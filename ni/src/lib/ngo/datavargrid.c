@@ -1,5 +1,5 @@
 /*
- *      $Id: datavargrid.c,v 1.9 2000-01-20 03:38:20 dbrown Exp $
+ *      $Id: datavargrid.c,v 1.10 2000-01-21 05:18:51 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -297,8 +297,6 @@ static void CreateShapeTool
         NgDataVarGridRec *dvp = (NgDataVarGridRec *)data;
 	NgPlotData pd = &dvp->public.plotdata[dvp->data_ix];
 	NgVarData vdata = pd->vdata;
-	NclApiDataList *dl;	
-	NclApiVarInfoRec *vinfo = NULL;
 	Widget apply;
 	char 		buf[256];
 
@@ -306,14 +304,7 @@ static void CreateShapeTool
 	fprintf(stderr,"in create shape tool\n");
 #endif        
 	
-	dl = GetInfo(vdata->qfile,vdata->qvar,vdata->qcoord);
-	vinfo = dl->u.var;
-	if (! vinfo)
-		return;
-
-	dvp->shaper = NgCreateShaper(go,go->go.manager,vdata->qfile,
-				     vdata->start,vdata->finish,vdata->stride,
-				     dl);
+	dvp->shaper = NgCreateShaper(go,go->go.manager);
 	dvp->shaper->shape_notify = UpdateDataVarShape;
 	dvp->shaper->geo_notify = AdjustShapeToolGeometry;
 	dvp->shaper->pdata = NULL;
@@ -340,8 +331,8 @@ static void CreateShapeTool
 #endif
 		      NULL);
 
-	NgUpdateShaper(dvp->shaper,vdata->qfile,
-		       vdata->start,vdata->finish,vdata->stride,NULL);
+	NgUpdateShaper(dvp->shaper,vdata->qfile,vdata->qvar,
+		       vdata->start,vdata->finish,vdata->stride);
 	dvp->shaper->pdata = dvp;
 
 	_NgGOWidgetTranslations(go,dvp->shaper->frame);
@@ -409,8 +400,8 @@ static void PopupShaperAction
 			      XmNtitle,buf,
 			      NULL);
 		dl = GetInfo(vdata->qfile,vdata->qvar,vdata->qcoord);
-		NgUpdateShaper(dvp->shaper,vdata->qfile,
-			       vdata->start,vdata->finish,vdata->stride,dl);
+		NgUpdateShaper(dvp->shaper,vdata->qfile,vdata->qvar,
+			       vdata->start,vdata->finish,vdata->stride);
 		dvp->shaper->pdata = dvp;
 	}
 	NgGOPopup(dvp->shape_tool_id);
@@ -1524,9 +1515,9 @@ EditCB
 			dvp->shaper->finish = NULL;
 			dvp->shaper->stride = NULL;
 
-			NgUpdateShaper(dvp->shaper,vdata->qfile,
+			NgUpdateShaper(dvp->shaper,vdata->qfile,vdata->qvar,
 				       vdata->start,
-				       vdata->finish,vdata->stride,dl);
+				       vdata->finish,vdata->stride);
 		}
 	}
  ret:

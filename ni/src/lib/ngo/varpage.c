@@ -1,5 +1,5 @@
 /*
- *      $Id: varpage.c,v 1.19 2000-01-20 03:38:25 dbrown Exp $
+ *      $Id: varpage.c,v 1.20 2000-01-21 05:18:55 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -432,13 +432,9 @@ UpdateShaper
 {
 	brPageData	*pdp = page->pdata;
 	brVarPageRec *rec = (brVarPageRec *) pdp->type_rec;
-	NclApiDataList *dl;
 
         if (! rec->shaper) {
-		dl = GetInfo(page->qfile,page->qvar,NrmNULLQUARK);
-		rec->shaper = NgCreateShaper
-			(page->go,pdp->form,page->qfile,
-			 rec->start,rec->finish,rec->stride,dl);
+		rec->shaper = NgCreateShaper(page->go,pdp->form);
 
                 rec->shaper->geo_notify = AdjustVarPageGeometry;
                 rec->shaper->shape_notify = VarPageDataUpdate;
@@ -451,8 +447,8 @@ UpdateShaper
                               XmNtopWidget,rec->shaper_toggle,
                               NULL);
                 
-                NgUpdateShaper(rec->shaper,page->qfile,
-			 rec->start,rec->finish,rec->stride,NULL);
+                NgUpdateShaper(rec->shaper,page->qfile,page->qvar,
+			       rec->start,rec->finish,rec->stride);
 		rec->shaper->pdata = (NhlPointer) page;
                 rec->shaper_managed = True;
                 rec->new_shape = False;
@@ -462,10 +458,9 @@ UpdateShaper
 		_NgGOWidgetTranslations(page->go,rec->shaper->frame);
         }
         else if (rec->new_shape) {
-		dl = GetInfo(page->qfile,page->qvar,NrmNULLQUARK);
                 rec->shaper->pdata = NULL;/* prevent pointer function calls */
-                NgUpdateShaper(rec->shaper,page->qfile,
-			 rec->start,rec->finish,rec->stride,dl);
+                NgUpdateShaper(rec->shaper,page->qfile,page->qvar,
+			       rec->start,rec->finish,rec->stride);
                 rec->shaper->pdata = (NhlPointer) page;
                 rec->new_shape = False;
                 if (! rec->shaper_managed) {

@@ -1,5 +1,5 @@
 /*
- *      $Id: shapeinfogrid.h,v 1.4 1999-09-11 01:06:55 dbrown Exp $
+ *      $Id: shapeinfogrid.h,v 1.5 2000-01-21 05:18:54 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -69,18 +69,14 @@ typedef struct _NgShapeInfoGrid
 NgShapeInfoGrid *NgCreateShapeInfoGrid
 (
         NgGO                    go,
-        Widget			parent,
-        NrmQuark 		qfileref,
-        NclApiVarInfoRec	*vinfo,
-        NhlBoolean		headline_on,
-        NhlBoolean		highlight_on
+        Widget			parent
         );
 
 NhlErrorTypes NgUpdateShapeInfoGrid
 (
         NgShapeInfoGrid		*shape_info_grid,
         NrmQuark		qfileref,
-        NclApiVarInfoRec	*vinfo
+	NrmQuark		qvar
         );
 
 void NgDestroyShapeInfoGrid

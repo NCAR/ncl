@@ -1,5 +1,5 @@
 /*
- *      $Id: dataprofile.c,v 1.14 2000-01-20 03:38:19 dbrown Exp $
+ *      $Id: dataprofile.c,v 1.15 2000-01-21 05:18:51 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1142,6 +1142,9 @@ NhlBoolean NgSetExpressionVarData
 			return False;
 		}
 		strcpy(vdata->expr_val,expr_val);
+		if (vdata->go && vdata->qexpr_var)
+			DeleteTmpVarRef(vdata->go,vdata->qexpr_var);
+		vdata->qexpr_var = NrmNULLQUARK;
 	}
 	vdata->go = go;
 	if (vdata->dl) {

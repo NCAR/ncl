@@ -1,5 +1,5 @@
 /*
- *      $Id: shaper.h,v 1.8 2000-01-20 03:38:25 dbrown Exp $
+ *      $Id: shaper.h,v 1.9 2000-01-21 05:18:55 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -38,6 +38,7 @@ typedef struct _NgShaper {           /* shaper interface struct */
         Widget		frame;	     /* top-level widget for the shaper */
 	Widget		reverse;
 	NrmQuark	qfile;
+	NrmQuark	qvar;
 	NclApiDataList	*dl;	
 	NclApiVarInfoRec  *vinfo;
 	long		*start;
@@ -67,21 +68,16 @@ void NgDoShaper(
 
 NgShaper *NgCreateShaper(
 	NgGO		go,
-	Widget		parent,
-	NrmQuark	qfile,
-	long		*start,
-	long		*finish,
-	long		*stride,
-	NclApiDataList 	*dl
+	Widget		parent
 );
 
 NhlErrorTypes NgUpdateShaper(
 	NgShaper	*si,
 	NrmQuark	qfile,
+	NrmQuark	qvar,
 	long		*start,
 	long		*finish,
-	long		*stride,
-	NclApiDataList  *dl
+	long		*stride
 );
 
 NgShaper *NgDupShaper(

@@ -1,5 +1,5 @@
 /*
- *      $Id: shapeinfogrid.c,v 1.20 2000-01-10 21:08:13 dbrown Exp $
+ *      $Id: shapeinfogrid.c,v 1.21 2000-01-21 05:18:53 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1320,13 +1320,14 @@ NhlErrorTypes NgUpdateShapeInfoGrid
 (
         NgShapeInfoGrid		*shape_info_grid,
         NrmQuark		qfileref,
-        NclApiVarInfoRec	*vinfo
+	NrmQuark		qvar
         )
 {
         NgShapeInfoGridRec *sirp;
         NgShapeInfoGrid *sip;
         int	i;
         static NhlBoolean first = True;
+	NhlBoolean newvar = False;
         
         sirp = (NgShapeInfoGridRec *) shape_info_grid;
         if (!sirp) return NhlFATAL;
@@ -1338,6 +1339,30 @@ NhlErrorTypes NgUpdateShapeInfoGrid
                 Buflen = BUFINC;
         }
 
+
+        if (sirp->qfileref != qfileref || sirp->qvar != qvar) {
+                sip->edit_row = -1;
+		sirp->manual_edit_started = False;
+		newvar = True;
+	}
+        sirp->qfileref = qfileref;
+	sirp->qvar = qvar;
+	if (newvar || ! sirp->dl) {
+		if (sirp->dl)
+			NclFreeDataList(sirp->dl);
+		if (sirp->qfileref)
+			sirp->dl = NclGetFileVarInfo
+				(sirp->qfileref,sirp->qvar);
+		else
+			sirp->dl = NclGetVarInfo(sirp->qvar);
+		if (sirp->dl)
+			sirp->vinfo = sirp->dl->u.var;
+	}
+	if (! sirp->vinfo) {
+		NHLPERROR((NhlFATAL,ENOMEM,NULL));
+		return NhlFATAL;
+	}
+	
 /*
  * a side-effect of this call is to set the focus, thus calling CellFocusCB,
  * and setting the focus cell; put this first to avoid changing the background
@@ -1347,16 +1372,9 @@ NhlErrorTypes NgUpdateShapeInfoGrid
 
 	sirp->ignore_focus_cb = True;
         XtVaSetValues(sip->grid,
-                      XmNcolumns,vinfo->n_dims,
+                      XmNcolumns,sirp->vinfo->n_dims,
                       NULL);
 	sirp->ignore_focus_cb = False;
-
-        if (sirp->qfileref != qfileref || sirp->vinfo != vinfo) {
-                sip->edit_row = -1;
-		sirp->manual_edit_started = False;
-	}
-        sirp->qfileref = qfileref;
-        sirp->vinfo = vinfo;
         
 #if DEBUG_SHAPE_INFO_GRID
         fprintf(stderr,"shapeinfo rows %d vis rows %d height %d\n",
@@ -1410,11 +1428,7 @@ NhlErrorTypes NgUpdateShapeInfoGrid
 NgShapeInfoGrid *NgCreateShapeInfoGrid
 (
         NgGO                    go,
-        Widget			parent,
-        NrmQuark 		qfileref,
-        NclApiVarInfoRec	*vinfo,
-        NhlBoolean		headline_on,
-        NhlBoolean		highlight_on
+        Widget			parent
         )
 {
         NgShapeInfoGridRec *sirp;
@@ -1469,18 +1483,13 @@ NgShapeInfoGrid *NgCreateShapeInfoGrid
 	sirp->ignore_focus_cb = False;
         sip->edit_row = -1;
         sirp->qfileref = NrmNULLQUARK;
+	sirp->qvar = NrmNULLQUARK;
+	sirp->dl = NULL;
         sirp->vinfo = NULL;
         sip->index_mode = False;
-        sip->headline_on = headline_on;
-        sip->highlight_on = highlight_on;
+        sip->headline_on = False;
+        sip->highlight_on = False;
         sip->synchro_step = False;
-#if 0        
-        ret = NgUpdateShapeInfoGrid((NgShapeInfoGrid*) sirp,qfileref,vinfo);
-        if (ret < NhlWARNING) {
-                NhlFree(sirp);
-                return NULL;
-        }
-#endif
         
         return (NgShapeInfoGrid *) sirp;
 }
@@ -1533,6 +1542,8 @@ void NgDestroyShapeInfoGrid
         NhlFree(sirp->start_coords);
         NhlFree(sirp->finish_coords);
         NhlFree(sirp->float_types);
+	if (sirp->dl)
+		NclFreeDataList(sirp->dl);
 
         NhlFree(sirp);
         

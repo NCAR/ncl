@@ -1,5 +1,5 @@
 /*
- *      $Id: plotapp.c,v 1.18 2000-01-20 03:38:23 dbrown Exp $
+ *      $Id: plotapp.c,v 1.19 2000-01-21 05:18:53 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -4429,6 +4429,21 @@ static void InitializeDataTable
 	memset(Data_Table,(char) 0,count * sizeof(DataTableRec));
 	return;
 }
+static void CleanDataTable
+(
+	int count
+)
+{
+	int i;
+
+	for (i = 0; i < count; i++) {
+		DataTable dt = &Data_Table[i];
+		if (dt->free_dl) {
+			NclFreeDataList(dt->dl);
+		}
+	}
+	return;
+}
 
 NhlBoolean NgPlotAppDataUsable
 (
@@ -4710,6 +4725,7 @@ NhlErrorTypes NgSetPlotAppDataVars
 #if 0
 	EvaluateDataProfileVars(papp,data,dprof);
 #endif
+	CleanDataTable(papp->data_count);
 
 	return NhlNOERROR;
 }
@@ -5172,6 +5188,7 @@ extern NhlErrorTypes NgPlotAppBackSubstituteValue
 		arg->free_edata = FreeEditInfo;
 	}
 	FreeSymRefInfo(&symref_info);
+	CleanDataTable(papp->data_count);
 
 	return NhlNOERROR;
 }

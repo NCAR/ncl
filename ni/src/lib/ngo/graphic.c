@@ -1,5 +1,5 @@
 /*
- *      $Id: graphic.c,v 1.14 1999-09-11 01:06:22 dbrown Exp $
+ *      $Id: graphic.c,v 1.15 2000-01-21 05:18:52 dbrown Exp $
  */
 /*******************************************x*****************************
 *									*
@@ -701,8 +701,10 @@ NhlErrorTypes NgDrawGraphic
         hlu_id = NgNclGetHluObjId
                 (go->go.nclstate,ncl_graphic,&count,&id_array);
         if (count > 1) {
-                return DrawGraphicArray
+                NhlErrorTypes ret =  DrawGraphicArray
 			(go,wks_state,ncl_graphic,count,id_array,clear);
+		NhlFree(id_array);
+		return ret;
         }
 	layer = _NhlGetLayer(hlu_id);
 

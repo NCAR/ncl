@@ -1,5 +1,5 @@
 /*
- *      $Id: shaper.c,v 1.21 2000-01-20 03:38:24 dbrown Exp $
+ *      $Id: shaper.c,v 1.22 2000-01-21 05:18:55 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -367,7 +367,7 @@ UpdateShape
         si->shapeinfogrid->stride = si->stride;
         si->shapeinfogrid->selected_dim = shaper->tgl_coord;
 
-        NgUpdateShapeInfoGrid(si->shapeinfogrid,si->qfile,si->vinfo);
+        NgUpdateShapeInfoGrid(si->shapeinfogrid,si->qfile,si->vinfo->name);
         XtVaGetValues(si->frame,
                       XmNwidth,&frame_width,
                       NULL);
@@ -682,7 +682,7 @@ ShaperCoordsorIndexesCB
                 si->shapeinfogrid->selected_dim = shaper->tgl_coord;
                 si->shapeinfogrid->index_mode = set;
                 NgUpdateShapeInfoGrid
-                        (si->shapeinfogrid,si->qfile,si->vinfo);
+                        (si->shapeinfogrid,si->qfile,si->vinfo->name);
 	}
 
 	return;
@@ -1127,8 +1127,7 @@ static NgShaperRec *NewShaper
 
 /* Shape Info Grid */        
 
-	si->shapeinfogrid = NgCreateShapeInfoGrid
-		(shaper->go,shaper->form,si->qfile,si->vinfo,False,False);
+	si->shapeinfogrid = NgCreateShapeInfoGrid(shaper->go,shaper->form);
 
 	XtVaSetValues(si->shapeinfogrid->grid,
 		      XmNbottomAttachment,XmATTACH_WIDGET,
@@ -1164,12 +1163,7 @@ static NgShaperRec *NewShaper
 NgShaper *NgCreateShaper
 (
 	NgGO		go,
-	Widget		parent,
-	NrmQuark	qfile,
-	long		*start,
-	long		*finish,
-	long		*stride,
-	NclApiDataList	*dl         /* this belongs to the shaper */
+	Widget		parent
 	)
 {
 	NgShaperRec *shaper = NewShaper(go,parent);
@@ -1180,12 +1174,13 @@ NgShaper *NgCreateShaper
 
 	si = &shaper->si;
 
-	si->qfile = qfile;
-	si->dl = dl;
-	si->vinfo = dl->u.var;
-	si->start = start;
-	si->finish = finish;
-	si->stride = stride;
+	si->qfile = NrmNULLQUARK;
+	si->qvar = NrmNULLQUARK;
+	si->dl = NULL;
+	si->vinfo = NULL;
+	si->start = NULL;
+	si->finish = NULL;
+	si->stride = NULL;
 
 	return (NgShaper *) shaper;
 }
@@ -1193,77 +1188,53 @@ NgShaper *NgCreateShaper
 NhlErrorTypes NgUpdateShaper(
 	NgShaper	*si,
 	NrmQuark	qfile,
+	NrmQuark	qvar,
 	long		*start,
 	long		*finish,
-	long		*stride,
-	NclApiDataList	*dl        /* this belongs to the shaper */
+	long		*stride
 )
 {
 	NgShaperRec *shaper = (NgShaperRec *)si;
 	NclApiVarInfoRec *vinfo;
 	NhlBoolean new = False;
 
-#if 0	
-	if (! si->dl) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"No data list supplied");
+
+	if (! (si && start && finish && stride && qvar)) {
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"invalid parameters"));
 		return NhlFATAL;
 	}
-	vinfo = si->dl->u.var;
-#endif
-	if (dl)
-		vinfo = dl->u.var;
-	else if (si->dl)
-		vinfo = si->dl->u.var;
-	else {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"No data list supplied");
-		return NhlFATAL;
-	}
-		
-	if (qfile != si->qfile)
+	if (si->qfile != qfile || si->qvar != qvar)
 		new = True;
-	if (vinfo != si->vinfo) {
-		if (! si->vinfo) {
-			new = True;
-		}
-		else if (vinfo->name != si->vinfo->name) {
-			new = True;
-		}
-		else if (vinfo->type != si->vinfo->type ||
-			 vinfo->n_dims != si->vinfo->n_dims ||
-			 vinfo->n_atts != si->vinfo->n_atts) {
-			new = True;
-		}
-		else if (vinfo->type == FILEVAR) {
-			if (memcmp(vinfo->coordnames,si->vinfo->coordnames,
-				   vinfo->n_dims * sizeof(NclQuark)))
-				new = True;
-			else if (memcmp(vinfo->attnames,si->vinfo->attnames,
-				   vinfo->n_atts * sizeof(NclQuark)))
-				new = True;
-		}
+
+	si->qfile = qfile;
+	si->qvar = qvar;
+
+	if (new || ! si->dl) {
+		if (si->dl)
+			NclFreeDataList(si->dl);
+		if (si->qfile)
+			si->dl = NclGetFileVarInfo(si->qfile,si->qvar);
+		else
+			si->dl = NclGetVarInfo(si->qvar);
+		if (si->dl)
+			vinfo = si->vinfo = si->dl->u.var;
 	}
+	if (! vinfo) {
+		NHLPERROR((NhlFATAL,ENOMEM,NULL));
+		return NhlFATAL;
+	}
+
 	if (! (si->start && si->finish && si->stride))
 		new = True;
 	else {
-		if (memcmp(si->start,start,vinfo->n_dims * sizeof(long)))
-			new = True;
-		if (memcmp(si->finish,finish,vinfo->n_dims * sizeof(long)))
-			new = True;
-		if (memcmp(si->stride,stride,vinfo->n_dims * sizeof(long)))
+		if (memcmp(si->start,start,vinfo->n_dims * sizeof(long)) ||
+		    memcmp(si->finish,finish,vinfo->n_dims * sizeof(long)) ||
+		    memcmp(si->stride,stride,vinfo->n_dims * sizeof(long)))
 			new = True;
 	}
-	si->qfile = qfile;
 	si->start = start;
 	si->finish = finish;
 	si->stride = stride;
-	si->vinfo = vinfo;
-	if (dl) {
-		if (si->dl)
-			NclFreeDataList(si->dl);
-		si->dl = dl;
-	}
-	if (! si)
-		return NhlFATAL;
 
 	if (new)
 		shaper->new_data = True;
