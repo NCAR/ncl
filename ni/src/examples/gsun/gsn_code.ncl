@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.10 1999-02-20 00:11:09 haley Exp $
+;      $Id: gsn_code.ncl,v 1.11 1999-03-12 23:07:26 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -38,7 +38,7 @@
 ; procedures with the same name.                                        ;
 ;***********************************************************************;
 
-undef("turn_off_tickmarks")
+undef("gsnp_turn_off_tickmarks")
 undef("gsn_open_ps")
 undef("gsn_open_x11")
 undef("gsn_open_ncgm")
@@ -48,7 +48,7 @@ undef("gsn_retrieve_colormap")
 undef("gsn_panel")
 undef("gsn_contour")
 undef("gsn_contour_map")
-undef("gsn_labelbar")
+undef("gsn_labelbar_ndc")
 undef("gsn_map")
 undef("gsn_polygon")
 undef("gsn_polygon_ndc")
@@ -61,6 +61,7 @@ undef("gsn_streamline_map")
 undef("gsn_text")
 undef("gsn_text_ndc")
 undef("gsn_vector")
+undef("gsn_vector_contour")
 undef("gsn_vector_contour_map")
 undef("gsn_vector_map")
 undef("gsn_vector_scalar")
@@ -68,7 +69,7 @@ undef("gsn_vector_scalar_map")
 undef("gsn_xy")
 
 
-procedure turn_off_tickmarks(res:logical)
+
   new_vpx = new_ux + dx
   res@tmXBBorderOn = False 
   res@tmXBOn       = False
@@ -254,8 +255,12 @@ i, j, old_vpx, old_vpy, old_vpwidth, old_vpheight, callframe
     cols = floattointeger(dims(1))
     xrows = dims(0)
     xcols = dims(1)
-    xwsp_perc = 1.     ; White space is 1% of total length of plot.
-    ywsp_perc = 1.     ; This can be changed with an attribute.
+    xwsp_perc = 1.0   ; White space is 1% of total length of plot.
+    ywsp_perc = 1.0   ; This can be changed with an attribute.
+    x_lft = 0.0
+    y_top = 1.0
+    x_rgt = 1.0
+    y_bot = 0.0
     callframe = True
 ;***********************************************************************;
 	if(resources)
@@ -276,6 +281,39 @@ i, j, old_vpx, old_vpy, old_vpwidth, old_vpheight, callframe
           print("Warning: attribute gsnPanelYWhiteSpacePercent must be >= 0 and < 100.")
           print("Defaulting to 1.")
           ywsp_perc = 1.
+        end if
+      end if
+;               resources: optional resources                           ;
+      if(isatt(resources,"gsnPanelLeft"))
+        x_lft = resources@gsnPanelLeft
+        if(x_lft.lt.0..or.x_lft.gt.1.)
+          print("Warning: attribute gsnPanelLeft must be >= 0.0 and <= 1.0")
+          print("Defaulting to 0.")
+          x_lft = 0.0
+        end if
+      end if
+      if(isatt(resources,"gsnPanelRight"))
+        x_rgt = resources@gsnPanelRight
+        if(x_rgt.lt.0..or.x_rgt.gt.1.)
+          print("Warning: attribute gsnPanelRight must be >= 0.0 and <= 1.0")
+          print("Defaulting to 1.")
+          x_rgt = 1.0
+        end if
+      end if
+      if(isatt(resources,"gsnPanelTop"))
+        y_top = resources@gsnPanelTop
+        if(y_top.lt.0..or.y_top.gt.1.)
+          print("Warning: attribute gsnPanelTop must be >= 0.0 and <= 1.0")
+          print("Defaulting to 1.")
+          y_top = 1.0
+        end if
+      end if
+      if(isatt(resources,"gsnPanelBottom"))
+        y_bot = resources@gsnPanelBottom
+        if(y_bot.lt.0..or.y_bot.gt.1.)
+          print("Warning: attribute gsnPanelBottom must be >= 0.0 and <= 1.0")
+          print("Defaulting to 0.")
+          y_bot = 0.0
         end if
       end if
     end if
@@ -318,14 +356,17 @@ begin
 ;
 ; We want:
 ;
-;   ncols * scale * total_width  <= 1.0 (the viewport width)
-;   nrows * scale * total_height <= 1.0 (the viewport height)
+;   ncols * scale * total_width  <= x_rgt - x_lft (the viewport width)
+;   nrows * scale * total_height <= y_top - y_bot (the viewport height)
 ;
 ; By taking the minimum of these two, we get the scale
 ; factor that we need to fit all plots on a page.
 ;
-    col_scale = min((/1./(xcols*total_width),1./))
-    row_scale = min((/1./(xrows*total_height),1./))
+    xrange = x_rgt - x_lft
+    yrange = y_top - y_bot
+; Retrieve graphic style object.
+    col_scale = min((/xrange/(xcols*total_width), xrange/))
+    row_scale = min((/yrange/(xrows*total_height),yrange/))
     scale = min((/col_scale,row_scale/))
 
     new_plot_width  = scale*plot_width    ; Calculate new width
@@ -337,16 +378,16 @@ begin
     new_total_width  = 2.*xwsp + new_plot_width  ; Calculate new total width
     new_total_height = 2.*ywsp + new_plot_height ; and height w/white space.
 
-    xsp = 1. - new_total_width*cols   ; Calculate total amt of white space
-    ysp = 1. - new_total_height*rows  ; left in both X and Y directions.
+    xsp = xrange - new_total_width*cols   ; Calculate total amt of white space
+    ysp = yrange - new_total_height*rows  ; left in both X and Y directions.
 
     dx = scale * (vpx - left) ; Calculate distance from plot's left position
                               ; to its leftmost annotation
     dy = scale * (top - vpy) ; Calculate distance from plot's top position
                              ; to its topmost annotation.
 
-    xpos =      xwsp + dx +(xsp/2.+new_total_width*ispan(0,cols-1,1))
-    ypos = 1. - ywsp - dy -(ysp/2.+new_total_height*ispan(0,rows-1,1))
+    xpos = x_lft + xwsp + dx +(xsp/2.+new_total_width*ispan(0,cols-1,1))
+    ypos = y_top - ywsp - dy -(ysp/2.+new_total_height*ispan(0,rows-1,1))
 
   ywsp = ywsp_perc/100. * new_plot_height
 ; Loop through each plot and draw it in the new scaled-down size.
@@ -701,7 +742,7 @@ begin
 
         if(isatt(res2,"gsnTickMarksOn"))
             if(.not.res2@gsnTickMarksOn)
-              turn_off_tickmarks(res2)
+              gsnp_turn_off_tickmarks(res2)
             end if
             delete(res2@gsnTickMarksOn)
         end if
@@ -1701,7 +1742,7 @@ begin
 
         if(isatt(res2,"gsnTickMarksOn"))
             if(.not.res2@gsnTickMarksOn)
-              turn_off_tickmarks(res2)
+              gsnp_turn_off_tickmarks(res2)
             end if
             delete(res2@gsnTickMarksOn)
         end if
@@ -2246,7 +2287,7 @@ begin
 
         if(isatt(res2,"gsnTickMarksOn"))
             if(.not.res2@gsnTickMarksOn)
-              turn_off_tickmarks(res2)
+              gsnp_turn_off_tickmarks(res2)
             end if
             delete(res2@gsnTickMarksOn)
         end if
@@ -2374,6 +2415,230 @@ begin
 
       plot_object = create wksname + "_loglin" logLinPlotClass wks
         "trXLog"  : force_x_log
+        "trYLog"  : force_y_log
+        "trXMinF" : trxmin
+        "trXMaxF" : trxmax
+        "trYMinF" : trymin
+        "trYMaxF" : trymax
+      end create
+      attsetvalues_check(plot_object,llres)
+; This function creates and draws vectors and contours over a map plot  ;
+; to the workstation "wks" (the variable returned from a previous call  ;
+; to "gsn_open_wks").  "u" and "v" are the 2-dimensional arrays to be   ;
+    end if
+; "resources" is an optional list of resources. The id of the map plot  ;
+; is returned.                                                          ;
+;                     v: 2-dimensional V data                           ;
+
+;                  data: 2-dimensional scalar field                     ;
+;               resources: optional resources                           ;
+;                                                                       ;
+local i, attnames, vfdata_object, sfdata_object, contour_object, res, \
+; workstation "wks" (the variable returned from a previous call to      ;
+; "gsn_open_wks").  "u" and "v" are the 2-dimensional arrays to be      ;
+    calldraw = True
+    callframe = True
+    scale     = False
+; vectorized, and "data" is the scalar field to be contoured.           ;
+; "resources" is an optional list of resources. The id of the vector    ;
+; plot is returned.                                                     ;
+;                                                                       ;
+; Special resources ("gsn" prefix) allowed:                             ;
+    vfdata_object = create wks@name + "_vfdata" vectorFieldClass noparent
+;   gsnShape                                                            ;
+;   gsnScale                                                            ;
+;   gsnSpreadColors                                                     ;
+;   gsnSpreadColorStart                                                 ;
+;   gsnSpreadColorEnd                                                   ;
+;                                                                       ;
+;***********************************************************************;
+function gsn_vector_contour(wks:graphic,u[*][*]:numeric,\
+                            v[*][*]:numeric,data[*][*]:numeric,\
+                            resources:logical)
+local i, vfdata_object, sfdata_object, contour_object, res, \
+vf_res_index, vc_res_index, sf_res_index, res2
+begin
+    res2      = resources
+
+;
+; Create the vector field object.
+;
+    wksname = get_res_value_keep(wks,"name","gsnapp")
+
+    sfdata_object = create wks@name + "_sfdata" scalarFieldClass noparent
+        "vfUDataArray" : u
+        "vfVDataArray" : v
+    end create
+
+;
+; Check for missing values.
+;
+    if(isatt(u,"_FillValue")) then
+        setvalues vfdata_object
+            "vfMissingUValueV" :u@_FillValue
+        end setvalues
+    end if
+    if(isatt(v,"_FillValue")) then
+    vector_object = create wks@name + "_vector" vectorPlotClass wks
+            "vfMissingVValueV" :v@_FillValue
+        end setvalues
+    end if
+
+; Create the scalar field object.
+    contour_object = create wks@name + "_contour" contourPlotClass wks
+    sfdata_object = create wksname + "_sfdata" scalarFieldClass noparent
+        "sfDataArray" : data
+    end create
+    if((res2).and..not.any(ismissing(getvaratts(res2))))
+
+; Check if frame and/or draw are not supposed to be called.
+
+        if(isatt(res2,"gsnDraw"))
+            if(.not.res2@gsnDraw)
+                calldraw = False
+            end if
+            delete(res2@gsnDraw)
+        end if
+        if(isatt(res2,"gsnFrame"))
+            if(.not.res2@gsnFrame)
+                callframe = False
+            end if
+            delete(res2@gsnFrame)
+        end if
+
+        if(isatt(res2,"gsnScale"))
+            if(res2@gsnScale)
+                scale = True
+            end if
+            delete(res2@gsnScale)
+        end if
+    end if
+
+    if((res2).and..not.any(ismissing(getvaratts(res2))))
+; Get list of resources.
+
+        attnames = getvaratts(res2)
+        res = stringtochar(attnames(ind(attnames.ne."_FillValue")))
+        if(dimsizes(dimsizes(res)).eq.1)
+
+;***********************************************************************;
+; Check to see if any resources were set. For the vector field data     ;
+; object, resources begin with "vf" and for the scalar field data       ;
+; object, resources being with "sf". For the contour ojbect, resources  ;
+; begin with "cn" and for the vector object, any resource that doesn't  ;
+; start with "cn" or "vf" is assumed to be a vector or vector-related   ;
+; resource.                                                             ;
+;***********************************************************************;
+
+            if(chartostring(res(0:1)).eq."vf")
+                setvalues vfdata_object
+                    attnames : res2@$attnames$
+                end setvalues
+            else
+                if(chartostring(res(0:1)).eq."sf")
+                    setvalues sfdata_object
+                        attnames : res2@$attnames$
+                    end setvalues
+                else
+                  if(chartostring(res(0:1)).eq."cn".or.\
+                     chartostring(res(0:1)).eq."vp")
+                      setvalues contour_object
+                          attnames : res2@$attnames$
+                      end setvalues
+                  else
+                    setvalues vector_object
+                      attnames : res2@$attnames$
+                    end setvalues
+                  end if
+                end if
+            end if
+        else
+            vf_res_index = ind(chartostring(res(:,0:1)).eq."vf")
+            sf_res_index = ind(chartostring(res(:,0:1)).eq."sf")
+            cn_res_index = ind(chartostring(res(:,0:1)).eq."cn".or.\
+                               chartostring(res(:,0:1)).eq."vp")
+            vc_res_index = ind(chartostring(res(:,0:1)).ne."vf".and.\
+                               chartostring(res(:,0:1)).ne."cn".and.\
+                               chartostring(res(:,0:1)).ne."sf".and.\
+                               chartostring(res(:,0:1)).ne."vp")
+            if(.not.all(ismissing(vf_res_index)))
+                vfres = True
+                do i = 0,dimsizes(vf_res_index)-1
+                    vfres@$attnames(vf_res_index(i))$ = res2@$attnames(vf_res_index(i))$
+                end do
+                attsetvalues(vfdata_object,vfres)
+            end if
+            if(.not.all(ismissing(sf_res_index)))
+                sfres = True
+                do i = 0,dimsizes(sf_res_index)-1
+                    sfres@$attnames(sf_res_index(i))$ = res2@$attnames(sf_res_index(i))$
+                end do
+                attsetvalues(sfdata_object,sfres)
+            end if
+            if(.not.all(ismissing(cn_res_index)))
+                cnres = True
+                do i = 0,dimsizes(cn_res_index)-1
+                    cnres@$attnames(cn_res_index(i))$ = res2@$attnames(cn_res_index(i))$
+                end do
+                attsetvalues(contour_object,cnres)
+            end if
+            if(.not.all(ismissing(vc_res_index)))
+                vcres = True
+                do i = 0,dimsizes(vc_res_index)-1
+                    vcres@$attnames(vc_res_index(i))$ = res2@$attnames(vc_res_index(i))$
+                end do
+                attsetvalues(vector_object,vcres)
+            end if
+        end if
+    end if
+        "cnScalarFieldData" : sfdata_object
+    overlay(contour_object,vector_object)
+    vcres = get_res_ne(res2,(/"vf","sf","cn","vp"/))
+
+    attsetvalues_check(vfdata_object,vfres)
+    attsetvalues_check(sfdata_object,sfres)
+    attsetvalues_check(contour_object,cnres)
+    attsetvalues_check(vector_object,vcres)
+        getvalues vector_object
+          "tiXAxisFontHeightF"   : xfontf
+          "tiYAxisFontHeightF"   : yfontf
+          "tmXBLabelFontHeightF" : xbfontf
+          "tmXBMajorLengthF"     : xlengthf
+          "tmXBMinorLengthF"     : xmlengthf
+          "tmYLLabelFontHeightF" : ylfontf
+          "tmYLMajorLengthF"     : ylengthf
+          "tmYLMinorLengthF"     : ymlengthf
+        end getvalues
+
+        setvalues vector_object
+          "tiXAxisFontHeightF"   : (xfontf+yfontf)/2.
+          "tiYAxisFontHeightF"   : (xfontf+yfontf)/2.
+          "tmXBLabelFontHeightF" : (xbfontf+ylfontf)/2.
+          "tmXBMajorLengthF"     : (ylengthf+xlengthf)/2.
+          "tmXBMinorLengthF"     : (ymlengthf+xmlengthf)/2.
+          "tmYLLabelFontHeightF" : (xbfontf+ylfontf)/2.
+          "tmYLMajorLengthF"     : (ylengthf+xlengthf)/2.
+          "tmYLMinorLengthF"     : (ymlengthf+xmlengthf)/2.
+        end setvalues
+    if(sprdcols)
+      cnres2 = True
+    if(calldraw)
+        draw(contour_object)
+    end if
+
+    if(callframe)
+        frame(wks)
+    end if
+
+      set_attr(cnres2,"cnFillColors",\
+               spread_colors(wks,contour_object,min_index,max_index))
+    contour_object@vfdata = vfdata_object
+    contour_object@sfdata = sfdata_object
+    contour_object@vector = vector_object
+    return(contour_object)
+      attsetvalues(contour_object,cnres2)
+    end if
+
     overlay(stream_object,contour_object)
 
 ;
@@ -2911,7 +3176,7 @@ begin
 
         if(isatt(res2,"gsnTickMarksOn"))
             if(.not.res2@gsnTickMarksOn)
-              turn_off_tickmarks(res2)
+              gsnp_turn_off_tickmarks(res2)
             end if
             delete(res2@gsnTickMarksOn)
         end if
@@ -3393,7 +3658,7 @@ begin
 
         if(isatt(res2,"gsnTickMarksOn"))
             if(.not.res2@gsnTickMarksOn)
-              turn_off_tickmarks(res2)
+              gsnp_turn_off_tickmarks(res2)
             end if
             delete(res2@gsnTickMarksOn)
         end if
