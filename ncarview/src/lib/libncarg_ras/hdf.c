@@ -1,5 +1,5 @@
 /*
- *	$Id: hdf.c,v 1.15 1994-10-12 19:17:13 haley Exp $
+ *	$Id: hdf.c,v 1.16 1995-01-10 17:26:39 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -50,7 +50,6 @@
 
 static char	*FormatName = "hdf";
 
-extern int	OptionCompression;
 extern int	DFerror;
 
 
