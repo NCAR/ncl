@@ -1,6 +1,6 @@
 
 /*
- *      $Id: ncarg_path.c,v 1.15 1994-04-04 21:12:42 haley Exp $
+ *      $Id: ncarg_path.c,v 1.16 1994-04-08 17:03:49 haley Exp $
  */
 /*
  *	File:		ncarg_path.c
@@ -156,6 +156,8 @@ static	const char *dir_2_path(dir)
 			fprintf(stderr, "\nWarning: %s environment variable not set.", ROOT_ENV);
 			fprintf(stderr, "\n         Assuming %s as the value for %s.\n",
                     parent_default, ROOT_ENV);
+			fprintf(stderr, "\n         Please see the 'ncargintro' man page for\n");
+			fprintf(stderr, "\n         information on NCARG_ROOT\n");
 		}
 	}
 	/*
