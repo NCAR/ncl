@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncargcex.m,v 1.9 1994-11-03 23:09:26 haley Exp $
+.\"	$Id: ncargcex.m,v 1.10 1994-11-04 15:17:33 haley Exp $
 .\"
 .\" @(#)f77.1 1.4 86/07/31 SMI; 
 .TH NCARGCEX 1NCARG "October 1994" NCAR "NCAR GRAPHICS"
@@ -8,6 +8,7 @@ ncargcex \- NCAR Graphics C Examples
 .SH SYNOPSIS
 \fBncargcex\fP 
 [\fB\-A\fR]
+[\fB\-ps\fR]
 [\fB\-x11\fR]
 [\fB\-W workstation_type\fR]
 [\f\B\-areas]
@@ -156,6 +157,9 @@ tutorial examples.
 .IP \-x11 " " ""
 Generate all examples that use the X11 driver.
 .sp
+.IP \-ps " " ""
+Generate all examples that use the PostScript driver.
+.sp
 .IP \-areas " " ""
 Generate all areas examples.
 .sp
@@ -297,7 +301,7 @@ c_tgflas
 .sp
 .I "GKS Examples:"
 .sp
-c_gtxpac
+c_gtxpac c_pgkex21
 .sp
 .I "GRIDALL Example:"
 .sp
@@ -358,6 +362,10 @@ c_vvex03
 .I "WEATHER MAP Examples:"
 .sp
 c_wmex03
+.sp
+.I "PostScript Examples:"
+.sp
+c_pgkex21
 .sp
 .I "X11 Examples:"
 .sp
