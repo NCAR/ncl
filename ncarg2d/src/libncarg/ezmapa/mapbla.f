@@ -1,5 +1,5 @@
 C
-C $Id: mapbla.f,v 1.10 1998-04-16 20:26:41 kennison Exp $
+C $Id: mapbla.f,v 1.11 1998-05-12 23:18:08 kennison Exp $
 C
       SUBROUTINE MAPBLA (IAMP)
 C
@@ -429,11 +429,10 @@ C
       IF (ICFELL('MAPBLA',8).NE.0) RETURN
       NSEG=0
 C
-C Save the pointers that will tell us whether anything actually got
+C Save the pointer that will tell us whether anything actually got
 C put into the area map, so that, if not, we can take remedial action.
 C
       IAM5=IAMP(5)
-      IAM6=IAMP(6)
 C
 C Read the next record (group of points).
 C
@@ -491,7 +490,7 @@ C See if anything was actually put into the area map and, if not, take
 C action to supply AREAS with a correct area identifier.
 C
   302 CONTINUE
-      IF (.NOT.(IAMP(5).EQ.IAM5.AND.IAMP(6).EQ.IAM6)) GO TO 10068
+      IF (.NOT.(IAMP(5).EQ.IAM5)) GO TO 10068
       CALL MPDBDI (FLNM,ISTA)
       IF (ISTA.EQ.-1) GO TO 309
       DO 303 I=1,111

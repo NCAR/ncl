@@ -1,5 +1,5 @@
 C
-C $Id: mapblm.f,v 1.5 1998-04-16 20:26:43 kennison Exp $
+C $Id: mapblm.f,v 1.6 1998-05-12 23:18:09 kennison Exp $
 C
       SUBROUTINE MAPBLM (IAM,XCS,YCS,MCS,IAI,IAG,MAI,LPR)
 C
@@ -440,7 +440,7 @@ C
       IF (ICFELL('MAPBLM',14).NE.0) RETURN
 10064 CONTINUE
       CALL MAPCHM (4+IGID,IOR(ISHIFT(32767,1),1),
-     +                                IAM,XCS,YCS,MCS,IAI,IAG,MAI,LPR)
+     +                              IAM,XCS,YCS,MCS,IAI,IAG,MAI,LPR)
       IF (ICFELL('MAPBLM',15).NE.0) RETURN
       IGIS=IGID
 10063 CONTINUE
