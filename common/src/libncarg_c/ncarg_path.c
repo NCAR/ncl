@@ -1,6 +1,6 @@
 
 /*
- *      $Id: ncarg_path.c,v 1.5 1992-09-09 17:38:13 clyne Exp $
+ *      $Id: ncarg_path.c,v 1.6 1992-09-24 16:07:33 clyne Exp $
  */
 /*
  *	File:		ncarg_path.c
@@ -174,6 +174,7 @@ const	char	*GetNCARGPath(dir)
 	char	*lib = "lib";
 	char	*tmp = "tmp";
 	char	*inc = "include";
+	char	*man = "man";
 	char	*db = "database";
 	char	*fontcap = "fontcaps";
 	char	*graphcap = "graphcaps";
@@ -188,7 +189,8 @@ const	char	*GetNCARGPath(dir)
 	if ((strcmp(bin, dir) == 0) 
 		|| (strcmp(lib, dir) == 0)
 		|| (strcmp(tmp, dir) == 0)
-		|| (strcmp(inc, dir) == 0)) {
+		|| (strcmp(inc, dir) == 0)
+		|| (strcmp(man, dir) == 0)) {
 
 		return(dir_2_path(dir));
 	}
