@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: uname,v 1.5 1995-10-20 15:37:00 haley Exp $
+#      $Id: uname,v 1.6 1995-11-07 16:21:04 haley Exp $
 #
 #########################################################################
 #									#
@@ -71,7 +71,8 @@ case IRIX64:
 case ULTRIX:
 case HP-UX:
 case OSF1:
-	set os = $foo
+case Linux:
+	set os = LINUX
 	breaksw
 
 default:
@@ -204,6 +205,10 @@ while($#argv)
 				echo "$0 : Unknown machine type" > /dev/tty
 				exit 1
 			endsw
+			breaksw
+
+		case	LINUX:
+			set arch = i486
 			breaksw
 
 		case	ULTRIX:

@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: rarch,v 1.4 1995-10-20 15:36:59 haley Exp $
+#      $Id: rarch,v 1.5 1995-11-07 16:21:00 haley Exp $
 #
 #########################################################################
 #									#
@@ -89,6 +89,11 @@ case ULTRIX:
 case HP-UX:
 	echo HPUX_HP9000_7xx
 	exit 0
+
+case LINUX:
+	echo LINUX_i486
+	exit 0
+
 case SunOS:
 	switch ("$a[3]")
 	case	5*:
