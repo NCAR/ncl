@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.6 1994-12-05 22:52:42 haley Exp $
+#      $Id: yMakefile,v 1.7 1994-12-09 17:40:14 haley Exp $
 #
 #########################################################################
 #									#
@@ -54,3 +54,11 @@ nhlex: nhlex.csh Makefile
 	-e 's+SED_EXAMPLES+$(EXAMPLES)+' \
 	< nhlex.csh > nhlex
 
+examples::
+	@tname=examples; \
+	for dir in $(SUBDIRS) ; do \
+	if (test -d $$dir) then \
+	(cd $$dir; echo "Making $$tname in $(CURRENT_DIR)/$$dir";\
+	$(MAKE) $(MFLAGS) $$tname);\
+	else echo "NOT Making $$tname in $(CURRENT_DIR)/$$dir"; fi \
+	done
