@@ -1,5 +1,5 @@
 /*
- *      $Id: CnStdRenderer.c,v 1.2 2004-03-20 00:16:22 dbrown Exp $
+ *      $Id: CnStdRenderer.c,v 1.3 2004-10-05 22:50:32 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -247,6 +247,7 @@ CnStdRendererInitialize
 	char			*e_text;
 
 	load_hlucp_routines(False);
+	
 
         return ret;
 }
@@ -1799,6 +1800,48 @@ static NhlErrorTypes cnInitCellArray
 	return ret;
 }
 
+#if 0
+/* 
+ * not fully implemented -- leave out for now.
+ * The idea of this routine is to manage data specified using 
+ * cell boundaries for the conpack routines that only handle
+ * cell-centered data. 
+ */
+static NhlErrorTypes SetTransBoundsState
+#if	NhlNeedProto
+(
+        NhlContourPlotLayer     cnl,
+	NhlBoolean              do_bounds,
+	NhlBoolean              *do_bounds_ret
+        )
+#else
+(cnl,do_bounds)
+        NhlContourPlotLayer     cnl;
+	NhlBoolean              do_bounds;
+	NhlBoolean              *do_bounds_ret;
+#endif
+{
+        NhlErrorTypes ret = NhlNOERROR,subret = NhlNOERROR;
+	NhlContourPlotLayerPart 	  *cnp = &cnl->contourplot;
+	NhlTransformLayerPart 		  *tfp = &cnl->trans;
+
+	if (do_bounds == *do_bounds_ret)
+		return ret;
+
+	if (! cnp->sfp->xc_is_bounds && ! cnp->sfp->yc_is_bounds)
+		return ret;
+
+	ret = NhlVASetValues(tfp->trans_obj->base.id, 
+			     NhlNtrDoBounds, do_bounds,
+			     NULL);
+
+	if (ret > NhlFATAL)
+		*do_bounds_ret = do_bounds;
+
+	return ret;
+}
+#endif
+
 static NhlErrorTypes CnStdRender
 #if	NhlNeedProto
 (
@@ -1824,11 +1867,16 @@ static NhlErrorTypes CnStdRender
 
 	Cnl = cnl;
 	Cnp = cnp;
-
 	
 	c_cprset();
-
 	SetCpParams(cnl,entry_name);
+
+/*
+ * Get the current bounds handling state
+ */
+	NhlVAGetValues(tfp->trans_obj->base.id, 
+		       NhlNtrDoBounds, &csrp->do_bounds,
+		       NULL);
 /*
  * Only set the ORV parameter if overlaying on EZMAP. It can cause
  * problems otherwise. (Not sure yet whether it is needed in some cases
@@ -1930,6 +1978,14 @@ static NhlErrorTypes CnStdRender
 	if (cnp->do_fill && cnp->fill_order == order) {
 
 		if (cnp->fill_mode == NhlAREAFILL) {
+#if 0
+			subret = SetTransBoundsState
+				(cnl,False,&csrp->do_bounds);
+			if ((ret = MIN(subret,ret)) < NhlWARNING) {
+				ContourAbortDraw(cnl);
+				return ret;
+			}
+#endif
 			if (cnp->aws == NULL) {
 				subret = cnInitAreamap(cnl,entry_name);
 				if ((ret = MIN(subret,ret)) < NhlWARNING) {
@@ -1972,6 +2028,14 @@ static NhlErrorTypes CnStdRender
 			cnp->aws = NULL;
 		}
 		else if (cnp->fill_mode == NhlCELLFILL) {
+#if 0
+			subret = SetTransBoundsState
+				(cnl,True,&csrp->do_bounds);
+			if ((ret = MIN(subret,ret)) < NhlWARNING) {
+				ContourAbortDraw(cnl);
+				return ret;
+			}
+#endif
 			subret = _NhlCellFill((NhlLayer)cnl,entry_name);
 			if ((ret = MIN(subret,ret)) < NhlWARNING) {
 				ContourAbortDraw(cnl);
@@ -1982,7 +2046,20 @@ static NhlErrorTypes CnStdRender
 			int msize,nsize;
 			float min_cell_size;
 			NhlBoundingBox bbox;
-
+#if 0
+			if (! cnp->raster_smoothing_on) {
+				subret = SetTransBoundsState
+					(cnl,True,&csrp->do_bounds);
+			}
+			else {
+				subret = SetTransBoundsState
+					(cnl,False,&csrp->do_bounds);
+			}
+#endif
+			if ((ret = MIN(subret,ret)) < NhlWARNING) {
+				ContourAbortDraw(cnl);
+				return ret;
+			}
 			subret = cnInitCellArray(cnl,&msize,&nsize,&bbox,
 						 &min_cell_size,entry_name);
  			if ((ret = MIN(subret,ret)) < NhlWARNING) {
@@ -2011,6 +2088,14 @@ static NhlErrorTypes CnStdRender
 	if (cnp->line_order == order &&
 	    (cnp->do_lines || cnp->missing_val.perim_on ||
 	     cnp->grid_bound.perim_on || cnp->out_of_range.perim_on)) {
+#if 0
+		subret = SetTransBoundsState
+			(cnl,False,&csrp->do_bounds);
+		if ((ret = MIN(subret,ret)) < NhlWARNING) {
+			ContourAbortDraw(cnl);
+			return ret;
+		}
+#endif
 		if (cnp->do_labels && cnp->label_masking) {
 			c_cpseti("GIL",5);
 			if (cnp->aws == NULL) {
@@ -2062,6 +2147,14 @@ static NhlErrorTypes CnStdRender
 	}
 	
 	if (cnp->do_labels && cnp->label_order == order) {
+#if 0
+		subret = SetTransBoundsState
+			(cnl,False,&csrp->do_bounds);
+		if ((ret = MIN(subret,ret)) < NhlWARNING) {
+			ContourAbortDraw(cnl);
+			return ret;
+		}
+#endif
 		cnp->line_lbls.count = 0;
 		cnp->high_lbls.count = 0;
 		cnp->low_lbls.count = 0;
@@ -3064,7 +3157,7 @@ NhlErrorTypes _NhlRasterFill
 	float		zval,orv,spv;
         float		*levels;
 	float		cxstep,cystep,dxstep,dystep;
-	float           xoff,xsoff,xeoff,yoff,ysoff,yeoff;
+	float           xsoff,xeoff,ysoff,yeoff;
 	NhlBoolean      x_isbound,y_isbound;
 #if 0
 	FILE *fp = fopen("tmp.out","w");
@@ -3100,18 +3193,29 @@ NhlErrorTypes _NhlRasterFill
         map = -map;
 	cxstep = (xcqf-xcpf)/(float)icam;
 	cystep = (ycqf-ycpf)/(float)ican;
-	xoff = .5;
-	xsoff = Xsoff + .5 * (1.0 - Xsoff);
-	xeoff = Xeoff + .5 * (1.0 - Xeoff);
-	yoff = .5;
-	ysoff = Ysoff + .5 * (1.0 - Ysoff);
-	yeoff = Yeoff + .5 * (1.0 - Yeoff);
  	x_isbound = Cnp->sfp->xc_is_bounds;
  	y_isbound = Cnp->sfp->yc_is_bounds;
-	dxstep = x_isbound ? 
-		(xcm-xc1) / (float)(izdm) : (xcm-xc1) / (float)(izdm-1);
-	dystep = y_isbound ?
-		(ycn-yc1) / (float)(izdn) : (ycn-yc1) / (float)(izdn-1);
+
+	if (x_isbound) {
+		xsoff = Xsoff;
+		xeoff = Xeoff;
+		dxstep = (xcm-xc1) / (float)izdm;
+	}
+	else {
+		xsoff = Xsoff + .5 * (1.0 - Xsoff);
+		xeoff = Xeoff + .5 * (1.0 - Xeoff);
+		dxstep = (xcm-xc1) / (float)(izdm-1);
+	}
+	if (y_isbound) {
+		ysoff = Ysoff;
+		yeoff = Yeoff;
+		dystep = (ycn-yc1) / (float) izdn;
+	}
+	else {
+		ysoff = Ysoff + .5 * (1.0 - Ysoff);
+		yeoff = Yeoff + .5 * (1.0 - Yeoff);
+		dystep = (ycn-yc1) / (float)( izdn - 1);
+	}
 
 	for (i = 0; i < icam; i++) {
 		int iplus = i+1;

@@ -1,5 +1,5 @@
 /*
- *      $Id: CurvilinearTransObj.c,v 1.1 2002-03-18 21:20:06 dbrown Exp $
+ *      $Id: CurvilinearTransObj.c,v 1.2 2004-10-05 22:50:33 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -255,6 +255,7 @@ static NrmQuark QtrXCoordPoints;
 static NrmQuark QtrYCoordPoints;
 static NrmQuark QtrXInterPoints;
 static NrmQuark QtrYInterPoints;
+static NrmQuark Qdouble;
 
 NhlCurvilinearTransObjClassRec NhlcurvilinearTransObjClassRec = {
         {
@@ -341,6 +342,14 @@ static NhlErrorTypes CrTransSetValues
 	NhlCurvilinearTransObjLayer inew = (NhlCurvilinearTransObjLayer) new;
 	NhlCurvilinearTransObjLayerPart *crp = &inew->crtrans;
 	NhlTransObjLayerPart	*tp = &inew->trobj;
+
+	if (_NhlArgIsSet(args,num_args,NhlNtrDoBounds)) {
+		/*
+		 * This arg should be set by itself
+		 */
+		if (! tp->xc_isbounds && ! tp->yc_isbounds)
+			return NhlNOERROR;
+	}
 
 	return(SetUpTrans(new,old,SET,args,num_args));	
 }
@@ -439,23 +448,24 @@ static void SetUpIndexArrays
 {
 	int ixbeg,ixend,iybeg,iyend;
 	int ixmin,ixmax,iymin,iymax;
-	float xmin,xmax,ymin,ymax;
-	float *xp,*yp;
+	double xmin,xmax,ymin,ymax;
+	double *xp,*yp;
 	int i,j;
 	int size = crp->msize * crp->nsize;
 	int xsz = crp->xaxis_size; 
-	float xfac,yfac;
 	int ii,jj;
 	int *ixmn,*ixmx,*iymn,*iymx;
 	int msz = crp->msize;
+	double dmsz = (double) crp->msize;
+	double dnsz = (double) crp->nsize;
 
 	ixmn = crp->ixmin;
 	ixmx = crp->ixmax;
 	iymn = crp->iymin;
 	iymx = crp->iymax;
 
-	xp = (float *) crp->x_crv_ga->data;
-	yp = (float *) crp->y_crv_ga->data;
+	xp = (double *) crp->x_crv_ga->data;
+	yp = (double *) crp->y_crv_ga->data;
 	
 	ixbeg = (int)crp->compc_x_min;
 	ixend = (int)crp->compc_x_max;
@@ -469,8 +479,6 @@ static void SetUpIndexArrays
 		*(crp->iymax + i) = iybeg;
 	}
 	
-	xfac = ((float)crp->msize) / (crp->x_crv_max - crp->x_crv_min);
-	yfac = ((float)crp->nsize) / (crp->y_crv_max - crp->y_crv_min);
 	for (j = 0; j < crp->yaxis_size - 1; j++) {
 		for (i = 0; i < crp->xaxis_size - 1; i++) {
 			xmin = MIN4(*(xp + j * xsz + i),
@@ -490,13 +498,13 @@ static void SetUpIndexArrays
 				    *(yp + (j+1) * xsz + i),
 				    *(yp + (j+1) * xsz + i + 1));
 			ixmin = MAX(0,MIN(crp->msize-1,
-				    (int)(xfac * (xmin - crp->x_crv_min))));
+					  (int)(dmsz * xmin)));
 			ixmax = MAX(0,MIN(crp->msize-1,
-				    (int)(xfac * (xmax - crp->x_crv_min))));
+					  (int)(dmsz * xmax)));
 			iymin = MAX(0,MIN(crp->nsize-1,
-				    (int)(yfac * (ymin - crp->y_crv_min))));
+					  (int)(dnsz * ymin)));
 			iymax = MAX(0,MIN(crp->nsize-1,
-				    (int)(yfac * (ymax - crp->y_crv_min))));
+					  (int)(dnsz * ymax)));
 			for (jj = iymin; jj <= iymax; jj++) {
 				for (ii = ixmin; ii <= ixmax; ii++) {
 					*(ixmn + jj*msz + ii)
@@ -604,32 +612,66 @@ static NhlErrorTypes SetUpTrans
 		old_nsize = 0;
 	}
 
+	/*
+	 * To improve accuracy all internal calculation is now done
+	 * in double precision. Also the coordinate data is 
+	 * normalized along each axis into the range [0.0, 1.0].
+	 * This prevents errors when the extent of one axis varies
+	 * widely from the other, or when one or another axis has a small 
+	 * extent relative to its absolute value.
+	 */
+
 	if (data_extent_def) {
 		crp->x_crv_min = MIN(tp->data_xstart,tp->data_xend);
 		crp->x_crv_max = MAX(tp->data_xstart,tp->data_xend);
+		crp->x_crv_ext = crp->x_crv_max - crp->x_crv_min;
 		crp->y_crv_min = MIN(tp->data_ystart,tp->data_yend);
 		crp->y_crv_max = MAX(tp->data_ystart,tp->data_yend);
+		crp->y_crv_ext = crp->y_crv_max - crp->y_crv_min;
 	}
 	if (x_crv_coords_set) {
+		float *fdata;
+		double *data;
+		int i;
 		if (crp->x_crv_ga)
 			NhlFreeGenArray(crp->x_crv_ga);
 		crp->x_crv_ga = 
-			_NhlCopyGenArray(crp->x_coord_points_ga,True);
-		if (! crp->x_crv_ga) {
+			_NhlCopyGenArray(crp->x_coord_points_ga,False);
+		data = NhlMalloc(crp->x_crv_ga->num_elements * sizeof(double));
+		if (! (crp->x_crv_ga && data)) {
 			NHLPERROR((NhlFATAL,ENOMEM,NULL));
 			return NhlFATAL;
 		}
+		/* copy to double */
+		fdata = crp->x_crv_ga->data;
+		for (i = 0; i < crp->x_crv_ga->num_elements; i++) 
+			*(data + i) = ((double) *(fdata + i) - crp->x_crv_min)
+				/ crp->x_crv_ext;
+		crp->x_crv_ga->data = (void *)data;
+		crp->x_crv_ga->typeQ = Qdouble;
+		crp->x_crv_ga->my_data = True;
 		crp->x_coord_points_ga = NULL;
 	}
 	if (y_crv_coords_set) {
+		float *fdata;
+		double *data;
+		int i;
 		if (crp->y_crv_ga)
 			NhlFreeGenArray(crp->y_crv_ga);
 		crp->y_crv_ga = 
-			_NhlCopyGenArray(crp->y_coord_points_ga,True);
-		if (! crp->y_crv_ga) {
+			_NhlCopyGenArray(crp->y_coord_points_ga,False);
+		data = NhlMalloc(crp->y_crv_ga->num_elements * sizeof(double));
+		if (! (crp->y_crv_ga && data)) {
 			NHLPERROR((NhlFATAL,ENOMEM,NULL));
 			return NhlFATAL;
 		}
+		fdata = crp->y_crv_ga->data;
+		for (i = 0; i < crp->y_crv_ga->num_elements; i++) 
+			*(data + i) = ((double) *(fdata + i) - crp->y_crv_min)
+				/ crp->y_crv_ext;
+		crp->y_crv_ga->data = (void *)data;
+		crp->y_crv_ga->typeQ = Qdouble;
+		crp->y_crv_ga->my_data = True;
 		crp->y_coord_points_ga = NULL;
 	}
 	if (crp->y_crv_ga->len_dimensions[1] != 
@@ -648,28 +690,28 @@ static NhlErrorTypes SetUpTrans
 			  "%s: X minimum less than minimum value of coordinate points array, defaulting",
 			  error_lead);
 		ret = MIN(ret,NhlWARNING);
-		tp->x_min = crp->x_crv_min;
+		tp->x_min = (float)crp->x_crv_min;
 	}
 	if (tp->x_max > crp->x_crv_max) {
 		NhlPError(NhlWARNING,NhlEUNKNOWN,
 			  "%s: X maximum greater than maximum value of coordinate points array, defaulting",
 			  error_lead);
 		ret = MIN(ret,NhlWARNING);
-		tp->x_max = crp->x_crv_max;
+		tp->x_max = (float)crp->x_crv_max;
 	}
 	if (tp->y_min < crp->y_crv_min) {
 		NhlPError(NhlWARNING,NhlEUNKNOWN,
 			  "%s: Y minimum less than minimum value of coordinate points array, defaulting",
 			  error_lead);
 		ret = MIN(ret,NhlWARNING);
-		tp->y_min = crp->y_crv_min;
+		tp->y_min = (float)crp->y_crv_min;
 	}
 	if (tp->y_max > crp->y_crv_max) {
 		NhlPError(NhlWARNING,NhlEUNKNOWN,
 			  "%s: Y maximum greater than maximum value of coordinate points array, defaulting",
 			  error_lead);
 		ret = MIN(ret,NhlWARNING);
-		tp->y_max = crp->y_crv_max;
+		tp->y_max = (float)crp->y_crv_max;
 	}
 
 /*
@@ -1295,8 +1337,8 @@ static NhlBoolean IsInCompcBox
 #if	NhlNeedProto
 (
 	NhlCurvilinearTransObjLayerPart *crp,
-	float x,
-	float y,
+	double x,
+	double y,
 	int ixbeg,
 	int iybeg,
 	int ixend,
@@ -1305,8 +1347,8 @@ static NhlBoolean IsInCompcBox
 #else
 (crp,x,y,ixbeg,iybeg,ixend,iyend)
 	NhlCurvilinearTransObjLayerPart *crp;
-	float x;
-	float y;
+	double x;
+	double y;
 	int ixbeg;
 	int iybeg;
 	int ixend;
@@ -1317,8 +1359,8 @@ static NhlBoolean IsInCompcBox
 	int ipmn = 0;
 	int ixm = ixbeg;
 	int iym = iybeg;
-	float *xp = (float *)crp->x_crv_ga->data;
-	float *yp = (float *)crp->y_crv_ga->data;
+	double *xp = (double *)crp->x_crv_ga->data;
+	double *yp = (double *)crp->y_crv_ga->data;
 	int xsz = crp->xaxis_size;
 	double xt = *(xp + iym * xsz + ixm);
 	double yt = *(yp + iym * xsz + ixm);
@@ -1461,32 +1503,28 @@ static NhlBoolean SetCompcBox
 #if	NhlNeedProto
 (
 	NhlCurvilinearTransObjLayerPart *crp,
-	float x,
-	float y
+	double x,
+	double y
 )
 #else
 (crp,x,y)
 	NhlCurvilinearTransObjLayerPart *crp;
-	float x;
-	float y;
+	double x;
+	double y;
 
 #endif
 {
-	float *xp = (float *)crp->x_crv_ga->data;
-	float *yp = (float *)crp->y_crv_ga->data;
+	double *xp = (double *)crp->x_crv_ga->data;
+	double *yp = (double *)crp->y_crv_ga->data;
 	int msz = crp->msize;
 	int ix,iy;
 	int ixb,iyb,ixe,iye,ixt,iyt;
 
 
 	ix = MAX(0,MIN(crp->msize - 1,(int)
-		       (((x - crp->x_crv_min) / 
-			 (crp->x_crv_max - crp->x_crv_min))
-			* (float) crp->msize)));
+		       (((double)crp->msize * x))));
 	iy = MAX(0,MIN(crp->nsize - 1,(int)
-		       (((y - crp->y_crv_min) / 
-			 (crp->y_crv_max - crp->y_crv_min))
-			* (float) crp->nsize)));
+		       (((double)crp->nsize * y))));
 	ixb = *(crp->ixmin + iy*msz + ix); 
 	ixe = *(crp->ixmax + iy*msz + ix); 
 	iyb = *(crp->iymin + iy*msz + ix); 
@@ -1547,24 +1585,24 @@ static NhlErrorTypes GetFracCoordsD
 #if	NhlNeedProto
 (
 	NhlCurvilinearTransObjLayerPart *crp,
-        float   x,
-        float   y,
-        float*  xout,
-        float*  yout
+        double   x,
+        double   y,
+        double*  xout,
+        double*  yout
 )
 #else
 (crp,x,y,xout,yout)
 	NhlCurvilinearTransObjLayerPart *crp;
-        float   x;
-        float   y;
-        float*  xout;
-        float*  yout;
+        double   x;
+        double   y;
+        double*  xout;
+        double*  yout;
 
 #endif
 {
 	NhlErrorTypes ret = NhlNOERROR;
-	float *xp = (float *)crp->x_crv_ga->data;
-	float *yp = (float *)crp->y_crv_ga->data;
+	double *xp = (double *)crp->x_crv_ga->data;
+	double *yp = (double *)crp->y_crv_ga->data;
 	int xsz = crp->xaxis_size;
 	int ixb = crp->ixb;
 	int iyb = crp->iyb;
@@ -1644,8 +1682,8 @@ static NhlErrorTypes GetFracCoordsD
 		fy = ((double)y - (1.0 - fx) * ylb - fx * yrb) / ytm;
 
 
-	*xout = (float)ixb + MAX(0.0,MIN(1.0,fx));
-	*yout = (float)iyb + MAX(0.0,MIN(1.0,fy));
+	*xout = (double)ixb + MAX(0.0,MIN(1.0,fx));
+	*yout = (double)iyb + MAX(0.0,MIN(1.0,fy));
 			
 
 	return ret;
@@ -1689,8 +1727,8 @@ static NhlErrorTypes GetFracCoords
 #endif
 {
 	NhlErrorTypes ret = NhlNOERROR;
-	float *xp = (float *)crp->x_crv_ga->data;
-	float *yp = (float *)crp->y_crv_ga->data;
+	double *xp = (double *)crp->x_crv_ga->data;
+	double *yp = (double *)crp->y_crv_ga->data;
 	int xsz = crp->xaxis_size;
 	int ixb = crp->ixb;
 	int iyb = crp->iyb;
@@ -1822,6 +1860,8 @@ static NhlErrorTypes CrDataToCompc
                 (NhlCurvilinearTransObjLayer)instance;
 	NhlCurvilinearTransObjLayerPart *crp = &iinstance->crtrans;
 	int i;
+	double xt,yt;
+	double xo,yo;
 
 	*status = 0;
 	for(i=0; i< n;i++) {
@@ -1839,21 +1879,28 @@ static NhlErrorTypes CrDataToCompc
 				continue;
 			}
 		}
-		
+		xt = (x[i] -  crp->x_crv_min) / crp->x_crv_ext;
+		yt = (y[i] -  crp->y_crv_min) / crp->y_crv_ext;
 		if ((crp->ixe == crp->ixb+1 && crp->iye == crp->iyb+1) &&
-		    IsInCompcBox(crp,x[i],y[i],crp->ixb,crp->iyb,
+		    IsInCompcBox(crp,xt,yt,crp->ixb,crp->iyb,
 				 crp->ixe,crp->iye)) {
-			subret = GetFracCoordsD(crp,x[i],y[i],
-					       &(xout[i]),&(yout[i]));
+			subret = GetFracCoordsD(crp,xt,yt,
+						&xo,&yo);
+			xout[i] = xo;
+			yout[i] = yo;
 			ret = MIN(ret,subret);
 			continue;
 		}
-		if (! SetCompcBox(crp,x[i],y[i])) {
+		if (! SetCompcBox(crp,xt,yt)) {
 			*status = 1;
 			xout[i]= yout[i] = iinstance->trobj.out_of_range;
 			continue;
 		}
-		subret = GetFracCoordsD(crp,x[i],y[i],&(xout[i]),&(yout[i]));
+		subret = GetFracCoordsD(crp,xt,yt,&xo,&yo);
+
+		xout[i] = xo;
+		yout[i] = yo;
+			
 		ret = MIN(ret,subret);
 
 	}
@@ -1904,10 +1951,12 @@ static NhlErrorTypes CrCompcToData
 	NhlCurvilinearTransObjLayerPart *crp = &iinstance->crtrans;
 	int i;
 	int ix,iy;
-	float *xp = (float *)crp->x_crv_ga->data;
-	float *yp = (float *)crp->y_crv_ga->data;
+	double *xp = (double *)crp->x_crv_ga->data;
+	double *yp = (double *)crp->y_crv_ga->data;
 	int xsz = crp->xaxis_size;
-	float x0,y0;
+	double x0,y0;
+	double xt,yt;
+	double xo,yo;
 
 	*status = 0;
 	for(i = 0; i< n ; i++) {
@@ -1929,20 +1978,22 @@ static NhlErrorTypes CrCompcToData
 		iy = MAX(0,MIN(crp->yaxis_size-2,(int)y[i]));
 		
 		x0 = *(xp + iy * xsz + ix);
-		xout[i] = x0 +
-			(*(xp + iy * xsz + ix+1) - x0) * (x[i] - (float)ix) +
-			(*(xp + (iy+1)*xsz + ix) - x0) * (y[i] - (float)iy) +
+		xo = (float)(x0 +
+			(*(xp + iy * xsz + ix+1) - x0) * (x[i] - (double)ix) +
+			(*(xp + (iy+1)*xsz + ix) - x0) * (y[i] - (double)iy) +
 			(*(xp + (iy+1)*xsz + ix+1) - *(xp + (iy+1)*xsz + ix) -
 			 *(xp + iy * xsz + ix+1) + x0) *
-			(x[i] - (float)ix) * (y[i] - (float)iy);
+			   (x[i] - (double)ix) * (y[i] - (double)iy));
 
 		y0 = *(yp + iy * xsz + ix);
-		yout[i] = y0 +
-			(*(yp + iy * xsz + ix+1) - y0) * (x[i] - (float)ix) +
-			(*(yp + (iy+1)*xsz + ix) - y0) * (y[i] - (float)iy) +
+		yo = (float)(y0 +
+			(*(yp + iy * xsz + ix+1) - y0) * (x[i] - (double)ix) +
+			(*(yp + (iy+1)*xsz + ix) - y0) * (y[i] - (double)iy) +
 			(*(yp + (iy+1)*xsz + ix+1) - *(yp + (iy+1)*xsz + ix) -
 			 *(yp + iy * xsz + ix+1) + y0) *
-			(x[i] - (float)ix) * (y[i] - (float)iy);
+			   (x[i] - (double)ix) * (y[i] - (double)iy));
+		xout[i] = xo * crp->x_crv_ext + crp->x_crv_min;
+		yout[i] = yo * crp->y_crv_ext + crp->y_crv_min;
 	}
 	return(ret);
 }
@@ -2789,6 +2840,7 @@ static NhlErrorTypes    CrTransClassInitialize
 
 	QtrXCoordPoints = NrmStringToQuark(NhlNtrXCoordPoints);
 	QtrYCoordPoints = NrmStringToQuark(NhlNtrYCoordPoints);
+	Qdouble = NrmStringToQuark(NhlTDouble);
 
 	return(NhlNOERROR);	
 }

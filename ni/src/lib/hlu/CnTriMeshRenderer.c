@@ -1,5 +1,5 @@
 /*
- *      $Id: CnTriMeshRenderer.c,v 1.3 2004-08-11 23:52:50 dbrown Exp $
+ *      $Id: CnTriMeshRenderer.c,v 1.4 2004-10-05 22:50:32 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -372,11 +372,21 @@ static NhlErrorTypes BuildTriangularMesh
 		cnp->sfp->missing_value : -FLT_MAX;
 
 	if (cnp->sfp->x_arr && cnp->sfp->x_arr->num_dimensions == 2) {
-		if (! cnp->sfp->xc_is_bounds) {
+		float x[9],y[9];
+			
+		
+		/* 
+		 * since the triangular mesh algorithm does not handle
+		 * coordinates not defined at the grid points we 
+		 * must interpolate bounding coordinates to the 
+		 * cell centers as best we can.
+		 */
+		if (! (cnp->sfp->xc_is_bounds || cnp->sfp->yc_is_bounds)) {
 			rlat = (float*)cnp->sfp->y_arr->data;
 			rlon = (float*)cnp->sfp->x_arr->data;
 		}
-		else {
+		else if (cnp->sfp->xc_is_bounds && cnp->sfp->yc_is_bounds) {
+			int jd, jbd, jbdp;
 			float *tlat, *tlon;
 			int cidim = idim + 1; 
 			tlat = (float*)cnp->sfp->y_arr->data;
@@ -385,9 +395,57 @@ static NhlErrorTypes BuildTriangularMesh
 			rlat = NhlMalloc(idim * jdim * sizeof(float));
 			rlon = NhlMalloc(idim * jdim * sizeof(float));
 			for (j = 0; j < jdim; j++) {
+				jd = j * idim;
+				jbd = j * cidim;
+				jbdp = (j+1) * cidim;
 				for (i = 0; i < idim; i++) {
-					*(rlat+j*idim+i) = *(tlat+j*cidim+i);
-					*(rlon+j*idim+i) = *(tlon+j*cidim+i);
+				     *(rlon+jd+i) = 
+				       (*(tlon+jbd+i) + *(tlon+jbd+i+1) +
+				        *(tlon+jbdp+i) + *(tlon+jbdp+i+1)) 
+					     / 4.0;
+				     *(rlat+jd+i) = 
+				       (*(tlat+jbd+i) + *(tlat+jbd+i+1) +
+				        *(tlat+jbdp+i) + *(tlat+jbdp+i+1)) 
+					     / 4.0;
+				}
+			}
+		}
+		else if (cnp->sfp->xc_is_bounds) {
+			int jd, jbd;
+			float *tlat, *tlon;
+			int cidim = idim + 1; 
+			tlat = (float*)cnp->sfp->y_arr->data;
+			tlon = (float*)cnp->sfp->x_arr->data;
+			coords_alloced = 1;
+			rlat = NhlMalloc(idim * jdim * sizeof(float));
+			rlon = NhlMalloc(idim * jdim * sizeof(float));
+			for (j = 0; j < jdim; j++) {
+				jd = j * idim;
+				jbd = j * cidim;
+				for (i = 0; i < idim; i++) {
+				     *(rlon+jd+i) = 
+				       (*(tlon+jbd+i) + *(tlon+jbd+i+1)) / 2.0;
+				     *(rlat+jd+i) = 
+				       (*(tlat+jbd+i) + *(tlat+jbd+i+1)) / 2.0;
+				}
+			}
+		}
+		else if (cnp->sfp->yc_is_bounds) {
+			int jd, jdp;
+			float *tlat, *tlon;
+			tlat = (float*)cnp->sfp->y_arr->data;
+			tlon = (float*)cnp->sfp->x_arr->data;
+			coords_alloced = 1;
+			rlat = NhlMalloc(idim * jdim * sizeof(float));
+			rlon = NhlMalloc(idim * jdim * sizeof(float));
+			for (j = 0; j < jdim; j++) {
+				jd = j * idim;
+				jdp = (j + 1) * idim;
+				for (i = 0; i < idim; i++) {
+				     *(rlon+jd+i) = 
+				       (*(tlon+jd+i) + *(tlon+jdp+i)) / 2.0;
+				     *(rlat+jd+i) = 
+				       (*(tlat+jd+i) + *(tlat+jdp+i)) / 2.0;
 				}
 			}
 		}
@@ -3450,8 +3508,8 @@ NhlErrorTypes _NhlTriMeshRasterFill
 	float		xccf,xccd,xcci,yccf,yccd,ycci;
 	float		zval,orv,spv;
         float		*levels;
-	float		cxstep,cystep,dxstep,dystep;
-	float           xoff,xsoff,xeoff,yoff,ysoff,yeoff;
+	float		cxstep,cystep;
+	float           xsoff,xeoff,ysoff,yeoff;
 	NhlBoolean      x_isbound,y_isbound;
 
 	float           tol1,tol2;
@@ -3483,14 +3541,30 @@ NhlErrorTypes _NhlTriMeshRasterFill
 
 	cxstep = (xcqf-xcpf)/(float)icam;
 	cystep = (ycqf-ycpf)/(float)ican;
-	xoff = .5;
-	xsoff = Xsoff + .5 * (1.0 - Xsoff);
-	xeoff = Xeoff + .5 * (1.0 - Xeoff);
-	yoff = .5;
-	ysoff = Ysoff + .5 * (1.0 - Ysoff);
-	yeoff = Yeoff + .5 * (1.0 - Yeoff);
  	x_isbound = Cnp->sfp->xc_is_bounds;
  	y_isbound = Cnp->sfp->yc_is_bounds;
+#if 0
+	if (x_isbound) {
+		xsoff = Xsoff;
+		xeoff = Xeoff;
+	}
+	else {
+		xsoff = Xsoff + .5 * (1.0 - Xsoff);
+		xeoff = Xeoff + .5 * (1.0 - Xeoff);
+	}
+	if (y_isbound) {
+		ysoff = Ysoff;
+		yeoff = Yeoff;
+	}
+	else {
+		ysoff = Ysoff + .5 * (1.0 - Ysoff);
+		yeoff = Yeoff + .5 * (1.0 - Yeoff);
+	}
+#endif
+	xsoff = Xsoff + .5 * (1.0 - Xsoff);
+	xeoff = Xeoff + .5 * (1.0 - Xeoff);
+	ysoff = Ysoff + .5 * (1.0 - Ysoff);
+	yeoff = Yeoff + .5 * (1.0 - Yeoff);
 
 	tol1 = 0.0001 * MIN(Cnl->view.width,Cnl->view.height);
 	tol2 = 0.5 * MIN(Cnl->view.width,Cnl->view.height);
@@ -3764,8 +3838,8 @@ NhlErrorTypes CnTriMeshWriteCellData
 	double		xccf,xccd,xcci,yccf,yccd,ycci;
 	float		zval,orv,spv;
         float		*levels;
-	double		cxstep,cystep,dxstep,dystep;
-	double           xoff,xsoff,xeoff,yoff,ysoff,yeoff;
+	double		cxstep,cystep;
+	double          xsoff,xeoff,ysoff,yeoff;
 	NhlBoolean      x_isbound,y_isbound;
 
 	double           tol1,tol2;
@@ -3823,15 +3897,24 @@ NhlErrorTypes CnTriMeshWriteCellData
 
 	cxstep = (xcqf-xcpf)/(double)icam;
 	cystep = (ycqf-ycpf)/(double)ican;
-	xoff = .5;
-	xsoff = Xsoff + .5 * (1.0 - Xsoff);
-	xeoff = Xeoff + .5 * (1.0 - Xeoff);
-	yoff = .5;
-	ysoff = Ysoff + .5 * (1.0 - Ysoff);
-	yeoff = Yeoff + .5 * (1.0 - Yeoff);
  	x_isbound = Cnp->sfp->xc_is_bounds;
  	y_isbound = Cnp->sfp->yc_is_bounds;
-
+	if (x_isbound) {
+		xsoff = Xsoff;
+		xeoff = Xeoff;
+	}
+	else {
+		xsoff = Xsoff + .5 * (1.0 - Xsoff);
+		xeoff = Xeoff + .5 * (1.0 - Xeoff);
+	}
+	if (y_isbound) {
+		ysoff = Ysoff;
+		yeoff = Yeoff;
+	}
+	else {
+		ysoff = Ysoff + .5 * (1.0 - Ysoff);
+		yeoff = Yeoff + .5 * (1.0 - Yeoff);
+	}
 	tol1 = 0.00001 * MIN(Cnl->view.width,Cnl->view.height);
 	tol2 = 0.5 * MIN(Cnl->view.width,Cnl->view.height);
 	

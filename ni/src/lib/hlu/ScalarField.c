@@ -1,5 +1,5 @@
 /*
- *      $Id: ScalarField.c,v 1.41 2004-08-11 23:52:50 dbrown Exp $
+ *      $Id: ScalarField.c,v 1.42 2004-10-05 22:50:33 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -943,17 +943,13 @@ ValidCoordArray
 		else {
 			name = NhlNsfYArray;
 		}
-
-		if (sfp->yc_el_count == sfp->yd_el_count + 1 &&
-		    sfp->xc_el_count == sfp->xd_el_count + 1) {
-			/* in 2D bounds case assume both dimensions must
-			 * be cell boundaries 
-			 */
-			sfp->xc_is_bounds = True;
+		if (sfp->yc_el_count == sfp->yd_el_count + 1) 
 			sfp->yc_is_bounds = True;
-		}
-		else if (sfp->yc_el_count != sfp->yd_el_count ||
-			 sfp->xc_el_count != sfp->xd_el_count) {
+		if (sfp->xc_el_count == sfp->xd_el_count + 1)
+			sfp->xc_is_bounds = True;
+
+		if ((! sfp->yc_is_bounds && sfp->yc_el_count != sfp->yd_el_count) ||
+		    (! sfp->xc_is_bounds &&  sfp->xc_el_count != sfp->xd_el_count)) {
 			e_text = 
    "%s: 2d coordinate array %s has an incorrect dimension size: defaulting %s";
 			NhlPError(NhlWARNING,

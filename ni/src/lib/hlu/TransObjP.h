@@ -1,5 +1,5 @@
 /*
- *      $Id: TransObjP.h,v 1.20 2003-09-10 21:29:59 dbrown Exp $
+ *      $Id: TransObjP.h,v 1.21 2004-10-05 22:50:34 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -86,6 +86,9 @@ typedef struct _NhlTransObjLayerPart {
 	float		resolution;
 	NhlBoolean	grid_type_set;
         NhlGridType   	grid_type;
+	NhlBoolean      xc_isbounds;
+	NhlBoolean      yc_isbounds;
+	NhlBoolean      do_bounds;
 /*
  * Each time the trans obj changes this field is incremented
  */

@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.126 2004-07-24 05:25:39 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.127 2004-10-05 22:50:33 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3156,12 +3156,10 @@ static NhlErrorTypes cnInitDraw
 	else if (tfp->grid_type >= NhltrCURVILINEAR) {
                 int xcount,ycount;
 
-		xcount = cnp->sfp->fast_len;
-		ycount = cnp->sfp->slow_len;
-                cnp->xc1 = 0;
-                cnp->xcm = xcount - 1;
-                cnp->yc1 = 0;
-                cnp->ycn = ycount - 1;
+                cnp->xc1 = cnp->sfp->ix_start;
+                cnp->xcm = cnp->sfp->ix_end;
+                cnp->yc1 = cnp->sfp->iy_start;
+                cnp->ycn = cnp->sfp->iy_end;
 	}
 
 	return ret;
@@ -3419,14 +3417,6 @@ static NhlErrorTypes cnUpdateTrans
 
 			xmin = MIN (cnp->sfp->x_start,cnp->sfp->x_end);
 			xmax = MAX (cnp->sfp->x_start,cnp->sfp->x_end);
-#if 0
-			/* this is no good */
-			if (! cnp->sfp->xc_is_bounds) {
-				cell_size = (xmax - xmin) / (cnp->sfp->fast_len-1);
-				xmin -= 0.5 * cell_size;
-				xmax += 0.5 * cell_size;
-			}
-#endif
 
 			if (cnp->sfp->x_start < cnp->sfp->x_end) {
 				subret = NhlVASetValues
@@ -4378,13 +4368,18 @@ static NhlErrorTypes SetUpIrrTransObj
 		cnp->new_draw_req = True;
                 cnp->update_req = True;
                 
-		if (cnp->sfp->x_arr)
+		if (cnp->sfp->x_arr) {
 			NhlSetSArg(&sargs[nargs++],NhlNtrXCoordPoints,
 				   cnp->sfp->x_arr);
-		if (cnp->sfp->y_arr)
+			NhlSetSArg(&sargs[nargs++],NhlNtrXCIsBounds,
+				   cnp->sfp->xc_is_bounds);
+		}
+		if (cnp->sfp->y_arr) {
 			NhlSetSArg(&sargs[nargs++],NhlNtrYCoordPoints,
 				   cnp->sfp->y_arr);
-                
+			NhlSetSArg(&sargs[nargs++],NhlNtrYCIsBounds,
+				   cnp->sfp->yc_is_bounds);
+		}
                 NhlSetSArg(&sargs[nargs++],NhlNtrXAxisType,tfp->x_axis_type);
                 NhlSetSArg(&sargs[nargs++],NhlNtrYAxisType,tfp->y_axis_type);
 		NhlSetSArg(&sargs[nargs++],NhlNtrXMinF,tfp->x_min);
@@ -4418,13 +4413,19 @@ static NhlErrorTypes SetUpIrrTransObj
 	}
         else {
                 if (cnp->data_changed &&cnp->sfp->x_arr &&
-                    (cnp->sfp->changed & _NhlsfXARR_CHANGED))
+                    (cnp->sfp->changed & _NhlsfXARR_CHANGED)) {
                         NhlSetSArg(&sargs[nargs++],
                                    NhlNtrXCoordPoints,cnp->sfp->x_arr);
+			NhlSetSArg(&sargs[nargs++],NhlNtrXCIsBounds,
+				   cnp->sfp->xc_is_bounds);
+		}
                 if (cnp->data_changed && cnp->sfp->y_arr &&
-		    (cnp->sfp->changed & _NhlsfYARR_CHANGED))
+		    (cnp->sfp->changed & _NhlsfYARR_CHANGED)) {
                         NhlSetSArg(&sargs[nargs++],
                                    NhlNtrYCoordPoints,cnp->sfp->y_arr);
+			NhlSetSArg(&sargs[nargs++],NhlNtrYCIsBounds,
+				   cnp->sfp->yc_is_bounds);
+		}
                 if (tfp->x_axis_type != cold->trans.x_axis_type)        
                         NhlSetSArg(&sargs[nargs++],
                                    NhlNtrXAxisType,tfp->x_axis_type);
@@ -4588,13 +4589,18 @@ static NhlErrorTypes SetUpCrvTransObj
 		cnp->new_draw_req = True;
                 cnp->update_req = True;
                 
-		if (cnp->sfp->x_arr)
+		if (cnp->sfp->x_arr) {
 			NhlSetSArg(&sargs[nargs++],NhlNtrXCoordPoints,
 				   cnp->sfp->x_arr);
-		if (cnp->sfp->y_arr)
+			NhlSetSArg(&sargs[nargs++],NhlNtrXCIsBounds,
+				   cnp->sfp->xc_is_bounds);
+		}
+		if (cnp->sfp->y_arr) {
 			NhlSetSArg(&sargs[nargs++],NhlNtrYCoordPoints,
 				   cnp->sfp->y_arr);
-                
+			NhlSetSArg(&sargs[nargs++],NhlNtrYCIsBounds,
+				   cnp->sfp->yc_is_bounds);
+		}
 		NhlSetSArg(&sargs[nargs++],NhlNtrXMinF,tfp->x_min);
 		NhlSetSArg(&sargs[nargs++],NhlNtrXMaxF,tfp->x_max);
 		NhlSetSArg(&sargs[nargs++],NhlNtrYMinF,tfp->y_min);
@@ -4624,13 +4630,19 @@ static NhlErrorTypes SetUpCrvTransObj
 	}
         else {
                 if (cnp->data_changed &&cnp->sfp->x_arr &&
-                    (cnp->sfp->changed & _NhlsfXARR_CHANGED))
+                    (cnp->sfp->changed & _NhlsfXARR_CHANGED)) {
                         NhlSetSArg(&sargs[nargs++],
                                    NhlNtrXCoordPoints,cnp->sfp->x_arr);
+			NhlSetSArg(&sargs[nargs++],NhlNtrXCIsBounds,
+				   cnp->sfp->xc_is_bounds);
+		}
                 if (cnp->data_changed && cnp->sfp->y_arr &&
-		    (cnp->sfp->changed & _NhlsfYARR_CHANGED))
+		    (cnp->sfp->changed & _NhlsfYARR_CHANGED)) {
                         NhlSetSArg(&sargs[nargs++],
                                    NhlNtrYCoordPoints,cnp->sfp->y_arr);
+			NhlSetSArg(&sargs[nargs++],NhlNtrYCIsBounds,
+				   cnp->sfp->yc_is_bounds);
+		}
         
                 if (tfp->x_min != cold->trans.x_min)
                         NhlSetSArg(&sargs[nargs++],NhlNtrXMinF,tfp->x_min);
@@ -9945,7 +9957,11 @@ NhlErrorTypes AddToGoodList
 
 	return ret;
 }
-		
+
+#define NO_BOUNDS   0
+#define X_BOUNDS    1 << 0
+#define Y_BOUNDS    1 << 1
+#define X_Y_BOUNDS  X_BOUNDS | Y_BOUNDS
 
 NhlBoolean GetXYIn2D
 (	
@@ -9956,47 +9972,19 @@ NhlBoolean GetXYIn2D
 	int jcp1,
 	int i,
 	int icount,
-	NhlBoolean is_bounds,
-	NhlBoolean modular,
+	int mode,
+	NhlBoolean ezmap,
 	float *xi,
 	float *yi
 	)
 {
 	int k;
 	float min, max;
+	int ic,icm1,icp1;
+	float x[9],y[9];
 
-	if (is_bounds && modular) {
-		xi[0] = *(xa + jc + i); 
-		xi[1] = *(xa + jc + i + 1);
-		xi[2] = *(xa + jcp1 + i + 1);
-		xi[3] = *(xa + jcp1 + i); 
-		min = max = xi[0];
-		for (k = 1; k < 4; k++) {
-			if (xi[k] < min) {
-				min = xi[k];
-			}
-			if (xi[k] > max) {
-				max = xi[k];
-			}
-			if (fabs(min) > 540 || fabs(max) > 540)
-				return False;
-		}
-		if (max - min > 180) {
-			for (k=0; k<4; k++) {
-				if (fabs(xi[k] - min) < fabs(xi[k] - max))
-					xi[k] += 360.0;
-			}
-		}
-		yi[0] = *(ya + jc + i); 
-		yi[1] = *(ya + jc + i + 1);
-		yi[2] = *(ya + jcp1 + i + 1);
-		yi[3] = *(ya + jcp1 + i); 
-		for (k = 0; k < 4; k++) {
-			if (fabs(yi[k]) > 90)
-				return False;
-		}
-	}
-	else if (is_bounds) {
+	switch (mode) {
+	case X_Y_BOUNDS:
 		xi[0] = *(xa + jc + i); 
 		xi[1] = *(xa + jc + i + 1);
 		xi[2] = *(xa + jcp1 + i + 1);
@@ -10005,41 +9993,165 @@ NhlBoolean GetXYIn2D
 		yi[1] = *(ya + jc + i + 1);
 		yi[2] = *(ya + jcp1 + i + 1);
 		yi[3] = *(ya + jcp1 + i); 
-	}
-	else {
-		int ic,icm1,icp1;
-		float x[9],y[9];
-		if (modular) {
-			if (i == 0) {
-				icm1 = icount - 1;
-				ic = 0;
-				icp1 = 1;
+		if (ezmap) {
+			min = max = xi[0];
+			for (k = 1; k < 4; k++) {
+				if (xi[k] < min) {
+					min = xi[k];
+				}
+				if (xi[k] > max) {
+					max = xi[k];
+				}
+				if (fabs(min) > 540 || fabs(max) > 540)
+					return False;
 			}
-			else if (i == icount-1) {
-				icm1 = i - 1;
-				ic = i;
-				icp1 = 0;
+			if (max - min > 180) {
+				for (k=0; k<4; k++) {
+					if (fabs(xi[k] - min) < 
+					    fabs(xi[k] - max))
+						xi[k] += 360.0;
+				}
 			}
-			else {
-				ic = i;
-				icp1 = i + 1;
-				icm1 = i -1;
+			for (k = 0; k < 4; k++) {
+				if (fabs(yi[k]) > 90)
+					return False;
 			}
+		}
+		break;
+	case X_BOUNDS:
+		if (i == 0) {
+			ic = icm1 = 0;
+			icp1 = 1;
 		}
 		else {
-			if (i == 0) {
-				ic = icm1 = 0;
-				icp1 = 1;
+			ic = i;
+			icp1 = i + 1;
+			icm1 = i -1;
+		}
+		x[0] = *(xa + jcm1 + ic);
+		x[1] = *(xa + jcm1 + icp1);
+		x[2] = *(xa + jc + ic);
+		x[3] = *(xa + jc + icp1);
+		x[4] = *(xa + jcp1 + ic);
+		x[5] = *(xa + jcp1 + icp1);
+
+		y[0] = *(ya + jcm1 + ic);
+		y[1] = *(ya + jcm1 + icp1);
+		y[2] = *(ya + jc + ic);
+		y[3] = *(ya + jc + icp1);
+		y[4] = *(ya + jcp1 + ic);
+		y[5] = *(ya + jcp1 + icp1);
+
+		if (ezmap) {
+			min = max = x[0];
+			for (k = 1; k < 6; k++) {
+				if (x[k] < min) {
+					min = x[k];
+				}
+				if (x[k] > max) {
+					max = x[k];
+				}
+				if (fabs(min) > 540 || fabs(max) > 540)
+					return False;
 			}
-			else if (i == icount-1) {
-				ic = icp1 = i;
-				icm1 = i - 1;
+			if (max - min > 180) {
+				for (k=0; k<6; k++) {
+					if (fabs(x[k] - min) < 
+					    fabs(x[k] - max))
+						x[k] += 360.0;
+				}
 			}
-			else {
-				ic = i;
-				icp1 = i + 1;
-				icm1 = i -1;
+			for (k = 0; k < 6; k++) {
+				if (fabs(y[k]) > 90)
+					return False;
 			}
+		}
+		xi[0] = 0.5 * (x[0] + x[2]);
+		xi[1] = 0.5 * (x[1] + x[3]);
+		xi[2] = 0.5 * (x[3] + x[5]);
+		xi[3] = 0.5 * (x[2] + x[4]);
+
+		yi[0] = 0.5 * (y[0] + y[2]);
+		yi[1] = 0.5 * (y[1] + y[3]);
+		yi[2] = 0.5 * (y[3] + y[5]);
+		yi[3] = 0.5 * (y[2] + y[4]);
+
+		break;
+	case Y_BOUNDS:
+		if (i == 0) {
+			ic = icm1 = 0;
+			icp1 = 1;
+		}
+		else if (i == icount-1) {
+			ic = icp1 = i;
+			icm1 = i - 1;
+		}
+		else {
+			ic = i;
+			icp1 = i + 1;
+			icm1 = i -1;
+		}
+		x[0] = *(xa + jc + icm1);
+		x[1] = *(xa + jc + ic);
+		x[2] = *(xa + jc + icp1);
+		x[3] = *(xa + jcp1 + icm1);
+		x[4] = *(xa + jcp1 + ic);
+		x[5] = *(xa + jcp1 + icp1);
+
+		y[0] = *(ya + jc + icm1);
+		y[1] = *(ya + jc + ic);
+		y[2] = *(ya + jc + icp1);
+		y[3] = *(ya + jcp1 + icm1);
+		y[4] = *(ya + jcp1 + ic);
+		y[5] = *(ya + jcp1 + icp1);
+
+		if (ezmap) {
+			min = max = x[0];
+			for (k = 1; k < 6; k++) {
+				if (x[k] < min) {
+					min = x[k];
+				}
+				if (x[k] > max) {
+					max = x[k];
+				}
+				if (fabs(min) > 540 || fabs(max) > 540)
+					return False;
+			}
+			if (max - min > 180) {
+				for (k=0; k<6; k++) {
+					if (fabs(x[k] - min) < 
+					    fabs(x[k] - max))
+						x[k] += 360.0;
+				}
+			}
+			for (k = 0; k < 6; k++) {
+				if (fabs(y[k]) > 90)
+					return False;
+			}
+		}
+		xi[0] = 0.5 * (x[0] + x[1]);
+		xi[1] = 0.5 * (x[1] + x[2]);
+		xi[2] = 0.5 * (x[4] + x[5]);
+		xi[3] = 0.5 * (x[3] + x[4]);
+
+		yi[0] = 0.5 * (y[0] + y[1]);
+		yi[1] = 0.5 * (y[1] + y[2]);
+		yi[2] = 0.5 * (y[4] + y[5]);
+		yi[3] = 0.5 * (y[3] + y[4]);
+		break;
+	case NO_BOUNDS:
+		if (i == 0) {
+			ic = icm1 = 0;
+			icp1 = 1;
+		}
+		else if (i == icount-1) {
+			ic = icp1 = i;
+			icm1 = i - 1;
+		}
+		else {
+			ic = i;
+			icp1 = i + 1;
+			icm1 = i -1;
 		}
 		x[0] = *(xa + jcm1 + icm1);
 		x[1] = *(xa + jcm1 + ic);
@@ -10061,21 +10173,23 @@ NhlBoolean GetXYIn2D
 		y[7] = *(ya + jcp1 + ic);
 		y[8] = *(ya + jcp1 + icp1);
 
-		if (modular) {
+		if (ezmap) {
 			min = max = x[0];
-
 			for (k = 1; k < 9; k++) {
-				if (x[k] < min) 
+				if (x[k] < min) {
 					min = x[k];
-				if (x[k] > max) 
+				}
+				if (x[k] > max) {
 					max = x[k];
+				}
+				if (fabs(min) > 540 || fabs(max) > 540)
+					return False;
 			}
-			if (fabs(min) > 540 || fabs(max) > 540)
-				return False;
 			if (max - min > 180) {
 				for (k=0; k<9; k++) {
-					if (max - x[k] > 180)
-						x[k] += 360;
+					if (fabs(x[k] - min) < 
+					    fabs(x[k] - max))
+						x[k] += 360.0;
 				}
 			}
 			for (k = 0; k < 9; k++) {
@@ -10098,7 +10212,7 @@ NhlBoolean GetXYIn2D
 		yi[2] = 0.25 * (y[4] + y[5] + y[7] + y[8]);
 
 		yi[3] = 0.25 * (y[3] + y[4] + y[6] + y[7]);
-
+		break;
 	}
 	return True;
 }
@@ -10125,6 +10239,7 @@ NhlErrorTypes DrawCell
 	float zval,
 	float *xo,
 	float *yo,
+	NhlBoolean do_softfill,
 	NhlString    entry_name
 	)
 #else     
@@ -10133,6 +10248,7 @@ NhlErrorTypes DrawCell
 	float zval;
 	float *xo;
 	float *yo;
+	NhlBoolean do_softfill;
 	NhlString    entry_name;
 #endif
 {
@@ -10176,13 +10292,32 @@ NhlErrorTypes DrawCell
 	}
 	xo[4] = xo[0];
 	yo[4] = yo[0];
-	if (gcol >  NhlTRANSPARENT) {
-		gset_fill_colr_ind(gcol);
-		NGCALLF(gfa,GFA)(&npoints,xo,yo);
+	if (do_softfill) {
+		float dst[10];
+		int ind[15];
+		if (gcol >  NhlTRANSPARENT && lcol > NhlTRANSPARENT) {
+			float xfill[5],yfill[5];
+			memcpy(xfill,xo,npoints * sizeof(float));
+			memcpy(yfill,yo,npoints * sizeof(float));
+			c_sfsgfa(xfill,yfill,npoints,dst,10,ind,15,gcol);
+		}
+		else if (gcol > NhlTRANSPARENT) {
+			c_sfsgfa(xo,yo,npoints,dst,10,ind,15,gcol);
+		}
+		if (lcol > NhlTRANSPARENT) {
+			gset_line_colr_ind(lcol);
+			c_curve(xo,yo,npoints);
+		}
 	}
-	if (lcol > NhlTRANSPARENT) {
-		gset_line_colr_ind(lcol);
-		NGCALLF(gpl,GPL)(&npoints,xo,yo);
+	else {
+		if (gcol > NhlTRANSPARENT) {
+			gset_fill_colr_ind(gcol);
+			NGCALLF(gfa,GFA)(&npoints,xo,yo);
+		}
+		if (lcol > NhlTRANSPARENT) {
+			gset_line_colr_ind(lcol);
+			NGCALLF(gpl,GPL)(&npoints);
+		}
 	}
 	return ret;
 }
@@ -10213,11 +10348,12 @@ NhlErrorTypes DrawAdjustedCell
 	float xcellthreshold,
 	float ycellthreshold,
 	float out_of_range,
+	NhlBoolean do_softfill,
 	NhlString    entry_name
 	)
 #else     
 (cnl, zval, xi, yi,points,adj_count,xcellthreshold,ycellthreshold,
- out_of_range,entry_name)
+ out_of_range,do_softfill,entry_name)
 	NhlContourPlotLayer     cnl;
 	float zval;
 	float *xi;
@@ -10227,6 +10363,7 @@ NhlErrorTypes DrawAdjustedCell
 	float xcellthreshold;
 	float ycellthreshold;
 	float out_of_range;
+	NhlBoolean do_softfill;
 	NhlString    entry_name;
 #endif
 {
@@ -10294,14 +10431,35 @@ NhlErrorTypes DrawAdjustedCell
 		xo[lnpoints] = xo[0];
 		yo[lnpoints] = yo[0];
 		lnpoints++;
-		if (gcol > NhlTRANSPARENT) {
-			gset_fill_colr_ind(gcol);
-			NGCALLF(gfa,GFA)(&lnpoints,xo,yo);
+		if (do_softfill) {
+			float dst[16];
+			int ind[24];
+			if (gcol >  NhlTRANSPARENT && lcol > NhlTRANSPARENT) {
+				float xfill[8],yfill[8];
+				memcpy(xfill,xo,lnpoints * sizeof(float));
+				memcpy(yfill,yo,lnpoints * sizeof(float));
+				c_sfsgfa(xfill,yfill,lnpoints,
+					dst,10,ind,15,gcol);
+			}
+			else if (gcol > NhlTRANSPARENT) {
+				c_sfsgfa(xo,yo,lnpoints,dst,10,ind,15,gcol);
+			}
+			if (lcol > NhlTRANSPARENT) {
+				gset_line_colr_ind(lcol);
+				c_curve(xo,yo,lnpoints);
+			}
 		}
-		if (lcol > NhlTRANSPARENT) {
-			gset_line_colr_ind(lcol);
-			NGCALLF(gpl,GPL)(&lnpoints,xo,yo);
+		else {
+			if (gcol > NhlTRANSPARENT) {
+				gset_fill_colr_ind(gcol);
+				NGCALLF(gfa,GFA)(&lnpoints,xo,yo);
+			}
+			if (lcol > NhlTRANSPARENT) {
+				gset_line_colr_ind(lcol);
+				NGCALLF(gpl,GPL)(&lnpoints);
+			}
 		}
+
 	}
 	return ret;
 }
@@ -10349,10 +10507,10 @@ NhlErrorTypes CellFill2D
 	int             oor_count = 0;
 	int             over_sized = 0;
 	int             partial_oor = 0;
-	NhlBoolean      modular = False;
 	int             adj_count;
 	float           xcellthreshold,ycellthreshold;
 	NhlBoolean      ezmap = False;
+	NhlBoolean      cyclic = False;
 	int             *ibnd;
 	int xmaxix, xminix;
 	int jc, jcp1, jcm1;
@@ -10376,8 +10534,14 @@ NhlErrorTypes CellFill2D
 	int yrow_count,xrow_count;
 	float xt[5],yt[5];
 	int points;
+	int mode;
+	NhlBoolean do_softfill = False;
 	
 	c_getset(&flx,&frx,&fby,&fuy,&wlx,&wrx,&wby,&wuy,&ll);
+	if (ll > 1 || wrx < wlx || wuy < wby) 
+		do_softfill = True;
+	
+
 #if 0
 	printf("getset - %f,%f,%f,%f,%f,%f,%f,%f\n",
 		       flx,frx,fby,fuy,wlx,wrx,wby,wuy); 
@@ -10398,7 +10562,9 @@ NhlErrorTypes CellFill2D
 	NhlVAGetValues(cnp->trans_obj->base.id,
 		       NhlNtrOutOfRangeF,&out_of_range,NULL);
 
-	modular = ezmap ? True : False;
+        mode = 0;
+	mode |= cnp->sfp->xc_is_bounds ? X_BOUNDS : 0;
+	mode |= cnp->sfp->yc_is_bounds ? Y_BOUNDS : 0;
 
 	/*
 	 * This preliminary trip through the coord arrays finds the
@@ -10409,6 +10575,7 @@ NhlErrorTypes CellFill2D
 
 	lxsize = cnp->sfp->xc_is_bounds ? xsize + 1 : xsize;
 	xc_count = cnp->sfp->xc_is_bounds ? xcount + 1 : xcount;
+	yc_count = cnp->sfp->yc_is_bounds ? ycount + 1 : ycount;
 	xrow_count = 0;
 	yminix = -1;
 	ymaxix = 0;
@@ -10450,6 +10617,8 @@ NhlErrorTypes CellFill2D
 			yminix = j;
 		ymaxix = j;
 		*(ibnd + 2 * j) = xminix;
+		if (cnp->sfp->xc_is_bounds)
+			xmaxix--;
 		*(ibnd + 2 * j + 1) = xmaxix;
 		xrow_count = MAX(xrow_count,xmaxix-xminix);
 	}
@@ -10458,8 +10627,20 @@ NhlErrorTypes CellFill2D
 	yrow_count = ymaxix - yminix;
 	uxd = fabs(wrx - wlx);
 	uyd = fabs(wuy - wby);
-	xcellthreshold = (uxd / xrow_count) * (1 + 0.1 * xrow_count);
-	ycellthreshold = (uyd / yrow_count) * (1 + 0.1 * yrow_count);
+	/* 
+	 * this is a problematic way of eliminating cells that cross
+	 * from one side to another (modular data) or just become too
+	 * enlarged (and distorted) because of the particular projection
+	 * in use. It needs more work.
+	 */
+	if (1) {
+		xcellthreshold = (uxd / xrow_count) * (1 + 0.1 * xrow_count);
+		ycellthreshold = (uyd / yrow_count) * (1 + 0.1 * yrow_count);
+	}
+	else {
+		xcellthreshold = uxd * .4;
+		ycellthreshold = uyd * .4;
+	}
 
 	xfcell = fabs((frx - flx) / xcount);
 	yfcell = fabs((fuy - fby) / ycount);
@@ -10482,22 +10663,19 @@ NhlErrorTypes CellFill2D
 		if (*(ibnd+2*j) < 0)
 			continue;
 
-		if (cnp->sfp->xc_is_bounds) {
-			jc = j * (xsize+1);
-			jcp1 = (j+1) * (xsize+1);
-		}
-		else if (j == 0) {
+		if (j == 0) {
 			jc = jcm1 =  0;
-			jcp1 = xsize;
+			jcp1 = lxsize;
 		}
 		else if (j == ycount - 1) {
-			jc = jcp1 = (ycount - 1) * xsize;
-			jcm1 = (ycount - 2) * xsize;
+			jc = (ycount - 1) * lxsize;
+			jcm1 = (ycount - 2) * lxsize;
+			jcp1 = cnp->sfp->yc_is_bounds ? ycount * lxsize : jc;
 		}
 		else {
-			jcm1 = (j-1) * xsize;
-			jc = j * xsize;
-			jcp1 = (j+1) * xsize;
+			jcm1 = (j-1) * lxsize;
+			jc = j * lxsize;
+			jcp1 = (j+1) * lxsize;
 		}
 				
 
@@ -10505,8 +10683,8 @@ NhlErrorTypes CellFill2D
 			float zval = *(da + jd + i);
 
 			points = 15;
-			if (! GetXYIn2D(xa,ya,jc,jcm1,jcp1,i,xcount,
-					cnp->sfp->xc_is_bounds,modular,xi,yi))
+			if (! GetXYIn2D(xa,ya,jc,jcm1,jcp1,i,
+					xcount,mode,ezmap,xi,yi))
 				continue;
 
 
@@ -10551,7 +10729,7 @@ NhlErrorTypes CellFill2D
 					continue;
 				}
 			}
-			DrawCell(cnl,zval,xo,yo,entry_name);
+			DrawCell(cnl,zval,xo,yo,do_softfill,entry_name);
 		}
 	}
 
@@ -10570,29 +10748,24 @@ NhlErrorTypes CellFill2D
 	
 	for (j = yminix; j <= ymaxix; j++) {
 		int jd = j * xsize;
-		jcm1 = 0;
-		if (cnp->sfp->xc_is_bounds) {
-			jc = j * (xsize+1);
-			jcp1 = (j+1) * (xsize+1);
-		}
-		else if (j == 0) {
+
+		if (j == 0) {
 			jc = jcm1 =  0;
-			jcp1 = xsize;
+			jcp1 = lxsize;
 		}
 		else if (j == ycount - 1) {
-			jc = jcp1 = (ycount - 1) * xsize;
-			jcm1 = (ycount - 2) * xsize;
+			jc = (ycount - 1) * lxsize;
+			jcm1 = (ycount - 2) * lxsize;
+			jcp1 = cnp->sfp->yc_is_bounds ? ycount * lxsize : jc;
 		}
 		else {
-			jcm1 = (j-1) * xsize;
-			jc = j * xsize;
-			jcp1 = (j+1) * xsize;
+			jcm1 = (j-1) * lxsize;
+			jc = j * lxsize;
+			jcp1 = (j+1) * lxsize;
 		}
-		/*
-		 */
 		for (i = *(ibnd+2*j)-1; i >=0; i--) {
-			if (! GetXYIn2D(xa,ya,jc,jcm1,jcp1,i,xcount,
-					cnp->sfp->xc_is_bounds,modular,xi,yi))
+			if (! GetXYIn2D(xa,ya,jc,jcm1,jcp1,i,
+					xcount,mode,ezmap,xi,yi))
 				continue;
 			_NhlDataToWin(cnp->trans_obj,
 				      xi,yi,4,xo,yo,
@@ -10611,8 +10784,8 @@ NhlErrorTypes CellFill2D
 				      &glist_alloc_count);
 		}
 		for (i = *(ibnd+2*j+1)+1; i <xcount; i++) {
-			if (! GetXYIn2D(xa,ya,jc,jcm1,jcp1,i,xcount,
-					cnp->sfp->xc_is_bounds,modular,xi,yi))
+			if (! GetXYIn2D(xa,ya,jc,jcm1,jcp1,i,
+					xcount,mode,ezmap,xi,yi))
 				continue;
 
 			_NhlDataToWin(cnp->trans_obj,
@@ -10635,30 +10808,30 @@ NhlErrorTypes CellFill2D
 	empty = 0;
 	for (j = yminix-1; j >= 0; j--) {
 		int jd = j * xsize;
-		if (empty) 
-			break;
-		jcm1 = 0;
-		if (cnp->sfp->xc_is_bounds) {
-			jc = j * (xsize+1);
-			jcp1 = (j+1) * (xsize+1);
-		}
-		else if (j == 0) {
+
+		if (j == 0) {
 			jc = jcm1 =  0;
-			jcp1 = xsize;
+			jcp1 = lxsize;
 		}
 		else if (j == ycount - 1) {
-			jc = jcp1 = (ycount - 1) * xsize;
-			jcm1 = (ycount - 2) * xsize;
+			jc = (ycount - 1) * lxsize;
+			jcm1 = (ycount - 2) * lxsize;
+			jcp1 = cnp->sfp->yc_is_bounds ? ycount * lxsize : jc;
 		}
 		else {
-			jcm1 = (j-1) * xsize;
-			jc = j * xsize;
-			jcp1 = (j+1) * xsize;
+			jcm1 = (j-1) * lxsize;
+			jc = j * lxsize;
+			jcp1 = (j+1) * lxsize;
 		}
+
+
+		if (empty) 
+			break;
+
 		empty = 1;
 		for (i = 0; i < xcount; i++) {
-			if (! GetXYIn2D(xa,ya,jc,jcm1,jcp1,i,xcount,
-					cnp->sfp->xc_is_bounds,modular,xi,yi))
+			if (! GetXYIn2D(xa,ya,jc,jcm1,jcp1,i,
+					xcount,mode,ezmap,xi,yi))
 				continue;
 			_NhlDataToWin(cnp->trans_obj,
 				      xi,yi,4,xo,yo,
@@ -10680,30 +10853,27 @@ NhlErrorTypes CellFill2D
 	empty = 0;
 	for (j = ymaxix+1; j < ycount; j++) {
 		int jd = j * xsize;
-		if (empty) 
-			break;
-		jcm1 = 0;
-		if (cnp->sfp->xc_is_bounds) {
-			jc = j * (xsize+1);
-			jcp1 = (j+1) * (xsize+1);
-		}
-		else if (j == 0) {
+		if (j == 0) {
 			jc = jcm1 =  0;
-			jcp1 = xsize;
+			jcp1 = lxsize;
 		}
 		else if (j == ycount - 1) {
-			jc = jcp1 = (ycount - 1) * xsize;
-			jcm1 = (ycount - 2) * xsize;
+			jc = (ycount - 1) * lxsize;
+			jcm1 = (ycount - 2) * lxsize;
+			jcp1 = cnp->sfp->yc_is_bounds ? ycount * lxsize : jc;
 		}
 		else {
-			jcm1 = (j-1) * xsize;
-			jc = j * xsize;
-			jcp1 = (j+1) * xsize;
+			jcm1 = (j-1) * lxsize;
+			jc = j * lxsize;
+			jcp1 = (j+1) * lxsize;
 		}
+		if (empty) 
+			break;
+
 		empty = 1;
 		for (i = 0; i < xcount; i++) {
-			if (!GetXYIn2D(xa,ya,jc,jcm1,jcp1,i,xcount,
-				       cnp->sfp->xc_is_bounds,modular,xi,yi))
+			if (!GetXYIn2D(xa,ya,jc,jcm1,jcp1,i,
+				       xcount,mode,ezmap,xi,yi))
 				continue;
 			_NhlDataToWin(cnp->trans_obj,
 				      xi,yi,4,xo,yo,
@@ -10753,26 +10923,23 @@ NhlErrorTypes CellFill2D
 
 		j = glist[k] / xsize;
 		i = glist[k] % xsize;
-		jcm1 = 0;
-		if (cnp->sfp->xc_is_bounds) {
-			jc = j * (xsize+1);
-			jcp1 = (j+1) * (xsize+1);
-		}
-		else if (j == 0) {
+
+		if (j == 0) {
 			jc = jcm1 =  0;
-			jcp1 = xsize;
+			jcp1 = lxsize;
 		}
 		else if (j == ycount - 1) {
-			jc = jcp1 = (ycount - 1) * xsize;
-			jcm1 = (ycount - 2) * xsize;
+			jc = (ycount - 1) * lxsize;
+			jcm1 = (ycount - 2) * lxsize;
+			jcp1 = cnp->sfp->yc_is_bounds ? ycount * lxsize : jc;
 		}
 		else {
-			jcm1 = (j-1) * xsize;
-			jc = j * xsize;
-			jcp1 = (j+1) * xsize;
+			jcm1 = (j-1) * lxsize;
+			jc = j * lxsize;
+			jcp1 = (j+1) * lxsize;
 		}
-		if (! GetXYIn2D(xa,ya,jc,jcm1,jcp1,i,xcount,
-				cnp->sfp->xc_is_bounds,modular,xi,yi))
+		if (! GetXYIn2D(xa,ya,jc,jcm1,jcp1,i,
+				xcount,mode,ezmap,xi,yi))
 			continue;
 		_NhlDataToWin(cnp->trans_obj,
 			      xi,yi,4,xo,yo,
@@ -10819,11 +10986,12 @@ NhlErrorTypes CellFill2D
 						(cnl,zb[n],xb[n],yb[n],
 						 gpoints[n],adj_count,
 						 xcellthreshold,ycellthreshold,
-						 out_of_range,entry_name);
+						 out_of_range,do_softfill,
+						 entry_name);
 				}
 				else {
 					DrawCell(cnl,zb[n],xb[n],yb[n],
-						 entry_name);
+						 do_softfill,entry_name);
 				}
 			}
 			if (ezmap) {
@@ -10866,11 +11034,11 @@ NhlErrorTypes CellFill2D
 					(cnl,zb[n],xb[n],yb[n],
 					 gpoints[n],adj_count,
 					 xcellthreshold,ycellthreshold,
-					 out_of_range,entry_name);
+					 out_of_range,do_softfill,entry_name);
 			}
 			else {
 				DrawCell(cnl,zb[n],xb[n],yb[n],
-					 entry_name);
+					 do_softfill,entry_name);
 			}
 		}
 	}
@@ -10955,8 +11123,12 @@ NhlErrorTypes CellFill1D
 	int empty_count;
 	int bufcount;
 	int status;
+	NhlBoolean do_softfill = False;
 
 	c_getset(&flx,&frx,&fby,&fuy,&wlx,&wrx,&wby,&wuy,&ll);
+	if (ll > 1 || wrx < wlx || wuy < wby) 
+		do_softfill = True;
+	
 #if 0       
 	printf("getset - %f,%f,%f,%f,%f,%f,%f,%f\n",
 	       flx,frx,fby,fuy,wlx,wrx,wby,wuy); 
@@ -11058,7 +11230,13 @@ NhlErrorTypes CellFill1D
 	yrow_count = ymaxix - yminix;
 	uxd = fabs(wrx - wlx);
 	uyd = fabs(wuy - wby);
-	if (modular) {
+	/* 
+	 * this is a problematic way of eliminating cells that cross
+	 * from one side to another (modular data) or just become too
+	 * enlarged (and distorted) because of the particular projection
+	 * in use. It needs more work.
+	 */
+	if (1) {
 		xcellthreshold = 
 			(uxd / (xrow_count-1)) * (1 + 0.25 * xrow_count);
 		ycellthreshold = 
@@ -11073,7 +11251,6 @@ NhlErrorTypes CellFill1D
 	 * jc is the offset to the beginning of the current y axis coord row
 	 * jcp1 is the offset to the beginning of the next y axis coord row
 	 * jcm1 is the offset to the beginning of the previous y axis coord.
-	 * For 2d coords both axes must be bounds if one is.
 	 */
 
 
@@ -11174,7 +11351,7 @@ NhlErrorTypes CellFill1D
 					continue;
 				}
 			}
-			DrawCell(cnl,zval,xo,yo,entry_name);
+			DrawCell(cnl,zval,xo,yo,do_softfill,entry_name);
 		}
 	}
 
@@ -11579,11 +11756,12 @@ NhlErrorTypes CellFill1D
 						(cnl,zb[n],xb[n],yb[n],
 						 gpoints[n],adj_count,
 						 xcellthreshold,ycellthreshold,
-						 out_of_range,entry_name);
+						 out_of_range,do_softfill,
+						 entry_name);
 				}
 				else {
 					DrawCell(cnl,zb[n],xb[n],yb[n],
-						 entry_name);
+						 do_softfill,entry_name);
 				}
 			}
 			if (ezmap) {
@@ -11626,11 +11804,11 @@ NhlErrorTypes CellFill1D
 					(cnl,zb[n],xb[n],yb[n],
 					 gpoints[n],adj_count,
 					 xcellthreshold,ycellthreshold,
-					 out_of_range,entry_name);
+					 out_of_range,do_softfill,entry_name);
 			}
 			else {
 				DrawCell(cnl,zb[n],xb[n],yb[n],
-					 entry_name);
+					 do_softfill,entry_name);
 			}
 		}
 	}
@@ -11681,10 +11859,13 @@ NhlErrorTypes _NhlCellFill
         Gint            err_ind;
         Gclip           clip_ind_rect;
 	char		*e_text;
+	int             save_ty;
 
 
 	ginq_clip(&err_ind,&clip_ind_rect);
         gset_clip_ind(GIND_CLIP);
+	c_sfgeti("ty",&save_ty);
+	c_sfseti("ty",0);
 
         if (cnp == NULL) {
 		e_text = "%s: invalid call to cnCellFill";
@@ -11704,5 +11885,6 @@ NhlErrorTypes _NhlCellFill
 		ret = CellFill1D(Cnl,entry_name);
 	}
 	gset_clip_ind(clip_ind_rect.clip_ind);
+	c_sfseti("ty",save_ty);
 	return ret;
 }

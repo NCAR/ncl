@@ -1,5 +1,5 @@
 /*
- *      $Id: TriMeshTransObj.c,v 1.1 2004-03-11 02:00:34 dbrown Exp $
+ *      $Id: TriMeshTransObj.c,v 1.2 2004-10-05 22:50:34 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -534,16 +534,6 @@ static NhlErrorTypes SetUpTrans
 	}
 
         
-	if(tp->x_reverse) {
-		float tmpf = tmp->ur;
-		tmp->ur = tmp->ul;
-		tmp->ul = tmpf;
-	}
-	if(tp->y_reverse) {
-		float tmpf = tmp->ut;
-		tmp->ut = tmp->ub;
-		tmp->ub = tmpf;
-	}
 	tmp->compc_x_min = MIN(tmp->ul,tmp->ur);
 	tmp->compc_x_max = MAX(tmp->ul,tmp->ur);
 	tmp->compc_y_min = MIN(tmp->ut,tmp->ub);
@@ -565,6 +555,16 @@ static NhlErrorTypes SetUpTrans
 	tmp->ur = tmp->x_max;
 	tmp->ub = tmp->y_min;
 	tmp->ut = tmp->y_max;
+	if(tp->x_reverse) {
+		float tmpf = tmp->ur;
+		tmp->ur = tmp->ul;
+		tmp->ul = tmpf;
+	}
+	if(tp->y_reverse) {
+		float tmpf = tmp->ut;
+		tmp->ut = tmp->ub;
+		tmp->ub = tmpf;
+	}
 
 
 	if (c_or_s == CREATE) {

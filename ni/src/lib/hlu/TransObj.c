@@ -1,5 +1,5 @@
 /*
- *      $Id: TransObj.c,v 1.36 2004-01-23 22:46:53 dbrown Exp $
+ *      $Id: TransObj.c,v 1.37 2004-10-05 22:50:34 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -108,8 +108,22 @@ static NhlResource resources[] =  {
 		NhlOffset(NhlTransObjLayerRec, trobj.data_ystart),
 		NhlTString, _NhlUSET("0.0"),0,NULL },
 	{ NhlNtrDataYEndF, NhlCtrDataYEndF, NhlTFloat, sizeof(float),
-		NhlOffset(NhlTransObjLayerRec, trobj.data_yend),
-		NhlTString, _NhlUSET("0.0"),0,NULL }
+	  NhlOffset(NhlTransObjLayerRec, trobj.data_yend),
+	  NhlTString, _NhlUSET("0.0"),0,NULL },
+/*
+ * these are not yet in use -- they will indicate to the transobj whether
+ * cell-centered coordinates must be interpolated when cell bounds are
+ * given -- but the rendering method only understands cell centered coordinates
+ */
+	{ NhlNtrXCIsBounds, NhlCtrXCIsBounds, NhlTBoolean, sizeof(NhlBoolean),
+	  NhlOffset(NhlTransObjLayerRec, trobj.xc_isbounds),
+	  NhlTImmediate, _NhlUSET((NhlPointer)False),0,NULL },
+	{ NhlNtrYCIsBounds, NhlCtrYCIsBounds, NhlTBoolean, sizeof(NhlBoolean),
+	  NhlOffset(NhlTransObjLayerRec, trobj.yc_isbounds),
+	  NhlTImmediate, _NhlUSET((NhlPointer)False),0,NULL },
+	{ NhlNtrDoBounds, NhlCtrDoBounds, NhlTBoolean, sizeof(NhlBoolean),
+	  NhlOffset(NhlTransObjLayerRec, trobj.do_bounds),
+	  NhlTImmediate, _NhlUSET((NhlPointer)True),0,NULL },
 
 };
 static NhlErrorTypes TransInitialize(

@@ -1,5 +1,5 @@
 /*
- *      $Id: TransObjI.h,v 1.8 1998-04-16 03:09:11 dbrown Exp $
+ *      $Id: TransObjI.h,v 1.9 2004-10-05 22:50:34 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -46,6 +46,24 @@
 #define NhlCtrDataYStartF	".TrDataYStartF"
 #define NhlCtrDataXEndF		".TrDataXEndF"
 #define NhlCtrDataYEndF		".TrDataYEndF"
+
+/*
+ * Cell Bounds Information
+ * trXCIsBounds and trYCIsBounds specify whether the provided coordinates
+ * are cell boundaries (if not they are cell centers).
+ * trDoBounds is set True if the drawing method used is capable of
+ * handling cell boundaries. If not the TransObj class is expected to
+ * substitute a coordinate set interpolated to cell centers.
+ */
+
+#define NhlNtrXCIsBounds         ".trXCIsBounds"
+#define NhlNtrYCIsBounds         ".trYCIsBounds"
+#define NhlNtrDoBounds           ".trDoBounds"
+
+#define NhlCtrXCIsBounds         ".TrXCIsBounds"
+#define NhlCtrYCIsBounds         ".TrYCIsBounds"
+#define NhlCtrDoBounds           ".TrDoBounds"
+
 
 /*
  * Private Global functions defined by the Transform Class

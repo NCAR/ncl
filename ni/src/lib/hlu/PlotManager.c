@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManager.c,v 1.70 2004-03-11 02:00:31 dbrown Exp $
+ *      $Id: PlotManager.c,v 1.71 2004-10-05 22:50:33 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3970,11 +3970,11 @@ ManageTickMarks
 			       NhlNtrXMaxF,&x_max,
 			       NhlNtrYMinF,&y_min,
 			       NhlNtrYMaxF,&y_max,
+			       NhlNtrXReverse,&x_reverse,
+			       NhlNtrYReverse,&y_reverse,
 			       NULL);
 		x_log = False;
-		x_reverse = False;
 		y_log = False;
-		y_reverse = False;
 		ovp->x_tm_style = NhlLINEAR;
 		ovp->y_tm_style = NhlLINEAR;
 	}

@@ -1,5 +1,5 @@
 /*
- *      $Id: CurvilinearTransObjP.h,v 1.1 2002-03-18 21:20:06 dbrown Exp $
+ *      $Id: CurvilinearTransObjP.h,v 1.2 2004-10-05 22:50:33 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -51,10 +51,12 @@ typedef struct _NhlCurvilinearTransObjLayerPart {
 	int		msize;
 	int		nsize;
 
-        float		x_crv_min;
-        float		x_crv_max;
-        float		y_crv_min;
-        float		y_crv_max;
+        double		x_crv_min;
+        double		x_crv_max;
+	double          x_crv_ext;
+        double		y_crv_min;
+        double		y_crv_max;
+	double          y_crv_ext;
 
 	float		ur;
 	float 		ul;

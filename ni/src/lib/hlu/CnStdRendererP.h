@@ -1,5 +1,5 @@
 /*
- *      $Id: CnStdRendererP.h,v 1.1 2004-03-11 02:00:18 dbrown Exp $
+ *      $Id: CnStdRendererP.h,v 1.2 2004-10-05 22:50:32 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -27,7 +27,7 @@
 #include <ncarg/hlu/CnRendererP.h>
 
 typedef struct _NhlCnStdRendererLayerPart {
-	int foo;
+	NhlBoolean do_bounds;
 } NhlCnStdRendererLayerPart;
 
 
