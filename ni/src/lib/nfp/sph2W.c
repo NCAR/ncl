@@ -2028,7 +2028,7 @@ NhlErrorTypes ilapsf_W( void )
     return(NhlFATAL);
   }
   NGCALLF(shaeci,SHAECI)(&nlat,&nlon,wshaec,&lshaec,dwork,&ldwork,&jer);
-  NGCALLF(shaec,SHAEC)(&nlat,&nlon,&isym,&nt,&z[0],&idvw,&jdvw,a,b,
+  NGCALLF(shaec,SHAEC)(&nlat,&nlon,&isym,&nt,&zlap[0],&idvw,&jdvw,a,b,
 		       &mdab,&ndab,wshaec,&lshaec,work,&lwork,&ker);
   free(wshaec);
   free(work);
@@ -2054,7 +2054,7 @@ NhlErrorTypes ilapsf_W( void )
   }
 
   NGCALLF(shseci,SHSECI)(&nlat,&nlon,wshsec,&lshsec,dwork,&ldwork,&jer);
-  NGCALLF(islapec,ISLAPEC)(&nlat,&nlon,&isym,&nt,&zlmbda[0],&zlap[0],
+  NGCALLF(islapec,ISLAPEC)(&nlat,&nlon,&isym,&nt,&zlmbda[0],&z[0],
 			   &idvw,&jdvw,a,b,&mdab,&ndab,wshsec,&lshsec,
 			   work,&lwork,pertrb,&ker);
   free(a);
@@ -2257,7 +2257,7 @@ NhlErrorTypes ilapsF_W( void )
     return(NhlFATAL);
   }
   NGCALLF(shaeci,SHAECI)(&nlat,&nlon,wshaec,&lshaec,dwork,&ldwork,&jer);
-  NGCALLF(shaec,SHAEC)(&nlat,&nlon,&isym,&nt,&z[0],&idvw,&jdvw,a,b,
+  NGCALLF(shaec,SHAEC)(&nlat,&nlon,&isym,&nt,&zlap[0],&idvw,&jdvw,a,b,
 		       &mdab,&ndab,wshaec,&lshaec,work,&lwork,&ker);
   free(wshaec);
   free(work);
@@ -2283,7 +2283,7 @@ NhlErrorTypes ilapsF_W( void )
   }
 
   NGCALLF(shseci,SHSECI)(&nlat,&nlon,wshsec,&lshsec,dwork,&ldwork,&jer);
-  NGCALLF(islapec,ISLAPEC)(&nlat,&nlon,&isym,&nt,&zlmbda[0],&zlap[0],
+  NGCALLF(islapec,ISLAPEC)(&nlat,&nlon,&isym,&nt,&zlmbda[0],&z[0],
 			   &idvw,&jdvw,a,b,&mdab,&ndab,wshsec,&lshsec,
 			   work,&lwork,pertrb,&ker);
   free(a);
