@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.60 2005-03-10 18:07:20 shea Exp $
+;      $Id: contributed.ncl,v 1.61 2005-03-10 18:12:27 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -402,7 +402,7 @@ begin
 
   filString = asciiread ( fNam, -1, "string")
   nrow      = dimsizes(filString)
-  ncol      = words/nrow
+  ncol      = tokens/nrow
   return (ncol)
 end
 
