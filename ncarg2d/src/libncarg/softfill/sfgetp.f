@@ -1,8 +1,5 @@
 C
-C	$Id: sfgetp.f,v 1.1.1.1 1992-04-17 22:32:55 ncargd Exp $
-C
-C
-C-----------------------------------------------------------------------
+C $Id: sfgetp.f,v 1.2 1994-03-17 20:58:38 kennison Exp $
 C
       SUBROUTINE SFGETP (IDP)
 C
@@ -17,6 +14,10 @@ C
 C Declare the block data routine external to force its loading.
 C
       EXTERNAL SFBLDA
+C
+C Check for an uncleared prior error.
+C
+      IF (ICFELL('SFGETP - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
 C
 C Transfer the internal dot-pattern array into the user's array.
 C

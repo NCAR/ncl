@@ -1,8 +1,5 @@
 C
-C	$Id: sfgetr.f,v 1.3 1992-09-04 20:46:40 ncargd Exp $
-C
-C
-C-----------------------------------------------------------------------
+C $Id: sfgetr.f,v 1.4 1994-03-17 20:58:40 kennison Exp $
 C
       SUBROUTINE SFGETR (CNP,RVP)
 C
@@ -27,15 +24,19 @@ C
 C
 C Declare a local character variable in which to form an error message.
 C
-      CHARACTER*48 CTM
+      CHARACTER*38 CTM
+C
+C Check for an uncleared prior error.
+C
+      IF (ICFELL('SFGETR - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
 C
 C Check for a parameter name that is too short.
 C
       IF (.NOT.(LEN(CNP).LT.2)) GO TO 10001
-      CTM(1:46)='SFGETI OR SFGETR - PARAMETER NAME TOO SHORT - '
-      CTM(47:46+LEN(CNP))=CNP
-      CALL SETER (CTM(1:46+LEN(CNP)),1,2)
-      STOP
+      CTM(1:36)='SFGETR - PARAMETER NAME TOO SHORT - '
+      CTM(37:36+LEN(CNP))=CNP
+      CALL SETER (CTM(1:36+LEN(CNP)),2,1)
+      RETURN
 10001 CONTINUE
 C
 C Get the appropriate parameter value.
@@ -60,10 +61,10 @@ C
       RVP=REAL(ITY)
       GO TO 10003
 10007 CONTINUE
-      CTM(1:46)='SFGETI OR SFGETR - PARAMETER NAME NOT KNOWN - '
-      CTM(47:48)=CNP(1:2)
-      CALL SETER (CTM(1:48),2,2)
-      STOP
+      CTM(1:36)='SFGETR - PARAMETER NAME NOT KNOWN - '
+      CTM(37:38)=CNP(1:2)
+      CALL SETER (CTM(1:38),3,1)
+      RETURN
 10003 CONTINUE
 C
 C Done.

@@ -1,8 +1,5 @@
 C
-C	$Id: sfblda.f,v 1.3 1992-09-04 20:46:35 ncargd Exp $
-C
-C
-C-----------------------------------------------------------------------
+C $Id: sfblda.f,v 1.4 1994-03-17 20:58:32 kennison Exp $
 C
       BLOCK DATA SFBLDA
 C

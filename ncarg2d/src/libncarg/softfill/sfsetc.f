@@ -1,8 +1,5 @@
 C
-C	$Id: sfsetc.f,v 1.3 1992-09-04 20:46:42 ncargd Exp $
-C
-C
-C-----------------------------------------------------------------------
+C $Id: sfsetc.f,v 1.4 1994-03-17 20:58:44 kennison Exp $
 C
       SUBROUTINE SFSETC (CNP,CVP)
 C
@@ -28,13 +25,17 @@ C Declare a local character variable in which to form an error message.
 C
       CHARACTER*38 CTM
 C
+C Check for an uncleared prior error.
+C
+      IF (ICFELL('SFSETC - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+C
 C Check for a parameter name that is too short.
 C
       IF (.NOT.(LEN(CNP).LT.2)) GO TO 10001
       CTM(1:36)='SFSETC - PARAMETER NAME TOO SHORT - '
       CTM(37:36+LEN(CNP))=CNP
-      CALL SETER (CTM(1:36+LEN(CNP)),1,2)
-      STOP
+      CALL SETER (CTM(1:36+LEN(CNP)),2,1)
+      RETURN
 10001 CONTINUE
 C
 C Set the appropriate parameter value.
@@ -45,8 +46,8 @@ C
 10002 CONTINUE
       CTM(1:36)='SFSETC - PARAMETER NAME NOT KNOWN - '
       CTM(37:38)=CNP(1:2)
-      CALL SETER (CTM(1:38),2,2)
-      STOP
+      CALL SETER (CTM(1:38),3,1)
+      RETURN
 10003 CONTINUE
 C
 C Done.

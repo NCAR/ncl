@@ -1,10 +1,5 @@
 C
-C	$Id: sfsort.f,v 1.1.1.1 1992-04-17 22:32:56 ncargd Exp $
-C
-C
-C***********************************************************************
-C S O F T F I L L   -   I N T E R N A L   R O U T I N E S
-C***********************************************************************
+C $Id: sfsort.f,v 1.2 1994-03-17 20:58:53 kennison Exp $
 C
       SUBROUTINE SFSORT (RVL,NVL,IOR,IPR)
 C
