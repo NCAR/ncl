@@ -1,5 +1,5 @@
 /*
- *      $Id: plotapp.c,v 1.24 2000-02-26 01:35:30 dbrown Exp $
+ *      $Id: plotapp.c,v 1.25 2000-03-10 01:12:55 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3635,6 +3635,8 @@ static NhlBoolean ReplaceDataSymRef
 			}
 			is_coord_attr = True;
 		}
+		if (offset == 0 && spos == strlen(*buffer))
+			*single_term = True;
 		if (qdim > NrmNULLQUARK) {
 			/* 
 			 * This might be just a named dimension or it
@@ -3675,7 +3677,11 @@ static NhlBoolean ReplaceDataSymRef
 			status = True;
 		}
 		else {
-			sprintf(tbuf,"null");
+			if (*single_term)
+				sprintf(tbuf,"null");
+			else
+				sprintf(tbuf,"\"\"");
+
 			status = True;
 		}
 		break;
@@ -3731,6 +3737,8 @@ static NhlBoolean ReplaceDataSymRef
 			sprintf(tbuf,"\"\"");
 			status = True;
 		}
+		if (offset == 0 && spos == strlen(*buffer))
+			*single_term = True;
 		break;
 	case REF_REGULAR:
 		if (dt->qfile) {
@@ -3753,6 +3761,8 @@ static NhlBoolean ReplaceDataSymRef
 		}
 		spos = offset + sref->count + 1;
 		status = True;
+		if (offset == 0 && spos == strlen(*buffer))
+			*single_term = True;
 		break;
 		
 	default:
@@ -3761,10 +3771,6 @@ static NhlBoolean ReplaceDataSymRef
 
 	if (attname) {
 		if (offset == 0 && spos + strlen(attname)+1 == strlen(*buffer))
-			*single_term = True;
-	}
-	else {
-		if (offset == 0 && spos == strlen(*buffer))
 			*single_term = True;
 	}
 

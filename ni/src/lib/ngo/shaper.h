@@ -1,5 +1,5 @@
 /*
- *      $Id: shaper.h,v 1.9 2000-01-21 05:18:55 dbrown Exp $
+ *      $Id: shaper.h,v 1.10 2000-03-10 01:12:57 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -104,7 +104,7 @@ void NgDestroyShaper(
 #endif
 );
 
-void NgUpdateShaperCoordDataGrid(
+void NgUpdateShaperCoords(
 #if	NhlNeedProto
 	NgShaper	*si
 #endif

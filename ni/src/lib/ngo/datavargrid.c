@@ -1,5 +1,5 @@
 /*
- *      $Id: datavargrid.c,v 1.13 2000-02-08 01:29:54 dbrown Exp $
+ *      $Id: datavargrid.c,v 1.14 2000-03-10 01:12:53 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -61,6 +61,17 @@ static XtActionsRec datavargridactions[] = {
 	{ "PopupShaperAction", PopupShaperAction }
 };
 
+
+static void
+ErrorMessage(
+	NgDataVarGridRec *dvp,
+	NhlString	    message
+)
+{
+	XmLMessageBox(dvp->public.grid,message,True);
+
+	return;
+}
 	    
 static NclApiDataList *GetInfo
 (
@@ -81,6 +92,25 @@ static NclApiDataList *GetInfo
 		dl = NclGetVarInfo(qvar);
 
 	return dl;
+}
+
+static int
+EffectiveDims(
+	int	ndims,
+	long	*start,
+	long	*finish,
+	long	*stride
+	)
+{
+	int i;
+	int dim_count = 0;
+
+	for (i = 0; i < ndims; i++) {
+		int el_count = abs((finish[i] - start[i])/stride[i]);
+		if (el_count > 0)
+			dim_count++;
+	}
+	return dim_count;
 }
 
 /*
@@ -205,6 +235,72 @@ SetShape
 	return True;
 }
 
+static void UpdateShaper
+(
+        NgDataVarGridRec *dvp
+)
+{
+	NgVarData vdata = dvp->public.plotdata[dvp->data_ix].vdata;
+
+	if (! dvp->shaper) {
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Invalid shaper reference"));
+		return;
+	}
+	if (! dvp->shaper->vinfo ||
+	    dvp->shaper->vinfo->n_dims < vdata->ndims) {
+		dvp->start = NhlRealloc
+			(dvp->start,sizeof(long)* vdata->ndims);
+		dvp->finish = NhlRealloc
+			(dvp->finish,sizeof(long)* vdata->ndims);
+		dvp->stride = NhlRealloc
+			(dvp->stride,sizeof(long)* vdata->ndims);
+		if (! (dvp->start &&dvp->finish && dvp->stride)) {
+			NHLPERROR((NhlFATAL,ENOMEM,NULL));
+			return;
+		}
+	}
+
+	if (! dvp->shaper->vinfo ||
+	    dvp->shaper->vinfo->n_dims != vdata->ndims ||
+	    memcmp(dvp->start,vdata->start,sizeof(long)* vdata->ndims) ||
+	    memcmp(dvp->finish,vdata->finish,sizeof(long)* vdata->ndims) ||
+	    memcmp(dvp->stride,vdata->stride,sizeof(long)* vdata->ndims)) {
+		dvp->shaper->vinfo = NULL;
+		dvp->shaper->start = NULL;
+		dvp->shaper->finish = NULL;
+		dvp->shaper->stride = NULL;
+		memcpy(dvp->start,vdata->start,sizeof(long)* vdata->ndims);
+		memcpy(dvp->finish,vdata->finish,sizeof(long)* vdata->ndims);
+		memcpy(dvp->stride,vdata->stride,sizeof(long)* vdata->ndims);
+	}
+	NgUpdateShaper(dvp->shaper,vdata->qfile,vdata->qvar,
+		       dvp->start,dvp->finish,dvp->stride);
+	dvp->shaper->pdata = dvp;
+	return;
+}
+
+static NhlBoolean CheckAndApplyChanges
+(
+	 NgDataVarGridRec *dvp
+)
+{
+	NgPlotData pd = &dvp->public.plotdata[dvp->data_ix];
+	NgVarData vdata = pd->vdata;
+
+	if (pd->ndims > EffectiveDims(pd->vdata->ndims,
+				      dvp->start,dvp->finish,dvp->stride)) {
+		char buf[256];
+		sprintf(buf,INSUFFICIENT_DIMS_AS_SHAPED,pd->ndims);
+		ErrorMessage(dvp,buf);
+		return False;
+	}
+	memcpy(vdata->start,dvp->start,sizeof(long)* vdata->ndims);
+	memcpy(vdata->finish,dvp->finish,sizeof(long)* vdata->ndims);
+	memcpy(vdata->stride,dvp->stride,sizeof(long)* vdata->ndims);
+	return True;
+}
+
+
 static void UpdateDataVarShape
 (
 	NhlPointer pdata
@@ -221,6 +317,11 @@ static void UpdateDataVarShape
 	vinfo = GetDataVarInfo(vdata);
 	if (! vinfo)
 		return;
+
+	if (! CheckAndApplyChanges(dvp)) {
+		NgUpdateShaperCoords(dvp->shaper);
+		return;
+	}
 
 	vdata->set_state = _NgSHAPED_VAR;
 	vdata->cflags = _NgSHAPE_CHANGE;
@@ -258,6 +359,9 @@ static void UpdateDataVarShape
 	NgPostPageMessage(dvp->go->base.id,page_id,_NgNOMESSAGE,
 			  _brPLOTVAR,NrmNULLQUARK,dvp->qname,
 			  _NgDATAVARUPDATE,(NhlPointer)True,True,NULL,True);
+
+	NgUpdateShaperCoords(dvp->shaper);
+
 	return;
 }
 
@@ -284,6 +388,7 @@ static void ShapeToolApplyCB
 {
         NgDataVarGridRec *dvp = (NgDataVarGridRec *)udata;
 
+	
 	UpdateDataVarShape((NhlPointer)dvp);
 
 }
@@ -331,13 +436,12 @@ static void CreateShapeTool
 #endif
 		      NULL);
 
-	NgUpdateShaper(dvp->shaper,vdata->qfile,vdata->qvar,
-		       vdata->start,vdata->finish,vdata->stride);
-	dvp->shaper->pdata = dvp;
+	UpdateShaper(dvp);
 
 	_NgGOWidgetTranslations(go,dvp->shaper->frame);
+	XmProcessTraversal(dvp->shaper->shapeinfogrid->grid,
+			   XmTRAVERSE_CURRENT);
 }
-
 static void PopupShaperAction
 (
 	Widget		w,
@@ -398,20 +502,7 @@ static void PopupShaperAction
 			      XmNtitle,buf,
 			      NULL);
 
-		/*
-		 * if it's another data var force a reinitialization. 
-		 * Note that it could be the same data var, just a 
-		 * different element.
-		 */
-		if (dvp->shaper->start != vdata->start) {
-			dvp->shaper->vinfo = NULL;
-			dvp->shaper->start = NULL;
-			dvp->shaper->finish = NULL;
-			dvp->shaper->stride = NULL;
-		}
-		NgUpdateShaper(dvp->shaper,vdata->qfile,vdata->qvar,
-			       vdata->start,vdata->finish,vdata->stride);
-		dvp->shaper->pdata = dvp;
+		UpdateShaper(dvp);
 	}
 	NgGOPopup(dvp->shape_tool_id);
 		
@@ -634,17 +725,6 @@ static NhlBoolean ConformingVar
 		}
 	}
 	return True;
-}
-
-static void
-ErrorMessage(
-	NgDataVarGridRec *dvp,
-	NhlString	    message
-)
-{
-	XmLMessageBox(dvp->public.grid,message,True);
-
-	return;
 }
 
 
@@ -1058,24 +1138,6 @@ GetVar
 		return False;
 
 	return True;
-}
-static int
-EffectiveDims(
-	int	ndims,
-	long	*start,
-	long	*finish,
-	long	*stride
-	)
-{
-	int i;
-	int dim_count = 0;
-
-	for (i = 0; i < ndims; i++) {
-		int el_count = abs((finish[i] - start[i])/stride[i]);
-		if (el_count > 0)
-			dim_count++;
-	}
-	return dim_count;
 }
 
 static void NonConformalOKCB
@@ -1515,24 +1577,7 @@ EditCB
 			NgXAppFreeXmString(dvp->go->go.appmgr,xmstr);
 		}
 		if (dvp->shaper && dvp->data_ix > -1) {
-
-			NgVarData vdata = 
-				dvp->public.plotdata[dvp->data_ix].vdata;
-			
-			if (vdata && vdata->qvar) {
-				/*
-				 * this is a kludgy trick to force an update
-				 */
-				dvp->shaper->vinfo = NULL;
-				dvp->shaper->start = NULL;
-				dvp->shaper->finish = NULL;
-				dvp->shaper->stride = NULL;
-
-				NgUpdateShaper(dvp->shaper,
-					       vdata->qfile,vdata->qvar,
-					       vdata->start,
-					       vdata->finish,vdata->stride);
-			}
+			UpdateShaper(dvp);
 		}
 	}
 
@@ -1949,6 +1994,9 @@ NgDataVarGrid *NgCreateDataVarGrid
 	dvp->shape_tool_id  = NhlNULLOBJID;
 	dvp->shaper = NULL;
 	dvp->data_ix = -1;
+	dvp->start = NULL;
+	dvp->finish = NULL;
+	dvp->stride = NULL;
       
         data_var_grid->grid = XtVaCreateManagedWidget
                 ("DataVarGrid",
@@ -2008,6 +2056,13 @@ void NgDeactivateDataVarGrid
 		dvp->shaper->finish = NULL;
 		dvp->shaper->stride = NULL;
 	}
+	if (dvp->start) 
+		NhlFree(dvp->start);
+	if (dvp->finish) 
+		NhlFree(dvp->finish);
+	if (dvp->stride) 
+		NhlFree(dvp->stride);
+	dvp->start = dvp->finish = dvp->stride;
 
 	if (dvp->selected_row <= -1) 
 		return;

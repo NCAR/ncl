@@ -1,5 +1,5 @@
 /*
- *      $Id: shapeinfogrid.c,v 1.21 2000-01-21 05:18:53 dbrown Exp $
+ *      $Id: shapeinfogrid.c,v 1.22 2000-03-10 01:12:56 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -34,6 +34,20 @@ static char *Buffer;
 static int  Buflen;
 static Pixel Foreground,Background,Right_Border_Color,Left_Border_Color;
 static NhlString Unnamed = "<unnamed>";
+
+#if 0
+static void EditCompleteAction
+(
+	Widget		w,
+	XEvent		*xev,
+	String		*params,
+	Cardinal	*num_params
+);
+
+static XtActionsRec shapeinfogridactions[] = {
+	{ "EditCompleteAction", EditCompleteAction }
+};
+#endif
 
 static char *
 ColumnWidths
@@ -1434,7 +1448,12 @@ NgShapeInfoGrid *NgCreateShapeInfoGrid
         NgShapeInfoGridRec *sirp;
         NgShapeInfoGrid *sip;
         int nrows;
-        
+#if 0        
+	XtAppAddActions(go->go.x->app,
+                        shapeinfogridactions,
+			NhlNumber(shapeinfogridactions));
+#endif
+
         sirp = NhlMalloc(sizeof(NgShapeInfoGridRec));
         if (!sirp) return NULL;
         sip = &sirp->shapeinfogrid;
@@ -1549,3 +1568,17 @@ void NgDestroyShapeInfoGrid
         
         return;
 }
+
+#if 0
+static void EditCompleteAction
+(
+	Widget		w,
+	XEvent		*xev,
+	String		*params,
+	Cardinal	*num_params
+)
+{
+	printf("in edit complete action\n");
+}
+
+#endif

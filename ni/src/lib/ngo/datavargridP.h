@@ -1,5 +1,5 @@
 /*
- *      $Id: datavargridP.h,v 1.2 1999-09-11 01:06:14 dbrown Exp $
+ *      $Id: datavargridP.h,v 1.3 2000-03-10 01:12:54 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -58,6 +58,9 @@ typedef struct _NgDataVarGridRec
 	int			shape_tool_id;
 	int			data_ix;
 	NgShaper		*shaper;
+	long			*start;
+	long			*finish;
+	long			*stride;
 } NgDataVarGridRec;
 
 

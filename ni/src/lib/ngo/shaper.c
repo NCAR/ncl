@@ -1,5 +1,5 @@
 /*
- *      $Id: shaper.c,v 1.23 2000-01-24 20:56:20 dbrown Exp $
+ *      $Id: shaper.c,v 1.24 2000-03-10 01:12:57 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -852,13 +852,14 @@ void NgDeactivateShaper
         return;
 }
 
-void NgUpdateShaperCoordDataGrid
+void NgUpdateShaperCoords
 (
 	NgShaper	*si
 )
 {
-        if (si->datagrid && XtIsManaged(si->datagrid->grid))
-                UpdateCoordDataGrid(si);
+	UpdateShape(si,False);
+        if (si->geo_notify && si->pdata)
+                (*si->geo_notify)(si->pdata);
         return;
 }
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: stringutil.c,v 1.4 1999-09-11 01:07:01 dbrown Exp $
+ *      $Id: stringutil.c,v 1.5 2000-03-10 01:12:57 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -117,7 +117,7 @@ extern char *NgTypedValueToString
                     *vlen = strlen(buffer);
                     return buffer;
             case NCLAPI_double:
-                    sprintf(buffer,"%.*g",DBL_DIG,*(double*)valp);
+                    sprintf(buffer,"%.*g",FLT_DIG,*(double*)valp);
                     NgFixFloat(buffer);
                     if (short_form)
                             NgRemoveZeros(buffer);
