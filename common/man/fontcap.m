@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: fontcap.m,v 1.3 1994-05-04 15:34:25 haley Exp $
+.\"	$Id: fontcap.m,v 1.4 1995-05-23 22:25:19 haley Exp $
 .\"
 .\" @(#)f77.1 1.4 86/07/31 SMI; 
 .TH FONTCAP 5NCARG "April 1993" NCAR "NCAR GRAPHICS"
@@ -106,7 +106,7 @@ For ctrans, it is possible to set the desired font using the
 environment variable.
 .SH SEE ALSO
 Online:
-ctrans(1NCARG), fontc(5NCARG)
+ctrans(1NCARG), fontc(5NCARG), ncarg_env(5NCARG)
 .sp
 Hardcopy:
 NCAR Graphics Fundamentals, UNIX Version

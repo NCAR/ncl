@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: graphcap.m,v 1.9 1994-05-04 15:47:10 haley Exp $
+.\"	$Id: graphcap.m,v 1.10 1995-05-23 22:25:20 haley Exp $
 .\"
 .\" @(#)f77.1 1.4 86/07/31 SMI; 
 .TH GRAPHCAP 5NCARG "March 1994" NCAR "NCAR GRAPHICS"
@@ -250,7 +250,7 @@ X Window System interface (valid only for ctrans).
 X11 xwd formatted raster file (valid only for ctrans).
 .SH SEE ALSO
 Online:
-ctrans(1NCARG), ras_formats(1NCARG), graphc(5NCARG)
+ctrans(1NCARG), ras_formats(1NCARG), graphc(5NCARG), ncarg_env(5NCARG)
 .sp
 Hardcopy:
 NCAR Graphics Fundamentals, UNIX Version;
