@@ -99,20 +99,25 @@ static void HLUObjDestroy
 #endif
 {
 	NclHLUObj hlu_obj = (NclHLUObj) self,ptmp;
- 
+	NclHLUChildList *tmp1,*tmp2;
 	NclObj tmp_obj;
+
 	if(hlu_obj != NULL) {
 /*
 * All of the HLU objects children will be destroyed by the NhlDestroy call
 * Therefore, all NclHLUObjs that point to children must be deleted.
 */
 		if(hlu_obj->hlu.c_list != NULL) {
-			while(hlu_obj->hlu.c_list != NULL) {
+			tmp1 = hlu_obj->hlu.c_list;
+			hlu_obj->hlu.c_list == NULL;
+			while(tmp1 != NULL) {
 				tmp_obj = _NclGetObj(hlu_obj->hlu.c_list->child_id);
+				tmp2 = tmp1;
+				tmp1 = tmp1->next;
 				if(tmp_obj != NULL){
 					_NclDestroyObj(tmp_obj);
 				}
-				hlu_obj->hlu.c_list = hlu_obj->hlu.c_list->next;
+				NclFree(tmp2);
 			}
 		}
 		if(hlu_obj->hlu.parent_hluobj_id > -1) {
