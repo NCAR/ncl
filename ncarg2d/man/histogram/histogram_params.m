@@ -10,16 +10,16 @@ of type LOGICAL; HSTOPR sets parameters of type REAL.
 .SH DESCRIPTION 
 Parameters of type CHARACTER set in calls to entry HSTOPC:
 .IP FOR 12
-Format for class labels.  Default is '(G10.3)'.
+Format for class labels.  Default is \'(G10.3)\'.
 .IP TIT 12
 A main title.  Default is no title.
 .IP LAB 12
 A label for the class interval (histogram bar) axis.
-Default value is 'CLASS INTERVALS' when
-the HSTOPL option 'MID=OFF' is selected, and 'CLASS
-MIDVALUES' when 'MID=ON'.
+Default value is \'CLASS INTERVALS\' when
+the HSTOPL option \'MID=OFF\' is selected, and \'CLASS
+MIDVALUES\' when \'MID=ON\'.
 .IP FQN 12
-The frequency axis label.  Default value is 'FREQUENCY'.
+The frequency axis label.  Default value is \'FREQUENCY\'.
 .IP CHR 12
 A concatenated string of class interval labels.
 Default is that class labels will be internally computed
@@ -77,7 +77,7 @@ All parameters begin at their default values.
 Parameters of type REAL set in calls to entry HSTOPR:
 .IP WIN 12
 Defines a rectangular region of the total frame in
-NDC's where the current histogram is to be plotted.
+NDC\'s where the current histogram is to be plotted.
 For example, XMIN=0., XMAX=.5, YMIN=.5, and YMAX=1.
 would specify the upper left quadrant of the frame.
 Default is the total frame is used.

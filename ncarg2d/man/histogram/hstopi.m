@@ -2,61 +2,65 @@
 .na
 .nh
 .SH NAME
-HSTOPI - specifys various INTEGER parameters to be used by
+HSTOPI - Specifies various INTEGER parameters to be used by
 the Histogram utility.
 .SH SYNOPSIS
 CALL HSTOPI (STRING, PARAM1, PARAM2, ICOL, LCOL)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void c_hstopi (char *string, int param1, int param2, int *icol, int lcol)
+void c_hstopi (char *string, int param1, int param2, \\
+.br
+int *icol, int lcol)
 .SH DESCRIPTION
 .IP STRING 12
 Character, input -- Selects an internal parameter.  The
 possibilities are:
 .sp
-   'COL=ON' or 'COL=OFF'
+   \'COL=ON\' or \'COL=OFF\'
 .br
-   'CLA=ON' or 'CLA=OFF'
+   \'CLA=ON\' or \'CLA=OFF\'
 .sp
-If an option is turned 'ON', then the remaining HSTOPI
+If an option is turned \'ON\', then the remaining HSTOPI
 arguments can be used to override the default settings
 of that option.
 .sp
-If the option is 'OFF', then the remaining arguments
+If the option is \'OFF\', then the remaining arguments
 of the HSTOPI call can be any dummy values.
 Option settings will be returned to their default values.
 .sp
 The following options are defined by this subroutine:
-.IP COL 8
+.RS
+.IP COL 12
 This option turns the use of color OFF, or ON.  If it
 is ON, then eight color indices are assigned to the
 various parts of the histogram as described by the
 INTEGER array ICOL.  Arguments ICOL and LCOL must be
 set, PARAM1 and PARAM2 can have dummy values.
-.IP CLA 8
+.IP CLA 12
 This option allows the size and orientation of class
-labels to be altered.  If 'CLA=ON', the size of the
+labels to be altered.  If \'CLA=ON\', the size of the
 label characters is set using argument PARAM1, and
 the orientation is set by argument PARAM2.  Arguments
-ICOL and LCOL can have dummy values.  If 'CLA=OFF',
+ICOL and LCOL can have dummy values.  If \'CLA=OFF\',
 defaults are used which cause medium sized characters
 to be written in the horizontal direction.
+.RE
 .IP PARAM1 12
 Integer, input -- Specifies the character height of
 class labels.
 .sp
-When 'CLA=ON'; 1 = small, 2 = medium, 3 = large;
-default is 2 when 'CLA=OFF'.
+When \'CLA=ON\'; 1 = small, 2 = medium, 3 = large;
+default is 2 when \'CLA=OFF\'.
 .IP PARAM2 12
 Integer, input -- Specifies the character orientation of
 class labels.
 .sp
-If'CLA=ON', labels can vary from 0 (horizontal) to 90 (vertical)
-degrees.  Vertical is the default when 'CLA=OFF'.
+If \'CLA=ON\', labels can vary from 0 (horizontal) to 90 (vertical)
+degrees.  Vertical is the default when \'CLA=OFF\'.
 .IP ICOL 12
 Integer, input -- Assigns a set of RGB color indices to
-the eight components of a histogram graphic when 'COL=ON'.
+the eight components of a histogram graphic when \'COL=ON\'.
 .sp
 ICOL(1) = color index used for area fill of
 .br
@@ -88,9 +92,9 @@ ICOL(8) = color index used for drawing the
 .br
 		perimeter box.
 .sp
-The default color index is 1 for all (when 'COL=OFF').
+The default color index is 1 for all (when \'COL=OFF\').
 .sp
-If 'COL=ON', the color indices and their associated
+If \'COL=ON\', the color indices and their associated
 colors are as follows. (These may be changed by
 specifying an RGB color table prior to your call to
 HSTOPI.  See the man page for GKS routine gscr.)
@@ -125,6 +129,9 @@ HSTOPI is called to set parameters of type INTEGER before
 entry HISTGR is called to generate the histogram.  Options
 are size and orientation of class labels, and setting the
 colors for various components of the graphic.
+.sp
+For a complete list of parameters available
+in this utility, see the histogram_params man page.
 .SH EXAMPLES
 Use the command "ncargex thstgr" to generate a three frame example
 of histogram options.  The following code causes the second
@@ -154,15 +161,15 @@ C
          COLORS(6) = 13
          COLORS(7) = 14
          COLORS(8) = 5
-      CALL HSTOPI('COL=ON',3,0,COLORS,8)
+      CALL HSTOPI(\'COL=ON\',3,0,COLORS,8)
 .fi
 .SH ACCESS
-To use HSTOPI load the NCAR Graphics libraries ncarg, ncarg_gks, and
-ncarg_loc, preferably in that order.  To use the C bindings, load the
+To use HSTOPI, load the NCAR Graphics libraries ncarg, ncarg_gks, and
+ncarg_loc, preferably in that order.  To use c_hstopi, load the
 NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks, and
 ncarg_loc, preferably in that order.
 .SH MESSAGES
-See the histogram man page for a description of all histogram error
+See the histogram man page for a description of all Histogram error
 messages and/or informational messages.
 .SH SEE ALSO
 Online:

@@ -2,7 +2,7 @@
 .na
 .nh
 .SH NAME
-HSTOPL - turns options off and on for the Histogram utility.
+HSTOPL - Turns options off and on for the Histogram utility.
 .SH SYNOPSIS
 CALL HSTOPL (STRING)
 .SH C-BINDING SYNOPSIS
@@ -14,80 +14,82 @@ void c_hstopl (char *string)
 Character, input -- Selects an internal parameter.  The
 possibilities are:
 .sp
-   'HOR=ON' or 'HOR=OFF'
+   \'HOR=ON\' or \'HOR=OFF\'
 .br
-   'PER=ON' or 'PER=OFF'
+   \'PER=ON\' or \'PER=OFF\'
 .br
-   'MID=ON' or 'MID=OFF'
+   \'MID=ON\' or \'MID=OFF\'
 .br
-   'SHA=ON' or 'SHA=OFF'
+   \'SHA=ON\' or \'SHA=OFF\'
 .br
-   'DRL=ON' or 'DRL=OFF'
+   \'DRL=ON\' or \'DRL=OFF\'
 .br
-   'MED=ON' or 'MED=OFF'
+   \'MED=ON\' or \'MED=OFF\'
 .br
-   'PRM=ON' or 'PRM=OFF'
+   \'PRM=ON\' or \'PRM=OFF\'
 .br
-   'FRA=ON' or 'FRA=OFF'
+   \'FRA=ON\' or \'FRA=OFF\'
 .br
-   'LIS=ON' or 'LIS=OFF'
+   \'LIS=ON\' or \'LIS=OFF\'
 .br
-   'DEF=ON' or 'DEF=OFF'
+   \'DEF=ON\' or \'DEF=OFF\'
 .sp
 The following options are defined by this subroutine:
+.RS
 .IP HOR 8
-The histogram bars are drawn horizontally if 'HOR=ON',
-vertically if 'HOR=OFF'.  The default is 'HOR=OFF'.
+The histogram bars are drawn horizontally if \'HOR=ON\',
+vertically if \'HOR=OFF\'.  The default is \'HOR=OFF\'.
 .IP PER 8
-If 'PER=ON', a labeled percent axis is drawn on the
-right side of the histogram (top if 'HOR=ON'.)
-If 'PER=OFF', no percent axis is drawn.
-The default is 'PER=ON'.
+If \'PER=ON\', a labeled percent axis is drawn on the
+right side of the histogram (top if \'HOR=ON\'.)
+If \'PER=OFF\', no percent axis is drawn.
+The default is \'PER=ON\'.
 .sp
 This places a second axis on the opposite side of the
 frame from the normal frequency axis.
 .IP MID 8
-If 'MID=ON', class labels are placed at the midpoint
-of each class interval. If 'MID=OFF', the class
+If \'MID=ON\', class labels are placed at the midpoint
+of each class interval. If \'MID=OFF\', the class
 interval end points are labeled. (MID defaults to ON if
-IFLAG = 2 or 3.)  The default is 'MID=ON'.
+IFLAG = 2 or 3.)  The default is \'MID=ON\'.
 .IP SHA 8
-If 'SHA=ON', the histogram bars are shaded.
-If 'SHA=OFF', the bars are not shaded.
-The default is 'SHA=ON'.
+If \'SHA=ON\', the histogram bars are shaded.
+If \'SHA=OFF\', the bars are not shaded.
+The default is \'SHA=ON\'.
 .sp
 Devices will vary as to how they interpret shading.
 .IP DRL 8
-If 'DRL=ON', lines are drawn through the histogram
+If \'DRL=ON\', lines are drawn through the histogram
 bars where Y-axis tick marks would occur.  When
 comparing two datasets (IFLAG=3), lines are only
 drawn through the bars associated with the first
-dataset.  If 'DRL=OFF', no lines are drawn.
-The default is 'DRL=OFF'.
+dataset.  If \'DRL=OFF\', no lines are drawn.
+The default is \'DRL=OFF\'.
 .IP MED 8
-If 'MED=ON', a line is drawn through the median
-value of all points. If 'MED=OFF', this line is not
+If \'MED=ON\', a line is drawn through the median
+value of all points. If \'MED=OFF\', this line is not
 drawn. MED does not apply when assigning Y-values to
 X-values; it is valid only for IFLAG = 1 or 2.
-The default is 'MED=OFF'.
+The default is \'MED=OFF\'.
 .IP PRM 8
-If 'PRM=ON', a perimeter is drawn around the histogram.
-If 'PRM=OFF', no perimeter is drawn.
-The default is 'PRM=OFF'.
+If \'PRM=ON\', a perimeter is drawn around the histogram.
+If \'PRM=OFF\', no perimeter is drawn.
+The default is \'PRM=OFF\'.
 .IP FRA 8
-If 'FRA=ON', the frame is advanced automatically after
-the histogram is drawn.  If  'FRA=OFF', the frame is not
+If \'FRA=ON\', the frame is advanced automatically after
+the histogram is drawn.  If  \'FRA=OFF\', the frame is not
 advanced, and the user must call FRAME.
-The default is 'FRA=ON'.
+The default is \'FRA=ON\'.
 .IP LIS 8
-If 'LIS=ON', all the options along with their values
-are printed on the standard output. If 'LIS=OFF',
+If \'LIS=ON\', all the options along with their values
+are printed on the standard output. If \'LIS=OFF\',
 nothing is printed on the standard output.
-The default is 'LIS=OFF'.
+The default is \'LIS=OFF\'.
 .IP DEF 8
-If 'DEF=ON', ALL the options are reset to their default
-values.  'DEF=OFF' has no effect.  All parameters begin
+If \'DEF=ON\', ALL the options are reset to their default
+values.  \'DEF=OFF\' has no effect.  All parameters begin
 at their default values.
+.RE
 .SH C-BINDING DESCRIPTION
 The C-binding argument descriptions are the same as the FORTRAN
 argument descriptions.
@@ -98,12 +100,12 @@ HISTGR is called to generate the histogram.
 Use the command "ncargex thstgr" to generate a three frame example
 of histogram options.
 .SH ACCESS
-To use HSTOPL load the NCAR Graphics libraries ncarg, ncarg_gks, and
-ncarg_loc, preferably in that order.  To use the C bindings, load the
+To use HSTOPL, load the NCAR Graphics libraries ncarg, ncarg_gks, and
+ncarg_loc, preferably in that order.  To use c_hstopl, load the
 NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks, and
 ncarg_loc, preferably in that order.
 .SH MESSAGES
-See the histogram man page for a description of all histogram error
+See the histogram man page for a description of all Histogram error
 messages and/or informational messages.
 .SH SEE ALSO
 Online:

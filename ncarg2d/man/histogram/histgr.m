@@ -2,7 +2,7 @@
 .na
 .nh
 .SH NAME
-HISTGR - plots a histogram with various options including
+HISTGR - Plots a histogram with various options including
 specification of class values, spacing between histogram bars,
 shading of bars, windowing (i.e. scaling), specification of
 color, labels, titles, etc.  Data values are partitioned into
@@ -18,7 +18,9 @@ CALL HISTGR (DAT1,NDIM,NPTS,IFLAG,CLASS,NCLASS,WRK,NWRK)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void c_histgr (float *dat1, int ndim, int npts, int iflag, float *class, int nclass, float *wrk, int nwrk)
+void c_histgr (float *dat1, int ndim, int npts, \\
+.br
+int iflag, float *class, int nclass, float *wrk, int nwrk)
 .SH DESCRIPTION
 .IP DAT1 12
 Two dimensional real array containing data of one of
@@ -127,7 +129,7 @@ dimension statement of the calling program.
 The dimension size of array WRK determined from:
 NDIM + 3 * (NCLASS + 1)
 .SH C-BINDING DESCRIPTION
-The C-binding argument descriptions are the same as the Fortran 
+The C-binding argument descriptions are the same as the FORTRAN 
 argument descriptions with the following exceptions:
 .sp
 .IP dat1 12
@@ -146,12 +148,12 @@ that option.
 Use the command "ncargex thstgr" to generate a three frame example
 of various types of histograms.
 .SH ACCESS
-To use HISTGR load the NCAR Graphics libraries ncarg, ncarg_gks, and
-ncarg_loc, preferably in that order.  To use the C bindings, load the
+To use HISTGR, load the NCAR Graphics libraries ncarg, ncarg_gks, and
+ncarg_loc, preferably in that order.  To use c_histgr, load the
 NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks, and
 ncarg_loc, preferably in that order.
 .SH MESSAGES
-See the histogram man page for a description of all histogram error
+See the histogram man page for a description of all Histogram error
 messages and/or informational messages.
 .SH SEE ALSO
 Online:
