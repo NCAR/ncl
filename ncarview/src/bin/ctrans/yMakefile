@@ -1,6 +1,6 @@
 NCARG	= ../../../..
 #
-#	$Id: yMakefile,v 1.22 1992-10-09 23:07:22 clyne Exp $
+#	$Id: yMakefile,v 1.23 1993-01-20 16:02:19 haley Exp $
 #
 
 
@@ -23,7 +23,7 @@ SUNLIBS		 = -lsuntool -lsunwindow -lpixrect
 #
 #	local libraries
 #
-LOCLIB		= $(LIBPATH)/libctrans.o $(LIBPATH)/libcgm.a \
+LOCLIB		= $(ROBJPATH)/libctrans.o $(LIBPATH)/libcgm.a \
 		$(LIBPATH)/libncarg_ras.a $(LIBPATH)/libncarg_c.a
 
 #ifdef	sgi

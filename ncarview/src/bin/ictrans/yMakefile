@@ -19,7 +19,7 @@ SUNLIBS		= -lsuntool -lsunwindow -lpixrect
 #
 #	local libraries
 #
-LOCLIB		= $(LIBPATH)/libictrans_.o $(LIBPATH)/libctrans.o \
+LOCLIB		= $(ROBJPATH)/libictrans_.o $(ROBJPATH)/libctrans.o \
 		$(LIBPATH)/libcgm.a $(LIBPATH)/libncarg_ras.a \
 		$(LIBPATH)/libncarg_c.a
 
