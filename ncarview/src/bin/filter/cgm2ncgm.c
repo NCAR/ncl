@@ -1,5 +1,5 @@
 /*
- *	$Id: cgm2ncgm.c,v 1.7 1992-09-01 23:38:19 clyne Exp $
+ *	$Id: cgm2ncgm.c,v 1.8 1992-12-01 03:13:35 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -24,9 +24,7 @@
  *
  *		This program installs the NCAR CGM 4 byte header into 
  *	"vanilla" CGM metafiles. The program acts as a filter taking input
- *	from stdin and writing to stdout. A command line option -s 
- * 	can be used to set the input record size. Otherwise the
- *	the default is used
+ *	from stdin and writing to stdout. 
  *
  *	[10/4/89]
  *		Re-wrote to incorporate the cgm_tools library.
@@ -37,7 +35,7 @@
 static	unsigned char	*inBuf;	/* the output buffer	*/
 static	unsigned char	*bufPtr;	/* pointer into outBuf	*/
 static	unsigned	dataAva = 0;	/* bytes available in inBuf	*/
-static	unsigned	recordSize;	/* vanila CGM  record size in bytes */
+static	int		blockSize = 1024;	/* input block size	*/
 
 /*
  *	get_data
@@ -62,9 +60,8 @@ static	get_data(count)
 	 * read until we have enough data or EOF or error
 	 */
 	while (dataAva < count) {
-		if ((status = read(STDIN, (char *) inBuf+dataAva, 
-					(int) recordSize)) < 1) {
-
+		status = fread(inBuf+dataAva, 1, blockSize, stdin);
+		if (status < 0) {
 			return(status);
 		}
 		dataAva += status;
@@ -185,7 +182,7 @@ static int	get_next_instr(instr)
 
 static	usage()
 {
-	(void)fprintf(stderr,"Usage: cgm2ncgm [-V | -s <input record size>]\n");
+	(void)fprintf(stderr,"Usage: cgm2ncgm [ -V ] [ -s <block_size> ]\n");
 	exit(1);
 }
 
@@ -195,7 +192,6 @@ main (argc,argv)
 {
 
 	Cgm_fd	cgm_fd;
-	unsigned	record_size = NCAR_CGM_S;	/* input size	*/
 	Instr	instr;			/* contains a cgm element	*/
 	int	status;			/* read status			*/
 	int	i;
@@ -217,13 +213,11 @@ main (argc,argv)
 			if (++i >= argc) {
 				usage();
 			}
-			record_size = atoi(argv[i]);
+			blockSize = atoi(argv[i]);
 		}
 		else
 			usage();
 	}
-
-	recordSize = record_size;
 
 	/*
 	 * open stdout for writing
@@ -237,7 +231,7 @@ main (argc,argv)
 	 * malloc memory for write buffer and read buffer
 	 */
 	/* need enough mem for largest cgm element + 1 record	*/
-	if ((inBuf = (unsigned char *) malloc (32760 + record_size)) == NULL) {
+	if ((inBuf = (unsigned char *) malloc (32760 + blockSize)) == NULL) {
 		perror(argv[0]);
 		exit(1);
 	}

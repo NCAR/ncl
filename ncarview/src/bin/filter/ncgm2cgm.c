@@ -1,5 +1,5 @@
 /*
- *	$Id: ncgm2cgm.c,v 1.7 1992-09-01 23:38:21 clyne Exp $
+ *	$Id: ncgm2cgm.c,v 1.8 1992-12-01 03:13:37 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -37,7 +37,33 @@
 static	unsigned char	*outBuf;	/* the output buffer	*/
 static	unsigned char	*outPtr;	/* pointer into outBuf	*/
 static	unsigned	spaceAva;	/* bytes available in outBuf	*/
-static	unsigned	recordSize;	/* NCAR record size in bytes	*/
+static	unsigned	blockSize;	/* output block size		*/
+
+/*
+ *	flush
+ *	[internal]
+ *
+ *		Flush the output buffer
+ */
+static void	flush()
+{
+	int	to_write = blockSize - spaceAva;
+	
+	if (to_write) {	/* if buffer not empty	*/
+		bzero((char *) (outBuf+to_write), (int) spaceAva);	
+
+		if (fwrite((char *) outBuf, 1, blockSize, stdout) < 0) {
+			perror("ncgm2cgm");
+			exit(1);
+		}
+	}
+}
+
+static	void	usage()
+{
+	(void)fprintf(stderr,"Usage: ncgm2cgm [ -V ] [ -s <block_size> ]\n");
+	exit(1);
+}
 
 main (argc,argv)
 	int	argc;
@@ -47,13 +73,9 @@ main (argc,argv)
 	Cgm_fd	cgm_fd;
 	unsigned char	*buf;		/* input buffer			*/
 	unsigned	data_count;	/* num valid bytes in buf	*/
-	unsigned	record_size = NCAR_CGM_S;	/* buffer size	*/
 	unsigned	tmp;
 	int	status;			/* read status			*/
 	int	i;
-
-	void		put();
-	void		flush();
 
 	/*
 	 * parse command line arguments
@@ -72,13 +94,13 @@ main (argc,argv)
 			if (++i >= argc) {
 				usage();
 			}
-			record_size = atoi(argv[i]);
+			blockSize = atoi(argv[i]);
 		}
 		else
 			usage();
 	}
 
-	spaceAva = recordSize = record_size;	/* record record size	*/
+	spaceAva = blockSize;	/* record record size	*/
 
 	/*
 	 * open NCAR CGM file
@@ -95,7 +117,7 @@ main (argc,argv)
 		perror(argv[0]);
 		exit(1);
 	}
-	if ((outBuf = (unsigned char *) malloc (record_size)) == NULL) {
+	if ((outBuf = (unsigned char *) malloc (blockSize)) == NULL) {
 		perror(argv[0]);
 		exit(1);
 	}
@@ -138,14 +160,10 @@ main (argc,argv)
 		/*
 		 * write the record sans the header to a buffer
 		 */
-#ifdef	DEAD
-		(void) put(buf+HEADERSIZE, data_count);
-#else
 		if (fwrite(buf+HEADERSIZE, sizeof(char), data_count, stdout)<0){
 			perror(argv[0]);
 			exit(1);
 		}
-#endif
 	}
 
 	if (status != 0) {	/* if read did not fail because EOF	*/
@@ -163,75 +181,3 @@ main (argc,argv)
 	exit(0);
 }
 
-#ifdef	DEAD
-/*
- *	put
- *	[internal]
- *
- *		buffer bytes until the output buffer is full. Then write
- *	the buffer to stdout
- * on entry
- *	*buf		: incoming data
- *	count		: num bytes in buf
- */
-static void	put(buf, count)
-	unsigned char	*buf;
-	unsigned	count;
-{
-	int	to_copy;
-	
-	while (count != 0) {	/* while not all bytes are buffered	*/
-
-		/*
-		 * find out how much of data will fit into output buffer
-		 */
-		to_copy = (spaceAva > count ? count : spaceAva);
-
-		bcopy((char *) buf, (char *) outPtr, to_copy);
-		spaceAva -= to_copy;
-		count -= to_copy;
-		outPtr += to_copy;
-		buf += to_copy;
-
-		if (spaceAva == 0) {	/* if buffer is full 	*/
-			if (write(STDOUT, (char *) outBuf, 
-				(int) recordSize) != recordSize) {
-
-				perror("ncgm2cgm");
-				exit(1);
-			}
-			spaceAva = recordSize;
-			outPtr = outBuf;
-		}
-	}
-}
-
-
-/*
- *	flush
- *	[internal]
- *
- *		Flush the output buffer
- */
-static void	flush()
-{
-	int	to_write = recordSize - spaceAva;
-	
-	if (to_write) {	/* if buffer not empty	*/
-		bzero((char *) (outBuf+to_write), (int) spaceAva);	
-
-		if (write(STDOUT, 
-			(char *) outBuf, (int) recordSize) != recordSize) {
-
-			perror("ncgm2cgm");
-			exit(1);
-		}
-	}
-}
-#endif
-
-usage()
-{
-	(void)fprintf(stderr,"Usage: ncgm2cgm [-V | -s <output record size>]\n");
-	exit(1);
-}
