@@ -3,7 +3,7 @@ C***********************************************************************
 C B L O C K   D A T A   R O U T I N E S   -   D E F A U L T S
 C***********************************************************************
 C
-C $Id: pcblda.f,v 1.8 1994-04-13 23:06:15 kennison Exp $
+C $Id: pcblda.f,v 1.9 1994-08-15 22:58:34 kennison Exp $
 C
       BLOCK DATA PCBLDA
 C
@@ -18,7 +18,7 @@ C
      +                JCOD,LSCI(16),NFCC,NODF,RBXL,RBXM,RBXX,RBXY,ROLW,
      +                RPLW,RSLW,SHDX,SHDY,SIZA,SSIC,SSPR,SUBS,VPIC(3),
      +                WPIC(3),XBEG,XCEN,XEND,XMUL(3),YBEG,YCEN,YEND,
-     +                YMUL(3)
+     +                YMUL(3),ZINX,ZINY,ZINZ
       SAVE   /PCPRMS/
 C
       COMMON /PCSVEM/ IBNU,ICOD,IDDA(8625),IDDL,RDGU(7000),IDPC(256),
@@ -383,5 +383,10 @@ C passed by STITLE to PCMPXY.  This just keeps the code from blowing
 C up in certain error situations.
 C
       DATA XVPL,XVPR,YVPB,YVPT / 4*0. /
+C
+C ZINX, ZINY, and ZINZ are default zoom factors (internal parameters
+C 'ZX', 'ZY', and 'ZZ', respectively).
+C
+      DATA ZINX,ZINY,ZINZ / 3*1. /
 C
       END

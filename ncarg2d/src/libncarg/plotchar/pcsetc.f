@@ -1,5 +1,5 @@
 C
-C $Id: pcsetc.f,v 1.9 1994-03-17 18:44:41 kennison Exp $
+C $Id: pcsetc.f,v 1.10 1994-08-15 22:58:42 kennison Exp $
 C
       SUBROUTINE PCSETC (WHCH,CVAL)
 C
@@ -15,7 +15,7 @@ C
      +                JCOD,LSCI(16),NFCC,NODF,RBXL,RBXM,RBXX,RBXY,ROLW,
      +                RPLW,RSLW,SHDX,SHDY,SIZA,SSIC,SSPR,SUBS,VPIC(3),
      +                WPIC(3),XBEG,XCEN,XEND,XMUL(3),YBEG,YCEN,YEND,
-     +                YMUL(3)
+     +                YMUL(3),ZINX,ZINY,ZINZ
       SAVE   /PCPRMS/
 C
       COMMON /PCFNNO/ LFNO(43),LFNL

@@ -1,5 +1,5 @@
 C
-C $Id: plchhq.f,v 1.15 1994-04-20 23:58:27 kennison Exp $
+C $Id: plchhq.f,v 1.16 1994-08-15 22:58:46 kennison Exp $
 C
       SUBROUTINE PLCHHQ (XPOS,YPOS,CHRS,SIZE,ANGD,CNTR)
 C
@@ -37,7 +37,7 @@ C
      +                JCOD,LSCI(16),NFCC,NODF,RBXL,RBXM,RBXX,RBXY,ROLW,
      +                RPLW,RSLW,SHDX,SHDY,SIZA,SSIC,SSPR,SUBS,VPIC(3),
      +                WPIC(3),XBEG,XCEN,XEND,XMUL(3),YBEG,YCEN,YEND,
-     +                YMUL(3)
+     +                YMUL(3),ZINX,ZINY,ZINZ
       SAVE   /PCPRMS/
 C
       COMMON /PCSVEM/ IBNU,ICOD,IDDA(8625),IDDL,RDGU(MDGU),IDPC(256),
@@ -459,12 +459,12 @@ C
 C Initialize the multipliers representing the combined effects of
 C changing 'PH', 'PW', 'IH', 'IW', 'CH', 'CW', and the zoom factor.
 C
-      XMZM(1)=XMUL(1)
-      XMZM(2)=XMUL(2)
-      XMZM(3)=XMUL(3)
-      YMZM(1)=YMUL(1)
-      YMZM(2)=YMUL(2)
-      YMZM(3)=YMUL(3)
+      XMZM(1)=ZINX*ZINZ*XMUL(1)
+      XMZM(2)=ZINX*ZINZ*XMUL(2)
+      XMZM(3)=ZINX*ZINZ*XMUL(3)
+      YMZM(1)=ZINY*ZINZ*YMUL(1)
+      YMZM(2)=ZINY*ZINZ*YMUL(2)
+      YMZM(3)=ZINY*ZINZ*YMUL(3)
 C
 C If text extent quantities are to be computed, initialize the needed
 C quantities.
@@ -593,7 +593,7 @@ C
               IF (ICFELL('PLCHHQ',13).NE.0) RETURN
               IF (NDGU.EQ.0) CALL PCEXCD (INDP,IPSS,NDGU)
             END IF
-            IF (NDGU.NE.0.AND.STEI(1,KDPC,MFNT).EQ.0.) THEN
+            IF (NDGU.GT.2.AND.STEI(1,KDPC,MFNT).EQ.0.) THEN
               STEI(1,KDPC,MFNT)=RDGU(1)/SPIC(IPIC)
               STEI(2,KDPC,MFNT)=RDGU(2)/SPIC(IPIC)
               STEI(3,KDPC,MFNT)=0.

@@ -1,5 +1,5 @@
 C
-C $Id: pcgetr.f,v 1.9 1994-03-17 18:44:34 kennison Exp $
+C $Id: pcgetr.f,v 1.10 1994-08-15 22:58:39 kennison Exp $
 C
       SUBROUTINE PCGETR (WHCH,RVAL)
 C
@@ -15,7 +15,7 @@ C
      +                JCOD,LSCI(16),NFCC,NODF,RBXL,RBXM,RBXX,RBXY,ROLW,
      +                RPLW,RSLW,SHDX,SHDY,SIZA,SSIC,SSPR,SUBS,VPIC(3),
      +                WPIC(3),XBEG,XCEN,XEND,XMUL(3),YBEG,YCEN,YEND,
-     +                YMUL(3)
+     +                YMUL(3),ZINX,ZINY,ZINZ
       SAVE   /PCPRMS/
 C
       COMMON /PCPFLQ/ IMAP,OORV,RHTW
@@ -150,6 +150,12 @@ C
         RVAL=YCEN
       ELSE IF (WHCH(1:2).EQ.'YE'.OR.WHCH(1:2).EQ.'ye') THEN
         RVAL=YEND
+      ELSE IF (WHCH(1:2).EQ.'ZX'.OR.WHCH(1:2).EQ.'zx') THEN
+        RVAL=ZINX
+      ELSE IF (WHCH(1:2).EQ.'ZY'.OR.WHCH(1:2).EQ.'zy') THEN
+        RVAL=ZINY
+      ELSE IF (WHCH(1:2).EQ.'ZZ'.OR.WHCH(1:2).EQ.'zz') THEN
+        RVAL=ZINZ
       ELSE
         CALL SETER ('PCGETR - UNRECOGNIZED PARAMETER NAME',4,1)
         RETURN

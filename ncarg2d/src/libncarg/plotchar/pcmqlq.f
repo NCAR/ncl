@@ -1,5 +1,5 @@
 C
-C $Id: pcmqlq.f,v 1.6 1994-03-17 00:24:03 kennison Exp $
+C $Id: pcmqlq.f,v 1.7 1994-08-15 22:58:40 kennison Exp $
 C
       SUBROUTINE PCMQLQ (XSUB,YSUB,CHRS,SIZE,ANGD,CNTR)
 C
@@ -19,7 +19,7 @@ C
      +                JCOD,LSCI(16),NFCC,NODF,RBXL,RBXM,RBXX,RBXY,ROLW,
      +                RPLW,RSLW,SHDX,SHDY,SIZA,SSIC,SSPR,SUBS,VPIC(3),
      +                WPIC(3),XBEG,XCEN,XEND,XMUL(3),YBEG,YCEN,YEND,
-     +                YMUL(3)
+     +                YMUL(3),ZINX,ZINY,ZINZ
       SAVE   /PCPRMS/
 C
 C Call the appropriate routine.

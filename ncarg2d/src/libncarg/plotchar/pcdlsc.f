@@ -1,5 +1,5 @@
 C
-C $Id: pcdlsc.f,v 1.4 1994-03-17 18:44:28 kennison Exp $
+C $Id: pcdlsc.f,v 1.5 1994-08-15 22:58:36 kennison Exp $
 C
       SUBROUTINE PCDLSC (IFCI)
 C
@@ -16,7 +16,7 @@ C
      +                JCOD,LSCI(16),NFCC,NODF,RBXL,RBXM,RBXX,RBXY,ROLW,
      +                RPLW,RSLW,SHDX,SHDY,SIZA,SSIC,SSPR,SUBS,VPIC(3),
      +                WPIC(3),XBEG,XCEN,XEND,XMUL(3),YBEG,YCEN,YEND,
-     +                YMUL(3)
+     +                YMUL(3),ZINX,ZINY,ZINZ
       SAVE   /PCPRMS/
 C
 C Check for an uncleared prior error.
