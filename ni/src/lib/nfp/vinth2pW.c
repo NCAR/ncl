@@ -369,7 +369,9 @@ NhlErrorTypes vinth2p_W
 		for(i = 0; i < total; i++) {
 			NGCALLF(vinth2p,VINTH2P)((datai+sizeof(double)*i*nblk),(((char*)datao)+sizeof(double)*nblk_out*i),hbcofa,hbcofb,p0,plevi,plevo,intyp,ilev,(((char*)psfc_d)+sizeof(double)*psf_blk*i),&missing,kxtrp,&(datai_dimsizes[2]),&(datai_dimsizes[1]),&(datai_dimsizes[0]),&(datai_dimsizes[0]),&(plevo_dimsizes));
 		}
-		NclFree(psfc_d);
+		if(psfc_d != psfc) {
+			NclFree(psfc_d);
+		}
 	}
 
 
