@@ -1,5 +1,5 @@
 C
-C $Id: pcpnwi.f,v 1.3 1994-03-17 00:24:05 kennison Exp $
+C $Id: pcpnwi.f,v 1.4 1995-05-01 22:21:16 kennison Exp $
 C
       CHARACTER*16 FUNCTION PCPNWI (WHCH,IPAI)
 C

@@ -1,5 +1,5 @@
 C
-C $Id: pcsetr.f,v 1.10 1994-08-15 22:58:43 kennison Exp $
+C $Id: pcsetr.f,v 1.11 1995-05-01 22:21:19 kennison Exp $
 C
       SUBROUTINE PCSETR (WHCH,RVAL)
 C
@@ -10,12 +10,12 @@ C values of type REAL.
 C
 C COMMON block declarations.
 C
-      COMMON /PCPRMS/ ADDS,CONS,DSTB,DSTL,DSTR,DSTT,HPIC(3),IBXC(3),
-     +                IBXF,ICEN,IORD,IOUC,IOUF,IPCC,IQUF,ISHC,ISHF,ITEF,
-     +                JCOD,LSCI(16),NFCC,NODF,RBXL,RBXM,RBXX,RBXY,ROLW,
-     +                RPLW,RSLW,SHDX,SHDY,SIZA,SSIC,SSPR,SUBS,VPIC(3),
-     +                WPIC(3),XBEG,XCEN,XEND,XMUL(3),YBEG,YCEN,YEND,
-     +                YMUL(3),ZINX,ZINY,ZINZ
+      COMMON /PCPRMS/ ADDS,CONS,DSTB,DSTL,DSTR,DSTT,HPIC(3),IBNU,
+     +                IBXC(3),IBXF,ICEN,IORD,IOUC,IOUF,IPCC,IQUF,
+     +                ISHC,ISHF,ITEF,JCOD,LSCI(16),NFCC,NODF,RBXL,
+     +                RBXM,RBXX,RBXY,ROLW,RPLW,RSLW,SHDX,SHDY,SIZA,
+     +                SSIC,SSPR,SUBS,VPIC(3),WPIC(3),XBEG,XCEN,XEND,
+     +                XMUL(3),YBEG,YCEN,YEND,YMUL(3),ZINX,ZINY,ZINZ
       SAVE   /PCPRMS/
 C
       COMMON /PCPFLQ/ IMAP,OORV,RHTW
@@ -145,6 +145,8 @@ C
         SHDY=RVAL
       ELSE IF (WHCH(1:2).EQ.'TE'.OR.WHCH(1:2).EQ.'te') THEN
         ITEF=MAX(0,MIN(1,INT(RVAL)))
+      ELSE IF (WHCH(1:2).EQ.'UN'.OR.WHCH(1:2).EQ.'un') THEN
+        IBNU=MAX(1,INT(RVAL))
       ELSE IF (WHCH(1:2).EQ.'ZX'.OR.WHCH(1:2).EQ.'zx') THEN
         ZINX=MAX(0.,RVAL)
       ELSE IF (WHCH(1:2).EQ.'ZY'.OR.WHCH(1:2).EQ.'zy') THEN

@@ -1,5 +1,5 @@
 C
-C $Id: plchhq.f,v 1.17 1995-01-06 22:55:23 kennison Exp $
+C $Id: plchhq.f,v 1.18 1995-05-01 22:21:22 kennison Exp $
 C
       SUBROUTINE PLCHHQ (XPOS,YPOS,CHRS,SIZE,ANGD,CNTR)
 C
@@ -32,16 +32,16 @@ C
 C Note that the sizes of IDDA and INDA may be reduced to match the
 C values of IDDL and INDL computed below.
 C
-      COMMON /PCPRMS/ ADDS,CONS,DSTB,DSTL,DSTR,DSTT,HPIC(3),IBXC(3),
-     +                IBXF,ICEN,IORD,IOUC,IOUF,IPCC,IQUF,ISHC,ISHF,ITEF,
-     +                JCOD,LSCI(16),NFCC,NODF,RBXL,RBXM,RBXX,RBXY,ROLW,
-     +                RPLW,RSLW,SHDX,SHDY,SIZA,SSIC,SSPR,SUBS,VPIC(3),
-     +                WPIC(3),XBEG,XCEN,XEND,XMUL(3),YBEG,YCEN,YEND,
-     +                YMUL(3),ZINX,ZINY,ZINZ
+      COMMON /PCPRMS/ ADDS,CONS,DSTB,DSTL,DSTR,DSTT,HPIC(3),IBNU,
+     +                IBXC(3),IBXF,ICEN,IORD,IOUC,IOUF,IPCC,IQUF,
+     +                ISHC,ISHF,ITEF,JCOD,LSCI(16),NFCC,NODF,RBXL,
+     +                RBXM,RBXX,RBXY,ROLW,RPLW,RSLW,SHDX,SHDY,SIZA,
+     +                SSIC,SSPR,SUBS,VPIC(3),WPIC(3),XBEG,XCEN,XEND,
+     +                XMUL(3),YBEG,YCEN,YEND,YMUL(3),ZINX,ZINY,ZINZ
       SAVE   /PCPRMS/
 C
-      COMMON /PCSVEM/ IBNU,ICOD,IDDA(8625),IDDL,RDGU(MDGU),IDPC(256),
-     +                IERU,INDA(789),INDL,INIT,IVCO,IVDU,NBPW,NPPW
+      COMMON /PCSVEM/ ICOD,IDDA(8625),IDDL,RDGU(MDGU),IDPC(256),IERU,
+     +                INDA(789),INDL,INIT,IVCO,IVDU,NBPW,NPPW
       SAVE   /PCSVEM/
 C
       COMMON /PCPFLQ/ IMAP,OORV,RHTW

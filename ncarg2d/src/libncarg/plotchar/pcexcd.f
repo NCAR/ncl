@@ -1,5 +1,5 @@
 C
-C $Id: pcexcd.f,v 1.6 1994-03-17 00:23:40 kennison Exp $
+C $Id: pcexcd.f,v 1.7 1995-05-01 22:21:06 kennison Exp $
 C
       SUBROUTINE PCEXCD (IPNT,IPSS,NDGU)
 C
@@ -40,8 +40,8 @@ C is replaced by the value -2048.
 C
 C COMMON block declarations.
 C
-      COMMON /PCSVEM/ IBNU,ICOD,IDDA(8625),IDDL,RDGU(7000),IDPC(256),
-     +                IERU,INDA(789),INDL,INIT,IVCO,IVDU,NBPW,NPPW
+      COMMON /PCSVEM/ ICOD,IDDA(8625),IDDL,RDGU(7000),IDPC(256),IERU,
+     +                INDA(789),INDL,INIT,IVCO,IVDU,NBPW,NPPW
       SAVE   /PCSVEM/
 C
 C MXUN specifies the maximum number of units to be retrieved for a

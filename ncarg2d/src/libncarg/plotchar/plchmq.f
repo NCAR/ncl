@@ -1,5 +1,5 @@
 C
-C $Id: plchmq.f,v 1.10 1994-03-17 18:44:47 kennison Exp $
+C $Id: plchmq.f,v 1.11 1995-05-01 22:21:23 kennison Exp $
 C
       SUBROUTINE PLCHMQ (XPOS,YPOS,CHRS,SIZE,ANGD,CNTR)
 C

@@ -1,5 +1,5 @@
 C
-C $Id: pcblda.f,v 1.10 1995-01-06 22:55:22 kennison Exp $
+C $Id: pcblda.f,v 1.11 1995-05-01 22:21:01 kennison Exp $
 C
       BLOCK DATA PCBLDA
 C
@@ -9,16 +9,16 @@ C fontcap.
 C
 C COMMON block declarations.
 C
-      COMMON /PCPRMS/ ADDS,CONS,DSTB,DSTL,DSTR,DSTT,HPIC(3),IBXC(3),
-     +                IBXF,ICEN,IORD,IOUC,IOUF,IPCC,IQUF,ISHC,ISHF,ITEF,
-     +                JCOD,LSCI(16),NFCC,NODF,RBXL,RBXM,RBXX,RBXY,ROLW,
-     +                RPLW,RSLW,SHDX,SHDY,SIZA,SSIC,SSPR,SUBS,VPIC(3),
-     +                WPIC(3),XBEG,XCEN,XEND,XMUL(3),YBEG,YCEN,YEND,
-     +                YMUL(3),ZINX,ZINY,ZINZ
+      COMMON /PCPRMS/ ADDS,CONS,DSTB,DSTL,DSTR,DSTT,HPIC(3),IBNU,
+     +                IBXC(3),IBXF,ICEN,IORD,IOUC,IOUF,IPCC,IQUF,
+     +                ISHC,ISHF,ITEF,JCOD,LSCI(16),NFCC,NODF,RBXL,
+     +                RBXM,RBXX,RBXY,ROLW,RPLW,RSLW,SHDX,SHDY,SIZA,
+     +                SSIC,SSPR,SUBS,VPIC(3),WPIC(3),XBEG,XCEN,XEND,
+     +                XMUL(3),YBEG,YCEN,YEND,YMUL(3),ZINX,ZINY,ZINZ
       SAVE   /PCPRMS/
 C
-      COMMON /PCSVEM/ IBNU,ICOD,IDDA(8625),IDDL,RDGU(7000),IDPC(256),
-     +                IERU,INDA(789),INDL,INIT,IVCO,IVDU,NBPW,NPPW
+      COMMON /PCSVEM/ ICOD,IDDA(8625),IDDL,RDGU(7000),IDPC(256),IERU,
+     +                INDA(789),INDL,INIT,IVCO,IVDU,NBPW,NPPW
       SAVE   /PCSVEM/
 C
       COMMON /PCPFLQ/ IMAP,OORV,RHTW
@@ -57,7 +57,7 @@ C be read.
 C
       DATA IBNU / 3 /
 C
-C IBXC is an array of colors indices to be used for various parts of a
+C IBXC is an array of color indices to be used for various parts of a
 C box drawn around a character string.  Element 1 is for the outline of
 C the box, element 2 for fill of the box, and element 3 for fill of the
 C box shadow.
@@ -90,13 +90,13 @@ C INIT is an initialization flag for PLCHHQ.
 C
       DATA INIT / 0 /
 C
-C IORD is a flag which says in what order characters are to be drawn by
-C PLCHHQ.  If its value is positive, characters are to be drawn in which
-C they occur in an input string (from left to right); otherwise, they
-C are to be drawn from in the reverse order (from right to left).  The
-C absolute value of IORD should be either a 1 or a 2; the value 1 says
-C that PLCHHQ should draw all shadows for all the characters, then all
-C principal bodies for all the characters and then all outlines for all
+C IORD is a flag that says in what order characters are to be drawn by
+C PLCHHQ.  If its value is positive, characters are to be drawn in the
+C order in which they occur in an input string (from left to right);
+C otherwise, they are to be drawn in the reverse order (from right to
+C left).  The absolute value of IORD should be either a 1 or a 2; the
+C value 1 says that PLCHHQ should draw shadows for all the characters,
+C then principal bodies for all the characters and then outlines for all
 C the characters.  The value 2 says that it should draw the shadow, the
 C principal body, and the outline for character 1, then the shadow, the
 C principal body, and the outline for character 2, and so on.  Note

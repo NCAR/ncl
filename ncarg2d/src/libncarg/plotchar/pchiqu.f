@@ -1,5 +1,5 @@
 C
-C $Id: pchiqu.f,v 1.4 1994-03-17 18:44:36 kennison Exp $
+C $Id: pchiqu.f,v 1.5 1995-05-01 22:21:13 kennison Exp $
 C
       SUBROUTINE PCHIQU (XPOS,YPOS,CHRS,SIZE,ANGD,CNTR)
 C

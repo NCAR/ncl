@@ -1,5 +1,5 @@
 C
-C $Id: pcdlsc.f,v 1.5 1994-08-15 22:58:36 kennison Exp $
+C $Id: pcdlsc.f,v 1.6 1995-05-01 22:21:05 kennison Exp $
 C
       SUBROUTINE PCDLSC (IFCI)
 C
@@ -11,12 +11,12 @@ C color indices (IFCI, IFCI+1, IFCI+2, ... ).
 C
 C COMMON block declarations.
 C
-      COMMON /PCPRMS/ ADDS,CONS,DSTB,DSTL,DSTR,DSTT,HPIC(3),IBXC(3),
-     +                IBXF,ICEN,IORD,IOUC,IOUF,IPCC,IQUF,ISHC,ISHF,ITEF,
-     +                JCOD,LSCI(16),NFCC,NODF,RBXL,RBXM,RBXX,RBXY,ROLW,
-     +                RPLW,RSLW,SHDX,SHDY,SIZA,SSIC,SSPR,SUBS,VPIC(3),
-     +                WPIC(3),XBEG,XCEN,XEND,XMUL(3),YBEG,YCEN,YEND,
-     +                YMUL(3),ZINX,ZINY,ZINZ
+      COMMON /PCPRMS/ ADDS,CONS,DSTB,DSTL,DSTR,DSTT,HPIC(3),IBNU,
+     +                IBXC(3),IBXF,ICEN,IORD,IOUC,IOUF,IPCC,IQUF,
+     +                ISHC,ISHF,ITEF,JCOD,LSCI(16),NFCC,NODF,RBXL,
+     +                RBXM,RBXX,RBXY,ROLW,RPLW,RSLW,SHDX,SHDY,SIZA,
+     +                SSIC,SSPR,SUBS,VPIC(3),WPIC(3),XBEG,XCEN,XEND,
+     +                XMUL(3),YBEG,YCEN,YEND,YMUL(3),ZINX,ZINY,ZINZ
       SAVE   /PCPRMS/
 C
 C Check for an uncleared prior error.

@@ -1,5 +1,5 @@
 C
-C $Id: pcgetr.f,v 1.10 1994-08-15 22:58:39 kennison Exp $
+C $Id: pcgetr.f,v 1.11 1995-05-01 22:21:08 kennison Exp $
 C
       SUBROUTINE PCGETR (WHCH,RVAL)
 C
@@ -10,12 +10,12 @@ C values of type REAL.
 C
 C COMMON block declarations.
 C
-      COMMON /PCPRMS/ ADDS,CONS,DSTB,DSTL,DSTR,DSTT,HPIC(3),IBXC(3),
-     +                IBXF,ICEN,IORD,IOUC,IOUF,IPCC,IQUF,ISHC,ISHF,ITEF,
-     +                JCOD,LSCI(16),NFCC,NODF,RBXL,RBXM,RBXX,RBXY,ROLW,
-     +                RPLW,RSLW,SHDX,SHDY,SIZA,SSIC,SSPR,SUBS,VPIC(3),
-     +                WPIC(3),XBEG,XCEN,XEND,XMUL(3),YBEG,YCEN,YEND,
-     +                YMUL(3),ZINX,ZINY,ZINZ
+      COMMON /PCPRMS/ ADDS,CONS,DSTB,DSTL,DSTR,DSTT,HPIC(3),IBNU,
+     +                IBXC(3),IBXF,ICEN,IORD,IOUC,IOUF,IPCC,IQUF,
+     +                ISHC,ISHF,ITEF,JCOD,LSCI(16),NFCC,NODF,RBXL,
+     +                RBXM,RBXX,RBXY,ROLW,RPLW,RSLW,SHDX,SHDY,SIZA,
+     +                SSIC,SSPR,SUBS,VPIC(3),WPIC(3),XBEG,XCEN,XEND,
+     +                XMUL(3),YBEG,YCEN,YEND,YMUL(3),ZINX,ZINY,ZINZ
       SAVE   /PCPRMS/
 C
       COMMON /PCPFLQ/ IMAP,OORV,RHTW
@@ -138,6 +138,8 @@ C
         RVAL=SHDY
       ELSE IF (WHCH(1:2).EQ.'TE'.OR.WHCH(1:2).EQ.'te') THEN
         RVAL=REAL(ITEF)
+      ELSE IF (WHCH(1:2).EQ.'UN'.OR.WHCH(1:2).EQ.'un') THEN
+        RVAL=REAL(IBNU)
       ELSE IF (WHCH(1:2).EQ.'XB'.OR.WHCH(1:2).EQ.'xb') THEN
         RVAL=XBEG
       ELSE IF (WHCH(1:2).EQ.'XC'.OR.WHCH(1:2).EQ.'xc') THEN

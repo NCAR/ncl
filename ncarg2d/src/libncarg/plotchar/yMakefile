@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.11 1994-08-11 18:37:35 haley Exp $
+#	$Id: yMakefile,v 1.12 1995-05-01 22:21:24 kennison Exp $
 #
 
 MYNAME	= plotchar
@@ -11,7 +11,7 @@ GENERIC_SRCS = \
 	pcbdff.f pccfff.f pcffgd.f pcffgp.f pcffhl.f \
 	pcffme.f pcgneg.f tdblda.f tdgeti.f tdgetr.f tdinit.f tdpara.f \
 	tdprpa.f tdprpi.f tdprpt.f tdseti.f tdsetr.f pcmpxy.f \
-	pcdlsc.f pcgpai.f pchiqu.f pcloqu.f pcmequ.f pcpnwi.f
+	pcdlsc.f pcgpai.f pchiqu.f pcloqu.f pcmequ.f pcpnwi.f pcrset.f
 
 GENERIC_OBJS = \
 	plchhq.o plchmq.o plchlq.o pcgetc.o pcgeti.o pcgetr.o pcsetc.o \
@@ -20,7 +20,7 @@ GENERIC_OBJS = \
 	pcbdff.o pccfff.o pcffgd.o pcffgp.o pcffhl.o \
 	pcffme.o pcgneg.o tdblda.o tdgeti.o tdgetr.o tdinit.o tdpara.o \
 	tdprpa.o tdprpi.o tdprpt.o tdseti.o tdsetr.o pcmpxy.o \
-	pcdlsc.o pcgpai.o pchiqu.o pcloqu.o pcmequ.o pcpnwi.o
+	pcdlsc.o pcgpai.o pchiqu.o pcloqu.o pcmequ.o pcpnwi.o pcrset.o
 
 OTHER_SRCS = pcfcls.f pcfopn.f pcfred.f bofred.c pcbnrd.c
 

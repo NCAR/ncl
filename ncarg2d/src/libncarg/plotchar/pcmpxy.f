@@ -1,5 +1,5 @@
 C
-C $Id: pcmpxy.f,v 1.7 1994-04-13 23:06:17 kennison Exp $
+C $Id: pcmpxy.f,v 1.8 1995-05-01 22:21:15 kennison Exp $
 C
       SUBROUTINE PCMPXY (IMAP,XINP,YINP,XOTP,YOTP)
 C

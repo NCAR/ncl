@@ -1,5 +1,5 @@
 C
-C $Id: pcgtdi.f,v 1.7 1994-03-17 00:23:52 kennison Exp $
+C $Id: pcgtdi.f,v 1.8 1995-05-01 22:21:11 kennison Exp $
 C
       SUBROUTINE PCGTDI (CHRS,NCHR,ICHR,NUMV)
 C
@@ -23,8 +23,8 @@ C   found.
 C
 C COMMON block declarations.
 C
-      COMMON /PCSVEM/ IBNU,ICOD,IDDA(8625),IDDL,RDGU(7000),IDPC(256),
-     +                IERU,INDA(789),INDL,INIT,IVCO,IVDU,NBPW,NPPW
+      COMMON /PCSVEM/ ICOD,IDDA(8625),IDDL,RDGU(7000),IDPC(256),IERU,
+     +                INDA(789),INDL,INIT,IVCO,IVDU,NBPW,NPPW
       SAVE   /PCSVEM/
 C
       CHARACTER*(*) CHRS

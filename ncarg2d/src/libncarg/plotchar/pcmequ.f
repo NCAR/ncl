@@ -1,5 +1,5 @@
 C
-C $Id: pcmequ.f,v 1.4 1994-03-17 18:44:39 kennison Exp $
+C $Id: pcmequ.f,v 1.5 1995-05-01 22:21:14 kennison Exp $
 C
       SUBROUTINE PCMEQU (XPOS,YPOS,CHRS,SIZE,ANGD,CNTR)
 C

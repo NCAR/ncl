@@ -1,5 +1,5 @@
 C
-C $Id: plchlq.f,v 1.7 1994-03-17 00:24:21 kennison Exp $
+C $Id: plchlq.f,v 1.8 1995-05-01 22:21:22 kennison Exp $
 C
       SUBROUTINE PLCHLQ (XPOS,YPOS,CHRS,SIZE,ANGD,CNTR)
 C

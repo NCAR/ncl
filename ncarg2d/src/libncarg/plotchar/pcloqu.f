@@ -1,5 +1,5 @@
 C
-C $Id: pcloqu.f,v 1.4 1994-03-17 18:44:37 kennison Exp $
+C $Id: pcloqu.f,v 1.5 1995-05-01 22:21:14 kennison Exp $
 C
       SUBROUTINE PCLOQU (XPOS,YPOS,CHRS,SIZE,ANGD,CNTR)
 C
