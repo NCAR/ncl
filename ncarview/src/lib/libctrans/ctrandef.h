@@ -30,4 +30,16 @@
 #define M_PI_2	1.57079632679489661923
 #endif
 
+#ifndef	MAX
+#define	MAX(A,B)	((A) > (B) ? (A) : (B))
+#endif
+
+#ifndef	MIN
+#define	MIN(A,B)	((A) < (B) ? (A) : (B))
+#endif
+
+#ifndef	ABS
+#define	ABS(X)          ((X) < 0 ? -(X) : (X))
+#endif
+
 #endif	_ctrandef_

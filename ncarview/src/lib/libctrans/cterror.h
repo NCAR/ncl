@@ -123,6 +123,6 @@ typedef enum {
 	/*
 	 *	terminal X11 specific
 	 */
-	T_X11DEVNS = BEG_T_X11,	/* X11 display env. var. not set	*/
+	T_X11DEVNS = BEG_T_X11	/* X11 display env. var. not set	*/
 	} Ct_error;
 

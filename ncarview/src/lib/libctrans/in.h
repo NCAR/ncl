@@ -44,7 +44,7 @@ enum ads { na,			/*none          */
 	   VDC,			/*VDC value	*/
 	   D,			/*Data Record	*/
 	   CO,			/*CI or CD 	*/
-	   SPECIAL,		/*multiple parameter types. Some commands
+	   SPECIAL		/*multiple parameter types. Some commands
 				 *have several types of parameters
 				 *and require special processing
 				 */

@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class4.c,v 1.2 1991-01-09 11:07:19 clyne Exp $
+ *	$Id: X11_class4.c,v 1.3 1991-02-04 10:06:36 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -1140,7 +1140,7 @@ Ct_err	init_polygon()
 {
 	/*	query best size of tile. See section 5.4.4 */	
 	if (!(XQueryBestTile(dpy, drawable, PWIDTH, PHEIGHT,
-		&tile.width, &tile.height)))
+		(unsigned int *) &tile.width, (unsigned int *) &tile.height)))
 
 		ct_error(NT_MALLOC,"");
 

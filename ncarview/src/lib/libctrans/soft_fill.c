@@ -1,5 +1,5 @@
 /*
- *	$Id: soft_fill.c,v 1.2 1991-01-09 11:11:31 clyne Exp $
+ *	$Id: soft_fill.c,v 1.3 1991-02-04 10:07:00 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -12,6 +12,7 @@
 ***********************************************************************/
 #include	<stdio.h>
 #include	"soft_fill.h"
+#include	"ctrandef.h"
 #include	"cgmc.h"
 
 
@@ -257,8 +258,6 @@ FillTable	*buildFillTable(point_list, count)
 	return(&fillTable);
 }
 
-#define	MAX(X,Y)	(((X) > (Y)) ? (X) : (Y))
-#define	ABS(X)		((X) < 0 ? -(X) : (X))
 /*
  *	add_line
  *	[internal]

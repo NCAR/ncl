@@ -1,5 +1,5 @@
 /*
- *	$Id: default.c,v 1.3 1991-01-09 11:09:26 clyne Exp $
+ *	$Id: default.c,v 1.4 1991-02-04 10:06:52 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -19,10 +19,11 @@
  */
 #define	INDEXED	0
 #include <stdio.h>
+#include <cterror.h>
 #include "cgmc.h"
 #define	 DEFAULT
 #include "default.h"
-#include	<cterror.h>
+#include "ctrandef.h"
 
 static	struct	{
 	float	min_line_width;

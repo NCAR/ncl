@@ -1,5 +1,5 @@
 /*
- *	$Id: clip.c,v 1.2 1991-01-09 11:09:05 clyne Exp $
+ *	$Id: clip.c,v 1.3 1991-02-04 10:06:43 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -22,9 +22,8 @@
 #include <ncarv.h>
 #include "default.h"
 #include "translate.h"
+#include "ctrandef.h"
 
-#define	MIN(A,B)	((A) < (B) ? (A) : (B))
-#define	MAX(A,B)	((A) > (B) ? (A) : (B))
 
 long	clipxmin;
 long	clipymin;

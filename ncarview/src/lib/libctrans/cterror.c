@@ -1,5 +1,5 @@
 /*
- *	$Id: cterror.c,v 1.3 1991-01-09 11:09:10 clyne Exp $
+ *	$Id: cterror.c,v 1.4 1991-02-04 10:06:45 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -400,14 +400,14 @@ init_ct_error(prog_name, file_)
 	boolean	file_;
 {
 
+	static char tempfn[] = "/tmp/ctrans.XXXXXX";
 	program_name = prog_name;
 
 	/*
 	 *	Open the error file. 
 	 */
-
 	if (file_) {
-		tempfile = mktemp("/tmp/ctrans.XXXXXX");
+		tempfile = mktemp(tempfn);
 		if ((errfile = fopen(tempfile,"w")) == NULL) {
 			perror(program_name);
 			errfile = stderr;
