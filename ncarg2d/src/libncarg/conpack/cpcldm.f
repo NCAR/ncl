@@ -1,6 +1,6 @@
 C
-C $Id: cpcldm.f,v 1.9 2000-08-22 15:02:44 haley Exp $
-C                                                                      
+C $Id: cpcldm.f,v 1.10 2000-09-21 23:58:08 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -370,7 +370,8 @@ C
         IJMP=0
         IAIC=-9
 10043   CONTINUE
-          CALL CPTRES (ZDAT,RWRK,IWRK,IJMP,IAIC,IRW1,IRW2,NRWK)
+          CALL CPTRES (ZDAT,RWRK,IWRK,IJMP,IAIC,IRW1,IRW2,NRWK,
+     +                                          ICLU(258)/2)
           IF (ICFELL('CPCLDM',38).NE.0) RETURN
           IF (IJMP.EQ.0) GO TO 10044
           CALL ARDRLN (IAMA,RWRK(IRW1+1),RWRK(IRW2+1),NRWK,

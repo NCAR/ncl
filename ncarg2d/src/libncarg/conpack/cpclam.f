@@ -1,6 +1,6 @@
 C
-C $Id: cpclam.f,v 1.9 2000-08-22 15:02:44 haley Exp $
-C                                                                      
+C $Id: cpclam.f,v 1.10 2000-09-21 23:58:07 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -287,7 +287,7 @@ C
       IAIC=0
 C
 10009 CONTINUE
-        CALL CPTRES (ZDAT,RWRK,IWRK,IJMP,IAIC,IRW1,IRW2,NRWK)
+        CALL CPTRES (ZDAT,RWRK,IWRK,IJMP,IAIC,IRW1,IRW2,NRWK,0)
         IF (ICFELL('CPCLAM',23).NE.0) RETURN
         IF (IJMP.EQ.0) GO TO 10010
         IF (MIRO.EQ.0) THEN

@@ -1,6 +1,6 @@
 C
-C $Id: cpcldr.f,v 1.9 2000-08-22 15:02:45 haley Exp $
-C                                                                      
+C $Id: cpcldr.f,v 1.10 2000-09-21 23:58:09 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -358,7 +358,8 @@ C
         IJMP=0
         IAIC=-9
 10043   CONTINUE
-          CALL CPTRES (ZDAT,RWRK,IWRK,IJMP,IAIC,IRW1,IRW2,NRWK)
+          CALL CPTRES (ZDAT,RWRK,IWRK,IJMP,IAIC,IRW1,IRW2,NRWK,
+     +                                          ICLU(258)/2)
           IF (ICFELL('CPCLDR',36).NE.0) RETURN
           IF (IJMP.EQ.0) GO TO 10044
           CALL CPDRSG (RWRK,IRW1,IRW2,NRWK)

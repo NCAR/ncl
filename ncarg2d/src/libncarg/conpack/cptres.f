@@ -1,6 +1,6 @@
 C
-C $Id: cptres.f,v 1.12 2000-08-22 15:02:55 haley Exp $
-C                                                                      
+C $Id: cptres.f,v 1.13 2000-09-21 23:58:10 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -20,7 +20,7 @@ C along with this software; if not, write to the Free Software
 C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 C USA.
 C
-      SUBROUTINE CPTRES (ZDAT,RWRK,IWRK,IJMP,IAIC,IRW1,IRW2,NRWK)
+      SUBROUTINE CPTRES (ZDAT,RWRK,IWRK,IJMP,IAIC,IRW1,IRW2,NRWK,IFWB)
 C
       DIMENSION ZDAT(IZD1,*),RWRK(*),IWRK(*)
 C
@@ -50,6 +50,11 @@ C base indices of X and Y coordinate arrays in RWRK.
 C
 C NRWK is an output variable.  If IJMP is non-zero, NRWK is the number
 C of coordinates to be processed by the caller.
+C
+C IFWB is a new variable added to the calling sequence on 09/21/2000; it
+C is set non-zero if and only CPTRES is to generate the entire boundary
+C of each special-value area; if its value is zero, the parts of the
+C boundary on the edge of the grid are not drawn.
 C
 C
 C Declare all of the CONPACK common blocks.
@@ -205,8 +210,9 @@ C
             INDY=J
             IDIR=5
 10019       CONTINUE
-              IF (.NOT.((INDX.EQ.INOX.AND.(INDX.EQ.1.OR.INDX.EQ.IZDM)).O
-     +R.(INDY.EQ.INOY.AND.(INDY.EQ.1.OR.INDY.EQ.IZDN)))) GO TO 10020
+              IF (.NOT.(IFWB.EQ.0.AND.((INDX.EQ.INOX.AND.(INDX.EQ.1.OR.I
+     +NDX.EQ.IZDM)).OR.(INDY.EQ.INOY.AND.(INDY.EQ.1.OR.INDY.EQ.IZDN)))))
+     +        GO TO 10020
                 IF (.NOT.(NPLS.NE.0)) GO TO 10021
                   IJMP=1
                   IRW1=IR01
