@@ -1,5 +1,5 @@
 /*
- *	$Id: c.h,v 1.22 1994-10-24 17:48:37 haley Exp $
+ *	$Id: c.h,v 1.23 1995-03-16 20:32:53 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -87,7 +87,7 @@ typedef	caddr_t	Voidptr;
 /*
  * C++ prototype protector
  */
-#ifdef	__cpluscplus
+#ifdef	__cplusplus
 #define	NCARG_PROTO_BEGIN	extern "C" {
 #define	NCARG_PROTO_END		}
 #else
