@@ -1,5 +1,5 @@
 C
-C	$Id: vvectr.f,v 1.8 1993-06-23 19:29:21 dbrown Exp $
+C	$Id: vvectr.f,v 1.9 1993-10-01 19:22:31 dbrown Exp $
 C
       SUBROUTINE VVECTR (U,V,P,IAM,VVUDMV,WRK)
 C
@@ -311,8 +311,8 @@ C
 C Calculate the grid interval represented by adjacent array
 C elements along each axis
 C
-      XGV=(XHIV-XLOV)/(REAL(IXDM)-1.0)
-      YGV=(YHIV-YLOV)/(REAL(IYDN)-1.0)
+      XGV=(XHIV-XLOV)/REAL(MAX(1,IXDM-1))
+      YGV=(YHIV-YLOV)/REAL(MAX(1,IYDN-1))
 C
 C Draw the vectors. Note the extra processing if there are special 
 C values to consider or the independent scalar array is processed.

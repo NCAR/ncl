@@ -1,5 +1,5 @@
 C
-C	$Id: vvdata.f,v 1.3 1993-02-19 21:51:07 dbrown Exp $
+C	$Id: vvdata.f,v 1.4 1993-10-01 19:22:26 dbrown Exp $
 C
       BLOCK DATA VVDATA
 C
@@ -370,11 +370,11 @@ C
 C FAMN -- 'AMN' -- arrow head min size as FVPW 
 C                                        (fraction of viewport width)
 C
-      DATA FAMN / 0.01 /
+      DATA FAMN / 0.005 /
 C
 C FAMX -- 'AMX' -- arrow hear max size as FVPW
 C
-      DATA FAMX / 0.2 /
+      DATA FAMX / 0.05 /
 C
 C
 C --------------------------------------------------------------------

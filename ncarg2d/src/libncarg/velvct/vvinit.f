@@ -1,5 +1,5 @@
 C
-C	$Id: vvinit.f,v 1.6 1993-03-15 22:57:06 dbrown Exp $
+C	$Id: vvinit.f,v 1.7 1993-10-01 19:22:34 dbrown Exp $
 C
 C-----------------------------------------------------------------------
 C
@@ -149,7 +149,7 @@ C Decide what the range of values in X and Y should be.
 C
       IF (UXC1.EQ.UXCM) THEN
         XLOV=1.
-        XHIV=REAL(IXDM)
+        XHIV=REAL(MAX(IXDM, 2))
       ELSE
         XLOV=UXC1
         XHIV=UXCM
@@ -157,7 +157,7 @@ C
 C
       IF (UYC1.EQ.UYCN) THEN
         YLOV=1.
-        YHIV=REAL(IYDN)
+        YHIV=REAL(MAX(IYDN,2))
       ELSE
         YLOV=UYC1
         YHIV=UYCN

@@ -1,5 +1,5 @@
 C
-C	$Id: vvdraw.f,v 1.3 1993-02-19 21:51:10 dbrown Exp $
+C	$Id: vvdraw.f,v 1.4 1993-10-01 19:22:29 dbrown Exp $
 C
       SUBROUTINE VVDRAW (XB,YB,XE,YE,VLN,LBL,NC,IAM,VVUDMV,IDA)
 C
@@ -155,8 +155,8 @@ C If the size is outside the range of the minimum and maximum sizes
 C use fixed sizes
 C
       C1 = HDSZ
-      IF (VLN .LT. FAMN*FW2W) C1 = FAMN*FW2W*HDSZ/VLN
-      IF (VLN .GT. FAMX*FW2W) C1 = FAMX*FW2W*HDSZ/VLN
+      IF (VLN*C1 .LT. FAMN*FW2W) C1 = FAMN*FW2W/VLN
+      IF (VLN*C1 .GT. FAMX*FW2W) C1 = FAMX*FW2W/VLN
 C
 C Calculate the remaining points in fractional coordinates
 C
