@@ -1,5 +1,5 @@
 C
-C	$Id: gzinsl.f,v 1.4 1994-07-01 01:20:15 fred Exp $
+C	$Id: gzinsl.f,v 1.5 1995-06-21 16:52:01 fred Exp $
 C
       SUBROUTINE GZINSL
 C
@@ -70,7 +70,7 @@ C
       CCHH       = .01
       CTXP       = 0
       CFAI       = 1
-      CFAIS      = 0
+      CFAIS      = 1
       CFASI      = 1
       CFACI      = 1
       CFAISA     = GINDIV
