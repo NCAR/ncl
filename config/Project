@@ -1,5 +1,5 @@
 /*
- *      $Id: Project,v 1.17 1995-01-04 04:49:20 haley Exp $
+ *      $Id: Project,v 1.18 1995-01-11 20:09:48 haley Exp $
  */
 /************************************************************************
 *									*
@@ -311,7 +311,7 @@ DEPICTRANS_LIB	= $(ICTRANS_LIB)
 NCARGLIBS	= $(NCARGLIB) $(NCARGGKSLIB) $(NCARGCLIB)
 CNCARGLIBS	= $(CNCARGLIB) $(CNCARGGKSLIB)
 HLULIBS		= $(HLULIB)
-NCLLIBS		= $(NCLLIB) $(NCLAPILIB)
+NCLLIBS		= $(NCLAPILIB)
 
 DEPNCARGLIBS	= $(DEPNCARGLIB) $(DEPNCARGGKSLIB) $(DEPNCARGCLIB)
 DEPCNCARGLIBS	= $(DEPCNCARGLIB) $(DEPCNCARGGKSLIB)
