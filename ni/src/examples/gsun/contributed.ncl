@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.17 2003-07-16 17:03:49 shea Exp $
+;      $Id: contributed.ncl,v 1.18 2003-08-05 22:50:21 shea Exp $
 ;
 ; -------------- added Feb 14 2002
 ; copy_VarMeta
@@ -1090,10 +1090,10 @@ end
 ;******************************************************************
 ; D. Shea
 ; converts shorts to floats using the "scale" and "offset" attributes (if present) 
-
 ; Note: the CF and COARDS conventions require that 
 ; "if both scale_factor and add_offset
-;  attributes are present, the data are first scaled before the offset is added" 
+; attributes are present, the data are first scaled before the offset is added" 
+; This follows these conventions.
 
 undef("short2flt")
 function short2flt (xS:short)
@@ -1182,8 +1182,11 @@ begin
 end
 ;******************************************************************
 ; D. Shea
-; converts bytes to floats using the "scale" and "offset"
-; attributes (if present) 
+; converts bytes to floats using the "scale" and "offset" attributes (if present) 
+; Note: the CF and COARDS conventions require that 
+; "if both scale_factor and add_offset
+; attributes are present, the data are first scaled before the offset is added" 
+; This follows these conventions.
 
 undef("byte2flt")
 function byte2flt (xB:byte)
@@ -1247,6 +1250,191 @@ begin
      xF = (/ xB /) 
  else
      xF = xB*scale + offset 
+ end if
+
+ if (isatt(xB,"valid_range") .and. typeof(xB@valid_range).eq."short") then
+     vrB = xB@valid_range
+     vrF = new ( dimsizes(vrB), float)
+     vrF = vrB*scale + offset 
+     delete(xF@valid_range)    ; delete the "short" valid_range
+     xF@valid_range = vrF      ; recreate with float
+ end if
+
+ return (xF)
+
+end
+;******************************************************************
+; D. Shea
+; converts shorts to floats using the "scale" and "offset" attributes (if present) 
+
+; Note: Conventional HDF usage require that 
+; if both scale_factor and add_offset attributes are present, 
+; the following implementation should be used:
+;      result = scale_factor*(stored_integer-add_offset)
+; This is different than the COARDS and CF Conventions.
+;
+; Usage: 
+;      x = short2flt_hdf(xS)  where xS is a short
+; also directly convert to float
+;      x = short2flt_hdf(f->xS)  
+;
+undef("short2flt_hdf")
+function short2flt_hdf (xS:short)
+local xF, oNames, sNames, offset, scale, xAtts, nAtts, n
+begin
+;xF = new ( dimsizes(xS), float)
+ xF = new ( dimsizes(xS), float, 1.e20)  ; 20 Nov 2002
+ 
+ copy_VarAtts   (xS, xF)
+ copy_VarCoords (xS, xF)
+                                     ; added 19 Dec 2002
+ if (isatt(xS,"missing_value") .and. .not.isatt(xS,"_FillValue")) then
+           xS@_FillValue = xS@missing_value
+ end if
+
+          ; should data be 'scaled' and/or 'offset' ?
+
+          ; names to check
+ oNames = (/"add_offset", "offset", "OFFSET", "Offset", "_offset" \
+           ,"Intercept", "intercept"/)
+ sNames = (/"scale", "SCALE", "Scale", "_scale", "scale_factor" \
+           ,"Scale_factor", "Slope" , "slope" /)
+
+
+ offset = 0.0   ; establish as type float
+ scale  = 1.0
+
+ xAtts  = getvaratts(xS)
+ nAtts  = dimsizes(xAtts)
+ 
+ do n=0,nAtts-1
+    if (any(oNames.eq.xAtts(n))) then
+        if (typeof(xS@$xAtts(n)$).eq."float") then
+            offset = xS@$xAtts(n)$
+        else
+            if (typeof(xS@$xAtts(n)$).eq."double") then
+                offset = doubletofloat(xS@$xAtts(n)$)
+            end if
+            if (typeof(xS@$xAtts(n)$).eq."string") then
+                offset = stringtofloat(xS@$xAtts(n)$)
+            end if
+        end if
+        delete(xF@$xAtts(n)$)  ; xF will no longer have offset att
+        break
+    end if
+ end do
+ 
+ do n=0,nAtts-1
+    if (any(sNames.eq.xAtts(n))) then
+        if (typeof(xS@$xAtts(n)$).eq."float") then
+            scale  = xS@$xAtts(n)$
+        else
+            if (typeof(xS@$xAtts(n)$).eq."double") then
+                scale  = doubletofloat(xS@$xAtts(n)$)
+            end if
+            if (typeof(xS@$xAtts(n)$).eq."string") then
+                scale  = stringtofloat(xS@$xAtts(n)$)
+            end if
+        end if
+        delete(xF@$xAtts(n)$)  ; xF will no longer have scale att
+        break
+    end if
+ end do
+
+ if (scale.eq.1.0 .and. offset.eq.0.) then
+     xF = (/ xS /) 
+ else
+     xF = scale*(xS - offset) 
+ end if
+
+ if (isatt(xS,"valid_range") .and. typeof(xS@valid_range).eq."short") then
+     vrS = xS@valid_range
+     vrF = new ( dimsizes(vrS), float)
+     vrF = vrS*scale + offset 
+     delete(xF@valid_range)    ; delete the "short" valid_range
+     xF@valid_range = vrF      ; recreate with float
+ end if
+
+ if (isatt(xF,"missing_value")) then
+     delete(xF@missing_value)
+     xF@missing_value = xF@_FillValue
+ end if
+
+ return (xF)
+
+end
+;******************************************************************
+; D. Shea
+; converts bytes to floats using the "scale" and "offset"
+; attributes (if present) 
+
+; Note: Conventional HDF usage [HDF Users Guide] require that 
+; if both scale_factor and add_offset attributes are present, 
+; the following implementation should be used:
+;      Usage: x = byte2flt_hdf(xB)  where xB is a short
+
+undef("byte2flt_hdf")
+function byte2flt_hdf (xB:byte)
+local xF, oNames, sNames, offset, scale, xAtts, nAtts, n
+begin
+ xF = new ( dimsizes(xB), float)
+ 
+ copy_VarAtts   (xB, xF)
+ copy_VarCoords (xB, xF)
+
+          ; should data be 'scaled' and/or 'offset' ?
+
+          ; names to check
+ oNames = (/"add_offset", "offset", "OFFSET", "Offset", "_offset" \
+           ,"Intercept", "intercept"/)
+ sNames = (/"scale", "SCALE", "Scale", "_scale", "scale_factor" \
+           ,"Scale_factor", "Slope" , "slope" /)
+
+
+ offset = 0.0   ; establish as type float
+ scale  = 1.0
+
+ xAtts  = getvaratts(xB)
+ nAtts  = dimsizes(xAtts)
+ 
+ do n=0,nAtts-1
+    if (any(oNames.eq.xAtts(n))) then
+        if (typeof(xB@$xAtts(n)$).eq."float") then
+            offset = xB@$xAtts(n)$
+        else
+            if (typeof(xB@$xAtts(n)$).eq."double") then
+                offset = doubletofloat(xB@$xAtts(n)$)
+            end if
+            if (typeof(xB@$xAtts(n)$).eq."string") then
+                offset = stringtofloat(xB@$xAtts(n)$)
+            end if
+        end if
+        delete(xF@$xAtts(n)$)  ; xF will no longer have offset att
+        break
+    end if
+ end do
+ 
+ do n=0,nAtts-1
+    if (any(sNames.eq.xAtts(n))) then
+        if (typeof(xB@$xAtts(n)$).eq."float") then
+            scale  = xB@$xAtts(n)$
+        else
+            if (typeof(xB@$xAtts(n)$).eq."double") then
+                scale  = doubletofloat(xB@$xAtts(n)$)
+            end if
+            if (typeof(xB@$xAtts(n)$).eq."string") then
+                scale  = stringtofloat(xB@$xAtts(n)$)
+            end if
+        end if
+        delete(xF@$xAtts(n)$)  ; xF will no longer have scale att
+        break
+    end if
+ end do
+
+ if (scale.eq.1.0 .and. offset.eq.0.) then
+     xF = (/ xB /) 
+ else
+     xF = scale*(xB - offset) 
  end if
 
  if (isatt(xB,"valid_range") .and. typeof(xB@valid_range).eq."short") then
@@ -1786,7 +1974,8 @@ begin
 ;
 ; Compute all 12 monthly averages first. 
 ;
-   aveMonth = new((/nlat,mlon,nmos/),typeof(x))
+   aveMonth = new((/nlat,mlon,nmos/),typeof(x) \
+                                    ,getFillValue(x))
 
    do nmo=0,nmos-1
       aveMonth(:,:,nmo) = dim_avg( x(:,:,nmo:ntim-1:nmos) )
@@ -1845,7 +2034,8 @@ begin
 ;
 ; Compute all 12 monthly standard deviations first. 
 ;
-   stdMonth = new((/nlat,mlon,nmos/),typeof(x))
+   stdMonth = new((/nlat,mlon,nmos/),typeof(x) \
+                                    ,getFillValue(x))
 
    do nmo=0,nmos-1
       stdMonth(:,:,nmo) = dim_stddev( x(:,:,nmo:ntim-1:nmos) )
@@ -2100,7 +2290,7 @@ begin
 ;
 ; Compute all 12 monthly averages first. 
 ;
-  aveMonth = new(nmos,typeof(x))
+  aveMonth = new(nmos,typeof(x),getFillValue(x))
   do nmo=0,nmos-1
      aveMonth(nmo) = dim_avg( x(nmo:ntim-1:nmos) )
   end do
@@ -2144,7 +2334,8 @@ begin
 ;
 ; Compute all 12 monthly averages first. 
 ;
-   aveMonth = new((/klvl,nlat,mlon,nmos/),typeof(x))
+   aveMonth = new((/klvl,nlat,mlon,nmos/),typeof(x) \
+                                         ,getFillValue(x))
 
    do nmo=0,nmos-1
       aveMonth(:,:,:,nmo) = dim_avg( x(:,:,:,nmo:ntim-1:nmos) )
@@ -2203,7 +2394,8 @@ begin
 ;
 ; Compute all 12 monthly standard deviations first. 
 ;
-   stdMonth = new((/klvl,nlat,mlon,nmos/),typeof(x))
+   stdMonth = new((/klvl,nlat,mlon,nmos/),typeof(x) \
+                                         ,getFillValue(x))
 
    do nmo=0,nmos-1
       stdMonth(:,:,:,nmo) = dim_stddev( x(:,:,:,nmo:ntim-1:nmos) )
