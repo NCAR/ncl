@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.20 1999-07-21 22:29:09 haley Exp $
+;      $Id: gsn_code.ncl,v 1.21 1999-08-13 18:51:22 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -20,7 +20,7 @@
 ;;  Description: This script defines all of the basic plotting and
 ;;               miscellaneous functions and procedures used in the 
 ;;               examples in the "Getting started using NCL" documention.
-;;	             The URL for this document is:
+;;               The URL for this document is:
 ;;
 ;;                   http://ngwww.ucar.edu/ngdoc/ng/ug/ncl/gsun/
 ;;
@@ -38,9 +38,15 @@
 ; procedures with the same name.                                        ;
 ;***********************************************************************;
 
+undef("set_attr")
 undef("get_res_eq")
 undef("get_res_ne")
+undef("check_for_draw_and_frame")
+undef("check_for_scale_and_shape")
+undef("check_for_irreg2loglin")
 undef("gsnp_turn_off_tickmarks")
+undef("check_for_tickmarks_off")
+undef("draw_and_frame")
 undef("gsn_open_ps")
 undef("gsn_open_x11")
 undef("gsn_open_ncgm")
@@ -71,15 +77,38 @@ undef("gsn_vector_scalar_map")
 undef("gsn_xy")
 
 
-;
-; Get list of resources that start with res_prefix.
-;
+;***********************************************************************;
+; Procedure : set_attr                                                  ;
+;                res:logical                                            ;
+;           att_name: string                                            ;
+;          att_value                                                    ;
+;                                                                       ;
+; Add resource and its value to a resource list if it isn't already set.;
+;***********************************************************************;
+
+procedure set_attr(res:logical,att_name:string,att_value)
+begin
+  res = True
+  if(.not.isatt(res,att_name))
+    res@$att_name$  = att_value
+  end if
+  return
+end
+
+;***********************************************************************;
+; Function : get_res_eq                                                 ;
+;                res:logical                                            ;
+;             prefix: string                                            ;
+;                                                                       ;
+; Get a list of resources that start with res_prefix.                   ;
+;***********************************************************************;
+
 function get_res_eq(res,res_prefix:string)
 local i, j, ret_res, res2, attnames, res_index
 begin
   ret_res = False
 
-  if((res).and..not.any(ismissing(getvaratts(res))))
+  if(res.and..not.any(ismissing(getvaratts(res))))
     attnames = getvaratts(res)
     res2 = stringtochar(attnames(ind(attnames.ne."_FillValue")))
 ;
@@ -112,15 +141,20 @@ begin
   return(ret_res)
 end
 
-;
-; Get list of resources that don't start with res_prefix.
-;
+;***********************************************************************;
+; Function : get_res_ne                                                 ;
+;                res:logical                                            ;
+;             prefix: string                                            ;
+;                                                                       ;
+; Get a list of resources that don't start with res_prefix.             ;
+;***********************************************************************;
+
 function get_res_ne(res,res_prefix:string)
 local i, ret_res, res2, attnames, res_index
 begin
   ret_res = False
 
-  if((res).and..not.any(ismissing(getvaratts(res))))
+  if(res.and..not.any(ismissing(getvaratts(res))))
     attnames = getvaratts(res)
     res2 = stringtochar(attnames(ind(attnames.ne."_FillValue")))
 
@@ -144,6 +178,161 @@ begin
   return(ret_res)
 end
 
+;***********************************************************************;
+; Procedure : check_for_draw_and_frame                                  ;
+;                res:logical                                            ;
+;           calldraw:logical                                            ;
+;          callframe:logical                                            ;
+;                                                                       ;
+; By default, all of the plotting routines will draw the plot and       ;
+; advance the frame, unless the special resources gsnDraw and/or        ;
+; gsnFrame are set to False. This procedure checks to see if these      ;
+; resources are set, and sets some local logical variables accordingly. ;
+;***********************************************************************;
+
+procedure check_for_draw_and_frame(res2:logical,calldraw:logical,\
+                                   callframe:logical)
+begin
+
+  if(res2.and..not.any(ismissing(getvaratts(res2))))
+    if(isatt(res2,"gsnDraw"))
+      if(.not.res2@gsnDraw)
+        calldraw = False
+      end if
+      delete(res2@gsnDraw)
+    end if
+    if(isatt(res2,"gsnFrame"))
+      if(.not.res2@gsnFrame)
+        callframe = False
+      end if
+      delete(res2@gsnFrame)
+    end if
+  end if
+  return
+end
+
+;***********************************************************************;
+; Procedure : check_for_scale_and_shape                                 ;
+;                res:logical                                            ;
+;              scale:logical                                            ;
+;              shape:logical                                            ;
+;                                                                       ;
+; If gsnScale is set to True, then the tickmarks and the tickmark labels;
+; of both the X and Y axis will be drawn in the same size (by default,  ;
+; they are not drawn the same size if the axes aren't the same length). ;
+;                                                                       ;
+; If gsnShape is set to True, then the axes are scaled so that they are ;
+; proportional to each other. For example, if the X axis values go from ;
+; 1 to 20, and the Y axis values go from 1 to 10, the Y axis will be    ;
+; resized to be half the size of the X axis. If this resource is set to ;
+; True, then "scale" is also automatically set to True.                 ;
+;***********************************************************************;
+    print("spread_colors: invalid plot: defaulting")
+procedure check_for_scale_and_shape(res2:logical,scale:logical,shape:logical)
+begin
+  else
+  if(res2.and..not.any(ismissing(getvaratts(res2))))
+; Check if the plot should be reshaped or scaled.
+;
+    if(isatt(res2,"gsnScale"))
+      if(res2@gsnScale)
+        scale = True
+      end if
+      delete(res2@gsnScale)
+    end if
+  if (min_index .lt. 0)
+    if(isatt(res2,"gsnShape"))
+      if(res2@gsnShape)
+        shape = True
+        scale = True
+      end if
+      delete(res2@gsnShape)
+    end if
+
+  return
+  reverse = False
+  if(maxix.lt.minix)
+    reverse = True
+; something like "1.00001e-08".  But, we also have to make sure we don't;
+; have values like 1e-10, 1e-9, etc, where we *do* want "1e-10" label   ;
+; and not a "0". Don't even bother with checking if the minimum         ;
+; difference between the levels is less than 1e-5.                      ;
+;***********************************************************************;
+procedure fix_zero_contour(levels)
+begin
+  nlevels = dimsizes(levels)
+  delta_levels = min( levels(1:nlevels-1) - levels(0:nlevels-2) )
+  if(delta_levels.ge.1e-5)
+    do n=1,nlevels-2
+      if(fabs(levels(n)).le.1.e-5.and.levels(n-1).lt.0..and.levels(n+1).gt.0.)
+        levels(n) = 0.0
+      end if
+    end do
+  end if
+
+procedure check_for_irreg2loglin(res:logical,xlinear:logical,ylinear:logical,\
+end
+
+;***********************************************************************;
+  if(res.and..not.any(ismissing(getvaratts(res))))
+;
+; Check if a linear or log axis is wanted (this should only be used if
+; irregularly-spaced data is used for the X or Y axis (i.e. if sfXArray
+; or sfYArray are set).
+;
+    if(isatt(res,"gsnXAxisIrregular2Linear"))
+      if(res@gsnXAxisIrregular2Linear)
+        xlinear = True
+      end if
+      delete(res@gsnXAxisIrregular2Linear)
+    end if
+;                                                                       ;
+    if(isatt(res,"gsnYAxisIrregular2Linear"))
+      if(res@gsnYAxisIrregular2Linear)
+        ylinear = True
+      end if
+      delete(res@gsnYAxisIrregular2Linear)
+    end if
+
+    if(isatt(res,"gsnXAxisIrregular2Log"))
+      if(res@gsnXAxisIrregular2Log)
+        xlog = True
+      end if
+      delete(res@gsnXAxisIrregular2Log)
+    end if
+
+    if(isatt(res,"gsnYAxisIrregular2Log"))
+      if(res@gsnYAxisIrregular2Log)
+        ylog = True
+      end if
+      delete(res@gsnYAxisIrregular2Log)
+    end if
+
+    if(ylog.and.ylinear)
+      print("Error: You cannot set both gsnYAxisIrregular2Log")
+      print("and gsnYAxisIrregular2Linear to True.")
+      exit
+    end if
+procedure check_for_irreg2loglin(res:logical,xlinear:logical, \
+    if(xlog.and.xlinear)
+       print("Error: You cannot set both gsnXAxisIrregular2Log")
+       print("and gsnXAxisIrregular2Linear to True.")
+       exit
+    end if
+  end if
+                                 ylinear:logical,\
+                                 xlog:logical,ylog:logical)
+begin
+  dy = scale * (top - vpy) ; Calculate distance from plot's top position
+                           ; to its topmost annotation.
+;
+; Calculate new viewport coordinates.
+; 
+  new_uw = uw * scale
+  new_uh = uh * scale
+  new_ux =     .5 * (1-new_uw)
+  new_uy = 1 - .5 * (1-new_uh)
+
 
   new_vpx = new_ux + dx
   res@tmXBBorderOn = False 
@@ -157,6 +346,56 @@ end
 
   if(xrange.lt.yrange)
     new_width  = width * (xrange/yrange)
+; Procedure : gsnp_turn_off_tickmarks                                   ;
+
+  if(xmlength.ne.0..and.ymlength.ne.0.)
+    minor_length = (ymlength+xmlength)/2. 
+    xmlength = minor_length
+    ymlength = minor_length
+; resource, and sets the resources necessary to accomplish this mission.;
+
+
+  setvalues plot
+    "tiYAxisFontHeightF"   : (xfont+yfont)/2.
+    "tmXBLabelFontHeightF" : (xbfont+ylfont)/2.
+    "tmXBMajorLengthF"     : xlength
+    "tmXBMinorLengthF"     : xmlength
+  if(res.and.isatt(res,"gsnTickMarksOn")) then
+    if(.not.res@gsnTickMarksOn)
+      gsnp_turn_off_tickmarks(res)
+    end if
+    delete(res@gsnTickMarksOn)
+  end setvalues
+end
+
+
+;
+; Return device coordinates and the orientation.
+;
+  coords = tointeger((/lx,ly,ux,uy/))
+  coords@gsnPaperOrientation = lc_orient
+;
+;
+  if(is_debug)
+   print("-------Device coordinates for PostScript-------")
+   print("    wkDeviceLowerX = " + coords(0))
+   print("    wkDeviceLowerY = " + coords(1))
+   print("    wkOrientation  = " + coords@gsnPaperOrientation)
+
+  end if
+                         callframe:logical)
+  return(coords)
+      setvalues wks
+        "wkOrientation"  : coords@gsnPaperOrientation
+        "wkDeviceLowerX" : coords(0)
+        "wkDeviceLowerY" : coords(1)
+        "wkDeviceUpperX" : coords(2)
+        "wkDeviceUpperY" : coords(3)
+      end setvalues
+  return
+    else
+;
+; If the workstation is NCGM or X11, then maximize the bounding box.
   end if
 ;
 ; Indicate here whether the panel resources have been set.
@@ -408,7 +647,7 @@ i, j, old_vpx, old_vpy, old_vpwidth, old_vpheight, callframe
     y_bot = 0.0
     callframe = True
 ;***********************************************************************;
-	if(resources)
+    if(resources)
       if(isatt(resources,"gsnFrame").and..not.resources@gsnFrame)
           callframe = False
       end if
@@ -488,7 +727,10 @@ end
       print("Warning: gsn_panel: you have more plots than you have panels.")
       print("Only " + npanels + " plots will be drawn.")
     end if
-
+;
+; We assume all plots are the same size, so if we get the size of
+; the first one, this should be the size of all of them.
+;
     getvalues plot(0)
       "vpXF"      : vpx       ; Get original view port coordinates.
       "vpYF"      : vpy
@@ -585,7 +827,7 @@ begin
     end do    ; end of rows
 
     if(callframe)
-        frame(wks)   ; Advance the frame.
+      frame(wks)   ; Advance the frame.
     end if
 end
 
@@ -647,10 +889,10 @@ begin
 ; Function : gsn_contour                                                ;
 local i, attnames, data_object, plot_object, res, sf_res_index, \
 ;                  data: 2-dimensional data                             ;
-force_xaxis_linear, force_yaxis_linear, force_xaxis_log, force_yaxis_log, \
-trxmin, trxmax, trymin, trymax, res2
+;             resources: optional resources                             ;
+trxmin, trxmax, trymin, trymax, res2, scale, shape
 ; This function creates and draws a contour plot to the workstation     ;
-    calldraw = True
+    calldraw  = True
     callframe = True
     scale     = False
     shape     = False
@@ -658,10 +900,10 @@ trxmin, trxmax, trymin, trymax, res2
 ; "data" is the 2-dimensional data to be contoured, and "resources" is  ;
 ; an optional list of resources. The id of the contour plot is returned.;
 ;                                                                       ;
-    force_xaxis_linear = False
-    force_yaxis_linear = False
-    force_xaxis_log    = False
-    force_yaxis_log    = False
+; Special resources ("gsn" prefix) allowed:                             ;
+;                                                                       ;
+;   gsnDraw                                                             ;
+;   gsnFrame                                                            ;
 ;   gsnShape                                                            ;
 ;   gsnScale                                                            ;
 ;   gsnSpreadColors                                                     ;
@@ -693,101 +935,14 @@ begin
 
     if(isatt(data,"_FillValue")) then
         setvalues data_object
-        setvalues plot_object
-            "tiMainString" : data@long_name
-        end setvalues
+            "sfMissingValueV" :data@_FillValue
         end setvalues
     end if
-    if((res2).and..not.any(ismissing(getvaratts(res2))))
-
-; Check if frame and/or draw are not supposed to be called.
-
-        if(isatt(res2,"gsnDraw"))
-            if(.not.res2@gsnDraw)
-                calldraw = False
-            end if
-            delete(res2@gsnDraw)
-        end if
-
-        if(isatt(res2,"gsnFrame"))
-            if(.not.res2@gsnFrame)
-                callframe = False
-            end if
-            delete(res2@gsnFrame)
-        end if
-
-; Check if the plot should be reshaped or scaled.
-
-        if(isatt(res2,"gsnScale"))
-            if(res2@gsnScale)
-                scale = True
-            end if
-            delete(res2@gsnScale)
-        end if
-
-        if(isatt(res2,"gsnShape"))
-            if(res2@gsnShape)
-                shape = True
-                scale = True
-            end if
-            delete(res2@gsnShape)
-        end if
-
-;
-; Check if a linear or log axis is wanted (this should only be used if
-; irregularly-spaced data is used for the X or Y axis (i.e. if sfXArray
-; or sfYArray are set).
-;
-        if(isatt(res2,"gsnXAxisIrregular2Linear"))
-          if(res2@gsnXAxisIrregular2Linear)
-            force_xaxis_linear = True
-          end if
-          delete(res2@gsnXAxisIrregular2Linear)
-        end if
-
-        if(isatt(res2,"gsnYAxisIrregular2Linear"))
-          if(res2@gsnYAxisIrregular2Linear)
-            force_yaxis_linear = True
-          end if
-          delete(res2@gsnYAxisIrregular2Linear)
-        end if
-
-        if(isatt(res2,"gsnXAxisIrregular2Log"))
-          if(res2@gsnXAxisIrregular2Log)
-            force_xaxis_log = True
-          end if
-          delete(res2@gsnXAxisIrregular2Log)
-        end if
-
-        if(isatt(res2,"gsnYAxisIrregular2Log"))
-          if(res2@gsnYAxisIrregular2Log)
-            force_yaxis_log = True
-          end if
-          delete(res2@gsnYAxisIrregular2Log)
-        end if
-
-        if(force_yaxis_log.and.force_yaxis_linear)
-         print("Error: gsn_contour: you cannot set both gsnYAxisIrregular2Log")
-         print("and gsnYAxisIrregular2Linear to True.")
-         exit
-       end if
-
-        if(force_xaxis_log.and.force_xaxis_linear)
-         print("Error: gsn_contour: you cannot set both gsnXAxisIrregular2Log")
-         print("and gsnXAxisIrregular2Linear to True.")
-         exit
-       end if
-
-; Check if turning tickmarks off.
-
-        if(isatt(res2,"gsnTickMarksOn"))
-            if(.not.res2@gsnTickMarksOn)
-              gsnp_turn_off_tickmarks(res2)
-            end if
-            delete(res2@gsnTickMarksOn)
-        end if
-
-    end if
+    check_for_draw_and_frame(res2,calldraw,callframe)
+    check_for_scale_and_shape(res2,scale,shape)
+        "trXTensionF"       : xtension
+        "trYTensionF"       : ytension
+        "cnScalarFieldData" : data_object
     end create
     sfres = get_res_eq(res2,"sf")
 
@@ -797,8 +952,7 @@ begin
     if(cnres.and..not.any(ismissing(getvaratts(cnres))))
       attsetvalues(plot_object,cnres)
     end if
-    if(force_xaxis_linear.or.force_xaxis_log.or. \
-       force_yaxis_linear.or.force_yaxis_log)
+    maxbb     = get_bb_res(res2)
     shape     = get_res_value(res2,"gsnShape",False)
     scale     = get_res_value(res2,"gsnScale",shape)
 
@@ -872,9 +1026,7 @@ begin
       attsetvalues(plot_object,cnres2)
     end if
 
-    if(force_xaxis_linear.or.force_xaxis_log.or. \
-       force_yaxis_linear.or.force_yaxis_log)
-
+    if(force_x_linear.or.force_x_log.or.force_y_linear.or.force_y_log)
         llres = get_res_eq(res2,(/"tr","vp"/))
     end if
 ;
@@ -886,8 +1038,8 @@ begin
     end if
 ;
 ; If gsnScale was set to True, then make sure the X and Y axis labels
-        "trXLog"  : force_xaxis_log
-        "trYLog"  : force_yaxis_log
+; and tick marks are the same size.
+; 
     if(scale)
       gsnp_scale_plot(plot_object)
     end if
@@ -901,13 +1053,7 @@ begin
       overlay_plot_object = plot_object
       delete(plot_object)
 
-    if(calldraw)
-        draw(plot_object)
-    end if
-
-    if(callframe)
-        frame(wks)
-    end if
+    draw_and_frame(wks,plot_object,calldraw,callframe)
         "trXMinF"    : trxmin
         "trXMaxF"    : trxmax
         "trYMinF"    : trymin
@@ -931,11 +1077,12 @@ begin
 ;                   wks: workstation object                             ;
 ;                  data: 2-dimensional data                             ;
 local i, attnames, data_object, contour_object, res, sf_res_index, \
-cn_res_index, mp_res_index, map_object, res2
+cn_res_index, mp_res_index, map_object, res2, scale, shape
 ; This function creates and draws a contour plot over a map plot to the ;
     calldraw  = True
     callframe = True
     scale     = False
+    shape     = False
 ; workstation "wks" (the variable returned from a previous call to      ;
 ; "gsn_open_wks").  "data" is the 2-dimensional data to be contoured,   ;
 ; and "resources" is an optional list of resources. The id of the map   ;
@@ -968,9 +1115,7 @@ function gsn_contour_map(wks:graphic,data[*][*]:numeric,\
             "sfMissingValueV" :data@_FillValue
         end setvalues
     end if
-        setvalues contour_object
-            "tiMainString" : data@long_name
-        end setvalues
+
     sfres = get_res_eq(res2,"sf")
     attsetvalues_check(data_object,sfres)
 ;
@@ -978,31 +1123,8 @@ function gsn_contour_map(wks:graphic,data[*][*]:numeric,\
 ; any) when you create the plot. This works better than setting
 ; them later.
 ;
-    if((res2).and..not.any(ismissing(getvaratts(res2))))
-
-; Check if frame and/or draw are not supposed to be called.
-
-        if(isatt(res2,"gsnDraw"))
-            if(.not.res2@gsnDraw)
-                calldraw = False
-            end if
-            delete(res2@gsnDraw)
-        end if
-        if(isatt(res2,"gsnFrame"))
-            if(.not.res2@gsnFrame)
-                callframe = False
-            end if
-            delete(res2@gsnFrame)
-        end if
-
-        if(isatt(res2,"gsnScale"))
-            if(res2@gsnScale)
-                scale = True
-            end if
-            delete(res2@gsnScale)
-        end if
-
-    end if
+    check_for_draw_and_frame(res2,calldraw,callframe)
+    check_for_scale_and_shape(res2,scale,shape)
 
     sfres = get_res_eq(res2,"sf")
 ; Check for existence of data@long_name and use it in a title it
@@ -1048,13 +1170,7 @@ function gsn_contour_map(wks:graphic,data[*][*]:numeric,\
         end setvalues
     end if
 
-    if(calldraw)
-        draw(map_object)
-    end if
-
-    if(callframe)
-        frame(wks)
-    end if
+    draw_and_frame(wks,map_object,calldraw,callframe)
 
 ; Return plot object and data object (as attribute of plot object).
 
@@ -1097,7 +1213,21 @@ begin
 
     lbres = get_res_eq(resources,(/"lb","vp"/))
     if(lbres.and..not.any(ismissing(getvaratts(lbres))))
-      attsetvalues(lbid,lbres)
+
+; A special test is needed for the resource lbLabelFontHeightF.
+; If it is set, then we need to turn off lbAutoManage.
+
+      if(isatt(lbres,"lbLabelFontHeightF"))
+        setvalues lbid
+          "lbAutoManage"       : False
+          "lbLabelJust"        : "CenterCenter"
+          "lbLabelFontHeightF" : lbres@lbLabelFontHeightF
+        end setvalues
+        delete(lbres@lbLabelFontHeightF)
+      end if
+      if(lbres.and..not.any(ismissing(getvaratts(lbres))))
+        attsetvalues(lbid,lbres)
+      end if
     end if
 
 ; Draw labelbar.
@@ -1122,7 +1252,7 @@ end
 function gsn_map(wks:graphic, projection:string, resources:logical )
 local i, attnames, plot_object, res2
 begin
-    calldraw = True
+    calldraw  = True
     callframe = True
     res2      = resources
 
@@ -1140,36 +1270,13 @@ begin
 
 ; Check to see if any resources were set.
 
-    if((res2).and..not.any(ismissing(getvaratts(res2))))
+    check_for_draw_and_frame(res2,calldraw,callframe)
 
-; Check if frame and/or draw are not supposed to be called.
-
-        if(isatt(res2,"gsnDraw"))
-            if(.not.res2@gsnDraw)
-                calldraw = False
-            end if
-            delete(res2@gsnDraw)
-        end if
-        if(isatt(res2,"gsnFrame"))
-            if(.not.res2@gsnFrame)
-                callframe = False
-            end if
-            delete(res2@gsnFrame)
-        end if
-
-    end if
-
-    if((res2).and..not.any(ismissing(getvaratts(res2))))
+    if(res2.and..not.any(ismissing(getvaratts(res2))))
       attsetvalues(plot_object,res2)
     end if
 
-    if(calldraw)
-      draw(plot_object)
-    end if
-
-    if(callframe)
-      frame(wks)
-    end if
+    draw_and_frame(wks,plot_object,calldraw,callframe)
 
 ; Return plot object.
 
@@ -1530,8 +1637,8 @@ local i, plot_object, res2
 ;***********************************************************************;
 ; Function : gsn_streamline                                             ;
 local i,attnames,data_object,plot_object,res,vf_res_index,st_res_index, \
-force_xaxis_linear, force_yaxis_linear, force_xaxis_log, force_yaxis_log, \
-trxmin, trxmax, trymin, trymax, ll_res_index, llres, res2
+;                     u: 2-dimensional U array                          ;
+;                     v: 2-dimensional V array                          ;
 ;               resources: optional resources                           ;
     calldraw  = True
     callframe = True
@@ -1540,10 +1647,10 @@ trxmin, trxmax, trymin, trymax, ll_res_index, llres, res2
 ;                                                                       ;
 ; This function creates and draws a streamline plot to the workstation  ;
 ; "wks" (the variable returned from a previous call to "gsn_open_wks"). ;
-    force_xaxis_linear = False
-    force_yaxis_linear = False
-    force_xaxis_log    = False
-    force_yaxis_log    = False
+; "u" and "v" are the 2-dimensional arrays to be streamlined, and       ;
+; "resources" is an optional list of resources. The id of the streamline;
+; plot is returned.                                                     ;
+;                                                                       ;
 ; Special resources ("gsn" prefix) allowed:                             ;
 ;                                                                       ;
 ;   gsnDraw                                                             ;
@@ -1577,94 +1684,10 @@ begin
     data_object = create wksname + "_data" vectorFieldClass noparent
         "vfUDataArray" : u
         "vfVDataArray" : v
-    if((res2).and..not.any(ismissing(getvaratts(res2))))
-
-; Check if frame and/or draw are not supposed to be called.
-
-        if(isatt(res2,"gsnDraw"))
-            if(.not.res2@gsnDraw)
-                calldraw = False
-            end if
-            delete(res2@gsnDraw)
-        end if
-        if(isatt(res2,"gsnFrame"))
-            if(.not.res2@gsnFrame)
-                callframe = False
-            end if
-            delete(res2@gsnFrame)
-        end if
-
-; Check if the plot should be reshaped or scaled.
-
-        if(isatt(res2,"gsnScale"))
-            if(res2@gsnScale)
-                scale = True
-            end if
-            delete(res2@gsnScale)
-        end if
-
-        if(isatt(res2,"gsnShape"))
-            if(res2@gsnShape)
-                shape = True
-                scale = True
-            end if
-            delete(res2@gsnShape)
-        end if
-
-;
-; Check if a linear or log axis is wanted (this should only be used if
-; irregularly-spaced data is used for the X or Y axis (i.e. if vfXArray
-; or vfYArray are set).
-;
-        if(isatt(res2,"gsnXAxisIrregular2Linear"))
-          if(res2@gsnXAxisIrregular2Linear)
-            force_xaxis_linear = True
-          end if
-          delete(res2@gsnXAxisIrregular2Linear)
-        end if
-
-        if(isatt(res2,"gsnYAxisIrregular2Linear"))
-          if(res2@gsnYAxisIrregular2Linear)
-            force_yaxis_linear = True
-          end if
-          delete(res2@gsnYAxisIrregular2Linear)
-        end if
-
-        if(isatt(res2,"gsnXAxisIrregular2Log"))
-          if(res2@gsnXAxisIrregular2Log)
-            force_xaxis_log = True
-          end if
-          delete(res2@gsnXAxisIrregular2Log)
-        end if
-
-        if(isatt(res2,"gsnYAxisIrregular2Log"))
-          if(res2@gsnYAxisIrregular2Log)
-            force_yaxis_log = True
-          end if
-          delete(res2@gsnYAxisIrregular2Log)
-        end if
-
-        if(force_yaxis_log.and.force_yaxis_linear)
-         print("Error: gsn_streamline: you cannot set both gsnYAxisIrregular2Log")
-         print("and gsnYAxisIrregular2Linear to True.")
-         exit
-       end if
-
-        if(force_xaxis_log.and.force_xaxis_linear)
-         print("Error: gsn_streamline: you cannot set both gsnXAxisIrregular2Log")
-         print("and gsnXAxisIrregular2Linear to True.")
-         exit
-       end if
-
-; Check if turning tickmarks off.
-
-        if(isatt(res2,"gsnTickMarksOn"))
-            if(.not.res2@gsnTickMarksOn)
-              gsnp_turn_off_tickmarks(res2)
-            end if
-            delete(res2@gsnTickMarksOn)
-        end if
-
+    check_for_draw_and_frame(res2,calldraw,callframe)
+    check_for_scale_and_shape(res2,scale,shape)
+            "vfMissingUValueV" :u@_FillValue
+        end setvalues
     end if
     if(isatt(v,"_FillValue")) then
         setvalues data_object
@@ -1676,8 +1699,7 @@ begin
       attsetvalues(plot_object,stres)
     end if
 
-    if(force_xaxis_linear.or.force_xaxis_log.or. \
-       force_yaxis_linear.or.force_yaxis_log)
+; Create plot object.
 
     plot_object = create wksname + "_stream" streamlinePlotClass wks
         "stVectorFieldData" : data_object
@@ -1751,22 +1773,20 @@ begin
 
     if(force_x_linear.or.force_x_log.or.force_y_linear.or.force_y_log)
         llres = get_res_eq(res2,(/"tr","vp"/))
-     if(force_xaxis_linear.or.force_xaxis_log.or. \
-        force_yaxis_linear.or.force_yaxis_log)
-; If gsnShape was set to True, then resize the X or Y axis so that
-       overlay_plot_object = plot_object
-       delete(plot_object)
+    end if
 
-       getvalues overlay_plot_object
-         "trXMinF"    : trxmin
-         "trXMaxF"    : trxmax
-         "trYMinF"    : trymin
-         "trYMaxF"    : trymax
-       end getvalues
+;
+; If gsnShape was set to True, then resize the X or Y axis so that
+; the scales are proportionally correct.
+; 
+    if(shape)
+      gsnp_shape_plot(plot_object)
+    end if
+
 ;
 ; If gsnScale was set to True, then make sure the X and Y axis labels
-        "trXLog"  : force_xaxis_log
-        "trYLog"  : force_yaxis_log
+; and tick marks are the same size.
+; 
     if(scale)
       gsnp_scale_plot(plot_object)
     end if
@@ -1780,13 +1800,7 @@ begin
       overlay_plot_object = plot_object
       delete(plot_object)
 
-    if(calldraw)
-        draw(plot_object)
-    end if
-
-    if(callframe)
-        frame(wks)
-    end if
+    draw_and_frame(wks,plot_object,calldraw,callframe)
         "trXMinF"    : trxmin
         "trXMaxF"    : trxmax
         "trYMinF"    : trymin
@@ -1813,9 +1827,10 @@ begin
 local i, attnames, data_object, contour_object, res, vf_res_index, \
 ;                     u: 2-dimensional U data                           ;
 ;                     v: 2-dimensional V data                           ;
-    calldraw = True
+    calldraw  = True
     callframe = True
     scale     = False
+    shape     = False
 ;               resources: optional resources                           ;
 ;                                                                       ;
 ; This function creates and draws a streamline plot over a map plot to  ;
@@ -1855,30 +1870,8 @@ begin
 ; Check for missing values.
 
     if(isatt(u,"_FillValue")) then
-    if((res2).and..not.any(ismissing(getvaratts(res2))))
-
-; Check if frame and/or draw are not supposed to be called.
-
-        if(isatt(res2,"gsnDraw"))
-            if(.not.res2@gsnDraw)
-                calldraw = False
-            end if
-            delete(res2@gsnDraw)
-        end if
-        if(isatt(res2,"gsnFrame"))
-            if(.not.res2@gsnFrame)
-                callframe = False
-            end if
-            delete(res2@gsnFrame)
-        end if
-
-        if(isatt(res2,"gsnScale"))
-            if(res2@gsnScale)
-                scale = True
-            end if
-            delete(res2@gsnScale)
-        end if
-    end if
+    check_for_draw_and_frame(res2,calldraw,callframe)
+    check_for_scale_and_shape(res2,scale,shape)
         setvalues data_object
             "vfMissingVValueV" :v@_FillValue
     mpres = get_res_ne(res2,(/"mp","vp"/))
@@ -1924,13 +1917,7 @@ begin
         end setvalues
     callframe = get_res_value(res2,"gsnFrame",True)
     maxbb     = get_bb_res(res2)
-    if(calldraw)
-        draw(map_object)
-    end if
-
-    if(callframe)
-        frame(wks)
-    end if
+    draw_and_frame(wks,map_object,calldraw,callframe)
     scale     = get_res_value(res2,"gsnScale",shape)
 
     vfres = get_res_eq(res2,"vf")
@@ -2059,20 +2046,20 @@ begin
 ;                     u: 2-dimensional U array                          ;
 ;                     v: 2-dimensional V array                          ;
 local i,attnames,data_object,plot_object,res,vf_res_index,vc_res_index, \
-force_xaxis_linear, force_yaxis_linear, force_xaxis_log, force_yaxis_log, \
+force_x_linear, force_y_linear, force_x_log, force_y_log, \
 ; This function creates and draws a vector plot to the workstation "wks";
 ; (the variable returned from a previous call to "gsn_open_wks").  "u"  ;
-    calldraw = True
+    calldraw  = True
     callframe = True
     scale     = False
     shape     = False
 ; and "v" are the 2-dimensional arrays to be vectorized, and "resources";
 ; is an optional list of resources. The id of the vector plot is        ;
 ; returned.                                                             ;
-    force_xaxis_linear = False
-    force_yaxis_linear = False
-    force_xaxis_log    = False
-    force_yaxis_log    = False
+;                                                                       ;
+; Special resources ("gsn" prefix) allowed:                             ;
+;                                                                       ;
+;   gsnDraw                                                             ;
 ;   gsnFrame                                                            ;
 ;   gsnShape                                                            ;
 ;   gsnScale                                                            ;
@@ -2106,100 +2093,15 @@ begin
     data_object = create wksname + "_data" vectorFieldClass noparent
         "vfUDataArray" : u
         "vfVDataArray" : v
-    if((res2).and..not.any(ismissing(getvaratts(res2))))
-
-; Check if frame and/or draw are not supposed to be called.
-
-        if(isatt(res2,"gsnDraw"))
-          if(.not.res2@gsnDraw)
-            calldraw = False    
-          end if
-          delete(res2@gsnDraw)
-        end if
-        if(isatt(res2,"gsnFrame"))
-            if(.not.res2@gsnFrame)
-                callframe = False
-            end if
-            delete(res2@gsnFrame)
-        end if
-
-; Check if the plot should be reshaped or scaled.
-
-        if(isatt(res2,"gsnScale"))
-            if(res2@gsnScale)
-                scale = True
-            end if
-            delete(res2@gsnScale)
-        end if
-
-        if(isatt(res2,"gsnShape"))
-            if(res2@gsnShape)
-                shape = True
-                scale = True
-            end if
-            delete(res2@gsnShape)
-        end if
-
-;
-; Check if a linear or log axis is wanted (this should only be used if
-; irregularly-spaced data is used for the X or Y axis (i.e. if vfXArray
-; or vfYArray are set).
-;
-        if(isatt(res2,"gsnXAxisIrregular2Linear"))
-          if(res2@gsnXAxisIrregular2Linear)
-            force_xaxis_linear = True
-          end if
-          delete(res2@gsnXAxisIrregular2Linear)
-        end if
-
-        if(isatt(res2,"gsnYAxisIrregular2Linear"))
-          if(res2@gsnYAxisIrregular2Linear)
-            force_yaxis_linear = True
-          end if
-          delete(res2@gsnYAxisIrregular2Linear)
-        end if
-
-        if(isatt(res2,"gsnXAxisIrregular2Log"))
-          if(res2@gsnXAxisIrregular2Log)
-            force_xaxis_log = True
-          end if
-          delete(res2@gsnXAxisIrregular2Log)
-        end if
-
-        if(isatt(res2,"gsnYAxisIrregular2Log"))
-          if(res2@gsnYAxisIrregular2Log)
-            force_yaxis_log = True
-          end if
-          delete(res2@gsnYAxisIrregular2Log)
-        end if
-
-        if(force_yaxis_log.and.force_yaxis_linear)
-         print("Error: gsn_vector: you cannot set both gsnYAxisIrregular2Log")
-         print("and gsnYAxisIrregular2Linear to True.")
-         exit
-       end if
-
-        if(force_xaxis_log.and.force_xaxis_linear)
-         print("Error: gsn_vector: you cannot set both gsnXAxisIrregular2Log")
-         print("and gsnXAxisIrregular2Linear to True.")
-         exit
-       end if
-
-; Check if turning tickmarks off.
-
-        if(isatt(res2,"gsnTickMarksOn"))
-            if(.not.res2@gsnTickMarksOn)
-              gsnp_turn_off_tickmarks(res2)
-            end if
-            delete(res2@gsnTickMarksOn)
-        end if
-
-    end if
+    check_for_draw_and_frame(res2,calldraw,callframe)
+    check_for_scale_and_shape(res2,scale,shape)
+    if(isatt(v,"_FillValue")) then
+        setvalues data_object
+            "vfMissingVValueV" :v@_FillValue
         end setvalues
     end if
 
-    if(force_xaxis_linear.or.force_xaxis_log.or. \
-       force_yaxis_linear.or.force_yaxis_log)
+; Create plot object.
 
     plot_object = create wksname + "_vector" vectorPlotClass wks
         "vcVectorFieldData" : data_object
@@ -2280,22 +2182,20 @@ begin
       vcres2 = True
       set_attr(vcres2,"vcLevelColors",\
                spread_colors(wks,plot_object,min_index,max_index))
-     if(force_xaxis_linear.or.force_xaxis_log.or. \
-        force_yaxis_linear.or.force_yaxis_log)
+      attsetvalues(plot_object,vcres2)
+    end if
+;
 ; If gsnShape was set to True, then resize the X or Y axis so that
-       overlay_plot_object = plot_object
-       delete(plot_object)
+; the scales are proportionally correct.
+; 
+    if(shape)
+      gsnp_shape_plot(plot_object)
+    end if
 
-       getvalues overlay_plot_object
-         "trXMinF"    : trxmin
-         "trXMaxF"    : trxmax
-         "trYMinF"    : trymin
-         "trYMaxF"    : trymax
-       end getvalues
 ;
 ; If gsnScale was set to True, then make sure the X and Y axis labels
-        "trXLog"  : force_xaxis_log
-        "trYLog"  : force_yaxis_log
+; and tick marks are the same size.
+; 
     if(scale)
       gsnp_scale_plot(plot_object)
     end if
@@ -2309,13 +2209,7 @@ begin
       overlay_plot_object = plot_object
       delete(plot_object)
 
-    if(calldraw)
-        draw(plot_object)
-    end if
-
-    if(callframe)
-        frame(wks)
-    end if
+    draw_and_frame(wks,plot_object,calldraw,callframe)
         "trXMinF"    : trxmin
         "trXMaxF"    : trxmax
         "trYMinF"    : trymin
@@ -2345,9 +2239,10 @@ begin
 local i, attnames, vfdata_object, sfdata_object, contour_object, res, \
 ; workstation "wks" (the variable returned from a previous call to      ;
 ; "gsn_open_wks").  "u" and "v" are the 2-dimensional arrays to be      ;
-    calldraw = True
+    calldraw  = True
     callframe = True
     scale     = False
+    shape     = False
 ; vectorized, and "data" is the scalar field to be contoured.           ;
 ; "resources" is an optional list of resources. The id of the vector    ;
 ; plot is returned.                                                     ;
@@ -2404,30 +2299,8 @@ begin
     sfdata_object = create wksname + "_sfdata" scalarFieldClass noparent
         "sfDataArray" : data
     end create
-    if((res2).and..not.any(ismissing(getvaratts(res2))))
-
-; Check if frame and/or draw are not supposed to be called.
-
-        if(isatt(res2,"gsnDraw"))
-            if(.not.res2@gsnDraw)
-                calldraw = False
-            end if
-            delete(res2@gsnDraw)
-        end if
-        if(isatt(res2,"gsnFrame"))
-            if(.not.res2@gsnFrame)
-                callframe = False
-            end if
-            delete(res2@gsnFrame)
-        end if
-
-        if(isatt(res2,"gsnScale"))
-            if(res2@gsnScale)
-                scale = True
-            end if
-            delete(res2@gsnScale)
-        end if
-    end if
+    check_for_draw_and_frame(res2,calldraw,callframe)
+    check_for_scale_and_shape(res2,scale,shape)
 
 ; Create vector plot object.
 
@@ -2477,13 +2350,7 @@ begin
         end setvalues
     if(sprdcols)
       cnres2 = True
-    if(calldraw)
-      draw(vector_object)
-    end if
-
-    if(callframe)
-      frame(wks)
-    end if
+    draw_and_frame(wks,vector_object,calldraw,callframe)
 
       set_attr(cnres2,"cnFillColors",\
                spread_colors(wks,contour_object,min_index,max_index))
@@ -2515,9 +2382,10 @@ begin
 local i, attnames, vfdata_object, sfdata_object, contour_object, res, \
 ; to the workstation "wks" (the variable returned from a previous call  ;
 ; to "gsn_open_wks").  "u" and "v" are the 2-dimensional arrays to be   ;
-    calldraw = True
+    calldraw  = True
     callframe = True
     scale     = False
+    shape     = False
 ; vectorized, and "data" is the scalar field to be contoured.           ;
 ; "resources" is an optional list of resources. The id of the map plot  ;
 ; is returned.                                                          ;
@@ -2578,30 +2446,8 @@ begin
 ; Check for a missing value.
 
     if(isatt(data,"_FillValue")) then
-    if((res2).and..not.any(ismissing(getvaratts(res2))))
-
-; Check if frame and/or draw are not supposed to be called.
-
-        if(isatt(res2,"gsnDraw"))
-            if(.not.res2@gsnDraw)
-                calldraw = False
-            end if
-            delete(res2@gsnDraw)
-        end if
-        if(isatt(res2,"gsnFrame"))
-            if(.not.res2@gsnFrame)
-                callframe = False
-            end if
-            delete(res2@gsnFrame)
-        end if
-
-        if(isatt(res2,"gsnScale"))
-            if(res2@gsnScale)
-                scale = True
-            end if
-            delete(res2@gsnScale)
-        end if
-    end if
+    check_for_draw_and_frame(res2,calldraw,callframe)
+    check_for_scale_and_shape(res2,scale,shape)
         "vcVectorFieldData" : vfdata_object
     end create
 
@@ -2656,13 +2502,7 @@ begin
         end setvalues
       cnres2 = True
       vcres2 = True
-    if(calldraw)
-        draw(map_object)
-    end if
-
-    if(callframe)
-        frame(wks)
-    end if
+    draw_and_frame(wks,map_object,calldraw,callframe)
       set_attr(cnres2,"cnFillColors",\
                spread_colors(wks,contour_object,min_index,max_index))
       set_attr(vcres2,"vcLevelColors",\
@@ -2692,9 +2532,10 @@ begin
 local i, attnames, data_object, contour_object, res, vf_res_index, \
 vc_res_index, mp_res_index, map_object, res2
 ; This function creates and draws a vector plot over a map plot to the  ;
-    calldraw = True
+    calldraw  = True
     callframe = True
     scale     = False
+    shape     = False
 ; workstation "wks" (the variable returned from a previous call to      ;
 ; "gsn_open_wks").  "u" and "v" are the 2-dimensional arrays to be      ;
 ; vectorized, and "resources" is an optional list of resources. The id  ;
@@ -2734,30 +2575,8 @@ begin
 ; Check for missing values.
 
     if(isatt(u,"_FillValue")) then
-    if((res2).and..not.any(ismissing(getvaratts(res2))))
-
-; Check if frame and/or draw are not supposed to be called.
-
-        if(isatt(res2,"gsnDraw"))
-            if(.not.res2@gsnDraw)
-                calldraw = False
-            end if
-            delete(res2@gsnDraw)
-        end if
-        if(isatt(res2,"gsnFrame"))
-            if(.not.res2@gsnFrame)
-                callframe = False
-            end if
-            delete(res2@gsnFrame)
-        end if
-
-        if(isatt(res2,"gsnScale"))
-            if(res2@gsnScale)
-                scale = True
-            end if
-            delete(res2@gsnScale)
-        end if
-    end if
+    check_for_draw_and_frame(res2,calldraw,callframe)
+    check_for_scale_and_shape(res2,scale,shape)
     end if
 
 ; Create plot object.
@@ -2803,13 +2622,7 @@ begin
         end setvalues
     mpres = get_res_eq(res2,(/"mp","vp"/))
     vcres = get_res_ne(res2,(/"mp","vf","vp"/))
-    if(calldraw)
-        draw(map_object)
-    end if
-
-    if(callframe)
-        frame(wks)
-    end if
+    draw_and_frame(wks,map_object,calldraw,callframe)
     attsetvalues_check(data_object,vfres)
     attsetvalues_check(map_object,mpres)
     attsetvalues_check(vector_object,vcres)
@@ -2836,21 +2649,21 @@ begin
 ;                     v: 2-dimensional V array                          ;
 ;                  data: 2-dimensional scalar field                     ;
 local i, attnames, vfdata_object, sfdata_object, plot_object, res, \
-force_xaxis_linear, force_yaxis_linear, force_xaxis_log, force_yaxis_log, \
+;                                                                       ;
 ; This function creates and draws a vector plot to the workstation "wks";
 vc_res_index, sf_res_index, res2
 ; and "v" are the 2-dimensional arrays to be vectorized, and "data" is  ;
-    calldraw = True
+    calldraw  = True
     callframe = True
     scale     = False
     shape     = False
 ; the scalar field that the vectors are colored by. "resources" is an   ;
 ; optional list of resources. The id of the vector plot is returned.    ;
 ;                                                                       ;
-    force_xaxis_linear = False
-    force_yaxis_linear = False
-    force_xaxis_log    = False
-    force_yaxis_log    = False
+; Special resources ("gsn" prefix) allowed:                             ;
+;                                                                       ;
+;   gsnDraw                                                             ;
+;   gsnFrame                                                            ;
 ;   gsnShape                                                            ;
 ;   gsnScale                                                            ;
 ;   gsnSpreadColors                                                     ;
@@ -2901,101 +2714,16 @@ begin
         "vcMonoLineArrowColor"  : "false"
 
 ; Check for missing values.
-    if((res2).and..not.any(ismissing(getvaratts(res2))))
-
-; Check if frame and/or draw are not supposed to be called.
-
-        if(isatt(res2,"gsnDraw"))
-            if(.not.res2@gsnDraw)
-                calldraw = False
-            end if
-            delete(res2@gsnDraw)
-        end if
-        if(isatt(res2,"gsnFrame"))
-            if(.not.res2@gsnFrame)
-                callframe = False
-            end if
-            delete(res2@gsnFrame)
-        end if
-
-; Check if the plot should be reshaped or scaled.
-
-        if(isatt(res2,"gsnScale"))
-            if(res2@gsnScale)
-                scale = True
-            end if
-            delete(res2@gsnScale)
-        end if
-
-        if(isatt(res2,"gsnShape"))
-            if(res2@gsnShape)
-                shape = True
-                scale = True
-            end if
-            delete(res2@gsnShape)
-        end if
-
-;
-; Check if a linear or log axis is wanted (this should only be used if
-; irregularly-spaced data is used for the X or Y axis (i.e. if vfXArray
-; or vfYArray are set).
-;
-        if(isatt(res2,"gsnXAxisIrregular2Linear"))
-          if(res2@gsnXAxisIrregular2Linear)
-            force_xaxis_linear = True
-          end if
-          delete(res2@gsnXAxisIrregular2Linear)
-        end if
-
-        if(isatt(res2,"gsnYAxisIrregular2Linear"))
-          if(res2@gsnYAxisIrregular2Linear)
-            force_yaxis_linear = True
-          end if
-          delete(res2@gsnYAxisIrregular2Linear)
-        end if
-
-        if(isatt(res2,"gsnXAxisIrregular2Log"))
-          if(res2@gsnXAxisIrregular2Log)
-            force_xaxis_log = True
-          end if
-          delete(res2@gsnXAxisIrregular2Log)
-        end if
-
-        if(isatt(res2,"gsnYAxisIrregular2Log"))
-          if(res2@gsnYAxisIrregular2Log)
-            force_yaxis_log = True
-          end if
-          delete(res2@gsnYAxisIrregular2Log)
-        end if
-
-        if(force_yaxis_log.and.force_yaxis_linear)
-         print("Error: gsn_vector_scalar: you cannot set both gsnYAxisIrregular2Log")
-         print("and gsnYAxisIrregular2Linear to True.")
-         exit
-       end if
-
-        if(force_xaxis_log.and.force_xaxis_linear)
-         print("Error: gsn_vector_scalar: you cannot set both gsnXAxisIrregular2Log")
-         print("and gsnXAxisIrregular2Linear to True.")
-         exit
-       end if
-
-; Check if turning tickmarks off.
-
-        if(isatt(res2,"gsnTickMarksOn"))
-            if(.not.res2@gsnTickMarksOn)
-              gsnp_turn_off_tickmarks(res2)
-            end if
-            delete(res2@gsnTickMarksOn)
-        end if
-
+    check_for_draw_and_frame(res2,calldraw,callframe)
+    check_for_scale_and_shape(res2,scale,shape)
+        end setvalues
     end if
+
 ; Create plot object.
 
     plot_object = create wksname + "_vector" vectorPlotClass wks
         "vcVectorFieldData"     : vfdata_object
-    if(force_xaxis_linear.or.force_xaxis_log.or. \
-       force_yaxis_linear.or.force_yaxis_log)
+        "vcUseScalarArray"      : True
         "vcMonoLineArrowColor"  : False
     end create
 
@@ -3079,22 +2807,20 @@ begin
       vcres2 = True
       set_attr(vcres2,"vcLevelColors",\
                spread_colors(wks,plot_object,min_index,max_index))
-     if(force_xaxis_linear.or.force_xaxis_log.or. \
-        force_yaxis_linear.or.force_yaxis_log)
+      attsetvalues(plot_object,vcres2)
+    end if
+;
 ; If gsnShape was set to True, then resize the X or Y axis so that
-       overlay_plot_object = plot_object
-       delete(plot_object)
+; the scales are proportionally correct.
+; 
+    if(shape)
+      gsnp_shape_plot(plot_object)
+    end if
 
-       getvalues overlay_plot_object
-         "trXMinF"    : trxmin
-         "trXMaxF"    : trxmax
-         "trYMinF"    : trymin
-         "trYMaxF"    : trymax
-       end getvalues
 ;
 ; If gsnScale was set to True, then make sure the X and Y axis labels
-        "trXLog"  : force_xaxis_log
-        "trYLog"  : force_yaxis_log
+; and tick marks are the same size.
+; 
     if(scale)
       gsnp_scale_plot(plot_object)
     end if
@@ -3108,13 +2834,7 @@ begin
       overlay_plot_object = plot_object
       delete(plot_object)
 
-    if(calldraw)
-        draw(plot_object)
-    end if
-
-    if(callframe)
-        frame(wks)
-    end if
+    draw_and_frame(wks,plot_object,calldraw,callframe)
         "trXMinF"    : trxmin
         "trXMaxF"    : trxmax
         "trYMinF"    : trymin
@@ -3145,9 +2865,10 @@ begin
 local i, attnames, vfdata_object, sfdata_object, contour_object, res, \
 vf_res_index, vc_res_index, sf_res_index, mp_res_index, map_object, res2
 ; vectorized, and "data" is the scalar field that the vectors are       ;
-    calldraw = True
+    calldraw  = True
     callframe = True
     scale     = False
+    shape     = False
 ; colored by. "resources" is an optional list of resources. The id of   ;
 ; the map plot is returned.                                             ;
 ;                                                                       ;
@@ -3204,30 +2925,8 @@ begin
         "sfDataArray" : data
     end create
 
-    if((res2).and..not.any(ismissing(getvaratts(res2))))
-
-; Check if frame and/or draw are not supposed to be called.
-
-        if(isatt(res2,"gsnDraw"))
-            if(.not.res2@gsnDraw)
-                calldraw = False
-            end if
-            delete(res2@gsnDraw)
-        end if
-        if(isatt(res2,"gsnFrame"))
-            if(.not.res2@gsnFrame)
-                callframe = False
-            end if
-            delete(res2@gsnFrame)
-        end if
-
-        if(isatt(res2,"gsnScale"))
-            if(res2@gsnScale)
-                scale = True
-            end if
-            delete(res2@gsnScale)
-        end if
-    end if
+    check_for_draw_and_frame(res2,calldraw,callframe)
+    check_for_scale_and_shape(res2,scale,shape)
 ; Create plot object.
 
     vector_object = create wksname + "_vector" vectorPlotClass wks
@@ -3277,13 +2976,7 @@ begin
         end setvalues
 
     attsetvalues_check(vfdata_object,vfres)
-    if(calldraw)
-        draw(map_object)
-    end if
-
-    if(callframe)
-        frame(wks)
-    end if
+    draw_and_frame(wks,map_object,calldraw,callframe)
     attsetvalues_check(map_object,mpres)
     attsetvalues_check(vector_object,vcres)
 
@@ -3355,14 +3048,10 @@ begin
     getvalues plot_object
       "trXMinF" : trxmin2
       "trXMaxF" : trxmax2
-        setvalues plot_object
-            "tiXAxisString" : x@long_name
-        end setvalues
+      "trYMinF" : trymin2
       "trYMaxF" : trymax2
     end getvalues
-        setvalues plot_object
-            "tiYAxisString" : y@long_name
-        end setvalues
+
     trxmin = get_res_value_keep(res2,"trXMinF",trxmin2)
     trxmax = get_res_value_keep(res2,"trXMaxF",trxmax2)
     trymin = get_res_value_keep(res2,"trYMinF",trymin2)
@@ -3377,57 +3066,17 @@ begin
     end if
     if(isatt(y,"long_name")) then
     end setvalues
-    if((res2).and..not.any(ismissing(getvaratts(res2))))
 
-; Check if frame and/or draw are not supposed to be called.
+    check_for_draw_and_frame(res2,calldraw,callframe)
+    check_for_scale_and_shape(res2,scale,shape)
 
-        if(isatt(res2,"gsnDraw"))
-            if(.not.res2@gsnDraw)
-                calldraw = False
-            end if
-            delete(res2@gsnDraw)
-        end if
-        if(isatt(res2,"gsnFrame"))
-            if(.not.res2@gsnFrame)
-                callframe = False
-            end if
-            delete(res2@gsnFrame)
-        end if
-
-; Check if the plot should be reshaped or scaled.
- 
-       if(isatt(res2,"gsnScale"))
-            if(res2@gsnScale)
-                scale = True
-            end if
-            delete(res2@gsnScale)
-        end if
-
-        if(isatt(res2,"gsnShape"))
-            if(res2@gsnShape)
-                shape = True
-                scale = True
-            end if
-            delete(res2@gsnShape)
-        end if
-
-; Check if turning tickmarks off.
-
-        if(isatt(res2,"gsnTickMarksOn"))
-            if(.not.res2@gsnTickMarksOn)
-              gsnp_turn_off_tickmarks(res2)
-            end if
-            delete(res2@gsnTickMarksOn)
-        end if
-
-    end if
     if(res2.and..not.any(ismissing(getvaratts(res2))))
       if(isatt(res2,"xyDashPattern").or.isatt(res2,"xyDashPatterns"))
     if(cares.and..not.any(ismissing(getvaratts(cares))))
       attsetvalues(data_object,cares)
     end if
       end if
-    if((res2).and..not.any(ismissing(getvaratts(res2))))
+    end if
 
     if(set_dash)
       setvalues dspec
@@ -3562,17 +3211,11 @@ begin
         end setvalues
                     xydpres@$attnames(xydp_res_index(i))$ = res2@$attnames(xydp_res_index(i))$
                 end do
-    if(calldraw)
-        draw(plot_object)
-    end if
-
-    if(callframe)
-        frame(wks)
-    end if
+    draw_and_frame(wks,plot_object,calldraw,callframe)
             end if
         end if
 
-    plot_object@data = data_object
+    end if
 ;
 ; If gsnShape was set to True, then resize the X or Y axis so that
 ; the scales are proportionally correct.

@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.16 1999-08-02 19:19:16 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.17 1999-08-13 18:51:23 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -15,13 +15,14 @@
 ;;          National Center for Atmospheric Research
 ;;          PO 3000, Boulder, Colorado
 ;;
-;;  Date:       Mon Sep 28 14:08:49 MST 1995
+;;  Date:       Tue Feb 11 14:08:49 MST 1999
 ;;
 ;;  Description: This script contains some specialized plotting functions
 ;;               used by CGD for the CSM processor. To use the functions
-;;               and procedures in this script, you must have the line:
+;;               and procedures in this script, you must have the lines:
 ;;
 ;;                   load "gsn_csm.ncl"
+;;                   load "gsn_code.ncl"
 ;; 
 ;;               at the top of your NCL script, before the begin statement.
 ;;
@@ -34,11 +35,8 @@
 
 undef("xy_interp")
 undef("ref_line_interp")
-undef("set_attr")
 undef("gsn_geop_hgt")
 undef("check_for_subtitles")
-undef("check_for_draw_and_frame")
-undef("draw_and_frame")
 undef("create_labelbar")
 undef("add_subtitles")
 undef("add_labelbar")
@@ -193,23 +191,6 @@ begin
 end
 
 ;***********************************************************************;
-; Procedure : set_attr                                                  ;
-;                res:logical                                            ;
-;           att_name: string                                            ;
-;          att_value                                                    ;
-;                                                                       ;
-; Add resource and its value to a resource list if it isn't already set.;
-;***********************************************************************;
-
-procedure set_attr(res:logical,att_name:string,att_value)
-begin
-  if(.not.isatt(res,att_name))
-    res@$att_name$  = att_value
-  end if
-  return
-end
-
-;***********************************************************************;
 ; Procedure : gsn_geop_hgt                                              ;
 ;                                                                       ;
 ; Returns geopotential height (in km) given array p (pressure in mb)    ;
@@ -279,7 +260,19 @@ begin
  
 end
  
-procedure check_for_subtitles(res2:logical,left:logical,center:logical,\
+;***********************************************************************;
+; Procedure : check_for_subtitles                                       ;
+;                 res: logical                                          ;
+;                left: logical                                          ;
+;              center: logical                                          ;
+;               right: logical                                          ;
+;                                                                       ;
+; This procedure checks if the resources gsnLeftString, gsnCenterString,;
+; and/or gsnRightString have been set. These resources provide three    ;
+; subtitles for the top of a plot.                                      ;
+;***********************************************************************;
+ 
+procedure check_for_subtitles(res:logical,left:logical,center:logical,\
                               right:logical)
 begin
 ; Initialize
@@ -287,79 +280,74 @@ begin
   right  = False
   center = False
 
-  if((res2).and..not.any(ismissing(getvaratts(res2))))
-    if(isatt(res2,"gsnLeftString"))
+  if((res).and..not.any(ismissing(getvaratts(res))))
+    if(isatt(res,"gsnLeftString"))
       left            = True
-      left@sub_string = res2@gsnLeftString
-      delete(res2@gsnLeftString)
+      left@sub_string = res@gsnLeftString
+      delete(res@gsnLeftString)
     end if
-    if(isatt(res2,"gsnCenterString"))
+    if(isatt(res,"gsnCenterString"))
       center            = True
-      center@sub_string = res2@gsnCenterString
-      delete(res2@gsnCenterString)
+      center@sub_string = res@gsnCenterString
+      delete(res@gsnCenterString)
     end if
-    if(isatt(res2,"gsnRightString"))
+    if(isatt(res,"gsnRightString"))
       right            = True
-      right@sub_string = res2@gsnRightString
-      delete(res2@gsnRightString)
+      right@sub_string = res@gsnRightString
+      delete(res@gsnRightString)
     end if
   end if
   return
 end
 
-procedure check_for_draw_and_frame(res2:logical,calldraw:logical,\
-                                   callframe:logical)
-begin
-
-  if((res2).and..not.any(ismissing(getvaratts(res2))))
-    if(isatt(res2,"gsnDraw"))
-      if(.not.res2@gsnDraw)
-        calldraw = False
-      end if
-      delete(res2@gsnDraw)
-    end if
-    if(isatt(res2,"gsnFrame"))
-      if(.not.res2@gsnFrame)
-        callframe = False
-      end if
-      delete(res2@gsnFrame)
-    end if
-  end if
-  return
-end
-
-; Draw plot and advance frame.
-procedure draw_and_frame(wks:graphic,plot:graphic,calldraw:logical, \
-                         callframe:logical)
-begin
-  if(calldraw)
-    draw(plot)
-  end if
-
-  if(callframe)
-    frame(wks)           ; advance the frame
-  end if
-  return
-end
-
-;
-; Create a labelbar.
-;
-
+;***********************************************************************;
+; Function : create_labelbar                                            ;
+;                wks: graphic                                           ;
+;               nbox: integer                                           ;
+;             colors: array                                             ;
+;             labels: array                                             ;
+;              lbres: logical                                           ;
+;                                                                       ;
+; This function creates a labelbar given a workstation, the number of   ;
+; boxes, the colors and labels to use, and an optional list of          ;
+; labelbar resources. By default, lbAutoManage is set to False, the     ;
+; perimeter is turned off, and the fill patterns are set to solid.      ;
+;***********************************************************************;
+ 
 function create_labelbar(wks:graphic, nbox:integer, colors, labels, \
 lbres:logical)
+local perim_on, mono_fill_pat, label_align, labelbar_object
 begin
 
-  labelbar_object = create "labelbar" labelBarClass wks
-    "lbBoxCount"     : nbox
-    "lbFillColors"   : colors
-    "lbLabelStrings" : labels
-    "lbAutoManage"   : False
-    "lbPerimOn"      : False
+  if(lbres.and.isatt(lbres,"lbPerimOn"))
+    perim_on = lbres@lbPerimOn
+    delete(lbres@lbPerimOn)
+  else
+    perim_on = False
+  end if
 
-    "lbMonoFillPattern" : True
-    "lbLabelAlignment"  : "InteriorEdges"
-    "lbMonoFillPattern" : True
+  if(lbres.and.isatt(lbres,"lbMonoFillPattern"))
+    mono_fill_pat = lbres@lbMonoFillPattern
+    delete(lbres@lbMonoFillPattern)
+  else
+    mono_fill_pat = True
+  end if
+
+  if(lbres.and.isatt(lbres,"lbLabelAlignment"))
+    label_align = lbres@lbLabelAlignment
+    delete(lbres@lbLabelAlignment)
+  else
+    label_align = "InteriorEdges"
+  end if
+
+  labelbar_object = create "labelbar" labelBarClass wks
+    "lbBoxCount"        : nbox
+    "lbFillColors"      : colors
+    "lbLabelStrings"    : labels
+    "lbAutoManage"      : False
+    "lbPerimOn"         : perim_on
+    "lbLabelAlignment"  : label_align
+    "lbMonoFillPattern" : mono_fill_pat
   end create
 
   if(lbres.and..not.any(ismissing(getvaratts(lbres))))
@@ -369,9 +357,20 @@ begin
   return(labelbar_object)
 end
 
-;
-; Add three subtitles at the top.
-;
+;***********************************************************************;
+       all(dimsizes(data@lon2d).eq.dimsizes(data)).and. \
+       .not.(isatt(res,start_name).and.isatt(res,end_name)))
+      set_attr(res,array_name,data@lon2d)
+      return
+    end if 
+  end if
+
+  print("check_for_lon_coord: Warning: Data either does not contain a valid longitude coordinate array or doesn't contain one at all.")
+  print("Valid longitude names include: ")
+  print("    " + cat_strings(get_allowed_lonnames))
+  return
+end
+
 ;***********************************************************************;
 ; Function : get_polar_type                                             ;
 ;                 res: logical                                          ;
@@ -439,9 +438,17 @@ local text_object, parallel_pos, anno, just, strings, txres, amres, \
 num_res, ablank, chararray, string_len
 begin
   amres = False   ; Annotation resources
-; 
-; Add labelbar as an annotation of the given plot.
-;
+  txres = False   ; Text resources
+
+  num_res  = 0
+  parallel_pos = (/0.0,0.5,1.0/)
+  if(left_string)
+    strings(0) =   left_string@sub_string
+  end if
+  if(center_string) 
+; bottom of the plot, unless resources are set to change this.          ;
+  end if
+
 procedure add_labelbar(wks:graphic,plot,res:logical)
   txres = get_res_eq(res,"tx")
 lbar_side, lbar_just
@@ -510,47 +517,61 @@ end
     width  = get_res_value(res,"pmLabelBarWidthF",0.2*width)
   else
     height = get_res_value(res,"pmLabelBarHeightF",0.3*height)
-;
-; Set some resources needed to label the Y and X axis with
-; "nice" pressure and height values.
-;
-procedure set_pres_hgt_axes(pres:numeric,res2:logical,add_hgt:logical)
+    width  = get_res_value(res,"pmLabelBarWidthF",def_lvpwf*width)
+    if(zone.eq.2)
+      if(type.eq."polar")
+        orth = get_res_value(res,"pmLabelBarOrthogonalPosF",0.03)
+      else
+        orth = get_res_value(res,"pmLabelBarOrthogonalPosF",0.06)
+      end if
+    else
+      orth = get_res_value(res,"pmLabelBarOrthogonalPosF",0.0)
+    end if
+  end if
+  set_attr(lbres,"vpHeightF",height)
+  set_attr(lbres,"vpWidthF",width)
   set_attr(amres,"amOrthogonalPosF",orth)
 
 
   class_name = NhlClassName(plot)
-    ptmp = 1.* pres(::-1)    ; reverse values
+  if(class_name.eq."logLinPlotClass")
     the_plot = plot@contour
-    ptmp = 1.* pres
+  else
     the_plot = plot
   end if
-  if(.not.(isatt(res2,"sfYCStartV").and.isatt(res2,"sfYCEndV")))
-    set_attr(res2,"sfYArray",ptmp)
+  if(class_name.eq."contourPlotClass".or.class_name.eq."logLinPlotClass")
+    getvalues the_plot
       "cnLevels"          : levels
       "cnFillColors"      : colors
-  if(.not.isatt(res2,"tmYLMode"))
-    res2@tmYLMode   = "Explicit" ; Define own tick mark labels.
-    res2@tmYLValues = (/1000.,  850., 700., 500., 400., 300., 250.,\
+      "cnFillPatterns"    : fill_patterns
+      "cnFillScales"      : fill_scales
+      "cnMonoFillPattern" : mono_fill_pat
+      "cnMonoFillScale"   : mono_fill_scl
+      "cnMonoFillColor"   : mono_fill_col
+    end getvalues
 ;
-    res2@tmYLLabels = (/"1000","850","700","500","400","300","250",\
+; Check if we want different fill patterns or fill scales.  If so, we
 ; have to pass these on to the labelbar.
-    res2@tmYLMinorOn= False        ; No minor tick marks.
-    set_attr(res2,"tiYAxisString","Pressure (mb)")
+;
+    lbres@lbMonoFillColor = mono_fill_col
     if(.not.mono_fill_pat)
       lbres@lbMonoFillPattern = False
-  if(.not.isatt(res2,"tmYRMode"))
+      lbres@lbFillPatterns    = fill_patterns
+    end if
+    if(.not.mono_fill_scl)
+      lbres@lbMonoFillScale = False
       lbres@lbFillScales    = fill_scales
-    hgt   = gsn_geop_hgt(ptmp)     ; Calculate hgts as a fcn of pre.
+    hgt   = gsn_geop_hgt(ptmp)     ; Calculate hgts as a fcn of pres.
     hnice = fspan(2.,34.,9)        ; Set range of "nice" hgt values.
     pnice = ftcurv(hgt,ptmp,hnice) ; Get pres vals at nice hgt vals.
 
-    res2@tmYRMode      = "Explicit"
-    res2@tmYUseLeft    = False
-    res2@tmYRValues    = pnice     ; At each "nice" pressure value, 
-    res2@tmYRLabels    = hnice     ; put a "height" value label.
-    res2@tmYROn        = True      ; Turn on right axis tick marks.
-    res2@tmYRLabelsOn  = True      ; Turn on right axis tick marks.
-    res2@tmYRMinorOn   = False     ; No minor tick marks.
+
+  return
+end
+
+;***********************************************************************;
+; Procedure : set_pres_hgt_axes                                         ;
+;               pres: numeric                                           ;
 ;                res: logical                                           ;
 ;            add_hgt: logical                                           ;
 ;                                                                       ;
@@ -561,11 +582,20 @@ procedure set_pres_hgt_axes(pres:numeric,res2:logical,add_hgt:logical)
 ;***********************************************************************;
 
 procedure set_pres_hgt_axes(pres:numeric,res:logical,add_hgt:logical)
+local hgt, hnice, pnice, ptmp
+; Procedure : fill_xy                                                   ;
+  if(pres(0).lt.pres(dimsizes(pres)-1))
+    ptmp = 1.* pres(::-1)    ; reverse values so descending order
+;                 xin[*]: float                                         ;
+;                 yin[*]: float                                         ;
+;                    ref: float                                         ;
+
+  if(.not.(isatt(res,"sfYCStartV").and.isatt(res,"sfYCEndV")))
+    set_attr(res,"sfYArray",ptmp)
+  end if
+
 ;
-;
-; Take a set of X and Y points, and draw the Y points in one color if
-; they are above the ref line, and in another color if they are below
-; the ref line.
+; Set up the "nice" pressure values for which to label the left axis.
 ;
 procedure fill_xy(wks:graphic,xy:graphic,xin[*]:float,yin[*]:float,ref:float, \
                   ref_line_above_color,ref_line_below_color)
@@ -705,9 +735,19 @@ end
   return
     create_gon = False
 
+    do i=0,npts-1
+            last(1) = y2(ept)
+;             min_lon: float                                            ;
+;             max_lon: float                                            ;
+;         lon_spacing: float                                            ;
+;        mlon_spacing: float                                            ;
+; consider them to be the same point.
 ;
-; Calculate "nice" longitude values for longitude labels.
+              last(0) =  x(ept+1)
+              last(1) = y1(ept+1)
+            else
 ;
+; Otherwise, find the intersection where the two curves cross.
 function get_lon_values(min_lon:float,max_lon:float,lon_spacing:integer,\
                         mlon_spacing:integer)
             end if
@@ -747,9 +787,19 @@ function get_lon_values(min_lon:numeric,max_lon:numeric,lon_spacing:numeric,\
 start_lon, end_lon, xstart_lon, xend_lon
 begin
 
-;
-; Calculate "nice" latitude values for latitude labels.
-;
+; Initialize
+
+;             min_lat: float                                            ;
+;             max_lat: float                                            ;
+;         lat_spacing: float                                            ;
+;        mlat_spacing: float                                            ;
+    lcheck_arr = range_array
+  end if
+    
+  if(all(lonspacing_array.eq.0))
+    lspcng_arr = (/ 5, 10, 20, 30/)  ; spacings for major ticks
+  else
+    lspcng_arr = lonspacing_array
 function get_lat_values(min_lat:float,max_lat:float,lat_spacing:integer,\
                         mlat_spacing:integer)
 local lat_range, lcheck_arr, lspcng_arr, mlspcng_arr, lat_spcng, mlat_spcng
@@ -789,9 +839,13 @@ local lat_range, lcheck_arr, lspcng_arr, mlspcng_arr, lat_spcng, mlat_spcng
 ; lat_spacing and mlat_spacing are the spacings to use for major and    ;
 ; minor tickmarks.                                                      ;
 ;***********************************************************************;
-;
-; Create some nice longitude labels given longitude values.
-;
+
+function get_lat_values(min_lat:numeric,max_lat:numeric,lat_spacing:numeric,\
+;                lon_values[*]: float                                   ;
+local lat_range, lcheck_arr, lspcng_arr, mlspcng_arr, lat_spcng, mlat_spcng, \
+start_lat, end_lat, lat, found
+begin
+
 ; Initialize
 
   if(min_lat.lt.-90.or.max_lat.gt.90) then
@@ -836,9 +890,13 @@ local lat_range, lcheck_arr, lspcng_arr, mlspcng_arr, lat_spcng, mlat_spcng
 
 function get_lon_labels(lon_values:numeric)
 local lon_index
-;
-; Create some nice latitude labels given latitude values.
-;
+begin
+  lon_labels  = new(dimsizes(lon_values),string)
+;                lat_values[*]: float                                   ;
+; -180 < lon < 0 (west)
+
+  lon_index = ind((lon_values).lt.0)
+  if(.not.all(ismissing(lon_index)))
     lon_labels(lon_index) = fabs(lon_values(lon_index)) + "W"  ; west
   end if
   delete(lon_index)
@@ -867,9 +925,18 @@ local lon_index
   end if
   delete(lon_index)
 
-;
-; Add "nice" longitude labels to the X axis.
-;
+; 540 < lon < 720 (west)
+
+  lon_index = ind(lon_values.gt.540.and.lon_values.lt.720)
+;             min_lon: float                                            ;
+;             max_lon: float                                            ;
+;         lon_spacing: float                                            ;
+;        mlon_spacing: float                                            ;
+;                                                                       ;
+; lon = +/-180 or lon=540 (180)
+
+  lon_index = ind(fabs(lon_values).eq.180.or.lon_values.eq.540)
+  if(.not.all(ismissing(lon_index)))
     lon_labels(lon_index) = "180"
                          lon_spacing:integer,mlon_spacing:integer)
 
@@ -885,9 +952,19 @@ local lon_index
 ; Create labels for latitude tick marks.
   lat_labels = new(dimsizes(lat_values),string)
 
-;
-; Add "nice" latitude labels to the X axis.
-;
+  lat_index = ind(lat_values.lt.0)
+  if(.not.all(ismissing(lat_index)))
+     lat_labels(lat_index) = fabs(lat_values(lat_index)) + "S"    ; south
+;             min_lat: float                                            ;
+;             max_lat: float                                            ;
+;         lat_spacing: float                                            ;
+;        mlat_spacing: float                                            ;
+    lat_labels(lat_index) = lat_values(lat_index) + "N"    ; north
+  end if
+  delete(lat_index)
+
+  lat_index = ind(lat_values.eq.0)
+  if(.not.all(ismissing(lat_index)))
     lat_labels(lat_index) = lat_values(lat_index)          ; equator
                                lat_spacing:integer,mlat_spacing:integer)
   return(lat_labels)
@@ -903,9 +980,19 @@ local lon_index
 
   lon_spacing2 = get_res_value(tmres,"tmXBTickSpacingF",lon_spacing)
   lonvalues   = get_lon_values(min_lon,max_lon,lon_spacing2,mlon_spacing,\
+                             range_array,lonspacing_array,mlonspacing_array)
+  lonlabels   = get_lon_labels(lonvalues)
+
+;             min_lat: float                                            ;
+;             max_lat: float                                            ;
+;         lat_spacing: float                                            ;
+;        mlat_spacing: float                                            ;
+;                                                                       ;
 ;
-; Add "nice" latitude labels to the Y axis.
+; If the user has set tiXAxisString explicitly, then don't set tiXAxisOn
+; to False.
 ;
+  if(.not.(isatt(tmres,"tiXAxisString").and.tmres@tiXAxisString.ne.""))
     set_attr(tmres,"tiXAxisOn"      , False)
                                lat_spacing:integer,mlat_spacing:integer)
 end
@@ -921,11 +1008,16 @@ end
 
   lat_spacing2 = get_res_value(tmres,"tmXBTickSpacingF",lat_spacing)
   latvalues    = get_lat_values(min_lat,max_lat,lat_spacing2,mlat_spacing)
-;
-; Add a cyclic point in "x" to a 2D array
-; for a lat/lon plot "x"  corresponds to "lon"
-;                    "ny" corresponds to "nlat"
-;                    "mx" corresponds to "mlon"
+        print("add_map_tickmarks: Warning: you cannot use mpLimitMode=" + limit_mode + " with the gsm_csm_map routines")
+        return 
+;             data[*][*]: float                                         ;
+    end if
+
+; Create tickmark values for lat/lon labels.
+
+    lonvalues = get_lon_values(min_lon,max_lon,lon_spacing,mlon_spacing,0,0,0)
+    latvalues = get_lat_values(min_lat,max_lat,lat_spacing,mlat_spacing)
+
 function gsn_add_cyclic_point(data[*][*]:float)
 local dims, newdata, ny, mx, mx1
     lonlabels  = get_lon_labels(lonvalues)
@@ -1873,8 +1965,8 @@ begin
     cnres = get_res_ne(res2,(/"mp","vp","lb"/))
 function gsn_csm_contour_map_polar(wks:graphic,data[*][*]:numeric, \
       if(isatt(cnres,"cnFillOn").and.cnres@cnFillOn)
-	set_attr(cnres,"cnInfoLabelOn",False)
-        if(.not.lbatt(cnres,"lbLabelBarOn").or.\
+local i, contour_object, map_object, res, lbar_pos, lbar_zone, \
+        if(.not.isatt(cnres,"lbLabelBarOn").or.\
           isatt(lbres,"lbLabelBarOn").and.lbres@lbLabelBarOn)
 infolabel_on, infolabel_zone, lbar_zone, lbar_height, lbar_width
 begin
