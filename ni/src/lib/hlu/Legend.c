@@ -1,5 +1,5 @@
 /*
- *      $Id: Legend.c,v 1.4 1993-11-02 19:59:58 dbrown Exp $
+ *      $Id: Legend.c,v 1.5 1993-11-05 17:28:35 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2653,8 +2653,8 @@ static NhlErrorTypes    ManageItemPositionsArray
  * Now check the validity of the explicit placement fractions. Negative values
  * are not an error, but cause equal divisions between the two surrounding
  * specified values. Non-monotonically increasing positive values, or
- * values greater than 1.0 are an error causing a warning. However, this
- * function modifies incorrect values to make them usable.
+ * values greater than 1.0 cause an informational message to be generated. 
+ * but give the same results as if they had been set to a negative value.
  */
 	/* deal with first element manually, since in the loop the
 	   previous element must be compared */
@@ -2662,9 +2662,9 @@ static NhlErrorTypes    ManageItemPositionsArray
 	if (item_positions[0] < 0.0)
 		first_neg = 0;
 	else if (item_positions[0] > 1.0) {
-		NhlPError(WARNING,E_UNKNOWN,
+		NhlPError(INFO,E_UNKNOWN,
 			  "Modifying invalid box fraction array element: 0");
-		ret = WARNING;
+		ret = INFO;
 		item_positions[0] = -1.0;
 		first_neg = 0;
 	}
