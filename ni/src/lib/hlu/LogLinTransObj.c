@@ -1,5 +1,5 @@
 /*
- *      $Id: LogLinTransObj.c,v 1.10 1994-05-05 18:16:51 ethan Exp $
+ *      $Id: LogLinTransObj.c,v 1.11 1994-08-19 20:36:50 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -848,7 +848,6 @@ int upordown;
 		lastx = x;
 		lasty = y;
 		call_frstd =1;
-		return(NhlNOERROR);
 	} else {
 		currentx = x;
 		currenty = y;

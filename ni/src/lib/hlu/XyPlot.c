@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.20 1994-07-12 20:53:34 boote Exp $
+ *      $Id: XyPlot.c,v 1.21 1994-08-19 20:36:55 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -272,6 +272,30 @@ static NhlResource data_resources[] = {
 		(NhlPointer)NULL, 0,(NhlFreeFunc)NhlFreeGenArray},
 	{NhlNxyDashPattern,NhlCxyDashPattern,NhlTInteger,sizeof(int),
 		Oset(dash),NhlTImmediate,(NhlPointer)1,0,NULL},
+	{NhlNxyMarkerModes, NhlCxyMarkerModes,NhlTMarkerGenArray,
+		sizeof(NhlPointer), Oset(marker_modes),NhlTImmediate,
+		(NhlPointer)NULL, 0, (NhlFreeFunc)NhlFreeGenArray},
+	{NhlNxyMarkerMode, NhlCxyMarkerMode,NhlTMarkerModes,
+		sizeof(NhlPointer), Oset(marker_mode),NhlTImmediate,
+		(NhlPointer)0, 0, (NhlFreeFunc)NULL},
+	{NhlNxyMarkers, NhlCxyMarkers,NhlTIntegerGenArray,
+		sizeof(NhlPointer), Oset(markers),NhlTImmediate,
+		(NhlPointer)NULL, 0, (NhlFreeFunc)NhlFreeGenArray},
+	{NhlNxyMarker, NhlCxyMarker,NhlTInteger,
+		sizeof(NhlPointer), Oset(marker),NhlTImmediate,
+		(NhlPointer)0, 0, (NhlFreeFunc)NULL},
+	{NhlNxyMarkerSizesF, NhlCxyMarkerSizesF,NhlTFloatGenArray,
+		sizeof(NhlPointer), Oset(marker_sizes),NhlTImmediate,
+		(NhlPointer)NULL, 0, (NhlFreeFunc)NhlFreeGenArray},
+	{NhlNxyMarkerSizeF, NhlCxyMarkerSizeF,NhlTFloat,
+		sizeof(NhlPointer), Oset(marker_size),NhlTString,
+		".01", 0, (NhlFreeFunc)NULL},
+	{NhlNxyMarkerColors, NhlCxyMarkerColors,NhlTIntegerGenArray,
+		sizeof(NhlPointer), Oset(marker_colors),NhlTImmediate,
+		(NhlPointer)NULL, 0, (NhlFreeFunc)NhlFreeGenArray},
+	{NhlNxyMarkerColor, NhlCxyMarkerColor,NhlTInteger,
+		sizeof(NhlPointer), Oset(marker_color),NhlTImmediate,
+		(NhlPointer)-1, 0, (NhlFreeFunc)NULL},
 	{NhlNxyLabelMode,NhlCxyLabelMode,NhlTLineLabelModes,
 		sizeof(NhlLineLabelModes),
 		Oset(label_mode),NhlTImmediate,(NhlPointer)NhlNOLABELS,
@@ -732,6 +756,29 @@ XyDataClassInitialize
 ()
 #endif
 {
+	_NhlEnumVals	altplace[] = {
+		{NhlNONE,	"none"},
+		{NhlLEFTAXIS,	"leftaxis"},
+		{NhlRIGHTAXIS,	"rightaxis"},
+		{NhlTOPAXIS,	"topaxis"},
+		{NhlBOTTOMAXIS,	"bottomaxis"}
+	};
+
+	_NhlEnumVals	lblmode[] = {
+		{NhlNOLABELS,	"nolabels"},
+		{NhlLETTERED,	"lettered"},
+		{NhlCUSTOM,	"custom"}
+	};
+
+	_NhlEnumVals    mkrmode[] = {
+		{NhlNOMARKERS, "nomarkers"},
+		{NhlMARKERSONLY, "markersonly"},
+		{NhlMARKLINES, "marklines"}
+	};
+
+	_NhlRegisterEnumType(NhlTAlternatePlace,altplace,NhlNumber(altplace));
+	_NhlRegisterEnumType(NhlTLineLabelModes,lblmode,NhlNumber(lblmode));
+	_NhlRegisterEnumType(NhlTMarkerModes,mkrmode,NhlNumber(mkrmode));
 	Qint = NrmStringToQuark(NhlTInteger);
 	Qstring = NrmStringToQuark(NhlTString);
 
@@ -761,22 +808,6 @@ XyPlotClassInitialize
 ()
 #endif
 {
-	_NhlEnumVals	altplace[] = {
-		{NhlNONE,	"none"},
-		{NhlLEFTAXIS,	"leftaxis"},
-		{NhlRIGHTAXIS,	"rightaxis"},
-		{NhlTOPAXIS,	"topaxis"},
-		{NhlBOTTOMAXIS,	"bottomaxis"}
-	};
-
-	_NhlEnumVals	lblmode[] = {
-		{NhlNOLABELS,	"nolabels"},
-		{NhlLETTERED,	"lettered"},
-		{NhlCUSTOM,	"custom"}
-	};
-
-	_NhlRegisterEnumType(NhlTAlternatePlace,altplace,NhlNumber(altplace));
-	_NhlRegisterEnumType(NhlTLineLabelModes,lblmode,NhlNumber(lblmode));
 
 	Qfloat = NrmStringToQuark(NhlTFloat);
 
@@ -1218,6 +1249,14 @@ DrawCurves
 		int		num_curves=0;
 		NhlString	*labeltable=NULL;
 		int		len_labeltable =0;
+		NhlMarkerModes	*markermodestable=NULL;
+		int		len_markermodestable= 0;
+		int		*markerstable=NULL;
+		int		len_markerstable= 0;
+		float		*markersizestable=NULL;
+		float		len_markersizestable= 0;
+		int		*markercolorstable= NULL;
+		int		len_markercolorstable;
 
 		/*
 		 * Retrieve Data Information
@@ -1297,17 +1336,53 @@ DrawCurves
 		}
 		else
 			len_labeltable = 0;
+
+		/*
+		* markers
+		*/
+		if(dataspec->xydata.marker_modes != NULL) {
+			markermodestable = (NhlMarkerModes*)dataspec->xydata.marker_modes->data;
+			len_markermodestable= dataspec->xydata.marker_modes->len_dimensions[0];
+		} else {
+			len_markermodestable= 0;
+		}
+		if(dataspec->xydata.markers != NULL) {
+			markerstable = (int*)dataspec->xydata.markers->data;
+			len_markerstable = dataspec->xydata.markers->len_dimensions[0];
+		} else {
+			len_markerstable = 0;
+		}
+		if(dataspec->xydata.marker_colors != NULL){
+			markercolorstable = (int*)dataspec->xydata.marker_colors->data;
+			len_markercolorstable = dataspec->xydata.marker_colors->len_dimensions[0];
+		} else {
+			len_markercolorstable =0;
+		}
+		if(dataspec->xydata.marker_sizes != NULL){
+			markersizestable = (float*)dataspec->xydata.marker_sizes->data;
+			len_markersizestable = dataspec->xydata.marker_sizes->len_dimensions[0];
+		} else {
+			len_markersizestable =0;
+		}
+
 		
 		for(j=0;j < num_curves;j++){
 			float		*yvect=NULL;
 			float		*xvect=NULL;
 			int		dpattern;
 			int		color;
+			int		marker_color;
+			int		marker;
+			float		marker_size;
+			NhlMarkerModes	marker_mode;
 			NhlString	label=NULL;
 			int		tint;
 			int		npts;
 			NhlBoolean	curve_impy = False;
 			NhlBoolean	curve_impx = False;
+			float		xtmp,ytmp;
+			int		status;
+			float 		out_of_range;
 
 			if(!impy && !impx){
 				xvect = xvalues[j];
@@ -1349,6 +1424,30 @@ DrawCurves
 				dpattern = dashtable[j];
 			else
 				dpattern = dataspec->xydata.dash;
+			/****************
+                        * Set Markers   *
+			****************/
+			if(j < len_markermodestable) 
+				marker_mode = markermodestable[j];
+			else 
+				marker_mode = dataspec->xydata.marker_mode;
+		
+			if(j < len_markerstable)
+				marker = markerstable[j];
+			else
+				marker = dataspec->xydata.marker;
+
+			if(j < len_markercolorstable)
+				marker_color = markercolorstable[j];
+			else if(dataspec->xydata.marker_color != -1)
+				marker_color = dataspec->xydata.marker_color;
+			else 
+				marker_color = color;
+	
+			if(j < len_markersizestable)
+				marker_size = markersizestable[j];
+			else 
+				marker_size = dataspec->xydata.marker_size ;
 
 			/****************
 			 * Set Label	*
@@ -1391,6 +1490,15 @@ DrawCurves
 
 			_NhlSetLineInfo(xlayer->base.wkptr,(NhlLayer)xlayer);
 
+			if(marker_mode != NhlNOMARKERS) {
+				NhlVASetValues(xlayer->base.wkptr->base.id,
+					NhlNwkMarkerIndex,marker,
+					NhlNwkMarkerSizeF,marker_size,
+					NhlNwkMarkerColor,marker_color,NULL);
+				_NhlSetMarkerInfo(xlayer->base.wkptr,(NhlLayer)xlayer);
+			}	
+
+
 			upordownflag = 1;
 
 			if(!curve_impx && !curve_impy){
@@ -1399,18 +1507,44 @@ DrawCurves
 					datal->flt.missing_y_set){
 					float	xmiss=datal->flt.missing_x;
 					float	ymiss=datal->flt.missing_y;
+					int 	status;
 
 					for(tint=0;tint < npts;tint++){
 						if((xvect[tint] == xmiss) ||
 							(yvect[tint] == ymiss))
 							upordownflag = 1;
 						else{
+							if(marker_mode != 
+								NhlMARKERSONLY){
 							_NhlDataLineTo(
 							xlayer->xyplot.thetrans,
 								(NhlLayer)xlayer,
 								xvect[tint],
 								yvect[tint],
 								upordownflag);
+							}
+							if(marker_mode != 
+								NhlNOMARKERS){
+
+								XyPlotDataToNDC(
+								(NhlLayer)xlayer,
+								&(xvect[tint]),
+								&(yvect[tint]),
+								1,
+								&xtmp,
+								&ytmp,
+								&xmiss,
+								&ymiss,
+								&status,
+								&out_of_range);
+								_NhlWorkstationMarker(
+									xlayer->base.wkptr,
+									&xtmp,
+									&ytmp,
+									1
+								);
+							}
+							
 
 							upordownflag = 0;
 						}
@@ -1423,14 +1557,38 @@ DrawCurves
 						if(xvect[tint] == xmiss)
 							upordownflag = 1;
 						else{
-							_NhlDataLineTo(
-							xlayer->xyplot.thetrans,
-								(NhlLayer)xlayer,
-								xvect[tint],
-								yvect[tint],
-								upordownflag);
+							if(marker_mode != 
+								NhlMARKERSONLY){
+								_NhlDataLineTo(
+								xlayer->xyplot.thetrans,
+									(NhlLayer)xlayer,
+									xvect[tint],
+									yvect[tint],
+									upordownflag);
+							}
+							if(marker_mode != 
+								NhlNOMARKERS){
 
-							upordownflag = 0;
+								XyPlotDataToNDC(
+								(NhlLayer)xlayer,
+								&(xvect[tint]),
+								&(yvect[tint]),
+								1,
+								&xtmp,
+								&ytmp,
+								&xmiss,
+								NULL,
+								&status,
+								&out_of_range);
+								_NhlWorkstationMarker(
+									xlayer->base.wkptr,
+									&xtmp,
+									&ytmp,
+									1
+								);
+							}
+
+								upordownflag = 0;
 						}
 					}
 				}
@@ -1441,26 +1599,73 @@ DrawCurves
 						if(yvect[tint] == ymiss)
 							upordownflag = 1;
 						else{
-							_NhlDataLineTo(
-							xlayer->xyplot.thetrans,
-								(NhlLayer)xlayer,
-								xvect[tint],
-								yvect[tint],
-								upordownflag);
+							if(marker_mode != 
+								NhlMARKERSONLY){
+								_NhlDataLineTo(
+								xlayer->xyplot.thetrans,
+									(NhlLayer)xlayer,
+									xvect[tint],
+									yvect[tint],
+									upordownflag);
+							}
 
+							if(marker_mode != 
+								NhlNOMARKERS){
+
+								XyPlotDataToNDC(
+								(NhlLayer)xlayer,
+								&(xvect[tint]),
+								&(yvect[tint]),
+								1,
+								&xtmp,
+								&ytmp,
+								NULL,
+								&ymiss,
+								&status,
+								&out_of_range);
+								_NhlWorkstationMarker(
+									xlayer->base.wkptr,
+									&xtmp,
+									&ytmp,
+									1
+								);
+							}
 							upordownflag = 0;
 						}
 					}
 				}
 				else{
 					for(tint=0;tint < npts;tint++){
-						_NhlDataLineTo(
-							xlayer->xyplot.thetrans,
-							(NhlLayer)xlayer,
-							xvect[tint],
-							yvect[tint],
-							upordownflag);
+						if(marker_mode != 
+							NhlMARKERSONLY){
+							_NhlDataLineTo(
+								xlayer->xyplot.thetrans,
+								(NhlLayer)xlayer,
+								xvect[tint],
+								yvect[tint],
+								upordownflag);
+						}
+						if(marker_mode != 
+							NhlNOMARKERS){
 
+							XyPlotDataToNDC(
+								(NhlLayer)xlayer,
+								&(xvect[tint]),
+								&(yvect[tint]),
+								1,
+								&xtmp,
+								&ytmp,
+								NULL,
+								NULL,
+								&status,
+								&out_of_range);
+							_NhlWorkstationMarker(
+								xlayer->base.wkptr,
+								&xtmp,
+								&ytmp,
+								1
+							);
+						}
 						upordownflag = 0;
 					}
 				}
@@ -1468,12 +1673,35 @@ DrawCurves
 			else if(curve_impx && curve_impy){
 				/* both vectors implied */
 				for(tint=0;tint < npts;tint++){
-					_NhlDataLineTo(xlayer->xyplot.thetrans,
-								(NhlLayer)xlayer,
-								(float)(tint+1),
-								(float)(tint+1),
-								upordownflag);
+					if(marker_mode != NhlMARKERSONLY){
+						_NhlDataLineTo(xlayer->xyplot.thetrans,
+							(NhlLayer)xlayer,
+							(float)(tint+1),
+							(float)(tint+1),
+							upordownflag);
+					}
 
+					if(marker_mode != NhlNOMARKERS){
+						xtmp = (float)(tint+1);
+						ytmp = (float)(tint+1);
+						XyPlotDataToNDC(
+							(NhlLayer)xlayer,
+							&xtmp,
+							&ytmp,
+							1,
+							&xtmp,
+							&ytmp,
+							NULL,
+							NULL,
+							&status,
+							&out_of_range);
+						_NhlWorkstationMarker(
+							xlayer->base.wkptr,
+								&xtmp,
+								&ytmp,
+								1
+							);
+					}
 					upordownflag = 0;
 				}
 			}
@@ -1484,12 +1712,35 @@ DrawCurves
 						if(yvect[tint] == ymiss)
 							upordownflag = 1;
 						else{
-							_NhlDataLineTo(
-							xlayer->xyplot.thetrans,
-								(NhlLayer)xlayer,
-								(float)(tint+1),
-								yvect[tint],
-								upordownflag);
+							if(marker_mode != NhlMARKERSONLY){
+								_NhlDataLineTo(
+								xlayer->xyplot.thetrans,
+									(NhlLayer)xlayer,
+									(float)(tint+1),
+									yvect[tint],
+									upordownflag);
+							}
+							if(marker_mode != NhlNOMARKERS){
+								xtmp = (float)(tint+1);
+								XyPlotDataToNDC(
+									(NhlLayer)xlayer,
+									&xtmp,
+									&(yvect[tint]),
+									1,
+									&xtmp,
+									&ytmp,
+									NULL,
+									&ymiss,
+									&status,
+									&out_of_range);
+								_NhlWorkstationMarker(
+								xlayer->base.wkptr,
+									&xtmp,
+									&ytmp,
+									1
+								);
+							}
+							
 
 							upordownflag = 0;
 						}
@@ -1497,12 +1748,34 @@ DrawCurves
 				}
 				else{
 					for(tint=0;tint < npts;tint++){
+						if(marker_mode != NhlMARKERSONLY) {
 						_NhlDataLineTo(
 							xlayer->xyplot.thetrans,
 							(NhlLayer)xlayer,
 							(float)(tint+1),
 							yvect[tint],
 							upordownflag);
+						}
+						if(marker_mode != NhlNOMARKERS){
+							xtmp = (float)(tint+1);
+							XyPlotDataToNDC(
+								(NhlLayer)xlayer,
+								&xtmp,
+								&(yvect[tint]),
+								1,
+								&xtmp,
+								&ytmp,
+								NULL,
+								NULL,
+								&status,
+								&out_of_range);
+							_NhlWorkstationMarker(
+								xlayer->base.wkptr,
+								&xtmp,
+								&ytmp,
+								1
+							);
+						}
 
 						upordownflag = 0;
 					}
@@ -1515,12 +1788,34 @@ DrawCurves
 						if(xvect[tint] == xmiss)
 							upordownflag = 1;
 						else{
-							_NhlDataLineTo(
-							xlayer->xyplot.thetrans,
-								(NhlLayer)xlayer,
-								xvect[tint],
-								(float)(tint+1),
-								upordownflag);
+							if(marker_mode != NhlMARKERSONLY) {
+								_NhlDataLineTo(
+								xlayer->xyplot.thetrans,
+									(NhlLayer)xlayer,
+									xvect[tint],
+									(float)(tint+1),
+									upordownflag);
+							}
+							if(marker_mode != NhlNOMARKERS){
+								ytmp = (float)(tint+1);
+								XyPlotDataToNDC(
+									(NhlLayer)xlayer,
+									&(xvect[tint]),
+									&ytmp,
+									1,
+									&xtmp,
+									&ytmp,
+									&xmiss,
+									NULL,
+									&status,
+									&out_of_range);
+								_NhlWorkstationMarker(
+									xlayer->base.wkptr,
+									&xtmp,
+									&ytmp,
+									1
+								);
+							}
 
 							upordownflag = 0;
 						}
@@ -1528,24 +1823,46 @@ DrawCurves
 				}
 				else{
 					for(tint=0;tint < npts;tint++){
-						_NhlDataLineTo(
-							xlayer->xyplot.thetrans,
-							(NhlLayer)xlayer,
-							xvect[tint],
-							(float)(tint+1),
-							upordownflag);
+						if(marker_mode != NhlMARKERSONLY) {
+							_NhlDataLineTo(
+								xlayer->xyplot.thetrans,
+								(NhlLayer)xlayer,
+								xvect[tint],
+								(float)(tint+1),
+								upordownflag);
+						}
+						if(marker_mode != NhlNOMARKERS){
+							ytmp = (float)(tint+1);
+							XyPlotDataToNDC(
+								(NhlLayer)xlayer,
+								&(xvect[tint]),
+								&ytmp,
+								1,
+								&xtmp,
+								&ytmp,
+								NULL,
+								NULL,
+								&status,
+								&out_of_range);
+							_NhlWorkstationMarker(
+								xlayer->base.wkptr,
+								&xtmp,
+								&ytmp,
+								1
+							);
+						}
 
 						upordownflag = 0;
 					}
 				}
 			}
 		}
+		/*
+		 * This is called here so lastd is called for the last line.
+		 */
+		_NhlWorkstationLineTo(xlayer->base.wkptr,1.0,1.0,1);
 	}
 
-	/*
-	 * This is called here so lastd is called for the last line.
-	 */
-	_NhlDataLineTo(xlayer->xyplot.thetrans,(NhlLayer)xlayer,1.0,1.0,1);
 
 	ret = _NhlDeactivateWorkstation(xlayer->base.wkptr);	
 	if(ret < ret1)

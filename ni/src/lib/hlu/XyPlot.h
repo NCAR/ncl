@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.h,v 1.5 1994-01-27 21:27:53 boote Exp $
+ *      $Id: XyPlot.h,v 1.6 1994-08-19 20:36:59 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -38,6 +38,30 @@
 
 #define	NhlNxyColor	"xyColor"
 #define	NhlCxyColor	"XyColor"
+
+#define NhlNxyMarkerMode "xyMarkerMode"
+#define NhlCxyMarkerMode "XyMarkerMode"
+
+#define NhlNxyMarkerModes "xyMarkerModes"
+#define NhlCxyMarkerModes "XyMarkerModes"
+
+#define NhlNxyMarkerColor	"xyMarkerColor"
+#define NhlCxyMarkerColor	"XyMarkerColor"
+
+#define NhlNxyMarkerColors	"xyMarkerColors"
+#define NhlCxyMarkerColors	"XyMarkerColors"
+
+#define NhlNxyMarkerSizeF	"xyMarkerSizeF"
+#define NhlCxyMarkerSizeF	"XyMarkerSizeF"
+
+#define NhlNxyMarkerSizesF	"xyMarkerSizesF"
+#define NhlCxyMarkerSizesF	"XyMarkerSizesF"
+
+#define NhlNxyMarker	"xyMarker"
+#define NhlCxyMarker	"XyMarker"
+
+#define NhlNxyMarkers	"xyMarkers"
+#define NhlCxyMarkers	"XyMarkers"
 
 #define NhlNxyDashPatterns "xyDashPatterns"
 #define NhlCxyDashPatterns "XyDashPatterns"
@@ -140,6 +164,8 @@
  */
 #define NhlTAlternatePlace	"alternatePlace"
 #define NhlTLineLabelModes	"lineLabelModes"
+#define NhlTMarkerModes		"markerModes"
+#define NhlTMarkerGenArray 	"markerGenArray"
 
 /*
  * New types
@@ -151,6 +177,12 @@ typedef enum _NhlAlternatePlace{
 	NhlTOPAXIS,
 	NhlBOTTOMAXIS
 } NhlAlternatePlace;
+
+typedef enum _NhlMarkerModes {
+	NhlNOMARKERS,
+	NhlMARKERSONLY,
+	NhlMARKLINES
+} NhlMarkerModes;
 
 typedef enum _NhlLineLabelModes{
 	NhlNOLABELS,
