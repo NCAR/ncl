@@ -102,7 +102,7 @@
 ! *lb01Work.LabelBar.lbTitleOffsetF         : .03
 !
 !       NDC extent allocated for the title when AutoManage is on.
-! *lb01Work.LabelBar.lbMaxTitleExtentF      : .15
+! *lb01Work.LabelBar.lbTitleExtentF      : .15
 !
 !       Rotation angle of the title
 ! *lb01Work.LabelBar.lbTitleAngleF          : 0.
