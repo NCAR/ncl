@@ -1,0 +1,35 @@
+#
+#   $Id: yMakefile,v 1.1 1996-04-13 02:51:52 dbrown Exp $
+#
+#   Makefile for HLU VectorPlot examples
+#
+
+MYNAME      = vectorplot
+
+PROG_LIBS   = $(HLULIBS) $(CNCARGLIBS) $(NCARGLIBS)
+EXTRA_LIBS  = $(XMOTIFCLIENTLIBS) -lnetcdf
+SYS_LIBS    = $(CTOFLIBS) -lm
+
+CSRCS       = st01c.c st02c.c
+FSRCS       =
+NSRCS       = st01n.ncl st02n.ncl st03n.ncl st04n.ncl
+
+COBJS       = st01c.o st02c.o
+FOBJS       =
+SRCS        = $(CSRCS) $(FSRCS)
+OBJS        = $(COBJS) $(FOBJS)
+
+RESFILES    = st01.res st02.res st03.res st04.res
+CDFDATA     = U500storm.cdf V500storm.cdf
+EXFILES     = $(SRCS) $(INCLUDES)
+
+InstallTarget($(EXFILES),$(INSTALL_LIB),$(HLUEXROOT)/$(MYNAME))
+InstallTarget($(RESFILES),$(INSTALL_LIB),$(RESFILEROOT)/$(MYNAME))
+InstallTarget($(NSRCS),$(INSTALL_LIB),$(NCLEXROOT)/$(MYNAME))
+InstallTarget($(CDFDATA),$(INSTALL_LIB),$(DATAROOT)/cdf)
+
+CExampleTarget(st01c,st01c.o)
+CExampleTarget(st02c,st02c.o)
+
+CleanFilesTarget($(OBJS))
+DependTarget($(CSRCS))
