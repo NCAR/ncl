@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncargex.m,v 1.38 1998-06-11 19:26:54 haley Exp $
+.\"	$Id: ncargex.m,v 1.39 1998-06-19 20:59:00 haley Exp $
 .\"
 .\" @(#)f77.1 1.4 86/07/31 SMI; 
 .TH NCARGEX 1NCARG "June 1998" NCAR "NCAR GRAPHICS"
@@ -17,7 +17,7 @@ ncargex \- NCAR Graphics Fortran and C Low-Level Utility Examples
 [\fB-labelbar\fR] [\fB-ngmath\fR] [\fB-ngmisc\fR] [\fB-plotchar\fR]
 [\fB-polypack\fR] [\fB-pwrite_family\fR] [\fB-scrolled_title\fR] [\fB-seter\fR]
 [\fB-softfill\fR] [\fB-spps\fR] [\fB-streamlines\fR] [\fB-surface\fR]
-[\fB-threed\fR] [\fB-vectors\fR] [\fB-wmap\fR] [\fB-misc\fR]
+[\fB-tdpack\fR] [\fB-threed\fR] [\fB-vectors\fR] [\fB-wmap\fR] [\fB-misc\fR]
 [\fB-clean\fR] [\fB-n\fR] [\fB-noX11\fR] [\fB-onebyone\fR] \fBexample_name ...\fR
 .fi
 .SH DESCRIPTION
@@ -160,104 +160,107 @@ Generate all C/Fortran examples that use the PostScript driver.
 Generate all C/Fortran examples that use the X11 driver.
 .sp
 .IP \-areas " " ""
-Generate all areas C/Fortran examples.
+Generate all Areas C/Fortran examples.
 .sp
 .IP \-autograph " " ""
-Generate all autograph C/Fortran examples.
+Generate all Autograph C/Fortran examples.
 .sp
 .IP \-bivar " " ""
 Generate all bivar C/Fortran examples.
 .sp
 .IP \-colconv " " ""
-Generate all colconv C/Fortran examples.
+Generate all Colconv C/Fortran examples.
 .sp
 .IP \-conpack " " ""
-Generate all conpack C/Fortran examples.
+Generate all Conpack C/Fortran examples.
 .sp
 .IP \-conran_family " " ""
-Generate all conran Fortran examples.
+Generate all Conran Fortran examples.
 .sp
 .IP \-conrec_family " " ""
-Generate all conrec Fortran examples.
+Generate all Conrec Fortran examples.
 .sp
 .IP \-dashline " " ""
-Generate all dashline C/Fortran examples.
+Generate all Dashline C/Fortran examples.
 .sp
 .IP \-dashpack " " ""
-Generate all dashpack C/Fortran examples.
+Generate all Dashpack C/Fortran examples.
 .sp
 .IP \-ezmap " " ""
-Generate all ezmap C/Fortran examples.
+Generate all Ezmap C/Fortran examples.
 .sp
 .IP \-field_flow " " ""
-Generate all field_flow C/Fortran examples.  Includes streamlines and vectors 
+Generate all Field_flow C/Fortran examples.  Includes streamlines and vectors 
 examples.
 .sp
 .IP \-gflash " " ""
-Generate all gflash C/Fortran examples.
+Generate all Gflash C/Fortran examples.
 .sp
 .IP \-gks " " ""
-Generate all gks C/Fortran examples.
+Generate all GKS C/Fortran examples.
 .sp
 .IP \-gridall " " ""
-Generate all gridall C/Fortran examples.
+Generate all Gridall C/Fortran examples.
 .sp
 .IP \-halftone " " ""
-Generate all halftone Fortran examples.
+Generate all Halftone Fortran examples.
 .sp
 .IP \-histogram " " ""
-Generate all histogram C/Fortran examples.
+Generate all Histogram C/Fortran examples.
 .sp
 .IP \-isosrfhr " " ""
-Generate all isosrfhr Fortran examples.
+Generate all Isosrfhr Fortran examples.
 .sp
 .IP \-isosurface " " ""
-Generate all isosurface C/Fortran examples.
+Generate all Isosurface C/Fortran examples.
 .sp
 .IP \-labelbar " " ""
-Generate all labelbar C/Fortran examples.
+Generate all Labelbar C/Fortran examples.
 .sp
 .IP \-ngmath " " ""
-Generate all ngmath C/Fortran examples.
+Generate all Ngmath C/Fortran examples.
 .sp
 .IP \-ngmisc " " ""
-Generate all ngmisc C/Fortran examples.
+Generate all Ngmisc C/Fortran examples.
 .sp
 .IP \-plotchar " " ""
-Generate all plotchar C/Fortran examples.
+Generate all Plotchar C/Fortran examples.
 .sp
 .IP \-polypack " " ""
-Generate all polypack C/Fortran examples.
+Generate all Polypack C/Fortran examples.
 .sp
 .IP \-pwritx_family " " ""
-Generate all pwrite Fortran examples.
+Generate all Pwrite Fortran examples.
 .sp
 .IP \-scrolled_title " " ""
-Generate all scrolled C/Fortran examples.
+Generate all Scrolled title C/Fortran examples.
 .sp
 .IP \-seter " " ""
-Generate all seter C/Fortran examples.
+Generate all Seter C/Fortran examples.
 .sp
 .IP \-softfill " " ""
-Generate all softfill C/Fortran examples.
+Generate all Softfill C/Fortran examples.
 .sp
 .IP \-spps " " ""
-Generate all spps C/Fortran examples.
+Generate all SPPS C/Fortran examples.
 .sp
 .IP \-streamlines " " ""
-Generate all streamlines C/Fortran examples.
+Generate all Streamlines C/Fortran examples.
 .sp
 .IP \-surface " " ""
-Generate all surface C/Fortran examples.
+Generate all Surface C/Fortran examples.
+.sp
+.IP \-tdpack " " ""
+Generate all Tdpack C/Fortran examples.
 .sp
 .IP \-threed " " ""
-Generate all threed C/Fortran examples.
+Generate all Threed C/Fortran examples.
 .sp
 .IP \-vectors " " ""
-Generate all vectors C/Fortran examples.
+Generate all Vectors C/Fortran examples.
 .sp
 .IP \-wmap " " ""
-Generate all weather map C/Fortran examples.
+Generate all Weather map C/Fortran examples.
 .sp
 .IP \-misc " " ""
 Generate all miscellaneous C/Fortran examples.
@@ -431,6 +434,10 @@ stex03 tstrml c_ffex03
 .I "SURFACE Examples:"
 .sp
 fsrezsrf fsrpwrzs fsrsrfac srex01 tsrfac tpwrzs c_srex01
+.sp
+.I "TDPACK Examples:"
+.sp
+tdex01 tdex02 tdex03 c_tdex01 c_tdex03
 .sp
 .I "THREED Examples:"
 .sp
