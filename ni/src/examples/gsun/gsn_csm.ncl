@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.36 2000-03-09 14:42:22 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.37 2000-04-10 14:31:25 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -991,7 +991,6 @@ mono_fill_scl, mono_fill_col
   set_attr(lbres,"vpWidthF",width)
   set_attr(amres,"amOrthogonalPosF",orth)
 
-
   class_name = NhlClassName(plot)
   if(class_name.eq."logLinPlotClass")
     the_plot = plot@contour
@@ -1587,7 +1586,6 @@ end
       "trXMaxF"   : max_lat
     end getvalues
 
-
     add_lat_labels_xaxis(plot,min_lat,max_lat,0,0,res)
 
     set_xaxis = True
@@ -1822,7 +1820,7 @@ begin
     valid_popgrids = (/"POP23"/)       ; list of valid POP grids
 local i, attnames, res, map_object, tickmark_object, calldraw, callframe, \
 
-min_lon, max_lon, res2, tickmark_res
+min_lon, max_lon, res2, tmres, ticks_on
       print("pop_latlon_grid: "+popgrid+" is not a supported POP grid.")
       print("                 Supported POP grids include: " + valid_popgrids)
       print("                 No grid will be overlaid.")
@@ -1844,6 +1842,7 @@ min_lon, max_lon, res2, tickmark_res
     latlon_res@gsnDraw              = False
     latlon_res@gsnFrame             = False
     latlon_res@cnInfoLabelOn        = False
+    ticks_on     = get_res_value(res2,"gsnTickMarksOn",True)
     lat_spacing  = get_res_value(res2,"gsnMajorLatSpacing",0)
     lon_spacing  = get_res_value(res2,"gsnMajorLonSpacing",0)
     mlat_spacing = get_res_value(res2,"gsnMinorLatSpacing",0)
@@ -1945,12 +1944,18 @@ min_lon, max_lon, res2, tickmark_res
     end if
 
     if(min_lat.ge.max_lat)
+      print("gsn_csm_map_ce: Fatal: The resources mpMinLatF/mpLeftCornerLatF must be less than the resources mpMaxLatF/mpRightCornerF.")
+      print("Execution halted.")
+      exit
+    end if
     mpres = get_res_ne(res2,(/"tm","tx"/))  ; Get rest of resources
     if(mpres.and..not.any(ismissing(getvaratts(mpres))))
       attsetvalues(map_object,mpres)
     end if
+	
 ; on shape of plot.
-; Add tickmark object
+;
+    lat_range = 1.*(max_lat - min_lat)
     lon_range = 1.*(max_lon - min_lon)
 
     ratio1 = lat_range/lon_range
@@ -2044,6 +2049,7 @@ local i, attnames, res, res2, map_object, main_zone, \
 
     calldraw  = get_res_value(res2,"gsnDraw", True)
     callframe = get_res_value(res2,"gsnFrame",True)
+    ticks_on  = get_res_value(res2,"gsnTickMarksOn",True)
     end getvalues
 
     font_height = min((/xfontf,yfontf/))  ; Make label sizes a function of
@@ -2177,90 +2183,91 @@ side, just, orth, para, quad1, quad2, quad3, quad4, topbot, xcen, ycen, \
     height = get_res_value(res2,"vpHeightF",0.62)
     width  = get_res_value(res2,"vpWidthF",0.62)
     xpos   = get_res_value(res2,"vpXF",0.2)
+  if(ticks_on)
 
 ;
 ; Check for other resources that we need to set at the time the
 ; map is created.
 ;
     limit_mode   = get_res_value(res2,"mpLimitMode","LatLon")
-    ngrid = floattoint(360/res2@mpGridLonSpacingF)
+      ngrid = floattoint(360/res2@mpGridLonSpacingF)
 
-    if(min((/min_lat,max_lat/)).ge.0.or.polar_type.eq."NH")
-        plat = fspan(min_lat,min_lat,ngrid)
-    else
-        plat = fspan(max_lat,max_lat,ngrid)
-    end if 
-    plon = fspan(0.,360.-res2@mpGridLonSpacingF,ngrid)
+; Create a polar stereographic map object.
+
+    map_object = create "ezplot1p_map" mapPlotClass wks
+      "vpHeightF"            : height
+      "vpWidthF"             : width
+      plon = fspan(0.,360.-res2@mpGridLonSpacingF,ngrid)
       "vpYF"                 : ypos
 
       "mpProjection"         : "Stereographic"
       "mpEllipticalBoundary" : True
-    xndc = new(dimsizes(plon),float)
-    yndc = new(dimsizes(plat),float)
+      "mpLimitMode"          : limit_mode
+      "mpShapeMode"          : shape_mode   ; must be set when map created
 
       "mpFillOn"             : True
       "mpFillColors"         : (/"background","transparent","LightGray",\
                                  "transparent"/)
-    datatondc(map_object,plon,plat,xndc,yndc)
+      "pmTitleDisplayMode"   : "Always"
       "pmTitleZone"          : main_zone
     end create
 
 ; Set some map plot resources.
-    xcen = vpxf + vpwf/2.     ; X center
-    ycen = vpyf - vphf/2.     ; Y center
+
+    res2 = True
     set_attr(res2,"mpMinLatF",min_lat)
     set_attr(res2,"mpMaxLatF",max_lat)
     set_attr(res2,"mpCenterLatF",center_lat)
-    labels = new(dimsizes(plon),string)
+    set_attr(res2,"mpFillOn",True)
     set_attr(res2,"mpGridAndLimbOn",True)
-    indexes = ind(plon.gt.0.and.plon.lt.180)
-    labels(indexes) = floattoint(plon(indexes)) + "E"
-    delete(indexes)
-
-    indexes = ind(plon.gt.180.and.plon.lt.360)
-    labels(indexes) = floattoint(360-plon(indexes)) + "W"
-    delete(indexes)
-
-    indexes = ind(plon.eq.0.or.plon.eq.0.or.plon.eq.180)
-    labels(indexes) = floattoint(plon(indexes))
-    delete(indexes)
+    set_attr(res2,"mpGridLineDashPattern",2)
+    set_attr(res2,"mpGridLonSpacingF",30.)
+    set_attr(res2,"mpPerimOn",True)
+;
+; Set the spacing of the polar labels to the same as mpGridLonSpacingF,
+; unless user has explicitly set gsnPolarLabelSpacing.
+;
+    label_spacing = get_res_value(res2,"gsnPolarLabelSpacing",  \
+                                  res2@mpGridLonSpacingF)
+;
+; By default, mpOutlineOn is False, unless mpFillOn is set to False,
 ; then it is set back to True.
-    num_labels = dimsizes(labels)
-    text_ids = new(num_labels,graphic)
+;
+    set_attr(res2,"mpOutlineOn",.not.res2@mpFillOn)
 
 ; to put titles.
 
     getvalues map_object
-    do i=0,num_labels-1
-      text_ids(i) = create "lon_"+labels(i) textItemClass wks
-        "txString"      : labels(i)
-        "txFont"        : "helvetica-bold"
-        "txFontHeightF" : font_height
-      end create
-    end do
-
-    setvalues map_object
-      "pmAnnoViews" : text_ids  ; Add text items as annotations of map.
-    end setvalues
-                                  ; of the height of the viewport.
-    getvalues map_object
-      "pmAnnoManagers" : am_ids   ; Retrieve anno managers so we can 
-                                  ; change some stuff.
+      "vpXF"      : vpxf
+      "vpYF"      : vpyf
+      "vpWidthF"  : vpwf
+          "txFont"        : "helvetica-bold"
+          "txFontHeightF" : font_height
+      "mpMaxLatF" : max_lat
     end getvalues
+
+; Make sure axes labels are the same size.
+
+    font_height = 0.02 * vphf     ; Make various label sizes a function
+                                  ; of the height of the viewport.
+;
+; Check if user setting own font heights.
+;
+    main_font_height = get_res_value_keep(res2,"tiMainFontHeightF", \
                                           2.*font_height)
     main_font = get_res_value_keep(res2,"tiMainFont","helvetica-bold")
 
     setvalues map_object
         "tiMainOffsetYF"       : main_offset      ; main title offset
-    quad1 = ind((ycen-yndc).le.0.and.(xcen-xndc).le.0)
-    quad2 = ind((ycen-yndc).le.0.and.(xcen-xndc).gt.0)
-    quad3 = ind((ycen-yndc).gt.0.and.(xcen-xndc).gt.0)
-    quad4 = ind((ycen-yndc).gt.0.and.(xcen-xndc).le.0)
+        "tiMainFont"           : main_font        ; main title font
+        "tiMainFontHeightF"    : main_font_height ; main title size
+    end setvalues
 
-    side = new(ngrid,string)
-    just = new(ngrid,string)
-    orth = new(ngrid,float)
-    para = new(ngrid,float)
+  if(ticks_on) then
+;
+; Create the lat/lon coordinates where you want labels to appear.
+;
+; In this case, we want the labels to appear at a fixed latitude value
 ; and at varying longitude values.
 ;
       ngrid = floattoint(360/label_spacing)
@@ -2272,69 +2279,70 @@ side, just, orth, para, quad1, quad2, quad3, quad4, topbot, xcen, ycen, \
       end if 
       plon = fspan(0.,360.-label_spacing,ngrid)
 
-    if(.not.all(ismissing(quad1)))
-      side(quad1) = "Top"      ; Position labels in quadrants I and II wrt
-      orth(quad1) = ((yndc(quad1) - ycen)/vphf) * 1.04
-      just(quad1) = "CenterLeft"
-    end if
-    if(.not.all(ismissing(quad2)))
-      side(quad2) = "Top"      ; top of plot.
-      orth(quad2) = ((yndc(quad2) - ycen)/vphf) * 1.04
-      just(quad2) = "CenterRight"
-    end if
-    if(.not.all(ismissing(quad3)))
-      side(quad3) = "Bottom"   ; Position labels in quadrants III and IV wrt
-      orth(quad3) = ((ycen - yndc(quad3))/vphf) * 1.04
-      just(quad3) = "CenterRight"
-    end if
-    if(.not.all(ismissing(quad4)))
-      side(quad4) = "Bottom"   ; bottom of plot.
-      orth(quad4) = ((ycen - yndc(quad4))/vphf) * 1.04
-      just(quad4) = "CenterLeft"
-    end if
+; Create arrays to hold the NDC values that we're going to convert 
+; the lat/lon values to.
+        orth(quad1) = ((yndc(quad1) - ycen)/vphf) * 1.04
+      xndc = new(dimsizes(plon),float)
+      yndc = new(dimsizes(plat),float)
 
-    para = ((xndc - xcen)/vpwf) * 1.04
+; Convert lat/lon cooridinates to NDC coordinates since we are 
+        orth(quad2) = ((yndc(quad2) - ycen)/vphf) * 1.04
+
+      datatondc(map_object,plon,plat,xndc,yndc)
+
+;
+        orth(quad3) = ((ycen - yndc(quad3))/vphf) * 1.04
+;
+      xcen = vpxf + vpwf/2.     ; X center
+      ycen = vpyf - vphf/2.     ; Y center
+
+        orth(quad4) = ((ycen - yndc(quad4))/vphf) * 1.04
+
+      labels = new(dimsizes(plon),string)
+
+      para = ((xndc - xcen)/vpwf) * 1.04
       labels(indexes) = floattoint(plon(indexes)) + "E"
       delete(indexes)
 
       indexes = ind(plon.gt.180.and.plon.lt.360)
-    topbot = ind(fabs(xndc-xcen).le.1e-5)
-    if(.not.all(ismissing(topbot)))
-      just(topbot) = "CenterCenter"
-    end if
+      labels(indexes) = floattoint(360-plon(indexes)) + "W"
+      delete(indexes)
+
+      indexes = ind(plon.eq.0.or.plon.eq.0.or.plon.eq.180)
       labels(indexes) = floattoint(plon(indexes))
       delete(indexes)
 
       num_labels = dimsizes(labels)
       text_ids = new(num_labels,graphic)
 
-    names = NhlName(am_ids)
-    found = False
-    i = 0
-    do while(i.lt.dimsizes(names).and..not.found)
-      names_char = stringtochar(names)
-      if(chartostring(names_char(i,0:3)).eq."lon_")
-        start = i
-        found = True
-      end if
-      delete(names_char)
-      i = i + 1
-    end do
-    delete(names)
+;
+; Check if user setting own font heights.
+;
+    text_font_height = get_res_value_keep(res2,"txFontHeightF",font_height)
+    text_font        = get_res_value_keep(res2,"txFont","helvetica-bold")
+
+; Create an array of TextItem objects that we'll use to label the
+; lat/lon grid.  
+
+      do i=0,num_labels-1
+        text_ids(i) = create "lon_"+labels(i) textItemClass wks
+          "txString"      : labels(i)
+          "txFont"        : text_font
           "txFontHeightF" : text_font_height
         end create
       end do
-    do i=0,num_labels-1
-      setvalues am_ids(start+i)
-        "amTrackData"      : False
-        "amResizeNotify"   : True
-        "amZone"           : 0
-        "amSide"           : side(i)
-        "amJust"           : just(i)
-        "amOrthogonalPosF" : orth(i)
-        "amParallelPosF"   : para(i)
+
+      setvalues map_object
+        "pmAnnoViews" : text_ids  ; Add text items as annotations of map.
       end setvalues
-    end do
+
+      getvalues map_object
+        "pmAnnoManagers" : am_ids   ; Retrieve anno managers so we can 
+                                    ; change some stuff.
+      end getvalues
+
+;
+; Determine which quadrant each label is in, and then set values
 ; for justification, side, orthogonal and parallel positions.
 ;
       quad1 = ind((ycen-yndc).le.0.and.(xcen-xndc).le.0)
@@ -2447,6 +2455,10 @@ begin
   else
     if(.not.isatt(res2,"mpProjection").or.\
        check_attr(res2,"mpProjection","cylindricalequidistant",True))
+      return(gsn_csm_map_ce(wks,res2))
+    else   
+      return(gsn_csm_map_other(wks,res2))
+    end if
 ; 2-dimensional data to be contoured, and "resources" is an optional    ;
 ; list of resources. The id of the map plot is returned.                ;
 ;                                                                       ;
@@ -2629,8 +2641,8 @@ local i, attnames, contour_object, labelbar_object, xy_object, map_object, \
   
     draw_and_frame(wks,map_object,calldraw,callframe,maxbb)
     if((res2).and.isatt(res2,"gsnZonalMean"))
-      if((iscoord(datanew,"lat").and.iscoord(datanew,"lon")).or.\
-         (iscoord(datanew,"latitude").and.iscoord(datanew,"longitude"))) then
+; Return plot object and data object (as attribute of plot object).
+
     map_object@data    = contour_object@data
     map_object@contour = contour_object
     return(map_object)
@@ -2657,7 +2669,7 @@ end
 ;       are used to title the top left, center, and right of the plot   ;
 ;       (in addition, the regular resource "tiMainString" can be set to ;
 ;       create a regular title).                                        ;
-        print("if the data has coordinate variables 'lat' and 'lon'")
+;    3. If the special GSUN resource "gsnZonalMean" is set to True, then;
 ;       a zonal mean XY plot is drawn.
 ;    4. If the resource "cnFillOn" is set to True, then a labelbar is   ;
 ;       drawn and line labels are turned off.                           ;
@@ -2698,6 +2710,10 @@ begin
 
 ; Check for coordinate variables. These values will determine where to 
 ; overlay contour on map.
+    check_for_y_lat_coord(datanew,res2,"contour")
+    check_for_lon_coord(datanew,res2,"contour")
+
+    mpres@gsnTickMarksOn = get_res_value(res2,"gsnTickMarksOn",True)
       set_attr(res2,"sfYCStartV",-90.)
       set_attr(res2,"sfYCEndV",   90.)
     end if
@@ -2847,61 +2863,55 @@ begin
       else
         lbar_zone      = zonal_zone + 1
       end if
-      if(iscoord(datanew,"lat"))
+    else
       if(infolabel_on)
         lbar_zone      = infolabel_zone + 1
-          "caYArray" : datanew&lat
-    end if
-      else
-        if(iscoord(datanew,"latitude"))
-          data_object = create "data" coordArraysClass noparent
-            "caXArray" : zmeans
-            "caYArray" : datanew&latitude
-          end create
-        end if
       end if
+    end if
 
-      if(isatt(zmeans,"_FillValue")) then
+    if(infolabel_on)
       if(.not.isatt(cnres,"cnInfoLabelOrthogonalPosF").and.infolabel_zone.eq.2)
-              "caXMissingV" :zmeans@_FillValue
+        cnres@cnInfoLabelOrthogonalPosF = 0.13
       end if
-      end if
+      cnres@cnInfoLabelZone = infolabel_zone
     end if
 
-      xy_object = create "xyplot" xyPlotClass wks
-        "xyCoordData"            : data_object
-        "vpHeightF"              : vphf
-        "vpWidthF"               : 0.15 * map_vphf
-        "trYMaxF"                : max_lat
-        "trYMinF"                : min_lat
-        "tmXBLabelFontHeightF"   : xbfontf
-        "tmYLOn"                 : False
-        "tmYROn"                 : False
-        "tmXBMaxTicks"           : 3
-        "tmXBMinorPerMajor"      : 1
-        "tmXTMinorPerMajor"      : 1
-        "tmXBMajorLengthF"       : xlength
-        "tmXBMinorLengthF"       : xmlength
-        "tmYRMajorLengthF"       : xlength
-        "tmYRMinorLengthF"       : xmlength
-        "tmXBMajorOutwardLengthF": xlength
-        "tmXBMinorOutwardLengthF": xmlength
-        "tmYRMajorOutwardLengthF": xlength
-        "tmYRMinorOutwardLengthF": xmlength
-        "tiXAxisOn"              : False
-        "tiYAxisOn"              : False
-      end create
+; Before we create the objects, turn off draw and frame for them.
+    cnres           = True
+    mpres           = True
+    cnres@gsnDraw   = False
+    cnres@gsnFrame  = False
+    mpres@gsnDraw  = False
+    mpres@gsnFrame = False
+
+    contour_object = gsn_contour(wks,datanew,cnres) ; Create contours.
+    map_object = gsn_csm_map(wks,mpres)             ; Create map.
+    overlay(map_object,contour_object)              ; Overlay contours on map.
+
+; Retrieve some font heights and make the X/Y axis labels the same
+; size, and the info label size the same as the tick mark label size.
+
+    getvalues map_object@tickmarks
+      "tmXBLabelFontHeightF" : xbfontf
+      "tmXBMajorLengthF"     : xlength
+      "tmXBMinorLengthF"     : xmlength
+    end getvalues
+
+    getvalues map_object
+      "tiXAxisFontHeightF"   : xfontf
       "tiYAxisFontHeightF"   : yfontf
     end getvalues
-      anno = NhlAddAnnotation(map_object,xy_object)
-      setvalues anno
-        "amZone"          : zonal_zone   ; Just outside plot area
-        "amSide"          : "right"      ; Plot at right.
-        "amResizeNotify"  : True         ; Resize if map resized.
-        "amParallelPosF"  : 0.5          ; 0.5 is center of plot
-        "amOrthogonalPosF": 0.05         ; Move away from right edge
-      end setvalues
-    end if
+
+    font_height = min((/xfontf,yfontf/))  ; Make label sizes a function of
+                                          ; the size of the X/Y axis labels.
+;
+; Check if user setting own font heights.
+;
+    main_font_height = get_res_value_keep(res2,"tiMainFontHeightF", \
+                                          1.3*font_height)
+    setvalues map_object
+        "tiMainFontHeightF"    : main_font_height  ; main title size
+    end setvalues
 
 ; Set font heights only if they haven't been set explicitly by user.
 
@@ -3011,6 +3021,10 @@ end
     if(isatt(res2,"mpFillOn").and..not.res2@mpFillOn)
       set_attr(res2,"mpOutlineOn",True)
     end if
+;                     u: 2-dimensional data                             ;
+;    4. If data has an attribute called "units," and "gsnRightString"   ;
+;       hasn't explicitly been set, then the value of this attribute    ;
+    mpres@gsnTickMarksOn = get_res_value(res2,"gsnTickMarksOn",True)
                                 resources:logical)
 local i, vector_object, map_object, res, res2, calldraw, vcres, \
     mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx"/))
@@ -3203,6 +3217,10 @@ end
     if(isatt(res2,"mpFillOn").and..not.res2@mpFillOn)
       set_attr(res2,"mpOutlineOn",True)
     end if
+
+;       are used to title the top left, center, and right of the plot   ;
+;       (in addition, the regular resource "tiMainString" can be set to ;
+    mpres@gsnTickMarksOn = get_res_value(res2,"gsnTickMarksOn",True)
 ;       is used for the right string title.                             ;
 ;***********************************************************************;
     mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx"/))
@@ -3387,6 +3405,10 @@ begin
 
 ; Check for left/right titles at top. Use attributes "long_name" and
 ; "units" if they exist.
+
+    set_right_subtitle(unew,res2,mpres)
+    set_left_subtitle(unew,res2,mpres)
+    mpres@gsnTickMarksOn = get_res_value(res2,"gsnTickMarksOn",True)
 
     lbres = get_res_eq(res2,(/"lb","pm"/))
 
@@ -4231,7 +4253,7 @@ function gsn_csm_hov(wks:graphic,data:numeric,resources:logical)
     scale = font_scale(index(0))
     font_height  = scale * font_height
     if(.not.ismissing(data!1).and.iscoord(data,data!1).and.\
-       (data!1.eq."lon".or.data!1.eq."longitude"))
+       any(data!1.eq.get_allowed_lonnames()))
     if(popgrid.ne."") then
       pop_latlon_grid(wks,contour_object,popgrid)  ; Add a POP grid.
     else
@@ -4487,14 +4509,25 @@ function gsn_csm_pres_hgt(wks:graphic,data:numeric,resources:logical)
             isatt(data&$data!0$,"long_name"))
 
 function gsn_csm_time_lat(wks:graphic,data[*][*]:numeric,resources:logical)
+local res, contour_object, res2, font_height, calldraw, callframe, \
+datanew, lat_spacing
+begin
+
     if(.not.ismissing(data!0).and.iscoord(data,data!0).and.data!0.eq."lev")
     res2         = get_resources(resources)
+
+    calldraw     = get_res_value(res2,"gsnDraw", True)
+    callframe    = get_res_value(res2,"gsnFrame",True)
+    maxbb        = get_bb_res(res2)
     lat_spacing  = get_res_value(res2,"gsnMajorLatSpacing",15)
         pres = data&$data!0$(::-1)  ; reverse the values
         pres_reverse =  False       ; pres values weren't already reversed
     if((res2).and..not.any(ismissing(getvaratts(res2))))
         pres = data&$data!0$
     end if
+
+    res2@gsnDraw   = False
+    res2@gsnFrame  = False
       if(isatt(data&$data!0$,"units").and.(data&$data!0$@units.eq."Pa".or.\
                                            data&$data!0$@units.eq."Pascals"))
         pres = data&$data!0$ * 0.01  ; convert to mb
@@ -4564,12 +4597,13 @@ begin
     if(is_valid_ycoord(data).and.isatt(data&$data!0$,"long_name"))
       set_attr(res2,"tiYAxisString",data&$data!0$@long_name)
     if(.not.ismissing(data!1).and.iscoord(data,data!1).and.\
-       (data!1.eq."lat".or.data!1.eq."latitude"))
+       any(data!1.eq.get_allowed_latnames()))
       add_lat_labels_xaxis(contour_plot,xmin,xmax,lat_spacing,mlat_spacing)
 ; If this is a pressure/hgt plot, then do stuff to the pressure values.
-
 ;
-; Add a right Y axis label.
+    if(is_valid_ycoord(data))
+      npres = dimsizes(data&$data!0$)
+;
 ; Check for pressure values.  If they are not in descending order, then
 ; reverse 'em.
 ;
