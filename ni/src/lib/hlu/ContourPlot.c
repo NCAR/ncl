@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.72 1998-02-20 22:40:18 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.73 1998-02-24 01:51:12 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -7165,6 +7165,8 @@ static NhlErrorTypes ManageInfoLabel
 			   NhlNtxPerimSpaceF,ilp->perim_space);
 		NhlSetSArg(&targs[(targc)++],
 			   NhlNtxBackgroundFillColor,ilp->back_color);
+		NhlSetSArg(&targs[(targc)++],
+			   NhlNvpUseSegments,cnnew->view.use_segments);
 
 		sprintf(buffer,"%s",cnnew->base.name);
 		strcat(buffer,".InfoLabel");
@@ -7247,6 +7249,10 @@ static NhlErrorTypes ManageInfoLabel
 		if (init || ilp->back_color != oilp->back_color)
 			NhlSetSArg(&targs[(targc)++],
 				   NhlNtxBackgroundFillColor,ilp->back_color);
+		if (init ||
+                    cnnew->view.use_segments != cnold->view.use_segments)
+			NhlSetSArg(&targs[(targc)++],
+				   NhlNvpUseSegments,cnnew->view.use_segments);
 	}
 	subret = NhlALSetValues(cnp->info_lbl_rec.id,targs,targc);
 
