@@ -94,7 +94,7 @@ C
      +                LNEW,IWK(13*NPTS+1),IWK(14*NPTS+1),RWK(1),IER)
         IF (IER .EQ. 0) THEN
           IER = 0 
-          GO TO 200
+          GO TO 210
         ELSE IF (IER .EQ. -1) THEN
           IER = 1
           GO TO 200
@@ -110,7 +110,9 @@ C
         ELSE
           IER = 6
           GO TO 200
+C
         ENDIF
+  210   CONTINUE
 C
         N2 = NPTS*2
         DO 10 I=1,N2
@@ -160,15 +162,12 @@ C
         NUMV = NUMV+1
         NV(NUMV) = IWK(21*NPTS+LP)
       IF (LP .NE. LPL) GO TO 30
+      RETURN
 C
   200 CONTINUE
-      IF (IER .EQ. 0) THEN
-        RETURN
-      ELSE 
-        CALL CSSERR('CSVORO',IER)
-        NCA = 0
-        NUMV = 0  
-        RETURN
-      ENDIF
+      CALL CSSERR('CSVORO',IER)
+      NCA = 0
+      NUMV = 0  
+      RETURN
 C 
       END

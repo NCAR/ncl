@@ -68,7 +68,7 @@ C
       CALL CSTRMESH(N,X,Y,Z, IWK(1),IWK(6*N+1),IWK(12*N+1),LNEW,
      +              IWK(13*N+1),IWK(14*N+1),WK(1),IER)
       IF (IER .EQ. 0) THEN
-        GO TO 200
+        GO TO 210
       ELSE IF (IER .EQ. -1) THEN
         IER = 1
         GO TO 200
@@ -85,6 +85,8 @@ C
         IER = 6
         GO TO 200
       ENDIF
+C
+  210 CONTINUE
 C
 C  Determine the triangle nodes.
 C
@@ -104,13 +106,11 @@ C
         NTRI(3,J) = IWK(15*N+6*(J-1)+3) 
    10 CONTINUE
 C
+      RETURN
+C
   200 CONTINUE
-      IF (IER .EQ. 0) THEN
-        RETURN
-      ELSE 
-        CALL CSSERR('CSVORO',IER)
-        NT = 0
-        RETURN
-      ENDIF
+      CALL CSSERR('CSVORO',IER)
+      NT = 0
+      RETURN
 C
       END

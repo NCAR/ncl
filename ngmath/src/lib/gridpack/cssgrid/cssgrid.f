@@ -113,6 +113,8 @@ C
         GO TO 130
       ENDIF
 C
+  100 CONTINUE
+C
 C Compute uniform grid points and interpolated values.
 C
       DO 3 J = 1,NY
@@ -121,7 +123,7 @@ C
      +                   IWK(1),IWK(6*NN+1),IWK(12*NN+1),
      +                   IFLGS,SIGMA,IFL,GRAD,IST,FF(I,J),IERR)
           IF (IERR .EQ. 0) THEN
-            GO TO 100
+            GO TO 2
           ELSE IF (IERR .EQ. 1) THEN
             GO TO 110
           ELSE IF (IERR .EQ. 4) THEN
@@ -137,10 +139,6 @@ C
           ENDIF
     2     CONTINUE
     3   CONTINUE
-      RETURN
-C
-  100 CONTINUE
-      IER = 0
       RETURN
 C 
   110 CONTINUE
