@@ -1,5 +1,5 @@
 /*
- *	$Id: rasdraw.c,v 1.14 1994-06-03 22:31:05 clyne Exp $
+ *	$Id: rasdraw.c,v 1.15 1994-10-11 23:19:03 clyne Exp $
  */
 /*
  *	rasdraw.c
@@ -773,6 +773,7 @@ ras_draw_init(context, nx, ny, encoding_hint)
 	XtSetArg(args[n], XtNcolormap, context->cmap);		n++;
 	XtSetArg(args[n], XtNvisual, context->visual);		n++;
 	XtSetArg(args[n], XtNdepth, context->dsp_depth);	n++;
+	XtSetArg(args[n], XtNinput, True);			n++;
 	context->toplevel = XtAppCreateShell(
 		NULL, context->app_class, applicationShellWidgetClass, 
 		context->dpy, args, n
