@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.12 1997-04-11 17:59:32 haley Exp $
+#	$Id: yMakefile,v 1.13 1997-06-17 23:32:15 boote Exp $
 #
 #	Makefile for libncarg.a
 #	Includes utilities and their corresponding test programs,
@@ -28,10 +28,10 @@ PartialSourceLibraryRoot(srcncarg.a,$(SUBDIRS))
 BuildSharedPartialFromArch(libNGmisc,libNGmisc.a,1,0,NullArgument)
 BuildSharedPartialFromArch(libNGmisc2,libNGmisc2.a,1,0,NullArgument)
 BuildSharedPartialFromArch(libNGmp,libNGmp.a,1,0,NullArgument)
-BuildSharedPartialFromArch(libNGff,libNGff.a,1,0,-lNGmp)
-BuildSharedPartialFromArch(libNGcn,libNGcn.a,1,0,-lNGmp)
+BuildSharedPartialFromArch(libNGff,libNGff.a,1,0,NullArgument)
+BuildSharedPartialFromArch(libNGcn,libNGcn.a,1,0,NullArgument)
 BuildSharedPartialFromArch(libNGlluC,libNGlluC.a,1,0,NullArgument)
-BuildSharedFromArch(libNGllu,libNGllu.a,1,0,-exports -lNGcn -exports -lNGff -exports -lNGmp -exports -lNGmisc -exports -lNGmisc2 -exports -lNGlluC $(NCARGGKSLIB) $(NCARGCLIB) $(CTOFLIBS) -lm -lc)
+BuildSharedFromArch(libNGllu,libNGllu.a,1,0,-exports -lNGcn -exports -lNGff -exports -lNGmp -exports -lNGmisc -exports -lNGmisc2 -exports -lNGlluC)
 CleanFilesTarget(libNGmisc.a libNGmisc2.a libNGmp.a libNGff.a libNGcn.a libNGllu.a libNGlluC.a)
 
 BuildIncludes($(INCLUDES),ncarg,..)
