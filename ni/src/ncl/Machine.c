@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.6 1993-12-30 00:44:23 ethan Exp $
+ *      $Id: Machine.c,v 1.7 1994-01-13 22:14:20 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -431,7 +431,7 @@ NclSymbol* the_sym;
 
 	if(the_sym->level == 1) {
 		return(_NclGetLevel1Var(the_sym->offset));
-	} else {
+	} else if(the_sym->level != 0){
 		previous = (NclFrame*)fp;
 		while(i != the_sym->level) {
 			i--;
@@ -442,6 +442,9 @@ NclSymbol* the_sym;
 */
 		previous++;
 		return((NclStackEntry*)((NclStackEntry*)previous + the_sym->offset));
+	} else {
+		NhlPError(FATAL,E_UNKNOWN,"Attempt to reference keyword (%s) as variable",the_sym->name);
+		return(NULL);
 	}
 }
 

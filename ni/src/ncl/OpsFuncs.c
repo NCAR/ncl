@@ -166,15 +166,25 @@ NclStackEntry *result;
 int operation;
 #endif
 {
-        NclStackEntry data;
-	switch(operation) {
-	case NOT_OP:
-	break;
-	case NEG_OP:
-	break;
+	NclMultiDValData operand_md;
+	NhlErrorTypes ret = NOERROR;
+	
+	
+        if(operand.kind == NclStk_VAL) {
+		operand_md = operand.u.data_obj;
+	} else if(operand.kind == NclStk_VAR) {
+		operand_md = _NclGetVarVal(operand.u.data_var);
+        } else {
+                return(FATAL);
+        }
+
+	ret = _NclCallMonoOp(operand_md,result,operation);
+
+	if(operand_md->obj.status != PERMANENT) {
+		_NclDestroyObj((NclObj)operand_md);
 	}
 
-        return(NOERROR);
+        return(ret);
 }
 
 
@@ -401,22 +411,22 @@ NhlErrorTypes _NclBuildArray
 */
 	switch(result_type) {
 	case Ncl_MultiDValdoubleData:
-	result->u.data_obj = _NclMultiDValdoubleCreate(NULL,value,NULL,ndims,dim_sizes,NULL,TEMPORARY,NULL);
+	result->u.data_obj = _NclMultiDValdoubleCreate(NULL,value,NULL,ndims,dim_sizes,TEMPORARY,NULL);
 	break;
 	case Ncl_MultiDValfloatData:
-	result->u.data_obj = _NclMultiDValfloatCreate(NULL,value,NULL,ndims,dim_sizes,NULL,TEMPORARY,NULL);
+	result->u.data_obj = _NclMultiDValfloatCreate(NULL,value,NULL,ndims,dim_sizes,TEMPORARY,NULL);
 	break;
 	case Ncl_MultiDVallongData:
-	result->u.data_obj = _NclMultiDVallongCreate(NULL,value,NULL,ndims,dim_sizes,NULL,TEMPORARY,NULL);
+	result->u.data_obj = _NclMultiDVallongCreate(NULL,value,NULL,ndims,dim_sizes,TEMPORARY,NULL);
 	break;
 	case Ncl_MultiDValintData:
-	result->u.data_obj = _NclMultiDValintCreate(NULL,value,NULL,ndims,dim_sizes,NULL,TEMPORARY,NULL);
+	result->u.data_obj = _NclMultiDValintCreate(NULL,value,NULL,ndims,dim_sizes,TEMPORARY,NULL);
 	break;
 	case Ncl_MultiDValshortData:
-	result->u.data_obj = _NclMultiDValshortCreate(NULL,value,NULL,ndims,dim_sizes,NULL,TEMPORARY,NULL);
+	result->u.data_obj = _NclMultiDValshortCreate(NULL,value,NULL,ndims,dim_sizes,TEMPORARY,NULL);
 	break;
 	case Ncl_MultiDValstringData:
-	result->u.data_obj = _NclMultiDValstringCreate(NULL,value,NULL,ndims,dim_sizes,NULL,TEMPORARY,NULL);
+	result->u.data_obj = _NclMultiDValstringCreate(NULL,value,NULL,ndims,dim_sizes,TEMPORARY,NULL);
 	break;
 	case Ncl_MultiDValcharData:
 	default:

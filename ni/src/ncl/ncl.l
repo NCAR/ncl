@@ -113,7 +113,7 @@ digit	[0-9]
 		return REAL;
 }
 {digit}\.?{digit}*[eE][+-]?{digit}+|{digit}?\.{digit}+[eE][+-]?{digit}+ {
-	sscanf(yytext,"%e",&(yylval.real));
+	sscanf(yytext,"%le",&(yylval.real));
 	printtoken(REAL,yytext);
 	cur_line_length += yyleng;
 	strcpy(cur_line_text_pos,yytext);

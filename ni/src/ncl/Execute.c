@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.2 1993-12-30 00:44:21 ethan Exp $
+ *      $Id: Execute.c,v 1.3 1994-01-13 22:14:16 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -584,11 +584,11 @@ NclExecuteReturnStatus _NclExecute
 				ptr++;lptr++;fptr++;
 				data.kind = NclStk_VAL;
 				thestr = (char**)NclMalloc((unsigned)sizeof(char*));
-				*thestr = (char*)NclMalloc((unsigned)strlen((char*)*ptr + 1));
-				strcpy(*thestr,(char*)ptr);
+				*thestr = (char*)NclMalloc((unsigned)strlen((char*)*ptr) + 1);
+				strcpy(*thestr,(char*)*ptr);
 				data.u.data_obj = _NclMultiDValstringCreate(NULL,
 						(void*)thestr,NULL,1,&dim_size,
-						NULL,TEMPORARY,NULL);
+						TEMPORARY,NULL);
 				_NclPush(data);
 				break;
 			}
@@ -600,7 +600,7 @@ NclExecuteReturnStatus _NclExecute
 				data.kind = NclStk_VAL;
 				data.u.data_obj = _NclMultiDValfloatCreate(NULL,
 						(void*)ptr,NULL,1,&dim_size,
-						NULL,STATIC,NULL);
+						STATIC,NULL);
 				_NclPush(data);
 				break;
 			}
@@ -612,7 +612,7 @@ NclExecuteReturnStatus _NclExecute
 				data.kind = NclStk_VAL;
 				data.u.data_obj = _NclMultiDValintCreate(NULL,
 						(void*)ptr,NULL,1,&dim_size,
-						NULL,STATIC,NULL);
+						STATIC,NULL);
 				_NclPush(data);
 				break;
 			}
@@ -662,9 +662,41 @@ NclExecuteReturnStatus _NclExecute
 /***************************
 * Two Operand Instructions *
 ***************************/			
-			case VAR_DIMNUM_OP:
-			case ASSIGN_VAR_DIMNUM_OP:
 			case PARAM_VAR_DIMNUM_OP:
+			case VAR_DIMNUM_OP: {
+				NclSymbol *thesym;
+				int dim_num;
+				NclStackEntry data;
+				NclVar var;
+
+				ptr++;lptr++;fptr++;
+				thesym = (NclSymbol*)*ptr;
+				ptr++;lptr++;fptr++;
+				dim_num = *ptr;
+		
+				var = _NclRetrieveRec(thesym);
+
+				if(var != NULL) {	
+					data.u.data_obj = _NclReadDim(
+						var,
+						NULL,
+						dim_num);
+					if(data.u.data_obj == NULL) {
+						status = FATAL;
+					} else {
+						data.kind = NclStk_VAL;
+						_NclPush(data);
+					}
+				} else {
+					status = FATAL;
+				}
+			}
+			break;
+			case ASSIGN_VAR_DIMNUM_OP: {
+				ptr++;lptr++;fptr++;
+				ptr++;lptr++;fptr++;
+			}
+			break;
 			case VAR_DIMNAME_OP:
 			case ASSIGN_VAR_DIMNAME_OP:
 			case PARAM_VAR_DIMNAME_OP:
@@ -701,21 +733,21 @@ NclExecuteReturnStatus _NclExecute
 /*
 * Need to free some stuff here
 */							
-							_NclBuildVSelection(var->u.data_var,data.u.sub_rec->u.vec,&(sel_ptr->selection[i]),i,data.u.sub_rec->name);
+							_NclBuildVSelection(var->u.data_var,data.u.sub_rec->u.vec,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec->name);
 							break;
 						case INT_RANGE:
 /*
 * Need to free some stuff here
 */							
-							_NclBuildRSelection(var->u.data_var,data.u.sub_rec->u.range,&(sel_ptr->selection[i]),i,data.u.sub_rec->name);
+							_NclBuildRSelection(var->u.data_var,data.u.sub_rec->u.range,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec->name);
 							break;
 						case COORD_VECT:
 						case COORD_RANGE:
 							break;
 						}
 					}
-					data1.kind = NclStk_VAL;
-					data1.u.data_obj = _NclVarValueRead(var->u.data_var,sel_ptr);
+					data1.kind = NclStk_VAR;
+					data1.u.data_var = _NclVarRead(var->u.data_var,sel_ptr);
 					_NclPush(data1);
 				}
 				break;
@@ -725,8 +757,10 @@ NclExecuteReturnStatus _NclExecute
 				NclStackEntry data;
 				NclStackEntry *lhs_var;
 				NclMultiDValData rhs_md;
+				NclSelectionRecord *sel_ptr = NULL;
 				int i,nsubs;	
 				NclSymbol *sym;
+				NhlErrorTypes ret = NOERROR;
 			
 			rhs = _NclPop();	
 			if(rhs.kind == NclStk_VAL) {
@@ -753,12 +787,15 @@ NclExecuteReturnStatus _NclExecute
 						status = FATAL;
 						for(i=0;i<nsubs;i++) {
 /*
-* Need to free this stuff
+* code for building selection record
 */
 							(void)_NclPop();
 						}
 					} else {
-						lhs_var->u.data_var= _NclVarCreate(sym,rhs_md);
+						if(rhs_md->obj.status != TEMPORARY) {
+							rhs_md= _NclCopyVal(rhs_md);
+						} 
+						lhs_var->u.data_var= _NclVarCreate(sym,rhs_md,0,NULL,0,NULL,0,NULL,NORMAL);
 						if(lhs_var->u.data_var != NULL) {
 							(void)_NclChangeSymbolType(sym,VAR);
 							lhs_var->kind = NclStk_VAR;
@@ -770,7 +807,7 @@ NclExecuteReturnStatus _NclExecute
 						}
 					}
 				} else if(lhs_var->kind == NclStk_VAR) {
-					if(nsubs != lhs_var->u.data_var->var.n_dims) {
+					if((nsubs != lhs_var->u.data_var->var.n_dims)&&(nsubs != 0)) {
 						NhlPError(FATAL,E_UNKNOWN,"Number of subscripts (%d) and number of dimensions (%d) do not match for variable (%s)",nsubs,lhs_var->u.data_var->var.n_dims,sym->name);
 						status = FATAL;
 						for(i=0;i<nsubs;i++) {
@@ -780,12 +817,38 @@ NclExecuteReturnStatus _NclExecute
 							(void)_NclPop();
 						}
 					}
-					for(i=0;i<nsubs;i++) {
-/*
-* code for building selection record
-*/
-						data =_NclPop();
+					if(nsubs != 0) {
+						sel_ptr = (NclSelectionRecord*)NclMalloc (sizeof(NclSelectionRecord));
+						sel_ptr->n_entries = nsubs;
+					} else {
+						sel_ptr = NULL;
 					}
+
+					for(i=0;i<nsubs;i++) {
+						data =_NclPop();
+						switch(data.u.sub_rec->sub_type) {
+						case INT_VECT:
+/*
+* Need to free some stuff here
+*/							
+							_NclBuildVSelection(lhs_var->u.data_var,data.u.sub_rec->u.vec,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec->name);
+							break;
+						case INT_RANGE:
+/*
+* Need to free some stuff here
+*/								
+							_NclBuildRSelection(lhs_var->u.data_var,data.u.sub_rec->u.range,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec->name);
+							break;
+						case COORD_VECT:
+						case COORD_RANGE:
+							break;
+						}
+					}
+					ret = _NclAssignToVar(lhs_var->u.data_var,rhs_md,sel_ptr);
+					if(ret <= WARNING) {
+						status = ret;
+					}
+					
 				} else {
 					NhlPError(FATAL,E_UNKNOWN,"Assignment not supported for left-hand type");
 					status = FATAL;
@@ -816,13 +879,78 @@ NclExecuteReturnStatus _NclExecute
 /*****************************
 * Three Operand Instructions *
 *****************************/
-			case PARAM_FILE_VAR_OP:
 			case PARAM_VARATT_OP:
+			case VARATT_OP: {
+				NclSymbol *thesym;
+				char*	attname;
+				int	nsubs;
+				NclStackEntry *var;
+				NclSelectionRecord *sel_ptr = NULL;
+				NclStackEntry data;
+
+				ptr++;lptr++;fptr++;
+				thesym = (NclSymbol*)(*ptr);
+				ptr++;lptr++;fptr++;
+				attname = (char*)(*ptr);
+				ptr++;lptr++;fptr++;
+				nsubs = (int)(*ptr);
+
+				var = _NclRetrieveRec(thesym);
+				if(var->u.data_var != NULL) {
+					if(_NclIsAtt(var->u.data_var,attname)) {
+						if(nsubs == 1) {
+							sel_ptr = (NclSelectionRecord*)NclMalloc(sizeof(NclSelectionRecord));
+							sel_ptr->n_entries = 1;
+							data =_NclPop();
+							if(data.u.sub_rec->name != NULL) {
+								NhlPError(WARNING,E_UNKNOWN,"Named dimensions can not be used with variable attributes");
+								status = WARNING;
+							}
+							switch(data.u.sub_rec->sub_type) {
+							case INT_VECT:
+/*
+* Need to free some stuff here
+*/						
+								_NclBuildVSelection(NULL,data.u.sub_rec->u.vec,&(sel_ptr->selection[0]),0,NULL);
+								break;
+							case INT_RANGE:
+/*
+* Need to free some stuff here
+*/								
+								_NclBuildRSelection(NULL,data.u.sub_rec->u.range,&(sel_ptr->selection[0]),0,NULL);
+								break;
+							case COORD_VECT:
+							case COORD_RANGE:
+								NhlPError(FATAL,E_UNKNOWN,"Coordinate indexing can not be used with variable attributes");
+								status = FATAL;
+								break;
+							}
+						} else if(nsubs != 0) {
+							NhlPError(FATAL,E_UNKNOWN,"Attributes only have one dimension, %d subscripts used",nsubs);		
+							status = FATAL;
+						}
+					} else {
+						status = FATAL;
+						NhlPError(FATAL,E_UNKNOWN,"Attempt to reference attribute (%s) which is undefined",attname);
+					}
+					data.u.data_obj = _NclReadAtt(var->u.data_var,attname,sel_ptr);
+					if(data.u.data_obj == NULL) {
+						data.kind = NclStk_NOVAL;
+						status = FATAL;
+					} else {
+						data.kind = NclStk_VAL;
+					}
+				} else {
+					NhlPError(FATAL,E_UNKNOWN,"Variable (%s) is still undefined, unable to reference attribute %s",thesym->name,attname);
+					status = FATAL;
+				}
+				_NclPush(data);
+			}
+			break;
+			case PARAM_FILE_VAR_OP:
 			case PARAM_VAR_COORD_OP:
 			case VAR_COORD_OP:
 			case ASSIGN_VAR_COORD_OP:
-			case VARATT_OP:
-			case ASSIGN_VARATT_OP:
 			case FILE_VAR_OP :
 			case ASSIGN_FILE_VAR_OP :
 			case FILEVAR_DIMNAME_OP:	
@@ -835,6 +963,87 @@ NclExecuteReturnStatus _NclExecute
 				ptr++;lptr++;fptr++;
 				ptr++;lptr++;fptr++;
 				break;
+			case ASSIGN_VARATT_OP: {
+				NclSymbol *thesym;
+				char *attname;
+				int nsubs;
+				NhlErrorTypes ret = NOERROR;
+				NclStackEntry *var;
+				NclStackEntry value;
+				NclMultiDValData value_md;
+				NclSelectionRecord *sel_ptr = NULL;
+				NclStackEntry data1;
+				
+				ptr++;lptr++;fptr++;
+				thesym = (NclSymbol*)(*ptr);
+				ptr++;lptr++;fptr++;
+				attname = (char*)(*ptr);
+				ptr++;lptr++;fptr++;
+				nsubs = (int)(*ptr);
+	
+				var = _NclRetrieveRec(thesym);
+				if((var->u.data_var != NULL)&&!(status < INFO)) {
+					if(nsubs == 1) {
+						sel_ptr = (NclSelectionRecord*)NclMalloc(sizeof(NclSelectionRecord));
+						sel_ptr->n_entries = 1;
+						data1 =_NclPop();
+						if(data1.u.sub_rec->name != NULL) {
+							NhlPError(WARNING,E_UNKNOWN,"Named dimensions can not be used with variable attributes");
+							status = WARNING;
+						}
+						switch(data1.u.sub_rec->sub_type) {
+						case INT_VECT:
+/*
+* Need to free some stuff here
+*/						
+							_NclBuildVSelection(NULL,data1.u.sub_rec->u.vec,&(sel_ptr->selection[0]),0,NULL);
+							break;
+						case INT_RANGE:
+/*
+* Need to free some stuff here
+*/								
+							_NclBuildRSelection(NULL,data1.u.sub_rec->u.range,&(sel_ptr->selection[0]),0,NULL);
+							break;
+						case COORD_VECT:
+						case COORD_RANGE:
+							NhlPError(FATAL,E_UNKNOWN,"Coordinate indexing can not be used with variable attributes");
+							status = FATAL;
+							break;
+						}
+					} else if(nsubs != 0){
+						NhlPError(FATAL,E_UNKNOWN,"Attempt to subscript attribute with more than one dimension");
+						status = FATAL;
+					}
+					if(!(status < INFO)) {
+						value = _NclPop();
+						if(value.kind == NclStk_VAR) {
+							value_md = _NclGetVarVal(value.u.data_var);
+							if(value_md == NULL) {
+								status = FATAL;
+							}
+						} else if(value.kind == NclStk_VAL){
+							value_md = value.u.data_obj;
+						} else {
+							NhlPError(FATAL,E_UNKNOWN,"Attempt to assign illegal type or value to variable attribute");
+							status = FATAL;
+						}
+						ret = _NclWriteAtt(var->u.data_var,attname,value_md,sel_ptr);
+						if( ret < INFO) {
+							status = ret;
+						}
+					} else {
+/*
+* NOT GOOD!!!
+*/
+						(void)_NclPop();
+
+					}
+				} else {
+					NhlPError(FATAL,E_UNKNOWN,"Variable (%s) is undefined, can not assign attribute (%s)",thesym->name,attname);
+					status = FATAL;
+				}
+			}
+			break;
 /*****************************
 * Four Operand Instructions  *
 *****************************/
