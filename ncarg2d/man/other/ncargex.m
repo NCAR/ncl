@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncargex.m,v 1.31 1996-02-29 18:06:56 kennison Exp $
+.\"	$Id: ncargex.m,v 1.32 1996-03-20 21:47:14 haley Exp $
 .\"
 .\" @(#)f77.1 1.4 86/07/31 SMI; 
 .TH NCARGEX 1NCARG "March 1995" NCAR "NCAR GRAPHICS"
@@ -394,7 +394,7 @@ pgkex17 pgkex18 pgkex19 pgkex20 pgkex21 c_gtxpac c_pgkex21
 .sp
 .I "GRIDALL Example:"
 .sp
-tgrida c_tgrida
+ccpga tgrida c_tgrida
 .sp
 .I "HALFTONE Example:"
 .sp
