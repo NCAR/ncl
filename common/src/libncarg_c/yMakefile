@@ -1,6 +1,6 @@
 #
 #
-#	$Id: yMakefile,v 1.39 2000-12-05 18:02:54 haley Exp $
+#	$Id: yMakefile,v 1.40 2001-10-09 14:51:37 haley Exp $
 #
 #
 #	Makefile for libncarg_c -- NCAR G common utilities
@@ -34,10 +34,9 @@ EXOBJS  = bcopyswap.o gsbytes.o logic32.o
 SHLIBSRCS = g77.c
 SHLIBOBJS = g77.o 
 
-#else
+#elif !defined(alpha) && !(defined(ultrix) && defined(RISC)) && !(defined(linux) || defined(i386)) && !(defined(IRIX) || defined(IRIX64)) || !defined(AIX) && !defined(CRAY)
 EXCSRCS = gsbytes.c logic32.c
 EXOBJS  = gsbytes.o logic32.o
-
 #endif
 
 
@@ -66,6 +65,9 @@ LibraryTarget($(MYNAME),$(OBJS))
 InstallTarget($(HDRS),$(INSTALL_INC),$(NCARGINCPATH))
 BuildIncludes($(HDRS),ncarg,..)
 DependTarget($(CSRCS))
+
+#if !defined(i386) || defined(linux)
 CleanFilesTarget($(FCPP_FSRCS))
+#endif
 
 BuildSharedLibTarget(libNGc,$(OBJS) $(SHLIBOBJS),1,0,$(REQLIBS))
