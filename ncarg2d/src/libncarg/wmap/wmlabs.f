@@ -1,5 +1,5 @@
 
-C	$Id: wmlabs.f,v 1.3 1994-10-14 01:24:04 fred Exp $
+C	$Id: wmlabs.f,v 1.4 1994-10-27 00:28:33 fred Exp $
 C
       SUBROUTINE WMLABS(X,Y,SYMTYP)
 C
@@ -15,6 +15,7 @@ C         'CLOUD'
 C         'RAIN'
 C         'SUN'
 C         'THUNDERSTORM'
+C         'SNOWFLAKES'
 C
       CHARACTER*(*) SYMTYP
 C
@@ -198,7 +199,7 @@ C
           CALL PLCHHQ(XNDC,YNDC,':F37:o',10.*SIZEL,0.,0.)
         ENDIF
         CALL PCSETI('CC - character color',ICC)
-      ELSE IF (SYMTYP(1:1).EQ.'S' .OR. SYMTYP(1:1).EQ.'s') THEN
+      ELSE IF (SYMTYP(1:2).EQ.'SU' .OR. SYMTYP(1:2).EQ.'su') THEN
 C
 C  Draw a sun as a daily weather icon.
 C
@@ -311,6 +312,24 @@ C
           CALL PLCHHQ(XNDC,YNDC,':F137:k',10.*SIZEL,0.,0.)
         ENDIF
         CALL PCSETI('CC - character color',ICC)
+      ELSE IF (SYMTYP(1:2).EQ.'SN' .OR. SYMTYP(1:2).EQ.'sn') THEN
+C
+C  Draw snowflakes as part of daily weather icon.
+C
+        DSIZ = 1.3*SIZEL
+        CALL PCGETI('CC',ISNFC1)
+        CALL PCSETI('CC',ICOLOR)
+        DO 60 I=1,3
+          XP = XNDC+0.8*DSIZ+2.7*DSIZ*REAL(I-2)
+          YP = YNDC-2.30*DSIZ
+          CALL PLCHHQ(XP,YP,':F37:q',DSIZ,0.,0.)
+   60   CONTINUE
+        DO 70 I=1,2
+          XP = XNDC+0.8*DSIZ+2.7*DSIZ*(REAL(I)-1.5)
+          YP = YNDC-3.40*DSIZ
+          CALL PLCHHQ(XP,YP,':F37:q',DSIZ,0.,0.)
+   70   CONTINUE
+        CALL PCSETI('CC',ISNFC1)
       ENDIF
 C
 C  Restore original attrributes.
