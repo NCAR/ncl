@@ -1,5 +1,5 @@
 /*
- *	$Id: text.c,v 1.25 1993-04-04 20:51:35 clyne Exp $
+ *	$Id: text.c,v 1.26 1993-07-01 15:57:47 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -927,6 +927,26 @@ int	Text(cgmc)
 	 */
 	(void) strncpy(string,cgmc->s->string[str_ind], sizeof(string)-1);
 
+	/*
+	 * make sure every character in the string has a definition. If
+	 * not change that character to a space so we can do something 
+	 * reasonable when computing the alignment of the entire string
+	 */
+	for (i=0; i<strlen(string); i++) {
+
+		if (string[i] < F_CHAR_START(fcap_template) ||
+			string[i] > F_CHAR_END(fcap_template)) {
+
+			string[i] = ' ';
+		}
+
+		index = string[i] - F_CHAR_START(fcap_template);	
+		numstroke = F_NUMSTROKE(fcap_current, index);
+		if (numstroke <= 1) {
+			string[i] = ' ';
+		}
+	}
+
 	/* 
 	 * recalc transformation values if attributes have changed. 
 	 * always check for spaces, " ",  because chars that don't 
@@ -940,19 +960,6 @@ int	Text(cgmc)
 	y_space = -Y_spacing;
 
 
-	/*
-	 * make sure every character in the string has a definition. If
-	 * not change that character to a space so we can do something 
-	 * reasonable when computing the alignment of the entire string
-	 */
-	for (i=0; i<strlen(string); i++) {
-
-		index = string[i] - F_CHAR_START(fcap_template);	
-		numstroke = F_NUMSTROKE(fcap_current, index);
-		if (numstroke <= 1) {
-			string[i] = ' ';
-		}
-	}
 
 		
 
