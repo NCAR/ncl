@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.17 1995-02-15 22:33:48 haley Exp $
+#      $Id: yMakefile,v 1.18 1995-02-18 00:48:34 boote Exp $
 #
 #########################################################################
 #                                                                       #
@@ -38,4 +38,3 @@ ng4ex: ng4ex.csh Makefile
 	-e 's+SED_RESDIR+$(RESDIR)+' \
 	-e 's+SED_DATADIR+$(DATADIR)+' \
 	< ng4ex.csh > ng4ex
-
