@@ -208,7 +208,7 @@ NhlErrorTypes solve_linsys_W( void )
  */
   tmp_a = (double*)calloc(nn,sizeof(double));
   tmp_b = (double*)calloc(nnrhs,sizeof(double));
-  tmp_tmp_a = (double*)calloc(nnrhs,sizeof(double));
+  tmp_tmp_a = (double*)calloc(nn,sizeof(double));
   if( tmp_a == NULL || tmp_b == NULL || tmp_tmp_a == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"solve_linsys: Unable to allocate memory for making a copy of the input arrays");
     return(NhlFATAL);
