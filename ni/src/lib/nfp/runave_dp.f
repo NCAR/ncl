@@ -135,10 +135,6 @@ c          end do
           DO M = MSTRT,MLAST
               IF (WORK(M).NE.XMSG) THEN
                   SUM = SUM + WORK(M)
-c c c          if (mod(nave,2).eq.0) then
-c c c          print *,' DEBUG: kopt,n,nmid,mstrt,mlast,m,work(m)='
-c c c+                ,         kopt,n,nmid,mstrt,mlast,m,work(m)
-c c c          end if
               ELSE
                   KMSG = KMSG + 1
               END IF

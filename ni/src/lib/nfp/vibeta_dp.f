@@ -43,7 +43,7 @@ c local vectors and variables
 
       INTEGER KLVL,NL1,NL,NLL,NLMAX,NLTOP,NLSAV,NL2,NLX
       DOUBLE PRECISION ZERO,PZERO,XZERO,SLOPE,PA,PC,PSFCX
-      LOGICAL DEBUG,PFLAG
+      LOGICAL VDBG,PFLAG
 
       PARAMETER (KLVL=300)
       DOUBLE PRECISION PP(KLVL),XX(KLVL),PI(0:KLVL),XI(0:KLVL),
@@ -251,8 +251,8 @@ c calculate the integral (odd levels only)
 
 c optional print
 
-      DEBUG = .false.
-      IF (DEBUG) THEN
+      VDBG = .false.
+      IF (VDBG) THEN
           WRITE (*,FMT=
      +      '(/,'' sub vibeta: vint='',3i5,2(1x,f10.2),2f8.1,/)') NLMAX,
      +      2*NLMAX - 1,NLTOP,VINT,XSFC,PSFC,PSFCX

@@ -122,26 +122,15 @@ C pad work with appropriate values
 
       IF (KOPT.GT.0) THEN
           DO N = 1,NAV2
-c c c        print *,"(nav2+1-n), (npts+nav2+n)=",
-c c c+                (nav2+1-n), (npts+nav2+n)
               WORK(NAV2+1-N) = X(N+1)
               WORK(NPTS+NAV2+N) = X(NPTS-N)
           END DO
       ELSE IF (KOPT.LT.0) THEN
           DO N = 1,NAV2
-c c c        print *,"(nav2+1-n), (npts+nav2+n)=",
-c c c+                (nav2+1-n), (npts+nav2+n)
               WORK(NAV2+1-N) = X(NPTS+1-N)
               WORK(NPTS+NAV2+N) = X(N)
           END DO
       END IF
-
-c c c if (mod(nwgt,2).eq.0) then
-c          print *," "
-c          do n=1,lwork
-c             write (*,"('wrunavx77: ',3i4,3f8.2))") kopt,nav2,n,work(n)
-c          end do
-c c c end if
 
       DO N = 1,NPTS
           KMSG = 0
@@ -152,13 +141,6 @@ c c c end if
           DO M = MSTRT,MLAST
               IF (WORK(M).NE.XMSG) THEN
                   SUM = SUM + WORK(M)*WGT(M-MSTRT+1)
-c c c          if (mod(nwgt,2).eq.0) then
-c c c          print *,' DEBUG: kopt,n,nmid,mstrt,mlast,m,work(m)'
-c c c+                ,',wgt(m-mstrt+1),work(m)*wgt(m-mstrt+1),sum='
-c c c+                ,         kopt,n,nmid,mstrt,mlast,m,work(m)
-c c c+                ,  wgt(m-mstrt+1),work(m)*wgt(m-mstrt+1),sum
-c c c          end if
-
               ELSE
                   KMSG = KMSG + 1
               END IF
