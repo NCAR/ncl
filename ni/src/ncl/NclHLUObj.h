@@ -33,6 +33,7 @@ typedef struct _NclHLUChildList NclHLUChildList;
 
 typedef struct _NclHLUObjPart {
 	int hlu_id;
+	NclQuark hlu_name;
 	int parent_hluobj_id;
 	NhlClass class_ptr;
 	NclHLUChildList *c_list;

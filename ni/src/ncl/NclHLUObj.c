@@ -240,8 +240,10 @@ unsigned int type;
 		parent = (NclHLUObj)_NclGetObj(hlu->hlu.parent_hluobj_id);
 		tmp->hluobj.parent_hluobj_id = parent->hlu.hlu_id;
 	}
+	else
+		tmp->hluobj.parent_hluobj_id = -1;
 	tmp->hluobj.class_ptr = hlu->hlu.class_ptr;
-	tmp->hluobj.hlu_name = NrmStringToQuark(NhlName(hlu->hlu.hlu_id));
+	tmp->hluobj.hlu_name = hlu->hlu.hlu_name;
 
 	return((void*)tmp);
 	
@@ -312,10 +314,11 @@ NhlClass class_ptr;
 	}
 	tmp->hlu.parent_hluobj_id = -1;
 	tmp->hlu.hlu_id = id;
+	tmp->hlu.hlu_name = NrmStringToQuark(NhlName(tmp->hlu.hlu_id));
 	tmp->hlu.c_list = NULL;
 	tmp->hlu.class_ptr = class_ptr;
 #ifdef MAKEAPI
-	_NclAddToNewList(tmp->hlu.hlu_id,NrmStringToQuark(NhlName(tmp->hlu.hlu_id)),tmp->hlu.class_ptr);
+	_NclAddToNewList(tmp->hlu.hlu_id,tmp->hlu.hlu_name,tmp->hlu.class_ptr);
 #endif /*MAKEAPI*/
         (void)_NclObjCreate((NclObj)tmp , cptr , obj_type ,(obj_type_mask | Ncl_HLUObj), status);
 	tmp->hlu.parent_hluobj_id = parentid;
