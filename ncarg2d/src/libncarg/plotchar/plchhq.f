@@ -1,5 +1,5 @@
 C
-C $Id: plchhq.f,v 1.14 1994-03-17 00:24:17 kennison Exp $
+C $Id: plchhq.f,v 1.15 1994-04-20 23:58:27 kennison Exp $
 C
       SUBROUTINE PLCHHQ (XPOS,YPOS,CHRS,SIZE,ANGD,CNTR)
 C
@@ -88,14 +88,25 @@ C
       DIMENSION ISPC(19)
 C
 C Define a character array in which to define the characters to be
-C associated with values of NDPC from 1 to 95.
+C associated with values of NDPC from 1 to 96.  DPC was the set of
+C six-bit character codes used on the CDC 7600 (the machine on which
+C PWRITX, the predecessor of PLCHHQ, was first implemented) and the
+C digitization arrays of the PWRITX database are arranged in DPC order.
+C For NDPC = 1 to 47, CDPC(NDPC) is the character that the DPC codes
+C associated with that index value.  For NDPC = 48 to 73, CDPC(NDPC)
+C is a lower-case letter.  For NDPC = 74 to 95, CDPC(NDPC) is an ASCII
+C character which may be used in the input character string and for
+C which we wish to select a meaningful character from the PWRITX
+C database.  CDPC(96) is a blank; NDPC = 96 is used only as a signal
+C that an octal function code has been found in the input character
+C string, selecting a particular character from the PWRITX database.
 C
-      CHARACTER*1 CDPC(95)
+      CHARACTER*1 CDPC(96)
 C
 C Define an array in which to define the ASCII decimal equivalents of
 C the characters in CDPC.
 C
-      DIMENSION IASC(95)
+      DIMENSION IASC(96)
 C
 C Declare an array in which to put some standard character heights,
 C for use in calls to PCCFFF.
@@ -118,8 +129,14 @@ C transformation 1 and the current normalization transformation.
 C
       DIMENSION WNT1(4),VNT1(4),WNTC(4),VNTC(4)
 C
+C Declare an array in which to save text extent information for specific
+C characters from specific fonts.
+C
+      DIMENSION STEI(6,95,37)
+      SAVE STEI
+C
 C Define the characters to be associated with values of NDPC from 1
-C to 95.
+C to 96.
 C
       DATA CDPC / 'A','B','C','D','E','F','G','H','I','J',
      +            'K','L','M','N','O','P','Q','R','S','T',
@@ -130,7 +147,7 @@ C
      +            'n','o','p','q','r','s','t','u','v','w',
      +            'x','y','z','!','"','#','%','&',':',';',
      +            '<','>','?','@','[','\\',']','{','|','}',
-     +            '~','''','^','_','`'                   /
+     +            '~','''','^','_','`',' '               /
 C
 C Define the ASCII decimal equivalents of the characters in CDPC.
 C
@@ -143,7 +160,7 @@ C
      +            110,111,112,113,114,115,116,117,118,119,
      +            120,121,122, 33, 34, 35, 37, 38, 58, 59,
      +             60, 62, 63, 64, 91, 92, 93,123,124,125,
-     +            126, 39, 94, 95, 96                    /
+     +            126, 39, 94, 95, 96, 32                /
 C
 C Define the number of card images used to represent the contents of
 C the arrays INDA and IDDA.  These are used to compute the number of
@@ -172,6 +189,10 @@ C Define the standard character heights for principal, indexical, and
 C cartographic sizes, for use in calls to PCCFFF.
 C
       DATA SPIC / 21. , 13. , 9. /
+C
+C Initialize the array of text-extent information.
+C
+      DATA STEI / 21090*0. /
 C
 C
 C I N I T I A L I Z A T I O N
@@ -208,7 +229,7 @@ C
 C
 C Initialize the table IDPC.  For a given character "c", IDPC(ICHAR(c))
 C is the integer value of the equivalent of "c" in an augmented DPC
-C character set.  (DPC was the set of six-bit character codes used on
+C character set.  DPC was the set of six-bit character codes used on
 C the CDC 7600 (the machine on which the predecessor of PLCHHQ was
 C first implemented) and the digitization arrays are arranged in DPC
 C order.  First, all undefined entries are zeroed.
@@ -366,7 +387,7 @@ C first pass.  (When more than NCSO characters are defined by the
 C input string, it is necessary to return to this point and repeat
 C this pass, saving another batch of characters.)
 C
-  100 ILCG=0
+  103 ILCG=0
 C
 C Zero the count of characters for which information has been saved.
 C
@@ -400,7 +421,7 @@ C Set the index of the last character examined in the input.
 C
       ICHR=0
 C
-C Initialize the index offsets for font, size and case to Roman,
+C Initialize the index offsets for font, size, and case to Roman,
 C principal, and upper, respectively.
 C
       IFNT=IFRO
@@ -465,7 +486,7 @@ C
 C If there are no more characters in the string, jump to end-of-string
 C processor.
 C
-  103 IF (ICHR.GE.NCHR) GO TO 106
+  104 IF (ICHR.GE.NCHR) GO TO 108
 C
 C Get the next character from the string.  NCOL is the number of the
 C character in the character collating sequence on the machine on
@@ -489,7 +510,7 @@ C
           ICHR=ICHR+1
         ELSE
           IPFC=1-IPFC
-          GO TO 103
+          GO TO 104
         END IF
       END IF
 C
@@ -500,7 +521,7 @@ C
 C If function codes are being processed, jump to the function code
 C processor.
 C
-      IF (IPFC.NE.0) GO TO 109
+      IF (IPFC.NE.0) GO TO 128
 C
 C If the character is not one of the "standard" ones, take special
 C action.  Lower-case alphabetic characters behave like upper-case
@@ -518,7 +539,7 @@ C
         ELSE
           INDP=358
         END IF
-        GO TO 104
+        GO TO 105
       END IF
 C
 C Compute the index of the entry in INDA which points to the proper
@@ -532,32 +553,66 @@ C star instead; if that can't be found, there's a more serious error.
 C In any case, define the distances from the center of the character to
 C its left and right ends.
 C
-  104 IF (IQUF.EQ.0) THEN
+  105 IF (IQUF.EQ.0) THEN
         IF (NFNT.EQ.0.OR.NDPC.LT.1.OR.NDPC.GT.95.OR.INDP.EQ.95) THEN
           CALL PCEXCD (INDP,IPSS,NDGU)
         ELSE
           IF (ICSE.NE.ICSL.OR.NDPC.LT.1.OR.NDPC.GT.26) THEN
-            NASC=IASC(NDPC)
+            KDPC=NDPC
           ELSE
-            NASC=IASC(NDPC+47)
+            KDPC=NDPC+47
           END IF
-          IF (NFNT.GE.1.AND.NFNT.LE.20) THEN
-            CALL PCCFFC (IPSS,IBNU,NFNT,NASC,IPIC,RDGU,MDGU,NDGU)
-            IF (ICFELL('PLCHHQ',11).NE.0) RETURN
+          NASC=IASC(KDPC)
+          MFNT=MOD(NFNT,100)
+          IF (ITEF.NE.0.AND.ANGD.EQ.360..AND.
+     +        STEI(1,KDPC,MFNT).NE.0.) THEN
+            RDGU(1)=SPIC(IPIC)*STEI(1,KDPC,MFNT)
+            RDGU(2)=SPIC(IPIC)*STEI(2,KDPC,MFNT)
+            RDGU(3)=SPIC(IPIC)*STEI(3,KDPC,MFNT)
+            RDGU(4)=SPIC(IPIC)*STEI(4,KDPC,MFNT)
+            RDGU(5)=SPIC(IPIC)*STEI(5,KDPC,MFNT)
+            RDGU(6)=SPIC(IPIC)*STEI(6,KDPC,MFNT)
+            NDGU=6
           ELSE
-            IF (IMAP.LE.0) THEN
-              CHFS=SIZM*HPIC(IPIC)
+            IF (NFNT.GE.1.AND.NFNT.LE.20) THEN
+              CALL PCCFFC (IPSS,IBNU,NFNT,NASC,SPIC(IPIC),
+     +                                     RDGU,MDGU,NDGU)
+              IF (ICFELL('PLCHHQ',11).NE.0) RETURN
             ELSE
-              CHFS=.1  !  ???
+              IF (IMAP.LE.0) THEN
+                CHFS=SIZM*HPIC(IPIC)
+              ELSE
+                CHFS=.1  !  ???
+              END IF
+              CALL PCCFFF (IPSS,IBNU,NFNT,NASC,SPIC(IPIC),CHFS,
+     +                                          RDGU,MDGU,NDGU)
+              IF (ICFELL('PLCHHQ',12).NE.0) RETURN
             END IF
-            CALL PCCFFF (IPSS,IBNU,NFNT,NASC,SPIC(IPIC),CHFS,
-     +                                        RDGU,MDGU,NDGU)
-            IF (ICFELL('PLCHHQ',12).NE.0) RETURN
-          END IF
-          IF (NDGU.EQ.0) THEN
-            CALL PCCFFC (IPSS,IBNU,1,NASC,IPIC,RDGU,MDGU,NDGU)
-            IF (ICFELL('PLCHHQ',13).NE.0) RETURN
-            IF (NDGU.EQ.0) CALL PCEXCD (INDP,IPSS,NDGU)
+            IF (NDGU.EQ.0) THEN
+              CALL PCCFFC (IPSS,IBNU,1,NASC,SPIC(IPIC),RDGU,MDGU,NDGU)
+              IF (ICFELL('PLCHHQ',13).NE.0) RETURN
+              IF (NDGU.EQ.0) CALL PCEXCD (INDP,IPSS,NDGU)
+            END IF
+            IF (NDGU.NE.0.AND.STEI(1,KDPC,MFNT).EQ.0.) THEN
+              STEI(1,KDPC,MFNT)=RDGU(1)/SPIC(IPIC)
+              STEI(2,KDPC,MFNT)=RDGU(2)/SPIC(IPIC)
+              STEI(3,KDPC,MFNT)=0.
+              STEI(4,KDPC,MFNT)=0.
+              STEI(5,KDPC,MFNT)=0.
+              STEI(6,KDPC,MFNT)=0.
+              DO 106 I=3,NDGU-1,2
+                IF (RDGU(I).GT.-2047.) THEN
+                  STEI(3,KDPC,MFNT)=MIN(STEI(3,KDPC,MFNT),
+     +                                  RDGU(I  )/SPIC(IPIC))
+                  STEI(4,KDPC,MFNT)=MIN(STEI(4,KDPC,MFNT),
+     +                                  RDGU(I+1)/SPIC(IPIC))
+                  STEI(5,KDPC,MFNT)=MAX(STEI(5,KDPC,MFNT),
+     +                                  RDGU(I  )/SPIC(IPIC))
+                  STEI(6,KDPC,MFNT)=MAX(STEI(6,KDPC,MFNT),
+     +                                  RDGU(I+1)/SPIC(IPIC))
+                END IF
+  106         CONTINUE
+            END IF
           END IF
         END IF
         IF (NDGU.EQ.0) THEN
@@ -680,14 +735,14 @@ C
 C
         IF (IQUF.EQ.0) THEN
 C
-          DO 105 I=3,NDGU-1,2
+          DO 107 I=3,NDGU-1,2
             IF (RDGU(I).GT.-2047.) THEN
               DSTL=MAX(DSTL,-UCEN-SIZM*XMZM(IPIC)*RDGU(I  ))
               DSTR=MAX(DSTR,+UCEN+SIZM*XMZM(IPIC)*RDGU(I  ))
               DSTB=MAX(DSTB,-VCEN-SIZM*YMZM(IPIC)*RDGU(I+1))
               DSTT=MAX(DSTT,+VCEN+SIZM*YMZM(IPIC)*RDGU(I+1))
             END IF
-  105     CONTINUE
+  107     CONTINUE
 C
         ELSE
 C
@@ -755,7 +810,7 @@ C
 C
 C Go get the next character from the input string.
 C
-      GO TO 103
+      GO TO 104
 C
 C
 C E N D   O F   S T R I N G   E N C O U N T E R E D
@@ -766,7 +821,7 @@ C on whether the last character was "written down" or "written across".
 C In the former case, the bottom of the character box is used; in the
 C latter case, the center of the right edge of the character is used.
 C
-  106 IF (LCWD.NE.0) THEN
+  108 IF (LCWD.NE.0) THEN
         XEND=XCEN+.5*VEPC*STSO
         YEND=YCEN-.5*VEPC*STCO
       ELSE
@@ -805,7 +860,7 @@ C
 C
 C If the object of the call was just to compute text extents, quit.
 C
-      IF (ITEF.NE.0.AND.ANGD.EQ.360.) GO TO 134
+      IF (ITEF.NE.0.AND.ANGD.EQ.360.) GO TO 127
 C
 C
 C D R A W   T H E   C H A R A C T E R S
@@ -889,13 +944,13 @@ C shadow, the principal part of the character, or a character outline.
 C The internal parameter IORD determines the order in which all the
 C pieces of the characters are done.
 C
-      DO 108 I=1,3+3*NCSV
+      DO 126 I=1,3+3*NCSV
 C
 C Set things up to draw a part of the box ...
 C
         IF (I.LE.3) THEN
 C
-          IF (ILCS.NE.0) GO TO 108
+          IF (ILCS.NE.0) GO TO 126
 C
           IF      (I.EQ.1) THEN
             IDRF=MOD(IBXF/4,2)
@@ -911,7 +966,7 @@ C
             RDLW=RBXL
           END IF
 C
-          IF (IDRF.EQ.0) GO TO 108
+          IF (IDRF.EQ.0) GO TO 126
 C
           XCEN=XFRA
           YCEN=YFRA
@@ -971,7 +1026,7 @@ C
             RDLW=ROLW
           END IF
 C
-          IF (IDRF.EQ.0) GO TO 108
+          IF (IDRF.EQ.0) GO TO 126
 C
           XCEN=XCSV(ICSV)+XADJ
           YCEN=YCSV(ICSV)+YADJ
@@ -998,7 +1053,7 @@ C
               CALL PCEXCD (INDP,2,NDGU)
             ELSE
               IF (NFNT.GE.1.AND.NFNT.LE.20) THEN
-                CALL PCCFFC (2,IBNU,NFNT,NASC,IPIC,RDGU,MDGU,NDGU)
+                CALL PCCFFC (2,IBNU,NFNT,NASC,SPIC(IPIC),RDGU,MDGU,NDGU)
                 IF (ICFELL('PLCHHQ',23).NE.0) RETURN
               ELSE
                 IF (IMAP.LE.0) THEN
@@ -1011,7 +1066,7 @@ C
                 IF (ICFELL('PLCHHQ',24).NE.0) RETURN
               END IF
               IF (NDGU.EQ.0) THEN
-                CALL PCCFFC (2,IBNU,1,NASC,IPIC,RDGU,MDGU,NDGU)
+                CALL PCCFFC (2,IBNU,1,NASC,SPIC(IPIC),RDGU,MDGU,NDGU)
                 IF (ICFELL('PLCHHQ',25).NE.0) RETURN
                 IF (NDGU.EQ.0) CALL PCEXCD (INDP,2,NDGU)
               END IF
@@ -1073,7 +1128,7 @@ C
 C
             NCRA=0
 C
-            DO 149 K=3,NDGU-1,2
+            DO 110 K=3,NDGU-1,2
               IF (K.EQ.3.OR.RDGU(K-2).LE.-2047.
      +                  .OR.RDGU(K  ).LE.-2047.) THEN
                 IF (NCRA+1.LE.MCRA) THEN
@@ -1089,26 +1144,26 @@ C
                 NINT=MAX(1,INT(ABS(RDGU(K  )-RDGU(K-2))/2.1),
      +                     INT(ABS(RDGU(K+1)-RDGU(K-1))/2.1))
                 IF (NCRA+NINT.LE.MCRA) THEN
-                  DO 148 IINT=1,NINT
+                  DO 109 IINT=1,NINT
                     P=REAL(NINT-IINT)/REAL(NINT)
                     NCRA=NCRA+1
                     XCRA(NCRA)=P*RDGU(K-2)+(1.-P)*RDGU(K  )
                     YCRA(NCRA)=P*RDGU(K-1)+(1.-P)*RDGU(K+1)
-  148             CONTINUE
+  109             CONTINUE
                 ELSE
                   CALL SETER ('PLCHHQ - INTERNAL LOGIC ERROR (XCRA/YCRA
      +TOO SMALL) - SEE CONSULTANT',31,1)
                   RETURN
                 END IF
               END IF
-  149       CONTINUE
+  110       CONTINUE
 C
             NDGU=2+2*NCRA
 C
-            DO 150 K=3,NDGU-1,2
+            DO 111 K=3,NDGU-1,2
               RDGU(K  )=XCRA(K/2)
               RDGU(K+1)=YCRA(K/2)
-  150       CONTINUE
+  111       CONTINUE
 C
           END IF
 C
@@ -1128,7 +1183,7 @@ C what has been saved up in XCRA and YCRA is a polyline to be drawn.
 C If the X coordinate equals -2047, it says that what has been saved
 C up is a polygon to be filled.
 C
-          DO 107 K=3,NDGU-1,2
+          DO 125 K=3,NDGU-1,2
 C
 C If the X/Y pair is to be saved in XCRA and YCRA, increment NCRA ...
 C
@@ -1256,7 +1311,7 @@ C element in the middle of the arrays that we are looking at, which
 C changes the value of NCRA.  Control returns here to examine element
 C number ICRA of XCRA and YCRA.
 C
-  136           IF (ICRA.GT.NCRA) GO TO 142
+  112           IF (ICRA.GT.NCRA) GO TO 118
 C
 C If the last point looked at was out-of-range and this one is not,
 C interpolate, using a binary halving process, to find a point at the
@@ -1276,7 +1331,7 @@ C
                     YVIS=YCEN+XMZM(IPIC)*RDGU(KTMP+2)*STSO
      +                       +YMZM(IPIC)*RDGU(KTMP+3)*STCO
 C
-                    DO 137 IHLF=1,64
+                    DO 113 IHLF=1,64
 C
                       XHLF=.5*(XINV+XVIS)
                       YHLF=.5*(YINV+YVIS)
@@ -1285,18 +1340,18 @@ C
                       IF (ICFELL('PLCHHQ',35).NE.0) RETURN
 C
                       IF (XTMP.EQ.OORV) THEN
-                        IF (XHLF.EQ.XINV.AND.YHLF.EQ.YINV) GO TO 138
+                        IF (XHLF.EQ.XINV.AND.YHLF.EQ.YINV) GO TO 114
                         XINV=XHLF
                         YINV=YHLF
                       ELSE
-                        IF (XHLF.EQ.XVIS.AND.YHLF.EQ.YVIS) GO TO 138
+                        IF (XHLF.EQ.XVIS.AND.YHLF.EQ.YVIS) GO TO 114
                         XVIS=XHLF
                         YVIS=YHLF
                       END IF
 C
-  137               CONTINUE
+  113               CONTINUE
 C
-  138               IF (NPCS.GE.MPCS) THEN
+  114               IF (NPCS.GE.MPCS) THEN
                       CALL SETER ('PLCHHQ - INTERNAL LOGIC ERROR (NPCS T
      +OO BIG) - SEE CONSULTANT',36,1)
                       RETURN
@@ -1334,10 +1389,10 @@ C
                           RETURN
                         END IF
 C
-                        DO 139 L=NCRA,ICRA,-1
+                        DO 115 L=NCRA,ICRA,-1
                           XCRA(L+1)=XCRA(L)
                           YCRA(L+1)=YCRA(L)
-  139                   CONTINUE
+  115                   CONTINUE
 C
                         NCRA=NCRA+1
 C
@@ -1356,7 +1411,7 @@ C
                     YVIS=YCEN+XMZM(IPIC)*RDGU(KTMP-2)*STSO
      +                       +YMZM(IPIC)*RDGU(KTMP-1)*STCO
 C
-                    DO 140 IHLF=1,64
+                    DO 116 IHLF=1,64
 C
                       XHLF=.5*(XINV+XVIS)
                       YHLF=.5*(YINV+YVIS)
@@ -1365,17 +1420,17 @@ C
                       IF (ICFELL('PLCHHQ',41).NE.0) RETURN
 C
                       IF (XTMP.EQ.OORV) THEN
-                        IF (XHLF.EQ.XINV.AND.YHLF.EQ.YINV) GO TO 141
+                        IF (XHLF.EQ.XINV.AND.YHLF.EQ.YINV) GO TO 117
                         XINV=XHLF
                         YINV=YHLF
                       ELSE
-                        IF (XHLF.EQ.XVIS.AND.YHLF.EQ.YVIS) GO TO 141
+                        IF (XHLF.EQ.XVIS.AND.YHLF.EQ.YVIS) GO TO 117
                         XVIS=XHLF
                         YVIS=YHLF
                       END IF
 C
-  140               CONTINUE
-  141               IPCE(NPCS)=ICRA
+  116               CONTINUE
+  117               IPCE(NPCS)=ICRA
                     XPCE(NPCS)=XVIS
                     YPCE(NPCS)=YVIS
                     CALL PCMPXY (IMAP,XVIS,YVIS,XTMP,YTMP)
@@ -1394,11 +1449,11 @@ C
 C
 C ... and return to the beginning of the loop.
 C
-                  GO TO 136
+                  GO TO 112
 C
 C Finish storing information about the last piece, if any.
 C
-  142           IF (ISTA.NE.0) THEN
+  118           IF (ISTA.NE.0) THEN
                   IPCE(NPCS)=NCRA
                   XPCE(NPCS)=OORV
                   YPCE(NPCS)=OORV
@@ -1415,7 +1470,7 @@ C are visible under the current mapping from those which are not.
 C
 C Loop through the visible pieces of the polygon.
 C
-                  DO 147 L=1,NPCS
+                  DO 123 L=1,NPCS
 C
 C Compute MBEG and MEND, which point to the beginning and end of a
 C portion of the arrays XCRA and YCRA which mapped to an out-of-range
@@ -1458,7 +1513,7 @@ C
 C
 C Loop through the elements of XCRA and YCRA to be replaced.
 C
-                      DO 146 M=MBEG,MEND
+                      DO 122 M=MBEG,MEND
 C
 C When the points being replaced include a section at the end of the
 C arrays, followed by a section at the beginning, M may range past
@@ -1484,7 +1539,7 @@ C emanating from X0, one pointing in one direction and the other
 C pointing in the opposite direction.  What we are hoping for is
 C that one such endpoint will be visible and the other invisible.
 C
-                        DO 145 ISTP=1,6
+                        DO 121 ISTP=1,6
 C
                           XTM1=XTM0+XSTP
                           YTM1=YTM0+YSTP
@@ -1509,7 +1564,7 @@ C
                           ELSE
                             XSTP=XSTP+XSTP
                             YSTP=YSTP+YSTP
-                            GO TO 145
+                            GO TO 121
                           END IF
 C
 C At this point, we have found two such points.  Use a binary halving
@@ -1517,27 +1572,27 @@ C process to find the point where the line between them intersects the
 C visible/invisible boundary and use that point to generate the values
 C to be put in the arrays XCRA and YCRA.
 C
-                          DO 143 IHLF=1,64
+                          DO 119 IHLF=1,64
                             XHLF=.5*(XINV+XVIS)
                             YHLF=.5*(YINV+YVIS)
                             CALL PCMPXY (IMAP,XHLF,YHLF,XTMP,YTMP)
                             IF (ICFELL('PLCHHQ',48).NE.0) RETURN
                             IF (XTMP.EQ.OORV) THEN
                               IF (XHLF.EQ.XINV.AND.
-     +                            YHLF.EQ.YINV) GO TO 144
+     +                            YHLF.EQ.YINV) GO TO 120
                               XINV=XHLF
                               YINV=YHLF
                             ELSE
                               IF (XHLF.EQ.XVIS.AND.
-     +                            YHLF.EQ.YVIS) GO TO 144
+     +                            YHLF.EQ.YVIS) GO TO 120
                               XVIS=XHLF
                               YVIS=YHLF
                             END IF
-  143                     CONTINUE
+  119                     CONTINUE
 C
 C Replace the original point with one on the visible/invisible edge.
 C
-  144                     CALL PCMPXY (IMAP,XVIS,YVIS,XTMP,YTMP)
+  120                     CALL PCMPXY (IMAP,XVIS,YVIS,XTMP,YTMP)
                           IF (ICFELL('PLCHHQ',49).NE.0) RETURN
 C
                           XCRA(MSTR)=CUFX(XTMP)
@@ -1545,11 +1600,11 @@ C
                           YCRA(MSTR)=CUFY(YTMP)
                           IF (ICFELL('PLCHHQ',51).NE.0) RETURN
 C
-                          GO TO 146
+                          GO TO 122
 C
 C End of loop on step size.
 C
-  145                   CONTINUE
+  121                   CONTINUE
 C
 C If control drops through the end of the loop, supply a point that
 C we at least know is visible.
@@ -1559,7 +1614,7 @@ C
 C
 C End of loop replacing elements of XCRA and YCRA.
 C
-  146                 CONTINUE
+  122                 CONTINUE
 C
 C End of invisible-point replacement.
 C
@@ -1567,7 +1622,7 @@ C
 C
 C End of loop through visible pieces of the polygon.
 C
-  147             CONTINUE
+  123             CONTINUE
 C
                 END IF
 C
@@ -1622,11 +1677,11 @@ C ... draw the pieces of the polyline, ...
 C
                 IF (RDGU(K).EQ.-2048.) THEN
 C
-                  DO 135 L=1,NPCS
+                  DO 124 L=1,NPCS
                     IF (IPCE(L)-IPCB(L)+1.GT.1)
      +              CALL GPL (IPCE(L)-IPCB(L)+1,XCRA(IPCB(L)),
      +                                          YCRA(IPCB(L)))
-  135             CONTINUE
+  124             CONTINUE
 C
 C ... or fill the polygon, ...
 C
@@ -1687,7 +1742,7 @@ C
 C
 C End of loop loop through the digitization array.
 C
-  107     CONTINUE
+  125     CONTINUE
 C
 C Otherwise, the quality flag indicates that PLCHMQ or PLCHLQ should be
 C called to draw the character, so arrange for that.
@@ -1712,7 +1767,7 @@ C
 C
         END IF
 C
-  108 CONTINUE
+  126 CONTINUE
 C
 C Restore, as necessary, all the current color indices, the current line
 C width scale factor, and the fill area interior style.
@@ -1737,7 +1792,7 @@ C If not all the characters have been drawn yet, go back for more.
 C
       IF (ILCG-ILCS.GT.NCSO) THEN
         ILCS=ILCS+NCSO
-        GO TO 100
+        GO TO 103
       END IF
 C
 C
@@ -1747,7 +1802,7 @@ C
 C Restore the PLCHMQ parameter specifying the ratio of character height
 C to width.
 C
-  134 IF (IQUF.NE.0) RHTW=RHWO
+  127 IF (IQUF.NE.0) RHTW=RHWO
 C
 C Done.
 C
@@ -1760,38 +1815,39 @@ C
 C If the current character is invalid, issue an error message and go
 C back for the next one.
 C
-  109 IF (NDPC.LE.0.OR.(NDPC.GE.35.AND.NDPC.NE.45.AND.NDPC.NE.46)) THEN
+  128 IF (NDPC.LE.0.OR.(NDPC.GE.35.AND.NDPC.NE.45.AND.NDPC.NE.46)) THEN
         WRITE (IERU,1001) ICHR,CHRS(ICHR:ICHR)
-        GO TO 103
+        GO TO 104
       END IF
 C
 C If the character is an octal digit, retrieve an octal number in INDP
 C and jump back to process the character it points to.  NDPC is set to
-C a blank so as to avoid problems when low-quality characters are used.
+C the value signalling that a particular character from the PWRITX
+C database has been selected.
 C
       IF (NDPC.GE.27.AND.NDPC.LE.34) THEN
         CALL PCGTPI (CHRS,NCHR,ICHR,8,INDP)
         ICHR=ICHR-1
-        NDPC=45
-        GO TO 104
+        NDPC=96
+        GO TO 105
       END IF
 C
 C Blanks and commas are just separators; ignore them.
 C
-      IF (NDPC.EQ.45.OR.NDPC.EQ.46) GO TO 103
+      IF (NDPC.EQ.45.OR.NDPC.EQ.46) GO TO 104
 C
 C Jump to the appropriate section to process an alphabetic character.
 C
 C             A,  B,  C,  D,  E,  F,  G,  H,  I,  J,  K,  L,  M,
 C             N,  O,  P,  Q,  R,  S,  T,  U,  V,  W,  X,  Y,  Z
 C
-      GO TO (124,118,125,123,121,128,112,126,114,110,115,117,110,
-     +       122,110,113,103,111,119,110,116,127,110,129,130,131) , NDPC
+      GO TO (143,137,144,142,140,147,131,145,133,129,134,136,129,
+     +       141,129,132,104,130,138,129,135,146,129,148,149,150) , NDPC
 C
 C Log an error if it's not one of the legal ones.
 C
-  110 WRITE (IERU,1001) ICHR,CHRS(ICHR:ICHR)
-      GO TO 103
+  129 WRITE (IERU,1001) ICHR,CHRS(ICHR:ICHR)
+      GO TO 104
 C
 C FONT DEFINITION
 C ---------------
@@ -1800,13 +1856,13 @@ C Define index offset into INDA.
 C
 C R is for Roman font.
 C
-  111 IFNT=IFRO
-      GO TO 103
+  130 IFNT=IFRO
+      GO TO 104
 C
 C G is for Greek font.
 C
-  112 IFNT=IFGR
-      GO TO 103
+  131 IFNT=IFGR
+      GO TO 104
 C
 C SIZE DEFINITION
 C ---------------
@@ -1816,21 +1872,21 @@ C width.
 C
 C P is for Principal size.
 C
-  113 ISZE=ISZP
+  132 ISZE=ISZP
       IPIC=1
-      GO TO 103
+      GO TO 104
 C
 C I is for Indexical size.
 C
-  114 ISZE=ISZI
+  133 ISZE=ISZI
       IPIC=2
-      GO TO 103
+      GO TO 104
 C
 C K is for Cartographic size.
 C
-  115 ISZE=ISZC
+  134 ISZE=ISZC
       IPIC=3
-      GO TO 103
+      GO TO 104
 C
 C CASE DEFINITION
 C ---------------
@@ -1840,17 +1896,17 @@ C count.
 C
 C  U is for Upper case.
 C
-  116 ICSP=ICSL
+  135 ICSP=ICSL
       ICSE=ICSU
       CALL PCGTDI (CHRS,NCHR,ICHR,NCSE)
-      GO TO 103
+      GO TO 104
 C
 C L is for Lower case.
 C
-  117 ICSP=ICSU
+  136 ICSP=ICSU
       ICSE=ICSL
       CALL PCGTDI (CHRS,NCHR,ICHR,NCSE)
-      GO TO 103
+      GO TO 104
 C
 C LEVEL DEFINITION
 C ----------------
@@ -1858,18 +1914,18 @@ C
 C B is for suBscript.  Set the sine and cosine of the offset angle and
 C jump to join the superscript code.
 C
-  118 SINT=SINM
+  137 SINT=SINM
       COST=COSM
-      GO TO 120
+      GO TO 139
 C
 C S is for Superscript.  Set the sine and cosine of the offset angle.
 C
-  119 SINT=SINP
+  138 SINT=SINP
       COST=COSP
 C
 C Increment the subscript/superscript level, but to no more than five.
 C
-  120 NSSL=MIN(NSSL+1,5)
+  139 NSSL=MIN(NSSL+1,5)
 C
 C Retrieve the character count, if any, following the B or S.
 C
@@ -1912,12 +1968,12 @@ C
         ICSE=ICSU
       END IF
 C
-        GO TO 103
+        GO TO 104
 C
 C E is for End of subscripting or superscripting, which is ignored if
 C we're not in that mode.
 C
-  121 IF (NSSL.EQ.0) GO TO 103
+  140 IF (NSSL.EQ.0) GO TO 104
 C
 C Return everything to what it was after drawing the base character.
 C
@@ -1930,12 +1986,12 @@ C
       IPIC=ISZE/128+1
       NSSL=NSSL-1
 C
-      GO TO 103
+      GO TO 104
 C
 C N is for Normal, which is ignored if we're not subscripting or
 C superscripting.
 C
-  122 IF (NSSL.EQ.0) GO TO 103
+  141 IF (NSSL.EQ.0) GO TO 104
 C
 C Return everything to what it was after drawing the base character
 C except the position of the right edge, in which we just reverse the
@@ -1950,7 +2006,7 @@ C
       IPIC=ISZE/128+1
       NSSL=NSSL-1
 C
-      GO TO 103
+      GO TO 104
 C
 C DIRECTION DEFINITION
 C --------------------
@@ -1960,16 +2016,16 @@ C integer, if there is one, or to a number exceeding the number of
 C characters left in the string, otherwise.  Set the flag indicating
 C that the last character was "written down".
 C
-  123 CALL PCGTDI (CHRS,NCHR,ICHR,NDWN)
+  142 CALL PCGTDI (CHRS,NCHR,ICHR,NDWN)
       IF (NDWN.LE.0) NDWN=NCHR
       LCWD=1
-      GO TO 103
+      GO TO 104
 C
 C A is for Across.  Clear the "down" flags.
 C
-  124 NDWN=0
+  143 NDWN=0
       LCWD=0
-      GO TO 103
+      GO TO 104
 C
 C COORDINATE DEFINITION
 C ---------------------
@@ -1978,7 +2034,7 @@ C C is for Carriage return.  Reset the beginning-of-line position and
 C the positions of the center and right edge of the last character.
 C Suppress spacing manipulations at the beginning of the new line.
 C
-  125 XBOL=XBOL+SIZM*VPIC(IPIC)*COSM
+  144 XBOL=XBOL+SIZM*VPIC(IPIC)*COSM
       YBOL=YBOL+SIZM*VPIC(IPIC)*SINM
       XCEN=XBOL
       YCEN=YBOL
@@ -1986,14 +2042,14 @@ C
       YRGT=YBOL
       ADDP=0.
       SUBP=0.
-      GO TO 103
+      GO TO 104
 C
 C H is for Horizontal.
 C
 C Retrieve the integer which follows the H and use it to modify all of
 C the current character-position variables.
 C
-  126 CALL PCGTDI (CHRS,NCHR,ICHR,NUPA)
+  145 CALL PCGTDI (CHRS,NCHR,ICHR,NUPA)
       DELX=REAL(NUPA)
       IF (ICHR.LT.NCHR) THEN
         IF (CHRS(ICHR+1:ICHR+1).EQ.'Q') THEN
@@ -2006,14 +2062,14 @@ C
       YCEN=YCEN+DELX*STSO
       XRGT=XRGT+DELX*STCO
       YRGT=YRGT+DELX*STSO
-      GO TO 103
+      GO TO 104
 C
 C V is for Vertical.
 C
 C Retrieve the integer which follows the V and use it to modify all of
 C the current character-position variables.
 C
-  127 CALL PCGTDI (CHRS,NCHR,ICHR,NUPA)
+  146 CALL PCGTDI (CHRS,NCHR,ICHR,NUPA)
       DELY=REAL(NUPA)
       IF (ICHR.LT.NCHR) THEN
         IF (CHRS(ICHR+1:ICHR+1).EQ.'Q') THEN
@@ -2026,7 +2082,7 @@ C
       YCEN=YCEN+DELY*STCO
       XRGT=XRGT-DELY*STSO
       YRGT=YRGT+DELY*STCO
-      GO TO 103
+      GO TO 104
 C
 C FONT CHANGE REQUEST
 C -------------------
@@ -2039,11 +2095,11 @@ C Retrieve the integer that follows the F; it determines which font to
 C use.  If there is no such integer, go back to the font that was in
 C use when PLCHHQ was called.
 C
-  128 ICHS=ICHR
+  147 ICHS=ICHR
       CALL PCGTDI (CHRS,NCHR,ICHR,NFNT)
       IF (ICHR.EQ.ICHS) THEN
         NFNT=NODF
-        GO TO 103
+        GO TO 104
       END IF
 C
 C If the font number was given, force it to be positive and check the
@@ -2061,7 +2117,7 @@ C
      +    (NFNT.GE.127.AND.NFNT.LE.128).OR.
      +    (NFNT.GE.131.AND.NFNT.LE.132).OR.NFNT.GE.138) NFNT=1
 C
-      GO TO 103
+      GO TO 104
 C
 C ZOOM REQUEST
 C ------------
@@ -2078,7 +2134,7 @@ C base line.  This has no meaning for "X" and is just ignored.
 C
 C Process an "X".
 C
-  129 CALL PCGTDI (CHRS,NCHR,ICHR,ITMP)
+  148 CALL PCGTDI (CHRS,NCHR,ICHR,ITMP)
       ZOOM=REAL(ITMP/100.)
       IF (ZOOM.EQ.0.) ZOOM=1.
       XMZM(1)=ZOOM*XMUL(1)
@@ -2087,11 +2143,11 @@ C
       IF (ICHR.LT.NCHR) THEN
         IF (CHRS(ICHR+1:ICHR+1).EQ.'Q') ICHR=ICHR+1
       END IF
-      GO TO 103
+      GO TO 104
 C
 C Process a "Y".
 C
-  130 CALL PCGTDI (CHRS,NCHR,ICHR,ITMP)
+  149 CALL PCGTDI (CHRS,NCHR,ICHR,ITMP)
       ZOLD=YMZM(1)/YMUL(1)
       ZOOM=REAL(ITMP/100.)
       IF (ZOOM.EQ.0.) ZOOM=1.
@@ -2108,11 +2164,11 @@ C
           YRGT=YRGT+DELY*STCO
         END IF
       END IF
-      GO TO 103
+      GO TO 104
 C
 C Process a "Z".
 C
-  131 CALL PCGTDI (CHRS,NCHR,ICHR,ITMP)
+  150 CALL PCGTDI (CHRS,NCHR,ICHR,ITMP)
       ZOLD=YMZM(1)/YMUL(1)
       ZOOM=REAL(ITMP/100.)
       IF (ZOOM.EQ.0.) ZOOM=1.
@@ -2132,7 +2188,7 @@ C
           YRGT=YRGT+DELY*STCO
         END IF
       END IF
-      GO TO 103
+      GO TO 104
 C
 C Formats.
 C

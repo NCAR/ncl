@@ -1,7 +1,7 @@
 C
-C $Id: pccffc.f,v 1.8 1994-03-17 00:23:34 kennison Exp $
+C $Id: pccffc.f,v 1.9 1994-04-20 23:58:25 kennison Exp $
 C
-      SUBROUTINE PCCFFC (IPSS,IBNU,NFNT,IASC,IPIC,RDGU,LDGU,NDGU)
+      SUBROUTINE PCCFFC (IPSS,IBNU,NFNT,IASC,CHGT,RDGU,LDGU,NDGU)
 C
       DIMENSION RDGU(LDGU)
 C
@@ -16,8 +16,7 @@ C NFNT is the number of the desired font.
 C
 C IASC is the ASCII index of the desired character.
 C
-C IPIC is a 1, a 2, or a 3, depending on whether the character is to be
-C of principal size, indexical size. or cartographic size, respectively.
+C CHGT is the desired height of the character, in digitization units.
 C
 C RDGU is a real array in which the digitization is to be returned.
 C
@@ -56,12 +55,6 @@ C
 C
       DIMENSION       XLFT(128),XRGT(128),XCNT(128)
 C
-C Define arrays to hold the digitized height and width of characters in
-C the standard character set of principal, indexical, and cartographic
-C sizes.
-C
-      DIMENSION HPIC(3),WPIC(3)
-C
 C The variable NFRL, if non-zero, defines the number of the font read
 C last.  Some other quantities need to be saved from call to call, as
 C well.
@@ -71,11 +64,6 @@ C
 C NFRL starts off zeroed.
 C
       DATA NFRL / 0 /
-C
-C Define the heights and widths of characters in the standard set.
-C
-      DATA HPIC / 21. , 13. , 9. /
-      DATA WPIC / 16. , 12. , 8. /
 C
 C Zero the count of digitization elements returned.
 C
@@ -200,16 +188,7 @@ C
 C Compute multipliers required to give the character the proper size
 C and shape.
 C
-            HMUL=HPIC(IPIC)/REAL(FNTCAP-FNTBAS)
-C
-C The following definition of WMUL will give characters of indexical
-C and cartographic size shapes which are more nearly like those of
-C characters in the standard set.  I think it looks better to use
-C "WMUL=HMUL", which causes the characters to have the same shape,
-C no matter what size they are.
-C
-C           WMUL=1.3125*(WPIC(IPIC)/HPIC(IPIC))*HMUL
-C
+            HMUL=CHGT/REAL(FNTCAP-FNTBAS)
             WMUL=HMUL
 C
 C Compute the required offsets to the left and right edges.
