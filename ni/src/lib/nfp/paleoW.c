@@ -7,7 +7,7 @@
 #include "wrapper.h"
 
 extern void NGCALLF(paleooutline,PALEOOUTLINE)(float*,float*,int*,int*,
-                                               int*,int*,char*,float*);
+                                               int*,int*,char*,float*,int);
 
 NhlErrorTypes paleo_outline_W( void )
 {
@@ -75,7 +75,7 @@ NhlErrorTypes paleo_outline_W( void )
  * Call the Fortran paleo_outline routine.
  */
   NGCALLF(paleooutline,PALEOOUTLINE)(oro,zdat,&nlat,&nlon,&jm,&im,cname,
-                                     landmask);
+                                     landmask,strlen(cname));
 
   NclFree(zdat);
 
