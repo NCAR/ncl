@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.9 1997-01-25 22:53:06 haley Exp $
+#	$Id: yMakefile,v 1.10 1998-08-24 22:07:39 haley Exp $
 #
 
 MYNAME	= graphcap
@@ -47,6 +47,12 @@ CleanFilesTarget($(GRAPHCAPS) $(FCPP_OBJS))
 .gc:
 	@echo "	Processing graphcap $@"
 	@$(GRAPHC) $< $@
+
+#if defined(linux)
+aed.a: aed.a.gc
+	@$(GRAPHC) < aed.a.gc > aed.a
+#endif
+
 
 # graphc suffers from optimization, so optimization flags are
 # overridden. - commented out incase this is not a prob anymore.
