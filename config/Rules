@@ -1,3 +1,6 @@
+/*
+ *	$Id: Rules,v 1.3 1992-09-21 22:15:05 ncargd Exp $
+ */
 /* 
    This file contains Makefile macros.  Proper spacing is achieved
    through the use of the right square brackets, which are later expanded
@@ -42,9 +45,18 @@ Makefiles:: local-Makefile]\
 local-Makefile:]\
 	@$(YMAKE)]
 
+/* install at 'install' time	*/
 #define InstallTarget(names, mode, dest)\
 ]\
 install:: names]\
+	@for name in names; do\]\
+	($(INSTALL) -m mode $$name dest);\]\
+	done]
+
+/* install at 'all' time	*/
+#define InstallAllTarget(names, mode, dest)\
+]\
+all:: names]\
 	@for name in names; do\]\
 	($(INSTALL) -m mode $$name dest);\]\
 	done]
@@ -66,23 +78,17 @@ clean::]\
 	@for dir in dirs ; do\]\
 	(cd $$dir; echo "Cleaning in $$dir";\]\
 	$(MAKE) clean $(MFLAGS));\]\
-	done]\
-]\
-cleanbin::]\
-	@for dir in dirs ; do\]\
-	(cd $$dir; echo "Cleaning in $$dir";\]\
-	$(MAKE) cleanbin $(MFLAGS));\]\
 	done]
 
 
 #define RebuildSubdirs(library,dirs)\
 ]\
 rebuild::]\
-	@-$(RM) $(LIBDIR)/library]\
+	@-$(RM) $(LIBPATH)/library]\
 	@for dir in dirs ; do\]\
 	(cd $$dir; echo "Rebuilding $$dir"; $(MAKE) $(MFLAGS));\]\
 	done]\
-	@$(RANLIB) $(LIBDIR)/library]
+	@$(RANLIB) $(LIBPATH)/library]
 
 #define InstallSubdirs(dirs)\
 ]\
@@ -95,11 +101,11 @@ install::]\
 #define LibraryMakeSubdirs(library,dirs)\
 ]\
 all::]\
-	@-$(RM) $(LIBDIR)/library]\
+	@-$(RM) $(LIBPATH)/library]\
 	@for dir in dirs ; do\]\
 	(cd $$dir; echo "Making $$dir"; $(MAKE) $(MFLAGS));\]\
 	done]\
-	$(RANLIB) $(LIBDIR)/library]
+	$(RANLIB) $(LIBPATH)/library]
 
 
 #define MakefilesSubdirs(dirs)\
@@ -114,65 +120,6 @@ Makefiles::]\
 
 
 /*
- * macros for binary distribution
- */
-#define MakeBinSubdirs(dirs)\
-]\
-all::]\
-	@for dir in dirs ; do \]\
-	if (test -f $(BINDIR_LOCAL)/$(SYSTEM_INCLUDE)/$$dir) then \]\
-	echo "$(BINDIR_LOCAL)/$(SYSTEM_INCLUDE)/$$dir exists, not built";\]\
-	else \]\
-	(cd $$dir; echo "Making $$dir"; \]\
-	$(MAKE) $(MFLAGS));\]\
-	fi; \]\
-	done]
-
-#define InstallBinSubdirs(dirs)\
-]\
-install::]\
-	@for dir in dirs ; do \]\
-	if (test -f $(BINDIR_LOCAL)/$(SYSTEM_INCLUDE)/$$dir) then \]\
-	echo "$(BINDIR_LOCAL)/$(SYSTEM_INCLUDE)/$$dir already exists";\]\
-	echo "$$dir will be installed from binary distribution directory";\]\
-	else \]\
-	(cd $$dir; echo	Installing $$dir to distribution bin directory; \]\
-	$(MAKE) install $(MFLAGS));\]\
-	fi; \]\
-	done]
-
-#define CBinTarget(prog,objects,libs)\
-]\
-prog: objects]\
-	$(CC_LD) $(LD_CFLAGS) -o prog objects libs]\
-]\
-install:: prog]\
-	-$(INSTALL) -m $(INSTALL_BIN) prog $(BINDIR_LOCAL)/$(SYSTEM_INCLUDE)]\
-	@-$(RM) prog]\
-]\
-clean::]\
-	@-$(RM) prog]\
-]\
-cleanbin::	clean]
-
-#define InstallBin(arch)\
-]\
-all::]\
-]\
-install::]\
-	@-cd arch; \]\
-	for prog in * ; do \]\
-	if (test $$prog != CVS && test $$prog != Copyright) then \]\
-	echo "Installing $$prog in $(BINDIR)" ; \]\
-	$$NCARG/../utils/install -c -m $(INSTALL_BIN) $$prog $(BINDIR) ;\]\
-	fi; \]\
-	done]\
-]\
-clean::]\
-]\
-cleanbin::]\
-	@-cd arch; $(RM) *]
-/*
  * tree leaf macros
  */
 #define RelocatableTarget(name,objects)\
@@ -183,7 +130,7 @@ name:	objects]\
 	@$(LD_REL) -r -o name objects]\
 ]\
 install::]\
-	-$(INSTALL) -m $(INSTALL_LIB) name $(LIBDIR)]\
+	-$(INSTALL) -m $(INSTALL_LIB) name $(LIBPATH)]\
 	@-$(RM) name]
 
 #define FortranTarget(program,objects,libs)\
@@ -192,14 +139,11 @@ program: objects]\
 	$(F77_LD) $(LD_FFLAGS) -o program objects libs]\
 ]\
 install:: program]\
-	-$(INSTALL) -m $(INSTALL_BIN) program $(BINDIR)]\
+	-$(INSTALL) -m $(INSTALL_BIN) program $(BINPATH)]\
 	@-$(RM) program]\
 ]\
 clean::]\
-	@$(RM) program]\
-]\
-cleanbin::	clean]
-
+	@$(RM) program]
 
 #define CTarget(program,objects,libs)\
 ]\
@@ -207,39 +151,35 @@ program: objects]\
 	$(CC_LD) $(LD_CFLAGS) -o program objects libs]\
 ]\
 install:: program]\
-	-$(INSTALL) -m $(INSTALL_BIN) program $(BINDIR)]\
+	-$(INSTALL) -m $(INSTALL_BIN) program $(BINPATH)]\
 	@-$(RM) program]\
 ]\
 clean::]\
-	@-$(RM) program]\
-]\
-cleanbin::	clean]
+	@-$(RM) program]
 
 
 #define LibraryTarget(library,objects)\
 ]\
 all:: objects]\
-	@-$(RM) $(LIBDIR)/library]\
-	@$(AR_QUICK) $(LIBDIR)/library objects]\
-	$(RANLIB) $(LIBDIR)/library]\
+	@-$(RM) $(LIBPATH)/library]\
+	@$(AR_QUICK) $(LIBPATH)/library objects]\
+	$(RANLIB) $(LIBPATH)/library]\
 ]\
 install::]
 
 #define PartialLibraryTarget(library,objects)\
 ]\
 all:: objects]\
-	@$(AR_QUICK) $(LIBDIR)/library objects]\
+	@$(AR_QUICK) $(LIBPATH)/library objects]\
 ]\
 install:: objects]\
-	@$(AR_CHECK) $(LIBDIR)/library objects]\
-	$(RANLIB) $(LIBDIR)/library]
+	@$(AR_CHECK) $(LIBPATH)/library objects]\
+	$(RANLIB) $(LIBPATH)/library]
 
 #define CleanTarget\
 ]\
 clean::]\
-	@-$(RM) *.o core]\
-]\
-cleanbin::	clean]
+	@-$(RM) *.o core]
 
 #define FortranProgramLeaf(program,objects,libs)\
 FortranTarget(program,objects,libs)		\

@@ -1,3 +1,6 @@
+#
+#	$Id: ymake,v 1.2 1992-09-21 22:14:40 ncargd Exp $
+#
 #!/bin/csh -f
 ######################################################################
 #
@@ -73,6 +76,25 @@ endif
 
 onintr error_cleanup
 
+# Determine the hostname of the machine, create a definition
+# for it, and pass that to "cpp" so that yMakefiles can key
+# off of it. This is used to install local host-specific
+# configuration options permanently with the distribution.
+
+set hostname
+
+if (-e /bin/hostname) then
+	set hostname    = `/bin/hostname`
+endif
+
+if (-e /usr/bsd/hostname) then
+	set hostname    = `/usr/bsd/hostname`
+endif
+
+set hostname=host$hostname
+
+set defines=($defines -D$hostname)
+
 # Determine if this is an IBM system. If it is, extract the
 # defined symbols and pass them to "cpp".
 
@@ -101,8 +123,6 @@ endif
 # in front of Makefile comment lines.  cpp will later remove these
 # restoring the original form (plus a few blank lines).
 
-# Last sed edit command added for Saber-C constructs 3-92
-
 sed <$ymakefile >$tmp1 \
 	-e '/^#[ 	]*if/b' \
 	-e '/^#[ 	]*ifdef/b' \
@@ -114,8 +134,7 @@ sed <$ymakefile >$tmp1 \
 	-e '/^#[ 	]*undef/b' \
 	-e '/^#[ 	]*line/b' \
 	-e '/^#[ 	]*include/b' \
-	-e '/^#/s$$/**/_COMMENT_&$' \
-	-e '/^	#/s$$/**/_COMMENT_&$'
+	-e '/^#/s$$/**/_COMMENT_&$'
 
 cat <<'EOF' >$outfile
 #######################################################################
@@ -145,3 +164,5 @@ cp $outfile.bak $outfile
 rm -f $outfile.bak
 exit 1
 onintr
+
+
