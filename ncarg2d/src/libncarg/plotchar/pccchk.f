@@ -1,5 +1,5 @@
 C
-C $Id: pccchk.f,v 1.4 1993-01-12 02:40:52 kennison Exp $
+C $Id: pccchk.f,v 1.5 1993-06-11 17:19:52 kennison Exp $
 C
       SUBROUTINE PCCCHK (IERR)
 C
@@ -55,8 +55,11 @@ C
         IER1=1
       ELSE
         DO 101 I=1,14
-          IF (I.GE.4.AND.MOD(I,2).EQ.0.AND.RDGU(I-1).NE.-2048.)
-     +                                      RDGU(I)=RDGU(I)+1.5
+          IF (I.GE.4) THEN
+            IF (MOD(I,2).EQ.0) THEN
+              IF (RDGU(I-1).NE.-2048.) RDGU(I)=RDGU(I)+1.5
+            END IF
+          END IF
           IF (RDGU(I).NE.REAL(LCPC(I))) THEN
             IER1=1
             GO TO 102
@@ -73,8 +76,11 @@ C
         IER2=2
       ELSE
         DO 103 I=1,30
-          IF (I.GE.4.AND.MOD(I,2).EQ.0.AND.RDGU(I-1).NE.-2048.)
-     +                                      RDGU(I)=RDGU(I)+1.5
+          IF (I.GE.4) THEN
+            IF (MOD(I,2).EQ.0) THEN
+              IF (RDGU(I-1).NE.-2048.) RDGU(I)=RDGU(I)+1.5
+            END IF
+          END IF
           IF (RDGU(I).NE.REAL(LCOC(I))) THEN
             IER1=1
             GO TO 104
