@@ -1,5 +1,5 @@
 /*
- *      $Id: Draw.c,v 1.10 1995-04-01 00:03:59 dbrown Exp $
+ *      $Id: Draw.c,v 1.11 1995-04-03 21:57:24 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -202,7 +202,7 @@ NhlErrorTypes _NhlPlotManagerDraw
 	char			*e_text;
 	NhlTransformLayerPart	*tfp;
 	
-	if((layer == NULL) || !_NhlIsView(layer)){
+	if((layer == NULL) || !_NhlIsBase(layer)){
 		e_text = "%s: Invalid plot ID: %d";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
 			  e_text,entry_name,layer->base.id);
@@ -353,7 +353,7 @@ _NhlPreDraw
 #endif
 {
 
-	if((layer == NULL) || !_NhlIsView(layer)){
+	if((layer == NULL) || !_NhlIsBase(layer)){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
 			  "Invalid layer passed to _NhlPreDraw");
 		return(NhlFATAL);
@@ -389,7 +389,7 @@ _NhlDraw
 #endif
 {
 
-	if((layer == NULL) || !_NhlIsView(layer)){
+	if((layer == NULL) || !_NhlIsBase(layer)){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
 			  "Invalid layer passed to _NhlDraw");
 		return(NhlFATAL);
@@ -426,7 +426,7 @@ _NhlPostDraw
 #endif
 {
 
-	if((layer == NULL) || !_NhlIsView(layer)){
+	if((layer == NULL) || !_NhlIsBase(layer)){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
 				"Invalid layer passed to _NhlPostDraw");
 		return(NhlFATAL);
