@@ -1,0 +1,52 @@
+/*
+ *      $Id: SGI_IRIX.n32,v 1.1 1998-02-26 21:15:40 haley Exp $
+ */
+/************************************************************************
+*									*
+*			     Copyright (C)  1998			*
+*	     University Corporation for Atmospheric Research		*
+*			     All Rights Reserved			*
+*									*
+************************************************************************/
+/*
+ *	File:		SGI_IRIX.n32
+ *
+ *	Author:		Mary Haley
+ *			National Center for Atmospheric Research
+ *			PO 3000, Boulder, Colorado
+ *
+ *	Date:		Fri Apr 19 10:44:26 MDT 1996
+ *
+ *	Description:	
+ */
+
+#if	((MAJOR == 6) && (MINOR == 2))
+/*
+ * 1048 - cast between pointer-to-object and pointer-to-function
+ */
+#define	SgiWarnSuppress	-woff 1048
+#endif
+
+#ifdef	SgiWarnSuppress
+SGIWARNSUPPRESS = SgiWarnSuppress
+#endif
+#define BuildShared NO
+
+#define UseCatDirs	YES
+#define	XdrLibrary	-lsun
+#define	HdfDefines	-DIRIX
+#define	StdDefines	-DSYSV -D_XOPEN_SOURCE -D_XOPEN_SOURCE_EXTENDED=1
+#define CcOptions	-n32 -xansi -avoid_gp_overflow $(SGIWARNSUPPRESS)
+#define FcOptions	-n32
+#define	LdCommand	ld -n32
+#define	RanLib		$(AR) m
+#define CtoFLibraries	-lftn -lm
+#define COptimizeFlag    -O3
+#define FOptimizeFlag    -O3
+
+#define	ArchRecLibSearch	-L/usr/local/lib
+#define	ArchRecIncSearch	-I/usr/local/include
+
+#ifdef	sgi
+#undef	sgi
+#endif
