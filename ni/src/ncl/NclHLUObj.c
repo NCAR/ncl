@@ -496,7 +496,7 @@ NhlClass class_ptr;
 	tmp->hlu.hlu_name = NrmStringToQuark(NhlName(tmp->hlu.hlu_id));
 	tmp->hlu.c_list = NULL;
 	tmp->hlu.exp_list = NULL;
-	tmp->hlu.cblist = _NhlCBCreate(0,NULL,NULL);
+	tmp->hlu.cblist = _NhlCBCreate(0,NULL,NULL,NULL,NULL);
 	tmp->hlu.apcb = NULL;
 	tmp->hlu.class_ptr = class_ptr;
 #ifdef MAKEAPI
