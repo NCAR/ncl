@@ -298,7 +298,7 @@ data_limits:
 /*
  *  Determine if any input data coordinates are duplicated.
  */
-   if (dup == 1) {
+   if (nndup == 1) {
       for (i0 = 0 ; i0 < datcnt ; i0++) {
          for (i1 = i0+1 ; i1 < datcnt ; i1++) {
             if ( (points[i0][0] == points[i1][0]) &&

@@ -8,7 +8,7 @@
 
 extern int       igrad,  densi,   non_neg,    sdip,        rads,
                  optim,  extrap,  southhemi,  updir, auto_scale,
-                 adf,    dup;
+                 adf,    nndup;
 
 extern double    bI,        bJ,         magx,       magy,
                  magz,      horilap,    vertlap,    nuldat,

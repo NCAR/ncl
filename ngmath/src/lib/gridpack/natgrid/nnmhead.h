@@ -55,7 +55,7 @@ double  magx = 1, magy = 1, magz = 1, magx_orig, magy_orig, magz_orig,
         magx_auto, magy_auto, magz_auto;
 
 int     igrad = 0, non_neg = 0, densi, sdip = 0, rads = 0, southhemi = 0,
-        extrap = 1, adf = 0, dup = 1;
+        extrap = 1, adf = 0, nndup = 1;
 
 int     datcnt, datcnt3, numtri, imag, numnei, iscale,
         ext, *jndx, neicnt, optim = 1, goodflag, updir = 1,

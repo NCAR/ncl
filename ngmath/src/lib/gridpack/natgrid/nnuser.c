@@ -57,7 +57,7 @@ void c_nngeti(char *pnam, int *ival)
       *ival = adf;
    }
    else if (!strncmp(pnam,"dup",3) OR !strncmp(pnam,"DUP",3)) {
-      *ival = dup;
+      *ival = nndup;
    }
    else {
       sprintf(emsg,"\n  Parameter name supplied is: %s\n",pnam);
@@ -137,7 +137,7 @@ void c_nnseti(char *pnam, int ival)
       adf = ival;
    }
    else if (!strncmp(pnam,"dup",3) OR !strncmp(pnam,"DUP",3)) {
-      dup = ival;
+      nndup = ival;
    }
    else {
       sprintf(emsg,"\n  Parameter name supplied is: %s\n",pnam);

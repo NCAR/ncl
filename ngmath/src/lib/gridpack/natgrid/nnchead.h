@@ -54,7 +54,7 @@ extern  double  magx, magy, magz, magx_orig, magy_orig, magz_orig,
                 maxxy[2][3], magx_auto, magy_auto, magz_auto;
 
 extern  int     igrad, non_neg, densi, sdip, rads, southhemi,
-                extrap, adf, dup;
+                extrap, adf, nndup;
 
 extern  int     datcnt, datcnt3, numtri, imag, numnei, iscale,
                 ext, *jndx, neicnt, optim, goodflag, updir,
