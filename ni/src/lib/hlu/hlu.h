@@ -1,5 +1,5 @@
 /*
- *      $Id: hlu.h,v 1.35 1997-02-27 20:13:08 boote Exp $
+ *      $Id: hlu.h,v 1.36 1997-05-12 22:42:17 boote Exp $
  */
 /************************************************************************
 *									*
@@ -151,6 +151,7 @@ union _NhlType_ {
 	float		fltval;
 	NhlString	strval;
 	double		dblval;
+	unsigned long	ulngval;/* no converter support */
 };
 
 typedef	union _NhlType_	NhlArgVal;
