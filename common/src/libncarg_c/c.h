@@ -1,5 +1,5 @@
 /*
- *	$Id: c.h,v 1.21 1994-10-05 16:25:04 haley Exp $
+ *	$Id: c.h,v 1.22 1994-10-24 17:48:37 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -27,7 +27,7 @@
 /* Brain dead cray's have to be different from everything else! */
 #define	NGCALLF(reg,caps)	caps
 
-#elif	defined(AIX) || defined(__hpux)
+#elif	defined(RS6000) || defined(__hpux)
 /* No munging of names - wow how unique */
 #define	NGCALLF(reg,caps)	reg
 
