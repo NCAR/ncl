@@ -1,7 +1,7 @@
 .OP LS=10001 LI=1 CB RT ES=< ET=> OC UC=0 BI=77 IF=2
 .EL I
 I
-I $Id: CodeIftran,v 1.5 2004-07-27 21:14:52 kennison Exp $
+I $Id: CodeIftran,v 1.6 2004-08-24 21:10:39 kennison Exp $
 I
 I***********************************************************************
 I C O N P A C K T   -   I N T R O D U C T I O N
@@ -1549,18 +1549,19 @@ C projection does).  This used to be done only when the mapping flag
 C was turned on, but now it is done unconditionally, so as to force
 C an area identifier of "-1" outside the viewport.  The area identifier
 C on the inside of the viewport is set to zero, rather than to a value
-C associated with a contour level.
+C associated with a contour level.  As of 8/24/04, I'm pinching in
+C the viewport just slightly.
 C
-        RWRK(IR01+ 1)=XVPL
-        RWRK(IR01+ 2)=XVPR
-        RWRK(IR01+ 3)=XVPR
-        RWRK(IR01+ 4)=XVPL
-        RWRK(IR01+ 5)=XVPL
-        RWRK(IR01+ 6)=YVPB
-        RWRK(IR01+ 7)=YVPB
-        RWRK(IR01+ 8)=YVPT
-        RWRK(IR01+ 9)=YVPT
-        RWRK(IR01+10)=YVPB
+        RWRK(IR01+ 1)=XVPL+.000001
+        RWRK(IR01+ 2)=XVPR-.000001
+        RWRK(IR01+ 3)=XVPR-.000001
+        RWRK(IR01+ 4)=XVPL+.000001
+        RWRK(IR01+ 5)=XVPL+.000001
+        RWRK(IR01+ 6)=YVPB+.000001
+        RWRK(IR01+ 7)=YVPB+.000001
+        RWRK(IR01+ 8)=YVPT-.000001
+        RWRK(IR01+ 9)=YVPT-.000001
+        RWRK(IR01+10)=YVPB+.000001
 C
         CALL AREDAM (IAMA,RWRK(IR01+1),RWRK(IR01+6),5,IGCL,0,-1)
         IF (ICFELL('CTCLAM',7).NE.0) RETURN
