@@ -21,10 +21,6 @@
 
 begin
 
-      NCGM=1
-      PS=1
-      X11=1
-
 ;
 ; Call a subroutine that generates an LLU
 ;
@@ -42,16 +38,13 @@ begin
       	      "appDefaultParent": "True"
       end create	
 
-      if (NCGM .eq. 1)
 ;
 ; Create an NCGM workstation.
 ;
 	 widn = create "basic07ncgm" ncgmWorkstationClass defaultapp
 	 	"wkMetaName": "basic07n.ncgm"
          end create	
-      end if	
 
-      if (PS .eq. 1)
 ;
 ; Create a PostScript workstation.
 ;
@@ -60,16 +53,12 @@ begin
 		 "wkOrientation": "portrait"
 		 "wkPSFormat": "ps"
          end create	
-      end if	
-
-      if (X11 .eq. 1)
 ;
 ; Create an X Workstation.
 ;
 	 widx = create "basic07x11" xWorkstationClass defaultapp
 		 "wkPause": "True"
          end create	
-      end if	
 
 ;
 ; Create three plots, one for each workstation type.
