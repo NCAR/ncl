@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.20 2003-09-12 16:50:52 shea Exp $
+;      $Id: contributed.ncl,v 1.21 2003-10-23 20:17:26 shea Exp $
 ;
 ; -------------- added Feb 14 2002
 ; copy_VarMeta
@@ -5431,3 +5431,36 @@ begin
   end if
 end
 
+undef ("wallClockElapseTime")
+procedure wallClockElapseTime(wcStrt:string, title:string, opt:integer)
+;
+; compute *Wall Clock* elapsed time in seconds
+; Usage:     wcStrt = systemfunc("date")
+;                   :    ; one or more statements [usually a block of code]
+;            wallClockElapseTime(wcStrt, "short_info", 0)
+; opt not used right now
+; this will not handle case where year or month changes
+local wcNow, wcStrt_c, tSTRT, wcNow_c, tNOW, sec, NLINE
+begin
+  wcNow     = systemfunc("date")   ; current ("now") time
+ 
+  wcStrt_c  = stringtochar(wcStrt)
+  tSTRT     = stringtointeger((/wcStrt_c( 8: 9)/))*86400 \
+            + stringtointeger((/wcStrt_c(11:12)/))*3600  \
+            + stringtointeger((/wcStrt_c(14:15)/))*60    \
+            + stringtointeger((/wcStrt_c(17:18)/))
+ 
+  wcNow_c   = stringtochar(wcNow)
+  tNOW      = stringtointeger((/wcNow_c( 8: 9)/))*86400  \
+            + stringtointeger((/wcNow_c(11:12)/))*3600   \
+            + stringtointeger((/wcNow_c(14:15)/))*60     \
+            + stringtointeger((/wcNow_c(17:18)/))
+
+  secElapseTime = tNOW-tSTRT    
+
+  NLINE     = inttochar(10)   ; new line character
+  print (NLINE+ \
+        "=====> Wall Clock Elapsed Time: "+title+": "+   \
+         secElapseTime+" seconds <====="+NLINE)
+
+end 
