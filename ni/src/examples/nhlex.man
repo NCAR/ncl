@@ -1,7 +1,7 @@
 .\" The first line of this file must contain the '\"[e][r][t][v] line
 .\" to tell man to run the appropriate filter "t" for table.
 .\"
-.\"	$Id: nhlex.man,v 1.2 1994-12-05 23:08:18 haley Exp $
+.\"	$Id: nhlex.man,v 1.3 1994-12-09 16:01:27 haley Exp $
 .\"
 .\"######################################################################
 .\"#									#
@@ -24,62 +24,81 @@
 .TH nhlex 1Nhl "Prototype Release" "Nhl Prototype" "NCARG Nhl EXAMPLES"
 .SH NAME
 .nh
-nhlex \- NCAR Graphics High Level Utilties Example Programs
+nhlex \- NCAR Graphics High Level Utilities Example Programs
 .ny
-.SH STATUS
-These examples are part of the Nhl \fBprototype\fP library.  They are provided
-so NCAR Graphics users can see the direction that future versions of the
-package will take.  The Nhl/HLU library is provided on Suns and SGIs only.
 .SH SYNOPSIS
 \fBnhlex\fP 
 [\fI\-A\fP]
 [\fI\-clean\fP]
+[\fI\-list\fP]
 [\fI\-n\fP]
 \fIname ...\fP
+.SH DESCRIPTION
+.I nhlex
+provides the user with access to several C and Fortran examples
+illustrating the use of the NCAR Graphics HLUs (High Level Utilities).
+\fInhlex\fP copies the source code for the specified
+example(s) into the current directory and then compiles, links, and
+executes the example.  Depending on the example, the output may be
+sent to an NCGM (NCAR Graphics Metafile) file and/or displayed to an X
+window on your screen.  You must be running X and have your DISPLAY
+environment set correctly in order for the X window examples to
+execute properly.
+.sp
+If the requested example creates an NCGM file, it will have the same
+name as the example, suffixed with ".ncgm". An option allows you to
+request that only the source code be copied to your directory, without
+copying the executable or executing the example.  Another option
+allows you to request that only the NCGM file be left in your
+directory and that all other files created by \fBnhlex\fP be deleted.
+The argument \fIname\fP may be selected from the lists that appear
+below.
+.sp
+Since the HLU library is available on Suns and SGIs
+only, these examples will only execute on those machines.  In the
+future, the HLUs and their examples will be ported to other systems.
 .SH OPTIONS
 .IP "\-A\fP" 1i
 Copy and execute all available examples.
 .IP \-\fIclean\fP 1i
 Remove everything but the ".ncgm" file.
+.IP \-\fIlist\fP 1i
+Lists all the examples.  Must be used with the "-A" option.
 .IP \-\fIn\fP 1i
-Specifies that the example should not copy the executable or run.
+Specifies that the example should just be copied over, and not
+linked or executed.
 .IP \fIname\fP 1i
 List of example programs to retrieve.
-.SH DESCRIPTION
-.B nhlex
-provides the user with access to example source code for the NCAR
-Graphics High Level Utilities (The HLU Library). \fBnhlex\fP copies
-the source code and an executable for the specified example(s) into
-the current directory and then executes the example. If the requested
-example creates an NCGM file, it will have the same name as the
-example, suffixed with ".ncgm". An option allows you to request that
-only the source code be copied to your directory, without copying the
-executable or executing the example.  Another option allows you to
-request that only the NCGM file be left in your directory and that all
-other files created by \fBnhlex\fP be deleted.  The argument
-\fIname\fP may be selected from the lists that appear below.
 .SH "EXAMPLES AVAILABLE"
 .IP nhl01 1i
-This example demonstrates how to display an XyPlot to an X Window, and then
+Demonstrates how to display an XyPlot to an X Window, and then
 copy it to a meta file.
 .IP nhl02 1i
-This example demonstrates how to incorporate the HLU library with a GUI.
+Demonstrates how to incorporate the HLU library with a GUI.
 It uses an X/Motif interface, and also allows the user to copy frames from
 the X Window to a meta file.
 .IP nhl05 1i
-This example shows how to use the TextItem object of the HLU library.
+Shows how to use the TextItem object of the HLU library.
 .IP nhl06 1i
-This example demonstates how to use HLU objects with low level NCAR Graphics
+Demonstrates how to use HLU objects with low level NCAR Graphics
 library calls. 
 .IP nhl07 1i
+Demonstrates basic features of the Contour object.
 .IP nhl08 1i
+Demonstrates basic features of the Contour object.  The first
+frame emulates the contour plot drawn in nhl06 using low-level NCARG calls.
 .IP nhl09 1i
+Emulates the output of the ncargex example "cpex02".
 .IP nhl10 1i
+Demonstrates basic MapPlot capabilities.
 .IP nhl11 1i
+Demonstrates individual control of MapPlot areas.
 .IP nhl12 1i
+Demonstrates MapPlot masking; loosely emulates the ncargex example "colcon".
 .IP nhl13 1i
+Illustrates the use of Annotation objects.
 .IP nhlf01 1i
-Fortran example.
+A Fortran example demonstrating XyPlot capabilities.
 .SH SEE ALSO
 ncargcex(1NCARG)
 .SH COPYRIGHT
