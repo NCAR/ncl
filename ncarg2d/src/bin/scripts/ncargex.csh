@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.114 1999-03-18 18:01:27 haley Exp $
+#   $Id: ncargex.csh,v 1.115 1999-03-23 15:48:35 haley Exp $
 #
 
 if ($#argv < 1) goto usage
@@ -381,14 +381,17 @@ set c_list = ($c_list $labelbar_clist)
 # set ngmath examples #
 #                     #
 #*********************#
-set ngmath_fex  = (dsex01 dsex02 dsex03 dsex04 dsex05 dsex06 dsex01d nnex01 \
+set ngmath_fex  = (csex01 csex02 csex03 csex04 csex05 csex06 csex07 \
+                   dsex01 dsex02 dsex03 dsex04 dsex05 dsex06 dsex01d nnex01 \
                    nnex02 nnex03 nnex04 nnex05 nnex06 nnex07 nnex08 nnex09 \
                    nnex01d ftex01 ftex02 ftex03 ftex04 ftex05 ftex06)
 set ngmath_flist = ($ngmath_fex)
 
-set ngmath_cex  = (c_dsex01 c_dsex02 c_dsex03 c_dsex04 c_dsex05 c_dsex06 \
-                   c_dsex01d c_nnex01 c_nnex02 c_nnex03 c_nnex06 c_nnex01d \
-                   c_ftex01 c_ftex02 c_ftex03 c_ftex04 c_ftex05 c_ftex06)
+set ngmath_cex  = (c_csex01 c_csex02 c_csex03 c_csex04 c_csex05 c_csex06 \
+                   c_csex07 c_dsex01 c_dsex02 c_dsex03 c_dsex04 c_dsex05 \
+                   c_dsex06 c_dsex01d c_nnex01 c_nnex02 c_nnex03 c_nnex06 \
+                   c_nnex01d c_ftex01 c_ftex02 c_ftex03 c_ftex04 c_ftex05 \
+                   c_ftex06)
 set ngmath_clist = ($ngmath_cex)
 
 set f_list = ($f_list $ngmath_flist)
@@ -1512,23 +1515,34 @@ switch ($name)
         set data_files = (srex01.dat)
     breaksw
 
+    case c_csex01:
+    case c_csex02:
+    case c_csex03:
+    case c_csex04:
+    case c_csex05:
+    case c_csex06:
+    case c_csex07:
+    case c_dsex01:
+    case c_dsex01d:
+    case c_dsex02:
+    case c_dsex03:
+    case c_dsex04:
+    case c_dsex05:
+    case c_dsex06:
+    case csex01:
+    case csex02:
+    case csex03:
+    case csex04:
+    case csex05:
+    case csex06:
+    case csex07:
+    case dsex01d:
     case dsex01:
     case dsex02:
     case dsex03:
     case dsex04:
     case dsex05:
     case dsex06:
-    case dsex01d:
-        set comp_flags = ($comp_flags "-ngmath")
-    breaksw
-
-    case c_dsex01:
-    case c_dsex02:
-    case c_dsex03:
-    case c_dsex04:
-    case c_dsex05:
-    case c_dsex06:
-    case c_dsex01d:
         set comp_flags = ($comp_flags "-ngmath")
     breaksw
 
