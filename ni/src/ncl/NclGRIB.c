@@ -1348,6 +1348,7 @@ int GdsCompare(unsigned char *gds1,int gds_size1,unsigned char *gds2,int gds_siz
 	}
 	return 0;
 }
+
 void _Do109(GribFileRecord *therec,GribParamList *step) {
 	int dimsizes_level;
 	int tmp_file_dim_number;
@@ -2211,12 +2212,12 @@ GribFileRecord *therec;
 			}
 		} else {
 			if (step->has_gds && step->grid_number == 255) {
-				NhlPError(NhlFATAL,NhlEUNKNOWN,"NclGRIB: Unsupported GDS grid type (%d) can't decode",step->gds_type);
+				NhlPError(NhlWARNING,NhlEUNKNOWN,"NclGRIB: Unsupported GDS grid type (%d) can't decode",step->gds_type);
 			}
 			else {
-				NhlPError(NhlFATAL,NhlEUNKNOWN,"NclGRIB: Unsupported grid number (%d) can't decode",step->grid_number);
+				NhlPError(NhlWARNING,NhlEUNKNOWN,"NclGRIB: Unsupported grid number (%d) can't decode",step->grid_number);
 			}
-			is_err = NhlFATAL;
+			is_err = NhlWARNING;
 		}
 		if(is_err == NhlNOERROR) {
 
@@ -2579,7 +2580,7 @@ GribFileRecord *therec;
 				}
 			}
 		}
-		if(is_err == NhlNOERROR) {
+		if(is_err > NhlFATAL) {
 
 			last = step;	
 			step = step->next;
@@ -4563,7 +4564,7 @@ int wr_status;
 							}
 						}
 						if(i == grid_gds_tbl_len) {
-							grib_rec->grid_gds_tbl_index = -1;
+							grib_rec->grid_gds_tbl_index = 0;
 						}
 						grib_rec->grid_tbl_index = -1;
 					} else {
@@ -4800,7 +4801,12 @@ int wr_status;
 					}
 					if (i == ptable_count) {
 						if(!_IsDef(therec,grib_rec->param_number)) {
-							NhlPError(NhlWARNING,NhlEUNKNOWN,"NclGRIB: Unknown grib parameter number detected (%d), using default variable name (VAR_%d)",grib_rec->param_number,grib_rec->param_number);
+							NhlPError(NhlWARNING,NhlEUNKNOWN,"NclGRIB: Unknown grib parameter number detected (%d, center %d, table version %d grib record %d), using default variable name (VAR_%d)",
+								  grib_rec->param_number,
+								  center,
+								  ptable_version,
+								  rec_num,
+								  grib_rec->param_number);
 						}
 						i = -1;
 					}

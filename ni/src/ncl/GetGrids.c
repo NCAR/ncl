@@ -54,13 +54,18 @@ static void InitMapTrans
 	NGCALLF(mdpint,MDPINT)();
 }
 
-
+/* 
+ * pds-defined grids that are still unsupported:
+ * 8,53,88,94,95,96,97,110,127,145,146,147,148,170,171,172,173,175,185,186,190,192,194,198,215 - 254
+ */
 
 int grid_index[] = { 1, 2, 3, 4, 5, 6, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 33, 34, 37, 38, 39, 40, 41, 42, 43, 44, 45, 50, 55, 56, 61, 62, 63, 64, 75, 76, 77, 85, 86, 87, 90, 91, 92, 93, 98, 100, 101, 103, 104, 105, 106, 107, 126, 201, 202, 203, 204, 205, 206,207, 208, 209, 210, 211, 212, 213, 214 };
 
+
+
 int grid_tbl_len = sizeof(grid_index)/sizeof(int);
 
-int grid_gds_index[] = { 0, 1, 2, 3, 4, 5, 13, 50, 90, 201, 202, 203 };
+int grid_gds_index[] = { -1, 0, 1, 2, 3, 4, 5, /*10,*/ 13, 50, 60, 70, 80, /*90,*/ 201, 202, 203 };
 
 int grid_gds_tbl_len = sizeof(grid_gds_index)/sizeof(int);
 #define EAR 6371.2213
@@ -4479,7 +4484,325 @@ int * nlonatts;
 	return;
 }
 
-void GdsRLLGrid 
+void GdsUnknownGrid
+#if NhlNeedProto
+(GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon,GribAttInqRecList ** lat_att_list, int * nlatatts, GribAttInqRecList **lon_att_list, int * nlonatts)
+#else
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon,lat_att_list,nlatatts,lon_att_list, nlonatts)
+GribParamList* thevarrec;
+float** lat;
+int* n_dims_lat;
+int** dimsizes_lat;
+float** lon;
+int* n_dims_lon;
+int** dimsizes_lon;
+GribAttInqRecList ** lat_att_list;
+int * nlatatts;
+GribAttInqRecList ** lon_att_list;
+int * nlonatts;
+#endif
+{
+	unsigned char *gds;
+	int nlon,nlat;
+	int is_thinned_lat;
+	int is_thinned_lon;
+	int gds_type;
+	
+	
+	*lat = NULL;
+	*n_dims_lat = 0;
+	*dimsizes_lat = NULL;
+	*lon = NULL;
+	*n_dims_lon= 0;
+	*dimsizes_lon= NULL;
+	if((thevarrec->thelist == NULL)||(thevarrec->thelist->rec_inq == NULL)) 
+		return;
+
+	gds = thevarrec->thelist->rec_inq->gds;
+	if(gds == NULL) {
+		return;
+	}
+
+	gds_type = (int) gds[5];
+	nlon = CnvtToDecimal(2,&(gds[6]));
+	nlat = CnvtToDecimal(2,&(gds[8]));
+	is_thinned_lon = (nlon == 65535); /* all bits set indicates missing: missing means thinned */
+	is_thinned_lat = (nlat == 65535);
+	if (nlon <= 1 || nlat <= 1 || is_thinned_lon || is_thinned_lat) {
+		if (is_thinned_lon || is_thinned_lat) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+				  "GdsUnsupportedGrid: Cannot handle unsupported grid containing thinned lats or lons");
+		}
+		else {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+				  "GdsUnknownGrid: Invalid grid detected");
+		}
+		*lat = NULL;
+		*n_dims_lat = 0;
+		*dimsizes_lat = NULL;
+		*lon = NULL;
+		*n_dims_lon= 0;
+		*dimsizes_lon= NULL;
+		return;
+	}
+	*dimsizes_lat = (int*)NclMalloc(sizeof(int));
+	*dimsizes_lon = (int*)NclMalloc(sizeof(int));
+	*(*dimsizes_lon) = nlon;
+	*(*dimsizes_lat) = nlat;
+	*n_dims_lat = 1;
+	*n_dims_lon = 1;
+	NhlPError(NhlWARNING,NhlEUNKNOWN,
+		  "NCL does not yet fully support GDS grid type %d, no coordinate variables will be supplied for this grid",
+		  gds_type);
+
+	return;
+}
+
+/*
+ * Rotated Lat/Lon grids GDS grid type 10 
+ */
+void GdsRLLGrid
+#if NhlNeedProto
+(GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon,GribAttInqRecList ** lat_att_list, int * nlatatts, GribAttInqRecList **lon_att_list, int * nlonatts)
+#else
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon,lat_att_list,nlatatts,lon_att_list, nlonatts)
+GribParamList* thevarrec;
+float** lat;
+int* n_dims_lat;
+int** dimsizes_lat;
+float** lon;
+int* n_dims_lon;
+int** dimsizes_lon;
+GribAttInqRecList ** lat_att_list;
+int * nlatatts;
+GribAttInqRecList ** lon_att_list;
+int * nlonatts;
+#endif
+{
+	unsigned char *gds;
+	int la1;
+	int lo1;
+	int la2;
+	int lo2;
+	double di;
+	double dj;
+	int latXlon;
+	int idir;
+	int jdir;
+	int has_dir_inc;
+	int vectors;
+	int is_thinned_lat;
+	int is_thinned_lon;
+	unsigned char tmp[4];
+	int sign;
+	int i;
+	float *tmp_float;
+	NclQuark* tmp_string;
+	int nlon, nlat;
+	int itmp;
+	float lasp;
+	float losp;
+	float rotang;
+		
+	*lat = NULL;
+	*n_dims_lat = 0;
+	*dimsizes_lat = NULL;
+	*lon = NULL;
+	*n_dims_lon= 0;
+	*dimsizes_lon= NULL;
+	if((thevarrec->thelist == NULL)||(thevarrec->thelist->rec_inq == NULL)) 
+		return;
+
+	gds = thevarrec->thelist->rec_inq->gds;
+	if(gds == NULL) {
+		return;
+	}
+
+	nlon = CnvtToDecimal(2,&(gds[6]));
+	nlat = CnvtToDecimal(2,&(gds[8]));
+	is_thinned_lon = (nlon == 65535); /* all bits set indicates missing: missing means thinned */
+	is_thinned_lat = (nlat == 65535);
+	if (nlon <= 1 || nlat <= 1 || (is_thinned_lon && is_thinned_lat)) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			  "GdsCEGrid: Invalid grid detected");
+		*lat = NULL;
+		*n_dims_lat = 0;
+		*dimsizes_lat = NULL;
+		*lon = NULL;
+		*n_dims_lon= 0;
+		*dimsizes_lon= NULL;
+		return;
+	}
+
+	idir = ((char)0200 & gds[27]) ? -1 : 1;
+	jdir = ((char)0100 & gds[27]) ? 1 : -1;
+	latXlon = ((char)0040 & gds[27])? 0 : 1; 
+	sign = ((char)0200 & gds[10] )? -1 : 1;
+	tmp[0] = (char)0177 & gds[10];
+	tmp[1] = gds[11];
+	tmp[2] = gds[12];
+	la1 = sign * CnvtToDecimal(3,tmp);
+	sign = ((char)0200 & gds[13] )? -1 : 1;
+	tmp[0] = (char)0177 & gds[13];
+	tmp[1] = gds[14];
+	tmp[2] = gds[15];
+	lo1 = sign * CnvtToDecimal(3,tmp);
+	sign = ((char)0200 & gds[17] )? -1 : 1;
+	tmp[0] = (char)0177 & gds[17];
+	tmp[1] = gds[18];
+	tmp[2] = gds[19];
+	la2 = sign * CnvtToDecimal(3,tmp);
+	sign = ((char)0200 & gds[20] )? -1 : 1;
+	tmp[0] = (char)0177 & gds[20];
+	tmp[1] = gds[21];
+	tmp[2] = gds[22];
+	lo2 = sign * CnvtToDecimal(3,tmp);
+
+	sign = ((char)0200 & gds[32] )? -1 : 1;
+	tmp[0] = (char)0177 & gds[32];
+	tmp[1] = gds[33];
+	tmp[2] = gds[34];
+	lasp = ((float) sign * CnvtToDecimal(3,tmp)) / 1000.0;
+
+	sign = ((char)0200 & gds[35] )? -1 : 1;
+	tmp[0] = (char)0177 & gds[35];
+	tmp[1] = gds[36];
+	tmp[2] = gds[37];
+	losp = ((float) sign * CnvtToDecimal(3,tmp)) / 1000.0;
+
+	sign = ((char)0200 & gds[38] )? -1 : 1;
+	tmp[0] = (char)0177 & gds[38];
+	tmp[1] = gds[39];
+	tmp[2] = gds[40];
+	tmp[2] = gds[41];
+	rotang = (float)sign * ((float)CnvtToDecimal(3,&(tmp[1])) * pow(2.0,-24.0) * pow(16.0,tmp[0] - 64));
+
+	has_dir_inc = ((char)0200 & gds[16]) ? 1 : 0;
+	if (is_thinned_lon) {
+		GetThinnedLonParams(gds,nlat,lo1,lo2,idir,&nlon,&di);
+	}
+	else {
+		itmp =  CnvtToDecimal(2,&gds[23]);
+		if (itmp != 65535 && has_dir_inc) {
+			di = (double) itmp;
+		}
+		else {
+			/* not specified: must be calculated from the endpoints and number of steps */
+			di = (lo2 - lo1) / (double)(nlon - 1);
+			if (di < 0) di = -di;
+		}
+	}
+
+	if (is_thinned_lat) {
+		GetThinnedLatParams(gds,nlon,la1,la2,jdir,&nlat,&dj);
+	}
+	else {
+		itmp = (double) CnvtToDecimal(2,&gds[25]);
+		if (itmp != 65535.0 && has_dir_inc) {
+			dj = (double) itmp;
+		}
+		else {
+			/* not specified: must be calculated from the endpoints and number of steps */
+			dj = (la2 - la1) / (double) (nlat - 1);
+			if (dj < 0) dj = -dj;
+		}
+	}
+			
+	*dimsizes_lat = (int*)NclMalloc(sizeof(int));
+	*dimsizes_lon = (int*)NclMalloc(sizeof(int));
+	*(*dimsizes_lon) = nlon;
+	*(*dimsizes_lat) = nlat;
+	*n_dims_lat = 1;
+	*n_dims_lon = 1;
+	*lat = (float*)NclMalloc((unsigned)sizeof(float)* nlat);
+	*lon = (float*)NclMalloc((unsigned)sizeof(float)* nlon);
+	for(i = 0;i < *(*dimsizes_lat) ; i++) {
+		(*lat)[i] = (float)(la1 + jdir * i * dj) / 1000.0;
+	}
+	for(i = 0;i < *(*dimsizes_lon) ; i++) {
+		(*lon)[i] = (float)(lo1 + idir * i * di) / 1000.0;
+	}
+	
+	if(lon_att_list != NULL) {
+		tmp_float= (float*)NclMalloc(sizeof(float));
+		*tmp_float = lasp;
+		GribPushAtt(lon_att_list,"Latitude of southern pole",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+		tmp_float= (float*)NclMalloc(sizeof(float));
+		*tmp_float = losp;
+		GribPushAtt(lon_att_list,"Longitude of southern pole",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+		tmp_float= (float*)NclMalloc(sizeof(float));
+		*tmp_float = rotang;
+		GribPushAtt(lon_att_list,"Angle of rotation",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+		tmp_float= (float*)NclMalloc(sizeof(float));
+		*tmp_float = la1/1000.0;
+		GribPushAtt(lon_att_list,"La1",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+		tmp_float= (float*)NclMalloc(sizeof(float));
+		*tmp_float = lo1/1000.0;
+		GribPushAtt(lon_att_list,"Lo1",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+		tmp_float= (float*)NclMalloc(sizeof(float));
+		*tmp_float = la2/1000.0;
+		GribPushAtt(lon_att_list,"La2",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+		tmp_float= (float*)NclMalloc(sizeof(float));
+		*tmp_float = lo2/1000.0;
+		GribPushAtt(lon_att_list,"Lo2",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+		tmp_float= (float*)NclMalloc(sizeof(float));
+		*tmp_float = di/1000.0;
+		GribPushAtt(lon_att_list,"Di",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+		tmp_float= (float*)NclMalloc(sizeof(float));
+		*tmp_float = dj/1000.0;
+		GribPushAtt(lon_att_list,"Dj",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+		*tmp_string = NrmStringToQuark("degrees_east");
+		GribPushAtt(lon_att_list,"units",tmp_string,1,nclTypestringClass); (*nlonatts)++;
+		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+		if (is_thinned_lat || is_thinned_lon)
+			*tmp_string = NrmStringToQuark("Rotated Latitude/Longitude Grid (Quasi-Regular)");
+		else 
+			*tmp_string = NrmStringToQuark("Rotated Latitude/Longitude Grid");
+		GribPushAtt(lon_att_list,"GridType",tmp_string,1,nclTypestringClass); (*nlonatts)++;
+	}
+	if(lat_att_list != NULL) {
+		tmp_float= (float*)NclMalloc(sizeof(float));
+		*tmp_float = lasp;
+		GribPushAtt(lat_att_list,"Latitude of southern pole",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+		tmp_float= (float*)NclMalloc(sizeof(float));
+		*tmp_float = losp;
+		GribPushAtt(lat_att_list,"Longitude of southern pole",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+		tmp_float= (float*)NclMalloc(sizeof(float));
+		*tmp_float = rotang;
+		GribPushAtt(lat_att_list,"Angle of rotation",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+		tmp_float= (float*)NclMalloc(sizeof(float));
+		*tmp_float = la1/1000.0;
+		GribPushAtt(lat_att_list,"La1",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+		tmp_float= (float*)NclMalloc(sizeof(float));
+		*tmp_float = lo1/1000.0;
+		GribPushAtt(lat_att_list,"Lo1",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+		tmp_float= (float*)NclMalloc(sizeof(float));
+		*tmp_float = la2/1000.0;
+		GribPushAtt(lat_att_list,"La2",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+		tmp_float= (float*)NclMalloc(sizeof(float));
+		*tmp_float = lo2/1000.0;
+		GribPushAtt(lat_att_list,"Lo2",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+		tmp_float= (float*)NclMalloc(sizeof(float));
+		*tmp_float = di/1000.0;
+		GribPushAtt(lat_att_list,"Di",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+		tmp_float= (float*)NclMalloc(sizeof(float));
+		*tmp_float = dj/1000.0;
+		GribPushAtt(lat_att_list,"Dj",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+		*tmp_string = NrmStringToQuark("degrees_north");
+		GribPushAtt(lat_att_list,"units",tmp_string,1,nclTypestringClass); (*nlatatts)++;
+		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+		if (is_thinned_lat || is_thinned_lon)
+			*tmp_string = NrmStringToQuark("Rotated Latitude/Longitude Grid (Quasi-Regular)");
+		else 
+			*tmp_string = NrmStringToQuark("Rotated Latitude/Longitude Grid");
+		GribPushAtt(lat_att_list,"GridType",tmp_string,1,nclTypestringClass); (*nlatatts)++;
+	}
+	return;
+}
+
+void GdsSRLLGrid 
 #if NhlNeedProto
 (GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon,GribAttInqRecList ** lat_att_list, int * nlatatts, GribAttInqRecList **lon_att_list, int * nlonatts)
 #else
@@ -4701,18 +5024,28 @@ int * nlonatts;
 
 
 GridGDSInfoRecord grid_gds[] = {
+		GenericUnPack,GdsUnknownGrid,"Unsupported Gds Grid", /*-1*/
 		GenericUnPack,GdsCEGrid,"Cylindrical Equidistant Projection Grid", /*0*/
 /**/		GenericUnPack,GdsMEGrid,"Mercator Projection Grid", /*1*/
 /**/		GenericUnPack,GdsGNGrid,"Gnomonic Projection Grid", /*2*/
 		GenericUnPack,GdsLEGrid,"Lambert Conformal Secant or Tangent, Conical or bipolar", /*3*/
 		GenericUnPack,GdsGAGrid,"Gaussian Latitude/Longitude Grid", /*4*/
 		GenericUnPack,GdsSTGrid,"Polar Stereographic Projection Grid", /*5*/
+#if 0
+		GenericUnPack,GdsRLLGrid,"Rotated Latitude/Longitude Grid", /*10*/
+#endif
 /**/		GenericUnPack,GdsOLGrid,"Oblique Lambert conformal, secant or tangent, conical or bipolar, projection", /*13*/
 		GenericUnPack,GdsSHGrid,"Spherical Harmonic Coefficients", /*50*/
+		NULL,NULL,"Rotated Spherical Harmonic Coefficients", /*60*/
+		NULL,NULL,"Stretched Spherical Harmonic Coefficients", /*70*/
+		NULL,NULL,"Stretched and Rotated Spherical Harmonic Coefficients", /*80*/
+
+#if 0
 		NULL,NULL,"Space View perspective or orthographic grid", /*90*/
+#endif
 		NULL,NULL,"Arakawa semi-staggered E-grid on rotated latitude/longitude grid-point array", /*201*/
 		NULL,NULL,"Arakawa filled E-grid on rotated latitude/longitude grid-point array", /*202*/
-		GenericUnPack,GdsRLLGrid,"Arakawa staggered E-grid on rotated latitude/longitude grid-point array", /*203*/
+		GenericUnPack,GdsSRLLGrid,"Arakawa staggered E-grid on rotated latitude/longitude grid-point array", /*203*/
 		
 };
 
