@@ -1,5 +1,5 @@
 /*
- *      $Id: LogLinTransObj.c,v 1.29 1997-02-24 22:12:28 boote Exp $
+ *      $Id: LogLinTransObj.c,v 1.30 1997-06-18 07:14:40 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -740,12 +740,16 @@ static NhlErrorTypes LlSetTrans
 		e_text = "%s: View extent is outside NDC range: constraining";
 		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
 		ret = MIN(ret,NhlWARNING);
-		tp->x = MAX(tp->x,0.0);
-		xr = MIN(xr,1.0);
-		tp->y = MIN(tp->y,1.0);
-		yb = MAX(yb,0.0);
-		tp->width = xr - tp->x;
-		tp->height = tp->y - yb;
+		tp->x = MIN(1.0,MAX(tp->x,0.0));
+                tp->width = MIN(tp->width,1.0-tp->x);
+                if (tp->width <= 0.0)
+                        tp->width = 0.1;
+		xr = tp->x + tp->width;
+		tp->y = MAX(0.0,MIN(tp->y,1.0));
+                tp->height = MIN(tp->height,1.0-tp->y);
+                if (tp->height <= 0.0)
+                        tp->height = 0.1;
+		yb = tp->y - tp->height;
 	}
 	c_set(tp->x,xr,yb,tp->y,
 	      linstance->lltrans.ul,linstance->lltrans.ur,

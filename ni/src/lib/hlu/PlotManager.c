@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManager.c,v 1.37 1997-05-14 22:53:32 boote Exp $
+ *      $Id: PlotManager.c,v 1.38 1997-06-18 07:14:43 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3281,7 +3281,7 @@ ManageExtAnnotation
 	char			*e_text;
 	NhlJustification	just = NhlCENTERCENTER;
 	NhlBoundingBox		bbox;
-	float			x_pos,y_pos,width,height;
+	float			x_pos,y_pos,x_start,y_start,width,height;
 	float			x_vp,y_vp,width_vp,height_vp;
         NhlSArg			sargs[4];
         int			nargs = 0;
@@ -3330,31 +3330,31 @@ ManageExtAnnotation
 		NhlPError(ret,NhlEUNKNOWN,e_text, entry_name);
 		if (ret < NhlWARNING) return ret;
 	}
+	x_start = anno_rec->zone != 0 ? ovnew->view.x :
+		ovnew->view.x + 0.5 * ovnew->view.width; 
+	y_start = anno_rec->zone != 0 ? ovnew->view.y - ovnew->view.height :
+		ovnew->view.y - 0.5 * ovnew->view.height;
 	sign = anno_rec->zone == 1 ? 1.0 : -1.0;
 	switch (anno_rec->side) {
 	case NhlBOTTOM:
-		x_pos = ovnew->view.x + 
-			anno_rec->para_pos * ovnew->view.width;
+		x_pos = x_start + anno_rec->para_pos * ovnew->view.width;
 		y_pos = bbox.b +
-			sign * anno_rec->ortho_pos * ovnew->view.height;
+                        sign * anno_rec->ortho_pos * ovnew->view.height;
 		break;
 	case NhlTOP:
-		x_pos = ovnew->view.x + 
-			anno_rec->para_pos * ovnew->view.width;
+		x_pos = x_start + anno_rec->para_pos * ovnew->view.width;
 		y_pos = bbox.t -
 			sign * anno_rec->ortho_pos * ovnew->view.height;
 		break;
 	case NhlLEFT:
 		x_pos = bbox.l + 
 			sign * anno_rec->ortho_pos * ovnew->view.width;
-		y_pos = ovnew->view.y - ovnew->view.height +
-			anno_rec->para_pos * ovnew->view.height;
+		y_pos = y_start + anno_rec->para_pos * ovnew->view.height;
 		break;
 	case NhlRIGHT:
 		x_pos = bbox.r - 
 			sign * anno_rec->ortho_pos * ovnew->view.width;
-		y_pos = ovnew->view.y - ovnew->view.height +
-			anno_rec->para_pos * ovnew->view.height;
+		y_pos = y_start + anno_rec->para_pos * ovnew->view.height;
 		break;
 	default:
 		e_text = "%s: internal enumeration error";
@@ -3376,35 +3376,34 @@ ManageExtAnnotation
 	case NhlTOPLEFT:
 		break;
 	case NhlTOPCENTER:
-		x_pos = x_pos - width_vp / 2.0;
+		x_pos = x_pos - width / 2.0;
 		break;
 	case NhlTOPRIGHT:
-		x_pos = x_pos - width_vp;
+		x_pos = x_pos - width;
 		break;
 	case NhlCENTERLEFT:
-		y_pos = y_pos + height_vp / 2.0;
+		y_pos = y_pos + height / 2.0;
 		break;
 	case NhlCENTERCENTER:
-		x_pos = x_pos - width_vp / 2.0;
-		y_pos = y_pos + height_vp / 2.0;
+		x_pos = x_pos - width / 2.0;
+		y_pos = y_pos + height / 2.0;
 		break;
 	case NhlCENTERRIGHT:
-		x_pos = x_pos - width_vp;
-		y_pos = y_pos + height_vp / 2.0;
+		x_pos = x_pos - width;
+		y_pos = y_pos + height / 2.0;
 		break;
 	case NhlBOTTOMLEFT:
-		y_pos = y_pos + height_vp;
+		y_pos = y_pos + height;
 		break;
 	case NhlBOTTOMCENTER:
-		x_pos = x_pos - width_vp / 2.0;
-		y_pos = y_pos + height_vp;
+		x_pos = x_pos - width / 2.0;
+		y_pos = y_pos + height;
 		break;
 	case NhlBOTTOMRIGHT:
-		y_pos = y_pos + height_vp;
-		x_pos = x_pos - width_vp;
+		y_pos = y_pos + height;
+		x_pos = x_pos - width;
 		break;
 	}
-
 /*
  * Reset the viewport of the annotation's plot object if required
  */
