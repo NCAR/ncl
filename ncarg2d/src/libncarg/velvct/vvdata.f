@@ -1,5 +1,5 @@
 C
-C       $Id: vvdata.f,v 1.8 1996-03-29 19:20:58 dbrown Exp $
+C       $Id: vvdata.f,v 1.9 1996-04-11 17:22:25 dbrown Exp $
 C
       BLOCK DATA VVDATA
 C
@@ -404,7 +404,7 @@ C
 C
 C FAWF -- 'AWF' -- arrow width (minimum)
 C
-      DATA FAWF / 0.0 /
+      DATA FAWF / 0.25 /
 C
 C FAXR -- 'AXR' -- arrowhead X-coord length (reference)
 C
@@ -412,7 +412,7 @@ C
 C
 C FAXF -- 'AXF' -- arrowhead X-coord length (minimum)
 C
-      DATA FAXF / 0.0 /
+      DATA FAXF / 0.25 /
 C
 C FAYR -- 'AYR' -- arrowhead Y-coord length (reference)
 C
@@ -420,7 +420,7 @@ C
 C
 C FAYF -- 'AYF' -- arrowhead Y-coord length (minimum)
 C
-      DATA FAYF / 0.0 /
+      DATA FAYF / 0.25 /
 C
 C IACM -- 'ACM' -- arrow color mode 
 C                  (ignored if AST = 0)

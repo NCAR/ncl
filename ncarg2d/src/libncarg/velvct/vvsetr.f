@@ -1,5 +1,5 @@
 C
-C       $Id: vvsetr.f,v 1.12 1996-01-19 17:21:51 dbrown Exp $
+C       $Id: vvsetr.f,v 1.13 1996-04-11 17:22:26 dbrown Exp $
 C
 C
 C-----------------------------------------------------------------------
@@ -248,7 +248,7 @@ C
       ELSE IF (CNM(1:3).EQ.'AWF'.OR.CNM(1:3).EQ.'awf') THEN
          FAWF=MIN(1.0,MAX(0.0,RVL))
       ELSE IF (CNM(1:3).EQ.'AXR'.OR.CNM(1:3).EQ.'axr') THEN
-         FAXR=MIN(1.0,MAX(0.0,RVL))
+         FAXR=MIN(2.0,MAX(0.0,RVL))
       ELSE IF (CNM(1:3).EQ.'AXF'.OR.CNM(1:3).EQ.'axf') THEN
          FAXF=MIN(1.0,MAX(0.0,RVL))
       ELSE IF (CNM(1:3).EQ.'AYR'.OR.CNM(1:3).EQ.'ayr') THEN

@@ -1,5 +1,5 @@
 C
-C       $Id: vvrset.f,v 1.8 1996-01-19 17:21:50 dbrown Exp $
+C       $Id: vvrset.f,v 1.9 1996-04-11 17:22:26 dbrown Exp $
 C
 C
 C-----------------------------------------------------------------------
@@ -179,17 +179,17 @@ C
       HDSZ = 0.25
       HINF = 0.5
       HANG = 22.5
-      FAMN = 0.01
-      FAMX = 0.2
+      FAMN = 0.005
+      FAMX = 0.05
       IAST = 0
       UVMG = 0.0
       FAIR = 0.33
-      FAWR = 0.03
-      FAWF = 0.0
+      FAWR = 0.1
+      FAWF = 0.25
       FAXR = 0.36
-      FAXF = 0.0
+      FAXF = 0.25
       FAYR = 0.12
-      FAYF = 0.0
+      FAYF = 0.25
       IACM = 0
       IAFO = 1
 C
