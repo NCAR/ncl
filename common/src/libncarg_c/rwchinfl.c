@@ -1,5 +1,5 @@
 /*
- *	$Id: rwchinfl.c,v 1.5 2000-08-22 04:03:32 haley Exp $
+ *	$Id: rwchinfl.c,v 1.6 2001-05-07 21:56:38 kennison Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -30,13 +30,13 @@
 #include <fcntl.h>
 
 #if defined (cray)
+#include <fcntl.h>
 #include <sys/types.h>
 #include <fortran.h>
 #endif
 
 
-void
-NGCALLF(ngclfi,NGCLFI)(fdes)
+void NGCALLF(ngclfi,NGCLFI)(fdes)
 /*
  * This routine closes an open file; the argument "fdes" is the file
  * descriptor which was returned by ngofro, ngofrw, or ngofwo.
@@ -47,8 +47,7 @@ NGCALLF(ngclfi,NGCLFI)(fdes)
 }
 
 
-void
-NGCALLF(ngofro,NGOFRO)(flnm,fdes,stat)
+void NGCALLF(ngofro,NGOFRO)(flnm,fdes,stat)
 /*
  * This routine opens an existing file for reading only.  The argument
  * "flnm" is input; it contains a file name, in the form of a FORTRAN
@@ -84,8 +83,7 @@ NGCALLF(ngofro,NGOFRO)(flnm,fdes,stat)
 }
 
 
-void
-NGCALLF(ngofrw,NGOFRW)(flnm,fdes,stat)
+void NGCALLF(ngofrw,NGOFRW)(flnm,fdes,stat)
 /*
  * This routine opens a file for reading and writing both.  The argument
  * "flnm" is input; it contains a file name, in the form of a FORTRAN
@@ -121,8 +119,7 @@ NGCALLF(ngofrw,NGOFRW)(flnm,fdes,stat)
 }
 
 
-void
-NGCALLF(ngofwo,NGOFWO)(flnm,fdes,stat)
+void NGCALLF(ngofwo,NGOFWO)(flnm,fdes,stat)
 /*
  * This routine opens a file for writing only.  The argument "flnm" is
  * input; it contains a file name, in the form of a FORTRAN CHARACTER*1
@@ -158,8 +155,7 @@ NGCALLF(ngofwo,NGOFWO)(flnm,fdes,stat)
 }
 
 
-void
-NGCALLF(ngrdch,NGRDCH)(fdes,buff,lbuf,stat)
+void NGCALLF(ngrdch,NGRDCH)(fdes,buff,lbuf,stat)
 /*
  * This routine reads characters (bytes) from a file to an internal
  * buffer.  The argument "fdes" is the file descriptor returned by the
@@ -187,8 +183,7 @@ NGCALLF(ngrdch,NGRDCH)(fdes,buff,lbuf,stat)
 }
 
 
-void
-NGCALLF(ngrdfl,NGRDFL)(fdes,buff,lbuf,stat)
+void NGCALLF(ngrdfl,NGRDFL)(fdes,buff,lbuf,stat)
 /*
  * This routine reads floats (reals) from a file to an internal buffer.
  * The argument "fdes" is the file descriptor returned by the routine
@@ -209,8 +204,7 @@ NGCALLF(ngrdfl,NGRDFL)(fdes,buff,lbuf,stat)
 }
 
 
-void
-NGCALLF(ngrdin,NGRDIN)(fdes,buff,lbuf,stat)
+void NGCALLF(ngrdin,NGRDIN)(fdes,buff,lbuf,stat)
 /*
  * This routine reads integers from a file to an internal buffer.  The
  * argument "fdes" is the file descriptor returned by the routine that
@@ -232,8 +226,7 @@ NGCALLF(ngrdin,NGRDIN)(fdes,buff,lbuf,stat)
 }
 
 
-void
-NGCALLF(ngrmfi,NGRMFI)(flnm)
+void NGCALLF(ngrmfi,NGRMFI)(flnm)
 /*
  * This routine removes an existing file.  The argument "flnm" is input;
  * it contains a file name, in the form of a FORTRAN CHARACTER*1 string
@@ -253,8 +246,7 @@ NGCALLF(ngrmfi,NGRMFI)(flnm)
 }
 
 
-void
-NGCALLF(ngwrch,NGWRCH)(fdes,buff,lbuf,stat)
+void NGCALLF(ngwrch,NGWRCH)(fdes,buff,lbuf,stat)
 /*
  * This routine writes characters (bytes) to a file from an internal
  * buffer.  The argument "fdes" is the file descriptor returned by the
@@ -281,8 +273,7 @@ NGCALLF(ngwrch,NGWRCH)(fdes,buff,lbuf,stat)
 }
 
 
-void
-NGCALLF(ngwrfl,NGWRFL)(fdes,buff,lbuf,stat)
+void NGCALLF(ngwrfl,NGWRFL)(fdes,buff,lbuf,stat)
 /*
  * This routine writes reals (floats) to a file from an internal
  * buffer.  The argument "fdes" is the file descriptor returned by the
@@ -303,8 +294,7 @@ NGCALLF(ngwrfl,NGWRFL)(fdes,buff,lbuf,stat)
 }
 
 
-void
-NGCALLF(ngwrin,NGWRIN)(fdes,buff,lbuf,stat)
+void NGCALLF(ngwrin,NGWRIN)(fdes,buff,lbuf,stat)
 /*
  * This routine writes integers to a file from an internal buffer.  The
  * argument "fdes" is the file descriptor returned by the routine that
@@ -322,4 +312,21 @@ NGCALLF(ngwrin,NGWRIN)(fdes,buff,lbuf,stat)
   if (ret%sizeof(int)!=0) ret=-1;
   else if (ret>0) ret=ret/sizeof(int);
   *stat = ret;
+}
+
+
+void NGCALLF(ngseek,NGSEEK)(fdes,offs,orig,stat)
+/*
+ * This routine repositions the read/write position of an open file.
+ * The argument "fdes" is the file descriptor returned by the routine
+ * that opened the file.  The argument "offs" is the desired position,
+ * given as an offset from the origin specified by the argument "orig",
+ * which is a "0" to specify the beginning of the file, a 1 to specify
+ * the current position, or a 2 to specify the end of the file.
+ */
+  int *fdes,*offs,*orig,*stat;
+{
+  long ret;
+  ret = lseek((int)*fdes,(long)*offs,(int)*orig);
+  *stat = (int) ret;
 }
