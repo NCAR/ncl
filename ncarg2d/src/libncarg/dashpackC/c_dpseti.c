@@ -1,5 +1,5 @@
 /*
- *	$Id: c_dpseti.c,v 1.2 2000-07-12 16:23:12 haley Exp $
+ *	$Id: c_dpseti.c,v 1.3 2000-07-31 20:11:09 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,8 @@
 ************************************************************************/
 
 #include <ncarg/ncargC.h>
+
+extern void NGCALLF(dpseti,DPSETI)(NGstring,int*,int);
 
 void c_dpseti
 #ifdef NeedFuncProto

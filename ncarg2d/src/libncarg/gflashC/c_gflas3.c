@@ -1,5 +1,5 @@
 /*
- *	$Id: c_gflas3.c,v 1.2 2000-07-12 16:24:09 haley Exp $
+ *	$Id: c_gflas3.c,v 1.3 2000-07-31 20:11:20 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,8 @@
 ************************************************************************/
 
 #include <ncarg/ncargC.h>
+
+extern void NGCALLF(gflas3,GFLAS3)(int*);
 
 void c_gflas3
 #ifdef NeedFuncProto

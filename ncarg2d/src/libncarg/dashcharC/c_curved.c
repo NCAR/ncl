@@ -1,5 +1,5 @@
 /*
- *	$Id: c_curved.c,v 1.2 2000-07-12 16:23:02 haley Exp $
+ *	$Id: c_curved.c,v 1.3 2000-07-31 20:11:05 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,8 @@
 ************************************************************************/
 
 #include <ncarg/ncargC.h>
+
+extern void NGCALLF(curved,CURVED)(float*,float*,int*);
 
 void c_curved
 #ifdef NeedFuncProto

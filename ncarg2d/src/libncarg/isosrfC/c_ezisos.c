@@ -1,5 +1,5 @@
 /*
- *	$Id: c_ezisos.c,v 1.2 2000-07-12 16:24:33 haley Exp $
+ *	$Id: c_ezisos.c,v 1.3 2000-07-31 20:11:28 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,9 @@
 ************************************************************************/
 
 #include <ncarg/ncargC.h>
+
+extern void NGCALLF(ezisos,EZISOS)(float*,int*,int*,int*,float*,float*,
+                                   float*);
 
 void c_ezisos 
 #ifdef NeedFuncProto

@@ -1,5 +1,5 @@
 /*
- *      $Id: c_tdlnpa.c,v 1.2 2000-07-12 16:26:40 haley Exp $
+ *      $Id: c_tdlnpa.c,v 1.3 2000-07-31 20:12:09 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -26,6 +26,8 @@
 
 #include <ncarg/ncargC.h>
 
+extern void NGCALLF(tdlnpa,TDLNPA)(float*,float*,float*,float*);
+
 void c_tdlnpa
 #ifdef NeedFuncProto
 (
@@ -42,10 +44,5 @@ void c_tdlnpa
     float ycp2;
 #endif
 {
-    float xcp12,ycp12,xcp22,ycp22;
-    xcp12=xcp1;
-    ycp12=ycp1;
-    xcp22=xcp2;
-    ycp22=ycp2;
-    NGCALLF(tdlnpa,TDLNPA)(&xcp12,&ycp12,&xcp22,&ycp22);
+    NGCALLF(tdlnpa,TDLNPA)(&xcp1,&ycp1,&xcp2,&ycp2);
 }

@@ -1,5 +1,5 @@
 /*
- *	$Id: c_perim3.c,v 1.2 2000-07-12 16:26:48 haley Exp $
+ *	$Id: c_perim3.c,v 1.3 2000-07-31 20:12:13 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -26,6 +26,8 @@
 
 #include <ncarg/ncargC.h>
 
+extern void NGCALLF(perim3,PERIM3)(int*,int*,int*,int*,int*,float*);
+
 void c_perim3 
 #ifdef NeedFuncProto
 (
@@ -46,7 +48,5 @@ void c_perim3
     float var;
 #endif
 {
-    float var2;
-    var2 = var;
-    NGCALLF(perim3,PERIM3)(&magr1,&mini1,&magr2,&mini2,&iwhich,&var2);
+    NGCALLF(perim3,PERIM3)(&magr1,&mini1,&magr2,&mini2,&iwhich,&var);
 }

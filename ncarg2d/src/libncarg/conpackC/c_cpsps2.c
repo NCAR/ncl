@@ -1,5 +1,5 @@
 /*
- *	$Id: c_cpsps2.c,v 1.2 2000-07-12 16:22:48 haley Exp $
+ *	$Id: c_cpsps2.c,v 1.3 2000-07-31 20:11:03 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,9 @@
 ************************************************************************/
 
 #include <ncarg/ncargC.h>
+
+extern void NGCALLF(cpsps2,CPSPS2)(float*,float*,float*,int*,int*,int*,
+                                   float*,int*,int*,int*,float*,int*);
 
 void c_cpsps2
 #ifdef NeedFuncProto

@@ -1,5 +1,5 @@
 /*
- *	$Id: c_velvct.c,v 1.2 2000-07-12 16:26:58 haley Exp $
+ *	$Id: c_velvct.c,v 1.3 2000-07-31 20:12:16 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,9 @@
 ************************************************************************/
 
 #include <ncarg/ncargC.h>
+
+extern void NGCALLF(velvct,VELVCT)(float*,int*,float*,int*,int*,int*,float*,
+                                   float*,int*,int*,int*,float*);
 
 void c_velvct
 #ifdef NeedFuncProto
@@ -58,10 +61,5 @@ void c_velvct
     float *spv;
 #endif
 {
-    float flo2,hi2;
-
-    flo2 = flo;
-    hi2 = hi;
-
-    NGCALLF(velvct,VELVCT)(u,&lu,v,&lv,&m,&n,&flo2,&hi2,&nset,&length,&ispv,spv);
+    NGCALLF(velvct,VELVCT)(u,&lu,v,&lv,&m,&n,&flo,&hi,&nset,&length,&ispv,spv);
 }

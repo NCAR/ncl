@@ -1,5 +1,5 @@
 /*
- *      $Id: c_tdgrid.c,v 1.2 2000-07-12 16:26:39 haley Exp $
+ *      $Id: c_tdgrid.c,v 1.3 2000-07-31 20:12:08 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -26,6 +26,9 @@
 
 #include <ncarg/ncargC.h>
 
+extern void NGCALLF(tdgrid,TDGRID)(float*,float*,int*,float*,float*,int*,
+                                   int*);
+
 void c_tdgrid
 #ifdef NeedFuncProto
 (
@@ -48,16 +51,5 @@ void c_tdgrid
     int   igrd;
 #endif
 {
-    float xbeg2,xstp2;
-    int   noxs2;
-    float ybeg2,ystp2;
-    int   noys2,igrd2;
-    xbeg2=xbeg;
-    xstp2=xstp;
-    noxs2=noxs;
-    ybeg2=ybeg;
-    ystp2=ystp;
-    noys2=noys;
-    igrd2=igrd;
-    NGCALLF(tdgrid,TDGRID)(&xbeg2,&xstp2,&noxs2,&ybeg2,&ystp2,&noys2,&igrd2);
+    NGCALLF(tdgrid,TDGRID)(&xbeg,&xstp,&noxs,&ybeg,&ystp,&noys,&igrd);
 }

@@ -1,5 +1,5 @@
 /*
- *	$Id: c_set3.c,v 1.2 2000-07-12 16:26:49 haley Exp $
+ *	$Id: c_set3.c,v 1.3 2000-07-31 20:12:14 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,9 @@
 ************************************************************************/
 
 #include <ncarg/ncargC.h>
+
+extern void NGCALLF(set3,SET3)(float*,float*,float*,float*,float*,float*,
+                               float*,float*,float*,float*,float*);
 
 void c_set3 
 #ifdef NeedFuncProto
@@ -56,16 +59,5 @@ void c_set3
     float eye[3];
 #endif
 {
-    float xa2, xb2, ya2, yb2, ulo2, uhi2, vlo2, vhi2, wlo2, whi2;
-    xa2 = xa;
-    xb2 = xb;
-    ya2 = ya;
-    yb2 = yb;
-    ulo2 = ulo;
-    uhi2 = uhi;
-    vlo2 = vlo;
-    vhi2 = vhi;
-    wlo2 = wlo;
-    whi2 = whi;
-    NGCALLF(set3,SET3)(&xa2,&xb2,&ya2,&yb2,&ulo2,&uhi2,&vlo2,&vhi2,&wlo2,&whi2,eye);
+    NGCALLF(set3,SET3)(&xa,&xb,&ya,&yb,&ulo,&uhi,&vlo,&vhi,&wlo,&whi,eye);
 }

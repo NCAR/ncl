@@ -1,5 +1,5 @@
 /*
- *	$Id: c_entsr.c,v 1.2 2000-07-12 16:26:25 haley Exp $
+ *	$Id: c_entsr.c,v 1.3 2000-07-31 20:12:02 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,9 @@
 ************************************************************************/
 
 #include <ncarg/ncargC.h>
+
+extern void NGCALLF(entsr,ENTSR)(int*,int*);
+
 
 void c_entsr
 #ifdef NeedFuncProto

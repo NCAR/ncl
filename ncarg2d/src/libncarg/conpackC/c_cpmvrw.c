@@ -1,5 +1,5 @@
 /*
- *	$Id: c_cpmvrw.c,v 1.2 2000-07-12 16:22:45 haley Exp $
+ *	$Id: c_cpmvrw.c,v 1.3 2000-07-31 20:11:02 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,8 @@
 ************************************************************************/
 
 #include <ncarg/ncargC.h>
+
+extern void NGCALLF(cpmvrw,CPMVRW)(float*,float*,int*);
 
 void c_cpmvrw
 #ifdef NeedFuncProto

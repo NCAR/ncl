@@ -1,5 +1,5 @@
 /*
- *      $Id: c_tdpara.c,v 1.3 2000-07-12 16:26:41 haley Exp $
+ *      $Id: c_tdpara.c,v 1.4 2000-07-31 20:12:10 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,9 @@
 ************************************************************************/
 
 #include <ncarg/ncargC.h>
+
+extern void NGCALLF(tdpara,TDPARA)(float*,float*,float*,float*,float*,float*,
+                                                        float*,float*,float*);
 
 void c_tdpara
 #ifdef NeedFuncProto
@@ -52,16 +55,6 @@ void c_tdpara
     float wv01;
 #endif
 {
-    float ua002,va002,wa002,uv102,vv102,wv102,uv012,vv012,wv012;
-    ua002=ua00;
-    va002=va00;
-    wa002=wa00;
-    uv102=uv10;
-    vv102=vv10;
-    wv102=wv10;
-    uv012=uv01;
-    vv012=vv01;
-    wv012=wv01;
-    NGCALLF(tdpara,TDPARA)(&ua002,&va002,&wa002,&uv102,&vv102,&wv102,
-                                                &uv012,&vv012,&wv012);
+    NGCALLF(tdpara,TDPARA)(&ua00,&va00,&wa00,&uv10,&vv10,&wv10,
+                                             &uv01,&vv01,&wv01);
 }

@@ -1,5 +1,5 @@
 /*
- *      $Id: c_tdprpt.c,v 1.3 2000-07-12 16:26:41 haley Exp $
+ *      $Id: c_tdprpt.c,v 1.4 2000-07-31 20:12:10 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -26,6 +26,8 @@
 
 #include <ncarg/ncargC.h>
 
+extern void NGCALLF(tdprpt,TDPRPT)(float*,float*,float*,float*,float*);
+
 void c_tdprpt
 #ifdef NeedFuncProto
 (
@@ -44,9 +46,5 @@ void c_tdprpt
     float *yi2d;
 #endif
 {
-    float ui3d2,vi3d2,wi3d2;
-    ui3d2=ui3d;
-    vi3d2=vi3d;
-    wi3d2=wi3d;
-    NGCALLF(tdprpt,TDPRPT)(&ui3d2,&vi3d2,&wi3d2,xi2d,yi2d);
+    NGCALLF(tdprpt,TDPRPT)(&ui3d,&vi3d,&wi3d,xi2d,yi2d);
 }

@@ -1,5 +1,5 @@
 /*
- *	$Id: c_mstrms.c,v 1.2 2000-07-12 16:26:28 haley Exp $
+ *	$Id: c_mstrms.c,v 1.3 2000-07-31 20:12:04 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,9 @@
 ************************************************************************/
 #include <ncarg/ncargC.h>
 
+extern void NGCALLF(mstrms,MSTRMS)(float*,float*,float*,float*);
+
+
 void c_mstrms 
 #ifdef NeedFuncProto
 (
@@ -41,8 +44,5 @@ void c_mstrms
     float del;
 #endif
 {
-    float sigma2, del2;
-    sigma2 = sigma;
-    del2 = del;
-    NGCALLF(mstrms,MSTRMS)(diag,sdiag,&sigma2,&del2);
+    NGCALLF(mstrms,MSTRMS)(diag,sdiag,&sigma,&del);
 }

@@ -1,5 +1,5 @@
 /*
- *	$Id: c_dpdraw.c,v 1.2 2000-07-12 16:23:11 haley Exp $
+ *	$Id: c_dpdraw.c,v 1.3 2000-07-31 20:11:08 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -26,6 +26,8 @@
 
 #include <ncarg/ncargC.h>
 
+extern void NGCALLF(dpdraw,DPDRAW)(float*,float*,int*);
+
 void c_dpdraw
 #ifdef NeedFuncProto
 (
@@ -40,9 +42,5 @@ void c_dpdraw
     int ifvl;
 #endif
 {
-    float xcpf2, ycpf2;
-
-    xcpf2 = xcpf;
-    ycpf2 = ycpf;
-    NGCALLF(dpdraw,DPDRAW)(&xcpf2,&ycpf2,&ifvl);
+    NGCALLF(dpdraw,DPDRAW)(&xcpf,&ycpf,&ifvl);
 }

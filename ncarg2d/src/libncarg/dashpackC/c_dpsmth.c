@@ -1,5 +1,5 @@
 /*
- *	$Id: c_dpsmth.c,v 1.2 2000-07-12 16:23:12 haley Exp $
+ *	$Id: c_dpsmth.c,v 1.3 2000-07-31 20:11:09 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -26,6 +26,8 @@
 
 #include <ncarg/ncargC.h>
 
+extern void NGCALLF(dpsmth,DPSMTH)(float*,float*,int*);
+
 void c_dpsmth
 #ifdef NeedFuncProto
 (
@@ -40,9 +42,5 @@ void c_dpsmth
     int ifvl;
 #endif
 {
-    float xcpf2, ycpf2;
-
-    xcpf2 = xcpf;
-    ycpf2 = ycpf;
-    NGCALLF(dpsmth,DPSMTH)(&xcpf2,&ycpf2,&ifvl);
+    NGCALLF(dpsmth,DPSMTH)(&xcpf,&ycpf,&ifvl);
 }

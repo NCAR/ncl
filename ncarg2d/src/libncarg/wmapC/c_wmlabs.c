@@ -1,5 +1,5 @@
 /*
- *	$Id: c_wmlabs.c,v 1.2 2000-07-12 16:27:10 haley Exp $
+ *	$Id: c_wmlabs.c,v 1.3 2000-07-31 20:12:21 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -26,6 +26,8 @@
 
 #include <ncarg/ncargC.h>
 
+extern void NGCALLF(wmlabs,WMLABS)(float*,float*,NGstring,int);
+
 void c_wmlabs
 #ifdef NeedFuncProto
 (
@@ -43,10 +45,7 @@ void c_wmlabs
 {
     NGstring symtyp2;
 	int len;
-    float x2, y2;
-    x2 = x;
-    y2 = y;
 	len = NGSTRLEN(symtyp);
 	symtyp2 = NGCstrToFstr(symtyp,len);
-    NGCALLF(wmlabs,WMLABS)(&x2,&y2,symtyp2);
+    NGCALLF(wmlabs,WMLABS)(&x,&y,symtyp2,len);
 }

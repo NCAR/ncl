@@ -1,5 +1,5 @@
 /*
- *	$Id: c_cufx.c,v 1.2 2000-07-12 16:25:44 haley Exp $
+ *	$Id: c_cufx.c,v 1.3 2000-07-31 20:11:48 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -36,8 +36,7 @@ float c_cufx
     float rx;
 #endif
 {
-    float rx2,x;
-    rx2 = rx;
-    x = NGCALLF(cufx,CUFX)(&rx2);
+    float x;
+    x = NGCALLF(cufx,CUFX)(&rx);
     return(x);
 }

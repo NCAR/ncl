@@ -1,5 +1,5 @@
 /*
- *	$Id: c_vvectr.c,v 1.2 2000-07-12 16:26:58 haley Exp $
+ *	$Id: c_vvectr.c,v 1.3 2000-07-31 20:12:16 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,9 @@
 ************************************************************************/
 
 #include <ncarg/ncargC.h>
+
+extern void NGCALLF(vvectr,VVECTR)(float*,float*,float*,int*,
+                                   int (*vvudmv_)(),float*);
 
 void c_vvectr
 #ifdef NeedFuncProto

@@ -1,5 +1,5 @@
 /*
- *	$Id: c_gagetc.c,v 1.3 2000-07-12 16:24:16 haley Exp $
+ *	$Id: c_gagetc.c,v 1.4 2000-07-31 20:11:22 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,8 @@
 ************************************************************************/
 
 #include <ncarg/ncargC.h>
+
+extern void NGCALLF(gagetc,GAGETC)(NGstring,NGstring,int,int);
 
 void c_gagetc
 #ifdef NeedFuncProto

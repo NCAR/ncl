@@ -1,5 +1,5 @@
 /*
- *	$Id: c_argtai.c,v 1.2 2000-07-12 16:21:52 haley Exp $
+ *	$Id: c_argtai.c,v 1.3 2000-07-31 20:10:39 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -26,6 +26,9 @@
 
 #include <ncarg/ncargC.h>
 
+extern void NGCALLF(argtai,ARGTAI)(int*,float*,float*,int*,int*,int*,
+                                   int*,int*);
+
 void c_argtai
 #ifdef NeedFuncProto
 (
@@ -50,8 +53,5 @@ void c_argtai
     int icf;
 #endif
 {
-    float xcd2,ycd2;
-    xcd2 = xcd;
-    ycd2 = ycd;
-    NGCALLF(argtai,ARGTAI)(iam,&xcd2,&ycd2,iai,iag,&mai,nai,&icf);
+    NGCALLF(argtai,ARGTAI)(iam,&xcd,&ycd,iai,iag,&mai,nai,&icf);
 }

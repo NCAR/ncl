@@ -1,5 +1,5 @@
 /*
- *	$Id: c_ngpict.c,v 1.2 2000-07-12 16:24:50 haley Exp $
+ *	$Id: c_ngpict.c,v 1.3 2000-07-31 20:11:35 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,8 @@
 ************************************************************************/
 
 #include <ncarg/ncargC.h>
+
+extern void NGCALLF(ngpict,NGPICT)(int*,int*);
 
 void c_ngpict
 #ifdef NeedFuncProto

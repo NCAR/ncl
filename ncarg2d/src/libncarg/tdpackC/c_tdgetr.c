@@ -1,5 +1,5 @@
 /*
- *      $Id: c_tdgetr.c,v 1.2 2000-07-12 16:26:39 haley Exp $
+ *      $Id: c_tdgetr.c,v 1.3 2000-07-31 20:12:08 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,8 @@
 ************************************************************************/
 
 #include <ncarg/ncargC.h>
+
+extern void NGCALLF(tdgetr,TDGETR)(NGstring,float*,int);
 
 void c_tdgetr
 #ifdef NeedFuncProto

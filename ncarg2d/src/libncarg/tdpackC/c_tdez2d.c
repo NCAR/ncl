@@ -1,5 +1,5 @@
 /*
- *      $Id: c_tdez2d.c,v 1.3 2000-07-12 16:26:38 haley Exp $
+ *      $Id: c_tdez2d.c,v 1.4 2000-07-31 20:12:07 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,9 @@
 ************************************************************************/
 
 #include <ncarg/ncargC.h>
+
+extern void NGCALLF(tdez2d,TDEZ2D)(int*,int*,float*,float*,float*,float*,
+                                   float*,float*,int*);
 
 void c_tdez2d
 #ifdef NeedFuncProto
@@ -52,19 +55,5 @@ void c_tdez2d
     int ist
 #endif
 {
-    int nx2;
-    int ny2;
-    float rmult2;
-    float theta2;
-    float phi2;
-    int ist2;
-
-    nx2 = nx;
-    ny2 = ny;
-    rmult2 = rmult;
-    theta2 = theta;
-    phi2 = phi;
-    ist2 = ist;
-
-    NGCALLF(tdez2d,TDEZ2D)(&nx2,&ny2,x,y,z,&rmult2,&theta2,&phi2,&ist2);
+    NGCALLF(tdez2d,TDEZ2D)(&nx,&ny,x,y,z,&rmult,&theta,&phi,&ist);
 }

@@ -1,5 +1,5 @@
 /*
- *	$Id: c_cpcldr.c,v 1.2 2000-07-12 16:22:44 haley Exp $
+ *	$Id: c_cpcldr.c,v 1.3 2000-07-31 20:11:00 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,8 @@
 ************************************************************************/
 
 #include <ncarg/ncargC.h>
+
+extern void NGCALLF(cpcldr,CPCLDR)(float*,float*,int*);
 
 void c_cpcldr
 #ifdef NeedFuncProto

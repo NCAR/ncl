@@ -1,5 +1,5 @@
 /*
- *	$Id: c_ezsrfc.c,v 1.2 2000-07-12 16:25:55 haley Exp $
+ *	$Id: c_ezsrfc.c,v 1.3 2000-07-31 20:11:54 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -26,6 +26,8 @@
 
 #include <ncarg/ncargC.h>
 
+extern void NGCALLF(ezsrfc,EZSRFC)(float*,int*,int*,float*,float*,float*);
+
 void c_ezsrfc
 #ifdef NeedFuncProto
 (
@@ -46,8 +48,5 @@ void c_ezsrfc
     float *work;
 #endif
 {
-    float angh2, angv2;
-    angh2 = angh;
-    angv2 = angv;
-    NGCALLF(ezsrfc,EZSRFC)(z,&m,&n,&angh2,&angv2,work);
+    NGCALLF(ezsrfc,EZSRFC)(z,&m,&n,&angh,&angv,work);
 }

@@ -1,5 +1,5 @@
 /*
- *	$Id: c_msbsf2.c,v 1.2 2000-07-12 16:26:26 haley Exp $
+ *	$Id: c_msbsf2.c,v 1.3 2000-07-31 20:12:03 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,12 @@
 ************************************************************************/
 
 #include <ncarg/ncargC.h>
+
+extern void NGCALLF(msbsf2,MSBSF2)(float*,float*,int*,float*,float*,int*,
+                                   float*,int*,int*,int*,float*,float*,
+                                   float*,float*,float*,int*,float*,float*,
+                                   float*);
+
 
 void c_msbsf2
 #ifdef NeedFuncProto
@@ -72,19 +78,7 @@ void c_msbsf2
     float sigma;
 #endif
 {
-    float *dz2,*z2,*zp2,*work2;
-    float dxmin2,dxmax2,dymin2,dymax2,xmin2,xmax2,ymin2,ymax2,sigma2;
-    int i, j, k, l, l2;
-
-    dxmin2 = dxmin;
-    dxmax2 = dxmax;
-    dymin2 = dymin;
-    dymax2 = dymax;
-    xmin2 = xmin;
-    xmax2 = xmax;
-    ymin2 = ymin;
-    ymax2 = ymax;
-    sigma2 = sigma;
-
-    NGCALLF(msbsf2,MSBSF2)(&dxmin2,&dxmax,&md,&dymin2,&dymax2,&nd,dz,&idz,&m,&n,&xmin2,&xmax2,&ymin2,&ymax2,z,&iz,zp,work,&sigma2);
+    NGCALLF(msbsf2,MSBSF2)(&dxmin,&dxmax,&md,&dymin,&dymax,&nd,dz,&idz,
+                           &m,&n,&xmin,&xmax,&ymin,&ymax,z,&iz,zp,work,
+                           &sigma);
 }

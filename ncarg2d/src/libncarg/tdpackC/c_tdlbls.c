@@ -1,5 +1,5 @@
 /*
- *      $Id: c_tdlbls.c,v 1.2 2000-07-12 16:26:40 haley Exp $
+ *      $Id: c_tdlbls.c,v 1.3 2000-07-31 20:12:09 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,11 @@
 ************************************************************************/
 
 #include <ncarg/ncargC.h>
+
+extern void NGCALLF(tdlbls,TDLBLS)(float*,float*,float*,float*,float*,float*,
+                                   NGstring,NGstring,NGstring,NGstring,
+                                   NGstring,NGstring,int*,
+                                   int,int,int,int,int,int);
 
 void c_tdlbls
 #ifdef NeedFuncProto
@@ -60,7 +65,6 @@ void c_tdlbls
     int   ipck;
 #endif
 {
-    float umin2,vmin2,wmin2,umax2,vmax2,wmax2;
     int lounlb;
     NGstring unlb2;
     int lovnlb;
@@ -73,13 +77,6 @@ void c_tdlbls
     NGstring vilb2;
     int lowilb;
     NGstring wilb2;
-    int   ipck2;
-    umin2=umin;
-    vmin2=vmin;
-    wmin2=wmin;
-    umax2=umax;
-    vmax2=vmax;
-    wmax2=wmax;
     lounlb=NGSTRLEN(unlb);
     unlb2=NGCstrToFstr(unlb,lounlb);
     lovnlb=NGSTRLEN(vnlb);
@@ -92,8 +89,7 @@ void c_tdlbls
     vilb2=NGCstrToFstr(vilb,lovilb);
     lowilb=NGSTRLEN(wilb);
     wilb2=NGCstrToFstr(wilb,lowilb);
-    ipck2=ipck;
-    NGCALLF(tdlbls,TDLBLS)(&umin2,&vmin2,&wmin2,&umax2,&vmax2,&wmax2,
-                          unlb2,vnlb2,wnlb2,uilb2,vilb2,wilb2,&ipck2,
+    NGCALLF(tdlbls,TDLBLS)(&umin,&vmin,&wmin,&umax,&vmax,&wmax,
+                            unlb2,vnlb2,wnlb2,uilb2,vilb2,wilb2,&ipck,
                            lounlb,lovnlb,lownlb,louilb,lovilb,lowilb);
 }

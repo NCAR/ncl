@@ -1,5 +1,5 @@
 /*
- *      $Id: c_tdstri.c,v 1.2 2000-07-12 16:26:42 haley Exp $
+ *      $Id: c_tdstri.c,v 1.3 2000-07-31 20:12:11 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,9 @@
 ************************************************************************/
 
 #include <ncarg/ncargC.h>
+
+extern void NGCALLF(tdstri,TDSTRI)(float*,int*,float*,int*,float*,int*,
+                                   float*,int*,int*,int*);
 
 void c_tdstri
 #ifdef NeedFuncProto
@@ -54,11 +57,5 @@ void c_tdstri
     int    irst;
 #endif
 {
-    int nu2,nv2,lw1d2,mtri2,irst2;
-    nu2=nu;
-    nv2=nv;
-    lw1d2=lw1d;
-    mtri2=mtri;
-    irst2=irst;
-    NGCALLF(tdstri,TDSTRI)(u,&nu2,v,&nv2,w,&lw1d2,rtri,&mtri2,ntri,&irst2);
+    NGCALLF(tdstri,TDSTRI)(u,&nu,v,&nv,w,&lw1d,rtri,&mtri,ntri,&irst);
 }

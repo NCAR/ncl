@@ -1,5 +1,5 @@
 /*
- *	$Id: c_curve3.c,v 1.2 2000-07-12 16:26:48 haley Exp $
+ *	$Id: c_curve3.c,v 1.3 2000-07-31 20:12:13 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,8 @@
 ************************************************************************/
 
 #include <ncarg/ncargC.h>
+
+extern void NGCALLF(curve3,CURVE3)(float*,float*,float*,int*);
 
 void c_curve3 
 #ifdef NeedFuncProto

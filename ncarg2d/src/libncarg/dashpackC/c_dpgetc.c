@@ -1,5 +1,5 @@
 /*
- *	$Id: c_dpgetc.c,v 1.3 2000-07-12 16:23:11 haley Exp $
+ *	$Id: c_dpgetc.c,v 1.4 2000-07-31 20:11:08 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,8 @@
 ************************************************************************/
 
 #include <ncarg/ncargC.h>
+
+extern void NGCALLF(dpgetc,DPGETC)(NGstring,NGstring,int,int);
 
 void c_dpgetc
 #ifdef NeedFuncProto

@@ -1,5 +1,5 @@
 /*
- *	$Id: c_argetr.c,v 1.2 2000-07-12 16:21:52 haley Exp $
+ *	$Id: c_argetr.c,v 1.3 2000-07-31 20:10:38 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,8 @@
 ************************************************************************/
 
 #include <ncarg/ncargC.h>
+
+extern void NGCALLF(argetr,ARGETR)(NGstring,float*,int);
 
 void c_argetr
 #ifdef NeedFuncProto

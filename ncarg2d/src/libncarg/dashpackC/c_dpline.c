@@ -1,5 +1,5 @@
 /*
- *	$Id: c_dpline.c,v 1.2 2000-07-12 16:23:12 haley Exp $
+ *	$Id: c_dpline.c,v 1.3 2000-07-31 20:11:08 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -26,6 +26,8 @@
 
 #include <ncarg/ncargC.h>
 
+extern void NGCALLF(dpline,DPLINE)(float*,float*,float*,float*);
+
 void c_dpline
 #ifdef NeedFuncProto
 (
@@ -42,12 +44,5 @@ void c_dpline
     float ycp2;
 #endif
 {
-    float xcp12, ycp12;
-    float xcp22, ycp22;
-
-    xcp12 = xcp1;
-    ycp12 = ycp1;
-    xcp22 = xcp2;
-    ycp22 = ycp2;
-    NGCALLF(dpline,DPLINE)(&xcp12,&ycp12,&xcp22,&ycp22);
+    NGCALLF(dpline,DPLINE)(&xcp1,&ycp1,&xcp2,&ycp2);
 }

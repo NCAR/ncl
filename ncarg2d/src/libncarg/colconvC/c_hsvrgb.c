@@ -1,5 +1,5 @@
 /*
- *	$Id: c_hsvrgb.c,v 1.2 2000-07-12 16:22:14 haley Exp $
+ *	$Id: c_hsvrgb.c,v 1.3 2000-07-31 20:10:57 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -26,6 +26,8 @@
 
 #include <ncarg/ncargC.h>
 
+extern void NGCALLF(hsvrgb,HSVRGB)(float*,float*,float*,float*,float*,float*);
+
 void c_hsvrgb
 #ifdef NeedFuncProto
 (
@@ -46,9 +48,5 @@ void c_hsvrgb
     float *b;
 #endif
 {
-    float h1,s1,v1;
-    h1 = h;
-    s1 = s;
-    v1 = v;
-    NGCALLF(hsvrgb,HSVRGB)(&h1,&s1,&v1,r,g,b);
+    NGCALLF(hsvrgb,HSVRGB)(&h,&s,&v,r,g,b);
 }

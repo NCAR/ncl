@@ -1,5 +1,5 @@
 /*
- *	$Id: c_nerro.c,v 1.2 2000-07-12 16:26:28 haley Exp $
+ *	$Id: c_nerro.c,v 1.3 2000-07-31 20:12:04 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,8 @@
 ************************************************************************/
 
 #include <ncarg/ncargC.h>
+
+extern int NGCALLF(nerro,NERRO)(int*);
 
 int c_nerro
 #ifdef NeedFuncProto

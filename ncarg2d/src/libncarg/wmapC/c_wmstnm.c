@@ -1,5 +1,5 @@
 /*
- *	$Id: c_wmstnm.c,v 1.2 2000-07-12 16:27:11 haley Exp $
+ *	$Id: c_wmstnm.c,v 1.3 2000-07-31 20:12:22 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -26,6 +26,8 @@
 
 #include <ncarg/ncargC.h>
 
+extern void NGCALLF(wmstnm,WMSTNM)(float*,float*,NGstring,int);
+
 void c_wmstnm
 #ifdef NeedFuncProto
 (
@@ -42,10 +44,7 @@ void c_wmstnm
 {
     NGstring imdat2;
 	int len1;
-    float x2, y2;
-    x2 = x;
-    y2 = y;
     len1 = NGSTRLEN(imdat);
     imdat2 = NGCstrToFstr(imdat,len1);
-    NGCALLF(wmstnm,WMSTNM)(&x2,&y2,imdat2,len1);
+    NGCALLF(wmstnm,WMSTNM)(&x,&y,imdat2,len1);
 }

@@ -1,5 +1,5 @@
 /*
- *      $Id: c_tdotri.c,v 1.2 2000-07-12 16:26:41 haley Exp $
+ *      $Id: c_tdotri.c,v 1.3 2000-07-31 20:12:09 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -26,6 +26,8 @@
 
 #include <ncarg/ncargC.h>
 
+extern void NGCALLF(tdotri,TDOTRI)(float*,int*,int*,float*,int*,int*);
+
 void c_tdotri
 #ifdef NeedFuncProto
 (
@@ -46,8 +48,5 @@ void c_tdotri
     int    iord;
 #endif
 {
-    int mtri2,iord2;
-    mtri2=mtri;
-    iord2=iord;
-    NGCALLF(tdotri,TDOTRI)(rtri,&mtri2,ntri,rtwk,itwk,&iord2);
+    NGCALLF(tdotri,TDOTRI)(rtri,&mtri,ntri,rtwk,itwk,&iord);
 }

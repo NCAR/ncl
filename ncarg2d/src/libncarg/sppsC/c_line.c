@@ -1,5 +1,5 @@
 /*
- *	$Id: c_line.c,v 1.2 2000-07-12 16:25:48 haley Exp $
+ *	$Id: c_line.c,v 1.3 2000-07-31 20:11:51 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -26,6 +26,8 @@
 
 #include <ncarg/ncargC.h>
 
+extern void NGCALLF(line,LINE)(float*,float*,float*,float*);
+
 void c_line
 #ifdef NeedFuncProto
 (
@@ -42,10 +44,5 @@ void c_line
     float y2;
 #endif
 {
-    float u1,v1,u2,v2;
-    u1 = x1;
-    v1 = y1;
-    u2 = x2;
-    v2 = y2;
-    NGCALLF(line,LINE)(&u1,&v1,&u2,&v2);
+    NGCALLF(line,LINE)(&x1,&y1,&x2,&y2);
 }

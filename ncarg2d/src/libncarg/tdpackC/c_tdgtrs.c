@@ -1,5 +1,5 @@
 /*
- *      $Id: c_tdgtrs.c,v 1.3 2000-07-12 16:26:39 haley Exp $
+ *      $Id: c_tdgtrs.c,v 1.4 2000-07-31 20:12:08 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,9 @@
 ************************************************************************/
 
 #include <ncarg/ncargC.h>
+
+extern void NGCALLF(tdgtrs,TDGTRS)(int*,int*,int*,int*,int*,int*,
+                                   int*,int*,float*,float*,float*);
 
 void c_tdgtrs
 #ifdef NeedFuncProto
@@ -56,8 +59,6 @@ void c_tdgtrs
     float *wstp;
 #endif
 {
-    int irst2;
-    irst2=irst;
-    NGCALLF(tdgtrs,TDGTRS)(&irst2,ifc1,ifc2,ifc3,ifc4,ilc1,
-                                  ilc2,iltd,ustp,vstp,wstp);
+    NGCALLF(tdgtrs,TDGTRS)(&irst,ifc1,ifc2,ifc3,ifc4,ilc1,
+                                 ilc2,iltd,ustp,vstp,wstp);
 }

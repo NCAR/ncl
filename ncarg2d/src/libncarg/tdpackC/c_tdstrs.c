@@ -1,5 +1,5 @@
 /*
- *      $Id: c_tdstrs.c,v 1.3 2000-07-12 16:26:42 haley Exp $
+ *      $Id: c_tdstrs.c,v 1.4 2000-07-31 20:12:11 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,9 @@
 ************************************************************************/
 
 #include <ncarg/ncargC.h>
+
+extern void NGCALLF(tdstrs,TDSTRS)(int*,int*,int*,int*,int*,int*,int*,
+                                   int*,float*,float*,float*);
 
 void c_tdstrs
 #ifdef NeedFuncProto
@@ -56,19 +59,6 @@ void c_tdstrs
     float wstp;
 #endif
 {
-    int irst2,ifc12,ifc22,ifc32,ifc42,ilc12,ilc22,iltd2;
-    float ustp2,vstp2,wstp2;
-    irst2=irst;
-    ifc12=ifc1;
-    ifc22=ifc2;
-    ifc32=ifc3;
-    ifc42=ifc4;
-    ilc12=ilc1;
-    ilc22=ilc2;
-    iltd2=iltd;
-    ustp2=ustp;
-    vstp2=vstp;
-    wstp2=wstp;
-    NGCALLF(tdstrs,TDSTRS)(&irst2,&ifc12,&ifc22,&ifc32,&ifc42,&ilc12,&ilc22,
-                                                &iltd2,&ustp2,&vstp2,&wstp2);
+    NGCALLF(tdstrs,TDSTRS)(&irst,&ifc1,&ifc2,&ifc3,&ifc4,&ilc1,&ilc2,
+                                             &iltd,&ustp,&vstp,&wstp);
 }

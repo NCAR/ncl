@@ -1,5 +1,5 @@
 /*
- *      $Id: c_tdclrs.c,v 1.2 2000-07-12 16:26:38 haley Exp $
+ *      $Id: c_tdclrs.c,v 1.3 2000-07-31 20:12:06 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -26,6 +26,8 @@
 
 #include <ncarg/ncargC.h>
 
+extern void NGCALLF(tdclrs,TDCLRS)(int*,int*,float*,float*,int*,int*,int*);
+
 void c_tdclrs
 #ifdef NeedFuncProto
 (
@@ -48,15 +50,5 @@ void c_tdclrs
     int   ilmt;
 #endif
 {
-    int iwid2,ibow2;
-    float shde2,shdr2;
-    int iofc2,iolc2,ilmt2;
-    iwid2=iwid;
-    ibow2=ibow;
-    shde2=shde;
-    shdr2=shdr;
-    iofc2=iofc;
-    iolc2=iolc;
-    ilmt2=ilmt;
-    NGCALLF(tdclrs,TDCLRS)(&iwid2,&ibow2,&shde2,&shdr2,&iofc2,&iolc2,&ilmt2);
+    NGCALLF(tdclrs,TDCLRS)(&iwid,&ibow,&shde,&shdr,&iofc,&iolc,&ilmt);
 }

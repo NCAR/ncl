@@ -1,5 +1,5 @@
 /*
- *	$Id: c_wmbarb.c,v 1.2 2000-07-12 16:27:08 haley Exp $
+ *	$Id: c_wmbarb.c,v 1.3 2000-07-31 20:12:19 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -26,6 +26,8 @@
 
 #include <ncarg/ncargC.h>
 
+extern void NGCALLF(wmbarb,WMBARB)(float*,float*,float*,float*);
+
 void c_wmbarb
 #ifdef NeedFuncProto
 (
@@ -42,10 +44,5 @@ void c_wmbarb
     float v;
 #endif
 {
-    float x2, y2, u2, v2;
-    x2 = x;
-    y2 = y;
-    u2 = u;
-    v2 = v;
-    NGCALLF(wmbarb,WMBARB)(&x2,&y2,&u2,&v2);
+    NGCALLF(wmbarb,WMBARB)(&x,&y,&u,&v);
 }

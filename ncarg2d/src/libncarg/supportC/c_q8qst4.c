@@ -1,5 +1,5 @@
 /*
- *	$Id: c_q8qst4.c,v 1.2 2000-07-12 16:26:28 haley Exp $
+ *	$Id: c_q8qst4.c,v 1.3 2000-07-31 20:12:05 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,9 @@
 ************************************************************************/
 
 #include <ncarg/ncargC.h>
+
+extern void NGCALLF(q8qst4,Q8QST4)(NGstring,NGstring,NGstring,NGstring,int,
+                                   int,int,int);
 
 void c_q8qst4
 #ifdef NeedFuncProto

@@ -1,5 +1,5 @@
 /*
- *	$Id: c_frstd.c,v 1.2 2000-07-12 16:23:03 haley Exp $
+ *	$Id: c_frstd.c,v 1.3 2000-07-31 20:11:05 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -26,6 +26,8 @@
 
 #include <ncarg/ncargC.h>
 
+extern void NGCALLF(frstd,FRSTD)(float*,float*);
+
 void c_frstd
 #ifdef NeedFuncProto
 (
@@ -38,8 +40,5 @@ void c_frstd
     float y;
 #endif
 {
-    float x2, y2;
-    x2 = x;
-    y2 = y;
-    NGCALLF(frstd,FRSTD)(&x2,&y2);
+    NGCALLF(frstd,FRSTD)(&x,&y);
 }

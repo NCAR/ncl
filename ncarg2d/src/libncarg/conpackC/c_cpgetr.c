@@ -1,5 +1,5 @@
 /*
- *	$Id: c_cpgetr.c,v 1.2 2000-07-12 16:22:45 haley Exp $
+ *	$Id: c_cpgetr.c,v 1.3 2000-07-31 20:11:01 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,8 @@
 ************************************************************************/
 
 #include <ncarg/ncargC.h>
+
+extern void NGCALLF(cpgetr,CPGETR)(NGstring,float*,int);
 
 void c_cpgetr
 #ifdef NeedFuncProto

@@ -1,5 +1,5 @@
 /*
- *	$Id: c_cpmviw.c,v 1.2 2000-07-12 16:22:45 haley Exp $
+ *	$Id: c_cpmviw.c,v 1.3 2000-07-31 20:11:02 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,8 @@
 ************************************************************************/
 
 #include <ncarg/ncargC.h>
+
+extern void NGCALLF(cpmviw,CPMVIW)(int*,int*,int*);
 
 void c_cpmviw
 #ifdef NeedFuncProto

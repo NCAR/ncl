@@ -1,5 +1,5 @@
 /*
- *	$Id: c_arseti.c,v 1.2 2000-07-12 16:21:53 haley Exp $
+ *	$Id: c_arseti.c,v 1.3 2000-07-31 20:10:39 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,8 @@
 ************************************************************************/
 
 #include <ncarg/ncargC.h>
+
+extern void NGCALLF(arseti,ARSETI)(NGstring,int*,int);
 
 void c_arseti
 #ifdef NeedFuncProto

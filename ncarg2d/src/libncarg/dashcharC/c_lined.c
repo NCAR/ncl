@@ -1,5 +1,5 @@
 /*
- *	$Id: c_lined.c,v 1.2 2000-07-12 16:23:03 haley Exp $
+ *	$Id: c_lined.c,v 1.3 2000-07-31 20:11:06 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -26,6 +26,8 @@
 
 #include <ncarg/ncargC.h>
 
+extern void NGCALLF(lined,LINED)(float*,float*,float*,float*);
+
 void c_lined
 #ifdef NeedFuncProto
 (
@@ -42,10 +44,5 @@ void c_lined
     float yb;
 #endif
 {
-    float xa2,ya2,xb2,yb2;
-    xa2 = xa;
-    ya2 = ya;
-    xb2 = xb;
-    yb2 = yb;
-    NGCALLF(lined,LINED)(&xa2,&ya2,&xb2,&yb2);
+    NGCALLF(lined,LINED)(&xa,&ya,&xb,&yb);
 }

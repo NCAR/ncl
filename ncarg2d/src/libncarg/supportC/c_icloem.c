@@ -1,5 +1,5 @@
 /*
- *	$Id: c_icloem.c,v 1.2 2000-07-12 16:26:26 haley Exp $
+ *	$Id: c_icloem.c,v 1.3 2000-07-31 20:12:03 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -38,7 +38,7 @@ int c_icloem
 {
     NGstring messg2;
     int len;
-    extern int NGCALLF(icloem,ICLOEM)();
+    extern int NGCALLF(icloem,ICLOEM)(NGstring,int);
 /*
  * Make sure message is not NULL
  */

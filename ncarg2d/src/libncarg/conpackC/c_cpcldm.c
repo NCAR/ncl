@@ -1,5 +1,5 @@
 /*
- *	$Id: c_cpcldm.c,v 1.2 2000-07-12 16:22:43 haley Exp $
+ *	$Id: c_cpcldm.c,v 1.3 2000-07-31 20:11:00 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,8 @@
 ************************************************************************/
 
 #include <ncarg/ncargC.h>
+
+extern void NGCALLF(cpcldm,CPCLDM)(float*,float*,int*,int*,int (*rtpl_)());
 
 void c_cpcldm
 #ifdef NeedFuncProto

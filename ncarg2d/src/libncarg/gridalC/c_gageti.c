@@ -1,5 +1,5 @@
 /*
- *	$Id: c_gageti.c,v 1.2 2000-07-12 16:24:16 haley Exp $
+ *	$Id: c_gageti.c,v 1.3 2000-07-31 20:11:22 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,8 @@
 ************************************************************************/
 
 #include <ncarg/ncargC.h>
+
+extern void NGCALLF(gageti,GAGETI)(NGstring,int*,int);
 
 void c_gageti
 #ifdef NeedFuncProto

@@ -1,5 +1,5 @@
 /*
- *	$Id: c_plchlq.c,v 1.2 2000-07-12 16:25:05 haley Exp $
+ *	$Id: c_plchlq.c,v 1.3 2000-07-31 20:11:39 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -26,6 +26,9 @@
 
 #include <ncarg/ncargC.h>
 
+extern void NGCALLF(plchlq,PLCHLQ)(float*,float*,NGstring,float*,float*,
+                                   float*,int);
+
 void c_plchlq
 #ifdef NeedFuncProto
 (
@@ -46,15 +49,9 @@ void c_plchlq
     float cntr;
 #endif
 {
-    float xpos2,ypos2,size2,angd2,cntr2;
     NGstring chrs2;
     int len;
-    xpos2 = xpos;
-    ypos2 = ypos;
-    size2 = size;
-    angd2 = angd;
-    cntr2 = cntr;
     len = NGSTRLEN(chrs);
     chrs2 = NGCstrToFstr(chrs,len);
-    NGCALLF(plchlq,PLCHLQ)(&xpos2,&ypos2,chrs2,&size2,&angd2,&cntr2,len);
+    NGCALLF(plchlq,PLCHLQ)(&xpos,&ypos,chrs2,&size,&angd,&cntr,len);
 }

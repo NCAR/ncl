@@ -1,5 +1,5 @@
 /*
- *	$Id: c_cpcltr.c,v 1.2 2000-07-12 16:22:44 haley Exp $
+ *	$Id: c_cpcltr.c,v 1.3 2000-07-31 20:11:00 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -26,6 +26,9 @@
 
 #include <ncarg/ncargC.h>
 
+extern void NGCALLF(cpcltr,CPCLTR)(float*,float*,int*,float*,int*,int*,int*,
+                                   int*);
+
 void c_cpcltr
 #ifdef NeedFuncProto
 (
@@ -50,7 +53,5 @@ void c_cpcltr
     int *nrwk;
 #endif
 {
-    float clvl2;
-    clvl2 = clvl;
-    NGCALLF(cpcltr,CPCLTR)(zdat,rwrk,iwrk,&clvl2,ijmp,irw1,irw2,nrwk);
+    NGCALLF(cpcltr,CPCLTR)(zdat,rwrk,iwrk,&clvl,ijmp,irw1,irw2,nrwk);
 }

@@ -1,5 +1,5 @@
 /*
- *	$Id: c_pwrit.c,v 1.2 2000-07-12 16:25:49 haley Exp $
+ *	$Id: c_pwrit.c,v 1.3 2000-07-31 20:11:52 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -26,6 +26,9 @@
 
 #include <ncarg/ncargC.h>
 
+extern void NGCALLF(pwrit,PWRIT)(float*,float*,NGstring,int*,int*,int*,int*,
+                                 int);
+
 void c_pwrit
 #ifdef NeedFuncProto
 (
@@ -48,17 +51,12 @@ void c_pwrit
     int ic;
 #endif
 {
-    float px2,py2;
-
     NGstring ch2;
     int len;
-
-    px2 = px;
-    py2 = py;
 
     if( !ch ) nc = 0;
 
     len = NGSTRLEN(ch);
     ch2 = NGCstrToFstr(ch,len);
-    NGCALLF(pwrit,PWRIT)(&px2,&py2,ch2,&nc,&is,&io,&ic,len);
+    NGCALLF(pwrit,PWRIT)(&px,&py,ch2,&nc,&is,&io,&ic,len);
 }

@@ -1,5 +1,5 @@
 /*
- *	$Id: c_nggsog.c,v 1.2 2000-07-12 16:24:50 haley Exp $
+ *	$Id: c_nggsog.c,v 1.3 2000-07-31 20:11:34 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -26,6 +26,8 @@
 
 #include <ncarg/ncargC.h>
 
+extern void NGCALLF(nggsog,NGGSOG)(float*,float*,float*,float*,float*);
+
 void c_nggsog
 #ifdef NeedFuncProto
 (
@@ -44,9 +46,5 @@ void c_nggsog
     float *alon;
 #endif
 {
-    float slat2, slon2, srad2;
-	slat2 = slat;
-	slon2 = slon;
-	srad2 = srad;
-    NGCALLF(nggsog,NGGSOG)(&slat2,&slon2,&srad2,alat,alon);
+    NGCALLF(nggsog,NGGSOG)(&slat,&slon,&srad,alat,alon);
 }

@@ -1,5 +1,5 @@
 /*
- *      $Id: c_tdseti.c,v 1.2 2000-07-12 16:26:42 haley Exp $
+ *      $Id: c_tdseti.c,v 1.3 2000-07-31 20:12:10 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,8 @@
 ************************************************************************/
 
 #include <ncarg/ncargC.h>
+
+extern void NGCALLF(tdseti,TDSETI)(NGstring,int*,int);
 
 void c_tdseti
 #ifdef NeedFuncProto

@@ -1,5 +1,5 @@
 /*
- *	$Id: c_ngreop.c,v 1.2 2000-07-12 16:24:50 haley Exp $
+ *	$Id: c_ngreop.c,v 1.3 2000-07-31 20:11:35 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -26,6 +26,9 @@
 
 #include <ncarg/ncargC.h>
 #include <ncarg/gks.h>
+
+extern void NGCALLF(ngreop,NGREOP)(int*,int*,int*,NGstring,int*,int*,float*,
+                                   int*,int*,Gcolr_rep*,int);
 
 void c_ngreop
 #ifdef NeedFuncProto
@@ -60,7 +63,8 @@ void c_ngreop
 
     len = NGSTRLEN(fname);
     fname2 = NGCstrToFstr(fname,len);
-    NGCALLF(ngreop,NGREOP)(&wkid,&conid,&itype,fname2,&iopt,iat,rat,&ncolrs,&nstart,ctab,len);
+    NGCALLF(ngreop,NGREOP)(&wkid,&conid,&itype,fname2,&iopt,iat,rat,
+                           &ncolrs,&nstart,ctab,len);
 }
 
 

@@ -1,5 +1,5 @@
 /*
- *	$Id: c_wmdrft.c,v 1.2 2000-07-12 16:27:09 haley Exp $
+ *	$Id: c_wmdrft.c,v 1.3 2000-07-31 20:12:19 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,8 @@
 ************************************************************************/
 
 #include <ncarg/ncargC.h>
+
+extern void NGCALLF(wmdrft,WMDRFT)(int*,float*,float*);
 
 void c_wmdrft
 #ifdef NeedFuncProto

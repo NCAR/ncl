@@ -1,5 +1,5 @@
 /*
- *	$Id: c_lbgetr.c,v 1.2 2000-07-12 16:24:41 haley Exp $
+ *	$Id: c_lbgetr.c,v 1.3 2000-07-31 20:11:31 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,8 @@
 ************************************************************************/
 
 #include <ncarg/ncargC.h>
+
+extern void NGCALLF(lbgetr,LBGETR)(NGstring,float*,int);
 
 void c_lbgetr
 #ifdef NeedFuncProto

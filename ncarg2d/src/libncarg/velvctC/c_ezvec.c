@@ -1,5 +1,5 @@
 /*
- *	$Id: c_ezvec.c,v 1.2 2000-07-12 16:26:58 haley Exp $
+ *	$Id: c_ezvec.c,v 1.3 2000-07-31 20:12:16 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,8 @@
 ************************************************************************/
 
 #include <ncarg/ncargC.h>
+
+extern void NGCALLF(ezvec,EZVEC)(float*,float*,int*,int*);
 
 void c_ezvec
 #ifdef NeedFuncProto

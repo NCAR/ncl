@@ -1,5 +1,5 @@
 /*
- *	$Id: c_vvinit.c,v 1.2 2000-07-12 16:26:59 haley Exp $
+ *	$Id: c_vvinit.c,v 1.3 2000-07-31 20:12:17 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,9 @@
 ************************************************************************/
 
 #include <ncarg/ncargC.h>
+
+extern void NGCALLF(vvinit,VVINIT)(float*,int*,float*,int*,float*,int*,int*,
+                                   int*,float*,int*);
 
 void c_vvinit
 #ifdef NeedFuncProto

@@ -1,5 +1,5 @@
 /*
- *	$Id: c_sfsetc.c,v 1.2 2000-07-12 16:25:31 haley Exp $
+ *	$Id: c_sfsetc.c,v 1.3 2000-07-31 20:11:46 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,8 @@
 ************************************************************************/
 
 #include <ncarg/ncargC.h>
+
+extern void NGCALLF(sfsetc,SFSETC)(NGstring,NGstring,int,int);
 
 void c_sfsetc
 #ifdef NeedFuncProto

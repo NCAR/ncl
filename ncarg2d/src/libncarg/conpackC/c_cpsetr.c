@@ -1,5 +1,5 @@
 /*
- *	$Id: c_cpsetr.c,v 1.2 2000-07-12 16:22:47 haley Exp $
+ *	$Id: c_cpsetr.c,v 1.3 2000-07-31 20:11:03 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,8 @@
 ************************************************************************/
 
 #include <ncarg/ncargC.h>
+
+extern void NGCALLF(cpsetr,CPSETR)(NGstring,float*,int);
 
 void c_cpsetr
 #ifdef NeedFuncProto

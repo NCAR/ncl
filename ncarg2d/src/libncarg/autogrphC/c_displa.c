@@ -1,5 +1,5 @@
 /*
- *	$Id: c_displa.c,v 1.2 2000-07-12 16:22:08 haley Exp $
+ *	$Id: c_displa.c,v 1.3 2000-07-31 20:10:54 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,8 @@
 ************************************************************************/
 
 #include <ncarg/ncargC.h>
+
+extern void NGCALLF(displa,DISPLA)(int*,int*,int*);
 
 void c_displa
 #ifdef NeedFuncProto

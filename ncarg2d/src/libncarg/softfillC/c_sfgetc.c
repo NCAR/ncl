@@ -1,5 +1,5 @@
 /*
- *	$Id: c_sfgetc.c,v 1.3 2000-07-12 16:25:30 haley Exp $
+ *	$Id: c_sfgetc.c,v 1.4 2000-07-31 20:11:45 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,8 @@
 ************************************************************************/
 
 #include <ncarg/ncargC.h>
+
+extern void NGCALLF(sfgetc,SFGETC)(NGstring,NGstring,int,int);
 
 void c_sfgetc
 #ifdef NeedFuncProto

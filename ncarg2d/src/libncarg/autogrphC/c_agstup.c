@@ -1,5 +1,5 @@
 /*
- *	$Id: c_agstup.c,v 1.2 2000-07-12 16:22:08 haley Exp $
+ *	$Id: c_agstup.c,v 1.3 2000-07-31 20:10:54 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,9 @@
 ************************************************************************/
 
 #include <ncarg/ncargC.h>
+
+extern void NGCALLF(agstup,AGSTUP)(float*,int*,int*,int*,int*,float*,int*,
+                                   int*,int*,int*);
 
 void c_agstup
 #ifdef NeedFuncProto

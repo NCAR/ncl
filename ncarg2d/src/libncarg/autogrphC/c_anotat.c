@@ -1,5 +1,5 @@
 /*
- *	$Id: c_anotat.c,v 1.3 2000-07-12 16:22:08 haley Exp $
+ *	$Id: c_anotat.c,v 1.4 2000-07-31 20:10:54 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -26,6 +26,9 @@
 
 #include <stdlib.h>
 #include <ncarg/ncargC.h>
+
+extern void NGCALLF(anotat,ANOTAT)(NGstring,NGstring,int*,int*,int*,
+                                   NGstring,int,int,int);
 
 void c_anotat
 #ifdef NeedFuncProto

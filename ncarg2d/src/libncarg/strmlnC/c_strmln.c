@@ -1,5 +1,5 @@
 /*
- *	$Id: c_strmln.c,v 1.2 2000-07-12 16:26:13 haley Exp $
+ *	$Id: c_strmln.c,v 1.3 2000-07-31 20:12:00 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,9 @@
 ************************************************************************/
 
 #include <ncarg/ncargC.h>
+
+extern void NGCALLF(strmln,STRMLN)(float*,float*,float*,int*,int*,int*,int*,
+                                   int*);
 
 void c_strmln
 #ifdef NeedFuncProto

@@ -1,5 +1,5 @@
 /*
- *	$Id: c_pwrzt.c,v 1.2 2000-07-12 16:26:49 haley Exp $
+ *	$Id: c_pwrzt.c,v 1.3 2000-07-31 20:12:14 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,9 @@
 ************************************************************************/
 
 #include <ncarg/ncargC.h>
+
+extern void NGCALLF(pwrzt,PWRZT)(float*,float*,float*,NGstring,int*,int*,
+                                 int*,int*,int*,int);
 
 void c_pwrzt 
 #ifdef NeedFuncProto
@@ -52,13 +55,9 @@ void c_pwrzt
     int icnt;
 #endif
 {
-    float x2, y2, z2;
 	NGstring id2;
     int len;
-    x2 = x;
-    y2 = y;
-    z2 = z;
     len = NGSTRLEN(id);
 	id2 = NGCstrToFstr(id,len);
-    NGCALLF(pwrzt,PWRZT)(&x2,&y2,&z2,id2,&n,&isize,&lin3,&itop,&icnt,len);
+    NGCALLF(pwrzt,PWRZT)(&x,&y,&z,id2,&n,&isize,&lin3,&itop,&icnt,len);
 }

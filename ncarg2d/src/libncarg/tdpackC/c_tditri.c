@@ -1,5 +1,5 @@
 /*
- *      $Id: c_tditri.c,v 1.2 2000-07-12 16:26:40 haley Exp $
+ *      $Id: c_tditri.c,v 1.3 2000-07-31 20:12:09 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,10 @@
 ************************************************************************/
 
 #include <ncarg/ncargC.h>
+
+extern void NGCALLF(tditri,TDITRI)(float*,int*,float*,int*,float*,int*,
+                                   float*,int*,int*,float*,float*,int*,
+                                   int*,int*);
 
 void c_tditri
 #ifdef NeedFuncProto
@@ -62,17 +66,6 @@ void c_tditri
     int    irst;
 #endif
 {
-    int nu2,nv2,nw2,lf1d2,lf2d2;
-    float fiso2;
-    int mtri2,irst2;
-    nu2=nu;
-    nv2=nv;
-    nw2=nw;
-    lf1d2=lf1d;
-    lf2d2=lf2d;
-    fiso2=fiso;
-    mtri2=mtri;
-    irst2=irst;
-    NGCALLF(tditri,TDITRI)(u,&nu2,v,&nv2,w,&nw2,f,&lf1d2,&lf2d2,&fiso2,
-                                               rtri,&mtri2,ntri,&irst2);
+    NGCALLF(tditri,TDITRI)(u,&nu,v,&nv,w,&nw,f,&lf1d,&lf2d,&fiso,
+                                           rtri,&mtri,ntri,&irst);
 }

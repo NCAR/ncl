@@ -1,5 +1,5 @@
 /*
- *	$Id: c_fence3.c,v 1.2 2000-07-12 16:26:48 haley Exp $
+ *	$Id: c_fence3.c,v 1.3 2000-07-31 20:12:13 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -26,6 +26,8 @@
 
 #include <ncarg/ncargC.h>
 
+extern void NGCALLF(fence3,FENCE3)(float*,float*,float*,int*,int*,float*);
+
 void c_fence3
 #ifdef NeedFuncProto
 (
@@ -46,8 +48,5 @@ void c_fence3
     float bot;
 #endif
 {
-    float bot2;
-
-    bot2 = bot;
-    NGCALLF(fence3,FENCE3)(u,v,w,&n,&ior,&bot2);
+    NGCALLF(fence3,FENCE3)(u,v,w,&n,&ior,&bot);
 }

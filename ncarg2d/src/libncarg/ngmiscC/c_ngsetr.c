@@ -1,5 +1,5 @@
 /*
- *	$Id: c_ngsetr.c,v 1.2 2000-07-12 16:24:51 haley Exp $
+ *	$Id: c_ngsetr.c,v 1.3 2000-07-31 20:11:35 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -26,6 +26,8 @@
 
 #include <ncarg/ncargC.h>
 
+extern void NGCALLF(ngsetr,NGSETR)(NGstring,float*,int);
+
 void c_ngsetr
 #ifdef NeedFuncProto
 (
@@ -38,7 +40,6 @@ void c_ngsetr
     float rval;
 #endif
 {
-    float rval2;
     NGstring pnam2;
     int len;
 /*
@@ -49,8 +50,7 @@ void c_ngsetr
         return;
     }
 
-    rval2 = rval;
     len = NGSTRLEN(pnam);
     pnam2 = NGCstrToFstr(pnam,len);
-    NGCALLF(ngsetr,NGSETR)(pnam2,&rval2,len);
+    NGCALLF(ngsetr,NGSETR)(pnam2,&rval,len);
 }

@@ -1,5 +1,5 @@
 /*
- *      $Id: c_tdmtri.c,v 1.2 2000-07-12 16:26:41 haley Exp $
+ *      $Id: c_tdmtri.c,v 1.3 2000-07-31 20:12:09 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,10 @@
 ************************************************************************/
 
 #include <ncarg/ncargC.h>
+
+extern void NGCALLF(tdmtri,TDMTRI)(int*,float*,float*,float*,float*,float*,
+                                   int*,int*,int*,float*,float*,float*,
+                                   float*,float*,float*);
 
 void c_tdmtri
 #ifdef NeedFuncProto
@@ -64,32 +68,6 @@ void c_tdmtri
     float  wmax;
 #endif
 {
-    int   imrk2;
-    float umrk2;
-    float vmrk2;
-    float wmrk2;
-    float smrk2;
-    int   mtri2;
-    int   irst2;
-    float umin2;
-    float vmin2;
-    float wmin2;
-    float umax2;
-    float vmax2;
-    float wmax2;
-    imrk2=imrk;
-    umrk2=umrk;
-    vmrk2=vmrk;
-    wmrk2=wmrk;
-    smrk2=smrk;
-    mtri2=mtri;
-    irst2=irst;
-    umin2=umin;
-    vmin2=vmin;
-    wmin2=wmin;
-    umax2=umax;
-    vmax2=vmax;
-    wmax2=wmax;
-    NGCALLF(tdmtri,TDMTRI)(&imrk2,&umrk2,&vmrk2,&wmrk2,&smrk2,rtri,&mtri2,
-                   ntri,&irst2,&umin2,&vmin2,&wmin2,&umax2,&vmax2,&wmax2);
+    NGCALLF(tdmtri,TDMTRI)(&imrk,&umrk,&vmrk,&wmrk,&smrk,rtri,&mtri,
+                   ntri,&irst,&umin,&vmin,&wmin,&umax,&vmax,&wmax);
 }

@@ -1,5 +1,5 @@
 /*
- *	$Id: c_cpcnrc.c,v 1.2 2000-07-12 16:22:44 haley Exp $
+ *	$Id: c_cpcnrc.c,v 1.3 2000-07-31 20:11:00 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,9 @@
 ************************************************************************/
 
 #include <ncarg/ncargC.h>
+
+extern void NGCALLF(cpcnrc,CPCNRC)(float*,int*,int*,int*,float*,float*,
+                                   float*,int*,int*,int*);
 
 void c_cpcnrc
 #ifdef NeedFuncProto
@@ -54,11 +57,6 @@ void c_cpcnrc
     int ndsh;
 #endif
 {
-    float y1,y2,y3;
-
-    y1 = flow;
-    y2 = fhgh;
-    y3 = finc;
-
-    NGCALLF(cpcnrc,CPCNRC)(zdat,&kzdt,&mzdt,&nzdt,&y1,&y2,&y3,&kset,&nhgh,&ndsh);
+    NGCALLF(cpcnrc,CPCNRC)(zdat,&kzdt,&mzdt,&nzdt,&flow,&fhgh,&finc,&kset,
+                           &nhgh,&ndsh);
 }

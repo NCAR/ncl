@@ -1,5 +1,5 @@
 /*
- *	$Id: c_lblbar.c,v 1.3 2000-07-12 16:24:41 haley Exp $
+ *	$Id: c_lblbar.c,v 1.4 2000-07-31 20:11:31 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -26,6 +26,10 @@
 
 #include <stdlib.h>
 #include <ncarg/ncargC.h>
+
+extern void NGCALLF(lblbar,LBLBAR)(int*,float*,float*,float*,float*,int*,
+                                   float*,float*,int*,int*,NGstring,int*,
+                                   int*,int);
 
 void c_lblbar
 #ifdef NeedFuncProto
@@ -63,7 +67,6 @@ void c_lblbar
 {
     int i, maxlen;
     char *llbs2;
-    float xleb2,xreb2,ybeb2,yteb2,wsfb2,hsfb2;
     NGstring llbs22;
 
     maxlen = strlen(llbs[0]);
@@ -76,15 +79,9 @@ void c_lblbar
         return;
     }
     Pad_char_array(llbs,llbs2,nlbs,maxlen);
-    xleb2 = xleb;
-    xreb2 = xreb;
-    ybeb2 = ybeb;
-    yteb2 = yteb;
-    wsfb2 = wsfb;
-    hsfb2 = hsfb;
 
     llbs22 = NGCstrToFstr(llbs2,maxlen);
-    NGCALLF(lblbar,LBLBAR)(&ihov,&xleb2,&xreb2,&ybeb2,&yteb2,&nbox,
-                           &wsfb2,&hsfb2,lfin,&iftp,llbs22,&nlbs,&lbab,maxlen);
+    NGCALLF(lblbar,LBLBAR)(&ihov,&xleb,&xreb,&ybeb,&yteb,&nbox,
+                           &wsfb,&hsfb,lfin,&iftp,llbs22,&nlbs,&lbab,maxlen);
     free((char *) llbs2);
 }

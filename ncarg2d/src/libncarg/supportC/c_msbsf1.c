@@ -1,5 +1,5 @@
 /*
- *	$Id: c_msbsf1.c,v 1.2 2000-07-12 16:26:26 haley Exp $
+ *	$Id: c_msbsf1.c,v 1.3 2000-07-31 20:12:03 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,10 @@
 ************************************************************************/
 
 #include <ncarg/ncargC.h>
+
+extern void NGCALLF(msbsf1,MSBSF1)(int*,int*,float*,float*,float*,float*,
+                                   float*,int*,float*,float*,float*);
+
 
 void c_msbsf1 
 #ifdef NeedFuncProto
@@ -56,13 +60,6 @@ void c_msbsf1
     float sigma;
 #endif
 {
-    float xmin2, xmax2, ymin2, ymax2, sigma2;
-
-    xmin2 = xmin;
-    xmax2 = xmax;
-    ymin2 = ymin;
-    ymax2 = ymax;
-    sigma2 = sigma;
-    
-    NGCALLF(msbsf1,MSBSF1)(&m,&n,&xmin2,&xmax2,&ymin2,&ymax2,z,&iz,zp,temp,&sigma2);
+    NGCALLF(msbsf1,MSBSF1)(&m,&n,&xmin,&xmax,&ymin,&ymax,z,&iz,zp,temp,
+                           &sigma);
 }

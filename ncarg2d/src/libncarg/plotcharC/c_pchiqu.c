@@ -1,5 +1,5 @@
 /*
- *	$Id: c_pchiqu.c,v 1.2 2000-07-12 16:25:03 haley Exp $
+ *	$Id: c_pchiqu.c,v 1.3 2000-07-31 20:11:38 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -26,6 +26,9 @@
 
 #include <ncarg/ncargC.h>
 
+extern void NGCALLF(pchiqu,PCHIQU)(float*,float*,NGstring,float*,float*,
+                                   float*,int);
+
 void c_pchiqu
 #ifdef NeedFuncProto
 (
@@ -46,15 +49,9 @@ void c_pchiqu
     float cntr;
 #endif
 {
-    float y1,y2,y3,y4,y5;
     NGstring chrs2;
     int len;
-    y1 = xpos;
-    y2 = ypos;
-    y3 = size;
-    y4 = angd;
-    y5 = cntr;
     len = NGSTRLEN(chrs);
     chrs2 = NGCstrToFstr(chrs,len);
-    NGCALLF(pchiqu,PCHIQU)(&y1,&y2,chrs2,&y3,&y4,&y5,len);
+    NGCALLF(pchiqu,PCHIQU)(&xpos,&ypos,chrs2,&size,&angd,&cntr,len);
 }

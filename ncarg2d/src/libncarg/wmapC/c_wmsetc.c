@@ -1,5 +1,5 @@
 /*
- *	$Id: c_wmsetc.c,v 1.2 2000-07-12 16:27:11 haley Exp $
+ *	$Id: c_wmsetc.c,v 1.3 2000-07-31 20:12:21 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,8 @@
 ************************************************************************/
 
 #include <ncarg/ncargC.h>
+
+extern void NGCALLF(wmsetc,WMSETC)(NGstring,NGstring,int,int);
 
 void c_wmsetc
 #ifdef NeedFuncProto

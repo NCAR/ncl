@@ -1,5 +1,5 @@
 /*
- *	$Id: c_ppuntr.c,v 1.2 2000-07-12 16:25:11 haley Exp $
+ *	$Id: c_ppuntr.c,v 1.3 2000-07-31 20:11:43 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,9 @@
 ************************************************************************/
 
 #include <ncarg/ncargC.h>
+
+extern void NGCALLF(ppuntr,PPUNTR)(float*,float*,int*,float*,float*,int*,
+                                   float*,int*,int*,int (*urpt_)(),int*);
 
 void c_ppuntr
 #ifdef NeedFuncProto
@@ -63,5 +66,6 @@ void c_ppuntr
 	int *ierr;
 #endif
 {
-    NGCALLF(ppuntr,PPUNTR)(xccp,yccp,&nccp,xcsp,ycsp,&ncsp,rwrk,iwrk,&nwrk,urpt_,ierr);
+    NGCALLF(ppuntr,PPUNTR)(xccp,yccp,&nccp,xcsp,ycsp,&ncsp,rwrk,iwrk,&nwrk,
+                           urpt_,ierr);
 }

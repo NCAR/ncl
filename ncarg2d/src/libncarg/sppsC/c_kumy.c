@@ -1,5 +1,5 @@
 /*
- *	$Id: c_kumy.c,v 1.2 2000-07-12 16:25:47 haley Exp $
+ *	$Id: c_kumy.c,v 1.3 2000-07-31 20:11:50 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -36,7 +36,5 @@ int c_kumy
     float ry;
 #endif
 {
-	float ry2;
-	ry2 = ry;
-	return(NGCALLF(kumy,KUMY)(&ry2));
+	return(NGCALLF(kumy,KUMY)(&ry));
 }

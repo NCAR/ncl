@@ -1,5 +1,5 @@
 /*
- *      $Id: c_tdsetr.c,v 1.2 2000-07-12 16:26:42 haley Exp $
+ *      $Id: c_tdsetr.c,v 1.3 2000-07-31 20:12:11 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -26,6 +26,8 @@
 
 #include <ncarg/ncargC.h>
 
+extern void NGCALLF(tdsetr,TDSETR)(NGstring,float*,int);
+
 void c_tdsetr
 #ifdef NeedFuncProto
 (
@@ -38,7 +40,6 @@ void c_tdsetr
     float rval;
 #endif
 {
-    float rval2;
     NGstring pnam2;
     int len;
 /*
@@ -49,8 +50,7 @@ void c_tdsetr
         return;
     }
 
-    rval2 = rval;
     len = NGSTRLEN(pnam);
     pnam2 = NGCstrToFstr(pnam,len);
-    NGCALLF(tdsetr,TDSETR)(pnam2,&rval2,len);
+    NGCALLF(tdsetr,TDSETR)(pnam2,&rval,len);
 }

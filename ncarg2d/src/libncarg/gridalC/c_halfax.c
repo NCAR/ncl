@@ -1,5 +1,5 @@
 /*
- *	$Id: c_halfax.c,v 1.2 2000-07-12 16:24:17 haley Exp $
+ *	$Id: c_halfax.c,v 1.3 2000-07-31 20:11:23 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -26,6 +26,9 @@
 
 #include <ncarg/ncargC.h>
 
+extern void NGCALLF(halfax,HALFAX)(int*,int*,int*,int*,float*,float*,int*,
+                                   int*);
+
 void c_halfax
 #ifdef NeedFuncProto
 (
@@ -50,8 +53,5 @@ void c_halfax
     int iylb;
 #endif
 {
-    float xint2,yint2;
-    xint2 = xint;
-    yint2 = yint;
-    NGCALLF(halfax,HALFAX)(&mjrx,&mnrx,&mjry,&mnry,&xint2,&yint2,&ixlb,&iylb);
+    NGCALLF(halfax,HALFAX)(&mjrx,&mnrx,&mjry,&mnry,&xint,&yint,&ixlb,&iylb);
 }

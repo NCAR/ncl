@@ -1,5 +1,5 @@
 /*
- *	$Id: c_hstopr.c,v 1.2 2000-07-12 16:24:27 haley Exp $
+ *	$Id: c_hstopr.c,v 1.3 2000-07-31 20:11:26 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,8 @@
 ************************************************************************/
 
 #include <ncarg/ncargC.h>
+
+extern void NGCALLF(hstopr,HSTOPR)(NGstring,float*,int*,int);
 
 void c_hstopr
 #ifdef NeedFuncProto

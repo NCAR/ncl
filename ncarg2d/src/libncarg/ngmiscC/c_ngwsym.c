@@ -1,5 +1,5 @@
 /*
- *	$Id: c_ngwsym.c,v 1.2 2000-07-12 16:24:51 haley Exp $
+ *	$Id: c_ngwsym.c,v 1.3 2000-07-31 20:11:36 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -26,6 +26,9 @@
 
 #include <ncarg/ncargC.h>
 
+extern void NGCALLF(ngwsym,NGWSYM)(NGstring,int*,float*,float*,float*,
+                                   int*,int*,int);
+
 void c_ngwsym
 #ifdef NeedFuncProto
 (
@@ -48,7 +51,6 @@ void c_ngwsym
     int ialt;
 #endif
 {
-    float x2, y2, size2;
     NGstring ftype2;
     int len;
 /*
@@ -59,11 +61,7 @@ void c_ngwsym
         return;
     }
 
-    x2 = x;
-    y2 = y;
-    size2 = size;
-
     len = NGSTRLEN(ftype);
     ftype2 = NGCstrToFstr(ftype,len);
-    NGCALLF(ngwsym,NGWSYM)(ftype2,&num,&x2,&y2,&size2,&icolor,&ialt,len);
+    NGCALLF(ngwsym,NGWSYM)(ftype2,&num,&x,&y,&size,&icolor,&ialt,len);
 }

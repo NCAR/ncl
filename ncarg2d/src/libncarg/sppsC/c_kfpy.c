@@ -1,5 +1,5 @@
 /*
- *	$Id: c_kfpy.c,v 1.2 2000-07-12 16:25:46 haley Exp $
+ *	$Id: c_kfpy.c,v 1.3 2000-07-31 20:11:50 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -36,7 +36,5 @@ int c_kfpy
     float ry;
 #endif
 {
-	float ry2;
-	ry2 = ry;
-	return(NGCALLF(kfpy,KFPY)(&ry2));
+	return(NGCALLF(kfpy,KFPY)(&ry));
 }

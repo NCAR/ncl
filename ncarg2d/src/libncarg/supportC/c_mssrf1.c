@@ -1,5 +1,5 @@
 /*
- *	$Id: c_mssrf1.c,v 1.2 2000-07-12 16:26:27 haley Exp $
+ *	$Id: c_mssrf1.c,v 1.3 2000-07-31 20:12:04 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,12 @@
 ************************************************************************/
 
 #include <ncarg/ncargC.h>
+
+extern void NGCALLF(mssrf1,MSSRF1)(int*,int*,float*,float*,float*,int*,
+                                   float*,float*,float*,float*,float*,
+                                   float*,float*,float*,int*,float*,float*,
+                                   float*,int*);
+
 
 void c_mssrf1
 #ifdef NeedFuncProto
@@ -72,13 +78,6 @@ void c_mssrf1
     int *ierr;
 #endif
 {
-    float sigma2,zxy112,zxym12,zxy1n2,zxymn2;
-
-    zxy112 = zxy11;
-    zxym12 = zxym1;
-    zxy1n2 = zxy1n;
-    zxymn2 = zxymn;
-    sigma2 = sigma;
-
-    NGCALLF(mssrf1,MSSRF1)(&m,&n,x,y,z,&iz,zx1,zxm,zy1,zyn,&zxy112,&zxym12,&zxy1n2,&zxymn2,&islpsw,zp,temp,&sigma2,ierr);
+    NGCALLF(mssrf1,MSSRF1)(&m,&n,x,y,z,&iz,zx1,zxm,zy1,zyn,&zxy11,&zxym1,
+                           &zxy1n,&zxymn,&islpsw,zp,temp,&sigma,ierr);
 }

@@ -1,5 +1,5 @@
 /*
- *	$Id: c_arinam.c,v 1.2 2000-07-12 16:21:52 haley Exp $
+ *	$Id: c_arinam.c,v 1.3 2000-07-31 20:10:39 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,8 @@
 ************************************************************************/
 
 #include <ncarg/ncargC.h>
+
+extern void NGCALLF(arinam,ARINAM)(int*,int*);
 
 void c_arinam
 #ifdef NeedFuncProto

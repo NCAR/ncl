@@ -1,5 +1,5 @@
 /*
- *	$Id: c_getset.c,v 1.2 2000-07-12 16:25:45 haley Exp $
+ *	$Id: c_getset.c,v 1.3 2000-07-31 20:11:49 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,9 @@
 ************************************************************************/
 
 #include <ncarg/ncargC.h>
+
+extern void NGCALLF(getset,GETSET)(float*,float*,float*,float*,float*,
+                                   float*,float*,float*,int*);
 
 void c_getset
 #ifdef NeedFuncProto

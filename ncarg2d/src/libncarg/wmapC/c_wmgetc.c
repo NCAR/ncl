@@ -1,5 +1,5 @@
 /*
- *	$Id: c_wmgetc.c,v 1.3 2000-07-12 16:27:09 haley Exp $
+ *	$Id: c_wmgetc.c,v 1.4 2000-07-31 20:12:20 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,8 @@
 ************************************************************************/
 
 #include <ncarg/ncargC.h>
+
+extern void NGCALLF(wmgetc,WMGETC)(NGstring,NGstring,int,int);
 
 void c_wmgetc
 #ifdef NeedFuncProto

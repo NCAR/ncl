@@ -1,5 +1,5 @@
 /*
- *	$Id: c_rgbyiq.c,v 1.2 2000-07-12 16:22:15 haley Exp $
+ *	$Id: c_rgbyiq.c,v 1.3 2000-07-31 20:10:57 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -26,6 +26,8 @@
 
 #include <ncarg/ncargC.h>
 
+extern void NGCALLF(rgbyiq,RGBYIQ)(float*,float*,float*,float*,float*,float*);
+
 void c_rgbyiq 
 #ifdef NeedFuncProto
 (
@@ -46,9 +48,5 @@ void c_rgbyiq
     float *q;
 #endif
 {
-    float r2, g2, b2;
-    r2 = r;
-    g2 = g;
-    b2 = b;
-    NGCALLF(rgbyiq,RGBYIQ)( &r2, &g2, &b2, y, i, q );
+    NGCALLF(rgbyiq,RGBYIQ)( &r, &g, &b, y, i, q );
 }

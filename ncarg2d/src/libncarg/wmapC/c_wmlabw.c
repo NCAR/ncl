@@ -1,5 +1,5 @@
 /*
- *	$Id: c_wmlabw.c,v 1.2 2000-07-12 16:27:10 haley Exp $
+ *	$Id: c_wmlabw.c,v 1.3 2000-07-31 20:12:21 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -26,6 +26,8 @@
 
 #include <ncarg/ncargC.h>
 
+extern void NGCALLF(wmlabw,WMLABW)(float*,float*,NGstring,int);
+
 void c_wmlabw
 #ifdef NeedFuncProto
 (
@@ -43,10 +45,7 @@ void c_wmlabw
 {
     NGstring label2;
 	int len;
-    float x2, y2;
-    x2 = x;
-    y2 = y;
 	len = NGSTRLEN(label);
 	label2 = NGCstrToFstr(label,len);
-    NGCALLF(wmlabw,WMLABW)(&x2,&y2,label2,len);
+    NGCALLF(wmlabw,WMLABW)(&x,&y,label2,len);
 }

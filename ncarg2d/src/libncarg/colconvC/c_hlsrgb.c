@@ -1,5 +1,5 @@
 /*
- *	$Id: c_hlsrgb.c,v 1.2 2000-07-12 16:22:14 haley Exp $
+ *	$Id: c_hlsrgb.c,v 1.3 2000-07-31 20:10:56 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -26,6 +26,8 @@
 
 #include <ncarg/ncargC.h>
 
+extern void NGCALLF(hlsrgb,HLSRGB)(float*,float*,float*,float*,float*,float*);
+
 void c_hlsrgb
 #ifdef NeedFuncProto
 (
@@ -46,9 +48,5 @@ void c_hlsrgb
     float *b;
 #endif
 {
-    float h2, l2, s2;
-    h2 = h;
-    l2 = l;
-    s2 = s;
-    NGCALLF(hlsrgb,HLSRGB)( &h2, &l2, &s2, r, g, b );
+    NGCALLF(hlsrgb,HLSRGB)( &h, &l, &s, r, g, b );
 }   

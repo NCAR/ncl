@@ -1,5 +1,5 @@
 /*
- *	$Id: c_gridal.c,v 1.2 2000-07-12 16:24:17 haley Exp $
+ *	$Id: c_gridal.c,v 1.3 2000-07-31 20:11:23 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,9 @@
 ************************************************************************/
 
 #include <ncarg/ncargC.h>
+
+extern void NGCALLF(gridal,GRIDAL)(int*,int*,int*,int*,int*,int*,int*,
+                                   float*,float*);
 
 void c_gridal
 #ifdef NeedFuncProto
@@ -52,8 +55,6 @@ void c_gridal
     float yint;
 #endif
 {
-    float xint2,yint2;
-    xint2 = xint;
-    yint2 = yint;
-    NGCALLF(gridal,GRIDAL)(&mjrx,&mnrx,&mjry,&mnry,&ixlb,&iylb,&igph,&xint2,&yint2);
+    NGCALLF(gridal,GRIDAL)(&mjrx,&mnrx,&mjry,&mnry,&ixlb,&iylb,&igph,
+                           &xint,&yint);
 }

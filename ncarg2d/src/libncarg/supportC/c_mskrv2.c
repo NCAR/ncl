@@ -1,5 +1,5 @@
 /*
- *	$Id: c_mskrv2.c,v 1.2 2000-07-12 16:26:27 haley Exp $
+ *	$Id: c_mskrv2.c,v 1.3 2000-07-31 20:12:04 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,9 @@
 ************************************************************************/
 
 #include <ncarg/ncargC.h>
+
+extern void NGCALLF(mskrv2,MSKRV2)(float*,float*,float*,int*,float*,float*,
+                                   float*,float*,float*,float*,int*,float*);
 
 void c_mskrv2 
 #ifdef NeedFuncProto
@@ -58,10 +61,5 @@ void c_mskrv2
     float *slp;
 #endif
 {
-    float t2, sigma2;
-
-    t2 = t;
-    sigma2 = sigma;
-
-    NGCALLF(mskrv2,MSKRV2)(&t2,xs,ys,&n,x,y,xp,yp,s,&sigma2,&ics,slp);
+    NGCALLF(mskrv2,MSKRV2)(&t,xs,ys,&n,x,y,xp,yp,s,&sigma,&ics,slp);
 }

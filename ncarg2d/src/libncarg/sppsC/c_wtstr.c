@@ -1,5 +1,5 @@
 /*
- *	$Id: c_wtstr.c,v 1.2 2000-07-12 16:25:50 haley Exp $
+ *	$Id: c_wtstr.c,v 1.3 2000-07-31 20:11:53 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -26,6 +26,8 @@
 
 #include <ncarg/ncargC.h>
 
+extern void NGCALLF(wtstr,WTSTR)(float*,float*,NGstring,int*,int*,int*,int);
+
 void c_wtstr
 #ifdef NeedFuncProto
 (
@@ -46,12 +48,9 @@ void c_wtstr
     int ic;
 #endif
 {
-    float px2,py2;
     NGstring ch2;
     int len;
-    px2 = px;
-    py2 = py;
     len = NGSTRLEN(ch);
     ch2 = NGCstrToFstr(ch,len);
-    NGCALLF(wtstr,WTSTR)(&px2,&py2,ch2,&is,&io,&ic,len);
+    NGCALLF(wtstr,WTSTR)(&px,&py,ch2,&is,&io,&ic,len);
 }

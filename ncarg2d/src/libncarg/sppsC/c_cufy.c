@@ -1,5 +1,5 @@
 /*
- *	$Id: c_cufy.c,v 1.2 2000-07-12 16:25:45 haley Exp $
+ *	$Id: c_cufy.c,v 1.3 2000-07-31 20:11:49 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -36,8 +36,7 @@ float c_cufy
     float ry;
 #endif
 {
-    float ry2,y;
-    ry2 = ry;
-    y = NGCALLF(cufy,CUFY)(&ry2);
+    float y;
+    y = NGCALLF(cufy,CUFY)(&ry);
     return(y);
 }

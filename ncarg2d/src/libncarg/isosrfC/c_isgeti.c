@@ -1,5 +1,5 @@
 /*
- *	$Id: c_isgeti.c,v 1.2 2000-07-12 16:24:33 haley Exp $
+ *	$Id: c_isgeti.c,v 1.3 2000-07-31 20:11:28 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,8 @@
 ************************************************************************/
 
 #include <ncarg/ncargC.h>
+
+extern void NGCALLF(isgeti,ISGETI)(NGstring,int*,int);
 
 void c_isgeti
 #ifdef NeedFuncProto

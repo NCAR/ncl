@@ -1,5 +1,5 @@
 /*
- *	$Id: c_cpezct.c,v 1.2 2000-07-12 16:22:44 haley Exp $
+ *	$Id: c_cpezct.c,v 1.3 2000-07-31 20:11:01 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,8 @@
 ************************************************************************/
 
 #include <ncarg/ncargC.h>
+
+extern void NGCALLF(cpezct,CPEZCT)(float*,int*,int*);
 
 void c_cpezct
 #ifdef NeedFuncProto

@@ -1,5 +1,5 @@
 /*
- *	$Id: c_vect3.c,v 1.2 2000-07-12 16:26:49 haley Exp $
+ *	$Id: c_vect3.c,v 1.3 2000-07-31 20:12:14 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -26,6 +26,8 @@
 
 #include <ncarg/ncargC.h>
 
+extern void NGCALLF(vect3,VECT3)(float*,float*,float*);
+
 void c_vect3
 #ifdef NeedFuncProto
 (
@@ -40,9 +42,5 @@ void c_vect3
     float w;
 #endif
 {
-    float u2,v2,w2;
-    u2 = u;
-    v2 = v;
-    w2 = w;
-    NGCALLF(vect3,VECT3)(&u2,&v2,&w2);
+    NGCALLF(vect3,VECT3)(&u,&v,&w);
 }

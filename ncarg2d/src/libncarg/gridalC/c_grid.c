@@ -1,5 +1,5 @@
 /*
- *	$Id: c_grid.c,v 1.2 2000-07-12 16:24:17 haley Exp $
+ *	$Id: c_grid.c,v 1.3 2000-07-31 20:11:23 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,8 @@
 ************************************************************************/
 
 #include <ncarg/ncargC.h>
+
+extern void NGCALLF(grid,GRID)(int*,int*,int*,int*);
 
 void c_grid
 #ifdef NeedFuncProto

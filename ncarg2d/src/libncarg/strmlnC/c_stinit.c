@@ -1,5 +1,5 @@
 /*
- *	$Id: c_stinit.c,v 1.2 2000-07-12 16:26:12 haley Exp $
+ *	$Id: c_stinit.c,v 1.3 2000-07-31 20:12:00 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,9 @@
 ************************************************************************/
 
 #include <ncarg/ncargC.h>
+
+extern void NGCALLF(stinit,STINIT)(float*,int*,float*,int*,float*,int*,
+                                   int*,int*,float*,int*);
 
 void c_stinit
 #ifdef NeedFuncProto

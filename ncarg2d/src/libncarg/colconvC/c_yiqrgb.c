@@ -1,5 +1,5 @@
 /*
- *	$Id: c_yiqrgb.c,v 1.2 2000-07-12 16:22:15 haley Exp $
+ *	$Id: c_yiqrgb.c,v 1.3 2000-07-31 20:10:57 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -26,6 +26,8 @@
 
 #include <ncarg/ncargC.h>
 
+extern void NGCALLF(yiqrgb,YIQRGB)(float*,float*,float*,float*,float*,float*);
+
 void c_yiqrgb
 #ifdef NeedFuncProto
 (
@@ -46,9 +48,5 @@ void c_yiqrgb
     float *b;
 #endif
 {
-    float y2, i2, q2;
-    y2 = y;
-    i2 = i;
-    q2 = q;
-    NGCALLF(yiqrgb,YIQRGB)( &y2, &i2, &q2, r, g, b );
+    NGCALLF(yiqrgb,YIQRGB)( &y, &i, &q, r, g, b );
 }

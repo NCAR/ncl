@@ -1,5 +1,5 @@
 /*
- *	$Id: c_ticks.c,v 1.2 2000-07-12 16:24:18 haley Exp $
+ *	$Id: c_ticks.c,v 1.3 2000-07-31 20:11:24 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,9 @@
 ************************************************************************/
 
 #include <ncarg/ncargC.h>
+
+extern void NGCALLF(ticks,ticks)(int*,int*);
+
 
 void c_ticks
 #ifdef NeedFuncProto

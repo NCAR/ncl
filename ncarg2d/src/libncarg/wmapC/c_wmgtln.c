@@ -1,5 +1,5 @@
 /*
- *	$Id: c_wmgtln.c,v 1.2 2000-07-12 16:27:10 haley Exp $
+ *	$Id: c_wmgtln.c,v 1.3 2000-07-31 20:12:20 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -40,7 +40,7 @@ int c_wmgtln
     int ilr
 #endif
 {
-	extern int NGCALLF(wmgtln,WMGTLN)();
+	extern int NGCALLF(wmgtln,WMGTLN)(NGstring,int*,int*,int);
     NGstring lab2;
     int len;
     len = NGSTRLEN(lab);

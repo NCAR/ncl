@@ -1,5 +1,5 @@
 /*
- *	$Id: c_ftitle.c,v 1.2 2000-07-12 16:26:02 haley Exp $
+ *	$Id: c_ftitle.c,v 1.3 2000-07-31 20:11:57 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,8 @@
 ************************************************************************/
 
 #include <ncarg/ncargC.h>
+
+extern void NGCALLF(ftitle,FTITLE)(int*);
 
 void c_ftitle
 #ifdef NeedFuncProto

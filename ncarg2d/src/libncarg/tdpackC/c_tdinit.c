@@ -1,5 +1,5 @@
 /*
- *      $Id: c_tdinit.c,v 1.3 2000-07-12 16:26:40 haley Exp $
+ *      $Id: c_tdinit.c,v 1.4 2000-07-31 20:12:08 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,9 @@
 ************************************************************************/
 
 #include <ncarg/ncargC.h>
+
+extern void NGCALLF(tdinit,TDINIT)(float*,float*,float*,float*,float*,float*,
+                                   float*,float*,float*,float*);
 
 void c_tdinit
 #ifdef NeedFuncProto
@@ -54,17 +57,6 @@ void c_tdinit
     float otep;
 #endif
 {
-    float umid2,vmid2,wmid2,uori2,vori2,wori2,uthi2,vthi2,wthi2,otep2;
-    umid2=umid;
-    vmid2=vmid;
-    wmid2=wmid;
-    uori2=uori;
-    vori2=vori;
-    wori2=wori;
-    uthi2=uthi;
-    vthi2=vthi;
-    wthi2=wthi;
-    otep2=otep;
-    NGCALLF(tdinit,TDINIT)(&umid2,&vmid2,&wmid2,&uori2,&vori2,&wori2,
-                                                &uthi2,&vthi2,&wthi2,&otep2);
+    NGCALLF(tdinit,TDINIT)(&umid,&vmid,&wmid,&uori,&vori,&wori,
+                                       &uthi,&vthi,&wthi,&otep);
 }

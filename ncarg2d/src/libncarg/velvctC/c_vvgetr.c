@@ -1,5 +1,5 @@
 /*
- *	$Id: c_vvgetr.c,v 1.2 2000-07-12 16:26:59 haley Exp $
+ *	$Id: c_vvgetr.c,v 1.3 2000-07-31 20:12:17 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,8 @@
 ************************************************************************/
 
 #include <ncarg/ncargC.h>
+
+extern void NGCALLF(vvgetr,VVGETR)(NGstring,float*,int);
 
 void c_vvgetr
 #ifdef NeedFuncProto

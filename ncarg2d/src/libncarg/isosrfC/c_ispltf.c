@@ -1,5 +1,5 @@
 /*
- *	$Id: c_ispltf.c,v 1.2 2000-07-12 16:24:34 haley Exp $
+ *	$Id: c_ispltf.c,v 1.3 2000-07-31 20:11:29 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -26,6 +26,8 @@
 
 #include <ncarg/ncargC.h>
 
+extern void NGCALLF(ispltf,ISPLTF)(float*,float*,int*);
+
 void c_ispltf
 #ifdef NeedFuncProto
 (
@@ -40,9 +42,5 @@ void c_ispltf
     int ient;
 #endif
 {
-    float rxn2, ryn2;
-    
-    rxn2 = rxn;
-    ryn2 = ryn;
-    NGCALLF(ispltf,ISPLTF)(&rxn2,&ryn2,&ient);
+    NGCALLF(ispltf,ISPLTF)(&rxn,&ryn,&ient);
 }

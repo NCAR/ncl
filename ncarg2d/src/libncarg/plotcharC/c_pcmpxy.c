@@ -1,5 +1,5 @@
 /*
- *	$Id: c_pcmpxy.c,v 1.2 2000-07-12 16:25:04 haley Exp $
+ *	$Id: c_pcmpxy.c,v 1.3 2000-07-31 20:11:39 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -26,6 +26,8 @@
 
 #include <ncarg/ncargC.h>
 
+extern void NGCALLF(pcmpxy,PCMPXY)(int*,float*,float*,float*,float*);
+
 void c_pcmpxy
 #ifdef NeedFuncProto
 (
@@ -44,8 +46,5 @@ void c_pcmpxy
     float *yotp;
 #endif
 {
-    float xinp2, yinp2;
-    xinp2 = xinp;
-    yinp2 = yinp;
-    NGCALLF(pcmpxy,PCMPXY)(&imap,&xinp2,&yinp2,xotp,yotp);
+    NGCALLF(pcmpxy,PCMPXY)(&imap,&xinp,&yinp,xotp,yotp);
 }

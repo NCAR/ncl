@@ -1,5 +1,5 @@
 /*
- *	$Id: c_set.c,v 1.2 2000-07-12 16:25:49 haley Exp $
+ *	$Id: c_set.c,v 1.3 2000-07-31 20:11:52 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,9 @@
 ************************************************************************/
 
 #include <ncarg/ncargC.h>
+
+extern void NGCALLF(set,SET)(float*,float*,float*,float*,float*,float*,
+                             float*,float*,int*);
 
 void c_set
 #ifdef NeedFuncProto
@@ -52,15 +55,5 @@ void c_set
     int lf;
 #endif
 {
-
-    float vl2,vr2,vb2,vt2,wl2,wr2,wb2,wt2;
-    vl2 = vl;
-    vb2 = vb;
-    wl2 = wl;
-    wb2 = wb;
-    vr2 = vr;
-    vt2 = vt;
-    wr2 = wr;
-    wt2 = wt;
-    NGCALLF(set,SET)(&vl2,&vr2,&vb2,&vt2,&wl2,&wr2,&wb2,&wt2,&lf);
+    NGCALLF(set,SET)(&vl,&vr,&vb,&vt,&wl,&wr,&wb,&wt,&lf);
 }

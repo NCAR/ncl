@@ -1,5 +1,5 @@
 /*
- *  $Id: c_setr.c,v 1.2 2000-07-12 16:25:55 haley Exp $
+ *  $Id: c_setr.c,v 1.3 2000-07-31 20:11:55 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,9 @@
 ************************************************************************/
 
 #include <ncarg/ncargC.h>
+
+extern void NGCALLF(setr,SETR)(float*,float*,float*,float*,float*,float*,
+                               float*);
 
 void c_setr
 #ifdef NeedFuncProto

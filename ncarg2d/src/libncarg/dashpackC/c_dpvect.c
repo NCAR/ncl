@@ -1,5 +1,5 @@
 /*
- *	$Id: c_dpvect.c,v 1.2 2000-07-12 16:23:13 haley Exp $
+ *	$Id: c_dpvect.c,v 1.3 2000-07-31 20:11:09 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -26,6 +26,8 @@
 
 #include <ncarg/ncargC.h>
 
+extern void NGCALLF(dpvect,DPVECT)(float*,float*);
+
 void c_dpvect
 #ifdef NeedFuncProto
 (
@@ -38,9 +40,5 @@ void c_dpvect
     float ycpu;
 #endif
 {
-    float xcpu2, ycpu2;
-
-    xcpu2 = xcpu;
-    ycpu2 = ycpu;
-    NGCALLF(dpvect,DPVECT)(&xcpu2,&ycpu2);
+    NGCALLF(dpvect,DPVECT)(&xcpu,&ycpu);
 }

@@ -1,5 +1,5 @@
 /*
- *	$Id: c_kfmx.c,v 1.2 2000-07-12 16:25:46 haley Exp $
+ *	$Id: c_kfmx.c,v 1.3 2000-07-31 20:11:50 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -36,7 +36,5 @@ int c_kfmx
     float rx;
 #endif
 {
-	float rx2;
-	rx2 = rx;
-	return(NGCALLF(kfmx,KFMX)(&rx2));
+	return(NGCALLF(kfmx,KFMX)(&rx));
 }

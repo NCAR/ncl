@@ -1,5 +1,5 @@
 /*
- *	$Id: c_points.c,v 1.2 2000-07-12 16:25:49 haley Exp $
+ *	$Id: c_points.c,v 1.3 2000-07-31 20:11:52 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,8 @@
 ************************************************************************/
 
 #include <ncarg/ncargC.h>
+
+extern void NGCALLF(points,POINTS)(float*,float*,int*,int*,int*);
 
 void c_points
 #ifdef NeedFuncProto

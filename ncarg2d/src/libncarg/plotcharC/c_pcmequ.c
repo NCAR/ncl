@@ -1,5 +1,5 @@
 /*
- *	$Id: c_pcmequ.c,v 1.2 2000-07-12 16:25:03 haley Exp $
+ *	$Id: c_pcmequ.c,v 1.3 2000-07-31 20:11:38 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -26,6 +26,9 @@
 
 #include <ncarg/ncargC.h>
 
+extern void NGCALLF(pcmequ,PCMEQU)(float*,float*,NGstring,float*,float*,
+                                   float*,int);
+
 void c_pcmequ
 #ifdef NeedFuncProto
 (
@@ -46,15 +49,9 @@ void c_pcmequ
     float cntr;
 #endif
 {
-    float xpos2,ypos2,size2,angd2,cntr2;
     NGstring chrs2;
     int len;
-    xpos2 = xpos;
-    ypos2 = ypos;
-    size2 = size;
-    angd2 = angd;
-    cntr2 = cntr;
     len = NGSTRLEN(chrs);
     chrs2 = NGCstrToFstr(chrs,len);
-    NGCALLF(pcmequ,PCMEQU)(&xpos2,&ypos2,chrs2,&size2,&angd2,&cntr2,len);
+    NGCALLF(pcmequ,PCMEQU)(&xpos,&ypos,chrs2,&size,&angd,&cntr,len);
 }

@@ -1,5 +1,5 @@
 /*
- *	$Id: c_cpcica.c,v 1.3 2000-07-12 16:22:43 haley Exp $
+ *	$Id: c_cpcica.c,v 1.4 2000-07-31 20:10:59 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -27,6 +27,9 @@
 #include <stdlib.h>
 
 #include <ncarg/ncargC.h>
+
+extern void NGCALLF(cpcica,CPCICA)(float*,float*,int*,int*,int*,int*,int*,
+                                   float*,float*,float*,float*);
 
 void c_cpcica
 #ifdef NeedFuncProto
@@ -58,7 +61,6 @@ void c_cpcica
     float ycqf;
 #endif
 {
-    float xcpf2, ycpf2, xcqf2, ycqf2;
 	int i, j, k, l, icam2, *icra2;
 /*
  * Create transpositional array
@@ -69,12 +71,9 @@ void c_cpcica
         return;
     }
     icam2 = icam;
-    xcpf2 = xcpf;
 
-    ycpf2 = ycpf;
-    xcqf2 = xcqf;
-    ycqf2 = ycqf;
-    NGCALLF(cpcica,CPCICA)(zdat,rwrk,iwrk,icra2,&icam2,&icam,&ican,&xcpf2,&ycpf2,&xcqf2,&ycqf2);
+    NGCALLF(cpcica,CPCICA)(zdat,rwrk,iwrk,icra2,&icam2,&icam,&ican,&xcpf,
+                           &ycpf,&xcqf,&ycqf);
 /*
  * Transpose array
  */

@@ -1,5 +1,5 @@
 /*
- *	$Id: c_vector.c,v 1.2 2000-07-12 16:25:50 haley Exp $
+ *	$Id: c_vector.c,v 1.3 2000-07-31 20:11:52 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -26,6 +26,8 @@
 
 #include <ncarg/ncargC.h>
 
+extern void NGCALLF(vector,VECTOR)(float*,float*);
+
 void c_vector
 #ifdef NeedFuncProto
 (
@@ -38,8 +40,5 @@ void c_vector
     float py;
 #endif
 {
-    float px2,py2;
-    px2 = px;
-    py2 = py;
-    NGCALLF(vector,VECTOR)(&px2,&py2);
+    NGCALLF(vector,VECTOR)(&px,&py);
 }

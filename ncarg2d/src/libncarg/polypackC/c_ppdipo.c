@@ -1,5 +1,5 @@
 /*
- *	$Id: c_ppdipo.c,v 1.2 2000-07-12 16:25:10 haley Exp $
+ *	$Id: c_ppdipo.c,v 1.3 2000-07-31 20:11:41 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,9 @@
 ************************************************************************/
 
 #include <ncarg/ncargC.h>
+
+extern void NGCALLF(ppdipo,PPDIPO)(float*,float*,int*,float*,float*,int*,
+                                   float*,int*,int*,int (*urpp_)(),int*);
 
 void c_ppdipo
 #ifdef NeedFuncProto
@@ -60,5 +63,6 @@ void c_ppdipo
         int *ierr;
 #endif
 {
-    NGCALLF(ppdipo,PPDIPO)(xccp,yccp,&nccp,xcsp,ycsp,&ncsp,rwrk,iwrk,&nwrk,urpp_,ierr);
+    NGCALLF(ppdipo,PPDIPO)(xccp,yccp,&nccp,xcsp,ycsp,&ncsp,rwrk,iwrk,&nwrk,
+                           urpp_,ierr);
 }

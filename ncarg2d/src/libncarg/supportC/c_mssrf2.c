@@ -1,5 +1,5 @@
 /*
- *	$Id: c_mssrf2.c,v 1.2 2000-07-12 16:26:27 haley Exp $
+ *	$Id: c_mssrf2.c,v 1.3 2000-07-31 20:12:04 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -59,6 +59,7 @@ float c_mssrf2
 {
     float xmssrf2;
 
-    xmssrf2 = (float)NGCALLF(mssrf2,MSSRF2)(&xx,&yy,&m,&n,x,y,z,&iz,zp,&sigma);
+    xmssrf2 = (float)NGCALLF(mssrf2,MSSRF2)(&xx,&yy,&m,&n,x,y,z,&iz,zp,
+                                            &sigma);
     return(xmssrf2);
 }

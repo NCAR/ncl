@@ -1,5 +1,5 @@
 /*
- *	$Id: c_getsi.c,v 1.2 2000-07-12 16:25:46 haley Exp $
+ *	$Id: c_getsi.c,v 1.3 2000-07-31 20:11:49 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,8 @@
 ************************************************************************/
 
 #include <ncarg/ncargC.h>
+
+extern void NGCALLF(getsi,GETSI)(int*,int*);
 
 void c_getsi
 #ifdef NeedFuncProto

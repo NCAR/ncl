@@ -1,5 +1,5 @@
 /*
- *	$Id: c_ngdots.c,v 1.2 2000-07-12 16:24:49 haley Exp $
+ *	$Id: c_ngdots.c,v 1.3 2000-07-31 20:11:33 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -26,6 +26,8 @@
 
 #include <ncarg/ncargC.h>
 
+extern void NGCALLF(ngdots,NGDOTS)(float*,float*,int*,float*,int*);
+
 void c_ngdots
 #ifdef NeedFuncProto
 (
@@ -44,7 +46,5 @@ void c_ngdots
     int icolor;
 #endif
 {
-    float size2;
-    size2 = size;
-    NGCALLF(ngdots,NGDOTS)(x,y,&num,&size2,&icolor);
+    NGCALLF(ngdots,NGDOTS)(x,y,&num,&size,&icolor);
 }

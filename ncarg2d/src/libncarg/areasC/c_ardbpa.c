@@ -1,5 +1,5 @@
 /*
- *	$Id: c_ardbpa.c,v 1.2 2000-07-12 16:21:51 haley Exp $
+ *	$Id: c_ardbpa.c,v 1.3 2000-07-31 20:10:38 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,8 @@
 ************************************************************************/
 
 #include <ncarg/ncargC.h>
+
+extern void NGCALLF(ardbpa,ARDBPA)(int*,int*,NGstring,int);
 
 void c_ardbpa
 #ifdef NeedFuncProto

@@ -1,5 +1,5 @@
 /*
- *	$Id: c_rgbhls.c,v 1.2 2000-07-12 16:22:14 haley Exp $
+ *	$Id: c_rgbhls.c,v 1.3 2000-07-31 20:10:57 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -26,6 +26,8 @@
 
 #include <ncarg/ncargC.h>
 
+extern void NGCALLF(rgbhls,RGBHLS)(float*,float*,float*,float*,float*,float*);
+
 void c_rgbhls
 #ifdef NeedFuncProto
 (
@@ -46,9 +48,5 @@ void c_rgbhls
     float *s;
 #endif
 {
-    float r2, g2, b2;
-    r2 = r;
-    g2 = g;
-    b2 = b;
-    NGCALLF(rgbhls,RGBHLS)( &r2, &g2, &b2, h, l, s );
+    NGCALLF(rgbhls,RGBHLS)( &r, &g, &b, h, l, s );
 }

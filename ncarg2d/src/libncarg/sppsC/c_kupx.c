@@ -1,5 +1,5 @@
 /*
- *	$Id: c_kupx.c,v 1.2 2000-07-12 16:25:47 haley Exp $
+ *	$Id: c_kupx.c,v 1.3 2000-07-31 20:11:51 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -36,7 +36,5 @@ int c_kupx
     float rx;
 #endif
 {
-	float rx2;
-	rx2 = rx;
-	return(NGCALLF(kupx,KUPX)(&rx2));
+	return(NGCALLF(kupx,KUPX)(&rx));
 }

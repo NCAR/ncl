@@ -1,5 +1,5 @@
 /*
- *	$Id: c_msceez.c,v 1.2 2000-07-12 16:26:26 haley Exp $
+ *	$Id: c_msceez.c,v 1.3 2000-07-31 20:12:03 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -26,6 +26,9 @@
 
 #include <ncarg/ncargC.h>
 
+extern void NGCALLF(msceez,MSCEEZ)(float*,float*,float*,float*,float*,
+                                   float*,int*);
+
 void c_msceez 
 #ifdef NeedFuncProto
 (
@@ -48,11 +51,5 @@ void c_msceez
     int n;
 #endif
 {
-    float del12, del22, sigma2;
-
-    del12 = del1;
-    del22 = del2;
-    sigma2 = sigma;
-
-    NGCALLF(msceez,MSCEEZ)(&del12,&del22,&sigma2,c1,c2,c3,&n);
+    NGCALLF(msceez,MSCEEZ)(&del1,&del2,&sigma,c1,c2,c3,&n);
 }

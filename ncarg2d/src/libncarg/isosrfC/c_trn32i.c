@@ -1,5 +1,5 @@
 /*
- *	$Id: c_trn32i.c,v 1.2 2000-07-12 16:24:34 haley Exp $
+ *	$Id: c_trn32i.c,v 1.3 2000-07-31 20:11:29 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -26,6 +26,9 @@
 
 #include <ncarg/ncargC.h>
 
+extern void NGCALLF(trn32i,TRN32I)(float*,float*,float*,float*,float*,
+                                   float*,int*);
+
 void c_trn32i
 #ifdef NeedFuncProto
 (
@@ -48,13 +51,5 @@ void c_trn32i
     int ient;
 #endif
 {
-    float ut2,vt2,wt2,xt2,yt2,zt2;
-
-    ut2 = ut;
-    vt2 = vt;
-    wt2 = wt;
-    xt2 = xt;
-    yt2 = yt;
-    zt2 = zt;
-    NGCALLF(trn32i,TRN32I)(&ut2,&vt2,&wt2,&xt2,&yt2,&zt2,&ient);
+    NGCALLF(trn32i,TRN32I)(&ut,&vt,&wt,&xt,&yt,&zt,&ient);
 }

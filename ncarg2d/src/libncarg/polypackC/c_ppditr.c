@@ -1,5 +1,5 @@
 /*
- *	$Id: c_ppditr.c,v 1.2 2000-07-12 16:25:10 haley Exp $
+ *	$Id: c_ppditr.c,v 1.3 2000-07-31 20:11:42 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,9 @@
 ************************************************************************/
 
 #include <ncarg/ncargC.h>
+
+extern void NGCALLF(ppditr,PPDITR)(float*,float*,int*,float*,float*,int*,
+                                   float*,int*,int*,int (*urpt_)(),int*);
 
 void c_ppditr
 #ifdef NeedFuncProto
@@ -63,5 +66,6 @@ void c_ppditr
 	int *ierr;
 #endif
 {
-    NGCALLF(ppditr,PPDITR)(xccp,yccp,&nccp,xcsp,ycsp,&ncsp,rwrk,iwrk,&nwrk,urpt_,ierr);
+    NGCALLF(ppditr,PPDITR)(xccp,yccp,&nccp,xcsp,ycsp,&ncsp,rwrk,iwrk,&nwrk,
+                           urpt_,ierr);
 }

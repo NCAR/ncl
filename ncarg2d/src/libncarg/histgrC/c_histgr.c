@@ -1,5 +1,5 @@
 /*
- *	$Id: c_histgr.c,v 1.2 2000-07-12 16:24:26 haley Exp $
+ *	$Id: c_histgr.c,v 1.3 2000-07-31 20:11:26 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -26,6 +26,9 @@
 
 #include <ncarg/ncargC.h>
 
+extern void NGCALLF(histgr,HISTGR)(float*,int*,int*,int*,float*,int*,
+                                   float*,int*);
+
 void c_histgr
 #ifdef NeedFuncProto
 (
@@ -50,5 +53,6 @@ void c_histgr
     int nwrk;
 #endif
 {
-    NGCALLF(histgr,HISTGR)(dat1,&ndim,&npts,&iflag,class_values,&nclass,wrk,&nwrk);
+    NGCALLF(histgr,HISTGR)(dat1,&ndim,&npts,&iflag,class_values,&nclass,
+                           wrk,&nwrk);
 }

@@ -1,5 +1,5 @@
 /*
- *	$Id: c_wmlgnd.c,v 1.2 2000-07-12 16:27:11 haley Exp $
+ *	$Id: c_wmlgnd.c,v 1.3 2000-07-31 20:12:21 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -26,6 +26,8 @@
 
 #include <ncarg/ncargC.h>
 
+extern void NGCALLF(wmlgnd,WMLGND)(float*,float*,int*,int*,int*);
+
 void c_wmlgnd
 #ifdef NeedFuncProto
 (
@@ -44,8 +46,5 @@ void c_wmlgnd
     int icols;
 #endif
 {
-    float x2, y2;
-    x2 = x;
-    y2 = y;
-    NGCALLF(wmlgnd,WMLGND)(&x2,&y2,&ntype,&irows,&icols);
+    NGCALLF(wmlgnd,WMLGND)(&x,&y,&ntype,&irows,&icols);
 }

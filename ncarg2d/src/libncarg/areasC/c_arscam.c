@@ -1,5 +1,5 @@
 /*
- *	$Id: c_arscam.c,v 1.2 2000-07-12 16:21:53 haley Exp $
+ *	$Id: c_arscam.c,v 1.3 2000-07-31 20:10:39 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,10 @@
 ************************************************************************/
 
 #include <ncarg/ncargC.h>
+
+extern void NGCALLF(arscam,ARSCAM)(int*,float*,float*,int*,int*,int*,
+                                   int*,int (*cpcolr_)());
+
 
 void c_arscam
 #ifdef NeedFuncProto

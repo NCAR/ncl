@@ -1,5 +1,5 @@
 /*
- *	$Id: c_srface.c,v 1.2 2000-07-12 16:25:55 haley Exp $
+ *	$Id: c_srface.c,v 1.3 2000-07-31 20:11:55 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,9 @@
 ************************************************************************/
 
 #include <ncarg/ncargC.h>
+
+extern void NGCALLF(srface,SRFACE)(float*,float*,float*,int*,int*,int*,int*,
+                                   float*,float*);
 
 void c_srface
 #ifdef NeedFuncProto
@@ -52,8 +55,5 @@ void c_srface
     float stereo;
 #endif
 {
-    float stereo2;
-
-    stereo2 = stereo;
-    NGCALLF(srface,SRFACE)(x,y,z,m,&mx,&nx,&ny,s,&stereo2);
+    NGCALLF(srface,SRFACE)(x,y,z,m,&mx,&nx,&ny,s,&stereo);
 }

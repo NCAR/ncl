@@ -1,5 +1,5 @@
 /*
- *	$Id: c_nggcog.c,v 1.2 2000-07-12 16:24:49 haley Exp $
+ *	$Id: c_nggcog.c,v 1.3 2000-07-31 20:11:34 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -26,6 +26,8 @@
 
 #include <ncarg/ncargC.h>
 
+extern void NGCALLF(nggcog,NGGCOG)(float*,float*,float*,float*,float*,int*);
+
 void c_nggcog
 #ifdef NeedFuncProto
 (
@@ -46,9 +48,5 @@ void c_nggcog
     int npts;
 #endif
 {
-    float clat2, clon2, crad2;
-	clat2 = clat;
-	clon2 = clon;
-	crad2 = crad;
-    NGCALLF(nggcog,NGGCOG)(&clat2,&clon2,&crad2,alat,alon,&npts);
+    NGCALLF(nggcog,NGGCOG)(&clat,&clon,&crad,alat,alon,&npts);
 }

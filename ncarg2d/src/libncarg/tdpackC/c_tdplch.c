@@ -1,5 +1,5 @@
 /*
- *      $Id: c_tdplch.c,v 1.2 2000-07-12 16:26:41 haley Exp $
+ *      $Id: c_tdplch.c,v 1.3 2000-07-31 20:12:10 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -26,6 +26,9 @@
 
 #include <ncarg/ncargC.h>
 
+extern void NGCALLF(tdplch,TDPLCH)(float*,float*,NGstring,float*,float*,
+                                   float*,int);
+
 void c_tdplch
 #ifdef NeedFuncProto
 (
@@ -46,16 +49,9 @@ void c_tdplch
     float cntr;
 #endif
 {
-    float xpos2,ypos2;
     int lochrs;
     NGstring chrs2;
-    float size2,angd2,cntr2;
-    xpos2=xpos;
-    ypos2=ypos;
     lochrs=NGSTRLEN(chrs);
     chrs2=NGCstrToFstr(chrs,lochrs);
-    size2=size;
-    angd2=angd;
-    cntr2=cntr;
-    NGCALLF(tdplch,TDPLCH)(&xpos2,&ypos2,chrs2,&size2,&angd2,&cntr2,lochrs);
+    NGCALLF(tdplch,TDPLCH)(&xpos,&ypos,chrs2,&size,&angd,&cntr,lochrs);
 }

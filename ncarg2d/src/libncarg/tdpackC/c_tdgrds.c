@@ -1,5 +1,5 @@
 /*
- *      $Id: c_tdgrds.c,v 1.2 2000-07-12 16:26:39 haley Exp $
+ *      $Id: c_tdgrds.c,v 1.3 2000-07-31 20:12:08 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,9 @@
 ************************************************************************/
 
 #include <ncarg/ncargC.h>
+
+extern void NGCALLF(tdgrds,TDGRDS)(float*,float*,float*,float*,float*,float*,
+                                   float*,float*,float*,int*,int*);
 
 void c_tdgrds
 #ifdef NeedFuncProto
@@ -56,19 +59,6 @@ void c_tdgrds
     int   ihid;
 #endif
 {
-    float umin2,vmin2,wmin2,umax2,vmax2,wmax2,ustp2,vstp2,wstp2;
-    int   igrt2,ihid2;
-    umin2=umin;
-    vmin2=vmin;
-    wmin2=wmin;
-    umax2=umax;
-    vmax2=vmax;
-    wmax2=wmax;
-    ustp2=ustp;
-    vstp2=vstp;
-    wstp2=wstp;
-    igrt2=igrt;
-    ihid2=ihid;
-    NGCALLF(tdgrds,TDGRDS)(&umin2,&vmin2,&wmin2,&umax2,&vmax2,&wmax2,
-                                  &ustp2,&vstp2,&wstp2,&igrt2,&ihid2);
+    NGCALLF(tdgrds,TDGRDS)(&umin,&vmin,&wmin,&umax,&vmax,&wmax,
+                                 &ustp,&vstp,&wstp,&igrt,&ihid);
 }

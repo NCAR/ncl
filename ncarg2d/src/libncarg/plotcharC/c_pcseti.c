@@ -1,5 +1,5 @@
 /*
- *	$Id: c_pcseti.c,v 1.2 2000-07-12 16:25:04 haley Exp $
+ *	$Id: c_pcseti.c,v 1.3 2000-07-31 20:11:39 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,8 @@
 ************************************************************************/
 
 #include <ncarg/ncargC.h>
+
+extern void NGCALLF(pcseti,PCSETI)(NGstring,int*,int);
 
 void c_pcseti
 #ifdef NeedFuncProto

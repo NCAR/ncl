@@ -1,5 +1,5 @@
 /*
- *	$Id: c_ppplcl.c,v 1.2 2000-07-12 16:25:11 haley Exp $
+ *	$Id: c_ppplcl.c,v 1.3 2000-07-31 20:11:42 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,10 @@
 ************************************************************************/
 
 #include <ncarg/ncargC.h>
+
+extern void NGCALLF(ppplcl,PPPLCL)(float*,float*,float*,float*,float*,
+                                   float*,int*,float*,int*,int (*urpf_)(),
+                                   int*);
 
 void c_ppplcl
 #ifdef NeedFuncProto
@@ -60,10 +64,6 @@ void c_ppplcl
 	int *ierr;
 #endif
 {
-	float xmin2,xmax2,ymin2,ymax2;
-	xmin2 = xmin;
-	xmax2 = xmax;
-	ymin2 = ymin;
-	ymax2 = ymax;
-    NGCALLF(ppplcl,PPPLCL)(&xmin2,&xmax2,&ymin2,&ymax2,xcpl,ycpl,&ncpl,rwrk,&lwrk,urpf_,ierr);
+    NGCALLF(ppplcl,PPPLCL)(&xmin,&xmax,&ymin,&ymax,xcpl,ycpl,&ncpl,
+                           rwrk,&lwrk,urpf_,ierr);
 }

@@ -1,5 +1,5 @@
 /*
- *	$Id: c_icfell.c,v 1.2 2000-07-12 16:26:25 haley Exp $
+ *	$Id: c_icfell.c,v 1.3 2000-07-31 20:12:03 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -39,7 +39,7 @@ int c_icfell
 #endif
 {
     NGstring messg2;
-    extern int NGCALLF(icfell,ICFELL)();
+    extern int NGCALLF(icfell,ICFELL)(NGstring,int*,int);
     int len;
     len = NGSTRLEN(messg);
     messg2 = NGCstrToFstr(messg,len);

@@ -1,5 +1,5 @@
 /*
- *	$Id: c_msshch.c,v 1.2 2000-07-12 16:26:27 haley Exp $
+ *	$Id: c_msshch.c,v 1.3 2000-07-31 20:12:04 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -26,6 +26,9 @@
 
 #include <ncarg/ncargC.h>
 
+extern void NGCALLF(msshch,MSSHCH)(float*,float*,float*,int*);
+
+
 void c_msshch 
 #ifdef NeedFuncProto
 (
@@ -42,7 +45,5 @@ void c_msshch
     int isw;
 #endif
 {
-    float x2;
-    x2 = x;
-    NGCALLF(msshch,MSSHCH)(sinhm,coshm,&x2,&isw);
+    NGCALLF(msshch,MSSHCH)(sinhm,coshm,&x,&isw);
 }

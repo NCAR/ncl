@@ -1,5 +1,5 @@
 /*
- *	$Id: c_fl2int.c,v 1.2 2000-07-12 16:25:45 haley Exp $
+ *	$Id: c_fl2int.c,v 1.3 2000-07-31 20:11:49 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -26,6 +26,8 @@
 
 #include <ncarg/ncargC.h>
 
+extern void NGCALLF(fl2int,FL2INT)(float*,float*,int*,int*);
+
 void c_fl2int
 #ifdef NeedFuncProto
 (
@@ -42,8 +44,5 @@ void c_fl2int
     int *iy;
 #endif
 {
-    float px2, py2;
-    px2 = px;
-    py2 = py;
-    NGCALLF(fl2int,FL2INT)(&px2,&py2,ix,iy);
+    NGCALLF(fl2int,FL2INT)(&px,&py,ix,iy);
 }

@@ -1,5 +1,5 @@
 /*
- *      $Id: c_tdsort.c,v 1.2 2000-07-12 16:26:42 haley Exp $
+ *      $Id: c_tdsort.c,v 1.3 2000-07-31 20:12:11 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -26,6 +26,8 @@
 
 #include <ncarg/ncargC.h>
 
+extern void NGCALLF(tdsort,TDSORT)(float*,int*,int*,int*);
+
 void c_tdsort
 #ifdef NeedFuncProto
 (
@@ -42,8 +44,5 @@ void c_tdsort
     int   *iwrk;
 #endif
 {
-    int nwrk2,iord2;
-    nwrk2=nwrk;
-    iord2=iord;
-    NGCALLF(tdsort,TDSORT)(rwrk,&nwrk2,&iord2,iwrk);
+    NGCALLF(tdsort,TDSORT)(rwrk,&nwrk,&iord,iwrk);
 }

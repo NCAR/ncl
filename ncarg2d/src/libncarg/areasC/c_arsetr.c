@@ -1,5 +1,5 @@
 /*
- *	$Id: c_arsetr.c,v 1.2 2000-07-12 16:21:53 haley Exp $
+ *	$Id: c_arsetr.c,v 1.3 2000-07-31 20:10:40 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -26,6 +26,8 @@
 
 #include <ncarg/ncargC.h>
 
+extern void NGCALLF(arsetr,ARSETR)(NGstring,float*,int);
+
 void c_arsetr
 #ifdef NeedFuncProto
 (
@@ -38,7 +40,6 @@ void c_arsetr
     float rvl;
 #endif
 {
-    float rvl2;
 	NGstring ipn2;
     int len;
 /*
@@ -49,9 +50,7 @@ void c_arsetr
         return;
     }
 
-    rvl2 = rvl;
-
     len = NGSTRLEN(ipn);
 	ipn2 = NGCstrToFstr(ipn,len);
-    NGCALLF(arsetr,ARSETR)(ipn2,&rvl2,len);
+    NGCALLF(arsetr,ARSETR)(ipn2,&rvl,len);
 }

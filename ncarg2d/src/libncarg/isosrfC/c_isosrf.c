@@ -1,5 +1,5 @@
 /*
- *	$Id: c_isosrf.c,v 1.2 2000-07-12 16:24:34 haley Exp $
+ *	$Id: c_isosrf.c,v 1.3 2000-07-31 20:11:28 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,9 @@
 ************************************************************************/
 
 #include <ncarg/ncargC.h>
+
+extern void NGCALLF(isosrf,ISOSRF)(float*,int*,int*,int*,int*,int*,float*,
+                                   int*,float*,float*,int*);
 
 void c_isosrf 
 #ifdef NeedFuncProto
@@ -56,5 +59,6 @@ void c_isosrf
     int iflag;
 #endif
 {
-    NGCALLF(isosrf,ISOSRF)(t,&lu,&mu,&lv,&mv,&mw,eye,&muvwp2,slab,&tiso,&iflag);
+    NGCALLF(isosrf,ISOSRF)(t,&lu,&mu,&lv,&mv,&mw,eye,&muvwp2,slab,&tiso,
+                           &iflag);
 }

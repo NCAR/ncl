@@ -1,5 +1,5 @@
 /*
- *	$Id: c_hstopi.c,v 1.2 2000-07-12 16:24:26 haley Exp $
+ *	$Id: c_hstopi.c,v 1.3 2000-07-31 20:11:26 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,6 +25,8 @@
 ************************************************************************/
 
 #include <ncarg/ncargC.h>
+
+extern void NGCALLF(hstopi,HSTOPI)(NGstring,int*,int*,int*,int*,int);
 
 void c_hstopi
 #ifdef NeedFuncProto

@@ -1,5 +1,5 @@
 /*
- *	$Id: c_plotif.c,v 1.2 2000-07-12 16:25:48 haley Exp $
+ *	$Id: c_plotif.c,v 1.3 2000-07-31 20:11:51 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -26,6 +26,8 @@
 
 #include <ncarg/ncargC.h>
 
+extern void NGCALLF(plotif,PLOTIF)(float*,float*,int*);
+
 void c_plotif
 #ifdef NeedFuncProto
 (
@@ -40,8 +42,5 @@ void c_plotif
     int ip;
 #endif
 {
-    float fx2, fy2;
-    fx2 = fx;
-    fy2 = fy;
-    NGCALLF(plotif,PLOTIF)(&fx2,&fy2,&ip);
+    NGCALLF(plotif,PLOTIF)(&fx,&fy,&ip);
 }
