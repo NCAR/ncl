@@ -1,5 +1,5 @@
 C
-C	$Id: gpm.f,v 1.2 1993-01-09 01:59:16 fred Exp $
+C	$Id: gpm.f,v 1.3 1998-03-18 02:00:07 fred Exp $
 C
       SUBROUTINE GPM(N,PX,PY)
 C
@@ -32,6 +32,11 @@ C  workstation interface.  Flag conversion to NDC space.
 C
       FCODE = 12
       CALL GZROI(0)
+C
+C  Establish the attributes.
+C
+      IF (NOPICT .EQ. 0) CALL GZATT()
+C
       NPTOT = N
       CALL GZPUTR(NPTOT,N,PX,PY,1,IER)
       RERR = IER

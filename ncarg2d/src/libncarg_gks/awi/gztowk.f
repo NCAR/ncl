@@ -1,5 +1,5 @@
 C
-C	$Id: gztowk.f,v 1.9 1996-09-30 23:36:18 fred Exp $
+C	$Id: gztowk.f,v 1.10 1998-03-18 02:00:14 fred Exp $
 C
       SUBROUTINE GZTOWK
 C
@@ -79,10 +79,12 @@ C  If CUFLAG is set, make the interface call only for the specific
 C  workstation.
 C
             IF (CUFLAG.GE.0 .AND. SOPWK(I).NE.CUFLAG) GO TO 100
+C           IF (IST.GE.2  .AND. NOPICT.LE.0 .AND. 
+C    -        (FCODE.EQ.-2 .OR.  FCODE.EQ.56  .OR. FCODE.EQ.61  .OR.
+C    -         FCODE.EQ.82 .OR. (FCODE.GE.11 .AND. FCODE.LE.16) .OR.
+C    -         (FCODE.GE.21.AND.FCODE.LE.43))) THEN
             IF (IST.GE.2  .AND. NOPICT.LE.0 .AND. 
-     -        (FCODE.EQ.-2 .OR.  FCODE.EQ.56  .OR. FCODE.EQ.61  .OR.
-     -         FCODE.EQ.82 .OR. (FCODE.GE.11 .AND. FCODE.LE.16) .OR.
-     -         (FCODE.GE.21.AND.FCODE.LE.43))) THEN
+     -          (FCODE.EQ.82 .OR. (FCODE.GE.11 .AND. FCODE.LE.16))) THEN       
               FCODEO = FCODE
               CONTO  = CONT
               FCODE  = 91

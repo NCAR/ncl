@@ -1,5 +1,5 @@
 C
-C	$Id: gca.f,v 1.2 1993-01-09 01:57:47 fred Exp $
+C	$Id: gca.f,v 1.3 1998-03-18 01:59:55 fred Exp $
 C
       SUBROUTINE GCA(PX,PY,QX,QY,DIMX,DIMY,NCS,NRS,DX,DY,COLIA)
 C
@@ -27,6 +27,10 @@ C
         ERS = 0
         RETURN
       ENDIF
+C
+C  Establish the attributes.
+C
+      IF (NOPICT .EQ. 0) CALL GZATT()
 C
       PXN = PX
       PYN = PY

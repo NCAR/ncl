@@ -1,5 +1,5 @@
 C
-C	$Id: gtx.f,v 1.2 1993-01-09 02:03:43 fred Exp $
+C	$Id: gtx.f,v 1.3 1998-03-18 02:00:11 fred Exp $
 C
       SUBROUTINE GTX(PX,PY,CHARS)
 C
@@ -22,6 +22,11 @@ C  Transform position coordinates to NDC space and set up
 C  the real arrays in the workstation interface common block.
 C
       CALL GZROI(0)
+C
+C  Establish the attributes.
+C
+      IF (NOPICT .EQ. 0) CALL GZATT()
+C
       RL1 = 1
       RL2 = 1
       CALL GZW2NX(1,PX,PXN)
