@@ -1,5 +1,5 @@
 /*
- *	$Id: options.c,v 1.18 1992-09-09 17:38:20 clyne Exp $
+ *	$Id: options.c,v 1.19 1993-01-07 18:38:59 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -57,7 +57,8 @@ static	OptDescRec	*get_option (odr, name)
 	OptDescRec	*odr;
 	char	*name;
 {
-	char *p, *q;
+	const char *p; 
+	char	*q;
 	OptDescRec *o, *found;
 	int nmatches, longest;
 
@@ -332,12 +333,23 @@ int	OpenOptionTbl()
 CloseOptionTbl(od) 
 	int	od;
 {
+	int	i;
+
 	if (!(usedOD & (1 << od))) {
 		ESprintf(EBADF, "");
 		return(-1);
 	}
 
 	if (optTbls[od].size > 0) {
+		OptDescRec	*odr = optTbls[od].opt_desc_rec;
+		int		i;
+
+		for (i=0; i<optTbls[od].num; i++) {
+			if (odr[i].value) {
+				free((char *) odr[i].value);
+			}
+		}
+
 		free((char *) optTbls[od].opt_desc_rec);
 		optTbls[od].size = 0;
 		optTbls[od].num = 0;
@@ -461,8 +473,8 @@ GetOptions(od, options)
  *	return		: -1 => failure, else OK.
  */
 LoadOptionTable(od, optd)
-	int		od;
-	OptDescRec	*optd;
+	int			od;
+	const OptDescRec	*optd;
 {
 
 	int	i,j,n;
@@ -515,25 +527,39 @@ LoadOptionTable(od, optd)
 	 * as necessary.
 	 */
 	for (i = 0, n = optTbls[od].num; i < num; i++, optTbls[od].num++, n++) {
-		if (optd[i].arg_count == 0) optd[i].value = "false";
+		char	*value;
+		char	*s;
+
+		s = optd[i].value;
+		if (s) {
+			value = malloc(strlen(s) + 1);
+			if (! value) {
+				ESprintf(errno, "malloc(%d)", strlen(s +1));
+				return(-1);
+			}
+			(void) strcpy(value, s);
+		}
+		else {
+			value = NULL;
+		}
+
+		if (optd[i].arg_count == 0) value = "false";
 
 		if (! optd[i].option) {
 			ESprintf(EINVAL, ("Invalid option descriptor"));
 			return(-1);
 		}
 
-		if (optd[i].value) {
-			optd[i].value = fmt_opt_string(
-				optd[i].value,optd[i].arg_count
-			);
-			if (! optd[i].value) {
+		if (value) {
+			value = fmt_opt_string(value, optd[i].arg_count);
+			if (! value) {
 				return(-1);
 			}
 		}
 
 		odr[n].option = optd[i].option;
 		odr[n].arg_count = optd[i].arg_count;
-		odr[n].value = optd[i].value;
+		odr[n].value = value;
 		odr[n].help = optd[i].help;
 
 	}
@@ -619,7 +645,7 @@ int	ParseOptionTable(od, argc, argv, optds)
 	int	od;
 	int	*argc;
 	char	**argv;
-	OptDescRec	*optds;
+	const	OptDescRec	*optds;
 {
 	int	i;
 	char	**next = argv + 1;
@@ -736,7 +762,7 @@ int	ParseOptionTable(od, argc, argv, optds)
 int	ParseEnvOptions(od, envv, optds)
 	int		od;
 	const EnvOpt	*envv;
-	OptDescRec	*optds;
+	const	OptDescRec	*optds;
 {
 	int	envc;		/* size of envv list		*/
 	const EnvOpt	*envptr;	/* pointer to envv		*/

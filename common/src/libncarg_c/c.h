@@ -1,5 +1,5 @@
 /*
- *	$Id: c.h,v 1.15 1992-10-02 16:30:03 don Exp $
+ *	$Id: c.h,v 1.16 1993-01-07 18:38:54 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -167,10 +167,10 @@ extern	USleep(
  *	structure for describing a valid option to buildOptionTable
  */
 typedef	struct	_OptDescRec {
-	char	*option;	/* name of option without preceeding '-' */
+	const char	*option;/* name of option without preceeding '-' */
 	int	arg_count;	/* num args expected by option		*/
 	char	*value;		/* default value for the argument	*/
-	char	*help;		/* help string for option		*/
+	const char	*help;	/* help string for option		*/
 	} OptDescRec;
 
 /*
@@ -252,7 +252,7 @@ extern	int	GetOptions(
 extern	int	LoadOptionTable(
 #ifdef	NeedFuncProto
 	int	od,
-	OptDescRec	*optd
+	const OptDescRec	*optd
 #endif
 );
 
@@ -268,7 +268,7 @@ extern	int	ParseOptionTable(
 	int		od,
 	int		*argc,
 	char		**argv,
-	OptDescRec	*optds
+	const OptDescRec	*optds
 #endif
 );
 
@@ -276,7 +276,7 @@ extern	int	ParseEnvOptions(
 #ifdef	NeedFuncProto
 	int		od,
 	const EnvOpt	*envv,
-	OptDescRec	*optds
+	const OptDescRec	*optds
 #endif
 );
 
