@@ -6,7 +6,7 @@
  */
 void c_nngetc(char *pnam, char *vnam)
 {
-   char *s;
+   char *s; 
    if (!strncmp(pnam,"alg",3) OR !strncmp(pnam,"ALG",3)) {
       s = tri_file;
    }
