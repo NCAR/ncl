@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncargex.m,v 1.1.1.1 1992-04-17 22:30:32 ncargd Exp $
+.\"	$Id: ncargex.m,v 1.2 1993-01-13 21:49:18 haley Exp $
 .\"
 .\" @(#)f77.1 1.4 86/07/31 SMI; 
 .TH NCARGEX 1NCARG "NOVEMBER 1989" NCAR "NCAR GRAPHICS"
@@ -7,9 +7,10 @@
 ncargex \- NCAR Graphics Examples and Tests
 .SH SYNOPSIS
 \fBncargex\fP 
-[\fB\-all\fR]
-[\fB\-allexamples\fR]
-[\fB\-alltests\fR]
+[\fB\-all, -A\fR]
+[\fB\-allexamples, -E\fR]
+[\fB\-alltests, -T\fR]
+[\fB\-alltutorial, -U\fR]
 [\fB\-clean\fR]
 [\fB\-n\fR]
 [\fB\-onebyone\fR]
@@ -17,31 +18,35 @@ ncargex \- NCAR Graphics Examples and Tests
 .SH DESCRIPTION
 .LP
 .I ncargex
-provides the user with access to example source code for NCAR
+provides the user with access to example source code as
+well as the tutorial code for NCAR
 Graphics. \fIncargex\fP
 copies the source code for the specified example(s)
 into the current directory and then compiles, links,
-and executes the example, leaving a CGM file
+and executes the example, leaving an NCGM file
 with the same name as the example, suffixed with
 ".ncgm". An option allows you to request that
 only the source code be copied to your directory,
 without compilation, linking, or execution.
 Another option allows you to request that only the
-CGM file be left in your directory and that all other files
+NCGM file be left in your directory and that all other files
 created by \fIncargex\fP be deleted.
 The argument \fIname\fP may be
 selected from the lists that appear below.
 .LP
 .I OPTIONS
 .LP
-.IP \-all " " ""
-Generate all available examples and tests.
+.IP "\-all, \-A"
+Generate all available examples, tests, and tutorial examples.
 .LP
-.IP \-allexamples " " ""
+.IP "\-allexamples, \-E"
 Generate all available examples.
 .LP
-.IP \-alltests " " ""
+.IP "\-alltests, \-T"
 Generate all available tests.
+.LP
+.IP "\-alltutorial, \-U"
+Generate all available tutorial examples.
 .LP
 .IP \-clean " " ""
 Remove everything but the ".ncgm" file.
@@ -104,6 +109,34 @@ testing of new releases at NCAR.
 .I "Miscellaneous Examples:"
 .nf
 	arex01 cbex01 coex01 coex02 coex03 stex01
+.fi
+.LP
+.I "Tutorial Areas Examples:"
+.nf
+	cardb1 caredg carline cardb2 carfill carmap
+.fi
+.LP
+.I "Tutorial Conpack Examples:"
+.nf
+	ccpback ccpcff ccpcfx ccpcir ccpcis ccpcit ccpclc ccpcld
+	ccpcldm ccpcldr ccpcll ccpclu ccpcnrc ccpdflt ccpezct ccpfil 
+	ccpga ccphand ccphl ccphlt ccpila ccpils ccpilt ccpklb ccplbam 
+	ccplbdr ccpline ccpllb ccpllc ccplll ccpllo ccpllp ccpllt 
+	ccpllw ccpmap ccpmpxy ccpncls ccpnet ccpnof ccpnsd ccppc ccppc1 
+	ccppc2 ccppc3 ccppc4 ccppkcl ccprc ccprect ccprwc ccprwu ccpscam 
+	ccpset ccpsps1 ccpsps2 ccpspv ccptitle ccpvp ccpvs cidsfft colcon
+.fi
+.LP
+.I "Tutorial Ezmap Examples:"
+.nf
+	cezmap1 cezmap2 cezmap3 cmpclr cmpdd cmpdrw cmpel cmpfil
+	cmpgci cmpgrd cmpgrp cmpita cmpitm cmplab cmplbl cmplot 
+	cmpmsk cmpou cmppos cmpsat cmpsup cmptit cmptra cmpusr
+.fi
+.LP
+.I "Tutorial Softfill Examples:"
+.nf
+	csfwrld csfsgfa
 .fi
 .LP
 .I "Test Programs:"
