@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ncargCex.csh,v 1.1 1992-10-26 21:55:36 haley Exp $
+#	$Id: ncargCex.csh,v 1.2 1992-10-30 18:47:09 haley Exp $
 #
 
 set example_dir = `ncargpath SED_EXAMPLESDIR`
@@ -53,6 +53,7 @@ while ($#argv > 0)
     switch ($1)
 
         case "-all":
+        case "-A":
             shift
             set names=($example_list $test_list)
             breaksw
