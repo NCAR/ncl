@@ -1,5 +1,5 @@
 C
-C $Id: mapchm.f,v 1.4 1998-05-23 20:24:37 kennison Exp $
+C $Id: mapchm.f,v 1.5 1999-04-02 23:00:26 kennison Exp $
 C
       SUBROUTINE MAPCHM (IPRT,IDPT,IAM,XCS,YCS,MCS,IAI,IAG,MAI,LPR)
 C
@@ -37,15 +37,15 @@ C
      +                ELPF,XLOW,XROW,YBOW,YTOW,IDTL,GRDR,SRCH,ILCW,GRLA,
      +                GRLO,GRPO
       LOGICAL         INTF,LBLF,PRMF,ELPF
-      SAVE /MAPCM4/
+      SAVE   /MAPCM4/
 C
       COMMON /MAPCMQ/ ICIN(7)
-      SAVE /MAPCMQ/
+      SAVE   /MAPCMQ/
 C
 C Declare one of the dash-package common blocks, too.
 C
       COMMON /SMFLAG/ ISMO
-      SAVE /SMFLAG/
+      SAVE   /SMFLAG/
 C
 C Certain variables need to be saved between calls.
 C

@@ -1,5 +1,5 @@
 C
-C $Id: mapiqm.f,v 1.6 1998-05-23 20:24:42 kennison Exp $
+C $Id: mapiqm.f,v 1.7 1999-04-02 23:00:28 kennison Exp $
 C
       SUBROUTINE MAPIQM (IAM,XCS,YCS,MCS,IAI,IAG,MAI,LPR)
 C
@@ -9,7 +9,7 @@ C Declare required common blocks.  See MAPBD for descriptions of these
 C common blocks and the variables in them.
 C
       COMMON /MAPCMC/ IGI1,IGI2,NOVS,XCRA(100),YCRA(100),NCRA
-      SAVE /MAPCMC/
+      SAVE   /MAPCMC/
 C
 C Check for an uncleared prior error.
 C

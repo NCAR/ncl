@@ -1,5 +1,5 @@
 C
-C $Id: mapiqa.f,v 1.6 1998-05-23 20:24:41 kennison Exp $
+C $Id: mapiqa.f,v 1.7 1999-04-02 23:00:27 kennison Exp $
 C
       SUBROUTINE MAPIQA (IAMP,IGRP,IDLT,IDRT)
 C
@@ -9,7 +9,7 @@ C Declare required common blocks.  See MAPBD for descriptions of these
 C common blocks and the variables in them.
 C
       COMMON /MAPCMC/ IGI1,IGI2,NOVS,XCRA(100),YCRA(100),NCRA
-      SAVE /MAPCMC/
+      SAVE   /MAPCMC/
 C
 C Check for an uncleared prior error.
 C
