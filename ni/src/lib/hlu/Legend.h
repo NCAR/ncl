@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Legend.h,v 1.3 1993-10-23 00:34:57 dbrown Exp $
+ *      $Id: Legend.h,v 1.4 1993-11-02 20:00:43 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -28,9 +28,9 @@
 
 /* public defines */
 
-#define NhlLG_MAX_BOXES   	256
-#define NhlLG_MAX_LBL_STRINGS  	(NhlLG_MAX_BOXES)
-#define NhlLG_DEF_BOX_COUNT   	16
+#define NhlLG_MAX_ITEMS   	256
+#define NhlLG_MAX_LBL_STRINGS  	(NhlLG_MAX_ITEMS)
+#define NhlLG_DEF_ITEM_COUNT   	16
 #define NhlLG_DEF_COLOR   	NhlFOREGROUND
 #define NhlLG_DEF_LINE_INDEX	1
 #define NhlLG_MIN_LINE_INDEX	1
@@ -47,14 +47,14 @@
 
 /* label alignment */
 
-#define NhlLG_BOXCENTERS	0
-#define NhlLG_ABOVEBOXES	1
-#define NhlLG_BELOWBOXES	2
+#define NhlLG_ITEMCENTERS	0
+#define NhlLG_ABOVEITEMS	1
+#define NhlLG_BELOWITEMS	2
 
 /* Box sizing */
 
-#define NhlLG_UNIFORMSIZING	0
-#define NhlLG_EXPLICITSIZING	1
+#define NhlLG_UNIFORMPLACEMENT	0
+#define NhlLG_EXPLICITPLACEMENT	1
 
 /* Legend types */
 
@@ -68,9 +68,8 @@
 #define NhlNlgJustification		"lgJustification"
 #define NhlNlgBoxMajorExtentF		"lgBoxMajorExtentF"
 #define NhlNlgBoxMinorExtentF		"lgBoxMinorExtentF"
-#define NhlNlgBoxCount			"lgBoxCount"
-#define NhlNlgBoxSizing			"lgBoxSizing"
-#define NhlNlgBoxBackground		"lgBoxBackground"
+#define NhlNlgItemCount			"lgItemCount"
+#define NhlNlgItemPlacement		"lgItemPlacement"
 
 #define NhlNlgAutoManage		"lgAutoManage"
 #define NhlNlgBarMode			"lgBarMode"
@@ -95,7 +94,7 @@
 #define NhlNlgMonoItemTextHeight	"lgMonoItemTextHeight"
 #define NhlNlgItemTextHeights		"lgItemTextHeights"
 #define NhlNlgLabelStrings		"lgLabelStrings"
-#define NhlNlgBoxFractions		"lgBoxFractions"
+#define NhlNlgItemPositions		"lgItemPositions"
 
 /*end of arrays */
 
@@ -131,6 +130,7 @@
 #define NhlNlgTitleConstantSpacingF	"lgTitleConstantSpacingF"
 #define NhlNlgTitleFuncCode		"lgTitleFuncCode"
 
+#define NhlNlgBoxBackground		"lgBoxBackground"
 #define NhlNlgDrawBoxLines		"lgDrawBoxLines"
 #define NhlNlgBoxLineColor		"lgBoxLineColor"
 #define NhlNlgBoxLineThicknessF		"lgBoxLineThicknessF"
@@ -145,7 +145,6 @@
 #define NhlNlgPerimDashPattern		"lgPerimDashPattern"
 #define NhlNlgPerimDashLengthF		"lgPerimDashLengthF"
 
-
 /* Class resources */
 
 #define NhlClgLegend			"LgLegend"
@@ -154,9 +153,8 @@
 #define NhlClgBoxMajorExtentF		"LgBoxMajorExtentF"
 #define NhlClgBoxMinorExtentF		"LgBoxMinorExtentF"
 #define NhlClgAlignment			"LgAlignment"
-#define NhlClgBoxCount			"LgBoxCount"
-#define NhlClgBoxSizing			"LgBoxSizing"
-#define NhlClgBoxBackground		"LgBoxBackground"
+#define NhlClgItemCount			"LgItemCount"
+#define NhlClgItemPlacement		"LgItemPlacement"
 
 #define NhlClgAutoManage		"LgAutoManage"
 #define NhlClgBarMode			"LgBarMode"
@@ -181,7 +179,8 @@
 #define NhlClgMonoItemTextHeight	"LgMonoItemTextHeight"
 #define NhlClgItemTextHeights		"LgItemTextHeights"
 #define NhlClgLabelStrings		"LgLabelStrings"
-#define NhlClgBoxFractions		"LgBoxFractions"
+#define NhlClgItemPositions		"LgItemPositions"
+
 /*end of arrays */
 
 #define NhlClgDrawLabels		"LgDrawLabels"
@@ -216,6 +215,7 @@
 #define NhlClgTitleConstantSpacingF	"LgTitleConstantSpacingF"
 #define NhlClgTitleFuncCode		"LgTitleFuncCode"
 
+#define NhlClgBoxBackground		"LgBoxBackground"
 #define NhlClgDrawBoxLines		"LgDrawBoxLines"
 #define NhlClgBoxLineColor		"LgBoxLineColor"
 #define NhlClgBoxLineThicknessF		"LgBoxLineThicknessF"

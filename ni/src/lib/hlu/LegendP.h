@@ -1,6 +1,6 @@
 
 /*
- *      $Id: LegendP.h,v 1.2 1993-10-19 17:51:36 boote Exp $
+ *      $Id: LegendP.h,v 1.3 1993-11-02 20:00:47 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -35,9 +35,8 @@ typedef struct _LegendLayerPart {
 	NhlJustification just;
 	float	box_major_ext;
 	float	box_minor_ext;
-	int	box_count;
-	int     box_sizing;
-	int	box_background;
+	int	item_count;
+	int     item_placement;
 
 	NhlBoolean	auto_manage;
 	float	label_angle_add;
@@ -56,13 +55,13 @@ typedef struct _LegendLayerPart {
 	NhlBoolean 	mono_item_text_height;
 	NhlGenArray	item_text_heights;
 	NhlGenArray	label_strings;
-	NhlGenArray	box_fractions;
+	NhlGenArray	item_positions;
 
 	int	labels_on;
 	NhlPosition	label_pos;
 	NhlJustification label_just;
-	int     label_alignment;    /* 0 - Box Centers, 1 - Interior_Edges,
-				       2 - External_Edges */
+	int     label_alignment;    /* 0 - Item Centers, 1 - Above Items,
+				       2 - Below Items */
 	int	label_dir;
 	float	label_angle;
 	int	label_font;
@@ -92,6 +91,7 @@ typedef struct _LegendLayerPart {
 	float	title_const_spacing;
 	char	title_func_code;
 
+	int	box_background;
 	int	box_line_on;
 	int	box_line_color;
 	float	box_line_thickness;
@@ -129,7 +129,7 @@ typedef struct _LegendLayerPart {
 	NhlBoundingBox	adj_bar;        /* after external label, label angle */
 	NhlCoord	box_size;        /* size of box assuming uniform */
 	NhlCoord        adj_box_size;    /* size of box after adjustments */
-	float		*box_locs;       /* x or y depending on orientation */
+	float		*item_locs;       /* x or y depending on orientation */
 	NhlBoundingBox	labels;          /* overall boundary of label area */
 	int		labels_id;       /* multitext id */
 	float		const_pos;       /* constant position for labels */

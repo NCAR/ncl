@@ -1,5 +1,5 @@
 /*
- *      $Id: Legend.c,v 1.3 1993-10-23 00:34:50 dbrown Exp $
+ *      $Id: Legend.c,v 1.4 1993-11-02 19:59:58 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -30,12 +30,6 @@
 #include <ncarg/hlu/LegendP.h>
 #include <ncarg/hlu/Workstation.h>
 
-/* default pattern list */
-
-#if 0
-static int def_patterns[] = { 
-	1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
-#endif
 static int def_colors[] = { 
 	0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
 
@@ -62,12 +56,12 @@ static NhlResource resources[] = {
 {NhlNlgBoxMinorExtentF, NhlClgBoxMinorExtentF, NhlTFloat,
 	 sizeof(float), NhlOffset(LegendLayerRec,legend.box_minor_ext),
 	 NhlTString,"0.6"},
-{NhlNlgBoxCount, NhlClgBoxCount, NhlTInteger,
-	 sizeof(int), NhlOffset(LegendLayerRec,legend.box_count),
+{NhlNlgItemCount, NhlClgItemCount, NhlTInteger,
+	 sizeof(int), NhlOffset(LegendLayerRec,legend.item_count),
 	 NhlTImmediate,(NhlPointer) 16},
-{NhlNlgBoxSizing, NhlClgBoxSizing, NhlTInteger,
-	 sizeof(int), NhlOffset(LegendLayerRec,legend.box_sizing),
-	 NhlTImmediate,(NhlPointer) NhlLG_UNIFORMSIZING},
+{NhlNlgItemPlacement, NhlClgItemPlacement, NhlTInteger,
+	 sizeof(int), NhlOffset(LegendLayerRec,legend.item_placement),
+	 NhlTImmediate,(NhlPointer) NhlLG_UNIFORMPLACEMENT},
 {NhlNlgBoxBackground, NhlClgBoxBackground, NhlTInteger,
 	 sizeof(int), NhlOffset(LegendLayerRec,legend.box_background),
 	 NhlTImmediate,(NhlPointer) -1},
@@ -84,9 +78,6 @@ static NhlResource resources[] = {
 {NhlNlgTitleOffsetF, NhlClgTitleOffsetF, NhlTFloat,
 	 sizeof(float), NhlOffset(LegendLayerRec,legend.title_off),
 	 NhlTString,"0.03"},
-{NhlNlgLeftMarginF, NhlClgLeftMarginF, NhlTFloat,
-	 sizeof(float), NhlOffset(LegendLayerRec,legend.margin.l),
-	 NhlTString,"0.05"},
 {NhlNlgLeftMarginF, NhlClgLeftMarginF, NhlTFloat,
 	 sizeof(float), NhlOffset(LegendLayerRec,legend.margin.l),
 	 NhlTString,"0.05"},
@@ -141,8 +132,8 @@ static NhlResource resources[] = {
 	 sizeof(NhlPointer), 
 	 NhlOffset(LegendLayerRec,legend.label_strings),
 	 NhlTImmediate,(NhlPointer) NULL},
-{NhlNlgBoxFractions, NhlClgBoxFractions, NhlTFloatPtr,
-	 sizeof(float *), NhlOffset(LegendLayerRec,legend.box_fractions),
+{NhlNlgItemPositions, NhlClgItemPositions, NhlTFloatPtr,
+	 sizeof(float *), NhlOffset(LegendLayerRec,legend.item_positions),
 	 NhlTImmediate,(NhlPointer) NULL },
 	
 {NhlNlgDrawLabels, NhlClgDrawLabels, NhlTInteger, 
@@ -156,7 +147,7 @@ static NhlResource resources[] = {
 	 NhlTString,"0.0"},
 {NhlNlgLabelAlignment, NhlClgLabelAlignment, NhlTInteger, 
 	 sizeof(int), NhlOffset(LegendLayerRec,legend.label_alignment),
-	 NhlTImmediate,(NhlPointer) NhlLG_BOXCENTERS},
+	 NhlTImmediate,(NhlPointer) NhlLG_ITEMCENTERS},
 {NhlNlgLabelDirection,NhlClgLabelDirection,NhlTTextDirection,
 	 sizeof(TextDirection),
 	 NhlOffset(LegendLayerRec,legend.label_direction),
@@ -169,7 +160,7 @@ static NhlResource resources[] = {
 	 NhlTImmediate,(NhlPointer) 1},
 {NhlNlgLabelFontColor, NhlClgLabelFontColor, NhlTInteger, 
 	 sizeof(int), NhlOffset(LegendLayerRec,legend.label_color),
-	 NhlTImmediate,(NhlPointer) 1},
+	 NhlTImmediate,(NhlPointer) NhlLG_DEF_COLOR},
 {NhlNlgLabelFontHeightF, NhlClgLabelFontHeightF, NhlTFloat, 
 	 sizeof(float), NhlOffset(LegendLayerRec,legend.label_height),
 	 NhlTString,"0.02"},
@@ -218,7 +209,7 @@ static NhlResource resources[] = {
 	 NhlTImmediate,(NhlPointer) 1},
 {NhlNlgTitleFontColor, NhlClgTitleFontColor, NhlTInteger, 
 	 sizeof(int), NhlOffset(LegendLayerRec,legend.title_color),
-	 NhlTImmediate,(NhlPointer) 1},
+	 NhlTImmediate,(NhlPointer) NhlLG_DEF_COLOR},
 {NhlNlgTitleJust, NhlClgTitleJust, NhlTJustification, sizeof(NhlJustification),
 	 NhlOffset(LegendLayerRec,legend.title_just),
 	 NhlTImmediate,(NhlPointer)NhlCENTERCENTER},
@@ -248,7 +239,7 @@ static NhlResource resources[] = {
 	 NhlTImmediate,(NhlPointer) 0},
 {NhlNlgBoxLineColor, NhlClgBoxLineColor, NhlTInteger, 
 	 sizeof(int), NhlOffset(LegendLayerRec,legend.box_line_color),
-	 NhlTImmediate,(NhlPointer) 1},
+	 NhlTImmediate,(NhlPointer) NhlLG_DEF_COLOR},
 {NhlNlgBoxLineThicknessF, NhlClgBoxLineThicknessF, NhlTFloat, 
 	 sizeof(float), 
 	 NhlOffset(LegendLayerRec,legend.box_line_thickness),
@@ -267,13 +258,13 @@ static NhlResource resources[] = {
 	 NhlTImmediate,(NhlPointer) 1},
 {NhlNlgPerimColor, NhlClgPerimColor, NhlTInteger, 
 	 sizeof(int), NhlOffset(LegendLayerRec,legend.perim_color),
-	 NhlTImmediate,(NhlPointer) 1},
+	 NhlTImmediate,(NhlPointer) NhlLG_DEF_COLOR},
 {NhlNlgPerimFill, NhlClgPerimFill, NhlTInteger, 
 	 sizeof(int), NhlOffset(LegendLayerRec,legend.perim_fill),
 	 NhlTImmediate,(NhlPointer) NhlHOLLOWFILL},
 {NhlNlgPerimFillColor, NhlClgPerimFillColor, NhlTInteger, 
 	 sizeof(int), NhlOffset(LegendLayerRec,legend.perim_fill_color),
-	 NhlTImmediate,(NhlPointer) 1},
+	 NhlTImmediate,(NhlPointer) NhlLG_DEF_COLOR},
 {NhlNlgPerimThicknessF, NhlClgPerimThicknessF, NhlTFloat, 
 	 sizeof(float), 
 	 NhlOffset(LegendLayerRec,legend.perim_thickness),
@@ -293,6 +284,17 @@ static NhlResource resources[] = {
 * Base Methods used
 */
 
+
+static NhlErrorTypes    LegendInitialize(
+#ifdef NhlNeedProto
+        LayerClass,     /* class */
+        Layer,          /* req */
+        Layer,          /* new */
+        _NhlArgList,    /* args */
+        int             /* num_args */
+#endif
+);
+
 static NhlErrorTypes LegendSetValues(
 #ifdef NhlNeedProto
         Layer,          /* old */
@@ -308,16 +310,6 @@ static NhlErrorTypes 	LegendGetValues(
 	Layer,		/* l */
 	_NhlArgList, 	/* args */
 	int		/* num_args */
-#endif
-);
-
-static NhlErrorTypes    LegendInitialize(
-#ifdef NhlNeedProto
-        LayerClass,     /* class */
-        Layer,          /* req */
-        Layer,          /* new */
-        _NhlArgList,    /* args */
-        int             /* num_args */
 #endif
 );
 
@@ -338,6 +330,24 @@ static NhlErrorTypes 	LegendClassInitialize();
 /*
 * Private functions
 */
+
+static NhlErrorTypes    InitializeDynamicArrays(
+#ifdef NhlNeedProto
+	Layer,		/* new		*/ 
+	Layer,		/* old		*/
+	_NhlArgList,	/* args		*/
+	int		/* num_args	*/
+#endif
+);
+
+static NhlErrorTypes    ManageDynamicArrays(
+#ifdef NhlNeedProto
+	Layer,		/* new		*/ 
+	Layer,		/* old		*/
+	_NhlArgList,	/* args		*/
+	int		/* num_args	*/
+#endif
+);
 
 static NhlErrorTypes    SetLegendGeometry(
 #ifdef NhlNeedProto
@@ -368,18 +378,21 @@ static NhlErrorTypes    SetBoxLocations(
 );
 
 
-static NhlErrorTypes    ManageBoxFractionsArray(
+static NhlErrorTypes    ManageItemPositionsArray(
 #ifdef NhlNeedProto
-	float	*box_fractions,
+	float	*item_positions,
 	int	count
 #endif
 );
 
+
 static void CreateIntermediates(
 #ifdef NhlNeedProto
 	 float		*flist,
+	 float		base_val,
 	 int		start,
-	 int		end
+	 int		end,
+         int		last
 #endif
 );
 
@@ -393,33 +406,6 @@ static NhlErrorTypes    SetLabels(
 #endif
 );
 
-static NhlErrorTypes    AdjustGeometry(
-#ifdef NhlNeedProto
-	Layer,		/* new		*/ 
-	Layer,		/* old		*/
-	int,            /* init         */
-	_NhlArgList,	/* args		*/
-	int		/* num_args	*/
-#endif
-);
-
-static NhlErrorTypes    ManageDynamicArrays(
-#ifdef NhlNeedProto
-	Layer,		/* new		*/ 
-	Layer,		/* old		*/
-	_NhlArgList,	/* args		*/
-	int		/* num_args	*/
-#endif
-);
-
-static NhlErrorTypes    InitializeDynamicArrays(
-#ifdef NhlNeedProto
-	Layer,		/* new		*/ 
-	Layer,		/* old		*/
-	_NhlArgList,	/* args		*/
-	int		/* num_args	*/
-#endif
-);
 
 static NhlErrorTypes   	AdjustLabels(
 #ifdef NhlNeedProto
@@ -432,6 +418,16 @@ static NhlErrorTypes   	AdjustLabels(
 #endif
 );
 
+static NhlErrorTypes    AdjustGeometry(
+#ifdef NhlNeedProto
+	Layer,		/* new		*/ 
+	Layer,		/* old		*/
+	int,            /* init         */
+	_NhlArgList,	/* args		*/
+	int		/* num_args	*/
+#endif
+);
+
 
 static NhlGenArray GenArraySubsetCopy(
 #ifdef NhlNeedProto
@@ -439,18 +435,6 @@ static NhlGenArray GenArraySubsetCopy(
 	int		length
 #endif
 );
-
-#if 0
-static NhlBoolean    	LegendChanged(
-#ifdef NhlNeedProto
-	Layer,		/* new		*/ 
-	Layer,		/* old		*/
-	int,            /* init         */
-	_NhlArgList	args,
-	int		num_args
-#endif
-);
-#endif
 
 LegendLayerClassRec legendLayerClassRec = {
 	{
@@ -503,7 +487,7 @@ static NrmQuark	Qitem_colors = NrmNULLQUARK;
 static NrmQuark	Qitem_thicknesses = NrmNULLQUARK;
 static NrmQuark	Qitem_text_heights = NrmNULLQUARK;
 static NrmQuark	Qlabel_strings = NrmNULLQUARK;
-static NrmQuark	Qbox_fractions = NrmNULLQUARK;
+static NrmQuark	Qitem_positions = NrmNULLQUARK;
 
 /*
  * Function:	LegendInitialize
@@ -514,6 +498,7 @@ static NrmQuark	Qbox_fractions = NrmNULLQUARK;
  *              2) Copy the view settings.
  *              2) Create a default title string.
  *              3) InitializeDynamicArrays
+ *		4) Set up the Legend geometry.
  *
  * In Args:	Standard initialize parameters
  *
@@ -547,7 +532,7 @@ static NhlErrorTypes    LegendInitialize
 	lg_p->labels_id = -1;
 	lg_p->title_id = -1;
 	lg_p->stride_labels = NULL;
-	lg_p->box_locs = NULL;
+	lg_p->item_locs = NULL;
 	lg_p->label_locs = NULL;
 
 /*
@@ -556,10 +541,10 @@ static NhlErrorTypes    LegendInitialize
 	lg_p->label_angle = fmod(lg_p->label_angle,360.0);
 	lg_p->title_angle = fmod(lg_p->title_angle,360.0);
 
-	if (lg_p->box_count < 1) {
+	if (lg_p->item_count < 1) {
 		NhlPError(WARNING,E_UNKNOWN,"Minimum box count is 1");
 		ret = WARNING;
-		lg_p->box_count = 1;
+		lg_p->item_count = 1;
 	}
 
 /*
@@ -643,9 +628,13 @@ static NhlErrorTypes    LegendInitialize
 /*
  * Function:	LegendSetValues
  *
- * Description: Performs same operations as LegendInitialize except if 
- *		a move or resize has ocurred font_height is automatically 
- *		scaled.
+ * Description: Handles setting all the Legend object resources. Calls a
+ *	number of internal subroutines to deal with each phase of the 
+ *	operation of setting up the Legend object. Calls many of the same
+ *	routines used by the Legend initialize call.
+ *	Note: the Legend object has not been performance tuned. It is
+ *	possible that a performance saving could result from eliminating
+ *	some calls under certain conditions. 
  *
  * In Args:	Standard SetValues args
  *
@@ -653,7 +642,7 @@ static NhlErrorTypes    LegendInitialize
  *
  * Return Values: Error Conditions
  *
- * Side Effects: GKS and plotchar state changes.
+ * Side Effects: 
  */
 /*ARGSUSED*/
 static NhlErrorTypes LegendSetValues
@@ -678,10 +667,10 @@ static NhlErrorTypes LegendSetValues
 	LegendLayerPart *lg_p = &(tnew->legend);
 	NhlErrorTypes ret = NOERROR,ret1 = NOERROR;
 
-	if (lg_p->box_count < 1) {
+	if (lg_p->item_count < 1) {
 		NhlPError(WARNING,E_UNKNOWN,"Minimum box count is 1");
 		ret = WARNING;
-		lg_p->box_count = 1;
+		lg_p->item_count = 1;
 	}
 	
 /*
@@ -756,21 +745,6 @@ static NhlErrorTypes LegendSetValues
 		}
 	}
 
-#if 0		
-
-	if (LegendChanged(tnew, told, 0, args, num_args)) {
-		NhlPError(WARNING,E_UNKNOWN,"LegendSetValues: Can not change x,y,width,and height when other legend attribute changes have been requested also, proceding with other text attribute requests");
-		ret1 = WARNING;
-			
-	}
-
-	else {
-
-		ret1 = TransformPoints(tnew);
-	}
-#endif
-
-
 	lg_p->perim.l = lg_p->lg_x;
 	lg_p->perim.r = lg_p->lg_x + lg_p->lg_width;
 	lg_p->perim.b = lg_p->lg_y - lg_p->lg_height;
@@ -801,9 +775,12 @@ static NhlErrorTypes LegendSetValues
 }
 
 /*
- * Function:	LegendGetValues
+ * Function:  InitializeDynamicArrays
  *
- * Description:	
+ * Description: Creates internal copies of each of the Legend GenArrays and
+ *	populates the copies with the values specified via a LegendCreate
+ *	call. Assigns default values and sizes to any array whose resource
+ *	the caller has not set.
  *
  * In Args:
  *
@@ -812,696 +789,7 @@ static NhlErrorTypes LegendSetValues
  * Return Values:
  *
  * Side Effects: 
- *	Memory is allocated when the following resources are retrieved:
- *		NhlNlgItemTypes
- *		NhlNlgItemIndexes
- *		NhlNlgItemStrings
- *		NhlNlgItemColors
- *		NhlNlgItemThicknesses
- *		NhlNlgItemTextHeights
- *		NhlNlgLabelStrings
- *		NhlNlgBoxFractions
- *	The caller is responsible for freeing this memory.
  */
-
-static NhlErrorTypes	LegendGetValues
-#if __STDC__
-(Layer l, _NhlArgList args, int num_args)
-#else
-(l,args,num_args)
-	Layer	l;
-	_NhlArgList	args;
-	int	num_args;
-#endif
-{
-	LegendLayer lgl = (LegendLayer)l;
-	LegendLayerPart *lg_p = &(lgl->legend);
-	NhlGenArray ga;
-	char *e_text;
-	int i, count = 0;
-	char *type = "";
-	
-	for( i = 0; i< num_args; i++ ) {
-
-		ga = NULL;
-		if(args[i].quark == Qitem_types) {
-			ga = lg_p->item_types;
-			count = lg_p->mono_item_type ? 1 : lg_p->box_count;
-			type = NhlNlgItemTypes;
-		}
-		else if (args[i].quark == Qitem_indexes) {
-			ga = lg_p->item_indexes;
-			count = lg_p->box_count;
-			type = NhlNlgItemIndexes;
-		}
-		else if (args[i].quark == Qitem_strings) {
-			ga = lg_p->item_strings;
-			count = lg_p->box_count;
-			type = NhlNlgItemStrings; 
-		}
-		else if (args[i].quark == Qitem_colors) {
-			ga = lg_p->item_colors;
-			count = lg_p->mono_item_color ? 1 : lg_p->box_count;
-			type = NhlNlgItemColors;
-		}
-		else if (args[i].quark == Qitem_thicknesses) {
-			ga = lg_p->item_thicknesses;
-			count = lg_p->mono_item_thickness ? 
-				1 : lg_p->box_count;
-			type = NhlNlgItemThicknesses;
-		}
-		else if (args[i].quark == Qitem_text_heights) {
-			ga = lg_p->item_text_heights;
-			count = lg_p->mono_item_text_height ? 
-				1 : lg_p->box_count;
-			type = NhlNlgItemTextHeights;
-		}
-		else if (args[i].quark == Qlabel_strings) {
-			ga = lg_p->label_strings;
-			count = lg_p->box_count;
-			type = NhlNlgLabelStrings;
-		}
-		else if (args[i].quark == Qbox_fractions) {
-			ga = lg_p->box_fractions;
-			count = lg_p->box_count+1;
-			type = NhlNlgBoxFractions;
-		}
-		if (ga != NULL) {
-			if ((ga = GenArraySubsetCopy(ga, count)) == NULL) {
-				e_text = "%s: error copying %s GenArray";
-				NhlPError(FATAL,E_UNKNOWN,e_text,
-					  "LegendGetValues",type);
-				return FATAL;
-			}
-			*((NhlGenArray *)(args[i].value)) = ga;
-		}
-	}
-
-	return(NOERROR);
-
-}
-static NhlGenArray GenArraySubsetCopy
-#if __STDC__
-	(NhlGenArray	ga,
-	int		length)
-#else
-(ga,length)
-	NhlGenArray	ga;
-	int		length;
-#endif
-{
-	NhlGenArray gto;
-
-	if (length > ga->num_elements)
-		return NULL;
-
-	if ((gto = _NhlCopyGenArray(ga,False)) == NULL) {
-		return NULL;
-	}
-	if ((gto->data = (NhlPointer) NhlMalloc(length * ga->size)) == NULL) {
-		return NULL;
-	}
-	if (ga->typeQ != Qstring) {
-		memcpy((void *)gto->data, (Const void *) ga->data, 
-		       length * ga->size);
-	}
-	else {
-		NhlString *cfrom = (NhlString *) ga->data;
-		NhlString *cto = (NhlString *) gto->data;
-		int i;
-		for (i=0; i<length; i++) {
-			if ((*cto = (char *) 
-			     NhlMalloc(strlen(*cfrom)+1)) == NULL) {
-				return NULL;
-			}
-			strcpy(*cto++,*cfrom++);
-		}
-	}
-	gto->num_elements = length;
-	return gto;
-			
-}
-#if 0
-/*ARGSUSED*/
-static NhlBoolean    	LegendChanged
-#if __STDC__
-	(Layer		new, 
-	Layer		old,
-	int		init,
-	_NhlArgList	args,
-	int		num_args)
-#else
-(new,old,init,args,num_args)
-	Layer		new;
-	Layer		old;
-	int		init;
-	_NhlArgList	args;
-	int		num_args;
-#endif
-{
-	LegendLayer	tnew = (LegendLayer) new;
-	LegendLayer	told = (LegendLayer) old;
-	LegendLayerPart *lg_p = &(tnew->legend);
-	LegendLayerPart *olg_p = &(told->legend);
-	NhlErrorTypes ret = NOERROR, ret1 = NOERROR;
-
-	if (memcmp((const void *) lg_p, (const void *) olg_p, 
-		   sizeof(LegendLayerPart)) == 0) 
-		return (False);
-	else
-		return (True);
-#if 0
-	if (lg_p->orient != olg_p->orient    ||
-	    lg_p->box_major_ext != olg_p->box_major_ext    ||
-	    lg_p->box_minor_ext != olg_p->box_minor_ext    ||
-	    lg_p->box_count != olg_p->box_count    ||
-	    lg_p->box_sizing != olg_p->box_sizing    ||
-	    lg_p->label_strings != olg_p->label_strings    ||
-	    lg_p->box_fractions != olg_p->box_fractions    ||
-	    lg_p->labels_on != olg_p->labels_on    ||
-	    lg_p->label_angle != olg_p->label_angle    ||
-	    lg_p->label_font != olg_p->label_font    ||
-	    lg_p->label_color != olg_p->label_color    ||
-	    lg_p->label_height != olg_p->label_height    ||
-	    lg_p->label_aspect != olg_p->label_aspect    ||
-	    lg_p->label_thickness != olg_p->label_thickness    ||
-	    lg_p->label_quality != olg_p->label_quality    ||
-	    lg_p->label_const_spacing != olg_p->label_const_spacing    ||
-	    lg_p->label_func_code != olg_p->label_func_code    ||
-	    lg_p->label_direction != olg_p->label_direction    ||
-	    lg_p->max_title_ext != olg_p->max_title_ext    ||
-	    lg_p->title_string != olg_p->title_string    ||
-	    lg_p->title_on != olg_p->title_on    ||
-	    lg_p->title_pos != olg_p->title_pos    ||
-	    lg_p->title_just != olg_p->title_just    ||
-	    lg_p->title_direction != olg_p->title_direction    ||
-	    lg_p->title_angle != olg_p->title_angle    ||
-	    lg_p->title_font != olg_p->title_font    ||
-	    lg_p->title_color != olg_p->title_color    ||
-	    lg_p->title_height != olg_p->title_height    ||
-	    lg_p->title_aspect != olg_p->title_aspect    ||
-	    lg_p->title_thickness != olg_p->title_thickness    ||
-	    lg_p->title_quality != olg_p->title_quality    ||
-	    lg_p->title_const_spacing != olg_p->title_const_spacing ||
-	    lg_p->title_func_code != olg_p->title_func_code) {
-		
-		return True;
-	}
-
-	return False;
-
-#endif		
-}
-#endif
-
-/*ARGSUSED*/
-static NhlErrorTypes    ManageDynamicArrays
-#if __STDC__
-	(Layer		new, 
-	Layer		old,
-	_NhlArgList	args,
-	int		num_args)
-#else
-(new,old,args,num_args)
-	Layer		new;
-	Layer		old;
-	_NhlArgList	args;
-	int		num_args;
-#endif
-{
-	LegendLayer	tnew = (LegendLayer) new;
-	LegendLayer	told = (LegendLayer) old;
-	LegendLayerPart *lg_p = &(tnew->legend);
-	LegendLayerPart *olg_p = &(told->legend);
-	NhlErrorTypes ret = NOERROR, ret_1 = NOERROR;
-	int i;
-	int count, len_1, len_2;
-	char number[10];
-	char *entry_name = "LegendSetValues";
-	char *e_text;
-	float *f_p;
-	int *i_p,*i2_p;
-	NhlString *s_p;
-
-/*=======================================================================*/
-/* 
- * Handle the item types array first: the item indexes array depends on
- * it being set up correctly.
- */
-
-
-	count = lg_p->mono_item_type ? 1 : lg_p->box_count;
-
-	if (lg_p->item_types != olg_p->item_types) {
-		
-		ret_1 = _NhlValidatedGenArrayCopy(&(olg_p->item_types),
-						  lg_p->item_types,
-						  NhlLG_MAX_BOXES,True,False,
-						  NhlNlgItemTypes, entry_name);
-		
-		if ((ret = MIN(ret,ret_1)) < WARNING) 
-				return ret;
-		lg_p->item_types = olg_p->item_types;
-		i_p = (int *) lg_p->item_types->data;
-
-		for (i=0; i<MIN(count,lg_p->item_types->num_elements); i++) {
-			if (i_p[i] != NhlLG_LINES && 
-			    i_p[i] != NhlLG_MARKERS) {
-				e_text =
-		"%s: %s index %d holds an invalid type value: defaulting";
-				NhlPError(WARNING,E_UNKNOWN,e_text,entry_name,
-					  NhlNlgItemTypes, i);
-				ret = MIN(ret, WARNING);
-				i_p[i] = NhlLG_LINES;
-			}
-		}
-	}
-
-	if (lg_p->item_types->num_elements < count) {
-		i_p = (int *) lg_p->item_types->data;
-		if ((i_p = (int *)
-		     NhlRealloc(i_p, count * sizeof (int))) == NULL) {
-			e_text = "%s: error allocating %s data";
-			NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
-				  NhlNlgItemTypes);
-			return FATAL;
-		}
-		for (i=lg_p->item_types->num_elements; i<count; i++) {
-			i_p[i] = NhlLG_LINES;
-		}
-
-		lg_p->item_types->data = (NhlPointer) i_p;
-		lg_p->item_types->num_elements = count;
-	}
-
-/*======================================================================*/
-
-/*
- * Copy the new information if the resource has changed. 
- * If number of label boxes has increased, gcheck all added values for a
- * valid pattern index, setting the default pattern index if an invalid
- * value is found.
- */
-	
-	
-	i2_p = (int *) lg_p->item_types->data;
-
-	if (lg_p->item_indexes != olg_p->item_indexes) {
-		
-		ret_1 = _NhlValidatedGenArrayCopy(&(olg_p->item_indexes),
-						  lg_p->item_indexes,
-						  NhlLG_MAX_BOXES,True,False,
-						  NhlNlgItemIndexes,
-						  entry_name);
-		
-		if ((ret = MIN(ret,ret_1)) < WARNING) 
-				return ret;
-
-		lg_p->item_indexes = olg_p->item_indexes;
-		NhlGetValues(tnew->base.wkptr->base.id,
-			     NhlNwkDashTableLength, &len_1,
-			     NhlNwkMarkerTableLength, &len_2, NULL);
-		i_p = (int *) lg_p->item_indexes->data;
-		count = MIN(lg_p->box_count,lg_p->item_indexes->num_elements);
-
-		if (lg_p->mono_item_type && *i2_p == NhlLG_LINES) {
-			for (i=0; i<count; i++)
-				if (i_p[i] < NhlLG_MIN_LINE_INDEX) 
-					i_p[i] = NhlLG_DEF_LINE_INDEX;
-		}
-		else if (lg_p->mono_item_type) {
-			for (i=0; i<count; i++)
-				if (i_p[i] < NhlLG_MIN_MARKER_INDEX)
-					i_p[i] = NhlLG_DEF_MARKER_INDEX;
-		}
-		else {
-			for (i=0; i<count; i++)
-				if (i2_p[i] == NhlLG_LINES)
-					if (i_p[i] < NhlLG_MIN_LINE_INDEX)
-						i_p[i] = NhlLG_DEF_LINE_INDEX;
-				else
-					if (i_p[i] < NhlLG_MIN_MARKER_INDEX)
-						i_p[i]= NhlLG_DEF_MARKER_INDEX;
-			
-		}
-		
-	}
-	
-	if (lg_p->item_indexes->num_elements < lg_p->box_count) {
-		count = lg_p->item_indexes->num_elements;
-		i_p = (int *) lg_p->item_indexes->data;
-		if ((i_p = (int *)
-		     NhlRealloc(i_p, 
-				lg_p->box_count * sizeof (int))) == NULL) {
-			e_text = "%s: error allocating %s data";
-			NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
-				  NhlNlgItemIndexes);
-			return FATAL;
-		}
-		for (i=count;i<lg_p->box_count;i++) 
-			i_p[i] = i + 1;
-
-		lg_p->item_indexes->data = (NhlPointer) i_p;
-		lg_p->item_indexes->num_elements = lg_p->box_count;
-	}
-	
-/*=======================================================================*/
-
-/* 
- * Handle the item strings. Copy the new array into the old.
- * NULL strings generate an error message and are replaced by empty 
- * (single byte null terminator) strings within the Validated copy function. 
- * If the box count has increased, but the string gen array does not 
- * contain enough elements, the array is resized and default strings are
- * created for the additional elements.
- */
-
-	if (lg_p->item_strings != olg_p->item_strings) {
-		
-		ret_1 = _NhlValidatedGenArrayCopy(&(olg_p->item_strings),
-						  lg_p->item_strings,
-						  NhlLG_MAX_BOXES,True,False,
-						  NhlNlgItemStrings,
-						  entry_name);
-		
-		if ((ret = MIN(ret,ret_1)) < WARNING) 
-				return ret;
-		lg_p->item_strings = olg_p->item_strings;
-	}
-
-	if (lg_p->item_strings->num_elements < lg_p->box_count) {
-		s_p = (NhlString *) lg_p->item_strings->data;
-		if ((s_p = (NhlString *)
-		     NhlRealloc(s_p, lg_p->box_count * 
-				sizeof (NhlString))) == NULL) {
-			e_text = "%s: error allocating %s data";
-			NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
-				  NhlNlgItemStrings);
-			return FATAL;
-		}
-		for (i=lg_p->item_strings->num_elements; 
-		     i<lg_p->box_count; i++) {
-			sprintf(number,"%d",i);
-			if ((s_p[i] = (char *)
-			     NhlMalloc(strlen(NhlLG_DEF_ITEM_STRING) + 
-				       strlen(number) + 1)) == NULL) {
-				e_text = "%s: error creating %s string";
-				NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
-					  NhlNlgItemStrings);
-				return FATAL;
-			}
-			strcpy(s_p[i],(Const char *)NhlLG_DEF_ITEM_STRING);
-			strcat(s_p[i],number);
-		}
-
-		lg_p->item_strings->data = (NhlPointer) s_p;
-		lg_p->item_strings->num_elements = lg_p->box_count;
-	}
-
-/*=======================================================================*/
-/*
- * Manage the colors array: if the array has changed copy the new
- * array elements, check them for validity and get the GKS index.
- * Then if the box count is greater than the current array size, enlarge
- * the array and give initial values to the new elements.
- */
-
-	NhlGetValues(tnew->base.wkptr->base.id,
-		     NhlNwkColorMapLen, &len_1, NULL);
-	count = lg_p->mono_item_color ? 1 : lg_p->box_count;
-
-	if (lg_p->item_colors != olg_p->item_colors) {
-		ret_1 = _NhlValidatedGenArrayCopy(&(olg_p->item_colors),
-						  lg_p->item_colors,
-						  NhlLG_MAX_BOXES,True,False,
-						  NhlNlgItemColors, 
-						  entry_name);
-		
-		if ((ret = MIN(ret,ret_1)) < WARNING) 
-				return ret;
-		lg_p->item_colors = olg_p->item_colors;
-		i_p = (int *) lg_p->item_colors->data;
-
-		for (i=0; i<MIN(count,lg_p->item_colors->num_elements); i++) {
-			if (i_p[i] < 0 || i_p[i] > len_1) {
-				e_text =
-		"%s: %s index %d holds an invalid color value, %d: defaulting";
-				NhlPError(WARNING,E_UNKNOWN,e_text,entry_name,
-					  NhlNlgItemColors, i, i_p[i]);
-				ret = MIN(ret, WARNING);
-				i_p[i] = NhlLG_DEF_COLOR;
-			}
-			lg_p->gks_colors[i] =
-				_NhlGetGksCi(tnew->base.wkptr, i_p[i]);
-		}
-	}
-
-	if (lg_p->item_colors->num_elements < count) {
-		i_p = (int *) lg_p->item_colors->data;
-		if ((i_p = (int *)
-		     NhlRealloc(i_p, count * sizeof (int))) == NULL) {
-			e_text = "%s: error allocating %s data";
-			NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
-				  NhlNlgItemColors);
-			return FATAL;
-		}
-		if ((lg_p->gks_colors = (int *)
-		     NhlRealloc(lg_p->gks_colors, 
-				count * sizeof (int))) == NULL) {
-			e_text = "%s: error allocating private %s data";
-			NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
-				  NhlNlgItemColors);
-			return FATAL;
-		}
-		for (i=lg_p->item_colors->num_elements; i<count; i++) {
-			i_p[i] = i < len_1 ? i : NhlLG_DEF_COLOR;
-			lg_p->gks_colors[i] =
-				_NhlGetGksCi(tnew->base.wkptr, i_p[i]);
-		}
-
-		lg_p->item_colors->data = (NhlPointer) i_p;
-		lg_p->item_colors->num_elements = count;
-	}
-/*=======================================================================*/
-/* 
- * Handle the item_thickness
- */
-
-	count = lg_p->mono_item_thickness ? 1 : lg_p->box_count;
-
-	if (lg_p->item_thicknesses != olg_p->item_thicknesses) {
-		
-		ret_1 = _NhlValidatedGenArrayCopy(&(olg_p->item_thicknesses),
-						  lg_p->item_thicknesses,
-						  NhlLG_MAX_BOXES,True,False,
-						  NhlNlgItemThicknesses, 
-						  entry_name);
-		
-		if ((ret = MIN(ret,ret_1)) < WARNING) 
-				return ret;
-		lg_p->item_thicknesses = olg_p->item_thicknesses;
-		f_p = (float *) lg_p->item_thicknesses->data;
-
-		for (i=0; i<MIN(count,
-				lg_p->item_thicknesses->num_elements); i++) {
-			if (f_p[i] <= 0.0) {
-				e_text =
-        "%s: %s index %d holds an invalid item thickness value: defaulting";
-				NhlPError(WARNING,E_UNKNOWN,e_text,entry_name,
-					  NhlNlgItemThicknesses, i);
-				ret = MIN(ret, WARNING);
-				f_p[i] = 1.0;
-			}
-		}
-	}
-
-	if (lg_p->item_thicknesses->num_elements < count) {
-		f_p = (float *) lg_p->item_thicknesses->data;
-		if ((f_p = (float *)
-		     NhlRealloc(f_p, count * sizeof (float))) == NULL) {
-			e_text = "%s: error allocating %s data";
-			NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
-				  NhlNlgItemThicknesses);
-			return FATAL;
-		}
-		for (i=lg_p->item_thicknesses->num_elements; i<count; i++) {
-			f_p[i] = 1.0;
-		}
-
-		lg_p->item_thicknesses->data = (NhlPointer) f_p;
-		lg_p->item_thicknesses->num_elements = count;
-	}
-
-/*=======================================================================*/
-/* Item text height is handled similarly to thickness */
-
-	count = lg_p->mono_item_text_height ? 1 : lg_p->box_count;
-
-	if (lg_p->item_text_heights != olg_p->item_text_heights) {
-		
-		ret_1 = _NhlValidatedGenArrayCopy(&(olg_p->item_text_heights),
-						  lg_p->item_text_heights,
-						  NhlLG_MAX_BOXES,True,False,
-						  NhlNlgItemTextHeights, 
-						  entry_name);
-		
-		if ((ret = MIN(ret,ret_1)) < WARNING) 
-				return ret;
-		lg_p->item_text_heights = olg_p->item_text_heights;
-		f_p = (float *) lg_p->item_text_heights->data;
-
-		for (i=0; i<MIN(count,
-				lg_p->item_text_heights->num_elements); i++) {
-			if (f_p[i] <= 0.0) {
-				e_text =
-        "%s: %s index %d holds an invalid item thickness value: defaulting";
-				NhlPError(WARNING,E_UNKNOWN,e_text,entry_name,
-					  NhlNlgItemTextHeights, i);
-				ret = MIN(ret, WARNING);
-				f_p[i] = 0.01;
-			}
-		}
-	}
-
-	if (lg_p->item_text_heights->num_elements < count) {
-		f_p = (float *) lg_p->item_text_heights->data;
-		if ((f_p = (float *)
-		     NhlRealloc(f_p, count * sizeof (float))) == NULL) {
-			e_text = "%s: error allocating %s data";
-			NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
-				  NhlNlgItemTextHeights);
-			return FATAL;
-		}
-		for (i=lg_p->item_text_heights->num_elements; i<count; i++) {
-			f_p[i] = 0.01;
-		}
-
-		lg_p->item_text_heights->data = (NhlPointer) f_p;
-		lg_p->item_text_heights->num_elements = count;
-	}
-
-/*=======================================================================*/
-
-/* 
- * Handle the label strings. Copy the new array into the old.
- * NULL strings generate an error message and are replaced by empty 
- * (single byte null terminator) strings within the Validated copy function. 
- * If the box count has increased, but the string gen array does not 
- * contain enough elements, the array is resized and default strings are
- * created for the additional elements.
- */
-
-	if (lg_p->label_strings != olg_p->label_strings) {
-		
-		ret_1 = _NhlValidatedGenArrayCopy(&(olg_p->label_strings),
-						  lg_p->label_strings,
-						  NhlLG_MAX_BOXES,True,False,
-						  NhlNlgLabelStrings, 
-						  entry_name);
-		
-		if ((ret = MIN(ret,ret_1)) < WARNING) 
-				return ret;
-		lg_p->label_strings = olg_p->label_strings;
-	}
-
-	if (lg_p->label_strings->num_elements < lg_p->box_count) {
-		s_p = (NhlString *) lg_p->label_strings->data;
-		if ((s_p = (NhlString *)
-		     NhlRealloc(s_p, lg_p->box_count * 
-				sizeof (NhlString))) == NULL) {
-			e_text = "%s: error allocating %s data";
-			NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
-				  NhlNlgLabelStrings);
-			return FATAL;
-		}
-		for (i=lg_p->label_strings->num_elements; 
-		     i<lg_p->box_count; i++) {
-			sprintf(number,"%d",i);
-			if ((s_p[i] = (char *)
-			     NhlMalloc(strlen(NhlLG_DEF_STRING) + 
-				       strlen(number) + 1)) == NULL) {
-				e_text = "%s: error creating %s string";
-				NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
-					  NhlNlgLabelStrings);
-				return FATAL;
-			}
-			strcpy(s_p[i],(Const char *)NhlLG_DEF_STRING);
-			strcat(s_p[i],number);
-		}
-
-		lg_p->label_strings->data = (NhlPointer) s_p;
-		lg_p->label_strings->num_elements = lg_p->box_count;
-	}
-
-/*=======================================================================*/
-/* 
- * Manage the box_fraction array. If the box count changes then reset the
- * box fraction array to a default (uniform) state. This is because there
- * is no obvious way to modify explicitly set sizes to handle a different
- * number of boxes. Even if the box_fraction resource is set in the 
- * same call the reset occurs because it is difficult to ensure that 
- * the passed in array contains the appropriate elements for the new 
- * box_count. Note that error checking for the elements of this resource 
- * is handled later. The box fraction array contains one more element than
- * the box count.
- */
-	count = lg_p->box_count + 1;
-	if (lg_p->box_fractions != olg_p->box_fractions) {
-		ret_1 = _NhlValidatedGenArrayCopy(&(olg_p->box_fractions),
-						  lg_p->box_fractions,
-						  NhlLG_MAX_BOXES+1,True,False,
-						  NhlNlgBoxFractions, 
-						  entry_name);
-		
-		if ((ret = MIN(ret,ret_1)) < WARNING) 
-			return ret;
-		lg_p->box_fractions = olg_p->box_fractions;
-	}
-	
-	if (lg_p->box_fractions->num_elements < count) {
-		f_p = (float *) lg_p->box_fractions->data;
-		if ((f_p = (float *)
-		     NhlRealloc(f_p, (count) * 
-				sizeof (float))) == NULL) {
-			e_text = "%s: error allocating %s data";
-			NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
-				  NhlNlgBoxFractions);
-			return FATAL;
-		}
-
-		lg_p->box_fractions->data = (NhlPointer) f_p;
-		lg_p->box_fractions->num_elements = count;
-	}
-
-	if (lg_p->box_count != olg_p->box_count) {
-		f_p = (float *) lg_p->box_fractions->data;
-		f_p[0] = 0.0;
-		for (i=1;i<lg_p->box_count; i++)
-			f_p[i] = -1.0;
-		f_p[lg_p->box_count] = 1.0;
-	}
-
-/*=======================================================================*/
-/*
- * Allocate or reallocate the location arrays: use one more than
- * the current box count so that both ends of the legend can be stored
- */
-
-	if (lg_p->box_count > olg_p->box_count) {
-		if (lg_p->box_locs == NULL) {
-			lg_p->box_locs = (float *) 
-				NhlMalloc((lg_p->box_count+1) * sizeof(float));
-		}
-		else {
-			lg_p->box_locs = (float *) 
-				NhlRealloc(lg_p->box_locs, 
-					   (lg_p->box_count+1) *
-					   sizeof(float));
-		}
-	}
-	
-	return (ret);
-}
 
 /*ARGSUSED*/
 static NhlErrorTypes    InitializeDynamicArrays
@@ -1530,6 +818,7 @@ static NhlErrorTypes    InitializeDynamicArrays
 	float *f_p;
 	int *i_p, *i2_p;
 	NhlString *s_p;
+	float tfloat;
 
 /*=======================================================================*/
 /* Handle the item types array first: the item indexes array depends on
@@ -1537,7 +826,7 @@ static NhlErrorTypes    InitializeDynamicArrays
  * explicitly set so that the gen array free routine will free the data.
  */
 
-	count = MAX(lg_p->box_count, NhlLG_DEF_BOX_COUNT);
+	count = MAX(lg_p->item_count, NhlLG_DEF_ITEM_COUNT);
 	if ((i_p = (int *) NhlMalloc(count * sizeof(int))) == NULL) {
 		e_text = "%s: error creating %s array";
 		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
@@ -1560,7 +849,7 @@ static NhlErrorTypes    InitializeDynamicArrays
 
 	if (lg_p->item_types != NULL) {
 		ret_1 = _NhlValidatedGenArrayCopy(&ga,lg_p->item_types,
-						  NhlLG_MAX_BOXES,True,False,
+						  NhlLG_MAX_ITEMS,True,False,
 						  NhlNlgItemTypes, entry_name);
 		
 		if ((ret = MIN(ret,ret_1)) < WARNING) 
@@ -1594,7 +883,7 @@ static NhlErrorTypes    InitializeDynamicArrays
 		     NhlNwkDashTableLength, &len_1,
 		     NhlNwkMarkerTableLength, &len_2, NULL);
 
-	count = MAX(lg_p->box_count, NhlLG_DEF_BOX_COUNT);
+	count = MAX(lg_p->item_count, NhlLG_DEF_ITEM_COUNT);
 	i_p = (int *) NhlMalloc(count * sizeof(int));
 
 	i2_p = (int *)lg_p->item_types->data;
@@ -1627,7 +916,7 @@ static NhlErrorTypes    InitializeDynamicArrays
 
 	if (lg_p->item_indexes != NULL) {
 		ret_1 = _NhlValidatedGenArrayCopy(&ga,lg_p->item_indexes,
-						  NhlLG_MAX_BOXES,True,False,
+						  NhlLG_MAX_ITEMS,True,False,
 						  NhlNlgItemIndexes, 
 						  entry_name);
 		
@@ -1676,7 +965,7 @@ static NhlErrorTypes    InitializeDynamicArrays
  * these arrays (called label_locs and stride_labels).
  */
 
-	count = MAX(lg_p->box_count, NhlLG_DEF_BOX_COUNT);
+	count = MAX(lg_p->item_count, NhlLG_DEF_ITEM_COUNT);
 	if ((s_p = (NhlString *) 
 	     NhlMalloc(count * sizeof(NhlString))) == NULL) {
 		e_text = "%s: error creating %s array";
@@ -1742,16 +1031,16 @@ static NhlErrorTypes    InitializeDynamicArrays
 
 	NhlGetValues(tnew->base.wkptr->base.id,
 		     NhlNwkColorMapLen, &len_1, NULL);
-	count = MAX(lg_p->box_count, NhlLG_DEF_BOX_COUNT);
+	count = MAX(lg_p->item_count, NhlLG_DEF_ITEM_COUNT);
 	if ((i_p = (int *) NhlMalloc(count * sizeof(int))) == NULL) {
 		e_text = "%s: error creating %s array";
 		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
 			  NhlNlgItemColors);
 		return FATAL;
 	}
-	for (i=0; i < NhlLG_DEF_BOX_COUNT; i++) 
+	for (i=0; i < NhlLG_DEF_ITEM_COUNT; i++) 
 		i_p[i] = def_colors[i];
-	for (i=NhlLG_DEF_BOX_COUNT; i<count; i++)
+	for (i=NhlLG_DEF_ITEM_COUNT; i<count; i++)
 		i_p[i] = i < len_1 ? i : NhlLG_DEF_COLOR;
 			
 	if ((ga = NhlCreateGenArray((NhlPointer)i_p,NhlTInteger,
@@ -1765,7 +1054,7 @@ static NhlErrorTypes    InitializeDynamicArrays
 
 	if (lg_p->item_colors != NULL) {
 		ret_1 = _NhlValidatedGenArrayCopy(&ga,lg_p->item_colors,
-						  NhlLG_MAX_BOXES,True,False,
+						  NhlLG_MAX_ITEMS,True,False,
 						  NhlNlgItemColors, 
 						  entry_name);
 		
@@ -1801,7 +1090,7 @@ static NhlErrorTypes    InitializeDynamicArrays
 
 /* The item thicknesses array */
 
-	count = MAX(lg_p->box_count, NhlLG_DEF_BOX_COUNT);
+	count = MAX(lg_p->item_count, NhlLG_DEF_ITEM_COUNT);
 	if ((f_p = (float *) NhlMalloc(count * sizeof(float))) == NULL) {
 		e_text = "%s: error creating %s array";
 		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
@@ -1825,7 +1114,7 @@ static NhlErrorTypes    InitializeDynamicArrays
 
 	if (lg_p->item_thicknesses != NULL) {
 		ret_1 = _NhlValidatedGenArrayCopy(&ga,lg_p->item_thicknesses,
-						  NhlLG_MAX_BOXES,True,False,
+						  NhlLG_MAX_ITEMS,True,False,
 						  NhlNlgItemThicknesses, 
 						  entry_name);
 		
@@ -1852,7 +1141,7 @@ static NhlErrorTypes    InitializeDynamicArrays
 
 /* The item_text_heights array */
 
-	count = MAX(lg_p->box_count, NhlLG_DEF_BOX_COUNT);
+	count = MAX(lg_p->item_count, NhlLG_DEF_ITEM_COUNT);
 	if ((f_p = (float *) NhlMalloc(count * sizeof(float))) == NULL) {
 		e_text = "%s: error creating %s array";
 		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
@@ -1876,7 +1165,7 @@ static NhlErrorTypes    InitializeDynamicArrays
 
 	if (lg_p->item_text_heights != NULL) {
 		ret_1 = _NhlValidatedGenArrayCopy(&ga,lg_p->item_text_heights,
-						  NhlLG_MAX_BOXES,True,False,
+						  NhlLG_MAX_ITEMS,True,False,
 						  NhlNlgItemTextHeights, 
 						  entry_name);
 		
@@ -1913,7 +1202,7 @@ static NhlErrorTypes    InitializeDynamicArrays
 	lg_p->max_label_stride_count = 0;
 	lg_p->max_label_draw_count = 0;
 
-	count = MAX(lg_p->box_count, NhlLG_DEF_BOX_COUNT);
+	count = MAX(lg_p->item_count, NhlLG_DEF_ITEM_COUNT);
 	if ((s_p = (NhlString *) 
 	     NhlMalloc(count * sizeof(NhlString))) == NULL) {
 		e_text = "%s: error creating %s array";
@@ -1967,44 +1256,45 @@ static NhlErrorTypes    InitializeDynamicArrays
 /* 
  * Set up the box_fraction array. If no array
  * is provided create a uniform array, allowing future modification of 
- * the sizing. Set it up whether or not it is going to be used.
+ * the placement. Set it up whether or not it is going to be used.
  */
 	
-	count = MAX(lg_p->box_count, NhlLG_DEF_BOX_COUNT) + 1;
+	count = MAX(lg_p->item_count, NhlLG_DEF_ITEM_COUNT);
 	if ((f_p = (float *) NhlMalloc(count * sizeof(float))) == NULL) {
 		e_text = "%s: error creating %s array";
 		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
-			  NhlNlgBoxFractions);
+			  NhlNlgItemPositions);
 		return FATAL;
 	}
 	
-	f_p[0] = 0.0;
-	for (i=1;i<lg_p->box_count; i++)
-		f_p[i] = -1.0;
-	f_p[lg_p->box_count] = 1.0;
+	tfloat = 1.0/((float) lg_p->item_count);
+	f_p[0] = tfloat/2.0;
+
+	for (i=1;i<lg_p->item_count; i++)
+		f_p[i] = f_p[0] + (float) i * tfloat;
 	
 	if ((ga = NhlCreateGenArray((NhlPointer)f_p,NhlTFloat,
 				    sizeof(float),1,&count)) == NULL) {
 		e_text = "%s: error creating %s GenArray";
 		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
-			  NhlNlgBoxFractions);
+			  NhlNlgItemPositions);
 		return FATAL;
 	}
 	ga->my_data = True;
 		
 /* If a box fractions array has been passed in, copy it to the ga */
 
-	if (lg_p->box_fractions != NULL) {
-		ret_1 = _NhlValidatedGenArrayCopy(&ga,lg_p->box_fractions,
-						  NhlLG_MAX_BOXES+1,
+	if (lg_p->item_positions != NULL) {
+		ret_1 = _NhlValidatedGenArrayCopy(&ga,lg_p->item_positions,
+						  NhlLG_MAX_ITEMS,
 						  True,False,
-						  NhlNlgBoxFractions, 
+						  NhlNlgItemPositions, 
 						  entry_name);
 		
 		if ((ret = MIN(ret,ret_1)) < WARNING) 
 				return ret;
 	}
-	lg_p->box_fractions = ga;
+	lg_p->item_positions = ga;
 	     
 /*=======================================================================*/
 /*
@@ -2012,20 +1302,1000 @@ static NhlErrorTypes    InitializeDynamicArrays
  * the current box count so that both ends of the legend can be stored
  */
 
-	lg_p->box_locs = (float *) 
-		NhlMalloc((lg_p->box_count+1) * sizeof(float));
+	lg_p->item_locs = (float *) 
+		NhlMalloc((lg_p->item_count+1) * sizeof(float));
 	
 	return (ret);
 }
 
+
+/*
+ * Function:    ManageDynamicArrays
+ *
+ * Description:	Handles changes to any of the Legend object GenArrays after
+ *	their initial creation. 
+ *
+ * In Args:
+ *
+ * Out Args:
+ *
+ * Return Values:
+ *
+ * Side Effects: The internal copy of each GenArray is modified to reflect
+ *	changes requested via LegendSetValues
+ */
+
 /*ARGSUSED*/
-static NhlErrorTypes    AdjustGeometry
+static NhlErrorTypes    ManageDynamicArrays
+#if __STDC__
+	(Layer		new, 
+	Layer		old,
+	_NhlArgList	args,
+	int		num_args)
+#else
+(new,old,args,num_args)
+	Layer		new;
+	Layer		old;
+	_NhlArgList	args;
+	int		num_args;
+#endif
+{
+	LegendLayer	tnew = (LegendLayer) new;
+	LegendLayer	told = (LegendLayer) old;
+	LegendLayerPart *lg_p = &(tnew->legend);
+	LegendLayerPart *olg_p = &(told->legend);
+	NhlErrorTypes ret = NOERROR, ret_1 = NOERROR;
+	int i;
+	int count, len_1, len_2;
+	char number[10];
+	char *entry_name = "LegendSetValues";
+	char *e_text;
+	float *f_p;
+	int *i_p,*i2_p;
+	NhlString *s_p;
+
+/*=======================================================================*/
+/* 
+ * Handle the item types array first: the item indexes array depends on
+ * it being set up correctly.
+ */
+
+
+	count = lg_p->mono_item_type ? 1 : lg_p->item_count;
+
+	if (lg_p->item_types != olg_p->item_types) {
+		
+		ret_1 = _NhlValidatedGenArrayCopy(&(olg_p->item_types),
+						  lg_p->item_types,
+						  NhlLG_MAX_ITEMS,True,False,
+						  NhlNlgItemTypes, entry_name);
+		
+		if ((ret = MIN(ret,ret_1)) < WARNING) 
+				return ret;
+		lg_p->item_types = olg_p->item_types;
+		i_p = (int *) lg_p->item_types->data;
+
+		for (i=0; i<MIN(count,lg_p->item_types->num_elements); i++) {
+			if (i_p[i] != NhlLG_LINES && 
+			    i_p[i] != NhlLG_MARKERS) {
+				e_text =
+		"%s: %s index %d holds an invalid type value: defaulting";
+				NhlPError(WARNING,E_UNKNOWN,e_text,entry_name,
+					  NhlNlgItemTypes, i);
+				ret = MIN(ret, WARNING);
+				i_p[i] = NhlLG_LINES;
+			}
+		}
+	}
+
+	if (lg_p->item_types->num_elements < count) {
+		i_p = (int *) lg_p->item_types->data;
+		if ((i_p = (int *)
+		     NhlRealloc(i_p, count * sizeof (int))) == NULL) {
+			e_text = "%s: error allocating %s data";
+			NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+				  NhlNlgItemTypes);
+			return FATAL;
+		}
+		for (i=lg_p->item_types->num_elements; i<count; i++) {
+			i_p[i] = NhlLG_LINES;
+		}
+
+		lg_p->item_types->data = (NhlPointer) i_p;
+		lg_p->item_types->num_elements = count;
+	}
+
+/*======================================================================*/
+
+/*
+ * Copy the new information if the resource has changed. 
+ * If number of label boxes has increased, gcheck all added values for a
+ * valid pattern index, setting the default pattern index if an invalid
+ * value is found.
+ */
+	
+	
+	i2_p = (int *) lg_p->item_types->data;
+
+	if (lg_p->item_indexes != olg_p->item_indexes) {
+		
+		ret_1 = _NhlValidatedGenArrayCopy(&(olg_p->item_indexes),
+						  lg_p->item_indexes,
+						  NhlLG_MAX_ITEMS,True,False,
+						  NhlNlgItemIndexes,
+						  entry_name);
+		
+		if ((ret = MIN(ret,ret_1)) < WARNING) 
+				return ret;
+
+		lg_p->item_indexes = olg_p->item_indexes;
+		NhlGetValues(tnew->base.wkptr->base.id,
+			     NhlNwkDashTableLength, &len_1,
+			     NhlNwkMarkerTableLength, &len_2, NULL);
+		i_p = (int *) lg_p->item_indexes->data;
+		count = MIN(lg_p->item_count,lg_p->item_indexes->num_elements);
+
+		if (lg_p->mono_item_type && *i2_p == NhlLG_LINES) {
+			for (i=0; i<count; i++)
+				if (i_p[i] < NhlLG_MIN_LINE_INDEX) 
+					i_p[i] = NhlLG_DEF_LINE_INDEX;
+		}
+		else if (lg_p->mono_item_type) {
+			for (i=0; i<count; i++)
+				if (i_p[i] < NhlLG_MIN_MARKER_INDEX)
+					i_p[i] = NhlLG_DEF_MARKER_INDEX;
+		}
+		else {
+			for (i=0; i<count; i++)
+				if (i2_p[i] == NhlLG_LINES)
+					if (i_p[i] < NhlLG_MIN_LINE_INDEX)
+						i_p[i] = NhlLG_DEF_LINE_INDEX;
+				else
+					if (i_p[i] < NhlLG_MIN_MARKER_INDEX)
+						i_p[i]= NhlLG_DEF_MARKER_INDEX;
+			
+		}
+		
+	}
+	
+	if (lg_p->item_indexes->num_elements < lg_p->item_count) {
+		count = lg_p->item_indexes->num_elements;
+		i_p = (int *) lg_p->item_indexes->data;
+		if ((i_p = (int *)
+		     NhlRealloc(i_p, 
+				lg_p->item_count * sizeof (int))) == NULL) {
+			e_text = "%s: error allocating %s data";
+			NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+				  NhlNlgItemIndexes);
+			return FATAL;
+		}
+		for (i=count;i<lg_p->item_count;i++) 
+			i_p[i] = i + 1;
+
+		lg_p->item_indexes->data = (NhlPointer) i_p;
+		lg_p->item_indexes->num_elements = lg_p->item_count;
+	}
+	
+/*=======================================================================*/
+
+/* 
+ * Handle the item strings. Copy the new array into the old.
+ * NULL strings generate an error message and are replaced by empty 
+ * (single byte null terminator) strings within the Validated copy function. 
+ * If the box count has increased, but the string gen array does not 
+ * contain enough elements, the array is resized and default strings are
+ * created for the additional elements.
+ */
+
+	if (lg_p->item_strings != olg_p->item_strings) {
+		
+		ret_1 = _NhlValidatedGenArrayCopy(&(olg_p->item_strings),
+						  lg_p->item_strings,
+						  NhlLG_MAX_ITEMS,True,False,
+						  NhlNlgItemStrings,
+						  entry_name);
+		
+		if ((ret = MIN(ret,ret_1)) < WARNING) 
+				return ret;
+		lg_p->item_strings = olg_p->item_strings;
+	}
+
+	if (lg_p->item_strings->num_elements < lg_p->item_count) {
+		s_p = (NhlString *) lg_p->item_strings->data;
+		if ((s_p = (NhlString *)
+		     NhlRealloc(s_p, lg_p->item_count * 
+				sizeof (NhlString))) == NULL) {
+			e_text = "%s: error allocating %s data";
+			NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+				  NhlNlgItemStrings);
+			return FATAL;
+		}
+		for (i=lg_p->item_strings->num_elements; 
+		     i<lg_p->item_count; i++) {
+			sprintf(number,"%d",i);
+			if ((s_p[i] = (char *)
+			     NhlMalloc(strlen(NhlLG_DEF_ITEM_STRING) + 
+				       strlen(number) + 1)) == NULL) {
+				e_text = "%s: error creating %s string";
+				NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+					  NhlNlgItemStrings);
+				return FATAL;
+			}
+			strcpy(s_p[i],(Const char *)NhlLG_DEF_ITEM_STRING);
+			strcat(s_p[i],number);
+		}
+
+		lg_p->item_strings->data = (NhlPointer) s_p;
+		lg_p->item_strings->num_elements = lg_p->item_count;
+	}
+
+/*=======================================================================*/
+/*
+ * Manage the colors array: if the array has changed copy the new
+ * array elements, check them for validity and get the GKS index.
+ * Then if the box count is greater than the current array size, enlarge
+ * the array and give initial values to the new elements.
+ */
+
+	NhlGetValues(tnew->base.wkptr->base.id,
+		     NhlNwkColorMapLen, &len_1, NULL);
+	count = lg_p->mono_item_color ? 1 : lg_p->item_count;
+
+	if (lg_p->item_colors != olg_p->item_colors) {
+		ret_1 = _NhlValidatedGenArrayCopy(&(olg_p->item_colors),
+						  lg_p->item_colors,
+						  NhlLG_MAX_ITEMS,True,False,
+						  NhlNlgItemColors, 
+						  entry_name);
+		
+		if ((ret = MIN(ret,ret_1)) < WARNING) 
+				return ret;
+		lg_p->item_colors = olg_p->item_colors;
+		i_p = (int *) lg_p->item_colors->data;
+
+		for (i=0; i<MIN(count,lg_p->item_colors->num_elements); i++) {
+			if (i_p[i] < 0 || i_p[i] > len_1) {
+				e_text =
+		"%s: %s index %d holds an invalid color value, %d: defaulting";
+				NhlPError(WARNING,E_UNKNOWN,e_text,entry_name,
+					  NhlNlgItemColors, i, i_p[i]);
+				ret = MIN(ret, WARNING);
+				i_p[i] = NhlLG_DEF_COLOR;
+			}
+			lg_p->gks_colors[i] =
+				_NhlGetGksCi(tnew->base.wkptr, i_p[i]);
+		}
+	}
+
+	if (lg_p->item_colors->num_elements < count) {
+		i_p = (int *) lg_p->item_colors->data;
+		if ((i_p = (int *)
+		     NhlRealloc(i_p, count * sizeof (int))) == NULL) {
+			e_text = "%s: error allocating %s data";
+			NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+				  NhlNlgItemColors);
+			return FATAL;
+		}
+		if ((lg_p->gks_colors = (int *)
+		     NhlRealloc(lg_p->gks_colors, 
+				count * sizeof (int))) == NULL) {
+			e_text = "%s: error allocating private %s data";
+			NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+				  NhlNlgItemColors);
+			return FATAL;
+		}
+		for (i=lg_p->item_colors->num_elements; i<count; i++) {
+			i_p[i] = i < len_1 ? i : NhlLG_DEF_COLOR;
+			lg_p->gks_colors[i] =
+				_NhlGetGksCi(tnew->base.wkptr, i_p[i]);
+		}
+
+		lg_p->item_colors->data = (NhlPointer) i_p;
+		lg_p->item_colors->num_elements = count;
+	}
+/*=======================================================================*/
+/* 
+ * Handle the item_thickness
+ */
+
+	count = lg_p->mono_item_thickness ? 1 : lg_p->item_count;
+
+	if (lg_p->item_thicknesses != olg_p->item_thicknesses) {
+		
+		ret_1 = _NhlValidatedGenArrayCopy(&(olg_p->item_thicknesses),
+						  lg_p->item_thicknesses,
+						  NhlLG_MAX_ITEMS,True,False,
+						  NhlNlgItemThicknesses, 
+						  entry_name);
+		
+		if ((ret = MIN(ret,ret_1)) < WARNING) 
+				return ret;
+		lg_p->item_thicknesses = olg_p->item_thicknesses;
+		f_p = (float *) lg_p->item_thicknesses->data;
+
+		for (i=0; i<MIN(count,
+				lg_p->item_thicknesses->num_elements); i++) {
+			if (f_p[i] <= 0.0) {
+				e_text =
+        "%s: %s index %d holds an invalid item thickness value: defaulting";
+				NhlPError(WARNING,E_UNKNOWN,e_text,entry_name,
+					  NhlNlgItemThicknesses, i);
+				ret = MIN(ret, WARNING);
+				f_p[i] = 1.0;
+			}
+		}
+	}
+
+	if (lg_p->item_thicknesses->num_elements < count) {
+		f_p = (float *) lg_p->item_thicknesses->data;
+		if ((f_p = (float *)
+		     NhlRealloc(f_p, count * sizeof (float))) == NULL) {
+			e_text = "%s: error allocating %s data";
+			NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+				  NhlNlgItemThicknesses);
+			return FATAL;
+		}
+		for (i=lg_p->item_thicknesses->num_elements; i<count; i++) {
+			f_p[i] = 1.0;
+		}
+
+		lg_p->item_thicknesses->data = (NhlPointer) f_p;
+		lg_p->item_thicknesses->num_elements = count;
+	}
+
+/*=======================================================================*/
+/* Item text height is handled similarly to thickness */
+
+	count = lg_p->mono_item_text_height ? 1 : lg_p->item_count;
+
+	if (lg_p->item_text_heights != olg_p->item_text_heights) {
+		
+		ret_1 = _NhlValidatedGenArrayCopy(&(olg_p->item_text_heights),
+						  lg_p->item_text_heights,
+						  NhlLG_MAX_ITEMS,True,False,
+						  NhlNlgItemTextHeights, 
+						  entry_name);
+		
+		if ((ret = MIN(ret,ret_1)) < WARNING) 
+				return ret;
+		lg_p->item_text_heights = olg_p->item_text_heights;
+		f_p = (float *) lg_p->item_text_heights->data;
+
+		for (i=0; i<MIN(count,
+				lg_p->item_text_heights->num_elements); i++) {
+			if (f_p[i] <= 0.0) {
+				e_text =
+        "%s: %s index %d holds an invalid item thickness value: defaulting";
+				NhlPError(WARNING,E_UNKNOWN,e_text,entry_name,
+					  NhlNlgItemTextHeights, i);
+				ret = MIN(ret, WARNING);
+				f_p[i] = 0.01;
+			}
+		}
+	}
+
+	if (lg_p->item_text_heights->num_elements < count) {
+		f_p = (float *) lg_p->item_text_heights->data;
+		if ((f_p = (float *)
+		     NhlRealloc(f_p, count * sizeof (float))) == NULL) {
+			e_text = "%s: error allocating %s data";
+			NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+				  NhlNlgItemTextHeights);
+			return FATAL;
+		}
+		for (i=lg_p->item_text_heights->num_elements; i<count; i++) {
+			f_p[i] = 0.01;
+		}
+
+		lg_p->item_text_heights->data = (NhlPointer) f_p;
+		lg_p->item_text_heights->num_elements = count;
+	}
+
+/*=======================================================================*/
+
+/* 
+ * Handle the label strings. Copy the new array into the old.
+ * NULL strings generate an error message and are replaced by empty 
+ * (single byte null terminator) strings within the Validated copy function. 
+ * If the box count has increased, but the string gen array does not 
+ * contain enough elements, the array is resized and default strings are
+ * created for the additional elements.
+ */
+
+	if (lg_p->label_strings != olg_p->label_strings) {
+		
+		ret_1 = _NhlValidatedGenArrayCopy(&(olg_p->label_strings),
+						  lg_p->label_strings,
+						  NhlLG_MAX_ITEMS,True,False,
+						  NhlNlgLabelStrings, 
+						  entry_name);
+		
+		if ((ret = MIN(ret,ret_1)) < WARNING) 
+				return ret;
+		lg_p->label_strings = olg_p->label_strings;
+	}
+
+	if (lg_p->label_strings->num_elements < lg_p->item_count) {
+		s_p = (NhlString *) lg_p->label_strings->data;
+		if ((s_p = (NhlString *)
+		     NhlRealloc(s_p, lg_p->item_count * 
+				sizeof (NhlString))) == NULL) {
+			e_text = "%s: error allocating %s data";
+			NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+				  NhlNlgLabelStrings);
+			return FATAL;
+		}
+		for (i=lg_p->label_strings->num_elements; 
+		     i<lg_p->item_count; i++) {
+			sprintf(number,"%d",i);
+			if ((s_p[i] = (char *)
+			     NhlMalloc(strlen(NhlLG_DEF_STRING) + 
+				       strlen(number) + 1)) == NULL) {
+				e_text = "%s: error creating %s string";
+				NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+					  NhlNlgLabelStrings);
+				return FATAL;
+			}
+			strcpy(s_p[i],(Const char *)NhlLG_DEF_STRING);
+			strcat(s_p[i],number);
+		}
+
+		lg_p->label_strings->data = (NhlPointer) s_p;
+		lg_p->label_strings->num_elements = lg_p->item_count;
+	}
+
+/*=======================================================================*/
+/* 
+ * Manage the box_fraction array. If the box count changes then reset the
+ * box fraction array to a default (uniform) state. This is because there
+ * is no obvious way to modify explicitly set sizes to handle a different
+ * number of boxes. Even if the box_fraction resource is set in the 
+ * same call the reset occurs because it is difficult to ensure that 
+ * the passed in array contains the appropriate elements for the new 
+ * item_count. Note that error checking for the elements of this resource 
+ * is handled later. The box fraction array contains one more element than
+ * the box count.
+ */
+	if (lg_p->item_positions != olg_p->item_positions) {
+		ret_1 = _NhlValidatedGenArrayCopy(&(olg_p->item_positions),
+						  lg_p->item_positions,
+						  NhlLG_MAX_ITEMS,True,False,
+						  NhlNlgItemPositions, 
+						  entry_name);
+		
+		if ((ret = MIN(ret,ret_1)) < WARNING) 
+			return ret;
+		lg_p->item_positions = olg_p->item_positions;
+	}
+	
+	if (lg_p->item_positions->num_elements < lg_p->item_count) {
+		f_p = (float *) lg_p->item_positions->data;
+		if ((f_p = (float *)
+		     NhlRealloc(f_p, (lg_p->item_count) * 
+				sizeof (float))) == NULL) {
+			e_text = "%s: error allocating %s data";
+			NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+				  NhlNlgItemPositions);
+			return FATAL;
+		}
+
+		lg_p->item_positions->data = (NhlPointer) f_p;
+		lg_p->item_positions->num_elements = lg_p->item_count;
+	}
+
+	if (lg_p->item_count != olg_p->item_count) {
+		float tfloat;
+		f_p = (float *) lg_p->item_positions->data;
+		tfloat = 1.0 / lg_p->item_count;
+		f_p[0] = tfloat / 2.0;
+		for (i=1;i<lg_p->item_count; i++)
+			f_p[i] = f_p[0] + i * tfloat;
+	}
+
+/*=======================================================================*/
+/*
+ * Allocate or reallocate the location arrays: use one more than
+ * the current box count so that both ends of the legend can be stored
+ */
+
+	if (lg_p->item_count > olg_p->item_count) {
+		if (lg_p->item_locs == NULL) {
+			lg_p->item_locs = (float *) 
+				NhlMalloc((lg_p->item_count+1) * 
+					  sizeof(float));
+		}
+		else {
+			lg_p->item_locs = (float *) 
+				NhlRealloc(lg_p->item_locs, 
+					   (lg_p->item_count+1) *
+					   sizeof(float));
+		}
+	}
+	
+	return (ret);
+}
+
+
+/*
+ * Function: SetLegendGeometry
+ *
+ * Description:	Performs a rough division of the space available for the
+ *		Legend into item area, label area and title area. Depending
+ *		on the situation some of these areas are adjusted later.
+ *
+ * In Args:
+ *
+ * Out Args: Error conditions
+ *
+ * Return Values:
+ *
+ * Side Effects: There are no calls to Get or Set Values so the args and
+ *               num_args arguments are not required.
+ */
+
+/*ARGSUSED*/
+static NhlErrorTypes    SetLegendGeometry
+#if __STDC__
+	 (Layer new, 
+	 _NhlArgList args,
+	 int num_args)
+#else
+(new,args,num_args)
+	Layer		new;
+	_NhlArgList	args;
+	int		num_args;
+#endif
+{
+	LegendLayer	tnew = (LegendLayer) new;
+	LegendLayerPart *lg_p = &(tnew->legend);
+	enum {NO_TITLE, MINOR_AXIS, MAJOR_AXIS} title_loc;
+	float bar_ext, max_title_ext, adj_perim_width, adj_perim_height;
+	float small_axis;
+	float title_off = 0.0, angle_adj = 0.0;
+	float title_angle, tan_t;
+
+/* Calculate the ndc margin from the fractional margin */
+
+	small_axis = MIN(lg_p->lg_width, lg_p->lg_height);
+
+	lg_p->adj_perim.l = lg_p->perim.l + lg_p->margin.l * small_axis;
+	lg_p->adj_perim.r = lg_p->perim.r - lg_p->margin.r * small_axis;
+	lg_p->adj_perim.b = lg_p->perim.b + lg_p->margin.b * small_axis;
+	lg_p->adj_perim.t = lg_p->perim.t - lg_p->margin.t * small_axis;
+	adj_perim_width = lg_p->adj_perim.r - lg_p->adj_perim.l;
+	adj_perim_height = lg_p->adj_perim.t - lg_p->adj_perim.b;
+		
+/*
+ * Check the title extent to make sure it does not exceed the hard-coded
+ * limit; then locate the title
+ */
+	if (lg_p->auto_manage && 
+	    lg_p->max_title_ext + lg_p->title_off > 0.5) {
+		/* need a WARNING */
+		lg_p->max_title_ext = NhlLG_DEF_MAX_TITLE_EXT;
+		lg_p->title_off = NhlLG_DEF_TITLE_OFF;
+	}
+	title_angle = lg_p->title_angle * DEGTORAD;
+	tan_t = fabs(sin(title_angle)) / 
+		     MAX(0.01, fabs(cos(title_angle)));
+		    
+	if (!lg_p->title_on)
+		title_loc = NO_TITLE;
+	else if (lg_p->orient == NhlHORIZONTAL) {
+		if (lg_p->title_pos == NhlRIGHT ||
+		    lg_p->title_pos == NhlLEFT) {
+			title_loc = MAJOR_AXIS;
+			title_off = lg_p->title_off * adj_perim_width;
+			if (lg_p->title_direction == ACROSS)
+				angle_adj = adj_perim_height / tan_t;
+			else
+				angle_adj = adj_perim_height * tan_t;
+						
+		}
+		else {
+			title_loc = MINOR_AXIS;
+			title_off = lg_p->title_off * adj_perim_height;
+			if (lg_p->title_direction == ACROSS)
+				angle_adj = adj_perim_width * tan_t; 
+			else
+				angle_adj = adj_perim_width / tan_t;
+		}
+	}
+	else {
+		if (lg_p->title_pos == NhlRIGHT ||
+		    lg_p->title_pos == NhlLEFT) {
+			title_loc = MINOR_AXIS;
+			title_off = lg_p->title_off * adj_perim_width;
+			if (lg_p->title_direction == ACROSS)
+				angle_adj = adj_perim_height / tan_t;
+			else
+				angle_adj = adj_perim_height * tan_t;
+		}
+		else {
+			title_loc = MAJOR_AXIS;
+			title_off = lg_p->title_off * adj_perim_height;
+			if (lg_p->title_direction == ACROSS)
+				angle_adj = adj_perim_width * tan_t; 
+			else
+				angle_adj = adj_perim_width / tan_t;
+		}
+	}
+/*
+ * If not in auto manage mode the title offset should make the label bar
+ * grow. By setting it to 0.0 here, it will be added into the total size
+ * in the AdjustGeometry routine.
+ */
+
+	if (! lg_p->auto_manage) {
+		title_off = 0.0;
+	}
+
+/*
+ * Silently modify the label position if not appropriate for the
+ * current legend orientation. Also determine the maximum critical
+ * angle for label angle adjustments.
+ */
+
+	if (lg_p->orient == NhlHORIZONTAL) {
+		switch (lg_p->label_pos) {
+		case NhlLEFT:
+			lg_p->label_pos = NhlTOP;
+			break;
+		case NhlRIGHT:
+			lg_p->label_pos = NhlBOTTOM;
+			break;
+		}
+	}
+	else {
+		switch (lg_p->label_pos) {
+		case NhlBOTTOM:
+			lg_p->label_pos = NhlRIGHT;
+			break;
+		case NhlTOP:
+			lg_p->label_pos = NhlLEFT;
+			break;
+		}
+
+	}
+		
+/*
+ * Determine dimensions: first pass determines basic position for
+ * title, bar and labels. Bar dimensions may be adjusted later to 
+ * ensure that labels are visible.
+ */
+	if (lg_p->orient == NhlHORIZONTAL) {
+		bar_ext = adj_perim_height * lg_p->box_minor_ext;
+		switch (title_loc) {
+
+		case NO_TITLE:
+			lg_p->bar.l = lg_p->adj_perim.l;
+			lg_p->bar.r = lg_p->adj_perim.r;
+			lg_p->labels.l = lg_p->bar.l;
+			lg_p->labels.r = lg_p->bar.r;
+					
+			if (! lg_p->labels_on || 
+			    lg_p->label_pos == NhlCENTER) {
+				lg_p->bar.b = lg_p->adj_perim.b +
+					(adj_perim_height - bar_ext) / 2.0;
+				lg_p->bar.t = lg_p->bar.b + bar_ext;
+				lg_p->labels.b = lg_p->bar.b;
+				lg_p->labels.t = lg_p->bar.t;
+			}
+			else if (lg_p->label_pos == NhlTOP) {
+				lg_p->bar.b = lg_p->adj_perim.b;
+				lg_p->bar.t = lg_p->bar.b + bar_ext;
+				lg_p->labels.b = lg_p->bar.t;
+				lg_p->labels.t = lg_p->adj_perim.t;
+			}
+			else if (lg_p->label_pos == NhlBOTTOM) {
+				lg_p->bar.b = lg_p->adj_perim.t - bar_ext;
+				lg_p->bar.t = lg_p->adj_perim.t;
+				lg_p->labels.b = lg_p->adj_perim.b;
+				lg_p->labels.t = lg_p->bar.b;
+			}
+			break;
+
+		case MAJOR_AXIS:
+			
+			max_title_ext = 
+				MIN(lg_p->max_title_ext * adj_perim_width,
+					adj_perim_height / 
+					strlen(lg_p->title_string) + 
+					angle_adj);
+			lg_p->title.b = lg_p->adj_perim.b;
+			lg_p->title.t = lg_p->adj_perim.t;
+				
+			if (lg_p->title_pos == NhlLEFT) {
+				lg_p->bar.l = lg_p->adj_perim.l +
+					max_title_ext + title_off;
+				lg_p->bar.r = lg_p->adj_perim.r;
+				lg_p->title.l = lg_p->adj_perim.l;
+				lg_p->title.r = lg_p->bar.l - title_off;
+			}
+			else if (lg_p->title_pos == NhlRIGHT) {
+				lg_p->bar.l = lg_p->adj_perim.l;
+				lg_p->bar.r = lg_p->adj_perim.r - 
+					max_title_ext - title_off;
+				lg_p->title.l = lg_p->bar.r + title_off;
+				lg_p->title.r = lg_p->adj_perim.r;
+			}
+			lg_p->labels.l = lg_p->bar.l;
+			lg_p->labels.r = lg_p->bar.r;
+
+			if (! lg_p->labels_on || 
+			    lg_p->label_pos == NhlCENTER) {
+				lg_p->bar.b = lg_p->adj_perim.b +
+					(adj_perim_height - bar_ext) / 2.0;
+				lg_p->bar.t = lg_p->bar.b + bar_ext;
+				lg_p->labels.b = lg_p->bar.b;
+				lg_p->labels.t = lg_p->bar.t;
+			}
+			else if (lg_p->label_pos == NhlTOP) {
+				lg_p->bar.b = lg_p->adj_perim.b;
+				lg_p->bar.t = lg_p->bar.b + bar_ext;
+				lg_p->labels.b = lg_p->bar.t;
+				lg_p->labels.t = lg_p->adj_perim.t;
+			}
+			else if (lg_p->label_pos == NhlBOTTOM) {
+				lg_p->bar.b = lg_p->adj_perim.t - bar_ext;
+				lg_p->bar.t = lg_p->adj_perim.t;
+				lg_p->labels.b = lg_p->adj_perim.b;
+				lg_p->labels.t = lg_p->bar.b;
+			}
+			break;
+
+		case MINOR_AXIS:
+
+			max_title_ext = 
+				MIN(lg_p->max_title_ext * adj_perim_height,
+					adj_perim_width / 
+					strlen(lg_p->title_string) + 
+					angle_adj);
+			if (max_title_ext + title_off + bar_ext > 
+			    adj_perim_height) {
+				/* need a WARNING */
+				printf("adjusting bar size smaller\n");
+				bar_ext = adj_perim_height - 
+					max_title_ext - title_off;
+				lg_p->box_minor_ext = 
+					bar_ext / adj_perim_height;
+			}
+			lg_p->title.l = lg_p->adj_perim.l;
+			lg_p->title.r = lg_p->adj_perim.r;
+			lg_p->bar.l = lg_p->adj_perim.l;
+			lg_p->bar.r = lg_p->adj_perim.r;
+			lg_p->labels.l = lg_p->adj_perim.l;
+			lg_p->labels.r = lg_p->adj_perim.r;
+				
+			if (lg_p->title_pos == NhlBOTTOM) {
+				lg_p->title.b = lg_p->adj_perim.b;
+				lg_p->title.t = lg_p->adj_perim.b + 
+					max_title_ext;
+				lg_p->bar.b = lg_p->title.t + title_off;
+				lg_p->bar.t = lg_p->adj_perim.t;
+			}
+			else if (lg_p->title_pos == NhlTOP) {
+				lg_p->bar.b = lg_p->adj_perim.b;
+				lg_p->bar.t = lg_p->adj_perim.t - 
+					max_title_ext - title_off;
+				lg_p->title.b = lg_p->bar.t + title_off;
+				lg_p->title.t = lg_p->adj_perim.t;
+			}
+
+			
+			if (!lg_p->labels_on || lg_p->label_pos == NhlCENTER) {
+				lg_p->bar.b = (lg_p->bar.t - lg_p->bar.b - 
+					       bar_ext) / 2.0 + lg_p->bar.b;
+				lg_p->bar.t = lg_p->bar.b + bar_ext;
+				lg_p->labels.b = lg_p->bar.b;
+				lg_p->labels.t = lg_p->bar.t;
+			}
+			else if (lg_p->label_pos == NhlTOP) {
+				lg_p->labels.t = lg_p->bar.t;
+				lg_p->bar.t = lg_p->bar.b + bar_ext;
+				lg_p->labels.b = lg_p->bar.t;
+			}
+			else if (lg_p->label_pos == NhlBOTTOM) {
+				lg_p->labels.b = lg_p->bar.b;
+				lg_p->bar.b = lg_p->bar.t - bar_ext;
+				lg_p->labels.t = lg_p->bar.b;
+			}
+			break;
+		default:
+			/* need error message */
+			return FATAL;
+		}
+		/* get the box size */
+		
+		lg_p->box_size.x = 
+			(lg_p->bar.r - lg_p->bar.l) / lg_p->item_count;
+		lg_p->box_size.y = lg_p->bar.t - lg_p->bar.b;
+	}
+
+	else { /* NhlVERTICAL */
+
+		bar_ext = adj_perim_width * lg_p->box_minor_ext;
+
+		switch (title_loc) {
+
+		case NO_TITLE:
+			lg_p->bar.b = lg_p->adj_perim.b;
+			lg_p->bar.t = lg_p->adj_perim.t;
+			lg_p->labels.b = lg_p->adj_perim.b;
+			lg_p->labels.t = lg_p->adj_perim.t;
+					
+			if (!lg_p->labels_on || lg_p->label_pos == NhlCENTER) {
+				lg_p->bar.l = lg_p->adj_perim.l +
+					(adj_perim_width - bar_ext) / 2.0;
+				lg_p->bar.r = lg_p->bar.l + bar_ext;
+				lg_p->labels.l = lg_p->bar.l;
+				lg_p->labels.r = lg_p->bar.r;
+			}
+			else if (lg_p->label_pos == NhlRIGHT) {
+				lg_p->bar.l = lg_p->adj_perim.l;
+				lg_p->bar.r = lg_p->bar.l + bar_ext;
+				lg_p->labels.l = lg_p->bar.r;
+				lg_p->labels.r = lg_p->adj_perim.r;
+			}
+			else if (lg_p->label_pos == NhlLEFT) {
+				lg_p->bar.l = lg_p->adj_perim.r - bar_ext;
+				lg_p->bar.r = lg_p->adj_perim.r;
+				lg_p->labels.l = lg_p->adj_perim.l;
+				lg_p->labels.r = lg_p->bar.l;
+			}
+			break;
+
+		case MAJOR_AXIS:
+			max_title_ext = 
+				MIN(lg_p->max_title_ext * adj_perim_height,
+					adj_perim_width / 
+					strlen(lg_p->title_string) + 
+					angle_adj);
+
+			lg_p->title.l = lg_p->adj_perim.l;
+			lg_p->title.r = lg_p->adj_perim.r;
+				
+			if (lg_p->title_pos == NhlBOTTOM) {
+				lg_p->bar.b = lg_p->adj_perim.b + 
+					max_title_ext + title_off;
+				lg_p->bar.t = lg_p->adj_perim.t;
+				lg_p->title.b = lg_p->adj_perim.b;
+				lg_p->title.t = lg_p->bar.b - title_off;
+			}
+			else if (lg_p->title_pos == NhlTOP) {
+				lg_p->bar.b = lg_p->adj_perim.b;
+				lg_p->bar.t = lg_p->adj_perim.t - 
+					max_title_ext - title_off;
+				lg_p->title.b = lg_p->bar.t + title_off;
+				lg_p->title.t = lg_p->adj_perim.t;
+			}
+			lg_p->labels.b = lg_p->bar.b;
+			lg_p->labels.t = lg_p->bar.t;
+
+			if (! lg_p->labels_on || 
+			    lg_p->label_pos == NhlCENTER) {
+				lg_p->bar.l = lg_p->adj_perim.l +
+					(adj_perim_width - bar_ext) / 2.0;
+				lg_p->bar.r = lg_p->bar.l + bar_ext;
+				lg_p->labels.l = lg_p->bar.l;
+				lg_p->labels.r = lg_p->bar.r;
+			}
+			else if (lg_p->label_pos == NhlRIGHT) {
+				lg_p->bar.l = lg_p->adj_perim.l;
+				lg_p->bar.r = lg_p->bar.l + bar_ext;
+				lg_p->labels.l = lg_p->bar.r;
+				lg_p->labels.r = lg_p->adj_perim.r;
+			}
+			else if (lg_p->label_pos == NhlLEFT) {
+				lg_p->bar.l = lg_p->adj_perim.r - bar_ext;
+				lg_p->bar.r = lg_p->adj_perim.r;
+				lg_p->labels.l = lg_p->adj_perim.l;
+				lg_p->labels.r = lg_p->bar.l;
+			}
+			break;
+
+		case MINOR_AXIS:
+
+			max_title_ext = 
+				MIN(lg_p->max_title_ext * adj_perim_width,
+					adj_perim_height / 
+					strlen(lg_p->title_string) + 
+					angle_adj);
+			if (max_title_ext + title_off + bar_ext > 
+			    adj_perim_width) {
+				/* need a WARNING */
+				printf("adjusting bar size smaller\n");
+				bar_ext = adj_perim_width - 
+					max_title_ext - title_off;
+				lg_p->box_minor_ext = 
+					bar_ext / adj_perim_width;
+			}
+
+			lg_p->title.b = lg_p->adj_perim.b;
+			lg_p->title.t = lg_p->adj_perim.t;
+			lg_p->bar.b = lg_p->adj_perim.b;
+			lg_p->bar.t = lg_p->adj_perim.t;
+			lg_p->labels.b = lg_p->adj_perim.b;
+			lg_p->labels.t = lg_p->adj_perim.t;
+				
+			if (lg_p->title_pos == NhlLEFT) {
+				lg_p->title.l = lg_p->adj_perim.l;
+				lg_p->title.r = lg_p->adj_perim.l + 
+					max_title_ext;
+				lg_p->bar.l = lg_p->title.r + title_off;
+				lg_p->bar.r = lg_p->adj_perim.r;
+			}
+			else if (lg_p->title_pos == NhlRIGHT) {
+				lg_p->bar.l = lg_p->adj_perim.l;
+				lg_p->bar.r = lg_p->adj_perim.r - 
+					max_title_ext - title_off;
+				lg_p->title.l = lg_p->bar.r + title_off;
+				lg_p->title.r = lg_p->adj_perim.r;
+			}
+
+			
+			if (!lg_p->labels_on || lg_p->label_pos == NhlCENTER) {
+				lg_p->bar.l = (lg_p->bar.r - lg_p->bar.l - 
+					       bar_ext) / 2.0 + lg_p->bar.l;
+				lg_p->bar.r = lg_p->bar.l + bar_ext;
+				lg_p->labels.l = lg_p->bar.l;
+				lg_p->labels.r = lg_p->bar.r;
+			}
+			else if (lg_p->label_pos == NhlRIGHT) {
+				lg_p->labels.r = lg_p->bar.r;
+				lg_p->bar.r = lg_p->bar.l + bar_ext;
+				lg_p->labels.l = lg_p->bar.r;
+			}
+			else if (lg_p->label_pos == NhlLEFT) {
+				lg_p->labels.l = lg_p->bar.l;
+				lg_p->bar.l = lg_p->bar.r - bar_ext;
+				lg_p->labels.r = lg_p->bar.l;
+			}
+			break;
+		default:
+			/* need error message */
+			return FATAL;
+		}
+		lg_p->box_size.x = lg_p->bar.r - lg_p->bar.l;
+		lg_p->box_size.y = 
+			(lg_p->bar.t - lg_p->bar.b) / lg_p->item_count;
+	}
+
+	return NOERROR;
+				
+}
+
+
+/*
+ * Function: SetTitle
+ *
+ * Description:	Calculates the title extent, then creates or sets the
+ *	attributes of child text object used for the title. In auto-manage 
+ *	mode, retrieves the bounding box of the child after a preliminary
+ *	setting of the text height, and then resets the text height to fit
+ *	into the space available.
+ *	This routine needs performance evaluation and tuning.
+ *	
+ *
+ * In Args:
+ *
+ * Out Args:
+ *
+ * Return Values:
+ *
+ * Side Effects: 
+ *	Calls to NhlSetValues or NhlCreate modify attributes of the child
+ *	text object.
+ */
+
+/*ARGSUSED*/
+static NhlErrorTypes    SetTitle
 #if __STDC__
 	(Layer		new, 
 	Layer		old,
 	int		init,
 	_NhlArgList	args,
-	int		num_args)
+	int		 num_args)
 #else
 (new,old,init,args,num_args)
 	Layer		new;
@@ -2036,344 +2306,182 @@ static NhlErrorTypes    AdjustGeometry
 #endif
 {
 	LegendLayer	tnew = (LegendLayer) new;
+	LegendLayer	told = (LegendLayer) old;
 	LegendLayerPart *lg_p = &(tnew->legend);
+	LegendLayerPart *olg_p = &(told->legend);
 	NhlErrorTypes ret = NOERROR, ret1 = NOERROR;
+	char buffer[MAXRESNAMLEN];
+	char *c_p;
 	NhlBoundingBox titleBB;
-	NhlBoundingBox labelsBB;
-	NhlBoundingBox legendBB;
-	NhlBoundingBox tmpBB;
-	float title_x = lg_p->title_x;
-	float title_y = lg_p->title_y;
-	float pos_offset = 0.0;
-	float obj_offset = 0.0;
-	float x_off, y_off;
-	float small_axis;
-	float minor_off;
-	float major_off;
-	float center_off;
-	int i;
-
-	small_axis = MIN(lg_p->lg_width, lg_p->lg_height);
-/*
- * Get the bounding box of the labels, then adjust the box if it
- * overlaps the bar boundary. Next combine the two bounding boxes,
- * and adjust both the bar and the labels to the center of the combined box.
- */
-	if (! lg_p->labels_on) {
-		legendBB.l = lg_p->adj_bar.l;
-		legendBB.r = lg_p->adj_bar.r;
-		legendBB.b = lg_p->adj_bar.b;
-		legendBB.t = lg_p->adj_bar.t;
-	}
-	else {
-		if ((ret1 = NhlGetBB(lg_p->labels_id, &labelsBB)) < WARNING)
-			return ret1;
-		ret = MIN(ret1,ret);
-		
-		if (lg_p->orient == NhlHORIZONTAL) {
-			
-			obj_offset = lg_p->label_off * 
-				(lg_p->adj_perim.t - lg_p->adj_perim.b);
-			if (lg_p->label_pos == NhlTOP) {
-				if (labelsBB.b < 
-				    lg_p->adj_bar.t + obj_offset) {
-					pos_offset = lg_p->adj_bar.t + 
-						obj_offset - labelsBB.b;
-				}
-			}
-			else if (lg_p->label_pos == NhlBOTTOM) {
-				if (labelsBB.t > 
-				    lg_p->adj_bar.b - obj_offset) {
-					pos_offset = lg_p->adj_bar.b - 
-						obj_offset - labelsBB.t;
-				}
-			}
-			labelsBB.b += pos_offset;
-			labelsBB.t += pos_offset;
-		}
-		else {
-			
-			obj_offset = lg_p->label_off * 
-				(lg_p->adj_perim.r - lg_p->adj_perim.l);
-			if (lg_p->label_pos == NhlRIGHT) {
-				if (labelsBB.l < 
-				    lg_p->adj_bar.r + obj_offset) {
-					pos_offset = lg_p->adj_bar.r + 
-						obj_offset - labelsBB.l;
-				}
-			}
-			else if (lg_p->label_pos == NhlLEFT) {
-				if (labelsBB.r > 
-				    lg_p->adj_bar.l - obj_offset) {
-					pos_offset = lg_p->adj_bar.l - 
-						obj_offset - labelsBB.r;
-				}
-				
-			}
-			labelsBB.l += pos_offset;
-			labelsBB.r += pos_offset;
-		}
-		
-		tmpBB.l = MIN(labelsBB.l, lg_p->adj_bar.l);
-		tmpBB.r = MAX(labelsBB.r, lg_p->adj_bar.r);
-		tmpBB.b = MIN(labelsBB.b, lg_p->adj_bar.b);
-		tmpBB.t = MAX(labelsBB.t, lg_p->adj_bar.t);
-		legendBB.l = MIN(tmpBB.l, lg_p->labels.l);
-		legendBB.r = MAX(tmpBB.r, lg_p->labels.r);
-		legendBB.b = MIN(tmpBB.b, lg_p->labels.b);
-		legendBB.t = MAX(tmpBB.t, lg_p->labels.t);
-
-		if (lg_p->orient == NhlHORIZONTAL) {
-
-			center_off = (legendBB.t - tmpBB.t + 
-				      legendBB.b - tmpBB.b) / 2.0;
-			labelsBB.b += center_off;
-			labelsBB.t += center_off;
-			lg_p->adj_bar.b += center_off;
-			lg_p->adj_bar.t += center_off;
-			pos_offset += center_off;
-		}
-		else {
-
-			center_off = (legendBB.r - tmpBB.r +
-				      legendBB.l - tmpBB.l) / 2.0;
-			labelsBB.l += center_off;
-			labelsBB.r += center_off;
-			lg_p->adj_bar.l += center_off;
-			lg_p->adj_bar.r += center_off;
-			pos_offset += center_off;
-		}		
-		
-	}
+	float w, h, wta, hta, factor, height;
 
 /*
- * handle the title
+ * Only initialize a text item for the title if it is turned on
+ * and the maximum title extent is greater than 0.0.
  */
-	if (! lg_p->title_on || lg_p->max_title_ext <= 0.0) {
-		titleBB.l = legendBB.l;
-		titleBB.r = legendBB.r;
-		titleBB.b = legendBB.b;
-		titleBB.t = legendBB.t;
-	}
-	else {
-		if ((ret1 = NhlGetBB(lg_p->title_id, &titleBB)) < WARNING)
-			return ret1;
-		ret = MIN(ret1,ret);
-		
-		
-		/*
-		 * Adjust for the title: 
-		 * first move it out of the way of the legend, 
-		 * then adjust for possibly larger justification area.
-		 */
-		
-		
-		if (lg_p->title_pos == NhlBOTTOM || lg_p->title_pos == NhlTOP)
-			obj_offset = lg_p->title_off *
-				(lg_p->adj_perim.t - lg_p->adj_perim.b);
-		else
-			obj_offset = lg_p->title_off *
-				(lg_p->adj_perim.r - lg_p->adj_perim.l);
-		if (lg_p->title_pos == NhlBOTTOM &&
-		    titleBB.t > legendBB.b - obj_offset) {
-			title_y -= titleBB.t + obj_offset - legendBB.b;
-		}
-		else if (lg_p->title_pos == NhlTOP &&
-			 titleBB.b < legendBB.t + obj_offset) {
-			title_y += legendBB.t + obj_offset - titleBB.b;
-		}
-		else if (lg_p->title_pos == NhlLEFT &&
-			 titleBB.r > legendBB.l - obj_offset) {
-			title_x -= titleBB.r + obj_offset - legendBB.l;
-		}
-		else if (lg_p->title_pos == NhlRIGHT &&
-			 titleBB.l < legendBB.r + obj_offset) {
-			title_x += legendBB.r + obj_offset - titleBB.l;
-		}
-		
-		if (lg_p->title_pos == NhlTOP
-		    || lg_p->title_pos == NhlBOTTOM) {
-			switch (lg_p->title_just) {
-			case NhlBOTTOMLEFT:
-			case NhlCENTERLEFT:
-			case NhlTOPLEFT:
-				title_x = legendBB.l;
-				break;
-			case NhlBOTTOMCENTER:
-			case NhlCENTERCENTER:
-			case NhlTOPCENTER:
-			default:
-				title_x = legendBB.l + 
-					(legendBB.r - legendBB.l) / 2.0;
-				break;
-			case NhlBOTTOMRIGHT:
-			case NhlCENTERRIGHT:
-			case NhlTOPRIGHT:
-				title_x = legendBB.r;
-				break;
-			}
-		}
-		else if (lg_p->title_pos == NhlLEFT
-			 || lg_p->title_pos == NhlRIGHT) {
-			switch (lg_p->title_just) {
-			case NhlBOTTOMLEFT:
-			case NhlBOTTOMCENTER:
-			case NhlBOTTOMRIGHT:
-				title_y = legendBB.b;
-				break;
-			case NhlCENTERLEFT:
-			case NhlCENTERCENTER:
-			case NhlCENTERRIGHT:
-			default:
-				title_y = legendBB.b + 
-					(legendBB.t - legendBB.b) / 2.0;
-				break;
-			case NhlTOPLEFT:
-			case NhlTOPCENTER:
-			case NhlTOPRIGHT:
-				title_y = legendBB.t;
-				break;
-			}
-		}
-		titleBB.l += title_x - lg_p->title_x;
-		titleBB.r += title_x - lg_p->title_x;
-		titleBB.b += title_y - lg_p->title_y;
-		titleBB.t += title_y - lg_p->title_y;
-		titleBB.l = MIN(titleBB.l, lg_p->title.l);
-		titleBB.r = MAX(titleBB.r, lg_p->title.r);
-		titleBB.b = MIN(titleBB.b, lg_p->title.b);
-		titleBB.t = MAX(titleBB.t, lg_p->title.t);
-	}
-/*
- * Determine the real perimeter and set the view accordingly
- */
-
-	lg_p->real_perim.l = MIN(legendBB.l - lg_p->margin.l * small_axis, 
-				 titleBB.l - lg_p->margin.l * small_axis);
-	lg_p->real_perim.r = MAX(legendBB.r + lg_p->margin.r * small_axis, 
-				 titleBB.r + lg_p->margin.r * small_axis);
-	lg_p->real_perim.b = MIN(legendBB.b - lg_p->margin.b * small_axis, 
-				 titleBB.b - lg_p->margin.b * small_axis);
-	lg_p->real_perim.t = MAX(legendBB.t + lg_p->margin.t * small_axis, 
-				 titleBB.t + lg_p->margin.t * small_axis);
+	if (!lg_p->title_on || lg_p->max_title_ext <= 0.0)
+		return ret;
 
 /*
- * Adjust position based on the justification
+ * If the title string is NULL, create a default string.
+ * The default string is the name of the label bar object
  */
-	switch (lg_p->just) {
+	if (lg_p->title_string == NULL) {
+                lg_p->title_string = (char*)
+                        NhlMalloc((unsigned)strlen(tnew->base.name) +1);
+                strcpy(lg_p->title_string,tnew->base.name);
+        } 
+	else if (init) {
+                c_p = lg_p->title_string;
+                lg_p->title_string = (char*)NhlMalloc((unsigned)strlen(c_p)+1);
+                strcpy(lg_p->title_string,c_p);
+        }
+	else if (lg_p->title_string != olg_p->title_string) {
+		NhlFree(olg_p->title_string);
+		c_p = lg_p->title_string;
+		lg_p->title_string = (char*)NhlMalloc((unsigned)strlen(c_p)+1);
+		strcpy(lg_p->title_string, c_p);
+	}
 
+	switch (lg_p->title_just) {
 	case NhlBOTTOMLEFT:
-		x_off = lg_p->real_perim.l - lg_p->perim.l;
-		y_off = lg_p->real_perim.b - lg_p->perim.b;
-		break;
-	case NhlCENTERLEFT:
-		x_off = lg_p->real_perim.l - lg_p->perim.l;
-		y_off = lg_p->real_perim.b + 
-			(lg_p->real_perim.t - lg_p->real_perim.b)/2.0 -
-				(lg_p->lg_y - lg_p->lg_height/2.0);
-		break;
-	case NhlTOPLEFT:
-		x_off = lg_p->real_perim.l - lg_p->perim.l;
-		y_off = lg_p->real_perim.t - lg_p->perim.t;
+		lg_p->title_x = lg_p->title.l;
+		lg_p->title_y = lg_p->title.b;
 		break;
 	case NhlBOTTOMCENTER:
-		x_off = lg_p->real_perim.l + 
-			(lg_p->real_perim.r - lg_p->real_perim.l)/2.0 -
-				(lg_p->lg_x + lg_p->lg_width/2.0);
-		y_off = lg_p->real_perim.b - lg_p->perim.b;
+		lg_p->title_x = lg_p->title.l +
+			(lg_p->title.r - lg_p->title.l)/2.0;
+		lg_p->title_y = lg_p->title.b;
+		break;
+	case NhlBOTTOMRIGHT:
+		lg_p->title_x = lg_p->title.r;
+		lg_p->title_y = lg_p->title.b;
+		break;
+	case NhlCENTERLEFT:
+		lg_p->title_x = lg_p->title.l;
+		lg_p->title_y = lg_p->title.b +
+			(lg_p->title.t - lg_p->title.b)/2.0;
 		break;
 	case NhlCENTERCENTER:
 	default:
-		x_off = lg_p->real_perim.l + 
-			(lg_p->real_perim.r - lg_p->real_perim.l)/2.0 -
-				(lg_p->lg_x + lg_p->lg_width/2.0);
-		y_off = lg_p->real_perim.b + 
-			(lg_p->real_perim.t - lg_p->real_perim.b)/2.0 -
-				(lg_p->lg_y - lg_p->lg_height/2.0);
-		break;
-	case NhlTOPCENTER:
-		x_off = lg_p->real_perim.l + 
-			(lg_p->real_perim.r - lg_p->real_perim.l)/2.0 -
-				(lg_p->lg_x + lg_p->lg_width/2.0);
-		y_off = lg_p->real_perim.t - lg_p->perim.t;
-		break;
-	case NhlBOTTOMRIGHT:
-		x_off = lg_p->real_perim.r - lg_p->perim.r;
-		y_off = lg_p->real_perim.b - lg_p->perim.b;
+		lg_p->title_x = lg_p->title.l +
+			(lg_p->title.r - lg_p->title.l)/2.0;
+		lg_p->title_y = lg_p->title.b +
+			(lg_p->title.t - lg_p->title.b)/2.0;
 		break;
 	case NhlCENTERRIGHT:
-		x_off = lg_p->real_perim.r - lg_p->perim.r;
-		y_off = lg_p->real_perim.b + 
-			(lg_p->real_perim.t - lg_p->real_perim.b)/2.0 -
-				(lg_p->lg_y - lg_p->lg_height/2.0);
+		lg_p->title_x = lg_p->title.r;
+		lg_p->title_y = lg_p->title.b +
+			(lg_p->title.t - lg_p->title.b)/2.0;
+		break;
+	case NhlTOPLEFT:
+		lg_p->title_x = lg_p->title.l;
+		lg_p->title_y = lg_p->title.t;
+		break;
+	case NhlTOPCENTER:
+		lg_p->title_x = lg_p->title.l +
+			(lg_p->title.r - lg_p->title.l)/2.0;
+		lg_p->title_y = lg_p->title.t;
 		break;
 	case NhlTOPRIGHT:
-		x_off = lg_p->real_perim.r - lg_p->perim.r;
-		y_off = lg_p->real_perim.t - lg_p->perim.t;
+		lg_p->title_x = lg_p->title.r;
+		lg_p->title_y = lg_p->title.t;
+		break;
 	}
 
-	minor_off = (lg_p->orient == NhlHORIZONTAL) ? y_off : x_off;
-	major_off = (lg_p->orient == NhlHORIZONTAL) ? x_off : y_off;
-/*
- * Adjust the perimeter
- */
+	if (lg_p->title_height <= 0.0) 
+		height = NhlLG_DEF_CHAR_HEIGHT;
+	else 
+		height = lg_p->title_height;
 
-	lg_p->real_perim.l -= x_off;
-	lg_p->real_perim.r -= x_off;
-	lg_p->real_perim.b -= y_off;
-	lg_p->real_perim.t -= y_off;
-/*
- * Adjust the bar position
- */
-
-	lg_p->adj_bar.l -= x_off;
-	lg_p->adj_bar.r -= x_off;
-	lg_p->adj_bar.b -= y_off;
-	lg_p->adj_bar.t -= y_off;
-	for (i=0; i<lg_p->box_count+1; i++) {
-		lg_p->box_locs[i] -= major_off;
-	}
-/*
- * Adjust the labels position
- */
-
-	if (lg_p->labels_on) {
-		for (i=0; i<lg_p->label_draw_count; i++) {
-			lg_p->label_locs[i] -= major_off;
-		}
+	if (init || lg_p->title_id < 0) {
+		strcpy(buffer,tnew->base.name);
+		strcat(buffer,".Title");
+		ret1 = NhlCreate(&lg_p->title_id,
+				 buffer,textItemLayerClass,
+				 tnew->base.id,
+				 NhlNtxFont,lg_p->title_font,
+				 NhlNtxString,lg_p->title_string,
+				 NhlNtxPosXF,lg_p->title_x,
+				 NhlNtxPosYF,lg_p->title_y,
+				 NhlNtxDirection,lg_p->title_direction,
+				 NhlNtxAngleF,lg_p->title_angle,
+				 NhlNtxJust,(int)lg_p->title_just,
+				 NhlNtxFontColor,lg_p->title_color,
+				 NhlNtxFontHeightF,height,
+				 NhlNtxFontAspectF,lg_p->title_aspect,
+				 NhlNtxConstantSpacingF,
+				 	lg_p->title_const_spacing,
+				 NhlNtxFontQuality,lg_p->title_quality,
+				 NhlNtxFuncCode,lg_p->title_func_code,
+				 NhlNtxFontThicknessF,lg_p->title_thickness,
+				 NULL);
 		
-		if ((ret1 = NhlSetValues(lg_p->labels_id,
-					 NhlNMtextConstPosF,
-					 lg_p->const_pos + 
-					 pos_offset - minor_off,
-					 NhlNMtextPosArray,lg_p->label_locs,
-					 NULL)) < WARNING)
-			return (ret1);
-		ret = MIN(ret1,ret);
 	}
+	else {
+		ret1 = NhlSetValues(lg_p->title_id,
+				    NhlNtxFont,lg_p->title_font,
+				    NhlNtxString,lg_p->title_string,
+				    NhlNtxPosXF,lg_p->title_x,
+				    NhlNtxPosYF,lg_p->title_y,
+				    NhlNtxDirection,lg_p->title_direction,
+				    NhlNtxAngleF,lg_p->title_angle,
+				    NhlNtxJust,(int)lg_p->title_just,
+				    NhlNtxFontColor,lg_p->title_color,
+				    NhlNtxFontHeightF,height,
+				    NhlNtxFontAspectF,lg_p->title_aspect,
+				    NhlNtxConstantSpacingF,
+				    	lg_p->title_const_spacing,
+				    NhlNtxFontQuality,lg_p->title_quality,
+				    NhlNtxFuncCode,lg_p->title_func_code,
+				    NhlNtxFontThicknessF,lg_p->title_thickness,
+				    NULL);
+	}
+	ret = MIN(ret,ret1);
+
 /*
- * Set the title position
+ * If title_height is 0.0 or auto-manage is in effect adjust the title
+ * to the space available
  */
-
-	if (lg_p->title_on && lg_p->max_title_ext > 0.0) {
-		title_x -= x_off;
-		title_y -= y_off;
-		if ((ret1 = NhlSetValues(lg_p->title_id,
-					 NhlNtxPosXF, title_x,
-					 NhlNtxPosYF, title_y,
-					 NULL)) < WARNING)
-			return (ret1);
-		ret = MIN(ret1,ret);
+	ret1 = NhlGetBB(lg_p->title_id, &titleBB);
+	ret = MIN(ret,ret1);
+	
+	w=titleBB.r-titleBB.l;
+	h=titleBB.t-titleBB.b;
+	if (w <= 0.0 || h <= 0.0) {
+		printf("error getting BB\n");
 	}
-
-	_NhlInternalSetView((ViewLayer)tnew,
-			    lg_p->real_perim.l, lg_p->real_perim.t,
-			    lg_p->real_perim.r - lg_p->real_perim.l,
-			    lg_p->real_perim.t - lg_p->real_perim.b,
-			    False);
-	return (ret);
-
+	wta=lg_p->title.r-lg_p->title.l;
+	hta=lg_p->title.t-lg_p->title.b;
+	if (wta <= 0.0 || hta <= 0.0) {
+		printf("error in title area\n");
+	}
+	if (lg_p->title_height <= 0.0 || lg_p->auto_manage) {
+		factor = wta / w < hta / h ? wta / w : hta / h;
+		lg_p->title_height = height * factor;
+	}
+	ret1 = NhlSetValues(lg_p->title_id,
+			    NhlNtxFontHeightF,lg_p->title_height,
+			    NULL);
+	return MIN(ret1,ret);
 }
+
+
+/*
+ * Function:  SetBoxLocations
+ *
+ * Description:	Sets the position of each Legend item. If the item placement
+ *	mode is explicit, first calls an internal function to check and 
+ *	coerce the item_positions array into a proper sequence of values.
+ *
+ * In Args:
+ *
+ * Out Args:
+ *
+ * Return Values:
+ *
+ * Side Effects: The item_positions GenArray may be modified.
+ */
 
 /*ARGSUSED*/
 static NhlErrorTypes    SetBoxLocations
@@ -2398,11 +2506,13 @@ static NhlErrorTypes    SetBoxLocations
 	LegendLayerPart *lg_p = &(tnew->legend);
 	NhlErrorTypes ret = NOERROR, ret1 = NOERROR;
 	float bar_len;
+	float box_len;
 	int i;
-	float *box_fractions = (float *)lg_p->box_fractions->data;
+	float *item_positions = (float *)lg_p->item_positions->data;
 
-	if (lg_p->box_sizing == NhlLG_EXPLICITSIZING) {
-		ret1 = ManageBoxFractionsArray(box_fractions,lg_p->box_count);
+	if (lg_p->item_placement == NhlLG_EXPLICITPLACEMENT) {
+		ret1 = ManageItemPositionsArray(item_positions,
+						lg_p->item_count);
 	}
 	ret = MIN(ret,ret1);
 
@@ -2414,10 +2524,10 @@ static NhlErrorTypes    SetBoxLocations
 	       sizeof(NhlBoundingBox));
 	memcpy((void *)&lg_p->adj_box_size, (Const void *)&lg_p->box_size,
 	       sizeof(NhlCoord));
-	if (lg_p->label_alignment == NhlLG_ABOVEBOXES) {
+	if (lg_p->label_alignment == NhlLG_ABOVEITEMS) {
 		if (lg_p->orient == NhlHORIZONTAL) {
 			lg_p->adj_box_size.x = lg_p->box_size.x * 
-				lg_p->box_count / (lg_p->box_count + 0.5);
+				lg_p->item_count / (lg_p->item_count + 0.5);
 			lg_p->adj_bar.r = 
 				lg_p->bar.r - lg_p->adj_box_size.x / 2.0;
 			lg_p->labels.l = 
@@ -2425,17 +2535,17 @@ static NhlErrorTypes    SetBoxLocations
 		}
 		else {
 			lg_p->adj_box_size.y = lg_p->box_size.y * 
-				lg_p->box_count / (lg_p->box_count + 0.5);
+				lg_p->item_count / (lg_p->item_count + 0.5);
 			lg_p->adj_bar.t = 
 				lg_p->bar.t - lg_p->adj_box_size.y / 2.0;
 			lg_p->labels.b = 
 				lg_p->bar.b + lg_p->adj_box_size.y / 2.0;
 		}
 	}
-	else if (lg_p->label_alignment == NhlLG_BELOWBOXES) {
+	else if (lg_p->label_alignment == NhlLG_BELOWITEMS) {
 		if (lg_p->orient == NhlHORIZONTAL) {
 			lg_p->adj_box_size.x = lg_p->box_size.x * 
-				lg_p->box_count / (lg_p->box_count + 0.5);
+				lg_p->item_count / (lg_p->item_count + 0.5);
 			lg_p->adj_bar.l = 
 				lg_p->bar.l + lg_p->adj_box_size.x / 2.0;
 			lg_p->labels.l = lg_p->bar.l;
@@ -2444,7 +2554,7 @@ static NhlErrorTypes    SetBoxLocations
 		}
 		else {
 			lg_p->adj_box_size.y = lg_p->box_size.y * 
-				lg_p->box_count / (lg_p->box_count + 0.5);
+				lg_p->item_count / (lg_p->item_count + 0.5);
 			lg_p->adj_bar.b = 
 				lg_p->bar.b + lg_p->adj_box_size.y / 2.0;
 			lg_p->labels.t = 
@@ -2452,71 +2562,95 @@ static NhlErrorTypes    SetBoxLocations
 		}
 	}
 
+
 /*
  * create an array of the left or bottom varying coordinates -- 
  */
 		
 	if (lg_p->orient == NhlHORIZONTAL &&
-	    lg_p->box_sizing == NhlLG_UNIFORMSIZING) {
-		for (i=0; i < lg_p->box_count; i++) {
-			lg_p->box_locs[i] = lg_p->adj_bar.l + 
-				(float) i * lg_p->adj_box_size.x;
+	    lg_p->item_placement == NhlLG_UNIFORMPLACEMENT) {
+		bar_len = lg_p->adj_bar.r - lg_p->adj_bar.l;
+		box_len = bar_len / (lg_p->item_count);
+		lg_p->item_locs[0] = lg_p->adj_bar.l + 0.5 * box_len;
+		for (i=1; i < lg_p->item_count; i++) {
+			lg_p->item_locs[i] = lg_p->item_locs[0] + i * box_len;
 		}
-		lg_p->box_locs[lg_p->box_count] = lg_p->adj_bar.r;
+		lg_p->item_locs[lg_p->item_count] = lg_p->adj_bar.r;
 	}
 	if (lg_p->orient == NhlVERTICAL &&
-	    lg_p->box_sizing == NhlLG_UNIFORMSIZING) {
-		for (i=0; i < lg_p->box_count; i++) {
-			lg_p->box_locs[i] = lg_p->adj_bar.b + 
-				(float) i * lg_p->adj_box_size.y;
+	    lg_p->item_placement == NhlLG_UNIFORMPLACEMENT) {
+		bar_len = lg_p->adj_bar.t - lg_p->adj_bar.b;
+		box_len = bar_len / (lg_p->item_count);
+		lg_p->item_locs[0] = lg_p->adj_bar.b + 0.5 * box_len;
+		for (i=1; i < lg_p->item_count; i++) {
+			lg_p->item_locs[i] = lg_p->item_locs[0] + i * box_len;
 		}
-		lg_p->box_locs[lg_p->box_count] = lg_p->adj_bar.t;
+		lg_p->item_locs[lg_p->item_count] = lg_p->adj_bar.t;
 	}
 	if (lg_p->orient == NhlHORIZONTAL &&
-	    lg_p->box_sizing == NhlLG_EXPLICITSIZING) {
+	    lg_p->item_placement == NhlLG_EXPLICITPLACEMENT) {
 		bar_len = lg_p->adj_bar.r - lg_p->adj_bar.l;
-		for (i=0; i < lg_p->box_count; i++) {
-			lg_p->box_locs[i] = lg_p->adj_bar.l + 
-				bar_len * box_fractions[i];
+		for (i=0; i < lg_p->item_count; i++) {
+			lg_p->item_locs[i] = lg_p->adj_bar.l + 
+				bar_len * item_positions[i];
 		}
-		lg_p->box_locs[lg_p->box_count] = lg_p->adj_bar.r;
+		lg_p->item_locs[lg_p->item_count] = lg_p->adj_bar.r;
 	}
 	if (lg_p->orient == NhlVERTICAL &&
-	    lg_p->box_sizing == NhlLG_EXPLICITSIZING) {
+	    lg_p->item_placement == NhlLG_EXPLICITPLACEMENT) {
 		bar_len = lg_p->adj_bar.t - lg_p->adj_bar.b;
-		for (i=0; i < lg_p->box_count; i++) {
-			lg_p->box_locs[i] = lg_p->adj_bar.b + 
-				bar_len * box_fractions[i];
+		for (i=0; i < lg_p->item_count; i++) {
+			lg_p->item_locs[i] = lg_p->adj_bar.b + 
+				bar_len * item_positions[i];
 		}
-		lg_p->box_locs[lg_p->box_count] = lg_p->adj_bar.t;
+		lg_p->item_locs[lg_p->item_count] = lg_p->adj_bar.t;
 	}
-
 	return(ret);
 
 }
 
 
-
+/*
+ * Function: ManageItemPositionsArray
+ *
+ * Description:	Finds and modifies out-of-range values in the item positions
+ *	array, so that a monotonically increasing set of values is returned. 
+ *	The assumption is that negative values are placed intentionally, in
+ *	order to force linear division of the subspace between two properly
+ *	ascending bounding values in the array. Values that are out-of-range
+ *	in some other way, such as exceeding the value of a subsequent 
+ *	element, are flagged with an informational message but still are
+ *	coerced into a proper sequence.
+ *	
+ * In Args:
+ *
+ * Out Args:
+ *
+ * Return Values:
+ *
+ * Side Effects: The item_positions GenArray may be modified.
+ */
 
 /*ARGSUSED*/
-static NhlErrorTypes    ManageBoxFractionsArray
+static NhlErrorTypes    ManageItemPositionsArray
 #if __STDC__
-	(float *box_fractions, 
+	(float *item_positions, 
 	 int count) 
 #else
-(box_fractions, count)
-	float *box_fractions;
+(item_positions, count)
+	float *item_positions;
 	int count;
 #endif
 
 {
 	int i, first_neg = -1;
 	int ret = NOERROR;
+	float last_val = 0.0, last_good_val = 0.0;
 			
 /*
  * At this point it should be guaranteed that the box_fraction array exists
  * and it is of the correct length.
- * Now check the validity of the explicit sizing fractions. Negative values
+ * Now check the validity of the explicit placement fractions. Negative values
  * are not an error, but cause equal divisions between the two surrounding
  * specified values. Non-monotonically increasing positive values, or
  * values greater than 1.0 are an error causing a warning. However, this
@@ -2525,88 +2659,161 @@ static NhlErrorTypes    ManageBoxFractionsArray
 	/* deal with first element manually, since in the loop the
 	   previous element must be compared */
 
-	/* the first value must be 0.0 and the last 1.0 */
-
-	if (box_fractions[0] < 0.0)
-		box_fractions[0] = 0.0;
-	else if (box_fractions[0] > 0.0) {
+	if (item_positions[0] < 0.0)
+		first_neg = 0;
+	else if (item_positions[0] > 1.0) {
 		NhlPError(WARNING,E_UNKNOWN,
 			  "Modifying invalid box fraction array element: 0");
 		ret = WARNING;
-		box_fractions[0] = 0.0;
-	}
-	if (box_fractions[count] < 0.0)
-		box_fractions[count] = 1.0;
-	else if (box_fractions[count] != 1.0) {
-		NhlPError(WARNING,E_UNKNOWN,
-			  "Modifying invalid box fraction array element: %d",
-			  count);
-		ret = WARNING;
-		box_fractions[count] = 1.0;
+		item_positions[0] = -1.0;
+		first_neg = 0;
 	}
 
-	for (i=1; i<count+1;i++) {
-		if (box_fractions[i] < 0.0) {
-			if (first_neg == -1)
+	for (i=1; i<count;i++) {
+		if (item_positions[i] < 0.0) {
+			if (first_neg == -1) {
+				last_good_val = last_val;
 				first_neg = i;
+			}
 		}
 		else if (first_neg != -1) {
-			if (box_fractions[i] > 1.0 ||
-			    box_fractions[i] <=
-			    box_fractions[first_neg-1]) {
-				NhlPError(WARNING,E_UNKNOWN,
-		    "Modifying invalid box fraction array element: %d",i);
-				ret = WARNING;
-				box_fractions[i] = -1.0;
+			if (item_positions[i] > 1.0 ||
+			    item_positions[i] < last_good_val) {
+				NhlPError(INFO,E_UNKNOWN,
+		    "Modifying out-of-range box fraction array element: %d",i);
+				ret = INFO;
+				item_positions[i] = -1.0;
+				last_good_val = last_val;
+				first_neg = i;
 			}
 			else {
-				CreateIntermediates(box_fractions, 
-						    first_neg, i);
+				CreateIntermediates(item_positions, 
+						    last_good_val, 
+						    first_neg, i, count-1);
 				first_neg = -1;
+				last_val = item_positions[i];
 			}
 		}
-		else if (box_fractions[i] > 1.0 ||
-			 (box_fractions[i] <= box_fractions[i-1])) {
-			NhlPError(WARNING,E_UNKNOWN,
-		        "Modifying invalid box fraction array element: %d",i);
-			ret = WARNING;
-			box_fractions[i] = -1.0;
+		else if (item_positions[i] > 1.0 ||
+			 (item_positions[i] < last_val)) {
+			NhlPError(INFO,E_UNKNOWN,
+		    "Modifying out-of-range box fraction array element: %d",i);
+			ret = INFO;
+			item_positions[i] = -1.0;
+			last_good_val = last_val;
 			first_neg = i;
 		}
+		else {
+			last_val = item_positions[i];
+		}
 	}
+/*
+ * handle case of out-of-range final element
+ */
+	if (first_neg != -1) {
+		CreateIntermediates(item_positions, 
+				    last_good_val, 
+				    first_neg, count-1, count-1);
+	}
+	
 	return (ret);
 }
 
+
 /*
- * Creates evenly spaced values to replace negative values in the
- * box fractions array. The start value is the index of the first
- * negative value in the chain; the end value is the index of the
- * first non-negative value. Since the zeroth value has been dealt with
- * separately, it is not necessary to test for it here.
+ * Function: CreateIntermediates
+ *
+ * Description:	
+ *
+ * 	Creates evenly spaced values to replace negative values in the
+ * 	item positions array. The start value is the index of the first
+ * 	negative value in the chain; the end value is the index of the
+ * 	first non-negative value. Note that the default distance between
+ *	the boundary of the items area and the first or last items is half
+ *	of the normal distance between items.
+ *
+ * In Args:
+ *
+ * Out Args:
+ *
+ * Return Values:
+ *
+ * Side Effects: Modifies the contents of the item positions array
  */
 
 static void CreateIntermediates
 #if __STDC__
 	(float		*flist,
+	 float		base_val,
 	 int		start,
-	 int		end)
+	 int		end,
+         int		last)
 #else
-(flist,start,end)
+(flist,base_val,start,end,last)
 	float		*flist;
+        float		base_val;
 	int		start;
 	int		end;
+        int		last;
 #endif
 {
 	float	spacing;
-	int	count;
+	int	cnt;
 	int	i;
+	float	tfloat;
 
-	count = end - start + 1;
-	spacing = (flist[end] - flist[start - 1]) / count;
-	for (i=0; i<count-1; i++) {
-		flist[start+i] = flist[start-1] + (float) (i+1) * spacing;
+	if (end == last && flist[end] < 0.0) {
+		if (start == 0) {
+			cnt = last+1;
+			tfloat = 1.0/((float) cnt);
+			flist[0] = tfloat/2.0;
+			for (i=1;i<cnt; i++)
+				flist[i] = flist[0] + i * tfloat;
+		}
+		else {
+			cnt = (end - start + 1) * 2 + 1;
+			spacing = 2 * (1.0 - base_val) / (float) cnt;
+			for (i=0;i<cnt/2;i++)
+				flist[start+i] = base_val + (i+1) * spacing;
+		}
+	}
+	
+	else if (start == 0) {
+		cnt = end * 2 + 1;
+		spacing = flist[end] / (float) cnt;
+		flist[start] = spacing;
+		for (i=1;i<cnt/2;i++)
+			flist[start+i] = flist[start] + i * 2 * spacing;
+	}
+	else {
+		cnt = end - start + 1;
+		spacing = (flist[end] - base_val) / (float) cnt;
+		for (i=0; i<cnt-1; i++)
+			flist[start+i] = base_val + (i+1) * spacing;
 	}
 }
+
+/*
+ * Function:  SetLabels
+ *
+ * Description:	Calculates the attributes of the Legend labels
+ *	and creates or sets the child multi-text object that is responsible
+ *	for rendering the labels. If in auto-manage mode the bounding box
+ *	of the multitext object is inquired after a preliminary setting of
+ *	the attributes, and then another internal function is called to
+ *	adjust the height and/or justification of the multi-text object in
+ *	order to ensure that the labels do not overlap on rotation. 
+ *	Note: there is code in this routine for label stride. However, label
+ *	stride is not a supported option for the Legend object. 
+ *
+ * In Args:
+ *
+ * Out Args:
+ *
+ * Return Values:
+ *
+ * Side Effects: Modifies attibutes of the child multi-text object.
+ */
 
 /*ARGSUSED*/
 static NhlErrorTypes    SetLabels
@@ -2663,7 +2870,7 @@ static NhlErrorTypes    SetLabels
  * AdjustGeometry routine.
  */ 
 
-	count = lg_p->box_count;
+	count = lg_p->item_count;
 		
 /*
  * If the label stride is greater than 1, find the number of
@@ -2756,7 +2963,7 @@ static NhlErrorTypes    SetLabels
  * offset is negative
  */
 	if (lg_p->label_pos == NhlCENTER || label_offset < 0.0) {
-		if (lg_p->label_alignment == NhlLG_BOXCENTERS) {
+		if (lg_p->label_alignment == NhlLG_ITEMCENTERS) {
 			c_frac = lg_p->box_major_ext;
 		}
 		else {
@@ -2886,56 +3093,74 @@ static NhlErrorTypes    SetLabels
  * Now find the variable label positions
  */
 
-	if (lg_p->box_sizing == NhlLG_UNIFORMSIZING) {
-
-		if (lg_p->orient == NhlHORIZONTAL) {
+	if (lg_p->orient == NhlHORIZONTAL) {
 		
-			/* position array contains X values */
-
-			base_pos = lg_p->adj_bar.l;
-		       
-			/* determine offset */
-			if (lg_p->label_alignment == NhlLG_BOXCENTERS)
-				offset = lg_p->adj_box_size.x / 2.0;
-			else if (lg_p->label_alignment == NhlLG_ABOVEBOXES)
-				offset = lg_p->adj_box_size.x;
-			else
-				offset = 0;
-
-			increment = lg_p->adj_box_size.x * lg_p->label_stride;
-		}
-		else if (lg_p->orient == NhlVERTICAL) {
+		/* position array contains X values */
 		
-			/* position array contains Y values */
-
-			base_pos = lg_p->adj_bar.b;
-		       
-			/* determine offset */
-			if (lg_p->label_alignment == NhlLG_BOXCENTERS)
-				offset = lg_p->adj_box_size.y / 2.0;
-			else if (lg_p->label_alignment == NhlLG_ABOVEBOXES)
-				offset = lg_p->adj_box_size.y;
-			else
-				offset = 0;
-
-			increment = lg_p->adj_box_size.y * lg_p->label_stride;
-		}
+		base_pos = lg_p->adj_bar.l;
+		
+		/* determine offset */
+		if (lg_p->label_alignment == NhlLG_ITEMCENTERS)
+			offset = lg_p->adj_box_size.x / 2.0;
+		else if (lg_p->label_alignment == NhlLG_ABOVEITEMS)
+			offset = lg_p->adj_box_size.x;
+		else
+			offset = 0;
+		
+		increment = lg_p->adj_box_size.x * lg_p->label_stride;
+	}
+	else if (lg_p->orient == NhlVERTICAL) {
+		
+		/* position array contains Y values */
+		
+		base_pos = lg_p->adj_bar.b;
+		
+		/* determine offset */
+		if (lg_p->label_alignment == NhlLG_ITEMCENTERS)
+			offset = lg_p->adj_box_size.y / 2.0;
+		else if (lg_p->label_alignment == NhlLG_ABOVEITEMS)
+			offset = lg_p->adj_box_size.y;
+		else
+			offset = 0;
+		
+		increment = lg_p->adj_box_size.y * lg_p->label_stride;
+	}
+	if (lg_p->item_placement == NhlLG_UNIFORMPLACEMENT) {
 		for (i=0; i<lg_p->label_draw_count; i++) 
 			lg_p->label_locs[i] = base_pos + offset + 
 				(float) i * increment;
 	}
 	else {
+		if (lg_p->orient == NhlHORIZONTAL)
+			offset = lg_p->adj_box_size.x/2.0;
+		else
+			offset = lg_p->adj_box_size.y/2.0;
 		for (i=0; i < lg_p->label_draw_count; i++) {
 
 			ix = i * lg_p->label_stride;
-			if (lg_p->label_alignment == NhlLG_BOXCENTERS)
-				lg_p->label_locs[i] = lg_p->box_locs[ix] +
-					(lg_p->box_locs[ix+1] -
-					  lg_p->box_locs[ix]) / 2.0;
-			else if (lg_p->label_alignment == NhlLG_ABOVEBOXES)
-				lg_p->label_locs[i] = lg_p->box_locs[ix+1];
-			else
-				lg_p->label_locs[i] = lg_p->box_locs[ix];
+			if (lg_p->label_alignment == NhlLG_ITEMCENTERS)
+				lg_p->label_locs[i] = lg_p->item_locs[ix];
+			else if (lg_p->label_alignment == NhlLG_ABOVEITEMS) {
+				float t;
+				if (i == lg_p->label_draw_count - 1)
+					t = lg_p->item_locs[ix+1] - 
+						lg_p->item_locs[ix];
+				else 
+					t = 0.5 * (lg_p->item_locs[ix+1] - 
+						lg_p->item_locs[ix]);
+				lg_p->label_locs[i] = lg_p->item_locs[ix] +
+					MIN(t, offset);
+			}
+			else {
+				float t;
+				if (i == 0) 
+					t = lg_p->item_locs[ix] - base_pos;
+				else
+					t = 0.5 * (lg_p->item_locs[ix] - 
+						   lg_p->item_locs[ix-1]);
+				lg_p->label_locs[i] = lg_p->item_locs[ix] -
+					MIN(t, offset);
+			}
 
 		}
 	}
@@ -3003,18 +3228,29 @@ static NhlErrorTypes    SetLabels
 				   max_strlen, larea.x, larea.y);
 		ret = MIN(ret, ret1);
 	}
-
 	return (ret);
 }
 
+
 /*
- * This function adjusts the label height to fit
- * the size it has available. This should probably be replaced by an option
- * within Multitext itself. The routine tries to ensure that under 
- * any rotation, no piece of multitext overlap another piece of the 
- * same text. The text size is adjusted based on some primitive 
- * heuristics to accomplish this. Also the label text justification is
- * managed to ensure that the label always lines up with its correct box.
+ * Function: AdjustLabels
+ *
+ * Description:	Adjusts the label height to fit the size it has available. 
+ *	This should probably be replaced by an option
+ * 	within Multitext itself. The routine tries to ensure that under 
+ * 	any rotation, no piece of multitext overlap another piece of the 
+ * 	same text. The text size is adjusted based on some primitive 
+ * 	heuristics to accomplish this. Also the label text justification is
+ * 	managed to ensure that the label always lines up with its correct box.
+ *
+ * In Args:
+ *
+ * Out Args:
+ *
+ * Return Values:
+ *
+ * Side Effects: Modifies the text height and justification of the child
+ *	multi-text object
  */
 
 #define NhlLG_TRANSITIONANGLE 7.5
@@ -3344,14 +3580,39 @@ static NhlErrorTypes   	AdjustLabels
 	return (ret);
 }
 
+
+/*
+ * Function: AdjustGeometry
+ *
+ * Description: Called after all individual elements of the Legend have been
+ *	sized in order to ensure that no elements overlap and that the 
+ *	overall size of the Legend is big enough to accommodate the specified
+ *	size of each element in the Legend. When auto-manage mode is turned
+ *     	both the width and height of the Legend may be expanded; when 
+ *	auto-manage is on, only one direction (the major axis) may expand.
+ *	Elements of the Legend may be moved relative to each other in order
+ *	to eliminate overlap. Finally the routine adjusts the Legend position
+ *	as a whole depending on the setting of the Legend justification
+ *	resource.
+ *
+ * In Args:
+ *
+ * Out Args:
+ *
+ * Return Values:
+ *
+ * Side Effects: The bounding box of the Legend may be modified, and the
+ *	title and label child objects may be repositioned.
+ */
+
 /*ARGSUSED*/
-static NhlErrorTypes    SetTitle
+static NhlErrorTypes    AdjustGeometry
 #if __STDC__
 	(Layer		new, 
 	Layer		old,
 	int		init,
 	_NhlArgList	args,
-	int		 num_args)
+	int		num_args)
 #else
 (new,old,init,args,num_args)
 	Layer		new;
@@ -3362,604 +3623,521 @@ static NhlErrorTypes    SetTitle
 #endif
 {
 	LegendLayer	tnew = (LegendLayer) new;
-	LegendLayer	told = (LegendLayer) old;
 	LegendLayerPart *lg_p = &(tnew->legend);
-	LegendLayerPart *olg_p = &(told->legend);
 	NhlErrorTypes ret = NOERROR, ret1 = NOERROR;
-	char buffer[MAXRESNAMLEN];
-	char *c_p;
 	NhlBoundingBox titleBB;
-	float w, h, wta, hta, factor, height;
+	NhlBoundingBox labelsBB;
+	NhlBoundingBox legendBB;
+	NhlBoundingBox tmpBB;
+	float title_x = lg_p->title_x;
+	float title_y = lg_p->title_y;
+	float pos_offset = 0.0;
+	float obj_offset = 0.0;
+	float x_off, y_off;
+	float small_axis;
+	float minor_off;
+	float major_off;
+	float center_off;
+	int i;
 
+	small_axis = MIN(lg_p->lg_width, lg_p->lg_height);
 /*
- * Only initialize a text item for the title if it is turned on
- * and the maximum title extent is greater than 0.0.
+ * Get the bounding box of the labels, then adjust the box if it
+ * overlaps the bar boundary. Next combine the two bounding boxes,
+ * and adjust both the bar and the labels to the center of the combined box.
  */
-	if (!lg_p->title_on || lg_p->max_title_ext <= 0.0)
-		return ret;
+	if (! lg_p->labels_on) {
+		legendBB.l = lg_p->adj_bar.l;
+		legendBB.r = lg_p->adj_bar.r;
+		legendBB.b = lg_p->adj_bar.b;
+		legendBB.t = lg_p->adj_bar.t;
+	}
+	else {
+		if ((ret1 = NhlGetBB(lg_p->labels_id, &labelsBB)) < WARNING)
+			return ret1;
+		ret = MIN(ret1,ret);
+		
+		if (lg_p->orient == NhlHORIZONTAL) {
+			
+			obj_offset = lg_p->label_off * 
+				(lg_p->adj_perim.t - lg_p->adj_perim.b);
+			if (lg_p->label_pos == NhlTOP) {
+				if (labelsBB.b < 
+				    lg_p->adj_bar.t + obj_offset) {
+					pos_offset = lg_p->adj_bar.t + 
+						obj_offset - labelsBB.b;
+				}
+			}
+			else if (lg_p->label_pos == NhlBOTTOM) {
+				if (labelsBB.t > 
+				    lg_p->adj_bar.b - obj_offset) {
+					pos_offset = lg_p->adj_bar.b - 
+						obj_offset - labelsBB.t;
+				}
+			}
+			labelsBB.b += pos_offset;
+			labelsBB.t += pos_offset;
+		}
+		else {
+			
+			obj_offset = lg_p->label_off * 
+				(lg_p->adj_perim.r - lg_p->adj_perim.l);
+			if (lg_p->label_pos == NhlRIGHT) {
+				if (labelsBB.l < 
+				    lg_p->adj_bar.r + obj_offset) {
+					pos_offset = lg_p->adj_bar.r + 
+						obj_offset - labelsBB.l;
+				}
+			}
+			else if (lg_p->label_pos == NhlLEFT) {
+				if (labelsBB.r > 
+				    lg_p->adj_bar.l - obj_offset) {
+					pos_offset = lg_p->adj_bar.l - 
+						obj_offset - labelsBB.r;
+				}
+				
+			}
+			labelsBB.l += pos_offset;
+			labelsBB.r += pos_offset;
+		}
+		
+		tmpBB.l = MIN(labelsBB.l, lg_p->adj_bar.l);
+		tmpBB.r = MAX(labelsBB.r, lg_p->adj_bar.r);
+		tmpBB.b = MIN(labelsBB.b, lg_p->adj_bar.b);
+		tmpBB.t = MAX(labelsBB.t, lg_p->adj_bar.t);
+		legendBB.l = MIN(tmpBB.l, lg_p->labels.l);
+		legendBB.r = MAX(tmpBB.r, lg_p->labels.r);
+		legendBB.b = MIN(tmpBB.b, lg_p->labels.b);
+		legendBB.t = MAX(tmpBB.t, lg_p->labels.t);
 
-/*
- * If the title string is NULL, create a default string.
- * The default string is the name of the label bar object
- */
-	if (lg_p->title_string == NULL) {
-                lg_p->title_string = (char*)
-                        NhlMalloc((unsigned)strlen(tnew->base.name) +1);
-                strcpy(lg_p->title_string,tnew->base.name);
-        } 
-	else if (init) {
-                c_p = lg_p->title_string;
-                lg_p->title_string = (char*)NhlMalloc((unsigned)strlen(c_p)+1);
-                strcpy(lg_p->title_string,c_p);
-        }
-	else if (lg_p->title_string != olg_p->title_string) {
-		NhlFree(olg_p->title_string);
-		c_p = lg_p->title_string;
-		lg_p->title_string = (char*)NhlMalloc((unsigned)strlen(c_p)+1);
-		strcpy(lg_p->title_string, c_p);
+		if (lg_p->orient == NhlHORIZONTAL) {
+
+			center_off = (legendBB.t - tmpBB.t + 
+				      legendBB.b - tmpBB.b) / 2.0;
+			labelsBB.b += center_off;
+			labelsBB.t += center_off;
+			lg_p->adj_bar.b += center_off;
+			lg_p->adj_bar.t += center_off;
+			pos_offset += center_off;
+		}
+		else {
+
+			center_off = (legendBB.r - tmpBB.r +
+				      legendBB.l - tmpBB.l) / 2.0;
+			labelsBB.l += center_off;
+			labelsBB.r += center_off;
+			lg_p->adj_bar.l += center_off;
+			lg_p->adj_bar.r += center_off;
+			pos_offset += center_off;
+		}		
+		
 	}
 
-	switch (lg_p->title_just) {
+/*
+ * handle the title
+ */
+	if (! lg_p->title_on || lg_p->max_title_ext <= 0.0) {
+		titleBB.l = legendBB.l;
+		titleBB.r = legendBB.r;
+		titleBB.b = legendBB.b;
+		titleBB.t = legendBB.t;
+	}
+	else {
+		if ((ret1 = NhlGetBB(lg_p->title_id, &titleBB)) < WARNING)
+			return ret1;
+		ret = MIN(ret1,ret);
+		
+		
+		/*
+		 * Adjust for the title: 
+		 * first move it out of the way of the legend, 
+		 * then adjust for possibly larger justification area.
+		 */
+		
+		
+		if (lg_p->title_pos == NhlBOTTOM || lg_p->title_pos == NhlTOP)
+			obj_offset = lg_p->title_off *
+				(lg_p->adj_perim.t - lg_p->adj_perim.b);
+		else
+			obj_offset = lg_p->title_off *
+				(lg_p->adj_perim.r - lg_p->adj_perim.l);
+		if (lg_p->title_pos == NhlBOTTOM &&
+		    titleBB.t > legendBB.b - obj_offset) {
+			title_y -= titleBB.t + obj_offset - legendBB.b;
+		}
+		else if (lg_p->title_pos == NhlTOP &&
+			 titleBB.b < legendBB.t + obj_offset) {
+			title_y += legendBB.t + obj_offset - titleBB.b;
+		}
+		else if (lg_p->title_pos == NhlLEFT &&
+			 titleBB.r > legendBB.l - obj_offset) {
+			title_x -= titleBB.r + obj_offset - legendBB.l;
+		}
+		else if (lg_p->title_pos == NhlRIGHT &&
+			 titleBB.l < legendBB.r + obj_offset) {
+			title_x += legendBB.r + obj_offset - titleBB.l;
+		}
+		
+		if (lg_p->title_pos == NhlTOP
+		    || lg_p->title_pos == NhlBOTTOM) {
+			switch (lg_p->title_just) {
+			case NhlBOTTOMLEFT:
+			case NhlCENTERLEFT:
+			case NhlTOPLEFT:
+				title_x = legendBB.l;
+				break;
+			case NhlBOTTOMCENTER:
+			case NhlCENTERCENTER:
+			case NhlTOPCENTER:
+			default:
+				title_x = legendBB.l + 
+					(legendBB.r - legendBB.l) / 2.0;
+				break;
+			case NhlBOTTOMRIGHT:
+			case NhlCENTERRIGHT:
+			case NhlTOPRIGHT:
+				title_x = legendBB.r;
+				break;
+			}
+		}
+		else if (lg_p->title_pos == NhlLEFT
+			 || lg_p->title_pos == NhlRIGHT) {
+			switch (lg_p->title_just) {
+			case NhlBOTTOMLEFT:
+			case NhlBOTTOMCENTER:
+			case NhlBOTTOMRIGHT:
+				title_y = legendBB.b;
+				break;
+			case NhlCENTERLEFT:
+			case NhlCENTERCENTER:
+			case NhlCENTERRIGHT:
+			default:
+				title_y = legendBB.b + 
+					(legendBB.t - legendBB.b) / 2.0;
+				break;
+			case NhlTOPLEFT:
+			case NhlTOPCENTER:
+			case NhlTOPRIGHT:
+				title_y = legendBB.t;
+				break;
+			}
+		}
+		titleBB.l += title_x - lg_p->title_x;
+		titleBB.r += title_x - lg_p->title_x;
+		titleBB.b += title_y - lg_p->title_y;
+		titleBB.t += title_y - lg_p->title_y;
+		titleBB.l = MIN(titleBB.l, lg_p->title.l);
+		titleBB.r = MAX(titleBB.r, lg_p->title.r);
+		titleBB.b = MIN(titleBB.b, lg_p->title.b);
+		titleBB.t = MAX(titleBB.t, lg_p->title.t);
+	}
+/*
+ * Determine the real perimeter and set the view accordingly
+ */
+
+	lg_p->real_perim.l = MIN(legendBB.l - lg_p->margin.l * small_axis, 
+				 titleBB.l - lg_p->margin.l * small_axis);
+	lg_p->real_perim.r = MAX(legendBB.r + lg_p->margin.r * small_axis, 
+				 titleBB.r + lg_p->margin.r * small_axis);
+	lg_p->real_perim.b = MIN(legendBB.b - lg_p->margin.b * small_axis, 
+				 titleBB.b - lg_p->margin.b * small_axis);
+	lg_p->real_perim.t = MAX(legendBB.t + lg_p->margin.t * small_axis, 
+				 titleBB.t + lg_p->margin.t * small_axis);
+
+/*
+ * Adjust position based on the justification
+ */
+	switch (lg_p->just) {
+
 	case NhlBOTTOMLEFT:
-		lg_p->title_x = lg_p->title.l;
-		lg_p->title_y = lg_p->title.b;
-		break;
-	case NhlBOTTOMCENTER:
-		lg_p->title_x = lg_p->title.l +
-			(lg_p->title.r - lg_p->title.l)/2.0;
-		lg_p->title_y = lg_p->title.b;
-		break;
-	case NhlBOTTOMRIGHT:
-		lg_p->title_x = lg_p->title.r;
-		lg_p->title_y = lg_p->title.b;
+		x_off = lg_p->real_perim.l - lg_p->perim.l;
+		y_off = lg_p->real_perim.b - lg_p->perim.b;
 		break;
 	case NhlCENTERLEFT:
-		lg_p->title_x = lg_p->title.l;
-		lg_p->title_y = lg_p->title.b +
-			(lg_p->title.t - lg_p->title.b)/2.0;
+		x_off = lg_p->real_perim.l - lg_p->perim.l;
+		y_off = lg_p->real_perim.b + 
+			(lg_p->real_perim.t - lg_p->real_perim.b)/2.0 -
+				(lg_p->lg_y - lg_p->lg_height/2.0);
+		break;
+	case NhlTOPLEFT:
+		x_off = lg_p->real_perim.l - lg_p->perim.l;
+		y_off = lg_p->real_perim.t - lg_p->perim.t;
+		break;
+	case NhlBOTTOMCENTER:
+		x_off = lg_p->real_perim.l + 
+			(lg_p->real_perim.r - lg_p->real_perim.l)/2.0 -
+				(lg_p->lg_x + lg_p->lg_width/2.0);
+		y_off = lg_p->real_perim.b - lg_p->perim.b;
 		break;
 	case NhlCENTERCENTER:
 	default:
-		lg_p->title_x = lg_p->title.l +
-			(lg_p->title.r - lg_p->title.l)/2.0;
-		lg_p->title_y = lg_p->title.b +
-			(lg_p->title.t - lg_p->title.b)/2.0;
-		break;
-	case NhlCENTERRIGHT:
-		lg_p->title_x = lg_p->title.r;
-		lg_p->title_y = lg_p->title.b +
-			(lg_p->title.t - lg_p->title.b)/2.0;
-		break;
-	case NhlTOPLEFT:
-		lg_p->title_x = lg_p->title.l;
-		lg_p->title_y = lg_p->title.t;
+		x_off = lg_p->real_perim.l + 
+			(lg_p->real_perim.r - lg_p->real_perim.l)/2.0 -
+				(lg_p->lg_x + lg_p->lg_width/2.0);
+		y_off = lg_p->real_perim.b + 
+			(lg_p->real_perim.t - lg_p->real_perim.b)/2.0 -
+				(lg_p->lg_y - lg_p->lg_height/2.0);
 		break;
 	case NhlTOPCENTER:
-		lg_p->title_x = lg_p->title.l +
-			(lg_p->title.r - lg_p->title.l)/2.0;
-		lg_p->title_y = lg_p->title.t;
+		x_off = lg_p->real_perim.l + 
+			(lg_p->real_perim.r - lg_p->real_perim.l)/2.0 -
+				(lg_p->lg_x + lg_p->lg_width/2.0);
+		y_off = lg_p->real_perim.t - lg_p->perim.t;
+		break;
+	case NhlBOTTOMRIGHT:
+		x_off = lg_p->real_perim.r - lg_p->perim.r;
+		y_off = lg_p->real_perim.b - lg_p->perim.b;
+		break;
+	case NhlCENTERRIGHT:
+		x_off = lg_p->real_perim.r - lg_p->perim.r;
+		y_off = lg_p->real_perim.b + 
+			(lg_p->real_perim.t - lg_p->real_perim.b)/2.0 -
+				(lg_p->lg_y - lg_p->lg_height/2.0);
 		break;
 	case NhlTOPRIGHT:
-		lg_p->title_x = lg_p->title.r;
-		lg_p->title_y = lg_p->title.t;
-		break;
+		x_off = lg_p->real_perim.r - lg_p->perim.r;
+		y_off = lg_p->real_perim.t - lg_p->perim.t;
 	}
 
-	if (lg_p->title_height <= 0.0) 
-		height = NhlLG_DEF_CHAR_HEIGHT;
-	else 
-		height = lg_p->title_height;
-
-	if (init || lg_p->title_id < 0) {
-		strcpy(buffer,tnew->base.name);
-		strcat(buffer,".Title");
-		ret1 = NhlCreate(&lg_p->title_id,
-				 buffer,textItemLayerClass,
-				 tnew->base.id,
-				 NhlNtxFont,lg_p->title_font,
-				 NhlNtxString,lg_p->title_string,
-				 NhlNtxPosXF,lg_p->title_x,
-				 NhlNtxPosYF,lg_p->title_y,
-				 NhlNtxDirection,lg_p->title_direction,
-				 NhlNtxAngleF,lg_p->title_angle,
-				 NhlNtxJust,(int)lg_p->title_just,
-				 NhlNtxFontColor,lg_p->title_color,
-				 NhlNtxFontHeightF,height,
-				 NhlNtxFontAspectF,lg_p->title_aspect,
-				 NhlNtxConstantSpacingF,
-				 	lg_p->title_const_spacing,
-				 NhlNtxFontQuality,lg_p->title_quality,
-				 NhlNtxFuncCode,lg_p->title_func_code,
-				 NhlNtxFontThicknessF,lg_p->title_thickness,
-				 NULL);
-		
-	}
-	else {
-		ret1 = NhlSetValues(lg_p->title_id,
-				    NhlNtxFont,lg_p->title_font,
-				    NhlNtxString,lg_p->title_string,
-				    NhlNtxPosXF,lg_p->title_x,
-				    NhlNtxPosYF,lg_p->title_y,
-				    NhlNtxDirection,lg_p->title_direction,
-				    NhlNtxAngleF,lg_p->title_angle,
-				    NhlNtxJust,(int)lg_p->title_just,
-				    NhlNtxFontColor,lg_p->title_color,
-				    NhlNtxFontHeightF,height,
-				    NhlNtxFontAspectF,lg_p->title_aspect,
-				    NhlNtxConstantSpacingF,
-				    	lg_p->title_const_spacing,
-				    NhlNtxFontQuality,lg_p->title_quality,
-				    NhlNtxFuncCode,lg_p->title_func_code,
-				    NhlNtxFontThicknessF,lg_p->title_thickness,
-				    NULL);
-	}
-	ret = MIN(ret,ret1);
-
+	minor_off = (lg_p->orient == NhlHORIZONTAL) ? y_off : x_off;
+	major_off = (lg_p->orient == NhlHORIZONTAL) ? x_off : y_off;
 /*
- * If title_height is 0.0 or auto-manage is in effect adjust the title
- * to the space available
+ * Adjust the perimeter
  */
-	ret1 = NhlGetBB(lg_p->title_id, &titleBB);
-	ret = MIN(ret,ret1);
-	
-	w=titleBB.r-titleBB.l;
-	h=titleBB.t-titleBB.b;
-	if (w <= 0.0 || h <= 0.0) {
-		printf("error getting BB\n");
+
+	lg_p->real_perim.l -= x_off;
+	lg_p->real_perim.r -= x_off;
+	lg_p->real_perim.b -= y_off;
+	lg_p->real_perim.t -= y_off;
+/*
+ * Adjust the bar position
+ */
+
+	lg_p->adj_bar.l -= x_off;
+	lg_p->adj_bar.r -= x_off;
+	lg_p->adj_bar.b -= y_off;
+	lg_p->adj_bar.t -= y_off;
+	for (i=0; i<lg_p->item_count+1; i++) {
+		lg_p->item_locs[i] -= major_off;
 	}
-	wta=lg_p->title.r-lg_p->title.l;
-	hta=lg_p->title.t-lg_p->title.b;
-	if (wta <= 0.0 || hta <= 0.0) {
-		printf("error in title area\n");
+/*
+ * Adjust the labels position
+ */
+
+	if (lg_p->labels_on) {
+		for (i=0; i<lg_p->label_draw_count; i++) {
+			lg_p->label_locs[i] -= major_off;
+		}
+		
+		if ((ret1 = NhlSetValues(lg_p->labels_id,
+					 NhlNMtextConstPosF,
+					 lg_p->const_pos + 
+					 pos_offset - minor_off,
+					 NhlNMtextPosArray,lg_p->label_locs,
+					 NULL)) < WARNING)
+			return (ret1);
+		ret = MIN(ret1,ret);
 	}
-	if (lg_p->title_height <= 0.0 || lg_p->auto_manage) {
-		factor = wta / w < hta / h ? wta / w : hta / h;
-		lg_p->title_height = height * factor;
+/*
+ * Set the title position
+ */
+
+	if (lg_p->title_on && lg_p->max_title_ext > 0.0) {
+		title_x -= x_off;
+		title_y -= y_off;
+		if ((ret1 = NhlSetValues(lg_p->title_id,
+					 NhlNtxPosXF, title_x,
+					 NhlNtxPosYF, title_y,
+					 NULL)) < WARNING)
+			return (ret1);
+		ret = MIN(ret1,ret);
 	}
-	ret1 = NhlSetValues(lg_p->title_id,
-			    NhlNtxFontHeightF,lg_p->title_height,
-			    NULL);
-	return MIN(ret1,ret);
+
+	_NhlInternalSetView((ViewLayer)tnew,
+			    lg_p->real_perim.l, lg_p->real_perim.t,
+			    lg_p->real_perim.r - lg_p->real_perim.l,
+			    lg_p->real_perim.t - lg_p->real_perim.b,
+			    False);
+	return (ret);
+
 }
 
-/*ARGSUSED*/
-static NhlErrorTypes    SetLegendGeometry
+/*
+ * Function:	LegendGetValues
+ *
+ * Description:	Retrieves the current setting of one or more Legend resources.
+ *	This routine only retrieves resources that require special methods
+ *	that the generic GetValues method cannot handle. For now this means
+ *	all the GenArray resources. Note that space is allocated; the user
+ *	is responsible for freeing this space.
+ *	
+ *
+ * In Args:
+ *
+ * Out Args:
+ *
+ * Return Values:
+ *
+ * Side Effects: 
+ *	Memory is allocated when any of the following resources are retrieved:
+ *		NhlNlgItemTypes
+ *		NhlNlgItemIndexes
+ *		NhlNlgItemStrings
+ *		NhlNlgItemColors
+ *		NhlNlgItemThicknesses
+ *		NhlNlgItemTextHeights
+ *		NhlNlgLabelStrings
+ *		NhlNlgItemPositions
+ *	The caller is responsible for freeing this memory.
+ */
+
+static NhlErrorTypes	LegendGetValues
 #if __STDC__
-	 (Layer new, 
-	 _NhlArgList args,
-	 int num_args)
+(Layer l, _NhlArgList args, int num_args)
 #else
-(new,args,num_args)
-	Layer		new;
+(l,args,num_args)
+	Layer	l;
 	_NhlArgList	args;
-	int		num_args;
+	int	num_args;
 #endif
 {
-	LegendLayer	tnew = (LegendLayer) new;
-	LegendLayerPart *lg_p = &(tnew->legend);
-	enum {NO_TITLE, MINOR_AXIS, MAJOR_AXIS} title_loc;
-	float bar_ext, max_title_ext, adj_perim_width, adj_perim_height;
-	float small_axis;
-	float title_off = 0.0, angle_adj = 0.0;
-	float title_angle, tan_t;
+	LegendLayer lgl = (LegendLayer)l;
+	LegendLayerPart *lg_p = &(lgl->legend);
+	NhlGenArray ga;
+	char *e_text;
+	int i, count = 0;
+	char *type = "";
+	
+	for( i = 0; i< num_args; i++ ) {
 
-/* Calculate the ndc margin from the fractional margin */
-
-	small_axis = MIN(lg_p->lg_width, lg_p->lg_height);
-
-	lg_p->adj_perim.l = lg_p->perim.l + lg_p->margin.l * small_axis;
-	lg_p->adj_perim.r = lg_p->perim.r - lg_p->margin.r * small_axis;
-	lg_p->adj_perim.b = lg_p->perim.b + lg_p->margin.b * small_axis;
-	lg_p->adj_perim.t = lg_p->perim.t - lg_p->margin.t * small_axis;
-	adj_perim_width = lg_p->adj_perim.r - lg_p->adj_perim.l;
-	adj_perim_height = lg_p->adj_perim.t - lg_p->adj_perim.b;
-		
-/*
- * Check the title extent to make sure it does not exceed the hard-coded
- * limit; then locate the title
- */
-	if (lg_p->auto_manage && 
-	    lg_p->max_title_ext + lg_p->title_off > 0.5) {
-		/* need a WARNING */
-		lg_p->max_title_ext = NhlLG_DEF_MAX_TITLE_EXT;
-		lg_p->title_off = NhlLG_DEF_TITLE_OFF;
+		ga = NULL;
+		if(args[i].quark == Qitem_types) {
+			ga = lg_p->item_types;
+			count = lg_p->mono_item_type ? 1 : lg_p->item_count;
+			type = NhlNlgItemTypes;
+		}
+		else if (args[i].quark == Qitem_indexes) {
+			ga = lg_p->item_indexes;
+			count = lg_p->item_count;
+			type = NhlNlgItemIndexes;
+		}
+		else if (args[i].quark == Qitem_strings) {
+			ga = lg_p->item_strings;
+			count = lg_p->item_count;
+			type = NhlNlgItemStrings; 
+		}
+		else if (args[i].quark == Qitem_colors) {
+			ga = lg_p->item_colors;
+			count = lg_p->mono_item_color ? 1 : lg_p->item_count;
+			type = NhlNlgItemColors;
+		}
+		else if (args[i].quark == Qitem_thicknesses) {
+			ga = lg_p->item_thicknesses;
+			count = lg_p->mono_item_thickness ? 
+				1 : lg_p->item_count;
+			type = NhlNlgItemThicknesses;
+		}
+		else if (args[i].quark == Qitem_text_heights) {
+			ga = lg_p->item_text_heights;
+			count = lg_p->mono_item_text_height ? 
+				1 : lg_p->item_count;
+			type = NhlNlgItemTextHeights;
+		}
+		else if (args[i].quark == Qlabel_strings) {
+			ga = lg_p->label_strings;
+			count = lg_p->item_count;
+			type = NhlNlgLabelStrings;
+		}
+		else if (args[i].quark == Qitem_positions) {
+			ga = lg_p->item_positions;
+			count = lg_p->item_count;
+			type = NhlNlgItemPositions;
+		}
+		if (ga != NULL) {
+			if ((ga = GenArraySubsetCopy(ga, count)) == NULL) {
+				e_text = "%s: error copying %s GenArray";
+				NhlPError(FATAL,E_UNKNOWN,e_text,
+					  "LegendGetValues",type);
+				return FATAL;
+			}
+			*((NhlGenArray *)(args[i].value)) = ga;
+		}
 	}
-	title_angle = lg_p->title_angle * DEGTORAD;
-	tan_t = fabs(sin(title_angle)) / 
-		     MAX(0.01, fabs(cos(title_angle)));
-		    
-	if (!lg_p->title_on)
-		title_loc = NO_TITLE;
-	else if (lg_p->orient == NhlHORIZONTAL) {
-		if (lg_p->title_pos == NhlRIGHT ||
-		    lg_p->title_pos == NhlLEFT) {
-			title_loc = MAJOR_AXIS;
-			title_off = lg_p->title_off * adj_perim_width;
-			if (lg_p->title_direction == ACROSS)
-				angle_adj = adj_perim_height / tan_t;
-			else
-				angle_adj = adj_perim_height * tan_t;
-						
-		}
-		else {
-			title_loc = MINOR_AXIS;
-			title_off = lg_p->title_off * adj_perim_height;
-			if (lg_p->title_direction == ACROSS)
-				angle_adj = adj_perim_width * tan_t; 
-			else
-				angle_adj = adj_perim_width / tan_t;
-		}
+
+	return(NOERROR);
+
+}
+
+/*
+ * Function:  GenArraySubsetCopy
+ *
+ * Description:	Since the internal GenArrays maintained by the Legend object
+ *	may be bigger than the size currently in use, this function allows
+ *	a copy of only a portion of the array to be created. This is for
+ * 	use by the GetValues routine when returning GenArray resources to
+ *	the usr level. The array is assumed to be valid. The only pointer 
+ *	type arrays that the routine can handle are NhlString arrays.
+ *	Note: this might be another candidate for inclusion as a global 
+ *	routine.
+ *
+ * In Args:
+ *
+ * Out Args:
+ *
+ * Return Values:
+ *
+ * Side Effects: 
+ */
+
+static NhlGenArray GenArraySubsetCopy
+#if __STDC__
+	(NhlGenArray	ga,
+	int		length)
+#else
+(ga,length)
+	NhlGenArray	ga;
+	int		length;
+#endif
+{
+	NhlGenArray gto;
+
+	if (length > ga->num_elements)
+		return NULL;
+
+	if ((gto = _NhlCopyGenArray(ga,False)) == NULL) {
+		return NULL;
+	}
+	if ((gto->data = (NhlPointer) NhlMalloc(length * ga->size)) == NULL) {
+		return NULL;
+	}
+	if (ga->typeQ != Qstring) {
+		memcpy((void *)gto->data, (Const void *) ga->data, 
+		       length * ga->size);
 	}
 	else {
-		if (lg_p->title_pos == NhlRIGHT ||
-		    lg_p->title_pos == NhlLEFT) {
-			title_loc = MINOR_AXIS;
-			title_off = lg_p->title_off * adj_perim_width;
-			if (lg_p->title_direction == ACROSS)
-				angle_adj = adj_perim_height / tan_t;
-			else
-				angle_adj = adj_perim_height * tan_t;
-		}
-		else {
-			title_loc = MAJOR_AXIS;
-			title_off = lg_p->title_off * adj_perim_height;
-			if (lg_p->title_direction == ACROSS)
-				angle_adj = adj_perim_width * tan_t; 
-			else
-				angle_adj = adj_perim_width / tan_t;
-		}
-	}
-/*
- * If not in auto manage mode the title offset should make the label bar
- * grow. By setting it to 0.0 here, it will be added into the total size
- * in the AdjustGeometry routine.
- */
-
-	if (! lg_p->auto_manage) {
-		title_off = 0.0;
-	}
-
-/*
- * Silently modify the label position if not appropriate for the
- * current legend orientation. Also determine the maximum critical
- * angle for label angle adjustments.
- */
-
-	if (lg_p->orient == NhlHORIZONTAL) {
-		switch (lg_p->label_pos) {
-		case NhlLEFT:
-			lg_p->label_pos = NhlTOP;
-			break;
-		case NhlRIGHT:
-			lg_p->label_pos = NhlBOTTOM;
-			break;
-		}
-	}
-	else {
-		switch (lg_p->label_pos) {
-		case NhlBOTTOM:
-			lg_p->label_pos = NhlRIGHT;
-			break;
-		case NhlTOP:
-			lg_p->label_pos = NhlLEFT;
-			break;
-		}
-
-	}
-		
-/*
- * Determine dimensions: first pass determines basic position for
- * title, bar and labels. Bar dimensions may be adjusted later to 
- * ensure that labels are visible.
- */
-	if (lg_p->orient == NhlHORIZONTAL) {
-		bar_ext = adj_perim_height * lg_p->box_minor_ext;
-		switch (title_loc) {
-
-		case NO_TITLE:
-			lg_p->bar.l = lg_p->adj_perim.l;
-			lg_p->bar.r = lg_p->adj_perim.r;
-			lg_p->labels.l = lg_p->bar.l;
-			lg_p->labels.r = lg_p->bar.r;
-					
-			if (! lg_p->labels_on || 
-			    lg_p->label_pos == NhlCENTER) {
-				lg_p->bar.b = lg_p->adj_perim.b +
-					(adj_perim_height - bar_ext) / 2.0;
-				lg_p->bar.t = lg_p->bar.b + bar_ext;
-				lg_p->labels.b = lg_p->bar.b;
-				lg_p->labels.t = lg_p->bar.t;
+		NhlString *cfrom = (NhlString *) ga->data;
+		NhlString *cto = (NhlString *) gto->data;
+		int i;
+		for (i=0; i<length; i++) {
+			if ((*cto = (char *) 
+			     NhlMalloc(strlen(*cfrom)+1)) == NULL) {
+				return NULL;
 			}
-			else if (lg_p->label_pos == NhlTOP) {
-				lg_p->bar.b = lg_p->adj_perim.b;
-				lg_p->bar.t = lg_p->bar.b + bar_ext;
-				lg_p->labels.b = lg_p->bar.t;
-				lg_p->labels.t = lg_p->adj_perim.t;
-			}
-			else if (lg_p->label_pos == NhlBOTTOM) {
-				lg_p->bar.b = lg_p->adj_perim.t - bar_ext;
-				lg_p->bar.t = lg_p->adj_perim.t;
-				lg_p->labels.b = lg_p->adj_perim.b;
-				lg_p->labels.t = lg_p->bar.b;
-			}
-			break;
-
-		case MAJOR_AXIS:
+			strcpy(*cto++,*cfrom++);
+		}
+	}
+	gto->num_elements = length;
+	return gto;
 			
-			max_title_ext = 
-				MIN(lg_p->max_title_ext * adj_perim_width,
-					adj_perim_height / 
-					strlen(lg_p->title_string) + 
-					angle_adj);
-			lg_p->title.b = lg_p->adj_perim.b;
-			lg_p->title.t = lg_p->adj_perim.t;
-				
-			if (lg_p->title_pos == NhlLEFT) {
-				lg_p->bar.l = lg_p->adj_perim.l +
-					max_title_ext + title_off;
-				lg_p->bar.r = lg_p->adj_perim.r;
-				lg_p->title.l = lg_p->adj_perim.l;
-				lg_p->title.r = lg_p->bar.l - title_off;
-			}
-			else if (lg_p->title_pos == NhlRIGHT) {
-				lg_p->bar.l = lg_p->adj_perim.l;
-				lg_p->bar.r = lg_p->adj_perim.r - 
-					max_title_ext - title_off;
-				lg_p->title.l = lg_p->bar.r + title_off;
-				lg_p->title.r = lg_p->adj_perim.r;
-			}
-			lg_p->labels.l = lg_p->bar.l;
-			lg_p->labels.r = lg_p->bar.r;
-
-			if (! lg_p->labels_on || 
-			    lg_p->label_pos == NhlCENTER) {
-				lg_p->bar.b = lg_p->adj_perim.b +
-					(adj_perim_height - bar_ext) / 2.0;
-				lg_p->bar.t = lg_p->bar.b + bar_ext;
-				lg_p->labels.b = lg_p->bar.b;
-				lg_p->labels.t = lg_p->bar.t;
-			}
-			else if (lg_p->label_pos == NhlTOP) {
-				lg_p->bar.b = lg_p->adj_perim.b;
-				lg_p->bar.t = lg_p->bar.b + bar_ext;
-				lg_p->labels.b = lg_p->bar.t;
-				lg_p->labels.t = lg_p->adj_perim.t;
-			}
-			else if (lg_p->label_pos == NhlBOTTOM) {
-				lg_p->bar.b = lg_p->adj_perim.t - bar_ext;
-				lg_p->bar.t = lg_p->adj_perim.t;
-				lg_p->labels.b = lg_p->adj_perim.b;
-				lg_p->labels.t = lg_p->bar.b;
-			}
-			break;
-
-		case MINOR_AXIS:
-
-			max_title_ext = 
-				MIN(lg_p->max_title_ext * adj_perim_height,
-					adj_perim_width / 
-					strlen(lg_p->title_string) + 
-					angle_adj);
-			if (max_title_ext + title_off + bar_ext > 
-			    adj_perim_height) {
-				/* need a WARNING */
-				printf("adjusting bar size smaller\n");
-				bar_ext = adj_perim_height - 
-					max_title_ext - title_off;
-				lg_p->box_minor_ext = 
-					bar_ext / adj_perim_height;
-			}
-			lg_p->title.l = lg_p->adj_perim.l;
-			lg_p->title.r = lg_p->adj_perim.r;
-			lg_p->bar.l = lg_p->adj_perim.l;
-			lg_p->bar.r = lg_p->adj_perim.r;
-			lg_p->labels.l = lg_p->adj_perim.l;
-			lg_p->labels.r = lg_p->adj_perim.r;
-				
-			if (lg_p->title_pos == NhlBOTTOM) {
-				lg_p->title.b = lg_p->adj_perim.b;
-				lg_p->title.t = lg_p->adj_perim.b + 
-					max_title_ext;
-				lg_p->bar.b = lg_p->title.t + title_off;
-				lg_p->bar.t = lg_p->adj_perim.t;
-			}
-			else if (lg_p->title_pos == NhlTOP) {
-				lg_p->bar.b = lg_p->adj_perim.b;
-				lg_p->bar.t = lg_p->adj_perim.t - 
-					max_title_ext - title_off;
-				lg_p->title.b = lg_p->bar.t + title_off;
-				lg_p->title.t = lg_p->adj_perim.t;
-			}
-
-			
-			if (!lg_p->labels_on || lg_p->label_pos == NhlCENTER) {
-				lg_p->bar.b = (lg_p->bar.t - lg_p->bar.b - 
-					       bar_ext) / 2.0 + lg_p->bar.b;
-				lg_p->bar.t = lg_p->bar.b + bar_ext;
-				lg_p->labels.b = lg_p->bar.b;
-				lg_p->labels.t = lg_p->bar.t;
-			}
-			else if (lg_p->label_pos == NhlTOP) {
-				lg_p->labels.t = lg_p->bar.t;
-				lg_p->bar.t = lg_p->bar.b + bar_ext;
-				lg_p->labels.b = lg_p->bar.t;
-			}
-			else if (lg_p->label_pos == NhlBOTTOM) {
-				lg_p->labels.b = lg_p->bar.b;
-				lg_p->bar.b = lg_p->bar.t - bar_ext;
-				lg_p->labels.t = lg_p->bar.b;
-			}
-			break;
-		default:
-			/* need error message */
-			return FATAL;
-		}
-		/* get the box size */
-		
-		lg_p->box_size.x = 
-			(lg_p->bar.r - lg_p->bar.l) / lg_p->box_count;
-		lg_p->box_size.y = lg_p->bar.t - lg_p->bar.b;
-	}
-
-	else { /* NhlVERTICAL */
-
-		bar_ext = adj_perim_width * lg_p->box_minor_ext;
-
-		switch (title_loc) {
-
-		case NO_TITLE:
-			lg_p->bar.b = lg_p->adj_perim.b;
-			lg_p->bar.t = lg_p->adj_perim.t;
-			lg_p->labels.b = lg_p->adj_perim.b;
-			lg_p->labels.t = lg_p->adj_perim.t;
-					
-			if (!lg_p->labels_on || lg_p->label_pos == NhlCENTER) {
-				lg_p->bar.l = lg_p->adj_perim.l +
-					(adj_perim_width - bar_ext) / 2.0;
-				lg_p->bar.r = lg_p->bar.l + bar_ext;
-				lg_p->labels.l = lg_p->bar.l;
-				lg_p->labels.r = lg_p->bar.r;
-			}
-			else if (lg_p->label_pos == NhlRIGHT) {
-				lg_p->bar.l = lg_p->adj_perim.l;
-				lg_p->bar.r = lg_p->bar.l + bar_ext;
-				lg_p->labels.l = lg_p->bar.r;
-				lg_p->labels.r = lg_p->adj_perim.r;
-			}
-			else if (lg_p->label_pos == NhlLEFT) {
-				lg_p->bar.l = lg_p->adj_perim.r - bar_ext;
-				lg_p->bar.r = lg_p->adj_perim.r;
-				lg_p->labels.l = lg_p->adj_perim.l;
-				lg_p->labels.r = lg_p->bar.l;
-			}
-			break;
-
-		case MAJOR_AXIS:
-			max_title_ext = 
-				MIN(lg_p->max_title_ext * adj_perim_height,
-					adj_perim_width / 
-					strlen(lg_p->title_string) + 
-					angle_adj);
-
-			lg_p->title.l = lg_p->adj_perim.l;
-			lg_p->title.r = lg_p->adj_perim.r;
-				
-			if (lg_p->title_pos == NhlBOTTOM) {
-				lg_p->bar.b = lg_p->adj_perim.b + 
-					max_title_ext + title_off;
-				lg_p->bar.t = lg_p->adj_perim.t;
-				lg_p->title.b = lg_p->adj_perim.b;
-				lg_p->title.t = lg_p->bar.b - title_off;
-			}
-			else if (lg_p->title_pos == NhlTOP) {
-				lg_p->bar.b = lg_p->adj_perim.b;
-				lg_p->bar.t = lg_p->adj_perim.t - 
-					max_title_ext - title_off;
-				lg_p->title.b = lg_p->bar.t + title_off;
-				lg_p->title.t = lg_p->adj_perim.t;
-			}
-			lg_p->labels.b = lg_p->bar.b;
-			lg_p->labels.t = lg_p->bar.t;
-
-			if (! lg_p->labels_on || 
-			    lg_p->label_pos == NhlCENTER) {
-				lg_p->bar.l = lg_p->adj_perim.l +
-					(adj_perim_width - bar_ext) / 2.0;
-				lg_p->bar.r = lg_p->bar.l + bar_ext;
-				lg_p->labels.l = lg_p->bar.l;
-				lg_p->labels.r = lg_p->bar.r;
-			}
-			else if (lg_p->label_pos == NhlRIGHT) {
-				lg_p->bar.l = lg_p->adj_perim.l;
-				lg_p->bar.r = lg_p->bar.l + bar_ext;
-				lg_p->labels.l = lg_p->bar.r;
-				lg_p->labels.r = lg_p->adj_perim.r;
-			}
-			else if (lg_p->label_pos == NhlLEFT) {
-				lg_p->bar.l = lg_p->adj_perim.r - bar_ext;
-				lg_p->bar.r = lg_p->adj_perim.r;
-				lg_p->labels.l = lg_p->adj_perim.l;
-				lg_p->labels.r = lg_p->bar.l;
-			}
-			break;
-
-		case MINOR_AXIS:
-
-			max_title_ext = 
-				MIN(lg_p->max_title_ext * adj_perim_width,
-					adj_perim_height / 
-					strlen(lg_p->title_string) + 
-					angle_adj);
-			if (max_title_ext + title_off + bar_ext > 
-			    adj_perim_width) {
-				/* need a WARNING */
-				printf("adjusting bar size smaller\n");
-				bar_ext = adj_perim_width - 
-					max_title_ext - title_off;
-				lg_p->box_minor_ext = 
-					bar_ext / adj_perim_width;
-			}
-
-			lg_p->title.b = lg_p->adj_perim.b;
-			lg_p->title.t = lg_p->adj_perim.t;
-			lg_p->bar.b = lg_p->adj_perim.b;
-			lg_p->bar.t = lg_p->adj_perim.t;
-			lg_p->labels.b = lg_p->adj_perim.b;
-			lg_p->labels.t = lg_p->adj_perim.t;
-				
-			if (lg_p->title_pos == NhlLEFT) {
-				lg_p->title.l = lg_p->adj_perim.l;
-				lg_p->title.r = lg_p->adj_perim.l + 
-					max_title_ext;
-				lg_p->bar.l = lg_p->title.r + title_off;
-				lg_p->bar.r = lg_p->adj_perim.r;
-			}
-			else if (lg_p->title_pos == NhlRIGHT) {
-				lg_p->bar.l = lg_p->adj_perim.l;
-				lg_p->bar.r = lg_p->adj_perim.r - 
-					max_title_ext - title_off;
-				lg_p->title.l = lg_p->bar.r + title_off;
-				lg_p->title.r = lg_p->adj_perim.r;
-			}
-
-			
-			if (!lg_p->labels_on || lg_p->label_pos == NhlCENTER) {
-				lg_p->bar.l = (lg_p->bar.r - lg_p->bar.l - 
-					       bar_ext) / 2.0 + lg_p->bar.l;
-				lg_p->bar.r = lg_p->bar.l + bar_ext;
-				lg_p->labels.l = lg_p->bar.l;
-				lg_p->labels.r = lg_p->bar.r;
-			}
-			else if (lg_p->label_pos == NhlRIGHT) {
-				lg_p->labels.r = lg_p->bar.r;
-				lg_p->bar.r = lg_p->bar.l + bar_ext;
-				lg_p->labels.l = lg_p->bar.r;
-			}
-			else if (lg_p->label_pos == NhlLEFT) {
-				lg_p->labels.l = lg_p->bar.l;
-				lg_p->bar.l = lg_p->bar.r - bar_ext;
-				lg_p->labels.r = lg_p->bar.l;
-			}
-			break;
-		default:
-			/* need error message */
-			return FATAL;
-		}
-		lg_p->box_size.x = lg_p->bar.r - lg_p->bar.l;
-		lg_p->box_size.y = 
-			(lg_p->bar.t - lg_p->bar.b) / lg_p->box_count;
-	}
-
-	return NOERROR;
-				
 }
 
 /*
  * Function:	LegendDraw
  *
- * Description:  Activates parent workstation, calls plotchar parameter 
- *		setting functions and then GKS attributes for linewidth, 
- *		fill styles, fill colors and line colors.
+ * Description:  Activates parent workstation, then draws the Legend 
+ *		 perimeter and Legend items. Deactivates the workstation
+ *		 and calls the draw functions for the Legend title
+ *		 text object and the Legend labels multitext object.
  *
  * In Args: the instance to be drawn
  *
@@ -3967,8 +4145,7 @@ static NhlErrorTypes    SetLegendGeometry
  *
  * Return Values: Error conditions
  *
- * Side Effects: GKS and plotchar state affected. 
- *		Does do a get_set before makeing internal set.
+ * Side Effects: 
  */
 static NhlErrorTypes    LegendDraw
 #if  __STDC__
@@ -3995,6 +4172,7 @@ static NhlErrorTypes    LegendDraw
 	float *thicknesses;
 	float *text_heights;
 	NhlString *item_strings;
+	float back_dist, for_dist;
 
 	if (! lg_p->legend_on)
 		return(ret);
@@ -4049,7 +4227,7 @@ static NhlErrorTypes    LegendDraw
 /* 
  * Draw the boxes
  */
-	frac = (1.0 - lg_p->box_major_ext) / 2.0;
+	frac = lg_p->box_major_ext;
 	colors = (int *) lg_p->item_colors->data;
 	indexes = (int *) lg_p->item_indexes->data;
 	types = (int *) lg_p->item_types->data;
@@ -4065,10 +4243,18 @@ static NhlErrorTypes    LegendDraw
 		ypoints[3] = lg_p->adj_bar.t;
 		ypoints[4] = lg_p->adj_bar.b;
 		tcoord = ypoints[0] + (ypoints[2] - ypoints[1]) / 2.0;
-		for (i=0; i<lg_p->box_count; i++) {
-			dist = lg_p->box_locs[i+1] - lg_p->box_locs[i];
-			xpoints[0] = lg_p->box_locs[i] + dist * frac;
-			xpoints[1] = lg_p->box_locs[i+1] - dist * frac;
+		back_dist = lg_p->item_locs[0] - lg_p->adj_bar.l;
+		
+		for (i=0; i<lg_p->item_count; i++) {
+
+			for_dist = lg_p->item_locs[i+1] - lg_p->item_locs[i];
+			for_dist = i < lg_p->item_count - 1 ? 
+				for_dist/2.0 : for_dist;
+			dist = MIN(back_dist,for_dist);
+			back_dist = for_dist;
+				   
+			xpoints[0] = lg_p->item_locs[i] - dist * frac;
+			xpoints[1] = lg_p->item_locs[i] + dist * frac;
 			xpoints[2] = xpoints[1];
 			xpoints[3] = xpoints[0];
 			xpoints[4] = xpoints[0];
@@ -4148,11 +4334,16 @@ static NhlErrorTypes    LegendDraw
 		xpoints[3] = lg_p->adj_bar.l;
 		xpoints[4] = lg_p->adj_bar.l;
 		tcoord = xpoints[0] + (xpoints[1] - xpoints[0]) / 2.0;
-		for (i=0; i< lg_p->box_count; i++) {
-			dist = lg_p->box_locs[i+1] - lg_p->box_locs[i];
-			ypoints[0] = lg_p->box_locs[i] + dist * frac;
+		back_dist = lg_p->item_locs[0] - lg_p->adj_bar.b;
+		for (i=0; i< lg_p->item_count; i++) {
+			for_dist = lg_p->item_locs[i+1] - lg_p->item_locs[i];
+			for_dist = i < lg_p->item_count - 1 ? 
+				for_dist/2.0 : for_dist;
+			dist = MIN(back_dist,for_dist);
+			back_dist = for_dist;
+			ypoints[0] = lg_p->item_locs[i] - dist * frac;
 			ypoints[1] = ypoints[0];
-			ypoints[2] = lg_p->box_locs[i+1] - dist * frac;
+			ypoints[2] = lg_p->item_locs[i] + dist * frac;
 			ypoints[3] = ypoints[2];
 			ypoints[4] = ypoints[0];
 
@@ -4270,7 +4461,7 @@ static NhlErrorTypes    LegendClassInitialize
 	Qitem_thicknesses = NrmStringToQuark(NhlNlgItemThicknesses);
 	Qitem_text_heights = NrmStringToQuark(NhlNlgItemTextHeights);
 	Qlabel_strings = NrmStringToQuark(NhlNlgLabelStrings);
-	Qbox_fractions = NrmStringToQuark(NhlNlgBoxFractions);
+	Qitem_positions = NrmStringToQuark(NhlNlgItemPositions);
 
 	_NhlInitializeLayerClass(textItemLayerClass);
 	_NhlInitializeLayerClass(multiTextLayerClass);
@@ -4308,8 +4499,8 @@ static NhlErrorTypes    LegendDestroy
 		NhlFree(lg_p->stride_labels);
 	if (lg_p->label_locs != NULL)
 		NhlFree(lg_p->label_locs);
-	if (lg_p->box_locs != NULL)
-		NhlFree(lg_p->box_locs);
+	if (lg_p->item_locs != NULL)
+		NhlFree(lg_p->item_locs);
 
 	NhlFreeGenArray(lg_p->item_strings);
 	NhlFreeGenArray(lg_p->label_strings);
@@ -4318,7 +4509,7 @@ static NhlErrorTypes    LegendDestroy
 	NhlFreeGenArray(lg_p->item_colors);
 	NhlFreeGenArray(lg_p->item_thicknesses);
 	NhlFreeGenArray(lg_p->item_text_heights);
-	NhlFreeGenArray(lg_p->box_fractions);
+	NhlFreeGenArray(lg_p->item_positions);
 
 	if (lg_p->labels_id >=0)
 		NhlDestroy(lg_p->labels_id);
