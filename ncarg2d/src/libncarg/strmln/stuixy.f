@@ -1,21 +1,18 @@
 C
-C       $Id: stumxy.f,v 1.5 1997-03-25 21:32:07 haley Exp $
+C ---------------------------------------------------------------------
 C
-C-----------------------------------------------------------------------
+      SUBROUTINE STUIXY(XUS,YUS,XDA,YDA,IST)
 C
-      SUBROUTINE STUMXY(XDA,YDA,XUS,YUS,IST)
-C
-C User modifiable routine for mapping data coordinate space to
-C user space
-C
+C User modifiable routine for inversely transforming
+C a point in user coordinate space to data space
 C
 C Input parameters:
 C
-C XDA,YDA - Point in data coordinate space
+C XUS,YUS - Point in user coordinate space
 C
 C Output parameters:
 C
-C XUS,YUS - Point in user coordinate space
+C XDA,YDA - Point in data coordinate space
 C IST     - Status code indicating success or failure
 C
 C --------------------------------------------------------------------
@@ -42,20 +39,13 @@ C
      +           P1D2PI = 1.57079632679489,
      +           P5D2PI = 7.85398163397448) 
 C
-C -------------------------------------------------------------
-C
-C Identity transformation
+C ---------------------------------------------------------------------
 C
       IST=0
-      XUS=XDA
-      YUS=YDA
+      XDA=XUS
+      YDA=YUS
 C
-C Done.
+C Done
 C
       RETURN
-C
       END
-
-
-
-

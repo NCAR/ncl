@@ -1,21 +1,21 @@
 C
-C       $Id: stumxy.f,v 1.5 1997-03-25 21:32:07 haley Exp $
+C ---------------------------------------------------------------------
 C
-C-----------------------------------------------------------------------
+      SUBROUTINE STUMTA(XDA,YDA,XUS,YUS,XND,YND,DU,DV,TA,IST)
 C
-      SUBROUTINE STUMXY(XDA,YDA,XUS,YUS,IST)
-C
-C User modifiable routine for mapping data coordinate space to
-C user space
-C
+C User modifiable routine for mapping a tangent angle in data space to 
+C normalized device coordinate space.
 C
 C Input parameters:
 C
 C XDA,YDA - Point in data coordinate space
+C XUS,YUS - Point in user coordinate space
+C XND,YND - Point in NDC space
+C DU,DV   - Differential vector components in data space
 C
 C Output parameters:
 C
-C XUS,YUS - Point in user coordinate space
+C TA      - Streamline tangent angle in NDC space
 C IST     - Status code indicating success or failure
 C
 C --------------------------------------------------------------------
@@ -42,20 +42,13 @@ C
      +           P1D2PI = 1.57079632679489,
      +           P5D2PI = 7.85398163397448) 
 C
-C -------------------------------------------------------------
-C
-C Identity transformation
+C ---------------------------------------------------------------------
 C
       IST=0
-      XUS=XDA
-      YUS=YDA
+      TA=ATAN2(DV,DU)
 C
 C Done.
 C
       RETURN
 C
       END
-
-
-
-

@@ -1,18 +1,18 @@
 #
-#	$Id: yMakefile,v 1.8 1996-10-25 21:45:58 boote Exp $
+#	$Id: yMakefile,v 1.9 1997-03-25 21:32:08 haley Exp $
 #
 MYNAME	= strmln
 
 GENERIC_SRCS    = stcycl.f stdraw.f ezstrm.f stdudv.f strmln.f \
 	 	  stinit.f stream.f stdata.f stsetc.f stgetc.f \
 		  stseti.f stsetr.f stgeti.f stgetr.f \
-         	  stmpxy.f stumxy.f strset.f stumsl.f \
+                  stmpxy.f stumxy.f strset.f stumsl.f stumta.f stuixy.f \
 		  chkcyc.f drwstr.f gnewpt.f sthluint.f hlustmpxy.f
 
 GENERIC_OBJS    = stcycl.o stdraw.o ezstrm.o stdudv.o strmln.o \
 	 	  stinit.o stream.o stdata.o stsetc.o stgetc.o \
 		  stseti.o stsetr.o stgeti.o stgetr.o \
-         	  stmpxy.o stumxy.o strset.o stumsl.o \
+         	  stmpxy.o stumxy.o strset.o stumsl.o stumta.o stuixy.o \
 		  chkcyc.o drwstr.o gnewpt.o sthluint.o hlustmpxy.o
 
 SOURCES = $(GENERIC_SRCS)
