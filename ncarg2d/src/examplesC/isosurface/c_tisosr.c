@@ -1,5 +1,5 @@
 /*
- *	$Id: c_tisosr.c,v 1.5 1995-06-14 13:59:39 haley Exp $
+ *	$Id: c_tisosr.c,v 1.6 1995-06-19 00:09:15 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -8,7 +8,7 @@
 
 float t[19][31][21],slab[33][33];
 
-#define IWTYPE  SED_IWTYPE
+#define IWTYPE 1
 #define WKID    1
 
 main()
