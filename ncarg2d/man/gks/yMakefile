@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.6 1994-04-08 22:09:32 haley Exp $
+#	$Id: yMakefile,v 1.7 1998-10-27 19:54:08 fred Exp $
 #
 
 MAN =	gactm gacwk gca gclks gclrwk gclsg gclwk gcrsg gcsgwk gdawk gdsg gesc \

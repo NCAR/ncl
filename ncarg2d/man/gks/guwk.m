@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: guwk.m,v 1.7 1998-02-04 05:12:26 haley Exp $
+.\"	$Id: guwk.m,v 1.8 1998-10-27 19:54:07 fred Exp $
 .\"
 .TH GUWK 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -16,7 +16,7 @@ void gupd_ws(Gint ws_id, Gupd_regen_flag upd_regen_flag);
 (Integer, Input) - A number identifying the workstation to be updated.
 WKID must be the same as that used in some previous GOPWK call.
 .IP REGFL 12
-(Real, Input) - A flag to specify if the current picture should be
+(Integer, Input) - A flag to specify if the current picture should be
 regenerated.  The possible values for this are "0" for postpone, and
 "1" for perform.  For the workstation types supported in NCAR GKS,
 this flag should always be set to "0".
