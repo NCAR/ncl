@@ -1,6 +1,6 @@
 
 /*
- *      $Id: AddBuiltIns.c,v 1.43 1998-12-23 18:31:37 ethan Exp $
+ *      $Id: AddBuiltIns.c,v 1.44 1999-09-23 21:15:47 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -855,6 +855,9 @@ void _NclAddBuiltIns
 	args = NewArgs(1);
 	SetArgTemplate(args,0,"graphic",1,NclANY);nargs++;
 	NclRegisterFunc(_NclIName,args,"NhlName",nargs);
+
+	nargs = 0;
+	NclRegisterFunc(_NclINhlPalGetDefined,NULL,"NhlPalGetDefined",nargs);
 
 
 	
