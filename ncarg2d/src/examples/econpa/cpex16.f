@@ -1672,18 +1672,18 @@ C
 C If that technique is unusable or fails, fall back on a binary-halving
 C technique.
 C
-  102   XFR1=0.
-        XFR2=1.
+C*102   XFR1=0.
+C*      XFR2=1.
 C
-  103   XFRA=.5*(XFR1+XFR2)
-        CALL IPGCSP (AQSP,BQSP,XFRA,PQSP)
-        CALL IPGCSP (CQSP,DQSP,XFRA,QQSP)
-        IF (DPGCSP(PQSP,QQSP,EQSP).LT.0.) THEN
-          XFR1=XFRA
-        ELSE
-          XFR2=XFRA
-        END IF
-        IF (XFR2-XFR1.GT.1.E-6) GO TO 103
+C*103   XFRA=.5*(XFR1+XFR2)
+C*      CALL IPGCSP (AQSP,BQSP,XFRA,PQSP)
+C*      CALL IPGCSP (CQSP,DQSP,XFRA,QQSP)
+C*      IF (DPGCSP(PQSP,QQSP,EQSP).LT.0.) THEN
+C*        XFR1=XFRA
+C*      ELSE
+C*        XFR2=XFRA
+C*      END IF
+C*      IF (XFR2-XFR1.GT.1.E-6) GO TO 103
 C
 C Computing YFRA is easier:
 C
@@ -2281,18 +2281,18 @@ C
 C If that technique is unusable or fails, fall back on a binary-halving
 C technique.
 C
-  102   XFR1=0.D0
-        XFR2=1.D0
+C*102   XFR1=0.D0
+C*      XFR2=1.D0
 C
-  103   XFRA=.5D0*(XFR1+XFR2)
-        CALL IPGCDP (AQDP,BQDP,XFRA,PQDP)
-        CALL IPGCDP (CQDP,DQDP,XFRA,QQDP)
-        IF (DPGCDP(PQDP,QQDP,EQDP).LT.0.D0) THEN
-          XFR1=XFRA
-        ELSE
-          XFR2=XFRA
-        END IF
-        IF (XFR2-XFR1.GT.1.D-12) GO TO 103
+C*103   XFRA=.5D0*(XFR1+XFR2)
+C*      CALL IPGCDP (AQDP,BQDP,XFRA,PQDP)
+C*      CALL IPGCDP (CQDP,DQDP,XFRA,QQDP)
+C*      IF (DPGCDP(PQDP,QQDP,EQDP).LT.0.D0) THEN
+C*        XFR1=XFRA
+C*      ELSE
+C*        XFR2=XFRA
+C*      END IF
+C*      IF (XFR2-XFR1.GT.1.D-12) GO TO 103
 C
 C Computing YFRA is easier:
 C
