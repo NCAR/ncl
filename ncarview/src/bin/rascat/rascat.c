@@ -1,6 +1,6 @@
 
 /*
- *      $Id: rascat.c,v 1.6 1992-03-30 21:10:33 clyne Exp $
+ *      $Id: rascat.c,v 1.7 1992-03-31 00:18:53 clyne Exp $
  */
 /*
  *	File:		rascat.c
@@ -99,7 +99,7 @@ static	struct	{
 	char		*srcformat;
 	char		*dstformat;
 	float		scale;
-	Dimension	resolution;
+	Dimension2D	resolution;
 	boolean		do_help;
 	int		(*resample)();
 	} opt;
@@ -140,7 +140,7 @@ static	Option get_options[] = {
 	},
 	{"scale", NCARGCvtToFloat, (Voidptr) &opt.scale, sizeof(opt.scale)
 	},
-	{"resolution", NCARGCvtToDimension, (Voidptr) &opt.resolution, 
+	{"resolution", NCARGCvtToDimension2D, (Voidptr) &opt.resolution, 
 							sizeof(opt.resolution)
 	},
 	{"help", NCARGCvtToBoolean, (Voidptr) &opt.do_help, 
