@@ -520,10 +520,12 @@ NhlErrorTypes ut_inv_calendar_W( void )
 /*
  * Attribute variables
  */
+  NclQuark *units;
   int att_id;
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
+
 /*
  * various
  */
@@ -773,12 +775,20 @@ NhlErrorTypes ut_inv_calendar_W( void )
   att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
   dsizes[0] = 1;
 
+/*
+ * We can't just return "sspec" here, because it's an NCL input
+ * parameter and this seems to screw things up if we try to
+ * return it as an attribute.
+ */
+  units  = (NclQuark*)NclMalloc(sizeof(NclQuark));
+  *units = NrmStringToQuark(cspec);
+
   att_md = _NclCreateVal(
                          NULL,
                          NULL,
                          Ncl_MultiDValData,
                          0,
-                         (void*)sspec,
+                         (void*)units,
                          NULL,
                          1,
                          dsizes,
