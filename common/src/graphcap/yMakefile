@@ -1,25 +1,31 @@
 #
-#	$Id: yMakefile,v 1.8 1995-06-05 18:48:19 haley Exp $
+#	$Id: yMakefile,v 1.9 1997-01-25 22:53:06 haley Exp $
 #
 
 MYNAME	= graphcap
+
+OBJECTS = \
+	 capchg.o binput.o bndcls.o capast.o capdat.o cappar.o dascls.o\
+	 devcls.o devcol.o devmap.o fndchr.o grinit.o gtflt.o gtint.o\
+	 gtlog.o gtstr.o intcnv.o lincls.o marcls.o mtchit.o plgcls.o\
+	 rascls.o rdline.o skpblk.o txtcls.o
+
+SOURCES = \
+	 capchg.F binput.f bndcls.f capast.F capdat.f cappar.f dascls.f\
+	 devcls.f devcol.f devmap.f fndchr.f grinit.f gtflt.f gtint.f\
+	 gtlog.f gtstr.f intcnv.f lincls.f marcls.f mtchit.f plgcls.f\
+	 rascls.f rdline.f skpblk.f txtcls.f
+
+FCPP_OBJS	= capast.f capchg.f
+EXTRA_LIBS = $(CTOFLIBS)
+
+PROG_LIBS	= $(NCARGCLIB)
 
 #
 # NOTE:		"t4006.gc" is not installed because it requires
 #		an internal code change to graphc.
 #
 #		"form.gc" is just an example and not installed.
-
-GENERIC_SRCS = \
-	adm5.gc aed.a.gc aed.b.gc balsml.gc hpgl.gc \
-	hpgl2.gc hpgl2.dual.gc hpgl2pe.gc hpgl2pe.dual.gc \
-	hp150.gc hp2648a.gc hp7475a.gc hp7510a.gc \
-	imagen.gc imagen.port.gc pc.mono.gc \
-	ps.color.gc ps.land.color.gc ps.land.mono.gc ps.mono.gc qms800.gc \
-	r6211.gc s100.gc t4010.gc t4025.gc t4105.gc t4107.gc \
-	t4107.seg.gc t4115.gc t4115.seg.gc tal1590.gc tekalike.gc \
-	versaterm.gc vt100.gc vt125.gc vt220.gc vt240.gc vt330.gc vt340.gc \
-	vt340w.gc ditroff.gc
 
 GRAPHCAPS = \
 	adm5 aed.a aed.b balsml hpgl \
@@ -32,12 +38,18 @@ GRAPHCAPS = \
 	versaterm vt100 vt125 vt220 vt240 vt330 vt340 \
 	vt340w ditroff
 
+FortranTarget(graphc,$(OBJECTS))
 InstallTarget($(GRAPHCAPS),$(INSTALL_DB),$(GRAPHCAPPATH))
-CleanFilesTarget($(GRAPHCAPS))
+CleanFilesTarget($(GRAPHCAPS) $(FCPP_OBJS))
 
 # rule for processing graphcaps
-.SUFFIXES:
 .SUFFIXES: .gc
 .gc:
 	@echo "	Processing graphcap $@"
 	@$(GRAPHC) $< $@
+
+# graphc suffers from optimization, so optimization flags are
+# overridden. - commented out incase this is not a prob anymore.
+/* #define	DisableOptimize	YES */
+
+
