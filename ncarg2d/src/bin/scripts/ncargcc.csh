@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ncargcc.csh,v 1.32 1994-04-19 14:58:31 haley Exp $
+#	$Id: ncargcc.csh,v 1.33 1994-05-03 13:54:37 haley Exp $
 #
 
 #*********************************************#
@@ -41,7 +41,7 @@ set ctrans_libs = ""
 set stub_file   = ""
 
 if ($system == "Cray2" || $system == "Cray") then
-  set f77libs     = "-L/lib -lf -lio -lm -lp -lsci -lu -lc"
+  set f77libs     = "-L/lib -lf -lm -lp -lsci -lu -lc"
 else if ($system == "Sun4") then
   set f77libs     = "-L/usr/lang/SC1.0 -Bstatic -lF77 -Bdynamic -lV77 -lm -lc"
 else if ($system == "Sun4Solaris") then
