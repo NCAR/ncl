@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargf77.csh,v 1.23 1995-03-17 19:50:36 haley Exp $
+#   $Id: ncargf77.csh,v 1.24 1995-05-22 19:54:04 haley Exp $
 #
 
 #*********************************************#
@@ -136,9 +136,6 @@ foreach arg ($argv)
         set xlib   = ""
         set libmath  = ""
         set stub_file = $ro/ggkwdr_stub.o
-        if ("$system" == "Sun4") then
-            set libextra = "-L/usr/lang/SC1.0/ansi_lib -lansi"
-        endif
         breaksw
 
     case "-noX11"
