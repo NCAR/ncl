@@ -4,14 +4,14 @@
 /*
 **  Stuff that should be edited by Configure
 */
-VERSION           = 3.1.3a
-BINROOT           = /usr/local/bin
-LIBROOT           = /usr/local/lib
-INCROOT           = /usr/local/include
-MANROOT           = /usr/local/man
-TMPROOT           = /tmp
-LOCAL_LIB_SEARCH  = -L/X/X11/lib -L/usr/local/lib
-LOCAL_INC_SEARCH  = -I/X/X11/include -I/usr/local/include
+VERSION     = 3.2.alpha
+BINROOT     = /red/u2/ncarg_test/dec/bin
+LIBROOT     = /red/u2/ncarg_test/dec/lib
+INCROOT     = /red/u2/ncarg_test/dec/include
+MANROOT     = /red/u2/ncarg_test/dec/man
+TMPROOT     = /tmp
+LOCAL_LIB_SEARCH        = -L/X/X11/lib -L/usr/local/lib
+LOCAL_INC_SEARCH        = -I/X/X11/include -I/usr/local/include
 
 /*
 **  Order of assignment to LIB_SEARCH and to INC_SEARCH is 
@@ -54,6 +54,7 @@ FONTCAPPATH       = $(LIBNCARGPATH)/$(FONTCAPDIR)
 GRAPHCAPPATH      = $(LIBNCARGPATH)/$(GRAPHCAPDIR)
 EXAMPLESPATH      = $(LIBNCARGPATH)/$(EXAMPLESDIR)
 TESTSPATH         = $(LIBNCARGPATH)/$(TESTSDIR)
+TUTORIALPATH      = $(LIBNCARGPATH)/$(TUTORIALDIR)
 XAPPPATH          = $(LIBNCARGPATH)/$(XAPPDIR)
 
 MANL_SECTION      = l
@@ -68,7 +69,7 @@ XTOOLLIB          = -lXt
 XMULIB            = -lXmu
 XAWLIB            = -lXaw
 HDFLIB            = -ldf
-XDRLIB		  =
+XDRLIB            =
 NETCDFLIB         = -lnetcdf $(XDRLIB)
 
 GENERICPATH       = $(NCARG)/$(GENERICDIR)
@@ -85,7 +86,7 @@ CC                = cc
 CC_LD             = $(CC)
 CDEBUG            =
 COPT              = -O
-CMISC             = -D__STDC__ -DNeedFuncProto
+CMISC             =
 CINC              = $(INC_SEARCH)
 CFLAGS            = $(OS) $(ARCH) $(CDEFINES) $(CDEBUG) $(COPT) $(CMISC)\
                     $(FLOAT_OPT) $(CINC) $(VDEFINE)

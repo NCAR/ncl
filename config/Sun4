@@ -3,14 +3,14 @@
 /*
 **  Stuff that should be edited by Configure
 */
-VERSION		= 3.1.3
-BINROOT		= /tmp/clyne/bin
-LIBROOT		= /tmp/clyne/lib
-INCROOT		= /tmp/clyne/include
-MANROOT		= /tmp/clyne/man
-TMPROOT		= /tmp
-LOCAL_LIB_SEARCH		= -L/X/X11/lib -L/usr/local/lib
-LOCAL_INC_SEARCH		= -I/X/X11/include -I/usr/local/include
+VERSION     = 3.1.3
+BINROOT     = /tmp/clyne/bin
+LIBROOT     = /tmp/clyne/lib
+INCROOT     = /tmp/clyne/include
+MANROOT     = /tmp/clyne/man
+TMPROOT     = /tmp
+LOCAL_LIB_SEARCH        = -L/X/X11/lib -L/usr/local/lib
+LOCAL_INC_SEARCH        = -I/X/X11/include -I/usr/local/include
 
 /*
 **  Order of assignment to LIB_SEARCH and to INC_SEARCH is
@@ -53,6 +53,7 @@ FONTCAPPATH       = $(LIBNCARGPATH)/$(FONTCAPDIR)
 GRAPHCAPPATH      = $(LIBNCARGPATH)/$(GRAPHCAPDIR)
 EXAMPLESPATH      = $(LIBNCARGPATH)/$(EXAMPLESDIR)
 TESTSPATH         = $(LIBNCARGPATH)/$(TESTSDIR)
+TUTORIALPATH      = $(LIBNCARGPATH)/$(TUTORIALDIR)
 XAPPPATH          = $(LIBNCARGPATH)/$(XAPPDIR)
 
 MANL_SECTION      = l
@@ -67,7 +68,7 @@ XTOOLLIB          = -lXt
 XMULIB            = -lXmu
 XAWLIB            = -lXaw
 HDFLIB            = -ldf
-XDRLIB		  =
+XDRLIB            =
 NETCDFLIB         = -lnetcdf $(XDRLIB)
 
 

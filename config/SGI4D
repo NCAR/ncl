@@ -53,6 +53,7 @@ FONTCAPPATH       = $(LIBNCARGPATH)/$(FONTCAPDIR)
 GRAPHCAPPATH      = $(LIBNCARGPATH)/$(GRAPHCAPDIR)
 EXAMPLESPATH      = $(LIBNCARGPATH)/$(EXAMPLESDIR)
 TESTSPATH         = $(LIBNCARGPATH)/$(TESTSDIR)
+TUTORIALPATH      = $(LIBNCARGPATH)/$(TUTORIALDIR)
 XAPPPATH          = $(LIBNCARGPATH)/$(XAPPDIR)
 
 MANL_SECTION      = l
@@ -67,7 +68,7 @@ XTOOLLIB          = -lXt
 XMULIB            = -lXmu
 XAWLIB            = -lXaw
 HDFLIB            = -ldf
-XDRLIB		  = -lsun
+XDRLIB            = -lsun
 NETCDFLIB         = -lnetcdf $(XDRLIB)
 
 
