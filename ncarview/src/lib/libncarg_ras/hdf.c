@@ -1,5 +1,5 @@
 /*
- *	$Id: hdf.c,v 1.8 1992-03-27 00:19:09 don Exp $
+ *	$Id: hdf.c,v 1.9 1992-03-30 21:40:01 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -93,6 +93,8 @@ HDFOpen(name)
 
 	ras->format = (char *) calloc((unsigned) strlen(FormatName) + 1, 1);
 	(void) strcpy(ras->format, FormatName);
+
+	status = DFR8restart();
 
 	status = DFR8getdims(ras->name, &ras->nx, &ras->ny, &palette_exists);
 	if (status == -1) {
@@ -273,11 +275,6 @@ HDFRead(ras)
 
 		status = DFR8getimage(ras->name, ras->data, 
 				ras->nx, ras->ny, pal);
-
-		if (status != 0) {
-			(void) RasterSetError(RAS_E_SYSTEM);
-			return(RAS_ERROR);
-		}
 	}
 		
 	if (ras->map_loaded == False) {
