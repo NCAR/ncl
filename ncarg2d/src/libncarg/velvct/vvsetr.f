@@ -1,5 +1,5 @@
 C
-C	$Id: vvsetr.f,v 1.8 1993-02-24 01:24:57 dbrown Exp $
+C	$Id: vvsetr.f,v 1.9 1993-04-30 23:36:38 dbrown Exp $
 C
 C
 C-----------------------------------------------------------------------
@@ -143,9 +143,9 @@ C
       ELSE IF (CNM(1:3).EQ.'YDN'.OR. CNM(1:3).EQ.'ydn') THEN
          IYDN=INT(RVL)
       ELSE IF (CNM(1:3).EQ.'VLC'.OR.CNM(1:3).EQ.'vlc') THEN
-         VLOM=ABS(RVL) 
+         VLOM=RVL 
       ELSE IF (CNM(1:3).EQ.'VHC'.OR.CNM(1:3).EQ.'vhc') THEN
-         VHIM=ABS(RVL) 
+         VHIM=RVL 
       ELSE IF (CNM(1:3).EQ.'SET'.OR. CNM(1:3).EQ.'set') THEN
          ISET=INT(RVL)
       ELSE IF (CNM(1:3).EQ.'VRL'.OR. CNM(1:3).EQ.'vrl') THEN

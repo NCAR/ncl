@@ -1,5 +1,5 @@
 C
-C	$Id: velvct.f,v 1.8 1993-03-15 22:56:58 dbrown Exp $
+C	$Id: velvct.f,v 1.9 1993-04-30 23:36:32 dbrown Exp $
 C
       SUBROUTINE VELVCT (U,LU,V,LV,M,N,FLO,HI,NSET,LENGTH,ISPV,SPV)
 C
@@ -216,6 +216,9 @@ C X3,Y3,X4,Y4     - temporary window boundary
 C SVM             - Size of Viewport, Metacode coords
 C LEN             - maximum vector size in Metacode coords
 C IDM             - integer dummy variable
+C XP              - X coordinate position
+C YP              - Y coordinate position
+C TSZ             - text size
 C
       DATA IDM / 0 /
 C
@@ -282,6 +285,8 @@ C
 C
       IF (IPM .EQ. 1) THEN
 C
+C VELVCT parameters override Vectors internal parameters
+C
          IF (NSET .LT. 0) THEN
 C
             X3 = 1.
@@ -313,13 +318,13 @@ C
             SVM = FLOAT(KFMX(X2) - KFMX(X1))
 C     
          END IF
-
-
 C
 C Use VVSET calls to transfer parameter values into the common block
+C 
+C Use of FLO and HI correspond to negative values for VLC and VHC
 C
-         CALL VVSETR('VLC - Vector Low Cutoff Value', FLO)
-         CALL VVSETR('VHC - Vector High Cutoff Value', HI)
+         CALL VVSETR('VLC - Vector Low Cutoff Value', MIN(0.0,-FLO))
+         CALL VVSETR('VHC - Vector High Cutoff Value', MIN(0.0,-HI))
 C
 C Since the set call has been handled VVINIT should not do a SET
 C
@@ -328,11 +333,11 @@ C
 C Convert the maximum vector length from plotter address units to
 C a fraction of the viewport
 C
+         CALL GETUSV('XF',ISX)
+         ISX = 2**(15-ISX)
          IF (LENGTH .EQ. 0) THEN
             VRL=0.0
          ELSE
-            CALL GETUSV('XF',ISX)
-            ISX = 2**(15-ISX)
             VRL=CMFX(LENGTH*ISX)/(X2-X1)
          ENDIF
          CALL VVSETR('VRL - Maximum Vector Realized Length', VRL)
@@ -351,6 +356,9 @@ C
 C Common block values
 C
       IF (ICB .EQ. 1) THEN
+C
+C VEC1, VEC2 values override Vectors internal parameters
+C
          CALL VVSETR('VPS - Viewport Mode Setting', EXT)
          CALL VVSETI('VPO - Vector Position Method', ICTRFG)
          CALL VVSETI('LBL - Vector Labelling Flag', ILAB)
@@ -380,8 +388,20 @@ C
          IF (IOFFM .NE. 0) THEN
             CALL VVSETC('MXT - Maximum Vector Text', ' ')
          ELSE
-            CALL VVSETI('MXP - Maximum Text Position Mode', 4)
-            CALL VVSETR('MXX - Maximum Text X Position', 1.0)
+C
+C Calculate text position values to place text at lower right of
+C plotter frame (0.05,0.005 NDC units from the corner)
+C rather than under lower left of viewport.
+C Also calculate a fixed text size based on the size hardcoded 
+C in the old version of VELVCT.
+C
+            XP=1.0+(1.0-X2-0.05)/(X2-X1)
+            YP=(0.005-Y1)/(Y2-Y1)
+            TSZ=CPFX(MAX0(256/ISX,8))/(X2-X1)
+            CALL VVSETR('MXS - Maximum Text Size', TSZ)
+            CALL VVSETI('MXP - Maximum Text Position Mode', -2)
+            CALL VVSETR('MXX - Maximum Text X Position', XP)
+            CALL VVSETR('MXY - Maximum Text Y Position', YP)
             CALL VVSETC('MXT - Maximum Vector Text', 'MAXIMUM VECTOR')
          END IF
 C

@@ -1,5 +1,5 @@
 C
-C	$Id: vvectr.f,v 1.6 1993-03-15 22:57:03 dbrown Exp $
+C	$Id: vvectr.f,v 1.7 1993-04-30 23:36:35 dbrown Exp $
 C
       SUBROUTINE VVECTR (U,V,P,IAM,VVUDMV,WRK)
 C
@@ -250,27 +250,33 @@ C that the user coordinate value may not be useful if the user
 C coordinate system is not uniform.
 C
 C If the parameter VMXL is greater than 0.0 the user has specified 
-C a maximum vector value as a fraction of the viewspace width.
+C a length for the maximum vector value 
+C as a fraction of the viewspace width.
 C
       IF (VMXL .GT. 0.0) THEN
          DVMX=VMXL*FW2W
          RLEN=DVMX*(WXMX-WXMN)/FW2W
       END IF
 C         
-C Determine the maximum vector magnitude to use. It will be the
-C minimum of the parameter VHIM (if greater than 0.0) and the maximum
-C vector size encountered in the field, stored in UVMX.
+C Determine the maximum vector magnitude to use. If VHIM is less than
+C 0.0 then it becomes the size to use, unconditionally. Otherwise,
+C It will be the minimum of the parameter VHIM (if not equal to 0.0) 
+C and the maximum vector size encountered in the field, stored in UVMX.
 C Do likewise with the minimum vector.
-C Note that it is still possible for the user to set the max or min
+C Note that it is possible for the user to set the max or min
 C such that no vectors qualify for plotting. A 'ZERO FIELD' condition
 C results in this case. 
 C
       IF (VHIM .GT. 0.0) THEN
          UVMX = MIN(VHIM, UVMX)
+      ELSE IF (VHIM.LT.0.0) THEN
+         UVMX = ABS(VHIM)
       END IF
 C
       IF (VLOM .GT. 0.0) THEN
          UVMN = MAX(VLOM, UVMN)
+      ELSE IF (VLOM.LT.0.0) THEN
+         UVMN = ABS(VLOM)
       END IF
 C
 C Compute scale factors.
@@ -511,7 +517,6 @@ C
 C
 C Set the read-only min/max vector sizes to reflect the vectors
 C actually drawn
-C Restore DVMN and DVMX to their original values
 C
       IF (IAV.EQ.0) THEN
          RDMN=VMN*SXDC
@@ -521,19 +526,27 @@ C
       RDMX=VMX*SXDC
       RVMX=VMX
       RVMN=VMN
-      DVMN=SMN
-      DVMX=SMX
 C
 C If vectors were drawn, write out the vector informational text if 
 C called for, else conditionally write the zero field text.
+C The size printed out depends on whether absolute or relative
+C size mode is in effect.
 C 
       IF (IZF .EQ. 0) THEN
 C
          IF (CMXT(1:1) .NE. ' ') THEN
-            CALL VVARTX(CMXT,IMXP,FMXX,FMXY,FMXS,IMXC,VMX,RDMX)
+            IF (VHIM .LT. 0.0) THEN
+               CALL VVARTX(CMXT,IMXP,FMXX,FMXY,FMXS,IMXC,UVMX,DVMX)
+            ELSE
+               CALL VVARTX(CMXT,IMXP,FMXX,FMXY,FMXS,IMXC,VMX,RDMX)
+            ENDIF
          END IF
          IF (CMNT(1:1) .NE. ' ') THEN
-            CALL VVARTX(CMNT,IMNP,FMNX,FMNY,FMNS,IMNC,VMN,RDMN)
+            IF (VLOM .LT. 0.0) THEN
+               CALL VVARTX(CMNT,IMNP,FMNX,FMNY,FMNS,IMNC,UVMN,DVMN)
+            ELSE
+               CALL VVARTX(CMNT,IMNP,FMNX,FMNY,FMNS,IMNC,VMN,RDMN)
+            END IF
          END IF
 C
       ELSE
@@ -572,6 +585,11 @@ C
          END IF
 C
       END IF
+C
+C Restore DVMN and DVMX to their original values
+C
+      DVMN=SMN
+      DVMX=SMX
 C
 C Done
 C
@@ -776,4 +794,12 @@ C Done
 C
       RETURN
       END
+
+
+
+
+
+
+
+
 
