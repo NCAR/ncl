@@ -189,7 +189,6 @@ main()
 	gdeactivate_ws(WKID);
 	gclose_ws(WKID);
 	gclose_gks();
-
 }
 
 void drbox(xl,xr,yb,yt)
