@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.60 1997-08-01 21:02:31 ethan Exp $
+#      $Id: yMakefile,v 1.61 1997-08-06 20:19:24 boote Exp $
 #
 #########################################################################
 #									#
@@ -53,7 +53,7 @@ API_DEFS	=	-DMAKEAPI
 PROG_LIBS	=	$(HLULIBS) $(NCARGLIBS)
 DEPLIBS		=	$(DEPHLULIBS) $(DEPNCARGLIBS)
 EXTRA_LIBS	=	$(NCDFLIBS) $(HDFLIB)
-SYS_LIBS	=	$(XLIB) $(CTOFLIBS) -lm $(ARCH_LIBS) $(DYNAMIC_LIBS) -ledit
+SYS_LIBS	=	$(XLIB) $(CTOFLIBS) -lm $(ARCH_LIBS) $(DYNAMIC_LIBS)
 
 HDRS		=	$(GEN_HDRS) $(STATIC_HDRS) $(INSTALL_HDRS)
 
@@ -73,7 +73,8 @@ STATIC_HDRS	=	AttSupport.h DataSupport.h FileSupport.h Keywords.h \
 			NclType.h \
 			NclMultiDValnclfileData.h NclMultiDValHLUObjData.h \
 			NclOneDValCoordData.h BuiltInFuncs.h HLUFunctions.h \
-			NclCallBacksI.h date.h NclGRIB.h date.h tables.h
+			NclCallBacksI.h date.h NclGRIB.h date.h tables.h \
+			editline.h unix.h
 
 INSTALL_HDRS	=	defs.h NclApi.h ApiRecords.h NclVar.h NclBuiltIns.h \
 			NclDataDefs.h NclBuiltInSupport.h NclCallBacksI.h \
@@ -109,7 +110,8 @@ STATIC_SRCS	=	AddBuiltIns.c AddFileFormats.c AddHLUObjs.c \
 			NclMultiDValnclfileData.c NclMultiDValHLUObjData.c \
 			NclOneDValCoordData.c BuiltInSupport.c BuiltInFuncs.c \
 			HLUFunctions.c NclHDF.c NclGRIB.c date.c yywrap.c \
-			GetGrids.c NclCCM.c craybin.c ctoiee.c
+			GetGrids.c NclCCM.c craybin.c ctoiee.c complete.c \
+			editline.c sysunix.c
 
 FSRCS		=	fortranio.f gaus.f vinth2p.f
 FOBJS		=	fortranio.o gaus.o vinth2p.o
@@ -131,7 +133,8 @@ STATIC_OBJS	=	AddBuiltIns.o AddFileFormats.o AddHLUObjs.o \
 			NclMultiDValnclfileData.o NclMultiDValHLUObjData.o \
 			NclOneDValCoordData.o BuiltInSupport.o BuiltInFuncs.o \
 			HLUFunctions.o NclHDF.o NclGRIB.o date.o yywrap.o \
-			GetGrids.o NclCCM.o craybin.o ctoiee.o
+			GetGrids.o NclCCM.o craybin.o ctoiee.o complete.o \
+			editline.o sysunix.o
 
 OBJS		=	$(GEN_OBJS) $(STATIC_OBJS) $(FOBJS)
 
