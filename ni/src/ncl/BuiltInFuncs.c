@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.174 2005-02-05 00:13:55 dbrown Exp $
+ *      $Id: BuiltInFuncs.c,v 1.175 2005-02-07 21:58:20 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -6672,6 +6672,7 @@ NhlErrorTypes _NclIUnDef
 	logical *outval;
 	NclQuark *vals;
 	NclSymbol* s;
+	NclObj tmp;
 
 	
 	arg  = _NclGetArg(0,1,DONT_CARE);
@@ -6703,6 +6704,7 @@ NhlErrorTypes _NclIUnDef
 						case VAR:
 						case FVAR:
 							var = _NclRetrieveRec(s,DONT_CARE);
+							tmp = (NclObj)var->u.data_var;
 							if((var != NULL)&&(var->u.data_var != NULL)) {
 								if(var->u.data_var->var.var_type == NORMAL) {
 /*
@@ -6714,9 +6716,11 @@ NhlErrorTypes _NclIUnDef
 									data.u.data_obj = NULL;
 									_NclPutRec(s,&data);
 								}
-								_NclDestroyObj((NclObj)var->u.data_var);
-								var->u.data_var = NULL;
-								var->kind = NclStk_NOVAL;
+								_NclDestroyObj((NclObj)tmp);
+								if (var != NULL) {
+									var->u.data_var = NULL;
+									var->kind = NclStk_NOVAL;
+								}
 							}
 							break;
 						default:
@@ -6731,40 +6735,41 @@ NhlErrorTypes _NclIUnDef
 			s = _NclLookUp(NrmQuarkToString(vals[i]));
 			if(s!=NULL){
 
-			 		switch(s->type) {	
-						case NPROC:
-						case PIPROC:
-						case IPROC:
-						case NFUNC:
-						case IFUNC:
-							_NclFreeProcFuncInfo(s);
-							break;
-						case UNDEF:
-							s->type = UNDEF;
-							break;
-						case VAR:
-						case FVAR:
-							var = _NclRetrieveRec(s,DONT_CARE);
-							if((var != NULL)&&(var->u.data_var != NULL)) {
-								if(var->u.data_var->var.var_type == NORMAL) {
+				switch(s->type) {	
+				case NPROC:
+				case PIPROC:
+				case IPROC:
+				case NFUNC:
+				case IFUNC:
+					_NclFreeProcFuncInfo(s);
+					break;
+				case UNDEF:
+					s->type = UNDEF;
+					break;
+				case VAR:
+				case FVAR:
+					var = _NclRetrieveRec(s,DONT_CARE);
+					if((var != NULL)&&(var->u.data_var != NULL)) {
+						tmp = (NclObj)var->u.data_var;
+						if(var->u.data_var->var.var_type == NORMAL) {
 /*
 * Can't destroy symbol since it may be referenced from the instruction
 * sequence. Changing it to UNDEF should do the trick though
 */
-									_NclChangeSymbolType(s,UNDEF);
-									data.kind = NclStk_NOVAL;
-									data.u.data_obj = NULL;
-									_NclPutRec(s,&data);
-								}
-								_NclDestroyObj((NclObj)var->u.data_var);
-								var->u.data_var = NULL;
-								var->kind = NclStk_NOVAL;
-							}
-							break;
-						default:
-							NhlPError(NhlWARNING,NhlEUNKNOWN,"undef: attempting to undefine a key word");
-						break;
+							_NclChangeSymbolType(s,UNDEF);
+							data.kind = NclStk_NOVAL;
+							data.u.data_obj = NULL;
+							_NclPutRec(s,&data);
+						}
+						_NclDestroyObj((NclObj)tmp);
+						var->u.data_var = NULL;
+						var->kind = NclStk_NOVAL;
 					}
+					break;
+				default:
+					NhlPError(NhlWARNING,NhlEUNKNOWN,"undef: attempting to undefine a key word");
+					break;
+				}
 			}
 		}
 	}
