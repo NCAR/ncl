@@ -15,7 +15,7 @@ extern "C" {
 #include <ncarg/hlu/ConvertP.h>
 #include <ncarg/hlu/Error.h>
 #include <ncarg/hlu/App.h>
-#include "netcdf-3.3.1/src/libsrc/netcdf.h"
+#include <netcdf.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <dirent.h>
