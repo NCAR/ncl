@@ -1,5 +1,5 @@
 /*
- *	$Id: ictrans_wks.c.sed,v 1.10 1993-02-09 16:35:31 haley Exp $
+ *	$Id: ictrans_wks.c.sed,v 1.11 1993-02-09 17:02:18 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -25,6 +25,8 @@
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/file.h>
+#include <unistd.h>
+#include <ncarg/cgm_tools.h>
 #include "ictrans_wks.h"
 
 /*LINTLIBRARY*/
@@ -361,14 +363,14 @@ wrtwks_(unit, buffer, length, status)
 #if defined(ByteSwapped)
 	bcopyswap(buffer, locbuf, RECORDSIZE);
 	if (mftab[*unit].type == MEM_FILE_OUTPUT) {
-		nb = CGM_write(mftab[*unit].fd, (char *) locbuf);
+		nb = CGM_write(mftab[*unit].fd, (unsigned char *) locbuf);
 	}
 	else {
 		nb = write(mftab[*unit].fd, (char *) locbuf, RECORDSIZE);
 	}
 #else
 	if (mftab[*unit].type == MEM_FILE_OUTPUT) {
-		nb = CGM_write(mftab[*unit].fd, (char *)buffer);
+		nb = CGM_write(mftab[*unit].fd, (unsigned char *)buffer);
 	}
 	else {
 		nb = write(mftab[*unit].fd, (char *) buffer, RECORDSIZE);
@@ -424,7 +426,7 @@ rdwks_(unit, buffer, length, status)
 
 #if defined(ByteSwapped)
 	if (mftab[*unit].type == MEM_FILE_OUTPUT) {
-		nb = CGM_read(mftab[*unit].fd, (char *) locbuf);
+		nb = CGM_read(mftab[*unit].fd, (unsigned char *) locbuf);
 	}
 	else {
 		nb = read(mftab[*unit].fd, (char *) locbuf, RECORDSIZE);
@@ -432,7 +434,7 @@ rdwks_(unit, buffer, length, status)
 	bcopyswap(locbuf, buffer, RECORDSIZE);
 #else
 	if (mftab[*unit].type == MEM_FILE_OUTPUT) {
-		nb = CGM_read(mftab[*unit].fd, (char *) buffer);
+		nb = CGM_read(mftab[*unit].fd, (unsigned char *) buffer);
 	}
 	else {
 		nb = read(mftab[*unit].fd, (char *) buffer, RECORDSIZE);
