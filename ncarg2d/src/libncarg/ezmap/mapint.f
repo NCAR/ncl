@@ -1,6 +1,6 @@
 C
-C $Id: mapint.f,v 1.15 2000-08-22 15:03:33 haley Exp $
-C                                                                      
+C $Id: mapint.f,v 1.16 2001-07-24 20:42:55 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -102,12 +102,11 @@ C
       GO TO 107
 C
 C Lambert conformal conic and orthographic.  The quantity "R" which is
-C used below is the largest accceptable ratio of the lengths of the
-C major and minor axes of the elliptical limb of the satellite-view
-C projection for which we will show the entire ellipse.  For larger
-C values of the angle "alpha", we just use a "camera" with a 120-degree
-C field of view; it is debatable whether there is any better course of
-C action.
+C used below is the largest acceptable ratio of the lengths of the major
+C and minor axes of the elliptical limb of the satellite-view projection
+C for which we will show the entire ellipse.  For larger values of the
+C angle "alpha", we just use a "camera" with a 120-degree field of view;
+C it is debatable whether there is any better course of action.
 C
   101 IF (IPRJ.NE.3.OR.ABS(SALT).LE.1..OR.ALFA.EQ.0.) THEN
         UMIN=-1.

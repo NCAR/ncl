@@ -1,5 +1,5 @@
 C
-C $Id: mprgol.f,v 1.1 2001-05-18 22:49:39 kennison Exp $
+C $Id: mprgol.f,v 1.2 2001-07-24 20:42:56 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -92,11 +92,27 @@ C
             IF (UPRJ.NE.1.E12) GO TO 101  !  UL VISIBLE
             CALL MAPTRA (REAL(ILAT+1),REAL(ILON+1),UPRJ,VPRJ)
             IF (UPRJ.NE.1.E12) GO TO 101  !  UR VISIBLE
-            CALL MAPTRI (CFUX(.5),CFUY(.5),RLAT,RLON)
-            IF (RLAT.LT.REAL(ILAT).OR.RLAT.GT.REAL(ILAT+1)) GO TO 102
+            CALL MAPTRI (CFUX(XLOW),CFUY(YBOW),RLAT,RLON)
             IF (RLON.LT.REAL(ILON)) RLON=RLON+360.
             IF (RLON.GT.REAL(ILON+360)) RLON=RLON-360.
-            IF (RLON.LT.REAL(ILON).OR.RLON.GT.REAL(ILON+1)) GO TO 102
+            IF (RLAT.GE.REAL(ILAT).AND.RLAT.LE.REAL(ILAT+1).AND.
+     +          RLON.GE.REAL(ILON).AND.RLON.LE.REAL(ILON+1)) GO TO 101
+            CALL MAPTRI (CFUX(XLOW),CFUY(YTOW),RLAT,RLON)
+            IF (RLON.LT.REAL(ILON)) RLON=RLON+360.
+            IF (RLON.GT.REAL(ILON+360)) RLON=RLON-360.
+            IF (RLAT.GE.REAL(ILAT).AND.RLAT.LE.REAL(ILAT+1).AND.
+     +          RLON.GE.REAL(ILON).AND.RLON.LE.REAL(ILON+1)) GO TO 101
+            CALL MAPTRI (CFUX(XROW),CFUY(YBOW),RLAT,RLON)
+            IF (RLON.LT.REAL(ILON)) RLON=RLON+360.
+            IF (RLON.GT.REAL(ILON+360)) RLON=RLON-360.
+            IF (RLAT.GE.REAL(ILAT).AND.RLAT.LE.REAL(ILAT+1).AND.
+     +          RLON.GE.REAL(ILON).AND.RLON.LE.REAL(ILON+1)) GO TO 101
+            CALL MAPTRI (CFUX(XROW),CFUY(YTOW),RLAT,RLON)
+            IF (RLON.LT.REAL(ILON)) RLON=RLON+360.
+            IF (RLON.GT.REAL(ILON+360)) RLON=RLON-360.
+            IF (RLAT.GE.REAL(ILAT).AND.RLAT.LE.REAL(ILAT+1).AND.
+     +          RLON.GE.REAL(ILON).AND.RLON.LE.REAL(ILON+1)) GO TO 101
+            GO TO 102
   101       CALL MPRGSQ (ICAT,ICEL,IRIM,ILAT,ILON,0.,0)
             IF (ICFELL('MPRGOL',6).NE.0) GO TO 104
   102     CONTINUE
@@ -112,9 +128,9 @@ C
 C
 C Close all RANGS/GSHHS files.
 C
-        CALL CLFILE (ICAT)
-        CALL CLFILE (ICEL)
-        CALL CLFILE (IRIM)
+        CALL NGCLFI (ICAT)
+        CALL NGCLFI (ICEL)
+        CALL NGCLFI (IRIM)
 C
 C Done.
 C

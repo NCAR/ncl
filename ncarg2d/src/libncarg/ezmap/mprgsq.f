@@ -1,5 +1,5 @@
 C
-C $Id: mprgsq.f,v 1.1 2001-05-18 22:49:40 kennison Exp $
+C $Id: mprgsq.f,v 1.2 2001-07-24 20:42:56 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -84,7 +84,7 @@ C
           RETURN
         END IF
 C
-        CALL RDCHRS (ICAT,CTM4,4,ISTA)
+        CALL NGRDCH (ICAT,CTM4,4,ISTA)
 C
         IF (ISTA.NE.4) THEN
           CALL SETER ('MPRGSQ - READ FAILURE IN CAT FILE ',2,1)
@@ -107,7 +107,7 @@ C
 C
 C Read a new polygon byte.
 C
-  101   CALL RDCHRS (ICEL,CTM1,1,ISTA)
+  101   CALL NGRDCH (ICEL,CTM1,1,ISTA)
 C
         IF (ISTA.NE.1) THEN
           CALL SETER ('MPRGSQ - READ FAILURE IN CEL FILE ',4,1)
@@ -131,7 +131,7 @@ C
 C
 C Read the polygon ID.
 C
-          CALL RDCHRS (ICEL,CTM4,4,ISTA)
+          CALL NGRDCH (ICEL,CTM4,4,ISTA)
 C
           IF (ISTA.NE.4) THEN
             CALL SETER ('MPRGSQ - READ FAILURE IN CEL FILE ',5,1)
@@ -156,7 +156,7 @@ C
 C
 C Read a new segment byte.
 C
-  102     CALL RDCHRS (ICEL,CTM1,1,ISTA)
+  102     CALL NGRDCH (ICEL,CTM1,1,ISTA)
 C
           IF (ISTA.NE.1) THEN
             CALL SETER ('MPRGSQ - READ FAILURE IN CEL FILE ',6,1)
@@ -193,7 +193,7 @@ C
 C
 C Read a longitude.
 C
-              CALL RDCHRS (ICEL,CTM4,4,ISTA)
+              CALL NGRDCH (ICEL,CTM4,4,ISTA)
 C
               IF (ISTA.NE.4) THEN
                 CALL SETER ('MPRGSQ - READ FAILURE IN CEL FILE ',7,1)
@@ -210,7 +210,7 @@ C
 C
 C Read a latitude.
 C
-              CALL RDCHRS (ICEL,CTM4,4,ISTA)
+              CALL NGRDCH (ICEL,CTM4,4,ISTA)
 C
               IF (ISTA.NE.4) THEN
                 CALL SETER ('MPRGSQ - READ FAILURE IN CEL FILE ',8,1)
@@ -347,7 +347,7 @@ C
 C
 C Get the pointer into the rim file.
 C
-            CALL RDCHRS (ICEL,CTM4,4,ISTA)
+            CALL NGRDCH (ICEL,CTM4,4,ISTA)
 C
             IF (ISTA.NE.4) THEN
               CALL SETER ('MPRGSQ - READ FAILURE IN CEL FILE ',15,1)
@@ -361,7 +361,7 @@ C
 C
 C Get the number of points to be read from the rim file.
 C
-            CALL RDCHRS (ICEL,CTM4,4,ISTA)
+            CALL NGRDCH (ICEL,CTM4,4,ISTA)
 C
             IF (ISTA.NE.4) THEN
               CALL SETER ('MPRGSQ - READ FAILURE IN CEL FILE ',16,1)
@@ -393,7 +393,7 @@ C
 C
 C Read a longitude.
 C
-                CALL RDCHRS (IRIM,CTM4,4,ISTA)
+                CALL NGRDCH (IRIM,CTM4,4,ISTA)
 C
                 IF (ISTA.NE.4) THEN
                   CALL SETER ('MPRGSQ - READ FAILURE IN RIM FILE ',18,1)
@@ -410,7 +410,7 @@ C
 C
 C Read a latitude.
 C
-                CALL RDCHRS (IRIM,CTM4,4,ISTA)
+                CALL NGRDCH (IRIM,CTM4,4,ISTA)
 C
                 IF (ISTA.NE.4) THEN
                   CALL SETER ('MPRGSQ - READ FAILURE IN RIM FILE ',19,1)

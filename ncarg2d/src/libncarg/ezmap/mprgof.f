@@ -1,5 +1,5 @@
 C
-C $Id: mprgof.f,v 1.1 2001-05-18 22:49:39 kennison Exp $
+C $Id: mprgof.f,v 1.2 2001-07-24 20:42:55 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -27,7 +27,7 @@ C at a specified resolution level IRGL.  The file descriptors come back
 C in ICAT, ICEL, and IRIM.
 C
 C FLNM is a character variable in which to build the names of files to
-C be opened by a call to OPFIRO.
+C be opened by a call to NGOFRO.
 C
         CHARACTER*129 FLNM
 C
@@ -65,7 +65,7 @@ C
 C Open all the data files.
 C
         FLNM(INAM:INAM+12)=NCAT
-        CALL OPFIRO (FLNM,ICAT,ISTA)
+        CALL NGOFRO (FLNM,ICAT,ISTA)
 C
         IF (ISTA.NE.0) THEN
           CALL SETER ('MPRGOF - ERROR OPENING RANGS/GSHHS CAT FILE',3,1)
@@ -73,21 +73,21 @@ C
         END IF
 C
         FLNM(INAM:INAM+12)=NCEL
-        CALL OPFIRO (FLNM,ICEL,ISTA)
+        CALL NGOFRO (FLNM,ICEL,ISTA)
 C
         IF (ISTA.NE.0) THEN
           CALL SETER ('MPRGOF - ERROR OPENING RANGS/GSHHS CEL FILE',4,1)
-          CALL CLFILE (ICAT)
+          CALL NGCLFI (ICAT)
           RETURN
         END IF
 C
         FLNM(INAM:INAM+12)=NRIM
-        CALL OPFIRO (FLNM,IRIM,ISTA)
+        CALL NGOFRO (FLNM,IRIM,ISTA)
 C
         IF (ISTA.NE.0) THEN
           CALL SETER ('MPRGOF - ERROR OPENING RANGS/GSHHS RIM FILE',5,1)
-          CALL CLFILE (ICAT)
-          CALL CLFILE (ICEL)
+          CALL NGCLFI (ICAT)
+          CALL NGCLFI (ICEL)
           RETURN
         END IF
 C

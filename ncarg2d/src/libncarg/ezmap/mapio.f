@@ -1,6 +1,6 @@
 C
-C $Id: mapio.f,v 1.15 2000-08-22 15:03:33 haley Exp $
-C                                                                      
+C $Id: mapio.f,v 1.16 2001-07-24 20:42:55 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -57,7 +57,7 @@ C
           IF (FLNM(I:I).EQ.CHAR(0)) THEN
             FLNM(I:I+17)='/EzmapOutlines.'//DDCT(NOUT+1)//CHAR(0)
             GO TO 102
-          ENDIF
+          END IF
   101   CONTINUE
 C
         GO TO 901
