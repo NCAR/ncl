@@ -1,6 +1,6 @@
 #
 #
-#	$Id: yMakefile,v 1.30 1997-05-08 22:42:47 haley Exp $
+#	$Id: yMakefile,v 1.31 1997-05-14 23:08:13 boote Exp $
 #
 #
 #	Makefile for libncarg_c -- NCAR G common utilities
@@ -38,7 +38,10 @@ EXOBJS  = sbytes.o gbytes.o logic32.o
 
 EXCSRCS = bcopyswap.c gsbytes.c logic32.c
 EXOBJS  = bcopyswap.o gsbytes.o logic32.o
- 
+
+SHLIBSRCS = g77.c
+SHLIBOBJS = g77.o
+
 #else
 
 EXCSRCS = gsbytes.c logic32.c
@@ -73,4 +76,4 @@ BuildIncludes($(HDRS),ncarg,..)
 DependTarget($(CSRCS))
 CleanFilesTarget($(FCPP_FSRCS))
 
-BuildSharedLibTarget(libNGc,$(OBJS),1,0,$(REQLIBS))
+BuildSharedLibTarget(libNGc,$(OBJS) $(SHLIBOBJS),1,0,$(REQLIBS))
