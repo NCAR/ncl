@@ -1,5 +1,5 @@
 /*
- *      $Id: LogLinTransObj.c,v 1.5 1993-12-22 00:56:06 dbrown Exp $
+ *      $Id: LogLinTransObj.c,v 1.6 1994-01-13 02:34:50 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -689,6 +689,10 @@ static NhlErrorTypes LlNDCToWin
 		NhlNvpYF,&y0,
 		NhlNvpWidthF,&width,
 		NhlNvpHeightF,&height,NULL);
+	xmin = x0;
+	xmax = x0 + width;
+	ymin = y0 - height;
+	ymax = y0;
 	if( ret < WARNING)
 		return(ret);
 	*status = 0;
@@ -702,10 +706,6 @@ static NhlErrorTypes LlNDCToWin
 			uttmp = (float)log10(linstance->lltrans.ut);
 			ubtmp = (float)log10(linstance->lltrans.ub);
 	
-			xmin = MIN(urtmp,ultmp);
-			xmax = MAX(ultmp,urtmp);
-			ymin = MIN(uttmp,ubtmp);
-			ymax = MAX(uttmp,ubtmp);
 
 			for(i = 0; i< n; i++) {
 				if(((xmissing != NULL)&&(*xmissing == x[i]))
@@ -736,16 +736,14 @@ static NhlErrorTypes LlNDCToWin
 */
 			urtmp = (float)log10(linstance->lltrans.ur);
 			ultmp = (float)log10(linstance->lltrans.ul);
-			xmin = MIN(urtmp,ultmp);
-			xmax = MAX(ultmp,urtmp);
 		
 			for(i = 0; i< n; i++) {
 				if(((xmissing != NULL)&&(*xmissing == x[i]))
 					||((ymissing != NULL)&&(*ymissing == y[i]))
 					||(x[i] < xmin)
 					||(x[i] > xmax)
-					||(y[i] < linstance->lltrans.y_min)
-					||(y[i] > linstance->lltrans.y_max)) {
+					||(y[i] < ymin)
+					||(y[i] > ymax)) {
 		
 					*status = 1;
 					xout[i]=yout[i]=linstance->trobj.out_of_range;
@@ -765,13 +763,12 @@ static NhlErrorTypes LlNDCToWin
 */
 			uttmp = (float)log10(linstance->lltrans.ut);
 			ubtmp = (float)log10(linstance->lltrans.ub);
-			ymin = MIN(uttmp,ubtmp);
-			ymax = MAX(uttmp,ubtmp);
+
 			for(i = 0; i< n; i++) {
 				if(((xmissing != NULL)&&(*xmissing == x[i]))
 					||((ymissing != NULL)&&(*ymissing == y[i]))
-					||(x[i] < linstance->lltrans.x_min)
-					||(x[i] > linstance->lltrans.x_max)
+					||(x[i] < xmin)
+					||(x[i] > xmax)
 					||(y[i] < ymin)
 					||(y[i] > ymax)) {
 
@@ -796,10 +793,10 @@ static NhlErrorTypes LlNDCToWin
 			for(i = 0; i< n; i++) {
 				if(((xmissing != NULL)&&(*xmissing == x[i]))
 					||((ymissing != NULL)&&(*ymissing == y[i]))
-					||(x[i] < linstance->lltrans.x_min)
-					||(x[i] > linstance->lltrans.x_max)
-					||(y[i] < linstance->lltrans.y_min)
-					||(y[i] > linstance->lltrans.y_max)) {
+					||(x[i] < xmin)
+					||(x[i] > xmax)
+					||(y[i] < ymin)
+					||(y[i] > ymax)) {
 
 					*status = 1;
 					xout[i]=yout[i]=linstance->trobj.out_of_range;
