@@ -17,7 +17,7 @@ FRAME_LIST	({FRAME}[ ]*","[ ]*{FRAME})
 ALPHA		[a-zA-Z]
 ALPHAS		{ALPHA}+
 COMMAND	("!"|{ALPHAS})
-DATA	[\\^a-zA-Z0-9!#%&'()*/:;<>=_?@~.$, ]
+DATA	[\-\\^a-zA-Z0-9!|#%&'()*/:;<>=_?@~.$, ]
 
 
 %%
