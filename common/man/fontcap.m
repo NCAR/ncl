@@ -1,14 +1,15 @@
 .\"
-.\"	$Id: fontcap.m,v 1.1.1.1 1992-04-17 22:30:06 ncargd Exp $
+.\"	$Id: fontcap.m,v 1.2 1993-04-21 20:04:19 fred Exp $
 .\"
 .\" @(#)f77.1 1.4 86/07/31 SMI; 
-.TH FONTCAP 5NCARG "NOVEMBER 1989" NCAR "NCAR GRAPHICS"
+.TH FONTCAP 5NCARG "April 1993" NCAR "NCAR GRAPHICS"
 .SH NAME
-fontcap \- NCAR Graphics font definition file
+fontcap \- A list of supported NCAR Graphics font definition files for
+use with ctrans and Plotchar.
 .SH DESCRIPTION
 .LP
 .I font1
-This fontcap defines the default font for the NCAR CGM translators.
+A very simple ASCII font.
 .LP
 .I font2
 Character fontcap for: HERSHEY:CARTOGRAPHIC_ROMAN
@@ -67,11 +68,47 @@ Character fontcap for: HERSHEY:SYMBOL_SET1
 .I font20
 Character fontcap for: HERSHEY:SYMBOL_SET2
 .LP
-It is possible to set the desired font using the 
-.I FONTCAP
-environment variable, but this is currently not recommended
-because each translator selects its appropriate font.
-.SH "SEE ALSO"
-.I "NCAR Graphics Version 3.00 - UNIX Release"
+.I font21
+Character fontcap for: NCAR:HELVETICA (filled font for Plotchar)
 .LP
-.I "NCAR Graphics User's Guide"
+.I font22
+Character fontcap for: NCAR:HELVETICA-BOLD (filled font for Plotchar)
+.LP
+.I font25
+Character fontcap for: NCAR:TIMES-ROMAN (filled font for Plotchar)
+.LP
+.I font26
+Character fontcap for: NCAR:TIMES-BOLD (filled font for Plotchar)
+.LP
+.I font29
+Character fontcap for: NCAR:COURIER (filled font for Plotchar)
+.LP
+.I font30
+Character fontcap for: NCAR:COURIER-BOLD (filled font for Plotchar)
+.LP
+.I font33
+Character fontcap for: NCAR:GREEK (filled font for Plotchar)
+.LP
+.I font34
+Character fontcap for: NCAR:MATH-SYMBOLS (filled font for Plotchar)
+.LP
+.I font35
+Character fontcap for: NCAR:TEXT-SYMBOLS (filled font for Plotchar)
+.LP
+.I font36
+Character fontcap for: NCAR:WEATHER1 (filled font for Plotchar)
+.LP
+.I font37
+Character fontcap for: NCAR:WEATHER2 (filled font for Plotchar)
+.LP
+For ctrans, it is possible to set the desired font using the 
+.I FONTCAP
+environment variable.
+.SH "SEE ALSO"
+ctrans(1NCARG), fontc(5NCARG)
+.LP
+.I "NCAR Graphics Fundamentals, UNIX Version"
+.LP
+.I "NCAR Graphics Generic Package Installer's Guide"
+.LP
+.I "NCAR Graphics Programmer Document: Plotchar"
