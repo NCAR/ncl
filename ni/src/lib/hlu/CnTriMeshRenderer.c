@@ -1,5 +1,5 @@
 /*
- *      $Id: CnTriMeshRenderer.c,v 1.4 2004-10-05 22:50:32 dbrown Exp $
+ *      $Id: CnTriMeshRenderer.c,v 1.5 2005-02-14 22:56:52 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3543,24 +3543,7 @@ NhlErrorTypes _NhlTriMeshRasterFill
 	cystep = (ycqf-ycpf)/(float)ican;
  	x_isbound = Cnp->sfp->xc_is_bounds;
  	y_isbound = Cnp->sfp->yc_is_bounds;
-#if 0
-	if (x_isbound) {
-		xsoff = Xsoff;
-		xeoff = Xeoff;
-	}
-	else {
-		xsoff = Xsoff + .5 * (1.0 - Xsoff);
-		xeoff = Xeoff + .5 * (1.0 - Xeoff);
-	}
-	if (y_isbound) {
-		ysoff = Ysoff;
-		yeoff = Yeoff;
-	}
-	else {
-		ysoff = Ysoff + .5 * (1.0 - Ysoff);
-		yeoff = Yeoff + .5 * (1.0 - Yeoff);
-	}
-#endif
+
 	xsoff = Xsoff + .5 * (1.0 - Xsoff);
 	xeoff = Xeoff + .5 * (1.0 - Xeoff);
 	ysoff = Ysoff + .5 * (1.0 - Ysoff);
@@ -3899,22 +3882,11 @@ NhlErrorTypes CnTriMeshWriteCellData
 	cystep = (ycqf-ycpf)/(double)ican;
  	x_isbound = Cnp->sfp->xc_is_bounds;
  	y_isbound = Cnp->sfp->yc_is_bounds;
-	if (x_isbound) {
-		xsoff = Xsoff;
-		xeoff = Xeoff;
-	}
-	else {
-		xsoff = Xsoff + .5 * (1.0 - Xsoff);
-		xeoff = Xeoff + .5 * (1.0 - Xeoff);
-	}
-	if (y_isbound) {
-		ysoff = Ysoff;
-		yeoff = Yeoff;
-	}
-	else {
-		ysoff = Ysoff + .5 * (1.0 - Ysoff);
-		yeoff = Yeoff + .5 * (1.0 - Yeoff);
-	}
+	xsoff = Xsoff + .5 * (1.0 - Xsoff);
+	xeoff = Xeoff + .5 * (1.0 - Xeoff);
+	ysoff = Ysoff + .5 * (1.0 - Ysoff);
+	yeoff = Yeoff + .5 * (1.0 - Yeoff);
+
 	tol1 = 0.00001 * MIN(Cnl->view.width,Cnl->view.height);
 	tol2 = 0.5 * MIN(Cnl->view.width,Cnl->view.height);
 	

@@ -1,5 +1,5 @@
 /*
- *      $Id: CnStdRenderer.c,v 1.5 2004-12-23 23:29:20 dbrown Exp $
+ *      $Id: CnStdRenderer.c,v 1.6 2005-02-14 22:56:52 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3190,25 +3190,21 @@ NhlErrorTypes _NhlRasterFill
 	cystep = (ycqf-ycpf)/(float)ican;
  	x_isbound = Cnp->sfp->xc_is_bounds;
  	y_isbound = Cnp->sfp->yc_is_bounds;
+	xsoff = Xsoff + .5 * (1.0 - Xsoff);
+	xeoff = Xeoff + .5 * (1.0 - Xeoff);
+	ysoff = Ysoff + .5 * (1.0 - Ysoff);
+	yeoff = Yeoff + .5 * (1.0 - Yeoff);
 
 	if (x_isbound) {
-		xsoff = Xsoff;
-		xeoff = Xeoff;
 		dxstep = (xcm-xc1) / (float)izdm;
 	}
 	else {
-		xsoff = Xsoff + .5 * (1.0 - Xsoff);
-		xeoff = Xeoff + .5 * (1.0 - Xeoff);
 		dxstep = (xcm-xc1) / (float)(izdm-1);
 	}
 	if (y_isbound) {
-		ysoff = Ysoff;
-		yeoff = Yeoff;
 		dystep = (ycn-yc1) / (float)izdn;
 	}
 	else {
-		ysoff = Ysoff + .5 * (1.0 - Ysoff);
-		yeoff = Yeoff + .5 * (1.0 - Yeoff);
 		dystep = (ycn-yc1) / (float)( izdn - 1);
 	}
 
