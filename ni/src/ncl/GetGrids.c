@@ -3184,7 +3184,7 @@ int** dimsizes_lon;
 	float deg_per_gp_y;
 	int status,idir,jdir,i,j;
 	float orv;
-	char *gds = thevarrec->thelist->rec_inq->gds;
+	unsigned char *gds = (unsigned char*)thevarrec->thelist->rec_inq->gds;
 	
 
 
@@ -3276,7 +3276,7 @@ int** dimsizes_lon;
 #endif
 {
 		int nlat;
-		char tmpc[4];
+		unsigned char tmpc[4];
 		double *theta;
 		double *wts;
 		int lwork= 0;
