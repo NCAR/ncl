@@ -1,5 +1,5 @@
 /*
- *	$Id: cell.c,v 1.4 1991-07-18 16:25:00 clyne Exp $
+ *	$Id: cell.c,v 1.5 1992-04-03 20:41:19 clyne Exp $
  */
 /*
  *	cell.c

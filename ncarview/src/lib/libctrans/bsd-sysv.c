@@ -1,5 +1,5 @@
 /*
- *	$Id: bsd-sysv.c,v 1.2 1991-01-09 11:08:23 clyne Exp $
+ *	$Id: bsd-sysv.c,v 1.3 1992-04-03 20:41:02 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -13,10 +13,13 @@
 
 #include <stdio.h>
 
+#ifdef  NEVER
+
 /*
  * don't compile on bsd machines
  */
 #ifdef	SYSV
+
 char *
 strchr(s, c)
 	char	*s;
@@ -49,7 +52,6 @@ strrchr(s, c)
 	return(mark);
 }
 
-#ifndef	CRAY
 bcopy(b1, b2, length)
 	char	*b1;
 	char	*b2;
@@ -116,6 +118,7 @@ bcmp(b1, b2, length)
 	}
 	return(0);
 }
-#endif CRAY
 
 #endif	SYSV
+
+#endif  NEVER

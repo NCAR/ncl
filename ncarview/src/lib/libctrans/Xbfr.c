@@ -1,5 +1,5 @@
 /*
- *	$Id: Xbfr.c,v 1.6 1992-02-07 16:22:28 clyne Exp $
+ *	$Id: Xbfr.c,v 1.7 1992-04-03 20:40:35 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -50,7 +50,7 @@ extern	boolean	Batch;
 extern	char	*program_name;
 extern	Colormap	Cmap;
 extern	boolean	*softFill;
-extern	boolean	*bellOff;
+extern	boolean	*doBell;
 
 extern	Ct_err	init_color();
 extern	Ct_err	init_polygon();
@@ -130,7 +130,7 @@ CGMC *c;
 		 *      parse X11 specific command line args
 		 *      (currently only geometry accepted       )
 		 */
-		getOptions((caddr_t) 0, options);
+		GetOptions((caddr_t) 0, options);
 
 
 
@@ -346,7 +346,7 @@ CGMC *c;
 			(unsigned) xsh.width, (unsigned) xsh.height, 
 			Cmap, visual, ZPixmap, stdout);
 
-	if (! *bellOff) XBell(dpy, 0);
+	if (*doBell) XBell(dpy, 0);
 	return(OK);
 
 }

@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class0.c,v 1.11 1992-02-29 00:13:38 clyne Exp $
+ *	$Id: X11_class0.c,v 1.12 1992-04-03 20:39:48 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -56,49 +56,49 @@ extern	char	**Argv;
 extern	int	Argc;
 extern	boolean	Color_ava;
 extern	boolean	*softFill;
-extern	boolean	*bellOff;
+extern	boolean	*doBell;
 
 extern	Ct_err	init_color();
 extern	Ct_err	init_polygon();
 
 static	struct	{
-	StringType_	Geometry;
-	StringType_	window;
-	StringType_	viewport;
-	StringType_	foreground;
-	StringType_	background;
-	BoolType_	reverse;
+	char	*Geometry;
+	char	*window;
+	char	*viewport;
+	char	*foreground;
+	char	*background;
+	boolean	reverse;
 	} x11_opts;
 
 static	Option	options[] =  {
 	{
-	"geometry", StringType, 
-		(unsigned long) &x11_opts.Geometry, sizeof (StringType_ )
+	"geometry", NCARGCvtToString, 
+		(Voidptr) &x11_opts.Geometry, sizeof (x11_opts.Geometry )
 	},
 	{
-	"window", StringType, 
-		(unsigned long) &x11_opts.window, sizeof (StringType_ )
+	 "window", NCARGCvtToString, 
+		(Voidptr) &x11_opts.window, sizeof (x11_opts.window )
 	},
 	{
-	"viewport", StringType, 
-		(unsigned long) &x11_opts.viewport, sizeof (StringType_ )
+	"viewport", NCARGCvtToString, 
+		(Voidptr) &x11_opts.viewport, sizeof (x11_opts.viewport )
 	},
 	{
-	"foreground", StringType, 
-		(unsigned long) &x11_opts.foreground, sizeof (StringType_ )
+	"foreground", NCARGCvtToString, 
+		(Voidptr) &x11_opts.foreground, sizeof (x11_opts.foreground )
 	},
 	{
-	"background", StringType, 
-		(unsigned long) &x11_opts.background, sizeof (StringType_ )
+	"background", NCARGCvtToString, 
+		(Voidptr) &x11_opts.background, sizeof (x11_opts.background )
 	},
 	{
-	"reverse", BoolType, 
-		(unsigned long) &x11_opts.reverse, sizeof (BoolType_ )
+	"reverse", NCARGCvtToBoolean, 
+		(Voidptr) &x11_opts.reverse, sizeof (x11_opts.reverse )
 	},
 	{
 	NULL
 	},
-	};
+};
 
 #include	"ncaricon.bit"
 static	struct {
@@ -185,7 +185,10 @@ CGMC *c;
 		 *      parse X11 specific command line args
 		 *      (currently only geometry accepted       )
 		 */
-		getOptions((caddr_t) 0, options);
+		if (GetOptions(options) < 0) {
+			ct_error(T_NULL, ErrGetMsg());
+			return(DIE);
+		}
 
 		/*
 		 *	establish connection to sever
@@ -623,7 +626,7 @@ CGMC *c;
 	/*
 	 *	if not interactive don't perform any user interaction
 	 */
-	if (! *bellOff) XBell(dpy, 0);
+	if (*doBell) XBell(dpy, 0);
 
 	if (Batch) {
 		XFlush(dpy);
