@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.101 2004-12-23 18:42:53 haley Exp $
+#      $Id: yMakefile,v 1.102 2005-03-24 00:08:37 haley Exp $
 #
 #########################################################################
 #																		#
@@ -15,7 +15,7 @@
 #				National Center for Atmospheric Research
 #				POB 3000, Boulder, Colorado
 #
-#	Date:		$Date: 2004-12-23 18:42:53 $
+#	Date:		$Date: 2005-03-24 00:08:37 $
 #
 #	Description:	
 #
@@ -89,8 +89,8 @@ EXTRA_CDEFINES = $(OS1_DEF) $(MAJOR_DEF) $(HDFEOS_DEFS) $(UDUNITS_DEFS) $(V5D_DE
 
 API_DEFS	=	-DMAKEAPI
 
-PROG_LIBS	=	$(NFPLIB) $(HLULIBS) $(NCARGLIBS) $(NGMATHLIB)
-DEPLIBS		=	$(DEPNFPLIB) $(DEPHLULIBS) $(DEPNCARGLIBS) $(DEPNGMATHLIB)
+PROG_LIBS	=	$(NFPLIBS) $(HLULIBS) $(NCARGLIBS) $(NGMATHLIB)
+DEPLIBS		=	$(DEPNFPLIBS) $(DEPHLULIBS) $(DEPNCARGLIBS) $(DEPNGMATHLIB)
 
 #if defined(SUN)
 # EXTRA_LIBS      =	$(NCDFLIBS) $(HDFEOSLIB) $(HDFLIB) $(UDUNITSLIB) $(V5DLIB) -lsphere3_dp -fast -xlic_lib=sunperf 
