@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.4 1994-09-14 22:55:55 haley Exp $
+#      $Id: yMakefile,v 1.5 1995-04-03 15:34:06 haley Exp $
 #
 #########################################################################
 #									#
@@ -20,6 +20,5 @@
 #	Description:	yMakefile for ncarg/ni
 
 SUBDIRS = src
-#if (!defined(Solaris) && defined(sun4)) || defined(HPUX) || defined(IRIX)
 #define IHaveSubdirs
-#endif
+
