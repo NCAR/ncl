@@ -1,6 +1,6 @@
 
 /*
- *      $Id: AddBuiltIns.c,v 1.16 1996-02-29 01:03:29 ethan Exp $
+ *      $Id: AddBuiltIns.c,v 1.17 1996-04-19 23:05:18 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -158,6 +158,16 @@ void
 #endif
 );
 extern NhlErrorTypes _NclIchartoint(
+#if NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclIstringtochar(
+#if NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclIchartostring(
 #if NhlNeedProto
 void
 #endif
@@ -581,6 +591,15 @@ void _NclAddBuiltIns
 	SetArgTemplate(args,nargs,"character",NclANY,NclANY);nargs++;
 	NclRegisterFunc( _NclIchartoint,args,"chartoint",nargs);
 
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,"character",NclANY,NclANY);nargs++;
+	NclRegisterFunc( _NclIchartostring,args,"chartostring",nargs);
+
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,"string",NclANY,NclANY);nargs++;
+	NclRegisterFunc( _NclIstringtochar,args,"stringtochar",nargs);
 	nargs = 0;
 	args = NewArgs(1);
 	SetArgTemplate(args,nargs,"string",NclANY,NclANY); nargs++;

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.29 1996-04-12 23:35:33 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.30 1996-04-19 23:05:20 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -4579,6 +4579,72 @@ NhlErrorTypes _NclIdoubletofloat
 	));
 }
 
+NhlErrorTypes _NclIstringtochar
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NclStackEntry data;
+	NclStackEntry data_out;
+	NclMultiDValData tmp_md;
+
+	data = _NclGetArg(0,1,DONT_CARE);
+	switch(data.kind) {
+	case NclStk_VAL:
+		tmp_md = data.u.data_obj;
+		break;
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	default:
+		return(NhlFATAL);
+	}
+	if(tmp_md == NULL) {
+		return(NhlFATAL);
+	}
+	data_out.kind = NclStk_VAL;
+	data_out.u.data_obj = _NclStringMdToCharMd(tmp_md);
+	if(data_out.u.data_obj == NULL) {
+		return(NhlFATAL);
+	} 
+	_NclPlaceReturn(data_out);
+	return(NhlNOERROR);
+}
+NhlErrorTypes _NclIchartostring
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NclStackEntry data;
+	NclStackEntry data_out;
+	NclMultiDValData tmp_md;
+
+	data = _NclGetArg(0,1,DONT_CARE);
+	switch(data.kind) {
+	case NclStk_VAL:
+		tmp_md = data.u.data_obj;
+		break;
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+		break;
+	default:
+		return(NhlFATAL);
+	}
+	if(tmp_md == NULL) {
+		return(NhlFATAL);
+	}
+	data_out.kind = NclStk_VAL;
+	data_out.u.data_obj = _NclCharMdToStringMd(tmp_md);
+	if(data_out.u.data_obj == NULL) {
+		return(NhlFATAL);
+	} 
+	_NclPlaceReturn(data_out);
+	return(NhlNOERROR);
+}
 NhlErrorTypes _NclIIsVar
 #if	NhlNeedProto
 (void)

@@ -1,5 +1,5 @@
 /*
- *      $Id: DataSupport.c,v 1.23 1995-11-04 00:49:22 ethan Exp $
+ *      $Id: DataSupport.c,v 1.24 1996-04-19 23:05:24 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -356,6 +356,7 @@ NclMultiDValData char_md;
 	val = (char*)char_md->multidval.val;
 	for(i = 0; i < n_strings ; i++) {
 		memcpy((void*)buffer,&(val[from]),len);
+		from += len;
 		value[i] = NrmStringToQuark(buffer);
 	}
 	NclFree(buffer);

@@ -2830,11 +2830,12 @@ int type;
 				}
 				obj_type = _NclBasicDataTypeToObjType(to_type);
 				tmp_md = _NclCoerceData(value,obj_type,NULL);
-				if(tmp_md == NULL) {
+				if((tmp_md == NULL)||( to_type == value->multidval.data_type)) {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"Attempting to write variable (%s) of type (%s) which is not representable in the format of file (%s)",
 						NrmQuarkToString(var),
 						_NclBasicDataTypeToName(value->multidval.data_type),
-						thefile->file.fname);
+						NrmQuarkToString(thefile->file.fpath));
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"Trying using a type conversion function");
 					return(NhlFATAL);
 				} else {
 					ret = (*thefile->file.format_funcs->add_var)(
