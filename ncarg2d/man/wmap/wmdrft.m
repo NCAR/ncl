@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: wmdrft.m,v 1.1 1995-01-06 00:57:50 fred Exp $
+.\"	$Id: wmdrft.m,v 1.2 1995-10-13 14:48:30 haley Exp $
 .\"
 .TH WMDRFT 3NCARG "January 1995" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -47,6 +47,8 @@ Hardcopy:
 WMAP - A Package for Producing Daily Weather Maps and Plotting Station 
 Model Data
 .SH COPYRIGHT
-(c) Copyright 1995 University Corporation for Atmospheric Research
+Copyright (C) 1987-1995
 .br
-All Rights Reserved
+University Corporation for Atmospheric Research
+.br
+The use of this Software is governed by a License Agreement.

@@ -96,7 +96,8 @@ stumta,
 stumxy,
 ncarg_cbind.
 .SH COPYRIGHT
-Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
-for Atmospheric Research
+Copyright (C) 1987-1995
 .br
-All Rights Reserved
+University Corporation for Atmospheric Research
+.br
+The use of this Software is governed by a License Agreement.
