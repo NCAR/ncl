@@ -141,7 +141,7 @@ NhlDummyWorkstationClassRec NhldummyWorkstationClassRec = {
 /* close_work		*/	DummyWorkstationClose,
 /* activate_work	*/	DummyWorkstationActivate,
 /* deactivate_work	*/	DummyWorkstationDeactivate,
-/* alloc_colors		*/	DummyWorkstationOpen,
+/* alloc_colors		*/	NULL,
 /* update_work		*/	DummyWorkstationOpen,
 /* clear_work		*/	DummyWorkstationOpen,
 /* lineto_work 		*/	(NhlWorkstationLineTo)DummyWorkstationOpen,
@@ -175,7 +175,9 @@ static NhlErrorTypes DummyWorkstationInitialize
 	int		num_args;
 #endif
 {
+	NhlWorkstationLayer wks = (NhlWorkstationLayer)new;
 
+	wks->work.gkswkstype = -9999;
 	return(NhlNOERROR);
 }
 
@@ -195,6 +197,7 @@ static NhlErrorTypes DummyWorkstationDestroy
 
 	return(retcode);
 }
+
 
 
 static NhlErrorTypes
@@ -295,7 +298,19 @@ double dpi = (double)3.14159265358979323846;
 double rtod = (double)180.0/(double)3.14159265358979323846;
 double dtor = (double)3.14159265358979323846/(double)180.0;
 
+static int compute_index(int index,int nx, int ny, int ijswap) {
+	int row_number;
+	int col_number;
 
+	if(!ijswap) return(index);
+	
+	row_number = (int)(index / nx);
+
+	col_number = index % nx;
+
+	return((col_number * ny) + row_number);
+
+}
 static int is_gpoint
 #if NhlNeedProto
 ( unsigned char *bms, int index)
@@ -2499,6 +2514,7 @@ GribParamList* thevarrec;
 	int isize = sizeof(int)*8;
 	unsigned int X;
 	int tbits;
+	int ijswap;
 	int bboff;
 	int dnum = 0;
 	int total_gpoints = 0;
@@ -2553,6 +2569,11 @@ GribParamList* thevarrec;
         	complex_packing = CnvtToDecimal(1,&(therec->gds[13])) == 2 ? 1:0;
 	} else {
 		complex_packing = 0;
+	}
+	if(therec->has_gds) {
+		ijswap = (int)(therec->gds[27]&(unsigned char)0040);
+	} else {
+		ijswap = 0;
 	}
 
 	if(therec->version != 0) {
@@ -2626,23 +2647,15 @@ GribParamList* thevarrec;
 					X = X << bboff;
 					X = X >> (isize - number_of_bits);
 					if(integer) {
-						((int*)data)[index] = (int)(reference_value + (X * pow(2.0,(double)binary_scale_factor)))/pow(10.0,(double)(decimal_scale_factor));
+						((int*)data)[compute_index(index,thevarrec->var_info.dim_sizes[thevarrec->var_info.num_dimensions-1],thevarrec->var_info.dim_sizes[thevarrec->var_info.num_dimensions-2],ijswap)] = (int)(reference_value + (X * pow(2.0,(double)binary_scale_factor)))/pow(10.0,(double)(decimal_scale_factor));
 						index++;
 						dnum++;
 
 					} else {
-						((float*)data)[index] = (float)(reference_value + (X * pow(2.0,(double)binary_scale_factor)))/pow(10.0,(double)(decimal_scale_factor));
+						((float*)data)[compute_index(index,thevarrec->var_info.dim_sizes[thevarrec->var_info.num_dimensions-2],thevarrec->var_info.dim_sizes[thevarrec->var_info.num_dimensions-1],ijswap)] = (float)(reference_value + (X * pow(2.0,(double)binary_scale_factor)))/pow(10.0,(double)(decimal_scale_factor));
 						index++;
 						dnum++;
 					}
-/*
-					if((index > 1)&&(((float*)data)[index] > ((float*)data)[index-1] + 500)) {
-						fprintf(stdout,"index:%d\n",index);
-					} else if((index > 1)&&(((float*)data)[index] + 500 < ((float*)data)[index-1] )) {
-						fprintf(stdout,"index:%d\n",index);
-					}
-*/
-
 					tbits += number_of_bits;
 					i = (int)(tbits/8.0) + 11;
 					bboff = tbits % 8;
