@@ -1,5 +1,5 @@
 /*
- *      $Id: MapRGDataHandler.c,v 1.4 2003-05-31 00:32:25 dbrown Exp $
+ *      $Id: MapRGDataHandler.c,v 1.5 2003-07-14 23:12:00 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -668,6 +668,7 @@ static void SetLineAttrs
                     thickness = Mpp->us_state.thickness;
                     break;
         }
+
 #if 0
 	/* dash patterns don't work because lines are drawn using GPL at
 	   the low level 
@@ -693,11 +694,6 @@ static void SetLineAttrs
                 jcrt = jcrt > 1 ? jcrt : 1;
                 strcpy(buffer,sp[dpat]);
 	
-		for (i = 0; i < strlen(buffer); i++) {
-			if (buffer[i] == '_')
-				buffer[i] = '\'';
-		}
-
                 c_dashdc(buffer,jcrt,4);
                 _NhlLLErrCheckPrnt(NhlWARNING,entry_name);
         }

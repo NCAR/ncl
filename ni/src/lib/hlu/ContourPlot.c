@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.119 2003-07-07 21:52:15 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.120 2003-07-14 23:11:02 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -10952,7 +10952,7 @@ void   (_NHLCALLF(hlucpchcl,HLUCPCHCL))
 
 	if (lcol == NhlTRANSPARENT) {
 		for (i = 0; i < strlen(buffer); i++)
-			buffer[i] = '\'';
+			buffer[i] = '_';
 	}
 	else{
 	        gset_line_colr_ind((Gint)lcol);

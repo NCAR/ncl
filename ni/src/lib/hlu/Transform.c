@@ -1,5 +1,5 @@
 /*
- *      $Id: Transform.c,v 1.54 2002-03-18 21:20:07 dbrown Exp $
+ *      $Id: Transform.c,v 1.55 2003-07-14 23:12:06 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1074,8 +1074,14 @@ static NhlErrorTypes TransformDataPolyline
 		return(ret);
 	}
 
-	if (tfp->poly_clip_on || ismaptrans || isirtrans)
+	if (ismaptrans) {
 		gset_clip_ind(GIND_CLIP);
+		NGCALLF(setdashchar,SETDASHCHAR)();
+	}
+	else if (tfp->poly_clip_on || isirtrans) {
+		gset_clip_ind(GIND_CLIP);
+	}
+
 /* Do a pen up to the first point */
 
 	subret = _NhlDataLineTo((NhlLayer)top,*x++,*y++,1);
@@ -1098,6 +1104,7 @@ static NhlErrorTypes TransformDataPolyline
  */
 	if (ismaptrans) {
 		c_mapiqd();
+		NGCALLF(resetdashchar,RESETDASHCHAR)();
 	}
 	else {
 		subret = _NhlWorkstationLineTo(tl->base.wkptr,0.0,0.0,1);
@@ -1326,6 +1333,9 @@ static NhlErrorTypes TransformDataPolygon
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
 		return(ret);
 	}
+	if (ismaptrans) {
+		NGCALLF(setdashchar,SETDASHCHAR)();
+	}
 
 	_NhlSetFillInfo(tl->base.wkptr, plot);
 
@@ -1344,6 +1354,9 @@ static NhlErrorTypes TransformDataPolygon
 	subret = _NhlDataPolygon((NhlLayer)top,x,y,n);
 	if (tfp->poly_clip_on || ismaptrans || isirtrans)
 		gset_clip_ind(GIND_NO_CLIP);
+	if (ismaptrans) {
+		NGCALLF(resetdashchar,RESETDASHCHAR)();
+	}
 
         subret = _NhlDeactivateWorkstation(tl->base.wkptr);
 

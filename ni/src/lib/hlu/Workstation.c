@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.101 2003-06-10 23:20:59 dbrown Exp $
+ *      $Id: Workstation.c,v 1.102 2003-07-14 23:12:10 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -5685,16 +5685,6 @@ _NhlSetLineInfo
 		
 		strcpy(buffer,wkp->dash_table[ix]->dpat);
 
-		/*
-		 * since dashchar recognizes only a single quote as
-		 * the space indicator, we must change the the 
-		 * underscores in the pattern into spaces.
-		 */
-		 
-		for (i = 0; i < strlen(buffer); i++) {
-			if (buffer[i] == '_')
-				buffer[i] = '\'';
-		}
 		c_dashdc(buffer,dollar_size,1);
 		(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 	}
@@ -5737,7 +5727,7 @@ _NhlSetLineInfo
 	if(wklp->line_color == NhlTRANSPARENT){
 		i=0;
 		while(buffer[i] != '\0'){
-			buffer[i] = '\'';
+			buffer[i] = '_';
 			i++;
 		}
 	}
@@ -5919,17 +5909,6 @@ _NhlSetFillInfo
 		
 		strcpy(buffer,wk_p->dash_table[ix]->dpat);
 
-		/*
-		 * since dashchar recognizes only a single quote as
-		 * the space indicator, we must change the the 
-		 * underscores in the pattern into spaces.
-		 */
-		 
-		for (i = 0; i < strlen(buffer); i++) {
-			if (buffer[i] == '_')
-				buffer[i] = '\'';
-		}
-		
 		c_dashdc(buffer,edge_dash_dollar_size,1);
 		(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 	}

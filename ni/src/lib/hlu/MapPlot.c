@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.92 2003-06-04 19:04:21 dbrown Exp $
+ *      $Id: MapPlot.c,v 1.93 2003-07-14 23:11:42 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2332,6 +2332,9 @@ static NhlErrorTypes mpDraw
 		_NhlNwkReset,	True,
 		NULL);
 
+	NGCALLF(setdashchar,SETDASHCHAR)();
+
+
 /* Do the fill first */
 
 	if (mpp->fill_on && mpp->fill_order == order) {
@@ -2388,6 +2391,7 @@ static NhlErrorTypes mpDraw
 		_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
 	}
 
+	NGCALLF(resetdashchar,RESETDASHCHAR)();
 	return ret;
 }
 
@@ -5101,7 +5105,8 @@ void   (_NHLCALLF(hlumapusr,HLUMAPUSR))
 	jcrt = jcrt > 1 ? jcrt : 1;
 	strcpy(buffer,sp[dpat]);
 
-	/*
+#if 0
+	/* unneeded now-----------------
 	 * since dashchar recognizes only a single quote as
 	 * the space indicator, we must change the the 
 	 * underscores in the pattern into spaces.
@@ -5109,8 +5114,9 @@ void   (_NHLCALLF(hlumapusr,HLUMAPUSR))
 		 
 	for (i = 0; i < strlen(buffer); i++) {
 		if (buffer[i] == '_')
-			buffer[i] = '\'';
+			buffer[i] = '_';
 	}	
+#endif
 	c_dashdc(buffer,jcrt,4);
 	_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
 
