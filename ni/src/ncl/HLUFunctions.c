@@ -3381,3 +3381,30 @@ NhlErrorTypes _NclINhlGetParentId
         );
 	return(ret);
 }
+
+NhlErrorTypes _NclINhlPalGetDefined
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	char **names;
+	NclQuark *output;
+	int num;
+	int i;
+
+	num = NhlPalGetDefined(NhlworkstationClass,&names);
+	output = (NclQuark*)NclMalloc(sizeof(NclQuark)*num);
+	for(i = 0; i < num; i++) {
+		output[i] = NrmStringToQuark(names[i]);
+	}
+	NclReturnValue(
+                (void*)output,
+                1,
+                &num,
+		NULL,
+		NCL_string,
+                0
+        );
+}

@@ -105,4 +105,9 @@ extern NhlErrorTypes _NclIName(
 void
 #endif
 );
+extern NhlErrorTypes _NclINhlPalGetDefined(
+#if	NhlNeedProto
+void
+#endif
+);
 #endif /*_NCHLUFunctions_h*/
