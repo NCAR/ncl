@@ -88,7 +88,7 @@ main() {
 	char *libpath;
 	char *scriptpath;
 	char *pt;
-	char *tmp;
+	char *tmp = NULL;
 
 #ifdef YYDEBUG
 	extern int yydebug;
@@ -125,7 +125,7 @@ main() {
 		NhlNappDefaultParent,1,
 		NhlNappUsrDir,"./",NULL);
 	errid = NhlErrGetID();
-	NhlVAGetValues(errid,NhlNerrFileName,&tmp);
+	NhlVAGetValues(errid,NhlNerrFileName,&tmp,NULL);
 	
 	if((tmp == NULL)||(!strcmp(tmp,"stderr"))){
 		NhlVASetValues(errid,
