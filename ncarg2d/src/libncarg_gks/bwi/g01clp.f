@@ -1,5 +1,5 @@
 C
-C	$Id: g01clp.f,v 1.6 2000-08-22 15:09:31 haley Exp $
+C	$Id: g01clp.f,v 1.7 2001-09-07 00:31:53 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -38,7 +38,7 @@ C
       include 'gksenu.h'
 C
       INTEGER  NBYTES, I, ICRLOC(4)
-      LOGICAL  CHANGE
+      LOGICAL  CHANGE, DCLIP
 C
       SAVE
 C
@@ -50,7 +50,8 @@ C
 C  If the clipping indicator has changed, store it in the WSL.  If 
 C  the picture is not empty, send the clip indicator.
 C
-      IF (ID(1).NE.MRCLIP)  THEN
+      DCLIP = ID(1).NE.MRCLIP
+      IF (DCLIP)  THEN
         MRCLIP = ID(1)
         IF (MDEMPT .EQ. GNEMPT) THEN
 C
@@ -84,7 +85,7 @@ C
           MRCREC(I) = ICRLOC(I)
         END IF
    10 CONTINUE
-      IF (CHANGE) THEN
+      IF (DCLIP) THEN
         IF (MDEMPT .EQ. GNEMPT) THEN
 C
 C  Total byte length, based on VDC bit precision.
