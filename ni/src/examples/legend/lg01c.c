@@ -1,10 +1,10 @@
-/************************************************************************
-*                                                                       *
-*                Copyright (C)  1995                                    *
-*        University Corporation for Atmospheric Research                *
-*                All Rights Reserved                                    *
-*                                                                       *
-************************************************************************/
+/***********************************************************************
+*                                                                      *
+*                Copyright (C)  1995                                   *
+*        University Corporation for Atmospheric Research               *
+*                All Rights Reserved                                   *
+*                                                                      *
+***********************************************************************/
 /*
  *      File:           lg01c.c
  *
@@ -36,9 +36,10 @@ main()
     NhlInitialize();
 
 /*
- * Create an application context. Set the app dir to the current directory
- * so the application looks for a resource file in the working directory.
- * In this example the resource file supplies the plot title only.
+ * Create an application context. Set the app dir to the current
+ * directory so the application looks for a resource file in the
+ * working directory. In this example the resource file supplies the
+ * plot title only.
  */
     rlist = NhlRLCreate(NhlSETRL);
     NhlRLClear(rlist);
@@ -52,8 +53,8 @@ main()
  */
         NhlRLClear(rlist);
         NhlRLSetString(rlist,NhlNwkMetaName,"./lg01c.ncgm");
-        NhlCreate(&wid,"lg01Work",NhlncgmWorkstationLayerClass,NhlDEFAULT_APP,
-                  rlist);
+        NhlCreate(&wid,"lg01Work",NhlncgmWorkstationLayerClass,
+                  NhlDEFAULT_APP,rlist);
     }
     else {
 /*
@@ -61,8 +62,8 @@ main()
  */
         NhlRLClear(rlist);
         NhlRLSetInteger(rlist,NhlNwkPause,True);
-        NhlCreate(&wid,"lg01Work",NhlxWorkstationLayerClass,NhlDEFAULT_APP,
-                  rlist);
+        NhlCreate(&wid,"lg01Work",NhlxWorkstationLayerClass,
+                  NhlDEFAULT_APP,rlist);
     }
 /*
  * Specify the viewport extent of the object.
