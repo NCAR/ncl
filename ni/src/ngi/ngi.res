@@ -1,5 +1,5 @@
 !
-!      $Id: ngi.res,v 1.28 1999-09-11 00:44:03 dbrown Exp $
+!      $Id: ngi.res,v 1.29 1999-09-30 21:46:18 dbrown Exp $
 !
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !									!
@@ -439,12 +439,13 @@ addfile*Start_Stop.translations: #override \
 *xwork*emenu*colorMapEditor.mnemonic:			C
 *xwork*emenu*colorMapEditor.acceleratorText:		Ctrl+C
 
+*xwork*emenu*exchangeForeBackGround.labelString: Exchange Foreground/Background
+
 *xwork*omenu*drawSingleViewOption.labelString:		Draw Selected View Only
 *xwork*omenu*autoRefreshOption.labelString:		Auto Update
 
 *xwork*vmenu*clearAllViews.labelString:                 Clear All Views
 *xwork*vmenu*drawAllViews.labelString:                  Draw All Views
-
 
 
 *xworkMGR*graphics.background:	black
@@ -861,7 +862,11 @@ browse.title:				Data Browser
 *VarPage*OutputMenuLbl.labelString: Output Data:
 
 *CreateDialog*okLabelString : Create
-*CreateDialog*ConfigurePB.labelString : Configure
+*CreateDialog*configurePB.labelString : Configure
+*CreateDialog*plotDisplayLbl.labelString : Display plot in
+*CreateDialog*existingWindowTgl.labelString : Existing window:
+*CreateDialog*newWindowTgl.labelString : New window:
+
 
 *HluVarsBtn.labelString: Graphic Vars
 *RegVarsBtn.labelString: Regular Vars
@@ -1162,6 +1167,7 @@ browse.title:				Data Browser
 *logLinPlotClass*pmTickMarkDisplayMode: always
 *irregularPlotClass*pmTickMarkDisplayMode: always
 *wkColorMap: default
-
+*wkForegroundColor: black
+*wkBackgroundColor: white
 
 
