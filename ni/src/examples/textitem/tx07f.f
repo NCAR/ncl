@@ -56,7 +56,7 @@ C
 C
 C Create a meta file workstation.
 C
-         call NhlFRLClear(rlist,ierr)
+         call NhlFRLClear(rlist)
          call NhlFRLSetString(rlist,'wkMetaName',
      &        './tx07f.ncgm',ierr)
          call NhlFRLSetFloatArray(rlist,'wkBackgroundColor',
@@ -68,7 +68,7 @@ C
 C
 C Create an XWorkstation object.
 C
-         call NhlFRLClear(rlist,ierr)
+         call NhlFRLClear(rlist)
          call NhlFRLSetInteger(rlist,'wkPause','True',ierr)
          call NhlFRLSetFloatArray(rlist,'wkBackgroundColor',
      &        bkg_color,3,ierr)
@@ -79,7 +79,7 @@ C
 C
 C Create a PS workstation.
 C
-         call NhlFRLClear(rlist,ierr)
+         call NhlFRLClear(rlist)
          call NhlFRLSetString(rlist,'wkPSFileName',
      &        './tx07f.ps',ierr)
          call NhlFRLSetFloatArray(rlist,'wkBackgroundColor',
@@ -100,7 +100,7 @@ C
 C
 C  Set up example string.
 C
-      call NhlFRLClear(rlist,ierr)
+      call NhlFRLClear(rlist)
       call NhlFRLSetString(rlist,'txString', 'NCAR Graphics',ierr)
       call NhlFRLSetInteger(rlist,'txFontColor', 1,ierr)
       call NhlFRLSetInteger(rlist,'txFont', 25,ierr)
@@ -110,7 +110,7 @@ C
 C
 C  Set up label string.
 C
-      call NhlFRLClear(rlist,ierr)
+      call NhlFRLClear(rlist)
       call NhlFRLSetInteger(rlist,'txFontColor', 2,ierr)
       call NhlFRLSetInteger(rlist,'txFont', 21,ierr)
       call NhlFRLSetFloat(rlist,'txPosXF',  0.5,ierr)
@@ -121,7 +121,7 @@ C  Spacings
 C
       do 100 i=0,2
          ypos = 0.83 - 0.17 * real(i)
-         call NhlFRLClear(rlist,ierr)
+         call NhlFRLClear(rlist)
         
          write (label,900) spacings(i+1)
          call NhlFRLSetString(rlist,'txString',label,ierr)
@@ -129,7 +129,7 @@ C
          call NhlFSetValues(labid,rlist,ierr)
          call NhlFDraw(labid,ierr)
   
-         call NhlFRLClear(rlist,ierr)
+         call NhlFRLClear(rlist)
          call NhlFRLSetFloat(rlist,'txConstantSpacingF',
      &        spacings(i+1),ierr)
          call NhlFRLSetFloat(rlist,'txPosYF',ypos - 0.07,ierr)
@@ -143,7 +143,7 @@ C
       do 200 i=0,1
          ypos = 0.32 - 0.17 * real(i)
          aspect = 1.3 * real(i) + 0.7
-         call NhlFRLClear(rlist,ierr)
+         call NhlFRLClear(rlist)
 
          write (label,910) aspect         
          call NhlFRLSetString(rlist,'txString',label,ierr)
@@ -151,7 +151,7 @@ C
          call NhlFSetValues(labid,rlist,ierr)
          call NhlFDraw(labid,ierr)
   
-         call NhlFRLClear(rlist,ierr)
+         call NhlFRLClear(rlist)
          call NhlFRLSetFloat(rlist,'txConstantSpacingF',0.0,ierr)
          call NhlFRLSetFloat(rlist,'txPosYF',ypos - 0.07,ierr)
          call NhlFRLSetFloat(rlist,'txFontAspectF',aspect,ierr)
@@ -162,7 +162,7 @@ C
 C
 C  Plot title.
 C
-      call NhlFRLClear(rlist,ierr)
+      call NhlFRLClear(rlist)
       call NhlFRLSetInteger(rlist,'txFontColor', 3,ierr)
       call NhlFRLSetInteger(rlist,'txFont', 25,ierr)
       call NhlFRLSetFloat(rlist,'txPosYF',  0.93,ierr)
