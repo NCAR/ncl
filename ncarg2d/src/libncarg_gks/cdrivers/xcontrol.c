@@ -1,5 +1,5 @@
 /*
- *	$Id: xcontrol.c,v 1.7 1994-07-13 18:26:31 boote Exp $
+ *	$Id: xcontrol.c,v 1.8 1995-04-29 19:36:54 boote Exp $
  */
 /*
  *      File:		xcontrol.c
@@ -687,6 +687,11 @@ X11_CloseWorkstation
 	Xddp	*xi = (Xddp *) gksc->ddp;
 	Display	*dpy = xi->dpy;
 
+	XFreeGC(dpy,xi->line_gc);
+	XFreeGC(dpy,xi->fill_gc);
+	XFreeGC(dpy,xi->marker_gc);
+	XFreeGC(dpy,xi->cell_gc);
+	XFreeGC(dpy,xi->text_gc);
 	XCloseDisplay(dpy);
 	free((char *) xi);
 

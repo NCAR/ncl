@@ -1,5 +1,5 @@
 /*
- *	$Id: font.c,v 1.4 1994-08-11 18:40:26 haley Exp $
+ *	$Id: font.c,v 1.5 1995-04-29 19:36:53 boote Exp $
  */
 /*
  *	File		font.c
@@ -382,7 +382,10 @@ int	SetFont(font_index, var_space)
 	 * initialize the font processor with the selected font
 	 */
 	if ((rc = read_fontcap(fcap, var_space)) < 0) {
-		return(rc);
+		status = rc;
 	}
+
+	free(fcap);
+
 	return(status);
 }
