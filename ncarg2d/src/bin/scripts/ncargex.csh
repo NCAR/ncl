@@ -1,16 +1,34 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.21 1993-03-05 15:12:56 haley Exp $
+#   $Id: ncargex.csh,v 1.22 1993-03-11 17:34:16 haley Exp $
 #
 
+#********************#
+#                    #
+#   NCARGEX USAGE    #
+#                    #
+#********************#
 if ($#argv < 1) then
-echo "usage: ncargex [-all,-A] [-allexamples,-E] [-alltests,-T]"
-echo "               [-alltutorial,-U] [-clean] [-n] [-onebyone] names"
-echo "                                                              "
-echo "See <man ncargex>                                             "
-exit
+  echo "usage: ncargex [-all,-A] [-allexamples,-E] [-alltests,-T]        "
+  echo "               [-allfundamental,-F] [-alltutorial,-U] [-areas]   "
+  echo "               [-autograph] [-cbivar] [-colconv] [-conpack]      "
+  echo "               [-conran_family] [-conrec_family] [-dashline]     "
+  echo "               [-ezmap] [-gflash] [-gridall] [-halftone]         "
+  echo "               [-histogram] [-isosrfhr] [-isosurface] [-labelbar]"
+  echo "               [-plotchar] [-pwritx] [-pwrity] [-scrolled_title] "
+  echo "               [-softfill] [-spps] [-streamlines] [-surface]     "
+  echo "               [-threed] [-vectors] [-gks] [-misc] [-clean] [-n] "
+  echo "               [-onebyone] names                                 "
+  echo "                                                                 "
+  echo "See <man ncargex>                                                "
+  exit
 endif
 
+#*********************************#
+#                                 #
+# Check for existing directories  #
+#                                 #
+#*********************************#
 set example_dir=`ncargpath SED_EXAMPLESDIR`
 if ($status != 0) then
         exit 1
@@ -20,10 +38,11 @@ if (! -d "$example_dir") then
   echo "Example directory <$example_dir> does not exist."
   exit 1
 endif
+set fund_dir = $example_dir
 
 set test_dir=`ncargpath SED_TESTSDIR`
 if ($status != 0) then
-        exit 1
+  exit 1
 endif
 
 if (! -d "$test_dir") then
@@ -33,7 +52,7 @@ endif
 
 set tutor_dir=`ncargpath SED_TUTORIALDIR`
 if ($status != 0) then
-        exit 1
+  exit 1
 endif
 
 if (! -d "$tutor_dir") then
@@ -41,48 +60,398 @@ if (! -d "$tutor_dir") then
   exit 2
 endif
 
-set example_list=(\
-agex01 agex02 agex03 agex04 agex05 agex06 agex07 agex08 agex09 agex10 \
-agex11 agex12 agex13 arex01 mpex01 mpex02 mpex03 mpex04 mpex05 mpex06 \
-mpex07 mpex08 mpex09 mpex10 mpexfi cpex01 cpex02 cpex03 cpex04 cpex05 \
-cpex06 cpex07 cpex08 cpex09 eezmpa elblba epltch cbex01 coex01 coex02 \
-coex03 srex01 slex01 sfex01 sfex02 stex01 stex02 stex03 vvex01 vvex02 \
-example splogy sprevx spset1 spset2 bnchmk)
+#**********************#
+#                      #
+#  Set areas examples  #
+#                      #
+#**********************#
+set ex_areas   = (arex01)
+set tst_areas  = (tareas)
+set ttr_areas  = (cardb1 caredg carline cardb2 carfill carmap)
+set fnd_areas
+set areas_list = ($ex_areas $tst_areas $ttr_areas $fnd_areas)
 
-set test_list=(\
-tagupw tareas tautog tcnqck tcnsmt tcnsup tcolcv tconan tconaq \
-tconas tconpa tconre tdashc tdashl tdashp tdashs tezmap tezmpa \
-tgflas tgrida thafto thstgr tisohr tisosr tlblba tpltch tpwrtx \
-tpwry tpwrzi tpwrzs tpwrzt tsoftf tsrfac tstitl tstrml tthree \
-tvelvc)
+#**************************#
+#                          #
+#  Set autograph examples  #
+#                          #
+#**************************#
+set ex_autograph   = (agex01 agex02 agex03 agex04 agex05 agex06 agex07 \
+                      agex08 agex09 agex10 agex11 agex12 agex13)
+set tst_autograph  = (tautog tagupw)
+set ttr_autograph
+set fnd_autograph
+set autograph_list = ($ex_autograph $tst_autograph $ttr_autograph \
+                      $fnd_autograph)
 
-set tutor_conpack=(\
-ccpback ccpcff ccpcfx ccpcir ccpcis ccpcit ccpclc ccpcld ccpcldm ccpcldr \
-ccpcll ccpclu ccpcnrc ccpdflt ccpezct ccpfil ccpga ccphand ccphl ccphlt \
-ccpila ccpils ccpilt ccpklb ccplbam ccplbdr ccpline ccpllb ccpllc ccplll \
-ccpllo ccpllp ccpllt ccpllw ccpmap ccpmpxy ccpncls ccpnet ccpnof ccpnsd \
-ccppc ccppc1 ccppc2 ccppc3 ccppc4 ccppkcl ccprc ccprect ccprwc ccprwu \
-ccpscam ccpset ccpsps1 ccpsps2 ccpspv ccptitle ccpvp ccpvs cidsfft colcon)
+#******************************#
+#                              #
+#  Set bivar/conpack examples  #
+#                              #
+#******************************#
+set ex_cbivar   = (cbex01)
+set tst_cbivar
+set ttr_cbivar  = (cidsfft)
+set fnd_cbivar
+set cbivar_list = ($ex_cbivar $tst_cbivar $ttr_cbivar $fnd_cbivar)
 
-set tutor_areas=(cardb1 caredg carline cardb2 carfill carmap)
+#************************#
+#                        #
+#  Set colconv examples  #
+#                        #
+#************************#
+set ex_colconv 
+set tst_colconv  = (tcolcv)
+set ttr_colconv
+set fnd_colconv
+set colconv_list = ($ex_colconv $tst_colconv $ttr_colconv $fnd_colconv)
 
-set tutor_ezmap=(\
-cezmap1 cezmap2 cezmap3 cmpclr cmpdd cmpdrw cmpel cmpfil cmpgci \
-cmpgrd cmpgrp cmpita cmpitm cmplab cmplbl cmplot cmpmsk cmpou cmppos \
-cmpsat cmpsup cmptit cmptra cmpusr)
- 
-set tutor_softfill=(fsfwrld fsfsgfa)
+#************************#
+#                        #
+#  Set conpack examples  #
+#                        #
+#************************#
+set ex_conpack   = (cpex01 cpex02 cpex03 cpex04 cpex05 cpex06 cpex07 \
+                    cpex08 cpex09 ${ex_cbivar})
+set tst_conpack  = (tconpa ${tst_cbivar})
+set ttr_conpack  = (ccpback ccpcff ccpcfx ccpcir ccpcis ccpcit ccpclc \
+                    ccpcld ccpcldm ccpcldr ccpcll ccpclu ccpcnrc ccpdflt \
+                    ccpezct ccpfil ccpga ccphand ccphl ccphlt ccpila \
+                    ccpils ccpilt ccpklb ccplbam ccplbdr ccpline ccpllb \
+                    ccpllc ccplll ccpllo ccpllp ccpllt ccpllw ccpmap \
+                    ccpmpxy ccpncls ccpnet ccpnof ccpnsd ccppc ccppc1 \
+                    ccppc2 ccppc3 ccppc4 ccppkcl ccprc ccprect ccprwc \
+                    ccprwu ccpscam ccpset ccpsps1 ccpsps2 ccpspv ccptitle \
+                    ccpvp ccpvs colcon ${ttr_cbivar})
+set fnd_conpack  = (${fnd_cbivar})
+set conpack_list = ($ex_conpack $tst_conpack $ttr_conpack $fnd_conpack)
 
-set tutor_list=( $tutor_areas $tutor_ezmap $tutor_conpack $tutor_softfill )
+#******************************#
+#                              #
+#  Set conran_family examples  #
+#                              #
+#******************************#
+set ex_cnrn_family 
+set tst_cnrn_family  = (tconan tconaq tconas)
+set ttr_cnrn_family
+set fnd_cnrn_family
+set cnrn_family_list = (${ex_cnrn_family} ${tst_cnrn_family} \
+                        ${ttr_cnrn_family} ${fnd_cnrn_family})
 
-set alias_list=(\
-agupwrtx areas autograph conrecq conrecs conrecsup colconv conran \
-conranq conransup conpack conrec dashchar dashline dashsmth \
-dashsupr ezmap ezmapa gflash gridal hafton histgr isosrf isosrfhr \
-labelbar plotchar pwritx pwrity pwrzi pwrtz pwrzs pwrzt softfill \
-srface stitle strmln threed velvct)
+#******************************#
+#                              #
+#  Set conrec_family examples  #
+#                              #
+#******************************#
+set ex_cnrc_family 
+set tst_cnrc_family  = (tconre tcnqck tcnsmt tcnsup)
+set ttr_cnrc_family
+set fnd_cnrc_family
+set cnrc_family_list = (${ex_cnrc_family} ${tst_cnrc_family} \
+                        ${ttr_cnrc_family} ${fnd_cnrc_family})
 
-set X11_option = ""
+#*************************#
+#                         #
+#  Set dashline examples  #
+#                         #
+#*************************#
+set ex_dashline 
+set tst_dashline  = (tdashc tdashl tdashp tdashs)
+set ttr_dashline
+set fnd_dashline
+set dashline_list = ($ex_dashline $tst_dashline $ttr_dashline $fnd_dashline)
+
+#**********************#
+#                      #
+#  Set ezmap examples  #
+#                      #
+#**********************#
+set ex_ezmap   = (mpex01 mpex02 mpex03 mpex04 mpex05 mpex06 mpex07 mpex08 \
+                  mpex09 mpex10 mpexfi eezmpa)
+set tst_ezmap  = (tezmap tezmpa)
+set ttr_ezmap  = (cezmap1 cezmap2 cezmap3 cmpclr cmpdd cmpdrw cmpel \
+                  cmpfil cmpgci cmpgrd cmpgrp cmpita cmpitm cmplab cmplbl \
+                  cmplot cmpmsk cmpou cmppos cmpsat cmpsup cmptit cmptra \
+                  cmpusr)
+set fnd_ezmap
+set ezmap_list = ($ex_ezmap $tst_ezmap $ttr_ezmap $fnd_ezmap)
+
+#***********************#
+#                       #
+#  Set gflash examples  #
+#                       #
+#***********************#
+set ex_gflash 
+set tst_gflash  = (tgflas)
+set ttr_gflash
+set fnd_gflash
+set gflash_list = ($ex_gflash $tst_gflash $ttr_gflash $fnd_gflash)
+
+#************************#
+#                        #
+#  Set gridall examples  #
+#                        #
+#************************#
+set ex_gridall 
+set tst_gridall  = (tgrida)
+set ttr_gridall
+set fnd_gridall
+set gridall_list = ($ex_gridall $tst_gridall $ttr_gridall $fnd_gridall)
+
+#*************************#
+#                         #
+#  Set halftone examples  #
+#                         #
+#*************************#
+set ex_halftone 
+set tst_halftone  = (thafto)
+set ttr_halftone
+set fnd_halftone
+set halftone_list = ($ex_halftone $tst_halftone $ttr_halftone $fnd_halftone)
+
+#**************************#
+#                          #
+#  Set histogram examples  #
+#                          #
+#**************************#
+set ex_histogram 
+set tst_histogram  = (thstgr)
+set ttr_histogram
+set fnd_histogram
+set histogram_list = ($ex_histogram $tst_histogram $ttr_histogram \
+                      $fnd_histogram)
+
+#***********************#
+#                       #
+# set isosrfhr examples #
+#                       #
+#***********************#
+set ex_isosrfhr 
+set tst_isosrfhr  = (tisohr)
+set ttr_isosrfhr
+set fnd_isosrfhr
+set isosrfhr_list = ($ex_isosrfhr $tst_isosrfhr $ttr_isosrfhr $fnd_isosrfhr)
+
+#*************************#
+#                         #
+# set isosurface examples #
+#                         #
+#*************************#
+set ex_isosurface 
+set tst_isosurface  = (tisosr tpwrzi)
+set ttr_isosurface
+set fnd_isosurface
+set isosurface_list = ($ex_isosurface $tst_isosurface $ttr_isosurface \
+                       $fnd_isosurface)
+
+#***********************#
+#                       #
+# set labelbar examples #
+#                       #
+#***********************#
+set ex_labelbar   = (elblba)
+set tst_labelbar  = (tlblba)
+set ttr_labelbar
+set fnd_labelbar
+set labelbar_list = ($ex_labelbar $tst_labelbar $ttr_labelbar $fnd_labelbar)
+
+#***********************#
+#                       #
+# set plotchar examples #
+#                       #
+#***********************#
+set ex_plotchar   = (epltch)
+set tst_plotchar  = (tpltch)
+set ttr_plotchar
+set fnd_plotchar
+set plotchar_list = ($ex_plotchar $tst_plotchar $ttr_plotchar $fnd_plotchar)
+
+#*********************#
+#                     #
+# set pwritx examples #
+#                     #
+#*********************#
+set ex_pwritx 
+set tst_pwritx  = (tpwrtx)
+set ttr_pwritx
+set fnd_pwritx
+set pwritx_list = ($ex_pwritx $tst_pwritx $ttr_pwritx $fnd_pwritx)
+
+#*********************#
+#                     #
+# set pwrity examples #
+#                     #
+#*********************#
+set ex_pwrity 
+set tst_pwrity  = (tpwry)
+set ttr_pwrity
+set fnd_pwrity
+set pwrity_list = ($ex_pwrity $tst_pwrity $ttr_pwrity $fnd_pwrity)
+
+#*****************************#
+#                             #
+# set scrolled title examples #
+#                             #
+#*****************************#
+set ex_scrlld_title   = (slex01)
+set tst_scrlld_title  = (tstitl)
+set ttr_scrlld_title
+set fnd_scrlld_title
+set scrlld_title_list = (${ex_scrlld_title} ${tst_scrlld_title} \
+                         ${ttr_scrlld_title} ${fnd_scrlld_title})
+
+#***********************#
+#                       #
+# set softfill examples #
+#                       #
+#***********************#
+set ex_softfill   = (sfex01 sfex02)
+set tst_softfill  = (tsoftf)
+set ttr_softfill
+set fnd_softfill  = (fsfwrld fsfsgfa)
+set softfill_list = ($ex_softfill $tst_softfill $ttr_softfill \
+                         $fnd_softfill)
+
+#*******************#
+#                   #
+# set spps examples #
+#                   #
+#*******************#
+set ex_spps   = (splogy sprevx spset1 spset2)
+set tst_spps
+set ttr_spps
+set fnd_spps
+set spps_list = ($ex_spps $tst_spps $ttr_spps $fnd_spps)
+
+#**************************#
+#                          #
+# set streamlines examples #
+#                          #
+#**************************#
+set ex_streamlines   = (stex01 stex02 stex03)
+set tst_streamlines  = (tstrml)
+set ttr_streamlines
+set fnd_streamlines
+set streamlines_list = ($ex_streamlines $tst_streamlines \
+                        $ttr_streamlines $fnd_streamlines)
+
+#**********************#
+#                      #
+# set surface examples #
+#                      #
+#**********************#
+set ex_surface   = (srex01)
+set tst_surface  = (tsrfac tpwrzs)
+set ttr_surface
+set fnd_surface
+set surface_list = ($ex_surface $tst_surface $ttr_surface $fnd_surface)
+
+#*********************#
+#                     #
+# set threed examples #
+#                     #
+#*********************#
+set ex_threed 
+set tst_threed  = (tthree tpwrzt)
+set ttr_threed
+set fnd_threed
+set threed_list = ($ex_threed $tst_threed $ttr_threed $fnd_threed)
+
+#**********************#
+#                      #
+# set vectors examples #
+#                      #
+#**********************#
+set ex_vectors   = (vvex01 vvex02)
+set tst_vectors  = (tvelvc)
+set ttr_vectors
+set fnd_vectors
+set vectors_list = ($ex_vectors $tst_vectors $ttr_vectors $fnd_vectors)
+
+#******************#
+#                  #
+# set gks examples #
+#                  #
+#******************#
+set ex_gks
+set tst_gks
+set ttr_gks
+set fnd_gks
+set gks_list
+
+#****************************#
+#                            #
+# set miscellaneous examples #
+#                            #
+#****************************#
+set ex_misc   = (coex01 coex02 coex03 example bnchmk)
+set tst_misc
+set ttr_misc
+set fnd_misc
+set misc_list = ($ex_misc $tst_misc $ttr_misc $fnd_misc)
+
+#*************************************************************#
+#                                                             #
+# Some of the other examples are considered tutorial examples #
+#                                                             #
+#*************************************************************#
+set ttr_overlap = (mpex03 mpex05 arex01 sfex01 tsoftf)
+
+#*********************************************************************#
+#                                                                     #
+#               SET LISTS OF VARIOUS TYPES OF EXAMPLES                #
+#                                                                     #
+#*********************************************************************#
+set ex_list = ($ex_areas $ex_autograph $ex_cbivar $ex_colconv $ex_conpack \
+               ${ex_cnrn_family} ${ex_cnrc_family} $ex_dashline $ex_ezmap \
+               $ex_gflash $ex_gridall $ex_halftone $ex_histogram $ex_isosrfhr \
+               $ex_isosurface $ex_labelbar $ex_plotchar $ex_pwritx $ex_pwrity \
+               ${ex_scrlld_title} $ex_softfill $ex_spps $ex_streamlines \
+               $ex_surface $ex_threed $ex_vectors $ex_gks $ex_misc)
+
+set tst_list = ($tst_areas $tst_autograph $tst_cbivar $tst_colconv \
+                $tst_conpack ${tst_cnrn_family} ${tst_cnrc_family} \
+                $tst_dashline $tst_ezmap $tst_gflash $tst_gridall \
+                $tst_halftone $tst_histogram $tst_isosrfhr $tst_isosurface \
+                $tst_labelbar $tst_plotchar $tst_pwritx $tst_pwrity \
+                ${tst_scrlld_title} $tst_softfill $tst_spps $tst_streamlines \
+                $tst_surface $tst_threed $tst_vectors $tst_gks $tst_misc)
+
+set ttr_list = ($ttr_areas $ttr_autograph $ttr_cbivar $ttr_colconv \
+                $ttr_conpack ${ttr_cnrn_family} ${ttr_cnrc_family} \
+                $ttr_dashline $ttr_ezmap $ttr_gflash $ttr_gridall \
+                $ttr_halftone $ttr_histogram $ttr_isosrfhr $ttr_isosurface \
+                $ttr_labelbar $ttr_plotchar $ttr_pwritx $ttr_pwrity \
+                ${ttr_scrlld_title} $ttr_softfill $ttr_spps $ttr_streamlines \
+                $ttr_surface $ttr_threed $ttr_vectors $ttr_gks $ttr_misc)
+
+set fnd_list = ($fnd_areas $fnd_autograph $fnd_cbivar $fnd_colconv \
+                $fnd_conpack ${fnd_cnrn_family} ${fnd_cnrc_family} \
+                $fnd_dashline $fnd_ezmap $fnd_gflash $fnd_gridall \
+                $fnd_halftone $fnd_histogram $fnd_isosrfhr \
+                $fnd_isosurface $fnd_labelbar $fnd_plotchar $fnd_pwritx \
+                $fnd_pwrity ${fnd_scrlld_title} $fnd_softfill \
+                $fnd_spps $fnd_streamlines $fnd_surface $fnd_threed \
+                $fnd_vectors $fnd_gks $fnd_misc)
+
+set alias_list=(agupwrtx areas autograph conrecq conrecs conrecsup colconv \
+                conran conranq conransup conpack conrec dashchar dashline \
+                dashsmth dashsupr ezmap ezmapa gflash gridal hafton histgr \
+                isosrf isosrfhr labelbar plotchar pwritx pwrity pwrzi pwrtz \
+                pwrzs pwrzt softfill srface stitle strmln threed velvct)
+
+#*********************************#
+#                                 #
+# Default is to load in X library #
+#                                 #
+#*********************************#
+set X11_option
+
+#***************#
+#               #
+# Parse options #
+#               #
+#***************#
 set names
 
 while ($#argv > 0)
@@ -92,27 +461,173 @@ while ($#argv > 0)
         case "-all":
         case "-A":
             shift
-            set names=($example_list $test_list $tutor_list)
+            set names=($ex_list $tst_list $ttr_list $fnd_list)
             breaksw
 
         case "-allexamples":
         case "-E":
             shift
-            set names=($example_list)
+            set names=($ex_list)
             breaksw
 
         case "-alltests":
         case "-T":
             shift
-            set names=($test_list)
+            set names=($tst_list)
             breaksw
         
         case "-alltutorial":
         case "-U":
             shift
-            set names=($tutor_list "mpex03" "mpex05" "arex01" "sfex01" "tsoftf")
+            set names=($ttr_list $ttr_overlap)
             breaksw
         
+        case "-allfundamental":
+        case "-F":
+            shift
+            set names=($fnd_list)
+            breaksw
+        
+        case "-areas":
+            shift
+            set names=($areas_list)
+            breaksw
+        
+        case "-autograph":
+            shift
+            set names=($autograph_list)
+            breaksw
+
+        case "-cbivar":
+            shift
+            set names=($cbivar_list)
+            breaksw
+
+        case "-colconv":
+            shift
+            set names=($colconv_list)
+            breaksw
+
+        case "-conpack":
+            shift
+            set names=($conpack_list)
+            breaksw
+
+        case "-conran_family":
+            shift
+            set names=(${cnrn_family_list})
+            breaksw
+
+        case "-conrec_family":
+            shift
+            set names=(${cnrc_family_list})
+            breaksw
+
+        case "-dashline":
+            shift
+            set names=($dashline_list)
+            breaksw
+
+        case "-ezmap":
+            shift
+            set names=($ezmap_list)
+            breaksw
+
+        case "-gflash":
+            shift
+            set names=($gflash_list)
+            breaksw
+
+        case "-gridall":
+            shift
+            set names=($gridall_list)
+            breaksw
+
+        case "-halftone":
+            shift
+            set names=($halftone_list)
+            breaksw
+
+        case "-histogram":
+            shift
+            set names=($histogram_list)
+            breaksw
+
+        case "-isosrfhr":
+            shift
+            set names=($isosrfhr_list)
+            breaksw
+
+        case "-isosurface":
+            shift
+            set names=($isosurface_list)
+            breaksw
+
+        case "-labelbar":
+            shift
+            set names=($labelbar_list)
+            breaksw
+
+        case "-plotchar":
+            shift
+            set names=($plotchar_list)
+            breaksw
+
+        case "-pwritx":
+            shift
+            set names=($pwritx_list)
+            breaksw
+
+        case "-pwrity":
+            shift
+            set names=($pwrity_list)
+            breaksw
+
+        case "-scrolled_title":
+            shift
+            set names=(${scrlld_title_list})
+            breaksw
+
+        case "-softfill":
+            shift
+            set names=($softfill_list)
+            breaksw
+
+        case "-spps":
+            shift
+            set names=($spps_list)
+            breaksw
+
+        case "-streamlines":
+            shift
+            set names=($streamlines_list)
+            breaksw
+
+        case "-surface":
+            shift
+            set names=($surface_list)
+            breaksw
+
+        case "-threed":
+            shift
+            set names=($threed_list)
+            breaksw
+
+        case "-vectors":
+            shift
+            set names=($vectors_list)
+            breaksw
+
+        case "-gks":
+            shift
+            set names=($gks_list)
+            breaksw
+
+        case "-misc":
+            shift
+            set names=($misc_list)
+            breaksw
+
         case "-clean":
             shift
             set CleanOption
@@ -155,27 +670,44 @@ while ($#argv > 0)
     endsw
 end
 
+
+#***********************#
+#                       #
+# Generate each example #
+#                       #
+#***********************#
 foreach name ($names)
 
 set rmfiles
 
+#*************************************#
+#                                     #
+# Find out what type of example it is #
+#                                     #
+#*************************************#
 set type="Unknown"
 
-foreach known ($example_list)
+foreach known ($ex_list)
     if ("$name" == "$known") then
         set type="Example"
     endif
 end
 
-foreach known ($test_list)
+foreach known ($tst_list)
     if ("$name" == "$known") then
         set type="Test"
     endif
 end
 
-foreach known ($tutor_list)
+foreach known ($ttr_list)
     if ("$name" == "$known") then
         set type="Tutorial"
+    endif
+end
+
+foreach known ($fnd_list)
+    if ("$name" == "$known") then
+        set type="Fundamentals"
     endif
 end
 
@@ -185,437 +717,295 @@ foreach known ($alias_list)
     endif
 end
 
+#***********************************************#
+#                                               #
+# If you just want to see what list of examples #
+# you have asked for, list them and exit        #
+#                                               #
+#***********************************************#
 if ($?List) then
    echo $names
    exit
 endif
 
-################################################################
-#
-# Code for handling examples
-#
-################################################################
+#**************************#
+#                          #
+# Find out what type it is #
+#                          #
+#**************************#
 
-if ("$type" == "Example") then
-
-echo ""
-echo "NCAR Graphics Fortran Example <$name>"
-
-if ($?Unique && -f $name.ncgm) goto theend
-
-set f_files = $name.f
-
-foreach file (cpex01 cpex02 cpex03 cpex04 cpex05 cpex06 cpex07 cpex08 cpex09)
-    if ("$name" == "$file") then
-        set f_files=($f_files cpexcc.f)
-        set rmfiles="cpexcc.o"
-    endif
-end
-
-foreach file (vvex01 vvex02)
-    if ("$name" == "$file") then
-        set f_files=($f_files vvexcc.f)
-        set rmfiles="vvexcc.o"
-    endif
-end
-
-foreach file (mpex01 mpex02 mpex03 mpex04 mpex05 mpex06 mpex07 mpex08 mpex09 mpex10 mpexfi)
-    if ("$name" == "$file") then
-        set f_files=($f_files mpexcc.f)
-        set rmfiles="mpexcc.o"
-    endif
-end
-
-set copy_files="$f_files"
-
-if ( "$name" == "mpexfi" ) then
-    set copy_files=($copy_files mpexfi.dat)
-endif
-if ( "$name" == "srex01" ) then
-    set copy_files=($copy_files srex01.dat)
-endif
-if ( "$name" == "agex13" ) then
-    set copy_files=($copy_files agda13.dat)
-endif
-
-set rmfiles=($rmfiles $copy_files)
-
-foreach file($copy_files)
-    echo "  Copying $file"
-    cp $example_dir/$file .
-end
-
-if (! $?NoRunOption) then
-    echo ""
-    echo "Compiling and Linking..."
-    ncargf77 $X11_option -o $name $f_files
-    if ($status != 0) then
-        echo ""
-        echo "The compile and link failed"
-        exit -1
-    endif
-    echo ""
-    echo "Executing <$name>..."
-
-    switch( $name )
-    case mpexfi:
-        ncargrun -o $name.ncgm $name < mpexfi.dat
-        breaksw
-    case srex01:
-        ncargrun -o $name.ncgm $name < srex01.dat
-        breaksw
-    case agex13:
-        ncargrun -o $name.ncgm $name < agda13.dat
-        breaksw
-    default:
-        ncargrun -o $name.ncgm $name
-    endsw
-    set rmfiles = ($rmfiles $name.o $name)
-    echo "Metafile is named $name.ncgm"
-endif
-
-if ("$name" == "slex01") then
-    set rmfiles = ($rmfiles GNFB09)
-endif
-
-endif
-
-################################################################
-#
-# Code for handling tutorial exercises
-#
-################################################################
-
-if ("$type" == "Tutorial") then
-
-echo ""
-echo "NCAR Graphics Tutorial Exercise <$name>"
-
-if ($?Unique && -f $name.ncgm) goto theend
-
-set f_files = $name.f
-
-set copy_files="$f_files"
-
-if ( "$name" == "ccpcir" || "$name" == "ccpcnrc" || "$name" == "ccpezct" || \
-     "$name" == "ccphl" || "$name" == "ccpmap" || "$name" == "ccpvp" ) then
-    set copy_files=($copy_files ggdini.f)
-    set f_files=($f_files ggdini.f)
-    set rmfiles="ggdini.o"
-endif
-
-if ( "$name" == "ccpmpxy" ) then
-    set copy_files=($copy_files cpmpxy1.dat cpmpxy2.dat)
-    set f_files=($f_files)
-    set rmfiles=(cpmpxy1.dat cpmpxy2.dat)
-endif
-
-if ( "$name" == "ccpila" ) then
-    set copy_files=($copy_files ccpila.dat)
-    set f_files=($f_files)
-    set rmfiles="ccpila.dat"
-endif
-
-if ( "$name" == "ccpils" || "$name" == "ccpilt" || "$name" == "ccplbdr" || \
-     "$name" == "ccptitle" ) then
-    set copy_files=($copy_files ccpex.dat)
-    set f_files=($f_files)
-    set rmfiles="ccpex.dat"
-endif
-
-set rmfiles=($rmfiles $copy_files)
-
-foreach file($copy_files)
-    echo "  Copying $file"
-    cp $tutor_dir/$file .
-end
-
-if (! $?NoRunOption) then
-    echo ""
-    echo "Compiling and Linking..."
-    ncargf77 $X11_option -o $name $f_files
-    if ($status != 0) then
-        echo ""
-        echo "The compile and link failed"
-        exit -1
-    endif
-    echo ""
-    echo "Executing <$name>..."
-
-    ncargrun -o $name.ncgm $name
-    set rmfiles = ($rmfiles $name.o $name)
-    if ( "$name" == "ccpcff" ) then
-      rm -f ccpcff.ncgm 
-    else
-      echo "Metafile is named $name.ncgm"
-    endif
-endif
-
-endif
-
-################################################################
-#
-# Code for handling tests
-#
-################################################################
-
-if ("$type" == "Test" || "$type" == "TestAlias") then
-
-set alias_name="$name"
-
-set rmfiles = ($alias_name.f $alias_name.o $alias_name)
-
-if ("$type" == "TestAlias") then
-
-switch ($alias_name)
-
-case autograph:
-    set name=tautog
+switch ($type)
+    case Example:
+        echo "NCAR Graphics Fortran Example <$name>"
     breaksw
 
-case agupwrtx:
-    set name=tagupw
+    case Test:
+        echo "NCAR Graphics Fortran Test <$name>"
+    breaksw
+    
+    case Fundamentals:
+        echo "NCAR Graphics Fortran Fundamentals Example <$name>"
     breaksw
 
-case areas:
-    set name=tareas
+    case Tutorial:
+        echo "NCAR Graphics Fortran Tutorial Example <$name>"
     breaksw
 
-case conrec:
-    set name=tconre
+    case Unknown:
+        echo "ncargex: <$name> is not a known example"
+        goto theend
     breaksw
-
-case conrecq:
-    set name=tcnqck
-    breaksw
-
-case conrecs:
-    set name=tcnsmt
-    breaksw
-
-case conrecsup:
-    set name=tcnsup
-    breaksw
-
-case conran:
-    set name=tconan
-    breaksw
-
-case conranq:
-    set name=tconaq
-    breaksw
-
-case conransup:
-    set name=tconas
-    breaksw
-
-case dashchar:
-    set name=tdashc
-    breaksw
-
-case dashline:
-    set name=tdashl
-    breaksw
-
-case dashsupr:
-    set name=tdashp
-    breaksw
-
-case dashsmth:
-    set name=tdashs
-    breaksw
-
-case ezmap:
-    set name=tezmap
-    breaksw
-
-case ezmapa:
-    set name=tezmpa
-    breaksw
-
-case gridal:
-    set name=tgrida
-    breaksw
-
-case hafton:
-    set name=thafto
-    breaksw
-
-case histgr:
-    set name=thstgr
-    breaksw
-
-case isosrfhr:
-    set name=tisohr
-    breaksw
-
-case isosrf:
-    set name=tisosr
-    breaksw
-
-case pwritx:
-    set name=tpwrtx
-    breaksw
-
-case pwrity:
-    set name=tpwry
-    breaksw
-
-case pwrzi:
-    set name=tpwrzi
-    breaksw
-
-case pwrzs:
-    set name=tpwrzs
-    breaksw
-
-case pwrzt:
-    set name=tpwrzt
-    breaksw
-
-case srface:
-    set name=tsrfac
-    breaksw
-
-case strmln:
-    set name=tstrml
-    breaksw
-
-case threed:
-    set name=tthree
-    breaksw
-
-case velvct:
-    set name=tvelvc
-    breaksw
-
-case colconv:
-    set name=tcolcv
-    breaksw
-
-case plotchar:
-    set name=tpltch
-    breaksw
-
-case conpack:
-    set name=tconpa
-    breaksw
-
-case gflash:
-    set name=tgflas
-    breaksw
-
-case stitle:
-    set name=tstitl
-    breaksw
-
-case labelbar:
-    set name=tlblba
-    breaksw
-
-default:
-    echo "ncargex: Unfamiliar with <$name>"
-    exit 1
-
 endsw
-
-echo "Note: <$alias_name> is an alias for <$name>"
-endif
-
 echo ""
-echo "NCAR Graphics Test Program <$name.f>"
+
+#**************************************************#
+#                                                  #
+# If the "-unique" option was selected and the     #
+# example already exists, don't generate it again. #
+#                                                  #
+#**************************************************#
 
 if ($?Unique && -f $name.ncgm) goto theend
 
-rm -f $alias_name.f
-
-echo ""
-echo "Copying source code..."
-
-cat $test_dir/$name.f >>$alias_name.f
-
-if (! $?NoRunOption) then
+#********************************#
+#                                #
+# Code for handling all examples #
+#                                #
+#********************************#
 
 set ncargf77flags
+set f_files = $name.f
+set rmfiles
+
+#****************************************#
+#                                        #
+# Some examples need extra Fortran files #
+#                                        #
+#****************************************#
 
 switch ($name)
+    case cpex01:
+    case cpex02:
+    case cpex03:
+    case cpex04:
+    case cpex05:
+    case cpex06:
+    case cpex07:
+    case cpex08:
+    case cpex09:
+        set f_files = ($f_files cpexcc.f)
+        set rmfiles = (cpexcc.o)
+    breaksw
+
+    case mpex01:
+    case mpex02:
+    case mpex03:
+    case mpex04:
+    case mpex05:
+    case mpex06:
+    case mpex07:
+    case mpex08:
+    case mpex09:
+    case mpex10:
+    case mpexfi:
+        set f_files = ($f_files mpexcc.f)
+        set rmfiles = (mpexcc.o)
+    breaksw
+
+    case vvex01:
+    case vvex02:
+        set f_files = ($f_files vvexcc.f)
+        set rmfiles = (vvexcc.o)
+    breaksw
+
+    case ccpcir:
+    case ccpcnrc:
+    case ccpezct:
+    case ccphl:
+    case ccpmap:
+    case ccpvp:
+        set f_files = ($f_files ggdini.f)
+        set rmfiles = (ggdini.o)
+    breaksw
+endsw
+
+set copy_files = "$f_files"
+
+switch ($name)
+
+#*******************************#
+#                               #
+# Some examples need data files #
+#                               #
+#*******************************#
+
+    case mpexfi:
+        set copy_files = ($copy_files mpexfi.dat)
+    breaksw
+
+    case srex01:
+        set copy_files = ($copy_files srex01.dat)
+    breaksw
+
+    case agex13:
+        set copy_files = ($copy_files agda13.dat)
+    breaksw
+
+    case ccpmpxy:
+        set copy_files = ($copy_files cpmpxy1.dat cpmpxy2.dat)
+    breaksw
+
+    case ccpila:
+        set copy_files = ($copy_files ccpila.dat)
+    breaksw
+
+    case ccpils:
+    case ccpilt:
+    case ccplbdr:
+    case ccptitle:
+        set copy_files = ($copy_files ccpex.dat)
+    breaksw
+
+#**********************************************************#
+#                                                          #
+# Set special ncargf77 flags for some of the test examples #
+#                                                          #
+#**********************************************************#
+
 # quick routines
     case tdashl:
     case tcnqck:
     case tconaq:
         set ncargf77flags = "-quick"
-        breaksw
+    breaksw
 
 # smooth routines (default)
     case tdashs:
     case tcnsmt:
     case tconan:
         set ncargf77flags = "-smooth"
-        breaksw
+    breaksw
 
 # super routines
     case tdashp:
     case tcnsup:
     case tconas:
         set ncargf77flags = "-super"
-        breaksw
+    breaksw
 
 # autograph with pwritx for character generation
-
     case tagupw:
         set ncargf77flags = "-agupwrtx"
-        breaksw
+    breaksw
 endsw
 
-echo ""
-echo "Compiling and Linking..."
+set rmfiles = ($rmfiles $copy_files)
 
-ncargf77 $X11_option $ncargf77flags -o $alias_name $alias_name.f
+#***********************#
+#                       #
+# Copy the needed files #
+#                       #
+#***********************#
+   
+foreach file($copy_files)
+    echo "  Copying $file"
+    if ( $type == "Example")      cp $example_dir/$file .
+    if ( $type == "Fundamentals") cp $fund_dir/$file .
+    if ( $type == "Tutorial" )    cp $tutor_dir/$file .
+    if ( $type == "Test" )        cp $test_dir/$file .
+end
 
-if ($status != 0) then
+#******************************#
+#                              #
+# Compile and link the example #
+#                              #
+#******************************#
+   
+if (! $?NoRunOption) then
     echo ""
-    echo "The compile and link failed"
-    exit -1
-endif
-
-if ("$name" == "tcolcv" || "$name" == "colconv") then
+    echo "Compiling and Linking..."
+    ncargf77 $X11_option $ncargf77flags -o $name $f_files
+    if ($status != 0) then
+        echo ""
+        echo "The compile and link failed"
+        exit -1
+    endif
     echo ""
-    echo "Executing <$alias_name> - no metafile produced"
-    $alias_name
-else
-    echo ""
-    echo "Executing <$alias_name>..."
-    ncargrun -o $alias_name.ncgm $alias_name
-    echo "Metafile is named $alias_name.ncgm"
+    echo "Executing <$name>..."
+
+#*****************#
+#                 #
+# Run the example #
+#                 #
+#*****************#
+   
+    switch( $name )
+        case mpexfi:
+            ncargrun -o $name.ncgm $name < mpexfi.dat
+        breaksw
+        case srex01:
+            ncargrun -o $name.ncgm $name < srex01.dat
+        breaksw
+        case agex13:
+            ncargrun -o $name.ncgm $name < agda13.dat
+        breaksw
+        case ccpcff:
+            ncargrun -o $name.ncgm $name
+            /bin/rm -f $name.ncgm
+            echo "No metafile produced"
+        breaksw
+        case tcolcv:
+            $name
+            echo "No metafile produced"
+        breaksw
+        default:
+            ncargrun -o $name.ncgm $name
+    endsw
+
+    set rmfiles = ($rmfiles $name.o $name)
+    if ( $name != "tcolcv" && $name != "ccpcff" ) then
+        echo "Metafile is named $name.ncgm"
+    endif
 endif
 
+#******************************#
+#                              #
+# Keep track of unwanted files #
+#                              #
+#******************************#
+switch ($name)
+    case slex01:
+        set rmfiles = ($rmfiles GNFB09)
+    breaksw
+
+    case tgflas:
+        set rmfiles = ($rmfiles GNFB01 GNFB02 GNFB03 GNFB04)
+    breaksw
+
+    case tstitl:
+        set rmfiles = ($rmfiles GNFB09)
+    breaksw
+endsw
+
 endif
 
-if ("$name" == "tgflas") then
-    set rmfiles = ($rmfiles GNFB01 GNFB02 GNFB03 GNFB04)
-endif
 
-if ("$name" == "tstitl") then
-    set rmfiles = ($rmfiles GNFB09)
-endif
-
-endif
-
-# Code for handling inappropriate requests
-
-if ("$type" == "Unknown") then
-
-echo "ncargex: <$name> is not a known example or test"
-
-endif
-
-# Clean out unwanted files.
+#************************#
+#                        #
+# Remove unwanted files. #
+#                        #
+#************************#
 
 if ($?CleanOption) then
     rm -f $rmfiles
 endif
 
-if ($?OneByOneOption) then
+#************************#
+#                        #
+# Display NCGM on screen #
+#                        #
+#************************#
+if ($?OneByOneOption && (-f $name.ncgm)) then
     ctrans -d X11 -geometry 1142x865+10+0 $name.ncgm
     rm -f $name.ncgm $rmfiles
 endif
