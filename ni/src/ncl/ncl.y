@@ -1913,7 +1913,7 @@ function:  IFUNC opt_arg_list		{
 									$$ = _NclMakeFuncCall(s,$5,Ncl_INTRINSICFUNCCALL); 
 								}
                                                 	} else {
-                                                        	NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: %s is not a funciton in package %s\n",$1->name,$4->name);
+                                                        	NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: %s is not a function in package %s\n",$1->name,$4->name);
                                                         	$$ = NULL;
                                                 	}
 	
