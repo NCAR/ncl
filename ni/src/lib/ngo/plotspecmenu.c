@@ -1,5 +1,5 @@
 /*
- *      $Id: plotspecmenu.c,v 1.10 1999-06-02 03:40:07 dbrown Exp $
+ *      $Id: plotspecmenu.c,v 1.11 1999-06-16 22:28:11 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -394,6 +394,7 @@ GetPlotStylesInPath
 	int		count, totalcount;
 	char		fullpath[1024];
 	char		*endp;
+	FILE 		*fp = NULL;
 
 	if (! path) {
 		NHLPERROR((NhlWARNING,NhlEUNKNOWN,
@@ -417,7 +418,6 @@ GetPlotStylesInPath
 	count = 0;
 	while ( (dirp = readdir(dp)) != NULL) {
 		char *cp;
-		FILE *fp;
 		char buf[256];
 
 		if (! strcmp(dirp->d_name, ".")  ||
@@ -458,7 +458,6 @@ GetPlotStylesInPath
 		NhlBoolean gotname = False;
 		NhlBoolean gotclass = False;
 		char *cp;
-		FILE *fp;
 		char buf[256];
 
 		if (! strcmp(dirp->d_name, ".")  ||
@@ -471,6 +470,9 @@ GetPlotStylesInPath
 			continue;
 		
 		strcpy(endp,dirp->d_name);
+		if (fp)
+			fclose(fp);
+
 		fp = fopen(fullpath,"r");
 		if (! fp) {
 			NHLPERROR((NhlWARNING,NhlEUNKNOWN,
@@ -564,6 +566,8 @@ GetPlotStylesInPath
 			   dirp->d_name));
 			
 	}
+	if (fp)
+		fclose(fp);
         closedir(dp);
 	if (count) {
 		PlotStylePathCount++;

@@ -1,5 +1,5 @@
 /*
- *      $Id: app.c,v 1.21 1999-06-02 23:01:18 dbrown Exp $
+ *      $Id: app.c,v 1.22 1999-06-16 22:28:09 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -248,6 +248,7 @@ static void GetColormapsInPath
 				i++;
 			}
 		}
+		fclose(fp);
 		count = i;
 		if (max_cval > 1.0) {
 			if (max_cval < 256.0) {
@@ -282,7 +283,8 @@ static void GetColormapsInPath
 				  (NhlColor *)colormap,count / 3);
 		
 	}
-	
+	closedir(dp);
+
 	return;
 }
 
