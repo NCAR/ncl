@@ -1,5 +1,5 @@
 /*
- *      $Id: ctxt_device.c,v 1.1 1996-10-25 21:41:22 boote Exp $
+ *      $Id: ctxt_device.c,v 1.2 1997-08-25 20:19:23 boote Exp $
  */
 /************************************************************************
 *									*
@@ -33,6 +33,9 @@
 static GKSdev ctxtdev =
 {
 	"ctxt", 
+
+	NULL,
+
 	ctxt_ConvPoints, sizeof(CTXTPoint), 
 	ctxt_ConvString, sizeof(char), ctxt_ConvInts, sizeof(int), 
 	ctxt_ConvFloats, sizeof(int), ctxt_ConvIndexes, sizeof(int),

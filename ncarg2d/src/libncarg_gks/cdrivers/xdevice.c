@@ -1,5 +1,5 @@
 /*
- *      $Id: xdevice.c,v 1.1 1996-10-25 21:41:29 boote Exp $
+ *      $Id: xdevice.c,v 1.2 1997-08-25 20:19:28 boote Exp $
  */
 /************************************************************************
 *									*
@@ -33,6 +33,9 @@
 static GKSdev xdev =
 {
 	"X11", 
+
+	X11_Exec,
+
 	X11_ConvPoints,sizeof(XPoint), X11_ConvString,sizeof(char),
 	X11_ConvInts, sizeof(int), X11_ConvFloats, sizeof (float),
 	X11_ConvIndexes, sizeof (unsigned long), 

@@ -1,5 +1,5 @@
 /*
- *	$Id: gksc.c,v 1.5 1996-03-16 21:43:48 boote Exp $
+ *	$Id: gksc.c,v 1.6 1997-08-25 20:19:24 boote Exp $
  */
 /*
  *      File:		gksc.c
@@ -201,6 +201,7 @@ GKSC	*CreateGKSC(dev_name)
 	gksc->native = NULL;
 	gksc->ddp = NULL;
 
+	gksc->exec_gksc = gks_dev->exec_gksc;
 	gksc->operations = gks_dev->operations;
 
 	return(gksc);

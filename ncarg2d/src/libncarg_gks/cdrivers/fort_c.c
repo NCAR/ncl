@@ -1,5 +1,5 @@
 /*
- *      $Id: fort_c.c,v 1.5 1996-10-25 21:41:24 boote Exp $
+ *      $Id: fort_c.c,v 1.6 1997-08-25 20:19:23 boote Exp $
  */
 /************************************************************************
 *									*
@@ -301,15 +301,15 @@ err_msg)
 	/*
 	 * execute the gks command
 	 */
-	*status = ExecGKSC(gksc);
+	if(gksc->exec_gksc)
+		*status = (*(gksc->exec_gksc))(gksc);
+	else
+		*status = (*(gksc->operations[gksc->opcode]))(gksc);
 	if (*status != 0) {
-		if (*status != 0) {
-			c2f_strncpy((int*)err_msg,(char*)ErrGetMsg(),
-								ERR_MSG_MAX);
+		c2f_strncpy((int*)err_msg,(char*)ErrGetMsg(), ERR_MSG_MAX);
 #ifdef cray
-			strncpy( _fcdtocp(err_msg_), err_msg, length );
+		strncpy( _fcdtocp(err_msg_), err_msg, length );
 #endif
-		}
 		ClearGKSC(gksc);
 		return(-1);
 	}

@@ -1,5 +1,5 @@
 /*
- *	$Id: xcontrol.c,v 1.17 1997-07-31 17:58:18 boote Exp $
+ *	$Id: xcontrol.c,v 1.18 1997-08-25 20:19:27 boote Exp $
  */
 /*
  *      File:		xcontrol.c
@@ -21,6 +21,7 @@
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
 #include <ncarg/c.h>
+#include "gks_device.h"
 #include "common.h"
 #include "gksc.h"
 #include "gks.h"
@@ -357,133 +358,27 @@ pause
 	 * discard all events that a impatient user
 	 * may have aquired while waiting for a plot to finnish
 	 */
-	XSync(dpy,True);
-
-	for (;;) {
-
-		XNextEvent(dpy, &event);
-
-		switch (event.type) {
-
-		case	ButtonPress:
-		case	KeyPress:
-			return;	/* exit event loop	*/
-
-		default:
-			break;
-		}
-	}
-}
-
-/*
- *	do_geometry
- *	[internal]
- *
- *	Use the X resource manager to determine user preferances for
- *	geometry
- *
- * on entry
- *	*dpy		: the display
- *	*res_name	: the application resource name
- *	border_width	: width of window border
- *	*geometry	: geoemtry string. If Null geometry will be taken
- *			  from the resourc manager
- *
- * on exit
- *	return		: size hints structure with geometry information
- */
-static	XSizeHints
-*do_geometry
-#ifdef	NeedFuncProto
-(
-	Display		*dpy,
-	char		*res_name,
-	char		*res_class,
-	unsigned long	border_width,
-	char		*geometry
-)
-#else
-(dpy,res_name,res_class,border_width,geometry)
-	Display		*dpy;
-	char		*res_name;
-	char		*res_class;
-	unsigned long	border_width;
-	char		*geometry;
-#endif
-{
-	static	XSizeHints  xsh = {	/* Size hints for window manager*/
-		(PMinSize),
-		0,0,			/* obsolete ????		*/
-		DEFAULT_WIDTH,		/* obsolete ????		*/
-		DEFAULT_HEIGHT,		/* obsolete ????		*/
-		MIN_WIDTH, MIN_HEIGHT,	/* minimum usefull win dim	*/	
-		0,0,			/* max dim (not used)		*/
-		0,0,			/* not used			*/
-		{0,0},			/* not used			*/
-		{0,0},			/* not used			*/
-		0,
-		0,			/* dimensions of window		*/
-		0
-	};
-	int	geom_mask = 0;
+	while(XCheckMaskEvent(dpy,ButtonPressMask|KeyPressMask,&event));
 
 	/*
-	 * get the geometry resource string from the resource manager
+	 * wait for next buttonpress or keypress
 	 */
-	if (!geometry) geometry = XGetDefault (dpy, res_name, "geometry");
-	if (!geometry) geometry = XGetDefault (dpy, res_name, "Geometry");
-	if (!geometry) geometry = XGetDefault (dpy, res_class, "geometry");
-	if (!geometry) geometry = XGetDefault (dpy, res_class, "Geometry");
+	XMaskEvent(dpy,ButtonPressMask|KeyPressMask,&event);
 
-	if (geometry) {
-		geom_mask = XParseGeometry (geometry, &xsh.x, &xsh.y,
-				(unsigned int *)&xsh.width,
-				(unsigned int *)&xsh.height);
-	}
-
-	/*
-	 * see if user specified a window position. 
-	 */
-	if ((geom_mask & XValue) || (geom_mask & YValue)) {
-		xsh.flags |= USPosition;
-	}
-
-	/*
-	 * deal with negative position
-	 */
-	if ((geom_mask & XValue) && (geom_mask & XNegative)) {
-		xsh.x = DisplayWidth (dpy, DefaultScreen(dpy)) + xsh.x -
-		xsh.width - border_width * 2;
-	}
-
-	if ((geom_mask & YValue) && (geom_mask & YNegative)) {
-		xsh.y = DisplayWidth (dpy, DefaultScreen(dpy)) + xsh.y -
-		xsh.height - border_width * 2;
-	}
-
-
-	/*
-	 * see if user specified a dimension, else we use program defaults
-	 */
-	if ((geom_mask & WidthValue) || (geom_mask & HeightValue)) {
-		xsh.flags |= USSize;
-	}
-	else {
-		xsh.flags |= PSize;
-	}
-
-	return(&xsh);
+	return;
 }
 
 static Window
 CreateXWorkWindow
 #ifdef	NeedFuncProto
 (
-	Display		*dpy
+	Display		*dpy,
+	_NGCXWinConfig	*xwc
 )
 #else
-(dpy)
+(dpy,xwc)
 	Display		*dpy;
+	_NGCXWinConfig	*xwc;
 #endif
 {
 	Window			win;
@@ -501,16 +396,96 @@ CreateXWorkWindow
 		"xgks",			/* resource name		*/
 		"Xgks"			/* class name			*/
 	};
+	XSizeHints		xsh = { /* Size hints for window manager*/
+		(PMinSize),
+		0,0,			/* obsolete ????		*/
+		DEFAULT_WIDTH,		/* obsolete ????		*/
+		DEFAULT_HEIGHT,		/* obsolete ????		*/
+		MIN_WIDTH, MIN_HEIGHT,	/* minimum usefull win dim	*/	
+		0,0,			/* max dim (not used)		*/
+		0,0,			/* not used			*/
+		{0,0},			/* not used			*/
+		{0,0},			/* not used			*/
+		0,
+		0,			/* dimensions of window		*/
+		0
+	};
+	char			*geometry=NULL;
+	int			geom_mask = 0;
 	XSetWindowAttributes	xswa;	/* Set Window Attribute struct 	*/
 	XTextProperty		window_name, icon_name;
 	unsigned long		bw = 0;	/* Border width 		*/
 	XEvent     		 event;	/* Event received 		*/
-	XSizeHints		*xshptr;
+	Atom			wm_del;
 
 	/*
-	 * get user preferances for window geometry
+	 * get the geometry resource string from the resource manager
 	 */
-	xshptr = do_geometry(dpy,xch.res_name,xch.res_class,bw,NULL);
+	if (!geometry) geometry = XGetDefault (dpy, xch.res_name, "geometry");
+	if (!geometry) geometry = XGetDefault (dpy, xch.res_name, "Geometry");
+	if (!geometry) geometry = XGetDefault (dpy, xch.res_class, "geometry");
+	if (!geometry) geometry = XGetDefault (dpy, xch.res_class, "Geometry");
+
+	if (geometry) {
+		geom_mask = XParseGeometry (geometry, &xsh.x, &xsh.y,
+				(unsigned int *)&xsh.width,
+				(unsigned int *)&xsh.height);
+	}
+
+	/*
+	 * if xwc is set, it takes precedence over "geometry" resource.
+	 */
+	if(xwc){
+		if(xwc->x >= 0){
+			xsh.x = xwc->x;
+			geom_mask &= ~XNegative;
+			geom_mask |= XValue;
+		}
+		if(xwc->y >= 0){
+			xsh.y = xwc->y;
+			geom_mask &= ~YNegative;
+			geom_mask |= YValue;
+		}
+		if(xwc->width >= 0){
+			xsh.width = xwc->width;
+			geom_mask |= WidthValue;
+		}
+		if(xwc->height >= 0){
+			xsh.height = xwc->height;
+			geom_mask |= HeightValue;
+		}
+	}
+
+	/*
+	 * see if user specified a window position. 
+	 */
+	if ((geom_mask & XValue) || (geom_mask & YValue)) {
+		xsh.flags |= USPosition;
+	}
+
+	/*
+	 * deal with negative position
+	 */
+	if ((geom_mask & XValue) && (geom_mask & XNegative)) {
+		xsh.x = DisplayWidth (dpy, DefaultScreen(dpy)) + xsh.x -
+		xsh.width - bw * 2;
+	}
+
+	if ((geom_mask & YValue) && (geom_mask & YNegative)) {
+		xsh.y = DisplayWidth (dpy, DefaultScreen(dpy)) + xsh.y -
+		xsh.height - bw * 2;
+	}
+
+
+	/*
+	 * see if user specified a dimension, else we use program defaults
+	 */
+	if ((geom_mask & WidthValue) || (geom_mask & HeightValue)) {
+		xsh.flags |= USSize;
+	}
+	else {
+		xsh.flags |= PSize;
+	}
 
 	/*
 	 * Ensure that the window's colormap field points to the default
@@ -527,7 +502,7 @@ CreateXWorkWindow
 	 * border width, and the border & background pixels.
 	 */
 	win = XCreateWindow(dpy, RootWindow(dpy,DefaultScreen(dpy)),
-		xshptr->x, xshptr->y, xshptr->width, xshptr->height,
+		xsh.x, xsh.y, xsh.width, xsh.height,
 		bw,CopyFromParent,InputOutput,CopyFromParent,
 		(CWBitGravity|CWBackingStore|CWBackPixel|CWBorderPixel),&xswa);
 
@@ -536,14 +511,21 @@ CreateXWorkWindow
 	 */
 	window_name.encoding = XA_STRING;
 	window_name.format = 8;
-	window_name.value = (unsigned char *) "NCAR Xgks";
+	if(xwc && xwc->title)
+		window_name.value = (unsigned char *) xwc->title;
+	else
+		window_name.value = (unsigned char *) "NCAR Xgks";
 	window_name.nitems = strlen ((char *)window_name.value);
+
 	icon_name.encoding = XA_STRING;
 	icon_name.format = 8;
-	icon_name.value = (unsigned char *) "xgks";
+	if(xwc && xwc->icon_title)
+		icon_name.value = (unsigned char *) xwc->icon_title;
+	else
+		icon_name.value = (unsigned char *) "xgks";
 	icon_name.nitems = strlen ((char *)icon_name.value);
 
-	XSetWMProperties(dpy,win,&window_name,&icon_name,NULL,0,xshptr,&xwmh,
+	XSetWMProperties(dpy,win,&window_name,&icon_name,NULL,0,&xsh,&xwmh,
 									&xch);
 
 	/* 
@@ -582,11 +564,78 @@ CreateXWorkWindow
 	}
 
 	/*
-	 * Select input for "pause"
+	 * Select input for "pause" and destroy of window.
 	 */
-	XSelectInput(dpy,win,(ButtonPressMask|KeyPressMask));
+	XSelectInput(dpy,win,
+			(ButtonPressMask|KeyPressMask|StructureNotifyMask));
+
+	/*
+	 * Request clientMessage events for WM_DELETE_WINDOW.
+	 */
+
+	wm_del = XInternAtom(dpy,"WM_DELETE_WINDOW",False);
+	XSetWMProtocols(dpy,win,&wm_del,1);
 
 	return win;
+}
+
+int
+X11_Exec
+#ifdef	NeedFuncProto
+(
+	GKSC	*gksc
+)
+#else
+(gksc)
+	GKSC	*gksc;
+#endif
+{
+	Xddp			*xi = (Xddp *) gksc->ddp;
+	XEvent			event;
+	XClientMessageEvent	*xcme;
+
+	if((gksc->opcode == OPEN_WORKSTATION) ||
+			(gksc->opcode == CLOSE_WORKSTATION))
+		goto DONE;
+
+	if(xi->dead){
+		ESprintf(ERR_WIN_ATTRIB,"Window Destroyed");
+		return(ERR_WIN_ATTRIB);
+	}
+
+	while(XCheckTypedEvent(xi->dpy,ClientMessage,&event) ||
+			XCheckMaskEvent(xi->dpy,StructureNotifyMask,&event)){
+
+		switch (event.type) {
+		case	DestroyNotify:
+			xi->dead = True;
+			break;
+
+		case	ClientMessage:
+			xcme = (XClientMessageEvent*)&event;
+			xi->dead = True;
+			break;
+
+		default:
+			break;
+		}
+		if(xi->dead)
+			break;
+	}
+	if(xi->dead){
+		XFreeGC(xi->dpy,xi->line_gc);
+		XFreeGC(xi->dpy,xi->fill_gc);
+		XFreeGC(xi->dpy,xi->marker_gc);
+		XFreeGC(xi->dpy,xi->cell_gc);
+		XFreeGC(xi->dpy,xi->text_gc);
+		XCloseDisplay(xi->dpy);
+		ESprintf(ERR_WIN_ATTRIB,"Window Destroyed");
+		return(ERR_WIN_ATTRIB);
+	}
+
+DONE:
+
+	return (*(gksc->operations[gksc->opcode]))(gksc);
 }
 
 int
@@ -607,6 +656,7 @@ X11_OpenWorkstation
 	CoordSpace		square_screen;
         int			*iptr = (int *) gksc->i.list;
 	_NGCesc			*cesc;
+	_NGCXWinConfig		*xwc=NULL;
 
 	if((xi = (Xddp *) malloc (sizeof (Xddp))) == (Xddp *) NULL){
 		ESprintf(ERR_DTABLE_MEMORY, "malloc(%d)", sizeof(Xddp));
@@ -626,6 +676,7 @@ X11_OpenWorkstation
 
 	gksc->ddp = (GKSC_Ptr) xi;
 
+	xi->dead = False;
 	xi->alloc_color = NULL;
 	xi->free_colors = NULL;
 	xi->cref = NULL;
@@ -643,6 +694,10 @@ X11_OpenWorkstation
 				xi->cref = xac->cref;
 				break;
 			
+			case NGC_XWINCONFIG:
+				xwc = (_NGCXWinConfig*)cesc;
+
+				break;
 			default:
 				gerr_hand(182,11,NULL);
 		}
@@ -677,7 +732,7 @@ X11_OpenWorkstation
 		xi->win = (Window)iptr[0];
 	}
 	else{
-		xi->win = CreateXWorkWindow(xi->dpy);
+		xi->win = CreateXWorkWindow(xi->dpy,xwc);
 	}
 
 	if(XGetWindowAttributes(xi->dpy,xi->win,&xwa) == 0){
@@ -685,6 +740,12 @@ X11_OpenWorkstation
 		return ERR_WIN_ATTRIB;
 	}
 
+	if(xwc){
+		xwc->x = xwa.x;
+		xwc->y = xwa.y;
+		xwc->width = xwa.width;
+		xwc->height = xwa.height;
+	}
 	xi->scr = xwa.screen;
 	xi->vis = xwa.visual;
 	xi->cmap = xwa.colormap;
@@ -826,12 +887,14 @@ X11_CloseWorkstation
 	Xddp	*xi = (Xddp *) gksc->ddp;
 	Display	*dpy = xi->dpy;
 
-	XFreeGC(dpy,xi->line_gc);
-	XFreeGC(dpy,xi->fill_gc);
-	XFreeGC(dpy,xi->marker_gc);
-	XFreeGC(dpy,xi->cell_gc);
-	XFreeGC(dpy,xi->text_gc);
-	XCloseDisplay(dpy);
+	if(!xi->dead){
+		XFreeGC(dpy,xi->line_gc);
+		XFreeGC(dpy,xi->fill_gc);
+		XFreeGC(dpy,xi->marker_gc);
+		XFreeGC(dpy,xi->cell_gc);
+		XFreeGC(dpy,xi->text_gc);
+		XCloseDisplay(dpy);
+	}
 	if(xi->color_def) free(xi->color_def);
 	free((char *) xi);
 

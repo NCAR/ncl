@@ -1,5 +1,5 @@
 /*
- *	$Id: xddi.h,v 1.9 1997-07-31 17:58:20 boote Exp $
+ *	$Id: xddi.h,v 1.10 1997-08-25 20:19:28 boote Exp $
  */
 /*
  *      File:		xddi.h
@@ -31,6 +31,7 @@ typedef	struct Xddi_ColorStatus_ {
 
 typedef	struct	Xddi_	{
 	XWorkType	xwtype;
+	int		dead;
 	Display		*dpy;
 	Screen		*scr;
 	Visual		*vis;

@@ -1,5 +1,5 @@
 /*
- *	$Id: gksc.h,v 1.7 1996-09-10 17:01:56 fred Exp $
+ *	$Id: gksc.h,v 1.8 1997-08-25 20:19:25 boote Exp $
  */
 /*
  *      File:		gksc.h
@@ -17,6 +17,8 @@
 
 #ifndef	_gksc_
 #define	_gksc_
+
+#include <sys/types.h>
 
 #ifdef __STDC__
 typedef void*           GKSC_Ptr;
@@ -74,6 +76,7 @@ typedef	struct	GKSC_	{
 	RGBs		rgb;		/* rgb color triples		*/
 	GKSC_Ptr	native;		/* c native type (direct esc)	*/
 	GKSC_Ptr	ddp;		/* device dependent data	*/
+	int		(*exec_gksc)();
 	int	(**operations)();	/* device functions		*/
 	} GKSC;
 

@@ -1,5 +1,5 @@
 /*
- *	$Id: x_device.h,v 1.2 1994-06-08 16:57:56 boote Exp $
+ *	$Id: x_device.h,v 1.3 1997-08-25 20:19:26 boote Exp $
  */
 /*
  *      File:		x_device.h
@@ -79,6 +79,11 @@ extern	void	X11_ConvRGBs(
 #endif
 ); 
 
+extern	int	X11_Exec(
+#ifdef	NeedFuncProto
+	GKSC	*gksc
+#endif
+);
 
 extern	int	X11_OpenWorkstation(
 #ifdef	NeedFuncProto

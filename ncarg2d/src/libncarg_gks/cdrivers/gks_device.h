@@ -1,5 +1,5 @@
 /*
- *	$Id: gks_device.h,v 1.2 1996-10-25 21:41:27 boote Exp $
+ *	$Id: gks_device.h,v 1.3 1997-08-25 20:19:24 boote Exp $
  */
 /*
  *      File:		gks_device.h
@@ -63,6 +63,7 @@
  */ 
 typedef	struct	GKSdev_	{
 	char		*name;
+	int		(*exec_gksc)();
 	void		(*conv_points)();
 	unsigned	sizeof_point;
 	void		(*conv_string)();

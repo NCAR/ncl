@@ -1,5 +1,5 @@
 /*
- *      $Id: psdevice.c,v 1.1 1996-10-25 21:41:28 boote Exp $
+ *      $Id: psdevice.c,v 1.2 1997-08-25 20:19:26 boote Exp $
  */
 /************************************************************************
 *									*
@@ -33,6 +33,9 @@
 static GKSdev psdev =
 {
 	"ps", 
+
+	NULL,
+
 	ps_ConvPoints, sizeof(PSPoint), 
 	ps_ConvString, sizeof(char), ps_ConvInts, sizeof(int), 
 	ps_ConvFloats, sizeof(int), ps_ConvIndexes, sizeof(int),
