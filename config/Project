@@ -1,5 +1,5 @@
 /*
- *      $Id: Project,v 1.4 1993-11-12 02:44:13 boote Exp $
+ *      $Id: Project,v 1.5 1994-04-08 04:16:03 boote Exp $
  */
 /************************************************************************
 *									*
@@ -22,9 +22,6 @@
  *			etc are in the Template file.
  */
 
-/*
- * This varible (?should?) be edited by Configure.
- */
 #define NcargVersion 3.2.1
 
 #ifndef	BuildRasterHDF

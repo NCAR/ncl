@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ymake,v 1.13 1994-03-10 00:54:53 boote Exp $
+#	$Id: ymake,v 1.14 1994-04-08 04:16:08 boote Exp $
 #
 ######################################################################
 #
@@ -180,7 +180,11 @@ if ($?YMAKE_DEV_FILE) then
 	endif
 endif
 
-
+if (-e $config_dir/Site.local) then
+	set defines=($defines -DSiteFile=\"Site.local\")
+else
+	set defines=($defines -DSiteFile=\"Site\")
+endif
 
 set ymakefile
 set outfile
@@ -205,7 +209,7 @@ if (-e $outfile) then
 	if (-e $outfile.bak) then
 		/bin/rm -f $outfile.bak
 	endif
-	cp $outfile $outfile.bak
+	mv $outfile $outfile.bak
 endif
 
 onintr error_cleanup
@@ -532,6 +536,8 @@ endsw
 echo '#include "Template"' | \
 $cpp $cppopt -I. -D_COMMENT_="" -DNGCOMM=\# $defines -DYMAKEFILE=\"$tmp1\" | \
 "$config_dir"/ymake-filter >>$outfile
+
+if($status) goto error_cleanup
 
 /bin/rm -f $outfile.bak $tmp1
 onintr

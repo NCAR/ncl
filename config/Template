@@ -1,5 +1,5 @@
 /*
- *      $Id: Template,v 1.18 1994-04-06 21:40:54 boote Exp $
+ *      $Id: Template,v 1.19 1994-04-08 04:16:05 boote Exp $
  */
 /************************************************************************
 *									*
@@ -55,7 +55,7 @@ NGCOMM Including Site - first time
 NGCOMM
 NGCOMM########################################################################
 #define FirstSite
-#include "Site"
+#include SiteFile
 #undef FirstSite
 NGCOMM########################################################################
 NGCOMM
@@ -81,7 +81,7 @@ NGCOMM Including Site - second time
 NGCOMM
 NGCOMM########################################################################
 #define SecondSite
-#include "Site"
+#include SiteFile
 #undef SecondSite
 NGCOMM########################################################################
 NGCOMM
@@ -470,6 +470,9 @@ BINPATH			= BinPath
 LIBPATH			= LibPath
 INCPATH			= IncPath
 MANPATH			= ManPath
+
+LIBSEARCH		= LibSearch
+INCSEARCH		= IncSearch
 
 LIB_SEARCH		= LibSearch ExtraLibSearch
 INC_SEARCH		= IncSearch ExtraIncSearch
