@@ -1,5 +1,5 @@
 /*
- *      $Id: hluP.h,v 1.29 1995-04-22 01:02:20 boote Exp $
+ *      $Id: hluP.h,v 1.30 1995-06-17 00:09:42 boote Exp $
  */
 /************************************************************************
 *									*
@@ -335,6 +335,13 @@ extern NhlClass _NhlClass(
 extern Const char * _NhlClassName(
 #if	NhlNeedProto
 	NhlClass  /* lc */
+#endif
+);
+
+extern NhlBoolean _NhlIsClass(
+#if	NhlNeedProto
+	NhlLayer	l,
+	NhlClass	cl
 #endif
 );
 

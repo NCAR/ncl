@@ -1,5 +1,5 @@
 /*
- *      $Id: hlu.h,v 1.29 1995-04-07 10:44:39 boote Exp $
+ *      $Id: hlu.h,v 1.30 1995-06-17 00:09:41 boote Exp $
  */
 /************************************************************************
 *									*
@@ -235,6 +235,20 @@ extern Const char *NhlName(
 extern Const char *NhlClassName(
 #if	NhlNeedProto
 	int	pid	/* id of object whose class name is requested */
+#endif
+);
+
+extern NhlBoolean NhlClassIsSubclass(
+#if	NhlNeedProto
+	NhlClass	cl,
+	NhlClass	ref_class
+#endif
+);
+
+extern NhlBoolean NhlIsClass(
+#if	NhlNeedProto
+	int		id,
+	NhlClass	cl
 #endif
 );
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: hlu.c,v 1.31 1995-05-05 08:50:49 boote Exp $
+ *      $Id: hlu.c,v 1.32 1995-06-17 00:09:40 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1581,4 +1581,102 @@ _NhlResUnset
 	*set = False;
 
 	return NhlNOERROR;
+}
+
+/*
+ * Function:	NhlClassIsSubclass
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+NhlBoolean
+NhlClassIsSubclass
+#if	NhlNeedProto
+(
+	NhlClass	cptr,
+	NhlClass	ref_cptr
+)
+#else
+(cptr,ref_cptr)
+	NhlClass	cptr;
+	NhlClass	ref_cptr;
+#endif
+{
+	if(!cptr)
+		return False;
+
+	if(cptr == ref_cptr)
+		return True;
+
+	return NhlClassIsSubclass(cptr->base_class.superclass,ref_cptr);
+}
+
+/*
+ * Function:	_NhlIsClass
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+NhlBoolean
+_NhlIsClass
+#if	NhlNeedProto
+(
+	NhlLayer	l,
+	NhlClass	cl
+)
+#else
+(l,cl)
+	NhlLayer	l;
+	NhlClass	cl;
+#endif
+{
+	return NhlClassIsSubclass(l->base.layer_class,cl);
+}
+
+/*
+ * Function:	NhlIsClass
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+NhlBoolean
+NhlIsClass
+#if	NhlNeedProto
+(
+	int		id,
+	NhlClass	cl
+)
+#else
+(id,cl)
+	int		id;
+	NhlClass	cl;
+#endif
+{
+	NhlLayer	l = _NhlGetLayer(id);
+
+	if(!l)
+		return False;
+
+	return _NhlIsClass(l,cl);
 }

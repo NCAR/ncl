@@ -1,5 +1,5 @@
 C
-C $Id: gerhnd.f,v 1.2 1995-05-05 22:33:01 boote Exp $
+C $Id: gerhnd.f,v 1.3 1995-06-17 00:09:39 boote Exp $
 C
 C****************************************************************
 C								*
@@ -25,7 +25,7 @@ C
 C****************************************************************
 C
 C If any version of GKS is used other than libncarg_gks, then
-C the user will need to install thier own version of this
+C the user will need to install their own version of this
 C function to over-ride this one, it makes calls that will
 C only be resolved in libncarg_gks.
 C
