@@ -1,5 +1,5 @@
 /*
- *      $Id: NclApi.c,v 1.39 1996-12-12 22:58:08 ethan Exp $
+ *      $Id: NclApi.c,v 1.40 1997-01-31 22:27:59 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -107,13 +107,17 @@ int NclInitServer
 #endif
 {
 #ifdef YYDEBUG
+/*
 #if     defined(SunOS) && (MAJOR == 4)
         extern int ncldebug;
         ncldebug = 1;
 #else
+*/
         extern int yydebug;
         yydebug = 1;
+/*
 #endif
+*/
 #endif
 	ncopts = NC_VERBOSE;
 	cur_line_text = NclMalloc((unsigned)512);

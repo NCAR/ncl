@@ -25,14 +25,18 @@ extern char *cur_line_text;
 extern int cur_line_maxsize;
 extern char *cur_line_text_pos;
 
-
+/*
 #if     defined(SunOS) && (MAJOR == 4)
 extern FILE *nclin;
 extern int nclparse(int);
 #else
+*/
 extern FILE *yyin;
 extern int yyparse(int);
-#endif /*SunOs*/
+/*
+#endif 
+*/
+
 
 #define BUFF_SIZE 512
 
@@ -89,11 +93,15 @@ main() {
 	if(cmd_line)	
 		fprintf(stdout_fp,"ncl %d> ",0);
 */
+/*
 #if     defined(SunOS) && (MAJOR == 4)
 	nclparse(1);
 #else
+*/
 	yyparse(1);
+/*
 #endif
+*/
 #ifdef NCLDEBUG
 	fclose(thefptr);
 	fprintf(stdout,"Number of unfreed objects %d\n",_NclNumObjs());

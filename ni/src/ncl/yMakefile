@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.48 1996-12-17 18:43:10 ethan Exp $
+#      $Id: yMakefile,v 1.49 1997-01-31 22:28:00 ethan Exp $
 #
 #########################################################################
 #									#
@@ -175,16 +175,16 @@ parseapi.c: parser.c
 parseapi.o: parseapi.c
 	$(CC) -c $(API_DEFS) $(CFLAGS) $<
 
-#if	defined(SUN) && (MAJOR == 4)
-scanner.c:	lex.yy.c syms_lex.sh
-	$(SHELL) syms_lex.sh
-
-parser.h:	y.tab.h syms_tab_h.sh
-	$(SHELL) syms_tab_h.sh
-
-parser.c:	y.tab.c syms_tab_c.sh
-	$(SHELL) syms_tab_c.sh
-#else
+##if	defined(SUN) && (MAJOR == 4)
+#scanner.c:	lex.yy.c syms_lex.sh
+#	$(SHELL) syms_lex.sh
+#
+#parser.h:	y.tab.h syms_tab_h.sh
+#	$(SHELL) syms_tab_h.sh
+#
+#parser.c:	y.tab.c syms_tab_c.sh
+#	$(SHELL) syms_tab_c.sh
+##else
 scanner.c:	lex.yy.c
 	$(CP) lex.yy.c scanner.c
 
@@ -193,7 +193,7 @@ parser.h:	y.tab.h
 
 parser.c:	y.tab.c
 	$(CP) y.tab.c parser.c
-#endif
+##endif
 
 lex.yy.c: ncl.l
 	$(LEX) ncl.l
