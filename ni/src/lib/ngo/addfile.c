@@ -1,5 +1,5 @@
 /*
- *      $Id: addfile.c,v 1.4 1997-03-04 00:24:31 dbrown Exp $
+ *      $Id: addfile.c,v 1.5 1997-03-04 02:53:49 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -345,6 +345,154 @@ AddFileScript
 	return;
 }
 
+static void AdjustSize
+(
+ 	NgGO	go
+)
+{
+	NgAddFile	l = (NgAddFile)go;
+	NgAddFilePart	*np = &l->addfile;
+        int max,ssize,inc,pinc,off,oldoff;
+	Widget wid,dirlabel,hscroll;
+        XmFontList      fontlist;
+        XmString xmlabel;
+        Dimension w, cwidth,add,vwidth,fwidth,formwidth;
+
+        if (! np->mapped)
+                return;
+/*
+ * Force the directory box to be at least as wide as the directory label
+ */
+	XtVaSetValues(np->fselect_box,
+		      XmNleftAttachment,XmATTACH_NONE,
+		      NULL);
+        dirlabel = XmFileSelectionBoxGetChild(np->fselect_box,
+                                              XmDIALOG_DIR_LIST_LABEL);
+        XtVaGetValues(dirlabel,
+                      XmNfontList,&fontlist,
+                      XmNlabelString,&xmlabel,
+                      NULL);
+        
+        w = XmStringWidth(fontlist,xmlabel);
+        XmStringFree(xmlabel);
+        XtVaGetValues(XtParent(np->dirlist),
+                      XmNhorizontalScrollBar,&hscroll,
+                      XmNwidth,&cwidth,
+                      NULL);
+        cwidth = MAX(MAX(cwidth,w+10),np->user_dir_width);
+        XtVaSetValues(XtParent(np->dirlist),
+                      XmNwidth,cwidth,
+                      NULL);
+        XtVaGetValues(XtParent(np->dirlist),
+                      XmNwidth,&cwidth,
+                      NULL);
+        XtVaGetValues(XtParent(np->vlist),
+                      XmNwidth,&vwidth,
+                      NULL);
+        XtVaGetValues(XtParent(np->filelist),
+                      XmNwidth,&fwidth,
+                      NULL);
+        cwidth = cwidth+vwidth+fwidth+40;
+        XtVaGetValues(np->listform,
+                      XmNwidth,&formwidth,
+                      NULL);
+        if (formwidth != cwidth) {
+                np->user_configure = False;
+                XtVaSetValues(np->listform,
+                              XmNwidth,cwidth,
+                              NULL);
+        }
+                
+	XtVaSetValues(np->fselect_box,
+		      XmNleftAttachment,XmATTACH_FORM,
+		      NULL);
+
+        XtVaGetValues(np->info_optmenu,
+                      XmNleftOffset,&oldoff,
+                      XmNwidth,&cwidth,
+                      NULL);
+        off = -cwidth/2;
+        if (off < oldoff-1 || off > oldoff + 1) {
+                XtVaSetValues(np->info_optmenu,
+                              XmNleftPosition,50,
+                              XmNleftOffset,off,
+                              NULL);
+        }
+
+        XtVaGetValues(XtParent(np->dirlist),
+                      XmNhorizontalScrollBar,&hscroll,
+                      XmNwidth,&cwidth,
+                      NULL);
+        XtVaGetValues(hscroll,
+                      XmNmaximum,&max,
+		      XmNsliderSize,&ssize,
+		      XmNincrement,&inc,
+		      XmNpageIncrement,&pinc,
+                      NULL);
+	XmScrollBarSetValues(hscroll,max-ssize,ssize,inc,pinc,True);
+
+
+	return;
+}
+
+static void SetApplyForm
+(
+        NgGO	go
+)
+{
+	NgAddFile		l = (NgAddFile)go;
+	NgAddFilePart		*np = &l->addfile;
+	char			bname[_NhlMAXFNAMELEN];
+	char			*item = NULL;
+	char			*ptr,*ptr2,*ptr3;
+	size_t			len;
+        Dimension		width1,width2;
+        char			*vname;
+
+        item = np->dirspec;
+
+	if(item)
+		ptr = strrchr(item,'/');
+	if(ptr)
+		ptr++;
+	if(ptr){
+		/* Prefix numeric filenames with "F" */
+		if(!isalpha(*ptr))
+			strcpy(bname,"F");
+		else
+			bname[0]='\0';
+		ptr2 = &bname[strlen(bname)];
+		ptr3 = strrchr(item,'.');
+                len = ptr3 - ptr;
+		strncat(ptr2,ptr,len);
+		ptr2[len]='\0';
+                while (*ptr2 != '\0') {
+                        if (! isalnum(*ptr2))
+                                *ptr2 = '_';
+                        ptr2++;
+                }
+	}
+	else
+		bname[0] = '\0';
+
+        vname = NgNclGetSymName(bname);
+        XtVaGetValues(np->vname,
+		XmNwidth,&width1,
+		NULL);
+	XmTextFieldSetString(np->vname,vname);
+	XtVaGetValues(np->vname,
+		XmNwidth,&width2,
+		NULL);
+
+        if (width1 != width2) {
+                np->user_configure = False;
+                AdjustSize(go);
+        }
+                
+	return;
+        
+}
+
 static void
 ApplyButtonCB
 (
@@ -359,6 +507,8 @@ ApplyButtonCB
 	fprintf(stderr,"ApplyButtonCB(IN)\n");
 #endif
         AddFileScript(go);
+        SetApplyForm(go);
+        
         return;
 }
 
@@ -377,6 +527,7 @@ OkButtonCB
 	fprintf(stderr,"OkButtonCB(IN)\n");
 #endif
         AddFileScript(go);
+        SetApplyForm(go);
 	NgGOPopdown(l->base.id);
 }
 
@@ -403,7 +554,7 @@ CreateDimInfoPopup
                                         xmFormWidgetClass,dip->frame,
                                         NULL);
 
-        dip->grid = NgCreateVarInfoGrid(form,QPreviewFile,dip->vinfo);
+        dip->grid = NgCreateDimInfoGrid(form,QPreviewFile,dip->vinfo);
         
         return;
         
@@ -434,7 +585,7 @@ DoDimInfoPopup
                 new = True;
         }
         else {
-                NgUpdateVarInfoGrid(dip->grid,QPreviewFile,dip->vinfo);
+                NgUpdateDimInfoGrid(dip->grid,QPreviewFile,dip->vinfo);
         }
         root_w = WidthOfScreen(XtScreen(dip->popup));
         root_h = HeightOfScreen(XtScreen(dip->popup));
@@ -565,96 +716,6 @@ DoAttrPopup
         aip->up = True;
         
         return;
-}
-
-static void AdjustSize
-(
- 	NgGO	go
-)
-{
-	NgAddFile	l = (NgAddFile)go;
-	NgAddFilePart	*np = &l->addfile;
-        int max,ssize,inc,pinc,off,oldoff;
-	Widget wid,dirlabel,hscroll;
-        XmFontList      fontlist;
-        XmString xmlabel;
-        Dimension w, cwidth,add,vwidth,fwidth,formwidth;
-
-        if (! np->mapped)
-                return;
-/*
- * Force the directory box to be at least as wide as the directory label
- */
-	XtVaSetValues(np->fselect_box,
-		      XmNleftAttachment,XmATTACH_NONE,
-		      NULL);
-        dirlabel = XmFileSelectionBoxGetChild(np->fselect_box,
-                                              XmDIALOG_DIR_LIST_LABEL);
-        XtVaGetValues(dirlabel,
-                      XmNfontList,&fontlist,
-                      XmNlabelString,&xmlabel,
-                      NULL);
-        
-        w = XmStringWidth(fontlist,xmlabel);
-        XmStringFree(xmlabel);
-        XtVaGetValues(XtParent(np->dirlist),
-                      XmNhorizontalScrollBar,&hscroll,
-                      XmNwidth,&cwidth,
-                      NULL);
-        cwidth = MAX(MAX(cwidth,w+10),np->user_dir_width);
-        XtVaSetValues(XtParent(np->dirlist),
-                      XmNwidth,cwidth,
-                      NULL);
-        XtVaGetValues(XtParent(np->dirlist),
-                      XmNwidth,&cwidth,
-                      NULL);
-        XtVaGetValues(XtParent(np->vlist),
-                      XmNwidth,&vwidth,
-                      NULL);
-        XtVaGetValues(XtParent(np->filelist),
-                      XmNwidth,&fwidth,
-                      NULL);
-        cwidth = cwidth+vwidth+fwidth+40;
-        XtVaGetValues(np->listform,
-                      XmNwidth,&formwidth,
-                      NULL);
-        if (formwidth != cwidth) {
-                np->user_configure = False;
-                XtVaSetValues(np->listform,
-                              XmNwidth,cwidth,
-                              NULL);
-        }
-                
-	XtVaSetValues(np->fselect_box,
-		      XmNleftAttachment,XmATTACH_FORM,
-		      NULL);
-
-        XtVaGetValues(np->info_optmenu,
-                      XmNleftOffset,&oldoff,
-                      XmNwidth,&cwidth,
-                      NULL);
-        off = -cwidth/2;
-        if (off < oldoff-1 || off > oldoff + 1) {
-                XtVaSetValues(np->info_optmenu,
-                              XmNleftPosition,50,
-                              XmNleftOffset,off,
-                              NULL);
-        }
-
-        XtVaGetValues(XtParent(np->dirlist),
-                      XmNhorizontalScrollBar,&hscroll,
-                      XmNwidth,&cwidth,
-                      NULL);
-        XtVaGetValues(hscroll,
-                      XmNmaximum,&max,
-		      XmNsliderSize,&ssize,
-		      XmNincrement,&inc,
-		      XmNpageIncrement,&pinc,
-                      NULL);
-	XmScrollBarSetValues(hscroll,max-ssize,ssize,inc,pinc,True);
-
-
-	return;
 }
 static NhlBoolean ClearVarList
 (
@@ -1177,63 +1238,6 @@ static void SelectButtonCB
 	ShowVarList(go);
 
 	return;
-}
-static void SetApplyForm
-(
-        NgGO	go
-)
-{
-	NgAddFile		l = (NgAddFile)go;
-	NgAddFilePart		*np = &l->addfile;
-	char			bname[_NhlMAXFNAMELEN];
-	char			cmd[_NhlMAXFNAMELEN];
-	char			*item = NULL;
-	char			*ptr,*ptr2,*ptr3;
-	XmString		cmdstr;
-	size_t			len;
-        Dimension		width1,width2;
-
-        item = np->dirspec;
-
-	if(item)
-		ptr = strrchr(item,'/');
-	if(ptr)
-		ptr++;
-	if(ptr){
-		/* Prefix numeric filenames with "F" */
-		if(!isalpha(*ptr))
-			strcpy(bname,"F");
-		else
-			bname[0]='\0';
-		ptr2 = &bname[strlen(bname)];
-		ptr3 = strrchr(item,'.');
-                len = ptr3 - ptr;
-		strncat(ptr2,ptr,len);
-		ptr2[len]='\0';
-                while (*ptr2 != '\0') {
-                        if (! isalnum(*ptr2))
-                                *ptr2 = '_';
-                        ptr2++;
-                }
-	}
-	else
-		bname[0] = '\0';
-        
-        XtVaGetValues(np->vname,
-		XmNwidth,&width1,
-		NULL);
-	XmTextFieldSetString(np->vname,bname);
-	XtVaGetValues(np->vname,
-		XmNwidth,&width2,
-		NULL);
-
-        if (width1 != width2) {
-                np->user_configure = False;
-                AdjustSize(go);
-        }
-                
-	return;
-        
 }
 
 static void ClearApplyForm
@@ -2543,7 +2547,7 @@ static void InfoPopupAction
         
 	l = (NgAddFile)go;
 
-	if (type == GLOBAL_ATTRS_POPUP)
+	if (type == DIM_INFO_POPUP)
 		DoInfoPopup(l,type,False);
 	else
 		DoInfoPopup(l,type,True);

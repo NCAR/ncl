@@ -1,5 +1,5 @@
 /*
- *      $Id: addfileP.h,v 1.2 1997-03-04 00:04:40 dbrown Exp $
+ *      $Id: addfileP.h,v 1.3 1997-03-04 02:53:50 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -25,7 +25,7 @@
 #include <ncarg/ngo/goP.h>
 
 #include <ncarg/ngo/addfile.h>
-#include <ncarg/ngo/varinfogrid.h>
+#include <ncarg/ngo/diminfogrid.h>
 #include <ncarg/ngo/attrinfogrid.h>
 #include <ncarg/ngo/vcrcontrol.h>
 
@@ -58,7 +58,7 @@ typedef struct _NgafDimInfoRec
  	NclApiVarInfoRec	*vinfo;
         Widget 			popup;
         Widget			frame;
-        NgVarInfoGrid		grid;
+        NgDimInfoGrid		grid;
         int			pos;
         NhlBoolean		up;
 } NgafDimInfoRec;

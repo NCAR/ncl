@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.8 1997-03-04 00:04:43 dbrown Exp $
+#      $Id: yMakefile,v 1.9 1997-03-04 02:53:53 dbrown Exp $
 #
 #########################################################################
 #									#
@@ -34,12 +34,12 @@ OBJS		= ngo.o app.o nclstate.o util.o $(XOBJS)
 
 XHDRS		= xappP.h xapp.h goP.h go.h ncleditP.h ncledit.h xutil.h \
 		loadP.h load.h addfileP.h addfile.h mwinP.h mwin.h \
-		xwkP.h xwk.h varinfogrid.h varinfogridP.h attrinfogrid.h \
+		xwkP.h xwk.h diminfogrid.h diminfogridP.h attrinfogrid.h \
 		attrinfogridP.h vcrcontrol.h vcrcontrolP.h
 XSRCS		= xapp.c go.c ncledit.c xutil.c load.c addfile.c mwin.c \
-		xwk.c varinfogrid.c attrinfogrid.c vcrcontrol.c
+		xwk.c diminfogrid.c attrinfogrid.c vcrcontrol.c
 XOBJS		= xapp.o go.o ncledit.o xutil.o load.o addfile.o mwin.o \
-		xwk.o varinfogrid.o attrinfogrid.o vcrcontrol.o
+		xwk.o diminfogrid.o attrinfogrid.o vcrcontrol.o
 
 BuildSharedLibTarget(libNGgo,$(OBJS),1,0,$(CLIENT_LIBS))
 BuildLibTarget($(MYNAME),$(OBJS))

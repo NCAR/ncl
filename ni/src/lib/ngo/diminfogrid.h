@@ -1,5 +1,5 @@
 /*
- *      $Id: varinfogrid.h,v 1.1 1997-03-04 00:04:41 dbrown Exp $
+ *      $Id: diminfogrid.h,v 1.1 1997-03-04 02:53:51 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -9,7 +9,7 @@
 *									*
 ************************************************************************/
 /*
- *	File:		varinfogrid.h
+ *	File:		diminfogrid.h
  *
  *	Author:		David I. Brown
  *			National Center for Atmospheric Research
@@ -19,8 +19,8 @@
  *
  *	Description:	
  */
-#ifndef	_NG_VARINFOGRID_H
-#define	_NG_VARINFOGRID_H
+#ifndef	_NG_DIMINFOGRID_H
+#define	_NG_DIMINFOGRID_H
 
 #include <ncarg/ngo/go.h>
 
@@ -36,21 +36,21 @@
  * Public api
  */
 
-typedef NhlPointer NgVarInfoGrid;
+typedef NhlPointer NgDimInfoGrid;
 
-NgVarInfoGrid NgCreateVarInfoGrid
+NgDimInfoGrid NgCreateDimInfoGrid
 (
         Widget			parent,
         NrmQuark 		qfileref,
         NclApiVarInfoRec	*vinfo
         );
 
-NhlErrorTypes NgUpdateVarInfoGrid
+NhlErrorTypes NgUpdateDimInfoGrid
 (
-        NgVarInfoGrid		var_info_grid,
+        NgDimInfoGrid		dim_info_grid,
         NrmQuark		qfileref,
         NclApiVarInfoRec	*vinfo
         );
         
 
-#endif	/* _NG_VARINFOGRID_H */
+#endif	/* _NG_DIMINFOGRID_H */

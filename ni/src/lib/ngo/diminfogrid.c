@@ -1,5 +1,5 @@
 /*
- *      $Id: varinfogrid.c,v 1.1 1997-03-04 00:04:41 dbrown Exp $
+ *      $Id: diminfogrid.c,v 1.1 1997-03-04 02:53:50 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -9,7 +9,7 @@
 *									*
 ************************************************************************/
 /*
- *	File:		varinfogrid.c
+ *	File:		diminfogrid.c
  *
  *	Author:		David I. Brown
  *			National Center for Atmospheric Research
@@ -20,7 +20,7 @@
  *	Description:	
  */
 
-#include <ncarg/ngo/varinfogridP.h>
+#include <ncarg/ngo/diminfogridP.h>
 #include <ncarg/ngo/xutil.h>
 
 #include <Xm/Xm.h>
@@ -101,23 +101,23 @@ RemoveZeros
 static char *
 ColumnWidths
 (
-	NgVarInfoGridRec *vip
+	NgDimInfoGridRec *dip
 )
 {
 	int	i;
-        NclApiVarInfoRec *vinfo = vip->vinfo;
+        NclApiVarInfoRec *vinfo = dip->vinfo;
         char	sizestr[10];
 
         Buffer[0] = '\0';
 	for (i=0; i <= vinfo->n_dims; i++) {
-                sprintf(sizestr,"%dc ",vip->cwidths[i]);
+                sprintf(sizestr,"%dc ",dip->cwidths[i]);
                 if (strlen(sizestr) + strlen(Buffer) + 1> Buflen) {
                         Buffer = NhlRealloc(Buffer,Buflen+BUFINC);
                 }
 		strcat(Buffer,sizestr);
 	}
         Buffer[strlen(Buffer)-1] = '\0';
-#if DEBUG_VAR_INFO_GRID      
+#if DEBUG_DIM_INFO_GRID      
         fprintf(stderr,"%s\n",Buffer);
 #endif        
         return Buffer;
@@ -127,17 +127,17 @@ ColumnWidths
 static char *
 VarTypeText
 (
-	NgVarInfoGridRec *vip
+	NgDimInfoGridRec *dip
 )
 {
 	int	i;
-        NclApiVarInfoRec *vinfo = vip->vinfo;
+        NclApiVarInfoRec *vinfo = dip->vinfo;
 	NclExtValueRec *val;
         char *cp,*sval = NULL;
         int cwidth,twidth;
 
         sprintf(Buffer,"%dD %s|",vinfo->n_dims,TypeString(vinfo->data_type));
-        vip->cwidths[0] = MAX(vip->cwidths[0],strlen(Buffer));
+        dip->cwidths[0] = MAX(dip->cwidths[0],strlen(Buffer));
 
 	for (i = 0; i < vinfo->n_atts; i++)
 		if (vinfo->attnames[i] == Qlong_name)
@@ -146,8 +146,8 @@ VarTypeText
                 cp = NrmQuarkToString(vinfo->name);
         }
         else {
-                if (vip->qfileref) {
-                        val = NclReadFileVarAtt(vip->qfileref,vinfo->name,
+                if (dip->qfileref) {
+                        val = NclReadFileVarAtt(dip->qfileref,vinfo->name,
                                                 vinfo->attnames[i]);
                 }
                 else {
@@ -164,16 +164,16 @@ VarTypeText
         }
         strcat(Buffer,cp);
         
-#if DEBUG_VAR_INFO_GRID      
+#if DEBUG_DIM_INFO_GRID      
         fprintf(stderr,"%s\n",Buffer);
 #endif        
 
 	for (i=1,twidth=0; i <= vinfo->n_dims; i++) {
-                twidth += vip->cwidths[i];
+                twidth += dip->cwidths[i];
 	}
         cwidth = strlen(cp);
-        vip->cwidths[1] = MAX(vip->cwidths[1],
-                             vip->cwidths[1]+cwidth-twidth);
+        dip->cwidths[1] = MAX(dip->cwidths[1],
+                             dip->cwidths[1]+cwidth-twidth);
         if (sval)
                 NclFree(sval);
         
@@ -183,15 +183,15 @@ VarTypeText
 static char *
 DimNamesText
 (
-	NgVarInfoGridRec *vip
+	NgDimInfoGridRec *dip
 )
 {
 	int	i;
-        NclApiVarInfoRec *vinfo = vip->vinfo;
+        NclApiVarInfoRec *vinfo = dip->vinfo;
         char *cp;
 
 	strcpy(Buffer,"Dimensions");
-        vip->cwidths[0] = MAX(vip->cwidths[0],strlen(Buffer));
+        dip->cwidths[0] = MAX(dip->cwidths[0],strlen(Buffer));
         
 	for (i=0; i < vinfo->n_dims; i++) {
                 int clen;
@@ -202,9 +202,9 @@ DimNamesText
                 }
                 strcat(Buffer,"|");
 		strcat(Buffer,cp);
-                vip->cwidths[i+1] = MAX(vip->cwidths[i+1],clen);
+                dip->cwidths[i+1] = MAX(dip->cwidths[i+1],clen);
 	}
-#if DEBUG_VAR_INFO_GRID      
+#if DEBUG_DIM_INFO_GRID      
         fprintf(stderr,"%s\n",Buffer);
 #endif        
         return Buffer;
@@ -213,23 +213,23 @@ DimNamesText
 static char *
 ElementsText
 (
-	NgVarInfoGridRec *vip
+	NgDimInfoGridRec *dip
 )
 {
 	int	i;
 	char	dimstr[20];
-        NclApiVarInfoRec *vinfo = vip->vinfo;
+        NclApiVarInfoRec *vinfo = dip->vinfo;
 
 	strcpy(Buffer,"Elements");
-        vip->cwidths[0] = MAX(vip->cwidths[0],strlen(Buffer));
+        dip->cwidths[0] = MAX(dip->cwidths[0],strlen(Buffer));
         
 	for (i=0; i < vinfo->n_dims; i++) {
                 strcat(Buffer,"|");
 		sprintf(dimstr,"%d",vinfo->dim_info[i].dim_size);
 		strcat(Buffer,dimstr);
-                vip->cwidths[i+1] = MAX(vip->cwidths[i+1],strlen(dimstr));
+                dip->cwidths[i+1] = MAX(dip->cwidths[i+1],strlen(dimstr));
 	}
-#if DEBUG_VAR_INFO_GRID      
+#if DEBUG_DIM_INFO_GRID      
         fprintf(stderr,"%s\n",Buffer);
 #endif        
         return Buffer;
@@ -238,7 +238,7 @@ ElementsText
 static char *
 RangeText
 (
-	NgVarInfoGridRec *vip
+	NgDimInfoGridRec *dip
 )
 {
 	Arg	args[50];
@@ -246,12 +246,12 @@ RangeText
 	int	i;
 	char	substr[32];
 	NclExtValueRec *val;
-        NclApiVarInfoRec *vinfo = vip->vinfo;
+        NclApiVarInfoRec *vinfo = dip->vinfo;
         int	len;
         
 
         strcpy(Buffer,"Range");
-        vip->cwidths[0] = MAX(vip->cwidths[0],strlen(Buffer));
+        dip->cwidths[0] = MAX(dip->cwidths[0],strlen(Buffer));
         
 	for (i=0; i < vinfo->n_dims; i++) {
                 len = strlen(Buffer)+1; /* add 1 for the | character */
@@ -274,8 +274,8 @@ RangeText
                         long    stride;
                         
 			stride = MAX(1,vinfo->dim_info[i].dim_size - 1);
-                        if (vip->qfileref) {
-                                val = NclReadFileVarCoord(vip->qfileref,
+                        if (dip->qfileref) {
+                                val = NclReadFileVarCoord(dip->qfileref,
                                                           vinfo->name,
                                                           vinfo->coordnames[i],
                                                           NULL,NULL,&stride);
@@ -312,62 +312,62 @@ RangeText
 				NclFree(val->value);
 			NclFreeExtValue(val);
 		}
-                vip->cwidths[i+1] = MAX(vip->cwidths[i+1],
+                dip->cwidths[i+1] = MAX(dip->cwidths[i+1],
                                         strlen(Buffer)-len);
 	}
-#if DEBUG_VAR_INFO_GRID      
+#if DEBUG_DIM_INFO_GRID      
         fprintf(stderr,"%s\n",Buffer);
 #endif        
         return Buffer;
 	       
 }
 
-NhlErrorTypes NgUpdateVarInfoGrid
+NhlErrorTypes NgUpdateDimInfoGrid
 (
-        NgVarInfoGrid		var_info_grid,
+        NgDimInfoGrid		dim_info_grid,
         NrmQuark		qfileref,
         NclApiVarInfoRec	*vinfo
         )
 {
         NhlErrorTypes ret;
-        NgVarInfoGridRec *vip;
+        NgDimInfoGridRec *dip;
         int	i;
         
-        vip = (NgVarInfoGridRec *) var_info_grid;
-        if (!vip) return NhlFATAL;
+        dip = (NgDimInfoGridRec *) dim_info_grid;
+        if (!dip) return NhlFATAL;
 
-        vip->qfileref = qfileref;
-        vip->vinfo = vinfo;
+        dip->qfileref = qfileref;
+        dip->vinfo = vinfo;
         
-        XtVaSetValues(vip->grid,
-                      XmNcolumns,vip->vinfo->n_dims + 1,
+        XtVaSetValues(dip->grid,
+                      XmNcolumns,dip->vinfo->n_dims + 1,
                       NULL);
-        XtVaSetValues(vip->grid,
+        XtVaSetValues(dip->grid,
                       XmNrow,0,
                       XmNcolumn,1,
-                      XmNcellColumnSpan,vip->vinfo->n_dims,
+                      XmNcellColumnSpan,dip->vinfo->n_dims,
                       NULL);
 
-        for (i = 0; i <= vip->vinfo->n_dims; i++)
-                vip->cwidths[i] = 0;
+        for (i = 0; i <= dip->vinfo->n_dims; i++)
+                dip->cwidths[i] = 0;
         
-        XmLGridSetStringsPos(vip->grid,XmCONTENT,1,XmCONTENT,0,
-                             DimNamesText(vip));
-        XmLGridSetStringsPos(vip->grid,XmCONTENT,2,XmCONTENT,0,
-                             ElementsText(vip));
-        XmLGridSetStringsPos(vip->grid,XmCONTENT,3,XmCONTENT,0,
-                             RangeText(vip));
-        XmLGridSetStringsPos(vip->grid,XmCONTENT,0,XmCONTENT,0,
-                             VarTypeText(vip));
-        XtVaSetValues(vip->grid,
-                      XmNsimpleWidths,ColumnWidths(vip),
+        XmLGridSetStringsPos(dip->grid,XmCONTENT,1,XmCONTENT,0,
+                             DimNamesText(dip));
+        XmLGridSetStringsPos(dip->grid,XmCONTENT,2,XmCONTENT,0,
+                             ElementsText(dip));
+        XmLGridSetStringsPos(dip->grid,XmCONTENT,3,XmCONTENT,0,
+                             RangeText(dip));
+        XmLGridSetStringsPos(dip->grid,XmCONTENT,0,XmCONTENT,0,
+                             VarTypeText(dip));
+        XtVaSetValues(dip->grid,
+                      XmNsimpleWidths,ColumnWidths(dip),
                       NULL);
         
         return NhlNOERROR;
 }
 
 
-NgVarInfoGrid NgCreateVarInfoGrid
+NgDimInfoGrid NgCreateDimInfoGrid
 (
         Widget			parent,
         NrmQuark 		qfileref,
@@ -375,7 +375,7 @@ NgVarInfoGrid NgCreateVarInfoGrid
         )
 {
         NhlErrorTypes ret;
-        NgVarInfoGridRec *vip;
+        NgDimInfoGridRec *dip;
         static NhlBoolean first = True;
 
         if (first) {
@@ -385,23 +385,23 @@ NgVarInfoGrid NgCreateVarInfoGrid
                 first = False;
         }
         
-        vip = NhlMalloc(sizeof(NgVarInfoGridRec));
-        if (!vip) return NULL;
+        dip = NhlMalloc(sizeof(NgDimInfoGridRec));
+        if (!dip) return NULL;
         
-        vip->grid = XtVaCreateManagedWidget("VarInfoGrid",
+        dip->grid = XtVaCreateManagedWidget("DimInfoGrid",
                                             xmlGridWidgetClass,parent,
                                             XmNrows,4,
                                             XmNvisibleRows,4,
                                             XmNhorizontalSizePolicy,XmVARIABLE,
                                             NULL);
         
-        ret = NgUpdateVarInfoGrid((NgVarInfoGrid) vip,qfileref,vinfo);
+        ret = NgUpdateDimInfoGrid((NgDimInfoGrid) dip,qfileref,vinfo);
 
         if (ret < NhlWARNING) {
-                NhlFree(vip);
+                NhlFree(dip);
                 return NULL;
         }
-        return (NgVarInfoGrid) vip;
+        return (NgDimInfoGrid) dip;
 }
 
         
