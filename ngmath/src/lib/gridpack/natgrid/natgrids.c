@@ -56,6 +56,9 @@ float *c_natgrids(int n, float x[], float y[], float z[],
       Terminate();
    }
 
+   horilap = -1.;
+   vertlap = -1.;
+
    rtrn_val = data_out[0];
    free(data_out);
    return (rtrn_val);

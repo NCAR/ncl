@@ -54,7 +54,10 @@ double *c_natgridd(int n, double x[], double y[], double z[],
    {
       Terminate();
    }
-
+ 
+   horilap = -1.;
+   vertlap = -1.;
+ 
    rtrn_val = data_out[0];
    free(data_out);
    return (rtrn_val);
