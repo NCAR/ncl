@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlot.c,v 1.56 2000-06-28 19:04:00 dbrown Exp $
+ *      $Id: StreamlinePlot.c,v 1.57 2001-04-11 23:19:45 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2453,6 +2453,7 @@ static NhlErrorTypes InitCoordBounds
 {
 	NhlErrorTypes	ret = NhlNOERROR;
         NhlStreamlinePlotLayerPart	*stp = &stl->streamlineplot;
+        NhlStreamlinePlotLayerPart	*ostp = &ostl->streamlineplot;
         NhlTransformLayerPart	*tfp = &stl->trans;
 	char		*e_text;
 	NhlBoolean	x_data_reversed,y_data_reversed;
@@ -2497,7 +2498,8 @@ static NhlErrorTypes InitCoordBounds
         if (stp->use_irr_trans) {
                 if (stp->vfp->x_arr && ! tfp->x_axis_type_set) {
 			if (! stp->ovfp || (stp->data_changed  &&
-			    (stp->vfp->changed & _NhlvfXARR_CHANGED)))
+			    (stp->vfp->changed & _NhlvfXARR_CHANGED)) ||
+			    (ostp->x_tension != stp->x_tension))	
 				tfp->x_axis_type = NhlIRREGULARAXIS;
 		}
                 if (! stp->vfp->x_arr && tfp->x_axis_type == NhlIRREGULARAXIS)
@@ -2509,7 +2511,8 @@ static NhlErrorTypes InitCoordBounds
                 }
                 if (stp->vfp->y_arr && ! tfp->y_axis_type_set) {
 			if (! stp->ovfp || (stp->data_changed  &&
-			    (stp->vfp->changed & _NhlvfYARR_CHANGED)))
+			    (stp->vfp->changed & _NhlvfYARR_CHANGED)) ||
+			    (ostp->y_tension != stp->y_tension))
 				tfp->y_axis_type = NhlIRREGULARAXIS;
 		}
                 if (! stp->vfp->y_arr && tfp->y_axis_type == NhlIRREGULARAXIS)
