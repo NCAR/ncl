@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.117 2003-12-01 14:41:10 haley Exp $
+;      $Id: gsn_code.ncl,v 1.118 2003-12-02 22:27:04 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -71,8 +71,9 @@ undef("gsnp_shape_plot")
 undef("gsnp_scale_plot")
 undef("check_for_tickmarks_off")
 undef("compute_ps_device_coords")
+undef("maximize_output")
 undef("draw_and_frame")
-undef ("create_canvas")
+undef("create_canvas")
 undef("get_bb_res")
 undef("gsn_open_ncgm")
 undef("gsn_open_x11")
@@ -1693,6 +1694,67 @@ end
 
 
 ;***********************************************************************;
+; Procedure : maximize_output                                           ;
+;                wks:graphic                                            ;
+;              psres:logical                                            ;
+;                                                                       ;
+; This procedure takes a workstation (that supposedly has several plots ;
+; drawn on it), calculates the device coordinates needed to maximize    ;
+; the plots on a PS or PDF workstation, and then sets these device      ;
+; coordinates back to the workstation. draw and frame happen by default ;
+; unless otherwise specified.                                           ;
+;***********************************************************************;
+procedure maximize_output(wks:graphic,psres:logical)
+local bb, calldraw, callframe, class, res2
+begin
+  res2 = psres
+;
+; Get draw and frame values, if set.
+;
+  calldraw  = get_res_value(res2,"gsnDraw", True)
+  callframe = get_res_value(res2,"gsnFrame",True)
+;
+; Only do this type of maximization for PS or PDF workstations.
+; The device coordinates mean nothing for NCGM and X11 workstations.
+;
+  class = NhlClassName(wks)
+  if((class.eq."psWorkstationClass").or. \
+     (class.eq."pdfWorkstationClass")) then
+
+;
+; Get bounding box of everything on the frame.
+;
+    bb = NhlGetBB(wks)
+
+;
+; Calculate device coords to maximize these plots on the PDF or PS 
+; workstation.
+;
+    coords = compute_ps_device_coords(bb,res2)
+
+;
+; Using the coordinate values just calculated, set them in the
+; workstation (also set the orientation).
+;
+    setvalues wks
+      "wkDeviceLowerX" : coords(0)
+      "wkDeviceLowerY" : coords(1)
+      "wkDeviceUpperX" : coords(2)
+      "wkDeviceUpperY" : coords(3)
+      "wkOrientation"  : coords@gsnPaperOrientation
+    end setvalues
+
+  end if
+
+  if(calldraw) then
+    draw(wks)            ; This will draw everything on the workstation.
+  end if
+  if(callframe) then
+    frame(wks)
+  end if
+end
+
+;***********************************************************************;
 ; Procedure : draw_and_frame                                            ;
 ;                wks:graphic                                            ;
 ;               plot:graphic                                            ;
@@ -1713,8 +1775,8 @@ local nplots, class, coords, dims
 begin
   if(maxbb) then
 ;
-; If dealing with multiple plots, then this means we have a
-; panel plot, and we don't need to maximize the space.
+; If dealing with multiple plots on an NCGM or X11 window, then this
+; means we have a panel plot, and we don't need to maximize the space.
 ;
     dims = dimsizes(plot)
     if(dimsizes(dims).eq.1 .and. dims(0).eq.1) then
@@ -1735,6 +1797,8 @@ begin
     if((class(0).eq."psWorkstationClass").or.(class(0).eq."pdfWorkstationClass")) then
 ;
 ; Compute device coordinates that will make plot fill the whole page.
+;
+; NhlGetBB(plot) will work on an array of plots as well.
 ;
       coords = compute_ps_device_coords(NhlGetBB(plot),maxbb)
 ;
@@ -1768,7 +1832,7 @@ end
 ;***********************************************************************;
 function get_bb_res(res:logical)
 begin
-  maxbb                = get_res_value(res,"gsnMaximize", False)
+  maxbb                = get_res_value(res,"gsnMaximize", False) 
   maxbb@gsnPaperMargin = get_res_value(res,"gsnPaperMargin",0.5)
   maxbb@gsnPaperHeight = get_res_value(res,"gsnPaperHeight",11.0)
   maxbb@gsnPaperWidth  = get_res_value(res,"gsnPaperWidth",8.5)
