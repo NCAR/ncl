@@ -57,23 +57,16 @@ NCAR Graphics source code, follow the instructions at the URL:
 
      http://ngwww.ucar.edu/ng/download.html
 
-The NCAR Graphics source code that you download will either be a
-single compressed tar file, or multiple compressed tar files.
+The NCAR Graphics source code that you download will be a
+gzipped tar file.
 
-Let's assume you downloaded the multiple compressed tar files, called
-"ncarg-4.4.0.libs.tar.gz", "ncarg-4.4.0.db.tar.gz", and
-"ncarg-4.4.0.misc.tar.gz". Move these files to a temporary directory
-where you have plenty of disk space (around 100 megabytes to hold all
-of the source code, object files, binaries, and so on). Then,
-uncompress and un-tar the files as follows:
+Once you download "ncarg-4.4.0.src.tar.gz", move it to a temporary
+directory where you have plenty of disk space (around 200 megabytes to
+hold all of the source code, object files, binaries, and so on). Then,
+gunzip and un-tar the file as follows:
 
-     % gunzip ncarg-4.4.0.libs.tar.gz (or uncompress if the files end
-     in ".Z")
-     % gunzip ncarg-4.4.0.db.tar.gz
-     % gunzip ncarg-4.4.0.misc.tar.gz
-     % tar -xvf ncarg-4.4.0.libs.tar
-     % tar -xvf ncarg-4.4.0.db.tar
-     % tar -xvf ncarg-4.4.0.misc.tar
+     gunzip ncarg-4.4.0.src.tar.gz
+     tar -xvf ncarg-4.4.0.src.tar
 
 The above steps will create a directory called "ncarg-4.4.0". Set the
 environment variable NCARG to the name of this directory. For purposes
