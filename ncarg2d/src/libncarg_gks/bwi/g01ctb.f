@@ -1,5 +1,5 @@
 C
-C	$Id: g01ctb.f,v 1.3 1998-03-19 06:41:33 fred Exp $
+C	$Id: g01ctb.f,v 1.4 1998-03-20 01:31:10 fred Exp $
 C
         SUBROUTINE G01CTB
 C
@@ -80,7 +80,8 @@ C
       ID(3) = RX(3)*MDCCRG
 C
 C  Write out a color table entry only if the current picture is
-C  not empty.
+C  not empty.  If the current picture is empty, then the color table
+C  will ultimately be put out by G01SNP.
 C
       IF (IWRITE .EQ. 1) THEN
 C

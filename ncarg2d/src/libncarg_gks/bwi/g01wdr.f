@@ -1,5 +1,5 @@
 C
-C	$Id: g01wdr.f,v 1.7 1996-09-30 23:36:47 fred Exp $
+C	$Id: g01wdr.f,v 1.8 1998-03-20 01:31:13 fred Exp $
 C
         SUBROUTINE G01WDR(WKID,METANM)
 C
@@ -318,10 +318,13 @@ C
 C
         CALL GBYTES(MOUTBF, IMFBSZ, 0, 16, 0, 1)
         CALL GBYTES(MOUTBF, IMFENP, (IMFBSZ+2)*8, 16, 0, 1)
-        IF (IMFENP .NE. 160) THEN
+        IF (IMFENP.NE.160 .AND. MRECNM.GT.1) THEN
 C
 C  No END PICTURE in current record; return an error flag of -10 to 
-C  indicate a break in the middle of a picture.
+C  indicate a break in the middle of a picture; if the metafile
+C  has only a single record (MRECNM = 1), then it doesn't have an
+C  END PICTURE, but the reopen is still technically at a picture break,
+C  so we do not flag a mid-picture file in that case.
 C
           RERR = -10
           MDEMPT = GNEMPT
