@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.47 1993-05-02 03:50:00 haley Exp $
+#   $Id: ncargex.csh,v 1.48 1993-06-16 20:29:40 haley Exp $
 #
 
 #********************#
@@ -216,7 +216,8 @@ set isosurface_list = ($tst_isosurface $fnd_isosurface)
 #***********************#
 set ex_labelbar   = (elblba)
 set tst_labelbar  = (tlblba)
-set labelbar_list = ($ex_labelbar $tst_labelbar)
+set fnd_labelbar  = (clbfil clbbar clblbr)
+set labelbar_list = ($ex_labelbar $tst_labelbar $fnd_labelbar)
 
 #*********************#
 #                     #
@@ -371,8 +372,9 @@ set tst_list = ($tst_areas $tst_autograph $tst_colconv $tst_conpack \
 set ttr_list = ($ttr_areas $ttr_conpack $ttr_ezmap)
 
 set fnd_list = ($fnd_autograph $fnd_colconv $fnd_dashline $fnd_field $fnd_gks \
-                $fnd_isosurface $fnd_ngmisc $fnd_plotchar ${fnd_scrlld_title} \
-                $fnd_softfill $fnd_spps $fnd_surface $fnd_threed)
+                $fnd_isosurface $fnd_labelbar $fnd_ngmisc $fnd_plotchar \
+                ${fnd_scrlld_title} $fnd_softfill $fnd_spps $fnd_surface \
+                $fnd_threed)
 
 set pdc_list = ($pdc_gks)
 
