@@ -1,5 +1,5 @@
 C
-C $Id: cpwlam.f,v 1.2 1994-03-17 01:52:32 kennison Exp $
+C $Id: cpwlam.f,v 1.3 1994-05-18 16:17:45 kennison Exp $
 C
       SUBROUTINE CPWLAM (XNXT,YNXT,IFST,IAMA,IGID,IAIL,IAIR)
 C

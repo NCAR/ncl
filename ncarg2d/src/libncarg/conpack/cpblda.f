@@ -1,5 +1,5 @@
 C
-C $Id: cpblda.f,v 1.2 1994-03-17 01:50:14 kennison Exp $
+C $Id: cpblda.f,v 1.3 1994-05-18 16:15:58 kennison Exp $
 C
       BLOCK DATA CPBLDA
 C
@@ -26,13 +26,13 @@ C
       COMMON /CPCOM1/ LRWM,LRWS(4),LSDD,LSDL,LSDM,LTCF,LTHI
       COMMON /CPCOM1/ LTIL,LTLO,MIRO,NCLB(256),NCLV,NDGL,NEXL
       COMMON /CPCOM1/ NEXT,NEXU,NLBS,NLSD,NLZF,NOMF,NOVS,NR04,NSDL
-      COMMON /CPCOM1/ NSDR,OORV,SCFS,SCFU,SEGL,SVAL,T2DS,T3DS,UCMN
-      COMMON /CPCOM1/ UCMX,UVPB,UVPL,UVPR,UVPS,UVPT,UWDB,UWDL,UWDR
-      COMMON /CPCOM1/ UWDT,UXA1,UXAM,UYA1,UYAN,WCCF,WCHL,WCIL,WCLL
-      COMMON /CPCOM1/ WLCF,WLHL,WLIL,WLLL,WOCH,WODA,WTCD,WTGR,WTNC
-      COMMON /CPCOM1/ WTOD,WWCF,WWHL,WWIL,WWLL,XAT1,XATM,XLBC,XVPL
-      COMMON /CPCOM1/ XVPR,XWDL,XWDR,YAT1,YATN,YLBC,YVPB,YVPT,YWDB
-      COMMON /CPCOM1/ YWDT,ZDVL,ZMAX,ZMIN
+      COMMON /CPCOM1/ NSDR,OORV,PITH,SCFS,SCFU,SEGL,SVAL,T2DS,T3DS
+      COMMON /CPCOM1/ UCMN,UCMX,UVPB,UVPL,UVPR,UVPS,UVPT,UWDB,UWDL
+      COMMON /CPCOM1/ UWDR,UWDT,UXA1,UXAM,UYA1,UYAN,WCCF,WCHL,WCIL
+      COMMON /CPCOM1/ WCLL,WLCF,WLHL,WLIL,WLLL,WOCH,WODA,WTCD,WTGR
+      COMMON /CPCOM1/ WTNC,WTOD,WWCF,WWHL,WWIL,WWLL,XAT1,XATM,XLBC
+      COMMON /CPCOM1/ XVPL,XVPR,XWDL,XWDR,YAT1,YATN,YLBC,YVPB,YVPT
+      COMMON /CPCOM1/ YWDB,YWDT,ZDVL,ZMAX,ZMIN
       EQUIVALENCE (IIWS(1),II01),(LIWS(1),LI01)
       EQUIVALENCE (IIWS(2),II02),(LIWS(2),LI02)
       EQUIVALENCE (IRWS(1),IR01),(LRWS(1),LR01)
@@ -696,6 +696,16 @@ C OORV is the parameter 'ORV', an out-of-range value to be returned by
 C CPMPXY for both coordinates of a point which is invisible.
 C
       DATA OORV / 0. /
+C
+C PITH is the parameter 'PIT', the "point interpolation threshold".  In
+C routines that map polylines using CPMPXY, this value is used to check
+C whether two points have mapped so far apart that some interpolated
+C points should be inserted.  The value less than or equal to zero (like
+C the default) says that no such checks are to be performed.  A value
+C greater than zero represents a fraction of the height or width of the
+C window in the user coordinate system.
+C
+      DATA PITH / 0. /
 C
 C SCFS is the parameter 'SFS', the scale factor selector.
 C

@@ -1,5 +1,5 @@
 C
-C $Id: cptroe.f,v 1.2 1994-03-17 01:52:27 kennison Exp $
+C $Id: cptroe.f,v 1.3 1994-05-18 16:17:41 kennison Exp $
 C
       SUBROUTINE CPTROE (XCRA,YCRA,NCRA,OFFS,RWRK,IOCF,IAMA,IGID,IAIL,
      +                                                           IAIR)

@@ -1,5 +1,5 @@
 C
-C $Id: cpsort.f,v 1.2 1994-03-17 01:52:00 kennison Exp $
+C $Id: cpsort.f,v 1.3 1994-05-18 16:17:21 kennison Exp $
 C
       SUBROUTINE CPSORT (RVAL,NVAL,IPER)
 C

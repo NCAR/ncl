@@ -1,5 +1,5 @@
 C
-C $Id: cpcnrc.f,v 1.7 1994-03-17 01:50:41 kennison Exp $
+C $Id: cpcnrc.f,v 1.8 1994-05-18 16:16:19 kennison Exp $
 C
       SUBROUTINE CPCNRC (ZDAT,KZDT,MZDT,NZDT,FLOW,FHGH,FINC,KSET,NHGH,
      +                   NDSH)
