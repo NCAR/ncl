@@ -15,7 +15,7 @@ CALL CPCLDM (ZDAT, RWRK, IWRK, IAMA, RTPL)
 .sp
 void c_cpcldm (float *zdat, float *rwrk, int *iwrk, \\
 .br
-int *iama, int rtpl(float *xcs, float *ycs, int *ncs, \\
+int *iama, int (*rtpl)(float *xcs, float *ycs, int *ncs, \\
 .br
 int *iai, int *iag, int *nai))
 .SH DESCRIPTION 

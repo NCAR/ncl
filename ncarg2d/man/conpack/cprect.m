@@ -40,15 +40,15 @@ integer work array.
 .SH C-BINDING DESCRIPTION
 The C-binding argument descriptions are the same as the FORTRAN 
 argument descriptions with the following exceptions:
-.IP "z(l,k)" 12
-z is dimensioned l by k, where l \(>= n.
-.IP "k" 12
-The second dimension of the array z. 
-.IP "m" 12
-The second dimension of the array of data in z. m \(<= k. 
-.IP "n" 12
-The first dimension of the array of data in z. n \(<= l, 
-where l is the declared first dimension of the array z. 
+.IP "zdat(l,kzdt)" 12
+zdat is dimensioned l by kzdt, where l \(>= nzdt.
+.IP "kzdt" 12
+The second dimension of the array zdat. 
+.IP "mzdt" 12
+The second dimension of the array of data in zdat. mzdt \(<= kzdt. 
+.IP "nzdt" 12
+The first dimension of the array of data in zdat. nzdt \(<= l, 
+where l is the declared first dimension of the array zdat. 
 .SH USAGE@@@
 CPRECT initializes the internal pointers that are used to manage
 workspace use and decides what the ranges of X and Y coordinates

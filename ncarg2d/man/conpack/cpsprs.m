@@ -67,17 +67,17 @@ sparse grid.
 .SH C-BINDING DESCRIPTION
 The C-binding argument descriptions are the same as the FORTRAN 
 argument descriptions with the following exceptions:
-.IP "zsps(l,k)" 12
-Dimensioned l by k, where l \(>= n.
-.IP "K" 12
+.IP "zsps(l,ksps)" 12
+Dimensioned l by ksps, where l \(>= nsps.
+.IP "ksps" 12
 (Integer, Input) - 
 The second dimension of the array zsps.
-.IP "M" 12
-The second dimension of the sparse array of data in zsps. m \(<= k.
-.IP "N" 12
+.IP "msps" 12
+The second dimension of the sparse array of data in zsps. msps \(<= ksps.
+.IP "nsps" 12
 (Integer, Input) - 
 The first dimension of the sparse array of data in zsps. 
-n \(<= l, where l is the declared first dimension of the array zsps.
+nsps \(<= l, where l is the declared first dimension of the array zsps.
 .SH USAGE@@@
 CPSPS1 performs the same functions as CPRECT, but, in addition,
 it interpolates from a sparse array of data to a dense array of

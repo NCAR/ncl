@@ -78,15 +78,15 @@ implied by the value of the ratio
 The C-binding argument descriptions are the same as the FORTRAN 
 argument descriptions, with the following exceptions:
 .sp
-.IP "zsps(l,k)" 12
-Dimensioned l by k, where l \(<= n.
-.IP "k" 12
+.IP "zsps(l,ksps)" 12
+Dimensioned l by ksps, where l \(<= nsps.
+.IP "ksps" 12
 The second dimension of the array zsps.
-.IP "m" 12
-The second dimension of the sparse array of data in zsps. m \(<= k.
-.IP "n" 12
+.IP "msps" 12
+The second dimension of the sparse array of data in zsps. msps \(<= ksps.
+.IP "nsps" 12
 The first dimension of the sparse array of data in zsps. 
-n \(<= l, the declared first dimension of the array zsps.
+nsps \(<= l, the declared first dimension of the array zsps.
 .SH USAGE@@@
 CPSPS2 initializes the internal pointers that are used to
 manage workspace use and decides what the ranges of X and Y

@@ -10,7 +10,7 @@ CALL CPEZCT (ZDAT,MZDT,NZDT)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void c_cpezct (zdat, mzdt, nzdt)
+void c_cpezct (float *zdat, int mzdt, int nzdt)
 .SH DESCRIPTION 
 .IP ZDAT 12
 (REAL array, dimensioned MZDT x NZDT, input) is the 
@@ -24,11 +24,11 @@ FORTRAN array ZDAT and of the array of data stored in it.
 .SH C-BINDING DESCRIPTION
 The C-binding argument descriptions are the same as the FORTRAN 
 argument descriptions with the following exceptions:
-.IP "z(n,m)" 12
+.IP "z(nzdt,mzdt)" 12
 An n by m data array holding values to be contoured.
-.IP "m" 12
+.IP "mzdt" 12
 The second dimension of z.
-.IP "n" 12
+.IP "nzdt" 12
 The first dimension of z.
 .SH USAGE@@@
 The effect of calling CPEZCT will be exactly the same as if
