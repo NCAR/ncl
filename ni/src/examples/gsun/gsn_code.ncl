@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.124 2003-12-21 19:07:23 haley Exp $
+;      $Id: gsn_code.ncl,v 1.125 2003-12-31 16:36:22 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -3285,7 +3285,8 @@ end
 ;***********************************************************************;
 function gsn_panel_return(wks:graphic,plot[*]:graphic,dims[*]:integer,\
                           resources:logical)
-local res, nrows, ncols, ddims, is_row_spec, row_spec, npanels, nplots
+local res, nrows, ncols, ddims, is_row_spec, row_spec, npanels, nplots, \
+      perim_on
 begin
   res = get_resources(resources)           ; Make copy of resources
 ;
@@ -3674,6 +3675,13 @@ begin
 ; the text box.
 ;
   if(is_figure_strings) then
+;
+; First, get some resource values that might have been set by user.
+; 
+    perim_on      = get_res_value(res,"gsnPanelFigureStringsPerimOn",True)
+    bg_fill_color = get_res_value(res, \
+                    "gsnPanelFigureStringsBackgroundFillColor",0)
+
     fig_index = ind(just.eq.justs)
     if(ismissing(fig_index))
       fig_index = 0
@@ -3758,8 +3766,8 @@ begin
             text = create "string" textItemClass wks
               "txString"              : panel_strings(nplot)
               "txFontHeightF"         : pfont_height
-              "txPerimOn"             : True
-              "txBackgroundFillColor" : 0
+              "txPerimOn"             : perim_on
+              "txBackgroundFillColor" : bg_fill_color
             end create
 ;
 ; See note above about not checking for tx* resources here.
