@@ -123,7 +123,7 @@ Use the ncargex command to see the following relevant
 examples: 
 tisosr,
 tpwrzi,
-ffisissrf,
+fisissrf,
 fispwrzi.
 .SH ACCESS
 To use ISOSRF load the NCAR Graphics libraries ncarg, ncarg_gks,
