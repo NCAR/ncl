@@ -1,5 +1,5 @@
 C
-C $Id: mputin.f,v 1.1 1999-04-02 23:05:52 kennison Exp $
+C $Id: mputin.f,v 1.2 1999-04-08 23:30:24 kennison Exp $
 C
       SUBROUTINE MPUTIN (IPRJ,IZON,ISPH,PARA,UMIN,UMAX,VMIN,VMAX)
 C
@@ -21,7 +21,7 @@ C
         COMMON /PROJZ0/ IPRO
         SAVE   /PROJZ0/
 C
-        COMMON /SPCSIR/ ISPHER,LU27,LU83,LEN
+        COMMON /SPCSIR/ ISPHER
         SAVE   /SPCSIR/
 C
         COMMON /USGSC1/ IPRF,UTPA(15),UUMN,UUMX,UVMN,UVMX
