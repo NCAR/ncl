@@ -1,5 +1,5 @@
 /*
- *      $Id: CnStdRenderer.c,v 1.6 2005-02-14 22:56:52 dbrown Exp $
+ *      $Id: CnStdRenderer.c,v 1.7 2005-02-28 22:14:11 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1110,18 +1110,23 @@ static NhlErrorTypes AddDataBoundToAreamap
 
 		if (! cnp->fix_fill_bleed)
 			return NhlNOERROR;
-
+#if 0
 		xa[0] = xa[1] = xa[4] = cnp->xlb;
 		xa[2] = xa[3] = cnp->xub;
 		ya[0] = ya[3] = ya[4] = cnp->ylb;
 		ya[1] = ya[2] = cnp->yub;
+#endif
+		xa[0] = xa[3] = xa[4] = cnp->xlb;
+		xa[1] = xa[2] = cnp->xub;
+		ya[0] = ya[1] = ya[4] = cnp->ylb;
+		ya[2] = ya[3] = cnp->yub;
 
 		for (i=0;  i < 4; i++) {
 			xinc = (xa[i+1] - xa[i]) / _cnMAPBOUNDINC;
 			yinc = (ya[i+1] - ya[i]) / _cnMAPBOUNDINC;
 			if (! started) {
 				_NhlMapita(cnp->aws,ya[i],xa[i],
-					   0,3,-1,0,entry_name);
+					   0,3,0,-1,entry_name);
 #if 0
 				c_mapit(ya[i],xa[i],0);
 #endif
@@ -1129,13 +1134,13 @@ static NhlErrorTypes AddDataBoundToAreamap
 			}
 			for (j = 0; j < _cnMAPBOUNDINC + 1; j++) {
 				_NhlMapita(cnp->aws,ya[i]+j*yinc,xa[i]+j*xinc,
-					   1,3,-1,0,entry_name);
+					   1,3,0,-1,entry_name);
 #if 0
 				c_mapit(ya[i]+j*yinc,xa[i]+j*xinc,1);
 #endif
 			}
 		}
-		_NhlMapiqa(cnp->aws,3,-1,0,entry_name);
+		_NhlMapiqa(cnp->aws,3,0,-1,entry_name);
 #if 0
 		c_mapiq();
 #endif
