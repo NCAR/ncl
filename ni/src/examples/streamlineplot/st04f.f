@@ -1,5 +1,5 @@
 C
-C      $Id: st04f.f,v 1.2 1996-10-09 19:23:21 haley Exp $
+C      $Id: st04f.f,v 1.3 1997-02-05 15:28:10 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -63,7 +63,7 @@ C
       parameter(NLAT=33,NLON=36)
 
       integer NCGM, X11, PS
-      integer i, j, k, time, d, h
+      integer i, j, k, d, h
       integer appid, wid, cnid, vcid, stid, txid, amid, mpid, tmid
       integer vfield, vfield2, sfield, sfield2
       integer rlist, len_dims(2)

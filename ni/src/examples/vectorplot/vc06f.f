@@ -1,5 +1,5 @@
 C
-C  $Id: vc06f.f,v 1.2 1996-09-18 20:04:19 haley Exp $
+C  $Id: vc06f.f,v 1.3 1997-02-05 15:28:56 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -70,8 +70,6 @@ C
       character*256  filenameUV
       character*256  filenamePsl
 
-      CHARACTER BUFFER*16
-      REAL X
 C
 C Open the netCDF file.
 C

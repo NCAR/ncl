@@ -1,5 +1,5 @@
 C
-C      $Id: pr05f.f,v 1.1 1996-06-28 20:55:40 haley Exp $
+C      $Id: pr05f.f,v 1.2 1997-02-05 15:26:02 haley Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -32,8 +32,8 @@ C
       external NhlFMapPlotClass
       external NhlFGraphicStyleClass
 
-      integer rlist,grlist
-      integer appid,wid,canvas,gsid,id
+      integer rlist
+      integer appid,wid,canvas,gsid
       integer i 
       real px(5),py(5)
       character*13 projection(3)

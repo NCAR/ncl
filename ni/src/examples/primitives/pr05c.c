@@ -1,5 +1,5 @@
 /*
- *      $Id: pr05c.c,v 1.1 1996-05-24 18:23:52 dbrown Exp $
+ *      $Id: pr05c.c,v 1.2 1997-02-05 15:26:45 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -42,8 +42,8 @@ main(int argc, char *argv[])
 
 {
     int NCGM=0, X11=1, PS=0;
-    int rlist,grlist;
-    int appid,wid,canvas,gsid,id;
+    int rlist;
+    int appid,wid,canvas,gsid;
     int i;
     float px[5];
     float py[5];
@@ -59,7 +59,6 @@ main(int argc, char *argv[])
  * directory. 
  */
     rlist = NhlRLCreate(NhlSETRL);
-    grlist = NhlRLCreate(NhlGETRL);
     NhlRLClear(rlist);
     NhlRLSetString(rlist,NhlNappUsrDir,"./");
     NhlCreate(&appid,"pr05",NhlappClass,NhlDEFAULT_APP,rlist);
