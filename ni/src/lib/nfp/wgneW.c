@@ -12,6 +12,8 @@ extern void NGCALLF(daamom1,daamom1)(double*,double*,double*,double*,int*,
 extern void NGCALLF(daamom3,daamom3)(double*,double*,double*,double*,int*,
 				     int*,int*,double*,double*);
 
+extern void NGCALLF(dcosweight,DCOSWEIGHT)(double*,int*,double*);
+
 NhlErrorTypes angmom_atm_W( void )
 {
 /*
@@ -91,7 +93,7 @@ NhlErrorTypes angmom_atm_W( void )
   klev = dsizes_u[ndims_u-3];
   klevnlatnlon = klev * nlat * nlon;
 
-  if(ndims_u == 4) ntim = 1; 
+  if(ndims_u == 3) ntim = 1; 
   else             ntim = dsizes_u[0];
 
   if((ndims_dp == 1 && dsizes_dp[0] != klev) ||
@@ -117,23 +119,6 @@ NhlErrorTypes angmom_atm_W( void )
 
   if(dsizes_wgt[0] != 1 && dsizes_wgt[0] != nlat) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"angmom_atm: wgt must be a scalar or a 1-dimensional vector the same size as the 'lats' array");
-    return(NhlFATAL);
-  }
-/*
- * Coerce weights to double if necessary. If scalar weight, then copy to
- * to full array.
- */
-  tmp1_wgt = coerce_input_double(wgt,type_wgt,dsizes_wgt[0],0,NULL,NULL);
-
-  if(tmp1_wgt == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"angmom_atm: Unable to allocate memory for coercing weights to double precision");
-    return(NhlFATAL);
-  }
-
-  tmp_wgt = copy_scalar_to_array(tmp1_wgt,1,dsizes_wgt,nlat);
-
-  if(tmp_wgt == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"angmom_atm: Unable to allocate memory for coercing weights to double precision");
     return(NhlFATAL);
   }
 /*
@@ -177,6 +162,33 @@ NhlErrorTypes angmom_atm_W( void )
   if( tmp_lat == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"angmom_atm: Unable to allocate memory for coercing lat array to double precision");
     return(NhlFATAL);
+  }
+
+/*
+ * Coerce weights to double if necessary. If scalar weight, then copy to
+ * to full array.
+ */
+  tmp1_wgt = coerce_input_double(wgt,type_wgt,dsizes_wgt[0],0,NULL,NULL);
+
+  if(tmp1_wgt == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"angmom_atm: Unable to allocate memory for coercing weights to double precision");
+    return(NhlFATAL);
+  }
+
+  if(dsizes_wgt[0] == 1) {
+    tmp_wgt = (double*)calloc(nlat,sizeof(double));
+    if( tmp_wgt == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"angmom_atm: Unable to allocate memory for coercing weights to double precision");
+      return(NhlFATAL);
+    }
+    tmp_wgt[0] = *tmp1_wgt;
+    NGCALLF(dcosweight,DCOSWEIGHT)(tmp_lat,&nlat,tmp_wgt);
+  }
+  else {
+/*
+ * wgt is not a scalar, so just point tmp_wgt at tmp1_wgt.
+ */
+    tmp_wgt = tmp1_wgt;
   }
 
 /*

@@ -18,7 +18,7 @@ c                              local
       RETURN
       END
 
-      SUBROUTINE DPHYBRID(P0,PS,HYAI,HYBI,KLVL,DPHY)
+      SUBROUTINE DPRESHYBRID(P0,PS,HYAI,HYBI,KLVL,DPHY)
       IMPLICIT NONE
 
 c NCL: dphy  = dpres_hybrid (ps,p0,hyai,hybi)

@@ -239,7 +239,9 @@ extern NhlErrorTypes linint1_W(void);
 extern NhlErrorTypes linint2_W(void);
 extern NhlErrorTypes linint2_points_W(void);
 extern NhlErrorTypes pres_hybrid_W(void);
+extern NhlErrorTypes pres_hybrid_ccm_W(void);
 extern NhlErrorTypes dpres_hybrid_W(void);
+extern NhlErrorTypes dpres_hybrid_ccm_W(void);
 extern NhlErrorTypes pslhyp_W(void);
 extern NhlErrorTypes pslec_W(void);
 extern NhlErrorTypes pslhor_W(void);
@@ -259,6 +261,9 @@ extern NhlErrorTypes runave_W(void);
 extern NhlErrorTypes wgt_runave_W(void);
 extern NhlErrorTypes wgt_areaave_W(void);
 extern NhlErrorTypes wgt_volave_W(void);
+extern NhlErrorTypes wgt_arearmse_W(void);
+extern NhlErrorTypes wgt_volrmse_W(void);
+extern NhlErrorTypes wgt_volrmse_ccm_W(void);
 extern NhlErrorTypes wgt_volave_ccm_W(void);
 extern NhlErrorTypes dtrend_W(void);
 extern NhlErrorTypes dtrend_msg_W(void);
@@ -2938,6 +2943,20 @@ void NclAddUserFuncs(void)
     NclRegisterFunc(pres_hybrid_W,args,"pres_hybrid",nargs);
 
 /*
+ * Register "pres_hybrid_ccm".
+ */
+    nargs = 0;
+    args = NewArgs(4);
+
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+
+    NclRegisterFunc(pres_hybrid_ccm_W,args,"pres_hybrid_ccm",nargs);
+
+/*
  * Register "dpres_hybrid".
  */
     nargs = 0;
@@ -2950,6 +2969,20 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
 
     NclRegisterFunc(dpres_hybrid_W,args,"dpres_hybrid",nargs);
+
+/*
+ * Register "dpres_hybrid_ccm".
+ */
+    nargs = 0;
+    args = NewArgs(4);
+
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+
+    NclRegisterFunc(dpres_hybrid_ccm_W,args,"dpres_hybrid_ccm",nargs);
 
 /*
  * Register "pslhyp".
@@ -3151,6 +3184,48 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
     NclRegisterFunc(wgt_volave_ccm_W,args,"wgt_volave_ccm",nargs);
+
+/*
+ * Register "wgt_arearmse".
+ */
+    nargs = 0;
+    args = NewArgs(5);
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    NclRegisterFunc(wgt_arearmse_W,args,"wgt_arearmse",nargs);
+
+/*
+ * Register "wgt_volrmse".
+ */
+    nargs = 0;
+    args = NewArgs(6);
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    NclRegisterFunc(wgt_volrmse_W,args,"wgt_volrmse",nargs);
+
+/*
+ * Register "wgt_volrmse_ccm".
+ */
+    nargs = 0;
+    args = NewArgs(7);
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    NclRegisterFunc(wgt_volrmse_ccm_W,args,"wgt_volrmse_ccm",nargs);
 
 /*
  * Register "dtrend".
