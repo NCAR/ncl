@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.37 1995-05-23 01:12:17 dbrown Exp $
+ *      $Id: MapPlot.c,v 1.38 1995-05-26 16:15:58 haley Exp $
  */
 /************************************************************************
 *									*
@@ -5411,7 +5411,7 @@ void   (_NHLCALLF(hlumapeod,HLUMAPEOD))
 	NhlBoolean keep = False;
 
 	if (Mpp == NULL) {
-		_NHLCALLF(hlumapeod,HLUMAPEOD)(nout,nseg,idls,idrs,npts,pnts);
+		_NHLCALLF(mapeod,MAPEOD)(nout,nseg,idls,idrs,npts,pnts);
 		return;
 	}
 
