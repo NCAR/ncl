@@ -62,42 +62,77 @@ c_sfsetr
 .SH USER-MODIFIABLE INTERNAL ROUTINES
 None
 .SH MESSAGES
-The following error messages may result from calls to routines
-in the SOFTFILL package. All are treated as fatal errors.
+Various error conditions can occur in Softfill.  Each of these results in
+a call to the error-handling routine SETER, with a final argument indicating
+that the error is recoverable; by default, an error message is printed and
+execution is terminated, but, if you turn on error recovery
+(as described in the "man" page for "error_handling"), you
+can get control back.
 .sp
-SFSGFA - ERROR EXIT FROM GQFACI 
+The error messages are as follows; all should be
+more or less self-explanatory.
 .sp
-SFSGFA - ERROR EXIT FROM GQPLCI 
+.in +5
+SFGETC - PARAMETER NAME NOT KNOWN - X
+.br
+SFGETC - PARAMETER NAME TOO SHORT - X
+.br
+SFGETC - UNCLEARED PRIOR ERROR
+.br
+SFGETI - UNCLEARED PRIOR ERROR
+.br
+SFGETP - UNCLEARED PRIOR ERROR
+.br
+SFGETR - PARAMETER NAME NOT KNOWN - X
+.br
+SFGETR - PARAMETER NAME TOO SHORT - X
+.br
+SFGETR - UNCLEARED PRIOR ERROR
+.br
+SFNORM - ARRAY DST IS TOO SMALL
+.br
+SFNORM - ARRAY IND IS TOO SMALL
+.br
+SFNORM - COORDINATE ARRAYS TOO SMALL
+.br
+SFNORM - LOGIC ERROR - SEE SPECIALIST
+.br
+SFNORM - UNCLEARED PRIOR ERROR
+.br
+SFSETC - PARAMETER NAME NOT KNOWN - X
+.br
+SFSETC - PARAMETER NAME TOO SHORT - X
+.br
+SFSETC - UNCLEARED PRIOR ERROR
+.br
+SFSETI - UNCLEARED PRIOR ERROR
+.br
+SFSETP - UNCLEARED PRIOR ERROR
+.br
+SFSETR - PARAMETER NAME NOT KNOWN - X
+.br
+SFSETR - PARAMETER NAME TOO SHORT - X
+.br
+SFSETR - UNCLEARED PRIOR ERROR
+.br
+SFSGFA - ERROR EXIT FROM GQFACI
+.br
+SFSGFA - ERROR EXIT FROM GQPLCI
+.br
+SFSGFA - UNCLEARED PRIOR ERROR
+.br
+SFWRLD - UNCLEARED PRIOR ERROR
+.in -5
 .sp
-SFNORM - COORDINATE ARRAYS TOO SMALL 
-.sp
-SFNORM - ARRAY DST IS TOO SMALL 
-.sp
-SFNORM - ARRAY IND IS TOO SMALL 
-.sp
-SFNORM - LOGIC ERROR - SEE SPECIALIST 
-.sp
-SFGETC - PARAMETER NAME TOO SHORT - x 
-.sp
-SFGETC - PARAMETER NAME NOT KNOWN - xx 
-.sp
-SFGETI OR SFGETR - PARAMETER NAME TOO SHORT - x 
-.sp
-SFGETI OR SFGETR - PARAMETER NAME NOT KNOWN - xx 
-.sp
-SFSETC - PARAMETER NAME TOO SHORT - x 
-.sp
-SFSETC - PARAMETER NAME NOT KNOWN - xx 
-.sp
-SFSETI OR SFSETR - PARAMETER NAME TOO SHORT - x 
-.sp
-SFSETI OR SFSETR - PARAMETER NAME NOT KNOWN - xx
-.sp
-Most of these should be self-explanatory. The "LOGIC ERROR" in
+The "LOGIC ERROR" in
 SFNORM should never occur; if it does, it indicates a compiler
 problem or some sort of tampering with the code of the package.
-Where "x" or "xx" appears, it will be replaced by the offending
-parameter name.
+Error messages
+that complain of an error exit from a GKS routine probably 
+imply that GKS has somehow been put in the wrong state.
+In the messages that result from using an incorrect internal-parameter
+name in a call to one of the parameter-access routines, the "X" will be
+replaced by the offending name.
 .SH SEE ALSO
 Online:
 softfill_params, sfgetc, sfgeti, sfgetp, sfgetr, sfsetc, sfseti,
