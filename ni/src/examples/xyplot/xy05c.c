@@ -1,5 +1,5 @@
 /*
-**      $Id: xy05c.c,v 1.13 1995-06-22 21:09:33 haley Exp $
+**      $Id: xy05c.c,v 1.14 1996-08-26 20:54:38 boote Exp $
 */
 /**********************************************************************
 *                                                                     *
@@ -161,10 +161,10 @@ main()
     NhlFrame(xworkid);
 /*
  * NhlDestroy destroys the given id and all of its children
- * so destroying "xworkid" will also destroy "plotid".
+ * so destroying "appid" will destroy "xworkid" which will also destroy
+ * "plotid".
  */
     NhlRLDestroy(rlist);
-    NhlDestroy(xworkid);
     NhlDestroy(appid);
 /*
  * Restores state.

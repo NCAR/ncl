@@ -1,5 +1,5 @@
 /*
- *      $Id: xy12c.c,v 1.9 1995-04-07 10:55:19 boote Exp $
+ *      $Id: xy12c.c,v 1.10 1996-08-26 20:54:39 boote Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -255,8 +255,8 @@ NextFrameCB
      * If it's the first time Create the Plot object
      */
     if(FirstTime){
-        int grlist, datadepid[1];
-        int *dspec = datadepid;
+        int grlist;
+        int *dspec;
         int num_dspec;
 
         FirstTime = False;
@@ -306,7 +306,8 @@ NextFrameCB
         NhlRLSetInteger(rlist,NhlNxyMonoDashPattern,True);
         NhlRLSetInteger(rlist,NhlNxyLineColor,4);
         NhlRLSetInteger(rlist,NhlNxyDashPattern,1);
-        NhlSetValues(dspec[0],rlist);
+        NhlSetValues(*dspec,rlist);
+	NhlFree(dspec);
 
 
         XtSetSensitive(hardCopy,True);
