@@ -1,5 +1,5 @@
 /*
- *	$Id: options.c,v 1.20 1994-02-03 01:41:45 clyne Exp $
+ *	$Id: options.c,v 1.21 1997-01-21 21:28:41 boote Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -249,6 +249,8 @@ int	NCARGCvtToString(from, to)
 {
 	char	**sptr	= (char **) to;
 	*sptr = (char *) from;
+
+	return(1);
 }
 
 /*

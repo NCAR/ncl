@@ -10,6 +10,7 @@
 #endif
 
 
+void
 NGCALLF(ngclfi,NGCLFI)(fdes)
 /*
  * This routine closes an open file; the argument "fdes" is the file
@@ -21,6 +22,7 @@ NGCALLF(ngclfi,NGCLFI)(fdes)
 }
 
 
+void
 NGCALLF(ngofro,NGOFRO)(flnm,fdes,stat)
 /*
  * This routine opens an existing file for reading only.  The argument
@@ -57,6 +59,7 @@ NGCALLF(ngofro,NGOFRO)(flnm,fdes,stat)
 }
 
 
+void
 NGCALLF(ngofrw,NGOFRW)(flnm,fdes,stat)
 /*
  * This routine opens a file for reading and writing both.  The argument
@@ -93,6 +96,7 @@ NGCALLF(ngofrw,NGOFRW)(flnm,fdes,stat)
 }
 
 
+void
 NGCALLF(ngofwo,NGOFWO)(flnm,fdes,stat)
 /*
  * This routine opens a file for writing only.  The argument "flnm" is
@@ -129,6 +133,7 @@ NGCALLF(ngofwo,NGOFWO)(flnm,fdes,stat)
 }
 
 
+void
 NGCALLF(ngrdch,NGRDCH)(fdes,buff,lbuf,stat)
 /*
  * This routine reads characters (bytes) from a file to an internal
@@ -157,6 +162,7 @@ NGCALLF(ngrdch,NGRDCH)(fdes,buff,lbuf,stat)
 }
 
 
+void
 NGCALLF(ngrdfl,NGRDFL)(fdes,buff,lbuf,stat)
 /*
  * This routine reads floats (reals) from a file to an internal buffer.
@@ -178,6 +184,7 @@ NGCALLF(ngrdfl,NGRDFL)(fdes,buff,lbuf,stat)
 }
 
 
+void
 NGCALLF(ngrdin,NGRDIN)(fdes,buff,lbuf,stat)
 /*
  * This routine reads integers from a file to an internal buffer.  The
@@ -200,6 +207,7 @@ NGCALLF(ngrdin,NGRDIN)(fdes,buff,lbuf,stat)
 }
 
 
+void
 NGCALLF(ngrmfi,NGRMFI)(flnm)
 /*
  * This routine removes an existing file.  The argument "flnm" is input;
@@ -220,6 +228,7 @@ NGCALLF(ngrmfi,NGRMFI)(flnm)
 }
 
 
+void
 NGCALLF(ngwrch,NGWRCH)(fdes,buff,lbuf,stat)
 /*
  * This routine writes characters (bytes) to a file from an internal
@@ -247,6 +256,7 @@ NGCALLF(ngwrch,NGWRCH)(fdes,buff,lbuf,stat)
 }
 
 
+void
 NGCALLF(ngwrfl,NGWRFL)(fdes,buff,lbuf,stat)
 /*
  * This routine writes reals (floats) to a file from an internal
@@ -268,6 +278,7 @@ NGCALLF(ngwrfl,NGWRFL)(fdes,buff,lbuf,stat)
 }
 
 
+void
 NGCALLF(ngwrin,NGWRIN)(fdes,buff,lbuf,stat)
 /*
  * This routine writes integers to a file from an internal buffer.  The

@@ -1,5 +1,5 @@
 /*
- * $Id: pcbnrd.c,v 1.1 1994-08-11 18:37:34 haley Exp $
+ * $Id: pcbnrd.c,v 1.2 1997-01-21 21:28:28 boote Exp $
  */
 
 #include <stdio.h>
@@ -40,6 +40,7 @@
 *       the compilers in use.
 *
 ***********************************************************************/
+void
 NGCALLF(pcbnrd,PCBNRD)(unit, count, buffer, ios, status)
 	int		*unit, *count, buffer[], *ios, *status;
 {

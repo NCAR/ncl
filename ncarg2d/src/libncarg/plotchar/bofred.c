@@ -1,5 +1,5 @@
 /*
- * $Id: bofred.c,v 1.3 1996-04-30 22:31:48 ethan Exp $
+ * $Id: bofred.c,v 1.4 1997-01-21 21:28:28 boote Exp $
  */
 
 #include <stdio.h>
@@ -18,6 +18,7 @@
  *	is always equal to that of "status"; "ios" is set only to keep
  *	certain "C" compilers from issuing warning messages.
  */
+void
 NGCALLF(bofred,BOFRED)(unit, fnum, ios, status)
 	int		*unit, *fnum, *ios, *status;
 {

@@ -1,5 +1,5 @@
 /*
- *	$Id: trnspprt.c,v 1.1 1994-08-11 16:30:00 haley Exp $
+ *	$Id: trnspprt.c,v 1.2 1997-01-21 21:28:43 boote Exp $
  */
 
 /***********************************************************************
@@ -56,6 +56,7 @@
 *
 ***********************************************************************/
 
+void
 NGCALLF(bclred,BCLRED)(unit, ios, status)
 	int		*unit;
 	int		*ios;
@@ -88,6 +89,7 @@ NGCALLF(bclred,BCLRED)(unit, ios, status)
 *	the compilers in use.
 *
 ***********************************************************************/
+void
 NGCALLF(bincls,BINCLS)(unit, ios, status)
 	int	*unit, *ios, *status;
 {
@@ -121,6 +123,7 @@ NGCALLF(bincls,BINCLS)(unit, ios, status)
 *
 ***********************************************************************/
 
+void
 #ifdef cray
 NGCALLF(binopn,BINOPN)(unit, flname_, ios, status)
 	_fcd	flname_;
@@ -204,6 +207,7 @@ NGCALLF(binopn,BINOPN)(unit, flname, ios, status)
 *	the compilers in use.
 *
 ***********************************************************************/
+void
 NGCALLF(binred,BINRED)(unit, count, buffer, ios, status)
 	int		*unit, *count, buffer[], *ios, *status;
 {
@@ -258,6 +262,7 @@ NGCALLF(binred,BINRED)(unit, count, buffer, ios, status)
 *	the compilers in use.
 *
 ***********************************************************************/
+void
 NGCALLF(binwri,BINWRI)(unit, count, buffer, ios, status)
 	int		*unit, *count, buffer[], *ios, *status;
 {
@@ -305,6 +310,7 @@ NGCALLF(binwri,BINWRI)(unit, count, buffer, ios, status)
 *	the compilers in use.
 *
 ***********************************************************************/
+void
 NGCALLF(chrcls,CHRCLS)(unit, ios, status)
 	int	*unit, *ios, *status;
 {
@@ -344,6 +350,7 @@ NGCALLF(chrcls,CHRCLS)(unit, ios, status)
 *	the compilers in use.
 *
 ***********************************************************************/
+void
 #ifdef cray
 NGCALLF(chropn,CHROPN)(unit, flname_, ios, status)
 #else
@@ -537,6 +544,7 @@ int	NGCALLF(chrred,CHRRED)(unit, count, buffer, iptr, ios, status)
 *	the compilers in use.
 *
 ***********************************************************************/
+void
 NGCALLF(frprmp,FRPRMP)(buff, count, ios, status)
 	int		*buff;
 	int		*count, *ios, *status;
@@ -590,6 +598,7 @@ NGCALLF(frprmp,FRPRMP)(buff, count, ios, status)
 *	the compilers in use.
 *
 ***********************************************************************/
+void
 #ifdef cray
 NGCALLF(readit,READIT)(buf_, max)
 	_fcd	buf_;
@@ -634,6 +643,7 @@ NGCALLF(readit,READIT)(buf, max)
 *	the compilers in use.
 *
 ***********************************************************************/
+void
 #ifdef cray
 NGCALLF(writit,WRITIT)(msg_, count)
 	_fcd	msg_;
