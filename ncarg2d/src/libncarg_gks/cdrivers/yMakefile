@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.1 1994-03-30 02:11:42 fred Exp $
+#	$Id: yMakefile,v 1.2 1994-06-08 16:58:09 boote Exp $
 #
 
 MYNAME		= cdrivers
@@ -16,12 +16,8 @@ OBJECTS		= \
 		ps.o ps_conv.o psfill.o \
 		xinquiry.o xoutput.o
 
-EXTRA_CDEFINES	= -DCTXT -DX11 -DPS
+EXTRA_CDEFINES	= $(OS_DEF) -DCTXT -DX11 -DPS
 
 PartialLibraryTarget(libncarg_gks.a,$(OBJECTS))
 PartialSourceLibraryTarget($(MYNAME),srcncarg_gks.a,$(SOURCES))
-CleanFilesTarget(fort_c.c)
-
-fort_c.c: fort_c.c.sed Makefile
-        @$(CALLCONV) $(SYSTEM_INCLUDE) fort_c.c ggkwdr
-
+DependTarget($(SOURCES))

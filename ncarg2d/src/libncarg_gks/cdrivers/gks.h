@@ -1,5 +1,5 @@
 /*
- *	$Id: gks.h,v 1.1 1994-03-30 02:11:22 fred Exp $
+ *	$Id: gks.h,v 1.2 1994-06-08 16:57:30 boote Exp $
  */
 /*
  *      File:		gks.h
@@ -134,12 +134,20 @@
  * maximum allowable colors
  */
 #define	MAX_COLORS		256
+/*
+ * If the color allocated is is more than this percentage different from
+ * the one requested, then report a ERR_DIFF_COLOR.
+ * A value of 0 would mean "I don't care what color I get" - so no error.
+ */
+#define	DEF_COLOR_ERR		(10)
 
 /*
  *	local escape codes
  */
-#define	ESCAPE_PAUSE	-1396
-#define	ESCAPE_CMAP	-1397
+#define	ESCAPE_PAUSE		-1396
+#define	ESCAPE_USR_CMAP		-1397
+#define	ESCAPE_COLOR_ERROR	-1400
+#define	ESCAPE_PRIVATE_CMAP	-1401
 
 #endif	/*	_gks_	*/
 

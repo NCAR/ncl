@@ -1,5 +1,5 @@
 /*
- *	$Id: xattribute.c,v 1.2 1994-05-28 00:44:54 fred Exp $
+ *	$Id: xattribute.c,v 1.3 1994-06-08 16:57:58 boote Exp $
  */
 /*
  *      File:		xattribute.c
@@ -14,6 +14,7 @@
  *			attribute functions for the x device driver
  */
 #include <stdio.h>
+#include <stdlib.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include "common.h"
@@ -26,11 +27,22 @@
 #include "text.h"
 #include "transform.h"
 
-static	int	set_foreground_color(dpy, gc, color_pal, index)
+static	int
+set_foreground_color
+#ifdef	NeedFuncProto
+(
+	Display		*dpy,
+	GC		gc,
+	Pixeltype	*color_pal,
+	unsigned	index
+)
+#else
+(dpy,gc,color_pal,index)
 	Display		*dpy;
 	GC		gc;
 	Pixeltype	*color_pal;
 	unsigned	index;
+#endif
 {
 	Pixeltype	pixel;
 
@@ -43,14 +55,19 @@ static	int	set_foreground_color(dpy, gc, color_pal, index)
 	return(0);
 }
 
-
-/*ARGSUSED*/
-X11_SetLinetype(gksc)
+int
+X11_SetLinetype
+#ifdef	NeedFuncProto
+(
+	GKSC	*gksc
+)
+#else
+(gksc)
 	GKSC	*gksc;
+#endif
 {
 	Xddp    *xi = (Xddp *) gksc->ddp;
 	Display *dpy = xi->dpy;
-	Window  win = xi->win;
 
 
 	int		*iptr = (int *) gksc->i.list;
@@ -108,13 +125,19 @@ X11_SetLinetype(gksc)
 	return(status);
 }
 
-/*ARGSUSED*/
-X11_SetLineWidthScaleFactor(gksc)
+int
+X11_SetLineWidthScaleFactor
+#ifdef	NeedFuncProto
+(
+	GKSC	*gksc
+)
+#else
+(gksc)
 	GKSC	*gksc;
+#endif
 {
 	Xddp    *xi = (Xddp *) gksc->ddp;
 	Display *dpy = xi->dpy;
-	Window  win = xi->win;
 
 	float		*fptr = (float *) gksc->f.list;
 	float		line_width = fptr[0];
@@ -155,13 +178,19 @@ X11_SetLineWidthScaleFactor(gksc)
 }
 
 
-/*ARGSUSED*/
-X11_SetPolylineColorIndex(gksc)
+int
+X11_SetPolylineColorIndex
+#ifdef	NeedFuncProto
+(
+	GKSC	*gksc
+)
+#else
+(gksc)
 	GKSC	*gksc;
+#endif
 {
 	Xddp    *xi = (Xddp *) gksc->ddp;
 	Display *dpy = xi->dpy;
-	Window  win = xi->win;
 
 	int		*xptr = (int *) gksc->x.list;
 	unsigned	index	= (unsigned) xptr[0];
@@ -169,13 +198,18 @@ X11_SetPolylineColorIndex(gksc)
 	return(set_foreground_color(dpy, xi->line_gc, xi->color_pal, index));
 }
 
-/*ARGSUSED*/
-X11_SetMarkerType(gksc)
+int
+X11_SetMarkerType
+#ifdef	NeedFuncProto
+(
+	GKSC	*gksc
+)
+#else
+(gksc)
 	GKSC	*gksc;
+#endif
 {
 	Xddp    *xi = (Xddp *) gksc->ddp;
-	Display *dpy = xi->dpy;
-	Window  win = xi->win;
 
 	int		*iptr = (int *) gksc->i.list;
 	int		marker_type = iptr[0];
@@ -190,13 +224,18 @@ X11_SetMarkerType(gksc)
 }
 
 
-/*ARGSUSED*/
-X11_SetMarkerSizeScaleFactor(gksc)
+int
+X11_SetMarkerSizeScaleFactor
+#ifdef	NeedFuncProto
+(
+	GKSC	*gksc
+)
+#else
+(gksc)
 	GKSC	*gksc;
+#endif
 {
 	Xddp    *xi = (Xddp *) gksc->ddp;
-	Display *dpy = xi->dpy;
-	Window  win = xi->win;
 
 	float		*fptr = (float *) gksc->f.list;
 	float		marker_size = fptr[0];
@@ -210,13 +249,19 @@ X11_SetMarkerSizeScaleFactor(gksc)
 	return(0);
 }
 
-/*ARGSUSED*/
-X11_SetPolymarkerColorIndex(gksc)
+int
+X11_SetPolymarkerColorIndex
+#ifdef	NeedFuncProto
+(
+	GKSC	*gksc
+)
+#else
+(gksc)
 	GKSC	*gksc;
+#endif
 {
 	Xddp    *xi = (Xddp *) gksc->ddp;
 	Display *dpy = xi->dpy;
-	Window  win = xi->win;
 
 	int		*xptr = (int *) gksc->x.list;
 	unsigned	index	= (unsigned) xptr[0];
@@ -225,14 +270,17 @@ X11_SetPolymarkerColorIndex(gksc)
 }
 
 
-/*ARGSUSED*/
-X11_SetTextFontAndPrecision(gksc)
+int
+X11_SetTextFontAndPrecision
+#ifdef	NeedFuncProto
+(
+	GKSC	*gksc
+)
+#else
+(gksc)
 	GKSC	*gksc;
+#endif
 {
-	Xddp    *xi = (Xddp *) gksc->ddp;
-	Display *dpy = xi->dpy;
-	Window  win = xi->win;
-
 	int		*iptr = (int *) gksc->i.list;
 	int	font		= iptr[0];
 	int	precision	= iptr[1];
@@ -249,9 +297,16 @@ X11_SetTextFontAndPrecision(gksc)
 
 }
 
-/*ARGSUSED*/
-X11_SetCharacterExpansionFactor(gksc)
+int
+X11_SetCharacterExpansionFactor
+#ifdef	NeedFuncProto
+(
+	GKSC	*gksc
+)
+#else
+(gksc)
 	GKSC	*gksc;
+#endif
 {
 	float		*fptr = (float *) gksc->f.list;
 
@@ -268,9 +323,16 @@ X11_SetCharacterExpansionFactor(gksc)
 }
 
 
-/*ARGSUSED*/
-X11_SetCharacterSpacing(gksc)
+int
+X11_SetCharacterSpacing
+#ifdef	NeedFuncProto
+(
+	GKSC	*gksc
+)
+#else
+(gksc)
 	GKSC	*gksc;
+#endif
 {
 	Xddp    *xi = (Xddp *) gksc->ddp;
 
@@ -294,13 +356,19 @@ X11_SetCharacterSpacing(gksc)
 	return(SetTextAttribute(&ta, mask));
 }
 
-/*ARGSUSED*/
-X11_SetTextColorIndex(gksc)
+int
+X11_SetTextColorIndex
+#ifdef	NeedFuncProto
+(
+	GKSC	*gksc
+)
+#else
+(gksc)
 	GKSC	*gksc;
+#endif
 {
 	Xddp    *xi = (Xddp *) gksc->ddp;
 	Display *dpy = xi->dpy;
-	Window  win = xi->win;
 
 	int		*xptr = (int *) gksc->x.list;
 	unsigned	index	= (unsigned) xptr[0];
@@ -309,9 +377,16 @@ X11_SetTextColorIndex(gksc)
 }
 
 
-/*ARGSUSED*/
-X11_SetCharacterHeightAndUpVector(gksc)
+int
+X11_SetCharacterHeightAndUpVector
+#ifdef	NeedFuncProto
+(
+	GKSC	*gksc
+)
+#else
+(gksc)
 	GKSC	*gksc;
+#endif
 {
 	Xddp    *xi = (Xddp *) gksc->ddp;
 
@@ -345,9 +420,16 @@ X11_SetCharacterHeightAndUpVector(gksc)
 	return(SetTextAttribute(&ta, mask));
 }
 
-/*ARGSUSED*/
-X11_SetTextPath(gksc)
+int
+X11_SetTextPath
+#ifdef	NeedFuncProto
+(
+	GKSC	*gksc
+)
+#else
+(gksc)
 	GKSC	*gksc;
+#endif
 {
 	int		*iptr = (int *) gksc->i.list;
 
@@ -364,9 +446,16 @@ X11_SetTextPath(gksc)
 }
 
 
-/*ARGSUSED*/
-X11_SetTextAlignment(gksc)
+int
+X11_SetTextAlignment
+#ifdef	NeedFuncProto
+(
+	GKSC	*gksc
+)
+#else
+(gksc)
 	GKSC	*gksc;
+#endif
 {
 	int		*iptr = (int *) gksc->i.list;
 
@@ -384,13 +473,18 @@ X11_SetTextAlignment(gksc)
 	return(SetTextAttribute(&ta, mask));
 }
 
-/*ARGSUSED*/
-X11_SetFillAreaInteriorStyle(gksc)
+int
+X11_SetFillAreaInteriorStyle
+#ifdef	NeedFuncProto
+(
+	GKSC	*gksc
+)
+#else
+(gksc)
 	GKSC	*gksc;
+#endif
 {
 	Xddp    *xi = (Xddp *) gksc->ddp;
-	Display *dpy = xi->dpy;
-	Window  win = xi->win;
 
 	int		*iptr = (int *) gksc->i.list;
 
@@ -402,13 +496,18 @@ X11_SetFillAreaInteriorStyle(gksc)
 }
 
 
-/*ARGSUSED*/
-X11_SetFillAreaStyleIndex(gksc)
+int
+X11_SetFillAreaStyleIndex
+#ifdef	NeedFuncProto
+(
+	GKSC	*gksc
+)
+#else
+(gksc)
 	GKSC	*gksc;
+#endif
 {
 	Xddp    *xi = (Xddp *) gksc->ddp;
-	Display *dpy = xi->dpy;
-	Window  win = xi->win;
 
 	int		*iptr = (int *) gksc->i.list;
 
@@ -419,13 +518,19 @@ X11_SetFillAreaStyleIndex(gksc)
 	return(0);
 }
 
-/*ARGSUSED*/
-X11_SetFillAreaColorIndex(gksc)
+int
+X11_SetFillAreaColorIndex
+#ifdef	NeedFuncProto
+(
+	GKSC	*gksc
+)
+#else
+(gksc)
 	GKSC	*gksc;
+#endif
 {
 	Xddp    *xi = (Xddp *) gksc->ddp;
 	Display *dpy = xi->dpy;
-	Window  win = xi->win;
 
 	int		*xptr = (int *) gksc->x.list;
 	unsigned	index	= (unsigned) xptr[0];
@@ -435,9 +540,16 @@ X11_SetFillAreaColorIndex(gksc)
 }
 
 
-/*ARGSUSED*/
-X11_SetColorRepresentation(gksc)
+int
+X11_SetColorRepresentation
+#ifdef	NeedFuncProto
+(
+	GKSC	*gksc
+)
+#else
+(gksc)
 	GKSC	*gksc;
+#endif
 {
         Xddp    	*xi = (Xddp *) gksc->ddp;
         Display 	*dpy = xi->dpy;
@@ -446,13 +558,15 @@ X11_SetColorRepresentation(gksc)
 
 	int		*xptr = (int *) gksc->x.list;
 	XColor		*rgbptr = (XColor *) gksc->rgb.list;
+	XColor		tcolor = rgbptr[0];
 
 	unsigned	index	= (unsigned) xptr[0];
 	Pixeltype	*color_pal = xi->color_pal;
+	int		*color_info = xi->color_info;
+	XddpColorStatus	*color_status = xi->color_status;
+	float		color_error = 0;
+	int		i;
 	
-	Pixeltype	planedummy[1];		/* not used	*/
-	Pixeltype	pixel_return[1];	/* device index	*/
-	Visual		*visual;
 
 	if (index > (MAX_COLORS - 1)) {
 		return(ERR_MAX_COLOR);
@@ -460,90 +574,171 @@ X11_SetColorRepresentation(gksc)
 
 	if (! xi->color_ava) return(0);	/* not a color device	*/
 
-	visual = DefaultVisual(dpy, DefaultScreen(dpy));
-
 	/*
-	 * see if we have a read only color model
+	 * If this index has a color allocated for it, free it up
 	 */
-	if ((visual->class == TrueColor) || (visual->class == StaticColor)
-		|| (visual->class == StaticGray)) {
+	if(color_info[index] > -1){
+		color_status[color_info[index]].ref_count--;
 
-
-                if (!XAllocColor(dpy, cmap, &rgbptr[0])) {
-
-			/* error allocating color cell	*/
-                        return(ERR_ALLOC_COLOR);
+		if(color_status[color_info[index]].ref_count < 1){
+			if(xi->cmap_ro){
+				XFreeColors(xi->dpy,xi->cmap,
+				&color_status[color_info[index]].xpixnum,1,0);
+			}
+			else{
+				xi->mycmap_cells--;
+			}
 		}
-
-		color_pal[index] = rgbptr->pixel;
-
-		/*
-		 * if index == 0 then change background color
-		 */
-		if (index == 0) {
-			XSetWindowBackground(dpy, win, rgbptr->pixel);
-			XClearWindow(dpy, win);
-		}
-
-		return (0);
 	}
 
-	/*
-	 * must have read/write color model
-	 */
- 
-	/*
-	 * if this index has not had a cell allocated to it previously
-	 * we need to do it now. It hasn't been allocated previsously if
-	 * its pointing to the foreground pixel, color_pal[1]. Initially all
-	 * entries in color_pal (except color_pal[0], background color) are
-	 * pointing to the default foreground pixel.
-	 */
-	if (index !=1 && color_pal[index]==WhitePixel(dpy,DefaultScreen(dpy))){
-		/*
-		 * try and alloc a new cell in the color map
-		 */
-		if (XAllocColorCells(dpy,cmap,FALSE, planedummy,
-				0, pixel_return, 1) == 0) {
+	if(xi->mycmap && !xi->cmap_ro && (xi->mycmap_cells < MAX_COLORS)){
+		for(i=0;i < MAX_COLORS;i++)
+			if(color_status[i].ref_count == 0)
+				break;
+		xi->mycmap_cells++;
+		color_info[index] = rgbptr->pixel = i;
+		color_status[i].xpixnum = color_pal[index] = i;
+		XStoreColor(xi->dpy,xi->cmap,&rgbptr[0]);
+		color_status[i].ref_count = 1;
+		color_status[i].red = rgbptr->red;
+		color_status[i].green = rgbptr->green;
+		color_status[i].blue = rgbptr->blue;
 
-			/* error allocating color cell	*/
-			return (ERR_ALLOC_COLOR);
+	}
+	else if(xi->cmap_ro && XAllocColor(dpy, cmap, &rgbptr[0])){
+		/*
+		 * Color Allocation succeded - place all the color information
+		 * in the color_pal, color_info and color_status arrays.
+		 */
+
+		for(i=0;i < MAX_COLORS;i++)
+			if(color_status[i].ref_count == 0)
+				break;
+		color_info[index] = i;
+		color_status[i].ref_count = 1;
+		color_status[i].red = rgbptr->red;
+		color_status[i].green = rgbptr->green;
+		color_status[i].blue = rgbptr->blue;
+		color_status[i].xpixnum = color_pal[index] = rgbptr->pixel;
+	}
+	else{
+		/*
+		 * unable to allocate a new color cell.
+		 * Dither to one of our current colors.
+		 */
+		int	minindx = -1;
+		float	minval = 0;
+		float	curval;
+		float	tfloat;
+		int	j;
+
+		for(j=0;j<MAX_COLORS;j++){
+			if(color_status[j].ref_count > 0){
+				tfloat = tcolor.red;
+				tfloat -= color_status[j].red;
+				curval = (tfloat * tfloat);
+				tfloat = tcolor.green;
+				tfloat -= color_status[j].green;
+				curval += (tfloat * tfloat);
+				tfloat = tcolor.blue;
+				tfloat -= color_status[j].blue;
+				curval += (tfloat * tfloat);
+
+				/*SUPPRESS766*/
+				if((minindx == -1)||(curval < minval)){
+					minval = curval;
+					minindx = j;
+				}
+			}
 		}
 
-		/* 
-		 *	record pixel in the colortable
-		 */
-		color_pal[index] = pixel_return[0];
+		if(minindx > -1){
+			/*
+			 * This is the color to use.
+			 */
+			color_info[index] = minindx;
+			color_pal[index] =color_status[minindx].xpixnum;
+			color_status[minindx].ref_count++;
+			color_error = minval;
+		}
+		else{
+			/*
+			 * We don't own any colors?!?!
+			 */
+			color_pal[index] = WhitePixelOfScreen(xi->scr);
+			color_info[index] = -1;
+			tfloat = tcolor.red;
+			tfloat -= MAX_INTENSITY;
+			color_error = (tfloat * tfloat);
+			tfloat = tcolor.green;
+			tfloat -= MAX_INTENSITY;
+			color_error += (tfloat * tfloat);
+			tfloat = tcolor.blue;
+			tfloat -= MAX_INTENSITY;
+			color_error += (tfloat * tfloat);
+		}
 	}
-
-	/* 
-	 *	set cell index in the colour map
-	 */
-	rgbptr->pixel = color_pal[index];
-
-	/* 
-	 *	store the colour in the map
-	 */
-	XStoreColor(dpy, cmap, &rgbptr[0]);
 
 	/*
 	 * if index == 0 then change background color
 	 */
 	if (index == 0) {
-		XSetWindowBackground(dpy, win, rgbptr->pixel);
+		XSetWindowBackground(dpy, win, color_pal[index]);
 		XClearWindow(dpy, win);
 	}
 
-	return(0);
+	if(xi->percent_colerr){
+		float	local;
+		int	tint = color_info[index];
+
+		if(color_error != 0.0){
+			if(tint > -1){
+			local = tcolor.red;
+			local -= color_status[tint].red;
+			color_error = local * local;
+			local = tcolor.green;
+			local -= color_status[tint].green;
+			color_error += (local * local);
+			local = tcolor.blue;
+			local -= color_status[tint].blue;
+			color_error += (local * local);
+			}
+			else{
+			/*
+			 * if tint is -1, we are using WhitePixel.
+			 */
+			local = tcolor.red;
+			local -= 1.0;
+			color_error = local * local;
+			local = tcolor.green;
+			local -= 1.0;
+			color_error += (local * local);
+			local = tcolor.blue;
+			local -= 1.0;
+			color_error += (local * local);
+			}
+		}
+
+		if(color_error > xi->pcerr_sqr)
+			return ERR_DIFF_COLOR;
+	}
+
+	return 0;
 }
 
-/*ARGSUSED*/
-X11_SetClipIndicator(gksc)
+int
+X11_SetClipIndicator
+#ifdef	NeedFuncProto
+(
+	GKSC	*gksc
+)
+#else
+(gksc)
 	GKSC	*gksc;
+#endif
 {
         Xddp    *xi = (Xddp *) gksc->ddp;
         Display *dpy = xi->dpy;
-        Window  win = xi->win;
 
 	int		*iptr = (int *) gksc->i.list;
 	XPoint	*pptr = (XPoint *) gksc->p.list;
@@ -593,9 +788,16 @@ X11_SetClipIndicator(gksc)
 }
 
 
-/*ARGSUSED*/
-X11_SetWindow(gksc)
+int
+X11_SetWindow
+#ifdef	NeedFuncProto
+(
+	GKSC	*gksc
+)
+#else
+(gksc)
 	GKSC	*gksc;
+#endif
 {
         Xddp    	*xi = (Xddp *) gksc->ddp;
 	float		*fptr = (float *) gksc->f.list;
@@ -615,9 +817,16 @@ X11_SetWindow(gksc)
 	return(0);
 }
 
-/*ARGSUSED*/
-X11_SetViewport(gksc)
+int
+X11_SetViewport
+#ifdef	NeedFuncProto
+(
+	GKSC	*gksc
+)
+#else
+(gksc)
 	GKSC	*gksc;
+#endif
 {
         Xddp    	*xi = (Xddp *) gksc->ddp;
 	float		*fptr = (float *) gksc->f.list;

@@ -1,5 +1,5 @@
 /*
- *	$Id: xinquiry.c,v 1.1 1994-03-30 02:11:40 fred Exp $
+ *	$Id: xinquiry.c,v 1.2 1994-06-08 16:58:05 boote Exp $
  */
 /*
  *      File:		xinquiry.c
@@ -30,7 +30,6 @@ X11_GetColorRepresentation(gksc)
 {
 	Xddp    	*xi = (Xddp *) gksc->ddp;
 	Display 	*dpy = xi->dpy;
-	Window  	win = xi->win;
 	Colormap	cmap = xi->cmap;
 
 	int		*xptr = (int *) gksc->x.list;

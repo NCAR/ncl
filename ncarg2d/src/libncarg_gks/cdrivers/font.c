@@ -1,5 +1,5 @@
 /*
- *	$Id: font.c,v 1.2 1994-05-28 00:44:37 fred Exp $
+ *	$Id: font.c,v 1.3 1994-06-08 16:57:24 boote Exp $
  */
 /*
  *	File		font.c
@@ -17,6 +17,8 @@
  */	
 #include <stdio.h>
 #include <stdlib.h>
+#include <fcntl.h>
+#include <unistd.h>
 #include <errno.h>
 #include <ncarg/c.h>
 #include <ncarg/ncarg_loc.h>
@@ -301,7 +303,7 @@ static	int	read_fontcap(fontcap, var_space)
 	/*
 	 *	malloc memory for fontcap 
 	 */
-	if (! (fontcap_raw = (Fontcap_raw *) malloc (sizeof (Fontcap_raw)))) {
+	if ((fontcap_raw = (Fontcap_raw *) malloc (sizeof (Fontcap_raw))) == 0){
 		ESprintf(errno, "malloc()");
 		return(ERR_FCAP_MEMORY);
 	}

@@ -1,5 +1,5 @@
 /*
- *	$Id: gksc.h,v 1.2 1994-05-28 00:44:44 fred Exp $
+ *	$Id: gksc.h,v 1.3 1994-06-08 16:57:38 boote Exp $
  */
 /*
  *      File:		gksc.h
@@ -168,6 +168,7 @@ typedef	struct	GKSC_	{
  */
 #define	ERR_INV_OPCODE	-109	/* invalid or unsupported opcode	*/
 #define	ERR_INV_WK_ID	20	/* invalid workstation id		*/
+#define	ERR_INV_WK_TYPE	22	/* invalid workstation type		*/
 #define	ERR_OPN_DEV	26	/* error opening device			*/
 #define	ERR_INV_RECT	51	/* transformation rect. def. is invalid	*/
 #define	ERR_INV_LINE	63	/* invalid line type			*/
@@ -204,7 +205,7 @@ typedef	struct	GKSC_	{
 #define ERR_FCAP_NAME      -217	/* error retrieving fontcap name        */
 #define ERR_INV_INDEX      -218	/* invalid index into GKS wks. ids      */
 #define ERR_MAX_COLOR      -219	/* color index too big                  */
-#define ERR_ALLOC_COLOR    -220	/* cannot allocate color                */
+#define ERR_DIFF_COLOR     -220	/* color is different than requested	*/
 
 /*
  *  local PostScript output errors.
@@ -277,7 +278,5 @@ extern	int    GKSCToIndex(
 	GKSC *gksc
 #endif
 );
-
-
 
 #endif	/*	_gksc_	*/

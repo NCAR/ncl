@@ -1,5 +1,5 @@
 /*
- *	$Id: x_device.h,v 1.1 1994-03-30 02:11:36 fred Exp $
+ *	$Id: x_device.h,v 1.2 1994-06-08 16:57:56 boote Exp $
  */
 /*
  *      File:		x_device.h
@@ -86,12 +86,6 @@ extern	int	X11_OpenWorkstation(
 #endif
 ); 
 		
-extern	int	X11P_OpenWorkstation(
-#ifdef	NeedFuncProto
-	GKSC	*gksc
-#endif
-); 
-
 extern	int	X11_ActivateWorkstation(
 #ifdef	NeedFuncProto
 	GKSC	*gksc
@@ -266,12 +260,6 @@ extern	int	X11_Esc(
 #endif
 );
 
-extern	int	X11P_Esc(
-#ifdef	NeedFuncProto
-	GKSC	*gksc
-#endif
-);
-		
 extern	int	X11_UpdateWorkstation(
 #ifdef	NeedFuncProto
 	GKSC	*gksc

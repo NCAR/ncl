@@ -1,5 +1,5 @@
 /*
- *	$Id: x.h,v 1.1 1994-03-30 02:11:35 fred Exp $
+ *	$Id: x.h,v 1.2 1994-06-08 16:57:53 boote Exp $
  */
 /*
  *      File:		x.h
@@ -25,8 +25,19 @@
 /*
  * maximum X11 color intensity
  */
-#define	MAX_INTENSITY	65535
+#define	MAX_INTENSITY	(65535)
+/*
+ * max distance in RGB space ie.
+ *	SQRT(MAX_INTENSITY^2 + MAX_INTENSITY^2 + MAX_INTENSITY^2)
+ */
+#define	MAX_INTEN_DIST	(113509)
+
+#define	MAX_DPY_LEN	(80)
 
 typedef	unsigned long	Pixeltype;
+
+enum XWorkType_ { XREG = 8, XUSRWIN = 7 };
+
+typedef enum XWorkType_ XWorkType;
 
 #endif	/*	_x_h_	*/

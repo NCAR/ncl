@@ -1,5 +1,5 @@
 /*
- *	$Id: x_conv.c,v 1.1 1994-03-30 02:11:36 fred Exp $
+ *	$Id: x_conv.c,v 1.2 1994-06-08 16:57:55 boote Exp $
  */
 /*
  *      File:		xconv.c
@@ -39,8 +39,10 @@ void	X11_ConvPoints(ddp, rawx, rawy, points, n, conv)
 
 	if (conv == RAW_TO_COOKED) {
 		for (i=0; i<*n; index++, i++) {
+			/*SUPPRESS55*/
 			xpoint_ptr[index].x = (xi->transform.x_scale * rawx[i])
 				+ (int) xi->transform.x_trans;
+			/*SUPPRESS55*/
 			xpoint_ptr[index].y = (xi->transform.y_scale * rawy[i])
 				+ (int) xi->transform.y_trans;
 		}
@@ -179,7 +181,6 @@ void	X11_ConvRGBs(ddp, raw, rgbs, n, conv)
 	int	*n;
 	int	conv;
 {
-	Xddp	*xi = (Xddp *) ddp;
 	XColor	*xcolor = (XColor *) rgbs->list;
 	register int	index = rgbs->num;
 
@@ -187,12 +188,16 @@ void	X11_ConvRGBs(ddp, raw, rgbs, n, conv)
 
 	if (conv == RAW_TO_COOKED) {
 		for (i=0; i<*n; i +=3, index++) {
+			/*
+			 * 100 is here to insure we are only using 2 points
+			 * of precision. (This helps dithering algorithm)
+			 */
 			xcolor[index].red = (unsigned short)
-					(raw[i] * MAX_INTENSITY);
+				((int)(raw[i] * 100) * (MAX_INTENSITY/100));
 			xcolor[index].green =(unsigned short)
-					(raw[i+1] * MAX_INTENSITY);
+				((int)(raw[i+1] * 100) * (MAX_INTENSITY/100));
 			xcolor[index].blue = (unsigned short)
-					(raw[i+2] * MAX_INTENSITY);
+				((int)(raw[i+2] * 100) * (MAX_INTENSITY/100));
 			xcolor[index].flags = (DoRed | DoGreen | DoBlue);
 			xcolor[index].pad = '\0';
 		}

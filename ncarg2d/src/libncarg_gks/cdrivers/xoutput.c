@@ -1,5 +1,5 @@
 /*
- *	$Id: xoutput.c,v 1.2 1994-05-28 00:44:58 fred Exp $
+ *	$Id: xoutput.c,v 1.3 1994-06-08 16:58:07 boote Exp $
  */
 /*
  *      File:		xoutput.c
@@ -25,6 +25,7 @@
 #include "x.h"
 #include "x_device.h"
 #include "xddi.h"
+#include "text.h"
 
 /*	
  * requested dimensions for fill tile. 
@@ -49,14 +50,29 @@
  * on exit
  *	return		: 0 => error, else gks error returned
  */
-static	hatch_fill(dpy, win, pptr, n, hatch_index, fill_gc, bg_gc)
-	Display	*dpy;
-	Window	win;
-	XPoint	*pptr;
-	int	n;
-	int	hatch_index;
-	GC	fill_gc,
-		bg_gc;
+static	hatch_fill
+#ifdef	NeedFuncProto
+(
+	Display		*dpy,
+	Window		win,
+	XPoint		*pptr,
+	int		n,
+	int		hatch_index,
+	GC		fill_gc,
+	GC		bg_gc,
+	unsigned int	depth
+)
+#else
+(dpy,win,pptr,n,hatch_index,fill_gc,bg_gc,depth)
+	Display		*dpy;
+	Window		win;
+	XPoint		*pptr;
+	int		n;
+	int		hatch_index;
+	GC		fill_gc,
+			bg_gc;
+	unsigned int	depth;
+#endif
 {
 
 	static  struct  {       /* a pixmap for tileing a filled polygon*/
@@ -85,8 +101,8 @@ static	hatch_fill(dpy, win, pptr, n, hatch_index, fill_gc, bg_gc)
 	 *	the polygon routine because once a tile is
 	 *	set in a GC, X does not allow it to be changed.
 	 */
-	if (! (tile.tileid = XCreatePixmap(dpy, win, tile.width, tile.height, 
-			DefaultDepth(dpy,DefaultScreen(dpy))))) {
+	if((tile.tileid = XCreatePixmap(dpy,win,tile.width,tile.height,
+								depth)) == 0){
 
 		ESprintf(ERR_CRT_PIXMAP, "XCreatePixmap(,,,,)");
 		return(ERR_CRT_PIXMAP);
@@ -467,18 +483,38 @@ static	void	encode_pixels(src, dst, n, pixel_size, byte_order)
  * on exit
  *	return		: 0 => Ok, else error
  */
-static	cell_array(dpy, win, gc, color_pal, P, Q, R, nx, ny, xptr)
-	Display	*dpy;
-	Window	win;
-	GC	gc;
+static	cell_array
+#if	NeedFuncProto
+(
+	Display		*dpy,
+	Visual		*visual,
+	unsigned int	depth,
+	Window		win,
+	GC		gc,
+	Pixeltype	*color_pal,
+	XPoint		P,
+	XPoint		Q,
+	XPoint		R,
+	int		nx,
+	int		ny,
+	int		*xptr
+)
+#else
+(dpy,vis,depth,win,gc,color_pal,P,Q,R,nx,ny,xptr)
+	Display		*dpy;
+	Visual		*visual;
+	unsigned int	depth;
+	Window		win;
+	GC		gc;
 	Pixeltype	*color_pal;
-	XPoint	P, Q, R;
-	int	nx, ny;
-	int	*xptr;
+	XPoint		P,
+			Q,
+			R;
+	int		nx,
+			ny;
+	int		*xptr;
+#endif
 {
-	Visual	*visual = DefaultVisual(dpy, DefaultScreen(dpy));
-	unsigned int depth = DisplayPlanes(dpy, DefaultScreen(dpy));
-
 	unsigned int	image_height,	/* image height in pixels	*/
 			image_width,	/* image width in pixels	*/
 			image_size,	/* size of image data in bytes	*/
@@ -521,21 +557,22 @@ static	cell_array(dpy, win, gc, color_pal, P, Q, R, nx, ny, xptr)
 		return(ERR_CELL_WIDTH);
 	}
 
-	if (!(rows = (int *) malloc ((unsigned) ny * sizeof (int)))) {
+	if ((rows = (int *) malloc ((unsigned) ny * sizeof (int))) == NULL) {
 		ESprintf(ERR_CELL_MEMORY, "malloc(%d)", ny * sizeof(int));
 		return(ERR_CELL_MEMORY);
 	}
-	if (!(cols = (int *) malloc ((unsigned) nx * sizeof (int)))) {
+	if ((cols = (int *) malloc ((unsigned) nx * sizeof (int))) == NULL) {
 		ESprintf(ERR_CELL_MEMORY, "malloc(%d)", ny * sizeof(int));
 		return(ERR_CELL_MEMORY);
 	}
-	if (!(index_array = (int *) malloc ((unsigned) nx * sizeof (int)))) {
+	if ((index_array = (int *) malloc ((unsigned) nx * sizeof (int)))
+								== NULL) {
 		ESprintf(ERR_CELL_MEMORY, "malloc(%d)", nx * sizeof(int));
 		return(ERR_CELL_MEMORY);
 	}
 
-	if (!(ximage = XCreateImage(dpy, visual, depth, ZPixmap, 0, NULL,
-		image_width, image_height, 32, 0))) {
+	if ((ximage = XCreateImage(dpy, visual, depth, ZPixmap, 0, NULL,
+		image_width, image_height, 32, 0)) == NULL) {
 
 		ESprintf(ERR_CRT_IMAGE, "XCreateImage(,,,,,,)");
 		return(ERR_CRT_IMAGE);
@@ -543,7 +580,7 @@ static	cell_array(dpy, win, gc, color_pal, P, Q, R, nx, ny, xptr)
 
 	image_size = ximage->bytes_per_line * image_height;
 
-	if (!(ximage->data = malloc(image_size))) {
+	if ((ximage->data = malloc(image_size)) == NULL){
 		ESprintf(ERR_IMAGE_MEMORY, "malloc(%d)", image_size);
 		return(ERR_IMAGE_MEMORY);
 	}
@@ -739,8 +776,6 @@ X11_Text(gksc)
 	GKSC	*gksc;
 {
 	Xddp	*xi = (Xddp *) gksc->ddp;
-	Display	*dpy = xi->dpy;
-	Window	win = xi->win;
 
 	XPoint		*pptr = (XPoint *) gksc->p.list;
 	char		*sptr = (char *) gksc->s.list;
@@ -823,8 +858,8 @@ X11_FillArea(gksc)
 			 */
 		
 			XSetForeground(dpy, xi->bg_gc, xi->color_pal[0]);
-			status = hatch_fill(dpy, win, pptr, n, hatch_index, 
-							gc, xi->bg_gc);
+			status = hatch_fill(dpy,win,pptr,n,hatch_index,gc,
+							xi->bg_gc,xi->depth);
 			break;
 
 		default:
@@ -856,10 +891,6 @@ X11_Cellarray(gksc)
 	XPoint	*Qptr = &pptr[1];
 	XPoint	*Rptr = &pptr[2];
 
-	int	index;
-	int	i,j;
-
-
 	/*
 	 * see if cell array is rectangular or not
 	 */
@@ -871,8 +902,7 @@ X11_Cellarray(gksc)
 	/*
 	 * cell array is a rectangluar
 	 */
-	return(cell_array(dpy,win,gc,color_pal,*Pptr,*Qptr,*Rptr,nx,ny,xptr));
+	return(cell_array(dpy,xi->vis,xi->depth,win,gc,color_pal,*Pptr,*Qptr,
+							*Rptr,nx,ny,xptr));
 		
 }
-
-

@@ -1,5 +1,5 @@
 /*
- *	$Id: gks_device.c,v 1.2 1994-05-28 00:44:41 fred Exp $
+ *	$Id: gks_device.c,v 1.3 1994-06-08 16:57:32 boote Exp $
  */
 /*
  *      File:		gks_device.c
@@ -17,6 +17,7 @@
  */
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <ncarg/c.h>
 #include "gks_device.h"
 
@@ -102,29 +103,6 @@ static	GKSdev	dev_tab[] = 	{
 		X11_SetFillAreaStyleIndex, X11_SetFillAreaColorIndex, 
 		X11_SetColorRepresentation, X11_SetClipIndicator, X11_SetWindow,
 		X11_GetColorRepresentation, X11_Esc, X11_UpdateWorkstation,
-		X11_DeactivateWorkstation, X11_SetViewport
-	},
-
-	{
-		"X11P", 
-		X11_ConvPoints,sizeof(XPoint), X11_ConvString,sizeof(char),
-		X11_ConvInts, sizeof(int), X11_ConvFloats, sizeof (float),
-		X11_ConvIndexes, sizeof (unsigned long), 
-		X11_ConvRGBs,sizeof(XColor),
-
-		X11P_OpenWorkstation, X11_ActivateWorkstation, 
-		X11_CloseWorkstation, X11_ClearWorkstation, X11_Polyline, 
-		X11_Polymarker, X11_Text, X11_FillArea, X11_Cellarray, 
-		X11_SetLinetype, X11_SetLineWidthScaleFactor, 
-		X11_SetPolylineColorIndex, X11_SetMarkerType, 
-		X11_SetMarkerSizeScaleFactor, X11_SetPolymarkerColorIndex, 
-		X11_SetTextFontAndPrecision, X11_SetCharacterExpansionFactor, 
-		X11_SetCharacterSpacing, X11_SetTextColorIndex, 
-		X11_SetCharacterHeightAndUpVector, X11_SetTextPath, 
-		X11_SetTextAlignment, X11_SetFillAreaInteriorStyle, 
-		X11_SetFillAreaStyleIndex, X11_SetFillAreaColorIndex, 
-		X11_SetColorRepresentation, X11_SetClipIndicator, X11_SetWindow,
-		X11_GetColorRepresentation, X11P_Esc, X11_UpdateWorkstation,
 		X11_DeactivateWorkstation, X11_SetViewport
 	},
 #endif	/*	X11	*/

@@ -1,5 +1,5 @@
 /*
- *	$Id: ps.c,v 1.5 1994-06-06 21:20:05 fred Exp $
+ *	$Id: ps.c,v 1.6 1994-06-08 16:57:42 boote Exp $
  */
 /*
  *
@@ -1387,7 +1387,7 @@ static int MapFonts (PSddp *psa, int cnum, PSCharInfo *psfc)
 		 32,  32,  32,  32,  -1,  -1,  -1,  -1,  32,  32,  32,  32, 
 		 32,  32,  32,  32,  32,  32,  32,  32,  32,  32,  32,  32, 
 	     };
-	int index, fnum, return_value=0;
+	int index=0, fnum, return_value=0;
 
 	psfc->char_num = cnum;
 	psfc->outline = FALSE;
@@ -2212,10 +2212,10 @@ ps_Text(gksc)
         int     requested_color, current_color;
 	int	PSFontScale, PSCharHeight, PSCharSpace;
 	int	i, j, found, x_position, y_position, y_inc, return_value;
-	int	string_height, max_char_width, char_spacing;
-	int	num_chars, old_font, current_font, strpos, fcount;
+	int	string_height=0, max_char_width, char_spacing=0;
+	int	num_chars, old_font=0, current_font, strpos, fcount;
 
-	float   xoffset, yoffset, vert_offset;
+	float   xoffset=0.0, yoffset=0.0, vert_offset=0.0;
 	float	nominal_vert_adjust, tdiff, bdiff, char_expn;
 	float	tm_a, tm_b, tm_c, tm_d, tmp1, aspect_ratio;
 	float	fc2wsvp, string_height_wsvp, char_spacing_wsvp;

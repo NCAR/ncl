@@ -1,5 +1,5 @@
 /*
- *	$Id: gksc.c,v 1.2 1994-05-28 00:44:43 fred Exp $
+ *	$Id: gksc.c,v 1.3 1994-06-08 16:57:35 boote Exp $
  */
 /*
  *      File:		gksc.c
@@ -55,6 +55,7 @@ static int	insert_table(GKSC *gksc)
 	/*
 	 * find a free entry in the table
 	 */
+	/*SUPPRESS570*/
         for(index = 0; index<TABLESIZE  && ((indexMask >> index) & 1); index++);
 
 	gkscTable[index] = gksc;
@@ -129,7 +130,7 @@ GKSC	*CreateGKSC(dev_name)
 		return((GKSC *) NULL);
 	}
 
-
+	gksc->opcode = 0;
 
 	gksc->p.size = gks_dev->sizeof_point;
 	gksc->p.list = (GKSC_Ptr) malloc (INITIAL_MAL * gksc->p.size);
@@ -197,6 +198,7 @@ GKSC	*CreateGKSC(dev_name)
 	gksc->rgb.convert = gks_dev->conv_rgbs;
 	gksc->rgb.num = 0;
 
+	gksc->ddp = NULL;
 
 	gksc->operations = gks_dev->operations;
 
@@ -561,6 +563,7 @@ int	WriteToGKSC(gksc, gks_opcode, total_i, num_i_sent, ints,
 	return(0);
 }
 
+/*ARGSUSED*/
 int	ReadFromGKSC(gksc, gks_opcode, total_i, num_i_sent, ints, 
 		total_x, num_x_sent, indexes, total_f, num_f_sent, 
 		fxs, fys, total_c, num_c_sent, chars)

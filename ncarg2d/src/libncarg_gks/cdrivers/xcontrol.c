@@ -1,5 +1,5 @@
 /*
- *	$Id: xcontrol.c,v 1.2 1994-05-28 00:44:56 fred Exp $
+ *	$Id: xcontrol.c,v 1.3 1994-06-08 16:58:00 boote Exp $
  */
 /*
  *      File:		xcontrol.c
@@ -15,6 +15,7 @@
  */
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <errno.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -29,7 +30,7 @@
 
 /*	init_color
  *
- *		intialize the color table and allocate default colours
+ *		intialize the color table
  *
  * on entry
  *	palette_size	: size of the color palette
@@ -39,160 +40,89 @@
  *	Color_ava	: true if have a color display
  *	fg, bg, bd	: set to default colours as described in name
  */
-static	Colormap	init_color(
-				dpy, fg, bg, bd, color_ava, 
-				color_palette, palette_size
-			)
-	Display	*dpy;
-	Pixeltype	*fg, *bg, *bd;
-	Boolean		*color_ava;
+static	void
+init_color
+#ifdef	NeedFuncProto
+(
+	Screen		*scr,
+	Pixeltype	color_palette[],
+	int		color_info[],
+	XddpColorStatus	color_status[]
+)
+#else
+(scr,color_palette,color_info,color_status)
+	Screen		*scr;
 	Pixeltype	color_palette[];
-	unsigned	palette_size;
+	int		color_info[];
+	XddpColorStatus	color_status[];
+#endif
 {
-
-	static	char	*name[] = {
-		"black", "white", "red", "green", "blue", "yellow", "magenta",
-		"cyan", "gray"
-	};
-
-	static  int num_cols = sizeof (name) / sizeof (char *);
-
-	static  XColor  color = {
-		0,0,0,0,(DoRed | DoGreen | DoBlue), '\0'
-	};
-
-
-	int	i;
-	Pixeltype	planedummy[1];		/* not used	*/
-	Pixeltype	pixel_return[1];	/* device index	*/
-	Visual		*visual;
-	Colormap	cmap;
-	int		dsp_depth;
-
+	int		i;
 
 	/*
-	 *	get default visual that describes colourmap
-	 */
-	visual = DefaultVisual(dpy, DefaultScreen(dpy));	
-	dsp_depth = DisplayPlanes(dpy, DefaultScreen(dpy));
-	cmap = DefaultColormap(dpy, DefaultScreen(dpy));
-
-
-	*fg = WhitePixel(dpy, DefaultScreen(dpy));
-	*bd = WhitePixel(dpy, DefaultScreen(dpy));
-	*bg = BlackPixel(dpy, DefaultScreen(dpy));
-
-	/*
-	 * initialize the color palette to the foreground color initialy.
+	 * initialize the color palette to the WhitePixel color initialy.
 	 * Thus any reference to a undefined color palette entry will get
-	 * the default foreground color
+	 * the WhitePixel of the screen.
 	 */
-	for (i=0; i<palette_size; i++) {
-		color_palette[i] = *fg;
+	for (i=0; i<MAX_COLORS; i++) {
+		color_palette[i] = WhitePixelOfScreen(scr);
+		color_info[i] = -1;
+		color_status[i].ref_count = 0;
 	}
+	/*
+	 * Set palette 0 to BlackPixel since it is default background
+	 */
+	color_palette[0] = BlackPixelOfScreen(scr);
 		
 
-	if (dsp_depth == 1) {
-		/* one plane monochrome display	*/
-		color_ava = FALSE;
-		return(cmap);
-	}
-
-
-	/* 
-	 *			colour display
-	 *
-	 *	We should be able to allocate "basic"  colours on any kind 
-	 *	of colour system (visual type). So say Oriely and Associates.
-	 */
-
-	/*
-	 * all output primitives will use Color_ava to see 
-	 * if they have a colour display
-	 */
-	*color_ava = TRUE;
-
-
-	/* 
-	 *	allocate some default colours	
-	 */
-	for (i=0; i < num_cols; i++) {
-
-		if (XParseColor(dpy, cmap, name[i], &color))  {
-
-			/*
-			 * see if have read/write color model
-			 */
-			if ((visual->class == DirectColor)
-				|| (visual->class == PseudoColor)
-				|| (visual->class == GrayScale)) {
-				
-				if (XAllocColorCells(dpy,cmap,FALSE, planedummy,
-                                        0, pixel_return, 1) == 0) {
-
-					/* 
-					 * Failed. try read only color model
-					 */
-					if (visual->class == DirectColor)
-						visual->class = TrueColor;
-					else if (visual->class == PseudoColor)
-						visual->class = StaticColor;
-					else if (visual->class == GrayScale)
-						visual->class = StaticGray;
-				}
-				else {
-					color.pixel = pixel_return[0];
-					/*
-					 *      store the colour in the map
-					 */
-					XStoreColor(dpy, cmap, &color);
-
-				}
-
-			}
-			/*
-			 * read only color model
-			 */
-			if ((visual->class == TrueColor)
-				|| (visual->class == StaticColor)
-				|| (visual->class == StaticGray)) {
-
-				if (!XAllocColor(dpy, cmap, &color)) {
-					if (Verbose) {
-						(void) fprintf(stderr, 
-						"Warning - color \"%s\" not allocated\n", 
-						name[i]);
-					}
-					continue;
-				}
-
-			}
-
-			color_palette[i] = color.pixel;
-		}
-		else {
-			if (Verbose) {
-				(void) fprintf(stderr, 
-				"Warning - color \"%s\" is not in database\n", 
-				name[i]);
-			}
-		}
-	}
-
-	return(cmap);
+	return;
 }
 
-static	void	pause(dpy)
+static void
+free_color
+#ifdef	NeedFuncProto
+(
+	Display		*dpy,
+	Colormap	cmap,
+	XddpColorStatus	color_status[]
+)
+#else
+(dpy,cmap,color_status)
+	Display		*dpy,
+	Colormap	cmap,
+	XddpColorStatus	color_status[]
+#endif
+{
+	int		i,j;
+	Pixeltype	free_pixels[MAX_COLORS];
+
+	for (i=0,j=0; i<MAX_COLORS; i++)
+		if(color_status[i].ref_count > 0)
+			free_pixels[j++] = color_status[i].xpixnum;
+
+	XFreeColors(dpy,cmap,free_pixels,j,(Pixeltype)0);
+
+	return;
+}
+
+static	void
+pause
+#ifdef	NeedFuncProto
+(
+	Display	*dpy
+)
+#else
+(dpy)
 	Display	*dpy;
+#endif
 {
 	XEvent	event;
 
 	/*
-	 * discard all button press events that a impatient user
+	 * discard all events that a impatient user
 	 * may have aquired while waiting for a plot to finnish
 	 */
-	while(XCheckTypedEvent(dpy, ButtonPress, &event))
-	;
+	XSync(dpy,True);
 
 	for (;;) {
 
@@ -227,29 +157,25 @@ static	void	pause(dpy)
  * on exit
  *	return		: size hints structure with geometry information
  */
-static	XSizeHints	*do_geometry(dpy, res_name, border_width, geometry)
+static	XSizeHints
+*do_geometry
+#ifdef	NeedFuncProto
+(
+	Display		*dpy,
+	char		*res_name,
+	char		*res_class,
+	unsigned long	border_width,
+	char		*geometry
+)
+#else
+(dpy,res_name,res_class,border_width,geometry)
 	Display		*dpy;
 	char		*res_name;
+	char		*res_class;
 	unsigned long	border_width;
 	char		*geometry;
+#endif
 {
-
-#ifdef	DEAD
-	static	XSizeHints  xsh = {	/* Size hints for window manager*/
-		(PMinSize | PAspect),
-		0,0,			/* obsolete ????		*/
-		DEFAULT_WIDTH,		/* obsolete ????		*/
-		DEFAULT_HEIGHT,		/* obsolete ????		*/
-		MIN_WIDTH, MIN_HEIGHT,	/* minimum usefull win dim	*/	
-		0,0,			/* max dim (not used)		*/
-		0,0,			/* not used			*/
-		{1,1},			/* min x/y aspect ratio		*/
-		{1,1},			/* max x/y aspect ratio		*/
-		0,
-		0,			/* dimensions of window		*/
-		0
-	};
-#else
 	static	XSizeHints  xsh = {	/* Size hints for window manager*/
 		(PMinSize),
 		0,0,			/* obsolete ????		*/
@@ -264,7 +190,6 @@ static	XSizeHints	*do_geometry(dpy, res_name, border_width, geometry)
 		0,			/* dimensions of window		*/
 		0
 	};
-#endif
 	int	geom_mask = 0;
 
 	/*
@@ -272,6 +197,8 @@ static	XSizeHints	*do_geometry(dpy, res_name, border_width, geometry)
 	 */
 	if (!geometry) geometry = XGetDefault (dpy, res_name, "geometry");
 	if (!geometry) geometry = XGetDefault (dpy, res_name, "Geometry");
+	if (!geometry) geometry = XGetDefault (dpy, res_class, "geometry");
+	if (!geometry) geometry = XGetDefault (dpy, res_class, "Geometry");
 
 	if (geometry) {
 		geom_mask = XParseGeometry (geometry, &xsh.x, &xsh.y,
@@ -313,12 +240,18 @@ static	XSizeHints	*do_geometry(dpy, res_name, border_width, geometry)
 	return(&xsh);
 }
 
-/*ARGSUSED*/
-X11_OpenWorkstation(gksc)
-	GKSC	*gksc;
+static Window
+CreateXWorkWindow
+#ifdef	NeedFuncProto
+(
+	Display		*dpy
+)
+#else
+(dpy)
+	Display		*dpy;
+#endif
 {
-        int             *iptr = (int *) gksc->i.list;
-
+	Window			win;
 	static	XWMHints	xwmh = {
 		(InputHint | StateHint ),/* flags 			*/
 		True,			/* input 			*/
@@ -329,83 +262,39 @@ X11_OpenWorkstation(gksc)
 		0,			/* icon mask 			*/
 		0			/* Window group 		*/
 	};
-	
 	static	XClassHint	xch = {
 		"xgks",			/* resource name		*/
 		"Xgks"			/* class name			*/
 	};
+	XSetWindowAttributes	xswa;	/* Set Window Attribute struct 	*/
+	XTextProperty		window_name, icon_name;
+	unsigned long		bw = 0;	/* Border width 		*/
+	XEvent     		 event;	/* Event received 		*/
+	XSizeHints		*xshptr;
 
-
-	Pixeltype fg, bg, bd;		/* Pixel values 		*/
-	XSetWindowAttributes xswa;	/* Set Window Attribute struct 	*/
-	XTextProperty	window_name,
-			icon_name;
-	unsigned long bw = 0;		/* Border width 		*/
-	Drawable	drawable;
-	XGCValues	gcv;		/* struc for manipulating a GC	*/
-	XEvent      event;		/* Event received 		*/
-	XWindowAttributes	xwa;	/* Get window attributes	*/
-	CoordSpace	square_screen;
-
-	GC	line_gc, mark_gc, fill_gc,
-		cell_gc, text_gc, bg_gc;
-
-
-	Display	*dpy;
-	Window	win;
-
-	Xddp	*xi;
-
-	char	*dpy_name;		/* display name			*/
-	XSizeHints	*xshptr;
-
-	if ((xi = (Xddp *) malloc (sizeof (Xddp))) == (Xddp *) NULL) {
-		ESprintf(ERR_DTABLE_MEMORY, "malloc(%d)", sizeof(Xddp));
-		return(ERR_DTABLE_MEMORY);
-	}
-
-	gksc->ddp = (GKSC_Ptr) xi;
-
-	/*
-	 *	establish connection to sever
-	 */
-	if ((dpy_name = getenv("DISPLAY")) == NULL) {
-		ESprintf(ERR_NO_DISPLAY, 
-			"X11 \"DISPLAY\" env. variable not set");
-		return(ERR_NO_DISPLAY);
-	}
-
-	if ((dpy = XOpenDisplay(dpy_name)) == NULL) {
-		ESprintf(ERR_OPN_DISPLAY, "  Error on opening X display (%s)", 
-			dpy_name);
-		return(ERR_OPN_DISPLAY);
-	}
-
-	/*
-	 * initialize color
-	 */
-	xi->cmap = init_color(
-		dpy, &fg, &bg, &bd, &(xi->color_ava), xi->color_pal, MAX_COLORS
-	);
-
-	/*
-	 * create our own window or use one given to us?
-	 */
 	/*
 	 * get user preferances for window geometry
 	 */
-	xshptr = do_geometry(dpy, xch.res_name, bw, NULL);
+	xshptr = do_geometry(dpy,xch.res_name,xch.res_class,bw,NULL);
+
+	/*
+	 * Ensure that the window's colormap field points to the default
+	 * colormap,  so that the window manager knows the correct 
+	 * colormap to use for the window.  
+	 */
+	xswa.bit_gravity = CenterGravity;
+	xswa.backing_store = WhenMapped;
+	xswa.background_pixel = BlackPixel(dpy, DefaultScreen(dpy));
+	xswa.border_pixel = BlackPixel(dpy, DefaultScreen(dpy));
 
 	/* 
 	 * Create the Window with the information in the XSizeHints, the
 	 * border width, and the border & background pixels.
 	 */
-	drawable = XCreateSimpleWindow(
-		dpy, RootWindow(dpy,DefaultScreen(dpy)),
+	win = XCreateWindow(dpy, RootWindow(dpy,DefaultScreen(dpy)),
 		xshptr->x, xshptr->y, xshptr->width, xshptr->height,
-		bw, bd, bg
-	);
-	win = drawable;
+		bw,CopyFromParent,InputOutput,CopyFromParent,
+		(CWBitGravity|CWBackingStore|CWBackPixel|CWBorderPixel),&xswa);
 
 	/*
 	 * Set the standard properties for the window managers. 
@@ -413,27 +302,14 @@ X11_OpenWorkstation(gksc)
 	window_name.encoding = XA_STRING;
 	window_name.format = 8;
 	window_name.value = (unsigned char *) "NCAR Xgks";
-	window_name.nitems = strlen (window_name.value);
+	window_name.nitems = strlen ((char *)window_name.value);
 	icon_name.encoding = XA_STRING;
 	icon_name.format = 8;
 	icon_name.value = (unsigned char *) "xgks";
-	icon_name.nitems = strlen (icon_name.value);
+	icon_name.nitems = strlen ((char *)icon_name.value);
 
-	XSetWMProperties(dpy, win, &window_name, &icon_name, 
-				NULL, 0, xshptr, &xwmh, &xch);
-
-	/*
-	 * Ensure that the window's colormap field points to the default
-	 * colormap,  so that the window manager knows the correct 
-	 * colormap to use for the window.  
-	 */
-	xswa.colormap = xi->cmap;
-	xswa.bit_gravity = CenterGravity;
-	xswa.backing_store = WhenMapped;
-	XChangeWindowAttributes(dpy, win, (CWColormap 
-			| CWBitGravity 
-			| CWBackingStore), &xswa);
-
+	XSetWMProperties(dpy,win,&window_name,&icon_name,NULL,0,xshptr,&xwmh,
+									&xch);
 
 	/* 
 	 * Select notification of Expose event that is generated when
@@ -463,219 +339,111 @@ X11_OpenWorkstation(gksc)
 			 * Remove any other pending Expose events from 
 			 * the queue to avoid multiple repaints. 
 			 */
-			while (XCheckTypedEvent(dpy, Expose, &event))
-				;
+			/*SUPPRESS570*/
+			while (XCheckTypedEvent(dpy, Expose, &event));
 		
 			break;
 		}
 	}
-	/* 
-	 * 	create default graphics contexts for the win.
-	 * 	Use defaults except for backround, backround and line width.
-	 */
-	gcv.background = bg;
-	gcv.foreground = fg;
-
-	line_gc = XCreateGC(dpy, drawable, (GCForeground | GCBackground ),&gcv);
-	fill_gc = XCreateGC(dpy, drawable, (GCForeground | GCBackground ),&gcv);
-	mark_gc = XCreateGC(dpy, drawable, (GCForeground | GCBackground ),&gcv);
-	cell_gc = XCreateGC(dpy, drawable, (GCForeground | GCBackground ),&gcv);
-	text_gc = XCreateGC(dpy, drawable, (GCForeground | GCBackground ),&gcv);
 
 	/*
-	 * create a background gc (gc for drawing in background color)
+	 * Select input for "pause"
 	 */
-	gcv.background = fg;
-	gcv.foreground = bg;
-	bg_gc = XCreateGC(dpy, drawable, (GCForeground | GCBackground ),&gcv);
+	XSelectInput(dpy,win,(ButtonPressMask|KeyPressMask));
 
-	/*
- 	 *      Select events for which we want future notification.
-	 */
-	XSelectInput(dpy,win, (ButtonPressMask | KeyPressMask ));
-
-	TransformSetWindow(&xi->tsystem, 0.0, 0.0, 1.0, 1.0);
-	TransformSetViewport(&xi->tsystem, 0.0, 0.0, 1.0, 1.0);
-	TransformSetNDScreenSpace(&xi->tsystem, 0.0, 0.0, 1.0, 1.0);
-
-	/*
-	 *	find out how big window is. calculate
-	 *	coordinate translation macros
-	 */
-	if (XGetWindowAttributes(dpy, win, &xwa) == 0) {
-		ESprintf(ERR_WIN_ATTRIB, "XGetWindowAttributes(,,)");
-		return(ERR_WIN_ATTRIB);
-	}
-
-
-	square_screen = ComputeLargestSquare(
-		(double) 0.0, (double) (xwa.height - 1),
-		(double) (xwa.width - 1), (double) 0.0
-	);
-	TransformSetScreenSpace(
-		&xi->tsystem, square_screen.llx, square_screen.lly, 
-		square_screen.urx, square_screen.ury
-	);
-
-	xi->transform = TransformGetTransform(&xi->tsystem);
-
-	xi->width = xwa.width;
-	xi->height = xwa.height;
-	xi->dim = xwa.width;
-
-
-	xi->dpy = dpy;
-	xi->win = win;
-	xi->line_gc = line_gc;
-	xi->marker_gc = mark_gc;
-	xi->fill_gc = fill_gc;
-	xi->cell_gc = cell_gc;
-	xi->text_gc = text_gc;
-	xi->bg_gc = bg_gc;
-
-	xi->marker_size = 1.0;
-
-	return(0);
+	return win;
 }
 
-
-/*
- *
- *	N.B.
- *	This version of OpenWorkstation doesn't create its own rendering
- *	window. Instead it uses the window id passed to it in 
- *	gksc->i.list[0]. Other than that it is identical to 
- *	X11_OpenWorkstation().
- */
-
-/*ARGSUSED*/
-X11P_OpenWorkstation(gksc)
+int
+X11_OpenWorkstation
+#ifdef	NeedFuncProto
+(
+	GKSC	*gksc
+)
+#else
+(gksc)
 	GKSC	*gksc;
+#endif
 {
-        int             *iptr = (int *) gksc->i.list;
+	Xddp			*xi;
+	static char		dpy_mem[MAX_DPY_LEN];
+	static char		*dpy_name=NULL;	/* Display name	*/
+	XWindowAttributes	xwa;		/* Get Attributes	*/
+	XGCValues		gcv;		/* struc for manip. a GC*/
+	CoordSpace		square_screen;
+        int			*iptr = (int *) gksc->i.list;
 
-	static	XWMHints	xwmh = {
-		(InputHint | StateHint ),/* flags 			*/
-		True,			/* input 			*/
-		NormalState,		/* initial_state 		*/
-		0,			/* icon pixmap 			*/
-		0,			/* icon window 			*/
-		0, 0,			/* icon location 		*/
-		0,			/* icon mask 			*/
-		0			/* Window group 		*/
-	};
-	
-	static	XClassHint	xch = {
-		"xgks",			/* resource name		*/
-		"Xgks"			/* class name			*/
-	};
-
-
-	Pixeltype fg, bg, bd;		/* Pixel values 		*/
-	XSetWindowAttributes xswa;	/* Set Window Attribute struct 	*/
-	XTextProperty	window_name,
-			icon_name;
-	unsigned long bw = 0;		/* Border width 		*/
-	Drawable	drawable;
-	XGCValues	gcv;		/* struc for manipulating a GC	*/
-	XEvent      event;		/* Event received 		*/
-	XWindowAttributes	xwa;	/* Get window attributes	*/
-	CoordSpace	square_screen;
-
-	GC	line_gc, mark_gc, fill_gc,
-		cell_gc, text_gc, bg_gc;
-
-
-
-	Display	*dpy;
-	Window	win;
-
-	Xddp	*xi;
-
-	char	*dpy_name;		/* display name			*/
-	XSizeHints	*xshptr;
-
-	/*
-	 * the window id is the first element in iptr
-	 */
-	drawable =  (Drawable) iptr[0];
-	win = drawable;
-
-	if ((xi = (Xddp *) malloc (sizeof (Xddp))) == (Xddp *) NULL) {
+	if((xi = (Xddp *) malloc (sizeof (Xddp))) == (Xddp *) NULL){
 		ESprintf(ERR_DTABLE_MEMORY, "malloc(%d)", sizeof(Xddp));
 		return(ERR_DTABLE_MEMORY);
+	}
+
+	switch(iptr[1]){
+		case XREG:
+		case XUSRWIN:
+			xi->xwtype = iptr[1];
+			break;
+
+		default:
+			(void)free(xi);
+			return ERR_INV_WK_TYPE;
 	}
 
 	gksc->ddp = (GKSC_Ptr) xi;
 
 	/*
-	 *	establish connection to sever
+	 * only get the DISPLAY env. var the first time we get called.
 	 */
-	if ((dpy_name = getenv("DISPLAY")) == NULL) {
-		ESprintf(ERR_NO_DISPLAY, 
-			"X11 \"DISPLAY\" env. variable not set");
-		return(ERR_NO_DISPLAY);
+	if(dpy_name == NULL){
+		dpy_name = getenv("DISPLAY");
+
+		if(dpy_name == NULL){
+			ESprintf(ERR_NO_DISPLAY,
+				"X11 \"DISPLAY\" env. variable not set");
+			return ERR_NO_DISPLAY;
+		}
+
+		strcpy(dpy_mem,dpy_name);
+		dpy_name = dpy_mem;
 	}
 
-	if ((dpy = XOpenDisplay(dpy_name)) == NULL) {
+	if((xi->dpy = XOpenDisplay(dpy_name)) == NULL){
 		ESprintf(ERR_OPN_DISPLAY, "  Error on opening X display (%s)", 
 			dpy_name);
 		return(ERR_OPN_DISPLAY);
 	}
 
-	/*
-	 * initialize color
-	 */
-	xi->cmap = init_color(
-		dpy, &fg, &bg, &bd, &(xi->color_ava), xi->color_pal, MAX_COLORS
-	);
+	if(xi->xwtype == XUSRWIN){
+		/*
+		 * Window id is first element in iptr for type 7
+		 */
+		xi->win = (Window)iptr[0];
+	}
+	else{
+		xi->win = CreateXWorkWindow(xi->dpy);
+	}
 
+	if(XGetWindowAttributes(xi->dpy,xi->win,&xwa) == 0){
+		ESprintf(ERR_WIN_ATTRIB, "XGetWindowAttributes(,,)");
+		return ERR_WIN_ATTRIB;
+	}
 
-	/* 
-	 * 	create default graphics contexts for the win.
-	 * 	Use defaults except for backround, backround and line width.
-	 */
-	gcv.background = bg;
-	gcv.foreground = fg;
-
-	line_gc = XCreateGC(dpy, drawable, (GCForeground | GCBackground ),&gcv);
-	fill_gc = XCreateGC(dpy, drawable, (GCForeground | GCBackground ),&gcv);
-	mark_gc = XCreateGC(dpy, drawable, (GCForeground | GCBackground ),&gcv);
-	cell_gc = XCreateGC(dpy, drawable, (GCForeground | GCBackground ),&gcv);
-	text_gc = XCreateGC(dpy, drawable, (GCForeground | GCBackground ),&gcv);
-
-	/*
-	 * create a background gc (gc for drawing in background color)
-	 */
-	gcv.background = fg;
-	gcv.foreground = bg;
-	bg_gc = XCreateGC(dpy, drawable, (GCForeground | GCBackground ),&gcv);
-
-#ifdef	DEAD
-	/*
- 	 *      Select events for which we want future notification.
-	 */
-	XSelectInput(dpy,win, (ButtonPressMask | KeyPressMask ));
-#endif
+	xi->scr = xwa.screen;
+	xi->vis = xwa.visual;
+	xi->cmap = xwa.colormap;
+	xi->mycmap = False;
+	xi->cmap_ro = True;
+	xi->mycmap_cells = 0;
 
 	TransformSetWindow(&xi->tsystem, 0.0, 0.0, 1.0, 1.0);
 	TransformSetViewport(&xi->tsystem, 0.0, 0.0, 1.0, 1.0);
 	TransformSetNDScreenSpace(&xi->tsystem, 0.0, 0.0, 1.0, 1.0);
 
-	/*
-	 *	find out how big window is. calculate
-	 *	coordinate translation macros
-	 */
-	if (XGetWindowAttributes(dpy, win, &xwa) == 0) {
-		ESprintf(ERR_WIN_ATTRIB, "XGetWindowAttributes(,,)");
-		return(ERR_WIN_ATTRIB);
-	}
-
-
 	square_screen = ComputeLargestSquare(
 		(double) 0.0, (double) (xwa.height - 1),
 		(double) (xwa.width - 1), (double) 0.0
 	);
+
 	TransformSetScreenSpace(
 		&xi->tsystem, square_screen.llx, square_screen.lly, 
 		square_screen.urx, square_screen.ury
@@ -687,24 +455,64 @@ X11P_OpenWorkstation(gksc)
 	xi->height = xwa.height;
 	xi->dim = xwa.width;
 
+	init_color(xi->scr,xi->color_pal,xi->color_info,xi->color_status);
 
-	xi->dpy = dpy;
-	xi->win = win;
-	xi->line_gc = line_gc;
-	xi->marker_gc = mark_gc;
-	xi->fill_gc = fill_gc;
-	xi->cell_gc = cell_gc;
-	xi->text_gc = text_gc;
-	xi->bg_gc = bg_gc;
+	/*
+	 * all output primitives will use Color_ava to see 
+	 * if they have a colour display
+	 */
+	if (xwa.depth == 1)
+		/* one plane monochrome display	*/
+		xi->color_ava = FALSE;
+	else
+		xi->color_ava = TRUE;
+
+	xi->depth = xwa.depth;
+
+	/* 
+	 * 	create default graphics contexts for the win.
+	 * 	Use defaults except for backround, foreground.
+	 */
+	gcv.background = xi->color_pal[0];
+	gcv.foreground = xi->color_pal[1];
+
+	xi->line_gc = XCreateGC(xi->dpy,xi->win,(GCForeground|GCBackground),
+									&gcv);
+	xi->fill_gc = XCreateGC(xi->dpy,xi->win,(GCForeground|GCBackground),
+									&gcv);
+	xi->marker_gc = XCreateGC(xi->dpy,xi->win,(GCForeground|GCBackground),
+									&gcv);
+	xi->cell_gc = XCreateGC(xi->dpy,xi->win,(GCForeground|GCBackground),
+									&gcv);
+	xi->text_gc = XCreateGC(xi->dpy,xi->win,(GCForeground|GCBackground),
+									&gcv);
+
+	/*
+	 * create a background gc (gc for drawing in background color)
+	 */
+	gcv.background = xi->color_pal[1];
+	gcv.foreground = xi->color_pal[0];
+	xi->bg_gc = XCreateGC(xi->dpy,xi->win,(GCForeground|GCBackground),&gcv);
 
 	xi->marker_size = 1.0;
+
+	xi->percent_colerr = DEF_COLOR_ERR;
+	xi->pcerr_sqr = (float)DEF_COLOR_ERR*((float)MAX_INTENSITY/(float)100);
+	xi->pcerr_sqr *= xi->pcerr_sqr;
 
 	return(0);
 }
 
-/*ARGSUSED*/
-X11_ActivateWorkstation(gksc)
+int
+X11_ActivateWorkstation
+#ifdef	NeedFuncProto
+(
+	GKSC	*gksc
+)
+#else
+(gksc)
 	GKSC	*gksc;
+#endif
 {
 	Xddp	*xi = (Xddp *) gksc->ddp;
 	Display	*dpy = xi->dpy;
@@ -742,32 +550,52 @@ X11_ActivateWorkstation(gksc)
 }
 
 /*ARGSUSED*/
-X11_DeactivateWorkstation(gksc)
+int
+X11_DeactivateWorkstation
+#ifdef	NeedFuncProto
+(
+	GKSC	*gksc
+)
+#else
+(gksc)
 	GKSC	*gksc;
+#endif
 {
 	return(0);
 }
 
-/*ARGSUSED*/
-X11_UpdateWorkstation(gksc)
+int
+X11_UpdateWorkstation
+#ifdef	NeedFuncProto
+(
+	GKSC	*gksc
+)
+#else
+(gksc)
 	GKSC	*gksc;
+#endif
 {
 	Xddp	*xi = (Xddp *) gksc->ddp;
 	Display	*dpy = xi->dpy;
-	Window	win = xi->win;
 
 	XSync(dpy, False);
 	return(0);
 }
 
 
-/*ARGSUSED*/
-X11_CloseWorkstation(gksc)
+int
+X11_CloseWorkstation
+#ifdef	NeedFuncProto
+(
+	GKSC	*gksc
+)
+#else
+(gksc)
 	GKSC	*gksc;
+#endif
 {
 	Xddp	*xi = (Xddp *) gksc->ddp;
 	Display	*dpy = xi->dpy;
-	Window	win = xi->win;
 
 	XCloseDisplay(dpy);
 	free((char *) xi);
@@ -775,9 +603,16 @@ X11_CloseWorkstation(gksc)
 	return(0);
 }
 
-/*ARGSUSED*/
-X11_ClearWorkstation(gksc)
+int
+X11_ClearWorkstation
+#ifdef	NeedFuncProto
+(
+	GKSC	*gksc
+)
+#else
+(gksc)
 	GKSC	*gksc;
+#endif
 {
         Xddp    *xi = (Xddp *) gksc->ddp;
         Display *dpy = xi->dpy;
@@ -819,65 +654,96 @@ X11_ClearWorkstation(gksc)
 	return(0);
 }
 
-
-
-/*ARGSUSED*/
-X11_Esc(gksc)
+int
+X11_Esc
+#ifdef	NeedFuncProto
+(
+	GKSC	*gksc
+)
+#else
+(gksc)
 	GKSC	*gksc;
-{
-	Xddp	*xi = (Xddp *) gksc->ddp;
-	Display	*dpy = xi->dpy;
-	Window	win = xi->win;
-
-	char	*sptr = (char *) gksc->s.list;
-	int	*iptr = (int *) gksc->i.list;
-
-	int	flag = iptr[0];
-
-	switch (flag) {
-	case	ESCAPE_PAUSE:
-		pause(dpy);
-		break;
-
-	case	ESCAPE_CMAP:
-		xi->cmap = atoi(sptr);
-		break;
-
-	default:
-		return(ERR_INV_ESCAPE);
-	}
-
-	return(0);
-}
-
-/*ARGSUSED*/
-X11P_Esc(gksc)
-	GKSC	*gksc;
-{
-	Xddp	*xi = (Xddp *) gksc->ddp;
-	Display	*dpy = xi->dpy;
-	Window	win = xi->win;
-
-	char	*sptr = (char *) gksc->s.list;
-	int	*iptr = (int *) gksc->i.list;
-
-	int	flag = iptr[0];
-
-	switch (flag) {
-
-	/*
-	 * N.B. No pause for the X11P device since we cannot select the 
-	 * events we want to receive since we do not own the drawing canvas
-	 * window.
-	 */
-#ifdef	DEAD
-	case	ESCAPE_PAUSE:
-		pause(dpy);
-		break;
 #endif
+{
+	Xddp			*xi = (Xddp *) gksc->ddp;
+	char			*sptr = (char *) gksc->s.list;
+	int			*iptr = (int *) gksc->i.list;
+	int			tint;
+	int			flag = iptr[0];
 
-	case	ESCAPE_CMAP:
+	switch (flag) {
+	case	ESCAPE_PAUSE:
+		/*
+		 * Pause does nothing for XUSRWIN type
+		 */
+		if(xi->xwtype == XUSRWIN) break;
+
+		pause(xi->dpy);
+		break;
+
+	case	ESCAPE_USR_CMAP:
+		if(xi->cmap_ro)
+			free_color(xi->dpy,xi->cmap,xi->color_status);
+		if(xi->mycmap)
+			XFreeColormap(xi->dpy,xi->cmap);
 		xi->cmap = atoi(sptr);
+		init_color(xi->scr,xi->color_pal,xi->color_info,
+							xi->color_status);
+		xi->mycmap = False;
+		xi->cmap_ro = True;
+		break;
+
+	case	ESCAPE_PRIVATE_CMAP:
+		if(xi->cmap_ro)
+			free_color(xi->dpy,xi->cmap,xi->color_status);
+
+		if(xi->mycmap)
+			XFreeColormap(xi->dpy,xi->cmap);
+		/*
+		 * See if we have to use a RO/RW color model
+		 */
+		switch(xi->vis->class){
+			/*
+			 * RO model
+			 */
+			case TrueColor:
+			case StaticColor:
+			case StaticGray:
+				xi->cmap = XCreateColormap(xi->dpy,xi->win,
+							xi->vis,AllocNone);
+				xi->mycmap = True;
+				xi->cmap_ro = True;
+
+				break;
+
+			/*
+			 * RW model
+			 */
+			default:
+				xi->cmap = XCreateColormap(xi->dpy,xi->win,
+							xi->vis,AllocAll);
+				xi->mycmap = True;
+				xi->cmap_ro = False;
+				xi->mycmap_cells = 0;
+
+				break;
+		}
+		
+		init_color(xi->scr,xi->color_pal,xi->color_info,
+							xi->color_status);
+		XSetWindowColormap(xi->dpy,xi->win,xi->cmap);
+		XSetWindowBackground(xi->dpy,xi->win,xi->color_pal[0]);
+		XClearWindow(xi->dpy,xi->win);
+		break;
+
+	case	ESCAPE_COLOR_ERROR:
+		tint = atoi(sptr);
+		if((tint < 0 )|| (tint > 100))
+			return(ERR_INV_CODE);
+		if (tint == 100) tint = 0;
+		xi->percent_colerr = tint;
+		xi->pcerr_sqr = (float)tint*((float)MAX_INTEN_DIST/(float)100);
+		xi->pcerr_sqr *= xi->pcerr_sqr;
 		break;
 
 	default:

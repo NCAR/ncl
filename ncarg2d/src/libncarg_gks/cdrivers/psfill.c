@@ -1,5 +1,5 @@
 /*
- *	$Id: psfill.c,v 1.3 1994-05-28 00:44:50 fred Exp $
+ *	$Id: psfill.c,v 1.4 1994-06-08 16:57:46 boote Exp $
  */
 /*
  *      File:           ps_fill.c
@@ -25,7 +25,6 @@
 #include <math.h>
 #include "gksc.h"
 #include "gks.h"
-#include "gksc.h"
 #include "common.h"
 #include "ps.h"
 #include "psddi.h"

@@ -1,4 +1,14 @@
 /*
+ *      $Id: fort_c.c,v 1.3 1994-06-08 16:57:27 boote Exp $
+ */
+/************************************************************************
+*									*
+*			     Copyright (C)  1994			*
+*	     University Corporation for Atmospheric Research		*
+*			     All Rights Reserved			*
+*									*
+************************************************************************/
+/*
  *      File:		fort_c.c
  *
  *      Author:		John Clyne
@@ -115,39 +125,64 @@ static	int	*c2f_strncpy(fs, cs, n)
  *			  of storage. If on return status is set to -113
  *			  err_msg will contain an error message.
  */
-#ifdef cray
-int	ggkwdr_(wk_id, gks_opcode, continuation,
-	total_i, num_i_sent, ints, 
-	total_x, num_x_sent, indexes,
-	total_f, num_f_sent, fxs, fys, 
-	total_c, num_c_sent, chars, 
-	status, err_msg_)
+int
+_GKCALLF(ggkwdr,GGKWDR)
+#ifdef	NeedFuncProto
+(
+	unsigned int	*wk_id,
+	int		*gks_opcode,
+	int		*continuation,
+	int		*total_i,
+	int		*num_i_sent,
+	int		*ints,
+	int		*total_x,
+	int		*num_x_sent,
+	int		*indexes,
+	int		*total_f,
+	int		*num_f_sent,
+	float		*fxs,
+	float		*fys,
+	int		*total_c,
+	int		*chars,
+	int		*num_c_sent,
+	int		*status,
+#ifdef UNICOS
+	_fcd	err_msg_
 #else
-int	ggkwdr_(wk_id, gks_opcode, continuation,
-	total_i, num_i_sent, ints, 
-	total_x, num_x_sent, indexes,
-	total_f, num_f_sent, fxs, fys, 
-	total_c, num_c_sent, chars, 
-	status, err_msg)
+	char	*err_msg
+#endif
+)
+#else
+(wk_id,gks_opcode,continuation,total_i,num_i_sent,ints,total_x,num_x_sent,
+indexes,total_f,num_f_sent,fxs,fys,total_c,num_c_sent,chars,status,
+#ifdef UNICOS
+err_msg_)
+#else
+err_msg)
 #endif
 	unsigned int	*wk_id;
-	int	*gks_opcode, *continuation;
-
-	int	*total_i, *num_i_sent, *ints;
-
-	int	*total_x, *num_x_sent, *indexes;
-
-	int	*total_f, *num_f_sent;
-	float	*fxs, *fys;
-
-	int	*total_c, *chars, *num_c_sent;
-
-	int	*status;
-#ifdef cray
+	int		*gks_opcode;
+	int		*continuation;
+	int		*total_i;
+	int		*num_i_sent;
+	int		*ints;
+	int		*total_x;
+	int		*num_x_sent;
+	int		*indexes;
+	int		*total_f;
+	int		*num_f_sent;
+	float		*fxs;
+	float		*fys;
+	int		*total_c;
+	int		*chars;
+	int		*num_c_sent;
+	int		*status;
+#ifdef UNICOS
 	_fcd	err_msg_;
 #else
 	char	*err_msg;
 #endif
+#endif	/* NeedFuncProto */
 {
 	char	*dev_name;
 	GKSC	*gksc;
@@ -181,10 +216,8 @@ int	ggkwdr_(wk_id, gks_opcode, continuation,
 			dev_name = "CGM";
 			break;
 		case	DEV_X11:
-			dev_name = "X11";
-			break;
 		case	DEV_X11P:
-			dev_name = "X11P";
+			dev_name = "X11";
 			break;
 		case	DEV_WISS:
 			dev_name = "WISS";
@@ -211,9 +244,10 @@ int	ggkwdr_(wk_id, gks_opcode, continuation,
 		/*
 		 * create a gksc for this device
 		 */
-		if (! (gksc = CreateGKSC(dev_name))) {
+		if ((gksc = CreateGKSC((char*)dev_name)) == 0) {
 			*status = ErrGetNum();
-			c2f_strncpy(err_msg, ErrGetMsg(), ERR_MSG_MAX);
+			c2f_strncpy((int*)err_msg, (char*)ErrGetMsg(),
+								ERR_MSG_MAX);
 #ifdef cray
 			strncpy( _fcdtocp(err_msg_), err_msg, length );
 #endif
@@ -240,7 +274,7 @@ int	ggkwdr_(wk_id, gks_opcode, continuation,
 			*total_c, *num_c_sent, chars);
 
 	if (*status != 0) {
-		c2f_strncpy(err_msg, ErrGetMsg(), ERR_MSG_MAX);
+		c2f_strncpy((int*)err_msg,(char*)ErrGetMsg(), ERR_MSG_MAX);
 #ifdef cray
 		strncpy( _fcdtocp(err_msg_), err_msg, length );
 #endif
@@ -270,7 +304,8 @@ int	ggkwdr_(wk_id, gks_opcode, continuation,
 	*status = ExecGKSC(gksc);
 	if (*status != 0) {
 		if (*status != 0) {
-			c2f_strncpy(err_msg, ErrGetMsg(), ERR_MSG_MAX);
+			c2f_strncpy((int*)err_msg,(char*)ErrGetMsg(),
+								ERR_MSG_MAX);
 #ifdef cray
 			strncpy( _fcdtocp(err_msg_), err_msg, length );
 #endif
@@ -290,7 +325,8 @@ int	ggkwdr_(wk_id, gks_opcode, continuation,
 			total_c, num_c_sent, chars);
 
 		if (*status != 0) {
-			c2f_strncpy(err_msg, ErrGetMsg(), ERR_MSG_MAX);
+			c2f_strncpy((int*)err_msg,(char*)ErrGetMsg(),
+								ERR_MSG_MAX);
 #ifdef cray
 			strncpy( _fcdtocp(err_msg_), err_msg, length );
 #endif

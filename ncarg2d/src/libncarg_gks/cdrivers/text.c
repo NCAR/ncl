@@ -1,5 +1,5 @@
 /*
- *	$Id: text.c,v 1.2 1994-05-28 00:44:52 fred Exp $
+ *	$Id: text.c,v 1.3 1994-06-08 16:57:49 boote Exp $
  */
 /*
  *	File		text.c
@@ -31,6 +31,8 @@
  *	Alignment.
  */	
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <sys/types.h>
 #include "font.h"
 #include "gks.h"
@@ -141,6 +143,7 @@ int	SetTextAttribute(ta, mask)
 		TextInfo.dirty = TRUE;
 	}
 
+	/*SUPPRESS570*/
 	if (mask & TEXT_PRECISION_SG) {
 		/*
 		 * only support stroke precision
@@ -446,7 +449,6 @@ static	int	middle_most(s, strlen)
 	const char	*s;
 	int		strlen;
 {
-	int	i;
 	int	left, right;
 
 	left = left_most(s, strlen);
@@ -625,6 +627,7 @@ static int	str_width(strlen, s)
 			return(right_most(s,strlen));
 		}
 	}
+	/*NOTREACHED*/
 }
 
 /*	str_heigth:
@@ -742,6 +745,7 @@ static int	str_height(strlen, s)
 
 		}
 	}
+	/*NOTREACHED*/
 }
  
 /*	text_align:
@@ -819,7 +823,6 @@ int	Text_(x,y, string, lines, lines_data)
 	long	trans_x, trans_y;
 	int	numstroke;	/* number of strokes making up the font	*/
 	int	char_ind;
-	int	str_ind;	/* index to the current string		*/
 
 	int	text_path = TextInfo.ta.text_path;
 	float	x_base = TextInfo.ta.orientation.x_base;
@@ -827,7 +830,6 @@ int	Text_(x,y, string, lines, lines_data)
 	float	x_up = TextInfo.ta.orientation.x_up;
 	float	y_up = TextInfo.ta.orientation.y_up;
 
-	Boolean	var_space;
 	int	x_spacing;
 	int	y_spacing;
 
@@ -846,7 +848,6 @@ int	Text_(x,y, string, lines, lines_data)
 
 	y_spacing = TextInfo.y_spacing;
 	x_spacing = TextInfo.x_spacing;
-	var_space = TextInfo.var_space;
 
 
 	prev_width = 0;
@@ -889,7 +890,7 @@ int	Text_(x,y, string, lines, lines_data)
 		 */
 		index = string[char_ind] - F_CHAR_START(fcap_template);	
 
-		if (index < 0 || index >= F_NUMCHAR(fcap_template)){
+		if (index >= F_NUMCHAR(fcap_template)){
 			continue;
 		}
 

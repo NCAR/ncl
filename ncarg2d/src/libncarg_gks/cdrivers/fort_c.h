@@ -1,5 +1,5 @@
 /*
- *	$Id: fort_c.h,v 1.1 1994-03-30 02:11:22 fred Exp $
+ *	$Id: fort_c.h,v 1.2 1994-06-08 16:57:29 boote Exp $
  */
 /*
  *      File:		fort_c.h
@@ -17,6 +17,28 @@
  */
 #ifndef	_fort_c_
 #define	_fort_c_
+
+/*
+ * This macro is used to resolve C/Fortran naming conventions on the
+ * supported arch's.
+ */
+#ifndef	_GKCALLF
+#ifdef	UNICOS
+/* Brain dead cray loader */
+#define _GKCALLF(reg,caps)	caps
+
+#elif	defined(AIX) || defined(HPUX)
+/* No munging of names - wow how unique */
+#define _GKCALLF(reg,caps)     reg
+
+#else   /* Regular old BSD */
+#ifdef  __STDC__
+#define _GKCALLF(reg,caps)     reg##_
+#else
+#define _GKCALLF(reg,caps)     reg/**/_
+#endif  /* __STDC__ */
+#endif  /* defined... */
+#endif  /* _GKCALLF    */
 
 /*
  *	supported output device identifiers
