@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.26 1994-06-23 19:49:43 haley Exp $
+#	$Id: yMakefile,v 1.27 1994-10-26 13:45:16 haley Exp $
 #
 
 #ifdef	BuildNCARGSourceLibrary
@@ -58,6 +58,7 @@ ncargcex: ncargcex.csh Makefile
 	@sed \
 	-e 's+SED_EXAMPLESDIR+$(EXAMPLESDIR)+' \
 	-e 's+SED_TESTSDIR+$(TESTSDIR)+' \
+	-e 's+SED_TUTORIALDIR+$(TUTORIALDIR)+' \
 	<ncargcex.csh >ncargcex
 
 #ifdef	BuildNCARGSourceLibrary
