@@ -1,5 +1,5 @@
 /*
- *      $Id: ImageWorkstation.c,v 1.1 2004-03-20 00:16:24 dbrown Exp $
+ *      $Id: ImageWorkstation.c,v 1.2 2004-03-24 02:14:14 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -333,7 +333,6 @@ static NhlErrorTypes ImageWorkstationInitialize
 				  NhlNwkImageFileName);
 			ret = NhlWARNING;
 		}
-		NhlFree(wnew->imagework.pixconfig.filename);
 	}
 	if (! tstr) {
 		tstr = (char*)new->base.name;
