@@ -1,5 +1,5 @@
 /*
- *	$Id: xrubber.c,v 1.6 1992-08-10 22:05:09 clyne Exp $
+ *	$Id: xrubber.c,v 1.7 1992-08-10 23:46:29 clyne Exp $
  */
 /*
  *	xrubber.c
@@ -370,13 +370,18 @@ static	rubber_band_window(dpy, root, fg, x, y,
  *	*dpy		: the display
  *	*root		: the root window
  * on exit
+ *	*llx		: lower left x if non-null on entry.
+ *	*lly		: lower left y if non-null on entry.
+ *	*urx		: upper right x if non-null on entry.
+ *	*ury		: upper right y if non-null on entry.
  *	return		: NULL => failure, else a string containing the user's
  *			  selection for lower left and upper right coords 
  *			  for the ictrans "zoom" command
  */	
-char	*ZoomCoords(dpy, root)
+char	*ZoomCoords(dpy, root, llx, lly, urx, ury)
 	Display	*dpy;
 	Window	root;
+	float	*llx, *lly, *urx, *ury;
 {
 
 	int		x1, y1, x2, y2;
@@ -506,6 +511,11 @@ char	*ZoomCoords(dpy, root)
 	 */
 	(void) sprintf(buf, 
 		"%4.2f %4.2f %4.2f %4.2f",norm_x1,norm_y1,norm_x2,norm_y2);
+
+	if (llx) *llx = norm_x1;
+	if (lly) *lly = norm_y1;
+	if (urx) *urx = norm_x2;
+	if (ury) *ury = norm_y2;
 
 	return(buf);
 }

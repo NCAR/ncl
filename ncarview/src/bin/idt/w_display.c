@@ -1,5 +1,5 @@
 /*
- *	$Id: w_display.c,v 1.9 1992-08-10 22:04:47 clyne Exp $
+ *	$Id: w_display.c,v 1.10 1992-08-10 23:46:26 clyne Exp $
  */
 /*
  *	w_display.c
@@ -44,7 +44,7 @@ extern	void	Command1(), Command2(), Command3();
  */
 static	void	Scroll();
 static	void	Done(), CurrentFrame(), NoPrint(), PrintSelect(), 
-		Save(), Zoom();
+		Save(), Zoom(), UnZoom();
 static	void	Loop(), Dup(), Goto_(), Skip(), 
 		Start_Segment(), Stop_Segment(), Set_Window();
 static	void	Playback(), Jogback(), Stop(), Jog(), Play();
@@ -339,7 +339,7 @@ static	Widget	create_bottom_panel(paned, id)
 {
 	Arg		args[10];
 	Widget	form;
-	Widget	save, current_frame, zoom, done;
+	Widget	save, current_frame, zoom, unzoom, done;
 	Widget	print;
 	Cardinal	n;
 
@@ -371,6 +371,11 @@ static	Widget	create_bottom_panel(paned, id)
 	XtSetArg(args[n], XtNfromHoriz, save);	n++;
         zoom = XtCreateManagedWidget("zoom",commandWidgetClass,form,args,n);
 	XtAddCallback(zoom, XtNcallback, Zoom, (XtPointer) id);
+
+        n = 0;
+	XtSetArg(args[n], XtNfromHoriz, zoom);	n++;
+        unzoom = XtCreateManagedWidget("unzoom",commandWidgetClass,form,args,n);
+	XtAddCallback(unzoom, XtNcallback, UnZoom, (XtPointer) id);
 
 	return(print);
 }
@@ -684,24 +689,70 @@ static  void    Zoom(widget, client_data, call_data)
 			call_data;	/* not used	*/
 {
 	int	id = (int) client_data;
-	char	*s;
         Window  root;
+	char	*zoom_str;
+	float	llx, lly, urx, ury;
+	float	llx_, lly_, urx_, ury_;
+	float	new_llx, new_lly,
+		new_urx, new_ury;
+	float	ax, bx, ay, by;
+	char	buf[80];
 
 	extern	char	*ZoomCoords();
 
 	root = RootWindowOfScreen(XtScreen(widget));
 
-        s = ZoomCoords(XtDisplay(widget), root);
-
-        if (s == NULL) {
-                (void) fprintf(stderr, "error in zoom\n");
+	/*
+	 * get the new mapping
+	 */
+        if (ZoomCoords(XtDisplay(widget), root, &llx,&lly,&urx,&ury) == NULL){
+                (void) fprintf(stderr, "Zoom failed\n");
+		return;
         }
-        else {
-		command_Id.id = id;
-		command_Id.command = ZOOM;
 
-		Command2((caddr_t) &command_Id, s);
-        }
+	/*
+	 * grab the old mapping
+	 */
+	zoom_str = TalkTo(id, "zoom\n", SYNC);
+	if (sscanf(zoom_str, "llx = %f, lly = %f, urx = %f, ury = %f", 
+					&llx_, &lly_, &urx_, &ury_) != 4) {
+
+		(void) fprintf(stderr, "Zoom failed\n");
+		return;
+	}
+
+	/*
+	 * map the new mapping into the old
+	 */
+	bx = llx_;
+	ax = urx_ - bx;
+	by = lly_;
+	ay = ury_ - by;
+
+	new_llx = (ax * llx) + bx;
+	new_lly = (ay * lly) + by;
+	new_urx = (ax * urx) + bx;
+	new_ury = (ay * ury) + by;
+
+	sprintf(buf, "%4.2f %4.2f %4.2f %4.2f",new_llx,new_lly,new_urx,new_ury);
+	
+
+	command_Id.id = id;
+	command_Id.command = ZOOM;
+
+	Command2((caddr_t) &command_Id, buf);
+}
+
+/*ARGSUSED*/
+static  void    UnZoom(widget, client_data, call_data)
+	Widget  widget;
+	XtPointer       client_data,	/* display id	*/
+			call_data;	/* not used	*/
+{
+	int	id = (int) client_data;
+	void	simple_command();
+
+	simple_command(id, UNZOOM);
 }
 
 /*

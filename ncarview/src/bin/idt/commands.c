@@ -1,5 +1,5 @@
 /*
- *	$Id: commands.c,v 1.5 1992-04-03 23:20:39 clyne Exp $
+ *	$Id: commands.c,v 1.6 1992-08-10 23:46:19 clyne Exp $
  */
 /*
  *	commands.c
@@ -91,6 +91,11 @@ void	Command1(command)
 
 	case DONE: 
 		(void) strcpy(buf, DONE_STRING);
+		(void) strcat(buf, "\n");
+		break;
+
+	case UNZOOM: 
+		(void) strcpy(buf, UNZOOM_STRING);
 		(void) strcat(buf, "\n");
 		break;
 

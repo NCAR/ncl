@@ -19,7 +19,8 @@
 #define	LIST_STRING		"list"
 #define	SAVE_STRING		"save"
 #define	ZOOM_STRING1		"zoom"
-#define	ZOOM_STRING2		"\n. plot \nzoom 0.0 0.0 1.0 1.0"
+#define	ZOOM_STRING2		"\n. plot"
+#define	UNZOOM_STRING		"zoom 0.0 0.0 1.0 1.0\n. plot"
 #define	PRINT_STRING1		"spooler"
 #define	PRINT_STRING2		"\n. Print"
 
