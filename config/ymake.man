@@ -1,7 +1,7 @@
 .\" The first line of this file must contain the '\"[e][r][t][v] line
 .\" to tell man to run the appropriate filter "t" for table.
 .\"
-.\"	$Id: ymake.man,v 1.3 1993-10-19 17:14:10 boote Exp $
+.\"	$Id: ymake.man,v 1.4 1993-10-19 22:14:48 boote Exp $
 .\"
 .\"######################################################################
 .\"#									#
@@ -142,7 +142,7 @@ the directory \fIncarg2d/src/libncargC\fP (relative to the top of the sources):
 .fi
 .sp
 The \fIconfig\fP option to \fBymake\fP is used to tell \fBymake\fP that it
-is being involked from within the NCAR Graphics full source tree.  It should
+is being invoked from within the NCAR Graphics full source tree.  It should
 only be used by the \fIMakefile.ini\fP and \fIMakefile\fP files in the NCAR
 Graphics full source tree.
 .SH "USE OUTSIDE OF NCAR GRAPHICS DISTRIBUTION"
@@ -171,7 +171,9 @@ can over-ride any symbols set by \fBymake\fP except those set directly in
 the \fIyMakefile\fP.
 This file is used by developers to override the values of some of the
 \fBmake\fP symbols defined by \fBymake\fP.  For example, if you are working on
-some of the functions in libncarg_gks.a, then you would probably want to
+some of the functions in libncarg_gks.a, then you would want your test programs
+to use your version of the libncarg_gks.a library, not the one in the system's
+lib directory.  One way to do this would be to
 redefine the \fBmake\fP symbol \fINCARGGKSLIB\fP.  By default it would be set:
 .ta 1i 2.5i 3i
 .sp
@@ -188,6 +190,9 @@ use your working version of the library:
 	NCARGGKSLIB	=	my_dev_dir/libncarg_gks.a
 .fi
 .sp
+.PP
+Another way to do this would be to use the \fIDEV_LIB_SEARCH\fP symbol
+described below.
 .ta
 .PP
 There are some make symbols that are reserved for use in the
