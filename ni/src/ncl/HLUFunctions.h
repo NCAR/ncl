@@ -70,7 +70,27 @@ extern NhlErrorTypes _NclIDataPolyline (
 void
 #endif
 );
+extern NhlErrorTypes _NclIDataPolygon(
+#if	NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclIDataPolymarker(
+#if	NhlNeedProto
+void
+#endif
+);
 extern NhlErrorTypes _NclINDCPolyline (
+#if	NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclINDCPolygon(
+#if	NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclINDCPolymarker(
 #if	NhlNeedProto
 void
 #endif
