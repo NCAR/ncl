@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.37 2004-03-09 21:19:02 shea Exp $
+;      $Id: contributed.ncl,v 1.38 2004-03-31 00:22:43 shea Exp $
 ;
 ; -------------- added Feb 14 2002
 ; copy_VarMeta
@@ -5080,7 +5080,7 @@ begin
 end
 ;*************************************************************************
 ; D. Shea
-;      convert initial_time (type string) to integer
+;      convert initial_time (type string) to integer time
 ;
 ;      01/01/1997 (18:00)  <==> MM/DD/YYYY (HH:NN) {ignore NN}  
 ;      return will be integer of form YYYYMMDDHH
@@ -5091,7 +5091,7 @@ local N, time, i, tmp_c
 begin
 
         N      = dimsizes(stime)
-        time   = new( N ,integer,-99)
+        time   = new( N ,integer)
         delete(time@_FillValue)
 
         do i=0,N-1
@@ -5109,6 +5109,44 @@ begin
         time&time       =  time        ; make coordinate variable
         return (time)
 end 
+;*************************************************************************
+; D. Shea
+;      convert initial_time (type string) to COARDS time
+;
+;      01/01/1997 (18:00)  <==> MM/DD/YYYY (HH:NN) {ignore NN}  
+;      return will be "double" 
+; Usage:
+;   sit0 = a->initial_time0
+;   time = grib_stime2COARDStime(sit0, "days since 1801-01-01 00:00:0.0")
+;                                      ^^^^ can be anything^^^^^^^^^^^^
+;
+undef ("grib_stime2COARDStime")
+function grib_stime2COARDStime(stime[*]:string, tunits:string)
+local N, time, tmp_c, year, month, day, hour, min, sec
+begin
+
+  N      = dimsizes(stime)
+  time   = new( N ,"double")
+  delete(time@_FillValue)
+  time@units = tunits
+  time!0 = "time"
+  time@long_name  = "time"
+
+  tmp_c   = stringtochar(stime)
+  year    = stringtointeger((/tmp_c(:,6:9)/))
+  month   = stringtointeger((/tmp_c(:,0:1)/)) 
+  day     = stringtointeger((/tmp_c(:,3:4)/))
+  hour    = stringtointeger((/tmp_c(:,12:13)/))
+  min     = stringtointeger((/tmp_c(:,15:16)/))
+  sec     = new( N ,"float")
+  sec     = 0.0
+
+  time    = (/ ut_inv_calendar(year,month,day,hour,min,sec,tunits, 0) /)
+
+  time&time       =  time        ; make coordinate variable
+  return (time)
+end 
+
 ;*************************************************************************
 ; D. Shea
 ; Concatenate 2 (or more) variables to create one variable
