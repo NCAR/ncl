@@ -1,5 +1,5 @@
 /*
- *	$Id: raster.c,v 1.26 1993-10-20 17:12:00 don Exp $
+ *	$Id: raster.c,v 1.27 1993-10-20 17:54:26 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -579,8 +579,10 @@ RasterCreate(nx, ny, encoding)
 	int		ny;
 	RasterEncoding	encoding;
 {
-	Raster	*ras;
-	char	*comment = "Memory raster structure";
+	Raster		*ras;
+	char		*comment = "Memory raster structure";
+	static int	count = 0;
+	char		buf[32];
 
 	ras = (Raster *) ras_calloc(sizeof(Raster), 1);
 
@@ -589,10 +591,15 @@ RasterCreate(nx, ny, encoding)
 		return( (Raster *) NULL );
 	}
 
+	ras->text = (char *)ras_calloc((unsigned)(strlen(comment)+1),1);
+	(void) strcpy(ras->text, comment);
+
+	(void) sprintf(buf, "memory.%d", ++count);
+	ras->name = (char *)ras_calloc((unsigned)(strlen(buf)+1),1);
+	(void) strcpy(ras->name, buf);
+
 	if (encoding == RAS_INDEXED) {
 		ras->written = False;
-		ras->text = (char *)ras_calloc((unsigned)(strlen(comment)+1),1);
-		(void) strcpy(ras->text, comment);
 		ras->nx      = nx;
 		ras->ny      = ny;
 		ras->length  = ras->nx * ras->ny;
@@ -618,15 +625,13 @@ RasterCreate(nx, ny, encoding)
 	}
 	else if (encoding == RAS_DIRECT) {
 		ras->written = False;
-		ras->text = (char *)ras_calloc((unsigned)(strlen(comment)+1),1);
-		(void) strcpy(ras->text, comment);
 		ras->nx      = nx;
 		ras->ny      = ny;
 		ras->length  = ras->nx * ras->ny * 3;
 		ras->ncolor  = 256 * 256 * 256;
 		ras->type    = RAS_DIRECT;
 
-		ras->data = (unsigned char *) ras_calloc((unsigned) ras->length, 1);
+		ras->data =(unsigned char *)ras_calloc((unsigned)ras->length,1);
 		if (ras->data == (unsigned char *) NULL) {
 			(void) ESprintf(errno, "RasterCreate()");
 			return( (Raster *) NULL );
