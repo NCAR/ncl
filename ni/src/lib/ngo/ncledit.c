@@ -1,5 +1,5 @@
 /*
- *      $Id: ncledit.c,v 1.13 1998-09-18 23:47:38 boote Exp $
+ *      $Id: ncledit.c,v 1.14 1999-02-27 03:18:32 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -39,6 +39,7 @@
 #include <Xm/Text.h>
 #include <Xm/RowColumn.h>
 #include <ncarg/ngo/CascadeBG.h>
+#include <Xm/ToggleBG.h>
 
 #include <Xm/MenuShell.h>
 #include <Xcb/xcbShells.h>
@@ -165,6 +166,8 @@ NEInitialize
 
 	np->submitcb = np->promptcb = np->resetcb =
 					np->outputcb = np->erroutputcb = NULL;
+
+	np->error_bell_on = np->error_popup_on = True;
 
 	return NhlNOERROR;
 }
@@ -686,8 +689,10 @@ PromptCB
 	msg = np->cstr;
 
 	if(prompt->err){
-		XBell(ncl->go.x->dpy,0);
-		NgGOPopup(ncl->base.id);
+		if (np->error_bell_on)
+			XBell(ncl->go.x->dpy,0);
+		if (np->error_popup_on)
+			NgGOPopup(ncl->base.id);
 		msg = np->estr;
 	}
 
@@ -912,6 +917,49 @@ LoseFocusCB
 }
 
 static void
+ErrorBellCB
+(
+	Widget		w,
+	XtPointer	udata,
+	XtPointer	cbdata
+)
+{
+	XmToggleButtonCallbackStruct	*xmcb = 
+		(XmToggleButtonCallbackStruct*)cbdata;
+	NgNclEdit	ncl = (NgNclEdit)udata;
+	NgNclEditPart	*np = &ncl->ncledit;
+
+#if DEBUG_NCLSTATE
+	fprintf(stderr,"in ErrorBellCB -- %s\n", xmcb->set ? "on" : "off");
+#endif	
+	np->error_bell_on = xmcb->set;
+
+	return;
+}
+
+static void
+ErrorPopupCB
+(
+	Widget		w,
+	XtPointer	udata,
+	XtPointer	cbdata
+)
+{
+	XmToggleButtonCallbackStruct	*xmcb = 
+		(XmToggleButtonCallbackStruct*)cbdata;
+	NgNclEdit	ncl = (NgNclEdit)udata;
+	NgNclEditPart	*np = &ncl->ncledit;
+
+#if DEBUG_NCLSTATE
+	fprintf(stderr,"in ErrorPopupCB -- %s\n", xmcb->set ? "on" : "off");
+#endif
+
+	np->error_popup_on = xmcb->set;
+
+	return;
+}
+
+static void
 ChangeSizeEH
 (
 	Widget		w,
@@ -967,6 +1015,7 @@ NECreateWin
 	Widget		oform,olabel;
 	Widget		iform,scroll;
 	Widget		hsbar;
+	Widget		w;
 	Dimension	width,height;
 	Arg		args[10];
 	int		nargs;
@@ -975,7 +1024,6 @@ NECreateWin
 	char		buff[20];
 	XmString	msg;
 
-	_NgGOCreateMenubar(go);
 	if(nec->ncledit_class.nedit)
 		sprintf(buff,"NCL Editor %d",nec->ncledit_class.nedit++);
 	else{
@@ -984,6 +1032,27 @@ NECreateWin
 	}
 
 	_NgGOSetTitle(go,buff,NULL);
+
+	_NgGOCreateMenubar(go);
+
+	XtVaSetValues(go->go.options,
+		XmNsensitive,	True,
+		NULL);
+	
+	w = XtVaCreateManagedWidget
+		("errorBellOption",xmToggleButtonGadgetClass,
+		 go->go.omenu,
+		 XmNset,np->error_bell_on,
+		 NULL);
+	XtAddCallback(w,XmNvalueChangedCallback,ErrorBellCB,go);
+
+
+	w = XtVaCreateManagedWidget
+		("errorPopupOption",xmToggleButtonGadgetClass,
+		 go->go.omenu,
+		 XmNset,np->error_popup_on,
+		 NULL);
+	XtAddCallback(w,XmNvalueChangedCallback,ErrorPopupCB,go);
 
 	pane = XtVaCreateManagedWidget("pane",xmPanedWindowWidgetClass,
 								go->go.manager,

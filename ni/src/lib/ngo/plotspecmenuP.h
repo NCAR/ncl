@@ -1,5 +1,5 @@
 /*
- *      $Id: plotspecmenuP.h,v 1.4 1999-02-23 03:56:52 dbrown Exp $
+ *      $Id: plotspecmenuP.h,v 1.5 1999-02-27 03:18:34 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -49,6 +49,7 @@ typedef struct _PlotSpecMenuRec
         int		nsid;
         Widget		create_dialog;
         Widget		dialog_text;
+	Widget		config_pb;
         NgMenuRec	plot;
         NgMenuRec	var;
         NgMenuRec	data;

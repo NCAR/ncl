@@ -1,5 +1,5 @@
 /*
- *      $Id: plotspecmenu.c,v 1.7 1999-02-23 03:56:51 dbrown Exp $
+ *      $Id: plotspecmenu.c,v 1.8 1999-02-27 03:18:33 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -62,18 +62,19 @@ typedef struct _NgPlotStyleRec {
 	NhlString	name;
 	NhlClass	class;
 	NhlString	def_symbol;
+	NhlString	path;
+#if 0
 	NgDataProfile	dprof;
+#endif
 } NgPlotStyleRec, *NgPlotStyle;
 
 NgPlotStyle	PlotStyles = NULL;
 
-static NgDataProfileRec VarDataProf =
-	{_NgDEFAULT,NULL,NULL,0,0,False,NULL };
-
-NgPlotStyleRec  VarPlotStyle = { NULL, NULL, NULL, "ncl_var", &VarDataProf };
+NgPlotStyleRec  VarPlotStyle = { NULL, NULL, NULL, "ncl_var",NULL };
 
 static int	PlotStyleCount = 0;
-static 	char	*PlotStyleDir = NULL;
+static 	NhlString  PlotStylePath[4] = { NULL,NULL,NULL,NULL };
+static int PlotStylePathCount = 0;
 
 static NhlString GetDefaultSymbol
 (
@@ -103,10 +104,12 @@ static void CancelCB
         XtVaGetValues(w,
                       XmNuserData,&pstyle,
                       NULL);
-
-	NgFreeDataProfile(pstyle->dprof);
-	pstyle->dprof = NULL;
-
+#if 0
+	if (pstyle != &VarPlotStyle) {
+		NgFreeDataProfile(pstyle->dprof);
+		pstyle->dprof = NULL;
+	}
+#endif
 	return;
 }
 
@@ -182,7 +185,9 @@ static void CreateCB
 #if	DEBUG_PLOTSPECMENU
 		fprintf(stderr,"%s\n",prof->class_name);
 #endif
+#if 0
 		pstyle->dprof = prof;
+#endif
 
 		NgSetDataProfileVar(prof,vdata,True,True);
 
@@ -192,7 +197,7 @@ static void CreateCB
 		hlu_create_rec.obj_id = NhlNULLOBJID;
 		hlu_create_rec.class_name = prof->class_name;
 		hlu_create_rec.plot_style = pstyle->pstyle;
-		hlu_create_rec.plot_style_dir = PlotStyleDir;
+		hlu_create_rec.plot_style_dir = pstyle->path;
 		hlu_create_rec.has_input_data = True;
 		hlu_create_rec.state = _hluNOTCREATED;
 		hlu_create_rec.dprof = prof;
@@ -249,18 +254,18 @@ static void CreateDialog
 	XtSetArg(args[nargs],XmNuserData,pstyle);nargs++;
 	name = NgNclGetSymName(priv->nsid,pstyle->def_symbol,True);
         if (! priv->create_dialog) {
-		Widget pb;
                 priv->create_dialog = XmCreateMessageDialog
                         (pub->menubar,"CreateDialog",args,nargs);
                 help = XmMessageBoxGetChild
                         (priv->create_dialog,XmDIALOG_HELP_BUTTON);
                 XtUnmanageChild(help);
-		pb = XtVaCreateManagedWidget
+		priv->config_pb = XtVaCreateManagedWidget
 			("ConfigurePB",
 			 xmPushButtonWidgetClass,priv->create_dialog,
 			 XmNuserData,pstyle,
 			 NULL);
-		XtAddCallback(pb,XmNactivateCallback,CreateCB,priv);
+		XtAddCallback
+			(priv->config_pb,XmNactivateCallback,CreateCB,priv);
 
 		XtAddCallback(priv->create_dialog,
 			      XmNokCallback,CreateCB,priv);
@@ -292,6 +297,13 @@ static void CreateDialog
                 XtVaSetValues(priv->dialog_text,
                               XmNvalue,name,
                               NULL);
+	}
+	if (! pstyle->class) {
+		if (XtIsManaged(priv->config_pb))
+			XtUnmanageChild(priv->config_pb);
+	}
+	else if (! XtIsManaged(priv->config_pb)) {
+		 XtManageChild(priv->config_pb);
 	}
 	XmStringFree(xmname);
         XtManageChild(priv->create_dialog);
@@ -366,39 +378,36 @@ NhlErrorTypes NgUpdatePlotSpecMenu
         return NhlNOERROR;
 }
 
-static void 
-UpdatePlotStyles
+static void
+GetPlotStylesInPath
 (
-	PlotSpecMenuRec	*priv
+	PlotSpecMenuRec	*priv,
+	NhlString	path
 )
 {
-	struct stat		statbuf;
-	struct dirent		*dirp;  
-	DIR			*dp;
-	int			ret;
-	char			*ptr;
-	static	int last_count = 0;
-	int	count = 0;
-	char	*endp,fullpath[1024];
-	int i;
+	struct stat	statbuf;
+	struct dirent	*dirp;  
+	DIR		*dp;
+	int		i,j;
+	int		count, totalcount;
+	char		fullpath[1024];
+	char		*endp;
+	
 
-	if (! PlotStyleDir) {
-		PlotStyleDir = getenv("NDV_PLOT_STYLE_DIR");
-		if (! PlotStyleDir) {
-			NHLPERROR((NhlWARNING,NhlEUNKNOWN,
-                                   "NDV_PLOT_STYLE_DIR environment variable not set; assuming value ./plot_styles"));
-			PlotStyleDir = "./plot_styles";
-		}
+	for (i = 0; i < PlotStylePathCount; i ++) {
+		if (! strcmp(path,PlotStylePath[i])) /* dir already read */
+			return;
 	}
 
-	if ((dp = opendir(PlotStyleDir)) == NULL) {
-		NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-			   "Invalid plot style directory: %s",PlotStyleDir));
+	if ((dp = opendir(path)) == NULL) {
+		NHLPERROR((NhlWARNING,NhlEUNKNOWN,
+			   "Invalid plot style directory: %s",path));
 		return;
 	}
 /*
  * first just count the possibilities
  */
+	count = 0;
 	while ( (dirp = readdir(dp)) != NULL) {
 		char *cp;
 		FILE *fp;
@@ -414,15 +423,26 @@ UpdatePlotStyles
 			continue;
 		count++;
 	}
-	if (count == last_count)
+	if (! count) {
+		closedir(dp);
 		return;
+	}
 
-	PlotStyles = NhlRealloc(PlotStyles,count * sizeof(NgPlotStyleRec));
-	last_count = count;
+	PlotStylePath[PlotStylePathCount] = NhlMalloc(strlen(path)+1);
+	strcpy(PlotStylePath[PlotStylePathCount],path);
+
+	totalcount = PlotStyleCount + count;
+	PlotStyles = NhlRealloc(PlotStyles,
+				totalcount * sizeof(NgPlotStyleRec));
+	if (! PlotStyles) {
+		 NHLPERROR((NhlFATAL,ENOMEM,NULL));
+		closedir(dp);
+		return;
+	}
 	rewinddir(dp);
 
-	count = 0;
-	strcpy(fullpath,PlotStyleDir);
+	count = PlotStyleCount;
+	strcpy(fullpath,path);
 	endp = fullpath + strlen(fullpath);
 	*endp++ = '/';
 	*endp = '\0';
@@ -495,22 +515,40 @@ UpdatePlotStyles
 					GetDefaultSymbol(np);
 
 				PlotStyles[count].class = class;
+#if 0
 				PlotStyles[count].dprof = NULL;
+#endif
+
 				gotclass = True;
 			}
 			if (gotname && gotclass)
 				break;
 		}
 		if (gotclass) {
+			NhlBoolean duplicate = False;
 			strcpy(buf,dirp->d_name);
 			cp = strrchr(buf,'.');
 			*cp = '\0';
+			/* 
+			 * If this plot style name matches any in previously
+			 * parsed directories, skip it.
+			 */
+			for (j = 0; j < PlotStyleCount; j++) {
+				if (! strcmp(buf,PlotStyles[j].pstyle)) {
+					duplicate = True;
+					break;
+				}
+			}
+			if (duplicate)
+				continue;
 			PlotStyles[count].pstyle = 
 				NhlMalloc(strlen(buf)+1);
 			strcpy(PlotStyles[count].pstyle,buf);
 			if (! gotname)
 				PlotStyles[count].name =
                                         PlotStyles[count].pstyle;
+			PlotStyles[count].path = 
+				PlotStylePath[PlotStylePathCount];
 			count++;
 			continue;
 		}
@@ -520,7 +558,54 @@ UpdatePlotStyles
 			
 	}
         closedir(dp);
-	PlotStyleCount = count;
+	if (count) {
+		PlotStylePathCount++;
+		PlotStyleCount = count;
+	}
+	else {
+		NhlFree(PlotStylePath[PlotStylePathCount]);
+	}
+
+	return;
+}
+
+/*
+ * Plot style directory search:
+ * 	1. NDV_PLOT_STYLE_DIR environment variable
+ *	2. $NCARG_ROOT/lib/ncarg/plot_styles
+ * all found plot styles are merged. if 2 plot styles have the same name
+ * then the first one is used.
+ */
+static void 
+UpdatePlotStyles
+(
+	PlotSpecMenuRec	*priv
+)
+{
+	NhlString path;
+	char buf[512];
+
+	path = getenv("NDV_PLOT_STYLE_DIR");
+	if (path) {
+		GetPlotStylesInPath(priv,path);
+	}
+	else {
+		NHLPERROR((NhlWARNING,NhlEUNKNOWN,
+			   "NDV_PLOT_STYLE_DIR environment variable not set"));
+	}	
+
+	path = (char *) GetNCARGPath("root");
+	if (path) {
+		strcpy(buf,path);
+		strcat(buf,"/lib/ncarg/plot_styles");
+
+		GetPlotStylesInPath(priv,buf);	
+	}
+	else {
+		NHLPERROR((NhlWARNING,NhlEUNKNOWN,
+			   "NCARG_ROOT environment variable not set"));
+	}	
+
 	return;
 }
 
