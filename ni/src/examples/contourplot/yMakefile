@@ -1,5 +1,5 @@
 #
-#   $Id: yMakefile,v 1.35 1999-03-25 03:47:54 haley Exp $
+#   $Id: yMakefile,v 1.36 2004-10-21 22:06:17 haley Exp $
 #
 #   Makefile for HLU ContourPlot examples
 #
@@ -29,7 +29,6 @@ SRCS        = $(CSRCS) $(FSRCS)
 OBJS        = $(COBJS) $(FOBJS)
 INCLUDES    = cn03c.h cn11c.h
 RESFILES    = cn01.res cn02.res cn03.res cn04.res cn11.res cn12.res cn13.res cn17.res
-ASCDATA     = cn03f.asc cn04n.asc cn11f.asc cn12n.asc
 EXFILES     = $(SRCS) $(INCLUDES)
 
 InstallTarget($(EXFILES),$(INSTALL_LIB),$(HLUEXROOT)/$(MYNAME))
@@ -37,7 +36,6 @@ InstallTarget($(RESFILES),$(INSTALL_LIB),$(RESFILEROOT)/$(MYNAME))
 #if !defined(CRAY)
 InstallTarget($(NSRCS),$(INSTALL_LIB),$(NCLEXROOT)/$(MYNAME))
 #endif
-InstallTarget($(ASCDATA),$(INSTALL_LIB),$(DATAROOT)/asc)
 
 CExampleTarget(cn01c,cn01c.o)
 CExampleTarget(cn02c,cn02c.o)
