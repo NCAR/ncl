@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ncargcex.csh,v 1.12 1994-07-12 21:38:28 haley Exp $
+#	$Id: ncargcex.csh,v 1.13 1994-07-13 16:26:53 haley Exp $
 #
 
 #********************#
@@ -154,7 +154,7 @@ set names
 set ws_type = "1"
 set default_file = "gmeta"
 set graphic_type = "ncgm"
-set message = "Metafile is named "
+set message = "Metafile is named"
 
 #***************#
 #               #
@@ -250,9 +250,6 @@ while ($#argv > 0)
             breaksw
 
         case "-W":
-            unset psfile
-            unset epsfile
-            unset epsifile
             shift
             set ws_type = "$1"
 
@@ -270,30 +267,27 @@ while ($#argv > 0)
             case "23":
             case "26":
             case "29":
-                set psfile
                 set default_file = "gmeta1.ps"
                 set graphic_type = "ps"
-                set message = "PostScript file is named "
+                set message = "PostScript file is named"
             breaksw
 
             case "21":
             case "24":
             case "27":
             case "30":
-                set epsfile
                 set default_file = "gmeta1.eps"
                 set graphic_type = "eps"
-                set message = "Encapsulated PostScript file is named "
+                set message = "Encapsulated PostScript file is named"
             breaksw
 
             case "22":
             case "25":
             case "28":
             case "31":
-                set epsifile
                 set default_file = "gmeta1.epsi"
                 set graphic_type = "epsi"
-                set message = "Interchange Encapsulated PostScript file is named "
+                set message = "Interchange Encapsulated PostScript file is named"
             breaksw
 
             default:
