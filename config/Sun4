@@ -38,7 +38,7 @@ VDEFINE         = -DVERSION='"$(VERSION)"'
 CC              = cc
 CC_LD           = $(CC)
 CDEBUG          =
-COPT            = -g
+COPT            = -O
 CMISC           = 
 CFLAGS          = $(OS) $(ARCH) $(CDEFINES) $(CDEBUG) $(COPT) $(CMISC)\
                   $(FLOAT_OPT) $(XPATH) $(VDEFINE)
