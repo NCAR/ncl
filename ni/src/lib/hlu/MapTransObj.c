@@ -1,5 +1,5 @@
 /*
-*      $Id: MapTransObj.c,v 1.50 2001-11-12 23:59:53 dbrown Exp $
+*      $Id: MapTransObj.c,v 1.51 2001-11-13 01:26:50 dbrown Exp $
 */
 /************************************************************************
 *									*
@@ -1843,6 +1843,7 @@ static NhlErrorTypes GetWindowLimits
 	float clon;
 	int ll;
 	NhlBoolean two_step = False;
+	NhlBoolean lon_done,lat_done;
 
         *wl=*wr=*wb=*wt=0.0;
         c_mapset("MA",wl,wr,wb,wt);
@@ -1879,11 +1880,18 @@ static NhlErrorTypes GetWindowLimits
 		lonmax = clon + 180;
 	}
         
-        for (tlat = mtp->min_lat; tlat < mtp->max_lat + latinc; 
-	     tlat += latinc) {
-		tlat = tlat > mtp->max_lat ? mtp->max_lat : tlat;
-                for (tlon = lonmin; tlon < lonmax + loninc; tlon += loninc) {
-			tlon = tlon > lonmax ? lonmax : tlon;
+	lat_done = False;
+        for (tlat = mtp->min_lat; ; tlat += latinc) {
+		if (tlat > mtp->max_lat) {
+			tlat = mtp->max_lat;
+			lat_done = True;
+		}
+		lon_done = False;
+                for (tlon = lonmin; ; tlon += loninc) {
+			if (tlon > lonmax) {
+				tlon = lonmax;
+				lon_done = True;
+			}
                         c_maptra(tlat,tlon,&uval,&vval);
                         if (uval > 1E9)
                                 continue;
@@ -1891,11 +1899,16 @@ static NhlErrorTypes GetWindowLimits
                         if (uval > umax) umax = uval;
                         if (vval < vmin) vmin = vval;
 			if (vval > vmax) vmax = vval;
+			if (lon_done)
+				break;
                 }
+		lon_done = False;
 		if (two_step) {
-			for (tlon = clon - 180; 
-			     tlon < lonmax2 + loninc; tlon += loninc) {
-				tlon = tlon > lonmax2 ? lonmax2 : tlon;
+			for (tlon = clon - 180; ; tlon += loninc) {
+				if (tlon > lonmax2) {
+					tlon = lonmax2;
+					lon_done = True;
+				}
 				c_maptra(tlat,tlon,&uval,&vval);
 				if (uval > 1E9)
 					continue;
@@ -1903,8 +1916,12 @@ static NhlErrorTypes GetWindowLimits
 				if (uval > umax) umax = uval;
 				if (vval < vmin) vmin = vval;
 				if (vval > vmax) vmax = vval;
+				if (lon_done)
+					break;
 			}
 		}
+		if (lat_done)
+			break;
         }
         *wl = umin;
         *wr = umax;
