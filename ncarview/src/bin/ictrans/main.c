@@ -1,5 +1,5 @@
 /*
- *	$Id: main.c,v 1.5 1992-09-01 23:38:27 clyne Exp $
+ *	$Id: main.c,v 1.6 1992-10-15 15:23:23 clyne Exp $
  */
 #include <stdio.h>
 #include <signal.h>
@@ -16,7 +16,6 @@ main(argc, argv)
 	int	argc;
 	char	**argv;
 {
-
 
 	(void) signal(SIGINT, SIG_IGN);
 	if (ICTrans(argc, argv, NULL) < 0) {

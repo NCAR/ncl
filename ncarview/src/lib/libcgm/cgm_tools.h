@@ -116,6 +116,8 @@ typedef	struct {
 **
 */
 
+/* This macro protects C function names from C++ name-mangling. */
+NCARG_PROTO_BEGIN
 
 extern	Cgm_fd	CGM_open(
 #ifdef	NeedFuncProto
@@ -307,5 +309,6 @@ extern	Directory	*CGM_editFrame(
 #endif
 );
 
+NCARG_PROTO_END
 
 #endif	/* _cgm_tools_	*/

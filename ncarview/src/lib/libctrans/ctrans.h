@@ -1,6 +1,6 @@
 
 /*
- *      $Id: ctrans.h,v 1.2 1992-09-01 23:42:00 clyne Exp $
+ *      $Id: ctrans.h,v 1.3 1992-10-15 15:23:50 clyne Exp $
  */
 /*
  *	File:		ctrans.h
@@ -29,6 +29,9 @@ typedef	enum	{
 
 
 #define	EOM	0	/* End of Metafile	*/
+
+/* This macro protects C function names from C++ name-mangling. */
+NCARG_PROTO_BEGIN
 
 extern	CtransRC	init_ctrans(
 #ifdef	NeedFuncProto
@@ -187,5 +190,7 @@ extern	char	*CtransGetErrorMessage(
 #ifdef	NeedFuncProto
 #endif
 );
+
+NCARG_PROTO_END
 
 #endif
