@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.50 1997-04-09 17:31:56 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.51 1997-04-11 19:31:23 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -9816,7 +9816,7 @@ static NhlErrorTypes    SetupLevelsAutomatic
 	if ((*levels = (float *) NhlMalloc(count * sizeof(float))) == NULL) {
 		e_text = "%s: dynamic memory allocation error";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return(ret);
+		return(NhlFATAL);
 	}
 	for (i =  0; i <  count; i++)
 		(*levels)[i] = lmin + i * spacing;
@@ -9997,7 +9997,7 @@ static NhlErrorTypes ChooseSpacingLin
 	}
 		
 	d = pow(10.0,floor(log10(*tend-*tstart)) - 2.0);
-	u = *spacing = 1e30;
+	u = *spacing = FLT_MAX;
 	for(i=0;i<npts; i++) {
 		t = table[i] * d;
 		am1 = ceil(*tstart/t) *t;
