@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclVar.c,v 1.69 2003-08-08 23:11:02 dbrown Exp $
+ *      $Id: NclVar.c,v 1.70 2005-02-05 00:13:55 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1258,9 +1258,6 @@ NclSelectionRecord *sel_ptr;
 */
 	if(thevalue->obj.id != value->obj.id) {
 		if(sel_ptr == NULL) {
-/*
-* Case where neither have missing values
-*/
 			if(value->multidval.type->type_class.type != thevalue->multidval.type->type_class.type) {
 				tmp_md = _NclCoerceData(value,
 						thevalue->multidval.type->type_class.type,
@@ -1287,36 +1284,31 @@ NclSelectionRecord *sel_ptr;
 				}
 			}
 
-			if((tmpmd_ndims == theval_ndims)&&(tmp_md->multidval.kind != SCALAR)){
-				for(i = 0, j = 0; i< thevalue->multidval.n_dims;i++) {
-					if (thevalue->multidval.dim_sizes[i] == 1)
-						continue;
-					while (tmp_md->multidval.dim_sizes[j] == 1)
-						j++;
-					
-					if(tmp_md->multidval.dim_sizes[j] != 
-						thevalue->multidval.dim_sizes[i]) {
+			if((tmpmd_ndims == theval_ndims)|| (tmp_md->multidval.kind == SCALAR)){
+				if (tmp_md->multidval.kind != SCALAR) {
+					for(i = 0, j = 0; i< thevalue->multidval.n_dims;i++) {
+						if (thevalue->multidval.dim_sizes[i] == 1)
+							continue;
+						while (tmp_md->multidval.dim_sizes[j] == 1)
+							j++;
 						
-						NhlPError(NhlFATAL,NhlEUNKNOWN,"Dimension sizes of left hand side and right hand side of assignment do not match");
-						if((tmp_md!=value) &&(tmp_md->obj.status == TEMPORARY)) {
-							_NclDestroyObj((NclObj)tmp_md);
+						if(tmp_md->multidval.dim_sizes[j] != thevalue->multidval.dim_sizes[i]) {
+							NhlPError(NhlFATAL,NhlEUNKNOWN,
+								  "Dimension sizes of left hand side and right hand side of assignment do not match");
+							if((tmp_md!=value) &&(tmp_md->obj.status == TEMPORARY)) {
+								_NclDestroyObj((NclObj)tmp_md);
+							}
+							return(NhlFATAL);
 						}
-						return(NhlFATAL);
+						j++;
 					}
-					j++;
 				}
-				if(thevalue->multidval.missing_value.has_missing ) {
-/*
-* Situation where missing value already exists
-*/
-				} else if(tmp_md->multidval.missing_value.has_missing) {
-/*
-* Situation where a missing value attribute must be added to 
-* the variable
-*					
-*/
-					missing_ptr = (NclScalar*)NclMalloc((unsigned)	
-							sizeof(NclScalar));
+				if (! thevalue->multidval.missing_value.has_missing &&
+				    tmp_md->multidval.missing_value.has_missing) {
+				        /*
+					 * A missing value attribute must be added to the variable
+					 */
+					missing_ptr = (NclScalar*)NclMalloc((unsigned)sizeof(NclScalar));
 					*missing_ptr = tmp_md->multidval.missing_value.value;
 					miss_dim_sizes[0] = 1;
 					
@@ -1333,39 +1325,16 @@ NclSelectionRecord *sel_ptr;
 						NULL,
 						thevalue->multidval.type);
 					if(self_var->var.att_id == -1) {
-						self_var->var.att_id =
-							_NclAttCreate(NULL,NULL,Ncl_Att,0,(NclObj)self_var);
-						self->var.att_cb = _NclAddCallback((NclObj)_NclGetObj(self->var.att_id),(NclObj)self,_NclVarMissingNotify,MISSINGNOTIFY,NULL);
+						self_var->var.att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,(NclObj)self_var);
+						self->var.att_cb = _NclAddCallback((NclObj)_NclGetObj(self->var.att_id),
+										   (NclObj)self,
+										   _NclVarMissingNotify,
+										   MISSINGNOTIFY,
+										   NULL);
 					}
 					_NclAddAtt(self_var->var.att_id,NCL_MISSING_VALUE_ATT,attvalue,NULL);
 				}
-				 
-	/*
-	* By changing this field to permanent the calling env will not destroy it
-	*
-	*			if(!_NclSetStatus((NclObj)tmp_md,PERMANENT) ) {
-	*
-	* this is ok since value is destroyed by calling env when value is STATIC.
-	* Note that if tmp_md came from _NclCoerceData it will not hit this branch
-	* so no memory is lost. The only way tmp_md can be PERMANENT or STATIC is
-	* if it came in from the calling env. Therefore no pointer is actually lost. 
-	*
-	*				tmp_md1 = _NclCopyVal(tmp_md,NULL);
-	*				_NclSetStatus((NclObj)tmp_md1,PERMANENT);
-	*				tmp_md = tmp_md1;
-	*			}
-	*
-	* Since whole sale replacement of thevalue occurs, it is the responsiblity
-	* of this function to free the old storage
-	*
-	* BOGUS CODE ALERT----> switching to id's instead of pointers makes this a
-	* no-no
-	*
-	*
-	*			_NclDelParent((NclObj)thevalue,(NclObj)self);
-	*			_NclAddParent((NclObj)tmp_md,(NclObj)self);
-	*			self->var.thevalue_id = tmp_md->obj.id;
-	*/
+
 				mysel.n_entries = thevalue->multidval.n_dims;
 				for( i = 0; i < thevalue->multidval.n_dims; i++) {
 					mysel.selection[i].sel_type = Ncl_SUB_ALL;
@@ -1375,16 +1344,7 @@ NclSelectionRecord *sel_ptr;
 				ret = _NclWriteSubSection((NclData)thevalue,&mysel,(NclData)tmp_md);
 				if((tmp_md != value)&&(tmp_md->obj.status != PERMANENT))	
 					_NclDestroyObj((NclObj)tmp_md);
-				return(NhlNOERROR);
-			} else if( tmp_md->multidval.kind == SCALAR) {
-				mysel.n_entries = thevalue->multidval.n_dims;
-				for( i = 0; i < thevalue->multidval.n_dims; i++) {
-					mysel.selection[i].sel_type = Ncl_SUB_ALL;
-					mysel.selection[i].dim_num = i;
-					mysel.selection[i].u.sub.stride = 1;
-				}
-				_NclWriteSubSection((NclData)thevalue, &mysel, (NclData)tmp_md);
-				return(ret);
+				return ret;
 			} else {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"Number of dimensions on right hand side do not match number of dimension in left hand side");
 				return(NhlFATAL);

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclTypestring.c.specific,v 1.6 1999-02-23 23:32:20 ethan Exp $
+ *      $Id: NclTypestring.c.specific,v 1.7 2005-02-05 00:13:55 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -236,7 +236,7 @@ NclTypeClass fc;
 		byte *fl = (byte*)from;
 		if((from_m == NULL)||(to_m == NULL)) {
 			for(i = 0; i < n;i++,res++,fl++)  {
-				sprintf(buffer,"%o",*fl);
+				sprintf(buffer,"0x%02x",*fl);
 				*res = (string)NrmStringToQuark(buffer);
 			}
 		} else {
@@ -246,7 +246,7 @@ NclTypeClass fc;
 				if(tmp) {
 					*res = tmp_mis.stringval;
 				} else {
-					sprintf(buffer,"%o",*fl);
+					sprintf(buffer,"0x%02x",*fl);
 					*res = (string)NrmStringToQuark(buffer);
 				}
 			}

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclTypebyte.c.specific,v 1.5 1999-02-23 23:32:18 ethan Exp $
+ *      $Id: NclTypebyte.c.specific,v 1.6 2005-02-05 00:13:55 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -35,7 +35,7 @@ void *val;
         byte sp = *(byte *)val;
 	int ret;
 
-        ret = nclfprintf(fp,"%o",sp);
+        ret = nclfprintf(fp,"0x%02x",sp);
 	if(ret < 0) {
 		return(NhlWARNING);
 	} else {

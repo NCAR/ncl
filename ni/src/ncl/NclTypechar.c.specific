@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclTypechar.c.specific,v 1.4 1999-02-23 23:32:18 ethan Exp $
+ *      $Id: NclTypechar.c.specific,v 1.5 2005-02-05 00:13:55 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -23,6 +23,7 @@
 
 #include "NclTypelogical.h"
 #include "NclTypefloat.h"
+#include <ctype.h>
 
 static NhlErrorTypes Ncl_Type_char_print
 #if     NhlNeedProto
@@ -33,10 +34,13 @@ FILE *fp;
 void *val;
 #endif
 {
-        char *sp = (char*)val;
+        unsigned char *sp = (unsigned char*)val;
 	int ret;
 
-        ret = nclfprintf(fp,"%c",*sp);
+	if (isprint(*sp) || isspace(*sp))
+	        ret = nclfprintf(fp,"%c",*sp);
+        else
+	        ret = nclfprintf(fp,"0x%02x",*sp);
 	if(ret < 0) {
                 return(NhlWARNING);
         } else {

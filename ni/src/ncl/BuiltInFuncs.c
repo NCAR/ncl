@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.173 2005-01-21 22:51:06 dbrown Exp $
+ *      $Id: BuiltInFuncs.c,v 1.174 2005-02-05 00:13:55 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -38,6 +38,8 @@ extern "C" {
 #include <fcntl.h>
 #include <unistd.h>
 #include <math.h>
+#include <limits.h>
+#include <float.h>
 #include "defs.h"
 #include <errno.h>
 #include "Symbol.h"
@@ -4423,7 +4425,6 @@ NhlErrorTypes _NclIinttoshort
 ()
 #endif
 {
-	static int maxshort = -1;
 	NclScalar missing,missing2;
         int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
         short *out_val;
@@ -4431,13 +4432,6 @@ NhlErrorTypes _NclIinttoshort
         int *value;
         int total=1;
         int i;
-
-	if(maxshort == -1) {
-/*
-* Assuming IEEE integer representation
-*/
-		maxshort  = (int)pow(2.0,(double)((sizeof(short)*8)-1)) - 1;
-	}
 
         value = (int*)NclGetArgValue(
                         0,
@@ -4453,24 +4447,28 @@ NhlErrorTypes _NclIinttoshort
         }
 	out_val = NclMalloc(((NclTypeClass)nclTypeshortClass)->type_class.size *total);
 	if(has_missing) {
+		if (missing.intval < SHRT_MIN || missing.intval > SHRT_MAX) {
+		        missing2.shortval = ((NclTypeClass)nclTypeshortClass)->type_class.default_mis.shortval;
+		}
+		else {
+			missing2.shortval = (short)missing.intval;
+		}
 		for(i = 0; i < total; i++) {
-			if((value[i] < -maxshort)||(value[i] > maxshort)||(value[i] == missing.intval)) {
-				out_val[i] = (short)missing.intval;
+			if((value[i] < SHRT_MIN) ||(value[i] > SHRT_MAX)||(value[i] == missing.intval)) {
+				out_val[i] = (short)missing2.shortval;
 			} else {
 				out_val[i] = (short)value[i];
 			}
 		}
-		missing2.shortval =  (short)missing.intval;
 	} else {
+		missing2.shortval = ((NclTypeClass)nclTypeshortClass)->type_class.default_mis.shortval;
 		for(i = 0; i < total; i++) {
-			if((value[i] < -maxshort )||(value[i] > maxshort)) {
-				out_val[i] = ((NclTypeClass)nclTypeshortClass)->type_class.default_mis.shortval;
+			if((value[i] < SHRT_MIN )||(value[i] > SHRT_MAX)) {
+				has_missing = 1;
+				out_val[i] = missing2.shortval;
 			} else {
 				out_val[i] = (short)value[i];
 			}
-		}
-		if(has_missing) {
-			missing2.shortval = ((NclTypeClass)nclTypeshortClass)->type_class.default_mis.shortval;
 		}
 	}
 	return(NclReturnValue(
@@ -4512,25 +4510,28 @@ NhlErrorTypes _NclIinttobyte
         }
 	out_val = NclMalloc(((NclTypeClass)nclTypebyteClass)->type_class.size *total);
 	if(has_missing) {
+		if (missing.intval < 0 || missing.intval > UCHAR_MAX) {
+		        missing2.byteval = ((NclTypeClass)nclTypebyteClass)->type_class.default_mis.byteval;
+		}
+		else {
+			missing2.byteval = (byte)missing.intval;
+		}
 		for(i = 0; i < total; i++) {
-			if((value[i] < 0)||(value[i] > 255)||(value[i] == missing.intval)) {
-				out_val[i] = (byte)missing.intval;
+			if((value[i] < 0)||(value[i] > UCHAR_MAX)||(value[i] == missing.intval)) {
+				out_val[i] = (byte)missing2.byteval;
 			} else {
 				out_val[i] = (byte)value[i];
 			}
 		}
-		missing2.byteval = (byte)missing.intval;
 	} else {
+		missing2.byteval = ((NclTypeClass)nclTypebyteClass)->type_class.default_mis.byteval;
 		for(i = 0; i < total; i++) {
-			if((value[i] < 0)||(value[i] > 255)) {
-				out_val[i] = ((NclTypeClass)nclTypebyteClass)->type_class.default_mis.byteval;
+			if((value[i] < 0)||(value[i] > UCHAR_MAX)) {
+				out_val[i] = missing2.byteval;
 				has_missing = 1;
 			} else {
 				out_val[i] = (byte)value[i];
 			}
-		}
-		if(has_missing) { 
-			missing2.byteval = ((NclTypeClass)nclTypebyteClass)->type_class.default_mis.byteval;
 		}
 	}
 	return(NclReturnValue(
@@ -4573,23 +4574,29 @@ NhlErrorTypes _NclIinttochar
         }
 	out_val = NclMalloc(((NclTypeClass)nclTypecharClass)->type_class.size *total);
 	if(has_missing) {
+		if (missing.intval < 0 || missing.intval > UCHAR_MAX) {
+		        missing2.charval = ((NclTypeClass)nclTypecharClass)->type_class.default_mis.charval;
+		}
+		else {
+			missing2.charval = (char)missing.intval;
+		}
 		for(i = 0; i < total; i++) {
-			if((value[i] < 0)||(value[i] > 255)||(value[i] == missing.intval)) {
-				out_val[i] = (char)missing.intval;
+			if((value[i] < 0)||(value[i] > UCHAR_MAX)||(value[i] == missing.intval)) {
+				out_val[i] = (char)missing2.charval;
 			} else {
 				out_val[i] = (char)value[i];
 			}
 		}
-		missing2.charval = (char)missing.intval;
 	} else {
+		missing2.charval = ((NclTypeClass)nclTypecharClass)->type_class.default_mis.charval;
 		for(i = 0; i < total; i++) {
-			if((value[i] < 0)||(value[i] > 255)) {
-				out_val[i] = ((NclTypeClass)nclTypecharClass)->type_class.default_mis.charval;
+			if((value[i] < 0)||(value[i] > UCHAR_MAX)) {
+				has_missing = 1;
+				out_val[i] = missing2.charval;
 			} else {
 				out_val[i] = (char)value[i];
 			}
 		}
-		missing2.charval = ((NclTypeClass)nclTypecharClass)->type_class.default_mis.charval;
 	}
 	return(NclReturnValue(
 		(void*)out_val,
@@ -4683,26 +4690,29 @@ NhlErrorTypes _NclIshorttobyte
         }
 	out_val = NclMalloc(((NclTypeClass)nclTypebyteClass)->type_class.size *total);
 	if(has_missing) {
+		if (missing.shortval < 0 || missing.shortval > UCHAR_MAX) {
+		        missing2.byteval = ((NclTypeClass)nclTypebyteClass)->type_class.default_mis.byteval;
+		}
+		else {
+			missing2.byteval = (byte)missing.shortval;
+		}
 		for(i = 0; i < total; i++) {
-			if((value[i] < 0)||(value[i] > 255)||(value[i] == missing.shortval)) {
-				out_val[i] = (byte)  missing.shortval;
+			if((value[i] < 0)||(value[i] > UCHAR_MAX)||(value[i] == missing.shortval)) {
+				out_val[i] = (byte)  missing2.byteval;
 			} else {
 				out_val[i] = (byte)value[i];
 			}
 		}
-		missing2.byteval = (byte)  missing.shortval;
 
 	} else {
+		missing2.byteval = ((NclTypeClass)nclTypebyteClass)->type_class.default_mis.byteval;  
 		for(i = 0; i < total; i++) {
-			if((value[i] < 0)||(value[i] > 255)) {
-				out_val[i] = ((NclTypeClass)nclTypebyteClass)->type_class.default_mis.byteval;	
+			if((value[i] < 0)||(value[i] > UCHAR_MAX)) {
+				out_val[i] = missing2.byteval;
 				has_missing = 1;
 			} else {
 				out_val[i] = (byte)value[i];
 			}
-		}
-		if(has_missing) {
-			missing2.byteval = ((NclTypeClass)nclTypebyteClass)->type_class.default_mis.byteval;  
 		}
 	}
 	return(NclReturnValue(
@@ -4745,25 +4755,28 @@ NhlErrorTypes _NclIshorttochar
         }
 	out_val = NclMalloc(((NclTypeClass)nclTypecharClass)->type_class.size *total);
 	if(has_missing) {
+		if (missing.shortval < 0 || missing.shortval > UCHAR_MAX) {
+		        missing2.charval = ((NclTypeClass)nclTypecharClass)->type_class.default_mis.charval;
+		}
+		else {
+			missing2.charval = (char)missing.shortval;
+		}
 		for(i = 0; i < total; i++) {
-			if((value[i] < 0)||(value[i] > 255)||(value[i] == missing.shortval)) {
-				out_val[i] = (char)missing.shortval;
+			if((value[i] < 0)||(value[i] > UCHAR_MAX)||(value[i] == missing.shortval)) {
+				out_val[i] = (char)missing2.charval;
 			} else {
 				out_val[i] = (char)value[i];
 			}
 		}
-		missing2.charval = (char)missing.shortval;
 	} else {
+		missing2.charval = ((NclTypeClass)nclTypecharClass)->type_class.default_mis.charval;
 		for(i = 0; i < total; i++) {
-			if((value[i] < 0)||(value[i] > 255)) {
-				out_val[i] = ((NclTypeClass)nclTypecharClass)->type_class.default_mis.charval;
+			if((value[i] < 0)||(value[i] > UCHAR_MAX)) {
+				out_val[i] = missing2.charval;
 				has_missing = 1;
 			} else {
 				out_val[i] = (char)value[i];
 			}
-		}
-		if(has_missing) {
-			missing2.charval = ((NclTypeClass)nclTypecharClass)->type_class.default_mis.charval;
 		}
 	}
 	return(NclReturnValue(
@@ -4836,7 +4849,6 @@ NhlErrorTypes _NclIlongtoint
 ()
 #endif
 {
-	static int maxint = -1;
 	NclScalar missing,missing2;
         int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
         int *out_val;
@@ -4845,12 +4857,6 @@ NhlErrorTypes _NclIlongtoint
         int total=1;
         int i;
 
-	if(maxint == -1) {
-/*
-* Assuming IEEE integer representation
-*/
-		maxint  = (int)pow(2.0,(double)((sizeof(int)*8)-1)) - 1;
-	}
 
         value = (long*)NclGetArgValue(
                         0,
@@ -4866,25 +4872,29 @@ NhlErrorTypes _NclIlongtoint
         }
 	out_val = NclMalloc(((NclTypeClass)nclTypeintClass)->type_class.size *total);
 	if(has_missing) {
+		if (missing.longval < INT_MIN || missing.longval > INT_MAX) {
+		        missing2.intval = ((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval;
+		}
+		else {
+			missing2.intval = (int)missing.longval;
+		}
 		for(i = 0; i < total; i++) {
-			if((value[i] < -maxint)||(value[i] > maxint)||(value[i] == missing.longval)) {
-				out_val[i] = (int)missing.longval;
+			if((value[i] < INT_MIN)||(value[i] > INT_MAX)||(value[i] == missing.longval)) {
+					
+				out_val[i] = missing2.intval;
 			} else {
 				out_val[i] = (int)value[i];
 			}
 		}
-		missing2.intval = (int)missing.longval;
 	} else {
+		missing2.intval = ((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval;
 		for(i = 0; i < total; i++) {
-			if((value[i] < -maxint )||(value[i] > maxint)) {
-				out_val[i] = ((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval;
+			if((value[i] < INT_MIN)||(value[i] > INT_MAX)) {
+				out_val[i] = missing2.intval;
 				has_missing = 1;
 			} else {
 				out_val[i] = (int)value[i];
 			}
-		}
-		if(has_missing) {
-			missing2.intval = ((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval;
 		}
 	}
 
@@ -4904,7 +4914,6 @@ NhlErrorTypes _NclIlongtoshort
 ()
 #endif
 {
-	static int maxshort = -1;
 	NclScalar missing,missing2;
         int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
         short *out_val;
@@ -4912,13 +4921,6 @@ NhlErrorTypes _NclIlongtoshort
         long *value;
         int total=1;
         int i;
-
-	if(maxshort == -1) {
-/*
-* Assuming IEEE integer representation
-*/
-		maxshort  = (int)pow(2.0,(double)((sizeof(short)*8)-1)) - 1;
-	}
 
         value = (long*)NclGetArgValue(
                         0,
@@ -4934,25 +4936,28 @@ NhlErrorTypes _NclIlongtoshort
         }
 	out_val = NclMalloc(((NclTypeClass)nclTypeshortClass)->type_class.size *total);
 	if(has_missing) {
+		if (missing.longval < SHRT_MIN || missing.longval > SHRT_MAX) {
+		        missing2.shortval = ((NclTypeClass)nclTypeshortClass)->type_class.default_mis.shortval;
+		}
+		else {
+			missing2.shortval = (short)missing.longval;
+		}
 		for(i = 0; i < total; i++) {
-			if((value[i] < -maxshort)||(value[i] > maxshort)||(value[i] == missing.longval)) {
-				out_val[i] = (short)missing.longval;
+			if((value[i] < SHRT_MIN)||(value[i] > SHRT_MAX)||(value[i] == missing.longval)) {
+				out_val[i] = (short)missing2.shortval;
 			} else {
 				out_val[i] = (short)value[i];
 			}
 		}
-		missing2.shortval = (short)missing.longval;
 	} else {
+		missing2.shortval = ((NclTypeClass)nclTypeshortClass)->type_class.default_mis.shortval;
 		for(i = 0; i < total; i++) {
-			if((value[i] < -maxshort )||(value[i] > maxshort)) {
-				out_val[i] = ((NclTypeClass)nclTypeshortClass)->type_class.default_mis.shortval;
+			if((value[i] < SHRT_MIN )||(value[i] > SHRT_MAX)) {
+				out_val[i] = missing2.shortval;
 				has_missing = 1;
 			} else {
 				out_val[i] = (short)value[i];
 			}
-		}
-		if(has_missing) {
-			missing2.shortval = ((NclTypeClass)nclTypeshortClass)->type_class.default_mis.shortval;
 		}
 	}
 	return(NclReturnValue(
@@ -4993,25 +4998,28 @@ NhlErrorTypes _NclIlongtobyte
         }
 	out_val = NclMalloc(((NclTypeClass)nclTypebyteClass)->type_class.size *total);
 	if(has_missing) {
+		if (missing.longval < 0 || missing.longval > UCHAR_MAX) {
+		        missing2.byteval = ((NclTypeClass)nclTypebyteClass)->type_class.default_mis.byteval;
+		}
+		else {
+			missing2.byteval = (int)missing.longval;
+		}
 		for(i = 0; i < total; i++) {
-			if((value[i] < 0)||(value[i] > 255)||(value[i] == missing.longval)) {
-				out_val[i] = (byte)missing.longval;
+			if((value[i] < 0)||(value[i] > UCHAR_MAX)||(value[i] == missing.longval)) {
+				out_val[i] = (byte)missing2.byteval;
 			} else {
 				out_val[i] = (byte)value[i];
 			}
 		}
-		missing2.byteval = (byte)missing.longval;
 	} else {
+		missing2.byteval = ((NclTypeClass)nclTypebyteClass)->type_class.default_mis.byteval;
 		for(i = 0; i < total; i++) {
-			if((value[i] < 0)||(value[i] > 255)) {
-				out_val[i] = ((NclTypeClass)nclTypebyteClass)->type_class.default_mis.byteval;
+			if((value[i] < 0)||(value[i] > UCHAR_MAX)) {
+				out_val[i] = missing2.byteval;
 				has_missing = 1;
 			} else {
 				out_val[i] = (byte)value[i];
 			}
-		}
-		if(has_missing) {
-			missing2.byteval = ((NclTypeClass)nclTypebyteClass)->type_class.default_mis.byteval;
 		}
 	}
 	return(NclReturnValue(
@@ -5054,25 +5062,28 @@ NhlErrorTypes _NclIlongtochar
         }
 	out_val = NclMalloc(((NclTypeClass)nclTypecharClass)->type_class.size *total);
 	if(has_missing) {
+		if (missing.longval < 0 || missing.longval > UCHAR_MAX) {
+		        missing2.charval = ((NclTypeClass)nclTypecharClass)->type_class.default_mis.charval;
+		}
+		else {
+			missing2.charval = (int)missing.longval;
+		}
 		for(i = 0; i < total; i++) {
-			if((value[i] < 0)||(value[i] > 255)||(value[i] == missing.longval)) {
-				out_val[i] = (char)missing.longval;
+			if((value[i] < 0)||(value[i] > UCHAR_MAX)||(value[i] == missing.longval)) {
+				out_val[i] = (char)missing2.charval;
 			} else {
 				out_val[i] = (char)value[i];
 			}
 		}
-		missing2.charval = (char)missing.longval;
 	} else {
+		missing2.charval = ((NclTypeClass)nclTypecharClass)->type_class.default_mis.charval;
 		for(i = 0; i < total; i++) {
-			if((value[i] < 0)||(value[i] > 255)) {
-				out_val[i] = ((NclTypeClass)nclTypecharClass)->type_class.default_mis.charval;
+			if((value[i] < 0)||(value[i] > UCHAR_MAX)) {
+				out_val[i] = missing2.charval;
 				has_missing = 1;
 			} else {
 				out_val[i] = (char)value[i];
 			}
-		}
-		if(has_missing) {
-			missing2.charval = ((NclTypeClass)nclTypecharClass)->type_class.default_mis.charval;
 		}
 	}
 	return(NclReturnValue(
@@ -5144,7 +5155,6 @@ NhlErrorTypes _NclIfloattoshort
 ()
 #endif
 {
-	static int maxshort = -1;
 	NclScalar missing,missing2;
         int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
         short *out_val;
@@ -5153,12 +5163,6 @@ NhlErrorTypes _NclIfloattoshort
         int total=1;
         int i;
 
-	if(maxshort == -1) {
-/*
-* Assuming IEEE integer representation
-*/
-		maxshort  = (int)pow(2.0,(float)((sizeof(short)*8)-1)) - 1;
-	}
 
         value = (float*)NclGetArgValue(
                         0,
@@ -5174,25 +5178,28 @@ NhlErrorTypes _NclIfloattoshort
         }
 	out_val = NclMalloc(((NclTypeClass)nclTypeshortClass)->type_class.size *total);
 	if(has_missing) {
+		if (missing.floatval < (float)SHRT_MIN || missing.floatval > (float)SHRT_MAX) {
+		        missing2.shortval = ((NclTypeClass)nclTypeshortClass)->type_class.default_mis.shortval;
+		}
+		else {
+			missing2.shortval = (short)missing.floatval;
+		}
 		for(i = 0; i < total; i++) {
-			if((value[i] < -maxshort)||(value[i] > maxshort)||(value[i] == missing.floatval)) {
-				out_val[i] = (short)missing.floatval;
+			if((value[i] < (float)SHRT_MIN)||(value[i] > (float)SHRT_MAX)||(value[i] == missing.floatval)) {
+				out_val[i] = (short)missing2.shortval;
 			} else {
 				out_val[i] = (short)value[i];
 			}
 		}
-		missing2.shortval  = (short)missing.floatval;
 	} else {
+		missing2.shortval = ((NclTypeClass)nclTypeshortClass)->type_class.default_mis.shortval;
 		for(i = 0; i < total; i++) {
-			if((value[i] < -maxshort )||(value[i] > maxshort)) {
-				out_val[i] = ((NclTypeClass)nclTypeshortClass)->type_class.default_mis.shortval;
+			if((value[i] < (float)SHRT_MIN)||(value[i] > (float)SHRT_MAX)) {
+				out_val[i] = missing2.shortval;
 				has_missing = 1;
 			} else {
 				out_val[i] = (short)value[i];
 			}
-		}
-		if(has_missing) {
-			missing2.shortval = ((NclTypeClass)nclTypeshortClass)->type_class.default_mis.shortval;
 		}
 	}
 	return(NclReturnValue(
@@ -5211,7 +5218,6 @@ NhlErrorTypes _NclIfloattoint
 ()
 #endif
 {
-	static int maxint = -1;
 	NclScalar missing,missing2;
         int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
         int *out_val;
@@ -5219,13 +5225,6 @@ NhlErrorTypes _NclIfloattoint
         float *value;
         int total=1;
         int i;
-
-	if(maxint == -1) {
-/*
-* Assuming IEEE integer representation
-*/
-		maxint  = (int)pow(2.0,(float)((sizeof(int)*8)-1)) - 1;
-	}
 
         value = (float*)NclGetArgValue(
                         0,
@@ -5241,25 +5240,28 @@ NhlErrorTypes _NclIfloattoint
         }
 	out_val = NclMalloc(((NclTypeClass)nclTypeintClass)->type_class.size *total);
 	if(has_missing) {
+		if (missing.floatval < (float)INT_MIN || missing.floatval > (float)INT_MAX) {
+		        missing2.intval = ((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval;
+		}
+		else {
+			missing2.intval = (int)missing.floatval;
+		}
 		for(i = 0; i < total; i++) {
-			if((value[i] < -maxint)||(value[i] > maxint)||(value[i] == missing.floatval)) {
-				out_val[i] = (int)missing.floatval;
+			if((value[i] < (float)INT_MIN)||(value[i] > (float)INT_MAX)||(value[i] == missing.floatval)) {
+				out_val[i] = (int)missing2.intval;
 			} else {
 				out_val[i] = (int)value[i];
 			}
 		}
-		missing2.intval = (int)missing.floatval;
 	} else {
+		missing2.intval = ((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval;
 		for(i = 0; i < total; i++) {
-			if((value[i] < -maxint )||(value[i] > maxint)) {
-				out_val[i] = ((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval;
+			if((value[i] < (float)INT_MIN)||(value[i] > (float)INT_MAX)) {
+				out_val[i] = missing2.intval;
 				has_missing = 1;
 			} else {
 				out_val[i] = (int)value[i];
 			}
-		}
-		if(has_missing) {
-			missing2.intval = ((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval;
 		}
 	}
 	return(NclReturnValue(
@@ -5278,7 +5280,6 @@ NhlErrorTypes _NclIfloattolong
 ()
 #endif
 {
-	static long maxlong = -1;
 	NclScalar missing,missing2;
         int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
         long *out_val;
@@ -5287,12 +5288,6 @@ NhlErrorTypes _NclIfloattolong
         int total=1;
         int i;
 
-	if(maxlong == -1) {
-/*
-* Assuming IEEE integer representation
-*/
-		maxlong  = (long)pow(2.0,(float)((sizeof(long)*8)-1)) - 1;
-	}
 
         value = (float*)NclGetArgValue(
                         0,
@@ -5308,25 +5303,28 @@ NhlErrorTypes _NclIfloattolong
         }
 	out_val = NclMalloc(((NclTypeClass)nclTypelongClass)->type_class.size *total);
 	if(has_missing) {
+		if (missing.floatval < (float)LONG_MIN || missing.floatval > (float)LONG_MAX) {
+		        missing2.longval = ((NclTypeClass)nclTypelongClass)->type_class.default_mis.longval;
+		}
+		else {
+			missing2.longval = (long)missing.floatval;
+		}
 		for(i = 0; i < total; i++) {
-			if((value[i] < -maxlong)||(value[i] > maxlong)||(value[i] == missing.floatval)) {
-				out_val[i] = (long)missing.floatval;
+			if((value[i] < (float)LONG_MIN)||(value[i] > (float)LONG_MAX)||(value[i] == missing.floatval)) {
+				out_val[i] = missing2.longval;
 			} else {
 				out_val[i] = (long)value[i];
 			}
 		}
-		missing2.longval = (long)missing.floatval;
 	} else {
+		missing2.longval = ((NclTypeClass)nclTypelongClass)->type_class.default_mis.longval;
 		for(i = 0; i < total; i++) {
-			if((value[i] < -maxlong )||(value[i] > maxlong)) {
-				out_val[i] = ((NclTypeClass)nclTypelongClass)->type_class.default_mis.longval;
+			if((value[i] < (float)LONG_MIN)||(value[i] > (float)LONG_MAX)) {
+				out_val[i] = missing2.longval;
 				has_missing = 1;
 			} else {
 				out_val[i] = (long)value[i];
 			}
-		}
-		if(has_missing) {
-			missing2.longval = ((NclTypeClass)nclTypelongClass)->type_class.default_mis.longval;
 		}
 	}
 	return(NclReturnValue(
@@ -5367,26 +5365,28 @@ NhlErrorTypes _NclIfloattobyte
         }
 	out_val = NclMalloc(((NclTypeClass)nclTypebyteClass)->type_class.size *total);
 	if(has_missing) {
+		if (missing.floatval < (float)0 || missing.floatval > (float)UCHAR_MAX) {
+		        missing2.byteval = ((NclTypeClass)nclTypebyteClass)->type_class.default_mis.byteval;
+		}
+		else {
+			missing2.byteval = (byte)missing.floatval;
+		}
 		for(i = 0; i < total; i++) {
-			if((value[i] < 0)||(value[i] > 255)||(value[i] == missing.floatval)) {
-				out_val[i] = (byte)missing.floatval;
+			if((value[i] < 0)||(value[i] > UCHAR_MAX)||(value[i] == missing.floatval)) {
+				out_val[i] = missing2.byteval;
 			} else {
 				out_val[i] = (byte)value[i];
 			}
 		}
-		missing2.byteval = (byte)missing.floatval;
-
 	} else {
+		missing2.byteval = ((NclTypeClass)nclTypebyteClass)->type_class.default_mis.byteval;
 		for(i = 0; i < total; i++) {
-			if((value[i] < 0)||(value[i] > 255)) {
-				out_val[i] = ((NclTypeClass)nclTypebyteClass)->type_class.default_mis.byteval;
+			if((value[i] < 0)||(value[i] > UCHAR_MAX)) {
+				out_val[i] = missing2.byteval;
 				has_missing = 1;
 			} else {
 				out_val[i] = (byte)value[i];
 			}
-		}
-		if(has_missing) {
-			missing2.byteval = ((NclTypeClass)nclTypebyteClass)->type_class.default_mis.byteval;
 		}
 	}
 	return(NclReturnValue(
@@ -5429,35 +5429,29 @@ NhlErrorTypes _NclIfloattochar
         }
 	out_val = NclMalloc(((NclTypeClass)nclTypecharClass)->type_class.size *total);
 	if(has_missing) {
+		if (missing.floatval < (float)0 || missing.floatval > (float)UCHAR_MAX) {
+		        missing2.charval = 
+				((NclTypeClass)nclTypecharClass)->type_class.default_mis.charval;
+		}
+		else {
+			missing2.charval = (char)missing.floatval;
+		}
 		for(i = 0; i < total; i++) {
-/*
-fprintf(stderr, "value[%d]: %3.1f\n", i, value[i]);
-fprintf(stderr, "missing.floatval == %3.1f\n", missing.floatval);
-*/
-			if((value[i] < 0)||(value[i] > 255)||(value[i] == missing.floatval)) {
-/*				out_val[i] = (char)missing.floatval;*/
-/*				out_val[i] = missing.floatval;*/
-				out_val[i] = (char) 0;
+			if((value[i] < 0)||(value[i] > UCHAR_MAX)||(value[i] == missing.floatval)) {
+				out_val[i] = missing2.charval;
 			} else {
 				out_val[i] = (char)value[i];
 			}
-/*
-fprintf(stderr, "out_val[%d]: %3.3f\n", i, (float) out_val[i]);
-fprintf(stderr, "out_val[%d]: %d\n", i, out_val[i]);
-*/
 		}
-		missing2.charval = (char)missing.floatval;
 	} else {
+		missing2.charval = ((NclTypeClass)nclTypecharClass)->type_class.default_mis.charval;
 		for(i = 0; i < total; i++) {
-			if((value[i] < 0)||(value[i] > 255)) {
-				out_val[i] = ((NclTypeClass)nclTypecharClass)->type_class.default_mis.charval;
+			if((value[i] < 0)||(value[i] > UCHAR_MAX)) {
+				out_val[i] = missing2.charval;
 				has_missing = 1;
 			} else {
 				out_val[i] = (char)value[i];
 			}
-		}
-		if(has_missing) {
-			missing2.charval = ((NclTypeClass)nclTypecharClass)->type_class.default_mis.charval;
 		}
 	}
 	return(NclReturnValue(
@@ -5499,25 +5493,13 @@ NhlErrorTypes _NclIchartofloat
         }
 	out_val = NclMalloc(((NclTypeClass)nclTypefloatClass)->type_class.size *total);
 
-missing.charval = (char) 0;
 	if(has_missing) {
 		for(i = 0; i < total; i++) {
-/*
-fprintf(stderr, "fvalue[%d]: %3.1f\n", i, (float) value[i]);
-fprintf(stderr, "cvalue[%d]: %d\n", i, value[i]);
-fprintf(stderr, "missing.charval == %d\n", missing.charval);
-*/
-/*			if(value[i] == missing.charval) {
+			if(value[i] == missing.charval) {
 				out_val[i] = (float)missing.charval;
-*/
-			if(value[i] == (char) 0) {
-				out_val[i] = (float) 0;
 			} else {
 				out_val[i] = (float)value[i];
 			}
-/*
-fprintf(stderr, "out_val[%d]: %3.3f\n", i, out_val[i]);
-*/
 		}
 		missing2.floatval = (float)missing.charval;
 	} else {
@@ -5563,25 +5545,28 @@ NhlErrorTypes _NclIdoubletobyte
         }
 	out_val = NclMalloc(((NclTypeClass)nclTypebyteClass)->type_class.size *total);
 	if(has_missing) {
+		if (missing.doubleval < (double)0 || missing.doubleval > (double)UCHAR_MAX) {
+		        missing2.byteval = ((NclTypeClass)nclTypebyteClass)->type_class.default_mis.byteval;
+		}
+		else {
+			missing2.byteval = (byte)missing.doubleval;
+		}
 		for(i = 0; i < total; i++) {
-			if((value[i] < 0)||(value[i] > 255)||(value[i] == missing.doubleval)) {
-				out_val[i] = (byte)missing.doubleval;
+			if((value[i] < 0)||(value[i] > UCHAR_MAX)||(value[i] == missing.doubleval)) {
+				out_val[i] = missing2.byteval;
 			} else {
 				out_val[i] = (byte)value[i];
 			}
 		}
-		missing2.byteval = (byte)missing.doubleval;
 	} else {
+		missing2.byteval = ((NclTypeClass)nclTypebyteClass)->type_class.default_mis.byteval;
 		for(i = 0; i < total; i++) {
-			if((value[i] < 0)||(value[i] > 255)) {
-				out_val[i] = ((NclTypeClass)nclTypebyteClass)->type_class.default_mis.byteval;
+			if((value[i] < 0)||(value[i] > UCHAR_MAX)) {
+				out_val[i] = missing2.byteval;
 				has_missing = 1;
 			} else {
 				out_val[i] = (byte)value[i];
 			}
-		}
-		if(has_missing) {
-			missing2.byteval = ((NclTypeClass)nclTypebyteClass)->type_class.default_mis.byteval;
 		}
 	}
 	return(NclReturnValue(
@@ -5624,25 +5609,28 @@ NhlErrorTypes _NclIdoubletochar
         }
 	out_val = NclMalloc(((NclTypeClass)nclTypecharClass)->type_class.size *total);
 	if(has_missing) {
+		if (missing.doubleval < (double)0 || missing.doubleval > (double)UCHAR_MAX) {
+		        missing2.charval = ((NclTypeClass)nclTypecharClass)->type_class.default_mis.charval;
+		}
+		else {
+			missing2.charval = (char)missing.doubleval;
+		}
 		for(i = 0; i < total; i++) {
-			if((value[i] < 0)||(value[i] > 255)||(value[i] == missing.doubleval)) {
-				out_val[i] = (char)missing.doubleval;
+			if((value[i] < 0)||(value[i] > UCHAR_MAX)||(value[i] == missing.doubleval)) {
+				out_val[i] = (char)missing2.charval;
 			} else {
 				out_val[i] = (char)value[i];
 			}
 		}
-		missing2.charval = (char)missing.doubleval;
 	} else {
+		missing2.charval = ((NclTypeClass)nclTypecharClass)->type_class.default_mis.charval;
 		for(i = 0; i < total; i++) {
-			if((value[i] < 0)||(value[i] > 255)) {
-				out_val[i] = ((NclTypeClass)nclTypecharClass)->type_class.default_mis.charval;
+			if((value[i] < 0)||(value[i] > UCHAR_MAX)) {
+				out_val[i] = missing2.charval;
 				has_missing = 1;
 			} else {
 				out_val[i] = (char)value[i];
 			}
-		}
-		if(has_missing) {
-			missing2.charval = ((NclTypeClass)nclTypecharClass)->type_class.default_mis.charval;
 		}
 	}
 	return(NclReturnValue(
@@ -5713,7 +5701,6 @@ NhlErrorTypes _NclIdoubletoshort
 ()
 #endif
 {
-	static int maxshort = -1;
 	NclScalar missing,missing2;
         int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
         short *out_val;
@@ -5722,12 +5709,6 @@ NhlErrorTypes _NclIdoubletoshort
         int total=1;
         int i;
 
-	if(maxshort == -1) {
-/*
-* Assuming IEEE integer representation
-*/
-		maxshort  = (int)pow(2.0,(double)((sizeof(short)*8)-1)) - 1;
-	}
 
         value = (double*)NclGetArgValue(
                         0,
@@ -5743,25 +5724,28 @@ NhlErrorTypes _NclIdoubletoshort
         }
 	out_val = NclMalloc(((NclTypeClass)nclTypeshortClass)->type_class.size *total);
 	if(has_missing) {
+		if (missing.doubleval < (double)SHRT_MIN || missing.doubleval > (double)SHRT_MAX) {
+		        missing2.shortval = ((NclTypeClass)nclTypeshortClass)->type_class.default_mis.shortval;
+		}
+		else {
+			missing2.shortval = (short)missing.doubleval;
+		}
 		for(i = 0; i < total; i++) {
-			if((value[i] < -maxshort)||(value[i] > maxshort)||(value[i] == missing.doubleval)) {
-				out_val[i] = (short)missing.doubleval;
+			if((value[i] < (double)SHRT_MIN)||(value[i] > (double)SHRT_MAX)||(value[i] == missing.doubleval)) {
+				out_val[i] = (short)missing2.shortval;
 			} else {
 				out_val[i] = (short)value[i];
 			}
 		}
-		missing2.shortval = (short)missing.doubleval;
 	} else {
+		missing2.shortval = ((NclTypeClass)nclTypeshortClass)->type_class.default_mis.shortval;
 		for(i = 0; i < total; i++) {
-			if((value[i] < -maxshort )||(value[i] > maxshort)) {
-				out_val[i] = ((NclTypeClass)nclTypeshortClass)->type_class.default_mis.shortval;
+			if((value[i] < (double)SHRT_MIN)||(value[i] > (double)SHRT_MAX)) {
+				out_val[i] = missing2.shortval;
 				has_missing = 1;
 			} else {
 				out_val[i] = (short)value[i];
 			}
-		}
-		if(has_missing) {
-			missing2.shortval = ((NclTypeClass)nclTypeshortClass)->type_class.default_mis.shortval;
 		}
 	}
 	return(NclReturnValue(
@@ -5780,7 +5764,6 @@ NhlErrorTypes _NclIdoubletoint
 ()
 #endif
 {
-	static int maxint = -1;
 	NclScalar missing,missing2;
         int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
         int *out_val;
@@ -5789,12 +5772,6 @@ NhlErrorTypes _NclIdoubletoint
         int total=1;
         int i;
 
-	if(maxint == -1) {
-/*
-* Assuming IEEE integer representation
-*/
-		maxint  = (int)pow(2.0,(double)((sizeof(int)*8)-1)) - 1;
-	}
 
         value = (double*)NclGetArgValue(
                         0,
@@ -5810,25 +5787,28 @@ NhlErrorTypes _NclIdoubletoint
         }
 	out_val = NclMalloc(((NclTypeClass)nclTypeintClass)->type_class.size *total);
 	if(has_missing) {
+		if (missing.doubleval < (double)INT_MIN || missing.doubleval > (double)INT_MAX) {
+		        missing2.intval = ((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval;
+		}
+		else {
+			missing2.intval = (int)missing.doubleval;
+		}
 		for(i = 0; i < total; i++) {
-			if((value[i] < -maxint)||(value[i] > maxint)||(value[i] == missing.doubleval)) {
-				out_val[i] =  (int)missing.doubleval;
+			if((value[i] < (double)INT_MIN)||(value[i] > (double)INT_MAX)||(value[i] == missing.doubleval)) {
+				out_val[i] = (int)missing2.intval;
 			} else {
 				out_val[i] = (int)value[i];
 			}
 		}
-		missing2.intval = (int)missing.doubleval;
 	} else {
+		missing2.intval = ((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval;
 		for(i = 0; i < total; i++) {
-			if((value[i] < -maxint )||(value[i] > maxint)) {
-				out_val[i] = ((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval;
+			if((value[i] < (double)INT_MIN)||(value[i] > (double)INT_MAX)) {
+				out_val[i] = missing2.intval;
 				has_missing = 1;
 			} else {
 				out_val[i] = (int)value[i];
 			}
-		}
-		if(has_missing) {
-			missing2.intval = ((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval;
 		}
 	}
 	return(NclReturnValue(
@@ -5847,7 +5827,6 @@ NhlErrorTypes _NclIdoubletolong
 ()
 #endif
 {
-	static long maxlong = -1;
 	NclScalar missing,missing2;
         int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
         long *out_val;
@@ -5856,12 +5835,6 @@ NhlErrorTypes _NclIdoubletolong
         int total=1;
         int i;
 
-	if(maxlong == -1) {
-/*
-* Assuming IEEE integer representation
-*/
-		maxlong  = (long)pow(2.0,(double)((sizeof(long)*8)-1)) - 1;
-	}
 
         value = (double*)NclGetArgValue(
                         0,
@@ -5878,25 +5851,28 @@ NhlErrorTypes _NclIdoubletolong
         }
 	out_val = NclMalloc(((NclTypeClass)nclTypelongClass)->type_class.size *total);
 	if(has_missing) {
+		if (missing.doubleval < (double)LONG_MIN || missing.doubleval > (double)LONG_MAX) {
+		        missing2.longval = ((NclTypeClass)nclTypelongClass)->type_class.default_mis.longval;
+		}
+		else {
+			missing2.longval = (long)missing.doubleval;
+		}
 		for(i = 0; i < total; i++) {
-			if((value[i] < -maxlong)||(value[i] > maxlong)||(value[i] == missing.doubleval)) {
-				out_val[i] = (long)missing.doubleval;
+			if((value[i] < (double)LONG_MIN)||(value[i] > (double)LONG_MAX)||(value[i] == missing.doubleval)) {
+				out_val[i] = missing2.longval;
 			} else {
 				out_val[i] = (long)value[i];
 			}
 		}
-		missing2.longval = (long)missing.doubleval;
 	} else {
+		missing2.longval = ((NclTypeClass)nclTypelongClass)->type_class.default_mis.longval;
 		for(i = 0; i < total; i++) {
-			if((value[i] < -maxlong )||(value[i] > maxlong)) {
-				out_val[i] = ((NclTypeClass)nclTypelongClass)->type_class.default_mis.longval;
+			if((value[i] < (double)LONG_MIN)||(value[i] > (double)LONG_MAX)) {
+				out_val[i] = missing2.longval;
 				has_missing = 1;
 			} else {
 				out_val[i] = (long)value[i];
 			}
-		}
-		if(has_missing) {	
-			missing2.longval = ((NclTypeClass)nclTypelongClass)->type_class.default_mis.longval;
 		}
 	}
 	return(NclReturnValue(
@@ -5924,6 +5900,7 @@ NhlErrorTypes _NclIdoubletofloat
         float *out_val;
 	NclBasicDataTypes type;
         double *value;
+	double dtmp;
         int total=1;
         int i;
 
@@ -5941,10 +5918,39 @@ NhlErrorTypes _NclIdoubletofloat
         }
 	out_val = NclMalloc(((NclTypeClass)nclTypefloatClass)->type_class.size *total);
 	if(has_missing) {
-		missing2.floatval = (float)missing.doubleval;
-	}  
-	for(i = 0; i < total; i++) {
-		out_val[i] = (float)value[i];
+		if (fabs(missing.doubleval) < (double)FLT_MIN || fabs(missing.doubleval) > (double)FLT_MAX) {
+		        missing2.floatval = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+		}
+		else {
+			missing2.floatval = (float)missing.doubleval;
+		}
+		for(i = 0; i < total; i++) {
+			dtmp = fabs(value[i]);
+			if((dtmp > (double)FLT_MAX)||(value[i] == missing.doubleval)) {
+				out_val[i] = missing2.floatval;
+			}
+			else if (dtmp < (double)FLT_MIN) {
+				out_val[i] = 0.0;
+			}
+			else {
+				out_val[i] = (float)value[i];
+			}
+		}
+	} else {
+		missing2.floatval = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+		for(i = 0; i < total; i++) {
+			dtmp = fabs(value[i]);
+			if(dtmp > (double)FLT_MAX) {
+				out_val[i] = missing2.floatval;
+				has_missing = 1;
+			}
+			else if (dtmp < (double)FLT_MIN) {
+				out_val[i] = 0.0;
+			}
+			else {
+				out_val[i] = (float)value[i];
+			}
+		}
 	}
 	return(NclReturnValue(
 		(void*)out_val,
@@ -5970,6 +5976,9 @@ NhlErrorTypes _NclIstringtolong
         string *value;
         int total=1;
         int i;
+	long tval;
+	char *val;
+	char *end;
 
         value = (string*)NclGetArgValue(
                         0,
@@ -5984,26 +5993,54 @@ NhlErrorTypes _NclIstringtolong
                 total *= dimsizes[i];
         }
 	out_val = (long*) NclMalloc(((NclTypeClass)nclTypelongClass)->type_class.size *total);
-	missing2 = ((NclTypeClass)nclTypelongClass)->type_class.default_mis;
 	if(has_missing) {
+		errno = 0;
+		val = NrmQuarkToString(missing.stringval);
+		tval = strtol(val,&end,0);
+		if (end == val || errno == ERANGE) {
+			missing2.longval = ((NclTypeClass)nclTypelongClass)->type_class.default_mis.longval;
+		}
+		else {
+			missing2.longval = tval;
+		}
 		for(i = 0; i < total; i++) {
 			if(missing.stringval == value[i]) {
 				out_val[i] = missing2.longval;
 			} else {
-				if(!sscanf(NrmQuarkToString(value[i]),"%ld",&(out_val[i]))) {
-					NhlPError(NhlFATAL,NhlEUNKNOWN,"A bad value was passed to stringtolong, input strings must contain numeric digits, replacing with missing value");
-					out_val[i] = missing2.longval;
-
+				errno = 0;
+				val = NrmQuarkToString(value[i]);
+				tval = strtol(val,&end,0);
+				if (end == val) {
+                                        NhlPError(NhlFATAL,NhlEUNKNOWN,
+					"A bad value was passed to stringtolong, input strings must contain numeric digits, replacing with missing value");
+                                        out_val[i] = missing2.longval;
+				}
+				else if (errno == ERANGE) {
+                                        out_val[i] = missing2.longval;
+				}
+				else {
+					out_val[i] = tval;
 				}
 			}
 		}
 	}  else {
+		missing2.longval = ((NclTypeClass)nclTypelongClass)->type_class.default_mis.longval;
 		for(i = 0; i < total; i++) {
-			if(!sscanf(NrmQuarkToString(value[i]),"%ld",&(out_val[i]))) {
-				NhlPError(NhlFATAL,NhlEUNKNOWN,"A bad value was passed to stringtolong, input strings must contain numeric digits, replacing with missing value");
-				has_missing = 1;
+			errno = 0;
+			val = NrmQuarkToString(value[i]);
+			tval = strtol(val,&end,0);
+			if (end == val) {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,
+                                "A bad value was passed to stringtolong, input strings must contain numeric digits, replacing with missing value");
+                                has_missing = 1;
 				out_val[i] = missing2.longval;
-		
+			}
+			else if (errno == ERANGE) {
+                                has_missing = 1;
+				out_val[i] = missing2.longval;
+			}
+			else {
+				out_val[i] = tval;
 			}
 		}
 	}
@@ -6030,6 +6067,9 @@ NhlErrorTypes _NclIstringtoshort
         string *value;
         int total=1;
         int i;
+	long tval;
+	char *val;
+	char *end;
 
         value = (string*)NclGetArgValue(
                         0,
@@ -6044,27 +6084,52 @@ NhlErrorTypes _NclIstringtoshort
                 total *= dimsizes[i];
         }
 	out_val = (short*) NclMalloc(((NclTypeClass)nclTypeshortClass)->type_class.size *total);
-	missing2 = ((NclTypeClass)nclTypeshortClass)->type_class.default_mis;
 	if(has_missing) {
+		errno = 0;
+		val = NrmQuarkToString(missing.stringval);
+		tval = strtol(val,&end,0);
+		if (end == val || tval < SHRT_MIN || tval > SHRT_MAX || errno == ERANGE) {
+			missing2.shortval = ((NclTypeClass)nclTypeshortClass)->type_class.default_mis.shortval;
+		}
+		else {
+			missing2.shortval = (short) tval;
+		}
 		for(i = 0; i < total; i++) {
 			if(missing.stringval == value[i]) {
 				out_val[i] = missing2.shortval;
 			} else {
-				if(!sscanf(NrmQuarkToString(value[i]),"%hd",&(out_val[i]))) {
-                                        NhlPError(NhlFATAL,NhlEUNKNOWN,"A bad value was passed to stringtoshort, input strings must contain numeric digits, replacing with missing value");
+				val = NrmQuarkToString(value[i]);
+				tval = strtol(val,&end,0);
+				if (end == val) {
+                                        NhlPError(NhlFATAL,NhlEUNKNOWN,
+                                        "A bad value was passed to stringtoshort, input strings must contain numeric digits, replacing with missing value");
                                         out_val[i] = missing2.shortval;
-
+				}
+				else if (tval > SHRT_MAX || tval < SHRT_MIN) {
+                                        out_val[i] = missing2.shortval;
+				}
+				else {
+					out_val[i] = (short)tval;
 				}
 			}
 		}
 	}  else {
+		missing2.shortval = ((NclTypeClass)nclTypeshortClass)->type_class.default_mis.shortval;
 		for(i = 0; i < total; i++) {
-			if(!sscanf(NrmQuarkToString(value[i]),"%hd",&(out_val[i]))) {
-				NhlPError(NhlFATAL,NhlEUNKNOWN,"A bad value was passed to stringtoshort, input strings must contain numeric digits, replacing with missing value");
+			val = NrmQuarkToString(value[i]);
+			tval = strtol(val,&end,0);
+			if (end == val) {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,
+                                "A bad value was passed to stringtoshort, input strings must contain numeric digits, replacing with missing value");
                                 has_missing = 1;
-                                out_val[i] = missing2.shortval;
- 
-
+				out_val[i] = missing2.shortval;
+			}
+			else if (tval > SHRT_MAX || tval < SHRT_MIN) {
+                                has_missing = 1;
+				out_val[i] = missing2.shortval;
+			}
+			else {
+				out_val[i] = (short)tval;
 			}
 		}
 	}
@@ -6091,6 +6156,9 @@ NhlErrorTypes _NclIstringtointeger
         string *value;
         int total=1;
         int i;
+	long tval;
+	char *val;
+	char *end;
 
         value = (string*)NclGetArgValue(
                         0,
@@ -6105,24 +6173,54 @@ NhlErrorTypes _NclIstringtointeger
                 total *= dimsizes[i];
         }
 	out_val = (int*) NclMalloc(((NclTypeClass)nclTypeintClass)->type_class.size *total);
-	missing2 = ((NclTypeClass)nclTypeintClass)->type_class.default_mis;
 	if(has_missing) {
+		errno = 0;
+		val = NrmQuarkToString(missing.stringval);
+		tval = strtol(val,&end,0);
+		if (end == val || tval < INT_MIN || tval > INT_MAX || errno == ERANGE) {
+			missing2.intval = ((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval;
+		}
+		else {
+			missing2.intval = (int) tval;
+		}
 		for(i = 0; i < total; i++) {
 			if(missing.stringval == value[i]) {
 				out_val[i] = missing2.intval;
 			} else {
-				if(!sscanf(NrmQuarkToString(value[i]),"%d",&(out_val[i]))) {
-					NhlPError(NhlFATAL,NhlEUNKNOWN,"A bad value was passed to stringtointeger, input strings must contain numeric digits, replacing with missing value");
-					out_val[i] = missing2.intval;
+				errno = 0;
+				val = NrmQuarkToString(value[i]);
+				tval = strtol(val,&end,0);
+				if (end == val) {
+                                        NhlPError(NhlFATAL,NhlEUNKNOWN,
+                                        "A bad value was passed to stringtointeger, input strings must contain numeric digits, replacing with missing value");
+                                        out_val[i] = missing2.intval;
+				}
+				else if (tval > INT_MAX || tval < INT_MIN || errno == ERANGE) {
+                                        out_val[i] = missing2.intval;
+				}
+				else {
+					out_val[i] = (int)tval;
 				}
 			}
 		}
 	}  else {
+		missing2.intval = ((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval;
 		for(i = 0; i < total; i++) {
-			if(!sscanf(NrmQuarkToString(value[i]),"%d",&(out_val[i]))) {
-				NhlPError(NhlFATAL,NhlEUNKNOWN,"A bad value was passed to stringtointeger, input strings must contain numeric digits, replacing with missing value");
-				has_missing = 1;
+			errno = 0;
+			val = NrmQuarkToString(value[i]);
+			tval = strtol(val,&end,0);
+			if (end == val) {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,
+                                "A bad value was passed to stringtointeger, input strings must contain numeric digits, replacing with missing value");
+                                has_missing = 1;
 				out_val[i] = missing2.intval;
+			}
+			else if (tval > INT_MAX || tval < INT_MIN || errno == ERANGE) {
+                                has_missing = 1;
+				out_val[i] = missing2.intval;
+			}
+			else {
+				out_val[i] = (int)tval;
 			}
 		}
 	}
@@ -6149,6 +6247,9 @@ NhlErrorTypes _NclIstringtodouble
         string *value;
         int total=1;
         int i;
+	double tval;
+	char *val;
+	char *end;
 
         value = (string*)NclGetArgValue(
                         0,
@@ -6163,26 +6264,55 @@ NhlErrorTypes _NclIstringtodouble
                 total *= dimsizes[i];
         }
 	out_val = (double*) NclMalloc(((NclTypeClass)nclTypedoubleClass)->type_class.size *total);
-	missing2 = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis;
 	if(has_missing) {
+		errno = 0;
+		val = NrmQuarkToString(missing.stringval);
+		tval = strtod(val,&end);
+		if (end == val || errno == ERANGE) {
+			missing2.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
+		}
+		else {
+			missing2.doubleval =  tval;
+		}
 		for(i = 0; i < total; i++) {
 			if(missing.stringval == value[i]) {
 				out_val[i] = missing2.doubleval;
 			} else {
-				if(!sscanf(NrmQuarkToString(value[i]),"%lf",&(out_val[i]))) {
-					NhlPError(NhlFATAL,NhlEUNKNOWN,"A bad value was passed to stringtodouble, input strings must contain numeric digits, replacing with missing value");
-					out_val[i] = missing2.doubleval;
-
+				errno = 0;
+				val = NrmQuarkToString(value[i]);
+				tval = strtod(val,&end);
+				if (end == val) {
+                                        NhlPError(NhlFATAL,NhlEUNKNOWN,
+					"A bad value was passed to stringtodouble, input strings must contain numeric digits, replacing with missing value");
+                                        out_val[i] = missing2.doubleval;
+				}
+				else if (errno == ERANGE) {
+                                        out_val[i] = missing2.doubleval;
+				}
+				else {
+					out_val[i] = tval;
 				}
 			}
 		}
 	}  else {
+		missing2.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
 		for(i = 0; i < total; i++) {
-			if(!sscanf(NrmQuarkToString(value[i]),"%lf",&(out_val[i]))) {
-				NhlPError(NhlFATAL,NhlEUNKNOWN,"A bad value was passed to stringtodouble, input strings must contain numeric digits, replacing with missing value");
+			errno = 0;
+			val = NrmQuarkToString(value[i]);
+			tval = strtod(val,&end);
+			if (end == val) {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,
+                                "A bad value was passed to stringtodouble, input strings must contain numeric digits, replacing with missing value");
+                                has_missing = 1;
+				out_val[i] = missing2.doubleval;
+			}
+			else if (errno == ERANGE) {
                                 has_missing = 1;
                                 out_val[i] = missing2.doubleval;
 
+			}
+			else {
+				out_val[i] = tval;
 			}
 		}
 	}
@@ -6210,6 +6340,9 @@ NhlErrorTypes _NclIstringtofloat
         string *value;
         int total=1;
         int i;
+	double tval,dtest;
+	char *val;
+	char *end;
 
         value = (string*)NclGetArgValue(
                         0,
@@ -6224,25 +6357,66 @@ NhlErrorTypes _NclIstringtofloat
                 total *= dimsizes[i];
         }
 	out_val = (float*)NclMalloc(((NclTypeClass)nclTypefloatClass)->type_class.size *total);
-	missing2 = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis;
 	if(has_missing) {
+		errno = 0;
+		val = NrmQuarkToString(missing.stringval);
+		tval = strtod(val,&end);
+		dtest = fabs(tval);
+		if (end == val || errno == ERANGE || dtest > (double) FLT_MAX) {
+			missing2.floatval = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+		}
+		else if (dtest < (double) FLT_MIN) {
+			missing2.floatval = 0.0;
+		}
+		else {
+			missing2.floatval = (float) tval;
+		}
 		for(i = 0; i < total; i++) {
 			if(missing.stringval == value[i]) {
 				out_val[i] = missing2.floatval;
 			} else {
-				if(!sscanf(NrmQuarkToString(value[i]),"%f",&(out_val[i]))) {
-					 NhlPError(NhlFATAL,NhlEUNKNOWN,"A bad value was passed to stringtofloat, input strings must contain numeric digits, replacing with missing value");
-					out_val[i] = missing2.floatval;
-
+				errno = 0;
+				val = NrmQuarkToString(value[i]);
+				tval = strtod(val,&end);
+				dtest = fabs(tval);
+				if (end == val) {
+                                        NhlPError(NhlFATAL,NhlEUNKNOWN,
+					"A bad value was passed to stringtofloat, input strings must contain numeric digits, replacing with missing value");
+                                        out_val[i] = missing2.floatval;
+				}
+				else if (errno == ERANGE || dtest > (double) FLT_MAX) {
+                                        out_val[i] = missing2.floatval;
+				}
+				else if (dtest < (double) FLT_MIN) {
+					out_val[i] = 0.0;
+				}
+				else {
+					out_val[i] = tval;
 				}
 			}
 		}
 	}  else {
+		missing2.floatval = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
 		for(i = 0; i < total; i++) {
-			if(!sscanf(NrmQuarkToString(value[i]),"%f",&(out_val[i]))) {
-				NhlPError(NhlFATAL,NhlEUNKNOWN,"A bad value was passed to stringtolong, input strings must contain numeric digits, replacing with missing value");
+			errno = 0;
+			val = NrmQuarkToString(value[i]);
+			tval = strtod(val,&end);
+			dtest = fabs(tval);
+			if (end == val) {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,
+					  "A bad value was passed to stringtofloat, input strings must contain numeric digits, replacing with missing value");
 				has_missing = 1;
 				out_val[i] = missing2.floatval;
+			}
+			else if (errno == ERANGE || dtest > (double) FLT_MAX) {
+				has_missing = 1;
+				out_val[i] = missing2.floatval;
+			}
+			else if (dtest < (double) FLT_MIN) {
+				out_val[i] = 0.0;
+			}
+			else {
+				out_val[i] = tval;
 			}
 		}
 	}

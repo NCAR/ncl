@@ -1,5 +1,5 @@
 /*
- *      $Id: DataSupport.c,v 1.44 2003-09-24 18:53:28 dbrown Exp $
+ *      $Id: DataSupport.c,v 1.45 2005-02-05 00:13:55 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -323,7 +323,7 @@ NclMultiDValData str_md;
 		dim_sizes[str_md->multidval.n_dims] = max_len;
 		n_dims = str_md->multidval.n_dims +1;
 	}
-	val = (char*)NclMalloc(max_len * str_md->multidval.totalelements);
+	val = (char*)NclCalloc(max_len * str_md->multidval.totalelements,sizeof(char));
 	for(i = 0; i < str_md->multidval.totalelements; i++) {
 		strcpy(&(val[to]),buffer[i]);
 		to += max_len;
