@@ -1,5 +1,5 @@
 /*
- *      $Id: Palette.c,v 1.8 1999-09-30 21:34:15 dbrown Exp $
+ *      $Id: Palette.c,v 1.9 2001-10-02 16:48:53 haley Exp $
  */
 /************************************************************************
 *									*
@@ -1647,6 +1647,8 @@ static NhlErrorTypes ReadUserColormaps
 	path = getenv(NDV_COLORMAP_PATH);
 	if (! path)
 		path = getenv(NCARG_COLORMAP_PATH);
+	if (! path)
+		path = _NGGetNCARGEnv("colormaps");
 	if (! path) {
 		if (! suppress_path_message) {
 			fprintf(stderr,
