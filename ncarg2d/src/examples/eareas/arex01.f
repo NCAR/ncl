@@ -1,5 +1,5 @@
 C
-C	$Id: arex01.f,v 1.2 1994-07-08 16:27:06 stautler Exp $
+C $Id: arex01.f,v 1.3 1995-04-19 17:28:23 kennison Exp $
 C
       PROGRAM EXMPLE
 C
@@ -216,6 +216,9 @@ C
         STOP
 C
       END
+
+
+
       SUBROUTINE ARDBPA (IAMA,IGIP,LABL)
 C
         DIMENSION IAMA(*)
@@ -262,6 +265,9 @@ C
         RETURN
 C
       END
+
+
+
       SUBROUTINE ARDBPB (IAMA,IGIP,LABL)
 C
         DIMENSION IAMA(*)
@@ -277,7 +283,7 @@ C
 C ARCOMN contains variables which are used by all the AREAS routines.
 C
         COMMON /ARCOMN/ IAD,IAU,ILC,RLC,ILM,RLM,ILP,RLP,IBS,RBS,DBS,IDB,
-     +                  IDC,IDI
+     +                  IDC,IDI,IRC,RLA,RWA,RDI,RSI
         SAVE   /ARCOMN/
 C
 C The common block ARCOM1 is used to communicate with the arrow-drawing
@@ -339,6 +345,9 @@ C
         RETURN
 C
       END
+
+
+
       SUBROUTINE ARDBDA (X1,Y1,X2,Y2,IL,IR)
 C
 C The routine ARDBDA is called by ARDBPB, above, to draw an arrow from
@@ -475,6 +484,9 @@ C
         RETURN
 C
       END
+
+
+
       SUBROUTINE COLRAM (XCRA,YCRA,NCRA,IAAI,IAGI,NGPS)
 C
 C This routine colors the areas defined by the area map.

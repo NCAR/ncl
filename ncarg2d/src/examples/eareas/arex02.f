@@ -1,5 +1,5 @@
 C
-C $Id: arex02.f,v 1.3 1994-07-08 16:27:07 stautler Exp $
+C $Id: arex02.f,v 1.4 1995-04-19 17:28:25 kennison Exp $
 C
       PROGRAM AREX02
 C
@@ -136,6 +136,14 @@ C Define the mapping from the user system to the plotter frame.
 C
         CALL SET (.05,.95,.05,.95,0.,1.,0.,1.,1)
 C
+C Tell AREAS to make identifiers larger and further from the arrows
+C and make the arrowheads bigger.
+C
+        CALL ARSETR ('ID - IDENTIFIER DISTANCE',.02)
+        CALL ARSETR ('IS - IDENTIFIER SIZE',.01)
+        CALL ARSETR ('AL - ARROWHEAD LENGTH',.04)
+        CALL ARSETR ('AW - ARROWHEAD WIDTH',.008)
+C
 C Initialize the variable that keeps track of how much space is
 C currently used in the area map.
 C
@@ -213,6 +221,9 @@ C
         STOP
 C
       END
+
+
+
       SUBROUTINE COLRAM (XCRA,YCRA,NCRA,IAAI,IAGI,NGPS)
 C
 C This routine colors the areas defined by the area map.
@@ -247,6 +258,9 @@ C
   102   RETURN
 C
       END
+
+
+
       SUBROUTINE EXEDAM (IAMA,LAMA,NAMA,XCRA,YCRA,NCRA,IGID,IAIL,IAIR)
 C
         DIMENSION IAMA(LAMA),XCRA(NCRA),YCRA(NCRA)
@@ -272,9 +286,6 @@ C
 C A recoverable error occurred.  See if it was due to overflowing the
 C area map array and if we can do something about it.
 C
-	write(*,*) 'SEMESS(2) ', SEMESS(2)
-	write(*,*) 'NAMA ', NAMA
-	write(*,*) 'LAMA ', LAMA
           IF (SEMESS(2).EQ.'AREA-MAP ARRAY OVERFLOW'.AND.
      +                                          NAMA.LT.LAMA) THEN
 C
@@ -318,6 +329,9 @@ C
         RETURN
 C
       END
+
+
+
       SUBROUTINE EXPRAM (IAMA,LAMA,NAMA,IFL1,IFL2,IFL3)
 C
         DIMENSION IAMA(LAMA)
@@ -386,6 +400,9 @@ C
         RETURN
 C
       END
+
+
+
       SUBROUTINE EXSCAM (IAMA,LAMA,NAMA,XCRA,YCRA,NCRA,IAAI,IAGI,NGPS,
      +                                                           URPA)
 C
