@@ -1,5 +1,5 @@
 C
-C	$Id: vvexcc.f,v 1.4 1993-04-08 23:38:00 dbrown Exp $
+C	$Id: vvexcc.f,v 1.5 1993-04-09 23:47:41 dbrown Exp $
 C
       SUBROUTINE GENDAT (DATA,IDIM,M,N,MLOW,MHGH,DLOW,DHGH)
 C
@@ -125,14 +125,15 @@ C
 C
       SUBROUTINE DFCLRS
 C
-C Define a set of RGB color triples for colors 1 through 15.
+C Define a set of RGB color triples for colors 0 through 15.
 C
       PARAMETER (NCLRS=16)
       DIMENSION RGBV(3,NCLRS)
 C
 C Define the RGB color triples needed below.
 C
-      DATA RGBV / 0.00 , 0.00 , 0.00 ,
+      DATA RGBV / 
+     +     0.00 , 0.00 , 0.00 ,
      +     1.00 , 1.00 , 1.00 ,
      +     0.70 , 0.70 , 0.70 ,
      +     0.75 , 0.50 , 1.00 ,
