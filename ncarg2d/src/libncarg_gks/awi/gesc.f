@@ -1,5 +1,5 @@
 C
-C	$Id: gesc.f,v 1.34 2003-01-06 23:26:53 fred Exp $
+C	$Id: gesc.f,v 1.35 2003-09-21 00:44:33 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -33,7 +33,7 @@ C
       INTEGER FCTID, LIDR, IBUF(46), TBUF(720)
       REAL    UBUF(26)
       CHARACTER*(*) IDR(LIDR),ODR(MLODR)
-      CHARACTER*57  NAMET
+      CHARACTER*137 NAMET
       CHARACTER*5   DNAME
 C
 C  Check if GKS is in the proper state.
@@ -242,7 +242,7 @@ C
       ELSE IF (FCTID .EQ. -1392) THEN
 C
 C  FLASH4 support (segment number is in columns 11-20; segment
-C  name is in columns 24-80).
+C  name is in columns 24-80 of IDR(1) (and in IDR(2) if long enough).
 C
 C
 C  Check if the input data record is dimensioned properly.
@@ -254,7 +254,7 @@ C
            RETURN
         ENDIF
 C
-C  Check if the segment name is already in use.
+C  Check if the segment is already in use.
 C
         READ(IDR(1)(11:20),500) ICSEG 
   500   FORMAT(I10)
@@ -268,7 +268,10 @@ C
   210   CONTINUE
         NUMSEG = NUMSEG+1
         SEGS(NUMSEG) = ICSEG
-        SEGNAM(NUMSEG) = IDR(1)(24:80)
+        SEGNAM(NUMSEG)(1:57) = IDR(1)(24:80)
+        IF (LIDR .EQ. 2) THEN
+          SEGNAM(NUMSEG)(58:137) = IDR(2)
+        ENDIF
 C
 C  Get the connection ID.
 C
@@ -277,9 +280,9 @@ C
 C
 C  Determine the segment length.
 C
-        CALL GTNLEN(IDR(1)(24:80),ILEN,IER)
+        CALL GTNLEN(SEGNAM(NUMSEG),ILEN,IER)
         NAMET = ' '
-        NAMET(1:ILEN) = IDR(1)(24:24+ILEN-1)
+        NAMET(1:ILEN) = SEGNAM(NUMSEG)(1:ILEN)
         NAMET(ILEN+1:ILEN+1) = CHAR(0)
         CALL G01MIO(8, IFUNIT, NAMET(1:ILEN+1), IDUM1, IDUM2, IER)
         IF (IER .NE. 0) THEN

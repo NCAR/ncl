@@ -1,5 +1,5 @@
 C
-C $Id: gkscom.h,v 1.21 2003-02-26 23:58:13 fred Exp $
+C $Id: gkscom.h,v 1.22 2003-09-21 00:44:33 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -66,7 +66,7 @@ C  Details on all GKS COMMON variables are in the GKS BLOCKDATA.
      +               GMI   , GCGM  , GWSS  , GXWE  , GXWC  , GDMP  ,
      +               GPSMIN, GPSMAX, GPDFP , GPDFL
       COMMON/GKSNAM/ GNAM(109)     , SEGNAM(NSEG)  , GFNAME, GSEGRT
-      CHARACTER      GNAM*6, SEGNAM*57     , GFNAME*256    ,
+      CHARACTER      GNAM*6, SEGNAM*137    , GFNAME*256    ,
      +               GSEGRT*80
       COMMON/GKSIN1/ FCODE , CONT  , 
      +               IL1   , IL2   , ID(128)       ,
@@ -78,4 +78,4 @@ C  Details on all GKS COMMON variables are in the GKS BLOCKDATA.
      +               IC2   , IC    , RL1   , RL2   , STRL1 , STRL2 ,
      +               RERR
       REAL           RX    , RY
-      CHARACTER*80   STR
+      CHARACTER*160  STR
