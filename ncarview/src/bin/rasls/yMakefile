@@ -1,0 +1,35 @@
+#
+#
+#	$Id: yMakefile,v 1.1 1993-01-16 00:43:04 don Exp $
+#
+#
+#	Makefile for rasls
+#
+#
+
+NCARG = ../../../..
+
+MYNAME		= rasls
+
+LIBS		= $(LIBPATH)/libncarg_ras.a \
+		$(LIBPATH)/libncarg_c.a $(NETCDFLIB) $(HDFLIB) -lm
+
+CDEFINES	= 
+
+OBJS		= rasls.o
+SRCS		= rasls.c
+
+all::	$(MYNAME)
+
+CTarget($(MYNAME),$(OBJS),$(LIBS))
+MakefileTarget
+CleanTarget
+
+saber_src: $(SRCS)
+	#setopt load_flags $(CFLAGS) $(CINCS)
+	#load $(SRCS) $(LIBS)
+
+saber_obj: $(OBJS)
+	#setopt load_flags $(CFLAGS) $(CINCS)
+	#load $(OBJS) $(LIBS)
+
