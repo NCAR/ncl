@@ -74,7 +74,7 @@ float y[] = {
 
   Gcolr_rep rgb;
 
-  iwk = (int *) calloc(2*NUMXOUT*NUMYOUT,sizeof(float));
+  iwk = (int *) calloc(2*NUMXOUT*NUMYOUT,sizeof(int));
 
   for (i = 0 ; i < NUMIN ; i++) {
     z[i] = (x[i]-0.25)*(x[i]-0.25) + (y[i]-0.50)*(y[i]-0.50);

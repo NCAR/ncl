@@ -1,8 +1,9 @@
 /*
- *  $Id: c_shex02.c,v 1.1 1999-08-21 20:20:07 fred Exp $
+ *  $Id: c_shex02.c,v 1.2 2000-09-19 23:54:05 fred Exp $
  */
 
 #include <math.h>
+#include <stdlib.h>
 #include <ncarg/ncargC.h>
 #include <ncarg/gks.h>
 #include <ncarg/ngmath.h>

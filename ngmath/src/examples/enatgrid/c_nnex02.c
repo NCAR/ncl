@@ -23,7 +23,7 @@ main()
 
   Gcolr_rep rgb;
 
-  iwk = (int *) calloc(2*NUMXOUT*NUMYOUT,sizeof(float));
+  iwk = (int *) calloc(2*NUMXOUT*NUMYOUT,sizeof(int));
 
   xc = 1./(NUMXOUT-1.);
   for (i = 0 ; i < NUMXOUT ; i++) {
