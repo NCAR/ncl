@@ -1,5 +1,5 @@
 /*
- *      $Id: NclHDF.c,v 1.6 1997-09-02 20:26:31 ethan Exp $
+ *      $Id: NclHDF.c,v 1.7 1997-09-03 22:34:10 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -471,7 +471,9 @@ NclQuark var_name;
 				while(stepdl->dim_inq->dimid != stepvl->var_inq->dim[j]) {
 					stepdl = stepdl->next;
 				}
+/*
 				tmp->dim_sizes[j] = stepdl->dim_inq->size;
+*/
 				if(stepdl->dim_inq->dimid == -5) {
 					tmp->file_dim_num[j] = 0;
 				} else if(rec->has_scalar_dim) {

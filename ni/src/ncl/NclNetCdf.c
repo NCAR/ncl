@@ -1,5 +1,5 @@
 /*
- *      $Id: NclNetCdf.c,v 1.20 1997-09-02 20:26:40 ethan Exp $
+ *      $Id: NclNetCdf.c,v 1.21 1997-09-03 22:34:11 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -323,6 +323,7 @@ int wr_status;
 			tmp->dims->next = tmpdlptr;
 			tmp->dims->dim_inq->dimid = -5;
 			tmp->dims->dim_inq->size = 1;
+			tmp->dims->dim_inq->is_unlimited = 0;
 			tmp->dims->dim_inq->name = NrmStringToQuark("ncl_scalar");
 			tmp->n_dims++;
 		} else {
@@ -471,7 +472,6 @@ NclQuark var_name;
 				while(stepdl->dim_inq->dimid != stepvl->var_inq->dim[j]) {
 					stepdl = stepdl->next;
 				}
-				tmp->dim_sizes[j] = stepdl->dim_inq->size;
 				if(stepdl->dim_inq->dimid == -5) {
 					tmp->file_dim_num[j] = 0;
 				} else if(rec->has_scalar_dim) {
@@ -900,8 +900,9 @@ long *stride;
 	NetCdfFileRecord *rec = (NetCdfFileRecord*)therec;
 	int cdfid;
 	NetCdfVarInqRecList *stepvl; 
+	NetCdfDimInqRecList *stepdl; 
 	long count[MAX_NC_DIMS];
-	int i,n_elem = 1,no_stride = 1;
+	int i,n_elem = 1,no_stride = 1,k;
 	int ret;
 
 	if(rec->wr_status <= 0) {
@@ -913,6 +914,13 @@ long *stride;
 					n_elem *= count[i];
 					if(stride[i] != 1) {
 						no_stride = 0;
+					}
+					stepdl = rec->dims;
+					for(k = 0; ((stepdl!=NULL)&&(stepdl->dim_inq->dimid < stepvl->var_inq->dim[i])); k ++) {
+						stepdl = stepdl->next;
+					}
+					if(stepdl->dim_inq->is_unlimited) {
+						stepdl->dim_inq->size = finish[i] + 1;
 					}
 				}
 				cdfid = ncopen(NrmQuarkToString(rec->file_path_q),NC_WRITE);

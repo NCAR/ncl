@@ -1259,14 +1259,19 @@ NclQuark var_name;
 	CCMFileRec *thefile = (CCMFileRec*)therec;
 	NclFVarRec *tmp = NULL;
 	CcmIntVarInqRecList *vtmp;
-	int i;
+	int i,j;
 
 	vtmp = thefile->int_vars;
 	for(i = 0; i < thefile->n_int_vars; i++ ) {
 		
 		if(var_name == vtmp->var_name_q) {
 			tmp = (NclFVarRec*)NclMalloc(sizeof(NclFVarRec));
-			*tmp = vtmp->var_info;
+                        tmp->var_name_quark  = vtmp->var_info.var_name_quark;
+                        tmp->data_type  = vtmp->var_info.data_type;
+                        tmp->num_dimensions  = vtmp->var_info.num_dimensions;
+                        for(j=0;j< tmp->num_dimensions;j++) {
+                                tmp->file_dim_num[j]  = vtmp->var_info.file_dim_num[j];
+                        }
 			return(tmp);
 		}
 		vtmp = vtmp->next;
@@ -1275,11 +1280,16 @@ NclQuark var_name;
 
 		if(var_name == thefile->vars[i].var_name_q) {
 			tmp = (NclFVarRec*)NclMalloc(sizeof(NclFVarRec));
-			*tmp = thefile->vars[i].var_info;
+                        tmp->var_name_quark  = thefile->vars[i].var_info.var_name_quark;
+                        tmp->data_type  = thefile->vars[i].var_info.data_type;
+                        tmp->num_dimensions  = thefile->vars[i].var_info.num_dimensions;
+                        for(j=0;j< tmp->num_dimensions;j++) {
+                                tmp->file_dim_num[j]  = thefile->vars[i].var_info.file_dim_num[j];
+                        }
+        		return(tmp);
 		}
 	}
 	
-        return(tmp);
 }
 
 static NclQuark* CcmGetDimNames
@@ -1320,6 +1330,7 @@ NclQuark dim_name;
 			dims = (NclFDimRec*)NclMalloc(sizeof(NclFDimRec));
 			dims->dim_name_quark = thefile->dims[i].dim_name;
 			dims->dim_size = thefile->dims[i].size;
+			dims->is_unlimited = 0;
 		}
 	}
 	return(dims);

@@ -61,7 +61,15 @@ typedef struct _GribAttInqRecList GribAttInqRecList;
 typedef struct _GribParamList GribParamList;
 typedef struct _GribInternalVarList GribInternalVarList;
 typedef struct _GribInternalVarRec GribInternalVarRec;
+typedef struct _NclGribFVarRec      NclGribFVarRec;
 
+struct _NclGribFVarRec {
+        NclQuark var_name_quark;
+        NclBasicDataTypes data_type;
+        int     num_dimensions;
+        int     dim_sizes[NCL_MAX_DIMENSIONS];
+        int     file_dim_num[NCL_MAX_DIMENSIONS];
+};
 struct _GribInternalVarList {
 	GribInternalVarRec *int_var;
 	GribInternalVarList *next;
@@ -69,11 +77,14 @@ struct _GribInternalVarList {
 
 struct _GribInternalVarRec {
 	NclQuark var_name_q;
-	NclFVarRec var_info;
+	NclGribFVarRec var_info;
 	NclMultiDValData value;
 	int n_atts;
 	GribAttInqRecList *theatts;
 };
+
+
+
 
 struct _GribParamList {
 	int param_number;
@@ -87,7 +98,7 @@ struct _GribParamList {
 	int time_unit_indicator;
 	int level_indicator;
 	GIT minimum_it;
-	NclFVarRec var_info;
+	NclGribFVarRec var_info;
 	int yymmddhh_isatt;
 	NclOneDValCoordData yymmddhh;
 	GIT *it_vals;

@@ -81,10 +81,20 @@ typedef struct _CcmAttInqRecList CcmAttInqRecList;
 typedef struct _CcmVarInqRecList CcmVarInqRecList;
 typedef struct _CcmIntVarInqRecList CcmIntVarInqRecList;
 typedef struct _CcmHeader CcmHeader;
+typedef struct _NclCcmFVarRec NclCcmFVarRec;
+
+struct _NclCcmFVarRec {
+        NclQuark var_name_quark;
+        NclBasicDataTypes data_type;
+        int     num_dimensions;
+        int     dim_sizes[NCL_MAX_DIMENSIONS];
+        int     file_dim_num[NCL_MAX_DIMENSIONS];
+};
+
 
 struct _CcmIntVarInqRecList {
 	NclQuark var_name_q;
-	NclFVarRec var_info;
+	NclCcmFVarRec var_info;
 	NclMultiDValData thevalue;
 	int n_atts;
 	CcmAttInqRecList *theatts;
@@ -95,7 +105,7 @@ struct _CcmVarInqRecList {
 	NclQuark var_name_q;		/*
 					 * take from cheader.MCFLDS
 					 */
-	NclFVarRec var_info;		/*
+	NclCcmFVarRec var_info;		/*
 					 * vars are dimensioned <= 4
 					 * if 4 then [time]x[lat]x[lev]x[lon]
 					 * if 3 either [lat]x[lev]x[lon] or

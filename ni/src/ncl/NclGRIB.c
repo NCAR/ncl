@@ -29,7 +29,7 @@ GribAttInqRecList **att_list_ptr,char* name,void *val,int dimsize,NclObjClass ty
 
 static NclMultiDValData  _GribGetInternalVar
 #if	NhlNeedProto
-(GribFileRecord * therec,NclQuark name_q, NclFVarRec **vrec)
+(GribFileRecord * therec,NclQuark name_q, NclGribFVarRec **vrec)
 #else
 (therec,name_q)
 GribFileRecord * therec;
@@ -72,7 +72,9 @@ int natts;
 	tmp->var_info.var_name_quark = name_q;
 	tmp->var_info.num_dimensions = tmp_md->multidval.n_dims;
 	for (i = 0; i < tmp_md->multidval.n_dims; i++) {
+/*
 		tmp->var_info.dim_sizes[i] = tmp_md->multidval.dim_sizes[i];
+*/
 		tmp->var_info.file_dim_num[i] = dim_numbers[i];
 	}
 	tmp->value = tmp_md;
@@ -896,7 +898,7 @@ GribFileRecord *therec;
 	int current_dim = 0;
 	NclMultiDValData tmp_md;
 	NclMultiDValData tmp_md1;
-	NclFVarRec *test;
+	NclGribFVarRec *test;
 	int n_dims_lat;
 	int n_dims_lon;
 	int *dimsizes_lat = NULL;
@@ -3320,12 +3322,18 @@ NclQuark var_name;
 	GribParamList *step;
 	NclFVarRec *tmp;
 	GribInternalVarList *vstep;
+	int i;
 
 	vstep = thefile->internal_var_list;
 	while(vstep != NULL) {
 		if(vstep->int_var->var_info.var_name_quark == var_name) {
 			tmp = (NclFVarRec*)NclMalloc(sizeof(NclFVarRec));
-			*tmp = vstep->int_var->var_info;
+			tmp->var_name_quark  = vstep->int_var->var_info.var_name_quark;
+			tmp->data_type  = vstep->int_var->var_info.data_type;
+			tmp->num_dimensions  = vstep->int_var->var_info.num_dimensions;
+			for(i=0;i< tmp->num_dimensions;i++) {
+				tmp->file_dim_num[i]  = vstep->int_var->var_info.file_dim_num[i];
+			}
 			return(tmp);
 		} else {
 			vstep = vstep->next;
@@ -3336,7 +3344,12 @@ NclQuark var_name;
 	while(step != NULL) {
 		if(step->var_info.var_name_quark == var_name) {
 			tmp = (NclFVarRec*)NclMalloc(sizeof(NclFVarRec));
-			*tmp = step->var_info;
+			tmp->var_name_quark  = step->var_info.var_name_quark;
+			tmp->data_type  = step->var_info.data_type;
+			tmp->num_dimensions  = step->var_info.num_dimensions;
+			for(i=0;i< tmp->num_dimensions;i++) {
+				tmp->file_dim_num[i]  = step->var_info.file_dim_num[i];
+			}
 			return(tmp);
 		} else {
 			step = step->next;
@@ -3410,6 +3423,7 @@ NclQuark dim_name_q;
 				tmpd = (NclFDimRec*)NclMalloc(sizeof(NclFDimRec));
 				tmpd->dim_name_quark = dim_name_q;
 				tmpd->dim_size = dstep->dim_inq->size;
+				tmpd->is_unlimited = 0;
 				return(tmpd);
 			}
 			dstep = dstep->next;
@@ -3420,6 +3434,7 @@ NclQuark dim_name_q;
 				tmpd = (NclFDimRec*)NclMalloc(sizeof(NclFDimRec));
 				tmpd->dim_name_quark = dim_name_q;
 				tmpd->dim_size = dstep->dim_inq->size;
+				tmpd->is_unlimited = 0;
 				return(tmpd);
 			}
 			dstep = dstep->next;
@@ -3430,6 +3445,7 @@ NclQuark dim_name_q;
 				tmpd = (NclFDimRec*)NclMalloc(sizeof(NclFDimRec));
 				tmpd->dim_name_quark = dim_name_q;
 				tmpd->dim_size = dstep->dim_inq->size;
+				tmpd->is_unlimited = 0;
 				return(tmpd);
 			}
 			dstep = dstep->next;
@@ -3440,6 +3456,7 @@ NclQuark dim_name_q;
 				tmpd = (NclFDimRec*)NclMalloc(sizeof(NclFDimRec));
 				tmpd->dim_name_quark = dim_name_q;
 				tmpd->dim_size = dstep->dim_inq->size;
+				tmpd->is_unlimited = 0;
 				return(tmpd);
 			}
 			dstep = dstep->next;

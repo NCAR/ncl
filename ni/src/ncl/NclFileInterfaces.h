@@ -15,7 +15,9 @@ struct _NclFVarRec {
 	NclQuark var_name_quark;
 	NclBasicDataTypes data_type;
 	int	num_dimensions;
+/*
 	int	dim_sizes[NCL_MAX_DIMENSIONS];
+*/
 	int     file_dim_num[NCL_MAX_DIMENSIONS];
 };
 

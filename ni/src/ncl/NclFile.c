@@ -966,7 +966,7 @@ int vtype;
 				if(Ncl_SUB_VAL_DEF == sel->sel_type) {
 					start[sel->dim_num] = sel->u.sub.start;
 				}
-				finish[sel->dim_num] = thefile->file.var_info[index]->dim_sizes[sel->dim_num]-1;
+				finish[sel->dim_num] = thefile->file.file_dim_info[thefile->file.var_info[index]->file_dim_num[sel->dim_num]]->dim_size-1;
 			case Ncl_SUB_DEF_VAL:
 				if(sel->sel_type == Ncl_SUB_DEF_VAL) {
 					finish[sel->dim_num] = sel->u.sub.finish;
@@ -1018,11 +1018,11 @@ int vtype;
 					tmpf = 1;
 				}
 				n_elem =(int)(fabs(((float)(finish[sel->dim_num] - start[sel->dim_num]))) /tmpf) + 1;
-				if((sel->u.sub.start > thefile->file.var_info[index]->dim_sizes[sel->dim_num]-1)||(sel->u.sub.start < 0)) {
+				if((sel->u.sub.start > thefile->file.file_dim_info[thefile->file.var_info[index]->file_dim_num[sel->dim_num]]->dim_size-1)||(sel->u.sub.start < 0)) {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"Subscript out of range, error in subscript #%d",i);
 					return(NULL);
 				}
-				if((sel->u.sub.finish> thefile->file.var_info[index]->dim_sizes[sel->dim_num]-1)||(sel->u.sub.finish< 0)) {
+				if((sel->u.sub.finish> thefile->file.file_dim_info[thefile->file.var_info[index]->file_dim_num[sel->dim_num]]->dim_size-1)||(sel->u.sub.finish< 0)) {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"Subscript out of range, error in subscript #%d",i);
 					return(NULL);
 				}
@@ -1037,11 +1037,11 @@ int vtype;
 				index_map[i] = sel->dim_num;
 				break;
 			case Ncl_VECSUBSCR:
-				if((sel->u.vec.min < 0)||(sel->u.vec.min >= thefile->file.var_info[index]->dim_sizes[sel->dim_num])) {	
+				if((sel->u.vec.min < 0)||(sel->u.vec.min >= thefile->file.file_dim_info[thefile->file.var_info[index]->file_dim_num[sel->dim_num]]->dim_size)) {	
 					NhlPError(NhlFATAL,NhlEUNKNOWN, "Subscript out of range, error in subscript #%d",i);
 					return(NULL);
 				}
-				if((sel->u.vec.max < 0)||(sel->u.vec.max >= thefile->file.var_info[index]->dim_sizes[sel->dim_num])) {	
+				if((sel->u.vec.max < 0)||(sel->u.vec.max >= thefile->file.file_dim_info[thefile->file.var_info[index]->file_dim_num[sel->dim_num]]->dim_size)) {	
 					NhlPError(NhlFATAL,NhlEUNKNOWN, "Subscript out of range, error in subscript #%d",i);
 					return(NULL);
 				}
@@ -1064,7 +1064,7 @@ int vtype;
 			if(sel->dim_num != n_dims_input -1) {
 				multiplier_input[sel->dim_num] = 1;
 				for(k = sel->dim_num + 1; k < n_dims_input; k++) {
-					multiplier_input[sel->dim_num] *= (long)thefile->file.var_info[index]->dim_sizes[k];
+					multiplier_input[sel->dim_num] *= (long)thefile->file.file_dim_info[thefile->file.var_info[index]->file_dim_num[k]]->dim_size;
 				}
 			}
 			output_dim_sizes[i] = n_elem;
@@ -1078,17 +1078,17 @@ int vtype;
 	} else {
 		for(i = 0; i< n_dims_input; i++) {
 			start[i] = 0;
-			finish[i] = thefile->file.var_info[index]->dim_sizes[i] - 1;
+			finish[i] = thefile->file.file_dim_info[thefile->file.var_info[index]->file_dim_num[i]]->dim_size - 1;
 			stride[i] = 1;
-			total_elements *= thefile->file.var_info[index]->dim_sizes[i];
-			output_dim_sizes[i] = thefile->file.var_info[index]->dim_sizes[i];
+			total_elements *= (finish[i] + 1);
+			output_dim_sizes[i] = finish[i] + 1;
 			(dim_info)[i].dim_num = i;
 			(dim_info)[i].dim_size = output_dim_sizes[i];
 			(dim_info)[i].dim_quark = FileGetDimName(thefile,thefile->file.var_info[index]->file_dim_num[i]);
 			compare_sel[i] = NCLFILE_INC;
 			multiplier_input[i] = 1;
 			for(k = i + 1; k < n_dims_input; k++) {
-				multiplier_input[i] *= (long)thefile->file.var_info[index]->dim_sizes[k];
+				multiplier_input[i] *= (long)thefile->file.file_dim_info[thefile->file.var_info[index]->file_dim_num[k]]->dim_size;
 			}
 
 		}
@@ -2555,6 +2555,7 @@ int type;
 	long 	new_dim_sizes[NCL_MAX_DIMENSIONS];
 	
 	int has_missing = 0;
+	int update_unlimited = 0;
 	char buffer[8];
 	void *val;
 	NhlErrorTypes ret = NhlNOERROR;
@@ -2572,6 +2573,7 @@ int type;
 	int has_reverse = 0;
 	int has_reorder = 0;
 	int from = 0,block_write_limit,n_elem_block;
+	NclFDimRec *tmpfdim = NULL;
 	
 	int multiplier_target[NCL_MAX_DIMENSIONS];
 	int compare_sel[NCL_MAX_DIMENSIONS];
@@ -2601,7 +2603,7 @@ int type;
 						if(sel->sel_type == Ncl_SUB_VAL_DEF) {
 							start[sel->dim_num] = sel->u.sub.start;
 						}
-						finish[sel->dim_num] = thefile->file.var_info[index]->dim_sizes[sel->dim_num]-1;
+						finish[sel->dim_num] = thefile->file.file_dim_info[thefile->file.var_info[index]->file_dim_num[sel->dim_num]]->dim_size-1;
 					case Ncl_SUB_DEF_VAL:
 						if(sel->sel_type == Ncl_SUB_DEF_VAL) {
 							start[sel->dim_num] = 0;
@@ -2653,16 +2655,20 @@ int type;
 						}
 						n_elem = (int)(fabs(((float)(finish[sel->dim_num] -start[sel->dim_num])))/tmpf) + 1;
 
-						if((sel->u.sub.start > thefile->file.var_info[index]->dim_sizes[sel->dim_num]-1)||(sel->u.sub.start < 0)) {
-							if(!( thefile->file.file_dim_info[ thefile->file.var_info[index]->file_dim_num[sel->dim_num]]->is_unlimited)) {
+						if((sel->u.sub.start > thefile->file.file_dim_info[thefile->file.var_info[index]->file_dim_num[sel->dim_num]]->dim_size-1 )||(sel->u.sub.start < 0)) {
+							if(!( thefile->file.file_dim_info[ thefile->file.var_info[index]->file_dim_num[sel->dim_num]]->is_unlimited)||(sel->u.sub.start < 0)) {
 								NhlPError(NhlFATAL,NhlEUNKNOWN,"Subscript out of range, error in subscript #%d",i);
                                         			return(NhlFATAL);
+							} else if(sel->u.sub.start >= thefile->file.file_dim_info[thefile->file.var_info[index]->file_dim_num[sel->dim_num]]->dim_size){
+								update_unlimited = 1;
 							}
                                 		}
-                                		if((sel->u.sub.finish> thefile->file.var_info[index]->dim_sizes[sel->dim_num]-1)||(sel->u.sub.finish < 0)) {
-							if(!( thefile->file.file_dim_info[ thefile->file.var_info[index]->file_dim_num[sel->dim_num]]->is_unlimited)) {
+                                		if((sel->u.sub.finish> thefile->file.file_dim_info[thefile->file.var_info[index]->file_dim_num[sel->dim_num]]->dim_size-1)||(sel->u.sub.finish < 0)) {
+							if(!( thefile->file.file_dim_info[ thefile->file.var_info[index]->file_dim_num[sel->dim_num]]->is_unlimited)||(sel->u.sub.finish < 0)) {
 								NhlPError(NhlFATAL,NhlEUNKNOWN,"Subscript out of range, error in subscript #%d",i);
                                         			return(NhlFATAL);
+							} else if(sel->u.sub.finish >= thefile->file.file_dim_info[thefile->file.var_info[index]->file_dim_num[sel->dim_num]]->dim_size){
+								update_unlimited = 1;
 							}
                                 		}
 						if(sel->dim_num != i) {
@@ -2671,13 +2677,21 @@ int type;
 						index_map[i] = sel->dim_num;
 						break;
 					case Ncl_VECSUBSCR:
-						if((sel->u.vec.min < 0 ) || (sel->u.vec.min >= thefile->file.var_info[index]->dim_sizes[sel->dim_num])){
-							NhlPError(NhlFATAL,NhlEUNKNOWN,	"Vector subscript out of range, error in subscript #%d",i);
-							return(NhlFATAL);
+						if((sel->u.vec.min < 0 ) || (sel->u.vec.min >= thefile->file.file_dim_info[thefile->file.var_info[index]->file_dim_num[sel->dim_num]]->dim_size)){
+							if(!( thefile->file.file_dim_info[ thefile->file.var_info[index]->file_dim_num[sel->dim_num]]->is_unlimited)||(sel->u.vec.min < 0)) {
+								NhlPError(NhlFATAL,NhlEUNKNOWN,"Vector subscript out of range, error in subscript #%d",i);
+                                        			return(NhlFATAL);
+							} else if(sel->u.vec.min >= thefile->file.file_dim_info[thefile->file.var_info[index]->file_dim_num[sel->dim_num]]->dim_size){
+								update_unlimited = 1;
+							}
 						}
-						if((sel->u.vec.max < 0)||(sel->u.vec.max >= thefile->file.var_info[index]->dim_sizes[sel->dim_num])) {
-							NhlPError(NhlFATAL,NhlEUNKNOWN,	"Vector subscript out of range, error in subscript #%d",i);
-							return(NhlFATAL);
+						if((sel->u.vec.max < 0)||(sel->u.vec.max >= thefile->file.file_dim_info[thefile->file.var_info[index]->file_dim_num[sel->dim_num]]->dim_size)) {
+							if(!( thefile->file.file_dim_info[ thefile->file.var_info[index]->file_dim_num[sel->dim_num]]->is_unlimited)||(sel->u.vec.max < 0)) {
+								NhlPError(NhlFATAL,NhlEUNKNOWN,"Vector subscript out of range, error in subscript #%d",i);
+                                        			return(NhlFATAL);
+							} else if(sel->u.vec.max >= thefile->file.file_dim_info[thefile->file.var_info[index]->file_dim_num[sel->dim_num]]->dim_size){
+								update_unlimited = 1;
+							}
 						}
 						n_elem = sel->u.vec.n_ind;
 						stride[sel->dim_num] = 0;
@@ -2693,7 +2707,7 @@ int type;
 					multiplier_target[sel->dim_num] = 1;
 					if(sel->dim_num != n_dims_target - 1) {
 						for(k = sel->dim_num +1 ; k< n_dims_target; k++) {
-							multiplier_target[sel->dim_num] *= (long)thefile->file.var_info[index]->dim_sizes[k];
+							multiplier_target[sel->dim_num] *= (long)thefile->file.file_dim_info[thefile->file.var_info[index]->file_dim_num[k]]->dim_size;
 						}
 					}
 					selection_dim_sizes[i] =n_elem;
@@ -2704,15 +2718,15 @@ int type;
 			} else {
 				for(i = 0 ; i < n_dims_target; i++) {
 					start[i] = 0;
-					finish[i] = thefile->file.var_info[index]->dim_sizes[i] -1;
+					finish[i] = thefile->file.file_dim_info[thefile->file.var_info[index]->file_dim_num[i]]->dim_size -1;
 					stride[i] = 1;
 					index_map[i] = i;
-					total_elements *= thefile->file.var_info[index]->dim_sizes[i];
-					selection_dim_sizes[i] = thefile->file.var_info[index]->dim_sizes[i];
+					total_elements *= (finish[i] + 1);
+					selection_dim_sizes[i] = (finish[i]+ 1);
 					compare_sel[i] = NCLFILE_INC;
 					multiplier_target[i] = 1;
 					for(k = i + 1; k < n_dims_target; k++) {
-						multiplier_target[i] *= (long)thefile->file.var_info[index]->dim_sizes[k];
+						multiplier_target[i] *= (long)thefile->file.file_dim_info[thefile->file.var_info[index]->file_dim_num[k]]->dim_size;
 					}
 				}
 				sel = NULL;
@@ -2805,6 +2819,19 @@ int type;
 							finish,	
 							stride);
 					}
+/*
+* Add unlimited update
+*/
+					if(update_unlimited) {
+						for(i = 0; i < thefile->file.n_file_dims;i++) {
+							if(thefile->file.file_dim_info[i]->is_unlimited) {
+								tmpfdim= thefile->file.file_dim_info[i];
+								thefile->file.file_dim_info[i] = (*thefile->file.format_funcs->get_dim_info)(thefile->file.private_rec,tmpfdim->dim_name_quark);
+								NclFree(tmpfdim);
+							}
+						}
+					}
+
 						return(ret);
 				} else {
 					if(value->multidval.kind != SCALAR) {
@@ -2933,6 +2960,19 @@ int type;
 							current_finish[index_map[0]] = current_index[index_map[0]];
 						}
 					}	
+/*
+* Add unlimited update
+*/
+					if(update_unlimited) {
+						for(i = 0; i < thefile->file.n_file_dims;i++) {
+							if(thefile->file.file_dim_info[i]->is_unlimited) {
+								tmpfdim= thefile->file.file_dim_info[i];
+								thefile->file.file_dim_info[i] = (*thefile->file.format_funcs->get_dim_info)(thefile->file.private_rec,tmpfdim->dim_name_quark);
+								NclFree(tmpfdim);
+							}
+						}
+					}
+
 					return(ret);
 				}
 			} else if((type == FILE_VAR_ACCESS) ? thefile->file.format_funcs->write_var_ns != NULL : thefile->file.format_funcs->write_coord_ns != NULL) {
@@ -2954,6 +2994,19 @@ int type;
 							finish
 							);
 					}
+/*
+* Add unlimited update
+*/
+					if(update_unlimited) {
+						for(i = 0; i < thefile->file.n_file_dims;i++) {
+							if(thefile->file.file_dim_info[i]->is_unlimited) {
+								tmpfdim= thefile->file.file_dim_info[i];
+								thefile->file.file_dim_info[i] = (*thefile->file.format_funcs->get_dim_info)(thefile->file.private_rec,tmpfdim->dim_name_quark);
+								NclFree(tmpfdim);
+							}
+						}
+					}
+
 					return(ret);
 				}else{
 /*
@@ -3085,6 +3138,18 @@ int type;
 							current_finish[index_map[0]] = current_index[index_map[0]];
 						}
 					}	
+/*
+* Add unlimited update
+*/
+					if(update_unlimited) {
+						for(i = 0; i < thefile->file.n_file_dims;i++) {
+							if(thefile->file.file_dim_info[i]->is_unlimited) {
+								tmpfdim= thefile->file.file_dim_info[i];
+								thefile->file.file_dim_info[i] = (*thefile->file.format_funcs->get_dim_info)(thefile->file.private_rec,tmpfdim->dim_name_quark);
+								NclFree(tmpfdim);
+							}
+						}
+					}
 					return(ret);
 				}
 			}
@@ -3259,6 +3324,18 @@ int type;
 			thefile->file.var_att_ids[thefile->file.n_vars] = -1;
 			
 			thefile->file.n_vars++;
+/*
+* Add update unlimited
+*/
+					if(update_unlimited) {
+						for(i = 0; i < thefile->file.n_file_dims;i++) {
+							if(thefile->file.file_dim_info[i]->is_unlimited) {
+								tmpfdim= thefile->file.file_dim_info[i];
+								thefile->file.file_dim_info[i] = (*thefile->file.format_funcs->get_dim_info)(thefile->file.private_rec,tmpfdim->dim_name_quark);
+								NclFree(tmpfdim);
+							}
+						}
+					}
 			return(NhlNOERROR);
 		}
 	} else {

@@ -1,5 +1,5 @@
 /*
- *      $Id: Symbol.c,v 1.49 1997-09-02 20:26:57 ethan Exp $
+ *      $Id: Symbol.c,v 1.50 1997-09-03 22:34:12 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1104,7 +1104,7 @@ NclApiDataList *_NclGetFileVarInfoList
 						for(j = 0 ; j < tmp->u.var->n_dims ; j++) {
 							tmp->u.var->dim_info[j].dim_quark =thefile->file.file_dim_info[thefile->file.var_info[i]->file_dim_num[j]]->dim_name_quark;
 							tmp->u.var->dim_info[j].dim_num = thefile->file.var_info[i]->file_dim_num[j];
-							tmp->u.var->dim_info[j].dim_size = thefile->file.var_info[i]->dim_sizes[j];
+							tmp->u.var->dim_info[j].dim_size = thefile->file.file_dim_info[thefile->file.var_info[i]->file_dim_num[j]]->dim_size;
 							if(thefile->file.coord_vars[thefile->file.var_info[i]->file_dim_num[j]] != NULL) {
 								tmp->u.var->coordnames[j] = thefile->file.file_dim_info[thefile->file.var_info[i]->file_dim_num[j]]->dim_name_quark;
 
@@ -1182,7 +1182,7 @@ NclQuark file_var_name;
 							for(j = 0 ; j < tmp->u.var->n_dims ; j++) {
 								tmp->u.var->dim_info[j].dim_quark =thefile->file.file_dim_info[thefile->file.var_info[i]->file_dim_num[j]]->dim_name_quark;
 								tmp->u.var->dim_info[j].dim_num = thefile->file.var_info[i]->file_dim_num[j];
-								tmp->u.var->dim_info[j].dim_size = thefile->file.var_info[i]->dim_sizes[j];
+								tmp->u.var->dim_info[j].dim_size = thefile->file.file_dim_info[thefile->file.var_info[i]->file_dim_num[j]]->dim_size;
 								if(thefile->file.coord_vars[thefile->file.var_info[i]->file_dim_num[j]] != NULL) {	
 									tmp->u.var->coordnames[j] =  thefile->file.file_dim_info[thefile->file.var_info[i]->file_dim_num[j]]->dim_name_quark;
 								} else {
@@ -1261,7 +1261,7 @@ NclQuark coordname;
 							tmp->u.var->dim_info = (NclDimRec*)NclMalloc(sizeof(NclDimRec));
 							tmp->u.var->dim_info->dim_quark = coordname;
 							tmp->u.var->dim_info->dim_num = thefile->file.coord_vars[i]->file_dim_num[0];
-							tmp->u.var->dim_info->dim_size = thefile->file.coord_vars[i]->dim_sizes[0];	
+							tmp->u.var->dim_info->dim_size = thefile->file.file_dim_info[thefile->file.coord_vars[i]->file_dim_num[0]]->dim_size;	
 							tmp->u.var->coordnames[0] = -1;	
 							for(j = 0; j < thefile->file.n_vars; j++) {
 								if(thefile->file.var_info[j]->var_name_quark == coordname) {
@@ -1523,7 +1523,8 @@ long    * stride;
 	NclExtValueRec *out_data = NULL;
 	NclMultiDValData theid;
 	NclSelectionRecord *sel_ptr=NULL;
-	int i,index = 0;
+	int i,index = 0,k;
+	int dim_sizes[NCL_MAX_DIMENSIONS];
 	
 	s = _NclLookUp(NrmQuarkToString(file_sym_name));
 	if((s != NULL)&&(s->type != UNDEF)) {
@@ -1534,7 +1535,10 @@ long    * stride;
 				thefile = (NclFile)_NclGetObj(*(int*)theid->multidval.val);
 				index = _NclFileIsVar(thefile,file_var_name);
 				if(thefile != NULL) {
-					sel_ptr = BuildSel(thefile->file.var_info[index]->num_dimensions,thefile->file.var_info[index]->dim_sizes,start,finish,stride);
+					for(k = 0; k < thefile->file.var_info[index]->num_dimensions; k++) {
+						dim_sizes[k] = thefile->file.file_dim_info[thefile->file.var_info[index]->file_dim_num[k]]->dim_size;
+					}
+					sel_ptr = BuildSel(thefile->file.var_info[index]->num_dimensions,dim_sizes,start,finish,stride);
 					tmp_md = _NclFileReadVarValue(thefile,file_var_name,sel_ptr);
 					if(sel_ptr != NULL) {
 						NclFree(sel_ptr);
@@ -1589,7 +1593,8 @@ long* stride;
 	NclExtValueRec *out_data = NULL;
 	NclMultiDValData theid;
 	NclSelectionRecord *sel_ptr=NULL;
-	int i,index = 0;
+	int i,index = 0,k;
+	int dim_sizes[NCL_MAX_DIMENSIONS];
 
 	s = _NclLookUp(NrmQuarkToString(file_sym_name));
 	if((s != NULL)&&(s->type != UNDEF)) {
@@ -1600,7 +1605,10 @@ long* stride;
 				thefile = (NclFile)_NclGetObj(*(int*)theid->multidval.val);
 				index = _NclFileVarIsCoord(thefile,coordname);
 				if(thefile != NULL) {
-					sel_ptr = BuildSel(thefile->file.coord_vars[index]->num_dimensions,thefile->file.coord_vars[index]->dim_sizes,start,finish,stride);
+					for(k = 0; k < thefile->file.var_info[index]->num_dimensions; k++) {
+						dim_sizes[k] = thefile->file.file_dim_info[thefile->file.var_info[index]->file_dim_num[k]]->dim_size;
+					}
+					sel_ptr = BuildSel(thefile->file.coord_vars[index]->num_dimensions,dim_sizes,start,finish,stride);
 					tmp_var = _NclFileReadCoord(thefile,coordname,sel_ptr);
 					if(sel_ptr != NULL) {
 						NclFree(sel_ptr);
