@@ -1,5 +1,5 @@
 ;
-;      $Id: xy08n.ncl,v 1.2 1995-06-22 21:09:44 haley Exp $
+;      $Id: xy08n.ncl,v 1.3 1996-04-22 23:43:32 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                     ;
@@ -37,7 +37,7 @@ begin
 ; Define procedure for setting up data arrays.
 ;
 procedure assigndata(
-    xc[*][*]:float,
+    xc[*]:float,
     x[*][*]:float,
     y[*][*]:float,
     len[*]:integer,
@@ -52,8 +52,8 @@ begin
   l = 0
   do i = 0, ncurve-1
     do j = 0,len(i)*2-1,2
-        x(i,j/2) = xc(0,l)
-        y(i,j/2) = xc(0,l+1)
+        x(i,j/2) = xc(l)
+        y(i,j/2) = xc(l+1)
         l = l + 2
     end do
   end do
@@ -65,7 +65,7 @@ end
 ncurve = 3
 npts = 61
 npts2 = 220
-xcoord = new((/1,npts2/),float)
+xcoord = new(npts2,float)
 xdra = new((/ncurve,npts/),float)
 ydra = new((/ncurve,npts/),float)
 len = new(ncurve,integer)
@@ -81,13 +81,12 @@ dataid = new(ncurve,graphic)
 ;
 ; Read the input data
 ;
-len_dims = new(2,integer)
-len_dims(0) = 1
-len_dims(1) = npts2
+len_dims = new(1,integer)
+len_dims(0) = npts2
 xcoord = asciiread("xy08.asc",len_dims,"float")
 
 do i = 0, npts2-1
-  xcoord(0,i) = 2. ^ ((xcoord(0,i)-15.)/2.5)
+  xcoord(i) = 2. ^ ((xcoord(i)-15.)/2.5)
 end do
 
 assigndata(xcoord,xdra,ydra,len,npts,ncurve)
