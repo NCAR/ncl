@@ -1,5 +1,5 @@
 C
-C       $Id: vvsetr.f,v 1.11 1995-10-27 23:25:26 dbrown Exp $
+C       $Id: vvsetr.f,v 1.12 1996-01-19 17:21:51 dbrown Exp $
 C
 C
 C-----------------------------------------------------------------------
@@ -39,7 +39,7 @@ C
       COMMON /VVCOM/
      +                IUD1       ,IVD1       ,IPD1       ,IXDM       ,
      +                IYDN       ,VLOM       ,VHIM       ,ISET       ,
-     +                VRMG       ,VMXL       ,VFRC       ,IXIN       ,
+     +                VRMG       ,VRLN       ,VFRC       ,IXIN       ,
      +                IYIN       ,ISVF       ,UUSV       ,UVSV       ,
      +                UPSV       ,IMSK       ,ICPM       ,UVPS       ,
      +                UVPL       ,UVPR       ,UVPB       ,UVPT       ,
@@ -48,16 +48,23 @@ C
      +                NLVL       ,IPAI       ,ICTV       ,WDLV       ,
      +                UVMN       ,UVMX       ,PMIN       ,PMAX       ,
      +                RVMN       ,RVMX       ,RDMN       ,RDMX       ,
-     +                ISPC       ,ITHN       ,IPLR       ,IVST       ,
+     +                ISPC       ,RVMD       ,IPLR       ,IVST       ,
      +                IVPO       ,ILBL       ,IDPF       ,IMSG       ,
      +                ICLR(IPLVLS)           ,TVLU(IPLVLS)
 C
 C Arrow size/shape parameters
 C
         COMMON / VVARO /
-     +                HDSZ       ,HINF       ,HANG       ,
-     +                HSIN       ,HCOS       ,FAMN       ,FAMX
-
+     +                HDSZ       ,HINF       ,HANG       ,IAST       ,
+     +                HSIN       ,HCOS       ,FAMN       ,FAMX       ,
+     +                UVMG       ,FAIR       ,FAWR       ,FAWF       ,
+     +                FAXR       ,FAXF       ,FAYR       ,FAYF       ,
+     +                AROX(8)    ,AROY(8)    ,FXSZ       ,FYSZ       ,
+     +                FXRF       ,FXMN       ,FYRF       ,FYMN       ,
+     +                FWRF       ,FWMN       ,FIRF       ,FIMN       ,
+     +                AXMN       ,AXMX       ,AYMN       ,AYMX       ,
+     +                IACM       ,IAFO
+C
 C
 C Text related parameters
 C
@@ -151,7 +158,7 @@ C
       ELSE IF (CNM(1:3).EQ.'VRM'.OR. CNM(1:3).EQ.'vrm') THEN
          VRMG=RVL
       ELSE IF (CNM(1:3).EQ.'VRL'.OR. CNM(1:3).EQ.'vrl') THEN
-         VMXL=RVL
+         VRLN=RVL
       ELSE IF (CNM(1:3).EQ.'VFR'.OR. CNM(1:3).EQ.'vfr') THEN
          VFRC=RVL
       ELSE IF (CNM(1:3).EQ.'XIN'.OR. CNM(1:3).EQ.'xin') THEN
@@ -211,8 +218,8 @@ C UVMN,UVMX, PMIN, PMAX are read-only
 C
       ELSE IF (CNM(1:3).EQ.'SPC'.OR. CNM(1:3).EQ.'spc') THEN
          ISPC=INT(RVL)
-      ELSE IF (CNM(1:3).EQ.'THN'.OR. CNM(1:3).EQ.'thn') THEN
-         ITHN=INT(RVL)
+      ELSE IF (CNM(1:3).EQ.'VMD'.OR. CNM(1:3).EQ.'vmd') THEN
+         RVMD=MAX(0.0,RVL)
       ELSE IF (CNM(1:3).EQ.'MAP'.OR. CNM(1:3).EQ.'map') THEN
          IMAP=INT(RVL)
       ELSE IF (CNM(1:3).EQ.'PLR'.OR. CNM(1:3).EQ.'plr') THEN
@@ -226,12 +233,32 @@ C
       ELSE IF (CNM(1:3).EQ.'DPF'.OR. CNM(1:3).EQ.'dpf') THEN
          IDPF=INT(RVL)
 C
-C arrow min, max
+C arrow parameters
 C
       ELSE IF (CNM(1:3).EQ.'AMN'.OR.CNM(1:3).EQ.'amn') THEN
          FAMN=RVL
       ELSE IF (CNM(1:3).EQ.'AMX'.OR.CNM(1:3).EQ.'amx') THEN
          FAMX=RVL
+      ELSE IF (CNM(1:3).EQ.'AST'.OR.CNM(1:3).EQ.'ast') THEN
+         IAST=INT(RVL)
+      ELSE IF (CNM(1:3).EQ.'AIR'.OR.CNM(1:3).EQ.'air') THEN
+         FAIR=MIN(1.0,MAX(0.0,RVL))
+      ELSE IF (CNM(1:3).EQ.'AWR'.OR.CNM(1:3).EQ.'awr') THEN
+         FAWR=MIN(1.0,MAX(0.0,RVL))
+      ELSE IF (CNM(1:3).EQ.'AWF'.OR.CNM(1:3).EQ.'awf') THEN
+         FAWF=MIN(1.0,MAX(0.0,RVL))
+      ELSE IF (CNM(1:3).EQ.'AXR'.OR.CNM(1:3).EQ.'axr') THEN
+         FAXR=MIN(1.0,MAX(0.0,RVL))
+      ELSE IF (CNM(1:3).EQ.'AXF'.OR.CNM(1:3).EQ.'axf') THEN
+         FAXF=MIN(1.0,MAX(0.0,RVL))
+      ELSE IF (CNM(1:3).EQ.'AYR'.OR.CNM(1:3).EQ.'ayr') THEN
+         FAYR=MIN(1.0,MAX(0.0,RVL))
+      ELSE IF (CNM(1:3).EQ.'AYF'.OR.CNM(1:3).EQ.'ayf') THEN
+         FAYF=MIN(1.0,MAX(0.0,RVL))
+      ELSE IF (CNM(1:3).EQ.'ACM'.OR.CNM(1:3).EQ.'acm') THEN
+         IACM=INT(RVL)
+      ELSE IF (CNM(1:3).EQ.'AFO'.OR.CNM(1:3).EQ.'afo') THEN
+         IAFO=INT(RVL)
 C
 C character multiplier
 C

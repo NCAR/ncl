@@ -1,5 +1,5 @@
 C
-C       $Id: vvgetc.f,v 1.9 1995-10-27 23:25:23 dbrown Exp $
+C       $Id: vvgetc.f,v 1.10 1996-01-19 17:21:47 dbrown Exp $
 C
 C
 C-----------------------------------------------------------------------
@@ -40,7 +40,7 @@ C
       COMMON /VVCOM/
      +                IUD1       ,IVD1       ,IPD1       ,IXDM       ,
      +                IYDN       ,VLOM       ,VHIM       ,ISET       ,
-     +                VRMG       ,VMXL       ,VFRC       ,IXIN       ,
+     +                VRMG       ,VRLN       ,VFRC       ,IXIN       ,
      +                IYIN       ,ISVF       ,UUSV       ,UVSV       ,
      +                UPSV       ,IMSK       ,ICPM       ,UVPS       ,
      +                UVPL       ,UVPR       ,UVPB       ,UVPT       ,
@@ -49,16 +49,23 @@ C
      +                NLVL       ,IPAI       ,ICTV       ,WDLV       ,
      +                UVMN       ,UVMX       ,PMIN       ,PMAX       ,
      +                RVMN       ,RVMX       ,RDMN       ,RDMX       ,
-     +                ISPC       ,ITHN       ,IPLR       ,IVST       ,
+     +                ISPC       ,RVMD       ,IPLR       ,IVST       ,
      +                IVPO       ,ILBL       ,IDPF       ,IMSG       ,
      +                ICLR(IPLVLS)           ,TVLU(IPLVLS)
 C
 C Arrow size/shape parameters
 C
         COMMON / VVARO /
-     +                HDSZ       ,HINF       ,HANG       ,
-     +                HSIN       ,HCOS       ,FAMN       ,FAMX
-
+     +                HDSZ       ,HINF       ,HANG       ,IAST       ,
+     +                HSIN       ,HCOS       ,FAMN       ,FAMX       ,
+     +                UVMG       ,FAIR       ,FAWR       ,FAWF       ,
+     +                FAXR       ,FAXF       ,FAYR       ,FAYF       ,
+     +                AROX(8)    ,AROY(8)    ,FXSZ       ,FYSZ       ,
+     +                FXRF       ,FXMN       ,FYRF       ,FYMN       ,
+     +                FWRF       ,FWMN       ,FIRF       ,FIMN       ,
+     +                AXMN       ,AXMX       ,AYMN       ,AYMX       ,
+     +                IACM       ,IAFO
+C
 C
 C Text related parameters
 C

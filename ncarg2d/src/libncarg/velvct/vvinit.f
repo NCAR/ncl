@@ -1,5 +1,5 @@
 C
-C       $Id: vvinit.f,v 1.9 1995-10-27 23:25:24 dbrown Exp $
+C       $Id: vvinit.f,v 1.10 1996-01-19 17:21:49 dbrown Exp $
 C
 C-----------------------------------------------------------------------
 C
@@ -50,7 +50,7 @@ C
       COMMON /VVCOM/
      +                IUD1       ,IVD1       ,IPD1       ,IXDM       ,
      +                IYDN       ,VLOM       ,VHIM       ,ISET       ,
-     +                VRMG       ,VMXL       ,VFRC       ,IXIN       ,
+     +                VRMG       ,VRLN       ,VFRC       ,IXIN       ,
      +                IYIN       ,ISVF       ,UUSV       ,UVSV       ,
      +                UPSV       ,IMSK       ,ICPM       ,UVPS       ,
      +                UVPL       ,UVPR       ,UVPB       ,UVPT       ,
@@ -59,16 +59,23 @@ C
      +                NLVL       ,IPAI       ,ICTV       ,WDLV       ,
      +                UVMN       ,UVMX       ,PMIN       ,PMAX       ,
      +                RVMN       ,RVMX       ,RDMN       ,RDMX       ,
-     +                ISPC       ,ITHN       ,IPLR       ,IVST       ,
+     +                ISPC       ,RVMD       ,IPLR       ,IVST       ,
      +                IVPO       ,ILBL       ,IDPF       ,IMSG       ,
      +                ICLR(IPLVLS)           ,TVLU(IPLVLS)
 C
 C Arrow size/shape parameters
 C
         COMMON / VVARO /
-     +                HDSZ       ,HINF       ,HANG       ,
-     +                HSIN       ,HCOS       ,FAMN       ,FAMX
-
+     +                HDSZ       ,HINF       ,HANG       ,IAST       ,
+     +                HSIN       ,HCOS       ,FAMN       ,FAMX       ,
+     +                UVMG       ,FAIR       ,FAWR       ,FAWF       ,
+     +                FAXR       ,FAXF       ,FAYR       ,FAYF       ,
+     +                AROX(8)    ,AROY(8)    ,FXSZ       ,FYSZ       ,
+     +                FXRF       ,FXMN       ,FYRF       ,FYMN       ,
+     +                FWRF       ,FWMN       ,FIRF       ,FIMN       ,
+     +                AXMN       ,AXMX       ,AYMN       ,AYMX       ,
+     +                IACM       ,IAFO
+C
 C
 C Text related parameters
 C
@@ -136,6 +143,11 @@ C
       IYDN=N
       IF (IXDM.GT.IUD1 .OR. IXDM.GT.IVD1) THEN
          CSTR(1:45)='VVINIT - U AND/OR V ARRAY DIMENSIONS EXCEEDED'
+         CALL SETER (CSTR(1:45),1,1)
+         RETURN
+      END IF
+      IF (RVMD .GT. 0.0 .AND. LW .LT. 2*IXDM*IYDN) THEN
+         CSTR(1:50)='VVINIT - WORK ARRAY TOO SMALL FOR THINNING VECTORS'
          CALL SETER (CSTR(1:45),1,1)
          RETURN
       END IF
@@ -254,7 +266,7 @@ C
       END IF
 C
 C Calculate a default value for the maximum vector length in
-C fractional coordinates. 
+C fractional coordinates. Set minimum length to 0.0.
 C
       IXIN = MAX(IXIN, 1)
       IYIN = MAX(IYIN, 1)
@@ -264,6 +276,7 @@ C
       TX=(XVPR-XVPL)/FLOAT(I)
       TY=(YVPT-YVPB)/FLOAT(J)
       DVMX=SQRT((TX*TX+TY*TY)/2.0)
+      DVMN = 0.0
 C
 C Determine the equivalent maximum length in the user coordinate
 C system. Note that if the X axis is non-uniform or if the Y axis
@@ -384,11 +397,6 @@ C
          END IF
 C
       END IF
-C
-C Calculate the sine and cosine of the arrow head half angle
-C
-      HSIN = SIN(PDTOR*HANG)
-      HCOS = COS(PDTOR*HANG)
 C
 C Copy min/max vector magnitude and NDC size to read-only params.
 C

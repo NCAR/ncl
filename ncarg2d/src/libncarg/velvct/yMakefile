@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.6 1993-10-19 17:32:56 boote Exp $
+#	$Id: yMakefile,v 1.7 1996-01-19 17:21:53 dbrown Exp $
 #
 MYNAME	= velvct
 
@@ -7,13 +7,13 @@ GENERIC_SRCS = \
 	 vvectr.f velvct.f ezvec.f veldat.o velvec.f vvdata.f vvdraw.f \
 	 vvsetc.f vvseti.f vvsetr.f vvgetc.f vvgeti.f vvgetr.f \
 	 vvmpxy.f vvumxy.f vvrset.f vvinit.f vvtext.f vvudmv.f \
-	 mxf.f myf.f drwvec.f
+	 mxf.f myf.f drwvec.f hluvvmpxy.f vvdrfl.f vvhluint.f vvthin.f
 
 GENERIC_OBJS = \
 	 vvectr.o velvct.o ezvec.o veldat.o velvec.o vvdata.o vvdraw.o \
 	 vvsetc.o vvseti.o vvsetr.o vvgetc.o vvgeti.o vvgetr.o \
 	 vvmpxy.o vvumxy.o vvrset.o vvinit.o vvtext.o vvudmv.o \
-	 mxf.o myf.o drwvec.o
+	 mxf.o myf.o drwvec.o hluvvmpxy.o vvdrfl.o vvhluint.o vvthin.o
 
 SOURCES = $(GENERIC_SRCS)
 OBJECTS = $(GENERIC_OBJS)

@@ -1,5 +1,5 @@
 C
-C       $Id: vvrset.f,v 1.7 1995-10-27 23:25:25 dbrown Exp $
+C       $Id: vvrset.f,v 1.8 1996-01-19 17:21:50 dbrown Exp $
 C
 C
 C-----------------------------------------------------------------------
@@ -33,7 +33,7 @@ C
       COMMON /VVCOM/
      +                IUD1       ,IVD1       ,IPD1       ,IXDM       ,
      +                IYDN       ,VLOM       ,VHIM       ,ISET       ,
-     +                VRMG       ,VMXL       ,VFRC       ,IXIN       ,
+     +                VRMG       ,VRLN       ,VFRC       ,IXIN       ,
      +                IYIN       ,ISVF       ,UUSV       ,UVSV       ,
      +                UPSV       ,IMSK       ,ICPM       ,UVPS       ,
      +                UVPL       ,UVPR       ,UVPB       ,UVPT       ,
@@ -42,16 +42,23 @@ C
      +                NLVL       ,IPAI       ,ICTV       ,WDLV       ,
      +                UVMN       ,UVMX       ,PMIN       ,PMAX       ,
      +                RVMN       ,RVMX       ,RDMN       ,RDMX       ,
-     +                ISPC       ,ITHN       ,IPLR       ,IVST       ,
+     +                ISPC       ,RVMD       ,IPLR       ,IVST       ,
      +                IVPO       ,ILBL       ,IDPF       ,IMSG       ,
      +                ICLR(IPLVLS)           ,TVLU(IPLVLS)
 C
 C Arrow size/shape parameters
 C
         COMMON / VVARO /
-     +                HDSZ       ,HINF       ,HANG       ,
-     +                HSIN       ,HCOS       ,FAMN       ,FAMX
-
+     +                HDSZ       ,HINF       ,HANG       ,IAST       ,
+     +                HSIN       ,HCOS       ,FAMN       ,FAMX       ,
+     +                UVMG       ,FAIR       ,FAWR       ,FAWF       ,
+     +                FAXR       ,FAXF       ,FAYR       ,FAYF       ,
+     +                AROX(8)    ,AROY(8)    ,FXSZ       ,FYSZ       ,
+     +                FXRF       ,FXMN       ,FYRF       ,FYMN       ,
+     +                FWRF       ,FWMN       ,FIRF       ,FIMN       ,
+     +                AXMN       ,AXMX       ,AYMN       ,AYMX       ,
+     +                IACM       ,IAFO
+C
 C
 C Text related parameters
 C
@@ -114,7 +121,7 @@ C
       VHIM = 0.0
       ISET = 1
       VRMG = 0.0
-      VMXL = 0.0
+      VRLN = 0.0
       VFRC = 0.0
       IXIN = 1
       IYIN = 1
@@ -150,7 +157,7 @@ C
       RDMN = 0.0
       RDMX = 0.0
       ISPC = -1
-      ITHN = 0
+      RVMD = 0.0
       IMAP = 0
       IPLR = 0
       IVST = 0
@@ -174,6 +181,17 @@ C
       HANG = 22.5
       FAMN = 0.01
       FAMX = 0.2
+      IAST = 0
+      UVMG = 0.0
+      FAIR = 0.33
+      FAWR = 0.03
+      FAWF = 0.0
+      FAXR = 0.36
+      FAXF = 0.0
+      FAYR = 0.12
+      FAYF = 0.0
+      IACM = 0
+      IAFO = 1
 C
 C ---------------------------------------------------------------------
 C

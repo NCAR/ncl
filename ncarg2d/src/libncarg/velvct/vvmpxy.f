@@ -1,5 +1,5 @@
 C
-C       $Id: vvmpxy.f,v 1.7 1994-06-10 19:16:06 dbrown Exp $
+C       $Id: vvmpxy.f,v 1.8 1996-01-19 17:21:49 dbrown Exp $
 C
 C
 C-----------------------------------------------------------------------
@@ -145,7 +145,7 @@ C
                RETURN
             END IF
 C
-C Calculate the incrmental end points, then check to see if 
+C Calculate the incremental end points, then check to see if 
 C they take us out of the user coordinate boundaries. If they
 C do, try incrementing in the other direction
 C

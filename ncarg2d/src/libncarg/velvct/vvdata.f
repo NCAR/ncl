@@ -1,5 +1,5 @@
 C
-C       $Id: vvdata.f,v 1.6 1995-10-27 23:25:21 dbrown Exp $
+C       $Id: vvdata.f,v 1.7 1996-01-19 17:21:44 dbrown Exp $
 C
       BLOCK DATA VVDATA
 C
@@ -29,7 +29,7 @@ C
       COMMON /VVCOM/
      +                IUD1       ,IVD1       ,IPD1       ,IXDM       ,
      +                IYDN       ,VLOM       ,VHIM       ,ISET       ,
-     +                VRMG       ,VMXL       ,VFRC       ,IXIN       ,
+     +                VRMG       ,VRLN       ,VFRC       ,IXIN       ,
      +                IYIN       ,ISVF       ,UUSV       ,UVSV       ,
      +                UPSV       ,IMSK       ,ICPM       ,UVPS       ,
      +                UVPL       ,UVPR       ,UVPB       ,UVPT       ,
@@ -38,16 +38,23 @@ C
      +                NLVL       ,IPAI       ,ICTV       ,WDLV       ,
      +                UVMN       ,UVMX       ,PMIN       ,PMAX       ,
      +                RVMN       ,RVMX       ,RDMN       ,RDMX       ,
-     +                ISPC       ,ITHN       ,IPLR       ,IVST       ,
+     +                ISPC       ,RVMD       ,IPLR       ,IVST       ,
      +                IVPO       ,ILBL       ,IDPF       ,IMSG       ,
      +                ICLR(IPLVLS)           ,TVLU(IPLVLS)
 C
 C Arrow size/shape parameters
 C
         COMMON / VVARO /
-     +                HDSZ       ,HINF       ,HANG       ,
-     +                HSIN       ,HCOS       ,FAMN       ,FAMX
-
+     +                HDSZ       ,HINF       ,HANG       ,IAST       ,
+     +                HSIN       ,HCOS       ,FAMN       ,FAMX       ,
+     +                UVMG       ,FAIR       ,FAWR       ,FAWF       ,
+     +                FAXR       ,FAXF       ,FAYR       ,FAYF       ,
+     +                AROX(8)    ,AROY(8)    ,FXSZ       ,FYSZ       ,
+     +                FXRF       ,FXMN       ,FYRF       ,FYMN       ,
+     +                FWRF       ,FWMN       ,FIRF       ,FIMN       ,
+     +                AXMN       ,AXMX       ,AYMN       ,AYMX       ,
+     +                IACM       ,IAFO
+C
 C
 C Text related parameters
 C
@@ -134,11 +141,18 @@ C ISET -- 'SET' -- The Set call flag - Old NSET parameter
 C
       DATA     ISET / 1 /
 C
-C VMXL -- 'VRL' -- Old LENGTH parameter (but stored as a fraction of
+C VRMG -- 'VRM' -- Reference magnitude - the magnitude represented by
+C                  the reference length. If 0.0, the maximum magnitude
+C                  is used as the reference magnitude
+C
+      DATA     VRMG / 0.0 /
+C
+C
+C VRLN -- 'VRL' -- Old LENGTH parameter (but stored as a fraction of
 C                  the viewport width). 
 C                  0.0 causes VVINIT to select a value.
 C
-      DATA     VMXL / 0.0 /
+      DATA     VRLN / 0.0 /
 C
 C VFRC -- 'VFR' -- Fraction of the maximum length used to represent
 C                  the minimum length vector. 1.0 causes all vectors to
@@ -313,9 +327,9 @@ C                      > 0: draw P special values using color SPC
 C
 C     DATA ISPC / -1 /
 C
-C ITHN -- 'THN' -- vector thinning flag
+C RVMD -- 'VMD' -- vector minimum distance
 C
-      DATA ITHN / 0 /
+      DATA RVMD / 0.0 /
 C
 C IPLR -- 'PLR' -- Polar coordinates for UV array flag
 C
@@ -372,9 +386,58 @@ C                                        (fraction of viewport width)
 C
       DATA FAMN / 0.005 /
 C
-C FAMX -- 'AMX' -- arrow hear max size as FVPW
+C FAMX -- 'AMX' -- arrow head max size as FVPW
 C
       DATA FAMX / 0.05 /
+C
+C IAST -- 'AST' -- arrow style (currently line or filled)
+C
+      DATA IAST / 0 /
+C
+C FAIR -- 'AIR' -- arrow interior position (reference)
+C
+      DATA FAIR / 0.33 /
+C
+C FAWR -- 'AWR' -- arrow width (reference)
+C
+      DATA FAWR / 0.03 /
+C
+C FAWF -- 'AWF' -- arrow width (minimum)
+C
+      DATA FAWF / 0.0 /
+C
+C FAXR -- 'AXR' -- arrowhead X-coord length (reference)
+C
+      DATA FAXR / 0.36 /
+C
+C FAXF -- 'AXF' -- arrowhead X-coord length (minimum)
+C
+      DATA FAXF / 0.0 /
+C
+C FAYR -- 'AYR' -- arrowhead Y-coord length (reference)
+C
+      DATA FAYR / 0.12 /
+C
+C FAYF -- 'AYF' -- arrowhead Y-coord length (minimum)
+C
+      DATA FAYF / 0.0 /
+C
+C IACM -- 'ACM' -- arrow color mode 
+C                  (ignored if AST = 0)
+C                 (if CTV is 0, all lines and fill become mono;
+C                  only -2, -1, and 0 will be distinguishable states)
+C                 -2 multi-fill, no-line
+C                 -1 no-fill, multi-line
+C                  0 multi-fill, mono-line
+C                  1 mono-fill, multi-line
+C                  2 multi-fill, multi-line
+C
+C
+      DATA IACM / 0 /
+C
+C IAFO -- 'AFO' -- arrow fill over (arrow lines)
+C
+      DATA IAFO / 1 /
 C
 C
 C --------------------------------------------------------------------

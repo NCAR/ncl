@@ -1,5 +1,5 @@
 C
-C       $Id: vvtext.f,v 1.8 1995-10-27 23:25:26 dbrown Exp $
+C       $Id: vvtext.f,v 1.9 1996-01-19 17:21:51 dbrown Exp $
 C
 C This module contains four subroutines for text support of the
 C VELVCT utility. 
@@ -9,7 +9,7 @@ C string presumably specifying the vector magnitude above and an
 C informational label below. It is designed to allow a message
 C showing the maximum and/or minimum vector contained the plot
 C to be displayed. If the vectors are colored by vector magnitude
-C then the vector is drawn its designated color.
+C then the vector is drawn using its designated color.
 C
 C The other modules are lowel level support routines:
 C
@@ -74,7 +74,7 @@ C
       COMMON /VVCOM/
      +                IUD1       ,IVD1       ,IPD1       ,IXDM       ,
      +                IYDN       ,VLOM       ,VHIM       ,ISET       ,
-     +                VRMG       ,VMXL       ,VFRC       ,IXIN       ,
+     +                VRMG       ,VRLN       ,VFRC       ,IXIN       ,
      +                IYIN       ,ISVF       ,UUSV       ,UVSV       ,
      +                UPSV       ,IMSK       ,ICPM       ,UVPS       ,
      +                UVPL       ,UVPR       ,UVPB       ,UVPT       ,
@@ -83,16 +83,23 @@ C
      +                NLVL       ,IPAI       ,ICTV       ,WDLV       ,
      +                UVMN       ,UVMX       ,PMIN       ,PMAX       ,
      +                RVMN       ,RVMX       ,RDMN       ,RDMX       ,
-     +                ISPC       ,ITHN       ,IPLR       ,IVST       ,
+     +                ISPC       ,RVMD       ,IPLR       ,IVST       ,
      +                IVPO       ,ILBL       ,IDPF       ,IMSG       ,
      +                ICLR(IPLVLS)           ,TVLU(IPLVLS)
 C
 C Arrow size/shape parameters
 C
         COMMON / VVARO /
-     +                HDSZ       ,HINF       ,HANG       ,
-     +                HSIN       ,HCOS       ,FAMN       ,FAMX
-
+     +                HDSZ       ,HINF       ,HANG       ,IAST       ,
+     +                HSIN       ,HCOS       ,FAMN       ,FAMX       ,
+     +                UVMG       ,FAIR       ,FAWR       ,FAWF       ,
+     +                FAXR       ,FAXF       ,FAYR       ,FAYF       ,
+     +                AROX(8)    ,AROY(8)    ,FXSZ       ,FYSZ       ,
+     +                FXRF       ,FXMN       ,FYRF       ,FYMN       ,
+     +                FWRF       ,FWMN       ,FIRF       ,FIMN       ,
+     +                AXMN       ,AXMX       ,AYMN       ,AYMX       ,
+     +                IACM       ,IAFO
+C
 C
 C Text related parameters
 C
@@ -184,14 +191,22 @@ C
 C We know the width of the arrow, compute its height
 C If less than or equal to 0.0 it will not be drawn
 C
+C Determine the height of the arrow by calling the drawing routine
+C using a negative value of the vector len
+C
       WA = ASZ
+      UVMG = VMG
+      IF (WA .GT. 0.0) THEN
+         IF (IAST .EQ. 0) THEN
+            CALL VVDRAW(0.5,0.5,0.5+WA,0.5,-WA,IDM,0,IDM,IDM,0)
+         ELSE
+            CALL VVDRFL(0.5,0.5,0.5+WA,0.5,-WA,IDM,0,IDM,IDM,0)
+         END IF
+      END IF
       IF (WA .LE. 0.0) THEN
          HA = 0.0
       ELSE
-         C1 = HDSZ
-         IF (WA*C1 .LT. FAMN*FW2W) C1 = FAMN*FW2W/WA
-         IF (WA*C1 .GT. FAMX*FW2W) C1 = FAMX*FW2W/WA
-         HA = 2.0*C1*WA*HSIN
+         HA = FYSZ
       END IF
 C
 C Now get the size of the vector text string
@@ -254,6 +269,8 @@ C Save the current polyline and text colors
 C
       CALL GQTXCI(IER,IOT)
       CALL GQPLCI(IER,IOC)
+      CALL GQFAIS(IER,IOF)
+      CALL GQFACI(IER,IOK)
 C
 C If the vectors are colored by magnitude then find the correct color
 C Set the text color too if required.
@@ -261,11 +278,18 @@ C
       IF (ABS(ICTV).EQ.1) THEN
          DO 100 K=1,NLVL,1
             IF (VMG .LE. TVLU(K) .OR. K.EQ.NLVL) THEN
-               CALL GSPLCI(ICLR(K))
-C
-               IF (ITC .EQ. -2) THEN
-                  CALL GSTXCI(ICLR(K))
+               IF (IAST .EQ. 0) THEN
+                  CALL GSPLCI(ICLR(K))
+               ELSE 
+                  IF (IACM .EQ. -1 .OR. IACM .GE. 1) THEN
+                     CALL GSPLCI(ICLR(K))
+                  END IF
+                  IF (IACM .EQ. 0 .OR. ABS(IACM) .GE. 2) THEN
+                     CALL GSFACI(ICLR(K))
+                  END IF
                END IF
+C
+               IF (ITC .EQ. -2) CALL GSTXCI(ICLR(K))
 C
                GO TO 101
             END IF
@@ -279,8 +303,10 @@ C
       IF (ITC .GE. 0) THEN
          CALL GSTXCI(ITC)
          CALL GSPLCI(ITC)
+         IF (IAST.NE.0) CALL GSFACI(ITC)
       ELSE IF (ITC .LT. -2) THEN
          CALL  GSPLCI(IOT)
+         IF (IAST.NE.0) CALL GSFACI(IOT)
       END IF
 C
 C Temporarily reset the vector positioning flag to ensure a 
@@ -291,7 +317,11 @@ C
       CALL GQLWSC(IER,ROW)
       CALL GSLWSC(WDLV)
       IF (WA .GT. 0.0) THEN
-         CALL VVDRAW(CXA,CYA,CXA+WA,CYA,WA,IDM,0,IDM,IDM,0)
+         IF (IAST .EQ. 0) THEN
+            CALL VVDRAW(CXA,CYA,CXA+WA,CYA,WA,IDM,0,IDM,IDM,0)
+         ELSE
+            CALL VVDRFL(CXA,CYA,CXA+WA,CYA,WA,IDM,0,IDM,IDM,0)
+         END IF
       END IF
 C
 C Restore linewidth and centering flag
@@ -307,6 +337,8 @@ C
 C
       CALL GSTXCI(IOT)
       CALL GSPLCI(IOC)
+      CALL GSFACI(IOK)
+      CALL GSFAIS(IOF)
 C
 C Restore clipping and the set transformation.
 C

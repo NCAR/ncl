@@ -1,5 +1,5 @@
 C
-C       $Id: vvgetr.f,v 1.11 1995-10-27 23:25:24 dbrown Exp $
+C       $Id: vvgetr.f,v 1.12 1996-01-19 17:21:47 dbrown Exp $
 C
 C
 C-----------------------------------------------------------------------
@@ -40,7 +40,7 @@ C
       COMMON /VVCOM/
      +                IUD1       ,IVD1       ,IPD1       ,IXDM       ,
      +                IYDN       ,VLOM       ,VHIM       ,ISET       ,
-     +                VRMG       ,VMXL       ,VFRC       ,IXIN       ,
+     +                VRMG       ,VRLN       ,VFRC       ,IXIN       ,
      +                IYIN       ,ISVF       ,UUSV       ,UVSV       ,
      +                UPSV       ,IMSK       ,ICPM       ,UVPS       ,
      +                UVPL       ,UVPR       ,UVPB       ,UVPT       ,
@@ -49,16 +49,23 @@ C
      +                NLVL       ,IPAI       ,ICTV       ,WDLV       ,
      +                UVMN       ,UVMX       ,PMIN       ,PMAX       ,
      +                RVMN       ,RVMX       ,RDMN       ,RDMX       ,
-     +                ISPC       ,ITHN       ,IPLR       ,IVST       ,
+     +                ISPC       ,RVMD       ,IPLR       ,IVST       ,
      +                IVPO       ,ILBL       ,IDPF       ,IMSG       ,
      +                ICLR(IPLVLS)           ,TVLU(IPLVLS)
 C
 C Arrow size/shape parameters
 C
         COMMON / VVARO /
-     +                HDSZ       ,HINF       ,HANG       ,
-     +                HSIN       ,HCOS       ,FAMN       ,FAMX
-
+     +                HDSZ       ,HINF       ,HANG       ,IAST       ,
+     +                HSIN       ,HCOS       ,FAMN       ,FAMX       ,
+     +                UVMG       ,FAIR       ,FAWR       ,FAWF       ,
+     +                FAXR       ,FAXF       ,FAYR       ,FAYF       ,
+     +                AROX(8)    ,AROY(8)    ,FXSZ       ,FYSZ       ,
+     +                FXRF       ,FXMN       ,FYRF       ,FYMN       ,
+     +                FWRF       ,FWMN       ,FIRF       ,FIMN       ,
+     +                AXMN       ,AXMX       ,AYMN       ,AYMX       ,
+     +                IACM       ,IAFO
+C
 C
 C Text related parameters
 C
@@ -152,7 +159,7 @@ C
       ELSE IF (CNM(1:3).EQ.'VRM'.OR. CNM(1:3).EQ.'vrm') THEN
          RVL=VRMG
       ELSE IF (CNM(1:3).EQ.'VRL'.OR. CNM(1:3).EQ.'vrl') THEN
-         RVL=VMXL
+         RVL=VRLN
       ELSE IF (CNM(1:3).EQ.'VFR'.OR. CNM(1:3).EQ.'vfr') THEN
          RVL=VFRC
       ELSE IF (CNM(1:3).EQ.'XIN'.OR. CNM(1:3).EQ.'xin') THEN
@@ -221,8 +228,8 @@ C
         RVL=PMAX
       ELSE IF (CNM(1:3).EQ.'SPC'.OR. CNM(1:3).EQ.'spc') THEN
          RVL=REAL(ISPC)
-      ELSE IF (CNM(1:3).EQ.'THN'.OR. CNM(1:3).EQ.'thn') THEN
-         RVL=REAL(ITHN)
+      ELSE IF (CNM(1:3).EQ.'VMD'.OR. CNM(1:3).EQ.'vmd') THEN
+         RVL=RVMD
       ELSE IF (CNM(1:3).EQ.'MAP'.OR. CNM(1:3).EQ.'map') THEN
          RVL=REAL(IMAP)
       ELSE IF (CNM(1:3).EQ.'PLR'.OR. CNM(1:3).EQ.'plr') THEN
@@ -236,12 +243,32 @@ C
       ELSE IF (CNM(1:3).EQ.'DPF'.OR. CNM(1:3).EQ.'dpf') THEN
          RVL=REAL(IDPF)
 C
-C arrow min, max
+C arrow parameters
 C
       ELSE IF (CNM(1:3).EQ.'AMN'.OR.CNM(1:3).EQ.'amn') THEN
-        RVL=FAMN
+         RVL=FAMN
       ELSE IF (CNM(1:3).EQ.'AMX'.OR.CNM(1:3).EQ.'amx') THEN
-        RVL=FAMX
+         RVL=FAMX
+      ELSE IF (CNM(1:3).EQ.'AST'.OR.CNM(1:3).EQ.'ast') THEN
+         RVL=REAL(IAST)
+      ELSE IF (CNM(1:3).EQ.'AIR'.OR.CNM(1:3).EQ.'air') THEN
+         RVL=FAIR
+      ELSE IF (CNM(1:3).EQ.'AWR'.OR.CNM(1:3).EQ.'awr') THEN
+         RVL=FAWR
+      ELSE IF (CNM(1:3).EQ.'AWF'.OR.CNM(1:3).EQ.'awf') THEN
+         RVL=FAWF
+      ELSE IF (CNM(1:3).EQ.'AXR'.OR.CNM(1:3).EQ.'axr') THEN
+         RVL=FAXR
+      ELSE IF (CNM(1:3).EQ.'AXF'.OR.CNM(1:3).EQ.'axf') THEN
+         RVL=FAXF
+      ELSE IF (CNM(1:3).EQ.'AYR'.OR.CNM(1:3).EQ.'ayr') THEN
+         RVL=FAYR
+      ELSE IF (CNM(1:3).EQ.'AYF'.OR.CNM(1:3).EQ.'ayf') THEN
+         RVL=FAYF
+      ELSE IF (CNM(1:3).EQ.'ACM'.OR.CNM(1:3).EQ.'acm') THEN
+         RVL=REAL(IACM)
+      ELSE IF (CNM(1:3).EQ.'AFO'.OR.CNM(1:3).EQ.'afo') THEN
+         RVL=REAL(IAFO)
 C
 C character multiplier
 C

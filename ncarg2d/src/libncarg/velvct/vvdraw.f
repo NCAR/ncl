@@ -1,5 +1,5 @@
 C
-C       $Id: vvdraw.f,v 1.6 1995-10-27 23:25:22 dbrown Exp $
+C       $Id: vvdraw.f,v 1.7 1996-01-19 17:21:45 dbrown Exp $
 C
       SUBROUTINE VVDRAW (XB,YB,XE,YE,VLN,LBL,NC,IAM,VVUDMV,IDA)
 C
@@ -13,6 +13,8 @@ C
 C XB,YB    -  Coordinate of arrow base, fractional coordinate
 C XE,YE    -  Coordinate of arrow head, fractional coordinate
 C VLN      -  Length of the vector (arrow)
+C          -  (if negative does not draw the vector, but just 
+C          -  calculates the vector's height and width)
 C LBL      -  Character label to be put above arrow.
 C NC       -  Number of characters in label.
 C IAM      -  Area map (optional) for masking vectors
@@ -43,7 +45,7 @@ C
       COMMON /VVCOM/
      +                IUD1       ,IVD1       ,IPD1       ,IXDM       ,
      +                IYDN       ,VLOM       ,VHIM       ,ISET       ,
-     +                VRMG       ,VMXL       ,VFRC       ,IXIN       ,
+     +                VRMG       ,VRLN       ,VFRC       ,IXIN       ,
      +                IYIN       ,ISVF       ,UUSV       ,UVSV       ,
      +                UPSV       ,IMSK       ,ICPM       ,UVPS       ,
      +                UVPL       ,UVPR       ,UVPB       ,UVPT       ,
@@ -52,16 +54,23 @@ C
      +                NLVL       ,IPAI       ,ICTV       ,WDLV       ,
      +                UVMN       ,UVMX       ,PMIN       ,PMAX       ,
      +                RVMN       ,RVMX       ,RDMN       ,RDMX       ,
-     +                ISPC       ,ITHN       ,IPLR       ,IVST       ,
+     +                ISPC       ,RVMD       ,IPLR       ,IVST       ,
      +                IVPO       ,ILBL       ,IDPF       ,IMSG       ,
      +                ICLR(IPLVLS)           ,TVLU(IPLVLS)
 C
 C Arrow size/shape parameters
 C
         COMMON / VVARO /
-     +                HDSZ       ,HINF       ,HANG       ,
-     +                HSIN       ,HCOS       ,FAMN       ,FAMX
-
+     +                HDSZ       ,HINF       ,HANG       ,IAST       ,
+     +                HSIN       ,HCOS       ,FAMN       ,FAMX       ,
+     +                UVMG       ,FAIR       ,FAWR       ,FAWF       ,
+     +                FAXR       ,FAXF       ,FAYR       ,FAYF       ,
+     +                AROX(8)    ,AROY(8)    ,FXSZ       ,FYSZ       ,
+     +                FXRF       ,FXMN       ,FYRF       ,FYMN       ,
+     +                FWRF       ,FWMN       ,FIRF       ,FIMN       ,
+     +                AXMN       ,AXMX       ,AYMN       ,AYMX       ,
+     +                IACM       ,IAFO
+C
 C
 C Text related parameters
 C
@@ -125,6 +134,14 @@ C
 C
       CHARACTER*10 LBL
 C
+      IF (VLN.LT.0.0) THEN
+         ISZ=1
+         VLL=-VLN
+      ELSE
+         ISZ=0
+         VLL=VLN
+      END IF
+C
 C Transfer arguments to local variables and compute the vector length.
 C
       DX=XE-XB
@@ -155,8 +172,8 @@ C If the size is outside the range of the minimum and maximum sizes
 C use fixed sizes
 C
       C1 = HDSZ
-      IF (VLN*C1 .LT. FAMN*FW2W) C1 = FAMN*FW2W/VLN
-      IF (VLN*C1 .GT. FAMX*FW2W) C1 = FAMX*FW2W/VLN
+      IF (VLL*C1 .LT. FAMN*FW2W) C1 = FAMN*FW2W/VLL
+      IF (VLL*C1 .GT. FAMX*FW2W) C1 = FAMX*FW2W/VLL
 C
 C Calculate the remaining points in fractional coordinates
 C
@@ -166,6 +183,28 @@ C
       YF(2) = YF(4)-C1*HINF*DY
       XF(5) = XF(4)-C1*(HCOS*DX+HSIN*DY)
       YF(5) = YF(4)-C1*(HCOS*DY-HSIN*DX)
+      XF(6) = XF(2)
+      YF(6) = YF(2)
+C
+C
+C Early return if just calculating the size
+C
+      IF (ISZ.EQ.1) THEN
+         AYMN = 100.0
+         AYMX = -100.
+         AXMN = 100.0
+         AXMX = -100.0
+         DO 60 I=1,IPAPCT
+            IF (XF(I) .LT. AXMN) AXMN = XF(I)
+            IF (XF(I) .GT. AXMX) AXMX = XF(I)
+            IF (YF(I) .LT. AYMN) AYMN = YF(I)
+            IF (YF(I) .GT. AYMX) AYMX = YF(I)
+ 60      CONTINUE
+         FXSZ = AXMX-AXMN
+         FYSZ = AYMX-AYMN 
+C
+         RETURN
+      END IF
 C
 C Convert to user coodinates
 C
@@ -186,10 +225,10 @@ C Plot the arrow using areas or not, as required.
 C
       IF (IDA .GT. 1) THEN
         CALL ARGTAI(IAM,XW(1),YW(1),IAI,IAG,IPAGMX,NAI,0)
-        CALL VVUDMV(X,Y,IPAPCT,IAI,IAG,NAI)
+        CALL VVUDMV(XW,YW,IPAPCT,IAI,IAG,NAI)
       ELSE IF (IDA .EQ. 1) THEN
-         CALL ARDRLN(IAM, XW, YW, IPAPCT, 
-     +        XO, YO, IPAPCT, IAI, IAG, IPAGMX, VVUDMV)
+         CALL ARDRLN(IAM,XW,YW,IPAPCT, 
+     +        XO,YO,IPAPCT,IAI,IAG,IPAGMX,VVUDMV)
       ELSE
          CALL CURVE(XW,YW,IPAPCT)
       END IF
