@@ -1,5 +1,5 @@
 C
-C	$Id: coex01.f,v 1.4 1995-06-14 13:56:14 haley Exp $
+C       $Id: coex01.f,v 1.5 1996-03-15 21:38:17 kennison Exp $
 C
 C
 C  This program produces five 9 x 9 color charts.  Blue and green
@@ -183,8 +183,8 @@ C
 C
 C  Print the title of each axis.
 C
-      CALL PLCHHQ(0.5,0.007,'Blue Axis' ,0.015,0.,0.)
-      CALL PLCHHQ(0.05,0.50,'Green Axis',0.015,90.,0.)
+      CALL PLCHHQ(0.5,0.01,'Blue Axis' ,0.015,0.,0.)
+      CALL PLCHHQ(0.05,0.5,'Green Axis',0.015,90.,0.)
 C
 C  Draw the arrow-line on each axis.
 C
