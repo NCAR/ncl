@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularTransObj.c,v 1.19 1995-12-19 20:39:09 boote Exp $
+ *      $Id: IrregularTransObj.c,v 1.20 1996-02-01 20:42:55 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -657,27 +657,17 @@ static NhlErrorTypes SetUpTrans
 		if (! irp->y_max_set) irp->y_max = 1.0;
 	}
 
-	irp->x_use_log = False;
-	irp->y_use_log = False;
-	if (irp->x_min > irp->x_max) {
-		tmpf = irp->x_min;
-		irp->x_min = irp->x_max;
-		irp->x_max = tmpf;
-		tmpb = irp->x_min_set;
-		irp->x_min_set = irp->x_max_set;
-		irp->x_max_set = tmpb;
-
-	}
-	if (irp->y_min > irp->y_max) {
-		tmpf = irp->y_min;
-		irp->y_min = irp->y_max;
-		irp->y_max = tmpf;
-		tmpb = irp->y_min_set;
-		irp->y_min_set = irp->y_max_set;
-		irp->y_max_set = tmpb;
-	}
 		    
 	if (new_x_coords) {
+		irp->x_use_log = False;
+		if (irp->x_min > irp->x_max) {
+			tmpf = irp->x_min;
+			irp->x_min = irp->x_max;
+			irp->x_max = tmpf;
+			tmpb = irp->x_min_set;
+			irp->x_min_set = irp->x_max_set;
+			irp->x_max_set = tmpb;
+		}
 		switch (irp->x_axis_type) {
 		case NhlIRREGULARAXIS:
 			if (irp->x_coord_points_ga != NULL ||
@@ -726,6 +716,15 @@ static NhlErrorTypes SetUpTrans
 	}
 		    
 	if (new_y_coords) {
+		irp->y_use_log = False;
+		if (irp->y_min > irp->y_max) {
+			tmpf = irp->y_min;
+			irp->y_min = irp->y_max;
+			irp->y_max = tmpf;
+			tmpb = irp->y_min_set;
+			irp->y_min_set = irp->y_max_set;
+			irp->y_max_set = tmpb;
+		}
 		switch (irp->y_axis_type) {
 		case NhlIRREGULARAXIS:
 			if (irp->y_coord_points_ga != NULL ||

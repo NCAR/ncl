@@ -1,5 +1,5 @@
 /*
- *      $Id: Workspace.c,v 1.27 1996-01-19 18:06:41 dbrown Exp $
+ *      $Id: Workspace.c,v 1.28 1996-02-01 20:43:04 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3709,11 +3709,14 @@ NhlErrorTypes _NhlStream
 	char		*e_msg;
 	char		*cmp_msg1 = "REAL WORKSPACE OVERFLOW";
 	int		err_num;
+	void		*awp;
+
+	awp = awsrp ? awsrp->ws_ptr : NULL;
 
 	c_entsr(&save_mode,1);
 
 	do {
-		c_stream(u,v,p,awsrp->ws_ptr,stumsl,fwsrp->ws_ptr);
+		c_stream(u,v,p,awp,stumsl,fwsrp->ws_ptr);
 
 		if (c_nerro(&err_num) == 0) {
 			done = True;

@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.c,v 1.5 1996-01-19 18:06:38 dbrown Exp $
+ *      $Id: VectorPlot.c,v 1.6 1996-02-01 20:43:02 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -879,7 +879,7 @@ static NhlErrorTypes VectorPlotDataInitialize(
 
 /* internal static functions */
 
-static NhlErrorTypes SetCoordBounds(
+static NhlErrorTypes InitCoordBounds(
 #if	NhlNeedProto
         NhlVectorPlotLayerPart	*vcp,
 	char			*entry_name
@@ -894,7 +894,7 @@ static NhlErrorTypes SetUpLLTransObj(
 #endif
 );
 
-static NhlErrorTypes SetIrrCoordBounds(
+static NhlErrorTypes SetCoordBounds(
 #if	NhlNeedProto
 	NhlVectorPlotLayerPart	*vcp,
 	vcCoord			ctype,
@@ -1865,7 +1865,7 @@ VectorPlotInitialize
 		return(ret);
 	}
  
-	subret = SetCoordBounds(vcp,entry_name);
+	subret = InitCoordBounds(vcp,entry_name);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) return(ret);
 
 /* Set view dependent resources */
@@ -2116,7 +2116,7 @@ static NhlErrorTypes VectorPlotSetValues
 		return(ret);
 	}
 
-	subret = SetCoordBounds(vcp,entry_name);
+	subret = InitCoordBounds(vcp,entry_name);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) return(ret);
 
 /* Set view dependent resources */
@@ -2343,11 +2343,11 @@ static NhlErrorTypes    VectorPlotGetValues
         return(NhlNOERROR);
 }
 
-
 /*
- * Function:	SetCoordBounds
+ * Function:	InitCoordBounds
  *
- * Description: 
+ * Description: Sets coordinate boundary variables that must be 
+ *              initialized regardless of whether any data has been supplied
  *
  * In Args:
  *
@@ -2358,7 +2358,7 @@ static NhlErrorTypes    VectorPlotGetValues
  * Side Effects:
  */
 /*ARGSUSED*/
-static NhlErrorTypes SetCoordBounds
+static NhlErrorTypes InitCoordBounds
 #if	NhlNeedProto
 (
         NhlVectorPlotLayerPart	*vcp,
@@ -2383,24 +2383,6 @@ static NhlErrorTypes SetCoordBounds
 			vcp->y_min = MIN(vcp->vfp->y_start,vcp->vfp->y_end);
 		if (! vcp->y_max_set)
 			vcp->y_max = MAX(vcp->vfp->y_start,vcp->vfp->y_end);
-	}
-	else {
-		if (! vcp->x_reverse) {
-			vcp->xc1 = vcp->x_min;
-			vcp->xcm = vcp->x_max;
-		}
-		else {
-			vcp->xc1 = vcp->x_max;
-			vcp->xcm = vcp->x_min;
-		}
-		if (! vcp->y_reverse) {
-			vcp->yc1 = vcp->y_min;
-			vcp->ycn = vcp->y_max;
-		}
-		else {
-			vcp->yc1 = vcp->y_max;
-			vcp->ycn = vcp->y_min;
-		}
 	}
 
 	if (vcp->x_min == vcp->x_max) {
@@ -2448,6 +2430,26 @@ static NhlErrorTypes SetCoordBounds
 		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,NhlNtrYLog);
 		vcp->y_log = False;
 	}
+
+	if (! vcp->data_init) {
+		if (! vcp->x_reverse) {
+			vcp->xc1 = vcp->x_min;
+			vcp->xcm = vcp->x_max;
+		}
+		else {
+			vcp->xc1 = vcp->x_max;
+			vcp->xcm = vcp->x_min;
+		}
+		if (! vcp->y_reverse) {
+			vcp->yc1 = vcp->y_min;
+			vcp->ycn = vcp->y_max;
+		}
+		else {
+			vcp->yc1 = vcp->y_max;
+			vcp->ycn = vcp->y_min;
+		}
+	}
+
 	return ret;
 }
 
@@ -3621,6 +3623,128 @@ static NhlErrorTypes vcDraw
 	return MIN(subret,ret);
 }
 
+
+/*
+ * Function:	SetCoordBounds
+ *
+ * Description: Sets the max and min coord bounds
+ *
+ * In Args:	vcp	pointer to VectorPlot layer part
+ *		ctype	which coordinate
+ *		count	length of irregular coord array if > 0
+ *                      if 0 indicates a non-irregular transformation
+ *		entry_name the high level entry point
+ *
+ * Out Args:	NONE
+ *
+ * Return Values:	Error Conditions
+ *
+ * Side Effects:   A number of fields in the VectorPlotLayerPart are set
+ */
+
+static NhlErrorTypes SetCoordBounds
+#if	NhlNeedProto
+(
+	NhlVectorPlotLayerPart	*vcp,
+	vcCoord			ctype,
+	int			count,
+	NhlString		entry_name
+)
+#else 
+(vcp,ctype,count,entry_name)
+	NhlVectorPlotLayerPart	*vcp;
+	vcCoord			ctype;
+	int			count;
+	NhlString		entry_name;
+#endif
+{
+	NhlErrorTypes	ret = NhlNOERROR;
+	char		*e_text;
+	float		tmin,tmax;
+	NhlBoolean	rev;
+
+	if (ctype == vcXCOORD) {
+
+		rev = vcp->vfp->x_start > vcp->vfp->x_end;
+		if (! rev) {
+			tmin = MAX(vcp->vfp->x_start,vcp->x_min); 
+			tmax = MIN(vcp->vfp->x_end,vcp->x_max);
+		}
+		else {
+			tmin = MAX(vcp->vfp->x_end,vcp->x_min); 
+			tmax = MIN(vcp->vfp->x_start,vcp->x_max);
+		}
+		vcp->xlb = tmin;
+		vcp->xub = tmax;
+
+		if (count == 0) {
+			vcp->xc1 = vcp->vfp->x_start;
+			vcp->xcm = vcp->vfp->x_end;
+		}
+		else {
+			vcp->xc1 = 0;
+			vcp->xcm = count - 1;
+
+			if (tmin > vcp->x_min) {
+				e_text = 
+"%s: irregular transformation requires %s to be within data coordinate range: resetting";
+				NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
+					  entry_name,NhlNtrXMinF);
+				ret = MIN(ret,NhlWARNING);
+				vcp->x_min = tmin;
+			}
+			if (tmax < vcp->x_max) {
+				e_text = 
+"%s: irregular transformation requires %s to be within data coordinate range: resetting";
+				NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
+					  entry_name,NhlNtrXMaxF);
+				ret = MIN(ret,NhlWARNING);
+				vcp->x_max = tmax;
+			}
+		}
+	}
+	else if (ctype == vcYCOORD) {
+
+		rev = vcp->vfp->y_start > vcp->vfp->y_end;
+		if (! rev) {
+			tmin = MAX(vcp->vfp->y_start,vcp->y_min); 
+			tmax = MIN(vcp->vfp->y_end,vcp->y_max);
+		}
+		else {
+			tmin = MAX(vcp->vfp->y_end,vcp->y_min); 
+			tmax = MIN(vcp->vfp->y_start,vcp->y_max);
+		}
+		vcp->ylb = tmin;
+		vcp->yub = tmax;
+
+		if (count == 0) {
+			vcp->yc1 = vcp->vfp->y_start;
+			vcp->ycn = vcp->vfp->y_end;
+		}
+		else {
+			vcp->yc1 = 0;
+			vcp->ycn = count - 1;
+			if (tmin > vcp->y_min) {
+				e_text = 
+"%s: irregular transformation requires %s to be within data coordinate range: resetting";
+				NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
+					  entry_name,NhlNtrYMinF);
+				ret = MIN(ret,NhlWARNING);
+				vcp->y_min = tmin;
+			}
+			if (tmax < vcp->y_max) {
+				e_text = 
+"%s: irregular transformation requires %s to be within data coordinate range: resetting";
+				NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
+					  entry_name,NhlNtrYMaxF);
+				ret = MIN(ret,NhlWARNING);
+				vcp->y_max = tmax;
+			}
+		}
+	}
+	return ret;
+}
+
 /*
  * Function:	SetUpLLTransObj
  *
@@ -3697,35 +3821,12 @@ static NhlErrorTypes SetUpLLTransObj
 	}
 
 	if (vcp->data_init) {
-		float		tmin,tmax;
-
-		xrev = vcp->vfp->x_start > vcp->vfp->x_end;
-		yrev = vcp->vfp->y_start > vcp->vfp->y_end;
-		vcp->xc1 = vcp->vfp->x_start;
-		vcp->xcm = vcp->vfp->x_end;
-		if (! xrev) {
-			tmin = MAX(vcp->vfp->x_start,vcp->x_min); 
-			tmax = MIN(vcp->vfp->x_end,vcp->x_max);
-		}
-		else {
-			tmin = MAX(vcp->vfp->x_end,vcp->x_min); 
-			tmax = MIN(vcp->vfp->x_start,vcp->x_max);
-		}
-		vcp->xlb = tmin;
-		vcp->xub = tmax;
-
-		vcp->yc1 = vcp->vfp->y_start;
-		vcp->ycn = vcp->vfp->y_end;
-		if (! yrev) {
-			tmin = MAX(vcp->vfp->y_start,vcp->y_min); 
-			tmax = MIN(vcp->vfp->y_end,vcp->y_max);
-		}
-		else {
-			tmin = MAX(vcp->vfp->y_end,vcp->y_min); 
-			tmax = MIN(vcp->vfp->y_start,vcp->y_max);
-		}
-		vcp->ylb = tmin;
-		vcp->yub = tmax;
+		subret = SetCoordBounds(vcp,vcXCOORD,0,entry_name);
+		if ((ret = MIN(subret,ret)) < NhlWARNING)
+			return ret;
+		subret = SetCoordBounds(vcp,vcYCOORD,0,entry_name);
+		if ((ret = MIN(subret,ret)) < NhlWARNING)
+			return ret;
 	}
 
 	if (tfp->trans_obj == NULL) {
@@ -3827,113 +3928,6 @@ static NhlErrorTypes SetUpLLTransObj
 
 }
 
-
-/*
- * Function:	SetIrrCoordBounds
- *
- * Description: Sets the max and min coord bounds for an Irregular trans
- *
- * In Args:	vcp	pointer to VectorPlot layer part
- *		ctype	which coordinate
- *		count	length of irregular coord array
- *		entry_name the high level entry point
- *
- * Out Args:	NONE
- *
- * Return Values:	Error Conditions
- *
- * Side Effects:   A number of fields in the VectorPlotLayerPart are set
- */
-
-static NhlErrorTypes SetIrrCoordBounds
-#if	NhlNeedProto
-(
-	NhlVectorPlotLayerPart	*vcp,
-	vcCoord			ctype,
-	int			count,
-	NhlString		entry_name
-)
-#else 
-(vcp,ctype,count,entry_name)
-	NhlVectorPlotLayerPart	*vcp;
-	vcCoord			ctype;
-	int			count;
-	NhlString		entry_name;
-#endif
-{
-	NhlErrorTypes	ret = NhlNOERROR;
-	char		*e_text;
-	float		tmin,tmax;
-	NhlBoolean	rev;
-
-	if (ctype == vcXCOORD) {
-
-		vcp->xc1 = 0;
-		vcp->xcm = count - 1;
-
-		rev = vcp->vfp->x_start > vcp->vfp->x_end;
-		if (! rev) {
-			tmin = MAX(vcp->vfp->x_start,vcp->x_min); 
-			tmax = MIN(vcp->vfp->x_end,vcp->x_max);
-		}
-		else {
-			tmin = MAX(vcp->vfp->x_end,vcp->x_min); 
-			tmax = MIN(vcp->vfp->x_start,vcp->x_max);
-		}
-		vcp->xlb = tmin;
-		vcp->xub = tmax;
-		if (tmin > vcp->x_min) {
-			e_text = 
-			 "%s: %s cannot be less than %s min value: resetting";
-			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
-				  entry_name,NhlNtrXMinF,NhlNvfXArray);
-			ret = MIN(ret,NhlWARNING);
-			vcp->x_min = tmin;
-		}
-		if (tmax < vcp->x_max) {
-			e_text = 
-		      "%s: %s cannot be greater than %s max value: resetting";
-			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
-				  entry_name,NhlNtrXMaxF,NhlNvfXArray);
-			ret = MIN(ret,NhlWARNING);
-			vcp->x_max = tmax;
-		}
-	}
-	else if (ctype == vcYCOORD) {
-
-		vcp->yc1 = 0;
-		vcp->ycn = count - 1;
-
-		rev = vcp->vfp->y_start > vcp->vfp->y_end;
-		if (! rev) {
-			tmin = MAX(vcp->vfp->y_start,vcp->y_min); 
-			tmax = MIN(vcp->vfp->y_end,vcp->y_max);
-		}
-		else {
-			tmin = MAX(vcp->vfp->y_end,vcp->y_min); 
-			tmax = MIN(vcp->vfp->y_start,vcp->y_max);
-		}
-		vcp->ylb = tmin;
-		vcp->yub = tmax;
-		if (tmin > vcp->y_min) {
-			e_text = 
-			 "%s: %s cannot be less than %s min value: resetting";
-			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
-				  entry_name,NhlNtrYMinF,NhlNvfYArray);
-			ret = MIN(ret,NhlWARNING);
-			vcp->y_min = tmin;
-		}
-		if (tmax < vcp->y_max) {
-			e_text = 
-		      "%s: %s cannot be greater than %s max value: resetting";
-			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
-				  entry_name,NhlNtrYMaxF,NhlNvfYArray);
-			ret = MIN(ret,NhlWARNING);
-			vcp->y_max = tmax;
-		}
-	}
-	return ret;
-}
 /*
  * Function:	SetUpIrrTransObj
  *
@@ -3973,10 +3967,8 @@ static NhlErrorTypes SetUpIrrTransObj
 	int			tmpid;
         NhlSArg			sargs[16];
         int			nargs = 0;
-	float			float_buf[3];
 	NhlBoolean		x_irr,y_irr;
 	NhlBoolean		xrev,yrev,oxrev,oyrev;
-	float			*fp;
 	int			count;
 
 	entry_name = (init) ? InitName : SetValuesName;
@@ -3992,7 +3984,6 @@ static NhlErrorTypes SetUpIrrTransObj
 		}
 		tfp->trans_obj = NULL;
 	}
-	return ret;
 
 	if (! vcp->data_init) return ret;
 
@@ -4030,7 +4021,8 @@ static NhlErrorTypes SetUpIrrTransObj
 	    vcp->vfp->x_start != vcp->ovfp->x_start ||
 	    vcp->vfp->x_end != vcp->ovfp->x_end ||
 	    vcp->x_min != ovcp->x_min ||
-	    vcp->x_max != ovcp->x_max) {
+	    vcp->x_max != ovcp->x_max ||
+	    vcp->x_log != ovcp->x_log) {
 
 		if (x_irr) {
 			NhlSetSArg(&sargs[nargs++],NhlNtrXCoordPoints,
@@ -4040,9 +4032,6 @@ static NhlErrorTypes SetUpIrrTransObj
 				   NhlNtrXAxisType,NhlIRREGULARAXIS);
 		}
 		else {
-			fp = float_buf;
-			fp[0] = vcp->vfp->x_start;
-			fp[2] = vcp->vfp->x_end;
 			if (vcp->x_log)
 				NhlSetSArg(&sargs[nargs++],
 					   NhlNtrXAxisType,NhlLOGAXIS);
@@ -4051,8 +4040,7 @@ static NhlErrorTypes SetUpIrrTransObj
 					   NhlNtrXAxisType,NhlLINEARAXIS);
 			count = 3;
 		}
-		subret = SetIrrCoordBounds(vcp,
-					   vcXCOORD,count,entry_name);
+		subret = SetCoordBounds(vcp,vcXCOORD,count,entry_name);
 		if ((ret = MIN(subret,ret)) < NhlWARNING)
 			return ret;
 		NhlSetSArg(&sargs[nargs++],NhlNtrXMinF,vcp->x_min);
@@ -4066,7 +4054,6 @@ static NhlErrorTypes SetUpIrrTransObj
 	    vcp->vfp->y_end != vcp->ovfp->y_end ||
 	    vcp->y_min != ovcp->y_min ||
 	    vcp->y_max != ovcp->y_max ||
-	    vcp->x_log != ovcp->x_log ||
 	    vcp->y_log != ovcp->y_log) {
 
 		if (y_irr) {
@@ -4077,9 +4064,6 @@ static NhlErrorTypes SetUpIrrTransObj
 				   NhlNtrYAxisType,NhlIRREGULARAXIS);
 		}
 		else {
-			fp = float_buf;
-			fp[0] = vcp->vfp->y_start;
-			fp[2] = vcp->vfp->y_end;
 			if (vcp->y_log)
 				NhlSetSArg(&sargs[nargs++],
 					   NhlNtrYAxisType,NhlLOGAXIS);
@@ -4088,8 +4072,7 @@ static NhlErrorTypes SetUpIrrTransObj
 					   NhlNtrYAxisType,NhlLINEARAXIS);
 			count = 3;
 		}
-		subret = SetIrrCoordBounds(vcp,
-					   vcYCOORD,count,entry_name);
+		subret = SetCoordBounds(vcp,vcYCOORD,count,entry_name);
 		if ((ret = MIN(subret,ret)) < NhlWARNING)
 			return ret;
 
@@ -8261,12 +8244,12 @@ static void   load_hlucp_routines
 	NhlBoolean	flag;
 #endif
 {
-	int idum;
-	float fdum;
-
 
 	if (flag) {
-                return;
+		float fdm;
+		int   idm;
+		(_NHLCALLF(hluvvmpxy,HLUVVMPXY))
+			(&fdm,&fdm,&fdm,&fdm,&fdm,&fdm,&fdm,&fdm,&fdm,&idm);
 	}
 	return;
 }

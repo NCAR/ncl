@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.29 1996-01-19 18:06:26 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.30 1996-02-01 20:42:54 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1044,7 +1044,7 @@ static NhlErrorTypes AddDataBoundToAreamap(
 #endif
 );
 
-static NhlErrorTypes SetCoordBounds(
+static NhlErrorTypes InitCoordBounds(
 #if	NhlNeedProto
         NhlContourPlotLayerPart	*cnp,
 	char			*entry_name
@@ -1059,7 +1059,7 @@ static NhlErrorTypes SetUpLLTransObj(
 #endif
 );
 
-static NhlErrorTypes SetIrrCoordBounds(
+static NhlErrorTypes SetCoordBounds(
 #if	NhlNeedProto
 	NhlContourPlotLayerPart	*cnp,
 	cnCoord			ctype,
@@ -2163,7 +2163,7 @@ ContourPlotInitialize
 		return(ret);
 	}
  
-	subret = SetCoordBounds(cnp,entry_name);
+	subret = InitCoordBounds(cnp,entry_name);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) return(ret);
 
 /* Set view dependent resources */
@@ -2357,7 +2357,7 @@ static NhlErrorTypes ContourPlotSetValues
 		return(ret);
 	}
 
-	subret = SetCoordBounds(cnp,entry_name);
+	subret = InitCoordBounds(cnp,entry_name);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) return(ret);
 
 /* Set view dependent resources */
@@ -2629,7 +2629,7 @@ static NhlErrorTypes    ContourPlotGetValues
 
 
 /*
- * Function:	SetCoordBounds
+ * Function:	InitCoordBounds
  *
  * Description: 
  *
@@ -2642,7 +2642,7 @@ static NhlErrorTypes    ContourPlotGetValues
  * Side Effects:
  */
 /*ARGSUSED*/
-static NhlErrorTypes SetCoordBounds
+static NhlErrorTypes InitCoordBounds
 #if	NhlNeedProto
 (
         NhlContourPlotLayerPart	*cnp,
@@ -2668,25 +2668,6 @@ static NhlErrorTypes SetCoordBounds
 		if (! cnp->y_max_set)
 			cnp->y_max = MAX(cnp->sfp->y_start,cnp->sfp->y_end);
 	}
-	else {
-		if (! cnp->x_reverse) {
-			cnp->xc1 = cnp->x_min;
-			cnp->xcm = cnp->x_max;
-		}
-		else {
-			cnp->xc1 = cnp->x_max;
-			cnp->xcm = cnp->x_min;
-		}
-		if (! cnp->y_reverse) {
-			cnp->yc1 = cnp->y_min;
-			cnp->ycn = cnp->y_max;
-		}
-		else {
-			cnp->yc1 = cnp->y_max;
-			cnp->ycn = cnp->y_min;
-		}
-	}
-		
 	if (cnp->x_min == cnp->x_max) {
 		e_text = "%s: Zero X coordinate span: defaulting";
 		ret = MIN(ret,NhlWARNING);
@@ -2732,6 +2713,25 @@ static NhlErrorTypes SetCoordBounds
 		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,NhlNtrYLog);
 		cnp->y_log = False;
 	}
+	if (! cnp->data_init) {
+		if (! cnp->x_reverse) {
+			cnp->xc1 = cnp->x_min;
+			cnp->xcm = cnp->x_max;
+		}
+		else {
+			cnp->xc1 = cnp->x_max;
+			cnp->xcm = cnp->x_min;
+		}
+		if (! cnp->y_reverse) {
+			cnp->yc1 = cnp->y_min;
+			cnp->ycn = cnp->y_max;
+		}
+		else {
+			cnp->yc1 = cnp->y_max;
+			cnp->ycn = cnp->y_min;
+		}
+	}
+		
 	return ret;
 }
 
@@ -4738,6 +4738,128 @@ static NhlErrorTypes UpdateFillInfo
 	return ret;
 }
 
+
+/*
+ * Function:	SetCoordBounds
+ *
+ * Description: Sets the max and min coord bounds
+ *
+ * In Args:	cnp	pointer to VectorPlot layer part
+ *		ctype	which coordinate
+ *		count	length of irregular coord array if > 0
+ *                      if 0 indicates a non-irregular transformation
+ *		entry_name the high level entry point
+ *
+ * Out Args:	NONE
+ *
+ * Return Values:	Error Conditions
+ *
+ * Side Effects:   A number of fields in the VectorPlotLayerPart are set
+ */
+
+static NhlErrorTypes SetCoordBounds
+#if	NhlNeedProto
+(
+	NhlContourPlotLayerPart	*cnp,
+	cnCoord			ctype,
+	int			count,
+	NhlString		entry_name
+)
+#else 
+(cnp,ctype,count,entry_name)
+	NhlContourPlotLayerPart	*cnp;
+	cnCoord			ctype;
+	int			count;
+	NhlString		entry_name;
+#endif
+{
+	NhlErrorTypes	ret = NhlNOERROR;
+	char		*e_text;
+	float		tmin,tmax;
+	NhlBoolean	rev;
+
+	if (ctype == cnXCOORD) {
+
+		rev = cnp->sfp->x_start > cnp->sfp->x_end;
+		if (! rev) {
+			tmin = MAX(cnp->sfp->x_start,cnp->x_min); 
+			tmax = MIN(cnp->sfp->x_end,cnp->x_max);
+		}
+		else {
+			tmin = MAX(cnp->sfp->x_end,cnp->x_min); 
+			tmax = MIN(cnp->sfp->x_start,cnp->x_max);
+		}
+		cnp->xlb = tmin;
+		cnp->xub = tmax;
+
+		if (count == 0) {
+			cnp->xc1 = cnp->sfp->x_start;
+			cnp->xcm = cnp->sfp->x_end;
+		}
+		else {
+			cnp->xc1 = 0;
+			cnp->xcm = count - 1;
+
+			if (tmin > cnp->x_min) {
+				e_text = 
+"%s: irregular transformation requires %s to be within data coordinate range: resetting";
+				NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
+					  entry_name,NhlNtrXMinF);
+				ret = MIN(ret,NhlWARNING);
+				cnp->x_min = tmin;
+			}
+			if (tmax < cnp->x_max) {
+				e_text = 
+"%s: irregular transformation requires %s to be within data coordinate range: resetting";
+				NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
+					  entry_name,NhlNtrXMaxF);
+				ret = MIN(ret,NhlWARNING);
+				cnp->x_max = tmax;
+			}
+		}
+	}
+	else if (ctype == cnYCOORD) {
+
+		rev = cnp->sfp->y_start > cnp->sfp->y_end;
+		if (! rev) {
+			tmin = MAX(cnp->sfp->y_start,cnp->y_min); 
+			tmax = MIN(cnp->sfp->y_end,cnp->y_max);
+		}
+		else {
+			tmin = MAX(cnp->sfp->y_end,cnp->y_min); 
+			tmax = MIN(cnp->sfp->y_start,cnp->y_max);
+		}
+		cnp->ylb = tmin;
+		cnp->yub = tmax;
+
+		if (count == 0) {
+			cnp->yc1 = cnp->sfp->y_start;
+			cnp->ycn = cnp->sfp->y_end;
+		}
+		else {
+			cnp->yc1 = 0;
+			cnp->ycn = count - 1;
+			if (tmin > cnp->y_min) {
+				e_text = 
+"%s: irregular transformation requires %s to be within data coordinate range: resetting";
+				NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
+					  entry_name,NhlNtrYMinF);
+				ret = MIN(ret,NhlWARNING);
+				cnp->y_min = tmin;
+			}
+			if (tmax < cnp->y_max) {
+				e_text = 
+"%s: irregular transformation requires %s to be within data coordinate range: resetting";
+				NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
+					  entry_name,NhlNtrYMaxF);
+				ret = MIN(ret,NhlWARNING);
+				cnp->y_max = tmax;
+			}
+		}
+	}
+	return ret;
+}
+
 /*
  * Function:	SetUpLLTransObj
  *
@@ -4814,35 +4936,12 @@ static NhlErrorTypes SetUpLLTransObj
 	}
 
 	if (cnp->data_init) {
-		float		tmin,tmax;
-
-		xrev = cnp->sfp->x_start > cnp->sfp->x_end;
-		yrev = cnp->sfp->y_start > cnp->sfp->y_end;
-		cnp->xc1 = cnp->sfp->x_start;
-		cnp->xcm = cnp->sfp->x_end;
-		if (! xrev) {
-			tmin = MAX(cnp->sfp->x_start,cnp->x_min); 
-			tmax = MIN(cnp->sfp->x_end,cnp->x_max);
-		}
-		else {
-			tmin = MAX(cnp->sfp->x_end,cnp->x_min); 
-			tmax = MIN(cnp->sfp->x_start,cnp->x_max);
-		}
-		cnp->xlb = tmin;
-		cnp->xub = tmax;
-
-		cnp->yc1 = cnp->sfp->y_start;
-		cnp->ycn = cnp->sfp->y_end;
-		if (! yrev) {
-			tmin = MAX(cnp->sfp->y_start,cnp->y_min); 
-			tmax = MIN(cnp->sfp->y_end,cnp->y_max);
-		}
-		else {
-			tmin = MAX(cnp->sfp->y_end,cnp->y_min); 
-			tmax = MIN(cnp->sfp->y_start,cnp->y_max);
-		}
-		cnp->ylb = tmin;
-		cnp->yub = tmax;
+		subret = SetCoordBounds(cnp,cnXCOORD,0,entry_name);
+		if ((ret = MIN(subret,ret)) < NhlWARNING)
+			return ret;
+		subret = SetCoordBounds(cnp,cnYCOORD,0,entry_name);
+		if ((ret = MIN(subret,ret)) < NhlWARNING)
+			return ret;
 	}
 	if (tfp->trans_obj == NULL) {
 
@@ -4942,113 +5041,6 @@ static NhlErrorTypes SetUpLLTransObj
 
 }
 
-
-/*
- * Function:	SetIrrCoordBounds
- *
- * Description: Sets the max and min coord bounds for an Irregular trans
- *
- * In Args:	cnp	pointer to ContourPlot layer part
- *		ctype	which coordinate
- *		count	length of irregular coord array
- *		entry_name the high level entry point
- *
- * Out Args:	NONE
- *
- * Return Values:	Error Conditions
- *
- * Side Effects:   A number of fields in the ContourPlotLayerPart are set
- */
-
-static NhlErrorTypes SetIrrCoordBounds
-#if	NhlNeedProto
-(
-	NhlContourPlotLayerPart	*cnp,
-	cnCoord			ctype,
-	int			count,
-	NhlString		entry_name
-)
-#else 
-(cnp,ctype,count,entry_name)
-	NhlContourPlotLayerPart	*cnp;
-	cnCoord			ctype;
-	int			count;
-	NhlString		entry_name;
-#endif
-{
-	NhlErrorTypes	ret = NhlNOERROR;
-	char		*e_text;
-	float		tmin,tmax;
-	NhlBoolean	rev;
-
-	if (ctype == cnXCOORD) {
-
-		cnp->xc1 = 0;
-		cnp->xcm = count - 1;
-
-		rev = cnp->sfp->x_start > cnp->sfp->x_end;
-		if (! rev) {
-			tmin = MAX(cnp->sfp->x_start,cnp->x_min); 
-			tmax = MIN(cnp->sfp->x_end,cnp->x_max);
-		}
-		else {
-			tmin = MAX(cnp->sfp->x_end,cnp->x_min); 
-			tmax = MIN(cnp->sfp->x_start,cnp->x_max);
-		}
-		cnp->xlb = tmin;
-		cnp->xub = tmax;
-		if (tmin > cnp->x_min) {
-			e_text = 
-			 "%s: %s cannot be less than %s min value: resetting";
-			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
-				  entry_name,NhlNtrXMinF,NhlNsfXArray);
-			ret = MIN(ret,NhlWARNING);
-			cnp->x_min = tmin;
-		}
-		if (tmax < cnp->x_max) {
-			e_text = 
-		      "%s: %s cannot be greater than %s max value: resetting";
-			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
-				  entry_name,NhlNtrXMaxF,NhlNsfXArray);
-			ret = MIN(ret,NhlWARNING);
-			cnp->x_max = tmax;
-		}
-	}
-	else if (ctype == cnYCOORD) {
-
-		cnp->yc1 = 0;
-		cnp->ycn = count - 1;
-
-		rev = cnp->sfp->y_start > cnp->sfp->y_end;
-		if (! rev) {
-			tmin = MAX(cnp->sfp->y_start,cnp->y_min); 
-			tmax = MIN(cnp->sfp->y_end,cnp->y_max);
-		}
-		else {
-			tmin = MAX(cnp->sfp->y_end,cnp->y_min); 
-			tmax = MIN(cnp->sfp->y_start,cnp->y_max);
-		}
-		cnp->ylb = tmin;
-		cnp->yub = tmax;
-		if (tmin > cnp->y_min) {
-			e_text = 
-			 "%s: %s cannot be less than %s min value: resetting";
-			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
-				  entry_name,NhlNtrYMinF,NhlNsfYArray);
-			ret = MIN(ret,NhlWARNING);
-			cnp->y_min = tmin;
-		}
-		if (tmax < cnp->y_max) {
-			e_text = 
-		      "%s: %s cannot be greater than %s max value: resetting";
-			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
-				  entry_name,NhlNtrYMaxF,NhlNsfYArray);
-			ret = MIN(ret,NhlWARNING);
-			cnp->y_max = tmax;
-		}
-	}
-	return ret;
-}
 /*
  * Function:	SetUpIrrTransObj
  *
@@ -5144,7 +5136,8 @@ static NhlErrorTypes SetUpIrrTransObj
 	    cnp->sfp->x_start != cnp->osfp->x_start ||
 	    cnp->sfp->x_end != cnp->osfp->x_end ||
 	    cnp->x_min != ocnp->x_min ||
-	    cnp->x_max != ocnp->x_max) {
+	    cnp->x_max != ocnp->x_max ||
+	    cnp->x_log != ocnp->x_log) {
 
 		if (x_irr) {
 			NhlSetSArg(&sargs[nargs++],NhlNtrXCoordPoints,
@@ -5154,9 +5147,6 @@ static NhlErrorTypes SetUpIrrTransObj
 				   NhlNtrXAxisType,NhlIRREGULARAXIS);
 		}
 		else {
-			fp = float_buf;
-			fp[0] = cnp->sfp->x_start;
-			fp[2] = cnp->sfp->x_end;
 			if (cnp->x_log)
 				NhlSetSArg(&sargs[nargs++],
 					   NhlNtrXAxisType,NhlLOGAXIS);
@@ -5165,8 +5155,7 @@ static NhlErrorTypes SetUpIrrTransObj
 					   NhlNtrXAxisType,NhlLINEARAXIS);
 			count = 3;
 		}
-		subret = SetIrrCoordBounds(cnp,
-					   cnXCOORD,count,entry_name);
+		subret = SetCoordBounds(cnp,cnXCOORD,count,entry_name);
 		if ((ret = MIN(subret,ret)) < NhlWARNING)
 			return ret;
 		NhlSetSArg(&sargs[nargs++],NhlNtrXMinF,cnp->x_min);
@@ -5180,7 +5169,6 @@ static NhlErrorTypes SetUpIrrTransObj
 	    cnp->sfp->y_end != cnp->osfp->y_end ||
 	    cnp->y_min != ocnp->y_min ||
 	    cnp->y_max != ocnp->y_max ||
-	    cnp->x_log != ocnp->x_log ||
 	    cnp->y_log != ocnp->y_log) {
 
 		if (y_irr) {
@@ -5191,9 +5179,6 @@ static NhlErrorTypes SetUpIrrTransObj
 				   NhlNtrYAxisType,NhlIRREGULARAXIS);
 		}
 		else {
-			fp = float_buf;
-			fp[0] = cnp->sfp->y_start;
-			fp[2] = cnp->sfp->y_end;
 			if (cnp->y_log)
 				NhlSetSArg(&sargs[nargs++],
 					   NhlNtrYAxisType,NhlLOGAXIS);
@@ -5202,11 +5187,9 @@ static NhlErrorTypes SetUpIrrTransObj
 					   NhlNtrYAxisType,NhlLINEARAXIS);
 			count = 3;
 		}
-		subret = SetIrrCoordBounds(cnp,
-					   cnYCOORD,count,entry_name);
+		subret = SetCoordBounds(cnp,cnYCOORD,count,entry_name);
 		if ((ret = MIN(subret,ret)) < NhlWARNING)
 			return ret;
-
 		NhlSetSArg(&sargs[nargs++],NhlNtrYMinF,cnp->y_min);
 		NhlSetSArg(&sargs[nargs++],NhlNtrYMaxF,cnp->y_max);
 	}
