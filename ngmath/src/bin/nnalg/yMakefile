@@ -1,0 +1,11 @@
+#
+#       "$Id:"
+#
+
+MYNAME  = nnalg
+
+GENERIC_SRCS = nadisp.f  nadraw.f  naskln.f  nasort.f
+
+GENERIC_OBJS = nadisp.o  nadraw.o  naskln.o  nasort.o
+
+FortranTarget(nnalg,$(GENERIC_OBJS))
