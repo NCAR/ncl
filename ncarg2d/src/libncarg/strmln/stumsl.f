@@ -1,5 +1,5 @@
 C
-C	$Id: stumsl.f,v 1.1 1993-01-15 23:53:50 dbrown Exp $
+C       $Id: stumsl.f,v 1.2 1993-12-03 21:18:59 kennison Exp $
 C
       SUBROUTINE STUMSL(XCS,YCS,NCS,IAI,IAG,NAI)
 C

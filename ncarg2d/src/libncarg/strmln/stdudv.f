@@ -1,5 +1,5 @@
 C
-C	$Id: stdudv.f,v 1.4 1993-02-02 23:30:45 dbrown Exp $
+C       $Id: stdudv.f,v 1.5 1993-12-03 21:18:36 kennison Exp $
 C
       SUBROUTINE STDUDV (UX,VY,I,J,X,Y,DU,DV)
 C
@@ -45,7 +45,7 @@ C
      +                IXD1       ,IXDM       ,IYD1       ,IYDN       ,
      +                IXM1       ,IYM1       ,IXM2       ,IYM2       ,
      +                IWKD       ,IWKU       ,ISET       ,IERR       ,
-     +	              IXIN       ,IYIN       ,IMSK       ,ICPM       ,
+     +                IXIN       ,IYIN       ,IMSK       ,ICPM       ,
      +                NLVL       ,IPAI       ,ICTV       ,WDLV       ,
      +                UVMN       ,UVMX       ,PMIN       ,PMAX       ,
      +                ITHN       ,IPLR       ,ISST       ,

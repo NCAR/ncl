@@ -1,5 +1,5 @@
 C
-C	$Id: chkcyc.f,v 1.1.1.1 1992-04-17 22:31:45 ncargd Exp $
+C       $Id: chkcyc.f,v 1.2 1993-12-03 21:18:21 kennison Exp $
 C
       SUBROUTINE CHKCYC  (U,V,IMAX,JPTSY,IER)
 C

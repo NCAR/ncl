@@ -1,5 +1,5 @@
 C
-C	$Id: drwstr.f,v 1.1.1.1 1992-04-17 22:31:44 ncargd Exp $
+C       $Id: drwstr.f,v 1.2 1993-12-03 21:18:23 kennison Exp $
 C
       SUBROUTINE DRWSTR  (U,V,UX,VY,IMAX,JPTSY)
 C

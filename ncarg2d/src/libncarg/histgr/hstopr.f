@@ -89,12 +89,12 @@ C Set special value flag.
 C
       ELSEIF (TAG .EQ. 'MV') THEN
         IF (OPT .EQ. 'ON') THEN
-	  MVALU = .TRUE.
-	  SETMVA = ARRAY(1)
-	  SETEPS = ARRAY(2)
+          MVALU = .TRUE.
+          SETMVA = ARRAY(1)
+          SETEPS = ARRAY(2)
           RETURN
         ELSEIF (OPT .EQ. 'OF') THEN
-	  MVALU = .FALSE.
+          MVALU = .FALSE.
           RETURN
         ELSE
           GOTO 120

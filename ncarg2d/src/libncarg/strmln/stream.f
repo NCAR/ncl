@@ -1,5 +1,5 @@
 C
-C	$Id: stream.f,v 1.7 1993-04-20 16:40:29 dbrown Exp $
+C       $Id: stream.f,v 1.8 1993-12-03 21:18:47 kennison Exp $
 C
       SUBROUTINE STREAM (U,V,P,IAM,STUMSL,WRK)
 C
@@ -39,7 +39,7 @@ C
      +                IXD1       ,IXDM       ,IYD1       ,IYDN       ,
      +                IXM1       ,IYM1       ,IXM2       ,IYM2       ,
      +                IWKD       ,IWKU       ,ISET       ,IERR       ,
-     +	              IXIN       ,IYIN       ,IMSK       ,ICPM       ,
+     +                IXIN       ,IYIN       ,IMSK       ,ICPM       ,
      +                NLVL       ,IPAI       ,ICTV       ,WDLV       ,
      +                UVMN       ,UVMX       ,PMIN       ,PMAX       ,
      +                ITHN       ,IPLR       ,ISST       ,

@@ -1,5 +1,5 @@
 C
-C	$Id: stsetr.f,v 1.5 1993-03-31 00:31:33 dbrown Exp $
+C       $Id: stsetr.f,v 1.6 1993-12-03 21:18:57 kennison Exp $
 C
 C
 C-----------------------------------------------------------------------
@@ -38,7 +38,7 @@ C
      +                IXD1       ,IXDM       ,IYD1       ,IYDN       ,
      +                IXM1       ,IYM1       ,IXM2       ,IYM2       ,
      +                IWKD       ,IWKU       ,ISET       ,IERR       ,
-     +	              IXIN       ,IYIN       ,IMSK       ,ICPM       ,
+     +                IXIN       ,IYIN       ,IMSK       ,ICPM       ,
      +                NLVL       ,IPAI       ,ICTV       ,WDLV       ,
      +                UVMN       ,UVMX       ,PMIN       ,PMAX       ,
      +                ITHN       ,IPLR       ,ISST       ,

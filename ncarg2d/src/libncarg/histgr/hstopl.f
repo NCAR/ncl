@@ -58,7 +58,7 @@ C
         SHADE = .TRUE.
         DRAWL = .FALSE.
         MEDIAN = .FALSE.
-	MVALU  = .FALSE.
+        MVALU  = .FALSE.
         PERIM = .FALSE.
         HFRAME = .TRUE.
         LISTOP = .FALSE.
@@ -78,10 +78,10 @@ C
         COLPER = 1
         SETSPA = 2.
         SETSP2 = -1.
-	NMVAL = .TRUE.
-	PMVAL = .TRUE.
-	SETMVA = -999.
-	SETEPS = 1.E-10
+        NMVAL = .TRUE.
+        PMVAL = .TRUE.
+        SETMVA = -999.
+        SETEPS = 1.E-10
         HSTFOR = .FALSE.
         STRFOR = '(G10.3)'
         TITLE = .FALSE.
@@ -251,13 +251,13 @@ C
 C  SWITCH ON
 C
           IF (OPT .EQ. 'ON') THEN
-	    NMVAL = .TRUE.
+            NMVAL = .TRUE.
             RETURN
 C
 C  SWITCH OFF
 C
           ELSEIF (OPT .EQ. 'OF') THEN
-	    NMVAL = .FALSE.
+            NMVAL = .FALSE.
             RETURN
           ELSE
                 GOTO 900
@@ -270,13 +270,13 @@ C
 C  SWITCH ON
 C
           IF (OPT .EQ. 'ON') THEN
-	    PMVAL = .TRUE.
+            PMVAL = .TRUE.
             RETURN
 C
 C  SWITCH OFF
 C
           ELSEIF (OPT .EQ. 'OF') THEN
-	    PMVAL = .FALSE.
+            PMVAL = .FALSE.
             RETURN
           ELSE
                 GOTO 900

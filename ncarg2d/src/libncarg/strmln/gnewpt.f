@@ -1,5 +1,5 @@
 C
-C	$Id: gnewpt.f,v 1.1.1.1 1992-04-17 22:31:44 ncargd Exp $
+C       $Id: gnewpt.f,v 1.2 1993-12-03 21:18:26 kennison Exp $
 C
       SUBROUTINE GNEWPT (UX,VY,IMAX,JPTSY)
 C

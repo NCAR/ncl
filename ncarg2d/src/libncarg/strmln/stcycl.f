@@ -1,5 +1,5 @@
 C
-C	$Id: stcycl.f,v 1.4 1993-03-31 00:31:07 dbrown Exp $
+C       $Id: stcycl.f,v 1.5 1993-12-03 21:18:28 kennison Exp $
 C
       SUBROUTINE STCYCL(U,V)
 C
@@ -30,7 +30,7 @@ C
      +                IXD1       ,IXDM       ,IYD1       ,IYDN       ,
      +                IXM1       ,IYM1       ,IXM2       ,IYM2       ,
      +                IWKD       ,IWKU       ,ISET       ,IERR       ,
-     +	              IXIN       ,IYIN       ,IMSK       ,ICPM       ,
+     +                IXIN       ,IYIN       ,IMSK       ,ICPM       ,
      +                NLVL       ,IPAI       ,ICTV       ,WDLV       ,
      +                UVMN       ,UVMX       ,PMIN       ,PMAX       ,
      +                ITHN       ,IPLR       ,ISST       ,

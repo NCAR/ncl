@@ -1,5 +1,5 @@
 C
-C	$Id: stinit.f,v 1.6 1993-04-20 16:40:27 dbrown Exp $
+C       $Id: stinit.f,v 1.7 1993-12-03 21:18:42 kennison Exp $
 C
 C-----------------------------------------------------------------------
 C
@@ -58,7 +58,7 @@ C
      +                IXD1       ,IXDM       ,IYD1       ,IYDN       ,
      +                IXM1       ,IYM1       ,IXM2       ,IYM2       ,
      +                IWKD       ,IWKU       ,ISET       ,IERR       ,
-     +	              IXIN       ,IYIN       ,IMSK       ,ICPM       ,
+     +                IXIN       ,IYIN       ,IMSK       ,ICPM       ,
      +                NLVL       ,IPAI       ,ICTV       ,WDLV       ,
      +                UVMN       ,UVMX       ,PMIN       ,PMAX       ,
      +                ITHN       ,IPLR       ,ISST       ,
