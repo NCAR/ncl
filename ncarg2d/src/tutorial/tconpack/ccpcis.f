@@ -8,7 +8,7 @@
 
 C Open GKS
 	CALL OPNGKS
-C Change Contour levels to come at increments of 200000
+C Change Contour levels to come at increments of 15
 C Draw labels at every other contour level.
 	CALL CPSETR ('CIS - CONTOUR INTERVAL SPECIFIER',15.)
 	CALL CPSETI ('LIS - LABEL INTERVAL SPECIFIER',2)

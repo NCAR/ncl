@@ -12,11 +12,11 @@ C Open GKS
 	CALL OPNGKS
 C Initialize Areas
 	CALL ARINAM(MAP,LMAP)
-C Initialize Conpack
-	CALL CPRECT(Z, M, M, N, RWRK, LRWK, IWRK, LIWK)
 C Choose which labelling scheme will be used.
 	CALL CPSETI('LLP - LINE LABEL POSITIONING FLAG',2)
 	CALL CPSETR('RC1 - REGULAR SCHEME CONSTANT 1',.1)
+C Initialize Conpack
+	CALL CPRECT(Z, M, M, N, RWRK, LRWK, IWRK, LIWK)
 C Force Conpack to chose contour levels
 	CALL CPPKCL(Z, RWRK, IWRK)
 C Modify Conpack chosen parameters

@@ -13,9 +13,9 @@ C Open GKS
 	CALL OPNGKS
 
 C Turn on hachures and demonstrate changing hachure spacing and length
-	CALL CPSETI('HCF',2)
-	CALL CPSETR('HCS',.05)
-	CALL CPSETR('HCL',.01)
+	CALL CPSETI('HCF - HACHURING FLAG',2)
+	CALL CPSETR('HCS - HACHURE SPACING',.05)
+	CALL CPSETR('HCL - HACHURE LENGTH',.01)
 C Initialize Conpack
 	CALL CPRECT(ZREG,M,M,N,RWRK,LRWK,IWRK,LIWK)
 C Draw perimiter

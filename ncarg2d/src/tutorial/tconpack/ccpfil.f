@@ -36,7 +36,7 @@ C Set up color table
 C Initialize Areas
 	CALL ARINAM(MAP, LMAP)
 C Set number of contour levels and initialize Conpack
-	CALL CPSETI('CLS',NCL)
+	CALL CPSETI('CLS - CONTOUR LEVEL SELECTION FLAG',NCL)
 	CALL CPRECT(ZREG, MREG, MREG, NREG, RWRK, LRWK, IWRK, LIWK)
 C Add contours to area map
 	CALL CPCLAM(ZREG, RWRK, IWRK, MAP)

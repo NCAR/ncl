@@ -36,16 +36,16 @@ C
 C Tell CONPACK to use 12 contour levels, splitting the range into 13
 C equal bands, one for each of the 13 colors available.
 C
-        CALL CPSETI ('CLS - CONTOUR LEVEL SELECTOR',-12)
+        CALL CPSETI ('CLS - CONTOUR LEVEL SELECTION FLAG',-12)
 C
 C Draw smoothed plot to the right
 C
-	CALL CPSETR ('VPL',.51)
-	CALL CPSETR ('VPR',1.0)
+	CALL CPSETR ('VPL - VIEWPORT LEFT',.51)
+	CALL CPSETR ('VPR - VIEWPORT RIGHT',1.0)
 C
 C Set smoothing so that lines are very smooth
 C
-        CALL CPSETR ('T2D',.0001)
+        CALL CPSETR ('T2D - TENSION ON 2D SPLINES',.0001)
 C
 C Initialize the drawing of the contour plot.
 C
@@ -67,12 +67,12 @@ C
 C
 C Draw unsmoothed plot to the left
 C
-	CALL CPSETR ('VPL',0.0)
-	CALL CPSETR ('VPR',0.49)
+	CALL CPSETR ('VPL - VIEWPORT LEFT',0.0)
+	CALL CPSETR ('VPR - VIEWPORT RIGHT',0.49)
 C 
 C Tell Conpack that we want no smoothing
 C
-        CALL CPSETR ('T2D',0.)
+        CALL CPSETR ('T2D - TENSION ON 2D SPLINES',0.)
 C
 C Initialize the drawing of the contour plot.
 C

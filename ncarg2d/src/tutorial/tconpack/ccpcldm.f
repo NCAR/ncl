@@ -38,14 +38,14 @@ C Set fill style to solid
 
 C Use regular or penalty labeling scheme so that contour labels can be
 c boxed.
-	CALL CPSETI('LLP',2)
+	CALL CPSETI('LLP - LINE LABEL POSITIONING FLAG',2)
 
 C Initialize Conpack
 	CALL CPRECT(ZREG, MREG, MREG, NREG, RWRK, LRWK, IWRK, LIWK)
 
 C Set up color table
 	CALL CPPKCL (ZREG, RWRK, IWRK)
-	CALL CPGETI('NCL',NCL)
+	CALL CPGETI('NCL - NUMBER OF CONTOUR LEVELS',NCL)
 	CALL COLOR(NCL+1)
 
 C Draw Perimeter

@@ -49,7 +49,7 @@ C
 C Initialize Areas
 C
 	CALL ARINAM(MAP, MAPSIZ)
-	CALL ARSETI('DB',1)
+	CALL ARSETI('DB - DEBUG PLOTS',1)
 C
 C Add edges to area map
 C
