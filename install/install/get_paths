@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: get_paths,v 1.6 1995-10-05 21:59:00 haley Exp $
+#      $Id: get_paths,v 1.7 1998-01-30 16:57:13 haley Exp $
 #
 #########################################################################
 #                                                                       #
@@ -78,7 +78,7 @@ endif
 #   get default paths for this directory. paths.$SYSTEM sets the
 #   bin_path, lib_path, inc_path, and man_path variables
 #
-source $LOCALDIR/config/paths.$SYSTEM
+source $LOCALDIR/config/paths.$SYSTEM_TO_INSTALL
 
 if (! "$do_default") then
 

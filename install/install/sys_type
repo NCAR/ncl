@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: sys_type,v 1.12 1998-01-09 16:19:03 haley Exp $
+#      $Id: sys_type,v 1.13 1998-01-30 16:57:19 haley Exp $
 #
 #########################################################################
 #									#
@@ -26,46 +26,66 @@
 #			recognizes are given by the $systems variable.
 #
 #
-#	Usage:		sys_type
+#	Usage:		sys_type -d
 #
 #	Environment:	LOCALDIR	path to installation system.
 #
 #	Files:		
 #
 #
-#	Options:
+#	Options: -d  select a system other than the default
+
+if ($#argv == 1) then
+  if ("$argv[1]" == "-d") then
+    set select_own_system
+  endif
+endif
 
 # systems we know about
+#
 #set systems = ( \
 #		HPUX_HP9000_7xx HPUX_HP9000_8xx AIX_RS6000 SunOS_sun4 Solaris_sun4 \
 #        ULTRIX_RISC IRIX_IP IRIX64_IP UNICOS_YMP UNICOS_J90 UNICOS_C90 \
 #        UNICOS_T90 OSF1_alpha LINUX_PC Solaris_PC UNIXSV_Fujitsu300)
 set systems = ( \
-		HPUX_HP9000_7xx AIX_RS6000 Solaris_sun4 IRIX_IP IRIX64_IP \
+		HPUX_HP9000_7xx AIX_RS6000 Solaris_sun4 IRIX_n32_IP IRIX_64_IP \
         UNICOS_J90 UNICOS_C90 OSF1_alpha LINUX_PC)
 
 #
 # auto-detect the system type
 #
-set line = `$LOCALDIR/uname -M -s`
-if ($status == 0) then
+if (! $?select_own_system) then
+  set line = `$LOCALDIR/uname -M -s`
+  if ($status == 0) then
         echo "$line[2]_$line[1]"
         exit 0
-endif
-
+  endif
 #
 #	uname failed for some reason. Try to get system name from user
 #
 
-		
-cat > /dev/tty << EOF
+  cat > /dev/tty << EOF
 
 	I cannot determine your system type. 
 	I only know about the following systems:
 
 
+EOF
+
+else
+#
+# Prompt installer to select a system from the list
+#
+
+  cat > /dev/tty << EOF
+
+	Select one of the following systems:
+
 
 EOF
+
+
+endif
 
 while ( 1 )
 	set i = 1
@@ -98,3 +118,4 @@ while ( 1 )
 	echo "" > /dev/tty
 	echo "" > /dev/tty
 end
+

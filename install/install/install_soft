@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: install_soft,v 1.15 1996-06-10 17:50:20 haley Exp $
+#      $Id: install_soft,v 1.16 1998-01-30 16:57:15 haley Exp $
 #
 #########################################################################
 #                                                                       #
@@ -123,7 +123,7 @@ cat <<EOF
 
 
                  NCAR Graphics Unix Version $VERSION
-                     Copyright (C) 1987-1996
+                     Copyright (C) 1987-1998
           University Corporation for Atmospheric Research
      The use of this Software is governed by a License Agreement.
 
@@ -212,6 +212,7 @@ EOF
         echo "  Current Installation Configuration" > /dev/tty
         echo "" > /dev/tty
         echo "" > /dev/tty
+        echo "  Installing software for a(n) $SYSTEM_TO_INSTALL system" > /dev/tty
         echo "" > /dev/tty
         echo "  Order Number:          $NCARG_SITE_ID" > /dev/tty
         echo "  Installation source:   $INSTALL_SOURCE" > /dev/tty

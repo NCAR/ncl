@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: perf_install,v 1.13 1997-12-17 00:16:47 haley Exp $
+#      $Id: perf_install,v 1.14 1998-01-30 16:57:15 haley Exp $
 #
 #########################################################################
 #									#
@@ -29,7 +29,8 @@
 #
 #	Environment:	LOCALDIR	path to installation system
 #			INSTALL_SOURCE	one of (tape,cdrom,tarfile)
-#			SYSTEM		system type
+#			SYSTEM		system type the INSTALL is being run from
+#			SYSTEM_TO_INSTALL system type of binaries we want
 #			INSTALL_TAPE_DEV	tape dev path for tape installs
 #			INSTALL_CD_DEV		cdrom dev path for cd installs
 #			INSTALL_FILE_DEV	tar file path for file installs
@@ -77,7 +78,7 @@ set instbls = ("$bin_path" "$inc_path" "$lib_path" "$man_path")
 set utars = ("BIN.TAR" "INCLUDE.TAR" "LIB.TAR" "MAN.TAR")
 set ltars = ("bin.tar" "include.tar" "lib.tar" "man.tar")
 #
-# upper case by default
+# Upper case by default.
 #
 set tars = ($utars)
 
@@ -142,13 +143,13 @@ endif
 switch ("$INSTALL_SOURCE") 
 
 case	"tape":
-	set line = (`grep $SYSTEM $LOCALDIR/var/TOC`)
+	set line = (`grep $SYSTEM_TO_INSTALL $LOCALDIR/var/TOC`)
 	if ($status != 0) then
-		echo "Can't find <$SYSTEM> files on tape device $INSTALL_TAPE_DEV" > /dev/tty
+		echo "Can't find <$SYSTEM_TO_INSTALL> files on tape device $INSTALL_TAPE_DEV" > /dev/tty
 		echo "Installation from $INSTALL_SOURCE failed" > /dev/tty
 		exit 1
 	endif
-	set fsf = $line[1]	# location of $SYSTEM files on tape
+	set fsf = $line[1]	# location of $SYSTEM_TO_INSTALL files on tape
 	
 	$LOCALDIR/read_tape $INSTALL_TAPE_DEV $fsf $instbls > /dev/tty
 	if ($status != 0) then
@@ -164,75 +165,151 @@ case	"cdrom":
 	# Need to map $SYSTEM into something that conforms.
 	#
 	switch ("$SYSTEM")
-
 	case	"HPUX_HP9000_7xx"
+	case	"HPUX_HP9000_8xx"
+	case	"OSF1_alpha"
+	case	"ULTRIX_RISC"
+	case	"UNICOS_YMP"
+	case	"UNICOS_J90"
+	case	"UNICOS_C90"
+	case	"UNICOS_T90"
+    set tars = ($utars)
+	switch ("$SYSTEM_TO_INSTALL")
+
+  	  case	"HPUX_HP9000_7xx"
 		set cd_system = "HPUX_7XX"
 		breaksw
 
-	case	"HPUX_HP9000_8xx"
+	  case	"HPUX_HP9000_8xx"
 		set cd_system = "HPUX_8XX"
 		breaksw
 
-	case	"AIX_RS6000"
-		set cd_system = "aix_r6k"
-		set tars = ($ltars)
+	  case	"AIX_RS6000"
+		set cd_system = "AIX_R6K"
 		breaksw
 
-	case	"LINUX_PC"
-		set cd_system = "linux"
-		set tars = ($ltars)
+	  case	"LINUX_PC"
+		set cd_system = "LINUX"
 		breaksw
 
-	case	"SunOS_sun4"
-		set cd_system = "sunos_s4"
-		set tars = ($ltars)
+	  case	"SunOS_sun4"
+		set cd_system = "SUNOS_S4"
 		breaksw
 
-	case	"Solaris_sun4"
-		set cd_system = "solaris"
-		set tars = ($ltars)
+	  case	"Solaris_sun4"
+		set cd_system = "SOLARIS"
 		breaksw
 
-	case	"Solaris_PC"
-		set cd_system = "solarpc"
-		set tars = ($ltars)
+	  case	"Solaris_PC"
+		set cd_system = "SOLARPC"
 		breaksw
 
-	case	"OSF1_alpha"
+	  case	"OSF1_alpha"
 		set cd_system = "OSF1_ALF"
 		breaksw
 
-	case	"ULTRIX_RISC"
+	  case	"ULTRIX_RISC"
 		set cd_system = "ULTRIX"
 		breaksw
 
-	case	"IRIX_IP"
-		set cd_system = "irix_ip"
-		set tars = ($ltars)
+	  case	"IRIX_n32_IP"
+		set cd_system = "IRIXN32"
 		breaksw
 
-	case	"UNICOS_YMP"
+	  case	"IRIX_64_IP"
+		set cd_system = "IRIX64"
+		breaksw
+
+	  case	"UNICOS_YMP"
 		set cd_system = "UCOS_YMP"
 		breaksw
-	endsw
 
-	case	"UNICOS_C90"
+	  case	"UNICOS_C90"
 		set cd_system = "UCOS_C90"
 		breaksw
-	endsw
 
-	case	"UNICOS_J90"
+	  case	"UNICOS_J90"
 		set cd_system = "UCOS_J90"
 		breaksw
-	endsw
 
-	case	"UNICOS_T90"
+	  case	"UNICOS_T90"
 		set cd_system = "UCOS_T90"
 		breaksw
+    endsw
+
+	case	"AIX_RS6000"
+	case	"LINUX_PC"
+	case	"SunOS_sun4"
+	case	"Solaris_sun4"
+	case	"Solaris_PC"
+	case	"IRIX_IP"
+    set tars = ($ltars)
+	switch ("$SYSTEM_TO_INSTALL")
+
+	  case	"HPUX_HP9000_7xx"
+		set cd_system = "hpux_7xx"
+		breaksw
+
+	  case	"HPUX_HP9000_8xx"
+		set cd_system = "hpux_8xx"
+		breaksw
+
+	  case	"AIX_RS6000"
+		set cd_system = "aix_r6k"
+		breaksw
+
+	  case	"LINUX_PC"
+		set cd_system = "linux"
+		breaksw
+
+	  case	"SunOS_sun4"
+		set cd_system = "sunos_s4"
+		breaksw
+
+	  case	"Solaris_sun4"
+		set cd_system = "solaris"
+		breaksw
+
+	  case	"Solaris_PC"
+		set cd_system = "solarpc"
+		breaksw
+
+	  case	"OSF1_alpha"
+		set cd_system = "osf1_alf"
+		breaksw
+
+	  case	"ULTRIX_RISC"
+		set cd_system = "ultrix"
+		breaksw
+
+	  case	"IRIX_n32_IP"
+		set cd_system = "irixn32"
+		breaksw
+
+	  case	"IRIX_64_IP"
+		set cd_system = "irix64"
+		breaksw
+
+	  case	"UNICOS_YMP"
+		set cd_system = "ucos_ymp"
+		breaksw
+
+	  case	"UNICOS_C90"
+		set cd_system = "ucos_c90"
+		breaksw
+
+	  case	"UNICOS_J90"
+		set cd_system = "ucos_j90"
+		breaksw
+
+	  case	"UNICOS_T90"
+		set cd_system = "ucos_t90"
+		breaksw
 	endsw
+    endsw
 
 	if (! $?cd_system)  then
-		echo "Unknown system ($SYSTEM)" > /dev/tty
+		echo "Unknown system ($SYSTEM_TO_INSTALL)" > /dev/tty
 		exit 1
 	endif
 

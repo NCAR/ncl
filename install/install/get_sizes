@@ -27,11 +27,11 @@
 #
 #   Usage:      get_sizes [-t]
 #
-#   Environment:    SYSTEM      : system type
+#   Environment:    SYSTEM_TO_INSTALL      : system type
 #           LOCALDIR    : path to install system
 #
 #   Files:      $LOCALDIR/var/sizes.$system space requirements
-#                   for system $SYSTEM
+#                   for system $SYSTEM_TO_INSTALL
 #
 #
 #   Options:
@@ -53,7 +53,7 @@ if ($#argv == 1) then
     set do_total = 1
 endif
 
-    set cmd = "grep bin $LOCALDIR/var/sizes.$SYSTEM"
+    set cmd = "grep bin $LOCALDIR/var/sizes.$SYSTEM_TO_INSTALL"
     set size_line = `$cmd`
     if ($status != 0) then
         echo "$0 : <$cmd> - failed" > /dev/tty
@@ -61,7 +61,7 @@ endif
     endif
     set bin_size = $size_line[2]
 
-    set cmd = "grep include $LOCALDIR/var/sizes.$SYSTEM"
+    set cmd = "grep include $LOCALDIR/var/sizes.$SYSTEM_TO_INSTALL"
     set size_line = `$cmd`
     if ($status != 0) then
         echo "$0 : <$cmd> - failed" > /dev/tty
@@ -69,7 +69,7 @@ endif
     endif
     set inc_size = $size_line[2]
 
-    set cmd = "grep lib $LOCALDIR/var/sizes.$SYSTEM"
+    set cmd = "grep lib $LOCALDIR/var/sizes.$SYSTEM_TO_INSTALL"
     set size_line = `$cmd`
     if ($status != 0) then
         echo "$0 : <$cmd> - failed" > /dev/tty
@@ -77,7 +77,7 @@ endif
     endif
     set lib_size = $size_line[2]
 
-    set cmd = "grep man $LOCALDIR/var/sizes.$SYSTEM"
+    set cmd = "grep man $LOCALDIR/var/sizes.$SYSTEM_TO_INSTALL"
     set size_line = `$cmd`
     if ($status != 0) then
         echo "$0 : <$cmd> - failed" > /dev/tty

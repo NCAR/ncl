@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: read_tape,v 1.4 1996-05-24 17:18:18 haley Exp $
+#      $Id: read_tape,v 1.5 1998-01-30 16:57:16 haley Exp $
 #
 #########################################################################
 #									#
@@ -151,11 +151,11 @@ echo "" > /dev/tty
 echo "" > /dev/tty
 echo "Looking for your files..... Just a sec." > /dev/tty
 if ("$fsf" != 0) then
-	if ("$fsf" > 8) then 
+	if ("$fsf" > 31) then 
 		echo "" > /dev/tty
 		echo "" > /dev/tty
 		echo "" > /dev/tty
-		echo "Whoa. Bummer Dude. Your files are at the end of the tape" > /dev/tty
+		echo "Whoa. Bummer. Your files are at the end of the tape" > /dev/tty
 		echo "This is gonna take longer than I thought." > /dev/tty
 	endif
 	if ("$rhost" != "") then

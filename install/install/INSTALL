@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: INSTALL,v 1.11 1996-05-24 14:29:09 haley Exp $
+#      $Id: INSTALL,v 1.12 1998-01-30 16:57:12 haley Exp $
 #
 #########################################################################
 #                                                                       #
@@ -45,19 +45,56 @@ endif
 setenv LOCALDIR "$dir"
 
 setenv SYSTEM `$LOCALDIR/sys_type`
+setenv SYSTEM_TO_INSTALL $SYSTEM
+
 if ($status != 0) then
         exit 1
 endif
 
 setenv VERSION `cat $LOCALDIR/var/version.$SYSTEM`
 
+clear
+cat <<EOF
+
+
+                 NCAR Graphics Unix Version $VERSION
+                     Copyright (C) 1987-1998
+          University Corporation for Atmospheric Research
+     The use of this Software is governed by a License Agreement.
+
+
+EOF
+
+echo "    Do you want to install NCAR Graphics on a system different than"
+echo -n "    the type of system you are running this INSTALL script on [y/n] (n) ? "
+set answer =  $<
+if ("$answer" == "y") then
+  setenv SYSTEM_TO_INSTALL `$LOCALDIR/sys_type -d`
+  if ($status != 0) then
+      $LOCALDIR/pause
+  endif
+endif
+
+if ("$SYSTEM_TO_INSTALL" == "IRIX_IP") then
+  echo -n "I see you are installing binaries for an SGI system. Do you want to install binaries compiled with the -n32 (1) or the -64 option (2)?: (1)" > /dev/tty
+  set answer=$<
+  if ("$answer" == "2") then
+    setenv SYSTEM_TO_INSTALL IRIX_64_IP
+  else
+    setenv SYSTEM_TO_INSTALL IRIX_n32_IP
+  endif 
+endif
+
+#
+# Now onto main menu.
+#
 while (1) 
     clear
 cat <<EOF
 
 
                  NCAR Graphics Unix Version $VERSION
-                     Copyright (C) 1987-1996
+                     Copyright (C) 1987-1998
           University Corporation for Atmospheric Research
      The use of this Software is governed by a License Agreement.
 
