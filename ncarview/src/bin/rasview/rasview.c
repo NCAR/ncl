@@ -1,5 +1,5 @@
 /*
- *	$Id: rasview.c,v 1.8 1992-06-24 21:03:48 clyne Exp $
+ *	$Id: rasview.c,v 1.9 1992-08-17 22:53:20 clyne Exp $
  */
 /*
  *	rasview.c
@@ -55,6 +55,7 @@ static	Option	get_options[] = {
 };
 
 static	int	oD;
+static	char	*progName;
 
 main(argc, argv)
 	int	argc;
@@ -67,14 +68,13 @@ main(argc, argv)
 	char	*pal_name;	/* name of a default color palette	*/
 	int	verbose;	/* verbose or quite mode		*/
 	int	count;		/* number of image displayed		*/
-	char	*prog_name;
 	int	i;
 
 	int	exit_status = 0;
 
 	void	usage();
 
-	prog_name = argv[0];
+	progName = argv[0];
 
 	/*
 	 * register the options we're interested in and have them parsed
@@ -83,7 +83,7 @@ main(argc, argv)
 	if (ParseOptionTable(oD, &argc, argv, set_options) < 0) {
 		fprintf(
 			stderr,"%s : Error parsing command line options : %s\n",
-			prog_name, ErrGetMsg()
+			progName, ErrGetMsg()
 		);
 		exit(1);
 	}
@@ -94,7 +94,7 @@ main(argc, argv)
 	if (GetOptions(oD, get_options) < 0) {
 		fprintf(
 			stderr,"%s : GetOptions(,) : %s\n",
-			prog_name,ErrGetMsg()
+			progName,ErrGetMsg()
 		);
 		exit(1);
 	}
@@ -102,7 +102,7 @@ main(argc, argv)
 	verbose = ! opt.quiet;
 
 	if (opt.version) {
-		PrintVersion(prog_name);
+		PrintVersion(progName);
 		exit(0);
 	}
 
@@ -115,7 +115,7 @@ main(argc, argv)
 	if ((context = RasDrawOpen(&argc, argv, FALSE)) == (Context *) NULL) {
 		fprintf(
 			stderr, "%s : Error initializing display : %s\n",
-			prog_name, ErrGetMsg()
+			progName, ErrGetMsg()
 		);
 		exit(1);
 	}
@@ -124,7 +124,7 @@ main(argc, argv)
 	 * make sure nothing left on command line execpt file names
 	 */
 	for (i=0; i<argc; i++) {
-		if (*argv[i] == '-') usage(prog_name, (char *) NULL);
+		if (*argv[i] == '-') usage(progName, (char *) NULL);
 	}
 
 	/*
@@ -138,7 +138,11 @@ main(argc, argv)
 				256);
 		}
 		else {
-			RasterPrintError(pal_name);
+			(void) fprintf (
+				stderr, "%s: Reading palette file(%s) [ %s ]\n",
+				progName, pal_name, ErrGetMsg()
+			);
+			
 			exit_status++;
 		}
 	}
@@ -150,7 +154,10 @@ main(argc, argv)
 	{
 
 		if ((ras = RasterOpen(*argv, NULL)) == (Raster *) NULL){
-			(void) RasterPrintError(*argv);
+			(void) fprintf (
+				stderr, "%s: RasterOpen(%s, ) [ %s ]\n",
+				progName, *argv, ErrGetMsg()
+			);
 			exit_status++;
 			continue;	/* skip this file	*/
 		}
@@ -180,7 +187,10 @@ main(argc, argv)
 		(void) RasterClose(ras);
 
 		if (status == RAS_ERROR) {
-			RasterPrintError(*argv);
+			(void) fprintf(
+				stderr, "%s: Reading input file(%s) [ %s ]\n",
+				progName, *argv, ErrGetMsg()
+			);
 			exit_status++;
 		}
 	}
@@ -222,7 +232,10 @@ static	display_image(ras, context, verbose)
 		if (! indexed_ras) {	/* alloc memory for indexed image */
 			indexed_ras = RasterCreate(ras->nx,ras->ny,RAS_INDEXED);
 			if (indexed_ras == (Raster *) NULL) {
-				(void) RasterPrintError((char *)NULL);
+				(void) fprintf(
+					stderr, "%s: Allocating memory, [ %s ]\n",
+					progName, ErrGetMsg()
+				);
 				return(-1);
 			}
 		}
@@ -232,31 +245,34 @@ static	display_image(ras, context, verbose)
 		status = RasterDither(ras, indexed_ras, verbose);
 
 		if (status == RAS_ERROR) {
-			(void) RasterPrintError((char *) NULL);
+			(void) fprintf(
+				stderr, "%s: Quantizing imagery, [ %s ]\n",
+				progName, ErrGetMsg()
+			);
 			return(-1);
 		}
 
 		(void) RasDraw(indexed_ras, context);
 	} 
 	else {
-		(void) fprintf(stderr, "Error: unknow image format\n");
+		(void) fprintf(stderr, "%s : Unknown image format\n", progName);
 		return(-1);
 	}
 	return(0);
 }
 
-void	usage(prog_name, message) 
-	char	*prog_name;
+void	usage(progName, message) 
+	char	*progName;
 	char	*message;
 {
 
 	if (message) {
-		(void) fprintf(stderr, "%s: %s", prog_name, message);
+		(void) fprintf(stderr, "%s: %s", progName, message);
 	}
 
 	(void) fprintf(stderr, 
 		"%s: Usage: %s [-Version] [-pal palette_file] [-quiet] [raster_file...]\n",
-		prog_name, prog_name);
+		progName, progName);
 	PrintOptionHelp(oD, stderr);
 
 	exit(1);
