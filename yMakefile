@@ -106,9 +106,9 @@ dirs::
 	@-if (test ! -d $(MANROOT) || test ! -w $(MANROOT)) then \
 	echo "Installation Error - $(MANROOT) is not writeable"; exit 1; \
 	else continue; fi
-	@-if (test ! -d $(MANPATH)) then mkdir $(MANPATH); else continue; fi
-	@-if (test ! -d $(MANPATH) || test ! -w $(MANPATH)) then \
-	echo "Installation Error - $(MANPATH) is not writeable"; exit 1; \
+	@-if (test ! -d $(MANLPATH)) then mkdir $(MANLPATH); else continue; fi
+	@-if (test ! -d $(MANLPATH) || test ! -w $(MANLPATH)) then \
+	echo "Installation Error - $(MANLPATH) is not writeable"; exit 1; \
 	else continue; fi
 	@-if (test ! -d $(FONTCAPPATH)) then mkdir $(FONTCAPPATH); \
 	else continue; fi
