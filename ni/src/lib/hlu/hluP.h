@@ -1,5 +1,5 @@
 /*
- *      $Id: hluP.h,v 1.18 1994-08-11 21:37:11 boote Exp $
+ *      $Id: hluP.h,v 1.19 1994-09-06 21:51:32 boote Exp $
  */
 /************************************************************************
 *									*
@@ -391,18 +391,6 @@ extern NhlErrorTypes _NhlSegDraw(
  * End of Draw.c functions
  */
 
-extern Const char *_NhlGetSysResFile(
-#if	NhlNeedProto
-	void
-#endif
-);
-
-extern Const char *_NhlGetUsrResFile(
-#if	NhlNeedProto
-	void
-#endif
-);
-
 extern  NhlErrorTypes _NhlInitializeLayerClass(
 #ifdef NhlNeedProto
 NhlLayerClass /* lc */
@@ -410,7 +398,7 @@ NhlLayerClass /* lc */
 );
 
 extern NhlBoolean _NhlArgIsSet(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         _NhlArgList 	/* args */,
         int    		/* num_args */,
         char* 	 	/*resource_name*/
@@ -422,6 +410,13 @@ extern void _NhlCopyToVal(
 	NhlPointer	src,
 	_NhlArgVal	*dst,
 	unsigned int	size
+#endif
+);
+
+extern NhlBoolean _NhlLLErrCheckPrnt(
+#if	NhlNeedProto
+	NhlErrorTypes	level,
+	NhlString	calling_func
 #endif
 );
 

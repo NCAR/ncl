@@ -1,5 +1,5 @@
 C
-C $Id: ERROR.f,v 1.2 1994-07-12 20:51:55 boote Exp $
+C $Id: ERROR.f,v 1.3 1994-09-06 21:51:26 boote Exp $
 C
 C****************************************************************
 C								*
@@ -35,9 +35,9 @@ C
 	inquire(iunit,OPENED=opn,IOSTAT=ierr)
 	if(ierr .EQ. 0) then
 		if (opn .EQ. .TRUE.) then
-			opn = 1
+			iconn = 1
 		else
-			opn = 0
+			iconn = 0
 		endif
 	endif
 	return
@@ -76,21 +76,6 @@ C
      % 				'Unable to print Error Messages???'
       	endif
         return
-      end
-C
-C****************************************************************
-C
-C	GKS Error Handler function - this function will be called
-C	in the event of a GKS error.
-C
-C****************************************************************
-C
-      subroutine gerhnd(errnr,fctid,errfil)
-	integer errnr,fctid,errfil
-
-	call nhl_fgerhnd(errnr,fctid,errfil)
-
-	return
       end
 C
 C****************************************************************

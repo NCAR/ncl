@@ -1,5 +1,5 @@
 /*
- *      $Id: Error.c,v 1.11 1994-08-11 21:36:58 boote Exp $
+ *      $Id: Error.c,v 1.12 1994-09-06 21:51:27 boote Exp $
  */
 /************************************************************************
 *									*
@@ -349,7 +349,14 @@ ErrorInitialize
 	Const char		*tfname = NULL;
 	NhlErrorTypes		ret;
 	char			*fname = "ErrorInitialize";
-	int			foo;
+	int			foo=0;
+
+	/*
+	 * This is just here to force the gerhnd function to load from the
+	 * hlu library - It needs to be referenced from this library or
+	 * that won't happen.
+	 */
+	_NHLCALLF(nhlfloadgerhnd,NHLFLOADGERHND)(&foo);
 
 	if(elc->error_class.num_error_instances > 0){
 		NHLPERROR((NhlFATAL,NhlEUNKNOWN,
@@ -1885,21 +1892,54 @@ NhlErrFPrintMsg
 void _NHLCALLF(nhl_fgerhnd,NHL_FGERHND)
 #if	NhlNeedProto
 (
-	int	*errnum,
-	int	*funcid,
-	int	*errfile
+	_NhlFString	ffname,
+	int		*ffname_len,
+	_NhlFString	fmesg,
+	int		*fmesg_len
 )
 #else
-(errnum,funcid,errfile)
-	int	*errnum;
-	int	*funcid;
-	int	*errfile;
+(ffname,ffname_len,fmesg,fmesg_len)
+	_NhlFString	ffname;
+	int		*ffname_len;
+	_NhlFString	fmesg;
+	int		*fmesg_len;
 #endif
 {
-#ifdef	NOTYET
-	int	foo;
+	int		err_num;
+	char		stack_gks_func[_NhlGKSMAXMSGLEN];
+	char		stack_gks_msg[_NhlGKSMAXMSGLEN];
+	char		*gks_func,*gks_msg;
 
-	/* reset error mode if it is currently set */
-	if(c_nerro(&foo)){
-#endif
+	/* reset libncarg error mode if it is currently set */
+	if(c_nerro(&err_num)){
+		gks_msg = c_semess(0);
+		/*
+		 * Was the error reported from this function?
+		 * If not, don't reset the errorflag - this will cause
+		 * a stop when seter is called, but It should only end
+		 * up happening if one of the objects doesn't bother to
+		 * check the error flag after calling libncarg/libncarg_gks
+		 * functions.
+		 */
+		if((err_num == _NhlGKSERRNUM) &&
+		!strncmp(gks_msg,_NhlGKSERRMSG,strlen(_NhlGKSERRMSG))){
+			c_errof();
+		}
+	}
+
+	gks_func = _NhlFstrToCstr(stack_gks_func,NhlNumber(stack_gks_func),
+							ffname,*ffname_len);
+	gks_msg = _NhlFstrToCstr(stack_gks_msg,NhlNumber(stack_gks_msg),
+							fmesg,*fmesg_len);
+	if(!gks_func)
+		gks_func = "Unknown GKS Func";
+
+	if(!gks_msg)
+		gks_msg = "Unknown GKS Message";
+
+	NhlPError(NhlWARNING,NhlEUNKNOWN,"GKS:%s:%s",gks_func,gks_msg);
+
+	c_seter(_NhlGKSERRMSG,_NhlGKSERRNUM,1);
+
+	return;
 }

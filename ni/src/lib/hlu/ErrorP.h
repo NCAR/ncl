@@ -1,5 +1,5 @@
 /*
- *      $Id: ErrorP.h,v 1.6 1994-08-11 21:37:00 boote Exp $
+ *      $Id: ErrorP.h,v 1.7 1994-09-06 21:51:29 boote Exp $
  */
 /************************************************************************
 *									*
@@ -25,7 +25,6 @@
 #include <ncarg/hlu/BaseP.h>
 #include <ncarg/hlu/FortranP.h>
 #include <ncarg/hlu/ErrorI.h>
-
 
 typedef struct _NhlErrorLayerRec *NhlErrorLayer;
 typedef struct _NhlErrorLayerClassRec *NhlErrorLayerClass;

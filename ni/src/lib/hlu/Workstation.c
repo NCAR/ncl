@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.14 1994-07-12 20:53:25 boote Exp $
+ *      $Id: Workstation.c,v 1.15 1994-09-06 21:51:29 boote Exp $
  */
 /************************************************************************
 *									*
@@ -43,6 +43,7 @@
 #include <ncarg/hlu/FortranP.h>
 #include <ncarg/hlu/WorkstationP.h>
 #include <ncarg/hlu/hluutil.h>
+#include <ncarg/hlu/ErrorI.h>
 
 /*
 * ------------> NEED TO set up default colormap to place in default resource 
@@ -614,6 +615,17 @@ static NhlErrorTypes WorkstationClassInitialize()
 */
 		status1 = 0;
 /* FORTRAN */ _NHLCALLF(gopks,GOPKS)(&dummy,&status1);
+		/*
+		 * Check for a gks Error.
+		 */
+		if(_NhlLLErrCheckPrnt(NhlFATAL,"WorkstationClassInitialize")){
+			/*
+			 * Bummer dude!
+			 */
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:Can't Open GKS",
+						"WorkstationClassInitialize");
+			return NhlFATAL;
+		}
 	}
 	
 /*
@@ -1433,12 +1445,15 @@ static NhlErrorTypes WorkstationActivate
 	NhlLayer	instance;
 #endif
 {
-	NhlWorkstationLayer  thework = (NhlWorkstationLayer) instance;
-	NhlErrorTypes retcode = NhlNOERROR;	
+	char			func[] = "WorkstationActivate";
+	NhlWorkstationLayer	thework = (NhlWorkstationLayer) instance;
+	NhlErrorTypes		retcode = NhlNOERROR;	
 
 	if(wksisopn(thework->work.gkswksid)) {
 		if(!wksisact(thework->work.gkswksid)) {
 			gactivate_ws(thework->work.gkswksid);
+			if(_NhlLLErrCheckPrnt(NhlWARNING,func))
+				retcode = NhlWARNING;
 		} else {
 /*
 * WORKSTATION IS ALREADY ACTIVE
@@ -1478,12 +1493,16 @@ static NhlErrorTypes WorkstationDeactivate
 	NhlLayer	instance;
 #endif
 {
-	NhlWorkstationLayer  thework = (NhlWorkstationLayer) instance;
-	NhlErrorTypes	retcode = NhlNOERROR;
+	char			func[] = "WorkstationDeactivate";
+	NhlWorkstationLayer	thework = (NhlWorkstationLayer) instance;
+	NhlErrorTypes		retcode = NhlNOERROR;
 
 	if(wksisopn(thework->work.gkswksid)&&wksisact(thework->work.gkswksid)){
 		gdeactivate_ws(thework->work.gkswksid);
-	} else {
+		if(_NhlLLErrCheckPrnt(NhlWARNING,func))
+			retcode = NhlWARNING;
+	}
+	else{
 /*
 * ERROR WORKSTATION NOT ACTIVE OR NOT INITIALIZED
 */
@@ -1491,7 +1510,7 @@ static NhlErrorTypes WorkstationDeactivate
 		retcode = NhlWARNING;
 	}
 
-	return(retcode);
+	return retcode;
 }
 
 /*
@@ -1523,9 +1542,10 @@ static NhlErrorTypes WorkstationOpen
 	NhlLayer	instance;
 #endif
 {	
-	NhlWorkstationLayer thework = (NhlWorkstationLayer) instance;
-	NhlErrorTypes retcode = NhlNOERROR;
-	int i = 2;
+	char			func[] = "OpenWorkstation";
+	NhlWorkstationLayer	thework = (NhlWorkstationLayer) instance;
+	NhlErrorTypes		retcode = NhlNOERROR;
+	int			i = 2;
 
 	if(thework->work.gkswkstype == NhlFATAL) {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"Unknown workstation type");
@@ -1542,7 +1562,12 @@ static NhlErrorTypes WorkstationOpen
 	thework->work.gkswksid = i;
 
 /* FORTRAN */ _NHLCALLF(gopwk,GOPWK)(&(thework->work.gkswksid),&(thework->work.gkswksconid),&(thework->work.gkswkstype));
+	if(_NhlLLErrCheckPrnt(NhlFATAL,func))
+		return NhlFATAL;
 	gset_clip_ind(GIND_NO_CLIP);
+	if(_NhlLLErrCheckPrnt(NhlWARNING,func)){
+		return NhlFATAL;
+	}
 
 	retcode = AllocateColors((NhlLayer)thework);
 
@@ -1575,6 +1600,7 @@ static NhlErrorTypes WorkstationClose
 	NhlLayer	instance;
 #endif
 {
+	char			func[] = "WorkstationClose";
 	NhlWorkstationLayer	thework = (NhlWorkstationLayer) instance;
 	NhlErrorTypes retcode = NhlNOERROR;
 
@@ -1587,7 +1613,8 @@ static NhlErrorTypes WorkstationClose
 		retcode = NhlINFO;
 	} else {
 		gclose_ws(thework->work.gkswksid);
-
+		if(_NhlLLErrCheckPrnt(NhlINFO,func))
+			retcode = NhlINFO;
 	}
 	return(retcode);
 }
@@ -1617,7 +1644,11 @@ WorkstationUpdate
 	NhlLayer	l;	/* workstation layer to update	*/
 #endif
 {
+	char	func[] = "WorkstationUpdate";
+
 	gupd_ws(_NhlWorkstationId(l),GFLAG_PERFORM);
+	if(_NhlLLErrCheckPrnt(NhlWARNING,func))
+		return NhlWARNING;
 
 	return NhlNOERROR;
 }
@@ -1647,7 +1678,11 @@ WorkstationClear
 	NhlLayer	l;	/* workstation layer to update	*/
 #endif
 {
+	char	func[] = "WorkstationClear";
+
 	gclear_ws(_NhlWorkstationId(l),GFLAG_ALWAYS);
+	if(_NhlLLErrCheckPrnt(NhlWARNING,func))
+		return NhlWARNING;
 
 	return NhlNOERROR;
 }
@@ -1847,10 +1882,12 @@ static NhlErrorTypes AllocateColors
 	NhlLayer inst;
 #endif
 {
-	NhlWorkstationLayer thework = (NhlWorkstationLayer) inst;
-	Gcolr_rep tmpcolrrep;
-	int i;
-	NhlPrivateColor *pcmap;
+	char			func[] = "AllocateColors";
+	NhlWorkstationLayer	thework = (NhlWorkstationLayer) inst;
+	Gcolr_rep		tmpcolrrep;
+	int			i;
+	NhlPrivateColor		*pcmap;
+	NhlErrorTypes		ret = NhlNOERROR;
 /*
 * Temporary allocation routine until some color management scheme is put in 
 * place. In fact this may turn in to a method
@@ -1867,6 +1904,8 @@ static NhlErrorTypes AllocateColors
 			tmpcolrrep.rgb.green = pcmap[i].green;
 			tmpcolrrep.rgb.blue= pcmap[i].blue;
 			gset_colr_rep(thework->work.gkswksid,i,&tmpcolrrep);
+			if(_NhlLLErrCheckPrnt(NhlWARNING,func))
+				ret = NhlWARNING;
 			pcmap[i].ci = i;
 		}
 		else if (pcmap[i].ci == UNSET) {
@@ -1876,7 +1915,7 @@ static NhlErrorTypes AllocateColors
 			pcmap[i].ci = NhlFOREGROUND;
 		}
 	}
-	return(NhlNOERROR);
+	return ret;
 }
 
 /*
@@ -1901,10 +1940,12 @@ static NhlErrorTypes DeallocateColors
 	NhlLayer inst;
 #endif
 {
-	NhlWorkstationLayer thework = (NhlWorkstationLayer) inst;
-	NhlPrivateColor *pcmap = thework->work.private_color_map;
-	Gcolr_rep tmpcolrrep;
-	int i;
+	char			func[] = "DeallocateColors";
+	NhlWorkstationLayer	thework = (NhlWorkstationLayer) inst;
+	NhlPrivateColor		*pcmap = thework->work.private_color_map;
+	Gcolr_rep		tmpcolrrep;
+	int			i;
+	NhlErrorTypes		ret = NhlNOERROR;
 
 /*
  * If the Foreground is removed set a new foreground of white or black 
@@ -1931,6 +1972,8 @@ static NhlErrorTypes DeallocateColors
 		tmpcolrrep.rgb.blue= pcmap[NhlFOREGROUND].blue;
 		gset_colr_rep(thework->work.gkswksid,
 			      NhlFOREGROUND,&tmpcolrrep);
+		if(_NhlLLErrCheckPrnt(NhlWARNING,func))
+			ret = NhlWARNING;
 	}
 		
 	for( i = 1; i < MAX_COLOR_MAP; i++) {
@@ -1941,7 +1984,7 @@ static NhlErrorTypes DeallocateColors
 			pcmap[i].blue = pcmap[NhlFOREGROUND].blue;
 		}
 	}
-	return(NhlNOERROR);
+	return ret;
 }
 
 /*
@@ -2965,18 +3008,21 @@ void _NhlSetLineInfo
         NhlLayer plot;
 #endif
 {
-        NhlWorkstationLayer tinst = (NhlWorkstationLayer)instance;
-        float   fl,fr,fb,ft,ul,ur,ub,ut;
-        float  y0,y1,x0,x1;
-        int ll;
-        char buffer[80];
-	int ix;
+	char			func[] = "_NhlSetLineInfo";
+        NhlWorkstationLayer	tinst = (NhlWorkstationLayer)instance;
+        float			fl,fr,fb,ft,ul,ur,ub,ut;
+        float			y0,y1,x0,x1;
+        int			ll;
+        char			buffer[80];
+	int			ix;
 
 	memset((void *) buffer, (char) 0, 80 * sizeof(char));
 
         c_sflush();
 
         c_getset(&fl,&fr,&fb,&ft,&ul,&ur,&ub,&ut,&ll);
+	if(_NhlLLErrCheckPrnt(NhlFATAL,func))
+		return;
 
         y0 = fb;
         y1 = fb + tinst->work.line_label_font_height;
@@ -3013,17 +3059,21 @@ void _NhlSetLineInfo
 
         strcpy(buffer,dash_patterns[ix]);
         if(tinst->work.line_label != NULL) {
-                  strcpy(&(buffer[strlen(dash_patterns[ix])
+		strcpy(&(buffer[strlen(dash_patterns[ix])
 				  - strlen(tinst->work.line_label)]),
 			 tinst->work.line_label);
-		  gset_text_colr_ind((Gint)_NhlGetGksCi(
-			    plot->base.wkptr,tinst->work.line_label_color));
+		gset_text_colr_ind((Gint)_NhlGetGksCi(
+				plot->base.wkptr,tinst->work.line_label_color));
+		(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
         }
         gset_line_colr_ind((Gint)_NhlGetGksCi(
 			    plot->base.wkptr,tinst->work.line_color));
+	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 
         gset_linewidth(tinst->work.line_thickness);
+	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
         c_dashdc(buffer,tinst->work.dash_dollar_size,tinst->work.char_size);
+	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
         return;
 }
 
@@ -3040,16 +3090,16 @@ static NhlErrorTypes WorkstationLineTo
 	int upordown;
 #endif
 {
-	static float lastx,lasty;
-	static first = 0;
-	int ix0,iy0,ix1,iy1;
+	char		func[] = "WorkstationLineTo";
+	static float	lastx,lasty;
+	static int	first = 0;
+	int		ix0,iy0,ix1,iy1;
 
 	if(upordown == 1) {
 		lastx = x;
 		lasty = y;
 /* FORTRAN*/    _NHLCALLF(lastd,LASTD)();
 		first = 1;
-		return(NhlNOERROR);
 	} else {
 		if(first == 1) {
 			ix0 = c_kfmx(lastx);
@@ -3062,8 +3112,10 @@ static NhlErrorTypes WorkstationLineTo
 /* FORTRAN */   _NHLCALLF(cfvld,CFVLD)(&first,&ix1,&iy1);
 		lastx = x;
 		lasty = y;
-		return(NhlNOERROR);
 	}
+	if(_NhlLLErrCheckPrnt(NhlWARNING,func))
+		return NhlWARNING;
+	return NhlNOERROR;
 }
 
 NhlErrorTypes CallWorkLineTo
@@ -3117,12 +3169,13 @@ void _NhlSetFillInfo
         NhlLayer plot;
 #endif
 {
-        NhlWorkstationLayer tinst = (NhlWorkstationLayer)instance;
-	NhlWorkstationLayerPart *wk_p = &tinst->work;
-        float   fl,fr,fb,ft,ul,ur,ub,ut;
-        float  x0,x1;
-        int ll,ix;
-        char buffer[80];
+	char			func[] = "_NhlSetFillInfo";
+        NhlWorkstationLayer	tinst = (NhlWorkstationLayer)instance;
+	NhlWorkstationLayerPart	*wk_p = &tinst->work;
+        float			fl,fr,fb,ft,ul,ur,ub,ut;
+        float			x0,x1;
+        int			ll,ix;
+        char			buffer[80];
 	
 
 	if (wk_p->edges_on && wk_p->edge_dash_pattern < 0) {
@@ -3137,6 +3190,8 @@ void _NhlSetFillInfo
 		c_sflush();
 
 		c_getset(&fl,&fr,&fb,&ft,&ul,&ur,&ub,&ut,&ll);
+		if(_NhlLLErrCheckPrnt(NhlFATAL,func))
+			return;
 
 		x0 = fl;
 		x1 = fl + wk_p->edge_dash_seglen;
@@ -3159,6 +3214,7 @@ void _NhlSetFillInfo
 		strcpy(buffer,dash_patterns[ix]);
 		
 		c_dashdc(buffer,wk_p->edge_dash_dollar_size,1);
+		(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 	}
 		
 /*
@@ -3193,8 +3249,10 @@ void _NhlSetFillInfo
 
 	if (ix != NhlHOLLOWFILL) {
 		c_sfseti("AN", fill_specs[ix].angle);
+		(void)_NhlLLErrCheckPrnt(NhlINFO,func);
 		c_sfsetr("SP", fill_specs[ix].spacing * 
 			 wk_p->fill_scale_factor);
+		(void)_NhlLLErrCheckPrnt(NhlINFO,func);
 	}
 
         return;
@@ -3212,22 +3270,23 @@ static NhlErrorTypes WorkstationFill
 	int num_points;
 #endif
 {
-        NhlWorkstationLayer inst = (NhlWorkstationLayer)l;
-	NhlWorkstationLayerPart *wk_p = &inst->work;
-	static int first = 1;
-	static float *dst;
-	static int *ind;
-	static int msize;
-	static int nst, nnd;
-        float   fl,fr,fb,ft,ul,ur,ub,ut;
-	int ll, ix;
-	Gfill_int_style save_fillstyle;
-	Gint save_linecolor;
-	Gint save_linetype;
-	Gdouble save_linewidth;
-	Gint err_ind;
-	Gint fill_color;
-	Gint fill_background;
+	char			func[] = "WorkstationFill";
+        NhlWorkstationLayer	inst = (NhlWorkstationLayer)l;
+	NhlWorkstationLayerPart	*wk_p = &inst->work;
+	static int		first = 1;
+	static float		*dst;
+	static int		*ind;
+	static int		msize;
+	static int		nst, nnd;
+        float			fl,fr,fb,ft,ul,ur,ub,ut;
+	int			ll, ix;
+	Gfill_int_style		save_fillstyle;
+	Gint			save_linecolor;
+	Gint			save_linetype;
+	Gdouble			save_linewidth;
+	Gint			err_ind;
+	Gint			fill_color;
+	Gint			fill_background;
 	
 	/* 
  * Create or enlarge the workspace arrays as required
@@ -3264,7 +3323,11 @@ static NhlErrorTypes WorkstationFill
  * duration of the routine
  */
 	c_getset(&fl,&fr,&fb,&ft,&ul,&ur,&ub,&ut,&ll);
+	if(_NhlLLErrCheckPrnt(NhlFATAL,func))
+		return NhlFATAL;
 	c_set(fl,fr,fb,ft,fl,fr,fb,ft,1);
+	if(_NhlLLErrCheckPrnt(NhlFATAL,func))
+		return NhlFATAL;
 /*
  * Save attributes that may be modified
  */
@@ -3289,8 +3352,11 @@ static NhlErrorTypes WorkstationFill
 		/* fill_specs[ix].type  must be 0 */
 		gset_fill_int_style(1);
 		gset_linewidth(wk_p->fill_line_thickness);
+		(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 		c_sfseti("type of fill", 0);
+		(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 		c_sfsgfa(x,y,num_points,dst,nst,ind,nnd,fill_color);
+		(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 	}
 	else if (ix > 0) {
 		/* fill_specs[ix].type must not be 0 */
@@ -3298,19 +3364,27 @@ static NhlErrorTypes WorkstationFill
 		if (fill_background >= 0) {
 			gset_linewidth(1.0);
 			gset_fill_int_style(1);
+			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 			c_sfseti("type of fill", 0);
+			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 			c_sfsgfa(x,y,num_points,dst,nst,ind,nnd,
-				 fill_background);
+							fill_background);
+			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 		}
 		gset_linewidth(wk_p->fill_line_thickness);
+		(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 		c_sfseti("TY", fill_specs[ix].type);
+		(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 		if (fill_specs[ix].type > 0) { 
  			c_sfsgfa(x,y,num_points,dst,nst,ind,nnd,fill_color);
+			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 		}
 		else {
 			gset_line_colr_ind(fill_color);
+			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
  			c_sfsgfa(x,y,num_points,dst,nst,ind,nnd,
 				 fill_specs[ix].ici);
+			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 		}
 	}
 
@@ -3320,13 +3394,16 @@ static NhlErrorTypes WorkstationFill
 	if (wk_p->edges_on) {
 		gset_line_colr_ind((Gint)_NhlGetGksCi(inst->base.wkptr,
 						      wk_p->edge_color));
-		
+		(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 		gset_linewidth(wk_p->edge_thickness);
+		(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 		if (wk_p->edge_dash_pattern > 0) {
 			c_curved(x,y,num_points);
+			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 		}
 		else {
 			c_curve(x,y,num_points);
+			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 		}
 	}
 
@@ -3338,8 +3415,10 @@ static NhlErrorTypes WorkstationFill
 	gset_linewidth(save_linewidth);
 	gset_fill_int_style(save_fillstyle);
 	gset_linetype(save_linetype);
+	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 
 	c_set(fl,fr,fb,ft,ul,ur,ub,ut,ll);
+	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 
 	return(NhlNOERROR);
 
@@ -3699,12 +3778,13 @@ void _NhlSetMarkerInfo
         NhlLayer plot;
 #endif
 {
-        NhlWorkstationLayer tinst = (NhlWorkstationLayer)instance;
-	NhlWorkstationLayerPart *wk_p = &tinst->work;
-        float   fl,fr,fb,ft,ul,ur,ub,ut;
-        float  x0,x1;
-        int ll,ix;
-        char buffer[80];
+	char			func[] = "_NhlSetMarkerInfo";
+        NhlWorkstationLayer	tinst = (NhlWorkstationLayer)instance;
+	NhlWorkstationLayerPart	*wk_p = &tinst->work;
+        float			fl,fr,fb,ft,ul,ur,ub,ut;
+        float			x0,x1;
+        int			ll,ix;
+        char			buffer[80];
 
 
 	if (wk_p->marker_lines_on && wk_p->marker_line_dash_pattern < 0) {
@@ -3719,6 +3799,8 @@ void _NhlSetMarkerInfo
 		c_sflush();
 
 		c_getset(&fl,&fr,&fb,&ft,&ul,&ur,&ub,&ut,&ll);
+		if(_NhlLLErrCheckPrnt(NhlFATAL,func))
+			return;
 
 		x0 = fl;
 		x1 = fl + wk_p->marker_line_dash_seglen;
@@ -3741,6 +3823,7 @@ void _NhlSetMarkerInfo
 		strcpy(buffer,dash_patterns[ix]);
 		
 		c_dashdc(buffer,wk_p->marker_line_dash_dollar_size,1);
+		(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 	}
 
 /*
@@ -3784,27 +3867,32 @@ static NhlErrorTypes WorkstationMarker
 	int num_points;
 #endif
 {
-        NhlWorkstationLayer inst = (NhlWorkstationLayer)l;
-	NhlWorkstationLayerPart *wk_p = &inst->work;
-        float   fl,fr,fb,ft,ul,ur,ub,ut;
-	int ll, i, index;
-	int save_font;
-	Gint save_linecolor;
-	Gint save_linetype;
-	Gdouble save_linewidth;
-	Gint err_ind;
-	float marker_size, x_off, y_off;
-	int ret = NhlNOERROR;
-	char *string;
-	int marker_color,line_color;
-	float p_height, p_width;
+	char			func[] = "WorkstationMarker";
+        NhlWorkstationLayer	inst = (NhlWorkstationLayer)l;
+	NhlWorkstationLayerPart	*wk_p = &inst->work;
+        float			fl,fr,fb,ft,ul,ur,ub,ut;
+	int			ll, i, index;
+	int			save_font;
+	Gint			save_linecolor;
+	Gint			save_linetype;
+	Gdouble			save_linewidth;
+	Gint			err_ind;
+	float			marker_size, x_off, y_off;
+	NhlErrorTypes		ret = NhlNOERROR;
+	char			*string;
+	int			marker_color,line_color;
+	float			p_height, p_width;
 
 /*
  * Make the user space coincide with the NDC space for the
  * duration of the routine
  */
 	c_getset(&fl,&fr,&fb,&ft,&ul,&ur,&ub,&ut,&ll);
+	if(_NhlLLErrCheckPrnt(NhlFATAL,func))
+		return NhlFATAL;
 	c_set(fl,fr,fb,ft,fl,fr,fb,ft,1);
+	if(_NhlLLErrCheckPrnt(NhlFATAL,func))
+		return NhlFATAL;
 /*
  * Save attributes that may be modified
  */
@@ -3812,6 +3900,7 @@ static NhlErrorTypes WorkstationMarker
 	ginq_linewidth(&err_ind, &save_linewidth);
 	ginq_linetype(&err_ind, &save_linetype);
 	c_pcgeti("FN",&save_font);
+	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 	marker_color = _NhlGetGksCi(inst->base.wkptr, wk_p->marker_color);
 
 /*
@@ -3819,14 +3908,18 @@ static NhlErrorTypes WorkstationMarker
  */
 	if (wk_p->marker_lines_on && num_points > 1) {
 		gset_linewidth(wk_p->marker_line_thickness);
+		(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 		line_color = _NhlGetGksCi(inst->base.wkptr, 
 					  wk_p->marker_line_color);
 		gset_line_colr_ind((Gint) line_color);
+		(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 		if (wk_p->marker_line_dash_pattern > 0) {
 			c_curved(x,y,num_points);
+			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 		}
 		else {
 			c_curve(x,y,num_points);
+			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 		}
 	}
 		
@@ -3835,9 +3928,13 @@ static NhlErrorTypes WorkstationMarker
  * a function code are drawn using the default font (font #1).
  */
 	c_pcseti("FN", 1);
+	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 	gset_linewidth(wk_p->marker_thickness);
+	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 	c_pcseti("OC",marker_color);
+	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 	c_pcseti("CC",marker_color);
+	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 	if ((index = wk_p->marker_index) <= 0) {
 		/* the marker string is used to define the marker */
 		x_off = wk_p->marker_size * wk_p->marker_x_off;
@@ -3863,8 +3960,9 @@ static NhlErrorTypes WorkstationMarker
 		}
 			
 		for (i=0; i<num_points; i++) {
-			c_plchhq(x[i]+x_off,y[i]+y_off,string,
-				 marker_size,0.0,0.0);
+			c_plchhq(x[i]+x_off,y[i]+y_off,string,marker_size,
+								0.0,0.0);
+			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 		}
 
 	}
@@ -3882,7 +3980,9 @@ static NhlErrorTypes WorkstationMarker
 			}
 			
 			c_pcsetr("PH",p_height);
+			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 			c_pcsetr("PW",p_width);
+			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 			marker_size = marker_table[index]->size_adj *
 				wk_p->marker_size;
 			x_off = marker_size * 
@@ -3894,6 +3994,7 @@ static NhlErrorTypes WorkstationMarker
 			c_plchhq(x[i]+x_off,y[i]+y_off,
 				 marker_table[index]->marker,
 				 marker_size,0.0,0.0);
+			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 		}
 	}
 
@@ -3904,9 +4005,12 @@ static NhlErrorTypes WorkstationMarker
 	gset_line_colr_ind(save_linecolor);
 	gset_linewidth(save_linewidth);
 	gset_linetype(save_linetype);
+	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 	c_pcseti("FN",save_font);
+	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 
 	c_set(fl,fr,fb,ft,ul,ur,ub,ut,ll);
+	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 
 	return(ret);
 

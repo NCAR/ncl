@@ -1,5 +1,5 @@
 /*
- *      $Id: hlu.c,v 1.19 1994-08-11 21:37:10 boote Exp $
+ *      $Id: hlu.c,v 1.20 1994-09-06 21:51:31 boote Exp $
  */
 /************************************************************************
 *									*
@@ -29,6 +29,7 @@
 #include <pwd.h>
 #include <ncarg/hlu/VarArg.h>
 #include <ncarg/hlu/BaseP.h>
+#include <ncarg/hlu/ErrorI.h>
 
 /************************************************************************
  *									*
@@ -1483,4 +1484,48 @@ _NhlCopyToVal
     else if (size == sizeof(_NhlArgVal)) *dst = *(_NhlArgVal*)src;
     else
         memcpy((NhlPointer)dst,(NhlPointer)&src,size);
+}
+
+/*
+ * Function:	_NhlLLErrCheckPrnt
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+NhlBoolean
+_NhlLLErrCheckPrnt
+#if	NhlNeedProto
+(
+	NhlErrorTypes	level,
+	NhlString	calling_func
+)
+#else
+(level,calling_func)
+	NhlErrorTypes	level;
+	NhlString	calling_func;
+#endif
+{
+	int	err_num;
+
+	if(c_nerro(&err_num)){
+		if(err_num != _NhlGKSERRNUM){
+			if(calling_func)
+			NhlPError(level,NhlEUNKNOWN,"%s:libncarg Error:%s",
+						calling_func,c_semess(0));
+			else
+			NhlPError(level,NhlEUNKNOWN,"libncarg Error:%s",
+								c_semess(0));
+		}
+		c_errof();
+		return True;
+	}
+
+	return False;
 }
