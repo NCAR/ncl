@@ -14,7 +14,7 @@
 ;
 ;   Date:         Fri Dec  4 12:25:37 MST 1998
 ;
-;   Description:  This program illustrates the use of csa2xs.
+;   Description:  This program illustrates the use of csa2ls.
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
