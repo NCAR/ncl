@@ -1,5 +1,5 @@
 /*
- *      $Id: restree.c,v 1.4 1997-10-03 20:08:18 dbrown Exp $
+ *      $Id: restree.c,v 1.5 1997-10-04 01:49:51 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -245,6 +245,8 @@ static void DoSpecialResources
 	if (pub_rtp->preview_instance && rtp->sres_state) {
 		for (i = 0; i < NhlNumber(SpecialResources); i++) {
 			rtSResState *srs = &rtp->sres_state[i];
+                        if (! srs->res_data)
+                                continue;
 			if (srs->faked && srs->res_data->ndata) {
 				XmLGridSetStringsPos
 				  (pub_rtp->tree,XmCONTENT,
@@ -2441,6 +2443,8 @@ static void GetActualSpecialValues
                 rtSResState	*srs = &rtp->sres_state[i];
                 rtResData	*resp = rtp->sres_state[i].res_data;
 
+                if (! resp)
+                        continue;
                 if (resp->res->nhlclass != last_class) {
                         _NhlConvertContextClass(context,resp->res->nhlclass);
                         last_class = resp->res->nhlclass;
