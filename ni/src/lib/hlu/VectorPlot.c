@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.c,v 1.11 1996-04-04 19:17:10 dbrown Exp $
+ *      $Id: VectorPlot.c,v 1.12 1996-04-06 03:49:11 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -287,7 +287,7 @@ static NhlResource resources[] = {
         {NhlNvcRefAnnoArrowEdgeColor,NhlCvcRefAnnoArrowEdgeColor,
 		 NhlTColorIndex,sizeof(NhlColorIndex),
 		 Oset(ref_attrs.arrow_edge_color),
-		 NhlTImmediate,_NhlUSET((NhlPointer)NhlFOREGROUND),0,NULL},
+		 NhlTImmediate,_NhlUSET((NhlPointer)NhlBACKGROUND),0,NULL},
         {NhlNvcRefAnnoArrowUseVecColor,NhlCvcRefAnnoArrowUseVecColor,
 		 NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(ref_attrs.use_vec_color),
@@ -416,7 +416,7 @@ static NhlResource resources[] = {
         {NhlNvcMinAnnoArrowEdgeColor,NhlCvcMinAnnoArrowEdgeColor,
 		 NhlTColorIndex,sizeof(NhlColorIndex),
 		 Oset(ref_attrs.arrow_edge_color),
-		 NhlTImmediate,_NhlUSET((NhlPointer)NhlFOREGROUND),0,NULL},
+		 NhlTImmediate,_NhlUSET((NhlPointer)NhlBACKGROUND),0,NULL},
         {NhlNvcMinAnnoArrowUseVecColor,NhlCvcMinAnnoArrowUseVecColor,
 		 NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(min_attrs.use_vec_color),
@@ -4583,7 +4583,7 @@ static NhlErrorTypes SetScale
 			     t >=sip->scale_value; t /= 10.0) {
 				power++;
 			}
-			sip->scale_factor = pow(10.0,-(double)power);
+			sip->scale_factor = pow(10.0,(double)power);
 		}
 		else {
 			for (t = sigval * 10;
@@ -4591,7 +4591,7 @@ static NhlErrorTypes SetScale
 				power++;
 			}
 			power--;
-			sip->scale_factor = pow(10.0,(double)power);
+			sip->scale_factor = pow(10.0,-(double)power);
 		}
 		break;
 	case NhlTRIMZEROS:
@@ -4599,13 +4599,13 @@ static NhlErrorTypes SetScale
 			power = divpwr;
 		else
 			power = MAX(0,divpwr - sig_digits);
-		sip->scale_factor = pow(10.0,-(double)power);
+		sip->scale_factor = pow(10.0,(double)power);
 		break;
 	case NhlMAXSIGDIGITSLEFT:
 		power = divpwr - sig_digits;
-		sip->scale_factor = pow(10.0,-(double)power);
+		sip->scale_factor = pow(10.0,(double)power);
 		break;
-	case NhlINTEGERLINELABELS:
+	case NhlALLINTEGERS:
 		if (! do_levels) {
 			fp = &sigval;
 			count = 1;
@@ -4651,7 +4651,7 @@ static NhlErrorTypes SetScale
 			t--;
 		}
 	
-		sip->scale_factor = max_fac;
+		sip->scale_factor = 1.0 / max_fac;
 		break;
 	default:
 		e_text = "%s: internal enumeration error";
@@ -5010,7 +5010,7 @@ static NhlErrorTypes ManageLabelBar
 				return NhlFATAL;
 			}
 
-			fval = sip->min_val * sip->scale_factor;
+			fval = sip->min_val / sip->scale_factor;
 			s = _NhlFormatFloat(frec,fval,NULL,
 					    &sip->sig_digits,
 					    &sip->left_sig_digit,
@@ -5037,7 +5037,7 @@ static NhlErrorTypes ManageLabelBar
 				}
 				strcpy(to_sp[i],from_sp[i-1]);
 			}
-			fval = sip->max_val * sip->scale_factor;
+			fval = sip->max_val / sip->scale_factor;
 			s = _NhlFormatFloat(frec,fval,NULL,
 					    &sip->sig_digits,
 					    &sip->left_sig_digit,
@@ -5156,6 +5156,9 @@ static NhlErrorTypes PrepareAnnoString
 	char			*matchp,*subst;
 	float			val;
 	NhlvcScaleInfo		*sip;
+	NhlBoolean		modify;
+	int			left_sig_digit;
+	NhlffStat		left_sig_digit_flag;
 
 	*changed = False;
 
@@ -5186,51 +5189,54 @@ static NhlErrorTypes PrepareAnnoString
 	}
 	strcpy(buffer,*new_string);
 	while (! done) {
+		modify = False;
 		if ((matchp = strstr(buffer,"$VMG$")) != NULL) {
-			val = value * vcp->mag_scale.scale_factor;
+			val = value / vcp->mag_scale.scale_factor;
 			sip = &vcp->mag_scale;
 		}
 		else if ((matchp = strstr(buffer,"$MNM$")) != NULL) {
-			val = vcp->zmin * vcp->mag_scale.scale_factor;
+			val = vcp->zmin / vcp->mag_scale.scale_factor;
 			sip = &vcp->mag_scale;
 		}
 		else if ((matchp = strstr(buffer,"$MXM$")) != NULL) {
-			val = vcp->zmax * vcp->mag_scale.scale_factor;
+			val = vcp->zmax / vcp->mag_scale.scale_factor;
 			sip = &vcp->mag_scale;
 		}
 		else if ((matchp = strstr(buffer,"$RFM$")) != NULL) {
-			val = vcp->ref_magnitude * vcp->mag_scale.scale_factor;
+			val = vcp->ref_magnitude / vcp->mag_scale.scale_factor;
 			sip = &vcp->mag_scale;
 		}
 		else if ((matchp = strstr(buffer,"$MSF$")) != NULL) {
+			modify = True;
 			val = vcp->mag_scale.scale_factor;
 			sip = &vcp->mag_scale;
 		}
 		else if ((matchp = strstr(buffer,"$MNU$")) != NULL) {
-			val = vcp->umin * vcp->mag_scale.scale_factor;
+			val = vcp->umin / vcp->mag_scale.scale_factor;
 			sip = &vcp->mag_scale;
 		}
 		else if ((matchp = strstr(buffer,"$MXU$")) != NULL) {
-			val = vcp->umax * vcp->mag_scale.scale_factor;
+			val = vcp->umax / vcp->mag_scale.scale_factor;
 			sip = &vcp->mag_scale;
 		}
 		else if ((matchp = strstr(buffer,"$MNV$")) != NULL) {
-			val = vcp->vmin * vcp->mag_scale.scale_factor;
+			val = vcp->vmin / vcp->mag_scale.scale_factor;
 			sip = &vcp->mag_scale;
 		}
 		else if ((matchp = strstr(buffer,"$MXV$")) != NULL) {
-			val = vcp->vmax * vcp->mag_scale.scale_factor;
+			val = vcp->vmax / vcp->mag_scale.scale_factor;
 			sip = &vcp->mag_scale;
 		}
 		else if ((matchp = strstr(buffer,"$MNS$")) != NULL) {
-			val = vcp->scalar_min * vcp->svalue_scale.scale_factor;
+			val = vcp->scalar_min / vcp->svalue_scale.scale_factor;
 			sip = &vcp->svalue_scale;
 		}
 		else if ((matchp = strstr(buffer,"$MXS$")) != NULL) {
-			val = vcp->scalar_max * vcp->svalue_scale.scale_factor;
+			val = vcp->scalar_max / vcp->svalue_scale.scale_factor;
 			sip = &vcp->svalue_scale;
 		}
 		else if ((matchp = strstr(buffer,"$SSF$")) != NULL) {
+			modify = True;
 			val = vcp->svalue_scale.scale_factor;
 			sip = &vcp->svalue_scale;
 		}
@@ -5238,11 +5244,23 @@ static NhlErrorTypes PrepareAnnoString
 			done = True;
 			break;
 		}
+		if (modify) {
+			left_sig_digit = sip->format.left_sig_digit;
+			left_sig_digit_flag = sip->format.left_sig_digit_flag;
+			sip->format.left_sig_digit_flag = NhlffUNSPECED;
+			sip->format.left_sig_digit = -10000;
+		}
+			
 		subst = _NhlFormatFloat(&sip->format,val,NULL,
 					&sip->sig_digits,&sip->left_sig_digit,
 					NULL,NULL,NULL,func_code,entry_name);
 		if (subst == NULL) return NhlFATAL;
 		Substitute(matchp,5,subst);
+
+		if (modify) {
+			sip->format.left_sig_digit_flag = left_sig_digit_flag;
+			sip->format.left_sig_digit = left_sig_digit;
+		}
 	}
 	if (*formatted_string != NULL)
 		NhlFree(*formatted_string);
@@ -7023,7 +7041,7 @@ static NhlErrorTypes    ManageDynamicArrays
 			return NhlFATAL;
 		}
 		for (i=0; i<count; i++) {
-			float fval = fp[i] * sip->scale_factor;
+			float fval = fp[i] / sip->scale_factor;
 			NhlFormatRec *frec = &sip->format;
 
 			cp = _NhlFormatFloat(frec,fval,NULL,

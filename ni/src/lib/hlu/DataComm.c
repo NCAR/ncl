@@ -1,5 +1,5 @@
 /*
- *      $Id: DataComm.c,v 1.36 1996-03-21 14:42:40 boote Exp $
+ *      $Id: DataComm.c,v 1.37 1996-04-06 03:49:10 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -661,7 +661,8 @@ DataCommClassInitialize
         {NhlCONFINETORANGE, 	"confinetorange"},
         {NhlTRIMZEROS, 		"trimzeros"},
         {NhlMAXSIGDIGITSLEFT,	"maxsigdigitsleft"},
-	{NhlINTEGERLINELABELS,	"integerlinelabels"}
+	{NhlALLINTEGERS,	"allintegers"},
+	{NhlINTEGERLINELABELS,	"integerlinelabels"} /* obsolete synonym */
         };
 
 	_NhlRegisterEnumType(NhldataCommClass,NhlTLevelSelectionMode,

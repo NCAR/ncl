@@ -1,5 +1,5 @@
 /*
- *      $Id: DataComm.h,v 1.12 1995-11-21 20:18:57 dbrown Exp $
+ *      $Id: DataComm.h,v 1.13 1996-04-06 03:49:11 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -29,18 +29,23 @@
 /* Level selection modes */
 
 typedef enum _NhlLevelSelectionMode { 
-	NhlAUTOMATICLEVELS, NhlMANUALLEVELS, 
-	NhlEXPLICITLEVELS, NhlEQUALSPACEDLEVELS } 
-NhlLevelSelectionMode;
+	NhlAUTOMATICLEVELS = 0, 
+	NhlMANUALLEVELS = 1, 
+	NhlEXPLICITLEVELS = 2, 
+	NhlEQUALSPACEDLEVELS = 3
+} NhlLevelSelectionMode;
 
 #define NhlTLevelSelectionMode "levelselectionmode"
 
 /* Scaling mode */
 
 typedef enum _NhlScalingMode {
-	NhlSCALEFACTOR, NhlCONFINETORANGE,
-	NhlTRIMZEROS,NhlMAXSIGDIGITSLEFT,
-        NhlINTEGERLINELABELS
+	NhlSCALEFACTOR = 0, 
+	NhlCONFINETORANGE = 1,
+	NhlTRIMZEROS = 2,
+	NhlMAXSIGDIGITSLEFT = 3,
+	NhlALLINTEGERS = 4,
+        NhlINTEGERLINELABELS = 4       /* Obsolete synonym */
 } NhlScalingMode;
 
 #define NhlTScalingMode "scalingmode"
