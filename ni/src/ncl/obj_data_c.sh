@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-#      $Id: obj_data_c.sh,v 1.1 1995-01-28 01:53:52 ethan Exp $
+#      $Id: obj_data_c.sh,v 1.2 1995-01-31 22:26:14 ethan Exp $
 #
 #########################################################################
 #									#
@@ -46,7 +46,6 @@ sed \
 -e '/REPLACE/d' \
 -e '/DSPECIFIC/r NclTypeobj.c.specific' \
 -e '/DSPECIFIC/d' \
--e 's/Ncl_Type_obj_print/NULL/' \
 -e 's/Ncl_Type_obj_not_type/NULL/' \
 -e 's/Ncl_Type_obj_not/NULL/' \
 -e 's/Ncl_Type_obj_xor_type/NULL/' \

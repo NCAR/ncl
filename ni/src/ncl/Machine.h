@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.h,v 1.15 1994-12-23 01:17:42 ethan Exp $
+ *      $Id: Machine.h,v 1.16 1995-01-31 22:25:50 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -276,7 +276,7 @@ int  /*offset*/
 
 extern NhlErrorTypes _NclPutRec(
 #if	NhlNeedProto
-NclSymbol * /*n_items*/,
+struct _NclSymbol * /*n_items*/,
 NclStackEntry * /*therec*/
 #endif
 );

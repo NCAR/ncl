@@ -1,6 +1,6 @@
 
 /*
- *      $Id: defs.h,v 1.18 1994-12-23 01:19:25 ethan Exp $
+ *      $Id: defs.h,v 1.19 1995-01-31 22:26:11 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -33,7 +33,7 @@ extern "C" {
 #define NCL_MAX_SYMS_PER_STMNT 300
 #define NCL_SRC_TREE_NODE_LIST_SIZE 1000
 #define NCL_MISSING_VALUE_ATT "_FillValue"
-
+#define NclANY NULL
 #define NhlTNclData "nclData"
 typedef enum { NORMAL, VARSUBSEL , COORD, COORDSUBSEL, FILEVAR, FILEVARSUBSEL,PARAM,RETURNVAR,HLUOBJ } NclVarTypes;
 typedef struct _NclDimRec {

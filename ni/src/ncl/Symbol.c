@@ -1,5 +1,5 @@
 /*
- *      $Id: Symbol.c,v 1.18 1995-01-28 01:52:43 ethan Exp $
+ *      $Id: Symbol.c,v 1.19 1995-01-31 22:26:07 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -28,6 +28,7 @@ extern "C" {
 #include <ncarg/hlu/NresDB.h>
 #include "defs.h"
 #include "Symbol.h"
+#include "NclBuiltIns.h"
 #include "Keywords.h"
 #include "NclVar.h"
 #include "NclAtt.h"
@@ -167,12 +168,26 @@ void _NclRegisterFunc
 		return;
 	}
 }
+
+void NclRegisterFunc
+#if	NhlNeedProto
+(NclPubBuiltInFuncWrapper thefuncptr, void * args, char * fname, int nargs)
+#else 
+(thefuncptr, args, fname, nargs)
+NclPubBuiltInFuncWrapper thefuncptr;
+void * args;
+char * fname;
+int nargs;
+#endif
+{
+	_NclRegisterFunc((NclBuiltInFuncWrapper)thefuncptr,(NclArgTemplate*)args,fname,nargs,IFUNC);
+}
 void _NclRegisterProc
 #if	NhlNeedProto
 (NclBuiltInProcWrapper theprocptr,NclArgTemplate *args,char* fname,int nargs,int ftype)
 #else 
 (theprocptr,args, fname,nargs,ftype)
-	NclIntrinsicProcWrapper theprocptr;
+	NclBuiltInProcWrapper theprocptr;
 	NclArgTemplate	*args;
 	char *fname;
 	int nargs;
@@ -200,6 +215,64 @@ void _NclRegisterProc
 		return;
 	}
 }
+void NclRegisterProc
+#if NhlNeedProto
+(NclBuiltInProcWrapper theprocptr, void* args, char* fname, int n_args)
+#else
+(theprocptr, args, fname, n_args)
+NclBuiltInProcWrapper theprocptr;
+void * args;
+char* fname;
+int n_args;
+#endif
+{
+	_NclRegisterProc((NclBuiltInProcWrapper)theprocptr,(NclArgTemplate*)args,fname,n_args,IPROC);
+}
+void *NewArgs
+#if NhlNeedProto
+(int n)
+#else
+(n)
+int n;
+#endif
+{
+	return((void*)NclMalloc(n * sizeof(NclArgTemplate)));
+}
+void SetArgTemplate
+#if NhlNeedProto
+(void *args, int arg_num, char *type_name, int n_dims, int *dimsizes)
+#else
+(args, arg_num, type_name, n_dims, dimsizes)
+void *args;
+int arg_num;
+char *type_name;
+int n_dims;
+int *dimsizes;
+#endif
+{
+	NclArgTemplate* the_args = (NclArgTemplate*) args;
+	if(the_args == NULL) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"Error adding argument template for intrinisic function NULL arg record passed");
+		return;
+	}
+	the_args->n_dims = n_dims;
+	if(dimsizes != NULL) {
+		the_args->is_dimsizes = 1;
+		memcpy((void*)the_args->dim_sizes,(void*)dimsizes,sizeof(int)*n_dims);
+	} else {
+		the_args->is_dimsizes = 0;
+	}
+	
+	the_args->arg_data_type = _NclLookUp(type_name);
+	if(the_args->arg_data_type == NULL) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"Error adding argument template for intrinisic function");
+	}
+	the_args->arg_sym = NULL;
+	return;
+
+}
+
+
 
 
 /*

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclTypeobj.c.specific,v 1.2 1995-01-31 22:26:02 ethan Exp $
+ *      $Id: MathTemplate.h.sed,v 1.1 1995-01-31 22:25:56 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -16,26 +16,13 @@
  *			National Center for Atmospheric Research
  *			PO 3000, Boulder, Colorado
  *
- *	Date:		Fri Jan 27 18:34:41 MST 1995
+ *	Date:		Tue Jan 31 15:17:01 MST 1995
  *
  *	Description:	
  */
-#include "NclTypelogical.h"
-
-static void Ncl_Type_obj_print
+extern NhlErrorTypes _NclFUNCNAME(
 #if     NhlNeedProto
-(FILE *fp, void * val)
-#else
-(fp,val)
-FILE *fp;
-void *val;
+void
 #endif
-{
+);
 
-	NclObj object;
-
-
-	object = _NclGetObj(*(obj*)val);
-
-	_NclPrint(object,fp);
-}

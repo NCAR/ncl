@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.27 1995-01-28 01:54:06 ethan Exp $
+#      $Id: yMakefile,v 1.28 1995-01-31 22:26:15 ethan Exp $
 #
 #########################################################################
 #									#
@@ -62,7 +62,8 @@ GEN_HDRS	=	NclTypeobj.h NclTypelogical.h \
 			NclTypedouble.h NclTypefloat.h \
 			NclTypeint.h NclTypelong.h \
 			NclTypeshort.h NclTypestring.h \
-			parser.h NclTypebyte.h NclTypechar.h TypeSupport.h
+			parser.h NclTypebyte.h NclTypechar.h TypeSupport.h \
+			MathFuncs.h 
 
 STATIC_HDRS	=	AttSupport.h DataSupport.h FileSupport.h Keywords.h \
 			Machine.h NclAtt.h NclData.h NclDataDefs.h \
@@ -71,9 +72,11 @@ STATIC_HDRS	=	AttSupport.h DataSupport.h FileSupport.h Keywords.h \
 			OpsFuncs.h OpsList.h SrcTree.h Symbol.h VarSupport.h \
 			NclFileVar.h NclHLUVar.h HLUSupport.h NclCoordVar.h NclType.h \
 			NclMultiDValnclfileData.h NclMultiDValHLUObjData.h \
-			NclOneDValCoordData.h
+			NclOneDValCoordData.h 
 
-INSTALL_HDRS	=	defs.h NclApi.h ApiRecords.h NclVar.h
+INSTALL_HDRS	=	defs.h NclApi.h ApiRecords.h NclVar.h NclBuiltIns.h \
+			NclBuiltInSupport.h
+			
 
 API_SRCS	=	NclApi.c scanapi.c parseapi.c 
 EXE_SRCS	=	Ncl.c scanner.c parser.c io.c
@@ -88,7 +91,8 @@ GEN_SRCS	=	NclTypedouble.c NclTypefloat.c \
 			NclTypelong.c NclTypeobj.c \
 			NclTypeshort.c NclTypestring.c \
 			scanner.c parser.c NclTypebyte.c \
-			NclTypechar.c scanapi.c parseapi.c TypeSupport.c NclMultiDValData.c
+			NclTypechar.c scanapi.c parseapi.c TypeSupport.c NclMultiDValData.c \
+			MathFuncs.c
 
 STATIC_SRCS	=	AddBuiltIns.c AddFileFormats.c AddHLUObjs.c \
 			AddIntrinsics.c AttSupport.c DataSupport.c Execute.c \
@@ -99,7 +103,7 @@ STATIC_SRCS	=	AddBuiltIns.c AddFileFormats.c AddHLUObjs.c \
 			Symbol.c Translate.c VarSupport.c NclFileVar.c \
 			NclHLUVar.c HLUSupport.c NclCoordVar.c yywrap.c \
 			NclMultiDValnclfileData.c NclMultiDValHLUObjData.c \
-			NclOneDValCoordData.c
+			NclOneDValCoordData.c BuiltInSupport.c
 
 API_OBJS	=	NclApi.o scanapi.o parseapi.o ioapi.o NclHLUObjapi.o 
 EXE_OBJS	=	Ncl.o scanner.o parser.o io.o NclHLUObj.o 
@@ -114,7 +118,7 @@ GEN_OBJS	=	NclTypedouble.o NclTypefloat.o \
 			NclTypelong.o NclTypeobj.o \
 			NclTypeshort.o NclTypestring.o \
 			NclTypebyte.o NclTypechar.o NclMultiDValData.o \
-			TypeSupport.o
+			TypeSupport.o MathFuncs.o
 
 STATIC_OBJS	=	AddBuiltIns.o AddFileFormats.o AddHLUObjs.o \
 			AddIntrinsics.o AttSupport.o DataSupport.o Execute.o \
@@ -124,7 +128,7 @@ STATIC_OBJS	=	AddBuiltIns.o AddFileFormats.o AddHLUObjs.o \
 			Symbol.o Translate.o VarSupport.o NclFileVar.o \
 			NclHLUVar.o HLUSupport.o NclCoordVar.o yywrap.o NclType.o \
 			NclMultiDValnclfileData.o NclMultiDValHLUObjData.o \
-			NclOneDValCoordData.o
+			NclOneDValCoordData.o BuiltInSupport.o
 
 
 LibraryTarget($(MYLIB),$(ALLOBJS))
@@ -197,8 +201,14 @@ TypeSupport.h: TypeSupport.h.sed
 TypeSupport.c: TypeSupport.c.sed
 	@$(SHELL) type_support_c.sh
 
-NclMultiDValData.c: NclMultiDValData.c.sed MultiDValOp.c.sed NclMultiDValData.h
+NclMultiDValData.c: NclMultiDValData.c.sed MultiDValOp.c.sed NclMultiDValData.h math_funcs.sh
 	@$(SHELL) multid_data_c.sh
+
+MathFuncs.c: MathFuncs.c.sed MathFuncs.h.sed MathTemplate.c.sed MathTemplate.h.sed math_funcs.sh
+	@$(SHELL) math_funcs.sh
+
+MathFuncs.h: MathFuncs.c.sed MathFuncs.h.sed MathTemplate.c.sed MathTemplate.h.sed math_funcs.sh
+	@$(SHELL) math_funcs.sh
 
 #
 # Data Object dependancies

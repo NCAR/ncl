@@ -1510,9 +1510,9 @@ NhlErrorTypes _NclBuildArray
 	} else if(obj_type & NCL_VAL_CHARSTR_MASK) {
 		must_be_numeric =0;
 		result_type = obj_type & NCL_VAL_CHARSTR_MASK;
-	} else if(obj_type & NCL_HLU_MASK) {
+	} else if(obj_type & Ncl_Typeobj) {
 		must_be_numeric =-1;
-		result_type = obj_type & NCL_HLU_MASK;
+		result_type = Ncl_Typeobj;
 	} else {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclBuildArray: attempt to build array out of illegal data type or undefined element, can't continue");
 		_NclCleanUpStack(n_items);
@@ -1572,10 +1572,8 @@ NhlErrorTypes _NclBuildArray
 				result_type = (obj_type & NCL_VAL_CHARSTR_MASK);
 			}
 		} else if((must_be_numeric == -1)&&
-			(obj_type & NCL_HLU_MASK)) {
-			if(result_type > (obj_type & NCL_HLU_MASK)) {
-				result_type = (obj_type & NCL_HLU_MASK);
-			}
+			(obj_type & Ncl_Typeobj )) {
+			result_type = obj_type;
 		} else {
 /*
 * May need to say something different now that objects are done in this
@@ -1671,6 +1669,14 @@ NhlErrorTypes _NclBuildArray
 		_NclCleanUpStack(items_left);
 		return(NhlFATAL);
 	}
+	if(theobj->obj.obj_type_mask & Ncl_MultiDValnclfileData) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclBuildArray: Arrays of files are not yet supported");
+		result->kind = NclStk_NOVAL;
+		result->u.data_obj = NULL; 
+		NclFree(value);
+		_NclCleanUpStack(items_left);
+		return(NhlFATAL);
+	}
 
 
 	partsize = theobj->multidval.totalsize;
@@ -1712,6 +1718,14 @@ NhlErrorTypes _NclBuildArray
 		items_left--;
 		if(data.kind == NclStk_VAL) {
 			theobj = (NclMultiDValData)data.u.data_obj;
+			if(theobj->obj.obj_type_mask & Ncl_MultiDValnclfileData) {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclBuildArray: Arrays of files are not yet supported");
+				result->kind = NclStk_NOVAL;
+				result->u.data_obj = NULL; 
+				NclFree(value);
+				_NclCleanUpStack(items_left);
+				return(NhlFATAL);
+			}
 			if(!(theobj->multidval.type->type_class.type & result_type)) {
 				coerce_res = _NclCoerceData(theobj,result_type,mis_ptr);
 				if(coerce_res == NULL) {

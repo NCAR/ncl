@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Symbol.h,v 1.13 1994-12-23 01:19:17 ethan Exp $
+ *      $Id: Symbol.h,v 1.14 1995-01-31 22:26:09 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -51,7 +51,6 @@ typedef struct _NclVarInfo {
 
 
 #define ANYDIMSIZE = -1
-
 typedef NhlErrorTypes (*NclBuiltInProcWrapper)(
 #if	NhlNeedProto
 	void
@@ -62,7 +61,6 @@ typedef NhlErrorTypes (*NclIntrinsicProcWrapper)(
 	void	
 #endif
 );
-
 typedef NhlErrorTypes (*NclBuiltInFuncWrapper)(
 #if	NhlNeedProto
 	void

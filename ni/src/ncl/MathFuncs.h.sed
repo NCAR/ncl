@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclTypeobj.c.specific,v 1.2 1995-01-31 22:26:02 ethan Exp $
+ *      $Id: MathFuncs.h.sed,v 1.1 1995-01-31 22:25:53 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -16,26 +16,11 @@
  *			National Center for Atmospheric Research
  *			PO 3000, Boulder, Colorado
  *
- *	Date:		Fri Jan 27 18:34:41 MST 1995
+ *	Date:		Tue Jan 31 15:17:33 MST 1995
  *
  *	Description:	
  */
-#include "NclTypelogical.h"
-
-static void Ncl_Type_obj_print
-#if     NhlNeedProto
-(FILE *fp, void * val)
-#else
-(fp,val)
-FILE *fp;
-void *val;
-#endif
-{
-
-	NclObj object;
+#ifndef MathFuncs_h
+#define MathFuncs_h
 
 
-	object = _NclGetObj(*(obj*)val);
-
-	_NclPrint(object,fp);
-}

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: FileSupport.c,v 1.4 1995-01-28 23:51:54 ethan Exp $
+ *      $Id: FileSupport.c,v 1.5 1995-01-31 22:25:48 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -267,13 +267,17 @@ NhlErrorTypes  _NclBuildFileCoordVSelection
 #endif
 {	
 	NclMultiDValData vect_md;
-	NclMultiDValData tmp_md;
 	long *thevector;
 	int i;
 	char * v_name;
 	char * f_name;
 	int index = -1;
 	int vindex = -1;
+	NclQuark cname;
+	NclMultiDValData name_md = NULL,tmp_md = NULL,coord_md = NULL;
+        NclCoordVar cvar = NULL;
+        NclObjTypes the_type;
+
 /*
 * Preconditions: subscripts are SCALAR and integer guarenteed!!!!
 */
@@ -296,6 +300,18 @@ NhlErrorTypes  _NclBuildFileCoordVSelection
 				return(NhlFATAL);
 			}
 		} else {
+			name_md = _NclFileReadDim(file,-1,dim_num);
+			if(name_md != NULL) {
+				if(name_md->multidval.type->type_class.type & Ncl_Typestring) {
+					cname = *(string*)name_md->multidval.val;
+					_NclDestroyObj((NclObj)name_md);
+				} else {
+					return(NhlFATAL);
+				}
+			} else {
+				NhlPError(NhlFATAL,NhlEUNKNOWN, "Dimension (%d) of file (%s) is not named and therfore doesn't have an associated coordinate variable",dim_num,f_name);
+				return(NhlFATAL);
+			}
 			sel->dim_num = dim_num;
 		}
 /*
@@ -304,15 +320,47 @@ NhlErrorTypes  _NclBuildFileCoordVSelection
 * to free the objects without freeing the val field which I need to keep
 * arround untill the actual ValueRead happens
 */
-		if(!(vect_md->multidval.type->type_class.type & Ncl_Typelong)) {
-			tmp_md = _NclCoerceData(vect_md,Ncl_Typelong,NULL);
-			
-		}  else {
+		if(_NclFileVarIsCoord(file,cname) == -1) {
+                        NhlPError(NhlFATAL,NhlEUNKNOWN,"Dimension (%s) of file (%s) does not have an associated coordinate variable",NrmQuarkToString(cname),f_name);
+                        return(NhlFATAL);
+
+                }
+		cvar = (NclCoordVar)_NclFileReadCoord(file,cname,NULL);
+		coord_md = _NclVarValueRead((NclVar)cvar,NULL,NULL);
+		the_type = _NclGetVarRepValue((NclVar)cvar);
+		if(!(the_type & vect_md->multidval.type->type_class.type)) {
+			tmp_md = _NclCoerceData(vect_md,the_type,NULL);
+                        if(tmp_md == NULL) {
+                                NhlPError(NhlFATAL,NhlEUNKNOWN,"Coordinate subscript type mismatch. Subscript (%d) can not be coerced to type of coordinate variable",dim_num);
+                                if(coord_md->obj.status != PERMANENT) {
+                                        _NclDestroyObj((NclObj)coord_md);
+                                }
+                                if(cvar->obj.status != PERMANENT) {
+                                        _NclDestroyObj((NclObj)cvar);
+                                }
+                                return(NhlFATAL);
+                        }
+
+		} else {
 			tmp_md = vect_md;
 		}
-		thevector = (long*)NclMalloc((unsigned)vect_md->multidval.totalelements * sizeof(long));
-	
-		memcpy((char*)thevector,(char*)tmp_md->multidval.val,vect_md->multidval.totalelements * sizeof(long));
+		thevector = (long*)NclMalloc((unsigned)tmp_md->multidval.totalelements*sizeof(long));
+		sel->sel_type = Ncl_VECSUBSCR;
+		sel->u.vec.n_ind = tmp_md->multidval.totalelements;
+		for(i = 0; i < tmp_md->multidval.totalelements; i++) {
+			if(_NclGetCoordClosestIndex(coord_md,(void*)((char*)tmp_md->multidval.val + i * tmp_md->multidval.type->type_class.size),&(thevector[i])) == NhlFATAL) {
+				if(coord_md->obj.status != PERMANENT) {
+                                        _NclDestroyObj((NclObj)coord_md);
+                                }
+                                if(cvar->obj.status != PERMANENT) {
+                                        _NclDestroyObj((NclObj)cvar);
+                                }
+                                return(NhlFATAL);
+                        }
+                }
+
+		
+
 		sel->sel_type = Ncl_VECSUBSCR;
 		sel->u.vec.n_ind = vect_md->multidval.totalelements;
 		sel->u.vec.min = thevector[0];
@@ -329,6 +377,12 @@ NhlErrorTypes  _NclBuildFileCoordVSelection
 		if((tmp_md != vect_md)&&(tmp_md->obj.status != PERMANENT)) {
 			_NclDestroyObj((NclObj)tmp_md);
 		}
+		if(coord_md->obj.status != PERMANENT) {
+                        _NclDestroyObj((NclObj)coord_md);
+                }
+                if(cvar->obj.status != PERMANENT) {
+                        _NclDestroyObj((NclObj)cvar);
+                }
 		return(NhlNOERROR);
 	} else {
 		return(NhlFATAL);
