@@ -1,5 +1,5 @@
 /*
- *      $Id: DataItem.c,v 1.10 1995-04-07 10:41:32 boote Exp $
+ *      $Id: DataItem.c,v 1.11 1995-12-19 20:39:04 boote Exp $
  */
 /************************************************************************
 *									*
@@ -95,6 +95,7 @@ NhlDataItemClassRec NhldataItemClassRec = {
 /* layer_size			*/	sizeof(NhlDataItemLayerRec),
 /* class_inited			*/	False,
 /* superclass			*/	(NhlClass)&NhlbaseClassRec,
+/* cvt_table			*/	NULL,
 
 /* resources			*/	resources,
 /* num_resources		*/	NhlNumber(resources),

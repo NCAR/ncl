@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.40 1995-05-05 08:50:42 boote Exp $
+ *      $Id: Workstation.c,v 1.41 1995-12-19 20:39:39 boote Exp $
  */
 /************************************************************************
 *									*
@@ -510,6 +510,7 @@ NhlWorkstationClassRec NhlworkstationClassRec = {
 /* layer_size			*/	sizeof(NhlWorkstationLayerRec),
 /* class_inited			*/	False,
 /* superclass			*/	(NhlClass)&NhlbaseClassRec,
+/* cvt_table			*/	NULL,
 
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
@@ -636,30 +637,33 @@ WorkstationClassInitialize
 		{NhlMARKLINES,	"marklines"}
 	};
 
-	(void)_NhlRegisterEnumType(NhlTDashIndex,dashvals,NhlNumber(dashvals));
-	(void)_NhlRegisterEnumType(NhlTColorIndex,colorvals,
+	(void)_NhlRegisterEnumType(NhlbaseClass,NhlTDashIndex,dashvals,
+		NhlNumber(dashvals));
+	(void)_NhlRegisterEnumType(NhlbaseClass,NhlTColorIndex,colorvals,
 		NhlNumber(colorvals));
-	(void)_NhlRegisterEnumType(NhlTFillIndex,fillvals,NhlNumber(fillvals));
-	(void)_NhlRegisterEnumType(NhlTMarkerIndex,markervals,
+	(void)_NhlRegisterEnumType(NhlbaseClass,NhlTFillIndex,fillvals,
+		NhlNumber(fillvals));
+	(void)_NhlRegisterEnumType(NhlbaseClass,NhlTMarkerIndex,markervals,
 		NhlNumber(markervals));
-	(void)_NhlRegisterEnumType(NhlTMarkLineMode,mrkline,NhlNumber(mrkline));
+	(void)_NhlRegisterEnumType(NhlbaseClass,NhlTMarkLineMode,mrkline,
+		NhlNumber(mrkline));
 
-	(void)NhlRegisterConverter(NhlTScalar,NhlTDashIndex,_NhlCvtScalarToIndex,
-		dashargs,NhlNumber(dashargs),False,NULL);
-	(void)NhlRegisterConverter(NhlTScalar,NhlTColorIndex,
+	(void)NhlRegisterConverter(NhlbaseClass,NhlTScalar,NhlTDashIndex,
+		_NhlCvtScalarToIndex,dashargs,NhlNumber(dashargs),False,NULL);
+	(void)NhlRegisterConverter(NhlbaseClass,NhlTScalar,NhlTColorIndex,
 		_NhlCvtScalarToIndex,colorargs,NhlNumber(colorargs),False,NULL);
-	(void)NhlRegisterConverter(NhlTScalar,NhlTFillIndex,_NhlCvtScalarToIndex,
-		fillargs,NhlNumber(fillargs),False,NULL);
+	(void)NhlRegisterConverter(NhlbaseClass,NhlTScalar,NhlTFillIndex,
+		_NhlCvtScalarToIndex,fillargs,NhlNumber(fillargs),False,NULL);
 
-	(void)NhlRegisterConverter(NhlTGenArray,NhlTDashIndexGenArray,
-		_NhlCvtGenArrayToIndexGenArray,dashargs,NhlNumber(dashargs),
-		False,NULL);
-	(void)NhlRegisterConverter(NhlTGenArray,NhlTColorIndexGenArray,
-		_NhlCvtGenArrayToIndexGenArray,colorargs,NhlNumber(colorargs),
-		False,NULL);
-	(void)NhlRegisterConverter(NhlTGenArray,NhlTFillIndexGenArray,
-		_NhlCvtGenArrayToIndexGenArray,fillargs,NhlNumber(fillargs),
-		False,NULL);
+	(void)NhlRegisterConverter(NhlbaseClass,NhlTGenArray,
+		NhlTDashIndexGenArray,_NhlCvtGenArrayToIndexGenArray,dashargs,
+		NhlNumber(dashargs),False,NULL);
+	(void)NhlRegisterConverter(NhlbaseClass,NhlTGenArray,
+		NhlTColorIndexGenArray,_NhlCvtGenArrayToIndexGenArray,colorargs,
+		NhlNumber(colorargs),False,NULL);
+	(void)NhlRegisterConverter(NhlbaseClass,NhlTGenArray,
+		NhlTFillIndexGenArray,_NhlCvtGenArrayToIndexGenArray,fillargs,
+		NhlNumber(fillargs),False,NULL);
 
 	(void)_NhlInitPalettes();
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.c,v 1.3 1995-12-01 04:15:53 dbrown Exp $
+ *      $Id: VectorPlot.c,v 1.4 1995-12-19 20:39:35 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1221,6 +1221,7 @@ NhlVectorPlotDataDepClassRec NhlvectorPlotDataDepClassRec = {
 /* class_inited			*/	False,
 /* superclass			*/	(NhlClass)
 						&NhldataSpecClassRec,
+/* cvt_table			*/	NULL,
 
 /* layer_resources		*/	data_resources,
 /* num_resources		*/	NhlNumber(data_resources),
@@ -1253,6 +1254,7 @@ NhlVectorPlotClassRec NhlvectorPlotClassRec = {
 /* layer_size			*/      sizeof(NhlVectorPlotLayerRec),
 /* class_inited			*/      False,
 /* superclass			*/  (NhlClass)&NhldataCommClassRec,
+/* cvt_table			*/	NULL,
 
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
@@ -1505,8 +1507,8 @@ VectorPlotClassInitialize
 
 	load_hlucp_routines(False);
 
-	_NhlRegisterEnumType(NhlTVectorPositionMode,positionmodelist,
-			     NhlNumber(positionmodelist));
+	_NhlRegisterEnumType(NhlvectorPlotClass,NhlTVectorPositionMode,
+		positionmodelist,NhlNumber(positionmodelist));
 
 	Qint = NrmStringToQuark(NhlTInteger);
 	Qstring = NrmStringToQuark(NhlTString);

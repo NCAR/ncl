@@ -1,5 +1,5 @@
 /*
- *      $Id: MultiText.c,v 1.14 1995-04-27 16:58:34 dbrown Exp $
+ *      $Id: MultiText.c,v 1.15 1995-12-19 20:39:18 boote Exp $
  */
 /************************************************************************
 *									*
@@ -129,6 +129,7 @@ NhlMultiTextClassRec NhlmultiTextClassRec = {
 /* layer_size			*/	sizeof(NhlMultiTextLayerRec),
 /* class_inited			*/	False,
 /* superclass			*/	(NhlClass)&NhlviewClassRec,
+/* cvt_table			*/	NULL,
 
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),

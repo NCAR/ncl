@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrTable.c,v 1.26 1995-05-02 21:28:08 boote Exp $
+ *      $Id: CoordArrTable.c,v 1.27 1995-12-19 20:39:01 boote Exp $
  */
 /************************************************************************
 *									*
@@ -161,6 +161,7 @@ NhlCoordArrTableFloatClassRec NhlcoordArrTableFloatClassRec = {
 /* layer_size			*/	sizeof(NhlCoordArrTableFloatLayerRec),
 /* class_inited			*/	False,
 /* superclass			*/	(NhlClass)&NhlobjClassRec,
+/* cvt_table			*/	NULL,
 
 /* resources			*/	NULL,
 /* num_resources		*/	0,
@@ -189,6 +190,7 @@ NhlCoordArrTableClassRec NhlcoordArrTableClassRec = {
 /* layer_size			*/	sizeof(NhlCoordArrTableLayerRec),
 /* class_inited			*/	False,
 /* superclass			*/	(NhlClass)&NhldataItemClassRec,
+/* cvt_table			*/	NULL,
 
 /* resources			*/	resources,
 /* num_resources		*/	NhlNumber(resources),
@@ -349,7 +351,7 @@ CvtToFltPtrs
 	to.size = sizeof(NhlGenArray);
 	to.data.ptrval = &new;
 
-	tcontext = _NhlCreateConvertContext();
+	tcontext = _NhlCreateConvertContext(NULL);
 	if(tcontext == NULL){
 		NHLPERROR((NhlFATAL,ENOMEM,NULL));
 		return NhlFATAL;
@@ -503,7 +505,7 @@ GetOwnMiss
 	to.size = sizeof(float);
 	to.data.ptrval = &value;
 
-	ret = NhlConvertData(NhlTGenArray,NhlTFloat,&from,&to);
+	ret = NhlConvertData(NULL,NhlTGenArray,NhlTFloat,&from,&to);
 
 	if(ret < NhlWARNING)
 		return NhlFATAL;
@@ -854,7 +856,7 @@ CoordArrTableClassInitialize
 	minxQ = NrmStringToQuark(NhlNctXMinV);
 	minyQ = NrmStringToQuark(NhlNctYMinV);
 
-	ret = NhlRegisterConverter(
+	ret = NhlRegisterConverter(NhlbaseClass,
 			NhlcoordArrTableClass->base_class.class_name,
 			NhlcoordArrTableFloatClass->base_class.class_name,
 			CvtGenObjToFloatObj,NULL,0,False,NULL);

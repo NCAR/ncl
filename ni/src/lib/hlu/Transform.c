@@ -1,5 +1,5 @@
 /*
- *      $Id: Transform.c,v 1.21 1995-06-16 20:57:12 dbrown Exp $
+ *      $Id: Transform.c,v 1.22 1995-12-19 20:39:32 boote Exp $
  */
 /************************************************************************
 *									*
@@ -122,6 +122,7 @@ NhlTransformClassRec NhltransformClassRec = {
 /* layer_size			*/      sizeof(NhlTransformLayerRec),
 /* class_inited			*/      False,
 /* superclass			*/      (NhlClass)&NhlviewClassRec,
+/* cvt_table			*/	NULL,
 
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),

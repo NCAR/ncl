@@ -1,5 +1,5 @@
 /*
- *      $Id: TransObj.c,v 1.15 1995-05-05 08:50:41 boote Exp $
+ *      $Id: TransObj.c,v 1.16 1995-12-19 20:39:31 boote Exp $
  */
 /************************************************************************
 *									*
@@ -83,6 +83,7 @@ NhlTransObjClassRec NhltransObjClassRec = {
 /* layer_size */        sizeof(NhlTransObjLayerRec),
 /* class_inited */      False,
 /* superclass*/         (NhlClass)&NhlobjClassRec,
+/* cvt_table			*/	NULL,
 
 /* layer_resources */   resources,
 /* num_resources */     NhlNumber(resources),

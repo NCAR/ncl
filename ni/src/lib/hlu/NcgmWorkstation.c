@@ -1,5 +1,5 @@
 /*
- *      $Id: NcgmWorkstation.c,v 1.18 1995-04-22 01:01:55 boote Exp $
+ *      $Id: NcgmWorkstation.c,v 1.19 1995-12-19 20:39:19 boote Exp $
  */
 /************************************************************************
 *									*
@@ -108,6 +108,7 @@ NhlNcgmWorkstationClassRec NhlncgmWorkstationClassRec = {
 /* layer_size			*/	sizeof(NhlNcgmWorkstationLayerRec),
 /* class_inited			*/	False,
 /* superclass			*/	(NhlClass)&NhlworkstationClassRec,
+/* cvt_table			*/	NULL,
 
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),

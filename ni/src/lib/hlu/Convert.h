@@ -1,5 +1,5 @@
 /*
- *      $Id: Convert.h,v 1.9 1995-01-24 01:25:07 boote Exp $
+ *      $Id: Convert.h,v 1.10 1995-12-19 20:38:58 boote Exp $
  */
 /************************************************************************
 *									*
@@ -64,9 +64,9 @@ typedef void (*NhlCacheClosure)(
 /*
  * Conversion functions
  */
-
 extern NhlErrorTypes NhlRegisterConverter(
 #if	NhlNeedProto
+	NhlClass		ref_class,
 	NhlString		from,
 	NhlString		to,
 	NhlTypeConverter	convert,
@@ -79,31 +79,34 @@ extern NhlErrorTypes NhlRegisterConverter(
 
 extern NhlErrorTypes NhlDeleteConverter(
 #if	NhlNeedProto
-	NhlString,		/* from type - usually a NHLT*** constant*/
-	NhlString		/* to type - usually a NHLT*** constant	*/
+	NhlClass	ref_class,
+	NhlString	from,
+	NhlString	to
 #endif
 );
 
 extern NhlErrorTypes NhlUnRegisterConverter(
 #if	NhlNeedProto
-	NhlString,	/* from type - usually a NHLT*** constant*/
-	NhlString,	/* to type - usually a NHLT*** constant	*/
-	NhlConvertPtr	/* returns pointer to opaque type	*/
+	NhlClass	ref_class,
+	NhlString	from,
+	NhlString	to,
+	NhlConvertPtr*	ptr
 #endif
 );
 
 extern NhlErrorTypes NhlReRegisterConverter(
 #if	NhlNeedProto
-	NhlConvertPtr	/* identifies converter to re-install	*/
+	NhlConvertPtr	ptr	/* identifies converter to re-install	*/
 #endif
 );
 
 extern NhlErrorTypes NhlConvertData(
 #if	NhlNeedProto
-	NhlString,	/* from type - usually a NHLT*** constant	*/
-	NhlString,	/* to type - usually a NHLT*** constant		*/
-	NrmValue*,	/* from data					*/
-	NrmValue*	/* to data					*/
+	int		ref_obj,
+	NhlString	from,
+	NhlString	to,
+	NrmValue*	fptr,
+	NrmValue*	tptr
 #endif
 );
 

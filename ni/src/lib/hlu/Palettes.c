@@ -1,5 +1,5 @@
 /*
- *      $Id: Palettes.c,v 1.5 1995-10-12 21:33:41 boote Exp $
+ *      $Id: Palettes.c,v 1.6 1995-12-19 20:39:21 boote Exp $
  */
 /************************************************************************
 *									*
@@ -952,13 +952,14 @@ _NhlInitPalettes
 
 	(void)_NhlRegisterTypes(NhlTFloatGenArray,NhlTColorMap,NULL);
 
-	(void)_NhlRegSymConv(NhlTQuarkGenArray,NhlTColorMap,
+	(void)_NhlRegSymConv(NhlworkstationClass,NhlTQuarkGenArray,NhlTColorMap,
 						NhlTQuarkGenArray,NhlTGenArray);
-	(void)NhlRegisterConverter(NhlTString,NhlTColorMap,
+	(void)NhlRegisterConverter(NhlworkstationClass,NhlTString,NhlTColorMap,
 					NhlCvtStringToCmap,NULL,0,False,NULL);
-	(void)_NhlRegSymConv(NhlTQuark,NhlTColorMap,NhlTQuark,NhlTScalar);
-	(void)NhlRegisterConverter(NhlTGenArray,NhlTColorMap,
-					NhlCvtGenArrayToCmap,NULL,0,False,NULL);
+	(void)_NhlRegSymConv(NhlworkstationClass,NhlTQuark,NhlTColorMap,
+							NhlTQuark,NhlTScalar);
+	(void)NhlRegisterConverter(NhlworkstationClass,NhlTGenArray,
+			NhlTColorMap,NhlCvtGenArrayToCmap,NULL,0,False,NULL);
 
 	strgenQ = NrmStringToQuark(NhlTStringGenArray);
 	fltgenQ = NrmStringToQuark(NhlTFloatGenArray);

@@ -1,5 +1,5 @@
 /*
-*      $Id: MapTransObj.c,v 1.22 1995-11-14 02:23:57 dbrown Exp $
+*      $Id: MapTransObj.c,v 1.23 1995-12-19 20:39:17 boote Exp $
 */
 /************************************************************************
 *									*
@@ -399,6 +399,7 @@ NhlMapTransObjClassRec NhlmapTransObjClassRec = {
 /* layer_size			*/	sizeof(NhlMapTransObjLayerRec),
 /* class_inited			*/	False,
 /* superclass			*/	(NhlClass)&NhltransObjClassRec,
+/* cvt_table			*/	NULL,
 
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
@@ -1626,9 +1627,9 @@ static NhlErrorTypes    MapTransClassInitialize
         {NhlLAMBERTCONFORMAL,		"lambertconformal"}
         };
 
-        _NhlRegisterEnumType(NhlTMapLimitMode,limitmodelist,
+        _NhlRegisterEnumType(NhlmapTransObjClass,NhlTMapLimitMode,limitmodelist,
 						NhlNumber(limitmodelist));
-        _NhlRegisterEnumType(NhlTProjection,projectionlist,
+        _NhlRegisterEnumType(NhlmapTransObjClass,NhlTProjection,projectionlist,
 						NhlNumber(projectionlist));
 
 	return NhlNOERROR;

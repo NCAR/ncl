@@ -1,5 +1,5 @@
 /*
- *      $Id: ResList.c,v 1.13 1995-04-29 18:53:26 boote Exp $
+ *      $Id: ResList.c,v 1.14 1995-12-19 20:39:24 boote Exp $
  */
 /************************************************************************
 *									*
@@ -2370,21 +2370,22 @@ InitRLList
 	expQ = NrmStringToQuark(_NhlTExpArray);
 	expTypeQ = NrmStringToQuark(_NhlTExpTypeArray);
 
-	(void)NhlRegisterConverter(NhlTGenArray,_NhlTExpMDArray,
+	(void)NhlRegisterConverter(NULL,NhlTGenArray,_NhlTExpMDArray,
 					CvtGenToExpMDArray,NULL,0,False,NULL);
-	(void)_NhlRegSymConv(NhlTScalar,_NhlTExpMDArray,
+	(void)_NhlRegSymConv(NULL,NhlTScalar,_NhlTExpMDArray,
 						NhlTScalar,NhlTGenArray);
 
-	(void)NhlRegisterConverter(NhlTGenArray,_NhlTExpMDTypeArray,
+	(void)NhlRegisterConverter(NULL,NhlTGenArray,_NhlTExpMDTypeArray,
 				CvtGenToExpTypeMDArray,NULL,0,False,NULL);
-	(void)_NhlRegSymConv(NhlTScalar,_NhlTExpMDTypeArray,
+	(void)_NhlRegSymConv(NULL,NhlTScalar,_NhlTExpMDTypeArray,
 						NhlTScalar,NhlTGenArray);
 
-	(void)NhlRegisterConverter(NhlTGenArray,_NhlTExpArray,
+	(void)NhlRegisterConverter(NULL,NhlTGenArray,_NhlTExpArray,
 					CvtGenToExpArray,NULL,0,False,NULL);
-	(void)_NhlRegSymConv(NhlTScalar,_NhlTExpArray,NhlTScalar,NhlTGenArray);
+	(void)_NhlRegSymConv(NULL,NhlTScalar,_NhlTExpArray,NhlTScalar,
+								NhlTGenArray);
 
-	(void)NhlRegisterConverter(NhlTGenArray,_NhlTExpTypeArray,
+	(void)NhlRegisterConverter(NULL,NhlTGenArray,_NhlTExpTypeArray,
 					CvtGenToExpTypeArray,NULL,0,False,NULL);
 	return;
 }

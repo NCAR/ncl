@@ -1,5 +1,5 @@
 /*
- *      $Id: BaseP.h,v 1.8 1995-04-07 10:40:53 boote Exp $
+ *      $Id: BaseP.h,v 1.9 1995-12-19 20:38:55 boote Exp $
  */
 /************************************************************************
 *									*
@@ -179,6 +179,7 @@ typedef struct _NhlObjClassPart {
 	unsigned int		layer_size;
 	int			class_inited;
 	NhlClass 		superclass;
+	NhlConvertPtr		*cvt_table;
 
 	NhlResourceList		resources;
 	int			num_resources;
@@ -204,6 +205,7 @@ typedef struct _NhlBaseClassPart {
 	unsigned int		layer_size;
 	int			class_inited;
 	NhlClass 		superclass;
+	NhlConvertPtr		*cvt_table;
 
 	NhlResourceList		resources;
 	int			num_resources;

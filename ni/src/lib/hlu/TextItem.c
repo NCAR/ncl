@@ -1,5 +1,5 @@
 /*
- *      $Id: TextItem.c,v 1.33 1995-11-21 20:19:00 dbrown Exp $
+ *      $Id: TextItem.c,v 1.34 1995-12-19 20:39:27 boote Exp $
  */
 /************************************************************************
 *									*
@@ -219,6 +219,7 @@ NhlTextItemClassRec NhltextItemClassRec = {
 /* layer_size			*/	sizeof(NhlTextItemLayerRec),
 /* class_inited			*/	False,
 /* superclass			*/	(NhlClass)&NhlviewClassRec,
+/* cvt_table			*/	NULL,
 
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
@@ -312,8 +313,9 @@ static NhlErrorTypes    TextItemClassInitialize
 		{NhlACROSS,	"across"}
 	};
 
-	_NhlRegisterEnumType(NhlTFontQuality,fontqlist,NhlNumber(fontqlist));
-	_NhlRegisterEnumType(NhlTTextDirection,textdirlist,
+	_NhlRegisterEnumType(NhlbaseClass,NhlTFontQuality,fontqlist,
+							NhlNumber(fontqlist));
+	_NhlRegisterEnumType(NhlbaseClass,NhlTTextDirection,textdirlist,
 							NhlNumber(textdirlist));
 
 	txstrQ = NrmStringToQuark(NhlNtxString);

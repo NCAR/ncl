@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorField.c,v 1.2 1995-11-30 02:33:06 dbrown Exp $
+ *      $Id: VectorField.c,v 1.3 1995-12-19 20:39:34 boote Exp $
  */
 /************************************************************************
 *									*
@@ -210,6 +210,7 @@ NhlVectorFieldFloatClassRec NhlvectorFieldFloatClassRec = {
 /* layer_size			*/	sizeof(NhlVectorFieldFloatLayerRec),
 /* class_inited			*/	False,
 /* superclass			*/	(NhlClass)&NhlobjClassRec,
+/* cvt_table			*/	NULL,
 
 /* resources			*/	NULL,
 /* num_resources		*/	0,
@@ -239,6 +240,7 @@ NhlVectorFieldClassRec NhlvectorFieldClassRec = {
 /* class_inited			*/	False,
 /* superclass			*/	(NhlClass)
 						&NhldataItemClassRec,
+/* cvt_table			*/	NULL,
 /* resources			*/	resources,
 /* num_resources		*/	NhlNumber(resources),
 /* all_resources		*/	NULL,
@@ -2471,7 +2473,7 @@ VectorFieldClassInitialize
 	Qy_actual_start  = NrmStringToQuark(NhlNvfYCActualStartF);
 	Qy_actual_end  = NrmStringToQuark(NhlNvfYCActualEndF);
 
-	ret = NhlRegisterConverter(
+	ret = NhlRegisterConverter(NhlbaseClass,
 			NhlvectorFieldClass->base_class.class_name,
 			NhlvectorFieldFloatClass->base_class.class_name,
 			CvtGenVFObjToFloatVFObj,NULL,0,False,NULL);
@@ -3200,7 +3202,7 @@ static NhlVectorFieldFloatLayer ForceConvert
 	from.data.intval = vfl->base.id;
 	to.size = sizeof(NhlVectorFieldFloatLayerRec);
 	to.data.ptrval = &id;
-	ret = NhlConvertData(NhlvectorFieldClass->base_class.class_name,
+	ret = NhlConvertData(NULL,NhlvectorFieldClass->base_class.class_name,
 			NhlvectorFieldFloatClass->base_class.class_name,
 			     &from,&to);
 	if (ret < NhlWARNING ||

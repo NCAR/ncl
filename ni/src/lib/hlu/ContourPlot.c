@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.27 1995-12-01 04:15:51 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.28 1995-12-19 20:38:56 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1498,6 +1498,7 @@ NhlContourPlotDataDepClassRec NhlcontourPlotDataDepClassRec = {
 /* superclass			*/	(NhlClass)
 						&NhldataSpecClassRec,
 
+/* cvt_table			*/	NULL,
 /* layer_resources		*/	data_resources,
 /* num_resources		*/	NhlNumber(data_resources),
 /* all_resources		*/	NULL,
@@ -1529,6 +1530,7 @@ NhlContourPlotClassRec NhlcontourPlotClassRec = {
 /* layer_size			*/      sizeof(NhlContourPlotLayerRec),
 /* class_inited			*/      False,
 /* superclass			*/  (NhlClass)&NhldataCommClassRec,
+/* cvt_table			*/	NULL,
 
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
@@ -1851,12 +1853,12 @@ ContourPlotClassInitialize
 
 	load_hlucp_routines(False);
 
-	_NhlRegisterEnumType(NhlTcnLevelUseMode,leveluselist,
-			     NhlNumber(leveluselist));
-	_NhlRegisterEnumType(NhlTcnLineLabelPlacementMode,
+	_NhlRegisterEnumType(NhlcontourPlotClass,NhlTcnLevelUseMode,
+		leveluselist,NhlNumber(leveluselist));
+	_NhlRegisterEnumType(NhlcontourPlotClass,NhlTcnLineLabelPlacementMode,
 			     linelabelplacementlist,
 			     NhlNumber(linelabelplacementlist));
-	_NhlRegisterEnumType(NhlTcnHighLowLabelOverlapMode,
+	_NhlRegisterEnumType(NhlcontourPlotClass,NhlTcnHighLowLabelOverlapMode,
 			     highlowlabeloverlaplist,
 			     NhlNumber(highlowlabeloverlaplist));
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: DataComm.c,v 1.32 1995-11-21 20:18:57 dbrown Exp $
+ *      $Id: DataComm.c,v 1.33 1995-12-19 20:39:03 boote Exp $
  */
 /************************************************************************
 *									*
@@ -117,6 +117,7 @@ NhlDataCommClassRec NhldataCommClassRec = {
 /* layer_size			*/	sizeof(NhlDataCommLayerRec),
 /* class_inited			*/	False,
 /* superclass			*/	(NhlClass)&NhltransformClassRec,
+/* cvt_table			*/	NULL,
 
 /* layer_resources		*/	dcresources,
 /* num_resources		*/	NhlNumber(dcresources),
@@ -189,6 +190,7 @@ NhlDataSpecClassRec NhldataSpecClassRec = {
 /* layer_size			*/	sizeof(NhlDataSpecLayerRec),
 /* class_inited			*/	False,
 /* superclass			*/	(NhlClass)&NhlbaseClassRec,
+/* cvt_table			*/	NULL,
 
 /* layer_resources		*/	dsresources,
 /* num_resources		*/	NhlNumber(dsresources),
@@ -658,24 +660,24 @@ DataCommClassInitialize
 	{NhlINTEGERLINELABELS,	"integerlinelabels"}
         };
 
-	_NhlRegisterEnumType(NhlTLevelSelectionMode,levelselectionlist,
-			     NhlNumber(levelselectionlist));
-	_NhlRegisterEnumType(NhlTScalingMode,scalingmodelist,
+	_NhlRegisterEnumType(NhldataCommClass,NhlTLevelSelectionMode,
+		levelselectionlist,NhlNumber(levelselectionlist));
+	_NhlRegisterEnumType(NhldataCommClass,NhlTScalingMode,scalingmodelist,
 			     NhlNumber(scalingmodelist));
 
 	QListCompiled = NrmStringToQuark(_NhlTDListCompiled);
 	QGenArray = NrmStringToQuark(NhlTGenArray);
 
-	ret = NhlRegisterConverter(_NhlTAddData,_NhlTDataList,AddData,NULL,0,
-								False,NULL);
-	lret = NhlRegisterConverter(_NhlTRemoveData,_NhlTDataList,RemoveData,
-							NULL,0,False,NULL);
+	ret = NhlRegisterConverter(NhldataCommClass,_NhlTAddData,_NhlTDataList,
+		AddData,NULL,0,False,NULL);
+	lret = NhlRegisterConverter(NhldataCommClass,_NhlTRemoveData,
+		_NhlTDataList,RemoveData,NULL,0,False,NULL);
 	ret = MIN(ret,lret);
-	lret = NhlRegisterConverter(NhlTGenArray,_NhlTDataList,CvtGenToData,
-							NULL,0,False,NULL);
+	lret = NhlRegisterConverter(NhldataCommClass,NhlTGenArray,_NhlTDataList,
+		CvtGenToData,NULL,0,False,NULL);
 	ret = MIN(ret,lret);
-	lret = NhlRegisterConverter(NhlTScalar,_NhlTDataList,CvtScalarToData,
-							NULL,0,False,NULL);
+	lret = NhlRegisterConverter(NhldataCommClass,NhlTScalar,_NhlTDataList,
+		CvtScalarToData,NULL,0,False,NULL);
 	return MIN(ret,lret);
 }
 
@@ -731,8 +733,8 @@ CreateDataNode
 		return NULL;
 	}
 
-	dnode->dhandle = _NhlInitDataConnection(dil,dcl->base.id,oset->res_name,
-						oset->qlist,&dnode->type);
+	dnode->dhandle = _NhlInitDataConnection(dil,(NhlLayer)dcl,
+				oset->res_name,oset->qlist,&dnode->type);
 	if(dnode->dhandle == NULL){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
 				"Unable to init a connection with Data \"%s\"",

@@ -1,5 +1,5 @@
 /*
- *      $Id: DataMgr.c,v 1.11 1995-04-07 10:41:37 boote Exp $
+ *      $Id: DataMgr.c,v 1.12 1995-12-19 20:39:04 boote Exp $
  */
 /************************************************************************
 *									*
@@ -61,6 +61,7 @@ NhlDataMgrClassRec NhldataMgrClassRec = {
 /* layer_size			*/	sizeof(NhlDataMgrLayerRec),
 /* class_inited			*/	False,
 /* superclass			*/	(NhlClass)&NhlobjClassRec,
+/* cvt_table			*/	NULL,
 
 /* layer_resources		*/	NULL,
 /* num_resources		*/	0,
@@ -342,15 +343,15 @@ _NhlInitDataConnection
 #if	NhlNeedProto
 (
 	NhlLayer		l,		/* DataItem sub-class	*/
-	int			dcommid,	/* id for datacomm layer*/
+	NhlLayer		dcomm,		/* datacomm layer	*/
 	NrmQuark		res_name,	/* resource name	*/
 	NrmQuark		*type_req,	/* type wanted		*/
 	NrmQuark		*type_ret	/* type will be created	*/
 )
 #else
-(l,dcommid,res_name,type_req,type_ret)
+(l,dcomm,res_name,type_req,type_ret)
 	NhlLayer		l;		/* DataItem sub-class	*/
-	int			dcommid;	/* id for datacomm layer*/
+	NhlLayer		dcomm;		/* datacomm layer	*/
 	NrmQuark		res_name;	/* resource name	*/
 	NrmQuark		*type_req;	/* type wanted		*/
 	NrmQuark		*type_ret;	/* type will be created	*/
@@ -374,7 +375,7 @@ _NhlInitDataConnection
 		/*
 		 * Check for an exact converter.
 		 */
-		if(_NhlConverterExists(from,*type))
+		if(_NhlConverterExists(dcomm->base.layer_class,from,*type))
 			break;
 		type++;
 	}
@@ -391,7 +392,7 @@ _NhlInitDataConnection
 		return NULL;
 	}
 
-	new->datacommid = dcommid;
+	new->datacommid = dcomm->base.id;
 	new->res_name = res_name;
 	new->type = *type;
 	new->cache = NULL;
@@ -508,7 +509,7 @@ CreateCache
 	new->type = type;
 	new->uptodate = True;
 	new->ref_count = 1;
-	new->cvt_context = _NhlCreateConvertContext();
+	new->cvt_context = _NhlCreateConvertContext((NhlLayer)mgr);
 	if(new->cvt_context == NULL){
 		NhlPError(NhlFATAL,ENOMEM,NULL);
 		(void)NhlFree(new);

@@ -1,5 +1,5 @@
 /*
- *      $Id: Convert.c,v 1.11 1995-10-12 21:33:39 boote Exp $
+ *      $Id: Convert.c,v 1.12 1995-12-19 20:38:57 boote Exp $
  */
 /************************************************************************
 *									*
@@ -27,13 +27,14 @@
  */
 #include <string.h>
 #include <ncarg/hlu/hluP.h>
+#include <ncarg/hlu/BaseP.h>
 #include <ncarg/hlu/VarArg.h>
 #include <ncarg/hlu/ConvertP.h>
 
 
 #define _NhlHASHFUNC(a,b)	((((a)*_NhlHASHMULT)+(b)) & _NhlHASHMASK)
 
-static NhlConvertPtr HashTable[_NhlHASHSIZE] = { NULL};
+NhlConvertPtr _NhlDefHashTable[_NhlHASHSIZE] = { NULL};
 static	_NhlCtxtStack	 ctxt_stack = NULL;
 
 /*
@@ -80,10 +81,11 @@ _NhlConvertContext
 _NhlCreateConvertContext
 #if	NhlNeedProto
 (
-	void
+	NhlLayer	l
 )
 #else
-()
+(l)
+	NhlLayer	l;
 #endif
 {
 	_NhlConvertContext	context = NULL;
@@ -96,6 +98,7 @@ _NhlCreateConvertContext
 	}
 
 	*context = init;
+	context->ref = l;
 
 	return context;
 }
@@ -529,26 +532,34 @@ _NhlIsSubtype
  * Returns:	NrmValue*
  * Side Effect:	
  */
-static NhlConvertArgList
+static NhlErrorTypes
 CreateConvArgs
 #if	NhlNeedProto
 (
-	NhlConvertArgList	args,	/* list of args		*/
-	int			nargs	/* number of args	*/
+	NhlConvertPtr	cvtr,
+	NhlConvertArgList	args,
+	int			nargs
 )
 #else
-(args,nargs)
-	NhlConvertArgList	args;	/* list of args		*/
-	int			nargs;	/* number of args	*/
+(cvtr,args,nargs)
+	NhlConvertPtr	cvtr;
+	NhlConvertArgList	args;
+	int			nargs;
 #endif
 {
 	register int		i;
 	NhlConvertArgList	newargs=NULL;
 
+	if(nargs < 1){
+		cvtr->args = NULL;
+		cvtr->nargs = 0;
+		return NhlNOERROR;
+	}
+
 	newargs = (NhlConvertArgList)NhlMalloc(nargs * sizeof(NhlConvertArg));
 	if(newargs == NULL){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"Unable to copy convert Args");
-		return NULL;
+		return NhlFATAL;
 	}
 
 	for(i=0;i < nargs; i++){
@@ -595,13 +606,15 @@ CreateConvArgs
 				NhlPError(NhlFATAL,NhlEUNKNOWN,
 				"addressmode of convert arg[%d] not valid",i);
 				(void)NhlFree(newargs);
-				return(NULL);
+				return NhlFATAL;
 		}
 
 		newargs[i].addressmode = args[i].addressmode;
 	}
 
-	return(newargs);
+	cvtr->args = newargs;
+	cvtr->nargs = nargs;
+	return NhlNOERROR;
 }
 
 /*
@@ -630,9 +643,26 @@ insertConverter
 #endif
 {
 	int entry;
+	NhlConvertPtr	*HashTable;
 
 	entry = _NhlHASHFUNC(ptr->fromtype,ptr->totype);
+	if(!ptr->ref_class){
+		ptr->ref_class = NhlbaseClass;
+	}
 
+	if(!ptr->ref_class->base_class.cvt_table){
+		ptr->ref_class->base_class.cvt_table = (NhlConvertPtr*)
+				NhlMalloc(sizeof(NhlConvertPtr)*_NhlHASHSIZE);
+		if(!ptr->ref_class->base_class.cvt_table){
+			NhlPError(NhlWARNING,ENOMEM,
+					"Unable to alloc class cvt table");
+			return NhlFATAL;
+		}
+		memset(ptr->ref_class->base_class.cvt_table,0,
+					sizeof(NhlConvertPtr)*_NhlHASHSIZE);
+	}
+
+	HashTable = ptr->ref_class->base_class.cvt_table;
 	if(HashTable[entry] != (NhlConvertPtr)NULL)
 		ptr->next = HashTable[entry];
 
@@ -754,22 +784,41 @@ NhlErrorTypes
 _NhlRegSymConv
 #if	NhlNeedProto
 (
+	NhlClass	ref_class,
 	NhlString	fromSym,
 	NhlString	toSym,
 	NhlString	from,
 	NhlString	to
 )
 #else
-(fromSym,toSym,from,to)
+(ref_class,fromSym,toSym,from,to)
+	NhlClass	ref_class;
 	NhlString	fromSym;
 	NhlString	toSym;
 	NhlString	from;
 	NhlString	to;
 #endif
 {
-	return _NhlRegSymConvQ(
+	return _NhlRegSymConvQ(ref_class,
 			NrmStringToQuark(fromSym),NrmStringToQuark(toSym),
 				NrmStringToQuark(from),NrmStringToQuark(to));
+}
+
+NhlConvertPtr
+*GetCvtTable
+#if	NhlNeedProto
+(
+	NhlClass	ref_class
+)
+#else
+(ref_class)
+	NhlClass	ref_class
+#endif
+{
+	if(!ref_class)
+		ref_class = NhlbaseClass;
+
+	return ref_class->base_class.cvt_table;
 }
 
 /*
@@ -789,13 +838,15 @@ NhlErrorTypes
 _NhlRegSymConvQ
 #if	NhlNeedProto
 (
+	NhlClass	ref_class,
 	NrmQuark	fromSym,
 	NrmQuark	toSym,
 	NrmQuark	from,
 	NrmQuark	to
 )
 #else
-(fromSym,toSym,from,to)
+(ref_class,fromSym,toSym,from,to)
+	NhlClass	ref_class;
 	NrmQuark	fromSym;
 	NrmQuark	toSym;
 	NrmQuark	from;
@@ -809,8 +860,14 @@ _NhlRegSymConvQ
 					};
 	NhlConvertPtr		cvtrec = NULL;
 	NhlConvertPtr		tmp = NULL;
+	NhlConvertPtr		*HashTable = NULL;
 
-	tmp = HashTable[_NhlHASHFUNC(fromSym,toSym)];
+	if(!ref_class)
+		ref_class = NhlbaseClass;
+
+	if(ref_class->base_class.cvt_table)
+		tmp = ref_class->base_class.cvt_table[
+						_NhlHASHFUNC(fromSym,toSym)];
 
 	while((tmp != NULL) &&
 	    ((tmp->fromtype != fromSym) || (tmp->totype != toSym)))
@@ -825,7 +882,7 @@ _NhlRegSymConvQ
 						NrmQuarkToString(toSym));
 			return NhlFATAL;
 		}
-		(void)_NhlDeleteConverter(fromSym,toSym);
+		(void)_NhlDeleteConverter(ref_class,fromSym,toSym);
 	}
 
 	cvtrec = (NhlConvertPtr)NhlMalloc(sizeof(NhlConvertRec));
@@ -837,6 +894,7 @@ _NhlRegSymConvQ
 		return NhlFATAL;
 	}
 
+	cvtrec->ref_class = ref_class;
 	cvtrec->next = NULL;
 	cvtrec->record_type = _NhlReferenceConverter;
 	cvtrec->fromtype = fromSym;
@@ -849,9 +907,7 @@ _NhlRegSymConvQ
 	cvtargs[0].data.lngval = from;
 	cvtargs[1].data.lngval = to;
 
-	cvtrec->nargs = 2;
-	cvtrec->args = CreateConvArgs(cvtargs,2);
-	if(cvtrec->args == NULL){
+	if(CreateConvArgs(cvtrec,cvtargs,2) < NhlNOERROR){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
 					"Unable to install Converter %s to %s",
 						NrmNameToString(fromSym),
@@ -886,7 +942,8 @@ _NhlRegSymConvQ
 static NhlErrorTypes
 _NhlRegisterConverter
 #if     NhlNeedProto
-( 
+(
+	NhlClass		ref_class,
 	NrmQuark		from,		/* from type		*/
 	NrmQuark		to,		/* to type		*/
 	_NhlCvtRecType		rec_type,	/* type	of converter	*/
@@ -897,7 +954,8 @@ _NhlRegisterConverter
 	NhlCacheClosure		close		/* for freeing cache data*/ 
 )
 #else
-(from,to,rec_type,convert,args,nargs,cache,close)
+(ref_class,from,to,rec_type,convert,args,nargs,cache,close)
+	NhlClass		ref_class;
 	NrmQuark		from;		/* from type		*/
 	NrmQuark		to;		/* to type		*/
 	_NhlCvtRecType		rec_type;	/* symname type		*/
@@ -912,6 +970,8 @@ _NhlRegisterConverter
 
 	if(convert == NULL) return(NhlWARNING);
 
+	if(!ref_class)
+		ref_class = NhlbaseClass;
 	cvtrec = (NhlConvertPtr)NhlMalloc(sizeof(NhlConvertRec));
 	if(cvtrec == NULL){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -920,6 +980,7 @@ _NhlRegisterConverter
 		return NhlFATAL;
 	}
 
+	cvtrec->ref_class = ref_class;
 	cvtrec->next = NULL;
 	cvtrec->record_type = rec_type;
 	cvtrec->fromtype = from;
@@ -929,27 +990,18 @@ _NhlRegisterConverter
 	cvtrec->cache = (CachePtr)NULL;
 	cvtrec->closure = (cache) ? close : (NhlCacheClosure)NULL;
 
-	cvtrec->nargs = nargs;
-	if(nargs > 0){
-		cvtrec->args = CreateConvArgs(args,nargs);
-		if(cvtrec->args == NULL){
-			NhlPError(NhlFATAL,NhlEUNKNOWN,
-					"Unable to install Converter %s to %s",
-							NrmNameToString(from),
-							NrmNameToString(to));
-			(void)NhlFree(cvtrec);
-			return(NhlWARNING);
-		}
+	if(CreateConvArgs(cvtrec,args,nargs) < NhlNOERROR){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"Unable to install converter...");
+		NhlFree(cvtrec);
+		return NhlFATAL;
 	}
-	else
-		cvtrec->args = NULL;
 
 	/*
 	 * If there is a current converter installed - delete it.
 	 * ignore return value - we don't care if one was actually removed
 	 * or not.
 	 */
-	(void)_NhlDeleteConverter(from,to);
+	(void)_NhlDeleteConverter(ref_class,from,to);
 
 	return(insertConverter(cvtrec));
 }
@@ -978,6 +1030,7 @@ NhlErrorTypes
 NhlRegisterConverter
 #if     NhlNeedProto
 ( 
+	NhlClass		ref_class,
 	NhlString		from,		/* from type		*/
 	NhlString		to,		/* to type		*/
 	NhlTypeConverter	convert,	/* the converter function*/ 
@@ -987,7 +1040,8 @@ NhlRegisterConverter
 	NhlCacheClosure		close		/* for freeing cache data*/ 
 )
 #else
-(from,to,convert,args,nargs,cache,close)
+(ref_class,from,to,convert,args,nargs,cache,close)
+	NhlClass		ref_class;
 	NhlString		from;		/* from type		*/
 	NhlString		to;		/* to type		*/
 	NhlTypeConverter	convert;	/* the converter function*/ 
@@ -997,8 +1051,9 @@ NhlRegisterConverter
 	NhlCacheClosure		close;		/* for freeing cache data*/ 
 #endif 
 {
-	return(_NhlRegisterConverter(NrmStringToName(from),NrmStringToName(to),
-		_NhlRegularConverter,convert, args, nargs, cache, close));
+	return(_NhlRegisterConverter(ref_class,NrmStringToName(from),
+		NrmStringToName(to),_NhlRegularConverter,convert,args,nargs,
+		cache, close));
 }
 
 /*
@@ -1024,6 +1079,7 @@ NhlErrorTypes
 _NhlExtRegisterConverter
 #if     NhlNeedVarArgProto
 ( 
+	NhlClass		ref_class,
 	NhlString		from,		/* from type		*/
 	NhlString		to,		/* to type		*/
 	NhlTypeConverter	convert,	/* the converter function*/ 
@@ -1035,7 +1091,8 @@ _NhlExtRegisterConverter
 	...
 )
 #else
-(from,to,convert,args,nargs,cache,close,rec_type,va_alist)
+(ref_class,from,to,convert,args,nargs,cache,close,rec_type,va_alist)
+	NhlClass		ref_class;
 	NhlString		from;		/* from type		*/
 	NhlString		to;		/* to type		*/
 	NhlTypeConverter	convert;	/* the converter function*/ 
@@ -1057,15 +1114,15 @@ _NhlExtRegisterConverter
 	switch (rec_type){
 
 		case _NhlExclusiveConverter:
-			ret = _NhlRegisterConverter(fromQ,toQ,rec_type,convert,
-							args,nargs,cache,close);
+			ret = _NhlRegisterConverter(ref_class,fromQ,toQ,
+				rec_type,convert,args,nargs,cache,close);
 
 			break;
 
 		case _NhlSymFrom:
 		case _NhlSymTo:
 
-			ret = _NhlRegisterConverter(fromQ,toQ,
+			ret = _NhlRegisterConverter(ref_class,fromQ,toQ,
 					_NhlRegularConverter,convert,args,nargs,
 								cache,close);
 
@@ -1079,10 +1136,10 @@ _NhlExtRegisterConverter
 			for(name = va_arg(ap,NhlString); name != NULL;
 						name = va_arg(ap,NhlString)){
 				if(rec_type == _NhlSymFrom)
-					lret = _NhlRegSymConvQ(
+					lret = _NhlRegSymConvQ(ref_class,
 					NrmStringToQuark(name),toQ,fromQ,toQ);
 				else
-					lret = _NhlRegSymConvQ(fromQ,
+					lret = _NhlRegSymConvQ(ref_class,fromQ,
 					NrmStringToQuark(name),fromQ,toQ);
 
 				if(lret < NhlWARNING){
@@ -1126,19 +1183,28 @@ _NhlExtRegisterConverter
 NhlErrorTypes
 _NhlDeleteConverter
 #if	NhlNeedProto
-( 
+(
+	NhlClass		ref_class, 
 	NrmQuark		fromQ,		/* from type	*/
 	NrmQuark		toQ		/* to type	*/
 )
 #else
-(fromQ,toQ)
+(ref_class,fromQ,toQ)
+	NhlClass		ref_class;
 	NrmQuark		fromQ;		/* from type	*/
 	NrmQuark		toQ;		/* to type	*/
 #endif 
 {
 	NhlConvertPtr	*ptr = NULL, tmp = NULL;
 
-	ptr = &HashTable[_NhlHASHFUNC(fromQ,toQ)];
+	if(!ref_class)
+		ref_class = NhlbaseClass;
+
+	if(!ref_class->base_class.cvt_table){
+		return NhlFATAL;
+	}
+
+	ptr = &ref_class->base_class.cvt_table[_NhlHASHFUNC(fromQ,toQ)];
 
 	while((*ptr != NULL) &&
 	    (((*ptr)->fromtype != fromQ) || ((*ptr)->totype != toQ)))
@@ -1174,16 +1240,19 @@ NhlErrorTypes
 NhlDeleteConverter
 #if	NhlNeedProto
 ( 
+	NhlClass		ref_class,
 	NhlString		from,		/* from type	*/
 	NhlString		to		/* to type	*/
 )
 #else
-(from,to)
+(ref_class,from,to)
+	NhlClass		ref_class;
 	NhlString		from;		/* from type	*/
 	NhlString		to;		/* to type	*/
 #endif 
 {
-	return _NhlDeleteConverter(NrmStringToName(from),NrmStringToName(to));
+	return _NhlDeleteConverter(ref_class,NrmStringToName(from),
+								NrmStringToName(to));
 }
 
 /*
@@ -1208,24 +1277,34 @@ NhlDeleteConverter
 NhlErrorTypes
 _NhlUnRegisterConverter
 #if     NhlNeedProto
-( 
+(
+	NhlClass	ref_class, 
 	NrmQuark	from,		/* from type		*/
 	NrmQuark	to,		/* to type		*/
- 	NhlConvertPtr	converter	/* pointer to converter	*/
+ 	NhlConvertPtr	*converter	/* pointer to converter	*/
 )
 #else
-(from,to,converter)
+(ref_class,from,to,converter)
+	NhlClass	ref_class;
 	NrmQuark	from;		/* from type		*/
 	NrmQuark	to;		/* to type		*/
- 	NhlConvertPtr	converter;	/* pointer to converter	*/
-#endif 
+ 	NhlConvertPtr	*converter;	/* pointer to converter	*/
+#endif
 {
 	NhlConvertPtr	*ptr = NULL;
 
 	/*
 	 * ptr becomes the record containing the converter to remove
 	 */
-	ptr = &HashTable[_NhlHASHFUNC(from,to)];
+	if(!ref_class)
+		ref_class = NhlbaseClass;
+	if(!ref_class->base_class.cvt_table){
+		NhlPError(NhlINFO,NhlEUNKNOWN,
+			"No converter table for given class");
+		return NhlFATAL;
+	}
+
+	ptr = &ref_class->base_class.cvt_table[_NhlHASHFUNC(from,to)];
 
 	while((*ptr != NULL) &&
 		    (((*ptr)->fromtype != from) || ((*ptr)->totype != to)))
@@ -1241,7 +1320,7 @@ _NhlUnRegisterConverter
 	/*
 	 * return the converter structure in "converter" ptr
 	 */
-	*converter = **ptr;
+	*converter = *ptr;
 
 	/*
 	 * remove ptr from the list by setting the pointer that points to
@@ -1274,18 +1353,20 @@ NhlErrorTypes
 NhlUnRegisterConverter
 #if     NhlNeedProto
 ( 
+	NhlClass	ref_class,
 	NhlString	from,		/* from type		*/
 	NhlString	to,		/* to type		*/
- 	NhlConvertPtr	converter	/* pointer to converter	*/
+ 	NhlConvertPtr	*converter	/* pointer to converter	*/
 )
 #else
-(from,to,converter)
+(ref_class,from,to,converter)
+	NhlClass	ref_class;
 	NhlString	from;		/* from type		*/
 	NhlString	to;		/* to type		*/
- 	NhlConvertPtr	converter;	/* pointer to converter	*/
+ 	NhlConvertPtr	*converter;	/* pointer to converter	*/
 #endif 
 {
-	return(_NhlUnRegisterConverter(NrmStringToName(from),
+	return(_NhlUnRegisterConverter(ref_class,NrmStringToName(from),
 						NrmStringToName(to),converter));
 }
 
@@ -1314,12 +1395,14 @@ NhlReRegisterConverter
  	NhlConvertPtr	converter;	/* pointer to converter	*/
 #endif 
 {
-	NhlConvertPtr	*ptr = NULL;
+	NhlConvertPtr	*ptr = NULL,*HashTable = NULL;
 
-	/*
-	 * ptr becomes the record containing the converter to delete
-	 * last becomes the node before
-	 */
+	if(!converter->ref_class){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"Invalid Converter Record");
+		return NhlFATAL;
+	}
+
+	HashTable = converter->ref_class->base_class.cvt_table;
 	ptr = &HashTable[_NhlHASHFUNC(converter->fromtype,converter->totype)];
 
 	while((*ptr != NULL) &&
@@ -1343,47 +1426,43 @@ static NhlConvertPtr
 GetCvtHash
 #if	NhlNeedProto
 (
+	NhlClass	cptr,
 	NrmQuark	from,
 	NrmQuark	to
 )
 #else
-(from,to)
+(cptr,from,to)
+	NhlClass	cptr;
 	NrmQuark	from;
 	NrmQuark	to;
 #endif
 {
 	NhlConvertPtr	ptr;
 
-	while(1){
-		ptr = HashTable[_NhlHASHFUNC(from,to)];
+	if(!cptr || !cptr->base_class.cvt_table)
+		return NULL;
 
-		while((ptr != NULL) &&
+	ptr = cptr->base_class.cvt_table[_NhlHASHFUNC(from,to)];
+
+	while((ptr != NULL) &&
 			    ((ptr->fromtype != from) || (ptr->totype != to)))
 			ptr = ptr->next;
-
-		if((ptr == NULL)||(ptr->record_type != _NhlReferenceConverter))
-			return ptr;
-
-		/*
-		 * ptr is actually pointing to a "ref" converter -
-		 * need to get the actual one.
-		 */
-		from = ptr->args[0].data.lngval;
-		to = ptr->args[1].data.lngval;
-	}
+	return ptr;
 }
 
 static NhlConvertPtr
 RecurseFrom
 #if	NhlNeedProto
 (
+	NhlClass	cptr,
 	_NhlTptr	fptr,
 	_NhlTptr	tptr,
 	NrmQuark	from,
 	NrmQuark	to
 )
 #else
-(fptr,tptr,from,to)
+(cptr,fptr,tptr,from,to)
+	NhlClass	cptr;
 	_NhlTptr	fptr;
 	_NhlTptr	tptr;
 	NrmQuark	from;
@@ -1398,7 +1477,7 @@ RecurseFrom
 	if(fptr == NULL)
 		return NULL;
 	
-	ptr = GetCvtHash(fptr->typeQ,tptr->typeQ);
+	ptr = GetCvtHash(cptr,fptr->typeQ,tptr->typeQ);
 
 	/*
 	 * if we havn't found it yet, keep going up from tree.
@@ -1406,7 +1485,7 @@ RecurseFrom
 	if((ptr == NULL) ||
 		((ptr->record_type == _NhlExclusiveConverter) &&
 			((ptr->fromtype != from) || (ptr->totype != to))))
-		return RecurseFrom(fptr->super,tptr,from,to);
+		return RecurseFrom(cptr,fptr->super,tptr,from,to);
 
 	return ptr;
 }
@@ -1415,13 +1494,15 @@ static NhlConvertPtr
 RecurseGetCvtPtr
 #if	NhlNeedProto
 (
+	NhlClass	cptr,
 	_NhlTptr	fptr,
 	_NhlTptr	tptr,
 	NrmQuark	from,
 	NrmQuark	to
 )
 #else
-(fptr,tptr,from,to)
+(cptr,fptr,tptr,from,to)
+	NhlClass	cptr;
 	_NhlTptr	fptr;
 	_NhlTptr	tptr;
 	NrmQuark	from;
@@ -1442,11 +1523,12 @@ RecurseGetCvtPtr
 	 * Traverse up the "from super-type" tree first since it is
 	 * probably shorter.
 	 */
-	ptr = RecurseFrom(fptr,tptr,from,to);
+	ptr = RecurseFrom(cptr,fptr,tptr,from,to);
 
 	if(ptr != NULL)
 		return ptr;
 
+#ifdef	NOT
 	/*
 	 * Traverse down the "to sub-type" tree if didn't find a converter up
 	 * the "from super-type" tree.
@@ -1455,12 +1537,13 @@ RecurseGetCvtPtr
 
 	while(sub != NULL){
 		for(i=0;i<sub->num;i++){
-			ptr = RecurseGetCvtPtr(fptr,sub->sub[i],from,to);
+			ptr = RecurseGetCvtPtr(cptr,fptr,sub->sub[i],from,to);
 			if(ptr != NULL)
 				return ptr;
 		}
 		sub = sub->more;
 	}
+#endif
 
 	/*
 	 * Didn't find anything down this sub-tree
@@ -1472,19 +1555,36 @@ static NhlConvertPtr
 GetCvtPtr
 #if	NhlNeedProto
 (
+	NhlClass	ref_class,
 	NrmQuark	from,
 	NrmQuark	to
 )
 #else
-(from,to)
+(ref_class,from,to)
+	NhlClass	ref_class;
 	NrmQuark	from;
 	NrmQuark	to;
 #endif
 {
+	NhlClass	current = ref_class;
+	NhlConvertPtr	cvtr = NULL;
 	_NhlTptr	fptr = GetTypeNode(from);
 	_NhlTptr	tptr = GetTypeNode(to);
 
-	return RecurseGetCvtPtr(fptr,tptr,from,to);
+	while(!cvtr && current){
+		cvtr = RecurseGetCvtPtr(current,fptr,tptr,from,to);
+
+		if(cvtr && cvtr->record_type == _NhlReferenceConverter){
+			fptr = GetTypeNode(cvtr->args[0].data.lngval);
+			tptr = GetTypeNode(cvtr->args[1].data.lngval);
+			current = ref_class;
+			cvtr = NULL;
+		}
+		else
+			current = current->base_class.superclass;
+	}
+
+	return cvtr;
 }
 
 /*
@@ -1505,17 +1605,19 @@ GetCvtPtr
 static NhlBoolean
 ConverterExists
 #if     NhlNeedProto
-( 
+(
+	NhlClass		cptr,
 	NrmQuark		from,		/* from type		*/
 	NrmQuark		to		/* to type		*/
 )
 #else
-(from,to)
+(cptr,from,to)
+	NhlClass		cptr;
 	NrmQuark		from;		/* from type		*/
 	NrmQuark		to;		/* to type		*/
 #endif 
 {
-	NhlConvertPtr	ptr = GetCvtPtr(from,to);
+	NhlConvertPtr	ptr = GetCvtPtr(cptr,from,to);
 
 	if((ptr == NULL) || (ptr->fromtype != from) || (ptr->totype != to))
 		return False;
@@ -1540,17 +1642,22 @@ ConverterExists
 NhlBoolean
 _NhlConverterExists
 #if     NhlNeedProto
-( 
+(
+	NhlClass	ref_class,
 	NrmQuark	from,		/* from type		*/
 	NrmQuark	to		/* to type		*/
 )
 #else
-(from,to)
+(ref_class,from,to)
+	NhlClass	ref_class;
 	NrmQuark	from;		/* from type		*/
 	NrmQuark	to;		/* to type		*/
 #endif 
 {
-	return ConverterExists(from,to);
+	if(!ref_class)
+		ref_class = NhlbaseClass;
+
+	return ConverterExists(ref_class,from,to);
 }
 
 /*
@@ -1752,11 +1859,13 @@ Convert
 	if(ret < NhlWARNING)
 		return(ret);
 
+#ifdef	NOTUSED
 	if(conv->cacheit){
 		lret = InsertInCache(conv,fromdata,todata);
 		return MIN(lret,ret);
 	}
 	else
+#endif
 		return(ret);
 }
 
@@ -1801,6 +1910,7 @@ ConvertData
 	_NhlCtxtStackRec	ctxt;
 	NhlErrorTypes		ret=NhlNOERROR;
 	NrmQuark		from,to;
+	NhlClass		ref_class;
 
 	if(context == NULL){
 		NHLPERROR((NhlFATAL,NhlEUNKNOWN,
@@ -1815,7 +1925,12 @@ ConvertData
 	fromdata->typeQ = from = fromQ;
 	todata->typeQ = to = toQ;
 
-	ptr = GetCvtPtr(from,to);
+	if(!context->ref)
+		ref_class = NhlbaseClass;
+	else
+		ref_class = context->ref->base.layer_class;
+
+	ptr = GetCvtPtr(ref_class,from,to);
 
 	if(ptr == NULL){
 		NhlPError(NhlWARNING,NhlEUNKNOWN,"No Converter for %s to %s",
@@ -1823,9 +1938,11 @@ ConvertData
 		return(NhlFATAL);
 	}
 
+#ifdef	NOT
 	if(ptr->cacheit)
 		if((cache = RetrieveCache(ptr->cache, fromdata)) != NULL)
 			return(SetConvertVal(cache->to, todata));
+#endif
 
 	ret = Convert(ptr,fromdata,todata);
 
@@ -1898,13 +2015,15 @@ NhlErrorTypes
 NhlConvertData
 #if     NhlNeedProto
 ( 
+	int		id,
 	NhlString	from,		/* from type		*/
 	NhlString	to,		/* to type		*/
 	NrmValue	*fromdata,	/* from data		*/
 	NrmValue	*todata		/* to data		*/
 )
 #else
-(from,to,fromdata,todata)
+(id,from,to,fromdata,todata)
+	int		id;
 	NhlString	from;		/* from type		*/
 	NhlString	to;		/* to type		*/
 	NrmValue	*fromdata;	/* from data		*/
@@ -1913,7 +2032,8 @@ NhlConvertData
 {
 	static _NhlCtxtStack	free_list = NULL;
 	_NhlCtxtStack		tptr = NULL;
-	_NhlConvertContext	context = _NhlCreateConvertContext();
+	_NhlConvertContext	context = _NhlCreateConvertContext(
+							_NhlGetLayer(id));
 	NhlErrorTypes		ret;
 
 	/*
@@ -2055,7 +2175,7 @@ _NhlCvtCtxtMalloc
 
 	while(ctxt->num_alloced >= NHLCONVALLOCLISTLEN){
 		if(ctxt->next == NULL){
-			ctxt->next = _NhlCreateConvertContext();
+			ctxt->next = _NhlCreateConvertContext(NULL);
 			if(ctxt->next == NULL){
 				NhlPError(NhlFATAL, NhlEUNKNOWN,
 				"NhlConvertMalloc:Unable to Grow Context");
@@ -2170,3 +2290,12 @@ _NhlConvertCopyGenArray
 	return _NhlConvertCreateGenArray(gen->data,NrmQuarkToString(gen->typeQ),
 		gen->size,gen->num_dimensions,gen->len_dimensions);
 }
+
+
+
+
+
+
+
+
+

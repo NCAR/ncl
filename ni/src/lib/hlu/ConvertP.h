@@ -1,5 +1,5 @@
 /*
- *      $Id: ConvertP.h,v 1.6 1994-07-28 22:11:34 boote Exp $
+ *      $Id: ConvertP.h,v 1.7 1995-12-19 20:38:58 boote Exp $
  */
 /************************************************************************
 *									*
@@ -26,6 +26,7 @@
 #ifndef _NCONVERTP_H
 #define _NCONVERTP_H
 
+#include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/NresDB.h>
 #include <ncarg/hlu/Convert.h>
 
@@ -37,6 +38,7 @@
 typedef struct _NhlConvertContext _NhlConvertContextRec, *_NhlConvertContext;
 
 struct _NhlConvertContext {
+	NhlLayer		ref;
 	int			num_alloced;
 	NhlPointer		alloc_list[NHLCONVALLOCLISTLEN];
 	_NhlConvertContext	next;
@@ -49,9 +51,11 @@ struct _NhlCtxtStack{
 	_NhlCtxtStack		next;
 };
 
+extern NhlConvertPtr	_NhlDefHashTable[];
+
 extern _NhlConvertContext _NhlCreateConvertContext(
 #if	NhlNeedProto
-	void
+	NhlLayer	ref
 #endif
 );
 
@@ -111,6 +115,7 @@ typedef enum _NhlCvtRecType_ {
 } _NhlCvtRecType;
 
 struct _NhlConvertRec{
+	NhlClass		ref_class;
 	NhlConvertPtr		next;
 	_NhlCvtRecType		record_type;
 	NrmQuark		fromtype;
@@ -125,6 +130,7 @@ struct _NhlConvertRec{
 
 extern NhlErrorTypes _NhlExtRegisterConverter(
 #if	NhlNeedVarArgProto
+	NhlClass		ref_class,
 	NhlString		from,		/* from type		*/
 	NhlString		to,		/* to type		*/
 	NhlTypeConverter	convert,	/* the converter function*/ 
@@ -139,6 +145,7 @@ extern NhlErrorTypes _NhlExtRegisterConverter(
 
 extern NhlErrorTypes _NhlRegSymConv(
 #if	NhlNeedProto
+	NhlClass	ref_class,
 	NhlString	fromSym,
 	NhlString	toSym,
 	NhlString	from,
@@ -148,6 +155,7 @@ extern NhlErrorTypes _NhlRegSymConv(
 
 NhlErrorTypes _NhlRegSymConvQ(
 #if	NhlNeedProto
+	NhlClass	ref_class,
 	NrmQuark	fromSym,
 	NrmQuark	toSym,
 	NrmQuark	from,
@@ -157,6 +165,7 @@ NhlErrorTypes _NhlRegSymConvQ(
 
 extern NhlErrorTypes _NhlDeleteConverter(
 #if	NhlNeedProto
+	NhlClass		ref_class,
 	NrmQuark		fromQ,		/* from type	*/
 	NrmQuark		toQ		/* to type	*/
 #endif
@@ -164,14 +173,16 @@ extern NhlErrorTypes _NhlDeleteConverter(
 
 extern NhlErrorTypes _NhlUnRegisterConverter(
 #if	NhlNeedProto
+	NhlClass	ref_class,
 	NrmQuark	from,		/* from type		*/
 	NrmQuark	to,		/* to type		*/
- 	NhlConvertPtr	converter	/* pointer to converter	*/
+ 	NhlConvertPtr	*converter	/* pointer to converter	*/
 #endif
 );
 
 extern NhlBoolean _NhlConverterExists(
 #if	NhlNeedProto
+	NhlClass		ref_class,
 	NrmQuark		from,		/* from type	*/
 	NrmQuark		to		/* to type	*/
 #endif

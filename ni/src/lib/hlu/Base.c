@@ -1,5 +1,5 @@
 /*
- *      $Id: Base.c,v 1.13 1995-07-03 06:55:35 boote Exp $
+ *      $Id: Base.c,v 1.14 1995-12-19 20:38:54 boote Exp $
  */
 /************************************************************************
 *									*
@@ -24,6 +24,7 @@
 #include <stdio.h>
 #include <limits.h>
 #include <ncarg/hlu/hluP.h>
+#include <ncarg/hlu/ConvertP.h>
 #include <ncarg/hlu/ResourcesP.h>
 #include <ncarg/hlu/ConvertersP.h>
 #include <ncarg/hlu/BaseP.h>
@@ -66,6 +67,7 @@ NhlObjClassRec NhlobjClassRec = {
 /* layer_size			*/	sizeof(NhlObjLayerRec),
 /* class_inited			*/	False,
 /* superclass			*/	(NhlClass)NULL,
+/* cvt_table			*/	_NhlDefHashTable,
 
 /* resources			*/	NULL,
 /* num_resources		*/	0,
@@ -89,6 +91,7 @@ NhlClassRec NhllayerClassRec = {
 /* layer_size			*/	sizeof(NhlLayerRec),
 /* class_inited			*/	False,
 /* superclass			*/	(NhlClass)NULL,
+/* cvt_table			*/	_NhlDefHashTable,
 
 /* resources			*/	NULL,
 /* num_resources		*/	0,
@@ -152,10 +155,11 @@ BaseClassInitialize
 		{NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)NhlNULLOBJID)}
 	};
 
-	(void)_NhlRegisterEnumType(NhlTObjId,objidvals,NhlNumber(objidvals));
-	(void)NhlRegisterConverter(NhlTScalar,NhlTObjId,_NhlCvtScalarToIndex,
-				   objidargs,NhlNumber(objidargs),False,NULL);
-	(void)NhlRegisterConverter(NhlTGenArray,NhlTObjIdGenArray,
+	(void)_NhlRegisterEnumType(NhlbaseClass,NhlTObjId,objidvals,
+							NhlNumber(objidvals));
+	(void)NhlRegisterConverter(NhlbaseClass,NhlTScalar,NhlTObjId,
+		_NhlCvtScalarToIndex,objidargs,NhlNumber(objidargs),False,NULL);
+	(void)NhlRegisterConverter(NhlbaseClass,NhlTGenArray,NhlTObjIdGenArray,
 		_NhlCvtGenArrayToIndexGenArray,objidargs,NhlNumber(objidargs),
 		False,NULL);
 

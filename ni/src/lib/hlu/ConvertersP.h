@@ -1,5 +1,5 @@
 /*
- *      $Id: ConvertersP.h,v 1.4 1995-04-22 01:01:33 boote Exp $
+ *      $Id: ConvertersP.h,v 1.5 1995-12-19 20:39:00 boote Exp $
  */
 /************************************************************************
 *									*
@@ -36,6 +36,7 @@ struct _NhlEnumVals_ {
 
 extern NhlErrorTypes _NhlRegisterEnumType(
 #if	NhlNeedProto
+	NhlClass	ref_class,
 	NhlString	enum_name,
 	_NhlEnumVals	*enum_vals,
 	int		nvals

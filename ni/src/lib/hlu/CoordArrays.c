@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrays.c,v 1.30 1995-07-03 06:55:39 boote Exp $
+ *      $Id: CoordArrays.c,v 1.31 1995-12-19 20:39:01 boote Exp $
  */
 /************************************************************************
 *									*
@@ -216,6 +216,7 @@ NhlCoordArraysClassRec NhlcoordArraysClassRec = {
 /* layer_size			*/	sizeof(NhlCoordArraysLayerRec),
 /* class_inited			*/	False,
 /* superclass			*/	(NhlClass)&NhldataItemClassRec,
+/* cvt_table			*/	NULL,
 
 /* resources			*/	resources,
 /* num_resources		*/	NhlNumber(resources),
@@ -466,7 +467,7 @@ MyArray
 	else if(array->typeQ == floatQ)
 		*my_array = array;
 	else{
-		tctxt = _NhlCreateConvertContext();
+		tctxt = _NhlCreateConvertContext(NULL);
 		if(tctxt == NULL){
 			NHLPERROR((NhlFATAL,ENOMEM,NULL));
 			return NhlFATAL;
@@ -639,8 +640,8 @@ FlushObj
 				to.size = sizeof(float);
 				to.data.ptrval = &tfloat;
 
-				lret = NhlConvertData(NhlTVariable,NhlTFloat,
-								&from,&to);
+				lret = NhlConvertData(NULL,NhlTVariable,
+					NhlTFloat,&from,&to);
 				if(ret < NhlWARNING)
 					return NhlFATAL;
 				ret = MIN(ret,lret);
@@ -699,8 +700,8 @@ FlushObj
 				to.size = sizeof(float);
 				to.data.ptrval = &tfloat;
 
-				lret = NhlConvertData(NhlTVariable,NhlTFloat,
-								&from,&to);
+				lret = NhlConvertData(NULL,NhlTVariable,
+						NhlTFloat,&from,&to);
 				if(lret < NhlWARNING)
 					return NhlFATAL;
 				ret = MIN(lret,ret);
@@ -957,10 +958,10 @@ CoordArraysClassInitialize
 	xminQ = NrmStringToQuark(NhlNcaXMinV);
 	yminQ = NrmStringToQuark(NhlNcaYMinV);
 
-	lret = _NhlRegisterEnumType(NhlTcaCastMode,cast_mode,
-							NhlNumber(cast_mode));
+	lret = _NhlRegisterEnumType(NhlcoordArraysClass,NhlTcaCastMode,
+			cast_mode,NhlNumber(cast_mode));
 
-	ret = NhlRegisterConverter(
+	ret = NhlRegisterConverter(NhlbaseClass,
 			NhlcoordArraysClass->base_class.class_name,
 			NhlcoordArrTableFloatClass->base_class.class_name,
 			CvtCArrToCArrTabFlt,NULL,0,False,NULL);

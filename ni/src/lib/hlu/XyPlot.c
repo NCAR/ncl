@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.51 1995-08-18 02:19:37 dbrown Exp $
+ *      $Id: XyPlot.c,v 1.52 1995-12-19 20:39:41 boote Exp $
  */
 /************************************************************************
 *									*
@@ -516,6 +516,7 @@ NhlXyDataSpecClassRec NhlxyDataSpecClassRec = {
 /* class_inited			*/	False,
 /* superclass			*/	(NhlClass)
 						&NhldataSpecClassRec,
+/* cvt_table			*/	NULL,
 
 /* layer_resources		*/	data_resources,
 /* num_resources		*/	NhlNumber(data_resources),
@@ -549,6 +550,7 @@ NhlXyPlotClassRec NhlxyPlotClassRec = {
 /* class_inited                 */      False,
 /* superclass                   */      (NhlClass)
 						&NhldataCommClassRec,
+/* cvt_table			*/	NULL,
 
 /* layer_resources              */      resources,
 /* num_resources                */      NhlNumber(resources),
@@ -682,7 +684,8 @@ XyDataClassInitialize
 		{NhlCUSTOM,	"custom"}
 	};
 
-	_NhlRegisterEnumType(NhlTLineLabelMode,lblmode,NhlNumber(lblmode));
+	_NhlRegisterEnumType(NhlxyPlotClass,NhlTLineLabelMode,lblmode,
+		NhlNumber(lblmode));
 	Qint = NrmStringToQuark(NhlTInteger);
 	Qstring = NrmStringToQuark(NhlTString);
 

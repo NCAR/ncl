@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularTransObj.c,v 1.18 1995-05-18 20:05:35 dbrown Exp $
+ *      $Id: IrregularTransObj.c,v 1.19 1995-12-19 20:39:09 boote Exp $
  */
 /************************************************************************
 *									*
@@ -397,6 +397,7 @@ NhlIrregularTransObjClassRec NhlirregularTransObjClassRec = {
 /* layer_size			*/	sizeof(NhlIrregularTransObjLayerRec),
 /* class_inited			*/	False,
 /* superclass			*/	(NhlClass)&NhltransObjClassRec,
+/* cvt_table			*/	NULL,
 
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
@@ -1991,8 +1992,8 @@ static NhlErrorTypes    IrTransClassInitialize
 	{NhlLOGAXIS,		"logaxis"}
         };
 
-	_NhlRegisterEnumType(NhlTAxisType,axistypelist,
-			     NhlNumber(axistypelist));
+	_NhlRegisterEnumType(NhlirregularTransObjClass,
+			NhlTAxisType,axistypelist,NhlNumber(axistypelist));
 
 	QtrXCoordPoints = NrmStringToQuark(NhlNtrXCoordPoints);
 	QtrYCoordPoints = NrmStringToQuark(NhlNtrYCoordPoints);

@@ -1,5 +1,5 @@
 /*
- *      $Id: Legend.c,v 1.43 1995-07-28 22:51:41 dbrown Exp $
+ *      $Id: Legend.c,v 1.44 1995-12-19 20:39:13 boote Exp $
  */
 /************************************************************************
 *									*
@@ -665,6 +665,7 @@ NhlLegendClassRec NhllegendClassRec = {
 /* layer_size			*/	sizeof(NhlLegendLayerRec),
 /* class_inited			*/	False,
 /* superclass			*/	(NhlClass)&NhlviewClassRec,
+/* cvt_table			*/	NULL,
 
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
@@ -5633,10 +5634,10 @@ static NhlErrorTypes    LegendClassInitialize
         {NhlEXPLICITPLACEMENT,	"explicitplacement"},
         };
 
-	_NhlRegisterEnumType(NhlTlgLabelAlignmentMode,labelalignmentlist,
-			     NhlNumber(labelalignmentlist));
-	_NhlRegisterEnumType(NhlTlgItemPlacementMode,itemplacementlist,
-			     NhlNumber(itemplacementlist));
+	_NhlRegisterEnumType(NhllegendClass,NhlTlgLabelAlignmentMode,
+			labelalignmentlist,NhlNumber(labelalignmentlist));
+	_NhlRegisterEnumType(NhllegendClass,NhlTlgItemPlacementMode,
+			itemplacementlist,NhlNumber(itemplacementlist));
 
 	Qint = NrmStringToQuark(NhlTInteger);
 	Qstring = NrmStringToQuark(NhlTString);

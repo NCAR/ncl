@@ -1,5 +1,5 @@
 /*
- *      $Id: SetValues.c,v 1.20 1995-05-10 06:07:36 boote Exp $
+ *      $Id: SetValues.c,v 1.21 1995-12-19 20:39:26 boote Exp $
  */
 /************************************************************************
 *									*
@@ -398,7 +398,7 @@ _NhlSetLayerValues
  * along with all that memory after the SetValues method has had a chance
  * to copy the memory.
  */
-	context = _NhlCreateConvertContext();
+	context = _NhlCreateConvertContext(l);
 
 	oldl = (NhlLayer)NhlMalloc((unsigned)lc->base_class.layer_size);
 	reql = (NhlLayer)NhlMalloc((unsigned)lc->base_class.layer_size);

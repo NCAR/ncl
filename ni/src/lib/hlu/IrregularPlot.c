@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularPlot.c,v 1.16 1995-05-03 03:11:09 dbrown Exp $
+ *      $Id: IrregularPlot.c,v 1.17 1995-12-19 20:39:08 boote Exp $
  */
 /************************************************************************
 *									*
@@ -109,6 +109,7 @@ NhlIrregularPlotClassRec NhlirregularPlotClassRec = {
 /* layer_size			*/      sizeof(NhlIrregularPlotLayerRec),
 /* class_inited			*/      False,
 /* superclass			*/      (NhlClass)&NhltransformClassRec,
+/* cvt_table			*/	NULL,
 
 /* layer_resources		*/	resources, /* resources */
 /* num_resources		*/	NhlNumber(resources),

@@ -1,5 +1,5 @@
 /*
- *      $Id: App.c,v 1.18 1995-05-30 19:47:58 boote Exp $
+ *      $Id: App.c,v 1.19 1995-12-19 20:38:53 boote Exp $
  */
 /************************************************************************
 *									*
@@ -168,6 +168,7 @@ NhlAppClassRec NhlappClassRec = {
 /* layer_size			*/	sizeof(NhlAppLayerRec),
 /* class_inited			*/	False,
 /* superclass			*/	(NhlClass)&NhlbaseClassRec,
+/* cvt_table			*/	NULL,
 
 /* resources			*/	resources,
 /* num_resources		*/	NhlNumber(resources),
@@ -588,7 +589,7 @@ AppInitialize
 	classQ[1] = NrmNULLQUARK;
 
 	rlist = (NrmResourceList)ac->app_class.resources;
-	context = _NhlCreateConvertContext();
+	context = _NhlCreateConvertContext(new);
 	if(anew->app.appDB)
 		db = anew->app.appDB;
 	else
@@ -753,7 +754,7 @@ AppSetValues
 		if(np->res){
 			NhlString	*new_vals;
 
-			context = _NhlCreateConvertContext();
+			context = _NhlCreateConvertContext(new);
 			if(!context){
 				NhlPError(NhlFATAL,ENOMEM,
 					"%s:No Converter Context.",func);

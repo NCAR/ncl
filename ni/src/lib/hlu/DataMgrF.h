@@ -1,5 +1,5 @@
 /*
- *      $Id: DataMgrF.h,v 1.5 1995-02-17 10:23:13 boote Exp $
+ *      $Id: DataMgrF.h,v 1.6 1995-12-19 20:39:05 boote Exp $
  */
 /************************************************************************
 *									*
@@ -33,8 +33,8 @@
 
 extern _NhlDHandle _NhlInitDataConnection(
 #if	NhlNeedProto
-	NhlLayer	item,		/* DataItem sub-class	*/
-	int		dcommid,	/* id for datacomm layer	*/
+	NhlLayer	item,		/* DataItem sub-class		*/
+	NhlLayer	dcomm,		/* datacomm layer		*/
 	NrmQuark	res_name,	/* resource name		*/
 	NrmQuark	*type_req,	/* array of type wanted		*/
 	NrmQuark	*type_ret	/* type will be created		*/

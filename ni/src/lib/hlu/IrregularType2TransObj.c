@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularType2TransObj.c,v 1.19 1995-05-03 03:11:14 dbrown Exp $
+ *      $Id: IrregularType2TransObj.c,v 1.20 1995-12-19 20:39:10 boote Exp $
  */
 /************************************************************************
 *									*
@@ -264,6 +264,7 @@ NhlIrregularType2TransObjClassRec NhlirregularType2TransObjClassRec = {
 /* class_inited			*/	False,
 /* superclass			*/	(NhlClass)
 						&NhltransObjClassRec,
+/* cvt_table			*/	NULL,
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
 /* all_resources		*/	NULL,

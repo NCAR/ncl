@@ -1,5 +1,5 @@
 /*
- *      $Id: XWorkstation.c,v 1.13 1995-04-29 18:53:43 boote Exp $
+ *      $Id: XWorkstation.c,v 1.14 1995-12-19 20:39:40 boote Exp $
  */
 /************************************************************************
 *									*
@@ -96,6 +96,7 @@ NhlXWorkstationClassRec NhlxWorkstationClassRec = {
 /* class_inited			*/	False,
 /* superclass			*/	(NhlClass)
 						&NhlworkstationClassRec,
+/* cvt_table			*/	NULL,
 
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
@@ -193,7 +194,8 @@ XWorkstationClassInitialize
 		{NhlPRIVATE,	"private"}
 	};
 
-	(void)_NhlRegisterEnumType(NhlTXColorMode,cmvals,NhlNumber(cmvals));
+	(void)_NhlRegisterEnumType(NhlxWorkstationClass,NhlTXColorMode,cmvals,
+		NhlNumber(cmvals));
 
 	return NhlNOERROR;
 }

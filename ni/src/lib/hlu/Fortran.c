@@ -1,5 +1,5 @@
 /*
- *      $Id: Fortran.c,v 1.11 1995-05-05 08:50:35 boote Exp $
+ *      $Id: Fortran.c,v 1.12 1995-12-19 20:39:07 boote Exp $
  */
 /************************************************************************
 *									*
@@ -97,7 +97,7 @@ _NHLCALLF(nhl_frlcreate,NHL_FRLCREATE)
 	to.size = sizeof(rltype);
 	to.data.ptrval = &rltype;
 
-	if(NhlConvertData(NhlTString,NhlTRLType,&from,&to) != NhlNOERROR){
+	if(NhlConvertData(NULL,NhlTString,NhlTRLType,&from,&to) != NhlNOERROR){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"Invalid list type \"%s\"",
 								tstring);
 		*listid = NhlFATAL;
@@ -1619,29 +1619,30 @@ FortranInit
 	FExpStrArrQ = NrmStringToQuark(_NhlTFExpStringArr);
 	FExpArrQ = NrmStringToQuark(_NhlTFExpArray);
 
-	_NhlRegisterEnumType(NhlTRLType,RlListTypeEnum,
+	_NhlRegisterEnumType(NULL,NhlTRLType,RlListTypeEnum,
 						NhlNumber(RlListTypeEnum));
 
 	/*
 	 * convert to a fortran string.
 	 */
-	(void)NhlRegisterConverter(NhlTScalar,_NhlTFExpString,
+	(void)NhlRegisterConverter(NULL,NhlTScalar,_NhlTFExpString,
 					NhlCvtScalarToFStr,NULL,0,False,NULL);
-	(void)_NhlRegSymConv(NhlTGenArray,_NhlTFExpString,
+	(void)_NhlRegSymConv(NULL,NhlTGenArray,_NhlTFExpString,
 						NhlTGenArray,NhlTScalar);
 	/*
 	 * convert to a fortran array.
 	 */
-	(void)NhlRegisterConverter(NhlTGenArray,_NhlTFExpArray,CvtGenArrToFArr,
-							NULL,0,False,NULL);
-	(void)_NhlRegSymConv(NhlTScalar,_NhlTFExpArray,NhlTScalar,NhlTGenArray);
+	(void)NhlRegisterConverter(NULL,NhlTGenArray,_NhlTFExpArray,
+		CvtGenArrToFArr,NULL,0,False,NULL);
+	(void)_NhlRegSymConv(NULL,NhlTScalar,_NhlTFExpArray,NhlTScalar,
+								NhlTGenArray);
 
 
 	/*
 	 * convert to a fortran string array.
 	 */
-	(void)NhlRegisterConverter(NhlTGenArray,_NhlTFExpStringArr,
+	(void)NhlRegisterConverter(NULL,NhlTGenArray,_NhlTFExpStringArr,
 					CvtGenToFStrArr,NULL,0,False,NULL);
-	(void)_NhlRegSymConv(NhlTScalar,_NhlTFExpStringArr,
+	(void)_NhlRegSymConv(NULL,NhlTScalar,_NhlTFExpStringArr,
 						NhlTScalar,NhlTGenArray);
 }

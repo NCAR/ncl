@@ -1,5 +1,5 @@
 /*
- *      $Id: View.c,v 1.19 1995-11-21 20:19:09 dbrown Exp $
+ *      $Id: View.c,v 1.20 1995-12-19 20:39:37 boote Exp $
  */
 /************************************************************************
 *									*
@@ -248,6 +248,7 @@ NhlViewClassRec NhlviewClassRec = {
 /* layer_size			*/	sizeof(NhlViewLayerRec),
 /* class_inited			*/	False,
 /* superclass			*/	(NhlClass)&NhlbaseClassRec,  
+/* cvt_table			*/	NULL,
 
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
@@ -635,13 +636,13 @@ static NhlErrorTypes	ViewClassInitialize()
 	{NhlPOSTDRAW,	"postdraw"}
 	};
 
-	_NhlRegisterEnumType(NhlTOrientation,orientationlist,
+	_NhlRegisterEnumType(NhlviewClass,NhlTOrientation,orientationlist,
 			     NhlNumber(orientationlist));
-	_NhlRegisterEnumType(NhlTPosition,positionlist,
+	_NhlRegisterEnumType(NhlviewClass,NhlTPosition,positionlist,
 			     NhlNumber(positionlist));
-	_NhlRegisterEnumType(NhlTJustification,justificationlist,
+	_NhlRegisterEnumType(NhlviewClass,NhlTJustification,justificationlist,
 			     NhlNumber(justificationlist));
-	_NhlRegisterEnumType(NhlTDrawOrder,draworderlist,
+	_NhlRegisterEnumType(NhlviewClass,NhlTDrawOrder,draworderlist,
 			     NhlNumber(draworderlist));
 
 /*

@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.42 1995-10-02 21:55:20 dbrown Exp $
+ *      $Id: MapPlot.c,v 1.43 1995-12-19 20:39:16 boote Exp $
  */
 /************************************************************************
 *									*
@@ -817,6 +817,7 @@ NhlMapPlotClassRec NhlmapPlotClassRec = {
 /* layer_size			*/      sizeof(NhlMapPlotLayerRec),
 /* class_inited			*/      False,
 /* superclass			*/      (NhlClass)&NhltransformClassRec,
+/* cvt_table			*/	NULL,
 
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
@@ -1136,18 +1137,17 @@ MapPlotClassInitialize
 
 	load_hlumap_routines(False);
 
-        _NhlRegisterEnumType(NhlTMapBoundarySets,mapboundarysetslist,
-                             NhlNumber(mapboundarysetslist));
+        _NhlRegisterEnumType(NhlmapPlotClass,NhlTMapBoundarySets,
+		mapboundarysetslist,NhlNumber(mapboundarysetslist));
 
-        _NhlRegisterEnumType(NhlTSpecifiedFillPriority,
-			     specifiedfillprioritylist,
-                             NhlNumber(specifiedfillprioritylist));
+        _NhlRegisterEnumType(NhlmapPlotClass,NhlTSpecifiedFillPriority,
+		specifiedfillprioritylist,NhlNumber(specifiedfillprioritylist));
 
-        _NhlRegisterEnumType(NhlTMapGridMaskMode,mapgridmaskmodelist,
-                             NhlNumber(mapgridmaskmodelist));
+        _NhlRegisterEnumType(NhlmapPlotClass,NhlTMapGridMaskMode,
+		mapgridmaskmodelist,NhlNumber(mapgridmaskmodelist));
 
-        _NhlRegisterEnumType(NhlTMapShapeMode,mapshapemodelist,
-                             NhlNumber(mapshapemodelist));
+        _NhlRegisterEnumType(NhlmapPlotClass,NhlTMapShapeMode,mapshapemodelist,
+		NhlNumber(mapshapemodelist));
 
 	Qint = NrmStringToQuark(NhlTInteger);
 	Qstring = NrmStringToQuark(NhlTString);

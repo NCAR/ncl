@@ -1,5 +1,5 @@
 /*
- *      $Id: LogLinPlot.c,v 1.15 1995-04-07 10:42:42 boote Exp $
+ *      $Id: LogLinPlot.c,v 1.16 1995-12-19 20:39:14 boote Exp $
  */
 /************************************************************************
 *									*
@@ -106,6 +106,7 @@ NhlLogLinPlotClassRec NhllogLinPlotClassRec = {
 /* layer_size			*/      sizeof(NhlLogLinPlotLayerRec),
 /* class_inited			*/      False,
 /* superclass			*/      (NhlClass)&NhltransformClassRec,
+/* cvt_table			*/	NULL,
 
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),

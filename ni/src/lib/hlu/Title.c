@@ -1,5 +1,5 @@
 /*
- *      $Id: Title.c,v 1.23 1995-06-06 13:09:20 boote Exp $
+ *      $Id: Title.c,v 1.24 1995-12-19 20:39:30 boote Exp $
  */
 /************************************************************************
 *									*
@@ -339,6 +339,7 @@ NhlTitleClassRec NhltitleClassRec = {
 /* layer_size                   */      sizeof(NhlTitleLayerRec),
 /* class_inited                 */      False,
 /* superclass                   */      (NhlClass)&NhlviewClassRec,
+/* cvt_table			*/	NULL,
 
 /* layer_resources              */      resources,
 /* num_resources                */      NhlNumber(resources),
@@ -431,7 +432,8 @@ static NhlErrorTypes    TitleClassInitialize
 		{NhlCENTER,	"center"}
 	};
 
-	_NhlRegisterEnumType(NhlTTitlePositions,titlepos,NhlNumber(titlepos));
+	_NhlRegisterEnumType(NhlbaseClass,NhlTTitlePositions,titlepos,
+							NhlNumber(titlepos));
 
 	Qmain = NrmStringToQuark(NhlNtiMainString);
 	Qxaxis = NrmStringToQuark(NhlNtiXAxisString);

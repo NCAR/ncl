@@ -1,5 +1,5 @@
 /*
- *      $Id: LabelBar.c,v 1.41 1995-07-28 22:51:40 dbrown Exp $
+ *      $Id: LabelBar.c,v 1.42 1995-12-19 20:39:11 boote Exp $
  */
 /************************************************************************
 *									*
@@ -552,6 +552,7 @@ NhlLabelBarClassRec NhllabelBarClassRec = {
 /* layer_size			*/	sizeof(NhlLabelBarLayerRec),
 /* class_inited			*/	False,
 /* superclass			*/	(NhlClass)&NhlviewClassRec,
+/* cvt_table			*/	NULL,
 
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
@@ -4389,9 +4390,9 @@ static NhlErrorTypes    LabelBarClassInitialize
         {NhlEXPLICITSIZING,	"explicitsizing"},
         };
 
-	_NhlRegisterEnumType(NhlTlbLabelAlignmentMode,labelalignmentlist,
-			     NhlNumber(labelalignmentlist));
-	_NhlRegisterEnumType(NhlTlbBoxSizingMode,boxsizinglist,
+	_NhlRegisterEnumType(NhlviewClass,NhlTlbLabelAlignmentMode,
+		labelalignmentlist,NhlNumber(labelalignmentlist));
+	_NhlRegisterEnumType(NhllabelBarClass,NhlTlbBoxSizingMode,boxsizinglist,
 			     NhlNumber(boxsizinglist));
 
 	Qint = NrmStringToQuark(NhlTInteger);

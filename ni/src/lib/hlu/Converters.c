@@ -1,5 +1,5 @@
 /*
- *      $Id: Converters.c,v 1.41 1995-10-12 21:33:40 boote Exp $
+ *      $Id: Converters.c,v 1.42 1995-12-19 20:38:59 boote Exp $
  */
 /************************************************************************
 *									*
@@ -923,12 +923,14 @@ NhlErrorTypes
 _NhlRegisterEnumType
 #if	NhlNeedProto
 (
+	NhlClass	ref_class,
 	NhlString	enum_name,
 	_NhlEnumVals	*enum_vals,
 	int		nvals
 )
 #else
-(enum_name,enum_vals,nvals)
+(ref_class,enum_name,enum_vals,nvals)
+	NhlClass	ref_class;
 	NhlString	enum_name;
 	_NhlEnumVals	*enum_vals;
 	int		nvals;
@@ -965,19 +967,19 @@ _NhlRegisterEnumType
 		args[i].size = enum_vals[i].value;
 		args[i].data.strval = enum_vals[i].name;
 	}
-	if(NhlRegisterConverter(NhlTString,enum_name,NhlCvtStringToEnum,args,
-					nvals,False,NULL) != NhlNOERROR){
+	if(NhlRegisterConverter(ref_class,NhlTString,enum_name,
+		NhlCvtStringToEnum,args,nvals,False,NULL) != NhlNOERROR){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:Unable to register enum %s",
 								func,enum_name);
 		return NhlFATAL;
 	}
-	if(NhlRegisterConverter(enum_name,NhlTString,NhlCvtEnumToString,args,
-					nvals,False,NULL) != NhlNOERROR){
+	if(NhlRegisterConverter(ref_class,enum_name,NhlTString,
+		NhlCvtEnumToString,args,nvals,False,NULL) != NhlNOERROR){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:Unable to register enum %s",
 								func,enum_name);
 		return NhlFATAL;
 	}
-	if(NhlRegisterConverter(NhlTStringGenArray,enumgen_name,
+	if(NhlRegisterConverter(ref_class,NhlTStringGenArray,enumgen_name,
 					NhlCvtStringGenArrayToEnumGenArray,args,
 					nvals,False,NULL) != NhlNOERROR){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:Unable to register enum %s",
@@ -990,14 +992,15 @@ _NhlRegisterEnumType
 		args[i].size = sizeof(int);
 		args[i].data.lngval = enum_vals[i].value;
 	}
-	if(NhlRegisterConverter(NhlTScalar,enum_name,NhlCvtScalarToEnum,args,
-					nvals,False,NULL) != NhlNOERROR){
+	if(NhlRegisterConverter(ref_class,NhlTScalar,enum_name,
+		NhlCvtScalarToEnum,args,nvals,False,NULL) != NhlNOERROR){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:Unable to register enum %s",
 								func,enum_name);
 		return NhlFATAL;
 	}
-	(void)_NhlRegSymConv(NhlTScalar,enumgen_name,NhlTScalar,NhlTGenArray);
-	if(NhlRegisterConverter(NhlTGenArray,enumgen_name,
+	(void)_NhlRegSymConv(ref_class,NhlTScalar,enumgen_name,NhlTScalar,
+								NhlTGenArray);
+	if(NhlRegisterConverter(ref_class,NhlTGenArray,enumgen_name,
 					NhlCvtGenArrayToEnumGenArray,args,
 					nvals,False,NULL) != NhlNOERROR){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:Unable to register enum %s",
@@ -1005,20 +1008,20 @@ _NhlRegisterEnumType
 		return NhlFATAL;
 	}
 
-	if(_NhlRegSymConv(NhlTGenArray,enum_name,NhlTGenArray,NhlTScalar) !=
-								NhlNOERROR){
+	if(_NhlRegSymConv(ref_class,NhlTGenArray,enum_name,NhlTGenArray,
+					NhlTScalar) != NhlNOERROR){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:Unable to register enum %s",
 								func,enum_name);
 		return NhlFATAL;
 	}
 
-	if(_NhlRegSymConv(NhlTQuark,enum_name,NhlTQuark,NhlTScalar) !=
+	if(_NhlRegSymConv(ref_class,NhlTQuark,enum_name,NhlTQuark,NhlTScalar) !=
 								NhlNOERROR){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:Unable to register enum %s",
 								func,enum_name);
 		return NhlFATAL;
 	}
-	if(_NhlRegSymConv(NhlTQuarkGenArray,enumgen_name,
+	if(_NhlRegSymConv(ref_class,NhlTQuarkGenArray,enumgen_name,
 				NhlTQuarkGenArray,NhlTGenArray) != NhlNOERROR){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:Unable to register enum %s",
 								func,enum_name);
@@ -3159,8 +3162,8 @@ _NhlConvertersInitialize
 	 * types.
 	 */
 #define	_Reg(FROM,TO)\
-	(void)NhlRegisterConverter(NhlT##FROM,NhlT##TO,NhlCvt##FROM##To##TO,\
-							NULL,0,False,NULL);
+	(void)NhlRegisterConverter(NULL,NhlT##FROM,NhlT##TO,\
+				NhlCvt##FROM##To##TO,NULL,0,False,NULL);
 #define _RegToAll(FROM)\
 	_Reg(FROM,Byte)		\
 	_Reg(FROM,Character)	\
@@ -3183,90 +3186,91 @@ _NhlConvertersInitialize
 	_RegToAll(Short)
 	_RegToAll(String)
 
-	(void)NhlRegisterConverter(NhlTString,NhlTQuark,NhlCvtStringToQuark,
-							NULL,0,False,NULL);
+	(void)NhlRegisterConverter(NULL,NhlTString,NhlTQuark,
+				NhlCvtStringToQuark,NULL,0,False,NULL);
 
 	/*
 	 * take care of all Quark to Scalar conversions
 	 */
-	(void)NhlRegisterConverter(NhlTQuark,NhlTScalar,NhlCvtQuarkToScalar,
-							NULL,0,False,NULL);
-	(void)_NhlRegSymConv(NhlTQuark,NhlTByte,NhlTQuark,NhlTScalar);
-	(void)_NhlRegSymConv(NhlTQuark,NhlTCharacter,NhlTQuark,NhlTScalar);
-	(void)_NhlRegSymConv(NhlTQuark,NhlTDouble,NhlTQuark,NhlTScalar);
-	(void)_NhlRegSymConv(NhlTQuark,NhlTFloat,NhlTQuark,NhlTScalar);
-	(void)_NhlRegSymConv(NhlTQuark,NhlTInteger,NhlTQuark,NhlTScalar);
-	(void)_NhlRegSymConv(NhlTQuark,NhlTLong,NhlTQuark,NhlTScalar);
-	(void)_NhlRegSymConv(NhlTQuark,NhlTShort,NhlTQuark,NhlTScalar);
-	(void)_NhlRegSymConv(NhlTQuark,NhlTString,NhlTQuark,NhlTScalar);
+	(void)NhlRegisterConverter(NULL,NhlTQuark,NhlTScalar,
+			NhlCvtQuarkToScalar,NULL,0,False,NULL);
+	(void)_NhlRegSymConv(NULL,NhlTQuark,NhlTByte,NhlTQuark,NhlTScalar);
+	(void)_NhlRegSymConv(NULL,NhlTQuark,NhlTCharacter,NhlTQuark,NhlTScalar);
+	(void)_NhlRegSymConv(NULL,NhlTQuark,NhlTDouble,NhlTQuark,NhlTScalar);
+	(void)_NhlRegSymConv(NULL,NhlTQuark,NhlTFloat,NhlTQuark,NhlTScalar);
+	(void)_NhlRegSymConv(NULL,NhlTQuark,NhlTInteger,NhlTQuark,NhlTScalar);
+	(void)_NhlRegSymConv(NULL,NhlTQuark,NhlTLong,NhlTQuark,NhlTScalar);
+	(void)_NhlRegSymConv(NULL,NhlTQuark,NhlTShort,NhlTQuark,NhlTScalar);
+	(void)_NhlRegSymConv(NULL,NhlTQuark,NhlTString,NhlTQuark,NhlTScalar);
 
 
 	/*
 	 * Take care of all GenArray to Scalar Conversions
 	 */
-	(void)NhlRegisterConverter(NhlTGenArray,NhlTScalar,
+	(void)NhlRegisterConverter(NULL,NhlTGenArray,NhlTScalar,
 				NhlCvtGenArrayToScalar,NULL,0,False,NULL);
-	(void)_NhlRegSymConv(NhlTGenArray,NhlTByte,NhlTGenArray,NhlTScalar);
-	(void)_NhlRegSymConv(NhlTGenArray,NhlTCharacter,NhlTGenArray,
+	(void)_NhlRegSymConv(NULL,NhlTGenArray,NhlTByte,NhlTGenArray,NhlTScalar);
+	(void)_NhlRegSymConv(NULL,NhlTGenArray,NhlTCharacter,NhlTGenArray,
 								NhlTScalar);
-	(void)_NhlRegSymConv(NhlTGenArray,NhlTDouble,NhlTGenArray,NhlTScalar);
-	(void)_NhlRegSymConv(NhlTGenArray,NhlTFloat,NhlTGenArray,NhlTScalar);
-	(void)_NhlRegSymConv(NhlTGenArray,NhlTInteger,NhlTGenArray,NhlTScalar);
-	(void)_NhlRegSymConv(NhlTGenArray,NhlTLong,NhlTGenArray,NhlTScalar);
-	(void)_NhlRegSymConv(NhlTGenArray,NhlTShort,NhlTGenArray,NhlTScalar);
-	(void)_NhlRegSymConv(NhlTGenArray,NhlTString,NhlTGenArray,NhlTScalar);
+	(void)_NhlRegSymConv(NULL,NhlTGenArray,NhlTDouble,NhlTGenArray,NhlTScalar);
+	(void)_NhlRegSymConv(NULL,NhlTGenArray,NhlTFloat,NhlTGenArray,NhlTScalar);
+	(void)_NhlRegSymConv(NULL,NhlTGenArray,NhlTInteger,NhlTGenArray,NhlTScalar);
+	(void)_NhlRegSymConv(NULL,NhlTGenArray,NhlTLong,NhlTGenArray,NhlTScalar);
+	(void)_NhlRegSymConv(NULL,NhlTGenArray,NhlTShort,NhlTGenArray,NhlTScalar);
+	(void)_NhlRegSymConv(NULL,NhlTGenArray,NhlTString,NhlTGenArray,NhlTScalar);
 
 	/*
 	 * Take care of all Scalar to all GenArray conversions
 	 */
-	(void)NhlRegisterConverter(NhlTScalar,NhlTGenArray,
+	(void)NhlRegisterConverter(NULL,NhlTScalar,NhlTGenArray,
 				NhlCvtScalarToGenArray,NULL,0,False,NULL);
-	(void)_NhlRegSymConv(NhlTScalar,NhlTByteGenArray,NhlTScalar,
+	(void)_NhlRegSymConv(NULL,NhlTScalar,NhlTByteGenArray,NhlTScalar,
 								NhlTGenArray);
-	(void)_NhlRegSymConv(NhlTScalar,NhlTCharacterGenArray,NhlTScalar,
+	(void)_NhlRegSymConv(NULL,NhlTScalar,NhlTCharacterGenArray,NhlTScalar,
 								NhlTGenArray);
-	(void)_NhlRegSymConv(NhlTScalar,NhlTDoubleGenArray,NhlTScalar,
+	(void)_NhlRegSymConv(NULL,NhlTScalar,NhlTDoubleGenArray,NhlTScalar,
 								NhlTGenArray);
-	(void)_NhlRegSymConv(NhlTScalar,NhlTFloatGenArray,NhlTScalar,
+	(void)_NhlRegSymConv(NULL,NhlTScalar,NhlTFloatGenArray,NhlTScalar,
 								NhlTGenArray);
-	(void)_NhlRegSymConv(NhlTScalar,NhlTLongGenArray,NhlTScalar,
+	(void)_NhlRegSymConv(NULL,NhlTScalar,NhlTLongGenArray,NhlTScalar,
 								NhlTGenArray);
-	(void)_NhlRegSymConv(NhlTScalar,NhlTShortGenArray,NhlTScalar,
+	(void)_NhlRegSymConv(NULL,NhlTScalar,NhlTShortGenArray,NhlTScalar,
 								NhlTGenArray);
-	(void)_NhlRegSymConv(NhlTScalar,NhlTStringGenArray,NhlTScalar,
+	(void)_NhlRegSymConv(NULL,NhlTScalar,NhlTStringGenArray,NhlTScalar,
 								NhlTGenArray);
-	(void)_NhlRegSymConv(NhlTScalar,NhlTIntegerGenArray,NhlTScalar,
+	(void)_NhlRegSymConv(NULL,NhlTScalar,NhlTIntegerGenArray,NhlTScalar,
 								NhlTGenArray);
-	(void)_NhlRegSymConv(NhlTScalar,NhlTVariable,NhlTScalar,NhlTGenArray);
+	(void)_NhlRegSymConv(NULL,NhlTScalar,NhlTVariable,NhlTScalar,NhlTGenArray);
 
 	/*
 	 * Register all the converters from Array types to other Array
 	 * types.
 	 */
-	(void)NhlRegisterConverter(NhlTGenArray,NhlTGenArray,
+	(void)NhlRegisterConverter(NULL,NhlTGenArray,NhlTGenArray,
 				NhlCvtGenArrayToGenArray,NULL,0,False,NULL);
-	(void)_NhlRegSymConv(NhlTGenArray,NhlTByteGenArray,NhlTGenArray,
+	(void)_NhlRegSymConv(NULL,NhlTGenArray,NhlTByteGenArray,NhlTGenArray,
 								NhlTGenArray);
-	(void)_NhlRegSymConv(NhlTGenArray,NhlTCharacterGenArray,NhlTGenArray,
+	(void)_NhlRegSymConv(NULL,NhlTGenArray,NhlTCharacterGenArray,NhlTGenArray,
 								NhlTGenArray);
-	(void)_NhlRegSymConv(NhlTGenArray,NhlTDoubleGenArray,NhlTGenArray,
+	(void)_NhlRegSymConv(NULL,NhlTGenArray,NhlTDoubleGenArray,NhlTGenArray,
 								NhlTGenArray);
-	(void)_NhlRegSymConv(NhlTGenArray,NhlTFloatGenArray,NhlTGenArray,
+	(void)_NhlRegSymConv(NULL,NhlTGenArray,NhlTFloatGenArray,NhlTGenArray,
 								NhlTGenArray);
-	(void)_NhlRegSymConv(NhlTGenArray,NhlTLongGenArray,NhlTGenArray,
+	(void)_NhlRegSymConv(NULL,NhlTGenArray,NhlTLongGenArray,NhlTGenArray,
 								NhlTGenArray);
-	(void)_NhlRegSymConv(NhlTGenArray,NhlTShortGenArray,NhlTGenArray,
+	(void)_NhlRegSymConv(NULL,NhlTGenArray,NhlTShortGenArray,NhlTGenArray,
 								NhlTGenArray);
-	(void)_NhlRegSymConv(NhlTGenArray,NhlTStringGenArray,NhlTGenArray,
+	(void)_NhlRegSymConv(NULL,NhlTGenArray,NhlTStringGenArray,NhlTGenArray,
 								NhlTGenArray);
-	(void)_NhlRegSymConv(NhlTGenArray,NhlTIntegerGenArray,NhlTGenArray,
+	(void)_NhlRegSymConv(NULL,NhlTGenArray,NhlTIntegerGenArray,NhlTGenArray,
 								NhlTGenArray);
 
-	(void)NhlRegisterConverter(NhlTGenArray,NhlTVariable,
+	(void)NhlRegisterConverter(NULL,NhlTGenArray,NhlTVariable,
 				NhlCvtGenArrayToVariable,NULL,0,False,NULL);
 
 #define	_RegArr(FROM,TO)\
-	(void)NhlRegisterConverter(NhlT##FROM##GenArray,NhlT##TO##GenArray,\
+	(void)NhlRegisterConverter(NULL,\
+		NhlT##FROM##GenArray,NhlT##TO##GenArray,\
 		NhlCvt##FROM##GenArrayTo##TO##GenArray,NULL,0,False,NULL);
 #define _RegArrToAll(FROM)\
 	_RegArr(FROM,Byte)	\
@@ -3293,41 +3297,41 @@ _NhlConvertersInitialize
 	/*
 	 * take care of all QuarkGenArray to All GenArray conversions
 	 */
-	(void)NhlRegisterConverter(NhlTQuarkGenArray,NhlTGenArray,
+	(void)NhlRegisterConverter(NULL,NhlTQuarkGenArray,NhlTGenArray,
 			NhlCvtQuarkGenArrayToGenArray,NULL,0,False,NULL);
-	(void)_NhlRegSymConv(NhlTQuarkGenArray,NhlTByteGenArray,
+	(void)_NhlRegSymConv(NULL,NhlTQuarkGenArray,NhlTByteGenArray,
 						NhlTQuarkGenArray,NhlTGenArray);
-	(void)_NhlRegSymConv(NhlTQuarkGenArray,NhlTCharacterGenArray,
+	(void)_NhlRegSymConv(NULL,NhlTQuarkGenArray,NhlTCharacterGenArray,
 						NhlTQuarkGenArray,NhlTGenArray);
-	(void)_NhlRegSymConv(NhlTQuarkGenArray,NhlTDoubleGenArray,
+	(void)_NhlRegSymConv(NULL,NhlTQuarkGenArray,NhlTDoubleGenArray,
 						NhlTQuarkGenArray,NhlTGenArray);
-	(void)_NhlRegSymConv(NhlTQuarkGenArray,NhlTFloatGenArray,
+	(void)_NhlRegSymConv(NULL,NhlTQuarkGenArray,NhlTFloatGenArray,
 						NhlTQuarkGenArray,NhlTGenArray);
-	(void)_NhlRegSymConv(NhlTQuarkGenArray,NhlTIntegerGenArray,
+	(void)_NhlRegSymConv(NULL,NhlTQuarkGenArray,NhlTIntegerGenArray,
 						NhlTQuarkGenArray,NhlTGenArray);
-	(void)_NhlRegSymConv(NhlTQuarkGenArray,NhlTLongGenArray,
+	(void)_NhlRegSymConv(NULL,NhlTQuarkGenArray,NhlTLongGenArray,
 						NhlTQuarkGenArray,NhlTGenArray);
-	(void)_NhlRegSymConv(NhlTQuarkGenArray,NhlTShortGenArray,
+	(void)_NhlRegSymConv(NULL,NhlTQuarkGenArray,NhlTShortGenArray,
 						NhlTQuarkGenArray,NhlTGenArray);
-	(void)_NhlRegSymConv(NhlTQuarkGenArray,NhlTStringGenArray,
+	(void)_NhlRegSymConv(NULL,NhlTQuarkGenArray,NhlTStringGenArray,
 						NhlTQuarkGenArray,NhlTGenArray);
-	(void)_NhlRegSymConv(NhlTQuarkGenArray,NhlTVariable,
+	(void)_NhlRegSymConv(NULL,NhlTQuarkGenArray,NhlTVariable,
 						NhlTQuarkGenArray,NhlTGenArray);
 	/*
 	 * Register enumerations.
 	 */
-	(void)_NhlRegisterEnumType(NhlTBoolean,BoolEnumList,
+	(void)_NhlRegisterEnumType(NULL,NhlTBoolean,BoolEnumList,
 						NhlNumber(BoolEnumList));
-	(void)_NhlRegisterEnumType(NhlTFont,FontEnumList,
+	(void)_NhlRegisterEnumType(NULL,NhlTFont,FontEnumList,
 						NhlNumber(FontEnumList));
 	/*
 	 * Need to over-ride some of the default "enum" converters for Boolean
 	 * since all values are valid.
 	 */
-	(void)NhlRegisterConverter(NhlTBoolean,NhlTString,NhlCvtBooleanToString,
-							NULL,0,False,NULL);
-	(void)NhlRegisterConverter(NhlTScalar,NhlTBoolean,NhlCvtScalarToBoolean,
-							NULL,0,False,NULL);
+	(void)NhlRegisterConverter(NULL,NhlTBoolean,NhlTString,
+				NhlCvtBooleanToString,NULL,0,False,NULL);
+	(void)NhlRegisterConverter(NULL,NhlTScalar,NhlTBoolean,
+				NhlCvtScalarToBoolean,NULL,0,False,NULL);
 
 	return;
 }

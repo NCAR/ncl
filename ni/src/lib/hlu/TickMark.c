@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.c,v 1.42 1995-06-30 20:40:29 dbrown Exp $
+ *      $Id: TickMark.c,v 1.43 1995-12-19 20:39:29 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1109,6 +1109,7 @@ NhlTickMarkClassRec NhltickMarkClassRec = {
 /* layer_size		*/      sizeof(NhlTickMarkLayerRec),
 /* class_inited		*/      False,
 /* superclass		*/      (NhlClass)&NhlviewClassRec,
+/* cvt_table			*/	NULL,
 
 /* layer_resources	*/      resources,
 /* num_resources	*/      NhlNumber(resources),
@@ -2034,9 +2035,9 @@ static NhlErrorTypes	TickMarkClassInitialize
 
 	_NhlInitializeClass(NhlmultiTextClass);
 
-	_NhlRegisterEnumType(NhlTTickMarkMode,tmarkmodes,
+	_NhlRegisterEnumType(NhltickMarkClass,NhlTTickMarkMode,tmarkmodes,
 							NhlNumber(tmarkmodes));
-	_NhlRegisterEnumType(NhlTTickMarkStyle,tmarkstyles,
+	_NhlRegisterEnumType(NhlbaseClass,NhlTTickMarkStyle,tmarkstyles,
 							NhlNumber(tmarkstyles));
 
 	Qfloat = NrmStringToQuark(NhlTFloat);

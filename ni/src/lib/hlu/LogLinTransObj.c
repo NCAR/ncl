@@ -1,5 +1,5 @@
 /*
- *      $Id: LogLinTransObj.c,v 1.21 1995-05-03 03:11:17 dbrown Exp $
+ *      $Id: LogLinTransObj.c,v 1.22 1995-12-19 20:39:15 boote Exp $
  */
 /************************************************************************
 *									*
@@ -163,6 +163,7 @@ NhlLogLinTransObjClassRec NhllogLinTransObjClassRec = {
 /* layer_size			*/	sizeof(NhlLogLinTransObjLayerRec),
 /* class_inited			*/	False,
 /* superclass			*/	(NhlClass)&NhltransObjClassRec,
+/* cvt_table			*/	NULL,
 
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),

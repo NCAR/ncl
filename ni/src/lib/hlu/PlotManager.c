@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManager.c,v 1.17 1995-09-20 23:26:57 dbrown Exp $
+ *      $Id: PlotManager.c,v 1.18 1995-12-19 20:39:22 boote Exp $
  */
 /************************************************************************
 *									*
@@ -547,6 +547,7 @@ NhlPlotManagerClassRec NhlplotManagerClassRec = {
 /* layer_size			*/      sizeof(NhlPlotManagerLayerRec),
 /* class_inited			*/      False,
 /* superclass			*/  (NhlClass)&NhltransformClassRec,
+/* cvt_table			*/	NULL,
 
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
@@ -634,8 +635,8 @@ PlotManagerClassInitialize
 		{NhlALWAYS,		"always"}
         };
 
-        _NhlRegisterEnumType(NhlTAnnotationDisplayMode,annotationdisplaylist,
-					     NhlNumber(annotationdisplaylist));
+        _NhlRegisterEnumType(NhlviewClass,NhlTAnnotationDisplayMode,
+		annotationdisplaylist,NhlNumber(annotationdisplaylist));
 
 	Qoverlay_seq_ids = NrmStringToQuark(NhlNpmOverlaySequenceIds);
 	Qoverlay_recs = NrmStringToQuark(NhlNpmPlotManagerRecs);

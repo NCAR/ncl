@@ -1,5 +1,5 @@
 /*
- *      $Id: PSWorkstation.c,v 1.4 1995-04-22 01:01:56 boote Exp $
+ *      $Id: PSWorkstation.c,v 1.5 1995-12-19 20:39:20 boote Exp $
  */
 /************************************************************************
 *									*
@@ -131,6 +131,7 @@ NhlPSWorkstationClassRec NhlpsWorkstationClassRec = {
 /* layer_size			*/	sizeof(NhlPSWorkstationLayerRec),
 /* class_inited			*/	False,
 /* superclass			*/	(NhlClass)&NhlworkstationClassRec,
+/* cvt_table			*/	NULL,
 
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
@@ -275,10 +276,12 @@ PSWorkstationClassInitialize
 		{NhlLANDSCAPE,	"landscape"}
 	};
 
-	(void)_NhlRegisterEnumType(NhlTVisualType,visvals,NhlNumber(visvals));
-	(void)_NhlRegisterEnumType(NhlTPSFormat,fmtvals,NhlNumber(fmtvals));
-	(void)_NhlRegisterEnumType(NhlTWorkOrientation,orientvals,
-							NhlNumber(orientvals));
+	(void)_NhlRegisterEnumType(NhlpsWorkstationClass,NhlTVisualType,
+		visvals,NhlNumber(visvals));
+	(void)_NhlRegisterEnumType(NhlpsWorkstationClass,NhlTPSFormat,
+		fmtvals,NhlNumber(fmtvals));
+	(void)_NhlRegisterEnumType(NhlpsWorkstationClass,NhlTWorkOrientation,
+		orientvals,NhlNumber(orientvals));
 
 	fnameQ = NrmStringToQuark(NhlNwkPSFileName);
 

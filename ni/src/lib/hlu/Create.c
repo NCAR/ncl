@@ -1,5 +1,5 @@
 /*
- *      $Id: Create.c,v 1.19 1995-04-22 01:01:35 boote Exp $
+ *      $Id: Create.c,v 1.20 1995-12-19 20:39:02 boote Exp $
  */
 /************************************************************************
 *									*
@@ -378,7 +378,7 @@ _NhlCreate
  * along with all that memory after the Initailize methode has had a chance
  * to copy the memory.
  */
-	context = _NhlCreateConvertContext();
+	context = _NhlCreateConvertContext(layer);
 	if(context == NULL){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
 			"Unable to create Convert Context - Can't Create");

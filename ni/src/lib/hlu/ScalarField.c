@@ -1,5 +1,5 @@
 /*
- *      $Id: ScalarField.c,v 1.17 1995-11-21 20:18:58 dbrown Exp $
+ *      $Id: ScalarField.c,v 1.18 1995-12-19 20:39:25 boote Exp $
  */
 /************************************************************************
 *									*
@@ -186,6 +186,7 @@ NhlScalarFieldFloatClassRec NhlscalarFieldFloatClassRec = {
 /* layer_size			*/	sizeof(NhlScalarFieldFloatLayerRec),
 /* class_inited			*/	False,
 /* superclass			*/	(NhlClass)&NhlobjClassRec,
+/* cvt_table			*/	NULL,
 
 /* resources			*/	NULL,
 /* num_resources		*/	0,
@@ -215,6 +216,7 @@ NhlScalarFieldClassRec NhlscalarFieldClassRec = {
 /* class_inited			*/	False,
 /* superclass			*/	(NhlClass)
 						&NhldataItemClassRec,
+/* cvt_table			*/	NULL,
 /* resources			*/	resources,
 /* num_resources		*/	NhlNumber(resources),
 /* all_resources		*/	NULL,
@@ -2010,7 +2012,7 @@ ScalarFieldClassInitialize
 	Qy_actual_start  = NrmStringToQuark(NhlNsfYCActualStartF);
 	Qy_actual_end  = NrmStringToQuark(NhlNsfYCActualEndF);
 
-	ret = NhlRegisterConverter(
+	ret = NhlRegisterConverter(NhlbaseClass,
 			NhlscalarFieldClass->base_class.class_name,
 			NhlscalarFieldFloatClass->base_class.class_name,
 			CvtGenSFObjToFloatSFObj,NULL,0,False,NULL);
@@ -2562,7 +2564,7 @@ static NhlScalarFieldFloatLayer ForceConvert
 	from.data.intval = sfl->base.id;
 	to.size = sizeof(NhlScalarFieldFloatLayerRec);
 	to.data.ptrval = &id;
-	ret = NhlConvertData(NhlscalarFieldClass->base_class.class_name,
+	ret = NhlConvertData(NULL,NhlscalarFieldClass->base_class.class_name,
 			NhlscalarFieldFloatClass->base_class.class_name,
 			     &from,&to);
 	if (ret < NhlWARNING ||

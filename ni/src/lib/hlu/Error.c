@@ -1,5 +1,5 @@
 /*
- *      $Id: Error.c,v 1.20 1995-05-05 22:32:59 boote Exp $
+ *      $Id: Error.c,v 1.21 1995-12-19 20:39:06 boote Exp $
  */
 /************************************************************************
 *									*
@@ -158,6 +158,7 @@ NhlErrorClassRec NhlerrorClassRec = {
 /* layer_size			*/	sizeof(NhlErrorLayerRec),
 /* class_inited			*/	False,
 /* superclass			*/	(NhlClass)&NhlbaseClassRec,
+/* cvt_table			*/	NULL,
 
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
@@ -192,6 +193,7 @@ static _NhlErrorLayerCClassRec _NhlerrorLayerCClassRec = {
 /* layer_size			*/	sizeof(_NhlErrorLayerCRec),
 /* class_inited			*/	False,
 /* superclass			*/	(NhlClass)&NhlobjClassRec,
+/* cvt_table			*/	NULL,
 
 /* layer_resources		*/	cresources,
 /* num_resources		*/	NhlNumber(cresources),
@@ -220,6 +222,7 @@ static _NhlErrorLayerFClassRec _NhlerrorLayerFClassRec = {
 /* layer_size			*/	sizeof(_NhlErrorLayerFRec),
 /* class_inited			*/	False,
 /* superclass			*/	(NhlClass)&NhlobjClassRec,
+/* cvt_table			*/	NULL,
 
 /* layer_resources		*/	fresources,
 /* num_resources		*/	NhlNumber(fresources),
@@ -322,7 +325,7 @@ ErrorClassInitialize
 	/*
 	 *	Install converters to the NhlErrorTypes enum.
 	 */
-	_NhlRegisterEnumType(NhlTErrorTypes,errtypes,NhlNumber(errtypes));
+	_NhlRegisterEnumType(NULL,NhlTErrorTypes,errtypes,NhlNumber(errtypes));
 
 	return NhlNOERROR;
 }
@@ -1392,7 +1395,8 @@ _NHLCALLF(nhl_fperror,NHL_FPERROR)
 	to.size = sizeof(NhlErrorTypes);
 	to.data.ptrval = &elevel;
 
-	if(NhlConvertData(NhlTString,NhlTErrorTypes,&from,&to) != NhlNOERROR){
+	if(NhlConvertData(NULL,NhlTString,NhlTErrorTypes,&from,&to)
+							!= NhlNOERROR){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
 		"Unable to report Fortran error message:Invalid error level");
 		return;

@@ -1,5 +1,5 @@
 /*
- *      $Id: Workspace.c,v 1.25 1995-05-18 20:05:47 dbrown Exp $
+ *      $Id: Workspace.c,v 1.26 1995-12-19 20:39:38 boote Exp $
  */
 /************************************************************************
 *									*
@@ -227,6 +227,7 @@ NhlWorkspaceClassRec NhlworkspaceClassRec = {
 /* layer_size			*/	sizeof(NhlWorkspaceLayerRec),
 /* class_inited			*/	False,
 /* superclass			*/	(NhlClass)&NhlobjClassRec,
+/* cvt_table			*/	NULL,
 
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
