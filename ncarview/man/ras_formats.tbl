@@ -33,7 +33,7 @@ NRIF(.nrif);Bilevel;No;No;None
 NRIF(.nrif);Indexed-8;Yes;Yes;In/Out;
 NRIF(.nrif);Direct-24;Yes;Yes;In/Out;
 Sun(.sun);Indexed-8;Yes;Yes;In;
-Sun(.sun);Direct-24;Yes;Yes;In;
+Sun(.sun);Direct-24;Yes;No;In;
 SGI(.sgi,.rgb);Direct-24;Yes;Yes;In;
 XWD(.xwd);Indexed-8;Yes;Yes;None;
 .sp
