@@ -99,7 +99,7 @@ main(int argc, char *argv[])
  * Create a PS workstation.
  */
         NhlRLClear(rlist);
-        NhlRLSetString(rlist,NhlNwkPSFileName,"pr02.ps");
+        NhlRLSetString(rlist,NhlNwkPSFileName,"pr02c.ps");
         NhlCreate(&wid,"pr02Work",NhlpsWorkstationClass,appid,rlist);
     }
     else if (PDF) {
@@ -107,7 +107,7 @@ main(int argc, char *argv[])
  * Create a PDF workstation.
  */
         NhlRLClear(rlist);
-        NhlRLSetString(rlist,NhlNwkPDFFileName,"pr02.pdf");
+        NhlRLSetString(rlist,NhlNwkPDFFileName,"pr02c.pdf");
         NhlCreate(&wid,"pr02Work",NhlpdfWorkstationClass,appid,rlist);
     }
 

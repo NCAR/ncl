@@ -1,5 +1,5 @@
 C
-C      $Id: pr03f.f,v 1.3 2003-03-03 16:15:33 grubin Exp $
+C      $Id: pr03f.f,v 1.4 2003-03-04 20:34:20 grubin Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -89,8 +89,8 @@ C
 C  Create a PS workstation.
 C   
       call NhlFRLClear(rlist)
-      call NhlFRLSetString(rlist,'wkPSFileName','./pr03.ps',ierr)
-      call NhlFCreate(wid,'pr03Work',NhFlpsWorkstationClass,
+      call NhlFRLSetString(rlist,'wkPSFileName','./pr03f.ps',ierr)
+      call NhlFCreate(wid,'pr03Work',NhlFpsWorkstationClass,
      1    appid,rlist,ierr)
 
       else if (PDF.eq.1) then
@@ -98,8 +98,8 @@ C
 C  Create a PDF workstation.
 C   
       call NhlFRLClear(rlist)
-      call NhlFRLSetString(rlist,'wkPDFFileName','./pr03.pdf',ierr)
-      call NhlFCreate(wid,'pr03Work',NhFlpdfWorkstationClass,
+      call NhlFRLSetString(rlist,'wkPDFFileName','./pr03f.pdf',ierr)
+      call NhlFCreate(wid,'pr03Work',NhlFpdfWorkstationClass,
      1    appid,rlist,ierr)
 
       endif    

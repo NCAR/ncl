@@ -135,8 +135,8 @@ C
 C  Create a PS workstation.
 C   
       call NhlFRLClear(rlist)
-      call NhlFRLSetString(rlist,'wkPSFileName','./pr02.ps',ierr)
-      call NhlFCreate(wid,'pr02Work',NhFlpsWorkstationClass,
+      call NhlFRLSetString(rlist,'wkPSFileName','./pr02f.ps',ierr)
+      call NhlFCreate(wid,'pr02Work',NhlFpsWorkstationClass,
      1    appid,rlist,ierr)
 
       else if (PDF.eq.1) then
@@ -144,8 +144,8 @@ C
 C  Create a PDF workstation.
 C   
       call NhlFRLClear(rlist)
-      call NhlFRLSetString(rlist,'wkPDFFileName','./pr02.pdf',ierr)
-      call NhlFCreate(wid,'pr02Work',NhFlpdfWorkstationClass,
+      call NhlFRLSetString(rlist,'wkPDFFileName','./pr02f.pdf',ierr)
+      call NhlFCreate(wid,'pr02Work',NhlFpdfWorkstationClass,
      1    appid,rlist,ierr)
 
       endif    
