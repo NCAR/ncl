@@ -1,5 +1,5 @@
 /*
- *      $Id: Transform.c,v 1.46 1999-11-19 02:11:50 dbrown Exp $
+ *      $Id: Transform.c,v 1.47 2000-01-20 03:39:49 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1726,7 +1726,8 @@ _NhlOverlayBase
 /*
  * Function:	_NhlBasePlot
  *
- * Description:	
+ * Description:	This routine returns the current base plot for a plot
+ *              member. (Not necessarily the primary base plot.)
  *
  * In Args:	
  *
@@ -1747,22 +1748,24 @@ _NhlBasePlot
 	int	pid;
 #endif
 {
+	int id;
 
-	if (_NhlIsAnnotation(pid)) {
-		int base_plot_id = _NhlAnnotationBase(pid);
-		while (_NhlIsAnnotation(base_plot_id))
-			base_plot_id = _NhlAnnotationBase(base_plot_id);
-		return base_plot_id;
+	if (! _NhlGetLayer(pid))
+		return  NhlNULLOBJID;
+
+	id = pid;
+	if (_NhlIsAnnotation(id)) {
+		id = _NhlAnnotationBase(id);
 	}
 
-	return (_NhlOverlayBase(pid));
+	return (_NhlOverlayBase(id));
 }
-
 
 /*
  * Function:	_NhlTopLevelView
  *
- * Description:	
+ * Description:	This routine returns the primary base plot of any plot
+ *              member. Otherwise it returns the input pid.
  *
  * In Args:	
  *
@@ -1783,23 +1786,24 @@ _NhlTopLevelView
 	int	pid;
 #endif
 {
-	int top_id,anno_base_id;
-	
-	if (_NhlIsAnnotation(pid)) {
-		anno_base_id = _NhlAnnotationBase(pid);
-		while (_NhlIsAnnotation(anno_base_id))
-			anno_base_id = _NhlAnnotationBase(anno_base_id);
-		if (anno_base_id > NhlNULLOBJID)
-			pid = anno_base_id;
-	}
+	int id;
 
-	top_id = _NhlOverlayBase(pid);
-	if (top_id > NhlNULLOBJID)
-		return top_id;
-	else if (_NhlGetLayer(pid))
-		return pid;
-	else 
+	if (! _NhlGetLayer(pid))
 		return  NhlNULLOBJID;
+	
+	id = pid;
+	while (_NhlIsPlotMember(id)) {
+		if (_NhlIsOverlay(id))
+			id = _NhlOverlayBase(id);
+		else
+			id = _NhlAnnotationBase(id);
+	}
+	if (id > NhlNULLOBJID)
+                return id;
+/*
+ * should never get to this point because id should always be valid
+ */
+	return pid;
 
 }
 
