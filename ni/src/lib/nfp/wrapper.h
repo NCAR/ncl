@@ -26,6 +26,8 @@ extern float *coerce_output_float(double *, void *, int, int);
 
 extern void *coerce_output_float_only(void *,double *,int, int);
 
+extern void *coerce_output_int_only(void *,double *,int, int);
+
 extern void *coerce_output_float_or_double(void *,double *,
 					   NclBasicDataTypes,int,int);
 

@@ -412,6 +412,9 @@ extern NhlErrorTypes random_chi_W(void);
 extern NhlErrorTypes random_gamma_W(void);
 extern NhlErrorTypes random_normal_W(void);
 extern NhlErrorTypes random_uniform_W(void);
+extern NhlErrorTypes round_W(void);
+extern NhlErrorTypes isnan_ieee_W(void);
+extern NhlErrorTypes replace_nanieee_W(void);
 extern NhlErrorTypes dcdfbinp_W(void);
 extern NhlErrorTypes dcdfbinx_W(void);
 extern NhlErrorTypes dcdfbinxn_W(void);
@@ -5229,8 +5232,41 @@ void NclAddUserFuncs(void)
     NclRegisterFunc(random_uniform_W, args, "random_uniform", nargs);
 
 /*
+ *  Register round.
+ */
+    nargs = 0;
+    args = NewArgs(2);
+
+    SetArgTemplate(args, nargs, "numeric", NclANY, NclANY);  nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args, nargs, "integer", 1, dimsizes);  nargs++;
+
+    NclRegisterFunc(round_W, args, "round", nargs);
+
+/*
+ *  Register isnan_ieee.
+ */
+    nargs = 0;
+    args = NewArgs(1);
+
+    SetArgTemplate(args, nargs, "numeric", NclANY, NclANY);  nargs++;
+    NclRegisterFunc(isnan_ieee_W, args, "isnan_ieee", nargs);
+
+/*
+ *  Register replace_nanieee.
+ */
+    nargs = 0;
+    args = NewArgs(3);
+
+    SetArgTemplate(args, nargs, "numeric", NclANY, NclANY);  nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args, nargs, "numeric", 1, dimsizes);  nargs++;
+    SetArgTemplate(args, nargs, "integer", 1, dimsizes);  nargs++;
+    NclRegisterFunc(replace_nanieee_W, args, "replace_nanieee", nargs);
+
+/*
  *  Registering dcdfbinp_W.
-*/
+ */
     nargs = 0;
     args = NewArgs(3);
 
@@ -5627,6 +5663,22 @@ int    has_allocated
 }
 
 /*
+ * Copy double data back to a int array, using a void array. 
+ */
+void coerce_output_int_only(
+void   *x,
+double *dx,
+int    size_x,
+int    index_x
+)
+{
+  int i;
+
+  for( i = 0; i < size_x; i++ ) ((int*)x)[index_x+i]  = (int)dx[i];
+}
+
+
+/*
  * This routine doesn't really do any coercion.  It just checks if 
  * the type is float, and if so, it allocates enough space to hold
  * double values. Otherwise, it returns a pointer to the double values.
@@ -5825,8 +5877,6 @@ int    index_x
 
   for( i = 0; i < size_x; i++ ) ((float*)x)[index_x+i]  = (float)dx[i];
 }
-
-
 
 /*
  * Copy double data back to double or float array, using a void array. 
