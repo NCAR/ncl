@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManager.c,v 1.68 2002-09-17 21:49:46 dbrown Exp $
+ *      $Id: PlotManager.c,v 1.69 2003-05-09 18:25:45 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1071,6 +1071,7 @@ static NhlErrorTypes PlotManagerSetValues
 	NhlPlotManagerLayer		ovold = (NhlPlotManagerLayer) old;
 	NhlPlotManagerLayerPart	*ovp = &(ovnew->plotmanager);
 	NhlTransformLayer	parent = (NhlTransformLayer)ovnew->base.parent;
+	NhlTransformLayer       baseplotmanager = (NhlTransformLayer)ovnew->trans.overlay_object;
 	int			i;
 	int			trans_change_count;
 	NhlBoolean		is_map;
@@ -1093,6 +1094,15 @@ static NhlErrorTypes PlotManagerSetValues
 		ovp->ti_x_axis_font_height_set = True;
 	if (_NhlArgIsSet(args,num_args,NhlNtiYAxisFontHeightF))
 		ovp->ti_y_axis_font_height_set = True;
+
+	if (ovnew->trans.overlay_trans_obj != baseplotmanager->trans.overlay_trans_obj) {
+		/*
+		 * The baseplot may have changed its trans_obj.
+		 */
+		ovp->trans_changed = True;
+		ovnew->trans.overlay_trans_obj = baseplotmanager->trans.overlay_trans_obj;
+		parent->trans.overlay_trans_obj = baseplotmanager->trans.overlay_trans_obj;
+	}
 
 	subret = NhlVAGetValues(ovnew->trans.overlay_trans_obj->base.id,
 				NhlNtrChangeCount,&trans_change_count,
