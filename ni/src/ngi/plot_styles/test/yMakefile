@@ -1,6 +1,11 @@
 #
-#       $Id: yMakefile,v 1.1 1999-09-21 00:16:22 dbrown Exp $
+#       $Id: yMakefile,v 1.2 1999-11-04 20:40:38 haley Exp $
 #
+ 
+#define IHaveSubdirs
+ 
+SUBDIRS         = CSM_plots
+
 FILES		= DIRECTORY.res ZonalAverage.res test_style.ncl
 
 PSPATH	= $(LIBNCARGPATH)/plot_styles/test
