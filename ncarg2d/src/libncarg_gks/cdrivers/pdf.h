@@ -1,5 +1,5 @@
 /*
- *	$Id: pdf.h,v 1.1 2003-01-06 23:30:14 fred Exp $
+ *	$Id: pdf.h,v 1.2 2003-03-01 00:30:04 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -44,10 +44,9 @@
 #define MAX_STACK               200     /* max number of items on the stack */
 #define MAX_PATH                2500    /* maximum number of points in a path,*/
 #define MAX_OBJECTS             25000   /* maximum number of PDF objects */
-#define MAX_PAGE_SIZE           100000  /* maximum lines on a page */
-#define MAX_LINE_SIZE           100     /* maximum lenght of a line */
-#define MAX_STREAM_SIZE         MAX_LINE_SIZE * MAX_PAGE_SIZE 
-                                        /* maximum stream size */
+#define LINE_SIZE               100     /* maximum lenght of a line */
+#define LINE_INCREMENT          50000   /* no. of lines to increment the */
+                                        /* page_line array when it fills */
 
 #define PDF_SCALE 		.04     /* coordinate scale factor */
 

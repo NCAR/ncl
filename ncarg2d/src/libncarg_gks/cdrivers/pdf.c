@@ -1,5 +1,5 @@
 /*
- *      $Id: pdf.c,v 1.11 2003-02-28 19:53:02 fred Exp $
+ *      $Id: pdf.c,v 1.12 2003-03-01 00:30:04 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -59,6 +59,7 @@ void PDFDefaultColorTable(PDFddp *);
 void PDFPlotBackground(PDFddp *, int, int, int, int);
 static int PDFoutput_string(PDFddp *, char *);
 void rgb2cmyk(float, float, float, float *, float *, float *, float *);
+void adjust_lines(void);
 
 /*
  *  *********************** Globals ***********************************
@@ -68,7 +69,8 @@ void rgb2cmyk(float, float, float, float *, float *, float *, float *);
  *  An array to build the individual page streams.
  *
  */
-char page_lines[MAX_PAGE_SIZE][MAX_LINE_SIZE];
+char **page_lines;
+int maximum_lines=100000;
 int  starting_page_object_number, stream_size, object_number, 
      byte_count, num_page_lines;
 float red,green,blue,cyan,magenta,yellow,black;
@@ -363,6 +365,16 @@ void PDFpreamble (PDFddp *psa, preamble_type type)
 
 
   if (type == FOR_FILE) {
+
+/*
+ *  Initialize the page_lines buffer.
+ */
+    page_lines = (char **) calloc(maximum_lines,sizeof(char *));
+
+    for (i = 0; i < maximum_lines; i++) {
+      page_lines[i] = (char *) calloc(LINE_SIZE,sizeof(char));
+    }
+
 /*
  *  Initialize the array of object pointers.
  *
@@ -3829,9 +3841,28 @@ int bump_object_number() {
   object_number++;
 }
 int bump_page_lines() {
-  if (num_page_lines > MAX_PAGE_SIZE) {
-    fprintf(stderr,"PDF - maximum object size exceeded.\n");
-    return (object_number);
+  
+  if (num_page_lines > 99990)
+    printf("num_page_lines, maximum_lines %d %d\n",num_page_lines,maximum_lines);
+  if (num_page_lines >= maximum_lines-1) {
+    printf("Before adjust\n");
+    adjust_lines();
+    printf("After adjust\n");
   }
   num_page_lines++;
+}
+void adjust_lines() {
+  int i;
+
+  printf("num_page_lines = %d\n",num_page_lines);
+  page_lines = \
+   (char **) realloc(page_lines,(maximum_lines+LINE_INCREMENT)*sizeof(char *));
+  if (page_lines == (char **) NULL) {
+    printf ("PDF - unable to allocate space for object, object too large.\n");
+  }
+  printf("num_page_lines = %d\n",num_page_lines);
+  for (i = 0; i < LINE_INCREMENT; i++) {
+    page_lines[maximum_lines+i] = (char *) calloc(LINE_SIZE,sizeof(char));
+  }
+  maximum_lines += LINE_INCREMENT;
 }
