@@ -1,5 +1,5 @@
 /*
- *	$Id: talkto.c,v 1.6 1991-08-15 17:15:11 clyne Exp $
+ *	$Id: talkto.c,v 1.7 1991-08-20 15:55:03 clyne Exp $
  */
 /*
  *	talkto.c
@@ -41,15 +41,26 @@
 #include "talkto.h"
 
 /*
+ *	brain damaged ultrix sets wrong error code when read from non-blocking
+ *	pipe should block
+ */
+#ifdef	ultrix
+#define	EWOULDBLOCK_	EAGAIN
+#else
+#define	EWOULDBLOCK_	EWOULDBLOCK
+#endif
+
+/*
  * a structure containing information about running translators
  */
 static	struct	{
 	int	pid;		/* the pid of the translator process	*/
 	int	wfd;		/* a fd for writing to the process	*/
+	int	rfd;		/* fd for reading responses from trans	*/
 	int	r_err_fd;	/* standard error from the process	*/
 	} Translators[MAX_DISPLAYS];	
 
-static	int	hFD;	/* history file file descriptor	*/
+static	int	hFD = -1;	/* history file file descriptor	*/
 
 #ifdef	CRAY
 static	void	reaper()
@@ -80,7 +91,7 @@ static	void	reaper()
  *	channel		: Communication channel. All future communication with
  *			  this process will use this unique channel id. channel
  *			  is an int in the range [0,MAX_DISPLAYS). 
- *	targv		: process to exec with all its args
+ *	argv		: process to exec with all its args
  *	hfd		: history file fd, if -1 not open
  * on exit
  *	return		: < 0 => failure, else ok
@@ -94,7 +105,11 @@ OpenTranslator(channel, argv, hfd)
 	int	i;
 	int	pid;
 	int	to_child[2],		/* pipe descriptors to/from process */
+		to_parent[2],
 		stderr_to_parent[2];
+
+	char	fd_ascii[10];
+	char	**argptr;
 
 	static	short first	= 1;
 
@@ -124,8 +139,15 @@ OpenTranslator(channel, argv, hfd)
 		return(-1);
 	}
 
+	if (pipe(to_parent) < 0) {
+		(void) close(to_child[0]); (void) close(to_child[1]);
+		perror((char *) NULL);
+		return(-1);
+	}
+
 	if (pipe(stderr_to_parent) < 0) {
 		(void) close(to_child[0]); (void) close(to_child[1]);
+		(void) close(to_parent[0]); (void) close(to_parent[1]);
 		perror((char *) NULL);
 		return(-1);
 	}
@@ -149,6 +171,16 @@ OpenTranslator(channel, argv, hfd)
 		(void) close(to_child[1]);
 		(void) close(stderr_to_parent[0]);
 		(void) close(stderr_to_parent[1]);
+		(void) close(to_parent[0]);
+
+		(void) sprintf(fd_ascii, "%d", to_parent[1]);
+		for (argptr = argv; *argptr; argptr++)
+			;
+
+		*argptr++ = "-fdn";
+		*argptr++ = fd_ascii;
+		*argptr = NULL;
+		
 
 		execvp(argv[0], argv);
 		perror((char *) NULL);	/* should never get here	*/
@@ -158,15 +190,18 @@ OpenTranslator(channel, argv, hfd)
 	default:	/* the parent		*/
 		Translators[channel].pid = pid;
 		Translators[channel].wfd = to_child[1];
+		Translators[channel].rfd = to_parent[0];
 		Translators[channel].r_err_fd = stderr_to_parent[0];
 
 		(void) close(to_child[0]); 
+		(void) close(to_parent[1]);
 		(void) close(stderr_to_parent[1]);
 
 		/*
 		 * do non blocking reads from the translator
 		 */
 		(void) fcntl(Translators[channel].r_err_fd, F_SETFL, O_NDELAY);
+		(void) fcntl(Translators[channel].rfd, F_SETFL, O_NDELAY);
 
 	}
 
@@ -188,6 +223,7 @@ void	CloseTranslator(channel)
 		 * close pipes
 		 */
 		(void) close(Translators[channel].wfd); 
+		(void) close(Translators[channel].rfd);
 		(void) close(Translators[channel].r_err_fd);
 		Translators[channel].pid = -1;
 
@@ -244,15 +280,8 @@ char	*TalkTo(id, command_string, mode)
 	 */
 	b = buf;
 	for(n=0; n < r; n+=l) {
-		if ((l = read(Translators[id].r_err_fd, b + n, r - n)) < 0) {
-#ifndef	ultrix
-			if (errno != EWOULDBLOCK ) {
-#else
-			/*
-			 * ultrix returns wrong error code when pipe empty
-			 */
-			if (errno != EWOULDBLOCK && errno != EAGAIN) {
-#endif
+		if ((l = read(Translators[id].rfd, b + n, r - n)) < 0) {
+			if (errno != EWOULDBLOCK_ ) {
 				perror((char *) NULL);
 				return(NULL);
 			}
@@ -272,6 +301,28 @@ char	*TalkTo(id, command_string, mode)
 	 * Post any old messages
 	 */
 	if (strlen(buf)) Message(id, buf);
+
+	/*
+	 * see if there were any error messages
+	 */
+	b = buf;
+	for(n=0; n < r; n+=l) {
+		if ((l = read(Translators[id].r_err_fd, b + n, r - n)) < 0) {
+			if (errno != EWOULDBLOCK_ ) {
+				perror((char *) NULL);
+				return(NULL);
+			}
+			else break;
+		}
+		else if (l == 0) {
+			break;
+		}
+	}
+	buf[n] = '\0';
+	/*
+	 * Post any old messages
+	 */
+	if (strlen(buf)) ErrorMessage(id, buf);
 
 	/*
 	 * Send the command to the desired translator
@@ -306,15 +357,10 @@ char	*TalkTo(id, command_string, mode)
 			if (Translators[id].pid == -1) return (NULL);
 
 			for(n=0; n < r; n+=l) {
-				if ((l = read(Translators[id].r_err_fd, 
+				if ((l = read(Translators[id].rfd, 
 					b + n, r - n)) < 0) {
 
-#ifndef	ultrix
-					if (errno != EWOULDBLOCK ) {
-#else
-					if (errno != EWOULDBLOCK && 
-							errno != EAGAIN) {
-#endif
+					if (errno != EWOULDBLOCK_ ) {
 						perror((char *) NULL);
 						return(NULL);
 					}
@@ -422,6 +468,36 @@ Message(id, s)
 	cfree(cptr);
 }
 
+/*
+ *	ErrorMessage
+ *	[exported]
+ *
+ *	Send a message to the idt message handler. Prepend the id of the 
+ *	translator generating the message
+ * on entry
+ *	id		: id of the translator
+ *	*s		: message to send
+ */
+ErrorMessage(id, s)
+	int	id;
+	char	*s;
+{
+	char	*cptr;
+	char	buf[40];
+
+	void	AppendText();
+
+	(void) sprintf(buf, "Translator[%d]: Error - ", id);
+
+	cptr = icMalloc((unsigned) (strlen(buf) + strlen(s) + strlen("\n")+ 1));
+	(void) strcpy(cptr, buf);
+	(void) strcat(cptr, s); 
+	(void) strcat(cptr, "\n"); 
+
+	AppendText(cptr);
+
+	cfree(cptr);
+}
 /*
  *	close_trans_pid
  *	[internal]
