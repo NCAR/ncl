@@ -178,14 +178,18 @@
 !       Scale value of data at the left of the indicated axis
 ! tm01.tm01Work.TickMarks.tmXBDataLeftF               : 0.0
 ! tm01.tm01Work.TickMarks.tmXTDataLeftF               : 0.0
-! tm01.tm01Work.TickMarks.tmYLDataLeftF               : 0.0
-! tm01.tm01Work.TickMarks.tmYRDataLeftF               : 0.0
 !
 !       Scale value of data at the right of the indicated axis
-! tm01.tm01Work.TickMarks.tmXBDataRightF              : 0.0
+! tm01.tm01Work.TickMarks.tmXBDataRightF              : 10.0
 ! tm01.tm01Work.TickMarks.tmXTDataRightF              : 0.0
-! tm01.tm01Work.TickMarks.tmYLDataRightF              : 0.0
-! tm01.tm01Work.TickMarks.tmYRDataRightF              : 0.0
+!
+!       Scale value of data at the top of the indicated axis
+! tm01.tm01Work.TickMarks.tmYLDataTopF                : 0.0
+! tm01.tm01Work.TickMarks.tmYRDataTopF                : 0.0
+!
+!       Scale value of data at the bottom of the indicated axis
+! tm01.tm01Work.TickMarks.tmYLDataBottomF             : 0.0
+! tm01.tm01Work.TickMarks.tmYRDataBottomF             : 0.0
 !
 !       The number of digits precision in AUTOMATIC mode scaling.
 ! tm01.tm01Work.TickMarks.tmXBPrecision               : 4
