@@ -1,0 +1,98 @@
+#!/bin/csh -f
+#
+#      $Id: ymkmf,v 1.1 1993-11-02 17:32:51 boote Exp $
+#
+#########################################################################
+#									#
+#			   Copyright (C)  1993				#
+#	     University Corporation for Atmospheric Research		#
+#			   All Rights Reserved				#
+#									#
+#########################################################################
+#
+#	File:		ymkmf
+#
+#	Author:		Jeff W. Boote
+#			National Center for Atmospheric Research
+#			PO 3000, Boulder, Colorado
+#
+#	Date:		Tue Nov 2 09:22:31 MST 1993
+#
+#	Description:	This is a wrapper function for ymake so that
+#			it is easier to create a Makefile in any sub-directory
+#			of the distribution. This script parses the cwd
+#			and searches up the tree until it finds the name
+#			"ncarg" or "$topdirname".  It considers that to be
+#			the top of your current distribution.  If the script
+#			is passed "$topdirname" it just passes TOPDIR and
+#			CURDIR to ymake, and uses ymake from the installed
+#			area.  If it is called without any args, then it
+#			assumes ymake is in the "config" directory that is
+#			a direct sub-dir of "ncarg".
+#
+#	Usage:		ymkmf [topdirname]
+#
+#	Environment:	csh script
+#
+#	Files:		ymake
+#
+#
+#	Options:	topdirname
+
+set	topdir	= .
+set	thisdir = `pwd`
+
+if ($#argv) then
+	if ($#argv != 1) then
+		echo "$0 : Usage `basename $0` [topname]"
+		exit 1
+	endif
+	set	topname = $argv[1]
+	@ useinstalled = 1
+else
+	set	topname = ncarg
+	@ useinstalled = 0
+endif
+
+echo $thisdir | fgrep $topname >& /dev/null
+if ($status != 0) then
+	echo "$0 : Unable to find TopDir $topname in $thisdir"
+	exit 1
+endif
+
+echo $topname | fgrep / >& /dev/null
+if ($status != 1) then
+	echo "$0 : Bad TopDir name $topname"
+	exit 1
+endif
+
+set	base = `basename $thisdir`
+set	ndir = `dirname $thisdir`
+
+while ("$base" != "$topname")
+	if($?curdir) then
+		set curdir = "$base"/"$curdir"
+	else
+		set curdir = "$base"
+	endif
+
+	set topdir = ../"$topdir"
+
+	set base = `basename $ndir`
+	set ndir = `dirname ${ndir}`
+end
+
+set curdir = ./"$curdir"
+
+set defines = (-DCURDIR="$curdir" -DTOPDIR="$topdir")
+
+if ($useinstalled == 1) then
+	exec ymake $defines
+else
+	if ( ! -x "$topdir"/config/ymake-filter) then
+		echo "Making ymake from Makefile.ini in "$topdir"/config first"
+		(cd "$topdir"/config; make -f Makefile.ini clean all)
+		echo "continuing in `pwd`"
+	endif
+	exec "$topdir"/config/ymake -config "$topdir"/config $defines
+endif
