@@ -1,6 +1,6 @@
 #
 #
-#	$Id: yMakefile,v 1.3 1992-06-24 21:00:19 clyne Exp $
+#	$Id: yMakefile,v 1.4 1992-08-12 22:55:13 clyne Exp $
 #
 #
 #	Makefile for cgm filters -- filter between NCAR CGM and vanilla CGM
@@ -15,11 +15,11 @@ LIBS		= $(LIBDIR)/libcgm.a $(LIBDIR)/libncarv.a
 
 CDEFINES	= -I../../include
 
-CGM2_SRCS	= cgm2ncgm.c bsd-sysv.c
-NCAR2_SRCS	= ncgm2cgm.c bsd-sysv.c
+CGM2_SRCS	= cgm2ncgm.c
+NCAR2_SRCS	= ncgm2cgm.c 
 
-CGM2_OBJ	= cgm2ncgm.o bsd-sysv.o
-NCAR2_OBJ	= ncgm2cgm.o bsd-sysv.o
+CGM2_OBJ	= cgm2ncgm.o
+NCAR2_OBJ	= ncgm2cgm.o
 
 all::	cgm2ncgm ncgm2cgm 
 
