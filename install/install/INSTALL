@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: INSTALL,v 1.14 1998-03-04 20:51:19 haley Exp $
+#      $Id: INSTALL,v 1.15 1998-03-06 21:10:58 haley Exp $
 #
 #########################################################################
 #                                                                       #
@@ -70,6 +70,9 @@ echo -n "    the type of system you are running this INSTALL script on [y/n] (n)
 set answer =  $<
 if ("$answer" == "y") then
   setenv SYSTEM_TO_INSTALL `$LOCALDIR/sys_type -d`
+  if ($status == 2) then
+    exit 0
+  endif
   if ($status != 0) then
       $LOCALDIR/pause
   endif
@@ -165,7 +168,7 @@ cat <<EOF
 
 
         1.  Ordering information
-        2.  Install software for a $SYSTEM_TO_INSTALL system
+        2.  Install software for a(n) $SYSTEM_TO_INSTALL system
         3.  Remove installed software
         4.  Help
 

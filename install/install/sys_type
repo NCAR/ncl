@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: sys_type,v 1.15 1998-03-04 20:51:19 haley Exp $
+#      $Id: sys_type,v 1.16 1998-03-06 21:10:59 haley Exp $
 #
 #########################################################################
 #									#
@@ -101,7 +101,7 @@ while ( 1 )
 	set answer=$<
 	switch ("$answer")
 	case	0:
-		exit 1
+		exit 2
 		breaksw
 	case	[1-$#systems]:
 		echo $systems[$answer]
