@@ -31,9 +31,9 @@ typedef	struct	{
 
 extern	int	CGM_openMemFile(
 #ifdef	NeedFuncProto
-	char	*metafile,
-	int	record_size,
-	char	*type
+	const char	*metafile,
+	int		record_size,
+	const char	*type
 #endif
 );
 

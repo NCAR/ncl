@@ -1,5 +1,5 @@
 /*
- *	$Id: mem_file.c,v 1.7 1992-09-09 15:08:24 clyne Exp $
+ *	$Id: mem_file.c,v 1.8 1992-09-11 17:51:00 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -31,9 +31,9 @@ unsigned int    numOpen = 0;    /* number of files currently open       */
 
 
 int	CGM_openMemFile(metafile, record_size, type)
-	char	*metafile;
-	int	record_size;
-	char	*type;
+	const char	*metafile;
+	int		record_size;
+	const char	*type;
 {
 
 	int	i,

@@ -1,6 +1,6 @@
 #
 #
-#	$Id: yMakefile,v 1.7 1992-09-09 15:07:24 clyne Exp $
+#	$Id: yMakefile,v 1.8 1992-09-11 17:50:35 clyne Exp $
 #
 #
 #	Makefile for rascat
@@ -11,7 +11,7 @@ NCARG = ../../../..
 
 MYNAME		= rascat
 
-LIBS		= $(LIBPATH)/libncarg_ras.a $(LIBPATH)/libhdf.a \
+LIBS		= $(LIBPATH)/libncarg_ras.a $(LIBPATH)/libdf.a \
 		$(LIBPATH)/libncarg_c.a -lm
 
 CDEFINES	= 

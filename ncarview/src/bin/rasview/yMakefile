@@ -1,6 +1,6 @@
 #
 #
-#	$Id: yMakefile,v 1.7 1992-09-09 15:07:38 clyne Exp $
+#	$Id: yMakefile,v 1.8 1992-09-11 17:50:44 clyne Exp $
 #
 #	Makefile for rasview
 #
@@ -9,7 +9,7 @@ NCARG		= ../../../..
 MYNAME		= rasview
 
 LOCLIB		= $(LIBPATH)/libncarg_c.a  $(LIBPATH)/libncarg_ras.a \
-		$(LIBPATH)/libhdf.a
+		$(LIBPATH)/libdf.a
 
 SRCS		= rasdraw.c rasview.c
 

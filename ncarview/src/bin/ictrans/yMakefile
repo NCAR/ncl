@@ -29,7 +29,7 @@ SUNLIBS		= $(DSUNLIBS)
 #
 LOCLIB		= $(LIBPATH)/libictrans_.o $(LIBPATH)/libctrans.o \
 		$(LIBPATH)/libcgm.a $(LIBPATH)/libncarg_c.a \
-		$(LIBPATH)/libncarg_ras.a $(LIBPATH)/libhdf.a
+		$(LIBPATH)/libncarg_ras.a $(LIBPATH)/libdf.a
 
 SRCS		=  main.c 
 OBJS		= main.o 

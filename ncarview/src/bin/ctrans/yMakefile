@@ -1,6 +1,6 @@
 NCARG	= ../../../..
 #
-#	$Id: yMakefile,v 1.17 1992-09-09 15:06:35 clyne Exp $
+#	$Id: yMakefile,v 1.18 1992-09-11 17:50:21 clyne Exp $
 #
 
 
@@ -32,7 +32,7 @@ SUNLIBS		 = $(DSUNLIBS)
 #	local libraries
 #
 LOCLIB		= $(LIBPATH)/libctrans.o $(LIBPATH)/libcgm.a \
-		$(LIBPATH)/libncarg_ras.a  $(LIBPATH)/libhdf.a \
+		$(LIBPATH)/libncarg_ras.a  $(LIBPATH)/libdf.a \
 		$(LIBPATH)/libncarg_c.a
 
 

@@ -1,13 +1,13 @@
 #
 #
-#	$Id: yMakefile,v 1.5 1992-09-01 23:40:23 clyne Exp $
+#	$Id: yMakefile,v 1.6 1992-09-11 17:50:56 clyne Exp $
 #
 #	Makefile for NCAR Graphics source directories
 #
 
 NCARG	= ../../..
 
-SUBDIRS = libcgm libncarg_ras libctrans libictrans libhdf
+SUBDIRS = libcgm libncarg_ras libctrans libictrans 
 
 MakeSubdirs($(SUBDIRS))
 InstallSubdirs($(SUBDIRS))
