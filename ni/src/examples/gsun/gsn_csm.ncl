@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.19 1999-10-07 21:16:11 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.20 1999-10-07 21:26:19 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -4178,9 +4178,9 @@ end
       set_pres_hgt_axes(pres,res2,add_hgt)
     else
       print("gsn_csm_pres_hgt: Fatal: The first dimension of the input data must")
-/*
- * Check for transformation resources and apply them to loglin plot.
- */
+      print("have a coordinate variable called 'lev.'")
+      print("Cannot create plot.")
+    log_y = get_res_value(res2,"trYLog",True)  ; Check if Y axis to stay linear.
     res2           = True
     if(trres.and..not.any(ismissing(getvaratts(trres))))
       attsetvalues(loglin_object,trres)
