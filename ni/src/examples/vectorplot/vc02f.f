@@ -1,5 +1,5 @@
 C
-C      $Id: vc02f.f,v 1.1 1996-05-10 15:22:16 haley Exp $
+C      $Id: vc02f.f,v 1.2 1997-05-22 17:15:11 haley Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -153,7 +153,7 @@ C
 C Note that setting the reference magnitude also affects the length
 C of the arrows. In this case it is an inverse relationship.
 C
-      call NhlFRLClear(rlist,ierr)
+      call NhlFRLClear(rlist)
       call NhlFRLSetString(rlist,'tiMainString',
      1     'Adjusting the Reference Magnitude',ierr)
       call NhlFRLSetFloat(rlist,'vcRefMagnitudeF',20.0,ierr)
@@ -169,7 +169,7 @@ C reference vector annotation is displayed by default. Here, the
 C minimum vector annotation is turned on, and some resources of each
 C annotation are modified.
 C
-      call NhlFRLClear(rlist,ierr)
+      call NhlFRLClear(rlist)
       call NhlFRLSetString(rlist,'tiMainString',
      1     'Modifying the Vector Annotations',ierr)
       call NhlFRLSetFloat(rlist,'vcRefAnnoFontHeightF',0.015,ierr)

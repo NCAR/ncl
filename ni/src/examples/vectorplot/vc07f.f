@@ -1,5 +1,5 @@
 C
-C      $Id: vc07f.f,v 1.2 1996-07-03 17:04:26 haley Exp $
+C      $Id: vc07f.f,v 1.3 1997-05-22 17:15:11 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -155,7 +155,7 @@ C Create a ScalarField.
 C
       len_dims(1) = NSIZE
       len_dims(2) = MSIZE
-      call NhlFRLClear(rlist,ierr)
+      call NhlFRLClear(rlist)
       call NhlFRLSetMDFloatArray(rlist,'sfDataArray',P,2,len_dims,ierr)
       call NhlFRLSetFloat(rlist,'sfXCStartV',-180.,ierr)
       call NhlFRLSetFloat(rlist,'sfYCStartV',-90.,ierr)
