@@ -1,5 +1,5 @@
 !
-!      $Id: ngi.res,v 1.21 1998-11-19 00:56:13 dbrown Exp $
+!      $Id: ngi.res,v 1.22 1999-02-23 04:02:00 dbrown Exp $
 !
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !									!
@@ -232,6 +232,10 @@ NgNGO*XmForm.menubar.rightOffset:	0
 ! Main Window								!
 !									!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+*mainMGR*otree.translations: #override \
+        <Btn1Down>:               RowMoveAction() \n\
+	<Btn1Up>:		  RowSetPosAction()
+
 *mainMGR*topOffset:			5
 *mainMGR*bottomOffset:			5
 *mainMGR*leftOffset:			5
@@ -815,29 +819,20 @@ browse.title:				Data Browser
 *browseMGR*topform.width: 500
 *browseMGR*topform.height: 500
 
-
-!*contourPlotClass*cnMinLevelValF : 1.0
-!*contourPlotClass*cnMaxLevelValF : 7.0
-!*contourPlotClass*cnLevelSpacingF : 1.0
-
-!*contourPlotClass*cnLevelSelectionMode : ManualLevels
-!*wkColorMap : psgcap
-!*wkColorMap : temp1
-*cnHighLabelsOn : False
-*cnLowLabelsOn : False
-!*mpShapeMode: FixedAspectNoFitBB
-*mapPlotClass*vpWidthF : 1.0
-*mapPlotClass*vpHeightF : 1.0
-*mapPlotClass*vpYF : 1.0
-*mapPlotClass*vpXF : 0.0
-!*mapPlotClass*mpDumpAreaMap : True
-*mpDataBaseVersion : NCARG4_1
-*vpUseSegments: True
-*logLinPlotClass*pmTickMarkDisplayMode: always
-*irregularPlotClass*pmTickMarkDisplayMode: always
-
 !*browseMGR*EnumMenu*translations: #override \
 !        <Btn1Up>:               EnumButtonUpAction()
+
+*VarPage*ShaperTgl.labelString: Select a Subregion
+*VarPage*DatagridTgl.labelString: Data
+*VarPage*OutputMenuLbl.labelString: Output Data:
+
+*CreateDialog*okLabelString : Create
+*CreateDialog*ConfigurePB.labelString : Configure
+
+*HluVarsBtn.labelString: Graphic Vars
+*RegVarsBtn.labelString: Regular Vars
+*FilesBtn.labelString: Files
+*FileVarsBtn.labelString: File Vars
 
 !*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!
 
@@ -902,3 +897,25 @@ addfile*directory:     /fs/scd/home1/ncargd/dev/IRIS_IRIX_6_2_/lib/ncarg/data/cd
 *PaneInc*topOffset: 0
 *PaneInc*bottomOffset: 0
 
+
+
+!*contourPlotClass*cnMinLevelValF : 1.0
+!*contourPlotClass*cnMaxLevelValF : 7.0
+!*contourPlotClass*cnLevelSpacingF : 1.0
+
+!*contourPlotClass*cnLevelSelectionMode : ManualLevels
+!*wkColorMap : psgcap
+!*wkColorMap : temp1
+*cnHighLabelsOn : False
+*cnLowLabelsOn : False
+!*mpShapeMode: FixedAspectNoFitBB
+!*mapPlotClass*vpWidthF : 1.0
+!*mapPlotClass*vpHeightF : 1.0
+!*mapPlotClass*vpYF : 1.0
+!*mapPlotClass*vpXF : 0.0
+!*mapPlotClass*mpDumpAreaMap : True
+*mpDataBaseVersion : NCARG4_1
+*vpUseSegments: True
+*logLinPlotClass*pmTickMarkDisplayMode: always
+*irregularPlotClass*pmTickMarkDisplayMode: always
+*wkColorMap: temp1
