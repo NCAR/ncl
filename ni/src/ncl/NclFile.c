@@ -2086,7 +2086,7 @@ struct _NclSelectionRecord* sel_ptr;
 			j = 0;
 			for(i = 0 ; i < thefile->file.var_info[index]->num_dimensions; i++){
 				if(_NclFileVarIsCoord(thefile,
-					thefile->file.file_dim_info[thefile->file.var_info[index]->file_dim_num[i]]->dim_name_quark)!= -1) {
+					thefile->file.file_dim_info[thefile->file.var_info[index]->file_dim_num[sel[i].dim_num]]->dim_name_quark)!= -1) {
 					tmp_sel.selection[0] = sel[i];
 					tmp_sel.selection[0].dim_num = 0;
 					tmp_var = _NclFileReadCoord(thefile,thefile->file.file_dim_info[thefile->file.var_info[index]->file_dim_num[sel[i].dim_num]]->dim_name_quark,&tmp_sel);
@@ -2133,7 +2133,7 @@ struct _NclSelectionRecord* sel_ptr;
 						if(att_id == -1) {
 							att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
 						} 
-						_NclAddAtt(att_id,NrmQuarkToString(thefile->file.file_dim_info[thefile->file.var_info[index]->file_dim_num[i]]->dim_name_quark),_NclVarValueRead(tmp_var,NULL,NULL),&tmp_sel);
+						_NclAddAtt(att_id,NrmQuarkToString(thefile->file.file_dim_info[thefile->file.var_info[index]->file_dim_num[sel[i].dim_num]]->dim_name_quark),_NclVarValueRead(tmp_var,NULL,NULL),&tmp_sel);
 						coords[j] = -1;
 						if(tmp_var->obj.status != PERMANENT) {
 							_NclDestroyObj((NclObj)tmp_var);
