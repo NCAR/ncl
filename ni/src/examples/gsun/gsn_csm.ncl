@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.71 2001-06-15 22:26:40 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.72 2001-06-26 15:30:04 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -642,7 +642,7 @@ begin
 end
 
 ;***********************************************************************;
-  return((/"degrees_north","degree_north","degrees north"/))
+; Function : get_allowed_pres_units                                     ;
 ;                                                                       ;
 ; Get list of names allowed for pressure units.                         ; 
 ;                                                                       ;
@@ -654,7 +654,7 @@ begin
   hpa = get_allowed_pres_units_hpa()
   nmb  = dimsizes(mb)
   npa  = dimsizes(pa)
-  return((/"degrees_east","degree_east","degrees east"/))
+  nhpa = dimsizes(hpa)
   all_pres = new(nmb+npa+nhpa,string)
   all_pres(0:nmb-1)       = mb
   all_pres(nmb:nmb+npa-1) = pa
@@ -2249,17 +2249,38 @@ begin
   if((is_xyplot.and.is_yaxis.and.isatt(data,"units").and. \
       any(data@units.eq.get_allowed_lat_units)).or. \
      (.not.is_xyplot.and.is_valid_lat_ycoord(data))) then
-      "mpMinLonF"    : min_lon
-      "mpMaxLonF"    : max_lon
-      "mpMinLatF"    : min_lat
-      "mpMaxLatF"    : max_lat
-      "mpCenterLonF" : center_lon
+
 ; Label Y axis with nice latitude labels.
+
+    getvalues plot
+      "trYMinF"   : min_lat
+      "trYMaxF"   : max_lat
+    end getvalues
+
+    add_lat_labels_yaxis(plot,min_lat,max_lat,0,0,res)
+  else
+;
+; Only set a Y axis label if it is not a lat axis.
+;
+    set_yaxis_string(res,data)
+  end if
+
+  if((is_xyplot.and.is_xaxis.and.isatt(data,"units").and. \
+      any(data@units.eq.get_allowed_lon_units)).or. \
+     (.not.is_xyplot.and.is_valid_lon_xcoord(data))) then
+
+; Label X axis with nice longitude labels.
+
+    getvalues plot
+      "trXMinF"   : min_lon
+      "trXMaxF"   : max_lon
+    end getvalues
+;
 ; We want different defaults for longitude spacing, so set them up here.
 ;
     lon_range        = (/ 20,  40,  60, 180, 360/)
-   lonvalues = get_lon_values(min_lon,max_lon,lon_spacing,mlon_spacing,0,0,0)
-   latvalues = get_lat_values(min_lat,max_lat,lat_spacing,mlat_spacing)
+    lon_spacing_arr  = (/ 10,  20,  30,  45,  60/)
+    mlon_spacing_arr = (/  5,   5,  10,  15,  30/)
 
     add_lon_labels(plot,min_lon,max_lon,0,0,lon_range, \
                    lon_spacing_arr,mlon_spacing_arr,res)
@@ -2516,38 +2537,62 @@ min_lon, max_lon, res2, tmres, ticks_on
     lon_object = gsn_contour(wks,tmplon,latlon_res)
 
     setvalues plot
-;
-; If mpCenterLonF is set, but mpMinLonF and/or mpMaxLonF are not,
-; then we need to set them.
-;
+      "tmXBMode"              : "Explicit"
+      "tmXBValues"            : pop_tick_locs((a->LON(0,:)-360.0),\
+                                   (/-90,-45,0.0,45,90,135,180,225/))
+      "tmXBLabels"            : (/"90W","45W","0","45E","90E","135E",\
+                                  "180E","135W"/)
+      "tmYLMode"              : "EXPLICIT"
+      "tmYLValues"            : pop_tick_locs(a->LAT(:,0),\
+                                   (/-75,-60,-45,-30,-15,0,15,30/))
+      "tmYLLabels"            : (/"75S","60S","45S","30S","15S","EQ",\
+                                  "15N","30N"/)      
+      "tmXBLabelFontHeightF"  : 0.015
+      "tmYLLabelFontHeightF"  : 0.015
+      "tmXBMajorLengthF"      : 0.0001
+      "tmYLMajorLengthF"      : 0.0001
+    end setvalues
+
+    overlay(plot,lat_object)    ; Overlay latitude/longitude
+    overlay(plot,lon_object)    ; lines on plot.
+    return
+end
+
+;***********************************************************************;
+; Function : gsn_csm_map_ce                                             ;
+;                   wks: workstation object                             ;
+;               resources: optional resources                           ;
+;                                                                       ;
 ; This function creates and draws a labeled cylindrical equidistant map ;
-           .not.isatt(res2,"mpMinLonF").and.\
-           .not.isatt(res2,"mpMaxLonF"))
-      res2@mpMinLonF = res2@mpCenterLonF - 180
-      res2@mpMaxLonF = res2@mpCenterLonF + 180
+; plot to the workstation "wks" (the variable returned from a previous  ;
+; call to "gsn_open_wks").  "resources" is an optional list of          ;
+; resources. The Id of the map plot is returned.                        ;
+;                                                                       ;
 ; This function behaves differently from gsn_map in that it will        ;
-
-    if(res2.and.isatt(res2,"mpCenterLonF").and..not.isatt(res2,"mpMinLonF"))
-      res2@mpMinLonF = res2@mpCenterLonF - (res2@mpMaxLonF-res2@mpCenterLonF)
+; create a special kind of plot if certain attributes are set.          ;
+;                                                                       ;
+;    1. The lat/lon grid is labeled with tickmarks.                     ;
+;    2. If any of the special GSUN resources "gsnLeftString,"           ;
 ;       "gsnCenterString," and/or "gsnRightString" are set, then they   ;
+;       are used to title the top left, center, and right of the plot   ;
+;       (in addition, the regular resource "tiMainString" can be set to ;
+;       create a regular title).                                        ;
+;***********************************************************************;
 
-    if(res2.and.isatt(res2,"mpCenterLonF").and..not.isatt(res2,"mpMaxLonF"))
-      res2@mpMaxLonF = res2@mpCenterLonF + (res2@mpCenterLonF-res2@mpMinLonF)
-
-
-    min_lon = get_res_value(res2,"mpMinLonF",-180)
-    max_lon = get_res_value(res2,"mpMaxLonF", 180)
-    min_lat = get_res_value(res2,"mpMinLatF", -90)
-    max_lat = get_res_value(res2,"mpMaxLatF",  90)
+function gsn_csm_map_ce(wks:graphic,resources:logical)
+local i, res, map_object, tickmark_object, calldraw, callframe, \
+left_string, center_string, right_string, main_zone, min_lat, max_lat, \
+min_lon, max_lon, res2, tmres, ticks_on, display_mode
+begin
 ; Initialize.
     main_zone     = 2         ; Zone for main title (may change later)
-      print("gsn_csm_map_ce: Fatal: The resource mpMinLonF must be less than the resource mpMaxLonF.")
+    res2 = get_resources(resources)
 
 ; This section tests for more special resources: those that start
 ; with "gsn."
 
 ; Check if frame and/or draw are not supposed to be called.
-      print("gsn_csm_map_ce: Fatal: The resource mpMinLatF must be less than the resource mpMaxLatF.")
+    calldraw  = get_res_value(res2,"gsnDraw", True)
     callframe = get_res_value(res2,"gsnFrame",True)
     maxbb     = get_bb_res(res2)
     
@@ -2584,26 +2629,45 @@ min_lon, max_lon, res2, tmres, ticks_on
                                              "latlon".and. \
                                              lower_case(limit_mode).ne. \
                                              "corners"))
-    
+     print("gsn_csm_map_ce: Warning: you cannot use mpLimitMode=" + limit_mode + " with the gsm_csm_map routines.")
      return 
    end if
 ;
 ; If mpCenterLonF is set, but mpMinLonF/mpLeftCornerLonF and/or 
-
-    map_object = create "map" mapPlotClass wks
-      "vpXF"            : res2@vpXF
-      "vpYF"            : res2@vpYF
-      "vpWidthF"        : res2@vpWidthF
-      "vpHeightF"       : res2@vpHeightF
-      "mpLimitMode"     : limit_mode
-      "mpMinLonF"       : min_lon
-      "mpMaxLonF"       : max_lon
-      "mpMinLatF"       : min_lat
-      "mpMaxLatF"       : max_lat
-      "mpShapeMode"     : shape_mode   ; must be set when map created
-      "pmTitleDisplayMode" : "Always"
-      "pmTitleZone"        : main_zone        ; Zone for main title
-    end create
+; mpMaxLonF/mpRightCornerLonF are not, then we need to set them.
+;
+    if(lower_case(limit_mode).eq."latlon")
+      min_lon_str = "mpMinLonF"
+      max_lon_str = "mpMaxLonF"
+      min_lat_str = "mpMinLatF"
+      max_lat_str = "mpMaxLatF"
+    else
+      if(lower_case(limit_mode).eq."corners")
+        min_lon_str = "mpLeftCornerLonF"
+        max_lon_str = "mpRightCornerLonF"
+        min_lat_str = "mpLeftCornerLatF"
+        max_lat_str = "mpRightCornerLatF"
+      end if
+    end if
+    if(res2.and.isatt(res2,"mpCenterLonF").and.\
+           .not.isatt(res2,min_lon_str).and.\
+           .not.isatt(res2,max_lon_str))
+      res2@$min_lon_str$ = res2@mpCenterLonF - 180
+      res2@$max_lon_str$ = res2@mpCenterLonF + 180
+    end if
+  
+    if(res2.and.isatt(res2,"mpCenterLonF").and..not.isatt(res2,min_lon_str))
+      res2@$min_lon_str$ = res2@mpCenterLonF -  \
+                           (res2@$max_lon_str$-res2@mpCenterLonF)
+    end if
+  
+    if(res2.and.isatt(res2,"mpCenterLonF").and..not.isatt(res2,max_lon_str))
+      res2@$max_lon_str$ = res2@mpCenterLonF + \
+                         (res2@mpCenterLonF-res2@$min_lon_str$)
+    end if
+  
+    min_lon = get_res_value(res2,min_lon_str,-180)
+    max_lon = get_res_value(res2,max_lon_str, 180)
     min_lat = get_res_value(res2,min_lat_str, -90)
     max_lat = get_res_value(res2,max_lat_str,  90)
 
@@ -6672,6 +6736,7 @@ yabove, ybelow, ya_ind, yb_ind, xinterp, yinterp, nya, nyb, bar_chart
 
 ; Default for second plot is to draw line labels, but make background
 ; label box transparent. Also, move the info label around depending on
+; whether the labelbar from the first plot is on the side or the bottom.
 
   set_attr(res2_tmp,"cnLineLabelBackgroundColor",-1)
   if(.not.isatt(res2_tmp,"cnInfoLabelOrthogonalPosF"))
@@ -6766,8 +6831,9 @@ begin
 ; Check if we want a bar chart. If so, we can only have
 ; one curve for now. Also, gsnYRefLine must be set.
     end if
-      bar_chart = get_res_value(res2,"gsnXYBarChart",False)
-      if(bar_chart)
+;
+; Test dimensions. They must both either be the same, or have the
+; same rightmost dimension.
         if(ncurves.gt.1.or.ndimsx.gt.1)
           print("gsn_csm_xy: Warning: if drawing a bar chart, you can only have one curve.")
           print("Drawing a regular XY plot instead.")
@@ -6837,94 +6903,126 @@ begin
 ;
 ; If yref_fill_on is True, and we have more than one curve, then there
 ; should be the same number of reference lines as curves.
-; Bar chart is desired.
+; Figure out if we want individual bars, or just an outline.
+; Create some arrays to hold the new X/Y data.
         if(yref_fill_on.and.ncurves.gt.1.and.ncurves.ne.nyref.and.nyref.ne.1)
         nx = dimsizes(x) 
+
+          print("gsn_csm_xy: Fatal: if you plan to fill above and/or below reference lines, then the number of reference lines must either equal the number")
+          nya = dimsizes(y)
+          nyb = 2*nya
+          yinterp = new(nyb,double)
+          xinterp = new(nyb,double)
+          if(isatt(y,"_FillValue"))
+            yinterp@_FillValue = y@_FillValue
+          end if 
+          if(isatt(x,"_FillValue"))
+            xinterp@_FillValue = x@_FillValue
+          end if 
+;
+; Outlines only.
+          print("of curves, or be one.")
+; For each old y point, we need two new y points to represent
+        end if
+      end if                            ; Check if gsnYRefLine set.
+          bar_width = new(nx+1,double)
+          bar_width(0)       = 0.
+          bar_width(1:nx-1)  = x(1:) - x(:nx-2)
+          bar_width(nx)      = 0.
+          yinterp(0:nyb-2:2) = y
+          yinterp(1:nyb-1:2) = y
+          xinterp(0:nyb-2:2) = x - bar_width(0:nx-1)/2.
+          xinterp(1:nyb-1:2) = x + bar_width(1:nx)/2.
+             (ncurves.eq.1.and.nyref.ne.1))
+            print("gsn_csm_xy: Fatal: if you plan to draw a bar chart with values above")
+; Full bars are desired.  
             print("must either equal the number of curves, or be one.")
 ; Get smallest distance between X values. This will become the
 ; bar width, unless bar width is set explicitly.
         end if          ; Check for Y ref line.
-        dx = min( x(1:nx-1) - x(0:nx-2) )
-        if(isatt(res2,"gsnXYBarChartBarWidth"))
-          bar_width = get_res_value(res2,"gsnXYBarChartBarWidth",0.)
-          if(bar_width.gt.dx)
-            print("gsn_csm_xy: Warning: The bar width you selected ("+bar_width+") is larger than the smallest delta x ("+dx+").")
-            print("Defaulting to " + dx + ".")
+          dx = min( x(1:nx-1) - x(0:nx-2) )
+          if(isatt(res2,"gsnXYBarChartBarWidth"))
+            bar_width = get_res_value(res2,"gsnXYBarChartBarWidth",0.)
+            if(bar_width.gt.dx)
+              print("gsn_csm_xy: Warning: The bar width you selected ("+bar_width+") is larger than the smallest delta x ("+dx+").")
+              print("Defaulting to " + dx + ".")
+              bar_width = dx
+            end if
+          else
             bar_width = dx
           end if
-        else
-          bar_width = dx
-        end if
-        if(ismissing(bar_width).or.bar_width.le.0)
-          print("gsn_csm_xy: Fatal: The x array is not monotonically increasing.")
-          print("Cannot draw a bar chart.")
-          return
-        end if
+          if(ismissing(bar_width).or.bar_width.le.0)
+; Check if gsnXRefLine set.
+
+      if(isatt(res2,"gsnXRefLine"))
+        xref_line_on = True
+
         xref_line    = get_res_value(res2,"gsnXRefLine",0.)
 ; Get the indices where the y curve is above and below the ref line.
     res2          = True
-        ya_ind = ind(y.gt.yref_line)
-        yb_ind = ind(y.lt.yref_line)
+          ya_ind = ind(y.gt.yref_line)
+          yb_ind = ind(y.lt.yref_line)
     res2@gsnFrame = False   ; frame since we take care of that later.
 ; Create new array to hold bar charts.  For each old y point, we need
 ; four new y points to represent the rectangle, and then an extra point
 ; for the reference line.
 ; If user explicitly sets X or Y tick marks, then don't label the X 
-        if(.not.any(ismissing(ya_ind)))
-          if(isatt(y,"_FillValue"))
-            yabove = new(4*dimsizes(ya_ind)+1,double,y@_FillValue)
+          if(.not.any(ismissing(ya_ind)))
+            if(isatt(y,"_FillValue"))
+              yabove = new(4*dimsizes(ya_ind)+1,double,y@_FillValue)
+            else
+              yabove = new(4*dimsizes(ya_ind)+1,double,1e36)
+            end if 
+            nya = dimsizes(yabove)
+            yabove(0:nya-5:4) = yref_line
+            yabove(1:nya-4:4) = y(ya_ind)
+            yabove(2:nya-3:4) = y(ya_ind)
+            yabove(3:nya-2:4) = yref_line
+            yabove(nya-1)     = yref_line   ; last point
+            xabove = new(nya,double)
+            xabove(0:nya-5:4) = x(ya_ind) - bar_width/2.
+            xabove(1:nya-4:4) = x(ya_ind) - bar_width/2.
+            xabove(2:nya-3:4) = x(ya_ind) + bar_width/2.
+            xabove(3:nya-2:4) = x(ya_ind) + bar_width/2.
+            xabove(nya-1)     = xabove(0)   ; last point
           else
-            yabove = new(4*dimsizes(ya_ind)+1,double,1e36)
-          end if 
-          nya = dimsizes(yabove)
-          yabove(0:nya-5:4) = yref_line
-          yabove(1:nya-4:4) = y(ya_ind)
-          yabove(2:nya-3:4) = y(ya_ind)
-          yabove(3:nya-2:4) = yref_line
-          yabove(nya-1)     = yref_line   ; last point
-          xabove = new(nya,double)
-          xabove(0:nya-5:4) = x(ya_ind) - bar_width/2.
-          xabove(1:nya-4:4) = x(ya_ind) - bar_width/2.
-          xabove(2:nya-3:4) = x(ya_ind) + bar_width/2.
-          xabove(3:nya-2:4) = x(ya_ind) + bar_width/2.
-          xabove(nya-1)     = xabove(0)   ; last point
-        else
-          nya = 0
-        end if  
-        if(.not.any(ismissing(yb_ind)))
-          if(isatt(y,"_FillValue"))
-            ybelow = new(4*dimsizes(yb_ind)+1,double,y@_FillValue)
+            nya = 0
+          end if  
+          if(.not.any(ismissing(yb_ind)))
+            if(isatt(y,"_FillValue"))
+              ybelow = new(4*dimsizes(yb_ind)+1,double,y@_FillValue)
+            else
+              ybelow = new(4*dimsizes(yb_ind)+1,double,1e36)
+            end if 
+            nyb = dimsizes(ybelow)
+            ybelow(0:nyb-5:4) = yref_line
+            ybelow(1:nyb-4:4) = y(yb_ind)
+            ybelow(2:nyb-3:4) = y(yb_ind)
+            ybelow(3:nyb-2:4) = yref_line
+            ybelow(nyb-1)     = yref_line   ; last point
+            xbelow = new(nyb,double)
+            xbelow(0:nyb-5:4) = x(yb_ind) - bar_width/2.
+            xbelow(1:nyb-4:4) = x(yb_ind) - bar_width/2.
+            xbelow(2:nyb-3:4) = x(yb_ind) + bar_width/2.
+            xbelow(3:nyb-2:4) = x(yb_ind) + bar_width/2.
+            xbelow(nyb-1)     = xbelow(0)   ; last point
           else
-            ybelow = new(4*dimsizes(yb_ind)+1,double,1e36)
-          end if 
-          nyb = dimsizes(ybelow)
-          ybelow(0:nyb-5:4) = yref_line
-          ybelow(1:nyb-4:4) = y(yb_ind)
-          ybelow(2:nyb-3:4) = y(yb_ind)
-          ybelow(3:nyb-2:4) = yref_line
-          ybelow(nyb-1)     = yref_line   ; last point
-          xbelow = new(nyb,double)
-          xbelow(0:nyb-5:4) = x(yb_ind) - bar_width/2.
-          xbelow(1:nyb-4:4) = x(yb_ind) - bar_width/2.
-          xbelow(2:nyb-3:4) = x(yb_ind) + bar_width/2.
-          xbelow(3:nyb-2:4) = x(yb_ind) + bar_width/2.
-          xbelow(nyb-1)     = xbelow(0)   ; last point
-        else
-          nyb = 0
-        end if  
+            nyb = 0
+          end if  
       set_attr(res2,"tiXAxisString","")
 ; Combine the two sets of polygons.
         yinterp@_FillValue = y@_FillValue
-        xinterp = new(nya+nyb,double)
-        yinterp = new(nya+nyb,double)
-        if(nya.gt.0)
-          xinterp(0:nya-1) = xabove
-          yinterp(0:nya-1) = yabove
-        end if 
-        if(nyb.gt.0)
-          xinterp(nya:) = xbelow
-          yinterp(nya:) = ybelow
-        end if 
+          xinterp = new(nya+nyb,double)
+          yinterp = new(nya+nyb,double)
+          if(nya.gt.0)
+            xinterp(0:nya-1) = xabove
+            yinterp(0:nya-1) = yabove
+          end if 
+          if(nyb.gt.0)
+            xinterp(nya:) = xbelow
+            yinterp(nya:) = ybelow
+          end if 
+;
 ; Figure out if we want filled bars or outlined bars.
 ;
         if(bar_outline_only)
@@ -6997,7 +7095,7 @@ begin
               xinterp(0:2*ncurves-1:2,0:na_max-1) = xabove(:,0:na_max-1)
               yinterp(0:2*ncurves-1:2,0:na_max-1) = yabove(:,0:na_max-1)
               yinterp(0:2*ncurves-1:2,4:na_max-1:5) = yinterp@_FillValue
-    if(yref_fill_on.and.bar_chart)
+            end if
             if(nb_max.gt.0)
       if(yref_line_above.gt.0.and.nya.gt.0)
         gsres@gsFillColor = yref_line_above

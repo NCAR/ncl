@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.68 2001-05-17 16:24:11 haley Exp $
+;      $Id: gsn_code.ncl,v 1.69 2001-06-26 15:30:03 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -2929,6 +2929,14 @@ begin
 ;
         newplots(nplot) = pplot
 ;
+; Info for possible labelbar or main_string
+;
+        if(main_string_on.or.panel_labelbar.or.draw_boxes) then
+          bb  = NhlGetBB(pplot) ; Get bounding box of plot
+          top = bb(0)
+          lft = bb(2)
+          bot = bb(1)
+          rgt = bb(3)
           max_rgt = max((/rgt,max_rgt/))
           max_top = max((/top,max_top/))
 
@@ -2986,7 +2994,7 @@ begin
         getvalues vector_plot
           "vcLevels"                 : levels
           "vcLevelColors"            : colors
-          set_attr(lbres,"vpXF",xpos(0)+(scale*max(old_vp(:,2)) - lbres@vpWidthF)/2.)
+        end getvalues
       end if
           set_attr(lbres,"vpXF",(1. - lbres@vpWidthF)/2.)
 ;
