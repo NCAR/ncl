@@ -1,5 +1,5 @@
 C
-C	$Id: wmex02.f,v 1.2 1994-10-14 01:28:22 fred Exp $
+C	$Id: wmex02.f,v 1.3 1994-10-25 23:00:48 fred Exp $
 C
       PROGRAM WMEX02
 C
@@ -700,7 +700,8 @@ C   Texas
       ENDIF
 C
       CALL MAPTRN(31.25,-100.50,XO,YO)
-      CALL WMLABT(XO,YO,'90s',0,-IC90S)
+      CALL WMSETI('RBS',IC90S)
+      CALL WMLABT(XO,YO,'90s',0)
 C   S. of Okla.
       CALL MAPTRN(34.3,-97.5,XO,YO)
       CALL WMSETI('RBS',IC90S)
