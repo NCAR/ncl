@@ -1,5 +1,5 @@
 C
-C	$Id: pcbdff.f,v 1.4 2000-08-22 15:05:20 haley Exp $
+C	$Id: pcbdff.f,v 1.5 2002-02-07 23:17:56 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -30,5 +30,11 @@ C
       include 'pcffdx.h'
       include 'pcffsp.doc'
       include 'pcffsp.h'
+C
+C Initialize a single variable to avoid a loader error on
+C some systems.  This blockdata subroutine is here as a
+C dummy in case it should ever be needed in the future.
+C
+      DATA TYPFLG / 0 /
 C
       END
