@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ng4ex.csh,v 1.2 2001-07-05 21:44:14 haley Exp $
+#   $Id: ng4ex.csh,v 1.3 2002-03-04 21:58:18 haley Exp $
 #
 #######################################################################
 #                                                                     #
@@ -283,9 +283,9 @@ set n_list = ($n_list $n_prim)
 #  Set MapPlot examples  #
 #                        #
 #************************#
-set c_mapplot   = (mp01c mp02c mp03c mp04c mp05c mp06c)
-set f_mapplot   = (mp01f mp02f mp03f mp04f mp05f mp06f)
-set n_mapplot   = (mp01n mp02n mp03n mp04n mp05n mp06n)
+set c_mapplot   = (mp01c mp02c mp03c mp04c mp05c mp06c mp07c)
+set f_mapplot   = (mp01f mp02f mp03f mp04f mp05f mp06f mp07f)
+set n_mapplot   = (mp01n mp02n mp03n mp04n mp05n mp06n mp07n)
 set mapplot_list = ($c_mapplot $f_mapplot $n_mapplot)
 set c_list = ($c_list $c_mapplot)
 set f_list = ($f_list $f_mapplot)
