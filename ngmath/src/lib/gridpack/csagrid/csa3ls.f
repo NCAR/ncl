@@ -14,6 +14,8 @@ C
         IF (KNOTS(I) .LT. 4) THEN
           CALL CFAERR (202,' CSA3LS - must have at least four knots in e
      +very coordinate direction',69)       
+          IER = 202
+          RETURN
         ENDIF
    20 CONTINUE
 C
@@ -21,6 +23,8 @@ C  Check on the size of the workspace.
 C
       IF (NWRK .LT. NTOT*(NTOT+3)) THEN
         CALL CFAERR (203,' CSA3LS - workspace too small',29)
+        IER = 203
+        RETURN
       ENDIF
 C
 C  Invoke the expanded function.

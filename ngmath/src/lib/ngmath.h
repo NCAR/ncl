@@ -8,9 +8,9 @@
 /*
  *  Function prototypes for the csagrid package.
  */
-int c_csa1s(int, float [], float [], int, int, float [], float []);
-int c_csa1xs(int, float [], float [], float [], int,
-             float, int, int, float xo[], float yo[]);
+float *c_csa1s(int, float [], float [], int, int, float [], int *);
+float *c_csa1xs(int, float [], float [], float [], int,
+             float, int, int, float [], int *);
 float *c_csa2s(int, float [], float [], float [], int [],
                int, int, float [], float [], int *);
 float *c_csa2xs(int, float [], float [], float [], float [], int [], float,

@@ -3,47 +3,61 @@
 
 #include "csaproto.h"
 
-int c_csa1s(int n, float xi[], float yi[], int knots, 
-            int m, float xo[], float yo[])
+float *c_csa1s(int n, float xi[], float yi[], int knots, 
+            int m, float xo[], int *ier)
 {
-  float *work;
-  int   nwrk, ier;
+  float *work, *yo;
+  int   nwrk;
 
   nwrk = knots*(knots+3);
   work = (float *) calloc(nwrk, sizeof(float));
   if (work == NULL) {
     printf("Unable to allocate work space in c_csa1s\n");    
-    ier = 300;
-    return(ier);
+    *ier = 300;
+    return( (float *) NULL);
   }
-  
-  NGCALLF(csa1s,CSA1S)(&n, xi, yi, &knots, &m, xo, yo, &nwrk, work, &ier);
+
+  yo   = (float *) calloc(m, sizeof(float));
+  if (yo == NULL) {
+    printf("Unable to allocate space for output in c_csa1s\n");
+    *ier = 300;
+    return((float *)NULL);
+  }
+
+  NGCALLF(csa1s,CSA1S)(&n, xi, yi, &knots, &m, xo, yo, &nwrk, work, ier);
 
   free(work);
 
-  return(ier);
+  return(yo);
 }
 
-int c_csa1xs(int n, float xi[], float yi[], float wts[], int knots, 
-             float ssmth, int deriv, int m, float xo[], float yo[])
+float *c_csa1xs(int n, float xi[], float yi[], float wts[], int knots, 
+             float ssmth, int deriv, int m, float xo[], int *ier)
 {
-  float *work;
-  int   nwrk, ier;
+  float *work, *yo;
+  int   nwrk;
 
   nwrk = knots*(knots+3);
   work = (float *) calloc(nwrk, sizeof(float));
   if (work == NULL) {
     printf("Unable to allocate work space in c_csa1xs\n");    
-    ier = 300;
-    return(ier);
+    *ier = 300;
+    return( (float *)NULL);
   }
   
+  yo   = (float *) calloc(m, sizeof(float));
+  if (yo == NULL) {
+    printf("Unable to allocate space for output in c_csa1s\n");
+    *ier = 300;
+    return((float *)NULL);
+  }
+
   NGCALLF(csa1xs,CSA1XS)(&n, xi, yi, wts, &knots, &ssmth, &deriv, &m, xo, yo, 
-                         &nwrk, work, &ier);
+                         &nwrk, work, ier);
 
   free(work);
 
-  return(ier);
+  return(yo);
 }
 
 float *c_csa2xs(int ni, float xi[], float yi[], float zi[], 
@@ -86,10 +100,14 @@ float *c_csa2xs(int ni, float xi[], float yi[], float zi[],
  *  Make the Fortran call.
  */
   NGCALLF(csa2xs,CSA2XS)(&ni, zt, zi, wts, knots, &ssmth,
-          nderiv, &mo, &no, xo, yo, zo, &nwrk, work, &ier);
+          nderiv, &mo, &no, xo, yo, zo, &nwrk, work, ier);
 
   free(work);
   free(zt);
+
+  if (*ier != 0) {
+    return((float *)NULL);
+  }
 
 /*
  *  Rearrange the zo array to be row dominant.
@@ -162,7 +180,7 @@ float *c_csa2lxs(int ni, float xi[], float yi[], float zi[],
  *  Make the Fortran call.
  */
   NGCALLF(csa2lxs,CSA2LXS)(&ni, zt, zi, wts, knots, &ssmth,
-          nderiv, &no, xo, yo, zo, &nwrk, work, &ier);
+          nderiv, &no, xo, yo, zo, &nwrk, work, ier);
 
   free(work);
   free(zt);
@@ -232,7 +250,7 @@ float *c_csa3xs(int ni, float xi[], float yi[], float zi[], float ui[],
  *  Make the Fortran call.
  */
   NGCALLF(csa3xs,CSA3XS)(&ni, zt, ui, wts, knots, &ssmth,
-          nderiv, &nxo, &nyo, &nzo, xo, yo, zo, uo, &nwrk, work, &ier);
+          nderiv, &nxo, &nyo, &nzo, xo, yo, zo, uo, &nwrk, work, ier);
 
   free(work);
   free(zt);
@@ -301,7 +319,7 @@ float *c_csa3lxs(int ni, float xi[], float yi[], float zi[], float ui[],
  *  Make the Fortran call.
  */
   NGCALLF(csa3lxs,CSA3LXS)(&ni, zt, ui, wts, knots, &ssmth,
-          nderiv, &no, xo, yo, zo, uo, &nwrk, work, &ier);
+          nderiv, &no, xo, yo, zo, uo, &nwrk, work, ier);
 
   free(work);
   free(zt);

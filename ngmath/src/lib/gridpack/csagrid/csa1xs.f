@@ -7,12 +7,16 @@ C  Check on the number of knots.
 C
       IF (KNOTS .LT. 4) THEN
         CALL CFAERR (202,' CSA1XS - must have at least four knots',39)       
+        IER = 202
+        RETURN
       ENDIF
 C
 C  Check on the size of the workspace.
 C
       IF (NWRK .LT. KNOTS*(KNOTS+3)) THEN
         CALL CFAERR (203,' CSA1XS - workspace too small',29)
+        IER = 203
+        RETURN
       ENDIF
 C
 C  Calculate the min and max for the knots as the minimum value of
@@ -38,6 +42,7 @@ C  Calculate the approximated values.
 C
       DO 20 I=1,NO
         YO(I) = SPLDE(1,XO(I),NDERIV,WORK,XMN,XMX,KNOTS,IER)
+        IF (IERR .NE. 0) RETURN
    20 CONTINUE
 C
       RETURN

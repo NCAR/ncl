@@ -13,6 +13,8 @@ C
         IF (KNOTS(I) .LT. 4) THEN
           CALL CFAERR (202,' CSA2S - must have at least four knots in ev
      +ery coordinate direction',68)       
+          IER = 202
+          RETURN
         ENDIF
    20 CONTINUE
 C
@@ -20,6 +22,8 @@ C  Check on the size of the workspace.
 C
       IF (NWRK .LT. NTOT*(NTOT+3)) THEN
         CALL CFAERR (203,' CSA2S - workspace too small',28)
+        IER = 203
+        RETURN
       ENDIF
 C
 C  Calculate the min and max for the knots as the minimum value of
@@ -53,6 +57,7 @@ C
         DO 40 J=1,NYO
           XV(2) = YO(J)
           UO(I,J) = SPLDE(2,XV,NDERIV,WORK,XMN,XMX,KNOTS,IER)
+          IF (IERR .NE. 0) RETURN
    40   CONTINUE
    60 CONTINUE
 C

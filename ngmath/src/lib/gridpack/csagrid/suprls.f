@@ -227,6 +227,7 @@ C
       IF (L .GE. N) GO TO 126
       IER = 33
       CALL CFAERR (IER,' SUPRLS - array has too few rows.',33)
+      RETURN
   126 CONTINUE
 C
 C  K.NE.ISAV means further reduction needed.
