@@ -60,8 +60,8 @@ C  and scaled by SCALE.  Using a higher level of GKS one could use
 C  segment transformations to do the rotation, translation, and
 C  scaling, but it is done directly here.
 C
-      PARAMETER (ID=16 , H=1.)
-      DIMENSION XA(ID),YA(ID),XB(ID+1),YB(ID+1)
+      PARAMETER (ID=16, H=1.)
+      DIMENSION XA(ID),YA(ID),XB(ID),YB(ID)
 C
 C  Coordinates for the basic fill pattern.
 C
@@ -89,8 +89,6 @@ C
    20 CONTINUE
       CALL GSFAIS(1)
       CALL GSFACI(1)
-      XB(ID+1) = XB(1)
-      YB(ID+1) = YB(1)
       CALL GFA(ID,XB,YB)
       RETURN
       END
