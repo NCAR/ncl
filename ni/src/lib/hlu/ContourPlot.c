@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.1 1995-04-01 00:03:56 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.2 1995-04-01 23:27:55 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1528,7 +1528,7 @@ static NhlContourPlotLayer	Cnl;
 static NhlContourPlotLayerPart	*Cnp;
 
 /*
- * Function:	nhlfcontourplotclass
+ * Function:	nhlfcontourplotlayerclass
  *
  * Description:	fortran ref to contour class
  *

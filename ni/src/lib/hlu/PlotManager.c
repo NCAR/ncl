@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManager.c,v 1.2 1995-04-01 00:18:55 dbrown Exp $
+ *      $Id: PlotManager.c,v 1.3 1995-04-01 23:27:56 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -245,18 +245,18 @@ static NhlResource resources[] = {
 	{ NhlNtrYMaxF,NhlCtrYMaxF,NhlTFloat,sizeof(float),
 		Oset(y_max),
 		NhlTString,_NhlUSET("1.0"),0,NULL},
-	{ NhlNtrXLog, NhlCtrXLog,NhlTInteger, sizeof(int),
+	{ NhlNtrXLog, NhlCtrXLog,NhlTBoolean, sizeof(NhlBoolean),
 		  Oset(x_log),
-		  NhlTImmediate,_NhlUSET((NhlPointer) 0 ),0,NULL},
-	{ NhlNtrYLog, NhlCtrYLog,NhlTInteger, sizeof(int),
+		  NhlTImmediate,_NhlUSET((NhlPointer) False ),0,NULL},
+	{ NhlNtrYLog, NhlCtrYLog,NhlTBoolean, sizeof(NhlBoolean),
 		  Oset(y_log),
-		  NhlTImmediate,_NhlUSET((NhlPointer) 0 ),0,NULL},
-	{ NhlNtrXReverse, NhlCtrXReverse,NhlTInteger, sizeof(int),
+		  NhlTImmediate,_NhlUSET((NhlPointer) False ),0,NULL},
+	{ NhlNtrXReverse, NhlCtrXReverse,NhlTBoolean, sizeof(NhlBoolean),
 		  Oset(x_reverse),
-		  NhlTImmediate,_NhlUSET((NhlPointer) 0 ),0,NULL},
-	{ NhlNtrYReverse, NhlCtrYReverse,NhlTInteger, sizeof(int),
+		  NhlTImmediate,_NhlUSET((NhlPointer) False ),0,NULL},
+	{ NhlNtrYReverse, NhlCtrYReverse,NhlTBoolean, sizeof(NhlBoolean),
 		  Oset(y_reverse),
-		  NhlTImmediate,_NhlUSET((NhlPointer) 0),0,NULL },
+		  NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL },
 	{ NhlNtrYTensionF, NhlCtrYTensionF, NhlTFloat, sizeof(float),
 		Oset(y_tension),
 		NhlTString,_NhlUSET("2.0" ),0,NULL},
