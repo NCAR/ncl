@@ -184,7 +184,10 @@ NhlErrorTypes prcwater_dp_W( void )
 /*
  * Coerce output to float if necessary.
  */
-    if(type_prcwat != NCL_double) ((float*)prcwat)[i] = (float)*tmp_prcwat;
+    
+    if(type_prcwat != NCL_double) {
+      coerce_output_float_only(prcwat,tmp_prcwat,1,i);
+    }
       
     index_q += klvl;
   }

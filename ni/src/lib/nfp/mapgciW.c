@@ -1,4 +1,4 @@
- #include <stdio.h>
+#include <stdio.h>
 
 /*
  * The following are the required NCAR Graphics include files.
@@ -198,29 +198,17 @@ NhlErrorTypes gc_latlon_W( void )
                              tmp_lat,tmp_lon);
   }
 /*
- * Copy latitudes to output array.
+ * Copy latitudes to output array. Start with second point of lat
+ * array, since we copy begin/end lat points later.
  */
   if(npts > 0) {
-    for(j = 0; j < npts; j++) {
-      if(type_lat == NCL_double) {
-        ((double*)lat)[j+1] = tmp_lat[j];
-      }
-      else {
-        ((float*)lat)[j+1] = (float)(tmp_lat[j]);
-      }
-    }
+    coerce_output_float_or_double(lat,tmp_lat,type_lat,npts,1);
   }
 /*
  * Include the beginning and ending lat points.
  */
-  if(type_lat == NCL_double) {
-    ((double*)lat)[0]             = *tmp_lat1;
-    ((double*)lat)[nlatlon_new-1] = *tmp_lat2;
-  }
-  else {
-    ((float*)lat)[0]             = (float)*tmp_lat1;
-    ((float*)lat)[nlatlon_new-1] = (float)*tmp_lat2;
-  }
+  coerce_output_float_or_double(lat,tmp_lat1,type_lat,1,0);
+  coerce_output_float_or_double(lat,tmp_lat2,type_lat,1,nlatlon_new-1);
 /*
  * Copy longitudes to output array.
  */
@@ -237,12 +225,7 @@ NhlErrorTypes gc_latlon_W( void )
       else if(*code < 0 && tmp_lon[j] > 180.) {
         tmp_lon[j] -= 360.;
       }
-      if(type_lon == NCL_double) {
-        ((double*)lon)[j+1] = tmp_lon[j];
-      }
-      else {
-        ((float*)lon)[j+1] = (float)tmp_lon[j];
-      }
+      coerce_output_float_or_double(lon,&tmp_lon[j],type_lon,1,j+1);
     }
   }
 /*
@@ -255,12 +238,7 @@ NhlErrorTypes gc_latlon_W( void )
   else if(*code < 0 && *tmp_lon1 > 180.) {
     *tmp_lon1 -= 360.;
   }
-  if(type_lon == NCL_double) {
-    ((double*)lon)[0] = *tmp_lon1;
-  }
-  else {
-    ((float*)lon)[0] = (float)*tmp_lon1;
-  }
+  coerce_output_float_or_double(lon,tmp_lon1,type_lon,1,0);
 /*
  * Include the ending lon points.
  */
@@ -271,12 +249,7 @@ NhlErrorTypes gc_latlon_W( void )
   else if(*code < 0. && *tmp_lon2 > 180.) {
     *tmp_lon2 -= 360.;
   }
-  if(type_lon == NCL_double) {
-    ((double*)lon)[nlatlon_new-1] = *tmp_lon2;
-  }
-  else {
-    ((float*)lon)[nlatlon_new-1] = (float)*tmp_lon2;
-  }
+  coerce_output_float_or_double(lon,tmp_lon2,type_lon,1,nlatlon_new-1);
 
   *code = abs(*code);
   *ddist = NGCALLF(dgcdist,DGCDIST)(tmp_lat1,tmp_lon1,tmp_lat2,tmp_lon2,code);

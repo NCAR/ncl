@@ -153,16 +153,9 @@ NhlErrorTypes nice_mnmxintvl_W( void )
     _NhlGetEndpointsAndStepSize(*tmp_xmin,*tmp_xmax,*max_levels,
                                 *outside,&min_out,&max_out,&step_size);
 
-    if(type_mnmxintvl == NCL_float) {
-      ((float*)mnmxintvl)[0] = (float)min_out;
-      ((float*)mnmxintvl)[1] = (float)max_out;
-      ((float*)mnmxintvl)[2] = (float)step_size;
-    }
-    else {
-      ((double*)mnmxintvl)[0] = min_out;
-      ((double*)mnmxintvl)[1] = max_out;
-      ((double*)mnmxintvl)[2] = step_size;
-    }
+    coerce_output_float_or_double(mnmxintvl,&min_out,type_mnmxintvl,1,0);
+    coerce_output_float_or_double(mnmxintvl,&max_out,type_mnmxintvl,1,1);
+    coerce_output_float_or_double(mnmxintvl,&step_size,type_mnmxintvl,1,2);
   }
 /*
  * Free tmp arrays.

@@ -620,16 +620,7 @@ NhlErrorTypes natgrid_W( void )
         if(ier) {
           NhlPError(NhlWARNING,NhlEUNKNOWN,"natgrid: ier = %d", ier);
         }
-        if(type_zo == NCL_float) {
-          for (j = 0; j < nzo; j++) {
-            ((float*)zo)[index_zo+j] = (float)tmp_zo[j];
-          }    
-        }
-        else {
-          for (j = 0; j < nzo; j++) {
-            ((double*)zo)[index_zo+j] = tmp_zo[j];
-          }    
-        }
+	coerce_output_float_or_double(zo,tmp_zo,type_zo,nzo,index_zo);
         index_z  += npts;
         index_zo += nzo;
         NclFree(tmp_zo);
@@ -1612,7 +1603,8 @@ NhlErrorTypes nnpnt_W( void )
       tmp_z = &((double*)z)[i];
     }
     c_nnpntd(*tmp_x,*tmp_y,tmp_z);
-    if(type_z == NCL_float) ((float*)z)[i] = (float)tmp_z[0];
+
+    if(type_z != NCL_double) coerce_output_float_only(z,tmp_z,1,i);
   }
 
   if(type_x != NCL_double) NclFree(tmp_x);

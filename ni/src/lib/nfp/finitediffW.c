@@ -238,7 +238,7 @@ NhlErrorTypes center_finite_diff_W( void )
                                &missing_dr.doubleval,cyclic,&iend,
                                qq,rr,&npts1,tmp_dqdr,&ier);
     if(type_dqdr != NCL_double) {
-      coerce_output(dqdr,tmp_dqdr,npts,index_q);
+      coerce_output_float_only(dqdr,tmp_dqdr,npts,index_q);
     }
 
     index_q += npts;

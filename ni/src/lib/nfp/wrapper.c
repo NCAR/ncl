@@ -146,6 +146,7 @@ extern NhlErrorTypes rhomb_trunc_W(void);
 extern NhlErrorTypes rhomb_trunC_W(void);
 extern NhlErrorTypes tri_trunc_W(void);
 extern NhlErrorTypes tri_trunC_W(void);
+extern NhlErrorTypes exp_tapershC_W(void);
 extern NhlErrorTypes pop_remap_W(void);
 extern NhlErrorTypes smth9_W(void);
 
@@ -225,6 +226,28 @@ extern NhlErrorTypes csa3s_W(void);
 extern NhlErrorTypes csa3xs_W(void);
 extern NhlErrorTypes csa3ls_W(void);
 extern NhlErrorTypes csa3lxs_W(void);
+
+extern NhlErrorTypes csa1d_W(void);
+extern NhlErrorTypes csa1xd_W(void);
+extern NhlErrorTypes csa2d_W(void);
+extern NhlErrorTypes csa2xd_W(void);
+extern NhlErrorTypes csa2ld_W(void);
+extern NhlErrorTypes csa2lxd_W(void);
+extern NhlErrorTypes csa3d_W(void);
+extern NhlErrorTypes csa3xd_W(void);
+extern NhlErrorTypes csa3ld_W(void);
+extern NhlErrorTypes csa3lxd_W(void);
+
+extern NhlErrorTypes csa1x_W(void);
+extern NhlErrorTypes csa1_W(void);
+extern NhlErrorTypes csa2_W(void);
+extern NhlErrorTypes csa2x_W(void);
+extern NhlErrorTypes csa2l_W(void);
+extern NhlErrorTypes csa2lx_W(void);
+extern NhlErrorTypes csa3x_W(void);
+extern NhlErrorTypes csa3_W(void);
+extern NhlErrorTypes csa3lx_W(void);
+extern NhlErrorTypes csa3l_W(void);
 
 extern NhlErrorTypes drwsrfc_W(void);
 extern NhlErrorTypes drwvctc_W(void);
@@ -1731,6 +1754,20 @@ void NclAddUserFuncs(void)
     NclRegisterProc(tri_trunc_W,args,"tri_trunc",nargs);
 
 /*
+ * Register "exp_tapershC".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(3);
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+
+    NclRegisterFunc(exp_tapershC_W,args,"exp_tapershC",nargs);
+
+/*
  * Register "pop_remap"
  *
  * Create private argument array.
@@ -3056,6 +3093,369 @@ void NclAddUserFuncs(void)
   SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
   SetArgTemplate(args,nargs,"float",1,NclANY); nargs++;
   NclRegisterFunc(csa3lxs_W,args,"csa3lxs",nargs);
+
+/*
+ *  Register csa1d.
+ */
+  nargs = 0;
+  args = NewArgs(4);
+  SetArgTemplate(args,nargs,"double",NclANY,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"double",NclANY,NclANY); nargs++;
+  dimsizes[0] = 1;
+  SetArgTemplate(args,nargs,"integer",1,dimsizes); nargs++;
+  SetArgTemplate(args,nargs,"double",1,NclANY); nargs++;
+  NclRegisterFunc(csa1d_W,args,"csa1d",nargs);
+
+/*
+ *  Register csa1xd.
+ */
+  nargs = 0;
+  args = NewArgs(7);
+  SetArgTemplate(args,nargs,"double",NclANY,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"double",NclANY,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"double",1,NclANY); nargs++;
+  dimsizes[0] = 1;
+  SetArgTemplate(args,nargs,"integer",1,dimsizes); nargs++;
+  SetArgTemplate(args,nargs,"double",1,dimsizes); nargs++;
+  SetArgTemplate(args,nargs,"integer",1,dimsizes); nargs++;
+  SetArgTemplate(args,nargs,"double",1,NclANY); nargs++;
+  NclRegisterFunc(csa1xd_W,args,"csa1xd",nargs);
+
+/*
+ *  Register csa2d.
+ */
+  nargs = 0;
+  args = NewArgs(6);
+  SetArgTemplate(args,nargs,"double",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"double",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"double",NclANY,NclANY); nargs++;
+  dimsizes[0] = 2;
+  SetArgTemplate(args,nargs,"integer",1,dimsizes); nargs++;
+  SetArgTemplate(args,nargs,"double",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"double",1,NclANY); nargs++;
+  NclRegisterFunc(csa2d_W,args,"csa2d",nargs);
+
+/*
+ *  Register csa2xd.
+ */
+  nargs = 0;
+  args = NewArgs(9);
+  SetArgTemplate(args,nargs,"double",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"double",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"double",NclANY,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"double",1,NclANY); nargs++;
+
+  dimsizes[0] = 2;
+  SetArgTemplate(args,nargs,"integer",1,dimsizes); nargs++;
+  dimsizes[0] = 1;
+  SetArgTemplate(args,nargs,"double",1,dimsizes); nargs++;
+  dimsizes[0] = 2;
+  SetArgTemplate(args,nargs,"integer",1,dimsizes); nargs++;
+
+  SetArgTemplate(args,nargs,"double",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"double",1,NclANY); nargs++;
+  NclRegisterFunc(csa2xd_W,args,"csa2xd",nargs);
+
+/*
+ *  Register csa2ld.
+ */
+  nargs = 0;
+  args = NewArgs(6);
+  SetArgTemplate(args,nargs,"double",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"double",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"double",NclANY,NclANY); nargs++;
+
+  dimsizes[0] = 2;
+  SetArgTemplate(args,nargs,"integer",1,dimsizes); nargs++;
+
+  SetArgTemplate(args,nargs,"double",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"double",1,NclANY); nargs++;
+  NclRegisterFunc(csa2ld_W,args,"csa2ld",nargs);
+
+/*
+ *  Register csa2lxd.
+ */
+  nargs = 0;
+  args = NewArgs(9);
+  SetArgTemplate(args,nargs,"double",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"double",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"double",NclANY,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"double",1,NclANY); nargs++;
+
+  dimsizes[0] = 2;
+  SetArgTemplate(args,nargs,"integer",1,dimsizes); nargs++;
+  dimsizes[0] = 1;
+  SetArgTemplate(args,nargs,"double",1,dimsizes); nargs++;
+  dimsizes[0] = 2;
+  SetArgTemplate(args,nargs,"integer",1,dimsizes); nargs++;
+
+  SetArgTemplate(args,nargs,"double",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"double",1,NclANY); nargs++;
+  NclRegisterFunc(csa2lxd_W,args,"csa2lxd",nargs);
+
+/*
+ *  Register csa3d.
+ */
+  nargs = 0;
+  args = NewArgs(8);
+  SetArgTemplate(args,nargs,"double",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"double",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"double",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"double",NclANY,NclANY); nargs++;
+
+  dimsizes[0] = 3;
+  SetArgTemplate(args,nargs,"integer",1,dimsizes); nargs++;
+
+  SetArgTemplate(args,nargs,"double",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"double",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"double",1,NclANY); nargs++;
+  NclRegisterFunc(csa3d_W,args,"csa3d",nargs);
+
+/*
+ *  Register csa3xd.
+ */
+  nargs = 0;
+  args = NewArgs(11);
+  SetArgTemplate(args,nargs,"double",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"double",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"double",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"double",NclANY,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"double",1,NclANY); nargs++;
+
+  dimsizes[0] = 3;
+  SetArgTemplate(args,nargs,"integer",1,dimsizes); nargs++;
+  dimsizes[0] = 1;
+  SetArgTemplate(args,nargs,"double",1,dimsizes); nargs++;
+  dimsizes[0] = 3;
+  SetArgTemplate(args,nargs,"integer",1,dimsizes); nargs++;
+
+  SetArgTemplate(args,nargs,"double",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"double",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"double",1,NclANY); nargs++;
+  NclRegisterFunc(csa3xd_W,args,"csa3xd",nargs);
+
+/*
+ *  Register csa3ld.
+ */
+  nargs = 0;
+  args = NewArgs(8);
+  SetArgTemplate(args,nargs,"double",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"double",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"double",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"double",NclANY,NclANY); nargs++;
+
+  dimsizes[0] = 3;
+  SetArgTemplate(args,nargs,"integer",1,dimsizes); nargs++;
+
+  SetArgTemplate(args,nargs,"double",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"double",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"double",1,NclANY); nargs++;
+  NclRegisterFunc(csa3ld_W,args,"csa3ld",nargs);
+
+/*
+ *  Register csa3lxd.
+ */
+  nargs = 0;
+  args = NewArgs(11);
+  SetArgTemplate(args,nargs,"double",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"double",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"double",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"double",NclANY,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"double",1,NclANY); nargs++;
+
+  dimsizes[0] = 3;
+  SetArgTemplate(args,nargs,"integer",1,dimsizes); nargs++;
+  dimsizes[0] = 1;
+  SetArgTemplate(args,nargs,"double",1,dimsizes); nargs++;
+  dimsizes[0] = 3;
+  SetArgTemplate(args,nargs,"integer",1,dimsizes); nargs++;
+
+  SetArgTemplate(args,nargs,"double",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"double",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"double",1,NclANY); nargs++;
+  NclRegisterFunc(csa3lxd_W,args,"csa3lxd",nargs);
+
+/*
+ *  Register csa1x.
+ */
+  nargs = 0;
+  args = NewArgs(7);
+  SetArgTemplate(args,nargs,"numeric",NclANY,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"numeric",NclANY,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"numeric",1,NclANY); nargs++;
+  dimsizes[0] = 1;
+  SetArgTemplate(args,nargs,"integer",1,dimsizes); nargs++;
+  SetArgTemplate(args,nargs,"numeric",1,dimsizes); nargs++;
+  SetArgTemplate(args,nargs,"integer",1,dimsizes); nargs++;
+  SetArgTemplate(args,nargs,"numeric",1,NclANY); nargs++;
+  NclRegisterFunc(csa1x_W,args,"csa1x",nargs);
+
+/*
+ *  Register csa1.
+ */
+  nargs = 0;
+  args = NewArgs(4);
+  SetArgTemplate(args,nargs,"numeric",NclANY,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"numeric",NclANY,NclANY); nargs++;
+  dimsizes[0] = 1;
+  SetArgTemplate(args,nargs,"integer",1,dimsizes); nargs++;
+  SetArgTemplate(args,nargs,"numeric",1,NclANY); nargs++;
+  NclRegisterFunc(csa1_W,args,"csa1",nargs);
+
+/*
+ *  Register csa2.
+ */
+  nargs = 0;
+  args = NewArgs(6);
+  SetArgTemplate(args,nargs,"numeric",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"numeric",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"numeric",NclANY,NclANY); nargs++;
+  dimsizes[0] = 2;
+  SetArgTemplate(args,nargs,"integer",1,dimsizes); nargs++;
+  SetArgTemplate(args,nargs,"numeric",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"numeric",1,NclANY); nargs++;
+  NclRegisterFunc(csa2_W,args,"csa2",nargs);
+
+/*
+ *  Register csa2x.
+ */
+  nargs = 0;
+  args = NewArgs(9);
+
+  SetArgTemplate(args,nargs,"numeric",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"numeric",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"numeric",NclANY,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"numeric",1,NclANY); nargs++;
+
+  dimsizes[0] = 2;
+  SetArgTemplate(args,nargs,"integer",1,dimsizes); nargs++;
+  dimsizes[0] = 1;
+  SetArgTemplate(args,nargs,"numeric",1,dimsizes); nargs++;
+  dimsizes[0] = 2;
+  SetArgTemplate(args,nargs,"integer",1,dimsizes); nargs++;
+
+  SetArgTemplate(args,nargs,"numeric",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"numeric",1,NclANY); nargs++;
+  NclRegisterFunc(csa2x_W,args,"csa2x",nargs);
+
+/*
+ *  Register csa2l.
+ */
+  nargs = 0;
+  args = NewArgs(6);
+  SetArgTemplate(args,nargs,"numeric",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"numeric",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"numeric",NclANY,NclANY); nargs++;
+
+  dimsizes[0] = 2;
+  SetArgTemplate(args,nargs,"integer",1,dimsizes); nargs++;
+
+  SetArgTemplate(args,nargs,"numeric",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"numeric",1,NclANY); nargs++;
+  NclRegisterFunc(csa2l_W,args,"csa2l",nargs);
+
+/*
+ *  Register csa2lx.
+ */
+  nargs = 0;
+  args = NewArgs(9);
+  SetArgTemplate(args,nargs,"numeric",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"numeric",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"numeric",NclANY,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"numeric",1,NclANY); nargs++;
+
+  dimsizes[0] = 2;
+  SetArgTemplate(args,nargs,"integer",1,dimsizes); nargs++;
+  dimsizes[0] = 1;
+  SetArgTemplate(args,nargs,"numeric",1,dimsizes); nargs++;
+  dimsizes[0] = 2;
+  SetArgTemplate(args,nargs,"integer",1,dimsizes); nargs++;
+
+  SetArgTemplate(args,nargs,"numeric",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"numeric",1,NclANY); nargs++;
+  NclRegisterFunc(csa2lx_W,args,"csa2lx",nargs);
+
+/*
+ *  Register csa3x.
+ */
+  nargs = 0;
+  args = NewArgs(11);
+  SetArgTemplate(args,nargs,"numeric",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"numeric",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"numeric",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"numeric",NclANY,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"numeric",1,NclANY); nargs++;
+
+  dimsizes[0] = 3;
+  SetArgTemplate(args,nargs,"integer",1,dimsizes); nargs++;
+  dimsizes[0] = 1;
+  SetArgTemplate(args,nargs,"numeric",1,dimsizes); nargs++;
+  dimsizes[0] = 3;
+  SetArgTemplate(args,nargs,"integer",1,dimsizes); nargs++;
+
+  SetArgTemplate(args,nargs,"numeric",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"numeric",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"numeric",1,NclANY); nargs++;
+  NclRegisterFunc(csa3x_W,args,"csa3x",nargs);
+
+/*
+ *  Register csa3.
+ */
+  nargs = 0;
+  args = NewArgs(8);
+  SetArgTemplate(args,nargs,"numeric",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"numeric",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"numeric",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"numeric",NclANY,NclANY); nargs++;
+
+  dimsizes[0] = 3;
+  SetArgTemplate(args,nargs,"integer",1,dimsizes); nargs++;
+
+  SetArgTemplate(args,nargs,"numeric",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"numeric",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"numeric",1,NclANY); nargs++;
+  NclRegisterFunc(csa3_W,args,"csa3",nargs);
+
+/*
+ *  Register csa3lx.
+ */
+  nargs = 0;
+  args = NewArgs(11);
+  SetArgTemplate(args,nargs,"numeric",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"numeric",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"numeric",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"numeric",NclANY,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"numeric",1,NclANY); nargs++;
+
+  dimsizes[0] = 3;
+  SetArgTemplate(args,nargs,"integer",1,dimsizes); nargs++;
+  dimsizes[0] = 1;
+  SetArgTemplate(args,nargs,"numeric",1,dimsizes); nargs++;
+  dimsizes[0] = 3;
+  SetArgTemplate(args,nargs,"integer",1,dimsizes); nargs++;
+
+  SetArgTemplate(args,nargs,"numeric",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"numeric",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"numeric",1,NclANY); nargs++;
+  NclRegisterFunc(csa3lx_W,args,"csa3lx",nargs);
+
+/*
+ *  Register csa3l.
+ */
+  nargs = 0;
+  args = NewArgs(8);
+  SetArgTemplate(args,nargs,"numeric",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"numeric",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"numeric",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"numeric",NclANY,NclANY); nargs++;
+
+  dimsizes[0] = 3;
+  SetArgTemplate(args,nargs,"integer",1,dimsizes); nargs++;
+
+  SetArgTemplate(args,nargs,"numeric",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"numeric",1,NclANY); nargs++;
+  SetArgTemplate(args,nargs,"numeric",1,NclANY); nargs++;
+  NclRegisterFunc(csa3l_W,args,"csa3l",nargs);
 
 /*
  * Register "dsgrid2s".
@@ -4807,11 +5207,10 @@ NclBasicDataTypes type_x
   printf("xmin = %g xmax = %g\n", xmin, xmax );
 }
 
-
 /*
- * Coerce double data back to float, using a void array. 
+ * Copy double data back to double or float array, using a void array. 
  */
-void coerce_output(
+void coerce_output_float_only(
 void   *x,
 double *dx,
 int    size_x,
@@ -4821,6 +5220,29 @@ int    index_x
   int i;
 
   for( i = 0; i < size_x; i++ ) ((float*)x)[index_x+i]  = (float)dx[i];
+}
+
+
+
+/*
+ * Copy double data back to double or float array, using a void array. 
+ */
+void coerce_output_float_or_double(
+void   *x,
+double *dx,
+NclBasicDataTypes type_x,
+int    size_x,
+int    index_x
+)
+{
+  int i;
+
+  if(type_x == NCL_double) {
+    for( i = 0; i < size_x; i++ ) ((double*)x)[index_x+i]  = dx[i];
+  }
+  else {
+    for( i = 0; i < size_x; i++ ) ((float*)x)[index_x+i]  = (float)dx[i];
+  }
 }
 
 

@@ -492,13 +492,9 @@ NhlErrorTypes ttest_W( void )
       NGCALLF(dttest,DTTEST)(tmp_ave1,tmp_var1,tmp_s1,tmp_ave2,tmp_var2,
                              tmp_s2,iflag,tmp_alpha,tmp_tval,&ier);
 
-      if(type_prob == NCL_float) {
-        ((float*)prob)[i]                         = (float)*tmp_alpha;
-        if(*tval_opt) ((float*)prob)[i+size_ave1] = (float)*tmp_tval;
-      }
-      else {
-        ((double*)prob)[i]                         = *tmp_alpha;
-        if(*tval_opt) ((double*)prob)[i+size_ave1] = *tmp_tval;
+      coerce_output_float_or_double(prob,tmp_alpha,type_prob,1,i);
+      if(*tval_opt) {
+	coerce_output_float_or_double(prob,tmp_tval,type_prob,1,i+size_ave1);
       }
     }
     else {
@@ -837,8 +833,7 @@ NhlErrorTypes ftest_W( void )
     if(!ier) {
       NGCALLF(dftest,DFTEST)(tmp_var1,tmp_var2,tmp_s1,tmp_s2,tmp_prob,&ier);
 
-      if(type_prob == NCL_float) ((float*)prob)[i]  = (float)*tmp_prob;
-      else                       ((double*)prob)[i] = *tmp_prob;
+      coerce_output_float_or_double(prob,tmp_prob,type_prob,1,i);
     }
     else {
       if(type_prob == NCL_float) ((float*)prob)[i]  = missing_rvar1.floatval;
@@ -1022,8 +1017,7 @@ NhlErrorTypes rtest_W( void )
 
     NGCALLF(drtest,DRTEST)(tmp_r,&tmp_n,tmp_prob);
 
-    if(type_prob == NCL_float) ((float*)prob)[i]  = (float)*tmp_prob;
-    else                       ((double*)prob)[i] = *tmp_prob;
+    coerce_output_float_or_double(prob,tmp_prob,type_prob,1,i);
   }
 /*
  * free memory.

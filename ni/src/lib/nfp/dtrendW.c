@@ -156,24 +156,14 @@ NhlErrorTypes dtrend_W( void )
 
       NGCALLF(ddtrndx,DDTRNDX)(tmp_y,&npts,&iopt,&xmean,&yvari,&yvaro,
                                c,&ier);
-
-      if(type_dtrend_y == NCL_float) {
-        for(j = 0; j < npts; j++) {
-          ((float*)dtrend_y)[index_y+j] = (float)(tmp_y[j]);
-        }
-        if(*return_slope) {
-          ((float*)yintp)[i] = (float)c[0];
-          ((float*)slope)[i] = (float)c[1];
-        }
-      }
-      else {
-        for(j = 0; j < npts; j++) {
-          ((double*)dtrend_y)[index_y+j] = tmp_y[j];
-        }
-        if(*return_slope) {
-          ((double*)yintp)[i] = c[0];
-          ((double*)slope)[i] = c[1];
-        }
+/*
+ * Copy output back out as float or double.
+ */
+      coerce_output_float_or_double(dtrend_y,tmp_y,type_dtrend_y,npts,
+				    index_y);
+      if(*return_slope) {
+	coerce_output_float_or_double(yintp,&c[0],type_dtrend_y,1,i);
+	coerce_output_float_or_double(slope,&c[1],type_dtrend_y,1,i);
       }
     }
     index_y += npts;
@@ -575,24 +565,13 @@ NhlErrorTypes dtrend_msg_W( void )
                                  &missing_dy.doubleval,&iremove_mean,ydt,
                                  &slpe,&yint,&ier);
 
-    if(type_dtrend_y == NCL_float) {
-      for(j = 0; j < npts; j++) {
-        ((float*)dtrend_y)[index_y+j] = (float)(ydt[j]);
-      }
-      if(*return_slope) {
-        ((float*)yintp)[i] = (float)yint;
-        ((float*)slope)[i] = (float)slpe;
-      }
+    coerce_output_float_or_double(dtrend_y,ydt,type_dtrend_y,npts,
+				  index_y);
+    if(*return_slope) {
+      coerce_output_float_or_double(yintp,&yint,type_dtrend_y,1,i);
+      coerce_output_float_or_double(slope,&slpe,type_dtrend_y,1,i);
     }
-    else {
-      for(j = 0; j < npts; j++) {
-        ((double*)dtrend_y)[index_y+j] = ydt[j];
-      }
-      if(*return_slope) {
-        ((double*)yintp)[i] = yint;
-        ((double*)slope)[i] = slpe;
-      }
-    }
+
     index_y += npts;
   }
 /*

@@ -160,7 +160,7 @@ NhlErrorTypes sindex_yrmo_W( void )
     NhlPError(NhlWARNING,NhlEUNKNOWN,"sindex_yrmo: One or both of the input data arrays contains all missing values");
   }
   if(type_soi == NCL_float) {
-    coerce_output(soi,tmp_soi,total_size_xy,0);
+    coerce_output_float_only(soi,tmp_soi,total_size_xy,0);
     NclFree(tmp_soi);
   }
 /*
@@ -481,11 +481,11 @@ NhlErrorTypes snindex_yrmo_W( void )
  * If returning float values, we need to coerce the double precision values.
  */
   if(type_soi_noise == NCL_float) {
-    coerce_output(soi_noise,tmp_soi_noise,total_size_xy,0);
+    coerce_output_float_only(soi_noise,tmp_soi_noise,total_size_xy,0);
     NclFree(tmp_soi_noise);   /* Free up the double array */
   }
   if(type_soi == NCL_float) {
-    coerce_output(soi,tmp_soi,total_size_xy,0);
+    coerce_output_float_only(soi,tmp_soi,total_size_xy,0);
     NclFree(tmp_soi);   /* Free up the double array */
   }
 /*

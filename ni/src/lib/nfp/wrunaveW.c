@@ -138,14 +138,8 @@ NhlErrorTypes wgt_runave_W( void )
 
     NGCALLF(dwgtrunave,DWGTRUNAVE)(tmp_x,&npts,tmp_wgt,&nwgt,kopt,
                                    &missing_dx.doubleval,work,&lwork,&ier);
-    for(j = 0; j < npts; j++) {
-      if(type_x != NCL_double) {
-        ((float*)wrunave)[index_x+j] = (float)(tmp_x[j]);
-      }
-      else {
-        ((double*)wrunave)[index_x+j] = tmp_x[j];
-      }
-    }
+
+    coerce_output_float_or_double(wrunave,tmp_x,type_x,npts,index_x);
 
     index_x += npts;
   }
@@ -291,14 +285,8 @@ NhlErrorTypes runave_W( void )
 
     NGCALLF(drunave,DRUNAVE)(tmp_x,&npts,nave,kopt,&missing_dx.doubleval,
                              work,&lwork,&ier);
-    for(j = 0; j < npts; j++) {
-      if(type_x != NCL_double) {
-        ((float*)runave)[index_x+j] = (float)(tmp_x[j]);
-      }
-      else {
-        ((double*)runave)[index_x+j] = tmp_x[j];
-      }
-    }
+
+    coerce_output_float_or_double(runave,tmp_x,type_x,npts,index_x);
 
     index_x += npts;
   }

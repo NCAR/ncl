@@ -110,12 +110,7 @@ NhlErrorTypes inverse_matrix_W( void )
   if(!info) {
     NGCALLF(dgetri,DGETRI)( &n, tmp_x, &lda, ipiv, work, &lwork, &info );
     if(!info) {
-      if(type_xinv == NCL_float) {
-	coerce_output(xinv,tmp_x,nm,0);
-      }
-      else {
-	for( i = 0; i < nm; i++ ) ((double*)xinv)[i] = tmp_x[i];
-      }
+      coerce_output_float_or_double(xinv,tmp_x,type_xinv,nm,0);
     }
   }
   else {
@@ -265,12 +260,7 @@ NhlErrorTypes solve_linsys_W( void )
   }
   NGCALLF(dgesv,DGESV)( &n, &nrhs, tmp_a, &lda, ipiv, tmp_b, &ldb, &info );
   if(!info) {
-    if(type_x == NCL_float) {
-      coerce_output(x,tmp_b,nnrhs,0);
-    }
-    else {
-      for( j = 0; j < nnrhs; j++ ) ((double*)x)[j] = tmp_b[j];
-    }
+    coerce_output_float_or_double(x,tmp_b,type_x,nnrhs,0);
   }
   else {
     NhlPError(NhlWARNING,NhlEUNKNOWN,"solve_linsys: info = %d, missing values returned\n", info );

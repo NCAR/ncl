@@ -443,16 +443,7 @@ NhlErrorTypes dsgrid2_W( void )
         NclFree(tmp_zo);
         return(NhlFATAL);
       }
-      if(type_zo == NCL_float) {
-        for (j = 0; j < nzo; j++) {
-          ((float*)zo)[index_zo+j] = (float)tmp_zo[j];
-        }    
-      }
-      else {
-        for (j = 0; j < nzo; j++) {
-          ((double*)zo)[index_zo+j] = tmp_zo[j];
-        }    
-      }
+      coerce_output_float_or_double(zo,tmp_zo,type_zo,nzo,index_zo);
       index_z  += npts;
       index_zo += nzo;
       NclFree(tmp_zo);
@@ -1165,16 +1156,7 @@ NhlErrorTypes dsgrid3_W( void )
         NclFree(tmp_uo);
         return(NhlFATAL);
       }
-      if(type_uo == NCL_float) {
-        for (j = 0; j < nuo; j++) {
-          ((float*)uo)[index_uo+j] = (float)tmp_uo[j];
-        }    
-      }
-      else {
-        for (j = 0; j < nuo; j++) {
-          ((double*)uo)[index_uo+j] = tmp_uo[j];
-        }    
-      }
+      coerce_output_float_or_double(uo,tmp_uo,type_uo,nuo,index_uo);
       index_u  += npts;
       index_uo += nuo;
       NclFree(tmp_uo);
@@ -2077,7 +2059,7 @@ NhlErrorTypes dspnt2_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"dspnt2: ier = %d", ier);
     return(NhlFATAL);
   }
-  if(type_zo != NCL_double) coerce_output(zo,tmp_zo,nptso,0);
+  if(type_zo != NCL_double) coerce_output_float_only(zo,tmp_zo,nptso,0);
 /*
  * Free arrays
  */
@@ -2602,7 +2584,7 @@ NhlErrorTypes dspnt3_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"dspnt3: ier = %d", ier);
     return(NhlFATAL);
   }
-  if(type_uo != NCL_double) coerce_output(uo,tmp_uo,nptso,0);
+  if(type_uo != NCL_double) coerce_output_float_only(uo,tmp_uo,nptso,0);
 /*
  * Free arrays
  */

@@ -298,22 +298,22 @@ NhlErrorTypes wavelet_W( void )
                              tmp_st_dev,tmp_lag1,tmp_cdelta,tmp_psi0,
                              tmp_power,tmp_phase,tmp_r1);
   if(type_wave == NCL_float) {
-    coerce_output(wave,tmp_wave,size_wave,0);
-    coerce_output(scale,tmp_scale,*jtot,0);
-    coerce_output(period,tmp_period,*jtot,0);
-    coerce_output(coi,tmp_coi,n,0);
-    coerce_output(dof,tmp_dof,*jtot,0);
-    coerce_output(ffttheor,tmp_ffttheor,*jtot,0);
-    coerce_output(signif,tmp_signif,*jtot,0);
-    coerce_output(gws,tmp_gws,*jtot,0);
-    coerce_output(power,tmp_power,*jtot*n,0);
-    coerce_output(phase,tmp_phase,*jtot*n,0);
-    coerce_output(r1,tmp_r1,1,0);
-    coerce_output(mean,tmp_mean,1,0);
-    coerce_output(st_dev,tmp_st_dev,1,0);
-    coerce_output(lag1,tmp_lag1,1,0);
-    coerce_output(cdelta,tmp_cdelta,1,0);
-    coerce_output(psi0,tmp_psi0,1,0);
+    coerce_output_float_only(wave,tmp_wave,size_wave,0);
+    coerce_output_float_only(scale,tmp_scale,*jtot,0);
+    coerce_output_float_only(period,tmp_period,*jtot,0);
+    coerce_output_float_only(coi,tmp_coi,n,0);
+    coerce_output_float_only(dof,tmp_dof,*jtot,0);
+    coerce_output_float_only(ffttheor,tmp_ffttheor,*jtot,0);
+    coerce_output_float_only(signif,tmp_signif,*jtot,0);
+    coerce_output_float_only(gws,tmp_gws,*jtot,0);
+    coerce_output_float_only(power,tmp_power,*jtot*n,0);
+    coerce_output_float_only(phase,tmp_phase,*jtot*n,0);
+    coerce_output_float_only(r1,tmp_r1,1,0);
+    coerce_output_float_only(mean,tmp_mean,1,0);
+    coerce_output_float_only(st_dev,tmp_st_dev,1,0);
+    coerce_output_float_only(lag1,tmp_lag1,1,0);
+    coerce_output_float_only(cdelta,tmp_cdelta,1,0);
+    coerce_output_float_only(psi0,tmp_psi0,1,0);
   }
 /*
  * Free memory.
@@ -872,22 +872,22 @@ NhlErrorTypes wavelet_default_W( void )
                              tmp_st_dev,tmp_lag1,tmp_cdelta,tmp_psi0,
                              tmp_power,tmp_phase,tmp_r1);
   if(type_wave == NCL_float) {
-    coerce_output(wave,tmp_wave,size_wave,0);
-    coerce_output(scale,tmp_scale,jtot,0);
-    coerce_output(period,tmp_period,jtot,0);
-    coerce_output(coi,tmp_coi,n,0);
-    coerce_output(dof,tmp_dof,jtot,0);
-    coerce_output(ffttheor,tmp_ffttheor,jtot,0);
-    coerce_output(signif,tmp_signif,jtot,0);
-    coerce_output(gws,tmp_gws,jtot,0);
-    coerce_output(power,tmp_power,jtot*n,0);
-    coerce_output(phase,tmp_phase,jtot*n,0);
-    coerce_output(r1,tmp_r1,1,0);
-    coerce_output(mean,tmp_mean,1,0);
-    coerce_output(st_dev,tmp_st_dev,1,0);
-    coerce_output(lag1,tmp_lag1,1,0);
-    coerce_output(cdelta,tmp_cdelta,1,0);
-    coerce_output(psi0,tmp_psi0,1,0);
+    coerce_output_float_only(wave,tmp_wave,size_wave,0);
+    coerce_output_float_only(scale,tmp_scale,jtot,0);
+    coerce_output_float_only(period,tmp_period,jtot,0);
+    coerce_output_float_only(coi,tmp_coi,n,0);
+    coerce_output_float_only(dof,tmp_dof,jtot,0);
+    coerce_output_float_only(ffttheor,tmp_ffttheor,jtot,0);
+    coerce_output_float_only(signif,tmp_signif,jtot,0);
+    coerce_output_float_only(gws,tmp_gws,jtot,0);
+    coerce_output_float_only(power,tmp_power,jtot*n,0);
+    coerce_output_float_only(phase,tmp_phase,jtot*n,0);
+    coerce_output_float_only(r1,tmp_r1,1,0);
+    coerce_output_float_only(mean,tmp_mean,1,0);
+    coerce_output_float_only(st_dev,tmp_st_dev,1,0);
+    coerce_output_float_only(lag1,tmp_lag1,1,0);
+    coerce_output_float_only(cdelta,tmp_cdelta,1,0);
+    coerce_output_float_only(psi0,tmp_psi0,1,0);
   }
 /*
  * Free memory.

@@ -95,14 +95,8 @@ NhlErrorTypes y_skewt_W( void )
  */
   NGCALLF(dskewty,DSKEWTY)(tmp_pres,&np,tmp_yskewt);
 
-  for(i = 0; i < np; i++) {
-    if(type_pres != NCL_double) {
-      ((float*)yskewt)[i] = (float)(tmp_yskewt[i]);
-    }
-    else {
-      ((double*)yskewt)[i] = tmp_yskewt[i];
-    }
-  }
+  coerce_output_float_or_double(yskewt,tmp_yskewt,type_pres,np,0);
+
 /*
  * Free memory.
  */
@@ -201,14 +195,8 @@ NhlErrorTypes x_skewt_W( void )
  */
   NGCALLF(dskewtx,DSKEWTX)(tmp_temp,tmp_y,&nty,tmp_xskewt);
 
-  for(i = 0; i < nty; i++) {
-    if(type_xskewt == NCL_double) {
-      ((double*)xskewt)[i] = tmp_xskewt[i];
-    }
-    else {
-      ((float*)xskewt)[i] = (float)(tmp_xskewt[i]);
-    }
-  }
+  coerce_output_float_or_double(xskewt,tmp_xskewt,type_xskewt,nty,0);
+
 /*
  * Free memory.
  */
@@ -292,12 +280,8 @@ NhlErrorTypes tmr_skewt_W( void )
  */
   *tmp_tmrskewt = NGCALLF(dtmrskewt,DTMRSKEWT)(tmp_w,tmp_p);
 
-  if(type_tmrskewt == NCL_double) {
-    ((double*)tmrskewt)[0] = *tmp_tmrskewt;
-  }
-  else {
-    ((float*)tmrskewt)[0] = (float)(*tmp_tmrskewt);
-  }
+  coerce_output_float_or_double(tmrskewt,tmp_tmrskewt,type_tmrskewt,1,0);
+
 /*
  * Free memory.
  */
@@ -382,12 +366,8 @@ NhlErrorTypes tda_skewt_W( void )
  */
   *tmp_tdaskewt = NGCALLF(dtdaskewt,DTDASKEWT)(tmp_o,tmp_p);
 
-  if(type_tdaskewt == NCL_double) {
-    ((double*)tdaskewt)[0] = *tmp_tdaskewt;
-  }
-  else {
-    ((float*)tdaskewt)[0] = (float)(*tmp_tdaskewt);
-  }
+  coerce_output_float_or_double(tdaskewt,tmp_tdaskewt,type_tdaskewt,1,0);
+
 /*
  * Free memory.
  */
@@ -471,12 +451,8 @@ NhlErrorTypes satlft_skewt_W( void )
  */
   *tmp_satlftskewt = NGCALLF(dsatlftskewt,DSATLFTSKEWT)(tmp_thw,tmp_p);
 
-  if(type_satlftskewt == NCL_double) {
-    ((double*)satlftskewt)[0] = *tmp_satlftskewt;
-  }
-  else {
-    ((float*)satlftskewt)[0] = (float)(*tmp_satlftskewt);
-  }
+  coerce_output_float_or_double(satlftskewt,tmp_satlftskewt,
+				type_satlftskewt,1,0);
 /*
  * Free memory.
  */
@@ -706,12 +682,8 @@ NhlErrorTypes showal_skewt_W( void )
  */
   *tmp_showalskewt = NGCALLF(dshowalskewt,DSHOWALSKEWT)(tmp_p,tmp_t,tmp_td,
                                                         &nlvls);
-  if(type_showalskewt == NCL_double) {
-    ((double*)showalskewt)[0] = *tmp_showalskewt;
-  }
-  else {
-    ((float*)showalskewt)[0] = (float)(*tmp_showalskewt);
-  }
+  coerce_output_float_or_double(showalskewt,tmp_showalskewt,
+				type_showalskewt,1,0);
 /*
  * Free memory.
  */
@@ -809,12 +781,8 @@ NhlErrorTypes pw_skewt_W( void )
  * Call Fortran routine.
  */
   *tmp_pwskewt = NGCALLF(dpwskewt,DPWSKEWT)(tmp_td,tmp_p,&n);
-  if(type_pwskewt == NCL_double) {
-    ((double*)pwskewt)[0] = *tmp_pwskewt;
-  }
-  else {
-    ((float*)pwskewt)[0] = (float)(*tmp_pwskewt);
-  }
+  coerce_output_float_or_double(pwskewt,tmp_pwskewt,type_pwskewt,1,0);
+
 /*
  * Free memory.
  */
@@ -964,12 +932,11 @@ NhlErrorTypes cape_thermo_W( void )
                                                iprint,tparcel,
                                                &missing_dtenv.doubleval,
                                                jlcl,jlfc,jcross);
-  if(type_cape == NCL_double) {
-    ((double*)cape)[0] = *tmp_cape;
-  }
-  else {
-    ((float*)cape)[0] = (float)*tmp_cape;
-    for(i = 0; i < nlvls; i++ ) rtparcel[i] = (float)tparcel[i];
+
+  coerce_output_float_or_double(cape,tmp_cape,type_cape,1,0);
+
+  if(type_cape != NCL_double) {
+    coerce_output_float_only(rtparcel,tparcel,nlvls,0);
     NclFree(tparcel);
   }
 /*

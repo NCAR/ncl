@@ -112,14 +112,7 @@ NhlErrorTypes linmsg_W( void )
 
     NGCALLF(dlinmsg,DLINMSG)(tmp_x,&npts,&missing_dx.doubleval,&mflag,
                              &nptcrt);
-    for(j = 0; j < npts; j++) {
-      if(type_x != NCL_double) {
-        ((float*)xlinmsg)[index_x+j] = (float)(tmp_x[j]);
-      }
-      else {
-        ((double*)xlinmsg)[index_x+j] = tmp_x[j];
-      }
-    }
+    coerce_output_float_or_double(xlinmsg,tmp_x,type_x,npts,index_x);
     index_x += npts;
   }
 /*

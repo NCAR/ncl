@@ -54,7 +54,7 @@ NhlErrorTypes rhomb_trunC_W( void )
        NULL,
        2);
 /*
- * The grid coming in must be at least 2-dimensional.
+ * The grid coming in must be at least 3-dimensional.
  */
   if(ndims_ab < 3) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"rhomb_trunC: The input array must be at least 3-dimensional");
@@ -118,16 +118,8 @@ NhlErrorTypes rhomb_trunC_W( void )
 /*
  * Copy a and b arrays back into new_ab array.
  */
-    for(j = 0; j < nm; j++) {
-      if(type_ab == NCL_float) {
-        ((float*)new_ab)[index_nm+j]       = (float)(tmp_a[j]);
-        ((float*)new_ab)[start+index_nm+j] = (float)(tmp_b[j]);
-      }
-      else {
-        ((double*)new_ab)[index_nm+j]       = tmp_a[j];
-        ((double*)new_ab)[start+index_nm+j] = tmp_b[j];
-      }
-    }
+    coerce_output_float_or_double(new_ab,tmp_a,type_ab,nm,index_nm);
+    coerce_output_float_or_double(new_ab,tmp_b,type_ab,nm,index_nm+start);
     index_nm += nm;
   }
 
@@ -203,6 +195,10 @@ NhlErrorTypes tri_trunC_W( void )
   m = dsizes_ab[ndims_ab-2];
   n = dsizes_ab[ndims_ab-1];
   nm = n * m;
+  if(n != m) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"tri_trunC: the last two dimensions of ab must be the same size");
+    return(NhlFATAL);
+  }
 
   nt = 1;
   for(i = 1; i < ndims_ab-2; nt*=dsizes_ab[i],i++);
@@ -246,21 +242,17 @@ NhlErrorTypes tri_trunC_W( void )
     coerce_subset_input_double(ab,tmp_a,index_nm,type_ab,nm,0,NULL,NULL);
     coerce_subset_input_double(ab,tmp_b,start+index_nm,type_ab,nm,0,
                                NULL,NULL);
-
-    NGCALLF(dtritrunc,DTRITRUNC)(&n,&m,tmp_a,tmp_b,T);
+/*
+ * This was the original call to the original tritrunc. 
+ *
+ *   NGCALLF(dtritrunc,DTRITRUNC)(&n,&m,tmp_a,tmp_b,T);
+ */
+    NGCALLF(dtritruncnew,DTRITRUNCNEW)(&n, T, &m, tmp_a, tmp_b);
 /*
  * Copy a and b arrays back into new_ab array.
  */
-    for(j = 0; j < nm; j++) {
-      if(type_new_ab == NCL_float) {
-        ((float*)new_ab)[index_nm+j]       = (float)(tmp_a[j]);
-        ((float*)new_ab)[start+index_nm+j] = (float)(tmp_b[j]);
-      }
-      else {
-        ((double*)new_ab)[index_nm+j]       = tmp_a[j];
-        ((double*)new_ab)[start+index_nm+j] = tmp_b[j];
-      }
-    }
+    coerce_output_float_or_double(new_ab,tmp_a,type_ab,nm,index_nm);
+    coerce_output_float_or_double(new_ab,tmp_b,type_ab,nm,index_nm+start);
     index_nm += nm;
   }
 
@@ -495,6 +487,10 @@ NhlErrorTypes tri_trunc_W( void )
  */
   m = dsizes_a[ndims_a-2];
   n = dsizes_a[ndims_a-1];
+  if(n != m) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"tri_trunc: the last two dimensions of ab must be the same size");
+    return(NhlFATAL);
+  }
   nm = n * m;
 
   nt = 1;
@@ -546,18 +542,15 @@ NhlErrorTypes tri_trunc_W( void )
       tmp_b  = &((double*)b)[index_nm];
     }
 
-    NGCALLF(dtritrunc,DTRITRUNC)(&n,&m,tmp_a,tmp_b,T);
+/*
+ * This was the original call to the original tritrunc. 
+ *
+ *    NGCALLF(dtritrunc,DTRITRUNC)(&n,&m,tmp_a,tmp_b,T);
+ */
+    NGCALLF(dtritruncnew,DTRITRUNCNEW)(&n, T, &m, tmp_a, tmp_b);
 
-    if(type_a != NCL_double) {
-      for(j = 0; j < nm; j++ ) {
-        ((float*)a)[index_nm+j] = (float)(tmp_a[j]);
-      }
-    }
-    if(type_b != NCL_double) {
-      for(j = 0; j < nm; j++ ) {
-        ((float*)b)[index_nm+j] = (float)(tmp_b[j]);
-      }
-    }
+    if(type_a != NCL_double) coerce_output_float_only(a,tmp_a,nm,index_nm);
+    if(type_b != NCL_double) coerce_output_float_only(b,tmp_b,nm,index_nm);
     index_nm += nm;
   }
 

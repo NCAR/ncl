@@ -805,14 +805,8 @@ NhlErrorTypes dim_rmvmean_W( void )
     coerce_subset_input_double(x,tmp_x,l1,type_x,npts,0,NULL,NULL);
 
     NGCALLF(drmvmean,DRMVMEAN)(tmp_x,&npts,&missing_dx.doubleval,&ier);
-    for(j = 0; j < npts; j++) {
-      if(type_x != NCL_double) {
-        ((float*)rmvmean)[l1+j] = (float)(tmp_x[j]);
-      }
-      else {
-        ((double*)rmvmean)[l1+j] = tmp_x[j];
-      }
-    }
+
+    coerce_output_float_or_double(rmvmean,tmp_x,type_x,npts,l1);
 
     l1 += npts;
     if (ier == 2) {
@@ -928,14 +922,8 @@ NhlErrorTypes dim_rmvmed_W( void )
     coerce_subset_input_double(x,tmp_x,l1,type_x,npts,0,NULL,NULL);
 
     NGCALLF(drmvmed,DRMVMED)(tmp_x,work,&npts,&missing_dx.doubleval,&ier);
-    for(j = 0; j < npts; j++) {
-      if(type_x != NCL_double) {
-        ((float*)rmvmed)[l1+j] = (float)(tmp_x[j]);
-      }
-      else {
-        ((double*)rmvmed)[l1+j] = tmp_x[j];
-      }
-    }
+
+    coerce_output_float_or_double(rmvmed,tmp_x,type_x,npts,l1);
 
     l1 += npts;
     if (ier == 2) {
@@ -1055,14 +1043,8 @@ NhlErrorTypes dim_standardize_W( void )
     coerce_subset_input_double(x,tmp_x,l1,type_x,npts,0,NULL,NULL);
 
     NGCALLF(dxstnd,DXSTND)(tmp_x,&npts,&missing_dx.doubleval,opt,&ier);
-    for(j = 0; j < npts; j++) {
-      if(type_x != NCL_double) {
-        ((float*)standardize)[l1+j] = (float)(tmp_x[j]);
-      }
-      else {
-        ((double*)standardize)[l1+j] = tmp_x[j];
-      }
-    }
+
+    coerce_output_float_or_double(standardize,tmp_x,type_x,npts,l1);
 
     l1 += npts;
     if (ier == 2) {
@@ -2356,18 +2338,10 @@ NhlErrorTypes dim_stat4_W( void )
       NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_stat4: The input array contains all missing values");
       return(NhlFATAL);
     }
-    if(type_x != NCL_double) {
-      ((float*)stat)[i]                  = (float)dxmean;
-      ((float*)stat)[i+total_leftmost]   = (float)dxvar;
-      ((float*)stat)[i+2*total_leftmost] = (float)dxskew;
-      ((float*)stat)[i+3*total_leftmost] = (float)dxkurt;
-    }
-    else {
-      ((double*)stat)[i]                  = dxmean;
-      ((double*)stat)[i+total_leftmost]   = dxvar;
-      ((double*)stat)[i+2*total_leftmost] = dxskew;
-      ((double*)stat)[i+3*total_leftmost] = dxkurt;
-    }
+    coerce_output_float_or_double(stat,&dxmean,type_x,1,i);
+    coerce_output_float_or_double(stat,&dxvar,type_x,1,i+total_leftmost);
+    coerce_output_float_or_double(stat,&dxskew,type_x,1,i+total_leftmost*2);
+    coerce_output_float_or_double(stat,&dxkurt,type_x,1,i+total_leftmost*3);
     index_x    += npts;
   }
 /*

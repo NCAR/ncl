@@ -159,14 +159,8 @@ NhlErrorTypes smth9_W( void )
     NGCALLF(dsmth9,DSMTH9)(tmp_x,work,&ni,&nj,tmp_p,tmp_q,
                            &missing_dx.doubleval,lwrap,&ier);
 
-    for(j = 0; j < ninj; j++) {
-      if(type_smth != NCL_double) {
-        ((float*)smth)[index_x+j] = (float)(tmp_x[j]);
-      }
-      else {
-        ((double*)smth)[index_x+j] = tmp_x[j];
-      }
-    }
+    coerce_output_float_or_double(smth,tmp_x,type_smth,ninj,index_x);
+
     index_x += ninj;
   }
 

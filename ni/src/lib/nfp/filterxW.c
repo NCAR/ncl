@@ -196,20 +196,13 @@ NhlErrorTypes filwgts_lancos_W( void )
  * We need to strip off the first and last points of tmp_wgt, which
  * is of length *nwgt+2.
  */
+  coerce_output_float_or_double(wgt,&tmp_wgt[1],type_wgt,*nwgt,0);
+
   if(type_wgt == NCL_float) {
-    for(j = 0; j < *nwgt; j++) {
-      ((float*)wgt)[j] = (float)(tmp_wgt[j+1]);
-    }
-    for(j = 0; j < nfreq; j++) {
-      ((float*)resp)[j] = (float)(tmp_resp[j]);
-      ((float*)freq)[j] = (float)(tmp_freq[j]);
-    }
+    coerce_output_float_only(resp,tmp_resp,nfreq,0);
+    coerce_output_float_only(freq,tmp_freq,nfreq,0);
   }
-  else {
-    for(j = 0; j < *nwgt; j++) {
-      ((double*)wgt)[j] = (tmp_wgt[j+1]);
-    }
-  }
+
 /*
  * Free memory.
  */

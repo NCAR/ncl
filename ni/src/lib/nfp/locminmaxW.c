@@ -169,15 +169,10 @@ NhlErrorTypes local_min_W( void )
 /*
  * Copy output values.
  */
+  coerce_output_float_or_double(minvals,tmp_minvals,type_x,tmp_nmin,0);
   for(i = 0; i < tmp_nmin; i++) {
     ((int*)xi)[i] = tmp_xi[i];
     ((int*)yi)[i] = tmp_yi[i];
-    if(type_x != NCL_double) {
-      ((float*)minvals)[i] = (float)tmp_minvals[i];
-    }
-    else {
-      ((double*)minvals)[i] = tmp_minvals[i];
-    }
   }
 /*
  * Free memory.
@@ -464,15 +459,10 @@ NhlErrorTypes local_max_W( void )
 /*
  * Copy output values.
  */
+  coerce_output_float_or_double(maxvals,tmp_maxvals,type_x,tmp_nmax,0);
   for(i = 0; i < tmp_nmax; i++) {
     ((int*)xi)[i] = tmp_xi[i];
     ((int*)yi)[i] = tmp_yi[i];
-    if(type_x != NCL_double) {
-      ((float*)maxvals)[i] = (float)tmp_maxvals[i];
-    }
-    else {
-      ((double*)maxvals)[i] = tmp_maxvals[i];
-    }
   }
 /*
  * Free memory.

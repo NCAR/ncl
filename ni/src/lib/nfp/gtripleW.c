@@ -145,20 +145,9 @@ NhlErrorTypes grid2triple_W( void )
  *
  * The first ld elements of tmp_d will be the non-missing ones.
  */
-    if(type_d == NCL_float) {
-      for( i = 0; i < ld; i++ ) {
-        ((float*)d)[i]     = (float)tmp_d[i];
-        ((float*)d)[i+ld]  = (float)tmp_d[i+ldmax];
-        ((float*)d)[i+ld2] = (float)tmp_d[i+ldmax2];
-      }
-    }
-    else {
-      for( i = 0; i < ld; i++ ) {
-        ((double*)d)[i]     = tmp_d[i];
-        ((double*)d)[i+ld]  = tmp_d[i+ldmax];
-        ((double*)d)[i+ld2] = tmp_d[i+ldmax2];
-      }
-    }
+    coerce_output_float_or_double(d,tmp_d,type_d,ld,0);
+    coerce_output_float_or_double(d,&tmp_d[ldmax],type_d,ld,ld);
+    coerce_output_float_or_double(d,&tmp_d[ldmax2],type_d,ld,ld2);
   }
   else {
     if(ier == -10) {

@@ -212,14 +212,7 @@ NhlErrorTypes linint1_W( void )
       }
     }
     else {
-      for(j = 0; j < nfo; j++) {
-        if(type_fi == NCL_double) {
-          ((double*)fo)[index_fo+j] = tmp_fo[j];
-        }
-        else {
-          ((float*)fo)[index_fo+j] = (float)(tmp_fo[j]);
-        }
-      }
+      coerce_output_float_or_double(fo,tmp_fo,type_fi,nfo,index_fo);
     }
     index_fi += nfi;
     index_fo += nfo;
@@ -463,14 +456,7 @@ NhlErrorTypes linint2_W( void )
       }
     }
     else {
-      for(j = 0; j < nfo; j++) {
-        if(type_fi == NCL_double) {
-          ((double*)fo)[index_fo+j] = tmp_fo[j];
-        }
-        else {
-          ((float*)fo)[index_fo+j] = (float)(tmp_fo[j]);
-        }
-      }
+      coerce_output_float_or_double(fo,tmp_fo,type_fi,nfo,index_fo);
     }
     index_fi += nfi;
     index_fo += nfo;
@@ -718,14 +704,7 @@ NhlErrorTypes linint2_points_W( void )
       }
     }
     else {
-      for(j = 0; j < nxyo; j++) {
-        if(type_fi == NCL_double) {
-          ((double*)fo)[index_fo+j] = tmp_fo[j];
-        }
-        else {
-          ((float*)fo)[index_fo+j] = (float)(tmp_fo[j]);
-        }
-      }
+      coerce_output_float_or_double(fo,tmp_fo,type_fi,nxyo,index_fo);
     }
     index_fi += nfi;
     index_fo += nxyo;

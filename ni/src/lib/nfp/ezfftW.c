@@ -139,22 +139,12 @@ NhlErrorTypes ezfftf_W( void )
     NGCALLF(dezffti,DEZFFTI)(&npts,work);
     NGCALLF(dezfftf,DEZFFTF)(&npts,tmp_x,tmp_xbar,tmp_cf1,tmp_cf2,work);
 /*
- * Copy results back into cf.
+ * Copy results back into xbar and cf.
  */
-    if(type_x == NCL_double) {
-      ((double*)xbar)[i] = *tmp_xbar;
-      for(j = 0; j < npts2; j++) {
-        ((double*)cf)[index_cf+j]        = tmp_cf1[j];
-        ((double*)cf)[lnpts2+index_cf+j] = tmp_cf2[j];
-      }
-    }
-    else {
-      ((float*)xbar)[i] = (float)*tmp_xbar;
-      for(j = 0; j < npts2; j++) {
-        ((float*)cf)[index_cf+j]        = (float)tmp_cf1[j];
-        ((float*)cf)[lnpts2+index_cf+j] = (float)tmp_cf2[j];
-      }
-    }
+    coerce_output_float_or_double(xbar,tmp_xbar,type_x,1,i);
+    coerce_output_float_or_double(cf,tmp_cf1,type_x,npts2,index_cf);
+    coerce_output_float_or_double(cf,tmp_cf2,type_x,npts2,index_cf+lnpts2);
+
     index_x  += npts;
     index_cf += npts2;
   }
@@ -456,16 +446,8 @@ NhlErrorTypes ezfftb_W( void )
 /*
  * Copy results back into x.
  */
-    if(type_cf == NCL_double) {
-      for(j = 0; j < npts; j++) {
-        ((double*)x)[index_x+j] = tmp_x[j];
-      }
-    }
-    else {
-      for(j = 0; j < npts; j++) {
-        ((float*)x)[index_x+j] = (float)(tmp_x[j]);
-      }
-    }
+    coerce_output_float_or_double(x,tmp_x,type_cf,npts,index_x);
+
     index_x  += npts;
     index_cf += npts2;
   }
