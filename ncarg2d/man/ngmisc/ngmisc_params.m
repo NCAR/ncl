@@ -126,6 +126,22 @@ value specified in the Adobe PostScript specifications that is to
 apply to all PostScript interpreters.  A specific interpreter may
 allow for significantly larger paths.  See the documentation for
 your local PostScript interpreter to determine this value.
+.IP "\'PE\'   -   Integer   -   10"
+Percentage error allowed in matching requested colors in X Window output
+where the window shares a single color map with all the other current
+X windows.  The value "0" is special and is the same as the value "100"
+meaning that any color may be selected.
+In the default environment all X11 windows share a single
+color map and when a request is made to allocate a new color, and there
+are no more colors left, then the nearest color (to within the stated
+percentage) is selected.  The "nearest color" is the one in the current
+color table that is closest using the normal distance metric in the
+RGB color cube.  The percentage error is measured as a percentage of
+lenght of a diagonal of the RGB color cube.
+.IP "\'PR\'   -   Integer   -   0"
+Flags whether an X Window should share its color map (the default) or
+whether it should have its own private map, allowing for 256 colors
+to be allocated to that window.
 .IP "\'PI\'   -   Character   -   blanks"
 A character string that will be used for the picture name of the current
 picture in the PICTURE NAME element of an ncgm file.  The first picture 
