@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlotP.h,v 1.12 1995-04-07 10:42:56 boote Exp $
+ *      $Id: MapPlotP.h,v 1.13 1995-06-22 01:59:07 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -27,6 +27,11 @@
 #include <ncarg/hlu/MapTransObjP.h>
 #include <ncarg/hlu/MapPlot.h>
 #include <ncarg/hlu/WorkspaceI.h>
+
+/* private resources */
+
+#define NhlNmpDumpAreaMap		"mpDumpAreaMap"
+#define NhlCmpDumpAreaMap		"MpDumpAreaMap"
 
 #define Nhl_mpSTD_VIEW_WIDTH	0.5
 #define Nhl_mpSTD_VIEW_HEIGHT	0.5
@@ -268,6 +273,8 @@ typedef struct NhlMapPlotLayerPart {
 	NhlmpLineAttrs	limb;
 	NhlmpLineAttrs	perim;
 	NhlmpLabelAttrs labels;
+
+	NhlBoolean	dump_area_map;
 
 	/* Private Fields */
 

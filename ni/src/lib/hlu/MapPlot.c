@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.39 1995-06-05 19:09:00 dbrown Exp $
+ *      $Id: MapPlot.c,v 1.40 1995-06-22 01:59:05 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -452,6 +452,9 @@ static NhlResource resources[] = {
 
 /* End-documented-resources */
 
+	{NhlNmpDumpAreaMap, NhlCmpDumpAreaMap,NhlTBoolean,
+		 sizeof(NhlBoolean),Oset(dump_area_map),
+		 NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL},
         {NhlNmpLabelTextDirection,NhlCmpLabelTextDirection,
 		 NhlTTextDirection,sizeof(NhlTextDirection),
 		 Oset(labels.direction),
@@ -2745,6 +2748,9 @@ static NhlErrorTypes mpSetUpAreamap
 
 		subret = _NhlMapbla(*aws,entry_name);
 		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
+
+		if (mpp->dump_area_map)
+			_NhlDumpAreaMap(*aws,entry_name);
 	}
 	switch (amap_type) {
 	case mpGLOBAL_AMAP:
@@ -5439,11 +5445,22 @@ void   (_NHLCALLF(hlumapeod,HLUMAPEOD))
 {
 	int ir,il;
 	NhlBoolean keep = False;
+	int i;
 
 	if (Mpp == NULL) {
 		_NHLCALLF(mapeod,MAPEOD)(nout,nseg,idls,idrs,npts,pnts);
 		return;
 	}
+
+#if 0
+	printf("nseg %d idls %d, idrs %d, npts %d\n", 
+	       *nseg,*idls,*idrs,*npts);
+	for (i = 0; i < *npts; i++) {
+		printf("x %f y %f",pnts[2*i],pnts[2*i+1]);
+		if (*npts % 3 == 0)
+			printf("\n");
+	}
+#endif
 
 	switch (Draw_Op) {
 	case mpDRAWOUTLINE:
@@ -5486,22 +5503,17 @@ void   (_NHLCALLF(hlumapeod,HLUMAPEOD))
 		else if (ir >= 0 && DrawIds[ir].u.f.draw_mode != mpBACKGROUND)
 			keep = True;
 
-
 		if (! keep)
 			*npts = 0;
-		else if (DrawIds[ir].u.flags == DrawIds[il].u.flags &&
-			 DrawIds[ir].ix == DrawIds[il].ix) {
+		else if ((DrawIds[ir].u.flags == DrawIds[il].u.flags) &&
+			 (DrawIds[ir].ix == DrawIds[il].ix)) {
 			*npts = 0;
 		}
+
 		break;
 	default:
 		return;
 	}
-#if 0	
-
-	printf("nseg %d idls %d, idrs %d, npts %d\n", 
-	       *nseg,*idls,*idrs,*npts);
-#endif
 	return;
 }
 

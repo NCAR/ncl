@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMarkP.h,v 1.9 1995-06-16 20:57:10 dbrown Exp $
+ *      $Id: TickMarkP.h,v 1.10 1995-06-22 01:59:12 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -227,12 +227,16 @@ typedef struct _NhlTickMarkLayerPart {
 
 	float 		x_b_data_min;
 	float 		x_b_data_max;
+	NhlBoolean	x_b_data_valid;
 	float 		x_t_data_min;
 	float 		x_t_data_max;
+	NhlBoolean	x_t_data_valid;
 	float 		y_l_data_min;
 	float 		y_l_data_max;
+	NhlBoolean	y_l_data_valid;
 	float 		y_r_data_min;
 	float 		y_r_data_max;
+	NhlBoolean	y_r_data_valid;
 
 	float 		ir_xbmin;
 	float 		ir_xtmin;
