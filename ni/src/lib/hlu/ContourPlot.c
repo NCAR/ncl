@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.86 1999-04-06 23:46:02 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.87 1999-04-10 00:22:12 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -717,7 +717,8 @@ static NhlResource resources[] = {
 		 _NhlUSET((NhlPointer) 100000),_NhlRES_PRIVATE,NULL},
 	{NhlNcnConpackParams, NhlCcnConpackParams,NhlTStringGenArray,
 		 sizeof(NhlPointer),Oset(conpack_params),
-		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),_NhlRES_PRIVATE,
+		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),
+	 	 _NhlRES_PRIVATE | _NhlRES_NOGACCESS,
 		 (NhlFreeFunc)NhlFreeGenArray},
 	{NhlNcnDataChanged,NhlCcnDataChanged,NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(data_changed),NhlTImmediate,

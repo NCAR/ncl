@@ -1,5 +1,5 @@
 /*
-*      $Id: MapTransObj.c,v 1.45 1998-06-02 20:32:54 dbrown Exp $
+*      $Id: MapTransObj.c,v 1.46 1999-04-10 00:22:13 dbrown Exp $
 */
 /************************************************************************
 *									*
@@ -2367,9 +2367,7 @@ int n;
 
 	c_mpgetc("OU",cval,3);
 	c_mpsetc("OU","NO");
-	c_mpseti("G2",3);
 	c_mpseti("G1",3);
-	c_mpseti("VS",1);
 	_NhlMapbla(aws,entry_name);
 	c_mpsetc("OU",cval);
 	
@@ -2446,6 +2444,10 @@ int n;
 	}
 	
 	_NhlMapiqa(aws,3,left_id,right_id,entry_name);
+
+	if (mptrans->mptrans.dump_polygon_area_map) 
+		_NhlDumpAreaMap(aws,entry_name);
+
 	subret = _NhlArpram(aws,0,0,0,entry_name);
 	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
 
@@ -2453,8 +2455,6 @@ int n;
 			    entry_name);
 	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
 
-	if (mptrans->mptrans.dump_polygon_area_map) 
-		_NhlDumpAreaMap(aws,entry_name);
 
 	subret = _NhlIdleWorkspace(aws);
 	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
