@@ -1,27 +1,32 @@
 C
-C       $Id: tconpa.f,v 1.3 1993-03-23 23:08:32 kennison Exp $
+C       $Id: tconpa.f,v 1.4 1994-07-08 19:41:25 stautler Exp $
 C
+C
+C Define error file, Fortran unit number, and workstation type,
+C and workstation ID.
+C
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
 C
 C OPEN GKS, OPEN WORKSTATION OF TYPE 1, ACTIVATE WORKSTATION
 C
-      CALL GOPKS (6,IDUM) 
-      CALL GOPWK (1, 2, 1)
-      CALL GACWK (1) 
+      CALL GOPKS (IERRF, ISZDM)
+      CALL GOPWK (IWKID, LUNIT, IWTYPE)
+      CALL GACWK (IWKID)
 C
 C INVOKE DEMO DRIVER
 C
-      CALL TCONPA(IERR)
+      CALL TCONPA(IERR,IWKID)
 C
-C     DEACTIVATE AND CLOSE WORKSTATION, CLOSE GKS.
+C DEACTIVATE AND CLOSE WORKSTATION, CLOSE GKS.
 C
-      CALL GDAWK (1)
-      CALL GCLWK (1)
+      CALL GDAWK (IWKID)
+      CALL GCLWK (IWKID)
       CALL GCLKS
 C
       STOP
       END
 C
-      SUBROUTINE TCONPA (IERR)
+      SUBROUTINE TCONPA (IERR,IWKID)
 C
 C PURPOSE               To provide a simple demonstration of the use of
 C                       CONPACK to contour regularly-spaced rectangular
@@ -157,7 +162,7 @@ C
 C
 C Define a bunch of color indices.
 C
-        CALL CPCLRS
+        CALL CPCLRS(IWKID)
 C
 C Put a label at the top of the frame.
 C
@@ -221,7 +226,7 @@ C
  1001 FORMAT (' CONPACK TEST EXECUTED--SEE PLOTS TO CERTIFY')
 C
       END
-      SUBROUTINE CPCLRS
+      SUBROUTINE CPCLRS(IWKID)
 C
 C Define a set of RGB color triples for colors 1 through 15.
 C
@@ -249,10 +254,10 @@ C Define 16 different color indices, for indices 0 through 15.  The
 C color corresponding to index 0 is black and the color corresponding
 C to index 1 is white.
 C
-        CALL GSCR (1,0,0.,0.,0.)
+        CALL GSCR (IWKID,0,0.,0.,0.)
 C
         DO 101 I=1,15
-          CALL GSCR (1,I,RGBV(1,I),RGBV(2,I),RGBV(3,I))
+          CALL GSCR (IWKID,I,RGBV(1,I),RGBV(2,I),RGBV(3,I))
   101   CONTINUE
 C
 C Done.

@@ -5,6 +5,12 @@ C handling package used by NCAR Graphics.  It first produces a single
 C frame showing what output print lines to expect and then steps
 C through a simple set of tests that should produce those print lines.
 C
+C
+C Define error file, Fortran unit number, and workstation type,
+C and workstation ID.
+C
+        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+C
 C Make required character-variable declarations.  ERMSG receives the
 C error message returned by the character function SEMESS.
 C
@@ -65,7 +71,9 @@ C
 C
 C Open GKS.
 C
-        CALL OPNGKS
+        CALL GOPKS (IERRF, ISZDM)
+        CALL GOPWK (IWKID, LUNIT, IWTYPE)
+        CALL GACWK (IWKID)
 C
 C Produce a single frame of output, detailing what the program ought to
 C print.
@@ -93,7 +101,9 @@ C
 C
 C Close GKS.
 C
-        CALL CLSGKS
+        CALL GDAWK (IWKID)
+        CALL GCLWK (IWKID)
+        CALL GCLKS
 C
 C Enter recovery mode.
 C

@@ -1,21 +1,26 @@
 C
-C	$Id: tcnsmt.f,v 1.2 1993-03-05 00:11:55 haley Exp $
+C	$Id: tcnsmt.f,v 1.3 1994-07-08 19:41:21 stautler Exp $
 C
+C
+C Define error file, Fortran unit number, and workstation type,
+C and workstation ID.
+C
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
 C
 C OPEN GKS, OPEN WORKSTATION OF TYPE 1, ACTIVATE WORKSTATION
 C
-      CALL GOPKS (6,IDUM) 
-      CALL GOPWK (1, 2, 1)
-      CALL GACWK (1) 
+      CALL GOPKS (IERRF, ISZDM)
+      CALL GOPWK (IWKID, LUNIT, IWTYPE)
+      CALL GACWK (IWKID)
 C
 C INVOKE DEMO DRIVER
 C
       CALL TCNSMT(IERR)
 C
-C     DEACTIVATE AND CLOSE WORKSTATION, CLOSE GKS.
+C DEACTIVATE AND CLOSE WORKSTATION, CLOSE GKS.
 C
-      CALL GDAWK (1)
-      CALL GCLWK (1)
+      CALL GDAWK (IWKID)
+      CALL GCLWK (IWKID)
       CALL GCLKS
 C
       STOP

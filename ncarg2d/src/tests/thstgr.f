@@ -1,33 +1,38 @@
 C
-C	$Id: thstgr.f,v 1.4 1994-03-23 19:02:46 haley Exp $
+C	$Id: thstgr.f,v 1.5 1994-07-08 19:41:33 stautler Exp $
 C
+C
+C Define error file, Fortran unit number, and workstation type,
+C and workstation ID.
+C
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
 C
 C OPEN GKS, OPEN WORKSTATION OF TYPE 1, ACTIVATE WORKSTATION
 C
-      CALL GOPKS (6,IDUM) 
-      CALL GOPWK (1, 2, 1)
-      CALL GACWK (1) 
+      CALL GOPKS (IERRF, ISZDM)
+      CALL GOPWK (IWKID, LUNIT, IWTYPE)
+      CALL GACWK (IWKID)
 C
 C INVOKE DEMO DRIVER
 C
-      CALL THSTGR(IERR)
+      CALL THSTGR(IERR,IWKID)
 C
-C     DEACTIVATE AND CLOSE WORKSTATION, CLOSE GKS.
+C DEACTIVATE AND CLOSE WORKSTATION, CLOSE GKS.
 C
-      CALL GDAWK (1)
-      CALL GCLWK (1)
+      CALL GDAWK (IWKID)
+      CALL GCLWK (IWKID)
       CALL GCLKS
 C
       STOP
       END
 C
-      SUBROUTINE THSTGR (IERROR)
+      SUBROUTINE THSTGR (IERROR,IWKID)
 C
 C PURPOSE                To provide a demonstration of the HISTGR
 C                        utility and to test each of the four IFLAG
 C                        options.
 C
-C USAGE                  CALL THSTGR (IERROR)
+C USAGE                  CALL THSTGR (IERROR,IWKID)
 C
 C ARGUMENTS
 C
@@ -100,7 +105,7 @@ C  Define 15 color indices, 14 spaced throughout the color
 C  spectrum, and the last one being white.
 C
       DO 100 I = 1,15
-      CALL GSCR(1,I,RGB(1,I),RGB(2,I),RGB(3,I))
+      CALL GSCR(IWKID,I,RGB(1,I),RGB(2,I),RGB(3,I))
   100 CONTINUE
 C
 C  Call ENTSR (from PORT library) to recover from warnings

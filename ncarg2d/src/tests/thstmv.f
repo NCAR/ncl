@@ -1,10 +1,26 @@
 C
-C	$Id: thstmv.f,v 1.1 1993-10-25 14:59:51 haley Exp $
+C	$Id: thstmv.f,v 1.2 1994-07-08 19:41:34 stautler Exp $
 C
       PROGRAM TESTIT
-      CALL OPNGKS
+C
+C Define error file, Fortran unit number, and workstation type,
+C and workstation ID.
+C
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+C
+C Open GKS, open and activate a workstation.
+C
+      CALL GOPKS (IERRF, ISZDM)
+      CALL GOPWK (IWKID, LUNIT, IWTYPE)
+      CALL GACWK (IWKID)
+
       CALL THSTMV(IERR)
-      CALL CLSGKS
+C
+C Deactivate and close the workstation, close GKS.
+C
+      CALL GDAWK (IWKID)
+      CALL GCLWK (IWKID)
+      CALL GCLKS
       STOP
       END
       SUBROUTINE THSTMV (IERROR)

@@ -1,32 +1,37 @@
 C
-C	$Id: tezmpa.f,v 1.2 1993-03-05 00:12:16 haley Exp $
+C	$Id: tezmpa.f,v 1.3 1994-07-08 19:41:30 stautler Exp $
 C
+C
+C Define error file, Fortran unit number, and workstation type,
+C and workstation ID.
+C
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
 C
 C OPEN GKS, OPEN WORKSTATION OF TYPE 1, ACTIVATE WORKSTATION
 C
-      CALL GOPKS (6,IDUM) 
-      CALL GOPWK (1, 2, 1)
-      CALL GACWK (1) 
+      CALL GOPKS (IERRF, ISZDM)
+      CALL GOPWK (IWKID, LUNIT, IWTYPE)
+      CALL GACWK (IWKID)
 C
 C INVOKE DEMO DRIVER
 C
-      CALL TEZMPA(IERR)
+      CALL TEZMPA(IERR,IWKID)
 C
-C     DEACTIVATE AND CLOSE WORKSTATION, CLOSE GKS.
+C DEACTIVATE AND CLOSE WORKSTATION, CLOSE GKS.
 C
-      CALL GDAWK (1)
-      CALL GCLWK (1)
+      CALL GDAWK (IWKID)
+      CALL GCLWK (IWKID)
       CALL GCLKS
 C
       STOP
       END
 C
-      SUBROUTINE TEZMPA (IERROR)
+      SUBROUTINE TEZMPA (IERROR,IWKID)
 C
 C PURPOSE                To provide a simple demonstration of the use
 C                        of EZMAPA.
 C
-C USAGE                  CALL TEZMPA (IERROR)
+C USAGE                  CALL TEZMPA (IERROR,IWKID)
 C
 C ARGUMENTS
 C
@@ -127,12 +132,12 @@ C the color spectrum and the final one is black.
 C
         DO 101 J=1,14
           I=IOC(J)
-          CALL GSCR(1,J,RGB(1,I),RGB(2,I),RGB(3,I))
+          CALL GSCR(IWKID,J,RGB(1,I),RGB(2,I),RGB(3,I))
   101   CONTINUE
 C
 C Set color index 15 to black.
 C
-        CALL GSCR(1,15,0.,0.,0.)
+        CALL GSCR(IWKID,15,0.,0.,0.)
 C
 C Set up EZMAP.
 C
