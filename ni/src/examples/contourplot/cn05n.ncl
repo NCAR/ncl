@@ -19,6 +19,11 @@
 ;		 contour overlay and labelbar annotation.
 ;
 
+; The PLOT_ALL_DATA flag controls whether or not all 31 days of data is 
+; read and plotted.  Setting the flag to TRUE will cause this script to 
+; plot 31 frames.  Otherwise, the script will read only 3 days worth of 
+; data and plot 3 frames.
+PLOT_ALL_DATA="FALSE"
 
 procedure gen_colormap( cmap[*][*]:float )
 begin
@@ -254,6 +259,7 @@ lbarhi = create "lbarhi" textItemClass wks
 end create
 
 ; Draw all objects.
+print("Plotting Day " + 1)
 draw (map)
 draw (lbarlo)
 draw (lbarhi)
@@ -261,7 +267,12 @@ frame(wks)
 
 ; Loop on remaining time steps
 
- do i = 1, dimsizes(mfile->time) - 1
+ if ( PLOT_ALL_DATA .eq. "FALSE" ) then
+       NFRAMES=2
+ else
+       NFRAMES=dimsizes(mfile->time) - 1
+ end if
+ do i = 1, NFRAMES
          print("Plotting Day " + (i+1))
          ; Read the next data field (next day).
          setvalues field1
@@ -279,4 +290,9 @@ frame(wks)
          frame(wks)
  end do
 
+ if ( PLOT_ALL_DATA .eq. "FALSE" ) then
+
+  print("To plot all 31 days in this animation, edit the NCL script, and set the PLOT_ALL_DATA flag to TRUE.")
+
+ end if
 end
