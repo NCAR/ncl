@@ -1,5 +1,5 @@
 C
-C $Id: cppklb.f,v 1.4 1994-09-12 22:10:39 kennison Exp $
+C $Id: cppklb.f,v 1.5 1994-09-12 23:26:40 kennison Exp $
 C
       SUBROUTINE CPPKLB (ZDAT,RWRK,IWRK)
 C
@@ -181,7 +181,7 @@ C
 C Generate labels for those contour lines which will be labelled.
 C
       ISNX=0
-      IF (ABS(IPLL).EQ.1.AND.NEXT.EQ.1) THEN
+      IF (ABS(IPLL).EQ.1.AND.NEXT.EQ.1.AND.IDUF.GT.0) THEN
         ISNX=1
         NEXT=0
         SCHX=CHEX
