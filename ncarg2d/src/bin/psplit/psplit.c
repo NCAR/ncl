@@ -1,5 +1,5 @@
 /*
- * $Id: psplit.c,v 1.2 2000-08-22 04:34:26 haley Exp $
+ * $Id: psplit.c,v 1.3 2001-07-30 20:17:56 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -26,8 +26,8 @@
 
 /*
  *  This program takes a PostScript file created from NCAR
- *  Graphics 3.2 or later and splits it into EPS files, one
- *  for each page in the original file.
+ *  Graphics 3.2 or later and splits it into individual PS files, 
+ *  one for each page in the original file.
  */
 
 #include <stdio.h>
@@ -59,10 +59,10 @@ main(int argc, char *argv[])
  *  Check to see if an input file was specified.
  */
    if (argc < 2) {
-     printf("usage: ps2eps input_file [output_file_root]\n\n");
+     printf("usage: psplit input_file [output_file_root]\n\n");
      printf("  where \"input_file\" is the name of the input PostScript"
             " file and\n  \"output_file_root\" is an optional argument"
-            " specifying the root\n  name for the output eps files.\n\n");
+            " specifying the root\n  name for the output ps files.\n\n");
      exit(1);
    }
      
@@ -134,7 +134,7 @@ enum file_type ftype(FILE *ifile)
       trailer_flag=1;
     }
   }
-  if (page_flag && box_flag && trailer_flag) {
+  if (page_flag && trailer_flag) {
     if (fseek(ifile,0L,SEEK_SET)) {
         printf("Error in repositioning the input file to the start\n");
         exit(2);
@@ -204,7 +204,7 @@ void from_ncgm(FILE *ifile, char *rname)
     strcpy(output_name,"\0");
     strcat(output_name,rname);
     strcat(output_name,pnum);
-    strcat(output_name,".eps");
+    strcat(output_name,".ps");
 
 /*
  *  Open the output file.
@@ -589,7 +589,7 @@ void from_ps(FILE *ifile, char *rname)
   file_header = (char *) calloc( (size_t) *pict_start, sizeof(char));
 
 /*
- *  Store the header information to be used for each output eps file.
+ *  Store the header information to be used for each output ps file.
  */
   fseek(ifile,0L,SEEK_SET);
   fread(file_header, (size_t) sizeof(char), (size_t) *pict_start, ifile);
@@ -606,7 +606,7 @@ void from_ps(FILE *ifile, char *rname)
     strcpy(output_name,"\0");
     strcat(output_name,rname);
     strcat(output_name,pnum);
-    strcat(output_name,".eps");
+    strcat(output_name,".ps");
 
 /*
  *  Open the output file.
