@@ -1,6 +1,6 @@
 
 /*
- *      $Id: AddBuiltIns.c,v 1.19 1996-11-19 00:34:02 ethan Exp $
+ *      $Id: AddBuiltIns.c,v 1.20 1996-11-19 20:39:42 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -30,6 +30,17 @@ extern "C" {
 #include "NclBuiltIns.h"
 #include "MathFuncs.h"
 #include "HLUFunctions.h"
+
+extern NhlErrorTypes _Ncl1dtond(
+#if NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _Nclndto1d(
+#if NhlNeedProto
+void
+#endif
+);
 
 extern NhlErrorTypes _Ncldim_product(
 #if NhlNeedProto
@@ -702,7 +713,16 @@ void _NclAddBuiltIns
 	SetArgTemplate(args,nargs,"numeric",NclANY,NclANY); nargs++;
 	NclRegisterFunc( _Ncldim_avg,args,"dim_avg",nargs);
 
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,NclANY,NclANY,NclANY); nargs++;
+	NclRegisterFunc( _Nclndto1d,args,"ndtooned",nargs);
 
+	nargs = 0;
+	args = NewArgs(2);
+	SetArgTemplate(args,nargs,NclANY,NclANY,NclANY); nargs++;
+	SetArgTemplate(args,nargs,"integer",1,NclANY); nargs++;
+	NclRegisterFunc( _Ncl1dtond,args,"onedtond",nargs);
 /*
 	nargs = 0;
 	args = NewArgs(1);

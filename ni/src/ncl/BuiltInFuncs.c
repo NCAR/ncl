@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.47 1996-11-19 00:34:04 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.48 1996-11-19 20:39:40 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -5236,6 +5236,145 @@ NhlErrorTypes _NclIIsFileVarDim
 
 }
 
+NhlErrorTypes _Ncl1dtond
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NclStackEntry data;
+	NclMultiDValData tmp_md = NULL;
+	NclStackEntry dims;
+	NclMultiDValData tmp_dims= NULL;
+	void *out_val;
+	int *dimsizes;
+	logical *tmp;
+	int i;
+	int sz;
+
+	data = _NclGetArg(0,2,DONT_CARE);
+	switch(data.kind) {
+		case NclStk_VAR:
+			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+			break;
+		case NclStk_VAL:
+			tmp_md = (NclMultiDValData)data.u.data_obj;
+			break;
+	}
+	if(tmp_md == NULL)
+		return(NhlFATAL);
+
+	dims = _NclGetArg(1,2,DONT_CARE);
+	switch(dims.kind) {
+		case NclStk_VAR:
+			tmp_dims = _NclVarValueRead(dims.u.data_var,NULL,NULL);
+			break;
+		case NclStk_VAL:
+			tmp_dims = (NclMultiDValData)dims.u.data_obj;
+			break;
+	}
+	if(tmp_dims == NULL)
+		return(NhlFATAL);
+
+
+	dimsizes = (int*)tmp_dims->multidval.val;	
+
+	sz = 1;	
+	for(i = 0; i < tmp_dims->multidval.totalelements; i++) {
+		sz = sz * dimsizes[i];
+	}
+
+	if((sz == tmp_md->multidval.totalelements)||(sz < tmp_md->multidval.totalelements)) {
+		if(sz < tmp_md->multidval.totalelements) {
+			NhlPError(NhlWARNING, NhlEUNKNOWN,"1dtond : output dimension sizes have fewer elements than input, some data not copied");
+		}
+		out_val = (void*)NclMalloc(sz*tmp_md->multidval.type->type_class.size);
+		memcpy(out_val,tmp_md->multidval.val,sz*tmp_md->multidval.type->type_class.size);
+		return(NclReturnValue(
+			out_val,
+			tmp_dims->multidval.totalelements,
+			dimsizes,
+			tmp_md->multidval.missing_value.has_missing ? &(tmp_md->multidval.missing_value.value):NULL,
+			tmp_md->multidval.type->type_class.data_type,
+			0
+		));
+	} else if((sz > tmp_md->multidval.totalelements)&&(sz%tmp_md->multidval.totalelements)){
+		NhlPError(NhlWARNING, NhlEUNKNOWN,"1dtond : output dimension sizes not even multiples of input, check output");
+		out_val = (void*)NclMalloc(sz*tmp_md->multidval.type->type_class.size);
+		for(i = 0; i < (int)sz/tmp_md->multidval.totalelements; i++) {
+			memcpy(&(((char*)out_val)[i*tmp_md->multidval.totalsize]),
+				tmp_md->multidval.val,
+				tmp_md->multidval.totalsize);
+		}
+		memcpy(&(((char*)out_val)[i*tmp_md->multidval.totalsize]),
+			tmp_md->multidval.val,
+			(sz%tmp_md->multidval.totalelements)*tmp_md->multidval.type->type_class.size);
+
+		return(NclReturnValue(
+			out_val,
+			tmp_dims->multidval.totalelements,
+			dimsizes,
+			tmp_md->multidval.missing_value.has_missing ? &(tmp_md->multidval.missing_value.value):NULL,
+			tmp_md->multidval.type->type_class.data_type,
+			0
+		));
+	} else { /* (sz > tmp_md->multidval.totalelements)&&!(sz%tmp_md->multidval.totalelements)) */
+		out_val = (void*)NclMalloc(sz*tmp_md->multidval.type->type_class.size);
+		for(i = 0; i < sz/tmp_md->multidval.totalelements; i++) {
+			memcpy(&(((char*)out_val)[i*tmp_md->multidval.totalsize]),
+				tmp_md->multidval.val,
+				tmp_md->multidval.totalsize);
+		}
+		return(NclReturnValue(
+			out_val,
+			tmp_dims->multidval.totalelements,
+			dimsizes,
+			tmp_md->multidval.missing_value.has_missing ? &(tmp_md->multidval.missing_value.value):NULL,
+			tmp_md->multidval.type->type_class.data_type,
+			0
+		));
+	}
+}
+NhlErrorTypes _Nclndto1d
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NclStackEntry data;
+	NclMultiDValData tmp_md = NULL;
+	void *out_val;
+	int dimsizes = 0;
+	logical *tmp;
+	int i;
+
+	data = _NclGetArg(0,1,DONT_CARE);
+	switch(data.kind) {
+		case NclStk_VAR:
+			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+			break;
+		case NclStk_VAL:
+			tmp_md = (NclMultiDValData)data.u.data_obj;
+			break;
+	}
+	if(tmp_md == NULL)
+		return(NhlFATAL);
+	
+	out_val = (void*)NclMalloc(tmp_md->multidval.totalsize);
+
+	memcpy(out_val,tmp_md->multidval.val,tmp_md->multidval.totalsize);
+	dimsizes = tmp_md->multidval.totalelements;
+	return(NclReturnValue(
+		out_val,
+		1,
+		&dimsizes,
+		tmp_md->multidval.missing_value.has_missing ? &(tmp_md->multidval.missing_value.value):NULL,
+		tmp_md->multidval.type->type_class.data_type,
+		0
+	));
+}
 NhlErrorTypes _Nclproduct
 #if	NhlNeedProto
 (void)
