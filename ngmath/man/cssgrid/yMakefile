@@ -1,0 +1,20 @@
+#
+#       $Id: yMakefile,v 1.1 1999-06-29 00:23:04 fred Exp $
+#
+
+MAN = css_overview cssgrid csstri csscoord cstrans csvoro  \
+	c_cssgrid c_csstri c_csscoord c_cstrans c_csvoro   \
+	cssgrid_errors
+
+# Install preformatted troff documents on systems without troff
+#if UseCatDirs
+FORMAT_EXT      = .p
+#else
+FORMAT_EXT      = .m
+#endif
+
+MPATH   = $(MAN3PATH)
+MSECT   = $(MAN3_SECTION)
+
+InstallManPages($(MAN),$(FORMAT_EXT),$(MPATH),$(MSECT))
+FormatManPages($(MAN),.m,.p)
