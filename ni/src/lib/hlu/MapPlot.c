@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.82 2001-12-07 21:49:21 dbrown Exp $
+ *      $Id: MapPlot.c,v 1.83 2001-12-08 00:57:41 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1090,7 +1090,7 @@ MapPlotClassPartInitialize
 					NhlNtmYLValues,
 					NhlNtmYLLabels,
 					NhlNtmYLLabelFuncCode,
-					NhlNtmYRLabelFontHeightF,
+					NhlNtmYLLabelFontHeightF,
 					NhlNtmYLMajorLengthF,
 					NhlNtmYLMajorOutwardLengthF,
 					NhlNtmYROn,
