@@ -81,10 +81,8 @@ occurs.
 The C-binding argument descriptions are the same as the FORTRAN 
 argument descriptions.
 .SH EXAMPLES
-To use Bivar routines run "ncargex cbex01".  This will produce
-several files in your directory, cbex01, cbex01.f, and cbex01.ncgm.
-Edit cbex01.f and remove every line before the line "C PACKAGE BIVAR".
-What remains is the Bivar package.
+To use Bivar routines, load the NCAR Graphics libraries ncarg, ncarg_gks,
+and ncarg_c, preferably in that order. 
 .SH ACCESS 
 To use IDBVIP or c_idbvip, load the NCAR Graphics libraries ncarg, ncarg_gks, 
 and ncarg_c, preferably in that order.  
