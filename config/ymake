@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ymake,v 1.40 2002-03-25 21:18:19 haley Exp $
+#	$Id: ymake,v 1.41 2002-03-25 21:40:06 haley Exp $
 #
 ######################################################################
 #
@@ -289,8 +289,10 @@ case HP-UX:
 case OSF1:
 case Linux:
 case Darwin:
-case CYGWIN:
         set opsys = $foo
+        breaksw
+case CYGWIN*:
+        set opsys = CYGWIN
         breaksw
 default:
         set foo = `uname -m`
@@ -533,7 +535,7 @@ endif
 #
 if (-e $config_dir/$sysincs) then
         set defines=($defines -DSystemIncludes=\"$sysincs\")
-        set defines=($defines -DSystemIncludesName=$sysincs)
+        set defines=($defines -DSystemIncludesName=\"$sysincs\")
 else
         echo "$0 : Unable to open Config file: $sysincs" > /dev/tty
         exit 1
