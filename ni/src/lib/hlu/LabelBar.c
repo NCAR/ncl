@@ -1,5 +1,5 @@
 /*
- *      $Id: LabelBar.c,v 1.18 1994-11-07 03:09:37 ethan Exp $
+ *      $Id: LabelBar.c,v 1.19 1994-12-01 22:08:39 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -533,6 +533,7 @@ static NrmQuark	Qfill_colors = NrmNULLQUARK;
 static NrmQuark	Qfill_scales = NrmNULLQUARK;
 static NrmQuark	Qlabel_strings = NrmNULLQUARK;
 static NrmQuark	Qbox_fractions = NrmNULLQUARK;
+static NrmQuark	Qtitle_string = NrmNULLQUARK;
 
 /*
  * Function:	LabelBarInitialize
@@ -3731,6 +3732,7 @@ static NhlErrorTypes    AdjustGeometry
  *		NhlNlbFillScales
  *		NhlNlbLabelStrings
  *		NhlNlbBoxFractions
+ *              NhlNlbTitleString
  *	The caller is responsible for freeing this memory.
  */
 
@@ -3778,6 +3780,15 @@ static NhlErrorTypes	LabelBarGetValues
 			ga = lb_p->box_fractions;
 			count = lb_p->box_count+1;
 			type = NhlNlbBoxFractions;
+		} 
+		else if(args[i].quark == Qtitle_string) {
+			if(lb_p->title_string != NULL) {
+				(*(NhlString*)args[i].value.ptrval) = (NhlString)
+					NhlMalloc(strlen(lb_p->title_string) +1);
+				strcpy((*(NhlString*)args[i].value.ptrval),lb_p->title_string);
+			} else {
+				(*(NhlString*)args[i].value.ptrval) = NULL;
+			}
 		}
 		if (ga != NULL) {
 			if ((ga = GenArraySubsetCopy(ga, count)) == NULL) {
