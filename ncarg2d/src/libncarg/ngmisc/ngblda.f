@@ -1,5 +1,5 @@
 C
-C	$Id: ngblda.f,v 1.13 2002-04-04 22:04:15 fred Exp $
+C	$Id: ngblda.f,v 1.14 2002-05-07 01:04:02 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -86,6 +86,10 @@ C
 C  Percentage error allow in matching colors in shared X color maps.
 C
       DATA IPERCX/20/
+C
+C  Segment save flag. (1 = delete segments; 0 = save segments)
+C
+      DATA ISVSEG/1/
 C
 C  Color model flags
 C

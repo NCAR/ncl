@@ -1,5 +1,5 @@
 C
-C $Id: ngcomn.h,v 1.17 2002-05-03 22:51:35 fred Exp $
+C $Id: ngcomn.h,v 1.18 2002-05-07 01:04:03 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -73,6 +73,6 @@ C
      +                IPRIVX, ICDFLG,   ISCX,    IMCX,    IPCX,
      +                  ISUP, NLLX,     NLLY,    NURX,    NURY,
      +               LOGOTYP, LOGOCOL, LOGOSND       ,  OXLOGO,
-     +                OYLOGO, OLSIZE
+     +                OYLOGO, OLSIZE, ISVSEG
       COMMON /NGCOMC/ CFILNM, CPICNM, CSEGNM
       CHARACTER CFILNM*256, CPICNM*80, CSEGNM*15

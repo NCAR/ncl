@@ -1,5 +1,5 @@
 C
-C	$Id: nggeti.f,v 1.14 2002-04-04 22:04:16 fred Exp $
+C	$Id: nggeti.f,v 1.15 2002-05-07 01:04:03 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -67,6 +67,10 @@ C
       ELSE IF (CNP(1:2).EQ.'CL' .OR. CNP(1:2).EQ.'cl' .OR. 
      +    CNP(1:2).EQ.'Cl') THEN
         IVP = IGKSCP
+        GO TO 110
+      ELSE IF (CNP(1:2).EQ.'CM' .OR. CNP(1:2).EQ.'cm' .OR. 
+     +    CNP(1:2).EQ.'Cm') THEN
+        IVP = IPSCM
         GO TO 110
       ELSE IF (CNP(1:2).EQ.'ER' .OR. CNP(1:2).EQ.'er' .OR. 
      +    CNP(1:2).EQ.'Er') THEN
