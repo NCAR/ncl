@@ -1,9 +1,9 @@
 #
-#	$Id: yMakefile,v 1.1.1.1 1992-04-17 22:29:33 ncargd Exp $
+#	$Id: yMakefile,v 1.2 1992-09-21 21:19:08 clyne Exp $
 #
 NCARG	= ../..
 
-SUBDIRS =  params libncarg_loc bin fontcap graphcap
+SUBDIRS =  libncarg_loc libncarg_c bin fontcap graphcap
 
 MakeSubdirs($(SUBDIRS))
 InstallSubdirs($(SUBDIRS))
