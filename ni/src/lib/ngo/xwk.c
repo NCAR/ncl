@@ -1,5 +1,5 @@
 /*
- *      $Id: xwk.c,v 1.20 1999-09-21 23:36:17 dbrown Exp $
+ *      $Id: xwk.c,v 1.21 1999-09-29 02:06:02 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -160,7 +160,7 @@ ColorWPCB
 
 		if (browse != NhlDEFAULT_APP) {
 			xp->ignore_color_cb = True;
-			NgUpdatePages(browse,True);
+			NgUpdatePages(browse,True,xp->xwork->base.id);
 			xp->ignore_color_cb = False;
 		}
 	}

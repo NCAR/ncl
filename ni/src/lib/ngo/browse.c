@@ -1,5 +1,5 @@
 /*
- *      $Id: browse.c,v 1.30 1999-09-11 01:05:53 dbrown Exp $
+ *      $Id: browse.c,v 1.31 1999-09-29 02:05:53 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2140,7 +2140,7 @@ static void UpdatePagesCB
                 }
         }
 
-	NgDrawUpdatedViews(wks_state,False);
+	NgDrawUpdatedViews(wks_state,False,NhlNULLOBJID);
 	
         return;
 	
@@ -2627,7 +2627,8 @@ extern NhlErrorTypes NgResetPage
 extern NhlErrorTypes NgUpdatePages
 (
         int		goid,
-	NhlBoolean	force_draw
+	NhlBoolean	force_draw,
+	int		wk_id
         )        
 {
 	NgGO		go = (NgGO) _NhlGetLayer(goid);
@@ -2651,7 +2652,7 @@ extern NhlErrorTypes NgUpdatePages
 		       NULL);
 
 #if	DEBUG_DATABROWSER & DEBUG_ENTRY
-	fprintf(stderr,"UpdatePagesCB(IN)\n");
+	fprintf(stderr,"NgUpdatePages(IN)\n");
 #endif
 
         for (i = 0; i < pcp->current_count; i++) {
@@ -2664,7 +2665,7 @@ extern NhlErrorTypes NgUpdatePages
                 }
         }
 
-	NgDrawUpdatedViews(wks_state,force_draw);
+	NgDrawUpdatedViews(wks_state,force_draw,wk_id);
 	
         return NhlNOERROR;
 	

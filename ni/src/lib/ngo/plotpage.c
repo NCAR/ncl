@@ -1,5 +1,5 @@
 /*
- *      $Id: plotpage.c,v 1.3 1999-09-11 01:06:44 dbrown Exp $
+ *      $Id: plotpage.c,v 1.4 1999-09-29 02:06:00 dbrown Exp $
  */
 /*******************************************x*****************************
 *									*
@@ -852,13 +852,15 @@ static NhlBoolean DataChanged
 				     vdata->expr_val,_NgFORCED_EVAL,user);
 	if (! ret)
 		return False;
+	ret = False;
 
 	newval = NclReadVar(vdata->qexpr_var,NULL,NULL,NULL);
 
-	if (! newval)
-		return False;
+	if (! (newval && oldval)) {
 
-	if (oldval->totalelements != newval->totalelements ||
+		; /* can't do any further testing */
+	}
+	else if (oldval->totalelements != newval->totalelements ||
 	    oldval->elem_size != newval->elem_size) {
 		ret = True;
 	}
@@ -866,9 +868,10 @@ static NhlBoolean DataChanged
 			oldval->totalelements * oldval->elem_size)) {
 		ret = True;
 	}
-
-	NclFreeExtValue(oldval);
-	NclFreeExtValue(newval);
+	if (oldval)
+		NclFreeExtValue(oldval);
+	if (newval)
+		NclFreeExtValue(newval);
 
 	return ret;
 }

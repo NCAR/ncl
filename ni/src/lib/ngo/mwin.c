@@ -1,5 +1,5 @@
 /*
- *      $Id: mwin.c,v 1.26 1999-09-21 23:36:14 dbrown Exp $
+ *      $Id: mwin.c,v 1.27 1999-09-29 02:05:58 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2932,29 +2932,40 @@ extern void NgUpdateTransformation(
 
 extern void NgDrawUpdatedViews(
 	NgWksState	wks_state,
-	NhlBoolean	force_draw
+	NhlBoolean	force_draw,
+	int		wk_id
 )
 {
 	NgObjTree	otree = (NgWksState)wks_state;
 	NgObjTreeNode	vwnode,wknode;
 	NhlBoolean	draw_single;
 	int		selected_id;
-	NgXBBox   	bbox;
 
 	if (! otree)
 		return;
 
-	bbox.p0.x = bbox.p0.y = 16000;
-	bbox.p1.x = bbox.p1.y = -16000;
-
+/*
+ * If wk_id equals NhlNULLOBJID, views on all workstations will be drawn.
+ * if wk_id equals a particular workstation id, then only view on that
+ * workstation will be drawn.
+ */
 	for (wknode = otree->wklist; wknode; wknode = wknode->next) {
 		NgWksObj wkobj = (NgWksObj) wknode->ndata;
+		NgXBBox   	bbox;
+
 		if (! wkobj->auto_refresh)
 			continue;
+
+		if (wk_id > NhlNULLOBJID && wk_id != wknode->id)
+			continue;
+
 		NhlVAGetValues(wkobj->wks_wrap_id,
 			       NgNxwkSelectedView,&selected_id,
 			       NgNxwkDrawSelectedViewOnly,&draw_single,
 			       NULL);
+		bbox.p0.x = bbox.p0.y = 16000;
+		bbox.p1.x = bbox.p1.y = -16000;
+
 		for (vwnode = wknode->cnodes; vwnode; vwnode = vwnode->next) {
 			NgViewObj vobj = (NgViewObj) vwnode->ndata;
 			NgHluData hdata;

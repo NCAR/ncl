@@ -1,5 +1,5 @@
 /*
- *      $Id: browse.h,v 1.13 1999-09-11 01:05:56 dbrown Exp $
+ *      $Id: browse.h,v 1.14 1999-09-29 02:05:55 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -136,7 +136,8 @@ extern NhlErrorTypes NgUpdatePage(
 
 extern NhlErrorTypes NgUpdatePages(
         int		goid,
-	NhlBoolean	force_draw
+	NhlBoolean	force_draw,
+	int		wk_id
         );
 
 extern NhlErrorTypes NgResetPage(

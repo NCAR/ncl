@@ -1,5 +1,5 @@
 /*
- *      $Id: plotstylemenu.c,v 1.2 1999-09-21 23:36:15 dbrown Exp $
+ *      $Id: plotstylemenu.c,v 1.3 1999-09-29 02:06:01 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -34,6 +34,7 @@
 #include <ncarg/ngo/varpage.h>
 #include <ncarg/ngo/plotapp.h>
 #include <ncarg/ngo/graphic.h>
+#include <ncarg/hlu/XWorkstation.h>
 
 #include <Xm/Xm.h>
 #include <Xm/Protocols.h>
@@ -41,11 +42,13 @@
 #include <ncarg/ngo/CascadeBG.h>
 #include <Xm/MenuShell.h>
 #include <Xm/MessageB.h>
-#include <Xm/PushB.h>
+#include <Xm/PushBG.h>
 #include <Xm/TextF.h>
 #include  <Xm/Form.h>
 #include  <Xm/LabelG.h>
 #include <Xm/SeparatoG.h>
+#include <Xm/ToggleBG.h>
+#include <Xm/Frame.h>
 
 
 #define _NgTOPPATH "Plot Styles"
@@ -637,11 +640,16 @@ static void CancelCB
 	XtPointer	cb_data
 )
 {
+	PlotStyleMenuRec	*priv = (PlotStyleMenuRec *)udata;
 	NgPlotStyle	pstyle;
 
         XtVaGetValues(w,
                       XmNuserData,&pstyle,
                       NULL);
+
+	XtDestroyWidget(priv->create_dialog);
+	priv->create_dialog = NULL;
+
 	return;
 }
 
@@ -651,7 +659,7 @@ InsufficientDimsMesg(
 	NgVarData	vdata,
 	NgPlotStyle	pstyle)
 {		
-	char message[256];
+	char message[512];
 	char dname[128];
 
 	if (vdata->qfile) {
@@ -671,6 +679,101 @@ InsufficientDimsMesg(
 	return;
 }
 
+
+static NhlBoolean
+QualifiedNclSymbol
+(
+	char *var_string,
+	char **start,		/* location of first character */
+	char **end		/* location + 1 of last character */
+)
+{
+	char *cp = var_string;
+	int len = 1;
+
+	*start = *end = NULL;
+	
+	if (! (cp && strlen(cp)))
+		return False;
+	while (isspace(*cp))
+		cp++;
+
+	if (! (isalpha(*cp) || *cp == '_'))
+		return False;
+	*start = cp;
+	cp++;
+
+	while (isalnum(*cp) || *cp == '_')
+		cp++,len++;
+
+	if (len > 256)
+		return False;
+	*end = cp;
+
+	while(isspace(*cp))
+		cp++;
+
+	return (*cp == '\0' ? True : False);
+}
+
+static NhlBoolean SetSelectedWorkstation
+(
+	PlotStyleMenuRec	*priv 
+)
+{
+	NhlString xwktext,xwk_start,xwk_end,xwk_name;
+	
+	if (priv->new_xwk) {
+		int hlu_id;
+		XtVaGetValues(priv->new_xwk_text,
+			      XmNvalue,&xwktext,
+			      NULL);
+
+		if (QualifiedNclSymbol(xwktext,&xwk_start,&xwk_end)) {
+			*xwk_end = '\0';
+			xwk_name = xwk_start;
+		}
+		else {
+			char message[512];
+			if (xwk_end)
+				*xwk_end = '\0';
+			if (xwk_start)
+				xwk_name = xwk_start;
+			else
+				xwk_name = xwktext;
+			sprintf(message,
+				"\"%s\" is not a valid variable name.",
+				xwk_name);
+			XmLMessageBox(priv->create_dialog,message,True);
+			return False;
+		}
+		xwk_name = NgNclGetSymName(priv->nsid,xwk_name,False);
+		NgCreateGraphic(priv->go->base.id,&hlu_id,xwk_name,xwk_name,
+				NULL,"xWorkstationClass",0,NULL,NULL);
+		XtFree(xwktext);
+	}
+	else {
+		Widget pb;
+		NrmQuark qxwk_name;
+
+		XtVaGetValues(priv->xwk_menu,
+			      XmNmenuHistory,&pb,
+			      NULL);
+		XtVaGetValues(pb,
+			      XmNuserData,&qxwk_name,
+			      NULL);
+		if (qxwk_name <= NrmNULLQUARK) {
+			NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+				   "This shouldn't happen"));
+			return False;
+		}
+		xwk_name = NrmQuarkToString(qxwk_name);
+	}
+	NgAppSetSelectedWork(priv->go->go.appmgr,xwk_name);
+	return True;
+}
+		
+		
 static void CreateCB 
 (
 	Widget		w,
@@ -683,7 +786,7 @@ static void CreateCB
         NgDataProfile	prof;
 	NgPlotStyle	pstyle;
         NrmQuark	qname;
-        char		*vartext;
+        char		*vartext,*vstart,*vend;
         NgPageId	page_id;
 	NgVarData	vdata = pub->vdata;
         
@@ -695,12 +798,30 @@ static void CreateCB
                       XmNuserData,&pstyle,
                       NULL);
 		
+	/* need to qualify text string, and warn user if it's already
+	   a symbol */
+
         XtVaGetValues(priv->dialog_text,
                       XmNvalue,&vartext,
                       NULL);
 
-	/* need to qualify text string, and warn user if it's already
-	   a symbol */
+	if (QualifiedNclSymbol(vartext,&vstart,&vend)) {
+		*vend = '\0';
+	}
+	else {
+		char message[512];
+		char *vstr;
+		if (vend)
+			*vend = '\0';
+		vstr = vstart ? vstart : vartext;
+		sprintf(message,
+			"\"%s\" is not a valid variable name.",vstr);
+			XmLMessageBox(priv->create_dialog,message,True);
+		XtDestroyWidget(priv->create_dialog);
+		priv->create_dialog = NULL;
+		XtFree(vartext);
+                return;
+	}
 
         if (! pstyle->class_name) { 
 		/* 
@@ -708,12 +829,23 @@ static void CreateCB
 		 * copying the data to a variable.
 		 */
 
-		NgNclCopyShapedVar(priv->nsid,vartext,
+		NgNclCopyShapedVar(priv->nsid,vstart,
 				   vdata->qfile,vdata->qvar,vdata->ndims,
 				   vdata->start,vdata->finish,vdata->stride);
+		XtDestroyWidget(priv->create_dialog);
+		priv->create_dialog = NULL;
+		XtFree(vartext);
                 return;
         }
-        else if (!strcmp(pstyle->class_name,NGPLOTCLASS)){
+
+	if (! SetSelectedWorkstation(priv)) {
+		XtDestroyWidget(priv->create_dialog);
+		priv->create_dialog = NULL;
+		XtFree(vartext);
+		return;
+	}
+
+        if (!strcmp(pstyle->class_name,NGPLOTCLASS)){
 		brPlotObjCreateRec plot_create_rec;
 		int app_id;
 		char varname[256];
@@ -736,7 +868,7 @@ static void CreateCB
 			return;
 		}
 
-		strcpy(varname,NgNclGetSymName(priv->nsid,vartext,False));
+		strcpy(varname,NgNclGetSymName(priv->nsid,vstart,False));
 		plot_create_rec.obj_count = 0;
 		plot_create_rec.obj_ids = NULL;
 		plot_create_rec.class_name = pstyle->class_name;
@@ -779,7 +911,7 @@ static void CreateCB
 		brHluObjCreateRec hlu_create_rec;
                 char buf[256];
 		int app_id;
-                NhlString varname = NgNclGetSymName(priv->nsid,vartext,False);
+                NhlString varname = NgNclGetSymName(priv->nsid,vstart,False);
 		/*
 		 * Create an app object for the plot style
 		 */
@@ -848,9 +980,106 @@ static void CreateCB
 			NgUpdatePage(priv->go->base.id,page_id);
                 
         }
+	XtDestroyWidget(priv->create_dialog);
+	priv->create_dialog = NULL;
+	XtFree(vartext);
         return;
 }
+static void ChooseNewOrExistingXwkCB
+(
+	Widget		w,
+	XtPointer	udata,
+	XtPointer	cb_data
+)
+{
+	XmToggleButtonCallbackStruct *cbs =
+                (XmToggleButtonCallbackStruct*)cb_data;
+	PlotStyleMenuRec	*priv = (PlotStyleMenuRec	*)udata;
 
+	if (w == priv->exist_tgl) {
+#if	DEBUG_PLOTSTYLEMENU
+		fprintf(stderr,"existing: set = %d\n",cbs->set);
+#endif
+		XtSetSensitive(priv->xwk_optmenu,cbs->set);
+		priv->new_xwk = cbs->set ? False : True;
+		if (cbs->set) {
+			XmProcessTraversal
+				(priv->xwk_optmenu, XmTRAVERSE_CURRENT);
+		}
+	}
+	else if (w == priv->new_tgl) {
+#if	DEBUG_PLOTSTYLEMENU
+		fprintf(stderr,"new: set = %d\n",cbs->set);
+#endif
+		XtSetSensitive(priv->new_xwk_text,cbs->set);
+		priv->new_xwk = cbs->set ? True : False;
+		if (cbs->set) {
+			XmProcessTraversal
+				(priv->new_xwk_text, XmTRAVERSE_CURRENT);
+		}
+	}
+	else
+		return;
+
+	return;
+}
+
+static void AddXwksButtons
+(
+       PlotStyleMenuRec	*priv,
+       Widget		parent
+)
+{
+	int 	i,count;
+	NrmQuark *qvars = NclGetHLUVarSymNames(&count);
+	int	hlu_id,id_count,*id_array;
+	Widget  selected = NULL;
+	NhlBoolean	created;
+	int	sel_xwk_id;
+
+	if (! qvars)
+		return;
+
+	sel_xwk_id = NgAppGetSelectedWork(priv->go->go.appmgr,False,&created);
+	if (!NhlIsClass(sel_xwk_id,NhlxWorkstationClass))
+		sel_xwk_id = NhlNULLOBJID;
+
+	for (i = 0; i < count; i++) {
+		Widget pb;
+                char *name = NrmQuarkToString(qvars[i]);
+
+                if (! strncmp(name,"_Ng",3))
+                        continue;
+
+		hlu_id = NgNclGetHluObjId(priv->go->go.nclstate,
+					  name,&id_count,&id_array);
+
+		/* not interested in array variables here */
+	       
+		if (id_count > 1)
+			NhlFree(id_array);
+
+		if (! NhlIsClass(hlu_id,NhlxWorkstationClass))
+			continue;
+
+                pb = XtVaCreateManagedWidget
+			(name,
+			 xmPushButtonGadgetClass,parent,
+			 XmNalignment,	XmALIGNMENT_CENTER,
+			 XmNuserData, qvars[i],
+			 NULL);
+		if (hlu_id == sel_xwk_id)
+			selected = pb;
+	}		
+	
+	if (selected) {
+		XtVaSetValues(parent,
+			      XmNmenuHistory,selected,
+			      NULL);
+	}
+	return;
+
+}
 static void CreateDialog
 (
        PlotStyleMenuRec	*priv,
@@ -862,19 +1091,23 @@ static void CreateDialog
 	NgPlotStyleMenu	*pub = &priv->public;
 	char    buf[128] = "";
         XmString xmname;
-        Widget  form,label,help;
-	char *name;
+        Widget  form,label,help,menush,frame,radio;
+	char *name, *new_name;
+	NhlBoolean is_regvar = False;
+	NhlString label_str,plot_str = "Plot Name: ",var_str = "Var Name: ";
 
 #if	DEBUG_PLOTSTYLEMENU
         fprintf(stderr,"%s\n",pstyle->name);
 #endif
+	
 	if (! pstyle)
 		return;
         if (pstyle->class_name) {
-                sprintf(buf,"Create %s Plot",pstyle->name);
+                sprintf(buf,"Create New %s Plot",pstyle->name);
 	}
 	else {
-                sprintf(buf,"Create Ncl Variable");
+		is_regvar = True;
+                sprintf(buf,"Create New Variable");
 	}
         
         xmname = NgXAppCreateXmString(priv->go->go.appmgr,buf);
@@ -885,61 +1118,166 @@ static void CreateDialog
 	XtSetArg(args[nargs],XmNdialogTitle,xmname);nargs++;
 	XtSetArg(args[nargs],XmNuserData,pstyle);nargs++;
 	name = NgNclGetSymName(priv->nsid,pstyle->plot_name,True);
-        if (! priv->create_dialog) {
-                priv->create_dialog = XmCreateMessageDialog
-                        (pub->menubar,"CreateDialog",args,nargs);
-                help = XmMessageBoxGetChild
-                        (priv->create_dialog,XmDIALOG_HELP_BUTTON);
-                XtUnmanageChild(help);
+
+	priv->create_dialog = XmCreateMessageDialog
+		(pub->menubar,"CreateDialog",args,nargs);
+	help = XmMessageBoxGetChild
+		(priv->create_dialog,XmDIALOG_HELP_BUTTON);
+	XtUnmanageChild(help);
+
+	if (is_regvar) {
+		priv->config_pb = NULL;
+		label_str = var_str;
+	}
+	else {
 		priv->config_pb = XtVaCreateManagedWidget
 			("ConfigurePB",
-			 xmPushButtonWidgetClass,priv->create_dialog,
+			 xmPushButtonGadgetClass,priv->create_dialog,
 			 XmNuserData,pstyle,
 			 NULL);
 		XtAddCallback
 			(priv->config_pb,XmNactivateCallback,CreateCB,priv);
+		label_str = plot_str;
+	}
 
-		XtAddCallback(priv->create_dialog,
-			      XmNokCallback,CreateCB,priv);
-		XtAddCallback(priv->create_dialog,XmNcancelCallback,
-			      CancelCB,priv);
+	XtAddCallback(priv->create_dialog,
+		      XmNokCallback,CreateCB,priv);
+	XtAddCallback(priv->create_dialog,XmNcancelCallback,
+		      CancelCB,priv);
+	form = XtVaCreateManagedWidget
+		("form",xmFormWidgetClass,
+		 priv->create_dialog,
+		 NULL);
+
+	label = XtVaCreateManagedWidget
+		(label_str,xmLabelGadgetClass,
+		 form,
+		 XmNrightAttachment,XmATTACH_NONE,
+		 XmNbottomAttachment,XmATTACH_NONE,
+		 NULL);
+	priv->dialog_text = XtVaCreateManagedWidget
+		("dialog",xmTextFieldWidgetClass,
+		 form,
+		 XmNleftAttachment,XmATTACH_WIDGET,
+		 XmNleftWidget,label,
+		 XmNbottomAttachment,XmATTACH_NONE,
+		 XmNvalue,name,
+		 XmNresizeWidth,True,
+		 XmNbackground,priv->go->go.edit_field_pixel,
+		 NULL);
+
+	if (! is_regvar) {
+		/* show the workstation dialog */
+
+		frame = XtVaCreateManagedWidget
+			("frame",xmFrameWidgetClass,
+			 form,
+			 XmNtopOffset,10,
+			 XmNtopAttachment,XmATTACH_WIDGET,
+			 XmNtopWidget,priv->dialog_text,
+			 XmNbottomAttachment,XmATTACH_NONE,
+			 NULL);
+
+
 		form = XtVaCreateManagedWidget
-                        ("form",xmFormWidgetClass,
-                         priv->create_dialog,
-                         NULL);
+			("form",xmFormWidgetClass,
+			 frame,
+			 NULL);
 
-                label = XtVaCreateManagedWidget
-                        ("Name",xmLabelGadgetClass,
-                         form,
-                         XmNrightAttachment,XmATTACH_NONE,
+		label = XtVaCreateManagedWidget
+			("Display plot in ",xmLabelGadgetClass,
+			 form,
+			 XmNrightAttachment,XmATTACH_NONE,
 			 XmNbottomAttachment,XmATTACH_NONE,
-                         NULL);
-                priv->dialog_text = XtVaCreateManagedWidget
-                        ("dialog",xmTextFieldWidgetClass,
-                         form,
-                         XmNleftAttachment,XmATTACH_WIDGET,
-                         XmNleftWidget,label,
+			 NULL);
+
+		radio = XtVaCreateManagedWidget
+			("radio",xmRowColumnWidgetClass,form,
+			 XmNrowColumnType,XmWORK_AREA,
+			 XmNradioBehavior,True,
+			 XmNisHomogeneous,True,
+			 XmNorientation,XmVERTICAL,
+			 XmNrightAttachment,XmATTACH_NONE,
 			 XmNbottomAttachment,XmATTACH_NONE,
-                         XmNvalue,name,
-                         XmNresizeWidth,True,
+			 XmNtopAttachment,XmATTACH_WIDGET,
+			 XmNtopWidget,label,
+			 NULL);
+
+		priv->exist_tgl = XtVaCreateManagedWidget
+			("Existing window:",xmToggleButtonGadgetClass,
+			 radio,
+			 XmNset,True,
+			 NULL);
+		XtAddCallback(priv->exist_tgl,XmNvalueChangedCallback,
+			      ChooseNewOrExistingXwkCB,priv); 
+
+		priv->new_tgl = XtVaCreateManagedWidget
+			("New window:",xmToggleButtonGadgetClass,
+			 radio,
+			 NULL);
+		XtAddCallback(priv->new_tgl,XmNvalueChangedCallback,
+			      ChooseNewOrExistingXwkCB,priv); 
+
+		menush =
+			XtVaCreatePopupShell
+			("menush",xmMenuShellWidgetClass,
+			 form,
+			 XmNwidth,		5,
+			 XmNheight,		5,
+			 XmNallowShellResize,	True,
+			 XmNoverrideRedirect,	True,
+			 XmNdepth,	XcbGetDepth(priv->go->go.xcb),
+			 XmNcolormap,	XcbGetColormap(priv->go->go.xcb),
+			 XmNvisual,	XcbGetVisual(priv->go->go.xcb),
+			 NULL);
+
+		priv->xwk_menu = XtVaCreateWidget
+			("menu",xmRowColumnWidgetClass,menush,
+			 XmNrowColumnType,XmMENU_PULLDOWN,
+			 NULL);
+
+		AddXwksButtons(priv,priv->xwk_menu);
+		priv->xwk_optmenu = XtVaCreateManagedWidget
+			("optMenu",
+			 xmRowColumnWidgetClass,form,
+			 XmNspacing,0,
+			 XmNtopAttachment,XmATTACH_WIDGET,
+			 XmNtopWidget,label,
+			 XmNleftAttachment,XmATTACH_WIDGET,
+			 XmNleftWidget,radio,
+			 XmNbottomAttachment,XmATTACH_NONE,
+			 XmNrowColumnType,XmMENU_OPTION,
+			 XmNsubMenuId,priv->xwk_menu,
+			 NULL);
+		priv->new_xwk = False;
+		new_name = NgNclGetSymName(priv->go->go.nclstate,
+					   "Xwk",True);
+		if (priv->new_xwk_name)
+			NhlFree(priv->new_xwk_name);
+		priv->new_xwk_name = NhlMalloc(strlen(new_name)+1);
+		strcpy(priv->new_xwk_name,new_name);
+
+		priv->new_xwk_text = XtVaCreateManagedWidget
+			("dialog",xmTextFieldWidgetClass,
+			 form,
+			 XmNtopAttachment,XmATTACH_WIDGET,
+			 XmNtopWidget,priv->xwk_optmenu,
+			 XmNleftAttachment,XmATTACH_WIDGET,
+			 XmNleftWidget,radio,
+			 XmNleftOffset,8,
+			 XmNbottomAttachment,XmATTACH_NONE,
+			 XmNvalue,priv->new_xwk_name,
+			 XmNresizeWidth,True,
+			 XmNbackground,priv->go->go.edit_field_pixel,
+			 XmNsensitive,False,
                          NULL);
-        }
-	else {
-		XtSetValues(priv->create_dialog,args,nargs);
-                XtVaSetValues(priv->dialog_text,
-                              XmNvalue,name,
-                              NULL);
 	}
-	if (! pstyle->class_name) {
-		if (XtIsManaged(priv->config_pb))
-			XtUnmanageChild(priv->config_pb);
-	}
-	else if (! XtIsManaged(priv->config_pb)) {
-		 XtManageChild(priv->config_pb);
-	}
+
 	NgXAppFreeXmString(priv->go->go.appmgr,xmname);
         XtManageChild(priv->create_dialog);
-        
+        _NgGOWidgetTranslations(priv->go,priv->create_dialog);
+	XmProcessTraversal(priv->dialog_text, XmTRAVERSE_CURRENT);
+
         return;
         
 }
@@ -1312,6 +1650,7 @@ NgCreatePlotStyleMenu
         priv = NhlMalloc(sizeof(PlotStyleMenuRec));
         priv->go = go;
         priv->create_dialog = NULL;
+	priv->new_xwk_name = NULL;
 	pub = &priv->public;
 
 	if (! PlotStylePaths)

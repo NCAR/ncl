@@ -1,5 +1,5 @@
 /*
- *      $Id: colormap.c,v 1.7 1999-09-21 23:36:12 dbrown Exp $
+ *      $Id: colormap.c,v 1.8 1999-09-29 02:05:56 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -780,7 +780,7 @@ CmapApplyCB
 	NgAppEnumerateGO(cm->go.appmgr,GetBrowser,&browse);
 
 	if (browse != NhlDEFAULT_APP)
-		NgUpdatePages(browse,True);
+		NgUpdatePages(browse,True,cm->colormap.work);
 #endif
 	return;
 }
@@ -794,7 +794,9 @@ CmapOkCB
 )
 {
 	NgColorMap	cm = (NgColorMap)udata;
+#if 0
 	int		browse = NhlDEFAULT_APP;
+#endif
 
 	UnSelectCurrent(cm);
 	cm->colormap.sel_indx = -1;
@@ -803,11 +805,15 @@ CmapOkCB
 
 	cm->colormap.cur_pal_name_pos = cm->colormap.set_pal_name_pos;
 
+#if 0
+	/*
+	 * this is happening via a callback in the xwk now
+	 */
 	NgAppEnumerateGO(cm->go.appmgr,GetBrowser,&browse);
 
 	if (browse != NhlDEFAULT_APP)
-		NgUpdatePages(browse,True);
-
+		NgUpdatePages(browse,True,cm->colormap.work);
+#endif
 	return;
 }
 

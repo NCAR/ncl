@@ -1,5 +1,5 @@
 /*
- *      $Id: plotstylemenuP.h,v 1.1 1999-09-20 23:59:32 dbrown Exp $
+ *      $Id: plotstylemenuP.h,v 1.2 1999-09-29 02:06:01 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -43,12 +43,19 @@ typedef struct _PlotStyleMenuRec
 	NgPlotStyleMenu  public;
         NgGO		go;
         int		nsid;
-        Widget		create_dialog;
-        Widget		dialog_text;
-	Widget		config_pb;
         NgMenuRec	plot;
         NgMenuRec	var;
         NgMenuRec	data;
+        Widget		create_dialog;
+        Widget		dialog_text;
+	Widget		exist_tgl;
+	Widget		new_tgl;
+	Widget		xwk_optmenu;
+	Widget		xwk_menu;
+	Widget		new_xwk_text;
+	Widget		config_pb;
+	NhlBoolean	new_xwk;
+	NhlString	new_xwk_name;
 } PlotStyleMenuRec;
 
 #endif	/* _NG_PLOTSTYLEMENUP_H_ */
