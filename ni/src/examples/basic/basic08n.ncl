@@ -1,4 +1,4 @@
-; $Id: basic08n.ncl,v 1.1 1995-08-10 00:06:34 dbrown Exp $
+; $Id: basic08n.ncl,v 1.2 1996-04-10 14:36:50 haley Exp $
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                       ;
 ;                Copyright (C)  1995                                    ;
@@ -183,11 +183,15 @@ PS=0
   end create
 
 ;
-; Set Workstation resources to modify the immediate mode line attributes.
+; Set GraphicStyle resources to modify the immediate mode line attributes.
 ;
-  setvalues wid
-	"wkLineColor" : 2
-	"wkDashPattern" : 1
+  getvalues wid
+    "wkDefGraphicStyleId": gid
+  end getvalues
+
+  setvalues gid
+	"gsLineColor" : 2
+	"gsLineDashPattern" : 1
   end setvalues
 
 ;
@@ -225,7 +229,7 @@ PS=0
   y(2) = 0.95
   y(3) = 0.95
   y(4) = 0.05
-  NhlNDCPolyline(ll_id,x,y)
+  NhlNDCPolyline(ll_id,gid,x,y)
 
 ;
 ; Draw the plot with the desired boundary parameters.
@@ -247,7 +251,7 @@ PS=0
   y(2) = 0.975
   y(3) = 0.975
   y(4) = 0.525
-  NhlNDCPolyline(ll_id,x,y)
+  NhlNDCPolyline(ll_id,gid,x,y)
 
 ;
 ; Set the ContourPlot viewport so that the width is twice the height.
@@ -280,7 +284,7 @@ PS=0
   y(2) = 0.975
   y(3) = 0.975
   y(4) = 0.525
-  NhlNDCPolyline(ll_id,x,y)
+  NhlNDCPolyline(ll_id,gid,x,y)
 
 ;
 ;
@@ -313,7 +317,7 @@ PS=0
   y(2) = 0.4
   y(3) = 0.4
   y(4) = 0.1
-  NhlNDCPolyline(ll_id,x,y)
+  NhlNDCPolyline(ll_id,gid,x,y)
 
 ;
 ; For this plot the aspect ratio is distorted in order to fill as much as 
