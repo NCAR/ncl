@@ -1,5 +1,5 @@
 /*
- *      $Id: restree.c,v 1.10 1998-01-24 02:10:43 dbrown Exp $
+ *      $Id: restree.c,v 1.11 1998-01-28 17:25:57 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3607,6 +3607,24 @@ NgResTree *NgCreateResTree
                 to_white.addr = (XPointer)&White;
                 XtConvertAndStore(go->go.shell,
                                   XtRString,&from_white,XtRPixel,&to_white);
+                Check_Pixmap = XCreatePixmapFromBitmapData
+                        (XtDisplay(go->go.shell),
+                         DefaultRootWindow(XtDisplay(go->go.shell)),
+                         (char*)Check_Bits,PIXMAP_WIDTH,PIXMAP_HEIGHT,
+                         Black,White,
+                         DefaultDepthOfScreen(XtScreen(go->go.shell)));
+                No_Check_Pixmap = XCreatePixmapFromBitmapData
+                        (XtDisplay(go->go.shell),
+                         DefaultRootWindow(XtDisplay(go->go.shell)),
+                         (char*)No_Check_Bits,PIXMAP_WIDTH,PIXMAP_HEIGHT,
+                         Black,White,
+                         DefaultDepthOfScreen(XtScreen(go->go.shell)));
+                Mask_Pixmap = XCreatePixmapFromBitmapData
+                        (XtDisplay(go->go.shell),
+                         DefaultRootWindow(XtDisplay(go->go.shell)),
+                         (char*)Mask_Bits,PIXMAP_WIDTH,PIXMAP_HEIGHT,
+                         Background,Background,
+                         DefaultDepthOfScreen(XtScreen(go->go.shell)));
                 first = False;
         }
         
@@ -3686,24 +3704,6 @@ NgResTree *NgCreateResTree
         black = BlackPixelOfScreen(XtScreen(go->go.shell));
         white = WhitePixelOfScreen(XtScreen(go->go.shell));
 #endif        
-        Check_Pixmap = XCreatePixmapFromBitmapData
-                (XtDisplay(go->go.shell),
-                 DefaultRootWindow(XtDisplay(go->go.shell)),
-                 (char*)Check_Bits,PIXMAP_WIDTH,PIXMAP_HEIGHT,Black,White,
-                 DefaultDepthOfScreen(XtScreen(go->go.shell)));
-        No_Check_Pixmap = XCreatePixmapFromBitmapData
-                (XtDisplay(go->go.shell),
-                 DefaultRootWindow(XtDisplay(go->go.shell)),
-                 (char*)No_Check_Bits,PIXMAP_WIDTH,PIXMAP_HEIGHT,
-                 Black,White,
-                 DefaultDepthOfScreen(XtScreen(go->go.shell)));
-
-        Mask_Pixmap = XCreatePixmapFromBitmapData
-               (XtDisplay(go->go.shell),
-                DefaultRootWindow(XtDisplay(go->go.shell)),
-                (char*)Mask_Bits,PIXMAP_WIDTH,PIXMAP_HEIGHT,
-                Background,Background,
-                DefaultDepthOfScreen(XtScreen(go->go.shell)));
                                    
         XtAddCallback(pub_rtp->tree,XmNexpandCallback,ExpandCB,rtp);
         XtAddCallback(pub_rtp->tree,XmNcollapseCallback,CollapseCB,rtp);

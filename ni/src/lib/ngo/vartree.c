@@ -1,5 +1,5 @@
 /*
- *      $Id: vartree.c,v 1.6 1998-01-08 01:19:31 dbrown Exp $
+ *      $Id: vartree.c,v 1.7 1998-01-28 17:26:53 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -919,7 +919,6 @@ static void ExpandTree
                 Char_Height = ch;
                 Row_Height = MAX(rh,h/nrows);
                 Row_Height = 20;
-                printf("ch %d rh %d rh1 %d\n", ch,rh,h/nrows);
                 vtp->expand_called = True;
         }
 
@@ -1172,6 +1171,8 @@ NhlErrorTypes NgUpdateVarTree
         vtp->qfileref = qfileref;
         vtp->qvar = qvar;
         vtp->dlist = dlist;
+        vtp->page_id = NgGetPageId
+                (vtp->go->base.id,vtp->qvar,vtp->qfileref);
 
         vinfo = dlist->u.var;
         nattrs = vinfo->n_atts;
@@ -1286,13 +1287,11 @@ NgVarTree *NgCreateVarTree
         vtp->geo_notify = NULL;
         vtp->geo_data = NULL;
         vtp->created = False;
-        vtp->qfileref = NrmNULLQUARK;
-        vtp->qvar = NrmNULLQUARK;
+        vtp->qfileref = qfileref;
+        vtp->qvar = qvar;
         vtp->go = go;
         vtp->var.subdata = NULL;
         vtp->var.subcount = 0;
-        vtp->page_id = NgGetPageId
-                (vtp->go->base.id,NrmNULLQUARK,vtp->qfileref);
         
         vtp->tree = XtVaCreateManagedWidget("VarTree",
                                             xmlTreeWidgetClass,parent,

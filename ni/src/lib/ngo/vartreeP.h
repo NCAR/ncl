@@ -1,5 +1,5 @@
 /*
- *      $Id: vartreeP.h,v 1.2 1998-01-08 01:19:31 dbrown Exp $
+ *      $Id: vartreeP.h,v 1.3 1998-01-28 17:26:57 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -29,7 +29,7 @@
  
 #define DEBUG_ENTRY 1
 #define DEBUG_TREE 1 << 1
-#define DEBUG_VARTREE DEBUG_ENTRY | DEBUG_TREE
+#define DEBUG_VARTREE 0
 
 /* defines for each node of the file tree
  * -- not including the leaf nodes.
