@@ -1,5 +1,6 @@
       SUBROUTINE DSVDLAP(X,Y,LDXY,MRT,NCX,NCY,NSV,IFLAG,XYMSG,IPRNT,W,
-     +                  LWK,PCVAR,HOMLFT,HOMRGT,HETLFT,HETRGT,IER)
+     +                   LWK,PCVAR,HOMLFT,HOMRGT,HETLFT,HETRGT,
+     +                   AK,BK,LAB,IER)
 
 c perform a singular value decomposition on the data
 c .   as described by Bretherton, Smith and Wallace.
@@ -22,18 +23,19 @@ c .              if iflag=1 the input data arrays will be REPLACED with
 c .              the standardized data.
 c .   xymsg    - missing code
 c .   iprnt    - print out many of the steps (for debugging)
-C*PL*ERROR* Comment line too long
-c .   w        - work array. This array will be partitioned via pointers.
+c .   w        - work array. This array will be partitioned via
+c .              pointers.
 c .              upon return the first 4 elements of this array
 c .              will contain information
-C*PL*ERROR* Comment line too long
-c .              (fnorm, condition number, calculated rank, LAPACK error code)
+c .              (fnorm, condition number, calculated rank, LAPACK error
+c .               code)
 c .   lwk      - length of work (let nsvmx = min(ncx,ncy) then   lwk >=
-C*PL*ERROR* Comment line too long
 c .              ncx*ncy + nsvmx*ncx + nsvmx*ncy + mrt*ncx + mrt*ncy + nsvmx
 c .            + max(3*nsvmx+max(ncx,ncy) , 5*nsvmx-4)
-C*PL*ERROR* Comment line too long
-c .   pcvar    - percent variance explained by the modes (dimensioned nsv)
+c .   pcvar    - percent variance explained by the modes (dimensioned
+c .              nsv)
+c .   ak(lab)  - output: expansion coeff
+c .   bk(lab)  - output: expansion coeff
 c .   homlft   - left  homogeneous array
 c .   homrgt   - right homogeneous array
 c .   hetlft   - left  heterogeneous array
@@ -47,7 +49,7 @@ c Note: in many cases ldxy=mrt (Max Rows allocated for Time dimension)
       DOUBLE PRECISION X(LDXY,NCX),Y(LDXY,NCY),W(LWK,*),XYMSG
 
       DOUBLE PRECISION HOMLFT(NCX,NSV),HETLFT(NCX,NSV),HOMRGT(NCY,NSV),
-     +                 HETRGT(NCY,NSV),PCVAR(NSV)
+     +                 HETRGT(NCY,NSV),PCVAR(NSV),AK(LAB),BK(LAB)
 
       IER = 0
       IF (MRT.GT.LDXY) IER = IER + 1
@@ -80,6 +82,18 @@ c partition the work array. pointers to initial array location
       W(4,1) = W(IPT7+3,1)
       IER = W(4,1)
 
+C This returns the expansion coefficients.
+
+      K  = 0
+      K5 = IPT5-1 
+      K6 = IPT6-1 
+      DO N=1,NSV
+         DO M=1,MRT
+            K     = K + 1
+            AK(K) = W(K5+K,1)
+            BK(K) = W(K6+K,1)
+         END DO
+      END DO
       RETURN
       END
 c -------------------------------------------------------------

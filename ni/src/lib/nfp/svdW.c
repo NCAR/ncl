@@ -21,7 +21,8 @@
 extern void NGCALLF(dsvdlap,DSVDLAP)(double *,double *,int *,int *,int *,
                                      int *,int *,int *,double  *,int *,
                                      double *,int *,double *, double *,
-                                     double *, double *, double *,int *);
+                                     double *, double *, double *,double *,
+                                     double *, int *, int *);
 
 extern void NGCALLF(dsvdsv,DSVDSV)(double *,double *, int *,int *,int *,
                                    int *,int *,int *,double *, int *,
@@ -38,8 +39,7 @@ NhlErrorTypes svdcov_W( void )
  * Input array variables
  */
   void *x, *y, *homlft, *hetlft, *homrgt, *hetrgt;
-  double *dx, *dy, *dhomlft, *dhetlft, *dhomrgt, *dhetrgt;
-  float *rhomlft, *rhetlft, *rhomrgt, *rhetrgt;
+  double *dx, *dy, *homlft_tmp, *hetlft_tmp, *homrgt_tmp, *hetrgt_tmp;
   int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
   int ndims_y, dsizes_y[NCL_MAX_DIMENSIONS], has_missing_y;
   int ndims_homlft, dsizes_homlft[NCL_MAX_DIMENSIONS];
@@ -49,8 +49,7 @@ NhlErrorTypes svdcov_W( void )
   NclScalar missing_x, missing_y, missing_dx, missing_dy;
   NclBasicDataTypes type_x, type_y;
   NclBasicDataTypes type_homlft, type_hetlft, type_homrgt, type_hetrgt;
-  int ntimes, ncolx, ncoly;
-  int *nsvd;
+  int ntimes, ncolx, ncoly, lab, *nsvd;
   int ier = 0, iflag=0, iprint=0;
 /*
  * Work array variables
@@ -60,12 +59,11 @@ NhlErrorTypes svdcov_W( void )
 /*
  * Output array variables
  */
-  double *svdpcv;
-  float *rsvdpcv;
-  double *fnorm, *condn;
-  float *rfnorm, *rcondn;
-  int *lapack_err, ndims_svdpcv, dsizes_svdpcv[1];
+  double *svdpcv_tmp, *ak_tmp, *bk_tmp;
+  void *svdpcv, *fnorm, *condn, *ak, *bk;
+  int *lapack_err, dsizes_svdpcv[1];
   NclBasicDataTypes type_svdpcv;
+  NclTypeClass type_svdpcv_class;
 /*
  * Attribute variables
  */
@@ -160,6 +158,7 @@ NhlErrorTypes svdcov_W( void )
   ncolx  = dsizes_x[0];
   ncoly  = dsizes_y[0];
   ntimes = dsizes_x[1];
+  lab    = ntimes * *nsvd;
 
 /*
  * Check nsvd, the number of SVD patterns to be calculated.
@@ -190,23 +189,11 @@ NhlErrorTypes svdcov_W( void )
  * The hom/het arrays must be float or double. It doesn't matter what
  * the input types are.
  */
-  if(type_homlft != NCL_float && type_homlft != NCL_double) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"svdcov: The homlft array must be of type float or double");
-    return(NhlFATAL);
-  }
-
-  if(type_hetlft != NCL_float && type_hetlft != NCL_double) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"svdcov: The hetlft array must be of type float or double");
-    return(NhlFATAL);
-  }
-
-  if(type_homrgt != NCL_float && type_homrgt != NCL_double) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"svdcov: The homrgt array must be of type float or double");
-    return(NhlFATAL);
-  }
-
-  if(type_hetrgt != NCL_float && type_hetrgt != NCL_double) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"svdcov: The hetrgt array must be of type float or double");
+  if(type_hetlft != NCL_float && type_hetlft != NCL_double ||
+     type_homlft != NCL_float && type_homlft != NCL_double ||
+     type_homrgt != NCL_float && type_homrgt != NCL_double ||
+     type_hetrgt != NCL_float && type_hetrgt != NCL_double) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"svdcov: The hetlft/homlft/hetrgt/homrgt arrays must be of type float or double");
     return(NhlFATAL);
   }
 
@@ -241,33 +228,48 @@ NhlErrorTypes svdcov_W( void )
  * values coming in).  hom/het can only be float or double, so only
  * allocate space for a d.p. array if hom/het is float.
  */
-  dhomlft = coerce_output_double(homlft,type_homlft,total_size_lft);
-  dhetlft = coerce_output_double(hetlft,type_hetlft,total_size_lft);
-  dhomrgt = coerce_output_double(homrgt,type_homrgt,total_size_rgt);
-  dhetrgt = coerce_output_double(hetrgt,type_hetrgt,total_size_rgt);
-  if(dhomlft == NULL || dhetlft == NULL || 
-     dhomrgt == NULL || dhetrgt == NULL) {
+  homlft_tmp = coerce_output_double(homlft,type_homlft,total_size_lft);
+  hetlft_tmp = coerce_output_double(hetlft,type_hetlft,total_size_lft);
+  homrgt_tmp = coerce_output_double(homrgt,type_homrgt,total_size_rgt);
+  hetrgt_tmp = coerce_output_double(hetrgt,type_hetrgt,total_size_rgt);
+  if(homlft_tmp == NULL || hetlft_tmp == NULL || 
+     homrgt_tmp == NULL || hetrgt_tmp == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"svdcov: Unable to allocate memory for coercing output arrays to double precision");
     return(NhlFATAL);
   }
 /*
- * Determine type of output array.
+ * Determine type of output values and allocate space for them.
  */
+  dsizes_svdpcv[0] = *nsvd;
   if(type_x != NCL_double && type_y != NCL_double) {
     type_svdpcv = NCL_float;
+    svdpcv      = (void *)calloc(*nsvd,sizeof(float));
+    ak          = (void *)calloc(lab,sizeof(float));
+    bk          = (void *)calloc(lab,sizeof(float));
+    svdpcv_tmp  = (double *)calloc(*nsvd,sizeof(double));
+    ak_tmp      = (double *)calloc(lab,sizeof(double));
+    bk_tmp      = (double *)calloc(lab,sizeof(double));
+
+    if( svdpcv == NULL || svdpcv_tmp == NULL || ak == NULL || bk == NULL ||
+        ak_tmp == NULL || bk_tmp == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"svdcov: Unable to allocate memory for output values");
+      return(NhlFATAL);
+    }
   }
   else {
     type_svdpcv = NCL_double;
+    svdpcv      = (void *)calloc(*nsvd,sizeof(double));
+    ak          = (void *)calloc(lab,sizeof(double));
+    bk          = (void *)calloc(lab,sizeof(double));
+    svdpcv_tmp  = (double*)svdpcv;
+    ak_tmp      = (double *)ak;
+    bk_tmp      = (double *)bk;
+    if( svdpcv == NULL || ak == NULL || bk == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"svdcov: Unable to allocate memory for output values");
+      return(NhlFATAL);
+    }
   }
-/*
- * Allocate space for output array.
- */
-  dsizes_svdpcv[0] = *nsvd;
-  svdpcv = (double *)calloc(*nsvd,sizeof(double));
-  if( svdpcv == NULL ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"svdcov: Unable to allocate memory for output array");
-    return(NhlFATAL);
-  }
+
 /*
  * Allocate memory for work array.
  */
@@ -279,12 +281,14 @@ NhlErrorTypes svdcov_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"svdcov: Unable to allocate memory for work array");
     return(NhlFATAL);
   }
+
 /*
  * Call the Fortran version of 'svdlap' with the full argument list.
  */
-  NGCALLF(dsvdlap,DSVDLAP)(dx,dy,&ntimes,&ntimes,&ncolx,&ncoly,nsvd,
-                           &iflag,&missing_dx.doubleval,&iprint,w,&lwk,svdpcv,
-                           dhomlft,dhomrgt,dhetlft,dhetrgt,&ier);
+  NGCALLF(dsvdlap,DSVDLAP)(dx,dy,&ntimes,&ntimes,&ncolx,&ncoly,nsvd,&iflag,
+                           &missing_dx.doubleval,&iprint,w,&lwk,svdpcv_tmp,
+                           homlft_tmp,homrgt_tmp,hetlft_tmp,hetrgt_tmp,
+                           ak_tmp,bk_tmp,&lab,&ier);
   if (ier) {
     NhlPError(NhlWARNING,NhlEUNKNOWN,"svdcov: ier = %d\n", ier );
   }
@@ -296,256 +300,180 @@ NhlErrorTypes svdcov_W( void )
 
 /*
  * If hom/het were originally float, then we need to coerce them from
- * double to float. Do this by creating a pointer of type float that 
- * points to the original location, and then loop through the values and
- * do the coercion.
+ * double to float.
  */
   if(type_homlft == NCL_float) {
-    rhomlft = (float*)homlft;     /* Float pointer to original homlft array */
-    for( i = 0; i < total_size_lft; i++ ) rhomlft[i]  = (float)dhomlft[i];
-    NclFree(dhomlft);   /* Free up the double array */
+    coerce_output_float_only(homlft,homlft_tmp,total_size_lft,0);
+    NclFree(homlft_tmp);
   }
 
   if(type_hetlft == NCL_float) {
-    rhetlft = (float*)hetlft;     /* Float pointer to original hetlft array */
-    for( i = 0; i < total_size_lft; i++ ) rhetlft[i]  = (float)dhetlft[i];
-    NclFree(dhetlft);   /* Free up the double array */
+    coerce_output_float_only(hetlft,hetlft_tmp,total_size_lft,0);
+    NclFree(hetlft_tmp);
   }
 
   if(type_homrgt == NCL_float) {
-    rhomrgt = (float*)homrgt;     /* Float pointer to original homrgt array */
-    for( i = 0; i < total_size_rgt; i++ ) rhomrgt[i]  = (float)dhomrgt[i];
-    NclFree(dhomrgt);   /* Free up the double array */
+    coerce_output_float_only(homrgt,homrgt_tmp,total_size_rgt,0);
+    NclFree(homrgt_tmp);
   }
 
   if(type_hetrgt == NCL_float) {
-    rhetrgt = (float*)hetrgt;     /* Float pointer to original hetrgt array */
-    for( i = 0; i < total_size_rgt; i++ ) rhetrgt[i]  = (float)dhetrgt[i];
-    NclFree(dhetrgt);   /* Free up the double array */
+    coerce_output_float_only(hetrgt,hetrgt_tmp,total_size_rgt,0);
+    NclFree(hetrgt_tmp);
   }
 
 /*
- * Return output grid to NCL.
+ *  Assign values for various attributes.
  */
+  ipt7 = ncolx*ncoly + *nsvd*(ncolx+ncoly) + ntimes*(ncolx+ncoly) + *nsvd;
+
   if(type_svdpcv == NCL_float) {
-/*
- * Copy double values to float values.
- */
-    rsvdpcv = (float *)calloc(*nsvd,sizeof(float));
-    if( rsvdpcv == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"svdcov: Unable to allocate memory for output array");
-      return(NhlFATAL);
-    }
-    for( i = 0; i < *nsvd; i++ ) rsvdpcv[i] = (float)svdpcv[i];
-/*
- * Free up memory.
- */
-    NclFree(svdpcv);
-
-/*
- * Set up variable to return.
- */
-    return_md = _NclCreateVal(
-                              NULL,
-                              NULL,
-                              Ncl_MultiDValData,
-                              0,
-                              (void*)rsvdpcv,
-                              NULL,
-                              1,
-                              dsizes_svdpcv,
-                              TEMPORARY,
-                              NULL,
-                              (NclObjClass)nclTypefloatClass
-                              );
-/*
- * Set up attributes to return.
- */
-    att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
-
-/*
- * Get attribute values.
- */
-    rfnorm     = (float *)calloc(1,sizeof(float));
-    rcondn     = (float *)calloc(1,sizeof(float));
-    lapack_err = (int *)calloc(1,sizeof(int));
-    if( rfnorm == NULL || rcondn == NULL || lapack_err == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"svdcov: Unable to allocate memory for attributes");
-      return(NhlFATAL);
-    }
-/*
- * Get attribute values and coerce to float.
- */
-    ipt7 = ncolx*ncoly + *nsvd*(ncolx+ncoly) + ntimes*(ncolx+ncoly) + *nsvd;
-    *rfnorm     = (float)w[ipt7];
-    *rcondn     = (float)w[ipt7+1];
-    *lapack_err = (int)w[ipt7+3];
-
-    dsizes[0] = 1;
-    att_md = _NclCreateVal(
-                           NULL,
-                           NULL,
-                           Ncl_MultiDValData,
-                           0,
-                           (void*)rfnorm,
-                           NULL,
-                           1,
-                           dsizes,
-                           TEMPORARY,
-                           NULL,
-                           (NclObjClass)nclTypefloatClass
-                           );
-    _NclAddAtt(
-               att_id,
-               "fnorm",
-               att_md,
-               NULL
-               );
-
-    att_md = _NclCreateVal(
-                           NULL,
-                           NULL,
-                           Ncl_MultiDValData,
-                           0,
-                           (void*)rcondn,
-                           NULL,
-                           1,
-                           dsizes,
-                           TEMPORARY,
-                           NULL,
-                           (NclObjClass)nclTypefloatClass
-                           );
-    _NclAddAtt(
-               att_id,
-               "condn",
-               att_md,
-               NULL
-               );
-
-    att_md = _NclCreateVal(
-                           NULL,
-                           NULL,
-                           Ncl_MultiDValData,
-                           0,
-                           (void*)lapack_err,
-                           NULL,
-                           1,
-                           dsizes,
-                           TEMPORARY,
-                           NULL,
-                           (NclObjClass)nclTypeintClass
-                           );
-    _NclAddAtt(
-               att_id,
-               "lapack_err",
-               att_md,
-               NULL
-               );
-    
+    fnorm  = (void *)calloc(1,sizeof(float));
+    condn  = (void *)calloc(1,sizeof(float));
+    coerce_output_float_only(svdpcv,svdpcv_tmp,*nsvd,0);
+    coerce_output_float_only(ak,ak_tmp,lab,0);
+    coerce_output_float_only(bk,bk_tmp,lab,0);
+    NclFree(svdpcv_tmp);
+    NclFree(ak_tmp);
+    NclFree(bk_tmp);
   }
   else {
+    fnorm  = (void *)calloc(1,sizeof(double));
+    condn  = (void *)calloc(1,sizeof(double));
+  }
+  coerce_output_float_or_double(fnorm,&w[ipt7],type_svdpcv,1,0);
+  coerce_output_float_or_double(condn,&w[ipt7+1],type_svdpcv,1,0);
+  lapack_err  = (int *)calloc(1,sizeof(int));
+  *lapack_err = (int)w[ipt7+3];
+
 /*
- * One or more input arrays were double, so return doubles.
- *
  * Set up variable to return.
  */
-    return_md = _NclCreateVal(
-                              NULL,
-                              NULL,
-                              Ncl_MultiDValData,
-                              0,
-                              (void*)svdpcv,
-                              NULL,
-                              1,
-                              dsizes_svdpcv,
-                              TEMPORARY,
-                              NULL,
-                              (NclObjClass)nclTypedoubleClass
-                              );
+  type_svdpcv_class = (NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(type_svdpcv)));
+  return_md = _NclCreateVal(
+                            NULL,
+                            NULL,
+                            Ncl_MultiDValData,
+                            0,
+                            svdpcv,
+                            NULL,
+                            1,
+                            dsizes_svdpcv,
+                            TEMPORARY,
+                            NULL,
+                            (NclObjClass)type_svdpcv_class
+                            );
 /*
  * Set up attributes to return.
  */
-    att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
+  att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
 
 /*
- * Set some attribute values.
- *
- * First allocate memory for them.
+ * Create individual attributes.
  */
-    fnorm      = (double *)calloc(1,sizeof(double));
-    condn      = (double *)calloc(1,sizeof(double));
-    lapack_err = (int *)calloc(1,sizeof(int));
-    if( fnorm == NULL || condn == NULL || lapack_err == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"svdcov: Unable to allocate memory for attributes");
-      return(NhlFATAL);
-    }
+  dsizes[0] = 1;
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         fnorm,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         (NclObjClass)type_svdpcv_class
+                         );
+  _NclAddAtt(
+             att_id,
+             "fnorm",
+             att_md,
+             NULL
+             );
 
-    ipt7 = ncolx*ncoly + *nsvd*(ncolx+ncoly) + ntimes*(ncolx+ncoly) + *nsvd;
-    *fnorm      = w[ipt7];
-    *condn      = w[ipt7+1];
-    *lapack_err = (int)w[ipt7+3];
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         condn,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         (NclObjClass)type_svdpcv_class
+                         );
+  _NclAddAtt(
+             att_id,
+             "condn",
+             att_md,
+             NULL
+             );
 
-    dsizes[0] = 1;
-    att_md = _NclCreateVal(
-                           NULL,
-                           NULL,
-                           Ncl_MultiDValData,
-                           0,
-                           (void*)fnorm,
-                           NULL,
-                           1,
-                           dsizes,
-                           TEMPORARY,
-                           NULL,
-                           (NclObjClass)nclTypedoubleClass
-                           );
-    _NclAddAtt(
-               att_id,
-               "fnorm",
-               att_md,
-               NULL
-               );
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         (void*)lapack_err,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         (NclObjClass)nclTypeintClass
+                         );
+  _NclAddAtt(
+             att_id,
+             "lapack_err",
+             att_md,
+             NULL
+             );
 
-    att_md = _NclCreateVal(
-                           NULL,
-                           NULL,
-                           Ncl_MultiDValData,
-                           0,
-                           (void*)condn,
-                           NULL,
-                           1,
-                           dsizes,
-                           TEMPORARY,
-                           NULL,
-                           (NclObjClass)nclTypedoubleClass
-                           );
-    _NclAddAtt(
-               att_id,
-               "condn",
-               att_md,
-               NULL
-               );
+  dsizes[0] = lab;
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         ak,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         (NclObjClass)type_svdpcv_class
+                         );
+  _NclAddAtt(
+             att_id,
+             "ak",
+             att_md,
+             NULL
+             );
 
-    att_md = _NclCreateVal(
-                           NULL,
-                           NULL,
-                           Ncl_MultiDValData,
-                           0,
-                           (void*)lapack_err,
-                           NULL,
-                           1,
-                           dsizes,
-                           TEMPORARY,
-                           NULL,
-                           (NclObjClass)nclTypeintClass
-                           );
-    _NclAddAtt(
-               att_id,
-               "lapack_err",
-               att_md,
-               NULL
-               );
-  }
+
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         bk,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         (NclObjClass)type_svdpcv_class
+                         );
+  _NclAddAtt(
+             att_id,
+             "bk",
+             att_md,
+             NULL
+             );
+
 
   NclFree(w);
 
@@ -579,8 +507,7 @@ NhlErrorTypes svdstd_W( void )
  * Input array variables
  */
   void *x, *y, *homlft, *hetlft, *homrgt, *hetrgt;
-  double *dx, *dy, *dhomlft, *dhetlft, *dhomrgt, *dhetrgt;
-  float *rhomlft, *rhetlft, *rhomrgt, *rhetrgt;
+  double *dx, *dy, *homlft_tmp, *hetlft_tmp, *homrgt_tmp, *hetrgt_tmp;
   int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
   int ndims_y, dsizes_y[NCL_MAX_DIMENSIONS], has_missing_y;
   int ndims_homlft, dsizes_homlft[NCL_MAX_DIMENSIONS];
@@ -590,8 +517,7 @@ NhlErrorTypes svdstd_W( void )
   NclScalar missing_x, missing_y, missing_dx, missing_dy;
   NclBasicDataTypes type_x, type_y;
   NclBasicDataTypes type_homlft, type_hetlft, type_homrgt, type_hetrgt;
-  int ntimes, ncolx, ncoly;
-  int *nsvd;
+  int ntimes, ncolx, ncoly, lab, *nsvd;
   int ier = 0, iflag=1, iprint=0;
 /*
  * Work array variables
@@ -601,12 +527,11 @@ NhlErrorTypes svdstd_W( void )
 /*
  * Output array variables
  */
-  double *svdpcv;
-  float *rsvdpcv;
-  double *fnorm, *condn;
-  float *rfnorm, *rcondn;
-  int *lapack_err, ndims_svdpcv, dsizes_svdpcv[1];
+  double *svdpcv_tmp, *ak_tmp, *bk_tmp;
+  void *svdpcv, *fnorm, *condn, *ak, *bk;
+  int *lapack_err, dsizes_svdpcv[1];
   NclBasicDataTypes type_svdpcv;
+  NclTypeClass type_svdpcv_class;
 /*
  * Attribute variables
  */
@@ -701,6 +626,7 @@ NhlErrorTypes svdstd_W( void )
   ncolx  = dsizes_x[0];
   ncoly  = dsizes_y[0];
   ntimes = dsizes_x[1];
+  lab    = ntimes * *nsvd;
 
 /*
  * Check nsvd, the number of SVD patterns to be calculated.
@@ -731,23 +657,11 @@ NhlErrorTypes svdstd_W( void )
  * The hom/het arrays must be float or double. It doesn't matter what
  * the input types are.
  */
-  if(type_homlft != NCL_float && type_homlft != NCL_double) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"svdstd: The homlft array must be of type float or double");
-    return(NhlFATAL);
-  }
-
-  if(type_hetlft != NCL_float && type_hetlft != NCL_double) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"svdstd: The hetlft array must be of type float or double");
-    return(NhlFATAL);
-  }
-
-  if(type_homrgt != NCL_float && type_homrgt != NCL_double) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"svdstd: The homrgt array must be of type float or double");
-    return(NhlFATAL);
-  }
-
-  if(type_hetrgt != NCL_float && type_hetrgt != NCL_double) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"svdstd: The hetrgt array must be of type float or double");
+  if(type_hetlft != NCL_float && type_hetlft != NCL_double ||
+     type_homlft != NCL_float && type_homlft != NCL_double ||
+     type_homrgt != NCL_float && type_homrgt != NCL_double ||
+     type_hetrgt != NCL_float && type_hetrgt != NCL_double) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"svdstd: The hetlft/homlft/hetrgt/homrgt arrays must be of type float or double");
     return(NhlFATAL);
   }
 
@@ -782,33 +696,48 @@ NhlErrorTypes svdstd_W( void )
  * values coming in).  hom/het can only be float or double, so only
  * allocate space for a d.p. array if hom/het is float.
  */
-  dhomlft = coerce_output_double(homlft,type_homlft,total_size_lft);
-  dhetlft = coerce_output_double(hetlft,type_hetlft,total_size_lft);
-  dhomrgt = coerce_output_double(homrgt,type_homrgt,total_size_rgt);
-  dhetrgt = coerce_output_double(hetrgt,type_hetrgt,total_size_rgt);
-  if(dhomlft == NULL || dhetlft == NULL || 
-     dhomrgt == NULL || dhetrgt == NULL) {
+  homlft_tmp = coerce_output_double(homlft,type_homlft,total_size_lft);
+  hetlft_tmp = coerce_output_double(hetlft,type_hetlft,total_size_lft);
+  homrgt_tmp = coerce_output_double(homrgt,type_homrgt,total_size_rgt);
+  hetrgt_tmp = coerce_output_double(hetrgt,type_hetrgt,total_size_rgt);
+  if(homlft_tmp == NULL || hetlft_tmp == NULL || 
+     homrgt_tmp == NULL || hetrgt_tmp == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"svdstd: Unable to allocate memory for coercing output arrays to double precision");
     return(NhlFATAL);
   }
 /*
- * Determine type of output array.
+ * Determine type of output values and allocate space for them.
  */
+  dsizes_svdpcv[0] = *nsvd;
   if(type_x != NCL_double && type_y != NCL_double) {
     type_svdpcv = NCL_float;
+    svdpcv     = (void *)calloc(*nsvd,sizeof(float));
+    svdpcv_tmp = (double *)calloc(*nsvd,sizeof(double));
+    ak_tmp     = (double *)calloc(lab,sizeof(double));
+    bk_tmp     = (double *)calloc(lab,sizeof(double));
+    ak         = (void *)calloc(lab,sizeof(float));
+    bk         = (void *)calloc(lab,sizeof(float));
+
+    if( svdpcv == NULL || svdpcv_tmp == NULL || ak == NULL || bk == NULL ||
+        ak_tmp == NULL || bk_tmp == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"svdstd: Unable to allocate memory for output values");
+      return(NhlFATAL);
+    }
   }
   else {
     type_svdpcv = NCL_double;
+    svdpcv      = (void *)calloc(*nsvd,sizeof(double));
+    ak          = (void *)calloc(lab,sizeof(double));
+    bk          = (void *)calloc(lab,sizeof(double));
+    svdpcv_tmp  = (double*)svdpcv;
+    ak_tmp      = (double *)ak;
+    bk_tmp      = (double *)bk;
+    if( svdpcv == NULL || ak == NULL || bk == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"svdstd: Unable to allocate memory for output values");
+      return(NhlFATAL);
+    }
   }
-/*
- * Allocate space for output array.
- */
-  dsizes_svdpcv[0] = *nsvd;
-  svdpcv = (double *)calloc(*nsvd,sizeof(double));
-  if( svdpcv == NULL ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"svdstd: Unable to allocate memory for output array");
-    return(NhlFATAL);
-  }
+
 /*
  * Allocate memory for work array.
  */
@@ -820,12 +749,14 @@ NhlErrorTypes svdstd_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"svdstd: Unable to allocate memory for work array");
     return(NhlFATAL);
   }
+
 /*
  * Call the Fortran version of 'svdlap' with the full argument list.
  */
-  NGCALLF(dsvdlap,DSVDLAP)(dx,dy,&ntimes,&ntimes,&ncolx,&ncoly,nsvd,
-                           &iflag,&missing_dx.doubleval,&iprint,w,&lwk,svdpcv,
-                           dhomlft,dhomrgt,dhetlft,dhetrgt,&ier);
+  NGCALLF(dsvdlap,DSVDLAP)(dx,dy,&ntimes,&ntimes,&ncolx,&ncoly,nsvd,&iflag,
+                           &missing_dx.doubleval,&iprint,w,&lwk,svdpcv_tmp,
+                           homlft_tmp,homrgt_tmp,hetlft_tmp,hetrgt_tmp,
+                           ak_tmp,bk_tmp,&lab,&ier);
   if (ier) {
     NhlPError(NhlWARNING,NhlEUNKNOWN,"svdstd: ier = %d\n", ier );
   }
@@ -837,256 +768,179 @@ NhlErrorTypes svdstd_W( void )
 
 /*
  * If hom/het were originally float, then we need to coerce them from
- * double to float. Do this by creating a pointer of type float that 
- * points to the original location, and then loop through the values and
- * do the coercion.
+ * double to float.
  */
   if(type_homlft == NCL_float) {
-    rhomlft = (float*)homlft;     /* Float pointer to original homlft array */
-    for( i = 0; i < total_size_lft; i++ ) rhomlft[i]  = (float)dhomlft[i];
-    NclFree(dhomlft);   /* Free up the double array */
+    coerce_output_float_only(homlft,homlft_tmp,total_size_lft,0);
+    NclFree(homlft_tmp);
   }
 
   if(type_hetlft == NCL_float) {
-    rhetlft = (float*)hetlft;     /* Float pointer to original hetlft array */
-    for( i = 0; i < total_size_lft; i++ ) rhetlft[i]  = (float)dhetlft[i];
-    NclFree(dhetlft);   /* Free up the double array */
+    coerce_output_float_only(hetlft,hetlft_tmp,total_size_lft,0);
+    NclFree(hetlft_tmp);
   }
 
   if(type_homrgt == NCL_float) {
-    rhomrgt = (float*)homrgt;     /* Float pointer to original homrgt array */
-    for( i = 0; i < total_size_rgt; i++ ) rhomrgt[i]  = (float)dhomrgt[i];
-    NclFree(dhomrgt);   /* Free up the double array */
+    coerce_output_float_only(homrgt,homrgt_tmp,total_size_rgt,0);
+    NclFree(homrgt_tmp);
   }
 
   if(type_hetrgt == NCL_float) {
-    rhetrgt = (float*)hetrgt;     /* Float pointer to original hetrgt array */
-    for( i = 0; i < total_size_rgt; i++ ) rhetrgt[i]  = (float)dhetrgt[i];
-    NclFree(dhetrgt);   /* Free up the double array */
+    coerce_output_float_only(hetrgt,hetrgt_tmp,total_size_rgt,0);
+    NclFree(hetrgt_tmp);
   }
 
 /*
- * Return output grid to NCL.
+ *  Assign values for various attributes.
  */
+  ipt7 = ncolx*ncoly + *nsvd*(ncolx+ncoly) + ntimes*(ncolx+ncoly) + *nsvd;
+
   if(type_svdpcv == NCL_float) {
-/*
- * Copy double values to float values.
- */
-    rsvdpcv = (float *)calloc(*nsvd,sizeof(float));
-    if( rsvdpcv == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"svdstd: Unable to allocate memory for output array");
-      return(NhlFATAL);
-    }
-    for( i = 0; i < *nsvd; i++ ) rsvdpcv[i] = (float)svdpcv[i];
-/*
- * Free up memory.
- */
-    NclFree(svdpcv);
-
-/*
- * Set up variable to return.
- */
-    return_md = _NclCreateVal(
-                              NULL,
-                              NULL,
-                              Ncl_MultiDValData,
-                              0,
-                              (void*)rsvdpcv,
-                              NULL,
-                              1,
-                              dsizes_svdpcv,
-                              TEMPORARY,
-                              NULL,
-                              (NclObjClass)nclTypefloatClass
-                              );
-/*
- * Set up attributes to return.
- */
-    att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
-
-/*
- * Get attribute values.
- */
-    rfnorm     = (float *)calloc(1,sizeof(float));
-    rcondn     = (float *)calloc(1,sizeof(float));
-    lapack_err = (int *)calloc(1,sizeof(int));
-    if( rfnorm == NULL || rcondn == NULL || lapack_err == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"svdstd: Unable to allocate memory for attributes");
-      return(NhlFATAL);
-    }
-/*
- * Get attribute values and coerce to float.
- */
-    ipt7 = ncolx*ncoly + *nsvd*(ncolx+ncoly) + ntimes*(ncolx+ncoly) + *nsvd;
-    *rfnorm     = (float)w[ipt7];
-    *rcondn     = (float)w[ipt7+1];
-    *lapack_err = (int)w[ipt7+3];
-
-    dsizes[0] = 1;
-    att_md = _NclCreateVal(
-                           NULL,
-                           NULL,
-                           Ncl_MultiDValData,
-                           0,
-                           (void*)rfnorm,
-                           NULL,
-                           1,
-                           dsizes,
-                           TEMPORARY,
-                           NULL,
-                           (NclObjClass)nclTypefloatClass
-                           );
-    _NclAddAtt(
-               att_id,
-               "fnorm",
-               att_md,
-               NULL
-               );
-
-    att_md = _NclCreateVal(
-                           NULL,
-                           NULL,
-                           Ncl_MultiDValData,
-                           0,
-                           (void*)rcondn,
-                           NULL,
-                           1,
-                           dsizes,
-                           TEMPORARY,
-                           NULL,
-                           (NclObjClass)nclTypefloatClass
-                           );
-    _NclAddAtt(
-               att_id,
-               "condn",
-               att_md,
-               NULL
-               );
-
-    att_md = _NclCreateVal(
-                           NULL,
-                           NULL,
-                           Ncl_MultiDValData,
-                           0,
-                           (void*)lapack_err,
-                           NULL,
-                           1,
-                           dsizes,
-                           TEMPORARY,
-                           NULL,
-                           (NclObjClass)nclTypeintClass
-                           );
-    _NclAddAtt(
-               att_id,
-               "lapack_err",
-               att_md,
-               NULL
-               );
-    
+    fnorm  = (void *)calloc(1,sizeof(float));
+    condn  = (void *)calloc(1,sizeof(float));
+    coerce_output_float_only(svdpcv,svdpcv_tmp,*nsvd,0);
+    coerce_output_float_only(ak,ak_tmp,lab,0);
+    coerce_output_float_only(bk,bk_tmp,lab,0);
+    NclFree(svdpcv_tmp);
+    NclFree(ak_tmp);
+    NclFree(bk_tmp);
   }
   else {
+    fnorm  = (void *)calloc(1,sizeof(double));
+    condn  = (void *)calloc(1,sizeof(double));
+  }
+  coerce_output_float_or_double(fnorm,&w[ipt7],type_svdpcv,1,0);
+  coerce_output_float_or_double(condn,&w[ipt7+1],type_svdpcv,1,0);
+  lapack_err  = (int *)calloc(1,sizeof(int));
+  *lapack_err = (int)w[ipt7+3];
+
 /*
- * One or more input arrays were double, so return doubles.
- *
  * Set up variable to return.
  */
-    return_md = _NclCreateVal(
-                              NULL,
-                              NULL,
-                              Ncl_MultiDValData,
-                              0,
-                              (void*)svdpcv,
-                              NULL,
-                              1,
-                              dsizes_svdpcv,
-                              TEMPORARY,
-                              NULL,
-                              (NclObjClass)nclTypedoubleClass
-                              );
+  type_svdpcv_class = (NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(type_svdpcv)));
+  return_md = _NclCreateVal(
+                            NULL,
+                            NULL,
+                            Ncl_MultiDValData,
+                            0,
+                            svdpcv,
+                            NULL,
+                            1,
+                            dsizes_svdpcv,
+                            TEMPORARY,
+                            NULL,
+                            (NclObjClass)type_svdpcv_class
+                            );
 /*
  * Set up attributes to return.
  */
-    att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
+  att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
 
 /*
- * Set some attribute values.
- *
- * First allocate memory for them.
+ * Create individual attributes.
  */
-    fnorm      = (double *)calloc(1,sizeof(double));
-    condn      = (double *)calloc(1,sizeof(double));
-    lapack_err = (int *)calloc(1,sizeof(int));
-    if( fnorm == NULL || condn == NULL || lapack_err == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"svdstd: Unable to allocate memory for attributes");
-      return(NhlFATAL);
-    }
+  dsizes[0] = 1;
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         fnorm,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         (NclObjClass)type_svdpcv_class
+                         );
+  _NclAddAtt(
+             att_id,
+             "fnorm",
+             att_md,
+             NULL
+             );
 
-    ipt7 = ncolx*ncoly + *nsvd*(ncolx+ncoly) + ntimes*(ncolx+ncoly) + *nsvd;
-    *fnorm      = w[ipt7];
-    *condn      = w[ipt7+1];
-    *lapack_err = (int)w[ipt7+3];
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         condn,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         (NclObjClass)type_svdpcv_class
+                         );
+  _NclAddAtt(
+             att_id,
+             "condn",
+             att_md,
+             NULL
+             );
 
-    dsizes[0] = 1;
-    att_md = _NclCreateVal(
-                           NULL,
-                           NULL,
-                           Ncl_MultiDValData,
-                           0,
-                           (void*)fnorm,
-                           NULL,
-                           1,
-                           dsizes,
-                           TEMPORARY,
-                           NULL,
-                           (NclObjClass)nclTypedoubleClass
-                           );
-    _NclAddAtt(
-               att_id,
-               "fnorm",
-               att_md,
-               NULL
-               );
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         (void*)lapack_err,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         (NclObjClass)nclTypeintClass
+                         );
+  _NclAddAtt(
+             att_id,
+             "lapack_err",
+             att_md,
+             NULL
+             );
 
-    att_md = _NclCreateVal(
-                           NULL,
-                           NULL,
-                           Ncl_MultiDValData,
-                           0,
-                           (void*)condn,
-                           NULL,
-                           1,
-                           dsizes,
-                           TEMPORARY,
-                           NULL,
-                           (NclObjClass)nclTypedoubleClass
-                           );
-    _NclAddAtt(
-               att_id,
-               "condn",
-               att_md,
-               NULL
-               );
+  dsizes[0] = lab;
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         ak,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         (NclObjClass)type_svdpcv_class
+                         );
+  _NclAddAtt(
+             att_id,
+             "ak",
+             att_md,
+             NULL
+             );
 
-    att_md = _NclCreateVal(
-                           NULL,
-                           NULL,
-                           Ncl_MultiDValData,
-                           0,
-                           (void*)lapack_err,
-                           NULL,
-                           1,
-                           dsizes,
-                           TEMPORARY,
-                           NULL,
-                           (NclObjClass)nclTypeintClass
-                           );
-    _NclAddAtt(
-               att_id,
-               "lapack_err",
-               att_md,
-               NULL
-               );
-  }
+
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         bk,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         (NclObjClass)type_svdpcv_class
+                         );
+  _NclAddAtt(
+             att_id,
+             "bk",
+             att_md,
+             NULL
+             );
 
   NclFree(w);
 
@@ -1141,7 +995,7 @@ NhlErrorTypes svdcov_sv_W( void )
  */
   double *svdpcv;
   float *rsvdpcv, *rsv;
-  int ndims_svdpcv, dsizes_svdpcv[1];
+  int dsizes_svdpcv[1];
   NclBasicDataTypes type_svdpcv;
 /*
  * Attribute variables
@@ -1512,7 +1366,7 @@ NhlErrorTypes svdstd_sv_W( void )
  */
   double *svdpcv;
   float *rsvdpcv, *rsv;
-  int ndims_svdpcv, dsizes_svdpcv[1];
+  int dsizes_svdpcv[1];
   NclBasicDataTypes type_svdpcv;
 /*
  * Attribute variables
@@ -1887,10 +1741,10 @@ NhlErrorTypes svdpar_W( void )
  * Get label.
  */
   label = (string *)NclGetArgValue(
-	    1,
-	    2,
-	    NULL,
-	    NULL,
+            1,
+            2,
+            NULL,
+            NULL,
             NULL,
             NULL,
             NULL,
@@ -1900,7 +1754,7 @@ NhlErrorTypes svdpar_W( void )
  * Call the Fortran version of 'dsvdpar' with the full argument list.
  */
   NGCALLF(dsvdpar,DSVDPAR)(dx,&dsizes_x[1],&dsizes_x[1],&dsizes_x[0],
-			   label2,strlen(label2));
+                           label2,strlen(label2));
 /*
  * Free up memory and return.
  */
