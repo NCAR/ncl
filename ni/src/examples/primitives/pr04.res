@@ -5,7 +5,7 @@
 *trXMaxF : 170
 *trYMaxF : 100
 *trXReverse : true
-!*trYReverse : true
+*trLineInterpolationOn : True
 *trXCoordPoints : (/  0.0,30.0,45.,50.0,55.,70.,100.0 /)
 *trYCoordPoints : (/  0.0,30.0,45.,50.0,55.,70.,100.0 /)
 *trYAxisType : irregularaxis
