@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl 
 #
-#      $Id: make-cdrom,v 1.14 1997-12-16 23:39:43 haley Exp $
+#      $Id: make-cdrom,v 1.15 1998-01-14 21:55:29 haley Exp $
 #
 #########################################################################
 #									#
@@ -72,9 +72,10 @@ $do_doc = 0;		# do we record the distribution doc to cd-rom
 	'HPUX_HP9000_7xx',	'HPUX_7XX',
 	'AIX_RS6000',		'AIX_R6K',
 	'Solaris_sun4',		'SOLARIS',
+	'Solaris_PC',		'SOLARPC',
 	'OSF1_alpha',		'OSF1_ALF',
-    'IRIX_IP',	        'IRIX_IP',
-	'IRIX64_IP',		'IRIX64',
+    'IRIX_n32_IP',      'IRIXN32',
+    'IRIX_64_IP',       'IRIX64',
 	'UNICOS_J90',		'UCOS_J90',
 	'UNICOS_C90',		'UCOS_C90',
 	'LINUX_PC',		    'LINUX',
