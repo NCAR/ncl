@@ -1,5 +1,5 @@
 #
-#       $Id: yMakefile,v 1.21 2004-09-14 21:21:20 haley Exp $
+#       $Id: yMakefile,v 1.22 2004-10-01 13:52:12 haley Exp $
 #
 
 MYNAME	= conpack
@@ -33,7 +33,7 @@ OBJECTS = \
 
 PartialLibraryTarget(libncarg.a,$(OBJECTS))
 
-PartialSourceLibraryTarget($(MYNAME),srcncarg.a,$(SOURCES))
+
 
 PartialLibraryTarget(libNGcn.a,$(OBJECTS))
 
@@ -50,9 +50,6 @@ IftranRun : CodeIftran
 #if defined(linux) || defined(LINUX) || defined(Linux)
 cptres.o: cptres.f
 	$(F77) $(FCOPTIONS) -g -c cptres.f
-
-cptroe.o: cptroe.f
-	$(F77) $(FCOPTIONS) -g -c cptroe.f
 #endif
 
 #if defined(Darwin)
