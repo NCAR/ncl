@@ -1,4 +1,4 @@
-C	$Id: vvex02.f,v 1.5 1993-02-19 21:58:14 dbrown Exp $
+C	$Id: vvex02.f,v 1.6 1993-02-19 22:25:25 dbrown Exp $
 C
       PROGRAM VVEX02
 C
@@ -73,10 +73,12 @@ C
             CALL  VVGETR('VMX -- Maximum Vector', VMX)
             CALL VVSETR('VLC -- Vector Low Cutoff',
      +           VMN+(VMX-VMN)/5.0)
-            CALL VVGETR('VLC -- Vector Low Cutoff Magnitude',VLM)
+            CALL VVGETR('VLC -- Vector Low Cutoff Magnitude',VLC)
             CALL VVGETR('VFR -- Vector Fractional Minimum',VFR)
             CALL VVGETR('DMX -- Distance of Max Vector',DMX)
-            CALL VVSETR('VRL -- Vector Realized Length', DMX*2.0)
+            CALL GETSET(VL,VR,VB,VT,UL,UR,UB,UT,LL)
+            VRL = 1.5 * DMX / (VR - VL)
+            CALL VVSETR('VRL - Vector Realized Length', VRL)
          END IF
 C
          CALL VVECTR (A(1,10),A(1,25),ZDAT,IDM,IDM,IDM)
