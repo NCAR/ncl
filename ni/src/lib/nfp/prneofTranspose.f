@@ -1,8 +1,8 @@
 C NCLFORTSTART
-      SUBROUTINE DTDRVPRC(XDATA,NROW,NCOL,NROBS,NCSTA,XMSG,NEVAL,EVAL,
-     +                    PCVAR,TRACE,IOPT,JOPT,PCRIT,IREVERT,CSSM,
-     +                    LCSSM,WORK,LWORK,IWORK,LIWORK,IFAIL,TEOF,
-     +                    WEVAL,W2D,WEVEC,XDVAR,IER)
+      SUBROUTINE DTDRVPRC(XDATA,XDATAT,NROW,NCOL,NROBS,NCSTA,XMSG,
+     +                    NEVAL,EVAL,PCVAR,TRACE,IOPT,JOPT,IREVERT,
+     +                    CSSM,LCSSM,WORK,LWORK,IWORK,LIWORK,IFAIL,
+     +                    TEOF,WEVAL,W2D,WEVEC,XDVAR,IER)
       IMPLICIT NONE
 
 c this operates on the TRANSPOSE of the array "x"
@@ -10,20 +10,23 @@ c .   It results in [sometimes, MUCH] faster execution
 c Note for NCL: in *this* routine NROBS=NROW, NCSTA<=NCOL
 
       INTEGER NROW,NCOL,NROBS,NCSTA,NEVAL,IOPT,JOPT,IREVERT,IER
-      DOUBLE PRECISION EVAL(NEVAL),TRACE,XMSG,PCRIT
+      DOUBLE PRECISION EVAL(NEVAL),TRACE,XMSG
       REAL PCVAR(NEVAL)
       INTEGER LWORK,LIWORK,LCSSM
       DOUBLE PRECISION CSSM(LCSSM),WORK(LWORK),TEOF(NROW,NEVAL),
      +                 WEVAL(NROW),W2D(NROW,NEVAL),WEVEC(NCOL,NEVAL),
-     +                 XDATA(NROW,NCOL),XDVAR(NCOL)
+     +                 XDATA(NROW,NCOL),XDATAT(NCOL,NROW),XDVAR(NCOL)
 
       INTEGER IWORK(LIWORK),IFAIL(NROW)
 
 C NCLEND
 
 c======== .so info=====================
-c SGI/dataproc: WRAPIT -L /usr/lib64 -l complib.sgimath_mp prneofTranspose.f
-c Sun/CGD: WRAPIT -L /opt/SUNWspro/lib -l sunmath -l fsu -l fui -lsunperf prneofTranspose.f
+c SGI/dataproc: WRAPIT -L /usr/lib64 -l complib.sgimath_mp \
+c      prneofTranspose.f
+c Sun/CGD: 
+c WRAPIT -L /opt/SUNWspro/lib -l sunmath -l fsu -l fui -lsunperf 
+c       prneofTranspose.f
 c======================================
 
       INTEGER K,NE,NR,NC
@@ -49,11 +52,12 @@ C Don't need to do this because are doing this in C wrapper.
       END DO
 
 c Note: NROW=NROBS but, it is possible for  NCSTA<=NCOL
-c .                     when some stations/grid_pts do not have enough data
+c .                     when some stations/grid_pts do not have enough 
+c .                     data
 
-      CALL DXRVEOFT(XDATA,NROW,NCOL,NROBS,NCSTA,XMSG,NEVAL,WEVAL,WEVEC,
-     +              PCVAR,TRACE,IOPT,JOPT,CSSM,LCSSM,WORK,LWORK,IWORK,
-     +              LIWORK,IFAIL,TEOF,W2D,XDVAR,IREVERT,IER)
+      CALL DXRVEOFT(XDATA,XDATAT,NROW,NCOL,NROBS,NCSTA,XMSG,NEVAL,
+     +              WEVAL,WEVEC,PCVAR,TRACE,IOPT,JOPT,CSSM,LCSSM,WORK,
+     +              LWORK,IWORK,LIWORK,IFAIL,TEOF,W2D,XDVAR,IREVERT,IER)
 
 c return only the requested number of eigenvalues
 
@@ -64,9 +68,9 @@ c return only the requested number of eigenvalues
       RETURN
       END
 c ---------------------------------------------------------
-      SUBROUTINE DXRVEOFT(XDATA,NROW,NCOL,NROBS,NCSTA,XMSG,NEVAL,WEVAL,
-     +                    WEVEC,PCVAR,TRACE,IOPT,JOPT,CSSM,LCSSM,
-     +                    WORK,LWORK,IWORK,LIWORK,IFAIL,TEOF,
+      SUBROUTINE DXRVEOFT(XDATA,XDATAT,NROW,NCOL,NROBS,NCSTA,XMSG,
+     +                    NEVAL,WEVAL,WEVEC,PCVAR,TRACE,IOPT,JOPT,CSSM,
+     +                    LCSSM,WORK,LWORK,IWORK,LIWORK,IFAIL,TEOF,
      +                    W2D,XVAR,IREVERT,IER)
       IMPLICIT NONE
 
@@ -74,7 +78,7 @@ c operate on the *TRANSPOSE* OF XDATA: then use matrix stuff to
 c .   get the desired eof information.
 
 c Note: NROW=NROBS but, it is possible for  NCSTA<=NCOL
-c .                     when some stations/grid_pts do not have enough data
+c .               when some stations/grid_pts do not have enough data
 
 c driver to calculate :
 c .   the principal components (eignvalues and eigenvectors)
@@ -125,9 +129,10 @@ c .   ier       - error code
       INTEGER NROW,NCOL,NROBS,NCSTA,NEVAL,IOPT,JOPT,LWORK,LIWORK,LCSSM
       INTEGER IWORK(LIWORK),IFAIL(NROBS),IREVERT,IER
 
-      DOUBLE PRECISION XDATA(NROW,NCOL),WEVAL(NROW),WEVEC(NCOL,NEVAL),
-     +                 XMSG,TRACE
+      DOUBLE PRECISION XDATA(NROW,NCOL),XDATAT(NCOL,NROW),WEVAL(NROW),
+     +                 WEVEC(NCOL,NEVAL),XMSG,TRACE
       REAL             PCVAR(NEVAL)
+
 
 c temporary arrays (automatic or passed in via interface)
 
@@ -148,10 +153,26 @@ c .   of the *TRANSPOSE* of the *anomalies* of the input data matrix
 c .   JOPT=1 ... already handled in driver ... use covariance routine
 
       IER = 0
+c
+c Note: in the following code, the DVCMSSMT (T=transpose) routine was
+c originally called, but we found it was slower due to the innermost
+c loop being done across the slowest varying dimension. So, Dennis
+c suggested making a transpose copy of XDATA and passing this to
+c the DVCMSSM routine instead.
+c 
 c c c IF (JOPT.EQ.0) THEN
-          CALL DVCMSSMT(XDATA,NROW,NCOL,NROBS,NCSTA,XMSG,CSSM,LCSSM,IER)
+        DO NC=1,NCOL
+           DO NR=1,NROW
+              XDATAT(NC,NR) = XDATA(NR,NC)
+           END DO
+        END DO
+        CALL DVCMSSM(XDATAT,NCOL,NROW,NCSTA,NROBS,XMSG,CSSM,LCSSM,IER)
+c
+c The original call to DVCMSSMT
+c
+c c c   CALL DVCMSSMT(XDATA,NROW,NCOL,NROBS,NCSTA,XMSG,CSSM,LCSSM,IER)
 c c c ELSE
-c c c     CALL DCRMSSMT(XDATA,NROW,NCOL,NROBS,NCSTA,XMSG,CSSM,LCSSM,IER)
+c c c   CALL DCRMSSMT(XDATA,NROW,NCOL,NROBS,NCSTA,XMSG,CSSM,LCSSM,IER)
 c c c END IF
 
       IF (IER.NE.0) THEN

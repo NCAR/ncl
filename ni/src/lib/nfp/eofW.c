@@ -25,12 +25,12 @@ extern void NGCALLF(deoftsca,DEOFTSCA)(double *,int *,int *,int *,int *,
                                        double *,double *,int *,double *,
                                        double *);
 
-extern void NGCALLF(dtdrvprc,DTDRVPRDC)(double *, int *, int *, int *,
-                                        int *, double *, int *, double *,
-                                        float *, double *, int *, int *,
-                                        double *, int *, double *, int *,
-                                        double *, int *, int *, int *, 
-                                        int *, double *, double *, double *,
+extern void NGCALLF(dtdrvprc,DTDRVPRDC)(double *, double *, int *, int *,
+                                        int *, int *, double *, int *,
+                                        double *, float *, double *, int *, 
+                                        int *, int *, double *, int *, 
+                                        double *, int *, int *, int *, int *,
+                                        double *, double *, double *, 
                                         double *, double *, int *);
 
 extern NGCALLF(dtncleof,DTNCLEOF)(double *, int *, int *, int *, int *,
@@ -66,15 +66,15 @@ NhlErrorTypes eof_W( void )
   float *rpcrit;
   NclBasicDataTypes type_pcrit;
   int iopt = 0, jopt = 0, i, ier = 0, irevert = 1;
-  logical call_transpose = True;
-  logical revert = True, return_eval = False;
+  logical transpose, tr_setbyuser = False;
+  logical revert = True, return_eval = False, debug = False;
   logical return_trace = False, return_pcrit = False;
 /*
  * Work array variables.
  */
   double *cssm, *work, *weval, *teof, *w2d, *xave, *wevec;
   double con, pcx, xsd;
-  double *xdata, *xdvar, *xvar;
+  double *xdata, *xdatat, *xdvar, *xvar;
   int   *iwork, *ifail;
   int lwork, liwork, lifail, lweval, lcssm;
   long long int llcssm;
@@ -94,8 +94,8 @@ NhlErrorTypes eof_W( void )
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
-  char *cmatrix;
-  NclQuark *matrix;
+  char *cmatrix, *cmethod;
+  NclQuark *matrix, *method;
   double *trace, *eval;
   float *pcvar, *rtrace, *reval;
 /*
@@ -104,6 +104,7 @@ NhlErrorTypes eof_W( void )
   double *evec;
   float *revec;
   int total_size_evec, dsizes_evec[NCL_MAX_DIMENSIONS];
+
 /*
  * Retrieve parameters
  */
@@ -193,7 +194,7 @@ NhlErrorTypes eof_W( void )
   trace = (double *)calloc(1,sizeof(double));
   eval  = (double *)calloc(*neval,sizeof(double));
   pcvar = (float *)calloc(*neval,sizeof(float));
-  wevec  = (double *)calloc(*neval * ncol,sizeof(double));
+  wevec = (double *)calloc(*neval * ncol,sizeof(double));
   if( trace == NULL || pcvar == NULL || eval == NULL || wevec == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"EOF: Unable to allocate memory for attribute arrays");
     return(NhlFATAL);
@@ -247,6 +248,9 @@ NhlErrorTypes eof_W( void )
  *   "return_eval" : both routines (unadvertised)
  *   "pcrit"       : transpose routine only
  *   "revert"      : tranpose routine only (unadvertised)
+ *   "transpose"   : If True, call transpose routine no matter what
+ *                 : If False, don't call transpose routine no matter what
+ *   "debug"       : turn on debug
  *
  */
         while (attr_list != NULL) {
@@ -329,6 +333,29 @@ NhlErrorTypes eof_W( void )
               NhlPError(NhlWARNING,NhlEUNKNOWN,"EOF: The 'revert' attribute must be a logical. Defaulting to True.");
             }
           }
+/*
+ * Check for "transpose".
+ */
+          if (!strcmp(attr_list->attname, "transpose")) {
+            if(attr_list->attvalue->multidval.data_type == NCL_logical) {
+              transpose = *(logical*) attr_list->attvalue->multidval.val;
+              tr_setbyuser = True;
+            }
+            else {
+              NhlPError(NhlWARNING,NhlEUNKNOWN,"EOF: The 'transpose' attribute must be a logical. Will let routine pick best value.");
+            }
+          }
+/*
+ * Check for "debug".
+ */
+          if (!strcmp(attr_list->attname, "debug")) {
+            if(attr_list->attvalue->multidval.data_type == NCL_logical) {
+              debug = *(logical*) attr_list->attvalue->multidval.val;
+            }
+            else {
+              NhlPError(NhlWARNING,NhlEUNKNOWN,"EOF: The 'debug' attribute must be a logical. Defaulting to False.");
+            }
+          }
           attr_list = attr_list->next;
         }
       }
@@ -348,7 +375,9 @@ NhlErrorTypes eof_W( void )
     }
     *pcrit = 50.;
   }
-
+  if(debug) {
+    printf("EOF: pcrit = %g\n", *pcrit);
+  }
 /*
  * Create arrays to store non-missing data and to remove mean from
  * data before entering Fortran routines.
@@ -415,11 +444,30 @@ NhlErrorTypes eof_W( void )
  * one of two different Fortran routines. These routines basically behave
  * the same, except one operates on a transposed version of the 2d array.
  */
-  if(mcsta <= nrow) {
-    call_transpose = False;
+  if(debug) {
+    printf("EOF: msta = %d mcsta = %d nobs = %d\n", msta, mcsta, nobs);
   }
-  else {
-    call_transpose = True;
+  if(!tr_setbyuser) {
+    if(mcsta <= nrow) {
+      transpose = False;
+      if(debug) {
+        printf("EOF: transpose set to False\n");
+      }
+    }
+    else {
+      transpose = True;
+      if(debug) {
+        printf("EOF: transpose set to True\n");
+      }
+    }
+  }
+  else if(debug) {
+    if(transpose) {
+      printf("EOF: user set transpose to True\n");
+    }
+    else {
+      printf("EOF: user set transpose to False\n");
+    }
   }
 
 /*
@@ -430,7 +478,7 @@ NhlErrorTypes eof_W( void )
  * This first set of work arrays are common to both Fortran routines,
  * just calculated slightly differently.
  */
-  if(call_transpose) {
+  if(transpose) {
     lcssm  = nrow*(nrow+1)/2;
     lwork  = 8*nrow;
     liwork = 5*nrow;
@@ -458,10 +506,11 @@ NhlErrorTypes eof_W( void )
 /*
  * Additional work arrays for transpose routine.
  */
-  if(call_transpose) {
+  if(transpose) {
+    xdatat = (double *)calloc(nrow * ncol,sizeof(double));
     teof   = (double *)calloc(*neval * nrow,sizeof(double));
     w2d    = (double *)calloc(*neval * nrow,sizeof(double));
-    if( teof == NULL || w2d == NULL) {
+    if( teof == NULL || w2d == NULL || xdatat == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"EOF: Unable to allocate memory for additional work arrays");
       return(NhlFATAL);
     }
@@ -470,15 +519,16 @@ NhlErrorTypes eof_W( void )
 /*
  * Call the Fortran 77 version of appropriate routine.
  */
-  if(call_transpose) {
-    NGCALLF(dtdrvprc,DTDRVPRDC)(xdata,&nrow,&ncol,&nobs,&mcsta,
+  if(transpose) {
+    NGCALLF(dtdrvprc,DTDRVPRDC)(xdata,xdatat,&nrow,&ncol,&nobs,&mcsta,
                                 &missing_dx.doubleval,neval,eval,pcvar,
-                                trace,&iopt,&jopt,pcrit,&irevert,cssm,
+                                trace,&iopt,&jopt,&irevert,cssm,
                                 &lcssm,work,&lwork,iwork,&liwork,ifail,
                                 teof,weval,w2d,wevec,xdvar,&ier);
 /*
  * Free memory only used by transpose version of routine.
  */
+    NclFree(xdatat);
     NclFree(teof);
     NclFree(w2d);
   }
@@ -714,7 +764,7 @@ NhlErrorTypes eof_W( void )
  * transpose routine. The type returned is a float or a double,
  * depending on what pcrit was set to in the input.
  */
-  if(call_transpose && return_pcrit) {
+  if(transpose && return_pcrit) {
     dsizes[0] = 1;
     if(type_pcrit == NCL_float) {
       att_md = _NclCreateVal(
@@ -792,7 +842,6 @@ NhlErrorTypes eof_W( void )
   }
   matrix  = (NclQuark*)NclMalloc(sizeof(NclQuark));
   *matrix = NrmStringToQuark(cmatrix);
-  NclFree(cmatrix);
   
   dsizes[0] = 1;
   att_md = _NclCreateVal(
@@ -811,6 +860,41 @@ NhlErrorTypes eof_W( void )
   _NclAddAtt(
              att_id,
              "matrix",
+             att_md,
+             NULL
+             );
+
+/*
+ * "method" indicates whether the transpose routine was called or not.
+ */
+  if(transpose) {
+    cmethod = (char *)calloc(10,sizeof(char));
+    strcpy(cmethod,"transpose");
+  }
+  else {
+    cmethod = (char *)calloc(13,sizeof(char));
+    strcpy(cmethod,"no transpose");
+  }
+  method  = (NclQuark*)NclMalloc(sizeof(NclQuark));
+  *method = NrmStringToQuark(cmethod);
+  
+  dsizes[0] = 1;
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         (void*)method,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         (NclObjClass)nclTypestringClass
+                         );
+  _NclAddAtt(
+             att_id,
+             "method",
              att_md,
              NULL
              );
@@ -835,6 +919,7 @@ NhlErrorTypes eof_W( void )
   return_data.kind = NclStk_VAR;
   return_data.u.data_var = tmp_var;
   _NclPlaceReturn(return_data);
+
   return(NhlNOERROR);
 }
 
@@ -1206,7 +1291,6 @@ NhlErrorTypes eof_ts_W( void )
   }
   matrix  = (NclQuark*)NclMalloc(sizeof(NclQuark));
   *matrix = NrmStringToQuark(cmatrix);
-  NclFree(cmatrix);
   
   dsizes[0] = 1;
   att_md = _NclCreateVal(
@@ -1273,14 +1357,14 @@ NhlErrorTypes eofcov_tr_W( void )
   float *rpcrit;
   NclBasicDataTypes type_pcrit;
   int iopt = 0, jopt = 0, i, ier = 0, irevert = 1;
-  logical revert = True, return_eval = False;
+  logical revert = True, return_eval = False, debug = False;
   logical return_trace = False, return_pcrit = False;
 /*
  * Work array variables.
  */
   double *cssm, *work, *weval, *teof, *w2d, *xave, *wevec;
   double con, pcx, xsd;
-  double *xdata, *xdvar, *xvar;
+  double *xdata, *xdatat, *xdvar, *xvar;
   int   *iwork, *ifail;
   int lwork, liwork, lifail, lweval, lcssm;
   long long int llcssm;
@@ -1399,7 +1483,7 @@ NhlErrorTypes eofcov_tr_W( void )
   trace = (double *)calloc(1,sizeof(double));
   eval  = (double *)calloc(*neval,sizeof(double));
   pcvar = (float *)calloc(*neval,sizeof(float));
-  wevec  = (double *)calloc(*neval * ncol,sizeof(double));
+  wevec = (double *)calloc(*neval * ncol,sizeof(double));
   if( trace == NULL || pcvar == NULL || eval == NULL || wevec == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_tr: Unable to allocate memory for attribute arrays");
     return(NhlFATAL);
@@ -1453,6 +1537,7 @@ NhlErrorTypes eofcov_tr_W( void )
  *   "return_eval" : both routines (unadvertised)
  *   "pcrit"       : transpose routine only
  *   "revert"      : tranpose routine only (unadvertised)
+ *   "debug"       : turn on debug
  *
  */
         while (attr_list != NULL) {
@@ -1535,6 +1620,17 @@ NhlErrorTypes eofcov_tr_W( void )
               NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcov_tr: The 'revert' attribute must be a logical. Defaulting to True.");
             }
           }
+/*
+ * Check for "debug".
+ */
+          if (!strcmp(attr_list->attname, "debug")) {
+            if(attr_list->attvalue->multidval.data_type == NCL_logical) {
+              debug = *(logical*) attr_list->attvalue->multidval.val;
+            }
+            else {
+              NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcov_tr: The 'debug' attribute must be a logical. Defaulting to False.");
+            }
+          }
           attr_list = attr_list->next;
         }
       }
@@ -1554,16 +1650,21 @@ NhlErrorTypes eofcov_tr_W( void )
     }
     *pcrit = 50.;
   }
+  if(debug) {
+    printf("eofcov_tr: pcrit = %g\n", *pcrit);
+  }
 
 /*
  * Create arrays to store non-missing data and to remove mean from
  * data before entering Fortran routines.
  */
   xdata  = (double *)calloc(nrow * ncol,sizeof(double));
+  xdatat = (double *)calloc(nrow * ncol,sizeof(double));
   xave   = (double *)calloc(ncol,sizeof(double));
   xvar   = (double *)calloc(ncol,sizeof(double));
   xdvar  = (double *)calloc(ncol,sizeof(double));
-  if( xdata == NULL || xave == NULL || xvar == NULL || xdvar == NULL) {
+  if( xdata == NULL || xdatat == NULL || xave == NULL || xvar == NULL ||
+      xdvar == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_tr: Unable to allocate memory for work arrays");
     return(NhlFATAL);
   }
@@ -1616,6 +1717,9 @@ NhlErrorTypes eofcov_tr_W( void )
       mcsta++;
     }
   }
+  if(debug) {
+    printf("eofcov_tr: msta = %d mcsta = %d nobs = %d\n", msta, mcsta, nobs);
+  }
 
 /*
  * Create some work arrays.  This is necessary to avoid having
@@ -1641,9 +1745,9 @@ NhlErrorTypes eofcov_tr_W( void )
 /*
  * Additional work arrays.
  */
-  teof   = (double *)calloc(*neval * nrow,sizeof(double));
-  w2d    = (double *)calloc(*neval * nrow,sizeof(double));
-  wevec  = (double *)calloc(*neval * ncol,sizeof(double));
+  teof  = (double *)calloc(*neval * nrow,sizeof(double));
+  w2d   = (double *)calloc(*neval * nrow,sizeof(double));
+  wevec = (double *)calloc(*neval * ncol,sizeof(double));
   if( teof == NULL || w2d == NULL || wevec == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_tr: Unable to allocate memory for additional work arrays");
     return(NhlFATAL);
@@ -1652,9 +1756,9 @@ NhlErrorTypes eofcov_tr_W( void )
 /*
  * Call the Fortran 77 version of appropriate routine.
  */
-  NGCALLF(dtdrvprc,DTDRVPRDC)(xdata,&nrow,&ncol,&nobs,&mcsta,
+  NGCALLF(dtdrvprc,DTDRVPRDC)(xdata,xdatat,&nrow,&ncol,&nobs,&mcsta,
                               &missing_dx.doubleval,neval,eval,pcvar,
-                              trace,&iopt,&jopt,pcrit,&irevert,cssm,
+                              trace,&iopt,&jopt,&irevert,cssm,
                               &lcssm,work,&lwork,iwork,&liwork,ifail,
                               teof,weval,w2d,wevec,xdvar,&ier);
 /*
@@ -1693,6 +1797,7 @@ NhlErrorTypes eofcov_tr_W( void )
  */
   if((void*)dx != x) NclFree(dx);
   NclFree(xdata);
+  NclFree(xdatat);
   NclFree(xave);
   NclFree(xvar);
   NclFree(xdvar);
@@ -1963,7 +2068,6 @@ NhlErrorTypes eofcov_tr_W( void )
   }
   matrix  = (NclQuark*)NclMalloc(sizeof(NclQuark));
   *matrix = NrmStringToQuark(cmatrix);
-  NclFree(cmatrix);
   
   dsizes[0] = 1;
   att_md = _NclCreateVal(
@@ -2030,14 +2134,14 @@ NhlErrorTypes eofcor_tr_W( void )
   float *rpcrit;
   NclBasicDataTypes type_pcrit;
   int iopt = 0, jopt = 1, i, ier = 0, irevert = 1;
-  logical revert = True, return_eval = False;
+  logical revert = True, return_eval = False, debug = False;
   logical return_trace = False, return_pcrit = False;
 /*
  * Work array variables.
  */
   double *cssm, *work, *weval, *teof, *w2d, *xave, *wevec;
   double con, pcx, xsd;
-  double *xdata, *xdvar, *xvar;
+  double *xdata, *xdatat, *xdvar, *xvar;
   int   *iwork, *ifail;
   int lwork, liwork, lifail, lweval, lcssm;
   long long int llcssm;
@@ -2210,6 +2314,7 @@ NhlErrorTypes eofcor_tr_W( void )
  *   "return_eval" : both routines (unadvertised)
  *   "pcrit"       : transpose routine only
  *   "revert"      : tranpose routine only (unadvertised)
+ *   "debug"       : turn on debug
  *
  */
         while (attr_list != NULL) {
@@ -2292,6 +2397,17 @@ NhlErrorTypes eofcor_tr_W( void )
               NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcor_tr: The 'revert' attribute must be a logical. Defaulting to True.");
             }
           }
+/*
+ * Check for "debug".
+ */
+          if (!strcmp(attr_list->attname, "debug")) {
+            if(attr_list->attvalue->multidval.data_type == NCL_logical) {
+              debug = *(logical*) attr_list->attvalue->multidval.val;
+            }
+            else {
+              NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcor_tr: The 'debug' attribute must be a logical. Defaulting to False.");
+            }
+          }
           attr_list = attr_list->next;
         }
       }
@@ -2311,16 +2427,21 @@ NhlErrorTypes eofcor_tr_W( void )
     }
     *pcrit = 50.;
   }
+  if(debug) {
+    printf("eofcor_tr: pcrit = %g\n", *pcrit);
+  }
 
 /*
  * Create arrays to store non-missing data and to remove mean from
  * data before entering Fortran routines.
  */
   xdata  = (double *)calloc(nrow * ncol,sizeof(double));
+  xdatat = (double *)calloc(nrow * ncol,sizeof(double));
   xave   = (double *)calloc(ncol,sizeof(double));
   xvar   = (double *)calloc(ncol,sizeof(double));
   xdvar  = (double *)calloc(ncol,sizeof(double));
-  if( xdata == NULL || xave == NULL || xvar == NULL || xdvar == NULL) {
+  if( xdata == NULL || xdatat == NULL || xave == NULL || xvar == NULL ||
+      xdvar == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcor_tr: Unable to allocate memory for work arrays");
     return(NhlFATAL);
   }
@@ -2373,6 +2494,9 @@ NhlErrorTypes eofcor_tr_W( void )
       mcsta++;
     }
   }
+  if(debug) {
+    printf("eofcor_tr: msta = %d mcsta = %d nobs = %d\n", msta, mcsta, nobs);
+  }
 
 /*
  * Create some work arrays.  This is necessary to avoid having
@@ -2390,7 +2514,7 @@ NhlErrorTypes eofcor_tr_W( void )
   weval  = (double *)calloc(lweval,sizeof(double));
   iwork  =    (int *)calloc(liwork,sizeof(int));
   ifail  =    (int *)calloc(lifail,sizeof(int));
-  if( cssm == NULL || work == NULL || weval == NULL || iwork == NULL || 
+  if( cssm == NULL || work == NULL || weval == NULL || iwork == NULL ||
       ifail == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcor_tr: Unable to allocate memory for work arrays");
     return(NhlFATAL);
@@ -2398,9 +2522,9 @@ NhlErrorTypes eofcor_tr_W( void )
 /*
  * Additional work arrays.
  */
-  teof   = (double *)calloc(*neval * nrow,sizeof(double));
-  w2d    = (double *)calloc(*neval * nrow,sizeof(double));
-  wevec  = (double *)calloc(*neval * ncol,sizeof(double));
+  teof  = (double *)calloc(*neval * nrow,sizeof(double));
+  w2d   = (double *)calloc(*neval * nrow,sizeof(double));
+  wevec = (double *)calloc(*neval * ncol,sizeof(double));
   if( teof == NULL || w2d == NULL || wevec == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcor_tr: Unable to allocate memory for additional work arrays");
     return(NhlFATAL);
@@ -2409,9 +2533,9 @@ NhlErrorTypes eofcor_tr_W( void )
 /*
  * Call the Fortran 77 version of appropriate routine.
  */
-  NGCALLF(dtdrvprc,DTDRVPRDC)(xdata,&nrow,&ncol,&nobs,&mcsta,
+  NGCALLF(dtdrvprc,DTDRVPRDC)(xdata,xdatat,&nrow,&ncol,&nobs,&mcsta,
                               &missing_dx.doubleval,neval,eval,pcvar,
-                              trace,&iopt,&jopt,pcrit,&irevert,cssm,
+                              trace,&iopt,&jopt,&irevert,cssm,
                               &lcssm,work,&lwork,iwork,&liwork,ifail,
                               teof,weval,w2d,wevec,xdvar,&ier);
 /*
@@ -2450,6 +2574,7 @@ NhlErrorTypes eofcor_tr_W( void )
  */
   if((void*)dx != x) NclFree(dx);
   NclFree(xdata);
+  NclFree(xdatat);
   NclFree(xave);
   NclFree(xvar);
   NclFree(xdvar);
@@ -2720,7 +2845,6 @@ NhlErrorTypes eofcor_tr_W( void )
   }
   matrix  = (NclQuark*)NclMalloc(sizeof(NclQuark));
   *matrix = NrmStringToQuark(cmatrix);
-  NclFree(cmatrix);
   
   dsizes[0] = 1;
   att_md = _NclCreateVal(
