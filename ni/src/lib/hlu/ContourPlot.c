@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.130 2004-11-19 21:50:23 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.131 2005-02-08 00:10:32 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2068,6 +2068,7 @@ ContourPlotInitialize
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return(ret);
 	}
+
  
 	/*
 	 * CellFill is not supported for 1D data arrays
@@ -2124,7 +2125,7 @@ ContourPlotInitialize
 	subret = InitCoordBounds(cnew,NULL,entry_name);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) return(ret);
 
-	switch (cnew->trans.grid_type) {
+	switch (cnp->grid_type) {
 	case NhltrLOGLIN:
 	default:
 		subret = SetUpLLTransObj(cnew,(NhlContourPlotLayer) req,True);
@@ -2501,7 +2502,7 @@ static NhlErrorTypes ContourPlotSetValues
 	subret = InitCoordBounds(cnew,cold,entry_name);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) return(ret);
 
-	switch (cnew->trans.grid_type) {
+	switch (cnp->grid_type) {
 	case NhltrLOGLIN:
 	default:
 		subret = SetUpLLTransObj(cnew,(NhlContourPlotLayer)old,False);
@@ -2538,7 +2539,7 @@ static NhlErrorTypes ContourPlotSetValues
 		return(ret);
 	}
 
-	if (tfp->grid_type == NhltrTRIANGULARMESH) {
+	if (cnp->grid_type == NhltrTRIANGULARMESH) {
 		if (cnp->trans_updated)
 			cnp->render_update_mode = TRIMESH_NEWMESH;
 		else if (cnp->data_changed)
@@ -3151,13 +3152,13 @@ static NhlErrorTypes cnInitDraw
         cnp->ylb = MAX(tfp->y_min,MIN(tfp->data_ystart,tfp->data_yend));
         cnp->yub = MIN(tfp->y_max,MAX(tfp->data_ystart,tfp->data_yend));
         
-	if (tfp->grid_type == NhltrLOGLIN) {
+	if (cnp->grid_type == NhltrLOGLIN) {
                 cnp->xc1 = tfp->data_xstart;
                 cnp->xcm = tfp->data_xend;
                 cnp->yc1 = tfp->data_ystart;
                 cnp->ycn = tfp->data_yend;
         }
-        else if (tfp->grid_type == NhltrIRREGULAR) {
+        else if (cnp->grid_type == NhltrIRREGULAR) {
                 int xcount,ycount;
 
 		xcount = tfp->x_axis_type == NhlIRREGULARAXIS ?
@@ -3170,7 +3171,7 @@ static NhlErrorTypes cnInitDraw
                 cnp->yc1 = 0;
                 cnp->ycn = ycount - 1;
         }
-	else if (tfp->grid_type >= NhltrCURVILINEAR) {
+	else if (cnp->grid_type >= NhltrCURVILINEAR) {
                 int xcount,ycount;
 
                 cnp->xc1 = cnp->sfp->ix_start;
@@ -3876,7 +3877,7 @@ static NhlErrorTypes cnDraw
 
 		sprintf(buffer,"%s",cnl->base.name);
 		strcat(buffer,".Renderer");
-		if (tfp->grid_type == NhltrTRIANGULARMESH) {
+		if (cnp->grid_type == NhltrTRIANGULARMESH) {
 			NhlClass class;
 			class = NhlcnTriMeshRendererClass;
 
@@ -3919,7 +3920,7 @@ static NhlErrorTypes cnDraw
 		}
 
 	}
-	else if (tfp->grid_type == NhltrTRIANGULARMESH) {
+	else if (cnp->grid_type == NhltrTRIANGULARMESH) {
 		if (cnp->render_update_mode > TRIMESH_NOUPDATE) {
 			subret = NhlVASetValues
 				(cnp->render_obj->base.id,
@@ -4080,6 +4081,7 @@ static NhlErrorTypes InitCoordBounds
 			cnp->yub = cnp->yc1 = tfp->y_max;
 			cnp->ylb = cnp->ycn = tfp->y_min;
 		}
+		cnp->grid_type = NhltrLOGLIN; 
                 return ret;
 	}
         
@@ -4181,6 +4183,7 @@ static NhlErrorTypes InitCoordBounds
 			cnp->iws_id = -1;
 		}
         }
+	cnp->grid_type = tfp->grid_type;
 	return ret;
 }
 
@@ -4558,11 +4561,12 @@ static NhlErrorTypes SetUpCrvTransObj
 	NhlClass		trans_class;
 
 	/*
-	 * By now the grid_type should only be spherical or curvilinear 
+	 * By now the grid_type should only be spherical or curvilinear
+	 * or triangular mesh.
 	 * Otherwise fatal error.
 	 */ 
 
-	switch (tfp->grid_type) {
+	switch (cnp->grid_type) {
 	case NhltrCURVILINEAR:
 		trans_class =  NhlcurvilinearTransObjClass;
 		break;
@@ -7503,6 +7507,7 @@ static NhlErrorTypes    ManageData
 	if (cnp->sfp != NULL && cnp->osfp == NULL) {
 		cnp->osfp = NhlMalloc(sizeof(NhlScalarFieldFloatLayerPart));
 		if (cnp->osfp == NULL) {
+			cnp->data_init = False;
 			e_text = "%s: dynamic memory allocation error";
 			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 			return NhlFATAL;

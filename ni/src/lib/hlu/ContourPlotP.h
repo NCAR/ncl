@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlotP.h,v 1.32 2004-07-23 21:24:54 dbrown Exp $
+ *      $Id: ContourPlotP.h,v 1.33 2005-02-08 00:10:33 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -30,6 +30,7 @@
 #include <ncarg/hlu/WorkspaceI.h>
 #include <ncarg/hlu/ScalarFieldFloatP.h>
 #include <ncarg/hlu/FormatI.h>
+
 
 #define Nhl_cnDEF_ARRAY_SIZE	16
 #define Nhl_cnMAX_LEVELS	255
@@ -285,6 +286,7 @@ typedef struct _NhlContourPlotLayerPart {
 	NhlScalarFieldFloatLayerPart	*osfp;
 	NhlGenArray    x_arr;
 	NhlGenArray    y_arr;
+        NhlGridType    grid_type;
 
 	NhlString	*dtable;
 	int		dtable_len;
@@ -366,6 +368,15 @@ typedef struct _NhlContourPlotDataDepLayerRec	*NhlContourPlotDataDepLayer;
 
 typedef struct _NhlContourPlotClassRec	*NhlContourPlotClass;
 typedef struct _NhlContourPlotLayerRec		*NhlContourPlotLayer;
+
+extern NhlErrorTypes _NhlContourRender(
+#if	NhlNeedProto
+	NhlLayer		instance,
+        NhlContourPlotLayer     cnl,
+	NhlDrawOrder            order,
+	NhlString		entry_name
+#endif
+        );
 
 extern NhlClass			NhlcontourPlotDataDepClass;
 extern NhlContourPlotDataDepClassRec NhlcontourPlotDataDepClassRec;
