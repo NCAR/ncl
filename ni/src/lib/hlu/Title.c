@@ -1,5 +1,5 @@
 /*
- *      $Id: Title.c,v 1.22 1995-04-27 16:58:44 dbrown Exp $
+ *      $Id: Title.c,v 1.23 1995-06-06 13:09:20 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1031,6 +1031,10 @@ static NhlErrorTypes    TitleSetValues
 		tnew->title.main_string = NhlMalloc((unsigned)
 				strlen(tref->title.main_string)+1);
 		strcpy(tnew->title.main_string,tref->title.main_string);
+		if(!tnew->title.main_on &&
+				!_NhlArgIsSet(args,num_args,NhlNtiMainOn)){
+			tnew->title.main_on = True;
+		}
 	}
 	if(told->title.x_axis_string != tnew->title.x_axis_string) {
 		if(told->title.x_axis_string != XAxis)
@@ -1038,6 +1042,10 @@ static NhlErrorTypes    TitleSetValues
 		tnew->title.x_axis_string = NhlMalloc((unsigned)
 				strlen(tref->title.x_axis_string)+1);
 		strcpy(tnew->title.x_axis_string,tref->title.x_axis_string);
+		if(!tnew->title.x_axis_on &&
+				!_NhlArgIsSet(args,num_args,NhlNtiXAxisOn)){
+			tnew->title.x_axis_on = True;
+		}
 	}
 	if(told->title.y_axis_string != tnew->title.y_axis_string) {
 		if(told->title.y_axis_string != YAxis)
@@ -1045,6 +1053,10 @@ static NhlErrorTypes    TitleSetValues
 		tnew->title.y_axis_string = NhlMalloc((unsigned)
 				strlen(tref->title.y_axis_string)+1);
 		strcpy(tnew->title.y_axis_string,tref->title.y_axis_string);
+		if(!tnew->title.y_axis_on &&
+				!_NhlArgIsSet(args,num_args,NhlNtiYAxisOn)){
+			tnew->title.y_axis_on = True;
+		}
 	}
 /*
 * now determine is height or thickness has changed for each title. If it
