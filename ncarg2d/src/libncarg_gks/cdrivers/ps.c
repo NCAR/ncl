@@ -1,5 +1,5 @@
 /*
- *      $Id: ps.c,v 1.33 2003-04-02 19:16:44 fred Exp $
+ *      $Id: ps.c,v 1.34 2003-04-11 00:14:00 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -441,9 +441,8 @@ void PSpreamble (PSddp *psa, preamble_type type)
                 else {
                         (void) fprintf(fp, "%%!PS-Adobe-2.0\n");
                 }
-                (void) fprintf(fp, "%%%%DocumentFonts: (at end)\n");
                 if (psa->type == RPS) {
-                        (void) fprintf(fp, "%%%%Pages: (at end)\n");
+                        (void) fprintf(fp, "%%%%Pages: (atend)\n");
                         (void) fprintf(fp, "%%%%PageOrder: Ascend\n");
                 }
                 (void) fprintf(fp, "%%%%Creator: NCAR GKS\n");
@@ -460,6 +459,7 @@ void PSpreamble (PSddp *psa, preamble_type type)
                   (void) fprintf(psa->file_pointer, "%d\n",
                          (int) ((psa->scaling) * ((float)(psa->dspace.ury))+1));
                 }
+                (void) fprintf(fp, "%%%%DocumentFonts: (atend)\n");
                 (void) fprintf(fp, "%%%%EndComments\n");
 
                 /*  For an EPSI file, put out a preview bitmap here that 
