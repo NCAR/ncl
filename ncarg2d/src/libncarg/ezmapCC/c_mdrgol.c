@@ -1,5 +1,5 @@
 /*
- *      $Id: c_mdrgol.c,v 1.2 2001-11-04 02:38:49 haley Exp $
+ *      $Id: c_mdrgol.c,v 1.3 2001-11-06 02:04:03 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -33,10 +33,10 @@ void c_mdrgol
 (
     int irgl,
     float *rwrk,
-    int lrwk,
+    int lrwk
 )
 #else
-(irgl)
+(irgl,rwrk,lrwk)
     int irgl;
     float *rwrk;
     int lrwk;
