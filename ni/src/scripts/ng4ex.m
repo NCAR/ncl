@@ -1,7 +1,7 @@
 .\" The first line of this file must contain the '\"[e][r][t][v] line
 .\" to tell man to run the appropriate filter "t" for table.
 .\"
-.\" $Id: ng4ex.m,v 1.1 2002-03-29 16:04:40 haley Exp $
+.\" $Id: ng4ex.m,v 1.2 2003-03-04 15:54:09 haley Exp $
 .\"
 .\"######################################################################
 .\"#                                                                    #
@@ -122,6 +122,8 @@ The following workstation_type strings are valid:
 -  X11 window
 .IP "             ps" 18
 -  PostScript file
+.IP "             pdf" 18
+-  PDF file
 .sp
 .IP \fI-app\fP " " ""
 Generate all the app Fortran, C, and NCL examples that show how to do

@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ng4ex.csh,v 1.4 2002-09-16 20:52:01 haley Exp $
+#   $Id: ng4ex.csh,v 1.5 2003-03-04 15:54:09 haley Exp $
 #
 #######################################################################
 #                                                                     #
@@ -437,6 +437,7 @@ set names
 unset NCGM
 unset X11
 unset PS
+unset PDF
 set num_set = 0
 
 while ($#argv > 0)
@@ -501,6 +502,9 @@ while ($#argv > 0)
         @ num_set += 1
       else if ("$ws_type" == "PS" || "$ws_type" == "ps") then
         set PS
+        @ num_set += 1
+      else if ("$ws_type" == "pdf" || "$ws_type" == "PDF") then
+        set PDF
         @ num_set += 1
       else
         echo ""
@@ -691,11 +695,13 @@ foreach name ($names)
 #**************************************************#
 #                                                  #
 # If the "-unique" option was selected and the     #
-# NCGM/PS already exists, don't generate it again. #
+# NCGM/PS/PDF already exists, don't generate it    #
+# again.                                           #
 #                                                  #
 #**************************************************#
 if ($?NCGM && $?Unique && -f $name.ncgm) goto theend
 if ($?PS && $?Unique && -f $name.ps) goto theend
+if ($?PDF && $?Unique && -f $name.pdf) goto theend
 
 #*********************************************#
 #                                             #
@@ -885,7 +891,7 @@ switch($name)
         echo "libraries Xm and Xt to be loaded during the link phase."
         echo ""
         echo "The output will be displayed to an X11 window, and an"
-        echo "NCGM/PS file may or may not be produced."
+        echo "NCGM/PS/PDF file may or may not be produced."
         echo ""
         set comp_flags = "-XmXt"
         if ("$name" == "xy12c") set ascdata_file = "xy12c.asc"
@@ -1001,10 +1007,10 @@ end
 #*****************************************#
 #                                         #
 # Modify example if we explicity want to  #
-# output to an NCGM file, an XWorkstaion, #
-# or a PS file.  If a type is explicitly  #
-# requested, then turn the other 2 types  #
-# off.                                    #
+# output to an NCGM file, an XWorkstation,#
+# a PS file, or a PDF file.  If a type is #
+# explicitly requested, then turn the     #
+# other types off.                        #
 #                                         #
 #*****************************************#
 if ($?NCGM) then
@@ -1044,6 +1050,20 @@ EOF
 else if ("$num_set" == "1") then
   ed << EOF - ./$src_file >& /dev/null
 g/PS=1/s//PS=0/g
+w
+q
+EOF
+endif
+
+if ($?PDF) then
+  ed << EOF - ./$src_file >& /dev/null
+g/PDF=0/s//PDF=1/g
+w
+q
+EOF
+else if ("$num_set" == "1") then
+  ed << EOF - ./$src_file >& /dev/null
+g/PDF=1/s//PDF=0/g
 w
 q
 EOF
@@ -1131,6 +1151,12 @@ if (! $?NoRunOption) then
       echo ""
       echo "    Example $name produced a PostScript file."
       echo "    PS file is named $name.ps."
+      echo ""
+    endif
+    if( -e $name.pdf ) then
+      echo ""
+      echo "    Example $name produced a PDF file."
+      echo "    PDF file is named $name.pdf."
       echo ""
     endif
 endif
