@@ -1,5 +1,5 @@
 /*
- *	$Id: ps.c,v 1.27 2002-04-04 22:02:41 fred Exp $
+ *	$Id: ps.c,v 1.28 2002-04-12 00:32:46 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -3402,6 +3402,7 @@ void ps_NcarLogo(GKSC *gksc,float x,float y,float size)
   (void) fprintf(fp, "-40 33 translate\n");
   (void) fprintf(fp, "1 -1 scale\n");
   free(scale);
+  free(translate);
 
   (void) fprintf(fp, "\n");
   (void) fprintf(fp, "1 setflat\n");
