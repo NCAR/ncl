@@ -1047,6 +1047,7 @@ int	wr_status;
 	int n_time;
 	int *date;
 	int *datesec;
+	int bogus_mfilth = 0;
 	void *vbuf;
 
 	if(first) {
@@ -1464,6 +1465,7 @@ int	wr_status;
 			time_var[n_time] = (double)initial_iheader.NDCUR + initial_iheader.NSCUR/86400.;
 			date[n_time] = initial_iheader.NCDATE;
 			datesec[n_time++] = initial_iheader.NCSEC;
+			bogus_mfilth = 1;
 		} else {
 			time_var = (double*)NclMalloc(sizeof(double)*initial_iheader.MFILTH);
 			date = (int*)NclMalloc(sizeof(int)*initial_iheader.MFILTH);
@@ -1472,6 +1474,7 @@ int	wr_status;
 			time_var[n_time] = (double)initial_iheader.NDCUR + initial_iheader.NSCUR/86400.;
 			date[n_time] = initial_iheader.NCDATE;
 			datesec[n_time++] = initial_iheader.NCSEC;
+			bogus_mfilth = 0;
 
 		
 		}
@@ -1544,7 +1547,7 @@ int	wr_status;
 					NclFree(therec);
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"Error opening CCM real header for file (%s)",NrmQuarkToString(path));
 					fclose(fd);
-			NclFree(vbuf);
+					NclFree(vbuf);
 					return(NULL);
 				}
 				if(!CompareHeaders(&initial_iheader,&initial_cheader,&initial_rheader,
@@ -1552,7 +1555,7 @@ int	wr_status;
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"Comparision of headers failed, headers for timestep number (%d) vary unacceptably from initial header, NCL doesn't handle this",i+1);
 					NclFree(therec);
 					fclose(fd);
-			NclFree(vbuf);
+					NclFree(vbuf);
 					return(NULL);
 
 				} else {
@@ -1576,7 +1579,7 @@ int	wr_status;
 					}
 					break;
 				}
-				if(i == time_var_size) {
+				if((i == time_var_size)||((i == time_var_size-1)&&(bogus_mfilth))) {
 					time_var_size *=2;
 					time_var = (double*)NclRealloc(time_var,sizeof(double)*time_var_size);
 					date = (int*)NclRealloc(date,sizeof(int)*time_var_size);
