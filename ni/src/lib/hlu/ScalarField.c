@@ -1,5 +1,5 @@
 /*
- *      $Id: ScalarField.c,v 1.36 2002-07-03 01:09:56 dbrown Exp $
+ *      $Id: ScalarField.c,v 1.37 2002-07-12 22:41:29 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1703,7 +1703,7 @@ GetSubsetBoundsIrregular
                 start_byindex = sfp->ystart_byindex;
                 end_byindex = sfp->yend_byindex;
 		c_name = "Y coordinate";
-		sfp->yc_start_el = 1;
+		sfp->yc_start_el = 0;
 		sfp->yc_end_el = len - 1;
 	}
 

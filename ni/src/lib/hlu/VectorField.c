@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorField.c,v 1.21 2002-07-03 01:09:57 dbrown Exp $
+ *      $Id: VectorField.c,v 1.22 2002-07-12 22:41:29 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2120,7 +2120,7 @@ GetSubsetBoundsIrregular
                 start_byindex = vfp->ystart_byindex;
                 end_byindex = vfp->yend_byindex;
 		c_name = "Y coordinate";
-		vfp->yc_start_el = 1;
+		vfp->yc_start_el = 0;
                 vfp->yc_end_el = len - 1;
 
 	}
