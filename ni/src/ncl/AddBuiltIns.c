@@ -1,6 +1,6 @@
 
 /*
- *      $Id: AddBuiltIns.c,v 1.23 1996-11-21 00:42:28 ethan Exp $
+ *      $Id: AddBuiltIns.c,v 1.24 1996-11-25 23:24:25 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -31,6 +31,36 @@ extern "C" {
 #include "MathFuncs.h"
 #include "HLUFunctions.h"
 
+extern NhlErrorTypes _Nclmax(
+#if NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _Nclmin(
+#if NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _Nclmaxind(
+#if NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _Nclminind(
+#if NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _Ncldim_max(
+#if NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _Ncldim_min(
+#if NhlNeedProto
+void
+#endif
+);
 extern NhlErrorTypes _Nclmask(
 #if NhlNeedProto
 void
@@ -782,6 +812,37 @@ void _NclAddBuiltIns
 	SetArgTemplate(args,nargs,NclANY,NclANY,NclANY); nargs++;
 	SetArgTemplate(args,nargs,NclANY,1,dimsizes); nargs++;
 	NclRegisterFunc( _Nclmask,args,"mask",nargs);
+
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,"numeric",1,NclANY); nargs++;
+	NclRegisterFunc( _Nclmaxind,args,"maxind",nargs);
+
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,"numeric",1,NclANY); nargs++;
+	NclRegisterFunc( _Nclminind,args,"minind",nargs);
+	nargs = 0;
+
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,"numeric",NclANY,NclANY); nargs++;
+	NclRegisterFunc( _Nclmax,args,"max",nargs);
+
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,"numeric",NclANY,NclANY); nargs++;
+	NclRegisterFunc( _Nclmin,args,"min",nargs);
+
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,"numeric",NclANY,NclANY); nargs++;
+	NclRegisterFunc( _Ncldim_max,args,"dim_max",nargs);
+
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,"numeric",NclANY,NclANY); nargs++;
+	NclRegisterFunc( _Ncldim_min,args,"dim_min",nargs);
+
 /*
 	nargs = 0;
 	args = NewArgs(1);
