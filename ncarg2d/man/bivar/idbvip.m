@@ -54,7 +54,7 @@ the data points.
 .IP ZD 12
 Array of dimension NDP containing the Z coordinates of
 the data points.
-IP NIP 12
+.IP NIP 12
 The number of output points at which interpolation is
 to be performed (must be 1 or greater, else an error
 return occurs).
