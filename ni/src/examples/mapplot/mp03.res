@@ -70,6 +70,7 @@
 ! couple low and high label resources, and set perim on and the overlap mode
 ! set the high/low formatting to include trailing decimals
 !
+*mp03Work.Contour1*cnHighLabelsOn : true
 *mp03Work.Contour1*cnLowUseHighLabelRes : true
 *mp03Work.Contour1*cnHighLabelPerimOn : true
 *mp03Work.Contour1*cnHighLowLabelOverlapMode : AdjustVpOmitOverHLandInfo
