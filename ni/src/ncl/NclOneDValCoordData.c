@@ -1,6 +1,5 @@
-
 /*
- *      $Id: NclOneDValCoordData.c,v 1.9 2004-02-10 23:10:27 dbrown Exp $
+ *      $Id: NclOneDValCoordData.c,v 1.10 2004-06-16 00:41:32 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -67,7 +66,7 @@ long * ind;
 	case NclINCREASING:
 		i = 0;
 		while(i < the_coord->multidval.totalelements) {
-			_Nclcmpf(type_coord,(void*)((char*)coord_ptr + (i * type_coord->type_class.size)),ind_ptr,NULL,NULL,10,&cmp_val);
+			_Nclcmpf(type_coord,(void*)((char*)coord_ptr + (i * type_coord->type_class.size)),ind_ptr,NULL,NULL,16,&cmp_val);
 			if(cmp_val >= 0 ){
 				*ind= i;
 				break;
@@ -99,7 +98,7 @@ long * ind;
 	case NclDECREASING:
 		i = 0;
 		while(i < the_coord->multidval.totalelements) {
-			_Nclcmpf(type_coord,(void*)((char*)coord_ptr + (i * type_coord->type_class.size)),ind_ptr,NULL,NULL,10,&cmp_val);
+			_Nclcmpf(type_coord,(void*)((char*)coord_ptr + (i * type_coord->type_class.size)),ind_ptr,NULL,NULL,16,&cmp_val);
 			if(cmp_val <= 0 ){
 				*ind= i;
 				break;
@@ -180,7 +179,7 @@ long *finish;
 			i = 0;
 			while(i < the_coord->multidval.totalelements) {
 				result = 0;
-				_Nclcmpf(type_coord,(void*)((char*)coord_ptr + (i * type_coord->type_class.size)),finish_ptr,NULL,NULL,10,&cmp_val);
+				_Nclcmpf(type_coord,(void*)((char*)coord_ptr + (i * type_coord->type_class.size)),finish_ptr,NULL,NULL,16,&cmp_val);
 				if(cmp_val > 0 ){
 					*finish = i - 1;
 					if((cmp_val > 0)&&(i==0)) {
@@ -200,7 +199,7 @@ long *finish;
 			i = 0;
 			while(i < the_coord->multidval.totalelements) {
 				result = 0;
-				_Nclcmpf(type_coord,(void*)((char*)coord_ptr + (i * type_coord->type_class.size)),finish_ptr,NULL,NULL,10,&cmp_val);
+				_Nclcmpf(type_coord,(void*)((char*)coord_ptr + (i * type_coord->type_class.size)),finish_ptr,NULL,NULL,16,&cmp_val);
 				if(cmp_val < 0 ){
 					*finish= i - 1;
 					if((cmp_val < 0)&&(i==0)) {
@@ -232,7 +231,7 @@ long *finish;
 			i = 0;
 			while(i < the_coord->multidval.totalelements) {
 				result = 0;
-				_Nclcmpf(type_coord,(void*)((char*)coord_ptr + (i * type_coord->type_class.size)),start_ptr,NULL,NULL,10,&cmp_val);
+				_Nclcmpf(type_coord,(void*)((char*)coord_ptr + (i * type_coord->type_class.size)),start_ptr,NULL,NULL,16,&cmp_val);
 				if(cmp_val >= 0 ){
 					*start = i;
 					break;
@@ -249,7 +248,7 @@ long *finish;
 			i = 0;
 			while(i < the_coord->multidval.totalelements) {
 				result = 0;
-				_Nclcmpf(type_coord,(void*)((char*)coord_ptr + (i * type_coord->type_class.size)),start_ptr,NULL,NULL,10,&cmp_val);
+				_Nclcmpf(type_coord,(void*)((char*)coord_ptr + (i * type_coord->type_class.size)),start_ptr,NULL,NULL,16,&cmp_val);
 				if(cmp_val <= 0 ){
 					*start = i;
 					break;
@@ -292,7 +291,7 @@ long *finish;
 					i = 0;
 					while(i < the_coord->multidval.totalelements) {
 						result = 0;
-						_Nclcmpf(type_coord,(void*)((char*)coord_ptr + (i * type_coord->type_class.size)),start_ptr,NULL,NULL,10,&cmp_val);
+						_Nclcmpf(type_coord,(void*)((char*)coord_ptr + (i * type_coord->type_class.size)),start_ptr,NULL,NULL,16,&cmp_val);
 						if(cmp_val >= 0 ){
 							*start = i;
 							break;
@@ -306,7 +305,7 @@ long *finish;
 					}
 					while(i < the_coord->multidval.totalelements) {
 						result = 0;
-						_Nclcmpf(type_coord,(void*)((char*)coord_ptr + i * type_coord->type_class.size),finish_ptr,NULL,NULL,10,&cmp_val);
+						_Nclcmpf(type_coord,(void*)((char*)coord_ptr + i * type_coord->type_class.size),finish_ptr,NULL,NULL,16,&cmp_val);
 						if(cmp_val > 0 ){
 							*finish = i - 1;
 							break;
@@ -322,7 +321,7 @@ long *finish;
 					i = 0;
 					while(i < the_coord->multidval.totalelements) {
 						result = 0;
-						_Nclcmpf(type_coord,(void*)((char*)coord_ptr + i * type_coord->type_class.size),finish_ptr,NULL,NULL,10,&cmp_val);
+						_Nclcmpf(type_coord,(void*)((char*)coord_ptr + i * type_coord->type_class.size),finish_ptr,NULL,NULL,16,&cmp_val);
 						if(cmp_val >= 0 ){
 							*finish = i;
 							break;
@@ -336,7 +335,7 @@ long *finish;
 					}
 					while(i < the_coord->multidval.totalelements) {
 						result = 0;
-						_Nclcmpf(type_coord,(void*)((char*)coord_ptr + i * type_coord->type_class.size),start_ptr,NULL,NULL,10,&cmp_val);
+						_Nclcmpf(type_coord,(void*)((char*)coord_ptr + i * type_coord->type_class.size),start_ptr,NULL,NULL,16,&cmp_val);
 						if(cmp_val > 0 ){
 							*start = i - 1;
 							break;
@@ -354,7 +353,7 @@ long *finish;
 					i = 0;
 					while(i < the_coord->multidval.totalelements) {
 						result = 0;
-						_Nclcmpf(type_coord,(void*)((char*)coord_ptr + i * type_coord->type_class.size),finish_ptr,NULL,NULL,10,&cmp_val);
+						_Nclcmpf(type_coord,(void*)((char*)coord_ptr + i * type_coord->type_class.size),finish_ptr,NULL,NULL,16,&cmp_val);
 						if(cmp_val <= 0 ){
 							*finish= i;
 							break;
@@ -368,7 +367,7 @@ long *finish;
 					}
 					while(i < the_coord->multidval.totalelements) {
 						result = 0;
-						_Nclcmpf(type_coord,(void*)((char*)coord_ptr + i * type_coord->type_class.size),start_ptr,NULL,NULL,10,&cmp_val);
+						_Nclcmpf(type_coord,(void*)((char*)coord_ptr + i * type_coord->type_class.size),start_ptr,NULL,NULL,16,&cmp_val);
 						if(cmp_val < 0 ){
 							*start = i - 1;
 							break;
@@ -384,7 +383,7 @@ long *finish;
 					i = 0;
 					while(i < the_coord->multidval.totalelements) {
 						result = 0;
-						_Nclcmpf(type_coord,(void*)((char*)coord_ptr + i * type_coord->type_class.size),start_ptr,NULL,NULL,10,&cmp_val);
+						_Nclcmpf(type_coord,(void*)((char*)coord_ptr + i * type_coord->type_class.size),start_ptr,NULL,NULL,16,&cmp_val);
 						if(cmp_val <= 0 ){
 							*start= i;
 							break;
@@ -398,7 +397,7 @@ long *finish;
 					}
 					while(i < the_coord->multidval.totalelements) {
 						result = 0;
-						_Nclcmpf(type_coord,(void*)((char*)coord_ptr + i * type_coord->type_class.size),finish_ptr,NULL,NULL,10,&cmp_val);
+						_Nclcmpf(type_coord,(void*)((char*)coord_ptr + i * type_coord->type_class.size),finish_ptr,NULL,NULL,16,&cmp_val);
 						if(cmp_val < 0 ){
 							*finish= i - 1;
 							break;

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclTypedouble.c.specific,v 1.7 1999-02-23 23:32:19 ethan Exp $
+ *      $Id: NclTypedouble.c.specific,v 1.8 2004-06-16 00:41:32 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -20,6 +20,7 @@
  *
  *	Description:	
  */
+#include <float.h>
 #include "NclTypelogical.h"
 #include "NclTypefloat.h"
 #include <ncarg/hlu/hluutil.h>
@@ -219,12 +220,16 @@ double * result;
 #endif
 {
 	double dres;
-	if((lhs_m != NULL)&&(lhs_m->doubleval == *(double*)lhs)) {
+	double l = *(double*)lhs;
+	double r = *(double*)rhs;
+	int prec = DBL_DIG;
+
+	if((lhs_m != NULL)&&(lhs_m->doubleval == l)) {
                 return(NhlFATAL);
-        } else if((rhs_m != NULL)&&(rhs_m->doubleval == *(double*)rhs)) {
+        } else if((rhs_m != NULL)&&(rhs_m->doubleval == r)) {
                 return(NhlFATAL);
         } else {
-		*result =  _NhlCmpDAny(*(double*)lhs,*(double*)rhs,7);
+		*result = _NhlCmpDAny2(l,r,digits,DBL_EPSILON);
 		return(NhlNOERROR);
 	}
 }
