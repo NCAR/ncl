@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.86 2000-02-09 03:37:45 dbrown Exp $
+ *      $Id: XyPlot.c,v 1.87 2000-03-02 01:30:19 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2724,6 +2724,7 @@ DrawCurves
 			 * This is called here to flush the "lineto" buffer.
 			 */
 			_NhlWorkstationLineTo(xlayer->base.wkptr,1.0,1.0,1);
+			c_plotif(0.,0.,2);	
 		}
 
 		if(item_types[i] != NhlLINES){

@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.c,v 1.72 2000-02-16 01:43:33 dbrown Exp $
+ *      $Id: TickMark.c,v 1.73 2000-03-02 01:30:18 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2698,7 +2698,7 @@ NhlTickMarkLayer tlayer;
 	yt = tlayer->view.y;
 	yb = tlayer->view.y - tlayer->view.height;
 
-	c_set(0.0,1.0,0.0,1.0,0.0,1.0,0.0,1.0,1);
+	c_set(xl,xr,yb,yt,xl,xr,yb,yt,1);
 
 	NhlVASetValues(tlayer->base.wkptr->base.id,
 		_NhlNwkReset,	True,
@@ -2830,6 +2830,8 @@ NhlTickMarkLayer tlayer;
 		}
 	}
 
+	c_plotif(0.0,0.0,2);
+
 	return(MIN(ret,ret1));
 }
 
@@ -2871,7 +2873,7 @@ NhlTickMarkLayer tlayer;
 	yt = tlayer->view.y;
 	yb = tlayer->view.y - tlayer->view.height;
 
-	c_set(0.0,1.0,0.0,1.0,0.0,1.0,0.0,1.0,1);
+	c_set(xl,xr,yb,yt,xl,xr,yb,yt,1);
 	
 	NhlVASetValues(tlayer->base.wkptr->base.id,
 		_NhlNwkReset,	True,
@@ -3003,7 +3005,8 @@ NhlTickMarkLayer tlayer;
 			}
 		}
 	}
-	c_sflush();
+
+	c_plotif(0.0,0.0,2);
 	
 	return(ret);
 }
@@ -3033,13 +3036,21 @@ static NhlErrorTypes DrawBorder
 #endif
 {
 	int n;
+	float xr,xl,yt,yb;
 	NhlErrorTypes ret = NhlNOERROR;
 
 	gset_linewidth((Gdouble)tlayer->tick.border_thickness);
 	gset_line_colr_ind((Gint)_NhlGetGksCi(tlayer->base.wkptr,
                        tlayer->tick.border_line_color));
 
-	c_set(0.0,1.0,0.0,1.0,0.0,1.0,0.0,1.0,1);
+	xr = tlayer->view.x + tlayer->view.width;
+	xl = tlayer->view.x;
+	yt = tlayer->view.y;
+	yb = tlayer->view.y - tlayer->view.height;
+
+
+	c_set(xl,xr,yb,yt,xl,xr,yb,yt,1);
+
 	n = 0;
 	if(tlayer->tick.x_b_border_on) {
 		c_frstpt(tlayer->view.x + tlayer->view.width,tlayer->view.y - tlayer->view.height);
@@ -3087,10 +3098,7 @@ static NhlErrorTypes DrawBorder
 		n = 0;
 	}
 
-	c_sflush();
-#if 0
 	c_plotif(0.0,0.0,2);
-#endif
 
 	return(ret);
 }

@@ -1,5 +1,5 @@
 /*
- *      $Id: Legend.c,v 1.64 1999-10-26 05:14:12 dbrown Exp $
+ *      $Id: Legend.c,v 1.65 2000-03-02 01:30:18 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -5572,6 +5572,7 @@ static NhlErrorTypes    LegendDraw
 		}
 	}
 	_NhlWorkstationLineTo(lgl->base.wkptr,0.0,0.0,1); 
+	c_plotif(0.,0.,2);	
 
 	if (lgl->view.use_segments) {
 		if (lg_p->title_on && lg_p->title_ext > 0.0)
