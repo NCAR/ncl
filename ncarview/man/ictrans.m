@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ictrans.m,v 1.14 1993-02-03 04:26:29 clyne Exp $
+.\"	$Id: ictrans.m,v 1.15 1993-04-28 22:14:33 haley Exp $
 .\"
 .\" ictrans 3.01 90/06/22 
 .TH ICTRANS 1NCARG "January 1993" NCARG "NCAR GRAPHICS"
@@ -11,7 +11,7 @@ ictrans \- interactive NCAR CGM translator
 [
 .BI \-d " device"
 ] [
-.BI \-f " font"
+.BI \-font " font"
 ] [
 .BI \-e " script"
 ]* [
@@ -132,7 +132,7 @@ by the shell. When this option is used
 does not enter interactive mode. It simply performs the given commands
 and then exits.
 .TP
-.BI \-f " fontcap"
+.BI \-font " fontcap"
 Fontcap file to be used for stroking text.
 When interpreting CGM
 .B TEXT
@@ -393,7 +393,7 @@ reported.
 Set the fontcap to 
 .I font
 for future translation. This function is identical to that of the
-.B -f
+.B -font
 option.  If 
 .I font
 is omitted the current fontcap name is reported.
