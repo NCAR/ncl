@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.113 2002-12-11 16:15:50 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.114 2002-12-13 20:41:54 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -994,7 +994,7 @@ end
 function get_allowed_lat_units()
 begin
   return((/"degrees_north","degrees-north","degree_north","degrees north",\
-           "degrees_N"/))
+           "degrees_N","Degrees_north"/))
 end
 
 ;***********************************************************************;
@@ -1007,7 +1007,7 @@ end
 function get_allowed_lon_units()
 begin
   return((/"degrees_east","degrees-east","degree_east","degrees east",\
-           "degrees_E"/))
+           "degrees_E","Degrees_east"/))
 end
 
 ;***********************************************************************;
