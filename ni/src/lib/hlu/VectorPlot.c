@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.c,v 1.74 2001-12-05 00:19:05 dbrown Exp $
+ *      $Id: VectorPlot.c,v 1.75 2001-12-07 21:49:22 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -5262,6 +5262,7 @@ static NhlErrorTypes ManageLabelBar
 	NhlTransformLayerPart	*tfp = &(vcnew->trans);
 	NhlBoolean		redo_level_strings = False;
 	NhlBoolean		set_all = False;
+	NhlvcScaleInfo		*sip,*osip;
 
 	entry_name = (init) ? InitName : SetValuesName;
 
@@ -5320,6 +5321,10 @@ static NhlErrorTypes ManageLabelBar
 	if (vcp->zero_field)
 		return ret;
 
+	sip=(vcp->use_scalar_array && vcp->scalar_data_init) ?
+		&vcp->svalue_scale : &vcp->mag_scale;
+	osip=(ovcp->use_scalar_array && ovcp->scalar_data_init) ?
+		&ovcp->svalue_scale : &ovcp->mag_scale;
 	if (! vcp->explicit_lbar_labels_on) {
 		vcp->lbar_labels_set = False;
 		if (init || set_all ||
@@ -5329,8 +5334,12 @@ static NhlErrorTypes ManageLabelBar
 		    vcp->level_strings != ovcp->level_strings) {
 			redo_level_strings = True;
 		}
-		if (vcp->lbar_end_labels_on)
+		if (vcp->lbar_end_labels_on) {
+			if (sip->min_val != osip->min_val ||
+			    sip->max_val != osip->max_val)
+				redo_level_strings = True;
 			vcp->lbar_alignment = NhlEXTERNALEDGES;
+		}
 		else
 			vcp->lbar_alignment = NhlINTERIOREDGES;
 	}
@@ -5362,11 +5371,8 @@ static NhlErrorTypes ManageLabelBar
 		else {
 			float fval;
 			NhlFormatRec *frec;
-			NhlvcScaleInfo	*sip;
 			float *levels = (float *) vcp->levels->data;
 
-			sip=(vcp->use_scalar_array && vcp->scalar_data_init) ?
-				   &vcp->svalue_scale : &vcp->mag_scale;
 			frec = &sip->format;
 			copy = True;
 			count = vcp->level_count + 2;
@@ -5378,13 +5384,19 @@ static NhlErrorTypes ManageLabelBar
 				return NhlFATAL;
 			}
 
-			fval = MIN(sip->min_val,levels[0]) / sip->scale_factor;
-			s = _NhlFormatFloat(frec,fval,NULL,
-					    &sip->sig_digits,
-					    &sip->left_sig_digit,
-					    NULL,NULL,NULL,
-					    vcp->lbar_func_code,
-					    entry_name);
+			if (_NhlCmpFAny2
+			    (sip->min_val,levels[0],6,_NhlMIN_NONZERO) >=0.0) {
+				s = "";
+			}
+			else {
+				fval = sip->min_val / sip->scale_factor;
+				s = _NhlFormatFloat(frec,fval,NULL,
+						    &sip->sig_digits,
+						    &sip->left_sig_digit,
+						    NULL,NULL,NULL,
+						    vcp->lbar_func_code,
+						    entry_name);
+			}
 			if (s == NULL) return NhlFATAL;
 			to_sp[0] = NhlMalloc(strlen(s) + 1);
 			if (to_sp[0] == NULL) {
@@ -5405,14 +5417,20 @@ static NhlErrorTypes ManageLabelBar
 				}
 				strcpy(to_sp[i],from_sp[i-1]);
 			}
-			fval = MAX(sip->max_val,levels[vcp->level_count-1]) 
-				/ sip->scale_factor;
-			s = _NhlFormatFloat(frec,fval,NULL,
-					    &sip->sig_digits,
-					    &sip->left_sig_digit,
-					    NULL,NULL,NULL,
-					    vcp->lbar_func_code,
-					    entry_name);
+			if (_NhlCmpFAny2
+			    (sip->max_val,levels[vcp->level_count-1],
+			     6,_NhlMIN_NONZERO) <= 0.0) {
+				s = "";
+			}
+			else {
+				fval = sip->max_val / sip->scale_factor;
+				s = _NhlFormatFloat(frec,fval,NULL,
+						    &sip->sig_digits,
+						    &sip->left_sig_digit,
+						    NULL,NULL,NULL,
+						    vcp->lbar_func_code,
+						    entry_name);
+			}
 			if (s == NULL) return NhlFATAL;
 			to_sp[count - 1] = NhlMalloc(strlen(s) + 1);
 			if (to_sp[count - 1] == NULL) {

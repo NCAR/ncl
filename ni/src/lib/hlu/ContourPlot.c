@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.107 2001-12-05 00:19:03 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.108 2001-12-07 21:49:21 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -7037,8 +7037,12 @@ static NhlErrorTypes ManageLabelBar
 		    			!= ocnp->explicit_lbar_labels_on) {
 			copy_line_label_strings = True;
 		}
-		if (cnp->lbar_end_labels_on)
+		if (cnp->lbar_end_labels_on) {
+			if (cnp->zmin != ocnp->zmin ||
+			    cnp->zmax != ocnp->zmax) 
+			copy_line_label_strings = True;
 			cnp->lbar_alignment = NhlEXTERNALEDGES;
+		}
 		else
 			cnp->lbar_alignment = NhlINTERIOREDGES;
 	}
@@ -7088,14 +7092,7 @@ static NhlErrorTypes ManageLabelBar
 						      entry_name);
 			}
 			else {
-				s = _NhlFormatFloat
-					(&cnp->line_lbls.format,
-					 levels[0] / cnp->label_scale_factor,
-					 NULL,
-					 &cnp->max_data_format.sig_digits,
-					 &cnp->max_data_format.left_sig_digit,
-					 NULL,NULL,NULL,cnp->lbar_func_code,
-					 entry_name);
+				s = "";
 			}
 			if (s == NULL) return NhlFATAL;
 			to_sp[0] = NhlMalloc(strlen(s) + 1);
@@ -7126,14 +7123,7 @@ static NhlErrorTypes ManageLabelBar
 						      entry_name);
 			}
 			else {
-				s = _NhlFormatFloat
-					(&cnp->line_lbls.format,
-					 levels[cnp->level_count-1] / 
-					 cnp->label_scale_factor, NULL,
-					 &cnp->max_data_format.sig_digits,
-					 &cnp->max_data_format.left_sig_digit,
-					 NULL,NULL,NULL,cnp->lbar_func_code,
-					 entry_name);
+				s = "";
 			}
 			if (s == NULL) return NhlFATAL;
 			to_sp[count - 1] = NhlMalloc(strlen(s) + 1);

@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.81 2001-12-06 19:41:57 dbrown Exp $
+ *      $Id: MapPlot.c,v 1.82 2001-12-07 21:49:21 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1065,6 +1065,7 @@ MapPlotClassPartInitialize
 	subret = _NhlRegisterChildClass(lc,NhlplotManagerClass,
 					False,False,
 					NhlNpmTickMarkDisplayMode,
+					NhlNtmEqualizeXYSizes,
 					NhlNtmXBOn,
 					NhlNtmXBLabelsOn,
 					NhlNtmXBMode,
@@ -4413,6 +4414,7 @@ static NhlErrorTypes ManageTickMarks
 	NhlBoolean usebottom = True, useleft = True;
 	NhlBoolean xbon,ylon,xton,yron;
 	NhlBoolean xb_labels_on,yl_labels_on,xt_labels_on,yr_labels_on;
+	NhlBoolean update = False;
 	int i;
 
  	if (! tfp->plot_manager_on)
@@ -4430,17 +4432,19 @@ static NhlErrorTypes ManageTickMarks
 			NhlSetSArg(&sargs[(*nargs)++],
 				   NhlNpmTickMarkDisplayMode,
 				   mpp->display_tickmarks);
+			if (mpp->display_tickmarks > NhlNEVER)
+				update = True;
 	}
-	if (! (init || mpp->update_req 
-		|| mpp->xb_major_length_set
-		|| mpp->xt_major_length_set
-		|| mpp->yl_major_length_set
-		|| mpp->yr_major_length_set
-		|| mpp->xb_font_height_set
-		|| mpp->xt_font_height_set
-		|| mpp->yl_font_height_set
-	        || mpp->yr_font_height_set))
-		return ret;
+	if ( mpp->xb_major_length_set
+	     || mpp->xt_major_length_set
+	     || mpp->yl_major_length_set
+	     || mpp->yr_major_length_set
+	     || mpp->xb_font_height_set
+	     || mpp->xt_font_height_set
+	     || mpp->yl_font_height_set
+	     || mpp->yr_font_height_set
+	     || (mpp->display_tickmarks > NhlNEVER && mpp->update_req))
+		update = True;
 
 	if (init) {
 		float delta;
@@ -4565,7 +4569,7 @@ static NhlErrorTypes ManageTickMarks
 		}
 	}
 
-	if (mpp->display_tickmarks <= NhlNEVER)
+	if (! (init || update))
 		return ret;
 
 	if (mpp->xbvalues)
