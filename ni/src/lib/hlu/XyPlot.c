@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.1 1993-04-30 17:26:24 boote Exp $
+ *      $Id: XyPlot.c,v 1.2 1993-05-10 20:23:11 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -945,10 +945,14 @@ XyPlotLayer xlayer;
 	}
 	gset_linewidth((Gdouble)xlayer->xyplot.curve_thickness);
 	for(i=0; i< xlayer->xyplot.num_curves; i++) {
-		if(xlayer->xyplot.curve_colors!= NULL)
+		if(xlayer->xyplot.curve_colors!= NULL) {
 			gset_line_colr_ind((Gint)_NhlGetGksCi(
 				xlayer->base.wkptr, 
-				xlayer->xyplot.curve_colors[i]));
+				xlayer->xyplot.curve_colors[i]));	
+		} else {
+			gset_line_colr_ind((Gint)_NhlGetGksCi(
+				xlayer->base.wkptr, 0));	
+		}
 		switch(xlayer->xyplot.curve_line_label_mode) {
 		case NOLABELS:
 			if(xlayer->xyplot.curve_dash_patterns != NULL) {
@@ -2037,7 +2041,7 @@ static NhlErrorTypes InternalizePointers
 	}
 
 	if(xnew->xyplot.ti_main_string != main) {
-		if((c_or_s ==SET)&&(xnew->xyplot.ti_main_string != xold->xyplot.ti_main_string)) {
+		if((c_or_s ==SET)&&(xnew->xyplot.ti_main_string != xold->xyplot.ti_main_string)&&(xold->xyplot.ti_main_string != main)) {
 			NhlFree(xold->xyplot.ti_main_string);
 		}
 		tmpcptr = (char*) NhlMalloc((unsigned)strlen(xnew->xyplot.ti_main_string)+1);
@@ -2045,7 +2049,7 @@ static NhlErrorTypes InternalizePointers
 		xnew->xyplot.ti_main_string = tmpcptr;
 	}
 	if(xnew->xyplot.ti_x_axis_string != x_axis) {
-		if((c_or_s ==SET)&&(xnew->xyplot.ti_x_axis_string != xold->xyplot.ti_x_axis_string)) {
+		if((c_or_s ==SET)&&(xnew->xyplot.ti_x_axis_string != xold->xyplot.ti_x_axis_string)&&(xold->xyplot.ti_x_axis_string != main)) {
 			NhlFree(xold->xyplot.ti_x_axis_string);
 		}
 		tmpcptr = (char*) NhlMalloc((unsigned)strlen(xnew->xyplot.ti_x_axis_string)+1);
@@ -2053,7 +2057,7 @@ static NhlErrorTypes InternalizePointers
 		xnew->xyplot.ti_x_axis_string = tmpcptr;
 	}
 	if(xnew->xyplot.ti_y_axis_string != y_axis) {
-		if((c_or_s ==SET)&&(xnew->xyplot.ti_y_axis_string != xold->xyplot.ti_y_axis_string)) {
+		if((c_or_s ==SET)&&(xnew->xyplot.ti_y_axis_string != xold->xyplot.ti_y_axis_string)&&(xold->xyplot.ti_y_axis_string != main)) {
 			NhlFree(xold->xyplot.ti_y_axis_string);
 		}
 		tmpcptr = (char*) NhlMalloc((unsigned)strlen(xnew->xyplot.ti_y_axis_string)+1);
@@ -3388,19 +3392,6 @@ static NhlErrorTypes ConvertDataToWin
 
 	if(!(xnew->xyplot.noxvalues)&&!(xnew->xyplot.noyvalues)) {
 		for(i = 0; i < xnew->xyplot.num_curves;i++) {
-			if((xnew->xyplot.x_style == IRREGULAR)||(xnew->xyplot.y_style == IRREGULAR)) {
-			for(j = 0; j< xnew->xyplot.curve_lengths[i]; j++) {
-				if(((xnew->xyplot.x_values[i])[j] < xnew->xyplot.x_irr_min)||((xnew->xyplot.x_values[i])[j] > xnew->xyplot.x_irr_max)){
-					(xnew->xyplot.x_values[i])[j] =
-						*xnew->xyplot.thexmissing;
-				}
-				if(((xnew->xyplot.y_values[i])[j] < xnew->xyplot.y_irr_min)||((xnew->xyplot.y_values[i])[j] > xnew->xyplot.y_irr_max)){
-					(xnew->xyplot.y_values[i])[j] =
-						*xnew->xyplot.theymissing;
-				}
-			}
-			}
-
 			ret = _NhlDataToWin((Layer)xnew->xyplot.thetrans,
 				(Layer)xnew,
 				xnew->xyplot.x_values[i],
@@ -3424,6 +3415,26 @@ static NhlErrorTypes ConvertDataToWin
 					(char*)xnew->xyplot.y_final_values[i],
 					sizeof(float)*xnew->xyplot.curve_lengths[i]);
 			}
+
+/*
+* Problems exist when data is out of range for IRREGULAR style projections
+* This is a temporary fix so that drastically out of range data is not sent
+* to the autograph routines. ----> NOTE that passing data that is out of
+* bounds to _NhlDataToWin could result in NaN which on some machines will cause
+* abnormal termination.
+*/
+			if((xnew->xyplot.x_style == IRREGULAR)||(xnew->xyplot.y_style == IRREGULAR)) {
+			for(j = 0; j< xnew->xyplot.curve_lengths[i]; j++) {
+				if(((xnew->xyplot.x_values[i])[j] < xnew->xyplot.x_irr_min)||((xnew->xyplot.x_values[i])[j] > xnew->xyplot.x_irr_max)){
+					(xnew->xyplot.x_final_values[i])[j] =
+						*xnew->xyplot.thexmissing;
+				}
+				if(((xnew->xyplot.y_values[i])[j] < xnew->xyplot.y_irr_min)||((xnew->xyplot.y_values[i])[j] > xnew->xyplot.y_irr_max)){
+					(xnew->xyplot.y_final_values[i])[j] =
+						*xnew->xyplot.theymissing;
+				}
+			}
+			}
 /*
 * Since Autograph only takes one value for missing values if the two missing
 * values are not equal then one needs to replace the other. X replaces Y is 
@@ -3444,14 +3455,6 @@ static NhlErrorTypes ConvertDataToWin
 		xnew->xyplot.thexmissing = NULL;	
 		for(i = 0; i < xnew->xyplot.num_curves;i++) {
 
-			if(xnew->xyplot.y_style == IRREGULAR) {
-			for(j = 0; j< xnew->xyplot.curve_lengths[i]; j++) {
-				if(((xnew->xyplot.y_values[i])[j] < xnew->xyplot.y_irr_min)||((xnew->xyplot.y_values[i])[j] > xnew->xyplot.y_irr_max)){
-					(xnew->xyplot.y_values[i])[j] =
-						*xnew->xyplot.theymissing;
-				}
-			}
-			}
 			ret = _NhlDataToWin((Layer)xnew->xyplot.thetrans,
 				(Layer)xnew,
 				xnew->xyplot.dummy_array,
@@ -3475,6 +3478,14 @@ static NhlErrorTypes ConvertDataToWin
 					(char*)xnew->xyplot.y_final_values[i],
 					sizeof(float)*xnew->xyplot.curve_lengths[i]);
 			}
+			if(xnew->xyplot.y_style == IRREGULAR) {
+			for(j = 0; j< xnew->xyplot.curve_lengths[i]; j++) {
+				if(((xnew->xyplot.y_values[i])[j] < xnew->xyplot.y_irr_min)||((xnew->xyplot.y_values[i])[j] > xnew->xyplot.y_irr_max)){
+					(xnew->xyplot.y_final_values[i])[j] =
+						*xnew->xyplot.theymissing;
+				}
+			}
+			}
 		}
 /*
 * Since Autograph only takes one value for missing values if the two missing
@@ -3486,14 +3497,6 @@ static NhlErrorTypes ConvertDataToWin
 		xnew->xyplot.theymissing = NULL;	
 		for(i = 0; i < xnew->xyplot.num_curves;i++) {
 
-			if(xnew->xyplot.x_style == IRREGULAR) {
-			for(j = 0; j< xnew->xyplot.curve_lengths[i]; j++) {
-				if(((xnew->xyplot.x_values[i])[j] < xnew->xyplot.x_irr_min)||((xnew->xyplot.x_values[i])[j] > xnew->xyplot.x_irr_max)){
-					(xnew->xyplot.x_values[i])[j] =
-						*xnew->xyplot.thexmissing;
-				}
-			}
-			}
 			ret = _NhlDataToWin((Layer)xnew->xyplot.thetrans,
 				(Layer)xnew,
 				xnew->xyplot.x_values[i],
@@ -3516,6 +3519,14 @@ static NhlErrorTypes ConvertDataToWin
 				bcopy((char*)xnew->xyplot.x_values[i],
 					(char*)xnew->xyplot.x_final_values[i],
 					sizeof(float)*xnew->xyplot.curve_lengths[i]);
+			}
+			if(xnew->xyplot.x_style == IRREGULAR) {
+			for(j = 0; j< xnew->xyplot.curve_lengths[i]; j++) {
+				if(((xnew->xyplot.x_values[i])[j] < xnew->xyplot.x_irr_min)||((xnew->xyplot.x_values[i])[j] > xnew->xyplot.x_irr_max)){
+					(xnew->xyplot.x_final_values[i])[j] =
+						*xnew->xyplot.thexmissing;
+				}
+			}
 			}
 		}
 	}
