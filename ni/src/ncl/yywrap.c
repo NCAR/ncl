@@ -39,7 +39,12 @@ int yywrap()
 		cur_line_number = top_level_line;
 		cur_load_file = NULL;
 */
+#ifdef SunOS
+		cmd_line = isatty(fileno(nclin));
+#else
 		cmd_line = isatty(fileno(yyin));
+#endif
+
 		if(cmd_line) {
 			fprintf(stdout,"ncl %d> ",cur_line_number);
 
