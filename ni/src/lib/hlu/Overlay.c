@@ -1,5 +1,5 @@
 /*
- *      $Id: Overlay.c,v 1.31 1995-02-02 17:34:14 dbrown Exp $
+ *      $Id: Overlay.c,v 1.32 1995-02-17 10:23:23 boote Exp $
  */
 /************************************************************************
 *									*
@@ -880,10 +880,12 @@ OverlayInitialize
 		if (RecordAnnotation(ovnew,ovLEGEND,ovp->display_legend,
 				     ovp->legend_zone) == NULL) {
 			e_text = "%s: error creating annotation record";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return NhlFATAL;
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,
+							entry_name);
+			return NhlFATAL;
+		}
 	}
-	if (ovp->display_labelbar > NhlNOCREATE)
+	if (ovp->display_labelbar > NhlNOCREATE){
 		if (ovp->labelbar_zone < 0) {
 			e_text = "%s: Invalid legend zone number: defaulting";
 			ovp->labelbar_zone = NhlOV_DEF_LABELBAR_ZONE;
@@ -3010,7 +3012,7 @@ ManageTickMarks
 	int			i, count = 2, status = 0;
 	float			*xmiss = NULL, *ymiss = NULL; 
 	float			out_of_range;
-	NhlTickMarkStyles	tm_style = NhlLINEAR;
+	NhlTickMarkStyle	tm_style = NhlLINEAR;
 	NhlBoolean		x_log,y_log;
 	float			x_tension,y_tension;
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: Create.c,v 1.14 1995-01-25 23:35:48 boote Exp $
+ *      $Id: Create.c,v 1.15 1995-02-17 10:23:02 boote Exp $
  */
 /************************************************************************
 *									*
@@ -325,33 +325,25 @@ _NhlCreate
 			return(ret);
 	}
 
-	if(parentid == NhlNOPARENT){
-		if(lc->base_class.class_inited & _NhlAppLayerClassFlag)
-			parent = NULL;
-		else{
-			parent = _NhlGetCurrentApp();
-			if(parent == NULL){
-				NhlPError(NhlFATAL,NhlEUNKNOWN,
+	if(lc->base_class.class_inited & _NhlAppLayerClassFlag)
+		parent = NULL;
+	else if(parentid == NhlDEFAULT_APP){
+		parent = _NhlGetCurrentApp();
+		if(parent == NULL){
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
 				"%s:Unable to access \"default\" App object",
 				func);
-				return NhlFATAL;
-			}
+			return NhlFATAL;
 		}
 	}
 	else{
 		parent = _NhlGetLayer(parentid);
-		if(parent == NULL){
+		if((parent == NULL) || (_NhlIsObj(parent) &&
+						!(lc->base_class.class_inited &
+						_NhlObjLayerClassFlag))){
 			NhlPError(NhlFATAL,NhlEUNKNOWN,
 				"%s:Invalid Parent id #%d",func,parentid);
-			return NhlFATAL;
-		}
-		if(_NhlIsObj(parent) &&
-			!(lc->base_class.class_inited & _NhlObjLayerClassFlag)){
-
-			NhlPError(NhlFATAL,NhlEUNKNOWN,
-		"%s:NhlObjLayer classes can only have NhlObjLayer children",
-									func);
-			return NhlFATAL;
+				return NhlFATAL;
 		}
 	}
 
@@ -376,6 +368,7 @@ _NhlCreate
 	else
 		layer->base.appobj = parent->base.appobj;
 
+	layer->base.being_destroyed = False;
 	layer->base.all_children = NULL;
 
 /*
@@ -640,11 +633,6 @@ NhlVACreate
 	num_args = _NhlVarToSetArgList(ap,args);
 	va_end(ap);
 
-/*
- * Initialize pid in case user didn't
- */
-	*pid = NhlNULL_LAYER;
-
 	ret = _NhlCreate(pid, name, lc, parentid, args, num_args, NULL);
 
 	return(ret);
@@ -703,11 +691,6 @@ NhlCreate
 					"NhlCreate:Invalid RL id %d",rlid);
 		return NhlFATAL;
 	}
-
-/*
- * Initialize pid in case user didn't
- */
-	*pid = NhlNULL_LAYER;
 
 	return _NhlCreate(pid, name, lc, parentid, args, nargs, NULL);
 }
@@ -846,11 +829,6 @@ NhlALCreate
 	}
 
 	_NhlSArgToSetArgList(args,args_in,nargs);
-
-/*
- * Initialize pid in case user didn't
- */
-	*pid = NhlNULL_LAYER;
 
 	return _NhlCreate(pid, name, lc, parentid, args, nargs, NULL);
 }
@@ -1264,12 +1242,6 @@ CreateChild
 	 * merge the pargs and sargs into a single args list for _NhlCreate
 	 */
 	_NhlMergeArgLists(args,&num_args,sargs,num_sargs,pargs,num_pargs);
-
-	/*
-	 * Initailize pid in case user didn't
-	 */
-
-	*pid = NhlNULL_LAYER;
 
 	/*
 	 * Create a child node to place child info in.

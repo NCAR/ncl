@@ -1,5 +1,5 @@
 /*
- *      $Id: App.c,v 1.8 1995-01-11 00:46:22 boote Exp $
+ *      $Id: App.c,v 1.9 1995-02-17 10:22:52 boote Exp $
  */
 /************************************************************************
 *									*
@@ -129,6 +129,9 @@ static NhlResource resources[] = {
 	{NhlNappFileSuffix,NhlCappFileSuffix,NhlTString,sizeof(NhlString),
 		Oset(file_suffix),NhlTImmediate,(NhlPointer)".res",0,
 							(NhlFreeFunc)NhlFree},
+	{NhlNappDefaultParent,NhlCappDefaultParent,NhlTBoolean,
+		sizeof(NhlBoolean),
+		Oset(default_parent),NhlTImmediate,(NhlPointer)False,0,NULL},
 /* End-documented-resources */
 	{_NhlNappMode,_NhlCappMode,NhlTInteger,sizeof(_NhlC_OR_F),
 		Oset(init_mode),NhlTImmediate,(NhlPointer)_NhlNONE,0,NULL},
@@ -158,15 +161,24 @@ NhlAppLayerClassRec NhlappLayerClassRec = {
 /* layer_set_values_hook	*/	NULL,
 /* layer_get_values		*/	AppGetValues,
 /* layer_reparent		*/	NULL,
-/* layer_destroy		*/	AppLayerDestroy
+/* layer_destroy		*/	AppLayerDestroy,
+
+/* child_resources		*/	NULL,
+
+/* layer_draw			*/	NULL,
+
+/* layer_pre_draw		*/	NULL,
+/* layer_draw_segonly		*/	NULL,
+/* layer_post_draw		*/	NULL,
+/* layer_clear			*/	NULL
 	},
 	{
-/* num_app			*/	0,
 /* default_app			*/	NULL,
 /* current_app			*/	NULL,
 /* baseDB			*/	NULL,
 /* error_id			*/	0,
-/* workspace_id			*/	0
+/* workspace_id			*/	0,
+/* app_objs			*/	NULL
 	}
 };
 
@@ -293,11 +305,8 @@ AppLayerClassPartInitialize
 	NhlAppLayerClass	alc = (NhlAppLayerClass)lc;
 	NhlAppLayerClassPart	*alcp = &alc->app_class;
 
-	alcp->num_app = 0;
 	alcp->default_app = NULL;
 	alcp->current_app = NULL;
-	alcp->error_id = NhlNULL_LAYER;
-	alcp->workspace_id = NhlNULL_LAYER;
 	InitBaseDB(alc);
 
 	return NhlNOERROR;
@@ -306,6 +315,7 @@ AppLayerClassPartInitialize
 static NrmQuark	usrdirQ = NrmNULLQUARK;
 static NrmQuark	sysdirQ = NrmNULLQUARK;
 static NrmQuark	filesuffQ = NrmNULLQUARK;
+static NrmQuark	defparQ = NrmNULLQUARK;
 static _NhlC_OR_F lang_type = _NhlNONE;
 
 /*
@@ -338,6 +348,7 @@ AppClassInitialize
 	usrdirQ = NrmStringToQuark(NhlNappUsrDir);
 	sysdirQ = NrmStringToQuark(NhlNappSysDir);
 	filesuffQ = NrmStringToQuark(NhlNappFileSuffix);
+	defparQ = NrmStringToQuark(NhlNappDefaultParent);
 
 	return NhlNOERROR;
 }
@@ -392,6 +403,11 @@ AppInitialize
 		ac->app_class.default_app = anew;
 	}
 
+	if(anew->app.default_parent || !ac->app_class.current_app){
+		ac->app_class.current_app = anew;
+		anew->app.default_parent = False;
+	}
+
 	if(!ac->app_class.default_app){
 		int	tint;
 
@@ -401,8 +417,7 @@ AppInitialize
 			return NhlFATAL;
 		}
 
-		lret = NhlVACreate(&tint,anew->base.name,NhlappLayerClass,
-								NhlNOPARENT,
+		lret = NhlVACreate(&tint,anew->base.name,NhlappLayerClass,0,
 				_NhlNappMode,	lang_type,
 				_NhlNdefApp,	True,
 				NULL);
@@ -478,15 +493,12 @@ AppInitialize
 		}
 	}
 
-	ac->app_class.current_app = anew;
-	ac->app_class.num_app++;
-
 	/*
 	 * insure error reporting is available.
 	 */
 	if(ac->app_class.error_id < 1){
 		ret = NhlVACreate(&ac->app_class.error_id,"error",
-						NhlerrorLayerClass,new->base.id,
+				NhlerrorLayerClass,new->base.id,
 				_NhlNerrMode,	anew->app.init_mode,
 				NULL);
 		if(ret < NhlWARNING){
@@ -510,6 +522,18 @@ AppInitialize
 		}
 	}
 	ret = MIN(ret,lret);
+
+	if(ac->app_class.default_app != anew){
+		NhlAppTable	at = NhlMalloc(sizeof(NhlAppTableRec));
+
+		if(!at){
+			NHLPERROR((NhlFATAL,ENOMEM,NULL));
+			return NhlFATAL;
+		}
+		at->app = anew;
+		at->next = ac->app_class.app_objs;
+		ac->app_class.app_objs = at;
+	}
 
 	return ret;
 }
@@ -547,12 +571,13 @@ AppSetValues
 	int		nargs;
 #endif
 {
-	char		func[] = "AppSetValues";
-	NhlAppLayer	newapp = (NhlAppLayer)new;
-	NhlAppLayerPart	*np = &newapp->app;
-	NhlAppLayer	oldapp = (NhlAppLayer)old;
-	NhlAppLayerPart	*op = &oldapp->app;
-	NhlErrorTypes	ret = NhlNOERROR;
+	char			func[] = "AppSetValues";
+	NhlAppLayer		newapp = (NhlAppLayer)new;
+	NhlAppLayerPart		*np = &newapp->app;
+	NhlAppLayer		oldapp = (NhlAppLayer)old;
+	NhlAppLayerPart		*op = &oldapp->app;
+	NhlAppLayerClass	ac = (NhlAppLayerClass)new->base.layer_class;
+	NhlErrorTypes		ret = NhlNOERROR;
 
 	if(np->usr_appdir != op->usr_appdir){
 		NhlPError(NhlWARNING,NhlEUNKNOWN,
@@ -583,6 +608,11 @@ AppSetValues
 		"%s:%s is only settable at Create time.",func,_NhlNdefApp);
 		np->default_app = op->default_app;
 		ret = NhlWARNING;
+	}
+
+	if(np->default_parent){
+		ac->app_class.current_app = newapp;
+		np->default_parent = False;
 	}
 
 	return ret;
@@ -617,49 +647,38 @@ AppGetValues
 	int		nargs;
 #endif
 {
-	char		func[] = "AppGetValues";
-	NhlAppLayer	al = (NhlAppLayer)l;
-	NhlAppLayerPart	*alp = &al->app;
-	int		i;
-	NhlErrorTypes	ret = NhlNOERROR;
+	char			func[] = "AppGetValues";
+	NhlAppLayer		al = (NhlAppLayer)l;
+	NhlAppLayerPart		*alp = &al->app;
+	NhlAppLayerClass	alc = (NhlAppLayerClass)al->base.layer_class;
+	int			i;
+	NhlErrorTypes		ret = NhlNOERROR;
+	NhlString		tstring;
 
 	for(i=0;i<nargs;i++){
 
-		if(args[i].quark == usrdirQ){
-			*(NhlString*)args[i].value.ptrval =
-				NhlMalloc((strlen(alp->usr_appdir)+1) *
-								sizeof(char));
-			if(!*(NhlString*)args[i].value.ptrval){
-				NhlPError(NhlWARNING,ENOMEM,func);
-				ret = MIN(ret,NhlWARNING);
-				continue;
-			}
-			strcpy(*(NhlString*)args[i].value.ptrval,
-							alp->usr_appdir);
+		tstring = NULL;
+		if(args[i].quark == usrdirQ)
+			tstring = alp->usr_appdir;
+		else if(args[i].quark == sysdirQ)
+			tstring = alp->sys_appdir;
+		else if(args[i].quark == filesuffQ)
+			tstring = alp->file_suffix;
+		else if(args[i].quark == defparQ){
+			*(NhlBoolean*)args[i].value.ptrval =
+			(al->base.id == alc->app_class.current_app->base.id);
 		}
-		else if(args[i].quark == sysdirQ){
+
+		if(tstring){
 			*(NhlString*)args[i].value.ptrval =
-				NhlMalloc((strlen(alp->sys_appdir)+1) *
-								sizeof(char));
+				NhlMalloc((strlen(tstring)+1)*sizeof(char));
 			if(!*(NhlString*)args[i].value.ptrval){
-				NhlPError(NhlWARNING,ENOMEM,func);
+				NhlPError(NhlWARNING,ENOMEM,"%s:Retrieving %s",
+					func,NrmQuarkToString(args[i].quark));
 				ret = MIN(ret,NhlWARNING);
 				continue;
 			}
-			strcpy(*(NhlString*)args[i].value.ptrval,
-							alp->sys_appdir);
-		}
-		else if(args[i].quark == filesuffQ){
-			*(NhlString*)args[i].value.ptrval =
-				NhlMalloc((strlen(alp->file_suffix)+1) *
-								sizeof(char));
-			if(!*(NhlString*)args[i].value.ptrval){
-				NhlPError(NhlWARNING,ENOMEM,func);
-				ret = MIN(ret,NhlWARNING);
-				continue;
-			}
-			strcpy(*(NhlString*)args[i].value.ptrval,
-							alp->file_suffix);
+			strcpy(*(NhlString*)args[i].value.ptrval,tstring);
 		}
 	}
 
@@ -696,35 +715,63 @@ AppLayerDestroy
 {
 	char			func[] = "AppLayerDestroy";
 	NhlAppLayer		al = (NhlAppLayer)l;
+	NhlAppLayerPart		*alp = &al->app;
 	NhlAppLayerClass	alc = (NhlAppLayerClass)al->base.layer_class;
+	NhlAppLayerClassPart	*alcp = &alc->app_class;
 	NhlErrorTypes		ret = NhlNOERROR;
 
-	NhlFree(al->app.usr_appdir);
-	NhlFree(al->app.sys_appdir);
-	NhlFree(al->app.file_suffix);
-	NrmDestroyDB(al->app.appDB);
+	NhlFree(alp->usr_appdir);
+	NhlFree(alp->sys_appdir);
+	NhlFree(alp->file_suffix);
+	NrmDestroyDB(alp->appDB);
 
-	alc->app_class.num_app--;
-	if(alc->app_class.num_app < 1){
-		NrmDestroyDB(alc->app_class.baseDB);
-		alc->app_class.baseDB = NULL;
-		alc->app_class.default_app = NULL;
-		alc->app_class.current_app = NULL;
-		NhlDestroy(alc->app_class.error_id);
-		NhlDestroy(alc->app_class.workspace_id);
-		alc->app_class.error_id = NhlNOPARENT;
-		alc->app_class.workspace_id = NhlNOPARENT;
+	/*
+	 * If this is the "default_app", then destroy *ALL* app objects
+	 * that have been created, and therefore *ALL* objects.
+	 * This is how the NhlClose function has been implimented.
+	 */
+	if(al == alcp->default_app){
+		while(alcp->app_objs)
+			NhlDestroy(alcp->app_objs->app->base.id);
+		NrmDestroyDB(alcp->baseDB);
+		alcp->baseDB = NULL;
+		alcp->default_app = NULL;
+		alcp->current_app = NULL;
+		NhlDestroy(alcp->error_id);
+		NhlDestroy(alcp->workspace_id);
+		alcp->error_id = 0;
+		alcp->workspace_id = 0;
+		_NhlDestroyRLList();
+	}
+	/*
+	 * Otherwise, remove this layer from the app_objs list.
+	 */
+	else{
+		NhlAppTable	*tblptr = &alcp->app_objs;
+		NhlAppTable	tnode = NULL;
+		NhlBoolean	found = False;
+
+		while(*tblptr){
+			if((*tblptr)->app == al){
+				found = True;
+				tnode = *tblptr;
+				*tblptr = (*tblptr)->next;
+				NhlFree(tnode);
+				break;
+			}
+			tblptr = &(*tblptr)->next;
+		}
+
+		if(!found){
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
+				"%s:Unable to remove %s from App list",func,
+				l->base.name);
+			ret = NhlWARNING;
+		}
 	}
 
-	if(al == alc->app_class.default_app){
-		NhlPError(NhlFATAL,NhlEUNKNOWN,
-			"%s:Destroying Default App Class-Bad Things!!!",func);
-		alc->app_class.default_app = NULL;
-		ret = MIN(ret,NhlFATAL);
-	}
-
-	if(al == alc->app_class.current_app)
-		alc->app_class.current_app = alc->app_class.default_app;
+	if(al == alcp->current_app)
+		alcp->current_app = alcp->default_app;
 
 	return ret;
 }
@@ -819,4 +866,40 @@ _NhlSetLang
 	lang_type = ltype;
 
 	return;
+}
+
+/*
+ * Public API
+ */
+
+/*
+ * Function:	NhlAppGetDefaultParentID
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+int
+NhlAppGetDefaultParentID
+#if	NhlNeedProto
+(
+	void
+)
+#else
+()
+#endif
+{
+	if((NhlappLayerClassRec.app_class.current_app) &&
+			(NhlappLayerClassRec.app_class.current_app !=
+				NhlappLayerClassRec.app_class.default_app))
+
+		return NhlappLayerClassRec.app_class.current_app->base.id;
+
+	return (int)NhlFATAL;
 }

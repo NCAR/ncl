@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.h,v 1.6 1994-01-27 21:26:26 boote Exp $
+ *      $Id: TickMark.h,v 1.7 1995-02-17 10:23:31 boote Exp $
  */
 /************************************************************************
 *									*
@@ -24,12 +24,12 @@
 
 #include <ncarg/hlu/View.h>
 
-typedef enum { NhlAUTOMATIC, NhlMANUAL, NhlEXPLICIT } NhlTickMarkModes;
+typedef enum { NhlAUTOMATIC, NhlMANUAL, NhlEXPLICIT } NhlTickMarkMode;
 typedef enum { NhlLOG, NhlLINEAR, NhlIRREGULAR, NhlGEOGRAPHIC, NhlTIME }
-							NhlTickMarkStyles;
+							NhlTickMarkStyle;
 
-#define NhlTTickMarkModes 	"tickMarkModes"
-#define NhlTTickMarkStyles	"tickMarkStyles"
+#define NhlTTickMarkMode 	"tickMarkMode"
+#define NhlTTickMarkStyle	"tickMarkStyle"
 
 #define NhlNtmSciNoteCutoff	"tmSciNoteCutoff"
 #define NhlCtmSciNoteCutoff	"TmSciNoteCutoff"

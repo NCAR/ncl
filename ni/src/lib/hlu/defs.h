@@ -1,5 +1,5 @@
 /*
- *      $Id: defs.h,v 1.8 1994-11-11 02:34:00 ethan Exp $
+ *      $Id: defs.h,v 1.9 1995-02-17 10:23:49 boote Exp $
  */
 /************************************************************************
 *									*
@@ -60,10 +60,7 @@
 #define _NhlLAYERLISTINC	(128)
 
 /* usefull defines for specifying a layer has no parent or default app parent */
-#define NhlNULL_LAYER	((int)(NULL))
-#define NhlNULL_PARENT	NhlNULL_LAYER
-#define NhlNOPARENT	NhlNULL_LAYER
-#define	NhlDEFAULT_APP	NhlNULL_LAYER
+#define	NhlDEFAULT_APP	((int)(NULL))
 
 
 /* defines for the converter hash table */

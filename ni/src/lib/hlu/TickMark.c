@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.c,v 1.26 1995-01-11 00:46:51 boote Exp $
+ *      $Id: TickMark.c,v 1.27 1995-02-17 10:23:30 boote Exp $
  */
 /************************************************************************
 *									*
@@ -62,22 +62,22 @@ static NhlResource resources[] = {
 	{ NhlNtmXTBorderOn, NhlCtmXTBorderOn, NhlTBoolean, sizeof(NhlBoolean),
 		  NhlOffset(NhlTickMarkLayerRec, tick.x_t_border_on),
 		  NhlTImmediate,_NhlUSET((NhlPointer)True ),0,NULL},
-	{ NhlNtmXBMode,NhlCtmXBMode,NhlTTickMarkModes,sizeof(NhlTickMarkModes),
+	{ NhlNtmXBMode,NhlCtmXBMode,NhlTTickMarkMode,sizeof(NhlTickMarkMode),
 		  NhlOffset(NhlTickMarkLayerRec, tick.x_b_mode),
 		  NhlTImmediate,_NhlUSET((NhlPointer) NhlAUTOMATIC ),0,NULL},
-	{ NhlNtmXTMode,NhlCtmXTMode,NhlTTickMarkModes,sizeof(NhlTickMarkModes),
+	{ NhlNtmXTMode,NhlCtmXTMode,NhlTTickMarkMode,sizeof(NhlTickMarkMode),
 		  NhlOffset(NhlTickMarkLayerRec, tick.x_t_mode),
 		  NhlTImmediate,_NhlUSET((NhlPointer) NhlAUTOMATIC ),0,NULL}, 
-	{ NhlNtmXBStyle,NhlCtmXBStyle,NhlTTickMarkStyles,
-		  sizeof(NhlTickMarkStyles),
+	{ NhlNtmXBStyle,NhlCtmXBStyle,NhlTTickMarkStyle,
+		  sizeof(NhlTickMarkStyle),
 		  NhlOffset(NhlTickMarkLayerRec, tick.x_b_style),
 		  NhlTImmediate,_NhlUSET((NhlPointer) NhlLINEAR ),0,NULL},
 	{ NhlNtmXBIrrTensionF,NhlCtmXBIrrTensionF,NhlTFloat,sizeof(float),
 		  NhlOffset(NhlTickMarkLayerRec, tick.x_b_tension),
 		  NhlTString,_NhlUSET("2.0"),0,NULL},
 
-	{ NhlNtmXTStyle,NhlCtmXTStyle,NhlTTickMarkStyles,
-		  sizeof(NhlTickMarkStyles),
+	{ NhlNtmXTStyle,NhlCtmXTStyle,NhlTTickMarkStyle,
+		  sizeof(NhlTickMarkStyle),
 		  NhlOffset(NhlTickMarkLayerRec, tick.x_t_style),
 		  NhlTImmediate,_NhlUSET((NhlPointer) NhlLINEAR ),0,NULL},
 	{ NhlNtmXTIrrTensionF,NhlCtmXTIrrTensionF,NhlTFloat,sizeof(float),
@@ -229,9 +229,9 @@ static NhlResource resources[] = {
 		sizeof(float),
 		NhlOffset(NhlTickMarkLayerRec,tick.x_b_label_font_aspect),
 		NhlTString,_NhlUSET( "1.3125" ),0,NULL},
-	{NhlNtmXBLabelJust, NhlCtmXLabelJusts,NhlTInteger,sizeof(int),
+	{NhlNtmXBLabelJust, NhlCtmXLabelJusts,NhlTJustification,sizeof(int),
 		NhlOffset(NhlTickMarkLayerRec,tick.x_b_label_just),
-		NhlTImmediate,_NhlUSET( (NhlPointer)3 ),0,NULL},
+		NhlTImmediate,_NhlUSET((NhlPointer)NhlTOPCENTER),0,NULL},
 	{NhlNtmXBLabelAngleF, NhlCtmXLabelAnglesF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlTickMarkLayerRec,tick.x_b_label_angle),
 		NhlTString,_NhlUSET( "0.0" ),0,NULL},
@@ -324,9 +324,9 @@ static NhlResource resources[] = {
 		sizeof(float),
 		NhlOffset(NhlTickMarkLayerRec,tick.x_t_label_font_aspect),
 		NhlTString,_NhlUSET( "1.3125" ),0,NULL},
-	{NhlNtmXTLabelJust, NhlCtmXLabelJusts,NhlTInteger,sizeof(int),
+	{NhlNtmXTLabelJust, NhlCtmXLabelJusts,NhlTJustification,sizeof(int),
 		NhlOffset(NhlTickMarkLayerRec,tick.x_t_label_just),
-		NhlTImmediate,_NhlUSET( (NhlPointer)5 ),0,NULL},
+		NhlTImmediate,_NhlUSET((NhlPointer)NhlBOTTOMCENTER),0,NULL},
 	{NhlNtmXTLabelAngleF, NhlCtmXLabelAnglesF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlTickMarkLayerRec,tick.x_t_label_angle),
 		NhlTString,_NhlUSET( "0.0" ),0,NULL},
@@ -363,21 +363,21 @@ static NhlResource resources[] = {
 	{ NhlNtmYRBorderOn, NhlCtmYRBorderOn, NhlTBoolean, sizeof(NhlBoolean),
 		NhlOffset(NhlTickMarkLayerRec, tick.y_r_border_on),
 		NhlTImmediate,_NhlUSET((NhlPointer)True ),0,NULL},
-	{ NhlNtmYLMode,NhlCtmYLMode,NhlTTickMarkModes,sizeof(NhlTickMarkModes),
+	{ NhlNtmYLMode,NhlCtmYLMode,NhlTTickMarkMode,sizeof(NhlTickMarkMode),
 		NhlOffset(NhlTickMarkLayerRec, tick.y_l_mode),
 		NhlTImmediate,_NhlUSET((NhlPointer) NhlAUTOMATIC ),0,NULL},
-	{ NhlNtmYRMode,NhlCtmYRMode,NhlTTickMarkModes,sizeof(NhlTickMarkModes),
+	{ NhlNtmYRMode,NhlCtmYRMode,NhlTTickMarkMode,sizeof(NhlTickMarkMode),
 		NhlOffset(NhlTickMarkLayerRec, tick.y_r_mode),
 		NhlTImmediate,_NhlUSET((NhlPointer) NhlAUTOMATIC ),0,NULL}, 
-	{ NhlNtmYLStyle,NhlCtmYLStyle,NhlTTickMarkStyles,
-		  sizeof(NhlTickMarkStyles),
+	{ NhlNtmYLStyle,NhlCtmYLStyle,NhlTTickMarkStyle,
+		  sizeof(NhlTickMarkStyle),
 		NhlOffset(NhlTickMarkLayerRec, tick.y_l_style),
 		NhlTImmediate,_NhlUSET((NhlPointer) NhlLINEAR ),0,NULL},
 	{ NhlNtmYLIrrTensionF,NhlCtmYLIrrTensionF,NhlTFloat,sizeof(float),
 		NhlOffset(NhlTickMarkLayerRec, tick.y_l_tension),
 		NhlTString,_NhlUSET( "2.0"),0,NULL},
-	{ NhlNtmYRStyle,NhlCtmYRStyle,NhlTTickMarkStyles,
-		  sizeof(NhlTickMarkStyles),
+	{ NhlNtmYRStyle,NhlCtmYRStyle,NhlTTickMarkStyle,
+		  sizeof(NhlTickMarkStyle),
 		NhlOffset(NhlTickMarkLayerRec, tick.y_r_style),
 		NhlTImmediate,_NhlUSET((NhlPointer) NhlLINEAR ),0,NULL},
 	{ NhlNtmYRIrrTensionF,NhlCtmYRIrrTensionF,NhlTFloat,sizeof(float),
@@ -522,9 +522,9 @@ static NhlResource resources[] = {
 		sizeof(float),
 		NhlOffset(NhlTickMarkLayerRec,tick.y_l_label_font_aspect),
 		NhlTString,_NhlUSET( "1.3125" ),0,NULL},
-	{NhlNtmYLLabelJust, NhlCtmYLabelJusts,NhlTInteger,sizeof(int),
+	{NhlNtmYLLabelJust, NhlCtmYLabelJusts,NhlTJustification,sizeof(int),
 		NhlOffset(NhlTickMarkLayerRec,tick.y_l_label_just),
-		NhlTImmediate,_NhlUSET( (NhlPointer)7 ),0,NULL},
+		NhlTImmediate,_NhlUSET((NhlPointer)NhlCENTERRIGHT),0,NULL},
 	{NhlNtmYLLabelAngleF, NhlCtmYLabelAnglesF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlTickMarkLayerRec,tick.y_l_label_angle),
 		NhlTString,_NhlUSET( "0.0" ),0,NULL},
@@ -619,9 +619,9 @@ static NhlResource resources[] = {
 		sizeof(float),
 		NhlOffset(NhlTickMarkLayerRec,tick.y_r_label_font_aspect),
 		NhlTString,_NhlUSET( "1.3125" ),0,NULL},
-	{NhlNtmYRLabelJust, NhlCtmYLabelJusts,NhlTInteger,sizeof(int),
+	{NhlNtmYRLabelJust, NhlCtmYLabelJusts,NhlTJustification,sizeof(int),
 		NhlOffset(NhlTickMarkLayerRec,tick.y_r_label_just),
-		NhlTImmediate,_NhlUSET( (NhlPointer)1 ),0,NULL},
+		NhlTImmediate,_NhlUSET((NhlPointer)NhlCENTERLEFT),0,NULL},
 	{NhlNtmYRLabelAngleF, NhlCtmYLabelAnglesF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlTickMarkLayerRec,tick.y_r_label_angle),
 		NhlTString,_NhlUSET( "0.0" ),0,NULL},
@@ -674,12 +674,12 @@ static NhlErrorTypes ComputeMinorTickMarks(
 	float* minor_locs,
 	int* nminor,
 	int precision,
-	NhlTickMarkStyles style
+	NhlTickMarkStyle style
 #endif 
 );
 static NhlErrorTypes AutoComputeMajorTickMarks(
 #if	NhlNeedProto
-        NhlTickMarkStyles  /* style*/,
+        NhlTickMarkStyle  /* style*/,
         float */*array*/,
         char** /*larray*/,
         int /*max_ticks*/,
@@ -695,7 +695,7 @@ static NhlErrorTypes AutoComputeMajorTickMarks(
 );
 static NhlErrorTypes ManualComputeMajorTickMarks(
 #if	NhlNeedProto
-        NhlTickMarkStyles /*style*/,
+        NhlTickMarkStyle /*style*/,
         float */*array*/,
         char** /*larray*/,
         float /*dmax*/,
@@ -730,7 +730,7 @@ int /* max_ticks */
 
 static NhlErrorTypes ExplicitComputeMajorTickMarks(
 #if	NhlNeedProto
-NhlTickMarkStyles /*style*/,
+NhlTickMarkStyle /*style*/,
 float */*array*/,
 char** /*larray*/,
 float /*dmax*/,
@@ -945,7 +945,7 @@ static char *ConvertToString(
 	float		value,
 	int		convert_precision,
 	int		compare_precision,
-	NhlTickMarkStyles	style,
+	NhlTickMarkStyle	style,
 	int		cutoff
 #endif
 );
@@ -1683,7 +1683,7 @@ static NhlErrorTypes	TickMarkDestroy
  * Function:	TickMarkClassInitialize
  *
  * Description: Just calls NrmStringToQuark to assure that the two new
- *		types NhlTTickMarkModes and NhlTTickMarkStyles are registered
+ *		types NhlTTickMarkMode and NhlTTickMarkStyle are registered
  *		names.
  *
  * In Args: 	NONE
@@ -1717,9 +1717,9 @@ static NhlErrorTypes	TickMarkClassInitialize
 
 	_NhlInitializeLayerClass(NhlmultiTextLayerClass);
 
-	_NhlRegisterEnumType(NhlTTickMarkModes,tmarkmodes,
+	_NhlRegisterEnumType(NhlTTickMarkMode,tmarkmodes,
 							NhlNumber(tmarkmodes));
-	_NhlRegisterEnumType(NhlTTickMarkStyles,tmarkstyles,
+	_NhlRegisterEnumType(NhlTTickMarkStyle,tmarkstyles,
 							NhlNumber(tmarkstyles));
 
 	Qfloat = NrmStringToQuark(NhlTFloat);
@@ -2443,7 +2443,7 @@ static NhlErrorTypes TickMarkGetBB
 static NhlErrorTypes AutoComputeMajorTickMarks
 #if	NhlNeedProto
 (
-	NhlTickMarkStyles  style,
+	NhlTickMarkStyle  style,
 	float *array,
 	char** larray,
 	int max_ticks,
@@ -2458,7 +2458,7 @@ static NhlErrorTypes AutoComputeMajorTickMarks
 )
 #else
 (style,array,larray,max_ticks,dmax,dmin,tstart,tend,convert_precision,spacing,nmajor,cutoff)
-NhlTickMarkStyles  style;
+NhlTickMarkStyle  style;
 float   *       array;
 char	**	larray;
 int		max_ticks;
@@ -2641,7 +2641,7 @@ int		cutoff;
 static NhlErrorTypes ManualComputeMajorTickMarks
 #if	NhlNeedProto
 (
-	NhlTickMarkStyles style,
+	NhlTickMarkStyle style,
 	float *array,
 	char** larray,
 	float dmax,
@@ -2656,7 +2656,7 @@ static NhlErrorTypes ManualComputeMajorTickMarks
 )
 #else
 (style,array,larray,dmax,dmin,tstart,tend,convert_precision,spacing,spacing_type,nmajor,cutoff)
-NhlTickMarkStyles  style;
+NhlTickMarkStyle  style;
 float   *       array;
 char	** 	larray;
 float           dmax;
@@ -2824,10 +2824,10 @@ int		cutoff;
 /*ARGSUSED*/
 static NhlErrorTypes ExplicitComputeMajorTickMarks
 #if	NhlNeedProto
-(NhlTickMarkStyles style,float *array,char** larray,float dmax,float dmin,float tstart,float tend,int convert_precision,float *requested_points,char** requested_labels,int *nmajor,int n_requested)
+(NhlTickMarkStyle style,float *array,char** larray,float dmax,float dmin,float tstart,float tend,int convert_precision,float *requested_points,char** requested_labels,int *nmajor,int n_requested)
 #else
 (style,array,larray,dmax,dmin,tstart,tend,convert_precision,requested_points,requested_labels,nmajor,n_requested)
-NhlTickMarkStyles  style;
+NhlTickMarkStyle  style;
 float   *       array;
 char	**	larray;
 float           dmax;
@@ -3082,7 +3082,7 @@ static char *ConvertToString
 	float		value,
 	int		convert_precision,
 	int		compare_precision,
-	NhlTickMarkStyles	style,
+	NhlTickMarkStyle	style,
 	int		cutoff
 )
 #else
@@ -3090,7 +3090,7 @@ static char *ConvertToString
 float	value;
 int	convert_precision;
 int	compare_precision;
-NhlTickMarkStyles	style;
+NhlTickMarkStyle	style;
 int	cutoff;
 #endif
 {
@@ -3199,7 +3199,7 @@ int	cutoff;
  *		float* m_locs,		major tick mark locations
  *		int nmajor,		total numberr of major tick marks
  *		int precision,		precision used to compare two nums
- *		NhlTickMarkStyles style	style of tick marks
+ *		NhlTickMarkStyle style	style of tick marks
  *
  * Out Args:	minor_locs		locations of minor tick marks
  *		nminor		total number of minor tick marks.
@@ -3222,7 +3222,7 @@ static NhlErrorTypes ComputeMinorTickMarks
 	float* minor_locs,
 	int* nminor,
 	int precision,
-	NhlTickMarkStyles style
+	NhlTickMarkStyle style
 )
 #else
 (minorpermajor,spacing,tstart,tend,dmax,dmin,m_locs,nmajor,minor_locs, nminor,precision,style)
@@ -3237,7 +3237,7 @@ static NhlErrorTypes ComputeMinorTickMarks
 	float	*minor_locs;
 	int	*nminor;
 	int	precision;
-	NhlTickMarkStyles	style;
+	NhlTickMarkStyle	style;
 #endif
 {
 	float minor_spacing,tmp;
@@ -3724,14 +3724,14 @@ static NhlErrorTypes CheckKeyVals
         if((tnew->tick.x_b_data_left == 0.0)&&
                 (tnew->tick.x_b_data_right ==0.0)&&
                 (tnew->tick.x_b_on)){
-                NhlPError(NhlWARNING,NhlEUNKNOWN,"%s: Neither NhlXBDataLeftF nor NhlXBDataRightF are set and NhlXBOn is set, turning off bottom ticks",error_lead);
+                NhlPError(NhlWARNING,NhlEUNKNOWN,"%s: Neither NhltmXBDataLeftF nor NhltmXBDataRightF are set and NhltmXBOn is set, turning off bottom ticks",error_lead);
                 tnew->tick.x_b_on = 0;
 		ret = NhlWARNING;
         }
         if((tnew->tick.x_t_data_left == 0.0)&&
                 (tnew->tick.x_t_data_right ==0.0)&&
                 (tnew->tick.x_t_on)){
-                NhlPError(NhlWARNING,NhlEUNKNOWN,"%s: Neither NhlXTDataLeftF nor NhlXTDataRightF are set and NhlXTOn is set, turning off Top ticks",error_lead);
+                NhlPError(NhlWARNING,NhlEUNKNOWN,"%s: Neither NhltmXTDataLeftF nor NhltmXTDataRightF are set and NhltmXTOn is set, turning off Top ticks",error_lead);
 		tnew->tick.x_t_on = 0;
 		ret = NhlWARNING;
         }
@@ -3753,14 +3753,14 @@ static NhlErrorTypes CheckKeyVals
         if((tnew->tick.y_l_data_bottom == 0.0)&&
                 (tnew->tick.y_l_data_top ==0.0)&&
                 (tnew->tick.y_l_on)){
-                NhlPError(NhlWARNING,NhlEUNKNOWN,"%s: Neither NhlYLDataBottomF nor NhlYLDataTopF are set and NhlYLOn is set, turning off left ticks",error_lead);
+                NhlPError(NhlWARNING,NhlEUNKNOWN,"%s: Neither NhltmYLDataBottomF nor NhltmYLDataTopF are set and NhltmYLOn is set, turning off left ticks",error_lead);
                 tnew->tick.y_l_on = 0;
 		ret = NhlWARNING;
         }
         if((tnew->tick.y_r_data_bottom == 0.0)&&
                 (tnew->tick.y_r_data_top ==0.0)&&
                 (tnew->tick.y_r_on)){
-                NhlPError(NhlWARNING,NhlEUNKNOWN,"%s: Neither NhlYRDataBottomF nor NhlYRDataTopF are set and NhlYROn is set, turning off right ticks",error_lead);
+                NhlPError(NhlWARNING,NhlEUNKNOWN,"%s: Neither NhltmYRDataBottomF nor NhltmYRDataTopF are set and NhltmYROn is set, turning off right ticks",error_lead);
                 tnew->tick.y_r_on = 0;
 		ret = NhlWARNING;
         }
@@ -4852,7 +4852,7 @@ static NhlErrorTypes CheckIrregular
 	if((tnew->tick.x_b_irregular_points != NULL) && !skip_xb_irreg){
 		gen = (NhlGenArray)tnew->tick.x_b_irregular_points;
 
-		if((gen->typeQ != Qfloat) || (gen->size != sizeof(float)) ||
+		if((gen->size != sizeof(float)) ||
 		(gen->num_dimensions != 1) || (gen->len_dimensions[0] < 3)){
 			NhlPError(NhlWARNING,NhlEUNKNOWN,
 	"%s:%s must be a 1 dim float array with a min of 3 elements: resetting",
@@ -4893,7 +4893,7 @@ static NhlErrorTypes CheckIrregular
 	if((tnew->tick.x_t_irregular_points != NULL) && !skip_xt_irreg){
 		gen = (NhlGenArray)tnew->tick.x_t_irregular_points;
 
-		if((gen->typeQ != Qfloat) || (gen->size != sizeof(float)) ||
+		if((gen->size != sizeof(float)) ||
 		(gen->num_dimensions != 1) || (gen->len_dimensions[0] < 3)){
 			NhlPError(NhlWARNING,NhlEUNKNOWN,
 	"%s:%s must be a 1 dim float array with a min of 3 elements: resetting",
@@ -4934,7 +4934,7 @@ static NhlErrorTypes CheckIrregular
 	if((tnew->tick.y_l_irregular_points != NULL) && !skip_yl_irreg){
 		gen = (NhlGenArray)tnew->tick.y_l_irregular_points;
 
-		if((gen->typeQ != Qfloat) || (gen->size != sizeof(float)) ||
+		if((gen->size != sizeof(float)) ||
 		(gen->num_dimensions != 1) || (gen->len_dimensions[0] < 3)){
 			NhlPError(NhlWARNING,NhlEUNKNOWN,
 	"%s:%s must be a 1 dim float array with a min of 3 elements: resetting",
@@ -4975,8 +4975,8 @@ static NhlErrorTypes CheckIrregular
 	if((tnew->tick.y_r_irregular_points != NULL) && !skip_yr_irreg){
 		gen = (NhlGenArray)tnew->tick.y_r_irregular_points;
 
-		if((gen->typeQ != Qfloat) || (gen->size != sizeof(float)) ||
-		(gen->num_dimensions != 1) || (gen->len_dimensions[0] < 3)){
+		if((gen->size != sizeof(float)) || (gen->num_dimensions != 1)
+					|| (gen->len_dimensions[0] < 3)){
 			NhlPError(NhlWARNING,NhlEUNKNOWN,
 	"%s:%s must be a 1 dim float array with a min of 3 elements: resetting",
 				error_lead,NhlNtmYRIrregularPoints);
@@ -5059,23 +5059,23 @@ static NhlErrorTypes CheckIrregular
 		}
 		if(tnew->tick.x_b_data_left > tnew->tick.x_b_data_right) {
 			if(tnew->tick.x_b_data_left > tnew->tick.ir_xbmax) {
-				NhlPError(NhlWARNING,NhlEUNKNOWN,"CheckIrregular: XBDataLeftF is greater than maximum value in XBCoordPoints, resetting XBDataLeftF to maximum of XBCoordPoints");
+				NhlPError(NhlWARNING,NhlEUNKNOWN,"CheckIrregular: XBDataLeftF is greater than the maximum value in XBCoordPoints, resetting XBDataLeftF to maximum of XBCoordPoints");
 				tnew->tick.x_b_data_left = tnew->tick.ir_xbmax;
 				ret = NhlWARNING;
 			} 
 			if(tnew->tick.x_b_data_right < tnew->tick.ir_xbmin) {
-				NhlPError(NhlWARNING,NhlEUNKNOWN,"CheckIrregular: XBDataRightF is than minimum value in XBCoordPoints, resetting XBDataRightF to minimum of XBCoordPoints");
+				NhlPError(NhlWARNING,NhlEUNKNOWN,"CheckIrregular: XBDataRightF is than the minimum value in XBCoordPoints, resetting XBDataRightF to minimum of XBCoordPoints");
 				tnew->tick.x_b_data_right = tnew->tick.ir_xbmin;
 				ret = NhlWARNING;
 			}
 		} else {
 			if(tnew->tick.x_b_data_left < tnew->tick.ir_xbmin) {
-				NhlPError(NhlWARNING,NhlEUNKNOWN,"CheckIrregular: XBDataLeftF is less than minimum value in XBCoordPoints, resetting XBDataLeftF to minimum of XBCoordPoints");
+				NhlPError(NhlWARNING,NhlEUNKNOWN,"CheckIrregular: XBDataLeftF is less than the minimum value in XBCoordPoints, resetting XBDataLeftF to minimum of XBCoordPoints");
 				tnew->tick.x_b_data_left = tnew->tick.ir_xbmin;
 				ret = NhlWARNING;
 			}
 			if(tnew->tick.x_b_data_right > tnew->tick.ir_xbmax) {
-				NhlPError(NhlWARNING,NhlEUNKNOWN,"CheckIrregular: XBDataRightF is than maximum value in XBCoordPoints, resetting XBDataRightF to maximum of XBCoordPoints");
+				NhlPError(NhlWARNING,NhlEUNKNOWN,"CheckIrregular: XBDataRightF is greater than the maximum value in XBCoordPoints, resetting XBDataRightF to maximum of XBCoordPoints");
 				tnew->tick.x_b_data_right = tnew->tick.ir_xbmax;
 				ret = NhlWARNING;
 			}
@@ -5090,23 +5090,23 @@ static NhlErrorTypes CheckIrregular
 		}
 		if(tnew->tick.x_t_data_left > tnew->tick.x_t_data_right) {
 			if(tnew->tick.x_t_data_left > tnew->tick.ir_xtmax) {
-				NhlPError(NhlWARNING,NhlEUNKNOWN,"CheckIrregular: XTDataLeftF is greater than maximum value in XTCoordPoints, resetting XTDataLeftF to maximum of XTCoordPoints");
+				NhlPError(NhlWARNING,NhlEUNKNOWN,"CheckIrregular: XTDataLeftF is greater than the maximum value in XTCoordPoints, resetting XTDataLeftF to maximum of XTCoordPoints");
 				tnew->tick.x_t_data_left = tnew->tick.ir_xtmax;
 				ret = NhlWARNING;
 			}
 			if(tnew->tick.x_t_data_right < tnew->tick.ir_xtmin) {
-				NhlPError(NhlWARNING,NhlEUNKNOWN,"CheckIrregular: XTDataRightF is than minimum value in XTCoordPoints, resetting XTDataRightF to minimum of XTCoordPoints");
+				NhlPError(NhlWARNING,NhlEUNKNOWN,"CheckIrregular: XTDataRightF is less than the minimum value in XTCoordPoints, resetting XTDataRightF to minimum of XTCoordPoints");
 				tnew->tick.x_t_data_right = tnew->tick.ir_xtmin;
 				ret = NhlWARNING;
 			}
 		} else {
 			if(tnew->tick.x_t_data_left < tnew->tick.ir_xtmin) {
-				NhlPError(NhlWARNING,NhlEUNKNOWN,"CheckIrregular: XTDataLeftF is less than minimum value in XTCoordPoints, resetting XTDataLeftF to minimum of XTCoordPoints");
+				NhlPError(NhlWARNING,NhlEUNKNOWN,"CheckIrregular: XTDataLeftF is less than the minimum value in XTCoordPoints, resetting XTDataLeftF to minimum of XTCoordPoints");
 				tnew->tick.x_t_data_left = tnew->tick.ir_xtmin;
 				ret = NhlWARNING;
 			}
 			if(tnew->tick.x_t_data_right > tnew->tick.ir_xtmax) {
-				NhlPError(NhlWARNING,NhlEUNKNOWN,"CheckIrregular: XTDataRightF is than maximum value in XTCoordPoints, resetting XTDataRightF to maximum of XTCoordPoints");
+				NhlPError(NhlWARNING,NhlEUNKNOWN,"CheckIrregular: XTDataRightF is greater than the maximum value in XTCoordPoints, resetting XTDataRightF to maximum of XTCoordPoints");
 				tnew->tick.x_t_data_right = tnew->tick.ir_xtmax;
 				ret = NhlWARNING;
 			}
@@ -5121,23 +5121,23 @@ static NhlErrorTypes CheckIrregular
 		}
 		if(tnew->tick.y_r_data_bottom > tnew->tick.y_r_data_top) {
 			if(tnew->tick.y_r_data_bottom > tnew->tick.ir_yrmax) {
-				NhlPError(NhlWARNING,NhlEUNKNOWN,"CheckIrregular: YRDataBottomF is greater than maximum value in YRCoordPoints, resetting YRDataBottomF to maximum of YRCoordPoints");
+				NhlPError(NhlWARNING,NhlEUNKNOWN,"CheckIrregular: YRDataBottomF is greater than the maximum value in YRCoordPoints, resetting YRDataBottomF to maximum of YRCoordPoints");
 				tnew->tick.y_r_data_bottom = tnew->tick.ir_yrmax;
 				ret = NhlWARNING;
 			}
 			if(tnew->tick.y_r_data_top < tnew->tick.ir_yrmin) {
-				NhlPError(NhlWARNING,NhlEUNKNOWN,"CheckIrregular: YRDataTopF is than minimum value in YRCoordPoints, resetting YRDataTopF to minimum of YRCoordPoints");
+				NhlPError(NhlWARNING,NhlEUNKNOWN,"CheckIrregular: YRDataTopF is less than the minimum value in YRCoordPoints, resetting YRDataTopF to minimum of YRCoordPoints");
 				tnew->tick.y_r_data_top = tnew->tick.ir_yrmin;
 				ret = NhlWARNING;
 			}
 		} else {
 			if(tnew->tick.y_r_data_bottom < tnew->tick.ir_yrmin) {
-				NhlPError(NhlWARNING,NhlEUNKNOWN,"CheckIrregular: YRDataBottomF is less than minimum value in YRCoordPoints, resetting YRDataBottomF to minimum of YRCoordPoints");
+				NhlPError(NhlWARNING,NhlEUNKNOWN,"CheckIrregular: YRDataBottomF is less than the minimum value in YRCoordPoints, resetting YRDataBottomF to minimum of YRCoordPoints");
 				tnew->tick.y_r_data_bottom = tnew->tick.ir_yrmin;
 				ret = NhlWARNING;
 			}
 			if(tnew->tick.y_r_data_top > tnew->tick.ir_yrmax) {
-				NhlPError(NhlWARNING,NhlEUNKNOWN,"CheckIrregular: YRDataTopF is than maximum value in YRCoordPoints, resetting YRDataTopF to maximum of YRCoordPoints");
+				NhlPError(NhlWARNING,NhlEUNKNOWN,"CheckIrregular: YRDataTopF is greater than the maximum value in YRCoordPoints, resetting YRDataTopF to maximum of YRCoordPoints");
 				tnew->tick.y_r_data_top= tnew->tick.ir_yrmax;
 				ret = NhlWARNING;
 			}
@@ -5152,23 +5152,23 @@ static NhlErrorTypes CheckIrregular
 		}
 		if(tnew->tick.y_l_data_bottom > tnew->tick.y_l_data_top) {
 			if(tnew->tick.y_l_data_bottom > tnew->tick.ir_ylmax) {
-				NhlPError(NhlWARNING,NhlEUNKNOWN,"CheckIrregular: YLDataBottomF is greater than maximum value in YLCoordPoints, resetting YLDataBottomF to maximum of YLCoordPoints");
+				NhlPError(NhlWARNING,NhlEUNKNOWN,"CheckIrregular: YLDataBottomF is greater than the maximum value in YLCoordPoints, resetting YLDataBottomF to maximum of YLCoordPoints");
 				tnew->tick.y_l_data_bottom = tnew->tick.ir_ylmax;
 				ret = NhlWARNING;
 			}
 			if(tnew->tick.y_l_data_top < tnew->tick.ir_ylmin) {
-				NhlPError(NhlWARNING,NhlEUNKNOWN,"CheckIrregular: YLDataTopF is than minimum value in YLCoordPoints, resetting YLDataTopF to minimum of YLCoordPoints");
+				NhlPError(NhlWARNING,NhlEUNKNOWN,"CheckIrregular: YLDataTopF is less than the minimum value in YLCoordPoints, resetting YLDataTopF to minimum of YLCoordPoints");
 				tnew->tick.y_l_data_top= tnew->tick.ir_ylmin;
 				ret = NhlWARNING;
 			}
 		} else {
 			if(tnew->tick.y_l_data_bottom < tnew->tick.ir_ylmin) {
-				NhlPError(NhlWARNING,NhlEUNKNOWN,"CheckIrregular: YLDataBottomF is less than minimum value in YLCoordPoints, resetting YLDataBottomF to minimum of YLCoordPoints");
+				NhlPError(NhlWARNING,NhlEUNKNOWN,"CheckIrregular: YLDataBottomF is less than the minimum value in YLCoordPoints, resetting YLDataBottomF to minimum of YLCoordPoints");
 				tnew->tick.y_l_data_bottom= tnew->tick.ir_ylmin;
 				ret = NhlWARNING;
 			}
 			if(tnew->tick.y_l_data_top > tnew->tick.ir_ylmax) {
-				NhlPError(NhlWARNING,NhlEUNKNOWN,"CheckIrregular: YLDataTopF is than maximum value in YLCoordPoints, resetting YLDataTopF to maximum of YLCoordPoints");
+				NhlPError(NhlWARNING,NhlEUNKNOWN,"CheckIrregular: YLDataTopF is greater than the maximum value in YLCoordPoints, resetting YLDataTopF to maximum of YLCoordPoints");
 				tnew->tick.y_l_data_top = tnew->tick.ir_ylmax;
 				ret = NhlWARNING;
 			}

@@ -1,5 +1,5 @@
 /*
- *      $Id: View.c,v 1.13 1994-12-16 20:04:57 boote Exp $
+ *      $Id: View.c,v 1.14 1995-02-17 10:23:37 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1123,4 +1123,66 @@ NhlBoolean	keep_asp;
         _NhlResetSegTransDat(theview->view.thetrans_children,xpoints,ypoints);
 	return;
 
+}
+
+/*
+ * Function:	NhlIsView
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+NhlBoolean
+NhlIsView
+#if	NhlNeedProto
+(
+	int	pid
+)
+#else
+(pid)
+	int	pid;
+#endif
+{
+	NhlLayer	l = _NhlGetLayer(pid);
+
+	if(l && _NhlIsView(l))
+		return True;
+
+	return False;
+}
+
+/*
+ * Function:	nhl_fisview
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+void _NHLCALLF(nhl_fisview,NHL_FISVIEW)
+#if	NhlNeedProto
+(
+	int	*id,
+	int	*status
+)
+#else
+(id,status)
+	int	*id;
+	int	*status;
+#endif
+{
+	*status = NhlIsView(*id);
+
+	return;
 }

@@ -1,5 +1,5 @@
 /*
- *      $Id: Trans.c,v 1.9 1994-12-16 20:04:50 boote Exp $
+ *      $Id: Trans.c,v 1.10 1995-02-17 10:23:33 boote Exp $
  */
 /************************************************************************
 *									*
@@ -606,7 +606,18 @@ static NhlErrorTypes CallNDCToData
 
 NhlErrorTypes NhlNDCToData
 #if NhlNeedProto
-(int pid, float *x,float *y, int n, float *xout, float *yout,float *xmissing,float *ymissing,int* status,float* out_of_range)
+(
+	int	pid,
+	float	*x,
+	float	*y,
+	int	n,
+	float	*xout,
+	float	*yout,
+	float	*xmissing,
+	float	*ymissing,
+	int	*status,
+	float	*out_of_range
+)
 #else 
 (pid,x,y,n,xout,yout,xmissing,ymissing,status,out_of_range)
 	int pid;

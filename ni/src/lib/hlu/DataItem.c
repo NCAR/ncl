@@ -1,5 +1,5 @@
 /*
- *      $Id: DataItem.c,v 1.8 1994-12-16 20:04:07 boote Exp $
+ *      $Id: DataItem.c,v 1.9 1995-02-17 10:23:09 boote Exp $
  */
 /************************************************************************
 *									*
@@ -428,4 +428,64 @@ _NhlDataChanged
 *									*
 ************************************************************************/
 
-/* none yet */
+/*
+ * Function:	NhlIsDataItem
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+NhlBoolean
+NhlIsDataItem
+#if	NhlNeedProto
+(
+	int	pid
+)
+#else
+(pid)
+	int	pid;
+#endif
+{
+	NhlLayer	l = _NhlGetLayer(pid);
+
+	if(l && _NhlIsDataItem(l))
+		return True;
+
+	return False;
+}
+
+/*
+ * Function:	nhl_fisdataitem
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+void _NHLCALLF(nhl_fisdataitem,NHL_FISDATAITEM)
+#if	NhlNeedProto
+(
+	int	*id,
+	int	*status
+)
+#else
+(id,status)
+	int	*id;
+	int	*status;
+#endif
+{
+	*status = NhlIsDataItem(*id);
+
+	return;
+}

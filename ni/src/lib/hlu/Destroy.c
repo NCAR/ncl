@@ -1,5 +1,5 @@
 /*
- *      $Id: Destroy.c,v 1.7 1994-12-16 20:04:10 boote Exp $
+ *      $Id: Destroy.c,v 1.8 1995-02-17 10:23:15 boote Exp $
  */
 /************************************************************************
 *									*
@@ -110,6 +110,12 @@ NhlDestroy
 									pid);
 		return NhlFATAL;
 	}
+
+	if(l->base.being_destroyed)
+		return NhlNOERROR;
+
+	l->base.being_destroyed = True;
+
 	if(_NhlIsWorkstation(l) ) {
 		_NhlCloseWorkstation(l);
 	}

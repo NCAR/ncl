@@ -1,5 +1,5 @@
 C
-C $Id: TRANSFORM.f,v 1.1 1994-05-12 23:52:22 boote Exp $
+C $Id: TRANSFORM.f,v 1.2 1995-02-17 10:23:27 boote Exp $
 C
 C****************************************************************
 C								*
@@ -49,4 +49,9 @@ C
 	real	x(n),y(n)
 
 	call nhl_fndcpolyline(ipid,x,y,n,ierr)
+      end
+      subroutine nhlfistransform(id,istat)
+
+	integer id,istat
+	call nhl_fistransform(id,istat)
       end

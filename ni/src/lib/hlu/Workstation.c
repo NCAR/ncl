@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.23 1995-01-26 02:53:53 boote Exp $
+ *      $Id: Workstation.c,v 1.24 1995-02-17 10:23:42 boote Exp $
  */
 /************************************************************************
 *									*
@@ -831,12 +831,19 @@ WorkstationClassInitialize
 		{16,	"circle_filled"}
 	};
 
+	_NhlEnumVals	mrkline[] = {
+		{NhlLINES,	"lines"},
+		{NhlMARKERS,	"markers"},
+		{NhlMARKLINES,	"marklines"}
+	};
+
 	(void)_NhlRegisterEnumType(NhlTDashIndex,dashvals,NhlNumber(dashvals));
 	(void)_NhlRegisterEnumType(NhlTColorIndex,colorvals,
 		NhlNumber(colorvals));
 	(void)_NhlRegisterEnumType(NhlTFillIndex,fillvals,NhlNumber(fillvals));
 	(void)_NhlRegisterEnumType(NhlTMarkerIndex,markervals,
 		NhlNumber(markervals));
+	(void)_NhlRegisterEnumType(NhlTMarkLineMode,mrkline,NhlNumber(mrkline));
 
 	(void)NhlRegisterConverter(NhlTScalar,NhlTDashIndex,NhlCvtScalarToIndex,
 		dashargs,NhlNumber(dashargs),False,NULL);
@@ -3034,8 +3041,11 @@ NhlBoolean NhlIsAllocatedColor
 	int ci;
 #endif
 {
+	NhlLayer	l = _NhlGetLayer(pid);
 
- 	return(_NhlIsAllocatedColor(_NhlGetLayer(pid),ci));	
+	if(l && _NhlIsAllocatedColor(l,ci))
+		return True;
+	return False;
 }
 
 /*
@@ -3342,7 +3352,8 @@ void _NhlSetLineInfo
         float			y0,y1,x0,x1;
         int			ll;
         char			buffer[80];
-	int			ix;
+	int			i,ix;
+	char			*tchar;
 
 	memset((void *) buffer, (char) 0, 80 * sizeof(char));
 
@@ -3386,17 +3397,41 @@ void _NhlSetLineInfo
                         tinst->work.dash_dollar_size = 1;
 
         strcpy(buffer,dash_patterns[ix]);
-        if(tinst->work.line_label != NULL) {
-		strcpy(&(buffer[strlen(dash_patterns[ix])
-				  - strlen(tinst->work.line_label)]),
-			 tinst->work.line_label);
-		gset_text_colr_ind((Gint)_NhlGetGksCi(
-				plot->base.wkptr,tinst->work.line_label_color));
-		(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
-        }
-        gset_line_colr_ind((Gint)_NhlGetGksCi(
+	if(tinst->work.line_color == NhlTRANSPARENT){
+		i=0;
+		while(buffer[i] != '\0'){
+			buffer[i] = '\'';
+			i++;
+		}
+	}
+	else{
+	        gset_line_colr_ind((Gint)_NhlGetGksCi(
 			    plot->base.wkptr,tinst->work.line_color));
-	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
+		(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
+	}
+        if(tinst->work.line_label != NULL){
+		tchar = &buffer[strlen(dash_patterns[ix])-
+						strlen(tinst->work.line_label)];
+		strcpy(tchar,tinst->work.line_label);
+		if(tinst->work.line_label_color == NhlTRANSPARENT){
+			/*
+			 * All this seems to do is remove the linelabel.
+			 * I can't seem to get dashchar to put a "transparent"
+			 * linelabel in.
+			 */
+			i=0;
+			while(tchar[i] != '\0'){
+				tchar[i] = '\'';
+				i++;
+			}
+			strcat(tchar,"$");
+		}
+		else{
+			gset_text_colr_ind((Gint)_NhlGetGksCi(
+				plot->base.wkptr,tinst->work.line_label_color));
+			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
+		}
+        }
 
         gset_linewidth(tinst->work.line_thickness);
 	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
@@ -4387,4 +4422,66 @@ int num_points;
 {
         return(CallWorkstationMarker(instance->base.layer_class,
 				     instance,x,y,num_points));
+}
+
+/*
+ * Function:	NhlIsWorkstation
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+NhlBoolean
+NhlIsWorkstation
+#if	NhlNeedProto
+(
+	int	pid
+)
+#else
+(pid)
+	int	pid;
+#endif
+{
+	NhlLayer	l = _NhlGetLayer(pid);
+
+	if(l && _NhlIsWorkstation(l))
+		return True;
+
+	return False;
+}
+
+/*
+ * Function:	nhl_fisworkstation
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+void _NHLCALLF(nhl_fisworkstation,NHL_FISWORKSTATION)
+#if	NhlNeedProto
+(
+	int	*id,
+	int	*status
+)
+#else
+(id,status)
+	int	*id;
+	int	*status;
+#endif
+{
+	*status = NhlIsWorkstation(*id);
+
+	return;
 }

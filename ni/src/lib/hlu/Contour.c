@@ -1,5 +1,5 @@
 /*
- *      $Id: Contour.c,v 1.49 1995-02-11 02:41:55 dbrown Exp $
+ *      $Id: Contour.c,v 1.50 1995-02-17 10:22:58 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1811,23 +1811,35 @@ ContourClassPartInitialize
 					NhlNovTickMarkDisplayMode,
 					NhlNovTitleDisplayMode,
 					NhlNlgItemCount,
-					NhlNlgMonoItemIndex,
-					NhlNlgItemIndex,
-					NhlNlgItemIndexes,
+					NhlNlgMonoDashIndex,
+					NhlNlgMonoMarkerIndex,
+					NhlNlgDashIndex,
+					NhlNlgMarkerIndex,
+					NhlNlgDashIndexes,
+					NhlNlgMarkerIndexes,
 					NhlNlgLabelStrings,
-					NhlNlgMonoItemColor,
-					NhlNlgItemColor,
-					NhlNlgItemColors,
-					NhlNlgMonoItemThickness,
-					NhlNlgItemThicknessF,
-					NhlNlgItemThicknesses,
-					NhlNlgItemStrings,
-					NhlNlgMonoItemStringColor,
-					NhlNlgItemStringColor,
-					NhlNlgItemStringColors,
-					NhlNlgMonoItemFontHeight,
-					NhlNlgItemFontHeightF,
-					NhlNlgItemFontHeights,
+					NhlNlgMonoLineColor,
+					NhlNlgLineColor,
+					NhlNlgLineColors,
+					NhlNlgMonoMarkerColor,
+					NhlNlgMarkerColor,
+					NhlNlgMarkerColors,
+					NhlNlgMonoLineThickness,
+					NhlNlgLineThicknessF,
+					NhlNlgLineThicknesses,
+					NhlNlgMonoMarkerThickness,
+					NhlNlgMarkerThicknessF,
+					NhlNlgMarkerThicknesses,
+					NhlNlgLineLabelStrings,
+					NhlNlgMonoLineLabelColor,
+					NhlNlgLineLabelColor,
+					NhlNlgLineLabelColors,
+					NhlNlgMonoLineLabelFontHeight,
+					NhlNlgLineLabelFontHeightF,
+					NhlNlgLineLabelFontHeights,
+					NhlNlgMonoMarkerSize,
+					NhlNlgMarkerSizeF,
+					NhlNlgMarkerSizes,
 					NhlNlgLineLabelsOn,
 					NhlNlbBoxCount,
 					NhlNlbLabelAlignment,
@@ -1852,6 +1864,7 @@ ContourClassPartInitialize
 
 	subret = _NhlRegisterDataRes((NhlDataCommLayerClass)lc,
 				     NhlNcnScalarFieldData,
+				     NULL,
 				     NhlcontourDataDepLayerClass,
 				     NhlscalarFieldFloatLayerClass,
 				     NULL);
@@ -5178,11 +5191,11 @@ static NhlErrorTypes ManageLegend
 		NhlSetSArg(&sargs[(*nargs)++],
 			   NhlNlgItemCount,cnp->level_count);
 		NhlSetSArg(&sargs[(*nargs)++],
-			   NhlNlgMonoItemIndex,cnp->mono_line_dash_pattern);
+			   NhlNlgMonoDashIndex,cnp->mono_line_dash_pattern);
 		NhlSetSArg(&sargs[(*nargs)++],
-			   NhlNlgItemIndex,cnp->line_dash_pattern);
+			   NhlNlgDashIndex,cnp->line_dash_pattern);
 		NhlSetSArg(&sargs[(*nargs)++],
-			   NhlNlgItemIndexes,cnp->line_dash_patterns);
+			   NhlNlgDashIndexes,cnp->line_dash_patterns);
 		do_it = True;
 		if (! cnp->line_lbls.on)
 			do_it = False;
@@ -5192,31 +5205,31 @@ static NhlErrorTypes ManageLegend
 		NhlSetSArg(&sargs[(*nargs)++],
 			   NhlNlgLabelStrings,cnp->llabel_strings);
 		NhlSetSArg(&sargs[(*nargs)++],
-			   NhlNlgMonoItemStringColor,
+			   NhlNlgMonoLineLabelColor,
 			   cnp->line_lbls.mono_color);
 		NhlSetSArg(&sargs[(*nargs)++],
-			   NhlNlgItemStringColor,cnp->line_lbls.color);
+			   NhlNlgLineLabelColor,cnp->line_lbls.color);
 		NhlSetSArg(&sargs[(*nargs)++],
-			   NhlNlgItemStringColors,cnp->llabel_colors);
+			   NhlNlgLineLabelColors,cnp->llabel_colors);
 		NhlSetSArg(&sargs[(*nargs)++],
-			   NhlNlgMonoItemColor,cnp->mono_line_color);
+			   NhlNlgMonoLineColor,cnp->mono_line_color);
 		NhlSetSArg(&sargs[(*nargs)++],
-			   NhlNlgItemColor,cnp->line_color);
+			   NhlNlgLineColor,cnp->line_color);
 		NhlSetSArg(&sargs[(*nargs)++],
-			   NhlNlgItemColors,cnp->line_colors);
+			   NhlNlgLineColors,cnp->line_colors);
 		NhlSetSArg(&sargs[(*nargs)++],
-			   NhlNlgMonoItemThickness,cnp->mono_line_thickness);
+			   NhlNlgMonoLineThickness,cnp->mono_line_thickness);
 		NhlSetSArg(&sargs[(*nargs)++],
-			   NhlNlgItemThicknessF,cnp->line_thickness);
+			   NhlNlgLineThicknessF,cnp->line_thickness);
 		NhlSetSArg(&sargs[(*nargs)++],
-			   NhlNlgItemThicknesses,cnp->line_thicknesses);
+			   NhlNlgLineThicknesses,cnp->line_thicknesses);
 		NhlSetSArg(&sargs[(*nargs)++],
-			   NhlNlgItemStrings,cnp->ll_strings);
+			   NhlNlgLineLabelStrings,cnp->ll_strings);
   
 		NhlSetSArg(&sargs[(*nargs)++],
-			   NhlNlgMonoItemFontHeight,True);
+			   NhlNlgMonoLineLabelFontHeight,True);
 		NhlSetSArg(&sargs[(*nargs)++],
-			   NhlNlgItemFontHeightF,cnp->line_lbls.height);
+			   NhlNlgLineLabelFontHeightF,cnp->line_lbls.height);
 		NhlSetSArg(&sargs[(*nargs)++],
 			   NhlNlgLineDashSegLenF,cnp->line_dash_seglen);
 
@@ -5244,14 +5257,14 @@ static NhlErrorTypes ManageLegend
 		if (cnp->mono_line_dash_pattern != 
 		    ocnp->mono_line_dash_pattern)
 			NhlSetSArg(&sargs[(*nargs)++],
-				   NhlNlgMonoItemIndex,
+				   NhlNlgMonoDashIndex,
 				   cnp->mono_line_dash_pattern);
 		if (cnp->line_dash_pattern != ocnp->line_dash_pattern)
 			NhlSetSArg(&sargs[(*nargs)++],
-				   NhlNlgItemIndex,cnp->line_dash_pattern);
+				   NhlNlgDashIndex,cnp->line_dash_pattern);
 		if (cnp->line_dash_patterns != ocnp->line_dash_patterns)
 			NhlSetSArg(&sargs[(*nargs)++],
-				   NhlNlgItemIndexes,cnp->line_dash_patterns);
+				   NhlNlgDashIndexes,cnp->line_dash_patterns);
 		do_it = True;
 		changed = False;
 		if (cnp->draw_lgnd_line_lbls_set &&
@@ -5275,36 +5288,36 @@ static NhlErrorTypes ManageLegend
 				   NhlNlgLabelStrings,cnp->llabel_strings);
 		if (cnp->mono_line_color != ocnp->mono_line_color)
 			NhlSetSArg(&sargs[(*nargs)++],
-				   NhlNlgMonoItemColor,cnp->mono_line_color);
+				   NhlNlgMonoLineColor,cnp->mono_line_color);
 		if (cnp->line_color != ocnp->line_color)
 			NhlSetSArg(&sargs[(*nargs)++],
-				   NhlNlgItemColor,cnp->line_color);
+				   NhlNlgLineColor,cnp->line_color);
 		if (cnp->line_colors != ocnp->line_colors)
 			NhlSetSArg(&sargs[(*nargs)++],
-				   NhlNlgItemColors,cnp->line_colors);
+				   NhlNlgLineColors,cnp->line_colors);
 		if (cnp->mono_line_thickness != ocnp->mono_line_thickness)
 			NhlSetSArg(&sargs[(*nargs)++],
-				   NhlNlgMonoItemThickness,
+				   NhlNlgMonoLineThickness,
 				   cnp->mono_line_thickness);
 		if (cnp->line_thickness != ocnp->line_thickness)
 			NhlSetSArg(&sargs[(*nargs)++],
-				   NhlNlgItemThicknessF,
+				   NhlNlgLineThicknessF,
 				   cnp->line_thickness);
 		if (cnp->line_thicknesses != ocnp->line_thicknesses)
 			NhlSetSArg(&sargs[(*nargs)++],
-				   NhlNlgItemThicknesses,
+				   NhlNlgLineThicknesses,
 				   cnp->line_thicknesses);
 		if (cnp->line_lbls.mono_color != ocnp->line_lbls.mono_color)
 			NhlSetSArg(&sargs[(*nargs)++],
-				   NhlNlgMonoItemStringColor,
+				   NhlNlgMonoLineLabelColor,
 				   cnp->line_lbls.mono_color);
 		if (cnp->line_lbls.color != ocnp->line_lbls.color)
 			NhlSetSArg(&sargs[(*nargs)++],
-				   NhlNlgItemStringColor,
+				   NhlNlgLineLabelColor,
 				   cnp->line_lbls.color);
 		if (cnp->llabel_colors != ocnp->llabel_colors)
 			NhlSetSArg(&sargs[(*nargs)++],
-				   NhlNlgItemStringColors,
+				   NhlNlgLineLabelColors,
 				   cnp->llabel_colors);
 		if (cnp->llabel_strings != ocnp->llabel_strings ||
 		    cnp->level_flags != ocnp->level_flags ||
@@ -5312,10 +5325,10 @@ static NhlErrorTypes ManageLegend
 		    cnp->level_count != ocnp->level_count ||
 		    cnp->llabel_interval_set) 
 			NhlSetSArg(&sargs[(*nargs)++],
-				   NhlNlgItemStrings,cnp->ll_strings);
+				   NhlNlgLineLabelStrings,cnp->ll_strings);
 		if (cnp->line_lbls.height != ocnp->line_lbls.height)
 			NhlSetSArg(&sargs[(*nargs)++],
-				   NhlNlgItemFontHeightF,
+				   NhlNlgLineLabelFontHeightF,
 				   cnp->line_lbls.height);
 		if (cnp->line_dash_seglen != ocnp->line_dash_seglen)
 			NhlSetSArg(&sargs[(*nargs)++],

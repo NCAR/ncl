@@ -1,5 +1,5 @@
 /*
- *      $Id: DataCommP.h,v 1.6 1994-10-04 01:02:08 boote Exp $
+ *      $Id: DataCommP.h,v 1.7 1995-02-17 10:23:08 boote Exp $
  */
 /************************************************************************
 *									*
@@ -29,6 +29,7 @@
 
 #define _NhlTDListCompiled	".List.Compiled."
 #define _NhlTDataList		".Data.List"
+#define _NhlTDataSpecList	".Data.Spec.List"
 #define _NhlTAddData		".Add.Data"
 #define _NhlTRemoveData		".Rm.Data"
 
@@ -45,12 +46,10 @@ typedef struct _NhlInternalDataListRec _NhlInternDataListRec, *_NhlInternDataLis
 typedef struct _NhlDCommListRec _NhlDCommListRec, *_NhlDCommList;
 
 struct _NhlDataNodeRec {
-	int			id;		/* id used to add/remove*/
+	int			item;		/* Data Item		*/
 	NhlDataSpecLayer	dataspec;	/* DataSpec object	*/
 	NrmQuark		type;		/* Type to convert to	*/
-	int			item;		/* Data Item		*/
 	_NhlDHandle		dhandle;	/* connection to datamgr*/
-	_NhlDCommList		dspechandle;	/* connection to dspec	*/
 };
 
 struct _NhlInternalDataListRec{
@@ -65,6 +64,8 @@ struct _NhlInternalDataListRec{
 struct _NhlDataOffsetRec{
 	NrmQuark	res_name;
 	unsigned int	offset;
+	NrmQuark	dsres_name;
+	unsigned int	dsoffset;
 	NhlLayerClass	dataspec_class;
 	NrmQuarkList	qlist;
 	_NhlDataOffset	next;
@@ -117,14 +118,12 @@ struct _NhlDCommListRec{
 };
 
 typedef struct _NhlDataSpecLayerPart{
-	/* User setable resource fields */
-	int		 data_item;
 	/* Private Fields */
-	_NhlDCommList	dcomm_list;
+	int		destroying;
 } NhlDataSpecLayerPart;
 
 typedef struct _NhlDataSpecLayerRec{
-	NhlObjLayerPart		base;
+	NhlBaseLayerPart	base;
 	NhlDataSpecLayerPart	dataspec;
 } NhlDataSpecLayerRec;
 
@@ -133,7 +132,7 @@ typedef struct _NhlDataSpecLayerClassPart{
 } NhlDataSpecLayerClassPart;
 
 typedef struct _NhlDataSpecLayerClassRec{
-	NhlObjLayerClassPart	base_class;
+	NhlBaseLayerClassPart		base_class;
 	NhlDataSpecLayerClassPart	dataspec_class;
 } NhlDataSpecLayerClassRec;
 
@@ -147,8 +146,9 @@ extern NhlDataSpecLayerClassRec NhldataSpecLayerClassRec;
 extern NhlErrorTypes _NhlRegisterDataRes(
 #if	NhlNeedVarArgProto
 	NhlDataCommLayerClass	dc,		/* DataComm sub-class	*/
-	NrmString		res_name,	/* name of data res	*/
-	NhlLayerClass		dataspec,	/* DataSpecific object	*/
+	NrmString		data_res,	/* name of data res	*/
+	NrmString		dataspec_res,	/* name of data res	*/
+	NhlLayerClass		dataspec,	/* DataSpecific class	*/
 	...					/* types requested	*/
 #endif
 );

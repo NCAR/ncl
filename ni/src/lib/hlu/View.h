@@ -1,5 +1,5 @@
 /*
- *      $Id: View.h,v 1.7 1994-12-16 20:04:58 boote Exp $
+ *      $Id: View.h,v 1.8 1995-02-17 10:23:38 boote Exp $
  */
 /************************************************************************
 *									*
@@ -97,6 +97,12 @@ extern NhlErrorTypes NhlGetBB(
 #if	NhlNeedProto
 	int,		/* pid */
 	NhlBoundingBox*	/* thebox */
+#endif
+);
+
+extern NhlBoolean NhlIsView(
+#if	NhlNeedProto
+	int	pid
 #endif
 );
 

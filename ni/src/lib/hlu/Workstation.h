@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.h,v 1.11 1995-01-24 01:25:16 boote Exp $
+ *      $Id: Workstation.h,v 1.12 1995-02-17 10:23:43 boote Exp $
  */
 /************************************************************************
 *									*
@@ -121,15 +121,15 @@
 /* Define for dash pattern index 0 */
 
 typedef	int	NhlDashIndex;
-#define	NhlTDashIndex	"dashIndex"
-#define	NhlTDashIndexGenArray	"dashIndexGenArray"
+#define	NhlTDashIndex	"DashIndex"
+#define	NhlTDashIndexGenArray	"DashIndexGenArray"
 #define NhlSOLIDLINE	0
 
 /* Colormap stuff */
 
 typedef	int	NhlColorIndex;
-#define	NhlTColorIndex	"colorIndex"
-#define	NhlTColorIndexGenArray	"colorIndexGenArray"
+#define	NhlTColorIndex	"ColorIndex"
+#define	NhlTColorIndexGenArray	"ColorIndexGenArray"
 #define NhlBACKGROUND 0
 #define NhlFOREGROUND 1
 #define NhlTRANSPARENT -1
@@ -139,8 +139,8 @@ typedef float NhlColor[3];
 /* Workstation Fill stuff */
 
 typedef	int	NhlFillIndex;
-#define	NhlTFillIndex	"fillIndex"
-#define	NhlTFillIndexGenArray	"fillIndexGenArray"
+#define	NhlTFillIndex	"FillIndex"
+#define	NhlTFillIndexGenArray	"FillIndexGenArray"
 #define NhlHOLLOWFILL	-1
 #define NhlSOLIDFILL	0
 #define NhlWK_INITIAL_FILL_BUFSIZE 128
@@ -158,8 +158,8 @@ typedef struct _NhlFillSpec {
 /* Workstation marker stuff */
 
 typedef	int	NhlMarkerIndex;
-#define	NhlTMarkerIndex	"markerIndex"
-#define	NhlTMarkerIndexGenArray	"markerIndexGenArray"
+#define	NhlTMarkerIndex	"MarkerIndex"
+#define	NhlTMarkerIndexGenArray	"MarkerIndexGenArray"
 #define NhlWK_DEF_MARKER	3
 
 typedef struct _NhlMarkerSpec {
@@ -174,6 +174,15 @@ typedef struct _NhlMarkerSpec {
 typedef NhlMarkerSpec **NhlMarkerTable;
 
 typedef float NhlMarkerTableParams[4];
+
+#define	NhlTMarkLineMode		"MarkLineMode"
+#define	NhlTMarkLineModeGenArray	"MarkLineModeGenArray"
+
+typedef enum _NhlMarkLineMode{
+	NhlLINES = 0,
+	NhlMARKERS = 1,
+	NhlMARKLINES = 2
+} NhlMarkLineMode;
 
 /*
  * Public access functions to support Workstation Class
@@ -264,6 +273,12 @@ extern NhlErrorTypes NhlSetMarker(
 	float	y_off,
 	float	aspect_adj,
 	float	size_adj
+#endif
+);
+
+extern NhlBoolean NhlIsWorkstation(
+#if	NhlNeedProto
+	int	pid
 #endif
 );
 

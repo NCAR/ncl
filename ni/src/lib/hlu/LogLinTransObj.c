@@ -1,5 +1,5 @@
 /*
- *      $Id: LogLinTransObj.c,v 1.14 1994-12-16 20:04:24 boote Exp $
+ *      $Id: LogLinTransObj.c,v 1.15 1995-02-17 10:23:21 boote Exp $
  */
 /************************************************************************
 *									*
@@ -37,24 +37,24 @@ static NhlResource resources[] = {
 	{ NhlNtrXMaxF,NhlCtrXMaxF,NhlTFloat,sizeof(float),
 		NhlOffset(NhlLogLinTransObjLayerRec,lltrans.x_max),
 		NhlTString,"1.0",0,NULL},
-	{ NhlNtrXLog,NhlCtrXLog,NhlTInteger,sizeof(int),
+	{ NhlNtrXLog,NhlCtrXLog,NhlTBoolean,sizeof(NhlBoolean),
 		NhlOffset(NhlLogLinTransObjLayerRec,lltrans.x_log),
-		NhlTString,"0" ,0,NULL},
-	{ NhlNtrXReverse,NhlCtrXReverse,NhlTInteger,sizeof(int),
+		NhlTImmediate,False,0,NULL},
+	{ NhlNtrXReverse,NhlCtrXReverse,NhlTBoolean,sizeof(NhlBoolean),
 		NhlOffset(NhlLogLinTransObjLayerRec,lltrans.x_reverse),
-		NhlTString,"0",0,NULL},
+		NhlTImmediate,False,0,NULL},
 	{ NhlNtrYMinF,NhlCtrYMinF,NhlTFloat,sizeof(float),
 		NhlOffset(NhlLogLinTransObjLayerRec,lltrans.y_min),
 		NhlTString,"0.0",0,NULL},
 	{ NhlNtrYMaxF,NhlCtrYMaxF,NhlTFloat,sizeof(float),
 		NhlOffset(NhlLogLinTransObjLayerRec,lltrans.y_max),
 		NhlTString,"1.0",0,NULL},
-	{ NhlNtrYLog,NhlCtrYLog,NhlTInteger,sizeof(int),
+	{ NhlNtrYLog,NhlCtrYLog,NhlTBoolean,sizeof(NhlBoolean),
 		NhlOffset(NhlLogLinTransObjLayerRec,lltrans.y_log),
-		NhlTString,"0" ,0,NULL},
-	{ NhlNtrYReverse,NhlCtrYReverse,NhlTInteger,sizeof(int),
+		NhlTImmediate,False,0,NULL},
+	{ NhlNtrYReverse,NhlCtrYReverse,NhlTBoolean,sizeof(NhlBoolean),
 		NhlOffset(NhlLogLinTransObjLayerRec,lltrans.y_reverse),
-		NhlTString,"0",0,NULL}
+		NhlTImmediate,False,0,NULL}
 
 /* End-documented-resources */
 
@@ -717,18 +717,21 @@ static NhlErrorTypes LlNDCToWin
 	
 
 			for(i = 0; i< n; i++) {
-				if(((xmissing != NULL)&&(*xmissing == x[i]))
-					||((ymissing != NULL)&&(*ymissing == y[i]))
+				if(((xmissing != NULL) && (*xmissing == x[i]))
+					||
+					((ymissing != NULL) &&
+							(*ymissing == y[i]))
 					||(x[i] < xmin)
 					||(x[i] > xmax)
 					||(y[i] < ymin)
 					||(y[i] > ymax)) {
 			
 					*status = 1;
-					xout[i]=yout[i]=linstance->trobj.out_of_range;
+					xout[i] = yout[i] =
+						linstance->trobj.out_of_range;
 				} else {
 		
-					strans(x0,x0+width,y0-height,y0,ultmp, urtmp, 
+					strans(xmin,xmax,ymin,ymax,ultmp,urtmp,
 						ubtmp, uttmp, x[i],y[i], 
 						&(xout[i]),&(yout[i]));
 					xout[i]=(float)pow((double)10.0,
@@ -757,7 +760,7 @@ static NhlErrorTypes LlNDCToWin
 					*status = 1;
 					xout[i]=yout[i]=linstance->trobj.out_of_range;
 				} else {
-					strans(x0,x0+width,y0-height,y0,ultmp,
+					strans(xmin,xmax,ymin,ymax,ultmp,
 						urtmp, linstance->lltrans.ub,
 						linstance->lltrans.ut, x[i],y[i],
 						&(xout[i]),&(yout[i]));
@@ -784,7 +787,7 @@ static NhlErrorTypes LlNDCToWin
 					*status = 1;
 					xout[i]=yout[i]=linstance->trobj.out_of_range;
 				} else {
-					strans(x0,x0+width,y0-height,y0,
+					strans(xmin,xmax,ymin,ymax,
 						linstance->lltrans.ul,
 						linstance->lltrans.ur, 
 						ubtmp,uttmp, 
@@ -810,7 +813,7 @@ static NhlErrorTypes LlNDCToWin
 					*status = 1;
 					xout[i]=yout[i]=linstance->trobj.out_of_range;
 				} else {
-					strans(x0,x0+width,y0-height,y0,
+					strans(xmin,xmax,ymin,ymax,
 						linstance->lltrans.ul,
 						linstance->lltrans.ur, 
 						linstance->lltrans.ub,

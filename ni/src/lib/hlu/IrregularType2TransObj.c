@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularType2TransObj.c,v 1.14 1994-12-16 20:04:17 boote Exp $
+ *      $Id: IrregularType2TransObj.c,v 1.15 1995-02-17 10:23:16 boote Exp $
  */
 /************************************************************************
 *									*
@@ -71,7 +71,7 @@ static NhlResource resources[] = {
 		NhlTImmediate,_NhlUSET(0) ,0,NULL},
 	{ NhlNtrXReverse, NhlCtrXReverse, NhlTBoolean,sizeof(NhlBoolean),
 		NhlOffset(NhlIrregularType2TransObjLayerRec,ir2trans.x_reverse),
-		NhlTImmediate,_NhlUSET(0) ,0,NULL},
+		NhlTImmediate,_NhlUSET(False) ,0,NULL},
 	{ NhlNtrXTensionF, NhlCtrXTensionF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlIrregularType2TransObjLayerRec,ir2trans.x_tension),
 		NhlTString,_NhlUSET("2.0") ,0,NULL},
@@ -80,7 +80,7 @@ static NhlResource resources[] = {
 		NhlTImmediate,_NhlUSET((NhlPointer)9) ,0,NULL},
 	{ NhlNtrXUseLog, NhlCtrXUseLog, NhlTBoolean, sizeof(NhlBoolean),
 		NhlOffset(NhlIrregularType2TransObjLayerRec,ir2trans.x_use_log),
-		NhlTImmediate,_NhlUSET(0) ,0,NULL},
+		NhlTImmediate,_NhlUSET(False) ,0,NULL},
 	{ NhlNtrYCoordPoints,NhlCtrYCoordPoints,NhlTPointer,sizeof(float*),
 		NhlOffset(NhlIrregularType2TransObjLayerRec,ir2trans.y_coord_points),
 		NhlTImmediate,_NhlUSET(NULL) ,0,(NhlFreeFunc)NhlFree},
@@ -107,7 +107,7 @@ static NhlResource resources[] = {
 		NhlTImmediate,_NhlUSET((NhlPointer)9) ,0,NULL},
 	{ NhlNtrYUseLog, NhlCtrYUseLog, NhlTBoolean, sizeof(NhlBoolean),
 		NhlOffset(NhlIrregularType2TransObjLayerRec,ir2trans.y_use_log),
-		NhlTImmediate,_NhlUSET(0),0,NULL}
+		NhlTImmediate,_NhlUSET(False),0,NULL}
 };
 
 /*

@@ -1,5 +1,5 @@
 C
-C $Id: DATACOMM.f,v 1.1 1994-05-12 23:50:53 boote Exp $
+C $Id: DATACOMM.f,v 1.2 1995-02-17 10:23:03 boote Exp $
 C
 C****************************************************************
 C								*
@@ -31,4 +31,14 @@ C
 	character*(*) res_name
 	integer id_plot,id_data,ierr
 	call nhlf_removedata(id_plot,res_name,len(res_name),id_data,ierr)
+      end
+      subroutine nhlfisdatacomm(id,istat)
+
+	integer id,istat
+	call nhl_fisdatacomm(id,istat)
+      end
+      subroutine nhlfisdataspec(id,istat)
+
+	integer id,istat
+	call nhl_fisdataspec(id,istat)
       end

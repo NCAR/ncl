@@ -1,31 +1,26 @@
 C
-C $Id: VIEW.f,v 1.2 1995-02-17 10:23:36 boote Exp $
+C $Id: DATAITEM.f,v 1.1 1995-02-17 10:23:04 boote Exp $
 C
 C****************************************************************
 C								*
-C			Copyright (C)  1994			*
+C			Copyright (C)  1995			*
 C	University Corporation for Atmospheric Research		*
 C			All Rights Reserved			*
 C								*
 C****************************************************************
 C
-C      File:            VIEW.f
+C      File:            DATAITEM.f
 C
 C      Author:          Jeff W. Boote
 C                       National Center for Atmospheric Research
 C                       PO 3000, Boulder, Colorado
 C
-C      Date:            Fri Apr 15 16:55:34 MDT 1994
+C      Date:            Tue Feb 14 12:17:04 MST 1995
 C
 C      Description:     
 C
-      subroutine nhlfgetbb(ipid,top,bottom,left,right,ierr)
-	integer ipid,ierr
-	real top,bottom,left,right
-	call nhlf_getbb(ipid,top,bottom,left,right,ierr)
-      end
-      subroutine nhlfisview(id,istat)
+      subroutine nhlfisdataitem(id,istat)
 
 	integer id,istat
-	call nhl_fisview(id,istat)
+	call nhl_fisdataitem(id,istat)
       end

@@ -1,5 +1,5 @@
 /*
- *      $Id: DataCommF.h,v 1.3 1994-12-16 20:04:06 boote Exp $
+ *      $Id: DataCommF.h,v 1.4 1995-02-17 10:23:07 boote Exp $
  */
 /************************************************************************
 *									*
@@ -32,13 +32,6 @@
 extern NhlErrorTypes _NhlUpdateData(
 #if	NhlNeedProto
 	int	dcommid
-#endif
-);
-
-extern void _NhlReleaseDMgr(
-#if	NhlNeedProto
-	int	dspecid,
-	int	ditemid
 #endif
 );
 

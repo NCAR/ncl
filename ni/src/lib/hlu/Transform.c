@@ -1,5 +1,5 @@
 /*
- *      $Id: Transform.c,v 1.13 1995-01-26 02:53:50 boote Exp $
+ *      $Id: Transform.c,v 1.14 1995-02-17 10:23:34 boote Exp $
  */
 /************************************************************************
 *									*
@@ -640,4 +640,66 @@ _NhlIsOverlayMember
 		return True;
 
 	return False;
+}
+
+/*
+ * Function:	NhlIsTransform
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+NhlBoolean
+NhlIsTransform
+#if	NhlNeedProto
+(
+	int	pid
+)
+#else
+(pid)
+	int	pid;
+#endif
+{
+	NhlLayer	l = _NhlGetLayer(pid);
+
+	if(l && _NhlIsTransform(l))
+		return True;
+
+	return False;
+}
+
+/*
+ * Function:	nhl_fistransform
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+void _NHLCALLF(nhl_fistransform,NHL_FISTRANSFORM)
+#if	NhlNeedProto
+(
+	int	*id,
+	int	*status
+)
+#else
+(id,status)
+	int	*id;
+	int	*status;
+#endif
+{
+	*status = NhlIsTransform(*id);
+
+	return;
 }

@@ -1,5 +1,5 @@
 /*
- *      $Id: AppP.h,v 1.2 1994-10-04 01:02:03 boote Exp $
+ *      $Id: AppP.h,v 1.3 1995-02-17 10:22:54 boote Exp $
  */
 /************************************************************************
 *									*
@@ -33,6 +33,7 @@ typedef struct _NhlAppLayerPart {
 	NhlString	usr_appdir;
 	NhlString	sys_appdir;
 	NhlString	file_suffix;
+	NhlBoolean	default_parent;
 
 	/* private fields */
 	_NhlC_OR_F	init_mode;
@@ -46,13 +47,19 @@ typedef struct _NhlAppLayerRec {
 	NhlAppLayerPart		app;
 } NhlAppLayerRec;
 
+typedef struct _NhlAppTableRec NhlAppTableRec, *NhlAppTable;
+struct _NhlAppTableRec{
+	NhlAppLayer	app;
+	NhlAppTable	next;
+};
+
 typedef struct _NhlAppLayerClassPart {
-	int		num_app;
-	NhlAppLayer	default_app;
-	NhlAppLayer	current_app;
-	NrmDatabase	baseDB;
-	int		error_id;
-	int		workspace_id;
+	NhlAppLayer		default_app;
+	NhlAppLayer		current_app;
+	NrmDatabase		baseDB;
+	int			error_id;
+	int			workspace_id;
+	NhlAppTable		app_objs;	/* except default_app */
 } NhlAppLayerClassPart;
 
 typedef struct _NhlAppLayerClassRec {

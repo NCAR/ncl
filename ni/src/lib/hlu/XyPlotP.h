@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlotP.h,v 1.7 1995-01-11 00:46:59 boote Exp $
+ *      $Id: XyPlotP.h,v 1.8 1995-02-17 10:23:48 boote Exp $
  */
 /************************************************************************
 *									*
@@ -23,51 +23,70 @@
 #define _NXyPlotP_h
 
 #include <ncarg/hlu/DataCommP.h>
+#include <ncarg/hlu/OverlayI.h>
 #include <ncarg/hlu/XyPlot.h>
 #include <ncarg/hlu/TickMark.h>
 
-typedef struct _NhlXyDataDepLayerPart{
-	/* Public resources	*/
-	NhlColorIndex		color;
-	NhlGenArray		colors;
-	NhlBoolean		mono_color;
+#define	_NhlNxyDSpecChanged	"xyDspec.Changed"
+#define	_NhlCxyDSpecChanged	"XyDspec.Changed"
 
+typedef struct _NhlXyDataSpecLayerPart{
+	/* Public resources	*/
 	NhlDashIndex		dash;
 	NhlGenArray		dashes;
 	NhlBoolean		mono_dash;
 
-	NhlMarkerMode		marker_mode;
+	NhlMarkLineMode		marker_mode;
 	NhlGenArray		marker_modes;
 	NhlBoolean		mono_marker_mode;
+
+	NhlGenArray		lg_label_strings;
+
+	NhlColorIndex		color;
+	NhlGenArray		colors;
+	NhlBoolean		mono_color;
+
+	NhlColorIndex		label_color;
+	NhlGenArray		label_colors;
+	NhlBoolean		mono_label_color;
+
+	NhlLineLabelMode	label_mode;
+	NhlGenArray		labels;
+
+	float			line_thickness;
+	NhlGenArray		line_thicknesses;
+	NhlBoolean		mono_line_thickness;
+
+	NhlColorIndex		marker_color;
+	NhlGenArray		marker_colors;
+	NhlBoolean		mono_marker_color;
 
 	NhlMarkerIndex		marker;
 	NhlGenArray		markers;
 	NhlBoolean		mono_marker;
 	
-	NhlColorIndex		marker_color;
-	NhlGenArray		marker_colors;
-	NhlBoolean		mono_marker_color;
-
 	float			marker_size;
 	NhlGenArray		marker_sizes;
 	NhlBoolean		mono_marker_size;
 	
-	NhlLineLabelMode	label_mode;
-	NhlGenArray		labels;
-
+	float			marker_thickness;
+	NhlGenArray		marker_thicknesses;
+	NhlBoolean		mono_marker_thickness;
+	
 	/* Private fields	*/
-} NhlXyDataDepLayerPart;
+} NhlXyDataSpecLayerPart;
 
 typedef struct _NhlXyPlotLayerPart {
 	/* Publically setable resources */
 
-	/* DataResources should use the NhlPointer type */
 	NhlGenArray		curve_data;
+	NhlGenArray		dspeclist;
 
-	float			curve_thickness;
+	NhlTickMarkStyle	x_style;
+	NhlTickMarkStyle 	y_style;
 
-	NhlTickMarkStyles	x_style;
-	NhlTickMarkStyles 	y_style;
+	float			x_tension;
+	float			y_tension;
 
 	NhlGenArray		x_irregular_points;
 	NhlGenArray		y_irregular_points;
@@ -75,13 +94,22 @@ typedef struct _NhlXyPlotLayerPart {
 	NhlBoolean		x_reverse;
 	NhlBoolean		y_reverse;
 
+	NhlBoolean		comp_x_min_set;
 	NhlBoolean		compute_x_min;
+	NhlBoolean		comp_x_max_set;
 	NhlBoolean		compute_x_max;
+	NhlBoolean		comp_y_max_set;
 	NhlBoolean		compute_y_max;
+	NhlBoolean		comp_y_min_set;
 	NhlBoolean		compute_y_min;
+
+	NhlBoolean		x_min_set;
 	float			x_min;
+	NhlBoolean		x_max_set;
 	float			x_max;
+	NhlBoolean		y_max_set;
 	float			y_max;
+	NhlBoolean		y_min_set;
 	float			y_min;
 
 	NhlAlternatePlace	x_alternate;
@@ -92,25 +120,14 @@ typedef struct _NhlXyPlotLayerPart {
 	NhlGenArray		y_alternate_coords;
 	NhlGenArray		y_original_coords;
 
-	NhlBoolean		titles;
-
-
-	float			line_label_font_height;
 	float			dash_segment_length;
+	float			line_label_font_height;
 	
-	float 			ti_main_offset_x;
-	float			ti_x_axis_offset_x;
-	float			ti_y_axis_offset_y;
-	NhlTitlePositions 	ti_main_position;
-	NhlTitlePositions	ti_x_axis_position;
-	NhlTitlePositions	ti_y_axis_position;
-
-	float			x_tension;
-	float			y_tension;
+	NhlAnnotationDisplayMode	display_legend;
+	NhlAnnotationDisplayMode	display_titles;
+	NhlAnnotationDisplayMode	display_tickmarks;
 
 	/* Private fields */
-	NhlLayer	ticks;
-	NhlLayer	ttitles;
 	NhlLayer	thetrans;
 	NhlBoolean	have_irreg_trans;
 	NhlBoolean	fake_x;
@@ -120,14 +137,7 @@ typedef struct _NhlXyPlotLayerPart {
 	float		fake_y_max;
 	float		fake_y_min;
 
-	NhlBoolean	x_min_set;
-	NhlBoolean	x_max_set;
-	NhlBoolean	y_max_set;
-	NhlBoolean	y_min_set;
-	NhlBoolean	comp_x_min_set;
-	NhlBoolean	comp_x_max_set;
-	NhlBoolean	comp_y_max_set;
-	NhlBoolean	comp_y_min_set;
+	NhlLayer	overlay;
 
 	NhlBoolean	data_ranges_set;
 	NhlBoolean	check_ranges;
@@ -143,16 +153,35 @@ typedef struct _NhlXyPlotLayerPart {
 	float		y_irreg_min;
 	float		y_irreg_max;
 
-	float		real_main_offset_x;
-	float		real_x_axis_offset_x;
-	float		real_y_axis_offset_y;
+	int		num_cpairs;
+	int		size_cpair_arrays;
+
+	NhlGenArray	dash_indexes;
+	NhlGenArray	item_types;
+	NhlGenArray	lg_label_strings;
+	NhlGenArray	line_colors;
+	NhlGenArray	llabel_colors;
+	NhlGenArray	llabel_strings;
+	NhlGenArray	line_thicknesses;
+	NhlGenArray	marker_colors;
+	NhlGenArray	marker_indexes;
+	NhlGenArray	marker_sizes;
+	NhlGenArray	marker_thicknesses;
+	NhlGenArray	xvectors;
+	NhlGenArray	yvectors;
+	NhlGenArray	len_vectors;
+	NhlGenArray	missing_set;
+	NhlGenArray	xmissing;
+	NhlGenArray	ymissing;
+
+	NhlBoolean	dspec_changed;
 }NhlXyPlotLayerPart;
 
-typedef struct _NhlXyDataDepLayerRec{
-	NhlObjLayerPart		base;
+typedef struct _NhlXyDataSpecLayerRec{
+	NhlBaseLayerPart	base;
 	NhlDataSpecLayerPart	dataspec;
-	NhlXyDataDepLayerPart	xydata;
-} NhlXyDataDepLayerRec;
+	NhlXyDataSpecLayerPart	xydata;
+} NhlXyDataSpecLayerRec;
 
 typedef struct _NhlXyPlotLayerRec {
 	NhlBaseLayerPart		base;
@@ -162,19 +191,19 @@ typedef struct _NhlXyPlotLayerRec {
 	NhlXyPlotLayerPart		xyplot;
 }NhlXyPlotLayerRec;
 
-typedef struct _NhlXyDataDepLayerClassPart{
+typedef struct _NhlXyDataSpecLayerClassPart{
 	int	foo;
-} NhlXyDataDepLayerClassPart;
+} NhlXyDataSpecLayerClassPart;
 
 typedef struct _NhlXyPlotLayerClassPart {
 	char *foo;
 } NhlXyPlotLayerClassPart;
 
-typedef struct _NhlXyDataDepLayerClassRec{
-	NhlObjLayerClassPart		base_class;
+typedef struct _NhlXyDataSpecLayerClassRec{
+	NhlBaseLayerClassPart		base_class;
 	NhlDataSpecLayerClassPart	dataspec_class;
-	NhlXyDataDepLayerClassPart	xydata_class;
-} NhlXyDataDepLayerClassRec;
+	NhlXyDataSpecLayerClassPart	xydata_class;
+} NhlXyDataSpecLayerClassRec;
 
 typedef struct _NhlXyPlotLayerClassRec {
 	NhlBaseLayerClassPart		base_class;
@@ -184,13 +213,13 @@ typedef struct _NhlXyPlotLayerClassRec {
 	NhlXyPlotLayerClassPart		xyplot_class;
 }NhlXyPlotLayerClassRec;
 
-extern NhlXyDataDepLayerClassRec NhlxyDataDepLayerClassRec;
+extern NhlXyDataSpecLayerClassRec NhlxyDataSpecLayerClassRec;
 extern NhlXyPlotLayerClassRec NhlxyPlotLayerClassRec;
 
-extern NhlLayerClass NhlxyDataDepLayerClass;
+extern NhlLayerClass NhlxyDataSpecLayerClass;
 
-typedef struct _NhlXyDataDepLayerClassRec *NhlXyDataDepLayerClass;
-typedef struct _NhlXyDataDepLayerRec *NhlXyDataDepLayer;
+typedef struct _NhlXyDataSpecLayerClassRec *NhlXyDataSpecLayerClass;
+typedef struct _NhlXyDataSpecLayerRec *NhlXyDataSpecLayer;
 
 typedef struct _NhlXyPlotLayerClassRec *NhlXyPlotLayerClass;
 typedef struct _NhlXyPlotLayerRec *NhlXyPlotLayer;

@@ -1,5 +1,5 @@
 /*
- *      $Id: Converters.c,v 1.26 1995-01-19 22:04:52 boote Exp $
+ *      $Id: Converters.c,v 1.27 1995-02-17 10:23:01 boote Exp $
  */
 /************************************************************************
 *									*
@@ -34,10 +34,278 @@
 #include <floatingpoint.h>
 #endif	/* sun hack- strtod should be in stdlib.h but it's not */
 
+#define MAX_DIMENSIONS 50
+typedef enum { CHAR, LP, SPACE , RP , COMMA, ENDOFSTRING} _NhlTokens;
+
 static NrmQuark intQ;
 static NrmQuark stringQ;
 static NrmQuark genQ;
 static NrmQuark intgenQ;
+static NrmQuark strgenQ;
+
+
+static _NhlTokens
+NextToken
+#if	NhlNeedProto
+(
+	Const char	*strng,
+	int		*index
+) 
+#else
+(strng,index) 
+	Const char	*strng;
+	int		*index;
+#endif
+{
+	(*index)++;
+	switch(strng[*index-1]) {
+	case '(':
+		if(strng[*index] == '/') {
+			(*index)++;
+			return(LP);
+		} else {
+			return(CHAR);
+		}
+	case '/':
+		if(strng[*index] == ')') {
+			(*index)++;
+			return(RP);
+		} else {
+			return(CHAR);
+		}
+	case ' ':
+	case '\t':
+		return(SPACE);
+	case ',':
+		return(COMMA);
+	case '\0':
+		return(ENDOFSTRING);
+	default:
+		return(CHAR);
+	}
+}
+
+
+static NhlGenArray
+_NhlStringToStringGenArray
+#if	NhlNeedProto
+(
+	Const char*	strng
+)
+#else
+(strng)
+	Const char*	strng;
+#endif
+{
+	int done = 0;
+	int state = 1;
+	int index = 0;
+	int d_o_index = 0;
+	int d_p_index = 0;
+	_NhlTokens token;
+	int i,j;
+	char *data_out;
+	char **data_ptr;
+	char space_buffer[80];
+	int s_p_index = 0;
+	int level_count[MAX_DIMENSIONS];
+	int dimsizes[MAX_DIMENSIONS];
+	int level = -1;
+	
+	
+	while(!done) {
+		token = NextToken(strng,&index);
+		switch(state) {
+		case 0:
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
+				"Syntax error parsing resource file array");
+			done = 1;
+			break;
+		case 1:
+			switch(token) {
+			case CHAR:
+				return(NULL);
+			case LP:
+				for(i = 0; i < MAX_DIMENSIONS; i++) {
+					dimsizes[i] = -1;
+					level_count[i] = 0;
+				}
+				data_out = NhlConvertMalloc(strlen(strng) + 1);
+				data_ptr = NhlConvertMalloc(sizeof(char*) *
+								strlen(strng));
+				memset(data_ptr,0,sizeof(char*)*strlen(strng));
+				level++;
+				state = 2;
+				if(level >= MAX_DIMENSIONS){
+					NhlPError(NhlWARNING,NhlEUNKNOWN,
+	"Maximum dimensions of (%d) for resource file arrays was exceeded",
+								MAX_DIMENSIONS);
+					state = 0;
+				}
+				break;
+			default:
+				state = 0;
+				break;
+			}
+			break;
+		case 2:
+			switch(token) {
+			case CHAR:
+				data_ptr[d_p_index++] = &(data_out[d_o_index]);
+				data_out[d_o_index++] = strng[index-1];
+				s_p_index = 0;
+				state = 4;
+				break;
+			case SPACE:
+				break;
+			case LP:
+				s_p_index = 0;
+				level++;
+				if(level >= MAX_DIMENSIONS){
+					NhlPError(NhlWARNING,NhlEUNKNOWN,
+	"Maximum dimensions of (%d) for resource file arrays was exceeded",
+								MAX_DIMENSIONS);
+					state = 0;
+				}
+				break;
+			default:
+				state = 0;
+				break;
+			}
+			break;
+		case 3:
+			switch(token) {
+			case CHAR:
+				data_ptr[d_p_index++] = &(data_out[d_o_index]);
+				data_out[d_o_index++] = strng[index-1];
+				state = 4;
+				break;
+			case SPACE:
+				break;
+			default:
+				state = 0;
+                                break;
+			}
+			break;
+		case 4:
+			switch(token) {
+			case CHAR:
+				for(i = 0; i < s_p_index; i++ ) {
+					data_out[d_o_index++] = space_buffer[i];
+				}
+				s_p_index = 0;
+				data_out[d_o_index++] = strng[index-1];
+				break;
+			case SPACE:
+				space_buffer[s_p_index++] = strng[index-1];
+				break;
+			case RP:
+				if(level >= 0) {
+					data_out[d_o_index++] = '\0';
+					level_count[level]++;
+					s_p_index = 0;
+					state = 5;
+					if(dimsizes[level] == -1) {
+						dimsizes[level] =
+							level_count[level];
+						level_count[level] = 0;
+					} else if(dimsizes[level] !=
+							level_count[level]) {
+						NhlPError(NhlWARNING,
+							NhlEUNKNOWN,
+			"Dimension sizes of resource file array do not match");
+						state = 0;
+					} else {
+						level_count[level] = 0;
+					}
+					level--;
+					if(level >= 0)
+						level_count[level]++;
+				} else {
+					state = 0;
+				}
+				break;
+			case COMMA:
+				data_out[d_o_index++] = '\0';
+				level_count[level]++;
+				s_p_index = 0;
+				state = 3;
+				break;
+			default:
+                                state = 0;
+                                break;
+			}
+			break;
+		case 5:
+			switch(token) {
+			case SPACE:
+				break;
+			case COMMA:
+				state = 6;
+				break;
+			case ENDOFSTRING:
+				state = 7;
+				break;
+			case RP:
+				if(level >=0 ) {
+					if(dimsizes[level] == -1) {
+                                        	dimsizes[level] =
+							level_count[level];
+						level_count[level] = 0;
+                                	} else if(dimsizes[level] !=
+							level_count[level]) {
+						NhlPError(NhlWARNING,
+							NhlEUNKNOWN,
+			"Dimension sizes of resource file array do not match");
+                                        	state = 0;
+                                	} else {
+						level_count[level] = 0;
+					}
+                              		level--;
+					if(level >= 0)
+						level_count[level]++;
+				} else {
+					state = 0;
+				}
+				break;
+			default:
+                                state = 0;
+                                break;
+			}
+			break;
+		case 6:
+			switch(token) {
+			case LP:
+				level++;
+				state = 2;
+				break;
+			case SPACE:
+				break;
+			default:
+                                state = 0;
+                                break;
+			}
+			break;
+		case 7:
+			done = 1;
+			break;
+		}
+	}
+
+
+	if((state == 7)&&(level == -1)) {
+		i = 0;
+		while(dimsizes[i] != -1) i++;
+		return _NhlConvertCreateGenArray(data_ptr,NhlTString,
+						sizeof(char*),i,dimsizes);
+	} else if((state != 0)&&(level >= 0)){
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+				"Syntax error parsing resource file array");
+		return(NULL);
+	} else {
+		return(NULL);
+	}
+}
 
 /*
  * This macro is used because most of the converters end the same way.
@@ -203,7 +471,8 @@ NhlCvtStringToEnum
 	int		i, tmp=0;
 	NhlBoolean	set = False;
 	NhlString	s1 = from->data.strval;
-	NrmValue	ival;
+	NrmValue	val;
+	NhlGenArray	sgen;
 	NhlErrorTypes	ret = NhlNOERROR;
 
 	if(nargs < 1){
@@ -215,18 +484,25 @@ NhlCvtStringToEnum
 
 	if(isdigit((int)*s1) || (*s1 == '-')){
 		tmp = (int)strtol(s1,(char**)NULL,10);
-		ival.size = sizeof(int);
-		ival.data.intval = tmp;
+		val.size = sizeof(int);
+		val.data.intval = tmp;
 
-		return _NhlReConvertData(intQ,to->typeQ,&ival,to);
+		return _NhlReConvertData(intQ,to->typeQ,&val,to);
 	}
-	else{
-		for(i=0;i<nargs;i++){
-			if(comparestring(args[i].data.strval,s1) == 0){
-				tmp = args[i].size;
-				set = True;
-				break;
-			}
+
+	sgen = _NhlStringToStringGenArray(s1);
+	if(sgen){
+		val.size = sizeof(NhlGenArray);
+		val.data.ptrval = sgen;
+
+		return _NhlReConvertData(strgenQ,to->typeQ,&val,to);
+	}
+
+	for(i=0;i<nargs;i++){
+		if(comparestring(args[i].data.strval,s1) == 0){
+			tmp = args[i].size;
+			set = True;
+			break;
 		}
 	}
 
@@ -375,6 +651,137 @@ NhlCvtScalarToEnum
 	}
 
 	SetVal(int,sizeof(int),tint);
+}
+
+/*
+ * Function:	NhlCvtStringGenArrayToEnumGenArray
+ *
+ * Description:	This is a type converter to convert string's to enumerations
+ *		defined by the args. This function uses the NrmValue structure
+ *		in the args, in a slightly non-standard way.  The size
+ *		part actually indicates the value that should be used if the
+ *		string pointed to by data is the same as the string being
+ *		converted.  The data string should be a null terminated string.
+ *
+ * In Args:	NrmValue		*from	ptr to from data
+ *		NhlConvertArgList	args	args for conversion
+ *		int			nargs	number of args
+ *		
+ *
+ * Out Args:	NrmValue		*to	ptr to to data
+ *
+ * Scope:	Global public
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+static NhlErrorTypes
+NhlCvtStringGenArrayToEnumGenArray
+#if	NhlNeedProto
+(
+	NrmValue		*from,	/* ptr to from data	*/
+	NrmValue		*to,	/* ptr to to data	*/
+	NhlConvertArgList	args,	/* add'n args for conv	*/
+	int			nargs	/* number of args	*/
+)
+#else
+(from,to,args,nargs)
+	NrmValue		*from;	/* ptr to from data	*/
+	NrmValue		*to;	/* ptr to to data	*/
+	NhlConvertArgList	args;	/* add'n args for conv	*/
+	int			nargs;	/* number of args	*/
+#endif
+{
+	char		func[] = "NhlCvtStringGenArrayToEnumGenArray";
+	int		i,j,tmp=0;
+	NhlBoolean	set = False;
+	NhlString	*sdata;
+	NhlString	s1,s2;
+	NhlGenArray	sgen = from->data.ptrval;
+	NhlGenArray	tgen;
+	int		*tint;
+	NhlErrorTypes	ret = NhlNOERROR,lret = NhlNOERROR;
+	char		enum_name[_NhlMAXRESNAMLEN];
+	NrmQuark	enumQ;
+	NrmValue	ival,eval;
+
+	if(nargs < 1){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+				"%s:Called with improper number of args",func);
+		to->size = 0;
+		return NhlFATAL;
+	}
+
+	if(!sgen){
+		to->data.ptrval = NULL;
+		return NhlNOERROR;
+	}
+	sdata = sgen->data;
+
+	/*
+	 * What is the name for a single element of the to GenArray?
+	 */
+	s1 = NrmQuarkToString(to->typeQ);
+	strcpy(enum_name,s1);
+	s1 = strstr(enum_name,NhlTGenArray);
+	if(!s1){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:Invalid \"to\" type %s ???",
+			func,NrmQuarkToString(to->typeQ));
+		return NhlFATAL;
+	}
+	*s1 = '\0';
+	enumQ = NrmStringToQuark(enum_name);
+
+	tgen = _NhlConvertCreateGenArray(NULL,enum_name,sizeof(int),
+				sgen->num_dimensions,sgen->len_dimensions);
+	if(!tgen){
+		NhlPError(NhlFATAL,ENOMEM,"%s:unable to create array",func);
+		return NhlFATAL;
+	}
+	tint = NhlConvertMalloc(sizeof(int) * sgen->num_elements);
+	if(!tint){
+		NhlPError(NhlFATAL,ENOMEM,"%s:unable to create array",func);
+		return NhlFATAL;
+	}
+
+	tgen->data = tint;
+
+	for(i=0;i < sgen->num_elements;i++){
+		s1 = sdata[i];
+		set = False;
+
+		if(isdigit((int)*s1) || (*s1 == '-')){
+			tmp = (int)strtol(s1,&s2,10);
+			ival.size = sizeof(int);
+			ival.data.intval = tmp;
+			eval.size = sizeof(int);
+			eval.data.ptrval = &tint[i];
+
+			if(tmp || (s1 != s2)){
+				lret =_NhlReConvertData(intQ,enumQ,&ival,&eval);
+				if(lret == NhlNOERROR)
+					set = True;
+			}
+		}
+		else{
+			for(j=0;j<nargs;j++){
+				if(comparestring(args[j].data.strval,s1) == 0){
+					tint[i] = args[j].size;
+					set = True;
+					break;
+				}
+			}
+		}
+
+		if(!set){
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+			"%s: Unable to convert string \"%s\" to requested type",
+								func,s1);
+			to->size = 0;
+			return NhlFATAL;
+		}
+	}
+
+	SetVal(NhlGenArray,sizeof(NhlGenArray),tgen);
 }
 
 /*
@@ -539,6 +946,13 @@ _NhlRegisterEnumType
 		return NhlFATAL;
 	}
 	if(NhlRegisterConverter(enum_name,NhlTString,NhlCvtEnumToString,args,
+					nvals,False,NULL) != NhlNOERROR){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:Unable to register enum %s",
+								func,enum_name);
+		return NhlFATAL;
+	}
+	if(NhlRegisterConverter(NhlTStringGenArray,enumgen_name,
+					NhlCvtStringGenArrayToEnumGenArray,args,
 					nvals,False,NULL) != NhlNOERROR){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:Unable to register enum %s",
 								func,enum_name);
@@ -879,6 +1293,8 @@ CvtArgs
 {
 	char		func[] = "NhlCvtStringToByte";
 	char		tmp;
+	NrmValue	val;
+	NhlGenArray	sgen;
 	NhlErrorTypes	ret = NhlNOERROR;
 
 	if(nargs != 0){
@@ -886,6 +1302,13 @@ CvtArgs
 				"%s:Called with improper number of args",func);
 		to->size = 0;
 		return NhlFATAL;
+	}
+
+	sgen = _NhlStringToStringGenArray(from->data.strval);
+	if(sgen){
+		val.size = sizeof(NhlGenArray);
+		val.data.ptrval = sgen;
+		return _NhlReConvertData(strgenQ,to->typeQ,&val,to);
 	}
 
 	tmp = (char)strtol(from->data.strval,(char**)NULL,10);
@@ -903,12 +1326,21 @@ CvtArgs
 	NhlString	s1 = from->data.strval;
 	int		len = strlen(s1);
 	int		i;
+	NrmValue	val;
+	NhlGenArray	sgen;
 	NhlErrorTypes	ret = NhlNOERROR;
 
 	if(nargs != 0){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
 				"%s:Called with improper number of args",func);
 		return NhlFATAL;
+	}
+
+	sgen = _NhlStringToStringGenArray(from->data.strval);
+	if(sgen){
+		val.size = sizeof(NhlGenArray);
+		val.data.ptrval = sgen;
+		return _NhlReConvertData(strgenQ,to->typeQ,&val,to);
 	}
 
 	if(len > 1){
@@ -935,12 +1367,21 @@ CvtArgs
 {
 	char		func[] = "NhlCvtStringToDouble";
 	double		tmp;
+	NrmValue	val;
+	NhlGenArray	sgen;
 	NhlErrorTypes	ret = NhlNOERROR;
 
 	if(nargs != 0){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
 				"%s:Called with improper number of args",func);
 		return NhlFATAL;
+	}
+
+	sgen = _NhlStringToStringGenArray(from->data.strval);
+	if(sgen){
+		val.size = sizeof(NhlGenArray);
+		val.data.ptrval = sgen;
+		return _NhlReConvertData(strgenQ,to->typeQ,&val,to);
 	}
 
 	tmp = (double)strtod(from->data.strval,(char**)NULL);
@@ -955,12 +1396,21 @@ CvtArgs
 {
 	char		func[] = "NhlCvtStringToFloat";
 	float		tmp;
+	NrmValue	val;
+	NhlGenArray	sgen;
 	NhlErrorTypes	ret = NhlNOERROR;
 
 	if(nargs != 0){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
 				"%s:Called with improper number of args",func);
 		return NhlFATAL;
+	}
+
+	sgen = _NhlStringToStringGenArray(from->data.strval);
+	if(sgen){
+		val.size = sizeof(NhlGenArray);
+		val.data.ptrval = sgen;
+		return _NhlReConvertData(strgenQ,to->typeQ,&val,to);
 	}
 
 	tmp = (float)strtod(from->data.strval,(char**)NULL);
@@ -975,6 +1425,8 @@ CvtArgs
 {
 	char		func[] = "NhlCvtStringToInteger";
 	int		tmp;
+	NrmValue	val;
+	NhlGenArray	sgen;
 	NhlErrorTypes	ret = NhlNOERROR;
 
 	if(nargs != 0){
@@ -982,6 +1434,13 @@ CvtArgs
 				"%s:Called with improper number of args",func);
 		to->size = 0;
 		return NhlFATAL;
+	}
+
+	sgen = _NhlStringToStringGenArray(from->data.strval);
+	if(sgen){
+		val.size = sizeof(NhlGenArray);
+		val.data.ptrval = sgen;
+		return _NhlReConvertData(strgenQ,to->typeQ,&val,to);
 	}
 
 	tmp = (int)strtol(from->data.strval,(char**)NULL,10);
@@ -996,6 +1455,8 @@ CvtArgs
 {
 	char		func[] = "NhlCvtStringToLong";
 	long		tmp;
+	NrmValue	val;
+	NhlGenArray	sgen;
 	NhlErrorTypes	ret = NhlNOERROR;
 
 	if(nargs != 0){
@@ -1003,6 +1464,13 @@ CvtArgs
 				"%s:Called with improper number of args",func);
 		to->size = 0;
 		return NhlFATAL;
+	}
+
+	sgen = _NhlStringToStringGenArray(from->data.strval);
+	if(sgen){
+		val.size = sizeof(NhlGenArray);
+		val.data.ptrval = sgen;
+		return _NhlReConvertData(strgenQ,to->typeQ,&val,to);
 	}
 
 	tmp = strtol(from->data.strval,(char**)NULL,10);
@@ -1017,6 +1485,8 @@ CvtArgs
 {
 	char		func[] = "NhlCvtStringToShort";
 	short		tmp;
+	NrmValue	val;
+	NhlGenArray	sgen;
 	NhlErrorTypes	ret = NhlNOERROR;
 
 	if(nargs != 0){
@@ -1024,6 +1494,13 @@ CvtArgs
 				"%s:Called with improper number of args",func);
 		to->size = 0;
 		return NhlFATAL;
+	}
+
+	sgen = _NhlStringToStringGenArray(from->data.strval);
+	if(sgen){
+		val.size = sizeof(NhlGenArray);
+		val.data.ptrval = sgen;
+		return _NhlReConvertData(strgenQ,to->typeQ,&val,to);
 	}
 
 	tmp = (short)strtol(from->data.strval,(char**)NULL,10);
@@ -1038,12 +1515,21 @@ CvtArgs
 {
 	char		func[] = "NhlCvtStringToString";
 	NhlString	tstring;
+	NrmValue	val;
+	NhlGenArray	sgen;
 	NhlErrorTypes	ret = NhlNOERROR;
 
 	if(nargs != 0){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
 			"%s:Called with improper number of args",func);
 		return NhlFATAL;
+	}
+
+	sgen = _NhlStringToStringGenArray(from->data.strval);
+	if(sgen){
+		val.size = sizeof(NhlGenArray);
+		val.data.ptrval = sgen;
+		return _NhlReConvertData(strgenQ,to->typeQ,&val,to);
 	}
 
 	tstring = NhlConvertMalloc(sizeof(char)*(strlen(from->data.strval)+1));
@@ -1064,12 +1550,21 @@ CvtArgs
 {
 	char		func[] = "NhlCvtStringToQuark";
 	NrmQuark	tq;
+	NrmValue	val;
+	NhlGenArray	sgen;
 	NhlErrorTypes	ret = NhlNOERROR;
 
 	if(nargs != 0){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
 			"%s:Called with improper number of args",func);
 		return NhlFATAL;
+	}
+
+	sgen = _NhlStringToStringGenArray(from->data.strval);
+	if(sgen){
+		val.size = sizeof(NhlGenArray);
+		val.data.ptrval = sgen;
+		return _NhlReConvertData(strgenQ,to->typeQ,&val,to);
 	}
 
 	tq = NrmStringToQuark(from->data.strval);
@@ -1167,7 +1662,7 @@ NhlCvtScalarToGenArray
 CvtArgs
 {
 	char		func[] = "NhlCvtScalarToGenArray";
-	NhlGenArray	gen;
+	NhlGenArray	sgen;
 	NrmValue	val;
 	NhlPointer	data;
 	NhlErrorTypes	ret = NhlNOERROR;
@@ -1179,26 +1674,35 @@ CvtArgs
 		return NhlFATAL;
 	}
 
+	if(from->typeQ == stringQ){
+		sgen = _NhlStringToStringGenArray(from->data.strval);
+		if(sgen){
+			val.size = sizeof(NhlGenArray);
+			val.data.ptrval = sgen;
+			return _NhlReConvertData(strgenQ,to->typeQ,&val,to);
+		}
+	}
+
 	data = NhlConvertMalloc(from->size);
 	if(data == NULL){
 		NhlPError(NhlFATAL,ENOMEM,"%s",func);
 		return NhlFATAL;
 	}
 	memcpy(data,&from->data,from->size);
-	gen = _NhlConvertCreateGenArray(data,NrmQuarkToString(from->typeQ),
+	sgen = _NhlConvertCreateGenArray(data,NrmQuarkToString(from->typeQ),
 							from->size,1,NULL);
 
-	if(!gen){
+	if(!sgen){
 		NhlPError(NhlFATAL,ENOMEM,"%s:unable to create array",func);
 		return NhlFATAL;
 	}
 
 	if(to->typeQ == genQ){
-		SetVal(NhlGenArray,sizeof(NhlGenArray),gen);
+		SetVal(NhlGenArray,sizeof(NhlGenArray),sgen);
 	}
 
 	val.size = sizeof(NhlGenArray);
-	val.data.ptrval = gen;
+	val.data.ptrval = sgen;
 
 	return _NhlReConvertData(genQ,to->typeQ,&val,to);
 }
@@ -2311,6 +2815,7 @@ _NhlConvertersInitialize
 	stringQ = NrmStringToQuark(NhlTString);
 	genQ = NrmStringToQuark(NhlTGenArray);
 	intgenQ = NrmStringToQuark(NhlTIntegerGenArray);
+	strgenQ = NrmStringToQuark(NhlTStringGenArray);
 
 	/*
 	 * Create hierarchy

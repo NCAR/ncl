@@ -1,5 +1,5 @@
 /*
- *      $Id: hlu.h,v 1.26 1995-01-24 01:25:18 boote Exp $
+ *      $Id: hlu.h,v 1.27 1995-02-17 10:23:51 boote Exp $
  */
 /************************************************************************
 *									*
@@ -399,18 +399,6 @@ extern NhlErrorTypes NhlChangeWorkstation(
 #if	NhlNeedProto
 	int	/*plotid*/,		/* plotid to move to new workstation	*/
 	int	/*workid*/		/* workid of workstation		*/
-#endif
-);
-
-extern int NhlGetParentWorkstation(
-#if 	NhlNeedProto
-	int /* plotid */
-#endif
-);
-
-extern NhlBoolean NhlIsWorkstation(
-#if	NhlNeedProto
-	int /* plotid */
 #endif
 );
 

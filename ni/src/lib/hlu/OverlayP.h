@@ -1,5 +1,5 @@
 /*
- *      $Id: OverlayP.h,v 1.12 1995-02-02 17:34:15 dbrown Exp $
+ *      $Id: OverlayP.h,v 1.13 1995-02-17 10:23:24 boote Exp $
  */
 /************************************************************************
 *									*
@@ -186,8 +186,8 @@ typedef struct _NhlOverlayLayerPart {
 	float			real_y_axis_offset_y;
 	float			real_x_axis_offset_x;
 
-	NhlTickMarkStyles	x_tm_style;
-	NhlTickMarkStyles	y_tm_style;
+	NhlTickMarkStyle	x_tm_style;
+	NhlTickMarkStyle	y_tm_style;
 	int			x_irr_count;
 	int			y_irr_count;
 	NhlGenArray		x_irr;

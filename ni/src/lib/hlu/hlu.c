@@ -1,5 +1,5 @@
 /*
- *      $Id: hlu.c,v 1.25 1995-01-24 01:25:17 boote Exp $
+ *      $Id: hlu.c,v 1.26 1995-02-17 10:23:50 boote Exp $
  */
 /************************************************************************
 *									*
@@ -898,11 +898,13 @@ _NhlAllocCreateGenArray
 	if(QString == NrmNULLQUARK)
 		QString = NrmStringToQuark(NhlTString);
 
+#if	0
 	if((num_dimensions < 1) && (num_dimensions != -1111)){
 		NHLPERROR((NhlFATAL,NhlEUNKNOWN,
 		"NhlGenArrayCreate:Arrays must have at least one dimension"));
 		return NULL;
 	}
+#endif
 
 	gen = alloc_func(sizeof(NhlGenArrayRec));
 
@@ -946,7 +948,7 @@ _NhlAllocCreateGenArray
 		}
 	}
 
-	if(copy_data){
+	if(copy_data && data){
 		gen->data = alloc_func(gen->num_elements * gen->size);
 		if(gen->data == NULL)
 			return NULL;
@@ -975,6 +977,10 @@ _NhlAllocCreateGenArray
 		else{
 			memcpy(gen->data,data,gen->num_elements * gen->size);
 		}
+		gen->my_data = True;
+	}
+	else if(copy_data){
+		gen->data = NULL;
 		gen->my_data = True;
 	}
 	else{
@@ -1508,34 +1514,4 @@ _NhlLLErrCheckPrnt
 	}
 
 	return False;
-}
-
-
-/*
- * Function:	NhlIsWorkstation
- *
- * Description:	
- *
- * In Args:	
- *
- * Out Args:	
- *
- * Scope:	
- * Returns:	
- * Side Effect:	
- */
-NhlBoolean NhlIsWorkstation
-#if	NhlNeedProto
-(int plotid)
-#else
-(plotid)
-	int plotid;
-#endif
-{
-	NhlLayer l = _NhlGetLayer(plotid);
-	if(l != NULL) {
-		return(_NhlIsWorkstation(l));
-	} else {
-		return(False);
-	}
 }

@@ -1,5 +1,5 @@
 /*
- *      $Id: DataComm.h,v 1.6 1995-01-24 01:25:10 boote Exp $
+ *      $Id: DataComm.h,v 1.7 1995-02-17 10:23:06 boote Exp $
  */
 /************************************************************************
 *									*
@@ -58,6 +58,18 @@ extern NhlErrorTypes NhlRemoveData(
 	int		dcommid,	/* id of layer w/ data resource	*/
 	NhlString	res_name,	/* name of data resource	*/
 	int		ditemid		/* id of data item to remove	*/
+#endif
+);
+
+extern NhlBoolean NhlIsDataComm(
+#if	NhlNeedProto
+	int	pid
+#endif
+);
+
+extern NhlBoolean NhlIsDataSpec(
+#if	NhlNeedProto
+	int	pid
 #endif
 );
 

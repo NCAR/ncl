@@ -1,5 +1,5 @@
 /*
- *      $Id: Transform.h,v 1.5 1994-12-16 20:04:55 boote Exp $
+ *      $Id: Transform.h,v 1.6 1995-02-17 10:23:35 boote Exp $
  */
 /************************************************************************
 *									*
@@ -85,6 +85,12 @@ extern NhlErrorTypes NhlNDCPolyline(
 	float*		/* x */,
 	float*		/* y */,
 	int		/* n */
+#endif
+);
+
+extern NhlBoolean NhlIsTransform(
+#if	NhlNeedProto
+	int	pid
 #endif
 );
 

@@ -1,5 +1,5 @@
 C
-C $Id: WORKSTATION.f,v 1.2 1994-05-13 18:56:40 boote Exp $
+C $Id: WORKSTATION.f,v 1.3 1995-02-17 10:23:40 boote Exp $
 C
 C****************************************************************
 C								*
@@ -65,4 +65,9 @@ C
 
 	call nhl_fsetmarker(id_work,indx,marker,len(marker),xoff,yoff,
      %		aspadj,sizeadj,indx_ret)
+      end
+      subroutine nhlfisworkstation(id,istat)
+
+	integer id,istat
+	call nhl_fisworkstation(id,istat)
       end

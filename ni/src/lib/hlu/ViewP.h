@@ -1,5 +1,5 @@
 /*
- *      $Id: ViewP.h,v 1.7 1994-12-16 20:05:00 boote Exp $
+ *      $Id: ViewP.h,v 1.8 1995-02-17 10:23:39 boote Exp $
  */
 /************************************************************************
 *									*
@@ -169,13 +169,13 @@ extern NhlErrorTypes _NhlGetBB(
 );
 
 
-#define NHL_DEFAULT_VIEW_WIDTH  .8
-#define NHL_DEFAULT_VIEW_HEIGHT .8
-#define NHL_DEFAULT_VIEW_X	.1
-#define NHL_DEFAULT_VIEW_Y	.9
-#define NHL_DEFAULT_VIEW_WIDTH_STR  ".8"
-#define NHL_DEFAULT_VIEW_HEIGHT_STR ".8"
-#define NHL_DEFAULT_VIEW_X_STR	".1"
-#define NHL_DEFAULT_VIEW_Y_STR	".9"
+#define NHL_DEFAULT_VIEW_WIDTH  .6
+#define NHL_DEFAULT_VIEW_HEIGHT .6
+#define NHL_DEFAULT_VIEW_X	.2
+#define NHL_DEFAULT_VIEW_Y	.8
+#define NHL_DEFAULT_VIEW_WIDTH_STR  ".6"
+#define NHL_DEFAULT_VIEW_HEIGHT_STR ".6"
+#define NHL_DEFAULT_VIEW_X_STR	".2"
+#define NHL_DEFAULT_VIEW_Y_STR	".8"
 
 #endif	/*_NViewP_h*/

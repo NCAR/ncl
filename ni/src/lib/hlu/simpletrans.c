@@ -1,6 +1,6 @@
 
 /*
- *      $Id: simpletrans.c,v 1.2 1994-12-16 20:05:17 boote Exp $
+ *      $Id: simpletrans.c,v 1.3 1995-02-17 10:23:52 boote Exp $
  */
 /************************************************************************
 *									*
@@ -26,15 +26,43 @@
 
 void strans
 #if	NhlNeedProto
-(float froml, float fromr, float fromb, float fromt, float tol, float tor,float tob, float tot, float x, float y, float *xout, float *yout)
+(
+	float	froml,
+	float	fromr,
+	float	fromb,
+	float	fromt,
+	float	tol,
+	float	tor,
+	float	tob,
+	float	tot,
+	float	x,
+	float	y,
+	float	*xout,
+	float	*yout
+)
 #else
 (froml,fromr,fromb,fromt,tol,tor,tob,tot,x,y,xout,yout) 
-float froml,fromr,fromb,fromt,tol,tor,tob,tot,x,y;
-float* xout;
-float* yout;
+	float	froml;
+	float	fromr;
+	float	fromb;
+	float	fromt;
+	float	tol;
+	float	tor;
+	float	tob;
+	float	tot;
+	float	x;
+	float	y;
+	float	*xout;
+	float	*yout;
 #endif
 {
 	*xout = (x - froml)/(fromr - froml)*(tor - tol) + tol;
+	if((tol < tor) && (*xout > tor))
+		*xout = tor;
+
 	*yout = (y - fromb)/(fromt - fromb)*(tot - tob) + tob;
+	if((tob < tot) && (*yout > tot))
+		*yout = tot;
+
 	return;
 }

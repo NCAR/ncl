@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.h,v 1.7 1995-01-11 00:46:58 boote Exp $
+ *      $Id: XyPlot.h,v 1.8 1995-02-17 10:23:47 boote Exp $
  */
 /************************************************************************
 *									*
@@ -23,8 +23,9 @@
 #define _NXyPlot_h
 
 #include <ncarg/hlu/DataComm.h>
-#include <ncarg/hlu/TickMark.h>
-#include <ncarg/hlu/Title.h>
+#include <ncarg/hlu/Overlay.h>
+#include <ncarg/hlu/IrregularType2TransObj.h>
+#include <ncarg/hlu/LogLinTransObj.h>
 
 /*
  * Resource names
@@ -33,13 +34,6 @@
 /*
  * DataDep objects resources
  */
-#define	NhlNxyColor	"xyColor"
-#define	NhlCxyColor	"XyColor"
-#define NhlNxyColors	"xyColors"
-#define NhlCxyColors	"XyColors"
-#define	NhlNxyMonoColor	"xyMonoColor"
-#define	NhlCxyMonoColor	"XyMonoColor"
-
 #define	NhlNxyDashPattern	"xyDashPattern"
 #define	NhlCxyDashPattern	"XyDashPattern"
 #define NhlNxyDashPatterns	"xyDashPatterns"
@@ -47,20 +41,42 @@
 #define	NhlNxyMonoDashPattern	"xyMonoDashPattern"
 #define	NhlCxyMonoDashPattern	"XyMonoDashPattern"
 
+#define NhlNxyMarkLineMode	"xyMarkLineMode"
+#define NhlCxyMarkLineMode	"XyMarkLineMode"
+#define NhlNxyMarkLineModes	"xyMarkLineModes"
+#define NhlCxyMarkLineModes	"XyMarkLineModes"
+#define NhlNxyMonoMarkLineMode	"xyMonoMarkLineMode"
+#define NhlCxyMonoMarkLineMode	"XyMonoMarkLineMode"
 
-#define NhlNxyMarkerMode	"xyMarkerMode"
-#define NhlCxyMarkerMode	"XyMarkerMode"
-#define NhlNxyMarkerModes	"xyMarkerModes"
-#define NhlCxyMarkerModes	"XyMarkerModes"
-#define NhlNxyMonoMarkerMode	"xyMonoMarkerMode"
-#define NhlCxyMonoMarkerMode	"XyMonoMarkerMode"
+#define NhlNxyExplicitLegendLabels	"xyExplicitLegendLabels"
+#define NhlCxyExplicitLegendLabels	"XyExplicitLegendLabels"
 
-#define NhlNxyMarker		"xyMarker"
-#define NhlCxyMarker		"XyMarker"
-#define NhlNxyMarkers		"xyMarkers"
-#define NhlCxyMarkers		"XyMarkers"
-#define NhlNxyMonoMarker	"xyMonoMarker"
-#define NhlCxyMonoMarker	"XyMonoMarker"
+#define	NhlNxyLineColor		"xyLineColor"
+#define	NhlCxyLineColor		"XyLineColor"
+#define NhlNxyLineColors	"xyLineColors"
+#define NhlCxyLineColors	"XyLineColors"
+#define	NhlNxyMonoLineColor	"xyMonoLineColor"
+#define	NhlCxyMonoLineColor	"XyMonoLineColor"
+
+#define NhlNxyLineLabelColor		"xyLineLabelColor"
+#define NhlCxyLineLabelColor		"XyLineLabelColor"
+#define NhlNxyLineLabelColors		"xyLineLabelColors"
+#define NhlCxyLineLabelColors		"XyLineLabelColors"
+#define NhlNxyMonoLineLabelColor	"xyMonoLineLabelColor"
+#define NhlCxyMonoLineLabelColor	"XyMonoLineLabelColor"
+
+#define NhlNxyLabelMode		"xyLabelMode"
+#define NhlCxyLabelMode		"XyLabelMode"
+
+#define NhlNxyExplicitLabels	"xyExplicitLabels"
+#define NhlCxyExplicitLabels	"XyExplicitLabels"
+
+#define NhlNxyLineThicknessF	"xyLineThicknessF"
+#define NhlCxyLineThicknessF	"XyLineThicknessF"
+#define NhlNxyLineThicknesses	"xyLineThicknesses"
+#define NhlCxyLineThicknesses	"XyLineThicknesses"
+#define NhlNxyMonoLineThickness	"xyMonoLineThickness"
+#define NhlCxyMonoLineThickness	"XyMonoLineThickness"
 
 #define NhlNxyMarkerColor	"xyMarkerColor"
 #define NhlCxyMarkerColor	"XyMarkerColor"
@@ -69,6 +85,13 @@
 #define NhlNxyMonoMarkerColor	"xyMonoMarkerColor"
 #define NhlCxyMonoMarkerColor	"XyMonoMarkerColor"
 
+#define NhlNxyMarker		"xyMarker"
+#define NhlCxyMarker		"XyMarker"
+#define NhlNxyMarkers		"xyMarkers"
+#define NhlCxyMarkers		"XyMarkers"
+#define NhlNxyMonoMarker	"xyMonoMarker"
+#define NhlCxyMonoMarker	"XyMonoMarker"
+
 #define NhlNxyMarkerSizeF	"xyMarkerSizeF"
 #define NhlCxyMarkerSizeF	"XyMarkerSizeF"
 #define NhlNxyMarkerSizes	"xyMarkerSizes"
@@ -76,21 +99,22 @@
 #define NhlNxyMonoMarkerSize	"xyMonoMarkerSize"
 #define NhlCxyMonoMarkerSize	"XyMonoMarkerSize"
 
-#define NhlNxyLabelMode		"xyLabelMode"
-#define NhlCxyLabelMode		"XyLabelMode"
-
-#define NhlNxyExplicitLabels	"xyExplicitLabels"
-#define NhlCxyExplicitLabels	"XyExplicitLabels"
+#define NhlNxyMarkerThicknessF		"xyMarkerThicknessF"
+#define NhlCxyMarkerThicknessF		"XyMarkerThicknessF"
+#define NhlNxyMarkerThicknesses		"xyMarkerThicknesses"
+#define NhlCxyMarkerThicknesses		"XyMarkerThicknesses"
+#define NhlNxyMonoMarkerThickness	"xyMonoMarkerThickness"
+#define NhlCxyMonoMarkerThickness	"XyMonoMarkerThickness"
 
 /*
  * XyPlot's resource names
  */
 
-#define NhlNxyCurveData		"xyCurveData"
-#define NhlCxyCurveData		"XyCurveData"
+#define NhlNxyCoordData		"xyCoordData"
+#define NhlCxyCoordData		"XyCoordData"
 
-#define NhlNxyCurveThicknessF	"xyCurveThicknessF"
-#define NhlCxyCurveThicknessF	"XyCurveThicknessF"
+#define NhlNxyCoordDataSpec	"xyCoordDataSpec"
+#define NhlCxyCoordDataSpec	"XyCoordDataSpec"
 
 #define NhlNxyXStyle		"xyXStyle"
 #define NhlCxyXStyle		"XyXStyle"
@@ -104,38 +128,17 @@
 #define NhlNxyYIrregularPoints	"xyYIrregularPoints"
 #define NhlCxyYIrregularPoints	"XyYIrregularPoints"
 
-#define NhlNxyXReverse		"xyXReverse"
-#define NhlCxyXReverse		"XyXReverse"
-
-#define NhlNxyYReverse		"xyYReverse"
-#define NhlCxyYReverse		"XyYReverse"
-
 #define	NhlNxyComputeXMin	"xyComputeXMin"
 #define	NhlCxyComputeXMin	"XyComputeXMin"
-
-#define NhlNxyXMinF		"xyXMinF"
-#define NhlCxyXMinF		"XyXMinF"
 
 #define	NhlNxyComputeXMax	"xyComputeXMax"
 #define	NhlCxyComputeXMax	"XyComputeXMax"
 
-#define NhlNxyXMaxF		"xyXMaxF"
-#define NhlCxyXMaxF		"XyXMaxF"
-
 #define	NhlNxyComputeYMax	"xyComputeYMax"
 #define	NhlCxyComputeYMax	"XyComputeYMax"
 
-#define NhlNxyYMaxF		"xyYMaxF"
-#define NhlCxyYMaxF		"XyYMaxF"
-
 #define	NhlNxyComputeYMin	"xyComputeYMin"
 #define	NhlCxyComputeYMin	"XyComputeYMin"
-
-#define NhlNxyYMinF		"xyYMinF"
-#define NhlCxyYMinF		"XyYMinF"
-
-#define NhlNxyTitles		"xyTitles"
-#define NhlCxyTitles		"XyTitles"
 
 #define NhlNxyXAlternate	"xyXAlternate"
 #define NhlCxyXAlternate	"XyXAlternate"
@@ -155,24 +158,18 @@
 #define NhlNxyYOriginalCoords	"xyYOriginalCoords"
 #define NhlCxyYOriginalCoords	"XyYOriginalCoords"
 
-#define NhlNxyDashSegmentLengthF	"xyDashSegmentLengthF"
-#define NhlCxyDashSegmentLengthF	"XyDashSegmentLengthF"
+#define NhlNxyLineDashSegLenF	"xyLineDashSegLenF"
+#define NhlCxyLineDashSegLenF	"XyLineDashSegLenF"
 
 #define NhlNxyLineLabelFontHeightF	"xyLineLabelFontHeightF"
 #define NhlCxyLineLabelFontHeightF	"XyLineLabelFontHeightF"
 
-#define NhlNxyXIrrTensionF		"xyXIrrTensionF"
-#define NhlCxyXIrrTensionF		"XyXIrrTensionF"
 
-#define NhlNxyYIrrTensionF		"xyYIrrTensionF"
-#define NhlCxyYIrrTensionF		"XyYIrrTensionF"
 /*
  * Names for new types.
  */
 #define NhlTAlternatePlace	"alternatePlace"
 #define NhlTLineLabelMode	"lineLabelMode"
-#define NhlTMarkerMode		"markerMode"
-#define NhlTMarkerModeGenArray 	"markerModeGenArray"
 
 /*
  * New types
@@ -185,12 +182,6 @@ typedef enum _NhlAlternatePlace{
 	NhlBOTTOMAXIS
 } NhlAlternatePlace;
 
-typedef enum _NhlMarkerMode{
-	NhlNOMARKERS,
-	NhlMARKERSONLY,
-	NhlMARKLINES
-} NhlMarkerMode;
-
 typedef enum _NhlLineLabelMode{
 	NhlNOLABELS,
 	NhlLETTERED,
@@ -198,6 +189,5 @@ typedef enum _NhlLineLabelMode{
 } NhlLineLabelMode;
 
 extern NhlLayerClass NhlxyPlotLayerClass;
-extern NhlLayerClass NhlxyDataDepLayerClass;
 
 #endif /* _NXyPlot_h */

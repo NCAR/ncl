@@ -1,5 +1,5 @@
 /*
- *      $Id: DataMgrP.h,v 1.3 1994-01-27 21:22:49 boote Exp $
+ *      $Id: DataMgrP.h,v 1.4 1995-02-17 10:23:14 boote Exp $
  */
 /************************************************************************
 *									*
@@ -46,18 +46,12 @@ struct	_NhlDHandleRec{
 	_NhlDHandle	next;
 };
 
-struct	_NhlDSpecRec{
-	int		dspec_id;
-	_NhlDSpec	next;
-};
-
 typedef struct _NhlDataMgrLayerPart{
 	/* User setable resource fields */
 	/* Private Fields */
 	NhlBoolean	uptodate;
 	_NhlDHandle	connection_list;
 	_NhlDCache	data_list;
-	_NhlDSpec	dspec_list;
 } NhlDataMgrLayerPart;
 
 typedef struct _NhlDataMgrLayerRec{

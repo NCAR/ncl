@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourP.h,v 1.22 1995-02-02 17:34:02 dbrown Exp $
+ *      $Id: ContourP.h,v 1.23 1995-02-17 10:23:00 boote Exp $
  */
 /************************************************************************
 *									*
@@ -273,7 +273,7 @@ typedef struct _NhlContourLayerPart {
 } NhlContourLayerPart;
 
 typedef struct _NhlContourDataDepLayerRec{
-	NhlObjLayerPart			base;
+	NhlBaseLayerPart		base;
 	NhlDataSpecLayerPart		dataspec;
 	NhlContourDataDepLayerPart	cndata;
 } NhlContourDataDepLayerRec;
@@ -295,7 +295,7 @@ typedef struct NhlContourLayerClassPart{
 } NhlContourLayerClassPart;
 
 typedef struct _NhlContourDataDepLayerClassRec{
-	NhlObjLayerClassPart		base_class;
+	NhlBaseLayerClassPart		base_class;
 	NhlDataSpecLayerClassPart	dataspec_class;
 	NhlContourDataDepLayerClassPart	cndata_class;
 } NhlContourDataDepLayerClassRec;

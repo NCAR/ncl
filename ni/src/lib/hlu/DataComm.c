@@ -1,5 +1,5 @@
 /*
- *      $Id: DataComm.c,v 1.21 1995-01-24 01:25:09 boote Exp $
+ *      $Id: DataComm.c,v 1.22 1995-02-17 10:23:05 boote Exp $
  */
 /************************************************************************
 *									*
@@ -45,20 +45,6 @@ static NhlResource dcresources[] = {
 
 };
 #undef	Oset
-
-#define Oset(field)	NhlOffset(NhlDataSpecLayerRec,dataspec.field)
-/*SUPPRESS 25*/
-static NhlResource dsresources[] = {
-
-/* Begin-documented-resources */
-
-	{NhlNdsDataItem,NhlCdsDataItem,NhlTInteger,sizeof(int),
-		Oset(data_item),NhlTImmediate,(NhlPointer)NhlNULL_LAYER,0,NULL}
-
-/* End-documented-resources */
-
-};
-#undef Oset
 
 static NhlErrorTypes DataCommClassPartInitialize(
 #if	NhlNeedProto
@@ -146,9 +132,9 @@ NhlDataCommLayerClassRec NhldataCommLayerClassRec = {
 
 /* child_resources		*/	NULL,
 
-/* layer_draw			*/	DataCommDraw,
+/* layer_draw			*/	NULL,
 
-/* layer_pre_draw		*/	NULL,
+/* layer_pre_draw		*/	DataCommDraw,
 /* layer_draw_segonly		*/	NULL,
 /* layer_post_draw		*/	NULL,
 /* layer_clear			*/	NULL
@@ -178,26 +164,15 @@ NhlLayerClass NhldataCommLayerClass = (NhlLayerClass)&NhldataCommLayerClassRec;
 /*
  * DataSpec def's
  */
+#define	Oset(field)	NhlOffset(NhlDataSpecLayerRec,dataspec.field)
+static NhlResource dsresources[] = {
 
-static NhlErrorTypes DataSpecInitialize(
-#if	NhlNeedProto
-	NhlLayerClass	lc,	/* class	*/
-	NhlLayer	req,	/* requested	*/
-	NhlLayer	new,	/* new		*/
-	_NhlArgList	args,	/* args		*/
-	int		nargs	/* nargs	*/
-#endif
-);
+	/* initialize this field to false */
+	{"no.res","no.res",NhlTBoolean,sizeof(NhlBoolean),
+		Oset(destroying),NhlTImmediate,(NhlPointer)False,0,NULL}
 
-static NhlErrorTypes DataSpecSetValues(
-#if	NhlNeedProto
-	NhlLayer	old,	/* old		*/
-	NhlLayer	req,	/* requested	*/
-	NhlLayer	new,	/* new		*/
-	_NhlArgList	args,	/* args		*/
-	int		nargs	/* nargs	*/
-#endif
-);
+};
+#undef	Oset
 
 static NhlErrorTypes DataSpecDestroy(
 #if	NhlNeedProto
@@ -212,7 +187,7 @@ NhlDataSpecLayerClassRec NhldataSpecLayerClassRec = {
 /* nrm_class			*/	NrmNULLQUARK,
 /* layer_size			*/	sizeof(NhlDataSpecLayerRec),
 /* class_inited			*/	False,
-/* superclass			*/	(NhlLayerClass)&NhlobjLayerClassRec,
+/* superclass			*/	(NhlLayerClass)&NhlbaseLayerClassRec,
 
 /* layer_resources		*/	dsresources,
 /* num_resources		*/	NhlNumber(dsresources),
@@ -220,8 +195,8 @@ NhlDataSpecLayerClassRec NhldataSpecLayerClassRec = {
 
 /* class_part_initialize	*/	NULL,
 /* class_initialize		*/	NULL,
-/* layer_initialize		*/	DataSpecInitialize,
-/* layer_set_values		*/	DataSpecSetValues,
+/* layer_initialize		*/	NULL,
+/* layer_set_values		*/	NULL,
 /* layer_set_values_hook	*/	NULL,
 /* layer_get_values		*/	NULL,
 /* layer_reparent		*/	NULL,
@@ -298,7 +273,7 @@ AddData
 		return NhlFATAL;
 	}
 
-	if((dil == NULL) || !(_NhlIsDataItem(dil) || _NhlIsDataSpec(dil))){
+	if((dil == NULL) || !(_NhlIsDataItem(dil))){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"AddData:invalid Data Object %d",
 							from->data.intval);
 		return NhlFATAL;
@@ -334,7 +309,7 @@ AddData
 		 */
 		if(dlistold != NULL){
 			for(i=0;i < dlistold->num_items;i++){
-				if(dil->base.id == dlistold->list[i]->id){
+				if(dil->base.id == dlistold->list[i]->item){
 					NhlPError(NhlFATAL,NhlEUNKNOWN,
 	"AddData:Attempting to add Duplicate Data \"%s\" to \"%s\" resource",
 							NhlName(dil->base.id),
@@ -431,7 +406,7 @@ RemoveData
 #endif
 {
 	_NhlDataNodePtr		dnode=NULL;
-	int			i;
+	int			i,found;
 	NhlGenArray		gen=NULL,newgen=NULL;
 	_NhlInternDataList	dlistold=NULL,dlistnew=NULL;
 	NhlLayer		dil = _NhlGetLayer(from->data.intval);
@@ -441,7 +416,7 @@ RemoveData
 		return NhlFATAL;
 	}
 
-	if((dil == NULL) || !(_NhlIsDataItem(dil) || _NhlIsDataSpec(dil))){
+	if((dil == NULL) || !(_NhlIsDataItem(dil))){
 		NHLPERROR((NhlFATAL,NhlEUNKNOWN,
 			"RemoveData:invalid Data Object %d",from->data.intval));
 		return NhlFATAL;
@@ -458,7 +433,7 @@ RemoveData
 	dlistold = gen->data;
 
 	for(i=0;i < dlistold->num_items;i++){
-		if(dlistold->list[i]->id == dil->base.id){
+		if(dlistold->list[i]->item == dil->base.id){
 			dnode = dlistold->list[i];
 			break;
 		}
@@ -483,16 +458,15 @@ RemoveData
 			return NhlFATAL;
 		}
 		newgen->data = dlistnew;
-		memcpy((char*)dlistnew,(char*)dlistold,
-						sizeof(_NhlInternDataListRec));
+		*dlistnew = *dlistold;
 		dlistnew->num_items--;
 		dlistnew->shared_list = True;
 		dlistold->shared_list = True;
 
 		dlistnew->list = NhlMalloc(dlistnew->num_items *
 						sizeof(_NhlDataNodeRec));
+		found = 0;
 		for(i=0;i < dlistnew->num_items;i++){
-			int found = 0;
 			if(dlistold->list[i + found] == dnode)
 				found++;
 			dlistnew->list[i] = dlistold->list[i + found];
@@ -709,40 +683,26 @@ CreateDataNode
 (
 	NhlDataCommLayer	dcl,	/* DataComm subclass using data	*/
 	_NhlDataOffset		oset,	/* oset ptr - Data Description	*/
-	NhlLayer		dl	/* Data to connect to		*/
+	NhlLayer		dil	/* Data to connect to		*/
 )
 #else
 (dcl,oset,dl)
 	NhlDataCommLayer	dcl;	/* DataComm subclass using data	*/
 	_NhlDataOffset		oset;	/* oset ptr - Data Description	*/
-	NhlLayer		dl;	/* DataItem to connect to	*/
+	NhlLayer		dil;	/* DataItem to connect to	*/
 #endif
 {
 	_NhlDataNodePtr		dnode = NULL;
 	int			dspecid;
-	NhlLayer		dil = NULL;
 	NhlDataSpecLayer	dsl = NULL;
 	NhlErrorTypes		ret=NhlNOERROR;
 
-	if(_NhlIsDataItem(dl)){
-		dil = dl;
-	}
-	else if(dl->base.layer_class != oset->dataspec_class){
+	if(!_NhlIsDataItem(dil)){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
-"The \"%s\" resource must be set with a \"%s\" DataSpec object, not a \"%s\" object",
+"The \"%s\" resource must be set with a DataItem object, not a \"%s\" object",
 					NrmNameToString(oset->res_name),
-					_NhlClassName(oset->dataspec_class),
-					_NhlClassName(dl->base.layer_class));
+					_NhlClassName(dil->base.layer_class));
 		return NULL;
-	}
-	else{
-		dsl = (NhlDataSpecLayer)dl;
-		dil = _NhlGetLayer(dsl->dataspec.data_item);
-		if(dil == NULL){
-			NhlPError(NhlFATAL,NhlEUNKNOWN,
-			"The given DataSpec class does not have any data");
-			return NULL;
-		}
 	}
 
 	dnode = NhlMalloc(sizeof(_NhlDataNodeRec));
@@ -756,43 +716,22 @@ CreateDataNode
 	if(dnode->dhandle == NULL){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
 				"Unable to init a connection with Data \"%s\"",
-							NhlName(dl->base.id));
+							NhlName(dil->base.id));
 		(void)NhlFree(dnode);
 		return NULL;
 	}
 
-	dnode->id = dl->base.id;
 	dnode->item = dil->base.id;
 
-	if(dsl == NULL){
-		ret = NhlVACreate(&dspecid,dil->base.name,oset->dataspec_class,
+	ret = NhlVACreate(&dspecid,dil->base.name,oset->dataspec_class,
 							dcl->base.id,NULL);
-		dnode->dataspec = (NhlDataSpecLayer)_NhlGetLayer(dspecid);
-		dnode->dspechandle = NULL;
-		if((ret < NhlWARNING) || (dnode->dataspec == NULL)){
-			NhlPError(NhlFATAL,NhlEUNKNOWN,
+	dnode->dataspec = (NhlDataSpecLayer)_NhlGetLayer(dspecid);
+	if((ret < NhlWARNING) || (dnode->dataspec == NULL)){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
 				"Unable to process data-dependent resources");
-			_NhlCloseDataConnection(dil,dnode->dhandle);
-			(void)NhlFree(dnode);
-			return NULL;
-		}
-	}
-	else{
-		_NhlDCommList	dclist = (_NhlDCommList)NhlMalloc(
-						sizeof(_NhlDCommListRec));
-
-		if(dclist == NULL){
-			NhlPError(NhlFATAL,ENOMEM,NULL);
-			_NhlCloseDataConnection(dil,dnode->dhandle);
-			(void)NhlFree(dnode);
-			return NULL;
-		}
-		dclist->dcommid = dcl->base.id;
-		dclist->res_name = oset->res_name;
-		dclist->next = dsl->dataspec.dcomm_list;
-		dsl->dataspec.dcomm_list = dclist;
-		dnode->dataspec = dsl;
-		dnode->dspechandle = dclist;
+		_NhlCloseDataConnection(dil,dnode->dhandle);
+		(void)NhlFree(dnode);
+		return NULL;
 	}
 
 	return	dnode;
@@ -896,7 +835,7 @@ CompileDataList
 	ilist->list = dnodes;
 	for(i=0;i < len;i++){
 		dil = _NhlGetLayer(llist[i]);
-		if((dil == NULL)|| !(_NhlIsDataItem(dil)||_NhlIsDataSpec(dil))){
+		if((dil == NULL)|| !(_NhlIsDataItem(dil))){
 			NhlPError(NhlWARNING,NhlEUNKNOWN,
 			"Unable to add DataItem \"%s\" to DataList \"%s\"",
 			NhlName(llist[i]),NrmQuarkToString(oset->res_name));
@@ -991,6 +930,10 @@ DataCommInitialize
 		lret = CompileDataList((NhlDataCommLayer)new,oset);
 		ret = MIN(ret,lret);
 
+		if(oset->dsoffset){
+			*(NhlGenArray*)((char*)new + oset->dsoffset) = NULL;
+		}
+
 		oset = oset->next;
 	}
 
@@ -1068,6 +1011,21 @@ DataCommSetValues
 			}
 		}
 
+		if(oset->dsoffset &&
+			(*(NhlPointer*)((char*)new + oset->dsoffset) !=
+				*(NhlPointer*)((char*)old + oset->dsoffset))){
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
+			"DataCommSetValues:\"%s\" is a GetValues only resource",
+					NrmQuarkToString(oset->dsres_name));
+			/*
+			 * Boy - this is pretty.
+			 */
+			*(NhlPointer*)((char*)new + oset->dsoffset) =
+				*(NhlPointer*)((char*)old + oset->dsoffset);
+			
+			ret = MIN(ret,NhlWARNING);
+		}
+
 		oset = oset->next;
 	}
 
@@ -1118,12 +1076,20 @@ DataCommGetValues
 	NhlGenArray		gen;
 	int			i,j, *iarray;
 	int			len;
+	NhlBoolean		dsres;
 
 	for(i=0;i < nargs; i++){
+		dsres = False;
 		for(oset = cc->datacomm_class.data_offsets;
-					oset != NULL; oset = oset->next)
+					oset != NULL; oset = oset->next){
 			if(args[i].quark == oset->res_name)
 				break;
+			else if(oset->dsoffset && 
+				(args[i].quark == oset->dsres_name)){
+				dsres = True;
+				break;
+			}
+		}
 
 		if(oset == NULL)
 			continue;
@@ -1139,8 +1105,15 @@ DataCommGetValues
 				return NhlFATAL;
 			}
 
-			for(j=0;j < len;j++)
-				iarray[j] = ilist->list[j]->id;
+			if(dsres){
+				for(j=0;j < len;j++)
+					iarray[j] =
+					ilist->list[j]->dataspec->base.id;
+			}
+			else{
+				for(j=0;j < len;j++)
+					iarray[j] = ilist->list[j]->item;
+			}
 
 			gen = _NhlCreateGenArray(iarray,NhlTInteger,sizeof(int),
 								1,&len,False);
@@ -1158,6 +1131,41 @@ DataCommGetValues
 	}
 
 	return NhlNOERROR;
+}
+
+/*
+ * Function:	ListNotShared
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+static void
+ListNotShared
+#if	NhlNeedProto
+(
+	NhlGenArray		gen	/* list to free	*/
+)
+#else
+(gen)
+	NhlGenArray		gen;	/* list to free	*/
+#endif
+{
+	_NhlInternDataList	ilist = NULL;
+
+	if((gen == NULL) || (gen->typeQ != QListCompiled))
+		return;
+
+	ilist = gen->data;
+	ilist->shared_list = False;
+
+	return;
 }
 
 /*
@@ -1255,57 +1263,18 @@ DataCommSetValuesHook
 		nl = (NhlGenArray*)((char *)new + oset->offset);
 		rl = (NhlGenArray*)((char *)req + oset->offset);
 
-		if(*ol != *rl)	/* if ol == rl then resource not involved */
+		if(*ol != *rl){	/* if ol == rl then resource not involved */
 			if(*nl == *ol)
 				FreeInternDataList(*rl);
 			else
 				FreeInternDataList(*ol);
+			ListNotShared(*nl);
+		}
 
 		oset = oset->next;
 	}
 
 	return NhlNOERROR;
-}
-
-/*
- * Function:	ReleaseDSpec
- *
- * Description:	Removes the given dcommid/res_name from the DComm list
- *		in the DSpec layer.
- *
- * In Args:	
- *
- * Out Args:	
- *
- * Scope:	static
- * Returns:	null
- * Side Effect:	
- */
-static void
-ReleaseDSpec
-#if	NhlNeedProto
-(
-	NhlDataSpecLayer	dsl,
-	_NhlDCommList		dclist
-)
-#else
-(dsl,dclist)
-	NhlDataSpecLayer	dsl;
-	_NhlDCommList		dclist;
-#endif
-{
-	_NhlDCommList	*list = &dsl->dataspec.dcomm_list;
-
-	while(*list){
-		if(*list == dclist){
-			*list = dclist->next;
-			NhlFree(dclist);
-			break;
-		}
-		list = &(*list)->next;
-	}
-
-	return;
 }
 
 /*
@@ -1351,13 +1320,12 @@ FreeDataNode
 	}
 
 	/*
-	 * if dataspec is internal, then destroy it.
+	 * Must set this internal dspec field so the dspec knows it is
+	 * the dcomm that is destroying it.  Otherwise it forces a
+	 * destroy of the dcomm.
 	 */
-	if(node->id != node->dataspec->base.id)
-		(void)NhlDestroy(node->dataspec->base.id);
-	else{
-		ReleaseDSpec(node->dataspec,node->dspechandle);
-	}
+	node->dataspec->dataspec.destroying = True;
+	(void)NhlDestroy(node->dataspec->base.id);
 	(void)NhlFree(node);
 
 	return;
@@ -1538,175 +1506,6 @@ DataCommDestroy
  */
 
 /*
- * Function:	DataSpecInitialize
- *
- * Description:	init for dataspec
- *
- * In Args:	
- *		NhlLayerClass	lc,	class
- *		NhlLayer		req,	requested
- *		NhlLayer		new,	new
- *		_NhlArgList	args,	args
- *		int		nargs	nargs
- *
- * Out Args:	
- *
- * Scope:	static
- * Returns:	NhlErrorTypes
- * Side Effect:	
- */
-/*ARGSUSED*/
-static NhlErrorTypes
-DataSpecInitialize
-#if	NhlNeedProto
-(
-	NhlLayerClass	lc,	/* class	*/
-	NhlLayer	req,	/* requested	*/
-	NhlLayer	new,	/* new		*/
-	_NhlArgList	args,	/* args		*/
-	int		nargs	/* nargs	*/
-)
-#else
-(lc,req,new,args,nargs)
-	NhlLayerClass	lc;	/* class	*/
-	NhlLayer	req;	/* requested	*/
-	NhlLayer	new;	/* new		*/
-	_NhlArgList	args;	/* args		*/
-	int		nargs;	/* nargs	*/
-#endif
-{
-	NhlDataSpecLayer	dsnew = (NhlDataSpecLayer)new;
-	NhlLayer		dil;
-
-	dsnew->dataspec.dcomm_list = NULL;
-
-	if(dsnew->dataspec.data_item != NhlNULL_LAYER){
-		dil = _NhlGetLayer(dsnew->dataspec.data_item);
-
-		if((dil == NULL) || !_NhlIsDataItem(dil) ||
-		!_NhlRegisterDSpec(dil,dsnew->base.id)){
-			NhlPError(NhlWARNING,NhlEUNKNOWN,
-				"DataSpecInit:%s resource not valid",
-								NhlNdsDataItem);
-			dsnew->dataspec.data_item = NhlNULL_LAYER;
-			return NhlWARNING;
-		}
-	}
-
-	return NhlNOERROR;
-}
-
-/*
- * Function:	ReleaseDataComms
- *
- * Description:	This function recursively removes the dcomm_list from the
- *		dspec object.  It is used to remove the dspec from the given
- *		dcomm resource and free the memory allocated by the list
- *		itself.
- *
- * In Args:	
- *
- * Out Args:	
- *
- * Scope:	static
- * Returns:	void
- * Side Effect:	
- */
-static void
-ReleaseDataComms
-#if	NhlNeedProto
-(
-	int		dspecid,
-	_NhlDCommList	dc_list
-)
-#else
-(dspecid,dc_list)
-	int		dspecid;
-	_NhlDCommList	dc_list;
-#endif
-{
-	if(dc_list == NULL)
-		return;
-
-	ReleaseDataComms(dspecid,dc_list->next);
-
-	NhlRemoveData(dc_list->dcommid,NrmNameToString(dc_list->res_name),
-								dspecid);
-
-	(void)NhlFree(dc_list);
-
-	return;
-}
-
-/*
- * Function:	DataSpecSetValues
- *
- * Description:	setvalues method
- *
- * In Args:	
- *		NhlLayer	old,	old
- *		NhlLayer	req,	requested
- *		NhlLayer	new,	new
- *		_NhlArgList	args,	args
- *		int		nargs	nargs
- *
- * Out Args:	
- *
- * Scope:	static
- * Returns:	NhlErrorTypes
- * Side Effect:	
- */
-/*ARGSUSED*/
-static NhlErrorTypes
-DataSpecSetValues
-#if	NhlNeedProto
-(
-	NhlLayer	old,	/* old		*/
-	NhlLayer	req,	/* requested	*/
-	NhlLayer	new,	/* new		*/
-	_NhlArgList	args,	/* args		*/
-	int		nargs	/* nargs	*/
-)
-#else
-(old,req,new,args,nargs)
-	NhlLayer	old;	/* old		*/
-	NhlLayer	req;	/* requested	*/
-	NhlLayer	new;	/* new		*/
-	_NhlArgList	args;	/* args		*/
-	int		nargs;	/* nargs	*/
-#endif
-{
-	NhlDataSpecLayer	dsnew = (NhlDataSpecLayer)new;
-	NhlDataSpecLayer	dsold = (NhlDataSpecLayer)old;
-	NhlLayer		dil;
-
-	if(dsnew->dataspec.data_item == dsold->dataspec.data_item){
-		return NhlNOERROR;
-	}
-
-	dil = _NhlGetLayer(dsold->dataspec.data_item);
-	if((dil != NULL) && _NhlIsDataItem(dil))
-		_NhlUnRegisterDSpec(dil,dsold->base.id);
-
-	ReleaseDataComms(dsnew->base.id,dsnew->dataspec.dcomm_list);
-	dsnew->dataspec.dcomm_list = NULL;
-
-	if(dsnew->dataspec.data_item == NhlNULL_LAYER)
-		return NhlNOERROR;
-
-	dil = _NhlGetLayer(dsnew->dataspec.data_item);
-	if((dil != NULL) && _NhlIsDataItem(dil))
-		if(_NhlRegisterDSpec(dil,dsnew->base.id))
-			return NhlNOERROR;
-
-	NhlPError(NhlWARNING,NhlEUNKNOWN,"DataSpecSetValues:Invalid %s resource",
-								NhlNdsDataItem);
-	dsnew->dataspec.data_item = NhlNULL_LAYER;
-
-	return NhlWARNING;
-}
-
-/*
  * Function:	DataSpecDestroy
  *
  * Description:	destroy method
@@ -1730,14 +1529,14 @@ DataSpecDestroy
 	NhlLayer	l;	/* layer to destroy	*/
 #endif
 {
+	char			func[] = "DataSpecDestroy";
 	NhlDataSpecLayer	dsl = (NhlDataSpecLayer)l;
-	NhlLayer		dil;
 
-	dil = _NhlGetLayer(dsl->dataspec.data_item);
-	if((dil != NULL) && _NhlIsDataItem(dil))
-		_NhlUnRegisterDSpec(dil,dsl->base.id);
-
-	ReleaseDataComms(dsl->base.id,dsl->dataspec.dcomm_list);
+	if(!dsl->dataspec.destroying){
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+"%s:Destroy called from somewhere other than parent! Destroying parent to keep integrity",func);
+		return NhlDestroy(dsl->base.parent->base.id);
+	}
 
 	return NhlNOERROR;
 }
@@ -1784,22 +1583,25 @@ _NhlRegisterDataRes
 (
 	NhlDataCommLayerClass	dc,		/* DataComm sub-class	*/
 	NrmString		res_name,	/* name of data res	*/
+	NrmString		dsres_name,	/* name of dataspec res	*/
 	NhlLayerClass		dataspec,	/* DataSpecific object	*/
 	...					/* types requested	*/
 )
 #else
-(dc,res_name,dataspec,va_alist)
+(dc,res_name,dsres_name,dataspec,va_alist)
 	NhlDataCommLayerClass	dc;		/* DataComm sub-class	*/
 	NrmString		res_name;	/* name of data res	*/
+	NrmString		dsres_name;	/* name of dataspec res	*/
 	NhlLayerClass		dataspec;	/* DataSpecific object	*/
 	va_dcl					/* types requested	*/
 #endif
 {
 	static NrmQuark	QDataList=NrmNULLQUARK;
+	static NrmQuark	QDataSpecList=NrmNULLQUARK;
 	va_list		ap;
 	int		i,num_types = 0;
 	NhlLayerClass	tmp;
-	NrmQuark	Qres_name;
+	NrmQuark	Qres_name,Qdsres_name;
 	NrmQuarkList	qlist=NULL;
 	unsigned int	offset = 0;
 	_NhlDataOffset	oset=NULL;
@@ -1810,6 +1612,9 @@ _NhlRegisterDataRes
 
 	if(QDataList == NrmNULLQUARK){
 		QDataList= NrmStringToQuark(_NhlTDataList);
+	}
+	if(QDataSpecList == NrmNULLQUARK){
+		QDataSpecList= NrmStringToQuark(_NhlTDataSpecList);
 	}
 
 	/*
@@ -1891,6 +1696,38 @@ _NhlRegisterDataRes
 	oset->res_name = Qres_name;
 	oset->offset = offset;
 	oset->dataspec_class = dataspec;
+	if(dsres_name){
+		/*
+		 * Make sure res_name is a resource in the class - then find out
+		 * what the offset is for that resource.
+		 */
+		found = False;
+		Qdsres_name = NrmStringToQuark(dsres_name);
+		for(i=0;i < dc->base_class.num_resources; i++){
+			if((nrmres[i].nrm_name == Qdsres_name) &&
+					(nrmres[i].nrm_type == QDataSpecList)){
+				offset = nrmres[i].nrm_offset;
+				found = True;
+				break;
+			}
+		}
+		if(!found){
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+		"Trying to register a non-existant DataSpecList resource %s",
+								dsres_name);
+			NhlFree(qlist);
+			NhlFree(oset);
+			return NhlFATAL;
+		}
+
+		oset->dsres_name = Qdsres_name;
+		oset->dsoffset = offset;
+	}
+	else{
+		oset->dsres_name = NrmNULLQUARK;
+		oset->dsoffset = 0;
+	}
+
 	if(!old){
 		oset->next = dc->datacomm_class.data_offsets;
 		dc->datacomm_class.data_offsets = oset;
@@ -2315,57 +2152,125 @@ _NHLCALLF(nhlf_updatedata,NHLF_UPDATEDATA)
 }
 
 /*
- * Function:	_NhlReleaseDMgr
+ * Function:	NhlIsDataComm
  *
- * Description:	This function is used by the DataMgr to notify the dspec
- *		class that is using it, that it is being destroyed - so the
- *		spec object should set it's dataitem resource to NULL. And
- *		remove itself from all datalists that it is currently in.
+ * Description:	
  *
  * In Args:	
- *		int	dspecid,
- *		int	ditemid
  *
  * Out Args:	
  *
- * Scope:	global private(used only by DataMgr class)
- * Returns:	void
+ * Scope:	
+ * Returns:	
  * Side Effect:	
  */
-void
-_NhlReleaseDMgr
+NhlBoolean
+NhlIsDataComm
 #if	NhlNeedProto
 (
-	int	dspecid,
-	int	ditemid
+	int	pid
 )
 #else
-(dspecid,ditemid)
-	int	dspecid;
-	int	ditemid;
+(pid)
+	int	pid;
 #endif
 {
-	NhlDataSpecLayer	dspec = (NhlDataSpecLayer)_NhlGetLayer(dspecid);
+	NhlLayer	l = _NhlGetLayer(pid);
 
-	if((dspec == NULL) || !_NhlIsDataSpec(dspec)){
-		NhlPError(NhlFATAL,NhlEUNKNOWN,
-				"_NhlReleaseDMgr: called with invalid dspecid");
-		return;
-	}
+	if(l && _NhlIsDataComm(l))
+		return True;
 
-	if(ditemid != dspec->dataspec.data_item){
-		NhlPError(NhlFATAL,NhlEUNKNOWN,
-				"_NhlReleaseDMgr:incorrect dataitem id");
-		return;
-	}
+	return False;
+}
 
-	dspec->dataspec.data_item = NhlNULL_LAYER;
+/*
+ * Function:	nhl_fisdatacomm
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+void _NHLCALLF(nhl_fisdatacomm,NHL_FISDATACOMM)
+#if	NhlNeedProto
+(
+	int	*id,
+	int	*status
+)
+#else
+(id,status)
+	int	*id;
+	int	*status;
+#endif
+{
+	*status = NhlIsDataComm(*id);
 
-	/*
-	 * Remove self from all datacomm resource lists.
-	 */
-	ReleaseDataComms(dspec->base.id,dspec->dataspec.dcomm_list);
-	dspec->dataspec.dcomm_list = NULL;
+	return;
+}
+
+/*
+ * Function:	NhlIsDataSpec
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+NhlBoolean
+NhlIsDataSpec
+#if	NhlNeedProto
+(
+	int	pid
+)
+#else
+(pid)
+	int	pid;
+#endif
+{
+	NhlLayer	l = _NhlGetLayer(pid);
+
+	if(l && _NhlIsDataSpec(l))
+		return True;
+
+	return False;
+}
+
+/*
+ * Function:	nhl_fisdataspec
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+void _NHLCALLF(nhl_fisdataspec,NHL_FISDATASPEC)
+#if	NhlNeedProto
+(
+	int	*id,
+	int	*status
+)
+#else
+(id,status)
+	int	*id;
+	int	*status;
+#endif
+{
+	*status = NhlIsDataSpec(*id);
 
 	return;
 }

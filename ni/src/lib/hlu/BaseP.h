@@ -1,5 +1,5 @@
 /*
- *      $Id: BaseP.h,v 1.6 1994-10-28 03:13:40 boote Exp $
+ *      $Id: BaseP.h,v 1.7 1995-02-17 10:22:55 boote Exp $
  */
 /************************************************************************
 *									*
@@ -69,6 +69,7 @@ typedef struct _NhlObjLayerPart {
 	NrmName		nrm_name;	/* Layer resource name quarkified*/
 	Const char	*name;		/* Layer resource name		*/
 	NhlLayer	appobj;		/* App Class Object		*/
+	NhlBoolean	being_destroyed;
 	_NhlAllChildList	all_children;
 } NhlObjLayerPart;
 
@@ -83,6 +84,7 @@ typedef struct _NhlBaseLayerPart {
 	NrmName		nrm_name;	/* Layer resource name quarkified*/
 	Const char	*name;		/* Layer resource name		*/
 	NhlLayer	appobj;		/* App Class Object		*/
+	NhlBoolean	being_destroyed;
 	_NhlAllChildList	all_children;
 
 /* NOTHING CAN BE ADDED BEFORE HERE UNLESS IT IS ALSO ADDED IN ObjLayerPart */
@@ -220,8 +222,6 @@ typedef struct _NhlBaseLayerClassPart {
 	_NhlChildResList	child_resources;
 
 	NhlDrawProc		layer_draw;
-
-/* The following are not currently used	*/
 
 	NhlDrawProc		layer_pre_draw;
 	NhlDrawProc		layer_draw_segonly;

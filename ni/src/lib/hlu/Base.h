@@ -1,5 +1,5 @@
 /*
- *      $Id: Base.h,v 1.4 1994-11-07 08:29:55 boote Exp $
+ *      $Id: Base.h,v 1.5 1995-02-17 10:22:55 boote Exp $
  */
 /************************************************************************
 *									*
@@ -27,4 +27,11 @@
 
 extern NhlLayerClass NhlobjLayerClass;
 extern NhlLayerClass NhlbaseLayerClass;
+
+extern int NhlGetParentWorkstation(
+#if	NhlNeedProto
+	int	pid
+#endif
+);
+
 #endif  /* _NBase_h */

@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMarkP.h,v 1.6 1994-03-02 01:44:32 dbrown Exp $
+ *      $Id: TickMarkP.h,v 1.7 1995-02-17 10:23:32 boote Exp $
  */
 /************************************************************************
 *									*
@@ -41,10 +41,10 @@ typedef struct _NhlTickMarkLayerPart {
 	NhlBoolean	x_t_labels_on;
 	NhlBoolean	x_b_border_on;
 	NhlBoolean	x_t_border_on;
-	NhlTickMarkModes	x_b_mode;
-	NhlTickMarkModes	x_t_mode;
-	NhlTickMarkStyles	x_b_style;
-	NhlTickMarkStyles	x_t_style;
+	NhlTickMarkMode	x_b_mode;
+	NhlTickMarkMode	x_t_mode;
+	NhlTickMarkStyle	x_b_style;
+	NhlTickMarkStyle	x_t_style;
 	float		x_t_tension;
 	float		x_b_tension;
 	int		x_b_precision;
@@ -126,10 +126,10 @@ typedef struct _NhlTickMarkLayerPart {
 	NhlBoolean	y_l_labels_on;
 	NhlBoolean	y_r_border_on;
 	NhlBoolean	y_l_border_on;
-	NhlTickMarkModes	y_r_mode;
-	NhlTickMarkModes	y_l_mode;
-	NhlTickMarkStyles	y_l_style;
-	NhlTickMarkStyles	y_r_style;
+	NhlTickMarkMode	y_r_mode;
+	NhlTickMarkMode	y_l_mode;
+	NhlTickMarkStyle	y_l_style;
+	NhlTickMarkStyle	y_r_style;
 	float		y_l_tension;
 	float		y_r_tension;
 	int		y_l_precision;

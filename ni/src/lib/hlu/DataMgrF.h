@@ -1,5 +1,5 @@
 /*
- *      $Id: DataMgrF.h,v 1.4 1994-12-16 20:04:10 boote Exp $
+ *      $Id: DataMgrF.h,v 1.5 1995-02-17 10:23:13 boote Exp $
  */
 /************************************************************************
 *									*
@@ -53,24 +53,6 @@ extern void _NhlCloseDataConnection(
 #if	NhlNeedProto
 	NhlLayer	item,	/* DataItem sub-class	*/
 	_NhlDHandle		dhandle	/* id for Connection	*/
-#endif
-);
-
-/*
- * Private API for the DataSpec class only
- */
-
-extern NhlBoolean _NhlRegisterDSpec(
-#if	NhlNeedProto
-	NhlLayer	item,		/* dataitem sub-class	*/
-	int			dspecid		/* id for dataspec layer*/
-#endif
-);
-
-extern void _NhlUnRegisterDSpec(
-#if	NhlNeedProto
-	NhlLayer	item,	/* dataitem sub-class		*/
-	int			dspecid	/* id for dataspec layer	*/
 #endif
 );
 

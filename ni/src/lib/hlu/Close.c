@@ -1,5 +1,5 @@
 /*
- *      $Id: Close.c,v 1.9 1994-12-16 20:03:54 boote Exp $
+ *      $Id: Close.c,v 1.10 1995-02-17 10:22:56 boote Exp $
  */
 /************************************************************************
 *									*
@@ -20,12 +20,7 @@
  *	Description:	
  */
 #include <stdio.h>
-#include <ncarg/hlu/hluP.h>
-#include <ncarg/hlu/ResListP.h>
-#include <ncarg/hlu/FortranP.h>
-#include <ncarg/hlu/ResourcesP.h>
-#include <ncarg/hlu/ErrorP.h>
-#include <ncarg/hlu/WorkspaceP.h>
+#include <ncarg/hlu/AppP.h>
 
 
 /*
@@ -39,7 +34,7 @@
  * Out Args:	
  *
  * Scope:	Global Public
- * Returns:	void (should mabey be NhlErrorTypes?)
+ * Returns:	void
  * Side Effect:	
  */
 /*ARGSUSED*/
@@ -54,14 +49,10 @@ static void _NhlClose
 #endif
 {
 	/*
-	 * Destroy all remaining layer objects.
+	 * Destroy all remaining layer objects. By destroying the "default_app".
 	 */
-	_NhlDestroyLayerTable();
-
-	/*
-	 * Destroy all remaining RL lists.
-	 */
-	_NhlDestroyRLList();
+	if(NhlappLayerClassRec.app_class.default_app)
+		NhlDestroy(NhlappLayerClassRec.app_class.default_app->base.id);
 
 	return;
 }

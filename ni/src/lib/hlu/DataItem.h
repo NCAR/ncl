@@ -1,5 +1,5 @@
 /*
- *      $Id: DataItem.h,v 1.5 1994-07-12 20:51:51 boote Exp $
+ *      $Id: DataItem.h,v 1.6 1995-02-17 10:23:11 boote Exp $
  */
 /************************************************************************
 *									*
@@ -35,6 +35,12 @@
 
 #define	NhlCdiCopyData	"DiCopyData"
 #define	NhlCdiMissingValue	"DiMissingValue"
+
+extern NhlBoolean NhlIsDataItem(
+#if	NhlNeedProto
+	int	pid
+#endif
+);
 
 extern NhlLayerClass NhldataItemLayerClass;
 

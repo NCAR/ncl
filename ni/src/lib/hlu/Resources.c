@@ -1,5 +1,5 @@
 /*
- *      $Id: Resources.c,v 1.16 1995-01-11 00:46:43 boote Exp $
+ *      $Id: Resources.c,v 1.17 1995-02-17 10:23:26 boote Exp $
  */
 /************************************************************************
 *									*
@@ -331,14 +331,9 @@ GetResources
 	for (i=0; i < num_args; i++){
 		for(j=0; j < num_res; j++) {
 			if(args[i].quark == resources[j].nrm_name) {
-				if(args[i].type == NrmNULLQUARK){
+				if((args[i].type == NrmNULLQUARK) ||
+					(args[i].type==resources[j].nrm_type)){
 					_NhlCopyFromArg(args[i].value,
-					(char*)(base + resources[j].nrm_offset),
-					resources[j].nrm_size);
-					resfound[j] = True;
-				}
-				else if(args[i].type==resources[j].nrm_type){
-					_NhlCopyFromArgVal(args[i].value,
 					(char*)(base + resources[j].nrm_offset),
 					resources[j].nrm_size);
 					resfound[j] = True;
@@ -372,7 +367,7 @@ GetResources
 				}
 				argfound[i] = True;
 				break;
-			}	
+			}
 		}
 		if(!argfound[i]){
 			NhlPError(NhlWARNING,NhlEUNKNOWN,

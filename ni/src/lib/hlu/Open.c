@@ -1,5 +1,5 @@
 /*
- *      $Id: Open.c,v 1.9 1994-12-16 20:04:32 boote Exp $
+ *      $Id: Open.c,v 1.10 1995-02-17 10:23:22 boote Exp $
  */
 /************************************************************************
 *									*
@@ -50,10 +50,10 @@ static void _NhlOpen
 {
 	int	tint;
 
-	(void)NhlVACreate(&tint,"hlu",NhlappLayerClass,NhlNOPARENT,
-			_NhlNappMode,	init_type,
-			_NhlNnoAppDB,	True,
-			_NhlNdefApp,	True,
+	(void)NhlVACreate(&tint,"hlu",NhlappLayerClass,0,
+			_NhlNappMode,		init_type,
+			_NhlNnoAppDB,		True,
+			_NhlNdefApp,		True,
 			NULL);
 
 	return;

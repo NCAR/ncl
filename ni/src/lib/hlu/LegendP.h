@@ -1,5 +1,5 @@
 /*
- *      $Id: LegendP.h,v 1.8 1995-02-02 17:34:11 dbrown Exp $
+ *      $Id: LegendP.h,v 1.9 1995-02-17 10:23:20 boote Exp $
  */
 /************************************************************************
 *									*
@@ -63,30 +63,44 @@ typedef struct _NhlLegendLayerPart {
 	float		title_off;
 	NhlBoundingBox	margin;
 
-	NhlGenArray	item_strings;
+	NhlGenArray	line_labels;
 	NhlBoolean	mono_item_type;
-	NhllgItemType	item_type;
+	NhlMarkLineMode	item_type;
 	NhlGenArray	item_types;
-	NhlBoolean	mono_item_index;
-	int		item_index;
-	NhlGenArray	item_indexes;
-	NhlBoolean 	mono_item_color;
-	NhlColorIndex	item_color;
-	NhlGenArray	item_colors;
-	NhlBoolean	mono_item_thickness;
-	float		item_thickness;
-	NhlGenArray	item_thicknesses;
-	NhlBoolean 	mono_item_font_height;
-	float		item_font_height;
-	NhlGenArray	item_font_heights;
+	NhlBoolean	mono_dash_index;
+	NhlDashIndex	dash_index;
+	NhlGenArray	dash_indexes;
+	NhlBoolean	mono_marker_index;
+	NhlMarkerIndex	marker_index;
+	NhlGenArray	marker_indexes;
+	NhlBoolean 	mono_line_color;
+	NhlColorIndex	line_color;
+	NhlGenArray	line_colors;
+	NhlBoolean 	mono_marker_color;
+	NhlColorIndex	marker_color;
+	NhlGenArray	marker_colors;
+	NhlBoolean	mono_line_thickness;
+	float		line_thickness;
+	NhlGenArray	line_thicknesses;
+	NhlBoolean	mono_marker_thickness;
+	float		marker_thickness;
+	NhlGenArray	marker_thicknesses;
+	NhlBoolean 	mono_line_label_font_height;
+	float		line_label_font_height;
+	NhlGenArray	line_label_font_heights;
+	NhlBoolean 	mono_marker_size;
+	float		marker_size;
+	NhlGenArray	marker_sizes;
 	NhlGenArray	label_strings;
 	NhlGenArray	item_positions;
-	NhlBoolean 	mono_item_string_color;
-	NhlColorIndex	item_string_color;
-	NhlGenArray	item_string_colors;
+
+	NhlBoolean 	mono_line_label_color;
+	NhlColorIndex	line_label_color;
+	NhlGenArray	line_label_colors;
 
 	NhlBoolean	line_labels_on;
 	float		line_dash_seglen;
+
 	NhlFont		istring_font;
 	float		istring_aspect;
 	float		istring_thickness;
