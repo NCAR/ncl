@@ -22,8 +22,7 @@
 
 
 ;
-; Read data from the input file.  This file was generated with
-; the C write command, so can only be accessed with 'cbinread'.
+; Read data from input file 'mp03n.asc'. 
 ;
 procedure getdat (
         data: float,
