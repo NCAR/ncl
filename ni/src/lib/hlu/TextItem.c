@@ -1,5 +1,5 @@
 /*
- *      $Id: TextItem.c,v 1.16 1994-12-16 20:04:45 boote Exp $
+ *      $Id: TextItem.c,v 1.17 1994-12-16 23:35:22 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -108,9 +108,9 @@ static NhlResource resources[] = {
 	{ NhlNtxFont, NhlCFont, NhlTFont, sizeof(NhlFont),
 		NhlOffset(NhlTextItemLayerRec, text.font),
 		NhlTImmediate,_NhlUSET(0),0,NULL },
-	{ NhlNtxJust, NhlCtxJust, NhlTInteger, sizeof(int),
+	{ NhlNtxJust, NhlCtxJust, NhlTJustification, sizeof(NhlJustification),
 		NhlOffset(NhlTextItemLayerRec, text.just),
-		NhlTImmediate,_NhlUSET((NhlPointer)4),0,NULL},
+		NhlTImmediate,_NhlUSET((NhlPointer)NhlCENTERCENTER),0,NULL},
 	{ NhlNtxFontQuality, NhlCtxFontQuality, NhlTFQuality, 
 		sizeof(NhlFontQuality),
 		NhlOffset(NhlTextItemLayerRec, text.font_quality),
@@ -999,7 +999,7 @@ static NhlErrorTypes FigureAndSetTextBBInfo
 /*
 * Middle justification points
 */
-		case 1:
+		case NhlCENTERLEFT:
 /*
 * Just used to determin size so the x and y position parameters can be anything
 * however it is important that the cnt option be correct for the computations
@@ -1026,7 +1026,7 @@ static NhlErrorTypes FigureAndSetTextBBInfo
 				tnew->text.real_y_pos = tnew->text.pos_y;
 			}
 			break;
-		case 4:
+		case NhlCENTERCENTER:
 /*
 * Just used to determin size so the x and y position parameters can be anything
 * however it is important that the cntr option be correct for the computations
@@ -1044,7 +1044,7 @@ static NhlErrorTypes FigureAndSetTextBBInfo
 			c_pcgetr("DT",&tmpdt);
 			c_pcgetr("DB",&tmpdb);
 			break;
-		case 7:
+		case NhlCENTERRIGHT:
 /*
 * Just used to determin size so the x and y position parameters can be anything
 * however it is important that the cnt option be correct for the computations
@@ -1074,7 +1074,7 @@ static NhlErrorTypes FigureAndSetTextBBInfo
 /*
 * Top justification points
 */
-		case 0:
+		case NhlTOPLEFT:
 /*
 * Just used to determin size so the x and y position parameters can be anything
 * however it is important that the cnt option be correct for the computations
@@ -1101,7 +1101,7 @@ static NhlErrorTypes FigureAndSetTextBBInfo
 * when on top real_y is below pos_y
 */
 			break;
-		case 3:
+		case NhlTOPCENTER:
 /*
 * Just used to determin size so the x and y position parameters can be anything
 * however it is important that the cnt option be correct for the computations
@@ -1128,7 +1128,7 @@ static NhlErrorTypes FigureAndSetTextBBInfo
 				tnew->text.real_y_pos = tnew->text.pos_y;
 			}
 			break;
-		case 6:
+		case NhlTOPRIGHT:
 /*
 * Just used to determin size so the x and y position parameters can be anything
 * however it is important that the cnt option be correct for the computations
@@ -1158,7 +1158,7 @@ static NhlErrorTypes FigureAndSetTextBBInfo
 /*
 * Bottom justification points
 */
-		case 2:
+		case NhlBOTTOMLEFT:
 /*
 * Just used to determin size so the x and y position parameters can be anything
 * however it is important that the cnt option be correct for the computations
@@ -1185,7 +1185,7 @@ static NhlErrorTypes FigureAndSetTextBBInfo
 				tnew->text.real_y_pos = tnew->text.pos_y;
 			}
 			break;
-		case 5:
+		case NhlBOTTOMCENTER:
 /*
 * Just used to determin size so the x and y position parameters can be anything
 * however it is important that the cnt option be correct for the computations
@@ -1212,7 +1212,7 @@ static NhlErrorTypes FigureAndSetTextBBInfo
 				tnew->text.real_y_pos = tnew->text.pos_y;
 			}
 			break;
-		case 8:
+		case NhlBOTTOMRIGHT:
 /*
 * Just used to determin size so the x and y position parameters can be anything
 * however it is important that the cnt option be correct for the computations

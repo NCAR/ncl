@@ -1,5 +1,5 @@
 /*
- *      $Id: Overlay.c,v 1.29 1994-12-16 20:04:34 boote Exp $
+ *      $Id: Overlay.c,v 1.30 1994-12-16 23:35:21 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1952,6 +1952,14 @@ static NhlErrorTypes SetTitleView
 	height = bbox.t - bbox.b;
 	
 	switch(an_ovl->overlay.ti_main_position) {
+	case NhlTOP:
+	case NhlBOTTOM:
+	default:
+		e_text = 
+    "%s: Invalid value for Main axis title position, defaulting to NhlCENTER";
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text, entry_name);
+		ret = MIN(NhlWARNING,ret);
+		an_ovl->overlay.ti_main_position = NhlCENTER;
 	case NhlCENTER:
 		set_main_off_x = an_ovl->overlay.ti_main_offset_x +
 			((ovl->view.x + ovl->view.width/2.0) -
@@ -1966,15 +1974,17 @@ static NhlErrorTypes SetTitleView
 			((ovl->view.x + ovl->view.width) - 
 			 (x_pos + width));
 		break;
-	case NhlTOP:
-	case NhlBOTTOM:
-	default:
-		e_text = "%s: Invalid value for main axis title position";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
-		return(NhlFATAL);
 	}
 
 	switch(an_ovl->overlay.ti_x_axis_position) {
+	case NhlTOP:
+	case NhlBOTTOM:
+	default:
+		e_text = 
+    "%s: Invalid value for X-Axis title position, defaulting to NhlCENTER";
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text, entry_name);
+		ret = MIN(NhlWARNING,ret);
+		an_ovl->overlay.ti_x_axis_position = NhlCENTER;
 	case NhlCENTER:
 		set_x_off_x = an_ovl->overlay.ti_x_axis_offset_x +
 			((ovl->view.x + ovl->view.width/2.0) -
@@ -1989,15 +1999,17 @@ static NhlErrorTypes SetTitleView
 			((ovl->view.x + ovl->view.width) - 
 			 (x_pos + width));
 		break;
-	case NhlTOP:
-	case NhlBOTTOM:
-	default:
-		e_text = "%s: Invalid value for x axis title position";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
-		return(NhlFATAL);
 	}
 
 	switch(an_ovl->overlay.ti_y_axis_position) {
+	case NhlLEFT:
+	case NhlRIGHT:
+	default:
+		e_text = 
+    "%s: Invalid value for Y-Axis title position, defaulting to NhlCENTER";
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text, entry_name);
+		ret = MIN(NhlWARNING,ret);
+		an_ovl->overlay.ti_y_axis_position = NhlCENTER;
 	case NhlCENTER:
 		set_y_off_y = an_ovl->overlay.ti_y_axis_offset_y +
 			((ovl->view.y - ovl->view.height/2.0) -
@@ -2012,12 +2024,6 @@ static NhlErrorTypes SetTitleView
 			((ovl->view.y - ovl->view.height) - 
 			 (y_pos - height));
 		break;
-	case NhlLEFT:
-	case NhlRIGHT:
-	default:
-		e_text = "%s: Invalid value for y axis title position";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return(NhlFATAL);
 	}
 
 /*
@@ -2102,8 +2108,9 @@ static NhlErrorTypes SetViewTracking
 		     &anno_rec->data_x,&anno_rec->data_y,1,
 		     &x_pos,&y_pos,NULL,NULL,&status,&oo_range);
 	if (status) {
-		NhlLayer anl = _NhlGetLayer(anno_rec->anno_id);
 #if 0
+		NhlLayer anl = _NhlGetLayer(anno_rec->anno_id);
+
 		e_text = 
 	     "%s: annotation \"%s\" track point not in range: cannot display";
 		ret = MIN(ret,NhlWARNING);
@@ -2697,7 +2704,7 @@ ManageExtAnnotation
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	char			*entry_name;
 	char			*e_text;
-	NhlJustification	just;
+	NhlJustification	just = NhlCENTERCENTER;
 	NhlBoundingBox		bbox;
 	float			x_pos,y_pos,width,height;
 	float			x_vp,y_vp,width_vp,height_vp;
@@ -3393,6 +3400,14 @@ ManageTitles
 	ovp->ti_height = bbox.t - bbox.b;
 	
 	switch(ovp->ti_main_position) {
+	case NhlTOP:
+	case NhlBOTTOM:
+	default:
+		e_text = 
+    "%s: Invalid value for Main axis title position, defaulting to NhlCENTER";
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text, entry_name);
+		ret = MIN(NhlWARNING,ret);
+		ovp->ti_main_position = NhlCENTER;
 	case NhlCENTER:
 		ovp->real_main_offset_x = ovp->ti_main_offset_x +
 			((ovnew->view.x + ovnew->view.width/2.0) -
@@ -3407,15 +3422,17 @@ ManageTitles
 			((ovnew->view.x + ovnew->view.width) - 
 			 (ovp->ti_x + ovp->ti_width));
 		break;
-	case NhlTOP:
-	case NhlBOTTOM:
-	default:
-		e_text = "%s: Invalid value for main axis title position";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
-		return(NhlFATAL);
 	}
 
 	switch(ovp->ti_x_axis_position) {
+	case NhlTOP:
+	case NhlBOTTOM:
+	default:
+		e_text = 
+    "%s: Invalid value for X-Axis title position, defaulting to NhlCENTER";
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text, entry_name);
+		ret = MIN(NhlWARNING,ret);
+		ovp->ti_x_axis_position = NhlCENTER;
 	case NhlCENTER:
 		ovp->real_x_axis_offset_x = ovp->ti_x_axis_offset_x +
 			((ovnew->view.x + ovnew->view.width/2.0) -
@@ -3430,15 +3447,17 @@ ManageTitles
 			((ovnew->view.x + ovnew->view.width) - 
 			 (ovp->ti_x + ovp->ti_width));
 		break;
-	case NhlTOP:
-	case NhlBOTTOM:
-	default:
-		e_text = "%s: Invalid value for x axis title position";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
-		return(NhlFATAL);
 	}
 
 	switch(ovp->ti_y_axis_position) {
+	case NhlLEFT:
+	case NhlRIGHT:
+	default:
+		e_text = 
+    "%s: Invalid value for Y-Axis title position, defaulting to NhlCENTER";
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text, entry_name);
+		ret = MIN(NhlWARNING,ret);
+		ovp->ti_y_axis_position = NhlCENTER;
 	case NhlCENTER:
 		ovp->real_y_axis_offset_y = ovp->ti_y_axis_offset_y +
 			((ovnew->view.y - ovnew->view.height/2.0) -
@@ -3453,12 +3472,6 @@ ManageTitles
 			((ovnew->view.y - ovnew->view.height) - 
 			 (ovp->ti_y - ovp->ti_height));
 		break;
-	case NhlLEFT:
-	case NhlRIGHT:
-	default:
-		e_text = "%s: Invalid value for y axis title position";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return(NhlFATAL);
 	}
 
 /*
@@ -4687,7 +4700,6 @@ NhlErrorTypes NhlRegisterAnnotation
 	char			*entry_name = "NhlRegisterAnnotation";
 	NhlLayer		base = _NhlGetLayer(overlay_base_id);
 	NhlLayer		annotation = _NhlGetLayer(annotation_id);
-	NhlLayer		view_layer;
 	NhlOverlayLayer		overlay;
 	NhlTransformLayerPart	*base_tfp;
 	NhlAnnoRec		*anrp;
