@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.4 1994-01-19 19:20:47 ethan Exp $
+#      $Id: yMakefile,v 1.5 1994-10-19 18:58:30 dbrown Exp $
 #
 #########################################################################
 #									#
@@ -20,6 +20,4 @@
 #	Description:	yMakefile for ncarg/ni/src
 
 #define	IHaveSubdirs
-# remove examples until they are fixed
-# SUBDIRS = lib examples bin
-SUBDIRS = lib ncl 
+SUBDIRS = lib ncl db examples
