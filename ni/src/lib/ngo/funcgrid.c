@@ -1,5 +1,5 @@
 /*
- *      $Id: funcgrid.c,v 1.6 2000-03-21 02:35:40 dbrown Exp $
+ *      $Id: funcgrid.c,v 1.7 2000-03-22 00:42:18 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -373,15 +373,19 @@ static void FuncToolApplyCB
 
 static void CreateFuncTool
 (
-	NgGO		go,
+	int		go_id,
 	NhlPointer	data
 )
 {
+	NgGO	go = (NgGO) _NhlGetLayer(go_id);
         NgFuncGridRec *fgp = (NgFuncGridRec *)data;
 	Widget apply,restore,form;
 	char 		buf[256];
 	NgDataItem	ditem;
 	NhlBoolean	edit_enabled;
+
+	if (! go)
+		return;
 
 #if DEBUG_DATA_VAR_GRID      
 	fprintf(stderr,"in create func tool\n");
