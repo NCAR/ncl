@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.80 1994-12-16 18:24:06 haley Exp $
+#   $Id: ncargex.csh,v 1.81 1995-02-22 22:16:45 haley Exp $
 #
 
 #*************************#
@@ -448,7 +448,7 @@ set field_list = ($ex_field $tst_field $fnd_field)
 # set miscellaneous examples #
 #                            #
 #****************************#
-set ex_misc   = (example bnchmk)
+set ex_misc   = (example bnchmk ncargworld)
 set misc_list = ($ex_misc)
 
 #********************#
