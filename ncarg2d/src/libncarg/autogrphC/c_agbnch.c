@@ -1,5 +1,5 @@
 /*
- *	$Id: c_agbnch.c,v 1.4 2001-09-20 04:10:07 haley Exp $
+ *	$Id: c_agbnch.c,v 1.5 2002-02-23 02:49:37 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -46,8 +46,13 @@ char *c_agbnch
     NGCALLF(agbnch,AGBNCH)(ft_str,&idsh);
     strcpy( buff, _fcdtocp(ft_str));
 #else
+#if defined(AbsoftProFortran)
+    extern NGstring NGCALLF(agbnch,AGBNCH)(char*,int*,int);
+    NGCALLF(agbnch,AGBNCH)(buff,&idsh,len);
+#else
     extern NGstring NGCALLF(agbnch,AGBNCH)(char*,int,int*);
     NGCALLF(agbnch,AGBNCH)(buff,len,&idsh);
+#endif
 #endif
     buff[c_icloem(buff)] = '\0';
     return(buff);
