@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl 
 #
-#      $Id: chown-root,v 1.1 1993-07-09 20:24:18 clyne Exp $
+#      $Id: chown-root,v 1.2 1998-07-31 22:41:28 haley Exp $
 #
 #########################################################################
 #									#
@@ -91,7 +91,7 @@ sub     sigint_handler {
 ##
 
 
-$build_root = "/ncargbin";	
+$build_root = "/fs/scd/home1/X/ncarg/binaries";	
 $scratch_dir = "/tmp/chown-root.$$";	# scratch directory.
 $usage = "[-root <path>] [-debug]";
 
