@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncargex.m,v 1.4 1993-01-15 22:37:53 kennison Exp $
+.\"	$Id: ncargex.m,v 1.5 1993-01-17 05:05:20 haley Exp $
 .\"
 .\" @(#)f77.1 1.4 86/07/31 SMI; 
 .TH NCARGEX 1NCARG "NOVEMBER 1989" NCAR "NCAR GRAPHICS"
@@ -96,6 +96,11 @@ testing of new releases at NCAR.
 	sfex01 sfex02
 .fi
 .LP
+.I "STRMLN Examples:"
+.nf
+	stex01 stex02 stex03
+.fi
+.LP
 .I "SURFACE Examples:"
 .nf
 	srex01
@@ -109,6 +114,11 @@ testing of new releases at NCAR.
 .I "SPPS Examples:"
 .nf
 	nglogy ngrevx ngset1 ngset2
+.fi
+.LP
+.I "VELVCT Examples:"
+.nf
+	vvex01 vvex02
 .fi
 .LP
 .I "Miscellaneous Examples:"
