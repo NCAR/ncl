@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManager.c,v 1.71 2004-10-05 22:50:33 dbrown Exp $
+ *      $Id: PlotManager.c,v 1.72 2004-12-20 20:14:21 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3327,6 +3327,13 @@ ManageAnnotations
 		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
 	}
 
+	subret = _NhlSetTrans(ovnew->trans.overlay_trans_obj,
+			      (NhlLayer)ovp->pm_recs[0]->plot);
+        if ((ret = MIN(ret,subret)) < NhlWARNING) {
+                e_text = "%s: error setting transformation";
+                NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
+                return(ret);
+        }
 	while (anlp != NULL) {
 		if (anlp->status > NhlNOCREATE) {
 			switch (anlp->type) {
