@@ -1,5 +1,5 @@
 C
-C $Id: mdloch.f,v 1.1 2001-08-16 23:09:30 kennison Exp $
+C $Id: mdloch.f,v 1.2 2001-09-12 17:29:00 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -76,9 +76,13 @@ C
         NCHR=NCHR+9
         CHRS(NCHR-8:NCHR)=':F34:0:F:'
 C
-C If the number of minutes and seconds are both zero, we're done.
+C If the number of minutes and seconds are both zero, we're done except
+C for, perhaps, a "W" or an "E".
 C
-        IF (IMIN.EQ.0.AND.ISEC.EQ.0) GO TO 101
+        IF (IMIN.EQ.0.AND.ISEC.EQ.0) THEN
+          IF (IDEG.EQ.180) RETURN
+          GO TO 101
+        END IF
 C
 C Put the number of minutes in the buffer, followed by the code for a
 C single quote.
@@ -87,7 +91,8 @@ C
         NCHR=NCHR+15
         CHRS(NCHR-14:NCHR)=':F29H-5:'':H-4F:'
 C
-C If the number of seconds is zero, we're done.
+C If the number of seconds is zero, we're done except for, perhaps, a
+C "W" or an "E".
 C
         IF (ISEC.EQ.0) GO TO 101
 C

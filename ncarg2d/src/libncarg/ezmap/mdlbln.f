@@ -1,5 +1,5 @@
 C
-C $Id: mdlbln.f,v 1.1 2001-08-16 23:09:29 kennison Exp $
+C $Id: mdlbln.f,v 1.2 2001-09-12 17:28:59 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -24,7 +24,7 @@ C
 C
         REAL XCOP,YCOP,XCOQ,YCOQ,OFFX,OFFY,SIZE,ANGL,CENT
 C
-        DOUBLE PRECISION PLAT,PLON,QLAT,QLON,DNCE,RLON,UCOR,VCOR
+        DOUBLE PRECISION PLAT,PLON,QLAT,QLON,DNCE,RLAT,RLON,UCOR,VCOR
 C
 C This routine attempts to put tick marks and longitude labels along an
 C arbitrary line on a map drawn by EZMAP.  XCOP, YCOP, XCOQ, and YCOQ
@@ -59,6 +59,20 @@ C Get the latitude and longitude of Q.
 C
         CALL MDPTRI (DBLE(CFUX(XCOQ)),DBLE(CFUY(YCOQ)),QLAT,QLON)
         IF (QLAT.EQ.1.D12) RETURN
+C
+C Get the latitude and longitude of a point R that is 1/100th of the
+C way along the straight line from P to Q.
+C
+        CALL MDPTRI (DBLE(CFUX((.99*XCOP+.01*XCOQ))),
+     +               DBLE(CFUY((.99*YCOP+.01*YCOQ))),RLAT,RLON)
+        IF (RLAT.EQ.1.D12) RETURN
+C
+C Adjust the longitudes to make sure that the labels go the proper
+C way around the earth.
+C
+        IF (ABS(PLON-RLON).GT.180.) RLON=RLON+SIGN(360.D0,PLON-RLON)
+        IF (ABS(PLON-QLON).LT.1D-6.OR.
+     +    SIGN(1.D0,PLON-QLON).NE.SIGN(1.D0,PLON-RLON)) QLON=QLON+360.D0
 C
 C Compute a "nice" longitude interval to use.
 C

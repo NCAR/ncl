@@ -1,5 +1,5 @@
 C
-C $Id: mdrgol.f,v 1.1 2001-08-16 23:09:38 kennison Exp $
+C $Id: mdrgol.f,v 1.2 2001-09-12 17:29:00 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -76,6 +76,11 @@ C
         IF (ICFELL('MDRGOL',3).NE.0) RETURN
 C
 C Save the current state of the GKS clipping flag and turn clipping on.
+C (Note that the call to GTX to write a blank is a work-around that has
+C no visible effect on the picture but causes GKS to send the clipping
+C flag and clipping rectangle to a workstation even if nothing else had
+C previously been sent to it, so don't take it out unless you know that
+C the behavior of GKS in this regard has been changed.)
 C
         CALL GQCLIP (IERR,IGCF,DUMI)
 C
@@ -83,6 +88,8 @@ C
           CALL SETER ('MDRGOL - ERROR EXIT FROM GQCLIP',4,1)
           RETURN
         END IF
+C
+        CALL GTX    (CFUX(.5),CFUY(.5),' ')  !  SEE COMMENT ABOVE!
 C
         CALL GSCLIP (1)
 C

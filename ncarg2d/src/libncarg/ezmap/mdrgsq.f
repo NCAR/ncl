@@ -1,5 +1,5 @@
 C
-C $Id: mdrgsq.f,v 1.1 2001-08-16 23:09:39 kennison Exp $
+C $Id: mdrgsq.f,v 1.2 2001-09-12 17:29:00 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -331,8 +331,10 @@ C that's the reason for the ".AND.NPTS.NE.1" in the IF.
 C
               IF (IFLL.EQ.0.AND.I.EQ.1.AND.NPTS.NE.1) THEN
                 IF (NCRA.GT.1) THEN
-                  CALL GSPLCI (ICOL(ITYP+1))
-                  CALL GPL (NCRA,XCRA,YCRA)
+                  IF (ICOL(ITYP+1).GE.0) THEN
+                    CALL GSPLCI (ICOL(ITYP+1))
+                    CALL GPL (NCRA,XCRA,YCRA)
+                  END IF
                 END IF
                 NCRA=0
               END IF
@@ -556,8 +558,10 @@ C
               XCRA(NCRA)=REAL(XCRD)
               YCRA(NCRA)=REAL(YCRD)
               IF (XCRD.EQ.1.D12) NCRA=NCRA-1
-              CALL GSFACI (ICSF(ITYP+1))
-              CALL GFA (NCRA,XCRA,YCRA)
+              IF (ICSF(ITYP+1).GE.0) THEN
+                CALL GSFACI (ICSF(ITYP+1))
+                CALL GFA (NCRA,XCRA,YCRA)
+              END IF
 C
             END IF
 C
@@ -583,8 +587,10 @@ C
 C Now, output the polyline.
 C
               IF (NCRA.GT.1) THEN
-                CALL GSPLCI (ICOL(ITYP+1))
-                CALL GPL (NCRA,XCRA,YCRA)
+                IF (ICOL(ITYP+1).GE.0) THEN
+                  CALL GSPLCI (ICOL(ITYP+1))
+                  CALL GPL (NCRA,XCRA,YCRA)
+                END IF
               END IF
 C
             END IF

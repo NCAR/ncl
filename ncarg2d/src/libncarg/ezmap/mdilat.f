@@ -1,5 +1,5 @@
 C
-C $Id: mdilat.f,v 1.1 2001-08-16 23:09:28 kennison Exp $
+C $Id: mdilat.f,v 1.2 2001-09-12 17:28:59 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -33,22 +33,34 @@ C
         DOUBLE PRECISION QLAT,QLON,UCOQ,VCOQ
         DOUBLE PRECISION RLAT,     UCOR,VCOR
 C
+C Declare local variables.
+C
         DOUBLE PRECISION ALAT,ALON,UCOA,VCOA
         DOUBLE PRECISION BLAT,BLON,UCOB,VCOB
         DOUBLE PRECISION CLAT,CLON,UCOC,VCOC
 C
-C Declare local variables.
-C
         INTEGER          NREP
 C
-        ALAT=PLAT
-        ALON=PLON
-        UCOA=UCOP
-        VCOA=VCOP
-        BLAT=QLAT
-        BLON=QLON
-        UCOB=UCOQ
-        VCOB=VCOQ
+        IF (PLAT.LT.QLAT) THEN
+          ALAT=PLAT
+          ALON=PLON
+          UCOA=UCOP
+          VCOA=VCOP
+          BLAT=QLAT
+          BLON=QLON
+          UCOB=UCOQ
+          VCOB=VCOQ
+        ELSE
+          ALAT=QLAT
+          ALON=QLON
+          UCOA=UCOQ
+          VCOA=VCOQ
+          BLAT=PLAT
+          BLON=PLON
+          UCOB=UCOP
+          VCOB=VCOP
+        END IF
+C
         UCOC=UCOA
         VCOC=VCOA
 C
@@ -59,8 +71,8 @@ C
           UCOC=UCOA+((RLAT-ALAT)/(BLAT-ALAT))*(UCOB-UCOA)
           VCOC=VCOA+((RLAT-ALAT)/(BLAT-ALAT))*(VCOB-VCOA)
           CALL MDPTRI (UCOC,VCOC,CLAT,CLON)
-          IF ((UCOC-UCOA)**2+(VCOC-VCOA)**2.GT.
-     +        (UCOC-UCOB)**2+(VCOC-VCOB)**2) THEN
+          IF (CLAT.EQ.1.D12) GO TO 102
+          IF (CLAT.LT.RLAT) THEN
             ALAT=CLAT
             ALON=CLON
             UCOA=UCOC

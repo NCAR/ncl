@@ -1,5 +1,5 @@
 C
-C $Id: mdlach.f,v 1.1 2001-08-16 23:09:29 kennison Exp $
+C $Id: mdlach.f,v 1.2 2001-09-12 17:28:59 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -69,7 +69,8 @@ C
         NCHR=NCHR+9
         CHRS(NCHR-8:NCHR)=':F34:0:F:'
 C
-C If the number of minutes and seconds are both zero, we're done.
+C If the number of minutes and seconds are both zero, we're done except
+C for an "S" or an "N".
 C
         IF (IMIN.EQ.0.AND.ISEC.EQ.0) GO TO 101
 C
@@ -80,7 +81,8 @@ C
         NCHR=NCHR+15
         CHRS(NCHR-14:NCHR)=':F29H-5:'':H-4F:'
 C
-C If the number of seconds is zero, we're done.
+C If the number of seconds is zero, we're done except for an "S" or an
+C "N".
 C
         IF (ISEC.EQ.0) GO TO 101
 C
