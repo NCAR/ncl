@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.8 2003-05-07 21:28:01 shea Exp $
+;      $Id: contributed.ncl,v 1.9 2003-05-10 00:15:53 shea Exp $
 ;
 ; -------------- added Feb 14 2002
 ; copy_VarMeta
@@ -3825,6 +3825,45 @@ begin
 
   return (fo)
 end
+; ******************************************************************
+; Dennis Shea
+
+; wrapper for NCL function runave
+
+undef ("runave_Wrap")
+function runave_Wrap( x:numeric, nave:integer, kopt[1]:integer)
+local xRunAve
+begin
+  xRunAve = x
+  xRunAve = runave (x, nave, kopt)   
+  if (isatt(x,"long_name")) then     ; possibly augment long_name
+      xRunAve@aveInfo = x@long_name +": runave: nave="+nave 
+  else
+      xRunAve@aveInfo = "runave: nave="+nave
+  end if
+
+  return(xRunAve)
+end
+; ******************************************************************
+; Dennis Shea
+
+; wrapper for NCL function wgt_runave
+
+undef ("wgt_runave_Wrap")
+function wgt_runave_Wrap( x:numeric, wgt[*]:numeric, kopt[1]:integer)
+local wRunAve
+begin
+  wRunAve = x
+  wRunAve = wgt_runave (x, wgt, kopt)   
+  if (isatt(x,"long_name")) then     ; possibly augment long_name
+      wRunAve@aveInfo = x@long_name +": wgt_runave" 
+  else
+      wRunAve@aveInfo = "wgt_runave"
+  end if
+
+  return(wRunAve)
+end
+
 ; ******************************************************************
 ; Dennis Shea
 
