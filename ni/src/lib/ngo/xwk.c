@@ -1,5 +1,5 @@
 /*
- *      $Id: xwk.c,v 1.7 1998-08-26 05:16:14 dbrown Exp $
+ *      $Id: xwk.c,v 1.8 1998-09-18 23:47:41 boote Exp $
  */
 /************************************************************************
 *									*
@@ -28,7 +28,7 @@
 #include <Xm/Form.h>
 #include <Xm/RowColumn.h>
 #include <Xm/MenuShell.h>
-#include <Xm/CascadeBG.h>
+#include <ncarg/ngo/CascadeBG.h>
 #include <Xm/PushBG.h>
 #include <Xm/ScrolledW.h>
 #include <Xm/DrawingA.h>
@@ -146,6 +146,7 @@ void NgXWorkPopup
 	 * ** procs, timers, or alternate inputs which could be big	**
 	 * ** trouble!							**
 	 */
+#if	NOT
 	for(mask=XtAppPending(x->app);
 			!xwk->xwk.mapped || (XtIMXEvent&mask);
 						mask=XtAppPending(x->app)){
@@ -158,11 +159,35 @@ void NgXWorkPopup
 	 * before the window is ready to receive them. The following seems
 	 * to take care of the problem. Not sure if the syncs are really
 	 * necessary. The sleep is necessary.
+	 *
+	 * - hopefully the loop below fixes the problem without the sleep...
+	 *
+	 * It looks like the problem is that mapped was never being set to
+	 * false - so calling Popup on the XWks was not a "flushed" event, so
+	 * the event loop above probably would have still worked, but the one
+	 * below is better.. (not as effecient, but completely "flushed".)
+	 * 	- jeff
 	 */
-
 	XSync(x->dpy,False);
 	sleep(1);
 	XSync(x->dpy,False);
+#endif
+	mask = XtAppPending(x->app);
+	while(!xwk->xwk.mapped || (XtIMXEvent&mask)){
+		if(mask&XtIMXEvent)
+			XtAppProcessEvent(x->app,XtIMXEvent);
+		mask = XtAppPending(x->app);
+		/*
+		 * If there are no events - then call XSync to flush all
+		 * the events.  Then go back and process them all.  This should
+		 * make sure that we have processed all possible events before
+		 * leaving this loop.
+		 */
+		if(!(mask&XtIMXEvent)){
+			XSync(x->dpy,False);
+			mask = XtAppPending(x->app);
+		}
+	}
 
 	NgAppReleaseFocus(appmgr,xwkid);
 }
@@ -305,6 +330,7 @@ XWkInitialize
 	NgXWkPart		*np = &((NgXWk)new)->xwk;
 	NgXWkPart		*rp = &((NgXWk)req)->xwk;
 	NhlArgVal		sel,udata;
+	int			nclstate=NhlDEFAULT_APP;
 
 	if(!_NhlIsClass((NhlLayer)np->xwork,NhlxWorkstationClass)){
 		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s:Invalid XWorkstation",
@@ -315,6 +341,7 @@ XWkInitialize
 	 * initialize state vars...
 	 */
 	np->mapped = False;
+	np->graphics = NULL;
 
 	/*
 	 * Make sure this object is destroyed if the workstation is
@@ -325,6 +352,14 @@ XWkInitialize
 	udata.ptrval = new;
 	np->xwork_destroycb = NgCBWPAdd(xwk->go.appmgr,NULL,NULL,
 		(NhlLayer)np->xwork,_NhlCBobjDestroy,sel,WorkDestroyCB,udata);
+
+	NhlVAGetValues(xwk->go.appmgr,
+		NgNappNclState,	&nclstate,
+		NULL);
+	np->appdestroycb = _NhlAddObjCallback(_NhlGetLayer(xwk->go.appmgr),
+				_NhlCBobjDestroy,sel,NgDestroyMeCB,udata);
+	np->nsdestroycb = _NhlAddObjCallback(_NhlGetLayer(nclstate),
+				_NhlCBobjDestroy,sel,NgDestroyMeCB,udata);
 
 	np->my_broker = False;
 	np->xcb = NULL;
@@ -352,6 +387,25 @@ XWkInitialize
 	return NhlNOERROR;
 }
 
+static void
+MapGraphicsEH
+(
+	Widget		widget,
+	XtPointer	udata,
+	XEvent		*event,
+	Boolean		*cont
+)
+{
+	NgXWk	xwk = (NgXWk)udata;
+
+	if((event->type != MapNotify) && (event->type != UnmapNotify))
+		return;
+
+	xwk->xwk.mapped = (event->type == MapNotify);
+
+	return;
+}
+
 static NhlErrorTypes
 XWkDestroy
 (
@@ -361,24 +415,30 @@ XWkDestroy
 	char		func[]="XWkDestroy";
 	NgXWk		xwk = (NgXWk)l;
 	NgXWkPart	*xp = &((NgXWk)l)->xwk;
-	int		nclstate=NhlDEFAULT_APP;
-
-	NhlVAGetValues(xwk->go.appmgr,
-		NgNappNclState,	&nclstate,
-		NULL);
-	if(!NhlIsClass(nclstate,NgnclStateClass)){
-		NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-			   "%s:Invalid nclstate object %d",func,nclstate));
-		return NhlFATAL;
-	}
 
 	NgCBWPDestroy(xp->xwork_destroycb);
+	_NhlCBDelete(xp->appdestroycb);
+	_NhlCBDelete(xp->nsdestroycb);
+
+	if(xp->graphics)
+		XtRemoveEventHandler(xp->graphics,StructureNotifyMask,False,
+							MapGraphicsEH,xwk);
 #if 0
 	NgAppRemoveGO(xwk->go.appmgr,xwk->base.id);
 #endif
 	if(xp->xwork){
+		int	nclstate=NhlDEFAULT_APP;
 		char	*ref;
 		char	cmdbuff[1024];
+
+		NhlVAGetValues(xwk->go.appmgr,
+			NgNappNclState,	&nclstate,
+			NULL);
+		if(!NhlIsClass(nclstate,NgnclStateClass)){
+			NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+			   "%s:Invalid nclstate object %d",func,nclstate));
+			return NhlFATAL;
+		}
 
  		ref = NgNclGetHLURef(nclstate,xp->xwork->base.id);
 		if(ref){
@@ -394,28 +454,6 @@ XWkDestroy
 		XcbDestroy(xp->xcb);
 
 	return NhlNOERROR;
-}
-
-static void
-MapGraphicsEH
-(
-	Widget		widget,
-	XtPointer	udata,
-	XEvent		*event,
-	Boolean		*cont
-)
-{
-	NgXWk	xwk = (NgXWk)udata;
-
-	if(event->type != MapNotify)
-		return;
-
-	XtRemoveEventHandler(widget,StructureNotifyMask,False,
-							MapGraphicsEH,udata);
-
-	xwk->xwk.mapped = True;
-
-	return;
 }
 
 static void

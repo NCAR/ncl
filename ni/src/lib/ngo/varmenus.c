@@ -1,5 +1,5 @@
 /*
- *      $Id: varmenus.c,v 1.8 1998-08-21 01:14:22 dbrown Exp $
+ *      $Id: varmenus.c,v 1.9 1998-09-18 23:47:40 boote Exp $
  */
 /************************************************************************
 *									*
@@ -27,8 +27,7 @@
 #include <Xm/Xm.h>
 #include <Xm/Protocols.h>
 #include <Xm/RowColumn.h>
-#include <Xm/CascadeB.h>
-#include <Xm/CascadeBG.h>
+#include <ncarg/ngo/CascadeBG.h>
 #include <Xm/MenuShell.h>
 
 static void
@@ -205,7 +204,7 @@ FileVarMenu
                                             tcount * sizeof(Widget));
                 for (i = fvar->alloced; i < count; i++) {
                         fvar->vbuttons[i] = XtVaCreateWidget
-                                ("vbutton",xmCascadeButtonWidgetClass,
+                                ("vbutton",xmCascadeButtonGadgetClass,
                                  fvar->submenu,NULL);
                         XtAddCallback
                                 (fvar->vbuttons[i],
@@ -217,7 +216,7 @@ FileVarMenu
                         xmname = NgXAppCreateXmString
                                 (vp->appmgr,"More ...");
                         fvar->vbuttons[count] = XtVaCreateWidget
-                                ("vbutton",xmCascadeButtonWidgetClass,
+                                ("vbutton",xmCascadeButtonGadgetClass,
                                  fvar->submenu,
                                  XmNlabelString,xmname,
                                  NULL);
@@ -249,13 +248,16 @@ FileVarMenu
                         fvar = fvar->next;
                         fvar->next = NULL;
                         fvar->override_sh = XtVaCreatePopupShell
-                                ("override_sh",xmMenuShellWidgetClass,
-                                 prev->submenu,
-                                 XmNwidth,		5,
-                                 XmNheight,		5,
-                                 XmNallowShellResize,	True,
-                                 XtNoverrideRedirect,	True,
-                                 NULL);
+				("override_sh",xmMenuShellWidgetClass,
+				                                 prev->submenu,
+			XmNwidth,		5,
+			XmNheight,		5,
+			XmNallowShellResize,	True,
+			XtNoverrideRedirect,	True,
+			XmNdepth,		XcbGetDepth(vp->go->go.xcb),
+			XmNcolormap,		XcbGetColormap(vp->go->go.xcb),
+			XmNvisual,		XcbGetVisual(vp->go->go.xcb),
+			NULL);
                         cont_submenu = fvar->submenu = XtVaCreateWidget
                                 ("FileVars",xmRowColumnWidgetClass,
                                  fvar->override_sh,
@@ -371,12 +373,16 @@ static void VarMenuCB
                         if (!fvar->override_sh) {
                                 fvar->override_sh = XtVaCreatePopupShell
                                         ("override_sh",xmMenuShellWidgetClass,
-                                         vrec->menu,
-                                         XmNwidth,		5,
-                                         XmNheight,		5,
-                                         XmNallowShellResize,	True,
-                                         XtNoverrideRedirect,	True,
-                                         NULL);
+                                        vrec->menu,
+                                        XmNwidth,		5,
+                                        XmNheight,		5,
+                                        XmNallowShellResize,	True,
+                                        XtNoverrideRedirect,	True,
+					XmNdepth,XcbGetDepth(vp->go->go.xcb),
+					XmNcolormap,
+						XcbGetColormap(vp->go->go.xcb),
+					XmNvisual,XcbGetVisual(vp->go->go.xcb),
+                                        NULL);
                                 fvar->submenu = XtVaCreateWidget
                                         ("FileVars",xmRowColumnWidgetClass,
                                          fvar->override_sh,
@@ -385,7 +391,7 @@ static void VarMenuCB
                         }
                         for (i = vrec->alloced; i < count; i++) {
                                 vrec->vbuttons[i] = XtVaCreateWidget
-                                        ("vbutton",xmCascadeButtonWidgetClass,
+                                        ("vbutton",xmCascadeButtonGadgetClass,
                                          vrec->menu,
                                          XmNsubMenuId,fvar->submenu,
                                          NULL);
@@ -452,10 +458,51 @@ static void InitVarRec
         return;
 }
 
+static void
+NSDestroyCB
+(
+	NhlArgVal	cbdata,
+	NhlArgVal	udata
+)
+{
+	VarMenusRec	*vp = (VarMenusRec*)udata.ptrval;
+        NgVarRec	*vrec;
+        int i;
+        
+        for (i = 0; i < 4; i++) {
+                switch (i) {
+                    case 0:
+                            vrec = &vp->hluvars;
+                            break;
+                    case 1:
+                            vrec = &vp->regvars;
+                            break;
+                    case 2:
+                            vrec = &vp->filerefs;
+                            break;
+                    case 3:
+                            vrec = &vp->filevars;
+                            break;
+                }
+                if (vrec->create_cb){
+                        _NhlCBDelete(vrec->create_cb);
+			vrec->create_cb = NULL;
+		}
+                if (vrec->delete_cb){
+                        _NhlCBDelete(vrec->delete_cb);
+			vrec->delete_cb = NULL;
+		}
+	}
+
+	_NhlCBDelete(vp->nsdestroycb);
+	vp->nsdestroycb = NULL;
+
+        return;
+}
+
 NgVarMenus
 NgCreateVarMenus
 (
-        int		goid,
         Widget		parent,
         XtCallbackProc	hluvar_cb,
         XtCallbackProc	regvar_cb,
@@ -473,18 +520,27 @@ NgCreateVarMenus
         int		count;
         NgFileVarRec	*fvar;
 	NhlLayer	ncl;
+	int		goid = NgGOWidgetToGoId(parent);
         NgGO        	go = (NgGO)_NhlGetLayer(goid);
         
         if (!go)
                 return NULL;
         
+	NhlINITVAR(sel);
+	NhlINITVAR(user_data);
+
         vp = NhlMalloc(sizeof(VarMenusRec));
         vmenus = NhlMalloc(sizeof(NgVarMenusRec));
         vmenus->vmenu_data = (NhlPointer)vp;
         vmenus->qfile = NrmNULLQUARK;
+	vp->go = go;
         vp->appmgr = go->go.appmgr;
         vp->nsid = go->go.nclstate;
         ncl = _NhlGetLayer(vp->nsid);
+
+	user_data.ptrval = vp;
+	vp->nsdestroycb = _NhlAddObjCallback(ncl,_NhlCBobjDestroy,sel,
+							NSDestroyCB,user_data);
         vp->hluvar_cb = hluvar_cb;
         vp->regvar_cb = regvar_cb;
         vp->fileref_cb = fileref_cb;
@@ -507,18 +563,17 @@ NgCreateVarMenus
         
         vp->filevars.priv = (NhlPointer) fvar;
         
-	menush = XtVaCreatePopupShell
-                ("override_sh",xmMenuShellWidgetClass,
-                 parent,
-                 XmNwidth,		5,
-                 XmNheight,		5,
-                 XmNallowShellResize,	True,
-                 XtNoverrideRedirect,	True,
-                 NULL);
+	menush = XtVaCreatePopupShell("override_sh",xmMenuShellWidgetClass,
+						                 parent,
+		XmNwidth,		5,
+		XmNheight,		5,
+		XmNallowShellResize,	True,
+		XtNoverrideRedirect,	True,
+		XmNdepth,		XcbGetDepth(vp->go->go.xcb),
+		XmNcolormap,		XcbGetColormap(vp->go->go.xcb),
+		XmNvisual,		XcbGetVisual(vp->go->go.xcb),
+		NULL);
 
-
-	NhlINITVAR(sel);
-	NhlINITVAR(user_data);
         if (vp->hluvar_cb) {
                 vp->hluvars.menu = XtVaCreateWidget
                         ("Hlu Vars",xmRowColumnWidgetClass,menush,
@@ -683,6 +738,7 @@ void NgDestroyVarMenus
                         }
                 }
         }
+	_NhlCBDelete(vp->nsdestroycb);
         NhlFree(vp);
         NhlFree(vmenus);
                             

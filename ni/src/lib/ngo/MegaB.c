@@ -1,4 +1,4 @@
-/* $Id: MegaB.c,v 1.6 1998-03-23 22:48:39 dbrown Exp $ */
+/* $Id: MegaB.c,v 1.7 1998-09-18 23:47:35 boote Exp $ */
 /*
  * Copyright 1994 John L. Cwikla
  *
@@ -37,7 +37,6 @@
 #include <Xm/DrawP.h>
 #include <Xm/MenuShellP.h>
 #include <Xm/MenuUtilP.h>
-#include <Xm/CascadeB.h>
 
 #if HAVE_SOURCE
 #include "Xm/TraversalI.h"

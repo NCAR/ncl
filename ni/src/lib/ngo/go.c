@@ -1,5 +1,5 @@
 /*
- *      $Id: go.c,v 1.15 1998-08-26 05:16:12 dbrown Exp $
+ *      $Id: go.c,v 1.16 1998-09-18 23:47:38 boote Exp $
  */
 /************************************************************************
 *									*
@@ -35,14 +35,14 @@
 #include <Xm/TextF.h>
 #include <Xm/Form.h>
 #include <Xm/RowColumn.h>
-#include <Xm/CascadeBG.h>
+#include <ncarg/ngo/CascadeBG.h>
 #include <Xm/PushBG.h>
 #include <Xm/ToggleBG.h>
 #include <Xm/SeparatoG.h>
 
 #include <Xcb/xcbShells.h>
 
-#ifdef	DEBUG
+#ifdef	RESDEBUG
 #include <X11/Xmu/Editres.h>
 #endif
 
@@ -973,7 +973,7 @@ GOCreateWin
 							(XtPointer)go->base.id);
 	XtAddCallback(gp->shell,XmNdestroyCallback,DestroyFunc,
 							(XtPointer)go->base.id);
-#ifdef	DEBUG
+#ifdef	RESDEBUG
 	/*
 	 * If debug, turn on editres
 	 */
@@ -1516,6 +1516,9 @@ _NgGOCreateMenubar
 
 	gp->menush = XtVaCreatePopupShell("menush",xmMenuShellWidgetClass,
 								gp->shell,
+		XmNdepth,		XcbGetDepth(gp->xcb),
+		XmNcolormap,		XcbGetColormap(gp->xcb),
+		XmNvisual,		XcbGetVisual(gp->xcb),
 		XmNwidth,		5,
 		XmNheight,		5,
 		XmNallowShellResize,	True,
@@ -1624,6 +1627,9 @@ _NgGOCreateMenubar
         
 	menush = XtVaCreatePopupShell("menush",xmMenuShellWidgetClass,
 								gp->fmenu,
+		XmNdepth,		XcbGetDepth(gp->xcb),
+		XmNcolormap,		XcbGetColormap(gp->xcb),
+		XmNvisual,		XcbGetVisual(gp->xcb),
 		XmNwidth,		5,
 		XmNheight,		5,
 		XmNallowShellResize,	True,
@@ -1645,6 +1651,9 @@ _NgGOCreateMenubar
         
 	menush = XtVaCreatePopupShell("menush",xmMenuShellWidgetClass,
 								gp->fmenu,
+		XmNdepth,		XcbGetDepth(gp->xcb),
+		XmNcolormap,		XcbGetColormap(gp->xcb),
+		XmNvisual,		XcbGetVisual(gp->xcb),
 		XmNwidth,		5,
 		XmNheight,		5,
 		XmNallowShellResize,	True,
@@ -1655,8 +1664,7 @@ _NgGOCreateMenubar
                                     XmNrowColumnType,	XmMENU_PULLDOWN,
                                     NULL);
         
-        gp->delete_menu = NgCreateVarMenus(go->base.id,
-                                           pulldown,
+        gp->delete_menu = NgCreateVarMenus(pulldown,
                                            DeleteVarCB,
                                            DeleteVarCB,
                                            DeleteVarCB,
@@ -1914,7 +1922,7 @@ NgGOCreateUnmapped
 	int		goid
 )
 {
-	char		func[] = "NgGOPopup";
+	char		func[] = "NgGOCreateUnmapped";
 	NgGO		go = (NgGO)_NhlGetLayer(goid);
 	NgGOPart	*gp;
 	NgGOClass	gc;

@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.20 1998-08-21 01:14:24 dbrown Exp $
+#      $Id: yMakefile,v 1.21 1998-09-18 23:47:41 boote Exp $
 #
 #########################################################################
 #									#
@@ -20,17 +20,29 @@
 #	Description:	
 MYNAME		= libngo
 
-#ifdef	DEBUG
+#ifdef	RESDEBUG
 DEBUG_LIB	=	$(XMULIB)
 #endif
 
-EXTRA_CDEFINES	=	$(OS_DEF) -DNGOLIB
-CLIENT_LIBS	=	$(NCLAPILIB) -lXcb $(HLULIB) $(XMOTIFCLIENTLIBS) $(DEBUG_LIB) -lc
+#ifdef	Solaris
+#define	DoDceHacks
+#endif
+
+#ifdef	DoDceHacks
+DCEDEF		=	-DDCEHACKS
+DCEXHDRS	= CascadeBGP.h ToggleBGP.h
+DCEXSRCS	= CascadeBG.c ToggleBG.c
+DCEXOBJS	= CascadeBG.o ToggleBG.o
+#endif
+
+EXTRA_CDEFINES	=	$(OS_DEF) $(DCEDEF) -DNGOLIB
+CLIENT_LIBS	=	$(NCLAPILIB) -lXcb $(HLULIB) $(XMOTIFCLIENTLIBS) \
+			$(DEBUG_LIB) -lc
 
 HDRS		= ngoP.h ngo.h appP.h app.h nclstateP.h nclstate.h util.h \
-		$(XHDRS)
-SRCS		= ngo.c app.c nclstate.c util.c $(XSRCS)
-OBJS		= ngo.o app.o nclstate.o util.o $(XOBJS)
+		$(XHDRS) $(DCEXHDRS)
+SRCS		= ngo.c app.c nclstate.c util.c $(XSRCS) $(DCEXSRCS)
+OBJS		= ngo.o app.o nclstate.o util.o $(XOBJS) $(DCEXOBJS)
 
 XHDRS		= xappP.h xapp.h goP.h go.h ncleditP.h ncledit.h xutil.h \
 		loadP.h load.h addfileP.h addfile.h mwinP.h mwin.h \
@@ -44,7 +56,7 @@ XHDRS		= xappP.h xapp.h goP.h go.h ncleditP.h ncledit.h xutil.h \
 		restree.h restreeP.h MegaB.h MegaBP.h graphic.h \
 		plotspecmenu.h plotspecmenuP.h Folder.h FolderP.h \
 		Grid.h GridP.h Tree.h TreeP.h XmL.h htmlview.h htmlviewI.h \
-		htmlviewP.h print.h printP.h
+		htmlviewP.h print.h printP.h CascadeBG.h ToggleBG.h
 XSRCS		= xapp.c go.c ncledit.c xutil.c load.c addfile.c mwin.c \
 		xwk.c diminfogrid.c attrinfogrid.c vcrcontrol.c browse.c \
 		varmenus.c filetree.c sort.c vartree.c datagrid.c MegaB.c \

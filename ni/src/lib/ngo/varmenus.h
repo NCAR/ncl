@@ -1,5 +1,5 @@
 /*
- *      $Id: varmenus.h,v 1.3 1997-10-03 20:08:29 dbrown Exp $
+ *      $Id: varmenus.h,v 1.4 1998-09-18 23:47:40 boote Exp $
  */
 /************************************************************************
 *									*
@@ -48,7 +48,6 @@ typedef struct _NgVarMenusRec
 
 NgVarMenus
 NgCreateVarMenus(
-        int		goid,
         Widget		parent,
         XtCallbackProc	hluvar_cb,
         XtCallbackProc	regvar_cb,

@@ -1,5 +1,5 @@
 /*
- *      $Id: ncledit.c,v 1.12 1998-03-23 22:48:42 dbrown Exp $
+ *      $Id: ncledit.c,v 1.13 1998-09-18 23:47:38 boote Exp $
  */
 /************************************************************************
 *									*
@@ -38,7 +38,7 @@
 #include <Xm/ScrolledW.h>
 #include <Xm/Text.h>
 #include <Xm/RowColumn.h>
-#include <Xm/CascadeBG.h>
+#include <ncarg/ngo/CascadeBG.h>
 
 #include <Xm/MenuShell.h>
 #include <Xcb/xcbShells.h>
@@ -199,6 +199,7 @@ NEDestroy
 	if(np->high_gc != None)
 		XFreeGC(ncl->go.x->dpy,np->high_gc);
 
+	_NhlCBDelete(np->nsdestroycb);
 	_NhlCBDelete(np->submitcb);
 	_NhlCBDelete(np->promptcb);
 	_NhlCBDelete(np->resetcb);
@@ -1121,30 +1122,6 @@ NECreateWin
 		XmNhorizontalScrollBar,	&hsbar,
 		NULL);
 
-#if	NOT
-	XtVaGetValues(hsbar,
-		XmNwidth,	&width,
-		XmNheight,	&height,
-		NULL);
-
-	XtVaSetValues(hsbar,
-		XmNshadowThickness,	2,
-		XmNwidth,		width+4,
-		XmNheight,		height+4,
-		NULL);
-
-	XtVaGetValues(np->vsbar,
-		XmNwidth,	&width,
-		XmNheight,	&height,
-		NULL);
-
-	XtVaSetValues(np->vsbar,
-		XmNshadowThickness,	2,
-		XmNwidth,		width+4,
-		XmNheight,		height+4,
-		NULL);
-#endif
-
 	XtAddCallback(np->vsbar,XmNvalueChangedCallback,PromptScrollCB,
 							np->prompt_text);
 	XtAddCallback(np->vsbar,XmNincrementCallback,PromptScrollCB,
@@ -1166,6 +1143,8 @@ NECreateWin
 	udata.ptrval = go;
 
 	nstate = _NhlGetLayer(np->nsid);
+	np->nsdestroycb = _NhlAddObjCallback(nstate,_NhlCBobjDestroy,dummy,
+		NgDestroyMeCB,udata);
 	np->submitcb = _NhlAddObjCallback(nstate,NgCBnsSubmit,dummy,SubmitCB,
 									udata);
 	np->promptcb = _NhlAddObjCallback(nstate,NgCBnsPrompt,dummy,PromptCB,

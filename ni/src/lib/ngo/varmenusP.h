@@ -1,5 +1,5 @@
 /*
- *      $Id: varmenusP.h,v 1.3 1997-10-03 20:08:30 dbrown Exp $
+ *      $Id: varmenusP.h,v 1.4 1998-09-18 23:47:41 boote Exp $
  */
 /************************************************************************
 *									*
@@ -66,6 +66,8 @@ typedef struct _VarMenusRec
 {
         int		appmgr;
         int		nsid;
+	NgGO		go;
+        _NhlCB		nsdestroycb;
 	NgVarRec	hluvars;
         NgVarRec	regvars;
         NgVarRec	filerefs;

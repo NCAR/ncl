@@ -1,5 +1,5 @@
 /*
- *      $Id: ncleditP.h,v 1.6 1997-09-04 17:05:44 boote Exp $
+ *      $Id: ncleditP.h,v 1.7 1998-09-18 23:47:39 boote Exp $
  */
 /************************************************************************
 *									*
@@ -80,6 +80,7 @@ typedef struct _NgNclEditPart {
 	Pixel		high_color;
 	Pixel		back_color;
 
+	_NhlCB		nsdestroycb;
 	_NhlCB		submitcb;
 	_NhlCB		promptcb;
 	_NhlCB		resetcb;

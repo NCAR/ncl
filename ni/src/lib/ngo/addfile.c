@@ -1,5 +1,5 @@
 /*
- *      $Id: addfile.c,v 1.20 1998-08-21 01:14:15 dbrown Exp $
+ *      $Id: addfile.c,v 1.21 1998-09-18 23:47:37 boote Exp $
  */
 /************************************************************************
 *									*
@@ -661,8 +661,11 @@ CreateDimInfoPopup
         dip->popup =
                 XtVaCreatePopupShell("DimInfo",overrideShellWidgetClass,
                                      l->go.manager,
-                                     XmNallowShellResize,True,
-                                     NULL);
+			XmNdepth,		XcbGetDepth(l->go.xcb),
+			XmNcolormap,		XcbGetColormap(l->go.xcb),
+			XmNvisual,		XcbGetVisual(l->go.xcb),
+			XmNallowShellResize,	True,
+			NULL);
         dip->frame =
                 XtVaCreateManagedWidget("frame",
                                         xmFrameWidgetClass,dip->popup,
@@ -753,8 +756,11 @@ CreateAttrPopup
         aip->popup =
                 XtVaCreatePopupShell("AttrInfo",overrideShellWidgetClass,
                                      l->go.manager,
-                                     XmNallowShellResize,True,
-                                     NULL);
+			XmNdepth,		XcbGetDepth(l->go.xcb),
+			XmNcolormap,		XcbGetColormap(l->go.xcb),
+			XmNvisual,		XcbGetVisual(l->go.xcb),
+			XmNallowShellResize,	True,
+			NULL);
         aip->frame =
                 XtVaCreateManagedWidget("frame",
                                         xmFrameWidgetClass,aip->popup,
@@ -2116,12 +2122,15 @@ AddFileCreateWin
             /* the read/write option menu */
 	menush =
                 XtVaCreatePopupShell("rwMenush",xmMenuShellWidgetClass,
-                                     applyform,
-                                     XmNwidth,5,
-                                     XmNheight,5,
-                                     XmNallowShellResize,True,
-                                     XmNoverrideRedirect,True,
-                                     NULL);
+							applyform,
+			XmNwidth,		5,
+			XmNheight,		5,
+			XmNallowShellResize,	True,
+			XmNoverrideRedirect,	True,
+			XmNdepth,		XcbGetDepth(go->go.xcb),
+			XmNcolormap,		XcbGetColormap(go->go.xcb),
+			XmNvisual,		XcbGetVisual(go->go.xcb),
+			NULL);
 
 	menu =
                 XtVaCreateWidget("rwMenu",xmRowColumnWidgetClass,menush,
@@ -2271,11 +2280,14 @@ AddFileCreateWin
 	menush =
                 XtVaCreatePopupShell("varSortMenuSh",xmMenuShellWidgetClass,
                                      np->workareaform,
-                                     XmNwidth,5,
-                                     XmNheight,5,
-                                     XmNallowShellResize,True,
-                                     XmNoverrideRedirect,True,
-                                     NULL);
+			XmNwidth,		5,
+			XmNheight,		5,
+			XmNallowShellResize,	True,
+			XmNoverrideRedirect,	True,
+			XmNdepth,		XcbGetDepth(go->go.xcb),
+			XmNcolormap,		XcbGetColormap(go->go.xcb),
+			XmNvisual,		XcbGetVisual(go->go.xcb),
+			NULL);
 
 	menu =
                 XtVaCreateWidget("varSortMenu",xmRowColumnWidgetClass,menush,
@@ -2361,11 +2373,14 @@ AddFileCreateWin
 	menush =
                 XtVaCreatePopupShell("infoMenuSh",xmMenuShellWidgetClass,
                                      form,
-                                     XmNwidth,5,
-                                     XmNheight,5,
-                                     XmNallowShellResize,True,
-                                     XmNoverrideRedirect,True,
-                                     NULL);
+			XmNwidth,		5,
+			XmNheight,		5,
+			XmNallowShellResize,	True,
+			XmNoverrideRedirect,	True,
+			XmNdepth,		XcbGetDepth(go->go.xcb),
+			XmNcolormap,		XcbGetColormap(go->go.xcb),
+			XmNvisual,		XcbGetVisual(go->go.xcb),
+			NULL);
 
 	menu =
                 XtVaCreateWidget("infoMenu",xmRowColumnWidgetClass,menush,

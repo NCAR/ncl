@@ -1,5 +1,5 @@
 /*
- *      $Id: plotspecmenu.c,v 1.3 1998-03-23 22:48:43 dbrown Exp $
+ *      $Id: plotspecmenu.c,v 1.4 1998-09-18 23:47:39 boote Exp $
  */
 /************************************************************************
 *									*
@@ -27,8 +27,7 @@
 #include <Xm/Xm.h>
 #include <Xm/Protocols.h>
 #include <Xm/RowColumn.h>
-#include <Xm/CascadeB.h>
-#include <Xm/CascadeBG.h>
+#include <ncarg/ngo/CascadeBG.h>
 #include <Xm/MenuShell.h>
 #include <Xm/MessageB.h>
 #include <Xm/TextF.h>
@@ -359,14 +358,16 @@ NgCreatePlotSpecMenu
                  XmNrowColumnType,      XmMENU_BAR,
                  NULL);
 
-	menush = XtVaCreatePopupShell
-                ("override_sh",xmMenuShellWidgetClass,
-                 pub->menubar,
-                 XmNwidth,		5,
-                 XmNheight,		5,
-                 XmNallowShellResize,	True,
-                 XtNoverrideRedirect,	True,
-                 NULL);
+	menush = XtVaCreatePopupShell("override_sh",xmMenuShellWidgetClass,
+						                 pub->menubar,
+		XmNwidth,		5,
+		XmNheight,		5,
+		XmNallowShellResize,	True,
+		XtNoverrideRedirect,	True,
+		XmNdepth,		XcbGetDepth(priv->go->go.xcb),
+		XmNcolormap,		XcbGetColormap(priv->go->go.xcb),
+		XmNvisual,		XcbGetVisual(priv->go->go.xcb),
+		NULL);
         
         priv->plot.menu =  XtVaCreateWidget
                 ("Plot",xmRowColumnWidgetClass,menush,

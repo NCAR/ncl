@@ -1,5 +1,5 @@
 /*
- *      $Id: restree.c,v 1.14 1998-08-21 01:14:21 dbrown Exp $
+ *      $Id: restree.c,v 1.15 1998-09-18 23:47:40 boote Exp $
  */
 /************************************************************************
 *									*
@@ -2215,7 +2215,7 @@ static void EditEnum
 	rtResData 	*resp
         )
 {
-        NgResTree *pub_rtp = &rtp->restree;
+        NgResTree		*pub_rtp = &rtp->restree;
 	rtEnumInfoRec		*ep = &rtp->enum_info;
         NhlErrorTypes		ret;
 	NhlConvertArgList       args;
@@ -2294,15 +2294,18 @@ static void EditEnum
         ep->popup = XmCreatePopupMenu(rtp->go->go.manager,
                                       "EnumInfo",NULL,0);
 #endif        
-        ep->popup =  XtVaCreatePopupShell
-                ("EnumPopup",xmMenuShellWidgetClass,
-                 pub_rtp->tree,
-                 XmNwidth,		5,
-                 XmNheight,		5,
-                 XmNallowShellResize,	True,
-                 XtNoverrideRedirect,	True,
-                 XmNuserData,		rtp,
-                 NULL);
+        ep->popup =  XtVaCreatePopupShell("EnumPopup",xmMenuShellWidgetClass,
+						                 pub_rtp->tree,
+			XmNwidth,		5,
+			XmNheight,		5,
+			XmNallowShellResize,	True,
+			XtNoverrideRedirect,	True,
+			XmNuserData,		rtp,
+			XmNdepth,		XcbGetDepth(rtp->go->go.xcb),
+			XmNcolormap,		XcbGetColormap(rtp->go->go.xcb),
+			XmNvisual,		XcbGetVisual(rtp->go->go.xcb),
+			NULL);
+
 #if DEBUG_RESTREE
         fprintf(stderr,"ep popup %x parent window %x\n",ep->popup,
                XtWindow(pub_rtp->tree));

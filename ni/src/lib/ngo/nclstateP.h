@@ -1,5 +1,5 @@
 /*
- *      $Id: nclstateP.h,v 1.5 1997-10-03 20:08:12 dbrown Exp $
+ *      $Id: nclstateP.h,v 1.6 1998-09-18 23:47:39 boote Exp $
  */
 /************************************************************************
 *									*
@@ -79,6 +79,7 @@ typedef struct _NgNclStatePart {
 	_NhlCBList	post_submitcb;
 
 	_NhlCB		appdestroy_cb;
+	_NhlCB		perror_cb;
 
         int		block_id;
         int		bufsize;

@@ -1,5 +1,5 @@
 /*
- *      $Id: mwin.c,v 1.15 1998-03-11 18:58:22 dbrown Exp $
+ *      $Id: mwin.c,v 1.16 1998-09-18 23:47:38 boote Exp $
  */
 /************************************************************************
 *									*
@@ -28,7 +28,7 @@
 
 #include <Xm/Xm.h>
 #include <Xm/RowColumn.h>
-#include <Xm/CascadeBG.h>
+#include <ncarg/ngo/CascadeBG.h>
 #include <Xm/PushB.h>
 #include <Xm/PushBG.h>
 #include <Xm/PanedW.h>

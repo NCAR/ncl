@@ -1,5 +1,5 @@
 /*
- *      $Id: app.c,v 1.14 1998-08-26 05:16:10 dbrown Exp $
+ *      $Id: app.c,v 1.15 1998-09-18 23:47:37 boote Exp $
  */
 /************************************************************************
 *									*
@@ -464,6 +464,7 @@ NgAppQuit
 	}
 
 	ac = (NgAppMgrClass)app->base.layer_class;
+	NhlDestroy(app->base.id);
 /*
  * TODO:	call a quitConfirm callback - iff cbdata comes back true,
  *		then call quitNow callback. If that returns, exit.

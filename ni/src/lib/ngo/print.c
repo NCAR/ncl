@@ -1,5 +1,5 @@
 /*
- *      $Id: print.c,v 1.2 1998-08-26 05:16:13 dbrown Exp $
+ *      $Id: print.c,v 1.3 1998-09-18 23:47:39 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1670,14 +1670,16 @@ UpdateSourceDialog
 	create = top ? True : False;
 
 	if (create) {
-		menush = XtVaCreatePopupShell
-			("wksMenush",xmMenuShellWidgetClass,
-                         np->form_parent,
-                         XmNwidth,5,
-                         XmNheight,5,
-                         XmNallowShellResize,True,
-                         XmNoverrideRedirect,True,
-                         NULL);
+		menush = XtVaCreatePopupShell("wksMenush",
+					xmMenuShellWidgetClass,np->form_parent,
+			XmNwidth,		5,
+			XmNheight,		5,
+			XmNallowShellResize,	True,
+			XmNoverrideRedirect,	True,
+			XmNdepth,		XcbGetDepth(l->go.xcb),
+			XmNcolormap,		XcbGetColormap(l->go.xcb),
+			XmNvisual,		XcbGetVisual(l->go.xcb),
+			NULL);
 
                 np->wks_menu = XtVaCreateWidget
                         ("wksMenu",xmRowColumnWidgetClass,menush,
@@ -1950,13 +1952,17 @@ CreateLayoutDialog(
 	max_width = MAX(resolution_width,max_width);
 	*max_label_width = max_width;
 
-	menush = XtVaCreatePopupShell
-		("orientMenush",xmMenuShellWidgetClass,parent,
-		 XmNwidth,5,
-		 XmNheight,5,
-		 XmNallowShellResize,True,
-		 XmNoverrideRedirect,True,
-		 NULL);
+	menush = XtVaCreatePopupShell("orientMenush",
+						xmMenuShellWidgetClass,parent,
+			XmNwidth,		5,
+			XmNheight,		5,
+			XmNallowShellResize,	True,
+			XmNoverrideRedirect,	True,
+			XmNdepth,		XcbGetDepth(go->go.xcb),
+			XmNcolormap,		XcbGetColormap(go->go.xcb),
+			XmNvisual,		XcbGetVisual(go->go.xcb),
+			NULL);
+
 	menu = XtVaCreateWidget("orientMenu",xmRowColumnWidgetClass,menush,
                                 XmNrowColumnType,XmMENU_PULLDOWN,
                                 NULL);
@@ -1993,13 +1999,16 @@ CreateLayoutDialog(
 		(np->full_viewspace_tgl,
                  XmNvalueChangedCallback,MaximizeBBCB,go); 
 
-	menush = XtVaCreatePopupShell
-		("papersizeMenush",xmMenuShellWidgetClass,parent,
-		 XmNwidth,5,
-		 XmNheight,5,
-		 XmNallowShellResize,True,
-		 XmNoverrideRedirect,True,
-		 NULL);
+	menush = XtVaCreatePopupShell("papersizeMenush",
+						xmMenuShellWidgetClass,parent,
+			XmNwidth,		5,
+			XmNheight,		5,
+			XmNallowShellResize,	True,
+			XmNoverrideRedirect,	True,
+			XmNdepth,		XcbGetDepth(go->go.xcb),
+			XmNcolormap,		XcbGetColormap(go->go.xcb),
+			XmNvisual,		XcbGetVisual(go->go.xcb),
+			NULL);
 
 	menu = XtVaCreateWidget("papersizeMenu",xmRowColumnWidgetClass,menush,
                                 XmNrowColumnType,XmMENU_PULLDOWN,
@@ -2201,14 +2210,16 @@ CreateDestinationDialog(
         w[wc++] = np->file_type_lbl = filetype_lbl = XtCreateWidget
 		("fileTypeLbl",xmLabelGadgetClass,parent,arg,0);
 
-	menush = XtVaCreatePopupShell
-		("orientMenush",xmMenuShellWidgetClass,
-		 parent,
-		 XmNwidth,5,
-		 XmNheight,5,
-		 XmNallowShellResize,True,
-		 XmNoverrideRedirect,True,
-		 NULL);
+	menush = XtVaCreatePopupShell("orientMenush",xmMenuShellWidgetClass,
+									 parent,
+			XmNwidth,		5,
+			XmNheight,		5,
+			XmNallowShellResize,	True,
+			XmNoverrideRedirect,	True,
+			XmNdepth,		XcbGetDepth(go->go.xcb),
+			XmNcolormap,		XcbGetColormap(go->go.xcb),
+			XmNvisual,		XcbGetVisual(go->go.xcb),
+			NULL);
 	
 	menu = XtVaCreateWidget
 		("oftypeMenu",xmRowColumnWidgetClass,menush,

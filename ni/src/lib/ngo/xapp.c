@@ -1,5 +1,5 @@
 /*
- *      $Id: xapp.c,v 1.10 1998-08-21 01:14:23 dbrown Exp $
+ *      $Id: xapp.c,v 1.11 1998-09-18 23:47:41 boote Exp $
  */
 /************************************************************************
 *									*
@@ -341,8 +341,11 @@ XAppMgrInitialize
 	xapp->argv = NULL;
 
 	if(!xapp->x.dpy){
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"Unable to open display %s",
-							getenv("DISPLAY"));
+		char	*dpyname = getenv("DISPLAY");
+
+		if(!dpyname)
+			dpyname = "(null)";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"Unable to open display %s",dpyname);
 		return NhlFATAL;
 	}
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: createmenu.c,v 1.6 1998-09-01 17:19:53 dbrown Exp $
+ *      $Id: createmenu.c,v 1.7 1998-09-18 23:47:38 boote Exp $
  */
 /************************************************************************
 *									*
@@ -27,8 +27,7 @@
 #include <Xm/Xm.h>
 #include <Xm/Protocols.h>
 #include <Xm/RowColumn.h>
-#include <Xm/CascadeB.h>
-#include <Xm/CascadeBG.h>
+#include <ncarg/ngo/CascadeBG.h>
 #include <Xm/PushBG.h>
 #include <Xm/MenuShell.h>
 #include <Xm/MessageB.h>
@@ -652,14 +651,16 @@ NgCreateCreateMenu
                 priv->wks.buttons = priv->anno.buttons =
                 priv->other.buttons = NULL;
 
-	menush = XtVaCreatePopupShell
-                ("override_sh",xmMenuShellWidgetClass,
-                 parent,
-                 XmNwidth,		5,
-                 XmNheight,		5,
-                 XmNallowShellResize,	True,
-                 XtNoverrideRedirect,	True,
-                 NULL);
+	menush = XtVaCreatePopupShell("override_sh",xmMenuShellWidgetClass,
+						                 parent,
+			XmNwidth,		5,
+			XmNheight,		5,
+			XmNallowShellResize,	True,
+			XtNoverrideRedirect,	True,
+			XmNdepth,		XcbGetDepth(priv->go->go.xcb),
+			XmNcolormap,	XcbGetColormap(priv->go->go.xcb),
+			XmNvisual,		XcbGetVisual(priv->go->go.xcb),
+			NULL);
         
         priv->data.menu =  XtVaCreateWidget
                 ("Data",xmRowColumnWidgetClass,menush,

@@ -1,5 +1,5 @@
 /*
- *      $Id: browse.c,v 1.20 1998-08-21 01:14:17 dbrown Exp $
+ *      $Id: browse.c,v 1.21 1998-09-18 23:47:37 boote Exp $
  */
 /************************************************************************
 *									*
@@ -40,8 +40,7 @@
 #include <Xm/Text.h>
 #include <Xm/TextF.h>
 #include <Xm/RowColumn.h>
-#include <Xm/CascadeB.h>
-#include <Xm/CascadeBG.h>
+#include <ncarg/ngo/CascadeBG.h>
 #include <Xm/MenuShell.h>
 #include <Xm/DrawnB.h>
 #include <ncarg/ngo/Folder.h>
@@ -197,11 +196,14 @@ CreateMenuBar
 	menush = XtVaCreatePopupShell
                 ("menush",xmMenuShellWidgetClass,
                  go->go.shell,
-                 XmNwidth,		5,
-                 XmNheight,		5,
-                 XmNallowShellResize,	True,
-                 XtNoverrideRedirect,	True,
-                 NULL);
+		XmNwidth,		5,
+		XmNheight,		5,
+		XmNallowShellResize,	True,
+		XtNoverrideRedirect,	True,
+		XmNdepth,		XcbGetDepth(go->go.xcb),
+		XmNcolormap,		XcbGetColormap(go->go.xcb),
+		XmNvisual,		XcbGetVisual(go->go.xcb),
+		NULL);
 	fmenu = XtVaCreateWidget
                 ("fmenu",xmRowColumnWidgetClass,menush,
                  XmNrowColumnType,	XmMENU_PULLDOWN,
@@ -1827,8 +1829,7 @@ CreateVarMenus
                  XmNleftOffset,		15,
                  XmNrightAttachment,	XmATTACH_NONE,
                  NULL);
-        return NgCreateVarMenus(go->base.id,
-                                menubar,
+        return NgCreateVarMenus(menubar,
 				BrowseHluCB,
                                 BrowseVarCB,
                                 BrowseFileCB,

@@ -1,5 +1,5 @@
 /*
- *      $Id: nclstate.c,v 1.17 1998-03-23 22:48:43 dbrown Exp $
+ *      $Id: nclstate.c,v 1.18 1998-09-18 23:47:39 boote Exp $
  */
 /************************************************************************
 *									*
@@ -866,8 +866,8 @@ NclStateInitialize
 		(NCLFileVar,NclAPIDESTROYED,(void*)DeleteFileVarCB,nncl);
 
 	udata.ptrval = nncl;
-	_NhlAddObjCallback(_NhlGetLayer(NhlErrGetID()),_NhlCBerrPError,
-							dummy,ErrOutput,udata);
+	ns->perror_cb = _NhlAddObjCallback(_NhlGetLayer(NhlErrGetID()),
+				_NhlCBerrPError,dummy,ErrOutput,udata);
 
 
 	(void)UpdateFuncList((NhlPointer)nncl);
@@ -977,6 +977,7 @@ NclStateDestroy
 		NgRemoveWorkProc(ncl->appmgr,UpdateFuncList,l);
 
 	_NhlCBDelete(ncl->appdestroy_cb);
+	_NhlCBDelete(ncl->perror_cb);
 
 #if 0        
 	DestroyObjList(ncl->hluobj_pending);
