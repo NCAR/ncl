@@ -1,5 +1,5 @@
 /*
- *	$Id: nrif.c,v 1.9 1992-09-10 20:56:14 don Exp $
+ *	$Id: nrif.c,v 1.10 1992-09-14 21:27:49 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -210,7 +210,7 @@ NrifRead(ras)
 				break;
 			
 			default:
-				ras->file_type = RAS_INVALID_ENCODING;
+				ras->file_type = RAS_UNKNOWN;
 		}
 	}
 
@@ -863,9 +863,6 @@ _NrifWriteIndexedRLE(ras)
 		return(status);
 		}
 
-		/*
-		(void) fprintf(stderr, "value %3d  length %3d\n", length, p1);
-		*/
 		tmpbuf[image_length++] = length;
 		tmpbuf[image_length++] = p1;
 	}}
@@ -894,8 +891,6 @@ _NrifWriteIndexedRLE(ras)
 	if (status != ras->ncolor) return(RAS_EOF);
 
 	/* Write the image. */
-	(void) fprintf(stderr,
-	"Writing RLE Indexed %d bytes\n", image_length);
 	status = write(ras->fd, (char *) tmpbuf, image_length);
 	if (status != image_length) {
 		(void) ESprintf(errno, errmsg, ras->name);
@@ -1073,7 +1068,7 @@ char_encode(value, buf, nbytes)
 			buf[3] = (value & 0x000000ff) >> 0;
 			buf[2] = (value & 0x0000ff00) >> 8;
 			buf[1] = (value & 0x00ff0000) >> 16;
-			buf[0] = (value & 0xff000000) >> 24;
+			buf[0] = (value & (unsigned) 0xff000000) >> 24;
 			break;
 		
 		default:
@@ -1139,7 +1134,12 @@ _NrifTmpbuf(size)
 		return(RAS_OK);
 	}
 	else {
-		p = (unsigned char *) realloc(tmpbuf, size);
+		if (tmpbuf == (unsigned char *) NULL) {
+			p = (unsigned char *) malloc(size);
+		}
+		else {
+			p = (unsigned char *) realloc(tmpbuf, size);
+		}
 		if (p == (unsigned char *) NULL) return(RAS_ERROR);
 		tmpbuf		= p;
 		tmpbuf_size	= size;
