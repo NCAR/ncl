@@ -1,5 +1,5 @@
 C
-C      $Id: xy06f.f,v 1.2 1995-04-06 14:43:42 haley Exp $
+C      $Id: xy06f.f,v 1.3 1995-04-06 17:30:50 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -150,7 +150,7 @@ C
 C Get the DataSpec object id.
 C
       call NhlFRLCreate(grlist,'getrl')
-      call NhlFRLClear(grlist,ierr)
+      call NhlFRLClear(grlist)
       call NhlFRLGetintegerarray(grlist,'xyCoordDataSpec',dspec,
      +     num_dspec,ierr)
       call NhlFGetValues(plotid,grlist,ierr)
@@ -161,7 +161,7 @@ C be able to specify the stations we want.  We used the
 C 'xyExplicitLegendLabels' resource, because we also want to use the 
 C station names to label the lines in the legend.
 C
-      call NhlFRLClear(grlist,ierr)
+      call NhlFRLClear(grlist)
       call NhlFRLGetstringarray(grlist,'xyExplicitLegendLabels',
      +     station_abrev,numids,ierr)
       call NhlFGetValues(dspec(1),grlist,ierr)
@@ -170,10 +170,10 @@ C Make sure we didn't request too many stations or none at all.
 C
       if( numids .gt. NSTATIONS ) then
          write(error_msg,25)numids
- 25      format('Number of requested stations ', i,' is illegal.')
+ 25      format('Number of requested stations ', i2,' is illegal.')
          call NhlFPError('FATAL','EUNKNOWN',error_msg)
          write(error_msg,26)NSTATIONS
- 26      format('Can only request 1-',i,' stations.')
+ 26      format('Can only request 1-',i2,' stations.')
          call NhlFPError('FATAL','EUNKNOWN',error_msg)
          stop
       endif
@@ -264,7 +264,7 @@ C
  38            format('Station ',a3,' not in netCDF file for hour ',i2)
                call NhlFPError('WARNING',1000,error_msg)
                write(error_msg,39)special_value
- 39            format('Will substitue missing value = ' f7.1)
+ 39            format('Will substitue missing value = ', f7.1)
                call NhlFPError('WARNING',1000,error_msg)
             endif
          end do
