@@ -1,27 +1,13 @@
-
+#	$Id: yMakefile,v 1.35 1993-01-22 01:18:35 don Exp $
 #
 #	Makefile for libraster - libraries for dealing with
 #	a variety of raster image formats.
 #
 
-
-#define	BuildRasterHDF
-#define	BuildRasterHPPCL
-#define	BuildRasterNrif
-#define	BuildRasterSun
-#define BuildRasterAVS
-#define BuildRasterSGI
-#define BuildRasterAbekas
-#define BuildRasterBinary
-
-#ifdef hostantero
-#define BuildRasterNetcdf
-#endif
-
 # Build the Parallax video frame buffer driver only for local systems.
 
-#if	defined(hostlonecone) || defined(hostgulebra) \
-				|| defined(hostsalida) || defined (hostsunlight)
+#if	defined(hostlonecone)	|| defined(hostgulebra) || \
+	defined(hostsalida)	|| defined(hostsunlight)
 #define BuildRasterParallax
 #endif
 
