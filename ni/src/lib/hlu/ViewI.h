@@ -1,5 +1,5 @@
 /*
- *      $Id: ViewI.h,v 1.4 1995-04-07 10:44:16 boote Exp $
+ *      $Id: ViewI.h,v 1.5 1997-01-08 21:10:33 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -91,4 +91,16 @@ extern void _NhlEndSegment();
 typedef struct _NhlViewClassRec *NhlViewClass;
 typedef struct _NhlViewLayerRec *NhlViewLayer;
 
+typedef struct _NhlAnnoStatusCBDataRec 
+	_NhlAnnoStatusCBDataRec, *_NhlAnnoStatusCBData;
+
+struct _NhlAnnoStatusCBDataRec {
+	int		id;	/* layer id */
+        int		base_id; /* id of base plot */
+        int		anno_manager_id; /* NhlNULLOBJID on remove */
+	NhlBoolean	isanno;	/* True on add; False on remove */
+};
+
+#define	_NhlCBvpAnnoStatus	"CBvpAnnoStatus"	/* cbdata.ptrval is
+                                                        _NhlAnnoStatusCBData */
 #endif	/* _NVIEWI_H */

@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManager.c,v 1.31 1996-11-18 22:21:37 dbrown Exp $
+ *      $Id: PlotManager.c,v 1.32 1997-01-08 21:10:22 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -89,26 +89,9 @@ static NhlResource resources[] = {
 /* Begin-documented-resources */
 
 	{NhlNpmOverlaySequenceIds,NhlCpmOverlaySequenceIds,NhlTObjIdGenArray,
-		sizeof(NhlPointer),Oset(overlay_seq_ids),
-		NhlTImmediate,_NhlUSET(NULL),_NhlRES_GONLY,(NhlFreeFunc)NhlFreeGenArray},
-
-/* Bounding Box resources */
-
-	{ NhlNpmFitToBB,NhlCpmFitToBB,NhlTBoolean,
-		  sizeof(NhlBoolean),Oset(fit_to_bb),
-		  NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL},
-	{ NhlNpmBBLeftF, NhlCpmBBLeftF,NhlTFloat, sizeof(float),
-		  Oset(bb_left),NhlTString,
-		  _NhlUSET("0.0"),0,NULL},
-	{ NhlNpmBBRightF, NhlCpmBBRightF,NhlTFloat, sizeof(float),
-		  Oset(bb_right),NhlTString,
-		  _NhlUSET("1.0"),0,NULL},
-	{ NhlNpmBBBottomF,NhlCpmBBBottomF,NhlTFloat, sizeof(float),
-		  Oset(bb_left),NhlTString,
-		  _NhlUSET("0.0"),0,NULL},
-	{ NhlNpmBBTopF, NhlCpmBBTopF,NhlTFloat, sizeof(float),
-		  Oset(bb_left),NhlTString,
-		  _NhlUSET("1.0"),0,NULL},
+         sizeof(NhlPointer),Oset(overlay_seq_ids),
+         NhlTImmediate,_NhlUSET(NULL),_NhlRES_SGONLY,
+         (NhlFreeFunc)NhlFreeGenArray},
 
 /* Annotation resources  */
 
@@ -219,6 +202,24 @@ static NhlResource resources[] = {
 		  Oset(post_draw_order),
 		  NhlTImmediate,_NhlUSET(NULL),_NhlRES_NOACCESS,
 		  (NhlFreeFunc)NhlFreeGenArray},
+
+/* Bounding Box resources */
+
+	{ NhlNpmFitToBB,NhlCpmFitToBB,NhlTBoolean,
+		  sizeof(NhlBoolean),Oset(fit_to_bb),
+		  NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL},
+	{ NhlNpmBBLeftF, NhlCpmBBLeftF,NhlTFloat, sizeof(float),
+		  Oset(bb_left),NhlTString,
+		  _NhlUSET("0.0"),0,NULL},
+	{ NhlNpmBBRightF, NhlCpmBBRightF,NhlTFloat, sizeof(float),
+		  Oset(bb_right),NhlTString,
+		  _NhlUSET("1.0"),0,NULL},
+	{ NhlNpmBBBottomF,NhlCpmBBBottomF,NhlTFloat, sizeof(float),
+		  Oset(bb_left),NhlTString,
+		  _NhlUSET("0.0"),0,NULL},
+	{ NhlNpmBBTopF, NhlCpmBBTopF,NhlTFloat, sizeof(float),
+		  Oset(bb_left),NhlTString,
+		  _NhlUSET("1.0"),0,NULL},
 
 /* Private resources */
 
@@ -797,7 +798,7 @@ PlotManagerInitialize
 	NhlPlotManagerLayer		ovnew = (NhlPlotManagerLayer) new;
 	NhlPlotManagerLayerPart	*ovp = &(ovnew->plotmanager);
 	NhlTransformLayer	parent = (NhlTransformLayer)ovnew->base.parent;
-	NhlpmRec			*pm_rec;
+	NhlpmRec		*pm_rec;
 	int			i;
 /*
  * Array and object initializations
@@ -857,6 +858,7 @@ PlotManagerInitialize
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return NhlFATAL;
 	}
+
 	ovp->overlay_alloc = NhlOV_ALLOC_UNIT;
 	ovp->overlay_count = 1;
 	pm_rec->plot = parent;
@@ -931,6 +933,76 @@ PlotManagerInitialize
 	return ret;
 }
 
+static NhlErrorTypes RearrangePlotSequence
+#if	NhlNeedProto
+(
+	NhlPlotManagerLayerPart	*ovp,
+	char			*entry_name
+)
+#else
+(ovp,entry_name)
+	NhlPlotManagerLayerPart	*ovp;
+	char			*entry_name;
+#endif
+{
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
+        char *e_text;
+        int i,j;
+        int *seq_ids = (int *)ovp->overlay_seq_ids->data;
+
+        if (seq_ids[0] != ovp->pm_recs[0]->plot->base.id) {
+                e_text =
+                      "%s: ignoring %s: base plot must be first in sequence";
+                NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
+                          entry_name,NhlNpmOverlaySequenceIds);
+                return NhlWARNING;
+        }
+
+/*
+ * need to ensure both that all of the new sequence ids have entries in
+ * the plot manager records and that each entry in the plot manager
+ * records has a corresponding id in the seq_ids array. (There could be
+ * duplicate seq_ids)
+ */
+        for (i = 0; i < ovp->overlay_count; i++) {
+                NhlBoolean found_rec = False, found_id = False;
+
+                for (j = 0; j < ovp->overlay_count; j++) {
+                        if (ovp->pm_recs[j]->plot->base.id == seq_ids[i]) {
+                                found_rec = True;
+                                break;
+                        }
+                }
+                for (j = 0; j < ovp->overlay_count; j++) {
+                        if (seq_ids[j] == ovp->pm_recs[i]->plot->base.id) {
+                                found_id = True;
+                                break;
+                        }
+                }
+                if (! (found_rec && found_id)) {
+                        e_text =
+                          "%s: ignoring %s: ids do not match overlay plot ids";
+                        NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
+                                  entry_name,NhlNpmOverlaySequenceIds);
+                        return NhlWARNING;
+                }
+        }
+        for (i = 0; i < ovp->overlay_count; i++) {
+                NhlpmRec *pm_rec;
+                
+                for (j = 0; j < ovp->overlay_count; j++) {
+                        if (ovp->pm_recs[j]->plot->base.id == seq_ids[i]) {
+                                if (i == j)
+                                        continue;
+                                pm_rec = ovp->pm_recs[i];
+                                ovp->pm_recs[i] = ovp->pm_recs[j];
+                                ovp->pm_recs[j] = pm_rec;
+                        }
+                }
+        }
+        return NhlNOERROR;
+                                
+}
 
 /*
  * Function:	PlotManagerSetValues
@@ -1105,6 +1177,20 @@ static NhlErrorTypes PlotManagerSetValues
 		}
 		ovp->overlay_count = new_count;
 	}
+
+        if (_NhlArgIsSet(args,num_args,NhlNpmOverlaySequenceIds)) {
+                if (ovp->overlay_seq_ids->num_elements != ovp->overlay_count) {
+                        ret = MIN(ret,NhlWARNING);
+                        e_text = "%s: invalid number of elements in %s";
+                        NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
+                                  entry_name,NhlNpmOverlaySequenceIds);
+                }
+                else {
+                        subret = RearrangePlotSequence(ovp,entry_name);
+                        if ((ret = MIN(ret,subret)) < NhlWARNING)
+                                return ret;
+                }
+        }
 
 	subret = ManageAnnotations(ovnew,ovold,False,args,num_args);
 	ret = MIN(ret,subret);
@@ -4722,9 +4808,12 @@ NhlErrorTypes NhlAddOverlay
 
 	NhlGenArray		ga;
 	int			plot_count = 0;
-	NhlpmRec			**sub_recs = NULL;
+	NhlpmRec		**sub_recs = NULL;
 	int			i, j;
 	float			ox,oy,owidth,oheight;
+        NhlArgVal       	cbdata,dummy;
+        _NhlOverlayStatusCBDataRec overlay_status;
+        
 /*
  * Check validity of the plot layers, then root out the pointer to the overlay
  * layer.
@@ -4786,7 +4875,7 @@ NhlErrorTypes NhlAddOverlay
  * containing the list of overlays plots plus their associated overlay objs.
  * Also set the argument that will tell its overlay object it is no longer
  * a master overlay object.
- * If the plot is only not an overlay base or an overlay member, simply
+ * If the plot is not an overlay base or an overlay member, simply
  * allocate and fill in a single overlay record for it.
  */
 
@@ -4825,7 +4914,6 @@ NhlErrorTypes NhlAddOverlay
 
 		ga->my_data = False;
 		NhlFreeGenArray(ga);
-
 	}
 	else {
 		if ((sub_recs = (NhlpmRec **) 
@@ -4867,7 +4955,7 @@ NhlErrorTypes NhlAddOverlay
  * Reallocate the array of overlay record pointers if necessary
  */
 	if (ovp->overlay_alloc < ovp->overlay_count + plot_count) {
-		ovp->pm_recs = (NhlpmRec **)
+                ovp->pm_recs = (NhlpmRec **)
 			NhlRealloc(ovp->pm_recs, sizeof(NhlpmRec *) *
 				   (ovp->overlay_count + 
 				    MAX(NhlOV_ALLOC_UNIT,plot_count)));
@@ -4887,18 +4975,19 @@ NhlErrorTypes NhlAddOverlay
  */
 	
 	if (after == NULL) {
-
-		for (i = 0; i < plot_count; i++)
-			ovp->pm_recs[ovp->overlay_count+i] = sub_recs[i]; 
+                for (i = 0; i < plot_count; i++) {
+                        ovp->pm_recs[ovp->overlay_count+i] = sub_recs[i];
+                }
 	}
 	else if (! _NhlIsTransform(after)) {
-
+		
 		e_text = "%s: the after transform id is invalid";
 		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
 		ret = MIN(ret,NhlWARNING);
 
-		for (i = 0; i < plot_count; i++)
+		for (i = 0; i < plot_count; i++) {
 			ovp->pm_recs[ovp->overlay_count+i] = sub_recs[i]; 
+                }
 	}
 	else {
 		for (i = 0; i <= ovp->overlay_count; i++) {
@@ -4908,18 +4997,19 @@ NhlErrorTypes NhlAddOverlay
 				NhlPError(NhlWARNING,NhlEUNKNOWN,
 					  e_text,entry_name);
 				ret = MIN(ret,NhlWARNING);
-				for (j = 0; j < plot_count; j++)
+				for (j = 0; j < plot_count; j++) {
 					ovp->pm_recs[ovp->overlay_count+j] = 
 						sub_recs[j];
-
-	}
-			else if (after == (NhlLayer) ovp->pm_recs[i]->plot) {
+                                }
+                        }
+			else if (after ==  (NhlLayer) ovp->pm_recs[i]->plot) {
 				for (j = ovp->overlay_count - 1;j > i; j--) {
 				      ovp->pm_recs[j+plot_count] =
 					      ovp->pm_recs[j];
 			        }
-				for (j = 0; j < plot_count; j++)
+				for (j = 0; j < plot_count; j++) {
 					ovp->pm_recs[j+i+1] = sub_recs[j];
+                                }
 				break;
 			}
 		}
@@ -4967,6 +5057,16 @@ NhlErrorTypes NhlAddOverlay
 	for (i = ovp->overlay_count; i < ovp->overlay_alloc; i++) {
 		ovp->pm_recs[i] = NULL;
 	}
+
+#ifdef  DEBUG
+        memset(&dummy,0,sizeof(NhlArgVal));
+        memset(&cbdata,0,sizeof(NhlArgVal));
+#endif
+        overlay_status.id = transform_id;
+        overlay_status.base_id = base_id;
+        overlay_status.status = _tfCurrentOverlayMember;
+        cbdata.ptrval = &overlay_status;
+        _NhlCallObjCallbacks(plot,_NhlCBtfOverlayStatus,dummy,cbdata);
 
 	return ret;
 }
@@ -5044,7 +5144,9 @@ NhlErrorTypes NhlRemoveOverlay
 	NhlTransformLayerPart	*base_tfp;
 	NhlPlotManagerLayerPart	*ovp;
 	int			i, j;
-
+        NhlArgVal       	cbdata,dummy;
+        _NhlOverlayStatusCBDataRec overlay_status;
+        NhltfOverlayStatus	ostatus = _tfNotInOverlay;
 
 /*
  * Check validity of the plot layers, then root out the pointer to the overlay
@@ -5107,6 +5209,7 @@ NhlErrorTypes NhlRemoveOverlay
 				if ((ret = MIN(subret,ret)) < NhlWARNING) {
 					return ret;
 				}
+                                ostatus = _tfCurrentOverlayBase;
 			}
 			else if (ovp->pm_recs[i]->ov_obj != NULL) {
 
@@ -5114,6 +5217,7 @@ NhlErrorTypes NhlRemoveOverlay
 				if ((ret = MIN(subret,ret)) < NhlWARNING) {
 					return ret;
 				}
+                                ostatus = _tfCurrentOverlayBase;
 			}
 			else {
 				NhlSArg			sargs[3];
@@ -5138,6 +5242,7 @@ NhlErrorTypes NhlRemoveOverlay
 					return ret;
 
 				ovp->pm_recs[--ovp->overlay_count] = NULL;
+                                ostatus = _tfNotInOverlay;
 			}
 			break;
 		}
@@ -5150,6 +5255,16 @@ NhlErrorTypes NhlRemoveOverlay
 	subret = NhlVASetValues(base_id,NhlNpmUpdateAnnoReq,True,NULL);
 	if ((ret = MIN(subret,ret)) < NhlWARNING)
 		return ret;
+
+#ifdef  DEBUG
+        memset(&dummy,0,sizeof(NhlArgVal));
+        memset(&cbdata,0,sizeof(NhlArgVal));
+#endif
+        overlay_status.id = overlay_id;
+        overlay_status.base_id = base_id;
+        overlay_status.status = ostatus;
+        cbdata.ptrval = &overlay_status;
+        _NhlCallObjCallbacks(plot,_NhlCBtfOverlayStatus,dummy,cbdata);
 
 	return ret;
 }
@@ -5404,7 +5519,7 @@ int _NhlAddAnnotation
 	NhlString	entry_name
 )
 #else
-(plotmanager, anno_view, entry_name,anno_id)
+(plotmanager, anno_view, entry_name)
 	NhlLayer	plotmanager; 
 	NhlLayer	anno_view;
 	NhlString	entry_name;
@@ -5415,7 +5530,9 @@ int _NhlAddAnnotation
 	NhlPlotManagerLayerPart	*ovp =
 		&((NhlPlotManagerLayer)plotmanager)->plotmanager;
 	int			anno_manager_id;
-
+        NhlArgVal       	cbdata,dummy;
+        _NhlAnnoStatusCBDataRec	anno_status;
+        
 	if (entry_name == NULL) entry_name = "_NhlAddAnnotation";
 		
 /*
@@ -5487,6 +5604,17 @@ int _NhlAddAnnotation
 				 plotmanager->base.id,anno_manager_id);
 
 	ret =  MIN(subret,ret);
+
+#ifdef  DEBUG
+        memset(&dummy,0,sizeof(NhlArgVal));
+        memset(&cbdata,0,sizeof(NhlArgVal));
+#endif
+        anno_status.id = anno_view->base.id;
+        anno_status.base_id = plotmanager->base.parent->base.id;
+        anno_status.anno_manager_id = anno_manager_id;
+        anno_status.isanno = True;
+        cbdata.ptrval = &anno_status;
+        _NhlCallObjCallbacks(anno_view,_NhlCBvpAnnoStatus,dummy,cbdata);
 
 	return (ret < NhlNOERROR) ? (int) ret : anno_manager_id;
 
@@ -5620,7 +5748,10 @@ NhlErrorTypes _NhlRemoveAnnotation
 	NhlPlotManagerLayerPart	*ovp = 
 		&((NhlPlotManagerLayer)plotmanager)->plotmanager;
 	int			anno_ix = -1;
+        NhlLayer		anno_view;
+        NhlArgVal       	cbdata,dummy;
 	int			i;
+        _NhlAnnoStatusCBDataRec	anno_status;
 
 	if (entry_name == NULL) entry_name = "_NhlRemoveAnnotation";
 
@@ -5631,7 +5762,7 @@ NhlErrorTypes _NhlRemoveAnnotation
 		}
 	}
 	if (anno_ix < 0) {
-		e_text = "%s: annomanager not associated with plot object";
+		e_text = "%s: AnnoManager not associated with plot object";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return NhlFATAL;
 	}
@@ -5641,9 +5772,10 @@ NhlErrorTypes _NhlRemoveAnnotation
 
 	subret = _NhlUnregisterAnnotation(plotmanager,annomanager,entry_name);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
-
+        
+        anno_view = _NhlGetLayer(ovp->view_ids[anno_ix]);
 	subret = _NhlSetAnnoView((NhlViewLayer)
-				 _NhlGetLayer(ovp->view_ids[anno_ix]),
+				 anno_view,
 				 NhlNULLOBJID,NhlNULLOBJID);
 
 /*
@@ -5656,14 +5788,23 @@ NhlErrorTypes _NhlRemoveAnnotation
 	}
 	ovp->anno_count--;
 
-
 /*
- * Destroy the Annotation
+ * Destroy the AnnoManager
  */
-	
 	subret = NhlDestroy(annomanager->base.id);
 
 	ret = MIN(subret,ret);
+        
+#ifdef  DEBUG
+        memset(&dummy,0,sizeof(NhlArgVal));
+        memset(&cbdata,0,sizeof(NhlArgVal));
+#endif
+        anno_status.id = anno_view->base.id;
+        anno_status.isanno = False;
+        anno_status.base_id = plotmanager->base.parent->base.id;
+        anno_status.anno_manager_id = NhlNULLOBJID;
+        cbdata.ptrval = &anno_status;
+        _NhlCallObjCallbacks(anno_view,_NhlCBvpAnnoStatus,dummy,cbdata);
 
 	return ret;
 }

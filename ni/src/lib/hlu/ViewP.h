@@ -1,5 +1,5 @@
 /*
- *      $Id: ViewP.h,v 1.12 1995-04-07 10:44:17 boote Exp $
+ *      $Id: ViewP.h,v 1.13 1997-01-08 21:10:34 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -63,6 +63,8 @@ typedef struct _NhlViewLayerPart {
 	int		overlay_id;
 
 	/* Internal private fields */
+
+        _NhlCBList	annostatuscb;
 
 	NhlBoolean	x_set;
 	NhlBoolean	y_set;

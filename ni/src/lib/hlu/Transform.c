@@ -1,5 +1,5 @@
 /*
- *      $Id: Transform.c,v 1.30 1996-11-18 22:21:42 dbrown Exp $
+ *      $Id: Transform.c,v 1.31 1997-01-08 21:10:27 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -32,6 +32,12 @@
 #include <ncarg/hlu/TransformP.h>
 #include <ncarg/hlu/TransObjP.h>
 #include <ncarg/hlu/MapTransObjP.h>
+
+static _NhlRawObjCB callbacks[] = {
+	{_NhlCBtfOverlayStatus,
+         NhlOffset(NhlTransformLayerRec,trans.overlaystatuscb),
+		 0,NULL,NULL,NULL}
+};
 
 static NhlResource resources[] = {
 
@@ -168,8 +174,8 @@ NhlTransformClassRec NhltransformClassRec = {
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
 /* all_resources		*/	NULL,
-/* callbacks			*/	NULL,
-/* num_callbacks		*/	0,
+/* callbacks			*/	callbacks,
+/* num_callbacks		*/	NhlNumber(callbacks),
 
 /* class_part_initialize	*/	TransformClassPartInit,
 /* class_initialize		*/	NULL,

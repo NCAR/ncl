@@ -1,5 +1,5 @@
 /*
- *      $Id: TransformP.h,v 1.19 1996-11-18 22:21:44 dbrown Exp $
+ *      $Id: TransformP.h,v 1.20 1997-01-08 21:10:30 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -39,12 +39,6 @@
 #define NhlNtfOverlayStatus	".tfOverlayStatus"
 #define NhlCtfOverlayStatus	".TfOverlayStatus"
 
-typedef enum _NhltfOverlayStatus {
-	_tfNotInOverlay,
-	_tfCurrentOverlayBase,
-	_tfCurrentOverlayMember
-} NhltfOverlayStatus;
-
 typedef struct NhlTransformLayerPart {
 
 	/* Public resource fields */
@@ -70,6 +64,7 @@ typedef struct NhlTransformLayerPart {
 	float			data_xmax;
 	float			data_ymin;
 	float			data_ymax;
+        _NhlCBList		overlaystatuscb;
 
 } NhlTransformLayerPart;
 

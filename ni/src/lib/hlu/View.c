@@ -1,5 +1,5 @@
 /*
- *      $Id: View.c,v 1.23 1996-09-14 17:07:41 boote Exp $
+ *      $Id: View.c,v 1.24 1997-01-08 21:10:31 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -139,6 +139,12 @@ HSetFunc
 	return NhlNOERROR;
 }
 
+
+static _NhlRawObjCB callbacks[] = {
+	{_NhlCBvpAnnoStatus,NhlOffset(NhlViewLayerRec,view.annostatuscb),
+		 0,NULL,NULL,NULL}
+};
+
 static NhlResource resources[] = {
 
 /* Begin-documented-resources */
@@ -253,8 +259,8 @@ NhlViewClassRec NhlviewClassRec = {
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
 /* all_resources		*/	NULL,
-/* callbacks			*/	NULL,
-/* num_callbacks		*/	0,
+/* callbacks			*/	callbacks,
+/* num_callbacks		*/	NhlNumber(callbacks),
 
 /* class_part_initialize	*/	ViewClassPartInitialize,
 /* class_initialize		*/	ViewClassInitialize,

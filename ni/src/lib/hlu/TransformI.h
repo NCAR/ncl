@@ -1,5 +1,5 @@
 /*
- *      $Id: TransformI.h,v 1.5 1996-11-18 22:21:43 dbrown Exp $
+ *      $Id: TransformI.h,v 1.6 1997-01-08 21:10:29 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -26,6 +26,12 @@
  * Does not include Transform.h -- because a number of objects that 
  * need these functions are not Transform class objects.
  */
+
+typedef enum _NhltfOverlayStatus {
+	_tfNotInOverlay,
+	_tfCurrentOverlayBase,
+	_tfCurrentOverlayMember
+} NhltfOverlayStatus;
 
 extern NhlBoolean _NhlIsPlotMember(
 #if	NhlNeedProto
@@ -133,4 +139,15 @@ extern NhlErrorTypes _NhltfInitSegment(
 #endif
 );
 
+typedef struct _NhlOverlayStatusCBDataRec 
+	_NhlOverlayStatusCBDataRec, *_NhlOverlayStatusCBData;
+
+struct _NhlOverlayStatusCBDataRec {
+	int			id;	 /* layer id */
+        int			base_id; /* id of base plot */ 
+	NhltfOverlayStatus	status;	
+};
+
+#define	_NhlCBtfOverlayStatus	"CBtfOverlayStatus"	/* cbdata.ptrval is
+                                                   _NhlOverlayStatusCBData */
 #endif	/* _NTRANSFORMI_h */
