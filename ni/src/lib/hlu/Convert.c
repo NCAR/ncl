@@ -1,5 +1,5 @@
 /*
- *      $Id: Convert.c,v 1.16 1997-01-17 18:57:22 boote Exp $
+ *      $Id: Convert.c,v 1.17 1997-08-06 20:18:24 boote Exp $
  */
 /************************************************************************
 *									*
@@ -89,7 +89,7 @@ _NhlCreateConvertContext
 #endif
 {
 	_NhlConvertContext	context = NULL;
-	_NhlConvertContextRec   init = {NULL,0,{NULL},NULL};
+	_NhlConvertContextRec   init = {NULL,NULL,0,{NULL},NULL};
 
 	context = (_NhlConvertContext)NhlMalloc(sizeof(_NhlConvertContextRec));
 	if(context == NULL){
@@ -99,8 +99,32 @@ _NhlCreateConvertContext
 
 	*context = init;
 	context->ref = l;
+	if(l)
+		context->ref_class = _NhlClass(l);
 
 	return context;
+}
+
+void
+_NhlConvertContextClass
+#if	NhlNeedProto
+(
+	_NhlConvertContext	ctxt,
+	NhlClass		ref_class
+)
+#else
+(ctxt,ref_class)
+	_NhlConvertContext	ctxt;
+	NhlClass		ref_class;
+#endif
+{
+	if(ctxt->ref != NULL){
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s:Class not settable"));
+		return;
+	}
+
+	ctxt->ref_class = ref_class;
+	return;
 }
 
 /*
@@ -1543,23 +1567,6 @@ RecurseGetCvtPtr
 	if(ptr != NULL)
 		return ptr;
 
-#ifdef	NOT
-	/*
-	 * Traverse down the "to sub-type" tree if didn't find a converter up
-	 * the "from super-type" tree.
-	 */
-	sub = &tptr->sub;
-
-	while(sub != NULL){
-		for(i=0;i<sub->num;i++){
-			ptr = RecurseGetCvtPtr(cptr,fptr,sub->sub[i],from,to);
-			if(ptr != NULL)
-				return ptr;
-		}
-		sub = sub->more;
-	}
-#endif
-
 	/*
 	 * Didn't find anything down this sub-tree
 	 */
@@ -1953,7 +1960,9 @@ ConvertData
 	fromdata->typeQ = from = fromQ;
 	todata->typeQ = to = toQ;
 
-	if(!context->ref)
+	if(context->ref_class)
+		ref_class = context->ref_class;
+	else if(!context->ref)
 		ref_class = NhlbaseClass;
 	else
 		ref_class = context->ref->base.layer_class;
@@ -2345,11 +2354,32 @@ _NhlConvertCopyGenArray
 		gen->size,gen->num_dimensions,gen->len_dimensions);
 }
 
+NhlErrorTypes
+_NhlConverterGetArgs
+#if	NhlNeedProto
+(
+	NhlClass		ref_class,
+	NrmQuark		from,
+	NrmQuark		to,
+	NhlConvertArgList	*args,
+	int			*nargs
+)
+#else
+(ref_class,from,to,args,nargs)
+	NhlClass		ref_class;
+	NrmQuark		from;
+	NrmQuark		to;
+	NhlConvertArgList	*args;
+	int			*nargs;
+#endif
+{
+	NhlConvertPtr	ptr = GetCvtPtr(ref_class,from,to);
 
+	if(!ptr)
+		return NhlFATAL;
 
+	*args = ptr->args;
+	*nargs = ptr->nargs;
 
-
-
-
-
-
+	return NhlNOERROR;
+}

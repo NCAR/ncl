@@ -1,5 +1,5 @@
 /*
- *      $Id: ConvertP.h,v 1.8 1996-04-05 21:15:34 boote Exp $
+ *      $Id: ConvertP.h,v 1.9 1997-08-06 20:18:27 boote Exp $
  */
 /************************************************************************
 *									*
@@ -39,6 +39,7 @@ typedef struct _NhlConvertContext _NhlConvertContextRec, *_NhlConvertContext;
 
 struct _NhlConvertContext {
 	NhlLayer		ref;
+	NhlClass		ref_class;
 	int			num_alloced;
 	NhlPointer		alloc_list[NHLCONVALLOCLISTLEN];
 	_NhlConvertContext	next;
@@ -56,6 +57,13 @@ extern NhlConvertPtr	_NhlDefHashTable[];
 extern _NhlConvertContext _NhlCreateConvertContext(
 #if	NhlNeedProto
 	NhlLayer	ref
+#endif
+);
+
+extern void _NhlConvertContextClass(
+#if	NhlNeedProto
+	_NhlConvertContext	ctxt,
+	NhlClass		ref_class
 #endif
 );
 
@@ -205,6 +213,16 @@ extern NhlErrorTypes _NhlConvertData(
 	NrmQuark		toQ,		/* to type		*/
 	NrmValue		*fromdata,	/* from type		*/
 	NrmValue		*todata		/* to type		*/
+#endif
+);
+
+extern NhlErrorTypes _NhlConverterGetArgs(
+#if	NhlNeedProto
+	NhlClass		ref_class,
+	NrmQuark		fromQ,
+	NrmQuark		toQ,
+	NhlConvertArgList	*args,
+	int			*nargs
 #endif
 );
 
