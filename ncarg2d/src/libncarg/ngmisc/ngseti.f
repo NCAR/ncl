@@ -1,5 +1,5 @@
 C
-C	$Id: ngseti.f,v 1.15 2000-12-21 22:30:31 fred Exp $
+C	$Id: ngseti.f,v 1.16 2000-12-22 19:01:52 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -136,7 +136,7 @@ C
         CALL GESC(-1517,1,IDR,1,IDUM,CDUM)
         GO TO 120
 C
-C  SU - Suppress background and/or bounding box in PS output.
+C  SU - Suppress background color box in PS output.
 C
       ELSE IF (CNP(1:2).EQ.'SU' .OR. CNP(1:2).EQ.'su' .OR.
      +         CNP(1:2).EQ.'Su') THEN
