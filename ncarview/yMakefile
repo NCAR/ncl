@@ -3,7 +3,7 @@
 #
 NCARG	= ..
 
-SUBDIRS = src man bin app
+SUBDIRS = src man app
 
 MakeSubdirs($(SUBDIRS))
 InstallSubdirs($(SUBDIRS))
