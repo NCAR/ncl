@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ncargcc.csh,v 1.35 1994-12-05 17:23:30 haley Exp $
+#	$Id: ncargcc.csh,v 1.36 1995-03-17 19:50:34 haley Exp $
 #
 
 #*********************************************#
@@ -33,10 +33,6 @@ set newargv = "$cc $defines $loadflags"
 
 set ctrans_libs = ""
 set stub_file   = ""
-
-if ($system == "Sun4Solaris") then
-  set libextra    = "/usr/ucblib/libucb.a"
-endif
 
 set smooth = "$ro/libdashsmth.o"
 set quick  = "$ro/libdashline.o $ro/libconrcqck.o $ro/libconraq.o"

@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargf77.csh,v 1.22 1994-12-05 20:42:35 haley Exp $
+#   $Id: ncargf77.csh,v 1.23 1995-03-17 19:50:36 haley Exp $
 #
 
 #*********************************************#
@@ -29,10 +29,6 @@ if (! -d "$libdir") then
   echo "Library directory <$libdir> does not exist."
   exit 1
 endif
-
-if ("$system" == "Sun4Solaris") then
-  set libextra = "/usr/ucblib/libucb.a"
-endif    
 
 set newargv = "$fortran $loadflags"
 
