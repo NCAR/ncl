@@ -1,5 +1,5 @@
 /*
- *      $Id: c_tdex01.c,v 1.2 1997-07-01 23:00:54 kennison Exp $
+ *      $Id: c_tdex01.c,v 1.3 1997-12-02 16:44:40 haley Exp $
  */
 
 /*
@@ -37,24 +37,25 @@
  */
 #define DTOR .017453292519943
 
-/*
- * Start of program.
- */
-main()
-{
 
 /*
  * Declare local dimensioned variables to hold data defining a simple
  * surface and an isosurface.
  */
-    float u[IMAX],v[JMAX],w[KMAX],s[JMAX][IMAX],f[KMAX][JMAX][IMAX];
+float u[IMAX],v[JMAX],w[KMAX],s[JMAX][IMAX],f[KMAX][JMAX][IMAX];
 
 /*
  * Declare the triangle-list array and a couple of temporary arrays to
  * be used in sorting the list.
  */
-    float rtri[MTRI][10],rtwk[2][MTRI];
-    int itwk[MTRI];
+float rtri[MTRI][10],rtwk[2][MTRI];
+int itwk[MTRI];
+
+/*
+ * Start of program.
+ */
+main()
+{
 /*
  * Set the desired values of the dimensions of the data arrays.  Note that
  * "idim" must not exceed IMAX, that "jdim" must not exceed JMAX, and that
