@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.88 1999-05-22 00:43:09 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.89 1999-06-11 03:24:28 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2013,7 +2013,10 @@ ContourPlotInitialize
 	if (! cnp->level_spacing_set) cnp->level_spacing = 5.0;
 	if (! cnp->min_level_set) cnp->min_level_val = -FLT_MAX;
 	if (! cnp->max_level_set) cnp->max_level_val = FLT_MAX;
+
 	if (! cnp->llabel_interval_set) cnp->llabel_interval = 2;
+	cnp->llabel_interval_mode = cnp->level_flags ? False : True;
+
 	if (! cnp->line_dash_seglen_set) 
 		cnp->line_dash_seglen = 0.15;
 	if (! cnp->cell_size_set || cnp->cell_size <= 0.0) {
@@ -2187,7 +2190,8 @@ ContourPlotInitialize
 	cnp->constf_lbl.height_set = False;
 	cnp->lbar_labels_res_set = False;
 	cnp->lgnd_labels_res_set = False;
-        
+	cnp->llabel_interval_set = False;
+
         cnew->trans.x_reverse_set = cnew->trans.y_reverse_set = False;
         cnew->trans.x_log_set = cnew->trans.y_log_set = False;
         cnew->trans.x_axis_type_set = cnew->trans.y_axis_type_set = False;
@@ -2330,6 +2334,7 @@ static NhlErrorTypes ContourPlotSetValues
 	NhlContourPlotLayer		cnew = (NhlContourPlotLayer) new;
  	NhlContourPlotLayerPart	*cnp = &(cnew->contourplot);
 	NhlContourPlotLayer		cold = (NhlContourPlotLayer) old;
+ 	NhlContourPlotLayerPart	*ocnp = &(cold->contourplot);
 	/* Note that both ManageLegend and ManageLabelBar add to sargs */
 	NhlSArg			sargs[128];
 	int			nargs = 0;
@@ -2363,6 +2368,16 @@ static NhlErrorTypes ContourPlotSetValues
 		cnp->level_spacing_set = True;
 	if (_NhlArgIsSet(args,num_args,NhlNcnLineLabelInterval))
 		cnp->llabel_interval_set = True;
+	/*
+	 * The line label interval mode changes only if a relevant resource
+	 * has been set.
+	 */
+
+	if (cnp->level_flags && cnp->level_flags != ocnp->level_flags)
+		cnp->llabel_interval_mode = False;
+	else if (cnp->llabel_interval_set || ! cnp->level_flags)
+		cnp->llabel_interval_mode = True;
+
 	if (_NhlArgIsSet(args,num_args,NhlNcnLineDashSegLenF))
 		cnp->line_dash_seglen_set = True;
         if (_NhlArgIsSet(args,num_args,NhlNcnRasterCellSizeF)) {
@@ -2488,6 +2503,7 @@ static NhlErrorTypes ContourPlotSetValues
 	cnp->constf_lbl.height_set = False;
 	cnp->lbar_labels_res_set = False;
 	cnp->lgnd_labels_res_set = False;
+	cnp->llabel_interval_set = False;
 
         cnew->trans.x_reverse_set = cnew->trans.y_reverse_set = False;
         cnew->trans.x_log_set = cnew->trans.y_log_set = False;
@@ -4687,7 +4703,8 @@ static NhlErrorTypes UpdateLineAndLabelParams
 		aia = NhlcnAREAID_OFFSET+i+1;
 		c_cpseti("PAI",pai);
 		c_cpsetr("CLV",(float)clvp[i]);
-		flag = cnp->mono_level_flag ? cnp->level_flag :(NhlcnLevelUseMode)clup[i];
+		flag = cnp->mono_level_flag ? 
+			cnp->level_flag : (NhlcnLevelUseMode) clup[i];
 		if (*do_lines) {
 			c_cpseti("CLU",flag);
 		}
@@ -8445,20 +8462,7 @@ static NhlErrorTypes    ManageDynamicArrays
 
 	ip = (int *) cnp->level_flags->data;
 	if (need_check) {
-		if (! flags_modified && ! cnp->mono_level_flag &&
-	    		(levels_modified || cnp->llabel_interval_set)) {
-			flags_modified = True;
-			if (cnp->llabel_interval <= 0) {
-				for (i = init_count; i < count; i++) 
-					ip[i] = NhlLINEONLY;
-			}
-			else {
-				for (i = init_count; i < count; i++)
-					ip[i] = (i - cnp->ref_level) % 
-						cnp->llabel_interval == 0 ?
-						NhlLINEANDLABEL : NhlLINEONLY;
-			}
-		}
+		flags_modified = True;
 		for (i=0; i<init_count; i++) {
 			if (ip[i] < NhlNOLINE || 
 			    ip[i] > NhlLINEANDLABEL) {
@@ -8470,7 +8474,36 @@ static NhlErrorTypes    ManageDynamicArrays
 				ip[i] = NhlLINEONLY;
 			}
 		}
+		/* any unitialized elements should be set using the 
+		 * line label interval resource.
+		 */
+		if (cnp->llabel_interval <= 0) {
+			for (i = init_count; i < count; i++) 
+				ip[i] = NhlLINEONLY;
+		}	
+		else {
+			for (i = init_count; i < count; i++)
+				ip[i] = (i - cnp->ref_level) % 
+					cnp->llabel_interval == 0 ?
+					NhlLINEANDLABEL : NhlLINEONLY;
+		}
 	}
+	if (cnp->llabel_interval_mode && 
+	    (init ||
+	     cnp->llabel_interval_set || levels_modified || flags_modified)) {
+		flags_modified = True;
+		if (cnp->llabel_interval <= 0) {
+			for (i = 0; i < count; i++) 
+				ip[i] = NhlLINEONLY;
+		}	
+		else {
+			for (i = 0; i < count; i++)
+				ip[i] = (i - cnp->ref_level) % 
+					cnp->llabel_interval == 0 ?
+					NhlLINEANDLABEL : NhlLINEONLY;
+		}
+	}
+	
 
 /* Set up label scaling - the levels and level_flags must have been set */
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlotP.h,v 1.22 1998-11-06 22:16:05 dbrown Exp $
+ *      $Id: ContourPlotP.h,v 1.23 1999-06-11 03:24:29 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -304,6 +304,7 @@ typedef struct _NhlContourPlotLayerPart {
 	NhlGenArray	lgnd_ll_font_colors;
 	NhlGenArray	lgnd_ll_strings;
         NhlBoolean	sticky_cell_size_set;
+	NhlBoolean	llabel_interval_mode;
 
 } NhlContourPlotLayerPart;
 
