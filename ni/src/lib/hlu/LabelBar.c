@@ -1,5 +1,5 @@
 /*
- *      $Id: LabelBar.c,v 1.22 1994-12-23 01:21:02 ethan Exp $
+ *      $Id: LabelBar.c,v 1.23 1995-01-06 00:20:06 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -28,6 +28,33 @@
 #include <ncarg/hlu/WorkstationI.h>
 #include <ncarg/hlu/ConvertersP.h>
 
+static char lbDefTitle[] = "NOTHING";
+
+/*ARGSUSED*/
+static NhlErrorTypes
+SetTitleOn
+#if	NhlNeedProto
+(
+	NrmName		name,
+	NrmClass	class,
+	NhlPointer	base,
+	unsigned int	offset
+)
+#else
+(name,class,base,offset)
+	NrmName		name;
+	NrmClass	class;
+	NhlPointer	base;
+	unsigned int	offset;
+#endif
+{
+	NhlLabelBarLayer	lbl = (NhlLabelBarLayer)base;
+
+	lbl->labelbar.title_on = !(lbl->labelbar.title_string == lbDefTitle);
+
+	return NhlNOERROR;
+}
+
 /* default pattern list */
 
 static int def_patterns[] = { 
@@ -37,7 +64,6 @@ static int def_colors[] = {
 
 /* SUPPRESS 112 */
 
-#define DEFSTRING "NOTHING"
 #define DEGTORAD 0.017453293
 
 static NhlResource resources[] = { 
@@ -182,10 +208,10 @@ static NhlResource resources[] = {
 
 {NhlNlbTitleString, NhlClbTitleString, NhlTString, 
 	 sizeof(char *), NhlOffset(NhlLabelBarLayerRec,labelbar.title_string),
-	 NhlTImmediate,_NhlUSET(DEFSTRING),0,(NhlFreeFunc)NhlFree},
+	 NhlTImmediate,_NhlUSET(lbDefTitle),0,(NhlFreeFunc)NhlFree},
 {NhlNlbDrawTitle, NhlClbDrawTitle, NhlTInteger, 
 	 sizeof(int), NhlOffset(NhlLabelBarLayerRec,labelbar.title_on),
-	 NhlTImmediate,_NhlUSET((NhlPointer) 0),0,NULL},
+	 NhlTProcedure,_NhlUSET((NhlPointer)SetTitleOn),0,NULL},
 {NhlNlbTitlePosition, NhlClbTitlePosition, NhlTInteger, 
 	 sizeof(NhlPosition), 
 	 NhlOffset(NhlLabelBarLayerRec,labelbar.title_pos),
@@ -2099,7 +2125,7 @@ static NhlErrorTypes    SetTitle
  * If the title string is NULL, create a default string.
  * The default string is the name of the label bar object
  */
-	if (lb_p->title_string == NULL) {
+	if (lb_p->title_string == lbDefTitle) {
                 lb_p->title_string = (char*)
                         NhlMalloc((unsigned)strlen(tnew->base.name) +1);
                 strcpy(lb_p->title_string,tnew->base.name);
@@ -4191,7 +4217,7 @@ static NhlErrorTypes    LabelBarDestroy
 	if (lb_p->labels_id >=0)
 		NhlDestroy(lb_p->labels_id);
 
-	if (lb_p->title_string != NULL) {
+	if (lb_p->title_string != lbDefTitle) {
 		NhlFree(lb_p->title_string);
 	}
 	if (lb_p->title_id >=0)

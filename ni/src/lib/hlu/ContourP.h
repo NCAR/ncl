@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourP.h,v 1.19 1994-10-15 00:29:53 dbrown Exp $
+ *      $Id: ContourP.h,v 1.20 1995-01-06 00:20:05 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -213,12 +213,10 @@ typedef struct _NhlContourLayerPart {
 	NhlBoolean	y_reverse;
 	NhlBoolean	auto_legend_labels;
 	NhlGenArray	legend_labels;
-	NhlString	legend_title;
 	NhlBoolean	draw_lgnd_line_lbls_set;
 	NhlBoolean	draw_lgnd_line_lbls;
 	NhlBoolean	auto_labelbar_labels;
 	NhlGenArray	labelbar_labels;
-	NhlString	labelbar_title;
 
 	/* private resource */
 

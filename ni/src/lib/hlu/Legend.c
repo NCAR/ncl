@@ -1,5 +1,5 @@
 /*
- *      $Id: Legend.c,v 1.20 1994-12-16 20:04:22 boote Exp $
+ *      $Id: Legend.c,v 1.21 1995-01-06 00:20:08 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -28,12 +28,39 @@
 #include <ncarg/hlu/WorkstationI.h>
 #include <ncarg/hlu/ConvertersP.h>
 
+
+static char lgDefTitle[] = "NOTHING";
+
+/*ARGSUSED*/
+static NhlErrorTypes
+SetTitleOn
+#if	NhlNeedProto
+(
+	NrmName		name,
+	NrmClass	class,
+	NhlPointer	base,
+	unsigned int	offset
+)
+#else
+(name,class,base,offset)
+	NrmName		name;
+	NrmClass	class;
+	NhlPointer	base;
+	unsigned int	offset;
+#endif
+{
+	NhlLegendLayer	lgl = (NhlLegendLayer)base;
+
+	lgl->legend.title_on = !(lgl->legend.title_string == lgDefTitle);
+
+	return NhlNOERROR;
+}
+
 static int def_colors[] = { 
 	0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
 
 /* SUPPRESS 112 */
 
-#define DEFSTRING "NOTHING"
 #define DEGTORAD 0.017453293
 
 static NhlResource resources[] = { 
@@ -233,10 +260,10 @@ static NhlResource resources[] = {
 
 {NhlNlgTitleString, NhlClgTitleString, NhlTString, 
 	 sizeof(char *), NhlOffset(NhlLegendLayerRec,legend.title_string),
-	 NhlTImmediate, _NhlUSET(DEFSTRING),0,(NhlFreeFunc)NhlFree},
+	 NhlTImmediate, _NhlUSET(lgDefTitle),0,(NhlFreeFunc)NhlFree},
 {NhlNlgDrawTitle, NhlClgDrawTitle, NhlTInteger, 
 	 sizeof(int), NhlOffset(NhlLegendLayerRec,legend.title_on),
-	 NhlTImmediate, _NhlUSET((NhlPointer) 1),0,NULL},
+	 NhlTProcedure,_NhlUSET((NhlPointer)SetTitleOn),0,NULL},
 {NhlNlgTitlePosition, NhlClgTitlePosition, NhlTInteger, 
 	 sizeof(NhlPosition), NhlOffset(NhlLegendLayerRec,legend.title_pos),
 	 NhlTImmediate, _NhlUSET((NhlPointer) NhlTOP),0,NULL},
@@ -2601,7 +2628,7 @@ static NhlErrorTypes    SetTitle
  * If the title string is NULL, create a default string.
  * The default string is the name of the label bar object
  */
-	if (lg_p->title_string == NULL) {
+	if (lg_p->title_string == lgDefTitle) {
                 lg_p->title_string = (char*)
                         NhlMalloc((unsigned)strlen(tnew->base.name) +1);
                 strcpy(lg_p->title_string,tnew->base.name);
@@ -4898,7 +4925,7 @@ static NhlErrorTypes    LegendDestroy
 	if (lg_p->labels_id >=0)
 		NhlDestroy(lg_p->labels_id);
 
-	if (lg_p->title_string != NULL) {
+	if (lg_p->title_string != lgDefTitle) {
 		NhlFree(lg_p->title_string);
 	}
 	if (lg_p->title_id >=0)

@@ -1,5 +1,5 @@
 /*
- *      $Id: Contour.c,v 1.44 1994-12-23 01:20:50 ethan Exp $
+ *      $Id: Contour.c,v 1.45 1995-01-06 00:20:03 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -781,10 +781,6 @@ static NhlResource resources[] = {
 		 sizeof(NhlPointer),Oset(legend_labels),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
 		 (NhlFreeFunc)NhlFreeGenArray},
-	{NhlNlgTitleString, NhlClgTitleString, NhlTString,
-		 sizeof(NhlPointer),Oset(legend_title),
-		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
-		 (NhlFreeFunc)NhlFree},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(draw_lgnd_line_lbls_set),
 		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
@@ -1512,7 +1508,6 @@ static NrmQuark	Qinfo_label_format = NrmNULLQUARK;
 static NrmQuark	Qconst_f_label_string = NrmNULLQUARK; 
 static NrmQuark	Qconst_f_label_format = NrmNULLQUARK; 
 static NrmQuark	Qlb_label_strings = NrmNULLQUARK; 
-static NrmQuark	Qlb_title_string = NrmNULLQUARK; 
 
 #define NhlDASHBUFSIZE	128
 
@@ -2431,9 +2426,6 @@ static NhlErrorTypes    ContourGetValues
 		else if(args[i].quark == Qconst_f_label_format){
 			ts = cnp->constf_lbl.format.fstring;
 		} 
-		else if(args[i].quark == Qlb_title_string) {
-			ts = cnp->labelbar_title;
-		}
                 if (ts != NULL) {
 			*((NhlString*)(args[i].value.ptrval)) =
 							NhlMalloc(strlen(ts)+1);
@@ -5163,7 +5155,6 @@ static NhlErrorTypes ManageLegend
 	NhlContourLayerPart	*cnp = &(cnnew->contour);
 	NhlContourLayerPart	*ocnp = &(cnold->contour);
 	NhlTransformLayerPart	*tfp = &(cnnew->trans);
-	char 			*title_add = " Legend";
 	NhlBoolean		do_it, changed;
 
 	entry_name = (init) ? "ContourInitialize" : "ContourSetValues";
@@ -5190,21 +5181,6 @@ static NhlErrorTypes ManageLegend
 
 	if (init) {
 		int count = 1;
-
-		if (cnp->legend_title == NULL) {
-			if ((cnp->legend_title = 
-			    NhlMalloc(strlen(cnnew->base.name) +
-				      strlen(title_add) + 1)) == NULL) {
-				e_text = "%s: dynamic memory allocation error";
-				NhlPError(NhlFATAL,NhlEUNKNOWN,
-					  e_text,entry_name);
-				return NhlFATAL;
-			}
-			strcpy(cnp->legend_title,cnnew->base.name);
-			strcat(cnp->legend_title,title_add);
-		}
-		NhlSetSArg(&sargs[(*nargs)++],
-			   NhlNlgTitleString,cnp->legend_title);
 
 		NhlSetSArg(&sargs[(*nargs)++],
 			   NhlNlgItemCount,cnp->level_count);
@@ -5407,7 +5383,6 @@ static NhlErrorTypes ManageLabelBar
 	NhlContourLayerPart	*cnp = &(cnnew->contour);
 	NhlContourLayerPart	*ocnp = &(cnold->contour);
 	NhlTransformLayerPart	*tfp = &(cnnew->trans);
-	char			*title_add = " LabelBar";
 
 	entry_name = (init) ? "ContourInitialize" : "ContourSetValues";
 
@@ -5432,19 +5407,6 @@ static NhlErrorTypes ManageLabelBar
 	}
 
 	if (init) {
-
-		if (cnp->labelbar_title == NULL) {
-			if ((cnp->labelbar_title = 
-			    NhlMalloc(strlen(cnnew->base.name) +
-				      strlen(title_add) + 1)) == NULL) {
-				e_text = "%s: dynamic memory allocation error";
-				NhlPError(NhlFATAL,NhlEUNKNOWN,
-					  e_text,entry_name);
-				return NhlFATAL;
-			}
-			strcpy(cnp->labelbar_title,cnnew->base.name);
-			strcat(cnp->labelbar_title,title_add);
-		}
 
 		NhlSetSArg(&sargs[(*nargs)++],
 			   NhlNlbBoxCount,cnp->fill_count);
