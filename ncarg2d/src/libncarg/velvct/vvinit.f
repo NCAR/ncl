@@ -1,33 +1,41 @@
 C
-C	$Id: vvinit.f,v 1.2 1992-12-03 21:37:26 dbrown Exp $
+C	$Id: vvinit.f,v 1.3 1993-01-15 22:46:55 dbrown Exp $
 C
 C-----------------------------------------------------------------------
 C
-      SUBROUTINE VVINIT (U,LU,V,LV,P,LP,M,N,IWK,IC,RWK,RC)
+      SUBROUTINE VVINIT (U,LU,V,LV,P,LP,M,N,WRK,LW)
 C
 C Argument dimensions.
 C
       DIMENSION       U(LU,N)    ,V(LV,N)    ,P(LP,N)
-      DIMENSION       IWK(IC)    ,RWK(RC)
+      DIMENSION       WRK(LW)
 C
-C                        P
-C                          A two-dimensional array of scalar data 
-C                          representing an independent variable (e.g.
-C                          temperature or pressure) associated with 
-C                          the velocity vector field and realized as 
-C                          variations in the color of the velocity 
-C                          vectors. The colors to be used and the
-C                          threshold values dividing the data may be
-C                          set using the internal parameter setting
-C                          routines. Otherwise a default scheme 
-C                          linearly divides the data into 16 groups
-C                          represented by 16 colors.
+C Input parameters
 C
-C                        PV
-C                          The first dimension of P in the calling 
-C                          program. Must be >= M.
+C U,V   - 2-d arrays holding the component values of a vector field
+C LU,LV - The first dimensions of the U and V arrays, respectively
+C P     - A 2-d array containing a scalar data field. The contents
+C         of this array may be used to color the vectors.
+C LP    - The first dimension of the P array
+C M     - The first data dimension (must be less than or equal to
+C         MIN(LU,LV) (or MIN(LU,LV,LP) if the P array is used
+C WRK   - an internally used work array
+C LW    - dimension of the work array (must be at least 2*M*N) 
 C
-C *********************************************************************
+C Output parameters:
+C
+C None
+C
+C ---------------------------------------------------------------------
+C
+C NOTE:
+C Since implicit typing is used for all real and integer variables
+C a consistent length convention has been adopted to help clarify the
+C significance of the variables encountered in the code for this 
+C utility. All local variable and subroutine parameter identifiers 
+C are limited to 1,2,or 3 characters. Four character names identify  
+C members of common blocks. Five and 6 character variable names 
+C denote PARAMETER constants or subroutine or function names.
 C
 C Declare the VV common blocks.
 C
@@ -108,7 +116,9 @@ C --------------------------------------------------------------------
 C
 C Force the block data routine, which sets default variables, to load. 
 C
-      EXTERNAL        VELDAT
+      EXTERNAL VVDATA 
+C
+C ---------------------------------------------------------------------
 C
 C Write the array sizes into the common block
 C 
@@ -123,7 +133,6 @@ C
 C
 C Initialize and transfer some arguments to local variables.
 C
-c      write(*,*) "dib's prototype version"
       IBIG = I1MACH(9)
       RBIG = R1MACH(2)
 C
@@ -258,7 +267,7 @@ C Find the maximum and minimum magnitude vectors.
 C If there are no special values use simpler code for efficiency.
 C
       UVMN=RBIG
-      UVMX=-RBIG
+      UVMX=0.0
       IF (ISVF .LE. 0) THEN
 C
          DO 111 J=1,IYDN,IYIN
@@ -321,6 +330,7 @@ C
       IF (ICTV .LT. 0) THEN
          PMIN=UVMN
          PMAX=UVMX
+         IP=1
       ELSE IF (ICTV .GT. 0) THEN
 C
 C Check for error condition
@@ -333,9 +343,11 @@ C
          IF (ICTV .GT. 1 .OR. PMIN .EQ. PMAX) THEN
             PMIN=RBIG
             PMAX=-RBIG
+            IP=0
             DO 121 J=1,IYDN,IYIN
                DO 120 I=1,IXDM,IXIN
                   IF (ISPC .GE. 0 .AND. P(I,J) .EQ. UPSV) GO TO 120  
+                  IP=1
                   PMIN = MIN(PMIN, P(I,J))
                   PMAX = MAX(PMAX, P(I,J))
  120           CONTINUE
@@ -344,7 +356,9 @@ C
 C
       END IF
 C
-C Determine the threshold values
+C Determine the threshold values. If there were no non-special
+C values in the P array, then set all threshold values to the
+C maximum possible.
 C
       IF (ABS(ICTV) .GT. 1 .OR. NLVL .LE. 0) THEN
 C
@@ -354,11 +368,16 @@ C
             NLVL = 16
          END IF
 C
-         TV=(PMAX-PMIN)/NLVL
-C
-         DO 125 I=1,NLVL,1
-            TVLU(I)=PMIN+REAL(I)*TV
- 125     CONTINUE
+         IF (IP .NE. 0) THEN
+            TV=(PMAX-PMIN)/NLVL
+            DO 125 I=1,NLVL,1
+               TVLU(I)=PMIN+REAL(I)*TV
+ 125        CONTINUE
+         ELSE
+            DO 130 I=1,NLVL,1
+               TVLU(I)=RBIG
+ 130        CONTINUE
+         END IF
 C
       END IF
 C

@@ -1,20 +1,23 @@
 C
-C	$Id: vvsetc.f,v 1.4 1993-01-15 22:47:04 dbrown Exp $
+C	$Id: vvdraw.f,v 1.1 1993-01-15 22:46:42 dbrown Exp $
 C
+      SUBROUTINE VVDRAW (XB,YB,XE,YE,VLN,LBL,NC,IAM,VVUDMV,IDA)
 C
-C-----------------------------------------------------------------------
+      DIMENSION IAM(*)
 C
-      SUBROUTINE VVSETC (WHCH,CVAL)
+      EXTERNAL VVUDMV
 C
-      CHARACTER*(*) WHCH,CVAL
+C This routine is called to draw a single arrow.  It has arguments as
+C follows -
 C
-C This subroutine is called to give a specified character value to a
-C specified parameter.
-C
-C WHCH is the name of the parameter whose value is to be set.
-C
-C CVAL is a character variable containing the new value of the
-C parameter.
+C XB,YB    -  Coordinate of arrow base, fractional coordinate
+C XE,YE    -  Coordinate of arrow head, fractional coordinate
+C VLN      -  Length of the vector (arrow)
+C LBL      -  Character label to be put above arrow.
+C NC       -  Number of characters in label.
+C IAM      -  Area map (optional) for masking vectors
+C VVUDMV   -  User-supplied function for drawing masked vectors
+C IDA      -  Do area masking flag
 C
 C ---------------------------------------------------------------------
 C
@@ -104,36 +107,96 @@ C
 C
 C --------------------------------------------------------------------
 C
-C Check for a parameter name that is too short.
+      DIMENSION IAI(64), IAG(64)
+      DIMENSION XF(6), YF(6), XW(6), YW(6)
+      DIMENSION XO(6), YO(6)
 C
-      IF (LEN(WHCH).LT.3) THEN
-        CSTR(1:36)='VVSETC - PARAMETER NAME TOO SHORT - '
-        CSTR(37:36+LEN(WHCH))=WHCH
-        CALL SETER (CSTR(1:36+LEN(WHCH)),1,2)
-        STOP
-      END IF
+      CHARACTER*10 LBL
 C
-C Set the proper parameter.
+C Transfer arguments to local variables and compute the vector length.
 C
-      IF (WHCH(1:3).EQ.'MNT'.OR.WHCH(1:3).EQ.'mnt') THEN
-         CMNT=CVAL
-      ELSE IF (WHCH(1:3).EQ.'MXT'.OR.WHCH(1:3).EQ.'mxt') THEN
-         CMXT=CVAL
-      ELSE IF (WHCH(1:3).EQ.'ZFT'.OR.WHCH(1:3).EQ.'zft') THEN
-         CZFT=CVAL
-      ELSE IF (WHCH(1:3).EQ.'ILT'.OR.WHCH(1:3).EQ.'ilt') THEN
-         CILT=CVAL
+      DX=XE-XB
+      DY=YE-YB
+C
+C Adjust the coordinates of the vector endpoints as implied by the
+C vector positioning option.
+C
+      IF (IVPO .LT. 0) THEN
+         XF(4) = XB
+         YF(4) = YB
+         XF(1) = XB - DX
+         YF(1) = YB - DY
+      ELSE IF (IVPO .EQ. 0) THEN
+         XF(1) = XB - 0.5*DX
+         YF(1) = YB - 0.5*DY
+         XF(4) = XE - 0.5*DX
+         YF(4) = YE - 0.5*DY
       ELSE
-C
-         CSTR(1:36)='VVSETC - PARAMETER NAME NOT KNOWN - '
-         CSTR(37:39)=WHCH(1:3)
-         CALL SETER (CSTR(1:39),3,2)
-         STOP
-C
+         XF(1) = XB
+         YF(1) = YB
+         XF(4) = XE
+         YF(4) = YE
       END IF
 C
-C Done.
+C Determine the coordinates of the points used to draw the arrowhead.
+C If the size is outside the range of the minimum and maximum sizes
+C use fixed sizes
+C
+      C1 = HDSZ
+      IF (VLN .LT. FAMN*FW2W) C1 = FAMN*FW2W*HDSZ/VLN
+      IF (VLN .GT. FAMX*FW2W) C1 = FAMX*FW2W*HDSZ/VLN
+C
+C Calculate the remaining points in fractional coordinates
+C
+      XF(3) = XF(4)-C1*(HCOS*DX-HSIN*DY)
+      YF(3) = YF(4)-C1*(HCOS*DY+HSIN*DX)
+      XF(2) = XF(4)-C1*HINF*DX
+      YF(2) = YF(4)-C1*HINF*DY
+      XF(5) = XF(4)-C1*(HCOS*DX+HSIN*DY)
+      YF(5) = YF(4)-C1*(HCOS*DY-HSIN*DX)
+C
+C Convert to user coodinates
+C
+      XW(1) = CFUX(XF(1))
+      YW(1) = CFUY(YF(1))
+      XW(2) = CFUX(XF(2))
+      YW(2) = CFUY(YF(2))
+      XW(3) = CFUX(XF(3))
+      YW(3) = CFUY(YF(3))
+      XW(4) = CFUX(XF(4))
+      YW(4) = CFUY(YF(4))
+      XW(5) = CFUX(XF(5))
+      YW(5) = CFUY(YF(5))
+      XW(6) = XW(2)
+      YW(6) = YW(2)
+C
+C Plot the arrow using areas or not, as required.
+C
+      IF (IDA .GT. 1) THEN
+        CALL ARGTAI(IAM,XW(1),YW(1),IAI,IAG,64,NAI,0)
+        CALL VVUDMV(X,Y,6,IAI,IAG,NAI)
+      ELSE IF (IDA .EQ. 1) THEN
+         CALL ARDRLN(IAM, XW, YW, 6, XO, YO, 6, IAI, IAG, 64, VVUDMV)
+      ELSE
+         CALL CURVE(XW,YW,6)
+      END IF
+C
+C If requested, put the vector magnitude above the arrow.
+C need to look this over: replace SIZE with FLBS
+C
+      IF (NC .GT. 0) THEN
+C
+         PHI = ATAN2(DY,DX)
+         IF (AMOD(PHI+P5D2PI,P2XPI) .GT. P1XPI) PHI = PHI+P1XPI
+         XC = 0.5*(XF(1)+XF(4))+1.25*FLBS*FW2W*COS(PHI+P1D2PI)
+         YC = 0.5*(YF(1)+YF(4))+1.25*FLBS*FW2W*SIN(PHI+P1D2PI)
+C
+         XC = CFUX(Xc)
+         YC = CFUY(Yc)
+         CALL VVTXLN(LBL,10,IB,IE)
+         CALL PLCHLQ(XC,YC,LBL(ib:ie),FLBS*FW2W,PRTOD*PHI,0.0)
+C
+      END IF
 C
       RETURN
-C
       END

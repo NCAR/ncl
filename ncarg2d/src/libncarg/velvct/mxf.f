@@ -1,7 +1,4 @@
-C
-C	$Id: fx.f,v 1.3 1993-01-15 22:46:23 dbrown Exp $
-C
-      FUNCTION FX(X,Y)
+      FUNCTION MXF(X,Y,U,V,SFX,SFY,MX,MY)
 C
 C
 C The mapping common block: made available to user mapping routines
@@ -37,36 +34,82 @@ C
 C
       GOTO (10,20,30)  IMAP+1
 C
-C     Identity transformation.
+C     Linear transformation.
 C
 10    CONTINUE
-      FX = X
-      RETURN
 C
+      MXF = MX+IFIX(SFX*U)
+      RETURN
 C
 C     EZMAP overlaying.
 C
 20    CONTINUE
 C
-      XLON = XLOV + (X-1.)*(XHIV-XLOV)/(FLOAT(NXCT)-1.)
-      YLAT = YLOV + (Y-1.)*(YHIV-YLOV)/(FLOAT(NYCT)-1.)
+      UVLEN=SQRT(U**2+V**2)
 C
-      IF (IFIX(ABS(YLAT)*PRCFAC) .EQ. IFIX(90.*PRCFAC)) THEN
-         FX=RBIG
+C Check the vector magnitude
+C
+      IF (IFIX(UVLEN*PRCFAC) .EQ. 0) THEN
+         MXF=IBIG
          RETURN
       END IF
 C
-      CALL MAPTRN (YLAT, XLON, FXLON, YDUM)
+      CLMT=PVFRAC/UVLEN
 C
-      FX = FXLON
+      XLON = XLOV + (X-1.)*(XHIV-XLOV)/(FLOAT(NXCT)-1.)
+      YLAT = YLOV + (Y-1.)*(YHIV-YLOV)/(FLOAT(NYCT)-1.)
+C
+C If the latitude is 90 we never should have gotten to this routine
+C
+C
+      CFCT=COS(YLAT*PDTOR)
+      ICNT = 0
+      ISGN = 1
+C
+      CALL MAPTRN(YLAT,XLON,X1,Y1)
+C
+ 35   CONTINUE
+      CALL MAPTRN(YLAT + ISGN*CLMT*V,XLON + ISGN*CLMT*U/CFCT,X2,Y2)
+
+      VCLEN=SQRT((X2-X1)**2+(Y2-Y1)**2)
+C
+      IF (VCLEN .GT. RLEN) THEN
+         IF (ISGN .EQ. -1) THEN
+            MXF=IBIG
+            RETURN
+         ELSE
+            ISGN=-1
+            GO TO 35
+         END IF
+      ELSE IF (IFIX(VCLEN*PRCFAC) .EQ. 0) THEN
+         IF (ICNT .LT. 10) THEN
+            ICNT = ICNT + 1
+            CLMT = CLMT * 2.0
+            GO TO 35
+         ELSE
+            MXF = IBIG
+            RETURN
+         END IF
+      END IF
+C
+      IF (ABS(X2) .GE. PFOVFL) THEN
+         MXF = IBIG
+         RETURN
+      END IF
+C
+      T=ISGN*((X2-X1)/VCLEN)*UVLEN
+C
+      MXF=MX+IFIX(SFX*T)
+C
       RETURN
-C     Polar coordinate transformation.
 C
 30    CONTINUE
-      THETA=A1+A2*(Y-1)/(FLOAT(NA)-1.0)
-      R=D1+(D2-D1)*(X-1.)/(FLOAT(MA)-1.)
-      FX=R*COS(.017453292519943*THETA)
+C
+C Polar coordinate transformation.
+C
+      WRITE(*,*) 'Polar mapping not implemented in this version of MXF'
+C
       RETURN
-C
       END
-C
+
+

@@ -1,5 +1,5 @@
 C
-C	$Id: vvtext.f,v 1.2 1992-12-03 21:37:40 dbrown Exp $
+C	$Id: vvtext.f,v 1.3 1993-01-15 22:47:10 dbrown Exp $
 C
 C This module contains four subroutines for text support of the
 C VELVCT utility. 
@@ -50,7 +50,16 @@ C ITC - the text color
 C VMG - the vector magnitude 
 C ASZ - the arrow size in the fractional system
 C
-C *********************************************************************
+C ---------------------------------------------------------------------
+C
+C NOTE:
+C Since implicit typing is used for all real and integer variables
+C a consistent length convention has been adopted to help clarify the
+C significance of the variables encountered in the code for this 
+C utility. All local variable and subroutine parameter identifiers 
+C are limited to 1,2,or 3 characters. Four character names identify  
+C members of common blocks. Five and 6 character variable names 
+C denote PARAMETER constants or subroutine or function names.
 C
 C Declare the VV common blocks.
 C
@@ -264,7 +273,7 @@ C
       CALL GQLWSC(IER,ROW)
       CALL GSLWSC(WDLV)
       IF (WA .GT. 0.0) THEN
-         CALL DRWVEC(CXA,CYA,CXA+WA,CYA,WA,IDM,0,IDM,IDM,0)
+         CALL VVDRAW(CXA,CYA,CXA+WA,CYA,WA,IDM,0,IDM,IDM,0)
       END IF
 C
 C Restore linewidth and centering flag

@@ -1,5 +1,5 @@
 C
-C	$Id: vvgetc.f,v 1.3 1992-12-03 21:37:22 dbrown Exp $
+C	$Id: vvgetc.f,v 1.4 1993-01-15 22:46:49 dbrown Exp $
 C
 C
 C-----------------------------------------------------------------------
@@ -16,7 +16,16 @@ C
 C CVAL is a character variable in which the desired value is to be
 C returned by VVGETC.
 C
-C *********************************************************************
+C ---------------------------------------------------------------------
+C
+C NOTE:
+C Since implicit typing is used for all real and integer variables
+C a consistent length convention has been adopted to help clarify the
+C significance of the variables encountered in the code for this 
+C utility. All local variable and subroutine parameter identifiers 
+C are limited to 1,2,or 3 characters. Four character names identify  
+C members of common blocks. Five and 6 character variable names 
+C denote PARAMETER constants or subroutine or function names.
 C
 C Declare the VV common blocks.
 C

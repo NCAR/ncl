@@ -1,5 +1,5 @@
 C
-C	$Id: vvrset.f,v 1.2 1992-12-03 21:37:32 dbrown Exp $
+C	$Id: vvrset.f,v 1.3 1993-01-15 22:47:01 dbrown Exp $
 C
 C
 C-----------------------------------------------------------------------
@@ -9,7 +9,16 @@ C
 C This subroutine may be called to reset all variables which have
 C default values to those values.
 C
-C *********************************************************************
+C ---------------------------------------------------------------------
+C
+C NOTE:
+C Since implicit typing is used for all real and integer variables
+C a consistent length convention has been adopted to help clarify the
+C significance of the variables encountered in the code for this 
+C utility. All local variable and subroutine parameter identifiers 
+C are limited to 1,2,or 3 characters. Four character names identify  
+C members of common blocks. Five and 6 character variable names 
+C denote PARAMETER constants or subroutine or function names.
 C
 C Declare the VV common blocks.
 C
@@ -98,7 +107,7 @@ C
       IXDM = -1
       IYDN = -1
       VLOM = 0.0
-      VHIM = 1.E12
+      VHIM = 0.0
       ISET = 0
       VMXL = 0.0
       VFRC = 0.0

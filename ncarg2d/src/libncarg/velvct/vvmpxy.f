@@ -1,5 +1,5 @@
 C
-C	$Id: vvmpxy.f,v 1.2 1992-12-03 21:37:29 dbrown Exp $
+C	$Id: vvmpxy.f,v 1.3 1993-01-15 22:46:58 dbrown Exp $
 C
 C
 C-----------------------------------------------------------------------
@@ -284,9 +284,9 @@ C
          XE=XB+U*SXDC
          YE=YB+V*SYDC
 C
-         IF (ITRT .EQ. 1) THEN
+         IF (ITRT.GE.1) THEN
             DV1=SQRT((XE-XB)*(XE-XB)+(YE-YB)*(YE-YB))
-            PHI=ATAN2(U,V)
+            PHI=ATAN2(V,U)
             ANG=TH+PHI
             XE=XB + DV1*COS(ANG)
             YE=YB + DV1*SIN(ANG)

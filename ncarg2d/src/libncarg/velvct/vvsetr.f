@@ -1,5 +1,5 @@
 C
-C	$Id: vvsetr.f,v 1.3 1992-12-03 21:37:37 dbrown Exp $
+C	$Id: vvsetr.f,v 1.4 1993-01-15 22:47:07 dbrown Exp $
 C
 C
 C-----------------------------------------------------------------------
@@ -15,7 +15,16 @@ C WHCH is the name of the parameter whose value is to be set.
 C
 C RVAL is a real variable containing the new value of the parameter.
 C
-C *********************************************************************
+C ---------------------------------------------------------------------
+C
+C NOTE:
+C Since implicit typing is used for all real and integer variables
+C a consistent length convention has been adopted to help clarify the
+C significance of the variables encountered in the code for this 
+C utility. All local variable and subroutine parameter identifiers 
+C are limited to 1,2,or 3 characters. Four character names identify  
+C members of common blocks. Five and 6 character variable names 
+C denote PARAMETER constants or subroutine or function names.
 C
 C Declare the VV common blocks.
 C

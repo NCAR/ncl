@@ -1,18 +1,28 @@
 C
-C	$Id: vvectr.f,v 1.2 1992-12-03 21:37:19 dbrown Exp $
+C	$Id: vvectr.f,v 1.3 1993-01-15 22:46:45 dbrown Exp $
 C
-      SUBROUTINE VVECTR (U,V,P,IAM,VVUDMV,IWK,RWK)
+      SUBROUTINE VVECTR (U,V,P,IAM,VVUDMV,WRK)
 C
 C Argument dimensions
 C
       DIMENSION U(IUD1,*), V(IVD1,*), P(IPD1,*)
 C
-      DIMENSION IWK(*),RWK(*),IAM(*)
+      DIMENSION WRK(*),IAM(*)
 C
       EXTERNAL VVUDMV
 C
-C SUBROUTINE VVECTR (U,V,P,IAM,VVUDMV,IWK,RWK) 
+C Input parameters
 C
+C U,V    - 2-d arrays holding the component values of a vector field
+C P      - A 2-d array containing a scalar data field. The contents
+C          of this array may be used to color the vectors 
+C IAM    - Area mask array
+C VVUDMV - User modifiable masked vector drawing function
+C WRK    - work array (currently unused)
+C
+C Output parameters:
+C
+C None
 C
 C PURPOSE                VVECTR draws a representation of a two-
 C                        dimensional velocity field by drawing arrows
@@ -24,7 +34,14 @@ C                        at that location.
 C
 C ---------------------------------------------------------------------
 C
-C *********************************************************************
+C NOTE:
+C Since implicit typing is used for all real and integer variables
+C a consistent length convention has been adopted to help clarify the
+C significance of the variables encountered in the code for this 
+C utility. All local variable and subroutine parameter identifiers 
+C are limited to 1,2,or 3 characters. Four character names identify  
+C members of common blocks. Five and 6 character variable names 
+C denote PARAMETER constants or subroutine or function names.
 C
 C Declare the VV common blocks.
 C
@@ -110,13 +127,6 @@ C
 C
 C Local variables
 C
-C Since implicit typing is used for all real and integer variables
-C the following convention has been adopted to help clarify the
-C significance of the variables encountered in the code:
-C All local variable and subroutine parameter identifiers are limited 
-C to 1,2,or 3 characters. Four character names identify  members of 
-C common blocks. Five and 6 character variable names denote PARAMETER 
-C constants or subroutine or function names.
 C
 C The following status and count variables are used to gather
 C statistics that are not currently available to the user
@@ -173,9 +183,6 @@ C
 C The following call is for gathering statistics on library use at ncar.
 C
       CALL Q8QST4 ('NSSL','VELVCT','VVECTR','VERSION  6')
-c
-c dib's prototype version
-c
 C
 C Initialize local variables
 C
@@ -189,7 +196,31 @@ C
       IDA = IMSK
       VMN = RBIG
       VMX = 0.0
+      IZF = 1
+C 
+C Save the current color and linewidth, then set the vector
+C linewidth. Color must be set on a per vector basis within the 
+C main loop. Label text color is set here if a single color is
+C specified for all labels. 
 C
+      CALL GQPLCI(IER,IOC)
+      CALL GQTXCI(IER,IOT)
+      CALL GQLWSC(IER,ROW)
+      CALL GSLWSC(WDLV)
+      IF (ILBC .GE. 0) THEN
+         CALL GSTXCI(ILBC)
+      END IF
+C
+C If there are no drawable vectors skip the main loop
+C
+      IF (UVMX .LE. 0.0) THEN
+         IZC=NXCT*NYCT
+         DVMX=0.0
+         DVMN=0.0
+         VMN=0.0
+         VMX=0.0
+         GOTO 9800
+      END IF
 C
 C Determine the maximum vector length to use for drawing in 
 C fractional coordinates. The value is also calculated in user
@@ -247,27 +278,6 @@ C
          IAV=1
       ELSE
          DVMN = DVMX * (UVMN / UVMX)
-      END IF
-C 
-C Save the current color and linewidth, then set the vector
-C linewidth. Color must be set on a per vector basis within the 
-C main loop. Label text color is set here if a single color is
-C specified for all labels. 
-C
-      CALL GQPLCI(IER,IOC)
-      CALL GQTXCI(IER,IOT)
-      CALL GQLWSC(IER,ROW)
-      CALL GSLWSC(WDLV)
-      IF (ILBC .GE. 0) THEN
-         CALL GSTXCI(ILBC)
-      END IF
-C
-C If there are no drawable vectors skip the main loop
-C
-      IZF = 1
-      IF (UVMX .LE. 0.0) THEN
-         IZC=NXCT*NYCT
-         GOTO 9800
       END IF
 C
 C Calculate the grid interval represented by adjacent array
@@ -401,7 +411,7 @@ C
 C
 C Draw the vector
 C
-            CALL DRWVEC (XB,YB,XE,YE,VLN,LBL,NC,IAM,VVUDMV,IDA)
+            CALL VVDRAW (XB,YB,XE,YE,VLN,LBL,NC,IAM,VVUDMV,IDA)
 C
 C Statistical data:
 C
@@ -462,8 +472,12 @@ C
          WRITE(*,*) '     Vectors over maximum magnitude:',MXO
          WRITE(*,*) '          Other zero length vectors:',IZC
          WRITE(*,*) '            Rejected special values:',IVC
-         WRITE(*,*) '             Maximum vector plotted:',VMX
-         WRITE(*,*) '             Minimum vector plotted:',VMN
+         WRITE(*,*) '   Minimum plotted vector magnitude:',VMN
+         WRITE(*,*) '   Maximum plotted vector magnitude:',VMX
+         IF (ICTV .GT. 0) THEN
+            WRITE(*,*) '               Minimum scalar value:',PMIN
+            WRITE(*,*) '               Maximum scalar value:',PMAX
+         END IF
       END IF
 C
 C Reset the polyline color and the linewidth
@@ -536,7 +550,16 @@ C
 C XB,YB -- the begin position of the vector in fractional coords
 C XE,YE -- the end position of the vector in fractional coords
 C  
-C *********************************************************************
+C ---------------------------------------------------------------------
+C
+C NOTE:
+C Since implicit typing is used for all real and integer variables
+C a consistent length convention has been adopted to help clarify the
+C significance of the variables encountered in the code for this 
+C utility. All local variable and subroutine parameter identifiers 
+C are limited to 1,2,or 3 characters. Four character names identify  
+C members of common blocks. Five and 6 character variable names 
+C denote PARAMETER constants or subroutine or function names.
 C
 C Declare the VV common blocks.
 C
@@ -615,6 +638,7 @@ C
 C
 C --------------------------------------------------------------------
 C
+      PARAMETER (PRCFAC=1E5)
 C
 C Internal functions which may be modified for data transformation -
 C
@@ -671,7 +695,7 @@ C
          RETURN
       END IF
       TY=FY(X,Y)
-      IF (TY .LT. WXMN .OR. TY .GT. WXMX) THEN
+      IF (TY .LT. WYMN .OR. TY .GT. WYMX) THEN
          IST = -1
          RETURN
       END IF
@@ -693,6 +717,10 @@ C
       YB=CMFY(MY)
       XE=CMFX(LX)
       YE=CMFY(LY)
+C
+C Check for zero length vector
+C
+      IF (PRCFAC*(XE-XB).EQ.0 .AND. PRCFAC*(YE-YB).EQ.0) IST = -1 
 C
 C Done
 C
