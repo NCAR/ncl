@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.20 1994-08-08 22:34:57 ethan Exp $
+ *      $Id: Machine.c,v 1.21 1994-08-09 17:06:14 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1391,7 +1391,7 @@ void _NclRemapParameters
 	}
 
 	the_list = tmp_fp->parameter_map.u.the_list;
-	for (i = 0; i < nargs; i++) {
+	for (i = nargs -1 ; i > -1; i--) {
 		data = _NclPop();
 		if(the_list->the_elements[i].p_type == VAR_P) {
 			if((the_list->the_elements[i].var_sym != NULL)&&(the_list->the_elements[i].rec != NULL)) {
