@@ -30,9 +30,9 @@
 ;
 *sf@sfDataArray         : $cndata$
 *sf@sfDataArray%Profile : (/ Name : Primary Data Var /)
-*sf@sfXArray            : $cndata$!-1
+*sf@sfXArray            : $cndata$&-1
 *sf@sfXArray%Profile    : (/ Name : Latitude /)
-*sf@sfYArray            : $cndata$!-2
+*sf@sfYArray            : $cndata$&-2
 *sf@sfYArray%Profile    : (/ Name : Level /)
 
 ;
@@ -45,7 +45,7 @@
                              $raxis_title$ /)
 *contour@ndvUpdateFunc  : LabelLatX($contour$,30,15)
 *contour@ndvUpdateFunc%Profile : (/ Name : Latitude Tickmarks on X Axis /)
-*contour@ndvUpdateFunc2 : LabelHgtYR($contour$,$tickmark$,$cndata$!-2,\
+*contour@ndvUpdateFunc2 : LabelHgtYR($contour$,$tickmark$,$cndata$&-2,\
                                      $raxis_title$)
 *contour@ndvUpdateFunc2%Profile : (/ Name : Height Labels on Right Y Axis /)
 *contour@ndvUpdateFunc3 : SetContourLevels($contour$,0.,0.,0.)

@@ -40,9 +40,9 @@
 *vf@vfVDataArray         : FixLongitude($vdata$)
 *vf@vfUDataArray%Profile : (/ Name : U Component /)
 *vf@vfVDataArray%Profile : (/ Name : V Component /)
-*vf@vfXArray             : FixLongitudeCoord($vdata$!-1)
+*vf@vfXArray             : FixLongitudeCoord($vdata$&-1)
 *vf@vfXArray%Profile     : (/ Name : UV longitude /)
-*vf@vfYArray             : $vdata$!-2
+*vf@vfYArray             : $vdata$&-2
 *vf@vfYArray%Profile     : (/ Name : UV latitude /)
 
 ;

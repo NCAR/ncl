@@ -28,7 +28,7 @@
 ;
 *sf@sfDataArray         : $cndata$
 *sf@sfDataArray%Profile : (/ Name : Primary Data Var /)
-*sf@sfXArray            : $cndata$!-1
+*sf@sfXArray            : $cndata$&-1
 *sf@sfXArray%Profile    : (/ Name : Longitude /)
 
 ;
@@ -46,7 +46,7 @@
 *contour*lbLabelStride              : 2
 *contour*cnLineLabelsOn             : False
 *contour*cnLineLabelBackgroundColor : transparent
-*contour@tiYAxisString              : $cndata$!-2@long_name
+*contour@tiYAxisString              : $cndata$&-2@long_name
 *contour@pmAnnoViews    : (/ $left_title$, $center_title$, $right_title$ /)
 *contour@ndvUpdateFunc  : SetColormap($contour$,"rainbow")
 *contour@ndvUpdateFunc%Profile : (/ InitializeOnly : True, Name : Set Colormap /)

@@ -30,9 +30,9 @@
 ;
 *sf@sfDataArray         : FixLongitude($cndata$)
 *sf@sfDataArray%Profile : (/ Name : Primary Data Var /)
-*sf@sfXArray            : FixLongitudeCoord($cndata$!-1)
+*sf@sfXArray            : FixLongitudeCoord($cndata$&-1)
 *sf@sfXArray%Profile    : (/ Name : Longitude /)
-*sf@sfYArray            : $cndata$!-2
+*sf@sfYArray            : $cndata$&-2
 *sf@sfYArray%Profile    : (/ Name : Latitude /)
 
 ;

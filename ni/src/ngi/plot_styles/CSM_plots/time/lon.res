@@ -28,14 +28,14 @@
 ;
 *sf@sfDataArray         : $cndata$
 *sf@sfDataArray%Profile : (/ Name : Primary Data Var /)
-*sf@sfXArray            : $cndata$!-1
+*sf@sfXArray            : $cndata$&-1
 *sf@sfXArray%Profile    : (/ Name : Longitude /)
 
 ;
 ; contour resources
 ;
 *contour@cnScalarFieldData          : $sf$
-*contour@tiYAxisString              : $cndata$!-2@long_name
+*contour@tiYAxisString              : $cndata$&-2@long_name
 *contour*cnLineLabelBackgroundColor : transparent
 *contour@pmAnnoViews    : (/ $left_title$, $center_title$, $right_title$ /)
 *contour@ndvUpdateFunc  : LabelLon($contour$,60,20)

@@ -30,9 +30,9 @@
 ;
 *sf@sfDataArray         : $cndata$
 *sf@sfDataArray%Profile : (/ Name : Primary Data Var /)
-*sf@sfXArray            : $cndata$!-1
+*sf@sfXArray            : $cndata$&-1
 *sf@sfXArray%Profile    : (/ Name : Time /)
-*sf@sfYArray            : $cndata$!-2
+*sf@sfYArray            : $cndata$&-2
 *sf@sfYArray%Profile    : (/ Name : Level /)
 
 ;
@@ -43,7 +43,7 @@
 *tickmark@pmOverlays     : (/ $contour$ /)
 *contour@pmAnnoViews    : (/ $left_title$, $center_title$, $right_title$, \
                              $raxis_title$ /)
-*contour@ndvUpdateFunc  : LabelHgtYR($contour$,$tickmark$,$cndata$!-2, \
+*contour@ndvUpdateFunc  : LabelHgtYR($contour$,$tickmark$,$cndata$&-2, \
                                      $raxis_title$)
 *contour@ndvUpdateFunc%Profile : (/ Name : Height Labels on Right Y Axis /)
 *contour@ndvUpdateFunc2 : SetContourLevels($contour$,0.,0.,0.)

@@ -47,9 +47,9 @@
 *vf@vfVDataArray         : FixLongitude($vdata$)
 *vf@vfUDataArray%Profile : (/ Name : U /)
 *vf@vfVDataArray%Profile : (/ Name : V /)
-*vf@vfXArray             : FixLongitudeCoord($vdata$!-1)
+*vf@vfXArray             : FixLongitudeCoord($vdata$&-1)
 *vf@vfXArray%Profile     : (/ Name : UV longitude /)
-*vf@vfYArray             : $vdata$!-2
+*vf@vfYArray             : $vdata$&-2
 *vf@vfYArray%Profile     : (/ Name : UV latitude /)
 
 ;
@@ -57,9 +57,9 @@
 ;
 *sf@sfDataArray         : FixLongitude($sdata$)
 *sf@sfDataArray%Profile : (/ Name : scalar /)
-*sf@sfXArray            : FixLongitudeCoord($sdata$!-1)
+*sf@sfXArray            : FixLongitudeCoord($sdata$&-1)
 *sf@sfXArray%Profile    : (/ Name : scalar longitude /)
-*sf@sfYArray            : $sdata$!-2
+*sf@sfYArray            : $sdata$&-2
 *sf@sfYArray%Profile    : (/ Name : scalar latitude /)
 
 ;
