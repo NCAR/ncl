@@ -137,7 +137,7 @@ SRCS = cbdsqr.f cgbbrd.f cgbcon.f cgbequ.f cgbrfs.f cgbsv.f cgbsvx.f \
 	stgex2.f stgexc.f stgsen.f stgsja.f stgsna.f stgsy2.f stgsyl.f \
 	stpcon.f stprfs.f stptri.f stptrs.f strcon.f strevc.f strexc.f \
 	strrfs.f strsen.f strsna.f strsyl.f strti2.f strtri.f strtrs.f \
-	stzrqf.f stzrzf.f xerbla.f yMakefile zbdsqr.f zdrot.f zdrscl.f \
+	stzrqf.f stzrzf.f xerbla.f zbdsqr.f zdrot.f zdrscl.f \
 	zgbbrd.f zgbcon.f zgbequ.f zgbrfs.f zgbsv.f zgbsvx.f zgbtf2.f \
 	zgbtrf.f zgbtrs.f zgebak.f zgebal.f zgebd2.f zgebrd.f zgecon.f \
 	zgeequ.f zgees.f zgeesx.f zgeev.f zgeevx.f zgegs.f zgegv.f zgehd2.f \
@@ -319,7 +319,7 @@ OBJS = cbdsqr.o cgbbrd.o cgbcon.o cgbequ.o cgbrfs.o cgbsv.o cgbsvx.o \
 	stgex2.o stgexc.o stgsen.o stgsja.o stgsna.o stgsy2.o stgsyl.o \
 	stpcon.o stprfs.o stptri.o stptrs.o strcon.o strevc.o strexc.o \
 	strrfs.o strsen.o strsna.o strsyl.o strti2.o strtri.o strtrs.o \
-	stzrqf.o stzrzf.o xerbla.o yMakefile zbdsqr.o zdrot.o zdrscl.o \
+	stzrqf.o stzrzf.o xerbla.o zbdsqr.o zdrot.o zdrscl.o \
 	zgbbrd.o zgbcon.o zgbequ.o zgbrfs.o zgbsv.o zgbsvx.o zgbtf2.o \
 	zgbtrf.o zgbtrs.o zgebak.o zgebal.o zgebd2.o zgebrd.o zgecon.o \
 	zgeequ.o zgees.o zgeesx.o zgeev.o zgeevx.o zgegs.o zgegv.o zgehd2.o \
