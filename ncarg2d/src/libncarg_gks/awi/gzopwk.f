@@ -1,5 +1,5 @@
 C
-C	$Id: gzopwk.f,v 1.7 2001-02-06 21:16:40 fred Exp $
+C	$Id: gzopwk.f,v 1.8 2003-01-06 23:26:55 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -109,7 +109,8 @@ C
         FCODE = -3
         CONT  = 0
         CALL GZROI(0)
-        IF (WTYPE.GE.GPSMIN .AND. WTYPE.LE.GPSMAX) THEN
+        IF ((WTYPE.GE.GPSMIN .AND. WTYPE.LE.GPSMAX) .OR.
+     +       WTYPE.EQ.GPDFP .OR. WTYPE.EQ.GPDFL) THEN
           IL1   = 11
           IL2   = 11
           ID(1) = WKID
@@ -123,15 +124,15 @@ C
           ID(6) = CURX
           ID(7) = CURY
 C
-C  Scale factor for PostScript workstations.
+C  Scale factor for PostScript and PDF workstations.
 C
           ID(8) = CPSCL
 C
-C  Color model for PostScript workstations.
+C  Color model for PostScript and PDF workstations.
 C
           ID(9) = CCMDL
 C
-C  Flag for suppressing background color for PS.
+C  Flag for suppressing background color for PS and PDF.
 C
           ID(10) = CSUPR
 C
@@ -193,7 +194,8 @@ C  purpose.
 C
         IF (WTYPE.EQ.GXWC  .OR. WTYPE.EQ.GDMP  .OR. 
      +      WTYPE.EQ.GXWE  .OR. 
-     +        (WTYPE.GE.GPSMIN .AND. WTYPE.LE.GPSMAX)) THEN
+     +        (WTYPE.GE.GPSMIN .AND. WTYPE.LE.GPSMAX) .OR. 
+     +         WTYPE.EQ.GPDFP .OR. WTYPE.EQ.GPDFL) THEN
           LXWKID(NOPWK) = IL2
         ENDIF
 C

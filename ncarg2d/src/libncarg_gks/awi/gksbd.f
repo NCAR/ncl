@@ -1,5 +1,5 @@
 C
-C	$Id: gksbd.f,v 1.21 2001-02-06 21:16:39 fred Exp $
+C	$Id: gksbd.f,v 1.22 2003-01-06 23:26:54 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -168,6 +168,8 @@ C       GXWE   -- WORKSTATION TYPE EXISTING COLOUR X WINDOW
 C       GXWC   -- WORKSTATION TYPE COLOUR X WINDOW
 C       GPSMIN -- MINIMUM TYPE FOR THE POSTSCRIPT DRIVERS
 C       GPSMAX -- MAXIMUM TYPE FOR THE POSTSCRIPT DRIVERS
+C       GPDFP  -- Workstation type for PDF portrait.
+C       GPDFL  -- Workstation type for PDF landscape.
 C
 C-----------------------------------------------------------------------
 C
@@ -211,7 +213,7 @@ C       STR    -- CHARACTER VARIABLE FOR PASSING CHARACTERS
 C
 C-----------------------------------------------------------------------
       DATA KSLEV,WK/0, 17/
-      DATA LSWK/  1, 3, 7, 8,10,20,21,22,23,24,25,26,27,28,29,30,31/
+      DATA LSWK/1,3,7,8,10,11,12,20,21,22,23,24,25,26,27,28,29,30,31/       
       DATA MOPWK,MACWK,MNT
      +    /   15,   15,  1/
       DATA OPS/0/
@@ -219,7 +221,8 @@ C-----------------------------------------------------------------------
       DATA GBUNDL,GINDIV/0,1/
       DATA GGKCL,GGKOP,GWSOP,GWSAC,GSGOP/0,1,2,3,4/
       DATA GOUTPT,GINPUT,GOUTIN,GWISS,GMO,GMI/0,1,2,3,4,5/
-      DATA GCGM,GWSS,GXWE,GXWC,GDMP,GPSMIN,GPSMAX/1,3,7,8,10,20,31/       
+      DATA GCGM,GWSS,GXWE,GXWC,GDMP,GPDFP,GPDFL,GPSMIN,GPSMAX
+     +    /1,3,7,8,10,11,12,20,31/       
       DATA NOPWK,NACWK,NUMSEG,CURSEG,SEGDEL,GKSCLP/0,0,0,-1,1,1/
       DATA NOPICT/-1/
       DATA GFNAME/'DEFAULT'/
@@ -246,7 +249,7 @@ C
      +             -214, -215, -216, -300, -301, -302, -303, -217,
      +             -218, -219, -220, -221, 2200, 2201, 2202, 2203,
      +             2204,   90, -113, -400, -401, -402, -403, -404,
-     +             -405, -406/
+     +             -405, -406, -350, -351, -352/
 C  Error 1
       DATA ERMSGS(  1)/' --GKS NOT IN PROPER STATE: GKS SHALL BE IN STAT
      +E GKCL'/
@@ -576,6 +579,14 @@ C  Error -405
 C  Error -406
       DATA ERMSGS(130)/' --cannot have more than one NCAR CGM open at a 
      +given time'/
+C  Error -350
+      DATA ERMSGS(131)/' --PDF error: error in allocating memory for dev
+     +ice dependent table'/
+C  Error -351
+      DATA ERMSGS(132)/' --PDF error: error opening output file'/
+C  Error -352
+      DATA ERMSGS(133)/' --PDF warning: requested character not availab
+     +le, asterisk plotted, use Plotchar'/
 C
       DATA GNAM(001),GNAM(002),GNAM(003)/'GOPKS' ,'GCLKS' ,'GOPWK' /
       DATA GNAM(004),GNAM(005),GNAM(006)/'GCLWK' ,'GACWK' ,'GDAWK' /

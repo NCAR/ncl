@@ -1,5 +1,5 @@
 C
-C	$Id: gztowk.f,v 1.14 2000-12-22 19:01:05 fred Exp $
+C	$Id: gztowk.f,v 1.15 2003-01-06 23:26:56 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -49,7 +49,8 @@ C
             RETURN
           ELSE IF (ID(3).EQ.GXWC  .OR. ID(3).EQ.GXWE .OR. 
      +             ID(3).EQ.GDMP  .OR. 
-     +            (ID(3).GE.GPSMIN .AND. ID(3).LE.GPSMAX)) THEN
+     +            (ID(3).GE.GPSMIN .AND. ID(3).LE.GPSMAX) .OR.
+     +             ID(3).EQ.GPDFP .OR. ID(3).EQ.GPDFL) THEN
       
             DO 200 J=1,IADIM
               ADESTR(J) = 0
@@ -140,7 +141,8 @@ C
    50         CONTINUE
             ELSE IF (SWKTP(I).EQ.GXWC  .OR. SWKTP(I).EQ.GXWE .OR.
      +               SWKTP(I).EQ.GDMP  .OR. 
-     +              (SWKTP(I).GE.GPSMIN .AND. SWKTP(I).LE.GPSMAX)) THEN
+     +              (SWKTP(I).GE.GPSMIN .AND. SWKTP(I).LE.GPSMAX) .OR.
+     +               SWKTP(I).EQ.GPDFP .OR. SWKTP(I).EQ.GPDFL) THEN
 C
 C  If CUFLAG is set, make the interface call only for the specific
 C  workstation.
@@ -207,7 +209,8 @@ C
    60         CONTINUE
             ELSE IF (ITYP.EQ.GXWC  .OR. ITYP.EQ.GXWE .OR.
      +               ITYP.EQ.GDMP  .OR. 
-     +              (ITYP.GE.GPSMIN .AND. ITYP.LE.GPSMAX)) THEN
+     +              (ITYP.GE.GPSMIN .AND. ITYP.LE.GPSMAX) .OR.
+     +               ITYP.EQ.GPDFP .OR. ITYP.EQ.GPDFL) THEN
 C
 C  If CUFLAG is set, make the interface call only for the specific
 C  workstation.

@@ -1,5 +1,5 @@
 C
-C	$Id: gziqwk.f,v 1.6 2000-08-22 15:08:31 haley Exp $
+C	$Id: gziqwk.f,v 1.7 2003-01-06 23:26:55 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -40,7 +40,8 @@ C
         RETURN
       ELSE IF (WTYPE.EQ.GXWC  .OR. WTYPE.EQ.GDMP  .OR.
      +         WTYPE.EQ.GXWE  .OR.
-     +        (WTYPE.GE.GPSMIN .AND. WTYPE.LE.GPSMAX)) THEN
+     +        (WTYPE.GE.GPSMIN .AND. WTYPE.LE.GPSMAX) .OR.
+     +        (WTYPE.EQ.GPDFP .OR. WTYPE.EQ.GPDFL) ) THEN
         CALL GZXID(WKID,XID,RERR)
         IF (RERR .NE. 0) RETURN
         IL1 = 0

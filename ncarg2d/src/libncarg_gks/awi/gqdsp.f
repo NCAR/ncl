@@ -1,5 +1,5 @@
 C
-C	$Id: gqdsp.f,v 1.5 2000-08-22 15:08:06 haley Exp $
+C	$Id: gqdsp.f,v 1.6 2003-01-06 23:26:54 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -67,7 +67,8 @@ C
         RETURN
       ENDIF
 C
-      IF (WTYPE.GE.GPSMIN .AND. WTYPE.LE.GPSMAX) THEN
+      IF ((WTYPE.GE.GPSMIN .AND. WTYPE.LE.GPSMAX) .OR.
+     +     WTYPE.EQ.GPDFP .OR. WTYPE.EQ.GPDFL) THEN
         DCUNIT = 1
         RXP = 1.
         RYP = 1.

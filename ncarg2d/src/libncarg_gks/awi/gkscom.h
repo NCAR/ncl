@@ -1,5 +1,5 @@
 C
-C $Id: gkscom.h,v 1.19 2001-02-06 21:16:39 fred Exp $
+C $Id: gkscom.h,v 1.20 2003-01-06 23:26:54 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -21,14 +21,14 @@ C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 C USA.
 C
 C  Details on all GKS COMMON variables are in the GKS BLOCKDATA.
-      PARAMETER(MXNWK=15,NSEG=100,IWDIM=10000,NUMERS=130)
+      PARAMETER(MXNWK=15,NSEG=100,IWDIM=10000,NUMERS=133)
       COMMON/GKINTR/ NOPWK , NACWK , WCONID, NUMSEG,
      +               SEGS(NSEG)    , CURSEG, SEGLEN(NSEG)  , MXSREC,
      +               SEGT(NSEG,2,3), CURTM(2,3)            , SEGDEL,
      +               RWKSP(IWDIM)  , GKSCLP
       INTEGER        NOPWK , NACWK , WCONID, NUMSEG, SEGS  , CURSEG,
      +               SEGLEN, MXSREC, SEGDEL, GKSCLP
-      COMMON/GKOPDT/ OPS   , KSLEV , WK    , LSWK(17)      ,
+      COMMON/GKOPDT/ OPS   , KSLEV , WK    , LSWK(19)      ,
      +               MOPWK , MACWK , MNT
       INTEGER        OPS   , WK
       COMMON/GKSTAT/ SOPWK(MXNWK)  , SACWK(MXNWK)  , CPLI  , CLN   ,
@@ -60,11 +60,11 @@ C  Details on all GKS COMMON variables are in the GKS BLOCKDATA.
       COMMON/GKENUM/ GBUNDL, GINDIV, GGKCL , GGKOP , GWSOP , GWSAC ,
      +               GSGOP , GOUTPT, GINPUT, GOUTIN, GWISS , GMO   ,
      +               GMI   , GCGM  , GWSS  , GXWE  , GXWC  , GDMP  ,
-     +               GPSMIN, GPSMAX
+     +               GPSMIN, GPSMAX, GPDFP , GPDFL
       INTEGER        GBUNDL, GINDIV, GGKCL , GGKOP , GWSOP , GWSAC ,
      +               GSGOP , GOUTPT, GINPUT, GOUTIN, GWISS , GMO   ,
      +               GMI   , GCGM  , GWSS  , GXWE  , GXWC  , GDMP  ,
-     +               GPSMIN, GPSMAX
+     +               GPSMIN, GPSMAX, GPDFP , GPDFL
       COMMON/GKSNAM/ GNAM(109)     , SEGNAM(NSEG)  , GFNAME, GSEGRT
       CHARACTER      GNAM*6, SEGNAM*57     , GFNAME*256    ,
      +               GSEGRT*80

@@ -1,5 +1,5 @@
 C
-C	$Id: gsln.f,v 1.4 2000-08-22 15:08:19 haley Exp $
+C	$Id: gsln.f,v 1.5 2003-01-06 23:26:55 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -47,7 +47,7 @@ C
 C
 C  Set the current linetype (default it if it is out of range).
 C
-      IF (LTYPE .LE. 4) THEN
+      IF (LTYPE .LE. 5) THEN
         CLN = LTYPE
       ELSE
         CLN = 1

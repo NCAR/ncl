@@ -1,5 +1,5 @@
 C
-C	$Id: gesc.f,v 1.33 2002-04-04 22:02:18 fred Exp $
+C	$Id: gesc.f,v 1.34 2003-01-06 23:26:53 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -657,7 +657,7 @@ C
   136   CONTINUE
 C
 C
-C  PostScript escapes.
+C  PostScript and PDF escapes.
 C
       ELSE IF (FCTID.GE.-1530 .AND. FCTID.LE.-1510) THEN
 C
@@ -709,7 +709,7 @@ C
           RETURN
         ENDIF 
 C
-C  Portrait/landscape flag for PS output.
+C  Portrait/landscape flag for PS and PDF output.
 C
         IF (FCTID .EQ. -1525) THEN
           READ(IDR(1)(1:5),501,ERR=146) IWKID
@@ -739,14 +739,16 @@ C
           CUFLAG = IWKID
         ENDIF 
 C
-C  Return if not a PostScript workstation, unless FCTID = -1521
+C  Return if not a PostScript or PDF workstation, unless FCTID = -1521
 C  or FCTID = -1525, or FCTID = -1526.
 C
         CALL GQWKC(IWKID,IER,ICONID,ITYP)
-        IF (ITYP.GT.GPSMAX .OR. ITYP.LT.GPSMIN) THEN
-          CUFLAG = -1
-          IF (FCTID.NE.-1521 .AND. FCTID.NE.-1525 .AND.
+        IF (ITYP.NE.GPDFP .AND. ITYP.NE.GPDFL) THEN
+          IF (ITYP.GT.GPSMAX .OR. ITYP.LT.GPSMIN) THEN
+            CUFLAG = -1
+            IF (FCTID.NE.-1521 .AND. FCTID.NE.-1525 .AND.
      +        FCTID.NE.-1526) RETURN
+          ENDIF
         ENDIF
 C
   167   CONTINUE
