@@ -1,0 +1,1379 @@
+Ezmap has four outline datasets that are identified by 
+the index numbers and two-character names shown:
+
+Number	Name	Contents
+1	CO	Continental outlines only
+2	US	US state outlines only
+3	PS	Continental, US state, and international outlines
+4	PO	Continental and international outlines
+
+The following table shows the association between area identifiers and
+the names of the areas they identify. The first column contains an
+outline dataset abbreviation, the second column shows an area
+identifier, the third column shows a suggested color index for the area
+(which ensures that adjacent areas have different colors), and the name
+of the area appears in the fourth column.  This table is sorted by area
+name to help you find the area identifiers you need.
+
+PO	1264	3	Afghanistan
+PS	906	3	Afghanistan
+CO	3	2	Africa/Eurasia
+CO	99	2	Africa/Eurasia
+US	310	5	Alabama
+PO	1014	3	Alaska
+PS	450	3	Alaska
+CO	5	2	Alaska-Atka Is.
+PO	1008	3	Alaska-Atka Is.
+PS	444	3	Alaska-Atka Is.
+CO	218	2	Alaska-Attu Is.
+PO	1356	3	Alaska-Attu Is.
+PS	998	3	Alaska-Attu Is.
+CO	20	2	Alaska-Kodiak Is.
+PO	1023	3	Alaska-Kodiak Is.
+PS	459	3	Alaska-Kodiak Is.
+CO	13	2	Alaska-Nunivak Is.
+PO	1016	3	Alaska-Nunivak Is.
+PS	452	3	Alaska-Nunivak Is.
+CO	9	2	Alaska-Saint Lawrence Is.
+PO	1012	3	Alaska-Saint Lawrence Is.
+PS	448	3	Alaska-Saint Lawrence Is.
+CO	10	2	Alaska-Umnak Is.
+PO	1013	3	Alaska-Umnak Is.
+PS	449	3	Alaska-Umnak Is.
+CO	12	2	Alaska-Unalaska Is.
+PO	1015	3	Alaska-Unalaska Is.
+PS	451	3	Alaska-Unalaska Is.
+PO	1200	3	Albania
+PS	842	3	Albania
+PO	1144	2	Algeria
+PS	786	2	Algeria
+PO	1158	4	Andorra
+PS	800	4	Andorra
+PO	1188	4	Angola
+PS	830	4	Angola
+PO	1187	4	Angola-exclave called Cabinda
+PS	829	4	Angola-exclave called Cabinda
+CO	1	2	Antarctica
+PO	1004	7	Antarctica
+PS	440	7	Antarctica
+CO	72	2	Antarctica-Alexander Is.
+PO	1088	7	Antarctica-Alexander Is.
+PS	666	7	Antarctica-Alexander Is.
+CO	83	2	Antarctica-Anvers Is.
+PO	1106	7	Antarctica-Anvers Is.
+PS	748	7	Antarctica-Anvers Is.
+CO	36	2	Antarctica-Bear Is.
+PO	1042	7	Antarctica-Bear Is.
+PS	503	6	Antarctica-Bear Is.
+CO	85	2	Antarctica-Brabant Is.
+PO	1108	7	Antarctica-Brabant Is.
+PS	750	7	Antarctica-Brabant Is.
+CO	73	2	Antarctica-Charcot Is.
+PO	1089	7	Antarctica-Charcot Is.
+PS	669	7	Antarctica-Charcot Is.
+CO	95	2	Antarctica-Coronation Is.
+PO	1123	7	Antarctica-Coronation Is.
+PS	765	7	Antarctica-Coronation Is.
+CO	21	2	Antarctica-Guest Is.
+PO	1024	7	Antarctica-Guest Is.
+PS	460	7	Antarctica-Guest Is.
+CO	94	2	Antarctica-Joinvile Is.
+PO	1121	7	Antarctica-Joinvile Is.
+PS	763	7	Antarctica-Joinvile Is.
+CO	92	2	Antarctica-King George Is.
+PO	1117	7	Antarctica-King George Is.
+PS	759	7	Antarctica-King George Is.
+CO	91	2	Antarctica-Livingston Is.
+PO	1116	7	Antarctica-Livingston Is.
+PS	758	7	Antarctica-Livingston Is.
+CO	14	2	Antarctica-Roosevelt Is.
+PO	1017	7	Antarctica-Roosevelt Is.
+PS	453	7	Antarctica-Roosevelt Is.
+CO	213	2	Antarctica-Ross Is.
+PO	1351	7	Antarctica-Ross Is.
+PS	993	7	Antarctica-Ross Is.
+PO	1098	3	Argentina
+PS	713	3	Argentina
+PO	1103	3	Argentina-Tierra del Fuego
+PS	739	3	Argentina-Tierra del Fuego
+US	245	2	Arizona
+US	270	5	Arkansas
+CO	163	2	Australia
+PO	1297	3	Australia
+PS	939	3	Australia
+CO	193	2	Australia-Kangaroo Is.
+PO	1330	3	Australia-Kangaroo Is.
+PS	972	3	Australia-Kangaroo Is.
+CO	185	2	Australia-Melville and Bathurst Is.
+PO	1322	3	Australia-Melville and Bathurst Is.
+PS	964	3	Australia-Melville and Bathurst Is.
+CO	200	2	Australia-Tasmania
+PO	1338	3	Australia-Tasmania
+PS	980	3	Australia-Tasmania
+PO	1178	3	Austria
+PS	820	3	Austria
+CO	67	2	Bahamas
+CO	68	2	Bahamas
+CO	70	2	Bahamas
+PO	1083	6	Bahamas
+PO	1084	6	Bahamas
+PO	1086	6	Bahamas
+US	360	4	Bahamas-Andros
+US	362	4	Bahamas-Andros
+US	363	4	Bahamas-Andros
+US	365	4	Bahamas-Andros
+US	368	4	Bahamas-Andros
+US	394	4	Bahamas-Cat Is.
+US	372	4	Bahamas-Eleuthera Is.
+US	373	4	Bahamas-Eleuthera Is.
+US	374	4	Bahamas-Eleuthera Is.
+US	359	4	Bahamas-Grand Bahama
+US	366	4	Bahamas-Grand Bahama
+US	367	4	Bahamas-Grand Bahama
+US	364	4	Bahamas-Great Abaco and Little Abaco
+US	369	4	Bahamas-Mores Is.
+US	370	4	Bahamas-New Providence Is.
+PO	1276	4	Bangladesh
+PS	918	4	Bangladesh
+PO	1160	6	Belgium
+PS	802	6	Belgium
+PO	1064	2	Belize
+PS	582	2	Belize
+PO	1157	3	Benin
+PS	799	3	Benin
+PO	1277	3	Bhutan
+PS	919	3	Bhutan
+CO	203	2	Bismarck Archipelago-New Britain
+PO	1341	3	Bismarck Archipelago-New Britain
+PS	983	3	Bismarck Archipelago-New Britain
+CO	205	2	Bismarck Archipelago-New Hanover
+PO	1343	3	Bismarck Archipelago-New Hanover
+PS	985	3	Bismarck Archipelago-New Hanover
+CO	206	2	Bismarck Archipelago-New Ireland
+PO	1344	3	Bismarck Archipelago-New Ireland
+PS	986	3	Bismarck Archipelago-New Ireland
+CO	123	1	Black Sea
+PO	1217	1	Black Sea
+PS	859	1	Black Sea
+PO	1101	4	Bolivia
+PS	734	4	Bolivia
+US	223	7	Border
+CO	160	2	Borneo
+PO	1298	3	Borneo-Brunei
+PS	940	3	Borneo-Brunei
+PO	1203	6	Botswana
+PS	845	6	Botswana
+PO	1094	6	Brazil
+PS	705	6	Brazil
+PO	1211	5	Bulgaria
+PS	853	5	Bulgaria
+PO	1279	3	Burma
+PS	921	3	Burma
+PO	1221	4	Burundi
+PS	863	4	Burundi
+US	226	4	California
+US	240	4	California-San Clemente Is.
+US	234	4	California-San Miguel Is.(island)
+US	239	4	California-San Nicholas Is.
+US	241	4	California-Santa Catalina Is.
+US	238	4	California-Santa Cruz Is.
+US	235	4	California-Santa Rosa Is.
+PO	1286	2	Cambodia
+PS	928	2	Cambodia
+PO	1171	3	Cameroon
+PS	813	3	Cameroon
+PO	1026	6	Canada
+PS	462	6	Canada
+CO	62	2	Canada-Akimiski Is.
+PO	1075	6	Canada-Akimiski Is.
+PS	624	6	Canada-Akimiski Is.
+CO	82	2	Canada-Anticosti Is.
+PO	1105	6	Canada-Anticosti Is.
+PS	747	6	Canada-Anticosti Is.
+CO	50	2	Canada-Axel Heiberg Is.
+PO	1056	6	Canada-Axel Heiberg Is.
+PS	535	6	Canada-Axel Heiberg Is.
+CO	54	2	Canada-Baffin Is.
+PO	1062	6	Canada-Baffin Is.
+PS	568	6	Canada-Baffin Is.
+CO	25	2	Canada-Banks Is.
+PO	1029	6	Canada-Banks Is.
+PS	465	6	Canada-Banks Is.
+CO	39	2	Canada-Bathurst Is.
+PO	1045	6	Canada-Bathurst Is.
+PS	509	6	Canada-Bathurst Is.
+CO	65	2	Canada-Belcher Is.
+PO	1080	6	Canada-Belcher Is.
+PS	643	6	Canada-Belcher Is.
+CO	33	2	Canada-Borden Is.
+PO	1039	6	Canada-Borden Is.
+PS	498	6	Canada-Borden Is.
+CO	32	2	Canada-Brock Is.
+PO	1038	6	Canada-Brock Is.
+PS	493	6	Canada-Brock Is.
+CO	40	2	Canada-Byam Martin Is.
+PO	1046	6	Canada-Byam Martin Is.
+PS	510	6	Canada-Byam Martin Is.
+CO	63	2	Canada-Bylot Is.
+PO	1078	6	Canada-Bylot Is.
+PS	634	6	Canada-Bylot Is.
+CO	58	2	Canada-Coats Is.
+PO	1070	6	Canada-Coats Is.
+PS	610	6	Canada-Coats Is.
+CO	47	2	Canada-Cornwall Is.
+PO	1053	6	Canada-Cornwall Is.
+PS	525	6	Canada-Cornwall Is.
+CO	48	2	Canada-Cornwallis Is.
+PO	1054	6	Canada-Cornwallis Is.
+PS	528	6	Canada-Cornwallis Is.
+CO	49	2	Canada-Devon Is.
+PO	1055	6	Canada-Devon Is.
+PS	529	6	Canada-Devon Is.
+CO	28	2	Canada-Eglinton Is.
+PO	1033	6	Canada-Eglinton Is.
+PS	484	6	Canada-Eglinton Is.
+CO	37	2	Canada-Ellef Ringnes and Amund Ringnes Is.
+PO	1043	6	Canada-Ellef Ringnes and Amund Ringnes Is.
+PS	507	6	Canada-Ellef Ringnes and Amund Ringnes Is.
+CO	53	2	Canada-Ellesmere Is.
+PO	1060	6	Canada-Ellesmere Is.
+PS	562	6	Canada-Ellesmere Is.
+CO	26	1	Canada-Great Bear Lake
+PO	1030	1	Canada-Great Bear Lake
+PS	466	1	Canada-Great Bear Lake
+CO	31	1	Canada-Great Slave Lake
+PO	1036	1	Canada-Great Slave Lake
+PS	490	1	Canada-Great Slave Lake
+PS	716	1	Canada-lake
+US	415	1	Canada-lake
+CO	35	1	Canada-Lake Athabasca
+PO	1041	1	Canada-Lake Athabasca
+PS	501	1	Canada-Lake Athabasca
+CO	44	1	Canada-Lake Manitoba
+PO	1050	1	Canada-Lake Manitoba
+PS	519	1	Canada-Lake Manitoba
+CO	46	1	Canada-Lake Winnipeg
+PO	1052	1	Canada-Lake Winnipeg
+PS	521	1	Canada-Lake Winnipeg
+CO	43	1	Canada-Lake Winnipegosis
+PO	1049	1	Canada-Lake Winnipegosis
+PS	518	1	Canada-Lake Winnipegosis
+CO	38	2	Canada-Lougheed Is.
+PO	1044	6	Canada-Lougheed Is.
+PS	508	6	Canada-Lougheed Is.
+CO	34	2	Canada-Mackenzie King Is.
+PO	1040	6	Canada-Mackenzie King Is.
+PS	499	6	Canada-Mackenzie King Is.
+CO	60	2	Canada-Manitoulin Is.
+PO	1072	6	Canada-Manitoulin Is.
+CO	64	2	Canada-Mansel Is.
+PO	1079	6	Canada-Mansel Is.
+PS	642	6	Canada-Mansel Is.
+CO	45	2	Canada-Meighen Is.
+PO	1051	6	Canada-Meighen Is.
+PS	520	6	Canada-Meighen Is.
+CO	30	2	Canada-Melville Is.
+PO	1035	6	Canada-Melville Is.
+PS	488	6	Canada-Melville Is.
+PO	1118	6	Canada-Newfoundland
+PS	760	6	Canada-Newfoundland
+CO	71	2	Canada-Prince Charles Is.
+PO	1087	6	Canada-Prince Charles Is.
+PS	661	6	Canada-Prince Charles Is.
+CO	84	2	Canada-Prince Edward Is.
+PO	1107	6	Canada-Prince Edward Is.
+PS	749	6	Canada-Prince Edward Is.
+CO	42	2	Canada-Prince of Wales Is.
+PO	1048	6	Canada-Prince of Wales Is.
+PS	516	6	Canada-Prince of Wales Is.
+CO	27	2	Canada-Prince Patrick Is.
+PO	1032	6	Canada-Prince Patrick Is.
+PS	470	6	Canada-Prince Patrick Is.
+CO	23	2	Canada-Queen Charlotte Is.
+PO	1027	6	Canada-Queen Charlotte Is.
+PS	463	6	Canada-Queen Charlotte Is.
+CO	41	1	Canada-Reindeer Lake
+PO	1047	1	Canada-Reindeer Lake
+PS	514	1	Canada-Reindeer Lake
+CO	56	2	Canada-Southampton Is.
+PO	1067	6	Canada-Southampton Is.
+PS	590	6	Canada-Southampton Is.
+CO	24	2	Canada-Vancouver Is.
+PO	1028	6	Canada-Vancouver Is.
+PS	464	6	Canada-Vancouver Is.
+CO	29	2	Canada-Victoria Is.
+PO	1034	6	Canada-Victoria Is.
+PS	485	6	Canada-Victoria Is.
+CO	100	2	Canary Is.
+CO	101	2	Canary Is.
+CO	102	2	Canary Is.
+CO	103	2	Canary Is.
+PO	1130	2	Canary Is.
+PO	1133	2	Canary Is.
+PO	1135	2	Canary Is.
+PO	1136	2	Canary Is.
+PS	772	2	Canary Is.
+PS	775	2	Canary Is.
+PS	777	2	Canary Is.
+PS	778	2	Canary Is.
+CO	134	1	Caspian Sea
+PO	1249	1	Caspian Sea
+PS	891	1	Caspian Sea
+PO	1196	5	Central African Republic
+PS	838	5	Central African Republic
+PO	1194	2	Chad
+PS	836	2	Chad
+PO	1090	2	Chile
+PS	693	2	Chile
+PS	702	2	Chile-Is.la de Chiloe
+PO	1093	2	Chile-Isla de Chiloe
+PO	1091	2	Chile-Tierra del Fuego
+PS	699	2	Chile-Tierra del Fuego
+PO	1270	5	China
+PS	912	5	China
+CO	159	2	China-Hainan Dao
+PO	1292	5	China-Hainan Dao (island)
+PS	934	5	China-Hainan Dao (island)
+US	339	1	Clark Hill Reservoir
+PO	1082	2	Colombia
+PS	647	2	Colombia
+US	251	6	Colorado
+PO	1185	2	Congo
+PS	827	2	Congo
+US	409	5	Connecticut
+CO	111	2	Corsica
+PO	1173	3	Corsica
+PS	815	3	Corsica
+PO	1068	2	Costa Rica
+PS	596	2	Costa Rica
+CO	122	2	Crete
+PO	1212	2	Crete
+PS	854	2	Crete
+CO	57	2	Cuba
+PO	1069	4	Cuba
+PS	602	4	Cuba
+CO	61	2	Cuba-Isla de Pinos
+PO	1073	4	Cuba-Isla de Pinos
+PS	616	4	Cuba-Isla de Pinos
+CO	80	2	Curacao
+PO	1102	3	Curacao
+PS	735	3	Curacao
+CO	128	2	Cyprus
+PO	1228	3	Cyprus
+PS	870	3	Cyprus
+PO	1189	2	Czechoslovakia
+PS	831	2	Czechoslovakia
+US	393	5	Delaware
+US	402	1	Delaware-bay
+CO	112	2	Denmark-Fyn
+PO	1179	2	Denmark-Fyn
+PS	821	2	Denmark-Fyn
+PO	1169	2	Denmark-Jutland
+PS	811	2	Denmark-Jutland
+CO	113	2	Denmark-Lolland
+PO	1181	2	Denmark-Lolland
+PS	823	2	Denmark-Lolland
+CO	115	2	Denmark-Sjaelland
+PO	1183	2	Denmark-Sjaelland
+PS	825	2	Denmark-Sjaelland
+PO	1272	4	Disputed area between India and China
+PS	914	4	Disputed area between India and China
+PO	1242	3	Djibouti
+PS	884	3	Djibouti
+PO	1100	3	Dominican Republic
+PS	724	3	Dominican Republic
+PO	1180	3	East Germany
+PS	822	3	East Germany
+PO	1077	3	Ecuador
+PS	632	3	Ecuador
+PO	1213	6	Egypt
+PS	855	6	Egypt
+PO	1061	4	El Salvador
+PS	567	4	El Salvador
+PO	1150	5	England
+PS	792	5	England
+PO	1175	6	Equatorial Guinea
+PS	817	6	Equatorial Guinea
+PO	1230	4	Ethiopia
+PS	872	4	Ethiopia
+CO	105	2	Faeroe Is.
+PO	1147	2	Faeroe Is.
+PS	789	2	Faeroe Is.
+CO	89	2	Faulkland Is.
+PO	1114	5	Faulkland Is.
+PS	756	5	Faulkland Is.
+CO	222	2	Fiji-Vanua Levu
+PO	1360	3	Fiji-Vanua Levu
+PS	1002	3	Fiji-Vanua Levu
+CO	221	2	Fiji-Viti Levu
+PO	1359	3	Fiji-Viti Levu
+PS	1001	3	Fiji-Viti Levu
+PO	1205	3	Finland
+PS	847	3	Finland
+US	313	4	Florida
+US	322	4	Florida-island
+US	348	4	Florida-island
+US	349	4	Florida-island
+US	350	4	Florida-island
+US	351	4	Florida-island
+US	353	4	Florida-island
+US	343	4	Florida-Keys
+US	344	4	Florida-Keys
+US	345	4	Florida-Keys
+US	346	4	Florida-Keys
+US	319	1	Florida-lake
+US	347	1	Florida-Lake Okeechobee
+US	341	4	Florida-Pine Is.
+US	340	4	Florida-Sanibel Is.
+PO	1153	3	France
+PS	795	3	France
+PO	1122	3	French Guiana
+PS	764	3	French Guiana
+PO	1174	5	Gabon
+PS	816	5	Gabon
+CO	52	2	Galapagos Is.
+PO	1059	3	Galapagos Is.
+PS	553	3	Galapagos Is.
+PO	1132	2	Gambia
+PS	774	2	Gambia
+US	320	6	Georgia
+PO	1154	5	Ghana
+PS	796	5	Ghana
+CO	118	2	Gotland
+PO	1199	2	Gotland
+PS	841	2	Gotland
+US	248	1	Great Salt Lake
+CO	119	2	Greece
+PO	1202	2	Greece
+PO	1206	2	Greece
+PS	844	2	Greece
+PS	848	2	Greece
+CO	79	2	Green
+PO	1099	2	Greenland
+PS	718	2	Greenland
+CO	98	2	Greenland-off-shore island
+PO	1126	2	Greenland-off-shore island
+PS	768	2	Greenland-off-shore island
+CO	88	2	Guadeloupe-east
+PO	1112	3	Guadeloupe-east
+PS	754	3	Guadeloupe-east
+CO	87	2	Guadeloupe-west
+PO	1111	3	Guadeloupe-west
+PS	753	3	Guadeloupe-west
+PO	1057	3	Guatemala
+PS	549	3	Guatemala
+PO	1134	5	Guinea
+PS	776	5	Guinea
+PO	1131	4	Guinea-Bissau
+PS	773	4	Guinea-Bissau
+PO	1113	4	Guyana
+PS	755	4	Guyana
+PO	1092	6	Haiti
+PS	700	6	Haiti
+CO	75	2	Haiti and the Dominican Republic
+CO	19	2	Hawaiian Is.-Hawaii
+PO	1022	3	Hawaiian Is.-Hawaii
+PS	458	3	Hawaiian Is.-Hawaii
+CO	16	2	Hawaiian Is.-Kauai
+PO	1019	3	Hawaiian Is.-Kauai
+PS	455	3	Hawaiian Is.-Kauai
+CO	18	2	Hawaiian Is.-Maui
+PO	1021	3	Hawaiian Is.-Maui
+PS	457	3	Hawaiian Is.-Maui
+CO	15	2	Hawaiian Is.-Niihau
+PO	1018	3	Hawaiian Is.-Niihau
+PS	454	3	Hawaiian Is.-Niihau
+CO	17	2	Hawaiian Is.-Oahu
+PO	1020	3	Hawaiian Is.-Oahu
+PS	456	3	Hawaiian Is.-Oahu
+PO	1063	5	Honduras
+PS	572	5	Honduras
+PO	1197	5	Hungary
+PS	839	5	Hungary
+CO	97	2	Iceland
+PO	1125	7	Iceland
+PS	767	7	Iceland
+US	242	6	Idaho
+CO	146	2	Ile Kerguelen
+PO	1268	3	Ile Kerguelen
+PS	910	3	Ile Kerguelen
+US	284	4	Illinois
+PO	1267	2	India
+PS	909	2	India
+US	311	5	Indiana
+CO	177	2	Indonesia-Alor
+PO	1312	5	Indonesia-Alor
+PS	954	5	Indonesia-Alor
+CO	164	2	Indonesia-Bali
+PO	1299	5	Indonesia-Bali
+PS	941	5	Indonesia-Bali
+CO	156	2	Indonesia-Bangka
+PO	1289	5	Indonesia-Bangka
+PS	931	5	Indonesia-Bangka
+CO	162	2	Indonesia-Bawean
+PO	1296	5	Indonesia-Bawean
+PS	938	5	Indonesia-Bawean
+CO	158	2	Indonesia-Belitung
+PO	1291	5	Indonesia-Belitung
+PS	933	5	Indonesia-Belitung
+CO	192	2	Indonesia-Biak and Kepulauan Schouten
+PO	1329	5	Indonesia-Biak and Kepulauan Schouten
+PS	971	5	Indonesia-Biak and Kepulauan Schouten
+PO	1293	5	Indonesia-Borneo-Kalimantan
+PS	935	5	Indonesia-Borneo-Kalimantan
+CO	180	2	Indonesia-Buru
+PO	1316	5	Indonesia-Buru
+PS	958	5	Indonesia-Buru
+CO	183	2	Indonesia-Ceram
+PO	1320	5	Indonesia-Ceram
+PS	962	5	Indonesia-Ceram
+CO	169	2	Indonesia-Flores
+PO	1304	5	Indonesia-Flores
+PS	946	5	Indonesia-Flores
+CO	182	2	Indonesia-Halmahera
+PO	1319	5	Indonesia-Halmahera
+PS	961	5	Indonesia-Halmahera
+CO	175	2	Indonesia-island
+PO	1310	5	Indonesia-island
+PS	952	5	Indonesia-island
+CO	157	2	Indonesia-Java
+PO	1290	5	Indonesia-Java
+PS	932	5	Indonesia-Java
+CO	191	2	Indonesia-Kepulauan Aru
+PO	1328	5	Indonesia-Kepulauan Aru
+PS	970	5	Indonesia-Kepulauan Aru
+CO	189	2	Indonesia-Kepulauan Tanimbar
+PO	1326	5	Indonesia-Kepulauan Tanimbar
+PS	968	5	Indonesia-Kepulauan Tanimbar
+PO	1324	5	Indonesia-New Guinea-Irian Jaya
+PS	966	5	Indonesia-New Guinea-Irian Jaya
+CO	152	2	Indonesia-Nias
+PO	1281	5	Indonesia-Nias
+PS	923	5	Indonesia-Nias
+CO	181	2	Indonesia-Obi
+PO	1318	5	Indonesia-Obi
+PS	960	5	Indonesia-Obi
+CO	153	2	Indonesia-Siberut
+PO	1283	5	Indonesia-Siberut
+PS	925	5	Indonesia-Siberut
+CO	167	2	Indonesia-Sulawesi (Celebes)
+PO	1302	5	Indonesia-Sulawesi (Celebes)
+PS	944	5	Indonesia-Sulawesi (Celebes)
+CO	151	2	Indonesia-Sumatra
+PO	1280	5	Indonesia-Sumatra
+PS	922	5	Indonesia-Sumatra
+CO	168	2	Indonesia-Sumba
+PO	1303	5	Indonesia-Sumba
+PS	945	5	Indonesia-Sumba
+PS	942	5	Indonesia-Sumbawa & Lombok
+CO	165	2	Indonesia-Sumbawa and Lombok
+PO	1300	5	Indonesia-Sumbawa and Lombok
+CO	176	2	Indonesia-Timor
+PO	1311	5	Indonesia-Timor
+PS	953	5	Indonesia-Timor
+CO	186	2	Indonesia-Waigeo
+PO	1323	5	Indonesia-Waigeo
+PS	965	5	Indonesia-Waigeo
+CO	179	2	Indonesia-Wetar
+PO	1315	5	Indonesia-Wetar
+PS	957	5	Indonesia-Wetar
+US	262	6	Iowa
+PO	1246	5	Iran
+PS	888	5	Iran
+PO	1240	6	Iraq
+PS	882	6	Iraq
+CO	104	2	Ireland
+PO	1141	4	Ireland
+PS	783	4	Ireland
+CO	76	2	Isla de Chiloe
+PO	1233	2	Israel
+PS	875	2	Israel
+PO	1167	6	Italy
+PS	809	6	Italy
+PO	1145	4	Ivory Coast
+PS	787	4	Ivory Coast
+CO	69	2	Jamaica
+PO	1085	5	Jamaica
+PS	650	5	Jamaica
+CO	196	2	Japan-Hokkaido
+PO	1333	3	Japan-Hokkaido
+PS	975	3	Japan-Hokkaido
+CO	188	2	Japan-Honshu
+PO	1325	3	Japan-Honshu
+PS	967	3	Japan-Honshu
+CO	184	2	Japan-Kyushu
+PO	1321	3	Japan-Kyushu
+PS	963	3	Japan-Kyushu
+CO	190	2	Japan-Shikoku
+PO	1327	3	Japan-Shikoku
+PS	969	3	Japan-Shikoku
+PO	1237	5	Jordan
+PS	879	5	Jordan
+US	257	4	Kansas
+US	299	6	Kentucky
+PO	1231	5	Kenya
+PS	873	5	Kenya
+PO	1361	2	Kuwait
+PS	1003	2	Kuwait
+CO	117	1	Lake Chad
+PO	1192	1	Lake Chad
+PS	834	1	Lake Chad
+US	411	1	Lake Champlain
+US	413	2	Lake Champlain-Grand Isle
+CO	59	1	Lake Erie
+PO	1071	1	Lake Erie
+US	333	1	Lake Erie
+US	354	2	Lake Erie-Long Point (land)
+US	329	1	Lake George
+US	337	2	Lake Huron-Barrie Is.
+US	325	2	Lake Huron-Bois Blanc Is.
+US	355	2	Lake Huron-Christian Is.
+US	332	2	Lake Huron-Cockburn Is.
+US	330	2	Lake Huron-Drummond Is.
+US	342	2	Lake Huron-Fitzwilliam Is.
+US	335	2	Lake Huron-Manitoulin Is.
+US	246	1	Lake Mead (east)
+US	244	1	Lake Mead (west)
+US	321	2	Lake Michigan-Beaver Is.
+US	317	2	Lake Michigan-Manitou Is.
+US	314	2	Lake Michigan-Washington Is.
+CO	129	1	Lake Nyasa
+PO	1232	1	Lake Nyasa
+PS	874	1	Lake Nyasa
+CO	66	1	Lake Ontario
+PO	1081	1	Lake Ontario
+US	357	1	Lake Ontario
+US	371	2	Lake Ontario-island
+US	375	2	Lake Ontario-island
+US	377	2	Lake Ontario-island
+US	323	1	Lake Seminole
+US	336	1	Lake St. Clair
+CO	51	1	Lake Superior
+PO	1058	1	Lake Superior
+US	281	1	Lake Superior
+US	316	2	Lake Superior-Grand Is.
+US	326	2	Lake Superior-island
+US	307	2	Lake Superior-Isle Royale
+US	286	2	Lake Superior-Madeline Is.
+US	318	2	Lake Superior-Michipicoten Is.
+US	288	2	Lake Superior-Oak Is.
+US	292	2	Lake Superior-Outer Is.
+US	308	2	Lake Superior-Pie Is.
+US	289	2	Lake Superior-Stockton Is.
+US	236	1	Lake Tahoe
+CO	125	1	Lake Tanganyika
+PO	1220	1	Lake Tanganyika
+PS	862	1	Lake Tanganyika
+US	261	1	Lake Texoma
+CO	127	1	Lake Victoria
+PO	1227	1	Lake Victoria
+PS	869	1	Lake Victoria
+CO	55	1	Lakes Michigan and Huron
+PO	1065	1	Lakes Michigan and Huron
+US	312	1	Lakes Michigan and Huron
+PO	1285	6	Laos
+PS	927	6	Laos
+PO	1238	3	Lebanon
+PS	880	3	Lebanon
+PO	1216	6	Lesotho
+PS	858	6	Lesotho
+PO	1140	3	Liberia
+PS	782	3	Liberia
+PO	1176	4	Libya
+PS	818	4	Libya
+PO	1177	4	Liechtenstein
+PS	819	4	Liechtenstein
+CO	77	2	Long Is.
+PO	1095	3	Long Is.
+US	417	1	Long Is.-Great South Bay
+US	272	4	Louisiana
+US	275	1	Louisiana-Calcasieu Lake
+US	309	4	Louisiana-Cat Is.
+US	278	1	Louisiana-Grand Lake
+US	285	4	Louisiana-island
+US	287	4	Louisiana-island
+US	296	4	Louisiana-island
+US	297	4	Louisiana-island
+US	298	4	Louisiana-island
+US	300	4	Louisiana-island
+US	301	4	Louisiana-island
+US	302	4	Louisiana-island
+US	303	4	Louisiana-island
+US	304	4	Louisiana-island
+US	305	4	Louisiana-island
+US	306	4	Louisiana-island
+US	290	1	Louisiana-Lake Maurepas
+US	294	1	Louisiana-Lake Pontchartrain
+US	282	4	Louisiana-Marsh Is.
+US	273	1	Louisiana-Sabine Lake
+US	291	4	Louisiana-Timbalier Is.
+US	280	1	Louisiana-White Lake
+PO	1164	5	Luxembourg
+PS	806	5	Luxembourg
+CO	110	2	"Macias Nguema Biyogo (African island, Fernando Po)"
+PO	1172	3	"Macias Nguema Biyogo (African island, Fernando Po)"
+PS	814	3	"Macias Nguema Biyogo (African island, Fernando Po)"
+CO	132	2	Madagascar
+PO	1244	3	Madagascar
+PS	886	3	Madagascar
+US	427	5	Maine
+US	431	5	Maine-island
+US	432	5	Maine-island
+US	433	5	Maine-island
+US	434	5	Maine-island
+US	435	5	Maine-island
+US	436	5	Maine-island
+US	437	5	Maine-island
+US	438	5	Maine-island
+US	439	5	Maine-island
+PO	1229	2	Malawi
+PS	871	2	Malawi
+PO	1294	6	Malaysia-Borneo-Malaysia Timor
+PS	936	6	Malaysia-Borneo-Malaysia Timor
+PO	1201	6	Malaysia-Malay Peninsula
+PS	843	6	Malaysia-Malay Peninsula
+PO	1139	6	Mali
+PS	781	6	Mali
+CO	108	2	Mallorca
+PO	1159	2	Mallorca
+PS	801	2	Mallorca
+CO	90	2	Martinique
+PO	1115	3	Martinique
+PS	757	3	Martinique
+US	358	4	Maryland
+US	403	4	Maryland
+US	404	4	Maryland
+US	386	1	Maryland-inlet
+US	376	4	Maryland-island
+US	378	4	Maryland-island
+US	380	4	Maryland-island
+US	381	4	Maryland-island
+US	410	4	Massachusetts
+US	426	1	Massachusetts-bay
+US	430	1	Massachusetts-inlet
+US	428	4	Massachusetts-Marthas Vineyard
+US	429	4	Massachusetts-Nantucket Is.
+PO	1129	4	Mauritania
+PS	771	4	Mauritania
+CO	142	2	Mauritius
+PO	1261	3	Mauritius
+PS	903	3	Mauritius
+PO	1037	6	Mexico
+PS	491	6	Mexico
+US	315	2	Michigan (lower)
+US	293	2	Michigan (upper)
+US	260	4	Minnesota
+US	264	1	Minnesota-Lake of the Woods
+US	268	4	Minnesota-Lake of the Woods-island
+US	269	4	Minnesota-Lake of the Woods-island
+US	271	4	Minnesota-Lake of the Woods-island
+US	266	4	Minnesota-Lake of the Woods-land west of lake
+US	279	4	Minnesota-little piece
+US	276	1	Minnesota-Namakan Lake
+US	274	1	Minnesota-Rainy Lake
+US	265	1	Minnesota-Shoal Lake
+US	283	2	Mississippi
+US	263	2	Missouri
+PO	1275	3	Mongolia
+PS	917	3	Mongolia
+US	243	5	Montana
+PO	1138	5	Morocco
+PS	780	5	Morocco
+PO	1225	4	Mozambique
+PS	867	4	Mozambique
+PO	1186	2	Namibia
+PS	828	2	Namibia
+US	253	5	Nebraska
+PO	1274	3	Nepal
+PS	916	3	Nepal
+PO	1162	3	Netherlands
+PS	804	3	Netherlands
+US	237	5	Nevada
+CO	212	2	New Caledonia (island)
+PO	1350	3	New Caledonia (island)
+PS	992	3	New Caledonia (island)
+CO	187	2	New Guinea
+PO	1336	3	New Guinea-Papua
+PS	978	3	New Guinea-Papua
+US	418	6	New Hampshire
+US	414	1	New Hampshire-lake
+US	416	1	New Hampshire-lake
+CO	215	2	New Hebrides-Espiritu Santo
+PO	1353	3	New Hebrides-Espiritu Santo
+PS	995	3	New Hebrides-Espiritu Santo
+CO	216	2	New Hebrides-Malekula
+PO	1354	3	New Hebrides-Malekula
+PS	996	3	New Hebrides-Malekula
+US	400	2	New Jersey
+US	405	2	New Jersey-island
+US	407	1	New Jersey-Newark Bay
+US	250	5	New Mexico
+US	356	3	New York
+US	420	3	New York-Fishers Is.
+US	408	3	New York-Long Is.
+US	419	3	New York-Shelter Is.
+CO	6	2	New Zealand-Chatham Is.
+PO	1009	6	New Zealand-Chatham Is.
+PS	445	6	New Zealand-Chatham Is.
+CO	219	2	New Zealand-North Is.
+CO	220	2	New Zealand-North Is.
+PO	1357	6	New Zealand-North Is.
+PO	1358	6	New Zealand-North Is.
+PS	999	6	New Zealand-North Is.
+PS	1000	6	New Zealand-North Is.
+CO	214	2	New Zealand-South Is.
+PO	1352	6	New Zealand-South Is.
+PS	994	6	New Zealand-South Is.
+CO	217	2	New Zealand-Stewart Is.
+PO	1355	6	New Zealand-Stewart Is.
+PS	997	6	New Zealand-Stewart Is.
+CO	93	2	Newfoundland
+PO	1066	6	Nicaragua
+PS	588	6	Nicaragua
+PO	1156	5	Niger
+PS	798	5	Niger
+PO	1161	4	Nigeria
+PS	803	4	Nigeria
+CO	11	2	North and South America
+US	328	4	North Carolina
+US	361	4	North Carolina-Cape Fear
+US	383	4	North Carolina-island
+US	384	4	North Carolina-island
+US	388	4	North Carolina-island
+US	391	4	North Carolina-island
+US	392	4	North Carolina-island
+US	395	4	North Carolina-island
+US	396	4	North Carolina-island
+US	397	4	North Carolina-island
+US	398	4	North Carolina-island
+US	399	4	North Carolina-island
+US	255	3	North Dakota
+PO	1314	2	North Korea
+PS	956	2	North Korea
+PO	1146	5	Northern Ireland
+PS	788	5	Northern Ireland
+PO	1163	4	Norway
+PS	805	4	Norway
+CO	2	1	Oceans
+PO	1005	1	Oceans
+PS	441	1	Oceans
+US	324	4	Ohio
+US	256	3	Oklahoma
+PO	1254	4	Oman-northern section
+PS	896	4	Oman-northern section
+PO	1260	4	Oman-southern section
+PS	902	4	Oman-southern section
+US	225	3	Oregon
+CO	106	2	Outer Hebrides
+PO	1148	2	Outer Hebrides
+PS	790	2	Outer Hebrides
+PO	1265	4	Pakistan
+PS	907	4	Pakistan
+PO	1074	5	Panama
+PS	617	5	Panama
+PO	1109	5	Paraguay
+PS	751	5	Paraguay
+US	352	6	Pennsylvania
+PO	1076	5	Peru
+PS	630	5	Peru
+CO	170	2	Philippines-Luzon
+PO	1305	4	Philippines-Luzon
+PS	947	4	Philippines-Luzon
+CO	174	2	Philippines-Mindanao
+PO	1309	4	Philippines-Mindanao
+PS	951	4	Philippines-Mindanao
+CO	172	2	Philippines-Mindoro
+PO	1307	4	Philippines-Mindoro
+PS	949	4	Philippines-Mindoro
+CO	166	2	Philippines-Palawan
+PO	1301	4	Philippines-Palawan
+PS	943	4	Philippines-Palawan
+CO	173	2	"Philippines-Panay, Negros, and Bohol"
+PO	1308	4	"Philippines-Panay, Negros, and Bohol"
+PS	950	4	"Philippines-Panay, Negros, and Bohol"
+CO	178	2	Philippines-Samar
+PO	1313	4	Philippines-Samar
+PS	955	4	Philippines-Samar
+PO	1195	5	Poland
+PS	837	5	Poland
+PO	1142	4	Portugal
+PS	784	4	Portugal
+CO	81	2	Puerto Rico
+PO	1104	3	Puerto Rico
+PS	746	3	Puerto Rico
+PO	1252	4	Qatar
+PS	894	4	Qatar
+CO	140	2	Reunion Is.
+PO	1258	3	Reunion Is.
+PS	900	3	Reunion Is.
+US	421	6	Rhode Is.
+US	422	6	Rhode Is.-Block Is.
+US	423	6	Rhode Is.-island
+US	424	6	Rhode Is.-island
+US	425	6	Rhode Is.-island
+CO	124	2	Rhodes
+PO	1218	2	Rhodes
+PS	860	2	Rhodes
+PO	1204	3	Romania
+PS	846	3	Romania
+PO	1219	5	Rwanda
+PS	861	5	Rwanda
+CO	7	2	Samoa-Savaii
+PO	1010	3	Samoa-Savaii
+PS	446	3	Samoa-Savaii
+CO	8	2	Samoa-Upolu
+PO	1011	3	Samoa-Upolu
+PS	447	3	Samoa-Upolu
+CO	109	2	Sardinia
+PO	1170	6	Sardinia
+PS	812	6	Sardinia
+PO	1236	3	Saudi Arabia
+PS	878	3	Saudi Arabia
+US	327	1	Sault Ste. Marie
+PO	1149	2	Scotland
+PS	791	2	Scotland
+CO	107	2	Scotland/England/Wales
+PO	1127	3	Senegal
+PS	769	3	Senegal
+CO	116	2	Sicily
+PO	1191	6	Sicily
+PS	833	6	Sicily
+PO	1137	6	Sierra Leone
+PS	779	6	Sierra Leone
+CO	207	2	Solomon Is.-Bougainville
+PO	1345	3	Solomon Is.-Bougainville
+PS	987	3	Solomon Is.-Bougainville
+CO	209	2	Solomon Is.-Guadalcanal
+PO	1347	3	Solomon Is.-Guadalcanal
+PS	989	3	Solomon Is.-Guadalcanal
+CO	210	2	Solomon Is.-San Cristobal
+PO	1348	3	Solomon Is.-San Cristobal
+PS	990	3	Solomon Is.-San Cristobal
+PO	1241	2	Somalia
+PS	883	2	Somalia
+PO	1198	5	South Africa
+PS	840	5	South Africa
+US	334	2	South Carolina
+US	254	2	South Dakota
+CO	96	2	South Georgia Is.
+PO	1124	5	South Georgia Is.
+PS	766	5	South Georgia Is.
+PO	1317	4	South Korea
+PS	959	4	South Korea
+PO	1143	2	Spain
+PS	785	2	Spain
+CO	149	2	Sri Lanka (Ceylon)
+PO	1273	5	Sri Lanka (Ceylon)
+PS	915	5	Sri Lanka (Ceylon)
+US	406	3	Staten Is.
+PO	1208	3	Sudan
+PS	850	3	Sudan
+PO	1120	5	Surinam
+PS	762	5	Surinam
+CO	114	2	Svalbard
+PO	1182	4	Svalbard
+PS	824	4	Svalbard
+PO	1226	6	Swaziland
+PS	868	6	Swaziland
+PO	1184	5	Sweden
+PS	826	5	Sweden
+PO	1165	5	Switzerland
+PS	807	5	Switzerland
+PO	1239	4	Syria
+PS	881	4	Syria
+CO	22	2	Tahiti
+PO	1025	3	Tahiti
+PS	461	3	Tahiti
+CO	171	2	Taiwan
+PO	1306	2	Taiwan
+PS	948	2	Taiwan
+PO	1223	3	Tanzania
+PS	865	3	Tanzania
+US	295	3	Tennessee
+US	252	2	Texas
+US	258	2	Texas-island
+US	267	2	Texas-island
+US	259	2	Texas-Padre Is.
+PO	1282	5	Thailand
+PS	924	5	Thailand
+CO	74	2	Tierra del Fuego
+PO	1155	6	Togo
+PS	797	6	Togo
+CO	86	2	Trinidad and Tobago
+PO	1110	6	Trinidad and Tobago
+PS	752	6	Trinidad and Tobago
+PO	1168	5	Tunisia
+PS	810	5	Tunisia
+PO	1215	3	Turkey
+PS	857	3	Turkey
+CO	78	2	Turks and Caicos Is.
+PO	1096	4	Turks and Caicos Is.
+PS	708	4	Turks and Caicos Is.
+PO	1222	2	Uganda
+PS	864	2	Uganda
+PO	1251	2	United Arab Emirates
+PS	893	2	United Arab Emirates
+PO	1248	4	Unnamed neutral zone between Iraq and Saudi Arabia
+PS	890	4	Unnamed neutral zone between Iraq and Saudi Arabia
+PO	1151	2	Upper Volta
+PS	793	2	Upper Volta
+PO	1119	2	Uruguay
+PS	761	2	Uruguay
+PO	1031	3	US
+PO	1006	6	USSR
+PS	442	6	USSR
+CO	143	1	USSR-Aral Sea
+PO	1262	1	USSR-Aral Sea
+PS	904	1	USSR-Aral Sea
+CO	130	1	USSR-Azov Sea
+PO	1234	1	USSR-Azov Sea
+PS	876	1	USSR-Azov Sea
+CO	133	2	USSR-Franz Josef Land
+CO	137	2	USSR-Franz Josef Land
+CO	139	2	USSR-Franz Josef Land
+CO	141	2	USSR-Franz Josef Land
+CO	144	2	USSR-Franz Josef Land
+CO	145	2	USSR-Franz Josef Land
+PO	1247	6	USSR-Franz Josef Land
+PO	1255	6	USSR-Franz Josef Land
+PO	1257	6	USSR-Franz Josef Land
+PO	1259	6	USSR-Franz Josef Land
+PO	1263	6	USSR-Franz Josef Land
+PO	1266	6	USSR-Franz Josef Land
+PS	889	6	USSR-Franz Josef Land
+PS	897	6	USSR-Franz Josef Land
+PS	899	6	USSR-Franz Josef Land
+PS	901	6	USSR-Franz Josef Land
+PS	905	6	USSR-Franz Josef Land
+PS	908	6	USSR-Franz Josef Land
+CO	155	1	USSR-Lake Baikal
+PO	1288	1	USSR-Lake Baikal
+PS	930	1	USSR-Lake Baikal
+CO	148	1	USSR-Lake Balkhash (east)
+PO	1271	1	USSR-Lake Balkhash (east)
+PS	913	1	USSR-Lake Balkhash (east)
+CO	147	1	USSR-Lake Balkhash (west)
+PO	1269	1	USSR-Lake Balkhash (west)
+PS	911	1	USSR-Lake Balkhash (west)
+CO	136	2	USSR-Novaya Zemlya
+PO	1253	6	USSR-Novaya Zemlya
+PS	895	6	USSR-Novaya Zemlya
+CO	131	1	USSR-Onazhskoye Ozero
+PO	1235	1	USSR-Onazhskoye Ozero
+PS	877	1	USSR-Onazhskoye Ozero
+CO	154	2	USSR-Ostrov Bol'shevik
+PO	1284	6	USSR-Ostrov Bol'shevik
+PS	926	6	USSR-Ostrov Bol'shevik
+CO	161	2	USSR-Ostrov Bol'shoy Begichev
+PO	1295	6	USSR-Ostrov Bol'shoy Begichev
+PS	937	6	USSR-Ostrov Bol'shoy Begichev
+CO	198	2	USSR-Ostrov B ol'shoy Lyakhovskiy
+PO	1335	6	USSR-Ostrov Bol'shoy Lyakhovskiy
+PS	977	6	USSR-Ostrov Bol'shoy Lyakhovskiy
+CO	121	2	USSR-Ostrov Hiiumaa
+PO	1210	6	USSR-Ostrov Hiiumaa
+PS	852	6	USSR-Ostrov Hiiumaa
+CO	202	2	USSR-Ostrov Iturup
+PO	1340	6	USSR-Ostrov Iturup
+PS	982	6	USSR-Ostrov Iturup
+CO	211	2	USSR-Ostrov Karaginskiy
+PO	1349	6	USSR-Ostrov Karaginskiy
+PS	991	6	USSR-Ostrov Karaginskiy
+CO	135	2	USSR-Ostrov Kolguyev
+PO	1250	6	USSR-Ostrov Kolguyev
+PS	892	6	USSR-Ostrov Kolguyev
+CO	194	2	USSR-Ostrov Kotel'nyy and Ostrov Faddeyevskiy
+PO	1331	6	USSR-Ostrov Kotel'nyy and Ostrov Faddeyevskiy
+PS	973	6	USSR-Ostrov Kotel'nyy and Ostrov Faddeyevskiy
+CO	197	2	USSR-Ostrov Malyy Lyakhovskiy
+PO	1334	6	USSR-Ostrov Malyy Lyakhovskiy
+PS	976	6	USSR-Ostrov Malyy Lyakhovskiy
+CO	201	2	USSR-Ostrov Novaya Sibir'
+PO	1339	6	USSR-Ostrov Novaya Sibir'
+PS	981	6	USSR-Ostrov Novaya Sibir'
+CO	150	2	"USSR-Ostrov Oktyabr'skoy Revolyutsii, Komsomolets, Pioner"
+PO	1278	6	"USSR-Ostrov Oktyabr'skoy Revolyutsii, Komsomolets, Pioner"
+PS	920	6	"USSR-Ostrov Oktyabr'skoy Revolyutsii, Komsomolets, Pioner"
+CO	208	2	USSR-Ostrov Paramushir
+PO	1346	6	USSR-Ostrov Paramushir
+PS	988	6	USSR-Ostrov Paramushir
+CO	120	2	USSR-Ostrov Saaremaa
+PO	1207	6	USSR-Ostrov Saaremaa
+PS	849	6	USSR-Ostrov Saaremaa
+CO	199	2	USSR-Ostrov Sakhalin
+PO	1337	6	USSR-Ostrov Sakhalin
+PS	979	6	USSR-Ostrov Sakhalin
+CO	204	2	USSR-Ostrov Urup
+PO	1342	6	USSR-Ostrov Urup
+PS	984	6	USSR-Ostrov Urup
+CO	126	1	USSR-Ozero Ladozhskoye (Lake Ladoga)
+PO	1224	1	USSR-Ozero Ladozhskoye (Lake Ladoga)
+PS	866	1	USSR-Ozero Ladozhskoye (Lake Ladoga)
+CO	195	2	USSR-Shantarskiye Ostrova
+PO	1332	6	USSR-Shantarskiye Ostrova
+PS	974	6	USSR-Shantarskiye Ostrova
+CO	4	2	USSR-Wrangel Is.
+PO	1007	6	USSR-Wrangel Is.
+PS	443	6	USSR-Wrangel Is.
+PS	585	5	US-Alabama
+PS	495	2	US-Arizona
+PS	538	5	US-Arkansas
+PS	649	4	US-Bahamas-Andros
+PS	652	4	US-Bahamas-Andros
+PS	653	4	US-Bahamas-Andros
+PS	655	4	US-Bahamas-Andros
+PS	658	4	US-Bahamas-Andros
+PS	687	4	US-Bahamas-Cat Is.
+PS	663	4	US-Bahamas-Eleuthera Is.
+PS	664	4	US-Bahamas-Eleuthera Is.
+PS	665	4	US-Bahamas-Eleuthera Is.
+PS	648	4	US-Bahamas-Grand Bahama
+PS	656	4	US-Bahamas-Grand Bahama
+PS	657	4	US-Bahamas-Grand Bahama
+PS	654	4	US-Bahamas-Great Abaco and Little Abaco
+PS	659	4	US-Bahamas-Mores Is.
+PS	660	4	US-Bahamas-New Providence Is.
+PS	469	4	US-California
+PS	486	4	US-California-San Clemente Is.
+PS	478	4	US-California-San Miguel Is.
+PS	483	4	US-California-San Nicholas Is.
+PS	487	4	US-California-Santa Catalina Is.
+PS	482	4	US-California-Santa Cruz Is.
+PS	479	4	US-California-Santa Rosa Is.
+PS	621	1	US-Clark Hill Reservoir
+PS	505	6	US-Colorado
+PS	707	5	US-Connecticut
+PS	686	5	US-Delaware
+PS	696	1	US-Delaware-bay
+PS	589	4	US-Florida
+PS	600	4	US-Florida-island
+PS	633	4	US-Florida-island
+PS	635	4	US-Florida-island
+PS	636	4	US-Florida-island
+PS	637	4	US-Florida-island
+PS	639	4	US-Florida-island
+PS	626	4	US-Florida-Keys
+PS	627	4	US-Florida-Keys
+PS	628	4	US-Florida-Keys
+PS	629	4	US-Florida-Keys
+PS	597	1	US-Florida-lake
+PS	631	1	US-Florida-Lake Okeechobee
+PS	623	4	US-Florida-Pine Is.
+PS	622	4	US-Florida-Sanibel Is.
+PS	598	6	US-Georgia
+PS	500	1	US-Great Salt Lake
+PS	489	6	US-Idaho
+PS	554	4	US-Illinois
+PS	586	5	US-Indiana
+PS	527	6	US-Iowa
+PS	517	4	US-Kansas
+PS	573	6	US-Kentucky
+PS	711	1	US-Lake Champlain
+PS	714	2	US-Lake Champlain-Grand Isle
+PS	613	1	US-Lake Erie
+PS	640	2	US-Lake Erie-Long Point (land)
+PS	608	1	US-Lake George
+PS	619	2	US-Lake Huron-Barrie Is.
+PS	604	2	US-Lake Huron-Bois Blanc Is.
+PS	641	2	US-Lake Huron-Christian Is.
+PS	612	2	US-Lake Huron-Cockburn Is.
+PS	609	2	US-Lake Huron-Drummond Is.
+PS	625	2	US-Lake Huron-Fitzwilliam Is.
+PS	615	2	US-Lake Huron-Manitoulin Is.
+PS	496	1	US-Lake Mead (east)
+PS	494	1	US-Lake Mead (west)
+PS	599	2	US-Lake Michigan-Beaver Is.
+PS	594	2	US-Lake Michigan-Manitou Is.
+PS	591	2	US-Lake Michigan-Washington Is.
+PS	645	1	US-Lake Ontario
+PS	662	2	US-Lake Ontario-island
+PS	667	2	US-Lake Ontario-island
+PS	670	2	US-Lake Ontario-island
+PS	601	1	US-Lake Seminole
+PS	618	1	US-Lake St. Clair
+PS	550	1	US-Lake Superior
+PS	593	2	US-Lake Superior-Grand Is.
+PS	605	2	US-Lake Superior-island
+PS	581	2	US-Lake Superior-Isle Royale
+PS	556	2	US-Lake Superior-Madeline Is.
+PS	595	2	US-Lake Superior-Michipicoten Is.
+PS	558	2	US-Lake Superior-Oak Is.
+PS	563	2	US-Lake Superior-Outer Is.
+PS	583	2	US-Lake Superior-Pie Is.
+PS	559	2	US-Lake Superior-Stockton Is.
+PS	480	1	US-Lake Tahoe
+PS	526	1	US-Lake Texoma
+PS	587	1	US-Lakes Michigan and Huron
+PS	719	1	US-Long Is.-Great South Bay
+PS	540	4	US-Louisiana
+PS	543	1	US-Louisiana-Calcasieu Lake
+PS	584	4	US-Louisiana-Cat Is.
+PS	546	1	US-Louisiana-Grand Lake
+PS	555	4	US-Louisiana-island
+PS	557	4	US-Louisiana-island
+PS	569	4	US-Louisiana-island
+PS	570	4	US-Louisiana-island
+PS	571	4	US-Louisiana-island
+PS	574	4	US-Louisiana-island
+PS	575	4	US-Louisiana-island
+PS	576	4	US-Louisiana-island
+PS	577	4	US-Louisiana-island
+PS	578	4	US-Louisiana-island
+PS	579	4	US-Louisiana-island
+PS	580	4	US-Louisiana-island
+PS	560	1	US-Louisiana-Lake Maurepas
+PS	565	1	US-Louisiana-Lake Pontchartrain
+PS	551	4	US-Louisiana-Marsh Is.
+PS	541	1	US-Louisiana-Sabine Lake
+PS	561	4	US-Louisiana-Timbalier Is.
+PS	548	1	US-Louisiana-White Lake
+PS	730	5	US-Maine
+PS	736	5	US-Maine-island
+PS	737	5	US-Maine-island
+PS	738	5	US-Maine-island
+PS	740	5	US-Maine-island
+PS	741	5	US-Maine-island
+PS	742	5	US-Maine-island
+PS	743	5	US-Maine-island
+PS	744	5	US-Maine-island
+PS	745	5	US-Maine-island
+PS	646	4	US-Maryland
+PS	697	4	US-Maryland
+PS	698	4	US-Maryland
+PS	679	1	US-Maryland-inlet
+PS	668	4	US-Maryland-island
+PS	671	4	US-Maryland-island
+PS	673	4	US-Maryland-island
+PS	674	4	US-Maryland-island
+PS	709	4	US-Massachusetts
+PS	729	1	US-Massachusetts-bay
+PS	733	1	US-Massachusetts-inlet
+PS	731	4	US-Massachusetts-Marthas Vineyard
+PS	732	4	US-Massachusetts-Nantucket Is.
+PS	592	2	US-Michigan (lower)
+PS	564	2	US-Michigan (upper)
+PS	524	4	US-Minnesota
+PS	531	1	US-Minnesota-Lake of the Woods
+PS	536	4	US-Minnesota-Lake of the Woods-island
+PS	537	4	US-Minnesota-Lake of the Woods-island
+PS	539	4	US-Minnesota-Lake of the Woods-island
+PS	533	4	US-Minnesota-Lake of the Woods-land west of lake
+PS	547	4	US-Minnesota-little piece
+PS	544	1	US-Minnesota-Namakan Lake
+PS	542	1	US-Minnesota-Rainy Lake
+PS	532	1	US-Minnesota-Shoal Lake
+PS	552	2	US-Mississippi
+PS	530	2	US-Missouri
+PS	492	5	US-Montana
+PS	511	5	US-Nebraska
+PS	481	5	US-Nevada
+PS	720	3	US-New Hampshire
+PS	715	1	US-New Hampshire-lake
+PS	717	1	US-New Hampshire-lake
+PS	694	2	US-New Jersey
+PS	701	2	US-New Jersey-island
+PS	704	1	US-New Jersey-Newark Bay
+PS	504	5	US-New Mexico
+PS	644	3	US-New York
+PS	722	3	US-New York-Fishers Is.
+PS	706	3	US-New York-Long Is.
+PS	721	3	US-New York-Shelter Is.
+PS	607	4	US-North Carolina
+PS	651	4	US-North Carolina-Cape Fear
+PS	676	4	US-North Carolina-island
+PS	677	4	US-North Carolina-island
+PS	681	4	US-North Carolina-island
+PS	684	4	US-North Carolina-island
+PS	685	4	US-North Carolina-island
+PS	688	4	US-North Carolina-island
+PS	689	4	US-North Carolina-island
+PS	690	4	US-North Carolina-island
+PS	691	4	US-North Carolina-island
+PS	692	4	US-North Carolina-island
+PS	513	3	US-North Dakota
+PS	603	4	US-Ohio
+PS	515	3	US-Oklahoma
+PS	468	3	US-Oregon
+PS	638	6	US-Pennsylvania
+PS	723	6	US-Rhode Is.
+PS	725	6	US-Rhode Is.-Block Is.
+PS	726	6	US-Rhode Is.-island
+PS	727	6	US-Rhode Is.-island
+PS	728	6	US-Rhode Is.-island
+PS	606	1	US-Sault Ste. Marie
+PS	614	2	US-South Carolina
+PS	512	2	US-South Dakota
+PS	703	3	US-Staten Is.
+PS	566	3	US-Tennessee
+PS	506	2	US-Texas
+PS	522	2	US-Texas-island
+PS	534	2	US-Texas-island
+PS	523	2	US-Texas-Padre Is.
+PS	497	3	US-Utah
+PS	712	2	US-Vermont
+PS	611	2	US-Virginia
+PS	675	2	US-Virginia
+PS	682	2	US-Virginia
+PS	683	2	US-Virginia
+PS	672	2	US-Virginia-island
+PS	678	2	US-Virginia-island
+PS	680	2	US-Virginia-island
+PS	695	2	US-Virginia-island
+PS	467	2	US-Washington
+PS	471	2	US-Washington-island
+PS	472	2	US-Washington-island
+PS	473	2	US-Washington-island
+PS	474	2	US-Washington-island
+PS	475	2	US-Washington-island
+PS	476	2	US-Washington-island
+PS	477	2	US-Washington-island
+PS	620	3	US-West Virginia
+PS	545	3	US-Wisconsin
+PS	502	4	US-Wyoming
+US	247	3	Utah
+PO	1097	3	Venezuela
+PS	710	3	Venezuela
+US	412	2	Vermont
+PO	1287	4	Vietnam 
+PS	929	4	Vietnam
+US	331	2	Virginia
+US	382	2	Virginia
+US	389	2	Virginia
+US	390	2	Virginia
+US	379	2	Virginia-island
+US	385	2	Virginia-island
+US	387	2	Virginia-island
+US	401	2	Virginia-island
+PO	1152	3	Wales
+PS	794	3	Wales
+US	224	2	Washington
+US	227	2	Washington-island
+US	228	2	Washington-island
+US	229	2	Washington-island
+US	230	2	Washington-island
+US	231	2	Washington-island
+US	232	2	Washington-island
+US	233	2	Washington-island
+PO	1166	4	West Germany
+PS	808	4	West Germany
+US	338	3	West Virginia
+PO	1128	6	Western Sahara
+PS	770	6	Western Sahara
+US	277	3	Wisconsin
+US	249	4	Wyoming
+PO	1245	6	Yemen (Aden)
+PS	887	6	Yemen (Aden)
+CO	138	2	Yemen (Aden)-Socotra (island)
+PO	1256	6	Yemen (Aden)-Socotra (island)
+PS	898	6	Yemen (Aden)-Socotra (island)
+PO	1243	5	Yemen (Sana)
+PS	885	5	Yemen (Sana)
+PO	1193	4	Yugoslavia
+PS	835	4	Yugoslavia
+PO	1190	6	Zaire
+PS	832	6	Zaire
+PO	1209	5	Zambia
+PS	851	5	Zambia
+PO	1214	3	Zimbabwe
+PS	856	3	Zimbabwe
+
