@@ -121,7 +121,7 @@ procedure geni(mlow[1]:integer, mhgh[1]:integer, \
 ;  The function used is a sum of exponentials.
 ;
 ;  Versions of these codes were originally written in Fortran
-;  David Kennison at NCAR.
+;  by David Kennison at NCAR.
 ;
 
 local D2R, R2D, r0, r1, r2, xcvi, ycvi, zcvi, ivof, nlow, nhgh,   \
