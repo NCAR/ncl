@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.69 1997-07-25 21:12:59 dbrown Exp $
+ *      $Id: Workstation.c,v 1.70 1997-07-29 15:56:04 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -879,6 +879,7 @@ DoCmap
 	NhlColor		*tcp = NULL;
 	NhlPrivateColor		*pcmap = wp->private_color_map;
 	NhlString		e_text;
+	NhlErrorTypes 		ret = NhlNOERROR;
 
 	/*
 	 * If cmap is set, use it.
@@ -886,6 +887,11 @@ DoCmap
 	if(wp->color_map){
 		tcp = wp->color_map->data;
 		wp->color_map_len = wp->color_map->len_dimensions[0];
+		if(wp->color_map_len > _NhlMAX_COLOR_MAP) {
+			NhlPError(NhlWARNING,NhlEUNKNOWN,"DoCmap: Maximum color map length exceeded. Limit is (%d). Requested length is (%d), using only first (%d) elements.",_NhlMAX_COLOR_MAP,wp->color_map_len,_NhlMAX_COLOR_MAP);
+			wp->color_map_len = _NhlMAX_COLOR_MAP;
+			ret = NhlWARNING;
+		}
 		wp->color_map = NULL;
 		wp->cmap_changed = True;
 
@@ -1011,7 +1017,7 @@ DoCmap
 		pcmap[NhlFOREGROUND].blue = (*tcp)[2];
 	}
 
-	return NhlNOERROR;
+	return (ret);
 }
 
 /*
