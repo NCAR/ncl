@@ -1,5 +1,5 @@
 C
-C	$Id: wmex12.f,v 1.3 1995-06-14 13:57:30 haley Exp $
+C	$Id: wmex12.f,v 1.4 1996-06-03 19:10:35 fred Exp $
 C
       PROGRAM WMEX12
 C
@@ -12,17 +12,26 @@ C
 C
 C  City names and locations, Station model data.
 C
-C   NUMC    - the number of cities.
-C   ICITYS  - City names.
-C   CITYUX  - X user coordinates for city locations.
-C   CITYUY  - Y user coordinates for city locations.
+C   NUMC    -  the number of cities.
+C   ICITYS  -  City names.
+C   CITYUX  -  latitude of city.
+C   CITYUY  -  longitude of city.
+C   IMDAT   -  station model data for city.
+C   SV2C    -  variable in which to save two characters.
 C
       PARAMETER(NUMC=27)
       DIMENSION CITYUX(NUMC),CITYUY(NUMC)
       CHARACTER*13 ICITYS(NUMC)
       CHARACTER*5  IMDAT(10,NUMC)
+      CHARACTER*2  SV2C
 C
-C  Data on city locations and daily temperature labels.
+C  Constants used to convert from degrees to radians and from radians
+C  to degrees.
+C
+      DATA DTOR / .017453292519943 /
+      DATA RTOD / 57.2957795130823 /
+C
+C  City names.
 C
       DATA (ICITYS(II),II=1,NUMC)/
      +           'NCAR',       'Seattle', 'San Francisco',                
@@ -34,6 +43,9 @@ C
      +    'Albuquerque',      'Bismarck',         'Tulsa',
      +         'Dallas',   'Little Rock',     'Lexington',
      +      'Charlotte',       'Norfolk',        'Bangor'/
+C
+C  City locations.
+C
       DATA (CITYUX(II),II=1,NUMC)/ 
      +    40.0,   47.6,   37.8,   34.1,   45.8,   31.8,   29.8, 
      +    39.1,   45.0,   41.9,   42.3,   33.8,   25.8,   40.8,
@@ -44,6 +56,8 @@ C
      +  -094.1, -093.8, -087.6, -083.1, -084.4, -080.2, -074.0,
      +  -123.1, -116.2, -111.9, -112.1, -106.6, -100.8, -096.0,
      +  -096.8, -092.3, -084.1, -080.8, -076.3, -068.8/
+C
+C  Station model data.
 C
       DATA (IMDAT(L, 1),L=1,10)/'11000','00000','11260','21360','30000',       
      +                          '49550','54054','60000','77570','87712'/
@@ -79,7 +93,7 @@ C
      +                          '40120','51040','60801','76030','84703'/
       DATA (IMDAT(L,17),L=1,10)/'11648','62445','10250','20290','30000',
      +                          '40170','52008','60851','76440','85814'/
-      DATA (IMDAT(L,18),L=1,10)/'11751','72548','10270','20310','30000',
+      DATA (IMDAT(L,18),L=1,10)/'11751','70048','10270','20310','30000',
      +                          '40210','53012','60901','76850','86925'/
       DATA (IMDAT(L,19),L=1,10)/'11854','82651','10290','20330','30000',
      +                          '40250','54016','60950','77260','87036'/
@@ -97,7 +111,7 @@ C
      +                          '40480','51025','61250','79650','83692'/
       DATA (IMDAT(L,26),L=1,10)/'11575','51172','10430','20530','30000',
      +                          '40510','52022','61350','79960','84703'/
-      DATA (IMDAT(L,27),L=1,10)/'11678','63475','10480','21580','30000',
+      DATA (IMDAT(L,27),L=1,10)/'11678','60075','10480','21580','30000',
      +                          '40550','53013','61400','73370','85814'/
 C
 C Open GKS.
@@ -110,18 +124,14 @@ C
       CALL NGSETI('UX',710)
       CALL NGSETI('LY',-15)
       CALL NGSETI('UY',785)
+C
+C  Open and activate a workstation.
+C
       CALL GOPWK (IWKID, LUNIT, IWTYPE)
       CALL GACWK (IWKID)
 C
       CALL GSCR(IWKID,0,1.,1.,1.)
       CALL GSCR(IWKID,1,0.,0.,0.)
-      CALL GSCR(IWKID,2,1.,0.,0.)
-      CALL GSCR(IWKID,3,0.,0.,1.)
-      CALL GSCR(IWKID,4,.85,.85,.85)
-      CALL GSCR(IWKID,5,.60,.60,.60)
-C
-      CALL GSFAIS(1)
-      CALL GSFACI(2)
 C
       CALL PCSETI('CC',1)
       CALL PLCHHQ(0.5,0.82,':F21:Sample Plotted Station Model Data',
@@ -134,46 +144,77 @@ C
 C   Position the plot.
       CALL MAPPOS(0.05, 0.95, 0.00, 0.90)
 C
-C   Specify U.S. state outlines.
-      CALL MAPSTC('OU','US')
-C
 C   Choose Lambert conformal projection with two standard parallels.
       CALL MAPROJ('LC',30.,-100.,45.)
 C
-C   Reduce the value of 'MV' to make what MAPDRW produces match what
-C   comes out of MAPBLA/ARSCAM.
-      CALL MAPSTI ('MV',1)
+C   Specify U.S. state outlines.
+      CALL MAPSTC('OU','US')
 C
 C   Specify the corner points of the plot as lat/lon pairs.
       CALL MAPSET('CO',22.6,-120.,46.9,-64.2)
 C
-C   Initialize the transformations.
-      CALL MAPINT()
-C
-C  Set the flag for MAPEOD to just consider boundary lines.
-C
-      IEODF = 1
-      CALL GSPLCI(5)
-      CALL MAPLOT
+C   Draw the U.S. map.
+      CALL MAPDRW
 C  
-C--------------------------------------
-C  Station models at selected cities  |
-C--------------------------------------
+C  Plot station models at selected cities.
 C
-C   NUMC    - the number of cities.
-C   ICITYS  - City names.
-C   IDLYTS  - Daily hi/low labels for cities.
-C   CITYUX  - X user coordinates for city locations.
-C   CITYUY  - Y user coordinates for city locations.
-
+C  Prior to calling WMSTNM, the wind direction in the array IMDAT is 
+C  modified so that the wind barb will point in the correct direction 
+C  relative to the map.  This is done by projecting both ends of a tiny 
+C  wind vector and then computing the angle that the projected wind 
+C  vector makes with the sides of the map.  After the call to WMSTNM, 
+C  the original wind direction is restored.
+C
+C  In particular, the wind barbs for San Francisco, California
+C  and Bangor, Maine indicate a northerly wind.  Note how they
+C  align align with the longitude lines.
+C
+C  To get the correct wind barb directions relative to the map, the
+C  wind speeds are converted into a rate of change of longitude.
+C  That is to say, if a particle is at a given RLAT and RLON and it's 
+C  moving with eastward component VE and northward component VN, then 
+C  its position a bit later is given roughly by RLAT+Q*VN and 
+C  RLON+Q*VE/COS(RLAT), where Q is some small quantity (the smaller 
+C  the value of Q, the more accurate the position estimate).  By
+C  projecting both (RLAT,RLON) and (RLAT+C*VN,RLON+Q*VE/COS(RLAT)), you
+C  get points (XO,YO) and (XA,YA) on the map, defining the end points 
+C  of a tiny vector pointing in the direction the particle is moving.  
+C  As you get near the pole, there's a problem with this: COS(RLAT) 
+C  becomes zero, so you're dividing by zero.  This reflects the fact that 
+C  the concept "eastward" is undefined at the pole.
+C
       DO 110 I=1,NUMC
         CALL WMSETR('WBS - Wind barb size',0.035)
         IF (I.EQ.10 .OR. I.EQ.21 .OR. I.EQ.22 .OR. I.EQ.23 .OR.
      +      I.EQ.25) THEN
               CALL WMSETR('WBS - Wind barb size',0.028)
         ENDIF
+C
+C  Find the position of the city on the map.
+C
         CALL MAPTRN(CITYUX(I),CITYUY(I),XO,YO)
+C
+C  Modify the wind direction before calling WMSTNM (note that the wind
+C  directions, being represented as integers between 0 and 35, are 
+C  accurate only to within 10 degrees).
+C
+        SV2C=IMDAT(2,I)(2:3)
+        READ (SV2C,'(I2)') IANG
+        ANGR = DTOR*REAL(10*IANG)
+        CALL MAPTRN(CITYUX(I)+.1*                    COS(ANGR),
+     +              CITYUY(I)+.1/COS(DTOR*CITYUX(I))*SIN(ANGR),XA,YA)
+        ANGD = MOD(RTOD*ATAN2(XA-XO,YA-YO)+360.,360.)
+        IANG = MAX(0,MIN(35,NINT(ANGD/10.)))
+        WRITE (IMDAT(2,I)(2:3),'(I2)') IANG
+C
+C  Plot the station model data.
+C 
         CALL WMSTNM(XO,YO,IMDAT(1,I))
+C
+C  Restore original wind speed.
+C
+        IMDAT(2,I)(2:3) = SV2C
+C
   110 CONTINUE
 C
       CALL FRAME
