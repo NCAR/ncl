@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.93 2002-05-09 02:40:09 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.94 2002-05-09 14:56:37 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -2185,12 +2185,11 @@ begin
 
   if(lon_range.gt.360)
     print("get_lon_values: Warning: The range your of longitude values is greater than 360.")
-    print("You will not get 'nice' longitude labels.")
-    lon_values = new(1,float,-999)
-    return(lon_values)
+    lon_ind = dimsizes(lcheck_arr)-1
+  else
+    lon_ind = ind(lon_range.le.lcheck_arr)
   end if
 
-  lon_ind    = ind(lon_range.le.lcheck_arr)
 
   if(lon_spacing.le.0)
     lon_spcng  = lspcng_arr(lon_ind(0))  ; spacing for lon major tickmarks
