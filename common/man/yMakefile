@@ -1,42 +1,32 @@
 #
-#	$Id: yMakefile,v 1.4 1993-03-20 20:21:34 haley Exp $
+#	$Id: yMakefile,v 1.5 1993-03-21 01:53:28 haley Exp $
 #
 NCARG	= ../..
 
-MAN1	= fontc graphc ncargtar
+MAN1	= fontc graphc
 MAN3	= 
 MAN5	= fontcap graphcap
 MAN6	=
-MAN8	= ncargmv
-
+MAN8	= ncargmv ncargtar
 
 MAN	= $(MAN1) $(MAN3) $(MAN5) $(MAN6) $(MAN8)
-
-
-
-#
-#	we always format
-#
-FORMAT	= $(MAN)
 
 all:
 
 preformatted:
-	@for name in $(FORMAT); do \
-	nroff -man $$name.m >$$name.p; \
+	@for name in $(MAN3); do\
+	echo "Formatting $$name.m"; \
+	nroff -man $$name.m >$$name.p;\
 	done
 
-
-#if defined(CRAY) || defined(sgi)
+#if defined(CRAY) || defined(sgi) || defined(ardent)
 # Install preformatted troff documents on systems without troff
 FORMAT_EXT	= .p
 #else
 FORMAT_EXT	= .m
 #endif
 
-
 #ifdef	InstallManToLocal
-
 
 install::
 	@for name in $(MAN); do\
@@ -47,39 +37,12 @@ install::
 #else	/* ! InstallManToLocal	*/
 
 install::
-	@for name in $(MAN1); do\
+	@for name in $(MAN3); do\
 	($(INSTALL) -m $(INSTALL_MAN) $${name}$(FORMAT_EXT) \
-	$(MAN1PATH)/$$name.$(MAN1_SECTION) );\
-	done
-#
-#	no man pages for section 3 or 6. Brain damaged bourne shell
-#	doesn't understand an empty 'for' loop so we comment it out
-#install::
-#	@for name in $(MAN3); do\
-#	($(INSTALL) -m $(INSTALL_MAN) $${name}$(FORMAT_EXT) \
-#	$(MAN3PATH)/$$name.$(MAN3_SECTION) );\
-#	done
-
-install::
-	@for name in $(MAN5); do\
-	($(INSTALL) -m $(INSTALL_MAN) $${name}$(FORMAT_EXT) \
-	$(MAN5PATH)/$$name.$(MAN5_SECTION) );\
-	done
-
-#install::
-#	@for name in $(MAN6); do\
-#	($(INSTALL) -m $(INSTALL_MAN) $${name}$(FORMAT_EXT) \
-#	$(MAN6PATH)/$$name.$(MAN6_SECTION) );\
-#	done
-#
-install::
-	@for name in $(MAN8); do\
-	($(INSTALL) -m $(INSTALL_MAN) $${name}$(FORMAT_EXT) \
-	$(MAN8PATH)/$$name.$(MAN8_SECTION) );\
+	$(MAN3PATH)/$$name.$(MAN3_SECTION) );\
 	done
 
 #endif	/* InstallManToLocal	*/
-
 
 MakefileTarget
 CleanTarget
