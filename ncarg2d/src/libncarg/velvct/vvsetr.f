@@ -1,5 +1,5 @@
 C
-C	$Id: vvsetr.f,v 1.2 1992-12-03 00:22:27 dbrown Exp $
+C	$Id: vvsetr.f,v 1.3 1992-12-03 21:37:37 dbrown Exp $
 C
 C
 C-----------------------------------------------------------------------
@@ -35,7 +35,7 @@ C
      +                UXC1       ,UXCM       ,UYC1       ,UYCM       ,
      +                NLVL       ,IPAI       ,ICTV       ,WDLV       ,
      +                UVMN       ,UVMX       ,PMIN       ,PMAX       ,
-     +                ISPC       ,ITHN       ,IPLR       ,
+     +                ISPC       ,ITHN       ,IPLR       ,IVST       ,
      +                IVPO       ,ILBL       ,IDPF       ,IMSG       ,
      +                ICLR(IPLVLS)           ,TVLU(IPLVLS)
 C
@@ -202,7 +202,8 @@ C
          IMAP=INT(RVAL)
       ELSE IF (WHCH(1:3).EQ.'PLR'.OR. WHCH(1:3).EQ.'plr') THEN
          IPLR=INT(RVAL)
-C
+      ELSE IF (WHCH(1:3).EQ.'VST'.OR. WHCH(1:3).EQ.'vst') THEN
+         IVST=INT(RVAL)
       ELSE IF (WHCH(1:3).EQ.'VPO'.OR. WHCH(1:3).EQ.'vpo') THEN
          IVPO=INT(RVAL)
       ELSE IF (WHCH(1:3).EQ.'LBL'.OR. WHCH(1:3).EQ.'lbl') THEN

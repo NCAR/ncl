@@ -1,5 +1,5 @@
 C
-C	$Id: vvinit.f,v 1.1 1992-12-02 23:43:19 dbrown Exp $
+C	$Id: vvinit.f,v 1.2 1992-12-03 21:37:26 dbrown Exp $
 C
 C-----------------------------------------------------------------------
 C
@@ -9,6 +9,7 @@ C Argument dimensions.
 C
       DIMENSION       U(LU,N)    ,V(LV,N)    ,P(LP,N)
       DIMENSION       IWK(IC)    ,RWK(RC)
+C
 C                        P
 C                          A two-dimensional array of scalar data 
 C                          representing an independent variable (e.g.
@@ -46,7 +47,7 @@ C
      +                UXC1       ,UXCM       ,UYC1       ,UYCM       ,
      +                NLVL       ,IPAI       ,ICTV       ,WDLV       ,
      +                UVMN       ,UVMX       ,PMIN       ,PMAX       ,
-     +                ISPC       ,ITHN       ,IPLR       ,
+     +                ISPC       ,ITHN       ,IPLR       ,IVST       ,
      +                IVPO       ,ILBL       ,IDPF       ,IMSG       ,
      +                ICLR(IPLVLS)           ,TVLU(IPLVLS)
 C

@@ -1,5 +1,5 @@
 C
-C	$Id: fy.f,v 1.1 1992-12-02 23:28:32 dbrown Exp $
+C	$Id: fy.f,v 1.2 1992-12-03 21:37:10 dbrown Exp $
 C
       FUNCTION FY(X,Y)
 C

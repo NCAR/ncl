@@ -1,5 +1,5 @@
 C
-C	$Id: vvectr.f,v 1.1 1992-12-02 23:39:17 dbrown Exp $
+C	$Id: vvectr.f,v 1.2 1992-12-03 21:37:19 dbrown Exp $
 C
       SUBROUTINE VVECTR (U,V,P,IAM,VVUDMV,IWK,RWK)
 C
@@ -44,7 +44,7 @@ C
      +                UXC1       ,UXCM       ,UYC1       ,UYCM       ,
      +                NLVL       ,IPAI       ,ICTV       ,WDLV       ,
      +                UVMN       ,UVMX       ,PMIN       ,PMAX       ,
-     +                ISPC       ,ITHN       ,IPLR       ,
+     +                ISPC       ,ITHN       ,IPLR       ,IVST       ,
      +                IVPO       ,ILBL       ,IDPF       ,IMSG       ,
      +                ICLR(IPLVLS)           ,TVLU(IPLVLS)
 C
@@ -181,6 +181,7 @@ C Initialize local variables
 C
       NC  = 0
       ICT = 0
+      IVC = 0
       ISC = 0
       IZC = 0
       MXO = 0
@@ -204,11 +205,10 @@ C
          RLEN=DVMX*(WXMX-WXMN)/FW2W
       END IF
 C         
-C
 C Determine the maximum vector magnitude to use. It will be the
 C minimum of the parameter VHIM (if greater than 0.0) and the maximum
 C vector size encountered in the field, stored in UVMX.
-C The minimum can be calculated without condition.
+C Do likewise with the minimum vector.
 C Note that it is still possible for the user to set the max or min
 C such that no vectors qualify for plotting. A 'ZERO FIELD' condition
 C results in this case. 
@@ -217,7 +217,9 @@ C
          UVMX = MIN(VHIM, UVMX)
       END IF
 C
-      UVMN = MAX(VLOM, UVMN)
+      IF (VLOM .GT. 0.0) THEN
+         UVMN = MAX(VLOM, UVMN)
+      END IF
 C
 C Compute scale factors.
 C
@@ -231,7 +233,6 @@ C
       ASH = 1.0
       IF (IDP .NE. 0) ASH =
      +     10.**(3-IFIX(ALOG10(AMAX1(ABS(UVMN),ABS(UVMX)))-500.)-500)
-      IZF = 0
 C
 C Set the vector adjustment flag and calculate the minimum vector 
 C adjustment value if required
@@ -250,7 +251,8 @@ C
 C 
 C Save the current color and linewidth, then set the vector
 C linewidth. Color must be set on a per vector basis within the 
-C main loop.
+C main loop. Label text color is set here if a single color is
+C specified for all labels. 
 C
       CALL GQPLCI(IER,IOC)
       CALL GQTXCI(IER,IOT)
@@ -260,10 +262,11 @@ C
          CALL GSTXCI(ILBC)
       END IF
 C
-C If there are no drawable vectors go to zero field processing now
+C If there are no drawable vectors skip the main loop
 C
+      IZF = 1
       IF (UVMX .LE. 0.0) THEN
-         IZF = 0
+         IZC=NXCT*NYCT
          GOTO 9800
       END IF
 C
@@ -276,8 +279,8 @@ C
 C Draw the vectors. Note the extra processing if there are special 
 C values to consider or the independent scalar array is processed.
 C
-      DO 133 J=1,IYDN,IYIN
-         DO 132 I=1,IXDM,IXIN
+      DO 201 J=1,IYDN,IYIN
+         DO 200 I=1,IXDM,IXIN
 C
             UI = U(I,J)
             VI = V(I,J)
@@ -286,10 +289,10 @@ C Cull out special values
 C
             IF (ISVF .GT. 0) THEN
                IF (UI .EQ. UUSV) THEN
-                  IF (ISVF .EQ. 1 .OR. ISVF .EQ. 3) GO TO 132
-                  IF (VI .EQ. UVSV .AND. ISVF .EQ. 4) GO TO 132
+                  IF (ISVF .EQ. 1 .OR. ISVF .EQ. 3) GO TO 199
+                  IF (VI .EQ. UVSV .AND. ISVF .EQ. 4) GO TO 199
                ELSE IF (VI .EQ. UVSV) THEN
-                  IF (ISVF .EQ. 2 .OR. ISVF .EQ. 3) GO TO 132
+                  IF (ISVF .EQ. 2 .OR. ISVF .EQ. 3) GO TO 199
                END IF
             END IF
 C
@@ -306,20 +309,12 @@ C
             END IF
 C
 C Bypass vectors that fall outside the user-specified range.
-C Zero length vectors cannot be drawn even if UVMN is 0.0, but
-C need to be treated as if they were drawn.
 C
-            IF (UVM .GT. UVMX) THEN
-               MXO=MXO + 1
-               GO TO 132
-            ELSE IF (UVM .LT. UVMN) THEN
-               MNO=MNO + 1
-               GO TO 132
-            ELSE IF (UVM .LE. 0.0) THEN
-               IF (UVM .LT. VMN) VMN=UVM
-               IZC=IZC + 1
-               GO TO 132
-            END IF
+            IF (UVM .LT. UVMN) GO TO 196
+C
+            IF (UVM .GT. UVMX) GO TO 197
+C
+            IF (UVM .LE. 0.0) GO TO 198
 C
 C If using a scalar array, check for special values in the array, 
 C then determine the color to use for the vector
@@ -327,7 +322,7 @@ C
             IF (ICTV .GT. 0) THEN
 C
                IF (ISPC .EQ. 0 .AND. P(I,J) .EQ. UPSV) THEN
-                  GO TO 132
+                  GO TO 199
                ELSE IF (ISPC .GT. 0 .AND. P(I,J) .EQ. UPSV) THEN
                   CALL GSPLCI(ISPC)
                   GO TO 129
@@ -369,20 +364,14 @@ C
             IF (ICPM .GT. 0) THEN
 C
                CALL VVFCPM(I,J,UI,VI,UVM,XB,YB,XE,YE,IST)
-               IF (IST .NE. 0) THEN
-                  ISC = ISC + 1
-                  GO TO 132
-               END IF
+               IF (IST .NE. 0) GO TO 195
 C
             ELSE
 C
                X=XLOV+REAL(I-1)*XGV
                Y=YLOV+REAL(J-1)*YGV
                CALL VVMPXY(X,Y,UI,VI,UVM,XB,YB,XE,YE,IST)
-               IF (IST .NE. 0) THEN
-                  ISC = ISC + 1
-                  GO TO 132
-               END IF
+               IF (IST .NE. 0) GO TO 195
 C
             END IF
 C
@@ -404,33 +393,95 @@ C
             IF (UVM .LT. VMN) VMN=UVM
             IF (UVM .GT. VMX) VMX=UVM
 C
-C Set the zero field flag and encode the number if a label is to
+C Turn zero field flag off and encode the number if a label is to
 C be drawn
 C
-            IZF = 1
+            IZF = 0
             IF (ILBL .NE. 0) CALL ENCD(UVM,ASH,LBL,NC,IDP)
 C
 C Draw the vector
 C
-            ICT=ICT + 1
             CALL DRWVEC (XB,YB,XE,YE,VLN,LBL,NC,IAM,VVUDMV,IDA)
 C
-  132    CONTINUE
-  133 CONTINUE
+C Statistical data:
+C
+C Vectors plotted
+C
+            ICT=ICT + 1
+            GOTO 200
+C
+ 195        CONTINUE
+C
+C Vectors rejected by mapping routine
+C
+            ISC=ISC+1
+            GO TO 200
+C
+ 196        CONTINUE
+C
+C Vectors under minimum magnitude
+C
+            MNO=MNO+1
+            GO TO 200
+C
+ 197        CONTINUE
+C
+C Vectors over maximum magnitude
+C
+            MXO=MXO + 1
+            GO TO 200
+C
+C Zero length vectors cannot be drawn even if UVMN is 0.0, but
+C need to be treated as if they were drawn.
+C
+ 198        CONTINUE
+C
+            IF (UVM .LT. VMN) VMN=UVM
+            IZC=IZC + 1
+            GO TO 200
+C
+C Special values
+C
+ 199        CONTINUE
+            IVC = IVC+1
+C
+ 200     CONTINUE
+ 201  CONTINUE
 C
 C End of main loop.
+C
+ 9800 CONTINUE
+C
+C Plot statistics
+C
+      IF (IVST .EQ. 1) THEN
+         WRITE(*,*) 'VVECTR Statistics'
+         WRITE(*,*) '                    Vectors plotted:',ICT
+         WRITE(*,*) 'Vectors rejected by mapping routine:',ISC
+         WRITE(*,*) '    Vectors under minimum magnitude:',MNO
+         WRITE(*,*) '     Vectors over maximum magnitude:',MXO
+         WRITE(*,*) '          Other zero length vectors:',IZC
+         WRITE(*,*) '            Rejected special values:',IVC
+         WRITE(*,*) '             Maximum vector plotted:',VMX
+         WRITE(*,*) '             Minimum vector plotted:',VMN
+      END IF
+C
 C Reset the polyline color and the linewidth
 C
       CALL GSPLCI(IOC)
       CALL GSLWSC(ROW)
       CALL GSTXCI(IOT)
 C
- 9800 CONTINUE
+C Set UVMX and UVMN to the max and min vectors actually drawn,
+C so the user can recover this information
+C
+      UVMX=VMX
+      UVMN=VMN
 C
 C If vectors were drawn, write out the vector informational text if 
 C called for, else conditionally write the zero field text.
 C 
-      IF (IZF .NE. 0) THEN
+      IF (IZF .EQ. 0) THEN
 C
          IF (CMXT(1:1) .NE. ' ') THEN
             CALL VVARTX(CMXT,IMXP,FMXX,FMXY,FMXS,IMXC,VMX,DVMX)
@@ -505,7 +556,7 @@ C
      +                UXC1       ,UXCM       ,UYC1       ,UYCM       ,
      +                NLVL       ,IPAI       ,ICTV       ,WDLV       ,
      +                UVMN       ,UVMX       ,PMIN       ,PMAX       ,
-     +                ISPC       ,ITHN       ,IPLR       ,
+     +                ISPC       ,ITHN       ,IPLR       ,IVST       ,
      +                IVPO       ,ILBL       ,IDPF       ,IMSG       ,
      +                ICLR(IPLVLS)           ,TVLU(IPLVLS)
 C

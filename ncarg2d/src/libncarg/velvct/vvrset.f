@@ -1,5 +1,5 @@
 C
-C	$Id: vvrset.f,v 1.1 1992-12-02 23:53:26 dbrown Exp $
+C	$Id: vvrset.f,v 1.2 1992-12-03 21:37:32 dbrown Exp $
 C
 C
 C-----------------------------------------------------------------------
@@ -29,7 +29,7 @@ C
      +                UXC1       ,UXCM       ,UYC1       ,UYCM       ,
      +                NLVL       ,IPAI       ,ICTV       ,WDLV       ,
      +                UVMN       ,UVMX       ,PMIN       ,PMAX       ,
-     +                ISPC       ,ITHN       ,IPLR       ,
+     +                ISPC       ,ITHN       ,IPLR       ,IVST       ,
      +                IVPO       ,ILBL       ,IDPF       ,IMSG       ,
      +                ICLR(IPLVLS)           ,TVLU(IPLVLS)
 C
@@ -135,6 +135,7 @@ C
       ITHN = 0
       IMAP = 0
       IPLR = 0
+      IVST = 0
       IVPO = 0
       ILBL = 0
       IDPF = 1

@@ -1,5 +1,5 @@
 C
-C	$Id: fx.f,v 1.1 1992-12-02 23:26:45 dbrown Exp $
+C	$Id: fx.f,v 1.2 1992-12-03 21:37:08 dbrown Exp $
 C
       FUNCTION FX(X,Y)
 C

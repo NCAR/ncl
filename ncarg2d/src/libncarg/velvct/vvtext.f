@@ -1,5 +1,5 @@
 C
-C	$Id: vvtext.f,v 1.1 1992-12-03 00:04:55 dbrown Exp $
+C	$Id: vvtext.f,v 1.2 1992-12-03 21:37:40 dbrown Exp $
 C
 C This module contains four subroutines for text support of the
 C VELVCT utility. 
@@ -70,7 +70,7 @@ C
      +                UXC1       ,UXCM       ,UYC1       ,UYCM       ,
      +                NLVL       ,IPAI       ,ICTV       ,WDLV       ,
      +                UVMN       ,UVMX       ,PMIN       ,PMAX       ,
-     +                ISPC       ,ITHN       ,IPLR       ,
+     +                ISPC       ,ITHN       ,IPLR       ,IVST       ,
      +                IVPO       ,ILBL       ,IDPF       ,IMSG       ,
      +                ICLR(IPLVLS)           ,TVLU(IPLVLS)
 C
