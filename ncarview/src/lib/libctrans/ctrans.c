@@ -33,7 +33,7 @@
  * rev 1.01 clyne 4/18/90	: expanded application programmer interace
  */
 #ifndef lint
-static char *RCSid = "$Header: /home/brownrig/SVN/CVS/ncarg/ncarview/src/lib/libctrans/ctrans.c,v 1.2 1990-12-11 14:04:06 clyne Exp $";
+static char *RCSid = "$Header: /home/brownrig/SVN/CVS/ncarg/ncarview/src/lib/libctrans/ctrans.c,v 1.3 1990-12-19 15:34:24 clyne Exp $";
 #endif
 
 
@@ -144,6 +144,7 @@ Ct_err	init_ctrans(argc, argv, prog_name, gcap, fcap, stand_alone,				batch)
 
 {
 	extern	void	sigint_handler();
+	char	*minw;
  
 	stand_Alone = stand_alone;
 	Batch = batch;
@@ -185,6 +186,14 @@ Ct_err	init_ctrans(argc, argv, prog_name, gcap, fcap, stand_alone,				batch)
 	Argc = *argc;
 
 	Init_cgmc(&command);
+
+	/*
+	 * the following is a kludge to ensure a minimum linewidth
+	 */
+	if (minw = getenv ("MINWIDTH")) {
+		SetMinLineWidthDefault((float) atoi(minw));
+	}
+
 
 	/*
 	 * set the fontcap
