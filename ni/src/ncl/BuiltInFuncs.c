@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.7 1995-04-05 22:17:01 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.8 1995-04-06 21:13:40 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1797,7 +1797,6 @@ NhlErrorTypes _NclIfbinread
 	int i;
 	void *tmp_ptr;
 	struct stat buf;
-	int fd = -1;
 	int totalsize = 0;
 	int n;
 	char *step = NULL;
@@ -1865,7 +1864,7 @@ NhlErrorTypes _NclIfbinread
 	totalsize = size*thetype->type_class.size;
 	tmp_ptr = NclMalloc(totalsize);
 	NGCALLF(ncl_fortranread,NCL_FORTRANREAD)(path_string,tmp_ptr,&totalsize,&ret,strlen(path_string));
-	if((tmp_ptr != NULL)&&(fd > 0)) {
+	if(tmp_ptr != NULL) {
 		
 		tmp_md = _NclCreateMultiDVal(
 			NULL,
@@ -1885,9 +1884,7 @@ NhlErrorTypes _NclIfbinread
 		data_out.u.data_obj = tmp_md;
 		_NclPlaceReturn(data_out);
 		return(ret);
-	} else if (fd == -1) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinread: could not open file check permissions");
-	}
+	} 
 	return(NhlFATAL);
 }
 
@@ -2081,14 +2078,7 @@ NhlErrorTypes _NclIfbinwrite
 		totalsize = tmp_md->multidval.totalelements * thetype->type_class.size;
 	}
 	NGCALLF(ncl_fortranwrite,NCL_FORTRANWRITE)(path_string,tmp_ptr,&totalsize,&ret,strlen(path_string));
-	fd = open(path_string,(O_CREAT | O_RDWR),0777);
-	if((tmp_ptr != NULL)&&(fd >= 0)) {
-		n = write(fd, tmp_ptr,totalsize);
-		return(ret);
-	} else if(fd < 0) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"cbinwrite: Could not create file");
-	}
-	return(NhlFATAL);
+	return(ret);
 }
 NhlErrorTypes _NclIsleep
 #if	NhlNeedProto

@@ -1,45 +1,59 @@
-	SUBROUTINE NCL_FORTRANREAD(PPATH,ARR,N,ERR)
+	SUBROUTINE NCL_FORTRANREAD(PPATH,ARR,N,NCERR)
 	CHARACTER* (*)  PPATH
 	CHARACTER ARR(N)
-	INTEGER ERR
+	INTEGER NCERR
+	LOGICAL OPN
 
-	OPEN(STATUS='old',FILE=PPATH ,IOSTAT=ios,form='unformatted',
-     + ERR=10)
-	INQUIRE (FILE=PPATH,NUMBER=IU,RECL=IR)
-	READ(IU,ERR=20) ARR
-	CLOSE(IU)
+	DO 5 I=10,50
+		INQUIRE(I,OPENED=OPN)
+		IF (OPN.eq..FALSE.) THEN	
+			GOTO 7
+		END IF
+  5	CONTINUE
 
-	ERR = -1
+  7	OPEN(I,STATUS='old',FILE=PPATH ,IOSTAT=ios,form='unformatted',
+     +  ERR=10)
+	READ(I,ERR=20) ARR
+	CLOSE(I)
+
+	NCERR = -1
 	RETURN
- 10	ERR = -4
+ 10	NCERR = -4
 	CALL NHLFPERROR('FATAL',1000,'fbinread: An error occured '
      +  //'opening the requested file')
 	RETURN
- 20	ERR = -4
+ 20	NCERR = -4
 	CALL NHLFPERROR('FATAL',1000,'fbinread: An error occured while '
      +  //'reading the requested file check dimension size information')
 	RETURN
 	END
 
-	SUBROUTINE NCL_FORTRANWRITE(PPATH,ARR,N,ERR)
+	SUBROUTINE NCL_FORTRANWRITE(PPATH,ARR,N,NCERR)
 	CHARACTER* (*) PPATH
 	CHARACTER ARR(N)
-	INTEGER ERR
+	INTEGER NCERR
+	LOGICAL OPN
 
-	OPEN(STATUS='new',FILE=PPATH,IOSTAT=ios,FORM='unformatted',
+	DO 5 I=10,50
+		INQUIRE(I,OPENED=OPN)
+		IF (OPN.eq..FALSE.) THEN	
+			GOTO 7
+		END IF
+  5	CONTINUE
+
+  7	OPEN(I,STATUS='new',FILE=PPATH,IOSTAT=ios,FORM='unformatted',
      +  ERR=30)
-	INQUIRE (FILE=PPATH,NUMBER=IU,RECL=IR)
-	WRITE(IU,ERR=40) ARR
-	CLOSE(IU)
+	WRITE(I,ERR=40) ARR
+	CLOSE(I)
 
-	ERR = -1
+	NCERR = -1
 	RETURN
- 30	ERR = -4
-	CALL NHLFPERROR('FATAL',1000,'fbinread: An error occured '
+ 30	NCERR = -4
+	CALL NHLFPERROR('FATAL',1000,'fbinwrite: An error occured '
      +  //'opening the requested file')
 	RETURN
- 40	ERR = -4
-	CALL NHLFPERROR('FATAL',1000,'fbinread: An error occured '
+ 40	NCERR = -4
+	CALL NHLFPERROR('FATAL',1000,'fbinwrite: An error occured '
      +  //'while writing the requested file')
 	RETURN
 	END
