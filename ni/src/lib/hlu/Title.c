@@ -1,5 +1,5 @@
 /*
- *      $Id: Title.c,v 1.38 1999-03-29 18:31:38 dbrown Exp $
+ *      $Id: Title.c,v 1.39 1999-03-30 21:07:25 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -192,10 +192,10 @@ static NhlResource resources[] = {
 		 sizeof(float),
 		 Oset(x_axis_font_thickness), NhlTString,_NhlUSET("1.0"),
 		0,NULL},
-	{NhlNtiXAxisAngleF,NhlCYAxisTextAngleF,NhlTFloat,sizeof(float),
+	{NhlNtiXAxisAngleF,NhlCTextAngleF,NhlTFloat,sizeof(float),
 		 Oset(x_axis_angle), NhlTString,_NhlUSET("0.0"),
 		0,NULL},
-	{NhlNtiXAxisDirection,NhlCYAxisTextDirection,NhlTTextDirection,
+	{NhlNtiXAxisDirection,NhlCTextDirection,NhlTTextDirection,
 		 sizeof(NhlTextDirection),Oset(x_axis_direction),NhlTImmediate,
 		 _NhlUSET((NhlPointer)NhlACROSS), 0,NULL},
 	{NhlNtiXAxisPosition,NhlCtiXAxisPosition,NhlTTitlePositions,
@@ -244,9 +244,9 @@ static NhlResource resources[] = {
 	{NhlNtiYAxisFontThicknessF,NhlCFontThicknessF,NhlTFloat,
 		 sizeof(float), Oset(y_axis_font_thickness), NhlTString,
 		 _NhlUSET("1.0"),0,NULL},
-	{NhlNtiYAxisAngleF,NhlCTextAngleF,NhlTFloat, sizeof(float),
+	{NhlNtiYAxisAngleF,NhlCYAxisTextAngleF,NhlTFloat, sizeof(float),
 		 Oset(y_axis_angle), NhlTString,_NhlUSET("90.0"),0,NULL},
-	{NhlNtiYAxisDirection,NhlCTextDirection,NhlTTextDirection,
+	{NhlNtiYAxisDirection,NhlCYAxisTextDirection,NhlTTextDirection,
 		 sizeof(NhlTextDirection),
 		 Oset(y_axis_direction), NhlTImmediate,
 		 _NhlUSET((NhlPointer)NhlACROSS),0,NULL},
