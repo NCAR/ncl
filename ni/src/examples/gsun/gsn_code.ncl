@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.129 2004-01-06 21:40:49 haley Exp $
+;      $Id: gsn_code.ncl,v 1.130 2004-01-12 18:25:44 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -3492,12 +3492,53 @@ begin
     if(new_plot@plot_type.eq."contour") then
       getvalues new_plot
         "cnInfoLabelFontHeightF" : font_height
+        "cnFillOn"               : fill_on
       end getvalues
+      if(panel_labelbar.and.fill_on) then
+        getvalues new_plot
+          "cnFillColors"      : colors
+          "cnFillPatterns"    : fill_patterns
+          "cnFillScales"      : fill_scales
+          "cnMonoFillPattern" : mono_fill_pat
+          "cnMonoFillScale"   : mono_fill_scl
+          "cnMonoFillColor"   : mono_fill_col
+          "cnLevels"          : levels
+        end getvalues
+      else
+        panel_labelbar = False
+      end if
     else
       if(new_plot@plot_type.eq."vector") then
         getvalues new_plot
-          "vcRefAnnoFontHeightF" : font_height
+          "vcRefAnnoFontHeightF"     : font_height
+          "vcGlyphStyle"             : gstyle
+          "vcFillArrowsOn"           : fill_arrows_on
+          "vcMonoLineArrowColor"     : mono_line_color
+          "vcMonoFillArrowFillColor" : mono_fill_arrow
         end getvalues
+
+        if(panel_labelbar) then
+;
+; 0 = linearrow, 1 = fillarrow, 2 = windbarb, 3 = curlyvector
+;
+          if(    (fill_arrows_on .and. .not.mono_fill_arrow)     .or. \
+              (.not.fill_arrows_on .and. .not.mono_line_color)   .or. \
+              (gstyle.eq.1 .and. .not.mono_fill_arrow)  .or. \
+              (gstyle.eq.0 .or. gstyle.eq.3) .and. .not.mono_line_color) then
+;
+; There are no fill patterns in VectorPlot, only solids.
+;
+            mono_fill_pat = True
+            mono_fill_scl = True
+            mono_fill_col = False
+            getvalues new_plot
+              "vcLevels"      : levels
+              "vcLevelColors" : colors
+            end getvalues
+          else
+            panel_labelbar = False
+          end if
+        end if
       else
         if(new_plot@plot_type.eq."xy") then
           getvalues new_plot
@@ -3804,32 +3845,6 @@ begin
 ; If plot type is unknown or xy, then we can't get labelbar information.
 ;
     if(new_plot@plot_type.ne."unknown".and.new_plot@plot_type.ne."xy") then
-      if(new_plot@plot_type.eq."contour") then
-;
-; Get information on how contour plot is filled, so we can recreate 
-; labelbar.
-;
-        getvalues new_plot
-          "cnLevels"               : levels
-          "cnFillColors"           : colors
-          "cnFillPatterns"         : fill_patterns
-          "cnFillScales"           : fill_scales
-          "cnMonoFillPattern"      : mono_fill_pat
-          "cnMonoFillScale"        : mono_fill_scl
-          "cnMonoFillColor"        : mono_fill_col
-        end getvalues
-      else
-;
-; There are no fill patterns in VectorPlot, only solids.
-;
-        mono_fill_pat = True
-        mono_fill_scl = True
-        mono_fill_col = False
-        getvalues new_plot
-          "vcLevels"                 : levels
-          "vcLevelColors"            : colors
-        end getvalues
-      end if
 ;
 ; Set labelbar height, width, and font height.
 ;
