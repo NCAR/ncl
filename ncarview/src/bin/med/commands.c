@@ -1,5 +1,5 @@
 /*
- *	$Id: commands.c,v 1.11 1994-03-05 00:36:59 clyne Exp $
+ *	$Id: commands.c,v 1.12 1995-03-17 14:32:44 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -330,7 +330,7 @@ void	medLabel(med_data)
 	 * See CGM standard in regard to string data encoding
 	 */
 	(void) strcpy((char *) &e_instr.buf[1], c_data->file);
-	e_instr.class = DEL_ELEMENT;
+	e_instr.cgmclass = DEL_ELEMENT;
 	e_instr.id = BEG_PIC_ID;
 	e_instr.buf[0] = (unsigned char) strlen(c_data->file);
 	e_instr.data_length = strlen(c_data->file) + 1;
