@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.25 1996-04-14 03:07:36 haley Exp $
+#      $Id: yMakefile,v 1.26 1996-05-08 23:52:28 haley Exp $
 #
 #########################################################################
 #                                                                       #
@@ -21,7 +21,7 @@
 
 #define IHaveSubdirs
 
-SUBDIRS	= app basic contourplot labelbar legend mapplot \
+SUBDIRS	= app basic contourplot labelbar legend mapplot primitives \
 	streamlineplot textitem tickmark title vectorplot xyplot \
 	data
 
