@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.82 1995-03-27 17:33:28 haley Exp $
+#   $Id: ncargex.csh,v 1.83 1995-03-27 20:22:44 haley Exp $
 #
 
 if ($#argv < 1) goto usage
@@ -1011,8 +1011,8 @@ while ($#argv > 0)
 #                                             #
 #*********************************************#
         if ("$file_type" == "" || \
-           ($num == 2 && ($orient_type == "" && $color_type == "")) || \
-           ($num == 3 && ($orient_type == "" || $color_type == ""))) then
+           ($num == 2 && ("$orient_type" == "" && "$color_type" == "")) || \
+           ($num == 3 && ("$orient_type" == "" || "$color_type" == ""))) then
           set not_valid
           goto invalid
         endif
@@ -1083,7 +1083,7 @@ invalid:
     endsw
 end
 
-if ($names == "") goto usage
+if ("$names" == "") goto usage
 
 #***********************************************#
 #                                               #
@@ -1102,7 +1102,7 @@ endif
 #                                            #
 #********************************************#
 
-if ($X11_option == "-noX11" && "$ws_type" == "8") then
+if ("$X11_option" == "-noX11" && "$ws_type" == "8") then
     echo ""
     echo "Warning:  You cannot use the '-noX11' option if you are"
     echo "          running an interactive example.  I will turn"
@@ -1156,7 +1156,7 @@ foreach known ($list_fex $list_cex $list_cx11)
   endif
 end
 
-if ( $ex_type == "Unknown" ) then
+if ( "$ex_type" == "Unknown" ) then
   foreach known ($list_ftst $list_ctst)
     if ("$name" == "$known") then
       set ex_type= "Test"
@@ -1166,7 +1166,7 @@ if ( $ex_type == "Unknown" ) then
   end
 endif
 
-if ( $ex_type == "Unknown" ) then
+if ( "$ex_type" == "Unknown" ) then
   foreach known ($list_fttr $list_cttr)
     if ("$name" == "$known") then
       set ex_type="Tutorial"
@@ -1176,7 +1176,7 @@ if ( $ex_type == "Unknown" ) then
   end
 endif
 
-if ( $ex_type == "Unknown" ) then
+if ( "$ex_type" == "Unknown" ) then
   foreach known ($list_ffnd $list_cfnd $list_fx11)
     if ("$name" == "$known") then
       set ex_type="Fundamentals"
@@ -1186,7 +1186,7 @@ if ( $ex_type == "Unknown" ) then
   end
 endif
 
-if ( $ex_type == "Unknown" ) then
+if ( "$ex_type" == "Unknown" ) then
   foreach known ($list_ffnd $list_cfnd)
     if ("$name" == "$known") then
       set ex_type="Fundamentals"
@@ -1196,7 +1196,7 @@ if ( $ex_type == "Unknown" ) then
   end
 endif
 
-if ( $ex_type == "Unknown" ) then
+if ( "$ex_type" == "Unknown" ) then
   foreach known ($list_fpdc $list_cpdc)
     if ("$name" == "$known") then
       set ex_type= "Programmer"
@@ -1615,7 +1615,7 @@ if ($?CleanOption) /bin/rm $rmfiles >& /dev/null
 #************************#
 if ($?OneByOneOption) then
   if ( -f $graphic_file) then
-    if ($suffix == "ncgm") then
+    if ("$suffix" == "ncgm") then
       ctrans -d X11 -geometry 1142x865+10+0 $graphic_file
     else if ("$suffix" == "ps" || "$suffix" == "eps" || \
              "$suffix" == "epsi" ) then
