@@ -867,6 +867,8 @@ NhlErrorTypes linint2_points_W( void )
   if(type_yo != NCL_double) NclFree(tmp_yo);
   if(type_fi != NCL_double) NclFree(tmp_fi);
   NclFree(tmp_fo);
+  NclFree(xiw);
+  NclFree(fxiw);
 
   if(type_fi == NCL_double) {
 /*
