@@ -346,6 +346,7 @@ extern NhlErrorTypes pres_hybrid_ccm_W(void);
 extern NhlErrorTypes dpres_hybrid_W(void);
 extern NhlErrorTypes dpres_hybrid_ccm_W(void);
 extern NhlErrorTypes pres_sigma_W(void);
+extern NhlErrorTypes sigma2hybrid_W(void);
 extern NhlErrorTypes pslhyp_W(void);
 extern NhlErrorTypes pslec_W(void);
 extern NhlErrorTypes pslhor_W(void);
@@ -4451,6 +4452,23 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
     SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
     NclRegisterFunc(pres_sigma_W,args,"pres_sigma",nargs);
+
+/*
+ * Register "sigma2hybrid".
+ */
+    nargs = 0;
+    args = NewArgs(7);
+
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+
+    NclRegisterFunc(sigma2hybrid_W,args,"sigma2hybrid",nargs);
 
 /*
  * Register "pslhyp".
