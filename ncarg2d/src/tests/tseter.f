@@ -33,7 +33,7 @@ C
      +  'TSETER - RESULTING IERRO:             2' ,
      +  'TSETER - RESULTING JERRO:             2' ,
      +  ' ' ,
-     +  'TSETER - EXECUTE STATEMENT ''ERMSG=SEMESS()''' ,
+     +  'TSETER - EXECUTE STATEMENT ''ERMSG=SEMESS(0)''' ,
      +  'TSETER - RESULTING ERMSG:  ROUTINE_NAME_2 - ERROR_MESSAGE_2' ,
      +  'TSETER - (PRINTING ABOVE LINE ALSO TESTED ICLOEM)' ,
      +  ' ' ,
@@ -143,9 +143,9 @@ C Pick up and print the error message, as returned by the function
 C SEMESS.  This also tests proper functioning of the function ICLOEM.
 C
         PRINT * , ' '
-        PRINT * , 'TSETER - EXECUTE STATEMENT ''ERMSG=SEMESS()'''
+        PRINT * , 'TSETER - EXECUTE STATEMENT ''ERMSG=SEMESS(0)'''
 C
-        ERMSG=SEMESS()
+        ERMSG=SEMESS(0)
 C
         PRINT * , 'TSETER - RESULTING ERMSG:  ',ERMSG(1:ICLOEM(ERMSG))
         PRINT * , 'TSETER - (PRINTING ABOVE LINE ALSO TESTED ICLOEM)'
