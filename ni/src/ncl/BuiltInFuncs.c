@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.114 2000-01-28 20:46:14 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.115 2000-01-28 23:31:24 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -11627,6 +11627,104 @@ NhlErrorTypes _NclIprintFileVarSummary( void )
 	_NclPrintFileVarSummary(thefile,*var_string);
 
 }
+NhlErrorTypes _NclIAddFiles( void )
+{
+	NclStackEntry path;
+	NclStackEntry data;
+	NclStackEntry rw_status;
+	NclStackEntry out_data;
+	NclMultiDValData p_md = NULL;
+	NclMultiDValData rw_md = NULL;
+	NclFile file = NULL;
+	NclMultiDValData out_md = NULL;
+	char *rw;
+	int i;
+	int rw_v;
+	int *id = (int*)NclMalloc((unsigned)sizeof(int));
+	int dim_size = 1,one = 1;
+	obj *tmp_obj = NULL; 
+	NclList tmp_list;
+	
+/*
+* Guarenteed to be scalar string
+*/
+	path =  _NclGetArg(0,2,DONT_CARE);
+	rw_status = _NclGetArg(1,2,DONT_CARE);
+
+	if(path.kind == NclStk_VAR) {
+		if(path.u.data_var != NULL) {
+			p_md = _NclVarValueRead(path.u.data_var,NULL,NULL);
+		}
+	} else if(path.kind == NclStk_VAL) {
+		p_md = path.u.data_obj;
+	} else {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"addfile: incorrect type of object passed to addfile");
+		NclFree(id);
+		return(NhlFATAL);
+	}
+	if(rw_status.kind == NclStk_VAR) {
+		if(rw_status.u.data_var != NULL) {
+			rw_md = _NclVarValueRead(rw_status.u.data_var,NULL,NULL);
+		}
+	} else if(rw_status.kind == NclStk_VAL) {
+		rw_md = rw_status.u.data_obj;
+	} else {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"addfile: incorrect type of object passed to addfile");
+		NclFree(id);
+		return(NhlFATAL);
+	}
+	rw = NrmQuarkToString(*(NclQuark*)rw_md->multidval.val);
+	if((strrchr(rw,'c') != NULL)||(strrchr(rw,'C') != NULL)) {
+		rw_v = -1;
+	} else if((strrchr(rw,'w') == NULL)&&(strrchr(rw,'W') == NULL)) {
+		rw_v = 1;
+	} else {
+		rw_v = 0;
+	} 
+	tmp_list = (NclList)_NclListCreate(NULL,NULL,0,0,NCL_JOIN | NCL_FIFO);
+
+	*id = tmp_list->obj.id;
+	data.kind = NclStk_VAL;
+	data.u.data_obj = _NclMultiDVallistDataCreate(NULL,NULL,Ncl_MultiDVallistData,0,id,NULL,1,&one,TEMPORARY,NULL);
+        _NclListSetType((NclObj)tmp_list,NCL_FIFO);
+
+	for (i = p_md->multidval.totalelements-1;i>=0; i--) {
+
+		file = _NclCreateFile(NULL,NULL,Ncl_File,0,TEMPORARY,((NclQuark*)p_md->multidval.val)[i],rw_v);
+		if(file != NULL) {
+			id = (int*)NclMalloc((unsigned)sizeof(int));
+			*id = file->obj.id;
+			out_md = _NclMultiDValnclfileDataCreate(NULL,NULL,Ncl_MultiDValnclfileData,0,id,NULL,1,&dim_size,TEMPORARY,NULL);
+			if((out_md == NULL)|| (_NclListPush((NclObj)tmp_list,(NclObj)out_md) == NhlFATAL)) {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"An error occured opening %s, can't continue",NrmQuarkToString(((NclQuark*)p_md->multidval.val)[i]));	
+				return(NhlFATAL);	
+			}
+		} else {
+			tmp_obj =(obj*) NclMalloc(((NclTypeClass)nclTypeobjClass)->type_class.size);
+			*tmp_obj = ((NclTypeClass)nclTypeobjClass)->type_class.default_mis.objval;
+			out_md = _NclMultiDValnclfileDataCreate(
+					NULL,
+					NULL,
+					Ncl_MultiDValnclfileData,
+					0,
+					(void*)tmp_obj,
+					(void*)&((NclTypeClass)nclTypeobjClass)->type_class.default_mis,
+					1,
+					&dim_size,
+					TEMPORARY,
+					NULL);
+			if((out_md == NULL)|| (_NclListPush((NclObj)tmp_list,(NclObj)out_md) == NhlFATAL)) {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"An error occured opening %s, can't continue",NrmQuarkToString(((NclQuark*)p_md->multidval.val)[i]));	
+				return(NhlFATAL);	
+			}
+		}
+		file = NULL;
+		out_md = NULL;
+	}
+	_NclPlaceReturn(data);
+	return(NhlNOERROR);
+}
+
 #ifdef __cplusplus
 }
 #endif

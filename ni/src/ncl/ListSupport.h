@@ -1,5 +1,5 @@
 /*
- *      $Id: ListSupport.h,v 1.1 1999-11-12 18:36:39 ethan Exp $
+ *      $Id: ListSupport.h,v 1.2 2000-01-28 23:31:24 ethan Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -32,8 +32,6 @@ extern NhlErrorTypes _NclListPush(NclObj , NclObj );
 extern struct _NclObjRec* _NclListPop(NclObj );
 
 extern NhlErrorTypes _NclListSetType(NclObj , int );
-
-
 
 
 #endif /*_ListSupport_h */
