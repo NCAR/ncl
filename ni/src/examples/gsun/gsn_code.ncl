@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.53 2000-11-16 18:02:43 haley Exp $
+;      $Id: gsn_code.ncl,v 1.54 2001-01-13 02:17:31 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -52,6 +52,7 @@ undef("get_res_value_keep")
 undef("attsetvalues_check")
 undef("spread_colors")
 undef("check_for_irreg2loglin")
+undef("compute_ps_device_coords")
 undef("gsnp_turn_off_tickmarks")
 undef("gsnp_point_tickmarks_outward")
 undef("gsnp_uniform_tickmark_labels")
@@ -90,6 +91,7 @@ undef("gsn_streamline")
 undef("gsn_streamline_map")
 undef("gsn_add_text")
 undef("gsn_text")
+undef("gsn_text_ndc_return")
 undef("gsn_text_ndc")
 undef("gsn_draw_colormap")
 undef("gsn_vector")
@@ -695,6 +697,130 @@ procedure check_for_irreg2loglin(res:logical,xlinear:logical, \
                                  ylinear:logical,\
                                  xlog:logical,ylog:logical)
 begin
+
+; Function : compute_ps_device_coords                                  ;
+;                bb[4] : float                                         ;
+;               orient : string                                        ;
+;          paper_width : float                                         ;
+;         paper_height : float                                         ;
+;               margin : float                                         ;
+;                                                                      ;
+; This function computes the PostScript device coordinates needed to   ;
+; make a plot fill up the full page.                                   ;
+;                                                                      ;
+; bb     : bounding box that contains all graphical objects. It should ;
+;          be a float array with four values between 0 and 1.          ;
+;            (top,bottom,left,right)                                   ;
+;                                                                      ;
+; orient : orientation of paper. Can be "landscape", "portrait", or    ;
+;          "auto_orient"                                               ;
+;                                                                      ;
+; paper_width  : width of paper (in inches)                            ;
+; paper_height : height of paper (in inches)                           ;
+; margin       : margin to leave around plots (in inches)              ;
+;                                                                      ;
+;**********************************************************************;
+
+function compute_ps_device_coords(bb,orient,paper_width,paper_height,margin)
+local coords, top, bot, lft, rgt, dpi, dpi_pw, dpi_ph, dpi_margin
+begin
+;
+; Error checking.
+;
+  top = bb(0)
+  bot = bb(1)
+  lft = bb(2)
+  rgt = bb(3)
+
+  if(bot.lt.0.or.bot.gt.1.or.top.lt.0.or.top.gt.1.or. \
+     lft.lt.0.or.lft.gt.1.or.rgt.lt.0.or.rgt.gt.1)
+    print("compute_ps_device_coords: bounding box values must be between 0 and 1 inclusive")
+    return((/0,0,0,0/))
+  end if
+
+  if(bot.ge.top.or.lft.ge.rgt)
+    print("compute_ps_device_coords: bottom must be < top and left < right")
+    return((/0,0,0,0/))
+  end if
+;
+; Initialization
+;
+  dpi = 72       ; Dots per inch.
+  dpi_pw     = paper_width * dpi
+  dpi_ph     = paper_height * dpi
+  dpi_margin = margin * dpi
+
+;
+; Get paper height/width in dpi units
+;
+  pw = rgt - lft
+  ph = top - bot
+
+  lx = dpi_margin
+  ly = dpi_margin
+
+  ux = dpi_pw - dpi_margin
+  uy = dpi_ph - dpi_margin
+
+  dw = ux - lx
+  dh = uy - ly
+
+;
+; Determine orientation, and then calculate device coordinates based
+; on this.
+; 
+  lc_orient = orient
+  if(lc_orient.eq."portrait".or.lc_orient.eq."auto_orient".and. \
+      (ph / pw).ge.1.0)
+;
+; If plot is higher than it is wide, then default to portrait if
+; orientation is not specified.
+;
+    lc_orient = "portrait"
+
+    if (ph / pw .gt. dh / dw) then
+                                             ; paper height limits size
+      ndc2du = dh / ph
+    else
+      ndc2du = dw / pw
+    end if
+;
+; Compute device coordinates.
+;
+    lx = dpi_margin + 0.5 * ( dw - pw * ndc2du) - lft * ndc2du
+    ly = dpi_margin + 0.5 * ( dh - ph * ndc2du) - bot * ndc2du
+    ux = lx + ndc2du
+    uy = ly + ndc2du
+  else
+;
+; If plot is wider than it is high, then default to landscape if
+; orientation is not specified.
+;
+    lc_orient = "landscape"
+    if (pw / ph .gt. dh / dw) then
+                                             ; paper height limits size
+      ndc2du = dh / pw
+    else
+      ndc2du = dw / ph
+    end if
+
+;
+; Compute device coordinates.
+;
+    ly = dpi_margin + 0.5 * (dh - pw * ndc2du) - (1.0 - rgt) * ndc2du
+    lx = dpi_margin + 0.5 * (dw - ph * ndc2du) - bot * ndc2du
+    ux = lx + ndc2du
+    uy = ly + ndc2du
+  end if
+
+;
+; Return device coordinates and the orientation.
+;
+  coords = floattointeger((/lx,ly,ux,uy/))
+  coords@orientation = lc_orient
+  return(coords)
+end
+
   dy = scale * (top - vpy) ; Calculate distance from plot's top position
                            ; to its topmost annotation.
 ;
@@ -1906,6 +2032,7 @@ begin
     end do
   else
     if(ddims.ne.2)
+  panel_debug   = get_res_value(res,"gsnPanelDebug",False)
   panel_center = get_res_value(res,"gsnPanelCenter",True)
   panel_labelbar = get_res_value(res,"gsnPanelLabelBar",False)
   callframe      = get_res_value(res,"gsnFrame",True)
@@ -2215,6 +2342,11 @@ begin
           "vpHeightF" : old_vpheight
   do while(num_plots_left.gt.0)
     new_ncols = min((/num_plots_left,row_spec(nr)/))
+
+          print("plot #" + nplot + " x,y=" + xpos(nc) + "," + ypos(nr) + \
+                " width,height=" + scale*old_vpwidth + "," + scale*old_vpheight)
+    end if
+;
 ; Calculate new x positions.
 ;
     xpos = x_lft + xwsp + dx +(xsp/2.+new_total_width*ispan(0,new_ncols-1,1))
@@ -2248,6 +2380,7 @@ begin
               "txString"              : panel_strings(nplot)
 
         draw(pplot)  ; Draw the scaled down plot.
+
         if(added_anno) then
           NhlRemoveAnnotation(pplot,anno)
         end if
@@ -2375,7 +2508,6 @@ begin
                              (/bot,bot,top,top,bot/),gsres)
           "vpHeightF" : old_vp(i,3)
         end setvalues
-
       end if
     end do
   end if
@@ -2971,7 +3103,7 @@ function gsn_histogram(wks[1]:graphic,xdata:numeric,nbins[1]:integer, \
       npts = dimsizes(ndtooned(xdata))    ; Total number of points. 
     end if
 ;
-    set_attr(res2,"tiXAxisString","Number of bouys/bin")
+    set_attr(res2,"tiXAxisString","Number of buoys/bin")
     set_attr(res2,"tiYAxisString","Number of bins")
     set_attr(res2,"tmXTOn",False)
     set_attr(res2,"tmYROn",False)
@@ -3684,21 +3816,22 @@ begin
 end
 
 ;***********************************************************************;
-; Procedure : gsn_text_ndc                                              ;
+; Function : gsn_text_ndc_return                                        ;
 ;                   wks: workstation object                             ;
 ;                  text: array of text strings                          ;
 ;                     x: 1-dimensional array of x ndc positions         ;
 ;                     y: 1-dimensional array of y ndc positions         ;
 ;               resources: optional resources                           ;
 ;                                                                       ;
-; This procedure draws text strings on the workstation "wks" (the       ;
+; This function draws text strings on the workstation "wks" (the        ;
 ; variable returned from a previous call to "gsn_open_wks").  "x" and   ;
 ; "y" are the x and y locations of each text string, and should be      ;
 ; specified in NDC space. "resources" is an optional list of resources. ;
+; This function returns the text string created.                        ;
 ;***********************************************************************;
 
-procedure gsn_text_ndc(wks:graphic, text:string, x:numeric, \
-                       y:numeric, resources:logical )
+function gsn_text_ndc_return(wks:graphic, text:string, x:numeric, \
+                             y:numeric, resources:logical )
 local i, txid, plot_object, res, tx_res_index, x2, y2, res2, \
 calldraw, callframe
 begin
@@ -3729,6 +3862,21 @@ begin
     attsetvalues_check(txid,txres)            ; Set text resources.
 
     draw_and_frame(wks,txid,calldraw,callframe)
+    return(txid)
+end
+
+;***********************************************************************;
+; Procedure : gsn_text_ndc                                              ;
+;                                                                       ;
+; This procedure is the same as gsn_text, only it doesn't return        ;
+; anything.                                                             ;
+;***********************************************************************;
+
+procedure gsn_text_ndc(wks:graphic, text:string, x:numeric, \
+                       y:numeric, resources:logical )
+local txid
+begin
+    txid = gsn_text_ndc_return(wks,text,x,y,resources)
 end
 
 ;***********************************************************************;

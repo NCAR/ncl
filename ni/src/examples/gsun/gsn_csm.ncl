@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.54 2000-12-12 16:57:47 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.55 2001-01-13 02:17:32 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -1169,6 +1169,16 @@ begin
   lwscale   = (/0.75, 0.90, 1.00/)
   wh_ind    = ind(ratio.le.ratios)
   def_lvpwf = lwscale(wh_ind(0))    ; default width scale for labelbar
+
+;
+; Make sure the 0th contour (if it exists) really is "0" and not something
+; like "1.00001e-08".
+;
+  do n=0,dimsizes(levels)-1
+    if(fabs(levels(n)).le.1.e-5) then
+      levels(n) = 0.0
+    end if
+  end do
   if(lbar_orient.eq."vertical") then
     if(type.eq."polar")
       orth = get_res_value(res,"pmLabelBarOrthogonalPosF",0.05)

@@ -8,12 +8,12 @@ begin
   mpres@gsnFrame  = False
   
   mp0 = gsn_map(wks,"CylindricalEquidistant",mpres)
-  mp1 = mp0
-  mp2 = mp0
-  mp3 = mp0
+
+  mpres@mpCenterLonF = 180
+  mp1 = gsn_map(wks,"CylindricalEquidistant",mpres)
 
   res = True
-  gsn_panel_spec(wks,(/mp0,mp1/),(/2,1/),res)
+;  gsn_panel_save(wks,(/mp0,mp1/),(/2,1/),res)
   gsn_panel(wks,(/mp0,mp1/),(/2,1/),res)
-
+  output_gif((/mp0,mp1/),"output.gif",700,1)
 end
