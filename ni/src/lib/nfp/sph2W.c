@@ -2631,7 +2631,7 @@ NhlErrorTypes ilapsF_W( void )
   int ndims_zlap, dsizes_zlap[NCL_MAX_DIMENSIONS];
   int ndims_zlmbda, dsizes_zlmbda[NCL_MAX_DIMENSIONS];
   NclScalar missing_zlap, missing_zlmbda, missing_dzlap, missing_dzlmbda;
-  NclScalar missing_rzlap, missing_rzlmbda;
+  NclScalar missing_rzlap;
   NclBasicDataTypes type_zlap, type_zlmbda;
   int has_missing_zlap, has_missing_zlmbda;
 /*
@@ -2716,7 +2716,7 @@ NhlErrorTypes ilapsF_W( void )
   coerce_missing(type_zlap,has_missing_zlap,&missing_zlap,
                  &missing_dzlap,&missing_rzlap);
   coerce_missing(type_zlmbda,has_missing_zlmbda,&missing_zlmbda,
-                 &missing_dzlmbda,&missing_rzlmbda);
+                 &missing_dzlmbda,NULL);
 /*
  * Allocate space for temporary input and output. The temporary array
  * tmp_zlap is just big enough to hold a 2-dimensional subsection of the
@@ -2760,20 +2760,12 @@ NhlErrorTypes ilapsF_W( void )
     return(NhlFATAL);
   }
 /*
- * Set a missing value for the output if one of the input arrays has
- * a missing value.
+ * Set a missing value for the output if zlap has a missing value.
  */
-  if(has_missing_zlmbda) {
-    if(type_z == NCL_double) missing_z = missing_dzlmbda;
-    else                     missing_z = missing_rzlmbda;
-    missing_dz = missing_dzlmbda;
-  }
-  else {
-    if(has_missing_zlap) {
-      if(type_z == NCL_double) missing_z = missing_dzlap;
-      else                     missing_z = missing_rzlap;
-      missing_dz = missing_dzlap;
-    }
+  if(has_missing_zlap) {
+    if(type_z == NCL_double) missing_z = missing_dzlap;
+    else                     missing_z = missing_rzlap;
+    missing_dz = missing_dzlap;
   }
 
 /*
@@ -2876,8 +2868,10 @@ NhlErrorTypes ilapsF_W( void )
  * Set all elements of this 2D grid to a missing value, if a missing
  * value exists.
  */
-      set_subset_output_missing(z,index_zlap,type_z,nlatnlon,
-				missing_dz.doubleval);
+      if(has_missing_zlap) {
+        set_subset_output_missing(z,index_zlap,type_z,nlatnlon,
+                                  missing_dz.doubleval);
+      }
     }
     else {
 /*
@@ -3115,6 +3109,7 @@ NhlErrorTypes ilapsg_W( void )
       return(NhlFATAL);
     }
   } 
+
 /*
  * Allocate memory for work arrays.
  */
@@ -3215,8 +3210,8 @@ NhlErrorTypes ilapsg_W( void )
  * value exists.
  */
       if(has_missing_z) {
-	set_subset_output_missing(z,index_zlap,type_z,nlatnlon,
-				  missing_dz.doubleval);
+        set_subset_output_missing(z,index_zlap,type_z,nlatnlon,
+                                  missing_dz.doubleval);
       }
     }
     else {
@@ -3305,7 +3300,7 @@ NhlErrorTypes ilapsG_W( void )
   int ndims_zlap, dsizes_zlap[NCL_MAX_DIMENSIONS];
   int ndims_zlmbda, dsizes_zlmbda[NCL_MAX_DIMENSIONS];
   NclScalar missing_zlap, missing_zlmbda, missing_dzlap, missing_dzlmbda;
-  NclScalar missing_rzlap, missing_rzlmbda;
+  NclScalar missing_rzlap;
   NclBasicDataTypes type_zlap, type_zlmbda;
   int has_missing_zlap, has_missing_zlmbda;
 /*
@@ -3321,15 +3316,15 @@ NhlErrorTypes ilapsG_W( void )
  */
   int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2;
   int total_size_in, scalar_zlmbda;
-  int found_missing_zlap, found_missing_zlmbda;
   int nt, nlat, nlon, nlatnlon;
+  int found_missing_zlap, found_missing_zlmbda;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
   int index_zlap, nmiss;
   double scale;
 /*
  * Workspace variables
  */
-  int lwork1, lwork2, lwork3, ldwork, lshagc, lshsgc; 
+  int lwork1, lwork2, lwork3, ldwork, lshagc, lshsgc;
   double *work1, *work2, *work3, *wshagc, *wshsgc, *pertrb, *a, *b, *dwork;
 /*
  * Retrieve parameters
@@ -3390,7 +3385,7 @@ NhlErrorTypes ilapsG_W( void )
   coerce_missing(type_zlap,has_missing_zlap,&missing_zlap,
                  &missing_dzlap,&missing_rzlap);
   coerce_missing(type_zlmbda,has_missing_zlmbda,&missing_zlmbda,
-                 &missing_dzlmbda,&missing_rzlmbda);
+                 &missing_dzlmbda,NULL);
 /*
  * Allocate space for temporary input and output. The temporary array
  * tmp_zlap is just big enough to hold a 2-dimensional subsection of the
@@ -3434,20 +3429,12 @@ NhlErrorTypes ilapsG_W( void )
     return(NhlFATAL);
   }
 /*
- * Set a missing value for the output if one of the input arrays has
- * a missing value.
+ * Set a missing value for the output if zlap has a missing value.
  */
-  if(has_missing_zlmbda) {
-    if(type_z == NCL_double) missing_z = missing_dzlmbda;
-    else                     missing_z = missing_rzlmbda;
-    missing_dz = missing_dzlmbda;
-  }
-  else {
-    if(has_missing_zlap) {
-      if(type_z == NCL_double) missing_z = missing_dzlap;
-      else                     missing_z = missing_rzlap;
-      missing_dz = missing_dzlap;
-    }
+  if(has_missing_zlap) {
+    if(type_z == NCL_double) missing_z = missing_dzlap;
+    else                     missing_z = missing_rzlap;
+    missing_dz = missing_dzlap;
   }
 
 /*
@@ -3549,8 +3536,10 @@ NhlErrorTypes ilapsG_W( void )
  * Set all elements of this 2D grid to a missing value, if a missing
  * value exists.
  */
-      set_subset_output_missing(z,index_zlap,type_z,nlatnlon,
-				missing_dz.doubleval);
+      if(has_missing_zlap) {
+        set_subset_output_missing(z,index_zlap,type_z,nlatnlon,
+                                  missing_dz.doubleval);
+      }
     }
     else {
 /*
@@ -3626,7 +3615,6 @@ NhlErrorTypes ilapsG_W( void )
   else {
     return(NclReturnValue(z,ndims_zlap,dsizes_zlap,NULL,type_z,0));
   }
-
 }
 
 
