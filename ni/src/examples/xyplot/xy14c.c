@@ -1,5 +1,5 @@
 /*
-**      $Id: xy14c.c,v 1.1 1995-09-26 23:22:09 haley Exp $
+**      $Id: xy14c.c,v 1.2 1995-10-17 17:09:54 haley Exp $
 */
 /***********************************************************************
 *                                                                      *
@@ -111,8 +111,7 @@ main()
                   NhlDEFAULT_APP,srlist);
     }
 /*
- * Create X-axis values using the NCL "new" and "do" statements.
- * Convert data to Fahrenheit.
+ * Create X-axis values and convert data to Fahrenheit.
  */
     for( i = 0; i < NHOURS; i++ ) {
         x_array[i] = (float)i;
@@ -235,7 +234,7 @@ main()
  *
  * For each hourly temperature reading, plot the number of standard
  * deviations from the mean the reading represents.  (In NCL, note the
- * use of the NCL exponentiation operator (^) and the sqrt function.
+ * use of the NCL exponentiation operator (^) and the sqrt function.)
  */
     t_mean = 0.;
     for( i = 0; i < NHOURS; i++ )  t_mean = t_mean+(9./5.)*tr_data[0][i]+32.;
