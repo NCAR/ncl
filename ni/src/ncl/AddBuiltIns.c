@@ -1,6 +1,6 @@
 
 /*
- *      $Id: AddBuiltIns.c,v 1.65 2003-05-01 21:55:28 haley Exp $
+ *      $Id: AddBuiltIns.c,v 1.66 2003-05-20 22:09:52 grubin Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -46,6 +46,13 @@ extern NhlErrorTypes _NclIAddFiles(
 void
 #endif
 );
+
+extern NhlErrorTypes    _NclIFileIsPresent(
+# if    NhlNeedProto
+void
+# endif /* NhlNeedProto */
+);
+
 
 extern NhlErrorTypes    _NclIGetFileDimsizes(
 # if    NhlNeedProto
@@ -1704,6 +1711,12 @@ void _NclAddBuiltIns
     SetArgTemplate(args,nargs,"string",NclANY,NclANY); nargs++;
     SetArgTemplate(args,nargs,"string",1,dimsizes); nargs++;
     NclRegisterFunc(_NclIAddFiles,args,"addfilelist",nargs);
+
+    nargs = 0;
+    args = NewArgs(1);
+    dimsizes[0] = 1;
+    SetArgTemplate(args, nargs, "string", 1, dimsizes);  nargs++;
+    NclRegisterFunc( _NclIFileIsPresent, args, "isfilepresent", nargs);
 
     nargs = 0;
     args = NewArgs(1);

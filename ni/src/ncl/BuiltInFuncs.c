@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.158 2003-05-06 21:57:34 grubin Exp $
+ *      $Id: BuiltInFuncs.c,v 1.159 2003-05-20 22:09:52 grubin Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -12542,6 +12542,45 @@ NhlErrorTypes   _NclIVarIsUnlimited
 
     return NclReturnValue((void *) &isunlimited, 1, &dimsizes, NULL, NCL_logical, 1);
 }
+
+
+NhlErrorTypes   _NclIFileIsPresent
+# if    NhlNeedProto
+(void)
+# else
+()
+# endif
+{
+    string  *file;
+    const char  *fpath;
+    struct stat st;
+
+    NclScalar   missing;
+    int has_missing = 0;
+    int dimsizes = 1;
+
+    logical file_exists = 0;        /* file exists? */
+
+
+    file = (string *) NclGetArgValue(
+                0, 
+                1, 
+                NULL,
+                NULL,
+                &missing,
+                &has_missing,
+                NULL,
+                0);
+
+    fpath = _NGResolvePath(NrmQuarkToString(*file));
+    if (stat(fpath, &st) == -1)
+        file_exists == 0;
+    else
+        file_exists = 1;
+
+    return NclReturnValue((void *) &file_exists, 1, &dimsizes, NULL, NCL_logical, 1);
+}
+
 
 #ifdef __cplusplus
 }
