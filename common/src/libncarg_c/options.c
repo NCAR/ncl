@@ -1,5 +1,5 @@
 /*
- *	$Id: options.c,v 1.13 1992-04-24 20:43:23 clyne Exp $
+ *	$Id: options.c,v 1.14 1992-05-14 16:46:54 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -25,10 +25,15 @@
  *	as determined by the command line.
  */
 #include <stdio.h>
+
+#ifndef	ardent
 #include <stdlib.h>
+#endif
+
 #include <sys/types.h>
 #include <errno.h>
 #include <string.h>
+#include <ctype.h>
 #include <ncarv.h>
 #include "options.h"
 
