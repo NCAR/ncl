@@ -1,5 +1,5 @@
 /*
- *      $Id: ResList.h,v 1.2 1994-03-23 15:27:31 boote Exp $
+ *      $Id: ResList.h,v 1.3 1994-04-19 00:04:41 boote Exp $
  */
 /************************************************************************
 *									*
@@ -22,6 +22,7 @@
 #ifndef	_NResList_H
 #define	_NResList_H
 
+#define	NhlTRLType	"RLType"
 typedef enum NhlRLType_ { NhlSETRL, NhlGETRL } NhlRLType;
 
 extern int NhlRLCreate(

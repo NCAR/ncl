@@ -1,5 +1,5 @@
 /*
- *      $Id: ResList.c,v 1.4 1994-04-08 21:47:44 ethan Exp $
+ *      $Id: ResList.c,v 1.5 1994-04-19 00:04:39 boote Exp $
  */
 /************************************************************************
 *									*
@@ -36,6 +36,11 @@ static NrmQuark	expMDQ;
 static NrmQuark	expMDTypeQ;
 static NrmQuark	expQ;
 static NrmQuark	expTypeQ;
+static NrmQuark	charQ;
+static NrmQuark	shortQ;
+static NrmQuark	boolQ;
+static NrmQuark	doubleQ;
+static NrmQuark	pointerQ;
 
 /*
  * Function:	GetHead
@@ -469,13 +474,13 @@ void
 NhlRLUnSet
 #if	NhlNeedProto
 (
-	int	id,
-	char	*name
+	int		id,
+	NhlString	name
 )
 #else
 (id,name)
-	int	id;
-	char	*name;
+	int		id;
+	NhlString	name;
 #endif
 {
 	_NhlRLHead	*head;
@@ -528,13 +533,13 @@ NhlBoolean
 NhlRLIsSet
 #if	NhlNeedProto
 (
-	int	id,
-	char	*name
+	int		id,
+	NhlString	name
 )
 #else
 (id,name)
-	int	id;
-	char	*name;
+	int		id;
+	NhlString	name;
 #endif
 {
 	_NhlRLHead	*head;
@@ -591,12 +596,26 @@ NhlRLSet
 	_NhlArgVal	value;
 	NrmQuark	typeQ = NrmStringToQuark(type);
 
+	/*
+	 * default type is "long"
+	 */
 	VA_START(ap,type);
-	if(typeQ == floatQ)
+	if (typeQ == pointerQ)
+		value.ptrval = (NhlPointer)va_arg(ap,long);
+	else if(typeQ == charQ)
+		value.charval = (char)va_arg(ap,long);
+	else if(typeQ == shortQ)
+		value.shrtval = (short)va_arg(ap,long);
+	else if(typeQ == intQ)
+		value.intval = (int)va_arg(ap,long);
+	else if(typeQ == floatQ)
 		value.fltval = (float)va_arg(ap,double);
+	else if(typeQ == stringQ)
+		value.strval = (NhlString)va_arg(ap,long);
+	else if(typeQ == doubleQ)
+		value.dblval = va_arg(ap,double);
 	else
 		value.lngval = va_arg(ap,long);
-
 	va_end(ap);
 
 	if(_NhlRLInsert(id,NhlSETRL,NrmStringToQuark(name),typeQ,value,NULL))
@@ -1254,45 +1273,6 @@ NhlRLGetMDArray
 }
 
 /*
- * Function:	CopyToArg
- *
- * Description:	
- *
- * In Args:	
- *
- * Out Args:	
- *
- * Scope:	
- * Returns:	
- * Side Effect:	
- */
-static void
-CopyToArg
-#if	NhlNeedProto
-(
-	NhlPointer	src,
-	_NhlArgVal	*dst,
-	unsigned int	size
-)
-#else
-(src,dst,size)
-	NhlPointer	src;
-	_NhlArgVal	*dst;
-	unsigned int	size;
-#endif
-{ 
-    if      (size == sizeof(long)) dst->lngval = *(long*)src;
-    else if (size == sizeof(short)) dst->shrtval = *(short*)src;
-    else if (size == sizeof(NhlPointer)) dst->ptrval = *(NhlPointer*)src;
-    else if (size == sizeof(char))	dst->charval = *(char*)src;
-    else if (size == sizeof(char*))	dst->strval = *(char**)src;
-    else if (size == sizeof(_NhlArgVal)) *dst = *(_NhlArgVal*)src;
-    else
-        memcpy((NhlPointer)dst,(NhlPointer)&src,size);
-}
-
-
-/*
  * Function:	CvtGenToExpTypeMDArray
  *
  * Description:	This function is used to convert a "gen" array to an "exp"
@@ -1366,7 +1346,7 @@ CvtGenToExpTypeMDArray
 		fromdata = gen->data;
 
 		for(i=0;i < gen->num_elements;i++){
-			CopyToArg((NhlPointer)(fromdata + (gen->size * i)),
+			_NhlCopyToVal((NhlPointer)(fromdata + (gen->size * i)),
 						&fromval.data,gen->size);
 			fromval.size = gen->size;
 			toval.data.ptrval = (NhlPointer)
@@ -1845,7 +1825,7 @@ CvtGenToExpTypeArray
 		fromdata = gen->data;
 
 		for(i=0;i < gen->num_elements;i++){
-			CopyToArg((NhlPointer)(fromdata + (gen->size * i)),
+			_NhlCopyToVal((NhlPointer)(fromdata + (gen->size * i)),
 						&fromval.data,gen->size);
 			fromval.size = gen->size;
 			toval.data.ptrval = (NhlPointer)
@@ -2238,6 +2218,11 @@ _NhlInitRLList
 	floatQ = NrmStringToQuark(NhlTFloat);
 	intQ = NrmStringToQuark(NhlTInteger);
 	stringQ = NrmStringToQuark(NhlTString);
+	charQ = NrmStringToQuark(NhlTCharacter);
+	shortQ = NrmStringToQuark(NhlTShort);
+	boolQ = NrmStringToQuark(NhlTBoolean);
+	doubleQ = NrmStringToQuark(NhlTDouble);
+	pointerQ = NrmStringToQuark(NhlTPointer);
 	genQ = NrmStringToQuark(NhlTGenArray);
 	expMDQ = NrmStringToQuark(_NhlTExpMDArray);
 	expMDTypeQ = NrmStringToQuark(_NhlTExpMDTypeArray);

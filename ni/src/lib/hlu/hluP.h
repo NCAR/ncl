@@ -1,5 +1,5 @@
 /*
- *      $Id: hluP.h,v 1.13 1994-03-18 02:18:57 dbrown Exp $
+ *      $Id: hluP.h,v 1.14 1994-04-19 00:04:51 boote Exp $
  */
 /************************************************************************
 *									*
@@ -114,6 +114,12 @@ typedef void (*_NhlFreeFunc)(
 	NhlPointer	ptr
 #endif
 );
+
+typedef enum _NhlC_OR_F_{
+	_NhlCLIB,
+	_NhlFLIB,
+	_NhlFCLIB
+} _NhlC_OR_F;
 
 /*
  * type_ret, size_ret and free_func are for the get_values method to use - they
@@ -374,7 +380,7 @@ extern NhlErrorTypes _NhlSegDraw(
 
 extern void _NhlConvertersInitialize(
 #if	NhlNeedProto
-	void
+	_NhlC_OR_F	init_type
 #endif
 );
 
@@ -413,6 +419,14 @@ extern NhlBoolean _NhlArgIsSet(
         _NhlArgList 	/* args */,
         int    		/* num_args */,
         char* 	 	/*resource_name*/
+#endif
+);
+
+extern void _NhlCopyToVal(
+#if	NhlNeedProto
+	NhlPointer	src,
+	_NhlArgVal	*dst,
+	unsigned int	size
 #endif
 );
 

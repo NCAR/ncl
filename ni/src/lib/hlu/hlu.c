@@ -1,5 +1,5 @@
 /*
- *      $Id: hlu.c,v 1.11 1994-03-18 02:18:54 dbrown Exp $
+ *      $Id: hlu.c,v 1.12 1994-04-19 00:04:45 boote Exp $
  */
 /************************************************************************
 *									*
@@ -23,6 +23,7 @@
  */
 
 #include <ncarg/hlu/hluP.h>
+#include <ncarg/hlu/FortranP.h>
 #include <sys/types.h>
 #include <unistd.h>
 #include <pwd.h>
@@ -251,10 +252,12 @@ _NhlGetLayer
 	int	id;	/* The layer id of the requested layer	*/
 #endif
 {
-	if((id >= table_len) || (id < 0))
+	register int index = id - 1;
+
+	if((index >= table_len) || (index < 0))
 		return((NhlLayer)NULL);
 
-	return(LayerTable[id]);
+	return(LayerTable[index]);
 }
 
 /*
@@ -307,8 +310,8 @@ _NhlAddLayer
 		if(LayerTable[i] == (NhlLayer)NULL){
 			LayerTable[i] = l;
 			num_layers++;
-			l->base.id = i;
-			return(i);
+			l->base.id = i+1;
+			return(i+1);
 		}
 	}
 
@@ -343,6 +346,8 @@ _NhlRemoveLayer
 	NhlLayer	l;	/* The layer to remove from the table	*/
 #endif
 {
+	register int index;
+
 	if(l == (NhlLayer)NULL){
 		/*
 		 * ERROR - request to remove a null layer
@@ -352,7 +357,8 @@ _NhlRemoveLayer
 		return(NhlWARNING);
 	}
 
-	if(LayerTable[l->base.id] != l){
+	index = l->base.id-1;
+	if(LayerTable[index] != l){
 		/*
 		 * ERROR - layers id doesn't match internal table
 		 */
@@ -361,7 +367,7 @@ _NhlRemoveLayer
 		return(NhlWARNING);
 	}
 
-	LayerTable[l->base.id] = (NhlLayer)NULL;
+	LayerTable[index] = (NhlLayer)NULL;
 	num_layers--;
 
 	return(NhlNOERROR);
@@ -434,10 +440,10 @@ _NhlDestroyLayerTable
 
 	for(i=0;i < table_len && num_layers > 0;i++){
 		if(LayerTable[i] != NULL)
-			DestroyLayerTree(i);
+			DestroyLayerTree(i+1);
 		if(LayerTable[i] != NULL)
 			NhlPError(NhlWARNING,NhlEUNKNOWN,
-					"Unable to destroy layer %d ???",i);
+					"Unable to destroy layer %d ???",i+1);
 	}
 
 	if (num_layers > 0)
@@ -495,6 +501,45 @@ NhlName
 }
 
 /*
+ * Function:	nhl_fname
+ *
+ * Description:	Fortran callable function to return the name of an object.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	global
+ * Returns:	fills the "name" parameter with the name or " "'s
+ * Side Effect:	
+ */
+void
+_NHLCALLF(nhl_fname,NHL_FNAME)
+#if	__STDC__
+(
+	int		*id,
+	_NhlFString	name,
+	int		*name_len,
+	int		*err
+)
+#else
+(id,name,name_len,err)
+	int		*id;
+	_NhlFString	name;
+	int		*name_len;
+	int		*err;
+#endif
+{
+	Const char	*cstr;
+
+	cstr = NhlName(*id);
+
+	*err = _NhlCstrToFstr(name,*name_len,(NhlString)cstr);
+
+	return;
+}
+
+/*
  * Function:	NhlClassName
  *
  * Description: Returns class name of object
@@ -521,6 +566,45 @@ int pid;
 	NhlLayer	l = _NhlGetLayer(pid);
 
 	return(_NhlClassName(_NhlClass(l)));
+}
+
+/*
+ * Function:	nhl_fclassname
+ *
+ * Description:	Fortran callable function to return the classname of an object.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	global
+ * Returns:	fills the "name" parameter with the name or " "'s
+ * Side Effect:	
+ */
+void
+_NHLCALLF(nhl_fclassname,NHL_FCLASSNAME)
+#if	__STDC__
+(
+	int		*id,
+	_NhlFString	name,
+	int		*name_len,
+	int		*err
+)
+#else
+(id,name,name_len,err)
+	int		*id;
+	_NhlFString	name;
+	int		*name_len;
+	int		*err;
+#endif
+{
+	Const char	*cstr;
+
+	cstr = NhlClassName(*id);
+
+	*err = _NhlCstrToFstr(name,*name_len,(NhlString)cstr);
+
+	return;
 }
 
 /*
@@ -1503,7 +1587,7 @@ _NhlTmpFile
 	char *fname;
 	FILE *fp;
 
-	if ((fname = tempnam(GetNCARGPath("tmp"),NULL)) == NULL) {
+	if ((fname = tempnam((char *)GetNCARGPath("tmp"),NULL)) == NULL) {
 		e_text = "%s, error getting temporary file name";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return NULL;
@@ -1523,4 +1607,42 @@ _NhlTmpFile
 	NhlFree(fname);
 	
 	return fp;
+}
+
+/*
+ * Function:	_NhlCopyToVal
+ *
+ * Description:	copies the memory pointed to by "src" to an _NhlArgVal union.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+void
+_NhlCopyToVal
+#if	NhlNeedProto
+(
+	NhlPointer	src,
+	_NhlArgVal	*dst,
+	unsigned int	size
+)
+#else
+(src,dst,size)
+	NhlPointer	src;
+	_NhlArgVal	*dst;
+	unsigned int	size;
+#endif
+{ 
+    if      (size == sizeof(long)) dst->lngval = *(long*)src;
+    else if (size == sizeof(short)) dst->shrtval = *(short*)src;
+    else if (size == sizeof(NhlPointer)) dst->ptrval = *(NhlPointer*)src;
+    else if (size == sizeof(char))	dst->charval = *(char*)src;
+    else if (size == sizeof(char*))	dst->strval = *(char**)src;
+    else if (size == sizeof(_NhlArgVal)) *dst = *(_NhlArgVal*)src;
+    else
+        memcpy((NhlPointer)dst,(NhlPointer)&src,size);
 }

@@ -1,5 +1,5 @@
 /*
- *      $Id: hlu.h,v 1.13 1994-03-23 15:27:35 boote Exp $
+ *      $Id: hlu.h,v 1.14 1994-04-19 00:04:48 boote Exp $
  */
 /************************************************************************
 *									*
@@ -51,13 +51,15 @@
  *
  * Description:	This macro is used whenever a Fortran fuction is being called
  *		from C.  It is used to deal with different calling conventions.
+ *		It is also used when defining a function in C that will be
+ *		called from Fortran.
  */
 #ifndef	_NHLCALLF
-#if	defined(Cray2) || defined(Cray)
+#ifdef	UNICOS
 /* Brain dead cray's */
 #define	_NHLCALLF(reg,caps)	caps
 
-#elif	defined(RS6000) || defined(_HPUX_SOURCE)
+#elif	defined(AIX) || defined(HPUX)
 /* No munging of names - wow how unique */
 #define	_NHLCALLF(reg,caps)	reg
 
@@ -360,6 +362,16 @@ extern NhlErrorTypes NhlGetValues(
 #if	NhlNeedProto
 	int	pid,	/* id of object	*/
 	int	rlid	/* RL list id	*/
+#endif
+);
+
+/*
+ * Currently only access to "reparent" method.
+ */
+extern NhlErrorTypes NhlChangeWorkstation(
+#if	NhlNeedProto
+	int	plotid,		/* plotid to move to new workstation	*/
+	int	workid		/* workid of workstation		*/
 #endif
 );
 

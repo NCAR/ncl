@@ -1,5 +1,5 @@
 /*
- *      $Id: defs.h,v 1.5 1994-02-18 02:55:06 boote Exp $
+ *      $Id: defs.h,v 1.6 1994-04-19 00:04:43 boote Exp $
  */
 /************************************************************************
 *									*
@@ -77,7 +77,7 @@
 #define _NhlLAYERLISTINC	(128)
 
 /* usefull defines for specifying a layer has no parent */
-#define NhlNULL_LAYER	(-100)
+#define NhlNULL_LAYER	((int)(NULL))
 #define NhlNULL_PARENT	NhlNULL_LAYER
 #define NhlNOPARENT	NhlNULL_LAYER
 

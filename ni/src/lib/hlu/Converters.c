@@ -1,5 +1,5 @@
 /*
- *      $Id: Converters.c,v 1.8 1994-02-18 02:53:52 boote Exp $
+ *      $Id: Converters.c,v 1.9 1994-04-19 00:04:33 boote Exp $
  */
 /************************************************************************
 *									*
@@ -25,6 +25,8 @@
 #include <ctype.h>
 #include <stdlib.h>
 #include <ncarg/hlu/hluP.h>
+#include <ncarg/hlu/ConvertP.h>
+#include <ncarg/hlu/FortranP.h>
 #include <ncarg/hlu/NresDB.h>
 #include <ncarg/hlu/Converters.h>
 #include <math.h>
@@ -32,6 +34,10 @@
 #if	defined(SunOs) && (MAJOR == 4)
 #include <floatingpoint.h>
 #endif	/* sun hack- strtod should be in stdlib.h but it's not */
+
+static NrmQuark	floatQ;
+static NrmQuark	intQ;
+static NrmQuark	stringQ;
 
 /*
  * This macro is used because most of the converters end the same way.
@@ -150,7 +156,7 @@ NhlCvtFloatToString
 	int			nargs;	/* number of args	*/
 #endif
 {
-	static char	buff[_NhlMAXLINELEN];
+	char		buff[_NhlMAXLINELEN];
 	NhlString	tstring;
 	float		tfloat;
 	NhlErrorTypes ret = NhlNOERROR;
@@ -256,7 +262,7 @@ NhlCvtIntToString
 	int			nargs;	/* number of args	*/
 #endif
 {
-	static char	buff[_NhlMAXLINELEN];
+	char		buff[_NhlMAXLINELEN];
 	NhlString	tstring;
 	int		tint;
 	NhlErrorTypes ret = NhlNOERROR;
@@ -862,6 +868,182 @@ NhlCvtIntToFloat
 }
 
 /*
+ * Function:	NhlCvtGenToString
+ *
+ * Description:	This function is used to convert
+ *
+ * In Args:	NrmValue		*from	ptr to from data
+ *		NhlConvertArgList	args	add'n args for conversion
+ *		int			nargs	number of args
+ *		
+ *
+ * Out Args:	NrmValue		*to	ptr to to data
+ *
+ * Scope:	Global public
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+/*ARGSUSED*/
+static NhlErrorTypes
+NhlCvtGenToString
+#if	__STDC__
+(
+	NrmValue		*from,	/* ptr to from data		*/
+	NrmValue		*to,	/* ptr to to data		*/
+ 	NhlConvertArgList	args,	/* add'n args for conversion	*/
+	int			nargs	/* number of args		*/
+)
+#else
+(from,to,args,nargs)
+	NrmValue		*from;	/* ptr to from data		*/
+	NrmValue		*to;	/* ptr to to data		*/
+ 	NhlConvertArgList	args;	/* add'n args for conversion	*/
+	int			nargs;	/* number of args		*/
+#endif
+{
+	NhlString	tstring;
+	NhlGenArray	gen;
+	char		*name = "NhlCvtGenToString";
+	NhlErrorTypes	ret = NhlNOERROR;
+
+	if(nargs != 0){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+				"%s:Called with improper number of args",name);
+		to->size = 0;
+		return NhlFATAL;
+	}
+
+	gen = from->data.ptrval;
+
+	if((gen->typeQ != stringQ) && !_NhlConverterExists(gen->typeQ,stringQ)){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+				"%s:Unable to convert \"%s\" to \"%s\"",name,
+				NrmQuarkToString(gen->typeQ),NhlTString);
+		to->size = 0;
+		return NhlFATAL;
+	}
+
+	if(gen->num_elements != 1){
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+				"%s:Conversion loosing information",name);
+		ret = NhlWARNING;
+	}
+
+	if(gen->typeQ == stringQ)
+		tstring = *(NhlString*)gen->data;
+	else{
+		NrmValue	fromval,toval;
+		NhlErrorTypes	lret;
+
+
+		toval.data.ptrval = &stringQ;
+		toval.size = sizeof(NhlString);
+		_NhlCopyToVal((NhlPointer)gen->data,&fromval.data,gen->size);
+		fromval.size = gen->size;
+
+		lret = _NhlReConvertData(gen->typeQ,stringQ,&fromval,&toval);
+
+		if(lret < NhlWARNING){
+			NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+				"%s:Unable to convert \"%s\" to \"%s\"",name,
+				NrmQuarkToString(gen->typeQ),NhlTString));
+			return NhlFATAL;
+		}
+		ret = MIN(ret,lret);
+	}
+
+	SetVal(NhlString,sizeof(NhlString),tstring);
+}
+
+/*
+ * Function:	NhlCvtGenToInt
+ *
+ * Description:	This function is used to convert
+ *
+ * In Args:	NrmValue		*from	ptr to from data
+ *		NhlConvertArgList	args	add'n args for conversion
+ *		int			nargs	number of args
+ *		
+ *
+ * Out Args:	NrmValue		*to	ptr to to data
+ *
+ * Scope:	Global public
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+/*ARGSUSED*/
+static NhlErrorTypes
+NhlCvtGenToInt
+#if	__STDC__
+(
+	NrmValue		*from,	/* ptr to from data		*/
+	NrmValue		*to,	/* ptr to to data		*/
+ 	NhlConvertArgList	args,	/* add'n args for conversion	*/
+	int			nargs	/* number of args		*/
+)
+#else
+(from,to,args,nargs)
+	NrmValue		*from;	/* ptr to from data		*/
+	NrmValue		*to;	/* ptr to to data		*/
+ 	NhlConvertArgList	args;	/* add'n args for conversion	*/
+	int			nargs;	/* number of args		*/
+#endif
+{
+	int		tint;
+	NhlGenArray	gen;
+	char		*name = "NhlCvtGenToInt";
+	NhlErrorTypes	ret = NhlNOERROR;
+
+	if(nargs != 0){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+				"%s:Called with improper number of args",name);
+		to->size = 0;
+		return NhlFATAL;
+	}
+
+	gen = from->data.ptrval;
+
+	if((gen->typeQ != intQ) && !_NhlConverterExists(gen->typeQ,intQ)){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+				"%s:Unable to convert \"%s\" to \"%s\"",name,
+				NrmQuarkToString(gen->typeQ),NhlTInteger);
+		to->size = 0;
+		return NhlFATAL;
+	}
+
+	if(gen->num_elements != 1){
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+				"%s:Conversion loosing information",name);
+		ret = NhlWARNING;
+	}
+
+	if(gen->typeQ == intQ)
+		tint = *(int*)gen->data;
+	else{
+		NrmValue	fromval,toval;
+		NhlErrorTypes	lret;
+
+
+		toval.data.ptrval = &intQ;
+		toval.size = sizeof(int);
+		_NhlCopyToVal((NhlPointer)gen->data,&fromval.data,gen->size);
+		fromval.size = gen->size;
+
+		lret = _NhlReConvertData(gen->typeQ,intQ,&fromval,&toval);
+
+		if(lret < NhlWARNING){
+			NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+				"%s:Unable to convert \"%s\" to \"%s\"",name,
+				NrmQuarkToString(gen->typeQ),NhlTInteger));
+			return NhlFATAL;
+		}
+		ret = MIN(ret,lret);
+	}
+
+	SetVal(float,sizeof(int),tint);
+}
+
+/*
  * Function:	NhlCvtIntToGen
  *
  * Description:	This function is used to convert an int to a gen array.
@@ -989,6 +1171,94 @@ NhlCvtFloatToGen
 	newgen->my_data = False;	/* data belongs to convert context */
 
 	SetVal(NhlGenArray,sizeof(NhlGenArray),newgen);
+}
+
+/*
+ * Function:	NhlCvtGenToFloat
+ *
+ * Description:	This function is used to convert
+ *
+ * In Args:	NrmValue		*from	ptr to from data
+ *		NhlConvertArgList	args	add'n args for conversion
+ *		int			nargs	number of args
+ *		
+ *
+ * Out Args:	NrmValue		*to	ptr to to data
+ *
+ * Scope:	Global public
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+/*ARGSUSED*/
+static NhlErrorTypes
+NhlCvtGenToFloat
+#if	__STDC__
+(
+	NrmValue		*from,	/* ptr to from data		*/
+	NrmValue		*to,	/* ptr to to data		*/
+ 	NhlConvertArgList	args,	/* add'n args for conversion	*/
+	int			nargs	/* number of args		*/
+)
+#else
+(from,to,args,nargs)
+	NrmValue		*from;	/* ptr to from data		*/
+	NrmValue		*to;	/* ptr to to data		*/
+ 	NhlConvertArgList	args;	/* add'n args for conversion	*/
+	int			nargs;	/* number of args		*/
+#endif
+{
+	float		tfloat;
+	NhlGenArray	gen;
+	char		*name = "NhlCvtGenToFloat";
+	NhlErrorTypes	ret = NhlNOERROR;
+
+	if(nargs != 0){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+				"%s:Called with improper number of args",name);
+		to->size = 0;
+		return NhlFATAL;
+	}
+
+	gen = from->data.ptrval;
+
+	if((gen->typeQ != floatQ) && !_NhlConverterExists(gen->typeQ,floatQ)){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+				"%s:Unable to convert \"%s\" to \"%s\"",name,
+					NrmQuarkToString(gen->typeQ),NhlTFloat);
+		to->size = 0;
+		return NhlFATAL;
+	}
+
+	if(gen->num_elements != 1){
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+				"%s:Conversion loosing information",name);
+		ret = NhlWARNING;
+	}
+
+	if(gen->typeQ == floatQ)
+		tfloat = *(float*)gen->data;
+	else{
+		NrmValue	fromval,toval;
+		NhlErrorTypes	lret;
+
+
+		toval.data.ptrval = &tfloat;
+		toval.size = sizeof(float);
+		_NhlCopyToVal((NhlPointer)gen->data,&fromval.data,gen->size);
+		fromval.size = gen->size;
+
+		lret = _NhlReConvertData(gen->typeQ,floatQ,&fromval,&toval);
+
+		if(lret < NhlWARNING){
+			NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+				"%s:Unable to convert \"%s\" to \"%s\"",name,
+				NrmQuarkToString(gen->typeQ),NhlTFloat));
+			return NhlFATAL;
+		}
+		ret = MIN(ret,lret);
+	}
+
+	SetVal(float,sizeof(float),tfloat);
 }
 
 /*
@@ -1270,6 +1540,68 @@ NhlCvtEnumToFloat
 }
 
 /*
+ * Function:	NhlCvtEnumToFStr
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	static
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+/*ARGSUSED*/
+NhlErrorTypes
+NhlCvtEnumToFStr
+#if	NhlNeedProto
+(
+	NrmValue		*from,
+	NrmValue		*to,
+	NhlConvertArgList	args,
+	int			nargs
+)
+#else
+(from,to,args,nargs)
+	NrmValue		*from;
+	NrmValue		*to;
+	NhlConvertArgList	args;
+	int			nargs;
+#endif
+{
+	int			i;
+	NhlString		tstring = NULL;
+	_NhlFExportString	exp;
+
+	if(nargs < 1){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			"NhlCvtEnumToFStr:Called w/improper number of args");
+		to->size = 0;
+		return NhlFATAL;
+	}
+
+	for(i=0;i<nargs;i++){
+		if(from->data.intval == args[i].size){
+			tstring = args[i].data.strval;
+			break;
+		}
+	}
+
+	if(tstring == NULL){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+					"NhlCvtEnumToFStr: Invalid Enum \"%d\"",
+							from->data.intval);
+		to->size = 0;
+		return NhlFATAL;
+	}
+
+	exp = (_NhlFExportString)to->data.ptrval;
+
+	return _NhlCstrToFstr(exp->fstring,exp->strlen,tstring);
+}
+
+/*
  * Function:	_NhlConvertersInitialize
  *
  * Description:	This function is used to initialize the Quark's that will be
@@ -1283,14 +1615,16 @@ NhlCvtEnumToFloat
  * Returns:	void
  * Side Effect:	
  */
+/*ARGSUSED*/
 void
 _NhlConvertersInitialize
 #if	__STDC__
 (
-	void
+	_NhlC_OR_F	init_type
 )
 #else
-()
+(init_type)
+	_NhlC_OR_F	init_type;
 #endif
 {
 	NhlConvertArg	BoolEnumList[] = {
@@ -1406,6 +1740,10 @@ _NhlConvertersInitialize
 			{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)37}
 			};
 
+	floatQ = NrmStringToQuark(NhlTFloat);
+	intQ = NrmStringToQuark(NhlTInteger);
+	stringQ = NrmStringToQuark(NhlTString);
+
 	(void)NhlRegisterConverter(NhlTString,NhlTFloat,NhlCvtStringToFloat,
 							NULL,0,False,NULL);
 	(void)NhlRegisterConverter(NhlTFloat,NhlTString,NhlCvtFloatToString,
@@ -1450,5 +1788,18 @@ _NhlConvertersInitialize
 							NULL,0,False,NULL);
 	(void)NhlRegisterConverter(NhlTFloat,NhlTGenArray,NhlCvtFloatToGen,
 							NULL,0,False,NULL);
+
+	(void)NhlRegisterConverter(NhlTGenArray,NhlTInteger,NhlCvtGenToInt,
+							NULL,0,False,NULL);
+	(void)NhlRegisterConverter(NhlTGenArray,NhlTFloat,NhlCvtGenToFloat,
+							NULL,0,False,NULL);
+	(void)NhlRegisterConverter(NhlTGenArray,NhlTString,NhlCvtGenToString,
+							NULL,0,False,NULL);
+
+	(void)NhlRegisterConverter(NhlTBoolean,_NhlTFExpString,NhlCvtEnumToFStr,
+			BoolEnumList,NhlNumber(BoolEnumList),False,NULL);
+	(void)NhlRegisterConverter(NhlTFont,_NhlTFExpString,NhlCvtEnumToFStr,
+			FontEnumList,NhlNumber(FontEnumList),False,NULL);
+
 	return;
 }
