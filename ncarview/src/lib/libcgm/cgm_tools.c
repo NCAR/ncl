@@ -1,5 +1,5 @@
 /*
- *	$Id: cgm_tools.c,v 1.30 2002-08-20 18:33:38 akash Exp $
+ *	$Id: cgm_tools.c,v 1.31 2003-12-09 17:04:12 grubin Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -14,7 +14,7 @@
 * General Public License for more details.                              *
 *                                                                       *
 * You should have received a copy of the GNU General Public License     *
-* along with this software; if not, write to the Free Software         *
+* along with this software; if not, write to the Free Software          *
 * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307   *
 * USA.                                                                  *
 *                                                                       *
@@ -48,6 +48,7 @@
  *				if data was slow coming
  * rev 1.02 clyne 4/24/90	: CGM_putInstr produced extra begin meta bits
  * rev 1.03 clyne 6/1/90	: Added memory file capability
+ * rev 1.04 grubin 10/2004	: changed sys/file.h to sys/filio.h for FreeBSD
  */
 #include	<stdio.h>
 #include	<stdlib.h>
@@ -56,7 +57,11 @@
 #include	<fcntl.h>
 #include	<unistd.h>
 #include	<sys/types.h>
+#ifdef	FreeBSD
+#include	<sys/filio.h>
+#else
 #include	<sys/file.h>
+#endif	/* FreeBSD */
 #include	<ncarg/c.h>
 #include	"cgm_tools.h"
 #include	"cgmdef.h"

@@ -1,5 +1,5 @@
 /*
- *	$Id: in.c,v 1.14 2000-08-22 15:11:49 haley Exp $
+ *	$Id: in.c,v 1.15 2003-12-09 17:04:24 grubin Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -14,7 +14,7 @@
 * General Public License for more details.                              *
 *                                                                       *
 * You should have received a copy of the GNU General Public License     *
-* along with this software; if not, write to the Free Software         *
+* along with this software; if not, write to the Free Software          *
 * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307   *
 * USA.                                                                  *
 *                                                                       *
@@ -33,7 +33,11 @@
 
 #include	<stdio.h>
 #include	<sys/types.h>
+#ifdef	FreeBSD
+#include	<sys/filio.h>
+#else
 #include	<sys/file.h>
+#endif	/* FreeBSD */
 #include	<errno.h>
 #include	<ncarg/cgm_tools.h>
 #include	"in.h"
