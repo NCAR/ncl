@@ -1,5 +1,5 @@
 C
-C $Id: cptrev.f,v 1.6 1995-04-26 22:45:16 kennison Exp $
+C $Id: cptrev.f,v 1.7 1995-05-16 17:34:28 kennison Exp $
 C
       SUBROUTINE CPTREV (ZDAT,RWRK,IWRK,IJMP,IAIC,IRW1,IRW2,NRWK)
 C
@@ -325,6 +325,10 @@ C
 C
         GO TO 10030
 10031   CONTINUE
+C
+C Note: At this point, if NPLS is 1, and the call was from CPCLAM,
+C control need not return there, because CPTROE is not going to be
+C called.  (This is different from the situation in CPTRVE.)
 C
         IF (.NOT.(NPLS.GT.1)) GO TO 10038
           IJMP=1

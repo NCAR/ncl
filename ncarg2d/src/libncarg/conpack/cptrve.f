@@ -1,5 +1,5 @@
 C
-C $Id: cptrve.f,v 1.6 1995-04-26 22:45:18 kennison Exp $
+C $Id: cptrve.f,v 1.7 1995-05-16 17:34:30 kennison Exp $
 C
       SUBROUTINE CPTRVE (ZDAT,RWRK,IWRK,IJMP,IAIC,IRW1,IRW2,NRWK)
 C
@@ -355,7 +355,12 @@ C
         GO TO 10030
 10031   CONTINUE
 C
-        IF (.NOT.(NPLS.GT.1)) GO TO 10038
+C Note: At this point, if NPLS is 1, and the call was from CPCLAM,
+C control has to return there so that so that CPTROE can properly
+C do its thing.  If the call came from somewhere else, there should
+C be no problem - it's just a little inefficient.
+C
+        IF (.NOT.(NPLS.NE.0)) GO TO 10038
           IJMP=1
           IRW1=IR01
           IRW2=IR01+MPLS
