@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.105 1997-06-19 17:45:37 kennison Exp $
+#   $Id: ncargex.csh,v 1.106 1997-06-25 17:27:40 haley Exp $
 #
 
 if ($#argv < 1) goto usage
@@ -665,7 +665,7 @@ set list_ftst = ($areas_ftst $autograph_ftst $colconv_ftst $conpack_ftst \
                 $surface_ftst $tdpack_ftst $threed_ftst)
 
 set list_ctst = ($areas_ctst $dashpack_ctst $gflash_ctst $gridall_ctst \
-                $histogram_ctst $isosurface_ctst $tdpack_ctst)
+                $histogram_ctst $isosurface_ctst)
 
 set list_fttr = ($areas_fttr $conpack_fttr $ezmap_fttr $class_fttr)
 
