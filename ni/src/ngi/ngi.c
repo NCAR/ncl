@@ -1,5 +1,5 @@
 /*
- *      $Id: ngi.c,v 1.6 1997-07-02 15:27:43 boote Exp $
+ *      $Id: ngi.c,v 1.7 1997-09-04 16:57:34 boote Exp $
  */
 /************************************************************************
 *									*
@@ -32,6 +32,7 @@
 #include <ncarg/ngo/nclstate.h>
 #include <ncarg/ngo/mwin.h>
 #include <ncarg/ngo/ncledit.h>
+#include <ncarg/ngo/browse.h>
 
 static NhlString resdb[] = {
 #ifndef	DEBUG
@@ -58,7 +59,7 @@ main
 	char	**argv;
 #endif
 {
-	int		appid,nxapp,ncl,ne,mn;
+	int		appid,nxapp,ncl,ne,browse,mn;
 
 	NhlInitialize();
 
@@ -93,8 +94,11 @@ main
 	 * sure one is created immediately, so it records all ncl
 	 * commands that happen.
 	 */
-	NgGOCreateWindow(NgAppGetNclEditor(nxapp,False));
+	NhlVACreate(&ne,"ncledit",NgnclEditClass,appid,NULL);
+	NgGOCreateWindow(ne);
 
+	NhlVACreate(&browse,"browse",NgbrowseClass,appid,NULL);
+	NgGOCreateWindow(browse);
 
 	/*
 	 * Now create the main window object.

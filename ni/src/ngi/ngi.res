@@ -1,5 +1,5 @@
 !
-!      $Id: ngi.res,v 1.10 1997-07-02 15:27:44 boote Exp $
+!      $Id: ngi.res,v 1.11 1997-09-04 16:57:35 boote Exp $
 !
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !									!
@@ -72,6 +72,21 @@ NgNGO*troughColor:	#a2a2a2
 NgNGO*armColor:		#a2a2a2
 NgNGO*selectColor:	#a2a2a2
 
+! XmL widget color resources
+NgNGO*blankBackground:	#b2b2b2
+NgNGO*inactiveBackground:	#b2b2b2
+NgNGO*inactiveForeground:	black
+NgNGO*selectBackground:		black
+NgNGO*selectForeground:		#b2b2b2
+NgNGO*cellBackground:		#b2b2b2
+NgNGO*cellBottomBorderColor:	#656565
+NgNGO*cellForeground:		black
+NgNGO*cellLeftBorderColor:	#e1e1e1
+NgNGO*cellRightBorderColor:	#656565
+NgNGO*cellTopBorderColor:	#e1e1e1
+NgNGO*connectingLineColor:	black
+NgNGO*plusMinusColor:		black
+
 NgNGO*XmList.background:	#bfbfbf
 NgNGO*XmText.background:	#bfbfbf
 
@@ -120,8 +135,10 @@ NgNGO*globalTranslations:	\
 		 Alt ~Ctrl<Key>L:	loadScript()		\n\
 		Meta ~Ctrl<Key>N:	nclWindow()		\n\
 		 Alt ~Ctrl<Key>N:	nclWindow()		\n\
-		Meta ~Ctrl<Key>D:	browseWindow()		\n\
-		 Alt ~Ctrl<Key>D:	browseWindow()
+		Ctrl ~Alt<Key>N:	nclWindow("new")	\n\
+		Meta ~Ctrl<Key>B:	browseWindow()		\n\
+		 Alt ~Ctrl<Key>B:	browseWindow()		\n\
+		Ctrl ~Alt<Key>B:	browseWindow("new")
 !
 ! Menubar strings
 !
@@ -147,6 +164,14 @@ NgNGO*globalTranslations:	\
 *menubar.help.mnemonic:			H
 *menubar.help.sensitive:		False
 
+*fmenu.nclWindow.labelString:		New Ncl Editor
+*fmenu.nclWindow.mnemonic:		N
+*fmenu.nclWindow.acceleratorText:	Ctrl+N
+
+*fmenu.browseWindow.labelString:	New Browser
+*fmenu.browseWindow.mnemonic:		B
+*fmenu.browseWindow.acceleratorText:	Ctrl+B
+
 *fmenu.addFile.labelString:		Add File
 *fmenu.addFile.mnemonic:		A
 *fmenu.addFile.acceleratorText:		Alt+A
@@ -162,13 +187,6 @@ NgNGO*globalTranslations:	\
 *fmenu.quitApplication.labelString:	Exit
 *fmenu.quitApplication.mnemonic:	x
 *fmenu.quitApplication.acceleratorText:	Alt+Q
-
-*wmenu.nclWindow.labelString:		Ncl Editor
-*wmenu.nclWindow.mnemonic:		N
-*wmenu.nclWindow.acceleratorText:	Alt+N
-*wmenu.browseWindow.labelString:	Data Browser
-*wmenu.browseWindow.mnemonic:		D
-*wmenu.browseWindow.acceleratorText:	Alt+D
 
 !
 ! menubar geometry
@@ -422,7 +440,7 @@ addfile*Start_Stop.translations: #override \
 ! for development
 !addfile*directory:     /traver/dev/IRIS_IRIX_6_2_/lib/ncarg/data/cdf
 !addfile*directory:     /fs/scd/home1/dbrown/src/data
-addfile*directory:     /fs/scd/home1/ncargd/dev/IRIS_IRIX_6_2_/lib/ncarg/data/cdf/
+!addfile*directory:     /fs/scd/home1/ncargd/dev/IRIS_IRIX_6_2_/lib/ncarg/data/cdf/
 
 !*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!
 
