@@ -1,5 +1,5 @@
 C
-C $Id: ConvertMapData.f,v 1.5 2002-04-14 03:16:21 kennison Exp $
+C $Id: ConvertMapData.f,v 1.6 2002-04-14 03:17:01 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -20,7 +20,7 @@ C along with this software; if not, write to the Free Software
 C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 C USA.
 C
-      PROGRAM CONVERT
+      PROGRAM CONVRT
 C
 C This program reads data from the ASCII file "ezmapdat" and writes
 C four outline datasets for use by EZMAP.
