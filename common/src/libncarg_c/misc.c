@@ -1,5 +1,5 @@
 /*
- *	$Id: misc.c,v 1.7 2000-08-22 04:03:32 haley Exp $
+ *	$Id: misc.c,v 1.8 2002-04-16 22:32:36 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -32,10 +32,8 @@
 
 #include	<ctype.h>
 #include 	<stdlib.h>
+#include 	<errno.h>
 #include	"c.h"
-
-extern int	errno;
-
 
 /*
  * isint
