@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.5 1995-06-30 23:33:02 kennison Exp $
+#	$Id: yMakefile,v 1.6 1995-07-01 01:00:15 kennison Exp $
 #
 
 DBFILES = EzmapAreaInfo.CO EzmapAreaInfo.PO EzmapAreaInfo.PS EzmapAreaInfo.US \
@@ -7,11 +7,18 @@ DBFILES = EzmapAreaInfo.CO EzmapAreaInfo.PO EzmapAreaInfo.PS EzmapAreaInfo.US \
 	  ezmap_area_ids
 
 InstallTarget($(DBFILES),$(INSTALL_DB),$(DBPATH))
-FNotInstalledTarget(ConvertMapData,ConvertMapData.o)
+
+CleanFilesTarget(ConvertMapData)
+CleanFilesTarget(ConvertMapData.o)
+CleanFilesTarget(rwchinfl.o)
+
 CleanFilesTarget(EzmapOutlines.CO)
 CleanFilesTarget(EzmapOutlines.PO)
 CleanFilesTarget(EzmapOutlines.PS)
 CleanFilesTarget(EzmapOutlines.US)
+
+ConvertMapData: ConvertMapData.o rwchinfl.o
+	$(F77) -o ConvertMapData ConvertMapData.o rwchinfl.o
 
 EzmapOutlines.CO: ezmapdat ConvertMapData
 	-@$(RM) EzmapOutlines.CO
