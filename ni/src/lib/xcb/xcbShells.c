@@ -1,5 +1,5 @@
 /*
- *      $Id: xcbShells.c,v 1.4 1998-09-18 23:21:53 boote Exp $
+ *      $Id: xcbShells.c,v 1.5 1998-11-06 00:51:20 boote Exp $
  */
 /************************************************************************
 *									*
@@ -9,7 +9,7 @@
 *									*
 ************************************************************************/
 /*
- *	File:		appS.c
+ *	File:		xcbShells.c
  *
  *	Author:		Jeff W. Boote
  *			National Center for Atmospheric Research
@@ -22,7 +22,7 @@
 #include <X11/Intrinsic.h>
 #include <Xcb/appSP.h>
 
-#define XcbShellIndex (-1)
+#define XcbShellIndex (ApplicationShellIndex + 1)
 static XmPartResource raw_resources[] = {
 	/*
 	 * Over-ride default values of these resources. (Move them to
@@ -500,6 +500,11 @@ XcbApplicationShellClassInitialize(
 );
 
 static void
+XcbApplicationShellClassPartInitialize(
+	WidgetClass	wc
+);
+
+static void
 XcbApplicationShellInitialize(
 	Widget		req,
 	Widget		new,
@@ -528,7 +533,7 @@ XcbApplicationShellClassRec xcbApplicationShellClassRec = {
 /* class_name		*/	"XcbApplicationShell",
 /* widget_size		*/	sizeof(XcbShellPart),
 /* class_initialize	*/	XcbApplicationShellClassInitialize,
-/* class_part_initialize*/	NULL,
+/* class_part_initialize*/	XcbApplicationShellClassPartInitialize,
 /* class_inited		*/	FALSE,
 /* initialize		*/	XcbApplicationShellInitialize,
 /* initialize_hook	*/	NULL,
@@ -606,6 +611,14 @@ XcbApplicationShellClassInitialize(
 		app_resources);
 
 	return;
+}
+
+static void
+XcbApplicationShellClassPartInitialize(
+	WidgetClass	wc
+)
+{
+	_XmFastSubclassInit(wc,XmFIRST_APPLICATION_SUBCLASS_BIT+1);
 }
 
 static void

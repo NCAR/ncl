@@ -1,5 +1,5 @@
 /*
- *      $Id: xcb.c,v 1.7 1998-09-18 23:21:53 boote Exp $
+ *      $Id: xcb.c,v 1.8 1998-11-06 00:51:19 boote Exp $
  */
 /************************************************************************
 *									*
@@ -567,11 +567,14 @@ _XcbFindNullRefNode(
 
 		for(i=0;i<xcb->visinfo->colormap_size;i++){
 			while(sorti<xcb->ncsort){
-				node = xcb->csort[sorti++];
-				if(node->xcol.pixel < i)
+				node = xcb->csort[sorti];
+				if(node->xcol.pixel < i){
+					sorti++;
 					continue;
+				}
 				if(node->xcol.pixel > i)
 					break;
+				sorti++;
 				goto NEXTINDEX;
 			}
 
@@ -587,12 +590,15 @@ _XcbFindNullRefNode(
 		if(xcb->parent){
 			found=False;
 			while(psorti<xcb->parent->ncsort){
-				node = xcb->parent->csort[psorti++];
-				if(node->xcol.pixel < bpix)
+				node = xcb->parent->csort[psorti];
+				if(node->xcol.pixel < bpix){
+					psorti++;
 					continue;
+				}
 				if(node->xcol.pixel > bpix)
 					break;
 				found=True;
+				psorti++;
 				bpref = node->ref;
 				break;
 			}
@@ -606,11 +612,14 @@ _XcbFindNullRefNode(
 				for(i=bpix+1;i<xcb->visinfo->colormap_size;i++){
 					found = False;
 					while(sorti<xcb->ncsort){
-						node = xcb->csort[sorti++];
-						if(node->xcol.pixel < i)
+						node = xcb->csort[sorti];
+						if(node->xcol.pixel < i){
+							sorti++;
 							continue;
+						}
 						if(node->xcol.pixel > i)
 							break;
+						sorti++;
 						found = True;
 						break;
 					}
@@ -620,11 +629,14 @@ _XcbFindNullRefNode(
 					npix = i;
 					found = False;
 					while(psorti<xcb->parent->ncsort){
-						node = xcb->parent->csort[psorti++];
-						if(node->xcol.pixel < npix)
+						node = xcb->parent->csort[psorti];
+						if(node->xcol.pixel < npix){
+							psorti++;
 							continue;
+						}
 						if(node->xcol.pixel > npix)
 							break;
+						psorti++;
 						found=True;
 						if(node->ref < bpref){
 							bpref = node->ref;
@@ -632,8 +644,10 @@ _XcbFindNullRefNode(
 						}
 						break;
 					}
-					if(!found)
+					if(!found){
+						bpix = npix;
 						break;
+					}
 				}
 			}
 		}
@@ -1876,22 +1890,20 @@ XmDONE:
 	return xcb;
 }
 
-static int
+static void
 FreePixmapNode(
 	Xcb		xcb,
 	_XcbPixmapCache	node
 )
 {
-	int	status;
-
 	XcbFreeColors(xcb,node->pixels,node->npixels);
 
 	if(node->pixels != node->loc_pixels)
 		XFree(node->pixels);
-	status = XFreePixmap(xcb->dpy,node->pixmap);
+	(void)XFreePixmap(xcb->dpy,node->pixmap);
 	XFree(node);
 
-	return status;
+	return;
 }
 
 static void
@@ -3329,7 +3341,7 @@ XcbGetDepth(
  * that it will break things, if the pixmap was not allocated through
  * Xcb...)
  */
-extern int
+extern void
 XcbFreePixmap(
 	Xcb	xcb,
 	Pixmap	pixmap
@@ -3339,7 +3351,7 @@ XcbFreePixmap(
 	_XcbPixmapCache	node;
 
 	if(!xcb)
-		return 0;
+		return;
 
 	pmptr = &xcb->pixmaps;
 
@@ -3347,12 +3359,15 @@ XcbFreePixmap(
 		if((*pmptr)->pixmap == pixmap){
 			node = (*pmptr);
 			*pmptr = node->next;
-			return FreePixmapNode(xcb,node);
+			FreePixmapNode(xcb,node);
+			return;
 		}
 		pmptr = &(*pmptr)->next;
 	}
 
-	return XFreePixmap(xcb->dpy,pixmap);
+	(void)XFreePixmap(xcb->dpy,pixmap);
+
+	return;
 }
 
 static int

@@ -1,5 +1,5 @@
 /*
- *      $Id: xcb.h,v 1.2 1998-01-29 16:10:04 boote Exp $
+ *      $Id: xcb.h,v 1.3 1998-11-06 00:51:19 boote Exp $
  */
 /************************************************************************
 *									*
@@ -277,9 +277,8 @@ XcbXpmCreatePixmapFromXpmImage(
 
 /*
  * Free's colors associated with pixmap as well as pixmap.
- * (returns int status - same as XFreePixmap)
  */
-extern int
+extern void
 XcbFreePixmap(
 	Xcb	xcb,
 	Pixmap	pixmap
