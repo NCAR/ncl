@@ -1,0 +1,20 @@
+#
+#       $Id: yMakefile,v 1.1 1997-07-16 19:54:37 kennison Exp $
+#
+
+MAN = tdclrs tddtri tdgeti tdgetr tdgrds tdgrid tdgtrs tdinit tditri \
+      tdlbla tdlbls tdline tdlnpa tdmtri tdotri tdpack tdpara tdplch \
+      tdprpa tdprpi tdprpt tdseti tdsetr tdsort tdstri tdstrs tdpack_params
+
+# Install preformatted troff documents on systems without troff
+#if UseCatDirs
+FORMAT_EXT	= .p
+#else
+FORMAT_EXT	= .m
+#endif
+
+MPATH	= $(MAN3PATH)
+MSECT	= $(MAN3_SECTION)
+
+InstallManPages($(MAN),$(FORMAT_EXT),$(MPATH),$(MSECT))
+FormatManPages($(MAN),.m,.p)
