@@ -1,5 +1,5 @@
 /*
- *	$Id: ictrans_wks.c.sed,v 1.6 1992-09-01 23:44:06 clyne Exp $
+ *	$Id: ictrans_wks.c.sed,v 1.7 1993-02-02 21:54:09 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -547,4 +547,22 @@ lstwks_(unit, status)
 			return;
 		}
 	}
+}
+
+flswks_(unit, status)
+	int	*unit;
+	int	*status;
+{
+	int	rc;
+
+	/* Make sure the requested unit is valid. */
+
+	if (*unit >= MAX_UNITS || mftab[*unit].fd == MF_CLOSED)
+	{
+		(void) fprintf(stderr, "Invalid unit (%d)\n", *unit);
+		*status = 304;
+		return(0);
+	}
+
+	return(0);
 }
