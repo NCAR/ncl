@@ -1,5 +1,5 @@
 /*
- *      $Id: funcgrid.c,v 1.3 2000-01-10 21:08:12 dbrown Exp $
+ *      $Id: funcgrid.c,v 1.4 2000-01-20 03:38:21 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -162,12 +162,21 @@ static void CompleteFuncToolEdit
 	Boolean restore,enable_change_state,enabled,modified = True;
 	NgDataItem ditem;
 	NhlBoolean undo_edits = False;
+	NgResInfo rinfo = NULL;
 
 	NhlString new_value = NgGetFuncTreeValue
 		(fgp->func_tree,&data_ix,&is_new);
 	row_ix = RowIndex(fgp,fgp->data_ix);
 	ditem = fgp->data_profile->ditems[fgp->data_ix];
+	if (ditem)
+		rinfo = ditem->res_info;
 
+	if (! rinfo) {
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+			   "internal error retrieving func tool value"));
+		return;
+	}
+		
 
 	XtVaGetValues(fgp->enable_tgl,
 		      XmNset,&enable_change_state,
@@ -191,7 +200,7 @@ static void CompleteFuncToolEdit
 	 */
 
 	if (restore) {
-		ditem->vdata->set_state = fgp->orig_states[row_ix];
+		ditem->vdata->set_state = rinfo->init_state;
 		ditem->vdata->cflags = _NgSYMBOL_CHANGE;
 		modified = False;
 	}
@@ -215,7 +224,7 @@ static void CompleteFuncToolEdit
 	if (! enabled) {
 		if (ditem->vdata->set_state != _NgUSER_DISABLED) {
 			if (! restore)
-				fgp->last_states[row_ix] = 
+				rinfo->last_state = 
 					ditem->vdata->set_state;
 			ditem->vdata->set_state = _NgUSER_DISABLED;
 		}
@@ -224,12 +233,12 @@ static void CompleteFuncToolEdit
 			      XmNrow,row_ix,
 			      XmNcellPixmap,No_Check_Pixmap,
 			      NULL);
-		if (fgp->last_states[row_ix] == fgp->orig_states[row_ix])
+		if (rinfo->last_state == rinfo->init_state)
 			modified = False;
 	}
 	else {
 		if (ditem->vdata->set_state == _NgUSER_DISABLED) {
-			ditem->vdata->set_state = fgp->last_states[row_ix];
+			ditem->vdata->set_state = rinfo->last_state;
 			ditem->vdata->cflags = _NgALL_CHANGE;
 		}
 		XtVaSetValues(fgp->public.grid,
@@ -237,10 +246,10 @@ static void CompleteFuncToolEdit
 			      XmNrow,row_ix,
 			      XmNcellPixmap,Check_Pixmap,
 			      NULL);
-		if (ditem->vdata->set_state == fgp->orig_states[row_ix])
+		if (ditem->vdata->set_state == rinfo->init_state)
 			modified = False;
 		if (! restore)
-			fgp->last_states[row_ix] = ditem->vdata->set_state;
+			rinfo->last_state = ditem->vdata->set_state;
 	}
 	XtVaSetValues(fgp->public.grid,
 		      XmNcolumn,MODIFIED_COL,
@@ -320,15 +329,15 @@ static void SetFuncToolState
 	NhlBoolean	enabled;
 	NhlBoolean	modified;
 	int		row_ix;
+	NgResInfo 	rinfo = ditem->res_info;
 
 	row_ix = RowIndex(fgp,fgp->data_ix);
 
 	enabled = ditem->vdata->set_state != _NgUSER_DISABLED;
 	if (enabled)
-		modified = ditem->vdata->set_state != fgp->orig_states[row_ix];
+		modified = ditem->vdata->set_state != rinfo->init_state;
 	else
-		modified = 
-			fgp->last_states[row_ix] != fgp->orig_states[row_ix];
+		modified = rinfo->last_state != rinfo->init_state;
 		
 
 	XtVaSetValues(fgp->restore_tgl,
@@ -1455,7 +1464,6 @@ QualifyAndInsertVariable
 		}
 
 		NgFreeVarData(last_vdata);
-                NclFreeDataList(dl);
 		return True;
 	}
 	/* 
@@ -1474,7 +1482,6 @@ QualifyAndInsertVariable
 	}
 
 	NgFreeVarData(last_vdata);
-        NclFreeDataList(dl);
 	return True;
 
  error_ret:
@@ -1648,9 +1655,10 @@ ToggleEnabled
 	NgDataProfile dprof = fgp->data_profile;
 	int data_ix = DataIndex(fgp,row);
 	NgDataItem ditem = dprof->ditems[data_ix];
+	NgResInfo rinfo = ditem->res_info;
 
 	if (ditem->vdata->set_state != _NgUSER_DISABLED) {
-		fgp->last_states[row] = ditem->vdata->set_state;
+		rinfo->last_state = ditem->vdata->set_state;
 		ditem->vdata->set_state = _NgUSER_DISABLED;
 		XtVaSetValues(fgp->public.grid,
 			      XmNcolumn,ENABLED_COL,
@@ -1659,7 +1667,7 @@ ToggleEnabled
 			      NULL);
 	}
 	else {
-		ditem->vdata->set_state = fgp->last_states[row];
+		ditem->vdata->set_state = rinfo->last_state;
 		XtVaSetValues(fgp->public.grid,
 			      XmNcolumn,ENABLED_COL,
 			      XmNrow,row,
@@ -1795,6 +1803,12 @@ NhlErrorTypes NgSynchronizeFuncGridState
 	if (fgp->func_tool_id == NhlNULLOBJID)
 		return NhlNOERROR;
 
+	if (fgp->data_ix < 0) {
+		NgUpdateFuncTree(fgp->func_tree,fgp->qname,
+				 fgp->data_ix,fgp->data_profile,False);
+		return NhlNOERROR;
+	}
+
 	XmLGridEditComplete(fgp->func_tree->tree);
 
 	ditem = fgp->data_profile->ditems[fgp->data_ix];
@@ -1840,6 +1854,7 @@ NhlErrorTypes NgUpdateFuncGrid
         fgp->data_profile = data_profile;
         fgp->qname = qname;
 	fgp->vis_row_count = 0;
+	fgp->data_ix = -1;
         for (i = 0; i < data_profile->n_dataitems; i++) {
 		if (data_profile->ditems[i]->vis)
 			fgp->vis_row_count++;
@@ -1893,22 +1908,13 @@ NhlErrorTypes NgUpdateFuncGrid
 		      XmNcellMarginLeft,CWidth,
 		      NULL);
 
-	fgp->orig_states = NhlRealloc
-		(fgp->orig_states,
-		 fgp->vis_row_count * sizeof(NgVarDataSetState));
-	fgp->last_states = NhlRealloc
-		(fgp->last_states,
-		 fgp->vis_row_count * sizeof(NgVarDataSetState));
-	if (! (fgp->orig_states && fgp->last_states)) {
-		NHLPERROR((NhlFATAL,ENOMEM,NULL));
-		return NhlFATAL;
-	}
-		
 	row = 0;
         for (i = 0; i < data_profile->n_dataitems; i++) {
 		XmString xmstr;
+		NgDataItem ditem = data_profile->ditems[i];
+		NgResInfo rinfo = ditem->res_info;
 
-		if (! data_profile->ditems[i]->vis)
+		if (! ditem->vis)
 			continue;
 
 		xmstr = Column0String(fgp,i);
@@ -1922,8 +1928,28 @@ NhlErrorTypes NgUpdateFuncGrid
 			      XmNrowUserData,i,
 			      NULL);
 		NgXAppFreeXmString(fgp->go->go.appmgr,xmstr);
-		fgp->orig_states[row] = fgp->last_states[row] = 
-			data_profile->ditems[i]->vdata->set_state;
+		if (ditem->vdata->set_state == _NgUSER_DISABLED) {
+			XtVaSetValues(func_grid->grid,
+				      XmNrow,row,
+				      XmNcolumn,ENABLED_COL,
+				      XmNcellPixmap,No_Check_Pixmap,
+				      NULL);
+			if (rinfo && rinfo->last_state != rinfo->init_state) {
+				XtVaSetValues(func_grid->grid,
+					      XmNrow,row,
+					      XmNcolumn,MODIFIED_COL,
+					      XmNcellPixmap,Check_Pixmap,
+					      NULL);
+			}
+		}
+		else if (rinfo && 
+			 ditem->vdata->set_state != rinfo->init_state) {
+			XtVaSetValues(func_grid->grid,
+				      XmNrow,row,
+				      XmNcolumn,MODIFIED_COL,
+				      XmNcellPixmap,Check_Pixmap,
+				      NULL);
+		}
 		row++;
         }
         XtVaSetValues(func_grid->grid,
@@ -2158,8 +2184,6 @@ NgFuncGrid *NgCreateFuncGrid
 	fgp->func_tree = NULL;
 	fgp->data_ix = -1;
 	fgp->restore_tgl = NULL;
-	fgp->orig_states = NULL;
-	fgp->last_states = NULL;
         
         func_grid->grid = XtVaCreateManagedWidget
                 ("FuncGrid",
@@ -2260,10 +2284,6 @@ void NgDestroyFuncGrid
 
 	if (fgp->edit_save_string)
 		XmStringFree(fgp->edit_save_string);
-	if (fgp->orig_states)
-		NhlFree(fgp->orig_states);
-	if (fgp->last_states)
-		NhlFree(fgp->last_states);
         NhlFree(fgp);
         
         return;

@@ -1,5 +1,5 @@
 /*
- *      $Id: mwin.c,v 1.28 1999-10-18 22:12:33 dbrown Exp $
+ *      $Id: mwin.c,v 1.29 2000-01-20 03:38:23 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1813,7 +1813,7 @@ AnnoStatusCB
 			 * Note that the annotation's base plot is not 
 			 * necessarily the primary base plot. 
 			 */
-			pbase_id = _NhlBasePlot(base_id);
+			pbase_id = _NhlTopLevelView(base_id);
 			/* 
 			 * Redraw the base plot so the overlay will show up
 			 */
@@ -2102,6 +2102,7 @@ AddViewNode
 		NhlBoolean save_auto_refresh = wks->auto_refresh;
 		wks->auto_refresh = False;
 
+#if 0
 		if (_NhlIsAnnotation(vwnode->id)) {
 			base_id = _NhlAnnotationBase(vwnode->id);
 			/*
@@ -2112,6 +2113,7 @@ AddViewNode
 				base_id = _NhlOverlayBase(base_id);
 			}
 		}
+#endif
 		bnode = GetBasePlotNode(wknode->cnodes,base_id);
 		if(!bnode) {
 			base_node_not_found = True;

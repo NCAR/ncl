@@ -1,5 +1,5 @@
 /*
- *      $Id: plotstylemenu.c,v 1.7 1999-12-07 19:08:49 dbrown Exp $
+ *      $Id: plotstylemenu.c,v 1.8 2000-01-20 03:38:24 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -908,7 +908,7 @@ static void CreateCB
 		 * Call the Update function which will do a create if the
 		 * Create button is pressed.
 		 */
-		if (w == priv->create_dialog && ! plotpage->config_required)
+		if (w == priv->create_dialog)
 			NgUpdatePage(priv->go->base.id,page_id);
                 
         }

@@ -1,5 +1,5 @@
 /*
- *      $Id: funcgrid.h,v 1.1 1999-12-07 19:08:41 dbrown Exp $
+ *      $Id: funcgrid.h,v 1.2 2000-01-20 03:38:21 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -42,8 +42,6 @@
 typedef struct _NgFuncGrid
 {
         Widget			grid;
-        NhlBoolean		headline_on;
-        Dimension		height;
 } NgFuncGrid;
 
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: datasourcegrid.c,v 1.12 1999-12-11 01:02:34 dbrown Exp $
+ *      $Id: datasourcegrid.c,v 1.13 2000-01-20 03:38:20 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -980,7 +980,6 @@ QualifyAndInsertVariable
 		}
 
 		NgFreeVarData(last_vdata);
-                NclFreeDataList(dl);
 		return True;
 	}
 	/* 
@@ -999,7 +998,6 @@ QualifyAndInsertVariable
 	}
 
 	NgFreeVarData(last_vdata);
-        NclFreeDataList(dl);
 	return True;
 
  error_ret:

@@ -1,5 +1,5 @@
 /*
- *      $Id: functree.c,v 1.4 2000-01-12 23:38:36 dbrown Exp $
+ *      $Id: functree.c,v 1.5 2000-01-20 03:38:22 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1190,6 +1190,8 @@ NhlErrorTypes NgUpdateFuncTree
 	}
         XmLGridDeleteAllRows(pub->tree,XmCONTENT);
 
+	if (ftp->data_ix < 0)
+		return NhlNOERROR;
 
         ndata = &ftp->func;
         ndata->parent = NULL;

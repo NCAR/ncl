@@ -1,5 +1,5 @@
 /*
- *      $Id: browse.c,v 1.37 1999-12-07 19:08:36 dbrown Exp $
+ *      $Id: browse.c,v 1.38 2000-01-20 03:38:19 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1579,7 +1579,8 @@ UpdatePanes
                 for (j = 0; j < this_pane->pagecount; j++) {
                         page = XmLArrayGet(this_pane->pagelist,j);
                         this_pane->remove_pos = -1;
-			if (page->qvar == qvar && page->qfile == qfile) {
+			if ((page->qvar == qvar && page->qfile == qfile) ||
+			    (page->type == _brHLUVAR && page->qvar == qvar)) {
                                 if (! delete && this_pane == CurrentPane(go)) {
                                         page_found = True;
                                         ShufflePage(go,this_pane,j);

@@ -1,5 +1,5 @@
 /*
- *      $Id: dataprofile.h,v 1.10 2000-01-10 21:08:12 dbrown Exp $
+ *      $Id: dataprofile.h,v 1.11 2000-01-20 03:38:20 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -168,6 +168,8 @@ typedef struct _NgResInfoRec {
 	NrmQuark	qsym;		/* single-term func */
 	int		argcount;
 	NgArgInfo	args;		/* func arg values */
+	NgVarDataSetState init_state;
+	NgVarDataSetState last_state;
 } NgResInfoRec, *NgResInfo;
 
 extern NgResInfo NgNewResInfo(
