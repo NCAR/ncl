@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ncargCex.csh,v 1.2 1992-10-30 18:47:09 haley Exp $
+#	$Id: ncargCex.csh,v 1.3 1993-01-15 20:07:46 haley Exp $
 #
 
 set example_dir = `ncargpath SED_EXAMPLESDIR`
@@ -137,11 +137,6 @@ end
 
 set copy_files="$c_files"
 
-if ( "$name" == "c_cbex01" ) then
-    set copy_files=($copy_files c_cbex01-.f)
-    set rmfiles="c_cbex01-.o"
-endif
-
 if ( "$name" == "c_mpexfi" ) then
     set copy_files=($copy_files mpexfi.dat)
 endif
@@ -162,10 +157,6 @@ end
 if (! $?NoRunOption) then
     echo ""
     echo "Compiling and Linking..."
-    if ($name == "c_cbex01") then
-        f77 -c c_cbex01-.f
-        set c_files=($c_files c_cbex01-.o)
-    endif
     ncargcc -o $name $c_files
     if ($status != 0) then
             echo ""
