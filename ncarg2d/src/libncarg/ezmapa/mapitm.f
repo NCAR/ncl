@@ -1,5 +1,5 @@
 C
-C $Id: mapitm.f,v 1.6 1994-05-03 21:24:40 kennison Exp $
+C $Id: mapitm.f,v 1.7 1998-04-16 20:26:48 kennison Exp $
 C
       SUBROUTINE MAPITM (XLAT,XLON,IFST,IAM,XCS,YCS,MCS,IAI,IAG,MAI,LPR)
 C
@@ -22,8 +22,6 @@ C
       SAVE /MAPCM8/
       COMMON /MAPCMA/ DPLT,DDTS,DSCA,DPSQ,DSSQ,DBTD,DATL
       SAVE /MAPCMA/
-      COMMON /MAPCMB/ IIER
-      SAVE /MAPCMB/
       COMMON /MAPCMC/ IGI1,IGI2,NOVS,XCRA(100),YCRA(100),NCRA
       SAVE /MAPCMC/
 C
@@ -42,11 +40,7 @@ C
 C
 C Check for an uncleared prior error.
 C
-      IF (.NOT.(ICFELL('MAPITM - UNCLEARED PRIOR ERROR',1).NE.0))
-     +GO TO 10000
-      IIER=-1
-      RETURN
-10000 CONTINUE
+      IF (ICFELL('MAPITM - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
 C
 C Initialize the variables that control interpolation.
 C
@@ -57,7 +51,7 @@ C If the projection is one of those in which great distortion occurs at
 C points opposite the pole, see if some points need to be interpolated.
 C
       IF (.NOT.(IPRJ.EQ.2.OR.IPRJ.EQ.4.OR.IPRJ.EQ.5.OR.IPRJ.EQ.6))
-     +GO TO 10001
+     +GO TO 10000
       CPLT=COS(DTOR*PHIA)
       SPLT=SIN(DTOR*PHIA)
       CPLN=COS(DTOR*PHOC)
@@ -69,69 +63,69 @@ C
       APTX=2.*RTOD*ASIN(SQRT((CXLT*CXLN-CPLT*CPLN)**2+
      +                       (CXLT*SXLN-CPLT*SPLN)**2+
      +                       (SXLT     -SPLT     )**2)/2.)
-      IF (.NOT.(IPRJ.EQ.2)) GO TO 10002
-      IF (.NOT.(APTX.LE.179.999)) GO TO 10003
+      IF (.NOT.(IPRJ.EQ.2)) GO TO 10001
+      IF (.NOT.(APTX.LE.179.999)) GO TO 10002
       RMUL=2./(1.+COS(DTOR*APTX))
-      GO TO 10004
-10003 CONTINUE
-      RMUL=201.
-10004 CONTINUE
-      GO TO 10005
+      GO TO 10003
 10002 CONTINUE
-      IF (.NOT.(IPRJ.EQ.4)) GO TO 10006
-      IF (.NOT.(APTX.LE.179.999)) GO TO 10007
+      RMUL=201.
+10003 CONTINUE
+      GO TO 10004
+10001 CONTINUE
+      IF (.NOT.(IPRJ.EQ.4)) GO TO 10005
+      IF (.NOT.(APTX.LE.179.999)) GO TO 10006
       RMUL=2./SQRT(2.*(1.+COS(DTOR*APTX)))
-      GO TO 10008
-10007 CONTINUE
-      RMUL=201.
-10008 CONTINUE
-      GO TO 10005
+      GO TO 10007
 10006 CONTINUE
-      IF (.NOT.(IPRJ.EQ.5)) GO TO 10009
-      IF (.NOT.(APTX.LT.89.999)) GO TO 10010
-      RMUL=1./COS(DTOR*APTX)
-      GO TO 10011
-10010 CONTINUE
       RMUL=201.
-10011 CONTINUE
-      GO TO 10005
-10009 CONTINUE
-      IF (.NOT.(IPRJ.EQ.6)) GO TO 10012
-      IF (.NOT.(APTX.LE..001)) GO TO 10013
-      RMUL=1.
-      GO TO 10014
-10013 CONTINUE
-      IF (.NOT.(APTX.LT.179.999)) GO TO 10015
-      RMUL=DTOR*APTX/SIN(DTOR*APTX)
-      GO TO 10014
-10015 CONTINUE
-      RMUL=201.
-10014 CONTINUE
+10007 CONTINUE
+      GO TO 10004
 10005 CONTINUE
+      IF (.NOT.(IPRJ.EQ.5)) GO TO 10008
+      IF (.NOT.(APTX.LT.89.999)) GO TO 10009
+      RMUL=1./COS(DTOR*APTX)
+      GO TO 10010
+10009 CONTINUE
+      RMUL=201.
+10010 CONTINUE
+      GO TO 10004
+10008 CONTINUE
+      IF (.NOT.(IPRJ.EQ.6)) GO TO 10011
+      IF (.NOT.(APTX.LE..001)) GO TO 10012
+      RMUL=1.
+      GO TO 10013
 10012 CONTINUE
-      IF (.NOT.(IFST.NE.0)) GO TO 10016
+      IF (.NOT.(APTX.LT.179.999)) GO TO 10014
+      RMUL=DTOR*APTX/SIN(DTOR*APTX)
+      GO TO 10013
+10014 CONTINUE
+      RMUL=201.
+10013 CONTINUE
+10004 CONTINUE
+10011 CONTINUE
+      IF (.NOT.(IFST.NE.0)) GO TO 10015
       NOPI=MAX(0,MIN(100,(INT(MAX(RMLO,RMUL))-1)/2))
       IF (NOPI.NE.0)
      +          CALL MAPGCI (XLTO,XLNO,XLAT,XLON,NOPI,RLATI,RLONI)
-10016 CONTINUE
+10015 CONTINUE
       XLTO=XLAT
       XLNO=XLON
       RMLO=RMUL
-10001 CONTINUE
+10000 CONTINUE
 C
 C Return here for the next interpolated point.
 C
   100 CONTINUE
-      IF (.NOT.(IOPI.LT.NOPI)) GO TO 10017
+      IF (.NOT.(IOPI.LT.NOPI)) GO TO 10016
       IOPI=IOPI+1
       RLAT=RLATI(IOPI)
       RLON=RLONI(IOPI)
-      GO TO 10018
-10017 CONTINUE
+      GO TO 10017
+10016 CONTINUE
       IOPI=IOPI+1
       RLAT=XLAT
       RLON=XLON
-10018 CONTINUE
+10017 CONTINUE
 C
 C Project the point (RLAT,RLON) to (U,V).
 C
@@ -142,7 +136,7 @@ C For the sake of efficiency, execute one of two parallel algorithms,
 C depending on whether an elliptical or a rectangular perimeter is in
 C use.  (That way, we test ELPF only once.)
 C
-      IF (.NOT.(ELPF)) GO TO 10019
+      IF (.NOT.(ELPF)) GO TO 10018
 C
 C Elliptical - assume the new point is visible until we find otherwise.
 C
@@ -151,7 +145,7 @@ C
 C See if the new point is invisible.
 C
       IF (.NOT.(((U-UCEN)/URNG)**2+((V-VCEN)/VRNG)**2.GT.1.))
-     +GO TO 10020
+     +GO TO 10019
 C
 C The new point is invisible.  Reset the visibility flag.
 C
@@ -169,47 +163,47 @@ C If the new point is invisible because its projection is undefined,
 C use a binary-halving technique to find a visible point close to the
 C edge and extend the line to it.
 C
-      IF (.NOT.(U.GE.1.E12)) GO TO 10021
+      IF (.NOT.(U.GE.1.E12)) GO TO 10020
       RLTV=RLTO
       RLNV=RLNO
       RLTI=RLAT
       RLNI=RLON
       UINT=UOLD
       VINT=VOLD
-      L10023=    1
-      GO TO 10023
-10022 CONTINUE
+      L10022=    1
+      GO TO 10022
+10021 CONTINUE
       XCRD=UINT
       YCRD=VINT
-      L10025=    1
-      GO TO 10025
-10024 CONTINUE
+      L10024=    1
+      GO TO 10024
+10023 CONTINUE
       GO TO 108
-10021 CONTINUE
+10020 CONTINUE
 C
 C Otherwise, the new point is not a "first point", the last point was
 C visible, and the projection of the new point is defined, so we need
 C to continue the line.  First, if there's a cross-over problem, move
 C the new point to its alternate position.  This may make it visible.
 C
-      IF (.NOT.(ABS(P-POLD).GT.UEPS.OR.ABS(Q-QOLD).GT.VEPS)) GO TO 10026
+      IF (.NOT.(ABS(P-POLD).GT.UEPS.OR.ABS(Q-QOLD).GT.VEPS)) GO TO 10025
 C
-      IF (.NOT.(JPRJ.GE.7)) GO TO 10027
+      IF (.NOT.(JPRJ.GE.7)) GO TO 10026
       P=P-SIGN(CPRJ(JPRJ-6),P)
       U=P
       IF (JPRJ.EQ.9) U=U*SQRT(1.-V*V)
-      GO TO 10028
-10027 CONTINUE
+      GO TO 10027
+10026 CONTINUE
       GO TO 108
-10028 CONTINUE
+10027 CONTINUE
 C
       IF (.NOT.(((U-UCEN)/URNG)**2+((V-VCEN)/VRNG)**2.LE.1.))
-     +GO TO 10029
+     +GO TO 10028
       IVIS=1
       GO TO 107
-10029 CONTINUE
+10028 CONTINUE
 C
-10026 CONTINUE
+10025 CONTINUE
 C
 C If it's still invisible, interpolate to the edge of the frame, extend
 C the line to that point, and quit.
@@ -217,12 +211,12 @@ C
       CALL MAPTRE (UOLD,VOLD,U,V,UINT,VINT)
       XCRD=UINT
       YCRD=VINT
-      L10025=    2
-      GO TO 10025
-10030 CONTINUE
+      L10024=    2
+      GO TO 10024
+10029 CONTINUE
       GO TO 108
 C
-10020 CONTINUE
+10019 CONTINUE
 C
 C The new point is visible.  If it's the first point of a line, go start
 C a new line.
@@ -233,28 +227,28 @@ C If the last point was invisible because its projection was undefined,
 C use binary halving to find a point in between and start the new line
 C there.
 C
-      IF (.NOT.(UOLD.GE.1.E12)) GO TO 10031
+      IF (.NOT.(UOLD.GE.1.E12)) GO TO 10030
       RLTV=RLAT
       RLNV=RLON
       RLTI=RLTO
       RLNI=RLNO
       UINT=U
       VINT=V
-      L10023=    2
-      GO TO 10023
-10032 CONTINUE
+      L10022=    2
+      GO TO 10022
+10031 CONTINUE
       XCRD=UINT
       YCRD=VINT
-      L10034=    1
-      GO TO 10034
-10033 CONTINUE
+      L10033=    1
+      GO TO 10033
+10032 CONTINUE
       XCRD=U
       YCRD=V
-      L10025=    3
-      GO TO 10025
-10035 CONTINUE
+      L10024=    3
+      GO TO 10024
+10034 CONTINUE
       GO TO 108
-10031 CONTINUE
+10030 CONTINUE
 C
 C The new point is visible, but it's not the first point of a line.
 C Check for cross-over problems.
@@ -284,24 +278,24 @@ C If the old point was visible, generate the alternate projection of the
 C new point and draw the visible portion of the line segment joining the
 C old point to the alternate projection point.
 C
-      IF (.NOT.(IVSO.NE.0)) GO TO 10036
+      IF (.NOT.(IVSO.NE.0)) GO TO 10035
 C
       UTMP=P-SIGN(CPRJ(JPRJ-6),P)
       VTMP=Q
       IF (JPRJ.EQ.9) UTMP=UTMP*SQRT(1.-VTMP*VTMP)
 C
       IF (.NOT.(((UTMP-UCEN)/URNG)**2+((VTMP-VCEN)/VRNG)**2.GT.1.))
-     +GO TO 10037
+     +GO TO 10036
       CALL MAPTRE (UOLD,VOLD,UTMP,VTMP,UTMP,VTMP)
-10037 CONTINUE
+10036 CONTINUE
 C
       XCRD=UTMP
       YCRD=VTMP
-      L10025=    4
-      GO TO 10025
-10038 CONTINUE
+      L10024=    4
+      GO TO 10024
+10037 CONTINUE
 C
-10036 CONTINUE
+10035 CONTINUE
 C
 C Now generate an alternate projection of the old point close to the new
 C one and draw the visible portion of the line segment joining it to the
@@ -317,8 +311,8 @@ C Move (UOLD,VOLD) by interpolating to the edge of the frame.
 C
   102 CALL MAPTRE (U,V,UOLD,VOLD,UOLD,VOLD)
 C
-      GO TO 10039
-10019 CONTINUE
+      GO TO 10038
+10018 CONTINUE
 C
 C Rectangular - repeat the above code, changing the tests for a point's
 C being inside/outside the perimeter.  Commenting will be abbreviated.
@@ -326,82 +320,82 @@ C
       IVIS=1
 C
       IF (.NOT.(U.LT.UMIN.OR.U.GT.UMAX.OR.V.LT.VMIN.OR.V.GT.VMAX))
-     +GO TO 10040
+     +GO TO 10039
 C
       IVIS=0
 C
       IF (IFST.EQ.0.OR.IVSO.EQ.0) GO TO 108
 C
-      IF (.NOT.(U.GE.1.E12)) GO TO 10041
+      IF (.NOT.(U.GE.1.E12)) GO TO 10040
       RLTV=RLTO
       RLNV=RLNO
       RLTI=RLAT
       RLNI=RLON
       UINT=UOLD
       VINT=VOLD
-      L10023=    3
-      GO TO 10023
-10042 CONTINUE
+      L10022=    3
+      GO TO 10022
+10041 CONTINUE
       XCRD=UINT
       YCRD=VINT
-      L10025=    5
-      GO TO 10025
-10043 CONTINUE
+      L10024=    5
+      GO TO 10024
+10042 CONTINUE
       GO TO 108
-10041 CONTINUE
+10040 CONTINUE
 C
-      IF (.NOT.(ABS(P-POLD).GT.UEPS.OR.ABS(Q-QOLD).GT.VEPS)) GO TO 10044
+      IF (.NOT.(ABS(P-POLD).GT.UEPS.OR.ABS(Q-QOLD).GT.VEPS)) GO TO 10043
 C
-      IF (.NOT.(JPRJ.GE.7)) GO TO 10045
+      IF (.NOT.(JPRJ.GE.7)) GO TO 10044
       P=P-SIGN(CPRJ(JPRJ-6),P)
       U=P
       IF (JPRJ.EQ.9) U=U*SQRT(1.-V*V)
-      GO TO 10046
-10045 CONTINUE
+      GO TO 10045
+10044 CONTINUE
       GO TO 108
-10046 CONTINUE
+10045 CONTINUE
 C
       IF (.NOT.(U.GE.UMIN.AND.U.LE.UMAX.AND.V.GE.VMIN.AND.V.LE.VMAX))
-     +GO TO 10047
+     +GO TO 10046
       IVIS=1
       GO TO 107
-10047 CONTINUE
-10044 CONTINUE
+10046 CONTINUE
+10043 CONTINUE
 C
       CALL MAPTRP (UOLD,VOLD,U,V,UINT,VINT)
       XCRD=UINT
       YCRD=VINT
-      L10025=    6
-      GO TO 10025
-10048 CONTINUE
+      L10024=    6
+      GO TO 10024
+10047 CONTINUE
       GO TO 108
 C
-10040 CONTINUE
+10039 CONTINUE
 C
       IF (IFST.EQ.0) GO TO 106
 C
-      IF (.NOT.(UOLD.GE.1.E12)) GO TO 10049
+      IF (.NOT.(UOLD.GE.1.E12)) GO TO 10048
       RLTV=RLAT
       RLNV=RLON
       RLTI=RLTO
       RLNI=RLNO
       UINT=U
       VINT=V
-      L10023=    4
-      GO TO 10023
-10050 CONTINUE
+      L10022=    4
+      GO TO 10022
+10049 CONTINUE
       XCRD=UINT
       YCRD=VINT
-      L10034=    2
-      GO TO 10034
-10051 CONTINUE
+      L10033=    2
+      GO TO 10033
+10050 CONTINUE
       XCRD=U
       YCRD=V
-      L10025=    7
-      GO TO 10025
-10052 CONTINUE
+      L10024=    7
+      GO TO 10024
+10051 CONTINUE
       GO TO 108
-10049 CONTINUE
+10048 CONTINUE
 C
       IF (ABS(P-POLD).GT.UEPS.OR.ABS(Q-QOLD).GT.VEPS) GO TO 103
 C
@@ -411,23 +405,23 @@ C
 C
   103 IF (JPRJ.LT.7) GO TO 106
 C
-      IF (.NOT.(IVSO.NE.0)) GO TO 10053
+      IF (.NOT.(IVSO.NE.0)) GO TO 10052
 C
       UTMP=P-SIGN(CPRJ(JPRJ-6),P)
       VTMP=Q
       IF (JPRJ.EQ.9) UTMP=UTMP*SQRT(1.-VTMP*VTMP)
 C
       IF (.NOT.(UTMP.LT.UMIN.OR.UTMP.GT.UMAX.OR.VTMP.LT.VMIN.OR.VTMP.GT.
-     +VMAX)) GO TO 10054
+     +VMAX)) GO TO 10053
       CALL MAPTRP (UOLD,VOLD,UTMP,VTMP,UTMP,VTMP)
-10054 CONTINUE
+10053 CONTINUE
 C
       XCRD=UTMP
       YCRD=VTMP
-      L10025=    8
-      GO TO 10025
-10055 CONTINUE
-10053 CONTINUE
+      L10024=    8
+      GO TO 10024
+10054 CONTINUE
+10052 CONTINUE
 C
       UOLD=POLD-SIGN(CPRJ(JPRJ-6),POLD)
       IF (JPRJ.EQ.9) UOLD=UOLD*SQRT(1.-VOLD*VOLD)
@@ -437,21 +431,21 @@ C
 C
   104 CALL MAPTRP (U,V,UOLD,VOLD,UOLD,VOLD)
 C
-10039 CONTINUE
+10038 CONTINUE
 C
 C Draw the visible portion of the line joining the old point to the new.
 C
   105 XCRD=UOLD
       YCRD=VOLD
-      L10034=    3
-      GO TO 10034
-10056 CONTINUE
+      L10033=    3
+      GO TO 10033
+10055 CONTINUE
 C
       XCRD=U
       YCRD=V
-      L10025=    9
-      GO TO 10025
-10057 CONTINUE
+      L10024=    9
+      GO TO 10024
+10056 CONTINUE
 C
       GO TO 108
 C
@@ -459,9 +453,9 @@ C Start a new line.
 C
   106 XCRD=U
       YCRD=V
-      L10034=    4
-      GO TO 10034
-10058 CONTINUE
+      L10033=    4
+      GO TO 10033
+10057 CONTINUE
 C
       GO TO 108
 C
@@ -469,16 +463,16 @@ C Continue the line.  If the point is an interpolated one and it is too
 C close to the last one, skip it.
 C
   107 CONTINUE
-      IF (.NOT.(IOPI.LE.NOPI)) GO TO 10059
+      IF (.NOT.(IOPI.LE.NOPI)) GO TO 10058
       IF (ABS(U-UOLD).LT..001*(UMAX-UMIN).AND.
      +    ABS(V-VOLD).LT..001*(VMAX-VMIN)) GO TO 100
-10059 CONTINUE
+10058 CONTINUE
 C
       XCRD=U
       YCRD=V
-      L10025=   10
-      GO TO 10025
-10060 CONTINUE
+      L10024=   10
+      GO TO 10024
+10059 CONTINUE
 C
 C Save information about the current point for the next call and quit.
 C
@@ -500,76 +494,70 @@ C The following internal procedure, given a visible point and an
 C invisible point, uses a binary-halving technique to find a point
 C in between them, near the edge of visibility.
 C
-10023 CONTINUE
+10022 CONTINUE
       PSAV=P
       QSAV=Q
       ITMP=0
-10061 CONTINUE
+10060 CONTINUE
       CALL MAPGCI (RLTV,RLNV,RLTI,RLNI,1,RLATI,RLONI)
       RLTH=RLATI(1)
       RLNH=RLONI(1)
       CALL MAPTRN (RLTH,RLNH,UINH,VINH)
       IF (ICFELL('MAPITM',3).NE.0) RETURN
-      IF (.NOT.(UINH.LT.1.E12)) GO TO 10062
-      IF (.NOT.(RLTH.NE.RLTV.OR.RLNH.NE.RLNV)) GO TO 10063
+      IF (.NOT.(UINH.LT.1.E12)) GO TO 10061
+      IF (.NOT.(RLTH.NE.RLTV.OR.RLNH.NE.RLNV)) GO TO 10062
       RLTV=RLTH
       RLNV=RLNH
       UINT=UINH
       VINT=VINH
-      GO TO 10064
-10063 CONTINUE
-      ITMP=63
-10064 CONTINUE
-      GO TO 10065
+      GO TO 10063
 10062 CONTINUE
-      IF (.NOT.(RLTH.NE.RLTI.OR.RLNH.NE.RLNI)) GO TO 10066
+      ITMP=63
+10063 CONTINUE
+      GO TO 10064
+10061 CONTINUE
+      IF (.NOT.(RLTH.NE.RLTI.OR.RLNH.NE.RLNI)) GO TO 10065
       RLTI=RLTH
       RLNI=RLNH
-      GO TO 10067
-10066 CONTINUE
-      ITMP=63
-10067 CONTINUE
+      GO TO 10066
 10065 CONTINUE
+      ITMP=63
+10066 CONTINUE
+10064 CONTINUE
       ITMP=ITMP+1
-      IF (ITMP.GE.64) GO TO 10068
-      GO TO 10061
-10068 CONTINUE
+      IF (ITMP.GE.64) GO TO 10067
+      GO TO 10060
+10067 CONTINUE
       P=PSAV
       Q=QSAV
-      GO TO (10022,10032,10042,10050) , L10023
+      GO TO (10021,10031,10041,10049) , L10022
 C
 C The following internal procedure is invoked to start a line.
 C
-10034 CONTINUE
-      IF (.NOT.(NCRA.GT.1)) GO TO 10069
+10033 CONTINUE
+      IF (.NOT.(NCRA.GT.1)) GO TO 10068
       CALL ARDRLN (IAM,XCRA,YCRA,NCRA,XCS,YCS,MCS,IAI,IAG,MAI,LPR)
-      IF (.NOT.(ICFELL('MAPITM',4).NE.0)) GO TO 10070
-      IIER=-1
-      RETURN
-10070 CONTINUE
-10069 CONTINUE
+      IF (ICFELL('MAPITM',4).NE.0) RETURN
+10068 CONTINUE
       XCRA(1)=XCRD
       YCRA(1)=YCRD
       NCRA=1
-      GO TO (10033,10051,10056,10058) , L10034
+      GO TO (10032,10050,10055,10057) , L10033
 C
 C The following internal procedure is invoked to continue a line.
 C
-10025 CONTINUE
-      IF (.NOT.(NCRA.EQ.100)) GO TO 10071
+10024 CONTINUE
+      IF (.NOT.(NCRA.EQ.100)) GO TO 10069
       CALL ARDRLN (IAM,XCRA,YCRA,NCRA,XCS,YCS,MCS,IAI,IAG,MAI,LPR)
-      IF (.NOT.(ICFELL('MAPITM',5).NE.0)) GO TO 10072
-      IIER=-1
-      RETURN
-10072 CONTINUE
+      IF (ICFELL('MAPITM',5).NE.0) RETURN
       XCRA(1)=XCRA(100)
       YCRA(1)=YCRA(100)
       NCRA=1
-10071 CONTINUE
+10069 CONTINUE
       NCRA=NCRA+1
       XCRA(NCRA)=XCRD
       YCRA(NCRA)=YCRD
-      GO TO (10024,10030,10035,10038,10043,10048,10052,10055,10057,10060
-     +) , L10025
+      GO TO (10023,10029,10034,10037,10042,10047,10051,10054,10056,10059
+     +) , L10024
 C
       END
