@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.154 2004-09-01 13:00:39 haley Exp $
+;      $Id: gsn_code.ncl,v 1.155 2004-10-01 22:53:04 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -3278,9 +3278,19 @@ begin
 
     lgres = get_res_eq(res2,(/"lg","vp"/))
     if(lgres.and..not.any(ismissing(getvaratts(lgres))))
+
+; A special test is needed for the resource lgLabelFontHeightF.
+; If it is set, then we need to turn off lgAutoManage.
+
+      if(isatt(lgres,"lgLabelFontHeightF"))
+        setvalues legend
+          "lgAutoManage"       : False
+          "lgLabelFontHeightF" : lgres@lgLabelFontHeightF
+        end setvalues
+        delete(lgres@lgLabelFontHeightF)
+      end if
       attsetvalues_check(legend,lgres)
     end if
-
 ; Return legend.
 
     return(legend)
