@@ -1,7 +1,29 @@
-
 /*
- *      $Id: atoargv.c,v 1.4 1999-07-27 21:42:24 haley Exp $
+ *      $Id: atoargv.c,v 1.5 2000-07-11 21:58:05 haley Exp $
  */
+/************************************************************************
+*                                                                       *
+*			     Copyright (C)  2000	                        		*
+*	     University Corporation for Atmospheric Research		        *
+*			     All Rights Reserved			                        *
+*                                                                       *
+* This file is free software; you can redistribute it and/or modify     *
+* it under the terms of the GNU Lesser General Public License as        *
+* published by the Free Software Foundation; either version 2.1 of the  *
+* License, or (at your option) any later version.                       *
+*                                                                       *
+* This software is distributed in the hope that it will be useful, but  *
+* WITHOUT ANY WARRANTY; without even the implied warranty of            *
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU     *
+* Lesser General Public License for more details.                       *
+*                                                                       *
+* You should have received a copy of the GNU Lesser General Public      *
+* License along with this library; if not, write to the Free Software   *
+* Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307   *
+* USA.                                                                  *
+*                                                                       *
+************************************************************************/
+
 /*
  *	File:		atoargv.c
  *
@@ -9,7 +31,7 @@
  *			National Center for Atmospheric Research
  *			PO 3000, Boulder, Colorado
  *
- *	Date:		Thu Apr 9 13:34:30 MDT 1992
+ *	Date:		Thu Apr 9 13:34:30 MDT 2000
  *
  *	Description:	Convert a string to an argument vector;
  */
