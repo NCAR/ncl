@@ -1,11 +1,9 @@
 /*
- *	$Id: rasinfo.c,v 1.2 1991-08-16 11:12:34 clyne Exp $
+ *	$Id: rasinfo.c,v 1.3 1991-11-15 17:09:05 don Exp $
  */
 #include <stdio.h>
 #include <fcntl.h>
 #include "ncarg_ras.h"
-
-static char sccsid[]="%W% %E% don@ncar.ucar.edu";
 
 int	OptionDebug = 0;
 int	OptionPrintColors = False;
@@ -37,15 +35,15 @@ main(argc, argv)
 			}
 		}
 		else {
-			Print(arg, argc, argv);
+			(void) Print(arg);
 		}
 	}
+	exit(0);
 }
 
-Print(name, argc, argv)
+int
+Print(name)
 	char	*name;
-	int	argc;
-	char	*argv[];
 {
 	Raster	*ras, *RasterOpen();
 	int	status;
