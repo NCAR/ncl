@@ -1,6 +1,6 @@
 
 /*
- *      $Id: rascat.c,v 1.14 1992-09-24 17:40:29 clyne Exp $
+ *      $Id: rascat.c,v 1.15 1992-10-28 04:10:13 clyne Exp $
  */
 /*
  *	File:		rascat.c
@@ -58,7 +58,7 @@
  *				Resample the input image to the resolution
  *				'nx'x'ny'.
  *
- *			-ralgo	[NN|BL]
+ *			-ira	[NN|BL]
  *				Specify Nearest Neighbor (NN) or Bilinear 
  *				interpolation (BL) algorithm for resampling.
  *
@@ -112,7 +112,7 @@ static  OptDescRec      set_options[] = {
 	{"rgbscale", 1, "1.0", "Specify color intensity scaling factor"},
 	{"resolution", 1, "0x0", "Specify output image resolution"},
 	{"help", 0, "NULL", "Print this message and exit"},
-	{"ralgo", 1, "NN", "Specify resampling algo, NN or BL"},
+	{"ira", 1, "NN", "Specify resampling algo, NN or BL"},
 	{NULL},
 };
 
@@ -146,7 +146,7 @@ static	Option get_options[] = {
 	{"help", NCARGCvtToBoolean, (Voidptr) &opt.do_help, 
 							sizeof(opt.do_help)
 	},
-	{"ralgo", cvt_to_rsfunc, (Voidptr) &opt.resample, sizeof(opt.resample)
+	{"ira", cvt_to_rsfunc, (Voidptr) &opt.resample, sizeof(opt.resample)
 	},
 	{NULL
 	}
@@ -163,7 +163,7 @@ static	int	oD;
 static	void	Usage(msg) 
 	char	*msg;
 {
-	char	*opts = "[-v] [-ifmt format] [-ofmt format] [-win nx ny x y] [-o file] [-scale factor | -res resolution [ -ralgo NN | BL]] [-rgbscale  factor] [ - | file... ]";
+	char	*opts = "[-v] [-ifmt format] [-ofmt format] [-win nx ny x y] [-o file] [-scale factor | -res resolution [ -ira NN | BL]] [-rgbscale  factor] [ - | file... ]";
 
 	if (msg) {
 		(void) fprintf(stderr, "%s: %s\n", progName, msg);
