@@ -1,7 +1,10 @@
 C
-C	$Id: strmln.f,v 1.1.1.1 1992-04-17 22:31:44 ncargd Exp $
+C	$Id: strmln.f,v 1.2 1993-01-15 23:53:39 dbrown Exp $
 C
       SUBROUTINE STRMLN (U,V,WORK,IMAX,IPTSX,JPTSY,NSET,IER)
+C
+C This is the old form of the main streamline entry point
+C
 C
 C SUBROUTINE STRMLN (U,V,WORK,IMAX,IPTSX,JPTSY,NSET,IER)
 C
@@ -49,7 +52,7 @@ C                          on a different projection (i.e., stereo-
 C                          graphic), then the appropriate
 C                          transformation must be made to the U and V
 C                          components via the functions FU and FV
-C                          (located in DRWSTR).
+C                          (located in STDRAW).
 C
 C                        WORK
 C                          User provided work array.  The dimension
@@ -103,7 +106,7 @@ C                               routine will draw the
 C                               streamlines with the non-cyclic
 C                               interpolation formulas.
 C
-C ENTRY POINTS           STRMLN, DRWSTR, EZSTRM, GNEWPT, CHKCYC
+C ENTRY POINTS           STRMLN, STDRAW, EZSTRM, STNEWP, STCYCL
 C
 C COMMON BLOCKS          STR01, STR02, STR03, STR04
 C
@@ -117,6 +120,352 @@ C
 C PRECISION              Single
 C
 C LANGUAGE               FORTRAN 77
+C
+C The remainder of the original STRMLN discussion follows the code
+C
+C
+C ---------------------------------------------------------------------
+C
+C NOTE:
+C Since implicit typing is used for all real and integer variables
+C a consistent length convention has been adopted to help clarify the
+C significance of the variables encountered in the code for this 
+C utility. All local variable and subroutine parameter identifiers 
+C are limited to 1,2,or 3 characters. Four character names identify  
+C members of common blocks. Five and 6 character variable names 
+C denote PARAMETER constants or subroutine or function names.
+C
+C Declare the ST common blocks.
+C
+      PARAMETER (IPLVLS = 64)
+C
+C Integer and real common block variables
+C
+C
+      COMMON / STPAR /
+     +                IUD1       ,IVD1       ,IPD1       ,
+     +                IXD1       ,IXDM       ,IYD1       ,IYDN       ,
+     +                IXM1       ,IYM1       ,IXM2       ,IYM2
+     +                IWKD       ,IWKU       ,ISET       ,IERR       ,
+     +	              IXIN       ,IYIN       ,IMSK       ,ICPM       ,
+     +                NLVL       ,IPAI       ,ICTV       ,WDLV       ,
+     +                UVMN       ,UVMX       ,PMIN       ,PMAX       ,
+     +                ITHN       ,IPLR       ,ISST       ,
+     +                ICLR(IPLVLS)           ,TVLU(IPLVLS)
+C
+      COMMON / STTRAN /
+     +                UVPS       ,
+     +                UVPL       ,UVPR       ,UVPB       ,UVPT       ,
+     +                UWDL       ,UWDR       ,UWDB       ,UWDT       ,
+     +                UXC1       ,UXCM       ,UYC1       ,UYCM 
+C
+C Stream algorithm parameters
+C
+      COMMON / STSTRM /
+     +                ISGD       ,IAGD       ,RARL       ,ICKP       ,
+     +                ICKX       ,ITRP       ,ICYK       ,RVNL       ,
+     +                ISVF       ,RUSV       ,RVSV       ,RNDA       ,
+     +                ISPC       ,RPSV       ,RCDS       ,RSSP       ,
+     +                RDFM
+C
+C Text related parameters
+C
+      COMMON / STTXP /
+     +                FCWM    ,ICSZ    ,
+     +                FMNS    ,FMNX    ,FMNY    ,IMNP    ,IMNC  ,
+     +                FMXS    ,FMXX    ,FMXY    ,IMXP    ,IMXC  ,
+     +                FZFS    ,FZFX    ,FZFY    ,IZFP    ,IZFC  ,
+     +                FILS    ,FILX    ,FILY    ,IILP     IILC 
+C
+C Character variable declartions
+C
+      CHARACTER*160 CSTR
+      PARAMETER (IPCHSZ=80)
+      CHARACTER*(IPCHSZ)  CMNT,CMXT,CZFT,CILT
+C
+C Text string parameters
+C
+      COMMON / STCHAR / CSTR,CMNT,CMXT,CZFT,CILT
+C
+      SAVE /STPAR/, /STCOM/, /STTRAN/, /STSTRM/, /STTXP/, /STCHAR/
+C
+C Internal buffer lengths
+C
+C IPNPTS - Number of points in the point buffer -- not less than 3
+C IPLSTL - Streamline-crossover-check circular list length
+C IPGRCT - Number of groups supported for area masking
+C
+      PARAMETER (IPNPTS = 10, IPLSTL = 750, IPGRCT = 64)
+C
+C The mapping common block: made available to user mapping routines
+C
+      COMMON /STMAP/
+     +                IMAP       ,LNLG       ,INVX       ,INVY       ,
+     +                XLOV       ,XHIV       ,YLOV       ,YHIV       ,
+     +                WXMN       ,WXMX       ,WYMN       ,WYMX       ,
+     +                XVPL       ,XVPR       ,YVPB       ,YVPT       ,
+     +                XGDS       ,YGDS       ,NXCT       ,NYCT       ,
+     +                ITRT       ,FW2W       ,FH2H       ,
+     +                DFMG       ,VNML       ,RBIG       ,IBIG
+C
+      SAVE /STMAP/
+C
+C Math constants
+C
+      PARAMETER (PDTOR  = 0.017453292519943,
+     +           PRTOD  = 57.2957795130823,
+     +           P1XPI  = 3.14159265358979,
+     +           P2XPI  = 6.28318530717959,
+     +           P1D2PI = 1.57079632679489,
+     +           P5D2PI = 7.85398163397448) 
+C
+C --------------------------------------------------------------------
+C
+C ------------------------------------------------------------------
+C
+C The old STRMLN common blocks
+C (Now isolated to this compatibility routine)
+C Note that STR01 and STR04 have been completely eliminated
+C
+      COMMON /STR02/  EXT , SIDE , XLT , YBT
+C
+      COMMON /STR03/  INITA , INITB , AROWL , ITERP , ITERC , IGFLG
+     +             ,  IMSG , UVMSG , ICYC , DISPL , DISPC , CSTOP
+C
+      SAVE  /STR02/, /STR03/
+C
+C ---------------------------------------------------------------------
+C
+C Initialization section
+C
+C STR02
+C
+      DATA   EXT    / 0.25 /
+      DATA  SIDE    / 0.90 /
+      DATA   XLT    / 0.05 /
+      DATA   YBT    / 0.05 /
+C
+C STR03
+C
+      DATA INITA    / 2 /
+      DATA INITB    / 2 /
+      DATA AROWL    / 0.33 /
+      DATA ITERP    / 35 /
+      DATA ITERC    / -99 /
+      DATA IGFLG    / 0 /
+      DATA  IMSG    / 0 /
+      DATA UVMSG    / 1.E+36 /
+      DATA  ICYC    / 0 /
+      DATA DISPL    / 0.33 /
+      DATA DISPC    / 0.67 /
+      DATA CSTOP    / 0.50 /
+C
+C End of common block initialization
+C -----------------------------------------------------------------
+C
+C Local variables:
+C
+C Saved values of common block variables:
+C
+C ISSGD, ISAGD, SARL, ISCKP, 
+C ISCKX, ISTRP, ISCYK, SVNL, 
+C ISSVF, SUSV, SVSV, SCDS, SSSP
+C
+C IPM             - parameter use flag
+C ICB             - common blocks use flag
+C VXL,VXR,VYB,VYT - saved viewport boundary
+C WXL,WXR,WYB,WYT - saved window boundary
+C X1,X2,Y1,Y2     - temporary viewport boundary
+C X3,Y3,X4,Y4     - temporary window boundary
+C SVM             - Size of Viewport, Metacode coords
+C LEN             - maximum vector size in Metacode coords
+C IDM             - integer dummy variable
+C
+      DATA IDM / 0 /
+C
+C The following call is for gathering statistics on library use at ncar.
+C
+      CALL Q8QST4 ('CRAYLIB','STRMLN','VELVEC','VERSION  4')
+C
+C Load the communication common block with parameters
+C
+C
+      IF (IPTSX.LE.1 .OR. JPTSY.LE.1 .OR. IMAX.LT.IPTSX) THEN
+         WRITE(*,*) 'STRMLN exiting; parameter value out of range'
+         CALL EXIT(1)
+      END IF
+      LU=IMAX
+      LV=IMAX
+      LP=IMAX
+      M=IPTSX
+      N=JPTSY
+      LW=2*LU*N
+      IS = 1
+      IEND = IPTSX
+      JS = 1
+      JEND = JPTSY
+C
+C Set up the scaling of the plot.
+C
+      CALL GETSET (VXL,VXR,VYB,VYT,WXL,WXR,WYB,WYT,LL)
+C
+      X1=VXL
+      X2=VXR
+      Y1=VYB
+      Y2=VYT
+      SVM = FLOAT(KFMX(X2) - KFMX(X1))
+C
+C Set the parameter and common block use flags
+C Note that the value of ICPM is temporarily modified if it
+C is equal to the default value. It will be restored as soon as
+C the streamlines are drawn
+C
+      IPM = 0
+      IF (ICPM.GE.-2 .AND. ICPM.LE.2) IPM = 1
+      ICB = 0
+      IF (ABS(ICPM).EQ.1 .OR. ABS(ICPM).EQ.3 .OR. ICPM.EQ.0) ICB = 1
+      IF (ICPM .EQ. 0) ICPM = 99
+C
+      IF (IPM .EQ. 1) THEN
+C
+         ILL = 1
+         IF (NSET .LT. 0) THEN
+C     
+            X3 = FLOAT(IS)
+            X4 = FLOAT(IEND)
+            Y3 = FLOAT(JS)
+            Y4 = FLOAT(JEND)
+            CALL SET(X1,X2,Y1,Y2,X3,X4,Y3,Y4,ILL)
+C     
+         ELSE IF (NSET .EQ. 0) THEN
+C     
+            X1 = XLT
+            X2 = XLT+SIDE
+            Y1 = YBT
+            Y2 = YBT+SIDE
+            X3 = FLOAT(IS)
+            X4 = FLOAT(IEND)
+            Y3 = FLOAT(JS)
+            Y4 = FLOAT(JEND)
+            IF (AMIN1(XNX,XNY)/AMAX1(XNX,XNY).GE.EXT) THEN
+               IF (XNX .GT. XNY)  THEN
+                  Y2 = (SIDE*(XNY/XNX) + YBT)
+               ELSE IF (XNY .GT. XNX) THEN
+                  X2 = (SIDE*(XNX/XNY) + XLT)
+               END IF
+            END IF
+C
+C Center the plot
+C
+            DX = 0.25*( 1. - (X2-X1) )
+            DY = 0.25*( 1. - (Y2-Y1) )
+            X1 = (XLT+DX)
+            X2 = (X2+DX )
+            Y1 = (YBT+DY)
+            Y2 = (Y2+DY )
+C
+            CALL SET(X1,X2,Y1,Y2,X3,X4,Y3,Y4,ITYPE)
+C     
+            CALL PERIM (1,0,1,0)
+            SVM = FLOAT(KFMX(X2) - KFMX(X1))
+C     
+         END IF
+C
+C Since the set call has been handled STINIT should not do a SET
+C
+         CALL STSETI('SET - Do set call flag', 0)
+C
+      END IF
+C
+C Common block values (STR03) (Save them first)
+C
+      IF (ICB .EQ. 1) THEN
+C
+         CALL STGETI('SGD - Stream start grid increment', ISSGD)
+         CALL STGETI('AGD - Arrow placement grid increment', ISAGD)
+         CALL STGETR('ARL - Arrow length, fraction of grid', SARL)
+         CALL STGETI('CKP - check progress at iteration mod', ISCKP)
+         CALL STGETI('CKX - Check streamline crossover mod', ISCKX)
+         CALL STGETI('TRP - Interpolation method', ISTRP)
+         CALL STGETI('CYK - Cyclical data flag', ISCYK)
+         CALL STGETR('VNL - Normalized vector magnitude', SVNL)
+         CALL STGETI('SVF - Special value flag', ISSVF)
+         CALL STGETR('USV - U array special value', SUSV)
+         CALL STGETR('VSV - V array special value', SVSV)
+         CALL STGETR('CDS - Critical displacement', SCDS)
+         CALL STGETR('SSP - Streamline spacing', SSSP)
+C
+         CALL STSETI('SGD - Stream start grid increment', INITA)
+         CALL STSETI('AGD - Arrow placement grid increment', INITB)
+         CALL STSETI('CKP - check progress at iteration mod', ITERP)
+         CALL STSETI('CKX - Check streamline crossover mod', ITERC)
+         CALL STSETI('TRP - Interpolation method', IGFLG)
+         CALL STSETI('CYK - Cyclical data flag', ICYC)
+         CALL STSETI('SVF - Special value flag', IMSG)
+         CALL STSETR('USV - U array special value', UVMSG)
+         CALL STSETR('VSV - V array special value', UVMSG)
+         CALL STSETR('VNL - Normalized vector magnitude', DISPL)
+C
+C These parameters are roughly mapped to the new method of
+C using viewport fraction rather than grid fraction.
+C
+         CALL STSETR('ARL - Arrow length, viewport fraction', 
+     +        AROWL/FLOAT(M))
+         CALL STSETR('SSP - Streamline spacing, VP fraction', 
+     +        CSTOP/FLOAT(M))
+         CALL STSETR('DFM - Differential magnitude, VP fraction', 
+     +        DISPL/FLOAT(M))
+         CALL STSETR('CDS - Critical displacement multiplier', 
+     +        DISPC/DISPL)
+C
+      END IF
+C
+C Initialize the stream plotting routine and draw the streamlines
+C
+      CALL STINIT(U,LU,V,LV,IDM,IDM,M,N,WORK,LW)
+C
+      CALL STREAM(U,V,WORK,IDM,IDM)
+C
+C Fetch the error value into the output parameter, IER
+C
+      CALL STGETI('ERR - Error identifier', IER)
+C
+C Restore original SET values, if required.
+C
+      IF (NSET .LE. 0) THEN
+         CALL SET (VXL,VXR,VYB,VYT,WXL,WXR,WYB,WYT,LL)
+      END IF
+C
+C Restore the common block values
+C
+      IF (ICB .EQ. 1) THEN
+C
+         CALL STSETI('SGD - Stream start grid increment', ISSGD)
+         CALL STSETI('AGD - Arrow placement grid increment', ISAGD)
+         CALL STSETR('ARL - Arrow length, fraction of grid', SARL)
+         CALL STSETI('CKP - check progress at iteration mod', ISCKP)
+         CALL STSETI('CKX - Check streamline crossover mod', ISCKX)
+         CALL STSETI('TRP - Interpolation method', ISTRP)
+         CALL STSETI('CYK - Cyclical data flag', ISCYK)
+         CALL STSETR('VNL - Normalized vector magnitude', SVNL)
+         CALL STSETI('SVF - Special value flag', ISSVF)
+         CALL STSETR('USV - U array special value', SUSV)
+         CALL STSETR('VSV - V array special value', SVSV)
+         CALL STSETR('CDS - Critical displacement', SCDS)
+         CALL STSETR('SSP - Streamline spacing', SSSP)
+C
+      END IF
+C
+C
+C Restore the compatibility flag value if necessary
+C
+      IF (ICPM .EQ. 99) ICPM = 0
+C
+      RETURN
+      END
+C
+C --------------------------------------------------------------------
+C Original disucussion of the STRMLN algorithm follows:
 C
 C HISTORY                Written and standardized in November 1973.
 C
@@ -320,7 +669,7 @@ C                                            normalized u component.
 C                                            Set automatically.
 C
 C                        NCHK      750       This parameter is located
-C                                            in DRWSTR. It specifies the
+C                                            in STDRAW. It specifies the
 C                                            length of the circular
 C                                            lists  used for checking
 C                                            for STRMLN crossovers.
@@ -338,140 +687,6 @@ C                                            I1MACH(5) - 2 . This value
 C                                            may have to be changed
 C                                            depending on the target
 C                                            computer; see subroutine
-C                                            DRWSTR.
+C                                            STDRAW.
 C
-C
-C
-      DIMENSION       U(IMAX,JPTSY)         ,V(IMAX,JPTSY)           ,
-     1                WORK(1)
-      DIMENSION       WIND(4)               ,VIEW(4)
-C
-      COMMON /STR01/  IS         ,IEND      ,JS        ,JEND
-     1             ,  IEND1      ,JEND1     ,I         ,J
-     2             ,  X          ,Y         ,DELX      ,DELY
-     3             ,  ICYC1      ,IMSG1     ,IGFL1
-      COMMON /STR02/  EXT , SIDE , XLT , YBT
-      COMMON /STR03/  INITA , INITB , AROWL , ITERP , ITERC , IGFLG
-     1             ,  IMSG , UVMSG , ICYC , DISPL , DISPC , CSTOP
-C
-      SAVE
-C
-      EXT       = 0.25
-      SIDE      = 0.90
-      XLT       = 0.05
-      YBT       = 0.05
-C
-      INITA     = 2
-      INITB     = 2
-      AROWL     = 0.33
-      ITERP     = 35
-      ITERC     = -99
-      IGFLG     = 0
-      ICYC      = 0
-      IMSG      = 0
-      UVMSG     = 1.E+36
-      DISPL     = 0.33
-      DISPC     = 0.67
-      CSTOP     = 0.50
-C
-C THE FOLLOWING CALL IS FOR MONITORING LIBRARY USE AT NCAR
-C
-      CALL Q8QST4 ( 'GRAPHX', 'STRMLN', 'STRMLN', 'VERSION 01')
-C
-      IER = 0
-C
-C LOAD THE COMMUNICATION COMMON BLOCK WITH PARAMETERS
-C
-      IS = 1
-      IEND = IPTSX
-      JS = 1
-      JEND = JPTSY
-      IEND1 = IEND-1
-      JEND1 = JEND-1
-      IEND2 = IEND-2
-      JEND2 = JEND-2
-      XNX = FLOAT(IEND-IS+1)
-      XNY = FLOAT(JEND-JS+1)
-      ICYC1 = ICYC
-      IGFL1 = IGFLG
-      IMSG1 = 0
-C
-C IF ICYC .NE. 0 THEN CHECK TO MAKE SURE THE CYCLIC CONDITION EXISTS.
-C
-      IF (ICYC1.NE.0) CALL CHKCYC  (U,V,IMAX,JPTSY,IER)
-C
-C Save original SET call.
-C
-      CALL GETSET (VIEW(1),VIEW(2),VIEW(3),VIEW(4),
-     +             WIND(1),WIND(2),WIND(3),WIND(4),IOLLS)
-C
-C
-      IF (NSET) 10 , 20 , 60
-C
-C
-C
-   10 X1 = VIEW(1)
-      X2 = VIEW(2)
-      Y1 = VIEW(3)
-      Y2 = VIEW(4)
-      X3 = IS
-      X4 = IEND
-      Y3 = JS
-      Y4 = JEND
-      GO TO  55
-C
-   20 ITYPE = 1
-      X1 = XLT
-      X2 = (XLT+SIDE)
-      Y1 = YBT
-      Y2 = (YBT+SIDE)
-      X3 = IS
-      X4 = IEND
-      Y3 = JS
-      Y4 = JEND
-      IF (AMIN1(XNX,XNY)/AMAX1(XNX,XNY).LT.EXT) GO TO  50
-      IF (XNX-XNY)  30, 50, 40
-   30 X2 = (SIDE*(XNX/XNY) + XLT)
-      GO TO  50
-   40 Y2 = (SIDE*(XNY/XNX) + YBT)
-   50 CONTINUE
-C
-C CENTER THE PLOT
-C
-      DX = 0.25*( 1. - (X2-X1) )
-      DY = 0.25*( 1. - (Y2-Y1) )
-      X1 = (XLT+DX)
-      X2 = (X2+DX )
-      Y1 = (YBT+DY)
-      Y2 = (Y2+DY )
-C
-   55 CONTINUE
-C
-C
-C
-C
-C
-C DEFINE AND SELECT NORMALIZATION TRANS, SET LOG SCALING
-C
-      CALL SET(X1,X2,Y1,Y2,X3,X4,Y3,Y4,ITYPE)
-C
-      IF (NSET.EQ.0) CALL PERIM (1,0,1,0)
-C
-   60 CONTINUE
-C
-C DRAW THE STREAMLINES
-C .   BREAK THE WORK ARRAY INTO TWO PARTS.  SEE DRWSTR FOR FURTHER
-C .   COMMENTS ON THIS.
-C
-      CALL DRWSTR (U,V,WORK(1),WORK(IMAX*JPTSY+1),IMAX,JPTSY)
-C
-C Restore SET call.
-C
-C
-      CALL SET (VIEW(1),VIEW(2),VIEW(3),VIEW(4),
-     +          WIND(1),WIND(2),WIND(3),WIND(4),IOLLS)
-C
-C
-C
-      RETURN
-      END
+C --------------------------------------------------------------------
