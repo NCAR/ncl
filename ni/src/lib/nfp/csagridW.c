@@ -7,7 +7,7 @@ char csamsg[61];
 NhlErrorTypes csa1xs_W(void)
 {
   int i, j, npts, nxo, scalar_wts, size_output, size_leftmost;
-  int ier = 0, index_in = 0, index_yo = 0;
+  int ier = 0, index_xi = 0, index_yi, index_yo = 0;
   float *xi;
   int ndims_xi, dsizes_xi[NCL_MAX_DIMENSIONS];
   float *yi;
@@ -18,13 +18,16 @@ NhlErrorTypes csa1xs_W(void)
   float *smth;
   int *nderiv;
   float *xo;
-  int dsizes_xo[NCL_MAX_DIMENSIONS];
+  int dsizes_xo[1];
 
   float *yo, *yo_tmp;
   int *dsizes_yo;
 
 /*
  * Retrieve argument #0 (x coordinates).
+ *
+ * Note that the the csa1* arguments are a special case of where xi
+ * can be multi-dimensional, OR 1-dimensional.
  */
   xi = (float *) NclGetArgValue(0, 7, &ndims_xi, dsizes_xi, NULL, NULL, 
                                 NULL, 2);
@@ -36,22 +39,35 @@ NhlErrorTypes csa1xs_W(void)
                                 NULL, 2);
  
 /*
- * Check number of dimensions for arguments #0 and 1.
+ * Either the dimensions of xi and yi must be the same, or if xi
+ * is 1D and yi is nD, then the last dimension of yi must be equal
+ * to the dimension of xi.
  */
-  if(ndims_xi != ndims_yi) {
-    NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "csa1xs: Arguments #0 and 1 must have the same number of dimensions.");
-    return(NhlFATAL);
-  }
-  for( i = 0; i < ndims_xi; i++ ) {
-    if(dsizes_xi[i] != dsizes_yi[i]) {
+  if(ndims_xi > 1) {
+    if(ndims_xi != ndims_yi) {
       NhlPError(NhlFATAL, NhlEUNKNOWN,
-                "csa1xs: Arguments #0 and 1 must have the same dimensions sizes.");
+                "csa1xs: If arguments #0 and 1 are multi-dimensional, they must have the same dimensions sizes.");
+      return(NhlFATAL);
+    }
+    else {
+      for( i = 0; i < ndims_xi; i++ ) {
+        if(dsizes_xi[i] != dsizes_yi[i]) {
+          NhlPError(NhlFATAL, NhlEUNKNOWN,
+                    "csa1xs: If arguments #0 and 1 are multi-dimensional, they must have the same dimensions sizes.");
+          return(NhlFATAL);
+        }
+      }
+    }
+  }
+  else {
+    if(dsizes_xi[0] != dsizes_yi[ndims_yi-1]) {
+      NhlPError(NhlFATAL, NhlEUNKNOWN,
+                "csa1xs: If argument #0 is one-dimensional, it must be the same as the rightmost dimension of argument #1.");
       return(NhlFATAL);
     }
   }
 
-  npts = dsizes_xi[ndims_xi-1];
+  npts = dsizes_yi[ndims_yi-1];
 
 /*
  * Retrieve argument #2 (weights).
@@ -74,7 +90,7 @@ NhlErrorTypes csa1xs_W(void)
  * Compute the total size of the leftmost dimension.
  */
   size_leftmost = 1;
-  for( i = 0; i < ndims_xi-1; i++ ) size_leftmost *= dsizes_xi[i];
+  for( i = 0; i < ndims_yi-1; i++ ) size_leftmost *= dsizes_yi[i];
 
 /*
  * Retrieve argument #3 (knots).
@@ -104,7 +120,7 @@ NhlErrorTypes csa1xs_W(void)
 
   size_output = size_leftmost * nxo;
   yo        = (float *) calloc(size_output, sizeof(float));
-  dsizes_yo =   (int *) calloc(   ndims_xi, sizeof(int));
+  dsizes_yo =   (int *) calloc(   ndims_yi, sizeof(int));
 
   if(yo == NULL || dsizes_yo == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -112,15 +128,15 @@ NhlErrorTypes csa1xs_W(void)
     return(NhlFATAL);
   }
 
-  for( i = 0; i < ndims_xi-1; i++ ) dsizes_yo[i] = dsizes_xi[i];
-  dsizes_yo[ndims_xi-1] = nxo;
+  for( i = 0; i < ndims_yi-1; i++ ) dsizes_yo[i] = dsizes_yi[i];
+  dsizes_yo[ndims_yi-1] = nxo;
 
 /*
  *  Call the C procedure.
  */
 
   for( i = 0; i < size_leftmost; i++ ) {
-    yo_tmp = c_csa1xs(npts, &xi[index_in], &yi[index_in], wts, 
+    yo_tmp = c_csa1xs(npts, &xi[index_xi], &yi[index_yi], wts, 
                       *knots, *smth, *nderiv, nxo, xo, &ier);
     if (ier != 0) {
       sprintf(csamsg, "c_csa1xs: Error number %d.", ier);
@@ -131,25 +147,25 @@ NhlErrorTypes csa1xs_W(void)
     for (j = 0; j < nxo; j++) {
       yo[index_yo+j] = yo_tmp[j];
     }
-    index_in += npts;
+    if(ndims_xi > 1) index_xi += npts;
+    index_yi += npts;
     index_yo += nxo;
     free(yo_tmp);
   }
-  return(NclReturnValue( (void *) yo, ndims_xi, dsizes_yo, NULL, NCL_float, 0));
+  return(NclReturnValue( (void *) yo, ndims_yi, dsizes_yo, NULL, NCL_float, 0));
 }
 
 NhlErrorTypes csa1s_W(void)
 {
   int i, j, npts, nxo, size_output, size_leftmost;
-  int ier = 0, index_in = 0, index_yo = 0;
-
+  int ier = 0, index_xi = 0, index_yi = 0, index_yo = 0;
   float *xi;
   int ndims_xi, dsizes_xi[NCL_MAX_DIMENSIONS];
   float *yi;
   int ndims_yi, dsizes_yi[NCL_MAX_DIMENSIONS];
   int *knots;
   float *xo;
-  int dsizes_xo[NCL_MAX_DIMENSIONS];
+  int dsizes_xo[1];
 
   float *yo, *yo_tmp;
   int *dsizes_yo;
@@ -166,27 +182,42 @@ NhlErrorTypes csa1s_W(void)
   yi = (float *) NclGetArgValue(1, 4, &ndims_yi, dsizes_yi, NULL, NULL, 
                                 NULL, 2);
  
+
 /*
- * Check number of dimensions for arguments #0 and 1.
+ * Either the dimensions of xi and yi must be the same, or if xi
+ * is 1D and yi is nD, then the last dimension of yi must be equal
+ * to the dimension of xi.
  */
-  if(ndims_xi != ndims_yi) {
-    NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "csa1s: Arguments #0 and 1 must have the same number of dimensions.");
-    return(NhlFATAL);
-  }
-  for( i = 0; i < ndims_xi; i++ ) {
-    if(dsizes_xi[i] != dsizes_yi[i]) {
+  if(ndims_xi > 1) {
+    if(ndims_xi != ndims_yi) {
       NhlPError(NhlFATAL, NhlEUNKNOWN,
-                "csa1s: Arguments #0 and 1 must have the same dimensions sizes.");
+                "csa1s: If arguments #0 and 1 are multi-dimensional, they must have the same dimensions sizes.");
+      return(NhlFATAL);
+    }
+    else {
+      for( i = 0; i < ndims_xi; i++ ) {
+        if(dsizes_xi[i] != dsizes_yi[i]) {
+          NhlPError(NhlFATAL, NhlEUNKNOWN,
+                    "csa1s: If arguments #0 and 1 are multi-dimensional, they must have the same dimensions sizes.");
+          return(NhlFATAL);
+        }
+      }
+    }
+  }
+  else {
+    if(dsizes_xi[0] != dsizes_yi[ndims_yi-1]) {
+      NhlPError(NhlFATAL, NhlEUNKNOWN,
+                "csa1s: If argument #0 is one-dimensional, it must be the same as the rightmost dimension of argument #1.");
       return(NhlFATAL);
     }
   }
+
 /*
  * Compute the total size of the leftmost dimension.
  */
-  npts = dsizes_xi[ndims_xi-1];
+  npts = dsizes_yi[ndims_yi-1];
   size_leftmost = 1;
-  for( i = 0; i < ndims_xi-1; i++ ) size_leftmost *= dsizes_xi[i];
+  for( i = 0; i < ndims_yi-1; i++ ) size_leftmost *= dsizes_yi[i];
 
 /*
  * Retrieve argument #2 (knots).
@@ -206,7 +237,7 @@ NhlErrorTypes csa1s_W(void)
 
   size_output = size_leftmost * nxo;
   yo        = (float *) calloc(size_output, sizeof(float));
-  dsizes_yo =   (int *) calloc(   ndims_xi, sizeof(int));
+  dsizes_yo =   (int *) calloc(   ndims_yi, sizeof(int));
 
   if(yo == NULL || dsizes_yo == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -214,15 +245,15 @@ NhlErrorTypes csa1s_W(void)
     return(NhlFATAL);
   }
 
-  for( i = 0; i < ndims_xi-1; i++ ) dsizes_yo[i] = dsizes_xi[i];
-  dsizes_yo[ndims_xi-1] = nxo;
+  for( i = 0; i < ndims_yi-1; i++ ) dsizes_yo[i] = dsizes_yi[i];
+  dsizes_yo[ndims_yi-1] = nxo;
 
 /*
  *  Call the C procedure.
  */
 
   for( i = 0; i < size_leftmost; i++ ) {
-    yo_tmp = c_csa1s(npts, &xi[index_in], &yi[index_in], *knots, nxo, xo, &ier);
+    yo_tmp = c_csa1s(npts, &xi[index_xi], &yi[index_yi], *knots, nxo, xo, &ier);
     if (ier != 0) {
       sprintf(csamsg, "c_csa1s: Error number %d.", ier);
       NhlPError(NhlFATAL, NhlEUNKNOWN, csamsg);
@@ -232,11 +263,12 @@ NhlErrorTypes csa1s_W(void)
     for (j = 0; j < nxo; j++) {
       yo[index_yo+j] = yo_tmp[j];
     }
-    index_in += npts;
+    if(ndims_xi > 1) index_xi += npts;
+    index_yi += npts;
     index_yo += nxo;
     free(yo_tmp);
   }
-  return(NclReturnValue( (void *) yo, ndims_xi, dsizes_yo, NULL, NCL_float, 0));
+  return(NclReturnValue( (void *) yo, ndims_yi, dsizes_yo, NULL, NCL_float, 0));
 
 }
 
@@ -246,16 +278,16 @@ NhlErrorTypes csa2s_W(void)
   int ier = 0, index_in = 0, index_zo = 0;
 
   float *xi;
-  int dsizes_xi[NCL_MAX_DIMENSIONS];
+  int dsizes_xi[1];
   float *yi;
-  int dsizes_yi[NCL_MAX_DIMENSIONS];
+  int dsizes_yi[1];
   float *zi;
   int ndims_zi, dsizes_zi[NCL_MAX_DIMENSIONS];
   int *knots;
   float *xo;
-  int dsizes_xo[NCL_MAX_DIMENSIONS];
+  int dsizes_xo[1];
   float *yo;
-  int dsizes_yo[NCL_MAX_DIMENSIONS];
+  int dsizes_yo[1];
 
   float *zo, *zo_tmp;
   int ndims_zo, *dsizes_zo;
@@ -370,9 +402,9 @@ NhlErrorTypes csa2xs_W(void)
   int ier = 0, index_in = 0, index_zo = 0;
 
   float *xi;
-  int dsizes_xi[NCL_MAX_DIMENSIONS];
+  int dsizes_xi[1];
   float *yi;
-  int dsizes_yi[NCL_MAX_DIMENSIONS];
+  int dsizes_yi[1];
   float *zi;
   int ndims_zi, dsizes_zi[NCL_MAX_DIMENSIONS];
   float *wts;
@@ -381,9 +413,9 @@ NhlErrorTypes csa2xs_W(void)
   float *smth;
   int *nderiv;
   float *xo;
-  int dsizes_xo[NCL_MAX_DIMENSIONS];
+  int dsizes_xo[1];
   float *yo;
-  int dsizes_yo[NCL_MAX_DIMENSIONS];
+  int dsizes_yo[1];
 
   float *zo, *zo_tmp;
   int ndims_zo, *dsizes_zo;
@@ -527,16 +559,16 @@ NhlErrorTypes csa2ls_W(void)
   int ier = 0, index_in = 0, index_zo = 0, scalar_zo;
 
   float *xi;
-  int dsizes_xi[NCL_MAX_DIMENSIONS];
+  int dsizes_xi[1];
   float *yi;
-  int dsizes_yi[NCL_MAX_DIMENSIONS];
+  int dsizes_yi[1];
   float *zi;
   int ndims_zi, dsizes_zi[NCL_MAX_DIMENSIONS];
   int *knots;
   float *xo;
-  int dsizes_xo[NCL_MAX_DIMENSIONS];
+  int dsizes_xo[1];
   float *yo;
-  int dsizes_yo[NCL_MAX_DIMENSIONS];
+  int dsizes_yo[1];
 
   float *zo, *zo_tmp;
   int ndims_zo, *dsizes_zo;
@@ -659,20 +691,20 @@ NhlErrorTypes csa2lxs_W(void)
   int ier = 0, index_in = 0, index_zo = 0;
 
   float *xi;
-  int dsizes_xi[NCL_MAX_DIMENSIONS];
+  int dsizes_xi[1];
   float *yi;
-  int dsizes_yi[NCL_MAX_DIMENSIONS];
+  int dsizes_yi[1];
   float *zi;
   int ndims_zi, dsizes_zi[NCL_MAX_DIMENSIONS];
   float *wts;
-  int dsizes_wts[NCL_MAX_DIMENSIONS];
+  int dsizes_wts[1];
   int *knots;
   float *smth;
   int *nderiv;
   float *xo;
-  int dsizes_xo[NCL_MAX_DIMENSIONS];
+  int dsizes_xo[1];
   float *yo;
-  int dsizes_yo[NCL_MAX_DIMENSIONS];
+  int dsizes_yo[1];
 
   float *zo, *zo_tmp;
   int ndims_zo, *dsizes_zo;
@@ -825,24 +857,24 @@ NhlErrorTypes csa3xs_W(void)
   int ier = 0, index_in = 0, index_uo = 0;
 
   float *xi;
-  int dsizes_xi[NCL_MAX_DIMENSIONS];
+  int dsizes_xi[1];
   float *yi;
-  int dsizes_yi[NCL_MAX_DIMENSIONS];
+  int dsizes_yi[1];
   float *zi;
-  int dsizes_zi[NCL_MAX_DIMENSIONS];
+  int dsizes_zi[1];
   float *ui;
   int ndims_ui, dsizes_ui[NCL_MAX_DIMENSIONS];
   float *wts;
-  int dsizes_wts[NCL_MAX_DIMENSIONS];
+  int dsizes_wts[1];
   int *knots;
   float *smth;
   int *nderiv;
   float *xo;
-  int dsizes_xo[NCL_MAX_DIMENSIONS];
+  int dsizes_xo[1];
   float *yo;
-  int dsizes_yo[NCL_MAX_DIMENSIONS];
+  int dsizes_yo[1];
   float *zo;
-  int dsizes_zo[NCL_MAX_DIMENSIONS];
+  int dsizes_zo[1];
 
   float *uo, *uo_tmp;
   int ndims_uo, *dsizes_uo;
@@ -1001,20 +1033,20 @@ NhlErrorTypes csa3s_W(void)
   int ier = 0, index_in = 0, index_uo = 0;
 
   float *xi;
-  int dsizes_xi[NCL_MAX_DIMENSIONS];
+  int dsizes_xi[1];
   float *yi;
-  int dsizes_yi[NCL_MAX_DIMENSIONS];
+  int dsizes_yi[1];
   float *zi;
-  int dsizes_zi[NCL_MAX_DIMENSIONS];
+  int dsizes_zi[1];
   float *ui;
   int ndims_ui, dsizes_ui[NCL_MAX_DIMENSIONS];
   int *knots;
   float *xo;
-  int dsizes_xo[NCL_MAX_DIMENSIONS];
+  int dsizes_xo[1];
   float *yo;
-  int dsizes_yo[NCL_MAX_DIMENSIONS];
+  int dsizes_yo[1];
   float *zo;
-  int dsizes_zo[NCL_MAX_DIMENSIONS];
+  int dsizes_zo[1];
 
   float *uo, *uo_tmp;
   int ndims_uo, *dsizes_uo;
@@ -1143,24 +1175,24 @@ NhlErrorTypes csa3lxs_W(void)
   int ier = 0, index_in = 0, index_uo = 0;
 
   float *xi;
-  int dsizes_xi[NCL_MAX_DIMENSIONS];
+  int dsizes_xi[1];
   float *yi;
-  int dsizes_yi[NCL_MAX_DIMENSIONS];
+  int dsizes_yi[1];
   float *zi;
-  int dsizes_zi[NCL_MAX_DIMENSIONS];
+  int dsizes_zi[1];
   float *ui;
   int ndims_ui, dsizes_ui[NCL_MAX_DIMENSIONS];
   float *wts;
-  int dsizes_wts[NCL_MAX_DIMENSIONS];
+  int dsizes_wts[1];
   int *knots;
   float *smth;
   int *nderiv;
   float *xo;
-  int dsizes_xo[NCL_MAX_DIMENSIONS];
+  int dsizes_xo[1];
   float *yo;
-  int dsizes_yo[NCL_MAX_DIMENSIONS];
+  int dsizes_yo[1];
   float *zo;
-  int dsizes_zo[NCL_MAX_DIMENSIONS];
+  int dsizes_zo[1];
 
   float *uo, *uo_tmp;
   int ndims_uo, *dsizes_uo;
@@ -1334,20 +1366,20 @@ NhlErrorTypes csa3ls_W(void)
   int ier = 0, index_in = 0, index_uo = 0;
 
   float *xi;
-  int dsizes_xi[NCL_MAX_DIMENSIONS];
+  int dsizes_xi[1];
   float *yi;
-  int dsizes_yi[NCL_MAX_DIMENSIONS];
+  int dsizes_yi[1];
   float *zi;
-  int dsizes_zi[NCL_MAX_DIMENSIONS];
+  int dsizes_zi[1];
   float *ui;
   int ndims_ui, dsizes_ui[NCL_MAX_DIMENSIONS];
   int *knots;
   float *xo;
-  int dsizes_xo[NCL_MAX_DIMENSIONS];
+  int dsizes_xo[1];
   float *yo;
-  int dsizes_yo[NCL_MAX_DIMENSIONS];
+  int dsizes_yo[1];
   float *zo;
-  int dsizes_zo[NCL_MAX_DIMENSIONS];
+  int dsizes_zo[1];
 
   float *uo, *uo_tmp;
   int ndims_uo, *dsizes_uo;
@@ -1489,7 +1521,7 @@ NhlErrorTypes csa3ls_W(void)
 NhlErrorTypes csa1xd_W(void)
 {
   int i, j, npts, nxo, scalar_wts, size_output, size_leftmost;
-  int ier = 0, index_in = 0, index_yo = 0;
+  int ier = 0, index_xi = 0, index_yi = 0, index_yo = 0;
   double *xi;
   int ndims_xi, dsizes_xi[NCL_MAX_DIMENSIONS];
   double *yi;
@@ -1500,7 +1532,7 @@ NhlErrorTypes csa1xd_W(void)
   double *smth;
   int *nderiv;
   double *xo;
-  int dsizes_xo[NCL_MAX_DIMENSIONS];
+  int dsizes_xo[1];
 
   double *yo, *yo_tmp;
   int *dsizes_yo;
@@ -1518,22 +1550,35 @@ NhlErrorTypes csa1xd_W(void)
                                 NULL, 2);
  
 /*
- * Check number of dimensions for arguments #0 and 1.
+ * Either the dimensions of xi and yi must be the same, or if xi
+ * is 1D and yi is nD, then the last dimension of yi must be equal
+ * to the dimension of xi.
  */
-  if(ndims_xi != ndims_yi) {
-    NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "csa1xd: Arguments #0 and 1 must have the same number of dimensions.");
-    return(NhlFATAL);
-  }
-  for( i = 0; i < ndims_xi; i++ ) {
-    if(dsizes_xi[i] != dsizes_yi[i]) {
+  if(ndims_xi > 1) {
+    if(ndims_xi != ndims_yi) {
       NhlPError(NhlFATAL, NhlEUNKNOWN,
-                "csa1xd: Arguments #0 and 1 must have the same dimensions sizes.");
+                "csa1xd: If arguments #0 and 1 are multi-dimensional, they must have the same dimensions sizes.");
+      return(NhlFATAL);
+    }
+    else {
+      for( i = 0; i < ndims_xi; i++ ) {
+        if(dsizes_xi[i] != dsizes_yi[i]) {
+          NhlPError(NhlFATAL, NhlEUNKNOWN,
+                    "csa1xd: If arguments #0 and 1 are multi-dimensional, they must have the same dimensions sizes.");
+          return(NhlFATAL);
+        }
+      }
+    }
+  }
+  else {
+    if(dsizes_xi[0] != dsizes_yi[ndims_yi-1]) {
+      NhlPError(NhlFATAL, NhlEUNKNOWN,
+                "csa1xd: If argument #0 is one-dimensional, it must be the same as the rightmost dimension of argument #1.");
       return(NhlFATAL);
     }
   }
 
-  npts = dsizes_xi[ndims_xi-1];
+  npts = dsizes_yi[ndims_yi-1];
 
 /*
  * Retrieve argument #2 (weights).
@@ -1556,7 +1601,7 @@ NhlErrorTypes csa1xd_W(void)
  * Compute the total size of the leftmost dimension.
  */
   size_leftmost = 1;
-  for( i = 0; i < ndims_xi-1; i++ ) size_leftmost *= dsizes_xi[i];
+  for( i = 0; i < ndims_yi-1; i++ ) size_leftmost *= dsizes_yi[i];
 
 /*
  * Retrieve argument #3 (knots).
@@ -1586,7 +1631,7 @@ NhlErrorTypes csa1xd_W(void)
 
   size_output = size_leftmost * nxo;
   yo        = (double *) calloc(size_output, sizeof(double));
-  dsizes_yo =   (int *) calloc(   ndims_xi, sizeof(int));
+  dsizes_yo =   (int *) calloc(   ndims_yi, sizeof(int));
 
   if(yo == NULL || dsizes_yo == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -1594,15 +1639,15 @@ NhlErrorTypes csa1xd_W(void)
     return(NhlFATAL);
   }
 
-  for( i = 0; i < ndims_xi-1; i++ ) dsizes_yo[i] = dsizes_xi[i];
-  dsizes_yo[ndims_xi-1] = nxo;
+  for( i = 0; i < ndims_yi-1; i++ ) dsizes_yo[i] = dsizes_yi[i];
+  dsizes_yo[ndims_yi-1] = nxo;
 
 /*
  *  Call the C procedure.
  */
 
   for( i = 0; i < size_leftmost; i++ ) {
-    yo_tmp = c_csa1xd(npts, &xi[index_in], &yi[index_in], wts, 
+    yo_tmp = c_csa1xd(npts, &xi[index_xi], &yi[index_yi], wts, 
                       *knots, *smth, *nderiv, nxo, xo, &ier);
     if (ier != 0) {
       sprintf(csamsg, "c_csa1xd: Error number %d.", ier);
@@ -1613,17 +1658,18 @@ NhlErrorTypes csa1xd_W(void)
     for (j = 0; j < nxo; j++) {
       yo[index_yo+j] = yo_tmp[j];
     }
-    index_in += npts;
+    if(ndims_xi > 1) index_xi += npts;
+    index_yi += npts;
     index_yo += nxo;
     free(yo_tmp);
   }
-  return(NclReturnValue( (void *) yo, ndims_xi, dsizes_yo, NULL, NCL_double, 0));
+  return(NclReturnValue( (void *) yo, ndims_yi, dsizes_yo, NULL, NCL_double, 0));
 }
 
 NhlErrorTypes csa1d_W(void)
 {
   int i, j, npts, nxo, size_output, size_leftmost;
-  int ier = 0, index_in = 0, index_yo = 0;
+  int ier = 0, index_xi = 0, index_yi = 0, index_yo = 0;
 
   double *xi;
   int ndims_xi, dsizes_xi[NCL_MAX_DIMENSIONS];
@@ -1631,7 +1677,7 @@ NhlErrorTypes csa1d_W(void)
   int ndims_yi, dsizes_yi[NCL_MAX_DIMENSIONS];
   int *knots;
   double *xo;
-  int dsizes_xo[NCL_MAX_DIMENSIONS];
+  int dsizes_xo[1];
 
   double *yo, *yo_tmp;
   int *dsizes_yo;
@@ -1649,26 +1695,40 @@ NhlErrorTypes csa1d_W(void)
                                 NULL, 2);
  
 /*
- * Check number of dimensions for arguments #0 and 1.
+ * Either the dimensions of xi and yi must be the same, or if xi
+ * is 1D and yi is nD, then the last dimension of yi must be equal
+ * to the dimension of xi.
  */
-  if(ndims_xi != ndims_yi) {
-    NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "csa1d: Arguments #0 and 1 must have the same number of dimensions.");
-    return(NhlFATAL);
-  }
-  for( i = 0; i < ndims_xi; i++ ) {
-    if(dsizes_xi[i] != dsizes_yi[i]) {
+  if(ndims_xi > 1) {
+    if(ndims_xi != ndims_yi) {
       NhlPError(NhlFATAL, NhlEUNKNOWN,
-                "csa1d: Arguments #0 and 1 must have the same dimensions sizes.");
+                "csa1d: If arguments #0 and 1 are multi-dimensional, they must have the same dimensions sizes.");
+      return(NhlFATAL);
+    }
+    else {
+      for( i = 0; i < ndims_xi; i++ ) {
+        if(dsizes_xi[i] != dsizes_yi[i]) {
+          NhlPError(NhlFATAL, NhlEUNKNOWN,
+                    "csa1d: If arguments #0 and 1 are multi-dimensional, they must have the same dimensions sizes.");
+          return(NhlFATAL);
+        }
+      }
+    }
+  }
+  else {
+    if(dsizes_xi[0] != dsizes_yi[ndims_yi-1]) {
+      NhlPError(NhlFATAL, NhlEUNKNOWN,
+                "csa1d: If argument #0 is one-dimensional, it must be the same as the rightmost dimension of argument #1.");
       return(NhlFATAL);
     }
   }
+
 /*
  * Compute the total size of the leftmost dimension.
  */
-  npts = dsizes_xi[ndims_xi-1];
+  npts = dsizes_yi[ndims_yi-1];
   size_leftmost = 1;
-  for( i = 0; i < ndims_xi-1; i++ ) size_leftmost *= dsizes_xi[i];
+  for( i = 0; i < ndims_yi-1; i++ ) size_leftmost *= dsizes_yi[i];
 
 /*
  * Retrieve argument #2 (knots).
@@ -1688,7 +1748,7 @@ NhlErrorTypes csa1d_W(void)
 
   size_output = size_leftmost * nxo;
   yo        = (double *) calloc(size_output, sizeof(double));
-  dsizes_yo =   (int *) calloc(   ndims_xi, sizeof(int));
+  dsizes_yo =   (int *) calloc(   ndims_yi, sizeof(int));
 
   if(yo == NULL || dsizes_yo == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -1696,15 +1756,15 @@ NhlErrorTypes csa1d_W(void)
     return(NhlFATAL);
   }
 
-  for( i = 0; i < ndims_xi-1; i++ ) dsizes_yo[i] = dsizes_xi[i];
-  dsizes_yo[ndims_xi-1] = nxo;
+  for( i = 0; i < ndims_yi-1; i++ ) dsizes_yo[i] = dsizes_yi[i];
+  dsizes_yo[ndims_yi-1] = nxo;
 
 /*
  *  Call the C procedure.
  */
 
   for( i = 0; i < size_leftmost; i++ ) {
-    yo_tmp = c_csa1d(npts, &xi[index_in], &yi[index_in], *knots, nxo, xo, &ier);
+    yo_tmp = c_csa1d(npts, &xi[index_xi], &yi[index_yi], *knots, nxo, xo, &ier);
     if (ier != 0) {
       sprintf(csamsg, "c_csa1d: Error number %d.", ier);
       NhlPError(NhlFATAL, NhlEUNKNOWN, csamsg);
@@ -1714,11 +1774,12 @@ NhlErrorTypes csa1d_W(void)
     for (j = 0; j < nxo; j++) {
       yo[index_yo+j] = yo_tmp[j];
     }
-    index_in += npts;
+    if(ndims_xi > 1) index_xi += npts;
+    index_yi += npts;
     index_yo += nxo;
     free(yo_tmp);
   }
-  return(NclReturnValue( (void *) yo, ndims_xi, dsizes_yo, NULL, NCL_double, 0));
+  return(NclReturnValue( (void *) yo, ndims_yi, dsizes_yo, NULL, NCL_double, 0));
 
 }
 
@@ -1728,16 +1789,16 @@ NhlErrorTypes csa2d_W(void)
   int ier = 0, index_in = 0, index_zo = 0;
 
   double *xi;
-  int dsizes_xi[NCL_MAX_DIMENSIONS];
+  int dsizes_xi[1];
   double *yi;
-  int dsizes_yi[NCL_MAX_DIMENSIONS];
+  int dsizes_yi[1];
   double *zi;
   int ndims_zi, dsizes_zi[NCL_MAX_DIMENSIONS];
   int *knots;
   double *xo;
-  int dsizes_xo[NCL_MAX_DIMENSIONS];
+  int dsizes_xo[1];
   double *yo;
-  int dsizes_yo[NCL_MAX_DIMENSIONS];
+  int dsizes_yo[1];
 
   double *zo, *zo_tmp;
   int ndims_zo, *dsizes_zo;
@@ -1852,20 +1913,20 @@ NhlErrorTypes csa2xd_W(void)
   int ier = 0, index_in = 0, index_zo = 0;
 
   double *xi;
-  int dsizes_xi[NCL_MAX_DIMENSIONS];
+  int dsizes_xi[1];
   double *yi;
-  int dsizes_yi[NCL_MAX_DIMENSIONS];
+  int dsizes_yi[1];
   double *zi;
   int ndims_zi, dsizes_zi[NCL_MAX_DIMENSIONS];
   double *wts;
-  int dsizes_wts[NCL_MAX_DIMENSIONS];
+  int dsizes_wts[1];
   int *knots;
   double *smth;
   int *nderiv;
   double *xo;
-  int dsizes_xo[NCL_MAX_DIMENSIONS];
+  int dsizes_xo[1];
   double *yo;
-  int dsizes_yo[NCL_MAX_DIMENSIONS];
+  int dsizes_yo[1];
 
   double *zo, *zo_tmp;
   int ndims_zo, *dsizes_zo;
@@ -2009,16 +2070,16 @@ NhlErrorTypes csa2ld_W(void)
   int ier = 0, index_in = 0, index_zo = 0, scalar_zo;
 
   double *xi;
-  int dsizes_xi[NCL_MAX_DIMENSIONS];
+  int dsizes_xi[1];
   double *yi;
-  int dsizes_yi[NCL_MAX_DIMENSIONS];
+  int dsizes_yi[1];
   double *zi;
   int ndims_zi, dsizes_zi[NCL_MAX_DIMENSIONS];
   int *knots;
   double *xo;
-  int dsizes_xo[NCL_MAX_DIMENSIONS];
+  int dsizes_xo[1];
   double *yo;
-  int dsizes_yo[NCL_MAX_DIMENSIONS];
+  int dsizes_yo[1];
 
   double *zo, *zo_tmp;
   int ndims_zo, *dsizes_zo;
@@ -2141,20 +2202,20 @@ NhlErrorTypes csa2lxd_W(void)
   int ier = 0, index_in = 0, index_zo = 0;
 
   double *xi;
-  int dsizes_xi[NCL_MAX_DIMENSIONS];
+  int dsizes_xi[1];
   double *yi;
-  int dsizes_yi[NCL_MAX_DIMENSIONS];
+  int dsizes_yi[1];
   double *zi;
   int ndims_zi, dsizes_zi[NCL_MAX_DIMENSIONS];
   double *wts;
-  int dsizes_wts[NCL_MAX_DIMENSIONS];
+  int dsizes_wts[1];
   int *knots;
   double *smth;
   int *nderiv;
   double *xo;
-  int dsizes_xo[NCL_MAX_DIMENSIONS];
+  int dsizes_xo[1];
   double *yo;
-  int dsizes_yo[NCL_MAX_DIMENSIONS];
+  int dsizes_yo[1];
 
   double *zo, *zo_tmp;
   int ndims_zo, *dsizes_zo;
@@ -2307,24 +2368,24 @@ NhlErrorTypes csa3xd_W(void)
   int ier = 0, index_in = 0, index_uo = 0;
 
   double *xi;
-  int dsizes_xi[NCL_MAX_DIMENSIONS];
+  int dsizes_xi[1];
   double *yi;
-  int dsizes_yi[NCL_MAX_DIMENSIONS];
+  int dsizes_yi[1];
   double *zi;
-  int dsizes_zi[NCL_MAX_DIMENSIONS];
+  int dsizes_zi[1];
   double *ui;
   int ndims_ui, dsizes_ui[NCL_MAX_DIMENSIONS];
   double *wts;
-  int dsizes_wts[NCL_MAX_DIMENSIONS];
+  int dsizes_wts[1];
   int *knots;
   double *smth;
   int *nderiv;
   double *xo;
-  int dsizes_xo[NCL_MAX_DIMENSIONS];
+  int dsizes_xo[1];
   double *yo;
-  int dsizes_yo[NCL_MAX_DIMENSIONS];
+  int dsizes_yo[1];
   double *zo;
-  int dsizes_zo[NCL_MAX_DIMENSIONS];
+  int dsizes_zo[1];
 
   double *uo, *uo_tmp;
   int ndims_uo, *dsizes_uo;
@@ -2483,20 +2544,20 @@ NhlErrorTypes csa3d_W(void)
   int ier = 0, index_in = 0, index_uo = 0;
 
   double *xi;
-  int dsizes_xi[NCL_MAX_DIMENSIONS];
+  int dsizes_xi[1];
   double *yi;
-  int dsizes_yi[NCL_MAX_DIMENSIONS];
+  int dsizes_yi[1];
   double *zi;
-  int dsizes_zi[NCL_MAX_DIMENSIONS];
+  int dsizes_zi[1];
   double *ui;
   int ndims_ui, dsizes_ui[NCL_MAX_DIMENSIONS];
   int *knots;
   double *xo;
-  int dsizes_xo[NCL_MAX_DIMENSIONS];
+  int dsizes_xo[1];
   double *yo;
-  int dsizes_yo[NCL_MAX_DIMENSIONS];
+  int dsizes_yo[1];
   double *zo;
-  int dsizes_zo[NCL_MAX_DIMENSIONS];
+  int dsizes_zo[1];
 
   double *uo, *uo_tmp;
   int ndims_uo, *dsizes_uo;
@@ -2625,24 +2686,24 @@ NhlErrorTypes csa3lxd_W(void)
   int ier = 0, index_in = 0, index_uo = 0;
 
   double *xi;
-  int dsizes_xi[NCL_MAX_DIMENSIONS];
+  int dsizes_xi[1];
   double *yi;
-  int dsizes_yi[NCL_MAX_DIMENSIONS];
+  int dsizes_yi[1];
   double *zi;
-  int dsizes_zi[NCL_MAX_DIMENSIONS];
+  int dsizes_zi[1];
   double *ui;
   int ndims_ui, dsizes_ui[NCL_MAX_DIMENSIONS];
   double *wts;
-  int dsizes_wts[NCL_MAX_DIMENSIONS];
+  int dsizes_wts[1];
   int *knots;
   double *smth;
   int *nderiv;
   double *xo;
-  int dsizes_xo[NCL_MAX_DIMENSIONS];
+  int dsizes_xo[1];
   double *yo;
-  int dsizes_yo[NCL_MAX_DIMENSIONS];
+  int dsizes_yo[1];
   double *zo;
-  int dsizes_zo[NCL_MAX_DIMENSIONS];
+  int dsizes_zo[1];
 
   double *uo, *uo_tmp;
   int ndims_uo, *dsizes_uo;
@@ -2816,20 +2877,20 @@ NhlErrorTypes csa3ld_W(void)
   int ier = 0, index_in = 0, index_uo = 0;
 
   double *xi;
-  int dsizes_xi[NCL_MAX_DIMENSIONS];
+  int dsizes_xi[1];
   double *yi;
-  int dsizes_yi[NCL_MAX_DIMENSIONS];
+  int dsizes_yi[1];
   double *zi;
-  int dsizes_zi[NCL_MAX_DIMENSIONS];
+  int dsizes_zi[1];
   double *ui;
   int ndims_ui, dsizes_ui[NCL_MAX_DIMENSIONS];
   int *knots;
   double *xo;
-  int dsizes_xo[NCL_MAX_DIMENSIONS];
+  int dsizes_xo[1];
   double *yo;
-  int dsizes_yo[NCL_MAX_DIMENSIONS];
+  int dsizes_yo[1];
   double *zo;
-  int dsizes_zo[NCL_MAX_DIMENSIONS];
+  int dsizes_zo[1];
 
   double *uo, *uo_tmp;
   int ndims_uo, *dsizes_uo;
@@ -2999,22 +3060,35 @@ NhlErrorTypes csa1x_W(void)
                                &type_yi, 2);
  
 /*
- * Check number of dimensions for arguments #0 and 1.
+ * Either the dimensions of xi and yi must be the same, or if xi
+ * is 1D and yi is nD, then the last dimension of yi must be equal
+ * to the dimension of xi.
  */
-  if(ndims_xi != ndims_yi) {
-    NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "csa1x: Arguments #0 and 1 must have the same number of dimensions.");
-    return(NhlFATAL);
-  }
-  for( i = 0; i < ndims_xi; i++ ) {
-    if(dsizes_xi[i] != dsizes_yi[i]) {
+  if(ndims_xi > 1) {
+    if(ndims_xi != ndims_yi) {
       NhlPError(NhlFATAL, NhlEUNKNOWN,
-                "csa1x: Arguments #0 and 1 must have the same dimensions sizes.");
+                "csa1x: If arguments #0 and 1 are multi-dimensional, they must have the same dimensions sizes.");
+      return(NhlFATAL);
+    }
+    else {
+      for( i = 0; i < ndims_xi; i++ ) {
+        if(dsizes_xi[i] != dsizes_yi[i]) {
+          NhlPError(NhlFATAL, NhlEUNKNOWN,
+                    "csa1x: If arguments #0 and 1 are multi-dimensional, they must have the same dimensions sizes.");
+          return(NhlFATAL);
+        }
+      }
+    }
+  }
+  else {
+    if(dsizes_xi[0] != dsizes_yi[ndims_yi-1]) {
+      NhlPError(NhlFATAL, NhlEUNKNOWN,
+                "csa1x: If argument #0 is one-dimensional, it must be the same as the rightmost dimension of argument #1.");
       return(NhlFATAL);
     }
   }
 
-  npts = dsizes_xi[ndims_xi-1];
+  npts = dsizes_yi[ndims_yi-1];
 
 /*
  * Create temp arrays for coercing xi and yi to double if necessary.
@@ -3080,7 +3154,7 @@ NhlErrorTypes csa1x_W(void)
  * Compute the total size of the leftmost dimension.
  */
   size_leftmost = 1;
-  for( i = 0; i < ndims_xi-1; i++ ) size_leftmost *= dsizes_xi[i];
+  for( i = 0; i < ndims_yi-1; i++ ) size_leftmost *= dsizes_yi[i];
 
 /*
  * Retrieve argument #3 (knots).
@@ -3131,7 +3205,7 @@ NhlErrorTypes csa1x_W(void)
     type_yo = NCL_float;
     yo      = (void *) calloc(size_output, sizeof(float));
   }
-  dsizes_yo = (int *) calloc(   ndims_xi, sizeof(int));
+  dsizes_yo = (int *) calloc(   ndims_yi, sizeof(int));
 
   if(yo == NULL || dsizes_yo == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -3139,24 +3213,26 @@ NhlErrorTypes csa1x_W(void)
     return(NhlFATAL);
   }
 
-  for( i = 0; i < ndims_xi-1; i++ ) dsizes_yo[i] = dsizes_xi[i];
-  dsizes_yo[ndims_xi-1] = nxo;
+  for( i = 0; i < ndims_yi-1; i++ ) dsizes_yo[i] = dsizes_yi[i];
+  dsizes_yo[ndims_yi-1] = nxo;
 
 /*
  * Loop through leftmost dimensions.
  */
   for( i = 0; i < size_leftmost; i++ ) {
-    if(type_xi != NCL_double) {
+    if(ndims_xi > 1 || i == 0) {
+      if(type_xi != NCL_double) {
 /*
  * Coerce npts subsection of xi (tmp_xi) to double.
  */
-      coerce_subset_input_double(xi,tmp_xi,index_in,type_xi,npts,0,NULL,NULL);
-    }
-    else {
+        coerce_subset_input_double(xi,tmp_xi,index_in,type_xi,npts,0,NULL,NULL);
+      }
+      else {
 /*
  * Point tmp_xi to appropriate location in xi.
  */
-      tmp_xi = &((double*)xi)[index_in];
+        tmp_xi = &((double*)xi)[index_in];
+      }
     }
 
     if(type_yi != NCL_double) {
@@ -3194,7 +3270,7 @@ NhlErrorTypes csa1x_W(void)
   if(type_smth != NCL_double)               NclFree(tmp_smth);
   if(type_xo   != NCL_double)               NclFree(tmp_xo);
 
-  return(NclReturnValue(yo, ndims_xi, dsizes_yo, NULL, type_yo, 0));
+  return(NclReturnValue(yo, ndims_yi, dsizes_yo, NULL, type_yo, 0));
 }
 
 
@@ -3230,21 +3306,35 @@ NhlErrorTypes csa1_W(void)
                                &type_yi, 2);
  
 /*
- * Check number of dimensions for arguments #0 and 1.
+ * Either the dimensions of xi and yi must be the same, or if xi
+ * is 1D and yi is nD, then the last dimension of yi must be equal
+ * to the dimension of xi.
  */
-  if(ndims_xi != ndims_yi) {
-    NhlPError(NhlFATAL, NhlEUNKNOWN,
-              "csa1: Arguments #0 and 1 must have the same number of dimensions.");
-    return(NhlFATAL);
-  }
-  for( i = 0; i < ndims_xi; i++ ) {
-    if(dsizes_xi[i] != dsizes_yi[i]) {
+  if(ndims_xi > 1) {
+    if(ndims_xi != ndims_yi) {
       NhlPError(NhlFATAL, NhlEUNKNOWN,
-                "csa1: Arguments #0 and 1 must have the same dimensions sizes.");
+                "csa1: If arguments #0 and 1 are multi-dimensional, they must have the same dimensions sizes.");
+      return(NhlFATAL);
+    }
+    else {
+      for( i = 0; i < ndims_xi; i++ ) {
+        if(dsizes_xi[i] != dsizes_yi[i]) {
+          NhlPError(NhlFATAL, NhlEUNKNOWN,
+                    "csa1: If arguments #0 and 1 are multi-dimensional, they must have the same dimensions sizes.");
+          return(NhlFATAL);
+        }
+      }
+    }
+  }
+  else {
+    if(dsizes_xi[0] != dsizes_yi[ndims_yi-1]) {
+      NhlPError(NhlFATAL, NhlEUNKNOWN,
+                "csa1: If argument #0 is one-dimensional, it must be the same as the rightmost dimension of argument #1.");
       return(NhlFATAL);
     }
   }
-  npts = dsizes_xi[ndims_xi-1];
+
+  npts = dsizes_yi[ndims_yi-1];
 
 /*
  * Create temp arrays for coercing xi and yi to double if ncessary.
@@ -3269,7 +3359,7 @@ NhlErrorTypes csa1_W(void)
  * Compute the total size of the leftmost dimension.
  */
   size_leftmost = 1;
-  for( i = 0; i < ndims_xi-1; i++ ) size_leftmost *= dsizes_xi[i];
+  for( i = 0; i < ndims_yi-1; i++ ) size_leftmost *= dsizes_yi[i];
 
 /*
  * Retrieve argument #2 (knots).
@@ -3302,7 +3392,7 @@ NhlErrorTypes csa1_W(void)
     type_yo = NCL_float;
     yo      = (void *) calloc(size_output, sizeof(float));
   }
-  dsizes_yo = (int *) calloc(   ndims_xi, sizeof(int));
+  dsizes_yo = (int *) calloc(   ndims_yi, sizeof(int));
 
   if(yo == NULL || dsizes_yo == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -3310,24 +3400,26 @@ NhlErrorTypes csa1_W(void)
     return(NhlFATAL);
   }
 
-  for( i = 0; i < ndims_xi-1; i++ ) dsizes_yo[i] = dsizes_xi[i];
-  dsizes_yo[ndims_xi-1] = nxo;
+  for( i = 0; i < ndims_yi-1; i++ ) dsizes_yo[i] = dsizes_yi[i];
+  dsizes_yo[ndims_yi-1] = nxo;
 
 /*
  * Loop through leftmost dimensions.
  */
   for( i = 0; i < size_leftmost; i++ ) {
-    if(type_xi != NCL_double) {
+    if(ndims_xi > 1 || i == 0) {
+      if(type_xi != NCL_double) {
 /*
  * Coerce npts subsection of xi (tmp_xi) to double.
  */
-      coerce_subset_input_double(xi,tmp_xi,index_in,type_xi,npts,0,NULL,NULL);
-    }
-    else {
+        coerce_subset_input_double(xi,tmp_xi,index_in,type_xi,npts,0,NULL,NULL);
+      }
+      else {
 /*
  * Point tmp_xi to appropriate location in xi.
  */
-      tmp_xi = &((double*)xi)[index_in];
+        tmp_xi = &((double*)xi)[index_in];
+      }
     }
 
     if(type_yi != NCL_double) {
@@ -3362,7 +3454,7 @@ NhlErrorTypes csa1_W(void)
   if(type_yi   != NCL_double) NclFree(tmp_yi);
   if(type_xo   != NCL_double) NclFree(tmp_xo);
 
-  return(NclReturnValue(yo, ndims_xi, dsizes_yo, NULL, type_yo, 0));
+  return(NclReturnValue(yo, ndims_yi, dsizes_yo, NULL, type_yo, 0));
 
 }
 
@@ -3370,8 +3462,8 @@ NhlErrorTypes csa2_W(void)
 {
   void *xi, *yi, *zi, *xo, *yo;
   int *knots;
-  int dsizes_xi[NCL_MAX_DIMENSIONS];
-  int dsizes_yi[NCL_MAX_DIMENSIONS];
+  int dsizes_xi[1];
+  int dsizes_yi[1];
   int ndims_zi, dsizes_zi[NCL_MAX_DIMENSIONS];
   int dsizes_xo[1], dsizes_yo[1];
   NclBasicDataTypes type_xi, type_yi, type_zi, type_xo, type_yo;
@@ -3797,8 +3889,8 @@ NhlErrorTypes csa2l_W(void)
 {
   void *xi, *yi, *zi, *xo, *yo;
   int *knots;
-  int dsizes_xi[NCL_MAX_DIMENSIONS];
-  int dsizes_yi[NCL_MAX_DIMENSIONS];
+  int dsizes_xi[1];
+  int dsizes_yi[1];
   int ndims_zi, dsizes_zi[NCL_MAX_DIMENSIONS];
   int dsizes_xo[1], dsizes_yo[1];
   NclBasicDataTypes type_xi, type_yi, type_zi, type_xo, type_yo;
