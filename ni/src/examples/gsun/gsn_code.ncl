@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.142 2004-05-19 15:40:37 haley Exp $
+;      $Id: gsn_code.ncl,v 1.143 2004-05-27 15:12:33 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -2269,7 +2269,7 @@ end
 ; NCGM is given a default name "gmeta.type".                            ;
 ;***********************************************************************;
 function gsn_open_image(type:string,name[1]:string)
-local image, res_file, type2
+local image, res_file
 begin
     res_file = get_res_value_keep(name,"res_file","gsnapp")
     wkwidth  = get_res_value_keep(type,"wkWidth",512)
@@ -4931,11 +4931,19 @@ begin
 ; the bottommost plot. If attaching on the Y axis, start with the
 ; rightmost plot.
 ;
-  zone = get_res_value(res2,"amZone",2)
-  para = get_res_value(res2,"amParallelPosF",0.5)
-  orth = get_res_value(res2,"amOrthogonalPosF",0.0)
-
   annos = new(nplots,graphic)
+
+  zone = get_res_value(res2,"amZone",1)
+  orth = get_res_value(res2,"amOrthogonalPosF",0.0)
+  para = get_res_value(res2,"amParallelPosF",0.5)
+
+  if(attach_y) then
+    side = get_res_value(res2,"amSide","Right")
+    just = get_res_value(res2,"amJust","CenterLeft")
+  else
+    side = get_res_value(res2,"amSide","Bottom")
+    just = get_res_value(res2,"amJust","TopCenter")
+  end if
 
   do i=nplots-1,0,1
     if(i.gt.0) then
@@ -4943,23 +4951,14 @@ begin
     else
       annos(0) = NhlAddAnnotation(base,plots(0))
     end if
-    if(attach_y) then
-      setvalues annos(i)
-        "amZone"          : zone
-        "amSide"          : "right"  ; Plot at right.
-        "amResizeNotify"  : True     ; Allow resize if plot resized.
-        "amParallelPosF"  : para
-        "amOrthogonalPosF": orth
-      end setvalues
-    else
-      setvalues annos(i)
-        "amZone"          : zone
-        "amSide"          : "bottom" ; Plot at bottom
-        "amResizeNotify"  : True     ; Allow resize if plot resized.
-        "amParallelPosF"  : para
-        "amOrthogonalPosF": orth
+    setvalues annos(i)
+      "amZone"          : zone
+      "amJust"          : just
+      "amSide"          : side
+      "amResizeNotify"  : True     ; Allow resize if plot resized.
+      "amParallelPosF"  : para
+      "amOrthogonalPosF": orth
     end setvalues
-    end if
   end do
 ;
 ; Check for maximization. The plot does not get drawn in this
