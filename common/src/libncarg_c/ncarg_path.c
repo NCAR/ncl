@@ -1,5 +1,5 @@
 /*
- *      $Id: ncarg_path.c,v 1.22 1998-09-18 23:07:01 boote Exp $
+ *      $Id: ncarg_path.c,v 1.23 1999-08-31 20:40:26 ethan Exp $
  */
 /*
  *	File:		ncarg_path.c
@@ -214,6 +214,8 @@ const	char	*_NGGetNCARGEnv(name)
 	static char	*env_vals[(sizeof(env_vars)/sizeof(env_vars[0]))] =
 					{ NULL };
 
+	static 		tt = 1;
+
 	int		i=0;
 	char		**current;
 
@@ -315,10 +317,11 @@ const	char	*_NGGetNCARGEnv(name)
 								env_name);
 					return NULL;
 				}
-
+/*
 #define	EMSGSTR "\n\nWarning: %s environment variable not set.\n\tAssuming %s as the value for\n\t%s.\n\tPlease see the 'ncargintro' man page for\n\tinformation on the %s environment variable.\n\n"
 				fprintf(stderr,EMSGSTR,env_name,direct_val,
 							env_name,env_name);
+*/
 			}
 		}
 		/*
@@ -326,6 +329,10 @@ const	char	*_NGGetNCARGEnv(name)
 		 */
 		else
 			return NULL;
+	} else {
+		if(*(current+2)){
+			 (void*)_NGGetNCARGEnv(*(current+2));
+		}
 	}
 
 	cs = _NGResolvePath(direct_val);
@@ -366,7 +373,6 @@ const	char	*_NGGetNCARGEnv(name)
 		}
 		strcpy(env_vals[i],stmp);
 	}
-
 	return env_vals[i];
 }
 
