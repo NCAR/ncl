@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.23 1994-10-31 01:08:47 boote Exp $
+ *      $Id: XyPlot.c,v 1.24 1994-11-03 05:17:37 boote Exp $
  */
 /************************************************************************
 *									*
@@ -768,14 +768,6 @@ XyDataClassInitialize
 ()
 #endif
 {
-	_NhlEnumVals	altplace[] = {
-		{NhlNONE,	"none"},
-		{NhlLEFTAXIS,	"leftaxis"},
-		{NhlRIGHTAXIS,	"rightaxis"},
-		{NhlTOPAXIS,	"topaxis"},
-		{NhlBOTTOMAXIS,	"bottomaxis"}
-	};
-
 	_NhlEnumVals	lblmode[] = {
 		{NhlNOLABELS,	"nolabels"},
 		{NhlLETTERED,	"lettered"},
@@ -788,7 +780,6 @@ XyDataClassInitialize
 		{NhlMARKLINES, "marklines"}
 	};
 
-	_NhlRegisterEnumType(NhlTAlternatePlace,altplace,NhlNumber(altplace));
 	_NhlRegisterEnumType(NhlTLineLabelModes,lblmode,NhlNumber(lblmode));
 	_NhlRegisterEnumType(NhlTMarkerModes,mkrmode,NhlNumber(mkrmode));
 	Qint = NrmStringToQuark(NhlTInteger);
@@ -820,8 +811,17 @@ XyPlotClassInitialize
 ()
 #endif
 {
+	_NhlEnumVals	altplace[] = {
+		{NhlNONE,	"none"},
+		{NhlLEFTAXIS,	"leftaxis"},
+		{NhlRIGHTAXIS,	"rightaxis"},
+		{NhlTOPAXIS,	"topaxis"},
+		{NhlBOTTOMAXIS,	"bottomaxis"}
+	};
+
 
 	Qfloat = NrmStringToQuark(NhlTFloat);
+	_NhlRegisterEnumType(NhlTAlternatePlace,altplace,NhlNumber(altplace));
 
 	return NhlNOERROR;
 }

@@ -1,5 +1,5 @@
 /*
- *      $Id: SetValues.c,v 1.10 1994-10-31 01:08:42 boote Exp $
+ *      $Id: SetValues.c,v 1.11 1994-11-03 05:17:35 boote Exp $
  */
 /************************************************************************
 *									*
@@ -508,7 +508,7 @@ NhlVASetValues
 	l = _NhlGetLayer(id);
 	if(l == NULL){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
-				"PID #%d can't be found in NhlSetValues",id);
+				"PID #%d can't be found in NhlVASetValues",id);
 		return(NhlFATAL);
 	}
 	ret = _NhlSetValues(l,args,num_args);

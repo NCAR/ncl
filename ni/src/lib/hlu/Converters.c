@@ -1,5 +1,5 @@
 /*
- *      $Id: Converters.c,v 1.20 1994-08-11 21:36:56 boote Exp $
+ *      $Id: Converters.c,v 1.21 1994-11-03 05:17:34 boote Exp $
  */
 /************************************************************************
 *									*
@@ -926,6 +926,26 @@ CvtArgs
 	strcpy(tstring,from->data.strval);
 
 	SetVal(NhlString,sizeof(NhlString),tstring);
+}
+
+/*ARGSUSED*/
+static NhlErrorTypes
+NhlCvtStringToQuark
+CvtArgs
+{
+	char		func[] = "NhlCvtStringToQuark";
+	NrmQuark	tq;
+	NhlErrorTypes	ret = NhlNOERROR;
+
+	if(nargs != 0){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			"%s:Called with improper number of args",func);
+		return NhlFATAL;
+	}
+
+	tq = NrmStringToQuark(from->data.strval);
+
+	SetVal(NrmQuark,sizeof(NrmQuark),tq);
 }
 
 /*ARGSUSED*/
@@ -2096,6 +2116,9 @@ _NhlConvertersInitialize
 	_RegToAll(Long)
 	_RegToAll(Short)
 	_RegToAll(String)
+
+	(void)NhlRegisterConverter(NhlTString,NhlTQuark,NhlCvtStringToQuark,
+							NULL,0,False,NULL);
 
 	/*
 	 * take care of all Quark to Scalar conversions

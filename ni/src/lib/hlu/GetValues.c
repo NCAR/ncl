@@ -1,5 +1,5 @@
 /*
- *      $Id: GetValues.c,v 1.11 1994-08-11 21:37:03 boote Exp $
+ *      $Id: GetValues.c,v 1.12 1994-11-03 05:17:35 boote Exp $
  */
 /************************************************************************
 *									*
@@ -463,6 +463,11 @@ NhlGetValues
 			CopyArgToArgptr(gextra[i].value_ret,
 				args[i].value.ptrval,gextra[i].size_ret);
 		}
+		else if(gextra[i].type_ret == NrmNULLQUARK){
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
+					"NhlGetValues:Error retrieving %s",
+					NrmQuarkToString(args[i].quark));
+		}
 		else{
 			/*
 			 * Call Converter
@@ -522,12 +527,12 @@ NhlGetValues
 									tstr);
 				}
 			}
-			else if(args[i].type == genQ){
+			else if(_NhlIsSubtypeQ(genQ,args[i].type)){
 			/*
-			 * This really shouldn't happen.  All Array getvalues
-			 * should be using one of the (Exp)export types.
-			 * But just in case...  (only catch a GenArray, not
-			 * all the specific cases of GenArray)
+			 * This really shouldn't happen much.  All Array
+			 * getvalues should be using one of the (Exp)export
+			 * types.
+			 * But just in case...
 			 */
 				NhlGenArray	tgen =
 					*(NhlGenArray *)args[i].value.ptrval;
