@@ -1,5 +1,5 @@
 /*
- *      $Id: App.c,v 1.10 1995-03-15 11:48:23 boote Exp $
+ *      $Id: App.c,v 1.11 1995-03-29 10:01:39 boote Exp $
  */
 /************************************************************************
 *									*
@@ -121,24 +121,27 @@ GetSysAppDir
 static NhlResource resources[] = {
 /* Begin-documented-resources */
 	{NhlNappUsrDir,NhlCappUsrDir,NhlTString,sizeof(NhlString),
-		Oset(usr_appdir),NhlTImmediate,(NhlPointer)"./",0,
-							(NhlFreeFunc)NhlFree},
+		Oset(usr_appdir),NhlTImmediate,(NhlPointer)"./",
+		_NhlRES_NOSACCESS,(NhlFreeFunc)NhlFree},
 	{NhlNappSysDir,NhlCappSysDir,NhlTString,sizeof(NhlString),
-		Oset(sys_appdir),NhlTProcedure,(NhlPointer)GetSysAppDir,0,
-							(NhlFreeFunc)NhlFree},
+		Oset(sys_appdir),NhlTProcedure,(NhlPointer)GetSysAppDir,
+		_NhlRES_NOSACCESS,(NhlFreeFunc)NhlFree},
 	{NhlNappFileSuffix,NhlCappFileSuffix,NhlTString,sizeof(NhlString),
-		Oset(file_suffix),NhlTImmediate,(NhlPointer)".res",0,
-							(NhlFreeFunc)NhlFree},
+		Oset(file_suffix),NhlTImmediate,(NhlPointer)".res",
+		_NhlRES_NOSACCESS,(NhlFreeFunc)NhlFree},
 	{NhlNappDefaultParent,NhlCappDefaultParent,NhlTBoolean,
-		sizeof(NhlBoolean),
-		Oset(default_parent),NhlTImmediate,(NhlPointer)False,0,NULL},
+		sizeof(NhlBoolean),Oset(default_parent),NhlTImmediate,
+		(NhlPointer)False,_NhlRES_DEFAULT,NULL},
 /* End-documented-resources */
 	{_NhlNappMode,_NhlCappMode,NhlTInteger,sizeof(_NhlC_OR_F),
-		Oset(init_mode),NhlTImmediate,(NhlPointer)_NhlNONE,0,NULL},
+		Oset(init_mode),NhlTImmediate,(NhlPointer)_NhlNONE,
+		_NhlRES_CONLY,NULL},
 	{_NhlNdefApp,_NhlCdefApp,NhlTBoolean,sizeof(NhlBoolean),
-		Oset(default_app),NhlTImmediate,(NhlPointer)False,0,NULL},
+		Oset(default_app),NhlTImmediate,(NhlPointer)False,
+		_NhlRES_CONLY,NULL},
 	{_NhlNnoAppDB,_NhlCnoAppDB,NhlTBoolean,sizeof(NhlBoolean),
-		Oset(no_appDB),NhlTImmediate,(NhlPointer)False,0,NULL}
+		Oset(no_appDB),NhlTImmediate,(NhlPointer)False,_NhlRES_CONLY,
+		NULL}
 };
 #undef Oset
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: DataComm.c,v 1.27 1995-03-14 21:06:01 haley Exp $
+ *      $Id: DataComm.c,v 1.28 1995-03-29 10:01:44 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1905,7 +1905,7 @@ _NhlUpdateData
  * Returns:	NhlErrorTypes
  * Side Effect:	
  */
-NhlErrorTypes
+int
 NhlAddData
 #if	NhlNeedProto
 (

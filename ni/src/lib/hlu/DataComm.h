@@ -1,5 +1,5 @@
 /*
- *      $Id: DataComm.h,v 1.9 1995-03-13 21:47:25 dbrown Exp $
+ *      $Id: DataComm.h,v 1.10 1995-03-29 10:01:45 boote Exp $
  */
 /************************************************************************
 *									*
@@ -42,7 +42,7 @@ extern NhlErrorTypes NhlUpdateData(
 #endif
 );
 
-extern NhlErrorTypes NhlAddData(
+extern int NhlAddData(
 #if	NhlNeedProto
 	int		dcommid,	/* id of layer w/ data resource	*/
 	NhlString	res_name,	/* name of data resource	*/

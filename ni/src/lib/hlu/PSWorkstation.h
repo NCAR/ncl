@@ -1,5 +1,5 @@
 /*
- *      $Id: PSWorkstation.h,v 1.1 1995-03-24 11:27:34 boote Exp $
+ *      $Id: PSWorkstation.h,v 1.2 1995-03-29 10:01:46 boote Exp $
  */
 /************************************************************************
 *									*
@@ -39,6 +39,9 @@
 #define	NhlNwkFullBackground	"wkFullBackground"
 #define	NhlCwkFullBackground	"WkFullBackground"
 
+#define	NhlNwkPSResolution	"wkPSResolution"
+#define	NhlCwkPSResolution	"WkPSResolution"
+
 #define	NhlNwkDeviceLowerX	"wkDeviceLowerX"
 #define	NhlCwkDeviceLowerX	"WkDeviceLowerX"
 
@@ -51,18 +54,9 @@
 #define	NhlNwkDeviceUpperY	"wkDeviceUpperY"
 #define	NhlCwkDeviceUpperY	"WkDeviceUpperY"
 
-#define	NhlNwkPSResolution	"wkPSResolution"
-#define	NhlCwkPSResolution	"WkPSResolution"
-
 /*
  * New Types.
  */
-
-#define	NhlTVisualType	"VisualType"
-typedef enum _NhlVisualType{
-	NhlCOLOR = 0,
-	NhlMONOCHROME = 3
-} NhlVisualType;
 
 #define	NhlTPSFormat	"PSFormat"
 typedef enum _NhlPSFormat{
@@ -70,6 +64,12 @@ typedef enum _NhlPSFormat{
 	NhlEPS = 1,
 	NhlEPSI = 2
 } NhlPSFormat;
+
+#define	NhlTVisualType	"VisualType"
+typedef enum _NhlVisualType{
+	NhlCOLOR = 0,
+	NhlMONOCHROME = 3
+} NhlVisualType;
 
 #define NhlTWorkOrientation	"WorkOrientation"
 typedef enum _NhlWorkOrientation{

@@ -1,5 +1,5 @@
 /*
- *      $Id: Converters.c,v 1.33 1995-03-20 19:58:38 boote Exp $
+ *      $Id: Converters.c,v 1.34 1995-03-29 10:01:41 boote Exp $
  */
 /************************************************************************
 *									*
@@ -3087,6 +3087,17 @@ _NhlConvertersInitialize
 			{35,	"text-symbols"},
 			{36,	"weather1"},
 			{37,	"weather2"},
+			{121,	"o_helvetica"},
+			{122,	"o_helvetica-bold"},
+			{125,	"o_times-roman"},
+			{126,	"o_times-bold"},
+			{129,	"o_courier"},
+			{130,	"o_courier-bold"},
+			{133,	"o_greek"},
+			{134,	"o_math-symbols"},
+			{135,	"o_text-symbols"},
+			{136,	"o_weather1"},
+			{137,	"o_weather2"},
 			};
 
 
