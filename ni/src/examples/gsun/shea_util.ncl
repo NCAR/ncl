@@ -1,5 +1,5 @@
 ;
-;      $Id: shea_util.ncl,v 1.8 2004-02-09 16:47:24 haley Exp $
+;      $Id: shea_util.ncl,v 1.9 2004-03-09 21:22:36 shea Exp $
 ;
 ; ******************** NOTE *******************************
 ; These are my personal functions/procedures. They do things
@@ -2046,5 +2046,85 @@ begin
   yNew(N1)   = y(npt-1)
 
   return(yNew)
+end
+; ----------------------------------------------------------
+; Adam Phillips
+;
+procedure TimeSourceStamp (wks:graphic, chSize:float, Data:string )
+
+; Place text on plot to indicate the data source, program, and 
+; time created. This procedure must be invoked prior to any advance
+; frame call. Modified from Dennis Shea's procedure infoTimeStamp.
+; The program name is found automatically, no need to enter name.
+; If the user chooses not to include a data source (just enters ""),
+; the data source line is not plotted. Works for both landscaped
+; and portrait plots, as well as maximized plots.
+;
+; examples:
+;          (0) wks =  gsn_open_wks("ncgm","bogus") 
+;          (1) TimeSourceStamp (wks, 0.01, "slp.mon.mean.nc")
+;              [plot]
+; txJust: http://ngwww.ucar.edu/ngdoc/ng4.1/./qsg/textitem/tx06.html
+
+local yBot, xLeft, xRight, xoff_set, yoff_set,txres, TimeStamp, script_name \
+    , ps_xLeft, ps_yLeft, ps_xRight, ps_orient
+begin
+   yBot                = 0.001
+   xLeft               = 0.001
+   xRight              = 0.999
+                                        ; Sylvia Murphy mods
+   if (NhlClassName(wks).eq."psWorkstationClass") then
+      getvalues wks
+         "wkDeviceLowerX"   : ps_xLeft
+         "wkDeviceLowerY"   : ps_yLeft
+         "wkDeviceUpperX"   : ps_xRight
+	 "wkOrientation"    : ps_orient
+      end getvalues
+      
+      if(ps_xLeft .lt. 0)then           ; 36 is default, 0 is the beginning
+         xoff_set = fabs(ps_xLeft/612.) ; 612 is 8.5 * 72 in-1
+         xLeft = 0.02941 + xoff_set     ; .02941 is 1/4 of an inch
+      else                              ; which is the margin required
+         xLeft = 0.02941                ; when printing postscript 
+      end if
+
+      if(ps_xRight .gt. 612)then              ; 576 is default,612 is end
+         xoff_set = fabs(1 - (ps_xRight/612.)); 612 is 8.5 * 72 in-1
+         xRight= 0.97059 - xoff_set
+      else
+         xRight = 0.97059
+      end if
+
+      if(ps_yLeft .lt. 0)then         ; 126 is default, 0 is the beginning
+         yoff_set = fabs(ps_yLeft/792.) ; 792 is 11  * 72 in-1
+         yBot  = 0.02941  + yoff_set
+      else
+         yBot  = 0.02941
+      end if
+      
+      if (ps_orient.eq.6.and.xLeft.ne.0.02941) then	
+         yBot = yBot+.1		;exception for landscaped plots
+  	 xLeft  = xLeft - .08	
+	 xRight = xRight+ .08	
+      end if
+;      print("yBot = "+yBot+", xLeft = "+xLeft+", xRight = "+xRight)
+   end if
+   script_name = systemfunc("pwd")+"/"+get_script_name()+".ncl"
+
+   txres               = True         ; additional info
+   txres@txFontHeightF = chSize       ; size of meta data
+   txres@txJust        = "BottomRight"
+   if (Data.ne."") then
+      gsn_text_ndc  (wks, "Data Source: "+Data ,xRight,yBot + .022 ,txres)
+   end if
+   if (ismissing(script_name)) then
+      gsn_text_ndc  (wks, "Program: Not retrievable" , xRight , yBot, txres)
+   else
+      gsn_text_ndc  (wks, "Program: "+script_name , xRight , yBot, txres)
+   end if
+
+   TimeStamp           = systemfunc( "date" )
+   txres@txJust        = "BottomLeft"
+   gsn_text_ndc  (wks,"Created: "+TimeStamp , xLeft, yBot, txres)
 end
 
