@@ -165,7 +165,8 @@ BuildRasterAbekas	YES
 BuildRasterBinary	YES
 BuildXlibDependentCode	YES
 BuildSunViewctrans	NO
-HDFlib			-ldf		only if BuildRasterHDF
+HDFlib			-lmfhdf -ldf -ljpeg -lz
+HDFEOSlib		-lhdfeos -lGctp  
 NetCDFlib		-lnetcdf
 XdrLibrary		null
 ProjectDefines		-DNeedFuncProto		extra c defines for every c file

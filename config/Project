@@ -1,5 +1,5 @@
 /*
- *      $Id: Project,v 1.46 2002-09-09 20:13:09 haley Exp $
+ *      $Id: Project,v 1.47 2002-09-12 14:20:03 haley Exp $
  */
 /************************************************************************
 *									*
@@ -22,7 +22,7 @@
  *			etc are in the Template file.
  */
 
-#define NcargVersion 4.3.0
+#define NcargVersion 4.3.1
 
 #ifndef	BuildRasterHDF
 #define	BuildRasterHDF
@@ -111,8 +111,12 @@
 #endif	/* BuildSunViewctrans */
 
 #ifndef	HDFlib
-#define	HDFlib	-lhdfeos -lGctp -lmfhdf -ldf -ljpeg -lz
+#define	HDFlib	-lmfhdf -ldf -ljpeg -lz
 #endif	/* HDFlib */
+
+#ifndef	HDFEOSlib
+#define	HDFEOSlib   -lhdfeos -lGctp
+#endif	/* HDFEOSlib */
 
 #ifndef	NetCDFlib
 #define	NetCDFlib	-lnetcdf
@@ -389,6 +393,7 @@ NETCDFLIB	=
 
 NCDFLIBS	= NetCDFlib
 HDFLIB		= HDFlib
+HDFEOSLIB	= HDFEOSlib
 XDRLIB		= XdrLibrary
 HDFDEFINES	= HdfDefines
 VDEFINE		= -DVERSION='"$(VERSION)"'

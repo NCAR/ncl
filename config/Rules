@@ -1,5 +1,5 @@
 /*
- *	$Id: Rules,v 1.40 2000-07-18 19:49:28 haley Exp $
+ *	$Id: Rules,v 1.41 2002-09-12 14:20:03 haley Exp $
  */
 /* 
    This file contains Makefile macros.  Proper spacing is achieved
@@ -350,13 +350,13 @@ InstallTarget(program,$(INSTALL_BIN),$(BINPATH))
 #define	_CLinkProgram(program,objects,deplib)\
 BuildRelObj(program.obj.o,objects)\
 program: program.obj.o deplib]\
-	$(CC_LD) $(CC_LDOPTIONS) -o program program.obj.o $(CDYNAMIC) $(PROG_LIBS) $(CSTATIC) $(LDLIBS) $(CDYNAMIC) $(EXTRA_LDLIBS)]\
+	$(CC_LD) $(CC_LDOPTIONS) -o program program.obj.o $(PROG_LIBS) $(LDLIBS) $(EXTRA_LDLIBS)]\
 ]\
 CleanFilesTarget(program program.obj.o objects)
 #else
 #define	_CLinkProgram(program,objects,deplib)\
 program: objects deplib]\
-	$(CC_LD) $(CC_LDOPTIONS) -o program objects $(PROG_LIBS) $(CSTATIC) $(LDLIBS) $(CDYNAMIC) $(EXTRA_LDLIBS)]\
+	$(CC_LD) $(CC_LDOPTIONS) -o program objects $(PROG_LIBS) $(LDLIBS) $(EXTRA_LDLIBS)]\
 ]\
 CleanFilesTarget(program objects)
 #endif	/* BuildShared */
