@@ -1,0 +1,9 @@
+#
+#       $Id: yMakefile,v 1.1 1994-09-12 17:13:49 fred Exp $
+#
+MYNAME  = ewmap
+
+GENERIC_SRCS = wmex01.f wmex02.f wmex03.f wmex04.f
+
+InstallTarget($(GENERIC_SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
+
