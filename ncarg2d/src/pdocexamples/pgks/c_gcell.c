@@ -7,6 +7,7 @@
 
 #include <ncarg/ncargC.h>
 #include <ncarg/gks.h>
+#include <stdlib.h>
 
 #define IWTYPE 1
 #define WKID   1
@@ -75,7 +76,8 @@ main() {
 /*
  *  Specify the color index array.
  */
-  colia = (int *) malloc(6);
+  colia = (int*)malloc(6*sizeof(int));
+
   colia[0] = 2;   /* Red     */
   colia[1] = 3;   /* Green   */
   colia[2] = 4;   /* Blue    */
