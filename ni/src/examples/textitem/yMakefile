@@ -1,5 +1,5 @@
 #
-#   $Id: yMakefile,v 1.11 1995-03-21 18:01:16 fred Exp $
+#   $Id: yMakefile,v 1.12 1995-03-22 07:35:09 boote Exp $
 #
 #   Makefile for HLU TextItem examples
 #
@@ -7,7 +7,7 @@
 MYNAME      = textitem
 
 PROG_LIBS   =   $(HLULIBS) $(CNCARGLIBS) $(NCARGLIBS)
-EXTRA_LIBS  =   $(XMOTIFCLIENTLIBS)
+EXTRA_LIBS  =   $(XLIB)
 SYS_LIBS    =   $(CTOFLIBS) -lm
 
 CSRCS     = tx01c.c tx02c.c tx03c.c tx04c.c tx05c.c tx06c.c tx07c.c
