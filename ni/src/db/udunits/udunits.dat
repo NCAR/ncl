@@ -1,0 +1,711 @@
+# $Id: udunits.dat,v 1.1 2003-02-26 19:31:54 haley Exp $
+#
+# The first column is the unit name.  The second column indicates whether or
+# not the unit name has a plural form (i.e. with an 's' appended).  
+# A 'P' indicates that the unit has a plural form, whereas, a 'S' indicates
+# that the unit has a singular form only.  The remainder of the line is the 
+# definition for the unit.
+#
+# '#' is the to-end-of-line comment-character.
+#
+# NB: When adding to this table, be *very* careful to distinquish between
+# the letter 'O' and the numeral zero '0'.  For example, the following two
+# entries don't do what one might otherwise expect:
+#
+#	mercury_0C		mercury_32F
+#	millimeter_Hg_0C	mm mercury_OC
+
+#
+# BASE UNITS.  These must be first and are identified by a nil definition.
+#
+ampere			P			# electric current
+count			P			# dimensionless decimal number
+candela			P			# luminous intensity
+kelvin			P			# thermodynamic temperature
+kilogram		P			# mass
+meter			P			# length
+mole			P			# amount of substance
+second			P			# time
+radian			P			# plane angle
+
+#
+# CONSTANTS
+#
+percent			S 0.01
+PI			S 3.14159265358979323846
+bakersdozen		S 13
+pair			P 2
+ten			P 10
+dozen			S 12
+score			S 20
+hundred			P 100
+thousand		P 1.0e3
+million			P 1.0e6
+
+%			S percent
+pi			S PI
+
+#
+# NB: All subsequent definitions must be given in terms of
+# earlier definitions.  Forward referencing is not permitted.
+#
+
+#
+# The following are non-base units of the fundamental quantities
+#
+
+bit			P count			# unit of information
+
+#
+# UNITS OF ELECTRIC CURRENT
+#
+A			S ampere
+amp			P ampere
+abampere		P 10 ampere		# exact
+gilbert			P 7.957747e-1 ampere
+statampere		P 3.335640e-10 ampere
+biot			P 10 ampere
+
+#
+# UNITS OF LUMINOUS INTENSITY
+#
+cd			S candela
+candle			P candela
+
+#
+# UNITS OF THERMODYNAMIC TEMPERATURE
+#
+degree_Kelvin		P kelvin
+degree_Celsius		S kelvin @ 273.15
+degree_Rankine		P kelvin/1.8
+degree_Fahrenheit	P degree_Rankine @ 459.67
+
+#C			S degree_Celsius	# `C' means `coulomb'
+Celsius			S degree_Celsius
+celsius			S degree_Celsius
+degree_centigrade	S degree_Celsius	# approx. was just `centigrade'
+degC			S degree_Celsius
+degreeC			S degree_Celsius
+degree_C		S degree_Celsius
+degree_c		S degree_Celsius
+deg_C			S degree_Celsius
+deg_c			S degree_Celsius
+degK			S kelvin
+degreeK			S kelvin
+degree_K		S kelvin
+degree_k		S kelvin
+deg_K			S kelvin
+deg_k			S kelvin
+K			S kelvin
+Kelvin			P kelvin
+
+degF			S degree_Fahrenheit
+degreeF			S degree_Fahrenheit
+degree_F		S degree_Fahrenheit
+degree_f		S degree_Fahrenheit
+deg_F			S degree_Fahrenheit
+deg_f			S degree_Fahrenheit
+F			S degree_Fahrenheit
+Fahrenheit		P degree_Fahrenheit
+fahrenheit		P degree_Fahrenheit
+
+degR			S degree_Rankine
+degreeR			S degree_Rankine
+degree_R		S degree_Rankine
+degree_r		S degree_Rankine
+deg_R			S degree_Rankine
+deg_r			S degree_Rankine
+#R			S degree_Rankine	# `R' means `roentgen'
+Rankine			P degree_Rankine
+rankine			P degree_Rankine
+
+#
+# UNITS OF MASS
+#
+assay_ton		P 2.916667e-2 kilogram	# was 2.916667e2 (typo!)
+avoirdupois_ounce	P 2.834952e-2 kilogram
+avoirdupois_pound	P 4.5359237e-1 kilogram	# exact
+carat			P 2e-4 kilogram
+grain			P 6.479891e-5 kilogram	# exact
+gram			P 1e-3 kilogram		# exact
+kg			S kilogram
+long_hundredweight	P 5.080235e1 kilogram
+metric_ton		P 1e3 kilogram		# exact
+pennyweight		P 1.555174e-3 kilogram
+short_hundredweight	P 4.535924e1 kilogram
+slug			P 14.59390 kilogram
+troy_ounce		P 3.110348e-2 kilogram
+troy_pound		P 3.732417e-1 kilogram
+atomic_mass_unit	P 1.66054e-27 kilogram	# was 1.66044e-27
+
+tonne			P metric_ton
+apothecary_ounce	P troy_ounce
+apothecary_pound	P avoirdupois_pound
+pound			P avoirdupois_pound
+metricton		P metric_ton
+gr			S grain
+scruple			P 20 grain
+apdram			P 60 grain
+apounce			P 480 grain
+appound			P 5760 grain
+atomicmassunit		P atomic_mass_unit
+amu			P atomic_mass_unit
+
+t			S tonne
+lb			P pound
+bag			P 94 pound
+short_ton		P 2000 pound
+long_ton		P 2240 pound
+
+ton			P short_ton
+shortton		P short_ton
+longton			P long_ton
+
+#
+# UNITS OF LENGTH
+#
+angstrom		P decinanometer
+astronomical_unit	P 1.495979e11 meter
+fermi			P 1e-15 meter		# exact
+m			S meter
+metre			P meter
+light_year		P 9.46073e15 meter	# was ASTM's 9.46055e15 meter
+micron			P 1e-6 meter		# exact
+mil			P 2.54e-5 meter		# exact
+nautical_mile		P 1.852000e3 meter	# exact
+parsec			P 3.085678e16 meter
+printers_point		P 3.514598e-4 meter
+
+# God help us!  There's an international foot and a US survey foot and
+# they're not the same!
+
+# US Survey foot stuff:
+US_survey_foot		S (1200/3937) meter	# exact
+US_survey_feet		S US_survey_foot	# alias
+US_survey_yard		P 3 US_survey_feet	# exact
+US_survey_mile		P 5280 US_survey_feet	# exact
+US_statute_mile		P US_survey_mile	# alias
+rod			P 16.5 US_survey_feet	# exact
+pole			P rod			# alias
+perch			S rod			# alias
+perches			S perch			# alias
+furlong			P 660 US_survey_feet	# exact
+fathom			P 6 US_survey_feet	# exact
+
+# International foot stuff:
+international_inch	S 2.54 cm		# exact
+international_inches	S international_inch	# alias
+international_foot	S 12 international_inches	# exact
+international_feet	S international_foot	# alias
+international_yard	P 3 international_feet	# exact
+international_mile	P 5280 international_feet	# exact
+
+# Alias unspecified units to the international units:
+inch			S international_inch	# alias
+foot			S international_foot	# alias
+yard			P international_yard	# alias
+mile			P international_mile	# alias
+
+# The following should hold regardless:
+inches			S inch			# alias
+in			S inches		# alias
+feet			S foot			# alias
+ft			S feet			# alias
+yd			S yard			# alias
+
+chain			P 2.011684e1 meter
+
+printers_pica		P 12 printers_point	# exact
+astronomicalunit	P astronomical_unit
+au			S astronomical_unit
+nmile			P nautical_mile
+nmi			S nautical_mile
+
+pica			P printers_pica
+big_point		P inch/72		# exact
+barleycorn		P inch/3
+
+arpentlin		P 191.835 foot
+
+#
+# UNITS OF AMOUNT OF SUBSTANCE
+#
+mol			S mole
+
+#
+# UNITS OF TIME
+#
+day			P 8.64e4 second		# exact
+hour			P 3.6e3 second		# exact
+minute			P 60 second		# exact
+s			S second
+sec			P second
+shake			P 1e-8 second		# exact
+sidereal_day		P 8.616409e4 second
+sidereal_hour		P 3.590170e3 second
+sidereal_minute		P 5.983617e1 second
+sidereal_second		P 0.9972696 second
+sidereal_year		P 3.155815e7 second
+# Interval between 2 successive passages of sun through vernal equinox
+# (365.242198781 days -- see 
+# http://www.ast.cam.ac.uk/pubinfo/leaflets/,
+# http://aa.usno.navy.mil/AA/
+# and http://adswww.colorado.edu/adswww/astro_coord.html):
+tropical_year		P 3.15569259747e7 second
+lunar_month		P 29.530589 day
+
+common_year		P 365 day		# exact: 153600e7 seconds
+leap_year		P 366 day		# exact
+Julian_year		P 365.25 day		# exact
+Gregorian_year		P 365.2425 day		# exact
+sidereal_month		P 27.321661 day
+tropical_month		P 27.321582 day
+d			S day
+min			P minute
+hr			P hour
+h			S hour
+fortnight		P 14 day		# exact
+week			P 7 day			# exact
+jiffy			S 0.01 second		# believe it or not!
+jiffies			S jiffy			# assumed plural spelling
+
+year			P tropical_year
+
+yr			P year
+a			S year			# "anno"
+eon			P 1e9 year		# fuzzy
+month			P year/12		# on average
+
+#
+# UNITS OF PLANE ANGLE
+#
+#rad			P radian		# `rad' means `grey'
+circle			P 2 pi radian
+angular_degree		P (pi/180) radian
+
+turn			P circle
+degree			P angular_degree
+degree_north		S angular_degree
+degree_east		S angular_degree
+degree_true		S angular_degree
+arcdeg			P angular_degree
+angular_minute		P angular_degree/60
+angular_second		P angular_minute/60
+grade			P 0.9 angular_degree	# exact
+
+degrees_north		S degree_north
+degreeN			S degree_north
+degree_N		S degree_north
+degreesN		S degree_north
+degrees_N		S degree_north
+
+degrees_east		S degree_east
+degreeE			S degree_east
+degree_E		S degree_east
+degreesE		S degree_east
+degrees_E		S degree_east
+
+degree_west             S -1 degree_east
+degrees_west            S degree_west
+degreeW                 S degree_west
+degree_W                S degree_west
+degreesW                S degree_west
+degrees_W               S degree_west
+
+degrees_true		S degree_true
+degreeT			S degree_true
+degree_T		S degree_true
+degreesT		S degree_true
+degrees_T		S degree_true
+
+arcminute		P angular_minute
+arcsecond		P angular_second
+
+arcmin			P arcminute
+arcsec			P arcsecond
+
+#
+# The following are derived units with special names.  They are useful for
+# defining other derived units.
+#
+steradian		P radian2
+hertz			S 1/second
+newton			P kilogram.meter/second2
+coulomb			P ampere.second
+lumen			P candela steradian
+becquerel		P 1/second		# SI unit of activity of a 
+#						# radionuclide
+standard_free_fall	S 9.806650 meter/second2	# exact
+
+pascal			P newton/meter2
+joule			P newton.meter
+hz			S hertz
+sr			S steradian
+force			S standard_free_fall
+gravity			S standard_free_fall
+free_fall		S standard_free_fall
+lux			S lumen/meter2
+sphere			P 4 pi steradian
+
+luxes			S lux
+watt			P joule/second
+gray			P joule/kilogram	# absorbed dose. derived unit
+sievert			P joule/kilogram	# dose equivalent. derived unit
+conventional_mercury	S gravity 13595.10 kg/m3
+mercury_0C		S gravity 13595.1 kg/m3	# was 13595.065
+mercury_60F		S gravity 13556.8 kg/m3	# was 13556.806
+conventional_water	S gravity 1000 kg/m3	# exact
+water_4C		S gravity 999.972 kg/m3	# was 999.97226
+water_60F		S gravity 999.001 kg/m3	# was 999.00072
+g			S gravity		# approx. should be `local'
+
+volt			P watt/ampere
+mercury_32F		S mercury_0C
+water_39F		S water_4C		# actually 39.2 F
+mercury			S conventional_mercury	# was mercury_32F
+water			S conventional_water	# was water_4C
+
+farad			P coulomb/volt
+ohm			P volt/ampere
+siemens			S ampere/volt
+weber			P volt.second
+Hg			S mercury
+hg			S mercury
+H2O			S water
+h2o			S water
+
+tesla			P weber/meter2
+henry			P weber/ampere
+
+#
+# The following are compound units: units whose definitions consist 
+# of two or more base units.  They may now be defined in terms of the 
+# preceding units.
+#
+
+#
+# ACCELERATION
+#
+gal			P 1e-2 meter/second2	# exact
+
+#
+# Area
+#
+are			P 1e2 m2		# exact
+barn			P 1e-28 m2		# exact
+circular_mil		P 5.067075e-10 m2
+darcy			P 9.869233e-13 m2	# permeability of porous solids
+hectare			P 1e4 m2		# exact
+acre			P 160 rod2		# exact
+
+#
+# ELECTRICITY AND MAGNETISM
+#
+abfarad			P 1e9 farad		# exact
+abhenry			P 1e-9 henry		# exact
+abmho			P 1e9 siemens		# exact
+abohm			P 1e-9 ohm		# exact
+abvolt			P 1e-8 volt		# exact
+C			S coulomb
+e			S 1.60217733-19 coulomb	# was 1.6021917e-19
+chemical_faraday	P 9.64957e4 coulomb
+physical_faraday	P 9.65219e4 coulomb
+C12_faraday		P 9.648531e4 coulomb
+gamma			P 1e-9 tesla		# exact
+gauss			S 1e-4 tesla		# exact
+H			S henry
+maxwell			P 1e-8 weber		# exact
+oersted			P 7.957747e1 ampere/meter
+S			S siemens
+statcoulomb		P 3.335640e-10 coulomb
+statfarad		P 1.112650e-12 farad
+stathenry		P 8.987554e11 henry
+statmho			P 1.112650e-12 siemens
+statohm			P 8.987554e11 ohm
+statvolt		P 2.997925e2 volt
+T			S tesla
+unit_pole		P 1.256637e-7 weber
+V			S volt
+Wb			S weber
+mho			P siemens
+Oe			S oersted
+faraday			P C12_faraday		# charge of 1 mole of 
+#						# electrons
+
+#
+# ENERGY (INCLUDES WORK)
+#
+electronvolt		P 1.602177e-19 joule
+erg			P 1e-7 joule		# exact
+IT_Btu			P 1.05505585262e3 joule	# exact, was 1.055056e3
+EC_therm		P 1.05506e8 joule	# exact
+thermochemical_calorie	P 4.184000 joule	# exact
+IT_calorie		P 4.1868 joule		# exact
+J			S joule
+ton_TNT			S 4.184e9 joule
+US_therm		P 1.054804e8 joule	# exact
+watthour		P watt hour
+
+therm			P US_therm
+Wh			S watthour
+Btu			P IT_Btu
+calorie			P IT_calorie
+electron_volt		P electronvolt
+
+thm			S therm
+cal			S calorie
+eV			S electronvolt
+bev			S gigaelectron_volt
+
+#
+# FORCE
+#
+dyne			P 1e-5 newton		# exact
+pond			P 9.806650e-3 newton	# exact, was 1.806650e-3 (typo)
+force_kilogram		S 9.806650 newton	# exact
+force_ounce		S 2.780139e-1 newton
+force_pound		S 4.4482216152605 newton# exact
+poundal			P 1.382550e-1 newton
+N			S newton
+gf			S gram force
+
+force_gram		P 1e-3 force_kilogram
+force_ton		P 2000 force_pound	# exact
+lbf			S force_pound
+ounce_force		S force_ounce
+kilogram_force		S force_kilogram
+pound_force		S force_pound
+ozf			S force_ounce
+kgf			S force_kilogram
+
+kip			P 1000 lbf
+ton_force		S force_ton
+gram_force		S force_gram
+
+#
+# HEAT
+#
+clo			P 1.55e-1 kelvin.meter2/watt
+
+#
+# LIGHT
+#
+lm			S lumen
+lx			S lux
+footcandle		P 1.076391e-1 lux
+footlambert		P 3.426259 candela/meter2
+lambert			P (1e4/PI) candela/meter2	# exact
+stilb			P 1e4 candela/meter2	# exact
+phot			P 1e4 lumen/meter2	# exact
+nit			P 1 candela/meter2	# exact
+langley			P 4.184000e4 joule/meter2	# exact
+blondel			P candela/(pi meter2)
+
+apostilb		P blondel
+nt			S nit
+ph			S phot
+sb			S stilb
+
+#
+# MASS PER UNIT LENGTH
+#
+denier			P 1.111111e-7 kilogram/meter
+tex			P 1e-6 kilogram/meter	# exact
+
+#
+# MASS PER UNIT TIME (INCLUDES FLOW)
+#
+perm_0C			S 5.72135e-11 kg/(pascal second meter2)
+perm_23C		S 5.74525e-11 kg/(pascal second meter2)
+
+#
+# POWER
+#
+voltampere		P volt ampere
+VA			S volt ampere
+boiler_horsepower	P 9.80950e3 watt
+shaft_horsepower	P 7.456999e2 watt
+metric_horsepower	P 7.35499 watt
+electric_horsepower	P 7.460000e2 watt	# exact
+W			S watt
+water_horsepower	P 7.46043e2 watt
+UK_horsepower		P 7.4570e2 watt
+refrigeration_ton	P 12000 Btu/hour
+
+horsepower		P shaft_horsepower
+ton_of_refrigeration	P refrigeration_ton
+
+hp			S horsepower
+
+#
+# PRESSURE OR STRESS
+#
+bar			P 1e5 pascal		# exact
+standard_atmosphere	P 1.01325e5 pascal	# exact
+technical_atmosphere	P 1 kg gravity/cm2	# exact
+inch_H2O_39F		S inch water_39F
+inch_H2O_60F		S inch water_60F
+inch_Hg_32F		S inch mercury_32F
+inch_Hg_60F		S inch mercury_60F
+millimeter_Hg_0C	S mm mercury_0C
+footH2O			S foot water
+cmHg			S cm Hg
+cmH2O			S cm water
+Pa			S pascal
+inch_Hg			S inch Hg
+inch_hg			S inch Hg
+inHg			S inch Hg
+in_Hg			S inch Hg
+in_hg			S inch Hg
+millimeter_Hg		S mm Hg
+mmHg			S mm Hg
+mm_Hg			S mm Hg
+mm_hg			S mm Hg
+torr			P mm Hg
+foot_H2O		S foot water
+ftH2O			S foot water
+psi			S 1 pound gravity/in2
+ksi			S kip/in2
+barie			P 0.1 newton/meter2
+
+at			S technical_atmosphere
+atmosphere		P standard_atmosphere
+atm			P standard_atmosphere
+barye			P barie
+
+#
+# RADIATION UNITS
+#
+Bq			S becquerel
+curie			P 3.7e10 becquerel	# exact
+rem			P 1e-2 sievert		# dose equivalent. exact
+rad			P 1e-2 gray		# absorbed dose. exact
+roentgen		P 2.58e-4 coulomb/kg	# exact
+Sv			S sievert
+Gy			S gray
+
+Ci			S curie
+R			S roentgen
+rd			S rad
+
+#
+# VELOCITY (INCLUDES SPEED)
+#
+c			S 2.997925e+8 meter/sec
+knot			P nautical_mile/hour
+
+knot_international	S knot
+international_knot	S knot
+kt			P knot
+
+#
+# VISCOSITY
+#
+poise			S 1e-1 pascal second	# absolute viscosity. 
+#						# exact
+stokes			S 1e-4 meter2/second	# exact
+rhe			S 10/(pascal second)	# exact
+
+St			S stokes
+
+#
+# VOLUME (INCLUDES CAPACITY)
+#
+acre_foot		S 1.233489e3 m3	# but `acre foot' is 1233.4867714897 meters^3. Odd.
+board_foot		S 2.359737e-3 m3
+bushel			P 3.523907e-2 m3
+UK_liquid_gallon	P 4.546090e-3 m3	# exact. was 4.546092e-3
+Canadian_liquid_gallon	P 4.546090e-3 m3	# exact
+US_dry_gallon		P 4.404884e-3 m3
+US_liquid_gallon	P 3.785412e-3 m3
+cc			S cm3
+liter			P 1e-3 m3		# exact. However, from 1901 to 
+#						# 1964, 1 liter = 1.000028 dm3
+stere			P 1 m3			# exact
+register_ton		P 2.831685 m3		# was 3.831685 (typo!)
+
+US_dry_quart		P US_dry_gallon/4
+US_dry_pint		P US_dry_gallon/8
+
+US_liquid_quart		P US_liquid_gallon/4
+US_liquid_pint		P US_liquid_gallon/8
+US_liquid_cup		P US_liquid_gallon/16
+US_liquid_gill		P US_liquid_gallon/32
+US_fluid_ounce		P US_liquid_gallon/128
+US_liquid_ounce		P US_fluid_ounce
+
+UK_liquid_quart		P UK_liquid_gallon/4
+UK_liquid_pint		P UK_liquid_gallon/8
+UK_liquid_cup		P UK_liquid_gallon/16
+UK_liquid_gill		P UK_liquid_gallon/32
+UK_fluid_ounce		P UK_liquid_gallon/160
+UK_liquid_ounce		P UK_fluid_ounce
+
+liquid_gallon		P US_liquid_gallon
+fluid_ounce		P US_fluid_ounce
+#liquid_gallon		P UK_liquid_gallon
+#fluid_ounce		P UK_fluid_ounce
+
+dry_quart		P US_dry_quart
+dry_pint		P US_dry_pint
+
+liquid_quart		P liquid_gallon/4
+liquid_pint		P liquid_gallon/8
+
+gallon			P liquid_gallon
+barrel			P 42 US_liquid_gallon	# petroleum industry definition
+quart			P liquid_quart
+pint			P liquid_pint
+cup			P liquid_gallon/16
+gill			P liquid_gallon/32
+tablespoon		P US_fluid_ounce/2
+teaspoon		P tablespoon/3
+peck			P bushel/4
+
+oz			P fluid_ounce
+floz			S fluid_ounce
+acre_feet		S acre_foot
+board_feet		S board_foot
+Tbl			P tablespoon
+Tbsp			S tablespoon
+tbsp			S tablespoon
+Tblsp			S tablespoon
+tblsp			S tablespoon
+litre			P liter
+L			S liter
+l			S liter
+tsp			S teaspoon
+pk			S peck
+bu			S bushel
+
+fldr			S floz/8
+dram			P floz/16
+
+bbl			S barrel
+firkin			P barrel/4		# exact but barrel is vague
+pt			S pint
+dr			S dram
+
+
+#
+# COMPUTERS AND COMMUNICATION
+#
+baud			S 1/second		# exact
+b			S bit
+bps			S bit/second
+cps			S hertz
+
+Bd			S baud
+
+#
+# MISC
+#
+kayser			P 1e2/meter		# exact
+rps			S hertz
+rpm			S hertz/60
+geopotential		S gravity
+work_year		P 2056 hours
+work_month		P work_year/12
+
+gp			S geopotential
+dynamic			S geopotential
