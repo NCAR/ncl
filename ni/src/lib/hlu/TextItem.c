@@ -1,5 +1,5 @@
 /*
- *      $Id: TextItem.c,v 1.50 2003-11-25 22:41:18 dbrown Exp $
+ *      $Id: TextItem.c,v 1.51 2004-08-11 22:29:39 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -24,6 +24,7 @@
  */
 
 #include <math.h>
+#include <float.h>
 #include <ncarg/hlu/TextItemP.h>
 #include <ncarg/hlu/ConvertersP.h>
 #include <ncarg/hlu/FortranP.h>
@@ -1205,6 +1206,15 @@ static NhlErrorTypes FigureAndSetTextBBInfo
         if (fabs(tmpdr) > 10.0) tmpdr = 0.0001;
         if (fabs(tmpdb) > 10.0) tmpdb = 0.0001;
         if (fabs(tmpdt) > 10.0) tmpdt = 0.0001;
+
+	if (fabs(tmpdl + tmpdr) < FLT_EPSILON) {
+		tmpdl = 0.0001;
+		tmpdr = 0.0001;
+	}
+	if (fabs(tmpdb + tmpdt) < FLT_EPSILON) {
+		tmpdb = 0.0001;
+		tmpdt = 0.0001;
+	}
         
 	switch(tnew->text.just) {
 /*
