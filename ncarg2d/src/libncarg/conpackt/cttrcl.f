@@ -1,5 +1,5 @@
 C
-C $Id: cttrcl.f,v 1.2 2004-03-19 22:51:59 kennison Exp $
+C $Id: cttrcl.f,v 1.3 2004-03-26 21:00:10 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -115,10 +115,23 @@ C Define an interpolation function.
 C
       FRCT(ZDT1,ZDT2)=(CLVL-ZDT1)/(ZDT2-ZDT1)
 C
+C IXOR(IONE,ITWO) is the exclusive OR of the 12-bit masks IONE and ITWO.
+C
+      IXOR(IONE,ITWO)=IAND(IOR(IONE,ITWO),4095-IAND(IONE,ITWO))
+C
+C ITBF(IARG) is non-zero if and only if a triangle is blocked.
+C
+      ITBF(IARG)=IAND(IXOR(IARG,ITBX),ITBA)
+C
 C If this is a re-entry after coordinate processing by the caller, jump
 C back to the appropriate point in the code.
 C
       IF (IJMP.NE.0) GO TO (102,103) , IJMP
+C
+C Extract the values of ITBX and ITBA.
+C
+      ITBX=IAND(ISHIFT(ITBM,-12),4095)
+      ITBA=IAND(       ITBM     ,4095)
 C
 C Assign space to use for storing the coordinates of points on contour
 C lines.
@@ -347,8 +360,8 @@ C by the contour line) is in a blocked area, dump anything in the buffer
 C and clear it.  Otherwise, process the contour-line segment from the
 C old point to the new one.
 C
-          IF (.NOT.(IAND(ITRI(LOTN*((IEDG(IPTE+4)-1)/LOTN)+4),ITBM).NE.0
-     +))  GO TO 10029
+          IF (.NOT.(ITBF(ITRI(LOTN*((IEDG(IPTE+4)-1)/LOTN)+4)).NE.0))
+     +    GO TO 10029
             L10031=    1
             GO TO 10031
 10030       CONTINUE

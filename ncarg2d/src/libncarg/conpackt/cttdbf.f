@@ -1,5 +1,5 @@
 C
-C $Id: cttdbi.f,v 1.1 2004-03-19 22:51:58 kennison Exp $
+C $Id: cttdbf.f,v 1.1 2004-03-26 21:00:09 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -20,17 +20,18 @@ C along with this software; if not, write to the Free Software
 C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 C USA.
 C
-      SUBROUTINE CTTDBI (RPNT,IEDG,ITRI,RWRK,IWRK)
+      SUBROUTINE CTTDBF (RPNT,IEDG,ITRI,RWRK,IWRK,IFLG,ATOL)
 C
       DIMENSION RPNT(*),IEDG(*),ITRI(*),RWRK(*),IWRK(*)
 C
 C This routine assumes that TDPACK routines are being used to map the
-C triangular mesh from 3-space into 2-space.  It sets the blocking flags
+C triangular mesh from 3-space into 2-space.  It sets blocking flags
 C for the triangles in the triangle list so as to block those that are
-C invisible (because they are behind other triangles of the mesh).  The
-C partially blocked mesh can then be used to draw contour lines, and,
-C if the mesh is a fine one, this will do a pretty good job of solving
-C the hidden-line problem.
+C seen from the wrong side or too nearly edge on and/or those that are
+C invisible because they are behind other triangles of the mesh.  The
+C partially blocked mesh can then be used to draw contour lines; if the
+C mesh is a fine one, this can do a fair job of solving the hidden-line
+C problem.
 C
 C RPNT is an array of nodes defining vertices of triangles.
 C
@@ -41,6 +42,16 @@ C
 C RWRK is the user's real workspace array.
 C
 C IWRK is the user's integer workspace array.
+C
+C IFLG is a flag set to 1 to block triangles that are seen from the
+C wrong side or too nearly edge on, to 2 to block triangles that are
+C invisible because they are hidden by other triangles, or to 3 to do
+C both of the above.  One can also set IFLG to zero to simply clear
+C the blocking flags that this routine is capable of setting.
+C
+C ATOL is a tolerance, in degrees, to be used in determining whether
+C or not a triangle is nearly edge-on to the line of sight.  Use a
+C value near zero.
 C
 C Declare all of the CONPACKT common blocks.
 C
@@ -105,6 +116,10 @@ C
       COMMON /TDCOM1/ IS,FV,VL,VR,VB,VT,WL,WR,WB,WT
       SAVE   /TDCOM1/
 C
+C Declare a radians-to-degrees conversion constant.
+C
+      DATA RTOD / 57.2957795130823 /
+C
 C SIDE(X1,Y1,X2,Y2,X3,Y3) is negative if the three vertices of a given
 C triangle in the plane are in clockwise order, positive if they are in
 C counterclockwise order.  A zero value means that the three points are
@@ -112,41 +127,73 @@ C collinear.
 C
       SIDE(X1,Y1,X2,Y2,X3,Y3)=(X1-X3)*(Y2-Y3)-(Y1-Y3)*(X2-X3)
 C
+C IXOR(IONE,ITWO) is the exclusive OR of the 12-bit masks IONE and ITWO.
+C
+      IXOR(IONE,ITWO)=IAND(IOR(IONE,ITWO),4095-IAND(IONE,ITWO))
+C
+C ITBF(IARG) is non-zero if and only if a triangle is blocked.
+C
+      ITBF(IARG)=IAND(IAND(IXOR(IARG,ITBX),ITBA),1)
+C
 C Check for an uncleared prior error.
 C
-      IF (ICFELL('CTTDBI - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+      IF (ICFELL('CTTDBF - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
 C
 C If initialization has not been done, log an error and quit.
 C
       IF (INIT.EQ.0) THEN
-        CALL SETER ('CTTDBI - INITIALIZATION CALL NOT DONE',2,1)
+        CALL SETER ('CTTDBF - INITIALIZATION CALL NOT DONE',2,1)
         RETURN
       END IF
 C
-C Determine which bit of the blocking flags is to be used and set IBIT
-C accordingly.
+C Extract the values of ITBX and ITBA.
+C
+      ITBX=IAND(ISHIFT(ITBM,-12),4095)
+      ITBA=IAND(       ITBM     ,4095)
+C
+C Determine which bits of the blocking flags are to be used and set
+C IBIT accordingly.
 C
       IF (OE.GE.0.) THEN
         IBIT=2
       ELSE
-        IBIT=4
+        IBIT=16
       END IF
 C
-C Compute the bounding box for all triangles in the mesh that are not
-C user-blocked and a largest extent in X and Y for any single such
-C triangle.
+C Set a mask used to clear the bits that might be set.
 C
-      XMNM=XWDR
-      XMXM=XWDL
-      YMNM=YWDT
-      YMXM=YWDB
+      ICLR=127-7*IBIT
 C
-      XEXT=0.
-      YEXT=0.
+C Make a pass over the triangle list.  At the very least, this pass will
+C clear the blocking bits for all triangles.  If IFLG is 1 or 3, it will
+C also block triangles that are seen from the wrong side or are too
+C nearly edge-on.  If IFLG is 2 or 3, it will also compute the bounding
+C box for all triangles in the mesh that are not user-blocked and a
+C largest extent in X and Y for any single such triangle.
+C
+      IF (IFLG.EQ.2.OR.IFLG.EQ.3) THEN
+C
+        XMNM=XWDR
+        XMXM=XWDL
+        YMNM=YWDT
+        YMXM=YWDB
+C
+        XEXT=0.
+        YEXT=0.
+C
+      END IF
 C
       DO 101 IPTT=0,NTRI-LOTN,LOTN
 C
-      IF (IAND(IAND(ITRI(IPTT+4),ITBM),1).NE.0) GO TO 101
+C Use only triangles not blocked by the user.
+C
+      IF (ITBF(ITRI(IPTT+4)).NE.0) GO TO 101
+C
+C Clear the bits that might be set by this call.
+C
+      ITRI(IPTT+4)=IAND(ITRI(IPTT+4),ICLR)
+C
+C Find the base index of point 1 (that edges 1 and 2 have in common).
 C
       IF (IEDG(ITRI(IPTT+1)+1).EQ.IEDG(ITRI(IPTT+2)+1).OR.IEDG(ITRI(IPTT
      ++1)+1).EQ.IEDG(ITRI(IPTT+2)+2)) THEN
@@ -155,12 +202,16 @@ C
         IPT1=IEDG(ITRI(IPTT+1)+2)
       END IF
 C
+C Find the base index of point 2 (that edges 2 and 3 have in common).
+C
       IF (IEDG(ITRI(IPTT+2)+1).EQ.IEDG(ITRI(IPTT+3)+1).OR.IEDG(ITRI(IPTT
      ++2)+1).EQ.IEDG(ITRI(IPTT+3)+2)) THEN
         IPT2=IEDG(ITRI(IPTT+2)+1)
       ELSE
         IPT2=IEDG(ITRI(IPTT+2)+2)
       END IF
+C
+C Find the base index of point 3 (that edges 3 and 1 have in common).
 C
       IF (IEDG(ITRI(IPTT+3)+1).EQ.IEDG(ITRI(IPTT+1)+1).OR.IEDG(ITRI(IPTT
      ++3)+1).EQ.IEDG(ITRI(IPTT+1)+2)) THEN
@@ -169,19 +220,79 @@ C
         IPT3=IEDG(ITRI(IPTT+3)+2)
       END IF
 C
+C Project all three points.
+C
       CALL TDPRPT (RPNT(IPT1+1),RPNT(IPT1+2),RPNT(IPT1+3),XPT1,YPT1)
       CALL TDPRPT (RPNT(IPT2+1),RPNT(IPT2+2),RPNT(IPT2+3),XPT2,YPT2)
       CALL TDPRPT (RPNT(IPT3+1),RPNT(IPT3+2),RPNT(IPT3+3),XPT3,YPT3)
 C
-      XMNM=MIN(XMNM,XPT1,XPT2,XPT3)
-      XMXM=MAX(XMXM,XPT1,XPT2,XPT3)
-      YMNM=MIN(YMNM,YPT1,YPT2,YPT3)
-      YMXM=MAX(YMXM,YPT1,YPT2,YPT3)
+C If requested, check for triangles that are wrong-side on or edge-on.
 C
-      XEXT=MAX(XEXT,MAX(XPT1,XPT2,XPT3)-MIN(XPT1,XPT2,XPT3))
-      YEXT=MAX(YEXT,MAX(YPT1,YPT2,YPT3)-MIN(YPT1,YPT2,YPT3))
+      IF (IFLG.EQ.1.OR.IFLG.EQ.3) THEN
+C
+C If the wrong side of the triangle faces the eye, set a bit.
+C
+        IF (SIDE(XPT1,YPT1,XPT2,YPT2,XPT3,YPT3).LE.0.) THEN
+C
+          ITRI(IPTT+4)=IOR(ITRI(IPTT+4),IBIT)
+C
+        END IF
+C
+C If the triangle is nearly edge-on to the eye, set a different bit.
+C
+        IF (ATOL.GT.0.) THEN
+C
+          XDN1=RPNT(IPT1+2)*(RPNT(IPT3+3)-RPNT(IPT2+3))+
+     +         RPNT(IPT2+2)*(RPNT(IPT1+3)-RPNT(IPT3+3))+
+     +         RPNT(IPT3+2)*(RPNT(IPT2+3)-RPNT(IPT1+3))
+          YDN1=RPNT(IPT1+1)*(RPNT(IPT2+3)-RPNT(IPT3+3))+
+     +         RPNT(IPT2+1)*(RPNT(IPT3+3)-RPNT(IPT1+3))+
+     +         RPNT(IPT3+1)*(RPNT(IPT1+3)-RPNT(IPT2+3))
+          ZDN1=RPNT(IPT1+1)*(RPNT(IPT3+2)-RPNT(IPT2+2))+
+     +         RPNT(IPT2+1)*(RPNT(IPT1+2)-RPNT(IPT3+2))+
+     +         RPNT(IPT3+1)*(RPNT(IPT2+2)-RPNT(IPT1+2))
+C
+          XDN2=XE-(RPNT(IPT1+1)+RPNT(IPT2+1)+RPNT(IPT3+1))/3.
+          YDN2=YE-(RPNT(IPT1+2)+RPNT(IPT2+2)+RPNT(IPT3+2))/3.
+          ZDN2=ZE-(RPNT(IPT1+3)+RPNT(IPT2+3)+RPNT(IPT3+3))/3.
+C
+          IF ((XDN1.NE.0..OR.YDN1.NE.0..OR.ZDN1.NE.0.).AND.(XDN2.NE.0..O
+     +R.YDN2.NE.0..OR.ZDN2.NE.0.)) THEN
+            ANGD=RTOD*ABS(ACOS((XDN1*XDN2+YDN1*YDN2+ZDN1*ZDN2)/
+     +                    SQRT((XDN1*XDN1+YDN1*YDN1+ZDN1*ZDN1)*
+     +                         (XDN2*XDN2+YDN2*YDN2+ZDN2*ZDN2))))
+          ELSE
+            ANGD=90.
+          END IF
+C
+          IF (ANGD.GT.90.-ATOL.AND.ANGD.LT.90.+ATOL) THEN
+            ITRI(IPTT+4)=IOR(ITRI(IPTT+4),2*IBIT)
+          END IF
+C
+        END IF
+C
+      END IF
+C
+C Update info required for the second pass (if that pass is to be done).
+C
+      IF (IFLG.EQ.2.OR.IFLG.EQ.3) THEN
+C
+        XMNM=MIN(XMNM,XPT1,XPT2,XPT3)
+        XMXM=MAX(XMXM,XPT1,XPT2,XPT3)
+        YMNM=MIN(YMNM,YPT1,YPT2,YPT3)
+        YMXM=MAX(YMXM,YPT1,YPT2,YPT3)
+C
+        XEXT=MAX(XEXT,MAX(XPT1,XPT2,XPT3)-MIN(XPT1,XPT2,XPT3))
+        YEXT=MAX(YEXT,MAX(YPT1,YPT2,YPT3)-MIN(YPT1,YPT2,YPT3))
+C
+      END IF
 C
   101 CONTINUE
+C
+C We are done if the second pass is not to be done or if the bounding
+C box was improperly computed for some reason.
+C
+      IF (IFLG.NE.2.AND.IFLG.NE.3) RETURN
 C
       IF (XMNM.GE.XMXM.OR.YMNM.GE.YMXM) RETURN
 C
@@ -191,7 +302,11 @@ C
       IBLM=MAX(10,INT(SQRT(RWTH*REAL(LIWB))))
       IBLN=MAX(10,LIWB/IBLM)
       CALL CTGIWS (IWRK,1,IBLM*IBLN,IWSE)
-      IF (IWSE.NE.0.OR.ICFELL('CTTDBI',3).NE.0) GO TO 105
+      IF (IWSE.NE.0.OR.ICFELL('CTTDBF',3).NE.0) GO TO 105
+C
+C For pass two, we use the next higher bit in the blocking flag.
+C
+      IBIT=IBIT*4
 C
 C Sort the triangles into an IBLMxIBLN array of bins.  This should help
 C to speed up our search for those that overlap each other.  First,
@@ -206,7 +321,7 @@ C based on the position of its center point in user space.
 C
       DO 102 IPTT=0,NTRI-LOTN,LOTN
 C
-      IF (IAND(IAND(ITRI(IPTT+4),ITBM),1).NE.0) GO TO 102
+      IF (ITBF(ITRI(IPTT+4)).NE.0) GO TO 102
 C
       IF (IEDG(ITRI(IPTT+1)+1).EQ.IEDG(ITRI(IPTT+2)+1).OR.IEDG(ITRI(IPTT
      ++1)+1).EQ.IEDG(ITRI(IPTT+2)+2)) THEN
@@ -239,8 +354,8 @@ C
       I=MAX(1,MIN(IBLM,1+INT(REAL(IBLM)*((XMDT-XMNM)/(XMXM-XMNM)))))
       J=MAX(1,MIN(IBLN,1+INT(REAL(IBLN)*((YMDT-YMNM)/(YMXM-YMNM)))))
 C
-      ITRI(IPTT+4)=IWRK(II01+(I-1)*IBLN+J)+IAND(ITRI(IPTT+4),7)
-      IWRK(II01+(I-1)*IBLN+J)=8*(IPTT/LOTN+1)
+      ITRI(IPTT+4)=IWRK(II01+(I-1)*IBLN+J)+IAND(ITRI(IPTT+4),127)
+      IWRK(II01+(I-1)*IBLN+J)=128*(IPTT/LOTN+1)
 C
   102 CONTINUE
 C
@@ -249,9 +364,9 @@ C user as implied by what's between the triangle and the eye.
 C
       DO 104 IPTA=0,NTRI-LOTN,LOTN
 C
-C Examine only triangles not blocked by the user.
+C Use only triangles not blocked by the user.
 C
-      IF (IAND(IAND(ITRI(IPTA+4),ITBM),1).NE.0) GO TO 104
+      IF (ITBF(ITRI(IPTA+4)).NE.0) GO TO 104
 C
 C Find the base index of point 1 (that edges 1 and 2 have in common).
 C
@@ -339,7 +454,7 @@ C
 C Test each triangle in the bin to see if it is between triangle A and
 C the eye.
 C
-          IPTB=(IWRK(II01+(I-1)*IBLN+J)/8-1)*LOTN
+          IPTB=(IWRK(II01+(I-1)*IBLN+J)/128-1)*LOTN
 C
 10004     CONTINUE
           IF (.NOT.(IPTB.GE.0)) GO TO 10005
@@ -444,7 +559,7 @@ C
 C
             END IF
 C
-  103       IPTB=(ITRI(IPTB+4)/8-1)*LOTN
+  103       IPTB=(ITRI(IPTB+4)/128-1)*LOTN
 C
           GO TO 10004
 10005     CONTINUE
@@ -458,7 +573,7 @@ C
 C Clear the upper bits in the blocking flags.
 C
       DO 10006 IPTT=0,NTRI-LOTN,LOTN
-        ITRI(IPTT+4)=IAND(ITRI(IPTT+4),7)
+        ITRI(IPTT+4)=IAND(ITRI(IPTT+4),127)
 10006 CONTINUE
 C
 C Release the integer workspace.

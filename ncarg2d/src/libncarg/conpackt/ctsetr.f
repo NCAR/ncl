@@ -1,5 +1,5 @@
 C
-C $Id: ctsetr.f,v 1.2 2004-03-19 22:51:58 kennison Exp $
+C $Id: ctsetr.f,v 1.3 2004-03-26 21:00:09 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -358,8 +358,10 @@ C
         SCFS=RVAL
       ELSE IF (WHCH(1:3).EQ.'SSL'.OR.WHCH(1:3).EQ.'ssl') THEN
         SEGL=MAX(.0001,RVAL)
-      ELSE IF (WHCH(1:3).EQ.'TBM'.OR.WHCH(1:3).EQ.'tbm') THEN
-        ITBM=MAX(0,MIN(7,INT(RVAL)))
+      ELSE IF (WHCH(1:3).EQ.'TBA'.OR.WHCH(1:3).EQ.'tba') THEN
+        ITBM=IOR(ISHIFT(ISHIFT(ITBM,-12),12),IAND(INT(RVAL),4095))
+      ELSE IF (WHCH(1:3).EQ.'TBX'.OR.WHCH(1:3).EQ.'tbx') THEN
+        ITBM=IOR(ISHIFT(IAND(INT(RVAL),4095),12),IAND(ITBM,4095))
       ELSE IF (WHCH(1:3).EQ.'T2D'.OR.WHCH(1:3).EQ.'t2d') THEN
         T2DS=RVAL
       ELSE IF (WHCH(1:3).EQ.'VPB'.OR.WHCH(1:3).EQ.'vpb') THEN

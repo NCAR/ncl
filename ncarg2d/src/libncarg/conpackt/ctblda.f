@@ -1,5 +1,5 @@
 C
-C $Id: ctblda.f,v 1.3 2004-03-19 22:51:53 kennison Exp $
+C $Id: ctblda.f,v 1.4 2004-03-26 21:00:08 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -512,10 +512,15 @@ C call SET.
 C
       DATA ISET / 1 /
 C
-C ITBM is the parameter 'TBM', which is used as a mask for triangle
-C blocking flags.
+C ITBM contains the parameters 'TBX' and 'TBA', which are used to mask
+C triangle blocking flags.  It has the form 4096*ITBX+ITBA; both ITBX
+C and ITBA are 12-bit masks.  If ITBF is the triangle blocking flag for
+C some triangle of the triangular mesh, then, in general, the triangle
+C will be blocked if and only if the value of AND(XOR(ITBF,ITBX),ITBA)
+C is non-zero.  The default values are such as to block only triangles
+C having the low-order bit of the blocking flag set.
 C
-      DATA ITBM / 1 /
+      DATA ITBM / 1 /  !  ITBX = 0, ITBA = 1
 C
 C IWSO is the parameter 'WSO', which says what to do when workspace
 C overflow occurs.
@@ -554,8 +559,8 @@ C
       DATA LINU / 0 /
 C
 C LIWB is the length of the integer workspace to be made available to
-C the routine CTTDBI, which is called to block triangles invisible
-C under mapping by TDPACK.
+C the routine CTTDBF, which is called to set the blocking flags for
+C triangles being mapped by TDPACK.
 C
       DATA LIWB / 2500 /
 C

@@ -1,5 +1,5 @@
 C
-C $Id: cttdca.f,v 1.1 2004-03-19 22:51:58 kennison Exp $
+C $Id: cttdca.f,v 1.2 2004-03-26 21:00:10 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -26,7 +26,8 @@ C
       DIMENSION RPNT(*),IEDG(*),ITRI(*),RWRK(*),IWRK(*),ICRA(ICA1,*)
 C
 C This routine is a version of CTCICA that assumes TDPACK routines are
-C being used to map the triangular mesh from 3-space into 2-space.
+C being used to map the triangular mesh from 3-space into 2-space and
+C generates color indices using the triangles nearest the eye.
 C
 C RPNT is an array of nodes defining vertices of triangles.
 C
@@ -134,6 +135,14 @@ C the areas of triangles, so we don't worry about the factor of 4.)
 C
       HERO(A,B,C)=SQRT(MAX(0.,(A+B+C)*(B+C-A)*(A+C-B)*(A+B-C)))
 C
+C IXOR(IONE,ITWO) is the exclusive OR of the 12-bit masks IONE and ITWO.
+C
+      IXOR(IONE,ITWO)=IAND(IOR(IONE,ITWO),4095-IAND(IONE,ITWO))
+C
+C ITBF(IARG) is non-zero if and only if a triangle is blocked.
+C
+      ITBF(IARG)=IAND(IAND(IXOR(IARG,ITBX),ITBA),1)
+C
 C Check for an uncleared prior error.
 C
       IF (ICFELL('CTTDCA - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
@@ -163,9 +172,14 @@ C
       CALL SET (XVPL,XVPR,YVPB,YVPT,XWDL,XWDR,YWDB,YWDT,LNLG)
       IF (ICFELL('CTTDCA',5).NE.0) RETURN
 C
-C Compute some required tolerance values.
+C Compute a required tolerance value.
 C
       TOLR=.00001*MIN(ABS(XWDR-XWDL),ABS(YWDT-YWDB))
+C
+C Extract the values of ITBX and ITBA.
+C
+      ITBX=IAND(ISHIFT(ITBM,-12),4095)
+      ITBA=IAND(       ITBM     ,4095)
 C
 C If no contour levels are defined, try to pick a set of levels.
 C
@@ -207,9 +221,9 @@ C Examine each triangle of the triangular mesh in turn.
 C
       DO 101 IPTA=0,NTRI-LOTN,LOTN
 C
-C Examine only unblocked triangles.
+C Use only triangles not blocked by the user.
 C
-      IF (IAND(ITRI(IPTA+4),ITBM).NE.0) GO TO 101
+      IF (ITBF(ITRI(IPTA+4)).NE.0) GO TO 101
 C
 C Find the base index of point 1 (that edges 1 and 2 have in common).
 C
@@ -253,27 +267,10 @@ C
       IF (ABS(XPA1-XPA3).LT.TOLR.AND.
      +    ABS(YPA1-YPA3).LT.TOLR) GO TO 101
 C
-C Find the fractional coordinates of all three points.
-C
-      XFA1=CUFX(XPA1)
-      IF (ICFELL('CTTDCA',7).NE.0) RETURN
-      YFA1=CUFY(YPA1)
-      IF (ICFELL('CTTDCA',8).NE.0) RETURN
-C
-      XFA2=CUFX(XPA2)
-      IF (ICFELL('CTTDCA',9).NE.0) RETURN
-      YFA2=CUFY(YPA2)
-      IF (ICFELL('CTTDCA',10).NE.0) RETURN
-C
-      XFA3=CUFX(XPA3)
-      IF (ICFELL('CTTDCA',11).NE.0) RETURN
-      YFA3=CUFY(YPA3)
-      IF (ICFELL('CTTDCA',12).NE.0) RETURN
-C
 C Set a flag that says whether the projected triangle is given in
 C clockwise or counterclockwise order.
 C
-      IF (SIDE(XFA1,YFA1,XFA2,YFA2,XFA3,YFA3).LT.0.) THEN
+      IF (SIDE(XPA1,YPA1,XPA2,YPA2,XPA3,YPA3).LT.0.) THEN
         ICCW=-1
       ELSE
         ICCW=+1
@@ -291,6 +288,23 @@ C
       ZCTA=(RPNT(IPA1+3)+RPNT(IPA2+3)+RPNT(IPA3+3))/3.
 C
       SDTA=(XCTA-XE)**2+(YCTA-YE)**2+(ZCTA-ZE)**2
+C
+C Find the fractional coordinates of all three points.
+C
+      XFA1=CUFX(XPA1)
+      IF (ICFELL('CTTDCA',7).NE.0) RETURN
+      YFA1=CUFY(YPA1)
+      IF (ICFELL('CTTDCA',8).NE.0) RETURN
+C
+      XFA2=CUFX(XPA2)
+      IF (ICFELL('CTTDCA',9).NE.0) RETURN
+      YFA2=CUFY(YPA2)
+      IF (ICFELL('CTTDCA',10).NE.0) RETURN
+C
+      XFA3=CUFX(XPA3)
+      IF (ICFELL('CTTDCA',11).NE.0) RETURN
+      YFA3=CUFY(YPA3)
+      IF (ICFELL('CTTDCA',12).NE.0) RETURN
 C
 C Compute X and Y coordinate differences.
 C
@@ -331,7 +345,7 @@ C triangle and set the cell array element to point to the triangle; if
 C it already points to some other triangle, make it point to the one
 C nearest the eye.
 C
-      IOLD=-1
+      IPTB=-1
 C
       DO 10003 I=IBEG,IEND
         XFCC=XFCP+((REAL(I)-.5)/REAL(ICAM))*(XFCQ-XFCP)
@@ -345,29 +359,29 @@ C
             IF (ICRA(I,J).EQ.0) THEN
               ICRA(I,J)=ICCW*(IPTA+1)
             ELSE
-              IF (IOLD.NE.ABS(ICRA(I,J)-1)) THEN
-                IOLD=ABS(ICRA(I,J)-1)
-                XOLD=(RPNT(IEDG(ITRI(IOLD+1)+1)+1)+
-     +                RPNT(IEDG(ITRI(IOLD+1)+2)+1)+
-     +                RPNT(IEDG(ITRI(IOLD+2)+1)+1)+
-     +                RPNT(IEDG(ITRI(IOLD+2)+2)+1)+
-     +                RPNT(IEDG(ITRI(IOLD+3)+1)+1)+
-     +                RPNT(IEDG(ITRI(IOLD+3)+2)+1))/6.
-                YOLD=(RPNT(IEDG(ITRI(IOLD+1)+1)+2)+
-     +                RPNT(IEDG(ITRI(IOLD+1)+2)+2)+
-     +                RPNT(IEDG(ITRI(IOLD+2)+1)+2)+
-     +                RPNT(IEDG(ITRI(IOLD+2)+2)+2)+
-     +                RPNT(IEDG(ITRI(IOLD+3)+1)+2)+
-     +                RPNT(IEDG(ITRI(IOLD+3)+2)+2))/6.
-                ZOLD=(RPNT(IEDG(ITRI(IOLD+1)+1)+3)+
-     +                RPNT(IEDG(ITRI(IOLD+1)+2)+3)+
-     +                RPNT(IEDG(ITRI(IOLD+2)+1)+3)+
-     +                RPNT(IEDG(ITRI(IOLD+2)+2)+3)+
-     +                RPNT(IEDG(ITRI(IOLD+3)+1)+3)+
-     +                RPNT(IEDG(ITRI(IOLD+3)+2)+3))/6.
-                SOLD=(XOLD-XE)**2+(YOLD-YE)**2+(ZOLD-ZE)**2
+              IF (IPTB.NE.ABS(ICRA(I,J)-1)) THEN
+                IPTB=ABS(ICRA(I,J))-1
+                XCTB=(RPNT(IEDG(ITRI(IPTB+1)+1)+1)+
+     +                RPNT(IEDG(ITRI(IPTB+1)+2)+1)+
+     +                RPNT(IEDG(ITRI(IPTB+2)+1)+1)+
+     +                RPNT(IEDG(ITRI(IPTB+2)+2)+1)+
+     +                RPNT(IEDG(ITRI(IPTB+3)+1)+1)+
+     +                RPNT(IEDG(ITRI(IPTB+3)+2)+1))/6.
+                YCTB=(RPNT(IEDG(ITRI(IPTB+1)+1)+2)+
+     +                RPNT(IEDG(ITRI(IPTB+1)+2)+2)+
+     +                RPNT(IEDG(ITRI(IPTB+2)+1)+2)+
+     +                RPNT(IEDG(ITRI(IPTB+2)+2)+2)+
+     +                RPNT(IEDG(ITRI(IPTB+3)+1)+2)+
+     +                RPNT(IEDG(ITRI(IPTB+3)+2)+2))/6.
+                ZCTB=(RPNT(IEDG(ITRI(IPTB+1)+1)+3)+
+     +                RPNT(IEDG(ITRI(IPTB+1)+2)+3)+
+     +                RPNT(IEDG(ITRI(IPTB+2)+1)+3)+
+     +                RPNT(IEDG(ITRI(IPTB+2)+2)+3)+
+     +                RPNT(IEDG(ITRI(IPTB+3)+1)+3)+
+     +                RPNT(IEDG(ITRI(IPTB+3)+2)+3))/6.
+                SDTB=(XCTB-XE)**2+(YCTB-YE)**2+(ZCTB-ZE)**2
               END IF
-              IF (SDTA.LT.SOLD) ICRA(I,J)=ICCW*(IPTA+1)
+              IF (SDTA.LT.SDTB) ICRA(I,J)=ICCW*(IPTA+1)
             END IF
           END IF
 10004   CONTINUE
@@ -381,8 +395,10 @@ C
         XFCC=XFCP+((REAL(I)-.5)/REAL(ICAM))*(XFCQ-XFCP)
         DO 10006 J=1,ICAN
           YFCC=YFCP+((REAL(J)-.5)/REAL(ICAN))*(YFCQ-YFCP)
-          IF (ICRA(I,J).LE.0) THEN
+          IF (ICRA(I,J).LT.0) THEN
             ICRA(I,J)=IAIA(257)
+          ELSE IF (ICRA(I,J).EQ.0) THEN
+            ICRA(I,J)=IAIA(258)
           ELSE
             IPTA=ICRA(I,J)-1
             IF (IEDG(ITRI(IPTA+1)+1).EQ.IEDG(ITRI(IPTA+2)+1).OR.IEDG(ITR

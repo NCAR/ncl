@@ -1,5 +1,5 @@
 C
-C $Id: cttreg.f,v 1.2 2004-03-19 22:51:59 kennison Exp $
+C $Id: cttreg.f,v 1.3 2004-03-26 21:00:10 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -118,10 +118,23 @@ C Define an arithmetic statement function for use below.
 C
       FRCT(ZDT1,ZDT2)=(CLEV(ICLV)-ZDT1)/(ZDT2-ZDT1)
 C
+C IXOR(IONE,ITWO) is the exclusive OR of the 12-bit masks IONE and ITWO.
+C
+      IXOR(IONE,ITWO)=IAND(IOR(IONE,ITWO),4095-IAND(IONE,ITWO))
+C
+C ITBF(IARG) is non-zero if and only if a triangle is blocked.
+C
+      ITBF(IARG)=IAND(IXOR(IARG,ITBX),ITBA)
+C
 C If this is a re-entry after coordinate processing by the caller, jump
 C back to the appropriate point in the code.
 C
       IF (IJMP.NE.0) GO TO (101,104,105,106,107,108) , IJMP
+C
+C Extract the values of ITBX and ITBA.
+C
+      ITBX=IAND(ISHIFT(ITBM,-12),4095)
+      ITBA=IAND(       ITBM     ,4095)
 C
 C Assign space to use for storing the X and Y coordinates of points.
 C
@@ -172,7 +185,7 @@ C
           IFLL=0
 C
           IF (.NOT.(IEDG(IIII+3).GE.0)) GO TO 10009
-            IF (IAND(ITRI(LOTN*((IEDG(IIII+3)-1)/LOTN)+4),ITBM)
+            IF (ITBF(ITRI(LOTN*((IEDG(IIII+3)-1)/LOTN)+4))
      +                                                   .EQ.0) IFLL=1
 10009     CONTINUE
 C
@@ -182,7 +195,7 @@ C
           IFLR=0
 C
           IF (.NOT.(IEDG(IIII+4).GE.0)) GO TO 10010
-            IF (IAND(ITRI(LOTN*((IEDG(IIII+4)-1)/LOTN)+4),ITBM)
+            IF (ITBF(ITRI(LOTN*((IEDG(IIII+4)-1)/LOTN)+4))
      +                                                   .EQ.0) IFLR=1
 10010     CONTINUE
 C
@@ -266,8 +279,8 @@ C
                 IFLL=0
 C
                 IF (.NOT.(IEDG(IPTE+IP12+2).GE.0)) GO TO 10020
-                  IF (IAND(ITRI(LOTN*((IEDG(IPTE+IP12+2)-1)/LOTN)+4),
-     +                                              ITBM).EQ.0) IFLL=1
+                  IF (ITBF(ITRI(LOTN*((IEDG(IPTE+IP12+2)-1)/LOTN)+4))
+     +                                                   .EQ.0) IFLL=1
 10020           CONTINUE
 C
               IF (.NOT.(IFLL.EQ.0)) GO TO 10019

@@ -1,5 +1,5 @@
 C
-C $Id: ctmesh.f,v 1.2 2004-03-19 22:51:56 kennison Exp $
+C $Id: ctmesh.f,v 1.3 2004-03-26 21:00:09 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -119,6 +119,14 @@ C Define a variable which will hold a single character.
 C
       CHARACTER*1 SCHR
 C
+C IXOR(IONE,ITWO) is the exclusive OR of the 12-bit masks IONE and ITWO.
+C
+      IXOR(IONE,ITWO)=IAND(IOR(IONE,ITWO),4095-IAND(IONE,ITWO))
+C
+C ITBF(IARG) is non-zero if and only if a triangle is blocked.
+C
+      ITBF(IARG)=IAND(IAND(IXOR(IARG,ITBX),ITBA),1)
+C
 C Check for an uncleared prior error.
 C
       IF (ICFELL('CTMESH - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
@@ -130,6 +138,11 @@ C
         CALL CTINRC
         IF (ICFELL('CTMESH',2).NE.0) RETURN
       END IF
+C
+C Extract the values of ITBX and ITBA.
+C
+      ITBX=IAND(ISHIFT(ITBM,-12),4095)
+      ITBA=IAND(       ITBM     ,4095)
 C
 C Transfer the array dimensions and node lengths to variables in COMMON.
 C
@@ -201,7 +214,7 @@ C
       VMAX=0.
 C
       DO 10004 I=0,NTRI-LOTN,LOTN
-        IF (IAND(ITRI(I+4),ITBM).EQ.0) THEN
+        IF (ITBF(ITRI(I+4)).EQ.0) THEN
           DO 10005 J=1,3
             DO 10006 K=1,2
               L=IEDG(ITRI(I+J)+K)
@@ -323,9 +336,9 @@ C
 C
         DO 10007 I=0,NTRI-LOTN,LOTN
 C
-C Use only unblocked triangles.
+C Use only triangles not blocked by the user.
 C
-          IF (IAND(ITRI(I+4),ITBM).EQ.0) THEN
+          IF (ITBF(ITRI(I+4)).EQ.0) THEN
 C
 C Find the base index of the point that edges 1 and 2 have in common.
 C

@@ -1,5 +1,5 @@
 C
-C $Id: ctcica.f,v 1.3 2004-03-19 22:51:53 kennison Exp $
+C $Id: ctcica.f,v 1.4 2004-03-26 21:00:09 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -118,6 +118,14 @@ C the areas of triangles, so we don't worry about the factor of 4.)
 C
       HERO(A,B,C)=SQRT(MAX(0.,(A+B+C)*(B+C-A)*(A+C-B)*(A+B-C)))
 C
+C IXOR(IONE,ITWO) is the exclusive OR of the 12-bit masks IONE and ITWO.
+C
+      IXOR(IONE,ITWO)=IAND(IOR(IONE,ITWO),4095-IAND(IONE,ITWO))
+C
+C ITBF(IARG) is non-zero if and only if a triangle is blocked.
+C
+      ITBF(IARG)=IAND(IXOR(IARG,ITBX),ITBA)
+C
 C Check for an uncleared prior error.
 C
       IF (ICFELL('CTCICA - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
@@ -167,6 +175,11 @@ C
       TOL1=.00001*MIN(ABS(XVPR-XVPL),ABS(YVPT-YVPB))
       TOL2=.50000*MIN(ABS(XVPR-XVPL),ABS(YVPT-YVPB))
 C
+C Extract the values of ITBX and ITBA.
+C
+      ITBX=IAND(ISHIFT(ITBM,-12),4095)
+      ITBA=IAND(       ITBM     ,4095)
+C
 C Initialize the cell array to contain the off-grid value of IAID.
 C
       DO 10001 I=1,ICAM
@@ -212,7 +225,7 @@ C
 C
 C Use only unblocked triangles.
 C
-      IF (IAND(ITRI(IIII+4),ITBM).NE.0) GO TO 101
+      IF (ITBF(ITRI(IIII+4)).NE.0) GO TO 101
 C
 C Find the base index of point 1 (that edges 1 and 2 have in common).
 C

@@ -1,5 +1,5 @@
 C
-C $Id: ctcpag.f,v 1.2 2004-03-19 22:51:54 kennison Exp $
+C $Id: ctcpag.f,v 1.3 2004-03-26 21:00:09 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -94,10 +94,23 @@ C
       CHARACTER*32 TXLO
       SAVE   /CTCOM2/
 C
+C IXOR(IONE,ITWO) is the exclusive OR of the 12-bit masks IONE and ITWO.
+C
+      IXOR(IONE,ITWO)=IAND(IOR(IONE,ITWO),4095-IAND(IONE,ITWO))
+C
+C ITBF(IARG) is non-zero if and only if a triangle is blocked.
+C
+      ITBF(IARG)=IAND(IXOR(IARG,ITBX),ITBA)
+C
 C Compute some required tolerance values.
 C
       TOL1=.0001*MIN(ABS(XVPR-XVPL),ABS(YVPT-YVPB))
       TOL2=.5000*MIN(ABS(XVPR-XVPL),ABS(YVPT-YVPB))
+C
+C Extract the values of ITBX and ITBA.
+C
+      ITBX=IAND(ISHIFT(ITBM,-12),4095)
+      ITBA=IAND(       ITBM     ,4095)
 C
 C Initialize the gradient array.
 C
@@ -111,7 +124,7 @@ C
 C
 C Use only unblocked triangles.
 C
-      IF (IAND(ITRI(I+4),ITBM).NE.0) GO TO 101
+      IF (ITBF(ITRI(I+4)).NE.0) GO TO 101
 C
 C Find the base index of point 1 (that edges 1 and 2 have in common).
 C

@@ -1,5 +1,5 @@
 C
-C $Id: ctgetr.f,v 1.2 2004-03-19 22:51:55 kennison Exp $
+C $Id: ctgetr.f,v 1.3 2004-03-26 21:00:09 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -363,8 +363,10 @@ C
         RVAL=SCFU
       ELSE IF (WHCH(1:3).EQ.'SSL'.OR.WHCH(1:3).EQ.'ssl') THEN
         RVAL=SEGL
-      ELSE IF (WHCH(1:3).EQ.'TBM'.OR.WHCH(1:3).EQ.'tbm') THEN
-        RVAL=REAL(ITBM)
+      ELSE IF (WHCH(1:3).EQ.'TBA'.OR.WHCH(1:3).EQ.'tba') THEN
+        RVAL=REAL(IAND(ITBM,4095))
+      ELSE IF (WHCH(1:3).EQ.'TBX'.OR.WHCH(1:3).EQ.'tbx') THEN
+        RVAL=REAL(IAND(ISHIFT(ITBM,-12),4095))
       ELSE IF (WHCH(1:3).EQ.'T2D'.OR.WHCH(1:3).EQ.'t2d') THEN
         RVAL=T2DS
       ELSE IF (WHCH(1:3).EQ.'VPB'.OR.WHCH(1:3).EQ.'vpb') THEN
