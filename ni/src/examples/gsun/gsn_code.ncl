@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.96 2002-10-13 23:56:02 haley Exp $
+;      $Id: gsn_code.ncl,v 1.97 2002-10-23 15:10:31 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -3537,8 +3537,6 @@ begin
         lbres@vpYF = lbres@vpYF + get_res_value(lbres,"pmLabelBarOrthogonalPosF",0.)
         lbres@vpXF = lbres@vpXF + get_res_value(lbres,"pmLabelBarParallelPosF",0.)
       else
-        lbres@vpYF = lbres@vpYF + get_res_value(lbres,"pmLabelBarOrthogonalPosF",0.)
-        lbres@vpXF = lbres@vpXF + get_res_value(lbres,"pmLabelBarParallelPosF",0.)
         set_attr(lbres,"vpXF",min ((/1.-(xwsp+labelbar_width),max_rgt+xwsp/)))
         if(nrows.eq.1.and.lbres@vpHeightF.le.scaled_height)
           set_attr(lbres,"vpYF",ypos(0)-(scaled_height - lbres@vpHeightF)/2.)
@@ -4835,6 +4833,7 @@ end
 ;           setinterval: logical                                        ;
 ;           setdiscrete: integer                                        ;
 ;            minmaxbins: logical                                        ;
+;             count_msg: logical                                        ;
 ;                isnice: integer                                        ;
 ;               compare: integer                                        ;
 ;                                                                       ;
@@ -4873,7 +4872,7 @@ end
 function compute_hist_vals(xx:numeric,binlocs:numeric,nbinlocs[1]:integer, \
                            bin_width:numeric,setinterval:logical, \
                            setdiscrete:logical, minmaxbins:logical, \
-                           isnice:logical,compare:logical)
+                           count_msg:logical,isnice:logical,compare:logical)
 local xmin, xmax, new_binlocs, nbars, buckets, x, i
 begin
   xmin = tofloat(min(xx))
@@ -5005,7 +5004,6 @@ begin
     delete(new_num_in_bins)
     nbars = nbars + 2
   end if
-
 ;
 ; Count number of missing values.
 ;
@@ -5017,6 +5015,20 @@ begin
   else
     num_missing = 0
   end if
+;
+; If count_msg is True, then we need to bin the number of missing values.
+;
+  if(count_msg) then
+    new_num_in_bins              = new((/nsets,nbars+1/),integer)
+    new_num_in_bins(:,0:nbars-1) = num_in_bins
+    new_num_in_bins(:,nbars)     = num_missing
+
+    delete(num_in_bins)
+    num_in_bins = new_num_in_bins
+    delete(new_num_in_bins)
+    nbars = nbars + 1
+  end if
+
 ;
 ; Calculate percentages, both with and without missing points included.
 ;
@@ -5147,6 +5159,7 @@ begin
   nbins      = get_res_value(res2,"gsnHistogramNumberOfBins",-1)
   xbin_width = get_res_value(res2,"gsnHistogramBinWidth",-1)
   minmaxbins = get_res_value(res2,"gsnHistogramMinMaxBinsOn",False)
+  count_msg  = get_res_value(res2,"gsnHistogramBinMissing",False)
   perc_nomiss= get_res_value(res2,"gsnHistogramComputePercentagesNoMissing",False)
   ispercent  = get_res_value(res2,"gsnHistogramComputePercentages",perc_nomiss)
   percentsign= get_res_value(res2,"gsnHistogramPercentSign",False)
@@ -5246,7 +5259,8 @@ begin
 ;    (num_in_bins@binlocs).
 ;
   num_in_bins = compute_hist_vals(xdata,bins,nbins,xbin_width,setinterval, \
-                                  setdiscrete,minmaxbins,isnice,compare)
+                                  setdiscrete,minmaxbins,count_msg, \
+                                  isnice,compare)
 
   if(all(ismissing(num_in_bins)))
     print("Error: gsn_histogram: Unable to calculate bin values. No plot will be drawn.")
@@ -5259,7 +5273,8 @@ begin
   end if
 ;
 ; 3. Count number of bars and bin locations. If minmaxbins is True, then
-;    later we need to account for two extra bars.
+;    later we need to account for two extra bars.  Also, if count_msg is
+;    True, then this adds one extra bar.
 ;
   nbinlocs = dimsizes(num_in_bins@binlocs)
   if(compare)
@@ -5274,11 +5289,18 @@ begin
 ;    comparing two fields, then the histogram bars must be slightly
 ;    smaller in width to accomodate two bars.
 ;
+  extra_bins = 0
+
   if(minmaxbins) then
-    bin_width = 1./(nbinlocs+1)
-  else
-    bin_width = 1./(nbinlocs-1)
+    extra_bins = 2
   end if
+
+  if(count_msg) then
+    extra_bins = extra_bins + 1
+  end if
+
+  bin_width = 1./(nbinlocs-1+extra_bins)
+
   if(compare) then
     bar_width = 0.5 * bin_width
   else
@@ -5459,17 +5481,48 @@ begin
 ;
 ; 9. Set some post-resources for labeling the axis that indicates the
 ;    bin ranges or discrete values.  If minmaxbins is True, then we 
-;    need to add special labels to the end locations.
+;    need to make sure not to label the end bin locations. Also, if
+;    count_msg is True, then we need to add a special label for this.
 ;
   if(minmaxbins) then
-    lbs = new(nbinlocs+2,string)
-    lbs(0)            = ""
-    lbs(1:nbinlocs)   = num_in_bins@binlocs
-    lbs(nbinlocs+1)   = ""
+    if(.not.count_msg) then
+      lbs             = new(nbinlocs+2,string)
+      lbs(0)          = ""
+      lbs(1:nbinlocs) = num_in_bins@binlocs
+      lbs(nbinlocs+1) = ""
+    else
+      lbs = new(nbinlocs+3,string)
+      lbs(0)          = ""
+      lbs(1:nbinlocs) = num_in_bins@binlocs
+      lbs(nbinlocs+1) = ""
+      lbs(nbinlocs+2) = "# msg"
+    end if
   else
-    lbs = num_in_bins@binlocs
+    if(.not.count_msg) then
+      lbs = num_in_bins@binlocs
+    else
+      lbs               = new(nbinlocs+1,string)
+      lbs(0:nbinlocs-1) = num_in_bins@binlocs
+      lbs(nbinlocs)     = "# msg"
+    end if
   end if
-  lbs_vals = fspan(0.,1.,dimsizes(lbs))
+;
+; Calculate location for tickmarks.
+;
+  nlbs = dimsizes(lbs)
+  lbs_vals = fspan(0.,1.,nlbs)
+;
+; Make sure tickmark is centered under bar, if doing discrete
+; values with comparisons.
+;
+  if(compare.and.setdiscrete) then
+    lbs_vals = lbs_vals - (bar_width/6.)
+  end if
+
+  if(count_msg.and.setinterval) then
+    dx               = lbs_vals(nlbs-1) - lbs_vals(nlbs-2)
+    lbs_vals(nlbs-1) = lbs_vals(nlbs-2) + dx/2.
+  end if
 
   if(horizontal) then
     set_attr(res2,"tiXAxisString","Frequency")
