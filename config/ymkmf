@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: ymkmf,v 1.6 1994-05-05 21:43:45 boote Exp $
+#      $Id: ymkmf,v 1.7 1994-08-17 23:41:20 boote Exp $
 #
 #########################################################################
 #									#
@@ -73,6 +73,7 @@ end
 
 if (! $?topname) then
 	set	topname = ncarg
+	set	def_topname
 endif
 
 if ("$topname" == ".") then
@@ -83,6 +84,11 @@ endif
 
 echo $thisdir | fgrep $topname >& /dev/null
 if ($status != 0) then
+	if($?def_topname) then
+		set topdir = .
+		set curdir = .
+		goto shortcut
+	endif
 	echo "$0 : Unable to find TopDir $topname in $thisdir"
 	exit 1
 endif
@@ -97,6 +103,15 @@ set	base = `basename $thisdir`
 set	ndir = `dirname $thisdir`
 
 while ("$base" != "$topname")
+	if ("$base" == "/") then
+		if($?def_topname) then
+			set topdir = .
+			set curdir = .
+			goto shortcut
+		endif
+		echo "$0 : Bad TopDir name $topname"
+		exit 1
+	endif
 	if($?curdir) then
 		set curdir = "$base"/"$curdir"
 	else
