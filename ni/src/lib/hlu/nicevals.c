@@ -1,5 +1,5 @@
 /*
- *      $Id: nicevals.c,v 1.1 2000-08-22 00:16:55 dbrown Exp $
+ *      $Id: nicevals.c,v 1.2 2000-08-22 21:49:42 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -35,8 +35,8 @@
  *              through the data domain. A flag controls whether the max 
  *              and min are inside or outside the data range.
  *
- * In Args: float min 		the minimum value of the domain
- *          float max   	the maximum value of the domain
+ * In Args: double min 		the minimum value of the domain
+ *          double max   	the maximum value of the domain
  *          int   max_steps	the maximum number of steps desired
  *          NhlBoolean outside  controls whether return min/max fall just
  *                              outside or just inside the data domain.
@@ -48,9 +48,9 @@
  *                                  *max_out <= max < *max_out + *step_size
  *
  *
- * Out Args: float *min_out     a "nice" minimum value
- *           float *max_out     a "nice" maximum value
- *           float *step_size   a step value such that 
+ * Out Args: double *min_out     a "nice" minimum value
+ *           double *max_out     a "nice" maximum value
+ *           double *step_size   a step value such that 
  *                              (where n is an integer <= max_steps):
  *                              *min_out + n * *step_size == *max_out 
  *                               with no remainder 
@@ -66,23 +66,23 @@
 NhlErrorTypes _NhlGetEndpointsAndStepSize
 #if	NhlNeedProto
 (
-	float		min,
-	float   	max,
+	double		min,
+	double   	max,
 	int		max_steps,
 	NhlBoolean	outside,
-	float		*min_out,
-	float		*max_out,
-	float		*step_size
+	double		*min_out,
+	double		*max_out,
+	double		*step_size
 )
 #else
 (min,max,max_steps,outside,min_out,max_out,step_size)
-	float		min;
-	float   	max;
+	double		min;
+	double   	max;
 	int		max_steps;
 	NhlBoolean	outside;
-	float		*min_out;
-	float		*max_out;
-	float		*step_size;
+	double		*min_out;
+	double		*max_out;
+	double		*step_size;
 #endif
 {
 	double	table[] = 
@@ -96,7 +96,7 @@ NhlErrorTypes _NhlGetEndpointsAndStepSize
 	char	*e_text;
 	char	func[] = "_NhlGetEndpointsAndStepSize";
 
-	if(_NhlCmpFAny2(max,min,7,_NhlMIN_NONZERO)<=0.0) {
+	if(_NhlCmpFAny2((float)max,(float)min,7,_NhlMIN_NONZERO)<=0.0) {
 		e_text = "%s: Max value less than or equal to min value";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,func);
 		return(NhlFATAL);
@@ -111,7 +111,8 @@ NhlErrorTypes _NhlGetEndpointsAndStepSize
 			ax1 = ceil(max/t) * t;
 			if(((i>=npts-1)&&(*step_size == u))||
 			   ((t <= *step_size)&&
-			    (_NhlCmpFAny2((ax1-am1)/t,(double)max_steps,7,
+			    (_NhlCmpFAny2((float)((ax1-am1)/t),
+					  (float)max_steps,7,
 					  _NhlMIN_NONZERO) <= 0.0))){
 				*step_size = t;
 				ax2 = ax1;
@@ -126,7 +127,8 @@ NhlErrorTypes _NhlGetEndpointsAndStepSize
 			ax1 = floor(max/t) * t;
 			if(((i>=npts-1)&&(*step_size == u))||
 			   ((t <= *step_size)&&
-			    (_NhlCmpFAny2((ax1-am1)/t,(double)max_steps,7,
+			    (_NhlCmpFAny2((float)((ax1-am1)/t),
+					  (float)max_steps,7,
 					  _NhlMIN_NONZERO) <= 0.0))){
 				*step_size = t;
 				ax2 = ax1;

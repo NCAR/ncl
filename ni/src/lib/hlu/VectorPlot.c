@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.c,v 1.67 2000-08-22 00:16:52 dbrown Exp $
+ *      $Id: VectorPlot.c,v 1.68 2000-08-22 21:49:41 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -7765,8 +7765,8 @@ static NhlErrorTypes    SetupLevelsAutomatic
 	NhlVectorPlotLayerPart	*vcp = &(vcnew->vectorplot);
 	int			i,count = 0;
 
-	float			lmin,lmax,ftmp,ftest;
-	float			spacing;
+	float			ftmp,ftest;
+	double			lmin,lmax,spacing;
 	NhlBoolean		choose_spacing = True;
 	NhlBoolean	        zero_or_equal = False;
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.97 2000-08-22 00:16:48 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.98 2000-08-22 21:49:39 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -9778,8 +9778,8 @@ static NhlErrorTypes    SetupLevelsAutomatic
 	NhlContourPlotLayerPart	*cnp = &(cnew->contourplot);
 	int			i,count = 0;
 
-	float			lmin,lmax,ftmp,ftest;
-	float			spacing;
+	float			ftmp,ftest;
+	double			lmin,lmax,spacing;
 	NhlBoolean		choose_spacing = True;
 
 	lmin = cnp->zmin;

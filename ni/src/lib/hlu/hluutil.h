@@ -1,5 +1,5 @@
 /*
- *      $Id: hluutil.h,v 1.7 2000-08-22 00:16:55 dbrown Exp $
+ *      $Id: hluutil.h,v 1.8 2000-08-22 21:49:42 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -157,13 +157,13 @@ extern float	_NhlCmpFAny2(
 
 extern NhlErrorTypes _NhlGetEndpointsAndStepSize(
 #if	NhlNeedProto
-	float		min,
-	float   	max,
+	double		min,
+	double   	max,
 	int		max_steps,
 	NhlBoolean	outside,
-	float		*min_out,
-	float		*max_out,
-	float		*step_size
+	double		*min_out,
+	double		*max_out,
+	double		*step_size
 #endif
 );
 
