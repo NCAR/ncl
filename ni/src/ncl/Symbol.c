@@ -1,5 +1,5 @@
 /*
- *      $Id: Symbol.c,v 1.1 1993-09-24 23:41:05 ethan Exp $
+ *      $Id: Symbol.c,v 1.2 1993-10-06 22:54:43 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -32,6 +32,12 @@
 */
 static NclSymTableListNode *thetablelist;
 
+/*
+* This is used to avoid fragmentation in the event syntax errors are
+* detected in the current statement.
+*/
+static NclSymbol *new_sym_stack[NCL_MAX_SYMS_PER_STMNT];
+static int new_sym_i = 0;
 
 /*
  * Function:	_NclInitSymbol
@@ -287,8 +293,79 @@ NclSymbol *_NclAddSym
 	thetablelist->this_scope[index].thelist = s;
 	s->u.var = NULL;
 	s->offset = thetablelist->cur_offset++;
+
+	if(s->level > 0) {
+		new_sym_stack[new_sym_i] = s;
+		new_sym_i++;
+	}
 	return(s);
 }
+
+
+void _NclResetNewSymStack
+#if __STDC__
+(void)
+#else
+()
+#endif
+{
+	new_sym_i = 0;
+}
+
+void _NclDeleteNewSymStack
+#if __STDC__
+(void)
+#else
+()
+#endif
+{	
+	int i;
+	NclSymTableListNode *step;
+
+
+
+	for( i= new_sym_i-1 ; i>= 0; i--) {
+		step = thetablelist;
+		while(step != NULL) {
+               	 if(step->level == new_sym_stack[i]->level)
+			break;
+               	 else
+               	         step = step->previous;
+        	}
+		if(step != NULL) {
+			step->cur_offset = new_sym_stack[i]->offset;
+			_NclDeleteSym(new_sym_stack[i]);
+		}
+	}
+	new_sym_i = 0;
+	return;
+}
+
+
+
+/*
+ * Function:	_NclGetCurrentScopeLevel
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+int _NclGetCurrentScopeLevel
+#if __STDC__
+(void)
+#else
+()
+#endif
+{
+	return(thetablelist->level);
+}
+
 
 /*
  * Function:	_NclDeleteSym
@@ -323,7 +400,23 @@ void _NclDeleteSym
 			step = step->previous;
 	}
 	step->this_scope[sym->ind].nelem--;
-	sym->sympre->symnext = sym->symnext;
+	if((sym->sympre == NULL) &&(sym->symnext == NULL)) {
+		step->this_scope[sym->ind].thelist = NULL;
+		if(step->this_scope[sym->ind].nelem != 0) {
+			NhlPError(FATAL,E_UNKNOWN,"_NhlDeleteSym: Ack!! a big problem has just occured in the symbol table");
+		}
+	} else if(sym->sympre == NULL) {
+		sym->symnext->sympre = NULL;
+	} else if(sym->symnext == NULL) {
+		sym->sympre->symnext = NULL;
+	} else {
+		sym->sympre->symnext = sym->symnext;
+		sym->symnext->sympre = sym->sympre;
+	}
+
+
+
+
 	switch(sym->type) {
 	case UNDEF:
 		break;

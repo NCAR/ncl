@@ -8,13 +8,12 @@
 extern FILE *yyin;
 FILE *thefptr;
 FILE *theoptr;
-int cmd_line =1;
+int cmd_line;
 
 #define BUFF_SIZE 512
 
 main() {
 
-	int fd[2];
 	FILE *fp;
 	char buffer[BUFF_SIZE];
 	int i,j=0;
@@ -31,12 +30,15 @@ main() {
 
 #endif
 
+	cmd_line =isatty(fileno(stdin));
+
 	thefptr = fopen("ncl.tree","w");
 	theoptr = fopen("ncl.seq","w");
-	_NclInitSymbol();	
 	_NclInitMachine();
-	
-	fprintf(stdout,"ncl 1> ");
+	_NclInitSymbol();	
+
+	if(cmd_line)	
+		fprintf(stdout,"ncl 1> ");
 	yyparse();
 	fclose(thefptr);
 	exit(0);

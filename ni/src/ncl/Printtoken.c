@@ -3,6 +3,7 @@
 #include <defs.h>
 #include <y.tab.h>
 
+#ifdef DEBUGER
 
 void printtoken
 #if __STDC__
@@ -209,3 +210,4 @@ void printtoken
 			fprintf(stdout,"No match for (%c)",(char)type);
 	}
 }
+#endif

@@ -46,8 +46,8 @@ char *cur_load_file = NULL;
 %token <real> REAL
 %token <str> STRING DIM DIMNAME ATTNAME COORD FVAR 
 %token <sym> INTEGER FLOAT LONG DOUBLE BYTE CHARACTER NUMERIC FILETYPE SHORT
-%token <sym> UNDEF VAR WHILE DO QUIT PROC EPROC NPROC UNDEFFILEVAR
-%token <sym> BGIN END FUNC EFUNC NFUNC FDIM IF THEN VBLKNAME FILEVAR
+%token <sym> UNDEF VAR WHILE DO QUIT PROC EPROC NPROC UNDEFFILEVAR BREAK
+%token <sym> BGIN END FUNC EFUNC NFUNC FDIM IF THEN VBLKNAME FILEVAR CONTINUE
 %token <sym> DFILE KEYFUNC KEYPROC ELSE EXTERNAL RETURN VSBLKGET LOAD
 %token <sym> OBJNAME OBJTYPE RECORD VSBLKCREATE VSBLKSET LOCAL STOP
 %token '='
@@ -85,12 +85,12 @@ char *cur_load_file = NULL;
 %type <src_node> procedure function_def procedure_def block do conditional
 %type <src_node> visblk statement_list
 %type <src_node> declaration identifier expr
-%type <src_node> subscript0 eoln opt_eoln
+%type <src_node> subscript0 eoln opt_eoln break_cont
 %type <src_node> subscript1 subexpr primary function array error
-%type <list> the_list dec_list subscript_list opt_arg_list idn_list
+%type <list> the_list arg_dec_list subscript_list opt_arg_list 
 %type <list> block_statement_list resource_list dim_size_list vcreate 
 %type <list> arg_list do_stmnt resource vset vget get_resource get_resource_list
-%type <sym> datatype dfile_or_und var_or_und
+%type <sym> datatype pfname vname
 %type <sym> func_identifier proc_identifier 
 %%
 
@@ -101,13 +101,15 @@ statement_list :  statement eoln			{
 									fprintf(stdout,"ncl %d> ",yylineno);
 								if(($1 != NULL)&&!(is_error)) {
 									_NclPrintTree($1,thefptr);
-									strt = _NclTranslate($1,theoptr);
+									strt = _NclTranslate($1,thefptr);
 									_NclPrintMachine(strt,-1,theoptr);
+									_NclResetNewSymStack();
 									_NclFreeTree($1,is_error);
 #ifdef MAKEAPI
 									return(0);
 #endif
 								} else {
+									_NclDeleteNewSymStack();
 									_NclFreeTree($1,is_error);
 									is_error = 0;
 #ifdef MAKEAPI
@@ -125,12 +127,14 @@ statement_list :  statement eoln			{
 									_NclPrintTree($2,thefptr);
 									strt = _NclTranslate($2,thefptr);
 									_NclPrintMachine(strt,-1,theoptr);
+									_NclResetNewSymStack();
 									_NclFreeTree($2,is_error);
 									$$ = $3;
 #ifdef MAKEAPI
 									return(0);
 #endif 
 								} else {
+									_NclDeleteNewSymStack();
 									_NclFreeTree($2,is_error);
 									is_error = 0;
 									$$ = $3;
@@ -190,6 +194,7 @@ statement_list :  statement eoln			{
 										top_level_line = cur_line_number;
 										cur_line_number = 0;
 										yyin = tmp_file;
+										cmd_line = isatty(fileno(tmp_file));
 										loading = 1;
 										cur_load_file = (char*)NclMalloc((unsigned)strlen($2)+1);
 										strcpy(cur_load_file,$2);
@@ -213,6 +218,7 @@ statement_list :  statement eoln			{
 										yyin = tmp_file;
 										loading = 1;
 										cur_load_file = (char*)NclMalloc(strlen((char*)$2)+1);
+										cmd_line = isatty(fileno(tmp_file));
 										strcpy(cur_load_file,$3);
 									} else {
 										NhlPError(WARNING,E_UNKNOWN,"Could not open %s",$3);
@@ -224,8 +230,16 @@ statement_list :  statement eoln			{
 ;
 
 block_statement_list : statement eoln { 	
-								if(cmd_line)
+								
+								if(cmd_line) {
+									if(is_error) {
+										_NclDeleteNewSymStack();	
+										is_error = 0;
+									} else {
+										_NclResetNewSymStack();
+									}
 									fprintf(stdout,"ncl %d> ",yylineno);
+								}
 								if($1 != NULL) {
 									$$ = _NclMakeNewListNode();
 									$$->next = NULL;
@@ -244,8 +258,15 @@ block_statement_list : statement eoln {
 * This looping is necessary because ordering needs to be maintained for statement_lists
 */
 								NclSrcListNode *step;
-								if(cmd_line)
+								if(cmd_line){
+									if(is_error) {
+										_NclDeleteNewSymStack();	
+										is_error = 0;
+									} else {
+										_NclResetNewSymStack();
+									}
 									fprintf(stdout,"ncl %d> ",yylineno);
+								}
 								if($1 == NULL) {
 									if($2 != NULL) {
 										$$ = _NclMakeNewListNode();
@@ -320,6 +341,7 @@ block_statement_list : statement eoln {
 										top_level_line = cur_line_number;
 										cur_line_number = 0;
 										yyin = tmp_file;
+										cmd_line = isatty(fileno(tmp_file));
 										loading = 1;
 										cur_load_file = (char*)NclMalloc((unsigned)strlen($2)+1);
 										strcpy(cur_load_file,$2);
@@ -344,6 +366,7 @@ block_statement_list : statement eoln {
 										top_level_line = cur_line_number;
 										cur_line_number = 0;
 										yyin = tmp_file;
+										cmd_line = isatty(fileno(tmp_file));
 										loading = 1;
 										cur_load_file = (char*)NclMalloc((unsigned)strlen((char*)$2)+1);
 										strcpy(cur_load_file,$3);
@@ -364,17 +387,43 @@ opt_eoln : 		{ $$ = NULL; }
 eoln : EOLN 						{ yyerrok; $$ = _NclMakeEoln();}
 
 statement :     					{ $$ = NULL; }
-	| 	assignment 				{$$ = $1; }
-	|	procedure 				{$$ = $1;}
-	|	function_def 				{$$ = $1;}
-	|	procedure_def 				{$$ = $1;}
-	| 	block 					{$$ = $1;}
-	|	do 					{$$ = $1;}
-	| 	conditional				{$$ = $1;}
-	|	visblk 					{$$ = $1;}
-	|	RETURN expr 				{$$ = _NclMakeReturn($2); }
-	| 	QUIT 					{ exit(0);}
-	| 	error 					{ $$ = NULL ; ERROR("error in statement"); }
+	| 	assignment 				{
+								$$ = $1; 
+							}
+	|	procedure 				{
+								$$ = $1;
+							}
+	|	function_def 				{
+								$$ = $1;
+							}
+	|	procedure_def 				{
+								$$ = $1;
+							}
+	| 	block 					{
+								$$ = $1;
+							}
+	|	do 					{
+								$$ = $1;
+							}
+	| 	conditional				{
+								$$ = $1;
+							}
+	| 	break_cont				{
+								$$ = $1;
+							}
+	|	visblk 					{
+								$$ = $1;
+							}
+	|	RETURN expr 				{
+								$$ = _NclMakeReturn($2); 
+							}
+	| 	QUIT 					{ 
+								exit(0);
+							}
+	| 	error 					{ 
+								$$ = NULL ; 
+								ERROR("error in statement"); 
+							}
 	| 	STOP RECORD				{
 /*
 * this goes here so that rec gets set to one before eoln comes from scanner.
@@ -384,6 +433,13 @@ statement :     					{ $$ = NULL; }
 								} 
 							}
 ;
+
+break_cont : BREAK  {
+				$$ = _NclMakeBreakCont($1);
+			}
+	| CONTINUE {
+				$$ = _NclMakeBreakCont($1);
+		}
 
 conditional : IF expr then block_statement_list END IF				{  $$ = _NclMakeIfThen($2,$4);  }
 	| IF expr then block_statement_list ELSE block_statement_list END IF	{  $$ = _NclMakeIfThenElse($2,$4,$6);  }
@@ -632,12 +688,38 @@ block : BGIN block_statement_list END	{ $$ = _NclMakeBlock($2); }
 				}
 ;
 
-procedure : PROC opt_arg_list	{ $$ = _NclMakeProcCall($1,$2,Ncl_BUILTINPROCCALL); }
+procedure : PROC opt_arg_list	{ 
+						NclSrcListNode *step;
+						int count = 0;
+					
+						step = $2;
+						while(step != NULL) {
+							count++;
+							step = step->next;
+						}
+						if(count != $1->u.procfunc->nargs) {
+							is_error += 1;
+							NhlPError(FATAL,E_UNKNOWN,"syntax error: procedure %s expects %d arguments, got %d",$1->name,$1->u.procfunc->nargs,count);
+							$$ = NULL;
+						} else {
+							$$ = _NclMakeProcCall($1,$2,Ncl_BUILTINPROCCALL); 
+						}
+				}
 	| EPROC opt_arg_list	{ $$ = _NclMakeProcCall($1,$2,Ncl_EXTERNALPROCCALL); }
 	| NPROC opt_arg_list	{ $$ = _NclMakeProcCall($1,$2,Ncl_PROCCALL); }
-	| PROC 			{ $$ = _NclMakeProcCall($1,NULL,Ncl_BUILTINPROCCALL); }
+	| PROC 			{ 
+					$$ = _NclMakeProcCall($1,NULL,Ncl_BUILTINPROCCALL); 
+				}
 	| EPROC 		{ $$ = _NclMakeProcCall($1,NULL,Ncl_EXTERNALPROCCALL); }
-	| NPROC 		{ $$ = _NclMakeProcCall($1,NULL,Ncl_PROCCALL); }
+	| NPROC 		{ 
+						if($1->u.procfunc->nargs != 0) {
+							is_error += 1;
+							NhlPError(FATAL,E_UNKNOWN,"syntax error: procedure %s expects %d arguments, got %d",$1->name,$1->u.procfunc->nargs,0);
+							$$ = NULL;
+						} else {
+							$$ = _NclMakeProcCall($1,NULL,Ncl_PROCCALL); 
+						}
+				}
 /*---------------------------------------------ERROR HANDLING BELOW THIS LINE-----------------------------------------------------*/
 /*
 	| identifier opt_arg_list	{ ERROR("syntax error: <identifier> IS NOT A PROCEDURE"); }
@@ -655,75 +737,101 @@ arg_list: expr					{
 							$$->node = $1;
 						}
 	| arg_list ',' expr  			{
-						/* ordering not important as long as consistent */
-							$$ = _NclMakeNewListNode();
-							$$->next = $1;
-							$$->node = $3;
+							NclSrcListNode * step;
+						/* 
+						* ordering is important because arguments eventually must be pushed on stack in
+						* appropriate order 
+						*/
+							step = $1;
+							while(step->next != NULL) {
+								step = step->next;
+							}
+							step->next = _NclMakeNewListNode();
+							step->next->next = NULL;
+							step->next->node = $3;
+							$$ = $1;
 						}
 ;
 func_identifier: KEYFUNC UNDEF { _NclNewScope(); $$ = $2; }
 ;
 
-idn_list: identifier			{
-                                                        if($1 != NULL) {
-                                                                $$ = _NclMakeNewListNode();
-                                                                $$->next = NULL;
-                                                                $$->node = $1;
-                                                        } else {
-                                                                $$ = NULL;
-                                                        }
-					}
-	| idn_list ',' identifier	{
+local_list: vname {
+			/* have to make sure that items in the local list are not added twice !! */
+			int lv = _NclGetCurrentScopeLevel();
 
-                                                        if($1 == NULL) {
-                                                                if($3 != NULL) {
-                                                                        $$ = _NclMakeNewListNode();
-                                                                        $$->next = NULL;
-                                                                        $$->node = $3;
-                                                                } else {
-                                                                        $$ = NULL;
-                                                                }
-                                                        } else if($3 != NULL) {
-                                                                $$ = _NclMakeNewListNode();
-                                                                $$->next = $1;
-                                                                $$->node = $3;
-                                                        } else {
-                                                                $$ = $1;
-                                                        }
-					}
+			if($1->level != lv) {
+				_NclAddSym($1->name,UNDEF);
+			}
+		}
+	| pfname {
+			int lv = _NclGetCurrentScopeLevel();
+			if($1->level != lv) {
+				_NclAddSym($1->name,UNDEF);
+			}
+		}
+	| local_list ',' vname {
+			int lv = _NclGetCurrentScopeLevel();
+			if($3->level != lv) {
+				_NclAddSym($3->name,UNDEF);
+			}
+			}
+	| local_list ',' pfname {
+			int lv = _NclGetCurrentScopeLevel();
+			if($3->level != lv) {
+				_NclAddSym($3->name,UNDEF);
+			}
+			}
 ;
-function_def :  func_identifier LP dec_list  RP opt_eoln block		
+function_def :  func_identifier LP arg_dec_list  RP opt_eoln block		
 								{  
 									NclSymTableListNode *tmp;
-	
+
+									if(is_error) {
+										_NclDeleteNewSymStack();
+									}	
 									tmp = _NclPopScope();	
-									$$ = _NclMakeNFunctionDef(_NclChangeSymbolType($1,NFUNC),$3,NULL,$6,tmp);  
+									$$ = _NclMakeNFunctionDef(_NclChangeSymbolType($1,NFUNC),$3,$6,tmp);  
 								}
-	|  func_identifier LP dec_list  RP opt_eoln LOCAL idn_list opt_eoln block		
+	|  func_identifier LP arg_dec_list  RP opt_eoln LOCAL local_list opt_eoln block		
 								{  
 									NclSymTableListNode *tmp;
+
+									if(is_error) {
+										_NclDeleteNewSymStack();
+									}	
 									tmp = _NclPopScope();	
-									$$ = _NclMakeNFunctionDef(_NclChangeSymbolType($1,NFUNC),$3,$7,$9,tmp);  
+									$$ = _NclMakeNFunctionDef(_NclChangeSymbolType($1,NFUNC),$3,$9,tmp);  
 								}
-	| EXTERNAL func_identifier LP dec_list  RP opt_eoln STRING 
+	| EXTERNAL func_identifier LP arg_dec_list  RP opt_eoln STRING 
 								{  
 									NclSymTableListNode *tmp;
+									if(is_error) {
+										_NclDeleteNewSymStack();
+									}	
 									tmp = _NclPopScope();	
 									$$ = _NclMakeEFunctionDef(_NclChangeSymbolType($2,EFUNC),$4,$7,tmp);  
 								}
 
 /*---------------------------------------------ERROR HANDLING BELOW THIS LINE-----------------------------------------------------*/
+	| func_identifier error {
+			is_error += 1;
 /*
-	| func_identifier LP dec_list RP opt_eoln local_dec_list eoln error {
-						ERROR("syntax error: EXPECTING A 'begin'");
+* Need to call this before new scope is poped so symbols can be found and freed
+*/
+			_NclDeleteNewSymStack();
+/*
+* Need to call function to free scope
+*/
+			(void)_NclPopScope();
 	}
-	| EXTERNAL func_identifier LP dec_list RP opt_eoln local_dec_list eoln error {
+/*
+	| EXTERNAL func_identifier LP arg_dec_list RP opt_eoln local_arg_dec_list eoln error {
 						ERROR("syntax error: EXPECTING A 'begin'");
 	}
 */
 ;
 
-dec_list :			{ $$ = NULL; }
+arg_dec_list :			{ $$ = NULL; }
 	| the_list		{ $$ = $1; }
 ; 
 
@@ -732,7 +840,7 @@ the_list: declaration				{
 							$$->next = NULL;
 							$$->node = $1;
 						}
-	| dec_list ',' declaration 		{ 
+	| the_list ',' declaration 		{ 
 						/* once again ordering not important as long as it is consistent with function 
 							and procedure ordering of argument lists */
 							$$ = _NclMakeNewListNode();
@@ -742,10 +850,95 @@ the_list: declaration				{
 						}
 ;
 
-declaration : UNDEF		{ $$ = _NclMakeLocalVarDec($1,NULL,NULL); }
-	| UNDEF datatype		{ $$ = _NclMakeLocalVarDec($1,NULL,$2); }
-	| UNDEF dim_size_list		{ $$ = _NclMakeLocalVarDec($1,$2,NULL); }
-	| UNDEF dim_size_list datatype		{ $$ = _NclMakeLocalVarDec($1,$2,$3); }
+declaration : vname		{ 
+					NclSymbol *s;
+					int lv = _NclGetCurrentScopeLevel();
+
+					if(($1->type != UNDEF)||($1->level != lv)) {
+						s = _NclAddSym($1->name,UNDEF);
+					} else {
+						s = $1;
+					}
+					$$ = _NclMakeLocalVarDec(s,NULL,NULL); 
+				}
+	| vname datatype	{ 
+					NclSymbol *s;
+					int lv = _NclGetCurrentScopeLevel();
+
+					if(($1->type != UNDEF)||($1->level != lv)) {
+						s = _NclAddSym($1->name,UNDEF);
+					} else {
+						s = $1;
+					}
+					$$ = _NclMakeLocalVarDec(s,NULL,$2); 
+				}
+	| vname dim_size_list		{ 
+						NclSymbol *s;
+						int lv = _NclGetCurrentScopeLevel();
+						if(($1->type != UNDEF)||($1->level != lv)) {
+							s = _NclAddSym($1->name,UNDEF);
+						} else {
+							s = $1;
+						}
+
+						$$ = _NclMakeLocalVarDec(s,$2,NULL); 
+					}
+	| vname dim_size_list datatype	{ 
+						NclSymbol *s;
+						int lv = _NclGetCurrentScopeLevel();
+						if(($1->type != UNDEF)||($1->level != lv)) {
+							s = _NclAddSym($1->name,UNDEF);
+						} else {
+							s = $1;
+						}
+
+						$$ = _NclMakeLocalVarDec(s,$2,$3); 
+					}
+	| pfname		{ 
+				/* Need to intercept defined names and add them to current scope */
+					NclSymbol *s;
+
+					s = _NclAddSym($1->name,UNDEF);
+					$$ = _NclMakeLocalVarDec(s,NULL,NULL); 
+				}
+	| pfname datatype	{ 
+					NclSymbol *s;
+
+					s = _NclAddSym($1->name,UNDEF);
+					$$ = _NclMakeLocalVarDec($1,NULL,$2); 
+				}
+	| pfname dim_size_list	{ 
+					NclSymbol *s;
+
+					s = _NclAddSym($1->name,UNDEF);
+					$$ = _NclMakeLocalVarDec($1,$2,NULL); 
+				}
+	| pfname dim_size_list datatype	{ 
+					NclSymbol *s;
+
+					s = _NclAddSym($1->name,UNDEF);
+					$$ = _NclMakeLocalVarDec($1,$2,$3); 
+				}
+;
+
+pfname : NFUNC		{		
+				$$ = $1;
+			}
+	| EFUNC		{
+				$$ = $1;
+			}
+	| FUNC		{
+				$$ = $1;
+			}
+	| NPROC		{
+				$$ = $1;
+			}
+	| EPROC		{
+				$$ = $1;
+			}
+	| PROC		{
+				$$ = $1;
+			}
 ;
 
 datatype : COLON FLOAT		{ $$ = $2; }
@@ -798,25 +991,45 @@ dim_size_list : LBK INT RBK		{
 
 proc_identifier: KEYPROC UNDEF { _NclNewScope(); $$ = $2; }
 ;
-procedure_def : proc_identifier LP dec_list RP opt_eoln LOCAL idn_list opt_eoln block   {
+procedure_def : proc_identifier LP arg_dec_list RP opt_eoln LOCAL local_list opt_eoln block   {
 								NclSymTableListNode *tmp;
+								if(is_error) {
+									_NclDeleteNewSymStack();
+								}
                                                                 tmp = _NclPopScope();
 							
-								$$ = _NclMakeProcDef(_NclChangeSymbolType($1,NPROC),$3,$7,$9,tmp);
+								$$ = _NclMakeProcDef(_NclChangeSymbolType($1,NPROC),$3,$9,tmp);
 									
 							}
-	| proc_identifier LP dec_list RP opt_eoln block   {
+	| proc_identifier LP arg_dec_list RP opt_eoln block   {
 								NclSymTableListNode *tmp;
+								if(is_error) {
+									_NclDeleteNewSymStack();
+								}
                                                                 tmp = _NclPopScope();
-								$$ = _NclMakeProcDef(_NclChangeSymbolType($1,NPROC),$3,NULL,$6,tmp);
+								$$ = _NclMakeProcDef(_NclChangeSymbolType($1,NPROC),$3,$6,tmp);
 									
 							}
-	| EXTERNAL proc_identifier LP dec_list RP opt_eoln STRING	{
+	| EXTERNAL proc_identifier LP arg_dec_list RP opt_eoln STRING	{
 								NclSymTableListNode *tmp;
+								if(is_error) {
+									_NclDeleteNewSymStack();
+								}
                                                                 tmp = _NclPopScope();
 								$$ = _NclMakeExternalProcDef(_NclChangeSymbolType($2,EPROC),$4,$7,tmp);
 									
 							}
+	| proc_identifier error {
+			is_error += 1;
+/*
+* Need to call this before new scope is poped so symbols can be found and freed
+*/
+			_NclDeleteNewSymStack();
+/*
+* Need to call function to free scope
+*/
+			(void)_NclPopScope();
+	}
 ;
 
 assignment :  identifier '=' expr		{
@@ -825,115 +1038,125 @@ assignment :  identifier '=' expr		{
 					}
 ;
 
-identifier : DFILE				{
+identifier : vname {
+					if($1->type == DFILE) {
 						$$ = _NclMakeFileRef($1);
-					}
-	| dfile_or_und FVAR 			{
-						NclSymbol *s;
-						NclFileInfo *test;
-						s = $1;
-						test = s->u.file;
-					
-						s = _NclLookUpInScope($1->u.file->filescope,&(($2)[2]));
-						if(s == NULL) {
-							s = _NclAddInScope($1->u.file->filescope,&(($2)[2]),UNDEFFILEVAR);
-						}
-						$$ = _NclMakeFileVarRef($1,s,NULL,Ncl_FILEVAR);
-					}
-	| dfile_or_und FVAR MARKER		{
-						NclSymbol *s;
-						NclFileInfo *test;
-						s = $1;
-						test = s->u.file;
-						
-						s = _NclLookUpInScope($1->u.file->filescope,&(($2)[2]));
-						if(s == NULL) {
-							s = _NclAddInScope($1->u.file->filescope,&(($2)[2]),UNDEFFILEVAR);
-						}
-						$$ = _NclMakeFileVarRef($1,s,NULL,Ncl_FILEVAR);
-					}
-	| dfile_or_und FVAR LP subscript_list RP MARKER {
-						NclSymbol *s;
-				
-						s = _NclLookUpInScope($1->u.file->filescope,&(($2)[2]));
-						if(s == NULL) {
-							s = _NclAddInScope($1->u.file->filescope,&(($2)[2]),UNDEFFILEVAR);
-						} 
-						$$ = _NclMakeFileVarRef($1,s,$4,Ncl_FILEVAR);
-					}
-	| dfile_or_und FVAR LP subscript_list RP	{	
-						NclSymbol *s;
-				
-						s = _NclLookUpInScope($1->u.file->filescope,&(($2)[2]));
-						if(s == NULL) {
-							s = _NclAddInScope($1->u.file->filescope,&(($2)[2]),UNDEFFILEVAR);
-						}
-						$$ = _NclMakeFileVarRef($1,s,$4,Ncl_FILEVAR);
-					}
-	| DFILE DIMNUM			{
-						$$ = _NclMakeFileDimNumRef($1,$2);
-					}
-	| DFILE DIMNAME			{
-						$$ = _NclMakeFileDimNameRef($1,$2);
-					}
-        | DFILE ATTNAME			{
-						$$ = _NclMakeFileAttRef($1,$2,NULL); 
-					}
-        | DFILE ATTNAME LP subscript_list RP	{
-						$$ = _NclMakeFileAttRef($1,$2,$4);
-					}
-        | var_or_und			{
+					} else {
 						$$ = _NclMakeVarRef($1,NULL);
 					}
-	| var_or_und MARKER			{
+		  }
+	| vname FVAR 			{
+						NclSymbol *s = NULL;
+						NclFileInfo *test;
+						if($1->type == DFILE) {
+							s = _NclLookUpInScope($1->u.file->filescope,&(($2)[2]));
+							if(s == NULL) {
+								s = _NclAddInScope($1->u.file->filescope,&(($2)[2]),UNDEFFILEVAR);
+							}
+							$$ = _NclMakeFileVarRef($1,s,NULL,Ncl_FILEVAR);
+						} else {
+							/* error condition needed */
+						}
+					}
+	| vname FVAR MARKER		{
+						NclSymbol *s;
+						NclFileInfo *test;
+						if($1->type == DFILE) {	
+							s = _NclLookUpInScope($1->u.file->filescope,&(($2)[2]));
+							if(s == NULL) {
+								s = _NclAddInScope($1->u.file->filescope,&(($2)[2]),UNDEFFILEVAR);
+							}
+							$$ = _NclMakeFileVarRef($1,s,NULL,Ncl_FILEVAR);
+						} else {
+							/* error condition needed */
+						}
+					}
+	| vname FVAR LP subscript_list RP MARKER {
+						NclSymbol *s;
+				
+						if($1->type == DFILE) {	
+							s = _NclLookUpInScope($1->u.file->filescope,&(($2)[2]));
+							if(s == NULL) {
+								s = _NclAddInScope($1->u.file->filescope,&(($2)[2]),UNDEFFILEVAR);
+							} 
+							$$ = _NclMakeFileVarRef($1,s,$4,Ncl_FILEVAR);
+						} else {
+							/* error condition needed */
+						}
+					}
+	| vname FVAR LP subscript_list RP	{	
+						NclSymbol *s;
+				
+						if($1->type == DFILE) {	
+							s = _NclLookUpInScope($1->u.file->filescope,&(($2)[2]));
+							if(s == NULL) {
+								s = _NclAddInScope($1->u.file->filescope,&(($2)[2]),UNDEFFILEVAR);
+							}
+							$$ = _NclMakeFileVarRef($1,s,$4,Ncl_FILEVAR);
+						} else {
+							/* error condition needed */
+						}
+					}
+	| vname DIMNUM			{
+						if($1->type == DFILE) {
+							$$ = _NclMakeFileDimNumRef($1,$2);
+						} else {
+							$$ = _NclMakeVarDimNumRef($1,$2);
+						}
+					}
+	| vname DIMNAME			{
+						if($1->type == DFILE) {
+							$$ = _NclMakeFileDimNameRef($1,$2);
+						} else {
+							$$ = _NclMakeVarDimNameRef($1,$2);		
+						}
+					}
+        | vname ATTNAME			{
+						if($1->type == DFILE) {
+							$$ = _NclMakeFileAttRef($1,$2,NULL); 
+						} else {
+							$$ = _NclMakeVarAttRef($1,$2,NULL);
+						}
+					}
+        | vname ATTNAME LP subscript_list RP	{
+						if($1->type == DFILE) {
+							$$ = _NclMakeFileAttRef($1,$2,$4);
+						} else {
+							$$ = _NclMakeVarAttRef($1,$2,$4);
+						}
+					}
+	| vname MARKER			{
 						$$ = _NclMakeVarRef($1,NULL);
 					}
-	| var_or_und LP subscript_list RP MARKER     {
+	| vname LP subscript_list RP MARKER     {
 						$$ = _NclMakeVarRef($1,$3);
 					}
-        | var_or_und LP subscript_list RP {
+        | vname LP subscript_list RP {
 						$$ = _NclMakeVarRef($1,$3);
 					}
-	| var_or_und DIMNUM			{
-						$$ = _NclMakeVarDimNumRef($1,$2);
-					}
-        | var_or_und DIMNAME			{
-						$$ = _NclMakeVarDimNameRef($1,$2);
-					}
-	| var_or_und ATTNAME 			{
-						$$ = _NclMakeVarAttRef($1,$2,NULL);
-					}
-	| var_or_und ATTNAME LP subscript_list RP {
-						$$ = _NclMakeVarAttRef($1,$2,$4);
-					}
-	| var_or_und COORD			{
+	| vname COORD			{
 						$$ = _NclMakeVarCoordRef($1,$2,NULL);
 					}
-	| var_or_und COORD LP subscript_list RP{
+	| vname COORD LP subscript_list RP{
 						$$ = _NclMakeVarCoordRef($1,$2,$4);
 					}
-	| OBJNAME			{
-						$$ = _NclMakeVarRef($1,NULL);
-					}
-	| OBJTYPE			{
-						$$ = _NclMakeVarRef($1,NULL);
-					}
 ;
 
-var_or_und : UNDEF		{
-					$$ = $1;
-				}
-	| VAR			{
-					$$ = $1;
-				}
-;
-
-dfile_or_und : UNDEF		{
-					$$ = $1;
-				}
-	| DFILE			{		
-					$$ = $1;
-				}
+vname : OBJNAME		{
+				$$ = $1;
+			}
+	| OBJTYPE	{
+				$$ = $1;
+			}
+	| VAR		{
+				$$ = $1;
+			}
+	| UNDEF		{
+				$$ = $1;
+			}
+	| DFILE		{
+				$$ = $1;
+			}
 ;
 subscript_list :  subscript0 	{
 					/* ordering of subscripts must be preserved */
@@ -1105,10 +1328,10 @@ primary : REAL				{
 	| STRING			{
 						$$ = _NclMakeIdnExpr(_NclMakeStringExpr($1));
 					}
-	| identifier				{
+	| function			{	
 						$$ = _NclMakeIdnExpr($1);
 					}
-	| function			{	
+	| identifier				{
 						$$ = _NclMakeIdnExpr($1);
 					}
 	| array 		 	{
@@ -1118,8 +1341,22 @@ primary : REAL				{
 						$$ = $2;
 					}
 ;
-function: FUNC opt_arg_list		{
-						$$ = _NclMakeFuncCall($1,$2,Ncl_BUILTINFUNCCALL);
+function: FUNC opt_arg_list		{	
+						NclSrcListNode *step;
+						int count = 0;
+					
+						step = $2;
+						while(step != NULL) {
+							count++;
+							step = step->next;
+						}
+						if(count != $1->u.procfunc->nargs) {
+							is_error += 1;
+							NhlPError(FATAL,E_UNKNOWN,"syntax error: function %s expects %d arguments, got %d",$1->name,$1->u.procfunc->nargs,count);
+							$$ = NULL;
+						} else {
+							$$ = _NclMakeFuncCall($1,$2,Ncl_BUILTINFUNCCALL);
+						}
 					}
 	| EFUNC opt_arg_list		{
 						$$ = _NclMakeFuncCall($1,$2,Ncl_EXTERNFUNCCALL);
@@ -1128,7 +1365,13 @@ function: FUNC opt_arg_list		{
 						$$ = _NclMakeFuncCall($1,$2,Ncl_FUNCCALL);
 					}
 	| FUNC 				{
-						$$ = _NclMakeFuncCall($1,NULL,Ncl_BUILTINFUNCCALL);
+						if($1->u.procfunc->nargs != 0) {
+							is_error += 1;
+							NhlPError(FATAL,E_UNKNOWN,"syntax error: function %s expects %d arguments, got %d",$1->name,$1->u.procfunc->nargs,0);
+							$$ = NULL;
+						} else {
+							$$ = _NclMakeFuncCall($1,NULL,Ncl_BUILTINFUNCCALL);
+						}
 					}
 	| EFUNC 			{
 						$$ = _NclMakeFuncCall($1,NULL,Ncl_EXTERNFUNCCALL);

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: SrcTree.h,v 1.1 1993-09-24 23:41:02 ethan Exp $
+ *      $Id: SrcTree.h,v 1.2 1993-10-06 22:54:41 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -61,7 +61,7 @@ typedef enum {Ncl_BLOCK, Ncl_RETURN, Ncl_IFTHEN, Ncl_IFTHENELSE,
 			Ncl_FILEVAR, Ncl_FILEDIMNUM, Ncl_FILEDIMNAME,
 			Ncl_FILEATT, Ncl_UNDEFERROR, Ncl_IDNEXPR, 
 			Ncl_RESOURCE, Ncl_GETRESOURCE, Ncl_OBJ,
-			Ncl_EOLN
+			Ncl_EOLN, Ncl_BREAK, Ncl_CONTINUE
                         } NclSrcTreeTypes;
 
 
@@ -71,7 +71,7 @@ typedef struct ncl_genericnode{
 	char *name;
 	int  line;
 	char *file;
-} NclGenericNode,NclEoln;
+} NclGenericNode,NclEoln,NclBreak,NclContinue;
 
 
 
@@ -182,7 +182,9 @@ typedef struct ncl_funcdef{
 	char *file;
 	NclSymbol	*func;
 	NclSrcListNode  *dec_list;
+/*
 	NclSrcListNode  *local_dec_list;
+*/
 	void		*block;
 	NclSymTableListNode *scope;
 } NclFuncDef; 
@@ -224,7 +226,9 @@ typedef struct ncl_procdef{
 	char *file;
 	NclSymbol *proc;
 	NclSrcListNode *dec_list;
+/*
 	NclSrcListNode *local_dec_list;
+*/
 	void	*block;
 	NclSymTableListNode *scope;
 } NclProcDef;
@@ -521,7 +525,9 @@ extern void *_NclMakeNFunctionDef(
 #ifdef NhlNeedProto
 NclSymbol * /* func */,
 NclSrcListNode * /*dec_list*/,
+/*
 NclSrcListNode * /*local_dec_list*/,
+*/
 void*		/* block */,
 NclSymTableListNode * /*scope*/
 #endif
@@ -554,7 +560,9 @@ extern void * _NclMakeProcDef(
 #ifdef NhlNeedProto
 NclSymbol * /*var*/,
 NclSrcListNode * /*arg_list */,
+/*
 NclSrcListNode * /*locals*/,
+*/
 void*	/*block*/,
 NclSymTableListNode * /*thescope*/
 #endif
@@ -792,13 +800,19 @@ extern void *_NclMakeResource(
 );
 
 extern void *_NclMakeObjRef(
-#ifdef NhlNeedPRoto
+#ifdef NhlNeedProto
 	NclSymbol * /*obj*/
 #endif
 );
 extern void *_NclMakeEoln(
-#ifdef NhlNeedPRoto
+#ifdef NhlNeedProto
 void
+#endif
+);
+
+extern void *_NclMakeBreakCont(
+#ifdef NhlNeedProto
+NclSymbol *thesym;
 #endif
 );
 

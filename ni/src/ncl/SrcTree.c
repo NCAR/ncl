@@ -1,6 +1,6 @@
 
 /*
- *      $Id: SrcTree.c,v 1.1 1993-09-24 23:40:59 ethan Exp $
+ *      $Id: SrcTree.c,v 1.2 1993-10-06 22:54:37 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -55,7 +55,7 @@ char *src_tree_names[] = {"Ncl_BLOCK", "Ncl_RETURN", "Ncl_IFTHEN",
                         "Ncl_FILEVAR", "Ncl_FILEDIMNUM", "NclFILEDIMNAME",
                         "Ncl_FILEATT", "Ncl_UNDEFERROR", "Ncl_IDNEXPR",
 			"Ncl_RESOURCE","Ncl_GETRESOURCE", "Ncl_OBJ",
-			"Ncl_EOLN"
+			"Ncl_EOLN", "Ncl_BREAK", "Ncl_CONTINUE",
 			};
 void *_NclMakeEoln
 #if  __STDC__
@@ -68,6 +68,28 @@ void *_NclMakeEoln
 
 	tmp->kind = Ncl_EOLN;
 	tmp->name = src_tree_names[Ncl_EOLN];
+	tmp->line = cur_line_number;
+	tmp->file = cur_load_file;
+	return(tmp);
+}
+
+void *_NclMakeBreakCont
+#if  __STDC__
+(NclSymbol *thesym)
+#else
+(thesym)
+	NclSymbol *thesym;
+#endif
+{
+	NclBreak *tmp = (NclEoln*)NclMalloc((unsigned)sizeof(NclBreak));
+
+	if(thesym->type == BREAK) {
+		tmp->kind = Ncl_BREAK;
+		tmp->name = src_tree_names[Ncl_BREAK];
+	} else {
+		tmp->kind = Ncl_CONTINUE;
+		tmp->name = src_tree_names[Ncl_CONTINUE];
+	}
 	tmp->line = cur_line_number;
 	tmp->file = cur_load_file;
 	return(tmp);
@@ -502,18 +524,25 @@ NclSrcTreeTypes type;
  */
 void *_NclMakeNFunctionDef
 #if  __STDC__
-(NclSymbol *func, NclSrcListNode * dec_list, NclSrcListNode *locals, void *block, NclSymTableListNode* thescope)
+(NclSymbol *func, NclSrcListNode * dec_list,  void *block, NclSymTableListNode* thescope)
 #else 
-(func,dec_list,locals,block,thescope)
+(func,dec_list,block,thescope)
 NclSymbol *func;
 NclSrcListNode * dec_list;
-NclSrcListNode * locals;
 void* block;
 NclSymTableListNode* thescope; 
 #endif
 {
 	NclFuncDef *tmp = (NclFuncDef*)NclMalloc(
 				(unsigned)sizeof(NclFuncDef));
+	NclProcFuncInfo  *tmp1 = (NclProcFuncInfo*)NclMalloc((unsigned)
+				sizeof(NclProcFuncInfo));
+	NclSrcListNode *step, *step1;
+	NclLocalVarDec *var_dec;
+	NclDimSizeListNode *dim_size;
+	int i=0,j=0;
+
+
 	if(tmp == NULL) {
 		NhlPError(FATAL,errno,"Not enough memory for source tree construction");
 		return(NULL);
@@ -524,9 +553,58 @@ NclSymTableListNode* thescope;
 	tmp->file = cur_load_file;
 	tmp->func = func;
 	tmp->dec_list = dec_list;
-	tmp->local_dec_list = locals;
 	tmp->block = block;
 	tmp->scope = thescope;
+/*
+* Create argument numbers and type template and attach it to functions symbol
+*/
+	tmp1 = (NclProcFuncInfo*)NclMalloc((unsigned)sizeof(NclProcFuncInfo));
+	if(tmp1 == NULL) {
+		NhlPError(FATAL,errno,"Not enough memory for source tree construction");
+		return(NULL);
+	}
+	if(tmp->dec_list != NULL) {
+		step = tmp->dec_list;
+		i = 0;
+		while(step != NULL) {
+			i++;
+			step = step->next;
+		}
+		step = tmp->dec_list;
+		tmp1->nargs = i;
+		tmp1->theargs = (NclArgTemplate*)
+				NclMalloc((unsigned)sizeof(NclArgTemplate)*i);
+		step = tmp->dec_list;
+		i = 0;
+		while( step != NULL ) {
+			var_dec = (NclLocalVarDec*)step->node;
+			if(var_dec->dim_size_list != NULL) {
+				tmp1->theargs[i].is_dimsizes = 1;
+				step1 = var_dec->dim_size_list;
+				j = 0;
+				while(step1 != NULL) {
+					dim_size = (NclDimSizeListNode*)step1->node;
+					tmp1->theargs[i].dim_sizes[j] = dim_size->size;
+					step1 = step1->next;
+					j++;
+				}
+			} else {
+				tmp1->theargs[i].is_dimsizes = 0;
+			}
+			tmp1->theargs[i].arg_data_type = var_dec->data_type;
+			
+			step = step->next;		
+			i++;
+		}
+		tmp1->thesym = func;
+		tmp1->mach_rec_ptr= NULL;
+	} else {
+		tmp1->nargs = 0;
+		tmp1->theargs = NULL;
+		tmp1->thesym = func;
+		tmp1->mach_rec_ptr = NULL;
+	}
+	func->u.procfunc = tmp1;
 	return((void*)tmp);
 }
 
@@ -676,17 +754,22 @@ NclSrcListNode  * _NclMakeDimSizeNode
  */
 void * _NclMakeProcDef
 #if  __STDC__
-(NclSymbol *var, NclSrcListNode *arg_list, NclSrcListNode *locals,void* block,NclSymTableListNode *thescope)
+(NclSymbol *var, NclSrcListNode *arg_list, void* block,NclSymTableListNode *thescope)
 #else 
-(var, arg_list, locals,block,thescope)
+(var, arg_list, block,thescope)
 NclSymbol *var;
 NclSrcListNode *arg_list;
-NclSrcListNode *locals;
 void* block;
 NclSymTableListNode *thescope;
 #endif
 {
 	NclProcDef *tmp = (NclProcDef*)NclMalloc((unsigned)sizeof(NclProcDef));
+	NclProcFuncInfo  *tmp1 = (NclProcFuncInfo*)NclMalloc((unsigned)
+                                sizeof(NclProcFuncInfo));
+        NclSrcListNode *step, *step1;
+        NclLocalVarDec *var_dec;
+        NclDimSizeListNode *dim_size;
+        int i=0,j=0;
 
 	if(tmp == NULL) {
 		NhlPError(FATAL,errno,"Not enough memory for source tree construction");
@@ -698,10 +781,55 @@ NclSymTableListNode *thescope;
 	tmp->file = cur_load_file;
 	tmp->proc = var;	
 	tmp->dec_list = arg_list;
-	tmp->local_dec_list = locals;
 	tmp->block = block;
 	tmp->scope = thescope;
+	tmp1 = (NclProcFuncInfo*)NclMalloc((unsigned)sizeof(NclProcFuncInfo));
+        if(tmp1 == NULL) {
+                NhlPError(FATAL,errno,"Not enough memory for source tree construction");
+                return(NULL);
+        }
+        if(tmp->dec_list != NULL) {
+                step = tmp->dec_list;
+                i = 0;
+                while(step != NULL) {
+                        i++;
+                        step = step->next;
+                }
+                step = tmp->dec_list;
+                tmp1->nargs = i;
+                tmp1->theargs = (NclArgTemplate*)
+                                NclMalloc((unsigned)sizeof(NclArgTemplate)*i);
+                step = tmp->dec_list;
+                i = 0;
+                while( step != NULL ) {
+                        var_dec = (NclLocalVarDec*)step->node;
+                        if(var_dec->dim_size_list != NULL) {
+                                tmp1->theargs[i].is_dimsizes = 1;
+                                step1 = var_dec->dim_size_list;
+                                j = 0;
+                                while(step1 != NULL) {
+                                        dim_size = (NclDimSizeListNode*)step1->node;
+                                        tmp1->theargs[i].dim_sizes[j] = dim_size->size;
+                                        step1 = step1->next;
+                                        j++;
+                                }
+                        } else {
+                                tmp1->theargs[i].is_dimsizes = 0;
+                        }
+                        tmp1->theargs[i].arg_data_type = var_dec->data_type;
 
+                        step = step->next;
+                        i++;
+                }
+                tmp1->thesym = var;
+                tmp1->mach_rec_ptr = NULL;
+        } else {
+                tmp1->nargs = 0;
+                tmp1->theargs = NULL;
+                tmp1->thesym = var;
+                tmp1->mach_rec_ptr= NULL;
+        }
+        var->u.procfunc = tmp1;
 	return((void*)tmp);
 }
 
@@ -1527,6 +1655,12 @@ void _NclPrintSymbol
 	case FILEVAR:
 		fprintf(fp,"%s\t","FILEVAR");
 		break;
+	case BREAK:
+		fprintf(fp,"%s\t","BREAK");
+		break;
+	case CONTINUE:
+		fprintf(fp,"%s\t","CONTINUE");
+		break;
 	default:
 		break;
 	}
@@ -1756,11 +1890,13 @@ if(groot != NULL) {
 				_NclPrintTree(step->node,fp);
 				step = step->next;
 			}	
+/*
 			step = funcdef->local_dec_list;
 			while(step!= NULL) {
 				_NclPrintTree(step->node,fp);
 				step = step->next;
 			}	
+*/
 			_NclPrintTree(funcdef->block,fp);
 			i--;
 			return;
@@ -1839,11 +1975,13 @@ if(groot != NULL) {
 				_NclPrintTree(step->node,fp);
 				step = step->next;
 			}
+/*
 			step = procdef->local_dec_list;
 			while(step != NULL) {
 				_NclPrintTree(step->node,fp);
 				step = step->next;
 			}
+*/
 			_NclPrintTree(procdef->block,fp);
 			i--;
 			return;
@@ -2249,6 +2387,8 @@ if(groot != NULL) {
 		}
 			break;
 		case Ncl_EOLN:
+		case Ncl_BREAK:
+		case Ncl_CONTINUE:
 		{
 			putspace(i,fp);
 			fprintf(fp,"%s\n",groot->name);
@@ -2258,6 +2398,7 @@ if(groot != NULL) {
 			i--;
 		}
 		break;
+		
 		default:
 		
 		fprintf(fp,"UNRECOGNIZED ENUM VALUE!\n");
@@ -2764,6 +2905,7 @@ if(groot != NULL) {
 				step = step->next;
 				NclFree(tmp);
 			}	
+/*
 			step = funcdef->local_dec_list;
 			while(step!= NULL) {
 				tmp = step;
@@ -2772,6 +2914,7 @@ if(groot != NULL) {
 				step = step->next;
 				NclFree(tmp);
 			}	
+*/
 			_NclFreeTree(funcdef->block,is_error);
 			NclFree(funcdef->block);
 			return;
@@ -2838,6 +2981,7 @@ if(groot != NULL) {
 				step = step->next;
 				NclFree(tmp);
 			}
+/*
 			step = procdef->local_dec_list;
 			while(step != NULL) {
 				tmp = step;
@@ -2846,6 +2990,7 @@ if(groot != NULL) {
 				step = step->next;
 				NclFree(tmp);
 			}
+*/
 			_NclFreeTree(procdef->block,is_error);
 			NclFree(procdef->block);
 			return;
@@ -3173,6 +3318,8 @@ if(groot != NULL) {
 		}
 			break;	
 		case Ncl_EOLN:
+		case Ncl_BREAK:
+		case Ncl_CONTINUE:
 		{
 /*
 			NclFree(root);

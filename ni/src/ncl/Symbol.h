@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Symbol.h,v 1.1 1993-09-24 23:41:08 ethan Exp $
+ *      $Id: Symbol.h,v 1.2 1993-10-06 22:54:46 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -26,8 +26,7 @@
 #include <Files.h>
 #include <Variable.h>
 #include <Literal.h>
-#include <Functions.h>
-#include <Procedures.h>
+#include <ProcFuncs.h>
 #include <Graphics.h>
 
 
@@ -42,10 +41,9 @@ typedef struct _NclSymbol {
 		struct _NclFileInfo		*file;
 		struct _NclFileVarInfo		*fvar;
 		struct _NclVisBlkInfo		*visblk;
+		struct _NclProcFuncInfo		*procfunc;
 /*
-		struct _NclProcInfo		*proc;
 		struct _NclLiteral		*lit;
-		struct _NclFunInfo		*func;
 		struct _NclBuiltInProcInfo	*bproc;
 		struct _NclBuiltInFuncInfo	*bfunc;
 */
@@ -137,6 +135,24 @@ extern NclSymbol *_NclChangeSymbolType(
 #ifdef NhlNeedProto
 NclSymbol * /*thesym*/,
 int	/* type */
+#endif
+);
+
+extern int _NclGetCurrentScopeLevel(
+#ifdef NhlNeedProto
+void
+#endif
+);
+
+void _NclResetNewSymStack(
+#ifdef NhlNeedProto
+void
+#endif
+);
+
+void _NclDeleteNewSymStack(
+#ifdef NhlNeedProto
+void
 #endif
 );
 

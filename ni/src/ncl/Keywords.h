@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Keywords.h,v 1.1 1993-09-24 23:40:29 ethan Exp $
+ *      $Id: Keywords.h,v 1.2 1993-10-06 22:54:19 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -57,6 +57,8 @@ static struct {
 "load",		LOAD,
 "local",	LOCAL,
 "stop",		STOP,
+"break",	BREAK,
+"continue",	CONTINUE,
 /*
 "objdata",	RKEY,
 */

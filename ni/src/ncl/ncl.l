@@ -5,7 +5,7 @@
 #include <defs.h>
 #include <Symbol.h>
 #include <y.tab.h>
-#ifdef DEBUG
+#ifdef DEBUGER
 extern void printtoken(
 #ifdef NhlNeedProto
 	int /* type */
@@ -62,8 +62,8 @@ digit	[0-9]
 	}
 	last_line_length = cur_line_length;
 	cur_line_length = 0;
-	cur_line_text_pos = &(cur_line_text[0]);
 	*cur_line_text_pos = '\0';
+	cur_line_text_pos = &(cur_line_text[0]);
 	return EOLN;
 }
 [\\][\n] {
@@ -79,8 +79,8 @@ digit	[0-9]
 	}
 	last_line_length = cur_line_length;
 	cur_line_length = 0;
-	cur_line_text_pos = &(cur_line_text[0]);
 	*cur_line_text_pos = '\0';
+	cur_line_text_pos = &(cur_line_text[0]);
 	cur_line_number++;
 	return EOLN;
 }
@@ -92,8 +92,8 @@ digit	[0-9]
 	}
 	last_line_length = cur_line_length;
 	cur_line_length = 0;
-	cur_line_text_pos = &(cur_line_text[0]);
 	*cur_line_text_pos = '\0';
+	cur_line_text_pos = &(cur_line_text[0]);
 	BEGIN AA;
 	return EOLN;
 }

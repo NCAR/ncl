@@ -59,7 +59,16 @@
 #define VAR_COORD_OP			58
 #define SUBSCRIPTED_VAR_COORD_OP	59
 #define LINE				60
+#define FPDEF 				61
+#define BREAK_OP			62
+#define CONTINUE_OP			63
+#define NEW_FRAME_OP			64
+#define ENDSTMNT_OP			65
+#define FUNC_CALL_OP			66
+#define PROC_CALL_OP			67
+#define BPROC_CALL_OP			68
+#define BFUNC_CALL_OP			69
 
-#define NUM_OPERATORS			61
+#define NUM_OPERATORS			70
 
 

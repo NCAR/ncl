@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.1 1993-09-24 23:40:34 ethan Exp $
+ *      $Id: Machine.c,v 1.2 1993-10-06 22:54:22 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -27,6 +27,7 @@
 #include <Symbol.h>
 #include <errno.h>
 #include <OpsList.h>
+#include <Machine.h>
 
 /*
 * This is done so stack size and machine size can be configured at 
@@ -40,26 +41,23 @@
 #define NCL_MACHINE_SIZE 4096
 #endif
 
+/*
+* Making this smaller because functions will generally be smaller than 
+* whole programs.
+*/
+#ifndef NCL_FUNC_MACHINE_SIZE
+#define NCL_FUNC_MACHINE_SIZE 512
+#endif
+
 NclStackEntry thestack[NCL_STACK_SIZE];
 
 char *ops_strings[NUM_OPERATORS];
 
-/*
-* This is dynamically allocated so that ReAlloc can be used to grow the
-* machine incase of overflow.
-*/
-NclValue *themachine;
-char **thefiles;
-int	*thelines;
+_NclMachineStack *mstk;
 
-NclStackEntry *fp;
-unsigned int soff;
+NclFrame *fp;
 NclStackEntry *sb;
-NclValue *pc;
-char **fn;
-int *lc;
-unsigned int pcoffset;
-unsigned int current_machine_size;
+unsigned int current_scope_level = 0;
 
 static SetUpOpsStrings() {
 	ops_strings[NOOP] = "NOOP";
@@ -123,6 +121,70 @@ static SetUpOpsStrings() {
 	ops_strings[VAR_COORD_OP] = "VAR_COORD_OP";
 	ops_strings[SUBSCRIPTED_VAR_COORD_OP] = "SUBSCRIPTED_VAR_COORD_OP";
 	ops_strings[LINE] = "LINE";
+	ops_strings[FPDEF] = "FPDEF";
+	ops_strings[NEW_FRAME_OP] = "NEW_FRAME_OP";
+	ops_strings[BREAK_OP] = "BREAK_OP";
+	ops_strings[CONTINUE_OP] = "CONTINUE_OP";
+	ops_strings[ENDSTMNT_OP] = "ENDSTMNT_OP";
+	ops_strings[FUNC_CALL_OP] = "FUNC_CALL_OP";
+	ops_strings[PROC_CALL_OP] = "PROC_CALL_OP";
+	ops_strings[BFUNC_CALL_OP] = "BFUNC_CALL_OP";
+	ops_strings[BPROC_CALL_OP] = "BPROC_CALL_OP";
+}
+
+void _NclNewMachine
+#if __STDC__
+(void)
+#else
+()
+#endif
+{
+	_NclMachineStack* tmp;
+	tmp = (_NclMachineStack*)NclMalloc((unsigned)sizeof(_NclMachineStack));
+	tmp->themachine = (NclValue*)NclCalloc(NCL_FUNC_MACHINE_SIZE,sizeof(NclValue));
+	tmp->thefiles = (char**)NclCalloc(NCL_FUNC_MACHINE_SIZE,sizeof(char*));
+	tmp->thelines = (int*)NclCalloc(NCL_FUNC_MACHINE_SIZE,sizeof(int));
+	if(tmp->themachine == NULL ){
+		NhlPError(FATAL,errno,"_NhlNewMachine: Can't allocate space for new machine");
+		return;
+	}
+	tmp->pc = tmp->themachine;
+	tmp->lc = tmp->thelines;
+	tmp->fn = tmp->thefiles;
+	tmp->pcoffset = 0;
+	tmp->current_machine_size = NCL_FUNC_MACHINE_SIZE;
+	tmp->next = mstk;
+	mstk = tmp;
+}
+
+void *_NclPopMachine
+#if __STDC__
+(void)
+#else
+()
+#endif
+{
+	_NclMachineStack* tmp;
+
+	tmp = mstk;
+	mstk = mstk->next;
+	tmp->next = NULL;
+	return((void*)tmp);
+}
+void _NclPushMachine
+#if __STDC__
+(void * the_mach_rec)
+#else
+(the_mach_rec)
+	void * the_mach_rec;
+#endif
+{
+	_NclMachineStack* tmp;
+
+	tmp = mstk;
+	mstk = the_mach_rec;
+	mstk->next = tmp;
+	return;
 }
 
 void _NclResetMachine
@@ -137,11 +199,10 @@ void _NclResetMachine
 		NhlPError(WARNING,E_UNKNOWN,"ResetMachine: reseting non-empty stack, memory may leak!");
 	}
 	sb = thestack;
-	soff = 0;
-	pcoffset = 0;
-	pc = themachine;
-	lc = thelines;
-	fn = thefiles;
+	mstk->pcoffset = 0;
+	mstk->pc = mstk->themachine;
+	mstk->lc = mstk->thelines;
+	mstk->fn = mstk->thefiles;
 	return;
 }
 
@@ -152,11 +213,11 @@ static NhlErrorTypes IncreaseMachineSize
 ()
 #endif
 {
-	themachine = (NclValue*)NclRealloc(themachine,current_machine_size*2);
-	thefiles = (char**)NclRealloc(themachine,current_machine_size*2);
-	thelines = (int*)NclRealloc(themachine,current_machine_size*2);
-	current_machine_size *=2;
-	if(themachine == NULL) {
+	mstk->themachine = (NclValue*)NclRealloc(mstk->themachine,mstk->current_machine_size*2);
+	mstk->thefiles = (char**)NclRealloc(mstk->themachine,mstk->current_machine_size*2);
+	mstk->thelines = (int*)NclRealloc(mstk->themachine,mstk->current_machine_size*2);
+	mstk->current_machine_size *=2;
+	if(mstk->themachine == NULL) {
 		NhlPError(FATAL,errno,"IncreaseMachineSize: Unable to increase the size of the machine");
 		return(FATAL);
 
@@ -165,7 +226,7 @@ static NhlErrorTypes IncreaseMachineSize
 * Since a new pointer is possible here a new value of pc needs to be computed
 * from the current pcoffset value
 */
-	pc = &(themachine[pcoffset]);
+	mstk->pc = &(mstk->themachine[mstk->pcoffset]);
 	return(NOERROR);
 }
 	
@@ -179,23 +240,86 @@ NhlErrorTypes _NclInitMachine
 {
 	fp = NULL;
 	sb = thestack;
-	soff = 0;
-	themachine = (NclValue*)NclCalloc(NCL_MACHINE_SIZE,sizeof(NclValue));
-	thefiles = (char**)NclCalloc(NCL_MACHINE_SIZE,sizeof(char*));
-	thelines = (int*)NclCalloc(NCL_MACHINE_SIZE,sizeof(int));
-	if(themachine == NULL ){
+	mstk = (_NclMachineStack*)NclMalloc((unsigned)sizeof(_NclMachineStack));
+	mstk->themachine = (NclValue*)NclCalloc(NCL_MACHINE_SIZE,sizeof(NclValue));
+	mstk->thefiles = (char**)NclCalloc(NCL_MACHINE_SIZE,sizeof(char*));
+	mstk->thelines = (int*)NclCalloc(NCL_MACHINE_SIZE,sizeof(int));
+	if(mstk->themachine == NULL ){
 		NhlPError(FATAL,errno,"_NhlInitMachine: Can't allocate space for machine");
 		return(FATAL);
 	}
-	pc = themachine;
-	lc = thelines;
-	fn = thefiles;
-	pcoffset = 0;
-	current_machine_size = NCL_MACHINE_SIZE;
+	mstk->pc = mstk->themachine;
+	mstk->lc = mstk->thelines;
+	mstk->fn = mstk->thefiles;
+	mstk->pcoffset = 0;
+	mstk->current_machine_size = NCL_MACHINE_SIZE;
+	mstk->next = NULL;
 	SetUpOpsStrings();
 	return(NOERROR);
 }
 
+void _NclPushFrame
+#if __STDC__
+(NclSymTableListNode *new_scope,unsigned long next_instr_offset)
+#else
+(new_scope,next_instr_offset)
+	NclSymTableListNode *new_scope;
+	unsigned long next_instr_offset;
+#endif
+{
+	NclFrame *tmp; 
+	NclFrame *previous; 
+	NclStackEntry* stmp;
+	int i;
+
+	previous = (NclFrame*)fp;	
+
+	tmp = (NclFrame*)(sb);
+	tmp->func_ret_value.kind = NclStk_NOVAL;
+	tmp->func_ret_value.u.other = NULL;
+	if(new_scope->level == current_scope_level+1) {
+		tmp->static_link.u.offset  = (unsigned long)((NclStackEntry*)previous - (NclStackEntry*)thestack);
+		tmp->static_link.kind = NclStk_OFFSET;
+	} else if(new_scope->level == current_scope_level) {
+		tmp->static_link = previous->static_link;
+	} else  {
+		i = current_scope_level - new_scope->level;
+		while(i-- >= 0) {
+			previous = (NclFrame*)((NclStackEntry*)thestack + previous->static_link.u.offset);
+		}
+		tmp->static_link.u.offset = (unsigned long)((NclStackEntry*)previous - (NclStackEntry*)thestack);
+		tmp->static_link.kind = NclStk_OFFSET;
+	}
+	tmp->dynamic_link.u.offset  = (unsigned long)((NclStackEntry*)previous - (NclStackEntry*)thestack);
+
+/*
+* Maybe should be pcoffset + 1???
+*/
+	tmp->return_pcoffset.u.offset = next_instr_offset ;
+	tmp->return_pcoffset.kind = NclStk_OFFSET;
+
+	fp = tmp;
+	
+	tmp++;
+	sb = (NclStackEntry*)tmp;
+
+	current_scope_level = new_scope->level;
+	return;
+}
+
+void _NclLeaveFrame
+#if __STDC__
+(void)
+#else
+()
+#endif
+{
+/*
+* --------> Need code to free local variables here <----------
+*/
+	sb = &(fp->func_ret_value);
+	fp = (NclFrame*)(thestack + fp->dynamic_link.u.offset);
+}
 
 void _NclPush
 #if __STDC__
@@ -205,9 +329,9 @@ void _NclPush
 	NclStackEntry data;
 #endif
 {
-	*(sb + soff) = data;
-	soff++;
-	if((sb+soff) >= &(thestack[NCL_STACK_SIZE -1]) ) {
+	*(sb) = data;
+	sb++;
+	if((sb) >= &(thestack[NCL_STACK_SIZE -1]) ) {
 		NhlPError(FATAL,E_UNKNOWN,"Push: Stack overflow");
 	}
 	return;
@@ -221,13 +345,13 @@ NclStackEntry _NclPop
 #endif
 {
 	NclStackEntry tmp;
-	if(sb+soff <= thestack) {
+	if(sb <= thestack) {
 		NhlPError(FATAL,E_UNKNOWN,"Pop: Stack underflow");
 		tmp.kind = 0;
 		return(tmp);
 	} else {
-		tmp = (*(sb+soff));
-		soff--;
+		tmp = (*(sb));
+		sb--;
 		return(tmp);
 	}
 }
@@ -249,21 +373,21 @@ int _NclPutRealInstr
 * conditionals. Therefore it is necessary to return the offset of the instruct
 * being placed in the list.
 */
-	int old_offset = (int)(pc - themachine);
+	int old_offset = (int)(mstk->pc - mstk->themachine);
 
 /*
 * Check for overflow
 */
-	if(pc >= &(themachine[current_machine_size -1])) {
+	if(mstk->pc >= &(mstk->themachine[mstk->current_machine_size -1])) {
 /*
-* Will take care of updating pc
+* Will take care of updating mstk->pc
 */
 		IncreaseMachineSize();
 	}
-	*((float*)pc++) = val;
-	*(lc++) = line;
-	*(fn++) = file;
-	pcoffset = (int)(pc - themachine);
+	*((float*)mstk->pc++) = val;
+	*(mstk->lc++) = line;
+	*(mstk->fn++) = file;
+	mstk->pcoffset = (int)(mstk->pc - mstk->themachine);
 
 	return(old_offset);
 }
@@ -283,21 +407,21 @@ int _NclPutInstr
 * conditionals. Therefore it is necessary to return the offset of the instruct
 * being placed in the list.
 */
-	int old_offset = (int)(pc - themachine);
+	int old_offset = (int)(mstk->pc - mstk->themachine);
 
 /*
 * Check for overflow
 */
-	if(pc >= &(themachine[current_machine_size -1])) {
+	if(mstk->pc >= &(mstk->themachine[mstk->current_machine_size -1])) {
 /*
-* Will take care of updating pc
+* Will take care of updating mstk->pc
 */
 		IncreaseMachineSize();
 	}
-	*(pc++) = val;
-	*(lc++) = line;
-	*(fn++) = file;
-	pcoffset = (int)(pc - themachine);
+	*(mstk->pc++) = val;
+	*(mstk->lc++) = line;
+	*(mstk->fn++) = file;
+	mstk->pcoffset = (int)(mstk->pc - mstk->themachine);
 
 	return(old_offset);
 }
@@ -309,7 +433,7 @@ int _NclGetCurrentOffset
 ()
 #endif
 {
-	return(pcoffset);
+	return(mstk->pcoffset);
 }
 
 int _NclPutInstrAt
@@ -327,9 +451,9 @@ int _NclPutInstrAt
 	int *lptr;
 	char **fptr;
 
-	ptr = (NclValue*)(themachine + offset);
-	lptr = (int*)(thelines + offset);
-	fptr = (char**)(thefiles+ offset);
+	ptr = (NclValue*)(mstk->themachine + offset);
+	lptr = (int*)(mstk->thelines + offset);
+	fptr = (char**)(mstk->thefiles+ offset);
 
 	*ptr = val;
 	*lptr = line;
@@ -359,19 +483,19 @@ int _NclPrintMachine
 		from = 0;
 	}
 	if(to == -1) {
-		to = pcoffset;
+		to = mstk->pcoffset;
 	}
 
-	ptr = (NclValue*)(themachine + from);
-	eptr = (NclValue*)(themachine + to);
-	lptr = (int*)(thelines+from);		
-	fptr = (char**)(thefiles+from);
+	ptr = (NclValue*)(mstk->themachine + from);
+	eptr = (NclValue*)(mstk->themachine + to);
+	lptr = (int*)(mstk->thelines+from);		
+	fptr = (char**)(mstk->thefiles+from);
 	
 	while(ptr != eptr) {
 		if(*fptr != NULL) {
-			fprintf(fp,"(%d,%d,%s)\t",(int)(ptr-themachine),*lptr,*fptr);
+			fprintf(fp,"(%d,%d,%s)\t",(int)(ptr-mstk->themachine),*lptr,*fptr);
 		} else {
-			fprintf(fp,"(%d,%d)\t",(int)(ptr-themachine),*lptr);
+			fprintf(fp,"(%d,%d)\t",(int)(ptr-mstk->themachine),*lptr);
 		}
 		switch(*ptr) {
 			case LINE:
@@ -411,6 +535,9 @@ int _NclPrintMachine
 			case LT_OP :
 			case EQ_OP :
 			case NE_OP :
+			case BREAK_OP:
+			case CONTINUE_OP:
+			case ENDSTMNT_OP:
 				fprintf(fp,"%s\n",ops_strings[*ptr]);
 				break;
 			case JMP :
@@ -430,6 +557,23 @@ int _NclPrintMachine
 				fprintf(fp,"\t%s\n",(char*)*ptr);
 				break;
 			case PUSH_VAR_OP :
+				fprintf(fp,"%s\n",ops_strings[*ptr]);
+				ptr++;lptr++;fptr++;
+				fprintf(fp,"\t");
+				_NclPrintSymbol((NclSymbol*)*ptr,fp);
+				break;
+			case NEW_FRAME_OP:
+				fprintf(fp,"%s\n",ops_strings[*ptr]);
+				ptr++;lptr++;fptr++;
+				fprintf(fp,"\t");
+				_NclPrintSymbol((NclSymbol*)*ptr,fp);
+				ptr++;lptr++;fptr++;
+				fprintf(fp,"\t%d\n",*ptr);
+				break;
+			case PROC_CALL_OP:
+			case BPROC_CALL_OP:
+			case FUNC_CALL_OP:
+			case BFUNC_CALL_OP:
 				fprintf(fp,"%s\n",ops_strings[*ptr]);
 				ptr++;lptr++;fptr++;
 				fprintf(fp,"\t");
@@ -521,6 +665,16 @@ int _NclPrintMachine
 				ptr++;lptr++;fptr++;
 				fprintf(fp,"\t%d\n",*ptr);
 				break;
+			case FPDEF:
+				fprintf(fp,"%s\n",ops_strings[*ptr]);
+				ptr++;lptr++;fptr++;
+				fprintf(fp,"\t");
+				_NclPrintSymbol((NclSymbol*)*ptr,fp);
+				_NclPushMachine(((NclSymbol*)*ptr)->u.procfunc->mach_rec_ptr);
+				_NclPrintMachine(-1,-1,fp);
+				(void)_NclPopMachine();
+				break;
+			
 			default:
 				break;
 		}

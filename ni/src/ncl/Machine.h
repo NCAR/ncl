@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.h,v 1.1 1993-09-24 23:40:37 ethan Exp $
+ *      $Id: Machine.h,v 1.2 1993-10-06 22:54:25 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -21,21 +21,25 @@
  *	Description:	contains necessary extern definitions so other
  *			parts of NCL can access pc,sp and fp.
  */
-
 /*
-* Program conter
+* This is dynamically allocated so that ReAlloc can be used to grow the
+* machine incase of overflow. The reason for making the machine a stack
+* is so that functions and procedures won't fragment the instruction sequences.
+* procedures and functions have to stick arround until the end of the program
+* or until they are removed. Where regular instructions generated from a s
+* statment  can be removed once they are executed.
 */
-extern void *pc;
-
-/*
-* Stack pointer
-*/
-extern void *sp;
-
-/*
-* Frame pointer
-*/
-extern void *fp;
+typedef struct mach_stack {
+        NclValue *themachine;
+        char **thefiles;
+        int     *thelines;
+        unsigned int pcoffset;
+        NclValue *pc;
+        char **fn;
+        int *lc;
+        unsigned int current_machine_size;
+        struct mach_stack *next;
+} _NclMachineStack;
 
 extern void _NclPush(
 #ifdef NhlNeedProto
@@ -43,7 +47,7 @@ void * /*data*/
 #endif
 );
 
-extern void * _NclPop(
+extern NclStackEntry _NclPop(
 #ifdef NhlNeedProto
 void 
 #endif
@@ -100,6 +104,20 @@ FILE*	/* fp */
 #endif
 );
 
+extern void _NclNewMachine(
+#ifdef NhlNeedProto
+void
+#endif
+);
 
+extern void *_NclPopMachine(
+#ifdef NhlNeedProto
+void
+#endif
+);
 
-
+extern void _NclPushMachine(
+#ifdef NhlNeedProto
+void * /*the_mach_rec */
+#endif
+);

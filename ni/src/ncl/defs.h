@@ -1,6 +1,6 @@
 
 /*
- *      $Id: defs.h,v 1.1 1993-09-24 23:41:17 ethan Exp $
+ *      $Id: defs.h,v 1.2 1993-10-06 22:54:51 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -28,6 +28,7 @@
 #define NCL_MAX_DIMENSIONS 32
 #define NCL_MAX_STRING 256
 #define NCL_MAX_ATTRIBUTES 32
+#define NCL_MAX_SYMS_PER_STMNT 300
 
 /*
 * Maximum number of error messages to be printed
@@ -69,9 +70,13 @@ typedef struct _NclGenericVal {
 	char *name;
 } NclGenericVal;
 
+typedef enum { NclStk_NOVAL, NclStk_OFFSET, NclStk_DBVAL, NclStk_FLTVAL, 
+	NclStk_LNGVAL, NclStk_INTVAL, NclStk_SHRTVAL, NclStk_CHRVAL,
+	NclStk_STRVAL, NclStk_OTHER} NclStackValueTypes;
+
 typedef long NclValue;
 typedef struct _NclStackEntry{
-	int kind;
+	NclStackValueTypes kind;
 	union {
 		unsigned long   offset;
 		double dblval;
@@ -89,7 +94,7 @@ typedef struct _NclFrame{
 	NclStackEntry	func_ret_value;
 	NclStackEntry	static_link;
 	NclStackEntry	dynamic_link;
-	NclStackEntry	return_addr;
+	NclStackEntry	return_pcoffset;
 }NclFrame;
 
 extern int _NclTranslate(

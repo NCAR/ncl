@@ -1,6 +1,6 @@
 
 #
-#      $Id: yMakefile,v 1.1 1993-09-24 23:41:27 ethan Exp $
+#      $Id: yMakefile,v 1.2 1993-10-06 22:54:59 ethan Exp $
 #
 #########################################################################
 #									#
@@ -28,31 +28,6 @@
 #
 #
 #	Options:
-#ifndef NCLProgram
-#define NCLProgram(program,objects,deplib)\
-]\
-all:: program]\
-]\
-program: objects deplib]\
-        $(CC_LD) $(CC_LDOPTIONS) -o program objects $(PROG_LIBS) $(CSTATIC) $(LDLIBS) $(CDYNAMIC) $(EXTRA_LDLIBS)]\
-]\
-InstallTarget(program,$(INSTALL_BIN),$(BINPATH))\
-CleanFilesTarget(program objects)
-#endif
-
-#ifndef NCLLibraryTarget
-#define NCLLibraryTarget(library,objects)\
-]\
-all:: library]\
-]\
-library:: objects]\
-        -$(RM) library]\
-        @$(AR_QUICK) library objects]\
-        $(RANLIB) library]\
-]\
-InstallLibTarget(library)]\
-CleanFilesTarget(library objects)
-#endif  /* LibraryTarget */
 
 #ifdef  HPUX_snakeArch
 SYS_LIBS        =       $(CTOFLIBS) -lm -lPW -ll
@@ -68,34 +43,53 @@ MYNAME = ncl
 PROG_LIBS	=	$(HLULIBS) $(CNCARGLIBS) $(NCARGLIBS)
 EXTRA_LIBS	=	-ll $(NCDFLIBS) $(XMOTIFCLIENTLIBS)
 
-HDRS	= Files.h Functions.h Graphics.h Keywords.h Literal.h Machine.h \
-	NclApi.h OpsList.h Procedures.h SrcTree.h Symbol.h Variable.h \
+HDRS	= Files.h ProcFuncs.h Graphics.h Keywords.h Literal.h Machine.h \
+	NclApi.h OpsList.h SrcTree.h Symbol.h Variable.h \
 	defs.h y.tab.h
 
 API_SRCS	= NclApi.c
+EXE_SRCS	= Ncl.c
 
-ALLSRCS		= $(API_SRCS) $(SRCS)
+APISRCS		= $(API_SRCS) $(SRCS)
+EXESRCS		= $(EXE_SRCS) $(SRCS)
+ALLSRCS		= $(API_SRCS) $(EXE_SRCS) $(SRCS)
 
-SRCS	= Machine.c Memory.c Ncl.c Printtoken.c SrcTree.c Symbol.c Translate.c \
+SRCS	= Machine.c Memory.c Printtoken.c SrcTree.c Symbol.c Translate.c \
 	ncl.y ncl.l yywrap.c y.tab.c lex.yy.c
 
 API_OBJS	= NclApi.o
+EXE_OBJS	= Ncl.o
 
-OBJS	= Machine.o Memory.o Ncl.o Printtoken.o SrcTree.o Symbol.o Translate.o \
+OBJS	= Machine.o Memory.o Printtoken.o SrcTree.o Symbol.o Translate.o \
 	lex.yy.o y.tab.o yywrap.o
 
-ALLOBJS	= $(API_OBJS) $(OBJS)
+APIOBJS	= $(API_OBJS) $(OBJS)
+EXEOBJS	= $(EXE_OBJS) $(OBJS)
 
 InstallTarget(ncl,$(INSTALL_INC),$(XAPPPATH))
 InstallTarget(libncl.a,$(INSTALL_LIB),$(LIBPATH))
 DependTarget($(ALLSRCS))
-NCLProgram($(MYNAME), $(OBJS), $(DEPLIBS))
-NCLLibraryTarget(libncl.a, $(ALLOBJS))
+
+ncl:: $(EXEOBJS) $(DEPLIBS)
+	$(CC_LD) $(CC_LDOPTIONS) -o ncl $(EXEOBJS) $(PROG_LIBS) $(CSTATIC) $(LDLIBS) $(CDYNAMIC) $(EXTRA_LDLIBS)
+InstallTarget(ncl, $(INSTALL_BIN),$(BINPATH))
+CleanFilesTarget(ncl $(ALLOBJS))
+
+libncl.a::
+	-$(RM) $(APIOBJS) y.tab.h y.tab.c lex.yy.c
+	$(YACC) -d -t -v ncl.y
+	$(LEX) ncl.l
+	$(CC_LD) $(CC_LDOPTIONS) -c $(TOP_INCLUDES) -DMAKE_API $(APISRCS)
+	-$(RM) libncl.a
+	@$(AR_QUICK) libncl.a $(ALLOBJS)
+	$(RANLIB) libncl.a
+	-$(RM) $(APIOBJS)
+
 
 # Special dependencies
 
 lex.yy.c: ncl.l
-	lex ncl.l
+	$(LEX) ncl.l
 
 y.tab.c: ncl.y
 	$(YACC) -d -t -v ncl.y

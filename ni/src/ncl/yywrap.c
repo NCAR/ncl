@@ -11,6 +11,8 @@ extern char *cur_load_file;
 extern int cur_line_number;
 extern int top_level_line;
 extern FILE *yyin;
+extern int cmd_line;
+extern int yylineno;
 int yywrap() 
 {
 	if(loading) {
@@ -23,8 +25,12 @@ int yywrap()
 * of a block are not executed untill the end of the block 
 */
 		cur_line_number = top_level_line;
-		
+		cmd_line = isatty(fileno(stdin));
 		cur_load_file = NULL;
+		if(cmd_line) {
+			fprintf(stdout,"ncl %d> ",yylineno);
+
+		}
 		return(0);
 	} else {
 		return(1);
