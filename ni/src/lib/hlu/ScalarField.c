@@ -1,5 +1,5 @@
 /*
- *      $Id: ScalarField.c,v 1.27 1997-09-30 01:13:18 dbrown Exp $
+ *      $Id: ScalarField.c,v 1.28 1998-01-22 17:52:35 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -914,7 +914,7 @@ ValidCoordArray
 
 	if (ga->len_dimensions[0] != len_dim) {
 		e_text = 
-         "%s: irregular coordinate array %s requires %d elements: ignoring %s";
+		  "%s: coordinate array %s requires %d elements: defaulting";
 		NhlPError(NhlWARNING,NhlEUNKNOWN,
 			  e_text,entry_name,name,len_dim,name);
 		return False;
@@ -922,7 +922,7 @@ ValidCoordArray
 
 	if (! Monotonic((float *)ga->data,ga->num_elements)) {
 		e_text = 
-                "%s: irregular coordinate array %s non-monotonic: ignoring %s";
+             "%s: irregular coordinate array %s non-monotonic: defaulting %s";
 		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,name,name);
 		return False;
 	}
@@ -1802,13 +1802,21 @@ CvtGenSFObjToFloatSFObj
 	sffp->x_arr = NULL;
 	if (sfp->x_arr != NULL && sfp->x_arr->num_elements > 0) {
 		if ((x_arr = GenToFloatGenArray(sfp->x_arr)) == NULL) {
-			e_text = "%s: error converting XCoord data to float";
-			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-			return NhlFATAL;
+			e_text = 
+			  "%s: error converting %s to float; defaulting";
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
+				  e_text,entry_name,NhlNsfXArray);
+			ret = MIN(ret,NhlWARNING);
+			NhlFreeGenArray(sfp->x_arr);
+			sfp->x_arr = NULL;
 		}
 		if (ValidCoordArray(sfp,x_arr,sfXCOORD,entry_name)) {
 			NhlSetSArg(&sargs[nargs++],NhlNsfXArray,x_arr);
 			xirr = True;
+		}
+		else {
+			NhlFreeGenArray(sfp->x_arr);
+			sfp->x_arr = NULL;
 		}
 	}
 
@@ -1838,13 +1846,21 @@ CvtGenSFObjToFloatSFObj
 	sffp->y_arr = NULL;
 	if (sfp->y_arr != NULL && sfp->y_arr->num_elements > 0) {
 		if ((y_arr = GenToFloatGenArray(sfp->y_arr)) == NULL) {
-			e_text = "%s: error converting YCoord data to float";
-			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-			return NhlFATAL;
+			e_text = 
+			  "%s: error converting %s to float; defaulting";
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
+				  e_text,entry_name,NhlNsfYArray);
+			ret = MIN(ret,NhlWARNING);
+			NhlFreeGenArray(sfp->y_arr);
+			sfp->y_arr = NULL;
 		}
 		if (ValidCoordArray(sfp,y_arr,sfYCOORD,entry_name)) {
 			NhlSetSArg(&sargs[nargs++],NhlNsfYArray,y_arr);
 			yirr = True;
+		}
+		else {
+			NhlFreeGenArray(sfp->y_arr);
+			sfp->y_arr = NULL;
 		}
 	}
 
@@ -2155,20 +2171,42 @@ ScalarFieldInitialize
 		return NhlFATAL;
 	}
 
-	if (sfp->x_arr != NULL && 
-	    (sfp->x_arr =
-	     _NhlCopyGenArray(sfp->x_arr,sfp->copy_arrays)) == NULL) {
-		e_text = "%s: dynamic memory allocation error";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return NhlFATAL;
+	if (sfp->x_arr != NULL) {
+	  /* do a fast check on the array validity */
+		if (sfp->x_arr->len_dimensions[0] != 
+		    sfp->d_arr->len_dimensions[1]) {
+			e_text = 
+		 "%s: coordinate array %s requires %d elements: defaulting";
+			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
+				  NhlNsfXArray,sfp->d_arr->len_dimensions[1]);
+                        sfp->x_arr = NULL;
+			ret = MIN(ret,NhlWARNING);
+		}
+                else if ((sfp->x_arr = _NhlCopyGenArray
+                          (sfp->x_arr,sfp->copy_arrays)) == NULL) {
+                        e_text = "%s: dynamic memory allocation error";
+                        NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+                        return NhlFATAL;
+                }
 	}
 
-	if (sfp->y_arr != NULL && 
-	    (sfp->y_arr =
-	     _NhlCopyGenArray(sfp->y_arr,sfp->copy_arrays)) == NULL) {
-		e_text = "%s: dynamic memory allocation error";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return NhlFATAL;
+	if (sfp->y_arr != NULL) {
+	  /* do a fast check on the array validity */
+		if (sfp->y_arr->len_dimensions[0] != 
+		    sfp->d_arr->len_dimensions[0]) {
+			e_text = 
+		 "%s: coordinate array %s requires %d elements: defaulting";
+			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
+				  NhlNsfYArray,sfp->d_arr->len_dimensions[1]);
+                        sfp->y_arr = NULL;
+			ret = MIN(ret,NhlWARNING);
+		}
+                else if ((sfp->y_arr = _NhlCopyGenArray
+                          (sfp->y_arr,sfp->copy_arrays)) == NULL) {
+                        e_text = "%s: dynamic memory allocation error";
+                        NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+                        return NhlFATAL;
+                }
 	}
 
 	if (sfp->missing_value != NULL) {
@@ -2315,9 +2353,9 @@ ScalarFieldSetValues
 	NhlBoolean		status = False;
 
 	if (sfp->d_arr != osfp->d_arr) {
-		if (sfp->d_arr == NULL) {
+		if (sfp->d_arr == NULL || sfp->d_arr->num_dimensions != 2) {
 			e_text = 
-			   "%s:The %s resource cannot be set NULL: resetting";
+			   "%s: invalid %s value: restoring previous value";
 			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
 				  entry_name,NhlNsfDataArray);
 			ret = NhlWARNING;
@@ -2339,29 +2377,53 @@ ScalarFieldSetValues
 	}
 
 	if (sfp->x_arr != osfp->x_arr) {
-		NhlFreeGenArray(osfp->x_arr);
-		if (sfp->x_arr != NULL && 
-		    (ga = _NhlCopyGenArray(sfp->x_arr,
-					   sfp->copy_arrays)) == NULL) {
-			e_text = "%s: dynamic memory allocation error";
-			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-			return NhlFATAL;
-		}
-		sfp->x_arr = ga;
-		status = True;
+                NhlFreeGenArray(osfp->x_arr);
+                if (sfp->x_arr != NULL) {
+                            /* do a fast check on the array validity */
+                        if (sfp->x_arr->len_dimensions[0] != 
+                            sfp->d_arr->len_dimensions[1]) {
+                                e_text = 
+		 "%s: coordinate array %s requires %d elements: defaulting";
+                                NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
+                                          entry_name,NhlNsfXArray,
+                                          sfp->d_arr->len_dimensions[1]);
+                                sfp->x_arr = NULL;
+                                ret = MIN(ret,NhlWARNING);
+                        }
+                        else if ((sfp->x_arr = _NhlCopyGenArray
+                                  (sfp->x_arr,sfp->copy_arrays)) == NULL) {
+                                e_text = "%s: dynamic memory allocation error";
+                                NhlPError(NhlFATAL,
+                                          NhlEUNKNOWN,e_text,entry_name);
+                                return NhlFATAL;
+                        }
+                }
+                status = True;
 	}
 
 	if (sfp->y_arr != osfp->y_arr) {
 		NhlFreeGenArray(osfp->y_arr);
-		if (sfp->y_arr != NULL && 
-		    (ga = _NhlCopyGenArray(sfp->y_arr,
-					   sfp->copy_arrays)) == NULL) {
-			e_text = "%s: dynamic memory allocation error";
-			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-			return NhlFATAL;
-		}
-		sfp->y_arr = ga;
-		status = True;
+                if (sfp->y_arr != NULL) {
+                            /* do a fast check on the array validity */
+                        if (sfp->y_arr->len_dimensions[0] != 
+                            sfp->d_arr->len_dimensions[0]) {
+                                e_text = 
+		 "%s: coordinate array %s requires %d elements: defaulting";
+                                NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
+                                          entry_name,NhlNsfYArray,
+                                          sfp->d_arr->len_dimensions[1]);
+                                sfp->y_arr = NULL;
+                                ret = MIN(ret,NhlWARNING);
+                        }
+                        else if ((sfp->y_arr = _NhlCopyGenArray
+                                  (sfp->y_arr,sfp->copy_arrays)) == NULL) {
+                                e_text = "%s: dynamic memory allocation error";
+                                NhlPError(NhlFATAL,
+                                          NhlEUNKNOWN,e_text,entry_name);
+                                return NhlFATAL;
+                        }
+                }
+                status = True;
 	}
 
 	if (sfp->missing_value != osfp->missing_value) {
