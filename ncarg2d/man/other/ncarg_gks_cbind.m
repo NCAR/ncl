@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncarg_gks_cbind.m,v 1.5 1993-05-03 22:25:53 haley Exp $
+.\"	$Id: ncarg_gks_cbind.m,v 1.6 1995-03-27 17:50:42 haley Exp $
 .\"
 .TH NCARG_GKS_CBIND 3NCARG "February 1993" NCAR "NCAR GRAPHICS"
 .SH NAME
@@ -128,11 +128,11 @@ in your Makefile or whatever else you are using to compile your program.
 .SH EXAMPLES
 An example of a C program that calls some of the NCAR Graphics GKS
 C-bindings has been provided.  To copy this C program into your 
-directory, and then compile, link, and run it, type \fBncargcex c_gtxpac\fP.
+directory, and then compile, link, and run it, type \fBncargex c_gtxpac\fP.
 .SH SEE ALSO
 Online:
 .BR ncarg_cbind(3NCARG),
-.BR ncargcex(1NCARG),
+.BR ncargex(1NCARG),
 .BR ncargintro(5NCARG).
 .sp
 Hardcopy:

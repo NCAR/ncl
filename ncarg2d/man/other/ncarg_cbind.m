@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncarg_cbind.m,v 1.9 1994-04-11 18:17:14 haley Exp $
+.\"	$Id: ncarg_cbind.m,v 1.10 1995-03-27 17:50:41 haley Exp $
 .\"
 .TH NCARG_CBIND 3NCARG "February 1993" NCAR "NCAR GRAPHICS"
 .SH NAME
@@ -143,26 +143,18 @@ have been provided for your convenience.  You may be familiar with the
 output from these C programs as they were modeled after the Fortran
 programs that you can get with the \fBncargex\fP command.  To copy
 any one of these C programs in your directory, and then compile, link, 
-and run it,  type 
+and run it, type:
 .sp
-\fBncargcex\fP \fIxxxx\fP
+\fBncargex\fP \fIxxxx\fP
 .sp
 where \fIxxxx\fP is the name of the example you wish to generate.
-The following C examples are available:
-.sp
-.nf
-.in .5i
-c_agex07 c_cbex01 c_colcon c_eezmpa c_elblba
-c_epltch c_gtxpac c_mpex05 c_sfex02 c_slex01
-.sp
-.in -.5i
-If you want to generate all of these examples, type 
+To see a list of all the C examples, type:
 .in .5i
 .sp
-\fBncargcex -A\fP
+\fBncargex -C -list\fP
 .in -.5i
 .sp
-\fBncargcex\fP uses \fBncargcc\fP to compile and link the C-binding
+\fBncargex\fP uses \fBncargcc\fP to compile and link the C-binding
 example programs.
 .sp
 .in -.5i
@@ -177,7 +169,7 @@ Conran_family, Conrec_family, Halftone, Isosrfhr, and Pwrite_family.
 .SH SEE ALSO
 Online: 
 .BR ncargcc(1NCARG),
-.BR ncargcex(1NCARG),
+.BR ncargex(1NCARG),
 .BR ncarg_gks_cbind(3NCARG), 
 .BR ncargintro(5NCARG).
 .sp

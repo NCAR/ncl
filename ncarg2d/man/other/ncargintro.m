@@ -57,9 +57,11 @@ Online:
 .sp
 Commands which facilitate compiling and running with NCAR Graphics:
 .sp
+.BR nhlf77(1NCARG),
+.BR nhlcc(1NCARG),
 .BR ncargf77(1NCARG),
 .BR ncargcc(1NCARG),
-.BR ncargpath(1NCARG)
+.BR ncargpath(1NCARG),
 .BR ncargrun(1NCARG)
 .sp
 FORTRAN utilities in NCAR Graphics:
@@ -70,6 +72,7 @@ FORTRAN utilities in NCAR Graphics:
 .BR colconv(3NCARG),
 .BR conpack(3NCARG),
 .BR dashline(3NCARG),
+.BR dashpack(3NCARG),
 .BR ezmap(3NCARG),
 .BR gflash(3NCARG),
 .BR gks(3NCARG),
@@ -84,7 +87,8 @@ FORTRAN utilities in NCAR Graphics:
 .BR scrolled_title(3NCARG),
 .BR streamlines(3NCARG),
 .BR threed(3NCARG),
-.BR vectors(3NCARG)
+.BR vectors(3NCARG),
+.BR wmap(3NCARG)
 .sp
 NCGM translators:
 .sp
@@ -132,10 +136,11 @@ you are using:
 .sp
 .BR ncarvversion(1NCARG)
 .sp
-Utilities for generating NCAR Graphics Fortran and C examples:
+Utilities for generating NCAR Graphics Fortran, C, and NCL LLU and HLU
+examples:
 .sp
 .BR ncargex(1NCARG),
-.BR ncargcex(1NCARG)
+.BR ng4ex(1NCARG)
 .sp
 Utilities for giving you access to special NCAR Graphics files and/or tables.
 .sp

@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncargfile.m,v 1.1 1993-05-08 17:00:22 haley Exp $
+.\"	$Id: ncargfile.m,v 1.2 1995-03-27 17:50:43 haley Exp $
 .\"
 .\" @(#)f77.1 1.4 86/07/31 SMI; 
 .TH NCARGFILE 1NCARG "MARCH 1993" NCAR "NCAR GRAPHICS"
@@ -32,7 +32,6 @@ is the table of Ezmap Area identifiers, called "ezmap_area_ids".
 .SH SEE ALSO
 Online:
 .BR ncargex(1NCARG),
-.BR ncargcex(1NCARG),
 .BR ncargintro(5NCARG)
 .sp
 Hardcopy:
