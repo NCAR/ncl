@@ -1,5 +1,5 @@
 /*
- *	$Id: raster.c,v 1.18 1992-09-16 21:28:21 don Exp $
+ *	$Id: raster.c,v 1.19 1992-09-17 18:19:38 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -321,12 +321,12 @@ RasterOpen(name, format)
  *********************************************************************/
 Raster *
 RasterOpenWrite(name, nx, ny, comment, encoding, format)
-	char	*name;
-	int	nx;
-	int	ny;
-	char	*comment;
-	int	encoding;
-	char	*format;
+	char		*name;
+	int		nx;
+	int		ny;
+	char		*comment;
+	RasterEncoding	encoding;
+	char		*format;
 {
 	Raster	*ras = (Raster *) NULL;
 	RasterDevice	*rasdev;
@@ -569,9 +569,9 @@ RasterCopyColormap(src, dst)
  *********************************************************************/
 Raster *
 RasterCreate(nx, ny, encoding)
-	int	nx;
-	int	ny;
-	int	encoding;
+	int		nx;
+	int		ny;
+	RasterEncoding	encoding;
 {
 	Raster	*ras;
 	char	*calloc();
