@@ -1,5 +1,5 @@
 C
-C     $Id: xy11f.f,v 1.10 1995-04-07 10:55:18 boote Exp $
+C     $Id: xy11f.f,v 1.11 1995-05-09 22:39:45 haley Exp $
 C
 C****************************************************************
 C                                                               *
@@ -37,9 +37,6 @@ C
       real Temp(28)
       real Pressure(28)
 
-      real foreground(3)
-      real background(3)
-      
       data (Temp(i), i = 1,28) /-13.500000,-10.500000,-5.500000,
      %-3.100000,-1.300000,-6.700000,-12.900000,-13.100000,-17.700001,
      %-16.900000,-21.299999,-37.099998,-40.099998,-41.900002,-42.099998,
@@ -53,26 +50,20 @@ C
      %209.000000,192.000000,143.000000,111.000000,100.000000,95.300003,
      %76.400002,62.599998,58.299999,47.299999,30.000000,27.200001,
      %21.500000/
-
-      data (foreground(i), i=1,3) /0.0,0.0,0.0/
-      data (background(i), i=1,3) /1.0,1.0,1.0/
 C
 C   Initialize the error return variable
 C
       data ierr / 0 /
-
 C
 C   Initialize the HLU library
 C
       call NhlFInitialize
       call NhlFCreate(appid,'xy11',NhlFAppClass,0,0,ierr)
-
 C
 C   Create a ResList - This is filled with resource "Names" and
 C   "Values" to apply to an HLU object.
 C
       call NhlFRLCreate(list,'setrl')
-
 C
 C   Fill the ResList with the resources for the X Workstation
 C   object - then create the X Workstation object.
@@ -101,8 +92,6 @@ C
       call NhlFRLSetFloatArray(list,'caYArray',Pressure,28,ierr)
       call NhlFCreate(idata,'mydata',NhlFCoordArraysClass,0,list,
      %  ierr)
-
-
 C
 C   Fill the ResList with the resources for the XyPlot object
 C   including the "Data" which is the object id for the
@@ -122,14 +111,12 @@ C
 
       call NhlFCreate(ixyplot,'myxyplot',NhlFXyPlotClass,ixwork,
      %  list,ierr)
-
 C
 C   We don't need the ResList any more - so destroy it.  Memory
 C   is allocated for each reslist so it is important to destroy
 C   them when you are done with them.
 C
       call NhlFRLDestroy(list)
-
 C
 C   Draw the XyPlot - It was created as a child of the X Workstation
 C   so it will draw to the X Workstation's device (Window).  Then
@@ -140,14 +127,13 @@ C   the frame call until the user "clicks" in the Window.
 C
       call NhlFDraw(ixyplot,ierr)
       call NhlFFrame(ixwork,ierr)
-
 C
 C   Move the XyPlot to the Ncgm Workstation - This makes the
 C   XyPlot a child of the Ncgm Workstation so the XyPlot
 C   will draw to the Ncgm Workstations' device instead of the
 C   X Workstations device.
+C
       call NhlFChangeWorkstation(ixyplot,incgmwork,ierr)
-
 C
 C   Draw the XyPlot - It is now a child of the Ncgm Workstation
 C   so it will draw to the Ncgm Workstation's device (ncgm file).
@@ -156,7 +142,6 @@ C   the graphics C  buffers so all the graphics are displayed.
 C
       call NhlFDraw(ixyplot,ierr)
       call NhlFFrame(incgmwork,ierr)
-
 C
 C   Destroy the X Workstation object - this also pop's down
 C   the X Window. (Also free's all the memory associated with
