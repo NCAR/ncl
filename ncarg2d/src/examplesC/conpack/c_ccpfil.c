@@ -1,5 +1,5 @@
 /*
- * $Id: c_ccpcldm.c.sed,v 1.2 1994-06-08 14:44:29 haley Exp $
+ * $Id: c_ccpfil.c,v 1.1 1994-06-08 14:44:36 haley Exp $
  */
 
 #include <stdio.h>
@@ -20,8 +20,8 @@
 main()
 {
 	float xreg[MREG],yreg[NREG],zreg[NREG][MREG];
-	extern void ccpldm();
 	extern void getdat();
+	extern void ccpfil();
 /*
  * Get data array
  */
@@ -33,7 +33,7 @@ main()
 /*
  * Call Conpack color fill routine
  */
-	ccpldm(zreg);
+	ccpfil(zreg,-15);
 /*
  * Close frame and close GKS
  */
@@ -41,63 +41,50 @@ main()
 	c_clsgks();
 }
 
-void ccpldm(zreg)
+void ccpfil(zreg,ncl)
 float zreg[NREG][MREG];
+int ncl;
 {
-	int iwrk[LIWK], ncl;
+	int iwrk[LIWK];
 	float rwrk[LRWK], xwrk[NWRK], ywrk[NWRK];
 	int map[LMAP],iarea[NOGRPS],igrp[NOGRPS];
-
 	extern void color();
 	extern int fill();
-	extern int cpdrpl_();
-/*
- * Set fill style to solid
- */
-	gset_fill_int_style(GSTYLE_SOLID);
-/*
- * Use regular or penalty labeling scheme so that contour labels can be
- * boxed.
- */
-	c_cpseti("LLP - LINE LABEL POSITIONING FLAG",2);
-/*
- * Initialize Conpack
- */
-	c_cprect((float *)zreg, MREG, MREG, NREG, rwrk, LRWK, iwrk, LIWK);
 /*
  * Set up color table
  */
-	c_cppkcl ((float *)zreg, rwrk, iwrk);
-	c_cpgeti("NCL - NUMBER OF CONTOUR LEVELS",&ncl);
-	color(ncl+1);
-/*
- * Draw Perimeter
- */
-	c_cpback((float *)zreg, rwrk, iwrk);
+	color();
 /*
  * Initialize Areas
  */
 	c_arinam(map, LMAP);
 /*
- * Add label boxes to area map
+ * Set number of contour levels and initialize Conpack
  */
-	c_cplbam((float *)zreg, rwrk, iwrk, map);
-/*
- * Draw Labels
- */
-	c_cplbdr((float *)zreg, rwrk, iwrk);
+	c_cpseti("CLS - CONTOUR LEVEL SELECTION FLAG",ncl);
+	c_cprect((float *)zreg, MREG, MREG, NREG, rwrk, LRWK, iwrk, LIWK);
 /*
  * Add contours to area map
  */
 	c_cpclam((float *)zreg, rwrk, iwrk, map);
 /*
- * Fill contours
+ * Set fill style to solid, and fill contours
  */
+	gset_fill_int_style(GSTYLE_SOLID);
 	c_arscam(map, xwrk, ywrk, NWRK, iarea, igrp, NOGRPS, fill);
 /*
- * Draw contours, masking label boxes
+ * Draw Perimeter
  */
-	c_cpcldm((float *)zreg, rwrk, iwrk, map, cpdrpl_);
+	c_cpback((float *)zreg, rwrk, iwrk);
+/*
+ * Draw Labels
+ */
+	c_cplbdr((float *)zreg,rwrk,iwrk);
+/*
+ * Draw Contours
+ */
+	c_cpcldr((float *)zreg,rwrk,iwrk);
+
 	return;
 }
 
@@ -134,7 +121,7 @@ int fill(
             area.points[i].x = xwrk[i];
             area.points[i].y = ywrk[i];
         }
-		gset_fill_colr_ind(iarea3+2);
+		gset_fill_colr_ind(iarea3+1);
         gfill_area(&area);
         free(area.points);
 	}
@@ -184,52 +171,103 @@ float *xreg, *yreg, zreg[NREG][MREG];
 	return;
 }
 
-void color(n)
-int n;
+void color()
 {
-	int i,icnt, lap;
-	float xhue, hues,redln, red, green, blue;
 	Gcolr_rep rgb;
 /*
- * BACKGROUND COLOR
- * BLACK
+ *     BACKGROUND COLOR
+ *     BLACK
  */
 	rgb.rgb.red = 0.; rgb.rgb.green = 0.; rgb.rgb.blue = 0.;
 	gset_colr_rep(1,0,&rgb);
 /*
- * First foreground color is white
+ *     FORGROUND COLORS
+ * White
  */
-	rgb.rgb.red = 1.; rgb.rgb.green = 1.; rgb.rgb.blue = 1.;
-	gset_colr_rep(1,1,&rgb);
+	rgb.rgb.red = 1.0; rgb.rgb.green =  1.0; rgb.rgb.blue =  1.0;
+	gset_colr_rep(1,  1, &rgb );
 /*
- * Second foreground color is gray
+ * Orchid 
  */
-	rgb.rgb.red = .75; rgb.rgb.green = .75; rgb.rgb.blue = .75;
-	gset_colr_rep(1,2,&rgb);
+	rgb.rgb.red = 0.85; rgb.rgb.green =  0.45; rgb.rgb.blue =  0.8;
+	gset_colr_rep(1,  2, &rgb );
 /*
- * Choose other foreground colors spaced equally around the spectrum
+ * Red
  */
-	icnt=0;
-	hues=360./n;
+	rgb.rgb.red = 0.9; rgb.rgb.green =  0.25; rgb.rgb.blue =  0.0;
+	gset_colr_rep(1,  3, &rgb);
 /*
- * REDLN is intended to be the line between red and violet values
+ * OrangeRed
  */
-	redln=36.0;
-	lap=(int)(redln/hues);
-	for( i = 1; i <= n; i++ ) {
-		xhue=i*hues;
-		c_hlsrgb(xhue,60.,75.,&rgb.rgb.red,&rgb.rgb.green,&rgb.rgb.blue);
+	rgb.rgb.red = 1.0; rgb.rgb.green =  0.0; rgb.rgb.blue =  0.2;
+	gset_colr_rep(1,  4, &rgb);
 /*
- * Sort colors so that the redest is first, and violetest is last
+ * Orange
  */
-		if (xhue <= redln) {
-            gset_colr_rep(1,(n+2)-(lap-i),&rgb);
-            icnt=icnt+1;
-		}
-		else {
-            gset_colr_rep(1,i-icnt+2,&rgb);
-		}
-	}
+	rgb.rgb.red = 1.0; rgb.rgb.green =  0.65; rgb.rgb.blue =  0.0;
+	gset_colr_rep(1,  5, &rgb);
+/*
+ * Gold
+ */
+	rgb.rgb.red = 1.0; rgb.rgb.green =  0.85; rgb.rgb.blue =  0.0;
+	gset_colr_rep(1,  6, &rgb);
+/*
+ * Yellow
+ */
+	rgb.rgb.red = 1.0; rgb.rgb.green =  1.0; rgb.rgb.blue =  0.0;
+	gset_colr_rep(1,  7, &rgb);
+/*
+ * GreenYellow
+ */
+	rgb.rgb.red = 0.7; rgb.rgb.green =  1.0; rgb.rgb.blue =  0.2;
+	gset_colr_rep(1,  8, &rgb);
+/*
+ * Chartreuse
+ */
+	rgb.rgb.red = 0.5; rgb.rgb.green =  1.0; rgb.rgb.blue =  0.0;
+	gset_colr_rep(1,  9, &rgb);
+/*
+ * Celeste
+ */
+	rgb.rgb.red = 0.2; rgb.rgb.green =  1.0; rgb.rgb.blue =  0.5;
+	gset_colr_rep(1, 10, &rgb);
+/*
+ * Green
+ */
+	rgb.rgb.red = 0.2; rgb.rgb.green =  0.8; rgb.rgb.blue =  0.2;
+	gset_colr_rep(1, 11, &rgb);
+/*
+ * Aqua
+ */
+	rgb.rgb.red = 0.0; rgb.rgb.green =  0.9; rgb.rgb.blue =  1.0;
+	gset_colr_rep(1, 12, &rgb);
+/*
+ * DeepSkyBlue
+ */
+	rgb.rgb.red = 0.0; rgb.rgb.green =  0.75; rgb.rgb.blue =  1.0;
+	gset_colr_rep(1, 13, &rgb);
+/*
+ * RoyalBlue
+ */
+	rgb.rgb.red = 0.25; rgb.rgb.green =  0.45; rgb.rgb.blue =  0.95;
+	gset_colr_rep(1, 14, &rgb);
+/*
+ * SlateBlue
+ */
+	rgb.rgb.red = 0.4; rgb.rgb.green =  0.35; rgb.rgb.blue =  0.8;
+	gset_colr_rep(1, 15, &rgb);
+/*
+ * DarkViolet
+ */
+	rgb.rgb.red = 0.6; rgb.rgb.green =  0.0; rgb.rgb.blue =  0.8;
+	gset_colr_rep(1, 16, &rgb);
+/*
+ * Lavender
+ */
+	rgb.rgb.red = 0.8; rgb.rgb.green =  0.8; rgb.rgb.blue =  1.0;
+	gset_colr_rep(1, 17, &rgb);
+/*
+ * Done.
+ */
 	return;
 }
-

@@ -1,5 +1,5 @@
 /*
- * $Id: c_ccpcit.c,v 1.2 1994-06-08 14:44:28 haley Exp $
+ * $Id: c_ccpcll.c,v 1.1 1994-06-08 14:44:31 haley Exp $
  */
 
 #include <stdio.h>
@@ -13,13 +13,10 @@
 #define   LRWK   1000
 #define   LIWK   1000
 
-float cit[10] = {1.,2.,3.,4.,5.,6.,7.,8.,9.,0.};
-float lit[10] = {2, 2, 2, 2, 2, 2, 2, 2, 2, 0};
-
 main()
 {
 	float z[N][K], rwrk[LRWK];
-	int i, m, iwrk[LIWK];
+	int i, m, ncon, iwrk[LIWK];
 	extern void getdat();
 
 	getdat (z, K, &m, N) ;
@@ -28,26 +25,21 @@ main()
  */
 	c_opngks();
 /*
- * Change nice values to be steps of 1/3. (1/3, 2/3, 3/3...)
- * Draw labels at every 5th contour level no matter which contour
- * level interval is chosen.
- */
-	for( i = 0; i < 10; i++ ) {
-		c_cpseti ("PAI - PARAMETER ARRAY INDEX",i+1);
-		c_cpsetr ("CIT - CONTOUR INTERVAL TABLE",cit[i]);
-		c_cpseti ("LIT - LABEL INTERVAL TABLE",lit[i]);
-	}
-/*
- * Initialize Conpack
+ * Call conpack normally
  */
 	c_cprect((float *)z,K,m,N,rwrk,LRWK,iwrk,LIWK);
+
+	c_cppkcl((float *)z, rwrk, iwrk);
 /*
- * Draw perimeter
+ * Set a different line width for each contour line
  */
+	c_cpgeti("NCL - NUMBER OF CONTOUR LEVELS",&ncon);
+	for( i = 1; i <= ncon; i++ ) {
+		c_cpseti("PAI - PARAMETER ARRAY INDEX",i);
+		c_cpsetr("CLL - CONTOUR LINE LINE WIDTH",(float)i/3.);
+	}
+
 	c_cpback((float *)z, rwrk, iwrk);
-/*
- * Draw Contours
- */
 	c_cpcldr((float *)z,rwrk,iwrk);
 /*
  * Close frame and close GKS
@@ -71,5 +63,3 @@ int k, *m, n;
     }
     return;
 }
-
-

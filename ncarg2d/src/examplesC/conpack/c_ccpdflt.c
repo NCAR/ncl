@@ -1,5 +1,5 @@
 /*
- * $Id: c_ccpcit.c,v 1.2 1994-06-08 14:44:28 haley Exp $
+ * $Id: c_ccpdflt.c,v 1.1 1994-06-08 14:44:34 haley Exp $
  */
 
 #include <stdio.h>
@@ -13,9 +13,6 @@
 #define   LRWK   1000
 #define   LIWK   1000
 
-float cit[10] = {1.,2.,3.,4.,5.,6.,7.,8.,9.,0.};
-float lit[10] = {2, 2, 2, 2, 2, 2, 2, 2, 2, 0};
-
 main()
 {
 	float z[N][K], rwrk[LRWK];
@@ -27,16 +24,6 @@ main()
  * Open GKS
  */
 	c_opngks();
-/*
- * Change nice values to be steps of 1/3. (1/3, 2/3, 3/3...)
- * Draw labels at every 5th contour level no matter which contour
- * level interval is chosen.
- */
-	for( i = 0; i < 10; i++ ) {
-		c_cpseti ("PAI - PARAMETER ARRAY INDEX",i+1);
-		c_cpsetr ("CIT - CONTOUR INTERVAL TABLE",cit[i]);
-		c_cpseti ("LIT - LABEL INTERVAL TABLE",lit[i]);
-	}
 /*
  * Initialize Conpack
  */
@@ -54,8 +41,8 @@ main()
  */
 	c_frame();
 	c_clsgks();
-}
 
+}
 void getdat (z, n, m, k)
 float *z;
 int k, *m, n;
@@ -71,5 +58,4 @@ int k, *m, n;
     }
     return;
 }
-
 

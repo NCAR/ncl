@@ -1,5 +1,5 @@
 /*
- * $Id: c_ccpcit.c,v 1.2 1994-06-08 14:44:28 haley Exp $
+ * $Id: c_ccpga.c,v 1.1 1994-06-08 14:44:37 haley Exp $
  */
 
 #include <stdio.h>
@@ -8,19 +8,17 @@
 #include <ncarg/ncargC.h>
 #include <ncarg/gks.h>
 
-#define   K   40
-#define   N   40
+#define   K   30
+#define   N   30
 #define   LRWK   1000
 #define   LIWK   1000
-
-float cit[10] = {1.,2.,3.,4.,5.,6.,7.,8.,9.,0.};
-float lit[10] = {2, 2, 2, 2, 2, 2, 2, 2, 2, 0};
 
 main()
 {
 	float z[N][K], rwrk[LRWK];
 	int i, m, iwrk[LIWK];
 	extern void getdat();
+	extern float mod();
 
 	getdat (z, K, &m, N) ;
 /*
@@ -28,23 +26,30 @@ main()
  */
 	c_opngks();
 /*
- * Change nice values to be steps of 1/3. (1/3, 2/3, 3/3...)
- * Draw labels at every 5th contour level no matter which contour
- * level interval is chosen.
+ * Turn clipping off
  */
-	for( i = 0; i < 10; i++ ) {
-		c_cpseti ("PAI - PARAMETER ARRAY INDEX",i+1);
-		c_cpsetr ("CIT - CONTOUR INTERVAL TABLE",cit[i]);
-		c_cpseti ("LIT - LABEL INTERVAL TABLE",lit[i]);
-	}
+	gset_clip_ind (GIND_NO_CLIP);
+/*
+ * Set X and Y min and max values
+ */
+	c_cpsetr ("XC1 - X COORDINATE AT INDEX 1",2.0);
+	c_cpsetr ("XCM - X COORDINATE AT INDEX M",20.0);
+	c_cpsetr ("YC1 - Y COORDINATE AT INDEX 1",0.0);
+	c_cpsetr ("YCN - Y COORDINATE AT INDEX N",.01);
+/*
+ * Make viewport slightly smaller so that labels will fit
+ */
+	c_cpsetr ("VPL - VIEWPORT LEFT",0.10);
+	c_cpsetr ("VPB - VIEWPORT BOTTOM",0.10);
 /*
  * Initialize Conpack
  */
 	c_cprect((float *)z,K,m,N,rwrk,LRWK,iwrk,LIWK);
 /*
- * Draw perimeter
+ * Draw and label perimeter
  */
-	c_cpback((float *)z, rwrk, iwrk);
+	c_labmod("(E7.2)","(E7.2)",0,0,10,10,0,0,1);
+	c_gridal(K-1,0,N-1,0,1,1,5,0.,0.);
 /*
  * Draw Contours
  */
@@ -71,5 +76,3 @@ int k, *m, n;
     }
     return;
 }
-
-

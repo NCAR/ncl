@@ -1,5 +1,5 @@
 /*
- * $Id: c_ccpcit.c,v 1.2 1994-06-08 14:44:28 haley Exp $
+ * $Id: c_ccpclu.c,v 1.1 1994-06-08 14:44:32 haley Exp $
  */
 
 #include <stdio.h>
@@ -13,9 +13,6 @@
 #define   LRWK   1000
 #define   LIWK   1000
 
-float cit[10] = {1.,2.,3.,4.,5.,6.,7.,8.,9.,0.};
-float lit[10] = {2, 2, 2, 2, 2, 2, 2, 2, 2, 0};
-
 main()
 {
 	float z[N][K], rwrk[LRWK];
@@ -27,27 +24,19 @@ main()
  * Open GKS
  */
 	c_opngks();
-/*
- * Change nice values to be steps of 1/3. (1/3, 2/3, 3/3...)
- * Draw labels at every 5th contour level no matter which contour
- * level interval is chosen.
- */
-	for( i = 0; i < 10; i++ ) {
-		c_cpseti ("PAI - PARAMETER ARRAY INDEX",i+1);
-		c_cpsetr ("CIT - CONTOUR INTERVAL TABLE",cit[i]);
-		c_cpseti ("LIT - LABEL INTERVAL TABLE",lit[i]);
+
+	c_cpseti("CLS - CONTOUR LEVEL SELECTION FLAG",0);
+	c_cpseti("NCL - NUMBER OF CONTOUR LEVELS",40);
+	for( i = 1; i <= 40; i++ ) {
+		c_cpseti ("PAI - PARAMETER ARRAY INDEX",i);
+		c_cpsetr ("CLV - CONTOUR LEVEL VALUES",5.0*(float)i-15.);
+		c_cpseti ("CLU - CONTOUR LEVEL USE FLAG",i%4);
 	}
 /*
- * Initialize Conpack
+ * Call conpack normally
  */
 	c_cprect((float *)z,K,m,N,rwrk,LRWK,iwrk,LIWK);
-/*
- * Draw perimeter
- */
 	c_cpback((float *)z, rwrk, iwrk);
-/*
- * Draw Contours
- */
 	c_cpcldr((float *)z,rwrk,iwrk);
 /*
  * Close frame and close GKS
@@ -71,5 +60,3 @@ int k, *m, n;
     }
     return;
 }
-
-
