@@ -23,6 +23,7 @@ static KEY fkeytab [] = {
 	"COMMON","common",COMMON,
 	"FUNCTION","function",FUNCTION,
 	"REAL","real",REAL,
+	"IMPLICIT","implicit",IMPLICIT,
 	NULL,NULL,0
 };
 static KEY wkeytab [] = {
