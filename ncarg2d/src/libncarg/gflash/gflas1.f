@@ -1,5 +1,5 @@
 C
-C	$Id: gflas1.f,v 1.1.1.1 1992-04-17 22:32:59 ncargd Exp $
+C	$Id: gflas1.f,v 1.2 1993-01-10 23:54:38 fred Exp $
 C
       SUBROUTINE GFLAS1(INAME)
 C
@@ -98,7 +98,7 @@ C  whether the open workstation is also active.
 C
       COMMON /GFLASH/MODEF,IOPWKS(100),IOACT(100),NUMOP,IWISSI
 C
-      CHARACTER*80 IDR(1),ODR(1)
+C     CHARACTER*80 IDR(1),ODR(1)
 C
       SAVE
 C
@@ -110,11 +110,11 @@ C
 C
 C  Inform NCAR GKS that we are in GFLAS1
 C
-      IDR(1) = '1'
-      IFID = -1394
-      CALL PLOTIT(0,0,2)
-      CALL GESC(IFID,1,IDR,1,IDUM,ODR)
-      CALL PLOTIT(0,0,2)
+C     IDR(1) = '1'
+C     IFID = -1394
+C     CALL PLOTIT(0,0,2)
+C     CALL GESC(IFID,1,IDR,1,IDUM,ODR)
+C     CALL PLOTIT(0,0,2)
 C
 C  Check on the range of the input argument.
 C
@@ -130,9 +130,9 @@ C  Make sure that this GKS implementation has WISS (level 2).
 C
       CALL GQEWK(1,IER,NUMB,NTYP)
       DO 10 I=1,NUMB
-      CALL GQEWK(I,IER,NUMB,NTYP)
-      CALL GQWKCA(NTYP,IER,NCAT)
-      IF (NCAT .EQ. 3) GO TO 20
+        CALL GQEWK(I,IER,NUMB,NTYP)
+        CALL GQWKCA(NTYP,IER,NCAT)
+        IF (NCAT .EQ. 3) GO TO 20
    10 CONTINUE
       GO TO 102
    20 CONTINUE
@@ -146,12 +146,12 @@ C
       IF (NUMOP .LT. 1) GO TO 103
       IF (NUMOP .GT. 100) GO TO 104
       DO 30 I=1,NUMOP
-      CALL GQOPWK(I,IER,IOL,IOPWKS(I))
-      IOACT(I) = 0
-      CALL GQWKS(IOPWKS(I),IER,IOACT(I))
-      CALL GQWKC(IOPWKS(I),IER,ICON,ITYPE)
-      CALL GQWKCA(ITYPE,IER,ICAT)
-      IF (ICAT .EQ. 3) IWISSI = IOPWKS(I)
+        CALL GQOPWK(I,IER,IOL,IOPWKS(I))
+        IOACT(I) = 0
+        CALL GQWKS(IOPWKS(I),IER,IOACT(I))
+        CALL GQWKC(IOPWKS(I),IER,ICON,ITYPE)
+        CALL GQWKCA(ITYPE,IER,ICAT)
+        IF (ICAT .EQ. 3) IWISSI = IOPWKS(I)
    30 CONTINUE
       IF (IWISSI .EQ. -1335) GO TO 103
 C

@@ -1,5 +1,5 @@
 C
-C	$Id: gflas2.f,v 1.1.1.1 1992-04-17 22:32:59 ncargd Exp $
+C	$Id: gflas2.f,v 1.2 1993-01-10 23:54:41 fred Exp $
 C
       SUBROUTINE GFLAS2
 C
@@ -81,7 +81,7 @@ C
 C  Common for FLASH package.
 C
       COMMON /GFLASH/MODEF,IOPWKS(100),IOACT(100),NUMOP,IWISSI
-      CHARACTER*80 IDR(1),ODR(1)
+C     CHARACTER*80 IDR(1),ODR(1)
 C
       SAVE
 C
@@ -125,10 +125,10 @@ C
 C
 C  Inform NCAR GKS that we are finished in GFLAS2
 C
-      IDR(1) = '0'
-      IFID = -1394
-      CALL PLOTIT(0,0,2)
-      CALL GESC(IFID,1,IDR,1,IDUM,ODR)
+C     IDR(1) = '0'
+C     IFID = -1394
+C     CALL PLOTIT(0,0,2)
+C     CALL GESC(IFID,1,IDR,1,IDUM,ODR)
 C
       RETURN
 C

@@ -1,5 +1,5 @@
 C
-C	$Id: gflas4.f,v 1.1.1.1 1992-04-17 22:32:59 ncargd Exp $
+C	$Id: gflas4.f,v 1.2 1993-01-10 23:54:46 fred Exp $
 C
       SUBROUTINE GFLAS4(ID,FNAME)
 C
@@ -110,9 +110,9 @@ C  Make sure that this GKS implementation has WISS (level 2).
 C
       CALL GQEWK(1,IER,NUMB,NTYP)
       DO 10 I=1,NUMB
-      CALL GQEWK(I,IER,NUMB,NTYP)
-      CALL GQWKCA(NTYP,IER,NCAT)
-      IF (NCAT .EQ. 3) GO TO 20
+        CALL GQEWK(I,IER,NUMB,NTYP)
+        CALL GQWKCA(NTYP,IER,NCAT)
+        IF (NCAT .EQ. 3) GO TO 20
    10 CONTINUE
       GO TO 102
    20 CONTINUE

@@ -1,5 +1,5 @@
 C
-C	$Id: gflas3.f,v 1.1.1.1 1992-04-17 22:32:59 ncargd Exp $
+C	$Id: gflas3.f,v 1.2 1993-01-10 23:54:43 fred Exp $
 C
       SUBROUTINE GFLAS3(INAME)
 C
@@ -92,7 +92,7 @@ C  Common for FLASH package.
 C
       COMMON /GFLASH/MODEF,IOPWKS(100),IOACT(100),NUMOP,IWISSI
 C
-      CHARACTER*80 IDR(1),ODR(1)
+C     CHARACTER*80 IDR(1),ODR(1)
 C
       SAVE
 C
@@ -116,11 +116,11 @@ C
 C
 C  Force a new picture initialization if necessary.
 C
-        WRITE(IDR(1),110) ID
-  110   FORMAT('2',I8)
-        IFID = -1394
+C       WRITE(IDR(1),110) ID
+C 110   FORMAT('2',I8)
+C       IFID = -1394
         CALL PLOTIT(0,0,2)
-        CALL GESC(IFID,1,IDR,1,IDUM,ODR)
+C       CALL GESC(IFID,1,IDR,1,IDUM,ODR)
         CALL GCSGWK(ID,INAME)
         CALL PLOTIT(0,0,2)
       ENDIF
