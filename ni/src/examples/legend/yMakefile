@@ -1,5 +1,5 @@
 #
-#   $Id: yMakefile,v 1.5 1995-02-15 22:38:47 haley Exp $
+#   $Id: yMakefile,v 1.6 1995-06-13 21:12:10 haley Exp $
 #
 #   Makefile for HLU Legend examples
 #
@@ -23,13 +23,13 @@ InstallTarget($(SRCS),$(INSTALL_LIB),$(HLUEXROOT)/$(MYNAME))
 InstallTarget($(NSRCS),$(INSTALL_LIB),$(NCLEXROOT)/$(MYNAME))
 InstallTarget($(RESFILES),$(INSTALL_LIB),$(RESFILEROOT)/$(MYNAME))
 
-HLUCExampleTarget(lg01c,lg01c.o)
-HLUCExampleTarget(lg02c,lg02c.o)
-HLUCExampleTarget(lg03c,lg03c.o)
+CExampleTarget(lg01c,lg01c.o)
+CExampleTarget(lg02c,lg02c.o)
+CExampleTarget(lg03c,lg03c.o)
 
-HLUFExampleTarget(lg01f,lg01f.o)
-HLUFExampleTarget(lg02f,lg02f.o)
-HLUFExampleTarget(lg03f,lg03f.o)
+FExampleTarget(lg01f,lg01f.o)
+FExampleTarget(lg02f,lg02f.o)
+FExampleTarget(lg03f,lg03f.o)
 
 CleanFilesTarget($(OBJS))
 DependTarget($(CSRCS))

@@ -1,5 +1,5 @@
 #
-#   $Id: yMakefile,v 1.6 1995-02-15 22:37:42 haley Exp $
+#   $Id: yMakefile,v 1.7 1995-06-13 21:12:05 haley Exp $
 #
 #   Makefile for HLU LabeBar examples
 #
@@ -23,11 +23,11 @@ InstallTarget($(SRCS),$(INSTALL_LIB),$(HLUEXROOT)/$(MYNAME))
 InstallTarget($(NSRCS),$(INSTALL_LIB),$(NCLEXROOT)/$(MYNAME))
 InstallTarget($(RESFILES),$(INSTALL_LIB),$(RESFILEROOT)/$(MYNAME))
 
-HLUCExampleTarget(lb01c,lb01c.o)
-HLUCExampleTarget(lb02c,lb02c.o)
+CExampleTarget(lb01c,lb01c.o)
+CExampleTarget(lb02c,lb02c.o)
 
-HLUFExampleTarget(lb01f,lb01f.o)
-HLUFExampleTarget(lb02f,lb02f.o)
+FExampleTarget(lb01f,lb01f.o)
+FExampleTarget(lb02f,lb02f.o)
 
 CleanFilesTarget($(OBJS))
 DependTarget($(CSRCS))

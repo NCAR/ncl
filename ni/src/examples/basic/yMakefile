@@ -1,5 +1,5 @@
 #
-#   $Id: yMakefile,v 1.7 1995-06-07 23:11:53 scheitln Exp $
+#   $Id: yMakefile,v 1.8 1995-06-13 21:11:54 haley Exp $
 #
 #   Makefile for HLU Basic examples
 #
@@ -24,18 +24,18 @@ InstallTarget($(SRCS),$(INSTALL_LIB),$(HLUEXROOT)/$(MYNAME))
 InstallTarget($(NSRCS),$(INSTALL_LIB),$(NCLEXROOT)/$(MYNAME))
 InstallTarget($(RESFILES),$(INSTALL_LIB),$(RESFILEROOT)/$(MYNAME))
 
-HLUCExampleTarget(basic01c,basic01c.o)
-HLUCExampleTarget(basic02c,basic02c.o)
-HLUCExampleTarget(basic03c,basic03c.o)
-HLUCExampleTarget(basic04c,basic04c.o)
-HLUCExampleTarget(basic05c,basic05c.o)
+CExampleTarget(basic01c,basic01c.o)
+CExampleTarget(basic02c,basic02c.o)
+CExampleTarget(basic03c,basic03c.o)
+CExampleTarget(basic04c,basic04c.o)
+CExampleTarget(basic05c,basic05c.o)
 
-HLUFExampleTarget(basic01f,basic01f.o)
-HLUFExampleTarget(basic02f,basic02f.o)
-HLUFExampleTarget(basic03f,basic03f.o)
-HLUFExampleTarget(basic04f,basic04f.o)
-HLUFExampleTarget(basic05f,basic05f.o)
-HLUFExampleTarget(basic07f,basic07f.o)
+FExampleTarget(basic01f,basic01f.o)
+FExampleTarget(basic02f,basic02f.o)
+FExampleTarget(basic03f,basic03f.o)
+FExampleTarget(basic04f,basic04f.o)
+FExampleTarget(basic05f,basic05f.o)
+FExampleTarget(basic07f,basic07f.o)
 
 CleanFilesTarget($(OBJS))
 DependTarget($(SRCS))

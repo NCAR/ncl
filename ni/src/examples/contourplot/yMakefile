@@ -1,5 +1,5 @@
 #
-#   $Id: yMakefile,v 1.8 1995-06-09 22:05:51 haley Exp $
+#   $Id: yMakefile,v 1.9 1995-06-13 21:11:59 haley Exp $
 #
 #   Makefile for HLU ContourPlot examples
 #
@@ -28,14 +28,14 @@ InstallTarget($(RESFILES),$(INSTALL_LIB),$(RESFILEROOT)/$(MYNAME))
 InstallTarget($(NSRCS),$(INSTALL_LIB),$(NCLEXROOT)/$(MYNAME))
 InstallTarget($(ASCDATA),$(INSTALL_LIB),$(DATAROOT)/asc)
 
-HLUCExampleTarget(cn01c,cn01c.o)
-HLUCExampleTarget(cn02c,cn02c.o)
-HLUCExampleTarget(cn03c,cn03c.o)
-HLUCExampleTarget(cn04c,cn04c.o)
-HLUFExampleTarget(cn01f,cn01f.o)
-HLUFExampleTarget(cn02f,cn02f.o)
-HLUFExampleTarget(cn03f,cn03f.o)
-HLUFExampleTarget(cn04f,cn04f.o)
+CExampleTarget(cn01c,cn01c.o)
+CExampleTarget(cn02c,cn02c.o)
+CExampleTarget(cn03c,cn03c.o)
+CExampleTarget(cn04c,cn04c.o)
+FExampleTarget(cn01f,cn01f.o)
+FExampleTarget(cn02f,cn02f.o)
+FExampleTarget(cn03f,cn03f.o)
+FExampleTarget(cn04f,cn04f.o)
 
 CleanFilesTarget($(OBJS))
 DependTarget($(CSRCS))

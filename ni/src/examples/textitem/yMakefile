@@ -1,5 +1,5 @@
 #
-#   $Id: yMakefile,v 1.13 1995-06-09 18:11:10 haley Exp $
+#   $Id: yMakefile,v 1.14 1995-06-13 21:12:21 haley Exp $
 #
 #   Makefile for HLU TextItem examples
 #
@@ -25,19 +25,19 @@ InstallTarget($(SRCS),$(INSTALL_LIB),$(HLUEXROOT)/$(MYNAME))
 InstallTarget($(NSRCS),$(INSTALL_LIB),$(NCLEXROOT)/$(MYNAME))
 InstallTarget($(RESFILES),$(INSTALL_LIB),$(RESFILEROOT)/$(MYNAME))
 
-HLUCExampleTarget(tx01c,tx01c.o)
-HLUCExampleTarget(tx02c,tx02c.o)
-HLUCExampleTarget(tx03c,tx03c.o)
-HLUCExampleTarget(tx04c,tx04c.o)
-HLUCExampleTarget(tx05c,tx05c.o)
-HLUCExampleTarget(tx06c,tx06c.o)
-HLUCExampleTarget(tx07c,tx07c.o)
+CExampleTarget(tx01c,tx01c.o)
+CExampleTarget(tx02c,tx02c.o)
+CExampleTarget(tx03c,tx03c.o)
+CExampleTarget(tx04c,tx04c.o)
+CExampleTarget(tx05c,tx05c.o)
+CExampleTarget(tx06c,tx06c.o)
+CExampleTarget(tx07c,tx07c.o)
 
-HLUFExampleTarget(tx01f,tx01f.o)
-HLUFExampleTarget(tx02f,tx02f.o)
-HLUFExampleTarget(tx03f,tx03f.o)
-HLUFExampleTarget(tx04f,tx04f.o)
-HLUFExampleTarget(tx08f,tx08f.o)
+FExampleTarget(tx01f,tx01f.o)
+FExampleTarget(tx02f,tx02f.o)
+FExampleTarget(tx03f,tx03f.o)
+FExampleTarget(tx04f,tx04f.o)
+FExampleTarget(tx08f,tx08f.o)
 
 CleanFilesTarget($(OBJS) $(NCGMS))
 DependTarget($(CSRCS))

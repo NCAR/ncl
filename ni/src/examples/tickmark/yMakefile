@@ -1,5 +1,5 @@
 #
-#   $Id: yMakefile,v 1.6 1995-04-21 00:25:02 haley Exp $
+#   $Id: yMakefile,v 1.7 1995-06-13 21:12:27 haley Exp $
 #
 #   Makefile for HLU TickMark examples
 #
@@ -25,13 +25,13 @@ InstallTarget($(EXFILES),$(INSTALL_LIB),$(HLUEXROOT)/$(MYNAME))
 InstallTarget($(NSRCS),$(INSTALL_LIB),$(NCLEXROOT)/$(MYNAME))
 InstallTarget($(RESFILES),$(INSTALL_LIB),$(RESFILEROOT)/$(MYNAME))
 
-HLUCExampleTarget(tm01c,tm01c.o)
-HLUCExampleTarget(tm02c,tm02c.o)
-HLUCExampleTarget(tm03c,tm03c.o)
+CExampleTarget(tm01c,tm01c.o)
+CExampleTarget(tm02c,tm02c.o)
+CExampleTarget(tm03c,tm03c.o)
 
-HLUFExampleTarget(tm01f,tm01f.o)
-HLUFExampleTarget(tm02f,tm02f.o)
-HLUFExampleTarget(tm03f,tm03f.o)
+FExampleTarget(tm01f,tm01f.o)
+FExampleTarget(tm02f,tm02f.o)
+FExampleTarget(tm03f,tm03f.o)
 
 CleanFilesTarget($(OBJS))
 DependTarget($(CSRCS))

@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.1 1995-03-24 11:15:56 boote Exp $
+#      $Id: yMakefile,v 1.2 1995-06-13 21:11:48 haley Exp $
 #
 #########################################################################
 #									#
@@ -38,7 +38,7 @@ InstallTarget($(SRCS),$(INSTALL_LIB),$(HLUEXROOT)/$(MYNAME))
 InstallTarget($(NSRCS),$(INSTALL_LIB),$(NCLEXROOT)/$(MYNAME))
 InstallTarget($(RESFILES),$(INSTALL_LIB),$(RESFILEROOT)/$(MYNAME))
 
-HLUCExampleTarget(ap01c,ap01c.o)
+CExampleTarget(ap01c,ap01c.o)
 
 CleanFilesTarget($(OBJS) $(NCGMS))
 DependTarget($(CSRCS))

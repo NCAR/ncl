@@ -1,5 +1,5 @@
 #
-#   $Id: yMakefile,v 1.11 1995-04-28 19:34:00 haley Exp $
+#   $Id: yMakefile,v 1.12 1995-06-13 21:12:16 haley Exp $
 #
 #   Makefile for HLU MapPlot examples
 #
@@ -25,14 +25,14 @@ InstallTarget($(NSRCS),$(INSTALL_LIB),$(NCLEXROOT)/$(MYNAME))
 InstallTarget($(RESFILES),$(INSTALL_LIB),$(RESFILEROOT)/$(MYNAME))
 InstallTarget($(ASCDATA),$(INSTALL_LIB),$(DATAROOT)/asc)
 
-HLUCExampleTarget(mp01c,mp01c.o)
-HLUCExampleTarget(mp02c,mp02c.o)
-HLUCExampleTarget(mp03c,mp03c.o)
-HLUCExampleTarget(mp04c,mp04c.o)
-HLUFExampleTarget(mp01f,mp01f.o)
-HLUFExampleTarget(mp02f,mp02f.o)
-HLUFExampleTarget(mp03f,mp03f.o)
-HLUFExampleTarget(mp04f,mp04f.o)
+CExampleTarget(mp01c,mp01c.o)
+CExampleTarget(mp02c,mp02c.o)
+CExampleTarget(mp03c,mp03c.o)
+CExampleTarget(mp04c,mp04c.o)
+FExampleTarget(mp01f,mp01f.o)
+FExampleTarget(mp02f,mp02f.o)
+FExampleTarget(mp03f,mp03f.o)
+FExampleTarget(mp04f,mp04f.o)
 
 CleanFilesTarget($(OBJS))
 DependTarget($(CSRCS))
