@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.92 2002-09-06 22:36:03 haley Exp $
+;      $Id: gsn_code.ncl,v 1.93 2002-09-11 13:43:44 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -4615,14 +4615,14 @@ end
 ;                  bins: numeric                                        ;
 ;             binvalues: numeric                                        ;
 ;                 width: numeric                                        ;
-;                colors: numeric                                        ;
+;                colors                                                 ;
 ;                 gsres: logical                                        ;
 ;                                                                       ;
 ;    xy      - xy plot id to draw columns on                            ;
 ;  bins      - the center of each bin range.                            ;
 ;  binvalues - the number of values in the corresponding bin            ;
 ;  width     - half the width of the bar                                ;
-;  colors    - array of color indices to use                            ; 
+;  colors    - array of colors to use (ints or color names)             ; 
 ;  gsres     - optional primitive resources                             ;
 ;                                                                       ;
 ; This function creates the columns for a histogram plot. The Y axis    ;
@@ -4631,7 +4631,7 @@ end
 ;***********************************************************************;
 function hist_columns(wks[1]:graphic,xy[1]:graphic,bins[*]:numeric, \
                       binvalues:numeric, width[*]:numeric, \
-                      colors[*]:integer, gsres:logical)
+                      colors[*], gsres:logical)
 local i, gsres, points, compare
 begin
 ;
@@ -4647,9 +4647,8 @@ begin
     compare     = False
   end if
 
-  ncols = dimsizes(colors)
-  if(ncols.ne.nbins.or.nbins.ne.nbinvalues)
-    print("Error: columns: Dimension sizes of bins (" +nbins+ ") ,binvalues(" +nbinvalues + ") and colors (" + ncols + ") must be the same")
+  if(nbins.ne.nbinvalues) then
+    print("Error: hist_columns: Dimension sizes of bins (" + nbins+ ") and binvalues (" + nbinvalues + ") must be the same")
     return
   end if
 
@@ -4702,9 +4701,6 @@ begin
     xpoints(:,4) = (/xpoints(:,0)/)
   end if
 
-  newcolors = get_res_value(gsres,"gsFillColor",colors)
-  ncol      = dimsizes(newcolors)
-
   fillindex = get_res_value(gsres,"gsFillIndex",(/0,6/))
 ;
 ; Make sure fill indices are between 0 and 17.
@@ -4716,8 +4712,9 @@ begin
     fillindex2 = fillindex1
   end if
 
+  ncolors = dimsizes(colors)
   do i = 0, nbins - 1
-    gsres@gsFillColor = newcolors(i%ncol)
+    gsres@gsFillColor = colors(i % ncolors)
 
     if(compare) 
 ;
@@ -5146,24 +5143,30 @@ begin
     "wkColorMapLen" : lenc
   end getvalues
 
-  tmp = (lenc-2)/nbucks
-  if(tmp .eq. 0 )
-    print("Warning: gsn_histogram: not enough colors, using single color")
-    colors = new(nbucks,integer)
-    colors = 2
-  else 
-    if(setmidpts)
-      colors = new(nsprd,integer)
-    else
-      colors = new(nsprd-1,integer)
+  if(isatt(res2,"gsFillColor")) then
+    colors = get_res_value(res2,"gsFillColor",1)
+  else
+    tmp = (lenc-2)/nbucks
+    if(tmp .eq. 0 )
+      print("Warning: gsn_histogram: not enough colors, using single color")
+      colors = new(nbucks,integer)
+      colors = 2
+    else 
+      if(setmidpts)
+        colors = new(nsprd,integer)
+      else
+        colors = new(nsprd-1,integer)
+      end if
+      tmpc   = ispan(2,lenc,tmp)
+      if(dimsizes(tmpc).ne.dimsizes(colors))
+        colors = tmpc(0:dimsizes(colors)-1)
+      else
+        colors = tmpc
+      end if
     end if
-    tmpc   = ispan(2,lenc,tmp)
-    if(dimsizes(tmpc).ne.dimsizes(colors))
-      colors = tmpc(0:dimsizes(colors)-1)
-    else
-      colors = tmpc
-    end if
-  end if
+    delete(tmp)
+    delete(tmpc)
+  end if  
 ;
 ; Calculate locations of center of bins and labels and 
 ; values for tick marks. If comparing two fields, and using ranges,
@@ -5182,20 +5185,66 @@ begin
   end if
   lbs = buck@sprd
 
+;
+; If the bins are not of equal width, then we need to make the axis
+; that represents the bin widths irregular, so that the irregularly
+; spaced widths will be regularly spaced on the axis.
+;
+; First get the width of each bin, and then compare them to each other
+; to see if they are "close" to the same length. If they are, then we
+; don't need to make the axis irregular.
+; 
+  axis_type = "LinearAxis"
+  nbins = dimsizes(bins)
+  if(nbins.gt.2) then
+    bin_diffs     = fabs(bins(0:nbins-2) - bins(1:nbins-1))
+    max_bin_diffs = max(fabs(bin_diffs(0:nbins-3)-bin_diffs(1:nbins-2)))
+    range = max(bins) - min(bins)
+    if(max_bin_diffs.gt.(0.01*range)) then
+      axis_type = "IrregularAxis"
+    end if   
+  end if
+
   if(horizontal) then
-    xy = create "xy" xyPlotClass wks
-      "trYMinF" : get_res_value(res2,"trYMinF",left)
-      "trYMaxF" : get_res_value(res2,"trYMaxF",right)
-      "trXMinF" : get_res_value(res2,"trXMinF",bottom)
-      "trXMaxF" : get_res_value(res2,"trXMaxF",top)
-    end create
+    if(axis_type.eq."IrregularAxis") then
+      xy = create "xy" irregularPlotClass wks
+        "pmTickMarkDisplayMode"  : "Always"
+        "pmTitleDisplayMode"     : "Always"
+        "trYAxisType"            : axis_type
+        "trYCoordPoints"         : bins 
+        "trXMinF"                : get_res_value(res2,"trXMinF",bottom)
+        "trXMaxF"                : get_res_value(res2,"trXMaxF",top)
+      end create
+    else
+      xy = create "xy" irregularPlotClass wks
+        "pmTickMarkDisplayMode"  : "Always"
+        "pmTitleDisplayMode"     : "Always"
+        "trXMinF"                : get_res_value(res2,"trXMinF",bottom)
+        "trXMaxF"                : get_res_value(res2,"trXMaxF",top)
+        "trYMinF"                : get_res_value(res2,"trYMinF",left)
+        "trYMaxF"                : get_res_value(res2,"trYMaxF",right)
+      end create
+    end if
   else
-    xy = create "xy" xyPlotClass wks
-      "trXMinF" : get_res_value(res2,"trXMinF",left)
-      "trXMaxF" : get_res_value(res2,"trXMaxF",right)
-      "trYMinF" : get_res_value(res2,"trYMinF",bottom)
-      "trYMaxF" : get_res_value(res2,"trYMaxF",top)
-    end create
+    if(axis_type.eq."IrregularAxis") then
+      xy = create "xy" irregularPlotClass wks
+        "pmTickMarkDisplayMode"  : "Always"
+        "pmTitleDisplayMode"     : "Always"
+        "trXAxisType"            : axis_type
+        "trXCoordPoints"         : bins 
+        "trYMinF"                : get_res_value(res2,"trYMinF",bottom)
+        "trYMaxF"                : get_res_value(res2,"trYMaxF",top)
+      end create
+    else
+      xy = create "xy" irregularPlotClass wks
+        "pmTickMarkDisplayMode"  : "Always"
+        "pmTitleDisplayMode"     : "Always"
+        "trXMinF"                : get_res_value(res2,"trXMinF",left)
+        "trXMaxF"                : get_res_value(res2,"trXMaxF",right)
+        "trYMinF"                : get_res_value(res2,"trYMinF",bottom)
+        "trYMaxF"                : get_res_value(res2,"trYMaxF",top)
+      end create
+    end if
   end if
 ;
 ; If gsnHistogramComputePercentages is True, then we'll add percentage
@@ -5292,7 +5341,6 @@ begin
   end if
   xyres = get_res_ne(res2,"gs")
   attsetvalues_check(xy,xyres)
-
 ;
 ; Add a right Y (or top X axis) "Percent Occurence" or
 ; "Percent of Maximum" label.
