@@ -1,9 +1,10 @@
 /*
- *  $Id: c_eezmpa.c,v 1.5 1998-05-24 01:06:20 kennison Exp $
+ *  $Id: c_eezmpa.c,v 1.6 1999-07-27 20:15:03 haley Exp $
  */
 
 #include <stdio.h>
 #include <math.h>
+#include <stdlib.h>
 
 /*
  * Include function prototypes.

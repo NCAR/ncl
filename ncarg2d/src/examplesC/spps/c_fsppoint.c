@@ -1,8 +1,10 @@
 /*
- *	$Id: c_fsppoint.c,v 1.1 1994-08-03 14:42:31 haley Exp $
+ *	$Id: c_fsppoint.c,v 1.2 1999-07-27 20:15:07 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
+#include <stdlib.h>
+
 #include <ncarg/ncargC.h>
 #include <ncarg/gks.h>
 

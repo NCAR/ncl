@@ -1,9 +1,10 @@
 /*
- * $Id: c_fspcurve.c,v 1.1 1994-07-27 22:54:04 haley Exp $
+ * $Id: c_fspcurve.c,v 1.2 1999-07-27 20:15:07 haley Exp $
  */
 
 #include <stdio.h>
 #include <math.h>
+#include <stdlib.h>
 
 #include <ncarg/ncargC.h>
 #include <ncarg/gks.h>

@@ -6,6 +6,7 @@
  */
 #include <ncarg/ncargC.h>
 #include <ncarg/gks.h>
+#include <stdlib.h>
 
 #define MREG  50
 #define NREG  50

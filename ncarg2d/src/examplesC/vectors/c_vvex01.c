@@ -1,8 +1,9 @@
 /*
- *  $Id: c_vvex01.c,v 1.1 1994-10-31 04:16:59 haley Exp $
+ *  $Id: c_vvex01.c,v 1.2 1999-07-27 20:15:08 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
+#include <stdlib.h>
 
 #include <ncarg/ncargC.h>
 #include <ncarg/gks.h>

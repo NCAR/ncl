@@ -1,7 +1,8 @@
 /*
- *  $Id: c_fngwsym.c,v 1.4 1995-06-14 13:59:46 haley Exp $
+ *  $Id: c_fngwsym.c,v 1.5 1999-07-27 20:15:05 haley Exp $
  */
 #include <stdio.h>
+#include <stdlib.h>
 
 /*
  * Include function prototypes

@@ -1,8 +1,10 @@
 /*
- *      $Id: c_ppex01.c,v 1.7 1995-06-14 13:59:53 haley Exp $
+ *      $Id: c_ppex01.c,v 1.8 1999-07-27 20:15:06 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
+#include <stdlib.h>
+
 #include <ncarg/ncargC.h>
 #include <ncarg/gks.h>
 

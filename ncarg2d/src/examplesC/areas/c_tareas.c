@@ -1,10 +1,11 @@
 /*
- *	$Id: c_tareas.c,v 1.4 1997-04-21 14:38:07 haley Exp $
+ *	$Id: c_tareas.c,v 1.5 1999-07-27 20:14:54 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
 #include <ncarg/ncargC.h>
 #include <ncarg/gks.h>
+#include <stdlib.h>
 
 #define IWTYPE 1
 #define WKID   1

@@ -1,8 +1,9 @@
 /*
- *  $Id: c_coex02.c,v 1.7 1999-03-23 15:49:45 haley Exp $
+ *  $Id: c_coex02.c,v 1.8 1999-07-27 20:15:02 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
+#include <stdlib.h>
 
 /*
  * Include function prototypes
