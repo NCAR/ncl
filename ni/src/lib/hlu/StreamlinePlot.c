@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlot.c,v 1.25 1997-04-11 20:06:18 dbrown Exp $
+ *      $Id: StreamlinePlot.c,v 1.26 1997-05-15 22:44:03 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -5559,6 +5559,7 @@ static NhlErrorTypes    ManageDynamicArrays
 		}
 		NhlFree(stp->levels->data);
 		stp->levels->data = (NhlPointer) levels;
+                stp->levels->num_elements = count;
 #if 0
 		printf("no of levels: %d\n", stp->level_count);
 		for (i= 0; i < stp->level_count; i++)

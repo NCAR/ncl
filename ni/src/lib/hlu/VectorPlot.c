@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.c,v 1.31 1997-04-11 20:06:11 dbrown Exp $
+ *      $Id: VectorPlot.c,v 1.32 1997-05-15 22:44:06 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -7235,6 +7235,7 @@ static NhlErrorTypes    ManageDynamicArrays
 		}
 		NhlFree(vcp->levels->data);
 		vcp->levels->data = (NhlPointer) levels;
+                vcp->levels->num_elements = count;
 #if 0
 		printf("no of levels: %d\n", vcp->level_count);
 		for (i= 0; i < vcp->level_count; i++)
