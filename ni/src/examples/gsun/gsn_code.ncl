@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.26 1999-12-16 19:49:26 haley Exp $
+;      $Id: gsn_code.ncl,v 1.27 2000-01-03 16:23:04 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -352,53 +352,78 @@ end
 ;***********************************************************************;
 ; Procedure : gsnp_turn_off_tickmarks                                   ;
 ;                res:logical                                            ;
+;              x_major_length:float                                     ;
+;              y_major_length:float                                     ;
+;              x_minor_length:float                                     ;
+;              y_minor_length:float                                     ;
 ;              major_length:float                                       ;
 ;              minor_length:float                                       ;
 begin
   set_attr(res,"tmXBBorderOn",False )
   set_attr(res,"tmXBOn",      False)
   set_attr(res,"tmXTBorderOn",False)
-; tickmarks lengths are <= 0.                                           ;
+  set_attr(res,"tmXTOn",      False)
   set_attr(res,"tmYLBorderOn",False)
 
-procedure gsnp_point_tickmarks_outward(plot:graphic,major_length:float,\
-                                       minor_length:float)
-local x_major_length, x_minor_length, y_major_length, y_minor_length
+procedure gsnp_point_tickmarks_outward(plot:graphic, \
+                              x_major_length:float, y_major_length:float, \
+                              x_minor_length:float, y_minor_length:float, \
+end
 ;***********************************************************************;
+; Procedure : gsnp_point_tickmarks_outward                              ;
+;              plot:object                                              ;
+;               res:logical                                             ;
+;              x_major_length:numeric                                   ;
+;              y_major_length:numeric                                   ;
+;              x_minor_length:numeric                                   ;
+;              y_minor_length:numeric                                   ;
+;              major_length:numeric                                     ;
+;              minor_length:numeric                                     ;
+;                                                                       ;
+; By default, tickmarks are drawn pointing inwards.  This procedure     ;
+; makes them point out. This procedure also sets the major and/or minor ;
+; tickmarks on both axes to be the same length if the major and/or minor;
+; tickmarks lengths are != 0.                                           ;
+;***********************************************************************;
+procedure gsnp_point_tickmarks_outward(plot:graphic,res:logical, \
+                              x_major_length, y_major_length, \
+                              x_minor_length, y_minor_length, \
                               major_length, minor_length)
-
-  if(major_length.le.0.or.minor_length.le.0) 
+local tmres
 begin
-      "tmXBMajorLengthF"        : x_major_length
   if(major_length.lt.0.)
-      "tmYLMajorLengthF"        : y_major_length
     getvalues plot
       "tmXBMajorLengthF"   : x_major_length
-    if(major_length.le.0)
-      major_length = min((/x_major_length,y_major_length/))
+      "tmYLMajorLengthF"   : y_major_length
+    end getvalues
+    major_length = min((/x_major_length,y_major_length/))
     if(x_major_length.gt.0..and.y_major_length.gt.0.)
-    if(minor_length.le.0.) 
-      minor_length = min((/x_minor_length,y_minor_length/))
+      x_major_length = min((/x_major_length,y_major_length/))
+      y_major_length = x_major_length
+    end if
+  else
+    if(x_major_length.gt.0.)
+      x_major_length = major_length
     end if
     if(y_major_length.gt.0.)
       y_major_length = major_length
   setvalues plot
-    "tmXBMajorLengthF"        : major_length
-    "tmXBMajorOutwardLengthF" : major_length
-    "tmXBMinorLengthF"        : minor_length
-    "tmXBMinorOutwardLengthF" : minor_length
-    "tmXTMajorLengthF"        : major_length
-    "tmXTMajorOutwardLengthF" : major_length
-    "tmXTMinorLengthF"        : minor_length
-    "tmXTMinorOutwardLengthF" : minor_length
-    "tmYLMajorLengthF"        : major_length
-    "tmYLMajorOutwardLengthF" : major_length
-    "tmYLMinorLengthF"        : minor_length
-    "tmYLMinorOutwardLengthF" : minor_length
-    "tmYRMajorLengthF"        : major_length
-    "tmYRMajorOutwardLengthF" : major_length
-    "tmYRMinorLengthF"        : minor_length
-    "tmYRMinorOutwardLengthF" : minor_length
+    "tmXBMajorLengthF"        : x_major_length
+    "tmXBMajorOutwardLengthF" : x_major_length
+    "tmXBMinorLengthF"        : x_minor_length
+    "tmXBMinorOutwardLengthF" : x_minor_length
+    "tmXTMajorLengthF"        : x_major_length
+    "tmXTMajorOutwardLengthF" : x_major_length
+    "tmXTMinorLengthF"        : x_minor_length
+    "tmXTMinorOutwardLengthF" : x_minor_length
+    "tmYLMajorLengthF"        : y_major_length
+    "tmYLMajorOutwardLengthF" : y_major_length
+    "tmYLMinorLengthF"        : y_minor_length
+    "tmYLMinorOutwardLengthF" : y_minor_length
+    "tmYRMajorLengthF"        : y_major_length
+    "tmYRMajorOutwardLengthF" : y_major_length
+    "tmYRMinorLengthF"        : y_minor_length
+    "tmYRMinorOutwardLengthF" : y_minor_length
   end setvalues
 
   tmres = res
@@ -509,15 +534,27 @@ begin
   return
 end
 
+;***********************************************************************;
+; Procedure : gsnp_scale_plot                                           ;
+;              plot:graphic                                             ;
+;                                                                       ;
+; If gsnScale is set to True, then the plot is scaled such the tickmarks;
+; and tickmark labels are the same size on both axes.                   ;
+;***********************************************************************;
+procedure gsnp_scale_plot(plot:graphic)
+local xfont, yfont, xbfont, xlength, xmlength, ylfont, ylength, ymlength
+begin
+  end if	
+    "tiXAxisFontHeightF"   : xfont
     "tiYAxisFontHeightF"   : yfont
     "tmXBLabelFontHeightF" : xbfont
     "tmXBMajorLengthF"     : xlength
     "tmXBMinorLengthF"     : xmlength
-    "tmXBMajorLengthF"     : (ylength+xlength)/2.
-    "tmXBMinorLengthF"     : (ymlength+xmlength)/2.
+    "tmYLLabelFontHeightF" : ylfont
+    "tmYLMajorLengthF"     : ylength
     "tmYLMinorLengthF"     : ymlength
-    "tmYLMajorLengthF"     : (ylength+xlength)/2.
-    "tmYLMinorLengthF"     : (ymlength+xmlength)/2.
+  end getvalues
+
   if(xlength.ne.0..and.ylength.ne.0.)
     major_length = (ylength+xlength)/2. 
     xlength = major_length
