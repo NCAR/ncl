@@ -29,6 +29,8 @@ NhlErrorTypes ezfftf_W( void )
   void *x;
   int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_x;
+  NclScalar missing_x, missing_dx, missing_rx, missing_cf;
+  int has_missing_x;
   double *tmp_x;
 /*
  * Output array variables
@@ -52,7 +54,7 @@ NhlErrorTypes ezfftf_W( void )
  */
   double *work;
   int i, j, npts, npts2, lnpts2, npts22, index_x, index_cf;
-  int size_leftmost, size_cf;
+  int found_missing, any_missing, size_leftmost, size_cf;
 /*
  * Retrieve parameters
  *
@@ -64,8 +66,8 @@ NhlErrorTypes ezfftf_W( void )
            1,
            &ndims_x, 
            dsizes_x,
-           NULL,
-           NULL,
+           &missing_x,
+           &has_missing_x,
            &type_x,
            2);
 /*
@@ -86,6 +88,10 @@ NhlErrorTypes ezfftf_W( void )
   dsizes_cf[0]       = 2;
   for(i = 1; i < ndims_x; i++ ) dsizes_cf[i] = dsizes_x[i-1];
   dsizes_cf[ndims_x] = npts2;
+/*
+ * Coerce missing values.
+ */
+  coerce_missing(type_x,has_missing_x,&missing_x,&missing_dx,&missing_rx);
 /*
  * Create space for temporary input array if necessary.
  */
@@ -110,11 +116,13 @@ NhlErrorTypes ezfftf_W( void )
     cf   = (void*)calloc(size_cf,sizeof(double));
     xbar = (void*)calloc(size_leftmost,sizeof(double));
     type_cf = NCL_double;
+    if(has_missing_x) missing_cf = missing_dx;
   }
   else {
     cf   = (void*)calloc(size_cf,sizeof(float));
     xbar = (void*)calloc(size_leftmost,sizeof(float));
     type_cf = NCL_float;
+    if(has_missing_x) missing_cf = missing_rx;
   }
   N = (void*)calloc(1,sizeof(int));
   if ( cf == NULL || xbar == NULL || N == NULL ) {
@@ -134,6 +142,7 @@ NhlErrorTypes ezfftf_W( void )
  * Call the f77 version of 'dezfftf' with the full argument list.
  */
   index_x = index_cf = 0;
+  any_missing = 0;
   for(i = 0; i < size_leftmost; i++) {
     if(type_x != NCL_double) { 
       coerce_subset_input_double(x,tmp_x,index_x,type_x,npts,0,NULL,NULL);
@@ -141,19 +150,34 @@ NhlErrorTypes ezfftf_W( void )
     else {
       tmp_x = &((double*)x)[index_x];
     }
-
-    NGCALLF(dezffti,DEZFFTI)(&npts,work);
-    NGCALLF(dezfftf,DEZFFTF)(&npts,tmp_x,tmp_xbar,tmp_cf1,tmp_cf2,work);
+/*
+ * Check for missing values in x.  If any, then coerce that section of
+ * the output to missing.
+ */
+    found_missing = contains_missing(tmp_x,npts,has_missing_x,
+                                     missing_dx.doubleval);
+    if(found_missing) {
+      any_missing++;
+      set_subset_output_missing(xbar,i,type_cf,1,missing_dx.doubleval);
+      set_subset_output_missing(cf,index_cf,type_cf,npts2,
+                                missing_dx.doubleval);
+      set_subset_output_missing(cf,index_cf+lnpts2,type_cf,npts2,
+                                missing_dx.doubleval);
+    }
+    else {
+      NGCALLF(dezffti,DEZFFTI)(&npts,work);
+      NGCALLF(dezfftf,DEZFFTF)(&npts,tmp_x,tmp_xbar,tmp_cf1,tmp_cf2,work);
 /*
  * Copy results back into xbar and cf.
  */
-    coerce_output_float_or_double(xbar,tmp_xbar,type_cf,1,i);
-    coerce_output_float_or_double(cf,tmp_cf1,type_cf,npts2,index_cf);
-    coerce_output_float_or_double(cf,tmp_cf2,type_cf,npts2,index_cf+lnpts2);
-
+      coerce_output_float_or_double(xbar,tmp_xbar,type_cf,1,i);
+      coerce_output_float_or_double(cf,tmp_cf1,type_cf,npts2,index_cf);
+      coerce_output_float_or_double(cf,tmp_cf2,type_cf,npts2,index_cf+lnpts2);
+    }
     index_x  += npts;
     index_cf += npts2;
   }
+
 /*
  * Free up memory.
  */
@@ -170,19 +194,38 @@ NhlErrorTypes ezfftf_W( void )
 /*
  * Set up return values.
  */
-  return_md = _NclCreateVal(
-                            NULL,
-                            NULL,
-                            Ncl_MultiDValData,
-                            0,
-                            cf,
-                            NULL,
-                            ndims_cf,
-                            dsizes_cf,
-                            TEMPORARY,
-                            NULL,
-                            (NclObjClass)type_cf_class
-                            );
+  if(any_missing) {
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"ezfftf: %d input arrays contained missing values. No calculations performed on these arrays.",any_missing);
+
+    return_md = _NclCreateVal(
+                              NULL,
+                              NULL,
+                              Ncl_MultiDValData,
+                              0,
+                              cf,
+                              &missing_cf,
+                              ndims_cf,
+                              dsizes_cf,
+                              TEMPORARY,
+                              NULL,
+                              (NclObjClass)type_cf_class
+                              );
+  }
+  else {
+    return_md = _NclCreateVal(
+                              NULL,
+                              NULL,
+                              Ncl_MultiDValData,
+                              0,
+                              cf,
+                              NULL,
+                              ndims_cf,
+                              dsizes_cf,
+                              TEMPORARY,
+                              NULL,
+                              (NclObjClass)type_cf_class
+                              );
+  }
 /*
  * Attributes "xbar" and "npts".
  */
@@ -269,6 +312,8 @@ NhlErrorTypes ezfftb_W( void )
   void *xbar;
   double *tmp_xbar;
   NclBasicDataTypes type_cf, type_xbar;
+  NclScalar missing_cf, missing_dcf, missing_rcf, missing_x;
+  int has_missing_cf;
 /*
  * Some variables we need to retrieve the "npts" atttribute (if it exists).
  */
@@ -287,7 +332,7 @@ NhlErrorTypes ezfftb_W( void )
  */
   double *work;
   int i, j, npts, npts2, lnpts2, index_cf, index_x, size_x, size_leftmost;
-  int scalar_xbar;
+  int found_missing1, found_missing2, any_missing, scalar_xbar;
 /*
  * Retrieve parameters
  *
@@ -299,8 +344,8 @@ NhlErrorTypes ezfftb_W( void )
            2,
            &ndims_cf, 
            dsizes_cf,
-           NULL,
-           NULL,
+           &missing_cf,
+           &has_missing_cf,
            &type_cf,
            2);
   xbar = (void*)NclGetArgValue(
@@ -334,6 +379,10 @@ NhlErrorTypes ezfftb_W( void )
     }
   }
 
+/*
+ * Coerce missing values.
+ */
+  coerce_missing(type_cf,has_missing_cf,&missing_cf,&missing_dcf,&missing_rcf);
 /*
  * Okay, what follows here is some code for retrieving the "npts"
  * attribute if it exists. This attribute is one that should have been
@@ -407,10 +456,12 @@ NhlErrorTypes ezfftb_W( void )
   if(type_cf == NCL_double) {
     type_x = NCL_double;
     x = (void*)calloc(size_x,sizeof(double));
+    if(has_missing_cf) missing_x = missing_dcf;
   }
   else {
     type_x = NCL_float;
     x = (void*)calloc(size_x,sizeof(float));
+    if(has_missing_cf) missing_x = missing_rcf;
   }
   if (x == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"ezfftb: Cannot allocate memory for output array" );
@@ -440,6 +491,7 @@ NhlErrorTypes ezfftb_W( void )
  * Call the f77 version of 'dezfftb' with the full argument list.
  */
   index_x = index_cf = 0;
+  any_missing = 0;
   for(i = 0; i < size_leftmost; i++) {
     if(type_cf != NCL_double) { 
       coerce_subset_input_double(cf,tmp_cf1,index_cf,type_cf,npts2,0,
@@ -452,28 +504,42 @@ NhlErrorTypes ezfftb_W( void )
       tmp_cf2 = &((double*)cf)[lnpts2+index_cf];
     }
 /*
+ * Check for missing values in cf.  If any, then coerce that section of
+ * the output to missing.
+ */
+    found_missing1 = contains_missing(tmp_cf1,npts2,has_missing_cf,
+                                      missing_dcf.doubleval);
+    found_missing2 = contains_missing(tmp_cf2,npts2,has_missing_cf,
+                                      missing_dcf.doubleval);
+    if(found_missing1 || found_missing2) {
+      any_missing++;
+      set_subset_output_missing(x,index_x,type_x,npts,missing_dcf.doubleval);
+    }
+    else {
+/*
  * If xbar is not a scalar, then we need to coerce each element
  * to double or else just grab its value.
  */
-    if(!scalar_xbar) {
-      if(type_xbar != NCL_double) { 
-        coerce_subset_input_double(xbar,tmp_xbar,i,type_xbar,1,0,NULL,NULL);
+      if(!scalar_xbar) {
+        if(type_xbar != NCL_double) { 
+          coerce_subset_input_double(xbar,tmp_xbar,i,type_xbar,1,0,NULL,NULL);
+        }
+        else {
+          tmp_xbar = &((double*)xbar)[i];
+        }
       }
-      else {
-        tmp_xbar = &((double*)xbar)[i];
-      }
-    }
 
-    NGCALLF(dezffti,DEZFFTI)(&npts,work);
-    NGCALLF(dezfftb,DEZFFTB)(&npts,tmp_x,tmp_xbar,tmp_cf1,tmp_cf2,work);
+      NGCALLF(dezffti,DEZFFTI)(&npts,work);
+      NGCALLF(dezfftb,DEZFFTB)(&npts,tmp_x,tmp_xbar,tmp_cf1,tmp_cf2,work);
 /*
  * Copy results back into x.
  */
-    coerce_output_float_or_double(x,tmp_x,type_cf,npts,index_x);
-
+      coerce_output_float_or_double(x,tmp_x,type_cf,npts,index_x);
+    }
     index_x  += npts;
     index_cf += npts2;
   }
+
 /*
  * Free up memory.
  */
@@ -485,6 +551,13 @@ NhlErrorTypes ezfftb_W( void )
   NclFree(tmp_x);
   NclFree(work);
 
-  return(NclReturnValue(x,ndims_x,dsizes_x,NULL,type_x,0));
+  if(any_missing) {
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"ezfftb: %d input arrays contained missing values. No calculations performed on these arrays.",any_missing);
+
+    return(NclReturnValue(x,ndims_x,dsizes_x,&missing_x,type_x,0));
+  }
+  else {
+    return(NclReturnValue(x,ndims_x,dsizes_x,NULL,type_x,0));
+  }
 }
 

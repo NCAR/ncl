@@ -2418,6 +2418,8 @@ void NclAddUserFuncs(void)
         SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
         SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
         SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+
+        NclRegisterProc(tdez3d_W,args,"tdez3d",nargs);
 /*
  * Register wmbarb
  */
