@@ -1,5 +1,5 @@
 /*
- *	$Id: c_tconpa.c,v 1.3 1994-06-21 14:59:50 haley Exp $
+ *	$Id: c_tconpa.c,v 1.4 1994-08-17 17:55:15 stautler Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -201,11 +201,11 @@ cpclrs()
     rgbv[15].rgb.green = 0.00;
     rgbv[15].rgb.blue = 0.00;
 /*
- * Define 16 different color indices, for indices 0 through 15.  The
+ * Define 16 different color indices, for indices 1 through 15.  The
  * color corresponding to index 0 is black and the color corresponding
  * to index 1 is white.
  */
-    for( i = 0; i <= 15; i++ ) {
+    for( i = 1; i <= 15; i++ ) {
         gset_colr_rep(WKID,i,&rgbv[i]);
     }
     return(1);
