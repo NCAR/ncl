@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: Configure,v 1.20 2003-11-26 22:02:26 grubin Exp $
+#      $Id: Configure,v 1.21 2004-10-21 22:18:10 haley Exp $
 #
 #########################################################################
 #																		#
@@ -15,7 +15,7 @@
 #				National Center for Atmospheric Research
 #				POB 3000, Boulder, Colorado
 #
-#	Date:		$Date: 2003-11-26 22:02:26 $
+#	Date:		$Date: 2004-10-21 22:18:10 $
 #
 #	Description:	I took pieces of the old configure script to
 #					build this one.
@@ -136,6 +136,10 @@ set loclib=`$makecmd LSEARCH`
 echo -n "..."
 set locinc=`$makecmd ISEARCH`
 echo -n "..."
+set pythonlib=`$makecmd PYTHONLSEARCH`
+echo -n "..."
+set pythoninc=`$makecmd PYTHONISEARCH`
+echo -n "..."
 set buildxlibstuff=`$makecmd XSTUFF`
 echo -n "..."
 set buildhdf=`$makecmd HDFSTUFF`
@@ -145,6 +149,8 @@ echo -n "..."
 set buildhdfeos=`$makecmd HDFEOSSTUFF`
 echo -n "..."
 set buildv5d=`$makecmd V5DSTUFF`
+echo -n "..."
+set buildpyngl=`$makecmd PYNGLSTUFF`
 echo -n "..."
 set buildf90=`$makecmd F90STUFF`
 set f90comp="f90"
@@ -688,6 +694,98 @@ else
 endif
 
 #
+# PyNGL
+#
+  if ($?verbose_option) then
+    cat <<"EOF"
+
+	PyNGL is a Python module that allows you to access NCL's graphical
+    library.  Enabling this option will	cause PyNGL to be built, but
+    not installed.  In order to have this functionality, you must
+	have Python and Numeric installed on your system.
+
+"EOF"
+  endif
+
+  echo ""
+  echo "Build PyNGL ($buildpyngl)"
+  echo "(requires Python from python.org and Numeric from www.pfdubois.com/numpy/"
+  echo -n "Enter Return (default), y(yes), n(no), or q(quit) > "
+  set answer="$<"
+  if ("$answer" == "q") goto cleanup
+  if (("$answer" != "") && ("$answer" != "$buildpyngl")) then
+	set buildpyngl = $answer
+	set newbuildpyngl
+        set altered
+  endif
+  if ("$buildpyngl" == "y") then
+
+#
+# Get Python library and include directory.
+# 
+    set pythonlibdir = `echo "$pythonlib" | sed -e 's/-L//g'`
+proc_pythonlibdir:
+    echo ""
+    echo "Enter Python library path : $pythonlibdir"
+    echo -n "Enter Return (default), new directories, or q(quit) > "
+    set answer="$<"
+
+    if ("$answer" == "q") goto cleanup
+    if ("$answer" != "") then
+      set pythonlibdir = "$answer"
+      set npythonlib
+      set altered
+    endif
+    if ("$pythonlibdir" != "") then
+      set libs = ($pythonlibdir:x)
+      set newpythonlib=""
+      while ($#libs > 0)
+        if (! -d $libs[1]) then
+          echo "  *** Warning: <$libs[1]> does not exist"
+          echo ""
+          goto proc_pythonlibdir
+        else 
+          set newpythonlib = ($newpythonlib "-L$libs[1]")
+        endif
+        shift libs
+      end
+      set pythonlib = "$newpythonlib"
+    endif
+#
+# Pyton include directory
+#
+    set pythonincdir = `echo "$pythoninc" | sed -e 's/-I//g'`
+
+proc_pythonincdir:
+    echo ""
+    echo "Enter python include path : $pythonincdir"
+    echo "(be sure to enter full path to 'Python.h' file)"
+    echo -n "Enter Return (default), new directories, or q(quit) > "
+    set answer="$<"
+    if ("$answer" == "q") goto cleanup
+    if ("$answer" != "") then
+      set pythonincdir = "$answer"
+      set npythoninc
+      set altered
+    endif
+    if ("$pythonincdir" != "") then
+      set incs = ($pythonincdir:x)
+      set newpythoninc=""
+      while ($#incs > 0)
+        if (! -d $incs[1]) then
+          echo "  *** Warning: <$incs[1]> does not exist"
+          echo ""
+          goto proc_pythonincdir
+        else 
+          set newpythoninc = ($newpythoninc "-I$incs[1]")
+        endif
+        shift incs
+      end
+      set pythoninc = "$newpythoninc"
+    endif
+  endif 
+
+#
 #  Library Search Path
 #
 
@@ -875,6 +973,15 @@ endif
 
 echo "" >> Site.local
 
+if ($?npythonlib) then
+	echo "#define PythonLibSearch $pythonlib" >> Site.local
+endif
+if ($?npythoninc) then
+	echo "#define PythonIncSearch $pythoninc" >> Site.local
+endif
+
+echo "" >> Site.local
+
 if ($?newbuildf90) then
 	if ("$buildf90" == "y") then
 		echo "#define BuildWithF90 TRUE" >> Site.local
@@ -919,6 +1026,15 @@ if ($?newbuildv5d) then
 	else
 		echo "#define BuildV5D FALSE" >> Site.local
 		echo "#define V5Dlib" >> Site.local
+	endif
+endif
+
+if ($?newbuildpyngl) then
+	if ("$buildpyngl" == "y") then
+		echo "#define BuildPyNGL TRUE" >> Site.local
+	else
+		echo "#define BuildPyNGL FALSE" >> Site.local
+		echo "#define PYNGLlib" >> Site.local
 	endif
 endif
 
