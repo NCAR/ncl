@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlotP.h,v 1.9 1995-06-27 20:28:55 dbrown Exp $
+ *      $Id: ContourPlotP.h,v 1.10 1995-06-27 21:12:11 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -47,7 +47,7 @@
 #define NhlcnDEF_CONSTF_LABEL	"CONSTANT FIELD - VALUE IS $ZDV$"
 #define NhlcnDEF_HIGH_LABEL	"H:B:$ZDV$:E:"
 #define NhlcnDEF_LOW_LABEL	"L:B:$ZDV$:E:"
-#define NhlcnDEF_FORMAT		"*+.4^sg"
+#define NhlcnDEF_FORMAT		"*+^sg"
 #ifndef FLT_MAX
 #define FLT_MAX			10.0e37
 #endif

@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.23 1995-06-27 20:46:21 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.24 1995-06-27 21:12:09 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -327,7 +327,7 @@ static NhlResource resources[] = {
 	{NhlNcnMaxDataValueFormat,NhlCcnMaxDataValueFormat,
 		 NhlTString,sizeof(NhlString),
 		 Oset(max_data_format.fstring),NhlTImmediate,
-		 _NhlUSET(NhlcnDEF_FORMAT),0,(NhlFreeFunc)NhlFree},
+		 _NhlUSET("*+.4^sg"),0,(NhlFreeFunc)NhlFree},
 
 /* Line label resources */
 
