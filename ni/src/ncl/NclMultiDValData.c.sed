@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValData.c.sed,v 1.28 1998-04-17 16:55:09 ethan Exp $
+ *      $Id: NclMultiDValData.c.sed,v 1.29 1998-05-27 21:39:56 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -675,7 +675,9 @@ static NhlErrorTypes MultiDVal_md_WriteSection
 	}
 	if(chckmiss) {
 		_Nclreset_mis(target_md->multidval.type,target_md->multidval.val,&value_md->multidval.missing_value.value,&target_md->multidval.missing_value.value,target_md->multidval.totalelements);
-	} 
+	} else if(value_md->multidval.missing_value.has_missing && !chckmiss) {
+		target_md->multidval.missing_value = value_md->multidval.missing_value;
+	}
 	return(NhlNOERROR);
 }
 static NhlErrorTypes MultiDVal_s_WriteSection
@@ -1380,7 +1382,17 @@ NclSelectionRecord *from_selection;
 		for(i = 0; i < n_dims_value_orig;i++) {
 			from = from + (from_current_index[i] * from_multiplier[i]);
 		}
-		memcpy((void*)((char*)to_val + (to*el_size)),(void*)((char*)from_val + (from * el_size)),el_size);
+		if(chckmiss) {
+			tmpe = 0;
+			_Ncleq(target_md->multidval.type,(void*)&tmpe,(void*)((char*)from_val + (from * el_size)),(void*)&(value_md->multidval.missing_value.value),NULL,NULL,1,1);	
+			if(tmpe) {
+				memcpy((void*)((char*)to_val + (to*el_size)),(void*)&(target_md->multidval.missing_value.value),el_size);
+			} else {
+				memcpy((void*)((char*)to_val + (to*el_size)),(void*)((char*)from_val + (from * el_size)),el_size);
+			}
+		} else {
+			memcpy((void*)((char*)to_val + (to*el_size)),(void*)((char*)from_val + (from * el_size)),el_size);
+		}
 		if(to_compare_sel[n_dims_target_orig-1] <0) {
 			to_current_index[n_dims_target_orig -1 ] += to_strider[n_dims_target_orig-1];
 		} else {
@@ -1526,17 +1538,7 @@ NclSelectionRecord *from_selection;
 			}
 		}
 	}
-	if(chckmiss) {
-/*
-* First case both value and target have missing values
-* so value_md values that were missing and assigned are
-* now incorrect in target using _Nclreset_mis works to 
-* convert value_md missing values to the target_md 
-* missing values
-*/
-		_Nclreset_mis(value_md->multidval.type,target_md->multidval.val,&(value_md->multidval.missing_value.value),&(target_md->multidval.missing_value.value),target_md->multidval.totalelements);
-	
-	} else if(value_md->multidval.missing_value.has_missing) {
+	if(value_md->multidval.missing_value.has_missing&&!chckmiss) {
 /*
 * This condition is when value has missing value that could've been
 * assigned and target doesn't have a missing_value record.

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclVar.c,v 1.52 1998-02-12 17:18:14 ethan Exp $
+ *      $Id: NclVar.c,v 1.53 1998-05-27 21:39:54 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1252,52 +1252,43 @@ NclSelectionRecord *sel_ptr;
 */
 	if(thevalue->obj.id != value->obj.id) {
 		if(sel_ptr == NULL) {
-			if((value->multidval.n_dims == thevalue->multidval.n_dims)&&(value->multidval.kind != SCALAR)){
+/*
+* Case where neither have missing values
+*/
+			if(value->multidval.type->type_class.type != thevalue->multidval.type->type_class.type) {
+				tmp_md = _NclCoerceData(value,
+						thevalue->multidval.type->type_class.type,
+						NULL);
+				if(tmp_md == NULL) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"Assignment type mismatch, right hand side can't be coerced to type of left hand side");
+					return(NhlFATAL);
+				}
+			} else {
+				tmp_md = value;
+			}
+
+			if((tmp_md->multidval.n_dims == thevalue->multidval.n_dims)&&(tmp_md->multidval.kind != SCALAR)){
 				for(i = 0; i< thevalue->multidval.n_dims;i++) {
-					if(value->multidval.dim_sizes[i] != 
+					if(tmp_md->multidval.dim_sizes[i] != 
 						thevalue->multidval.dim_sizes[i]) {
 						
 						NhlPError(NhlFATAL,NhlEUNKNOWN,"Dimension sizes of left hand side and right hand side of assignment do not match");
+						if(tmp_md->obj.status == TEMPORARY) {
+							_NclDestroyObj((NclObj)tmp_md);
+						}
 						return(NhlFATAL);
 					}
 				}
 				if(thevalue->multidval.missing_value.has_missing ) {
-	/*
-	* _NclCoerceData is used regardless of the type since the missing value must 
-	* also be set Therefore is the types are different two things get done at once.
-	* If the types are the same then only the missing value is set. The Coerce 
-	* functions are be smart enough to compare missing values to see if they are 
-	* equal if they are and the types are equal then value is returned unchanged. 
-	* if value is TEMPORARY and the types are equal then _NclResetMissingValue
-	* is used by the coerce functions.
-	*/
-						tmp_md = _NclCoerceData(value,
-							thevalue->multidval.type->type_class.type,
-							&thevalue->multidval.missing_value.value); 
-						if(tmp_md==NULL) {
-							NhlPError(NhlFATAL,NhlEUNKNOWN,"Assignment type mismatch, right hand side can't be coerced to type of left hand side");
-							return(NhlFATAL);
-						}
-				} else if(value->multidval.missing_value.has_missing) {
-	/*
-	* Only input value has missing values. In this situation a missing value 
-	* attribute must be created and inserted into the attlist.
-	*/
-					if(value->multidval.type->type_class.type != thevalue->multidval.type->type_class.type) {
-						tmp_md = _NclCoerceData(value,
-							thevalue->multidval.type->type_class.type,
-							NULL);
-						if(tmp_md == NULL) {	
-							NhlPError(NhlFATAL,NhlEUNKNOWN,"Assignment type mismatch, right hand side can't be coerced to type of left hand side");
-							return(NhlFATAL);
-						}
-					} else {
-						tmp_md = value;
-					}
-					
-	/*
-	* Need to create permanent storage hence the malloc
-	*/
+/*
+* Situation where missing value already exists
+*/
+				} else if(tmp_md->multidval.missing_value.has_missing) {
+/*
+* Situation where a missing value attribute must be added to 
+* the variable
+*					
+*/
 					missing_ptr = (NclScalar*)NclMalloc((unsigned)	
 							sizeof(NclScalar));
 					*missing_ptr = tmp_md->multidval.missing_value.value;
@@ -1321,23 +1312,8 @@ NclSelectionRecord *sel_ptr;
 						self->var.att_cb = _NclAddCallback((NclObj)_NclGetObj(self->var.att_id),(NclObj)self,_NclVarMissingNotify,MISSINGNOTIFY,NULL);
 					}
 					_NclAddAtt(self_var->var.att_id,NCL_MISSING_VALUE_ATT,attvalue,NULL);
-				} else  {
-	/*
-	* Case where neither have missing values
-	*/
-					if(value->multidval.type->type_class.type != thevalue->multidval.type->type_class.type) {
-
-						tmp_md = _NclCoerceData(value,
-							thevalue->multidval.type->type_class.type,
-							NULL);
-						if(tmp_md == NULL) {	
-							NhlPError(NhlFATAL,NhlEUNKNOWN,"Assignment type mismatch, right hand side can't be coerced to type of left hand side");
-							return(NhlFATAL);
-						}
-					} else {
-						tmp_md = value;
-					}
-				} 
+				}
+				 
 	/*
 	* By changing this field to permanent the calling env will not destroy it
 	*
@@ -1374,25 +1350,7 @@ NclSelectionRecord *sel_ptr;
 				if((tmp_md != value)&&(tmp_md->obj.status != PERMANENT))	
 					_NclDestroyObj((NclObj)tmp_md);
 				return(NhlNOERROR);
-			} else if( value->multidval.kind == SCALAR) {
-				if(value->multidval.type->type_class.type != thevalue->multidval.type->type_class.type) {
-	/*
-	* Don't care about the missing values here because the _subsection function 
-	* handles differences in missing values
-	*/
-					tmp_md = _NclCoerceData(value,
-						thevalue->multidval.type->type_class.type,
-						NULL);
-					if(tmp_md==NULL) {
-						NhlPError(NhlFATAL,NhlEUNKNOWN,"Assignment type mismatch, right hand side can't be coerced to type of left hand side");
-						return(NhlFATAL);
-					}
-				} else {
-	/*
-	* Handle missing value diffs here
-	*/
-					tmp_md = value;
-				}
+			} else if( tmp_md->multidval.kind == SCALAR) {
 				mysel.n_entries = thevalue->multidval.n_dims;
 				for( i = 0; i < thevalue->multidval.n_dims; i++) {
 					mysel.selection[i].sel_type = Ncl_SUB_ALL;
