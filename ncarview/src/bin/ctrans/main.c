@@ -1,5 +1,5 @@
 /*
- *	$Id: main.c,v 1.29 1993-02-24 18:01:52 clyne Exp $
+ *	$Id: main.c,v 1.30 1993-03-25 01:48:08 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -144,11 +144,12 @@ usage(od, progName, msg)
 	char	*progName;
 	char	*msg;
 {
-	char	*usage = "-d device [-f font] [options] [device options]";
+	char	*usage = "[options] [device options] <metafile... | ->";
 
 	if (msg) fprintf(logFP, "%s: %s\n", progName, msg);
 
 	fprintf(logFP, "Usage: %s %s\n", progName, usage);
+	fprintf(logFP, "\nWhere \"options\" are:\n\n");
 	PrintOptionHelp(od, logFP);
 
 }
@@ -435,9 +436,9 @@ char	**argv;
 	/*
 	 *	init ctrans
 	 */
-	if (init_ctrans(&argc, argv, gcap, fcap, batch) != OK) {
-		log_ct(FATAL);
-		cleanup(1);
+	if ((ctrc = init_ctrans(&argc, argv, gcap, fcap, batch)) != OK) {
+		log_ct(ctrc);
+		if (ctrc == FATAL) cleanup(1);
 	}
 	/*
 	 * if graphical output is going to a tty log error messages to 

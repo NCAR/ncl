@@ -1,5 +1,5 @@
 /*
- *	$Id: ctrans.c,v 1.32 1993-02-24 18:17:01 clyne Exp $
+ *	$Id: ctrans.c,v 1.33 1993-03-25 01:48:46 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -439,6 +439,7 @@ CtransRC	init_ctrans(argc, argv, gcap, fcap, batch)
 
 {
 	char	*minw;
+	CtransRC	rc = OK;
  
 	Batch = batch;
 
@@ -470,7 +471,7 @@ CtransRC	init_ctrans(argc, argv, gcap, fcap, batch)
 			ErrGetMsg()
 		); 
 		elog(ErrGetMsg());
-		return(WARN);
+		rc = WARN;
 	}	
 
 	Argv = argv;
@@ -494,12 +495,14 @@ CtransRC	init_ctrans(argc, argv, gcap, fcap, batch)
 	 * set the fontcap
 	 */
 	if (fcap) {
-		(void) SetFont(fcap);
+		if (SetFont(fcap) < 0) {
+			rc = WARN;
+		}
 	}
 
 
 	ctransIsInit = TRUE;
-	return(OK);
+	return(rc);
 }
 
 
@@ -1127,6 +1130,10 @@ CtransRC	SetFont(fcap)
 		 *	Init the font Cap stuff
 		 */
 		if(Init_Font(fcap) < 0) {
+			ESprintf(
+				E_UNKNOWN, "Can't initialize fontcap [ %s ]",
+				ErrGetMsg()
+			); 
 			elog(ErrGetMsg());
 			return (WARN);
 		}

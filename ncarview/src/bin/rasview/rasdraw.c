@@ -1,5 +1,5 @@
 /*
- *	$Id: rasdraw.c,v 1.9 1993-01-16 01:12:16 clyne Exp $
+ *	$Id: rasdraw.c,v 1.10 1993-03-25 01:48:26 clyne Exp $
  */
 /*
  *	rasdraw.c
@@ -681,6 +681,11 @@ Context	*RasDrawOpen(argc, argv, batch)
 		ESprintf(E_UNKNOWN,"XtOpenDisplay(,,,,,,,)");
 		return(NULL);
 	}
+
+#ifdef  XSYNC
+        XSynchronize(dpy, 1);
+#endif
+
 
 	screen = DefaultScreen(dpy);
 	context->encoding = RASDRAW_0BIT;
