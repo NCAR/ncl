@@ -1,7 +1,7 @@
 .\"
-.\"	$Id: ncargf77.m,v 1.1.1.1 1992-04-17 22:30:32 ncargd Exp $
+.\"	$Id: ncargf77.m,v 1.2 1993-03-02 00:04:04 haley Exp $
 .\"
-.TH NCARGF77 1NCARG "SEPTEMBER 1990" NCAR "NCAR GRAPHICS"
+.TH NCARGF77 1NCARG "February 1993" NCAR "NCAR GRAPHICS"
 .SH NAME
 ncargf77 \- Command for compiling f77 code that uses NCAR Graphics
 .SH SYNOPSIS
@@ -20,9 +20,9 @@ ncargf77 \- Command for compiling f77 code that uses NCAR Graphics
 [\fB\-conran\fR]
 [\fB\-conransmooth\fR]
 [\fB\-conranquick\fR]
-[\fB\-ictrans\fR] ...
+[\fB\-ictrans\fR]
+[\fB\-noX11\fR] ...
 .SH DESCRIPTION
-.LP
 \fIncargf77\fP is a script that invokes the FORTRAN 77 
 compiler/linker (f77) with the proper NCAR Graphics libraries.  
 Arguments presented above are associated with NCAR Graphics.  
@@ -30,25 +30,29 @@ All other arguments and options are identical to the f77 command
 on your particular machine;
 arguments that include quoted strings may
 have to be enclosed in single quotes.
-.LP
+.sp
 Note that, on some systems, if you supply your own binary libraries in
 addition to the ones automatically referenced by \fIncargf77\fR, all the
 libraries must have been created in a similar fashion.  For example,
 on a "Sun3", problems may arise if the "-fswitch" option was used for
 some of the libraries and not for others.
-.LP
+.sp
 When \fIncargf77\fR is invoked with the \fB\-ictrans\fR option the resulting
 executable will, upon invocation, send its metafile output to the translator 
 \fBictrans\fR  . The environment variable GRAPHCAP must be set to a valid
 graphics output device whenever the executable is executed.
-.SH "SEE ALSO"
-.LP
-.I "NCAR Graphics User's Guide",
+.sp
+By default, \fIncargf77\fR will load in the X library when linking your
+Fortran program.  If you do not have the X library, or else you just don't 
+want to link it in, you can use the \fB\-noX11\fR option.
+.SH SEE ALSO
+Online:
+ictrans(1NCARG), gcaps(1NCARG), ncargcc(1NCARG)
+.sp
+Hardcopy:
+NCAR Graphics Fundamentals, UNIX Version
+.SH COPYRIGHT
+Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
+for Atmospheric Research
 .br
-.BR ictrans(1NCARG),
-.BR gcaps(1NCARG)
-.LP
-.SH BUGS
-.LP
-This script is provided for those people that perhaps do not know
-about Makefiles or program development under Unix.
+All Rights Reserved

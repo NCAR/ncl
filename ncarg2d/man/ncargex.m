@@ -1,10 +1,10 @@
 .\"
-.\"	$Id: ncargex.m,v 1.6 1993-02-16 18:26:26 haley Exp $
+.\"	$Id: ncargex.m,v 1.7 1993-03-02 00:04:02 haley Exp $
 .\"
 .\" @(#)f77.1 1.4 86/07/31 SMI; 
-.TH NCARGEX 1NCARG "NOVEMBER 1989" NCAR "NCAR GRAPHICS"
+.TH NCARGEX 1NCARG "February 1993" NCAR "NCAR GRAPHICS"
 .SH NAME
-ncargex \- NCAR Graphics Examples and Tests
+ncargex \- NCAR Graphics Fortran Examples and Tests
 .SH SYNOPSIS
 \fBncargex\fP 
 [\fB\-all, -A\fR]
@@ -13,10 +13,10 @@ ncargex \- NCAR Graphics Examples and Tests
 [\fB\-alltutorial, -U\fR]
 [\fB\-clean\fR]
 [\fB\-n\fR]
+[\fB\-noX11\fR]
 [\fB\-onebyone\fR]
 \fBname ...\fR
 .SH DESCRIPTION
-.LP
 .I ncargex
 provides the user with access to example source code as
 well as the tutorial code for NCAR
@@ -33,104 +33,106 @@ NCGM file be left in your directory and that all other files
 created by \fIncargex\fP be deleted.
 The argument \fIname\fP may be
 selected from the lists that appear below.
-.LP
 .I OPTIONS
-.LP
 .IP "\-all, \-A"
 Generate all available examples, tests, and tutorial examples.
-.LP
+.sp
 .IP "\-allexamples, \-E"
 Generate all available examples.
-.LP
+.sp
 .IP "\-alltests, \-T"
 Generate all available tests.
-.LP
+.sp
 .IP "\-alltutorial, \-U"
 Generate all available tutorial examples.
-.LP
+.sp
 .IP \-clean " " ""
 Remove everything but the ".ncgm" file.
-.LP
+.sp
 .IP \-n " " ""
 Specifies that the example should not be compiled, linked, or run.
-.LP
+.sp
+.IP \-noX11 " " ""
+Do not link in the X library when linking the selected examples and/or
+tests.
+.sp
 .IP \-onebyone " " ""
 Specifies that the selected examples and/or tests should be generated one
 at a time and viewed as they are generated.  This is intended for use during
 testing of new releases at NCAR.
-.LP
+.sp
 .I "EXAMPLES AND TESTS AVAILABLE"
-.LP
+.sp
 .I "AUTOGRAPH Examples:"
 .nf
 	agex01 agex02 agex03 agex04 agex05
 	agex06 agex07 agex08 agex09 agex10
 	agex11 agex12 agex13
 .fi
-.LP
+.sp
 .I "EZMAP Examples:"
 .nf
 	mpex01 mpex02 mpex03 mpex04 mpex05
 	mpex06 mpex07 mpex08 mpex09 mpex10
 	mpexfi
 .fi
-.LP
+.sp
 .I "EZMAPA Examples:"
 .nf
 	eezmpa
 .fi
-.LP
+.sp
 .I "CONPACK Examples:"
 .nf
 	cpex01 cpex02 cpex03 cpex04 cpex05
 	cpex06 cpex07 cpex08 cpex09
 .fi
-.LP
+.sp
 .I "LABELBAR Examples:"
 .nf
 	elblba
 .fi
-.LP
+.sp
 .I "SOFTFILL Examples:"
 .nf
 	sfex01 sfex02
 .fi
-.LP
+.sp
 .I "STRMLN Examples:"
 .nf
 	stex01 stex02 stex03
 .fi
-.LP
+.sp
 .I "SURFACE Examples:"
 .nf
 	srex01
 .fi
-.LP
+.sp
 .I "PLOTCHAR Examples:"
 .nf
 	epltch
 .fi
-.LP
+.sp
 .I "SPPS Examples:"
 .nf
 	nglogy ngrevx ngset1 ngset2
 .fi
-.LP
+.sp
 .I "VELVCT Examples:"
 .nf
 	vvex01 vvex02
 .fi
-.LP
+.sp
 .I "Miscellaneous Examples:"
 .nf
 	arex01 cbex01 coex01 coex02 coex03 slex01 bnchmk
 .fi
-.LP
+.sp
 .I "Tutorial Areas Examples:"
 .nf
 	cardb1 caredg carline cardb2 carfill carmap
 .fi
-.LP
+.sp
 .I "Tutorial Conpack Examples:"
 .nf
 	ccpback ccpcff ccpcfx ccpcir ccpcis ccpcit ccpclc ccpcld
@@ -141,21 +143,21 @@ testing of new releases at NCAR.
 	ccppc2 ccppc3 ccppc4 ccppkcl ccprc ccprect ccprwc ccprwu ccpscam 
 	ccpset ccpsps1 ccpsps2 ccpspv ccptitle ccpvp ccpvs cidsfft colcon
 .fi
-.LP
+.sp
 .I "Tutorial Ezmap Examples:"
 .nf
 	cezmap1 cezmap2 cezmap3 cmpclr cmpdd cmpdrw cmpel cmpfil
 	cmpgci cmpgrd cmpgrp cmpita cmpitm cmplab cmplbl cmplot 
 	cmpmsk cmpou cmppos cmpsat cmpsup cmptit cmptra cmpusr
 .fi
-.LP
+.sp
 .I "Tutorial Softfill Examples:"
 .nf
 	csfwrld csfsgfa
 .fi
-.LP
+.sp
 .I "Test Programs:"
-.LP
+.sp
 .nf
 tagupw |  aguprwtx - AUTOGRAPH with PWRITX
 tareas | areas     - AREAS
@@ -195,8 +197,15 @@ tstrml | strmln    - STRMLN
 tthree | threed    - THREED
 tvelvc | velvct    - VELVCT
 .fi
-.SH "SEE ALSO"
-.LP
-\fIUsing NCAR Graphics in a UNIX Environment\fP
-.LP
-\fINCAR Graphics User's Guide\fP
+.SH SEE ALSO
+Online:
+ncargcex (1NCARG), ncargf77 (1NCARG)
+.sp
+Hardcopy:
+Using NCAR Graphics in a UNIX Environment; NCAR Graphics 
+Fundamentals, UNIX Version
+.SH COPYRIGHT
+Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
+for Atmospheric Research
+.br
+All Rights Reserved
