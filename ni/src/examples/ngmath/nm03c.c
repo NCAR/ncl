@@ -1,5 +1,5 @@
 /*
- *      $Id: nm03c.c,v 1.6 1997-12-23 16:01:07 haley Exp $
+ *      $Id: nm03c.c,v 1.7 1998-01-08 16:31:20 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -112,7 +112,6 @@ main(int argc, char *argv[])
 /*
  * Create an application context. Set the app dir to the current directory
  * so the application looks for a resource file in the working directory.
- * In this example the resource file supplies the plot title only.
  */
   srlist = NhlRLCreate(NhlSETRL);
   grlist = NhlRLCreate(NhlGETRL);

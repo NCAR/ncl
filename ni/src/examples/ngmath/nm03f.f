@@ -1,5 +1,5 @@
 C
-C      $Id: nm03f.f,v 1.1 1997-12-23 16:01:08 haley Exp $
+C      $Id: nm03f.f,v 1.2 1998-01-08 16:31:21 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                       C
@@ -99,7 +99,6 @@ C
 C
 C Create an application context. Set the app dir to the current directory
 C so the application looks for a resource file in the working directory.
-C In this example the resource file supplies the plot title only.
 C
       call NhlFRLCreate(srlist,'setrl')
       call NhlFRLCreate(grlist,'getrl')
