@@ -1,8 +1,16 @@
 
 For information about building NCAR Graphics from source, please see
-the "NCAR Graphics Installer's Guide" that you should have received
+the "NCAR Graphics UNIX Installer's Guide" that you should have received
 with your copy of NCAR Graphics.  You should also read the "NCAR
 Graphics Release Notes" before doing anything else.
 
-The PostScript file for the "NCAR Graphics Fundamentals" can be found
-in the directory $NCARG/doc.
+Full documentation for NCAR Graphics can be found via the URL:
+
+	http://ngwww.ucar.edu/
+
+Documentation is also available in PostScript format.  Please check with
+your system administrator as he/she should have received it with the 
+rest of the NCAR Graphics distribution.
+
+
+
