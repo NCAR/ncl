@@ -1,6 +1,6 @@
 
 /*
- *      $Id: FileSupport.c,v 1.11 1996-10-15 00:05:31 ethan Exp $
+ *      $Id: FileSupport.c,v 1.12 1996-11-01 23:15:07 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -322,7 +322,7 @@ NhlErrorTypes  _NclBuildFileCoordVSelection
 				return(NhlFATAL);
 			}
 		} else {
-			name_md = _NclFileReadDim(file,-1,dim_num);
+			name_md = _NclFileVarReadDim(file,var,-1,(long)dim_num);
 			if(name_md != NULL) {
 				if(name_md->multidval.type->type_class.type & Ncl_Typestring) {
 					cname = *(string*)name_md->multidval.val;
