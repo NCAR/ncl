@@ -1,5 +1,5 @@
 C
-C $Id: lblbar.f,v 1.5 1994-03-17 20:19:50 kennison Exp $
+C $Id: lblbar.f,v 1.6 1994-05-13 23:08:56 kennison Exp $
 C
       SUBROUTINE LBLBAR (IHOV,XLEB,XREB,YBEB,YTEB,NBOX,WSFB,HSFB,LFIN,
      +                   IFTP,LLBS,NLBS,LBAB)
@@ -246,51 +246,87 @@ C
           CALL PCSETI ('TE - TEXT EXTENT FLAG',1)
           IF (ICFELL('LBLBAR',12).NE.0) RETURN
 C
-C Find the dimensions of the largest label in the list of labels.
+C Determine the character width to be used in drawing the labels.  We
+C start with a character width of .1, which is much too big, and then
+C reduce the value as required to avoid various overlap problems.
 C
-          WMAX=0.
+C RMUL is a real multiplier used to compensate for the fact that labels
+C are sometimes put on only one side of the bar and sometimes on both
+C sides of the bar.
+C
+C HMAX ends up expressing the largest vertical dimension of any label
+C (including some white space).
+C
+C XPLL and YPLL are used for the values of X and Y at the center of the
+C last label along the label bar, while DRLL and DTLL are distances
+C from the center to the right edge or the top edge, respectively, of
+C the last label.  (For a horizontal label bar, we use only XPLL and
+C DRLL; for a vertical one, we use only YPLL and DTLL.)
+C
+          WCHR=.1
+C
+          RMUL=1.+REAL(MAX(0,MIN(3,LBAB))/3)
+C
           HMAX=0.
+C
+          XPLL=0.
+          YPLL=0.
+          DRLL=0.
+          DTLL=0.
+C
+          IF (NLBS.LT.ABS(NBOX)) THEN
+            XPB1=XLB1+WSOB
+            YPB1=YBB1+HSOB
+          ELSE IF (NLBS.EQ.ABS(NBOX)) THEN
+            XPB1=XLB1+WSFB*WSOB/2.
+            YPB1=YBB1+HSFB*HSOB/2.
+          ELSE
+            XPB1=XLB1
+            YPB1=YBB1
+          END IF
 C
           DO 104 I=1,NLBS
             NCLB=LEN(LLBS(I))
   103       IF (LLBS(I)(NCLB:NCLB).EQ.' ') THEN
               NCLB=NCLB-1
-              IF (NCLB.NE.0) GO TO 103
+              IF (NCLB.GT.0) GO TO 103
             END IF
             IF (NCLB.NE.0) THEN
-              CALL PLCHHQ (.5,.5,LLBS(I)(1:NCLB),.01,360.,0.)
+              WCHO=WCHR
+              CALL PLCHHQ (.5,.5,LLBS(I)(1:NCLB),WCHO,360.,0.)
               IF (ICFELL('LBLBAR',13).NE.0) RETURN
               CALL PCGETR ('DL - DISTANCE TO LEFT EDGE'  ,DSTL)
               IF (ICFELL('LBLBAR',14).NE.0) RETURN
               CALL PCGETR ('DR - DISTANCE TO RIGHT EDGE' ,DSTR)
               IF (ICFELL('LBLBAR',15).NE.0) RETURN
-              CALL PCGETR ('DB - DISTANCE TO TOP EDGE'   ,DSTB)
+              CALL PCGETR ('DB - DISTANCE TO BOTTOM EDGE',DSTB)
               IF (ICFELL('LBLBAR',16).NE.0) RETURN
-              CALL PCGETR ('DT - DISTANCE TO BOTTOM EDGE',DSTT)
+              CALL PCGETR ('DT - DISTANCE TO TOP EDGE'   ,DSTT)
               IF (ICFELL('LBLBAR',17).NE.0) RETURN
-              WMAX=MAX(WMAX,DSTL+DSTR+.02)
-              HMAX=MAX(HMAX,DSTB+DSTT+.02)
+              IF (IHOV.EQ.0) THEN
+                IF ((1.-HSFB)*HSOB.LT.RMUL*(DSTB+DSTT+2.*WCHO))
+     +          WCHR=WCHO*(((1.-HSFB)*HSOB)/(RMUL*(DSTB+DSTT+2.*WCHO)))
+                IF (1.-XPB1.LT.DSTR+WCHO)
+     +          WCHR=MIN(WCHR,WCHO*((1.-XPB1)/(DSTR+WCHO)))
+                IF (XPB1-XPLL.LT.DRLL+DSTL+2.*WCHO)
+     +          WCHR=MIN(WCHR,WCHO*((XPB1-XPLL)/(DRLL+DSTL+2.*WCHO)))
+                HMAX=MAX(HMAX,DSTB+DSTT+.02)*(WCHR/WCHO)
+              ELSE
+                IF ((1.-WSFB)*WSOB.LT.RMUL*(DSTL+DSTR+2.*WCHO))
+     +          WCHR=WCHO*(((1.-WSFB)*WSOB)/(RMUL*(DSTL+DSTR+2.*WCHO)))
+                IF (1.-YPB1.LT.DSTT+WCHO)
+     +          WCHR=MIN(WCHR,WCHO*((1.-YPB1)/(DSTT+WCHO)))
+                IF (YPB1-YPLL.LT.DTLL+DSTB+2.*WCHO)
+     +          WCHR=MIN(WCHR,WCHO*((YPB1-YPLL)/(DTLL+DSTB+2.*WCHO)))
+              END IF
+              XPLL=XPB1
+              YPLL=YPB1
+              DRLL=DSTR*(WCHR/WCHO)
+              DTLL=DSTT*(WCHR/WCHO)
             END IF
+            XPB1=XPB1+WSOB
+            YPB1=YPB1+HSOB
   104     CONTINUE
-C
-C If the maximum height and width are undefined, quit.
-C
-          IF (WMAX.LE..02.OR.HMAX.LE..02) GO TO 107
-C
-C Determine the character width to be used and the resulting offset
-C distance to the bottom or top of the label.
-C
-          IF (IHOV.EQ.0) THEN
-            HOLA=(1.-HSFB)*HSOB
-            IF (LBAB.GE.3) HOLA=HOLA/2.
-            WCHR=.01*MIN(WSOB/WMAX,HOLA/HMAX)
-            DSTB=(DSTB+.01)*(WCHR/.01)
-            DSTT=(DSTT+.01)*(WCHR/.01)
-          ELSE
-            WOLA=(1.-WSFB)*WSOB
-            IF (LBAB.GE.3) WOLA=WOLA/2.
-            WCHR=.01*MIN(WOLA/WMAX,HSOB/HMAX)
-          END IF
 C
 C Draw the labels.
 C
@@ -299,17 +335,20 @@ C
             CALL SETER ('LBLBAR - ERROR EXIT FROM GQPLCI',18,1)
             RETURN
           END IF
+C
           CALL GQTXCI (IERR,ISCT)
           IF (IERR.NE.0) THEN
             CALL SETER ('LBLBAR - ERROR EXIT FROM GQTXCI',19,1)
             RETURN
           END IF
+C
           IF (ICLB.LT.0) THEN
             CALL GSPLCI (ISCT)
           ELSE
             CALL GSPLCI (ICLB)
             CALL GSTXCI (ICLB)
           END IF
+C
           IF (WOLB.GT.0.) THEN
             CALL GQLWSC (IERR,STLW)
             IF (IERR.NE.0) THEN
@@ -331,17 +370,17 @@ C
             NCLB=LEN(LLBS(I))
   105       IF (LLBS(I)(NCLB:NCLB).EQ.' ') THEN
               NCLB=NCLB-1
-              IF (NCLB.NE.0) GO TO 105
+              IF (NCLB.GT.0) GO TO 105
             END IF
             IF (NCLB.NE.0) THEN
               IF (IHOV.EQ.0) THEN
                 IF (LBAB.EQ.1.OR.LBAB.GE.3)
-     +            CALL PLCHHQ (XLB1+REAL(I-1)*WSOB,YBB1-DSTT,
-     +                            LLBS(I)(1:NCLB),WCHR,0.,0.)
+     +            CALL PLCHHQ (XLB1+REAL(I-1)*WSOB,YBB1-HMAX/2.,
+     +                               LLBS(I)(1:NCLB),WCHR,0.,0.)
                   IF (ICFELL('LBLBAR',21).NE.0) RETURN
                 IF (LBAB.EQ.2.OR.LBAB.GE.3)
-     +            CALL PLCHHQ (XLB1+REAL(I-1)*WSOB,YTB1+DSTB,
-     +                            LLBS(I)(1:NCLB),WCHR,0.,0.)
+     +            CALL PLCHHQ (XLB1+REAL(I-1)*WSOB,YTB1+HMAX/2.,
+     +                               LLBS(I)(1:NCLB),WCHR,0.,0.)
                   IF (ICFELL('LBLBAR',22).NE.0) RETURN
               ELSE
                 IF (LBAB.EQ.1.OR.LBAB.GE.3)
