@@ -1,5 +1,5 @@
 /*
- *	$Id: bitops.c,v 1.6 1992-09-01 23:41:37 clyne Exp $
+ *	$Id: bitops.c,v 1.7 1994-03-09 23:59:45 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -57,17 +57,17 @@ long GetInt(bufptr,prec,is_signed)
 	if (is_signed) neg = *bufptr >> (BYTESIZE - 1);/*determine if negative*/
 
 	/* note: for 8,16 and 24 bit signed ints it is necessary to 
-	 * extend the sign  bit for negative numbers. The code "~0 << prec" 
+	 * extend the sign  bit for negative numbers. The code "~0L << prec" 
 	 * performs this extension.
 	 */
 	if (prec == 8) 
-	    return (neg ? (*bufptr | (~0 << prec)) : (*bufptr)); 
+	    return (neg ? (*bufptr | (~0L << prec)) : (*bufptr)); 
 
 	if (prec == 16) {
 
 
 
-		return(neg ? (((*bufptr << 8) |*(bufptr+1)) | (~0 << prec))
+		return(neg ? (((*bufptr << 8) |*(bufptr+1)) | (~0L << prec))
 			:  (((unsigned) *bufptr << 8) | *(bufptr+1)));
 	}
 
@@ -76,7 +76,7 @@ long GetInt(bufptr,prec,is_signed)
 		return(neg ? ((((unsigned) *bufptr << 16) | 
 			((unsigned) *(bufptr+1) << 8) | 
 			(unsigned) *(bufptr+2)) | 
-			(~0 << prec))
+			(~0L << prec))
 			: 
 			(((unsigned) *bufptr << 16) | 
 			((unsigned) *(bufptr+1) << 8) | 
@@ -91,7 +91,7 @@ long GetInt(bufptr,prec,is_signed)
 
 	}
 
-	return (0);
+	return (0L);
 }
 
 
@@ -265,7 +265,7 @@ int	src_start_bit;
 
 	/* shift selected bits all the way to the right	*/
         src = (src >> (src_start_bit+1-bit_count)) &
-        ~(~0 << bit_count); 
+        ~(~0L << bit_count); 
 
 	/* shift bits to align with required destination	*/
 	src = src << ((temp = ((bit_count + bit_start) % size)) ? size - temp : 0);
