@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.70 1998-10-07 17:03:41 ethan Exp $
+ *      $Id: Machine.c,v 1.71 1998-10-09 18:36:37 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1212,14 +1212,10 @@ void _NclPrintMachine
 			case ARRAY_LIT_OP :
 			case JMP_SCALAR_TRUE_OP:
 			case JMP_SCALAR_FALSE_OP:
-				fprintf(fp,"%s\n",ops_strings[*ptr]);
-				ptr++;lptr++;fptr++;
-				fprintf(fp,"\t%d\n",*(int*)ptr);
-				break;
 			case PUSH_STRING_LIT_OP :
 				fprintf(fp,"%s\n",ops_strings[*ptr]);
 				ptr++;lptr++;fptr++;
-				fprintf(fp,"\t%s\n",NrmQuarkToString(*ptr));
+				fprintf(fp,"\t%d\n",*(int*)ptr);
 				break;
 			case NEW_FRAME_OP:
 				fprintf(fp,"%s\n",ops_strings[*ptr]);
@@ -2375,6 +2371,11 @@ if(the_list != NULL) {
 		}
 	}
 }
+	if((tmp_fp->func_ret_value.kind == NclStk_VAR)&&(tmp_fp->func_ret_value.u.data_var->var.var_type == VARSUBSEL)) {
+		tmp_fp->func_ret_value.u.data_var->var.var_type = RETURNVAR;
+		tmp_fp->func_ret_value.u.data_var->var.thesym = NULL;
+		tmp_fp->func_ret_value.u.data_var->var.var_quark = NrmStringToQuark("unnamed");
+	}
 }
 
 void _NclDumpStack
