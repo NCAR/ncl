@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArraysFloatP.h,v 1.2 1994-01-21 19:29:33 boote Exp $
+ *      $Id: CoordArraysFloatP.h,v 1.3 1994-01-27 21:22:11 boote Exp $
  */
 /************************************************************************
 *									*
@@ -27,12 +27,12 @@
 #define _NCoordArraysFloatP_h
 #include <ncarg/hlu/BaseP.h>
 
-typedef struct _CoordArraysFloatLayerClassRec *CoordArraysFloatLayerClass;
-typedef struct _CoordArraysFloatLayerRec *CoordArraysFloatLayer;
+typedef struct _NhlCoordArraysFloatLayerClassRec *NhlCoordArraysFloatLayerClass;
+typedef struct _NhlCoordArraysFloatLayerRec *NhlCoordArraysFloatLayer;
 
-extern LayerClass coordArraysFloatLayerClass;
+extern NhlLayerClass NhlcoordArraysFloatLayerClass;
 
-typedef struct _CoordArraysFloatLayerPart{
+typedef struct _NhlCoordArraysFloatLayerPart{
 	/* User setable resource fields */
 	NhlGenArray	xarray;
 	NhlGenArray	yarray;
@@ -58,22 +58,22 @@ typedef struct _CoordArraysFloatLayerPart{
 	NhlBoolean	min_y_set;
 	NhlBoolean	x_cast_set;
 	NhlBoolean	y_cast_set;
-} CoordArraysFloatLayerPart;
+} NhlCoordArraysFloatLayerPart;
 
-typedef struct _CoordArraysFloatLayerRec{
-	ObjLayerPart			base;
-	CoordArraysFloatLayerPart	carrfloat;
-} CoordArraysFloatLayerRec;
+typedef struct _NhlCoordArraysFloatLayerRec{
+	NhlObjLayerPart			base;
+	NhlCoordArraysFloatLayerPart	carrfloat;
+} NhlCoordArraysFloatLayerRec;
 
-typedef struct _CoordArraysFloatLayerClassPart{
+typedef struct _NhlCoordArraysFloatLayerClassPart{
 	int	foo;
-} CoordArraysFloatLayerClassPart;
+} NhlCoordArraysFloatLayerClassPart;
 
-typedef struct _CoordArraysFloatLayerClassRec{
-	ObjLayerClassPart			base_class;
-	CoordArraysFloatLayerClassPart		ccarrfloat_class;
-} CoordArraysFloatLayerClassRec;
+typedef struct _NhlCoordArraysFloatLayerClassRec{
+	NhlObjLayerClassPart			base_class;
+	NhlCoordArraysFloatLayerClassPart	ccarrfloat_class;
+} NhlCoordArraysFloatLayerClassRec;
 
-extern CoordArraysFloatLayerClassRec coordArraysFloatLayerClassRec;
+extern NhlCoordArraysFloatLayerClassRec NhlcoordArraysFloatLayerClassRec;
 
 #endif	/* _NCoordArraysFloatP_h */

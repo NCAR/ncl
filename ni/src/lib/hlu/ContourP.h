@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourP.h,v 1.2 1993-12-22 00:55:45 dbrown Exp $
+ *      $Id: ContourP.h,v 1.3 1994-01-27 21:21:36 boote Exp $
  */
 /************************************************************************
 *									*
@@ -25,9 +25,10 @@
 
 #include <ncarg/hlu/TransformP.h>
 #include <ncarg/hlu/LogLinTransObjP.h>
+#include <ncarg/hlu/OverlayI.h>
 #include <ncarg/hlu/Contour.h>
 
-typedef struct ContourLayerPart {
+typedef struct _NhlContourLayerPart {
 
 	/* Public resources */
 
@@ -44,28 +45,31 @@ typedef struct ContourLayerPart {
 
 	/* Private Fields */
 
-	Layer		overlay_object;
+	NhlLayer	overlay_object;
 
-} ContourLayerPart;
+} NhlContourLayerPart;
 
-typedef struct _ContourLayerRec {
-	BaseLayerPart		base;
-	ViewLayerPart		view;
-	TransformLayerPart	trans;
-	ContourLayerPart	contour;
-} ContourLayerRec;
+typedef struct _NhlContourLayerRec {
+	NhlBaseLayerPart	base;
+	NhlViewLayerPart	view;
+	NhlTransformLayerPart	trans;
+	NhlContourLayerPart	contour;
+} NhlContourLayerRec;
 
-typedef struct ContourLayerClassPart{
+typedef struct NhlContourLayerClassPart{
 	void *foo;
-} ContourLayerClassPart;
+} NhlContourLayerClassPart;
 
-typedef struct _ContourLayerClassRec{
-	BaseLayerClassPart		base_class;
-	ViewLayerClassPart		view_class;
-	TransformLayerClassPart		trans_class;
-	ContourLayerClassPart		contour_class;
-} ContourLayerClassRec;
+typedef struct _NhlContourLayerClassRec{
+	NhlBaseLayerClassPart		base_class;
+	NhlViewLayerClassPart		view_class;
+	NhlTransformLayerClassPart	trans_class;
+	NhlContourLayerClassPart	contour_class;
+} NhlContourLayerClassRec;
 
-extern ContourLayerClassRec		contourLayerClassRec;
+typedef struct _NhlContourLayerClassRec	*NhlContourLayerClass;
+typedef struct _NhlContourLayerRec	*NhlContourLayer;
+
+extern NhlContourLayerClassRec		NhlcontourLayerClassRec;
 
 #endif  /* _NContourP_h */

@@ -1,5 +1,5 @@
 /*
- *      $Id: SplineCoord.c,v 1.3 1993-11-02 15:57:53 boote Exp $
+ *      $Id: SplineCoord.c,v 1.4 1994-01-27 21:25:51 boote Exp $
  */
 /************************************************************************
 *									*
@@ -25,7 +25,7 @@
 #include <math.h>
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/CoordApprox.h>
-static Ordering GetOrdering(
+static NhlOrdering GetOrdering(
 #ifdef NhlNeedProto
 float * /*v*/,
 int   /*nv*/,
@@ -59,10 +59,10 @@ int	  /*n*/
 		float	ysigma;
 		int   xsample;
 		int   ysample;
-		Status *xstatus 
-		Status*ystatus
+		NhlStatus *xstatus 
+		NhlStatus*ystatus
  *
- * Out Args:	NONE
+ * Out Args:	NhlNONE
  *
  * Return Values: Returns a pointer to a struture  that contains all of the
  *		information needed to evaluate the approximation.
@@ -100,8 +100,8 @@ float xsigma,
 float ysigma,
 int xsample,
 int ysample, 
-Status *xstatus,
-Status *ystatus)
+NhlStatus *xstatus,
+NhlStatus *ystatus)
 #else
 (thedat,x_use_log,x,x_int,nx,y_use_log,y,y_int,ny,xsigma,ysigma,xsample,ysample,xstatus,ystatus)
 	NhlCoordDat *thedat;
@@ -117,23 +117,23 @@ Status *ystatus)
  	float ysigma;
 	int   xsample;
 	int   ysample;
-	Status	*xstatus;  /* 0 ERROR 	NONE
-			 1 x==>x_int	FORWARD	
-			 2 x<==x_int	INVERSE
-			 3 x<==>x_int	BOTH
+	NhlStatus	*xstatus;  /* 0 ERROR 	NhlNONE
+			 1 x==>x_int	NhlFORWARD	
+			 2 x<==x_int	NhlINVERSE
+			 3 x<==>x_int	NhlBOTHTRANS
 		      */
-	Status	*ystatus;  /* 0 ERROR	NONE
-			 1 y==>y_int	FORWARD
-			 2 y<==y_int	INVERSE
-			 3 y<==>y_int	BOTH
+	NhlStatus	*ystatus;  /* 0 ERROR	NhlNONE
+			 1 y==>y_int	NhlFORWARD
+			 2 y<==y_int	NhlINVERSE
+			 3 y<==>y_int	NhlBOTHTRANS
 		      */
 #endif
 {
 	int		i,j;
-	Ordering	xdirection;
-	Ordering	xdirection_int;
-	Ordering	ydirection;
-	Ordering	ydirection_int;
+	NhlOrdering	xdirection;
+	NhlOrdering	xdirection_int;
+	NhlOrdering	ydirection;
+	NhlOrdering	ydirection_int;
 	int		iop = 3;
 	float dir0 = 0.0;
 	float dirn = 0.0;
@@ -141,11 +141,11 @@ Status *ystatus)
 	float		*work_array;
 	float		interval;
 	int sample;
-	NhlErrorTypes	xret = NOERROR;
-	NhlErrorTypes	yret = NOERROR;
+	NhlErrorTypes	xret = NhlNOERROR;
+	NhlErrorTypes	yret = NhlNOERROR;
 
-	thedat->xstatus = *xstatus = NONE;
-	thedat->ystatus = *ystatus = NONE;
+	thedat->xstatus = *xstatus = NhlNONE;
+	thedat->ystatus = *ystatus = NhlNONE;
 
 	work_array =(float*)NhlMalloc(
 			(unsigned)((MAX(xsample,ysample))*sizeof(float)*(MAX(nx,ny))+1));
@@ -165,23 +165,23 @@ Status *ystatus)
 		if(x_int == NULL) {	
 			for(i = 0 ; i < nx; i++) 
 				thedat->x_orig_inverse[i] = (float) i;
-			xdirection_int = INCREASING;
+			xdirection_int = NhlINCREASING;
 			memcpy((char*)thedat->fx_orig_inverse,(char*)x,
 							nx*sizeof(float));
 		} else {
 			xdirection_int = GetOrdering(x_int,nx,&(thedat->x_int_min),&(thedat->x_int_max));
-			if(xdirection_int == INCREASING) {
+			if(xdirection_int == NhlINCREASING) {
 				memcpy((char*)thedat->x_orig_inverse,
 						(char*)x_int,nx*sizeof(float));
 				memcpy((char*)thedat->fx_orig_inverse,(char*)x,
 							nx*sizeof(float));
-			} else if(xdirection_int == DECREASING) {
+			} else if(xdirection_int == NhlDECREASING) {
 				reverse(thedat->fx_orig_inverse,thedat->nx_inverse);
 				reverse(thedat->x_orig_inverse,thedat->nx_inverse);
 			} 
 		}
 
-		if(xdirection_int == NONMONOTONIC) {
+		if(xdirection_int == NhlNONMONOTONIC) {
 			thedat->nx_inverse = 0;
 			NhlFree(thedat->x_orig_inverse);
 			thedat->x_orig_inverse = NULL;
@@ -189,11 +189,11 @@ Status *ystatus)
 			thedat->fx_orig_inverse = NULL;
 			NhlFree(thedat->x_coefs_inverse);
 			thedat->x_coefs_inverse = NULL;
-			NhlPError(WARNING,E_UNKNOWN,"Spline: A non-monotonic coordinate vector was passed to CreateSplineApprox");
-			xret = WARNING;
+			NhlPError(NhlWARNING,NhlEUNKNOWN,"Spline: A non-monotonic coordinate vector was passed to CreateSplineApprox");
+			xret = NhlWARNING;
 		} else
-		if((xdirection_int == INCREASING)
-			||(xdirection_int == DECREASING)){
+		if((xdirection_int == NhlINCREASING)
+			||(xdirection_int == NhlDECREASING)){
 			if(x_use_log) {
 				thedat->x_use_log = 1;
 				for(i=0; i< nx; i++ ) {
@@ -207,9 +207,9 @@ Status *ystatus)
 				&dir0,&dirn,&iop,
 				thedat->x_coefs_inverse,
 				work_array,&(thedat->xsigma),&ierr);
-			*xstatus = thedat->xstatus = INVERSE;
+			*xstatus = thedat->xstatus = NhlINVERSE;
 		} 
-		if(*xstatus==INVERSE) {
+		if(*xstatus==NhlINVERSE) {
 			thedat->x_orig_forward = (float*)NhlMalloc((unsigned)
 						sample*sizeof(float)*nx);
 			thedat->fx_orig_forward = (float*)NhlMalloc((unsigned)
@@ -246,10 +246,10 @@ Status *ystatus)
 	
 			xdirection = GetOrdering(thedat->x_orig_forward,thedat->nx_forward,&(thedat->x_min),&(thedat->x_max));
 				
-			if(xdirection == DECREASING) {
+			if(xdirection == NhlDECREASING) {
 				reverse(thedat->fx_orig_forward,thedat->nx_forward);
 				reverse(thedat->x_orig_forward,thedat->nx_forward);
-			} else if(xdirection == NONMONOTONIC){
+			} else if(xdirection == NhlNONMONOTONIC){
 				thedat->nx_forward= 0;
 				NhlFree(thedat->x_orig_forward);
 				thedat->x_orig_forward = NULL;
@@ -257,35 +257,35 @@ Status *ystatus)
 				thedat->fx_orig_forward= NULL;
 				NhlFree(thedat->x_coefs_forward);
 				thedat->x_coefs_inverse = NULL;
-				xret = WARNING;
-				NhlPError(WARNING,E_UNKNOWN,"Spline: A non-monotonic coordinate vector was passed to CreateSplineApprox");
+				xret = NhlWARNING;
+				NhlPError(NhlWARNING,NhlEUNKNOWN,"Spline: A non-monotonic coordinate vector was passed to CreateSplineApprox");
 			}
-			if((xdirection == DECREASING)||
-					(xdirection == INCREASING)) {
+			if((xdirection == NhlDECREASING)||
+					(xdirection == NhlINCREASING)) {
 /* FORTRAN */			_NHLCALLF(curv1,CURV1)(&(thedat->nx_forward),
 					thedat->x_orig_forward,
 					thedat->fx_orig_forward,
 					&dir0,&dirn,&iop,
 					thedat->x_coefs_forward,
 					work_array,&(thedat->xsigma),&ierr);
-				*xstatus = thedat->xstatus = BOTH;
+				*xstatus = thedat->xstatus = NhlBOTHTRANS;
 			} 
 		} else {
 /*
 * CONINUE TO INTERPOLATE
 */
-			NhlPError(WARNING,E_UNKNOWN,"Accuracy of spline coordinate approximation in question");
-			xret = WARNING;	
-			*xstatus =  thedat->xstatus = NONE;
+			NhlPError(NhlWARNING,NhlEUNKNOWN,"Accuracy of spline coordinate approximation in question");
+			xret = NhlWARNING;	
+			*xstatus =  thedat->xstatus = NhlNONE;
 		}
 	} else {
 /*
 * ERROR: NOT ENOUGH X COORDINATE POINTS
 */
 	
-		NhlPError(FATAL,E_UNKNOWN,"A Miniumum of 3 coordinates points must be provided to CreateSplineApprox");	
-		xret = FATAL;
-		*xstatus = NONE;
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"A Miniumum of 3 coordinates points must be provided to CreateSplineApprox");	
+		xret = NhlFATAL;
+		*xstatus = NhlNONE;
 	}
 	if(ny > 2) {
 		sample = ysample;
@@ -300,24 +300,24 @@ Status *ystatus)
 		if(y_int == NULL) {	
 			for(i = 0 ; i < ny; i++) 
 				thedat->y_orig_inverse[i] = (float) i;
-			ydirection_int = INCREASING;
+			ydirection_int = NhlINCREASING;
 			memcpy((char*)thedat->fy_orig_inverse,(char*)y,
 							ny*sizeof(float));
 		} else {
 			ydirection_int = GetOrdering(y_int,ny,&(thedat->y_int_min),&(thedat->y_int_max));
-			if(ydirection_int == INCREASING) {
+			if(ydirection_int == NhlINCREASING) {
 				memcpy((char*)thedat->y_orig_inverse,
 						(char*)y_int,ny*sizeof(float));
 				memcpy((char*)thedat->fy_orig_inverse,(char*)y,
 							ny*sizeof(float));
-			} else if(ydirection_int == DECREASING) {
+			} else if(ydirection_int == NhlDECREASING) {
 				reverse(thedat->fy_orig_inverse,ny);
 				reverse(thedat->y_orig_inverse,ny);
 			} 
 		}
 
-		if(ydirection_int == NONMONOTONIC) {
-			NhlPError(WARNING,E_UNKNOWN,"Spline: A non-monotonic coordinate vector was passed to CreateSplineApprox for the y axis");
+		if(ydirection_int == NhlNONMONOTONIC) {
+			NhlPError(NhlWARNING,NhlEUNKNOWN,"Spline: A non-monotonic coordinate vector was passed to CreateSplineApprox for the y axis");
 			thedat->ny_inverse = 0;
 			NhlFree(thedat->y_orig_inverse);
 			thedat->y_orig_inverse = NULL;
@@ -325,12 +325,12 @@ Status *ystatus)
 			thedat->fy_orig_inverse = NULL;
 			NhlFree(thedat->y_coefs_inverse);
 			thedat->y_coefs_inverse = NULL;
-			yret = WARNING;
-			thedat->ystatus = *ystatus = NONE;
+			yret = NhlWARNING;
+			thedat->ystatus = *ystatus = NhlNONE;
 		} else
 
-		if((ydirection_int == INCREASING)
-			||(ydirection_int == DECREASING)){
+		if((ydirection_int == NhlINCREASING)
+			||(ydirection_int == NhlDECREASING)){
 			if(y_use_log) {
 				thedat->y_use_log = 1;
 				for(i=0; i< ny; i++ ) {
@@ -344,9 +344,9 @@ Status *ystatus)
 				&dir0,&dirn,&iop,
 				thedat->y_coefs_inverse,
 				work_array,&(thedat->ysigma),&ierr);
-			thedat->ystatus = *ystatus = INVERSE;
+			thedat->ystatus = *ystatus = NhlINVERSE;
 		}
-		if(*ystatus == INVERSE) { 
+		if(*ystatus == NhlINVERSE) { 
 			thedat->y_orig_forward = (float*)NhlMalloc((unsigned)
 						sample*sizeof(float)*ny);
 			thedat->fy_orig_forward = (float*)NhlMalloc((unsigned)
@@ -384,10 +384,10 @@ Status *ystatus)
 				
 	
 				
-			if(ydirection == DECREASING) {
+			if(ydirection == NhlDECREASING) {
 				reverse(thedat->fy_orig_forward,thedat->ny_forward);
 				reverse(thedat->y_orig_forward,thedat->ny_forward);
-			} else if(ydirection == NONMONOTONIC){
+			} else if(ydirection == NhlNONMONOTONIC){
 /*
 ERROR
 */
@@ -398,35 +398,35 @@ ERROR
 				thedat->fy_orig_forward= NULL;
 				NhlFree(thedat->y_coefs_forward);
 				thedat->y_coefs_inverse = NULL;
-				thedat->ystatus = *ystatus = INVERSE;
-				NhlPError(WARNING,E_UNKNOWN,"Spline: A non-monotonic coordinate vector was passed to CreateSplineApprox");
+				thedat->ystatus = *ystatus = NhlINVERSE;
+				NhlPError(NhlWARNING,NhlEUNKNOWN,"Spline: A non-monotonic coordinate vector was passed to CreateSplineApprox");
 			}
-			if((ydirection == DECREASING)||
-					(ydirection == INCREASING)) {
+			if((ydirection == NhlDECREASING)||
+					(ydirection == NhlINCREASING)) {
 /* FORTRAN */			_NHLCALLF(curv1,CURV1)(&(thedat->ny_forward),
 					thedat->y_orig_forward,
 					thedat->fy_orig_forward,
 					&dir0,&dirn,&iop,
 					thedat->y_coefs_forward,
 					work_array,&(thedat->ysigma),&ierr);
-				thedat->ystatus = *ystatus = BOTH;
+				thedat->ystatus = *ystatus = NhlBOTHTRANS;
 			}
 		} else {
 /*
 * INTERPOLATE ANYWAYS
 NOTYET
 */
-			NhlPError(WARNING,E_UNKNOWN,"Accuracy of spline coordinate approximation for y axis in question");
-			yret = WARNING;
+			NhlPError(NhlWARNING,NhlEUNKNOWN,"Accuracy of spline coordinate approximation for y axis in question");
+			yret = NhlWARNING;
 		}
 	}
 	 else {
 /*
 * ERROR: NOT ENOUGH Y COORDINATE POINTS
 */
-		NhlPError(FATAL,E_UNKNOWN,"A Miniumum of 3 coordinates points must be provided to CreateSplineApprox");	
-		yret = FATAL;
-		thedat->ystatus = *ystatus = NONE;
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"A Miniumum of 3 coordinates points must be provided to CreateSplineApprox");	
+		yret = NhlFATAL;
+		thedat->ystatus = *ystatus = NhlNONE;
 	}
 	(void)NhlFree(work_array);
 	return(MIN(yret,xret));
@@ -466,7 +466,7 @@ NhlErrorTypes _NhlDestroySplineCoordApprox
 	NhlFree(thedat->y_orig_inverse);
 	NhlFree(thedat->fy_orig_inverse);
 	NhlFree(thedat->y_coefs_inverse);
-	return(NOERROR);
+	return(NhlNOERROR);
 }
 
 
@@ -502,13 +502,13 @@ NhlErrorTypes _NhlEvalSplineCoordForward
 	int itab[3];
 	float x_prime = x;
 	float y_prime = y;
-	NhlErrorTypes ret=NOERROR;
+	NhlErrorTypes ret=NhlNOERROR;
 
 	itab[0] = 1;
 	itab[1] = 0;
 	itab[2] = 0;
 
-	if((thedat->xstatus == FORWARD) || (thedat->xstatus == BOTH)) {
+	if((thedat->xstatus == NhlFORWARD) || (thedat->xstatus == NhlBOTHTRANS)) {
 		itab[0] = 1;
 		itab[1] = 0;
 		itab[2] = 0;
@@ -518,12 +518,12 @@ NhlErrorTypes _NhlEvalSplineCoordForward
 		if((xmissing == NULL)||(x_prime != *xmissing)) {
 /*
 			if(!((x_prime >= thedat->x_min)&&(x_prime<= thedat->x_max))) {
-				NhlPError(WARNING,E_UNKNOWN,"_NhlEvalSplineCoordForward: out of range value detected converting to closest in bounds value");
+				NhlPError(NhlWARNING,NhlEUNKNOWN,"_NhlEvalSplineCoordForward: out of range value detected converting to closest in bounds value");
 				if(x_prime < thedat->x_min)
 					x_prime = thedat->x_min;
 				else 
 					x_prime = thedat->x_max; 
-				ret = WARNING;
+				ret = NhlWARNING;
 			}
 */
 /* FORTRAN */		_NHLCALLF(curv2,CURV2)(&x_prime,xout,&(thedat->nx_forward),
@@ -535,11 +535,11 @@ NhlErrorTypes _NhlEvalSplineCoordForward
 			*xout = *xmissing;
 		}
 	} else {
-		NhlPError(FATAL,E_UNKNOWN,"The coordinate approximation has no forward X transformation");
-		return(FATAL);
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"The coordinate approximation has no forward X transformation");
+		return(NhlFATAL);
 	}
 
-	if((thedat->ystatus == FORWARD) || (thedat->ystatus == BOTH)) {
+	if((thedat->ystatus == NhlFORWARD) || (thedat->ystatus == NhlBOTHTRANS)) {
 		itab[0] = 1;
 		itab[1] = 0;
 		itab[2] = 0;
@@ -549,12 +549,12 @@ NhlErrorTypes _NhlEvalSplineCoordForward
 		if((ymissing == NULL)||(y_prime != *ymissing)) {
 /*
 			if(!((y_prime >= thedat->y_min)&&(y_prime<= thedat->y_max))) {
-				NhlPError(WARNING,E_UNKNOWN,"_NhlEvalSplineCoordForward: out of range value detected converting to closest in bounds value");
+				NhlPError(NhlWARNING,NhlEUNKNOWN,"_NhlEvalSplineCoordForward: out of range value detected converting to closest in bounds value");
 				if(y_prime < thedat->y_min)
 					y_prime = thedat->y_min;
 				else 
 					y_prime = thedat->y_max; 
-				ret = WARNING;
+				ret = NhlWARNING;
 			}
 */
 /* FORTRAN */		_NHLCALLF(curv2,CURV2)(&y_prime,yout,&(thedat->ny_forward),
@@ -566,8 +566,8 @@ NhlErrorTypes _NhlEvalSplineCoordForward
 			*yout = *ymissing;
 		}
 	} else {
-		NhlPError(FATAL,E_UNKNOWN,"The coordinate approximation has no forward Y transformation");
-		return(FATAL);
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"The coordinate approximation has no forward Y transformation");
+		return(NhlFATAL);
 	}
 	return(ret);
 }
@@ -588,7 +588,7 @@ NhlErrorTypes _NhlEvalSplineCoordForward
  *
  * Return Values:	Errors if any
  *
- * Side Effects:	NONE
+ * Side Effects:	NhlNONE
  */
 NhlErrorTypes _NhlEvalSplineCoordInverse
 #if	__STDC__
@@ -607,25 +607,25 @@ NhlErrorTypes _NhlEvalSplineCoordInverse
 	int itab[3];
 	float x_prime = x;
 	float y_prime = y;
-	NhlErrorTypes ret=NOERROR;
+	NhlErrorTypes ret=NhlNOERROR;
 
 	itab[0] = 1;
 	itab[1] = 0;
 	itab[2] = 0;
 
-	if((thedat->xstatus == INVERSE) || (thedat->xstatus == BOTH)) {
+	if((thedat->xstatus == NhlINVERSE) || (thedat->xstatus == NhlBOTHTRANS)) {
 		itab[0] = 1;
 		itab[1] = 0;
 		itab[2] = 0;
 		if((xmissing == NULL)||(x_prime != *xmissing)) {
 /*
 			if(!((x_prime >= thedat->x_int_min)&&(x_prime<= thedat->x_int_max))) {
-				NhlPError(WARNING,E_UNKNOWN,"_NhlEvalSplineCoordInverse: out of range value detected converting to closest in bounds value");
+				NhlPError(NhlWARNING,NhlEUNKNOWN,"_NhlEvalSplineCoordInverse: out of range value detected converting to closest in bounds value");
 				if(x_prime < thedat->x_min)
 					x_prime = thedat->x_int_min;
 				else 
 					x_prime = thedat->x_int_max; 
-				ret = WARNING;
+				ret = NhlWARNING;
 			}
 */
 /* FORTRAN */		_NHLCALLF(curv2,CURV2)(&x_prime,xout,&(thedat->nx_inverse),
@@ -640,23 +640,23 @@ NhlErrorTypes _NhlEvalSplineCoordInverse
 		}
 		
 	} else {
-		NhlPError(FATAL,E_UNKNOWN,"The coordinate approximation has no inverse X transformation");
-		return(FATAL);
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"The coordinate approximation has no inverse X transformation");
+		return(NhlFATAL);
 	}
 
-	if((thedat->ystatus == INVERSE) || (thedat->ystatus == BOTH)) {
+	if((thedat->ystatus == NhlINVERSE) || (thedat->ystatus == NhlBOTHTRANS)) {
 		itab[0] = 1;
 		itab[1] = 0;
 		itab[2] = 0;
 		if((ymissing == NULL) ||(y_prime != *ymissing)){
 /*
 			if(!((y_prime >= thedat->y_int_min)&&(y_prime<= thedat->y_int_max))) {
-				NhlPError(WARNING,E_UNKNOWN,"_NhlEvalSplineCoordInverse: out of range value detected converting to closest in bounds value");
+				NhlPError(NhlWARNING,NhlEUNKNOWN,"_NhlEvalSplineCoordInverse: out of range value detected converting to closest in bounds value");
 				if(y_prime < thedat->y_min)
 					y_prime = thedat->y_int_min;
 				else 
 					y_prime = thedat->y_int_max; 
-				ret = WARNING;
+				ret = NhlWARNING;
 			}
 */
 /* FORTRAN */		_NHLCALLF(curv2,CURV2)(&y_prime,yout,&(thedat->ny_inverse),
@@ -670,8 +670,8 @@ NhlErrorTypes _NhlEvalSplineCoordInverse
 			*yout = *ymissing;
 		}
 	} else {
-		NhlPError(FATAL,E_UNKNOWN,"The coordinate approximation has no inverse Y transformation");
-		return(FATAL);
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"The coordinate approximation has no inverse Y transformation");
+		return(NhlFATAL);
 	}
 	return(ret);
 }
@@ -721,29 +721,29 @@ NhlErrorTypes _NhlMultiEvalSplineCoordForward
 #endif
 {
 	int itab[3];
-	NhlErrorTypes ret=NOERROR;
+	NhlErrorTypes ret=NhlNOERROR;
 	int i,xok,yok;
 	float tmp;
 
 
-	if((thedat->ystatus == FORWARD) || (thedat->ystatus == BOTH)) {
+	if((thedat->ystatus == NhlFORWARD) || (thedat->ystatus == NhlBOTHTRANS)) {
 		yok = 1;
 	} else {
 		yok = 0;
-		NhlPError(WARNING,E_UNKNOWN,"Unable to evaluate a forward transformation for Y axis");
-		ret = WARNING;
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"Unable to evaluate a forward transformation for Y axis");
+		ret = NhlWARNING;
 	}	
 
-	if((thedat->xstatus == FORWARD) || (thedat->xstatus == BOTH)) {
+	if((thedat->xstatus == NhlFORWARD) || (thedat->xstatus == NhlBOTHTRANS)) {
 		xok = 1;
 	} else {
 		xok = 0;
-		if(ret == WARNING) {
-			NhlPError(FATAL,E_UNKNOWN,"Unable to evaluate a forward transformation for either axis");
-			return(FATAL);
+		if(ret == NhlWARNING) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"Unable to evaluate a forward transformation for either axis");
+			return(NhlFATAL);
 		} else {
-			NhlPError(FATAL,E_UNKNOWN,"Unable to evaluate a forward transformation for X axis");
-			ret = WARNING;
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"Unable to evaluate a forward transformation for X axis");
+			ret = NhlWARNING;
 		}
 	}
 	if(xok) {
@@ -820,31 +820,31 @@ NhlErrorTypes _NhlMultiEvalSplineCoordInverse
 #endif
 {
 	int itab[3];
-	NhlErrorTypes ret=NOERROR;
+	NhlErrorTypes ret=NhlNOERROR;
 	int i,xok,yok;
 
 	itab[0] = 1;
 	itab[1] = 0;
 	itab[2] = 0;
 
-	if((thedat->ystatus == BOTH) || (thedat->ystatus == INVERSE)) {
+	if((thedat->ystatus == NhlBOTHTRANS) || (thedat->ystatus == NhlINVERSE)) {
 		yok = 1;
 	} else {
 		yok = 0;
-		NhlPError(WARNING,E_UNKNOWN,"Unable to evaluate an inverse transformation for Y axis");
-		ret = WARNING;
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"Unable to evaluate an inverse transformation for Y axis");
+		ret = NhlWARNING;
 	}	
 
-	if((thedat->xstatus == BOTH) || (thedat->xstatus == INVERSE)) {
+	if((thedat->xstatus == NhlBOTHTRANS) || (thedat->xstatus == NhlINVERSE)) {
 		xok = 1;
 	} else {
 		xok = 0;
-		if(ret == WARNING) {
-			NhlPError(FATAL,E_UNKNOWN,"Unable to evaluate an inverse transformation for either axis");
-			return(FATAL);
+		if(ret == NhlWARNING) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"Unable to evaluate an inverse transformation for either axis");
+			return(NhlFATAL);
 		} else {
-			NhlPError(FATAL,E_UNKNOWN,"Unable to evaluate a forward transformation for X axis");
-			ret = WARNING;
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"Unable to evaluate a forward transformation for X axis");
+			ret = NhlWARNING;
 		}
 	}
 		
@@ -889,7 +889,7 @@ NhlErrorTypes _NhlMultiEvalSplineCoordInverse
 }
 
 
-static Ordering GetOrdering
+static NhlOrdering GetOrdering
 #if __STDC__
 (float *v,int nv,float* min, float*max) 
 #else
@@ -909,7 +909,7 @@ static Ordering GetOrdering
 	if(i == nv) {
 		*min = v[0];
 		*max = v[nv-1];
-		return(INCREASING);
+		return(NhlINCREASING);
 	}
 	i = 1;
 	while((i<nv)&&(v[i-1] >= v[i])) {
@@ -918,9 +918,9 @@ static Ordering GetOrdering
 	if(i==nv){
 		*max = v[0];
 		*min = v[nv-1];
-		return(DECREASING);
+		return(NhlDECREASING);
 	} else {
-		return(NONMONOTONIC);
+		return(NhlNONMONOTONIC);
 	}
 
 	

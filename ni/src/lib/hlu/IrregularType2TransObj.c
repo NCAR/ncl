@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularType2TransObj.c,v 1.7 1994-01-24 23:57:27 dbrown Exp $
+ *      $Id: IrregularType2TransObj.c,v 1.8 1994-01-27 21:23:23 boote Exp $
  */
 /************************************************************************
 *									*
@@ -54,58 +54,58 @@
 
 static NhlResource resources[] = {
 	{ NhlNtrXCoordPoints,NhlCtrXCoordPoints,NhlTFloatPtr,sizeof(float*),
-		NhlOffset(IrregularType2TransObjLayerRec,ir2trans.x_coord_points),
+		NhlOffset(NhlIrregularType2TransObjLayerRec,ir2trans.x_coord_points),
 		NhlTFloatPtr,NULL },
 	{ NhlNtrXInterPoints,NhlCtrXInterPoints,NhlTFloatPtr,sizeof(float*),
-		NhlOffset(IrregularType2TransObjLayerRec,ir2trans.x_inter_points),
+		NhlOffset(NhlIrregularType2TransObjLayerRec,ir2trans.x_inter_points),
 		NhlTFloatPtr,NULL },
 	{ NhlNtrXMaxF, NhlCtrXMaxF, NhlTFloat, sizeof(float),
-		NhlOffset(IrregularType2TransObjLayerRec,ir2trans.x_max),
+		NhlOffset(NhlIrregularType2TransObjLayerRec,ir2trans.x_max),
 		NhlTString, "0.0" },
 	{ NhlNtrXMinF, NhlCtrXMinF, NhlTFloat, sizeof(float),
-		NhlOffset(IrregularType2TransObjLayerRec,ir2trans.x_min),
+		NhlOffset(NhlIrregularType2TransObjLayerRec,ir2trans.x_min),
 		NhlTString, "0.0" },
 	{ NhlNtrXNumPoints,NhlCtrXNumPoints,NhlTInteger,sizeof(int),
-		NhlOffset(IrregularType2TransObjLayerRec,ir2trans.x_num_points),
+		NhlOffset(NhlIrregularType2TransObjLayerRec,ir2trans.x_num_points),
 		NhlTString,"0" },
 	{ NhlNtrXReverse, NhlCtrXReverse, NhlTInteger,sizeof(int),
-		NhlOffset(IrregularType2TransObjLayerRec,ir2trans.x_reverse),
+		NhlOffset(NhlIrregularType2TransObjLayerRec,ir2trans.x_reverse),
 		NhlTString,"0" },
 	{ NhlNtrXTensionF, NhlCtrXTensionF, NhlTFloat, sizeof(float),
-		NhlOffset(IrregularType2TransObjLayerRec,ir2trans.x_tension),
+		NhlOffset(NhlIrregularType2TransObjLayerRec,ir2trans.x_tension),
 		NhlTString,"2.0" },
 	{ NhlNtrXSamples, NhlCtrXSamples, NhlTInteger, sizeof(int),
-		NhlOffset(IrregularType2TransObjLayerRec,ir2trans.x_samples),
+		NhlOffset(NhlIrregularType2TransObjLayerRec,ir2trans.x_samples),
 		NhlTString,"9" },
 	{ NhlNtrXUseLog, NhlCtrXUseLog, NhlTInteger, sizeof(int),
-		NhlOffset(IrregularType2TransObjLayerRec,ir2trans.x_use_log),
+		NhlOffset(NhlIrregularType2TransObjLayerRec,ir2trans.x_use_log),
 		NhlTString,"0" },
 	{ NhlNtrYCoordPoints,NhlCtrYCoordPoints,NhlTFloatPtr,sizeof(float*),
-		NhlOffset(IrregularType2TransObjLayerRec,ir2trans.y_coord_points),
+		NhlOffset(NhlIrregularType2TransObjLayerRec,ir2trans.y_coord_points),
 		NhlTFloatPtr,NULL },
 	{ NhlNtrYInterPoints,NhlCtrYInterPoints,NhlTFloatPtr,sizeof(float*),
-		NhlOffset(IrregularType2TransObjLayerRec,ir2trans.y_inter_points),
+		NhlOffset(NhlIrregularType2TransObjLayerRec,ir2trans.y_inter_points),
 		NhlTFloatPtr,NULL },
 	{ NhlNtrYMaxF, NhlCtrYMaxF, NhlTFloat, sizeof(float),
-		NhlOffset(IrregularType2TransObjLayerRec,ir2trans.y_max),
+		NhlOffset(NhlIrregularType2TransObjLayerRec,ir2trans.y_max),
 		NhlTString, "0.0" },
 	{ NhlNtrYMinF, NhlCtrYMinF, NhlTFloat, sizeof(float),
-		NhlOffset(IrregularType2TransObjLayerRec,ir2trans.y_min),
+		NhlOffset(NhlIrregularType2TransObjLayerRec,ir2trans.y_min),
 		NhlTString, "0.0" },
 	{ NhlNtrYNumPoints,NhlCtrYNumPoints,NhlTInteger,sizeof(int),
-		NhlOffset(IrregularType2TransObjLayerRec,ir2trans.y_num_points),
+		NhlOffset(NhlIrregularType2TransObjLayerRec,ir2trans.y_num_points),
 		NhlTString,"0" },
 	{ NhlNtrYReverse, NhlCtrYReverse, NhlTInteger,sizeof(int),
-		NhlOffset(IrregularType2TransObjLayerRec,ir2trans.y_reverse),
+		NhlOffset(NhlIrregularType2TransObjLayerRec,ir2trans.y_reverse),
 		NhlTString,"0" },
 	{ NhlNtrYTensionF, NhlCtrYTensionF, NhlTFloat, sizeof(float),
-		NhlOffset(IrregularType2TransObjLayerRec,ir2trans.y_tension),
+		NhlOffset(NhlIrregularType2TransObjLayerRec,ir2trans.y_tension),
 		NhlTString,"2.0" },
 	{ NhlNtrYSamples, NhlCtrYSamples, NhlTInteger, sizeof(int),
-		NhlOffset(IrregularType2TransObjLayerRec,ir2trans.y_samples),
+		NhlOffset(NhlIrregularType2TransObjLayerRec,ir2trans.y_samples),
 		NhlTString,"9" },
 	{ NhlNtrYUseLog, NhlCtrYUseLog, NhlTInteger, sizeof(int),
-		NhlOffset(IrregularType2TransObjLayerRec,ir2trans.y_use_log),
+		NhlOffset(NhlIrregularType2TransObjLayerRec,ir2trans.y_use_log),
 		NhlTString,"0" }
 };
 
@@ -115,9 +115,9 @@ static NhlResource resources[] = {
 
 static NhlErrorTypes  IrTransSetValues(
 #ifdef NhlNeedProto
-        Layer,          /* old */
-        Layer,          /* reference */
-        Layer,          /* new */
+        NhlLayer,          /* old */
+        NhlLayer,          /* reference */
+        NhlLayer,          /* new */
         _NhlArgList,    /* args */
         int             /* num_args*/
 #endif
@@ -125,9 +125,9 @@ static NhlErrorTypes  IrTransSetValues(
 
 static NhlErrorTypes IrTransInitialize(
 #ifdef NhlNeedProto
-        LayerClass,     /* class */
-        Layer,          /* req */
-        Layer,          /* new */
+        NhlLayerClass,     /* class */
+        NhlLayer,          /* req */
+        NhlLayer,          /* new */
         _NhlArgList,    /* args */
         int             /* num_args */
 #endif
@@ -140,15 +140,15 @@ static NhlErrorTypes IrTransInitialize(
 
 static NhlErrorTypes IrSetTrans(
 #ifdef NhlNeedProto
-Layer	/*instance*/,
-Layer  /*parent*/
+NhlLayer	/*instance*/,
+NhlLayer  /*parent*/
 #endif
 );
 
 static NhlErrorTypes IrWinToNDC(
 #ifdef NhlNeedProto
-Layer	/*instance*/,
-Layer	/* parent */,
+NhlLayer	/*instance*/,
+NhlLayer	/* parent */,
 float*	/*x*/,
 float*   /*y*/,
 int	/* n*/,
@@ -163,8 +163,8 @@ int * 	/* status */
 
 static NhlErrorTypes IrNDCToWin(
 #ifdef NhlNeedProto
-Layer	/*instance*/,
-Layer	/*parent */,
+NhlLayer	/*instance*/,
+NhlLayer	/*parent */,
 float*	/*x*/,
 float*   /*y*/,
 int	/* n*/,
@@ -179,8 +179,8 @@ int *   /* status */
 
 static NhlErrorTypes IrDataToCompc(
 #ifdef NhlNeedProto
-Layer   /*instance */,
-Layer   /*parent */,
+NhlLayer   /*instance */,
+NhlLayer   /*parent */,
 float*  /*x*/,
 float*   /*y*/,
 int     /* n*/,
@@ -194,8 +194,8 @@ int *   /* status */
 
 static NhlErrorTypes IrCompcToData(
 #ifdef NhlNeedProto
-Layer   /*instance */,
-Layer   /*parent */,
+NhlLayer   /*instance */,
+NhlLayer   /*parent */,
 float*  /*x*/,
 float*   /*y*/,
 int     /* n*/,
@@ -209,8 +209,8 @@ int *   /* status */
 
 static NhlErrorTypes IrWinToCompc(
 #ifdef NhlNeedProto
-Layer   /*instance */,
-Layer   /*parent */,
+NhlLayer   /*instance */,
+NhlLayer   /*parent */,
 float*  /*x*/,
 float*   /*y*/,
 int     /* n*/,
@@ -226,8 +226,8 @@ int *   /* status */
 
 static NhlErrorTypes IrNDCLineTo(
 #if     NhlNeedProto
-Layer   /* instance */,
-Layer   /* parent */,
+NhlLayer   /* instance */,
+NhlLayer   /* parent */,
 float   /* x */,
 float   /* y */,
 int     /* upordown */
@@ -235,8 +235,8 @@ int     /* upordown */
 );
 static NhlErrorTypes IrDataLineTo(
 #if     NhlNeedProto
-Layer   /* instance */,
-Layer   /* parent */,
+NhlLayer   /* instance */,
+NhlLayer   /* parent */,
 float   /* x */,
 float   /* y */,
 int     /* upordown */
@@ -245,8 +245,8 @@ int     /* upordown */
 
 static NhlErrorTypes IrWinLineTo(
 #if     NhlNeedProto
-Layer   /* instance */,
-Layer   /* parent */,
+NhlLayer   /* instance */,
+NhlLayer   /* parent */,
 float   /* x */,
 float   /* y */,
 int     /* upordown */
@@ -255,8 +255,8 @@ int     /* upordown */
 
 static SetUpTrans(
 #if NhlNeedProto
-        Layer   /*new*/,
-        Layer   /*old*/,
+        NhlLayer   /*new*/,
+        NhlLayer   /*old*/,
 	int	/*c_or_s*/,
 	_NhlArgList /*args*/, 
 	int /*nargs*/
@@ -267,13 +267,13 @@ static SetUpTrans(
 #define SET 0
 
 
-IrregularType2TransObjLayerClassRec irregularType2TransObjLayerClassRec = {
+NhlIrregularType2TransObjLayerClassRec NhlirregularType2TransObjLayerClassRec = {
         {
 /* class_name			*/	"IrregularType2TransObj",
 /* nrm_class			*/	NrmNULLQUARK,
-/* layer_size			*/	sizeof(IrregularType2TransObjLayerRec),
+/* layer_size			*/	sizeof(NhlIrregularType2TransObjLayerRec),
 /* class_inited			*/	False,
-/* superclass			*/	(LayerClass)&transObjLayerClassRec,
+/* superclass			*/	(NhlLayerClass)&NhltransObjLayerClassRec,
 
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
@@ -306,7 +306,8 @@ IrregularType2TransObjLayerClassRec irregularType2TransObjLayerClassRec = {
         }
 };
 
-LayerClass irregularType2TransObjLayerClass = (LayerClass)&irregularType2TransObjLayerClassRec;
+NhlLayerClass NhlirregularType2TransObjLayerClass =
+			(NhlLayerClass)&NhlirregularType2TransObjLayerClassRec;
 
 
 
@@ -327,12 +328,12 @@ LayerClass irregularType2TransObjLayerClass = (LayerClass)&irregularType2TransOb
 /*ARGSUSED*/
 static NhlErrorTypes IrTransSetValues
 #if __STDC__
-(Layer old, Layer reference, Layer new, _NhlArgList args, int num_args)
+(NhlLayer old, NhlLayer reference, NhlLayer new, _NhlArgList args, int num_args)
 #else
 (old,reference, new,args,num_args)
-	Layer old;
-	Layer reference;
-	Layer new;
+	NhlLayer old;
+	NhlLayer reference;
+	NhlLayer new;
 	_NhlArgList args;
 	int	num_args;
 #endif
@@ -358,12 +359,12 @@ static NhlErrorTypes IrTransSetValues
 /*ARGSUSED*/
 static NhlErrorTypes IrTransInitialize
 #if __STDC__
-( LayerClass class, Layer req, Layer new, _NhlArgList args, int num_args)
+( NhlLayerClass class, NhlLayer req, NhlLayer new, _NhlArgList args, int num_args)
 #else
 (class,req,new,args,num_args)
-        LayerClass	class;
-        Layer		req;
-        Layer		new;
+        NhlLayerClass	class;
+        NhlLayer		req;
+        NhlLayer		new;
         _NhlArgList	args;
         int		num_args;
 #endif
@@ -373,24 +374,24 @@ static NhlErrorTypes IrTransInitialize
 
 static SetUpTrans
 #if __STDC__
-(Layer new, Layer old, int c_or_s,_NhlArgList args, int nargs)
+(NhlLayer new, NhlLayer old, int c_or_s,_NhlArgList args, int nargs)
 #else
 (new,old,c_or_s,args, nargs)
-	Layer 	new;
-	Layer	old;
+	NhlLayer 	new;
+	NhlLayer	old;
 	int c_or_s;
 	_NhlArgList args;
 	int nargs;
 #endif
 {
-	IrregularType2TransObjLayer inew = (IrregularType2TransObjLayer)new;
-	IrregularType2TransObjLayer iold = (IrregularType2TransObjLayer)old;
+	NhlIrregularType2TransObjLayer inew = (NhlIrregularType2TransObjLayer)new;
+	NhlIrregularType2TransObjLayer iold = (NhlIrregularType2TransObjLayer)old;
 	char *error_lead;
 	float *tmp;
 	float tmpf;
 	int call_spline_create;
-	NhlErrorTypes ret = NOERROR;
-	Status xstatus,ystatus;
+	NhlErrorTypes ret = NhlNOERROR;
+	NhlStatus xstatus,ystatus;
 
 	if(c_or_s == SET) {
 		error_lead = "IrTransSetValues";
@@ -405,17 +406,17 @@ static SetUpTrans
 			(inew->ir2trans.x_num_points < 2)||
 			(inew->ir2trans.y_num_points < 2)) {
 		if(c_or_s == CREATE) {
-			NhlPError(FATAL,E_UNKNOWN,
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
 			"%s: Not enough information to set up transformations",
 								error_lead);
-			return(FATAL);
+			return(NhlFATAL);
 		} else {
 			memcpy((char*)&inew->ir2trans,(char*)&iold->ir2trans,
-				sizeof(IrregularType2TransObjLayerPart));
+				sizeof(NhlIrregularType2TransObjLayerPart));
 			
 			
-			NhlPError(WARNING,E_UNKNOWN,"%s: Not enough information to set up transformations, reseting to previous values",error_lead);	
-			return(WARNING);
+			NhlPError(NhlWARNING,NhlEUNKNOWN,"%s: Not enough information to set up transformations, reseting to previous values",error_lead);	
+			return(NhlWARNING);
 		}
 	} else {
 		if(c_or_s == SET){
@@ -474,11 +475,11 @@ static SetUpTrans
 			inew->ir2trans.x_max = tmpf;
 		}
 		if(inew->ir2trans.x_min < MIN(inew->ir2trans.x_coord_points[0],inew->ir2trans.x_coord_points[inew->ir2trans.x_num_points-1])) {
-			NhlPError(WARNING,E_UNKNOWN,"%s: Minimum value is less than minimum value of coordinate points array, resetting to minimum",error_lead);
+			NhlPError(NhlWARNING,NhlEUNKNOWN,"%s: Minimum value is less than minimum value of coordinate points array, resetting to minimum",error_lead);
 			inew->ir2trans.x_min = MIN(inew->ir2trans.x_coord_points[0],inew->ir2trans.x_coord_points[inew->ir2trans.x_num_points-1]);
 		}
 		if(inew->ir2trans.x_max > MAX(inew->ir2trans.x_coord_points[0],inew->ir2trans.x_coord_points[inew->ir2trans.x_num_points-1])) {
-			NhlPError(WARNING,E_UNKNOWN,"%s: Maximum value is greater than maximum value of coordinate points array, resetting to maximum",error_lead);
+			NhlPError(NhlWARNING,NhlEUNKNOWN,"%s: Maximum value is greater than maximum value of coordinate points array, resetting to maximum",error_lead);
 			inew->ir2trans.x_max = MAX(inew->ir2trans.x_coord_points[0],inew->ir2trans.x_coord_points[inew->ir2trans.x_num_points-1]);
 		}
 		if((inew->ir2trans.y_min == 0.0)&&
@@ -491,11 +492,11 @@ static SetUpTrans
 			inew->ir2trans.y_max = tmpf;
 		}
 		if(inew->ir2trans.y_min < MIN(inew->ir2trans.y_coord_points[0],inew->ir2trans.y_coord_points[inew->ir2trans.y_num_points-1])) {
-			NhlPError(WARNING,E_UNKNOWN,"%s: Minimum value is less than minimum value of coordinate points array, resetting to minimum",error_lead);
+			NhlPError(NhlWARNING,NhlEUNKNOWN,"%s: Minimum value is less than minimum value of coordinate points array, resetting to minimum",error_lead);
 			inew->ir2trans.y_min = MIN(inew->ir2trans.y_coord_points[0],inew->ir2trans.y_coord_points[inew->ir2trans.y_num_points-1]);
 		}
 		if(inew->ir2trans.y_max > MAX(inew->ir2trans.y_coord_points[0],inew->ir2trans.y_coord_points[inew->ir2trans.y_num_points-1])) {
-			NhlPError(WARNING,E_UNKNOWN,"%s: Maximum value is greater than maximum value of coordinate points array, resetting to maximum",error_lead);
+			NhlPError(NhlWARNING,NhlEUNKNOWN,"%s: Maximum value is greater than maximum value of coordinate points array, resetting to maximum",error_lead);
 			inew->ir2trans.y_max = MAX(inew->ir2trans.y_coord_points[0],inew->ir2trans.y_coord_points[inew->ir2trans.y_num_points-1]);
 		}
 		
@@ -597,27 +598,27 @@ static SetUpTrans
 
 static NhlErrorTypes IrSetTrans
 #if __STDC__
-(Layer instance, Layer parent) 
+(NhlLayer instance, NhlLayer parent) 
 #else
 (instance, parent)
-Layer   instance;
-Layer   parent;
+NhlLayer   instance;
+NhlLayer   parent;
 #endif
 {
 	float x;
 	float y;
 	float width;
 	float height;
-	IrregularType2TransObjLayer iinstance = (IrregularType2TransObjLayer)instance;
+	NhlIrregularType2TransObjLayer iinstance = (NhlIrregularType2TransObjLayer)instance;
 	NhlErrorTypes ret;
 	
 
-	ret = NhlGetValues(parent->base.id,
+	ret = NhlVAGetValues(parent->base.id,
 		NhlNvpXF,&x,
 		NhlNvpYF,&y,
 		NhlNvpWidthF,&width,
 		NhlNvpHeightF,&height,NULL);
-	if(ret < WARNING) {
+	if(ret < NhlWARNING) {
 		return(ret);
 	}
 	
@@ -628,7 +629,7 @@ Layer   parent;
 		iinstance->ir2trans.ub,iinstance->ir2trans.ut,1);
 
 	
-	return(NOERROR);
+	return(NhlNOERROR);
 	
 }
 
@@ -654,11 +655,11 @@ Layer   parent;
 
 static NhlErrorTypes IrWinToNDC
 #if  __STDC__
-(Layer instance,Layer parent ,float *x,float *y,int n,float* xout,float* yout,float* xmissing,float* ymissing,int *status)
+(NhlLayer instance,NhlLayer parent ,float *x,float *y,int n,float* xout,float* yout,float* xmissing,float* ymissing,int *status)
 #else
 (instance, parent,x,y,n,xout,yout,xmissing,ymissing,status)
-	Layer   instance;
-	Layer   parent;
+	NhlLayer   instance;
+	NhlLayer   parent;
 	float   *x;
 	float   *y;
 	int	n;
@@ -673,18 +674,18 @@ static NhlErrorTypes IrWinToNDC
 	float y0;
 	float width;
 	float height;
-	IrregularType2TransObjLayer iinstance = (IrregularType2TransObjLayer)instance;
+	NhlIrregularType2TransObjLayer iinstance = (NhlIrregularType2TransObjLayer)instance;
 	int i;
 	NhlErrorTypes ret;
 	
 
 	*status = 0;	
-	ret= NhlGetValues(parent->base.id,
+	ret= NhlVAGetValues(parent->base.id,
 		NhlNvpXF,&x0,
 		NhlNvpYF,&y0,
 		NhlNvpWidthF,&width,
 		NhlNvpHeightF,&height,NULL);
-	if(ret < WARNING) {
+	if(ret < NhlWARNING) {
 		return(ret);
 	}
 
@@ -729,7 +730,7 @@ static NhlErrorTypes IrWinToNDC
 		}
 	}
 
-	return(NOERROR);
+	return(NhlNOERROR);
 }
 
 
@@ -748,11 +749,11 @@ static NhlErrorTypes IrWinToNDC
  */
 static NhlErrorTypes IrNDCToWin
 #if  __STDC__
-(Layer instance,Layer parent ,float *x,float *y,int n,float* xout,float* yout,float * xmissing, float *ymissing,int *status)
+(NhlLayer instance,NhlLayer parent ,float *x,float *y,int n,float* xout,float* yout,float * xmissing, float *ymissing,int *status)
 #else
 (instance, parent,x,y,n,xout,yout,xmissing,ymissing,status)
-	Layer   instance;
-	Layer   parent;
+	NhlLayer   instance;
+	NhlLayer   parent;
 	float   *x;
 	float   *y;
 	int	n;
@@ -768,17 +769,17 @@ static NhlErrorTypes IrNDCToWin
 	float width;
 	int i;
 	float height;
-	IrregularType2TransObjLayer iinstance = (IrregularType2TransObjLayer)instance;
+	NhlIrregularType2TransObjLayer iinstance = (NhlIrregularType2TransObjLayer)instance;
 	NhlErrorTypes ret;
 	
 	
 	*status = 0;
-	ret = NhlGetValues(parent->base.id,
+	ret = NhlVAGetValues(parent->base.id,
 		NhlNvpXF,&x0,
 		NhlNvpYF,&y0,
 		NhlNvpWidthF,&width,
 		NhlNvpHeightF,&height,NULL);
-	if( ret < WARNING)
+	if( ret < NhlWARNING)
 		return(ret);
 	x1 = x0 + width;
 	y1 = y0 - height;
@@ -818,7 +819,7 @@ static NhlErrorTypes IrNDCToWin
 			}
 		}
 	}
-	return(NOERROR);
+	return(NhlNOERROR);
 }
 
 
@@ -839,11 +840,11 @@ static NhlErrorTypes IrNDCToWin
 /*ARGSUSED*/
 static NhlErrorTypes IrDataToCompc
 #if  __STDC__
-(Layer instance,Layer parent ,float *x,float *y,int n,float* xout,float* yout,float *xmissing,float *ymissing, int *status)
+(NhlLayer instance,NhlLayer parent ,float *x,float *y,int n,float* xout,float* yout,float *xmissing,float *ymissing, int *status)
 #else
 (instance, parent,x,y,n,xout,yout,xmissing,ymissing,status)
-        Layer   instance;
-        Layer   parent;
+        NhlLayer   instance;
+        NhlLayer   parent;
         float   *x;
         float   *y;
         int     n;
@@ -854,8 +855,8 @@ static NhlErrorTypes IrDataToCompc
 	int * status;
 #endif
 {
-	NhlErrorTypes ret = NOERROR;
-	IrregularType2TransObjLayer iinstance = (IrregularType2TransObjLayer)instance;
+	NhlErrorTypes ret = NhlNOERROR;
+	NhlIrregularType2TransObjLayer iinstance = (NhlIrregularType2TransObjLayer)instance;
 	int i;
 
 	*status = 0;
@@ -894,11 +895,11 @@ static NhlErrorTypes IrDataToCompc
 /*ARGSUSED*/
 static NhlErrorTypes IrCompcToData
 #if  __STDC__
-(Layer instance,Layer parent ,float *x,float *y,int n,float* xout,float* yout,float *xmissing,float *ymissing,int* status)
+(NhlLayer instance,NhlLayer parent ,float *x,float *y,int n,float* xout,float* yout,float *xmissing,float *ymissing,int* status)
 #else
 (instance, parent,x,y,n,xout,yout,xmissing,ymissing,status)
-        Layer   instance;
-        Layer   parent;
+        NhlLayer   instance;
+        NhlLayer   parent;
         float   *x;
         float   *y;
         int     n;
@@ -909,8 +910,8 @@ static NhlErrorTypes IrCompcToData
 	int *   status;
 #endif
 {
-	NhlErrorTypes ret = NOERROR;
-	IrregularType2TransObjLayer iinstance = (IrregularType2TransObjLayer)instance;
+	NhlErrorTypes ret = NhlNOERROR;
+	NhlIrregularType2TransObjLayer iinstance = (NhlIrregularType2TransObjLayer)instance;
 	int i;
 
 	*status = 0;
@@ -934,17 +935,17 @@ static NhlErrorTypes IrCompcToData
 
 static NhlErrorTypes IrDataLineTo
 #if __STDC__
-(Layer instance, Layer parent,float x, float y, int upordown )
+(NhlLayer instance, NhlLayer parent,float x, float y, int upordown )
 #else
 (instance, parent,x, y, upordown )
-Layer instance;
-Layer parent;
+NhlLayer instance;
+NhlLayer parent;
 float x;
 float y;
 int upordown;
 #endif
 {
-	IrregularType2TransObjLayer ir2inst = (IrregularType2TransObjLayer)instance;
+	NhlIrregularType2TransObjLayer ir2inst = (NhlIrregularType2TransObjLayer)instance;
 	static float lastx,lasty;
 	static call_frstd = 1;
 	float currentx,currenty;
@@ -960,7 +961,7 @@ int upordown;
 		lastx = x;
 		lasty = y;
 		call_frstd = 1;
-		return(NOERROR);
+		return(NhlNOERROR);
 	} else {
 		currentx = x;
 		currenty = y;
@@ -985,7 +986,7 @@ int upordown;
 			lastx = x;	
 			lasty = y;
 			call_frstd = 1;
-			return(NOERROR);
+			return(NhlNOERROR);
 		} else {
 			xpoints[0] = lastx;
 			xpoints[1] = currentx;
@@ -1005,7 +1006,7 @@ int upordown;
 			_NhlWorkstationLineTo(parent->base.wkptr,c_cufx(xpoints[1]),c_cufy(ypoints[1]),0);
 			lastx = x;
 			lasty = y;
-			return(NOERROR);
+			return(NhlNOERROR);
 		}
 	}
 }
@@ -1013,17 +1014,17 @@ int upordown;
 /*ARGSUSED*/
 static NhlErrorTypes IrWinLineTo
 #if __STDC__
-(Layer instance, Layer parent, float x, float y, int upordown)
+(NhlLayer instance, NhlLayer parent, float x, float y, int upordown)
 #else
 (instance, parent, x, y, upordown)
-Layer instance;
-Layer parent;
+NhlLayer instance;
+NhlLayer parent;
 float x;
 float y;
 int upordown;
 #endif
 {
-	IrregularType2TransObjLayer ir2inst = (IrregularType2TransObjLayer)instance;
+	NhlIrregularType2TransObjLayer ir2inst = (NhlIrregularType2TransObjLayer)instance;
 	static float lastx,lasty;
 	static call_frstd = 1;
 	float currentx,currenty;
@@ -1033,7 +1034,7 @@ int upordown;
 		lastx = x;
 		lasty = y;
 		call_frstd = 1;
-		return(NOERROR);
+		return(NhlNOERROR);
 	} else {
 		currentx = x;
 		currenty = y;
@@ -1074,7 +1075,7 @@ int upordown;
 
 			lastx = x;
 			lasty = y;
-			return(NOERROR);
+			return(NhlNOERROR);
 		}
 			
 			
@@ -1086,17 +1087,17 @@ int upordown;
 /*ARGSUSED*/
 static NhlErrorTypes IrNDCLineTo
 #if __STDC__
-(Layer instance, Layer parent,float x, float y, int upordown )
+(NhlLayer instance, NhlLayer parent,float x, float y, int upordown )
 #else
 (instance, parent,x, y, upordown )
-Layer instance;
-Layer parent;
+NhlLayer instance;
+NhlLayer parent;
 float x;
 float y;
 int upordown;
 #endif
 {
-	IrregularType2TransObjLayer iinstance= (IrregularType2TransObjLayer)instance;
+	NhlIrregularType2TransObjLayer iinstance= (NhlIrregularType2TransObjLayer)instance;
 	static float lastx,lasty;
 	static call_frstd = 1;
 	float currentx,currenty;
@@ -1110,13 +1111,13 @@ int upordown;
 		lastx = x;
 		lasty = y;
 		call_frstd = 1;
-		return(NOERROR);
+		return(NhlNOERROR);
 	} else {
 		currentx = x;
 		currenty = y;
 		holdx = lastx;
 		holdy = lasty;
-                NhlGetValues(parent->base.id,
+                NhlVAGetValues(parent->base.id,
                         NhlNvpXF,&xvp,
                         NhlNvpYF,&yvp,
                         NhlNvpWidthF,&widthvp,
@@ -1151,20 +1152,22 @@ int upordown;
 
 			lastx = x;
 			lasty = y;
-			return(NOERROR);
+			return(NhlNOERROR);
 		}
 			
 			
 	}
 	
 }
+
+/*ARGSUSED*/
 static NhlErrorTypes IrWinToCompc
 #if  __STDC__
-(Layer instance, Layer parent,float* x,float* y,int n,float* xout,float* yout,float* xmissing,float* ymissing,int* status)
+(NhlLayer instance, NhlLayer parent,float* x,float* y,int n,float* xout,float* yout,float* xmissing,float* ymissing,int* status)
 #else
 (instance,parent,x,y,n,xout,yout,xmissing,ymissing,status)
-Layer instance;
-Layer parent;
+NhlLayer instance;
+NhlLayer parent;
 float* x;
 float* y;
 int n;
@@ -1175,8 +1178,8 @@ float* ymissing;
 int* status;
 #endif
 {
-        NhlErrorTypes ret = NOERROR;
-        IrregularType2TransObjLayer iinstance = (IrregularType2TransObjLayer)instance;
+        NhlErrorTypes ret = NhlNOERROR;
+        NhlIrregularType2TransObjLayer iinstance = (NhlIrregularType2TransObjLayer)instance;
         int i;
 
         *status = 0;

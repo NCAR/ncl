@@ -1,6 +1,5 @@
-
 /*
- *      $Id: TextItem.h,v 1.1 1993-04-30 17:24:27 boote Exp $
+ *      $Id: TextItem.h,v 1.2 1994-01-27 21:25:58 boote Exp $
  */
 /************************************************************************
 *									*
@@ -38,7 +37,7 @@
 #define NhlNtxDirection	"txDirection"
 #define NhlCtxDirection	"TxDirection"
 #define NhlNtxFont	"txFont"
-#define NhlCtxFont	"TxFont"
+#define NhlCFont	"Font"
 #define NhlNtxFontColor	"txFontColor"
 #define NhlCtxFontColor	"TxFontColor"
 #define NhlNtxFontHeightF	"txFontHeightF"
@@ -62,15 +61,11 @@
 #define NhlCtxYCorners		".TxYCorners"
 
 
-typedef enum {HIGH,MEDIUM,LOW} FontQuality;
-typedef enum {DOWN,UP,ACROSS} TextDirection;
+typedef enum {NhlHIGH,NhlMEDIUM,NhlLOW} NhlFontQuality;
+typedef enum {NhlDOWN,NhlUP,NhlACROSS} NhlTextDirection;
 
 #define NhlTFQuality "fquality"
 #define NhlTTextDirection "tdirection"
 
-extern LayerClass textItemLayerClass;
-
-typedef struct _TextItemLayerClassRec *TextItemLayerClass;
-typedef struct _TextItemLayerRec	*TextItemLayer;
+extern NhlLayerClass NhltextItemLayerClass;
 #endif  /* _NTextItem_h */
-

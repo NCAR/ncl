@@ -1,5 +1,5 @@
 /*
- *      $Id: Error.c,v 1.4 1993-12-13 22:55:19 boote Exp $
+ *      $Id: Error.c,v 1.5 1994-01-27 21:22:57 boote Exp $
  */
 /************************************************************************
 *									*
@@ -38,6 +38,10 @@
 #include <ncarg/hlu/VarArg.h>
 #include <ncarg/hlu/Converters.h>
 
+#define	MAXERRMSGLEN	1024
+#define	TABLELISTINC	10
+#define	ERRLISTINC	32
+
 /************************************************************************
 *									*
 *	Error Class definition's and declarations			*
@@ -45,12 +49,12 @@
 ************************************************************************/
 
 /* Resources */
-#define Oset(field)	NhlOffset(ErrorLayerRec,error.field)
+#define Oset(field)	NhlOffset(NhlErrorLayerRec,error.field)
 static NhlResource resources[] = {
 	{NhlNerrBuffer,NhlCerrBuffer,NhlTBoolean,sizeof(NhlBoolean),
 		Oset(buffer_errors),NhlTImmediate,False},
 	{NhlNerrLevel,NhlCerrLevel,NhlTErrorTypes,sizeof(NhlErrorTypes),
-		Oset(error_level),NhlTString,(NhlPointer)"WARNING"},
+		Oset(error_level),NhlTString,(NhlPointer)"NhlWARNING"},
 	{NhlNerrPrint,NhlCerrPrint,NhlTBoolean,sizeof(NhlBoolean),
 		Oset(print_errors),NhlTImmediate,(NhlPointer)True},
 	{NhlNerrFileName,NhlCerrFileName,NhlTString,sizeof(NhlString),
@@ -68,9 +72,9 @@ static NhlErrorTypes ErrorClassInitialize(
 
 static NhlErrorTypes ErrorInitialize(
 #if	NhlNeedProto
-	LayerClass	lc,	/* class	*/
-	Layer		req,	/* requested	*/
-	Layer		new,	/* new		*/
+	NhlLayerClass	lc,	/* class	*/
+	NhlLayer	req,	/* requested	*/
+	NhlLayer	new,	/* new		*/
 	_NhlArgList	args,	/* args		*/
 	int		nargs	/* nargs	*/
 #endif
@@ -78,9 +82,9 @@ static NhlErrorTypes ErrorInitialize(
 
 static NhlErrorTypes ErrorSetValues(
 #if	NhlNeedProto
-	Layer		old,		/* old		*/
-	Layer		req,		/* requested	*/
-	Layer		new,		/* new		*/
+	NhlLayer	old,		/* old		*/
+	NhlLayer	req,		/* requested	*/
+	NhlLayer	new,		/* new		*/
 	_NhlArgList	args,		/* args to set	*/
 	int		nargs		/* nargs	*/
 #endif
@@ -88,20 +92,20 @@ static NhlErrorTypes ErrorSetValues(
 
 static NhlErrorTypes ErrorDestroy(
 #if	NhlNeedProto
-	Layer	l	/* layer to destroy	*/
+	NhlLayer	l	/* layer to destroy	*/
 #endif
 );
 
 /* Class definition	*/
 
-ErrorLayerClassRec errorLayerClassRec = {
+NhlErrorLayerClassRec NhlerrorLayerClassRec = {
 	/* BaseClassPart */
 	{
 /* class_name			*/	"Error",
 /* nrm_class			*/	NrmNULLQUARK,
-/* layer_size			*/	sizeof(ErrorLayerRec),
+/* layer_size			*/	sizeof(NhlErrorLayerRec),
 /* class_inited			*/	False,
-/* superclass			*/	(LayerClass)&objLayerClassRec,
+/* superclass			*/	(NhlLayerClass)&NhlobjLayerClassRec,
 
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
@@ -122,7 +126,7 @@ ErrorLayerClassRec errorLayerClassRec = {
 	}
 };
 
-LayerClass errorLayerClass = (LayerClass)&errorLayerClassRec;
+NhlLayerClass NhlerrorLayerClass = (NhlLayerClass)&NhlerrorLayerClassRec;
 
 /************************************************************************
 * New type converters - needed for new type's defined for this class	*
@@ -158,10 +162,10 @@ ErrorClassInitialize
 #endif
 {
 	NhlConvertArg	errtypes[] = {
-				{NHLSTRENUM,	FATAL,		"fatal"},
-				{NHLSTRENUM,	WARNING,	"warning"},
-				{NHLSTRENUM,	INFO,		"info"},
-				{NHLSTRENUM,	NOERROR,	"noerror"}
+				{NhlSTRENUM,	NhlFATAL,	"fatal"},
+				{NhlSTRENUM,	NhlWARNING,	"warning"},
+				{NhlSTRENUM,	NhlINFO,	"info"},
+				{NhlSTRENUM,	NhlNOERROR,	"noerror"}
 				};
 
 	/*
@@ -171,7 +175,7 @@ ErrorClassInitialize
 	NhlRegisterConverter(NhlTString,NhlTErrorTypes,NhlCvtStringToEnum,
 				errtypes,NhlNumber(errtypes),False,NULL);
 
-	return NOERROR;
+	return NhlNOERROR;
 }
 
 /*
@@ -180,9 +184,9 @@ ErrorClassInitialize
  * Description:	This function initializes an instance of an Error class
  *
  * In Args:	
- *	LayerClass	lc,	class
- *	Layer		req,	requested
- *	Layer		new,	new
+ *	NhlLayerClass	lc,	class
+ *	NhlLayer	req,	requested
+ *	NhlLayer	new,	new
  *	_NhlArgList	args,	args
  *	int		nargs	nargs
  *
@@ -197,30 +201,30 @@ static NhlErrorTypes
 ErrorInitialize
 #if	__STDC__
 (
-	LayerClass	lc,	/* class	*/
-	Layer		req,	/* requested	*/
-	Layer		new,	/* new		*/
+	NhlLayerClass	lc,	/* class	*/
+	NhlLayer	req,	/* requested	*/
+	NhlLayer	new,	/* new		*/
 	_NhlArgList	args,	/* args		*/
 	int		nargs	/* nargs	*/
 )
 #else
 (lc,req,new,args,nargs)
-	LayerClass	lc;	/* class	*/
-	Layer		req;	/* requested	*/
-	Layer		new;	/* new		*/
+	NhlLayerClass	lc;	/* class	*/
+	NhlLayer	req;	/* requested	*/
+	NhlLayer	new;	/* new		*/
 	_NhlArgList	args;	/* args		*/
 	int		nargs;	/* nargs	*/
 #endif
 {
-	ErrorLayerClass elc = (ErrorLayerClass)lc;
-	ErrorLayer	enew = (ErrorLayer)new;
-	Const char	*tfname = NULL;
-	NhlErrorTypes	ret = NOERROR;
+	NhlErrorLayerClass	elc = (NhlErrorLayerClass)lc;
+	NhlErrorLayer		enew = (NhlErrorLayer)new;
+	Const char		*tfname = NULL;
+	NhlErrorTypes		ret = NhlNOERROR;
 
 	if(elc->error_class.num_error_instances > 0){
-		NHLPERROR((FATAL,E_UNKNOWN,
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,
 			"Only one instance of ErrorClass is supported"));
-		return FATAL;
+		return NhlFATAL;
 	}
 	elc->error_class.num_error_instances = 1;
 
@@ -233,9 +237,9 @@ ErrorInitialize
 		tfname = _NhlResolvePath(enew->error.error_file);
 		enew->error.error_fp = fopen(tfname,"w");
 		if(enew->error.error_fp == NULL){
-			NHLPERROR((WARNING,errno,
+			NHLPERROR((NhlWARNING,errno,
 			"Unable to open error file:%s - Using stderr",tfname));
-			ret = MIN(ret,WARNING);
+			ret = MIN(ret,NhlWARNING);
 			enew->error.error_fp = stderr;
 			tfname = "stderr";
 		}
@@ -261,13 +265,13 @@ ErrorInitialize
  * Description:	This is the setvalues methode for the errorclass hlu.
  *
  * In Args:	
- *		Layer		old,		old
- *		Layer		req,		requested
+ *		NhlLayer		old,		old
+ *		NhlLayer		req,		requested
  *		_NhlArgList	args,		args to set
  *		int		nargs		nargs
  *
  * Out Args:	
- *		Layer		new,		new
+ *		NhlLayer		new,		new
  *
  * Scope:	static
  * Returns:	NhlErrorTypes
@@ -278,35 +282,35 @@ static NhlErrorTypes
 ErrorSetValues
 #if	__STDC__
 (
-	Layer		old,		/* old		*/
-	Layer		req,		/* requested	*/
-	Layer		new,		/* new		*/
+	NhlLayer		old,		/* old		*/
+	NhlLayer		req,		/* requested	*/
+	NhlLayer		new,		/* new		*/
 	_NhlArgList	args,		/* args to set	*/
 	int		nargs		/* nargs	*/
 )
 #else
 (old,req,new,args,nargs)
-	Layer		old;		/* old		*/
-	Layer		req;		/* requested	*/
-	Layer		new;		/* new		*/
+	NhlLayer		old;		/* old		*/
+	NhlLayer		req;		/* requested	*/
+	NhlLayer		new;		/* new		*/
 	_NhlArgList	args;		/* args to set	*/
 	int		nargs;		/* nargs	*/
 #endif
 {
-	ErrorLayer eold = (ErrorLayer)old;
-	ErrorLayer ereq = (ErrorLayer)req;
-	ErrorLayer enew = (ErrorLayer)new;
+	NhlErrorLayer eold = (NhlErrorLayer)old;
+	NhlErrorLayer ereq = (NhlErrorLayer)req;
+	NhlErrorLayer enew = (NhlErrorLayer)new;
 	char *tfname = NULL;
 	FILE *tfptr = NULL;
-	NhlErrorTypes ret = NOERROR;
+	NhlErrorTypes ret = NhlNOERROR;
 
 
 	if(eold->error.error_file != ereq->error.error_file){
 		tfname = ereq->error.error_file;
 		if(tfname == NULL){
-			NhlPError(WARNING,E_UNKNOWN,
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
 				"Unable to open file NULL, Using stderr");
-			ret = MIN(ret,WARNING);
+			ret = MIN(ret,NhlWARNING);
 			tfname = "stderr";
 		}
 
@@ -317,9 +321,9 @@ ErrorSetValues
 		else{
 			tfptr = fopen(_NhlResolvePath(tfname),"w");
 			if(tfptr == NULL){
-				NHLPERROR((WARNING,E_UNKNOWN,
+				NHLPERROR((NhlWARNING,NhlEUNKNOWN,
 				"Unable to open %s,Using stderr",tfname));
-				ret = MIN(ret,WARNING);
+				ret = MIN(ret,NhlWARNING);
 				tfptr = stderr;
 				tfname = "stderr";
 			}
@@ -328,10 +332,10 @@ ErrorSetValues
 		if((eold->error.error_fp != stderr) &&
 					(eold->error.error_fp != stdout)){
 			if(fclose(eold->error.error_fp) != 0){
-				NhlPError(WARNING,E_UNKNOWN,
+				NhlPError(NhlWARNING,NhlEUNKNOWN,
 						"Error Closing File %s",
 						eold->error.error_file);
-				ret = MIN(ret,WARNING);
+				ret = MIN(ret,NhlWARNING);
 			}
 		}
 
@@ -351,7 +355,7 @@ ErrorSetValues
  * Description:	This function free's any memory that has been alocated
  *		on behalf of the ErrorClass instance.
  *
- * In Args:	Layer	l	The layer to destroy
+ * In Args:	NhlLayer	l	The layer to destroy
  *
  * Out Args:	
  *
@@ -363,22 +367,22 @@ static NhlErrorTypes
 ErrorDestroy
 #if	__STDC__
 (
-	Layer l		/* layer to ready for destruction	*/
+	NhlLayer l		/* layer to ready for destruction	*/
 )
 #else
 (l)
-	Layer l;	/* layer to ready for destruction	*/
+	NhlLayer l;	/* layer to ready for destruction	*/
 #endif
 {
-	ErrorLayer	el = (ErrorLayer)l;
-	NhlErrorTypes	ret = NOERROR;
+	NhlErrorLayer	el = (NhlErrorLayer)l;
+	NhlErrorTypes	ret = NhlNOERROR;
 	int		i;
 
 	if ((el->error.error_fp != stdout) && (el->error.error_fp != stderr)){
 		if(fclose(el->error.error_fp) != 0){
-			NHLPERROR((WARNING,E_UNKNOWN,
+			NHLPERROR((NhlWARNING,NhlEUNKNOWN,
 				"error closing file:%s",el->error.error_file));
-			ret = MIN(ret,WARNING);
+			ret = MIN(ret,NhlWARNING);
 		}
 	}
 
@@ -400,7 +404,7 @@ ErrorDestroy
 ************************************************************************/
 
 static int Error_inited = False;
-static ErrorLayer errorLayer = NULL;
+static NhlErrorLayer errorLayer = NULL;
 
 /*
  * Function:	_NhlInitError
@@ -431,23 +435,24 @@ _NhlInitError
 
 	if(!Error_inited){
 		int tmp;
-		NhlErrorTypes ret = NOERROR;
+		NhlErrorTypes ret = NhlNOERROR;
 
-		ret = NhlCreate(&tmp,"error",errorLayerClass,NOPARENT,NULL);
-		if(ret < WARNING){
-			NHLPERROR((ret,E_UNKNOWN,
+		ret = NhlVACreate(&tmp,"error",NhlerrorLayerClass,NhlNOPARENT,
+									NULL);
+		if(ret < NhlWARNING){
+			NHLPERROR((ret,NhlEUNKNOWN,
 					"Error Creating ErrorClass object"));
 			return;
 		}
 
-		errorLayer = (ErrorLayer)_NhlGetLayer(tmp);
+		errorLayer = (NhlErrorLayer)_NhlGetLayer(tmp);
 
 		Error_inited = True;
 
 
 		ret = NhlErrAddTable(0,sys_nerr,(Const char **)sys_errlist);
-		if (ret != NOERROR){
-			NHLPERROR((ret,E_UNKNOWN,
+		if (ret != NhlNOERROR){
+			NHLPERROR((ret,NhlEUNKNOWN,
 					"Error loading System Error Table"));
 		}
 	}
@@ -565,7 +570,7 @@ BufferMsg
 				errorLayer->error.print_errors = True;
 				errorLayer->error.error_fp = stderr;
 			}
-			NHLPERROR((WARNING,12,"Unable to buffer e-msgs"));
+			NHLPERROR((NhlWARNING,12,"Unable to buffer e-msgs"));
 		}
 		else
 			errorLayer->error.len_emsgs += ERRLISTINC;
@@ -646,7 +651,7 @@ AddErrMsg
 static HackUsed = False;
 static struct {
 	int	line;
-	char	fname[MAXFNAMELEN];
+	char	fname[_NhlMAXFNAMELEN];
 } HackInfo;
 
 /*
@@ -728,7 +733,7 @@ Const char *NhlPError
 	tmp.severity = severity;
 	tmp.errorno = errnum;
 
-	if(errnum == E_UNKNOWN)
+	if(errnum == NhlEUNKNOWN)
 		tmp.sysmsg = NULL;
 	else
 		tmp.sysmsg = RetrieveSysError(errnum);
@@ -788,8 +793,8 @@ NhlErrGetID
 	if(Error_inited && (errorLayer != NULL))
 		return errorLayer->base.id;
 
-	NHLPERROR((FATAL,E_UNKNOWN,"Can't find Error Object"));
-	return FATAL;
+	NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Can't find Error Object"));
+	return NhlFATAL;
 }
 
 /*
@@ -819,8 +824,8 @@ NhlErrNumMsgs
 	if(Error_inited && (errorLayer != NULL))
 		return errorLayer->error.num_emsgs;
 
-	NHLPERROR((FATAL,E_UNKNOWN,"Can't find Error Object"));
-	return FATAL;
+	NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Can't find Error Object"));
+	return NhlFATAL;
 }
 
 /*
@@ -855,16 +860,16 @@ NhlErrGetMsg
 	if(Error_inited && (errorLayer != NULL)){
 		if(((msgnum-1) < errorLayer->error.num_emsgs) && (msgnum > 0)){
 			*msg = &errorLayer->error.emsgs[msgnum-1];
-			return NOERROR;
+			return NhlNOERROR;
 		}
 
-		NHLPERROR((FATAL,E_UNKNOWN,"message number %d doesn't exist",
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"message number %d doesn't exist",
 								msgnum));
-		return FATAL;
+		return NhlFATAL;
 	}
 
-	NHLPERROR((FATAL,E_UNKNOWN,"Can't find Error Object"));
-	return FATAL;
+	NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Can't find Error Object"));
+	return NhlFATAL;
 }
 
 /*
@@ -903,11 +908,11 @@ NhlErrClearMsgs
 		errorLayer->error.num_emsgs = 0;
 		errorLayer->error.len_emsgs = 0;
 
-		return NOERROR;
+		return NhlNOERROR;
 	}
 
-	NHLPERROR((FATAL,E_UNKNOWN,"Can't find Error Object"));
-	return FATAL;
+	NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Can't find Error Object"));
+	return NhlFATAL;
 }
 
 /*
@@ -960,9 +965,9 @@ NhlErrAddTable
 			if(((start > tstart) && (start < tend)) ||
 			   ((end > tstart) && (end < tend))){
 
-				NHLPERROR((FATAL,E_UNKNOWN,
+				NHLPERROR((NhlFATAL,NhlEUNKNOWN,
 				"Table being added overlaps a previous table"));
-				return FATAL;
+				return NhlFATAL;
 			}
 		}
 
@@ -972,16 +977,16 @@ NhlErrAddTable
 		if(errorLayer->error.len_etables <
 					errorLayer->error.num_etables + 1){
 			errorLayer->error.etables =
-				(ETable *)NhlRealloc(errorLayer->error.etables,
+				(NhlETable *)NhlRealloc(errorLayer->error.etables,
 				(unsigned)((errorLayer->error.len_etables +
-					TABLELISTINC) * sizeof(ETable)));
+					TABLELISTINC) * sizeof(NhlETable)));
 			if(errorLayer->error.etables == NULL){
 				errorLayer->error.len_etables = 0;
 				errorLayer->error.num_etables = 0;
 
-				NHLPERROR((FATAL,errno,
+				NHLPERROR((NhlFATAL,errno,
 				"Unable to allocate memory for error table"));
-				return FATAL;
+				return NhlFATAL;
 			}
 			else
 				errorLayer->error.len_etables += TABLELISTINC;
@@ -998,11 +1003,11 @@ NhlErrAddTable
 									etable;
 		errorLayer->error.num_etables++;
 
-		return NOERROR;
+		return NhlNOERROR;
 	}
 
-	NHLPERROR((FATAL,E_UNKNOWN,"Can't find Error Object"));
-	return FATAL;
+	NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Can't find Error Object"));
+	return NhlFATAL;
 }
 
 /*
@@ -1036,14 +1041,14 @@ NhlErrSPrintMsg
 {
 	char tbuf[MAXERRMSGLEN];
 
-	if(msg->severity == NOERROR)
-		strcpy(buffer,"NOERROR");
-	else if(msg->severity == INFO)
-		strcpy(buffer,"INFO");
-	else if(msg->severity == WARNING)
-		strcpy(buffer,"WARNING");
+	if(msg->severity == NhlNOERROR)
+		strcpy(buffer,"NhlNOERROR");
+	else if(msg->severity == NhlINFO)
+		strcpy(buffer,"NhlINFO");
+	else if(msg->severity == NhlWARNING)
+		strcpy(buffer,"NhlWARNING");
 	else
-		strcpy(buffer,"FATAL");
+		strcpy(buffer,"NhlFATAL");
 	
 	if((msg->line > 0) && (msg->fname != NULL)){
 		sprintf(tbuf,":[\"%s\":%d]",msg->fname,msg->line);
@@ -1055,7 +1060,7 @@ NhlErrSPrintMsg
 		strcat(buffer,msg->msg);
 	}
 
-	if(msg->errorno != E_UNKNOWN){
+	if(msg->errorno != NhlEUNKNOWN){
 		sprintf(tbuf,":[errno=%d]",msg->errorno);
 		strcat(buffer,tbuf);
 	}

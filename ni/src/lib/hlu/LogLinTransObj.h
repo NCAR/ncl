@@ -1,6 +1,5 @@
-
 /*
- *      $Id: LogLinTransObj.h,v 1.1 1993-04-30 17:22:44 boote Exp $
+ *      $Id: LogLinTransObj.h,v 1.2 1994-01-27 21:24:28 boote Exp $
  */
 /************************************************************************
 *									*
@@ -45,11 +44,7 @@
 #define NhlCtrYReverse	"TrYReverse"
 
 
-typedef struct _LogLinTransObjLayerClassRec *LogLinTransObjLayerClass;
-typedef struct _LogLinTransObjLayerRec	*LogLinTransObjLayer;
-
-extern LayerClass logLinTransObjLayerClass;
-
+extern NhlLayerClass NhllogLinTransObjLayerClass;
 
 #endif /* LogLinTransObj_h */
 

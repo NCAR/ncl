@@ -1,5 +1,5 @@
 /*
- *      $Id: Reparent.c,v 1.4 1994-01-10 19:48:49 boote Exp $
+ *      $Id: Reparent.c,v 1.5 1994-01-27 21:25:33 boote Exp $
  */
 /************************************************************************
 *									*
@@ -43,24 +43,24 @@ static NhlErrorTypes
 CallReparent
 #if	__STDC__
 (
-	Layer		l,	/* layer to call reparent for	*/
-	Layer		parent,	/* layer to call reparent for	*/
-	LayerClass	lc	/* class or superclass of l	*/
+	NhlLayer	l,	/* layer to call reparent for	*/
+	NhlLayer	parent,	/* layer to call reparent for	*/
+	NhlLayerClass	lc	/* class or superclass of l	*/
 )
 #else
 (l,parent,lc)
-	Layer		l;	/* layer to call reparent for	*/
-	Layer		parent;	/* layer to call reparent for	*/
-	LayerClass	lc;	/* class or superclass of l	*/
+	NhlLayer	l;	/* layer to call reparent for	*/
+	NhlLayer	parent;	/* layer to call reparent for	*/
+	NhlLayerClass	lc;	/* class or superclass of l	*/
 #endif
 {
-	NhlErrorTypes	scret = NOERROR;
-	NhlErrorTypes	lcret = NOERROR;
+	NhlErrorTypes	scret = NhlNOERROR;
+	NhlErrorTypes	lcret = NhlNOERROR;
 
 	if(lc->base_class.superclass != NULL){
 		scret = CallReparent(l,parent,lc->base_class.superclass);
 
-		if(scret < WARNING)
+		if(scret < NhlWARNING)
 			return scret;
 	}
 
@@ -79,8 +79,8 @@ CallReparent
  *		on it's new hierachy.
  *
  * In Args:	
- *		Layer	child,	child to re-parent
- *		Layer	parent	new parent
+ *		NhlLayer	child,	child to re-parent
+ *		NhlLayer	parent	new parent
  *
  * Out Args:	
  *
@@ -93,28 +93,28 @@ static NhlErrorTypes
 Reparent
 #if	__STDC__
 (
-	Layer	child,	/* child to re-parent	*/
-	Layer	parent	/* new parent		*/
+	NhlLayer	child,	/* child to re-parent	*/
+	NhlLayer	parent	/* new parent		*/
 )
 #else
 (child,parent)
-	Layer	child;	/* child to re-parent	*/
-	Layer	parent;	/* new parent		*/
+	NhlLayer	child;	/* child to re-parent	*/
+	NhlLayer	parent;	/* new parent		*/
 #endif
 {
 	_NhlAllChildList	*tnodeptr;
 	_NhlAllChildList	tnode;
 
-	if(child->base.parent == (Layer)NULL){
-		NhlPError(FATAL,E_UNKNOWN,
+	if(child->base.parent == (NhlLayer)NULL){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
 					"Can not reparent a parentless child");
-		return FATAL;
+		return NhlFATAL;
 	}
 
 	if(_NhlIsObj(parent)){
-		NhlPError(FATAL,E_UNKNOWN,
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
 					"Parent found unsuitable for adoption");
-		return FATAL;
+		return NhlFATAL;
 	}
 
 	if(parent != child->base.parent){
@@ -136,9 +136,9 @@ Reparent
 		}
 
 		if(tnode == (_NhlAllChildList)NULL){
-			NhlPError(FATAL,E_UNKNOWN,
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
 			"Unable to remove PID#%d from parent",child->base.id);
-			return FATAL;
+			return NhlFATAL;
 		}
 
 		/*
@@ -175,19 +175,20 @@ NhlErrorTypes
 _NhlReparent
 #if	__STDC__
 (
-	Layer	child,
-	Layer	parent
+	NhlLayer	child,
+	NhlLayer	parent
 )
 #else
 (child,parent)
-	Layer	child;
-	Layer	parent;
+	NhlLayer	child;
+	NhlLayer	parent;
 #endif
 {
 	if((child == NULL) || (parent == NULL)){
-		NhlPError(FATAL,E_UNKNOWN,"_NhlReparent:passed a NULL layer");
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+					"_NhlReparent:passed a NULL layer");
 
-		return FATAL;
+		return NhlFATAL;
 	}
 
 	return Reparent(child,parent);
@@ -224,26 +225,26 @@ NhlChangeWorkstation
 	int	workid;		/* Id of new Workstation parent	*/
 #endif
 {
-	Layer		plot = _NhlGetLayer(plotid);
-	Layer		work = _NhlGetLayer(workid);
+	NhlLayer		plot = _NhlGetLayer(plotid);
+	NhlLayer		work = _NhlGetLayer(workid);
 
-	if((plot == (Layer)NULL) || (work == (Layer)NULL)){
-		NhlPError(FATAL,E_UNKNOWN,
+	if((plot == (NhlLayer)NULL) || (work == (NhlLayer)NULL)){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
 			"NhlChangeWorkstation-invalid plotid=%d or workid=%d",
 								plotid,workid);
-		return FATAL;
+		return NhlFATAL;
 	}
 
 	if(!_NhlIsWorkstation(plot->base.parent)){
-		NhlPError(FATAL,E_UNKNOWN,
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
 			"ChangeWorkstation-plot must be child of Workstation");
-		return FATAL;
+		return NhlFATAL;
 	}
 
 	if(!_NhlIsWorkstation(work)){
-		NhlPError(FATAL,E_UNKNOWN,
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
 			"ChangeWorkstation-workid must be id of Workstation");
-		return FATAL;
+		return NhlFATAL;
 	}
 
 	return Reparent(plot,work);

@@ -1,6 +1,5 @@
-
 /*
- *      $Id: Workstation.h,v 1.3 1993-10-23 00:35:04 dbrown Exp $
+ *      $Id: Workstation.h,v 1.4 1994-01-27 21:27:26 boote Exp $
  */
 /************************************************************************
 *									*
@@ -163,13 +162,97 @@ typedef NhlMarkerSpec **NhlMarkerTable;
 
 typedef float NhlMarkerTableParams[4];
 
-extern LayerClass workstationLayerClass;
+/*
+ * Public access functions to support Workstation Class
+ */
 
-typedef struct _WorkstationLayerRec *WorkstationLayer;
-typedef struct _WorkstationLayerClassRec *WorkstationLayerClass;
+extern NhlErrorTypes NhlChangeWorkstation(
+#if	NhlNeedProto
+	int	plotid,		/* plotid to move to new workstation	*/
+	int	workid		/* workid of workstation		*/
+#endif
+);
+
+extern NhlErrorTypes NhlUpdateWorkstation(
+#if	NhlNeedProto
+	int	workid	/* workid of workstation to update	*/
+#endif
+);
+
+extern NhlErrorTypes NhlClearWorkstation(
+#if	NhlNeedProto
+	int	workid	/* workid of workstation to clear	*/
+#endif
+);
+
+extern NhlErrorTypes   NhlFrame(
+#if	NhlNeedProto
+	int /*wid*/
+#endif
+);
+
+
+extern NhlErrorTypes NhlSetColor(
+#ifdef NhlNeedProto
+int 	/* pid */,
+int     /* ci */,
+float   /* red */,
+float   /* green */,
+float   /* blue */
+#endif
+);
+
+extern NhlErrorTypes NhlFreeColor(
+#ifdef NhlNeedProto
+        int 	/* pid */,
+        int     /* ci */
+#endif
+);
+
+extern int NhlNewColor(
+#ifdef NhlNeedProto
+        int     /* pid*/,
+        float   /* red */,
+        float   /* green */,
+        float   /* blue */
+#endif
+);
+
+extern int NhlGetGksCi(
+#ifdef NhlNeedProto
+        int     /* pid */,
+        int     /* ci   */
+#endif
+);
+int NhlGetGksWorkId(
+#ifdef NhlNeedProto
+int /* workid */
+#endif
+);
+
+int NhlNewMarker(
+#ifdef NhlNeedProto
+	int instance, 
+	char *marker_string, 
+	float x_off, 
+	float y_off,
+	float aspect_adj,
+	float size_adj
+#endif
+);
+
+NhlErrorTypes NhlSetMarker(
+#ifdef NhlNeedProto
+	int instance, 
+	int	index,
+	char	*marker_string, 
+	float	x_off, 
+	float	y_off,
+	float	aspect_adj,
+	float	size_adj
+#endif
+);
+
+extern NhlLayerClass NhlworkstationLayerClass;
 
 #endif	/* _NWorkstation_h */
-
-
-
-

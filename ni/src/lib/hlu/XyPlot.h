@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.h,v 1.4 1993-12-13 23:35:26 ethan Exp $
+ *      $Id: XyPlot.h,v 1.5 1994-01-27 21:27:53 boote Exp $
  */
 /************************************************************************
 *									*
@@ -144,12 +144,21 @@
 /*
  * New types
  */
-typedef enum { NONE, LEFTAXIS, RIGHTAXIS, TOPAXIS, BOTTOMAXIS } AlternatePlace;
-typedef enum { NOLABELS, LETTERED, CUSTOM } LineLabelModes;
+typedef enum _NhlAlternatePlace{
+	NhlNONE,
+	NhlLEFTAXIS,
+	NhlRIGHTAXIS,
+	NhlTOPAXIS,
+	NhlBOTTOMAXIS
+} NhlAlternatePlace;
 
-extern LayerClass xyPlotLayerClass;
-extern LayerClass xyDataDepLayerClass;
+typedef enum _NhlLineLabelModes{
+	NhlNOLABELS,
+	NhlLETTERED,
+	NhlCUSTOM
+} NhlLineLabelModes;
 
-typedef struct _XyPlotLayerClassRec *XyPlotLayerClass;
-typedef struct _XyPlotLayerRec *XyPlotLayer;
+extern NhlLayerClass NhlxyPlotLayerClass;
+extern NhlLayerClass NhlxyDataDepLayerClass;
+
 #endif /* _NXyPlot_h */

@@ -1,5 +1,5 @@
 /*
- *      $Id: MapTransObjP.h,v 1.2 1993-10-19 17:51:50 boote Exp $
+ *      $Id: MapTransObjP.h,v 1.3 1994-01-27 21:24:53 boote Exp $
  */
 /************************************************************************
 *									*
@@ -23,10 +23,11 @@
 #define _NMapTransObjP_h
 
 #include <ncarg/hlu/hluP.h>
+#include <ncarg/hlu/WorkstationI.h>
 #include <ncarg/hlu/TransObjP.h>
 #include <ncarg/hlu/MapTransObj.h>
 
-typedef struct _MapTransObjLayerPart{
+typedef struct _NhlMapTransObjLayerPart{
 	/* User setable resource fields */
 	char	*projection;
 	char	*outline_type;
@@ -55,24 +56,27 @@ typedef struct _MapTransObjLayerPart{
 	float	ur;
 	float 	ut;
 	float	ub;
-}MapTransObjLayerPart;
+}NhlMapTransObjLayerPart;
 
-typedef struct _MapTransObjLayerRec {
-	ObjLayerPart	base;
-	TransObjLayerPart trobj;
-	MapTransObjLayerPart mptrans;
-} MapTransObjLayerRec;
+typedef struct _NhlMapTransObjLayerRec {
+	NhlObjLayerPart		base;
+	NhlTransObjLayerPart	trobj;
+	NhlMapTransObjLayerPart	mptrans;
+} NhlMapTransObjLayerRec;
 
-typedef struct _MapTransObjLayerClassPart {
+typedef struct _NhlMapTransObjLayerClassPart {
 	char *foo;
-} MapTransObjLayerClassPart;
+} NhlMapTransObjLayerClassPart;
 
-typedef struct _MapTransObjLayerClassRec {
-	ObjLayerClassPart	base_class;
-	TransObjLayerClassPart	trobj_class;
-	MapTransObjLayerClass	mptrans_class;
-} MapTransObjLayerClassRec;
+typedef struct _NhlMapTransObjLayerClassRec {
+	NhlObjLayerClassPart		base_class;
+	NhlTransObjLayerClassPart	trobj_class;
+	NhlMapTransObjLayerClassPart	mptrans_class;
+} NhlMapTransObjLayerClassRec;
 
-extern MapTransObjLayerClassRec mapTransObjLayerClassRec;
+typedef struct _NhlMapTransObjLayerRec *NhlMapTransObjLayer;
+typedef struct _NhlMapTransObjLayerClassRec *NhlMapTransObjLayerClass;
+
+extern NhlMapTransObjLayerClassRec NhlmapTransObjLayerClassRec;
 
 #endif /*_NMapTransObjP_h*/

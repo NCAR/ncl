@@ -1,6 +1,5 @@
-
 /*
- *      $Id: MapTransObj.h,v 1.1 1993-04-30 17:22:56 boote Exp $
+ *      $Id: MapTransObj.h,v 1.2 1994-01-27 21:24:50 boote Exp $
  */
 /************************************************************************
 *									*
@@ -75,11 +74,6 @@
 #define NhlCmpMapPosBF			"MpMapPosBF"
 */
 
-
-
-extern LayerClass mapTransObjLayerClass;
-
-typedef struct _MapTransObjLayerRec *MapTransObjLayer;
-typedef struct _MapTransObjLayerClassRec *MapTransObjLayerClass;
+extern NhlLayerClass NhlmapTransObjLayerClass;
 
 #endif /*_NMapTranObj_h */

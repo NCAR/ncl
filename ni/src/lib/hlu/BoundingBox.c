@@ -1,5 +1,5 @@
 /*
- *      $Id: BoundingBox.c,v 1.2 1993-10-19 17:49:47 boote Exp $
+ *      $Id: BoundingBox.c,v 1.3 1994-01-27 21:21:28 boote Exp $
  */
 /************************************************************************
 *									*
@@ -25,8 +25,6 @@
  *			items like labelbars and legends as part of the
  *			BB. This is up to 	
  */
-
-
 #include <stdio.h>
 #include <string.h>
 #include <ncarg/hlu/hluP.h>
@@ -51,23 +49,27 @@
  */
 static NhlErrorTypes CallGetBB
 #if __STDC__
-(Layer instance, LayerClass class, NhlBoundingBox *thebox)
+(
+NhlLayer instance,
+NhlLayerClass class,
+NhlBoundingBox *thebox
+)
 #else
 (instance,class,thebox)
-	Layer	instance;
-	LayerClass class;
+	NhlLayer	instance;
+	NhlLayerClass class;
 	NhlBoundingBox *thebox;
 #endif
 {
-	ViewLayerClass	vclass = (ViewLayerClass) class;
-	NhlErrorTypes ancestor=NOERROR, ret = NOERROR;
+	NhlViewLayerClass	vclass = (NhlViewLayerClass) class;
+	NhlErrorTypes ancestor=NhlNOERROR, ret = NhlNOERROR;
 
 	if(vclass->base_class.superclass->base_class.class_inited &
-							ViewLayerClassFlag) {
+							_NhlViewLayerClassFlag){
 		ancestor =CallGetBB(instance,vclass->base_class.superclass,
 			thebox);
 
-		if(ancestor < WARNING)
+		if(ancestor < NhlWARNING)
 			return(ancestor);
 	}
 
@@ -95,10 +97,13 @@ static NhlErrorTypes CallGetBB
  */
 NhlErrorTypes _NhlGetBB
 #if	__STDC__
-(Layer instance, NhlBoundingBox *thebox)
+(
+	NhlLayer instance,
+	NhlBoundingBox *thebox
+)
 #else
 (instance,thebox)
-	Layer instance;
+	NhlLayer instance;
 	NhlBoundingBox* thebox;
 #endif
 {
@@ -107,9 +112,9 @@ NhlErrorTypes _NhlGetBB
 				thebox));
 	} else {
 
-	NhlPError(FATAL,E_UNKNOWN,"Can't get  BB info for non-view object");
+	NhlPError(NhlFATAL,NhlEUNKNOWN,"Can't get  BB info for non-view object");
 
-		return(FATAL);
+		return(NhlFATAL);
 	}
 }
 
@@ -137,7 +142,7 @@ NhlErrorTypes NhlGetBB
 	NhlBoundingBox *thebox;
 #endif
 {
-	Layer instance;
+	NhlLayer instance;
 	char  buffer[80];
 	
 	thebox->set = 0;
@@ -150,7 +155,7 @@ NhlErrorTypes NhlGetBB
 		return(_NhlGetBB(instance,thebox));
 	else {
 		sprintf(buffer,"Invalid plot ID=%g passed to NhlGetBB",pid);
-		NhlPError(FATAL,E_UNKNOWN,buffer);
-		return(FATAL);
+		NhlPError(NhlFATAL,NhlEUNKNOWN,buffer);
+		return(NhlFATAL);
 	}
 }

@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMarkP.h,v 1.4 1994-01-14 23:36:34 boote Exp $
+ *      $Id: TickMarkP.h,v 1.5 1994-01-27 21:26:30 boote Exp $
  */
 /************************************************************************
 *									*
@@ -27,9 +27,11 @@
 #include <ncarg/hlu/TickMark.h>
 #include <ncarg/hlu/TextItem.h>
 
-#define DEFAULTOFFSET 1.0
+#define	DEFAULTOFFSET	1.0
+#define MAXTICKS	256
+#define MAXMINORTICKS	1024
 
-typedef struct _TickMarkLayerPart {
+typedef struct _NhlTickMarkLayerPart {
 	/* Publically setable resources */
 	int		sci_note_cutoff;
 	NhlBoolean	x_use_bottom;
@@ -39,10 +41,10 @@ typedef struct _TickMarkLayerPart {
 	NhlBoolean	x_t_labels_on;
 	NhlBoolean	x_b_border_on;
 	NhlBoolean	x_t_border_on;
-	TickMarkModes	x_b_mode;
-	TickMarkModes	x_t_mode;
-	TickMarkStyles	x_b_style;
-	TickMarkStyles	x_t_style;
+	NhlTickMarkModes	x_b_mode;
+	NhlTickMarkModes	x_t_mode;
+	NhlTickMarkStyles	x_b_style;
+	NhlTickMarkStyles	x_t_style;
 	float		x_t_tension;
 	float		x_b_tension;
 	int		x_b_precision;
@@ -87,7 +89,7 @@ typedef struct _TickMarkLayerPart {
 	float		x_b_label_font_aspect;
 	int		x_b_label_just;
 	float		x_b_label_angle;
-	TextDirection   x_b_label_direction;
+	NhlTextDirection   x_b_label_direction;
 	float		x_b_label_delta;
 	NhlBoolean	x_b_auto_precision;
 	float		x_t_data_left;
@@ -114,7 +116,7 @@ typedef struct _TickMarkLayerPart {
 	float		x_t_label_font_aspect;
 	int		x_t_label_just;
 	float		x_t_label_angle;
-	TextDirection   x_t_label_direction;
+	NhlTextDirection   x_t_label_direction;
 	float		x_t_label_delta;
 	NhlBoolean	x_t_auto_precision;
 	NhlBoolean	y_use_left;
@@ -124,10 +126,10 @@ typedef struct _TickMarkLayerPart {
 	NhlBoolean	y_l_labels_on;
 	NhlBoolean	y_r_border_on;
 	NhlBoolean	y_l_border_on;
-	TickMarkModes	y_r_mode;
-	TickMarkModes	y_l_mode;
-	TickMarkStyles	y_l_style;
-	TickMarkStyles	y_r_style;
+	NhlTickMarkModes	y_r_mode;
+	NhlTickMarkModes	y_l_mode;
+	NhlTickMarkStyles	y_l_style;
+	NhlTickMarkStyles	y_r_style;
 	float		y_l_tension;
 	float		y_r_tension;
 	int		y_l_precision;
@@ -170,7 +172,7 @@ typedef struct _TickMarkLayerPart {
 	float		y_l_label_font_aspect;
 	int		y_l_label_just;
 	float		y_l_label_angle;
-	TextDirection   y_l_label_direction;
+	NhlTextDirection   y_l_label_direction;
 	float		y_l_label_delta;
 	NhlBoolean	y_l_auto_precision;
 	float		y_r_data_top;
@@ -197,17 +199,17 @@ typedef struct _TickMarkLayerPart {
 	float		y_r_label_font_aspect;
 	int		y_r_label_just;
 	float		y_r_label_angle;
-	TextDirection   y_r_label_direction;
+	NhlTextDirection   y_r_label_direction;
 	float		y_r_label_delta;
 	NhlBoolean	y_r_auto_precision;
 /* Private fields */
-	Layer		xb_yl_trans_obj;  /* used to tranform tick mark data locations
+	NhlLayer		xb_yl_trans_obj;  /* used to tranform tick mark data locations
 					to tickmark NDC locations */
-	Layer		xt_yr_trans_obj;
-	Layer		xb_multi;
-	Layer		xt_multi;
-	Layer		yl_multi;
-	Layer		yr_multi;
+	NhlLayer		xt_yr_trans_obj;
+	NhlLayer		xb_multi;
+	NhlLayer		xt_multi;
+	NhlLayer		yl_multi;
+	NhlLayer		yr_multi;
 
 /* different than data_left/right/top/bottom these are used to know what
    the data ranges actually are */
@@ -270,24 +272,27 @@ typedef struct _TickMarkLayerPart {
 	float		*y_r_minor_data_locs;
 	int		y_r_nminor;
 	float		y_r_ndc_label_x;
-}TickMarkLayerPart;
+}NhlTickMarkLayerPart;
 
-typedef struct _TickMarkLayerRec {
-	BaseLayerPart	base;
-	ViewLayerPart	view;
-	TickMarkLayerPart	tick;
-}TickMarkLayerRec;
+typedef struct _NhlTickMarkLayerRec {
+	NhlBaseLayerPart	base;
+	NhlViewLayerPart	view;
+	NhlTickMarkLayerPart	tick;
+}NhlTickMarkLayerRec;
 
-typedef struct _TickMarkLayerClassPart {
+typedef struct _NhlTickMarkLayerClassPart {
 	void *foo;
-}TickMarkLayerClassPart;
+}NhlTickMarkLayerClassPart;
 
-typedef struct _TickMarkLayerClassRec {
-	BaseLayerClassPart	base_class;
-	ViewLayerClassPart	view_class;
-	TickMarkLayerClassPart	tick_class;
-}TickMarkLayerClassRec;
+typedef struct _NhlTickMarkLayerClassRec {
+	NhlBaseLayerClassPart	base_class;
+	NhlViewLayerClassPart	view_class;
+	NhlTickMarkLayerClassPart	tick_class;
+}NhlTickMarkLayerClassRec;
 
-extern TickMarkLayerClassRec	tickMarkLayerClassRec;
+typedef struct _NhlTickMarkLayerClassRec *NhlTickMarkLayerClass;
+typedef struct _NhlTickMarkLayerRec	*NhlTickMarkLayer;
+
+extern NhlTickMarkLayerClassRec	NhltickMarkLayerClassRec;
 
 #endif /* _NTickMarkP_h */

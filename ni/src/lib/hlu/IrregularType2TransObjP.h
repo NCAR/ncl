@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularType2TransObjP.h,v 1.3 1993-12-13 23:34:32 ethan Exp $
+ *      $Id: IrregularType2TransObjP.h,v 1.4 1994-01-27 21:23:30 boote Exp $
  */
 /************************************************************************
 *									*
@@ -28,7 +28,7 @@
 
 #include <ncarg/hlu/CoordApprox.h>
 
-typedef struct _IrregularType2TransObjLayerPart {
+typedef struct _NhlIrregularType2TransObjLayerPart {
 	/* Publically setable resources */
 	float 	*x_coord_points;
 	float	*x_inter_points;
@@ -62,24 +62,30 @@ typedef struct _IrregularType2TransObjLayerPart {
 	float	compc_y_min;
 	float 	compc_y_max;
 	int log_lin_value;
-} IrregularType2TransObjLayerPart;
+} NhlIrregularType2TransObjLayerPart;
 
-typedef struct _IrregularType2TransObjLayerRec {
-	ObjLayerPart	base;
-	TransObjLayerPart trobj;
-	IrregularType2TransObjLayerPart ir2trans;
-} IrregularType2TransObjLayerRec;
+typedef struct _NhlIrregularType2TransObjLayerRec {
+	NhlObjLayerPart				base;
+	NhlTransObjLayerPart			trobj;
+	NhlIrregularType2TransObjLayerPart	ir2trans;
+} NhlIrregularType2TransObjLayerRec;
 
-typedef struct _IrregularType2TransObjLayerClassPart {
+typedef struct _NhlIrregularType2TransObjLayerClassPart {
 	char *foo;
-}IrregularType2TransObjLayerClassPart;
+}NhlIrregularType2TransObjLayerClassPart;
 
-typedef struct _IrregularType2TransObjLayerClassRec {
-	ObjLayerClassPart	base_class;
-	TransObjLayerClassPart	trobj_class;
-	IrregularType2TransObjLayerClassPart	ir2trans_class;
-}IrregularType2TransObjLayerClassRec;
+typedef struct _NhlIrregularType2TransObjLayerClassRec {
+	NhlObjLayerClassPart			base_class;
+	NhlTransObjLayerClassPart		trobj_class;
+	NhlIrregularType2TransObjLayerClassPart	ir2trans_class;
+}NhlIrregularType2TransObjLayerClassRec;
 
-extern IrregularType2TransObjLayerClassRec irregularType2TransObjLayerClassRec;
+typedef struct _NhlIrregularType2TransObjLayerClassRec
+					*NhlIrregularType2TransObjLayerClass;
+typedef struct _NhlIrregularType2TransObjLayerRec
+						*NhlIrregularType2TransObjLayer;
+
+extern NhlIrregularType2TransObjLayerClassRec
+					NhlirregularType2TransObjLayerClassRec;
 
 #endif /* _NIrregularType2TransObjP_h */

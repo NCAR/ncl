@@ -1,5 +1,5 @@
 /*
- *      $Id: OverlayP.h,v 1.4 1994-01-24 23:57:46 dbrown Exp $
+ *      $Id: OverlayP.h,v 1.5 1994-01-27 21:25:30 boote Exp $
  */
 /************************************************************************
 *									*
@@ -24,7 +24,7 @@
 #define _NOverlayP_h
 
 #include <ncarg/hlu/TransformP.h>
-#include <ncarg/hlu/Overlay.h>
+#include <ncarg/hlu/OverlayI.h>
 
 #define NhlOV_ALLOC_UNIT 8
 #define NhlOV_IRR_COUNT 16
@@ -45,12 +45,12 @@
 #define NhlCovOverlayRecs	".OvOverlayRecs"
 #define NhlCovUpdateReq		".OvUpdateReq"
 
-typedef struct _ovRec {
-	TransformLayer	plot;		/* overlay plot */
-	Layer		ov_obj;		/* overlay object associated w/ plot */
-} ovRec;
+typedef struct _NhlovRec {
+	NhlTransformLayer	plot;	/* overlay plot */
+	NhlLayer		ov_obj;	/* overlay object associated w/ plot */
+} NhlovRec;
 
-typedef struct OverlayLayerPart {
+typedef struct _NhlOverlayLayerPart {
 
 	/* Public resource fields */
 
@@ -85,9 +85,9 @@ typedef struct OverlayLayerPart {
 	float			ti_main_offset_x;
 	float			ti_x_axis_offset_x;
 	float			ti_y_axis_offset_y;
-	TitlePositions		ti_main_position;
-	TitlePositions		ti_x_axis_position;
-	TitlePositions		ti_y_axis_position;
+	NhlTitlePositions		ti_main_position;
+	NhlTitlePositions		ti_x_axis_position;
+	NhlTitlePositions		ti_y_axis_position;
 
 	/* labelbar resources */
 
@@ -122,12 +122,12 @@ typedef struct OverlayLayerPart {
 
 	int			overlay_alloc;
 	int			overlay_count;
-	ovRec			**ov_recs;
+	NhlovRec		**ov_recs;
 
-	Layer			tickmarks;
-	Layer			titles;
-	Layer			labelbar;
-	Layer			legend;
+	NhlLayer		tickmarks;
+	NhlLayer		titles;
+	NhlLayer		labelbar;
+	NhlLayer		legend;
 
 	float			lbar_x;
 	float			lbar_y;
@@ -142,33 +142,36 @@ typedef struct OverlayLayerPart {
 	float			real_y_axis_offset_y;
 	float			real_x_axis_offset_x;
 
-	TickMarkStyles		x_tm_style;
-	TickMarkStyles		y_tm_style;
+	NhlTickMarkStyles		x_tm_style;
+	NhlTickMarkStyles		y_tm_style;
 	int			x_irr_count;
 	int			y_irr_count;
 	NhlGenArray		x_irr;
 	NhlGenArray		y_irr;
 
-} OverlayLayerPart;
+} NhlOverlayLayerPart;
 
-typedef struct _OverlayLayerRec {
-	BaseLayerPart		base;
-	ViewLayerPart		view;
-	TransformLayerPart	trans;
-	OverlayLayerPart	overlay;
-} OverlayLayerRec;
+typedef struct _NhlOverlayLayerRec {
+	NhlBaseLayerPart		base;
+	NhlViewLayerPart		view;
+	NhlTransformLayerPart	trans;
+	NhlOverlayLayerPart	overlay;
+} NhlOverlayLayerRec;
 
-typedef struct OverlayLayerClassPart{
+typedef struct NhlOverlayLayerClassPart{
 	void *foo;
-} OverlayLayerClassPart;
+} NhlOverlayLayerClassPart;
 
-typedef struct _OverlayLayerClassRec{
-	BaseLayerClassPart	base_class;
-	ViewLayerClassPart	view_class;
-	TransformLayerClassPart	trans_class;
-	OverlayLayerClassPart	overlay_class;
-} OverlayLayerClassRec;
+typedef struct _NhlOverlayLayerClassRec{
+	NhlBaseLayerClassPart	base_class;
+	NhlViewLayerClassPart	view_class;
+	NhlTransformLayerClassPart	trans_class;
+	NhlOverlayLayerClassPart	overlay_class;
+} NhlOverlayLayerClassRec;
 
-extern OverlayLayerClassRec overlayLayerClassRec;
+typedef struct _NhlOverlayLayerClassRec *NhlOverlayLayerClass;
+typedef struct _NhlOverlayLayerRec *NhlOverlayLayer;
+
+extern NhlOverlayLayerClassRec NhloverlayLayerClassRec;
 
 #endif  /* _NOverlayP_h */

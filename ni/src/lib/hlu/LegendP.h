@@ -1,6 +1,5 @@
-
 /*
- *      $Id: LegendP.h,v 1.3 1993-11-02 20:00:47 dbrown Exp $
+ *      $Id: LegendP.h,v 1.4 1994-01-27 21:24:11 boote Exp $
  */
 /************************************************************************
 *									*
@@ -26,7 +25,7 @@
 #include <ncarg/hlu/ViewP.h>
 #include <ncarg/hlu/Legend.h>
 
-typedef struct _LegendLayerPart {
+typedef struct _NhlLegendLayerPart {
 
 	/* public resource fields */
 
@@ -64,15 +63,15 @@ typedef struct _LegendLayerPart {
 				       2 - Below Items */
 	int	label_dir;
 	float	label_angle;
-	int	label_font;
+	NhlFont	label_font;
 	int	label_color;
 	float	label_height;
 	float	label_aspect;
 	float	label_thickness;
-	FontQuality label_quality;
+	NhlFontQuality label_quality;
 	float	label_const_spacing;
 	char	label_func_code;
-	TextDirection label_direction;
+	NhlTextDirection label_direction;
 	int     label_stride;
 	
 	float	max_title_ext;
@@ -82,12 +81,12 @@ typedef struct _LegendLayerPart {
 	NhlJustification  title_just;
 	int     title_direction;
 	float	title_angle;
-	int	title_font;
+	NhlFont	title_font;
 	int	title_color;
 	float	title_height;
 	float	title_aspect;
 	float	title_thickness;
-	FontQuality title_quality;
+	NhlFontQuality title_quality;
 	float	title_const_spacing;
 	char	title_func_code;
 
@@ -140,25 +139,28 @@ typedef struct _LegendLayerPart {
 	float		title_x;
 	float		title_y;
 
-}LegendLayerPart;
+}NhlLegendLayerPart;
 
-typedef struct _LegendLayerRec{
-	BaseLayerPart	base;
-	ViewLayerPart	view;
-	LegendLayerPart legend;
-}LegendLayerRec;
+typedef struct _NhlLegendLayerRec{
+	NhlBaseLayerPart	base;
+	NhlViewLayerPart	view;
+	NhlLegendLayerPart legend;
+}NhlLegendLayerRec;
 
-typedef struct _LegendLayerClassPart {
+typedef struct _NhlLegendLayerClassPart {
 	char *foo;
-}LegendLayerClassPart;
+}NhlLegendLayerClassPart;
 
-typedef struct _LegendLayerClassRec{
-	BaseLayerClassPart base_class;
-	ViewLayerClassPart view_class;
-	LegendLayerClassPart legend_class;
-}LegendLayerClassRec;
+typedef struct _NhlLegendLayerClassRec{
+	NhlBaseLayerClassPart base_class;
+	NhlViewLayerClassPart view_class;
+	NhlLegendLayerClassPart legend_class;
+}NhlLegendLayerClassRec;
 
-extern LegendLayerClassRec legendLayerClassRec;
+typedef struct _NhlLegendLayerClassRec *NhlLegendLayerClass;
+typedef struct _NhlLegendLayerRec	*NhlLegendLayer;
+
+extern NhlLegendLayerClassRec NhllegendLayerClassRec;
 
 
 #endif  /*_NLegendP_h*/

@@ -1,5 +1,5 @@
 /*
- *      $Id: MultiText.h,v 1.1 1993-04-30 17:23:09 boote Exp $
+ *      $Id: MultiText.h,v 1.2 1994-01-27 21:25:00 boote Exp $
  */
 /************************************************************************
 *									*
@@ -50,18 +50,15 @@
 /*
  * Other new usefull definitions
  */
-typedef enum _MTextOrientatonType{
-	MTEXT_X_CONST,
-	MTEXT_Y_CONST
+typedef enum _NhlMTextOrientatonType{
+	NhlMTEXT_X_CONST,
+	NhlMTEXT_Y_CONST
 } NhlMTextOrientatonType;
 
 /*
  * Definition and declaration of new class for global use
  */
 
-extern LayerClass multiTextLayerClass;
+extern NhlLayerClass NhlmultiTextLayerClass;
 
-typedef struct _MultiTextLayerClassRec *MultiTextLayerClass;
-typedef struct _MultiTextLayerRec	*MultiTextLayer;
 #endif  /* _NMultiText_h */
-

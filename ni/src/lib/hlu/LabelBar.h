@@ -1,6 +1,5 @@
-
 /*
- *      $Id: LabelBar.h,v 1.3 1993-10-23 00:34:45 dbrown Exp $
+ *      $Id: LabelBar.h,v 1.4 1994-01-27 21:23:44 boote Exp $
  */
 /************************************************************************
 *									*
@@ -182,7 +181,6 @@
 #define NhlClbLabelJust			"LbLabelJust"
 #define NhlClbLabelAlignment		"LbLabelAlignment"
 #define NhlClbLabelDirection		"LbLabelDirection"
-#define NhlClbLabelFont			"LbLabelFont"
 #define NhlClbLabelFontColor		"LbLabelFontColor"
 #define NhlClbLabelFontHeightF		"LbLabelFontHeightF"
 #define NhlClbLabelFontAspectF		"LbLabelFontAspectF" /* height/width */
@@ -198,7 +196,6 @@
 #define NhlClbMaxTitleExtentF		"LbMaxTitleExtentF"
 #define NhlClbTitleAngleF		"LbTitleAngleF"
 #define NhlClbTitleDirection		"LbTitleDirection"
-#define NhlClbTitleFont			"LbTitleFont"
 #define NhlClbTitleJust			"LbTitleJust"
 #define NhlClbTitleFontColor		"LbTitleFontColor"
 #define NhlClbTitleFontHeightF		"LbTitleFontHeightF"
@@ -227,9 +224,6 @@
 
 /* end of resources */
 
-extern LayerClass labelBarLayerClass;
+extern NhlLayerClass NhllabelBarLayerClass;
 
-typedef struct _LabelBarLayerClassRec *LabelBarLayerClass;
-typedef struct _LabelBarLayerRec	*LabelBarLayer;
 #endif  /* _NLabelBar_h */
-

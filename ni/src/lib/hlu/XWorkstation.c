@@ -1,5 +1,5 @@
 /*
- *      $Id: XWorkstation.c,v 1.2 1993-10-19 17:53:22 boote Exp $
+ *      $Id: XWorkstation.c,v 1.3 1994-01-27 21:27:33 boote Exp $
  */
 /************************************************************************
 *									*
@@ -19,24 +19,117 @@
  *
  *	Description:	Responsible for managing the X workstation element
  */
-
-#include <stdio.h>
-#include <strings.h>
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/XWorkstationP.h>
 
+/*
+ * Function:	IsSetFuncs
+ *
+ * Description:	These functions are used to determine if the user set the
+ *		resources described.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	static
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+/*ARGSUSED*/
+static NhlErrorTypes
+WindowSet
+#if	__STDC__
+(
+	NrmName		name,
+	NrmClass	class,
+	NhlPointer	base,
+	unsigned int	offset
+)
+#else
+(name,class,base,offset)
+	NrmName		name;
+	NrmClass	class;
+	NhlPointer	base;
+	unsigned int	offset;
+#endif
+{
+	NhlXWorkstationLayer	xwork = (NhlXWorkstationLayer)base;
 
+	xwork->xwork.window_id_set = False;
+	xwork->xwork.window_id = 0;
+
+	return	NhlNOERROR;
+}
+
+/*ARGSUSED*/
+static NhlErrorTypes
+CMapSet
+#if	__STDC__
+(
+	NrmName		name,
+	NrmClass	class,
+	NhlPointer	base,
+	unsigned int	offset
+)
+#else
+(name,class,base,offset)
+	NrmName		name;
+	NrmClass	class;
+	NhlPointer	base;
+	unsigned int	offset;
+#endif
+{
+	NhlXWorkstationLayer	xwork = (NhlXWorkstationLayer)base;
+
+	xwork->xwork.color_map_id_set = False;
+	xwork->xwork.color_map_id = 0;
+
+	return	NhlNOERROR;
+}
+
+/*ARGSUSED*/
+static NhlErrorTypes
+PauseSet
+#if	__STDC__
+(
+	NrmName		name,
+	NrmClass	class,
+	NhlPointer	base,
+	unsigned int	offset
+)
+#else
+(name,class,base,offset)
+	NrmName		name;
+	NrmClass	class;
+	NhlPointer	base;
+	unsigned int	offset;
+#endif
+{
+	NhlXWorkstationLayer	xwork = (NhlXWorkstationLayer)base;
+
+	xwork->xwork.pause_set = False;
+	xwork->xwork.pause = True;
+
+	return	NhlNOERROR;
+}
+
+#define	Oset(field)	NhlOffset(NhlXWorkstationLayerRec,xwork.field)
 static NhlResource resources[] = {
+	{ "no.res", "no.res", NhlTBoolean, sizeof(NhlBoolean),
+		Oset(window_id_set), NhlTImmediate, (NhlPointer)True},
+	{ "no.res", "no.res", NhlTBoolean, sizeof(NhlBoolean),
+		Oset(color_map_id_set), NhlTImmediate, (NhlPointer)True},
+	{ "no.res", "no.res", NhlTBoolean, sizeof(NhlBoolean),
+		Oset(pause_set), NhlTImmediate, (NhlPointer)True},
 	{ NhlNwkWindowId, NhlCwkWindowId, NhlTInteger, sizeof(int),
-	NhlOffset(XWorkstationLayerRec,xwork.window_id), NhlTImmediate,
-								(NhlPointer)-1},
+		Oset(window_id), NhlTProcedure, (NhlPointer)WindowSet},
 	{ NhlNwkColorMapId, NhlCwkColorMapId, NhlTInteger, sizeof(int),
-	NhlOffset(XWorkstationLayerRec,xwork.color_map_id), NhlTImmediate,
-								(NhlPointer)-1},
+		Oset(color_map_id), NhlTProcedure, (NhlPointer)CMapSet},
 	{ NhlNwkPause, NhlCwkPause, NhlTBoolean, sizeof(NhlBoolean),
-	NhlOffset(XWorkstationLayerRec,xwork.pause), NhlTImmediate,
-							(NhlPointer)True}
+		Oset(pause), NhlTProcedure, (NhlPointer)PauseSet}
 };
+#undef	Oset
 
 /*
 * XWorkstation base_class method declarations
@@ -44,9 +137,9 @@ static NhlResource resources[] = {
 
 static NhlErrorTypes XWorkstationInitialize(
 #ifdef NhlNeedProto
-        LayerClass,     /* class */
-        Layer,          /* req */
-        Layer,          /* new */
+        NhlLayerClass,     /* class */
+        NhlLayer,          /* req */
+        NhlLayer,          /* new */
         _NhlArgList,        /* args */
         int             /* num_args */
 #endif
@@ -54,9 +147,9 @@ static NhlErrorTypes XWorkstationInitialize(
 
 static NhlErrorTypes XWorkstationSetValues(
 #ifdef NhlNeedProto
-        Layer,		/* old */
-        Layer,		/* reference */
-        Layer,		/* new */
+        NhlLayer,	/* old */
+        NhlLayer,	/* reference */
+        NhlLayer,	/* new */
         _NhlArgList,	/* args */
         int		/* num_args*/
 #endif
@@ -67,18 +160,19 @@ static NhlErrorTypes XWorkstationSetValues(
  */
 static NhlErrorTypes XWorkstationClear(
 #if	NhlNeedProto
-	Layer	l	/* workstation layer to clear	*/
+	NhlLayer	l	/* workstation layer to clear	*/
 #endif
 );
 
 
-XWorkstationLayerClassRec xWorkstationLayerClassRec = {
+NhlXWorkstationLayerClassRec NhlxWorkstationLayerClassRec = {
         {
 /* class_name			*/	"XWorkstation",
 /* nrm_class			*/	NrmNULLQUARK,
-/* layer_size			*/	sizeof(XWorkstationLayerRec),
+/* layer_size			*/	sizeof(NhlXWorkstationLayerRec),
 /* class_inited			*/	False,
-/* superclass			*/	(LayerClass)&workstationLayerClassRec,
+/* superclass			*/	(NhlLayerClass)
+						&NhlworkstationLayerClassRec,
 
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
@@ -118,7 +212,8 @@ XWorkstationLayerClassRec xWorkstationLayerClassRec = {
 	}
 };
 
-LayerClass xWorkstationLayerClass = (LayerClass)&xWorkstationLayerClassRec;
+NhlLayerClass NhlxWorkstationLayerClass = (NhlLayerClass)
+						&NhlxWorkstationLayerClassRec;
 
 
 
@@ -138,19 +233,27 @@ LayerClass xWorkstationLayerClass = (LayerClass)&xWorkstationLayerClassRec;
 /*ARGSUSED*/
 static NhlErrorTypes XWorkstationInitialize
 #if __STDC__
-(LayerClass class, Layer req, Layer new, _NhlArgList args, int num_args)
+(
+	NhlLayerClass	class,
+	NhlLayer	req,
+	NhlLayer	new,
+	_NhlArgList	args,
+	int		num_args
+)
 #else
 (class,req,new,args,num_args)
-        LayerClass class;
-        Layer req;
-        Layer new;
-        _NhlArgList args;
-        int num_args; 
+        NhlLayerClass	class;
+        NhlLayer	req;
+        NhlLayer	new;
+        _NhlArgList	args;
+        int		num_args; 
 #endif
 {
-	XWorkstationLayer	wnew = (XWorkstationLayer) new;
+	char			*error_lead="XWorkstationInitialize";
+	NhlXWorkstationLayer	wnew = (NhlXWorkstationLayer) new;
+	NhlErrorTypes		ret = NhlNOERROR;
 
-	if(wnew->xwork.window_id == -1) {
+	if(wnew->xwork.window_id_set == False) {
 /*
 * Not sure if this is ignored or not
 */
@@ -165,10 +268,16 @@ static NhlErrorTypes XWorkstationInitialize
 		 * GKS can't grab event's and still allow the user to grab
 		 * events.
 		 */
+		if((wnew->xwork.pause_set) && (wnew->xwork.pause)){
+			NhlPError(NhlINFO,NhlEUNKNOWN,
+	"%s:If the %s resource is specified, the %s resource must be False",
+					error_lead,NhlNwkWindowId,NhlNwkPause);
+			ret = NhlINFO;
+		}
 		wnew->xwork.pause = False;
 	}
 
-	return NOERROR;
+	return ret;
 }
 
 
@@ -188,31 +297,31 @@ static NhlErrorTypes XWorkstationInitialize
 /*ARGSUSED*/
 static NhlErrorTypes XWorkstationSetValues
 #if __STDC__
-(Layer old, Layer reference, Layer new, _NhlArgList args, int num_args)
+(NhlLayer old, NhlLayer reference, NhlLayer new, _NhlArgList args, int num_args)
 #else
 (old,reference,new,args,num_args)
-        Layer old;
-        Layer reference;
-        Layer new; 
+        NhlLayer old;
+        NhlLayer reference;
+        NhlLayer new; 
         _NhlArgList args;
         int num_args;
 #endif
 {
-	XWorkstationLayer	wold = (XWorkstationLayer) old;
-	XWorkstationLayer	wnew = (XWorkstationLayer) new;
-	NhlErrorTypes		ret = NOERROR, lret = NOERROR;
+	NhlXWorkstationLayer	wold = (NhlXWorkstationLayer) old;
+	NhlXWorkstationLayer	wnew = (NhlXWorkstationLayer) new;
+	NhlErrorTypes		ret = NhlNOERROR, lret = NhlNOERROR;
 
 	if(wnew->xwork.window_id != wold->xwork.window_id){
-		NhlPError(WARNING,E_UNKNOWN,"XWorkstation: Window Id cannot be changed after workstation is created");
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"XWorkstation: Window Id cannot be changed after workstation is created");
 		wnew->xwork.window_id = wold->xwork.window_id;
-		lret = WARNING;
+		lret = NhlWARNING;
 	}
 
 	if(wnew->xwork.pause){
-		if(wnew->xwork.window_id != -1){
-			NhlPError(WARNING,E_UNKNOWN,"XWorkstation: NhlNwkPause must be false if NhlNwkWindowId is provided");
+		if(wnew->xwork.window_id_set == True){
+			NhlPError(NhlWARNING,NhlEUNKNOWN,"XWorkstation: NhlNwkPause must be false if NhlNwkWindowId is provided");
 			wnew->xwork.pause = False;
-			ret = WARNING;
+			ret = NhlWARNING;
 		}
 	}
 
@@ -228,7 +337,7 @@ static NhlErrorTypes XWorkstationSetValues
  *		for default X driver use.
  *
  * In Args:	
- *		Layer	l	workstation layer to clear
+ *		NhlLayer	l	workstation layer to clear
  *
  * Out Args:	
  *
@@ -240,19 +349,19 @@ static NhlErrorTypes
 XWorkstationClear
 #if	__STDC__
 (
-	Layer	l	/* workstation layer to clear	*/
+	NhlLayer	l	/* workstation layer to clear	*/
 )
 #else
 (l)
-	Layer	l;	/* workstation layer to clear	*/
+	NhlLayer	l;	/* workstation layer to clear	*/
 #endif
 {
-	WorkstationLayerClass	lc = (WorkstationLayerClass)
-							workstationLayerClass;
-	XWorkstationLayer	xl = (XWorkstationLayer)l;
-	Gescape_in_data		indat;
-	Gescape_out_data	*outdat;
-	char			wkid[15];
+	NhlWorkstationLayerClass	lc = (NhlWorkstationLayerClass)
+						NhlworkstationLayerClass;
+	NhlXWorkstationLayer		xl = (NhlXWorkstationLayer)l;
+	Gescape_in_data			indat;
+	Gescape_out_data		*outdat;
+	char				wkid[15];
 
 	sprintf(wkid,"%d",_NhlWorkstationId(l));
 

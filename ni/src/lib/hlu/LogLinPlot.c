@@ -1,5 +1,5 @@
 /*
- *      $Id: LogLinPlot.c,v 1.4 1994-01-13 21:46:27 ethan Exp $
+ *      $Id: LogLinPlot.c,v 1.5 1994-01-27 21:24:14 boote Exp $
  */
 /************************************************************************
 *									*
@@ -23,7 +23,6 @@
  *			plot object catagories.
  */
 
-#include <stdio.h>
 #include <ncarg/hlu/LogLinPlotP.h>
 
 /* base methods */
@@ -37,15 +36,15 @@ static NhlErrorTypes LogLinPlotClassInitialize(
 
 static NhlErrorTypes LogLinPlotClassPartInitialize(
 #ifdef NhlNeedProto
-	LayerClass	lc
+	NhlLayerClass	lc
 #endif
 );
 
 static NhlErrorTypes LogLinPlotInitialize(
 #ifdef NhlNeedProto
-        LayerClass,     /* class */
-        Layer,          /* req */
-        Layer,          /* new */
+        NhlLayerClass,     /* class */
+        NhlLayer,          /* req */
+        NhlLayer,          /* new */
         _NhlArgList,    /* args */
         int             /* num_args */
 #endif
@@ -53,9 +52,9 @@ static NhlErrorTypes LogLinPlotInitialize(
 
 static NhlErrorTypes LogLinPlotSetValues(
 #ifdef NhlNeedProto
-        Layer,          /* old */
-        Layer,          /* reference */
-        Layer,          /* new */
+        NhlLayer,          /* old */
+        NhlLayer,          /* reference */
+        NhlLayer,          /* new */
         _NhlArgList,    /* args */
         int             /* num_args*/
 #endif
@@ -63,32 +62,32 @@ static NhlErrorTypes LogLinPlotSetValues(
 
 static NhlErrorTypes LogLinPlotDestroy(
 #ifdef NhlNeedProto
-        Layer           /* inst */
+        NhlLayer           /* inst */
 #endif
 );
 
 static NhlErrorTypes LogLinPlotDraw(
 #ifdef NhlNeedProto
-        Layer   /* layer */
+        NhlLayer   /* layer */
 #endif
 );
 
 static NhlErrorTypes SetUpTransObj(
 #ifdef NhlNeedProto
-	LogLinPlotLayer	xnew,
-	LogLinPlotLayer	xold,
+	NhlLogLinPlotLayer	xnew,
+	NhlLogLinPlotLayer	xold,
 	NhlBoolean	init
 #endif
 );
 
 
-LogLinPlotLayerClassRec logLinPlotLayerClassRec = {
+NhlLogLinPlotLayerClassRec NhllogLinPlotLayerClassRec = {
         {
 /* class_name			*/      "LogLinPlot",
 /* nrm_class			*/      NrmNULLQUARK,
-/* layer_size			*/      sizeof(LogLinPlotLayerRec),
+/* layer_size			*/      sizeof(NhlLogLinPlotLayerRec),
 /* class_inited			*/      False,
-/* superclass			*/      (LayerClass)&transformLayerClassRec,
+/* superclass			*/      (NhlLayerClass)&NhltransformLayerClassRec,
 
 /* layer_resources		*/	NULL,
 /* num_resources		*/	0,
@@ -129,7 +128,8 @@ LogLinPlotLayerClassRec logLinPlotLayerClassRec = {
 	}
 };
 	
-LayerClass logLinPlotLayerClass = (LayerClass)&logLinPlotLayerClassRec;
+NhlLayerClass NhllogLinPlotLayerClass = (NhlLayerClass)
+						&NhllogLinPlotLayerClassRec;
 
 
 /*
@@ -156,18 +156,18 @@ LogLinPlotClassInitialize
 #endif
 {
 
-	return NOERROR;
+	return NhlNOERROR;
 }
 
 /*
  * Function:	LogLinPlotClassPartInitialize
  *
  * Description:	This function initializes fields in the 
- *		LogLinPlotLayerClassPart that cannot be initialized statically.
+ *		NhlLogLinPlotLayerClassPart that cannot be initialized statically.
  *		Calls _NhlRegisterChildClass for the overlay manager object.
  *
  * In Args:	
- *		LayerClass	lc	Layer Class to init
+ *		NhlLayerClass	lc	NhlLayer Class to init
  *
  * Out Args:	
  *
@@ -180,38 +180,38 @@ static NhlErrorTypes
 LogLinPlotClassPartInitialize
 #if	__STDC__
 (
-	LayerClass	lc	/* Layer Class to init	*/
+	NhlLayerClass	lc	/* NhlLayer Class to init	*/
 )
 #else
 (lc)
-	LayerClass	lc;	/* Layer Class to init	*/
+	NhlLayerClass	lc;	/* NhlLayer Class to init	*/
 #endif
 {
-	NhlErrorTypes		ret = NOERROR, subret = NOERROR;
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	char			*e_text;
 	char			*entry_name = "LogLinPlotClassPartInitialize";
 
 /*
  * Register children objects
  */
-	subret = _NhlRegisterChildClass(lc,overlayLayerClass,
+	subret = _NhlRegisterChildClass(lc,NhloverlayLayerClass,
 					False,False,NULL);
 
-	if ((ret = MIN(ret,subret)) < WARNING) {
+	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: error registering %s";
-		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
-			  "overlayLayerClass");
-		return(FATAL);
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
+			  "NhloverlayLayerClass");
+		return(NhlFATAL);
 	}
 
-	subret = _NhlRegisterChildClass(lc,logLinTransObjLayerClass,
+	subret = _NhlRegisterChildClass(lc,NhllogLinTransObjLayerClass,
 					False,False,NULL);
 
-	if ((ret = MIN(ret,subret)) < WARNING) {
+	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: error registering %s";
-		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
-			  "logLinTransObjLayerClass");
-		return(FATAL);
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
+			  "NhllogLinTransObjLayerClass");
+		return(NhlFATAL);
 	}
 
 	return ret;
@@ -240,25 +240,25 @@ static NhlErrorTypes
 LogLinPlotInitialize
 #if     __STDC__
 (
-	LayerClass	class,
-	Layer		req,
-	Layer		new,
+	NhlLayerClass	class,
+	NhlLayer	req,
+	NhlLayer	new,
 	_NhlArgList	args,
 	int		num_args
 )
 #else
 (class,req,new,args,num_args)
-        LayerClass      class;
-        Layer           req;
-        Layer           new;
+        NhlLayerClass   class;
+        NhlLayer        req;
+        NhlLayer        new;
         _NhlArgList     args;
         int             num_args;
 #endif
 {
-	NhlErrorTypes		ret = NOERROR, subret = NOERROR;
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	char			*entry_name = "LogLinPlotInitialize";
-	LogLinPlotLayer		lnew = (LogLinPlotLayer) new;
-	LogLinPlotLayerPart	*llp = &(lnew->llplot);
+	NhlLogLinPlotLayer		lnew = (NhlLogLinPlotLayer) new;
+	NhlLogLinPlotLayerPart	*llp = &(lnew->llplot);
 
 /* Initialize private fields */
 
@@ -266,15 +266,15 @@ LogLinPlotInitialize
 	
 /* Set up the loglin transformation */
 
-	subret = SetUpTransObj(lnew, (LogLinPlotLayer) req, True);
-	if ((ret = MIN(ret,subret)) < WARNING) 
+	subret = SetUpTransObj(lnew, (NhlLogLinPlotLayer) req, True);
+	if ((ret = MIN(ret,subret)) < NhlWARNING) 
 		return ret;
 
 /* Manage the overlay */
 
 	subret = _NhlManageOverlay(&llp->overlay_object,new,req,
 				   True,NULL,0,entry_name);
-	if ((ret = MIN(ret,subret)) < WARNING) 
+	if ((ret = MIN(ret,subret)) < NhlWARNING) 
 		return ret;
 
 	return ret;
@@ -301,31 +301,31 @@ LogLinPlotInitialize
 static NhlErrorTypes LogLinPlotSetValues
 #if  __STDC__
 (
-	Layer		old,
-	Layer		reference,
-	Layer		new,
+	NhlLayer	old,
+	NhlLayer	reference,
+	NhlLayer	new,
 	_NhlArgList	args,
 	int		num_args
 )
 #else
 (old,reference,new,args,num_args)
-	Layer		old;
-	Layer		reference;
-	Layer		new;
+	NhlLayer	old;
+	NhlLayer	reference;
+	NhlLayer	new;
 	_NhlArgList	args;
 	int		num_args;
 #endif
 {
-	NhlErrorTypes		ret = NOERROR, subret = NOERROR;
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	char			*entry_name = "LogLinPlotSetValues";
-	LogLinPlotLayer		lnew = (LogLinPlotLayer) new;
-	LogLinPlotLayerPart	*llp = &(lnew->llplot);
+	NhlLogLinPlotLayer	lnew = (NhlLogLinPlotLayer) new;
+	NhlLogLinPlotLayerPart	*llp = &(lnew->llplot);
 
 
 /* Set up the loglin transformation */
 
-	subret = SetUpTransObj(lnew, (LogLinPlotLayer) old, False);
-	if ((ret = MIN(ret,subret)) < WARNING) 
+	subret = SetUpTransObj(lnew, (NhlLogLinPlotLayer) old, False);
+	if ((ret = MIN(ret,subret)) < NhlWARNING) 
 		return ret;
 
 /* Manage the overlay */
@@ -352,26 +352,26 @@ static NhlErrorTypes LogLinPlotSetValues
  */
 static NhlErrorTypes LogLinPlotDestroy
 #if __STDC__
-(Layer inst)
+(NhlLayer inst)
 #else
 (inst)
-Layer inst;
+NhlLayer inst;
 #endif
 {
-	NhlErrorTypes		ret = NOERROR, subret = NOERROR;
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 #if 0
 	char			*e_text;
 	char			*entry_name = "LogLinPlotDestroy";
 #endif
-	LogLinPlotLayerPart	*llp = &(((LogLinPlotLayer) inst)->llplot);
-	TransformLayerPart	*lltp = &(((TransformLayer) inst)->trans);
+	NhlLogLinPlotLayerPart	*llp = &(((NhlLogLinPlotLayer) inst)->llplot);
+	NhlTransformLayerPart	*lltp = &(((NhlTransformLayer) inst)->trans);
 
 	if (lltp->overlay_status == _tfCurrentOverlayMember) {
 		subret = NhlRemoveFromOverlay(
 				lltp->overlay_object->base.parent->base.id,
 					      inst->base.id,False);
-		if ((ret = MIN(subret,ret)) < WARNING)
-			return FATAL;
+		if ((ret = MIN(subret,ret)) < NhlWARNING)
+			return NhlFATAL;
 	}
 
 	if (llp->overlay_object != NULL) {
@@ -400,15 +400,16 @@ Layer inst;
  * Side Effects: NONE
  */	
 
+/*ARGSUSED*/
 static NhlErrorTypes LogLinPlotDraw
 #if  __STDC__
-(Layer layer)
+(NhlLayer layer)
 #else
 (layer)
-        Layer layer;
+        NhlLayer layer;
 #endif
 {
-	NhlErrorTypes		ret = NOERROR;
+	NhlErrorTypes		ret = NhlNOERROR;
 
 	return ret;
 }
@@ -431,25 +432,26 @@ static NhlErrorTypes LogLinPlotDraw
  *
  * Side Effects:	Objects created and destroyed.
  */
+/*ARGSUSED*/
 static NhlErrorTypes SetUpTransObj
 #if  __STDC__
 (
-	LogLinPlotLayer	llnew,
-	LogLinPlotLayer	llold,
-	NhlBoolean	init
+	NhlLogLinPlotLayer	llnew,
+	NhlLogLinPlotLayer	llold,
+	NhlBoolean		init
 )
 #else 
 (llnew,llold,init)
-	LogLinPlotLayer	llnew;
-	LogLinPlotLayer	llold;
-	NhlBoolean	init;
+	NhlLogLinPlotLayer	llnew;
+	NhlLogLinPlotLayer	llold;
+	NhlBoolean		init;
 #endif
 {
-	NhlErrorTypes		ret = NOERROR, subret = NOERROR;
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	char 			*e_text;
 	char			*entry_name;
-	TransformLayerPart	*tfp = &(llnew->trans);
-	char			buffer[MAXRESNAMLEN];
+	NhlTransformLayerPart	*tfp = &(llnew->trans);
+	char			buffer[_NhlMAXRESNAMLEN];
 	int			tmpid;
         NhlSArg			sargs[16];
         int			nargs = 0;
@@ -467,8 +469,8 @@ static NhlErrorTypes SetUpTransObj
 		strcat(buffer,".Trans");
 
 		subret = _NhlCreateChild(&tmpid,buffer,
-					 logLinTransObjLayerClass,
-					 (Layer) llnew, NULL);
+					 NhllogLinTransObjLayerClass,
+					 (NhlLayer) llnew, NULL);
 
 		ret = MIN(subret,ret);
 
@@ -476,15 +478,15 @@ static NhlErrorTypes SetUpTransObj
 
 		if(tfp->trans_obj == NULL){
 			e_text = "%s: Error creating transformation object";
-			NhlPError(FATAL,E_UNKNOWN,e_text,entry_name);
-			return FATAL;
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			return NhlFATAL;
 		}
 
 		return ret;
 	}
 
 	subret = _NhlALSetValuesChild(tfp->trans_obj->base.id,
-				      (Layer) llnew,sargs,nargs);
+				      (NhlLayer) llnew,sargs,nargs);
 	return MIN(ret,subret);
 
 }

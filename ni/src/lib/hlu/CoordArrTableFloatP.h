@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrTableFloatP.h,v 1.3 1994-01-14 23:36:08 boote Exp $
+ *      $Id: CoordArrTableFloatP.h,v 1.4 1994-01-27 21:21:58 boote Exp $
  */
 /************************************************************************
 *									*
@@ -26,12 +26,13 @@
 #ifndef _NCoordArrTableFloatP_h
 #define _NCoordArrTableFloatP_h
 
-typedef struct _CoordArrTableFloatLayerClassRec *CoordArrTableFloatLayerClass;
-typedef struct _CoordArrTableFloatLayerRec *CoordArrTableFloatLayer;
+typedef struct _NhlCoordArrTableFloatLayerClassRec
+					*NhlCoordArrTableFloatLayerClass;
+typedef struct _NhlCoordArrTableFloatLayerRec *NhlCoordArrTableFloatLayer;
 
-extern LayerClass coordArrTableFloatLayerClass;
+extern NhlLayerClass NhlcoordArrTableFloatLayerClass;
 
-typedef struct _CoordArrTableFloatLayerPart{
+typedef struct _NhlCoordArrTableFloatLayerPart{
 	/* User setable resource fields */
 	NhlGenArray	xtable;
 	NhlGenArray	ytable;
@@ -56,22 +57,22 @@ typedef struct _CoordArrTableFloatLayerPart{
 	NhlBoolean	min_y_set;
 	NhlBoolean	own_x;
 	NhlBoolean	own_y;
-} CoordArrTableFloatLayerPart;
+} NhlCoordArrTableFloatLayerPart;
 
-typedef struct _CoordArrTableFloatLayerRec{
-	ObjLayerPart			base;
-	CoordArrTableFloatLayerPart	catfloat;
-} CoordArrTableFloatLayerRec;
+typedef struct _NhlCoordArrTableFloatLayerRec{
+	NhlObjLayerPart			base;
+	NhlCoordArrTableFloatLayerPart	catfloat;
+} NhlCoordArrTableFloatLayerRec;
 
-typedef struct _CoordArrTableFloatLayerClassPart{
+typedef struct _NhlCoordArrTableFloatLayerClassPart{
 	int	foo;
-} CoordArrTableFloatLayerClassPart;
+} NhlCoordArrTableFloatLayerClassPart;
 
-typedef struct _CoordArrTableFloatLayerClassRec{
-	ObjLayerClassPart			base_class;
-	CoordArrTableFloatLayerClassPart	catfloat_class;
-} CoordArrTableFloatLayerClassRec;
+typedef struct _NhlCoordArrTableFloatLayerClassRec{
+	NhlObjLayerClassPart			base_class;
+	NhlCoordArrTableFloatLayerClassPart	catfloat_class;
+} NhlCoordArrTableFloatLayerClassRec;
 
-extern CoordArrTableFloatLayerClassRec coordArrTableFloatLayerClassRec;
+extern NhlCoordArrTableFloatLayerClassRec NhlcoordArrTableFloatLayerClassRec;
 
 #endif	/* _NCoordArrTableFloatP_h */

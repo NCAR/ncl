@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.h,v 1.5 1994-01-14 23:36:31 boote Exp $
+ *      $Id: TickMark.h,v 1.6 1994-01-27 21:26:26 boote Exp $
  */
 /************************************************************************
 *									*
@@ -24,8 +24,9 @@
 
 #include <ncarg/hlu/View.h>
 
-typedef enum { AUTOMATIC, MANUAL, EXPLICIT } TickMarkModes;
-typedef enum { LOG, LINEAR, IRREGULAR, GEOGRAPHIC, TIME } TickMarkStyles;
+typedef enum { NhlAUTOMATIC, NhlMANUAL, NhlEXPLICIT } NhlTickMarkModes;
+typedef enum { NhlLOG, NhlLINEAR, NhlIRREGULAR, NhlGEOGRAPHIC, NhlTIME }
+							NhlTickMarkStyles;
 
 #define NhlTTickMarkModes 	"tickMarkModes"
 #define NhlTTickMarkStyles	"tickMarkStyles"
@@ -347,7 +348,6 @@ typedef enum { LOG, LINEAR, IRREGULAR, GEOGRAPHIC, TIME } TickMarkStyles;
 * All line/text attributes share one class.
 */
 
-#define NhlCtmLabelFonts		"TmLabelFonts"
 #define NhlCtmLabelFontHeightsF		"TmLabelFontHeightsF"
 #define NhlCtmLabelFontColors		"TmLabelFontColors"
 #define NhlCtmLabelFontAspectsF		"TmLabelFontAspectsF"
@@ -469,12 +469,7 @@ typedef enum { LOG, LINEAR, IRREGULAR, GEOGRAPHIC, TIME } TickMarkStyles;
 #define NhlCtmYRValues		"TmYRValues"
 #define NhlCtmYRLabels		"TmYRLabels"
 #define NhlCtmYRLabelDeltaF	"TmYRLabelDeltaF"
-extern LayerClass tickMarkLayerClass;
 
-typedef struct _TickMarkLayerClassRec *TickMarkLayerClass;
-typedef struct _TickMarkLayerRec	*TickMarkLayer;
-
-#define MAXTICKS 256
-#define MAXMINORTICKS 1024
+extern NhlLayerClass NhltickMarkLayerClass;
 
 #endif /*_NTickMark_h */

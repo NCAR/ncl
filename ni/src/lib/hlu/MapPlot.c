@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.3 1994-01-12 00:34:44 dbrown Exp $
+ *      $Id: MapPlot.c,v 1.4 1994-01-27 21:24:36 boote Exp $
  */
 /************************************************************************
 *									*
@@ -23,8 +23,8 @@
  *			plot objects.
  */
 
-#include <stdio.h>
 #include <ncarg/hlu/hluP.h>
+#include <ncarg/hlu/WorkstationI.h>
 #include <ncarg/hlu/MapPlotP.h>
 #include <ncarg/hlu/LogLinTransObj.h>
 
@@ -32,7 +32,7 @@
 static NhlResource resources[] = {
 	{ NhlNtfOverlayPlotBase,NhlCtfOverlayPlotBase,
 		NhlTBoolean,sizeof(NhlBoolean),
-		NhlOffset(MapPlotLayerRec,trans.overlay_plot_base),
+		NhlOffset(NhlMapPlotLayerRec,trans.overlay_plot_base),
 		NhlTImmediate,(NhlPointer)False},
 };
 #endif
@@ -48,15 +48,15 @@ static NhlErrorTypes MapPlotClassInitialize(
 
 static NhlErrorTypes MapPlotClassPartInitialize(
 #ifdef NhlNeedProto
-	LayerClass	lc
+	NhlLayerClass	lc
 #endif
 );
 
 static NhlErrorTypes MapPlotInitialize(
 #ifdef NhlNeedProto
-        LayerClass,     /* class */
-        Layer,          /* req */
-        Layer,          /* new */
+        NhlLayerClass,     /* class */
+        NhlLayer,          /* req */
+        NhlLayer,          /* new */
         _NhlArgList,    /* args */
         int             /* num_args */
 #endif
@@ -64,9 +64,9 @@ static NhlErrorTypes MapPlotInitialize(
 
 static NhlErrorTypes MapPlotSetValues(
 #ifdef NhlNeedProto
-        Layer,          /* old */
-        Layer,          /* reference */
-        Layer,          /* new */
+        NhlLayer,          /* old */
+        NhlLayer,          /* reference */
+        NhlLayer,          /* new */
         _NhlArgList,    /* args */
         int             /* num_args*/
 #endif
@@ -74,31 +74,31 @@ static NhlErrorTypes MapPlotSetValues(
 
 static NhlErrorTypes MapPlotDestroy(
 #ifdef NhlNeedProto
-        Layer           /* inst */
+        NhlLayer           /* inst */
 #endif
 );
 
 static NhlErrorTypes MapPlotDraw(
 #ifdef NhlNeedProto
-        Layer   /* layer */
+        NhlLayer   /* layer */
 #endif
 );
 
 static NhlErrorTypes SetUpTransObj(
 #ifdef NhlNeedProto
-	MapPlotLayer	mpnew,
-	MapPlotLayer	mpold,
+	NhlMapPlotLayer	mpnew,
+	NhlMapPlotLayer	mpold,
 	NhlBoolean	init
 #endif
 );
 
-MapPlotLayerClassRec mapPlotLayerClassRec = {
+NhlMapPlotLayerClassRec NhlmapPlotLayerClassRec = {
         {
 /* class_name			*/      "MapPlot",
 /* nrm_class			*/      NrmNULLQUARK,
-/* layer_size			*/      sizeof(MapPlotLayerRec),
+/* layer_size			*/      sizeof(NhlMapPlotLayerRec),
 /* class_inited			*/      False,
-/* superclass			*/      (LayerClass)&transformLayerClassRec,
+/* superclass			*/      (NhlLayerClass)&NhltransformLayerClassRec,
 
 /* layer_resources		*/	NULL,
 /* num_resources		*/	0,
@@ -139,7 +139,7 @@ MapPlotLayerClassRec mapPlotLayerClassRec = {
 	}
 };
 	
-LayerClass mapPlotLayerClass = (LayerClass)&mapPlotLayerClassRec;
+NhlLayerClass NhlmapPlotLayerClass = (NhlLayerClass)&NhlmapPlotLayerClassRec;
 
 /*
  * Function:	MapPlotClassInitialize
@@ -165,18 +165,18 @@ MapPlotClassInitialize
 #endif
 {
 
-	return NOERROR;
+	return NhlNOERROR;
 }
 
 /*
  * Function:	MapPlotClassPartInitialize
  *
  * Description:	This function initializes fields in the 
- *		MapPlotLayerClassPart that cannot be initialized statically.
+ *		NhlMapPlotLayerClassPart that cannot be initialized statically.
  *		Calls _NhlRegisterChildClass for the overlay manager object.
  *
  * In Args:	
- *		LayerClass	lc	Layer Class to init
+ *		NhlLayerClass	lc	NhlLayer Class to init
  *
  * Out Args:	
  *
@@ -189,14 +189,14 @@ static NhlErrorTypes
 MapPlotClassPartInitialize
 #if	__STDC__
 (
-	LayerClass	lc	/* Layer Class to init	*/
+	NhlLayerClass	lc	/* NhlLayer Class to init	*/
 )
 #else
 (lc)
-	LayerClass	lc;	/* Layer Class to init	*/
+	NhlLayerClass	lc;	/* NhlLayer Class to init	*/
 #endif
 {
-	NhlErrorTypes		ret = NOERROR, subret = NOERROR;
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	char			*e_text;
 	char			*entry_name = "MapPlotClassPartInitialize";
 
@@ -204,24 +204,24 @@ MapPlotClassPartInitialize
 	 * Register children objects
 	 */
 
-	subret = _NhlRegisterChildClass(lc,overlayLayerClass,
+	subret = _NhlRegisterChildClass(lc,NhloverlayLayerClass,
 					False,False,NULL);
 
-	if ((ret = MIN(ret,subret)) < WARNING) {
+	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: error registering %s";
-		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
-			  "overlayLayerClass");
-		return(FATAL);
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
+			  "NhloverlayLayerClass");
+		return(NhlFATAL);
 	}
 
-	subret = _NhlRegisterChildClass(lc,mapTransObjLayerClass,
+	subret = _NhlRegisterChildClass(lc,NhlmapTransObjLayerClass,
 					False,False,NULL);
 
-	if ((ret = MIN(ret,subret)) < WARNING) {
+	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: error registering %s";
-		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
-			  "mapTransObjLayerClass");
-		return(FATAL);
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
+			  "NhlmapTransObjLayerClass");
+		return(NhlFATAL);
 	}
 
 	return ret;
@@ -250,25 +250,25 @@ static NhlErrorTypes
 MapPlotInitialize
 #if     __STDC__
 (
-	LayerClass	class,
-	Layer		req,
-	Layer		new,
+	NhlLayerClass	class,
+	NhlLayer	req,
+	NhlLayer	new,
 	_NhlArgList	args,
 	int		num_args
 )
 #else
 (class,req,new,args,num_args)
-        LayerClass      class;
-        Layer           req;
-        Layer           new;
+        NhlLayerClass   class;
+        NhlLayer        req;
+        NhlLayer        new;
         _NhlArgList     args;
         int             num_args;
 #endif
 {
-	NhlErrorTypes		ret = NOERROR, subret = NOERROR;
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	char			*entry_name = "MapPlotInitialize";
-	MapPlotLayer		mpnew = (MapPlotLayer) new;
-	MapPlotLayerPart	*mpp = &(mpnew->mapplot);
+	NhlMapPlotLayer		mpnew = (NhlMapPlotLayer) new;
+	NhlMapPlotLayerPart	*mpp = &(mpnew->mapplot);
 	
 /* Initialize private fields */
 
@@ -276,15 +276,15 @@ MapPlotInitialize
 
 /* Set up the Map transformation */
 
-	subret = SetUpTransObj(mpnew, (MapPlotLayer) req, True);
-	if ((ret = MIN(ret,subret)) < WARNING) 
+	subret = SetUpTransObj(mpnew, (NhlMapPlotLayer) req, True);
+	if ((ret = MIN(ret,subret)) < NhlWARNING) 
 		return ret;
 
 /* Manage the overlay */
 
 	subret = _NhlManageOverlay(&mpp->overlay_object,new,req,
 				   True,NULL,0,entry_name);
-	if ((ret = MIN(ret,subret)) < WARNING) 
+	if ((ret = MIN(ret,subret)) < NhlWARNING) 
 		return ret;
 
 	return ret;
@@ -311,31 +311,31 @@ MapPlotInitialize
 static NhlErrorTypes MapPlotSetValues
 #if  __STDC__
 (
-	Layer		old,
-	Layer		reference,
-	Layer		new,
+	NhlLayer	old,
+	NhlLayer	reference,
+	NhlLayer	new,
 	_NhlArgList	args,
 	int		num_args
 )
 #else
 (old,reference,new,args,num_args)
-	Layer		old;
-	Layer		reference;
-	Layer		new;
+	NhlLayer	old;
+	NhlLayer	reference;
+	NhlLayer	new;
 	_NhlArgList	args;
 	int		num_args;
 #endif
 {
-	NhlErrorTypes		ret = NOERROR, subret = NOERROR;
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	char			*entry_name = "MapPlotSetValues";
-	MapPlotLayer		mpnew = (MapPlotLayer) new;
-	MapPlotLayerPart	*mpp = &(mpnew->mapplot);
+	NhlMapPlotLayer		mpnew = (NhlMapPlotLayer) new;
+	NhlMapPlotLayerPart	*mpp = &(mpnew->mapplot);
 
 
 /* Set up the Map transformation */
 
-	subret = SetUpTransObj(mpnew, (MapPlotLayer) old, False);
-	if ((ret = MIN(ret,subret)) < WARNING) 
+	subret = SetUpTransObj(mpnew, (NhlMapPlotLayer) old, False);
+	if ((ret = MIN(ret,subret)) < NhlWARNING) 
 		return ret;
 
 /* Manage the overlay */
@@ -363,15 +363,15 @@ static NhlErrorTypes MapPlotSetValues
  */
 static NhlErrorTypes MapPlotDestroy
 #if __STDC__
-(Layer inst)
+(NhlLayer inst)
 #else
 (inst)
-Layer inst;
+NhlLayer inst;
 #endif
 {
-	MapPlotLayerPart	*mpp = &(((MapPlotLayer) inst)->mapplot);
-	TransformLayerPart	*mptp = &(((TransformLayer) inst)->trans);
-	NhlErrorTypes		ret = NOERROR, subret = NOERROR;
+	NhlMapPlotLayerPart	*mpp = &(((NhlMapPlotLayer) inst)->mapplot);
+	NhlTransformLayerPart	*mptp = &(((NhlTransformLayer) inst)->trans);
+	NhlErrorTypes		ret = NhlNOERROR;
 
 	if (mpp->overlay_object != NULL) {
 		(void) _NhlDestroyChild(mpp->overlay_object->base.id,inst);
@@ -401,32 +401,32 @@ Layer inst;
 
 static NhlErrorTypes MapPlotDraw
 #if  __STDC__
-(Layer layer)
+(NhlLayer layer)
 #else
 (layer)
-        Layer layer;
+        NhlLayer layer;
 #endif
 {
-	NhlErrorTypes		ret = NOERROR, subret = NOERROR;
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	char			*e_text;
 	char			*entry_name = "MapPlotDraw";
-	MapPlotLayer		mp = (MapPlotLayer) layer;
-	TransformLayerPart	*tfp = &(mp->trans);
+	NhlMapPlotLayer		mp = (NhlMapPlotLayer) layer;
+	NhlTransformLayerPart	*tfp = &(mp->trans);
 
 	subret = _NhlActivateWorkstation(mp->base.wkptr);
 
-	if ((ret = MIN(subret,ret)) < WARNING) {
+	if ((ret = MIN(subret,ret)) < NhlWARNING) {
 		e_text = "%s: Error activating workstation";
-		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name);
-		return FATAL;
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
 	}
 
-	subret = _NhlSetTrans((Layer)tfp->trans_obj,layer);
+	subret = _NhlSetTrans((NhlLayer)tfp->trans_obj,layer);
 
-	if ((ret = MIN(subret,ret)) < WARNING) {
+	if ((ret = MIN(subret,ret)) < NhlWARNING) {
 		e_text = "%s: Error setting transformation";
-		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name);
-		return FATAL;
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
 	}
 
 	gset_line_colr_ind((Gint)_NhlGetGksCi(mp->base.wkptr,0));
@@ -437,10 +437,10 @@ static NhlErrorTypes MapPlotDraw
 
 	subret = _NhlDeactivateWorkstation(mp->base.wkptr);
 
-	if ((ret = MIN(subret,ret)) < WARNING) {
+	if ((ret = MIN(subret,ret)) < NhlWARNING) {
 		e_text = "%s: Error setting transformation";
-		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name);
-		return FATAL;
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
 	}
 
 	return ret;
@@ -464,27 +464,26 @@ static NhlErrorTypes MapPlotDraw
  *
  * Side Effects:	Objects created and destroyed.
  */
+/*ARGSUSED*/
 static NhlErrorTypes SetUpTransObj
 #if  __STDC__
 (
-	MapPlotLayer	mpnew,
-	MapPlotLayer	mpold,
+	NhlMapPlotLayer	mpnew,
+	NhlMapPlotLayer	mpold,
 	NhlBoolean	init
 )
 #else 
 (mpnew,mpold,init)
-	MapPlotLayer	mpnew;
-	MapPlotLayer	mpold;
+	NhlMapPlotLayer	mpnew;
+	NhlMapPlotLayer	mpold;
 	NhlBoolean	init;
 #endif
 {
-	NhlErrorTypes		ret = NOERROR, subret = NOERROR;
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	char			*e_text;
 	char			*entry_name;
-	MapPlotLayerPart	*mpp = &(mpnew->mapplot);
-	MapPlotLayerPart	*ompp = &(mpold->mapplot);
-	TransformLayerPart	*tfp = &(mpnew->trans);
-	char			buffer[MAXRESNAMLEN];
+	NhlTransformLayerPart	*tfp = &(mpnew->trans);
+	char			buffer[_NhlMAXRESNAMLEN];
 	int			tmpid;
         NhlSArg			sargs[16];
         int			nargs = 0;
@@ -501,8 +500,8 @@ static NhlErrorTypes SetUpTransObj
 		sprintf(buffer,"%s",mpnew->base.name);
 		strcat(buffer,".Trans");
 
-		subret = _NhlCreateChild(&tmpid,buffer,mapTransObjLayerClass,
-					 (Layer) mpnew, NULL);
+		subret = _NhlCreateChild(&tmpid,buffer,NhlmapTransObjLayerClass,
+					 (NhlLayer) mpnew, NULL);
 
 		ret = MIN(subret,ret);
 
@@ -510,15 +509,15 @@ static NhlErrorTypes SetUpTransObj
 
 		if(tfp->trans_obj == NULL){
 			e_text = "%s: Error creating transformation object";
-			NhlPError(FATAL,E_UNKNOWN,e_text,entry_name);
-			return FATAL;
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			return NhlFATAL;
 		}
 
 		return ret;
 	}
 
 	subret = _NhlALSetValuesChild(tfp->trans_obj->base.id,
-				      (Layer) mpnew,sargs,nargs);
+				      (NhlLayer) mpnew,sargs,nargs);
 	return MIN(ret,subret);
 
 }

@@ -1,5 +1,5 @@
 /*
- *      $Id: Resources.c,v 1.3 1993-10-19 17:52:09 boote Exp $
+ *      $Id: Resources.c,v 1.4 1994-01-27 21:25:37 boote Exp $
  */
 /************************************************************************
 *									*
@@ -153,9 +153,9 @@ _NhlCopyToArg
  * Function:	GetNamesAndClasses
  *
  * Description:	This function creates a quark list of names and classes that
- *		give a unique description of the Layer instance. If there isn't
+ *		give a unique description of the NhlLayer instance. If there isn't
  *		enough memory it returns -<amountneeded>
- * In Args:	l - the Layer instance
+ * In Args:	l - the NhlLayer instance
  *		int length;	The length of the Qarrays provided
  * Out Args:	names and classes - each is an array of quarks
  * Scope:	static
@@ -168,14 +168,14 @@ static int
 GetNamesAndClasses
 #if	__STDC__
 (
-	Layer		layer,		/* layer instance		*/
+	NhlLayer	layer,		/* layer instance		*/
 	NrmNameList	names,		/* Quarkarray of names OUT	*/
 	NrmClassList	classes,	/* Quarkarray of classes OUT	*/
 	int		length		/* length of Quarkarrays provided*/
 )
 #else
 (layer,names,classes,length)
-	Layer		layer;		/* layer instance		*/
+	NhlLayer	layer;		/* layer instance		*/
 	NrmNameList	names;		/* Quarkarray of names OUT	*/
 	NrmClassList	classes;	/* Quarkarray of classes OUT	*/
 	int		length;		/* length of Quarkarrays provided*/
@@ -188,7 +188,7 @@ GetNamesAndClasses
 	 * return null-terminated quark arrays with len the number of quarks
 	 * not including NULL
 	 */
-	for(len=0; layer != NULL; layer = (Layer)layer->base.parent,len++){
+	for(len=0; layer != NULL; layer = (NhlLayer)layer->base.parent,len++){
 
 		if(len >= length-1) continue;
 
@@ -223,7 +223,7 @@ GetNamesAndClasses
  *		the addrs off of base using the given args and the Nrm. child
  *		is a pointer to the resources that should be forwarded from
  *		the parent's DB level or NULL if the base doesn't point to
- *		a child Layer.
+ *		a child NhlLayer.
  *
  * In Args:	void *base;	Used as base addr to write data to from reslist
  *		NrmQuarkList nameQ;		list of names Quarked
@@ -268,16 +268,16 @@ GetResources
 #endif
 {
 	register int	i,j;
-	NhlBoolean	resfound[MAXRESLIST];
-	NhlBoolean	argfound[MAXARGLIST];
-	NhlErrorTypes	ret = NOERROR;
-	NhlErrorTypes	lret = NOERROR;
-	NrmHashTable	stackslist[MAXRESLIST];
+	NhlBoolean	resfound[_NhlMAXRESLIST];
+	NhlBoolean	argfound[_NhlMAXARGLIST];
+	NhlErrorTypes	ret = NhlNOERROR;
+	NhlErrorTypes	lret = NhlNOERROR;
+	NrmHashTable	stackslist[_NhlMAXRESLIST];
 	NrmHashTable	*slist = stackslist;
-	int		slistlen = MAXRESLIST;
-	NrmHashTable	Pstackslist[MAXRESLIST];
+	int		slistlen = _NhlMAXRESLIST;
+	NrmHashTable	Pstackslist[_NhlMAXRESLIST];
 	NrmHashTable	*Pslist = Pstackslist;
-	int		Pslistlen = MAXRESLIST;
+	int		Pslistlen = _NhlMAXRESLIST;
 
 	/* Mark each resource as not found */
 	memset((char *)resfound,0, (int)(num_res * sizeof(NhlBoolean)));
@@ -316,18 +316,18 @@ GetResources
 							resources[j].nrm_type,
 							&from, &to);
 					
-					if(lret!=NOERROR){
-						NhlPError(WARNING,E_UNKNOWN,
+					if(lret!=NhlNOERROR){
+						NhlPError(NhlWARNING,NhlEUNKNOWN,
 			"Error retrieving resource %s from args - Ignoring Arg",
 					NrmNameToString(resources[i].nrm_name));
-						ret = MIN(WARNING,ret);
+						ret = MIN(NhlWARNING,ret);
 					}
 					else{
 						resfound[j] = True;
 					}
 				}
 				else{
-					NhlPError(WARNING,E_UNKNOWN,
+					NhlPError(NhlWARNING,NhlEUNKNOWN,
 				"The %s resource is not setable using a %s",
 						NrmQuarkToString(args[i].quark),
 						NrmQuarkToString(args[i].type));
@@ -337,10 +337,10 @@ GetResources
 			}	
 		}
 		if(!argfound[i]){
-			NhlPError(WARNING,E_UNKNOWN,
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
 				"%s is not a resource in the given object",
 						NrmNameToString(args[i].quark));
-			ret = MIN(ret,WARNING);
+			ret = MIN(ret,NhlWARNING);
 		}
 	}
 
@@ -411,7 +411,7 @@ GetResources
 							resources[i].nrm_type,
 							&from, &to);
 					
-					if(lret == NOERROR){
+					if(lret == NhlNOERROR){
 						resfound[i] = True;
 						continue;
 					}
@@ -421,11 +421,11 @@ GetResources
 					 * a db val for it - just notify caller
 					 */
 
-					NhlPError(WARNING,E_UNKNOWN,
+					NhlPError(NhlWARNING,NhlEUNKNOWN,
 		"Error retrieving resource %s from DB - Using default value",
 					NrmNameToString(resources[i].nrm_name));
 
-					ret = MIN(INFO,ret);
+					ret = MIN(NhlINFO,ret);
 				}
 				else{
 
@@ -473,7 +473,7 @@ GetResources
 							resources[i].nrm_type,
 							&from, &to);
 					
-					if(lret == NOERROR){
+					if(lret == NhlNOERROR){
 						resfound[i] = True;
 						continue;
 					}
@@ -483,11 +483,11 @@ GetResources
 					 * a db val for it - just notify caller
 					 */
 
-					NhlPError(INFO,E_UNKNOWN,
+					NhlPError(NhlINFO,NhlEUNKNOWN,
 		"Error retrieving resource %s from DB - Using default value",
 					NrmNameToString(resources[i].nrm_name));
 
-					ret = MIN(INFO,ret);
+					ret = MIN(NhlINFO,ret);
 				}
 				else{
 
@@ -526,7 +526,7 @@ GetResources
 		 *	to be run. - If it run's successfully it is assumed
 		 *	the procedure filled the value in correctly - if it
 		 *	doesn't run successfully it fills the value to NULL
-		 *	unless the procedure returned FATAL in which case
+		 *	unless the procedure returned NhlFATAL in which case
 		 *	it will exit.  The return value will propogate up
 		 *	to the user call point.
 		 *
@@ -543,7 +543,7 @@ GetResources
 		 *
 		 * 5. none of the above worked
 		 *	The resource will be set to NULL and a NhlErrorTypes
-		 *	value of WARNING will be returned.
+		 *	value of NhlWARNING will be returned.
 		 *	
 		 */
 
@@ -579,17 +579,17 @@ GetResources
 				lret = (*def_proc)(resources[i].nrm_name,
 						 resources[i].nrm_class,
 						 base,resources[i].nrm_offset);
-				if(lret > WARNING){
+				if(lret > NhlWARNING){
 					resfound[i] = True;
 					continue; /* this resource is finished*/
 				}
 
 				/* unspecified error - set to NULL */
-				NHLPERROR((WARNING,E_UNKNOWN,
+				NHLPERROR((NhlWARNING,NhlEUNKNOWN,
 			"Unable to set %s to default value - Using NULL",
 				NrmNameToString(resources[i].nrm_name)));
 				to.addr = NULL;
-				ret = MIN(ret,WARNING);
+				ret = MIN(ret,NhlWARNING);
 			}
 
 			else if(resources[i].nrm_default_type == 
@@ -611,17 +611,17 @@ GetResources
 					resources[i].nrm_default_type,
 					resources[i].nrm_type,&from,&to);
 				
-				if(lret < INFO){
+				if(lret < NhlINFO){
 
-				/* step #5 set return to WARNING*/
+				/* step #5 set return to NhlWARNING*/
 				/* and set resource to NULL	*/
 
 					/*ERROR*/
-					NHLPERROR((WARNING,E_UNKNOWN,
+					NHLPERROR((NhlWARNING,NhlEUNKNOWN,
 			"Unable to set %s to default value - Using NULL",
 				NrmNameToString(resources[i].nrm_name)));
 					to.addr = NULL;
-					ret = MIN(ret,WARNING);
+					ret = MIN(ret,NhlWARNING);
 				}
 
 			}
@@ -653,10 +653,10 @@ GetResources
  *
  * Description:	Initializes the given layer's resources using the Nrm and Args
  *
- * In Args:	Layer l;	The layer to be inited
+ * In Args:	NhlLayer l;	The layer to be inited
  *		Args args;	The args to override Nrm
  *		int nargs;	Number of args
- * Out Args:	Layer l;	Inited l's resources
+ * Out Args:	NhlLayer l;	Inited l's resources
  *
  * Scope:	Global private
  * Returns:	nothing
@@ -667,7 +667,7 @@ _NhlGetResources
 #if	__STDC__
 (
 	_NhlConvertContext	context,
-	Layer			l,	/* layer to set resources of	*/
+	NhlLayer			l,	/* layer to set resources of	*/
 	_NhlExtArgList		args,	/* args to override res defaults*/
 	int			num_args,/* number of args		*/
 	NrmQuarkList		child	/* layer is auto-managed chld	*/
@@ -675,25 +675,25 @@ _NhlGetResources
 #else
 (context,l,args,num_args,child)
 	_NhlConvertContext	context;
-	Layer			l;	/* layer to set resources of	*/
+	NhlLayer			l;	/* layer to set resources of	*/
 	_NhlExtArgList		args;	/* args to override res defaults*/
 	int			num_args;/* number of args		*/
 	NrmQuarkList		child;	/* layer is auto-managed chld	*/
 #endif
 {
-	NrmQuark nameQ[MAXTREEDEPTH], classQ[MAXTREEDEPTH];
-	LayerClass lc = _NhlClass(l);
+	NrmQuark nameQ[_NhlMAXTREEDEPTH], classQ[_NhlMAXTREEDEPTH];
+	NhlLayerClass lc = _NhlClass(l);
 
 	/*
 	 * Get quarks list of names and classes to use in querying the Nrm
 	 */
 
-	if(GetNamesAndClasses(l,nameQ,classQ,MAXTREEDEPTH) < 0){
+	if(GetNamesAndClasses(l,nameQ,classQ,_NhlMAXTREEDEPTH) < 0){
 		/* ERROR- DON'T DO ANY RESOURCES */
-		NhlPError(FATAL,E_UNKNOWN,
-			"Instance Tree depth exceeds MAXTREEDEPTH of %d",
-								MAXTREEDEPTH);
-		return(FATAL);
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			"Instance Tree depth exceeds _NhlMAXTREEDEPTH of %d",
+								_NhlMAXTREEDEPTH);
+		return(NhlFATAL);
 	}
 
 	return(GetResources(context,(char*)l, nameQ, classQ,
@@ -749,9 +749,9 @@ _NhlCompileResourceList
  *
  * Description:	This function combines the resources of the current layer
  *		class with the resources of it's superclass. If the current
- *		LayerClass over-rides any of the resources in the super-class
+ *		NhlLayerClass over-rides any of the resources in the super-class
  *
- * In Args:	LayerClass	lc;	layer class to create resource list for
+ * In Args:	NhlLayerClass	lc;	layer class to create resource list for
  *
  * Out Args:	lc->base_class.resources is updated.
  *
@@ -763,18 +763,18 @@ void
 _NhlGroupResources
 #if	__STDC__
 (
-	LayerClass lc	/* LayerClass to create full resource list for	*/
+	NhlLayerClass lc	/* NhlLayerClass to create full resource list for	*/
 )
 #else
 (lc)
-	LayerClass lc;	/* LayerClass to create full resource list for	*/
+	NhlLayerClass lc;	/* NhlLayerClass to create full resource list for	*/
 #endif
 {
 	NrmResourceList	rlist;
 	int		num_rlist;
 	int		i,j,next;
 	NrmResourceList	classlist;
-	LayerClass	sc = lc->base_class.superclass;
+	NhlLayerClass	sc = lc->base_class.superclass;
 	unsigned int	super_size;
 	NhlBoolean	override;
 
@@ -825,7 +825,7 @@ _NhlGroupResources
 					 */
 					if(classlist[i].nrm_size !=
 							rlist[j].nrm_size){
-						NhlPError(WARNING,E_UNKNOWN,
+						NhlPError(NhlWARNING,NhlEUNKNOWN,
 			"GroupResources:%s is Wrong size in Resource list",
 				NrmQuarkToString(classlist[i].nrm_name));
 
@@ -923,19 +923,19 @@ _NhlInitResDatabase
 	usrfile = _NhlGetUsrResFile();
 
 	if((void *)sysfile == (void *)NULL){
-		NhlPError(WARNING,E_UNKNOWN,
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
 				"Unable to Get System Resource File Name?");
 	}
 	else
 		NhlResDB = NrmGetFileDB(sysfile);
 	
 	if((void *)NhlResDB == (void *)NULL){
-		NhlPError(WARNING,E_UNKNOWN,
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
 			"Unable to load System Resource File %s",sysfile);
 	}
 
 	if((void *)usrfile == (void *)NULL){
-		NhlPError(INFO,E_UNKNOWN,
+		NhlPError(NhlINFO,NhlEUNKNOWN,
 				"Unable to Get User Resource File Name?");
 	}
 	else
@@ -943,7 +943,7 @@ _NhlInitResDatabase
 
 	if((void *)NhlResDB == (void *)NULL){
 		NrmPutStringRes(&NhlResDB,"DBLoaded","False");
-		NhlPError(WARNING,E_UNKNOWN,
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
 	"Unable to Create a Resource DB - Hard coded defaults will be used");
 
 	}
@@ -1076,7 +1076,7 @@ _NhlMergeArgLists
  *		a resource of the given class.
  *
  * In Args:	
- *		LayerClass	lc	class to check for res
+ *		NhlLayerClass	lc	class to check for res
  *		NrmQuark	res	resource to look for
  *
  * Out Args:	
@@ -1089,12 +1089,12 @@ NhlBoolean
 _NhlResInClass
 #if	__STDC__
 (
-	LayerClass	lc,	/* class to check for res	*/
+	NhlLayerClass	lc,	/* class to check for res	*/
 	NrmQuark	res	/* resource to look for		*/
 )
 #else
 (lc,res)
-	LayerClass	lc;	/* class to check for res	*/
+	NhlLayerClass	lc;	/* class to check for res	*/
 	NrmQuark	res;	/* resource to look for		*/
 #endif
 {
@@ -1116,7 +1116,7 @@ _NhlResInClass
  *		children args should be free'd by calling _NhlFreeChildArgs.
  *
  * In Args:	
- *		Layer			l,		layer
+ *		NhlLayer			l,		layer
  *		_NhlArgList		args_in,	args to sort
  *		int			nargs_in,	number args to sort
  *		_NhlArgList		args_out,	args not forwarded
@@ -1137,7 +1137,7 @@ NhlErrorTypes
 _NhlSortChildArgs
 #if	__STDC__
 (
-	Layer			l,		/* layer		*/
+	NhlLayer			l,		/* layer		*/
 	_NhlExtArgList		args_in,	/* args to sort		*/
 	int			nargs_in,	/* number args to sort	*/
 	_NhlExtArgList		*args_out,	/* args not forwarded	*/
@@ -1148,7 +1148,7 @@ _NhlSortChildArgs
 )
 #else
 (l,args_in,nargs_in,args_out,nargs_out,forw_list,args_used,getvalues)
-	Layer			l;		/* layer		*/
+	NhlLayer			l;		/* layer		*/
 	_NhlExtArgList		args_in;	/* args to sort		*/
 	int			nargs_in;	/* number args to sort	*/
 	_NhlExtArgList		*args_out;	/* args not forwarded	*/
@@ -1158,11 +1158,11 @@ _NhlSortChildArgs
 	NhlBoolean		getvalues;	/* called frm getvalues	*/
 #endif
 {
-	LayerClass		lc = _NhlClass(l);
+	NhlLayerClass		lc = _NhlClass(l);
 	int			i;
 	_NhlChildResList	reslist=NULL;
 	_NhlChildArgList	arglist=NULL;
-	NhlErrorTypes		ret = NOERROR;
+	NhlErrorTypes		ret = NhlNOERROR;
 
 	/*
 	 * Init nargs_out
@@ -1173,7 +1173,7 @@ _NhlSortChildArgs
 	 * Deal with simplest case
 	 */
 	if(nargs_in == 0)
-		return NOERROR;
+		return NhlNOERROR;
 
 	/*
 	 * Deal with no children case - Parent gets all args
@@ -1183,7 +1183,7 @@ _NhlSortChildArgs
 		*nargs_out = nargs_in;
 		for(i=0;i<nargs_in;i++)
 			args_used[i] = True;
-		return NOERROR;
+		return NhlNOERROR;
 	}
 
 	/*
@@ -1194,7 +1194,7 @@ _NhlSortChildArgs
 
 	*forw_list = (_NhlChildArgList)NhlMalloc(sizeof(_NhlChildArgNode));
 	if(*forw_list == NULL)
-		return FATAL;
+		return NhlFATAL;
 
 	arglist = *forw_list;
 
@@ -1212,7 +1212,7 @@ _NhlSortChildArgs
 			(void)NhlFree(arglist->args_used);
 			_NhlFreeChildArgs(*forw_list);
 			*forw_list = NULL;
-			return FATAL;
+			return NhlFATAL;
 		}
 
 		if(reslist->next != NULL){
@@ -1221,7 +1221,7 @@ _NhlSortChildArgs
 						sizeof(_NhlChildArgNode));
 			if(arglist->next == NULL){
 				_NhlFreeChildArgs(*forw_list);
-				return FATAL;
+				return NhlFATAL;
 			}
 		}
 
@@ -1291,11 +1291,11 @@ _NhlSortChildArgs
 		 * Notify user of bad resource requests
 		 */
 		if(!argfound){
-			NhlPError(INFO,E_UNKNOWN,
+			NhlPError(NhlINFO,NhlEUNKNOWN,
 				"The resource %s is not in objects of class %s",
 					NrmNameToString(args_in[i].quark),
 							_NhlClassName(lc));
-			ret = INFO;
+			ret = NhlINFO;
 		}
 	}
 
@@ -1306,7 +1306,7 @@ _NhlSortChildArgs
  * Function:	_NhlFreeChildArgs
  *
  * Description:	This function free's the memory associated with the child_args
- *		field of the given Layer instance.
+ *		field of the given NhlLayer instance.
  *
  * In Args:	
  *

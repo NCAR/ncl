@@ -1,5 +1,5 @@
 /*
- *      $Id: Contour.h,v 1.3 1994-01-12 00:34:15 dbrown Exp $
+ *      $Id: Contour.h,v 1.4 1994-01-27 21:21:34 boote Exp $
  */
 /************************************************************************
 *									*
@@ -38,9 +38,6 @@
 
 #define NhlCcnOutOfRangeValF	"CnOutOfRangeValF"
 
-typedef struct _ContourLayerClassRec	*ContourLayerClass;
-typedef struct _ContourLayerRec		*ContourLayer;
-
-extern LayerClass			contourLayerClass;
+extern NhlLayerClass			NhlcontourLayerClass;
 
 #endif /*_NContour_h */

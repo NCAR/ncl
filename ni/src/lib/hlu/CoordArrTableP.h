@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrTableP.h,v 1.1 1993-09-15 22:10:26 boote Exp $
+ *      $Id: CoordArrTableP.h,v 1.2 1994-01-27 21:22:02 boote Exp $
  */
 /************************************************************************
 *									*
@@ -27,31 +27,34 @@
 #include <ncarg/hlu/CoordArrTableIntP.h>
 #include <ncarg/hlu/CoordArrTableFloatP.h>
 
-typedef struct _CoordArrTableLayerPart{
+typedef struct _NhlCoordArrTableLayerPart{
 	/* User setable resource fields */
 	NhlString		type_string;
 
 	/* Private Fields */
 	NrmQuark		type;
-	Layer			child;
-} CoordArrTableLayerPart;
+	NhlLayer		child;
+} NhlCoordArrTableLayerPart;
 
-typedef struct _CoordArrTableLayerRec{
-	BaseLayerPart			base;
-	DataItemLayerPart		dataitem;
-	CoordArrTableLayerPart		cat;
-} CoordArrTableLayerRec;
+typedef struct _NhlCoordArrTableLayerRec{
+	NhlBaseLayerPart		base;
+	NhlDataItemLayerPart		dataitem;
+	NhlCoordArrTableLayerPart	cat;
+} NhlCoordArrTableLayerRec;
 
-typedef struct _CoordArrTableLayerClassPart{
+typedef struct _NhlCoordArrTableLayerClassPart{
 	int	foo;
-} CoordArrTableLayerClassPart;
+} NhlCoordArrTableLayerClassPart;
 
-typedef struct _CoordArrTableLayerClassRec{
-	BaseLayerClassPart		base_class;
-	DataItemLayerClassPart		dataitem_class;
-	CoordArrTableLayerClassPart	cat_class;
-} CoordArrTableLayerClassRec;
+typedef struct _NhlCoordArrTableLayerClassRec{
+	NhlBaseLayerClassPart		base_class;
+	NhlDataItemLayerClassPart	dataitem_class;
+	NhlCoordArrTableLayerClassPart	cat_class;
+} NhlCoordArrTableLayerClassRec;
 
-extern CoordArrTableLayerClassRec coordArrTableLayerClassRec;
+typedef struct _NhlCoordArrTableLayerClassRec *NhlCoordArrTableLayerClass;
+typedef struct _NhlCoordArrTableLayerRec *NhlCoordArrTableLayer;
+
+extern NhlCoordArrTableLayerClassRec NhlcoordArrTableLayerClassRec;
 
 #endif  /* _NCoordArrTableP_h */

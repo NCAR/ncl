@@ -1,5 +1,5 @@
 /*
- *      $Id: defs.h,v 1.3 1993-12-14 21:44:25 boote Exp $
+ *      $Id: defs.h,v 1.4 1994-01-27 21:27:58 boote Exp $
  */
 /************************************************************************
 *									*
@@ -35,51 +35,48 @@
 
 /* environment variable names for resource file locations */
 /* The sysresfile is kept in $NCARG_LIB/ncarg/hluresfile for now */
-#ifndef HLUSYSRESENVNAME
-#define SYSRESENVNAME	"NCARG_SYSRESFILE"
-#else
-#define SYSRESENVNAME HLUSYSRESENVNAME
-#endif
-#ifndef DEFSYSRESFNAME
-#define DEFSYSRESFNAME	"hluresfile"
+#ifndef NhlSYSRESENVNAME
+#define NhlSYSRESENVNAME	"NCARG_SYSRESFILE"
 #endif
 
-#ifndef HLUUSRRESENVNAME
-#define USRRESENVNAME	"NCARG_USRRESFILE"
-#else
-#define USRRESENVNAME HLUUSRRESENVNAME
+#ifndef NhlDEFSYSRESFNAME
+#define NhlDEFSYSRESFNAME	"hluresfile"
 #endif
-#ifndef DEFUSRRESFNAME
-#define DEFUSRRESFNAME	"~/.hluresfile"
+
+#ifndef NhlUSRRESENVNAME
+#define NhlUSRRESENVNAME	"NCARG_USRRESFILE"
+#endif
+#ifndef NhlDEFUSRRESFNAME
+#define NhlDEFUSRRESFNAME	"~/.hluresfile"
 #endif
 
 /* max characters in a filename */
-#define MAXFNAMELEN	(256)
+#define _NhlMAXFNAMELEN	(256)
 
 /* path delimiter - "/" in unix "\" in dos and I'm sure there are others */
-#define PATHDELIMITER	"/"
+#define _NhlPATHDELIMITER	"/"
 
 /* maximuim depth of parent -> sub-parent -> child */
-#define	MAXTREEDEPTH	(128)
+#define	_NhlMAXTREEDEPTH	(128)
 
 /* maximuin number of arguments that can be set in a single call*/
 /* The actual number is one less than this because the last one */
 /* gets filled with null to determine the length		*/
-#define	MAXARGLIST	(128)
+#define	_NhlMAXARGLIST	(128)
 
 /* maximuim number of resources a single object can have */
-#define	MAXRESLIST	(1024)
+#define	_NhlMAXRESLIST	(1024)
 
 /* maximuim resource name length - each name not the full name.name. string */
-#define MAXRESNAMLEN	(128)
+#define _NhlMAXRESNAMLEN	(128)
 
 /* how many layer pointers to alloc at a time when more are needed */
-#define LAYERLISTINC	(128)
+#define _NhlLAYERLISTINC	(128)
 
 /* usefull defines for specifying a layer has no parent */
-#define NULL_LAYER	(-100)
-#define NULL_PARENT	NULL_LAYER
-#define NOPARENT	NULL_LAYER
+#define NhlNULL_LAYER	(-100)
+#define NhlNULL_PARENT	NhlNULL_LAYER
+#define NhlNOPARENT	NhlNULL_LAYER
 
 
 /* defines for the converter hash table */
@@ -90,9 +87,9 @@
  * ie:        POW(2,HASHMULT) = HASHSIZE
  * right now: POW(2,8) = 256
  */
-#define HASHSIZE	(256)
-#define HASHMASK	(HASHSIZE - 1)
-#define HASHMULT	(8)
+#define _NhlHASHSIZE	(256)
+#define _NhlHASHMASK	(_NhlHASHSIZE - 1)
+#define _NhlHASHMULT	(8)
 
 
 #endif /*_DEFS_H_*/

@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrays.h,v 1.3 1994-01-22 01:59:07 boote Exp $
+ *      $Id: CoordArrays.h,v 1.4 1994-01-27 21:22:09 boote Exp $
  */
 /************************************************************************
 *									*
@@ -61,9 +61,6 @@
 #define	NhlNcaYMin	"caYMin"
 #define	NhlCcaYMin	"CaYMin"
 
-typedef struct _CoordArraysLayerClassRec *CoordArraysLayerClass;
-typedef struct _CoordArraysLayerRec *CoordArraysLayer;
-
-extern LayerClass coordArraysLayerClass;
+extern NhlLayerClass NhlcoordArraysLayerClass;
 
 #endif /*_NCoordArrays_h */

@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularTransObjP.h,v 1.4 1993-12-13 23:34:24 ethan Exp $
+ *      $Id: IrregularTransObjP.h,v 1.5 1994-01-27 21:23:20 boote Exp $
  */
 /************************************************************************
 *									*
@@ -31,7 +31,7 @@
 
 #include <ncarg/hlu/CoordApprox.h>
 
-typedef struct _IrregularTransObjLayerPart {
+typedef struct _NhlIrregularTransObjLayerPart {
 	/* Publically setable resources */
 	float 	*x_coord_points;
 	float	*x_inter_points;
@@ -65,24 +65,28 @@ typedef struct _IrregularTransObjLayerPart {
 	float   compc_y_min;
 	float	compc_y_max;
 	int log_lin_value;
-} IrregularTransObjLayerPart;
+} NhlIrregularTransObjLayerPart;
 
-typedef struct _IrregularTransObjLayerRec {
-	ObjLayerPart	base;
-	TransObjLayerPart trobj;
-	IrregularTransObjLayerPart irtrans;
-} IrregularTransObjLayerRec;
+typedef struct _NhlIrregularTransObjLayerRec {
+	NhlObjLayerPart			base;
+	NhlTransObjLayerPart		trobj;
+	NhlIrregularTransObjLayerPart	irtrans;
+} NhlIrregularTransObjLayerRec;
 
-typedef struct _IrregularTransObjLayerClassPart {
+typedef struct _NhlIrregularTransObjLayerClassPart {
 	char *foo;
-}IrregularTransObjLayerClassPart;
+}NhlIrregularTransObjLayerClassPart;
 
-typedef struct _IrregularTransObjLayerClassRec {
-	ObjLayerClassPart	base_class;
-	TransObjLayerClassPart	trobj_class;
-	IrregularTransObjLayerClassPart	irtrans_class;
-}IrregularTransObjLayerClassRec;
+typedef struct _NhlIrregularTransObjLayerClassRec {
+	NhlObjLayerClassPart			base_class;
+	NhlTransObjLayerClassPart		trobj_class;
+	NhlIrregularTransObjLayerClassPart	irtrans_class;
+}NhlIrregularTransObjLayerClassRec;
 
-extern IrregularTransObjLayerClassRec irregularTransObjLayerClassRec;
+typedef struct _NhlIrregularTransObjLayerClassRec
+					*NhlIrregularTransObjLayerClass;
+typedef struct _NhlIrregularTransObjLayerRec	*NhlIrregularTransObjLayer;
+
+extern NhlIrregularTransObjLayerClassRec NhlirregularTransObjLayerClassRec;
 
 #endif /* _NIrregularTransObjP_h */

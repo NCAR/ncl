@@ -1,5 +1,5 @@
 /*
- *      $Id: Convert.c,v 1.2 1993-10-19 17:49:52 boote Exp $
+ *      $Id: Convert.c,v 1.3 1994-01-27 21:21:39 boote Exp $
  */
 /************************************************************************
 *									*
@@ -30,9 +30,9 @@
 #include <ncarg/hlu/ConvertP.h>
 
 
-#define HASHFUNC(a,b,c)	((((a)*HASHMULT) + (b) + (c)) & HASHMASK)
+#define _NhlHASHFUNC(a,b,c)	((((a)*_NhlHASHMULT)+(b)+(c)) & _NhlHASHMASK)
 
-static NhlConvertPtr HashTable[HASHSIZE] = { NULL};
+static NhlConvertPtr HashTable[_NhlHASHSIZE] = { NULL};
 
 static	_NhlCtxtStack	 ctxt_stack = NULL;
 
@@ -67,7 +67,7 @@ _NhlCreateConvertContext
 
 	context = (_NhlConvertContext)NhlMalloc(sizeof(_NhlConvertContextRec));
 	if(context == NULL){
-		NhlPError(FATAL,ENOMEM,"_NhlCreateConvertContext needs memory");
+		NhlPError(NhlFATAL,ENOMEM,"_NhlCreateConvertContext needs memory");
 		return NULL;
 	}
 
@@ -146,7 +146,7 @@ CreateConvArgs
 
 	newargs = (NhlConvertArgList)NhlMalloc(nargs * sizeof(NhlConvertArg));
 	if(newargs == NULL){
-		NhlPError(FATAL,E_UNKNOWN,"Unable to copy convert Args");
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"Unable to copy convert Args");
 		return NULL;
 	}
 
@@ -154,13 +154,13 @@ CreateConvArgs
 
 		switch(args[i].addressmode){
 
-			case NHLIMMEDIATE:
+			case NhlIMMEDIATE:
 				newargs[i].addr = args[i].addr;
 				newargs[i].size = args[i].size;
 
 				break;
 
-			case NHLADDR:
+			case NhlADDR:
 				newargs[i].addr = NhlMalloc(args[i].size);
 				memcpy((void *)(newargs[i].addr),
 					(void *)(args[i].addr),args[i].size);
@@ -168,14 +168,14 @@ CreateConvArgs
 
 				break;
 
-			case NHLSTRENUM:
+			case NhlSTRENUM:
 				/*
 				 * This is a hack - Since string to enumerated
 				 * types are so frequent it made sense to put
 				 * it in.  This addr type basically means
 				 * the addr is a null terminated string and
 				 * the size is being used for integer data.
-				 * The addr should be malloc'ed as in NHLADDR
+				 * The addr should be malloc'ed as in NhlADDR
 				 * but it should allocate the size needed by
 				 * doing a strlen, and then just set the
 				 * value of size to the size part.
@@ -191,7 +191,7 @@ CreateConvArgs
 				break;
 
 			default:
-				NhlPError(FATAL,E_UNKNOWN,
+				NhlPError(NhlFATAL,NhlEUNKNOWN,
 				"addressmode of convert arg[%d] not valid",i);
 				(void)NhlFree(newargs);
 				return(NULL);
@@ -230,14 +230,14 @@ insertConverter
 {
 	int entry;
 
-	entry = HASHFUNC(ptr->fromtype,ptr->totype,ptr->converter_type);
+	entry = _NhlHASHFUNC(ptr->fromtype,ptr->totype,ptr->converter_type);
 
 	if(HashTable[entry] != (NhlConvertPtr)NULL)
 		ptr->next = HashTable[entry];
 
 	HashTable[entry] = ptr;
 
-	return(NOERROR);
+	return(NhlNOERROR);
 }
 
 /*
@@ -287,14 +287,14 @@ _NhlRegisterConverter
 {
 	NhlConvertPtr		cvtrec = NULL;
 
-	if(convert == NULL) return(WARNING);
+	if(convert == NULL) return(NhlWARNING);
 
 	cvtrec = (NhlConvertPtr)NhlMalloc(sizeof(NhlConvertRec));
 	if(cvtrec == NULL){
-		NhlPError(FATAL,E_UNKNOWN,
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
 			"Unable to allocate memory for Converter %s to %s",
 				NrmNameToString(from),NrmNameToString(to));
-		return FATAL;
+		return NhlFATAL;
 	}
 
 	cvtrec->next = NULL;
@@ -309,12 +309,12 @@ _NhlRegisterConverter
 	if(nargs > 0){
 		cvtrec->args = CreateConvArgs(args,nargs);
 		if(cvtrec->args == NULL){
-			NhlPError(FATAL,E_UNKNOWN,
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
 					"Unable to install Converter %s to %s",
 							NrmNameToString(from),
 							NrmNameToString(to));
 			(void)NhlFree(cvtrec);
-			return(WARNING);
+			return(NhlWARNING);
 		}
 	}
 	else
@@ -469,7 +469,7 @@ FreeConverter
 	 * free the args
 	 */
 	for(i=0;i < ptr->nargs;i++)
-		if(ptr->args[i].addressmode == NHLADDR)
+		if(ptr->args[i].addressmode == NhlADDR)
 			(void)NhlFree((void *)(ptr->args[i].addr));
 
 	(void)NhlFree(ptr->args);
@@ -479,7 +479,7 @@ FreeConverter
 	 */
 	(void)NhlFree(ptr);
 
-	return(NOERROR);
+	return(NhlNOERROR);
 }
 
 /*
@@ -521,7 +521,7 @@ _NhlDeleteConverter
 	 * ptr becomes the record containing the converter to delete
 	 * last becomes the node before
 	 */
-	ptr = &HashTable[HASHFUNC(fromQ,toQ,ctypeQ)];
+	ptr = &HashTable[_NhlHASHFUNC(fromQ,toQ,ctypeQ)];
 
 	while((*ptr != NULL) &&
 	    (((*ptr)->fromtype != fromQ) || ((*ptr)->totype != toQ) ||
@@ -529,7 +529,7 @@ _NhlDeleteConverter
 		ptr = &((*ptr)->next);
 
 	if(*ptr == NULL){
-		return(FATAL);
+		return(NhlFATAL);
 	}
 
 	tmp = *ptr;
@@ -612,7 +612,7 @@ _NhlUnRegisterConverter
 	/*
 	 * ptr becomes the record containing the converter to remove
 	 */
-	ptr = &HashTable[HASHFUNC(from,to,type)];
+	ptr = &HashTable[_NhlHASHFUNC(from,to,type)];
 
 	while((*ptr != NULL) &&
 		    (((*ptr)->fromtype != from) || ((*ptr)->totype != to) ||
@@ -620,10 +620,10 @@ _NhlUnRegisterConverter
 		ptr = &((*ptr)->next);
 
 	if(*ptr == NULL){
-		NhlPError(FATAL,E_UNKNOWN,
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
 			"Unable to Find Converter %s to %s to unregister",
 				NrmNameToString(from),NrmNameToString(to));
-		return(FATAL);
+		return(NhlFATAL);
 	}
 
 	/*
@@ -637,7 +637,7 @@ _NhlUnRegisterConverter
 	 */
 	*ptr = (*ptr)->next;
 
-	return(NOERROR);
+	return(NhlNOERROR);
 }
 
 /*
@@ -708,7 +708,7 @@ NhlReRegisterConverter
 	 * ptr becomes the record containing the converter to delete
 	 * last becomes the node before
 	 */
-	ptr = &HashTable[HASHFUNC(converter->fromtype,converter->totype,
+	ptr = &HashTable[_NhlHASHFUNC(converter->fromtype,converter->totype,
 						converter->converter_type)];
 
 	while((*ptr != NULL) &&
@@ -726,7 +726,7 @@ NhlReRegisterConverter
 
 	*ptr = converter;
 
-	return(NOERROR);
+	return(NhlNOERROR);
 }
 
 /*
@@ -761,7 +761,7 @@ _NhlConverterExists
 {
 	NhlConvertPtr	ptr = NULL;
 
-	ptr = HashTable[HASHFUNC(from,to,conv_type)];
+	ptr = HashTable[_NhlHASHFUNC(from,to,conv_type)];
 
 	while((ptr != NULL) &&
 		((ptr->fromtype != from) || (ptr->totype != to) ||
@@ -887,16 +887,16 @@ SetConvertVal
 
 		if(to->size < from.size){ 	/* not large enough */
 			to->size = from.size;
-			NhlPError(FATAL,E_UNKNOWN,
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
 				"Not enough space provided for converted data");
-			return(FATAL);
+			return(NhlFATAL);
 		}
 
 		/* give caller copy */
 
 		to->size = from.size;
 		memcpy(to->addr,from.addr,to->size);
-		return(NOERROR);
+		return(NhlNOERROR);
 	}
 
 	/*
@@ -907,7 +907,7 @@ SetConvertVal
 	to->size = from.size;
 	to->addr = from.addr;
 
-	return(NOERROR);
+	return(NhlNOERROR);
 }
 
 /*
@@ -958,7 +958,7 @@ InsertInCache
 	newnode->next = conv->cache;
 	conv->cache = newnode;
 
-	return(NOERROR);
+	return(NhlNOERROR);
 }
 
 /*
@@ -996,11 +996,11 @@ Convert
 	NrmValue		*todata;	/* return converted data*/
 #endif
 {
-	NhlErrorTypes	ret = NOERROR, lret = NOERROR;
+	NhlErrorTypes	ret = NhlNOERROR, lret = NhlNOERROR;
 
 	ret = (*conv->converter)(fromdata,todata,conv->args,conv->nargs);
 
-	if(ret < WARNING)
+	if(ret < NhlWARNING)
 		return(ret);
 
 	if(conv->cacheit){
@@ -1052,18 +1052,18 @@ ConvertData
 	NhlConvertPtr	ptr = NULL;
 	CachePtr	cache=NULL;
 	_NhlCtxtStack	ctxt = NULL;
-	NhlErrorTypes	ret=NOERROR;
+	NhlErrorTypes	ret=NhlNOERROR;
 
 	ctxt = (_NhlCtxtStack)NhlMalloc(sizeof(_NhlCtxtStackRec));
 	if(ctxt == NULL){
-		NHLPERROR((FATAL,ENOMEM,NULL));
-		return FATAL;
+		NHLPERROR((NhlFATAL,ENOMEM,NULL));
+		return NhlFATAL;
 	}
 	ctxt->context = context;
 	ctxt->next = ctxt_stack;
 	ctxt_stack = ctxt;
 
-	ptr = HashTable[HASHFUNC(fromQ,toQ,convert_type)];
+	ptr = HashTable[_NhlHASHFUNC(fromQ,toQ,convert_type)];
 
 	while((ptr != NULL) &&
 		    ((ptr->fromtype != fromQ) || (ptr->totype != toQ) ||
@@ -1071,9 +1071,9 @@ ConvertData
 		ptr = ptr->next;
 
 	if(ptr == NULL){
-		NhlPError(WARNING,E_UNKNOWN,"No Converter for %s to %s",
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"No Converter for %s to %s",
 				NrmNameToString(fromQ),NrmNameToString(toQ));
-		return(FATAL);
+		return(NhlFATAL);
 	}
 
 	if(ptr->cacheit)
@@ -1225,14 +1225,14 @@ NhlConvertData
 	}
 
 	if(context == NULL){
-		NhlPError(FATAL,ENOMEM,"Unable to Create Context");
-		return FATAL;
+		NhlPError(NhlFATAL,ENOMEM,"Unable to Create Context");
+		return NhlFATAL;
 	}
 
 	tptr = (_NhlCtxtStack)NhlMalloc(sizeof(_NhlCtxtStackRec));
 	if(tptr == NULL){
-		NHLPERROR((FATAL,ENOMEM,NULL));
-		return FATAL;
+		NHLPERROR((NhlFATAL,ENOMEM,NULL));
+		return NhlFATAL;
 	}
 	tptr->context = context;
 
@@ -1277,7 +1277,7 @@ NhlConvertMalloc
 	_NhlConvertContext	context;
 	
 	if((ctxt_stack == NULL) || (ctxt_stack->context == NULL)){
-		NhlPError(FATAL, E_UNKNOWN,
+		NhlPError(NhlFATAL, NhlEUNKNOWN,
 					"NhlConvertMalloc:Context not active");
 		return NULL;
 	}
@@ -1288,7 +1288,7 @@ NhlConvertMalloc
 		if(context->next == NULL){
 			context->next = _NhlCreateConvertContext();
 			if(context->next == NULL){
-				NhlPError(FATAL, E_UNKNOWN,
+				NhlPError(NhlFATAL, NhlEUNKNOWN,
 				"NhlConvertMalloc:Unable to Grow Context");
 				return NULL;
 			}

@@ -1,5 +1,5 @@
 /*
- *      $Id: DataMgrP.h,v 1.2 1993-10-19 17:50:36 boote Exp $
+ *      $Id: DataMgrP.h,v 1.3 1994-01-27 21:22:49 boote Exp $
  */
 /************************************************************************
 *									*
@@ -30,12 +30,12 @@ typedef struct _NhlDCacheRec _NhlDCacheRec, *_NhlDCache;
 typedef struct _NhlDSpecRec _NhlDSpecRec, *_NhlDSpec;
 
 struct	_NhlDCacheRec{
-	NrmQuark	type;
-	NhlBoolean	uptodate;
-	int		ref_count;
-	Layer		dataset;
+	NrmQuark		type;
+	NhlBoolean		uptodate;
+	int			ref_count;
+	NhlLayer		dataset;
 	_NhlConvertContext	cvt_context;
-	_NhlDCache	next;
+	_NhlDCache		next;
 };
 
 struct	_NhlDHandleRec{
@@ -51,29 +51,33 @@ struct	_NhlDSpecRec{
 	_NhlDSpec	next;
 };
 
-typedef struct _DataMgrLayerPart{
+typedef struct _NhlDataMgrLayerPart{
 	/* User setable resource fields */
 	/* Private Fields */
 	NhlBoolean	uptodate;
 	_NhlDHandle	connection_list;
 	_NhlDCache	data_list;
 	_NhlDSpec	dspec_list;
-} DataMgrLayerPart;
+} NhlDataMgrLayerPart;
 
-typedef struct _DataMgrLayerRec{
-	ObjLayerPart		base;
-	DataMgrLayerPart	datamgr;
-} DataMgrLayerRec;
+typedef struct _NhlDataMgrLayerRec{
+	NhlObjLayerPart		base;
+	NhlDataMgrLayerPart	datamgr;
+} NhlDataMgrLayerRec;
 
-typedef struct _DataMgrLayerClassPart{
+typedef struct _NhlDataMgrLayerClassPart{
 	int	foo;
-} DataMgrLayerClassPart;
+} NhlDataMgrLayerClassPart;
 
-typedef struct _DataMgrLayerClassRec{
-	ObjLayerClassPart	base_class;
-	DataMgrLayerClassPart	datamgr_class;
-} DataMgrLayerClassRec;
+typedef struct _NhlDataMgrLayerClassRec{
+	NhlObjLayerClassPart		base_class;
+	NhlDataMgrLayerClassPart	datamgr_class;
+} NhlDataMgrLayerClassRec;
 
-extern DataMgrLayerClassRec dataMgrLayerClassRec;
+/* Exported Layer and LayerClass */
+typedef struct _NhlDataMgrLayerClassRec *NhlDataMgrLayerClass;
+typedef struct _NhlDataMgrLayerRec *NhlDataMgrLayer;
+
+extern NhlDataMgrLayerClassRec NhldataMgrLayerClassRec;
 
 #endif  /* _NDataMgrP_h */

@@ -1,5 +1,5 @@
 /*
- *      $Id: DataMgrF.h,v 1.2 1993-10-19 17:50:34 boote Exp $
+ *      $Id: DataMgrF.h,v 1.3 1994-01-27 21:22:47 boote Exp $
  */
 /************************************************************************
 *									*
@@ -33,7 +33,7 @@
 
 extern _NhlDHandle _NhlInitDataConnection(
 #ifdef	NhlNeedProto
-	DataItemLayer	item,		/* DataItem sub-class		*/
+	NhlLayer	item,		/* DataItem sub-class	*/
 	int		dcommid,	/* id for datacomm layer	*/
 	NrmQuark	res_name,	/* resource name		*/
 	NrmQuark	*type_req,	/* array of type wanted		*/
@@ -41,18 +41,18 @@ extern _NhlDHandle _NhlInitDataConnection(
 #endif
 );
 
-extern Layer _NhlRetrieveData(
+extern NhlLayer _NhlRetrieveData(
 #ifdef	NhlNeedProto
-	DataItemLayer	item,		/* dataItem sub-class	*/
-	_NhlDHandle	dhandle,	/* id for Connection	*/
-	NhlBoolean	*new		/* is data new/changed	*/
+	NhlLayer		item,		/* dataItem sub-class	*/
+	_NhlDHandle		dhandle,	/* id for Connection	*/
+	NhlBoolean		*new		/* is data new/changed	*/
 #endif
 );
 
 extern void _NhlCloseDataConnection(
 #ifdef	NhlNeedProto
-	DataItemLayer	item,	/* DataItem sub-class	*/
-	_NhlDHandle	dhandle	/* id for Connection	*/
+	NhlLayer	item,	/* DataItem sub-class	*/
+	_NhlDHandle		dhandle	/* id for Connection	*/
 #endif
 );
 
@@ -62,15 +62,15 @@ extern void _NhlCloseDataConnection(
 
 extern NhlBoolean _NhlRegisterDSpec(
 #ifdef	NhlNeedProto
-	DataItemLayer	item,		/* dataitem sub-class		*/
-	int		dspecid		/* id for dataspec layer	*/
+	NhlLayer	item,		/* dataitem sub-class	*/
+	int			dspecid		/* id for dataspec layer*/
 #endif
 );
 
 extern void _NhlUnRegisterDSpec(
 #ifdef	NhlNeedProto
-	DataItemLayer	item,		/* dataitem sub-class		*/
-	int		dspecid		/* id for dataspec layer	*/
+	NhlLayer	item,	/* dataitem sub-class		*/
+	int			dspecid	/* id for dataspec layer	*/
 #endif
 );
 
@@ -80,13 +80,13 @@ extern void _NhlUnRegisterDSpec(
 
 extern void _NhlDataItemModified(
 #ifdef	NhlNeedProto
-	DataMgrLayer	mgr	/* DataMgr	*/
+	NhlLayer	mgr	/* DataMgr	*/
 #endif
 );
 
 extern NhlErrorTypes _NhlNotifyDataComm(
 #ifdef	NhlNeedProto
-	DataMgrLayer	mgr	/* DataMgr	*/
+	NhlLayer	mgr	/* DataMgr	*/
 #endif
 );
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: Transform.c,v 1.6 1994-01-24 23:57:53 dbrown Exp $
+ *      $Id: Transform.c,v 1.7 1994-01-27 21:26:56 boote Exp $
  */
 /************************************************************************
 *									*
@@ -28,7 +28,6 @@
  *			used.
  */
 
-#include <stdio.h>
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/TransformP.h>
 #include <ncarg/hlu/TransObjP.h>
@@ -36,19 +35,19 @@
 static NhlResource resources[] = {
 	{ NhlNtfOverlayPlotBase,NhlCtfOverlayPlotBase,
 		  NhlTBoolean,sizeof(NhlBoolean),
-		  NhlOffset(TransformLayerRec,trans.overlay_plot_base),
+		  NhlOffset(NhlTransformLayerRec,trans.overlay_plot_base),
 		  NhlTImmediate,(NhlPointer)True},
 	{ NhlNtfOverlayObject,NhlCtfOverlayObject,
 		  NhlTPointer,sizeof(NhlPointer),
-		  NhlOffset(TransformLayerRec,trans.overlay_object),
+		  NhlOffset(NhlTransformLayerRec,trans.overlay_object),
 		  NhlTImmediate,(NhlPointer)NULL},
 	{ NhlNtfOverlayTrans,NhlCtfOverlayTrans,
 		  NhlTPointer,sizeof(NhlPointer),
-		  NhlOffset(TransformLayerRec,trans.overlay_trans_obj),
+		  NhlOffset(NhlTransformLayerRec,trans.overlay_trans_obj),
 		  NhlTImmediate,(NhlPointer)NULL},
 	{ NhlNtfOverlayStatus,NhlCtfOverlayStatus,
 		  NhlTInteger,sizeof(int),
-		  NhlOffset(TransformLayerRec,trans.overlay_status),
+		  NhlOffset(NhlTransformLayerRec,trans.overlay_status),
 		  NhlTImmediate,(NhlPointer)_tfNotInOverlay}
 };
 
@@ -59,7 +58,7 @@ static NhlResource resources[] = {
 
 static NhlErrorTypes TransformDataToNDC(
 #ifdef NhlNeedProto
-	Layer		/* plot */,
+	NhlLayer		/* plot */,
 	float*		/* x */,
 	float*		/* y */,
 	int		/* n */,
@@ -74,7 +73,7 @@ static NhlErrorTypes TransformDataToNDC(
 
 static NhlErrorTypes TransformNDCToData(
 #ifdef NhlNeedProto
-	Layer		/* plot */,
+	NhlLayer		/* plot */,
 	float*		/* x */,
 	float*		/* y */,
 	int		/* n */,
@@ -89,7 +88,7 @@ static NhlErrorTypes TransformNDCToData(
 
 static NhlErrorTypes TransformDataPolyline(
 #ifdef NhlNeedProto
-	Layer		/* plot */,
+	NhlLayer		/* plot */,
 	float*		/* x */,
 	float*		/* y */,
 	int		/* n */
@@ -98,20 +97,20 @@ static NhlErrorTypes TransformDataPolyline(
 
 static NhlErrorTypes TransformNDCPolyline(
 #ifdef NhlNeedProto
-	Layer		/* plot */,
+	NhlLayer		/* plot */,
 	float*		/* x */,
 	float*		/* y */,
 	int		/* n */
 #endif
 );
 
-TransformLayerClassRec transformLayerClassRec = {
+NhlTransformLayerClassRec NhltransformLayerClassRec = {
         {
 /* class_name			*/      "Transform",
 /* nrm_class			*/      NrmNULLQUARK,
-/* layer_size			*/      sizeof(TransformLayerRec),
+/* layer_size			*/      sizeof(NhlTransformLayerRec),
 /* class_inited			*/      False,
-/* superclass			*/      (LayerClass)&viewLayerClassRec,
+/* superclass			*/      (NhlLayerClass)&NhlviewLayerClassRec,
 
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
@@ -149,7 +148,7 @@ TransformLayerClassRec transformLayerClassRec = {
 	}
 };
 	
-LayerClass transformLayerClass = (LayerClass)&transformLayerClassRec;
+NhlLayerClass NhltransformLayerClass = (NhlLayerClass)&NhltransformLayerClassRec;
 
 /*
  * Function:	TransformDataToNDC
@@ -181,12 +180,12 @@ LayerClass transformLayerClass = (LayerClass)&transformLayerClassRec;
  */
 static NhlErrorTypes TransformDataToNDC
 #if __STDC__
-(Layer plot,float* x,float* y,int n,
+(NhlLayer plot,float* x,float* y,int n,
  float* xout,float* yout,float* xmissing,float* ymissing, 
  int *status, float * out_of_range)
 #else
 (plot,x,y,n,xout,yout,xmissing,ymissing,status,out_of_range)
-	Layer		plot;
+	NhlLayer		plot;
 	float		*x;
 	float		*y;
 	int		n;
@@ -199,10 +198,10 @@ static NhlErrorTypes TransformDataToNDC
 #endif
 {
 	char			*entry_name = "TransformNDCToData";
-	NhlErrorTypes		ret = NOERROR, subret = NOERROR;
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	char			*e_text;
-	TransformLayerPart	*tfp = &(((TransformLayer) plot)->trans);
-	Layer			top;
+	NhlTransformLayerPart	*tfp = &(((NhlTransformLayer) plot)->trans);
+	NhlLayer		top;
 	int			mystatus = 0;
 
 	if (tfp->overlay_status == _tfCurrentOverlayMember && 
@@ -213,7 +212,7 @@ static NhlErrorTypes TransformDataToNDC
 		if ((top = tfp->trans_obj) == NULL) {
 			e_text = 
 			   "%s: no transformation object recorded for pid %d";
-			NhlPError(FATAL,E_UNKNOWN,e_text,
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,
 				  entry_name,plot->base.id);
 			return(ret);
 	        }
@@ -221,21 +220,21 @@ static NhlErrorTypes TransformDataToNDC
 
 	subret = _NhlSetTrans(top, plot);
 
-	if ((ret = MIN(ret,subret)) < WARNING) {
+	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: error setting transformation";
-		NhlPError(FATAL,E_UNKNOWN,e_text, entry_name);
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
 		return(ret);
 	}
 
-	NhlGetValues(top->base.id,
+	NhlVAGetValues(top->base.id,
 		     NhlNtrOutOfRangeF,out_of_range,NULL);
 
 	subret = _NhlDataToWin(top,plot,x,y,n,xout,yout,
 			       &mystatus,xmissing,ymissing);
 
-	if ((ret = MIN(ret,subret)) < WARNING) {
+	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: error transforming from NDC to window";
-		NhlPError(FATAL,E_UNKNOWN,e_text, entry_name);
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
 		return ret;
 	}
 	*status = mystatus ? 1 : 0;
@@ -243,9 +242,9 @@ static NhlErrorTypes TransformDataToNDC
 	subret = _NhlWinToNDC(top,plot,xout,yout,n,xout,yout,
 			      &mystatus,out_of_range,out_of_range);
 
-	if ((ret = MIN(ret,subret)) < WARNING) {
+	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: error transforming from window to data";
-		NhlPError(FATAL,E_UNKNOWN,e_text, entry_name);
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
 		return ret;
 	}
 	*status = mystatus ? 1 : *status;
@@ -282,12 +281,12 @@ static NhlErrorTypes TransformDataToNDC
  */
 static NhlErrorTypes TransformNDCToData
 #if __STDC__
-(Layer plot,float* x,float* y,int n,
+(NhlLayer plot,float* x,float* y,int n,
  float* xout,float* yout,float *xmissing,float *ymissing,
  int *status, float * out_of_range)
 #else
 (plot,x,y,n,xout,yout,xmissing,ymissing,status,out_of_range)
-	Layer		plot;
+	NhlLayer		plot;
 	float*		x;
 	float*		y;
 	int		n;
@@ -300,10 +299,10 @@ static NhlErrorTypes TransformNDCToData
 #endif
 {
 	char			*entry_name = "TransformNDCToData";
-	NhlErrorTypes		ret = NOERROR, subret = NOERROR;
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	char			*e_text;
-	TransformLayerPart	*tfp = &(((TransformLayer) plot)->trans);
-	Layer			top;
+	NhlTransformLayerPart	*tfp = &(((NhlTransformLayer) plot)->trans);
+	NhlLayer		top;
 	int			mystatus = 0;
 
 	if (tfp->overlay_status == _tfCurrentOverlayMember && 
@@ -314,7 +313,7 @@ static NhlErrorTypes TransformNDCToData
 		if ((top = tfp->trans_obj) == NULL) {
 			e_text = 
 			   "%s: no transformation object recorded for pid %d";
-			NhlPError(FATAL,E_UNKNOWN,e_text,
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,
 				  entry_name,plot->base.id);
 			return(ret);
 	        }
@@ -322,21 +321,21 @@ static NhlErrorTypes TransformNDCToData
 
 	subret = _NhlSetTrans(top, plot);
 
-	if ((ret = MIN(ret,subret)) < WARNING) {
+	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: error setting transformation";
-		NhlPError(FATAL,E_UNKNOWN,e_text, entry_name);
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
 		return(ret);
 	}
 
-	NhlGetValues(top->base.id,
+	NhlVAGetValues(top->base.id,
 		     NhlNtrOutOfRangeF,out_of_range,NULL);
 
 	subret = _NhlNDCToWin(top,plot,x,y,n,xout,yout,
 			      &mystatus,xmissing,ymissing);
 
-	if ((ret = MIN(ret,subret)) < WARNING) {
+	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: error transforming from NDC to window";
-		NhlPError(FATAL,E_UNKNOWN,e_text, entry_name);
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
 		return ret;
 	}
 	*status = mystatus ? 1 : 0;
@@ -344,9 +343,9 @@ static NhlErrorTypes TransformNDCToData
 	subret = _NhlWinToData(top,plot,xout,yout,n,xout,yout,
 			       &mystatus,out_of_range,out_of_range);
 
-	if ((ret = MIN(ret,subret)) < WARNING) {
+	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: error transforming from window to data";
-		NhlPError(FATAL,E_UNKNOWN,e_text, entry_name);
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
 		return ret;
 	}
 	*status = mystatus ? 1 : *status;
@@ -374,28 +373,28 @@ static NhlErrorTypes TransformNDCToData
  */
 static NhlErrorTypes TransformDataPolyline
 #if __STDC__
-(Layer plot,float* x,float* y,int n)
+(NhlLayer plot,float* x,float* y,int n)
 #else
 (plot,x,y,n)
-	Layer		plot;
+	NhlLayer		plot;
 	float*		x;
 	float*		y;
 	int		n;
 #endif
 {
-	NhlErrorTypes		ret = NOERROR, subret = NOERROR;
-	TransformLayer		tl = (TransformLayer) plot;
-	TransformLayerPart	*tfp = &(tl->trans);
-	TransObjLayer		top;
- 	TransObjLayerClass 	tocp;
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
+	NhlTransformLayer		tl = (NhlTransformLayer) plot;
+	NhlTransformLayerPart	*tfp = &(tl->trans);
+	NhlTransObjLayer		top;
+ 	NhlTransObjLayerClass 	tocp;
 	char			*e_text;
 	char			*entry_name = "TransformDataPolyline";
 	int			i;
 
 	if (n < 2) {
 		e_text = "%s, not enough points for a line";
-		NhlPError(WARNING,E_UNKNOWN,e_text, entry_name);
-		return WARNING;
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text, entry_name);
+		return NhlWARNING;
 	}
 
 /* 
@@ -404,25 +403,25 @@ static NhlErrorTypes TransformDataPolyline
  */
 	if (tfp->overlay_status == _tfCurrentOverlayMember && 
 	    tfp->overlay_trans_obj != NULL) {
-		top = (TransObjLayer) tfp->overlay_trans_obj;
+		top = (NhlTransObjLayer) tfp->overlay_trans_obj;
 	}
 	else {
-		if ((top = (TransObjLayer) tfp->trans_obj) == NULL) {
+		if ((top = (NhlTransObjLayer) tfp->trans_obj) == NULL) {
 			e_text = 
 			   "%s: no transformation object recorded for pid %d";
-			NhlPError(FATAL,E_UNKNOWN,e_text,
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,
 				  entry_name,plot->base.id);
 			return(ret);
 	        }
 	}
 
-	tocp = (TransObjLayerClass) (top->base.layer_class);
+	tocp = (NhlTransObjLayerClass) (top->base.layer_class);
 
 	subret = _NhlActivateWorkstation(tl->base.wkptr);
 
-	if ((ret = MIN(ret,subret)) < WARNING) {
+	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: error activating workstation";
-		NhlPError(FATAL,E_UNKNOWN,e_text, entry_name);
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
 		return(ret);
 	}
 
@@ -430,11 +429,11 @@ static NhlErrorTypes TransformDataPolyline
 
 /* Set the transformation */
 
-	subret = _NhlSetTrans((Layer) top, plot);
+	subret = _NhlSetTrans((NhlLayer) top, plot);
 
-	if ((ret = MIN(ret,subret)) < WARNING) {
+	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: error setting transformation";
-		NhlPError(FATAL,E_UNKNOWN,e_text, entry_name);
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
 		return(ret);
 	}
 
@@ -442,18 +441,18 @@ static NhlErrorTypes TransformDataPolyline
 /* Do a pen up to the first point */
 
 	subret = (tocp->trobj_class.data_lineto) 
-					((Layer)top, plot,*x++,*y++,1);
+					((NhlLayer)top, plot,*x++,*y++,1);
 
-	if ((ret = MIN(ret,subret)) < WARNING) 
+	if ((ret = MIN(ret,subret)) < NhlWARNING) 
 		return ret;
 
 /* Pen down for the remaining lines */
 
 	for (i = 1; i < n; i++) { 
 		subret = (tocp->trobj_class.data_lineto) 
-					((Layer)top,plot,*x++,*y++,0);
+					((NhlLayer)top,plot,*x++,*y++,0);
 
-		if ((ret = MIN(ret,subret)) < WARNING) 
+		if ((ret = MIN(ret,subret)) < NhlWARNING) 
 			return ret;
 
 	}
@@ -465,9 +464,9 @@ static NhlErrorTypes TransformDataPolyline
 
         subret = _NhlDeactivateWorkstation(tl->base.wkptr);
 
-	if ((ret = MIN(ret,subret)) < WARNING) {
+	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: error deactivating workstation";
-		NhlPError(FATAL,E_UNKNOWN,e_text, entry_name);
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
 		return(ret);
 	}
 
@@ -493,10 +492,10 @@ static NhlErrorTypes TransformDataPolyline
  */
 static NhlErrorTypes TransformNDCPolyline
 #if __STDC__
-(Layer plot,float* x,float* y,int n)
+(NhlLayer plot,float* x,float* y,int n)
 #else
 (plot,x,y,n)
-	Layer		plot;
+	NhlLayer		plot;
 	float*		x;
 	float*		y;
 	int		n;
@@ -504,17 +503,17 @@ static NhlErrorTypes TransformNDCPolyline
 {
 	char			*entry_name = "TransformNDCPolyline";
 	char			*e_text;
-	NhlErrorTypes		ret = NOERROR, subret = NOERROR;
-	TransformLayer		tl = (TransformLayer) plot;
-	TransformLayerPart	*tfp = &(tl->trans);
-	TransObjLayer		top;
- 	TransObjLayerClass 	tocp;
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
+	NhlTransformLayer		tl = (NhlTransformLayer) plot;
+	NhlTransformLayerPart	*tfp = &(tl->trans);
+	NhlTransObjLayer		top;
+ 	NhlTransObjLayerClass 	tocp;
 	int			i;
 
 	if (n < 2) {
 		e_text = "%s, not enough points for a line";
-		NhlPError(WARNING,E_UNKNOWN,e_text, entry_name);
-		return WARNING;
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text, entry_name);
+		return NhlWARNING;
 	}
 
 /* 
@@ -523,24 +522,24 @@ static NhlErrorTypes TransformNDCPolyline
  */
 	if (tfp->overlay_status == _tfCurrentOverlayMember && 
 	    tfp->overlay_trans_obj != NULL) {
-		top = (TransObjLayer) tfp->overlay_trans_obj;
+		top = (NhlTransObjLayer) tfp->overlay_trans_obj;
 	}
 	else {
-		if ((top = (TransObjLayer) tfp->trans_obj) == NULL) {
+		if ((top = (NhlTransObjLayer) tfp->trans_obj) == NULL) {
 			e_text = 
 			   "%s: no transformation object recorded for pid %d";
-			NhlPError(FATAL,E_UNKNOWN,e_text,
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,
 				  entry_name,plot->base.id);
 			return(ret);
 	        }
 	}
-	tocp = (TransObjLayerClass) (top->base.layer_class);
+	tocp = (NhlTransObjLayerClass) (top->base.layer_class);
 
 	subret = _NhlActivateWorkstation(tl->base.wkptr);
 
-	if ((ret = MIN(ret,subret)) < WARNING) {
+	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: error activating workstation";
-		NhlPError(FATAL,E_UNKNOWN,e_text, entry_name);
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
 		return(ret);
 	}
 
@@ -548,28 +547,28 @@ static NhlErrorTypes TransformNDCPolyline
 
 /* Not sure if a set trans is required */
 
-	subret = _NhlSetTrans((Layer) top, plot);
+	subret = _NhlSetTrans((NhlLayer) top, plot);
 
-	if ((ret = MIN(ret,subret)) < WARNING) {
+	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: error setting transformation";
-		NhlPError(FATAL,E_UNKNOWN,e_text, entry_name);
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
 		return(ret);
 	}
 
 /* Do a pen up to the first point */
 
-	subret = (tocp->trobj_class.NDC_lineto) ((Layer)top,plot,*x++,*y++,1);
+	subret = (tocp->trobj_class.NDC_lineto) ((NhlLayer)top,plot,*x++,*y++,1);
 
-	if ((ret = MIN(ret,subret)) < WARNING) 
+	if ((ret = MIN(ret,subret)) < NhlWARNING) 
 		return ret;
 
 /* Pen down for the remaining lines */
 
 	for (i = 1; i < n; i++) { 
 		subret = (tocp->trobj_class.NDC_lineto) 
-					 ((Layer)top,plot,*x++,*y++,0);
+					 ((NhlLayer)top,plot,*x++,*y++,0);
 
-		if ((ret = MIN(ret,subret)) < WARNING) 
+		if ((ret = MIN(ret,subret)) < NhlWARNING) 
 			return ret;
 
 	}
@@ -579,17 +578,17 @@ static NhlErrorTypes TransformNDCPolyline
  */
 	subret = _NhlWorkstationLineTo(tl->base.wkptr,0.0,0.0,1);
 
-	if ((ret = MIN(ret,subret)) < WARNING) {
+	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: error drawing polyline";
-		NhlPError(FATAL,E_UNKNOWN,e_text, entry_name);
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
 		return(ret);
 	}
 
         subret = _NhlDeactivateWorkstation(tl->base.wkptr);
 
-	if ((ret = MIN(ret,subret)) < WARNING) {
+	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: error deactivating workstation";
-		NhlPError(FATAL,E_UNKNOWN,e_text, entry_name);
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
 		return(ret);
 	}
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: hluP.h,v 1.7 1994-01-10 19:49:17 boote Exp $
+ *      $Id: hluP.h,v 1.8 1994-01-27 21:28:08 boote Exp $
  */
 /************************************************************************
 *									*
@@ -30,66 +30,68 @@
 #include <ncarg/ncargC.h>
 #include <ncarg/gks.h>
 
+typedef struct _NhlLayerRec *NhlLayer;
+
 /*
 * In order to recognize class types from the intrinsics the private header
 * and a one bit flag need to be included here and a new conditional stmnt
 * added to the InitializeLayerClass function in Create.c
 */
 
-#define ObjLayerClassFlag		0x02
+#define _NhlObjLayerClassFlag		0x02
 #define _NhlIsObj(instance) \
-	(((Layer)(instance))->base.layer_class->base_class.class_inited & \
-							ObjLayerClassFlag)
+	(((NhlLayer)(instance))->base.layer_class->base_class.class_inited & \
+							_NhlObjLayerClassFlag)
 
-#define BaseLayerClassFlag 		0x04
+#define _NhlBaseLayerClassFlag 		0x04
 #define _NhlIsBase(instance) \
-	(((Layer)(instance))->base.layer_class->base_class.class_inited & \
-							BaseLayerClassFlag)
+	(((NhlLayer)(instance))->base.layer_class->base_class.class_inited & \
+							_NhlBaseLayerClassFlag)
 
-#define WorkstationLayerClassFlag 	0x08
+#define _NhlWorkstationLayerClassFlag 	0x08
 #define _NhlIsWorkstation(instance) \
-	(((Layer)(instance))->base.layer_class->base_class.class_inited & \
-						WorkstationLayerClassFlag)
+	(((NhlLayer)(instance))->base.layer_class->base_class.class_inited & \
+						_NhlWorkstationLayerClassFlag)
 
-#define ViewLayerClassFlag 	0x010
+#define _NhlViewLayerClassFlag 	0x010
 #define _NhlIsView(instance) \
-	(((Layer)(instance))->base.layer_class->base_class.class_inited & \
-							ViewLayerClassFlag)
+	(((NhlLayer)(instance))->base.layer_class->base_class.class_inited & \
+							_NhlViewLayerClassFlag)
 
-#define TransformLayerClassFlag 	0x020
+#define _NhlTransformLayerClassFlag 	0x020
 #define _NhlIsTransform(instance) \
-	(((Layer)(instance))->base.layer_class->base_class.class_inited & \
-						TransformLayerClassFlag)
+	(((NhlLayer)(instance))->base.layer_class->base_class.class_inited & \
+						_NhlTransformLayerClassFlag)
 
-#define ErrorLayerClassFlag	0x040
+#define _NhlErrorLayerClassFlag	0x040
 #define _NhlIsError(instance) \
-	(((Layer)(instance))->base.layer_class->base_class.class_inited & \
-							ErrorLayerClassFlag)
+	(((NhlLayer)(instance))->base.layer_class->base_class.class_inited & \
+							_NhlErrorLayerClassFlag)
 
-#define TransObjLayerClassFlag		0x080
+#define _NhlTransObjLayerClassFlag		0x080
 #define _NhlIsTransObj(instance) \
-	(((Layer)(instance))->base.layer_class->base_class.class_inited & \
-							TransObjLayerClassFlag)
+	(((NhlLayer)(instance))->base.layer_class->base_class.class_inited & \
+							_NhlTransObjLayerClassFlag)
 
-#define	DataCommLayerClassFlag	0x0100
+#define	_NhlDataCommLayerClassFlag	0x0100
 #define	_NhlIsDataComm(instance) \
-	(((Layer)(instance))->base.layer_class->base_class.class_inited & \
-							DataCommLayerClassFlag)
+	(((NhlLayer)(instance))->base.layer_class->base_class.class_inited & \
+							_NhlDataCommLayerClassFlag)
 
-#define	DataItemLayerClassFlag	0x0200
+#define	_NhlDataItemLayerClassFlag	0x0200
 #define	_NhlIsDataItem(instance) \
-	(((Layer)(instance))->base.layer_class->base_class.class_inited & \
-							DataItemLayerClassFlag)
+	(((NhlLayer)(instance))->base.layer_class->base_class.class_inited & \
+							_NhlDataItemLayerClassFlag)
 
-#define	DataMgrLayerClassFlag	0x0400
+#define	_NhlDataMgrLayerClassFlag	0x0400
 #define	_NhlIsDataMgr(instance) \
-	(((Layer)(instance))->base.layer_class->base_class.class_inited & \
-							DataMgrLayerClassFlag)
+	(((NhlLayer)(instance))->base.layer_class->base_class.class_inited & \
+							_NhlDataMgrLayerClassFlag)
 
-#define	DataSpecLayerClassFlag	0x0800
+#define	_NhlDataSpecLayerClassFlag	0x0800
 #define	_NhlIsDataSpec(instance) \
-	(((Layer)(instance))->base.layer_class->base_class.class_inited & \
-							DataSpecLayerClassFlag)
+	(((NhlLayer)(instance))->base.layer_class->base_class.class_inited & \
+							_NhlDataSpecLayerClassFlag)
 
 #define MIN(a,b)	(((a)<(b))?(a):(b))
 #define MAX(a,b)	(((a)>(b))?(a):(b))
@@ -110,7 +112,7 @@ typedef struct _NhlExtArgRec{
 typedef struct _NhlChildArgRec _NhlChildArgNode, *_NhlChildArgList; 
   
 struct _NhlChildArgRec{ 
-	LayerClass		class; 
+	NhlLayerClass		class; 
 	NhlBoolean		autosetval;
 	_NhlExtArgList		args; 
 	int			nargs; 
@@ -201,8 +203,8 @@ extern NhlErrorTypes _NhlCreateChild(
 #if	NeedVarArgProto
 	int		*pid,	/* pid return		*/
 	Const char	*name,	/* name of child	*/
-	LayerClass	class,	/* class to create	*/
-	Layer		parent,	/* parent of child	*/
+	NhlLayerClass	class,	/* class to create	*/
+	NhlLayer	parent,	/* parent of child	*/
 	...			/* args to set in child	*/
 #endif
 );
@@ -211,8 +213,8 @@ extern NhlErrorTypes _NhlALCreateChild(
 #if	NhlNeedProto
 	int		*pid,		/* pid return		*/
 	Const char	*name,		/* name of child	*/
-	LayerClass	class,		/* class to create	*/
-	Layer		parent,		/* parent of child	*/
+	NhlLayerClass	class,		/* class to create	*/
+	NhlLayer	parent,		/* parent of child	*/
 	NhlSArgList	args_in,	/* args in		*/
 	int		nargs		/* number args		*/
 #endif
@@ -222,7 +224,7 @@ extern NhlErrorTypes _NhlALCreateChild(
 extern NhlErrorTypes _NhlSetValuesChild(
 #if	NeedVarArgProto
 	int		pid,	/* pid return		*/
-	Layer		parent,	/* parent of child	*/
+	NhlLayer	parent,	/* parent of child	*/
 	...			/* args to set in child	*/
 #endif
 );
@@ -230,7 +232,7 @@ extern NhlErrorTypes _NhlSetValuesChild(
 extern NhlErrorTypes _NhlALSetValuesChild(
 #if	NhlNeedProto
 	int		pid,		/* pid return		*/
-	Layer		parent,		/* parent of child	*/
+	NhlLayer		parent,		/* parent of child	*/
 	NhlSArgList	args_in,	/* args in		*/
 	int		nargs		/* number args in	*/
 #endif
@@ -238,31 +240,31 @@ extern NhlErrorTypes _NhlALSetValuesChild(
 
 extern NhlErrorTypes _NhlDestroyChild(
 #if	NhlNeedProto
-	int	pid,	/* pid of child to destroy	*/
-	Layer	parent	/* parent of child to destroy	*/
+	int		pid,	/* pid of child to destroy	*/
+	NhlLayer	parent	/* parent of child to destroy	*/
 #endif
 );
 
 /*VARARGS4*/
 extern NhlErrorTypes _NhlRegisterChildClass(
 #if	NeedVarArgProto
-	LayerClass	parent,		/* parent class			*/
-	LayerClass	child,		/* child class			*/
+	NhlLayerClass	parent,		/* parent class			*/
+	NhlLayerClass	child,		/* child class			*/
 	NhlBoolean	autosetval,	/* SetValue im/ex plicite	*/
 	NhlBoolean	forward,	/* T-frwd listed F-excl listed	*/
 	...				/* resource names		*/
 #endif
 );
 
-extern LayerClass _NhlClass(
+extern NhlLayerClass _NhlClass(
 #if	NhlNeedProto
-	Layer	/* layer	*/
+	NhlLayer	/* layer	*/
 #endif
 );
 
 extern Const char * _NhlClassName(
 #if	NhlNeedProto
-	LayerClass  /* lc */
+	NhlLayerClass  /* lc */
 #endif
 );
 
@@ -274,17 +276,17 @@ NhlBoolean _NhlIsFloatRes (
 
 extern int _NhlAddLayer(
 #if	NhlNeedProto
-	Layer	l		/* layer to add to list	*/
+	NhlLayer	l		/* layer to add to list	*/
 #endif
 );
 
 extern NhlErrorTypes _NhlRemoveLayer(
 #if	NhlNeedProto
-	Layer	l		/* layer to remove from list	*/
+	NhlLayer	l		/* layer to remove from list	*/
 #endif
 );
 
-extern Layer _NhlGetLayer(
+extern NhlLayer _NhlGetLayer(
 #if	NhlNeedProto
 	int	id		/* id of layer to retrieve	*/
 #endif
@@ -292,7 +294,7 @@ extern Layer _NhlGetLayer(
 
 extern NhlErrorTypes _NhlSetValues(
 #if	NhlNeedProto
-	Layer		l,		/* layer instance	*/
+	NhlLayer		l,		/* layer instance	*/
 	_NhlExtArgList	args,		/* args to change	*/
 	int		nargs		/* number of args	*/
 #endif
@@ -300,153 +302,16 @@ extern NhlErrorTypes _NhlSetValues(
 
 extern NhlErrorTypes _NhlReparent(
 #if	NhlNeedProto
-	Layer	l,
-	Layer	new_parent
+	NhlLayer	l,
+	NhlLayer	new_parent
 #endif
 );
 
-/*
-* Globally callable functions from Workstation.c
-*/
-extern NhlErrorTypes _NhlActivateWorkstation(
-#if	NhlNeedProto
-        Layer   /* layer*/
-#endif
-);
-
-extern NhlErrorTypes _NhlDeactivateWorkstation(
-#if	NhlNeedProto
-        Layer   /* layer*/
-#endif
-);
-
-extern NhlErrorTypes _NhlCloseWorkstation(
-#if	NhlNeedProto
-        Layer   /*layer*/
-#endif
-);
-
-extern NhlErrorTypes _NhlOpenWorkstation(
+extern NhlLayer _NhlGetWorkstationLayer(
 #ifdef NhlNeedProto
-        Layer   /*layer*/
+	NhlLayer	/*parent */
 #endif
 );
-
-extern  int  _NhlWorkstationId(
-#ifdef NhlNeedProto
-        Layer   /*instance */
-#endif
-);
-
-extern Layer _NhlGetWorkstationLayer(
-#ifdef NhlNeedProto
-	Layer	/*parent */
-#endif
-);
-
-extern int _NhlGetGksCi(
-#ifdef NhlNeedProto
-        Layer   /* workstation*/,
-        int /* ci*/
-#endif
-);
-
-extern NhlErrorTypes _NhlSetColor(
-#ifdef NhlNeedProto
-Layer   /* inst */,
-int     /* ci */,
-float   /* red */,
-float   /* green */,
-float   /* blue */
-#endif
-);
-
-extern NhlErrorTypes _NhlFreeColor(
-#ifdef NhlNeedProto
-        Layer   /* inst */,
-        int     /* ci */
-#endif
-);
-extern int _NhlNewColor(
-#ifdef NhlNeedProto
-        Layer   /* inst */,
-        float   /* red */,
-        float   /* green */,
-        float   /* blue */
-#endif
-);
-
-/*
-* END of functions from Workstation.c
-*/
-
-
-/*
-* END of functions from view.c
-*/
-
-/*
-* Globally callable functions from Segments.c
-*/
-extern void _NhlDestroySegTransDat(
-#ifdef NhlNeedProto
-NhlTransDat*    /* transdat */
-#endif
-);
-
-extern NhlTransDat      *_NhlInitSegTransDat(
-#ifdef NhlNeedProto
-float*, /* x */
-float*  /* y */
-#endif
-);
-
-extern void _NhlResetSegTransDat(
-#ifdef NhlNeedProto
-NhlTransDat*,   /* transdat */
-float*,         /* x */
-float*          /* y */
-#endif
-);
-extern void _NhlComputeSegTrans(
-#ifdef NhlNeedProto
-NhlTransDat*,   /* transdat */
-float   *,      /* transform */
-float   *,      /* xprime */
-float   *       /* yprime */
-#endif
-);
-
-extern NhlErrorTypes _NhlDrawSegment(
-#ifdef NhlNeedProto
-NhlTransDat*,   /* transdat */
-int             /* wksid */
-#endif
-);
-extern void _NhlEvalTrans(
-#ifdef NhlNeedProto
-float *,        /*transform */
-float,          /* x */
-float,          /* y */
-float *,        /* xprime */
-float *         /* yprime */
-#endif
-);
-
-extern void _NhlStartSegment(
-#ifdef NhlNeedProto
-NhlTransDat*    /* transdat */
-#endif
-);
-
-extern void _NhlSetSegTrans(
-#ifdef NhlNeedProto
-NhlTransDat*,   /* transdat */
-float*          /* transform */
-#endif
-);
-
-extern void _NhlEndSegment();
 
 /*
 * Globally callable functions from Draw.c
@@ -454,19 +319,19 @@ extern void _NhlEndSegment();
 
 extern NhlErrorTypes _NhlPreDraw(
 #ifdef NhlNeedProto
-	Layer	layer	/* layer of object to draw	*/
+	NhlLayer	layer	/* layer of object to draw	*/
 #endif
 );
 
 extern NhlErrorTypes _NhlDraw(
 #ifdef NhlNeedProto
-	Layer	layer	/* layer of object to draw	*/
+	NhlLayer	layer	/* layer of object to draw	*/
 #endif
 );
 
 extern NhlErrorTypes _NhlPostDraw(
 #ifdef NhlNeedProto
-	Layer	layer	/* layer of object to draw	*/
+	NhlLayer	layer	/* layer of object to draw	*/
 #endif
 );
 
@@ -504,183 +369,9 @@ extern Const char *_NhlResolvePath(
 #endif
 );
 
-extern NhlErrorTypes _NhlGetBB(
-#ifdef NhlNeedProto
-	Layer	instance,
-	NhlBoundingBox* /* thebox */
-#endif
-);
-
-
-extern NhlErrorTypes _NhlDataToWin(
-#ifdef NhlNeedProto
-	Layer /* instance */,
-	Layer /* parent */,
-	float* /* x */,
-	float* /* y */,
-	int 	/* n */,
-	float* /* xout */,
-	float* /* yout */,
-	int * /*istrans */,
-	float * /*xmissing */,
-	float * /*ymissing */
-#endif
-);
-
-extern NhlErrorTypes _NhlWinToData(
-#ifdef NhlNeedProto
-	Layer /* instance */,
-	Layer /* parent */,
-	float* /* x */,
-	float* /* y */,
-	int 	/* n */,
-	float* /* xout */,
-	float* /* yout */,
-	int * /*istrans*/,
-	float * /*xmissing */,
-	float * /*ymissing */
-#endif
-);
-
-extern NhlErrorTypes _NhlWinToNDC(
-#ifdef NhlNeedProto
-	Layer /* instance */,
-	Layer /* parent */,
-	float* /* x */,
-	float* /* y */,
-	int 	/* n */,
-	float* /* xout */,
-	float* /* yout */,
-	int * /*istrans*/,
-	float * /*xmissing */,
-	float * /*ymissing */
-#endif
-);
-extern NhlErrorTypes _NhlNDCToWin(
-#ifdef NhlNeedProto
-	Layer /* instance */,
-	Layer /* parent */,
-	float* /* x */,
-	float* /* y */,
-	int 	/* n */,
-	float* /* xout */,
-	float* /* yout */,
-	int * /*istrans*/,
-	float * /*xmissing */,
-	float * /*ymissing */
-#endif
-);
-extern NhlErrorTypes _NhlDataToCompc(
-#ifdef NhlNeedProto
-	Layer /* instance */,
-	Layer /* parent */,
-	float* /* x */,
-	float* /* y */,
-	int 	/* n */,
-	float* /* xout */,
-	float* /* yout */,
-	int * /*istrans*/,
-	float * /*xmissing */,
-	float * /*ymissing */
-#endif
-);
-extern NhlErrorTypes _NhlCompcToData(
-#ifdef NhlNeedProto
-	Layer /* instance */,
-	Layer /* parent */,
-	float* /* x */,
-	float* /* y */,
-	int 	/* n */,
-	float* /* xout */,
-	float* /* yout */,
-	int * /*istrans*/,
-	float * /*xmissing */,
-	float * /*ymissing */
-#endif
-);
-extern NhlErrorTypes _NhlCompcToWin(
-#ifdef NhlNeedProto
-	Layer /* instance */,
-	Layer /* parent */,
-	float* /* x */,
-	float* /* y */,
-	int 	/* n */,
-	float* /* xout */,
-	float* /* yout */,
-	int * /*istrans*/,
-	float * /*xmissing */,
-	float * /*ymissing */
-#endif
-);
-
-extern NhlErrorTypes _NhlWinToCompc(
-#ifdef NhlNeedProto
-	Layer /* instance */,
-	Layer /* parent */,
-	float* /* x */,
-	float* /* y */,
-	int 	/* n */,
-	float* /* xout */,
-	float* /* yout */,
-	int * /*istrans*/,
-	float * /*xmissing */,
-	float * /*ymissing */
-#endif
-);
-extern NhlErrorTypes   _NhlSetTrans(
-#ifdef NhlNeedProto
-Layer /* instance*/,
-Layer  parent
-#endif
-);
-
 extern  NhlErrorTypes _NhlInitializeLayerClass(
 #ifdef NhlNeedProto
-LayerClass /* lc */
-#endif
-);
-
-extern NhlErrorTypes _NhlDataLineTo(
-#ifdef NhlNeedProto
-Layer   /* instance */,
-Layer   /* parent */,
-float   /* x */,
-float   /* y */,
-int     /* upordown */
-#endif
-);
-extern NhlErrorTypes _NhlCompcLineTo(
-#ifdef NhlNeedProto
-Layer   /* instance */,
-Layer   /* parent */,
-float   /* x */,
-float   /* y */,
-int     /* upordown */
-#endif
-);
-extern NhlErrorTypes _NhlWinLineTo(
-#ifdef NhlNeedProto
-Layer   /* instance */,
-Layer   /* parent */,
-float   /* x */,
-float   /* y */,
-int     /* upordown */
-#endif
-);
-extern NhlErrorTypes _NhlNDCLineTo(
-#ifdef NhlNeedProto
-Layer   /* instance */,
-Layer   /* parent */,
-float   /* x */,
-float   /* y */,
-int     /* upordown */
-#endif
-);
-
-extern void _NhlSetLineInfo(
-#ifdef NhlNeedProto
-        Layer   /* instance */,
-        Layer   /* plot */
+NhlLayerClass /* lc */
 #endif
 );
 
@@ -689,47 +380,6 @@ extern NhlBoolean _NhlArgIsSet(
         _NhlArgList 	/* args */,
         int    		/* num_args */,
         char* 	 	/*resource_name*/
-#endif
-);
-
-extern NhlErrorTypes _NhlWorkstationLineTo(
-#ifdef NhlNeedProto
-Layer   /* instance */,
-float   /* x */,
-float   /* y */,
-int     /* upordown */
-#endif
-);
-
-extern void _NhlSetFillInfo(
-#ifdef NhlNeedProto
-Layer instance,
-Layer plot
-#endif
-);
-
-extern NhlErrorTypes _NhlWorkstationFill(
-#ifdef NhlNeedProto
-Layer   /* instance */,
-float*   /* x */,
-float*   /* y */,
-int     /* num_points */
-#endif
-);
-
-extern void _NhlSetMarkerInfo(
-#ifdef NhlNeedProto
-Layer instance,
-Layer plot
-#endif
-);
-
-extern NhlErrorTypes _NhlWorkstationMarker(
-#ifdef NhlNeedProto
-Layer   /* instance */,
-float*   /* x */,
-float*   /* y */,
-int     /* num_points */
 #endif
 );
 

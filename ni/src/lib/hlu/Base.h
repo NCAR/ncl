@@ -1,5 +1,5 @@
 /*
- *      $Id: Base.h,v 1.2 1993-10-19 17:49:41 boote Exp $
+ *      $Id: Base.h,v 1.3 1994-01-27 21:21:24 boote Exp $
  */
 /************************************************************************
 *									*
@@ -23,12 +23,6 @@
 #ifndef _NBase_h
 #define _NBase_h
 
-typedef struct _ObjLayerRec *ObjLayer;
-typedef struct _ObjLayerClassRec *ObjLayerClass;
-
-typedef struct _BaseLayerRec *BaseLayer;
-typedef struct _BaseLayerClassRec *BaseLayerClass;
-
-extern LayerClass objLayerClass;
-extern LayerClass baseLayerClass;
+extern NhlLayerClass NhlobjLayerClass;
+extern NhlLayerClass NhlbaseLayerClass;
 #endif  /* _NBase_h */

@@ -1,5 +1,5 @@
 /*
- *      $Id: View.c,v 1.3 1993-10-19 17:53:08 boote Exp $
+ *      $Id: View.c,v 1.4 1994-01-27 21:27:07 boote Exp $
  */
 /************************************************************************
 *									*
@@ -31,7 +31,6 @@
  *			
  */
 
-#include <stdio.h>
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/ViewP.h>
 #include <ncarg/hlu/hluutil.h>
@@ -39,19 +38,19 @@
 
 static NhlResource resources[] = {
 	{ NhlNvpXF, NhlCvpXF, NhlTFloat, sizeof(float),
-		NhlOffset(ViewLayerRec,view.x),
+		NhlOffset(NhlViewLayerRec,view.x),
 		NhlTString,NHL_DEFAULT_VIEW_X_STR},
 	{ NhlNvpYF, NhlCvpYF, NhlTFloat, sizeof(float),
-		NhlOffset(ViewLayerRec,view.y),
+		NhlOffset(NhlViewLayerRec,view.y),
 		NhlTString,NHL_DEFAULT_VIEW_Y_STR},
 	{ NhlNvpWidthF, NhlCvpWidthF, NhlTFloat, sizeof(float),
-		NhlOffset(ViewLayerRec,view.width),
+		NhlOffset(NhlViewLayerRec,view.width),
 		NhlTString,NHL_DEFAULT_VIEW_WIDTH_STR},
 	{ NhlNvpHeightF, NhlCvpHeightF, NhlTFloat, sizeof(float),
-		NhlOffset(ViewLayerRec,view.height),
+		NhlOffset(NhlViewLayerRec,view.height),
 		NhlTString,NHL_DEFAULT_VIEW_HEIGHT_STR},
 	{ NhlNvpKeepAspect, NhlCvpKeepAspect, NhlTInteger, sizeof(int),
-		NhlOffset(ViewLayerRec,view.keep_aspect),NhlTString,"0"}
+		NhlOffset(NhlViewLayerRec,view.keep_aspect),NhlTString,"0"}
 };
 
 /*
@@ -60,9 +59,9 @@ static NhlResource resources[] = {
 
 static NhlErrorTypes ViewSetValues(
 #ifdef NhlNeedFuncProto
-        Layer           /*old*/,
-        Layer           /*reference,*/,
-        Layer           /*new,*/,
+        NhlLayer           /*old*/,
+        NhlLayer           /*reference,*/,
+        NhlLayer           /*new,*/,
         _NhlArgList     /*args,*/,
         int             /*num_args*/
 #endif
@@ -72,9 +71,9 @@ static NhlErrorTypes ViewSetValues(
 
 static NhlErrorTypes	ViewInitialize(
 #ifdef NhlNeedProto
-	LayerClass,	/* class */
-	Layer,		/* req */
-	Layer,		/* new */
+	NhlLayerClass,	/* class */
+	NhlLayer,		/* req */
+	NhlLayer,		/* new */
 	_NhlArgList,	/* args */
 	int		/* num_args */
 #endif
@@ -82,7 +81,7 @@ static NhlErrorTypes	ViewInitialize(
 
 static NhlErrorTypes	 ViewDestroy(
 #ifdef NhlNeedProto
-	Layer		/* inst */
+	NhlLayer		/* inst */
 #endif
 );
 
@@ -90,7 +89,7 @@ static NhlErrorTypes	ViewClassInitialize();
 
 static NhlErrorTypes	ViewClassPartInitialize(
 #ifdef NhlNeedProto
-	LayerClass	/* lc */
+	NhlLayerClass	/* lc */
 #endif
 );
 
@@ -100,19 +99,19 @@ static NhlErrorTypes	ViewClassPartInitialize(
 
 static NhlErrorTypes    ViewGetBB(
 #ifdef NhlNeedProto
-	Layer		instance,
+	NhlLayer		instance,
 	NhlBoundingBox *thebox
 #endif
 );
 
 
-ViewLayerClassRec viewLayerClassRec = {
+NhlViewLayerClassRec NhlviewLayerClassRec = {
         {
 /* class_name			*/	"View",
 /* nrm_class			*/	NrmNULLQUARK, 
-/* layer_size			*/	sizeof(ViewLayerRec),
+/* layer_size			*/	sizeof(NhlViewLayerRec),
 /* class_inited			*/	False,
-/* superclass			*/	(LayerClass)&baseLayerClassRec,  
+/* superclass			*/	(NhlLayerClass)&NhlbaseLayerClassRec,  
 
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
@@ -146,7 +145,7 @@ ViewLayerClassRec viewLayerClassRec = {
 	}
 };
 	
-LayerClass viewLayerClass = (LayerClass)&viewLayerClassRec;
+NhlLayerClass NhlviewLayerClass = (NhlLayerClass)&NhlviewLayerClassRec;
 
 
 /*
@@ -178,31 +177,31 @@ LayerClass viewLayerClass = (LayerClass)&viewLayerClassRec;
 static NhlErrorTypes	ViewSetValues 
 #if __STDC__
 (
-	Layer		old,
-	Layer		reference,
-	Layer		new,
+	NhlLayer	old,
+	NhlLayer	reference,
+	NhlLayer	new,
 	_NhlArgList	args,
 	int		num_args
 )
 #else
 (old,reference,new,args,num_args)
-	Layer		old;
-	Layer		reference;
-	Layer		new;
+	NhlLayer	old;
+	NhlLayer	reference;
+	NhlLayer	new;
 	_NhlArgList	args;
 	int		num_args;
 #endif
 {
-	ViewLayer	oldl = (ViewLayer)old;
-	ViewLayer	newl = (ViewLayer)new;
+	NhlViewLayer	oldl = (NhlViewLayer)old;
+	NhlViewLayer	newl = (NhlViewLayer)new;
 	float		orig_x[3];
 	float		orig_y[3];
 	float		new_x[3];
 	float		new_y[3];
 	float		xl,yt,xr,yb,tmpx,tmpy,tmpwidth,tmpheight;
-	LayerList	step;
+	NhlLayerList	step;
 	NhlSegTransList	steptrans;
-	NhlErrorTypes ret = NOERROR;
+	NhlErrorTypes	ret = NhlNOERROR;
 
 
 	if((newl->view.x != oldl->view.x) ||
@@ -297,12 +296,12 @@ p2 = (x[2],y[2])
 */
 			step = newl->view.children;
 			while(step!=NULL) {
-				ret =NhlGetValues(step->layer->base.id,
+				ret =NhlVAGetValues(step->layer->base.id,
 					NhlNvpXF, &tmpx,
 					NhlNvpYF, &tmpy,
 					NhlNvpWidthF, &tmpwidth,
 					NhlNvpHeightF, &tmpheight, NULL);
-				if(ret < WARNING)
+				if(ret < NhlWARNING)
 					return(ret);
 
 				_NhlEvalTrans(newl->view.trans_children,
@@ -310,12 +309,12 @@ p2 = (x[2],y[2])
 				_NhlEvalTrans(newl->view.trans_children,
 					tmpx+tmpwidth,tmpy-tmpheight,&xr,&yb);
 
-				ret = NhlSetValues(step->layer->base.id,
+				ret = NhlVASetValues(step->layer->base.id,
 					NhlNvpXF, xl,
 					NhlNvpYF, yt,
 					NhlNvpWidthF, xr - xl,
 					NhlNvpHeightF, yt - yb, NULL);
-				if(ret<WARNING)
+				if(ret<NhlWARNING)
 					return(ret);
 
 				step = step->next;
@@ -365,24 +364,24 @@ p2 = (x[2],y[2])
 static NhlErrorTypes	ViewInitialize
 #if __STDC__
 (
-	LayerClass 	class,
-	Layer		req,
-	Layer		new,
+	NhlLayerClass 	class,
+	NhlLayer	req,
+	NhlLayer	new,
 	_NhlArgList	args,
 	int		num_args
 )
 #else
 (class,req,new,args,num_args)
-	LayerClass 		class;
-	Layer			req;
-	Layer			new;
+	NhlLayerClass 		class;
+	NhlLayer		req;
+	NhlLayer		new;
 	_NhlArgList		args;
 #endif
 {
-	ViewLayer	newl = (ViewLayer) new;
-	ViewLayerClass	lcl = (ViewLayerClass) class;
+	NhlViewLayer	newl = (NhlViewLayer) new;
+	NhlViewLayerClass	lcl = (NhlViewLayerClass) class;
 	float	x[3],y[3];
-	NhlErrorTypes ret = NOERROR;
+	NhlErrorTypes ret = NhlNOERROR;
 /*
 * vpX,vpY,vpWidth and vpHeight better be set already !!!
 * These should be set with system, user, or application defaults or through
@@ -430,21 +429,21 @@ static NhlErrorTypes	ViewInitialize
 static NhlErrorTypes	ViewClassPartInitialize
 #if __STDC__
 (
-	LayerClass	lc
+	NhlLayerClass	lc
 )
 #else
 (lc)
-	LayerClass 	lc;
+	NhlLayerClass 	lc;
 #endif
 {
-	ViewLayerClass	vlc = (ViewLayerClass)lc;
-	LayerClass	sc = vlc->base_class.superclass;
+	NhlViewLayerClass	vlc = (NhlViewLayerClass)lc;
+	NhlLayerClass	sc = vlc->base_class.superclass;
 
-	if(sc != &baseLayerClassRec) {
+	if(sc != &NhlbaseLayerClassRec) {
 		vlc->view_class.segment_workstation = 
-			((ViewLayerClass)sc)->view_class.segment_workstation;
+			((NhlViewLayerClass)sc)->view_class.segment_workstation;
 	}
-	return(NOERROR);
+	return(NhlNOERROR);
 }
 
 /*
@@ -458,7 +457,7 @@ static NhlErrorTypes	ViewClassPartInitialize
  *
  * Return Values: NONE
  *
- * Side Effects: Sets the segment_workstation field in the viewLayerClassRec
+ * Side Effects: Sets the segment_workstation field in the NhlviewLayerClassRec
  * 		structure which is then propagated down the class heirarchy
  *		by ClassPartInitialize.
  */
@@ -468,14 +467,14 @@ static NhlErrorTypes	ViewClassInitialize()
 	int i = NhlDEFAULT_SEG_WKS;
 	int cid = NhlDEFAULT_CONNECTION_ID;
 	int wtp = NhlDEFAULT_SEG_WKS_TYPE;
-	NhlErrorTypes	ret = NOERROR;
+	NhlErrorTypes	ret = NhlNOERROR;
 
 /*
  * GKS BETTER BE OPEN !!!!
  * Make sure the WorkstationLayerClass is initialized so GKS is sure to be open.
  */
-	 ret = _NhlInitializeLayerClass(workstationLayerClass);
-	 if(ret < WARNING)
+	 ret = _NhlInitializeLayerClass(NhlworkstationLayerClass);
+	 if(ret < NhlWARNING)
 		return(ret);
 
 	while(wksisopn(i)) {
@@ -483,7 +482,7 @@ static NhlErrorTypes	ViewClassInitialize()
 	}
 /* FORTRAN */ _NHLCALLF(gopwk,GOPWK)(&i,&cid,&wtp);
 	gactivate_ws(i);
-	viewLayerClassRec.view_class.segment_workstation = i;
+	NhlviewLayerClassRec.view_class.segment_workstation = i;
 	return(ret);
 }
 
@@ -503,15 +502,15 @@ static NhlErrorTypes	ViewClassInitialize()
 
 static NhlErrorTypes	ViewDestroy
 #if __STDC__
-(Layer inst )
+(NhlLayer inst )
 #else
 (inst)
-	Layer inst;
+	NhlLayer inst;
 #endif
 {
-	ViewLayer layer = (ViewLayer) inst;
+	NhlViewLayer layer = (NhlViewLayer) inst;
 	NhlSegTransList	step,tmp;
-	LayerList	step1,tmp1;
+	NhlLayerList	step1,tmp1;
 
 	step1 = layer->view.children;
 	_NhlDestroySegTransDat(layer->view.thetrans_children);
@@ -531,7 +530,7 @@ static NhlErrorTypes	ViewDestroy
 		step = tmp;
 	}
 	
-	return(NOERROR);
+	return(NhlNOERROR);
 
 }
 
@@ -553,24 +552,24 @@ static NhlErrorTypes	ViewDestroy
 
 void _NhlAddViewChildLayer
 #if __STDC__
-( Layer  instance , Layer  child )
+( NhlLayer  instance , NhlLayer  child )
 #else
 (instance,child)
-	Layer	instance;
-	Layer	child;
+	NhlLayer	instance;
+	NhlLayer	child;
 #endif
 {
-	ViewLayer parent = (ViewLayer) instance;
-	LayerList	step;
+	NhlViewLayer parent = (NhlViewLayer) instance;
+	NhlLayerList	step;
 
 	if(parent->view.children == NULL) {
-		parent->view.children = (LayerList)NhlMalloc(
-				(unsigned)sizeof(LayerListNode));
+		parent->view.children = (NhlLayerList)NhlMalloc(
+				(unsigned)sizeof(NhlLayerListNode));
 		parent->view.children->next = NULL;
 		parent->view.children->layer = child;
 		return;
 	} else {
-		step = (LayerList)NhlMalloc((unsigned)sizeof(LayerListNode));
+		step = (NhlLayerList)NhlMalloc((unsigned)sizeof(NhlLayerListNode));
 		step->layer = child;
 		step->next = parent->view.children;
 		parent->view.children = step;
@@ -598,15 +597,15 @@ void _NhlAddViewChildLayer
 
 void _NhlDeleteViewChildLayer
 #if	__STDC__
-( Layer instance , Layer child )
+( NhlLayer instance , NhlLayer child )
 #else
 (instance,child)
-	Layer	instance;
-	Layer	child;
+	NhlLayer	instance;
+	NhlLayer	child;
 #endif
 {
-	ViewLayer	parent = (ViewLayer) instance;
-	LayerList	step,tmp;
+	NhlViewLayer	parent = (NhlViewLayer) instance;
+	NhlLayerList	step,tmp;
 
 	step = parent->view.children;
 
@@ -647,13 +646,13 @@ void _NhlDeleteViewChildLayer
 
 NhlTransDat *_NhlNewViewSegment
 #if __STDC__
-(Layer instance )
+(NhlLayer instance )
 #else
 (instance)
-	Layer	instance;
+	NhlLayer	instance;
 #endif
 {
-	ViewLayer	parent = (ViewLayer) instance;
+	NhlViewLayer	parent = (NhlViewLayer) instance;
 	NhlSegTransList	step;
 	float	x[3],y[3];
 
@@ -712,14 +711,14 @@ NhlTransDat *_NhlNewViewSegment
 
 void _NhlDeleteViewSegment
 #if	__STDC__
-(Layer    instance, NhlTransDat*  transdat )
+(NhlLayer    instance, NhlTransDat*  transdat )
 #else
 (instance,transdat)
-	Layer	instance;
+	NhlLayer	instance;
 	NhlTransDat*	transdat;
 #endif
 {
-	ViewLayer	parent = (ViewLayer) instance;
+	NhlViewLayer	parent = (NhlViewLayer) instance;
 	NhlSegTransList	step,tmp;
 
 	step = parent->view.plot_segments_list;
@@ -753,7 +752,7 @@ void _NhlDeleteViewSegment
  *		is the identity transformation. This must be called every
  *		time a segment is redrawn. 
  *
- * In Args:	Layer instance		view object instance
+ * In Args:	NhlLayer instance		view object instance
  *		NhlTransDat *segdat	segment transformation data needed for
  *					drawing segment.
  *
@@ -766,14 +765,14 @@ void _NhlDeleteViewSegment
  */
 NhlErrorTypes _NhlResetViewSegment
 #if __STDC__
-(Layer instance,NhlTransDat *segdat )
+(NhlLayer instance,NhlTransDat *segdat )
 #else
 (instance,segdat)
-	Layer	instance;
+	NhlLayer	instance;
 	NhlTransDat *segdat;
 #endif
 {
-	ViewLayer	parent = (ViewLayer) instance;
+	NhlViewLayer	parent = (NhlViewLayer) instance;
 	NhlSegTransList	step;
 	float	x[3],y[3];
 
@@ -791,8 +790,8 @@ NhlErrorTypes _NhlResetViewSegment
 	
 	step = parent->view.plot_segments_list;
 	if(step == NULL) {
-		NhlPError(WARNING,E_UNKNOWN,"_NhlResetViewSegment: No segments initialized, can't reset segment");
-		return(WARNING);
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"_NhlResetViewSegment: No segments initialized, can't reset segment");
+		return(NhlWARNING);
 	} else {
 		while(step != NULL) {
 			if(step->seg_trans_dat->id == segdat->id) {
@@ -800,8 +799,8 @@ NhlErrorTypes _NhlResetViewSegment
 			}
 		}
 		if(step  == NULL) {
-			NhlPError(WARNING,E_UNKNOWN,"_NhlResetViewSegment: No segments found in view segment list");
-			return(WARNING);
+			NhlPError(NhlWARNING,NhlEUNKNOWN,"_NhlResetViewSegment: No segments found in view segment list");
+			return(NhlWARNING);
 		} else {
 /*
 * Important to reset segment transformation to identity 
@@ -815,7 +814,7 @@ NhlErrorTypes _NhlResetViewSegment
 			step->seg_trans[5] = 0.0;
 		}
 	}
-	return(NOERROR);
+	return(NhlNOERROR);
 }
 
 
@@ -879,7 +878,7 @@ void	_NhlAddBBInfo
  * Description: Simply performs default BB function by adding objects viewport
  *		to boudning box data structure.
  *
- * In Args:	Layer instance		object instance for which BB is req'ed
+ * In Args:	NhlLayer instance		object instance for which BB is req'ed
  *		NhlBoundingBox *thebox	Data Structure containing BB info
  *
  * Out Args:	NONE
@@ -890,19 +889,19 @@ void	_NhlAddBBInfo
  */
 static NhlErrorTypes ViewGetBB
 #if __STDC__
-(Layer instance, NhlBoundingBox *thebox)
+(NhlLayer instance, NhlBoundingBox *thebox)
 #else
 (instance,thebox)
-	Layer instance;
+	NhlLayer instance;
 	NhlBoundingBox *thebox;
 #endif
 {
-	ViewLayer vinstance = (ViewLayer) instance;
+	NhlViewLayer vinstance = (NhlViewLayer) instance;
 
 	_NhlAddBBInfo(vinstance->view.ft,vinstance->view.fb,
 		vinstance->view.fr,vinstance->view.fl,thebox);
 	
-	return(NOERROR);
+	return(NhlNOERROR);
 	
 }
 
@@ -913,7 +912,7 @@ static NhlErrorTypes ViewGetBB
  *		without invoking the public SetValues interface. This means that
  *		the geometry of the children and segments remain unaffected.
  *
- * In Args:	ViewLayer theview	instance of object
+ * In Args:	NhlViewLayer theview	instance of object
  *		float x,y,width,height  new viewport information
  *		int keep_asp		new keep_aspect resource
  *
@@ -925,10 +924,10 @@ static NhlErrorTypes ViewGetBB
  */
 void _NhlInternalSetView
 #if __STDC__
-(ViewLayer theview,float x, float y, float width, float height, int keep_asp)
+(NhlViewLayer theview,float x, float y, float width, float height, int keep_asp)
 #else
 (theview,x,y,width,height,keep_asp)
-ViewLayer theview;
+NhlViewLayer theview;
 float	x;
 float	y;
 float	width;

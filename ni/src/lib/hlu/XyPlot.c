@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.14 1994-01-14 23:36:39 boote Exp $
+ *      $Id: XyPlot.c,v 1.15 1994-01-27 21:27:46 boote Exp $
  */
 /************************************************************************
 *									*
@@ -25,6 +25,7 @@
 #include <ncarg/hlu/Converters.h>
 #include <ncarg/hlu/TickMark.h>
 #include <ncarg/hlu/Title.h>
+#include <ncarg/hlu/TransObjI.h>
 #include <ncarg/hlu/IrregularType2TransObj.h>
 #include <ncarg/hlu/LogLinTransObj.h>
 #include <ncarg/hlu/Workstation.h>
@@ -76,12 +77,12 @@ CompXMin
 	unsigned int	offset;
 #endif
 {
-	XyPlotLayer	xyplot = (XyPlotLayer)base;
+	NhlXyPlotLayer	xyplot = (NhlXyPlotLayer)base;
 
 	xyplot->xyplot.comp_x_min_set = False;
 	xyplot->xyplot.compute_x_min = False;
 
-	return NOERROR;
+	return NhlNOERROR;
 }
 /*ARGSUSED*/
 static NhlErrorTypes
@@ -101,12 +102,12 @@ SetXMin
 	unsigned int	offset;
 #endif
 {
-	XyPlotLayer	xyplot = (XyPlotLayer)base;
+	NhlXyPlotLayer	xyplot = (NhlXyPlotLayer)base;
 
 	xyplot->xyplot.x_min_set = False;
 	xyplot->xyplot.x_min = 1.0;
 
-	return NOERROR;
+	return NhlNOERROR;
 }
 /*ARGSUSED*/
 static NhlErrorTypes
@@ -126,12 +127,12 @@ CompXMax
 	unsigned int	offset;
 #endif
 {
-	XyPlotLayer	xyplot = (XyPlotLayer)base;
+	NhlXyPlotLayer	xyplot = (NhlXyPlotLayer)base;
 
 	xyplot->xyplot.comp_x_max_set = False;
 	xyplot->xyplot.compute_x_max = False;
 
-	return NOERROR;
+	return NhlNOERROR;
 }
 /*ARGSUSED*/
 static NhlErrorTypes
@@ -151,12 +152,12 @@ SetXMax
 	unsigned int	offset;
 #endif
 {
-	XyPlotLayer	xyplot = (XyPlotLayer)base;
+	NhlXyPlotLayer	xyplot = (NhlXyPlotLayer)base;
 
 	xyplot->xyplot.x_max_set = False;
 	xyplot->xyplot.x_max = 2.0;
 
-	return NOERROR;
+	return NhlNOERROR;
 }
 /*ARGSUSED*/
 static NhlErrorTypes
@@ -176,12 +177,12 @@ CompYMax
 	unsigned int	offset;
 #endif
 {
-	XyPlotLayer	xyplot = (XyPlotLayer)base;
+	NhlXyPlotLayer	xyplot = (NhlXyPlotLayer)base;
 
 	xyplot->xyplot.comp_y_max_set = False;
 	xyplot->xyplot.compute_y_max = False;
 
-	return NOERROR;
+	return NhlNOERROR;
 }
 /*ARGSUSED*/
 static NhlErrorTypes
@@ -201,12 +202,12 @@ SetYMax
 	unsigned int	offset;
 #endif
 {
-	XyPlotLayer	xyplot = (XyPlotLayer)base;
+	NhlXyPlotLayer	xyplot = (NhlXyPlotLayer)base;
 
 	xyplot->xyplot.y_max_set = False;
 	xyplot->xyplot.y_max = 2.0;
 
-	return NOERROR;
+	return NhlNOERROR;
 }
 /*ARGSUSED*/
 static NhlErrorTypes
@@ -226,12 +227,12 @@ CompYMin
 	unsigned int	offset;
 #endif
 {
-	XyPlotLayer	xyplot = (XyPlotLayer)base;
+	NhlXyPlotLayer	xyplot = (NhlXyPlotLayer)base;
 
 	xyplot->xyplot.comp_y_min_set = False;
 	xyplot->xyplot.compute_y_min = False;
 
-	return NOERROR;
+	return NhlNOERROR;
 }
 /*ARGSUSED*/
 static NhlErrorTypes
@@ -251,15 +252,15 @@ SetYMin
 	unsigned int	offset;
 #endif
 {
-	XyPlotLayer	xyplot = (XyPlotLayer)base;
+	NhlXyPlotLayer	xyplot = (NhlXyPlotLayer)base;
 
 	xyplot->xyplot.y_min_set = False;
 	xyplot->xyplot.y_min = 1.0;
 
-	return NOERROR;
+	return NhlNOERROR;
 }
 
-#define	Oset(field)	NhlOffset(XyDataDepLayerRec,xydata.field)
+#define	Oset(field)	NhlOffset(NhlXyDataDepLayerRec,xydata.field)
 static NhlResource data_resources[] = {
 	{NhlNxyColors,NhlCxyColors,NhlTGenArray,sizeof(NhlPointer),
 		Oset(colors),NhlTImmediate,(NhlPointer)NULL},
@@ -272,15 +273,15 @@ static NhlResource data_resources[] = {
 		Oset(dash),NhlTImmediate,(NhlPointer)1},
 
 	{NhlNxyLabelMode,NhlCxyLabelMode,NhlTLineLabelModes,
-		sizeof(LineLabelModes),
-		Oset(label_mode),NhlTImmediate,(NhlPointer)NOLABELS},
+		sizeof(NhlLineLabelModes),
+		Oset(label_mode),NhlTImmediate,(NhlPointer)NhlNOLABELS},
 	{NhlNxyExplicitLabels,NhlCxyExplicitLabels,NhlTGenArray,
 		sizeof(NhlPointer),
 		Oset(labels),NhlTImmediate,(NhlPointer)NULL}
 };
 #undef Oset
 
-#define	Oset(field)	NhlOffset(XyPlotLayerRec,xyplot.field)
+#define	Oset(field)	NhlOffset(NhlXyPlotLayerRec,xyplot.field)
 static NhlResource resources[] = {
 	{NhlNxyCurveData,NhlCxyCurveData,_NhlTDataList,sizeof(NhlGenArray),
 		Oset(curve_data),NhlTImmediate,NULL},
@@ -288,12 +289,12 @@ static NhlResource resources[] = {
 	{NhlNxyCurveThicknessF,NhlCxyCurveThicknessF,NhlTFloat,sizeof(float),
 		Oset(curve_thickness),NhlTString,"1.0"},
 
-	{NhlNxyXStyle,NhlCxyXStyle,NhlTTickMarkStyles,sizeof(TickMarkStyles),
-		Oset(x_style),NhlTImmediate,(NhlPointer)LINEAR},
+	{NhlNxyXStyle,NhlCxyXStyle,NhlTTickMarkStyles,sizeof(NhlTickMarkStyles),
+		Oset(x_style),NhlTImmediate,(NhlPointer)NhlLINEAR},
 	{NhlNxyXIrrTensionF,NhlCxyXIrrTensionF,NhlTFloat,sizeof(float),
 		Oset(x_tension),NhlTString,"2.0"},
-	{NhlNxyYStyle,NhlCxyYStyle,NhlTTickMarkStyles,sizeof(TickMarkStyles),
-		Oset(y_style),NhlTImmediate,(NhlPointer)LINEAR},
+	{NhlNxyYStyle,NhlCxyYStyle,NhlTTickMarkStyles,sizeof(NhlTickMarkStyles),
+		Oset(y_style),NhlTImmediate,(NhlPointer)NhlLINEAR},
 	{NhlNxyYIrrTensionF,NhlCxyYIrrTensionF,NhlTFloat,sizeof(float),
 		Oset(y_tension),NhlTString,"2.0"},
 
@@ -348,11 +349,11 @@ static NhlResource resources[] = {
 	{NhlNxyTitles,NhlCxyTitles,NhlTBoolean,sizeof(NhlBoolean),
 		Oset(titles),NhlTImmediate,(NhlPointer)True},
 	{NhlNxyXAlternate,NhlCxyXAlternate,NhlTAlternatePlace,
-		sizeof(AlternatePlace),
-		Oset(x_alternate),NhlTImmediate,(NhlPointer)NONE},
+		sizeof(NhlAlternatePlace),
+		Oset(x_alternate),NhlTImmediate,(NhlPointer)NhlNONE},
 	{NhlNxyYAlternate,NhlCxyYAlternate,NhlTAlternatePlace,
-		sizeof(AlternatePlace),
-		Oset(y_alternate),NhlTImmediate,(NhlPointer)NONE},
+		sizeof(NhlAlternatePlace),
+		Oset(y_alternate),NhlTImmediate,(NhlPointer)NhlNONE},
 	{NhlNxyYAlternateCoords,NhlCxyYAlternateCoords,NhlTGenArray,
 		sizeof(NhlPointer),Oset(y_alternate_coords),NhlTImmediate,NULL},
 	{NhlNxyXAlternateCoords,NhlCxyXAlternateCoords,NhlTGenArray,
@@ -377,14 +378,14 @@ static NhlResource resources[] = {
 	{NhlNtiYAxisOffsetYF,NhlCtiXAxisOffsetYF,NhlTFloat,sizeof(float),
 		Oset(ti_y_axis_offset_y),NhlTString,"0.0"},
 	{NhlNtiXAxisPosition,NhlCtiXAxisPosition,NhlTTitlePositions,
-		sizeof(TitlePositions),
-		Oset(ti_x_axis_position),NhlTImmediate,(NhlPointer)CENTER},
+		sizeof(NhlTitlePositions),
+		Oset(ti_x_axis_position),NhlTImmediate,(NhlPointer)NhlCENTER},
 	{NhlNtiYAxisPosition,NhlCtiYAxisPosition,NhlTTitlePositions,
-		sizeof(TitlePositions),
-		Oset(ti_y_axis_position),NhlTImmediate,(NhlPointer)CENTER},
+		sizeof(NhlTitlePositions),
+		Oset(ti_y_axis_position),NhlTImmediate,(NhlPointer)NhlCENTER},
 	{NhlNtiMainPosition,NhlCtiMainPosition,NhlTTitlePositions,
-		sizeof(TitlePositions),
-		Oset(ti_main_position),NhlTImmediate,(NhlPointer)CENTER},
+		sizeof(NhlTitlePositions),
+		Oset(ti_main_position),NhlTImmediate,(NhlPointer)NhlCENTER},
 };
 #undef Oset
 
@@ -393,9 +394,9 @@ static NhlResource resources[] = {
 
 static NhlErrorTypes XyPlotSetValues(
 #ifdef NhlNeedProto
-        Layer,          /* old */
-        Layer,          /* reference */
-        Layer,          /* new */
+        NhlLayer,          /* old */
+        NhlLayer,          /* reference */
+        NhlLayer,          /* new */
         _NhlArgList,    /* args */
         int             /* num_args*/
 #endif
@@ -403,9 +404,9 @@ static NhlErrorTypes XyPlotSetValues(
 
 static NhlErrorTypes XyDataInitialize(
 #ifdef NhlNeedProto
-        LayerClass,     /* class */
-        Layer,          /* req */
-        Layer,          /* new */
+        NhlLayerClass,     /* class */
+        NhlLayer,          /* req */
+        NhlLayer,          /* new */
         _NhlArgList,    /* args */
         int             /* num_args */
 #endif
@@ -413,9 +414,9 @@ static NhlErrorTypes XyDataInitialize(
 
 static NhlErrorTypes XyPlotInitialize(
 #ifdef NhlNeedProto
-        LayerClass,     /* class */
-        Layer,          /* req */
-        Layer,          /* new */
+        NhlLayerClass,     /* class */
+        NhlLayer,          /* req */
+        NhlLayer,          /* new */
         _NhlArgList,    /* args */
         int             /* num_args */
 #endif
@@ -423,7 +424,7 @@ static NhlErrorTypes XyPlotInitialize(
 
 static NhlErrorTypes XyPlotClassPartInitialize(
 #ifdef NhlNeedProto
-	LayerClass	lc
+	NhlLayerClass	lc
 #endif
 );
 
@@ -441,13 +442,13 @@ static NhlErrorTypes XyPlotClassInitialize(
 
 static NhlErrorTypes XyPlotDestroy(
 #ifdef NhlNeedProto
-        Layer           /* inst */
+        NhlLayer           /* inst */
 #endif
 );
 
 static NhlErrorTypes XyPlotDraw(
 #ifdef NhlNeedProto
-        Layer   /* layer */
+        NhlLayer   /* layer */
 #endif
 );
 
@@ -457,7 +458,7 @@ static NhlErrorTypes XyPlotDraw(
 
 static NhlErrorTypes XyPlotGetBB(
 #ifdef NhlNeedProto
-        Layer          /* instance */,
+        NhlLayer          /* instance */,
         NhlBoundingBox * /*thebox*/
 #endif
 );
@@ -468,7 +469,7 @@ static NhlErrorTypes XyPlotGetBB(
 
 static NhlErrorTypes XyPlotDataToNDC(
 #ifdef NhlNeedProto
-	Layer		/* plot */,
+	NhlLayer		/* plot */,
 	float*		/* x */,
 	float*		/* y */,
 	int		/* n */,
@@ -483,7 +484,7 @@ static NhlErrorTypes XyPlotDataToNDC(
 
 static NhlErrorTypes XyPlotNDCToData(
 #ifdef NhlNeedProto
-	Layer		/* plot */,
+	NhlLayer		/* plot */,
 	float*		/* x */,
 	float*		/* y */,
 	int		/* n */,
@@ -498,72 +499,73 @@ static NhlErrorTypes XyPlotNDCToData(
 
 static NhlErrorTypes XyPlotUpdateData(
 #ifdef NhlNeedProto
-	DataCommLayer	new,
-	DataCommLayer	old
+	NhlDataCommLayer	new,
+	NhlDataCommLayer	old
 #endif
 );
 
 static NhlErrorTypes CheckValues(
 #ifdef	NhlNeedProto
-	XyPlotLayer	xnew,
-	XyPlotLayer	xold,
+	NhlXyPlotLayer	xnew,
+	NhlXyPlotLayer	xold,
 	_NhlCallType	calledfrom
 #endif
 );
 
 static NhlErrorTypes InternalizePointers(
 #ifdef NhlNeedProto
-	XyPlotLayer	xnew,
-	XyPlotLayer	xold,
+	NhlXyPlotLayer	xnew,
+	NhlXyPlotLayer	xold,
 	_NhlCallType	calledfrom
 #endif
 );
 
 static NhlErrorTypes ComputeDataExtents(
 #ifdef NhlNeedProto
-	XyPlotLayer	xnew,
-	XyPlotLayer	xold,
+	NhlXyPlotLayer	xnew,
+	NhlXyPlotLayer	xold,
 	_NhlCallType	calledfrom
 #endif
 );
 
 static NhlErrorTypes SetUpTransObjs(
 #ifdef NhlNeedProto
-	XyPlotLayer	xnew,
-	XyPlotLayer	xold,
+	NhlXyPlotLayer	xnew,
+	NhlXyPlotLayer	xold,
 	_NhlCallType	calledfrom
 #endif
 );
 
 static NhlErrorTypes SetUpTicks(
 #ifdef NhlNeedProto
-	XyPlotLayer	xnew,
-	XyPlotLayer	xold,
+	NhlXyPlotLayer	xnew,
+	NhlXyPlotLayer	xold,
 	_NhlCallType	calledfrom
 #endif
 );
 static NhlErrorTypes SetUpTitles(
 #ifdef NhlNeedProto
-	XyPlotLayer	xnew,
-	XyPlotLayer	xold,
+	NhlXyPlotLayer	xnew,
+	NhlXyPlotLayer	xold,
 	_NhlCallType	calledfrom
 #endif
 );
 
 static NhlErrorTypes DrawCurves(
 #ifdef NhlNeedProto
-	XyPlotLayer	xlayer
+	NhlXyPlotLayer	xlayer
 #endif
 );
 
-XyDataDepLayerClassRec xyDataDepLayerClassRec = {
+NhlXyDataDepLayerClassRec NhlxyDataDepLayerClassRec = {
 	/* base_class */
         {
 /* class_name			*/	"XyDataDep",
 /* nrm_class			*/	NrmNULLQUARK,
-/* layer_size			*/	sizeof(XyDataDepLayerRec),
+/* layer_size			*/	sizeof(NhlXyDataDepLayerRec),
 /* class_inited			*/	False,
-/* superclass			*/	(LayerClass)&dataSpecLayerClassRec,
+/* superclass			*/	(NhlLayerClass)
+						&NhldataSpecLayerClassRec,
 
 /* layer_resources		*/	data_resources,
 /* num_resources		*/	NhlNumber(data_resources),
@@ -588,14 +590,15 @@ XyDataDepLayerClassRec xyDataDepLayerClassRec = {
 	}
 };
 
-XyPlotLayerClassRec xyPlotLayerClassRec = {
+NhlXyPlotLayerClassRec NhlxyPlotLayerClassRec = {
 	/* base_class */
         {
 /* class_name                   */      "XyPlot",
 /* nrm_class                    */      NrmNULLQUARK,
-/* layer_size                   */      sizeof(XyPlotLayerRec),
+/* layer_size                   */      sizeof(NhlXyPlotLayerRec),
 /* class_inited                 */      False,
-/* superclass                   */      (LayerClass)&dataCommLayerClassRec,
+/* superclass                   */      (NhlLayerClass)
+						&NhldataCommLayerClassRec,
 
 /* layer_resources              */      resources,
 /* num_resources                */      NhlNumber(resources),
@@ -643,8 +646,9 @@ XyPlotLayerClassRec xyPlotLayerClassRec = {
 	}
 };
 
-LayerClass xyDataDepLayerClass = (LayerClass)&xyDataDepLayerClassRec;
-LayerClass xyPlotLayerClass = (LayerClass)&xyPlotLayerClassRec;
+NhlLayerClass NhlxyDataDepLayerClass =
+				(NhlLayerClass)&NhlxyDataDepLayerClassRec;
+NhlLayerClass NhlxyPlotLayerClass = (NhlLayerClass)&NhlxyPlotLayerClassRec;
 
 static NrmQuark	Qfloat = NrmNULLQUARK;
 static NrmQuark Qint = NrmNULLQUARK;
@@ -677,7 +681,7 @@ XyDataClassInitialize
 	Qint = NrmStringToQuark(NhlTInteger);
 	Qstring = NrmStringToQuark(NhlTString);
 
-	return NOERROR;
+	return NhlNOERROR;
 }
 
 /*
@@ -685,13 +689,13 @@ XyDataClassInitialize
  *
  * Description:	Add type converters for types added to support this class.
  *
- * In Args:	NONE
+ * In Args:	NhlNONE
  *
- * Out Args:	NONE
+ * Out Args:	NhlNONE
  *
  * Return Values:	ErrorConditions
  *
- * Side Effects:	NONE
+ * Side Effects:	NhlNONE
  */
 static NhlErrorTypes
 XyPlotClassInitialize
@@ -704,17 +708,17 @@ XyPlotClassInitialize
 #endif
 {
 	NhlConvertArg	altplace[] = {
-				{NHLSTRENUM,	NONE,		"none"},
-				{NHLSTRENUM,	LEFTAXIS,	"leftaxis"},
-				{NHLSTRENUM,	RIGHTAXIS,	"rightaxis"},
-				{NHLSTRENUM,	TOPAXIS,	"topaxis"},
-				{NHLSTRENUM,	BOTTOMAXIS,	"bottomaxis"}
+				{NhlSTRENUM,	NhlNONE,	"none"},
+				{NhlSTRENUM,	NhlLEFTAXIS,	"leftaxis"},
+				{NhlSTRENUM,	NhlRIGHTAXIS,	"rightaxis"},
+				{NhlSTRENUM,	NhlTOPAXIS,	"topaxis"},
+				{NhlSTRENUM,	NhlBOTTOMAXIS,	"bottomaxis"}
 				};
 
 	NhlConvertArg	lblmode[] = {
-				{NHLSTRENUM,	NOLABELS,	"nolabels"},
-				{NHLSTRENUM,	LETTERED,	"lettered"},
-				{NHLSTRENUM,	CUSTOM,		"custom"}
+				{NhlSTRENUM,	NhlNOLABELS,	"nolabels"},
+				{NhlSTRENUM,	NhlLETTERED,	"lettered"},
+				{NhlSTRENUM,	NhlCUSTOM,	"custom"}
 				};
 
 	NhlRegisterConverter(NhlTString,NhlTAlternatePlace,NhlCvtStringToEnum,
@@ -724,13 +728,13 @@ XyPlotClassInitialize
 
 	Qfloat = NrmStringToQuark(NhlTFloat);
 
-	return NOERROR;
+	return NhlNOERROR;
 }
 
 /*
  * Function:	XyPlotClassPartInitialize
  *
- * Description:	This function initializes fields in the XyPlotLayerClassPart
+ * Description:	This function initializes fields in the NhlXyPlotLayerClassPart
  *		that can not be done by static initialization.
  *		Takes care of calling _NhlRegisterChildClass for the title
  *		and the tick mark objects. This needs to be done so resource
@@ -747,7 +751,7 @@ XyPlotClassInitialize
  *		have correct transformation.
  *
  * In Args:	
- *		LayerClass	lc	Layer Class to init
+ *		NhlLayerClass	lc	NhlLayer Class to init
  *
  * Out Args:	
  *
@@ -759,20 +763,20 @@ static NhlErrorTypes
 XyPlotClassPartInitialize
 #if	__STDC__
 (
-	LayerClass	lc	/* Layer Class to init	*/
+	NhlLayerClass	lc	/* NhlLayer Class to init	*/
 )
 #else
 (lc)
-	LayerClass	lc;	/* Layer Class to init	*/
+	NhlLayerClass	lc;	/* NhlLayer Class to init	*/
 #endif
 {
-	NhlErrorTypes ret = NOERROR;
-	NhlErrorTypes lret = NOERROR;
+	NhlErrorTypes ret = NhlNOERROR;
+	NhlErrorTypes lret = NhlNOERROR;
 
 	/*
 	 * Register children objects
 	 */
-	lret = _NhlRegisterChildClass(lc,titleLayerClass,False,False,
+	lret = _NhlRegisterChildClass(lc,NhltitleLayerClass,False,False,
 			NhlNtiMainOffsetXF,
         		NhlNtiXAxisOffsetXF, 
         		NhlNtiYAxisOffsetYF, 
@@ -781,7 +785,7 @@ XyPlotClassPartInitialize
         		NhlNtiMainPosition,
 			NULL);
 
-	ret = _NhlRegisterChildClass(lc,tickMarkLayerClass,False,False,
+	ret = _NhlRegisterChildClass(lc,NhltickMarkLayerClass,False,False,
 			NhlNtmXBDataLeftF,NhlNtmXBDataRightF,NhlNtmXTDataRightF,
 			NhlNtmXTDataLeftF,NhlNtmYLDataTopF,NhlNtmYLDataBottomF,
 			NhlNtmYRDataTopF,NhlNtmYRDataBottomF,NhlNtmYLStyle, 
@@ -798,8 +802,9 @@ XyPlotClassPartInitialize
 	 * Register Data Resources
 	 */
 
-	lret = _NhlRegisterDataRes((DataCommLayerClass)lc,NhlNxyCurveData,
-			xyDataDepLayerClass,coordArrTableFloatLayerClass,NULL);
+	lret = _NhlRegisterDataRes((NhlDataCommLayerClass)lc,NhlNxyCurveData,
+			NhlxyDataDepLayerClass,NhlcoordArrTableFloatLayerClass,
+									NULL);
 	return MIN(lret,ret);
 }
 
@@ -820,49 +825,49 @@ static NhlErrorTypes
 XyPlotChanges
 #if	__STDC__
 (
-	XyPlotLayer	xnew,
-	XyPlotLayer	xold,
+	NhlXyPlotLayer	xnew,
+	NhlXyPlotLayer	xold,
 	_NhlCallType	calledfrom
 )
 #else
 (xnew,xold,calledfrom)
-	XyPlotLayer	xnew;
-	XyPlotLayer	xold;
+	NhlXyPlotLayer	xnew;
+	NhlXyPlotLayer	xold;
 	_NhlCallType	calledfrom;
 #endif
 {
-	NhlErrorTypes	ret1 = NOERROR;
-	NhlErrorTypes	ret2 = NOERROR;
+	NhlErrorTypes	ret1 = NhlNOERROR;
+	NhlErrorTypes	ret2 = NhlNOERROR;
 
 
 	ret1 = InternalizePointers(xnew,xold,calledfrom);
-	if(ret1 < WARNING)
+	if(ret1 < NhlWARNING)
 		return ret1;
 
 	ret2 = CheckValues(xnew,xold,calledfrom);
-	if(ret2 < WARNING)
+	if(ret2 < NhlWARNING)
 		return ret2;
 	ret1 = MIN(ret1,ret2);
 
 	ret2 = ComputeDataExtents(xnew,xold,calledfrom);
-	if(ret2 < WARNING)
+	if(ret2 < NhlWARNING)
 		return ret2;
 	ret1 = MIN(ret1,ret2);
 
 	if(xnew->xyplot.data_ranges_set){
 		ret2 = SetUpTransObjs(xnew,xold,calledfrom);
-		if(ret2 < WARNING)
+		if(ret2 < NhlWARNING)
 			return(ret2);
 		ret1 = MIN(ret1,ret2);
 	}
 
 	ret2 = SetUpTicks(xnew,xold,calledfrom);
-	if(ret2 < WARNING)
+	if(ret2 < NhlWARNING)
 		return(ret2);
 	ret1 = MIN(ret1,ret2);
 
 	ret2 = SetUpTitles(xnew,xold,calledfrom);
-	if(ret2 < WARNING)
+	if(ret2 < NhlWARNING)
 		return(ret2);
 	ret1 = MIN(ret1,ret2);
 
@@ -876,9 +881,9 @@ XyPlotChanges
  * Description:	Initializes the XyData Dependent class instance.
  *
  * In Args:	
- *		LayerClass	class,
- *		Layer		req,
- *		Layer		new,
+ *		NhlLayerClass	class,
+ *		NhlLayer		req,
+ *		NhlLayer		new,
  *		_NhlArgList	args,
  *		int		num_args
  *
@@ -893,25 +898,25 @@ static NhlErrorTypes
 XyDataInitialize
 #if     __STDC__
 (
-	LayerClass	class,
-	Layer		req,
-	Layer		new,
+	NhlLayerClass	class,
+	NhlLayer		req,
+	NhlLayer		new,
 	_NhlArgList	args,
 	int		num_args
 )
 #else
 (class,req,new,args,num_args)
-        LayerClass      class;
-        Layer           req;
-        Layer           new;
+        NhlLayerClass      class;
+        NhlLayer           req;
+        NhlLayer           new;
         _NhlArgList     args;
         int             num_args;
 #endif
 {
-	XyDataDepLayer	dnew = (XyDataDepLayer)new;
+	NhlXyDataDepLayer	dnew = (NhlXyDataDepLayer)new;
 	char		*error_lead = "XyDataInitialize";
 	NhlGenArray	gen;
-	NhlErrorTypes	ret = NOERROR;
+	NhlErrorTypes	ret = NhlNOERROR;
 
 	if(dnew->xydata.colors != NULL){
 		gen = dnew->xydata.colors;
@@ -920,12 +925,12 @@ XyDataInitialize
 			dnew->xydata.colors = _NhlCopyGenArray(gen,True);
 		}
 		else{
-			NhlPError(WARNING,E_UNKNOWN,
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
 		"%s:%s must be set with a 1-dim generic int array: ignoring",
 					error_lead,NhlNxyColors);
 
 			dnew->xydata.colors = NULL;
-			ret = MIN(ret,WARNING);
+			ret = MIN(ret,NhlWARNING);
 		}
 	}
 
@@ -936,12 +941,12 @@ XyDataInitialize
 			dnew->xydata.dash_patterns = _NhlCopyGenArray(gen,True);
 		}
 		else{
-			NhlPError(WARNING,E_UNKNOWN,
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
 		"%s:%s must be set with a 1-dim generic int array: ignoring",
 					error_lead,NhlNxyDashPatterns);
 
 			dnew->xydata.dash_patterns = NULL;
-			ret = MIN(ret,WARNING);
+			ret = MIN(ret,NhlWARNING);
 		}
 	}
 
@@ -953,12 +958,12 @@ XyDataInitialize
 			dnew->xydata.labels = _NhlCopyGenArray(gen,True);
 		}
 		else{
-			NhlPError(WARNING,E_UNKNOWN,
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
 	"%s:%s must be set with a generic NhlString array: ignoring",
 					error_lead,NhlNxyExplicitLabels);
 
 			dnew->xydata.labels = NULL;
-			ret = MIN(ret,WARNING);
+			ret = MIN(ret,NhlWARNING);
 		}
 	}
 
@@ -976,7 +981,7 @@ XyDataInitialize
  *		args	list of resources and values for reference
  *		num_args 	number of elements in args.
  *
- * Out Args:	NONE
+ * Out Args:	NhlNONE
  *
  * Return Values:	Error Conditions
  *
@@ -987,22 +992,22 @@ static NhlErrorTypes
 XyPlotInitialize
 #if     __STDC__
 (
-	LayerClass	class,
-	Layer		req,
-	Layer		new,
+	NhlLayerClass	class,
+	NhlLayer		req,
+	NhlLayer		new,
 	_NhlArgList	args,
 	int		num_args
 )
 #else
 (class,req,new,args,num_args)
-        LayerClass      class;
-        Layer           req;
-        Layer           new;
+        NhlLayerClass      class;
+        NhlLayer           req;
+        NhlLayer           new;
         _NhlArgList     args;
         int             num_args;
 #endif
 {
-	XyPlotLayer	xnew = (XyPlotLayer)new;
+	NhlXyPlotLayer	xnew = (NhlXyPlotLayer)new;
 
 	xnew->xyplot.ticks = NULL;
 	xnew->xyplot.ttitles = NULL;
@@ -1010,7 +1015,7 @@ XyPlotInitialize
 	xnew->xyplot.data_ranges_set = False;
 	xnew->xyplot.check_ranges = True;
 
-	return XyPlotChanges((XyPlotLayer)new,NULL,CREATE);
+	return XyPlotChanges((NhlXyPlotLayer)new,NULL,CREATE);
 }
 
 /*
@@ -1024,7 +1029,7 @@ XyPlotInitialize
  *		args 	list of resources and values for reference
  *		num_args	number of elements in args.
  *
- * Out Args:	NONE
+ * Out Args:	NhlNONE
  *
  * Return Values:	ErrorConditions
  *
@@ -1035,23 +1040,23 @@ static NhlErrorTypes
 XyPlotSetValues
 #if  __STDC__
 (
-	Layer		old,
-	Layer		reference,
-	Layer		new,
+	NhlLayer		old,
+	NhlLayer		reference,
+	NhlLayer		new,
 	_NhlArgList	args,
 	int		num_args
 )
 #else
 (old,reference,new,args,num_args)
-	Layer		old;
-	Layer		reference;
-	Layer		new;
+	NhlLayer		old;
+	NhlLayer		reference;
+	NhlLayer		new;
 	_NhlArgList	args;
 	int		num_args;
 #endif
 {
-	XyPlotLayer xnew = (XyPlotLayer)new;
-	XyPlotLayer xold = (XyPlotLayer)old;
+	NhlXyPlotLayer xnew = (NhlXyPlotLayer)new;
+	NhlXyPlotLayer xold = (NhlXyPlotLayer)old;
 	float deltax,deltay;
 
 	/*
@@ -1095,53 +1100,53 @@ static NhlErrorTypes
 DrawCurves
 #if __STDC__
 (
-	XyPlotLayer	xlayer
+	NhlXyPlotLayer	xlayer
 )
 #else
 (xlayer)
-	XyPlotLayer	xlayer;
+	NhlXyPlotLayer	xlayer;
 #endif
 {
 	int			i,j;
 	int			num_data;
 	int			current_letter = 0;
-	NhlErrorTypes		ret = NOERROR;
-	NhlErrorTypes		ret1 = NOERROR;
+	NhlErrorTypes		ret = NhlNOERROR;
+	NhlErrorTypes		ret1 = NhlNOERROR;
 	char			buffer[80];
 	int			upordownflag = 1;
-	CoordArrTableFloatLayer	datal;
-	XyDataDepLayer		dataspec;
+	NhlCoordArrTableFloatLayer	datal;
+	NhlXyDataDepLayer		dataspec;
 	_NhlDataNodePtr		*datalist = NULL;
 	NhlBoolean		new;
 
 	for(i = 0; i< 80; i++)
 		buffer[i] = '\0';
 
-	ret = _NhlActivateWorkstation((Layer)xlayer->base.wkptr);	
-	if(ret < WARNING) {
-		NhlPError(FATAL,E_UNKNOWN,
+	ret = _NhlActivateWorkstation((NhlLayer)xlayer->base.wkptr);	
+	if(ret < NhlWARNING) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
 "DrawCurves:Could not activate workstation no data curves will be drawn");
-		return(FATAL);
+		return(NhlFATAL);
 	}
 	ret1 = MIN(ret,ret1);
 
-	ret = _NhlSetTrans((Layer)xlayer->xyplot.thetrans,(Layer)xlayer);
-	if(ret < WARNING) {
-		NhlPError(FATAL,E_UNKNOWN,
+	ret = _NhlSetTrans((NhlLayer)xlayer->xyplot.thetrans,(NhlLayer)xlayer);
+	if(ret < NhlWARNING) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
 	"DrawCurves:Could not set transformation no data curves will be drawn");
-		return(FATAL);
+		return(NhlFATAL);
 	}
 	ret1 = MIN(ret,ret1);
 
 	num_data = _NhlGetDataInfo(xlayer->xyplot.curve_data,&datalist);
 	if(num_data <= 0){
 		xlayer->xyplot.data_ranges_set = False;
-		NhlPError(FATAL,E_UNKNOWN,"XyPlotDraw:%s resource problem",
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"XyPlotDraw:%s resource problem",
 							NhlNxyCurveData);
-		return FATAL;
+		return NhlFATAL;
 	}
 
-	NhlSetValues(xlayer->base.wkptr->base.id,
+	NhlVASetValues(xlayer->base.wkptr->base.id,
 		NhlNwkLineThicknessF,	xlayer->xyplot.curve_thickness,
 		NhlNwkLineLabelFontHeightF,
 					xlayer->xyplot.line_label_font_height,
@@ -1165,11 +1170,11 @@ DrawCurves
 		/*
 		 * Retrieve Data Information
 		 */
-		datal=(CoordArrTableFloatLayer)_NhlGetDataSet(datalist[i],&new);
+		datal=(NhlCoordArrTableFloatLayer)_NhlGetDataSet(datalist[i],&new);
 		if(datal == NULL){
 			xlayer->xyplot.data_ranges_set = False;
-			NhlPError(FATAL,E_UNKNOWN,"Data Problem???");
-			return FATAL;
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"Data Problem???");
+			return NhlFATAL;
 		}
 		if(datal->catfloat.ytable != NULL){
 			yvalues = (float**)datal->catfloat.ytable->data;
@@ -1199,7 +1204,7 @@ DrawCurves
 			len_xvalues = NULL;
 			impx = True;
 			if(impy){
-				NhlPError(WARNING,E_UNKNOWN,
+				NhlPError(NhlWARNING,NhlEUNKNOWN,
 					"Data has implied X and implied Y?");
 				continue;
 			}
@@ -1208,7 +1213,7 @@ DrawCurves
 		/*
 		 * Retrieve Data Specific information
 		 */
-		dataspec = (XyDataDepLayer)datalist[i]->dataspec;
+		dataspec = (NhlXyDataDepLayer)datalist[i]->dataspec;
 
 		/*
 		 * colors
@@ -1266,7 +1271,7 @@ DrawCurves
 				npts = len_yvalues[j];
 			}
 			else{
-				NhlPError(WARNING,E_UNKNOWN,
+				NhlPError(NhlWARNING,NhlEUNKNOWN,
 					"Data has implied X and implied Y?");
 				break;
 			}
@@ -1302,10 +1307,10 @@ DrawCurves
 			for(tint = strlen(buffer) - 1; tint >= 0;tint--)
 				buffer[tint] = '\0';
 			switch(dataspec->xydata.label_mode) {
-				case NOLABELS:
+				case NhlNOLABELS:
 					label = NULL;
 				break;
-				case CUSTOM:	
+				case NhlCUSTOM:	
 					if(j < len_labeltable)
 						label = labeltable[j];
 					else{
@@ -1315,7 +1320,7 @@ DrawCurves
 						label = buffer;
 					}
 				break;
-				case LETTERED:
+				case NhlLETTERED:
 					buffer[0] =
 					(char)((int)'A' + current_letter % 26);
 					current_letter++;
@@ -1324,7 +1329,7 @@ DrawCurves
 				break;
 			}
 
-			NhlSetValues(xlayer->base.wkptr->base.id,
+			NhlVASetValues(xlayer->base.wkptr->base.id,
 				NhlNwkLineColor,	color,
 				NhlNwkDashPattern,	dpattern,
 				NhlNwkLineDashSegLenF,
@@ -1332,7 +1337,7 @@ DrawCurves
 				NhlNwkLineLabel,	label,
 				NULL);
 
-			_NhlSetLineInfo(xlayer->base.wkptr,(Layer)xlayer);
+			_NhlSetLineInfo(xlayer->base.wkptr,(NhlLayer)xlayer);
 
 			upordownflag = 1;
 
@@ -1350,7 +1355,7 @@ DrawCurves
 						else{
 							_NhlDataLineTo(
 							xlayer->xyplot.thetrans,
-								(Layer)xlayer,
+								(NhlLayer)xlayer,
 								xvect[tint],
 								yvect[tint],
 								upordownflag);
@@ -1368,7 +1373,7 @@ DrawCurves
 						else{
 							_NhlDataLineTo(
 							xlayer->xyplot.thetrans,
-								(Layer)xlayer,
+								(NhlLayer)xlayer,
 								xvect[tint],
 								yvect[tint],
 								upordownflag);
@@ -1386,7 +1391,7 @@ DrawCurves
 						else{
 							_NhlDataLineTo(
 							xlayer->xyplot.thetrans,
-								(Layer)xlayer,
+								(NhlLayer)xlayer,
 								xvect[tint],
 								yvect[tint],
 								upordownflag);
@@ -1399,7 +1404,7 @@ DrawCurves
 					for(tint=0;tint < npts;tint++){
 						_NhlDataLineTo(
 							xlayer->xyplot.thetrans,
-							(Layer)xlayer,
+							(NhlLayer)xlayer,
 							xvect[tint],
 							yvect[tint],
 							upordownflag);
@@ -1412,7 +1417,7 @@ DrawCurves
 				/* both vectors implied */
 				for(tint=0;tint < npts;tint++){
 					_NhlDataLineTo(xlayer->xyplot.thetrans,
-								(Layer)xlayer,
+								(NhlLayer)xlayer,
 								(float)(tint+1),
 								(float)(tint+1),
 								upordownflag);
@@ -1429,7 +1434,7 @@ DrawCurves
 						else{
 							_NhlDataLineTo(
 							xlayer->xyplot.thetrans,
-								(Layer)xlayer,
+								(NhlLayer)xlayer,
 								(float)(tint+1),
 								yvect[tint],
 								upordownflag);
@@ -1442,7 +1447,7 @@ DrawCurves
 					for(tint=0;tint < npts;tint++){
 						_NhlDataLineTo(
 							xlayer->xyplot.thetrans,
-							(Layer)xlayer,
+							(NhlLayer)xlayer,
 							(float)(tint+1),
 							yvect[tint],
 							upordownflag);
@@ -1460,7 +1465,7 @@ DrawCurves
 						else{
 							_NhlDataLineTo(
 							xlayer->xyplot.thetrans,
-								(Layer)xlayer,
+								(NhlLayer)xlayer,
 								xvect[tint],
 								(float)(tint+1),
 								upordownflag);
@@ -1473,7 +1478,7 @@ DrawCurves
 					for(tint=0;tint < npts;tint++){
 						_NhlDataLineTo(
 							xlayer->xyplot.thetrans,
-							(Layer)xlayer,
+							(NhlLayer)xlayer,
 							xvect[tint],
 							(float)(tint+1),
 							upordownflag);
@@ -1488,7 +1493,7 @@ DrawCurves
 	/*
 	 * This is called here so lastd is called for the last line.
 	 */
-	_NhlDataLineTo(xlayer->xyplot.thetrans,(Layer)xlayer,1.0,1.0,1);
+	_NhlDataLineTo(xlayer->xyplot.thetrans,(NhlLayer)xlayer,1.0,1.0,1);
 
 	ret = _NhlDeactivateWorkstation(xlayer->base.wkptr);	
 	if(ret < ret1)
@@ -1506,24 +1511,24 @@ DrawCurves
  *
  * In Args:	layer	XyPlot instance
  *
- * Out Args:	NONE
+ * Out Args:	NhlNONE
  *
  * Return Values: Error Conditions
  *
- * Side Effects: NONE
+ * Side Effects: NhlNONE
  */	
 
 static NhlErrorTypes XyPlotDraw
 #if  __STDC__
-(Layer layer)
+(NhlLayer layer)
 #else
 (layer)
-        Layer layer;
+        NhlLayer layer;
 #endif
 {
-	XyPlotLayer	xlayer = (XyPlotLayer) layer;
-	NhlErrorTypes ret1 = NOERROR;
-	NhlErrorTypes ret = NOERROR;
+	NhlXyPlotLayer	xlayer = (NhlXyPlotLayer) layer;
+	NhlErrorTypes ret1 = NhlNOERROR;
+	NhlErrorTypes ret = NhlNOERROR;
 
 /*
 * Should probably have resource for letting user draw curves on
@@ -1532,19 +1537,19 @@ static NhlErrorTypes XyPlotDraw
 
 	if((!xlayer->xyplot.data_ranges_set) ||
 					(xlayer->xyplot.thetrans == NULL)){
-		NhlPError(FATAL,E_UNKNOWN,
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
 				"XyPlotDraw:Data Must be set before Drawing");
-		return FATAL;
+		return NhlFATAL;
 	}
 
 	ret = DrawCurves(xlayer);
-	if(ret < WARNING)
+	if(ret < NhlWARNING)
 		return ret;
 	ret1 = MIN(ret,ret1);
 
 	if(xlayer->xyplot.titles && xlayer->xyplot.ttitles){
 		ret = NhlDraw(xlayer->xyplot.ttitles->base.id);
-		if(ret < WARNING)
+		if(ret < NhlWARNING)
 			return ret;
 		ret1 = MIN(ret,ret1);
 	}
@@ -1590,14 +1595,14 @@ static NhlErrorTypes XyPlotDraw
  *
  * Return Values:	Error Conditions
  *
- * Side Effects:	NONE
+ * Side Effects:	NhlNONE
  */
 static NhlErrorTypes XyPlotDataToNDC
 #if __STDC__
-(Layer plot,float* x,float* y,int n,float* xout,float* yout,float* xmissing,float* ymissing,int* status,float* out_of_range)
+(NhlLayer plot,float* x,float* y,int n,float* xout,float* yout,float* xmissing,float* ymissing,int* status,float* out_of_range)
 #else
 (plot,x,y,n,xout,yout,xmissing,ymissing, status, out_of_range)
-	Layer		plot;
+	NhlLayer		plot;
 	float*		x;
 	float*		y;
 	int		n;
@@ -1609,26 +1614,26 @@ static NhlErrorTypes XyPlotDataToNDC
 	float*		out_of_range;
 #endif
 {
-	XyPlotLayer xplot = (XyPlotLayer)plot;
-	NhlErrorTypes ret = NOERROR;
-	NhlErrorTypes ret1 = NOERROR;
+	NhlXyPlotLayer xplot = (NhlXyPlotLayer)plot;
+	NhlErrorTypes ret = NhlNOERROR;
+	NhlErrorTypes ret1 = NhlNOERROR;
 	int mystatus =0;
 
 	 ret = _NhlSetTrans(xplot->xyplot.thetrans,plot);
-	if(ret < WARNING) {
-		NhlPError(FATAL,E_UNKNOWN,"XyPlotDataToNDC: A FATAL error occured while setting the tranformation of XyPlot object: %s , cannot continue",plot->base.name);
+	if(ret < NhlWARNING) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"XyPlotDataToNDC: A NhlFATAL error occured while setting the tranformation of XyPlot object: %s , cannot continue",plot->base.name);
 		return(ret);
 	} else if( ret < ret1 )
 		ret1 = ret; 
 
-	NhlGetValues(xplot->xyplot.thetrans->base.id,
+	NhlVAGetValues(xplot->xyplot.thetrans->base.id,
 		NhlNtrOutOfRangeF,out_of_range,NULL);
 	
 
 	ret = _NhlDataToWin(xplot->xyplot.thetrans,plot,x,y,n,xout,yout,
 		&mystatus,xmissing,ymissing);
-	if(ret < WARNING){
-		NhlPError(FATAL,E_UNKNOWN,"XyPlotNDCToData: A FATAL error occured while transforming input to window, XyPlot object: %s , cannot continue",plot->base.name);
+	if(ret < NhlWARNING){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"XyPlotNDCToData: A NhlFATAL error occured while transforming input to window, XyPlot object: %s , cannot continue",plot->base.name);
 		return(ret);
 	} else if( ret < ret1)
 		ret1 = ret;
@@ -1641,8 +1646,8 @@ static NhlErrorTypes XyPlotDataToNDC
 	ret = _NhlWinToNDC(xplot->xyplot.thetrans,plot,xout,yout,n,xout,yout,
 		&mystatus,out_of_range,out_of_range);
 
-	if(ret < WARNING) {
-		NhlPError(FATAL,E_UNKNOWN,"XyPlotNDCToData: A FATAL error occured while transforming from window to NDC, XyPlot object: %s , cannot continue",plot->base.name);
+	if(ret < NhlWARNING) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"XyPlotNDCToData: A NhlFATAL error occured while transforming from window to NDC, XyPlot object: %s , cannot continue",plot->base.name);
 		return(ret);
 	} else if( ret < ret1)
 		ret1 = ret;
@@ -1674,14 +1679,14 @@ static NhlErrorTypes XyPlotDataToNDC
  *
  * Return Values:	Error Conditions
  *
- * Side Effects:	 NONE
+ * Side Effects:	 NhlNONE
  */
 static NhlErrorTypes XyPlotNDCToData
 #if __STDC__
-(Layer plot,float* x,float* y,int n,float* xout,float* yout,float *xmissing,float *ymissing,int* status, float* out_of_range)
+(NhlLayer plot,float* x,float* y,int n,float* xout,float* yout,float *xmissing,float *ymissing,int* status, float* out_of_range)
 #else
 (plot,x,y,n,xout,yout,xmissing,ymissing,status,out_of_range)
-	Layer		plot;
+	NhlLayer		plot;
 	float*		x;
 	float*		y;
 	int		n;
@@ -1693,26 +1698,26 @@ static NhlErrorTypes XyPlotNDCToData
 	float*		out_of_range;
 #endif
 {
-	XyPlotLayer xplot = (XyPlotLayer)plot;
+	NhlXyPlotLayer xplot = (NhlXyPlotLayer)plot;
 	int mystatus = 0;
-	NhlErrorTypes ret = NOERROR;
-	NhlErrorTypes ret1 = NOERROR;
+	NhlErrorTypes ret = NhlNOERROR;
+	NhlErrorTypes ret1 = NhlNOERROR;
 
 	ret = _NhlSetTrans(xplot->xyplot.thetrans,plot);
-	if(ret < WARNING) {
-		NhlPError(FATAL,E_UNKNOWN,"XyPlotNDCToData: A FATAL error occured while setting the tranformation of XyPlot object: %s , cannot continue",plot->base.name);
+	if(ret < NhlWARNING) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"XyPlotNDCToData: A NhlFATAL error occured while setting the tranformation of XyPlot object: %s , cannot continue",plot->base.name);
 		return(ret);
 	} else if(ret < ret1)
 		ret1 = ret;
 
 
-	NhlGetValues(xplot->xyplot.thetrans->base.id,
+	NhlVAGetValues(xplot->xyplot.thetrans->base.id,
 		NhlNtrOutOfRangeF,out_of_range,NULL);
 
 	ret = _NhlNDCToWin(xplot->xyplot.thetrans,plot,x,y,n,xout,yout,
 		&mystatus,xmissing,ymissing);
-	if(ret < WARNING){
-		NhlPError(FATAL,E_UNKNOWN,"XyPlotNDCToData: A FATAL error occured while transforming input to window, XyPlot object: %s , cannot continue",plot->base.name);
+	if(ret < NhlWARNING){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"XyPlotNDCToData: A NhlFATAL error occured while transforming input to window, XyPlot object: %s , cannot continue",plot->base.name);
 		return(ret);
 	} else if(ret < ret1)
 		ret1 = ret;
@@ -1725,8 +1730,8 @@ static NhlErrorTypes XyPlotNDCToData
 	mystatus = 0;
 	ret = _NhlWinToData(xplot->xyplot.thetrans,plot,xout,yout,n,xout,yout,
 		&mystatus,out_of_range,out_of_range);
-	if(ret < WARNING) {
-		NhlPError(FATAL,E_UNKNOWN,"XyPlotNDCToData: A FATAL error occured while transforming from window to data, XyPlot object: %s , cannot continue",plot->base.name);
+	if(ret < NhlWARNING) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"XyPlotNDCToData: A NhlFATAL error occured while transforming from window to data, XyPlot object: %s , cannot continue",plot->base.name);
 		return(ret);
 	} else if(ret < ret1)
 		ret1 = ret;
@@ -1757,23 +1762,23 @@ static NhlErrorTypes XyPlotNDCToData
  *
  * In Args:	inst		instance record pointer
  *
- * Out Args:	NONE
+ * Out Args:	NhlNONE
  *
  * Return Values:	ErrorConditions
  *
- * Side Effects:	NONE
+ * Side Effects:	NhlNONE
  */
 static NhlErrorTypes XyPlotDestroy
 #if __STDC__
-(Layer inst)
+(NhlLayer inst)
 #else
 (inst)
-Layer inst;
+NhlLayer inst;
 #endif
 {
-	XyPlotLayer xinst = (XyPlotLayer)inst;
-	NhlErrorTypes ret = NOERROR;
-	NhlErrorTypes ret1 = NOERROR;
+	NhlXyPlotLayer xinst = (NhlXyPlotLayer)inst;
+	NhlErrorTypes ret = NhlNOERROR;
+	NhlErrorTypes ret1 = NhlNOERROR;
 
 
 	if(xinst->xyplot.ticks != NULL)
@@ -1807,27 +1812,27 @@ Layer inst;
  *		thebox		data structure, provided by the user to
  *				hold boudning box information.
  *
- * Out Args:	NONE
+ * Out Args:	NhlNONE
  *
  * Return Values:  Error Conditions
  *
- * Side Effects:   NONE.
+ * Side Effects:   NhlNONE.
  */
 static NhlErrorTypes XyPlotGetBB
 #if  __STDC__
-(Layer instance, NhlBoundingBox* thebox)
+(NhlLayer instance, NhlBoundingBox* thebox)
 #else
 (instance,thebox)
-	Layer instance;
+	NhlLayer instance;
 	NhlBoundingBox *thebox;
 #endif
 {
-	XyPlotLayer xinst = (XyPlotLayer)instance;
-	NhlErrorTypes ret = NOERROR;
+	NhlXyPlotLayer xinst = (NhlXyPlotLayer)instance;
+	NhlErrorTypes ret = NhlNOERROR;
 
 	if(xinst->xyplot.ticks != NULL) {
 		ret = _NhlGetBB(xinst->xyplot.ticks,thebox);
-		if(ret < WARNING) 
+		if(ret < NhlWARNING) 
 			return(ret);
 	}
 	
@@ -1858,38 +1863,38 @@ static NhlErrorTypes
 XyPlotUpdateData
 #if	__STDC__
 (
-	DataCommLayer	new,
-	DataCommLayer	old
+	NhlDataCommLayer	new,
+	NhlDataCommLayer	old
 )
 #else
 (new,old)
-	DataCommLayer	new;
-	DataCommLayer	old;
+	NhlDataCommLayer	new;
+	NhlDataCommLayer	old;
 #endif
 {
-	XyPlotLayer		xl = (XyPlotLayer)new;
-	XyPlotLayer		xlold = (XyPlotLayer)old;
-	NhlErrorTypes		ret1=NOERROR,ret2=NOERROR;
+	NhlXyPlotLayer		xl = (NhlXyPlotLayer)new;
+	NhlXyPlotLayer		xlold = (NhlXyPlotLayer)old;
+	NhlErrorTypes		ret1=NhlNOERROR,ret2=NhlNOERROR;
 
 	ret2 = ComputeDataExtents(xl,xlold,DATACHANGE);
-	if(ret2 < WARNING)
+	if(ret2 < NhlWARNING)
 		return ret2;
 	ret1 = MIN(ret1,ret2);
 
 	if(xl->xyplot.data_ranges_set){
 		ret2 = SetUpTransObjs(xl,xlold,DATACHANGE);
-		if(ret2 < WARNING)
+		if(ret2 < NhlWARNING)
 			return(ret2);
 		ret1 = MIN(ret1,ret2);
 	}
 
 	ret2 = SetUpTicks(xl,xlold,DATACHANGE);
-	if(ret2 < WARNING)
+	if(ret2 < NhlWARNING)
 		return(ret2);
 	ret1 = MIN(ret1,ret2);
 
 	ret2 = SetUpTitles(xl,xlold,DATACHANGE);
-	if(ret2 < WARNING)
+	if(ret2 < NhlWARNING)
 		return(ret2);
 	ret1 = MIN(ret1,ret2);
 
@@ -1931,16 +1936,16 @@ CheckExtent
 	NhlString	error_lead;
 #endif
 {
-	NhlErrorTypes	ret = NOERROR;
+	NhlErrorTypes	ret = NhlNOERROR;
 
 	if(extent_change && *compute_value){
 		*compute_value = False;
 
 		if(compute_change){
-			NhlPError(WARNING,E_UNKNOWN,
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
 			"%s:Setting %s to False because %s was specified",
 						error_lead,comp_res,extent_res);
-			ret = WARNING;
+			ret = NhlWARNING;
 		}
 	}
 
@@ -1957,11 +1962,11 @@ CheckExtent
  *			compute_extents
  *
  * In Args:
- *		XyPlotLayer	xnew,
- *		XyPlotLayer	xold,
+ *		NhlXyPlotLayer	xnew,
+ *		NhlXyPlotLayer	xold,
  *		_NhlCallType	calledfrom
  *
- * Out Args:	NONE
+ * Out Args:	NhlNONE
  *
  * Return Values:	Error Conditions
  *
@@ -1971,19 +1976,19 @@ static NhlErrorTypes
 CheckValues
 #if  __STDC__
 (
-	XyPlotLayer	xnew,
-	XyPlotLayer	xold,
+	NhlXyPlotLayer	xnew,
+	NhlXyPlotLayer	xold,
 	_NhlCallType	calledfrom
 )
 #else
 (xnew,xold,calledfrom)
-	XyPlotLayer	xnew;
-	XyPlotLayer	xold;
+	NhlXyPlotLayer	xnew;
+	NhlXyPlotLayer	xold;
 	_NhlCallType	calledfrom;
 #endif
 {
 	char*		error_lead;
-	NhlErrorTypes	ret = NOERROR, lret = NOERROR;
+	NhlErrorTypes	ret = NhlNOERROR, lret = NhlNOERROR;
 
 	if(calledfrom == CREATE)
 		error_lead = "XyPlotInitialize";
@@ -1993,44 +1998,44 @@ CheckValues
 	/*
 	 * take care of style resources
 	 */
-	if((xnew->xyplot.x_style == IRREGULAR) &&
+	if((xnew->xyplot.x_style == NhlIRREGULAR) &&
 				(xnew->xyplot.x_irregular_points == NULL)){
-		NhlPError(WARNING,E_UNKNOWN,
-		"%s: cannot be IRREGULAR unless %s is set:setting %s to LINEAR",
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+		"%s: cannot be NhlIRREGULAR unless %s is set:setting %s to NhlLINEAR",
 			NhlNxyXStyle,NhlNxyXIrregularPoints,NhlNxyXStyle);
 
-		xnew->xyplot.x_style = LINEAR;
-		ret = MIN(ret,WARNING);
+		xnew->xyplot.x_style = NhlLINEAR;
+		ret = MIN(ret,NhlWARNING);
 	}
-	if((xnew->xyplot.y_style == IRREGULAR) &&
+	if((xnew->xyplot.y_style == NhlIRREGULAR) &&
 				(xnew->xyplot.y_irregular_points == NULL)){
-		NhlPError(WARNING,E_UNKNOWN,
-		"%s: cannot be IRREGULAR unless %s is set:setting %s to LINEAR",
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+		"%s: cannot be NhlIRREGULAR unless %s is set:setting %s to NhlLINEAR",
 			NhlNxyYStyle,NhlNxyYIrregularPoints,NhlNxyYStyle);
 
-		xnew->xyplot.y_style = LINEAR;
-		ret = MIN(ret,WARNING);
+		xnew->xyplot.y_style = NhlLINEAR;
+		ret = MIN(ret,NhlWARNING);
 	}
 
 	/*
 	 * Alternate Coord's are not yet implimented - so make sure x_alternate
-	 * and y_alternate are set to NONE.
+	 * and y_alternate are set to NhlNONE.
 	 * (Eventually this part should check and make sure the coord arrays
-	 * exist if x_alternate and y_alternate are not = to NONE)
+	 * exist if x_alternate and y_alternate are not = to NhlNONE)
 	 */
-	if(xnew->xyplot.x_alternate != NONE){
-		xnew->xyplot.x_alternate = NONE;
-		NhlPError(WARNING,E_UNKNOWN,
-			"%s:%s only supports a value of NONE at this time",
+	if(xnew->xyplot.x_alternate != NhlNONE){
+		xnew->xyplot.x_alternate = NhlNONE;
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+			"%s:%s only supports a value of NhlNONE at this time",
 						error_lead,NhlNxyXAlternate);
-		ret = MIN(ret,WARNING);
+		ret = MIN(ret,NhlWARNING);
 	}
-	if(xnew->xyplot.y_alternate != NONE){
-		xnew->xyplot.y_alternate = NONE;
-		NhlPError(WARNING,E_UNKNOWN,
-			"%s:%s only supports a value of NONE at this time",
+	if(xnew->xyplot.y_alternate != NhlNONE){
+		xnew->xyplot.y_alternate = NhlNONE;
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+			"%s:%s only supports a value of NhlNONE at this time",
 						error_lead,NhlNxyYAlternate);
-		ret = MIN(ret,WARNING);
+		ret = MIN(ret,NhlWARNING);
 	}
 
 	/*
@@ -2082,23 +2087,23 @@ CheckValues
 	}
 
 	if(!xnew->xyplot.compute_x_min && xnew->xyplot.x_min_set &&
-		(xnew->xyplot.x_style == LOG) && (xnew->xyplot.x_min <= 0)){
-		NhlPError(WARNING,E_UNKNOWN,
-			"%s:%s is LOG:%s can't be <= 0.0:Setting %s to True",
+		(xnew->xyplot.x_style == NhlLOG) && (xnew->xyplot.x_min <= 0)){
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+			"%s:%s is NhlLOG:%s can't be <= 0.0:Setting %s to True",
 			error_lead,NhlNxyXStyle,NhlNxyXMinF,NhlNxyComputeXMin);
 
 		xnew->xyplot.compute_x_min = True;
-		ret = MIN(ret,WARNING);
+		ret = MIN(ret,NhlWARNING);
 	}
 
 	if(!xnew->xyplot.compute_x_max && xnew->xyplot.x_max_set &&
-		(xnew->xyplot.x_style == LOG) && (xnew->xyplot.x_max <= 0)){
-		NhlPError(WARNING,E_UNKNOWN,
-			"%s:%s is LOG:%s can't be <= 0.0:Setting %s to True",
+		(xnew->xyplot.x_style == NhlLOG) && (xnew->xyplot.x_max <= 0)){
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+			"%s:%s is NhlLOG:%s can't be <= 0.0:Setting %s to True",
 			error_lead,NhlNxyXStyle,NhlNxyXMaxF,NhlNxyComputeXMax);
 
 		xnew->xyplot.compute_x_max = True;
-		ret = MIN(ret,WARNING);
+		ret = MIN(ret,NhlWARNING);
 	}
 
 	if(!xnew->xyplot.compute_x_min && xnew->xyplot.x_min_set &&
@@ -2106,7 +2111,7 @@ CheckValues
 		(xnew->xyplot.x_max < xnew->xyplot.x_min)){
 
 		float tfloat;
-		NhlPError(WARNING,E_UNKNOWN,"%s:%s is < %s: Swapping",
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"%s:%s is < %s: Swapping",
 					error_lead,NhlNxyXMaxF,NhlNxyXMinF);
 		tfloat = xnew->xyplot.x_max;
 		xnew->xyplot.x_max = xnew->xyplot.x_min;
@@ -2114,23 +2119,23 @@ CheckValues
 	}
 
 	if(!xnew->xyplot.compute_y_min && xnew->xyplot.y_min_set &&
-		(xnew->xyplot.y_style == LOG) && (xnew->xyplot.y_min <= 0)){
-		NhlPError(WARNING,E_UNKNOWN,
-			"%s:%s is LOG:%s can't be <= 0.0:Setting %s to True",
+		(xnew->xyplot.y_style == NhlLOG) && (xnew->xyplot.y_min <= 0)){
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+			"%s:%s is NhlLOG:%s can't be <= 0.0:Setting %s to True",
 			error_lead,NhlNxyYStyle,NhlNxyYMinF,NhlNxyComputeYMin);
 
 		xnew->xyplot.compute_y_min = True;
-		ret = MIN(ret,WARNING);
+		ret = MIN(ret,NhlWARNING);
 	}
 
 	if(!xnew->xyplot.compute_y_max && xnew->xyplot.y_max_set &&
-		(xnew->xyplot.y_style == LOG) && (xnew->xyplot.y_max <= 0)){
-		NhlPError(WARNING,E_UNKNOWN,
-			"%s:%s is LOG:%s can't be <= 0.0:Setting %s to True",
+		(xnew->xyplot.y_style == NhlLOG) && (xnew->xyplot.y_max <= 0)){
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+			"%s:%s is NhlLOG:%s can't be <= 0.0:Setting %s to True",
 			error_lead,NhlNxyYStyle,NhlNxyYMaxF,NhlNxyComputeYMax);
 
 		xnew->xyplot.compute_y_max = True;
-		ret = MIN(ret,WARNING);
+		ret = MIN(ret,NhlWARNING);
 	}
 
 	if(!xnew->xyplot.compute_y_min && xnew->xyplot.y_min_set &&
@@ -2138,7 +2143,7 @@ CheckValues
 		(xnew->xyplot.y_max < xnew->xyplot.y_min)){
 
 		float tfloat;
-		NhlPError(WARNING,E_UNKNOWN,"%s:%s is < %s: Swapping",
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"%s:%s is < %s: Swapping",
 					error_lead,NhlNxyYMaxF,NhlNxyYMinF);
 		tfloat = xnew->xyplot.y_max;
 		xnew->xyplot.y_max = xnew->xyplot.y_min;
@@ -2164,11 +2169,11 @@ CheckValues
  *		This function allocates memory for the title strings.
  *
  * In Args:
- *		XyPlotLayer	xnew,
- *		XyPlotLayer	xold,
+ *		NhlXyPlotLayer	xnew,
+ *		NhlXyPlotLayer	xold,
  *		_NhlCallType	calledfrom
  *
- * Out Args:	NONE
+ * Out Args:	NhlNONE
  *
  * Return Values:	Error Conditions
  *
@@ -2178,14 +2183,14 @@ static NhlErrorTypes
 InternalizePointers
 #if  __STDC__
 (
-	XyPlotLayer	xnew,
-	XyPlotLayer	xold,
+	NhlXyPlotLayer	xnew,
+	NhlXyPlotLayer	xold,
 	_NhlCallType	calledfrom
 )
 #else
 (xnew,xold,calledfrom)
-	XyPlotLayer	xnew;
-	XyPlotLayer	xold;
+	NhlXyPlotLayer	xnew;
+	NhlXyPlotLayer	xold;
 	_NhlCallType	calledfrom;
 #endif
 {
@@ -2197,7 +2202,7 @@ InternalizePointers
 	NhlBoolean	free_x_alt_coord = False, free_y_alt_coord = False;
 	NhlBoolean	skip_x_orig_coord = False, skip_y_orig_coord = False;
 	NhlBoolean	free_x_orig_coord = False, free_y_orig_coord = False;
-	NhlErrorTypes	ret = NOERROR;
+	NhlErrorTypes	ret = NhlNOERROR;
 
 	if(calledfrom == SET) {
 		error_lead = "XyPlotSetValues";
@@ -2225,7 +2230,7 @@ InternalizePointers
 		gen = (NhlGenArray)xnew->xyplot.x_irregular_points;
 		if((gen->typeQ != Qfloat) || (gen->size != sizeof(float)) ||
 		(gen->num_dimensions != 1) || (gen->len_dimensions[0] < 3)){
-			NhlPError(WARNING,E_UNKNOWN,
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
 	"%s:%s must be a 1 dim float array with a min of 3 elements: resetting",
 					error_lead,NhlNxyXIrregularPoints);
 
@@ -2236,7 +2241,7 @@ InternalizePointers
 				xnew->xyplot.x_irregular_points = NULL;
 
 			free_x_irreg = False;
-			ret = MIN(ret,WARNING);
+			ret = MIN(ret,NhlWARNING);
 		}
 		else{
 			float	*tarr;
@@ -2244,8 +2249,8 @@ InternalizePointers
 			xnew->xyplot.x_irregular_points =
 						_NhlCopyGenArray(gen,True);
 			if(xnew->xyplot.x_irregular_points == NULL){
-				NhlPError(FATAL,ENOMEM,NULL);
-				return FATAL;
+				NhlPError(NhlFATAL,ENOMEM,NULL);
+				return NhlFATAL;
 			}
 			tarr = (float*)gen->data;
 			xnew->xyplot.x_irreg_min =
@@ -2262,7 +2267,7 @@ InternalizePointers
 		gen = (NhlGenArray)xnew->xyplot.y_irregular_points;
 		if((gen->typeQ != Qfloat) || (gen->size != sizeof(float)) ||
 		(gen->num_dimensions != 1) || (gen->len_dimensions[0] < 3)){
-			NhlPError(WARNING,E_UNKNOWN,
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
 	"%s:%s must be a 1 dim float array with a min of 3 elements: ignoring",
 					error_lead,NhlNxyYIrregularPoints);
 
@@ -2273,7 +2278,7 @@ InternalizePointers
 				xnew->xyplot.y_irregular_points = NULL;
 
 			free_y_irreg = False;
-			ret = MIN(ret,WARNING);
+			ret = MIN(ret,NhlWARNING);
 		}
 		else{
 			float	*tarr;
@@ -2281,8 +2286,8 @@ InternalizePointers
 			xnew->xyplot.y_irregular_points =
 						_NhlCopyGenArray(gen,True);
 			if(xnew->xyplot.y_irregular_points == NULL){
-				NhlPError(FATAL,ENOMEM,NULL);
-				return FATAL;
+				NhlPError(NhlFATAL,ENOMEM,NULL);
+				return NhlFATAL;
 			}
 			tarr = (float*)gen->data;
 			xnew->xyplot.y_irreg_min =
@@ -2328,7 +2333,7 @@ InternalizePointers
 		gen = (NhlGenArray)xnew->xyplot.x_alternate_coords;
 		if((gen->typeQ != Qfloat) || (gen->size != sizeof(float)) ||
 						(gen->num_dimensions != 1)){
-			NhlPError(WARNING,E_UNKNOWN,
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
 			"%s:%s must be set with a 1-dim float array: ignoring",
 					error_lead,NhlNxyXAlternateCoords);
 
@@ -2339,14 +2344,14 @@ InternalizePointers
 				xnew->xyplot.x_alternate_coords = NULL;
 			free_x_alt_coord = False;
 
-			ret = MIN(ret,WARNING);
+			ret = MIN(ret,NhlWARNING);
 		}
 		else{
 			xnew->xyplot.x_alternate_coords =
 						_NhlCopyGenArray(gen,True);
 			if(xnew->xyplot.x_alternate_coords == NULL){
-				NhlPError(FATAL,ENOMEM,NULL);
-				return FATAL;
+				NhlPError(NhlFATAL,ENOMEM,NULL);
+				return NhlFATAL;
 			}
 		}
 	}
@@ -2360,12 +2365,12 @@ InternalizePointers
 			xnew->xyplot.y_alternate_coords =
 						_NhlCopyGenArray(gen,True);
 			if(xnew->xyplot.y_alternate_coords == NULL){
-				NhlPError(FATAL,ENOMEM,NULL);
-				return FATAL;
+				NhlPError(NhlFATAL,ENOMEM,NULL);
+				return NhlFATAL;
 			}
 		}
 		else{
-			NhlPError(WARNING,E_UNKNOWN,
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
 			"%s:%s must be set with a 1-dim float array: ignoring",
 					error_lead,NhlNxyYAlternateCoords);
 
@@ -2376,7 +2381,7 @@ InternalizePointers
 				xnew->xyplot.y_alternate_coords = NULL;
 			free_y_alt_coord = False;
 
-			ret = MIN(ret,WARNING);
+			ret = MIN(ret,NhlWARNING);
 		}
 	}
 	if(free_y_alt_coord)
@@ -2389,12 +2394,12 @@ InternalizePointers
 			xnew->xyplot.x_original_coords =
 						_NhlCopyGenArray(gen,True);
 			if(xnew->xyplot.x_original_coords == NULL){
-				NhlPError(FATAL,ENOMEM,NULL);
-				return FATAL;
+				NhlPError(NhlFATAL,ENOMEM,NULL);
+				return NhlFATAL;
 			}
 		}
 		else{
-			NhlPError(WARNING,E_UNKNOWN,
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
 		"%s:%s must be set with a generic 1-dim float array: ignoring",
 					error_lead,NhlNxyXOriginalCoords);
 
@@ -2405,7 +2410,7 @@ InternalizePointers
 				xnew->xyplot.x_original_coords = NULL;
 			free_x_orig_coord = False;
 
-			ret = MIN(ret,WARNING);
+			ret = MIN(ret,NhlWARNING);
 		}
 	}
 	if(free_x_orig_coord)
@@ -2418,12 +2423,12 @@ InternalizePointers
 			xnew->xyplot.y_original_coords =
 						_NhlCopyGenArray(gen,True);
 			if(xnew->xyplot.y_original_coords == NULL){
-				NhlPError(FATAL,ENOMEM,NULL);
-				return FATAL;
+				NhlPError(NhlFATAL,ENOMEM,NULL);
+				return NhlFATAL;
 			}
 		}
 		else{
-			NhlPError(WARNING,E_UNKNOWN,
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
 		"%s:%s must be set with a generic float array: ignoring",
 					error_lead,NhlNxyYOriginalCoords);
 
@@ -2434,7 +2439,7 @@ InternalizePointers
 				xnew->xyplot.y_original_coords = NULL;
 			free_y_orig_coord = False;
 
-			ret = MIN(ret,WARNING);
+			ret = MIN(ret,NhlWARNING);
 		}
 	}
 	if(free_y_orig_coord)
@@ -2460,29 +2465,29 @@ static NhlErrorTypes
 ComputeDataExtents
 #if __STDC__
 (
-	XyPlotLayer	xnew,
-	XyPlotLayer	xold,
+	NhlXyPlotLayer	xnew,
+	NhlXyPlotLayer	xold,
 	_NhlCallType	calledfrom
 )
 #else 
 (xnew,xold,calledfrom)
-	XyPlotLayer	xnew;
-	XyPlotLayer	xold;
+	NhlXyPlotLayer	xnew;
+	NhlXyPlotLayer	xold;
 	_NhlCallType	calledfrom;
 #endif
 {
 	_NhlDataNodePtr		*datalist = NULL;
 	int			num_data,i;
 	NhlBoolean		new;
-	CoordArrTableFloatLayer	datal = NULL;
+	NhlCoordArrTableFloatLayer	datal = NULL;
 	char			*error_lead;
-	NhlErrorTypes		ret = NOERROR;
+	NhlErrorTypes		ret = NhlNOERROR;
 
 	if(calledfrom == CREATE){
 		error_lead = "XyPlotInitialize";
 		if(xnew->xyplot.curve_data == NULL){
 			xnew->xyplot.data_ranges_set = False;
-			return NOERROR;
+			return NhlNOERROR;
 		}
 	}
 	else if(calledfrom == SET){
@@ -2492,8 +2497,8 @@ ComputeDataExtents
 		error_lead = "XyPlotUpdateData";
 	}
 	else{
-		NhlPError(FATAL,E_UNKNOWN,"BadCall");
-		return FATAL;
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"BadCall");
+		return NhlFATAL;
 	}
 
 	if((calledfrom == CREATE) || (calledfrom == DATACHANGE) ||
@@ -2505,17 +2510,17 @@ ComputeDataExtents
 		num_data = _NhlGetDataInfo(xnew->xyplot.curve_data,&datalist);
 		if(num_data <= 0){
 			xnew->xyplot.data_ranges_set = False;
-			return NOERROR;
+			return NhlNOERROR;
 		}
 
 		/*
 		 * Data Conversion Happens Here if anywhere.
 		 */
-		datal=(CoordArrTableFloatLayer)_NhlGetDataSet(datalist[0],&new);
+		datal=(NhlCoordArrTableFloatLayer)_NhlGetDataSet(datalist[0],&new);
 		if(datal == NULL){
 			xnew->xyplot.data_ranges_set = False;
-			NhlPError(FATAL,E_UNKNOWN,"Data Problem???");
-			return FATAL;
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"Data Problem???");
+			return NhlFATAL;
 		}
 
 		xnew->xyplot.x_data_min = datal->catfloat.min_x;
@@ -2525,12 +2530,12 @@ ComputeDataExtents
 
 
 		for(i=1;i < num_data;i++){
-			datal=(CoordArrTableFloatLayer)
+			datal=(NhlCoordArrTableFloatLayer)
 					_NhlGetDataSet(datalist[i],&new);
 			if(datal == NULL){
 				xnew->xyplot.data_ranges_set = False;
-				NhlPError(FATAL,E_UNKNOWN,"Data Problem???");
-				return FATAL;
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"Data Problem???");
+				return NhlFATAL;
 			}
 			xnew->xyplot.x_data_min =
 			MIN(xnew->xyplot.x_data_min,datal->catfloat.min_x);
@@ -2570,78 +2575,78 @@ ComputeDataExtents
 		}
 
 		/*
-		 * Make sure data extents will work in a LOG trans, if LOG
+		 * Make sure data extents will work in a NhlLOG trans, if NhlLOG
 		 * is specified.
 		 */
 		if((xnew->xyplot.x_data_min <= 0.0) &&
-						(xnew->xyplot.x_style == LOG)){
-			NhlPError(WARNING,E_UNKNOWN,
-	"%s:The Minimuim X value is <= 0.0 LOG invalid:Changing %s to LINEAR",
+						(xnew->xyplot.x_style == NhlLOG)){
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
+	"%s:The Minimuim X value is <= 0.0 NhlLOG invalid:Changing %s to NhlLINEAR",
 						error_lead,NhlNxyXStyle);
-			ret = MIN(ret,WARNING);
-			xnew->xyplot.x_style = LINEAR;
+			ret = MIN(ret,NhlWARNING);
+			xnew->xyplot.x_style = NhlLINEAR;
 		}
 		if((xnew->xyplot.y_data_min <= 0.0) &&
-						(xnew->xyplot.y_style == LOG)){
-			NhlPError(WARNING,E_UNKNOWN,
-	"%s:The Minimuim Y value is <= 0.0 LOG invalid:Changing %s to LINEAR",
+						(xnew->xyplot.y_style == NhlLOG)){
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
+	"%s:The Minimuim Y value is <= 0.0 NhlLOG invalid:Changing %s to NhlLINEAR",
 						error_lead,NhlNxyYStyle);
-			ret = MIN(ret,WARNING);
-			xnew->xyplot.y_style = LINEAR;
+			ret = MIN(ret,NhlWARNING);
+			xnew->xyplot.y_style = NhlLINEAR;
 		}
 
 		/*
-		 * Make sure data extents will work in an IRREGULAR trans,
-		 * if IRREGULAR is specifed.
+		 * Make sure data extents will work in an NhlIRREGULAR trans,
+		 * if NhlIRREGULAR is specifed.
 		 */
-		if(xnew->xyplot.x_style == IRREGULAR){
+		if(xnew->xyplot.x_style == NhlIRREGULAR){
 			if(xnew->xyplot.x_min < xnew->xyplot.x_irreg_min){
 
 				if(!xnew->xyplot.compute_x_min){
-					NhlPError(WARNING,E_UNKNOWN,
+					NhlPError(NhlWARNING,NhlEUNKNOWN,
 				"%s:%s is not defined by %s: Setting to %f",
 						error_lead,NhlNxyXMinF,
 						NhlNxyXIrregularPoints,
 						xnew->xyplot.x_irreg_min);
-					ret = MIN(ret,WARNING);
+					ret = MIN(ret,NhlWARNING);
 				}
 				xnew->xyplot.x_min = xnew->xyplot.x_irreg_min;
 			}
 			if(xnew->xyplot.x_max > xnew->xyplot.x_irreg_max){
 
 				if(!xnew->xyplot.compute_x_max){
-					NhlPError(WARNING,E_UNKNOWN,
+					NhlPError(NhlWARNING,NhlEUNKNOWN,
 				"%s:%s is not defined by %s: Setting to %f",
 						error_lead,NhlNxyXMaxF,
 						NhlNxyXIrregularPoints,
 						xnew->xyplot.x_irreg_max);
-					ret = MIN(ret,WARNING);
+					ret = MIN(ret,NhlWARNING);
 				}
 				xnew->xyplot.x_max = xnew->xyplot.x_irreg_max;
 			}
 		}
-		if(xnew->xyplot.y_style == IRREGULAR){
+		if(xnew->xyplot.y_style == NhlIRREGULAR){
 			if(xnew->xyplot.y_min < xnew->xyplot.y_irreg_min){
 
 				if(!xnew->xyplot.compute_y_min){
-					NhlPError(WARNING,E_UNKNOWN,
+					NhlPError(NhlWARNING,NhlEUNKNOWN,
 				"%s:%s is not defined by %s: Setting to %f",
 						error_lead,NhlNxyYMinF,
 						NhlNxyYIrregularPoints,
 						xnew->xyplot.y_irreg_min);
-					ret = MIN(ret,WARNING);
+					ret = MIN(ret,NhlWARNING);
 				}
 				xnew->xyplot.y_min = xnew->xyplot.y_irreg_min;
 			}
 			if(xnew->xyplot.y_max > xnew->xyplot.y_irreg_max){
 
 				if(!xnew->xyplot.compute_y_max){
-					NhlPError(WARNING,E_UNKNOWN,
+					NhlPError(NhlWARNING,NhlEUNKNOWN,
 				"%s:%s is not defined by %s: Setting to %f",
 						error_lead,NhlNxyYMaxF,
 						NhlNxyYIrregularPoints,
 						xnew->xyplot.y_irreg_max);
-					ret = MIN(ret,WARNING);
+					ret = MIN(ret,NhlWARNING);
 				}
 				xnew->xyplot.y_max = xnew->xyplot.y_irreg_max;
 			}
@@ -2668,7 +2673,7 @@ ComputeDataExtents
  *		switch statements to switch through the 25 possible combinations
  *		of (XStyle, YStyle). This is needed since one tranformation 
  *		object handles both x and y axis. The only real tricks here
- *		happen when either XStyle or YStyle is IRREGULAR and the other
+ *		happen when either XStyle or YStyle is NhlIRREGULAR and the other
  *		is not. When this happens an IrregularTransObj is created 
  *		and one of the IrregularTranObj is "fooled" into a linear
  *		or log tranformation. This is facilitated for log axis by 
@@ -2680,7 +2685,7 @@ ComputeDataExtents
  *		xold	old instance record if calledfrom == SET
  *		calledfrom  set to CREATE or SET
  *
- * Out Args:	NONE
+ * Out Args:	NhlNONE
  *
  * Return Values:	Error Conditions
  *
@@ -2690,27 +2695,27 @@ static NhlErrorTypes
 SetUpTransObjs
 #if  __STDC__
 (
-	XyPlotLayer	xnew,
-	XyPlotLayer	xold,
+	NhlXyPlotLayer	xnew,
+	NhlXyPlotLayer	xold,
 	_NhlCallType	calledfrom
 )
 #else 
 (xnew,xold,calledfrom)
-	XyPlotLayer	xnew;
-	XyPlotLayer	xold;
+	NhlXyPlotLayer	xnew;
+	NhlXyPlotLayer	xold;
 	_NhlCallType	calledfrom;
 #endif
 {
 	NhlSArg		sargs[30];
 	int		nargs = 0;
-	char		buffer[MAXRESNAMLEN];
+	char		buffer[_NhlMAXRESNAMLEN];
 	int		tmpid;
 	float		tmpcoords[3];
 	char		*error_lead=NULL;
-	LayerClass	trans_class = NULL;
+	NhlLayerClass	trans_class = NULL;
 	NhlGenArray	gen;
-	XyPlotLayerPart	*newxy = &xnew->xyplot;
-	XyPlotLayerPart	*oldxy=NULL;
+	NhlXyPlotLayerPart	*newxy = &xnew->xyplot;
+	NhlXyPlotLayerPart	*oldxy=NULL;
 
 /*
  * Now create main transformation object
@@ -2734,7 +2739,7 @@ SetUpTransObjs
 				(newxy->x_max == oldxy->x_max) &&
 				(newxy->y_min == oldxy->y_min) &&
 				(newxy->y_max == oldxy->y_max)){
-				return NOERROR;
+				return NhlNOERROR;
 			}
 			error_lead = "XyPlotUpdateData";
 		}
@@ -2747,14 +2752,14 @@ SetUpTransObjs
 		||
 		(calledfrom == CREATE)
 		||
-		(	(	(newxy->x_style == IRREGULAR) ||
-				(newxy->y_style == IRREGULAR)
+		(	(	(newxy->x_style == NhlIRREGULAR) ||
+				(newxy->y_style == NhlIRREGULAR)
 			) &&
 			!oldxy->have_irreg_trans
 		)
 		||
-		(	(newxy->x_style != IRREGULAR) &&
-			(newxy->y_style != IRREGULAR) &&
+		(	(newxy->x_style != NhlIRREGULAR) &&
+			(newxy->y_style != NhlIRREGULAR) &&
 			oldxy->have_irreg_trans
 		)
 									){
@@ -2769,9 +2774,9 @@ SetUpTransObjs
 
 		newxy->fake_x = newxy->fake_y = False;
 
-		if(newxy->y_style == IRREGULAR){
+		if(newxy->y_style == NhlIRREGULAR){
 
-			trans_class = irregularType2TransObjLayerClass;
+			trans_class = NhlirregularType2TransObjLayerClass;
 			newxy->have_irreg_trans = True;
 
 			gen = newxy->y_irregular_points;
@@ -2782,7 +2787,7 @@ SetUpTransObjs
 			NhlSetSArg(&sargs[nargs++],NhlNtrYTensionF,
 							newxy->y_tension);
 
-			if(newxy->x_style == IRREGULAR){
+			if(newxy->x_style == NhlIRREGULAR){
 
 				gen = newxy->x_irregular_points;
 				NhlSetSArg(&sargs[nargs++],NhlNtrXCoordPoints,
@@ -2798,11 +2803,11 @@ SetUpTransObjs
 				newxy->fake_x_min = tmpcoords[0] = newxy->x_min;
 				newxy->fake_x_max = tmpcoords[2] = newxy->x_max;
 
-				if(newxy->x_style == LINEAR){
+				if(newxy->x_style == NhlLINEAR){
 					tmpcoords[1] =
 						(tmpcoords[0]+tmpcoords[2])/2.0;
 				}
-				else if(newxy->x_style == LOG){
+				else if(newxy->x_style == NhlLOG){
 					tmpcoords[1] =
 					(float)pow(10.0,(log10(tmpcoords[0] +
 						log10(tmpcoords[2])) / 2.0));
@@ -2820,9 +2825,9 @@ SetUpTransObjs
 		 * Y is not IRREG
 		 */
 		else{
-			if(newxy->x_style == IRREGULAR){
+			if(newxy->x_style == NhlIRREGULAR){
 
-				trans_class = irregularType2TransObjLayerClass;
+				trans_class = NhlirregularType2TransObjLayerClass;
 				newxy->have_irreg_trans = True;
 
 				gen = newxy->x_irregular_points;
@@ -2837,11 +2842,11 @@ SetUpTransObjs
 				newxy->fake_y_min = tmpcoords[0] = newxy->y_min;
 				newxy->fake_y_max = tmpcoords[2] = newxy->y_max;
 
-				if(newxy->y_style == LINEAR){
+				if(newxy->y_style == NhlLINEAR){
 					tmpcoords[1] =
 						(tmpcoords[0]+tmpcoords[2])/2.0;
 				}
-				else if(newxy->y_style == LOG){
+				else if(newxy->y_style == NhlLOG){
 					tmpcoords[1] =
 					(float)pow(10.0,(log10(tmpcoords[0] +
 						log10(tmpcoords[2])) / 2.0));
@@ -2858,13 +2863,13 @@ SetUpTransObjs
 			 * X is not IRREG
 			 */
 			else{
-				trans_class = logLinTransObjLayerClass;
+				trans_class = NhllogLinTransObjLayerClass;
 				newxy->have_irreg_trans = False;
 
-				if(newxy->x_style == LOG)
+				if(newxy->x_style == NhlLOG)
 					NhlSetSArg(&sargs[nargs++],NhlNtrXLog,
 									True);
-				if(newxy->y_style == LOG)
+				if(newxy->y_style == NhlLOG)
 					NhlSetSArg(&sargs[nargs++],NhlNtrYLog,
 									True);
 
@@ -2883,13 +2888,13 @@ SetUpTransObjs
 
 		newxy->thetrans = _NhlGetLayer(tmpid);
 		if(newxy->thetrans == NULL){
-			NhlPError(FATAL,E_UNKNOWN,
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
 				"%s:Unable to continue without transformation",
 								error_lead);
-			return FATAL;
+			return NhlFATAL;
 		}
 
-		return NOERROR;
+		return NhlNOERROR;
 	}
 
 	/*
@@ -2902,7 +2907,7 @@ SetUpTransObjs
 	 */
 	if(newxy->have_irreg_trans){
 		if(newxy->fake_x){
-			if(newxy->x_style == IRREGULAR){
+			if(newxy->x_style == NhlIRREGULAR){
 				newxy->fake_x = False;
 				NhlSetSArg(&sargs[nargs++],NhlNtrXCoordPoints,
 					newxy->x_irregular_points->data);
@@ -2917,11 +2922,11 @@ SetUpTransObjs
 
 				newxy->fake_x_min = tmpcoords[0] = newxy->x_min;
 				newxy->fake_x_max = tmpcoords[2] = newxy->x_max;
-				if(newxy->x_style == LINEAR){
+				if(newxy->x_style == NhlLINEAR){
 					tmpcoords[1] =
 						(tmpcoords[0]+tmpcoords[2])/2.0;
 				}
-				else if(newxy->x_style == LOG){
+				else if(newxy->x_style == NhlLOG){
 					tmpcoords[1] =
 					(float)pow(10.0,(log10(tmpcoords[0] +
 						log10(tmpcoords[2])) / 2.0));
@@ -2932,15 +2937,15 @@ SetUpTransObjs
 			}
 		}
 		else {
-			if(newxy->x_style != IRREGULAR){
+			if(newxy->x_style != NhlIRREGULAR){
 				newxy->fake_x = True;
 				newxy->fake_x_min = tmpcoords[0] = newxy->x_min;
 				newxy->fake_x_max = tmpcoords[2] = newxy->x_max;
-				if(newxy->x_style == LINEAR){
+				if(newxy->x_style == NhlLINEAR){
 					tmpcoords[1] =
 						(tmpcoords[0]+tmpcoords[2])/2.0;
 				}
-				else if(newxy->x_style == LOG){
+				else if(newxy->x_style == NhlLOG){
 					tmpcoords[1] =
 					(float)pow(10.0,(log10(tmpcoords[0] +
 						log10(tmpcoords[2])) / 2.0));
@@ -2952,7 +2957,7 @@ SetUpTransObjs
 			}
 		}
 		if(newxy->fake_y){
-			if(newxy->y_style == IRREGULAR){
+			if(newxy->y_style == NhlIRREGULAR){
 				newxy->fake_y = False;
 				NhlSetSArg(&sargs[nargs++],NhlNtrYCoordPoints,
 					newxy->y_irregular_points->data);
@@ -2967,11 +2972,11 @@ SetUpTransObjs
 
 				newxy->fake_y_min = tmpcoords[0] = newxy->y_min;
 				newxy->fake_y_max = tmpcoords[2] = newxy->y_max;
-				if(newxy->y_style == LINEAR){
+				if(newxy->y_style == NhlLINEAR){
 					tmpcoords[1] =
 						(tmpcoords[0]+tmpcoords[2])/2.0;
 				}
-				else if(newxy->y_style == LOG){
+				else if(newxy->y_style == NhlLOG){
 					tmpcoords[1] =
 					(float)pow(10.0,(log10(tmpcoords[0] +
 						log10(tmpcoords[2])) / 2.0));
@@ -2982,15 +2987,15 @@ SetUpTransObjs
 			}
 		}
 		else {
-			if(newxy->y_style != IRREGULAR){
+			if(newxy->y_style != NhlIRREGULAR){
 				newxy->fake_y = True;
 				newxy->fake_y_min = tmpcoords[0] = newxy->y_min;
 				newxy->fake_y_max = tmpcoords[2] = newxy->y_max;
-				if(newxy->y_style == LINEAR){
+				if(newxy->y_style == NhlLINEAR){
 					tmpcoords[1] =
 						(tmpcoords[0]+tmpcoords[2])/2.0;
 				}
-				else if(newxy->y_style == LOG){
+				else if(newxy->y_style == NhlLOG){
 					tmpcoords[1] =
 					(float)pow(10.0,(log10(tmpcoords[0] +
 						log10(tmpcoords[2])) / 2.0));
@@ -3020,19 +3025,19 @@ SetUpTransObjs
 	if(newxy->x_style != oldxy->x_style){
 		if(newxy->have_irreg_trans)
 			NhlSetSArg(&sargs[nargs++],NhlNtrXUseLog,
-						(newxy->x_style == LOG));
+						(newxy->x_style == NhlLOG));
 		else
 			NhlSetSArg(&sargs[nargs++],NhlNtrXLog,
-						(newxy->x_style == LOG));
+						(newxy->x_style == NhlLOG));
 	}
 
 	if(newxy->y_style != oldxy->y_style){
 		if(newxy->have_irreg_trans)
 			NhlSetSArg(&sargs[nargs++],NhlNtrYUseLog,
-						(newxy->y_style == LOG));
+						(newxy->y_style == NhlLOG));
 		else
 			NhlSetSArg(&sargs[nargs++],NhlNtrYLog,
-						(newxy->y_style == LOG));
+						(newxy->y_style == NhlLOG));
 	}
 
 	return NhlALSetValues(newxy->thetrans->base.id,sargs,nargs);
@@ -3066,7 +3071,7 @@ SetUpTransObjs
  *		xold	old instance record if calledfrom == SET
  *		calledfrom  either SET or CREATE
  *
- * Out Args:	NONE
+ * Out Args:	NhlNONE
  *
  * Return Values:	Error Conditions
  *
@@ -3077,25 +3082,25 @@ static NhlErrorTypes
 SetUpTicks
 #if	__STDC__
 (
-	XyPlotLayer	xnew,
-	XyPlotLayer	xold,
+	NhlXyPlotLayer	xnew,
+	NhlXyPlotLayer	xold,
 	_NhlCallType	calledfrom
 )
 #else 
 (xnew,xold,calledfrom)
-	XyPlotLayer	xnew;
-	XyPlotLayer	xold;
+	NhlXyPlotLayer	xnew;
+	NhlXyPlotLayer	xold;
 	_NhlCallType	calledfrom;
 #endif
 {
-	char		buffer[MAXRESNAMLEN];
+	char		buffer[_NhlMAXRESNAMLEN];
 	int		tmpid;
 	char		*error_lead;
 	NhlSArg		sargs[30];
 	int		nargs=0;
-	XyPlotLayerPart	*newxy = &xnew->xyplot;
-	XyPlotLayerPart	*oldxy = NULL;
-	NhlErrorTypes	ret=NOERROR;
+	NhlXyPlotLayerPart	*newxy = &xnew->xyplot;
+	NhlXyPlotLayerPart	*oldxy = NULL;
+	NhlErrorTypes	ret=NhlNOERROR;
 
 	if(calledfrom == CREATE){
 		error_lead = "XyPlotInitialize";
@@ -3116,13 +3121,13 @@ SetUpTicks
 				(newxy->x_max == oldxy->x_max) &&
 				(newxy->y_min == oldxy->y_min) &&
 				(newxy->y_max == oldxy->y_max)){
-				return NOERROR;
+				return NhlNOERROR;
 			}
 			error_lead = "XyPlotUpdateData";
 		}
 		else{
-			NhlPError(FATAL,E_UNKNOWN,"Bad Call");
-			return FATAL;
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"Bad Call");
+			return NhlFATAL;
 		}
 	}
 /*
@@ -3183,13 +3188,13 @@ SetUpTicks
 					newxy->y_irregular_points);
 		}
 
-		ret = _NhlALCreateChild(&tmpid,buffer,tickMarkLayerClass,
-						(Layer)xnew,sargs,nargs);
+		ret = _NhlALCreateChild(&tmpid,buffer,NhltickMarkLayerClass,
+						(NhlLayer)xnew,sargs,nargs);
 		newxy->ticks = _NhlGetLayer(tmpid);
 		if(newxy->ticks == NULL){
-			NhlPError(FATAL,E_UNKNOWN,
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
 			"%s:Unable to Create TickMark Object",error_lead);
-			return FATAL;
+			return NhlFATAL;
 		}
 		return ret;
 	}
@@ -3288,7 +3293,7 @@ SetUpTicks
 									NULL);
 			}
 		}
-		return _NhlALSetValuesChild(tmpid,(Layer)xnew,sargs,nargs);
+		return _NhlALSetValuesChild(tmpid,(NhlLayer)xnew,sargs,nargs);
 	}
 }
 
@@ -3310,7 +3315,7 @@ SetUpTicks
  * In Args:	xnew 	new instance record
  *		xold	old instance record
  *
- * Out Args:	NONE
+ * Out Args:	NhlNONE
  *
  * Return Values:	Error Conditions
  *
@@ -3320,25 +3325,25 @@ SetUpTicks
 static NhlErrorTypes SetUpTitles
 #if  __STDC__
 (
-	XyPlotLayer	xnew,
-	XyPlotLayer	xold,
+	NhlXyPlotLayer	xnew,
+	NhlXyPlotLayer	xold,
 	_NhlCallType	calledfrom
 ) 
 #else 
 (xnew,xold,calledfrom)
-	XyPlotLayer	xnew;
-	XyPlotLayer	xold;
+	NhlXyPlotLayer	xnew;
+	NhlXyPlotLayer	xold;
 	_NhlCallType	calledfrom;
 #endif
 {
-	XyPlotLayerPart	*oldxy = NULL;
-	XyPlotLayerPart	*newxy = &xnew->xyplot;
+	NhlXyPlotLayerPart	*oldxy = NULL;
+	NhlXyPlotLayerPart	*newxy = &xnew->xyplot;
 	int		tmpid = -1;
 	NhlBoundingBox	abox;
-	char		buffer[MAXFNAMELEN];
+	char		buffer[_NhlMAXFNAMELEN];
 	float		xtmp,ytmp,widthtmp,heighttmp;
 	char		*error_lead;
-	NhlErrorTypes	ret = NOERROR;
+	NhlErrorTypes	ret = NhlNOERROR;
 
 	if(calledfrom == CREATE){
 		error_lead = "XyPlotInitialize";
@@ -3359,13 +3364,13 @@ static NhlErrorTypes SetUpTitles
 				(newxy->x_max == oldxy->x_max) &&
 				(newxy->y_min == oldxy->y_min) &&
 				(newxy->y_max == oldxy->y_max)){
-				return NOERROR;
+				return NhlNOERROR;
 			}
 			error_lead = "XyPlotUpdateData";
 		}
 		else{
-			NhlPError(FATAL,E_UNKNOWN,"Bad Call");
-			return FATAL;
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"Bad Call");
+			return NhlFATAL;
 		}
 	}
 
@@ -3379,34 +3384,34 @@ static NhlErrorTypes SetUpTitles
 	heighttmp = abox.t - abox.b;
 	
 	switch(xnew->xyplot.ti_main_position) {
-	case CENTER:
+	case NhlCENTER:
 		xnew->xyplot.real_main_offset_x = xnew->xyplot.ti_main_offset_x
 			+ ((xnew->view.x + xnew->view.width/2.0)
 			- (xtmp + widthtmp/2.0));
 		break;
-	case LEFT:
+	case NhlLEFT:
 		xnew->xyplot.real_main_offset_x = xnew->xyplot.ti_main_offset_x 
 			+ (xnew->view.x - xtmp);
 		break;
-	case RIGHT:
+	case NhlRIGHT:
 		xnew->xyplot.real_main_offset_x = xnew->xyplot.ti_main_offset_x
 			+ ((xnew->view.x + xnew->view.width) 
 			- (xtmp + widthtmp));
 		break;
 	}
 	switch(xnew->xyplot.ti_x_axis_position) {
-	case CENTER:
+	case NhlCENTER:
 		xnew->xyplot.real_x_axis_offset_x = 
 			xnew->xyplot.ti_x_axis_offset_x 
 			+ ((xnew->view.x + xnew->view.width/2.0)
 			- (xtmp + widthtmp/2.0));
 		break;
-	case LEFT:
+	case NhlLEFT:
 		xnew->xyplot.real_x_axis_offset_x = 
 			xnew->xyplot.ti_x_axis_offset_x 
 			+ (xnew->view.x - xtmp);
 		break;
-	case RIGHT:
+	case NhlRIGHT:
 		xnew->xyplot.real_x_axis_offset_x = 
 			xnew->xyplot.ti_x_axis_offset_x 
 			+ ((xnew->view.x + xnew->view.width) 
@@ -3414,18 +3419,18 @@ static NhlErrorTypes SetUpTitles
 		break;
 	}
 	switch(xnew->xyplot.ti_y_axis_position) {
-	case CENTER:
+	case NhlCENTER:
 		xnew->xyplot.real_y_axis_offset_y = 
 			xnew->xyplot.ti_y_axis_offset_y 
 			+ ((xnew->view.y - xnew->view.height/2.0)
 			- (ytmp - heighttmp/2.0));
 		break;
-	case TOP:
+	case NhlTOP:
 		xnew->xyplot.real_y_axis_offset_y = 
 			xnew->xyplot.ti_y_axis_offset_y 
 			+ (xnew->view.y - ytmp);
 		break;
-	case BOTTOM:
+	case NhlBOTTOM:
 		xnew->xyplot.real_y_axis_offset_y = 
 			xnew->xyplot.ti_y_axis_offset_y 
 			+ ((xnew->view.y - xnew->view.height) 
@@ -3437,7 +3442,7 @@ static NhlErrorTypes SetUpTitles
 	if((calledfrom == CREATE) || (xnew->xyplot.ttitles == NULL)){	
 		strcpy(buffer,xnew->base.name);
 		strcat(buffer,".Title");
-		ret = _NhlCreateChild(&tmpid,buffer,titleLayerClass,(Layer)xnew,
+		ret = _NhlCreateChild(&tmpid,buffer,NhltitleLayerClass,(NhlLayer)xnew,
 			NhlNvpXF,xtmp,
 			NhlNvpYF,ytmp,
 			NhlNvpWidthF,widthtmp,
@@ -3452,7 +3457,7 @@ static NhlErrorTypes SetUpTitles
 	} else {
 		tmpid = xnew->xyplot.ttitles->base.id;
 		ret = _NhlSetValuesChild(tmpid,
-			(Layer)xnew,
+			(NhlLayer)xnew,
 			NhlNvpXF,xtmp,
 			NhlNvpYF,ytmp,
 			NhlNvpWidthF,widthtmp,
@@ -3465,11 +3470,11 @@ static NhlErrorTypes SetUpTitles
 			NhlNtiMainPosition,xnew->xyplot.ti_main_position,
 			NULL);
 	}
-	if((tmpid > -1)||(ret >= WARNING)) {
+	if((tmpid > -1)||(ret >= NhlWARNING)) {
 		xnew->xyplot.ttitles = _NhlGetLayer(tmpid);
 		return(ret);
 	} else {
-		NhlPError(FATAL,E_UNKNOWN,"%s: Could not create Titles",error_lead);
-		return(FATAL);
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: Could not create Titles",error_lead);
+		return(NhlFATAL);
 	} 
 }

@@ -1,5 +1,5 @@
 /*
- *      $Id: hlu.c,v 1.7 1993-12-22 00:56:31 dbrown Exp $
+ *      $Id: hlu.c,v 1.8 1994-01-27 21:28:00 boote Exp $
  */
 /************************************************************************
 *									*
@@ -71,7 +71,7 @@ void
 	ptr = (void *)malloc(size);
 
 	if(ptr == NULL)
-		NhlPError(FATAL,errno,"NhlMalloc Failed");
+		NhlPError(NhlFATAL,errno,"NhlMalloc Failed");
 
 	return(ptr);
 }
@@ -114,7 +114,7 @@ void
 	ptr = (void *)calloc(num, size);
 
 	if(ptr == NULL)
-		NhlPError(FATAL,errno,"NhlCalloc Failed");
+		NhlPError(NhlFATAL,errno,"NhlCalloc Failed");
 
 	return(ptr);
 }
@@ -157,7 +157,7 @@ void
 		tptr = (void *)realloc(ptr,size);
 
 		if(tptr == NULL)
-			NhlPError(FATAL,errno,"NhlRealloc Failed");
+			NhlPError(NhlFATAL,errno,"NhlRealloc Failed");
 
 		return(tptr);
 	}
@@ -192,25 +192,25 @@ NhlFree
 {
 
 	if(ptr == NULL)
-		return(NOERROR);
+		return(NhlNOERROR);
 
 	else{
 #if	defined(__sgi) || defined(_HPUX_SOURCE) || defined(__CLCC__) \
 	|| defined(GCC)
 
 		free(ptr);
-		return NOERROR;
+		return NhlNOERROR;
 #else
 		register int ret;
 
 		ret = free(ptr);
 
 		if(ret == 0){
-			NhlPError(WARNING,errno,"Error in NhlFree");
-			return(WARNING);
+			NhlPError(NhlWARNING,errno,"Error in NhlFree");
+			return(NhlWARNING);
 		}
 		else{
-			return(NOERROR);
+			return(NhlNOERROR);
 		}
 #endif
 	}
@@ -218,11 +218,11 @@ NhlFree
 
 /************************************************************************
  *									*
- * These functions manage the global Layer Table			*
+ * These functions manage the global NhlLayer Table			*
  *									*
  ************************************************************************/
 
-static Layer *LayerTable = NULL;
+static NhlLayer *LayerTable = NULL;
 static int num_layers = 0;
 static int table_len = 0;
 
@@ -237,10 +237,10 @@ static int table_len = 0;
  * Out Args:	
  *
  * Scope:	Global Private
- * Returns:	Layer - the layer with the given id or NULL
+ * Returns:	NhlLayer - the layer with the given id or NULL
  * Side Effect:	
  */
-Layer
+NhlLayer
 _NhlGetLayer
 #if	__STDC__
 (
@@ -252,7 +252,7 @@ _NhlGetLayer
 #endif
 {
 	if((id >= table_len) || (id < 0))
-		return((Layer)NULL);
+		return((NhlLayer)NULL);
 
 	return(LayerTable[id]);
 }
@@ -260,12 +260,12 @@ _NhlGetLayer
 /*
  * Function:	_NhlAddLayer
  *
- * Description:	This function is used to add a layer into the global Layer
+ * Description:	This function is used to add a layer into the global NhlLayer
  *		Table.  It first determines if there is enough space allocated
  *		and then enters the given layer into the Table. It also
  *		updates the layer->base.pid to the correct entry in the table.
  *
- * In Args:	Layer	l	The layer to enter into the table
+ * In Args:	NhlLayer	l	The layer to enter into the table
  *
  * Out Args:	
  *
@@ -277,11 +277,11 @@ int
 _NhlAddLayer
 #if	__STDC__
 (
-	Layer	l	/* The layer to enter into the table	*/
+	NhlLayer	l	/* The layer to enter into the table	*/
 )
 #else
 (l)
-	Layer	l;	/* The layer to enter into the table	*/
+	NhlLayer	l;	/* The layer to enter into the table	*/
 #endif
 {
 	register int i;
@@ -291,20 +291,20 @@ _NhlAddLayer
 	 */
 	if(table_len < num_layers + 1){
 		LayerTable = NhlRealloc(LayerTable,
-			(unsigned)((table_len + LAYERLISTINC) * sizeof(Layer)));
+		(unsigned)((table_len + _NhlLAYERLISTINC) * sizeof(NhlLayer)));
 		if(LayerTable == NULL){
-			NhlPError(FATAL,12,
-				"Unable to Increase size of Layer Table");
-			return(FATAL);
+			NhlPError(NhlFATAL,12,
+				"Unable to Increase size of NhlLayer Table");
+			return(NhlFATAL);
 		}
 
-		for(i=table_len; i < (table_len + LAYERLISTINC); i++)
-			LayerTable[i] = (Layer)NULL;
-		table_len += LAYERLISTINC;
+		for(i=table_len; i < (table_len + _NhlLAYERLISTINC); i++)
+			LayerTable[i] = (NhlLayer)NULL;
+		table_len += _NhlLAYERLISTINC;
 	}
 
 	for(i=0; i < table_len; i++){
-		if(LayerTable[i] == (Layer)NULL){
+		if(LayerTable[i] == (NhlLayer)NULL){
 			LayerTable[i] = l;
 			num_layers++;
 			l->base.id = i;
@@ -315,16 +315,16 @@ _NhlAddLayer
 	/*
 	 * Error message!
 	 */
-	return(FATAL);
+	return(NhlFATAL);
 }
 
 /*
  * Function:	_NhlRemoveLayer
  *
- * Description:	This function is used to remove a layer from the global Layer
+ * Description:	This function is used to remove a layer from the global NhlLayer
  *		Table.  
  *
- * In Args:	Layer	l	The layer to remove from the table
+ * In Args:	NhlLayer	l	The layer to remove from the table
  *
  * Out Args:	
  *
@@ -336,35 +336,35 @@ NhlErrorTypes
 _NhlRemoveLayer
 #if	__STDC__
 (
-	Layer	l	/* The layer to remove from the table	*/
+	NhlLayer	l	/* The layer to remove from the table	*/
 )
 #else
 (l)
-	Layer	l;	/* The layer to remove from the table	*/
+	NhlLayer	l;	/* The layer to remove from the table	*/
 #endif
 {
-	if(l == (Layer)NULL){
+	if(l == (NhlLayer)NULL){
 		/*
 		 * ERROR - request to remove a null layer
 		 */
-		NhlPError(WARNING,E_UNKNOWN,
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
 					"_NhlRemoveLayer:Can't rm NULL layer");
-		return(WARNING);
+		return(NhlWARNING);
 	}
 
 	if(LayerTable[l->base.id] != l){
 		/*
 		 * ERROR - layers id doesn't match internal table
 		 */
-		NhlPError(WARNING,E_UNKNOWN,
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
 			"_NhlRemoveLayer:layer id doesn't match layer Table");
-		return(WARNING);
+		return(NhlWARNING);
 	}
 
-	LayerTable[l->base.id] = (Layer)NULL;
+	LayerTable[l->base.id] = (NhlLayer)NULL;
 	num_layers--;
 
-	return(NOERROR);
+	return(NhlNOERROR);
 }
 
 /************************************************************************
@@ -399,11 +399,11 @@ NhlName
 	int	pid;	/* id of a plot	*/
 #endif
 {
-	Layer	tmp = _NhlGetLayer(pid);
+	NhlLayer	tmp = _NhlGetLayer(pid);
 
 	if(tmp == NULL){
-		NhlPError(FATAL,E_UNKNOWN,"Unable to access plot with pid:%d",
-									pid);
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+				"Unable to access plot with pid:%d",pid);
 		return NULL;
 	}
 
@@ -434,7 +434,7 @@ NhlClassName
 int pid;
 #endif
 {
-	Layer	l = _NhlGetLayer(pid);
+	NhlLayer	l = _NhlGetLayer(pid);
 
 	return(_NhlClassName(_NhlClass(l)));
 }
@@ -444,7 +444,7 @@ int pid;
  *
  * Description:	This function returns the name of a given class
  *
- * In Args:	LayerClass	lc;	pointer to class struct
+ * In Args:	NhlLayerClass	lc;	pointer to class struct
  *
  * Out Args:	
  *
@@ -456,11 +456,11 @@ Const char *
 _NhlClassName
 #if	__STDC__
 (
-	LayerClass	lc	/* pointer to class struct	*/
+	NhlLayerClass	lc	/* pointer to class struct	*/
 )
 #else
 (lc)
-	LayerClass	lc;	/* pointer to class struct	*/
+	NhlLayerClass	lc;	/* pointer to class struct	*/
 #endif
 {
 	return lc->base_class.class_name;
@@ -469,25 +469,25 @@ _NhlClassName
 /*
  * Function:	_NhlClass
  *
- * Description:	This function returns the given Layer's class pointer.
+ * Description:	This function returns the given NhlLayer's class pointer.
  *
- * In Args:	Layer l;	layer
+ * In Args:	NhlLayer l;	layer
  *
  * Out Args:	
  *
  * Scope:	Global, Public
- * Returns:	LayerClass
+ * Returns:	NhlLayerClass
  * Side Effect:	
  */
-LayerClass
+NhlLayerClass
 _NhlClass
 #if	__STDC__
 (
-	Layer l		/* Instance pointer */
+	NhlLayer l		/* Instance pointer */
 )
 #else
 (l)
-	Layer l;
+	NhlLayer l;
 #endif
 {
 	return(l->base.layer_class);
@@ -553,9 +553,9 @@ Const char
 	Const char	*rawfname;	/* fname as provided	*/
 #endif
 {
-	static char	fname[MAXFNAMELEN];
-	char		tmpfname[MAXFNAMELEN];
-	char		buffer[MAXFNAMELEN];
+	static char	fname[_NhlMAXFNAMELEN];
+	char		tmpfname[_NhlMAXFNAMELEN];
+	char		buffer[_NhlMAXFNAMELEN];
 	char		*piece = NULL;
 	char		*tptr;
 	struct passwd	*pw = NULL;
@@ -568,17 +568,17 @@ Const char
 	fname[0] = '\0';
 
 	strcpy(tmpfname,rawfname);
-	strcpy(buffer,PATHDELIMITER);
+	strcpy(buffer,_NhlPATHDELIMITER);
 	if(tmpfname[0] == buffer[0])
-		strcpy(fname,PATHDELIMITER);
-	piece = strtok(tmpfname,PATHDELIMITER);
+		strcpy(fname,_NhlPATHDELIMITER);
+	piece = strtok(tmpfname,_NhlPATHDELIMITER);
 
 	while(piece != NULL){
 
 		if(first)
 			first = False;
 		else
-			strcat(fname,PATHDELIMITER);
+			strcat(fname,_NhlPATHDELIMITER);
 
 		switch(*piece){
 
@@ -593,7 +593,7 @@ Const char
 					pw = getpwuid(getuid());
 
 				if(pw == NULL){
-					NhlPError(FATAL,E_UNKNOWN,
+					NhlPError(NhlFATAL,NhlEUNKNOWN,
 						"Unable to Resolve \'~\' in %s",
 								rawfname);
 					return(NULL);
@@ -608,7 +608,7 @@ Const char
 				tptr = getenv(buffer);
 
 				if(tptr == NULL){
-					NhlPError(FATAL,E_UNKNOWN,
+					NhlPError(NhlFATAL,NhlEUNKNOWN,
 						"Unable to Resolve %s in %s",
 								piece,rawfname);
 					return(NULL);
@@ -622,7 +622,7 @@ Const char
 				strcat(fname,piece);
 		}
 
-		piece = strtok(NULL,PATHDELIMITER);
+		piece = strtok(NULL,_NhlPATHDELIMITER);
 	}
 
 	return(fname);
@@ -653,13 +653,13 @@ Const char
 ()
 #endif
 {
-	static char		fname[MAXFNAMELEN];
+	static char		fname[_NhlMAXFNAMELEN];
 	const char		*tmp = NULL;
 	static NhlBoolean	init = False;
 
 	if(!init){
 
-		tmp = getenv(SYSRESENVNAME);
+		tmp = getenv(NhlSYSRESENVNAME);
 		if(tmp == NULL){
 			tmp = GetNCARGPath("lib");
 
@@ -668,7 +668,7 @@ Const char
 
 			strcpy(fname,tmp);
 			strcat(fname,"/ncarg/");
-			strcat(fname,DEFSYSRESFNAME);
+			strcat(fname,NhlDEFSYSRESFNAME);
 		}
 		else
 			strcpy(fname,_NhlResolvePath(tmp));
@@ -704,15 +704,15 @@ Const char
 ()
 #endif
 {
-	static char		fname[MAXFNAMELEN];
+	static char		fname[_NhlMAXFNAMELEN];
 	char			*tmp = NULL;
 	static NhlBoolean	init = False;
 
 	if(!init){
 
-		tmp = getenv(USRRESENVNAME);
+		tmp = getenv(NhlUSRRESENVNAME);
 		if(tmp == NULL)
-			tmp = DEFUSRRESFNAME;
+			tmp = NhlDEFUSRRESFNAME;
 
 		(void)strcpy(fname,_NhlResolvePath(tmp));
 		init = True;
@@ -912,7 +912,7 @@ _NhlInherit
 ()
 #endif
 {
-	NhlPError(FATAL,E_UNKNOWN,
+	NhlPError(NhlFATAL,NhlEUNKNOWN,
 				"_NhlInherit- Inheritance resolved improperly");
 	return;
 }
@@ -1004,7 +1004,7 @@ _NhlCreateGenArray
 	}
 
 	if((num_dimensions < 1) && (num_dimensions != -1111)){
-		NHLPERROR((FATAL,E_UNKNOWN,
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,
 		"NhlGenArrayCreate:Arrays must have at least one dimension"));
 		return NULL;
 	}
@@ -1259,8 +1259,8 @@ NhlFreeGenArray
  *
  * Scope:       Global Private
  *
- * Returns:     If successful NOERROR; FATAL on memory allocation errors;
- *              WARNING if the from GenArray is invalid in some way.
+ * Returns:     If successful NhlNOERROR; NhlFATAL on memory allocation errors;
+ *              NhlWARNING if the from GenArray is invalid in some way.
  *
  * Side Effect: When string data is copied, all NULL string pointers are 
  *		replaced with single-byte strings containing only a NULL
@@ -1302,26 +1302,26 @@ NhlErrorTypes _NhlValidatedGenArrayCopy
 	if (gfrom == NULL || (*gto) == NULL) {
 		e_text = 
 		 "%s: %s NULL array passed in: copy not performed";
-		NhlPError(WARNING,E_UNKNOWN,e_text,caller,res_name);
-		return WARNING;
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,caller,res_name);
+		return NhlWARNING;
 	}
 	if (gfrom->num_elements <= 0) {
 		e_text = 
 		 "%s: %s invalid element count: ignoring";
-		NhlPError(WARNING,E_UNKNOWN,e_text,caller,res_name);
-		return WARNING;
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,caller,res_name);
+		return NhlWARNING;
 	}
 	else if (gfrom->num_elements > max_el) {
 		e_text =
 		 "%s: %s exceeds maximum number of elements, %d: ignoring";
-		NhlPError(WARNING,E_UNKNOWN,e_text,caller,res_name,max_el);
-		return WARNING;
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,caller,res_name,max_el);
+		return NhlWARNING;
 	}
 	if (gfrom->num_dimensions != (*gto)->num_dimensions) {
 		e_text = 
 		 "%s: %s invalid dimensionality: copy not performed";
-		NhlPError(WARNING,E_UNKNOWN,e_text,caller,res_name);
-		return WARNING;
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,caller,res_name);
+		return NhlWARNING;
 	}
 /*
  * All dimensions except the first (index 0) must match in length
@@ -1332,36 +1332,36 @@ NhlErrorTypes _NhlValidatedGenArrayCopy
 		if (gfrom->len_dimensions[i] != (*gto)->len_dimensions[i]) {
 			e_text = 
 			    "%s: %s dimensional mismatch: copy not performed";
-			NhlPError(WARNING,E_UNKNOWN,e_text,caller,res_name);
-			return WARNING;
+			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,caller,res_name);
+			return NhlWARNING;
 		}
 	}
 	if (el_count != gfrom->num_elements) {
 		e_text = 
 		 "%s: %s invalid element count: copy not performed";
-		NhlPError(WARNING,E_UNKNOWN,e_text,caller,res_name);
-		return WARNING;
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,caller,res_name);
+		return NhlWARNING;
 	}
 
 	if (gfrom->typeQ != (*gto)->typeQ) {
 		e_text = "%s: %s type mismatch: copy not performed";
-		NhlPError(WARNING,E_UNKNOWN,e_text,caller,res_name);
-		return WARNING; 
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,caller,res_name);
+		return NhlWARNING; 
 	}
 	if (gfrom->size != (*gto)->size) {
 		e_text = "%s: %s type size mismatch: copy not performed";
-		NhlPError(WARNING,E_UNKNOWN,e_text,caller,res_name);
-		return WARNING; 
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,caller,res_name);
+		return NhlWARNING; 
 	}
 	
 	if (gfrom->num_elements > (*gto)->num_elements) {
 		NhlFreeGenArray((*gto));
 		if (((*gto) = _NhlCopyGenArray(gfrom,copy_data)) == NULL) {
 			e_text = "%s: error copying %s GenArray";
-			NhlPError(FATAL,E_UNKNOWN,e_text,caller,res_name);
-			return FATAL;
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,caller,res_name);
+			return NhlFATAL;
 		}
-		return NOERROR;
+		return NhlNOERROR;
 	}
 	else if (!copy_data)
 			(*gto)->data = gfrom->data;
@@ -1379,9 +1379,9 @@ NhlErrorTypes _NhlValidatedGenArrayCopy
 						   strlen("")+1);
 				if (*to == NULL) {
 					e_text = "%s: error copying %s string";
-					NhlPError(FATAL,E_UNKNOWN,e_text,
+					NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,
 						  caller,res_name);
-					return FATAL;
+					return NhlFATAL;
 				}
 				strcpy(*to,"");
 			}
@@ -1389,9 +1389,9 @@ NhlErrorTypes _NhlValidatedGenArrayCopy
 				*to = (NhlString) NhlMalloc(strlen(*from)+1);
 				if (*to == NULL) {
 					e_text = "%s: error copying %s string";
-					NhlPError(FATAL,E_UNKNOWN,e_text,
+					NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,
 						  caller,res_name);
-					return FATAL;
+					return NhlFATAL;
 				}
 				strcpy(*to,*from);
 			}
@@ -1400,9 +1400,9 @@ NhlErrorTypes _NhlValidatedGenArrayCopy
 					NhlRealloc(*to, strlen(*from)+1);
 				if (*to == NULL) {
 					e_text = "%s: error copying %s string";
-					NhlPError(FATAL,E_UNKNOWN,e_text,
+					NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,
 						  caller,res_name);
-					return FATAL;
+					return NhlFATAL;
 				}
 				strcpy(*to,*from);
 			}
@@ -1425,6 +1425,6 @@ NhlErrorTypes _NhlValidatedGenArrayCopy
 		(*gto)->len_dimensions[0] = gfrom->len_dimensions[0];
 	}
 
-	return NOERROR;
+	return NhlNOERROR;
 
 }

@@ -1,5 +1,5 @@
 /*
- *      $Id: Title.h,v 1.1 1993-04-30 17:25:03 boote Exp $
+ *      $Id: Title.h,v 1.2 1994-01-27 21:26:37 boote Exp $
  */
 /************************************************************************
 *									*
@@ -108,7 +108,6 @@
 * all titles instead of each
 */
 #define NhlCtiTitleJust	"TiTitleJust"
-#define NhlCtiTitleFonts "TiTitleFonts"
 #define NhlCtiTitleFontHeightsF "TiTitleFontHeightsF"
 #define NhlCtiTitleFontAspectsF "TiTitleFontAspectsF"
 #define NhlCtiTitleFontThicknessF "TiTitleFontThicknessF"
@@ -120,12 +119,9 @@
 
 
 
-typedef enum { TOP,BOTTOM,LEFT,RIGHT,CENTER } TitlePositions;
+typedef NhlPosition	NhlTitlePositions;
 #define NhlTTitlePositions	"TitlePositions"
 
-extern LayerClass titleLayerClass;
-
-typedef struct _TitleLayerClassRec *TitleLayerClass;
-typedef struct _TitleLayerRec	*TitleLayer;
+extern NhlLayerClass NhltitleLayerClass;
 
 #endif /*_NTitle_h */

@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArraysIntP.h,v 1.2 1994-01-21 19:29:36 boote Exp $
+ *      $Id: CoordArraysIntP.h,v 1.3 1994-01-27 21:22:15 boote Exp $
  */
 /************************************************************************
 *									*
@@ -27,12 +27,12 @@
 #define _NCoordArraysIntP_h
 #include <ncarg/hlu/BaseP.h>
 
-typedef struct _CoordArraysIntLayerClassRec *CoordArraysIntLayerClass;
-typedef struct _CoordArraysIntLayerRec *CoordArraysIntLayer;
+typedef struct _NhlCoordArraysIntLayerClassRec *NhlCoordArraysIntLayerClass;
+typedef struct _NhlCoordArraysIntLayerRec *NhlCoordArraysIntLayer;
 
-extern LayerClass coordArraysIntLayerClass;
+extern NhlLayerClass NhlcoordArraysIntLayerClass;
 
-typedef struct _CoordArraysIntLayerPart{
+typedef struct _NhlCoordArraysIntLayerPart{
 	/* User setable resource fields */
 	NhlGenArray	xarray;
 	NhlGenArray	yarray;
@@ -58,22 +58,22 @@ typedef struct _CoordArraysIntLayerPart{
 	NhlBoolean	min_y_set;
 	NhlBoolean	x_cast_set;
 	NhlBoolean	y_cast_set;
-} CoordArraysIntLayerPart;
+} NhlCoordArraysIntLayerPart;
 
-typedef struct _CoordArraysIntLayerRec{
-	ObjLayerPart			base;
-	CoordArraysIntLayerPart		carrint;
-} CoordArraysIntLayerRec;
+typedef struct _NhlCoordArraysIntLayerRec{
+	NhlObjLayerPart			base;
+	NhlCoordArraysIntLayerPart	carrint;
+} NhlCoordArraysIntLayerRec;
 
-typedef struct _CoordArraysIntLayerClassPart{
+typedef struct _NhlCoordArraysIntLayerClassPart{
 	int	foo;
-} CoordArraysIntLayerClassPart;
+} NhlCoordArraysIntLayerClassPart;
 
-typedef struct _CoordArraysIntLayerClassRec{
-	ObjLayerClassPart		base_class;
-	CoordArraysIntLayerClassPart	carrint_class;
-} CoordArraysIntLayerClassRec;
+typedef struct _NhlCoordArraysIntLayerClassRec{
+	NhlObjLayerClassPart		base_class;
+	NhlCoordArraysIntLayerClassPart	carrint_class;
+} NhlCoordArraysIntLayerClassRec;
 
-extern CoordArraysIntLayerClassRec coordArraysIntLayerClassRec;
+extern NhlCoordArraysIntLayerClassRec NhlcoordArraysIntLayerClassRec;
 
 #endif /*_NCoordArraysIntP_h */

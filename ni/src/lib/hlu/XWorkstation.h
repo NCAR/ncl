@@ -1,6 +1,5 @@
-#ifndef _NXWorkstation_h
 /*
- *      $Id: XWorkstation.h,v 1.1 1993-04-30 17:26:16 boote Exp $
+ *      $Id: XWorkstation.h,v 1.2 1994-01-27 21:27:37 boote Exp $
  */
 /************************************************************************
 *									*
@@ -20,6 +19,7 @@
  *
  *	Description:	Public header for XWorkstation class
  */
+#ifndef _NXWorkstation_h
 #define	_NXWorkstation_h
 
 #include <ncarg/hlu/Workstation.h>
@@ -31,10 +31,6 @@
 #define NhlNwkPause	"wkPause"
 #define NhlCwkPause	"WkPause"
 
-extern LayerClass xWorkstationLayerClass;
-
-typedef struct _XWorkstationLayerRec *XWorkstationLayer;
-typedef struct _XWorkstationLayerClassRec *XWorkstationLayerClass;
-
+extern NhlLayerClass NhlxWorkstationLayerClass;
 
 #endif /* _NXWorkstation_h */

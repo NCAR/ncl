@@ -1,5 +1,5 @@
 /*
- *      $Id: TransObjP.h,v 1.4 1993-12-13 23:35:06 ethan Exp $
+ *      $Id: TransObjP.h,v 1.5 1994-01-27 21:26:54 boote Exp $
  */
 /************************************************************************
 *									*
@@ -18,19 +18,19 @@
  *	Date:		Fri Oct 16 10:48:21 MDT 1992
  *
  *	Description:	This is the public header file for the TransObj class.
- *			The TransObjLayerClass is responsible for managing 
+ *			The NhlTransObjLayerClass is responsible for managing 
  *			transformations DATA==>VIEWPORT definitions.
  */
 #ifndef _NTransObjP_h
 #define  _NTransObjP_h
 
 #include <ncarg/hlu/BaseP.h>
-#include <ncarg/hlu/TransObj.h>
+#include <ncarg/hlu/TransObjI.h>
 
 typedef NhlErrorTypes (*NhlLineToProc)(
 #if	NhlNeedProto
-Layer   /* instance */,
-Layer   /* parent */,
+NhlLayer   /* instance */,
+NhlLayer   /* parent */,
 float   /* x */,
 float   /* y */,
 int     /* upordown */
@@ -39,8 +39,8 @@ int     /* upordown */
 
 typedef NhlErrorTypes (*NhlTransformPoint)(
 #if 	NhlNeedProto
-Layer	/* instance */,
-Layer	/* parent */,
+NhlLayer	/* instance */,
+NhlLayer	/* parent */,
 float*  /* x */,
 float*  /* y */,
 int 	/* n */,
@@ -54,23 +54,23 @@ int*	/* status */		/* True if out of range value exists in input */
 
 typedef NhlErrorTypes (*NhlSetTransFunc)(
 #if	NhlNeedProto
-Layer	/* instance */,
-Layer 	/* parent */
+NhlLayer	/* instance */,
+NhlLayer 	/* parent */
 #endif
 );
 
-typedef struct _TransObjLayerPart {
+typedef struct _NhlTransObjLayerPart {
 	float out_of_range;
-}TransObjLayerPart;
+}NhlTransObjLayerPart;
 
 
-typedef struct _TransObjLayerRec {
-	ObjLayerPart	base;
-	TransObjLayerPart	trobj;
-}TransObjLayerRec;
+typedef struct _NhlTransObjLayerRec {
+	NhlObjLayerPart		base;
+	NhlTransObjLayerPart	trobj;
+}NhlTransObjLayerRec;
 
 
-typedef struct _TransObjLayerClassPart {
+typedef struct _NhlTransObjLayerClassPart {
 	NhlSetTransFunc set_trans;
 	NhlErrorTypes	(*trans_type)();
 /*
@@ -97,17 +97,18 @@ typedef struct _TransObjLayerClassPart {
 	NhlLineToProc	compc_lineto;
 	NhlLineToProc	win_lineto;
 	NhlLineToProc	NDC_lineto;
-} TransObjLayerClassPart;
+} NhlTransObjLayerClassPart;
 
-typedef struct _TransObjLayerClassRec {
-	ObjLayerClassPart	base_class;
-	TransObjLayerClassPart  trobj_class;
-} TransObjLayerClassRec;
+typedef struct _NhlTransObjLayerClassRec {
+	NhlObjLayerClassPart		base_class;
+	NhlTransObjLayerClassPart	trobj_class;
+} NhlTransObjLayerClassRec;
 
-extern TransObjLayerClassRec transObjLayerClassRec;
+typedef struct _NhlTransObjLayerClassRec *NhlTransObjLayerClass;
+typedef struct _NhlTransObjLayerRec *NhlTransObjLayer;
 
+extern NhlTransObjLayerClassRec NhltransObjLayerClassRec;
 
-extern char *dash_patterns[];
 
 extern void _NhlTransClipLine(
 #ifdef NhlNeedProto

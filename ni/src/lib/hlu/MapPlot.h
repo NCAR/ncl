@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.h,v 1.2 1993-12-22 00:56:11 dbrown Exp $
+ *      $Id: MapPlot.h,v 1.3 1994-01-27 21:24:40 boote Exp $
  */
 /************************************************************************
 *									*
@@ -45,9 +45,6 @@
  */
 
 
-typedef struct _MapPlotLayerClassRec *MapPlotLayerClass;
-typedef struct _MapPlotLayerRec *MapPlotLayer;
-
-extern LayerClass mapPlotLayerClass;
+extern NhlLayerClass NhlmapPlotLayerClass;
 
 #endif /*_NMapPlot_h */

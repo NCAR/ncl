@@ -1,6 +1,5 @@
-
 /*
- *      $Id: XWorkstationP.h,v 1.1 1993-04-30 17:26:19 boote Exp $
+ *      $Id: XWorkstationP.h,v 1.2 1994-01-27 21:27:39 boote Exp $
  */
 /************************************************************************
 *									*
@@ -25,12 +24,10 @@
 #include <ncarg/hlu/WorkstationP.h>
 #include <ncarg/hlu/XWorkstation.h>
 
-
-
 #define NCGM_DEFAULT_CONID -1
 #define NCGM_WORKSTATION_TYPE 1
 
-typedef struct _XWorkstationLayerPart {
+typedef struct _NhlXWorkstationLayerPart {
 	/* User setable resource fields */
 
 	int	window_id;
@@ -42,29 +39,34 @@ typedef struct _XWorkstationLayerPart {
 	NhlBoolean	pause;
 
 	/* Private internal fields */
+
+	NhlBoolean	window_id_set;
+	NhlBoolean	color_map_id_set;
+	NhlBoolean	pause_set;
 	
 	/* Export Values */
 	/* Import Values */
-} XWorkstationLayerPart;
+} NhlXWorkstationLayerPart;
 
-typedef struct _XWorkstationLayerRec {
-	BaseLayerPart	base;
-	WorkstationLayerPart	work;
-	XWorkstationLayerPart	xwork;
-} XWorkstationLayerRec;
+typedef struct _NhlXWorkstationLayerRec {
+	NhlBaseLayerPart		base;
+	NhlWorkstationLayerPart		work;
+	NhlXWorkstationLayerPart	xwork;
+} NhlXWorkstationLayerRec;
 
-typedef struct _XWorkstationLayerClassPart {
+typedef struct _NhlXWorkstationLayerClassPart {
 	char *foo;
-} XWorkstationLayerClassPart;
+} NhlXWorkstationLayerClassPart;
 
-typedef struct _XWorkstationLayerClassRec {
-	BaseLayerClassPart	base_class;
-	WorkstationLayerClassPart	work_class;
-	XWorkstationLayerClassPart	xwork_class;
-} XWorkstationLayerClassRec;
+typedef struct _NhlXWorkstationLayerClassRec {
+	NhlBaseLayerClassPart		base_class;
+	NhlWorkstationLayerClassPart	work_class;
+	NhlXWorkstationLayerClassPart	xwork_class;
+} NhlXWorkstationLayerClassRec;
 
-extern XWorkstationLayerClassRec xWorkstationLayerClassRec;
+typedef struct _NhlXWorkstationLayerRec *NhlXWorkstationLayer;
+typedef struct _NhlXWorkstationLayerClassRec *NhlXWorkstationLayerClass;
 
- 
+extern NhlXWorkstationLayerClassRec NhlxWorkstationLayerClassRec;
 
 #endif /* _XWorkstation_h */

@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrTable.h,v 1.4 1994-01-22 01:59:02 boote Exp $
+ *      $Id: CoordArrTable.h,v 1.5 1994-01-27 21:21:56 boote Exp $
  */
 /************************************************************************
 *									*
@@ -56,9 +56,6 @@
 #define	NhlNctYMin	"ctYMin"
 #define	NhlCctYMin	"CtYMin"
 
-typedef struct _CoordArrTableLayerClassRec *CoordArrTableLayerClass;
-typedef struct _CoordArrTableLayerRec *CoordArrTableLayer;
-
-extern LayerClass coordArrTableLayerClass;
+extern NhlLayerClass NhlcoordArrTableLayerClass;
 
 #endif /*_NCoordArrTable_h */

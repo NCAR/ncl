@@ -1,5 +1,5 @@
 /*
- *      $Id: NcgmWorkstationP.h,v 1.2 1993-10-19 17:51:58 boote Exp $
+ *      $Id: NcgmWorkstationP.h,v 1.3 1994-01-27 21:25:13 boote Exp $
  */
 /************************************************************************
 *									*
@@ -25,12 +25,12 @@
 #include <ncarg/hlu/NcgmWorkstation.h>
 
 
-typedef enum { INITED, INITEDALMOST, UNINITED } NcgmStatus;
+typedef enum { _NhlINITED, _NhlINITEDALMOST, _NhlUNINITED } _NhlNcgmStatus;
 
 #define NCGM_DEFAULT_CONID 7
 #define NCGM_WORKSTATION_TYPE 1
 
-typedef struct _NcgmWorkstationLayerPart {
+typedef struct _NhlNcgmWorkstationLayerPart {
 	/* User setable resource fields */
 
 	char 	*meta_name;
@@ -39,24 +39,27 @@ typedef struct _NcgmWorkstationLayerPart {
 	
 	/* Export Values */
 	/* Import Values */
-} NcgmWorkstationLayerPart;
+} NhlNcgmWorkstationLayerPart;
 
-typedef struct _NcgmWorkstationLayerRec {
-	BaseLayerPart	base;
-	WorkstationLayerPart	work;
-	NcgmWorkstationLayerPart	ncgm;
-} NcgmWorkstationLayerRec;
+typedef struct _NhlNcgmWorkstationLayerRec {
+	NhlBaseLayerPart	base;
+	NhlWorkstationLayerPart	work;
+	NhlNcgmWorkstationLayerPart	ncgm;
+} NhlNcgmWorkstationLayerRec;
 
-typedef struct _NcgmWorkstationLayerClassPart {
-	NcgmStatus *cgm_inited;
-} NcgmWorkstationLayerClassPart;
+typedef struct _NhlNcgmWorkstationLayerClassPart {
+	_NhlNcgmStatus *cgm_inited;
+} NhlNcgmWorkstationLayerClassPart;
 
-typedef struct _NcgmWorkstationLayerClassRec {
-	BaseLayerClassPart	base_class;
-	WorkstationLayerClassPart	work_class;
-	NcgmWorkstationLayerClassPart	ncgm_class;
-} NcgmWorkstationLayerClassRec;
+typedef struct _NhlNcgmWorkstationLayerClassRec {
+	NhlBaseLayerClassPart			base_class;
+	NhlWorkstationLayerClassPart		work_class;
+	NhlNcgmWorkstationLayerClassPart	ncgm_class;
+} NhlNcgmWorkstationLayerClassRec;
 
-extern NcgmWorkstationLayerClassRec ncgmWorkstationLayerClassRec;
+typedef struct _NhlNcgmWorkstationLayerRec *NhlNcgmWorkstationLayer;
+typedef struct _NhlNcgmWorkstationLayerClassRec *NhlNcgmWorkstationLayerClass;
+
+extern NhlNcgmWorkstationLayerClassRec NhlncgmWorkstationLayerClassRec;
 
 #endif /* _NCgmWorkstation_h */

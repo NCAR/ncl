@@ -1,6 +1,5 @@
-
 /*
- *      $Id: View.h,v 1.1 1993-04-30 17:25:50 boote Exp $
+ *      $Id: View.h,v 1.2 1994-01-27 21:27:10 boote Exp $
  */
 /************************************************************************
 *									*
@@ -25,6 +24,46 @@
 
 #include <ncarg/hlu/Base.h>
 
+/* pseudo Boolean types used by Legend and LabelBar */
+#define NhlTOrientation NhlTBoolean
+#define NhlHORIZONTAL   0
+#define NhlVERTICAL     1
+typedef NhlBoolean NhlOrientation;
+
+/* position enumeration */
+
+#define NhlTPosition "Position"
+typedef enum _NhlPosition {
+	NhlTOP,
+	NhlBOTTOM,
+	NhlRIGHT,
+	NhlLEFT,
+	NhlCENTER,
+	NhlBOTH       /* LabelBar needs this */
+} NhlPosition;
+
+/* justification enumeration */
+
+#define NhlTJustification "Justification"
+typedef enum _NhlJustification {
+	NhlTOPLEFT,
+	NhlCENTERLEFT,
+	NhlBOTTOMLEFT,
+	NhlTOPCENTER,
+	NhlCENTERCENTER,
+	NhlBOTTOMCENTER,
+	NhlTOPRIGHT,
+	NhlCENTERRIGHT,
+	NhlBOTTOMRIGHT
+} NhlJustification;
+
+NhlDOCTAG(NhlCoord)
+typedef struct _NhlCoord {
+	float x;
+	float y;
+} NhlCoord;
+
+
 #define NhlNvpXF "vpXF"
 #define NhlCvpXF "VpXF"
 #define NhlNvpYF "vpYF"
@@ -36,10 +75,22 @@
 #define NhlNvpKeepAspect	"vpKeepAspect"
 #define NhlCvpKeepAspect	"VpKeepAspect"
 
-typedef struct _ViewLayerClassRec *ViewLayerClass;
-typedef struct _ViewLayerRec *ViewLayer;
+NhlDOCTAG(NhlBoundingBox)
+typedef struct _NhlBoundingBox {
+        int     set;
+        float   t;
+        float   b;
+        float   l;
+        float   r;
+} NhlBoundingBox;
 
-extern LayerClass viewLayerClass;
+extern NhlErrorTypes NhlGetBB(
+#ifdef NhlNeedProto
+	int,		/* pid */
+	NhlBoundingBox*	/* thebox */
+#endif
+);
 
+extern NhlLayerClass NhlviewLayerClass;
 
 #endif /*_NView_h*/

@@ -1,6 +1,5 @@
-
 /*
- *      $Id: TransObj.h,v 1.4 1993-12-13 23:35:03 ethan Exp $
+ *      $Id: TransObj.h,v 1.5 1994-01-27 21:26:48 boote Exp $
  */
 /************************************************************************
 *									*
@@ -31,10 +30,7 @@
 #define NhlNtrOutOfRangeF	"trOutOfRangeF"
 #define NhlCtrOutOfRangeF	"TrOutOfRangeF"
 
-typedef struct _TransObjLayerClassRec *TransObjLayerClass;
-typedef struct _TransObjLayerRec *TransObjLayer;
-
-extern LayerClass transObjLayerClass;
+extern NhlLayerClass NhltransObjLayerClass;
 
 
 #endif  /*_NTransObj_h*/

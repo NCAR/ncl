@@ -1,5 +1,5 @@
 /*
- *      $Id: Destroy.c,v 1.3 1994-01-10 19:48:41 boote Exp $
+ *      $Id: Destroy.c,v 1.4 1994-01-27 21:22:51 boote Exp $
  */
 /************************************************************************
 *									*
@@ -24,6 +24,7 @@
  */
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/BaseP.h>
+#include <ncarg/hlu/WorkstationI.h>
 
 
 /*
@@ -33,8 +34,8 @@
  *		given function.  It is a sub-to-superclass chained methode.
  *
  * In Args:	
- *		Layer		l,	Layer to destroy
- *		LayerClass	lc	class or superclass of l
+ *		NhlLayer	l,	NhlLayer to destroy
+ *		NhlLayerClass	lc	class or superclass of l
  *
  * Out Args:	
  *
@@ -46,17 +47,17 @@ static NhlErrorTypes
 CallDestroy
 #if	__STDC__
 (
-	Layer		l,	/* Layer to destroy		*/
-	LayerClass	lc	/* class or superclass of l	*/
+	NhlLayer	l,	/* NhlLayer to destroy		*/
+	NhlLayerClass	lc	/* class or superclass of l	*/
 )
 #else
 (l,lc)
-	Layer		l;	/* Layer to destroy		*/
-	LayerClass	lc;	/* class or superclass of l	*/
+	NhlLayer	l;	/* NhlLayer to destroy		*/
+	NhlLayerClass	lc;	/* class or superclass of l	*/
 #endif
 {
-	NhlErrorTypes scret = NOERROR;
-	NhlErrorTypes lret = NOERROR;
+	NhlErrorTypes scret = NhlNOERROR;
+	NhlErrorTypes lret = NhlNOERROR;
 	
 
 	if(lc->base_class.layer_destroy != NULL){
@@ -102,11 +103,12 @@ NhlDestroy
 #endif
 {
 	NhlErrorTypes ret, lret;
-	Layer l = _NhlGetLayer(pid);
+	NhlLayer l = _NhlGetLayer(pid);
 
 	if(l == NULL){
-		NhlPError(FATAL,E_UNKNOWN,"Unable to Destroy (Bad PID#%d)",pid);
-		return FATAL;
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"Unable to Destroy (Bad PID#%d)",
+									pid);
+		return NhlFATAL;
 	}
 	if(_NhlIsWorkstation(l) ) {
 		_NhlCloseWorkstation(l);
@@ -134,7 +136,7 @@ NhlDestroy
 		}
 
 		if(!found){
-			NHLPERROR((WARNING,E_UNKNOWN,
+			NHLPERROR((NhlWARNING,NhlEUNKNOWN,
 				"Unable to remove PID#%d from Parent's list",
 								l->base.id));
 		}
@@ -157,7 +159,7 @@ NhlDestroy
  *
  * In Args:	
  *		int	pid,		pid of layer to destroy
- *		Layer	parent		parent of layer to destroy
+ *		NhlLayer	parent		parent of layer to destroy
  *
  * Out Args:	
  *
@@ -170,27 +172,27 @@ NhlErrorTypes
 _NhlDestroyChild
 #if	__STDC__
 (
-	int	pid,		/* pid of layer to destroy	*/
-	Layer	parent		/* parent of layer to destroy	*/
+	int		pid,		/* pid of layer to destroy	*/
+	NhlLayer	parent		/* parent of layer to destroy	*/
 )
 #else
 (pid,parent)
-	int	pid;		/* pid of layer to destroy	*/
-	Layer	parent;		/* parent of layer to destroy	*/
+	int		pid;		/* pid of layer to destroy	*/
+	NhlLayer	parent;		/* parent of layer to destroy	*/
 #endif
 {
-	NhlErrorTypes	ret=NOERROR;
+	NhlErrorTypes	ret=NhlNOERROR;
 	_NhlChildList	*tchldnodeptr=NULL;
 	_NhlChildList	tchldnode=NULL;
 	NhlBoolean	found=False;
 
 	/*
-	 * Not a valid function to call if parent is an ObjLayer
+	 * Not a valid function to call if parent is an ObjNhlLayer
 	 */
 	if(_NhlIsObj(parent)){
-		NhlPError(FATAL,E_UNKNOWN,
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
 				"_NhlDestroyChild:parent has no children");
-		return FATAL;
+		return NhlFATAL;
 	}
 
 	ret = NhlDestroy(pid);
@@ -211,9 +213,9 @@ _NhlDestroyChild
 	}
 
 	if(!found){
-		NHLPERROR((FATAL,E_UNKNOWN,
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,
 			"Unable to remove pid#%d from internal table",pid));
-		return FATAL;
+		return NhlFATAL;
 	}
 
 	return ret;

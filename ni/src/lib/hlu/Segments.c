@@ -1,6 +1,5 @@
-
 /*
- *      $Id: Segments.c,v 1.2 1993-10-19 17:52:14 boote Exp $
+ *      $Id: Segments.c,v 1.3 1994-01-27 21:25:44 boote Exp $
  */
 /************************************************************************
 *									*
@@ -341,15 +340,15 @@ NhlErrorTypes _NhlDrawSegment
 	if(transdat->id != SEG_NOT_SET) {
 		if(wksisopn(wksid)&&(wksisact(wksid))) {
 	/* FORTRAN */ _NHLCALLF(gcsgwk,GCSGWK)(&(wksid),&(transdat->id));
-			return(NOERROR);
+			return(NhlNOERROR);
 		}
 		else {
-			NhlPError(WARNING,E_UNKNOWN,"_NhlDrawSegment: Workstation is not open or inactive. ");
-			return(WARNING);
+			NhlPError(NhlWARNING,NhlEUNKNOWN,"_NhlDrawSegment: Workstation is not open or inactive. ");
+			return(NhlWARNING);
 		}
 	} else {
-		NhlPError(WARNING,E_UNKNOWN,"_NhlDrawSegment: _NhlStartSegment never called. ");
-		return(WARNING);
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"_NhlDrawSegment: _NhlStartSegment never called. ");
+		return(NhlWARNING);
 		
 	}
 }
@@ -457,7 +456,7 @@ void _NhlSetSegTrans
 	if(transdat->id != SEG_NOT_SET) {
 /* FORTRAN */ _NHLCALLF(gssgt,GSSGT)(&(transdat->id),transform);
 	} else {
-			NhlPError(WARNING,E_UNKNOWN,"_NhlSetSegTrans: _NhlStartSeg was never called. ");
+			NhlPError(NhlWARNING,NhlEUNKNOWN,"_NhlSetSegTrans: _NhlStartSeg was never called. ");
 			return;
 	}
 	return;

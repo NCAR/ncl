@@ -1,6 +1,5 @@
-#ifndef _NNcgmWorkstation_h
 /*
- *      $Id: NcgmWorkstation.h,v 1.1 1993-04-30 17:23:21 boote Exp $
+ *      $Id: NcgmWorkstation.h,v 1.2 1994-01-27 21:25:10 boote Exp $
  */
 /************************************************************************
 *									*
@@ -20,6 +19,7 @@
  *
  *	Description:	Public header for NcgmWorkstation class
  */
+#ifndef _NNcgmWorkstation_h
 #define	_NNcgmWorkstation_h
 
 #include <ncarg/hlu/Workstation.h>
@@ -27,10 +27,6 @@
 #define	NhlNwkMetaName	"wkMetaName"
 #define NhlCwkMetaName	"WkMetaName"
 
-extern LayerClass ncgmWorkstationLayerClass;
-
-typedef struct _NcgmWorkstationLayerRec *NcgmWorkstationLayer;
-typedef struct _NcgmWorkstationLayerClassRec *NcgmWorkstationLayerClass;
-
+extern NhlLayerClass NhlncgmWorkstationLayerClass;
 
 #endif /* _NNcgmWorkstation_h */

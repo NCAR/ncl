@@ -1,6 +1,5 @@
-
 /*
- *      $Id: Contour.c,v 1.5 1994-01-24 23:57:23 dbrown Exp $
+ *      $Id: Contour.c,v 1.6 1994-01-27 21:21:31 boote Exp $
  */
 /************************************************************************
 *									*
@@ -24,38 +23,37 @@
 #include <stdio.h>
 #include <math.h>
 #include <ncarg/hlu/ContourP.h>
-#include <ncarg/hlu/Workstation.h>
 #include <ncarg/hlu/IrregularTransObj.h>
 #include <ncarg/hlu/IrregularType2TransObj.h>
 #include "testdata.h"
 
 static NhlResource resources[] = {
 	{ NhlNcnOutOfRangeValF,NhlCcnOutOfRangeValF,NhlTFloat,sizeof(float),
-		NhlOffset(ContourLayerRec,contour.out_of_range_val),
+		NhlOffset(NhlContourLayerRec,contour.out_of_range_val),
 		NhlTString,"1.0E12"},
 	{ NhlNtrXMinF,NhlCtrXMinF,NhlTFloat,sizeof(float),
-		NhlOffset(ContourLayerRec,contour.x_min),
+		NhlOffset(NhlContourLayerRec,contour.x_min),
 		NhlTString,"0.0"},
 	{ NhlNtrXMaxF,NhlCtrXMaxF,NhlTFloat,sizeof(float),
-		NhlOffset(ContourLayerRec,contour.x_max),
+		NhlOffset(NhlContourLayerRec,contour.x_max),
 		NhlTString,"1.0"},
 	{ NhlNtrXLog,NhlCtrXLog,NhlTBoolean,sizeof(NhlBoolean),
-		NhlOffset(ContourLayerRec,contour.x_log),
+		NhlOffset(NhlContourLayerRec,contour.x_log),
 		NhlTImmediate,(NhlPointer)False},
 	{ NhlNtrXReverse,NhlCtrXReverse,NhlTBoolean,sizeof(NhlBoolean),
-		NhlOffset(ContourLayerRec,contour.x_reverse),
+		NhlOffset(NhlContourLayerRec,contour.x_reverse),
 		NhlTImmediate,(NhlPointer)False},
 	{ NhlNtrYMinF,NhlCtrYMinF,NhlTFloat,sizeof(float),
-		NhlOffset(ContourLayerRec,contour.y_min),
+		NhlOffset(NhlContourLayerRec,contour.y_min),
 		NhlTString,"0.0"},
 	{ NhlNtrYMaxF,NhlCtrYMaxF,NhlTFloat,sizeof(float),
-		NhlOffset(ContourLayerRec,contour.y_max),
+		NhlOffset(NhlContourLayerRec,contour.y_max),
 		NhlTString,"1.0"},
 	{ NhlNtrYLog,NhlCtrYLog,NhlTBoolean,sizeof(NhlBoolean),
-		NhlOffset(ContourLayerRec,contour.y_log),
+		NhlOffset(NhlContourLayerRec,contour.y_log),
 		NhlTImmediate,(NhlPointer)False},
 	{ NhlNtrYReverse,NhlCtrYReverse,NhlTBoolean,sizeof(NhlBoolean),
-		NhlOffset(ContourLayerRec,contour.y_reverse),
+		NhlOffset(NhlContourLayerRec,contour.y_reverse),
 		NhlTImmediate,(NhlPointer)False},
 };
 
@@ -70,15 +68,15 @@ static NhlErrorTypes ContourClassInitialize(
 
 static NhlErrorTypes ContourClassPartInitialize(
 #ifdef NhlNeedProto
-	LayerClass	lc
+	NhlLayerClass	lc
 #endif
 );
 
 static NhlErrorTypes ContourInitialize(
 #ifdef NhlNeedProto
-        LayerClass,     /* class */
-        Layer,          /* req */
-        Layer,          /* new */
+        NhlLayerClass,     /* class */
+        NhlLayer,          /* req */
+        NhlLayer,          /* new */
         _NhlArgList,    /* args */
         int             /* num_args */
 #endif
@@ -86,9 +84,9 @@ static NhlErrorTypes ContourInitialize(
 
 static NhlErrorTypes ContourSetValues(
 #ifdef NhlNeedProto
-        Layer,          /* old */
-        Layer,          /* reference */
-        Layer,          /* new */
+        NhlLayer,          /* old */
+        NhlLayer,          /* reference */
+        NhlLayer,          /* new */
         _NhlArgList,    /* args */
         int             /* num_args*/
 #endif
@@ -96,31 +94,32 @@ static NhlErrorTypes ContourSetValues(
 
 static NhlErrorTypes ContourDestroy(
 #ifdef NhlNeedProto
-        Layer           /* inst */
+        NhlLayer           /* inst */
 #endif
 );
 
 static NhlErrorTypes ContourDraw(
 #ifdef NhlNeedProto
-        Layer   /* layer */
+        NhlLayer   /* layer */
 #endif
 );
 
 static NhlErrorTypes SetUpTransObj(
 #ifdef NhlNeedProto
-	ContourLayer	xnew,
-	ContourLayer	xold,
+	NhlContourLayer	xnew,
+	NhlContourLayer	xold,
 	NhlBoolean	init
 #endif
 );
 
-ContourLayerClassRec contourLayerClassRec = {
+NhlContourLayerClassRec NhlcontourLayerClassRec = {
         {
 /* class_name			*/      "Contour",
 /* nrm_class			*/      NrmNULLQUARK,
-/* layer_size			*/      sizeof(ContourLayerRec),
+/* layer_size			*/      sizeof(NhlContourLayerRec),
 /* class_inited			*/      False,
-/* superclass			*/      (LayerClass)&transformLayerClassRec,
+/* superclass			*/      (NhlLayerClass)
+						&NhltransformLayerClassRec,
 
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
@@ -161,7 +160,7 @@ ContourLayerClassRec contourLayerClassRec = {
 	}
 };
 	
-LayerClass contourLayerClass = (LayerClass)&contourLayerClassRec;
+NhlLayerClass NhlcontourLayerClass = (NhlLayerClass)&NhlcontourLayerClassRec;
 
 
 /*
@@ -188,18 +187,18 @@ ContourClassInitialize
 #endif
 {
 
-	return NOERROR;
+	return NhlNOERROR;
 }
 
 /*
  * Function:	ContourClassPartInitialize
  *
  * Description:	This function initializes fields in the 
- *		ContourLayerClassPart that cannot be initialized statically.
+ *		NhlContourLayerClassPart that cannot be initialized statically.
  *		Calls _NhlRegisterChildClass for the overlay manager object.
  *
  * In Args:	
- *		LayerClass	lc	Layer Class to init
+ *		NhlLayerClass	lc	NhlLayer Class to init
  *
  * Out Args:	
  *
@@ -212,31 +211,31 @@ static NhlErrorTypes
 ContourClassPartInitialize
 #if	__STDC__
 (
-	LayerClass	lc	/* Layer Class to init	*/
+	NhlLayerClass	lc	/* NhlLayer Class to init	*/
 )
 #else
 (lc)
-	LayerClass	lc;	/* Layer Class to init	*/
+	NhlLayerClass	lc;	/* NhlLayer Class to init	*/
 #endif
 {
-	NhlErrorTypes	ret = NOERROR, subret = NOERROR;
+	NhlErrorTypes	ret = NhlNOERROR, subret = NhlNOERROR;
 	char		*e_text;
 	char		*entry_name = "ContourClassPartInitialize";
 
 /*
  * Register children objects
  */
-	subret = _NhlRegisterChildClass(lc,overlayLayerClass,
+	subret = _NhlRegisterChildClass(lc,NhloverlayLayerClass,
 					False,False,NULL);
 
-	if ((ret = MIN(ret,subret)) < WARNING) {
+	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: error registering %s";
-		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
-			  "overlayLayerClass");
-		return(FATAL);
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
+			  "overlayNhlLayerClass");
+		return(NhlFATAL);
 	}
 
-	subret = _NhlRegisterChildClass(lc,logLinTransObjLayerClass,
+	subret = _NhlRegisterChildClass(lc,NhllogLinTransObjLayerClass,
 					False,False,
 					NhlNtrXMinF,
 					NhlNtrXMaxF,
@@ -248,14 +247,14 @@ ContourClassPartInitialize
 					NhlNtrYLog,
 					NULL);
 
-	if ((ret = MIN(ret,subret)) < WARNING) {
+	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: error registering %s";
-		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
-			  "logLinTransObjLayerClass");
-		return(FATAL);
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
+			  "NhllogLinTransObjLayerClass");
+		return(NhlFATAL);
 	}
 
-	subret = _NhlRegisterChildClass(lc,irregularType2TransObjLayerClass,
+	subret = _NhlRegisterChildClass(lc,NhlirregularType2TransObjLayerClass,
 					False,False,
 					NhlNtrXMinF,
 					NhlNtrXMaxF,
@@ -267,14 +266,14 @@ ContourClassPartInitialize
 					NhlNtrYLog,
 					NULL);
 
-	if ((ret = MIN(ret,subret)) < WARNING) {
+	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: error registering %s";
-		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
-			  "irregularType2TransObjLayerClass");
-		return(FATAL);
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
+			  "NhlirregularType2TransObjLayerClass");
+		return(NhlFATAL);
 	}
 
-	subret = _NhlRegisterChildClass(lc,irregularTransObjLayerClass,
+	subret = _NhlRegisterChildClass(lc,NhlirregularTransObjLayerClass,
 					False,False,
 					NhlNtrXMinF,
 					NhlNtrXMaxF,
@@ -286,11 +285,11 @@ ContourClassPartInitialize
 					NhlNtrYLog,
 					NULL);
 
-	if ((ret = MIN(ret,subret)) < WARNING) {
+	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: error registering %s";
-		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
-			  "irregularTransObjLayerClass");
-		return(FATAL);
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
+			  "NhlirregularTransObjLayerClass");
+		return(NhlFATAL);
 	}
 
 	return ret;
@@ -319,25 +318,25 @@ static NhlErrorTypes
 ContourInitialize
 #if     __STDC__
 (
-	LayerClass	class,
-	Layer		req,
-	Layer		new,
+	NhlLayerClass	class,
+	NhlLayer	req,
+	NhlLayer	new,
 	_NhlArgList	args,
 	int		num_args
 )
 #else
 (class,req,new,args,num_args)
-        LayerClass      class;
-        Layer           req;
-        Layer           new;
+        NhlLayerClass      class;
+        NhlLayer           req;
+        NhlLayer           new;
         _NhlArgList     args;
         int             num_args;
 #endif
 {
-	NhlErrorTypes		ret = NOERROR, subret = NOERROR;
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	char			*entry_name = "ContourInitialize";
-	ContourLayer		cnew = (ContourLayer) new;
-	ContourLayerPart	*cnp = &(cnew->contour);
+	NhlContourLayer		cnew = (NhlContourLayer) new;
+	NhlContourLayerPart	*cnp = &(cnew->contour);
 
 /* global temp initialization */
 
@@ -358,15 +357,15 @@ ContourInitialize
 
 /* Set up the contour object transformation  */
 
-	subret = SetUpTransObj(cnew, (ContourLayer) req, True);
-	if ((ret = MIN(ret,subret)) < WARNING) 
+	subret = SetUpTransObj(cnew, (NhlContourLayer) req, True);
+	if ((ret = MIN(ret,subret)) < NhlWARNING) 
 		return ret;
 
 /* Manage the overlay */
 
 	subret = _NhlManageOverlay(&cnp->overlay_object,new,req,
 			       True,NULL,0,entry_name);
-	if ((ret = MIN(ret,subret)) < WARNING) 
+	if ((ret = MIN(ret,subret)) < NhlWARNING) 
 		return ret;
 
 	return ret;
@@ -393,33 +392,33 @@ ContourInitialize
 static NhlErrorTypes ContourSetValues
 #if  __STDC__
 (
-	Layer		old,
-	Layer		reference,
-	Layer		new,
+	NhlLayer	old,
+	NhlLayer	reference,
+	NhlLayer	new,
 	_NhlArgList	args,
 	int		num_args
 )
 #else
 (old,reference,new,args,num_args)
-	Layer		old;
-	Layer		reference;
-	Layer		new;
+	NhlLayer	old;
+	NhlLayer	reference;
+	NhlLayer	new;
 	_NhlArgList	args;
 	int		num_args;
 #endif
 {
-	NhlErrorTypes		ret = NOERROR, subret = NOERROR;
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	char			*entry_name = "ContourSetValues";
-	ContourLayer		cnew = (ContourLayer) new;
-	ContourLayerPart	*cnp = &(cnew->contour);
+	NhlContourLayer		cnew = (NhlContourLayer) new;
+	NhlContourLayerPart	*cnp = &(cnew->contour);
 	NhlSArg			sargs[16];
 	int			nargs = 0;
 
 
 /* Set up the contour object's transformation */
 
-	subret = SetUpTransObj(cnew, (ContourLayer) old, False);
-	if ((ret = MIN(ret,subret)) < WARNING) 
+	subret = SetUpTransObj(cnew, (NhlContourLayer) old, False);
+	if ((ret = MIN(ret,subret)) < NhlWARNING) 
 		return ret;
 
 
@@ -447,26 +446,26 @@ static NhlErrorTypes ContourSetValues
  */
 static NhlErrorTypes ContourDestroy
 #if __STDC__
-(Layer inst)
+(NhlLayer inst)
 #else
 (inst)
-Layer inst;
+NhlLayer inst;
 #endif
 {
-	NhlErrorTypes		ret = NOERROR, subret = NOERROR;
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 #if 0
 	char			*e_text;
 	char			*entry_name = "ContourDestroy";
 #endif
-	ContourLayerPart	*cnp = &(((ContourLayer) inst)->contour);
-	TransformLayerPart	*cntp = &(((TransformLayer) inst)->trans);
+	NhlContourLayerPart	*cnp = &(((NhlContourLayer) inst)->contour);
+	NhlTransformLayerPart	*cntp = &(((NhlTransformLayer) inst)->trans);
 
 	if (cntp->overlay_status == _tfCurrentOverlayMember) {
 		subret = NhlRemoveFromOverlay(
 				cntp->overlay_object->base.parent->base.id,
 					      inst->base.id,False);
-		if ((ret = MIN(subret,ret)) < WARNING)
-			return FATAL;
+		if ((ret = MIN(subret,ret)) < NhlWARNING)
+			return NhlFATAL;
 	}
 
 	if (cnp->overlay_object != NULL) {
@@ -497,19 +496,19 @@ Layer inst;
 
 static NhlErrorTypes ContourDraw
 #if  __STDC__
-(Layer layer)
+(NhlLayer layer)
 #else
 (layer)
-        Layer layer;
+        NhlLayer layer;
 #endif
 {
-	NhlErrorTypes		ret = NOERROR, subret = NOERROR;
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	char			*e_text;
 	char			*entry_name = "ContourDraw";
-	ContourLayer		cl = (ContourLayer) layer;
-	ContourLayerPart	*clp = &(cl->contour);
-	TransformLayerPart	*tfp = &(cl->trans);
-	Layer			trans_obj;
+	NhlContourLayer		cl = (NhlContourLayer) layer;
+	NhlContourLayerPart	*clp = &(cl->contour);
+	NhlTransformLayerPart	*tfp = &(cl->trans);
+	NhlLayer		trans_obj;
 	float			out_of_range_val;
 	float			rwrk[5000];
         int			iwrk[1000];
@@ -528,22 +527,22 @@ static NhlErrorTypes ContourDraw
 
 		subret = _NhlSetTrans(tfp->trans_obj, layer);
 
-		if ((ret = MIN(ret,subret)) < WARNING) {
+		if ((ret = MIN(ret,subret)) < NhlWARNING) {
 			e_text = "%s: error setting transformation";
-			NhlPError(FATAL,E_UNKNOWN,e_text, entry_name);
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
 			return(ret);
 		}
 	}
 
 	subret = _NhlActivateWorkstation(cl->base.wkptr);
 
-	if ((ret = MIN(ret,subret)) < WARNING) {
+	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: error activating workstation";
-		NhlPError(FATAL,E_UNKNOWN,e_text, entry_name);
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
 		return(ret);
 	}
 
-	NhlGetValues(trans_obj->base.id, 
+	NhlVAGetValues(trans_obj->base.id, 
 		     NhlNtrOutOfRangeF, &out_of_range_val,
 		     NULL);
         c_cpsetr("ORV",out_of_range_val);
@@ -579,9 +578,9 @@ static NhlErrorTypes ContourDraw
 
         subret = _NhlDeactivateWorkstation(cl->base.wkptr);
 
-	if ((ret = MIN(ret,subret)) < WARNING) {
+	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: error deactivating workstation";
-		NhlPError(FATAL,E_UNKNOWN,e_text, entry_name);
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
 		return(ret);
 	}
 
@@ -609,24 +608,24 @@ static NhlErrorTypes ContourDraw
 static NhlErrorTypes SetUpTransObj
 #if  __STDC__
 (
-	ContourLayer	cnnew,
-	ContourLayer	cnold,
+	NhlContourLayer	cnnew,
+	NhlContourLayer	cnold,
 	NhlBoolean	init
 )
 #else 
 (cnnew,cnold,init)
-	ContourLayer	cnnew;
-	ContourLayer	cnold;
+	NhlContourLayer	cnnew;
+	NhlContourLayer	cnold;
 	NhlBoolean	init;
 #endif
 {
- 	NhlErrorTypes		ret = NOERROR, subret = NOERROR;
+ 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	char			*e_text;
 	char			*entry_name;
-	ContourLayerPart	*cnp = &(cnnew->contour);
-	ContourLayerPart	*ocnp = &(cnold->contour);
-	TransformLayerPart	*tfp = &(cnnew->trans);
-	char			buffer[MAXRESNAMLEN];
+	NhlContourLayerPart	*cnp = &(cnnew->contour);
+	NhlContourLayerPart	*ocnp = &(cnold->contour);
+	NhlTransformLayerPart	*tfp = &(cnnew->trans);
+	char			buffer[_NhlMAXRESNAMLEN];
 	int			tmpid;
         NhlSArg			sargs[16];
         int			nargs = 0;
@@ -654,8 +653,8 @@ static NhlErrorTypes SetUpTransObj
 		strcat(buffer,".Trans");
 
 		subret = _NhlALCreateChild(&tmpid,buffer,
-					   logLinTransObjLayerClass,
-					   (Layer)cnnew,sargs,nargs);
+					   NhllogLinTransObjLayerClass,
+					   (NhlLayer)cnnew,sargs,nargs);
 
 		ret = MIN(subret,ret);
 
@@ -663,8 +662,8 @@ static NhlErrorTypes SetUpTransObj
 
 		if(tfp->trans_obj == NULL){
 			e_text = "%s: Error creating transformation object";
-			NhlPError(FATAL,E_UNKNOWN,e_text,entry_name);
-			return FATAL;
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			return NhlFATAL;
 		}
 
 		return ret;
@@ -690,10 +689,7 @@ static NhlErrorTypes SetUpTransObj
 		NhlSetSArg(&sargs[nargs++],NhlNtrYLog,cnp->y_log);
 
 	subret = _NhlALSetValuesChild(tfp->trans_obj->base.id,
-				      (Layer) cnnew,sargs,nargs);
+				      (NhlLayer) cnnew,sargs,nargs);
 	return MIN(ret,subret);
 
 }
-
-
-

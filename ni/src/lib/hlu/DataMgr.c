@@ -1,5 +1,5 @@
 /*
- *      $Id: DataMgr.c,v 1.2 1993-10-19 17:50:31 boote Exp $
+ *      $Id: DataMgr.c,v 1.3 1994-01-27 21:22:42 boote Exp $
  */
 /************************************************************************
 *									*
@@ -18,7 +18,7 @@
  *	Date:		Thu Jun 24 10:22:34 MDT 1993
  *
  *	Description:	This class is used to control the conversion process
- *			of a DataItemLayerClass.  There will be a DataMgr
+ *			of a NhlDataItemLayerClass.  There will be a DataMgr
  *			created for each instance of a DataItem Class object.
  *			Since this class is basically the control mechanism
  *			for the DataItem class, it includes the Private
@@ -39,9 +39,9 @@
 
 static NhlErrorTypes DataMgrInitialize(
 #if	NhlNeedProto
-	LayerClass	lc,	/* class	*/
-	Layer		req,	/* requested	*/
-	Layer		new,	/* new		*/
+	NhlLayerClass	lc,	/* class	*/
+	NhlLayer	req,	/* requested	*/
+	NhlLayer	new,	/* new		*/
 	_NhlArgList	args,	/* args		*/
 	int		nargs	/* nargs	*/
 #endif
@@ -49,18 +49,18 @@ static NhlErrorTypes DataMgrInitialize(
 
 static NhlErrorTypes DataMgrDestroy(
 #if	NhlNeedProto
-	Layer	l	/* layer to destroy	*/
+	NhlLayer	l	/* layer to destroy	*/
 #endif
 );
 
-DataMgrLayerClassRec dataMgrLayerClassRec = {
-	/* BaseLayerClassPart */
+NhlDataMgrLayerClassRec NhldataMgrLayerClassRec = {
+	/* NhlBaseLayerClassPart */
 	{
 /* class_name			*/	"DataMgr",
 /* nrm_class			*/	NrmNULLQUARK,
-/* layer_size			*/	sizeof(DataMgrLayerRec),
+/* layer_size			*/	sizeof(NhlDataMgrLayerRec),
 /* class_inited			*/	False,
-/* superclass			*/	(LayerClass)&objLayerClassRec,
+/* superclass			*/	(NhlLayerClass)&NhlobjLayerClassRec,
 
 /* layer_resources		*/	NULL,
 /* num_resources		*/	0,
@@ -75,13 +75,13 @@ DataMgrLayerClassRec dataMgrLayerClassRec = {
 /* layer_reparent		*/	NULL,
 /* layer_destroy		*/	DataMgrDestroy
 	},
-	/* DataMgrLayerClassPart */
+	/* NhlDataMgrLayerClassPart */
 	{
 /* foo				*/	0
 	}
 };
 	
-LayerClass dataMgrLayerClass = (LayerClass)&dataMgrLayerClassRec;
+NhlLayerClass NhldataMgrLayerClass = (NhlLayerClass)&NhldataMgrLayerClassRec;
 
 /************************************************************************
 *	New type converters - added to converter table by		*
@@ -102,9 +102,9 @@ LayerClass dataMgrLayerClass = (LayerClass)&dataMgrLayerClassRec;
  * Description:	This function initializes the DataMgr instance.
  *
  * In Args:	
- *		LayerClass	lc,	class
- *		Layer		req,	requested
- *		Layer		new,	new
+ *		NhlLayerClass	lc,	class
+ *		NhlLayer	req,	requested
+ *		NhlLayer	new,	new
  *		_NhlArgList	args,	args
  *		int		nargs	nargs
  *
@@ -119,29 +119,29 @@ static NhlErrorTypes
 DataMgrInitialize
 #if	__STDC__
 (
-	LayerClass	lc,	/* class	*/
-	Layer		req,	/* requested	*/
-	Layer		new,	/* new		*/
+	NhlLayerClass	lc,	/* class	*/
+	NhlLayer	req,	/* requested	*/
+	NhlLayer	new,	/* new		*/
 	_NhlArgList	args,	/* args		*/
 	int		nargs	/* nargs	*/
 )
 #else
 (lc,req,new,args,nargs)
-	LayerClass	lc;	/* class	*/
-	Layer		req;	/* requested	*/
-	Layer		new;	/* new		*/
+	NhlLayerClass	lc;	/* class	*/
+	NhlLayer	req;	/* requested	*/
+	NhlLayer	new;	/* new		*/
 	_NhlArgList	args;	/* args		*/
 	int		nargs;	/* nargs	*/
 #endif
 {
-	DataMgrLayer	dmgr = (DataMgrLayer)new;
+	NhlDataMgrLayer	dmgr = (NhlDataMgrLayer)new;
 
 	dmgr->datamgr.uptodate = True;
 	dmgr->datamgr.connection_list = NULL;
 	dmgr->datamgr.data_list = NULL;
 	dmgr->datamgr.dspec_list = NULL;
 
-	return NOERROR;
+	return NhlNOERROR;
 }
 
 /*
@@ -316,7 +316,7 @@ FreeCache
  *		behalf of the DataMgr layer given.
  *
  * In Args:	
- *		Layer	l	layer to destroy
+ *		NhlLayer	l	layer to destroy
  *
  * Out Args:	
  *
@@ -328,14 +328,14 @@ static NhlErrorTypes
 DataMgrDestroy
 #if	__STDC__
 (
-	Layer	l	/* layer to destroy	*/
+	NhlLayer	l	/* layer to destroy	*/
 )
 #else
 (l)
-	Layer	l;	/* layer to destroy	*/
+	NhlLayer	l;	/* layer to destroy	*/
 #endif
 {
-	DataMgrLayer	mgr = (DataMgrLayer)l;
+	NhlDataMgrLayer	mgr = (NhlDataMgrLayer)l;
 
 	/*
 	 * if the datacomm classes do the right thing ReleaseHandles should
@@ -347,7 +347,7 @@ DataMgrDestroy
 	FreeHandles(mgr->datamgr.connection_list);
 	FreeCache(mgr->datamgr.data_list);
 
-	return NOERROR;
+	return NhlNOERROR;
 }
 
 /************************************************************************
@@ -370,10 +370,10 @@ DataMgrDestroy
  *
  * Description:	This function is used to allocate a Data Handle record in
  *		the manager so the manager can keep track of the datacomm
- *		Layers it is providing data for.
+ *		NhlLayers it is providing data for.
  *
  * In Args:	
- *		DataItemLayer	item,		DataItem sub-class
+ *		NhlDataItemLayer	item,		DataItem sub-class
  *		NrmQuark	*type_req	type wanted
  *
  * Out Args:	
@@ -386,28 +386,30 @@ _NhlDHandle
 _NhlInitDataConnection
 #if	__STDC__
 (
-	DataItemLayer	item,		/* DataItem sub-class		*/
-	int		dcommid,	/* id for datacomm layer	*/
-	NrmQuark	res_name,	/* resource name		*/
-	NrmQuark	*type_req,	/* type wanted			*/
-	NrmQuark	*type_ret	/* type will be created		*/
+	NhlLayer		l,		/* DataItem sub-class	*/
+	int			dcommid,	/* id for datacomm layer*/
+	NrmQuark		res_name,	/* resource name	*/
+	NrmQuark		*type_req,	/* type wanted		*/
+	NrmQuark		*type_ret	/* type will be created	*/
 )
 #else
-(item,dcommid,res_name,type_req,type_ret)
-	DataItemLayer	item;		/* DataItem sub-class		*/
-	int		dcommid;	/* id for datacomm layer	*/
-	NrmQuark	res_name;	/* resource name		*/
-	NrmQuark	*type_req;	/* type wanted			*/
-	NrmQuark	*type_ret;	/* type will be created		*/
+(l,dcommid,res_name,type_req,type_ret)
+	NhlLayer		l;		/* DataItem sub-class	*/
+	int			dcommid;	/* id for datacomm layer*/
+	NrmQuark		res_name;	/* resource name	*/
+	NrmQuark		*type_req;	/* type wanted		*/
+	NrmQuark		*type_ret;	/* type will be created	*/
 #endif
 {
-	DataMgrLayer	mgr = (DataMgrLayer)item->dataitem.manager;
-	_NhlDHandle	new;
-	NrmQuark	from = item->base.layer_class->base_class.nrm_class;
-	NrmQuark	*type;
+	NhlDataItemLayer	item = (NhlDataItemLayer)l;
+	NhlDataMgrLayer		mgr = (NhlDataMgrLayer)item->dataitem.manager;
+	_NhlDHandle		new;
+	NrmQuark		from =
+				item->base.layer_class->base_class.nrm_class;
+	NrmQuark		*type;
 
 	if(mgr == NULL){
-		NhlPError(FATAL,E_UNKNOWN,
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
 			"_NhlInitDataConnection:Called without a Data Manager");
 		return NULL;
 	}
@@ -419,7 +421,7 @@ _NhlInitDataConnection
 		type++;
 	}
 	if(*type == NrmNULLQUARK){
-		NhlPError(FATAL,E_UNKNOWN,"No Conversion available");
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"No Conversion available");
 		return NULL;
 	}
 
@@ -427,7 +429,7 @@ _NhlInitDataConnection
 
 	new = NhlMalloc(sizeof(_NhlDHandleRec));
 	if(new == NULL){
-		NhlPError(FATAL,ENOMEM,NULL);
+		NhlPError(NhlFATAL,ENOMEM,NULL);
 		return NULL;
 	}
 
@@ -449,7 +451,7 @@ _NhlInitDataConnection
  *		the dataset is Destroyed.
  *
  * In Args:	
- *		DataMgrLayer	mgr,	manager
+ *		NhlDataMgrLayer	mgr,	manager
  *		_NhlDCache	cache	ptr to node to release
  *
  * Out Args:	
@@ -462,12 +464,12 @@ static void
 ReleaseCache
 #if	__STDC__
 (
-	DataMgrLayer	mgr,	/* manager			*/
+	NhlDataMgrLayer	mgr,	/* manager			*/
 	_NhlDCache	cache	/* ptr to node to release	*/
 )
 #else
 (mgr,cache)
-	DataMgrLayer	mgr;	/* manager			*/
+	NhlDataMgrLayer	mgr;	/* manager			*/
 	_NhlDCache	cache;	/* ptr to node to release	*/
 #endif
 {
@@ -500,7 +502,7 @@ ReleaseCache
  *		and returns the information in the _NhlDCache record.
  *
  * In Args:	
- *		DataMgrLayer	mgr,	data manager
+ *		NhlDataMgrLayer	mgr,	data manager
  *		NrmQuark	type	convert to type
  *
  * Out Args:	
@@ -513,18 +515,18 @@ static _NhlDCache
 CreateCache
 #if	__STDC__
 (
-	DataMgrLayer	mgr,	/* data manager		*/
+	NhlDataMgrLayer	mgr,	/* data manager		*/
 	NrmQuark	type	/* convert to type	*/
 )
 #else
 (mgr,type)
-	DataMgrLayer	mgr;	/* data manager		*/
+	NhlDataMgrLayer	mgr;	/* data manager		*/
 	NrmQuark	type;	/* convert to type	*/
 #endif
 {
 	_NhlDCache	new;
 	int		dataset_id;
-	NhlErrorTypes	ret = NOERROR;
+	NhlErrorTypes	ret = NhlNOERROR;
 	NrmQuark	fromQ =
 		mgr->base.parent->base.layer_class->base_class.nrm_class;
 	NrmValue	fromdata,todata;
@@ -541,7 +543,7 @@ CreateCache
 
 	new = NhlMalloc(sizeof(_NhlDCacheRec));
 	if(new == NULL){
-		NhlPError(FATAL,ENOMEM,NULL);
+		NhlPError(NhlFATAL,ENOMEM,NULL);
 		return NULL;
 	}
 
@@ -550,7 +552,7 @@ CreateCache
 	new->ref_count = 1;
 	new->cvt_context = _NhlCreateConvertContext();
 	if(new->cvt_context == NULL){
-		NhlPError(FATAL,ENOMEM,NULL);
+		NhlPError(NhlFATAL,ENOMEM,NULL);
 		(void)NhlFree(new);
 		return NULL;
 	}
@@ -562,8 +564,8 @@ CreateCache
 
 	ret = _NhlConvertData(new->cvt_context,fromQ,type,&fromdata,&todata);
 	new->dataset = _NhlGetLayer(dataset_id);
-	if((ret < WARNING) || (new->dataset == NULL)){
-		NhlPError(FATAL,E_UNKNOWN,"Unable to convert from %s to %s",
+	if((ret < NhlWARNING) || (new->dataset == NULL)){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"Unable to convert from %s to %s",
 				NrmNameToString(fromQ),NrmNameToString(type));
 		_NhlFreeConvertContext(new->cvt_context);
 		if(new->dataset != NULL)
@@ -652,7 +654,7 @@ UpdateCacheList
  *		dataset objects id.
  *
  * In Args:	
- *		DataItemLayer	item,		dataItem sub-class
+ *		NhlDataItemLayer	item,		dataItem sub-class
  *		_NhlDHandle	dhandle,	id for Connection
  *
  * Out Args:	
@@ -660,26 +662,27 @@ UpdateCacheList
  *		int		*dset_ret	rtrn dataset object
  *
  * Scope:	Global - Privately used by DataComm class
- * Returns:	Layer - Failure==NULL
+ * Returns:	NhlLayer - Failure==NULL
  * Side Effect:	
  */
-Layer
+NhlLayer
 _NhlRetrieveData
 #if	__STDC__
 (
-	DataItemLayer	item,		/* dataItem sub-class	*/
-	_NhlDHandle	dhandle,	/* id for Connection	*/
-	NhlBoolean	*new		/* is data new/changed	*/
+	NhlLayer		l,		/* dataItem sub-class	*/
+	_NhlDHandle		dhandle,	/* id for Connection	*/
+	NhlBoolean		*new		/* is data new/changed	*/
 )
 #else
-(item,dhandle,new)
-	DataItemLayer	item;		/* dataItem sub-class	*/
-	_NhlDHandle	dhandle;	/* id for Connection	*/
-	NhlBoolean	*new;		/* is data new/changed	*/
+(l,dhandle,new)
+	NhlLayer		l;		/* dataItem sub-class	*/
+	_NhlDHandle		dhandle;	/* id for Connection	*/
+	NhlBoolean		*new;		/* is data new/changed	*/
 #endif
 {
-	DataMgrLayer	mgr = (DataMgrLayer)item->dataitem.manager;
-	_NhlDHandle	thandle;
+	NhlDataItemLayer	item = (NhlDataItemLayer)l;
+	NhlDataMgrLayer		mgr = (NhlDataMgrLayer)item->dataitem.manager;
+	_NhlDHandle		thandle;
 
 	/*
 	 * set new in case caller didn't
@@ -687,7 +690,8 @@ _NhlRetrieveData
 	*new = False;
 
 	if(mgr == NULL){
-	NhlPError(FATAL,E_UNKNOWN,"_NhlRetrieveData:Called without a Data Mgr");
+	NhlPError(NhlFATAL,NhlEUNKNOWN,
+				"_NhlRetrieveData:Called without a Data Mgr");
 		return NULL;
 	}
 
@@ -702,7 +706,7 @@ _NhlRetrieveData
 		thandle = thandle->next;
 	}
 	if(thandle == NULL){
-		NhlPError(FATAL,E_UNKNOWN,
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
 	"_NhlRetrieveData:The given dhandle does not exist in DataItem %s",
 							NhlName(item->base.id));
 		return NULL;
@@ -741,7 +745,7 @@ _NhlRetrieveData
 
 	dhandle->cache = CreateCache(mgr,dhandle->type);
 	if(dhandle->cache == NULL){
-		NhlPError(FATAL,E_UNKNOWN,
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
 		"_NhlRetrieveData:Unable to convert data in DataItem %s",
 							NhlName(item->base.id));
 		return NULL;
@@ -763,7 +767,7 @@ _NhlRetrieveData
  *		when it is no longer needed.
  *
  * In Args:	
- *		DataItemLayer	item,	DataItem sub-class
+ *		NhlDataItemLayer	item,	DataItem sub-class
  *		_NhlDHandle	dhandle	id for Connection
  *
  * Out Args:	
@@ -776,20 +780,22 @@ void
 _NhlCloseDataConnection
 #if	__STDC__
 (
-	DataItemLayer	item,	/* DataItem sub-class	*/
-	_NhlDHandle	dhandle	/* id for Connection	*/
+	NhlLayer		l,	/* DataItem sub-class	*/
+	_NhlDHandle		dhandle	/* id for Connection	*/
 )
 #else
-(item,dhandle)
-	DataItemLayer	item;		/* DataItem sub-class	*/
-	_NhlDHandle	dhandle;	/* id for Connection	*/
+(l,dhandle)
+	NhlLayer		l;		/* DataItem sub-class	*/
+	_NhlDHandle		dhandle;	/* id for Connection	*/
 #endif
 {
-	DataMgrLayer	mgr = (DataMgrLayer)item->dataitem.manager;
-	_NhlDHandle	*dhptr;
+	NhlDataItemLayer	item = (NhlDataItemLayer)l;
+	NhlDataMgrLayer		mgr = (NhlDataMgrLayer)item->dataitem.manager;
+	_NhlDHandle		*dhptr;
 
 	if(mgr == NULL){
-NhlPError(FATAL,E_UNKNOWN,"_NhlCloseDataConnection:called without a DataMgr");
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			"_NhlCloseDataConnection:called without a DataMgr");
 		return;
 	}
 
@@ -804,7 +810,7 @@ NhlPError(FATAL,E_UNKNOWN,"_NhlCloseDataConnection:called without a DataMgr");
 		}
 	}
 
-	NhlPError(WARNING,E_UNKNOWN,
+	NhlPError(NhlWARNING,NhlEUNKNOWN,
 		"_NhlCloseDataConnection:Unable to find dhandle in %s",
 							NhlName(item->base.id));
 	return;
@@ -835,13 +841,15 @@ void
 _NhlDataItemModified
 #if	__STDC__
 (
-	DataMgrLayer	mgr	/* DataMgr	*/
+	NhlLayer	l	/* DataMgr	*/
 )
 #else
-(mgr)
-	DataMgrLayer	mgr;	/* DataMgr	*/
+(l)
+	NhlLayer	l;	/* DataMgr	*/
 #endif
 {
+	NhlDataMgrLayer	mgr = (NhlDataMgrLayer)l;
+
 	mgr->datamgr.uptodate = False;
 
 	return;
@@ -867,21 +875,22 @@ NhlErrorTypes
 _NhlNotifyDataComm
 #if	__STDC__
 (
-	DataMgrLayer	dmgr	/* dmgr layer */
+	NhlLayer	l	/* dmgr layer */
 )
 #else
-(dmgr)
-	DataMgrLayer	dmgr;	/* dmgr layer */
+(l)
+	NhlLayer	l;	/* dmgr layer */
 #endif
 {
+	NhlDataMgrLayer	dmgr = (NhlDataMgrLayer)l;
 	_NhlDHandle	list = NULL;
-	NhlErrorTypes	ret = NOERROR, lret = NOERROR;
+	NhlErrorTypes	ret = NhlNOERROR, lret = NhlNOERROR;
 
 	if(dmgr == NULL)
-		return NOERROR;
+		return NhlNOERROR;
 
 	if(dmgr->datamgr.uptodate)
-		return NOERROR;
+		return NhlNOERROR;
 	
 	list = dmgr->datamgr.connection_list;
 	while(list != NULL){
@@ -924,7 +933,7 @@ PushDSpec
 
 	*listptr = (_NhlDSpec)NhlMalloc(sizeof(_NhlDSpecRec));
 	if(*listptr == NULL){
-		NhlPError(FATAL,ENOMEM,NULL);
+		NhlPError(NhlFATAL,ENOMEM,NULL);
 		return False;
 	}
 
@@ -942,7 +951,7 @@ PushDSpec
  *		destroyed, it should notify each of the dspec objects.
  *
  * In Args:	
- *		DataItemLayer	item,		DataItem sub-class
+ *		NhlDataItemLayer	item,		DataItem sub-class
  *		int		dspecid		id for dataspec layer
  *
  * Out Args:	
@@ -955,19 +964,20 @@ NhlBoolean
 _NhlRegisterDSpec
 #if	__STDC__
 (
-	DataItemLayer	item,		/* DataItem sub-class		*/
-	int		dspecid		/* id for dataspec layer	*/
+	NhlLayer		l,		/* DataItem sub-class	*/
+	int			dspecid		/* id for dataspec layer*/
 )
 #else
-(item,dspecid)
-	DataItemLayer	item;		/* DataItem sub-class		*/
-	int		dspecid;	/* id for dataspec layer	*/
+(l,dspecid)
+	NhlLayer		l;		/* DataItem sub-class	*/
+	int			dspecid;	/* id for dataspec layer*/
 #endif
 {
-	DataMgrLayer	mgr = (DataMgrLayer)item->dataitem.manager;
+	NhlDataItemLayer	item = (NhlDataItemLayer)l;
+	NhlDataMgrLayer		mgr = (NhlDataMgrLayer)item->dataitem.manager;
 
 	if((mgr == NULL) || !_NhlIsDataMgr(mgr)){
-		NhlPError(FATAL,E_UNKNOWN,
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
 			"_NhlRegisterDSpec:Called without a Data Manager");
 		return False;
 	}
@@ -1023,7 +1033,7 @@ PopDSpec
  *		no longer being used as part of a DataSpec object.
  *
  * In Args:	
- *		DataItemLayer	item,		DataItem sub-class
+ *		NhlDataItemLayer	item,		DataItem sub-class
  *		int		dspecid		id for dataspec layer
  *
  * Out Args:	
@@ -1036,25 +1046,26 @@ void
 _NhlUnRegisterDSpec
 #if	__STDC__
 (
-	DataItemLayer	item,		/* DataItem sub-class		*/
-	int		dspecid		/* id for dataspec layer	*/
+	NhlLayer		l,		/* DataItem sub-class	*/
+	int			dspecid		/* id for dataspec layer*/
 )
 #else
-(item,dspecid)
-	DataItemLayer	item;		/* DataItem sub-class		*/
-	int		dspecid;	/* id for dataspec layer	*/
+(l,dspecid)
+	NhlLayer		l;		/* DataItem sub-class	*/
+	int			dspecid;	/* id for dataspec layer*/
 #endif
 {
-	DataMgrLayer	mgr = (DataMgrLayer)item->dataitem.manager;
+	NhlDataItemLayer	item = (NhlDataItemLayer)l;
+	NhlDataMgrLayer	mgr = (NhlDataMgrLayer)item->dataitem.manager;
 
 	if((mgr == NULL) || !_NhlIsDataMgr(mgr)){
-		NhlPError(FATAL,E_UNKNOWN,
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
 			"_NhlUnRegisterDSpec:Called without a Data Manager");
 		return;
 	}
 
 	if(!PopDSpec(&mgr->datamgr.dspec_list,dspecid))
-		NhlPError(WARNING,E_UNKNOWN,
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
 			"Unable to find %d in DataMgr's DSpec list",dspecid);
 
 	return;

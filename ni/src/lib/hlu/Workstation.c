@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.5 1993-12-13 23:35:12 ethan Exp $
+ *      $Id: Workstation.c,v 1.6 1994-01-27 21:27:20 boote Exp $
  */
 /************************************************************************
 *									*
@@ -32,8 +32,8 @@
  *			information. 
  *			
  *			There are two globally callable private functions
- *				NhlErrorTypes	_NhlAddWorkChildLayer
- *				NhlErrorTypes	_NhlDeleteWorkChildLayer
+ *				NhlErrorTypes	_NhlAddWorkChildNhlLayer
+ *				NhlErrorTypes	_NhlDeleteWorkChildNhlLayer
  */
 
 #include <stdio.h>
@@ -172,7 +172,7 @@ static NhlColor def_color[] = {
  * 0 through (and including) NhlNwkDashTableLength as valid indexes.
  */
 
-char *dash_patterns[] = { 
+static char *dash_patterns[] = { 
 		 "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$",
                  "$'$'$'$'$'$'$'$'$'$'$'$'$'$'$'$'$'$'$'$'$'$'$'$'",
                  "$$'$$'$$'$$'$$'$$'$$'$$'$$'$$'$$'$$'$$'$$'$$'$$'",
@@ -283,7 +283,7 @@ static NrmQuark foregnd_name;
 static NrmQuark	marker_tbl_strings_name;
 static NrmQuark marker_tbl_params_name;
 
-#define Oset(field) NhlOffset(WorkstationLayerRec,work.field)
+#define Oset(field) NhlOffset(NhlWorkstationLayerRec,work.field)
 static NhlResource resources[] = {
 	{ NhlNwkColorMap, NhlCwkColorMap, NhlTGenArray , sizeof(NhlPointer),
 		Oset(color_map), NhlTImmediate, NULL},
@@ -389,15 +389,15 @@ static NhlResource resources[] = {
 
 static NhlErrorTypes WorkstationClassPartInitialize(
 #if	NhlNeedProto
-	LayerClass	layerclass	/* layerclass to init	*/
+	NhlLayerClass	layerclass	/* layerclass to init	*/
 #endif
 );
 
 static NhlErrorTypes WorkstationInitialize(
 #ifdef NhlNeedProto
-        LayerClass,	/* class */
-        Layer,		/* req */
-        Layer,		/* new */
+        NhlLayerClass,	/* class */
+        NhlLayer,	/* req */
+        NhlLayer,	/* new */
         _NhlArgList,	/* args */
         int		/* num_args */
 #endif
@@ -408,15 +408,15 @@ static NhlErrorTypes WorkstationClassInitialize();
 
 static NhlErrorTypes WorkstationDestroy(
 #ifdef NhlNeedProto
-        Layer           /* inst */
+        NhlLayer           /* inst */
 #endif
 );
 
 static NhlErrorTypes    WorkstationSetValues(
 #ifdef NhlNeedProto
-        Layer,		/* old */
-        Layer,		/* reference */
-        Layer,		/* new */
+        NhlLayer,	/* old */
+        NhlLayer,	/* reference */
+        NhlLayer,	/* new */
         _NhlArgList,	/* args */
         int		/* num_args*/
 #endif
@@ -424,7 +424,7 @@ static NhlErrorTypes    WorkstationSetValues(
 
 static NhlErrorTypes 	WorkstationGetValues(
 #ifdef NhlNeedProto
-	Layer,		/* l */
+	NhlLayer,	/* l */
 	_NhlArgList, 	/* args */
 	int		/* num_args */
 #endif
@@ -437,43 +437,43 @@ static NhlErrorTypes 	WorkstationGetValues(
 
 static NhlErrorTypes WorkstationOpen(
 #ifdef NhlNeedProto
-	Layer	/* instance */
+	NhlLayer	/* instance */
 #endif
 );
 
 static NhlErrorTypes WorkstationClose(
 #ifdef NhlNeedProto
-	Layer	/* instance */
+	NhlLayer	/* instance */
 #endif
 );
 
 static NhlErrorTypes WorkstationActivate(
 #ifdef NhlNeedProto
-	Layer	/* instance */
+	NhlLayer	/* instance */
 #endif
 );
 
 static NhlErrorTypes WorkstationDeactivate(
 #ifdef NhlNeedProto
-	Layer	/* instance */
+	NhlLayer	/* instance */
 #endif
 );
 
 static NhlErrorTypes WorkstationUpdate(
 #if	NhlNeedProto
-	Layer	l	/* instance	*/
+	NhlLayer	l	/* instance	*/
 #endif
 );
 
 static NhlErrorTypes WorkstationClear(
 #if	NhlNeedProto
-	Layer	l	/* instance	*/
+	NhlLayer	l	/* instance	*/
 #endif
 );
 
 static NhlErrorTypes WorkstationLineTo(
 #if 	NhlNeedProto
-	Layer	l,
+	NhlLayer	l,
 	float	x,
 	float 	y,
 	int	upordown
@@ -482,19 +482,19 @@ static NhlErrorTypes WorkstationLineTo(
 
 static NhlErrorTypes WorkstationFill(
 #if 	NhlNeedProto
-	Layer	l,
-	float	*x,
-	float 	*y,
-	int	num_points
+	NhlLayer	l,
+	float		*x,
+	float 		*y,
+	int		num_points
 #endif
 );
 
 static NhlErrorTypes WorkstationMarker(
 #if 	NhlNeedProto
-	Layer	l,
-	float	*x,
-	float 	*y,
-	int	num_points
+	NhlLayer	l,
+	float		*x,
+	float 		*y,
+	int		num_points
 #endif
 );
 
@@ -503,13 +503,13 @@ static NhlErrorTypes WorkstationMarker(
 */
 static NhlErrorTypes AllocateColors(
 #ifdef NhlNeedProto
-Layer	/* instance */
+NhlLayer	/* instance */
 #endif
 ); 
 
 static NhlErrorTypes DeallocateColors(
 #ifdef NhlNeedProto
-Layer	/* instance */
+NhlLayer	/* instance */
 #endif
 ); 
 
@@ -520,13 +520,13 @@ Layer	/* instance */
 */
 
 
-WorkstationLayerClassRec workstationLayerClassRec = {
+NhlWorkstationLayerClassRec NhlworkstationLayerClassRec = {
         {
 /* class_name			*/	"Workstation",
 /* nrm_class			*/	NrmNULLQUARK,
-/* layer_size			*/	sizeof(WorkstationLayerRec),
+/* layer_size			*/	sizeof(NhlWorkstationLayerRec),
 /* class_inited			*/	False,
-/* superclass			*/	(LayerClass)&baseLayerClassRec,
+/* superclass			*/	(NhlLayerClass)&NhlbaseLayerClassRec,
 
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
@@ -563,7 +563,7 @@ WorkstationLayerClassRec workstationLayerClassRec = {
 	}
 };
 
-LayerClass workstationLayerClass = (LayerClass)&workstationLayerClassRec;
+NhlLayerClass NhlworkstationLayerClass = (NhlLayerClass)&NhlworkstationLayerClassRec;
 
 /*
  * Function:	WorkstationClassInitialize
@@ -625,15 +625,15 @@ static NhlErrorTypes WorkstationClassInitialize()
 	marker_table = (NhlMarkerTable) NhlMalloc(marker_table_len * 
 						  sizeof(NhlMarkerSpec *));
 	if (marker_table == NULL) {
-		NhlPError(FATAL,E_UNKNOWN,
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
 			  "WorkstationClassInitialize: NhlMalloc failed");
-		return FATAL;
+		return NhlFATAL;
 	}
 	for (i = 0; i < marker_table_len; i++) {
 		marker_table[i] = &marker_specs[i];
 	}
 	
-	return(NOERROR);
+	return(NhlNOERROR);
 }
 
 /*
@@ -654,15 +654,15 @@ static NhlErrorTypes
 WorkstationClassPartInitialize
 #if	__STDC__
 (
-	LayerClass	layerclass	/* layerclass to init	*/
+	NhlLayerClass	layerclass	/* layerclass to init	*/
 )
 #else
 (layerclass)
-	LayerClass	layerclass;	/* layerclass to init	*/
+	NhlLayerClass	layerclass;	/* layerclass to init	*/
 #endif
 {
-	WorkstationLayerClass	lc = (WorkstationLayerClass)layerclass;
-	WorkstationLayerClass	sc = (WorkstationLayerClass)
+	NhlWorkstationLayerClass	lc = (NhlWorkstationLayerClass)layerclass;
+	NhlWorkstationLayerClass	sc = (NhlWorkstationLayerClass)
 						lc->base_class.superclass;
 
 	if(lc->work_class.update_work == NhlInheritUpdate){
@@ -681,7 +681,7 @@ WorkstationClassPartInitialize
 		lc->work_class.marker_work = sc->work_class.marker_work;
 	}
 
-	return NOERROR;
+	return NhlNOERROR;
 }
 
 /*
@@ -703,20 +703,20 @@ WorkstationClassPartInitialize
 /*ARGSUSED*/
 static NhlErrorTypes WorkstationInitialize
 #if  __STDC__
-( LayerClass class,  Layer req, Layer new, _NhlArgList args , int num_args  )
+( NhlLayerClass class,  NhlLayer req, NhlLayer new, _NhlArgList args , int num_args  )
 #else
 ( class,  req, new, args , num_args  )
-	LayerClass 	class;
-	Layer		req;
-	Layer		new;
+	NhlLayerClass 	class;
+	NhlLayer		req;
+	NhlLayer		new;
 	_NhlArgList		args;
 	int		num_args;
 #endif
 {
-	WorkstationLayer newl = (WorkstationLayer) new;
+	NhlWorkstationLayer newl = (NhlWorkstationLayer) new;
 	NhlColor* tcolor = NULL;
 	int i;
-	NhlErrorTypes retcode = NOERROR, subret;
+	NhlErrorTypes retcode = NhlNOERROR, subret;
 	NhlGenArray ga;
 	char *e_text;
 	char *entry_name = "WorkstationInitialize";
@@ -731,9 +731,9 @@ static NhlErrorTypes WorkstationInitialize
  * has been set, issue a warning, then replace with the real value.
  */
 	if (_NhlArgIsSet(args,num_args,NhlNwkFillTableLength)) {
-		NhlPError(WARNING,E_UNKNOWN,
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
 			  "Attempt to set read-only resource ignored");
-		retcode = MIN(WARNING, retcode);
+		retcode = MIN(NhlWARNING, retcode);
 	}
 	newl->work.fill_table_len = fill_table_len - 1;
 
@@ -743,9 +743,9 @@ static NhlErrorTypes WorkstationInitialize
  */
 
 	if (_NhlArgIsSet(args,num_args,NhlNwkMarkerTableLength)) {
-		NhlPError(WARNING,E_UNKNOWN,
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
 			  "Attempt to set read-only resource ignored");
-		retcode = MIN(WARNING, retcode);
+		retcode = MIN(NhlWARNING, retcode);
 	}
 	newl->work.marker_table_len = marker_table_len - 1;
 /*
@@ -765,9 +765,9 @@ static NhlErrorTypes WorkstationInitialize
 	if ((ga = NhlCreateGenArray((NhlPointer)mparams,NhlTFloat,
 				    sizeof(float),2,count)) == NULL) {
 		e_text = "%s: error creating %s GenArray";
-		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
 			  NhlNwkMarkerTableParams);
-		return FATAL;
+		return NhlFATAL;
 	}
 	ga->my_data = False;
 
@@ -779,9 +779,9 @@ static NhlErrorTypes WorkstationInitialize
 						   NhlNwkMarkerTableParams, 
 						   entry_name);
 		
-		if ((retcode = MIN(retcode,subret)) < WARNING) 
+		if ((retcode = MIN(retcode,subret)) < NhlWARNING) 
 				return retcode;
-		if (subret > WARNING) {
+		if (subret > NhlWARNING) {
 			len1 = 
 			   newl->work.marker_table_params->len_dimensions[0];
 		}
@@ -795,9 +795,9 @@ static NhlErrorTypes WorkstationInitialize
 	if ((ga = NhlCreateGenArray((NhlPointer)mstrings,NhlTString,
 				    sizeof(NhlString),1,count)) == NULL) {
 		e_text = "%s: error creating %s GenArray";
-		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
 			  NhlNwkMarkerTableParams);
-		return FATAL;
+		return NhlFATAL;
 	}
 	ga->my_data = False;
 
@@ -808,9 +808,9 @@ static NhlErrorTypes WorkstationInitialize
 						   NhlNwkMarkerTableStrings, 
 						   entry_name);
 		
-		if ((retcode = MIN(retcode,subret)) < WARNING) 
+		if ((retcode = MIN(retcode,subret)) < NhlWARNING) 
 				return retcode;
-		if (subret > WARNING) {
+		if (subret > NhlWARNING) {
 			len2 = 
 			    newl->work.marker_table_strings->len_dimensions[0];
 		}
@@ -835,13 +835,14 @@ static NhlErrorTypes WorkstationInitialize
 			mstr = mstrings[i];
 
 		if (i < newl->work.marker_table_len) {
-			subret = NhlSetMarker(new,i+1,mstr,x,y,asp,size);
-			if ((retcode = MIN(retcode,subret)) < WARNING) 
+			subret = NhlSetMarker(new->base.id,i+1,mstr,x,y,asp,
+									size);
+			if ((retcode = MIN(retcode,subret)) < NhlWARNING) 
 				return retcode;
 		}
 		else {
-			subret = NhlNewMarker(new,mstr,x,y,asp,size);
-			if ((retcode = MIN(retcode,subret)) < WARNING) 
+			subret = NhlNewMarker(new->base.id,mstr,x,y,asp,size);
+			if ((retcode = MIN(retcode,subret)) < NhlWARNING) 
 				return retcode;
 		}
 	}
@@ -850,17 +851,15 @@ static NhlErrorTypes WorkstationInitialize
  * Same for dash pattern table
  */
 	if (_NhlArgIsSet(args,num_args,NhlNwkDashTableLength)) {
-		NhlPError(WARNING,E_UNKNOWN,
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
 			  "Attempt to set read-only resource ignored");
-		retcode = MIN(WARNING, retcode);
+		retcode = MIN(NhlWARNING, retcode);
 	}
 	newl->work.dash_table_len = dash_table_len - 1;
 
-	newl->work.gkswksid = (int)FATAL;
-	newl->work.gkswkstype = (int)FATAL;
-	newl->work.gkswksconid = (int)FATAL;
-	newl->work.children = NULL;
-	newl->work.num_children = 0;
+	newl->work.gkswksid = (int)NhlFATAL;
+	newl->work.gkswkstype = (int)NhlFATAL;
+	newl->work.gkswksconid = (int)NhlFATAL;
 
 	for(i = 0; i < MAX_COLOR_MAP; i++) {
 		newl->work.private_color_map[i].ci = UNSET;
@@ -875,9 +874,9 @@ static NhlErrorTypes WorkstationInitialize
  */
 	if ((tcolor = (NhlColor*)NhlMalloc(sizeof(NhlColor))) == NULL) {
 		e_text = "%s: error creating %s array";
-		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
 			  NhlNwkBackgroundColor);
-		return FATAL;
+		return NhlFATAL;
 	}
 	for (i=0; i<3; i++)
 		(*tcolor)[i] = 0.0;
@@ -885,9 +884,9 @@ static NhlErrorTypes WorkstationInitialize
 	if ((ga = NhlCreateGenArray((NhlPointer)tcolor,NhlTFloat,
 				    sizeof(float),1,count)) == NULL) {
 		e_text = "%s: error creating %s GenArray";
-		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
 			  NhlNwkBackgroundColor);
-		return FATAL;
+		return NhlFATAL;
 	}
 	ga->my_data = True;
 
@@ -897,7 +896,7 @@ static NhlErrorTypes WorkstationInitialize
 						   NhlNwkBackgroundColor, 
 						   entry_name);
 		
-		if ((retcode = MIN(retcode,subret)) < WARNING) 
+		if ((retcode = MIN(retcode,subret)) < NhlWARNING) 
 				return retcode;
 
 	}
@@ -909,9 +908,9 @@ static NhlErrorTypes WorkstationInitialize
 			int j;
 			e_text =
 			   "%s: %s holds an invalid color value: defaulting";
-			NhlPError(WARNING,E_UNKNOWN,e_text,entry_name,
+			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
 				  NhlNwkBackgroundColor);
-			retcode = MIN(retcode, WARNING);
+			retcode = MIN(retcode, NhlWARNING);
 			for (j=0; j<3; j++)
 				(*tcolor)[i] = 0.0;
 			break;
@@ -935,9 +934,9 @@ static NhlErrorTypes WorkstationInitialize
 	newl->work.num_private_colors = NhlNumber(def_color) + 1;
 
 	if (_NhlArgIsSet(args,num_args,NhlNwkColorMapLen)) {
-		NhlPError(WARNING,E_UNKNOWN,
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
 			  "Attempt to set read-only resource ignored");
-		retcode = MIN(WARNING, retcode);
+		retcode = MIN(NhlWARNING, retcode);
 	}
 	newl->work.color_map_len = newl->work.num_private_colors - 1;
 
@@ -951,9 +950,9 @@ static NhlErrorTypes WorkstationInitialize
 	if ((ga = NhlCreateGenArray((NhlPointer)def_color,NhlTFloat,
 			       sizeof(float),2,count)) == NULL) {
 		e_text = "%s: error creating %s GenArray";
-		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
 			  NhlNwkColorMap);
-		return FATAL;
+		return NhlFATAL;
 	}
 	ga->my_data = False;
 
@@ -962,9 +961,9 @@ static NhlErrorTypes WorkstationInitialize
 						   3*MAX_COLOR_MAP,False,False,
 						   NhlNwkColorMap, entry_name);
 		
-		if ((retcode = MIN(retcode,subret)) < WARNING) 
+		if ((retcode = MIN(retcode,subret)) < NhlWARNING) 
 				return retcode;
-		if (subret > WARNING) {
+		if (subret > NhlWARNING) {
 			newl->work.color_map_len = 
 				newl->work.color_map->len_dimensions[0];
 		}
@@ -997,9 +996,9 @@ static NhlErrorTypes WorkstationInitialize
 	if ((ga = NhlCreateGenArray((NhlPointer)tcolor,NhlTFloat,
 				    sizeof(float),1,count)) == NULL) {
 		e_text = "%s: error creating %s GenArray";
-		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
 			  NhlNwkForegroundColor);
-		return FATAL;
+		return NhlFATAL;
 	}
 	ga->my_data = False;
 
@@ -1010,25 +1009,25 @@ static NhlErrorTypes WorkstationInitialize
 						   NhlNwkForegroundColor, 
 						   entry_name);
 		
-		if ((retcode = MIN(retcode,subret)) < WARNING) 
+		if ((retcode = MIN(retcode,subret)) < NhlWARNING) 
 				return retcode;
 		
-		if (subret > WARNING) {
+		if (subret > NhlWARNING) {
 			tcolor = (NhlColor *) ga->data;
 			for (i=0; i<3; i++) {
 				if ((*tcolor)[i] < 0.0 || (*tcolor)[i] > 1.0) {
 					e_text =
 			    "%s: %s holds an invalid color value: not set";
-					NhlPError(WARNING,E_UNKNOWN,
+					NhlPError(NhlWARNING,NhlEUNKNOWN,
 						  e_text,entry_name,
 						  NhlNwkForegroundColor);
-					subret = WARNING;
+					subret = NhlWARNING;
 					retcode = MIN(retcode, subret);
 					break;
 				}
 			}
 		}
-		if (subret > WARNING) {
+		if (subret > NhlWARNING) {
 			newl->work.private_color_map[NhlFOREGROUND].ci = 
 				SETALMOST;
 			newl->work.private_color_map[NhlFOREGROUND].red = 
@@ -1075,15 +1074,14 @@ static NhlErrorTypes WorkstationInitialize
  */
 static NhlErrorTypes WorkstationDestroy
 #if	__STDC__
-( Layer inst )
+( NhlLayer inst )
 #else
 (inst)
-	Layer inst;
+	NhlLayer inst;
 #endif
 {
-	WorkstationLayer	winst = (WorkstationLayer) inst;
-	LayerList	step,tmp;
-	NhlErrorTypes	retcode = NOERROR;
+	NhlWorkstationLayer	winst = (NhlWorkstationLayer) inst;
+	NhlErrorTypes	retcode = NhlNOERROR;
 
 	NhlFreeGenArray(winst->work.bkgnd_color);
 	NhlFreeGenArray(winst->work.foregnd_color);
@@ -1091,16 +1089,6 @@ static NhlErrorTypes WorkstationDestroy
 	NhlFreeGenArray(winst->work.marker_table_strings);
 	NhlFreeGenArray(winst->work.marker_table_params);
 
-/*
-* Questionable whether the destruction of a workstation should result in the
-* destruction of all of the children. Here only the LayerList if freed
-*/
-	step = winst->work.children;
-	while(step != NULL) {
-		tmp = step->next;
-		NhlFree(step);
-		step = tmp;
-	}
 	return(retcode);
 }
 
@@ -1120,20 +1108,20 @@ static NhlErrorTypes WorkstationDestroy
 /*ARGSUSED*/
 static NhlErrorTypes    WorkstationSetValues
 #if  __STDC__
-( Layer old, Layer reference, Layer new, _NhlArgList args, int num_args)
+( NhlLayer old, NhlLayer reference, NhlLayer new, _NhlArgList args, int num_args)
 #else
 (old,reference,new,args,num_args)
-        Layer  old; 
-        Layer  reference; 
-        Layer  new;
+        NhlLayer  old; 
+        NhlLayer  reference; 
+        NhlLayer  new;
         _NhlArgList args;
         int num_args;
 #endif
 {
-	WorkstationLayer	newl = (WorkstationLayer) new;
+	NhlWorkstationLayer	newl = (NhlWorkstationLayer) new;
 	int i;
-	WorkstationLayer	oldl = (WorkstationLayer) old;
-	NhlErrorTypes	retcode = NOERROR,subret = NOERROR;
+	NhlWorkstationLayer	oldl = (NhlWorkstationLayer) old;
+	NhlErrorTypes	retcode = NhlNOERROR,subret = NhlNOERROR;
 	char *tmp;
 	int count;
 	char *entry_name = "WorkstationSetValues";
@@ -1148,9 +1136,9 @@ static NhlErrorTypes    WorkstationSetValues
  * size.
  */
 	if (newl->work.fill_table_len != fill_table_len - 1) {
-		NhlPError(WARNING,E_UNKNOWN,
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
 			  "Attempt to set read-only resource ignored");
-		retcode = MIN(WARNING, retcode);
+		retcode = MIN(NhlWARNING, retcode);
 		newl->work.fill_table_len = fill_table_len - 1;
 	}
 
@@ -1159,9 +1147,9 @@ static NhlErrorTypes    WorkstationSetValues
  * size.
  */
 	if (newl->work.marker_table_len != marker_table_len - 1) { 
-		NhlPError(WARNING,E_UNKNOWN,
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
 			  "Attempt to set read-only resource ignored");
-		retcode = MIN(WARNING, retcode);
+		retcode = MIN(NhlWARNING, retcode);
 		newl->work.marker_table_len = 
 			marker_table_len - 1;
 	}
@@ -1175,9 +1163,9 @@ static NhlErrorTypes    WorkstationSetValues
 						   NhlNwkMarkerTableParams, 
 						   entry_name);
 		
-		if ((retcode = MIN(retcode,subret)) < WARNING) 
+		if ((retcode = MIN(retcode,subret)) < NhlWARNING) 
 				return retcode;
-		if (subret > WARNING) {
+		if (subret > NhlWARNING) {
 			len1 = 
 			    newl->work.marker_table_params->len_dimensions[0];
 		}
@@ -1195,9 +1183,9 @@ static NhlErrorTypes    WorkstationSetValues
 						 NhlNwkMarkerTableStrings, 
 						 entry_name);
 		
-		if ((retcode = MIN(retcode,subret)) < WARNING) 
+		if ((retcode = MIN(retcode,subret)) < NhlWARNING) 
 				return retcode;
-		if (subret > WARNING) {
+		if (subret > NhlWARNING) {
 			len2 = 
 			   newl->work.marker_table_strings->len_dimensions[0];
 		}
@@ -1224,13 +1212,14 @@ static NhlErrorTypes    WorkstationSetValues
 			mstr = mstrings[i];
 
 		if (i < newl->work.marker_table_len) {
-			subret = NhlSetMarker(new,i+1,mstr,x,y,asp,size);
-			if ((retcode = MIN(retcode,subret)) < WARNING) 
+			subret = NhlSetMarker(new->base.id,i+1,mstr,x,y,asp,
+									size);
+			if ((retcode = MIN(retcode,subret)) < NhlWARNING) 
 				return retcode;
 		}
 		else {
-			subret = NhlNewMarker(new,mstr,x,y,asp,size);
-			if ((retcode = MIN(retcode,subret)) < WARNING) 
+			subret = NhlNewMarker(new->base.id,mstr,x,y,asp,size);
+			if ((retcode = MIN(retcode,subret)) < NhlWARNING) 
 				return retcode;
 		}
 	}
@@ -1240,9 +1229,9 @@ static NhlErrorTypes    WorkstationSetValues
  */
 
 	if (newl->work.dash_table_len != dash_table_len - 1) {
-		NhlPError(WARNING,E_UNKNOWN,
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
 			  "Attempt to set read-only resource ignored");
-		retcode = MIN(WARNING, retcode);
+		retcode = MIN(NhlWARNING, retcode);
 		newl->work.dash_table_len = dash_table_len - 1;
 	}
 
@@ -1250,17 +1239,17 @@ static NhlErrorTypes    WorkstationSetValues
  * The background color cannot change once the workstation is initialized
  */
 	if(newl->work.bkgnd_color != oldl->work.bkgnd_color ) {
-		NhlPError(WARNING,E_UNKNOWN,"Illegal Background color change");
-		retcode = MIN(WARNING, retcode);
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"Illegal Background color change");
+		retcode = MIN(NhlWARNING, retcode);
 	}
 
 /*
  * The color map len resource is read only also. 
  */
 	if (newl->work.color_map_len != newl->work.num_private_colors - 1) {
-		NhlPError(WARNING,E_UNKNOWN,
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
 			  "Attempt to set read-only resource ignored");
-		retcode = MIN(WARNING, retcode);
+		retcode = MIN(NhlWARNING, retcode);
 		newl->work.color_map_len = newl->work.num_private_colors - 1;
 	}
 
@@ -1272,11 +1261,11 @@ static NhlErrorTypes    WorkstationSetValues
 					       3*MAX_COLOR_MAP,False,False,
 					       NhlNwkColorMap, entry_name);
 		
-		if ((retcode = MIN(retcode,subret)) < WARNING) 
+		if ((retcode = MIN(retcode,subret)) < NhlWARNING) 
 				return retcode;
 		newl->work.color_map = oldl->work.color_map;
 
-		if (subret > WARNING) {
+		if (subret > NhlWARNING) {
 			newl->work.color_map_len = count;
 			newl->work.num_private_colors = 
 				newl->work.color_map_len + 1;
@@ -1307,26 +1296,26 @@ static NhlErrorTypes    WorkstationSetValues
 					       NhlNwkForegroundColor, 
 					       entry_name);
 		
-		if ((retcode = MIN(retcode,subret)) < WARNING) 
+		if ((retcode = MIN(retcode,subret)) < NhlWARNING) 
 				return retcode;
 		newl->work.foregnd_color = oldl->work.foregnd_color;
 		tcolor = (NhlColor *) newl->work.foregnd_color->data;
 
-		if (subret > WARNING) {
+		if (subret > NhlWARNING) {
 			for (i=0; i<3; i++) {
 				if ((*tcolor)[i] < 0.0 || (*tcolor)[i] > 1.0) {
 					e_text =
 			    "%s: %s holds an invalid color value: not set";
-					NhlPError(WARNING,E_UNKNOWN,
+					NhlPError(NhlWARNING,NhlEUNKNOWN,
 						  e_text,entry_name,
 						  NhlNwkForegroundColor);
-					subret = WARNING;
+					subret = NhlWARNING;
 					retcode = MIN(retcode, subret);
 					break;
 				}
 			}
 		}
-		if (subret > WARNING) {
+		if (subret > NhlWARNING) {
 			newl->work.private_color_map[NhlFOREGROUND].ci = 
 				SETALMOST;
 			newl->work.private_color_map[NhlFOREGROUND].red = 
@@ -1343,7 +1332,7 @@ static NhlErrorTypes    WorkstationSetValues
  * Allocate the colors now that both the color table and the foreground have
  * been set.
  */
-	subret = AllocateColors((Layer)newl);
+	subret = AllocateColors((NhlLayer)newl);
 	retcode = MIN(retcode,subret);
 
 /*
@@ -1386,14 +1375,14 @@ static NhlErrorTypes    WorkstationSetValues
  */
 static NhlErrorTypes WorkstationActivate
 #if __STDC__
-(Layer	instance )
+(NhlLayer	instance )
 #else
 (instance)
-	Layer	instance;
+	NhlLayer	instance;
 #endif
 {
-	WorkstationLayer  thework = (WorkstationLayer) instance;
-	NhlErrorTypes retcode = NOERROR;	
+	NhlWorkstationLayer  thework = (NhlWorkstationLayer) instance;
+	NhlErrorTypes retcode = NhlNOERROR;	
 
 	if(wksisopn(thework->work.gkswksid)) {
 		if(!wksisact(thework->work.gkswksid)) {
@@ -1402,15 +1391,15 @@ static NhlErrorTypes WorkstationActivate
 /*
 * WORKSTATION IS ALREADY ACTIVE
 */
-			NhlPError(INFO,E_UNKNOWN,"WorkstationActivate called on already active workstation");
-			retcode = INFO; 
+			NhlPError(NhlINFO,NhlEUNKNOWN,"WorkstationActivate called on already active workstation");
+			retcode = NhlINFO; 
 		}
 	} else {
 /*
 * ERROR WORKSTATION IS NOT OPEN INITILIZATION FAILED
 */
-		NhlPError(FATAL,E_UNKNOWN, "WorkstationActivate can't activate an unopened workstation");
-		retcode = FATAL;
+		NhlPError(NhlFATAL,NhlEUNKNOWN, "WorkstationActivate can't activate an unopened workstation");
+		retcode = NhlFATAL;
 	}
 	return(retcode);
 }
@@ -1418,7 +1407,7 @@ static NhlErrorTypes WorkstationActivate
 /*
  * Function:	WorkstationDeactivate
  *
- * Description:	Deactivates workstation. if not open FATAL error if not active
+ * Description:	Deactivates workstation. if not open NhlFATAL error if not active
  *		informational message.
  *
  * In Args:
@@ -1431,14 +1420,14 @@ static NhlErrorTypes WorkstationActivate
  */
 static NhlErrorTypes WorkstationDeactivate
 #if __STDC__
-(Layer	instance )
+(NhlLayer	instance )
 #else
 (instance)
-	Layer	instance;
+	NhlLayer	instance;
 #endif
 {
-	WorkstationLayer  thework = (WorkstationLayer) instance;
-	NhlErrorTypes	retcode = NOERROR;
+	NhlWorkstationLayer  thework = (NhlWorkstationLayer) instance;
+	NhlErrorTypes	retcode = NhlNOERROR;
 
 	if(wksisopn(thework->work.gkswksid)&&wksisact(thework->work.gkswksid)){
 		gdeactivate_ws(thework->work.gkswksid);
@@ -1446,8 +1435,8 @@ static NhlErrorTypes WorkstationDeactivate
 /*
 * ERROR WORKSTATION NOT ACTIVE OR NOT INITIALIZED
 */
-		NhlPError(WARNING,E_UNKNOWN,"WorkstationDeactivate: workstation not active or not openned");
-		retcode = WARNING;
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"WorkstationDeactivate: workstation not active or not openned");
+		retcode = NhlWARNING;
 	}
 
 	return(retcode);
@@ -1476,24 +1465,24 @@ static NhlErrorTypes WorkstationDeactivate
  */
 static NhlErrorTypes WorkstationOpen
 #if __STDC__
-(Layer	instance )
+(NhlLayer	instance )
 #else
 (instance)
-	Layer	instance;
+	NhlLayer	instance;
 #endif
 {	
-	WorkstationLayer thework = (WorkstationLayer) instance;
-	NhlErrorTypes retcode = NOERROR;
+	NhlWorkstationLayer thework = (NhlWorkstationLayer) instance;
+	NhlErrorTypes retcode = NhlNOERROR;
 	int i = 2;
 
-	if(thework->work.gkswkstype == FATAL) {
-		NhlPError(FATAL,E_UNKNOWN,"Unknown workstation type");
-		return(FATAL);
+	if(thework->work.gkswkstype == NhlFATAL) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"Unknown workstation type");
+		return(NhlFATAL);
 		
 	} 
-	if(thework->work.gkswksconid == FATAL) {
-		NhlPError(FATAL,E_UNKNOWN,"Unknown workstation connection id");
-		return(FATAL);
+	if(thework->work.gkswksconid == NhlFATAL) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"Unknown workstation connection id");
+		return(NhlFATAL);
 	}
 	while(wksisopn(i)) {
 		i++;
@@ -1503,7 +1492,7 @@ static NhlErrorTypes WorkstationOpen
 /* FORTRAN */ _NHLCALLF(gopwk,GOPWK)(&(thework->work.gkswksid),&(thework->work.gkswksconid),&(thework->work.gkswkstype));
 	gset_clip_ind(GIND_NO_CLIP);
 
-	retcode = AllocateColors((Layer)thework);
+	retcode = AllocateColors((NhlLayer)thework);
 
 	return(retcode);
 	
@@ -1528,22 +1517,22 @@ static NhlErrorTypes WorkstationOpen
  */
 static NhlErrorTypes WorkstationClose
 #if __STDC__
-(Layer	instance )
+(NhlLayer	instance )
 #else
 (instance)
-	Layer	instance;
+	NhlLayer	instance;
 #endif
 {
-	WorkstationLayer	thework = (WorkstationLayer) instance;
-	NhlErrorTypes retcode = NOERROR;
+	NhlWorkstationLayer	thework = (NhlWorkstationLayer) instance;
+	NhlErrorTypes retcode = NhlNOERROR;
 
 	if(wksisact(thework->work.gkswksid)){
-		NhlPError(INFO,E_UNKNOWN,"WorkstationClose: workstation must be deactivated before closed, deactivating workstation now");
+		NhlPError(NhlINFO,NhlEUNKNOWN,"WorkstationClose: workstation must be deactivated before closed, deactivating workstation now");
 		_NhlDeactivateWorkstation(instance);
 	} 
 	if(!wksisopn(thework->work.gkswksid)) {
-		NhlPError(INFO,E_UNKNOWN,"WorkstationClose: workstation already closed");
-		retcode = INFO;
+		NhlPError(NhlINFO,NhlEUNKNOWN,"WorkstationClose: workstation already closed");
+		retcode = NhlINFO;
 	} else {
 		gclose_ws(thework->work.gkswksid);
 
@@ -1557,7 +1546,7 @@ static NhlErrorTypes WorkstationClose
  * Description:	This function is used to update the workstation
  *
  * In Args:	
- *		Layer	l	workstation layer to update
+ *		NhlLayer	l	workstation layer to update
  *
  * Out Args:	
  *
@@ -1569,16 +1558,16 @@ static NhlErrorTypes
 WorkstationUpdate
 #if	__STDC__
 (
-	Layer	l	/* workstation layer to update	*/
+	NhlLayer	l	/* workstation layer to update	*/
 )
 #else
 (l)
-	Layer	l;	/* workstation layer to update	*/
+	NhlLayer	l;	/* workstation layer to update	*/
 #endif
 {
 	gupd_ws(_NhlWorkstationId(l),GFLAG_PERFORM);
 
-	return NOERROR;
+	return NhlNOERROR;
 }
 
 /*
@@ -1587,7 +1576,7 @@ WorkstationUpdate
  * Description:	This function is used to clear the workstation
  *
  * In Args:	
- *		Layer	l	workstation layer to update
+ *		NhlLayer	l	workstation layer to update
  *
  * Out Args:	
  *
@@ -1599,16 +1588,16 @@ static NhlErrorTypes
 WorkstationClear
 #if	__STDC__
 (
-	Layer	l	/* workstation layer to update	*/
+	NhlLayer	l	/* workstation layer to update	*/
 )
 #else
 (l)
-	Layer	l;	/* workstation layer to update	*/
+	NhlLayer	l;	/* workstation layer to update	*/
 #endif
 {
 	gclear_ws(_NhlWorkstationId(l),GFLAG_ALWAYS);
 
-	return NOERROR;
+	return NhlNOERROR;
 }
 
 /*
@@ -1640,24 +1629,24 @@ NhlErrorTypes	NhlSetColor
 }
 NhlErrorTypes	_NhlSetColor
 #if	__STDC__
-(Layer inst, int ci, float red, float green, float blue)
+(NhlLayer inst, int ci, float red, float green, float blue)
 #else
 (inst,ci,red,green,blue)
-	Layer	inst;
+	NhlLayer	inst;
 	int	ci;
 	float	red;
 	float	green;
 	float	blue;
 #endif
 {
-	WorkstationLayer	thework = (WorkstationLayer)inst;
+	NhlWorkstationLayer	thework = (NhlWorkstationLayer)inst;
 	
 	if(ci > MAX_COLOR_MAP) {
 /*
 * COLOR INDEX EXCEEDS MAX_COLOR_MAP
 */
-		NhlPError(WARNING,E_UNKNOWN,"_NhlSetColor: color index exceeds MAX_COLOR_MAP");
-		return(WARNING);
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"_NhlSetColor: color index exceeds MAX_COLOR_MAP");
+		return(NhlWARNING);
 	}
 
 	thework->work.private_color_map[ci - 1].ci = SETALMOST;
@@ -1665,7 +1654,7 @@ NhlErrorTypes	_NhlSetColor
 	thework->work.private_color_map[ci - 1].green = green;
 	thework->work.private_color_map[ci - 1].blue = blue;
 
-	return(AllocateColors((Layer)thework));
+	return(AllocateColors((NhlLayer)thework));
 }
 
 /*
@@ -1694,23 +1683,23 @@ NhlErrorTypes	NhlFreeColor
 }
 NhlErrorTypes	_NhlFreeColor
 #if	__STDC__
-(Layer inst, int ci)
+(NhlLayer inst, int ci)
 #else
 (inst,ci)
-	Layer inst;
+	NhlLayer inst;
 	int	ci;
 #endif
 {
-	WorkstationLayer	thework = (WorkstationLayer)inst;
+	NhlWorkstationLayer	thework = (NhlWorkstationLayer)inst;
 
 	if(ci > MAX_COLOR_MAP) {
-		NhlPError(WARNING,E_UNKNOWN,"_NhlFreeColor: color index exceeds MAX_COLOR_MAP");
-		return(WARNING);
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"_NhlFreeColor: color index exceeds MAX_COLOR_MAP");
+		return(NhlWARNING);
 	}
 
 	thework->work.private_color_map[ci - 1].ci =REMOVE;
 
-	return(DeallocateColors((Layer)thework));
+	return(DeallocateColors((NhlLayer)thework));
 }
 
 
@@ -1730,13 +1719,13 @@ NhlErrorTypes	_NhlFreeColor
 
 static NhlErrorTypes AllocateColors
 #if  __STDC__
-(Layer inst )
+(NhlLayer inst )
 #else
 (inst)
-	Layer inst;
+	NhlLayer inst;
 #endif
 {
-	WorkstationLayer thework = (WorkstationLayer) inst;
+	NhlWorkstationLayer thework = (NhlWorkstationLayer) inst;
 	Gcolr_rep tmpcolrrep;
 	int i;
 /*
@@ -1755,7 +1744,7 @@ static NhlErrorTypes AllocateColors
 			thework->work.private_color_map[i].ci = i;
 		}
 	}
-	return(NOERROR);
+	return(NhlNOERROR);
 }
 /*
  * Function:	DeallocateColors
@@ -1773,13 +1762,13 @@ static NhlErrorTypes AllocateColors
 
 static NhlErrorTypes DeallocateColors
 #if  __STDC__
-(Layer inst )
+(NhlLayer inst )
 #else
 (inst)
-	Layer inst;
+	NhlLayer inst;
 #endif
 {
-	WorkstationLayer thework = (WorkstationLayer) inst;
+	NhlWorkstationLayer thework = (NhlWorkstationLayer) inst;
 	int i;
 
 	for( i = 0; i < MAX_COLOR_MAP; i++) {
@@ -1787,7 +1776,7 @@ static NhlErrorTypes DeallocateColors
 			thework->work.private_color_map[i].ci = UNSET;
 		}
 	}
-	return(NOERROR);
+	return(NhlNOERROR);
 }
 
 /*
@@ -1821,18 +1810,18 @@ int NhlNewColor
 
 int _NhlNewColor
 #if   __STDC__
-(Layer inst,float red,float green,float blue)
+(NhlLayer inst,float red,float green,float blue)
 #else
 (inst,red,green,blue)
-        Layer   inst;
+        NhlLayer   inst;
         float   red;
         float   green;
         float   blue;
 #endif
 {
-	WorkstationLayer  thework = (WorkstationLayer) inst;
+	NhlWorkstationLayer  thework = (NhlWorkstationLayer) inst;
 	int i = 1;
-	NhlErrorTypes retcode = NOERROR;
+	NhlErrorTypes retcode = NhlNOERROR;
 
 	while( thework->work.private_color_map[i].ci != UNSET ) {
 		i++;
@@ -1840,17 +1829,17 @@ int _NhlNewColor
 /*
 * ERROR : no available colors
 */		
-			NhlPError(FATAL,E_UNKNOWN,"_NhlNewColor: no available colors");
-			return(FATAL);
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"_NhlNewColor: no available colors");
+			return(NhlFATAL);
 		}
 	}
 	thework->work.private_color_map[i].ci = SETALMOST;
 	thework->work.private_color_map[i].red = red;
 	thework->work.private_color_map[i].green = green;
 	thework->work.private_color_map[i].blue = blue;
-	retcode = AllocateColors((Layer)thework);
+	retcode = AllocateColors((NhlLayer)thework);
 
-	return((retcode < INFO)? (int)retcode : i+1);
+	return((retcode < NhlINFO)? (int)retcode : i+1);
 	 
 }
 
@@ -1876,15 +1865,15 @@ int _NhlNewColor
 
 static NhlErrorTypes	WorkstationGetValues
 #if __STDC__
-(Layer l, _NhlArgList args, int num_args)
+(NhlLayer l, _NhlArgList args, int num_args)
 #else
 (l,args,num_args)
-	Layer	l;
+	NhlLayer	l;
 	_NhlArgList	args;
 	int	num_args;
 #endif
 {
-	WorkstationLayer wl = (WorkstationLayer)l;
+	NhlWorkstationLayer wl = (NhlWorkstationLayer)l;
 	int i,j;
 	NhlColor* tmp;
 	NhlPrivateColor *private;
@@ -1913,9 +1902,9 @@ static NhlErrorTypes	WorkstationGetValues
 						    NhlTFloat,sizeof(float),
 						    2,count)) == NULL) {
 				e_text = "%s: error creating %s GenArray";
-				NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+				NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
 					  NhlNwkColorMap);
-				return FATAL;
+				return NhlFATAL;
 			}
 			ga->my_data = True;
 			*((NhlGenArray *)(args[i].value)) = ga;
@@ -1933,9 +1922,9 @@ static NhlErrorTypes	WorkstationGetValues
 						    NhlTFloat,sizeof(float),
 						    1,count)) == NULL) {
 				e_text = "%s: error creating %s GenArray";
-				NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+				NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
 					  NhlNwkBackgroundColor);
-				return FATAL;
+				return NhlFATAL;
 			}
 			ga->my_data = True;
 			*((NhlGenArray *)(args[i].value)) = ga;
@@ -1954,9 +1943,9 @@ static NhlErrorTypes	WorkstationGetValues
 						    NhlTFloat,sizeof(float),
 						    1,count)) == NULL) {
 				e_text = "%s: error creating %s GenArray";
-				NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+				NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
 					  NhlNwkForegroundColor);
-				return FATAL;
+				return NhlFATAL;
 			}
 			ga->my_data = True;
 			*((NhlGenArray *)(args[i].value)) = ga;
@@ -1966,18 +1955,18 @@ static NhlErrorTypes	WorkstationGetValues
 			     NhlMalloc(wl->work.marker_table_len *
 				       sizeof(NhlString))) == NULL) {
 				e_text = "%s: error allocating %s data";
-				NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+				NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
 					  NhlNwkMarkerTableStrings);
-				return FATAL;
+				return NhlFATAL;
 			}
 			for (j=0; j<wl->work.marker_table_len; j++) {
 				if ((s_p[j] = (char *) NhlMalloc(strlen(
 				   marker_table[j+1]->marker) + 1)) == NULL) {
 				       e_text = "%s: error allocating %s data";
-				       NhlPError(FATAL,E_UNKNOWN,e_text,
+				       NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,
 						 entry_name,
 						 NhlNwkMarkerTableStrings);
-				       return FATAL;
+				       return NhlFATAL;
 			        }
 				strcpy(s_p[j], marker_table[j+1]->marker);
 			}
@@ -1987,9 +1976,9 @@ static NhlErrorTypes	WorkstationGetValues
 						    sizeof(NhlString),
 						    1,count)) == NULL) {
 				e_text = "%s: error creating %s GenArray";
-				NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+				NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
 					  NhlNwkMarkerTableStrings);
-				return FATAL;
+				return NhlFATAL;
 			}
 			ga->my_data = True;
 			*((NhlGenArray *)(args[i].value)) = ga;
@@ -1999,9 +1988,9 @@ static NhlErrorTypes	WorkstationGetValues
 			     NhlMalloc(wl->work.marker_table_len *
 				    sizeof(NhlMarkerTableParams))) == NULL) {
 				e_text = "%s: error allocating %s data";
-				NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+				NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
 					  NhlNwkMarkerTableParams);
-				return FATAL;
+				return NhlFATAL;
 			}
 			for (j=0; j<wl->work.marker_table_len; j++) {
 				mtp_p[j][0] = marker_table[j+1]->x_off;
@@ -2018,116 +2007,16 @@ static NhlErrorTypes	WorkstationGetValues
 						    sizeof(float),
 						    2,count)) == NULL) {
 				e_text = "%s: error creating %s GenArray";
-				NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+				NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
 					  NhlNwkMarkerTableParams);
-				return FATAL;
+				return NhlFATAL;
 			}
 			ga->my_data = True;
 			*((NhlGenArray *)(args[i].value)) = ga;
 
 		}
 	}
-	return(NOERROR);
-}
-
-/*
-* EVERYTHING BELOW HERE IS AND SHOULD BE PRIVATE BUT GLOBALLY CALLABLE
-* FUNCTIONS AND SHOULD BE DECLARED IN "hluP.h"
-*/
-
-/*
- * Function:	_NhlAddWorkChildLayer
- *
- * Description:
- *
- * In Args:
- *
- * Out Args:
- *
- * Return Values:
- *
- * Side Effects:
- */
-NhlErrorTypes   _NhlAddWorkChildLayer
-#if __STDC__
-(Layer parent, Layer child)
-#else
-(parent,child)
-	Layer parent;
-	Layer child;
-#endif
-{
-	WorkstationLayer wparent = (WorkstationLayer) parent;
-	LayerList	tmp;
-	
-
-	if(wparent->work.children == NULL){
-		wparent->work.children = (LayerList)
-			NhlMalloc(sizeof(LayerListNode));
-		wparent->work.children->next = NULL;
-		wparent->work.children->layer = child;
-		wparent->work.num_children = 1;
-	} else {
-		tmp = (LayerList) NhlMalloc(sizeof(LayerListNode));
-		tmp->next = wparent->work.children;
-		tmp->layer = child;
-		wparent->work.children = tmp;
-		++wparent->work.num_children;
-	}
-	return(NOERROR);
-}
-
-/*
- * Function:	_NhlDeleteWorkChildLayer
- *
- * Description:
- *
- * In Args:
- *
- * Out Args:
- *
- * Return Values:
- *
- * Side Effects:
- */
-NhlErrorTypes   _NhlDeleteWorkChildLayer
-#if __STDC__
-(Layer parent, Layer child)
-#else 
-(parent,child)
-	Layer	parent;
-	Layer 	child;
-#endif
-{
-	WorkstationLayer	wparent = (WorkstationLayer) parent;
-	LayerList 	step = wparent->work.children;
-	LayerList	tmp;
-
-	if(step != NULL ) {
-		if(step->layer->base.id == child->base.id) {
-			tmp = step;
-			wparent->work.children = step->next;
-			--wparent->work.num_children;
-			NhlFree(step);
-		}
-		while(step->next != NULL){
-			if(step->next->layer->base.id == child->base.id) {
-				tmp = step->next;
-				step->next = step->next->next; 
-				NhlFree(tmp);
-				--wparent->work.num_children;
-				break;
-			}
-			step = step->next;
-		}
-		return(NOERROR);
-	} else {
-/*
-*ERROR: No child in list
-*/
-		NhlPError(INFO,E_UNKNOWN,"_NhlDeleteWorkChildLayer: Delete requested on empty list");
-		return(INFO);
-	}
+	return(NhlNOERROR);
 }
 
 /*
@@ -2145,13 +2034,13 @@ NhlErrorTypes   _NhlDeleteWorkChildLayer
  */
 int	_NhlWorkstationId
 #if __STDC__
-(Layer instance)
+(NhlLayer instance)
 #else
 (instance)
-	Layer instance;
+	NhlLayer instance;
 #endif
 {
-	WorkstationLayer wl = (WorkstationLayer) instance;
+	NhlWorkstationLayer wl = (NhlWorkstationLayer) instance;
 
 	return(wl->work.gkswksid);
 }
@@ -2173,41 +2062,41 @@ int	_NhlWorkstationId
  */
 static NhlErrorTypes CallActivateWorkstation
 #if __STDC__
-	(Layer layer, LayerClass lc)
+	(NhlLayer layer, NhlLayerClass lc)
 #else
 	(layer,lc)
-		Layer layer;
-		LayerClass lc;
+		NhlLayer layer;
+		NhlLayerClass lc;
 #endif
 {
-	WorkstationLayerClass wc = (WorkstationLayerClass) lc;
-	NhlErrorTypes ancestor = NOERROR, thistime = NOERROR;
+	NhlWorkstationLayerClass wc = (NhlWorkstationLayerClass) lc;
+	NhlErrorTypes ancestor = NhlNOERROR, thistime = NhlNOERROR;
 
 	if( wc->work_class.activate_work != NULL ) {
 		thistime = (*(wc->work_class.activate_work))(layer);
-		if( thistime < WARNING)
+		if( thistime < NhlWARNING)
 			return(thistime);
 	}
 
-	if( wc->base_class.superclass != baseLayerClass ) { 
+	if( wc->base_class.superclass != NhlbaseLayerClass ) { 
 		ancestor = CallActivateWorkstation(layer, wc->base_class.superclass);
 	}
 	return(MIN(ancestor,thistime));
 }
 NhlErrorTypes _NhlActivateWorkstation
 #if __STDC__
-(Layer wks)
+(NhlLayer wks)
 #else
 (wks)
-	Layer wks;
+	NhlLayer wks;
 #endif
 {
 
 	if(_NhlIsWorkstation(wks)) {
 		return(CallActivateWorkstation(wks,wks->base.layer_class));
 	} else {
-		NhlPError(WARNING,E_UNKNOWN,"_NhlActivateWorkstation: attempt to perform activate on nonworkstation");
-		return(WARNING);
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"_NhlActivateWorkstation: attempt to perform activate on nonworkstation");
+		return(NhlWARNING);
 	}
 }
 
@@ -2227,41 +2116,41 @@ NhlErrorTypes _NhlActivateWorkstation
  */
 static NhlErrorTypes CallDeactivateWorkstation
 #if __STDC__
-	(Layer layer, LayerClass lc)
+	(NhlLayer layer, NhlLayerClass lc)
 #else
 	(layer,lc)
-		Layer layer;
-		LayerClass lc;
+		NhlLayer layer;
+		NhlLayerClass lc;
 #endif
 {
-	WorkstationLayerClass wc = (WorkstationLayerClass) lc;
-	NhlErrorTypes ancestor = NOERROR, thistime = NOERROR;
+	NhlWorkstationLayerClass wc = (NhlWorkstationLayerClass) lc;
+	NhlErrorTypes ancestor = NhlNOERROR, thistime = NhlNOERROR;
 
 	if( wc->work_class.deactivate_work != NULL ) {
 		thistime = (*(wc->work_class.deactivate_work))(layer);
-		if( thistime < WARNING)
+		if( thistime < NhlWARNING)
 			return(thistime);
 	}
 
-	if( wc->base_class.superclass != baseLayerClass ) { 
+	if( wc->base_class.superclass != NhlbaseLayerClass ) { 
 		ancestor = CallDeactivateWorkstation(layer, wc->base_class.superclass);
 	}
 	return(MIN(ancestor,thistime));
 }
 NhlErrorTypes _NhlDeactivateWorkstation
 #if __STDC__
-(Layer wks)
+(NhlLayer wks)
 #else
 (wks)
-	Layer wks;
+	NhlLayer wks;
 #endif
 {
 
 	if(_NhlIsWorkstation(wks)) {
 		return(CallDeactivateWorkstation(wks,wks->base.layer_class));
 	} else {
-		NhlPError(WARNING,E_UNKNOWN,"_NhlActivateWorkstation: attempt to perform deactivate on nonworkstation");
-		return(WARNING);
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"_NhlActivateWorkstation: attempt to perform deactivate on nonworkstation");
+		return(NhlWARNING);
 	}
 }
 
@@ -2281,23 +2170,23 @@ NhlErrorTypes _NhlDeactivateWorkstation
  */
 static NhlErrorTypes CallCloseWorkstation
 #if __STDC__
-(Layer instance,LayerClass lc)
+(NhlLayer instance,NhlLayerClass lc)
 #else
 (instance,lc)
-        Layer instance;
-        LayerClass lc;
+        NhlLayer instance;
+        NhlLayerClass lc;
 #endif
 {
-        WorkstationLayerClass   wc =(WorkstationLayerClass)lc ;
-        NhlErrorTypes ancestorerr = NOERROR, thisclass = NOERROR;
+        NhlWorkstationLayerClass   wc =(NhlWorkstationLayerClass)lc ;
+        NhlErrorTypes ancestorerr = NhlNOERROR, thisclass = NhlNOERROR;
 
         if(wc->work_class.close_work != NULL) {
                 thisclass = (*wc->work_class.close_work)(instance);
-                if(thisclass < WARNING)
+                if(thisclass < NhlWARNING)
                         return(thisclass);
         }
 
-        if(lc->base_class.superclass != baseLayerClass)
+        if(lc->base_class.superclass != NhlbaseLayerClass)
                 ancestorerr = CallCloseWorkstation(instance,lc->base_class.superclass);
 
 
@@ -2306,17 +2195,17 @@ static NhlErrorTypes CallCloseWorkstation
 
 NhlErrorTypes _NhlCloseWorkstation
 #if __STDC__
-(Layer layer)
+(NhlLayer layer)
 #else
 (layer)
-	Layer	layer;
+	NhlLayer	layer;
 #endif
 {
 	if(_NhlIsWorkstation(layer)) {
 		return(CallCloseWorkstation(layer,layer->base.layer_class));
 	} else {
-		NhlPError(WARNING,E_UNKNOWN,"_NhlActivateWorkstation: attempt to perform close on nonworkstation");
-		return(WARNING);
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"_NhlActivateWorkstation: attempt to perform close on nonworkstation");
+		return(NhlWARNING);
 	}
 }
 
@@ -2337,23 +2226,23 @@ NhlErrorTypes _NhlCloseWorkstation
  */
 static NhlErrorTypes CallOpenWorkstation
 #if __STDC__
-(Layer instance,LayerClass lc)
+(NhlLayer instance,NhlLayerClass lc)
 #else
 (instance,lc)
-        Layer instance;
-        LayerClass lc;
+        NhlLayer instance;
+        NhlLayerClass lc;
 #endif
 {
-        WorkstationLayerClass   wc =(WorkstationLayerClass)lc ;
-        NhlErrorTypes ancestorerr = NOERROR, thisclass = NOERROR;
+        NhlWorkstationLayerClass   wc =(NhlWorkstationLayerClass)lc ;
+        NhlErrorTypes ancestorerr = NhlNOERROR, thisclass = NhlNOERROR;
 
         if(wc->work_class.open_work != NULL) {
                 thisclass = (*wc->work_class.open_work)(instance);
-                if(thisclass < WARNING)
+                if(thisclass < NhlWARNING)
                         return(thisclass);
         }
 
-        if(lc->base_class.superclass != baseLayerClass)
+        if(lc->base_class.superclass != NhlbaseLayerClass)
                 ancestorerr = CallOpenWorkstation(instance,lc->base_class.superclass);
 
 
@@ -2362,17 +2251,17 @@ static NhlErrorTypes CallOpenWorkstation
 
 NhlErrorTypes _NhlOpenWorkstation
 #if __STDC__
-(Layer layer)
+(NhlLayer layer)
 #else
 (layer)
-	Layer	layer;
+	NhlLayer	layer;
 #endif
 {
 	if(_NhlIsWorkstation(layer)) {
 		return(CallOpenWorkstation(layer,layer->base.layer_class));
 	} else {
-		NhlPError(WARNING,E_UNKNOWN,"_NhlActivateWorkstation: attempt to perform open on nonworkstation");
-		return(WARNING);
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"_NhlActivateWorkstation: attempt to perform open on nonworkstation");
+		return(NhlWARNING);
 	}
 }
 
@@ -2395,12 +2284,12 @@ int NhlGetGksWorkId
 int	workid;
 #endif
 {
-	Layer l = _NhlGetLayer(workid);
+	NhlLayer l = _NhlGetLayer(workid);
 
 	if(_NhlIsWorkstation(l)) {
-		return(((WorkstationLayer)l)->work.gkswksid);
+		return(((NhlWorkstationLayer)l)->work.gkswksid);
 	} else {
-		NhlPError(WARNING,E_UNKNOWN,"NhlGetGksWorkId: An incorrect type of object was passed");
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"NhlGetGksWorkId: An incorrect type of object was passed");
 		return(-1);
 	}
 }
@@ -2432,25 +2321,25 @@ int NhlGetGksCi
 }
 int _NhlGetGksCi
 #if __STDC__
-( Layer workstation, int  ci)
+( NhlLayer workstation, int  ci)
 #else
 (workstation, ci)
-	Layer	workstation;
+	NhlLayer	workstation;
 	int	ci;
 #endif
 {
 	
-	WorkstationLayer  wk = (WorkstationLayer) workstation;
+	NhlWorkstationLayer  wk = (NhlWorkstationLayer) workstation;
 	if(_NhlIsWorkstation(workstation)){
 		if(wk->work.private_color_map[ci+1].ci >= 0) {
 			return(wk->work.private_color_map[ci+1].ci);
 		} else {
-			NhlPError(WARNING,E_UNKNOWN,"_NhlGetGksCi: Color index requested is not allocated");
-			return((int)WARNING);
+			NhlPError(NhlWARNING,NhlEUNKNOWN,"_NhlGetGksCi: Color index requested is not allocated");
+			return((int)NhlWARNING);
 		}
 	} else {
-		NhlPError(WARNING,E_UNKNOWN,"_NhlGetGksCi: attempt to return color from none workstation");
-		return((int)WARNING);
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"_NhlGetGksCi: attempt to return color from none workstation");
+		return((int)NhlWARNING);
 	}
 }
 
@@ -2479,22 +2368,22 @@ NhlUpdateWorkstation
 	int	workid;	/* id of workstation class object	*/
 #endif
 {
-	Layer			l = _NhlGetLayer(workid);
-	WorkstationLayerClass	lc;
+	NhlLayer			l = _NhlGetLayer(workid);
+	NhlWorkstationLayerClass	lc;
 
-	if(l == (Layer)NULL){
-		NhlPError(FATAL,E_UNKNOWN,
+	if(l == (NhlLayer)NULL){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
 			"Unable to update Workstation with PID#%d",workid);
-		return FATAL;
+		return NhlFATAL;
 	}
 
 	if(!_NhlIsWorkstation(l)){
-		NhlPError(FATAL,E_UNKNOWN,
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
 			"PID#%d is not a Workstation Class object",workid);
-		return FATAL;
+		return NhlFATAL;
 	}
 
-	lc = (WorkstationLayerClass)l->base.layer_class;
+	lc = (NhlWorkstationLayerClass)l->base.layer_class;
 
 	return (*(lc->work_class.update_work))(l);
 }
@@ -2524,22 +2413,22 @@ NhlClearWorkstation
 	int	workid;	/* id of workstation class object	*/
 #endif
 {
-	Layer			l = _NhlGetLayer(workid);
-	WorkstationLayerClass	lc;
+	NhlLayer			l = _NhlGetLayer(workid);
+	NhlWorkstationLayerClass	lc;
 
-	if(l == (Layer)NULL){
-		NhlPError(FATAL,E_UNKNOWN,
+	if(l == (NhlLayer)NULL){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
 			"Unable to clear Workstation with PID#%d",workid);
-		return FATAL;
+		return NhlFATAL;
 	}
 
 	if(!_NhlIsWorkstation(l)){
-		NhlPError(FATAL,E_UNKNOWN,
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
 			"PID#%d is not a Workstation Class object",workid);
-		return FATAL;
+		return NhlFATAL;
 	}
 
-	lc = (WorkstationLayerClass)l->base.layer_class;
+	lc = (NhlWorkstationLayerClass)l->base.layer_class;
 
 	return (*(lc->work_class.clear_work))(l);
 }
@@ -2552,8 +2441,8 @@ NhlErrorTypes	NhlFrame
 	int wid;
 #endif
 {
-	NhlErrorTypes ret = NOERROR;
-	NhlErrorTypes ret1 = NOERROR;
+	NhlErrorTypes ret = NhlNOERROR;
+	NhlErrorTypes ret1 = NhlNOERROR;
 
 	ret = NhlUpdateWorkstation(wid);
 	ret1 = NhlClearWorkstation(wid);
@@ -2563,14 +2452,14 @@ NhlErrorTypes	NhlFrame
 /*ARGSUSED*/
 void _NhlSetLineInfo
 #if  __STDC__
-(Layer instance,Layer plot)
+(NhlLayer instance,NhlLayer plot)
 #else
 (instance,plot)
-        Layer instance;
-        Layer plot;
+        NhlLayer instance;
+        NhlLayer plot;
 #endif
 {
-        WorkstationLayer tinst = (WorkstationLayer)instance;
+        NhlWorkstationLayer tinst = (NhlWorkstationLayer)instance;
         float   fl,fr,fb,ft,ul,ur,ub,ut;
         float  y0,y1,x0,x1;
         int ll;
@@ -2598,14 +2487,14 @@ void _NhlSetLineInfo
         x1 = (float)c_kfpy(x1);
 
 	if ((ix = tinst->work.dash_pattern) < 0) {
-		/* WARNING - but it's a void function right now */
-		NhlPError(WARNING,E_UNKNOWN,
+		/* NhlWARNING - but it's a void function right now */
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
 			  "_NhlSetLineInfo: invalid dash pattern index");
 		ix = tinst->work.dash_pattern = NhlSOLIDLINE;
 	}
 	else if (ix > tinst->work.dash_table_len) {
-		/* INFO - but it's a void function right now */
-		NhlPError(INFO,E_UNKNOWN,
+		/* NhlINFO - but it's a void function right now */
+		NhlPError(NhlINFO,NhlEUNKNOWN,
 	"_NhlSetLineInfo: using mod function on dash pattern index: %d", ix);
 
 		ix = 1 + (ix - 1) % tinst->work.dash_table_len; 
@@ -2634,10 +2523,10 @@ void _NhlSetLineInfo
 /*ARGSUSED*/
 static NhlErrorTypes WorkstationLineTo
 #if  __STDC__
-(Layer l,float x,float y,int upordown)
+(NhlLayer l,float x,float y,int upordown)
 #else
 (l,x,y,upordown)
-	Layer l;
+	NhlLayer l;
 	float x;
 	float y;
 	int upordown;
@@ -2652,7 +2541,7 @@ static NhlErrorTypes WorkstationLineTo
 		lasty = y;
 /* FORTRAN*/    _NHLCALLF(lastd,LASTD)();
 		first = 1;
-		return(NOERROR);
+		return(NhlNOERROR);
 	} else {
 		if(first == 1) {
 			ix0 = c_kfmx(lastx);
@@ -2665,30 +2554,30 @@ static NhlErrorTypes WorkstationLineTo
 /* FORTRAN */   _NHLCALLF(cfvld,CFVLD)(&first,&ix1,&iy1);
 		lastx = x;
 		lasty = y;
-		return(NOERROR);
+		return(NhlNOERROR);
 	}
 }
 
 NhlErrorTypes CallWorkLineTo
 #if  __STDC__
-(LayerClass lc, Layer instance,  float x, float y, int upordown)
+(NhlLayerClass lc, NhlLayer instance,  float x, float y, int upordown)
 #else
 (lc, instance,  x, y, upordown)
-LayerClass lc;
-Layer instance;
+NhlLayerClass lc;
+NhlLayer instance;
 float x;
 float y;
 int upordown;
 #endif
 {
-        WorkstationLayerClass tlc = (WorkstationLayerClass)lc;
+        NhlWorkstationLayerClass tlc = (NhlWorkstationLayerClass)lc;
 
         if(tlc->work_class.lineto_work == NULL){
                 if(tlc->base_class.superclass != NULL) {
                         return(CallWorkLineTo(lc->base_class.superclass,instance,x,y,upordown));
                 } else {
-                        NhlPError(WARNING,E_UNKNOWN,"_NhlWorkstationLineTo: Transformation object of type (%s) does not have lineto_work function",tlc->base_class.class_name);
-                        return(WARNING);
+                        NhlPError(NhlWARNING,NhlEUNKNOWN,"_NhlWorkstationLineTo: Transformation object of type (%s) does not have lineto_work function",tlc->base_class.class_name);
+                        return(NhlWARNING);
                 }
         } else {
                 return((*tlc->work_class.lineto_work)(instance,x,y,upordown));
@@ -2697,10 +2586,10 @@ int upordown;
 
 NhlErrorTypes _NhlWorkstationLineTo
 #if __STDC__
-(Layer instance, float x, float y, int upordown)
+(NhlLayer instance, float x, float y, int upordown)
 #else
 (instance,x,y,upordown)
-Layer instance;
+NhlLayer instance;
 float   x;
 float y;
 int upordown;
@@ -2713,15 +2602,15 @@ int upordown;
 /*ARGSUSED*/
 void _NhlSetFillInfo
 #if  __STDC__
-(Layer instance,Layer plot)
+(NhlLayer instance,NhlLayer plot)
 #else
 (instance,plot)
-        Layer instance;
-        Layer plot;
+        NhlLayer instance;
+        NhlLayer plot;
 #endif
 {
-        WorkstationLayer tinst = (WorkstationLayer)instance;
-	WorkstationLayerPart *wk_p = &tinst->work;
+        NhlWorkstationLayer tinst = (NhlWorkstationLayer)instance;
+	NhlWorkstationLayerPart *wk_p = &tinst->work;
         float   fl,fr,fb,ft,ul,ur,ub,ut;
         float  x0,x1;
         int ll,ix;
@@ -2729,8 +2618,8 @@ void _NhlSetFillInfo
 	
 
 	if (wk_p->edges_on && wk_p->edge_dash_pattern < 0) {
-		/* WARNING - but it's a void function right now */
-		NhlPError(WARNING,E_UNKNOWN,
+		/* NhlWARNING - but it's a void function right now */
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
 			  "_NhlSetFillInfo: invalid edge dash pattern index");
 		wk_p->edge_dash_pattern = NhlSOLIDLINE;
 	}
@@ -2747,8 +2636,8 @@ void _NhlSetFillInfo
 		x1 = (float)c_kfpy(x1);
 	
 		if ((ix = wk_p->edge_dash_pattern) > wk_p->dash_table_len) {
-			/* INFO - but it's a void function right now */
-			NhlPError(INFO,E_UNKNOWN,
+			/* NhlINFO - but it's a void function right now */
+			NhlPError(NhlINFO,NhlEUNKNOWN,
 	"_NhlSetLineInfo: using mod function on dash pattern index: %d", ix);
 
 			ix = 1 + (ix - 1) % wk_p->dash_table_len;
@@ -2768,8 +2657,8 @@ void _NhlSetFillInfo
  * Make sure the scale factor is okay
  */
 	if (wk_p->fill_scale_factor <= 0.0) {
-		/* WARNING - but it's a void function right now */
-		NhlPError(WARNING,E_UNKNOWN,
+		/* NhlWARNING - but it's a void function right now */
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
 		"_NhlSetFillInfo: fill scale factor must be greater than 0.0");
 		wk_p->fill_scale_factor = 1.0;
 	}
@@ -2780,15 +2669,15 @@ void _NhlSetFillInfo
  */
 
 	if ((ix = wk_p->fill_index) < NhlHOLLOWFILL) {
-		/* WARNING - but it's a void function right now */
-		NhlPError(WARNING,E_UNKNOWN,
+		/* NhlWARNING - but it's a void function right now */
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
 			   "_NhlSetFillInfo: invalid fill index");
 		wk_p->fill_index = NhlHOLLOWFILL;
 		
 	}
 	else if (ix > wk_p->fill_table_len) {
-		/* INFO - but it's a void function right now */
-		NhlPError(INFO,E_UNKNOWN,
+		/* NhlINFO - but it's a void function right now */
+		NhlPError(NhlINFO,NhlEUNKNOWN,
 	 "_NhlSetLineInfo: using mod function on fill index: %d", ix);
 
 		ix = 1 + (ix - 1) % wk_p->fill_table_len;
@@ -2806,17 +2695,17 @@ void _NhlSetFillInfo
 
 static NhlErrorTypes WorkstationFill
 #if  __STDC__
-(Layer l,float *x,float *y,int num_points)
+(NhlLayer l,float *x,float *y,int num_points)
 #else
 (l,x,y,num_points)
-	Layer l;
+	NhlLayer l;
 	float *x;
 	float *y;
 	int num_points;
 #endif
 {
-        WorkstationLayer inst = (WorkstationLayer)l;
-	WorkstationLayerPart *wk_p = &inst->work;
+        NhlWorkstationLayer inst = (NhlWorkstationLayer)l;
+	NhlWorkstationLayerPart *wk_p = &inst->work;
 	static int first = 1;
 	static float *dst;
 	static int *ind;
@@ -2844,9 +2733,9 @@ static NhlErrorTypes WorkstationFill
 		ind = (int *)NhlMalloc(nnd * sizeof(int));
 		first = 0;
 		if (dst == NULL || ind == NULL) {
-			NhlPError(FATAL,E_UNKNOWN,
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
 			   "WorkstationFill: workspace allocation failed");
-			return(FATAL);
+			return(NhlFATAL);
 		}
 	}
 	else if (msize < num_points) {
@@ -2856,9 +2745,9 @@ static NhlErrorTypes WorkstationFill
 		dst = (float *)NhlRealloc(dst, nst * sizeof(float));
 		ind = (int *)NhlRealloc(ind, nnd * sizeof(int));
 		if (dst == NULL || ind == NULL) {
-			NhlPError(FATAL,E_UNKNOWN,
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
 			    "WorkstationFill: workspace allocation failed");
-			return(FATAL);
+			return(NhlFATAL);
 		}
 	}
 
@@ -2940,32 +2829,32 @@ static NhlErrorTypes WorkstationFill
 
 	c_set(fl,fr,fb,ft,ul,ur,ub,ut,ll);
 
-	return(NOERROR);
+	return(NhlNOERROR);
 
 }
 
 NhlErrorTypes CallWorkstationFill
 #if  __STDC__
-(LayerClass lc, Layer instance,  float *x, float *y, int num_points)
+(NhlLayerClass lc, NhlLayer instance,  float *x, float *y, int num_points)
 #else
 (lc, instance,  x, y, num_points)
-LayerClass lc;
-Layer instance;
+NhlLayerClass lc;
+NhlLayer instance;
 float *x;
 float *y;
 int num_points;
 #endif
 {
-        WorkstationLayerClass tlc = (WorkstationLayerClass)lc;
+        NhlWorkstationLayerClass tlc = (NhlWorkstationLayerClass)lc;
 
         if(tlc->work_class.fill_work == NULL){
                 if(tlc->base_class.superclass != NULL) {
                         return(CallWorkstationFill(lc->base_class.superclass,
 						   instance,x,y,num_points));
                 } else {
-                        NhlPError(WARNING,E_UNKNOWN,"_NhlWorkstationFill: Transformation object of type (%s) does not have fill_work function",
+                        NhlPError(NhlWARNING,NhlEUNKNOWN,"_NhlWorkstationFill: Transformation object of type (%s) does not have fill_work function",
 				  tlc->base_class.class_name);
-                        return(WARNING);
+                        return(NhlWARNING);
                 }
         } else {
                 return((*tlc->work_class.fill_work)(instance,x,y,num_points));
@@ -2974,10 +2863,10 @@ int num_points;
 
 NhlErrorTypes _NhlWorkstationFill
 #if __STDC__
-(Layer instance, float *x, float *y, int num_points)
+(NhlLayer instance, float *x, float *y, int num_points)
 #else
 (instance,x,y,num_points)
-Layer instance;
+NhlLayer instance;
 float   *x;
 float *y;
 int num_points;
@@ -2995,7 +2884,7 @@ int num_points;
 /*ARGSUSED*/
 int NhlNewMarker
 #if  __STDC__
-(Layer instance, 
+(int instance, 
  char *marker_string, 
  float x_off, 
  float y_off,
@@ -3003,7 +2892,7 @@ int NhlNewMarker
  float size_adj)
 #else
 (instance,marker_string,x_off,y_off,aspect_adj,size_adj)
-        Layer instance;
+        int instance;
 	char *marker_string; 
 	float x_off; 
 	float y_off;
@@ -3011,10 +2900,18 @@ int NhlNewMarker
 	float size_adj;
 #endif
 {
-        WorkstationLayer tinst = (WorkstationLayer)instance;
-	WorkstationLayerPart *wk_p = &tinst->work;
+        NhlWorkstationLayer tinst = (NhlWorkstationLayer)_NhlGetLayer(instance);
+	NhlWorkstationLayerPart *wk_p;
 	NhlMarkerSpec *m_p;
 	int i;
+
+	if((tinst == NULL) || !_NhlIsWorkstation(tinst)){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			"NhlNewMarker:Invalid workstation id = %d",instance);
+		return ((int)NhlFATAL);
+	}
+	
+	wk_p = &tinst->work;
 
 	if (marker_table_len == marker_table_alloc_len) {
 		marker_table_alloc_len += NhlWK_ALLOC_UNIT;
@@ -3023,16 +2920,16 @@ int NhlNewMarker
 				   marker_table_alloc_len *
 				   sizeof(NhlMarkerSpec *));
 		if (marker_table == NULL) {
-			NhlPError(FATAL,E_UNKNOWN,
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
 			     "_NhlNewMarker: marker table realloc failed");
-			return((int)FATAL);
+			return((int)NhlFATAL);
 		}
 		m_p = (NhlMarkerSpec *)
 			NhlMalloc(NhlWK_ALLOC_UNIT * sizeof(NhlMarkerSpec));
 		if (m_p == NULL) {
-			NhlPError(FATAL,E_UNKNOWN,
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
 			     "_NhlNewMarker: marker specs alloc failed");
-			return((int)FATAL);
+			return((int)NhlFATAL);
 		}
 		for (i=marker_table_len; i<marker_table_alloc_len; i++) {
 			marker_table[i] = &m_p[i - marker_table_len];
@@ -3050,9 +2947,9 @@ int NhlNewMarker
 		marker_string = marker_table[NhlWK_DEF_MARKER]->marker;
         }
 	if ((m_p->marker = NhlMalloc(strlen(marker_string) + 1)) == NULL) {
-		NhlPError(FATAL,E_UNKNOWN,
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
 			  "_NhlNewMarker: marker string alloc failed");
-		return((int)FATAL);
+		return((int)NhlFATAL);
 	}
 	strcpy(m_p->marker, marker_string);
 	
@@ -3091,7 +2988,7 @@ int NhlNewMarker
 /*ARGSUSED*/
 NhlErrorTypes NhlSetMarker
 #if  __STDC__
-(Layer instance, 
+(int instance, 
  int	index,
  char	*marker_string, 
  float	x_off, 
@@ -3100,7 +2997,7 @@ NhlErrorTypes NhlSetMarker
  float	size_adj)
 #else
 (instance,index,marker_string,x_off,y_off,aspect_adj,size_adj)
-        Layer instance;
+        int instance;
 	int   index;
 	char *marker_string; 
 	float x_off; 
@@ -3113,9 +3010,9 @@ NhlErrorTypes NhlSetMarker
 	char *c_p;
 
 	if (index <= 0 || index > marker_table_len) {
-		NhlPError(WARNING,E_UNKNOWN,
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
 			  "_NhlEditMarker: invalid marker index");
-		return(WARNING);
+		return(NhlWARNING);
 	}
 
 	m_p = marker_table[index];
@@ -3129,9 +3026,9 @@ NhlErrorTypes NhlSetMarker
 	if (! m_p->dynamic) {
 		if ((m_p = (NhlMarkerSpec *) 
 		    NhlMalloc(sizeof(NhlMarkerSpec))) == NULL) {
-			NhlPError(FATAL,E_UNKNOWN,
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
 			      "_NhlEditMarker: marker alloc failed");
-			return(FATAL);
+			return(NhlFATAL);
 		}
 		memcpy((char *) m_p, (char *) marker_table[index],
 			sizeof(NhlMarkerSpec));
@@ -3141,9 +3038,9 @@ NhlErrorTypes NhlSetMarker
 	if (marker_string != NULL && 
 	    strcmp(marker_string, m_p->marker)) {
 		    if ((c_p = NhlMalloc(strlen(marker_string)+ 1 )) == NULL) {
-			    NhlPError(FATAL,E_UNKNOWN,
+			    NhlPError(NhlFATAL,NhlEUNKNOWN,
 				 "_NhlEditMarker: marker string alloc failed");
-			    return(FATAL);
+			    return(NhlFATAL);
 		    }
 		    strcpy(c_p, marker_string);
 		    if (m_p->dynamic) 
@@ -3172,22 +3069,22 @@ NhlErrorTypes NhlSetMarker
 	else
 		m_p->size_adj = marker_specs[0].size_adj;
 
-	return (NOERROR); 
+	return (NhlNOERROR); 
 	
 }
 
 /*ARGSUSED*/
 void _NhlSetMarkerInfo
 #if  __STDC__
-(Layer instance,Layer plot)
+(NhlLayer instance,NhlLayer plot)
 #else
 (instance,plot)
-        Layer instance;
-        Layer plot;
+        NhlLayer instance;
+        NhlLayer plot;
 #endif
 {
-        WorkstationLayer tinst = (WorkstationLayer)instance;
-	WorkstationLayerPart *wk_p = &tinst->work;
+        NhlWorkstationLayer tinst = (NhlWorkstationLayer)instance;
+	NhlWorkstationLayerPart *wk_p = &tinst->work;
         float   fl,fr,fb,ft,ul,ur,ub,ut;
         float  x0,x1;
         int ll,ix;
@@ -3195,8 +3092,8 @@ void _NhlSetMarkerInfo
 
 
 	if (wk_p->marker_lines_on && wk_p->marker_line_dash_pattern < 0) {
-		/* WARNING - but it's a void function right now */
-		NhlPError(WARNING,E_UNKNOWN,
+		/* NhlWARNING - but it's a void function right now */
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
 		  "_NhlSetMarkerInfo: invalid marker dash pattern index");
 		wk_p->marker_line_dash_pattern = NhlSOLIDLINE;
 	}
@@ -3214,8 +3111,8 @@ void _NhlSetMarkerInfo
 	
 		if ((ix = wk_p->marker_line_dash_pattern) > 
 		    wk_p->dash_table_len) {
-			/* INFO - but it's a void function right now */
-			NhlPError(INFO,E_UNKNOWN,
+			/* NhlINFO - but it's a void function right now */
+			NhlPError(NhlINFO,NhlEUNKNOWN,
        "_NhlSetMarkerInfo: using mod function on dash pattern index: %d", ix);
 
 			ix = 1 + (ix - 1) % wk_p->dash_table_len;
@@ -3234,8 +3131,8 @@ void _NhlSetMarkerInfo
  * Make sure the marker size is okay
  */
 	if (wk_p->marker_size <= 0.0) {
-		/* WARNING - but it's a void function right now */
-		NhlPError(WARNING,E_UNKNOWN,
+		/* NhlWARNING - but it's a void function right now */
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
 		"_NhlSetMarkerInfo: marker size must be greater than 0.0");
 		wk_p->marker_size = 0.007;
 	}
@@ -3245,14 +3142,14 @@ void _NhlSetMarkerInfo
  */
 
 	if ((ix = wk_p->marker_index) < 0) {
-		/* WARNING - but it's a void function right now */
-		NhlPError(WARNING,E_UNKNOWN,
+		/* NhlWARNING - but it's a void function right now */
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
 			   "_NhlSetMarkerInfo: invalid marker index");
 		wk_p->marker_index = NhlWK_DEF_MARKER;
 	}
 	else if (ix >wk_p->fill_table_len) {
-		/* INFO - but it's a void function right now */
-		NhlPError(INFO,E_UNKNOWN,
+		/* NhlINFO - but it's a void function right now */
+		NhlPError(NhlINFO,NhlEUNKNOWN,
 	 "_NhlSetLineInfo: using mod function on marker index: %d", ix);
 	}
 
@@ -3262,17 +3159,17 @@ void _NhlSetMarkerInfo
 
 static NhlErrorTypes WorkstationMarker
 #if  __STDC__
-(Layer l,float *x,float *y,int num_points)
+(NhlLayer l,float *x,float *y,int num_points)
 #else
 (l,x,y,num_points)
-	Layer l;
+	NhlLayer l;
 	float *x;
 	float *y;
 	int num_points;
 #endif
 {
-        WorkstationLayer inst = (WorkstationLayer)l;
-	WorkstationLayerPart *wk_p = &inst->work;
+        NhlWorkstationLayer inst = (NhlWorkstationLayer)l;
+	NhlWorkstationLayerPart *wk_p = &inst->work;
         float   fl,fr,fb,ft,ul,ur,ub,ut;
 	int ll, i, index;
 	int save_font;
@@ -3281,7 +3178,7 @@ static NhlErrorTypes WorkstationMarker
 	Gdouble save_linewidth;
 	Gint err_ind;
 	float marker_size, x_off, y_off;
-	int ret = NOERROR;
+	int ret = NhlNOERROR;
 	char *string;
 	int marker_color,line_color;
 	float p_height, p_width;
@@ -3332,10 +3229,10 @@ static NhlErrorTypes WorkstationMarker
 		marker_size = wk_p->marker_size;
 		if ((string = wk_p->marker_string) == NULL ||
 		    string[0] == '\0') {
-			/* WARNING*/
-			NhlPError(WARNING,E_UNKNOWN,
+			/* NhlWARNING*/
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
 			      "_NhlWorkstationMarker: invalid marker string");
-			ret = WARNING;
+			ret = NhlWARNING;
 			marker_size = 
 				marker_table[NhlWK_DEF_MARKER]->size_adj *
 					wk_p->marker_size;
@@ -3401,17 +3298,17 @@ static NhlErrorTypes WorkstationMarker
 
 NhlErrorTypes CallWorkstationMarker
 #if  __STDC__
-(LayerClass lc, Layer instance,  float *x, float *y, int num_points)
+(NhlLayerClass lc, NhlLayer instance,  float *x, float *y, int num_points)
 #else
 (lc, instance,  x, y, num_points)
-LayerClass lc;
-Layer instance;
+NhlLayerClass lc;
+NhlLayer instance;
 float *x;
 float *y;
 int num_points;
 #endif
 {
-        WorkstationLayerClass tlc = (WorkstationLayerClass)lc;
+        NhlWorkstationLayerClass tlc = (NhlWorkstationLayerClass)lc;
 
         if(tlc->work_class.marker_work == NULL){
                 if(tlc->base_class.superclass != NULL) {
@@ -3419,9 +3316,9 @@ int num_points;
 					      lc->base_class.superclass,
 					      instance,x,y,num_points));
                 } else {
-                        NhlPError(WARNING,E_UNKNOWN,"_NhlWorkstationMarker: Transformation object of type (%s) does not have marker_work function",
+                        NhlPError(NhlWARNING,NhlEUNKNOWN,"_NhlWorkstationMarker: Transformation object of type (%s) does not have marker_work function",
 				  tlc->base_class.class_name);
-                        return(WARNING);
+                        return(NhlWARNING);
                 }
         } else {
                 return((*tlc->work_class.marker_work)(instance,
@@ -3431,10 +3328,10 @@ int num_points;
 
 NhlErrorTypes _NhlWorkstationMarker
 #if __STDC__
-(Layer instance, float *x, float *y, int num_points)
+(NhlLayer instance, float *x, float *y, int num_points)
 #else
 (instance,x,y,num_points)
-Layer instance;
+NhlLayer instance;
 float   *x;
 float *y;
 int num_points;

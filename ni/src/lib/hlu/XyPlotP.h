@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlotP.h,v 1.4 1993-11-10 01:19:48 ethan Exp $
+ *      $Id: XyPlotP.h,v 1.5 1994-01-27 21:27:55 boote Exp $
  */
 /************************************************************************
 *									*
@@ -26,21 +26,21 @@
 #include <ncarg/hlu/XyPlot.h>
 #include <ncarg/hlu/TickMark.h>
 
-typedef struct _XyDataDepLayerPart{
+typedef struct _NhlXyDataDepLayerPart{
 	/* Public resources	*/
-	NhlGenArray	colors;
-	int		color;
+	NhlGenArray		colors;
+	int			color;
 
-	NhlGenArray	dash_patterns;
-	int		dash;
+	NhlGenArray		dash_patterns;
+	int			dash;
 
-	LineLabelModes	label_mode;
-	NhlGenArray	labels;
+	NhlLineLabelModes	label_mode;
+	NhlGenArray		labels;
 
 	/* Private fields	*/
-} XyDataDepLayerPart;
+} NhlXyDataDepLayerPart;
 
-typedef struct _XyPlotLayerPart {
+typedef struct _NhlXyPlotLayerPart {
 	/* Publically setable resources */
 
 	/* DataResources should use the NhlPointer type */
@@ -48,8 +48,8 @@ typedef struct _XyPlotLayerPart {
 
 	float			curve_thickness;
 
-	TickMarkStyles		x_style;
-	TickMarkStyles 		y_style;
+	NhlTickMarkStyles	x_style;
+	NhlTickMarkStyles 	y_style;
 
 	NhlGenArray		x_irregular_points;
 	NhlGenArray		y_irregular_points;
@@ -66,8 +66,8 @@ typedef struct _XyPlotLayerPart {
 	float			y_max;
 	float			y_min;
 
-	AlternatePlace		x_alternate;
-	AlternatePlace		y_alternate;
+	NhlAlternatePlace	x_alternate;
+	NhlAlternatePlace	y_alternate;
 
 	NhlGenArray		x_alternate_coords;
 	NhlGenArray		x_original_coords;
@@ -83,17 +83,17 @@ typedef struct _XyPlotLayerPart {
 	float 			ti_main_offset_x;
 	float			ti_x_axis_offset_x;
 	float			ti_y_axis_offset_y;
-	TitlePositions 		ti_main_position;
-	TitlePositions		ti_x_axis_position;
-	TitlePositions		ti_y_axis_position;
+	NhlTitlePositions 	ti_main_position;
+	NhlTitlePositions	ti_x_axis_position;
+	NhlTitlePositions	ti_y_axis_position;
 
 	float			x_tension;
 	float			y_tension;
 
 	/* Private fields */
-	Layer		ticks;
-	Layer		ttitles;
-	Layer		thetrans;
+	NhlLayer	ticks;
+	NhlLayer	ttitles;
+	NhlLayer	thetrans;
 	NhlBoolean	have_irreg_trans;
 	NhlBoolean	fake_x;
 	float		fake_x_max;
@@ -128,50 +128,53 @@ typedef struct _XyPlotLayerPart {
 	float		real_main_offset_x;
 	float		real_x_axis_offset_x;
 	float		real_y_axis_offset_y;
-}XyPlotLayerPart;
+}NhlXyPlotLayerPart;
 
-typedef struct _XyDataDepLayerRec{
-	ObjLayerPart		base;
-	DataSpecLayerPart	dataspec;
-	XyDataDepLayerPart	xydata;
-} XyDataDepLayerRec;
+typedef struct _NhlXyDataDepLayerRec{
+	NhlObjLayerPart		base;
+	NhlDataSpecLayerPart	dataspec;
+	NhlXyDataDepLayerPart	xydata;
+} NhlXyDataDepLayerRec;
 
-typedef struct _XyPlotLayerRec {
-	BaseLayerPart		base;
-	ViewLayerPart		view;
-	TransformLayerPart	trans;
-	DataCommLayerPart	datacomm;
-	XyPlotLayerPart		xyplot;
-}XyPlotLayerRec;
+typedef struct _NhlXyPlotLayerRec {
+	NhlBaseLayerPart		base;
+	NhlViewLayerPart		view;
+	NhlTransformLayerPart		trans;
+	NhlDataCommLayerPart		datacomm;
+	NhlXyPlotLayerPart		xyplot;
+}NhlXyPlotLayerRec;
 
-typedef struct _XyDataDepLayerClassPart{
+typedef struct _NhlXyDataDepLayerClassPart{
 	int	foo;
-} XyDataDepLayerClassPart;
+} NhlXyDataDepLayerClassPart;
 
-typedef struct _XyPlotLayerClassPart {
+typedef struct _NhlXyPlotLayerClassPart {
 	char *foo;
-} XyPlotLayerClassPart;
+} NhlXyPlotLayerClassPart;
 
-typedef struct _XyDataDepLayerClassRec{
-	ObjLayerClassPart	base_class;
-	DataSpecLayerClassPart	dataspec_class;
-	XyDataDepLayerClassPart	xydata_class;
-} XyDataDepLayerClassRec;
+typedef struct _NhlXyDataDepLayerClassRec{
+	NhlObjLayerClassPart		base_class;
+	NhlDataSpecLayerClassPart	dataspec_class;
+	NhlXyDataDepLayerClassPart	xydata_class;
+} NhlXyDataDepLayerClassRec;
 
-typedef struct _XyPlotLayerClassRec {
-	BaseLayerClassPart	base_class;
-	ViewLayerClassPart	view_class;
-	TransformLayerClassPart	trans_class;
-	DataCommLayerClassPart	datacomm_class;
-	XyPlotLayerClassPart	xyplot_class;
-}XyPlotLayerClassRec;
+typedef struct _NhlXyPlotLayerClassRec {
+	NhlBaseLayerClassPart		base_class;
+	NhlViewLayerClassPart		view_class;
+	NhlTransformLayerClassPart	trans_class;
+	NhlDataCommLayerClassPart	datacomm_class;
+	NhlXyPlotLayerClassPart		xyplot_class;
+}NhlXyPlotLayerClassRec;
 
-extern XyDataDepLayerClassRec xyDataDepLayerClassRec;
-extern XyPlotLayerClassRec xyPlotLayerClassRec;
+extern NhlXyDataDepLayerClassRec NhlxyDataDepLayerClassRec;
+extern NhlXyPlotLayerClassRec NhlxyPlotLayerClassRec;
 
-extern LayerClass xyDataDepLayerClass;
+extern NhlLayerClass NhlxyDataDepLayerClass;
 
-typedef struct _XyDataDepLayerClassRec *XyDataDepLayerClass;
-typedef struct _XyDataDepLayerRec *XyDataDepLayer;
+typedef struct _NhlXyDataDepLayerClassRec *NhlXyDataDepLayerClass;
+typedef struct _NhlXyDataDepLayerRec *NhlXyDataDepLayer;
+
+typedef struct _NhlXyPlotLayerClassRec *NhlXyPlotLayerClass;
+typedef struct _NhlXyPlotLayerRec *NhlXyPlotLayer;
 
 #endif /* _NXyPlotP_h */

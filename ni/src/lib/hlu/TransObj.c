@@ -1,5 +1,5 @@
 /*
- *      $Id: TransObj.c,v 1.4 1993-12-13 23:35:01 ethan Exp $
+ *      $Id: TransObj.c,v 1.5 1994-01-27 21:26:45 boote Exp $
  */
 /************************************************************************
 *									*
@@ -20,25 +20,23 @@
  *	Description:	
  */
 
-#include <stdio.h>
-#include <string.h>
 #include <ncarg/hlu/hluP.h>
 
 #include <ncarg/hlu/TransObjP.h>
 
 static NhlResource resources[] =  {
 	{ NhlNtrOutOfRangeF, NhlCtrOutOfRangeF, NhlTFloat, sizeof(float),
-		NhlOffset(TransObjLayerRec, trobj.out_of_range),
+		NhlOffset(NhlTransObjLayerRec, trobj.out_of_range),
 		NhlTString, "-9999.0" }
 };
 
-TransObjLayerClassRec transObjLayerClassRec = {
+NhlTransObjLayerClassRec NhltransObjLayerClassRec = {
 	{
 /* class_name */        "TransObj",
 /* nrm_class */         NrmNULLQUARK,
-/* layer_size */        sizeof(TransObjLayerRec),
+/* layer_size */        sizeof(NhlTransObjLayerRec),
 /* class_inited */      False,
-/* superclass*/         (LayerClass)&objLayerClassRec,
+/* superclass*/         (NhlLayerClass)&NhlobjLayerClassRec,
 
 /* layer_resources */   resources,
 /* num_resources */     NhlNumber(resources),
@@ -71,7 +69,7 @@ TransObjLayerClassRec transObjLayerClassRec = {
 	}
 };
 
-LayerClass transObjLayerClass = (LayerClass)&transObjLayerClassRec;
+NhlLayerClass NhltransObjLayerClass = (NhlLayerClass)&NhltransObjLayerClassRec;
 
 
 #define CTOP 010
@@ -208,25 +206,25 @@ float missing;
 
 static NhlErrorTypes CallDataLineTo 
 #if  __STDC__
-(LayerClass lc, Layer instance, Layer parent, float x, float y, int upordown)
+(NhlLayerClass lc, NhlLayer instance, NhlLayer parent, float x, float y, int upordown)
 #else
 (lc, instance, parent, x, y, upordown)
-LayerClass lc;
-Layer instance;
-Layer parent;
+NhlLayerClass lc;
+NhlLayer instance;
+NhlLayer parent;
 float x;
 float y;
 int upordown;
 #endif
 {
-	TransObjLayerClass tlc = (TransObjLayerClass)lc;
+	NhlTransObjLayerClass tlc = (NhlTransObjLayerClass)lc;
 
 	if(tlc->trobj_class.data_lineto == NULL){
 		if(tlc->base_class.superclass != NULL) {
 			return(CallDataLineTo(lc->base_class.superclass,instance,parent,x,y,upordown));
 		} else {
-			NhlPError(WARNING,E_UNKNOWN,"_NhlDataLineTo: Transformation object of type (%s) does not have data_lineto function",tlc->base_class.class_name);
-			return(WARNING);
+			NhlPError(NhlWARNING,NhlEUNKNOWN,"_NhlDataLineTo: Transformation object of type (%s) does not have data_lineto function",tlc->base_class.class_name);
+			return(NhlWARNING);
 		}
 	} else {
 		return((*tlc->trobj_class.data_lineto)(instance,parent,x,y,upordown));
@@ -236,11 +234,11 @@ int upordown;
 
 NhlErrorTypes _NhlDataLineTo 
 #if __STDC__
-(Layer instance, Layer parent, float x, float y, int upordown)
+(NhlLayer instance, NhlLayer parent, float x, float y, int upordown)
 #else
 (instance,parent,x,y,upordown)
-Layer instance;
-Layer parent;
+NhlLayer instance;
+NhlLayer parent;
 float	x;
 float y;
 int upordown;
@@ -251,25 +249,25 @@ int upordown;
 
 static NhlErrorTypes CallWinLineTo 
 #if  __STDC__
-(LayerClass lc, Layer instance, Layer parent, float x, float y, int upordown)
+(NhlLayerClass lc, NhlLayer instance, NhlLayer parent, float x, float y, int upordown)
 #else
 (lc, instance, parent, x, y, upordown)
-LayerClass lc;
-Layer instance;
-Layer parent;
+NhlLayerClass lc;
+NhlLayer instance;
+NhlLayer parent;
 float x;
 float y;
 int upordown;
 #endif
 {
-	TransObjLayerClass tlc = (TransObjLayerClass)lc;
+	NhlTransObjLayerClass tlc = (NhlTransObjLayerClass)lc;
 
 	if(tlc->trobj_class.win_lineto == NULL){
 		if(tlc->base_class.superclass != NULL) {
 			return(CallWinLineTo(lc->base_class.superclass,instance,parent,x,y,upordown));
 		} else {
-			NhlPError(WARNING,E_UNKNOWN,"_NhlWinLineTo: Transformation object of type (%s) does not have win_lineto function",tlc->base_class.class_name);
-			return(WARNING);
+			NhlPError(NhlWARNING,NhlEUNKNOWN,"_NhlWinLineTo: Transformation object of type (%s) does not have win_lineto function",tlc->base_class.class_name);
+			return(NhlWARNING);
 		}
 	} else {
 		return((*tlc->trobj_class.win_lineto)(instance,parent,x,y,upordown));
@@ -279,11 +277,11 @@ int upordown;
 
 NhlErrorTypes _NhlWinLineTo 
 #if __STDC__
-(Layer instance, Layer parent, float x, float y, int upordown)
+(NhlLayer instance, NhlLayer parent, float x, float y, int upordown)
 #else
 (instance,parent,x,y,upordown)
-Layer instance;
-Layer parent;
+NhlLayer instance;
+NhlLayer parent;
 float	x;
 float y;
 int upordown;
@@ -294,25 +292,25 @@ int upordown;
 
 static NhlErrorTypes CallCompcLineTo 
 #if  __STDC__
-(LayerClass lc, Layer instance, Layer parent, float x, float y, int upordown)
+(NhlLayerClass lc, NhlLayer instance, NhlLayer parent, float x, float y, int upordown)
 #else
 (lc, instance, parent, x, y, upordown)
-LayerClass lc;
-Layer instance;
-Layer parent;
+NhlLayerClass lc;
+NhlLayer instance;
+NhlLayer parent;
 float x;
 float y;
 int upordown;
 #endif
 {
-	TransObjLayerClass tlc = (TransObjLayerClass)lc;
+	NhlTransObjLayerClass tlc = (NhlTransObjLayerClass)lc;
 
 	if(tlc->trobj_class.compc_lineto == NULL){
 		if(tlc->base_class.superclass != NULL) {
 			return(CallCompcLineTo(lc->base_class.superclass,instance,parent,x,y,upordown));
 		} else {
-			NhlPError(WARNING,E_UNKNOWN,"_NhlCompcLineTo: Transformation object of type (%s) does not have compc_lineto function",tlc->base_class.class_name);
-			return(WARNING);
+			NhlPError(NhlWARNING,NhlEUNKNOWN,"_NhlCompcLineTo: Transformation object of type (%s) does not have compc_lineto function",tlc->base_class.class_name);
+			return(NhlWARNING);
 		}
 	} else {
 		return((*tlc->trobj_class.compc_lineto)(instance,parent,x,y,upordown));
@@ -322,11 +320,11 @@ int upordown;
 
 NhlErrorTypes _NhlCompcLineTo 
 #if __STDC__
-(Layer instance, Layer parent, float x, float y, int upordown)
+(NhlLayer instance, NhlLayer parent, float x, float y, int upordown)
 #else
 (instance,parent,x,y,upordown)
-Layer instance;
-Layer parent;
+NhlLayer instance;
+NhlLayer parent;
 float	x;
 float y;
 int upordown;
@@ -337,25 +335,25 @@ int upordown;
 
 static NhlErrorTypes CallNDCLineTo 
 #if  __STDC__
-(LayerClass lc, Layer instance, Layer parent, float x, float y, int upordown)
+(NhlLayerClass lc, NhlLayer instance, NhlLayer parent, float x, float y, int upordown)
 #else
 (lc, instance, parent, x, y, upordown)
-LayerClass lc;
-Layer instance;
-Layer parent;
+NhlLayerClass lc;
+NhlLayer instance;
+NhlLayer parent;
 float x;
 float y;
 int upordown;
 #endif
 {
-	TransObjLayerClass tlc = (TransObjLayerClass)lc;
+	NhlTransObjLayerClass tlc = (NhlTransObjLayerClass)lc;
 
 	if(tlc->trobj_class.NDC_lineto == NULL){
 		if(tlc->base_class.superclass != NULL) {
 			return(CallNDCLineTo(lc->base_class.superclass,instance,parent,x,y,upordown));
 		} else {
-			NhlPError(WARNING,E_UNKNOWN,"_NhlNDCLineTo: Transformation object of type (%s) does not have NDC_lineto function",tlc->base_class.class_name);
-			return(WARNING);
+			NhlPError(NhlWARNING,NhlEUNKNOWN,"_NhlNDCLineTo: Transformation object of type (%s) does not have NDC_lineto function",tlc->base_class.class_name);
+			return(NhlWARNING);
 		}
 	} else {
 		return((*tlc->trobj_class.NDC_lineto)(instance,parent,x,y,upordown));
@@ -365,11 +363,11 @@ int upordown;
 
 NhlErrorTypes _NhlNDCLineTo 
 #if __STDC__
-(Layer instance, Layer parent, float x, float y, int upordown)
+(NhlLayer instance, NhlLayer parent, float x, float y, int upordown)
 #else
 (instance,parent,x,y,upordown)
-Layer instance;
-Layer parent;
+NhlLayer instance;
+NhlLayer parent;
 float	x;
 float y;
 int upordown;

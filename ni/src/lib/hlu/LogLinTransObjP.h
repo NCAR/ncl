@@ -1,5 +1,5 @@
 /*
- *      $Id: LogLinTransObjP.h,v 1.2 1993-10-19 17:51:44 boote Exp $
+ *      $Id: LogLinTransObjP.h,v 1.3 1994-01-27 21:24:32 boote Exp $
  */
 /************************************************************************
 *									*
@@ -24,13 +24,11 @@
 #ifndef _NLogLinTransObjP_h
 #define _NLogLinTransObjP_h
 
-
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/TransObjP.h>
 #include <ncarg/hlu/LogLinTransObj.h>
 
-
-typedef struct _LogLinTransObjLayerPart {
+typedef struct _NhlLogLinTransObjLayerPart {
 	/* Publically setable resources */
 	float 	x_min;
 	float	x_max;
@@ -47,24 +45,27 @@ typedef struct _LogLinTransObjLayerPart {
 	float	ut;
 	float	ub;
 	int	log_lin_value;
-} LogLinTransObjLayerPart;
+} NhlLogLinTransObjLayerPart;
 
-typedef struct _LogLinTransObjLayerRec {
-	ObjLayerPart	base;
-	TransObjLayerPart trobj;
-	LogLinTransObjLayerPart lltrans;
-} LogLinTransObjLayerRec;
+typedef struct _NhlLogLinTransObjLayerRec {
+	NhlObjLayerPart			base;
+	NhlTransObjLayerPart		trobj;
+	NhlLogLinTransObjLayerPart	lltrans;
+} NhlLogLinTransObjLayerRec;
 
-typedef struct _LogLinTransObjLayerClassPart {
+typedef struct _NhlLogLinTransObjLayerClassPart {
 	char *foo;
-}LogLinTransObjLayerClassPart;
+}NhlLogLinTransObjLayerClassPart;
 
-typedef struct _LogLinTransObjLayerClassRec {
-	ObjLayerClassPart	base_class;
-	TransObjLayerClassPart	trobj_class;
-	LogLinTransObjLayerClassPart	lltrans_class;
-}LogLinTransObjLayerClassRec;
+typedef struct _NhlLogLinTransObjLayerClassRec {
+	NhlObjLayerClassPart		base_class;
+	NhlTransObjLayerClassPart	trobj_class;
+	NhlLogLinTransObjLayerClassPart	lltrans_class;
+}NhlLogLinTransObjLayerClassRec;
 
-extern LogLinTransObjLayerClassRec logLinTransObjLayerClassRec;
+typedef struct _NhlLogLinTransObjLayerClassRec	*NhlLogLinTransObjLayerClass;
+typedef struct _NhlLogLinTransObjLayerRec	*NhlLogLinTransObjLayer;
+
+extern NhlLogLinTransObjLayerClassRec NhllogLinTransObjLayerClassRec;
 
 #endif /* _NLogLinTransObjP_h */

@@ -1,5 +1,5 @@
 /*
- *      $Id: DataComm.h,v 1.3 1994-01-05 22:34:20 boote Exp $
+ *      $Id: DataComm.h,v 1.4 1994-01-27 21:22:30 boote Exp $
  */
 /************************************************************************
 *									*
@@ -32,15 +32,8 @@
 /*
  * Class declarations
  */
-typedef struct _DataCommLayerClassRec *DataCommLayerClass;
-typedef struct _DataCommLayerRec *DataCommLayer;
-
-extern LayerClass dataCommLayerClass;
-
-typedef struct _DataSpecLayerClassRec *DataSpecLayerClass;
-typedef struct _DataSpecLayerRec *DataSpecLayer;
-
-extern LayerClass dataSpecLayerClass;
+extern NhlLayerClass NhldataCommLayerClass;
+extern NhlLayerClass NhldataSpecLayerClass;
 
 /*
  * Public API

@@ -1,5 +1,5 @@
 /*
- *      $Id: MultiTextP.h,v 1.1 1993-04-30 17:23:12 boote Exp $
+ *      $Id: MultiTextP.h,v 1.2 1994-01-27 21:25:03 boote Exp $
  */
 /************************************************************************
 *									*
@@ -25,7 +25,7 @@
 #include <ncarg/hlu/ViewP.h>
 #include <ncarg/hlu/MultiText.h>
 
-typedef struct _MultiTextLayerPart{
+typedef struct _NhlMultiTextLayerPart{
 
 	/* User setable resource fields */
 
@@ -40,12 +40,12 @@ typedef struct _MultiTextLayerPart{
 	float			angle;
 	int			font;
 	int			just;
-	FontQuality		font_quality;
+	NhlFontQuality		font_quality;
 	float			font_height;
 	float			font_aspect;
 	float			font_thickness;
 	float			constant_spacing;
-	TextDirection		direction;
+	NhlTextDirection	direction;
 
 	/* Internal private fields */
 
@@ -61,25 +61,27 @@ typedef struct _MultiTextLayerPart{
 	float			text_height;
 
 
-}MultiTextLayerPart;
+}NhlMultiTextLayerPart;
 
-typedef struct _MultiTextLayerRec{
-	BaseLayerPart	base;
-	ViewLayerPart	view;
-	MultiTextLayerPart multitext;
-}MultiTextLayerRec;
+typedef struct _NhlMultiTextLayerRec{
+	NhlBaseLayerPart	base;
+	NhlViewLayerPart	view;
+	NhlMultiTextLayerPart	multitext;
+}NhlMultiTextLayerRec;
 
-typedef struct _MultiTextLayerClassPart {
+typedef struct _NhlMultiTextLayerClassPart {
 	int foo;
-}MultiTextLayerClassPart;
+}NhlMultiTextLayerClassPart;
 
-typedef struct _MultiTextLayerClassRec{
-	BaseLayerClassPart	base_class;
-	ViewLayerClassPart	view_class;
-	MultiTextLayerClassPart	multitext_class;
-}MultiTextLayerClassRec;
+typedef struct _NhlMultiTextLayerClassRec{
+	NhlBaseLayerClassPart	base_class;
+	NhlViewLayerClassPart	view_class;
+	NhlMultiTextLayerClassPart	multitext_class;
+}NhlMultiTextLayerClassRec;
 
-extern MultiTextLayerClassRec multiTextLayerClassRec;
+typedef struct _NhlMultiTextLayerClassRec *NhlMultiTextLayerClass;
+typedef struct _NhlMultiTextLayerRec	*NhlMultiTextLayer;
 
+extern NhlMultiTextLayerClassRec NhlmultiTextLayerClassRec;
 
 #endif  /*_NMultiTextP_h*/

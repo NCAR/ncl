@@ -1,5 +1,5 @@
 /*
- *      $Id: WorkstationP.h,v 1.3 1993-10-23 00:35:07 dbrown Exp $
+ *      $Id: WorkstationP.h,v 1.4 1994-01-27 21:27:31 boote Exp $
  */
 /************************************************************************
 *									*
@@ -25,7 +25,7 @@
 #define	_NWorkstationP_h
 
 #include	<ncarg/hlu/BaseP.h>
-#include 	<ncarg/hlu/Workstation.h>
+#include 	<ncarg/hlu/WorkstationI.h>
 
 #define MAX_COLOR_MAP	256
 /*
@@ -52,13 +52,13 @@ typedef struct _NhlPrivateColor {
 
 typedef NhlErrorTypes (*NhlWorkstationProc)(
 #if	NhlNeedProto
-	Layer	l	/* layer to operate on	*/
+	NhlLayer	l	/* layer to operate on	*/
 #endif
 );
 
 typedef NhlErrorTypes (*NhlWorkstationLineTo)(
 #if	NhlNeedProto
-	Layer	l	/* layer to operate on	*/,
+	NhlLayer	l	/* layer to operate on	*/,
 	float   x,
 	float   y,	
 	int     upordown
@@ -67,7 +67,7 @@ typedef NhlErrorTypes (*NhlWorkstationLineTo)(
 
 typedef NhlErrorTypes (*NhlWorkstationFill)(
 #if	NhlNeedProto
-	Layer	l	/* layer to operate on	*/,
+	NhlLayer	l	/* layer to operate on	*/,
 	float   *x,
 	float   *y,	
 	int     num_points
@@ -76,7 +76,7 @@ typedef NhlErrorTypes (*NhlWorkstationFill)(
 
 typedef NhlErrorTypes (*NhlWorkstationMarker)(
 #if	NhlNeedProto
-	Layer	l	/* layer to operate on	*/,
+	NhlLayer	l	/* layer to operate on	*/,
 	float   *x,
 	float   *y,	
 	int     num_points
@@ -94,7 +94,7 @@ typedef NhlErrorTypes (*NhlWorkstationMarker)(
 #define NhlInheritMarker ((NhlWorkstationMarker)_NhlInherit)
 
 
-typedef struct _WorkstationLayerPart {
+typedef struct _NhlWorkstationLayerPart {
 	/* User setable resource fields */
 
 	NhlGenArray	color_map;
@@ -142,8 +142,6 @@ typedef struct _WorkstationLayerPart {
 
 	/* Private internal fields */
 
-	LayerList	children;
-	int		num_children;
 	NhlPrivateColor	private_color_map[MAX_COLOR_MAP];
 	int		num_private_colors;
 
@@ -163,14 +161,14 @@ typedef struct _WorkstationLayerPart {
 	/* Import Values */
 	int		gkswkstype;
 	int		gkswksconid;
-} WorkstationLayerPart;
+} NhlWorkstationLayerPart;
 
-typedef struct _WorkstationLayerRec {
-	BaseLayerPart		base;
-	WorkstationLayerPart	work;
-} WorkstationLayerRec;
+typedef struct _NhlWorkstationLayerRec {
+	NhlBaseLayerPart	base;
+	NhlWorkstationLayerPart	work;
+} NhlWorkstationLayerRec;
 
-typedef struct _WorkstationLayerClassPart {
+typedef struct _NhlWorkstationLayerClassPart {
 	NhlWorkstationProc	open_work;
 	NhlWorkstationProc	close_work;
 	NhlWorkstationProc	activate_work;
@@ -180,32 +178,17 @@ typedef struct _WorkstationLayerClassPart {
 	NhlWorkstationLineTo	lineto_work;
 	NhlWorkstationFill      fill_work;
 	NhlWorkstationMarker    marker_work;
+} NhlWorkstationLayerClassPart;
 
-} WorkstationLayerClassPart;
-
-typedef struct _WorkstationLayerClassRec {
-	BaseLayerClassPart		base_class;
-	WorkstationLayerClassPart	work_class;
-} WorkstationLayerClassRec;
+typedef struct _NhlWorkstationLayerClassRec {
+	NhlBaseLayerClassPart		base_class;
+	NhlWorkstationLayerClassPart	work_class;
+} NhlWorkstationLayerClassRec;
 	
 
-extern WorkstationLayerClassRec workstationLayerClassRec;	
+typedef struct _NhlWorkstationLayerRec *NhlWorkstationLayer;
+typedef struct _NhlWorkstationLayerClassRec *NhlWorkstationLayerClass;
 
-extern  NhlErrorTypes _NhlAddWorkChildLayer(
-#ifdef NhlNeedProto
-        Layer   /* parent */,
-        Layer   /* child */
-#endif
-);
-
-extern  NhlErrorTypes _NhlDeleteWorkChildLayer(
-#ifdef NhlNeedProto
-        Layer   /* parent */,
-        Layer   /* child */
-#endif
-);
-
-
+extern NhlWorkstationLayerClassRec NhlworkstationLayerClassRec;	
 
 #endif	/* _NWorkstationP_h */
-

@@ -1,5 +1,5 @@
 /*
- *      $Id: DataItemP.h,v 1.2 1993-10-19 17:50:29 boote Exp $
+ *      $Id: DataItemP.h,v 1.3 1994-01-27 21:22:39 boote Exp $
  */
 /************************************************************************
 *									*
@@ -29,7 +29,7 @@
 #define	NhlNnoManager	"no.Manager"
 #define	NhlCnoManager	"No.Manager"
 
-typedef struct _DataItemLayerPart{
+typedef struct _NhlDataItemLayerPart{
 	/* User setable resource fields */
 
 	/*
@@ -44,31 +44,34 @@ typedef struct _DataItemLayerPart{
 	 * in the public.h file so they at least all use the same name.
 	 */
 	/* Private Fields */
-	DataMgrLayer	manager;
-} DataItemLayerPart;
+	NhlLayer	manager;
+} NhlDataItemLayerPart;
 
-typedef struct _DataItemLayerRec{
-	BaseLayerPart		base;
-	DataItemLayerPart	dataitem;
-} DataItemLayerRec;
+typedef struct _NhlDataItemLayerRec{
+	NhlBaseLayerPart	base;
+	NhlDataItemLayerPart	dataitem;
+} NhlDataItemLayerRec;
 
-typedef struct _DataItemLayerClassPart{
+typedef struct _NhlDataItemLayerClassPart{
 	int	foo;
-} DataItemLayerClassPart;
+} NhlDataItemLayerClassPart;
 
-typedef struct _DataItemLayerClassRec{
-	BaseLayerClassPart	base_class;
-	DataItemLayerClassPart	dataitem_class;
-} DataItemLayerClassRec;
+typedef struct _NhlDataItemLayerClassRec{
+	NhlBaseLayerClassPart	base_class;
+	NhlDataItemLayerClassPart	dataitem_class;
+} NhlDataItemLayerClassRec;
 
-extern DataItemLayerClassRec dataItemLayerClassRec;
+typedef struct _NhlDataItemLayerClassRec *NhlDataItemLayerClass;
+typedef struct _NhlDataItemLayerRec *NhlDataItemLayer;
+
+extern NhlDataItemLayerClassRec NhldataItemLayerClassRec;
 
 /*
  * Private API for DataItem sub-classes
  */
 extern void _NhlDataChanged(
 #ifdef	NhlNeedProto
-	DataItemLayer	l
+	NhlDataItemLayer	l
 #endif
 );
 

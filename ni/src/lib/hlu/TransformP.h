@@ -1,5 +1,5 @@
 /*
- *      $Id: TransformP.h,v 1.6 1994-01-12 00:35:14 dbrown Exp $
+ *      $Id: TransformP.h,v 1.7 1994-01-27 21:27:03 boote Exp $
  */
 /************************************************************************
 *									*
@@ -27,6 +27,8 @@
 #define _NTransformP_h
 
 #include <ncarg/hlu/ViewP.h>
+#include <ncarg/hlu/OverlayI.h>
+#include <ncarg/hlu/TransObjI.h>
 #include <ncarg/hlu/Transform.h>
 
 #define NhlNtfOverlayObject	".tfOverlayObject"
@@ -42,7 +44,7 @@ typedef enum _NhltfOverlayStatus {
 	_tfCurrentOverlayMember
 } NhltfOverlayStatus;
 
-typedef struct TransformLayerPart {
+typedef struct NhlTransformLayerPart {
 
 	/* Public resource fields */
 
@@ -50,8 +52,8 @@ typedef struct TransformLayerPart {
 
 	/* Private resource fields, set only by the overlay manager */
 
-	Layer			overlay_trans_obj;  
-	Layer			overlay_object; 
+	NhlLayer		overlay_trans_obj;  
+	NhlLayer		overlay_object; 
 	NhltfOverlayStatus	overlay_status;
 
 	/* 
@@ -59,19 +61,19 @@ typedef struct TransformLayerPart {
 	 * All plots supporting overlays must fill in this field
 	 */
  
-	Layer			trans_obj;
+	NhlLayer		trans_obj;
 
-} TransformLayerPart;
+} NhlTransformLayerPart;
 
-typedef struct _TransformLayerRec {
-	BaseLayerPart	base;
-	ViewLayerPart	view;
-	TransformLayerPart trans;
-} TransformLayerRec;
+typedef struct _NhlTransformLayerRec {
+	NhlBaseLayerPart	base;
+	NhlViewLayerPart	view;
+	NhlTransformLayerPart	trans;
+} NhlTransformLayerRec;
 
 typedef NhlErrorTypes (*NhlTransFunction)(
 #ifdef	NhlNeedFuncProto
-        Layer           /* plot */,
+        NhlLayer           /* plot */,
         float*          /* x */,
         float*          /* y */,
         int             /* n */,
@@ -91,20 +93,24 @@ typedef enum _NhltfOverlayCapability {
 	_tfOverlayBaseOrMember
 } NhltfOverlayCapability;
 
-typedef struct TransformLayerClassPart{
+typedef struct NhlTransformLayerClassPart{
 	NhltfOverlayCapability	overlay_capability;
 	NhlTransFunction	data_to_ndc;
 	NhlTransFunction	ndc_to_data;
 	NhlErrorTypes		(*data_polyline)();
 	NhlErrorTypes		(*ndc_polyline)();
-} TransformLayerClassPart;
+} NhlTransformLayerClassPart;
 
-typedef struct _TransformLayerClassRec{
-	BaseLayerClassPart	base_class;
-	ViewLayerClassPart	view_class;
-	TransformLayerClassPart	trans_class;
-} TransformLayerClassRec;
+typedef struct _NhlTransformLayerClassRec{
+	NhlBaseLayerClassPart	base_class;
+	NhlViewLayerClassPart	view_class;
+	NhlTransformLayerClassPart	trans_class;
+} NhlTransformLayerClassRec;
 
-extern TransformLayerClassRec transformLayerClassRec;
+
+typedef struct _NhlTransformLayerClassRec *NhlTransformLayerClass;
+typedef struct _NhlTransformLayerRec *NhlTransformLayer;
+
+extern NhlTransformLayerClassRec NhltransformLayerClassRec;
 
 #endif  /* _NTransformP_h */

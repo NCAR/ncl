@@ -1,5 +1,5 @@
 /*
- *      $Id: LogLinPlotP.h,v 1.2 1993-12-22 00:56:03 dbrown Exp $
+ *      $Id: LogLinPlotP.h,v 1.3 1994-01-27 21:24:21 boote Exp $
  */
 /************************************************************************
 *									*
@@ -27,34 +27,37 @@
 #include <ncarg/hlu/LogLinTransObjP.h>
 #include <ncarg/hlu/LogLinPlot.h>
 
-typedef struct LogLinPlotLayerPart {
+typedef struct NhlLogLinPlotLayerPart {
 
 	/* Public resources */
 
 	/* Private Fields */
 
-	Layer		overlay_object;
+	NhlLayer		overlay_object;
 
-} LogLinPlotLayerPart;
+} NhlLogLinPlotLayerPart;
 
-typedef struct _LogLinPlotLayerRec {
-	BaseLayerPart		base;
-	ViewLayerPart		view;
-	TransformLayerPart	trans;
-	LogLinPlotLayerPart	llplot;
-} LogLinPlotLayerRec;
+typedef struct _NhlLogLinPlotLayerRec {
+	NhlBaseLayerPart		base;
+	NhlViewLayerPart		view;
+	NhlTransformLayerPart		trans;
+	NhlLogLinPlotLayerPart		llplot;
+} NhlLogLinPlotLayerRec;
 
-typedef struct LogLinPlotLayerClassPart{
+typedef struct NhlLogLinPlotLayerClassPart{
 	void *foo;
-} LogLinPlotLayerClassPart;
+} NhlLogLinPlotLayerClassPart;
 
-typedef struct _LogLinPlotLayerClassRec{
-	BaseLayerClassPart		base_class;
-	ViewLayerClassPart		view_class;
-	TransformLayerClassPart		trans_class;
-	LogLinPlotLayerClassPart	llplot_class;
-} LogLinPlotLayerClassRec;
+typedef struct _NhlLogLinPlotLayerClassRec{
+	NhlBaseLayerClassPart		base_class;
+	NhlViewLayerClassPart		view_class;
+	NhlTransformLayerClassPart	trans_class;
+	NhlLogLinPlotLayerClassPart	llplot_class;
+} NhlLogLinPlotLayerClassRec;
 
-extern LogLinPlotLayerClassRec logLinPlotLayerClassRec;
+typedef struct _NhlLogLinPlotLayerClassRec	*NhlLogLinPlotLayerClass;
+typedef struct _NhlLogLinPlotLayerRec	*NhlLogLinPlotLayer;
+
+extern NhlLogLinPlotLayerClassRec NhllogLinPlotLayerClassRec;
 
 #endif  /* _NLogLinPlotP_h */

@@ -1,5 +1,5 @@
 /*
- *      $Id: TextItem.c,v 1.3 1993-10-19 17:52:22 boote Exp $
+ *      $Id: TextItem.c,v 1.4 1994-01-27 21:25:55 boote Exp $
  */
 /************************************************************************
 *									*
@@ -23,70 +23,65 @@
  *		perform getset's to preserve current transformation.<------
  */
 
-#include <stdio.h>
 #include <math.h>
-#include <string.h>
-#include <ncarg/hlu/hluutil.h>
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/Converters.h>
 #include <ncarg/hlu/TextItemP.h>
-
-/* SUPPRESS 112 */
 
 #define DEFSTRING "NOTHING"
 #define DEGTORAD 0.017453293
 static NhlResource resources[] = {
 	{ NhlNtxString, NhlCtxString, NhlTString, sizeof(char*),
-		NhlOffset(TextItemLayerRec,text.string),
+		NhlOffset(NhlTextItemLayerRec,text.string),
 		NhlTImmediate,DEFSTRING},
 	{ NhlNtxPosXF, NhlCtxPosXF, NhlTFloat, sizeof(float),
-		NhlOffset(TextItemLayerRec,text.pos_x),
+		NhlOffset(NhlTextItemLayerRec,text.pos_x),
 		NhlTString,"0.0" },
 	{ NhlNtxPosYF, NhlCtxPosYF, NhlTFloat, sizeof(float),
-		NhlOffset(TextItemLayerRec,text.pos_y),
+		NhlOffset(NhlTextItemLayerRec,text.pos_y),
 		NhlTString,"1.0" },
 	{ NhlNtxAngleF, NhlCtxAngleF, NhlTFloat, sizeof(float),
-		NhlOffset(TextItemLayerRec,text.angle),
+		NhlOffset(NhlTextItemLayerRec,text.angle),
 		NhlTString,"0.0" },
-	{ NhlNtxFont, NhlCtxFont, NhlTInteger, sizeof(int),
-		NhlOffset(TextItemLayerRec, text.font),
+	{ NhlNtxFont, NhlCFont, NhlTFont, sizeof(NhlFont),
+		NhlOffset(NhlTextItemLayerRec, text.font),
 		NhlTImmediate,0 },
 	{ NhlNtxJust, NhlCtxJust, NhlTInteger, sizeof(int),
-		NhlOffset(TextItemLayerRec, text.just),
+		NhlOffset(NhlTextItemLayerRec, text.just),
 		NhlTImmediate,(NhlPointer)4},
 	{ NhlNtxFontQuality, NhlCtxFontQuality, NhlTFQuality, 
-		sizeof(FontQuality),
-		NhlOffset(TextItemLayerRec, text.font_quality),
-		NhlTImmediate,(NhlPointer)HIGH},
+		sizeof(NhlFontQuality),
+		NhlOffset(NhlTextItemLayerRec, text.font_quality),
+		NhlTImmediate,(NhlPointer)NhlHIGH},
 	{ NhlNtxFontColor, NhlCtxFontColor, NhlTInteger, sizeof(int),
-		NhlOffset(TextItemLayerRec, text.font_color),
+		NhlOffset(NhlTextItemLayerRec, text.font_color),
 		NhlTImmediate, (NhlPointer)1},
 	{ NhlNtxFontHeightF, NhlCtxFontHeightF, NhlTFloat, sizeof(float),
-		NhlOffset(TextItemLayerRec, text.font_height),
+		NhlOffset(NhlTextItemLayerRec, text.font_height),
 		NhlTString, ".05" },
 	{ NhlNtxFontAspectF, NhlCtxFontAspectF, NhlTFloat, sizeof(float),
-		NhlOffset(TextItemLayerRec, text.font_aspect),
+		NhlOffset(NhlTextItemLayerRec, text.font_aspect),
 		NhlTString, "1.3125" }, /* 21.0/16.0 see plotchar */
 	{ NhlNtxFontThicknessF, NhlCtxFontThicknessF, NhlTFloat, sizeof(float),
-		NhlOffset(TextItemLayerRec, text.font_thickness),
+		NhlOffset(NhlTextItemLayerRec, text.font_thickness),
 		NhlTString, "1.0" },
 	{ NhlNtxConstantSpacingF, NhlCtxConstantSpacingF, NhlTFloat, 
 		sizeof(float),
-		NhlOffset(TextItemLayerRec, text.constant_spacing),
+		NhlOffset(NhlTextItemLayerRec, text.constant_spacing),
 		NhlTString, "0.0" },
 	{ NhlNtxDirection, NhlCtxDirection, NhlTTextDirection, 
-		sizeof(TextDirection),
-		NhlOffset(TextItemLayerRec, text.direction),
-		NhlTImmediate, (NhlPointer)ACROSS},
+		sizeof(NhlTextDirection),
+		NhlOffset(NhlTextItemLayerRec, text.direction),
+		NhlTImmediate, (NhlPointer)NhlACROSS},
 	{ NhlNtxFuncCode, NhlCtxFuncCode, NhlTCharacter, 
 		sizeof(char),
-		NhlOffset(TextItemLayerRec, text.func_code),
+		NhlOffset(NhlTextItemLayerRec, text.func_code),
 		NhlTString,":"},
 	{ NhlNtxXCorners, NhlCtxXCorners, NhlTFloatPtr,sizeof(float*),
-		NhlOffset(TextItemLayerRec, text.x_corners),
+		NhlOffset(NhlTextItemLayerRec, text.x_corners),
 		NhlTImmediate, NULL },
 	{ NhlNtxYCorners, NhlNtxYCorners, NhlTFloatPtr,sizeof(float*),
-		NhlOffset(TextItemLayerRec, text.y_corners),
+		NhlOffset(NhlTextItemLayerRec, text.y_corners),
 		NhlTImmediate, NULL }
 };
 
@@ -96,9 +91,9 @@ static NhlResource resources[] = {
 
 static NhlErrorTypes TextItemSetValues(
 #ifdef NhlNeedProto
-        Layer,          /* old */
-        Layer,          /* reference */
-        Layer,          /* new */
+        NhlLayer,          /* old */
+        NhlLayer,          /* reference */
+        NhlLayer,          /* new */
         _NhlArgList,    /* args */
         int             /* num_args*/
 #endif
@@ -106,9 +101,9 @@ static NhlErrorTypes TextItemSetValues(
 
 static NhlErrorTypes    TextItemInitialize(
 #ifdef NhlNeedProto
-        LayerClass,     /* class */
-        Layer,          /* req */
-        Layer,          /* new */
+        NhlLayerClass,     /* class */
+        NhlLayer,          /* req */
+        NhlLayer,          /* new */
         _NhlArgList,    /* args */
         int             /* num_args */
 #endif
@@ -116,13 +111,13 @@ static NhlErrorTypes    TextItemInitialize(
 
 static NhlErrorTypes	TextItemDraw(
 #ifdef NhlNeedProto
-        Layer   /* layer */
+        NhlLayer   /* layer */
 #endif
 );
 
 static NhlErrorTypes	TextItemDestroy(
 #ifdef NhlNeedProto
-        Layer           /* inst */
+        NhlLayer           /* inst */
 #endif
 );
 
@@ -134,7 +129,7 @@ static NhlErrorTypes 	TextItemClassInitialize();
 
 static NhlErrorTypes FigureAndSetTextBBInfo(
 #ifdef NhlNeedProto
-	TextItemLayer /*tnew;*/
+	NhlTextItemLayer /*tnew;*/
 #endif
 );
 
@@ -148,13 +143,13 @@ float   * /*yot */
 #endif
 );
 
-TextItemLayerClassRec textItemLayerClassRec = {
+NhlTextItemLayerClassRec NhltextItemLayerClassRec = {
 	{
 /* class_name			*/	"TextItem",
 /* nrm_class			*/	NrmNULLQUARK,
-/* layer_size			*/	sizeof(TextItemLayerRec),
+/* layer_size			*/	sizeof(NhlTextItemLayerRec),
 /* class_inited			*/	False,
-/* superclass			*/	(LayerClass)&viewLayerClassRec,
+/* superclass			*/	(NhlLayerClass)&NhlviewLayerClassRec,
 
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
@@ -187,7 +182,7 @@ TextItemLayerClassRec textItemLayerClassRec = {
 	}
 };
 
-LayerClass textItemLayerClass = (LayerClass)&textItemLayerClassRec;
+NhlLayerClass NhltextItemLayerClass = (NhlLayerClass)&NhltextItemLayerClassRec;
 
 
 /*
@@ -208,19 +203,19 @@ LayerClass textItemLayerClass = (LayerClass)&textItemLayerClassRec;
 /*ARGSUSED*/
 static NhlErrorTypes TextItemSetValues
 #if __STDC__
-(Layer old,Layer reference,Layer new,_NhlArgList args,int num_args)
+(NhlLayer old,NhlLayer reference,NhlLayer new,_NhlArgList args,int num_args)
 #else
 (old,reference,new,args,num_args)
-	Layer	old;
-	Layer	reference;
-	Layer	new;
+	NhlLayer	old;
+	NhlLayer	reference;
+	NhlLayer	new;
 	_NhlArgList	args;
 	int	num_args;
 #endif
 {
-	TextItemLayer told = (TextItemLayer) old;
-	TextItemLayer tnew = (TextItemLayer) new;
-	NhlErrorTypes ret = NOERROR,ret1 = NOERROR;
+	NhlTextItemLayer told = (NhlTextItemLayer) old;
+	NhlTextItemLayer tnew = (NhlTextItemLayer) new;
+	NhlErrorTypes ret = NhlNOERROR,ret1 = NhlNOERROR;
 	float tmpvx0,tmpvx1,tmpvy0,tmpvy1;
 	float fl,fr,ft,fb,ul,ur,ut,ub;
 	int ll;
@@ -262,15 +257,15 @@ static NhlErrorTypes TextItemSetValues
 				+((tmpvy1-tmpvy0)*(tmpvy1-tmpvy0))));
 		
 		} else {
-		  NhlPError(WARNING,E_UNKNOWN,"TextItemSetValues: Can not change x,y,width,and height when other text attribute changes have been requested also, proceding with other text attribute requests");
-		  ret = WARNING;
+		  NhlPError(NhlWARNING,NhlEUNKNOWN,"TextItemSetValues: Can not change x,y,width,and height when other text attribute changes have been requested also, proceding with other text attribute requests");
+		  ret = NhlWARNING;
 		}
 	} 
 
 	if((tnew->text.direction != told->text.direction)||(tnew->text.func_code != told->text.func_code)){
 		rstringchange = 1;
-		if((tnew->text.direction == UP)||
-					(tnew->text.direction == DOWN)) {
+		if((tnew->text.direction == NhlUP)||
+					(tnew->text.direction == NhlDOWN)) {
 			sprintf(tnew->text.dirstr,"%cD%c",tnew->text.func_code,
 							tnew->text.func_code);
 		} else {
@@ -298,13 +293,13 @@ static NhlErrorTypes TextItemSetValues
 	}
 
 	switch(tnew->text.font_quality) {
-		case HIGH:
+		case NhlHIGH:
 			tnew->text.qual = 0;
 			break;
-		case MEDIUM:
+		case NhlMEDIUM:
 			tnew->text.qual = 1;
 			break;
-		case LOW:
+		case NhlLOW:
 			tnew->text.qual = 2;
 			break;
 	}
@@ -315,8 +310,8 @@ static NhlErrorTypes TextItemSetValues
 */
 	if( tnew->text.font_aspect <= 0.0 ) {
 		tnew->text.font_aspect = 1.3125;
-		NhlPError(WARNING,E_UNKNOWN,"TextItemSetValues: Aspect ratio cannont be zero or negative");
-		ret = WARNING;
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"TextItemSetValues: Aspect ratio cannont be zero or negative");
+		ret = NhlWARNING;
 	}
 	if(tnew->text.font_aspect <= 1.0) {
 		tnew->text.real_ph_height = 21.0 * tnew->text.font_aspect;
@@ -364,19 +359,19 @@ static NhlErrorTypes TextItemSetValues
 /*ARGSUSED*/
 static NhlErrorTypes    TextItemInitialize
 #if __STDC__
-( LayerClass class, Layer req, Layer new, _NhlArgList args,int num_args)
+( NhlLayerClass class, NhlLayer req, NhlLayer new, _NhlArgList args,int num_args)
 #else
 (class,req,new,args,num_args)
-	LayerClass	class;
-	Layer		req;
-	Layer		new;
+	NhlLayerClass	class;
+	NhlLayer		req;
+	NhlLayer		new;
 	_NhlArgList	args;
 	int		num_args;
 #endif
 {
-	TextItemLayer	tnew = (TextItemLayer) new;
+	NhlTextItemLayer	tnew = (NhlTextItemLayer) new;
 	char* tmp;
-	NhlErrorTypes	ret=NOERROR,ret1 = NOERROR;
+	NhlErrorTypes	ret=NhlNOERROR,ret1 = NhlNOERROR;
 	int ll;
 	float fr,fl,ft,fb,ur,ul,ut,ub;
 	char buf[10];
@@ -384,7 +379,7 @@ static NhlErrorTypes    TextItemInitialize
 
 	tnew->text.x_corners = (float*)NhlMalloc((unsigned)4*sizeof(float));
 	tnew->text.y_corners = (float*)NhlMalloc((unsigned)4*sizeof(float));
-	if((tnew->text.direction == UP)||(tnew->text.direction == DOWN)) {
+	if((tnew->text.direction == NhlUP)||(tnew->text.direction == NhlDOWN)) {
 		sprintf(tnew->text.dirstr,"%cD%c",tnew->text.func_code,tnew->text.func_code);
 	} else {
 		sprintf(tnew->text.dirstr,"%cA%c",tnew->text.func_code,tnew->text.func_code);
@@ -406,13 +401,13 @@ static NhlErrorTypes    TextItemInitialize
 	strcat(tnew->text.real_string,tnew->text.string);
 
 	switch(tnew->text.font_quality) {
-		case HIGH:
+		case NhlHIGH:
 			tnew->text.qual = 0;
 			break;
-		case MEDIUM:
+		case NhlMEDIUM:
 			tnew->text.qual = 1;
 			break;
-		case LOW:
+		case NhlLOW:
 			tnew->text.qual = 2;
 			break;
 	}
@@ -423,8 +418,8 @@ static NhlErrorTypes    TextItemInitialize
 */
 	if( tnew->text.font_aspect <= 0.0 ) {
 		tnew->text.font_aspect = 1.3125;
-		NhlPError(WARNING,E_UNKNOWN,"TextItemSetValues: Aspect ratio cannont be zero or negative");
-		ret = WARNING;
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"TextItemSetValues: Aspect ratio cannont be zero or negative");
+		ret = NhlWARNING;
 	}
 	if(tnew->text.font_aspect <= 1.0) {
 		tnew->text.real_ph_height = 21.0 * tnew->text.font_aspect;
@@ -471,16 +466,16 @@ static NhlErrorTypes    TextItemInitialize
  */
 static NhlErrorTypes    TextItemDraw
 #if  __STDC__
-(Layer layer)
+(NhlLayer layer)
 #else
 (layer)
-	Layer 	layer;
+	NhlLayer 	layer;
 #endif
 {
-	TextItemLayer tlayer = (TextItemLayer) layer;
+	NhlTextItemLayer tlayer = (NhlTextItemLayer) layer;
 	float fl,fr,fb,ft,ul,ur,ub,ut;
 	int ll;
-	NhlErrorTypes ret = NOERROR;
+	NhlErrorTypes ret = NhlNOERROR;
 	char buf[10];
 
 	c_getset(&fl,&fr,&fb,&ft,&ul,&ur,&ub,&ut,&ll);
@@ -520,7 +515,7 @@ static NhlErrorTypes    TextItemDraw
  *
  * Description: Frees both dynamically allocated strings.
  *
- * In Args:	Layer inst	instance of textitem
+ * In Args:	NhlLayer inst	instance of textitem
  *
  * Out Args:	NONE
  *
@@ -530,17 +525,17 @@ static NhlErrorTypes    TextItemDraw
  */
 static NhlErrorTypes    TextItemDestroy
 #if  __STDC__
-(Layer  inst)
+(NhlLayer  inst)
 #else
 (inst)
-	Layer	inst;
+	NhlLayer	inst;
 #endif
 {
-	TextItemLayer tinst = (TextItemLayer) inst;
+	NhlTextItemLayer tinst = (NhlTextItemLayer) inst;
 	
 	NhlFree(tinst->text.string);
 	NhlFree(tinst->text.real_string);
-	return(NOERROR);
+	return(NhlNOERROR);
 }
 
 /*
@@ -564,15 +559,15 @@ static NhlErrorTypes    TextItemClassInitialize
 #endif
 {
 	NhlConvertArg	fontqlist[] = {
-				{NHLSTRENUM,	HIGH,	"high"},
-				{NHLSTRENUM,	MEDIUM,	"medium"},
-				{NHLSTRENUM,	LOW,	"low"}
+				{NhlSTRENUM,	NhlHIGH,	"high"},
+				{NhlSTRENUM,	NhlMEDIUM,	"medium"},
+				{NhlSTRENUM,	NhlLOW,		"low"}
 				};
 
 	NhlConvertArg	textdirlist[] = {
-				{NHLSTRENUM,	DOWN,	"down"},
-				{NHLSTRENUM,	ACROSS,	"across"},
-				{NHLSTRENUM,	UP,	"up"}
+				{NhlSTRENUM,	NhlDOWN,	"down"},
+				{NhlSTRENUM,	NhlACROSS,	"across"},
+				{NhlSTRENUM,	NhlUP,		"up"}
 				};
 
 	NhlRegisterConverter(NhlTString,NhlTFQuality,NhlCvtStringToEnum,
@@ -580,7 +575,7 @@ static NhlErrorTypes    TextItemClassInitialize
 	NhlRegisterConverter(NhlTString,NhlTTextDirection,NhlCvtStringToEnum,
 				textdirlist,NhlNumber(textdirlist),False,NULL);
 
-	return(NOERROR);	
+	return(NhlNOERROR);	
 }
 
 
@@ -639,17 +634,17 @@ static void RotEval
  */
 static NhlErrorTypes FigureAndSetTextBBInfo
 #if  __STDC__
-(TextItemLayer tnew)
+(NhlTextItemLayer tnew)
 #else
 (tnew)
-	TextItemLayer tnew;
+	NhlTextItemLayer tnew;
 #endif
 {
 	float tmpdr,tmpdl,tmpdb,tmpdt;
 	float xpoints[4],ypoints[4];
 	float tmat[3][3];
 	float minx,miny,maxx,maxy;
-	NhlErrorTypes ret = NOERROR;
+	NhlErrorTypes ret = NhlNOERROR;
 	int i;
 	
 /*
@@ -679,7 +674,7 @@ static NhlErrorTypes FigureAndSetTextBBInfo
 * following to be correct 
 *
 */
-			if(tnew->text.direction == ACROSS) {
+			if(tnew->text.direction == NhlACROSS) {
 				tnew->text.cntr = -1.0;
 			} else {
 				tnew->text.cntr = 0.0;
@@ -691,7 +686,7 @@ static NhlErrorTypes FigureAndSetTextBBInfo
 			c_pcgetr("DR",&tmpdr);
 			c_pcgetr("DT",&tmpdt);
 			c_pcgetr("DB",&tmpdb);
-			if(tnew->text.direction == ACROSS) {
+			if(tnew->text.direction == NhlACROSS) {
 				tnew->text.real_x_pos = tnew->text.pos_x;
 				tnew->text.real_y_pos = tnew->text.pos_y;
 			} else {
@@ -724,7 +719,7 @@ static NhlErrorTypes FigureAndSetTextBBInfo
 * following to be correct 
 *
 */
-			if(tnew->text.direction == ACROSS) {
+			if(tnew->text.direction == NhlACROSS) {
 				tnew->text.cntr = 1.0;
 			} else {
 				tnew->text.cntr = 0.0;
@@ -736,7 +731,7 @@ static NhlErrorTypes FigureAndSetTextBBInfo
 			c_pcgetr("DR",&tmpdr);
 			c_pcgetr("DT",&tmpdt);
 			c_pcgetr("DB",&tmpdb);
-			if(tnew->text.direction == ACROSS) {
+			if(tnew->text.direction == NhlACROSS) {
 				tnew->text.real_x_pos = tnew->text.pos_x;
 				tnew->text.real_y_pos = tnew->text.pos_y;
 			} else {
@@ -763,7 +758,7 @@ static NhlErrorTypes FigureAndSetTextBBInfo
 			c_pcgetr("DR",&tmpdr);
 			c_pcgetr("DT",&tmpdt);
 			c_pcgetr("DB",&tmpdb);
-			if(tnew->text.direction == ACROSS) {
+			if(tnew->text.direction == NhlACROSS) {
 				tnew->text.real_x_pos = tnew->text.pos_x;
 				tnew->text.real_y_pos = tnew->text.pos_y - tmpdt;
 			} else {
@@ -781,7 +776,7 @@ static NhlErrorTypes FigureAndSetTextBBInfo
 * following to be correct 
 *
 */
-			if(tnew->text.direction == ACROSS) {
+			if(tnew->text.direction == NhlACROSS) {
 				tnew->text.cntr = 0.0;
 			} else {
 				tnew->text.cntr = -1.0;
@@ -793,7 +788,7 @@ static NhlErrorTypes FigureAndSetTextBBInfo
 			c_pcgetr("DR",&tmpdr);
 			c_pcgetr("DT",&tmpdt);
 			c_pcgetr("DB",&tmpdb);
-			if(tnew->text.direction == ACROSS) {
+			if(tnew->text.direction == NhlACROSS) {
 				tnew->text.real_x_pos = tnew->text.pos_x;
 				tnew->text.real_y_pos = tnew->text.pos_y - tmpdt;
 			} else {
@@ -808,7 +803,7 @@ static NhlErrorTypes FigureAndSetTextBBInfo
 * following to be correct 
 *
 */
-			if(tnew->text.direction == ACROSS) {
+			if(tnew->text.direction == NhlACROSS) {
 				tnew->text.cntr = 1.0;
 			} else {
 				tnew->text.cntr = -1.0;
@@ -820,7 +815,7 @@ static NhlErrorTypes FigureAndSetTextBBInfo
 			c_pcgetr("DR",&tmpdr);
 			c_pcgetr("DT",&tmpdt);
 			c_pcgetr("DB",&tmpdb);
-			if(tnew->text.direction == ACROSS) {
+			if(tnew->text.direction == NhlACROSS) {
 				tnew->text.real_x_pos = tnew->text.pos_x;
 				tnew->text.real_y_pos = tnew->text.pos_y - tmpdt;
 			} else {
@@ -838,7 +833,7 @@ static NhlErrorTypes FigureAndSetTextBBInfo
 * following to be correct 
 *
 */
-			if(tnew->text.direction == ACROSS) {
+			if(tnew->text.direction == NhlACROSS) {
 				tnew->text.cntr = -1.0;
 			} else {
 				tnew->text.cntr = 1.0;
@@ -850,7 +845,7 @@ static NhlErrorTypes FigureAndSetTextBBInfo
 			c_pcgetr("DR",&tmpdr);
 			c_pcgetr("DT",&tmpdt);
 			c_pcgetr("DB",&tmpdb);
-			if(tnew->text.direction == ACROSS) {
+			if(tnew->text.direction == NhlACROSS) {
 				tnew->text.real_x_pos = tnew->text.pos_x;
 				tnew->text.real_y_pos = tnew->text.pos_y + tmpdb;
 			} else {
@@ -865,7 +860,7 @@ static NhlErrorTypes FigureAndSetTextBBInfo
 * following to be correct 
 *
 */
-			if(tnew->text.direction == ACROSS) {
+			if(tnew->text.direction == NhlACROSS) {
 				tnew->text.cntr = 0.0;
 			} else {
 				tnew->text.cntr = 1.0;
@@ -877,7 +872,7 @@ static NhlErrorTypes FigureAndSetTextBBInfo
 			c_pcgetr("DR",&tmpdr);
 			c_pcgetr("DT",&tmpdt);
 			c_pcgetr("DB",&tmpdb);
-			if(tnew->text.direction == ACROSS) {
+			if(tnew->text.direction == NhlACROSS) {
 				tnew->text.real_x_pos = tnew->text.pos_x;
 				tnew->text.real_y_pos = tnew->text.pos_y + tmpdb;
 			} else {
@@ -900,7 +895,7 @@ static NhlErrorTypes FigureAndSetTextBBInfo
 			c_pcgetr("DR",&tmpdr);
 			c_pcgetr("DT",&tmpdt);
 			c_pcgetr("DB",&tmpdb);
-			if(tnew->text.direction == ACROSS) {
+			if(tnew->text.direction == NhlACROSS) {
 				tnew->text.real_x_pos = tnew->text.pos_x;
 				tnew->text.real_y_pos = tnew->text.pos_y + tmpdb;
 			} else {
@@ -909,8 +904,8 @@ static NhlErrorTypes FigureAndSetTextBBInfo
 			}
 			break;
 		default:
-			NhlPError(WARNING,E_UNKNOWN,"TextItemInitialize: Incorect justification point, using default");
-			ret = WARNING;
+			NhlPError(NhlWARNING,NhlEUNKNOWN,"TextItemInitialize: Incorect justification point, using default");
+			ret = NhlWARNING;
 			break;
 	}
 	_NhlDeactivateWorkstation(tnew->base.wkptr);
@@ -987,7 +982,7 @@ static NhlErrorTypes FigureAndSetTextBBInfo
 * all the private fields so there are no problems. This includes reseting the
 * thetrans_children transformation data. <-----------
 */
-	_NhlInternalSetView((ViewLayer)tnew,minx,maxy,maxx - minx,maxy - miny,1);
+	_NhlInternalSetView((NhlViewLayer)tnew,minx,maxy,maxx - minx,maxy - miny,1);
 /*
 * DONE RECONFIGURING VIEW
 */

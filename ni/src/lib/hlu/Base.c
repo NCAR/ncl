@@ -1,5 +1,5 @@
 /*
- *      $Id: Base.c,v 1.3 1994-01-10 19:48:25 boote Exp $
+ *      $Id: Base.c,v 1.4 1994-01-27 21:21:20 boote Exp $
  */
 /************************************************************************
 *									*
@@ -29,30 +29,30 @@
 
 static NhlErrorTypes BaseLayerClassPartInitialize(
 #if	NhlNeedProto
-	LayerClass
+	NhlLayerClass
 #endif
 );
 
 static NhlErrorTypes BaseLayerDestroy(
 #if	NhlNeedProto
-	Layer
+	NhlLayer
 #endif
 );
 
 static NhlErrorTypes BaseLayerReparent(
 #if	NhlNeedProto
-	Layer	instance,
-	Layer	new_parent
+	NhlLayer	instance,
+	NhlLayer	new_parent
 #endif
 );
 
-ObjLayerClassRec objLayerClassRec = {
+NhlObjLayerClassRec NhlobjLayerClassRec = {
 	{
 /* class_name			*/	"Obj",
 /* nrm_class			*/	NrmNULLQUARK,
-/* layer_size			*/	sizeof(ObjLayerRec),
+/* layer_size			*/	sizeof(NhlObjLayerRec),
 /* class_inited			*/	False,
-/* superclass			*/	(LayerClass)NULL,
+/* superclass			*/	(NhlLayerClass)NULL,
 
 /* resources			*/	NULL,
 /* num_resources		*/	0,
@@ -69,13 +69,13 @@ ObjLayerClassRec objLayerClassRec = {
 	}
 };
 
-LayerClassRec layerClassRec = {
+NhlLayerClassRec NhllayerClassRec = {
 	{
 /* class_name			*/	"Base",
 /* nrm_class			*/	NrmNULLQUARK,
-/* layer_size			*/	sizeof(LayerRec),
+/* layer_size			*/	sizeof(NhlLayerRec),
 /* class_inited			*/	False,
-/* superclass			*/	(LayerClass)NULL,
+/* superclass			*/	(NhlLayerClass)NULL,
 
 /* resources			*/	NULL,
 /* num_resources		*/	0,
@@ -101,9 +101,9 @@ LayerClassRec layerClassRec = {
 	}
 };
 
-LayerClass layerClass = (LayerClass)&layerClassRec;
-LayerClass baseLayerClass = (LayerClass)&layerClassRec;
-LayerClass objLayerClass = (LayerClass)&objLayerClassRec;
+NhlLayerClass NhllayerClass = (NhlLayerClass)&NhllayerClassRec;
+NhlLayerClass NhlbaseLayerClass = (NhlLayerClass)&NhllayerClassRec;
+NhlLayerClass NhlobjLayerClass = (NhlLayerClass)&NhlobjLayerClassRec;
 
 /*
  * Function:	BaseLayerClassPartInitialize
@@ -116,7 +116,7 @@ LayerClass objLayerClass = (LayerClass)&objLayerClassRec;
  *		the rest of the library.
  *
  * In Args:	
- *		LayerClass	lc	pointer to class structure to update
+ *		NhlLayerClass	lc	pointer to class structure to update
  *
  * Out Args:	
  *
@@ -128,11 +128,11 @@ static NhlErrorTypes
 BaseLayerClassPartInitialize
 #if	__STDC__
 (
-	LayerClass	lc	/* pointer to class structure to update	*/
+	NhlLayerClass	lc	/* pointer to class structure to update	*/
 )
 #else
 (lc)
-	LayerClass	lc;	/* pointer to class structure to update	*/
+	NhlLayerClass	lc;	/* pointer to class structure to update	*/
 #endif
 {
 	lc->base_class.nrm_class = NrmStringToName(lc->base_class.class_name);
@@ -142,7 +142,7 @@ BaseLayerClassPartInitialize
 					lc->base_class.num_resources);
 
 	_NhlGroupResources(lc);
-	return(NOERROR);
+	return(NhlNOERROR);
 }
 
 /*
@@ -172,7 +172,7 @@ FreeAndDestroyChildList
 	_NhlChildList	list;	/* list to free	*/
 #endif
 {
-	NhlErrorTypes ret=NOERROR,lret=NOERROR;
+	NhlErrorTypes ret=NhlNOERROR,lret=NhlNOERROR;
 
 	if(list == NULL)
 		return ret;
@@ -194,7 +194,7 @@ FreeAndDestroyChildList
  *		method to be called.
  *
  * In Args:	
- *		Layer	l
+ *		NhlLayer	l
  *
  * Out Args:	
  *
@@ -206,20 +206,20 @@ static NhlErrorTypes
 ReparentChildren
 #if	__STDC__
 (
-	Layer	l	/* layer 	*/
+	NhlLayer	l	/* layer 	*/
 )
 #else
 (l)
-	Layer	l;	/* layer 	*/
+	NhlLayer	l;	/* layer 	*/
 #endif
 {
 	_NhlAllChildList	tnode;
-	NhlErrorTypes		ret = NOERROR, lret = NOERROR;
+	NhlErrorTypes		ret = NhlNOERROR, lret = NhlNOERROR;
 
 	tnode = l->base.all_children;
 
 	while(tnode != (_NhlAllChildList)NULL){
-		Layer	child = NULL;
+		NhlLayer	child = NULL;
 
 		child = _NhlGetLayer(tnode->pid);
 		lret = _NhlReparent(child,l);
@@ -250,13 +250,13 @@ static NhlErrorTypes
 BaseLayerReparent
 #if	__STDC__
 (
-	Layer	l,	/* layer to reparent	*/
-	Layer	parent	/* new parent		*/
+	NhlLayer	l,	/* layer to reparent	*/
+	NhlLayer	parent	/* new parent		*/
 )
 #else
 (l,parent)
-	Layer	l;	/* layer to reparent	*/
-	Layer	parent;	/* new parent		*/
+	NhlLayer	l;	/* layer to reparent	*/
+	NhlLayer	parent;	/* new parent		*/
 #endif
 {
 	if(_NhlIsWorkstation(parent))
@@ -275,7 +275,7 @@ BaseLayerReparent
  *		from the NhlDestroy method.
  *
  * In Args:	
- *		Layer	l	layer to destroy
+ *		NhlLayer	l	layer to destroy
  *
  * Out Args:	
  *
@@ -287,14 +287,14 @@ static NhlErrorTypes
 BaseLayerDestroy
 #if	__STDC__
 (
-	Layer	l	/* layer to destroy	*/
+	NhlLayer	l	/* layer to destroy	*/
 )
 #else
 (l)
-	Layer	l;	/* layer to destroy	*/
+	NhlLayer	l;	/* layer to destroy	*/
 #endif
 {
-	NhlErrorTypes	ret=NOERROR,lret=NOERROR;
+	NhlErrorTypes	ret=NhlNOERROR,lret=NhlNOERROR;
 	/*
 	 * First free register children left behind by sub-classes
 	 */
@@ -318,23 +318,23 @@ BaseLayerDestroy
  *		from a layer object.
  *
  * In Args:	
- *		Layer	layer	Layer to retrieve workstation pointer from
+ *		NhlLayer	layer	Layer to get workstation pointer from
  *
  * Out Args:	
  *
  * Scope:	Global Private
- * Returns:	Layer
+ * Returns:	NhlLayer
  * Side Effect:	
  */
-Layer
+NhlLayer
 _NhlGetWorkstationLayer
 #if	__STDC__
 (
-	Layer	layer	/* Layer to retrieve workstation pointer from	*/
+	NhlLayer	layer	/* Layer to get workstation pointer from*/
 )
 #else
 (layer)
-	Layer layer;	/* Layer to retrieve workstation pointer from	*/
+	NhlLayer layer;	/* NhlLayer to retrieve workstation pointer from	*/
 #endif
 {
 	return(layer->base.wkptr);

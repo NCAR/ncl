@@ -1,5 +1,5 @@
 /*
- *      $Id: MultiText.c,v 1.2 1993-10-19 17:51:53 boote Exp $
+ *      $Id: MultiText.c,v 1.3 1994-01-27 21:24:57 boote Exp $
  */
 /************************************************************************
 *									*
@@ -24,10 +24,8 @@
 #include <ncarg/hlu/MultiTextP.h>
 #include <ncarg/hlu/TextItem.h>
 
-/* SUPPRESS 112 */
-
 /* Resources */
-#define Oset(field)	NhlOffset(MultiTextLayerRec,multitext.field)
+#define Oset(field)	NhlOffset(NhlMultiTextLayerRec,multitext.field)
 static NhlResource resources[] = {
 	{NhlNMtextNumStrings, NhlCMtextNumStrings, NhlTInteger,
 		sizeof(int),Oset(num_strings),NhlTImmediate,0},
@@ -35,7 +33,7 @@ static NhlResource resources[] = {
 		sizeof(char**),Oset(text_strings),NhlTImmediate,NULL},
 	{NhlNMtextOrientation, NhlCMtextOrientation, NhlTMTextOrientationType,
 		sizeof(NhlMTextOrientatonType),Oset(orientation),NhlTImmediate,
-						(NhlPointer)MTEXT_X_CONST},
+						(NhlPointer)NhlMTEXT_X_CONST},
 	{NhlNMtextConstPosF, NhlCMtextConstPosF, NhlTFloat,
 		sizeof(float),Oset(const_pos),NhlTString,"-1.0"},
 	{NhlNMtextPosArray, NhlCMtextPosArray, NhlTFloatPtr,
@@ -47,13 +45,13 @@ static NhlResource resources[] = {
 	 */
 	{NhlNtxAngleF, NhlCtxAngleF, NhlTFloat,
 		sizeof(float),Oset(angle),NhlTString,"0.0"},
-	{NhlNtxFont, NhlCtxFont, NhlTInteger,
+	{NhlNtxFont, NhlCFont, NhlTInteger,
 		sizeof(int),Oset(font),NhlTImmediate,(NhlPointer)0},
 	{NhlNtxJust, NhlCtxJust, NhlTInteger,
 		sizeof(int),Oset(just),NhlTImmediate,(NhlPointer)4},
 	{NhlNtxFontQuality, NhlCtxFontQuality, NhlTFQuality,
-		sizeof(FontQuality),Oset(font_quality),NhlTImmediate,
-						(NhlPointer)HIGH},
+		sizeof(NhlFontQuality),Oset(font_quality),NhlTImmediate,
+						(NhlPointer)NhlHIGH},
 	{NhlNtxFontHeightF, NhlCtxFontHeightF, NhlTFloat,
 		sizeof(float),Oset(font_height),NhlTString,"0.5"},
 	{NhlNtxFontAspectF, NhlCtxFontAspectF, NhlTFloat,
@@ -63,8 +61,8 @@ static NhlResource resources[] = {
 	{NhlNtxConstantSpacingF, NhlCtxConstantSpacingF, NhlTFloat,
 		sizeof(float),Oset(constant_spacing),NhlTString,"0.0"},
 	{NhlNtxDirection, NhlCtxDirection, NhlTTextDirection,
-		sizeof(TextDirection),Oset(direction),NhlTImmediate,
-						(NhlPointer)ACROSS}
+		sizeof(NhlTextDirection),Oset(direction),NhlTImmediate,
+						(NhlPointer)NhlACROSS}
 };
 #undef Oset
 
@@ -72,15 +70,15 @@ static NhlResource resources[] = {
 
 static NhlErrorTypes MultiTextClassPartInitialize(
 #if	NhlNeedProto
-	LayerClass	lc
+	NhlLayerClass	lc
 #endif
 );
 
 static NhlErrorTypes MultiTextInitialize(
 #if	NhlNeedProto
-	LayerClass	lc,	/* class	*/
-	Layer		req,	/* requested	*/
-	Layer		new,	/* new		*/
+	NhlLayerClass	lc,	/* class	*/
+	NhlLayer	req,	/* requested	*/
+	NhlLayer	new,	/* new		*/
 	_NhlArgList	args,	/* args		*/
 	int		nargs	/* nargs	*/
 #endif
@@ -88,9 +86,9 @@ static NhlErrorTypes MultiTextInitialize(
 
 static NhlErrorTypes MultiTextSetValues(
 #if	NhlNeedProto
-	Layer		old,		/* old		*/
-	Layer		req,		/* requested	*/
-	Layer		new,		/* new		*/
+	NhlLayer	old,		/* old		*/
+	NhlLayer	req,		/* requested	*/
+	NhlLayer	new,		/* new		*/
 	_NhlArgList	args,		/* args to set	*/
 	int		nargs		/* nargs	*/
 #endif
@@ -98,25 +96,25 @@ static NhlErrorTypes MultiTextSetValues(
 
 static NhlErrorTypes MultiTextDraw(
 #if	NhlNeedProto
-	Layer	l	/* layer to draw	*/
+	NhlLayer	l	/* layer to draw	*/
 #endif
 );
 
 static NhlErrorTypes MultiTextDestroy(
 #if	NhlNeedProto
-	Layer	l	/* layer to destroy	*/
+	NhlLayer	l	/* layer to destroy	*/
 #endif
 );
 
 /* Class definition	*/
 
-MultiTextLayerClassRec multiTextLayerClassRec = {
+NhlMultiTextLayerClassRec NhlmultiTextLayerClassRec = {
 	{
 /* class_name			*/	"MultiText",
 /* nrm_class			*/	NrmNULLQUARK,
-/* layer_size			*/	sizeof(MultiTextLayerRec),
+/* layer_size			*/	sizeof(NhlMultiTextLayerRec),
 /* class_inited			*/	False,
-/* superclass			*/	(LayerClass)&viewLayerClassRec,
+/* superclass			*/	(NhlLayerClass)&NhlviewLayerClassRec,
 
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
@@ -149,7 +147,7 @@ MultiTextLayerClassRec multiTextLayerClassRec = {
 	}
 };
 
-LayerClass multiTextLayerClass = (LayerClass)&multiTextLayerClassRec;
+NhlLayerClass NhlmultiTextLayerClass = (NhlLayerClass)&NhlmultiTextLayerClassRec;
 
 /************************************************************************
 * New type converters - needed for new type's defined for this class	*
@@ -168,10 +166,10 @@ LayerClass multiTextLayerClass = (LayerClass)&multiTextLayerClassRec;
 /*
  * Function:	MutliTextClassInitialize
  *
- * Description:	This function initializes the MultiText LayerClass record.
+ * Description:	This function initializes the MultiText NhlLayerClass record.
  *
  * In Args:
- *		LayerClass	lc	LayerClass being inited
+ *		NhlLayerClass	lc	NhlLayerClass being inited
  *
  * Out Args:	none
  *
@@ -183,17 +181,17 @@ static NhlErrorTypes
 MultiTextClassPartInitialize
 #if	__STDC__
 (
-	LayerClass	lc	/* LayerClass being inited	*/
+	NhlLayerClass	lc	/* NhlLayerClass being inited	*/
 )
 #else
 (lc)
-	LayerClass	lc;	/* LayerClass being inited	*/
+	NhlLayerClass	lc;	/* NhlLayerClass being inited	*/
 #endif
 {
 	/*
 	 * Register children classes
 	 */
-	return _NhlRegisterChildClass(lc,textItemLayerClass,True,False,
+	return _NhlRegisterChildClass(lc,NhltextItemLayerClass,True,False,
 				NhlNtxString,NhlNtxPosXF,NhlNtxPosYF,NULL);
 }
 
@@ -204,7 +202,7 @@ MultiTextClassPartInitialize
  *		passed to it.
  *
  * In Args:	
- *		MultiTextLayer	l,		The Layer
+ *		NhlMultiTextLayer	l,		The NhlLayer
  *
  * Out Args:	
  *		float		*x,		x return
@@ -220,19 +218,19 @@ static void
 CalculateGeometry
 #if	__STDC__
 (
-	MultiTextLayer	l,		/* The Layer		*/
-	float		*x,		/* x return		*/
-	float		*y,		/* y return		*/
-	float		*width,		/* width return		*/
-	float		*height		/* height return	*/
+	NhlMultiTextLayer	l,		/* The NhlLayer		*/
+	float			*x,		/* x return		*/
+	float			*y,		/* y return		*/
+	float			*width,		/* width return		*/
+	float			*height		/* height return	*/
 )
 #else
 (l,x,y,width,height)
-	MultiTextLayer	l;		/* The Layer		*/
-	float		*x;		/* x return		*/
-	float		*y;		/* y return		*/
-	float		*width;		/* width return		*/
-	float		*height;	/* height return	*/
+	NhlMultiTextLayer	l;		/* The NhlLayer		*/
+	float			*x;		/* x return		*/
+	float			*y;		/* y return		*/
+	float			*width;		/* width return		*/
+	float			*height;	/* height return	*/
 #endif
 {
 	int		i;
@@ -249,15 +247,15 @@ CalculateGeometry
 	 */
 	for(i=0;i < l->multitext.num_strings;i++){
 
-		if(l->multitext.orientation == MTEXT_X_CONST){
-			NhlSetValues(l->multitext.text_object,
+		if(l->multitext.orientation == NhlMTEXT_X_CONST){
+			NhlVASetValues(l->multitext.text_object,
 				NhlNtxString,l->multitext.text_strings[i],
 				NhlNtxPosXF,l->multitext.const_pos,
 				NhlNtxPosYF,l->multitext.pos_array[i],
 				NULL);
 		}
 		else{
-			NhlSetValues(l->multitext.text_object,
+			NhlVASetValues(l->multitext.text_object,
 				NhlNtxString,l->multitext.text_strings[i],
 				NhlNtxPosXF,l->multitext.pos_array[i],
 				NhlNtxPosYF,l->multitext.const_pos,
@@ -267,7 +265,7 @@ CalculateGeometry
 		/*
 		 * retrieve child's geometry
 		 */
-		NhlGetValues(l->multitext.text_object,
+		NhlVAGetValues(l->multitext.text_object,
 			NhlNvpXF,	&tx,
 			NhlNvpYF,	&ty,
 			NhlNvpWidthF,	&twidth,
@@ -294,13 +292,13 @@ CalculateGeometry
  * Description:	This function initializes an instance of a MultiText layer.
  *
  * In Args:	
- *		LayerClass	lc,	class
- *		Layer		req,	requested
+ *		NhlLayerClass	lc,	class
+ *		NhlLayer		req,	requested
  *		_NhlArgList	args,	args
  *		int		nargs	nargs
  *
  * Out Args:	
- *		Layer		new,	new
+ *		NhlLayer		new,	new
  *
  * Scope:	static
  * Returns:	NhlErrorTypes
@@ -311,29 +309,29 @@ static NhlErrorTypes
 MultiTextInitialize
 #if	__STDC__
 (
-	LayerClass	lc,	/* class	*/
-	Layer		req,	/* requested	*/
-	Layer		new,	/* new		*/
+	NhlLayerClass	lc,	/* class	*/
+	NhlLayer		req,	/* requested	*/
+	NhlLayer		new,	/* new		*/
 	_NhlArgList	args,	/* args		*/
 	int		nargs	/* nargs	*/
 )
 #else
 (lc,req,new,args,nargs)
-	LayerClass	lc;	/* class	*/
-	Layer		req;	/* requested	*/
-	Layer		new;	/* new		*/
+	NhlLayerClass	lc;	/* class	*/
+	NhlLayer		req;	/* requested	*/
+	NhlLayer		new;	/* new		*/
 	_NhlArgList	args;	/* args		*/
 	int		nargs;	/* nargs	*/
 #endif
 {
-	MultiTextLayer	mtnew = (MultiTextLayer)new;
-	MultiTextLayer	mtreq = (MultiTextLayer)req;
+	NhlMultiTextLayer	mtnew = (NhlMultiTextLayer)new;
+	NhlMultiTextLayer	mtreq = (NhlMultiTextLayer)req;
 	int		i;
 	int		num_strings = mtnew->multitext.num_strings;
 	char		**text_strings;
 	char		name[128];
 	float		x,y,width,height;
-	NhlErrorTypes	ret = NOERROR;
+	NhlErrorTypes	ret = NhlNOERROR;
 
 	if(num_strings > 0){
 
@@ -368,7 +366,7 @@ MultiTextInitialize
 	strcat(name,"-TxtItm");
 
 	ret = _NhlCreateChild(&mtnew->multitext.text_object,name,
-						textItemLayerClass,new,
+						NhltextItemLayerClass,new,
 		NhlNtxAngleF,		mtnew->multitext.angle,
 		NhlNtxFont,		mtnew->multitext.font,
 		NhlNtxJust,		mtnew->multitext.just,
@@ -389,27 +387,27 @@ MultiTextInitialize
 		/*
 		 * Set the size
 		 */
-		_NhlInternalSetView((ViewLayer)new,x,y,width,height,False);
+		_NhlInternalSetView((NhlViewLayer)new,x,y,width,height,False);
 
 		/*
 		 * save the geometry of the first string
 		 */
-		if(mtnew->multitext.orientation == MTEXT_X_CONST){
-			NhlSetValues(mtnew->multitext.text_object,
+		if(mtnew->multitext.orientation == NhlMTEXT_X_CONST){
+			NhlVASetValues(mtnew->multitext.text_object,
 				NhlNtxString,mtnew->multitext.text_strings[0],
 				NhlNtxPosXF,mtnew->multitext.const_pos,
 				NhlNtxPosYF,mtnew->multitext.pos_array[0],
 				NULL);
 		}
 		else{
-			NhlSetValues(mtnew->multitext.text_object,
+			NhlVASetValues(mtnew->multitext.text_object,
 				NhlNtxString,mtnew->multitext.text_strings[0],
 				NhlNtxPosXF,mtnew->multitext.pos_array[0],
 				NhlNtxPosYF,mtnew->multitext.const_pos,
 				NULL);
 		}
 
-		NhlGetValues(mtnew->multitext.text_object,
+		NhlVAGetValues(mtnew->multitext.text_object,
 			NhlNvpXF,	&mtnew->multitext.text_x,
 			NhlNvpYF,	&mtnew->multitext.text_y,
 			NhlNvpWidthF,	&mtnew->multitext.text_width,
@@ -426,13 +424,13 @@ MultiTextInitialize
  * Description:	This is the SetValues method for the MultiText object.
  *
  * In Args:	
- *		Layer		old,		old
- *		Layer		req,		requested
+ *		NhlLayer		old,		old
+ *		NhlLayer		req,		requested
  *		_NhlArgList	args,		args to set
  *		int		nargs		nargs
  *
  * Out Args:	
- *		Layer		new,		new
+ *		NhlLayer		new,		new
  *
  * Scope:	static
  * Returns:	NhlErrorTypes
@@ -443,37 +441,37 @@ static NhlErrorTypes
 MultiTextSetValues
 #if	__STDC__
 (
-	Layer		old,		/* old		*/
-	Layer		req,		/* requested	*/
-	Layer		new,		/* new		*/
+	NhlLayer		old,		/* old		*/
+	NhlLayer		req,		/* requested	*/
+	NhlLayer		new,		/* new		*/
 	_NhlArgList	args,		/* args to set	*/
 	int		nargs		/* nargs	*/
 )
 #else
 (old,req,new,args,nargs)
-	Layer		old;		/* old		*/
-	Layer		req;		/* requested	*/
-	Layer		new;		/* new		*/
+	NhlLayer		old;		/* old		*/
+	NhlLayer		req;		/* requested	*/
+	NhlLayer		new;		/* new		*/
 	_NhlArgList	args;		/* args to set	*/
 	int		nargs;		/* nargs	*/
 #endif
 {
 	int		i;
 	NhlBoolean	changed = False;
-	MultiTextLayer	mtold = (MultiTextLayer)old;
-	MultiTextLayer	mtreq = (MultiTextLayer)req;
-	MultiTextLayer	mtnew = (MultiTextLayer)new;
-	NhlErrorTypes	ret = NOERROR;
-	NhlErrorTypes	lret = NOERROR;
+	NhlMultiTextLayer	mtold = (NhlMultiTextLayer)old;
+	NhlMultiTextLayer	mtreq = (NhlMultiTextLayer)req;
+	NhlMultiTextLayer	mtnew = (NhlMultiTextLayer)new;
+	NhlErrorTypes	ret = NhlNOERROR;
+	NhlErrorTypes	lret = NhlNOERROR;
 
 	if(mtreq->multitext.num_strings != mtold->multitext.num_strings){
 		if((mtreq->multitext.text_strings ==
 			mtold->multitext.text_strings) ||
 				(mtreq->multitext.pos_array ==
 						mtold->multitext.pos_array)){
-			NhlPError(FATAL,E_UNKNOWN,
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
 				"Multitext SetValues:Changing number of strings w/o changing strings or positions");
-			return FATAL;
+			return NhlFATAL;
 		}
 	}
 
@@ -491,8 +489,8 @@ MultiTextSetValues
 					(unsigned)mtreq->multitext.num_strings *
 								sizeof(char*));
 			if(mtnew->multitext.text_strings == NULL){
-				NhlPError(FATAL,12,"Unable to SetValues");
-				return FATAL;
+				NhlPError(NhlFATAL,12,"Unable to SetValues");
+				return NhlFATAL;
 			}
 
 			for(i=0;i < mtreq->multitext.num_strings;i++){
@@ -500,9 +498,9 @@ MultiTextSetValues
 					(char*)NhlMalloc((unsigned)strlen(
 					mtreq->multitext.text_strings[i]) + 1);
 				if(mtnew->multitext.text_strings[i] == NULL){
-					NhlPError(FATAL,12,
+					NhlPError(NhlFATAL,12,
 							"Unable to SetValues");
-					return FATAL;
+					return NhlFATAL;
 				}
 				strcpy(mtnew->multitext.text_strings[i],
 					mtreq->multitext.text_strings[i]);
@@ -533,8 +531,8 @@ MultiTextSetValues
 								sizeof(float));
 
 			if(mtnew->multitext.pos_array == NULL){
-				NhlPError(FATAL,12,"Unable to SetValues");
-				return FATAL;
+				NhlPError(NhlFATAL,12,"Unable to SetValues");
+				return NhlFATAL;
 			}
 
 			for(i=0;i < mtnew->multitext.num_strings;i++)
@@ -575,7 +573,7 @@ MultiTextSetValues
 
 		changed = True;
 
-		lret = NhlSetValues(mtnew->multitext.text_object,
+		lret = NhlVASetValues(mtnew->multitext.text_object,
 			NhlNtxAngleF,		mtnew->multitext.angle,
 			NhlNtxFont,		mtnew->multitext.font,
 			NhlNtxJust,		mtnew->multitext.just,
@@ -635,7 +633,7 @@ MultiTextSetValues
 		 * using the transformed x,y,width,height from the first
 		 * text string (the first text string should be current)
 		 */
-		lret = NhlSetValues(mtnew->multitext.text_object,
+		lret = NhlVASetValues(mtnew->multitext.text_object,
 			NhlNvpXF,	x[0],
 			NhlNvpYF,	y[2],
 			NhlNvpWidthF,	x[2] - x[0],
@@ -649,12 +647,12 @@ MultiTextSetValues
 		mtnew->multitext.pos_array = (float*)NhlMalloc((unsigned)
 				mtnew->multitext.num_strings * sizeof(float));
 		if(mtnew->multitext.pos_array == NULL){
-			NhlPError(FATAL,12,
+			NhlPError(NhlFATAL,12,
 					"Unable to change size of Multitext");
-			return FATAL;
+			return NhlFATAL;
 		}
 
-		if(mtnew->multitext.orientation == MTEXT_X_CONST){
+		if(mtnew->multitext.orientation == NhlMTEXT_X_CONST){
 
 			for(i=0;i < mtnew->multitext.num_strings;i++){
 
@@ -691,19 +689,19 @@ MultiTextSetValues
 		/*
 		 * Set the size
 		 */
-		_NhlInternalSetView((ViewLayer)new,x,y,width,height,False);
+		_NhlInternalSetView((NhlViewLayer)new,x,y,width,height,False);
 		/*
 		 * save the geometry of the first string
 		 */
-		if(mtnew->multitext.orientation == MTEXT_X_CONST){
-			lret = NhlSetValues(mtnew->multitext.text_object,
+		if(mtnew->multitext.orientation == NhlMTEXT_X_CONST){
+			lret = NhlVASetValues(mtnew->multitext.text_object,
 				NhlNtxString,mtnew->multitext.text_strings[0],
 				NhlNtxPosXF,mtnew->multitext.const_pos,
 				NhlNtxPosYF,mtnew->multitext.pos_array[0],
 				NULL);
 		}
 		else{
-			lret = NhlSetValues(mtnew->multitext.text_object,
+			lret = NhlVASetValues(mtnew->multitext.text_object,
 				NhlNtxString,mtnew->multitext.text_strings[0],
 				NhlNtxPosXF,mtnew->multitext.pos_array[0],
 				NhlNtxPosYF,mtnew->multitext.const_pos,
@@ -711,7 +709,7 @@ MultiTextSetValues
 		}
 		ret = MIN(ret,lret);
 
-		lret = NhlGetValues(mtnew->multitext.text_object,
+		lret = NhlVAGetValues(mtnew->multitext.text_object,
 			NhlNvpXF,	&mtnew->multitext.text_x,
 			NhlNvpYF,	&mtnew->multitext.text_y,
 			NhlNvpWidthF,	&mtnew->multitext.text_width,
@@ -730,7 +728,7 @@ MultiTextSetValues
  *		draw it's string's
  *
  * In Args:	
- *		Layer	l	layer to draw
+ *		NhlLayer	l	layer to draw
  *
  * Out Args:	
  *
@@ -742,27 +740,27 @@ static NhlErrorTypes
 MultiTextDraw
 #if	__STDC__
 (
-	Layer	l	/* layer to draw	*/
+	NhlLayer	l	/* layer to draw	*/
 )
 #else
 (l)
-	Layer	l;	/* layer to draw	*/
+	NhlLayer	l;	/* layer to draw	*/
 #endif
 {
-	MultiTextLayer	mtl = (MultiTextLayer)l;
+	NhlMultiTextLayer	mtl = (NhlMultiTextLayer)l;
 	int		i;
 
 	for(i=0;i < mtl->multitext.num_strings;i++){
 
-		if(mtl->multitext.orientation == MTEXT_X_CONST){
-			NhlSetValues(mtl->multitext.text_object,
+		if(mtl->multitext.orientation == NhlMTEXT_X_CONST){
+			NhlVASetValues(mtl->multitext.text_object,
 				NhlNtxString,mtl->multitext.text_strings[i],
 				NhlNtxPosXF,mtl->multitext.const_pos,
 				NhlNtxPosYF,mtl->multitext.pos_array[i],
 				NULL);
 		}
 		else{
-			NhlSetValues(mtl->multitext.text_object,
+			NhlVASetValues(mtl->multitext.text_object,
 				NhlNtxString,mtl->multitext.text_strings[i],
 				NhlNtxPosXF,mtl->multitext.pos_array[i],
 				NhlNtxPosYF,mtl->multitext.const_pos,
@@ -773,7 +771,7 @@ MultiTextDraw
 		NhlDraw(mtl->multitext.text_object);
 	}
 
-	return NOERROR;
+	return NhlNOERROR;
 }
 
 /*
@@ -784,7 +782,7 @@ MultiTextDraw
  *		the object.
  *
  * In Args:	
- *		Layer	l	layer to destroy
+ *		NhlLayer	l	layer to destroy
  *
  * Out Args:	
  *
@@ -796,15 +794,15 @@ static NhlErrorTypes
 MultiTextDestroy
 #if	__STDC__
 (
-	Layer	l	/* layer to destroy	*/
+	NhlLayer	l	/* layer to destroy	*/
 )
 #else
 (l)
-	Layer	l;	/* layer to destroy	*/
+	NhlLayer	l;	/* layer to destroy	*/
 #endif
 {
 	int		i;
-	MultiTextLayer	mtl = (MultiTextLayer)l;
+	NhlMultiTextLayer	mtl = (NhlMultiTextLayer)l;
 
 	if((mtl->multitext.num_strings > 0) &&
 		(mtl->multitext.text_strings != NULL)){
@@ -817,5 +815,5 @@ MultiTextDestroy
 	if(mtl->multitext.pos_array != NULL)
 		(void)NhlFree(mtl->multitext.pos_array);
 
-	return NOERROR;
+	return NhlNOERROR;
 }

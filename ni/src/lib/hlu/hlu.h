@@ -1,5 +1,5 @@
 /*
- *      $Id: hlu.h,v 1.9 1994-01-14 23:36:46 boote Exp $
+ *      $Id: hlu.h,v 1.10 1994-01-27 21:28:04 boote Exp $
  */
 /************************************************************************
 *									*
@@ -105,55 +105,22 @@ typedef	void	*NhlPointer;
 typedef	int	NhlBoolean;
 typedef	int	NhlFont;
 
+/* This declaration will hopefully move to hluP.h */
 typedef	struct NhlGenArrayRec_ *NhlGenArray;
 
 typedef enum _NhlErrType{
-	FATAL	= -4,
-	WARNING	= -3,
-	INFO	= -2,
-	NOERROR	= -1
+	NhlFATAL	= -4,
+	NhlWARNING	= -3,
+	NhlINFO		= -2,
+	NhlNOERROR	= -1
 } NhlErrorTypes;
-
-
-/* pseudo Boolean types */
-
-#define NhlTOrientation NhlTBoolean
-#define NhlHORIZONTAL	0
-#define NhlVERTICAL	1
-typedef NhlBoolean NhlOrientation;
-
-/* position enumeration */
-
-#define NhlTPosition "Position"
-typedef enum _NhlPosition {
-	NhlTOP,
-	NhlBOTTOM,
-	NhlRIGHT,
-	NhlLEFT,
-	NhlCENTER,
-	NhlBOTH       /* LabelBar needs this */
-} NhlPosition;
-
-/* justification enumeration */
-
-#define NhlTJustification "Justification"
-typedef enum _NhlJustification {
-	NhlTOPLEFT,
-	NhlCENTERLEFT,
-	NhlBOTTOMLEFT,
-	NhlTOPCENTER,
-	NhlCENTERCENTER,
-	NhlBOTTOMCENTER,
-	NhlTOPRIGHT,
-	NhlCENTERRIGHT,
-	NhlBOTTOMRIGHT
-} NhlJustification;
 
 
 #define NhlOffset(p_type,field) \
         ((unsigned int) (((char *) (&(((p_type*)NULL)->field))) - ((char *) NULL)))
 #define NhlNumber(arr)           ((unsigned int) (sizeof(arr) / sizeof(arr[0])))
 
+/* This must be the longest int type on the architecture */
 typedef	long	NhlArgVal;
 
 NhlDOCTAG(NhlSArg)
@@ -180,32 +147,9 @@ typedef struct _NhlResource {
 	NhlPointer	default_addr;
 } NhlResource, *NhlResourceList;
 
-NhlDOCTAG(NhlBoundingBox)
-typedef struct _NhlBoundingBox {
-        int     set;
-        float   t;
-        float   b;
-        float   l;
-        float   r;
-} NhlBoundingBox;
+typedef struct _NhlLayerClassRec *NhlLayerClass;
 
-NhlDOCTAG(NhlCoord)
-typedef struct _NhlCoord {
-	float x;
-	float y;
-} NhlCoord;
-
-typedef struct _LayerClassRec *LayerClass;
-typedef struct _LayerRec *Layer;
-typedef struct _LayerList {
-	struct _LayerRec *layer;
-	struct _LayerList *next;
-} LayerListNode, *LayerList;
-
-/*
- * Error.h is included here because everything needs it - and it needs the
- * declarations of Layer and LayerClass before it.
- */
+/* This is here because it needs defs from above. */
 #include <ncarg/hlu/Error.h>
 
 /*
@@ -296,14 +240,14 @@ extern void NhlSetGArg(
 #endif
 );
 
-NhlDOCTAG(NhlCreate)
+NhlDOCTAG(NhlVACreate)
 NhlSRCREF(hlu/hlu.c#NhlSetGArg)
 /*VARARGS4*/
-extern NhlErrorTypes NhlCreate(
+extern NhlErrorTypes NhlVACreate(
 #if	NeedVarArgProto
 	int*,			/* return plot id			*/
 	Const char*,		/* name					*/
-	LayerClass,		/* requested class			*/
+	NhlLayerClass,		/* requested class			*/
 	int,			/* parent's id				*/
 	...			/* res names/values - NULL terminated	*/
 #endif
@@ -314,7 +258,7 @@ extern NhlErrorTypes NhlALCreate(
 #if	NhlNeedProto
 	int*,			/* return plot id	*/
 	Const char*,		/* name			*/
-	LayerClass,		/* requested class	*/
+	NhlLayerClass,		/* requested class	*/
 	int,			/* parent's id		*/
 	NhlSArgList,		/* setarg list		*/
 	int			/* number of Sarg's	*/
@@ -349,9 +293,9 @@ extern void NhlClose(
 #endif 
 ); 
 
-NhlDOCTAG(NhlSetValues)
+NhlDOCTAG(NhlVASetValues)
 /*VARARGS1*/
-extern NhlErrorTypes NhlSetValues( 
+extern NhlErrorTypes NhlVASetValues( 
 #if	NeedVarArgProto 
 	int,		/* id		*/
 	...		/* resource names and values - NULL terminated	*/
@@ -367,9 +311,9 @@ extern NhlErrorTypes NhlALSetValues(
 #endif
 );
 
-NhlDOCTAG(NhlGetValues)
+NhlDOCTAG(NhlVAGetValues)
 /*VARARGS1*/
-extern NhlErrorTypes NhlGetValues(
+extern NhlErrorTypes NhlVAGetValues(
 #if	NeedVarArgProto
 	int,		/* id		*/
 	...		/* resource names and values - NULL terminated	*/
@@ -383,165 +327,5 @@ extern NhlErrorTypes NhlALGetValues(
 	int		nargs	/* num args		*/
 #endif
 );
-
-extern NhlErrorTypes NhlChangeWorkstation(
-#if	NhlNeedProto
-	int	plotid,		/* plotid to move to new workstation	*/
-	int	workid		/* workid of workstation		*/
-#endif
-);
-
-extern NhlErrorTypes NhlUpdateWorkstation(
-#if	NhlNeedProto
-	int	workid	/* workid of workstation to update	*/
-#endif
-);
-
-extern NhlErrorTypes NhlClearWorkstation(
-#if	NhlNeedProto
-	int	workid	/* workid of workstation to clear	*/
-#endif
-);
-
-extern NhlErrorTypes   NhlFrame(
-#if	NhlNeedProto
-	int /*wid*/
-#endif
-);
-
-
-extern NhlErrorTypes NhlSetColor(
-#ifdef NhlNeedProto
-int 	/* pid */,
-int     /* ci */,
-float   /* red */,
-float   /* green */,
-float   /* blue */
-#endif
-);
-
-extern NhlErrorTypes NhlFreeColor(
-#ifdef NhlNeedProto
-        int 	/* pid */,
-        int     /* ci */
-#endif
-);
-
-extern int NhlNewColor(
-#ifdef NhlNeedProto
-        int     /* pid*/,
-        float   /* red */,
-        float   /* green */,
-        float   /* blue */
-#endif
-);
-
-extern int NhlGetGksCi(
-#ifdef NhlNeedProto
-        int     /* pid */,
-        int     /* ci   */
-#endif
-);
-int NhlGetGksWorkId(
-#ifdef NhlNeedProto
-int /* workid */
-#endif
-);
-
-int NhlNewMarker(
-#ifdef NhlNeedProto
-	Layer instance, 
-	char *marker_string, 
-	float x_off, 
-	float y_off,
-	float aspect_adj,
-	float size_adj
-#endif
-);
-
-NhlErrorTypes NhlSetMarker(
-#ifdef NhlNeedProto
-	Layer instance, 
-	int	index,
-	char	*marker_string, 
-	float	x_off, 
-	float	y_off,
-	float	aspect_adj,
-	float	size_adj
-#endif
-);
-
-extern NhlErrorTypes NhlGetBB(
-#ifdef NhlNeedProto
-	int,		/* pid */
-	NhlBoundingBox*	/* thebox */
-#endif
-);
-
-extern NhlErrorTypes NhlNDCToData(
-#ifdef NhlNeedProto
-	int	/*pid*/,
-	float* /*x*/,
-	float* /*y*/,
-	int	/*n*/,
-	float* /*xout*/,
-	float* /*yout*/,
-	float * /* xmissing */,
-	float * /* ymissing */,
-	int*	/* status */,
-	float*  /* out_of_range */
-#endif
-);
-
-extern NhlErrorTypes NhlDataToNDC(
-#ifdef NhlNeedProto
-	int	/*pid*/,
-	float* /*x*/,
-	float* /*y*/,
-	int	/*n*/,
-	float* /*xout*/,
-	float* /*yout*/,
-	float * /* xmissing */,
-	float * /* ymissing */,
-	int*	/* status */,
-	float*  /* out_of_range */
-#endif
-);
-
-extern NhlErrorTypes NhlDataPolyline(
-#ifdef NhlNeedProto
-	int		/* pid */,
-	float*		/* x */,
-	float*		/* y */,
-	int		/* n */
-#endif
-);
-
-extern NhlErrorTypes NhlNDCPolyline(
-#ifdef NhlNeedProto
-	int		/* pid */,
-	float*		/* x */,
-	float*		/* y */,
-	int		/* n */
-#endif
-);
-
-NhlErrorTypes NhlAddToOverlay(
-#ifdef NhlNeedProto
-        int		/* base_id */,
-	int		/* plot_id */,
-	int		/* after_id */
-#endif
-);
-
-NhlErrorTypes NhlRemoveFromOverlay(
-#ifdef NhlNeedProto
-        int		/* base_id */,
-	int		/* plot_id */,
-	NhlBoolean	/* restore */
-#endif
-);
-
-
 
 #endif /* _NHLU_h */

@@ -1,5 +1,5 @@
 /*
- *      $Id: Legend.c,v 1.5 1993-11-05 17:28:35 dbrown Exp $
+ *      $Id: Legend.c,v 1.6 1994-01-27 21:23:54 boote Exp $
  */
 /************************************************************************
 *									*
@@ -22,13 +22,10 @@
  *		Creates and manages a Legend
  */
 
-#include <stdio.h>
 #include <math.h>
-#include <string.h>
-#include <ncarg/hlu/hluutil.h>
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/LegendP.h>
-#include <ncarg/hlu/Workstation.h>
+#include <ncarg/hlu/WorkstationI.h>
 
 static int def_colors[] = { 
 	0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
@@ -41,241 +38,241 @@ static int def_colors[] = {
 static NhlResource resources[] = { 
 
 {NhlNlgLegend, NhlClgLegend, NhlTInteger,
-	 sizeof(int), NhlOffset(LegendLayerRec,legend.legend_on),
+	 sizeof(int), NhlOffset(NhlLegendLayerRec,legend.legend_on),
 	 NhlTImmediate,(NhlPointer) 1}, 
 {NhlNlgOrientation, NhlClgOrientation, NhlTOrientation,
-	 sizeof(NhlOrientation), NhlOffset(LegendLayerRec,legend.orient),
+	 sizeof(NhlOrientation), NhlOffset(NhlLegendLayerRec,legend.orient),
 	 NhlTImmediate,(NhlPointer) NhlVERTICAL},
 {NhlNlgJustification, NhlClgJustification, NhlTJustification, 
 	 sizeof(NhlJustification),
-	 NhlOffset(LegendLayerRec,legend.just),
+	 NhlOffset(NhlLegendLayerRec,legend.just),
 	 NhlTImmediate,(NhlPointer)NhlBOTTOMLEFT},
 {NhlNlgBoxMajorExtentF, NhlClgBoxMajorExtentF, NhlTFloat,
-	 sizeof(float), NhlOffset(LegendLayerRec,legend.box_major_ext),
+	 sizeof(float), NhlOffset(NhlLegendLayerRec,legend.box_major_ext),
 	 NhlTString,"0.5"},
 {NhlNlgBoxMinorExtentF, NhlClgBoxMinorExtentF, NhlTFloat,
-	 sizeof(float), NhlOffset(LegendLayerRec,legend.box_minor_ext),
+	 sizeof(float), NhlOffset(NhlLegendLayerRec,legend.box_minor_ext),
 	 NhlTString,"0.6"},
 {NhlNlgItemCount, NhlClgItemCount, NhlTInteger,
-	 sizeof(int), NhlOffset(LegendLayerRec,legend.item_count),
+	 sizeof(int), NhlOffset(NhlLegendLayerRec,legend.item_count),
 	 NhlTImmediate,(NhlPointer) 16},
 {NhlNlgItemPlacement, NhlClgItemPlacement, NhlTInteger,
-	 sizeof(int), NhlOffset(LegendLayerRec,legend.item_placement),
+	 sizeof(int), NhlOffset(NhlLegendLayerRec,legend.item_placement),
 	 NhlTImmediate,(NhlPointer) NhlLG_UNIFORMPLACEMENT},
 {NhlNlgBoxBackground, NhlClgBoxBackground, NhlTInteger,
-	 sizeof(int), NhlOffset(LegendLayerRec,legend.box_background),
+	 sizeof(int), NhlOffset(NhlLegendLayerRec,legend.box_background),
 	 NhlTImmediate,(NhlPointer) -1},
 
 {NhlNlgAutoManage, NhlClgAutoManage, NhlTBoolean,
-	 sizeof(NhlBoolean), NhlOffset(LegendLayerRec,legend.auto_manage),
+	 sizeof(NhlBoolean), NhlOffset(NhlLegendLayerRec,legend.auto_manage),
 	 NhlTImmediate,(NhlPointer) True},
 {NhlNlgMaxLabelAngleAdditionF, NhlClgMaxLabelAngleAdditionF, NhlTFloat,
-	 sizeof(float), NhlOffset(LegendLayerRec,legend.label_angle_add),
+	 sizeof(float), NhlOffset(NhlLegendLayerRec,legend.label_angle_add),
 	 NhlTString,"0.15"},
 {NhlNlgLabelOffsetF, NhlClgLabelOffsetF, NhlTFloat,
-	 sizeof(float), NhlOffset(LegendLayerRec,legend.label_off),
+	 sizeof(float), NhlOffset(NhlLegendLayerRec,legend.label_off),
 	 NhlTString,"0.0"},
 {NhlNlgTitleOffsetF, NhlClgTitleOffsetF, NhlTFloat,
-	 sizeof(float), NhlOffset(LegendLayerRec,legend.title_off),
+	 sizeof(float), NhlOffset(NhlLegendLayerRec,legend.title_off),
 	 NhlTString,"0.03"},
 {NhlNlgLeftMarginF, NhlClgLeftMarginF, NhlTFloat,
-	 sizeof(float), NhlOffset(LegendLayerRec,legend.margin.l),
+	 sizeof(float), NhlOffset(NhlLegendLayerRec,legend.margin.l),
 	 NhlTString,"0.05"},
 {NhlNlgRightMarginF, NhlClgRightMarginF, NhlTFloat,
-	 sizeof(float), NhlOffset(LegendLayerRec,legend.margin.r),
+	 sizeof(float), NhlOffset(NhlLegendLayerRec,legend.margin.r),
 	 NhlTString,"0.05"},
 {NhlNlgBottomMarginF, NhlClgBottomMarginF, NhlTFloat,
-	 sizeof(float), NhlOffset(LegendLayerRec,legend.margin.b),
+	 sizeof(float), NhlOffset(NhlLegendLayerRec,legend.margin.b),
 	 NhlTString,"0.05"},
 {NhlNlgTopMarginF, NhlClgTopMarginF, NhlTFloat,
-	 sizeof(float), NhlOffset(LegendLayerRec,legend.margin.t),
+	 sizeof(float), NhlOffset(NhlLegendLayerRec,legend.margin.t),
 	 NhlTString,"0.05"},
 
 	
 {NhlNlgItemIndexes, NhlClgItemIndexes, NhlTGenArray,
-	 sizeof(NhlPointer), NhlOffset(LegendLayerRec,legend.item_indexes),
+	 sizeof(NhlPointer), NhlOffset(NhlLegendLayerRec,legend.item_indexes),
 	 NhlTImmediate,(NhlPointer) NULL},
 {NhlNlgItemStrings, NhlClgItemStrings, NhlTGenArray,
 	 sizeof(NhlPointer), 
-	 NhlOffset(LegendLayerRec,legend.item_strings),
+	 NhlOffset(NhlLegendLayerRec,legend.item_strings),
 	 NhlTImmediate,(NhlPointer) NULL},
 {NhlNlgMonoItemType, NhlClgMonoItemType, NhlTBoolean,
 	 sizeof(NhlBoolean), 
-	 NhlOffset(LegendLayerRec,legend.mono_item_type),
+	 NhlOffset(NhlLegendLayerRec,legend.mono_item_type),
 	 NhlTImmediate,(NhlPointer) True},
 {NhlNlgItemTypes, NhlClgItemTypes, NhlTGenArray,
-	 sizeof(NhlPointer), NhlOffset(LegendLayerRec,legend.item_types),
+	 sizeof(NhlPointer), NhlOffset(NhlLegendLayerRec,legend.item_types),
 	 NhlTImmediate,(NhlPointer) NULL},
 {NhlNlgMonoItemColor, NhlClgMonoItemColor, NhlTBoolean,
 	 sizeof(NhlBoolean), 
-	 NhlOffset(LegendLayerRec,legend.mono_item_color),
+	 NhlOffset(NhlLegendLayerRec,legend.mono_item_color),
 	 NhlTImmediate,(NhlPointer) False},
 {NhlNlgItemColors, NhlClgItemColors, NhlTGenArray,
-	 sizeof(NhlPointer), NhlOffset(LegendLayerRec,legend.item_colors),
+	 sizeof(NhlPointer), NhlOffset(NhlLegendLayerRec,legend.item_colors),
 	 NhlTImmediate,(NhlPointer) NULL},
 {NhlNlgMonoItemThickness, NhlClgMonoItemThickness, NhlTBoolean,
 	 sizeof(NhlBoolean), 
-	 NhlOffset(LegendLayerRec,legend.mono_item_thickness),
+	 NhlOffset(NhlLegendLayerRec,legend.mono_item_thickness),
 	 NhlTImmediate,(NhlPointer) True},
 {NhlNlgItemThicknesses, NhlClgItemThicknesses, NhlTGenArray,
-	 sizeof(NhlPointer), NhlOffset(LegendLayerRec,legend.item_thicknesses),
+	 sizeof(NhlPointer), NhlOffset(NhlLegendLayerRec,legend.item_thicknesses),
 	 NhlTImmediate,(NhlPointer) NULL},
 {NhlNlgMonoItemTextHeight, NhlClgMonoItemTextHeight, NhlTBoolean,
 	 sizeof(NhlBoolean), 
-	 NhlOffset(LegendLayerRec,legend.mono_item_text_height),
+	 NhlOffset(NhlLegendLayerRec,legend.mono_item_text_height),
 	 NhlTImmediate,(NhlPointer) True},
 {NhlNlgItemTextHeights, NhlClgItemTextHeights, NhlTGenArray,
 	 sizeof(NhlPointer), 
-	 NhlOffset(LegendLayerRec,legend.item_text_heights),
+	 NhlOffset(NhlLegendLayerRec,legend.item_text_heights),
 	 NhlTImmediate,(NhlPointer) NULL },
 {NhlNlgLabelStrings, NhlClgLabelStrings, NhlTGenArray,
 	 sizeof(NhlPointer), 
-	 NhlOffset(LegendLayerRec,legend.label_strings),
+	 NhlOffset(NhlLegendLayerRec,legend.label_strings),
 	 NhlTImmediate,(NhlPointer) NULL},
 {NhlNlgItemPositions, NhlClgItemPositions, NhlTFloatPtr,
-	 sizeof(float *), NhlOffset(LegendLayerRec,legend.item_positions),
+	 sizeof(float *), NhlOffset(NhlLegendLayerRec,legend.item_positions),
 	 NhlTImmediate,(NhlPointer) NULL },
 	
 {NhlNlgDrawLabels, NhlClgDrawLabels, NhlTInteger, 
-	 sizeof(int), NhlOffset(LegendLayerRec,legend.labels_on),
+	 sizeof(int), NhlOffset(NhlLegendLayerRec,legend.labels_on),
 	 NhlTImmediate,(NhlPointer) 1},
 {NhlNlgLabelPosition, NhlClgLabelPosition, NhlTPosition, 
-	 sizeof(NhlPosition), NhlOffset(LegendLayerRec,legend.label_pos),
+	 sizeof(NhlPosition), NhlOffset(NhlLegendLayerRec,legend.label_pos),
 	 NhlTImmediate,(NhlPointer) NhlRIGHT},
 {NhlNlgLabelAngleF, NhlClgLabelAngleF, NhlTFloat, 
-	 sizeof(float), NhlOffset(LegendLayerRec,legend.label_angle),
+	 sizeof(float), NhlOffset(NhlLegendLayerRec,legend.label_angle),
 	 NhlTString,"0.0"},
 {NhlNlgLabelAlignment, NhlClgLabelAlignment, NhlTInteger, 
-	 sizeof(int), NhlOffset(LegendLayerRec,legend.label_alignment),
+	 sizeof(int), NhlOffset(NhlLegendLayerRec,legend.label_alignment),
 	 NhlTImmediate,(NhlPointer) NhlLG_ITEMCENTERS},
 {NhlNlgLabelDirection,NhlClgLabelDirection,NhlTTextDirection,
-	 sizeof(TextDirection),
-	 NhlOffset(LegendLayerRec,legend.label_direction),
-	 NhlTImmediate,(NhlPointer)ACROSS},
+	 sizeof(NhlTextDirection),
+	 NhlOffset(NhlLegendLayerRec,legend.label_direction),
+	 NhlTImmediate,(NhlPointer)NhlACROSS},
 {NhlNlgLabelJust, NhlClgLabelJust, NhlTJustification, sizeof(NhlJustification),
-	 NhlOffset(LegendLayerRec,legend.label_just),
+	 NhlOffset(NhlLegendLayerRec,legend.label_just),
 	 NhlTImmediate,(NhlPointer)NhlCENTERCENTER},
-{NhlNlgLabelFont, NhlClgLabelFont, NhlTInteger, 
-	 sizeof(int), NhlOffset(LegendLayerRec,legend.label_font),
+{NhlNlgLabelFont, NhlCFont, NhlTFont, 
+	 sizeof(int), NhlOffset(NhlLegendLayerRec,legend.label_font),
 	 NhlTImmediate,(NhlPointer) 1},
 {NhlNlgLabelFontColor, NhlClgLabelFontColor, NhlTInteger, 
-	 sizeof(int), NhlOffset(LegendLayerRec,legend.label_color),
+	 sizeof(int), NhlOffset(NhlLegendLayerRec,legend.label_color),
 	 NhlTImmediate,(NhlPointer) NhlLG_DEF_COLOR},
 {NhlNlgLabelFontHeightF, NhlClgLabelFontHeightF, NhlTFloat, 
-	 sizeof(float), NhlOffset(LegendLayerRec,legend.label_height),
+	 sizeof(float), NhlOffset(NhlLegendLayerRec,legend.label_height),
 	 NhlTString,"0.02"},
 {NhlNlgLabelFontAspectF, NhlClgLabelFontAspectF, NhlTFloat, 
-	 sizeof(float), NhlOffset(LegendLayerRec,legend.label_aspect),
+	 sizeof(float), NhlOffset(NhlLegendLayerRec,legend.label_aspect),
 	 NhlTString,"1.0"},
 {NhlNlgLabelFontThicknessF, NhlClgLabelFontThicknessF, NhlTFloat, 
-	 sizeof(float), NhlOffset(LegendLayerRec,legend.label_thickness),
+	 sizeof(float), NhlOffset(NhlLegendLayerRec,legend.label_thickness),
 	 NhlTString,"1.0"},
 {NhlNlgLabelFontQuality, NhlClgLabelFontQuality, NhlTFQuality, 
-	 sizeof(FontQuality), 
-	 NhlOffset(LegendLayerRec,legend.label_quality),
-	 NhlTImmediate,(NhlPointer) HIGH},
+	 sizeof(NhlFontQuality), 
+	 NhlOffset(NhlLegendLayerRec,legend.label_quality),
+	 NhlTImmediate,(NhlPointer) NhlHIGH},
 {NhlNlgLabelConstantSpacingF, NhlClgLabelConstantSpacingF, NhlTFloat, 
 	 sizeof(float), 
-	 NhlOffset(LegendLayerRec,legend.label_const_spacing),
+	 NhlOffset(NhlLegendLayerRec,legend.label_const_spacing),
 	 NhlTString,"0.0"},
 {NhlNlgLabelFuncCode, NhlClgLabelFuncCode, NhlTCharacter, 
-	 sizeof(char), NhlOffset(LegendLayerRec,legend.label_func_code),
+	 sizeof(char), NhlOffset(NhlLegendLayerRec,legend.label_func_code),
 	 NhlTString,":"},
 {NhlNlgLabelStride, NhlClgLabelStride, NhlTInteger, 
-	 sizeof(int), NhlOffset(LegendLayerRec,legend.label_stride),
+	 sizeof(int), NhlOffset(NhlLegendLayerRec,legend.label_stride),
 	 NhlTImmediate,(NhlPointer) 1},
 
 {NhlNlgTitleString, NhlClgTitleString, NhlTString, 
-	 sizeof(char *), NhlOffset(LegendLayerRec,legend.title_string),
+	 sizeof(char *), NhlOffset(NhlLegendLayerRec,legend.title_string),
 	 NhlTImmediate,DEFSTRING},
 {NhlNlgDrawTitle, NhlClgDrawTitle, NhlTInteger, 
-	 sizeof(int), NhlOffset(LegendLayerRec,legend.title_on),
+	 sizeof(int), NhlOffset(NhlLegendLayerRec,legend.title_on),
 	 NhlTImmediate,(NhlPointer) 1},
 {NhlNlgTitlePosition, NhlClgTitlePosition, NhlTInteger, 
-	 sizeof(NhlPosition), NhlOffset(LegendLayerRec,legend.title_pos),
+	 sizeof(NhlPosition), NhlOffset(NhlLegendLayerRec,legend.title_pos),
 	 NhlTImmediate,(NhlPointer) NhlTOP},
 {NhlNlgMaxTitleExtentF, NhlClgMaxTitleExtentF, NhlTFloat,
-	 sizeof(float), NhlOffset(LegendLayerRec,legend.max_title_ext),
+	 sizeof(float), NhlOffset(NhlLegendLayerRec,legend.max_title_ext),
 	 NhlTString,"0.15"},
 {NhlNlgTitleAngleF, NhlClgTitleAngleF, NhlTFloat, 
-	 sizeof(float), NhlOffset(LegendLayerRec,legend.title_angle),
+	 sizeof(float), NhlOffset(NhlLegendLayerRec,legend.title_angle),
 	 NhlTString,"0.0"},
 {NhlNlgTitleDirection,NhlClgTitleDirection,NhlTTextDirection,
-	 sizeof(TextDirection),
-	 NhlOffset(LegendLayerRec,legend.title_direction),
-	 NhlTImmediate,(NhlPointer)ACROSS},
-{NhlNlgTitleFont, NhlClgTitleFont, NhlTInteger, 
-	 sizeof(int), NhlOffset(LegendLayerRec,legend.title_font),
+	 sizeof(NhlTextDirection),
+	 NhlOffset(NhlLegendLayerRec,legend.title_direction),
+	 NhlTImmediate,(NhlPointer)NhlACROSS},
+{NhlNlgTitleFont, NhlCFont, NhlTFont, 
+	 sizeof(NhlFont), NhlOffset(NhlLegendLayerRec,legend.title_font),
 	 NhlTImmediate,(NhlPointer) 1},
 {NhlNlgTitleFontColor, NhlClgTitleFontColor, NhlTInteger, 
-	 sizeof(int), NhlOffset(LegendLayerRec,legend.title_color),
+	 sizeof(int), NhlOffset(NhlLegendLayerRec,legend.title_color),
 	 NhlTImmediate,(NhlPointer) NhlLG_DEF_COLOR},
 {NhlNlgTitleJust, NhlClgTitleJust, NhlTJustification, sizeof(NhlJustification),
-	 NhlOffset(LegendLayerRec,legend.title_just),
+	 NhlOffset(NhlLegendLayerRec,legend.title_just),
 	 NhlTImmediate,(NhlPointer)NhlCENTERCENTER},
 {NhlNlgTitleFontHeightF, NhlClgTitleFontHeightF, NhlTFloat, 
-	 sizeof(float), NhlOffset(LegendLayerRec,legend.title_height),
+	 sizeof(float), NhlOffset(NhlLegendLayerRec,legend.title_height),
 	 NhlTString,"0.025"},
 {NhlNlgTitleFontAspectF, NhlClgTitleFontAspectF, NhlTFloat, 
-	 sizeof(float), NhlOffset(LegendLayerRec,legend.title_aspect),
+	 sizeof(float), NhlOffset(NhlLegendLayerRec,legend.title_aspect),
 	 NhlTString,"1.0"},
 {NhlNlgTitleFontThicknessF, NhlClgTitleFontThicknessF, NhlTFloat, 
-	 sizeof(float), NhlOffset(LegendLayerRec,legend.title_thickness),
+	 sizeof(float), NhlOffset(NhlLegendLayerRec,legend.title_thickness),
 	 NhlTString,"1.0"},
 {NhlNlgTitleFontQuality, NhlClgTitleFontQuality, NhlTFQuality, 
-	 sizeof(FontQuality), 
-	 NhlOffset(LegendLayerRec,legend.title_quality),
-	 NhlTImmediate,(NhlPointer) HIGH},
+	 sizeof(NhlFontQuality), 
+	 NhlOffset(NhlLegendLayerRec,legend.title_quality),
+	 NhlTImmediate,(NhlPointer) NhlHIGH},
 {NhlNlgTitleConstantSpacingF, NhlClgTitleConstantSpacingF, NhlTFloat, 
 	 sizeof(float), 
-	 NhlOffset(LegendLayerRec,legend.title_const_spacing),
+	 NhlOffset(NhlLegendLayerRec,legend.title_const_spacing),
 	 NhlTString,"0.0"},
 {NhlNlgTitleFuncCode, NhlClgTitleFuncCode, NhlTCharacter, 
-	 sizeof(char), NhlOffset(LegendLayerRec,legend.title_func_code),
+	 sizeof(char), NhlOffset(NhlLegendLayerRec,legend.title_func_code),
 	 NhlTString,":"},
 	
 {NhlNlgDrawBoxLines, NhlClgDrawBoxLines, NhlTInteger, 
-	 sizeof(int), NhlOffset(LegendLayerRec,legend.box_line_on),
+	 sizeof(int), NhlOffset(NhlLegendLayerRec,legend.box_line_on),
 	 NhlTImmediate,(NhlPointer) 0},
 {NhlNlgBoxLineColor, NhlClgBoxLineColor, NhlTInteger, 
-	 sizeof(int), NhlOffset(LegendLayerRec,legend.box_line_color),
+	 sizeof(int), NhlOffset(NhlLegendLayerRec,legend.box_line_color),
 	 NhlTImmediate,(NhlPointer) NhlLG_DEF_COLOR},
 {NhlNlgBoxLineThicknessF, NhlClgBoxLineThicknessF, NhlTFloat, 
 	 sizeof(float), 
-	 NhlOffset(LegendLayerRec,legend.box_line_thickness),
+	 NhlOffset(NhlLegendLayerRec,legend.box_line_thickness),
 	 NhlTString,"1.0"},
 {NhlNlgBoxLineDashPattern, NhlClgBoxLineDashPattern, NhlTInteger, 
 	 sizeof(int), 
-	 NhlOffset(LegendLayerRec,legend.box_line_dash_pattern),
+	 NhlOffset(NhlLegendLayerRec,legend.box_line_dash_pattern),
 	 NhlTImmediate,(NhlPointer) 0},
 {NhlNlgBoxLineDashLengthF, NhlClgBoxLineDashLengthF, NhlTFloat, 
 	 sizeof(float), 
-	 NhlOffset(LegendLayerRec,legend.box_line_dash_length),
+	 NhlOffset(NhlLegendLayerRec,legend.box_line_dash_length),
 	 NhlTString,"0.15"},
 
 {NhlNlgDrawPerim, NhlClgDrawPerim, NhlTInteger, 
-	 sizeof(int), NhlOffset(LegendLayerRec,legend.perim_on),
+	 sizeof(int), NhlOffset(NhlLegendLayerRec,legend.perim_on),
 	 NhlTImmediate,(NhlPointer) 1},
 {NhlNlgPerimColor, NhlClgPerimColor, NhlTInteger, 
-	 sizeof(int), NhlOffset(LegendLayerRec,legend.perim_color),
+	 sizeof(int), NhlOffset(NhlLegendLayerRec,legend.perim_color),
 	 NhlTImmediate,(NhlPointer) NhlLG_DEF_COLOR},
 {NhlNlgPerimFill, NhlClgPerimFill, NhlTInteger, 
-	 sizeof(int), NhlOffset(LegendLayerRec,legend.perim_fill),
+	 sizeof(int), NhlOffset(NhlLegendLayerRec,legend.perim_fill),
 	 NhlTImmediate,(NhlPointer) NhlHOLLOWFILL},
 {NhlNlgPerimFillColor, NhlClgPerimFillColor, NhlTInteger, 
-	 sizeof(int), NhlOffset(LegendLayerRec,legend.perim_fill_color),
+	 sizeof(int), NhlOffset(NhlLegendLayerRec,legend.perim_fill_color),
 	 NhlTImmediate,(NhlPointer) NhlLG_DEF_COLOR},
 {NhlNlgPerimThicknessF, NhlClgPerimThicknessF, NhlTFloat, 
 	 sizeof(float), 
-	 NhlOffset(LegendLayerRec,legend.perim_thickness),
+	 NhlOffset(NhlLegendLayerRec,legend.perim_thickness),
 	 NhlTString,"1.0"},
 {NhlNlgPerimDashPattern, NhlClgPerimDashPattern, NhlTInteger, 
 	 sizeof(int), 
-	 NhlOffset(LegendLayerRec,legend.perim_dash_pattern),
+	 NhlOffset(NhlLegendLayerRec,legend.perim_dash_pattern),
 	 NhlTImmediate,(NhlPointer) 0},
 {NhlNlgPerimDashLengthF, NhlClgPerimDashLengthF, NhlTFloat, 
 	 sizeof(float), 
-	 NhlOffset(LegendLayerRec,legend.perim_dash_length),
+	 NhlOffset(NhlLegendLayerRec,legend.perim_dash_length),
 	 NhlTString,"0.15"},
 
 };
@@ -287,9 +284,9 @@ static NhlResource resources[] = {
 
 static NhlErrorTypes    LegendInitialize(
 #ifdef NhlNeedProto
-        LayerClass,     /* class */
-        Layer,          /* req */
-        Layer,          /* new */
+        NhlLayerClass,     /* class */
+        NhlLayer,          /* req */
+        NhlLayer,          /* new */
         _NhlArgList,    /* args */
         int             /* num_args */
 #endif
@@ -297,9 +294,9 @@ static NhlErrorTypes    LegendInitialize(
 
 static NhlErrorTypes LegendSetValues(
 #ifdef NhlNeedProto
-        Layer,          /* old */
-        Layer,          /* reference */
-        Layer,          /* new */
+        NhlLayer,          /* old */
+        NhlLayer,          /* reference */
+        NhlLayer,          /* new */
         _NhlArgList,    /* args */
         int             /* num_args*/
 #endif
@@ -307,7 +304,7 @@ static NhlErrorTypes LegendSetValues(
 
 static NhlErrorTypes 	LegendGetValues(
 #ifdef NhlNeedProto
-	Layer,		/* l */
+	NhlLayer,		/* l */
 	_NhlArgList, 	/* args */
 	int		/* num_args */
 #endif
@@ -315,13 +312,13 @@ static NhlErrorTypes 	LegendGetValues(
 
 static NhlErrorTypes	LegendDraw(
 #ifdef NhlNeedProto
-        Layer   /* layer */
+        NhlLayer   /* layer */
 #endif
 );
 
 static NhlErrorTypes	LegendDestroy(
 #ifdef NhlNeedProto
-        Layer           /* inst */
+        NhlLayer           /* inst */
 #endif
 );
 
@@ -333,8 +330,8 @@ static NhlErrorTypes 	LegendClassInitialize();
 
 static NhlErrorTypes    InitializeDynamicArrays(
 #ifdef NhlNeedProto
-	Layer,		/* new		*/ 
-	Layer,		/* old		*/
+	NhlLayer,		/* new		*/ 
+	NhlLayer,		/* old		*/
 	_NhlArgList,	/* args		*/
 	int		/* num_args	*/
 #endif
@@ -342,8 +339,8 @@ static NhlErrorTypes    InitializeDynamicArrays(
 
 static NhlErrorTypes    ManageDynamicArrays(
 #ifdef NhlNeedProto
-	Layer,		/* new		*/ 
-	Layer,		/* old		*/
+	NhlLayer,		/* new		*/ 
+	NhlLayer,		/* old		*/
 	_NhlArgList,	/* args		*/
 	int		/* num_args	*/
 #endif
@@ -351,7 +348,7 @@ static NhlErrorTypes    ManageDynamicArrays(
 
 static NhlErrorTypes    SetLegendGeometry(
 #ifdef NhlNeedProto
-	Layer,		/* new		*/ 
+	NhlLayer,		/* new		*/ 
 	_NhlArgList,	/* args		*/
 	int		/* num_args	*/
 #endif
@@ -359,8 +356,8 @@ static NhlErrorTypes    SetLegendGeometry(
 
 static NhlErrorTypes    SetTitle(
 #ifdef NhlNeedProto
-	Layer,		/* new		*/ 
-	Layer,		/* old		*/
+	NhlLayer,		/* new		*/ 
+	NhlLayer,		/* old		*/
 	int,            /* init         */
 	_NhlArgList,	/* args		*/
 	int		/* num_args	*/
@@ -369,8 +366,8 @@ static NhlErrorTypes    SetTitle(
 
 static NhlErrorTypes    SetBoxLocations(
 #ifdef NhlNeedProto
-	Layer,		/* new		*/ 
-	Layer,		/* old		*/
+	NhlLayer,		/* new		*/ 
+	NhlLayer,		/* old		*/
 	int,            /* init         */
 	_NhlArgList,	/* args		*/
 	int		/* num_args	*/
@@ -398,8 +395,8 @@ static void CreateIntermediates(
 
 static NhlErrorTypes    SetLabels(
 #ifdef NhlNeedProto
-	Layer,		/* new		*/ 
-	Layer,		/* old		*/
+	NhlLayer,		/* new		*/ 
+	NhlLayer,		/* old		*/
 	int,            /* init         */
 	_NhlArgList,	/* args		*/
 	int		/* num_args	*/
@@ -409,7 +406,7 @@ static NhlErrorTypes    SetLabels(
 
 static NhlErrorTypes   	AdjustLabels(
 #ifdef NhlNeedProto
-	LegendLayerPart *lg_p,
+	NhlLegendLayerPart *lg_p,
 	float		height,
 	float		avail_space,
 	int		max_strlen,
@@ -420,8 +417,8 @@ static NhlErrorTypes   	AdjustLabels(
 
 static NhlErrorTypes    AdjustGeometry(
 #ifdef NhlNeedProto
-	Layer,		/* new		*/ 
-	Layer,		/* old		*/
+	NhlLayer,		/* new		*/ 
+	NhlLayer,		/* old		*/
 	int,            /* init         */
 	_NhlArgList,	/* args		*/
 	int		/* num_args	*/
@@ -436,13 +433,13 @@ static NhlGenArray GenArraySubsetCopy(
 #endif
 );
 
-LegendLayerClassRec legendLayerClassRec = {
+NhlLegendLayerClassRec NhllegendLayerClassRec = {
 	{
 /* class_name			*/	"Legend",
 /* nrm_class			*/	NrmNULLQUARK,
-/* layer_size			*/	sizeof(LegendLayerRec),
+/* layer_size			*/	sizeof(NhlLegendLayerRec),
 /* class_inited			*/	False,
-/* superclass			*/	(LayerClass)&viewLayerClassRec,
+/* superclass			*/	(NhlLayerClass)&NhlviewLayerClassRec,
 
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
@@ -475,7 +472,7 @@ LegendLayerClassRec legendLayerClassRec = {
 	}
 };
 
-LayerClass legendLayerClass = (LayerClass)&legendLayerClassRec;
+NhlLayerClass NhllegendLayerClass = (NhlLayerClass)&NhllegendLayerClassRec;
 
 static NrmQuark	Qfloat = NrmNULLQUARK;
 static NrmQuark Qint = NrmNULLQUARK;
@@ -511,23 +508,23 @@ static NrmQuark	Qitem_positions = NrmNULLQUARK;
 /*ARGSUSED*/
 static NhlErrorTypes    LegendInitialize
 #if __STDC__
-	(LayerClass class, 
-	 Layer req, 
-	 Layer new, 
+	(NhlLayerClass class, 
+	 NhlLayer req, 
+	 NhlLayer new, 
 	 _NhlArgList args,
 	 int num_args)
 #else
 (class,req,new,args,num_args)
-	LayerClass	class;
-	Layer		req;
-	Layer		new;
+	NhlLayerClass	class;
+	NhlLayer		req;
+	NhlLayer		new;
 	_NhlArgList	args;
 	int		num_args;
 #endif
 {
-	LegendLayer	tnew = (LegendLayer) new;
-	LegendLayerPart *lg_p = &(tnew->legend);
-	NhlErrorTypes	ret=NOERROR,ret1 = NOERROR;
+	NhlLegendLayer	tnew = (NhlLegendLayer) new;
+	NhlLegendLayerPart *lg_p = &(tnew->legend);
+	NhlErrorTypes	ret=NhlNOERROR,ret1 = NhlNOERROR;
 
 	lg_p->labels_id = -1;
 	lg_p->title_id = -1;
@@ -542,8 +539,8 @@ static NhlErrorTypes    LegendInitialize
 	lg_p->title_angle = fmod(lg_p->title_angle,360.0);
 
 	if (lg_p->item_count < 1) {
-		NhlPError(WARNING,E_UNKNOWN,"Minimum box count is 1");
-		ret = WARNING;
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"Minimum box count is 1");
+		ret = NhlWARNING;
 		lg_p->item_count = 1;
 	}
 
@@ -557,11 +554,11 @@ static NhlErrorTypes    LegendInitialize
 		case NhlTOP:
 		case NhlBOTTOM:
 		default:
-			lg_p->title_direction = ACROSS;
+			lg_p->title_direction = NhlACROSS;
 			break;
 		case NhlRIGHT:
 		case NhlLEFT:
-			lg_p->title_direction = DOWN;
+			lg_p->title_direction = NhlDOWN;
 			break;
 		}
 	}
@@ -647,29 +644,29 @@ static NhlErrorTypes    LegendInitialize
 /*ARGSUSED*/
 static NhlErrorTypes LegendSetValues
 #if __STDC__
-	(Layer old,
-	Layer reference,
-	Layer new,
+	(NhlLayer old,
+	NhlLayer reference,
+	NhlLayer new,
 	_NhlArgList args,
 	int num_args)
 #else
 (old,reference,new,args,num_args)
-	Layer	old;
-	Layer	reference;
-	Layer	new;
+	NhlLayer	old;
+	NhlLayer	reference;
+	NhlLayer	new;
 	_NhlArgList	args;
 	int	num_args;
 #endif
 {
-	LegendLayer told = (LegendLayer) old;
-	LegendLayer tnew = (LegendLayer) new;
-	LegendLayerPart *olg_p = &(told->legend);
-	LegendLayerPart *lg_p = &(tnew->legend);
-	NhlErrorTypes ret = NOERROR,ret1 = NOERROR;
+	NhlLegendLayer told = (NhlLegendLayer) old;
+	NhlLegendLayer tnew = (NhlLegendLayer) new;
+	NhlLegendLayerPart *olg_p = &(told->legend);
+	NhlLegendLayerPart *lg_p = &(tnew->legend);
+	NhlErrorTypes ret = NhlNOERROR,ret1 = NhlNOERROR;
 
 	if (lg_p->item_count < 1) {
-		NhlPError(WARNING,E_UNKNOWN,"Minimum box count is 1");
-		ret = WARNING;
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"Minimum box count is 1");
+		ret = NhlWARNING;
 		lg_p->item_count = 1;
 	}
 	
@@ -693,11 +690,11 @@ static NhlErrorTypes LegendSetValues
 		case NhlTOP:
 		case NhlBOTTOM:
 		default:
-			lg_p->title_direction = ACROSS;
+			lg_p->title_direction = NhlACROSS;
 			break;
 		case NhlRIGHT:
 		case NhlLEFT:
-			lg_p->title_direction = DOWN;
+			lg_p->title_direction = NhlDOWN;
 			break;
 		}
 	}
@@ -731,14 +728,14 @@ static NhlErrorTypes LegendSetValues
 
 		if (! _NhlArgIsSet(args,num_args,NhlNlgLabelFontHeightF)) {
 
-			if (lg_p->label_direction == ACROSS)
+			if (lg_p->label_direction == NhlACROSS)
 				lg_p->label_height *= tx;
 			else 
 				lg_p->label_height *= ty;
 		}
 		if (! _NhlArgIsSet(args,num_args,NhlNlgTitleFontHeightF)) {
 
-			if (lg_p->title_direction == ACROSS)
+			if (lg_p->title_direction == NhlACROSS)
 				lg_p->label_height *= tx;
 			else
 				lg_p->label_height *= ty;
@@ -794,21 +791,21 @@ static NhlErrorTypes LegendSetValues
 /*ARGSUSED*/
 static NhlErrorTypes    InitializeDynamicArrays
 #if __STDC__
-	(Layer		new, 
-	Layer		old,
+	(NhlLayer		new, 
+	NhlLayer		old,
 	_NhlArgList	args,
 	int		num_args)
 #else
 (new,old,args,num_args)
-	Layer		new;
-	Layer		old;
+	NhlLayer		new;
+	NhlLayer		old;
 	_NhlArgList	args;
 	int		num_args;
 #endif
 {
-	LegendLayer	tnew = (LegendLayer) new;
-	LegendLayerPart *lg_p = &(tnew->legend);
-	NhlErrorTypes ret = NOERROR, ret_1;
+	NhlLegendLayer	tnew = (NhlLegendLayer) new;
+	NhlLegendLayerPart *lg_p = &(tnew->legend);
+	NhlErrorTypes ret = NhlNOERROR, ret_1;
 	int i,count;
 	int len_1, len_2;
 	char number[10];
@@ -829,9 +826,9 @@ static NhlErrorTypes    InitializeDynamicArrays
 	count = MAX(lg_p->item_count, NhlLG_DEF_ITEM_COUNT);
 	if ((i_p = (int *) NhlMalloc(count * sizeof(int))) == NULL) {
 		e_text = "%s: error creating %s array";
-		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
 			  NhlNlgItemTypes);
-		return FATAL;
+		return NhlFATAL;
 	}
 	for (i=0; i < count; i++) 
 		i_p[i] = NhlLG_LINES;
@@ -839,9 +836,9 @@ static NhlErrorTypes    InitializeDynamicArrays
 	if ((ga = NhlCreateGenArray((NhlPointer)i_p,NhlTInteger,
 				    sizeof(int),1,&count)) == NULL) {
 		e_text = "%s: error creating %s GenArray";
-		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
 			  NhlNlgItemTypes);
-		return FATAL;
+		return NhlFATAL;
 	}
 	ga->my_data = True;
 
@@ -852,7 +849,7 @@ static NhlErrorTypes    InitializeDynamicArrays
 						  NhlLG_MAX_ITEMS,True,False,
 						  NhlNlgItemTypes, entry_name);
 		
-		if ((ret = MIN(ret,ret_1)) < WARNING) 
+		if ((ret = MIN(ret,ret_1)) < NhlWARNING) 
 				return ret;
 	}
 	lg_p->item_types = ga;
@@ -864,9 +861,9 @@ static NhlErrorTypes    InitializeDynamicArrays
 		if (i_p[i] != NhlLG_LINES && i_p[i] != NhlLG_MARKERS) {
 			e_text =
 	       "%s: %s index %d holds an invalid item type: defaulting";
-			NhlPError(WARNING,E_UNKNOWN,e_text,entry_name,
+			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
 				  NhlNlgItemTypes, i);
-		        ret = MIN(ret, WARNING);
+		        ret = MIN(ret, NhlWARNING);
 			i_p[i] = NhlLG_LINES;
 		}
 	}
@@ -879,7 +876,7 @@ static NhlErrorTypes    InitializeDynamicArrays
  * to pass in an artificial default value to the Validated copy routine
  */
 
-	NhlGetValues(tnew->base.wkptr->base.id,
+	NhlVAGetValues(tnew->base.wkptr->base.id,
 		     NhlNwkDashTableLength, &len_1,
 		     NhlNwkMarkerTableLength, &len_2, NULL);
 
@@ -908,9 +905,9 @@ static NhlErrorTypes    InitializeDynamicArrays
 	if ((ga = NhlCreateGenArray((NhlPointer)i_p,NhlTInteger,
 				    sizeof(int),1,&count)) == NULL) {
 		e_text = "%s: error creating %s GenArray";
-		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
 			  NhlNlgItemColors);
-		return FATAL;
+		return NhlFATAL;
 	}
 	ga->my_data = True;
 
@@ -920,7 +917,7 @@ static NhlErrorTypes    InitializeDynamicArrays
 						  NhlNlgItemIndexes, 
 						  entry_name);
 		
-		if ((ret = MIN(ret,ret_1)) < WARNING) 
+		if ((ret = MIN(ret,ret_1)) < NhlWARNING) 
 				return ret;
 	}
 	lg_p->item_indexes = ga; 
@@ -969,9 +966,9 @@ static NhlErrorTypes    InitializeDynamicArrays
 	if ((s_p = (NhlString *) 
 	     NhlMalloc(count * sizeof(NhlString))) == NULL) {
 		e_text = "%s: error creating %s array";
-		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
 			  NhlNlgItemStrings);
-		return FATAL;
+		return NhlFATAL;
 	}
 	for (i=0;i<count;i++) {
 		sprintf(number,"%d",i);
@@ -979,9 +976,9 @@ static NhlErrorTypes    InitializeDynamicArrays
 		     NhlMalloc(strlen(NhlLG_DEF_ITEM_STRING) + 
 			       strlen(number) + 1)) == NULL) {
 			e_text = "%s: error creating %s string";
-			NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
 				  NhlNlgItemStrings);
-			return FATAL;
+			return NhlFATAL;
 		}
 		strcpy(s_p[i], 
 		       (Const char *)NhlLG_DEF_ITEM_STRING);
@@ -991,9 +988,9 @@ static NhlErrorTypes    InitializeDynamicArrays
 	if ((ga = NhlCreateGenArray((NhlPointer)s_p,NhlTString,
 				    sizeof(NhlString),1,&count)) == NULL) {
 		e_text = "%s: error creating %s GenArray";
-		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
 			  NhlNlgItemStrings);
-		return FATAL;
+		return NhlFATAL;
 	}
 	ga->my_data = True;
 
@@ -1006,7 +1003,7 @@ static NhlErrorTypes    InitializeDynamicArrays
 						  NhlNlgItemStrings, 
 						  entry_name);
 		
-		if ((ret = MIN(ret,ret_1)) < WARNING) 
+		if ((ret = MIN(ret,ret_1)) < NhlWARNING) 
 				return ret;
 	}
 	lg_p->item_strings = ga;
@@ -1029,14 +1026,14 @@ static NhlErrorTypes    InitializeDynamicArrays
  * workstation index into a GKS index, and copy into the GKS array.
  */
 
-	NhlGetValues(tnew->base.wkptr->base.id,
+	NhlVAGetValues(tnew->base.wkptr->base.id,
 		     NhlNwkColorMapLen, &len_1, NULL);
 	count = MAX(lg_p->item_count, NhlLG_DEF_ITEM_COUNT);
 	if ((i_p = (int *) NhlMalloc(count * sizeof(int))) == NULL) {
 		e_text = "%s: error creating %s array";
-		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
 			  NhlNlgItemColors);
-		return FATAL;
+		return NhlFATAL;
 	}
 	for (i=0; i < NhlLG_DEF_ITEM_COUNT; i++) 
 		i_p[i] = def_colors[i];
@@ -1046,9 +1043,9 @@ static NhlErrorTypes    InitializeDynamicArrays
 	if ((ga = NhlCreateGenArray((NhlPointer)i_p,NhlTInteger,
 				    sizeof(int),1,&count)) == NULL) {
 		e_text = "%s: error creating %s GenArray";
-		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
 			  NhlNlgItemColors);
-		return FATAL;
+		return NhlFATAL;
 	}
 	ga->my_data = True;
 
@@ -1058,7 +1055,7 @@ static NhlErrorTypes    InitializeDynamicArrays
 						  NhlNlgItemColors, 
 						  entry_name);
 		
-		if ((ret = MIN(ret,ret_1)) < WARNING) 
+		if ((ret = MIN(ret,ret_1)) < NhlWARNING) 
 				return ret;
 	}
 	lg_p->item_colors = ga;
@@ -1069,17 +1066,17 @@ static NhlErrorTypes    InitializeDynamicArrays
 	if ((lg_p->gks_colors = 
 	     (int *) NhlMalloc(count * sizeof(int))) == NULL) {
 		e_text = "%s: error creating private storage array";
-		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name);
-		return FATAL;
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
 	}
 
 	for (i=0; i<count; i++) {
 		if (i_p[i] < 0 || i_p[i] > len_1) {
 			e_text =
 	       "%s: %s index %d holds an invalid color value, %d: defaulting";
-			NhlPError(WARNING,E_UNKNOWN,e_text,entry_name,
+			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
 				  NhlNlgItemColors, i, i_p[i]);
-		        ret = MIN(ret, WARNING);
+		        ret = MIN(ret, NhlWARNING);
 			i_p[i] = NhlLG_DEF_COLOR;
 		}
 		lg_p->gks_colors[i] =
@@ -1093,9 +1090,9 @@ static NhlErrorTypes    InitializeDynamicArrays
 	count = MAX(lg_p->item_count, NhlLG_DEF_ITEM_COUNT);
 	if ((f_p = (float *) NhlMalloc(count * sizeof(float))) == NULL) {
 		e_text = "%s: error creating %s array";
-		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
 			  NhlNlgItemThicknesses);
-		return FATAL;
+		return NhlFATAL;
 	}
 	for (i=0; i < count; i++) 
 		f_p[i] = 1.0;
@@ -1103,9 +1100,9 @@ static NhlErrorTypes    InitializeDynamicArrays
 	if ((ga = NhlCreateGenArray((NhlPointer)f_p,NhlTFloat,
 				    sizeof(float),1,&count)) == NULL) {
 		e_text = "%s: error creating %s GenArray";
-		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
 			  NhlNlgItemThicknesses);
-		return FATAL;
+		return NhlFATAL;
 	}
 	ga->my_data = True;
 
@@ -1118,7 +1115,7 @@ static NhlErrorTypes    InitializeDynamicArrays
 						  NhlNlgItemThicknesses, 
 						  entry_name);
 		
-		if ((ret = MIN(ret,ret_1)) < WARNING) 
+		if ((ret = MIN(ret,ret_1)) < NhlWARNING) 
 				return ret;
 	}
 	lg_p->item_thicknesses = ga;
@@ -1130,9 +1127,9 @@ static NhlErrorTypes    InitializeDynamicArrays
 		if (f_p[i] <= 0.0) {
 			e_text =
 	       "%s: %s index %d holds an invalid item thickness: defaulting";
-			NhlPError(WARNING,E_UNKNOWN,e_text,entry_name,
+			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
 				  NhlNlgItemThicknesses, i);
-		        ret = MIN(ret, WARNING);
+		        ret = MIN(ret, NhlWARNING);
 			f_p[i] = 1.0;
 		}
 	}
@@ -1144,9 +1141,9 @@ static NhlErrorTypes    InitializeDynamicArrays
 	count = MAX(lg_p->item_count, NhlLG_DEF_ITEM_COUNT);
 	if ((f_p = (float *) NhlMalloc(count * sizeof(float))) == NULL) {
 		e_text = "%s: error creating %s array";
-		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
 			  NhlNlgItemTextHeights);
-		return FATAL;
+		return NhlFATAL;
 	}
 	for (i=0; i < count; i++) 
 		f_p[i] = 0.01;
@@ -1154,9 +1151,9 @@ static NhlErrorTypes    InitializeDynamicArrays
 	if ((ga = NhlCreateGenArray((NhlPointer)f_p,NhlTFloat,
 				    sizeof(float),1,&count)) == NULL) {
 		e_text = "%s: error creating %s GenArray";
-		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
 			  NhlNlgItemTextHeights);
-		return FATAL;
+		return NhlFATAL;
 	}
 	ga->my_data = True;
 
@@ -1169,7 +1166,7 @@ static NhlErrorTypes    InitializeDynamicArrays
 						  NhlNlgItemTextHeights, 
 						  entry_name);
 		
-		if ((ret = MIN(ret,ret_1)) < WARNING) 
+		if ((ret = MIN(ret,ret_1)) < NhlWARNING) 
 				return ret;
 	}
 	lg_p->item_text_heights = ga;
@@ -1181,9 +1178,9 @@ static NhlErrorTypes    InitializeDynamicArrays
 		if (f_p[i] <= 0.0) {
 			e_text =
 	       "%s: %s index %d holds an invalid item thickness: defaulting";
-			NhlPError(WARNING,E_UNKNOWN,e_text,entry_name,
+			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
 				  NhlNlgItemTextHeights, i);
-		        ret = MIN(ret, WARNING);
+		        ret = MIN(ret, NhlWARNING);
 			f_p[i] = 0.01;
 		}
 	}
@@ -1206,9 +1203,9 @@ static NhlErrorTypes    InitializeDynamicArrays
 	if ((s_p = (NhlString *) 
 	     NhlMalloc(count * sizeof(NhlString))) == NULL) {
 		e_text = "%s: error creating %s array";
-		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
 			  NhlNlgLabelStrings);
-		return FATAL;
+		return NhlFATAL;
 	}
 	for (i=0;i<count;i++) {
 		sprintf(number,"%d",i);
@@ -1216,9 +1213,9 @@ static NhlErrorTypes    InitializeDynamicArrays
 		     NhlMalloc(strlen(NhlLG_DEF_STRING) + 
 			       strlen(number) + 1)) == NULL) {
 			e_text = "%s: error creating %s string";
-			NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
 				  NhlNlgLabelStrings);
-			return FATAL;
+			return NhlFATAL;
 		}
 		strcpy(s_p[i], NhlLG_DEF_STRING);
 		strcat(s_p[i], number);
@@ -1227,9 +1224,9 @@ static NhlErrorTypes    InitializeDynamicArrays
 	if ((ga = NhlCreateGenArray((NhlPointer)s_p,NhlTString,
 				    sizeof(NhlString),1,&count)) == NULL) {
 		e_text = "%s: error creating %s GenArray";
-		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
 			  NhlNlgLabelStrings);
-		return FATAL;
+		return NhlFATAL;
 	}
 	ga->my_data = True;
 
@@ -1242,7 +1239,7 @@ static NhlErrorTypes    InitializeDynamicArrays
 						  NhlNlgLabelStrings, 
 						  entry_name);
 		
-		if ((ret = MIN(ret,ret_1)) < WARNING) 
+		if ((ret = MIN(ret,ret_1)) < NhlWARNING) 
 				return ret;
 	}
 	lg_p->label_strings = ga;
@@ -1262,9 +1259,9 @@ static NhlErrorTypes    InitializeDynamicArrays
 	count = MAX(lg_p->item_count, NhlLG_DEF_ITEM_COUNT);
 	if ((f_p = (float *) NhlMalloc(count * sizeof(float))) == NULL) {
 		e_text = "%s: error creating %s array";
-		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
 			  NhlNlgItemPositions);
-		return FATAL;
+		return NhlFATAL;
 	}
 	
 	tfloat = 1.0/((float) lg_p->item_count);
@@ -1276,9 +1273,9 @@ static NhlErrorTypes    InitializeDynamicArrays
 	if ((ga = NhlCreateGenArray((NhlPointer)f_p,NhlTFloat,
 				    sizeof(float),1,&count)) == NULL) {
 		e_text = "%s: error creating %s GenArray";
-		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
 			  NhlNlgItemPositions);
-		return FATAL;
+		return NhlFATAL;
 	}
 	ga->my_data = True;
 		
@@ -1291,7 +1288,7 @@ static NhlErrorTypes    InitializeDynamicArrays
 						  NhlNlgItemPositions, 
 						  entry_name);
 		
-		if ((ret = MIN(ret,ret_1)) < WARNING) 
+		if ((ret = MIN(ret,ret_1)) < NhlWARNING) 
 				return ret;
 	}
 	lg_p->item_positions = ga;
@@ -1328,23 +1325,23 @@ static NhlErrorTypes    InitializeDynamicArrays
 /*ARGSUSED*/
 static NhlErrorTypes    ManageDynamicArrays
 #if __STDC__
-	(Layer		new, 
-	Layer		old,
+	(NhlLayer		new, 
+	NhlLayer		old,
 	_NhlArgList	args,
 	int		num_args)
 #else
 (new,old,args,num_args)
-	Layer		new;
-	Layer		old;
+	NhlLayer		new;
+	NhlLayer		old;
 	_NhlArgList	args;
 	int		num_args;
 #endif
 {
-	LegendLayer	tnew = (LegendLayer) new;
-	LegendLayer	told = (LegendLayer) old;
-	LegendLayerPart *lg_p = &(tnew->legend);
-	LegendLayerPart *olg_p = &(told->legend);
-	NhlErrorTypes ret = NOERROR, ret_1 = NOERROR;
+	NhlLegendLayer	tnew = (NhlLegendLayer) new;
+	NhlLegendLayer	told = (NhlLegendLayer) old;
+	NhlLegendLayerPart *lg_p = &(tnew->legend);
+	NhlLegendLayerPart *olg_p = &(told->legend);
+	NhlErrorTypes ret = NhlNOERROR, ret_1 = NhlNOERROR;
 	int i;
 	int count, len_1, len_2;
 	char number[10];
@@ -1370,7 +1367,7 @@ static NhlErrorTypes    ManageDynamicArrays
 						  NhlLG_MAX_ITEMS,True,False,
 						  NhlNlgItemTypes, entry_name);
 		
-		if ((ret = MIN(ret,ret_1)) < WARNING) 
+		if ((ret = MIN(ret,ret_1)) < NhlWARNING) 
 				return ret;
 		lg_p->item_types = olg_p->item_types;
 		i_p = (int *) lg_p->item_types->data;
@@ -1380,9 +1377,9 @@ static NhlErrorTypes    ManageDynamicArrays
 			    i_p[i] != NhlLG_MARKERS) {
 				e_text =
 		"%s: %s index %d holds an invalid type value: defaulting";
-				NhlPError(WARNING,E_UNKNOWN,e_text,entry_name,
+				NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
 					  NhlNlgItemTypes, i);
-				ret = MIN(ret, WARNING);
+				ret = MIN(ret, NhlWARNING);
 				i_p[i] = NhlLG_LINES;
 			}
 		}
@@ -1393,9 +1390,9 @@ static NhlErrorTypes    ManageDynamicArrays
 		if ((i_p = (int *)
 		     NhlRealloc(i_p, count * sizeof (int))) == NULL) {
 			e_text = "%s: error allocating %s data";
-			NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
 				  NhlNlgItemTypes);
-			return FATAL;
+			return NhlFATAL;
 		}
 		for (i=lg_p->item_types->num_elements; i<count; i++) {
 			i_p[i] = NhlLG_LINES;
@@ -1425,11 +1422,11 @@ static NhlErrorTypes    ManageDynamicArrays
 						  NhlNlgItemIndexes,
 						  entry_name);
 		
-		if ((ret = MIN(ret,ret_1)) < WARNING) 
+		if ((ret = MIN(ret,ret_1)) < NhlWARNING) 
 				return ret;
 
 		lg_p->item_indexes = olg_p->item_indexes;
-		NhlGetValues(tnew->base.wkptr->base.id,
+		NhlVAGetValues(tnew->base.wkptr->base.id,
 			     NhlNwkDashTableLength, &len_1,
 			     NhlNwkMarkerTableLength, &len_2, NULL);
 		i_p = (int *) lg_p->item_indexes->data;
@@ -1465,9 +1462,9 @@ static NhlErrorTypes    ManageDynamicArrays
 		     NhlRealloc(i_p, 
 				lg_p->item_count * sizeof (int))) == NULL) {
 			e_text = "%s: error allocating %s data";
-			NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
 				  NhlNlgItemIndexes);
-			return FATAL;
+			return NhlFATAL;
 		}
 		for (i=count;i<lg_p->item_count;i++) 
 			i_p[i] = i + 1;
@@ -1495,7 +1492,7 @@ static NhlErrorTypes    ManageDynamicArrays
 						  NhlNlgItemStrings,
 						  entry_name);
 		
-		if ((ret = MIN(ret,ret_1)) < WARNING) 
+		if ((ret = MIN(ret,ret_1)) < NhlWARNING) 
 				return ret;
 		lg_p->item_strings = olg_p->item_strings;
 	}
@@ -1506,9 +1503,9 @@ static NhlErrorTypes    ManageDynamicArrays
 		     NhlRealloc(s_p, lg_p->item_count * 
 				sizeof (NhlString))) == NULL) {
 			e_text = "%s: error allocating %s data";
-			NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
 				  NhlNlgItemStrings);
-			return FATAL;
+			return NhlFATAL;
 		}
 		for (i=lg_p->item_strings->num_elements; 
 		     i<lg_p->item_count; i++) {
@@ -1517,9 +1514,9 @@ static NhlErrorTypes    ManageDynamicArrays
 			     NhlMalloc(strlen(NhlLG_DEF_ITEM_STRING) + 
 				       strlen(number) + 1)) == NULL) {
 				e_text = "%s: error creating %s string";
-				NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+				NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
 					  NhlNlgItemStrings);
-				return FATAL;
+				return NhlFATAL;
 			}
 			strcpy(s_p[i],(Const char *)NhlLG_DEF_ITEM_STRING);
 			strcat(s_p[i],number);
@@ -1537,7 +1534,7 @@ static NhlErrorTypes    ManageDynamicArrays
  * the array and give initial values to the new elements.
  */
 
-	NhlGetValues(tnew->base.wkptr->base.id,
+	NhlVAGetValues(tnew->base.wkptr->base.id,
 		     NhlNwkColorMapLen, &len_1, NULL);
 	count = lg_p->mono_item_color ? 1 : lg_p->item_count;
 
@@ -1548,7 +1545,7 @@ static NhlErrorTypes    ManageDynamicArrays
 						  NhlNlgItemColors, 
 						  entry_name);
 		
-		if ((ret = MIN(ret,ret_1)) < WARNING) 
+		if ((ret = MIN(ret,ret_1)) < NhlWARNING) 
 				return ret;
 		lg_p->item_colors = olg_p->item_colors;
 		i_p = (int *) lg_p->item_colors->data;
@@ -1557,9 +1554,9 @@ static NhlErrorTypes    ManageDynamicArrays
 			if (i_p[i] < 0 || i_p[i] > len_1) {
 				e_text =
 		"%s: %s index %d holds an invalid color value, %d: defaulting";
-				NhlPError(WARNING,E_UNKNOWN,e_text,entry_name,
+				NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
 					  NhlNlgItemColors, i, i_p[i]);
-				ret = MIN(ret, WARNING);
+				ret = MIN(ret, NhlWARNING);
 				i_p[i] = NhlLG_DEF_COLOR;
 			}
 			lg_p->gks_colors[i] =
@@ -1572,17 +1569,17 @@ static NhlErrorTypes    ManageDynamicArrays
 		if ((i_p = (int *)
 		     NhlRealloc(i_p, count * sizeof (int))) == NULL) {
 			e_text = "%s: error allocating %s data";
-			NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
 				  NhlNlgItemColors);
-			return FATAL;
+			return NhlFATAL;
 		}
 		if ((lg_p->gks_colors = (int *)
 		     NhlRealloc(lg_p->gks_colors, 
 				count * sizeof (int))) == NULL) {
 			e_text = "%s: error allocating private %s data";
-			NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
 				  NhlNlgItemColors);
-			return FATAL;
+			return NhlFATAL;
 		}
 		for (i=lg_p->item_colors->num_elements; i<count; i++) {
 			i_p[i] = i < len_1 ? i : NhlLG_DEF_COLOR;
@@ -1608,7 +1605,7 @@ static NhlErrorTypes    ManageDynamicArrays
 						  NhlNlgItemThicknesses, 
 						  entry_name);
 		
-		if ((ret = MIN(ret,ret_1)) < WARNING) 
+		if ((ret = MIN(ret,ret_1)) < NhlWARNING) 
 				return ret;
 		lg_p->item_thicknesses = olg_p->item_thicknesses;
 		f_p = (float *) lg_p->item_thicknesses->data;
@@ -1618,9 +1615,9 @@ static NhlErrorTypes    ManageDynamicArrays
 			if (f_p[i] <= 0.0) {
 				e_text =
         "%s: %s index %d holds an invalid item thickness value: defaulting";
-				NhlPError(WARNING,E_UNKNOWN,e_text,entry_name,
+				NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
 					  NhlNlgItemThicknesses, i);
-				ret = MIN(ret, WARNING);
+				ret = MIN(ret, NhlWARNING);
 				f_p[i] = 1.0;
 			}
 		}
@@ -1631,9 +1628,9 @@ static NhlErrorTypes    ManageDynamicArrays
 		if ((f_p = (float *)
 		     NhlRealloc(f_p, count * sizeof (float))) == NULL) {
 			e_text = "%s: error allocating %s data";
-			NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
 				  NhlNlgItemThicknesses);
-			return FATAL;
+			return NhlFATAL;
 		}
 		for (i=lg_p->item_thicknesses->num_elements; i<count; i++) {
 			f_p[i] = 1.0;
@@ -1656,7 +1653,7 @@ static NhlErrorTypes    ManageDynamicArrays
 						  NhlNlgItemTextHeights, 
 						  entry_name);
 		
-		if ((ret = MIN(ret,ret_1)) < WARNING) 
+		if ((ret = MIN(ret,ret_1)) < NhlWARNING) 
 				return ret;
 		lg_p->item_text_heights = olg_p->item_text_heights;
 		f_p = (float *) lg_p->item_text_heights->data;
@@ -1666,9 +1663,9 @@ static NhlErrorTypes    ManageDynamicArrays
 			if (f_p[i] <= 0.0) {
 				e_text =
         "%s: %s index %d holds an invalid item thickness value: defaulting";
-				NhlPError(WARNING,E_UNKNOWN,e_text,entry_name,
+				NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
 					  NhlNlgItemTextHeights, i);
-				ret = MIN(ret, WARNING);
+				ret = MIN(ret, NhlWARNING);
 				f_p[i] = 0.01;
 			}
 		}
@@ -1679,9 +1676,9 @@ static NhlErrorTypes    ManageDynamicArrays
 		if ((f_p = (float *)
 		     NhlRealloc(f_p, count * sizeof (float))) == NULL) {
 			e_text = "%s: error allocating %s data";
-			NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
 				  NhlNlgItemTextHeights);
-			return FATAL;
+			return NhlFATAL;
 		}
 		for (i=lg_p->item_text_heights->num_elements; i<count; i++) {
 			f_p[i] = 0.01;
@@ -1710,7 +1707,7 @@ static NhlErrorTypes    ManageDynamicArrays
 						  NhlNlgLabelStrings, 
 						  entry_name);
 		
-		if ((ret = MIN(ret,ret_1)) < WARNING) 
+		if ((ret = MIN(ret,ret_1)) < NhlWARNING) 
 				return ret;
 		lg_p->label_strings = olg_p->label_strings;
 	}
@@ -1721,9 +1718,9 @@ static NhlErrorTypes    ManageDynamicArrays
 		     NhlRealloc(s_p, lg_p->item_count * 
 				sizeof (NhlString))) == NULL) {
 			e_text = "%s: error allocating %s data";
-			NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
 				  NhlNlgLabelStrings);
-			return FATAL;
+			return NhlFATAL;
 		}
 		for (i=lg_p->label_strings->num_elements; 
 		     i<lg_p->item_count; i++) {
@@ -1732,9 +1729,9 @@ static NhlErrorTypes    ManageDynamicArrays
 			     NhlMalloc(strlen(NhlLG_DEF_STRING) + 
 				       strlen(number) + 1)) == NULL) {
 				e_text = "%s: error creating %s string";
-				NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+				NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
 					  NhlNlgLabelStrings);
-				return FATAL;
+				return NhlFATAL;
 			}
 			strcpy(s_p[i],(Const char *)NhlLG_DEF_STRING);
 			strcat(s_p[i],number);
@@ -1763,7 +1760,7 @@ static NhlErrorTypes    ManageDynamicArrays
 						  NhlNlgItemPositions, 
 						  entry_name);
 		
-		if ((ret = MIN(ret,ret_1)) < WARNING) 
+		if ((ret = MIN(ret,ret_1)) < NhlWARNING) 
 			return ret;
 		lg_p->item_positions = olg_p->item_positions;
 	}
@@ -1774,9 +1771,9 @@ static NhlErrorTypes    ManageDynamicArrays
 		     NhlRealloc(f_p, (lg_p->item_count) * 
 				sizeof (float))) == NULL) {
 			e_text = "%s: error allocating %s data";
-			NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
 				  NhlNlgItemPositions);
-			return FATAL;
+			return NhlFATAL;
 		}
 
 		lg_p->item_positions->data = (NhlPointer) f_p;
@@ -1836,18 +1833,18 @@ static NhlErrorTypes    ManageDynamicArrays
 /*ARGSUSED*/
 static NhlErrorTypes    SetLegendGeometry
 #if __STDC__
-	 (Layer new, 
+	 (NhlLayer new, 
 	 _NhlArgList args,
 	 int num_args)
 #else
 (new,args,num_args)
-	Layer		new;
+	NhlLayer		new;
 	_NhlArgList	args;
 	int		num_args;
 #endif
 {
-	LegendLayer	tnew = (LegendLayer) new;
-	LegendLayerPart *lg_p = &(tnew->legend);
+	NhlLegendLayer	tnew = (NhlLegendLayer) new;
+	NhlLegendLayerPart *lg_p = &(tnew->legend);
 	enum {NO_TITLE, MINOR_AXIS, MAJOR_AXIS} title_loc;
 	float bar_ext, max_title_ext, adj_perim_width, adj_perim_height;
 	float small_axis;
@@ -1871,7 +1868,7 @@ static NhlErrorTypes    SetLegendGeometry
  */
 	if (lg_p->auto_manage && 
 	    lg_p->max_title_ext + lg_p->title_off > 0.5) {
-		/* need a WARNING */
+		/* need a NhlWARNING */
 		lg_p->max_title_ext = NhlLG_DEF_MAX_TITLE_EXT;
 		lg_p->title_off = NhlLG_DEF_TITLE_OFF;
 	}
@@ -1886,7 +1883,7 @@ static NhlErrorTypes    SetLegendGeometry
 		    lg_p->title_pos == NhlLEFT) {
 			title_loc = MAJOR_AXIS;
 			title_off = lg_p->title_off * adj_perim_width;
-			if (lg_p->title_direction == ACROSS)
+			if (lg_p->title_direction == NhlACROSS)
 				angle_adj = adj_perim_height / tan_t;
 			else
 				angle_adj = adj_perim_height * tan_t;
@@ -1895,7 +1892,7 @@ static NhlErrorTypes    SetLegendGeometry
 		else {
 			title_loc = MINOR_AXIS;
 			title_off = lg_p->title_off * adj_perim_height;
-			if (lg_p->title_direction == ACROSS)
+			if (lg_p->title_direction == NhlACROSS)
 				angle_adj = adj_perim_width * tan_t; 
 			else
 				angle_adj = adj_perim_width / tan_t;
@@ -1906,7 +1903,7 @@ static NhlErrorTypes    SetLegendGeometry
 		    lg_p->title_pos == NhlLEFT) {
 			title_loc = MINOR_AXIS;
 			title_off = lg_p->title_off * adj_perim_width;
-			if (lg_p->title_direction == ACROSS)
+			if (lg_p->title_direction == NhlACROSS)
 				angle_adj = adj_perim_height / tan_t;
 			else
 				angle_adj = adj_perim_height * tan_t;
@@ -1914,7 +1911,7 @@ static NhlErrorTypes    SetLegendGeometry
 		else {
 			title_loc = MAJOR_AXIS;
 			title_off = lg_p->title_off * adj_perim_height;
-			if (lg_p->title_direction == ACROSS)
+			if (lg_p->title_direction == NhlACROSS)
 				angle_adj = adj_perim_width * tan_t; 
 			else
 				angle_adj = adj_perim_width / tan_t;
@@ -2053,7 +2050,7 @@ static NhlErrorTypes    SetLegendGeometry
 					angle_adj);
 			if (max_title_ext + title_off + bar_ext > 
 			    adj_perim_height) {
-				/* need a WARNING */
+				/* need a NhlWARNING */
 				printf("adjusting bar size smaller\n");
 				bar_ext = adj_perim_height - 
 					max_title_ext - title_off;
@@ -2103,7 +2100,7 @@ static NhlErrorTypes    SetLegendGeometry
 			break;
 		default:
 			/* need error message */
-			return FATAL;
+			return NhlFATAL;
 		}
 		/* get the box size */
 		
@@ -2203,7 +2200,7 @@ static NhlErrorTypes    SetLegendGeometry
 					angle_adj);
 			if (max_title_ext + title_off + bar_ext > 
 			    adj_perim_width) {
-				/* need a WARNING */
+				/* need a NhlWARNING */
 				printf("adjusting bar size smaller\n");
 				bar_ext = adj_perim_width - 
 					max_title_ext - title_off;
@@ -2254,14 +2251,14 @@ static NhlErrorTypes    SetLegendGeometry
 			break;
 		default:
 			/* need error message */
-			return FATAL;
+			return NhlFATAL;
 		}
 		lg_p->box_size.x = lg_p->bar.r - lg_p->bar.l;
 		lg_p->box_size.y = 
 			(lg_p->bar.t - lg_p->bar.b) / lg_p->item_count;
 	}
 
-	return NOERROR;
+	return NhlNOERROR;
 				
 }
 
@@ -2284,33 +2281,33 @@ static NhlErrorTypes    SetLegendGeometry
  * Return Values:
  *
  * Side Effects: 
- *	Calls to NhlSetValues or NhlCreate modify attributes of the child
+ *	Calls to SetValues or Create modify attributes of the child
  *	text object.
  */
 
 /*ARGSUSED*/
 static NhlErrorTypes    SetTitle
 #if __STDC__
-	(Layer		new, 
-	Layer		old,
+	(NhlLayer		new, 
+	NhlLayer		old,
 	int		init,
 	_NhlArgList	args,
 	int		 num_args)
 #else
 (new,old,init,args,num_args)
-	Layer		new;
-	Layer		old;
+	NhlLayer		new;
+	NhlLayer		old;
 	int		init;
 	_NhlArgList	args;
 	int		num_args;
 #endif
 {
-	LegendLayer	tnew = (LegendLayer) new;
-	LegendLayer	told = (LegendLayer) old;
-	LegendLayerPart *lg_p = &(tnew->legend);
-	LegendLayerPart *olg_p = &(told->legend);
-	NhlErrorTypes ret = NOERROR, ret1 = NOERROR;
-	char buffer[MAXRESNAMLEN];
+	NhlLegendLayer	tnew = (NhlLegendLayer) new;
+	NhlLegendLayer	told = (NhlLegendLayer) old;
+	NhlLegendLayerPart *lg_p = &(tnew->legend);
+	NhlLegendLayerPart *olg_p = &(told->legend);
+	NhlErrorTypes ret = NhlNOERROR, ret1 = NhlNOERROR;
+	char buffer[_NhlMAXRESNAMLEN];
 	char *c_p;
 	NhlBoundingBox titleBB;
 	float w, h, wta, hta, factor, height;
@@ -2397,8 +2394,8 @@ static NhlErrorTypes    SetTitle
 	if (init || lg_p->title_id < 0) {
 		strcpy(buffer,tnew->base.name);
 		strcat(buffer,".Title");
-		ret1 = NhlCreate(&lg_p->title_id,
-				 buffer,textItemLayerClass,
+		ret1 = NhlVACreate(&lg_p->title_id,
+				 buffer,NhltextItemLayerClass,
 				 tnew->base.id,
 				 NhlNtxFont,lg_p->title_font,
 				 NhlNtxString,lg_p->title_string,
@@ -2419,7 +2416,7 @@ static NhlErrorTypes    SetTitle
 		
 	}
 	else {
-		ret1 = NhlSetValues(lg_p->title_id,
+		ret1 = NhlVASetValues(lg_p->title_id,
 				    NhlNtxFont,lg_p->title_font,
 				    NhlNtxString,lg_p->title_string,
 				    NhlNtxPosXF,lg_p->title_x,
@@ -2460,7 +2457,7 @@ static NhlErrorTypes    SetTitle
 		factor = wta / w < hta / h ? wta / w : hta / h;
 		lg_p->title_height = height * factor;
 	}
-	ret1 = NhlSetValues(lg_p->title_id,
+	ret1 = NhlVASetValues(lg_p->title_id,
 			    NhlNtxFontHeightF,lg_p->title_height,
 			    NULL);
 	return MIN(ret1,ret);
@@ -2487,24 +2484,24 @@ static NhlErrorTypes    SetTitle
 static NhlErrorTypes    SetBoxLocations
 #if __STDC__
 (
-	Layer		new, 
-	Layer		old,
+	NhlLayer		new, 
+	NhlLayer		old,
 	int		init,
 	_NhlArgList	args,
 	int		num_args
 )
 #else
 (new,old,init,args,num_args)
-	Layer		new;
-	Layer		old;
+	NhlLayer		new;
+	NhlLayer		old;
 	int		init;
 	_NhlArgList	args;
 	int		num_args;
 #endif
 {
-	LegendLayer	tnew = (LegendLayer) new;
-	LegendLayerPart *lg_p = &(tnew->legend);
-	NhlErrorTypes ret = NOERROR, ret1 = NOERROR;
+	NhlLegendLayer	tnew = (NhlLegendLayer) new;
+	NhlLegendLayerPart *lg_p = &(tnew->legend);
+	NhlErrorTypes ret = NhlNOERROR, ret1 = NhlNOERROR;
 	float bar_len;
 	float box_len;
 	int i;
@@ -2644,7 +2641,7 @@ static NhlErrorTypes    ManageItemPositionsArray
 
 {
 	int i, first_neg = -1;
-	int ret = NOERROR;
+	int ret = NhlNOERROR;
 	float last_val = 0.0, last_good_val = 0.0;
 			
 /*
@@ -2662,9 +2659,9 @@ static NhlErrorTypes    ManageItemPositionsArray
 	if (item_positions[0] < 0.0)
 		first_neg = 0;
 	else if (item_positions[0] > 1.0) {
-		NhlPError(INFO,E_UNKNOWN,
+		NhlPError(NhlINFO,NhlEUNKNOWN,
 			  "Modifying invalid box fraction array element: 0");
-		ret = INFO;
+		ret = NhlINFO;
 		item_positions[0] = -1.0;
 		first_neg = 0;
 	}
@@ -2679,9 +2676,9 @@ static NhlErrorTypes    ManageItemPositionsArray
 		else if (first_neg != -1) {
 			if (item_positions[i] > 1.0 ||
 			    item_positions[i] < last_good_val) {
-				NhlPError(INFO,E_UNKNOWN,
+				NhlPError(NhlINFO,NhlEUNKNOWN,
 		    "Modifying out-of-range box fraction array element: %d",i);
-				ret = INFO;
+				ret = NhlINFO;
 				item_positions[i] = -1.0;
 				last_good_val = last_val;
 				first_neg = i;
@@ -2696,9 +2693,9 @@ static NhlErrorTypes    ManageItemPositionsArray
 		}
 		else if (item_positions[i] > 1.0 ||
 			 (item_positions[i] < last_val)) {
-			NhlPError(INFO,E_UNKNOWN,
+			NhlPError(NhlINFO,NhlEUNKNOWN,
 		    "Modifying out-of-range box fraction array element: %d",i);
-			ret = INFO;
+			ret = NhlINFO;
 			item_positions[i] = -1.0;
 			last_good_val = last_val;
 			first_neg = i;
@@ -2818,24 +2815,24 @@ static void CreateIntermediates
 /*ARGSUSED*/
 static NhlErrorTypes    SetLabels
 #if __STDC__
-	(Layer		new, 
-	Layer		old,
+	(NhlLayer		new, 
+	NhlLayer		old,
 	int		init,
 	_NhlArgList	args,
 	int		num_args)
 #else
 (new,old,init,args,num_args)
-	Layer		new;
-	Layer		old;
+	NhlLayer		new;
+	NhlLayer		old;
 	int		init;
 	_NhlArgList	args;
 	int		num_args;
 #endif
 {
-	LegendLayer	tnew = (LegendLayer) new;
-	LegendLayerPart *lg_p = &(tnew->legend);
-	NhlErrorTypes ret = NOERROR, ret1 = NOERROR;
-	char buffer[MAXRESNAMLEN];
+	NhlLegendLayer	tnew = (NhlLegendLayer) new;
+	NhlLegendLayerPart *lg_p = &(tnew->legend);
+	NhlErrorTypes ret = NhlNOERROR, ret1 = NhlNOERROR;
+	char buffer[_NhlMAXRESNAMLEN];
 	char **labels_p;
 	int count; 
 	int itmp, max_strlen = 0;
@@ -2848,19 +2845,19 @@ static NhlErrorTypes    SetLabels
 	float c_frac = 1.0;
 
 	if (! lg_p->labels_on)
-		return NOERROR;
+		return NhlNOERROR;
 
 /*
  * Determine the multitext orientation and the NDC label offset
  */
 
 	if (lg_p->orient == NhlHORIZONTAL) {
-		mtext_orient = MTEXT_Y_CONST;
+		mtext_orient = NhlMTEXT_Y_CONST;
 		label_offset = lg_p->label_off * 
 			(lg_p->adj_perim.t - lg_p->adj_perim.b);
 	}
 	else {
-		mtext_orient = MTEXT_X_CONST;
+		mtext_orient = NhlMTEXT_X_CONST;
 		label_offset = lg_p->label_off *
 			(lg_p->adj_perim.r - lg_p->adj_perim.l);
 	}
@@ -2972,7 +2969,7 @@ static NhlErrorTypes    SetLabels
 	}
 		
 	if (lg_p->orient == NhlHORIZONTAL && 
-	    lg_p->label_direction == ACROSS) {
+	    lg_p->label_direction == NhlACROSS) {
 
 		char_space = 0.8 * larea.y / (max_strlen + 1.0);
 		avail_char_space = 0.5 * c_frac * 
@@ -3001,7 +2998,7 @@ static NhlErrorTypes    SetLabels
 			printf("NhlBOTH not implemented\n");
 		}
 	}
-	else if (lg_p->orient == NhlHORIZONTAL){ /* DOWN or UP */
+	else if (lg_p->orient == NhlHORIZONTAL){ /* NhlDOWN or UP */
 
 		/* Set the font height */
 
@@ -3032,7 +3029,7 @@ static NhlErrorTypes    SetLabels
 		}
 	}
 	else if (lg_p->orient == NhlVERTICAL && 
-		 lg_p->label_direction == ACROSS) {
+		 lg_p->label_direction == NhlACROSS) {
 
 		char_space = 0.8 * larea.x / (max_strlen + 1.0);
 		avail_char_space = 0.5 * c_frac *
@@ -3060,7 +3057,7 @@ static NhlErrorTypes    SetLabels
 			printf("NhlBOTH not implemented\n");
 		}
 	}
-	else { /* NhlVERTICAL DOWN or UP */
+	else { /* NhlVERTICAL NhlDOWN or UP */
 
 		char_space = 0.8 * larea.x / (max_strlen + 1.0);
 		avail_char_space = 0.5 * c_frac *
@@ -3171,8 +3168,8 @@ static NhlErrorTypes    SetLabels
 	if (init) {
 		strcpy(buffer,tnew->base.name);
 		strcat(buffer,".Labels");
-		ret1 = NhlCreate(&(lg_p->labels_id),buffer,
-				 multiTextLayerClass,tnew->base.id,
+		ret1 = NhlVACreate(&(lg_p->labels_id),buffer,
+				 NhlmultiTextLayerClass,tnew->base.id,
 				 NhlNMtextNumStrings,lg_p->label_draw_count,
 				 NhlNMtextStrings,labels_p,
 				 NhlNMtextOrientation,mtext_orient,
@@ -3189,15 +3186,15 @@ static NhlErrorTypes    SetLabels
 				 NhlNtxFontColor,lg_p->label_color,
 				 NhlNtxFontThicknessF,lg_p->label_thickness,
 				 NULL);
-		if(ret1 < WARNING) {
-			NhlPError(FATAL,E_UNKNOWN,"MultiText create error");
-			return(FATAL);
+		if(ret1 < NhlWARNING) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"MultiText create error");
+			return(NhlFATAL);
 		}
 		ret = MIN(ret,ret1);
 
 	} 
 	else {
-		ret1 = NhlSetValues(lg_p->labels_id,
+		ret1 = NhlVASetValues(lg_p->labels_id,
 				    NhlNMtextNumStrings,lg_p->label_draw_count,
 				    NhlNMtextStrings,labels_p,
 				    NhlNMtextOrientation,mtext_orient,
@@ -3212,10 +3209,10 @@ static NhlErrorTypes    SetLabels
 				    NhlNtxFontColor,lg_p->label_color,
 				    NhlNtxFontThicknessF,lg_p->label_thickness,
 				    NULL);
-		if(ret1 < WARNING) {
-			NhlPError(FATAL,E_UNKNOWN,
+		if(ret1 < NhlWARNING) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
 				  "Multitext SetValues error");
-			return(FATAL);
+			return(NhlFATAL);
 		}
 		ret = MIN(ret,ret1);
 
@@ -3256,7 +3253,7 @@ static NhlErrorTypes    SetLabels
 #define NhlLG_TRANSITIONANGLE 7.5
 static NhlErrorTypes   	AdjustLabels
 #if __STDC__
-	(LegendLayerPart *lg_p,
+	(NhlLegendLayerPart *lg_p,
 	 float		height,
 	 float		avail_space,
 	 int		max_strlen,
@@ -3264,7 +3261,7 @@ static NhlErrorTypes   	AdjustLabels
 	 float		area_y)
 #else
 (lg_p, height, avail_space, max_strlen, area_x, area_y)
-	LegendLayerPart *lg_p;
+	NhlLegendLayerPart *lg_p;
 	float		height;
 	float		avail_space;
 	int		max_strlen;
@@ -3273,7 +3270,7 @@ static NhlErrorTypes   	AdjustLabels
 #endif
 {
 	float tmp, theta1, theta2, theta3, theta4;
-	NhlErrorTypes ret = NOERROR;
+	NhlErrorTypes ret = NhlNOERROR;
 	NhlBoundingBox stringBB;
 	float w, h;
 	float wb, wt, hb, ht;
@@ -3317,7 +3314,7 @@ static NhlErrorTypes   	AdjustLabels
 		height = MIN(height,avail_space);
 		lg_p->label_just = NhlCENTERCENTER;
 		lg_p->label_height = height;
-		ret = NhlSetValues(lg_p->labels_id,
+		ret = NhlVASetValues(lg_p->labels_id,
 				   NhlNtxFontHeightF,lg_p->label_height,
 				   NhlNtxJust,lg_p->label_just,
 				   NULL);
@@ -3352,7 +3349,7 @@ static NhlErrorTypes   	AdjustLabels
  * Then manage the text justification.
  */
 	if (lg_p->orient == NhlHORIZONTAL && 
-	    lg_p->label_direction == ACROSS) {
+	    lg_p->label_direction == NhlACROSS) {
 
 		height /= st;
 		height = MIN(height, avail_space);
@@ -3417,7 +3414,7 @@ static NhlErrorTypes   	AdjustLabels
 			}
 		}
 	}
-	else if (lg_p->orient == NhlHORIZONTAL){ /* DOWN or UP */
+	else if (lg_p->orient == NhlHORIZONTAL){ /* NhlDOWN or UP */
 
 		height /= ct;
 		height = MIN(height, avail_space);
@@ -3469,7 +3466,7 @@ static NhlErrorTypes   	AdjustLabels
 			 
 	}
 	else if (lg_p->orient == NhlVERTICAL && 
-		 lg_p->label_direction == ACROSS) {
+		 lg_p->label_direction == NhlACROSS) {
 
 		height /= ct;
 		height = MIN(height, avail_space);
@@ -3520,7 +3517,7 @@ static NhlErrorTypes   	AdjustLabels
 		}
 			 
 	}
-	else { /* NhlVERTICAL DOWN or UP */
+	else { /* NhlVERTICAL NhlDOWN or UP */
 
 		height /= st;
 		height = MIN(height, avail_space);
@@ -3573,7 +3570,7 @@ static NhlErrorTypes   	AdjustLabels
  * Set the newly determined text height and justification
  */
 	lg_p->label_height = height;
-	ret = NhlSetValues(lg_p->labels_id,
+	ret = NhlVASetValues(lg_p->labels_id,
 			   NhlNtxFontHeightF,lg_p->label_height,
 			   NhlNtxJust,lg_p->label_just,
 			   NULL);
@@ -3608,23 +3605,23 @@ static NhlErrorTypes   	AdjustLabels
 /*ARGSUSED*/
 static NhlErrorTypes    AdjustGeometry
 #if __STDC__
-	(Layer		new, 
-	Layer		old,
+	(NhlLayer		new, 
+	NhlLayer		old,
 	int		init,
 	_NhlArgList	args,
 	int		num_args)
 #else
 (new,old,init,args,num_args)
-	Layer		new;
-	Layer		old;
+	NhlLayer		new;
+	NhlLayer		old;
 	int		init;
 	_NhlArgList	args;
 	int		num_args;
 #endif
 {
-	LegendLayer	tnew = (LegendLayer) new;
-	LegendLayerPart *lg_p = &(tnew->legend);
-	NhlErrorTypes ret = NOERROR, ret1 = NOERROR;
+	NhlLegendLayer	tnew = (NhlLegendLayer) new;
+	NhlLegendLayerPart *lg_p = &(tnew->legend);
+	NhlErrorTypes ret = NhlNOERROR, ret1 = NhlNOERROR;
 	NhlBoundingBox titleBB;
 	NhlBoundingBox labelsBB;
 	NhlBoundingBox legendBB;
@@ -3653,7 +3650,7 @@ static NhlErrorTypes    AdjustGeometry
 		legendBB.t = lg_p->adj_bar.t;
 	}
 	else {
-		if ((ret1 = NhlGetBB(lg_p->labels_id, &labelsBB)) < WARNING)
+		if ((ret1 = NhlGetBB(lg_p->labels_id, &labelsBB)) < NhlWARNING)
 			return ret1;
 		ret = MIN(ret1,ret);
 		
@@ -3743,7 +3740,7 @@ static NhlErrorTypes    AdjustGeometry
 		titleBB.t = legendBB.t;
 	}
 	else {
-		if ((ret1 = NhlGetBB(lg_p->title_id, &titleBB)) < WARNING)
+		if ((ret1 = NhlGetBB(lg_p->title_id, &titleBB)) < NhlWARNING)
 			return ret1;
 		ret = MIN(ret1,ret);
 		
@@ -3929,12 +3926,12 @@ static NhlErrorTypes    AdjustGeometry
 			lg_p->label_locs[i] -= major_off;
 		}
 		
-		if ((ret1 = NhlSetValues(lg_p->labels_id,
+		if ((ret1 = NhlVASetValues(lg_p->labels_id,
 					 NhlNMtextConstPosF,
 					 lg_p->const_pos + 
 					 pos_offset - minor_off,
 					 NhlNMtextPosArray,lg_p->label_locs,
-					 NULL)) < WARNING)
+					 NULL)) < NhlWARNING)
 			return (ret1);
 		ret = MIN(ret1,ret);
 	}
@@ -3945,15 +3942,15 @@ static NhlErrorTypes    AdjustGeometry
 	if (lg_p->title_on && lg_p->max_title_ext > 0.0) {
 		title_x -= x_off;
 		title_y -= y_off;
-		if ((ret1 = NhlSetValues(lg_p->title_id,
+		if ((ret1 = NhlVASetValues(lg_p->title_id,
 					 NhlNtxPosXF, title_x,
 					 NhlNtxPosYF, title_y,
-					 NULL)) < WARNING)
+					 NULL)) < NhlWARNING)
 			return (ret1);
 		ret = MIN(ret1,ret);
 	}
 
-	_NhlInternalSetView((ViewLayer)tnew,
+	_NhlInternalSetView((NhlViewLayer)tnew,
 			    lg_p->real_perim.l, lg_p->real_perim.t,
 			    lg_p->real_perim.r - lg_p->real_perim.l,
 			    lg_p->real_perim.t - lg_p->real_perim.b,
@@ -3993,16 +3990,16 @@ static NhlErrorTypes    AdjustGeometry
 
 static NhlErrorTypes	LegendGetValues
 #if __STDC__
-(Layer l, _NhlArgList args, int num_args)
+(NhlLayer l, _NhlArgList args, int num_args)
 #else
 (l,args,num_args)
-	Layer	l;
+	NhlLayer	l;
 	_NhlArgList	args;
 	int	num_args;
 #endif
 {
-	LegendLayer lgl = (LegendLayer)l;
-	LegendLayerPart *lg_p = &(lgl->legend);
+	NhlLegendLayer lgl = (NhlLegendLayer)l;
+	NhlLegendLayerPart *lg_p = &(lgl->legend);
 	NhlGenArray ga;
 	char *e_text;
 	int i, count = 0;
@@ -4056,15 +4053,15 @@ static NhlErrorTypes	LegendGetValues
 		if (ga != NULL) {
 			if ((ga = GenArraySubsetCopy(ga, count)) == NULL) {
 				e_text = "%s: error copying %s GenArray";
-				NhlPError(FATAL,E_UNKNOWN,e_text,
+				NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,
 					  "LegendGetValues",type);
-				return FATAL;
+				return NhlFATAL;
 			}
 			*((NhlGenArray *)(args[i].value)) = ga;
 		}
 	}
 
-	return(NOERROR);
+	return(NhlNOERROR);
 
 }
 
@@ -4149,15 +4146,15 @@ static NhlGenArray GenArraySubsetCopy
  */
 static NhlErrorTypes    LegendDraw
 #if  __STDC__
-(Layer layer)
+(NhlLayer layer)
 #else
 (layer)
-	Layer 	layer;
+	NhlLayer 	layer;
 #endif
 {
-	LegendLayer tlayer = (LegendLayer) layer;
-	LegendLayerPart *lg_p = &(tlayer->legend);
-	NhlErrorTypes ret = NOERROR;
+	NhlLegendLayer tlayer = (NhlLegendLayer) layer;
+	NhlLegendLayerPart *lg_p = &(tlayer->legend);
+	NhlErrorTypes ret = NhlNOERROR;
 
 	float xpoints[5];
 	float ypoints[5];
@@ -4194,7 +4191,7 @@ static NhlErrorTypes    LegendDraw
 		xpoints[4] = lg_p->real_perim.l;
 		ypoints[4] = lg_p->real_perim.b;
 
-		NhlSetValues(tlayer->base.wkptr->base.id,
+		NhlVASetValues(tlayer->base.wkptr->base.id,
 			     NhlNwkDrawEdges, 1,
 			     NhlNwkEdgeDashPattern, lg_p->perim_dash_pattern,
 			     NhlNwkEdgeThicknessF, lg_p->perim_thickness,
@@ -4214,7 +4211,7 @@ static NhlErrorTypes    LegendDraw
  * Set the values that remain constant for all boxes
  */
 
-	NhlSetValues(tlayer->base.wkptr->base.id,
+	NhlVASetValues(tlayer->base.wkptr->base.id,
 		     NhlNwkDrawEdges, lg_p->box_line_on,
 		     NhlNwkEdgeDashPattern, lg_p->box_line_dash_pattern,
 		     NhlNwkEdgeThicknessF, lg_p->box_line_thickness,
@@ -4284,7 +4281,7 @@ static NhlErrorTypes    LegendDraw
 				item_text_height = text_heights[i];
 
 			if (item_type == NhlLG_LINES) {
-				NhlSetValues(tlayer->base.wkptr->base.id,
+				NhlVASetValues(tlayer->base.wkptr->base.id,
 					     NhlNwkLineLabel, 
 					        item_strings[i],
 					     NhlNwkDashPattern, 
@@ -4306,7 +4303,7 @@ static NhlErrorTypes    LegendDraw
 						      ypoints[2], 0);
 		        }
 			else {
-				NhlSetValues(tlayer->base.wkptr->base.id,
+				NhlVASetValues(tlayer->base.wkptr->base.id,
 					     NhlNwkMarkerString, 
 					        item_strings[i],
 					     NhlNwkMarkerIndex, 
@@ -4372,7 +4369,7 @@ static NhlErrorTypes    LegendDraw
 				item_text_height = text_heights[i];
 
 			if (item_type == NhlLG_LINES) {
-				NhlSetValues(tlayer->base.wkptr->base.id,
+				NhlVASetValues(tlayer->base.wkptr->base.id,
 					     NhlNwkLineLabel, 
 					        item_strings[i],
 					     NhlNwkDashPattern, 
@@ -4394,7 +4391,7 @@ static NhlErrorTypes    LegendDraw
 						 ypoints[0], 0);
 		        }
 			else {
-				NhlSetValues(tlayer->base.wkptr->base.id,
+				NhlVASetValues(tlayer->base.wkptr->base.id,
 					     NhlNwkMarkerString, 
 					        item_strings[i],
 					     NhlNwkMarkerIndex, 
@@ -4463,9 +4460,9 @@ static NhlErrorTypes    LegendClassInitialize
 	Qlabel_strings = NrmStringToQuark(NhlNlgLabelStrings);
 	Qitem_positions = NrmStringToQuark(NhlNlgItemPositions);
 
-	_NhlInitializeLayerClass(textItemLayerClass);
-	_NhlInitializeLayerClass(multiTextLayerClass);
-	return(NOERROR);	
+	_NhlInitializeLayerClass(NhltextItemLayerClass);
+	_NhlInitializeLayerClass(NhlmultiTextLayerClass);
+	return(NhlNOERROR);	
 }
 
 
@@ -4474,7 +4471,7 @@ static NhlErrorTypes    LegendClassInitialize
  *
  * Description: Frees all dynamically allocated memory
  *
- * In Args:	Layer inst	instance of Legend
+ * In Args:	NhlLayer inst	instance of Legend
  *
  * Out Args:	NONE
  *
@@ -4484,14 +4481,14 @@ static NhlErrorTypes    LegendClassInitialize
  */
 static NhlErrorTypes    LegendDestroy
 #if  __STDC__
-(Layer  inst)
+(NhlLayer  inst)
 #else
 (inst)
-	Layer	inst;
+	NhlLayer	inst;
 #endif
 {
-	LegendLayer tinst = (LegendLayer) inst;
-	LegendLayerPart *lg_p = &(tinst->legend);
+	NhlLegendLayer tinst = (NhlLegendLayer) inst;
+	NhlLegendLayerPart *lg_p = &(tinst->legend);
 
 	NhlFree(lg_p->gks_colors);
 
@@ -4519,6 +4516,6 @@ static NhlErrorTypes    LegendDestroy
 		NhlDestroy(lg_p->title_id);
 	}
 
-	return(NOERROR);
+	return(NhlNOERROR);
 }
 

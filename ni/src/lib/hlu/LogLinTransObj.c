@@ -1,5 +1,5 @@
 /*
- *      $Id: LogLinTransObj.c,v 1.8 1994-01-24 23:57:33 dbrown Exp $
+ *      $Id: LogLinTransObj.c,v 1.9 1994-01-27 21:24:24 boote Exp $
  */
 /************************************************************************
 *									*
@@ -29,28 +29,28 @@
 
 static NhlResource resources[] = {
 	{ NhlNtrXMinF,NhlCtrXMinF,NhlTFloat,sizeof(float),
-		NhlOffset(LogLinTransObjLayerRec,lltrans.x_min),
+		NhlOffset(NhlLogLinTransObjLayerRec,lltrans.x_min),
 		NhlTString,"0.0"},
 	{ NhlNtrXMaxF,NhlCtrXMaxF,NhlTFloat,sizeof(float),
-		NhlOffset(LogLinTransObjLayerRec,lltrans.x_max),
+		NhlOffset(NhlLogLinTransObjLayerRec,lltrans.x_max),
 		NhlTString,"1.0"},
 	{ NhlNtrXLog,NhlCtrXLog,NhlTInteger,sizeof(int),
-		NhlOffset(LogLinTransObjLayerRec,lltrans.x_log),
+		NhlOffset(NhlLogLinTransObjLayerRec,lltrans.x_log),
 		NhlTString,"0" },
 	{ NhlNtrXReverse,NhlCtrXReverse,NhlTInteger,sizeof(int),
-		NhlOffset(LogLinTransObjLayerRec,lltrans.x_reverse),
+		NhlOffset(NhlLogLinTransObjLayerRec,lltrans.x_reverse),
 		NhlTString,"0"},
 	{ NhlNtrYMinF,NhlCtrYMinF,NhlTFloat,sizeof(float),
-		NhlOffset(LogLinTransObjLayerRec,lltrans.y_min),
+		NhlOffset(NhlLogLinTransObjLayerRec,lltrans.y_min),
 		NhlTString,"0.0"},
 	{ NhlNtrYMaxF,NhlCtrYMaxF,NhlTFloat,sizeof(float),
-		NhlOffset(LogLinTransObjLayerRec,lltrans.y_max),
+		NhlOffset(NhlLogLinTransObjLayerRec,lltrans.y_max),
 		NhlTString,"1.0"},
 	{ NhlNtrYLog,NhlCtrYLog,NhlTInteger,sizeof(int),
-		NhlOffset(LogLinTransObjLayerRec,lltrans.y_log),
+		NhlOffset(NhlLogLinTransObjLayerRec,lltrans.y_log),
 		NhlTString,"0" },
 	{ NhlNtrYReverse,NhlCtrYReverse,NhlTInteger,sizeof(int),
-		NhlOffset(LogLinTransObjLayerRec,lltrans.y_reverse),
+		NhlOffset(NhlLogLinTransObjLayerRec,lltrans.y_reverse),
 		NhlTString,"0"}
 };
 
@@ -60,9 +60,9 @@ static NhlResource resources[] = {
 
 static NhlErrorTypes  LlTransSetValues(
 #ifdef NhlNeedProto
-        Layer,          /* old */
-        Layer,          /* reference */
-        Layer,          /* new */
+        NhlLayer,          /* old */
+        NhlLayer,          /* reference */
+        NhlLayer,          /* new */
         _NhlArgList,    /* args */
         int             /* num_args*/
 #endif
@@ -70,9 +70,9 @@ static NhlErrorTypes  LlTransSetValues(
 
 static NhlErrorTypes LlTransInitialize(
 #ifdef NhlNeedProto
-        LayerClass,     /* class */
-        Layer,          /* req */
-        Layer,          /* new */
+        NhlLayerClass,     /* class */
+        NhlLayer,          /* req */
+        NhlLayer,          /* new */
         _NhlArgList,    /* args */
         int             /* num_args */
 #endif
@@ -85,8 +85,8 @@ static NhlErrorTypes LlTransInitialize(
 
 static NhlErrorTypes LlNDCLineTo(
 #if     NhlNeedProto
-Layer   /* instance */,
-Layer   /* parent */,
+NhlLayer   /* instance */,
+NhlLayer   /* parent */,
 float   /* x */,
 float   /* y */,
 int     /* upordown */
@@ -94,8 +94,8 @@ int     /* upordown */
 );
 static NhlErrorTypes LlDataLineTo(
 #if     NhlNeedProto
-Layer   /* instance */,
-Layer   /* parent */,
+NhlLayer   /* instance */,
+NhlLayer   /* parent */,
 float   /* x */,
 float   /* y */,
 int     /* upordown */
@@ -109,15 +109,15 @@ int     /* upordown */
 
 static NhlErrorTypes LlSetTrans(
 #ifdef NhlNeedProto
-Layer	/*instance*/,
-Layer  /*parent*/
+NhlLayer	/*instance*/,
+NhlLayer  /*parent*/
 #endif
 );
 
 static NhlErrorTypes LlDataToWin(
 #ifdef NhlNeedProto
-Layer	/*instance*/,
-Layer	/* parent */,
+NhlLayer	/*instance*/,
+NhlLayer	/* parent */,
 float*	/*x*/,
 float*   /*y*/,
 int	/* n*/,
@@ -130,8 +130,8 @@ int* 	/*status*/
 );
 static NhlErrorTypes LlWinToNDC(
 #ifdef NhlNeedProto
-Layer	/*instance*/,
-Layer	/* parent */,
+NhlLayer	/*instance*/,
+NhlLayer	/* parent */,
 float*	/*x*/,
 float*   /*y*/,
 int	/* n*/,
@@ -146,8 +146,8 @@ int* 	/*status*/
 
 static NhlErrorTypes LlNDCToWin(
 #ifdef NhlNeedProto
-Layer	/*instance*/,
-Layer	/*parent */,
+NhlLayer	/*instance*/,
+NhlLayer	/*parent */,
 float*	/*x*/,
 float*   /*y*/,
 int	/* n*/,
@@ -160,13 +160,13 @@ int* 	/*status*/
 );
 
 
-LogLinTransObjLayerClassRec logLinTransObjLayerClassRec = {
+NhlLogLinTransObjLayerClassRec NhllogLinTransObjLayerClassRec = {
         {
 /* class_name			*/	"LogLinTransObj",
 /* nrm_class			*/	NrmNULLQUARK,
-/* layer_size			*/	sizeof(LogLinTransObjLayerRec),
+/* layer_size			*/	sizeof(NhlLogLinTransObjLayerRec),
 /* class_inited			*/	False,
-/* superclass			*/	(LayerClass)&transObjLayerClassRec,
+/* superclass			*/	(NhlLayerClass)&NhltransObjLayerClassRec,
 
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
@@ -202,7 +202,7 @@ LogLinTransObjLayerClassRec logLinTransObjLayerClassRec = {
 	}
 };
 
-LayerClass logLinTransObjLayerClass = (LayerClass)&logLinTransObjLayerClassRec;
+NhlLayerClass NhllogLinTransObjLayerClass = (NhlLayerClass)&NhllogLinTransObjLayerClassRec;
 
 
 
@@ -223,17 +223,17 @@ LayerClass logLinTransObjLayerClass = (LayerClass)&logLinTransObjLayerClassRec;
 /*ARGSUSED*/
 static NhlErrorTypes LlTransSetValues
 #if __STDC__
-(Layer old, Layer reference, Layer new, _NhlArgList args, int num_args)
+(NhlLayer old, NhlLayer reference, NhlLayer new, _NhlArgList args, int num_args)
 #else
 (old,reference, new,args,num_args)
-	Layer old;
-	Layer reference;
-	Layer new;
+	NhlLayer old;
+	NhlLayer reference;
+	NhlLayer new;
 	_NhlArgList args;
 	int	num_args;
 #endif
 {
-	LogLinTransObjLayer lnew = (LogLinTransObjLayer) new;
+	NhlLogLinTransObjLayer lnew = (NhlLogLinTransObjLayer) new;
 	float tmp;
 
 	lnew->lltrans.ul = lnew->lltrans.x_min;
@@ -253,29 +253,29 @@ static NhlErrorTypes LlTransSetValues
 	if((lnew->lltrans.y_log)&&(lnew->lltrans.x_log)) {
 		lnew->lltrans.log_lin_value = 4;
 		if((lnew->lltrans.x_min <= 0.0)||(lnew->lltrans.x_max<=0.0)){	
-			NhlPError(FATAL,E_UNKNOWN,"LlSetValues: Either NhlNtrXMax or NhlNtrXMin has been set to <= 0 for a log transformation");
-			return(FATAL);
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"LlSetValues: Either NhlNtrXMax or NhlNtrXMin has been set to <= 0 for a log transformation");
+			return(NhlFATAL);
 		}
 		if((lnew->lltrans.y_min <= 0.0)||(lnew->lltrans.y_max<=0.0)){	
-			NhlPError(FATAL,E_UNKNOWN,"LlSetValues: Either NhlNtrYMax or NhlNtrYMin has been set to <= 0 for a log transformation");
-			return(FATAL);
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"LlSetValues: Either NhlNtrYMax or NhlNtrYMin has been set to <= 0 for a log transformation");
+			return(NhlFATAL);
 		}
 	} else if(lnew->lltrans.x_log) {
 		lnew->lltrans.log_lin_value = 3;
 		if((lnew->lltrans.x_min <= 0.0)||(lnew->lltrans.x_max<=0.0)){	
-			NhlPError(FATAL,E_UNKNOWN,"LlSetValues: Either NhlNtrXMax or NhlNtrXMin has been set to <= 0 for a log transformation");
-			return(FATAL);
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"LlSetValues: Either NhlNtrXMax or NhlNtrXMin has been set to <= 0 for a log transformation");
+			return(NhlFATAL);
 		}
 	} else if(lnew->lltrans.y_log) {
 		lnew->lltrans.log_lin_value = 2;
 		if((lnew->lltrans.y_min <= 0.0)||(lnew->lltrans.y_max<=0.0)){	
-			NhlPError(FATAL,E_UNKNOWN,"LlSetValues: Either NhlNtrYMax or NhlNtrYMin has been set to <= 0 for a log transformation");
-			return(FATAL);
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"LlSetValues: Either NhlNtrYMax or NhlNtrYMin has been set to <= 0 for a log transformation");
+			return(NhlFATAL);
 		}
 	} else {
 		lnew->lltrans.log_lin_value = 1;
 	}
-	return(NOERROR);
+	return(NhlNOERROR);
 
 }
 
@@ -296,17 +296,17 @@ static NhlErrorTypes LlTransSetValues
 /*ARGSUSED*/
 static NhlErrorTypes LlTransInitialize
 #if __STDC__
-( LayerClass class, Layer req, Layer new, _NhlArgList args, int num_args)
+( NhlLayerClass class, NhlLayer req, NhlLayer new, _NhlArgList args, int num_args)
 #else
 (class,req,new,args,num_args)
-        LayerClass	class;
-        Layer		req;
-        Layer		new;
+        NhlLayerClass	class;
+        NhlLayer		req;
+        NhlLayer		new;
         _NhlArgList	args;
         int		num_args;
 #endif
 {
-	LogLinTransObjLayer lnew = (LogLinTransObjLayer) new;
+	NhlLogLinTransObjLayer lnew = (NhlLogLinTransObjLayer) new;
 	float tmp;
 
 	lnew->lltrans.ul = lnew->lltrans.x_min;
@@ -326,29 +326,29 @@ static NhlErrorTypes LlTransInitialize
 	if((lnew->lltrans.x_log)&&(lnew->lltrans.y_log)) {
 		lnew->lltrans.log_lin_value = 4;
 		if((lnew->lltrans.x_min <= 0.0)||(lnew->lltrans.x_max<=0.0)){	
-			NhlPError(FATAL,E_UNKNOWN,"LlSetValues: Either NhlNtrXMax or NhlNtrXMin has been set to <= 0 for a log transformation");
-			return(FATAL);
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"LlSetValues: Either NhlNtrXMax or NhlNtrXMin has been set to <= 0 for a log transformation");
+			return(NhlFATAL);
 		}
 		if((lnew->lltrans.y_min <= 0.0)||(lnew->lltrans.y_max<=0.0)){	
-			NhlPError(FATAL,E_UNKNOWN,"LlSetValues: Either NhlNtrYMax or NhlNtrYMin has been set to <= 0 for a log transformation");
-			return(FATAL);
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"LlSetValues: Either NhlNtrYMax or NhlNtrYMin has been set to <= 0 for a log transformation");
+			return(NhlFATAL);
 		}
 	} else if(lnew->lltrans.x_log) {
 		lnew->lltrans.log_lin_value = 3;
 		if((lnew->lltrans.x_min <= 0.0)||(lnew->lltrans.x_max<=0.0)){	
-			NhlPError(FATAL,E_UNKNOWN,"LlSetValues: Either NhlNtrXMax or NhlNtrXMin has been set to <= 0 for a log transformation");
-			return(FATAL);
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"LlSetValues: Either NhlNtrXMax or NhlNtrXMin has been set to <= 0 for a log transformation");
+			return(NhlFATAL);
 		}
 	} else if(lnew->lltrans.y_log) {
 		lnew->lltrans.log_lin_value = 2;
 		if((lnew->lltrans.y_min <= 0.0)||(lnew->lltrans.y_max<=0.0)){	
-			NhlPError(FATAL,E_UNKNOWN,"LlSetValues: Either NhlNtrYMax or NhlNtrYMin has been set to <= 0 for a log transformation");
-			return(FATAL);
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"LlSetValues: Either NhlNtrYMax or NhlNtrYMin has been set to <= 0 for a log transformation");
+			return(NhlFATAL);
 		}
 	} else {
 		lnew->lltrans.log_lin_value = 1;
 	}
-	return(NOERROR);
+	return(NhlNOERROR);
 
 }
 /*
@@ -372,27 +372,27 @@ static NhlErrorTypes LlTransInitialize
 
 static NhlErrorTypes LlSetTrans
 #if __STDC__
-(Layer instance, Layer parent) 
+(NhlLayer instance, NhlLayer parent) 
 #else
 (instance, parent)
-Layer   instance;
-Layer   parent;
+NhlLayer   instance;
+NhlLayer   parent;
 #endif
 {
 	float x;
 	float y;
 	float width;
 	float height;
-	LogLinTransObjLayer linstance = (LogLinTransObjLayer)instance;
+	NhlLogLinTransObjLayer linstance = (NhlLogLinTransObjLayer)instance;
 	NhlErrorTypes ret;
 	
 
-	ret = NhlGetValues(parent->base.id,
+	ret = NhlVAGetValues(parent->base.id,
 		NhlNvpXF,&x,
 		NhlNvpYF,&y,
 		NhlNvpWidthF,&width,
 		NhlNvpHeightF,&height,NULL);
-	if(ret < WARNING) {
+	if(ret < NhlWARNING) {
 		return(ret);
 	}
 
@@ -400,17 +400,18 @@ Layer   parent;
 		linstance->lltrans.ub,linstance->lltrans.ut,linstance->lltrans.log_lin_value);
 
 	
-	return(NOERROR);
+	return(NhlNOERROR);
 	
 }
 
+/*ARGSUSED*/
 static NhlErrorTypes LlDataToWin
 #if  __STDC__
-(Layer instance,Layer parent ,float *x,float *y,int n,float* xout,float* yout,float *xmissing,float *ymissing,int* status)
+(NhlLayer instance,NhlLayer parent ,float *x,float *y,int n,float* xout,float* yout,float *xmissing,float *ymissing,int* status)
 #else
 (instance, parent,x,y,n,xout,yout,xmissing,ymissing,status)
-	Layer   instance;
-	Layer   parent;
+	NhlLayer   instance;
+	NhlLayer   parent;
 	float   *x;
 	float   *y;
 	int	n;
@@ -421,7 +422,7 @@ static NhlErrorTypes LlDataToWin
 	int *	status;
 #endif
 {
-	LogLinTransObjLayer linst = (LogLinTransObjLayer)instance;
+	NhlLogLinTransObjLayer linst = (NhlLogLinTransObjLayer)instance;
 	int i; 
 
 	*status = 0;
@@ -443,7 +444,7 @@ static NhlErrorTypes LlDataToWin
 
 		}
 	}
-	return(NOERROR);
+	return(NhlNOERROR);
 }
 
 /*
@@ -467,11 +468,11 @@ static NhlErrorTypes LlDataToWin
 
 static NhlErrorTypes LlWinToNDC
 #if  __STDC__
-(Layer instance,Layer parent ,float *x,float *y,int n,float* xout,float* yout,float *xmissing,float *ymissing,int* status)
+(NhlLayer instance,NhlLayer parent ,float *x,float *y,int n,float* xout,float* yout,float *xmissing,float *ymissing,int* status)
 #else
 (instance, parent,x,y,n,xout,yout,xmissing,ymissing,status)
-	Layer   instance;
-	Layer   parent;
+	NhlLayer   instance;
+	NhlLayer   parent;
 	float   *x;
 	float   *y;
 	int	n;
@@ -487,19 +488,19 @@ static NhlErrorTypes LlWinToNDC
 	float width;
 	int i;
 	float height;
-	LogLinTransObjLayer linstance = (LogLinTransObjLayer)instance;
+	NhlLogLinTransObjLayer linstance = (NhlLogLinTransObjLayer)instance;
 	NhlErrorTypes ret;
 	float urtmp,ultmp,uttmp,ubtmp;
 	float xmin,ymin,xmax,ymax;
 	float tmpx,tmpy;
 	
 	
-	ret = NhlGetValues(parent->base.id,
+	ret = NhlVAGetValues(parent->base.id,
 		NhlNvpXF,&x0,
 		NhlNvpYF,&y0,
 		NhlNvpWidthF,&width,
 		NhlNvpHeightF,&height,NULL);
-	if( ret < WARNING)
+	if( ret < NhlWARNING)
 		return(ret);
 	*status = 0;
 	switch(linstance->lltrans.log_lin_value) {
@@ -637,10 +638,11 @@ static NhlErrorTypes LlWinToNDC
 			}
 			break;
 		default:
-			NhlPError(FATAL,E_UNKNOWN,"Internal Error in LlNDCToWin");
-			return(FATAL);
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"Internal Error in LlNDCToWin");
+			return(NhlFATAL);
 	}
-	return NOERROR;
+
+	return NhlNOERROR;
 }
 
 
@@ -659,11 +661,11 @@ static NhlErrorTypes LlWinToNDC
  */
 static NhlErrorTypes LlNDCToWin
 #if  __STDC__
-(Layer instance,Layer parent ,float *x,float *y,int n,float* xout,float* yout,float *xmissing, float *ymissing,int *status)
+(NhlLayer instance,NhlLayer parent ,float *x,float *y,int n,float* xout,float* yout,float *xmissing, float *ymissing,int *status)
 #else
 (instance, parent,x,y,n,xout,yout,xmissing,ymissing,status)
-	Layer   instance;
-	Layer   parent;
+	NhlLayer   instance;
+	NhlLayer   parent;
 	float   *x;
 	float   *y;
 	int	n;
@@ -679,13 +681,13 @@ static NhlErrorTypes LlNDCToWin
 	float width;
 	int i;
 	float height;
-	LogLinTransObjLayer linstance = (LogLinTransObjLayer)instance;
+	NhlLogLinTransObjLayer linstance = (NhlLogLinTransObjLayer)instance;
 	NhlErrorTypes ret;
 	float urtmp,ultmp,uttmp,ubtmp;
 	float xmin,ymin,xmax,ymax;
 	
 	
-	ret = NhlGetValues(parent->base.id,
+	ret = NhlVAGetValues(parent->base.id,
 		NhlNvpXF,&x0,
 		NhlNvpYF,&y0,
 		NhlNvpWidthF,&width,
@@ -694,7 +696,7 @@ static NhlErrorTypes LlNDCToWin
 	xmax = x0 + width;
 	ymin = y0 - height;
 	ymax = y0;
-	if( ret < WARNING)
+	if( ret < NhlWARNING)
 		return(ret);
 	*status = 0;
 	switch(linstance->lltrans.log_lin_value) {
@@ -813,8 +815,8 @@ static NhlErrorTypes LlNDCToWin
 			}
 			break;
 		default:
-			NhlPError(FATAL,E_UNKNOWN,"Internal Error in LlNDCToWin");
-			return(FATAL);
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"Internal Error in LlNDCToWin");
+			return(NhlFATAL);
 	}
 	return ret;
 }
@@ -823,17 +825,17 @@ static NhlErrorTypes LlNDCToWin
 /*ARGSUSED*/
 static NhlErrorTypes LlDataLineTo
 #if __STDC__
-(Layer instance, Layer parent,float x, float y, int upordown )
+(NhlLayer instance, NhlLayer parent,float x, float y, int upordown )
 #else
 (instance, parent,x, y, upordown )
-Layer instance;
-Layer parent;
+NhlLayer instance;
+NhlLayer parent;
 float x;
 float y;
 int upordown;
 #endif
 {
-	LogLinTransObjLayer llinst = (LogLinTransObjLayer)instance;
+	NhlLogLinTransObjLayer llinst = (NhlLogLinTransObjLayer)instance;
 	static float lastx,lasty;
 	static call_frstd = 1;
 	float currentx,currenty;
@@ -846,7 +848,7 @@ int upordown;
 		lastx = x;
 		lasty = y;
 		call_frstd =1;
-		return(NOERROR);
+		return(NhlNOERROR);
 	} else {
 		currentx = x;
 		currenty = y;
@@ -883,7 +885,7 @@ int upordown;
 			_NhlWorkstationLineTo(parent->base.wkptr,c_cufx(currentx),c_cufy(currenty),0);
 			lastx = x;
 			lasty = y;
-			return(NOERROR);
+			return(NhlNOERROR);
 		}
 			
 			
@@ -894,22 +896,22 @@ int upordown;
 /*ARGSUSED*/
 static NhlErrorTypes LlNDCLineTo
 #if __STDC__
-(Layer instance, Layer parent, float x, float y, int upordown)
+(NhlLayer instance, NhlLayer parent, float x, float y, int upordown)
 #else
 (instance, parent, x, y, upordown)
-Layer instance;
-Layer parent;
+NhlLayer instance;
+NhlLayer parent;
 float x;
 float y;
 int upordown;
 #endif
 {
-	LogLinTransObjLayer llinst = (LogLinTransObjLayer)instance;
+	NhlLogLinTransObjLayer llinst = (NhlLogLinTransObjLayer)instance;
 	static float lastx,lasty;
 	static call_frstd = 1;
 	float currentx,currenty;
 	float xvp,yvp,widthvp,heightvp;
-	NhlErrorTypes ret = NOERROR,ret1 = NOERROR;
+	NhlErrorTypes ret = NhlNOERROR,ret1 = NhlNOERROR;
 	float holdx,holdy;
 
 /*
@@ -919,13 +921,13 @@ int upordown;
 		lastx = x;
 		lasty = y;
 		call_frstd = 1;
-		return(NOERROR);
+		return(NhlNOERROR);
 	} else {
 		currentx = x;
 		currenty = y;
 		holdx = lastx;
 		holdy = lasty;
-		NhlGetValues(parent->base.id,
+		NhlVAGetValues(parent->base.id,
 			NhlNvpXF,&xvp,
 			NhlNvpYF,&yvp,
 			NhlNvpWidthF,&widthvp,

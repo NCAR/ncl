@@ -1,5 +1,5 @@
 /*
- *      $Id: Create.c,v 1.2 1993-10-19 17:50:07 boote Exp $
+ *      $Id: Create.c,v 1.3 1994-01-27 21:22:21 boote Exp $
  */
 /************************************************************************
 *									*
@@ -28,7 +28,7 @@
 #include <ncarg/hlu/VarArg.h>
 #include <ncarg/hlu/ResourcesP.h>
 #include <ncarg/hlu/BaseP.h>
-#include <ncarg/hlu/Workstation.h>
+#include <ncarg/hlu/WorkstationI.h>
 #include <ncarg/hlu/View.h>
 #include <ncarg/hlu/Transform.h>
 #include <ncarg/hlu/TransObj.h>
@@ -43,8 +43,8 @@
  * Description:	This function is used to call the top to bottom ClassPartInit
  *		chained method.
  *
- * In Args:	LayerClass	ancestor:
- *		LayerClass	lc;
+ * In Args:	NhlLayerClass	ancestor:
+ *		NhlLayerClass	lc;
  *
  * Out Args:	
  *
@@ -57,22 +57,22 @@ static NhlErrorTypes
 CallClassPartInit
 #if	__STDC__
 (
-	LayerClass	ancestor,	/* ancestor		*/
-	LayerClass	lc		/* class to update	*/
+	NhlLayerClass	ancestor,	/* ancestor		*/
+	NhlLayerClass	lc		/* class to update	*/
 )
 #else
 (ancestor, lc)
-	LayerClass	ancestor;	/* ancestor		*/
-	LayerClass	lc;		/* class to update	*/
+	NhlLayerClass	ancestor;	/* ancestor		*/
+	NhlLayerClass	lc;		/* class to update	*/
 #endif
 {
-	NhlErrorTypes ancestorerr = NOERROR, thisclass = NOERROR;
+	NhlErrorTypes ancestorerr = NhlNOERROR, thisclass = NhlNOERROR;
 
 	if(ancestor->base_class.superclass != NULL) {
 		ancestorerr =
 			CallClassPartInit(ancestor->base_class.superclass,lc);
 
-		if(ancestorerr < WARNING)
+		if(ancestorerr < NhlWARNING)
 			return(ancestorerr);
 	}
 
@@ -90,7 +90,7 @@ CallClassPartInit
  *		within the given class to do this.  Also, It initializes
  *		the given Classes superclass before doing itself.
  *
- * In Args:	LayerClass	lc;	Class to initialize
+ * In Args:	NhlLayerClass	lc;	Class to initialize
  *
  * Out Args:	
  *
@@ -102,47 +102,47 @@ static NhlErrorTypes
 InitializeLayerClass
 #if	__STDC__
 (
-	LayerClass	lc	/* pointer to class to be initalized	*/
+	NhlLayerClass	lc	/* pointer to class to be initalized	*/
 ) 
 #else
 (lc) 
-	LayerClass	lc;	/* pointer to class to be initalized	*/
+	NhlLayerClass	lc;	/* pointer to class to be initalized	*/
 #endif
 {
 	NhlErrorTypes ansestor, thisclass, classpart;
-	LayerClass step;
+	NhlLayerClass step;
 	int inited = 0x01;
 
-	if(lc->base_class.class_inited) return(NOERROR);
+	if(lc->base_class.class_inited) return(NhlNOERROR);
 
 	step = lc;
 	while(step != NULL) {
-		if(step == objLayerClass) {
-			inited |= (ObjLayerClassFlag);
+		if(step == NhlobjLayerClass) {
+			inited |= (_NhlObjLayerClassFlag);
 			break;
 		}
-		else if(step == baseLayerClass) {
-			inited |= ( BaseLayerClassFlag );  
+		else if(step == NhlbaseLayerClass) {
+			inited |= ( _NhlBaseLayerClassFlag );  
 			break;
 		}
-		else if(step == workstationLayerClass)
-			inited |= (WorkstationLayerClassFlag);  
-		else if(step == viewLayerClass)
-			inited |= (ViewLayerClassFlag);
-		else if(step == transformLayerClass)
-			inited |= (TransformLayerClassFlag);
-		else if(step == errorLayerClass)
-			inited |= (ErrorLayerClassFlag);
-		else if(step == transObjLayerClass)
-			inited |= (TransObjLayerClassFlag);
-		else if(step == dataCommLayerClass)
-			inited |= (DataCommLayerClassFlag);
-		else if(step == dataMgrLayerClass)
-			inited |= (DataMgrLayerClassFlag);
-		else if(step == dataItemLayerClass)
-			inited |= (DataItemLayerClassFlag);
-		else if(step == dataSpecLayerClass)
-			inited |= (DataSpecLayerClassFlag);
+		else if(step == NhlworkstationLayerClass)
+			inited |= (_NhlWorkstationLayerClassFlag);  
+		else if(step == NhlviewLayerClass)
+			inited |= (_NhlViewLayerClassFlag);
+		else if(step == NhltransformLayerClass)
+			inited |= (_NhlTransformLayerClassFlag);
+		else if(step == NhlerrorLayerClass)
+			inited |= (_NhlErrorLayerClassFlag);
+		else if(step == NhltransObjLayerClass)
+			inited |= (_NhlTransObjLayerClassFlag);
+		else if(step == NhldataCommLayerClass)
+			inited |= (_NhlDataCommLayerClassFlag);
+		else if(step == NhldataMgrLayerClass)
+			inited |= (_NhlDataMgrLayerClassFlag);
+		else if(step == NhldataItemLayerClass)
+			inited |= (_NhlDataItemLayerClassFlag);
+		else if(step == NhldataSpecLayerClass)
+			inited |= (_NhlDataSpecLayerClassFlag);
 		step = step->base_class.superclass;
 	}
 
@@ -150,22 +150,22 @@ InitializeLayerClass
 		&&(!(lc->base_class.superclass->base_class.class_inited))){
 
 		ansestor = InitializeLayerClass(lc->base_class.superclass);
-		if(ansestor < WARNING)
+		if(ansestor < NhlWARNING)
 			return(ansestor);
 	}
 	else
-		ansestor = NOERROR;
+		ansestor = NhlNOERROR;
 
 	if(lc->base_class.class_initialize != NULL){
 		thisclass = (*(lc->base_class.class_initialize))();
-		if(thisclass < WARNING)
+		if(thisclass < NhlWARNING)
 			return(thisclass);
 	}
 	else
-		thisclass = NOERROR;
+		thisclass = NhlNOERROR;
 
 	classpart = CallClassPartInit(lc,lc);
-	if(classpart < WARNING)
+	if(classpart < NhlWARNING)
 		return(classpart);
 
 	lc->base_class.class_inited = inited;
@@ -194,11 +194,11 @@ NhlErrorTypes
 _NhlInitializeLayerClass
 #if	__STDC__
 (
-	LayerClass	lc	/* pointer to class to be initalized	*/
+	NhlLayerClass	lc	/* pointer to class to be initalized	*/
 ) 
 #else
 (lc) 
-	LayerClass	lc;	/* pointer to class to be initalized	*/
+	NhlLayerClass	lc;	/* pointer to class to be initalized	*/
 #endif
 {
 	return(InitializeLayerClass(lc));
@@ -208,15 +208,15 @@ _NhlInitializeLayerClass
  * Function:	CallInitialize
  *
  * Description:	This function is used to initialize an instance of the given
- *		Layer Class.  It calls the top to bottom initialize method
+ *		NhlLayer Class.  It calls the top to bottom initialize method
  *		of the classes.
  *
- * In Args:	LayerClass	lc	Class of Layer being initialized
- *		Layer		req	Layer with requested values in it
+ * In Args:	NhlLayerClass	lc	Class of NhlLayer being initialized
+ *		NhlLayer	req	NhlLayer with requested values in it
  *		_NhlArgList	args	res names and values requested
  *		int		nargs	number of args
  *
- * Out Args:	Layer		new	Layer to update
+ * Out Args:	NhlLayer	new	NhlLayer to update
  *
  * Scope:	static
  * Returns:	NhlErrorTypes
@@ -226,27 +226,27 @@ static NhlErrorTypes
 CallInitialize
 #if	__STDC__
 (
-	LayerClass	lc,	/* Class of Layer being initialized	*/
-	Layer		req,	/* Layer with requested values in it	*/
-	Layer		new,	/* Layer to update			*/
+	NhlLayerClass	lc,	/* Class of NhlLayer being initialized	*/
+	NhlLayer	req,	/* NhlLayer with requested values in it	*/
+	NhlLayer	new,	/* NhlLayer to update			*/
 	_NhlArgList	args,	/* res names and values requested	*/
 	int		nargs	/* number of args			*/
 )
 #else
 (lc,req,new,args,nargs)
-	LayerClass	lc;	/* Class of Layer being initialized	*/
-	Layer		req;	/* Layer with requested values in it	*/
-	Layer		new;	/* Layer to update			*/
+	NhlLayerClass	lc;	/* Class of NhlLayer being initialized	*/
+	NhlLayer	req;	/* NhlLayer with requested values in it	*/
+	NhlLayer	new;	/* NhlLayer to update			*/
 	_NhlArgList	args;	/* res names and values requested	*/
 	int		nargs;	/* number of args			*/
 #endif
 {
-	NhlErrorTypes ancestor=NOERROR, class=NOERROR;
+	NhlErrorTypes ancestor=NhlNOERROR, class=NhlNOERROR;
 
 	if(lc->base_class.superclass != NULL){
 		ancestor = CallInitialize(lc->base_class.superclass,req,new,
 								args,nargs);
-		if(ancestor < WARNING)
+		if(ancestor < NhlWARNING)
 			return(ancestor);
 	}
 
@@ -267,7 +267,7 @@ CallInitialize
  *		into the arglists.
  *
  * In Args:	Const NhlString	name		name to identify instance
- *		LayerClass	lc		class of instance to create
+ *		NhlLayerClass	lc		class of instance to create
  *		int		parentid	id# of parent
  *		NhlErrorTypes	*ret		return code
  *		_NhlArgList	args		resources to set in instance
@@ -286,7 +286,7 @@ _NhlCreate
 (
 	int		*pid,		/* return plot id		*/
 	Const char	*name,		/* name to identify instance	*/
-	LayerClass	lc,		/* class of instance to create	*/
+	NhlLayerClass	lc,		/* class of instance to create	*/
 	int		parentid,	/* id# of parent		*/
 	_NhlExtArgList	args,		/* resources to set in instance	*/
 	int		nargs,		/* number of args		*/
@@ -296,48 +296,48 @@ _NhlCreate
 (pid, name, lc, parentid, args, nargs, child)
 	int		*pid;		/* return plot id		*/
 	Const char	*name;		/* name to identify instance	*/
-	LayerClass	lc;		/* class of instance to create	*/
+	NhlLayerClass	lc;		/* class of instance to create	*/
 	int		parentid;	/* id# of parent		*/
 	_NhlExtArgList	args;		/* resources to set in instance	*/
 	int		nargs;		/* number of args		*/
 	NrmQuarkList	child;		/* used to create managed child	*/
 #endif
 {
-	Layer			parent = _NhlGetLayer(parentid);
-	Layer			layer;
-	Layer			request;
-	NhlErrorTypes		ret=NOERROR, lret=NOERROR;
-	_NhlExtArg		stackargs[MAXARGLIST];
+	NhlLayer		parent = _NhlGetLayer(parentid);
+	NhlLayer		layer;
+	NhlLayer		request;
+	NhlErrorTypes		ret=NhlNOERROR, lret=NhlNOERROR;
+	_NhlExtArg		stackargs[_NhlMAXARGLIST];
 	_NhlExtArgList		largs=stackargs;
-	_NhlArg			init_args[MAXARGLIST];
+	_NhlArg			init_args[_NhlMAXARGLIST];
 	int			nlargs;
 	_NhlChildArgList	chld_args=NULL;
-	NhlBoolean		chld_args_used[MAXARGLIST];
+	NhlBoolean		chld_args_used[_NhlMAXARGLIST];
 	int			i;
 	_NhlConvertContext	context=NULL;
 
 	if((parent != NULL) && _NhlIsObj(parent)){
-		NhlPError(FATAL,E_UNKNOWN,
-				"ObjLayer sub-classes cannot have children");
-		return FATAL;
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+				"NhlObjLayer sub-classes cannot have children");
+		return NhlFATAL;
 	}
 
 	if(!(lc->base_class.class_inited)){
 		ret = InitializeLayerClass(lc);
-		if(ret < WARNING)
+		if(ret < NhlWARNING)
 			return(ret);
 	}
 
-	layer = (Layer)NhlMalloc((unsigned)(lc->base_class.layer_size));
+	layer = (NhlLayer)NhlMalloc((unsigned)(lc->base_class.layer_size));
 
-	if(layer == (Layer)NULL){
-		NhlPError(FATAL,ENOMEM,"Unable to Create");
-		return(FATAL);
+	if(layer == (NhlLayer)NULL){
+		NhlPError(NhlFATAL,ENOMEM,"Unable to Create");
+		return(NhlFATAL);
 	}
 
 	(void)memset((char*)layer,(int)~(0x01),(int)lc->base_class.layer_size);
 /*
- * Set things that are identical in Obj's and Layer's.
+ * Set things that are identical in Obj's and NhlLayer's.
  */
 	layer->base.self = layer;
 	layer->base.parent = parent;
@@ -354,10 +354,10 @@ _NhlCreate
  */
 	context = _NhlCreateConvertContext();
 	if(context == NULL){
-		NhlPError(FATAL,E_UNKNOWN,
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
 			"Unable to create Convert Context - Can't Create");
 		(void)NhlFree(layer);
-		return FATAL;
+		return NhlFATAL;
 	}
 
 /*
@@ -366,16 +366,16 @@ _NhlCreate
 	if(_NhlIsObj(layer)){
 		if(_NhlIsError(layer)){
 			if(parent != NULL){
-				NhlPError(WARNING,E_UNKNOWN,
+				NhlPError(NhlWARNING,NhlEUNKNOWN,
 "Error objects should not have a parent - Resetting parent to NOPARENT");
 				layer->base.parent = NULL;
 			}
 		}
 		else if(_NhlIsDataMgr(layer)){
 			if((parent == NULL) || !_NhlIsDataItem(parent)){
-				NhlPError(FATAL,E_UNKNOWN,"DataMgr objects can only be created as a child of a DataItem Class");
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"DataMgr objects can only be created as a child of a DataItem Class");
 				(void)NhlFree(layer);
-				return(FATAL);
+				return(NhlFATAL);
 			}
 		}
 	/*
@@ -387,7 +387,7 @@ _NhlCreate
 	}
 
 /*
- * It is a Layer - not an Obj so set the additional fields
+ * It is a NhlLayer - not an Obj so set the additional fields
  */
 	else {
 
@@ -396,7 +396,7 @@ _NhlCreate
 		layer->base.children = NULL;
 
 /*
- * Set Workstation Pointer in Layer
+ * Set Workstation Pointer in NhlLayer
  *
  * All layer types that should not have parents should be handled on a case
  * by case bases first, and then the default case of getting the workstation
@@ -405,7 +405,7 @@ _NhlCreate
 		if( _NhlIsWorkstation(layer)){
 			layer->base.wkptr = layer;
 			if(parent != NULL){
-				NhlPError(WARNING,E_UNKNOWN,
+				NhlPError(NhlWARNING,NhlEUNKNOWN,
 "Workstation objects should not have a parent - Resetting parent to NOPARENT");
 				layer->base.parent = NULL;
 				layer->base.wkptr = NULL;
@@ -413,7 +413,7 @@ _NhlCreate
 		}
 		else if(_NhlIsDataItem(layer)){
 			if(parent != NULL){
-				NhlPError(WARNING,E_UNKNOWN,"Data objects should not have a parent - Resetting parent to NOPARENT");
+				NhlPError(NhlWARNING,NhlEUNKNOWN,"Data objects should not have a parent - Resetting parent to NOPARENT");
 				layer->base.parent = NULL;
 			}
 		}
@@ -421,10 +421,10 @@ _NhlCreate
 			layer->base.wkptr = _NhlGetWorkstationLayer(parent);
 		}
 		else{
-			NhlPError(FATAL,E_UNKNOWN,
-					"This Layer must have a Parent");
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+					"This NhlLayer must have a Parent");
 			(void)NhlFree(layer);
-			return(FATAL);
+			return(NhlFATAL);
 		}
 
 /*
@@ -437,8 +437,8 @@ _NhlCreate
  */
 		lret = _NhlSortChildArgs(layer,args,nargs,&largs,&nlargs,
 					&chld_args,chld_args_used,False);
-		if(lret < WARNING){
-			NhlPError(lret,E_UNKNOWN,
+		if(lret < NhlWARNING){
+			NhlPError(lret,NhlEUNKNOWN,
 				"Unable to Create Arg Lists - Can't Create");
 			(void)NhlFree(layer);
 			return lret;
@@ -452,8 +452,8 @@ _NhlCreate
  * Gets Resources from args and default files and sets them in layer
  */	
 	lret = _NhlGetResources(context,layer,largs,nlargs,child);
-	if(lret < WARNING){
-		NhlPError(lret,E_UNKNOWN,
+	if(lret < NhlWARNING){
+		NhlPError(lret,NhlEUNKNOWN,
 				"Unable to retrieve resources-Can't Create");
 		_NhlFreeChildArgs(chld_args);
 		_NhlFreeConvertContext(context);
@@ -462,17 +462,17 @@ _NhlCreate
 	}
 	ret = MIN(lret,ret);
 	
-	request = (Layer)NhlMalloc((unsigned)(lc->base_class.layer_size));
+	request = (NhlLayer)NhlMalloc((unsigned)(lc->base_class.layer_size));
 	memcpy((char*)request,(char*)layer,lc->base_class.layer_size);
 
 /*
- * If AddLayer can't add it, it will return an ErrorCode - less than 0
+ * If AddNhlLayer can't add it, it will return an ErrorCode - less than 0
  */
 	*pid = _NhlAddLayer(layer);
 	if(*pid < 0){
 		lret = (NhlErrorTypes)*pid;
-		if(lret < WARNING){
-			NhlPError(lret,E_UNKNOWN,"Unable to add layer to internal table-Can't Create");
+		if(lret < NhlWARNING){
+			NhlPError(lret,NhlEUNKNOWN,"Unable to add layer to internal table-Can't Create");
 			_NhlFreeChildArgs(chld_args);
 			_NhlFreeConvertContext(context);
 			(void)NhlFree(layer);
@@ -487,8 +487,8 @@ _NhlCreate
 		init_args[i].value = largs[i].value;
 	}
 	lret = CallInitialize(lc,request,layer,init_args,nlargs); 
-	if(lret < WARNING){
-		NhlPError(lret,E_UNKNOWN,
+	if(lret < NhlWARNING){
+		NhlPError(lret,NhlEUNKNOWN,
 				"Unable to initialize layer-Can't Create");
 		_NhlRemoveLayer(layer);
 		_NhlFreeConvertContext(context);
@@ -511,11 +511,11 @@ _NhlCreate
 		layer->base.child_args = NULL;
 		for(i=0;i<nargs;i++){
 			if(!chld_args_used[i]){
-				NhlPError(WARNING,E_UNKNOWN,
+				NhlPError(NhlWARNING,NhlEUNKNOWN,
 				"%s is not a valid resource in %s at this time",
 						NrmNameToString(args[i].quark),
 							_NhlName(layer));
-				ret = MIN(ret,WARNING);
+				ret = MIN(ret,NhlWARNING);
 			}
 		}
 	}
@@ -525,8 +525,8 @@ _NhlCreate
 	if(_NhlIsWorkstation(layer)) {
 		lret = _NhlOpenWorkstation(layer);
 		ret = MIN(ret,lret);
-		if(ret < WARNING) {
-			NhlPError(ret,E_UNKNOWN,
+		if(ret < NhlWARNING) {
+			NhlPError(ret,NhlEUNKNOWN,
 				"Unable to open Workstation-Can't Create");
 			_NhlRemoveLayer(layer);
 			(void)NhlFree(layer); 
@@ -556,15 +556,15 @@ _NhlCreate
 }
 
 /*
- * Function:	NhlCreate
+ * Function:	NhlVACreate
  *
  * Description:	This function is used to create an instance of the given
- *		LayerClass.  It takes it's varargs and packs them into
+ *		NhlLayerClass.  It takes it's varargs and packs them into
  *		the internal arglist format needed - and then calls
  *		_NhlCreate. NhlDOCREF(#_NhlCreate,_NhlCreate is here.)
  *
  * In Args:	Const NhlString	name;		name of instance
- *		LayerClass	lc;		LayerClass to create
+ *		NhlLayerClass	lc;		NhlLayerClass to create
  *		int		parentid;	id of parent
  *		...				resource name/value pairs
  *
@@ -577,12 +577,12 @@ _NhlCreate
 /*VARARGS4*/
 NhlDOCTAG(NhlCreate)
 NhlErrorTypes
-NhlCreate
+NhlVACreate
 #if	NeedVarArgProto
 (
 	int		*pid,		/* return plot id		*/
 	Const char	*name,		/* name of instance		*/
-	LayerClass	lc,		/* LayerClass to create		*/
+	NhlLayerClass	lc,		/* NhlLayerClass to create		*/
 	int		parentid,	/* id of parent			*/
 	...				/* resource name/value pairs	*/
 )
@@ -590,19 +590,19 @@ NhlCreate
 (pid, name, lc, parentid, va_alist)
 	int		*pid;		/* return plot id		*/
 	Const char	*name;		/* name of instance		*/
-	LayerClass	lc;		/* LayerClass to create		*/
+	NhlLayerClass	lc;		/* NhlLayerClass to create		*/
 	int		parentid;	/* id of parent			*/
 	va_dcl				/* resource name/value pairs	*/
 #endif	/* NeedVarArgProto */
 {
 	va_list		ap;
 	int		num_args;
-	_NhlExtArg	args[MAXARGLIST];
+	_NhlExtArg	args[_NhlMAXARGLIST];
 	NhlErrorTypes	ret;
 
 	if(pid == NULL){
-		NhlPError(FATAL,E_UNKNOWN,"NhlCreate:arg pid must not be NULL");
-		return FATAL;
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"NhlCreate:arg pid must not be NULL");
+		return NhlFATAL;
 	}
 
 	VA_START(ap,parentid);
@@ -616,7 +616,7 @@ NhlCreate
 /*
  * Initialize pid in case user didn't
  */
-	*pid = NULL_LAYER;
+	*pid = NhlNULL_LAYER;
 
 	ret = _NhlCreate(pid, name, lc, parentid, args, num_args, NULL);
 
@@ -627,11 +627,11 @@ NhlCreate
  * Function:	NhlALCreate
  *
  * Description:	This function is used to create an instance of the given
- *		LayerClass.  This function is identical to NhlCreate
+ *		NhlLayerClass.  This function is identical to NhlCreate
  *		except that it takes an arglist instead of using varargs.
  *
  * In Args:	Const NhlString	name;		name of instance
- *		LayerClass	lc;		LayerClass to create
+ *		NhlLayerClass	lc;		NhlLayerClass to create
  *		int		parentid;	id of parent
  *		NhlArgList	args,
  *		int		nargs
@@ -649,7 +649,7 @@ NhlALCreate
 (
 	int		*pid,		/* plot id <return>	*/
 	Const char	*name,		/* name of instance	*/
-	LayerClass	lc,		/* LayerClass to create	*/
+	NhlLayerClass	lc,		/* NhlLayerClass to create	*/
 	int		parentid,	/* parent's id		*/
 	NhlSArgList	args_in,	/* resource name/values	*/
 	int		nargs		/* number of resources	*/
@@ -658,19 +658,19 @@ NhlALCreate
 (pid, name, lc, parentid, args_in, nargs)
 	int		*pid;		/* plot id <return>	*/
 	Const char	*name;		/* name of instance	*/
-	LayerClass	lc;		/* LayerClass to create	*/
+	NhlLayerClass	lc;		/* NhlLayerClass to create	*/
 	int		parentid;	/* parent's id		*/
 	NhlSArgList	args_in;	/* resource name/values	*/
 	int		nargs;		/* number of resources	*/
 #endif	/* NeedVarArgProto */
 {
-	_NhlExtArg	args[MAXARGLIST];
+	_NhlExtArg	args[_NhlMAXARGLIST];
 	NhlErrorTypes	ret;
 
 	if(pid == NULL){
-		NhlPError(FATAL,E_UNKNOWN,
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
 					"NhlALCreate:arg pid must not be NULL");
-		return FATAL;
+		return NhlFATAL;
 	}
 
 	_NhlSArgToSetArgList(args,args_in,nargs);
@@ -678,7 +678,7 @@ NhlALCreate
 /*
  * Initialize pid in case user didn't
  */
-	*pid = NULL_LAYER;
+	*pid = NhlNULL_LAYER;
 
 	ret = _NhlCreate(pid, name, lc, parentid, args, nargs, NULL);
 
@@ -699,7 +699,7 @@ NhlALCreate
  *
  *
  * In Args:	
- *		LayerClass	lc	Class to init all_resources
+ *		NhlLayerClass	lc	Class to init all_resources
  *
  * Out Args:	
  *
@@ -711,14 +711,14 @@ static NhlErrorTypes
 InitAllResources
 #if	__STDC__
 (
-	LayerClass	lc	/* Class to init all_resources 	*/
+	NhlLayerClass	lc	/* Class to init all_resources 	*/
 )
 #else
 (lc)
-	LayerClass	lc;	/* Class to init all_resources 	*/
+	NhlLayerClass	lc;	/* Class to init all_resources 	*/
 #endif
 {
-	NrmQuark		list[MAXRESLIST+1];
+	NrmQuark		list[_NhlMAXRESLIST+1];
 	NrmQuark		tquark;
 	int			i;
 	NrmResourceList		parentlist =
@@ -726,7 +726,7 @@ InitAllResources
 	int			num_all_res = 0;
 	_NhlChildResList	tnode;
 	
-	if(lc->base_class.class_inited & ObjLayerClassFlag)
+	if(lc->base_class.class_inited & _NhlObjLayerClassFlag)
 		tnode = NULL;
 	else
 		tnode = lc->base_class.child_resources;
@@ -764,15 +764,15 @@ InitAllResources
 	lc->base_class.all_resources = (NrmQuarkList)NhlMalloc((unsigned)
 					((num_all_res + 1) * sizeof(NrmQuark)));
 	if(lc->base_class.all_resources == NULL){
-		NHLPERROR((FATAL,12,"Unable to initialize all_resources of %s",
+		NHLPERROR((NhlFATAL,12,"Unable to initialize all_resources of %s",
 							_NhlClassName(lc)));
-		return FATAL;
+		return NhlFATAL;
 	}
 
 	memcpy((char*)lc->base_class.all_resources,(char*)list,
 					(num_all_res+1)*sizeof(NrmQuark));
 
-	return NOERROR;
+	return NhlNOERROR;
 }
 
 /*
@@ -792,8 +792,8 @@ InitAllResources
  *		to control exactly when the child's resources are set.
  *
  * In Args:	
- *		LayerClass	parent,		parent class
- *		LayerClass	child,		child class
+ *		NhlLayerClass	parent,		parent class
+ *		NhlLayerClass	child,		child class
  *		NhlBoolean	autosetval,	SetValue im/ex plicite
  *		NhlBoolean	forward,	T-frwd listed F-excl listed
  *		...
@@ -810,16 +810,16 @@ NhlErrorTypes
 _NhlRegisterChildClass
 #if	NeedVarArgProto
 (
-	LayerClass	parent,		/* parent class			*/
-	LayerClass	child,		/* child class			*/
+	NhlLayerClass	parent,		/* parent class			*/
+	NhlLayerClass	child,		/* child class			*/
 	NhlBoolean	autosetval,	/* SetValue im/ex plicite	*/
 	NhlBoolean	forward,	/* T-frwd listed F-excl listed	*/
 	...				/* resource names		*/
 )
 #else
 (parent,child,autosetval,forward,va_alist)
-	LayerClass	parent;		/* parent class			*/
-	LayerClass	child;		/* child class			*/
+	NhlLayerClass	parent;		/* parent class			*/
+	NhlLayerClass	child;		/* child class			*/
 	NhlBoolean	autosetval;	/* SetValue im/ex plicite	*/
 	NhlBoolean	forward;	/* T-frwd listed F-excl listed	*/
 	va_dcl				/* resource names		*/
@@ -828,11 +828,11 @@ _NhlRegisterChildClass
 	va_list			ap;
 	int			i;
 	NhlString		name=NULL;
-	NrmQuark		varqlist[MAXRESLIST];
-	NrmQuark		forwardqlist[MAXRESLIST];
+	NrmQuark		varqlist[_NhlMAXRESLIST];
+	NrmQuark		forwardqlist[_NhlMAXRESLIST];
 	NrmQuark		tquark;
-	NhlErrorTypes		ret=NOERROR;
-	NhlErrorTypes		lret=NOERROR;
+	NhlErrorTypes		ret=NhlNOERROR;
+	NhlErrorTypes		lret=NhlNOERROR;
 	int			num_frwd;
 	_NhlChildResList	chld_node=NULL;
 
@@ -847,19 +847,19 @@ _NhlRegisterChildClass
 	 */
 	if(!(child->base_class.class_inited)){
 		ret = InitializeLayerClass(child);
-		if(ret < WARNING)
+		if(ret < NhlWARNING)
 			return(ret);
 	}
 
 	/*
-	 * ObjLayer's do not support resource forwarding so they can not
+	 * ObjNhlLayer's do not support resource forwarding so they can not
 	 * have children or be children.
 	 */
-	if(parent->base_class.class_inited & ObjLayerClassFlag){
-		NhlPError(FATAL,E_UNKNOWN,
+	if(parent->base_class.class_inited & _NhlObjLayerClassFlag){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
 "_NhlRegisterChildClass:%s is a sub-class of Obj so it can't register children",
 						parent->base_class.class_name);
-		return FATAL;
+		return NhlFATAL;
 	}
 
 	/*
@@ -868,8 +868,8 @@ _NhlRegisterChildClass
 	 */
 	if(child->base_class.all_resources == NULL){
 		lret = InitAllResources(child);
-		if(lret < WARNING){
-			NhlPError(FATAL,E_UNKNOWN,
+		if(lret < NhlWARNING){
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
 				"Unable to determine resources for %s",
 							_NhlClassName(child));
 			return(ret);
@@ -916,8 +916,8 @@ _NhlRegisterChildClass
 	 */
 	chld_node = (_NhlChildResList)NhlMalloc(sizeof(_NhlChildResNode));
 	if(chld_node == NULL){
-		NHLPERROR((FATAL,12,NULL));
-		return(FATAL);
+		NHLPERROR((NhlFATAL,12,NULL));
+		return(NhlFATAL);
 	}
 
 	chld_node->class = child;
@@ -931,8 +931,8 @@ _NhlRegisterChildClass
 					((num_frwd + 1) * sizeof(NrmQuark)));
 	if(chld_node->resources == NULL){
 		(void)NhlFree(chld_node);
-		NHLPERROR((FATAL,12,NULL));
-		return(FATAL);
+		NHLPERROR((NhlFATAL,12,NULL));
+		return(NhlFATAL);
 	}
 
 	memcpy((char*)chld_node->resources,(char*)forwardqlist,
@@ -959,8 +959,8 @@ _NhlRegisterChildClass
  * In Args:	
  *		int		*pid,		pid return
  *		Const NhlString	name,		name of child
- *		LayerClass	class,		class to create
- *		Layer		parent,		parent of child
+ *		NhlLayerClass	class,		class to create
+ *		NhlLayer		parent,		parent of child
  *		_NhlArgList	sargs,		resources to set
  *		int		num_sargs	number of res to set
  *
@@ -977,8 +977,8 @@ CreateChild
 (
 	int		*pid,		/* pid return		*/
 	Const char	*name,		/* name of child	*/
-	LayerClass	class,		/* class to create	*/
-	Layer		parent,		/* parent of child	*/
+	NhlLayerClass	class,		/* class to create	*/
+	NhlLayer		parent,		/* parent of child	*/
 	_NhlExtArgList	sargs,		/* resources to set	*/
 	int		num_sargs	/* number of res to set	*/
 )
@@ -986,8 +986,8 @@ CreateChild
 (pid,name,class,parent,sargs,num_sargs)
 	int		*pid;		/* pid return		*/
 	Const char	*name;		/* name of child	*/
-	LayerClass	class;		/* class to create	*/
-	Layer		parent;		/* parent of child	*/
+	NhlLayerClass	class;		/* class to create	*/
+	NhlLayer		parent;		/* parent of child	*/
 	_NhlExtArgList	sargs;		/* resources to set	*/
 	int		num_sargs;	/* number of res to set	*/
 #endif
@@ -996,32 +996,32 @@ CreateChild
 	int			num_pargs=0;
 	_NhlExtArgList		pargs = NULL;
 	int			num_args=0;
-	_NhlExtArg		args[MAXARGLIST];
+	_NhlExtArg		args[_NhlMAXARGLIST];
 	NrmQuarkList		child=NULL;
-	LayerClass		plc = _NhlClass(parent);
+	NhlLayerClass		plc = _NhlClass(parent);
 	_NhlChildResList	tresnode=NULL;
 	_NhlChildArgList	targnode=NULL;
-	NhlErrorTypes		ret=NOERROR;
+	NhlErrorTypes		ret=NhlNOERROR;
 	_NhlChildList		tchldnode=NULL;
 
 	if(_NhlIsObj(parent)){
-		NhlPError(FATAL,E_UNKNOWN,
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
 		"CreateChild:%s is an Obj sub-class so it cannot have children",
 						NhlName(parent->base.id));
-		return FATAL;
+		return NhlFATAL;
 	}
 
 	if(!parent->base.in_init){
-		NhlPError(FATAL,E_UNKNOWN,
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
 		"CreateChild:%s is not in Initialize so CreateChild is invalid",
 						_NhlName(parent));
-		return FATAL;
+		return NhlFATAL;
 	}
 
 	if(pid == NULL){
-		NhlPError(FATAL,E_UNKNOWN,
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
 				"CreateChild:argument pid can not be NULL");
-		return FATAL;
+		return NhlFATAL;
 	}
 
 	/*
@@ -1038,10 +1038,10 @@ CreateChild
 	}
 
 	if(child == NULL){
-		NhlPError(FATAL,E_UNKNOWN,
-			"%s LayerClass is not a registered child class of %s",
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			"%s NhlLayerClass is not a registered child class of %s",
 				_NhlClassName(class),_NhlClassName(class));
-		return FATAL;
+		return NhlFATAL;
 	}
 
 	/*
@@ -1072,7 +1072,7 @@ CreateChild
 	 * Initailize pid in case user didn't
 	 */
 
-	*pid = NULL_LAYER;
+	*pid = NhlNULL_LAYER;
 
 	/*
 	 * Create a child node to place child info in.
@@ -1081,8 +1081,8 @@ CreateChild
 	 */
 	tchldnode = (_NhlChildList)NhlMalloc(sizeof(_NhlChildNode));
 	if(tchldnode == NULL){
-		NHLPERROR((FATAL,12,"Unable to Create Child"));
-		return FATAL;
+		NHLPERROR((NhlFATAL,12,"Unable to Create Child"));
+		return NhlFATAL;
 	}
 
 	/*
@@ -1118,13 +1118,13 @@ CreateChild
  * In Args:	
  *		int		*pid,	pid return
  *		Const NhlString	name,	name of child
- *		LayerClass	class,	class to create
- *		Layer		parent,	parent of child
+ *		NhlLayerClass	class,	class to create
+ *		NhlLayer		parent,	parent of child
  *		...			args to set in child
  *
  * Out Args:	
  *
- * Scope:	Global Layer writer
+ * Scope:	Global NhlLayer writer
  * Returns:	NhlErrorTypes
  * Side Effect:	
  */
@@ -1136,22 +1136,22 @@ _NhlCreateChild
 (
 	int		*pid,	/* pid return		*/
 	Const char	*name,	/* name of child	*/
-	LayerClass	class,	/* class to create	*/
-	Layer		parent,	/* parent of child	*/
+	NhlLayerClass	class,	/* class to create	*/
+	NhlLayer		parent,	/* parent of child	*/
 	...			/* args to set in child	*/
 )
 #else
 (pid,name,class,parent,va_alist)
 	int		*pid;	/* pid return		*/
 	Const char	*name;	/* name of child	*/
-	LayerClass	class;	/* class to create	*/
-	Layer		parent;	/* parent of child	*/
+	NhlLayerClass	class;	/* class to create	*/
+	NhlLayer		parent;	/* parent of child	*/
 	va_dcl
 #endif
 {
 	va_list			ap;
 	int			num_vargs;
-	_NhlExtArg		vargs[MAXARGLIST];
+	_NhlExtArg		vargs[_NhlMAXARGLIST];
 	NhlErrorTypes		ret;
 
 	/*
@@ -1188,14 +1188,14 @@ _NhlCreateChild
  * In Args:	
  *		int		*pid,		pid return
  *		Const NhlString	name,		name of child
- *		LayerClass	class,		class to create
- *		Layer		parent,		parent of child
+ *		NhlLayerClass	class,		class to create
+ *		NhlLayer		parent,		parent of child
  *		NhlSArgList	args_in,	args in
  *		int		nargs		number args
  *
  * Out Args:	
  *
- * Scope:	Global Layer writer
+ * Scope:	Global NhlLayer writer
  * Returns:	NhlErrorTypes
  * Side Effect:	
  */
@@ -1206,8 +1206,8 @@ _NhlALCreateChild
 (
 	int		*pid,		/* pid return		*/
 	Const char	*name,		/* name of child	*/
-	LayerClass	class,		/* class to create	*/
-	Layer		parent,		/* parent of child	*/
+	NhlLayerClass	class,		/* class to create	*/
+	NhlLayer		parent,		/* parent of child	*/
 	NhlSArgList	args_in,	/* args in		*/
 	int		nargs		/* number args		*/
 )
@@ -1215,13 +1215,13 @@ _NhlALCreateChild
 (pid,name,class,parent,args_in,nargs)
 	int		*pid;		/* pid return		*/
 	Const char	*name;		/* name of child	*/
-	LayerClass	class;		/* class to create	*/
-	Layer		parent;		/* parent of child	*/
+	NhlLayerClass	class;		/* class to create	*/
+	NhlLayer		parent;		/* parent of child	*/
 	NhlSArgList	args_in;	/* args in		*/
 	int		nargs;		/* number args		*/
 #endif
 {
-	_NhlExtArg		args[MAXARGLIST];
+	_NhlExtArg		args[_NhlMAXARGLIST];
 	NhlErrorTypes		ret;
 
 	_NhlSArgToSetArgList(args,args_in,nargs);

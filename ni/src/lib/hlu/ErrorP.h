@@ -1,5 +1,5 @@
 /*
- *      $Id: ErrorP.h,v 1.3 1993-12-13 22:29:03 boote Exp $
+ *      $Id: ErrorP.h,v 1.4 1994-01-27 21:23:01 boote Exp $
  */
 /************************************************************************
 *									*
@@ -25,6 +25,9 @@
 #include <ncarg/hlu/BaseP.h>
 #include <ncarg/hlu/Error.h>
 
+typedef struct _NhlErrorLayerRec *NhlErrorLayer;
+typedef struct _NhlErrorLayerClassRec *NhlErrorLayerClass;
+
 /*
  * Private Global functions
  */
@@ -44,20 +47,17 @@ extern void _NhlCloseError(
  * Private structures & definitions
  */
 
-#define TABLELISTINC	10
-#define ERRLISTINC	32
-
-typedef struct _ETable{
+typedef struct _NhlETable{
 	unsigned	start;
 	unsigned	len;
 	Const char	**errs;
-} ETable;
+} NhlETable;
 
 
 /*
  * Class declarations
  */
-typedef struct _ErrorLayerPart {
+typedef struct _NhlErrorLayerPart {
 	/* User setable resource fields */
 	NhlBoolean	buffer_errors;
 	NhlErrorTypes	error_level;
@@ -73,24 +73,24 @@ typedef struct _ErrorLayerPart {
 
 	int		num_etables;
 	int		len_etables;
-	ETable		*etables;
+	NhlETable	*etables;
 
-} ErrorLayerPart;
+} NhlErrorLayerPart;
 
-typedef struct _ErrorLayerRec {
-	ObjLayerPart	base;
-	ErrorLayerPart	error;
-} ErrorLayerRec;
+typedef struct _NhlErrorLayerRec {
+	NhlObjLayerPart		base;
+	NhlErrorLayerPart	error;
+} NhlErrorLayerRec;
 
-typedef struct _ErrorLayerClassPart {
+typedef struct _NhlErrorLayerClassPart {
 	int num_error_instances;
-} ErrorLayerClassPart;
+} NhlErrorLayerClassPart;
 
-typedef struct _ErrorLayerClassRec {
-	ObjLayerClassPart	base_class;
-	ErrorLayerClassPart	error_class;
-} ErrorLayerClassRec;
+typedef struct _NhlErrorLayerClassRec {
+	NhlObjLayerClassPart	base_class;
+	NhlErrorLayerClassPart	error_class;
+} NhlErrorLayerClassRec;
 
-extern ErrorLayerClassRec errorLayerClassRec;
+extern NhlErrorLayerClassRec NhlerrorLayerClassRec;
 
 #endif /* _NErrorP_h */	

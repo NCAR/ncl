@@ -1,5 +1,5 @@
 /*
- *      $Id: Converters.c,v 1.4 1994-01-10 19:48:30 boote Exp $
+ *      $Id: Converters.c,v 1.5 1994-01-27 21:21:46 boote Exp $
  */
 /************************************************************************
 *									*
@@ -45,7 +45,7 @@
 		if(to->size < sz){				\
 			/* Not large enough */			\
 			to->size = (unsigned int)sz;		\
-			return(FATAL);				\
+			return(NhlFATAL);				\
 		}						\
 								\
 		/* give caller copy */				\
@@ -104,11 +104,11 @@ NhlCvtStringToFloat
 #endif
 {
 	float tmp;
-	NhlErrorTypes ret = NOERROR;
+	NhlErrorTypes ret = NhlNOERROR;
 
 	if(nargs != 0){
 		/*ERROR*/
-		ret = WARNING;
+		ret = NhlWARNING;
 	}
 
 	tmp = (float)strtod((char *)from->addr,(char**)NULL);
@@ -151,12 +151,12 @@ NhlCvtStringToInteger
 #endif
 {
 	int tmp;
-	NhlErrorTypes ret = NOERROR;
+	NhlErrorTypes ret = NhlNOERROR;
 
 	if(nargs != 0){
-		NhlPError(FATAL,E_UNKNOWN,
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
 		"NhlCvtStringToInteger Called with improper number of args");
-		return FATAL;
+		return NhlFATAL;
 	}
 
 	tmp = (int)strtol((char *)from->addr,(char**)NULL,10);
@@ -292,12 +292,12 @@ NhlCvtStringToEnum
 	int		i, tmp=0;
 	NhlBoolean	set = False;
 	NhlString	s1 = (NhlString)from->addr;
-	NhlErrorTypes	ret = NOERROR;
+	NhlErrorTypes	ret = NhlNOERROR;
 
 	if(nargs < 1){
-		NhlPError(FATAL,E_UNKNOWN,
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
 		"NhlCvtStringToEnum Called with improper number of args");
-		return FATAL;
+		return NhlFATAL;
 	}
 
 	for(i=0;i<nargs;i++){
@@ -309,11 +309,11 @@ NhlCvtStringToEnum
 	}
 
 	if(!set){
-		NhlPError(FATAL,E_UNKNOWN,
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
 	"NhlCvtStringToEnum: Unable to convert string \"%s\" to requested type",
 							(char*)from->addr);
 		to->size = 0;
-		return FATAL;
+		return NhlFATAL;
 	}
 
 	SetVal(int,sizeof(int),tmp);
@@ -357,21 +357,21 @@ NhlCvtStringToChar
 	NhlString	s1 = (char*)from->addr;
 	int		len = strlen(s1);
 	int		i;
-	NhlErrorTypes	ret = NOERROR;
+	NhlErrorTypes	ret = NhlNOERROR;
 
 	if(nargs != 0){
-		NhlPError(FATAL,E_UNKNOWN,
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
 		"NhlCvtStringToChar Called with improper number of args");
-		return FATAL;
+		return NhlFATAL;
 	}
 
 	if(len > 1){
 		for(i=len-1;i > 0;i--){
 			if(isspace((int)s1[i]))
 				continue;
-			NhlPError(FATAL,E_UNKNOWN,
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
 		"NhlCvtStringToChar called with a string length unequal to 1");
-			return FATAL;
+			return NhlFATAL;
 		}
 	}
 
@@ -405,14 +405,14 @@ _NhlConvertersInitialize
 #endif
 {
 	NhlConvertArg	BoolEnumList[] = {
-			{NHLSTRENUM,	True,	"true"},
-			{NHLSTRENUM,	False,	"false"},
-			{NHLSTRENUM,	True,	"yes"},
-			{NHLSTRENUM,	False,	"no"},
-			{NHLSTRENUM,	True,	"on"},
-			{NHLSTRENUM,	False,	"off"},
-			{NHLSTRENUM,	True,	"1"},
-			{NHLSTRENUM,	False,	"0"}
+			{NhlSTRENUM,	True,	"true"},
+			{NhlSTRENUM,	False,	"false"},
+			{NhlSTRENUM,	True,	"yes"},
+			{NhlSTRENUM,	False,	"no"},
+			{NhlSTRENUM,	True,	"on"},
+			{NhlSTRENUM,	False,	"off"},
+			{NhlSTRENUM,	True,	"1"},
+			{NhlSTRENUM,	False,	"0"}
 			};
 
 	(void)NhlRegisterConverter(NhlTString,NhlTFloat,NhlCvtStringToFloat,

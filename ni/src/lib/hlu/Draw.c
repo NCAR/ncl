@@ -1,5 +1,5 @@
 /*
- *      $Id: Draw.c,v 1.4 1994-01-10 19:48:44 boote Exp $
+ *      $Id: Draw.c,v 1.5 1994-01-27 21:22:54 boote Exp $
  */
 /************************************************************************
 *									*
@@ -36,8 +36,8 @@
  *		of the object.
  *
  * In Args:	
- *		Layer		l,	object to draw
- *		LayerClass	class	class or super-class of object
+ *		NhlLayer	l,	object to draw
+ *		NhlLayerClass	class	class or super-class of object
  *
  * Out Args:	
  *
@@ -49,20 +49,20 @@ static NhlErrorTypes
 CallPreDraw
 #if	__STDC__
 (
-	Layer		l,	/* object to draw	*/
-	LayerClass	class	/* class or super-class of object	*/
+	NhlLayer	l,	/* object to draw	*/
+	NhlLayerClass	class	/* class or super-class of object	*/
 )
 #else
 (l,class)
-	Layer		l;	/* object to draw	*/
-	LayerClass	class;	/* class or super-class of object	*/
+	NhlLayer	l;	/* object to draw	*/
+	NhlLayerClass	class;	/* class or super-class of object	*/
 #endif
 {
-	NhlErrorTypes superclassret = NOERROR, localret = NOERROR;
+	NhlErrorTypes superclassret = NhlNOERROR, localret = NhlNOERROR;
 
 	if(class->base_class.superclass != NULL ) {
 		superclassret = CallPreDraw(l,class->base_class.superclass);
-		if(superclassret < WARNING)
+		if(superclassret < NhlWARNING)
 			return superclassret;
 	}
 
@@ -84,8 +84,8 @@ CallPreDraw
  *		of the object.
  *
  * In Args:	
- *		Layer		l,	object to draw
- *		LayerClass	class	class or super-class of object
+ *		NhlLayer	l,	object to draw
+ *		NhlLayerClass	class	class or super-class of object
  *
  * Out Args:	
  *
@@ -97,20 +97,20 @@ static NhlErrorTypes
 CallDraw
 #if	__STDC__
 (
-	Layer		l,	/* object to draw	*/
-	LayerClass	class	/* class or super-class of object	*/
+	NhlLayer	l,	/* object to draw	*/
+	NhlLayerClass	class	/* class or super-class of object	*/
 )
 #else
 (l,class)
-	Layer		l;	/* object to draw	*/
-	LayerClass	class;	/* class or super-class of object	*/
+	NhlLayer	l;	/* object to draw	*/
+	NhlLayerClass	class;	/* class or super-class of object	*/
 #endif
 {
-	NhlErrorTypes superclassret = NOERROR, localret = NOERROR;
+	NhlErrorTypes superclassret = NhlNOERROR, localret = NhlNOERROR;
 
 	if(class->base_class.superclass != NULL ) {
 		superclassret = CallDraw(l,class->base_class.superclass);
-		if(superclassret < WARNING)
+		if(superclassret < NhlWARNING)
 			return superclassret;
 	}
 
@@ -131,8 +131,8 @@ CallDraw
  *		of the object.
  *
  * In Args:	
- *		Layer		l,	object to draw
- *		LayerClass	class	class or super-class of object
+ *		NhlLayer	l,	object to draw
+ *		NhlLayerClass	class	class or super-class of object
  *
  * Out Args:	
  *
@@ -144,20 +144,20 @@ static NhlErrorTypes
 CallPostDraw
 #if	__STDC__
 (
-	Layer		l,	/* object to draw	*/
-	LayerClass	class	/* class or super-class of object	*/
+	NhlLayer	l,	/* object to draw	*/
+	NhlLayerClass	class	/* class or super-class of object	*/
 )
 #else
 (l,class)
-	Layer		l;	/* object to draw	*/
-	LayerClass	class;	/* class or super-class of object	*/
+	NhlLayer	l;	/* object to draw	*/
+	NhlLayerClass	class;	/* class or super-class of object	*/
 #endif
 {
-	NhlErrorTypes superclassret = NOERROR, localret = NOERROR;
+	NhlErrorTypes superclassret = NhlNOERROR, localret = NhlNOERROR;
 
 	if(class->base_class.superclass != NULL ) {
 		superclassret = CallPostDraw(l,class->base_class.superclass);
-		if(superclassret < WARNING)
+		if(superclassret < NhlWARNING)
 			return superclassret;
 	}
 
@@ -200,28 +200,28 @@ NhlDraw
 	int id;
 #endif
 {
-	NhlErrorTypes		ret = NOERROR, subret = NOERROR;
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	char			*e_text;
 	char			*entry_name = "NhlDraw";
-	Layer			layer = _NhlGetLayer(id);
-	TransformLayerPart	*tfp;
+	NhlLayer		layer = _NhlGetLayer(id);
+	NhlTransformLayerPart	*tfp;
 	
 	if((layer == NULL) || !_NhlIsBase(layer)){
 		e_text = "%s: Invalid plot ID: %d";
-		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,id);
-		return(FATAL);
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,id);
+		return(NhlFATAL);
 	}
 
 	if (_NhlIsTransform(layer)) {
 
-		tfp = & ((TransformLayer) layer)->trans;
+		tfp = & ((NhlTransformLayer) layer)->trans;
 
 		if (tfp->overlay_status == _tfCurrentOverlayMember) {
 
 			e_text = 
 		  "%s: cannot draw overlay member plot, ID %d, independently";
-			NhlPError(WARNING,E_UNKNOWN,e_text,entry_name,id);
-			return(WARNING);
+			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,id);
+			return(NhlWARNING);
 		}
 		else if (tfp->overlay_status == _tfCurrentOverlayBase) {
 
@@ -229,34 +229,34 @@ NhlDraw
 			if (layer == NULL || ! _NhlIsTransform(layer)) {
 				e_text = 
 				 "%s: invalid overlay object for plot, ID %d";
-				NhlPError(FATAL,E_UNKNOWN,
+				NhlPError(NhlFATAL,NhlEUNKNOWN,
 					  e_text,entry_name,id);
-				return(FATAL);
+				return(NhlFATAL);
 			}
 		}
 	}
 
 	subret = CallPreDraw(layer,layer->base.layer_class);
 
-	if ((ret = MIN(subret, ret)) < WARNING) {
+	if ((ret = MIN(subret, ret)) < NhlWARNING) {
 		e_text = "%s: PreDraw error";
-		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name);
-		return FATAL;
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
 	}
 
 	subret = CallDraw(layer,layer->base.layer_class);
 
-	if ((ret = MIN(subret, ret)) < WARNING) {
+	if ((ret = MIN(subret, ret)) < NhlWARNING) {
 		e_text = "%s: Draw error";
-		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name);
-		return FATAL;
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
 	}
 
 	subret = CallPostDraw(layer,layer->base.layer_class);
 
-	if ((ret = MIN(subret, ret)) < WARNING) {
+	if ((ret = MIN(subret, ret)) < NhlWARNING) {
 		e_text = "%s: PostDraw error";
-		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name);
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 	}
 
 	return ret;
@@ -269,7 +269,7 @@ NhlDraw
  *		of an object. 
  *
  * In Args:	
- *		Layer	layer 	layer pointer of the object to pre-draw
+ *		NhlLayer	layer 	layer pointer of the object to pre-draw
  *
  * Out Args:	
  *
@@ -281,18 +281,18 @@ NhlErrorTypes
 _NhlPreDraw
 #if	__STDC__
 (
-	Layer	layer	/* layer of object to draw	*/
+	NhlLayer	layer	/* layer of object to draw	*/
 )
 #else
 (layer)
-	Layer	layer;
+	NhlLayer	layer;
 #endif
 {
 
 	if((layer == NULL) || !_NhlIsBase(layer)){
-		NhlPError(FATAL,E_UNKNOWN,
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
 			  "Invalid layer passed to _NhlPreDraw");
-		return(FATAL);
+		return(NhlFATAL);
 	}
 
 	return CallPreDraw(layer,layer->base.layer_class);
@@ -305,7 +305,7 @@ _NhlPreDraw
  *		of an object - not the pre or post draw methods.
  *
  * In Args:	
- *		Layer	layer 	layer pointer of the object to draw
+ *		NhlLayer	layer 	layer pointer of the object to draw
  *
  * Out Args:	
  *
@@ -317,18 +317,18 @@ NhlErrorTypes
 _NhlDraw
 #if	__STDC__
 (
-	Layer	layer	/* layer of object to draw	*/
+	NhlLayer	layer	/* layer of object to draw	*/
 )
 #else
 (layer)
-	Layer	layer;
+	NhlLayer	layer;
 #endif
 {
 
 	if((layer == NULL) || !_NhlIsBase(layer)){
-		NhlPError(FATAL,E_UNKNOWN,
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
 			  "Invalid layer passed to _NhlDraw");
-		return(FATAL);
+		return(NhlFATAL);
 	}
 
 	return CallDraw(layer,layer->base.layer_class);
@@ -342,7 +342,7 @@ _NhlDraw
  *		of an object. 
  *
  * In Args:	
- *		Layer	layer 	layer pointer of the object to post-draw
+ *		NhlLayer	layer 	layer pointer of the object to post-draw
  *
  * Out Args:	
  *
@@ -354,18 +354,18 @@ NhlErrorTypes
 _NhlPostDraw
 #if	__STDC__
 (
-	Layer	layer	/* layer of object to draw	*/
+	NhlLayer	layer	/* layer of object to draw	*/
 )
 #else
 (layer)
-	Layer	layer;
+	NhlLayer	layer;
 #endif
 {
 
 	if((layer == NULL) || !_NhlIsBase(layer)){
-		NhlPError(FATAL,E_UNKNOWN,
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
 				"Invalid layer passed to _NhlPostDraw");
-		return(FATAL);
+		return(NhlFATAL);
 	}
 
 	return CallPostDraw(layer,layer->base.layer_class);

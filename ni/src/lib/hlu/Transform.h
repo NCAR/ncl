@@ -1,6 +1,5 @@
-
 /*
- *      $Id: Transform.h,v 1.2 1993-12-22 00:56:27 dbrown Exp $
+ *      $Id: Transform.h,v 1.3 1994-01-27 21:26:59 boote Exp $
  */
 /************************************************************************
 *									*
@@ -38,10 +37,57 @@
 
 #define NhlCtfOverlayPlotBase	"TfOverlayPlotBase"
 
-typedef struct _TransformLayerClassRec *TransformLayerClass;
-typedef struct _TransformLayerRec *TransformLayer;
+/*
+ * Public Functions defined by the Transform Class
+ */
+extern NhlErrorTypes NhlNDCToData(
+#ifdef NhlNeedProto
+	int	/*pid*/,
+	float* /*x*/,
+	float* /*y*/,
+	int	/*n*/,
+	float* /*xout*/,
+	float* /*yout*/,
+	float * /* xmissing */,
+	float * /* ymissing */,
+	int*	/* status */,
+	float*  /* out_of_range */
+#endif
+);
 
-extern LayerClass transformLayerClass;
+extern NhlErrorTypes NhlDataToNDC(
+#ifdef NhlNeedProto
+	int	/*pid*/,
+	float* /*x*/,
+	float* /*y*/,
+	int	/*n*/,
+	float* /*xout*/,
+	float* /*yout*/,
+	float * /* xmissing */,
+	float * /* ymissing */,
+	int*	/* status */,
+	float*  /* out_of_range */
+#endif
+);
 
+extern NhlErrorTypes NhlDataPolyline(
+#ifdef NhlNeedProto
+	int		/* pid */,
+	float*		/* x */,
+	float*		/* y */,
+	int		/* n */
+#endif
+);
+
+extern NhlErrorTypes NhlNDCPolyline(
+#ifdef NhlNeedProto
+	int		/* pid */,
+	float*		/* x */,
+	float*		/* y */,
+	int		/* n */
+#endif
+);
+
+extern NhlLayerClass NhltransformLayerClass;
 
 #endif /*_NTransform_h */

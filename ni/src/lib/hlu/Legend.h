@@ -1,6 +1,5 @@
-
 /*
- *      $Id: Legend.h,v 1.4 1993-11-02 20:00:43 dbrown Exp $
+ *      $Id: Legend.h,v 1.5 1994-01-27 21:24:06 boote Exp $
  */
 /************************************************************************
 *									*
@@ -189,7 +188,6 @@
 #define NhlClgLabelJust			"LgLabelJust"
 #define NhlClgLabelAlignment		"LgLabelAlignment"
 #define NhlClgLabelDirection		"LgLabelDirection"
-#define NhlClgLabelFont			"LgLabelFont"
 #define NhlClgLabelFontColor		"LgLabelFontColor"
 #define NhlClgLabelFontHeightF		"LgLabelFontHeightF"
 #define NhlClgLabelFontAspectF		"LgLabelFontAspectF" /* height/width */
@@ -205,7 +203,6 @@
 #define NhlClgMaxTitleExtentF		"LgMaxTitleExtentF"
 #define NhlClgTitleAngleF		"LgTitleAngleF"
 #define NhlClgTitleDirection		"LgTitleDirection"
-#define NhlClgTitleFont			"LgTitleFont"
 #define NhlClgTitleJust			"LgTitleJust"
 #define NhlClgTitleFontColor		"LgTitleFontColor"
 #define NhlClgTitleFontHeightF		"LgTitleFontHeightF"
@@ -233,9 +230,6 @@
 
 /* end of resources */
 
-extern LayerClass legendLayerClass;
+extern NhlLayerClass NhllegendLayerClass;
 
-typedef struct _LegendLayerClassRec *LegendLayerClass;
-typedef struct _LegendLayerRec	*LegendLayer;
 #endif  /* _NLegend_h */
-

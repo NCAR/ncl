@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArraysP.h,v 1.2 1994-01-21 19:29:39 boote Exp $
+ *      $Id: CoordArraysP.h,v 1.3 1994-01-27 21:22:18 boote Exp $
  */
 /************************************************************************
 *									*
@@ -30,31 +30,34 @@
 /*
  * Private Resource Names
  */
-typedef struct _CoordArraysLayerPart{
+typedef struct _NhlCoordArraysLayerPart{
 	/* User setable resource fields */
 	NhlString		type_string;
 
 	/* Private Fields */
 	NrmQuark		type;
-	Layer			child;
-} CoordArraysLayerPart;
+	NhlLayer		child;
+} NhlCoordArraysLayerPart;
 
-typedef struct _CoordArraysLayerRec{
-	BaseLayerPart			base;
-	DataItemLayerPart		dataitem;
-	CoordArraysLayerPart		carr;
-} CoordArraysLayerRec;
+typedef struct _NhlCoordArraysLayerRec{
+	NhlBaseLayerPart		base;
+	NhlDataItemLayerPart		dataitem;
+	NhlCoordArraysLayerPart		carr;
+} NhlCoordArraysLayerRec;
 
-typedef struct _CoordArraysLayerClassPart{
+typedef struct _NhlCoordArraysLayerClassPart{
 	int	foo;
-} CoordArraysLayerClassPart;
+} NhlCoordArraysLayerClassPart;
 
-typedef struct _CoordArraysLayerClassRec{
-	BaseLayerClassPart		base_class;
-	DataItemLayerClassPart		dataitem_class;
-	CoordArraysLayerClassPart	carr_class;
-} CoordArraysLayerClassRec;
+typedef struct _NhlCoordArraysLayerClassRec{
+	NhlBaseLayerClassPart		base_class;
+	NhlDataItemLayerClassPart	dataitem_class;
+	NhlCoordArraysLayerClassPart	carr_class;
+} NhlCoordArraysLayerClassRec;
 
-extern CoordArraysLayerClassRec coordArraysLayerClassRec;
+typedef struct _NhlCoordArraysLayerClassRec *NhlCoordArraysLayerClass;
+typedef struct _NhlCoordArraysLayerRec *NhlCoordArraysLayer;
+
+extern NhlCoordArraysLayerClassRec NhlcoordArraysLayerClassRec;
 
 #endif  /* _NCoordArraysP_h */

@@ -1,5 +1,5 @@
 /*
- *      $Id: ResourcesP.h,v 1.2 1993-10-19 17:52:12 boote Exp $
+ *      $Id: ResourcesP.h,v 1.3 1994-01-27 21:25:42 boote Exp $
  */
 /************************************************************************
 *									*
@@ -49,7 +49,7 @@ typedef NhlErrorTypes (*NrmResourceDefaultProc)(
 extern NhlErrorTypes _NhlGetResources(
 #if	NhlNeedProto
 	_NhlConvertContext	ctxt,	/* convert context		*/
-	Layer			l,	/* layer to set resources of	*/
+	NhlLayer		l,	/* layer to set resources of	*/
 	_NhlExtArgList		args,	/* args to override res defaults*/
 	int			num_args,/* number of args		*/
 	NrmQuarkList		child	/* layer is auto-managed chld	*/
@@ -64,7 +64,7 @@ extern void _NhlResourceListInitialize(
 
 extern void _NhlGroupResources(
 #ifdef	NhlNeedProto
-	LayerClass lc	/* LayerClass to create full resource list for	*/
+	NhlLayerClass lc	/* Class to create full reslist for	*/
 #endif
 );
 
@@ -104,7 +104,7 @@ extern void _NhlMergeArgLists(
 
 extern NhlErrorTypes _NhlSortChildArgs(
 #if	NhlNeedProto
-	Layer			l,		/* layer		*/
+	NhlLayer		l,		/* layer		*/
 	_NhlExtArgList		args_in,	/* args to sort		*/
 	int			nargs_in,	/* number args to sort	*/
 	_NhlExtArgList		*args_out,	/* args not forwarded	*/
@@ -123,7 +123,7 @@ extern void _NhlFreeChildArgs(
 
 extern NhlBoolean _NhlResInClass(
 #if	NhlNeedProto
-	LayerClass	lc,	/* class to check for res	*/
+	NhlLayerClass	lc,	/* class to check for res	*/
 	NrmQuark	res	/* resource to look for		*/
 #endif
 );

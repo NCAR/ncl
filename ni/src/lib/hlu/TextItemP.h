@@ -1,6 +1,5 @@
-
 /*
- *      $Id: TextItemP.h,v 1.1 1993-04-30 17:24:30 boote Exp $
+ *      $Id: TextItemP.h,v 1.2 1994-01-27 21:26:01 boote Exp $
  */
 /************************************************************************
 *									*
@@ -26,20 +25,20 @@
 #include <ncarg/hlu/ViewP.h>
 #include <ncarg/hlu/TextItem.h>
 
-typedef struct _TextItemLayerPart{
+typedef struct _NhlTextItemLayerPart{
 	/* user setable resource fields */
 	char	*string;
 	float	pos_x;
 	float	pos_y;
 	float	angle;
 	int	just;
-	TextDirection direction;
-	int	font;
+	NhlTextDirection direction;
+	NhlFont	font;
 	int	font_color;
 	float	font_height;
 	float	font_aspect;
 	float 	font_thickness;
-	FontQuality	font_quality;
+	NhlFontQuality	font_quality;
 	float	constant_spacing;
 	char	func_code;
 	float	*x_corners;
@@ -58,25 +57,27 @@ typedef struct _TextItemLayerPart{
 	float	heightvecy[2];
 	char	dirstr[4];
 	int 	qual;
-}TextItemLayerPart;
+}NhlTextItemLayerPart;
 
-typedef struct _TextItemLayerRec{
-	BaseLayerPart	base;
-	ViewLayerPart	view;
-	TextItemLayerPart text;
-}TextItemLayerRec;
+typedef struct _NhlTextItemLayerRec{
+	NhlBaseLayerPart	base;
+	NhlViewLayerPart	view;
+	NhlTextItemLayerPart text;
+}NhlTextItemLayerRec;
 
-typedef struct _TextItemLayerClassPart {
+typedef struct _NhlTextItemLayerClassPart {
 	char *foo;
-}TextItemLayerClassPart;
+}NhlTextItemLayerClassPart;
 
-typedef struct _TextItemLayerClassRec{
-	BaseLayerClassPart base_class;
-	ViewLayerClassPart view_class;
-	TextItemLayerClassPart text_class;
-}TextItemLayerClassRec;
+typedef struct _NhlTextItemLayerClassRec{
+	NhlBaseLayerClassPart base_class;
+	NhlViewLayerClassPart view_class;
+	NhlTextItemLayerClassPart text_class;
+}NhlTextItemLayerClassRec;
 
-extern TextItemLayerClassRec textItemLayerClassRec;
+typedef struct _NhlTextItemLayerClassRec *NhlTextItemLayerClass;
+typedef struct _NhlTextItemLayerRec	*NhlTextItemLayer;
 
+extern NhlTextItemLayerClassRec NhltextItemLayerClassRec;
 
 #endif  /*_NTextItemP_h*/

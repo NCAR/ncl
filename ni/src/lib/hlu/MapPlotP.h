@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlotP.h,v 1.3 1994-01-12 00:34:46 dbrown Exp $
+ *      $Id: MapPlotP.h,v 1.4 1994-01-27 21:24:43 boote Exp $
  */
 /************************************************************************
 *									*
@@ -27,34 +27,37 @@
 #include <ncarg/hlu/MapTransObj.h>
 #include <ncarg/hlu/MapPlot.h>
 
-typedef struct MapPlotLayerPart {
+typedef struct NhlMapPlotLayerPart {
 
 	/* Public resources */
 
 	/* Private Fields */
 
-	Layer		overlay_object;
+	NhlLayer		overlay_object;
 
-} MapPlotLayerPart;
+} NhlMapPlotLayerPart;
 
-typedef struct _MapPlotLayerRec {
-	BaseLayerPart		base;
-	ViewLayerPart		view;
-	TransformLayerPart	trans;
-	MapPlotLayerPart	mapplot;
-} MapPlotLayerRec;
+typedef struct _NhlMapPlotLayerRec {
+	NhlBaseLayerPart	base;
+	NhlViewLayerPart	view;
+	NhlTransformLayerPart	trans;
+	NhlMapPlotLayerPart	mapplot;
+} NhlMapPlotLayerRec;
 
-typedef struct MapPlotLayerClassPart{
+typedef struct NhlMapPlotLayerClassPart{
 	void *foo;
-} MapPlotLayerClassPart;
+} NhlMapPlotLayerClassPart;
 
-typedef struct _MapPlotLayerClassRec{
-	BaseLayerClassPart	base_class;
-	ViewLayerClassPart	view_class;
-	TransformLayerClassPart	trans_class;
-	MapPlotLayerClassPart	mapplot_class;
-} MapPlotLayerClassRec;
+typedef struct _NhlMapPlotLayerClassRec{
+	NhlBaseLayerClassPart		base_class;
+	NhlViewLayerClassPart		view_class;
+	NhlTransformLayerClassPart	trans_class;
+	NhlMapPlotLayerClassPart	mapplot_class;
+} NhlMapPlotLayerClassRec;
 
-extern MapPlotLayerClassRec mapPlotLayerClassRec;
+typedef struct _NhlMapPlotLayerClassRec *NhlMapPlotLayerClass;
+typedef struct _NhlMapPlotLayerRec *NhlMapPlotLayer;
+
+extern NhlMapPlotLayerClassRec NhlmapPlotLayerClassRec;
 
 #endif  /* _NMapPlotP_h */

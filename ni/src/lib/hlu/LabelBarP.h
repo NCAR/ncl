@@ -1,6 +1,5 @@
-
 /*
- *      $Id: LabelBarP.h,v 1.3 1994-01-12 00:34:38 dbrown Exp $
+ *      $Id: LabelBarP.h,v 1.4 1994-01-27 21:23:47 boote Exp $
  */
 /************************************************************************
 *									*
@@ -26,7 +25,7 @@
 #include <ncarg/hlu/ViewP.h>
 #include <ncarg/hlu/LabelBar.h>
 
-typedef struct _LabelBarLayerPart {
+typedef struct _NhlLabelBarLayerPart {
 
 	/* public resource fields */
 
@@ -61,15 +60,15 @@ typedef struct _LabelBarLayerPart {
 				       2 - External_Edges */
 	int	label_dir;
 	float	label_angle;
-	int	label_font;
+	NhlFont	label_font;
 	int	label_color;
 	float	label_height;
 	float	label_aspect;
 	float	label_thickness;
-	FontQuality label_quality;
+	NhlFontQuality label_quality;
 	float	label_const_spacing;
 	char	label_func_code;
-	TextDirection label_direction;
+	NhlTextDirection label_direction;
 	int     label_stride;
 	
 	float	max_title_ext;
@@ -79,12 +78,12 @@ typedef struct _LabelBarLayerPart {
 	NhlJustification  title_just;
 	int     title_direction;
 	float	title_angle;
-	int	title_font;
+	NhlFont	title_font;
 	int	title_color;
 	float	title_height;
 	float	title_aspect;
 	float	title_thickness;
-	FontQuality title_quality;
+	NhlFontQuality title_quality;
 	float	title_const_spacing;
 	char	title_func_code;
 
@@ -138,25 +137,27 @@ typedef struct _LabelBarLayerPart {
 	float		title_x;
 	float		title_y;
 
-}LabelBarLayerPart;
+}NhlLabelBarLayerPart;
 
-typedef struct _LabelBarLayerRec{
-	BaseLayerPart	base;
-	ViewLayerPart	view;
-	LabelBarLayerPart labelbar;
-}LabelBarLayerRec;
+typedef struct _NhlLabelBarLayerRec{
+	NhlBaseLayerPart	base;
+	NhlViewLayerPart	view;
+	NhlLabelBarLayerPart	labelbar;
+}NhlLabelBarLayerRec;
 
-typedef struct _LabelBarLayerClassPart {
+typedef struct _NhlLabelBarLayerClassPart {
 	char *foo;
-}LabelBarLayerClassPart;
+}NhlLabelBarLayerClassPart;
 
-typedef struct _LabelBarLayerClassRec{
-	BaseLayerClassPart base_class;
-	ViewLayerClassPart view_class;
-	LabelBarLayerClassPart labelbar_class;
-}LabelBarLayerClassRec;
+typedef struct _NhlLabelBarLayerClassRec{
+	NhlBaseLayerClassPart		base_class;
+	NhlViewLayerClassPart		view_class;
+	NhlLabelBarLayerClassPart	labelbar_class;
+}NhlLabelBarLayerClassRec;
 
-extern LabelBarLayerClassRec labelBarLayerClassRec;
+typedef struct _NhlLabelBarLayerClassRec *NhlLabelBarLayerClass;
+typedef struct _NhlLabelBarLayerRec	*NhlLabelBarLayer;
 
+extern NhlLabelBarLayerClassRec NhllabelBarLayerClassRec;
 
 #endif  /*_NLabelBarP_h*/

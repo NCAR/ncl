@@ -1,5 +1,5 @@
 /*
- *      $Id: DataMgr.h,v 1.1 1993-07-12 22:36:15 boote Exp $
+ *      $Id: DataMgr.h,v 1.2 1994-01-27 21:22:45 boote Exp $
  */
 /************************************************************************
 *									*
@@ -25,11 +25,6 @@
 #include <ncarg/hlu/Base.h>
 #include <ncarg/hlu/DataItem.h>
 
-/* Exported Layer and LayerClass */
-
-typedef struct _DataMgrLayerClassRec *DataMgrLayerClass;
-typedef struct _DataMgrLayerRec *DataMgrLayer;
-
 /* Exported New types to support this object class */
 
 /*
@@ -37,6 +32,6 @@ typedef struct _DataMgrLayerRec *DataMgrLayer;
  */
 typedef struct _NhlDHandleRec *_NhlDHandle;
 
-extern LayerClass dataMgrLayerClass;
+extern NhlLayerClass NhldataMgrLayerClass;
 
 #endif /*_NDataMgr_h */

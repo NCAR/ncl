@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.5 1993-12-13 23:35:32 ethan Exp $
+#      $Id: yMakefile,v 1.6 1994-01-27 21:28:11 boote Exp $
 #
 #########################################################################
 #									#
@@ -27,17 +27,18 @@ HDRS		= Base.h BaseP.h Convert.h ConvertP.h Converters.h\
 		MapTransObj.h MapTransObjP.h MultiText.h MultiTextP.h \
 		NcgmWorkstation.h NcgmWorkstationP.h NresDB.h ResourcesP.h \
 		Segments.h TextItem.h TextItemP.h TickMark.h TickMarkP.h \
-		Title.h TitleP.h TransObj.h TransObjP.h Transform.h \
-		TransformP.h VarArg.h View.h ViewP.h Workstation.h \
-		WorkstationP.h XWorkstation.h XWorkstationP.h XyPlot.h \
-		XyPlotP.h defs.h hlu.h hluP.h DataComm.h DataCommP.h \
-		DataCommF.h DataItem.h DataItemP.h DataMgr.h DataMgrF.h \
-		DataMgrP.h Legend.h LegendP.h LabelBar.h LabelBarP.h \
-		CoordArrTable.h CoordArrTableP.h CoordArrTableIntP.h \
-		CoordArrTableFloatP.h CoordArrays.h CoordArraysP.h \
-		CoordArraysFloatP.h CoordArraysIntP.h Contour.h ContourP.h \
-		Overlay.h OverlayP.h LogLinPlot.h LogLinPlotP.h \
-		IrregularPlot.h IrregularPlotP.h MapPlot.h MapPlotP.h 
+		Title.h TitleP.h TransObj.h TransObjI.h TransObjP.h \
+		Transform.h TransformP.h VarArg.h View.h ViewI.h ViewP.h \
+		Workstation.h WorkstationI.h WorkstationP.h XWorkstation.h \
+		XWorkstationP.h XyPlot.h XyPlotP.h defs.h hlu.h hluP.h \
+		DataComm.h DataCommP.h DataCommF.h DataItem.h DataItemP.h \
+		DataMgr.h DataMgrF.h DataMgrP.h Legend.h LegendP.h LabelBar.h \
+		LabelBarP.h  CoordArrTable.h CoordArrTableP.h \
+		CoordArrTableIntP.h CoordArrTableFloatP.h CoordArrays.h \
+		CoordArraysP.h CoordArraysFloatP.h CoordArraysIntP.h Contour.h \
+		ContourP.h Overlay.h OverlayI.h OverlayP.h LogLinPlot.h \
+		LogLinPlotP.h IrregularPlot.h IrregularPlotP.h MapPlot.h \
+		MapPlotP.h 
 
 SRCS		= Base.c BoundingBox.c Close.c Convert.c Converters.c \
 		Create.c Destroy.c Draw.c Error.c GetValues.c \

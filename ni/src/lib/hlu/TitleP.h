@@ -1,5 +1,5 @@
 /*
- *      $Id: TitleP.h,v 1.2 1993-10-19 17:52:47 boote Exp $
+ *      $Id: TitleP.h,v 1.3 1994-01-27 21:26:39 boote Exp $
  */
 /************************************************************************
 *									*
@@ -26,63 +26,63 @@
 #include <ncarg/hlu/Title.h>
 #include <ncarg/hlu/TextItem.h>
 
-typedef struct _TitleLayerPart {
+typedef struct _NhlTitleLayerPart {
 /* Publically setable resource fields */
 	float	delta;
 	char	*main_string;
 	NhlBoolean	main_on;
-	TitlePositions	main_side;
-	TitlePositions	main_position;
+	NhlTitlePositions	main_side;
+	NhlTitlePositions	main_position;
 	int	main_just;
-	int	main_font;
+	NhlFont	main_font;
 	float 	main_font_height;
 	float 	main_font_aspect;
 	float 	main_font_thickness;
 	float   main_angle;
-	TextDirection	main_direction;
+	NhlTextDirection	main_direction;
 	float	main_constant_spacing;
 	char 	main_func_code;
 	float	main_offset_x;
 	float	main_offset_y;
-	FontQuality	main_font_quality;
+	NhlFontQuality	main_font_quality;
 	int	use_main_attributes; /* if set only those TextItem attributes 
 					blonging to the main resources will be 
 					used for all the titles */
 	int 	main_font_color;
 	char	*x_axis_string;
 	NhlBoolean	x_axis_on;
-	TitlePositions	x_axis_side;
-	TitlePositions	x_axis_position;
+	NhlTitlePositions	x_axis_side;
+	NhlTitlePositions	x_axis_position;
 	int	x_axis_just;
-	int	x_axis_font;
+	NhlFont	x_axis_font;
 	float 	x_axis_font_height;
 	float	x_axis_font_aspect;
 	float	x_axis_font_thickness;
 	float	x_axis_angle;
-	TextDirection	x_axis_direction;
+	NhlTextDirection	x_axis_direction;
 	float 	x_axis_constant_spacing;
 	float	x_axis_offset_x;
 	float	x_axis_offset_y;
 	char	x_axis_func_code;
-	FontQuality	x_axis_font_quality;
+	NhlFontQuality	x_axis_font_quality;
 	int 	x_axis_font_color;
 
 	char	*y_axis_string;
 	NhlBoolean	y_axis_on;
-	TitlePositions	y_axis_side;
-	TitlePositions	y_axis_position;
+	NhlTitlePositions	y_axis_side;
+	NhlTitlePositions	y_axis_position;
 	int	y_axis_just;
-	int	y_axis_font;
+	NhlFont	y_axis_font;
 	float	y_axis_font_height;
 	float	y_axis_font_aspect;
 	float	y_axis_font_thickness;
 	float	y_axis_angle;
-	TextDirection	y_axis_direction;
+	NhlTextDirection	y_axis_direction;
 	float	y_axis_constant_spacing;
 	float	y_axis_offset_x;
 	float	y_axis_offset_y;
 	char	y_axis_func_code;
-	FontQuality	y_axis_font_quality;
+	NhlFontQuality	y_axis_font_quality;
 	int 	y_axis_font_color;
 /* Private internal fields */
 	int	main_id;
@@ -94,23 +94,26 @@ typedef struct _TitleLayerPart {
 	float	x_axis_pos_y;
 	float	y_axis_pos_x;
 	float	y_axis_pos_y;
-}TitleLayerPart;
+}NhlTitleLayerPart;
 
-typedef struct _TitleLayerRec {
-	BaseLayerPart	base;
-	ViewLayerPart	view;
-	TitleLayerPart	title;
-}TitleLayerRec;
+typedef struct _NhlTitleLayerRec {
+	NhlBaseLayerPart	base;
+	NhlViewLayerPart	view;
+	NhlTitleLayerPart	title;
+}NhlTitleLayerRec;
 
-typedef struct _TitleLayerClassPart {
+typedef struct _NhlTitleLayerClassPart {
 	void *foo;
-}TitleLayerClassPart;
+}NhlTitleLayerClassPart;
 
-typedef struct _TitleLayerClassRec {
-	BaseLayerClassPart	base_class;
-	ViewLayerClassPart	view_class;
-	TitleLayerClassPart	title_class;
-}TitleLayerClassRec;
+typedef struct _NhlTitleLayerClassRec {
+	NhlBaseLayerClassPart	base_class;
+	NhlViewLayerClassPart	view_class;
+	NhlTitleLayerClassPart	title_class;
+}NhlTitleLayerClassRec;
 
-extern TitleLayerClassRec	titleLayerClassRec;
+typedef struct _NhlTitleLayerClassRec *NhlTitleLayerClass;
+typedef struct _NhlTitleLayerRec	*NhlTitleLayer;
+
+extern NhlTitleLayerClassRec	NhltitleLayerClassRec;
 #endif /* _NTitleP_h */

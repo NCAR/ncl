@@ -1,5 +1,5 @@
 /*
- *      $Id: Error.h,v 1.4 1993-12-13 22:55:22 boote Exp $
+ *      $Id: Error.h,v 1.5 1994-01-27 21:22:59 boote Exp $
  */
 /************************************************************************
 *									*
@@ -45,14 +45,10 @@
 #define NhlTErrorTypes		"ErrorTypes"
 
 /* usefull const's for error stuff */
-#define MAXERRMSGLEN	1024
-#define E_UNKNOWN	1000
+#define NhlEUNKNOWN	1000
 
 
-typedef struct _ErrorLayerRec *ErrorLayer;
-typedef struct _ErrorLayerClassRec *ErrorLayerClass;
-
-extern LayerClass errorLayerClass;
+extern NhlLayerClass NhlerrorLayerClass;
 
 /************************************************************************
 *									*

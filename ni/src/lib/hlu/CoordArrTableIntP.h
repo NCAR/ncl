@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrTableIntP.h,v 1.3 1994-01-14 23:36:11 boote Exp $
+ *      $Id: CoordArrTableIntP.h,v 1.4 1994-01-27 21:22:00 boote Exp $
  */
 /************************************************************************
 *									*
@@ -26,12 +26,12 @@
 #ifndef _NCoordArrTableIntP_h
 #define _NCoordArrTableIntP_h
 
-typedef struct _CoordArrTableIntLayerClassRec *CoordArrTableIntLayerClass;
-typedef struct _CoordArrTableIntLayerRec *CoordArrTableIntLayer;
+typedef struct _NhlCoordArrTableIntLayerClassRec *NhlCoordArrTableIntLayerClass;
+typedef struct _NhlCoordArrTableIntLayerRec *NhlCoordArrTableIntLayer;
 
-extern LayerClass coordArrTableIntLayerClass;
+extern NhlLayerClass NhlcoordArrTableIntLayerClass;
 
-typedef struct _CoordArrTableIntLayerPart{
+typedef struct _NhlCoordArrTableIntLayerPart{
 	/* User setable resource fields */
 	NhlGenArray	xtable;
 	NhlGenArray	ytable;
@@ -56,22 +56,22 @@ typedef struct _CoordArrTableIntLayerPart{
 	NhlBoolean	min_y_set;
 	NhlBoolean	own_x;
 	NhlBoolean	own_y;
-} CoordArrTableIntLayerPart;
+} NhlCoordArrTableIntLayerPart;
 
-typedef struct _CoordArrTableIntLayerRec{
-	ObjLayerPart			base;
-	CoordArrTableIntLayerPart	catint;
-} CoordArrTableIntLayerRec;
+typedef struct _NhlCoordArrTableIntLayerRec{
+	NhlObjLayerPart			base;
+	NhlCoordArrTableIntLayerPart	catint;
+} NhlCoordArrTableIntLayerRec;
 
-typedef struct _CoordArrTableIntLayerClassPart{
+typedef struct _NhlCoordArrTableIntLayerClassPart{
 	int	foo;
-} CoordArrTableIntLayerClassPart;
+} NhlCoordArrTableIntLayerClassPart;
 
-typedef struct _CoordArrTableIntLayerClassRec{
-	ObjLayerClassPart		base_class;
-	CoordArrTableIntLayerClassPart	catint_class;
-} CoordArrTableIntLayerClassRec;
+typedef struct _NhlCoordArrTableIntLayerClassRec{
+	NhlObjLayerClassPart			base_class;
+	NhlCoordArrTableIntLayerClassPart	catint_class;
+} NhlCoordArrTableIntLayerClassRec;
 
-extern CoordArrTableIntLayerClassRec coordArrTableIntLayerClassRec;
+extern NhlCoordArrTableIntLayerClassRec NhlcoordArrTableIntLayerClassRec;
 
 #endif /*_NCoordArrTableIntP_h */

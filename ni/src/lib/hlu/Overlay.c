@@ -1,5 +1,5 @@
 /*
- *      $Id: Overlay.c,v 1.5 1994-01-24 23:57:38 dbrown Exp $
+ *      $Id: Overlay.c,v 1.6 1994-01-27 21:25:19 boote Exp $
  */
 /************************************************************************
 *									*
@@ -30,23 +30,23 @@
 static NhlResource resources[] = {
 
 	{ NhlNovOverlayIds,NhlCovOverlayIds,NhlTGenArray,sizeof(NhlPointer),
-		  NhlOffset(OverlayLayerRec,overlay.overlay_ids),
+		  NhlOffset(NhlOverlayLayerRec,overlay.overlay_ids),
 		  NhlTImmediate,NULL},
 	{ NhlNovPreDrawOrder,NhlCovPreDrawOrder,NhlTGenArray,
 		  sizeof(NhlPointer),
-		  NhlOffset(OverlayLayerRec,overlay.pre_draw_order),
+		  NhlOffset(NhlOverlayLayerRec,overlay.pre_draw_order),
 		  NhlTImmediate,NULL},
 	{ NhlNovPostDrawOrder,NhlCovPostDrawOrder,NhlTGenArray,
 		  sizeof(NhlPointer),
-		  NhlOffset(OverlayLayerRec,overlay.post_draw_order),
+		  NhlOffset(NhlOverlayLayerRec,overlay.post_draw_order),
 		  NhlTImmediate,NULL},
 	{ NhlNovOverlayRecs,NhlCovOverlayRecs,NhlTGenArray,
 		  sizeof(NhlPointer),
-		  NhlOffset(OverlayLayerRec,overlay.ov_rec_list),
+		  NhlOffset(NhlOverlayLayerRec,overlay.ov_rec_list),
 		  NhlTImmediate,NULL},
 	{ NhlNovUpdateReq,NhlCovUpdateReq,NhlTBoolean,
 		  sizeof(NhlBoolean),
-		  NhlOffset(OverlayLayerRec,overlay.update_req),
+		  NhlOffset(NhlOverlayLayerRec,overlay.update_req),
 		  NhlTImmediate,(NhlPointer) False},
 /*
  * Annotation resources
@@ -54,66 +54,66 @@ static NhlResource resources[] = {
 
 	{ NhlNovDisplayTitles,NhlCovDisplayTitles,
 		  NhlTInteger,sizeof(int),
-		  NhlOffset(OverlayLayerRec,overlay.display_titles),
+		  NhlOffset(NhlOverlayLayerRec,overlay.display_titles),
 		  NhlTImmediate,(NhlPointer) Nhl_ovNoCreate},
 	{ NhlNovDisplayTickMarks,NhlCovDisplayTickMarks,
 		  NhlTInteger,sizeof(int),
-		  NhlOffset(OverlayLayerRec,overlay.display_tickmarks),
+		  NhlOffset(NhlOverlayLayerRec,overlay.display_tickmarks),
 		  NhlTImmediate,(NhlPointer) Nhl_ovNoCreate},
 	{ NhlNovDisplayLabelBar,NhlCovDisplayLabelBar,NhlTInteger,sizeof(int),
-		  NhlOffset(OverlayLayerRec,overlay.display_labelbar),
+		  NhlOffset(NhlOverlayLayerRec,overlay.display_labelbar),
 		  NhlTImmediate,(NhlPointer) Nhl_ovNoCreate},
 	{ NhlNovDisplayLegend,NhlCovDisplayLegend,NhlTInteger,sizeof(int),
-		  NhlOffset(OverlayLayerRec,overlay.display_legend),
+		  NhlOffset(NhlOverlayLayerRec,overlay.display_legend),
 		  NhlTImmediate,(NhlPointer) Nhl_ovNoCreate},
 /*
  * Intercepted tick mark resources
  */
 	{ NhlNtmXBDataLeftF, NhlCtmXBDataLeftF,NhlTFloat, sizeof(float),
-		  NhlOffset(OverlayLayerRec,overlay.x_b_data_left),
+		  NhlOffset(NhlOverlayLayerRec,overlay.x_b_data_left),
 		  NhlTString,"0.0" },
 	{ NhlNtmXBDataRightF, NhlCtmXBDataRightF,NhlTFloat, sizeof(float),
-		  NhlOffset(OverlayLayerRec,overlay.x_b_data_right),
+		  NhlOffset(NhlOverlayLayerRec,overlay.x_b_data_right),
 		  NhlTString,"1.0" },
 	{ NhlNtmYLDataBottomF, NhlCtmYLDataBottomF,NhlTFloat, sizeof(float),
-		  NhlOffset(OverlayLayerRec,overlay.y_l_data_bottom),
+		  NhlOffset(NhlOverlayLayerRec,overlay.y_l_data_bottom),
 		  NhlTString,"0.0" },
 	{ NhlNtmYLDataTopF, NhlCtmYLDataTopF,NhlTFloat, sizeof(float),
-		  NhlOffset(OverlayLayerRec,overlay.y_l_data_top),
+		  NhlOffset(NhlOverlayLayerRec,overlay.y_l_data_top),
 		  NhlTString,"1.0" },
 
 /* 
  * Overlay only looks at the XLog and YLog directly
  */
 	{ NhlNtrXMinF,NhlCtrXMinF,NhlTFloat,sizeof(float),
-		NhlOffset(OverlayLayerRec,overlay.x_min),
+		NhlOffset(NhlOverlayLayerRec,overlay.x_min),
 		NhlTString,"0.0"},
 	{ NhlNtrXMaxF,NhlCtrXMaxF,NhlTFloat,sizeof(float),
-		NhlOffset(OverlayLayerRec,overlay.x_max),
+		NhlOffset(NhlOverlayLayerRec,overlay.x_max),
 		NhlTString,"1.0"},
 	{ NhlNtrYMinF,NhlCtrYMinF,NhlTFloat,sizeof(float),
-		NhlOffset(OverlayLayerRec,overlay.y_min),
+		NhlOffset(NhlOverlayLayerRec,overlay.y_min),
 		NhlTString,"0.0"},
 	{ NhlNtrYMaxF,NhlCtrYMaxF,NhlTFloat,sizeof(float),
-		NhlOffset(OverlayLayerRec,overlay.y_max),
+		NhlOffset(NhlOverlayLayerRec,overlay.y_max),
 		NhlTString,"1.0"},
 	{ NhlNtrXLog, NhlCtrXLog,NhlTInteger, sizeof(int),
-		  NhlOffset(OverlayLayerRec,overlay.x_log),
+		  NhlOffset(NhlOverlayLayerRec,overlay.x_log),
 		  NhlTImmediate,(NhlPointer) 0 },
 	{ NhlNtrYLog, NhlCtrYLog,NhlTInteger, sizeof(int),
-		  NhlOffset(OverlayLayerRec,overlay.y_log),
+		  NhlOffset(NhlOverlayLayerRec,overlay.y_log),
 		  NhlTImmediate,(NhlPointer) 0 },
 	{ NhlNtrXReverse, NhlCtrXReverse,NhlTInteger, sizeof(int),
-		  NhlOffset(OverlayLayerRec,overlay.x_reverse),
+		  NhlOffset(NhlOverlayLayerRec,overlay.x_reverse),
 		  NhlTImmediate,(NhlPointer) 0 },
 	{ NhlNtrYReverse, NhlCtrYReverse,NhlTInteger, sizeof(int),
-		  NhlOffset(OverlayLayerRec,overlay.y_reverse),
+		  NhlOffset(NhlOverlayLayerRec,overlay.y_reverse),
 		  NhlTImmediate,(NhlPointer) 0 },
 	{ NhlNtrYTensionF, NhlCtrYTensionF, NhlTFloat, sizeof(float),
-		NhlOffset(OverlayLayerRec,overlay.y_tension),
+		NhlOffset(NhlOverlayLayerRec,overlay.y_tension),
 		NhlTString,"2.0" },
 	{ NhlNtrXTensionF, NhlCtrXTensionF, NhlTFloat, sizeof(float),
-		NhlOffset(OverlayLayerRec,overlay.x_tension),
+		NhlOffset(NhlOverlayLayerRec,overlay.x_tension),
 		NhlTString,"2.0" },
 		
 /*
@@ -121,107 +121,107 @@ static NhlResource resources[] = {
  */
 
 	{NhlNtiMainOffsetXF,NhlCtiMainOffsetXF,NhlTFloat,sizeof(float),
-		 NhlOffset(OverlayLayerRec,overlay.ti_main_offset_x),
+		 NhlOffset(NhlOverlayLayerRec,overlay.ti_main_offset_x),
 		 NhlTString,"0.0"},
 	{NhlNtiXAxisOffsetXF,NhlCtiXAxisOffsetXF,NhlTFloat,sizeof(float),
-		 NhlOffset(OverlayLayerRec,overlay.ti_x_axis_offset_x),
+		 NhlOffset(NhlOverlayLayerRec,overlay.ti_x_axis_offset_x),
 		 NhlTString,"0.0"},
 	{NhlNtiYAxisOffsetYF,NhlCtiYAxisOffsetYF,NhlTFloat,sizeof(float),
-		 NhlOffset(OverlayLayerRec,overlay.ti_y_axis_offset_y),
+		 NhlOffset(NhlOverlayLayerRec,overlay.ti_y_axis_offset_y),
 		 NhlTString,"0.0"},
 	{NhlNtiXAxisPosition,NhlCtiXAxisPosition,NhlTTitlePositions,
-		 sizeof(TitlePositions),
-		 NhlOffset(OverlayLayerRec,overlay.ti_x_axis_position),
-		 NhlTImmediate,(NhlPointer)CENTER},
+		 sizeof(NhlTitlePositions),
+		 NhlOffset(NhlOverlayLayerRec,overlay.ti_x_axis_position),
+		 NhlTImmediate,(NhlPointer)NhlCENTER},
 	{NhlNtiYAxisPosition,NhlCtiYAxisPosition,NhlTTitlePositions,
-		 sizeof(TitlePositions),
-		 NhlOffset(OverlayLayerRec,overlay.ti_y_axis_position),
-		 NhlTImmediate,(NhlPointer)CENTER},
+		 sizeof(NhlTitlePositions),
+		 NhlOffset(NhlOverlayLayerRec,overlay.ti_y_axis_position),
+		 NhlTImmediate,(NhlPointer)NhlCENTER},
 	{NhlNtiMainPosition,NhlCtiMainPosition,NhlTTitlePositions,
-		 sizeof(TitlePositions),
-		 NhlOffset(OverlayLayerRec,overlay.ti_main_position),
-		 NhlTImmediate,(NhlPointer)CENTER},
+		 sizeof(NhlTitlePositions),
+		 NhlOffset(NhlOverlayLayerRec,overlay.ti_main_position),
+		 NhlTImmediate,(NhlPointer)NhlCENTER},
 
 /* LabelBar resources */
 
 	{ NhlNovLabelBarWidthF, NhlCovLabelBarWidthF,NhlTFloat, sizeof(float),
-		  NhlOffset(OverlayLayerRec,overlay.lbar_width),
+		  NhlOffset(NhlOverlayLayerRec,overlay.lbar_width),
 		  NhlTString,"0.2" },
 	{ NhlNovLabelBarHeightF, NhlCovLabelBarHeightF,NhlTFloat, 
 		  sizeof(float),
-		  NhlOffset(OverlayLayerRec,overlay.lbar_height),
+		  NhlOffset(NhlOverlayLayerRec,overlay.lbar_height),
 		  NhlTString,"0.5" },
 	{ NhlNovLabelBarXOffsetF, NhlCovLabelBarXOffsetF,NhlTFloat, 
 		  sizeof(float),
-		  NhlOffset(OverlayLayerRec,overlay.lbar_x_off),
+		  NhlOffset(NhlOverlayLayerRec,overlay.lbar_x_off),
 		  NhlTString,"0.02" },
 	{ NhlNovLabelBarYOffsetF, NhlCovLabelBarYOffsetF,NhlTFloat, 
 		  sizeof(float),
-		  NhlOffset(OverlayLayerRec,overlay.lbar_y_off),
+		  NhlOffset(NhlOverlayLayerRec,overlay.lbar_y_off),
 		  NhlTString,"0.00" },
 	{NhlNovLabelBarSide, NhlCovLabelBarSide, NhlTPosition, 
 		 sizeof(NhlJustification),
-		 NhlOffset(OverlayLayerRec,overlay.lbar_side),
+		 NhlOffset(NhlOverlayLayerRec,overlay.lbar_side),
 		 NhlTImmediate,(NhlPointer)NhlRIGHT},
 	{NhlNovLabelBarPosition, NhlCovLabelBarPosition, NhlTPosition, 
 		 sizeof(NhlJustification),
-		 NhlOffset(OverlayLayerRec,overlay.lbar_pos),
+		 NhlOffset(NhlOverlayLayerRec,overlay.lbar_pos),
 		 NhlTImmediate,(NhlPointer)NhlCENTER},
 
 /* intercepted LabelBar resources */
 
 	{NhlNlbLabelBar, NhlClbLabelBar, NhlTBoolean, 
 		 sizeof(NhlBoolean),
-		 NhlOffset(OverlayLayerRec,overlay.lbar_on),
+		 NhlOffset(NhlOverlayLayerRec,overlay.lbar_on),
 		 NhlTImmediate,(NhlPointer)False},
 	{NhlNlbJustification, NhlClbJustification, NhlTJustification, 
 		 sizeof(NhlJustification),
-		 NhlOffset(OverlayLayerRec,overlay.lbar_just),
+		 NhlOffset(NhlOverlayLayerRec,overlay.lbar_just),
 		 NhlTImmediate,(NhlPointer)NhlCENTERLEFT},
 	{NhlNlbOrientation, NhlClbOrientation, NhlTOrientation, 
 		 sizeof(NhlOrientation),
-		 NhlOffset(OverlayLayerRec,overlay.lbar_orient),
+		 NhlOffset(NhlOverlayLayerRec,overlay.lbar_orient),
 		 NhlTImmediate,(NhlPointer)NhlVERTICAL},
 
 /* Legend resources */
 
 	{ NhlNovLegendWidthF, NhlCovLegendWidthF,NhlTFloat, sizeof(float),
-		  NhlOffset(OverlayLayerRec,overlay.lgnd_width),
+		  NhlOffset(NhlOverlayLayerRec,overlay.lgnd_width),
 		  NhlTString,"0.4" },
 	{ NhlNovLegendHeightF, NhlCovLegendHeightF,NhlTFloat, 
 		  sizeof(float),
-		  NhlOffset(OverlayLayerRec,overlay.lgnd_height),
+		  NhlOffset(NhlOverlayLayerRec,overlay.lgnd_height),
 		  NhlTString,"0.2" },
 	{ NhlNovLegendXOffsetF, NhlCovLegendXOffsetF,NhlTFloat, 
 		  sizeof(float),
-		  NhlOffset(OverlayLayerRec,overlay.lgnd_x_off),
+		  NhlOffset(NhlOverlayLayerRec,overlay.lgnd_x_off),
 		  NhlTString,"0.00" },
 	{ NhlNovLegendYOffsetF, NhlCovLegendYOffsetF,NhlTFloat, 
 		  sizeof(float),
-		  NhlOffset(OverlayLayerRec,overlay.lgnd_y_off),
+		  NhlOffset(NhlOverlayLayerRec,overlay.lgnd_y_off),
 		  NhlTString,"0.02" },
 	{NhlNovLegendSide, NhlCovLegendSide, NhlTPosition, 
 		 sizeof(NhlPosition),
-		 NhlOffset(OverlayLayerRec,overlay.lgnd_side),
+		 NhlOffset(NhlOverlayLayerRec,overlay.lgnd_side),
 		 NhlTImmediate,(NhlPointer)NhlBOTTOM},
 	{NhlNovLegendPosition, NhlCovLegendPosition, NhlTPosition, 
 		 sizeof(NhlPosition),
-		 NhlOffset(OverlayLayerRec,overlay.lgnd_pos),
+		 NhlOffset(NhlOverlayLayerRec,overlay.lgnd_pos),
 		 NhlTImmediate,(NhlPointer)NhlCENTER},
 
 /* intercepted Legend resources */
 
 	{NhlNlgLegend, NhlClgLegend, NhlTBoolean, 
 		 sizeof(NhlBoolean),
-		 NhlOffset(OverlayLayerRec,overlay.lgnd_on),
+		 NhlOffset(NhlOverlayLayerRec,overlay.lgnd_on),
 		 NhlTImmediate,(NhlPointer)False},
 	{NhlNlgJustification, NhlClgJustification, NhlTJustification, 
 		 sizeof(NhlJustification),
-		 NhlOffset(OverlayLayerRec,overlay.lgnd_just),
+		 NhlOffset(NhlOverlayLayerRec,overlay.lgnd_just),
 		 NhlTImmediate,(NhlPointer)NhlCENTERLEFT},
 	{NhlNlgOrientation, NhlClgOrientation, NhlTOrientation, 
 		 sizeof(NhlOrientation),
-		 NhlOffset(OverlayLayerRec,overlay.lgnd_orient),
+		 NhlOffset(NhlOverlayLayerRec,overlay.lgnd_orient),
 		 NhlTImmediate,(NhlPointer)NhlVERTICAL},
 };
 
@@ -236,15 +236,15 @@ static NhlErrorTypes OverlayClassInitialize(
 
 static NhlErrorTypes OverlayClassPartInitialize(
 #ifdef NhlNeedProto
-	LayerClass	lc
+	NhlLayerClass	lc
 #endif
 );
 
 static NhlErrorTypes OverlayInitialize(
 #ifdef NhlNeedProto
-        LayerClass,     /* class */
-        Layer,          /* req */
-        Layer,          /* new */
+        NhlLayerClass,     /* class */
+        NhlLayer,          /* req */
+        NhlLayer,          /* new */
         _NhlArgList,    /* args */
         int             /* num_args */
 #endif
@@ -252,9 +252,9 @@ static NhlErrorTypes OverlayInitialize(
 
 static NhlErrorTypes OverlaySetValues(
 #ifdef NhlNeedProto
-        Layer,          /* old */
-        Layer,          /* reference */
-        Layer,          /* new */
+        NhlLayer,          /* old */
+        NhlLayer,          /* reference */
+        NhlLayer,          /* new */
         _NhlArgList,    /* args */
         int             /* num_args*/
 #endif
@@ -262,7 +262,7 @@ static NhlErrorTypes OverlaySetValues(
 
 static NhlErrorTypes 	OverlayGetValues(
 #ifdef NhlNeedProto
-	Layer,		/* l */
+	NhlLayer,		/* l */
 	_NhlArgList, 	/* args */
 	int		/* num_args */
 #endif
@@ -270,31 +270,31 @@ static NhlErrorTypes 	OverlayGetValues(
 
 static NhlErrorTypes OverlayDestroy(
 #ifdef NhlNeedProto
-        Layer           /* inst */
+        NhlLayer           /* inst */
 #endif
 );
 
 static NhlErrorTypes OverlayDraw(
 #ifdef NhlNeedProto
-        Layer   /* layer */
+        NhlLayer   /* layer */
 #endif
 );
 
 static NhlErrorTypes OverlayPreDraw(
 #ifdef NhlNeedProto
-        Layer   /* layer */
+        NhlLayer   /* layer */
 #endif
 );
 
 static NhlErrorTypes OverlayPostDraw(
 #ifdef NhlNeedProto
-        Layer   /* layer */
+        NhlLayer   /* layer */
 #endif
 );
 
 static NhlErrorTypes OverlayGetBB(
 #ifdef NhlNeedProto
-        Layer          /* instance */,
+        NhlLayer          /* instance */,
         NhlBoundingBox * /*thebox*/
 #endif
 );
@@ -304,7 +304,7 @@ static NhlErrorTypes OverlayGetBB(
 
 static NhlErrorTypes InternalGetBB(
 #ifdef NhlNeedProto
-        Layer			/* instance */,
+        NhlLayer			/* instance */,
         NhlBoundingBox *	/* thebox */,
         int  	        	/* include_types */,   
 	char *			/* entry_name */		   
@@ -313,8 +313,8 @@ static NhlErrorTypes InternalGetBB(
 
 static NhlErrorTypes ManageAnnotations(
 #ifdef NhlNeedProto
-	OverlayLayer	ovnew,
-	OverlayLayer	ovold,
+	NhlOverlayLayer	ovnew,
+	NhlOverlayLayer	ovold,
 	NhlBoolean	init,				       
 	_NhlArgList	args,
 	int		num_args
@@ -323,24 +323,24 @@ static NhlErrorTypes ManageAnnotations(
 
 static NhlErrorTypes ManageTitles(
 #ifdef NhlNeedProto
-	OverlayLayer	ovnew,
-	OverlayLayer	ovold,
+	NhlOverlayLayer	ovnew,
+	NhlOverlayLayer	ovold,
 	NhlBoolean	init				       
 #endif
 );
 
 static NhlErrorTypes ManageTickMarks(
 #ifdef NhlNeedProto
-	OverlayLayer	ovnew,
-	OverlayLayer	ovold,
+	NhlOverlayLayer	ovnew,
+	NhlOverlayLayer	ovold,
 	NhlBoolean	init				       
 #endif
 );
 
 static NhlErrorTypes ManageLabelBar(
 #ifdef NhlNeedProto
-	OverlayLayer	ovnew,
-	OverlayLayer	ovold,
+	NhlOverlayLayer	ovnew,
+	NhlOverlayLayer	ovold,
 	NhlBoolean	init,		       
 	_NhlArgList	args,
 	int		num_args
@@ -349,8 +349,8 @@ static NhlErrorTypes ManageLabelBar(
 
 static NhlErrorTypes ManageLegend(
 #ifdef NhlNeedProto
-	OverlayLayer	ovnew,
-	OverlayLayer	ovold,
+	NhlOverlayLayer	ovnew,
+	NhlOverlayLayer	ovold,
 	NhlBoolean	init,			       
 	_NhlArgList	args,
 	int		num_args
@@ -358,8 +358,8 @@ static NhlErrorTypes ManageLegend(
 );
 static NhlErrorTypes ManageLegend(
 #ifdef NhlNeedProto
-	OverlayLayer	ovnew,
-	OverlayLayer	ovold,
+	NhlOverlayLayer	ovnew,
+	NhlOverlayLayer	ovold,
 	NhlBoolean	init,			       
 	_NhlArgList	args,
 	int		num_args
@@ -368,31 +368,31 @@ static NhlErrorTypes ManageLegend(
 
 static NhlErrorTypes RestoreOverlayBase(
 #ifdef NhlNeedProto
-	OverlayLayerPart	*ovp,
+	NhlOverlayLayerPart	*ovp,
 	int			plot_number
 #endif
 );
 
 static NhlErrorTypes RemoveOverlayBase(
 #ifdef NhlNeedProto
-	OverlayLayerPart	*ovp,
+	NhlOverlayLayerPart	*ovp,
 	int			plot_number
 #endif
 );
 
 static NhlErrorTypes DissolveOverlay(
 #ifdef NhlNeedProto
-	Layer		overlay_object
+	NhlLayer		overlay_object
 #endif
 );
 
-OverlayLayerClassRec overlayLayerClassRec = {
+NhlOverlayLayerClassRec NhloverlayLayerClassRec = {
         {
 /* class_name			*/      "Overlay",
 /* nrm_class			*/      NrmNULLQUARK,
-/* layer_size			*/      sizeof(OverlayLayerRec),
+/* layer_size			*/      sizeof(NhlOverlayLayerRec),
 /* class_inited			*/      False,
-/* superclass			*/      (LayerClass)&transformLayerClassRec,
+/* superclass			*/      (NhlLayerClass)&NhltransformLayerClassRec,
 
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
@@ -433,7 +433,7 @@ OverlayLayerClassRec overlayLayerClassRec = {
 	}
 };
 
-LayerClass overlayLayerClass = (LayerClass)&overlayLayerClassRec;
+NhlLayerClass NhloverlayLayerClass = (NhlLayerClass)&NhloverlayLayerClassRec;
 
 static NrmQuark Overlay_Ids;
 static NrmQuark Overlay_Recs;
@@ -442,10 +442,10 @@ static NrmQuark Post_Draw_Order;
 
 /* static variables referenced by the low-level library mapping functions */
 
-static Layer Trans_Obj = NULL;
-static Layer Plot = NULL;
-static Layer Overlay_Trans_Obj = NULL;
-static Layer Overlay_Plot = NULL;
+static NhlLayer Trans_Obj = NULL;
+static NhlLayer Plot = NULL;
+static NhlLayer Overlay_Trans_Obj = NULL;
+static NhlLayer Overlay_Plot = NULL;
 
 /*
  * Function:	OverlayClassInitialize
@@ -475,17 +475,17 @@ OverlayClassInitialize
 	Pre_Draw_Order = NrmStringToQuark(NhlNovPreDrawOrder);
 	Post_Draw_Order = NrmStringToQuark(NhlNovPostDrawOrder);
 
-	return NOERROR;
+	return NhlNOERROR;
 }
 
 /*
  * Function:	OverlayClassPartInitialize
  *
  * Description:	This function initializes fields in the 
- *		OverlayLayerClassPart that cannot be initialized statically.
+ *		NhlOverlayLayerClassPart that cannot be initialized statically.
  *
  * In Args:	
- *		LayerClass	lc	Layer Class to init
+ *		NhlLayerClass	lc	NhlLayer Class to init
  *
  * Out Args:	
  *
@@ -498,16 +498,16 @@ static NhlErrorTypes
 OverlayClassPartInitialize
 #if	__STDC__
 (
-	LayerClass	lc	/* Layer Class to init	*/
+	NhlLayerClass	lc	/* NhlLayer Class to init	*/
 )
 #else
 (lc)
-	LayerClass	lc;	/* Layer Class to init	*/
+	NhlLayerClass	lc;	/* NhlLayer Class to init	*/
 #endif
 {
-	NhlErrorTypes ret = NOERROR, subret = NOERROR;
+	NhlErrorTypes ret = NhlNOERROR, subret = NhlNOERROR;
 
-	subret = _NhlRegisterChildClass(lc,tickMarkLayerClass,
+	subret = _NhlRegisterChildClass(lc,NhltickMarkLayerClass,
 					False,False,
 					NhlNtmXBDataLeftF,
 					NhlNtmXBDataRightF,
@@ -515,10 +515,10 @@ OverlayClassPartInitialize
 					NhlNtmYLDataTopF,
 					NULL);
 
-	if ((ret = MIN(subret,ret)) < WARNING)
+	if ((ret = MIN(subret,ret)) < NhlWARNING)
 		return ret;
 
-	subret = _NhlRegisterChildClass(lc,titleLayerClass,False,False,
+	subret = _NhlRegisterChildClass(lc,NhltitleLayerClass,False,False,
 					NhlNtiMainOffsetXF,
 					NhlNtiXAxisOffsetXF, 
 					NhlNtiYAxisOffsetYF, 
@@ -527,20 +527,20 @@ OverlayClassPartInitialize
 					NhlNtiMainPosition,
 					NULL);
 
-	if ((ret = MIN(subret,ret)) < WARNING)
+	if ((ret = MIN(subret,ret)) < NhlWARNING)
 		return ret;
 
-	subret = _NhlRegisterChildClass(lc,labelBarLayerClass,
+	subret = _NhlRegisterChildClass(lc,NhllabelBarLayerClass,
 					False,False,
 					NhlNlbLabelBar,
 					NhlNlbJustification,
 					NhlNlbOrientation,
 					NULL);
 
-	if ((ret = MIN(subret,ret)) < WARNING)
+	if ((ret = MIN(subret,ret)) < NhlWARNING)
 		return ret;
 
-	subret = _NhlRegisterChildClass(lc,legendLayerClass,
+	subret = _NhlRegisterChildClass(lc,NhllegendLayerClass,
 					False,False,
 					NhlNlgLegend,
 					NhlNlgJustification,
@@ -573,28 +573,28 @@ static NhlErrorTypes
 OverlayInitialize
 #if     __STDC__
 (
-	LayerClass	class,
-	Layer		req,
-	Layer		new,
+	NhlLayerClass	class,
+	NhlLayer		req,
+	NhlLayer		new,
 	_NhlArgList	args,
 	int		num_args
 )
 #else
 (class,req,new,args,num_args)
-        LayerClass      class;
-        Layer           req;
-        Layer           new;
+        NhlLayerClass      class;
+        NhlLayer           req;
+        NhlLayer           new;
         _NhlArgList     args;
         int             num_args;
 #endif
 {
-	NhlErrorTypes		ret = NOERROR;
+	NhlErrorTypes		ret = NhlNOERROR;
 	char			*e_text;
 	char			*entry_name = "OverlayInitialize";
-	OverlayLayer		ovnew = (OverlayLayer) new;
-	OverlayLayerPart	*ovp = &(ovnew->overlay);
-	TransformLayer		parent = (TransformLayer)ovnew->base.parent;
-	ovRec			*ov_rec;
+	NhlOverlayLayer		ovnew = (NhlOverlayLayer) new;
+	NhlOverlayLayerPart	*ovp = &(ovnew->overlay);
+	NhlTransformLayer	parent = (NhlTransformLayer)ovnew->base.parent;
+	NhlovRec			*ov_rec;
 	int			i;
 
 /*
@@ -603,8 +603,8 @@ OverlayInitialize
 	if (parent->trans.trans_obj == NULL ||
 	    ! _NhlIsTransObj(parent->trans.trans_obj)) {
 		e_text = "%s: invalid transformation supplied";
-		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name);
-		return(FATAL);
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return(NhlFATAL);
 	}
 	ovnew->trans.overlay_object = new;
 /*
@@ -612,17 +612,17 @@ OverlayInitialize
  * Then allocate an array for the first member element.
  */
 
-	if ((ovp->ov_recs = (ovRec **) 
-	     NhlMalloc(NhlOV_ALLOC_UNIT * sizeof(ovRec *))) == NULL) {
+	if ((ovp->ov_recs = (NhlovRec **) 
+	     NhlMalloc(NhlOV_ALLOC_UNIT * sizeof(NhlovRec *))) == NULL) {
 		e_text = "%s: dynamic memory allocation error";
-		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name);
-		return FATAL;
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
 	}
-	if ((ov_rec = (ovRec *) 
-	     NhlMalloc(NhlOV_ALLOC_UNIT * sizeof(ovRec))) == NULL) {
+	if ((ov_rec = (NhlovRec *) 
+	     NhlMalloc(NhlOV_ALLOC_UNIT * sizeof(NhlovRec))) == NULL) {
 		e_text = "%s: dynamic memory allocation error";
-		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name);
-		return FATAL;
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
 	}
 	ovp->overlay_alloc = NhlOV_ALLOC_UNIT;
 	ovp->overlay_count = 1;
@@ -633,7 +633,7 @@ OverlayInitialize
 	for (i = ovp->overlay_count; i < ovp->overlay_alloc; i++) 
 		ovp->ov_recs[i] = NULL;
 
-	ret = ManageAnnotations(ovnew,(OverlayLayer)req,True,args,num_args);
+	ret = ManageAnnotations(ovnew,(NhlOverlayLayer)req,True,args,num_args);
  
 	return ret;
 }
@@ -661,28 +661,28 @@ OverlayInitialize
 static NhlErrorTypes OverlaySetValues
 #if  __STDC__
 (
-	Layer		old,
-	Layer		reference,
-	Layer		new,
+	NhlLayer		old,
+	NhlLayer		reference,
+	NhlLayer		new,
 	_NhlArgList	args,
 	int		num_args
 )
 #else
 (old,reference,new,args,num_args)
-	Layer		old;
-	Layer		reference;
-	Layer		new;
+	NhlLayer		old;
+	NhlLayer		reference;
+	NhlLayer		new;
 	_NhlArgList	args;
 	int		num_args;
 #endif
 {
-	NhlErrorTypes		ret = NOERROR, subret = NOERROR;
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	char			*e_text;
 	char			*entry_name = "OverlaySetValues";
-	OverlayLayer		ovnew = (OverlayLayer) new;
-	OverlayLayer		ovold = (OverlayLayer) old;
-	OverlayLayerPart	*ovp = &(ovnew->overlay);
-	OverlayLayerPart	*oovp = &(ovold->overlay);
+	NhlOverlayLayer		ovnew = (NhlOverlayLayer) new;
+	NhlOverlayLayer		ovold = (NhlOverlayLayer) old;
+	NhlOverlayLayerPart	*ovp = &(ovnew->overlay);
+	NhlOverlayLayerPart	*oovp = &(ovold->overlay);
 #define _ovDefArgCount 16
         NhlSArg			sargs[_ovDefArgCount];
         int			nargs = 0;
@@ -694,40 +694,40 @@ static NhlErrorTypes OverlaySetValues
  */
 	if (ovp->display_tickmarks != Nhl_ovNoCreate &&
 	    ovp->tickmarks == NULL) {
-		ret = MIN(ret,WARNING);
+		ret = MIN(ret,NhlWARNING);
 		e_text = 
 		 "%s: overlay TickMarks can be created only during NhlCreate";
-		NhlPError(WARNING,E_UNKNOWN,e_text,
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
 			  entry_name,NhlNovDisplayTickMarks);
 		ovp->display_tickmarks = Nhl_ovNoCreate;
 	}
 
 	if (ovp->display_titles != Nhl_ovNoCreate &&
 	    ovp->titles == NULL) {
-		ret = MIN(ret,WARNING);
+		ret = MIN(ret,NhlWARNING);
 		e_text = 
 		 "%s: overlay Titles can be created only during NhlCreate";
-		NhlPError(WARNING,E_UNKNOWN,e_text,
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
 			  entry_name,NhlNovDisplayTitles);
 		ovp->display_titles = Nhl_ovNoCreate;
 	}
 
 	if (ovp->display_labelbar != Nhl_ovNoCreate &&
 	    ovp->labelbar == NULL) {
-		ret = MIN(ret,WARNING);
+		ret = MIN(ret,NhlWARNING);
 		e_text =
 		 "%s: overlay LabelBar can be created only during NhlCreate";
-		NhlPError(WARNING,E_UNKNOWN,e_text,
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
 			  entry_name,NhlNovDisplayLabelBar);
 		ovp->display_labelbar = Nhl_ovNoCreate;
 	}
 
 	if (ovp->display_legend != Nhl_ovNoCreate &&
 	    ovp->legend == NULL) {
-		ret = MIN(ret,WARNING);
+		ret = MIN(ret,NhlWARNING);
 		e_text =
 		    "%s: overlay Legend can be created only during NhlCreate";
-		NhlPError(WARNING,E_UNKNOWN,e_text,
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
 			  entry_name,NhlNovDisplayLegend);
 		ovp->display_legend = Nhl_ovNoCreate;
 	}
@@ -738,39 +738,41 @@ static NhlErrorTypes OverlaySetValues
  */
 	if (_NhlArgIsSet(args,num_args,NhlNovOverlayRecs)) {
 
-		ovRec	**ov_recs = (ovRec **) ovp->ov_rec_list->data;
+		NhlovRec	**ov_recs = (NhlovRec **) ovp->ov_rec_list->data;
 		int	new_count = ovp->ov_rec_list->num_elements;
 		
 		if (ov_recs == NULL || ! _NhlIsTransform(ov_recs[0]->plot)) {
 		     e_text = "%s: internally invalid overlay record resource";
-		     NhlPError(FATAL,E_UNKNOWN,e_text,entry_name);
-		     return FATAL;
+		     NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		     return NhlFATAL;
 		}
 		if (new_count > ovp->overlay_alloc) {
-			ovp->ov_recs = (ovRec **)
-				NhlRealloc(ovp->ov_recs, sizeof(ovRec *) *
+			ovp->ov_recs = (NhlovRec **)
+				NhlRealloc(ovp->ov_recs, sizeof(NhlovRec *) *
 					   MAX(new_count,ovp->overlay_alloc + 
 					       NhlOV_ALLOC_UNIT));
 			if (ovp->ov_recs == NULL) {
 				e_text = "%s: dynamic memory allocation error";
-				NhlPError(FATAL,E_UNKNOWN,e_text,entry_name);
-				return FATAL;
+				NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+				return NhlFATAL;
 			}
 			ovp->overlay_alloc = MAX(new_count,ovp->overlay_alloc +
 						 NhlOV_ALLOC_UNIT);
 		}
 		for (i = 0; i < MIN(new_count,ovp->overlay_count); i++) {
-			memcpy(ovp->ov_recs[i], ov_recs[i],sizeof(ovRec));
+			memcpy((void*)ovp->ov_recs[i],(void*)ov_recs[i],
+							sizeof(NhlovRec));
 		}
 			
 		for (i=MIN(new_count,ovp->overlay_count);i<new_count;i++) {
-			if ((ovp->ov_recs[i] = (ovRec *) 
-			     NhlMalloc(sizeof(ovRec))) == NULL) {
+			if ((ovp->ov_recs[i] = (NhlovRec *) 
+			     NhlMalloc(sizeof(NhlovRec))) == NULL) {
 				e_text = "%s: dynamic memory allocation error";
-				NhlPError(FATAL,E_UNKNOWN,e_text,entry_name);
-				return FATAL;
+				NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+				return NhlFATAL;
 			}
-			memcpy(ovp->ov_recs[i], ov_recs[i], sizeof(ovRec));
+			memcpy((void*)ovp->ov_recs[i],(void*)ov_recs[i],
+							sizeof(NhlovRec));
 		}
 		for (i = new_count; i < ovp->overlay_count; i++) {
 			NhlFree(ovp->ov_recs[i]);
@@ -780,7 +782,7 @@ static NhlErrorTypes OverlaySetValues
 	}
 
 	subret = ManageAnnotations(ovnew,ovold,False,args,num_args);
-	if ((ret = MIN(ret,subret)) < WARNING) 
+	if ((ret = MIN(ret,subret)) < NhlWARNING) 
 		return ret;
 /*
  * Reset the update required field
@@ -840,10 +842,10 @@ static NhlErrorTypes OverlaySetValues
 
 		subret = NhlALSetValues(ovp->ov_recs[i]->plot->base.id,
 					sargs,num_args);
-		if ((ret = MIN(subret, ret)) < WARNING) {
+		if ((ret = MIN(subret, ret)) < NhlWARNING) {
 			e_text = "%s: error setting overlay plot view";
-			NhlPError(FATAL,E_UNKNOWN,e_text,entry_name);
-			return FATAL;
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			return NhlFATAL;
 		}
 	}
 		
@@ -869,21 +871,21 @@ static NhlErrorTypes OverlaySetValues
 
 static NhlErrorTypes	OverlayGetValues
 #if __STDC__
-(Layer l, _NhlArgList args, int num_args)
+(NhlLayer l, _NhlArgList args, int num_args)
 #else
 (l,args,num_args)
-	Layer	l;
+	NhlLayer	l;
 	_NhlArgList	args;
 	int	num_args;
 #endif
 {
 	char			*entry_name = "OverlayGetValues";
 	char			*e_text;
-	OverlayLayerPart	*ovp = &((OverlayLayer) l)->overlay;
+	NhlOverlayLayerPart	*ovp = &((NhlOverlayLayer) l)->overlay;
 	int 			i,j;
 	int			*ids;
 	NhlGenArray		ga;
-	ovRec			**ov_recs;
+	NhlovRec			**ov_recs;
 
 	for ( i = 0; i< num_args; i++ ) {
 
@@ -893,8 +895,8 @@ static NhlErrorTypes	OverlayGetValues
 						     sizeof(int))) == NULL) {
 				
 				e_text = "%s: dynamic memory allocation error";
-				NhlPError(FATAL,E_UNKNOWN,e_text,entry_name);
-				return FATAL;
+				NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+				return NhlFATAL;
 			}
 
 			for (j = 0; j < ovp->overlay_count; j++) {
@@ -906,47 +908,47 @@ static NhlErrorTypes	OverlayGetValues
 						    1,&ovp->overlay_count)) 
 			    == NULL) {
 				e_text = "%s: error creating %s GenArray";
-				NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+				NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
 					  NhlNovOverlayIds);
-				return FATAL;
+				return NhlFATAL;
 			}
 			ga->my_data = True;
 			*((NhlGenArray *)(args[i].value)) = ga;
 		}
 		else if (args[i].quark == Overlay_Recs) {
 				
-			ov_recs = (ovRec **) 
-			      NhlMalloc(ovp->overlay_count * sizeof(ovRec *));
+			ov_recs = (NhlovRec **) 
+			      NhlMalloc(ovp->overlay_count * sizeof(NhlovRec *));
 			if (ov_recs == NULL) {
 				e_text = "%s: dynamic memory allocation error";
-				NhlPError(FATAL,E_UNKNOWN,e_text,entry_name);
-				return FATAL;
+				NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+				return NhlFATAL;
 			}
 
 			for (j = 0; j < ovp->overlay_count; j++) {
 
-				ov_recs[j] = (ovRec *)
-					NhlMalloc(sizeof(ovRec));
+				ov_recs[j] = (NhlovRec *)
+					NhlMalloc(sizeof(NhlovRec));
 				if (ov_recs[j] == NULL) {
 					e_text = 
 					 "%s: dynamic memory allocation error";
-					NhlPError(FATAL,E_UNKNOWN,
+					NhlPError(NhlFATAL,NhlEUNKNOWN,
 						  e_text,entry_name);
-					return FATAL;
+					return NhlFATAL;
 				}
 
 				memcpy((char*)ov_recs[j], 
-				       (char*)ovp->ov_recs[j],sizeof(ovRec));
+				       (char*)ovp->ov_recs[j],sizeof(NhlovRec));
 			}
 			
 			ga = NhlCreateGenArray((NhlPointer)ov_recs,
-					       NhlTPointer,sizeof(ovRec *),
+					       NhlTPointer,sizeof(NhlovRec *),
 					       1,&ovp->overlay_count);
 			if (ga == NULL) {
 				e_text = "%s: error creating %s GenArray";
-				NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+				NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
 					  NhlNovOverlayRecs);
-				return FATAL;
+				return NhlFATAL;
 			}
 
 			ga->my_data = True;
@@ -954,7 +956,7 @@ static NhlErrorTypes	OverlayGetValues
 		}
 			
 	}
-	return(NOERROR);
+	return(NhlNOERROR);
 }
 
 /*
@@ -972,16 +974,16 @@ static NhlErrorTypes	OverlayGetValues
  */
 static NhlErrorTypes OverlayDestroy
 #if __STDC__
-(Layer inst)
+(NhlLayer inst)
 #else
 (inst)
-Layer inst;
+NhlLayer inst;
 #endif
 {
-	NhlErrorTypes		ret = NOERROR, subret = NOERROR;
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	char			*entry_name = "OverlayDestroy";
 	char			*e_text;
-	OverlayLayerPart	*ovp = &((OverlayLayer) inst)->overlay;
+	NhlOverlayLayerPart	*ovp = &((NhlOverlayLayer) inst)->overlay;
 	int			i;
 
 /*
@@ -989,13 +991,13 @@ Layer inst;
  */
 	if (ovp->overlay_count > 1) {
 		subret = DissolveOverlay(inst);
-		if ((ret = MIN(subret,ret)) < WARNING)
+		if ((ret = MIN(subret,ret)) < NhlWARNING)
 			return ret;
 	}
 
 	if (ovp->overlay_count > 1) {
 		e_text = "%s: inconsistency in overlay count";
-		NhlPError(WARNING,E_UNKNOWN,e_text,entry_name);
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
 	}
 		
 /*
@@ -1028,17 +1030,17 @@ Layer inst;
 
 static NhlErrorTypes OverlayPreDraw
 #if  __STDC__
-(Layer layer)
+(NhlLayer layer)
 #else
 (layer)
-        Layer layer;
+        NhlLayer layer;
 #endif
 {
-	NhlErrorTypes		ret = NOERROR, subret = NOERROR;
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	char			*e_text;
 	char			*entry_name = "OverlayPreDraw";
-	OverlayLayer		ovl = (OverlayLayer) layer;
-	OverlayLayerPart	*ovp = &(ovl->overlay);
+	NhlOverlayLayer		ovl = (NhlOverlayLayer) layer;
+	NhlOverlayLayerPart	*ovp = &(ovl->overlay);
 	int			i;
 
 /*
@@ -1046,18 +1048,18 @@ static NhlErrorTypes OverlayPreDraw
  */
 
 	Overlay_Trans_Obj = ovl->trans.overlay_trans_obj;
-	Overlay_Plot = (Layer) ovp->ov_recs[0]->plot;
+	Overlay_Plot = (NhlLayer) ovp->ov_recs[0]->plot;
 	if (! _NhlIsTransObj(Overlay_Trans_Obj) || 
 	    ! _NhlIsTransform(Overlay_Plot)) {
 		e_text = "%s: invalid overlay trans object or plot class";
-		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name);
-		return FATAL;
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
 	}
 	subret = _NhlSetTrans(Overlay_Trans_Obj,Overlay_Plot);
 	
-        if ((ret = MIN(ret,subret)) < WARNING) {
+        if ((ret = MIN(ret,subret)) < NhlWARNING) {
                 e_text = "%s: error setting transformation";
-                NhlPError(FATAL,E_UNKNOWN,e_text, entry_name);
+                NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
                 return(ret);
         }
 
@@ -1067,13 +1069,13 @@ static NhlErrorTypes OverlayPreDraw
 
 	for (i = 0; i < ovp->overlay_count; i++) {
 		Trans_Obj = ovp->ov_recs[i]->plot->trans.trans_obj;
-		Plot = (Layer) ovp->ov_recs[i]->plot;
+		Plot = (NhlLayer) ovp->ov_recs[i]->plot;
 
 		subret = _NhlPreDraw(Plot);
 
-		if ((ret = MIN(ret,subret)) < WARNING) {
+		if ((ret = MIN(ret,subret)) < NhlWARNING) {
 			e_text = "%s: error in plot pre-draw";
-			NhlPError(FATAL,E_UNKNOWN,e_text, entry_name);
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
 			return(ret);
 		}
 	}
@@ -1097,17 +1099,17 @@ static NhlErrorTypes OverlayPreDraw
 
 static NhlErrorTypes OverlayDraw
 #if  __STDC__
-(Layer layer)
+(NhlLayer layer)
 #else
 (layer)
-        Layer layer;
+        NhlLayer layer;
 #endif
 {
-	NhlErrorTypes		ret = NOERROR, subret = NOERROR;
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	char			*e_text;
 	char			*entry_name = "OverlayDraw";
-	OverlayLayer		ovl = (OverlayLayer) layer;
-	OverlayLayerPart	*ovp = &(ovl->overlay);
+	NhlOverlayLayer		ovl = (NhlOverlayLayer) layer;
+	NhlOverlayLayerPart	*ovp = &(ovl->overlay);
 	int			i;
 
 /*
@@ -1115,18 +1117,18 @@ static NhlErrorTypes OverlayDraw
  */
 
 	Overlay_Trans_Obj = ovl->trans.overlay_trans_obj;
-	Overlay_Plot = (Layer) ovp->ov_recs[0]->plot;
+	Overlay_Plot = (NhlLayer) ovp->ov_recs[0]->plot;
 	if (! _NhlIsTransObj(Overlay_Trans_Obj) || 
 	    ! _NhlIsTransform(Overlay_Plot)) {
 		e_text = "%s: invalid overlay trans object or plot class";
-		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name);
-		return FATAL;
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
 	}
 	subret = _NhlSetTrans(Overlay_Trans_Obj,Overlay_Plot);
 	
-        if ((ret = MIN(ret,subret)) < WARNING) {
+        if ((ret = MIN(ret,subret)) < NhlWARNING) {
                 e_text = "%s: error setting transformation";
-                NhlPError(FATAL,E_UNKNOWN,e_text, entry_name);
+                NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
                 return(ret);
         }
 
@@ -1136,13 +1138,13 @@ static NhlErrorTypes OverlayDraw
 
 	for (i = 0; i < ovp->overlay_count; i++) {
 		Trans_Obj = ovp->ov_recs[i]->plot->trans.trans_obj;
-		Plot = (Layer) ovp->ov_recs[i]->plot;
+		Plot = (NhlLayer) ovp->ov_recs[i]->plot;
 
 		subret = _NhlDraw(Plot);
 
-		if ((ret = MIN(ret,subret)) < WARNING) {
+		if ((ret = MIN(ret,subret)) < NhlWARNING) {
 			e_text = "%s: error in plot draw";
-			NhlPError(FATAL,E_UNKNOWN,e_text, entry_name);
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
 			return(ret);
 		}
 	}
@@ -1167,17 +1169,17 @@ static NhlErrorTypes OverlayDraw
 
 static NhlErrorTypes OverlayPostDraw
 #if  __STDC__
-(Layer layer)
+(NhlLayer layer)
 #else
 (layer)
-        Layer layer;
+        NhlLayer layer;
 #endif
 {
-	NhlErrorTypes		ret = NOERROR, subret = NOERROR;
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	char			*e_text;
 	char			*entry_name = "OverlayPostDraw";
-	OverlayLayer		ovl = (OverlayLayer) layer;
-	OverlayLayerPart	*ovp = &(ovl->overlay);
+	NhlOverlayLayer		ovl = (NhlOverlayLayer) layer;
+	NhlOverlayLayerPart	*ovp = &(ovl->overlay);
 	int			i;
 	NhlBoolean		tickmarks_done = False,
 				titles_done = False,
@@ -1189,18 +1191,18 @@ static NhlErrorTypes OverlayPostDraw
  */
 
 	Overlay_Trans_Obj = ovl->trans.overlay_trans_obj;
-	Overlay_Plot = (Layer) ovp->ov_recs[0]->plot;
+	Overlay_Plot = (NhlLayer) ovp->ov_recs[0]->plot;
 	if (! _NhlIsTransObj(Overlay_Trans_Obj) || 
 	    ! _NhlIsTransform(Overlay_Plot)) {
 		e_text = "%s: invalid overlay trans object or plot class";
-		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name);
-		return FATAL;
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
 	}
 	subret = _NhlSetTrans(Overlay_Trans_Obj,Overlay_Plot);
 	
-        if ((ret = MIN(ret,subret)) < WARNING) {
+        if ((ret = MIN(ret,subret)) < NhlWARNING) {
                 e_text = "%s: error setting transformation";
-                NhlPError(FATAL,E_UNKNOWN,e_text, entry_name);
+                NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
                 return(ret);
         }
 
@@ -1212,28 +1214,28 @@ static NhlErrorTypes OverlayPostDraw
 	for (i = 0; i < ovp->overlay_count; i++) {
 
 		Trans_Obj = ovp->ov_recs[i]->plot->trans.trans_obj;
-		Plot = (Layer) ovp->ov_recs[i]->plot;
+		Plot = (NhlLayer) ovp->ov_recs[i]->plot;
 
 		subret = _NhlPostDraw(Plot);
 
-		if ((ret = MIN(ret,subret)) < WARNING) {
+		if ((ret = MIN(ret,subret)) < NhlWARNING) {
 			e_text = "%s: error in plot post-draw";
-			NhlPError(FATAL,E_UNKNOWN,e_text, entry_name);
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
 			return(ret);
 		}
 
 		if (ovp->ov_recs[i]->ov_obj != NULL) {
-			OverlayLayerPart *opi = 
-			  &(((OverlayLayer)ovp->ov_recs[i]->ov_obj)->overlay);
+			NhlOverlayLayerPart *opi = 
+			  &(((NhlOverlayLayer)ovp->ov_recs[i]->ov_obj)->overlay);
 
 			if ((opi->display_tickmarks == Nhl_ovAlways) ||
 			    (! tickmarks_done && 
 			     opi->display_tickmarks == Nhl_ovConditionally)) {
 
 				subret = NhlDraw(opi->tickmarks->base.id);
-				if ((ret = MIN(subret,ret)) < WARNING) {
+				if ((ret = MIN(subret,ret)) < NhlWARNING) {
 					e_text = "%s: error drawing tickmarks";
-					NhlPError(FATAL,E_UNKNOWN,
+					NhlPError(NhlFATAL,NhlEUNKNOWN,
 						  e_text, entry_name);
 					return(ret);
 				}
@@ -1245,9 +1247,9 @@ static NhlErrorTypes OverlayPostDraw
 			     opi->display_titles == Nhl_ovConditionally)) {
 
 				subret = NhlDraw(opi->titles->base.id);
-				if ((ret = MIN(subret,ret)) < WARNING) {
+				if ((ret = MIN(subret,ret)) < NhlWARNING) {
 					e_text = "%s: error drawing titles";
-					NhlPError(FATAL,E_UNKNOWN,
+					NhlPError(NhlFATAL,NhlEUNKNOWN,
 						  e_text, entry_name);
 					return(ret);
 				}
@@ -1259,9 +1261,9 @@ static NhlErrorTypes OverlayPostDraw
 			     opi->display_labelbar == Nhl_ovConditionally)) {
 
 				subret = NhlDraw(opi->labelbar->base.id);
-				if ((ret = MIN(subret,ret)) < WARNING) {
+				if ((ret = MIN(subret,ret)) < NhlWARNING) {
 					e_text = "%s: error drawing labelbar";
-					NhlPError(FATAL,E_UNKNOWN,
+					NhlPError(NhlFATAL,NhlEUNKNOWN,
 						  e_text, entry_name);
 					return(ret);
 				}
@@ -1273,9 +1275,9 @@ static NhlErrorTypes OverlayPostDraw
 			     opi->display_legend == Nhl_ovConditionally)) {
 
 				subret = NhlDraw(opi->legend->base.id);
-				if ((ret = MIN(subret,ret)) < WARNING) {
+				if ((ret = MIN(subret,ret)) < NhlWARNING) {
 					e_text = "%s: error drawing legend";
-					NhlPError(FATAL,E_UNKNOWN,
+					NhlPError(NhlFATAL,NhlEUNKNOWN,
 						  e_text, entry_name);
 					return(ret);
 				}
@@ -1306,20 +1308,24 @@ static NhlErrorTypes OverlayPostDraw
  */
 static NhlErrorTypes InternalGetBB
 #if	__STDC__
-(Layer instance, NhlBoundingBox *thebox, int include_types, char *entry_name)
+(
+	NhlLayer	instance,
+	NhlBoundingBox	*thebox,
+	int		include_types,
+	char		*entry_name
+)
 #else
-(instance,thebox, include_types)
-	Layer		instance;
+(instance,thebox,include_types,entry_name)
+	NhlLayer	instance;
 	NhlBoundingBox	*thebox;
 	int		include_types;
 	char		*entry_name;
 #endif
 {
-	NhlErrorTypes		ret = NOERROR, subret = NOERROR;
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	char			*e_text;
-	OverlayLayer		ovl = (OverlayLayer) instance;
-	OverlayLayerPart	*ovp = &(ovl->overlay);
-	OverlayLayerPart	*ovl_basep;
+	NhlOverlayLayer		ovl = (NhlOverlayLayer) instance;
+	NhlOverlayLayerPart	*ovl_basep;
 	float 			x0,y0,width,height;
 	int			i;
 	NhlBoolean		tickmarks_done = False,
@@ -1331,16 +1337,16 @@ static NhlErrorTypes InternalGetBB
  * The view of all members of the overlay is the same. 
  * Start with the view of the current overlay. (member or base)
  */
-	subret = NhlGetValues(instance->base.id,
+	subret = NhlVAGetValues(instance->base.id,
 			      NhlNvpXF,&x0,
 			      NhlNvpYF,&y0,
 			      NhlNvpWidthF,&width,
 			      NhlNvpHeightF,&height,
 			      NULL);
 				
-	if ((ret = MIN(subret,ret)) < WARNING) {
+	if ((ret = MIN(subret,ret)) < NhlWARNING) {
 		e_text = "%s: error getting Overlay base View";
-		NhlPError(FATAL,E_UNKNOWN,e_text, entry_name);
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
 		return(ret);
 	}
 	_NhlAddBBInfo(y0,y0-height,x0+width,x0,thebox);
@@ -1350,13 +1356,13 @@ static NhlErrorTypes InternalGetBB
  * for the base plot and each overlay member plot. Not that only currently
  * displayed items are included.
  */
-	ovl_basep = &((OverlayLayer)ovl->trans.overlay_object)->overlay;
+	ovl_basep = &((NhlOverlayLayer)ovl->trans.overlay_object)->overlay;
 
 	for (i = 0; i < ovl_basep->overlay_count; i++) {
 
 		if (ovl_basep->ov_recs[i]->ov_obj != NULL) {
-			OverlayLayerPart *opi = 
-				&(((OverlayLayer)
+			NhlOverlayLayerPart *opi = 
+				&(((NhlOverlayLayer)
 				   ovl_basep->ov_recs[i]->ov_obj)->overlay);
 
 			if ((include_types & NhlovTICKMARKS) &&
@@ -1365,10 +1371,10 @@ static NhlErrorTypes InternalGetBB
 			     ! tickmarks_done))) {
 				
 				subret = _NhlGetBB(opi->tickmarks,thebox);
-				if ((ret = MIN(subret,ret)) < WARNING) {
+				if ((ret = MIN(subret,ret)) < NhlWARNING) {
 					e_text = 
 					  "%s: error getting Tickmark BB";
-					NhlPError(FATAL,E_UNKNOWN,
+					NhlPError(NhlFATAL,NhlEUNKNOWN,
 						  e_text, entry_name);
 					return(ret);
 				}
@@ -1381,10 +1387,10 @@ static NhlErrorTypes InternalGetBB
 			     ! titles_done))) {
 				
 				subret = _NhlGetBB(opi->titles,thebox);
-				if ((ret = MIN(subret,ret)) < WARNING) {
+				if ((ret = MIN(subret,ret)) < NhlWARNING) {
 					e_text = 
 					  "%s: error getting Tickmark BB";
-					NhlPError(FATAL,E_UNKNOWN,
+					NhlPError(NhlFATAL,NhlEUNKNOWN,
 						  e_text, entry_name);
 					return(ret);
 				}
@@ -1398,10 +1404,10 @@ static NhlErrorTypes InternalGetBB
 			     ! labelbar_done))) {
 				
 				subret = _NhlGetBB(opi->labelbar,thebox);
-				if ((ret = MIN(subret,ret)) < WARNING) {
+				if ((ret = MIN(subret,ret)) < NhlWARNING) {
 					e_text = 
 					  "%s: error getting Tickmark BB";
-					NhlPError(FATAL,E_UNKNOWN,
+					NhlPError(NhlFATAL,NhlEUNKNOWN,
 						  e_text, entry_name);
 					return(ret);
 				}
@@ -1414,10 +1420,10 @@ static NhlErrorTypes InternalGetBB
 			     ! legend_done))) {
 
 				subret = _NhlGetBB(opi->legend,thebox);
-				if ((ret = MIN(subret,ret)) < WARNING) {
+				if ((ret = MIN(subret,ret)) < NhlWARNING) {
 					e_text = 
 					  "%s: error getting Tickmark BB";
-					NhlPError(FATAL,E_UNKNOWN,
+					NhlPError(NhlFATAL,NhlEUNKNOWN,
 						  e_text, entry_name);
 					return(ret);
 				}
@@ -1447,22 +1453,22 @@ static NhlErrorTypes InternalGetBB
  */
 static NhlErrorTypes OverlayGetBB
 #if	__STDC__
-(Layer instance, NhlBoundingBox *thebox)
+(NhlLayer instance, NhlBoundingBox *thebox)
 #else
 (instance,thebox)
-	Layer instance;
+	NhlLayer instance;
 	NhlBoundingBox *thebox;
 #endif
 {
-	NhlErrorTypes		ret = NOERROR, subret = NOERROR;
+	NhlErrorTypes		ret = NhlNOERROR;
 	char			*entry_name = "OverlayGetBB";
 	char			*e_text;
 
 	ret = InternalGetBB(instance,thebox,NhlovALL,entry_name);
 
-	if (ret < WARNING) {
+	if (ret < NhlWARNING) {
 		e_text = "%s: error getting Bounding Box";
-		NhlPError(ret,E_UNKNOWN,e_text, entry_name);
+		NhlPError(ret,NhlEUNKNOWN,e_text, entry_name);
 	}
 
 	return ret;
@@ -1475,8 +1481,8 @@ static NhlErrorTypes OverlayGetBB
  *		and legend objects for both the Initialize and SetValues
  *		routines.
  *
- * In Args:	OverlayLayer	ovnew - The new overlay layer
- *		OverlayLayer	ovold - The old overlay layer
+ * In Args:	NhlOverlayLayer	ovnew - The new overlay layer
+ *		NhlOverlayLayer	ovold - The old overlay layer
  *		int		init - called from Initialize?
  *
  * Out Args:
@@ -1489,24 +1495,23 @@ static NhlErrorTypes
 ManageAnnotations
 #if __STDC__
 (
-	OverlayLayer	ovnew,
-	OverlayLayer	ovold,
+	NhlOverlayLayer	ovnew,
+	NhlOverlayLayer	ovold,
 	NhlBoolean	init,
 	_NhlArgList	args,
 	int		num_args
 )
 #else
 (ovnew,ovold,init,args,num_args)
-	OverlayLayer	ovnew;
-	OverlayLayer	ovold;
+	NhlOverlayLayer	ovnew;
+	NhlOverlayLayer	ovold;
 	NhlBoolean	init;				       
 	_NhlArgList	args;
 	int		num_args;
 #endif
 {
-	NhlErrorTypes		ret = NOERROR, subret = NOERROR;
-	OverlayLayerPart	*ovp = &ovnew->overlay;
-	OverlayLayerPart	*oovp = &ovold->overlay;
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
+	NhlOverlayLayerPart	*ovp = &ovnew->overlay;
 
 	if (init) {
 		ovp->tickmarks = NULL;
@@ -1525,17 +1530,17 @@ ManageAnnotations
  
 	if (ovp->display_tickmarks > Nhl_ovNoCreate) {
 		subret = ManageTickMarks(ovnew,ovold,init);
-		if ((ret = MIN(subret,ret)) < WARNING)
+		if ((ret = MIN(subret,ret)) < NhlWARNING)
 			return ret;
 	}
 	if (ovp->display_titles > Nhl_ovNoCreate) {
 		subret = ManageTitles(ovnew,ovold,init);
-		if ((ret = MIN(subret,ret)) < WARNING)
+		if ((ret = MIN(subret,ret)) < NhlWARNING)
 			return ret;
 	}
 	if (ovp->display_labelbar > Nhl_ovNoCreate)   {
 		subret = ManageLabelBar(ovnew,ovold,init,args,num_args);
-		if ((ret = MIN(subret,ret)) < WARNING)
+		if ((ret = MIN(subret,ret)) < NhlWARNING)
 			return ret;
 	}
 
@@ -1553,8 +1558,8 @@ ManageAnnotations
  * Description: Internal function that manages the tickmark object
  *		for both the Initialize and SetValues routines.
  *
- * In Args:	OverlayLayer	ovnew - The new overlay layer
- *		OverlayLayer	ovold - The old overlay layer
+ * In Args:	NhlOverlayLayer	ovnew - The new overlay layer
+ *		NhlOverlayLayer	ovold - The old overlay layer
  *		int		init - called from Initialize?
  *
  * Out Args:
@@ -1567,35 +1572,35 @@ static NhlErrorTypes
 ManageTickMarks
 #if __STDC__
 (
-	OverlayLayer	ovnew,
-	OverlayLayer	ovold,
+	NhlOverlayLayer	ovnew,
+	NhlOverlayLayer	ovold,
 	NhlBoolean	init				       
 )
 #else
 (ovnew,ovold,init)
-	OverlayLayer	ovnew;
-	OverlayLayer	ovold;
+	NhlOverlayLayer	ovnew;
+	NhlOverlayLayer	ovold;
 	NhlBoolean	init;				       
 #endif
 {
-	NhlErrorTypes		ret = NOERROR, subret = NOERROR;
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	char			*entry_name;
 	char			*e_text;
-	OverlayLayerPart	*ovp = &ovnew->overlay;
-	OverlayLayerPart	*oovp = &ovold->overlay;
-	TransformLayerPart	*tfp = &ovnew->trans;
+	NhlOverlayLayerPart	*ovp = &ovnew->overlay;
+	NhlOverlayLayerPart	*oovp = &ovold->overlay;
+	NhlTransformLayerPart	*tfp = &ovnew->trans;
 	int			tmpid = -1;
-	char			buffer[MAXFNAMELEN];
+	char			buffer[_NhlMAXFNAMELEN];
         NhlSArg			sargs[16];
         int			nargs = 0;
-	Layer			trobj;
+	NhlLayer			trobj;
 	NhlString		trobj_name;
 	float			x_irr[NhlOV_IRR_COUNT], y_irr[NhlOV_IRR_COUNT];
 	float			*x_irrp, *y_irrp;
 	NhlBoolean		set = False;
 	int			i, count = 2, status = 0;
 	float			xmiss, ymiss, out_of_range;
-	TickMarkStyles		tm_style = LINEAR;
+	NhlTickMarkStyles	tm_style = NhlLINEAR;
 	NhlBoolean		x_log,y_log;
 	float			x_tension,y_tension;
 
@@ -1608,18 +1613,18 @@ ManageTickMarks
 	if (! init) {
 		if (ovp->tickmarks == NULL) {
 			e_text = "%s: internal error: Tickmark layer NULL";
-			NhlPError(FATAL,E_UNKNOWN,e_text, entry_name);
-			return(FATAL);
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
+			return(NhlFATAL);
 		}
 		if (ovp->display_tickmarks == Nhl_ovNever) {
 			return _NhlALSetValuesChild(ovp->tickmarks->base.id,
-						    (Layer)ovnew,sargs,nargs);
+						    (NhlLayer)ovnew,sargs,nargs);
 		}
 	}
 	if ((trobj = tfp->overlay_trans_obj) == NULL) {
 		e_text = "%s: No overlay trans found for TickMark object";
-		NhlPError(FATAL,E_UNKNOWN,e_text, entry_name);
-		return(FATAL);
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
+		return(NhlFATAL);
 	}
 	
 	if (ovp->x_irr != NULL) {
@@ -1630,18 +1635,18 @@ ManageTickMarks
 		x_irrp = (float *) NhlMalloc(count * sizeof(float));
 		if (x_irrp == NULL) {
 			e_text = "%s: dynamic memory allocation error";
-			NhlPError(FATAL,E_UNKNOWN,e_text,entry_name);
-			return FATAL;
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			return NhlFATAL;
 		}
-		memset(x_irrp,0,count * sizeof(float));
+		memset((void*)x_irrp,0,count * sizeof(float));
 		ovp->x_irr = NhlCreateGenArray((NhlPointer)x_irrp,
 					       NhlTFloat,sizeof(float),
 					       1,&count);
 		if (ovp->x_irr == NULL) {
 			e_text = "%s: error creating %s GenArray";
-			NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
 				  NhlNtmXBIrregularPoints);
-			return FATAL;
+			return NhlFATAL;
 		}
 		ovp->x_irr->my_data  = True;
 		
@@ -1654,33 +1659,33 @@ ManageTickMarks
 		y_irrp = (float *) NhlMalloc(count * sizeof(float));
 		if (y_irrp == NULL) {
 			e_text = "%s: dynamic memory allocation error";
-			NhlPError(FATAL,E_UNKNOWN,e_text,entry_name);
-			return FATAL;
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			return NhlFATAL;
 		}
-		memset(y_irrp,0,count * sizeof(float));
+		memset((void*)y_irrp,0,count * sizeof(float));
 		ovp->y_irr = NhlCreateGenArray((NhlPointer)y_irrp,
 					       NhlTFloat,sizeof(float),
 					       1,&count);
 		if (ovp->y_irr == NULL) {
 			e_text = "%s: error creating %s GenArray";
-			NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
 				  NhlNtmXBIrregularPoints);
-			return FATAL;
+			return NhlFATAL;
 		}
 		ovp->y_irr->my_data  = True;
 	}
 
 	if (tfp->overlay_status == _tfCurrentOverlayMember) {
-		subret = NhlGetValues(tfp->overlay_object->base.id,
+		subret = NhlVAGetValues(tfp->overlay_object->base.id,
 				      NhlNtrXLog,&x_log,
 				      NhlNtrYLog,&y_log,
 				      NhlNtrXTensionF, &x_tension,
 				      NhlNtrYTensionF, &y_tension,
 				      NULL);
-		if ((ret = MIN(subret,ret)) < WARNING) {
+		if ((ret = MIN(subret,ret)) < NhlWARNING) {
 			e_text = "%s: error getting trans object values";
-			NhlPError(FATAL,E_UNKNOWN,e_text,entry_name);
-			return FATAL;
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			return NhlFATAL;
 		}
 	}
 	else {
@@ -1693,42 +1698,42 @@ ManageTickMarks
 	trobj_name = (trobj->base.layer_class)->base_class.class_name;
 
 	if (! strcmp(trobj_name,"LogLinTransObj")) {
-		ovp->x_tm_style = (x_log == 1) ? LOG : LINEAR;
-		ovp->y_tm_style = (y_log == 1) ? LOG : LINEAR;
+		ovp->x_tm_style = (x_log == 1) ? NhlLOG : NhlLINEAR;
+		ovp->y_tm_style = (y_log == 1) ? NhlLOG : NhlLINEAR;
 	}
 	else if (! strcmp(trobj_name,"IrregularTransObj")) {
-		ovp->x_tm_style = LINEAR;
-		ovp->y_tm_style = LINEAR;
+		ovp->x_tm_style = NhlLINEAR;
+		ovp->y_tm_style = NhlLINEAR;
 	}
 	else if (! strcmp(trobj_name,"MapTransObj")) {
 		e_text = 
 	"%s: MAP tick mark style not yet implemented; turning tick marks off";
-		NhlPError(WARNING,E_UNKNOWN,e_text,entry_name);
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
 		ovp->display_tickmarks = init ? Nhl_ovNoCreate : Nhl_ovNever;
-		return MIN(ret,WARNING);
+		return MIN(ret,NhlWARNING);
 	}
 	else if (! strcmp(trobj_name,"IrregularType2TransObj")) {
-		tm_style = IRREGULAR;
-		ovp->x_tm_style = IRREGULAR;
-		ovp->y_tm_style = IRREGULAR;
+		tm_style = NhlIRREGULAR;
+		ovp->x_tm_style = NhlIRREGULAR;
+		ovp->y_tm_style = NhlIRREGULAR;
 		ovp->x_tension = x_tension;
 		ovp->y_tension = y_tension;
 	}
 	else {
 		e_text = 
 			"%s: unknown transformation; turning tick marks off";
-		NhlPError(WARNING,E_UNKNOWN,e_text,entry_name);
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
 		ovp->display_tickmarks = init ? Nhl_ovNoCreate : Nhl_ovNever;
 	}
 		
 
-	if (tm_style == LINEAR) {
+	if (tm_style == NhlLINEAR) {
 		x_irr[0] = ovnew->view.x;
 		y_irr[0] = ovnew->view.y - ovnew->view.height;
 		x_irr[1] = ovnew->view.x + ovnew->view.width;
 		y_irr[1] = ovnew->view.y;
 	}
-	else if (tm_style == IRREGULAR) {
+	else if (tm_style == NhlIRREGULAR) {
 		count = NhlOV_IRR_COUNT;
 		for (i=0; i < count; i++) {
 			x_irr[i] = ovnew->view.x + ovnew->view.width * 
@@ -1742,11 +1747,11 @@ ManageTickMarks
 			      x_irr,y_irr,count,x_irr,y_irr,
 			      &xmiss,&ymiss,&status,&out_of_range);
 		
-	if (status  || (ret = MIN(ret,subret)) < WARNING) {
+	if (status  || (ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = 
 		   "%s: can't transform NDC to Data; turning tick marks off";
-		ret = MIN(ret,WARNING);
-		NhlPError(ret,E_UNKNOWN,e_text,entry_name);
+		ret = MIN(ret,NhlWARNING);
+		NhlPError(ret,NhlEUNKNOWN,e_text,entry_name);
 		return ret;
 	}
 	for (i=0; i < count; i++)
@@ -1755,8 +1760,8 @@ ManageTickMarks
 			break;
 		}
 
-	memcpy(x_irrp,x_irr,count*sizeof(float));
-	memcpy(y_irrp,y_irr,count*sizeof(float));
+	memcpy((void*)x_irrp,(void*)x_irr,count*sizeof(float));
+	memcpy((void*)y_irrp,(void*)y_irr,count*sizeof(float));
 
 	if (set) {
 		NhlSetSArg(&sargs[nargs++],NhlNtmXBDataLeftF,x_irr[0]);
@@ -1784,14 +1789,14 @@ ManageTickMarks
 
 		strcpy(buffer,ovnew->base.name);
 		strcat(buffer,".TickMark");
-		subret = _NhlALCreateChild(&tmpid,buffer,tickMarkLayerClass,
-					   (Layer)ovnew,sargs,nargs);
+		subret = _NhlALCreateChild(&tmpid,buffer,NhltickMarkLayerClass,
+					   (NhlLayer)ovnew,sargs,nargs);
 
-		if ((ret = MIN(ret,subret)) < WARNING || 
+		if ((ret = MIN(ret,subret)) < NhlWARNING || 
 		    (ovp->tickmarks = _NhlGetLayer(tmpid)) == NULL) {
 			e_text = "%s: Error creating TickMark object";
-			NhlPError(FATAL,E_UNKNOWN,e_text, entry_name);
-			return(FATAL);
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
+			return(NhlFATAL);
 		}
 	} else {
 		if (ovnew->view.x != ovold->view.x)
@@ -1823,12 +1828,12 @@ ManageTickMarks
 		
 
 		subret = _NhlALSetValuesChild(ovp->tickmarks->base.id,
-					      (Layer)ovnew,sargs,nargs);
+					      (NhlLayer)ovnew,sargs,nargs);
 
-		if ((ret = MIN(ret,subret)) < WARNING) {
+		if ((ret = MIN(ret,subret)) < NhlWARNING) {
 			e_text = "%s: Error updating TickMark object";
-			NhlPError(FATAL,E_UNKNOWN,e_text, entry_name);
-			return(FATAL);
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
+			return(NhlFATAL);
 		}
 	}
 
@@ -1841,8 +1846,8 @@ ManageTickMarks
  * Description: Internal function that manages the title object
  *		for both the Initialize and SetValues routines.
  *
- * In Args:	OverlayLayer	ovnew - The new overlay layer
- *		OverlayLayer	ovold - The old overlay layer
+ * In Args:	NhlOverlayLayer	ovnew - The new overlay layer
+ *		NhlOverlayLayer	ovold - The old overlay layer
  *		int		init - called from Initialize?
  *
  * Out Args:
@@ -1855,25 +1860,25 @@ static NhlErrorTypes
 ManageTitles
 #if __STDC__
 (
-	OverlayLayer	ovnew,
-	OverlayLayer	ovold,
+	NhlOverlayLayer	ovnew,
+	NhlOverlayLayer	ovold,
 	NhlBoolean	init				       
 )
 #else
 (ovnew,ovold,init)
-	OverlayLayer	ovnew;
-	OverlayLayer	ovold;
+	NhlOverlayLayer	ovnew;
+	NhlOverlayLayer	ovold;
 	NhlBoolean	init;				       
 #endif
 {
-	NhlErrorTypes		ret = NOERROR, subret = NOERROR;
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	char			*entry_name;
 	char			*e_text;
-	OverlayLayerPart	*ovp = &ovnew->overlay;
-	OverlayLayerPart	*oovp = &ovold->overlay;
+	NhlOverlayLayerPart	*ovp = &ovnew->overlay;
+	NhlOverlayLayerPart	*oovp = &ovold->overlay;
 	int			tmpid = -1;
 	NhlBoundingBox		bbox;
-	char			buffer[MAXFNAMELEN];
+	char			buffer[_NhlMAXFNAMELEN];
         NhlSArg			sargs[16];
         int			nargs = 0;
 
@@ -1886,24 +1891,24 @@ ManageTitles
 	if (! init) {
 		if (ovp->titles == NULL) {
 			e_text = "%s: internal error: Title layer NULL";
-			NhlPError(FATAL,E_UNKNOWN,e_text, entry_name);
-			return(FATAL);
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
+			return(NhlFATAL);
 		}
 		if (ovp->display_titles == Nhl_ovNever) {
 			return _NhlALSetValuesChild(ovp->titles->base.id,
-						    (Layer)ovnew,sargs,nargs);
+						    (NhlLayer)ovnew,sargs,nargs);
 		}
 	}
 /*
  * Get the bounding box, then set the title positions with respect to it.
  */
 	bbox.set = 0;
-	ret = InternalGetBB((Layer)ovnew,&bbox,NhlovTICKMARKS,entry_name);
+	ret = InternalGetBB((NhlLayer)ovnew,&bbox,NhlovTICKMARKS,entry_name);
 
-	if ((ret = MIN(ret,subret)) < WARNING) {
+	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: Error getting bounding box";
-		NhlPError(FATAL,E_UNKNOWN,e_text, entry_name);
-		return(FATAL);
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
+		return(NhlFATAL);
 	}
 	ovp->ti_x = bbox.l; 
 	ovp->ti_y = bbox.t;
@@ -1911,72 +1916,72 @@ ManageTitles
 	ovp->ti_height = bbox.t - bbox.b;
 	
 	switch(ovp->ti_main_position) {
-	case CENTER:
+	case NhlCENTER:
 		ovp->real_main_offset_x = ovp->ti_main_offset_x +
 			((ovnew->view.x + ovnew->view.width/2.0) -
 			 (ovp->ti_x + ovp->ti_width/2.0));
 		break;
-	case LEFT:
+	case NhlLEFT:
 		ovp->real_main_offset_x = ovp->ti_main_offset_x +
 			(ovnew->view.x - ovp->ti_x);
 		break;
-	case RIGHT:
+	case NhlRIGHT:
 		ovp->real_main_offset_x = ovp->ti_main_offset_x +
 			((ovnew->view.x + ovnew->view.width) - 
 			 (ovp->ti_x + ovp->ti_width));
 		break;
-	case TOP:
-	case BOTTOM:
+	case NhlTOP:
+	case NhlBOTTOM:
 	default:
 		e_text = "%s: Invalid value for main axis title position";
-		NhlPError(FATAL,E_UNKNOWN,e_text, entry_name);
-		return(FATAL);
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
+		return(NhlFATAL);
 	}
 
 	switch(ovp->ti_x_axis_position) {
-	case CENTER:
+	case NhlCENTER:
 		ovp->real_x_axis_offset_x = ovp->ti_x_axis_offset_x +
 			((ovnew->view.x + ovnew->view.width/2.0) -
 			 (ovp->ti_x + ovp->ti_width/2.0));
 		break;
-	case LEFT:
+	case NhlLEFT:
 		ovp->real_x_axis_offset_x = ovp->ti_x_axis_offset_x +
 			(ovnew->view.x - ovp->ti_x);
 		break;
-	case RIGHT:
+	case NhlRIGHT:
 		ovp->real_x_axis_offset_x = ovp->ti_x_axis_offset_x +
 			((ovnew->view.x + ovnew->view.width) - 
 			 (ovp->ti_x + ovp->ti_width));
 		break;
-	case TOP:
-	case BOTTOM:
+	case NhlTOP:
+	case NhlBOTTOM:
 	default:
 		e_text = "%s: Invalid value for x axis title position";
-		NhlPError(FATAL,E_UNKNOWN,e_text, entry_name);
-		return(FATAL);
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
+		return(NhlFATAL);
 	}
 
 	switch(ovp->ti_y_axis_position) {
-	case CENTER:
+	case NhlCENTER:
 		ovp->real_y_axis_offset_y = ovp->ti_y_axis_offset_y +
 			((ovnew->view.y - ovnew->view.height/2.0) -
 			 (ovp->ti_y - ovp->ti_height/2.0));
 		break;
-	case TOP:
+	case NhlTOP:
 		ovp->real_y_axis_offset_y = ovp->ti_y_axis_offset_y +
 			(ovnew->view.y - ovp->ti_y);
 		break;
-	case BOTTOM:
+	case NhlBOTTOM:
 		ovp->real_y_axis_offset_y = ovp->ti_y_axis_offset_y + 
 			((ovnew->view.y - ovnew->view.height) - 
 			 (ovp->ti_y - ovp->ti_height));
 		break;
-	case LEFT:
-	case RIGHT:
+	case NhlLEFT:
+	case NhlRIGHT:
 	default:
 		e_text = "%s: Invalid value for y axis title position";
-		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name);
-		return(FATAL);
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return(NhlFATAL);
 	}
 
 /*
@@ -1999,14 +2004,14 @@ ManageTitles
 		NhlSetSArg(&sargs[nargs++],
 			   NhlNtiMainPosition,ovp->ti_main_position);
 
-		subret = _NhlALCreateChild(&tmpid,buffer,titleLayerClass,
-					   (Layer)ovnew,sargs,nargs);
+		subret = _NhlALCreateChild(&tmpid,buffer,NhltitleLayerClass,
+					   (NhlLayer)ovnew,sargs,nargs);
 
-		if ((ret = MIN(ret,subret)) < WARNING || 
+		if ((ret = MIN(ret,subret)) < NhlWARNING || 
 		    (ovp->titles = _NhlGetLayer(tmpid)) == NULL) {
 			e_text = "%s: Error creating Title object";
-			NhlPError(FATAL,E_UNKNOWN,e_text, entry_name);
-			return(FATAL);
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
+			return(NhlFATAL);
 		}
 	} else {
 		
@@ -2047,12 +2052,12 @@ ManageTitles
 				   ovp->ti_main_position);
 
 		subret = _NhlALSetValuesChild(ovp->titles->base.id,
-					      (Layer)ovnew,sargs,nargs);
+					      (NhlLayer)ovnew,sargs,nargs);
 
-		if ((ret = MIN(ret,subret)) < WARNING) {
+		if ((ret = MIN(ret,subret)) < NhlWARNING) {
 			e_text = "%s: Error updating Title object";
-			NhlPError(FATAL,E_UNKNOWN,e_text, entry_name);
-			return(FATAL);
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
+			return(NhlFATAL);
 		}
 	}
 
@@ -2065,8 +2070,8 @@ ManageTitles
  * Description: Internal function that manages the labelbar object
  *		for both the Initialize and SetValues routines.
  *
- * In Args:	OverlayLayer	ovnew - The new overlay layer
- *		OverlayLayer	ovold - The old overlay layer
+ * In Args:	NhlOverlayLayer	ovnew - The new overlay layer
+ *		NhlOverlayLayer	ovold - The old overlay layer
  *		int		init - called from Initialize?
  *
  * Out Args:
@@ -2079,29 +2084,29 @@ static NhlErrorTypes
 ManageLabelBar
 #if __STDC__
 (
-	OverlayLayer	ovnew,
-	OverlayLayer	ovold,
+	NhlOverlayLayer	ovnew,
+	NhlOverlayLayer	ovold,
 	NhlBoolean	init,
 	_NhlArgList	args,
 	int		num_args
 )
 #else
 (ovnew,ovold,init,args,num_args)
-	OverlayLayer	ovnew;
-	OverlayLayer	ovold;
+	NhlOverlayLayer	ovnew;
+	NhlOverlayLayer	ovold;
 	NhlBoolean	init;				       
 	_NhlArgList	args;
 	int		num_args;
 #endif
 {
-	NhlErrorTypes		ret = NOERROR, subret = NOERROR;
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	char			*entry_name;
 	char			*e_text;
-	OverlayLayerPart	*ovp = &ovnew->overlay;
-	OverlayLayerPart	*oovp = &ovold->overlay;
+	NhlOverlayLayerPart	*ovp = &ovnew->overlay;
+	NhlOverlayLayerPart	*oovp = &ovold->overlay;
 	int			tmpid = -1;
 	NhlBoundingBox		bbox;
-	char			buffer[MAXFNAMELEN];
+	char			buffer[_NhlMAXFNAMELEN];
         NhlSArg			sargs[16];
         int			nargs = 0;
 	float			width, height;
@@ -2119,8 +2124,8 @@ ManageLabelBar
  */
 	if (! init && ovp->labelbar == NULL) {
 		e_text = "%s: internal error: LabelBar layer NULL";
-		NhlPError(FATAL,E_UNKNOWN,e_text, entry_name);
-		return(FATAL);
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
+		return(NhlFATAL);
 	}
 	if (init || ovp->display_labelbar != oovp->display_labelbar) {
 		if (ovp->display_labelbar > Nhl_ovNever)
@@ -2130,7 +2135,7 @@ ManageLabelBar
 			if (! init) 
 				return _NhlALSetValuesChild(
 						    ovp->labelbar->base.id,
-						    (Layer)ovnew,sargs,nargs);
+						    (NhlLayer)ovnew,sargs,nargs);
 		}
 	}
 /*
@@ -2183,9 +2188,9 @@ ManageLabelBar
 		default:
 			e_text =
 			     "%s: setting invalid %s enumeration value to %s";
-			NhlPError(WARNING,E_UNKNOWN,e_text,entry_name,
+			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
 				  NhlNovLabelBarSide, "NhlRIGHT");
-			ret = MIN(ret,WARNING);
+			ret = MIN(ret,NhlWARNING);
 			ovp->lbar_side = NhlRIGHT;
 			/* falling through */
 		case NhlRIGHT:
@@ -2244,13 +2249,13 @@ ManageLabelBar
  * Get the bounding box, then set the labelbar position with respect to it.
  */
 	bbox.set = 0;
-	ret = InternalGetBB((Layer)ovnew,&bbox,NhlovTICKMARKS | NhlovTITLES,
+	ret = InternalGetBB((NhlLayer)ovnew,&bbox,NhlovTICKMARKS | NhlovTITLES,
 			    entry_name);
 
-	if ((ret = MIN(ret,subret)) < WARNING) {
+	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: Error getting bounding box";
-		NhlPError(FATAL,E_UNKNOWN,e_text, entry_name);
-		return(FATAL);
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
+		return(NhlFATAL);
 	}
 
 /*
@@ -2273,9 +2278,9 @@ ManageLabelBar
 		default:
 			e_text =
 			     "%s: setting invalid %s enumeration value to %s";
-			NhlPError(WARNING,E_UNKNOWN,e_text,entry_name,
+			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
 				  NhlNovLabelBarPosition, "NhlCENTER");
-			ret = MIN(ret,WARNING);
+			ret = MIN(ret,NhlWARNING);
 			ovp->lbar_pos = NhlCENTER;
 			/* falling through */
 
@@ -2313,9 +2318,9 @@ ManageLabelBar
 		default:
 			e_text =
 			     "%s: setting invalid %s enumeration value to %s";
-			NhlPError(WARNING,E_UNKNOWN,e_text,entry_name,
+			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
 				  NhlNovLabelBarPosition, "NhlCENTER");
-			ret = MIN(ret,WARNING);
+			ret = MIN(ret,NhlWARNING);
 			ovp->lbar_pos = NhlCENTER;
 			/* falling through */
 
@@ -2350,8 +2355,8 @@ ManageLabelBar
 	if (ovp->labelbar == NULL) {	
 		strcpy(buffer,ovnew->base.name);
 		strcat(buffer,".LabelBar");
-		subret = _NhlCreateChild(&tmpid,buffer,labelBarLayerClass,
-					 (Layer)ovnew,
+		subret = _NhlCreateChild(&tmpid,buffer,NhllabelBarLayerClass,
+					 (NhlLayer)ovnew,
 					 NhlNvpXF,ovp->lbar_x,
 					 NhlNvpYF,ovp->lbar_y,
 					 NhlNvpWidthF,ovp->lbar_width,
@@ -2359,11 +2364,11 @@ ManageLabelBar
 					 NhlNlbJustification,ovp->lbar_just,
 					 NhlNlbOrientation,ovp->lbar_orient,
 					 NULL);
-		if ((ret = MIN(ret,subret)) < WARNING || 
+		if ((ret = MIN(ret,subret)) < NhlWARNING || 
 		    (ovp->labelbar = _NhlGetLayer(tmpid)) == NULL) {
 			e_text = "%s: Error creating LabelBar object";
-			NhlPError(FATAL,E_UNKNOWN,e_text, entry_name);
-			return(FATAL);
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
+			return(NhlFATAL);
 		}
 	} else {
 
@@ -2384,12 +2389,12 @@ ManageLabelBar
 			NhlSetSArg(&sargs[nargs++],
 				   NhlNlbOrientation,ovp->lbar_orient);
 		subret = _NhlALSetValuesChild(ovp->labelbar->base.id,
-					      (Layer)ovnew,sargs,nargs);
+					      (NhlLayer)ovnew,sargs,nargs);
 
-		if ((ret = MIN(ret,subret)) < WARNING) {
+		if ((ret = MIN(ret,subret)) < NhlWARNING) {
 			e_text = "%s: Error updating LabelBar object";
-			NhlPError(FATAL,E_UNKNOWN,e_text, entry_name);
-			return(FATAL);
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
+			return(NhlFATAL);
 		}
 	}
 
@@ -2405,8 +2410,8 @@ ManageLabelBar
  * Description: Internal function that manages the legend object
  *		for both the Initialize and SetValues routines.
  *
- * In Args:	OverlayLayer	ovnew - The new overlay layer
- *		OverlayLayer	ovold - The old overlay layer
+ * In Args:	NhlOverlayLayer	ovnew - The new overlay layer
+ *		NhlOverlayLayer	ovold - The old overlay layer
  *		int		init - called from Initialize?
  *
  * Out Args:
@@ -2419,29 +2424,29 @@ static NhlErrorTypes
 ManageLegend
 #if __STDC__
 (
-	OverlayLayer	ovnew,
-	OverlayLayer	ovold,
+	NhlOverlayLayer	ovnew,
+	NhlOverlayLayer	ovold,
 	NhlBoolean	init,
 	_NhlArgList	args,
 	int		num_args
 )
 #else
 (ovnew,ovold,init,args,num_args)
-	OverlayLayer	ovnew;
-	OverlayLayer	ovold;
+	NhlOverlayLayer	ovnew;
+	NhlOverlayLayer	ovold;
 	NhlBoolean	init;				       
 	_NhlArgList	args;
 	int		num_args;
 #endif
 {
-	NhlErrorTypes		ret = NOERROR, subret = NOERROR;
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	char			*entry_name;
 	char			*e_text;
-	OverlayLayerPart	*ovp = &ovnew->overlay;
-	OverlayLayerPart	*oovp = &ovold->overlay;
+	NhlOverlayLayerPart	*ovp = &ovnew->overlay;
+	NhlOverlayLayerPart	*oovp = &ovold->overlay;
 	int			tmpid = -1;
 	NhlBoundingBox		bbox;
-	char			buffer[MAXFNAMELEN];
+	char			buffer[_NhlMAXFNAMELEN];
         NhlSArg			sargs[16];
         int			nargs = 0;
 	float			width, height;
@@ -2456,8 +2461,8 @@ ManageLegend
  */
 	if (! init && ovp->legend == NULL) {
 		e_text = "%s: internal error: Legend layer NULL";
-		NhlPError(FATAL,E_UNKNOWN,e_text, entry_name);
-		return(FATAL);
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
+		return(NhlFATAL);
 	}
 	if (init || ovp->display_legend != oovp->display_legend) {
 		if (ovp->display_legend > Nhl_ovNever)
@@ -2467,7 +2472,7 @@ ManageLegend
 			if (! init) 
 				return _NhlALSetValuesChild(
 						    ovp->legend->base.id,
-						    (Layer)ovnew,sargs,nargs);
+						    (NhlLayer)ovnew,sargs,nargs);
 		}
 	}
 /*
@@ -2496,9 +2501,9 @@ ManageLegend
 		default:
 			e_text =
 			     "%s: setting invalid %s enumeration value to %s";
-			NhlPError(WARNING,E_UNKNOWN,e_text,entry_name,
+			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
 				  NhlNovLegendSide, "NhlRIGHT");
-			ret = MIN(ret,WARNING);
+			ret = MIN(ret,NhlWARNING);
 			ovp->lgnd_side = NhlRIGHT;
 			/* falling through */
 		case NhlRIGHT:
@@ -2524,13 +2529,13 @@ ManageLegend
  * Get the bounding box, then set the legend position with respect to it.
  */
 	bbox.set = 0;
-	ret = InternalGetBB((Layer)ovnew,&bbox,NhlovTICKMARKS | NhlovTITLES,
+	ret = InternalGetBB((NhlLayer)ovnew,&bbox,NhlovTICKMARKS | NhlovTITLES,
 			    entry_name);
 
-	if ((ret = MIN(ret,subret)) < WARNING) {
+	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: Error getting bounding box";
-		NhlPError(FATAL,E_UNKNOWN,e_text, entry_name);
-		return(FATAL);
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
+		return(NhlFATAL);
 	}
 /*
  * Set the position, height and width of the Legend based on the
@@ -2552,9 +2557,9 @@ ManageLegend
 		default:
 			e_text =
 			     "%s: setting invalid %s enumeration value to %s";
-			NhlPError(WARNING,E_UNKNOWN,e_text,entry_name,
+			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
 				  NhlNovLegendPosition, "NhlCENTER");
-			ret = MIN(ret,WARNING);
+			ret = MIN(ret,NhlWARNING);
 			ovp->lgnd_pos = NhlCENTER;
 			/* falling through */
 
@@ -2592,9 +2597,9 @@ ManageLegend
 		default:
 			e_text =
 			     "%s: setting invalid %s enumeration value to %s";
-			NhlPError(WARNING,E_UNKNOWN,e_text,entry_name,
+			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
 				  NhlNovLegendPosition, "NhlCENTER");
-			ret = MIN(ret,WARNING);
+			ret = MIN(ret,NhlWARNING);
 			ovp->lgnd_pos = NhlCENTER;
 			/* falling through */
 
@@ -2629,8 +2634,8 @@ ManageLegend
 	if (ovp->legend == NULL) {	
 		strcpy(buffer,ovnew->base.name);
 		strcat(buffer,".Legend");
-		subret = _NhlCreateChild(&tmpid,buffer,legendLayerClass,
-					 (Layer)ovnew,
+		subret = _NhlCreateChild(&tmpid,buffer,NhllegendLayerClass,
+					 (NhlLayer)ovnew,
 					 NhlNvpXF,ovp->lgnd_x,
 					 NhlNvpYF,ovp->lgnd_y,
 					 NhlNvpWidthF,ovp->lgnd_width,
@@ -2638,11 +2643,11 @@ ManageLegend
 					 NhlNlgJustification,ovp->lgnd_just,
 					 NhlNlgOrientation,ovp->lgnd_orient,
 					 NULL);
-		if ((ret = MIN(ret,subret)) < WARNING || 
+		if ((ret = MIN(ret,subret)) < NhlWARNING || 
 		    (ovp->legend = _NhlGetLayer(tmpid)) == NULL) {
 			e_text = "%s: Error creating Legend object";
-			NhlPError(FATAL,E_UNKNOWN,e_text, entry_name);
-			return(FATAL);
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
+			return(NhlFATAL);
 		}
 	} else {
 
@@ -2663,12 +2668,12 @@ ManageLegend
 			NhlSetSArg(&sargs[nargs++],
 				   NhlNlgOrientation,ovp->lgnd_orient);
 		subret = _NhlALSetValuesChild(ovp->legend->base.id,
-					      (Layer)ovnew,sargs,nargs);
+					      (NhlLayer)ovnew,sargs,nargs);
 
-		if ((ret = MIN(ret,subret)) < WARNING) {
+		if ((ret = MIN(ret,subret)) < NhlWARNING) {
 			e_text = "%s: Error updating Legend object";
-			NhlPError(FATAL,E_UNKNOWN,e_text, entry_name);
-			return(FATAL);
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
+			return(NhlFATAL);
 		}
 	}
 
@@ -2751,23 +2756,23 @@ NhlErrorTypes NhlAddToOverlay
 	int after_id;
 #endif
 {
-	NhlErrorTypes		ret = NOERROR, subret = NOERROR;
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	char			*e_text;
 	char			*entry_name = "NhlAddToOverlay";
 
-	Layer			base = _NhlGetLayer(base_id);
-	Layer			plot = _NhlGetLayer(plot_id);
-	Layer			after = _NhlGetLayer(after_id);
+	NhlLayer			base = _NhlGetLayer(base_id);
+	NhlLayer			plot = _NhlGetLayer(plot_id);
+	NhlLayer			after = _NhlGetLayer(after_id);
 
-	TransformLayerPart	*base_tfp;
-	OverlayLayer		ovl;
-	OverlayLayerPart	*ovp;
-	TransformLayerPart	*plot_tfp;
-	TransformLayerClassRec	*plot_classp;
+	NhlTransformLayerPart	*base_tfp;
+	NhlOverlayLayer		ovl;
+	NhlOverlayLayerPart	*ovp;
+	NhlTransformLayerPart	*plot_tfp;
+	NhlTransformLayerClassRec	*plot_classp;
 
 	NhlGenArray		ga;
 	int			plot_count = 0;
-	ovRec			**sub_recs = NULL;
+	NhlovRec			**sub_recs = NULL;
 	int			i, j;
 
 /*
@@ -2776,44 +2781,44 @@ NhlErrorTypes NhlAddToOverlay
  */
 	if (base == NULL || ! _NhlIsTransform(base)) {
 		e_text = "%s: invalid base plot id";
-		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name);
-		return FATAL;
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
 	}
 	if (plot == NULL || ! _NhlIsTransform(plot)) {
 		e_text = "%s: invalid overlay plot id";
-		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name);
-		return FATAL;
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
 	}
 	if (base == plot) {
 		e_text = "%s: overlay member and base plot ids are the same";
-		NhlPError(WARNING,E_UNKNOWN,e_text,entry_name);
-		return WARNING;
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+		return NhlWARNING;
 	}
 
-	plot_tfp = &(((TransformLayer)plot)->trans);
-	base_tfp = &(((TransformLayer)base)->trans);
+	plot_tfp = &(((NhlTransformLayer)plot)->trans);
+	base_tfp = &(((NhlTransformLayer)base)->trans);
 	if (! base_tfp->overlay_plot_base ||
 	    base_tfp->overlay_object == NULL || 
 	    ! _NhlIsTransform(base_tfp->overlay_object)) {
 		e_text = "%s: no overlay initialized for base plot";
-		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name);
-		return FATAL;
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
 	}
-	ovl = (OverlayLayer) base_tfp->overlay_object;
+	ovl = (NhlOverlayLayer) base_tfp->overlay_object;
 	ovp = &(ovl->overlay);
 
 /*
  * Test to ensure the added plot can handle becoming an overlay member. 
  */
-	plot_classp = (TransformLayerClassRec *) _NhlClass(plot);
+	plot_classp = (NhlTransformLayerClassRec *) _NhlClass(plot);
 	if (plot_classp->trans_class.overlay_capability ==
 	    					_tfNotOverlayCapable ||
 	    plot_classp->trans_class.overlay_capability ==
 	    					_tfOverlayBaseOnly) {
 		e_text = "%s: plot class %s cannot be overlay member";
-		NhlPError(WARNING,E_UNKNOWN,e_text,entry_name,
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
 			  plot_classp->base_class.class_name);
-		return WARNING;
+		return NhlWARNING;
 	}
 
 /*
@@ -2830,52 +2835,52 @@ NhlErrorTypes NhlAddToOverlay
 
 	if (plot_tfp->overlay_status == _tfCurrentOverlayMember) {
 		e_text = "%s: plot ID %d is already an overlay member";
-		NhlPError(WARNING,E_UNKNOWN,e_text,entry_name,plot_id);
-		return WARNING;
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,plot_id);
+		return NhlWARNING;
 	}
 	else if (plot_tfp->overlay_status == _tfCurrentOverlayBase) {
 
 		if (plot_tfp->overlay_object == NULL || 
 		    ! _NhlIsTransform(plot_tfp->overlay_object)) {
 		      e_text = "%s: plot ID %d has inconsistent overlay info";
-		        NhlPError(WARNING,E_UNKNOWN,e_text,entry_name,plot_id);
-			return WARNING;
+		        NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,plot_id);
+			return NhlWARNING;
 		}
 
-		subret = NhlGetValues(plot_tfp->overlay_object->base.id,
+		subret = NhlVAGetValues(plot_tfp->overlay_object->base.id,
 				      NhlNovOverlayRecs, &ga, NULL);
 
-		if ((ret = MIN(ret,subret)) < WARNING) {
+		if ((ret = MIN(ret,subret)) < NhlWARNING) {
 			return ret;
 		}
-		if (ga == NULL || ga->size != sizeof(ovRec *)) {
+		if (ga == NULL || ga->size != sizeof(NhlovRec *)) {
 			e_text = "%s: error retrieving internal gen array";
-			NhlPError(FATAL,E_UNKNOWN,e_text,entry_name);
-			return FATAL;
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			return NhlFATAL;
 		}
 
 		plot_count = ga->num_elements;
-		sub_recs = (ovRec **) ga->data;
+		sub_recs = (NhlovRec **) ga->data;
 
 		ga->my_data = False;
 		NhlFreeGenArray(ga);
 
 	}
 	else {
-		if ((sub_recs = (ovRec **) 
-		     NhlMalloc(sizeof(ovRec *))) == NULL) {
+		if ((sub_recs = (NhlovRec **) 
+		     NhlMalloc(sizeof(NhlovRec *))) == NULL) {
 			e_text = "%s: dynamic memory allocation error";
-			NhlPError(FATAL,E_UNKNOWN,e_text,entry_name);
-			return FATAL;
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			return NhlFATAL;
 		}
-		if ((sub_recs[0] = (ovRec *) 
-		     NhlMalloc(sizeof(ovRec))) == NULL) {
+		if ((sub_recs[0] = (NhlovRec *) 
+		     NhlMalloc(sizeof(NhlovRec))) == NULL) {
 			e_text = "%s: dynamic memory allocation error";
-			NhlPError(FATAL,E_UNKNOWN,e_text,entry_name);
-			return FATAL;
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			return NhlFATAL;
 		}
 		plot_count = 1;
-		sub_recs[0]->plot = (TransformLayer) _NhlGetLayer(plot_id);
+		sub_recs[0]->plot = (NhlTransformLayer) _NhlGetLayer(plot_id);
 		sub_recs[0]->ov_obj = NULL;
 	}
 			
@@ -2884,14 +2889,14 @@ NhlErrorTypes NhlAddToOverlay
  * Reallocate the array of overlay record pointers if necessary
  */
 	if (ovp->overlay_alloc < ovp->overlay_count + plot_count) {
-		ovp->ov_recs = (ovRec **)
-			NhlRealloc(ovp->ov_recs, sizeof(ovRec *) *
+		ovp->ov_recs = (NhlovRec **)
+			NhlRealloc(ovp->ov_recs, sizeof(NhlovRec *) *
 				   (ovp->overlay_count + 
 				    MAX(NhlOV_ALLOC_UNIT,plot_count)));
 		if (ovp->ov_recs == NULL) {
 			e_text = "%s: dynamic memory allocation error";
-			NhlPError(FATAL,E_UNKNOWN,e_text,entry_name);
-			return FATAL;
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			return NhlFATAL;
 		}
 		ovp->overlay_alloc += MAX(NhlOV_ALLOC_UNIT,plot_count);
 	}
@@ -2900,7 +2905,7 @@ NhlErrorTypes NhlAddToOverlay
  * If no after plot is specified put the new plot at the end of the array.
  * Otherwise, rearrange the array so that the new plot follows the plot
  * specified by the after plot id. An invalid after plot id generates a
- * WARNING; the plot is placed at the end of the array.
+ * NhlWARNING; the plot is placed at the end of the array.
  */
 	
 	if (after == NULL) {
@@ -2911,8 +2916,8 @@ NhlErrorTypes NhlAddToOverlay
 	else if (! _NhlIsTransform(after)) {
 
 		e_text = "%s: invalid after plot id";
-		NhlPError(WARNING,E_UNKNOWN,e_text,entry_name);
-		ret = MIN(ret,WARNING);
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+		ret = MIN(ret,NhlWARNING);
 
 		for (i = 0; i < plot_count; i++)
 			ovp->ov_recs[ovp->overlay_count+i] = sub_recs[i]; 
@@ -2922,14 +2927,14 @@ NhlErrorTypes NhlAddToOverlay
 
 			if (i == ovp->overlay_count) { /* after not found */
 				e_text = "%s: invalid after plot id";
-				NhlPError(WARNING,E_UNKNOWN,e_text,entry_name);
-				ret = MIN(ret,WARNING);
+				NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+				ret = MIN(ret,NhlWARNING);
 				for (j = 0; j < plot_count; j++)
 					ovp->ov_recs[ovp->overlay_count+j] = 
 						sub_recs[j];
 
 	}
-			else if (after == (Layer) ovp->ov_recs[i]->plot) {
+			else if (after == (NhlLayer) ovp->ov_recs[i]->plot) {
 				for (j = ovp->overlay_count - 1;j > i; j--) {
 				      ovp->ov_recs[j+plot_count] =
 					      ovp->ov_recs[j];
@@ -2963,7 +2968,7 @@ NhlErrorTypes NhlAddToOverlay
 
 		subret = NhlALSetValues(sub_recs[i]->plot->base.id,
 					sargs,nargs); 
-		if ((ret = MIN(subret,ret)) < WARNING)
+		if ((ret = MIN(subret,ret)) < NhlWARNING)
 			return ret;
 	}
 
@@ -3009,14 +3014,14 @@ NhlErrorTypes NhlRemoveFromOverlay
 	NhlBoolean restore;
 #endif
 {
-	NhlErrorTypes		ret = NOERROR, subret = NOERROR;
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	char			*e_text;
 	char			*entry_name = "NhlRemoveFromOverlay";
-	Layer			base = _NhlGetLayer(base_id);
-	Layer			plot = _NhlGetLayer(plot_id);
+	NhlLayer			base = _NhlGetLayer(base_id);
+	NhlLayer			plot = _NhlGetLayer(plot_id);
 
-	TransformLayerPart	*base_tfp;
-	OverlayLayerPart	*ovp;
+	NhlTransformLayerPart	*base_tfp;
+	NhlOverlayLayerPart	*ovp;
 	int			i, j;
 
 
@@ -3026,29 +3031,29 @@ NhlErrorTypes NhlRemoveFromOverlay
  */
 	if (base == NULL || ! _NhlIsTransform(base)) {
 		e_text = "%s: invalid base plot id";
-		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name);
-		return FATAL;
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
 	}
 	if (plot == NULL || ! _NhlIsTransform(plot)) {
 		e_text = "%s: invalid overlay plot id";
-		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name);
-		return FATAL;
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
 	}
 
-	base_tfp = &(((TransformLayer)base)->trans);
+	base_tfp = &(((NhlTransformLayer)base)->trans);
 	if (! base_tfp->overlay_plot_base ||
 	    base_tfp->overlay_object == NULL || 
 	    ! _NhlIsTransform(base_tfp->overlay_object)) {
 		e_text = "%s: no overlay initialized for base plot";
-		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name);
-		return FATAL;
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
 	}
-	ovp = (OverlayLayerPart *) 
-		&(((OverlayLayer)base_tfp->overlay_object)->overlay);
-	if (ovp->ov_recs[0]->plot != (TransformLayer) base) {
+	ovp = (NhlOverlayLayerPart *) 
+		&(((NhlOverlayLayer)base_tfp->overlay_object)->overlay);
+	if (ovp->ov_recs[0]->plot != (NhlTransformLayer) base) {
 		e_text = "%s: base is not currently an overlay base plot";
-		NhlPError(WARNING,E_UNKNOWN,e_text,entry_name);
-		return WARNING;
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+		return NhlWARNING;
 	}
 /*
  * This code simply provides an alternative to the SetValues interface
@@ -3071,21 +3076,21 @@ NhlErrorTypes NhlRemoveFromOverlay
 	for (i = 0; i <= ovp->overlay_count; i++) {
 		if (i == ovp->overlay_count) {
 			e_text = "%s: plot not found in overlay";
-			NhlPError(WARNING,E_UNKNOWN,e_text,entry_name);
-			return WARNING;
+			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+			return NhlWARNING;
 		}
-		if (plot == (Layer) ovp->ov_recs[i]->plot) {
+		if (plot == (NhlLayer) ovp->ov_recs[i]->plot) {
 			
 			if (restore && ovp->ov_recs[i]->ov_obj != NULL) {
 				subret = RestoreOverlayBase(ovp,i);
-				if ((ret = MIN(subret,ret)) < WARNING) {
+				if ((ret = MIN(subret,ret)) < NhlWARNING) {
 					return ret;
 				}
 			}
 			else if (ovp->ov_recs[i]->ov_obj != NULL) {
 
 				subret = RemoveOverlayBase(ovp,i);
-				if ((ret = MIN(subret,ret)) < WARNING) {
+				if ((ret = MIN(subret,ret)) < NhlWARNING) {
 					return ret;
 				}
 			}
@@ -3106,7 +3111,7 @@ NhlErrorTypes NhlRemoveFromOverlay
 
 				subret = NhlALSetValues(plot->base.id,
 							sargs,nargs); 
-				if ((ret = MIN(subret,ret)) < WARNING)
+				if ((ret = MIN(subret,ret)) < NhlWARNING)
 					return ret;
 
 				ovp->ov_recs[--ovp->overlay_count] = NULL;
@@ -3126,7 +3131,7 @@ NhlErrorTypes NhlRemoveFromOverlay
  *		Restores the state of overlay plot member to their
  *		condition before being added to the current overlay. 
  *
- * In Args:	Layer overlay_object - the overlay object being dissolved
+ * In Args:	NhlLayer overlay_object - the overlay object being dissolved
  *
  * Return Values:	ErrorConditions
  *
@@ -3136,20 +3141,20 @@ static NhlErrorTypes
 DissolveOverlay
 #if __STDC__
 (
-	Layer		overlay_object
+	NhlLayer		overlay_object
 )
 #else
 (overlay_object)
-	Layer			overlay_object;
+	NhlLayer			overlay_object;
 #endif
 {
-	NhlErrorTypes		ret = NOERROR, subret = NOERROR;
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 #if 0
 	char			*e_text;
 	char			*entry_name = "NhlRemoveFromOverlay";
 #endif
-	OverlayLayerPart	*ovp = 
-				     &((OverlayLayer)overlay_object)->overlay;
+	NhlOverlayLayerPart	*ovp = 
+				     &((NhlOverlayLayer)overlay_object)->overlay;
 	int			i;
 	NhlSArg			sargs[3];
 	int			nargs = 0;
@@ -3158,7 +3163,7 @@ DissolveOverlay
 			
 		if (ovp->ov_recs[1]->ov_obj != NULL) {
 			subret = RestoreOverlayBase(ovp,1);
-			if ((ret = MIN(subret,ret)) < WARNING) {
+			if ((ret = MIN(subret,ret)) < NhlWARNING) {
 				return ret;
 			}
 		}
@@ -3170,7 +3175,7 @@ DissolveOverlay
 
 			subret = NhlALSetValues(ovp->ov_recs[1]->plot->base.id,
 						sargs,nargs); 
-			if ((ret = MIN(subret,ret)) < WARNING)
+			if ((ret = MIN(subret,ret)) < NhlWARNING)
 				return ret;
 
 			for (i = 1; i < ovp->overlay_count - 1; i++) {
@@ -3190,7 +3195,7 @@ DissolveOverlay
  * Description: Internal function that removes an overlay base plot without
  *		removing any member plots that originally belonged to it.
  *
- * In Args:	OverlayLayerPart ovp - overlay object that plot is being
+ * In Args:	NhlOverlayLayerPart ovp - overlay object that plot is being
  * 				       removed from
  *		int plot_number -- the array position in the overlay record of
  *			       	   the plot being removed
@@ -3205,23 +3210,23 @@ static NhlErrorTypes
 RemoveOverlayBase
 #if __STDC__
 (
-	OverlayLayerPart	*ovp,
+	NhlOverlayLayerPart	*ovp,
 	int			plot_number
 )
 #else
 (ovp,plot_number)
-	OverlayLayerPart	*ovp;
+	NhlOverlayLayerPart	*ovp;
 	int			plot_number;
 #endif
 {
-	NhlErrorTypes		ret = NOERROR, subret = NOERROR;
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	char			*e_text;
 	char			*entry_name = "NhlRemoveFromOverlay";
-	OverlayLayer		plot_ovl = (OverlayLayer) 
+	NhlOverlayLayer		plot_ovl = (NhlOverlayLayer) 
 					ovp->ov_recs[plot_number]->ov_obj;
-	TransformLayer		plot = ovp->ov_recs[plot_number]->plot;
+	NhlTransformLayer		plot = ovp->ov_recs[plot_number]->plot;
 	NhlGenArray		ga;
-	ovRec			**ov_recs = NULL;
+	NhlovRec			**ov_recs = NULL;
 	NhlSArg			sargs[10];
         int			nargs = 0;
 	int			i;
@@ -3237,29 +3242,29 @@ RemoveOverlayBase
  * of the overlay plot. This will erase its memory of its overlay plots.
  */
 
-	ov_recs = (ovRec **) NhlMalloc(sizeof(ovRec *));
+	ov_recs = (NhlovRec **) NhlMalloc(sizeof(NhlovRec *));
 	if (ov_recs == NULL) {
 		e_text = "%s: dynamic memory allocation error";
-		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name);
-		return FATAL;
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
 	}
 
-	ov_recs[0] = (ovRec *) NhlMalloc(ovp->overlay_count * sizeof(ovRec));
+	ov_recs[0] = (NhlovRec *) NhlMalloc(ovp->overlay_count * sizeof(NhlovRec));
 	if (ov_recs[0] == NULL) {
 		e_text ="%s: dynamic memory allocation error";
-		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name);
-		return FATAL;
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
 	}
 
 	ov_recs[0]->plot = plot;
-	ov_recs[0]->ov_obj = (Layer) plot_ovl;
+	ov_recs[0]->ov_obj = (NhlLayer) plot_ovl;
 			
 	ga = NhlCreateGenArray((NhlPointer)ov_recs,NhlTPointer,
-			       sizeof(ovRec *),1,&count);
+			       sizeof(NhlovRec *),1,&count);
 	if (ga == NULL) {
 		e_text = "%s: error creating %s GenArray";
-		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,NhlNovOverlayRecs);
-		return FATAL;
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,NhlNovOverlayRecs);
+		return NhlFATAL;
 	}
 	ga->my_data = True;
 
@@ -3286,7 +3291,7 @@ RemoveOverlayBase
  *		that was originally an overlay base when it is removed from 
  *		another overlay.
  *
- * In Args:	OverlayLayerPart ovp - overlay object that plot is being
+ * In Args:	NhlOverlayLayerPart ovp - overlay object that plot is being
  * 				       removed from
  *		int plot_number -- the array position in the overlay record of
  *			       	   the plot being removed
@@ -3301,23 +3306,23 @@ static NhlErrorTypes
 RestoreOverlayBase
 #if __STDC__
 (
-	OverlayLayerPart	*ovp,
+	NhlOverlayLayerPart	*ovp,
 	int			plot_number
 )
 #else
 (ovp,plot_number)
-	OverlayLayerPart	*ovp;
+	NhlOverlayLayerPart	*ovp;
 	int			plot_number;
 #endif
 {
-	NhlErrorTypes		ret = NOERROR, subret = NOERROR;
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	char			*e_text;
 	char			*entry_name = "NhlRemoveFromOverlay";
-	OverlayLayer		plot_ovl = (OverlayLayer) 
+	NhlOverlayLayer		plot_ovl = (NhlOverlayLayer) 
 					ovp->ov_recs[plot_number]->ov_obj;
-	TransformLayer		plot = ovp->ov_recs[plot_number]->plot;
+	NhlTransformLayer		plot = ovp->ov_recs[plot_number]->plot;
 	NhlGenArray		ga;
-	ovRec			**sub_recs = NULL;
+	NhlovRec			**sub_recs = NULL;
 	NhlSArg			sargs[10];
         int			nargs = 0;
 	int			i, j, k;
@@ -3331,26 +3336,26 @@ RestoreOverlayBase
  * not found must have been removed from the current overlay object; they
  * must therefore be removed from the plot's overlay object as well.
  */
-	if (! _NhlIsTransform((Layer) plot_ovl)) {
+	if (! _NhlIsTransform((NhlLayer) plot_ovl)) {
 		e_text = "%s: internal inconsistency in record of plot ID %d";
-		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name,plot->base.id);
-		return FATAL;
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,plot->base.id);
+		return NhlFATAL;
 	}
 
-	subret = NhlGetValues(plot_ovl->base.id,
+	subret = NhlVAGetValues(plot_ovl->base.id,
 			      NhlNovOverlayRecs, &ga, NULL);
 
-	if ((ret = MIN(ret,subret)) < WARNING) {
+	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		return ret;
 	}
-	if (ga == NULL || ga->size != sizeof(ovRec *)) {
+	if (ga == NULL || ga->size != sizeof(NhlovRec *)) {
 		e_text = "%s: error retrieving internal gen array";
-		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name);
-		return FATAL;
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
 	}
 
 	new_plot_count = ga->num_elements;
-	sub_recs = (ovRec **) ga->data;
+	sub_recs = (NhlovRec **) ga->data;
 
 	for (i = 0; i < new_plot_count; ) {
 		for (j = 0; j <= ovp->overlay_count; j++) {
@@ -3385,7 +3390,7 @@ RestoreOverlayBase
 
 		subret = NhlALSetValues(sub_recs[i]->plot->base.id,
 					sargs,nargs); 
-		if ((ret = MIN(subret,ret)) < WARNING)
+		if ((ret = MIN(subret,ret)) < NhlWARNING)
 			return ret;
 
 	}
@@ -3455,9 +3460,9 @@ RestoreOverlayBase
 extern NhlErrorTypes _NhlManageOverlay
 #if  __STDC__
 (
-	Layer		*overlay_object,
-	Layer		lnew,
-	Layer		lold,
+	NhlLayer	*overlay_object,
+	NhlLayer	lnew,
+	NhlLayer	lold,
 	NhlBoolean	init,
 	NhlSArgList	sargs,
 	int		nargs,
@@ -3465,24 +3470,22 @@ extern NhlErrorTypes _NhlManageOverlay
 )
 #else 
 (overlay_object,lnew,lold,init,sargs,nargs,entry_name)
-	Layer		*overlay_object;				   
-	Layer		lnew;
-	Layer		lold;
+	NhlLayer	*overlay_object;
+	NhlLayer	lnew;
+	NhlLayer	lold;
 	NhlBoolean	init;
 	NhlSArgList	sargs;
 	int		nargs;
 	char		*entry_name;
-
 #endif
 {
-	NhlErrorTypes		ret = NOERROR, subret = NOERROR;
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	char 			*e_text;
-	TransformLayerPart	*tfp = &(((TransformLayer)lnew)->trans);
-	TransformLayerPart	*otfp = &(((TransformLayer)lold)->trans);
-	ViewLayerPart		*vwp = &(((ViewLayer)lnew)->view);
+	NhlTransformLayerPart	*tfp = &(((NhlTransformLayer)lnew)->trans);
+	NhlTransformLayerPart	*otfp = &(((NhlTransformLayer)lold)->trans);
+	NhlViewLayerPart		*vwp = &(((NhlViewLayer)lnew)->view);
 	int			tmpid = -1;
-	char			buffer[MAXFNAMELEN];
-	NhlBoolean		created = False;
+	char			buffer[_NhlMAXFNAMELEN];
 	NhlSArg			*lsargs;
 	int			lsarg_count = 8;
 
@@ -3491,27 +3494,27 @@ extern NhlErrorTypes _NhlManageOverlay
 			return ret;
 		else if (! init) {
 			e_text = "%s: resetting create-only resource: %s";
-			NhlPError(WARNING,E_UNKNOWN,e_text,
+			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
 				  entry_name,NhlNtfOverlayPlotBase);
 			tfp->overlay_plot_base = False;
-			return WARNING;
+			return NhlWARNING;
 		}
 	}
 
 	if (! init && ! _NhlIsTransform(*overlay_object)) {
 		e_text = "%s: invalid overlay object passed in";
-		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name);
-		return FATAL;
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
 	}
 		
 	lsargs = (NhlSArg *) NhlMalloc((nargs+lsarg_count) * sizeof(NhlSArg));
 	if (lsargs == NULL) {
 		e_text ="%s: dynamic memory allocation error";
-		NhlPError(FATAL,E_UNKNOWN,e_text,entry_name);
-		return FATAL;
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
 	}
 	if (nargs > 0) {
-		memcpy(lsargs,sargs,nargs*sizeof(NhlSArg));
+		memcpy((void*)lsargs,(void*)sargs,nargs*sizeof(NhlSArg));
 	}
 
 	if (init) {
@@ -3527,17 +3530,17 @@ extern NhlErrorTypes _NhlManageOverlay
 		NhlSetSArg(&lsargs[nargs++],NhlNtfOverlayTrans,tfp->trans_obj);
 		
 		tfp->overlay_trans_obj = tfp->trans_obj;
-		subret = _NhlALCreateChild(&tmpid,buffer,overlayLayerClass,
+		subret = _NhlALCreateChild(&tmpid,buffer,NhloverlayLayerClass,
 					   lnew,lsargs,nargs);
 
 		ret = MIN(ret,subret);
 
-		if (ret < WARNING || (*overlay_object = 
+		if (ret < NhlWARNING || (*overlay_object = 
 				      _NhlGetLayer(tmpid)) == NULL) {
 			tfp->overlay_trans_obj = NULL;
 			e_text = "%s: overlay creation failure";
-			NhlPError(FATAL,E_UNKNOWN,e_text,entry_name);
-			return(FATAL);
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			return(NhlFATAL);
 		}
 		tfp->overlay_object = *overlay_object;
 		tfp->overlay_status = _tfCurrentOverlayBase;
@@ -3548,13 +3551,13 @@ extern NhlErrorTypes _NhlManageOverlay
 		if (tfp->overlay_status == _tfCurrentOverlayMember) {
 			e_text = 
 	       "%s: must remove from overlay before destroying overlay base";
-			NhlPError(WARNING,E_UNKNOWN,e_text,entry_name);
+			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
 			tfp->overlay_plot_base = True;
 		}
 		else {
 			subret = _NhlDestroyChild((*overlay_object)->base.id,
 						  lnew);
-			if ((ret = MIN(ret,subret)) < WARNING) {
+			if ((ret = MIN(ret,subret)) < NhlWARNING) {
 				return ret;
 			}
 			tfp->overlay_object = NULL;
@@ -3573,13 +3576,13 @@ extern NhlErrorTypes _NhlManageOverlay
 	
 	if (tfp->overlay_status == _tfCurrentOverlayMember) {
 
-		ViewLayer ovvl = (ViewLayer) tfp->overlay_object;
+		NhlViewLayer ovvl = (NhlViewLayer) tfp->overlay_object;
 
 		if (tfp->overlay_object == NULL || 
 		    ! _NhlIsTransform(tfp->overlay_object)) {
 			e_text = "%s: inconsistent overlay state";
-			NhlPError(FATAL,E_UNKNOWN,e_text,entry_name);
-			return(FATAL);
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			return(NhlFATAL);
 		}
 
 		if (vwp->x != ovvl->view.x ||
@@ -3594,13 +3597,13 @@ extern NhlErrorTypes _NhlManageOverlay
 
 			e_text =
 			"%s: attempt to set overlay member plot view ignored";
-			NhlPError(WARNING,E_UNKNOWN,e_text,entry_name);
-			ret = MIN(ret,WARNING);
+			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+			ret = MIN(ret,NhlWARNING);
 		}
 	}
 		
 	if (*overlay_object != NULL) {
-		ViewLayerPart		*ovwp = &(((ViewLayer)lold)->view);
+		NhlViewLayerPart		*ovwp = &(((NhlViewLayer)lold)->view);
 
 		if (vwp->x != ovwp->x)
 			NhlSetSArg(&lsargs[nargs++],NhlNvpXF,vwp->x);
@@ -3624,10 +3627,10 @@ extern NhlErrorTypes _NhlManageOverlay
 		subret = _NhlALSetValuesChild((*overlay_object)->base.id,
 					      lnew,lsargs,nargs);
 
-		if ((ret = MIN(subret, ret)) < WARNING) {
+		if ((ret = MIN(subret, ret)) < NhlWARNING) {
 			e_text = "%s: error setting overlay object view";
-			NhlPError(FATAL,E_UNKNOWN,e_text,entry_name);
-			return FATAL;
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			return NhlFATAL;
 		}
 	}
 

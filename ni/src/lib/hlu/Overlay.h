@@ -1,6 +1,5 @@
-
 /*
- *      $Id: Overlay.h,v 1.4 1994-01-24 23:57:44 dbrown Exp $
+ *      $Id: Overlay.h,v 1.5 1994-01-27 21:25:25 boote Exp $
  */
 /************************************************************************
 *									*
@@ -88,27 +87,22 @@
 #define NhlCovLegendSide	"OvLegendSide"
 #define NhlCovLegendPosition	"OvLegendPosition"
 
+extern NhlLayerClass NhloverlayLayerClass;
 
-typedef struct _OverlayLayerClassRec *OverlayLayerClass;
-typedef struct _OverlayLayerRec *OverlayLayer;
-
-extern LayerClass overlayLayerClass;
-
-/* 
- * Convenience function that performs the basic management of an
- * overlay for a plot object. Designed to be called from ...Initialize
- * or ...SetValues.
- */
-
-extern NhlErrorTypes _NhlManageOverlay(
+/* Public functions defined by the Overlay Class	*/
+NhlErrorTypes NhlAddToOverlay(
 #ifdef NhlNeedProto
-	Layer		*overlay_object,
-	Layer		lnew,
-	Layer		lold,
-	NhlBoolean	init,
-	NhlSArgList	sargs,
-	int		nargs,
-	char		*entry_name				   
+        int		/* base_id */,
+	int		/* plot_id */,
+	int		/* after_id */
+#endif
+);
+
+NhlErrorTypes NhlRemoveFromOverlay(
+#ifdef NhlNeedProto
+        int		/* base_id */,
+	int		/* plot_id */,
+	NhlBoolean	/* restore */
 #endif
 );
 

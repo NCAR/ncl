@@ -1,5 +1,5 @@
 /*
- *      $Id: ViewP.h,v 1.3 1993-10-19 17:53:10 boote Exp $
+ *      $Id: ViewP.h,v 1.4 1994-01-27 21:27:15 boote Exp $
  */
 /************************************************************************
 *									*
@@ -17,7 +17,7 @@
  *
  *	Date:		Tue Sep 1 10:01:24 MDT 1992
  *
- *	Description:	Private header file for ViewLayerClass. Contains
+ *	Description:	Private header file for NhlViewLayerClass. Contains
  *			NhlSegTransList typedef for storing output from the
  *			Segments utility.
  */
@@ -25,7 +25,7 @@
 #define _NViewP_h
 
 #include <ncarg/hlu/BaseP.h>
-#include <ncarg/hlu/View.h>
+#include <ncarg/hlu/ViewI.h>
 
 #include <ncarg/hlu/Segments.h>
 
@@ -35,8 +35,12 @@ typedef struct _NhlSegTransListNode {
 	struct _NhlSegTransListNode *next;
 } NhlSegTransListNode, *NhlSegTransList;
 
+typedef struct _NhlLayerList{
+	struct _NhlLayerRec *layer;
+	struct _NhlLayerList *next;
+} NhlLayerListNode, *NhlLayerList;
 
-typedef struct _ViewLayerPart {
+typedef struct _NhlViewLayerPart {
 	/* User setable resource fields */
 
 	float x,y;
@@ -46,7 +50,7 @@ typedef struct _ViewLayerPart {
 	/* Internal private fields */
 	
 	NhlSegTransList	plot_segments_list;
-	LayerList	children;
+	NhlLayerList	children;
 	int		segment_wksid;
 
 /*
@@ -73,24 +77,24 @@ typedef struct _ViewLayerPart {
 	float ur,ul,ub,ut;	/* these are user coordinate values they are
 					set by the plot level of the HLU */
 
-} ViewLayerPart;
+} NhlViewLayerPart;
 
-typedef struct _ViewLayerRec {
-	BaseLayerPart base;
-	ViewLayerPart view;
-} ViewLayerRec;
+typedef struct _NhlViewLayerRec {
+	NhlBaseLayerPart base;
+	NhlViewLayerPart view;
+} NhlViewLayerRec;
 
-typedef struct _ViewLayerClassPart {
+typedef struct _NhlViewLayerClassPart {
 	int	segment_workstation;
 	NhlErrorTypes	(*get_bb)();
-} ViewLayerClassPart; 
+} NhlViewLayerClassPart; 
 
-typedef struct _ViewLayerClassRec {
-	BaseLayerClassPart	base_class;
-	ViewLayerClassPart	view_class;
-} ViewLayerClassRec;
+typedef struct _NhlViewLayerClassRec {
+	NhlBaseLayerClassPart	base_class;
+	NhlViewLayerClassPart	view_class;
+} NhlViewLayerClassRec;
 
-extern ViewLayerClassRec viewLayerClassRec;
+extern NhlViewLayerClassRec NhlviewLayerClassRec;
 
 #define NhlDEFAULT_SEG_WKS 2
 #define NhlDEFAULT_CONNECTION_ID 1
@@ -98,34 +102,34 @@ extern ViewLayerClassRec viewLayerClassRec;
 
 extern void _NhlAddViewChildLayer(
 #ifdef NhlNeedProto
-Layer   /* instance */,
-Layer   /* child */
+NhlLayer   /* instance */,
+NhlLayer   /* child */
 #endif
 );
  
 extern void _NhlDeleteViewChildLayer(
 #ifdef NhlNeedProto
-Layer   /* instance */,
-Layer   /* child */
+NhlLayer   /* instance */,
+NhlLayer   /* child */
 #endif
 );
 
 extern NhlTransDat *_NhlNewViewSegment(
 #ifdef NhlNeedProto
-Layer   /* instance */
+NhlLayer   /* instance */
 #endif
 );
 
 extern void _NhlDeleteViewSegment(
 #ifdef NhlNeedProto
-Layer,  /* instance */
+NhlLayer,  /* instance */
 NhlTransDat*    /*trandat */
 #endif
 );
 
 extern NhlErrorTypes _NhlResetViewSegment(
 #ifdef NhlNeedProto
-Layer,  /* instance */
+NhlLayer,  /* instance */
 NhlTransDat */* segdat */
 #endif
 );
@@ -142,7 +146,7 @@ NhlBoundingBox*	/*thebox*/
 
 extern void _NhlInternalSetView(
 #ifdef NhlNeedProto
-ViewLayer	/* theview */,
+NhlViewLayer	/* theview */,
 float		/* x */,
 float		/* y */,
 float		/* width */,
@@ -151,6 +155,12 @@ int		/* keep_asp */
 #endif
 );
 
+extern NhlErrorTypes _NhlGetBB(
+#ifdef NhlNeedProto
+	NhlLayer	instance,
+	NhlBoundingBox* /* thebox */
+#endif
+);
 
 
 #define NHL_DEFAULT_VIEW_WIDTH  .8

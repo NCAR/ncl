@@ -1,6 +1,5 @@
-
 /*
- *      $Id: CoordApprox.h,v 1.1 1993-04-30 17:21:36 boote Exp $
+ *      $Id: CoordApprox.h,v 1.2 1994-01-27 21:21:50 boote Exp $
  */
 /************************************************************************
 *									*
@@ -21,13 +20,23 @@
  *	Description:	
  */
 #include <ncarg/hlu/hluP.h>
-typedef enum {NONMONOTONIC, INCREASING, DECREASING} Ordering;
-typedef enum {NONE,FORWARD,INVERSE,BOTH} Status;
+typedef enum _NhlOrdering{
+	NhlNONMONOTONIC,
+	NhlINCREASING,
+	NhlDECREASING
+} NhlOrdering;
 
-#define BOGUS 0
+typedef enum _NhlStatus{
+	NhlNONE,
+	NhlFORWARD,
+	NhlINVERSE,
+	NhlBOTHTRANS
+} NhlStatus;
+
+#define NhlBOGUS 0
 
 typedef struct _NhlCoordDat {
-	Status	xstatus;
+	NhlStatus	xstatus;
 	int	x_use_log;
 	float	*x_orig_forward;
 	float	*fx_orig_forward;
@@ -42,7 +51,7 @@ typedef struct _NhlCoordDat {
 	float	x_max;
 	float	x_int_min;
 	float	x_int_max;
-	Status	ystatus;
+	NhlStatus	ystatus;
 	int	y_use_log;
 	float	*y_orig_forward;
 	float	*fy_orig_forward;
@@ -74,8 +83,8 @@ float	/* xsigma */,
 float	/* ysigma */,
 int	/* xsample */,
 int	/* ysample */,
-Status	*/* xstatus */,
-Status	*/* ystatus */
+NhlStatus	*/* xstatus */,
+NhlStatus	*/* ystatus */
 #endif
 );
 

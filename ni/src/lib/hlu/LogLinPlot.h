@@ -1,5 +1,5 @@
 /*
- *      $Id: LogLinPlot.h,v 1.2 1993-12-22 00:56:01 dbrown Exp $
+ *      $Id: LogLinPlot.h,v 1.3 1994-01-27 21:24:18 boote Exp $
  */
 /************************************************************************
 *									*
@@ -33,9 +33,6 @@
  * LogLinPlot class resources
  */
 
-typedef struct _LogLinPlotLayerClassRec	*LogLinPlotLayerClass;
-typedef struct _LogLinPlotLayerRec	*LogLinPlotLayer;
-
-extern LayerClass logLinPlotLayerClass;
+extern NhlLayerClass NhllogLinPlotLayerClass;
 
 #endif /*_NLogLinPlot_h */

@@ -1,5 +1,5 @@
 /*
- *      $Id: BaseP.h,v 1.3 1994-01-10 19:48:28 boote Exp $
+ *      $Id: BaseP.h,v 1.4 1994-01-27 21:21:26 boote Exp $
  */
 /************************************************************************
 *									*
@@ -28,12 +28,18 @@
 #include <ncarg/hlu/ConvertP.h>
 #include <ncarg/hlu/Base.h>
 
+typedef struct _NhlObjLayerRec *NhlObjLayer;
+typedef struct _NhlObjLayerClassRec *NhlObjLayerClass;
+
+typedef struct _NhlBaseLayerRec *NhlBaseLayer;
+typedef struct _NhlBaseLayerClassRec *NhlBaseLayerClass;
+
 typedef struct _NhlChildRec _NhlChildNode, *_NhlChildList;
 
 struct _NhlChildRec {
 	int			pid;
 	NhlBoolean		svalscalled;
-	LayerClass		class;
+	NhlLayerClass		class;
 	NrmNameList		resources;
 	_NhlChildList		next;
 };
@@ -49,23 +55,23 @@ struct _NhlAllChildRec {
  * This structure is a simplified version of the BaseLayerPart.
  * It is used to create objects that don't do graphics and stuff.
  */
-typedef struct _ObjLayerPart {
+typedef struct _NhlObjLayerPart {
 	int		id;		/* index into global layer Table*/
-	Layer		self;		/* pointer to self		*/
-	LayerClass	layer_class;	/* pointer to ClassRec		*/
-	Layer		parent;		/* parent Layer			*/
+	NhlLayer	self;		/* pointer to self		*/
+	NhlLayerClass	layer_class;	/* pointer to ClassRec		*/
+	NhlLayer	parent;		/* parent Layer			*/
 	NrmName		nrm_name;	/* Layer resource name quarkified*/
 	Const char	*name;		/* Layer resource name		*/
-} ObjLayerPart;
+} NhlObjLayerPart;
 
 
 NhlDOCREF(/design/hlu/Base.html,Base Object Design)
-NhlDOCTAG(BaseLayerPart)
-typedef struct _BaseLayerPart {
+NhlDOCTAG(NhlBaseLayerPart)
+typedef struct _NhlBaseLayerPart {
 	int		id;		/* index into global layer Table*/
-	Layer		self;		/* pointer to self		*/
-	LayerClass	layer_class;	/* pointer to ClassRec		*/
-	Layer		parent;		/* parent Layer			*/
+	NhlLayer	self;		/* pointer to self		*/
+	NhlLayerClass	layer_class;	/* pointer to ClassRec		*/
+	NhlLayer	parent;		/* parent Layer			*/
 	NrmName		nrm_name;	/* Layer resource name quarkified*/
 	Const char	*name;		/* Layer resource name		*/
 
@@ -76,22 +82,22 @@ typedef struct _BaseLayerPart {
 	_NhlChildList		children;
 	_NhlChildArgList	child_args;
 
-	Layer			wkptr;
+	NhlLayer		wkptr;
 	/* import Values */
-} BaseLayerPart;
+} NhlBaseLayerPart;
 
-typedef struct _ObjRec {
-	ObjLayerPart	base;
-} ObjLayerRec;
+typedef struct _NhlObjRec {
+	NhlObjLayerPart	base;
+} NhlObjLayerRec;
 
-typedef struct _LayerRec {
-	BaseLayerPart	base;
-} BaseLayerRec, LayerRec;
+typedef struct _NhlLayerRec {
+	NhlBaseLayerPart	base;
+} NhlBaseLayerRec, NhlLayerRec;
 
 typedef struct _NhlChildResRec _NhlChildResNode, *_NhlChildResList;
 
 struct _NhlChildResRec {
-	LayerClass		class;
+	NhlLayerClass		class;
 	NhlBoolean		autosetval;
 	NrmNameList		resources;
 	_NhlChildResList	next;
@@ -99,7 +105,7 @@ struct _NhlChildResRec {
 
 typedef NhlErrorTypes (*NhlClassPartInitProc)(
 #if	NhlNeedProto
-	LayerClass	/* lc to initialize */
+	NhlLayerClass	/* lc to initialize */
 #endif
 );
 
@@ -111,9 +117,9 @@ typedef NhlErrorTypes (*NhlClassInitProc)(
 
 typedef NhlErrorTypes (*NhlInitProc)(
 #if	NhlNeedProto
-	LayerClass,	/* class of instance to init	*/
-	Layer,		/* request layer		*/
-	Layer,		/* new layer			*/
+	NhlLayerClass,	/* class of instance to init	*/
+	NhlLayer,	/* request layer		*/
+	NhlLayer,	/* new layer			*/
 	_NhlArgList,	/* args to set in layer		*/
 	int		/* nargs			*/
 #endif
@@ -121,9 +127,9 @@ typedef NhlErrorTypes (*NhlInitProc)(
 
 typedef NhlErrorTypes (*NhlSetValuesProc)(
 #if	NhlNeedProto
-	Layer		old,		/* old		*/
-	Layer		req,		/* requested	*/
-	Layer		new,		/* new		*/
+	NhlLayer	old,		/* old		*/
+	NhlLayer	req,		/* requested	*/
+	NhlLayer	new,		/* new		*/
 	_NhlArgList	args,		/* args to set	*/
 	int		nargs		/* nargs	*/
 #endif
@@ -131,7 +137,7 @@ typedef NhlErrorTypes (*NhlSetValuesProc)(
 
 typedef NhlErrorTypes (*NhlGetValuesProc)(
 #if	NhlNeedProto
-	Layer,		/* layer	*/
+	NhlLayer,	/* layer	*/
 	_NhlArgList,	/* args to get	*/
 	int		/* nargs	*/
 #endif
@@ -139,29 +145,29 @@ typedef NhlErrorTypes (*NhlGetValuesProc)(
 
 typedef NhlErrorTypes (*NhlReparentProc)(
 #if	NhlNeedProto
-	Layer	l,
-	Layer	parent
+	NhlLayer	l,
+	NhlLayer	parent
 #endif
 );
 
 typedef NhlErrorTypes (*NhlDrawProc)(
 #if	NhlNeedProto
-	Layer		/* layer to draw	*/
+	NhlLayer		/* layer to draw	*/
 #endif
 );
 
 typedef NhlErrorTypes (*NhlDestroyProc)(
 #if	NhlNeedProto
-	Layer		/* layer to destroy	*/
+	NhlLayer		/* layer to destroy	*/
 #endif
 );
 
-typedef struct _ObjLayerClassPart {
+typedef struct _NhlObjLayerClassPart {
 	NhlString		class_name;
 	NrmClass		nrm_class;
 	unsigned int		layer_size;
 	int			class_inited;
-	LayerClass 		superclass;
+	NhlLayerClass 		superclass;
 
 	NhlResourceList		resources;
 	int			num_resources;
@@ -175,18 +181,18 @@ typedef struct _ObjLayerClassPart {
 	NhlGetValuesProc	layer_get_values;
 	NhlReparentProc		layer_reparent;
 	NhlDestroyProc		layer_destroy;
-} ObjLayerClassPart;
+} NhlObjLayerClassPart;
 
 /*
  * NhlDOCREF(/design/hlu/Base.html,Base Object Design)
  */
-NhlDOCTAG(BaseLayerClassPart)
-typedef struct _BaseLayerClassPart {
+NhlDOCTAG(NhlBaseLayerClassPart)
+typedef struct _NhlBaseLayerClassPart {
 	NhlString		class_name;
 	NrmClass		nrm_class;
 	unsigned int		layer_size;
 	int			class_inited;
-	LayerClass 		superclass;
+	NhlLayerClass 		superclass;
 
 	NhlResourceList		resources;
 	int			num_resources;
@@ -212,20 +218,20 @@ typedef struct _BaseLayerClassPart {
 	NhlDrawProc		layer_draw_segonly;
 	NhlDrawProc		layer_post_draw;
 	NhlDrawProc		layer_clear;
-} BaseLayerClassPart;
+} NhlBaseLayerClassPart;
 
-typedef struct _ObjClassRec {
-	ObjLayerClassPart	base_class;
-} ObjLayerClassRec;
+typedef struct _NhlObjClassRec {
+	NhlObjLayerClassPart	base_class;
+} NhlObjLayerClassRec;
 
-typedef struct _LayerClassRec {
-	BaseLayerClassPart	base_class;
-} BaseLayerClassRec, LayerClassRec ;
+typedef struct _NhlLayerClassRec {
+	NhlBaseLayerClassPart	base_class;
+} NhlBaseLayerClassRec, NhlLayerClassRec ;
 
-extern ObjLayerClassRec objLayerClassRec;
-extern LayerClassRec layerClassRec;
+extern NhlObjLayerClassRec NhlobjLayerClassRec;
+extern NhlLayerClassRec NhllayerClassRec;
 
-#define baseLayerClassRec layerClassRec
+#define NhlbaseLayerClassRec NhllayerClassRec
 
-#define _NhlName(instance) (((Layer)instance)->base.name)
+#define _NhlName(instance) (((NhlLayer)instance)->base.name)
 #endif /* _NBaseP_h */	

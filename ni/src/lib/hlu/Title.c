@@ -1,5 +1,5 @@
 /*
- *      $Id: Title.c,v 1.3 1993-10-19 17:52:44 boote Exp $
+ *      $Id: Title.c,v 1.4 1994-01-27 21:26:33 boote Exp $
  */
 /************************************************************************
 *									*
@@ -46,11 +46,11 @@ SetMainOn
 	unsigned int	offset;
 #endif
 {
-	TitleLayer	tl = (TitleLayer)base;
+	NhlTitleLayer	tl = (NhlTitleLayer)base;
 
 	tl->title.main_on = !(tl->title.main_string == Main);
 
-	return NOERROR;
+	return NhlNOERROR;
 }
 
 /*ARGSUSED*/
@@ -71,11 +71,11 @@ SetXAxisOn
 	unsigned int	offset;
 #endif
 {
-	TitleLayer	tl = (TitleLayer)base;
+	NhlTitleLayer	tl = (NhlTitleLayer)base;
 
 	tl->title.x_axis_on = !(tl->title.x_axis_string == XAxis);
 
-	return NOERROR;
+	return NhlNOERROR;
 }
 
 /*ARGSUSED*/
@@ -96,22 +96,22 @@ SetYAxisOn
 	unsigned int	offset;
 #endif
 {
-	TitleLayer	tl = (TitleLayer)base;
+	NhlTitleLayer	tl = (NhlTitleLayer)base;
 
 	tl->title.y_axis_on = !(tl->title.y_axis_string == YAxis);
 
-	return NOERROR;
+	return NhlNOERROR;
 }
 
-#define Oset(field) NhlOffset(TitleLayerRec,title.field)
+#define Oset(field) NhlOffset(NhlTitleLayerRec,title.field)
 static NhlResource resources[] = {
 	{NhlNtiDeltaF, NhlCtiDeltaF, NhlTFloat, sizeof(float),
 		Oset(delta), NhlTString, "1.5" },
 	{NhlNtiMainFontColor,NhlCtiTitleFontColors,NhlTInteger,sizeof(int),
 		Oset(main_font_color),NhlTImmediate,(NhlPointer)1},
 	{NhlNtiMainFontQuality, NhlCtiTitleFontQualities, NhlTFQuality,
-		sizeof(FontQuality),Oset(main_font_quality),
-		NhlTImmediate,(NhlPointer)HIGH },
+		sizeof(NhlFontQuality),Oset(main_font_quality),
+		NhlTImmediate,(NhlPointer)NhlHIGH },
 	{NhlNtiUseMainAttributes,NhlCtiUseMainAttributes, NhlTBoolean,
 		sizeof(NhlBoolean),
 		Oset(use_main_attributes),NhlTImmediate,False},
@@ -119,7 +119,7 @@ static NhlResource resources[] = {
 		Oset(main_string),NhlTImmediate,(NhlPointer)Main},
 	{NhlNtiMainJust, NhlCtiTitleJust, NhlTInteger,sizeof(int),
 		Oset(main_just),NhlTImmediate,(NhlPointer)4},
-	{NhlNtiMainFont, NhlCtiTitleFonts, NhlTInteger, sizeof(int),
+	{NhlNtiMainFont, NhlCFont, NhlTFont, sizeof(NhlFont),
 		Oset(main_font),NhlTImmediate,(NhlPointer)0},
 	{NhlNtiMainFontHeightF,NhlCtiTitleFontHeightsF,NhlTFloat,sizeof(float),
 		Oset(main_font_height), NhlTString,"0.025"},
@@ -130,16 +130,16 @@ static NhlResource resources[] = {
 	{NhlNtiMainAngleF,NhlCtiTitleAnglesF,NhlTFloat, sizeof(float),
 		Oset(main_angle), NhlTString,"0.00"},
 	{NhlNtiMainDirection,NhlCtiMainDirection,NhlTTextDirection,
-		sizeof(TextDirection),
-		Oset(main_direction), NhlTImmediate,(NhlPointer)ACROSS},
+		sizeof(NhlTextDirection),
+		Oset(main_direction), NhlTImmediate,(NhlPointer)NhlACROSS},
 	{NhlNtiMainPosition,NhlCtiMainPosition,NhlTTitlePositions,
-		sizeof(TitlePositions),
-		Oset(main_position), NhlTImmediate,(NhlPointer)CENTER},
+		sizeof(NhlTitlePositions),
+		Oset(main_position), NhlTImmediate,(NhlPointer)NhlCENTER},
 	{NhlNtiMainOn,NhlCtiMainOn,NhlTBoolean, sizeof(NhlBoolean),
 		Oset(main_on),NhlTProcedure,(NhlPointer)SetMainOn},
 	{NhlNtiMainSide,NhlCtiMainSide,NhlTTitlePositions,
-		sizeof(TitlePositions),
-		Oset(main_side),NhlTImmediate,(NhlPointer)TOP},
+		sizeof(NhlTitlePositions),
+		Oset(main_side),NhlTImmediate,(NhlPointer)NhlTOP},
 	{NhlNtiMainConstantSpacingF, NhlCtiTitleConstantSpacingsF,NhlTFloat,
 		sizeof(float), Oset(main_constant_spacing),NhlTString,"0.0" },
 	{NhlNtiMainFuncCode, NhlCtiTitleFuncCodes, NhlTCharacter,sizeof(char),
@@ -151,13 +151,13 @@ static NhlResource resources[] = {
 	{NhlNtiXAxisFontColor,NhlCtiTitleFontColors,NhlTInteger,sizeof(int),
 		Oset(x_axis_font_color), NhlTImmediate,(NhlPointer)1},
 	{NhlNtiXAxisFontQuality, NhlCtiTitleFontQualities, NhlTFQuality,
-		sizeof(FontQuality),
-		Oset(x_axis_font_quality), NhlTImmediate,(NhlPointer)HIGH },
+		sizeof(NhlFontQuality),
+		Oset(x_axis_font_quality), NhlTImmediate,(NhlPointer)NhlHIGH },
 	{NhlNtiXAxisString, NhlCtiXAxisString,NhlTString,sizeof(char*),
 		Oset(x_axis_string),NhlTImmediate,(NhlPointer)XAxis},
 	{NhlNtiXAxisJust, NhlCtiTitleJust, NhlTInteger,sizeof(int),
 		Oset(x_axis_just),NhlTImmediate,(NhlPointer)4 },
-	{NhlNtiXAxisFont, NhlCtiTitleFonts, NhlTInteger, sizeof(int),
+	{NhlNtiXAxisFont, NhlCFont, NhlTFont, sizeof(NhlFont),
 		Oset(x_axis_font),NhlTImmediate,(NhlPointer)0 },
 	{NhlNtiXAxisFontHeightF,NhlCtiTitleFontHeightsF,NhlTFloat,sizeof(float),
 		Oset(x_axis_font_height), NhlTString,"0.025"},
@@ -169,11 +169,11 @@ static NhlResource resources[] = {
 	{NhlNtiXAxisAngleF,NhlCtiTitleAnglesF,NhlTFloat,sizeof(float),
 		Oset(x_axis_angle), NhlTString,"0.0"},
 	{NhlNtiXAxisDirection,NhlCtiXAxisDirection,NhlTTextDirection,
-		sizeof(TextDirection),
-		Oset(x_axis_direction), NhlTImmediate,(NhlPointer)ACROSS},
+		sizeof(NhlTextDirection),
+		Oset(x_axis_direction), NhlTImmediate,(NhlPointer)NhlACROSS},
 	{NhlNtiXAxisPosition,NhlCtiXAxisPosition,NhlTTitlePositions,
-		sizeof(TitlePositions),
-		Oset(x_axis_position), NhlTImmediate,(NhlPointer)CENTER},
+		sizeof(NhlTitlePositions),
+		Oset(x_axis_position), NhlTImmediate,(NhlPointer)NhlCENTER},
 	{NhlNtiXAxisConstantSpacingF, NhlCtiTitleConstantSpacingsF,NhlTFloat,
 		sizeof(float),
 		Oset(x_axis_constant_spacing), NhlTString,"0.0" },
@@ -186,18 +186,18 @@ static NhlResource resources[] = {
 	{NhlNtiXAxisOn,NhlCtiXAxisOn,NhlTBoolean, sizeof(NhlBoolean),
 		Oset(x_axis_on), NhlTProcedure,(NhlPointer)SetXAxisOn},
 	{NhlNtiXAxisSide,NhlCtiXAxisSide,NhlTTitlePositions, 
-		sizeof(TitlePositions),
-		Oset(x_axis_side), NhlTImmediate,(NhlPointer)BOTTOM},
+		sizeof(NhlTitlePositions),
+		Oset(x_axis_side), NhlTImmediate,(NhlPointer)NhlBOTTOM},
 	{NhlNtiYAxisFontColor,NhlCtiTitleFontColors,NhlTInteger,sizeof(int),
 		Oset(y_axis_font_color), NhlTImmediate,(NhlPointer)1},
 	{NhlNtiYAxisFontQuality, NhlCtiTitleFontQualities, NhlTFQuality,
-		sizeof(FontQuality),
-		Oset(y_axis_font_quality), NhlTImmediate,(NhlPointer)HIGH},
+		sizeof(NhlFontQuality),
+		Oset(y_axis_font_quality), NhlTImmediate,(NhlPointer)NhlHIGH},
 	{NhlNtiYAxisString, NhlCtiYAxisString,NhlTString,sizeof(char*),
 		Oset(y_axis_string),NhlTImmediate,(NhlPointer)YAxis},
 	{NhlNtiYAxisJust, NhlCtiTitleJust, NhlTInteger,sizeof(int),
 		Oset(y_axis_just),NhlTImmediate,(NhlPointer)4 },
-	{NhlNtiYAxisFont, NhlCtiTitleFonts, NhlTInteger, sizeof(int),
+	{NhlNtiYAxisFont, NhlCFont, NhlTFont, sizeof(NhlFont),
 		Oset(y_axis_font),NhlTImmediate,(NhlPointer)0 },
 	{NhlNtiYAxisFontHeightF,NhlCtiTitleFontHeightsF,NhlTFloat,sizeof(float),
 		Oset(y_axis_font_height), NhlTString,"0.025"},
@@ -208,11 +208,11 @@ static NhlResource resources[] = {
 	{NhlNtiYAxisAngleF,NhlCtiTitleAnglesF,NhlTFloat, sizeof(float),
 		Oset(y_axis_angle), NhlTString,"90.0"},
 	{NhlNtiYAxisDirection,NhlCtiYAxisDirection,NhlTTextDirection,
-		sizeof(TextDirection),
-		Oset(y_axis_direction), NhlTImmediate,(NhlPointer)ACROSS},
+		sizeof(NhlTextDirection),
+		Oset(y_axis_direction), NhlTImmediate,(NhlPointer)NhlACROSS},
 	{NhlNtiYAxisPosition,NhlCtiYAxisPosition,NhlTTitlePositions,
-		sizeof(TitlePositions),
-		Oset(y_axis_position), NhlTImmediate,(NhlPointer)CENTER},
+		sizeof(NhlTitlePositions),
+		Oset(y_axis_position), NhlTImmediate,(NhlPointer)NhlCENTER},
 	{NhlNtiYAxisConstantSpacingF, NhlCtiTitleConstantSpacingsF,NhlTFloat,
 		sizeof(float),
 		Oset(y_axis_constant_spacing), NhlTString,"0.0" },
@@ -225,8 +225,8 @@ static NhlResource resources[] = {
 	{NhlNtiYAxisOn,NhlCtiYAxisOn,NhlTBoolean, sizeof(NhlBoolean),
 		Oset(y_axis_on), NhlTProcedure,(NhlPointer)SetYAxisOn},
 	{NhlNtiYAxisSide,NhlCtiYAxisSide,NhlTTitlePositions, 
-		sizeof(TitlePositions),
-		Oset(y_axis_side), NhlTImmediate,(NhlPointer)LEFT}
+		sizeof(NhlTitlePositions),
+		Oset(y_axis_side), NhlTImmediate,(NhlPointer)NhlLEFT}
 };
 #undef Oset
 
@@ -235,18 +235,18 @@ static NhlResource resources[] = {
 */
 static NhlErrorTypes    TitleSetValues(
 #ifdef NhlNeedProto
-        Layer,          /* old */
-        Layer,          /* reference */
-        Layer,          /* new */
+        NhlLayer,          /* old */
+        NhlLayer,          /* reference */
+        NhlLayer,          /* new */
         _NhlArgList,    /* args */
         int             /* num_args*/
 #endif
 );
 static NhlErrorTypes    TitleInitialize(
 #ifdef NhlNeedProto
-        LayerClass,     /* class */
-        Layer,          /* req */
-        Layer,          /* new */
+        NhlLayerClass,     /* class */
+        NhlLayer,          /* req */
+        NhlLayer,          /* new */
         _NhlArgList,    /* args */
         int             /* num_args */
 #endif
@@ -254,7 +254,7 @@ static NhlErrorTypes    TitleInitialize(
 
 static NhlErrorTypes     TitleDestroy(
 #ifdef NhlNeedProto
-        Layer           /* inst */
+        NhlLayer           /* inst */
 #endif
 );
 
@@ -263,26 +263,26 @@ static NhlErrorTypes    TitleClassInitialize();
 
 static NhlErrorTypes TitleGetBB(
 #ifdef NhlNeedProto
-        Layer          /* instance */,
+        NhlLayer          /* instance */,
         NhlBoundingBox * /*thebox*/
 #endif
 );
 
 static NhlErrorTypes TitleDraw(
 #ifdef NhlNeedProto
-        Layer           instance
+        NhlLayer           instance
 #endif
 );
 
 
 
-TitleLayerClassRec titleLayerClassRec = {
+NhlTitleLayerClassRec NhltitleLayerClassRec = {
         {
 /* class_name                   */      "Title",
 /* nrm_class                    */      NrmNULLQUARK,
-/* layer_size                   */      sizeof(TitleLayerRec),
+/* layer_size                   */      sizeof(NhlTitleLayerRec),
 /* class_inited                 */      False,
-/* superclass                   */      (LayerClass)&viewLayerClassRec,
+/* superclass                   */      (NhlLayerClass)&NhlviewLayerClassRec,
 
 /* layer_resources              */      resources,
 /* num_resources                */      NhlNumber(resources),
@@ -315,7 +315,7 @@ TitleLayerClassRec titleLayerClassRec = {
 	}
 };
 
-LayerClass titleLayerClass = (LayerClass)&titleLayerClassRec;
+NhlLayerClass NhltitleLayerClass = (NhlLayerClass)&NhltitleLayerClassRec;
 
 		
 	
@@ -351,20 +351,20 @@ LayerClass titleLayerClass = (LayerClass)&titleLayerClassRec;
 /*ARGSUSED*/
 static NhlErrorTypes    TitleSetValues
 #if	__STDC__
-(Layer old, Layer reference, Layer new, _NhlArgList args,int num_args)
+(NhlLayer old, NhlLayer reference, NhlLayer new, _NhlArgList args,int num_args)
 #else
 (old,reference,new,args,num_args)
-        Layer		old;
-        Layer		reference;
-        Layer		new;
+        NhlLayer	old;
+        NhlLayer	reference;
+        NhlLayer	new;
         _NhlArgList	args;
         int		num_args;
 #endif
 {
-	TitleLayer tnew = (TitleLayer) new;
-	TitleLayer tref = (TitleLayer) reference;
-	TitleLayer told = (TitleLayer) old;
-	NhlErrorTypes ret = NOERROR,ret1 = NOERROR;
+	NhlTitleLayer tnew = (NhlTitleLayer) new;
+	NhlTitleLayer tref = (NhlTitleLayer) reference;
+	NhlTitleLayer told = (NhlTitleLayer) old;
+	NhlErrorTypes ret = NhlNOERROR,ret1 = NhlNOERROR;
 	float tmpxy,tmpwh,tmpxy1,tmpwh1,main_location;
 	float deltah;
 	float deltaw;
@@ -491,23 +491,23 @@ static NhlErrorTypes    TitleSetValues
 */
 
 	switch(tnew->title.y_axis_side) {
-                case RIGHT:
+                case NhlRIGHT:
                         switch(tnew->title.y_axis_position) {
-                                case TOP:
+                                case NhlTOP:
                                         tnew->title.y_axis_pos_y =
                                                 tnew->view.y
                                                 + tnew->title.y_axis_offset_y;
                                         break;
-                                case BOTTOM:
+                                case NhlBOTTOM:
                                         tnew->title.y_axis_pos_y =
                                                 tnew->view.y
                                                 - tnew->view.height
                                                 + tnew->title.y_axis_offset_y;
                                         break;
                                 default:
-					NhlPError(WARNING,E_UNKNOWN,"TitleSetValues: Y Axis title can only be positioned on TOP, BOTTOM, or CENTER, defaulting to CENTER");
-                                        ret = WARNING;
-                                case CENTER:
+					NhlPError(NhlWARNING,NhlEUNKNOWN,"TitleSetValues: Y Axis title can only be positioned on NhlTOP, NhlBOTTOM, or NhlCENTER, defaulting to NhlCENTER");
+                                        ret = NhlWARNING;
+                                case NhlCENTER:
                                         tnew->title.y_axis_pos_y =
                                                 tnew->view.y
                                                 - (tnew->view.height/2.0)
@@ -521,25 +521,25 @@ static NhlErrorTypes    TitleSetValues
                                 +tnew->title.y_axis_offset_x;
                         break;
                 default:
-			NhlPError(WARNING,E_UNKNOWN,"TitleSetValues: Y Axis title can only appear on LEFT or RIGHT side of plot, using LEFT");
-                        ret = WARNING;
-                case LEFT:
+			NhlPError(NhlWARNING,NhlEUNKNOWN,"TitleSetValues: Y Axis title can only appear on NhlLEFT or NhlRIGHT side of plot, using NhlLEFT");
+                        ret = NhlWARNING;
+                case NhlLEFT:
                         switch(tnew->title.y_axis_position) {
-                                case TOP:
+                                case NhlTOP:
                                         tnew->title.y_axis_pos_y =
                                                 tnew->view.y
                                                 + tnew->title.y_axis_offset_y;
                                         break;
-                                case BOTTOM:
+                                case NhlBOTTOM:
                                         tnew->title.y_axis_pos_y =
                                                 tnew->view.y
                                                 - tnew->view.height
                                                 + tnew->title.y_axis_offset_y;
                                         break;
                                 default:
-                                        NhlPError(WARNING,E_UNKNOWN,"TitleSetValues: Y Axis title can only be positioned on TOP, BOTTOM, or CENTER, defaulting to CENTER");
-                                        ret = WARNING;
-                                case CENTER:
+                                        NhlPError(NhlWARNING,NhlEUNKNOWN,"TitleSetValues: Y Axis title can only be positioned on NhlTOP, NhlBOTTOM, or NhlCENTER, defaulting to NhlCENTER");
+                                        ret = NhlWARNING;
+                                case NhlCENTER:
                                         tnew->title.y_axis_pos_y =
                                                 tnew->view.y
                                                 - (tnew->view.height/2.0)
@@ -553,7 +553,7 @@ static NhlErrorTypes    TitleSetValues
                                 +tnew->title.y_axis_offset_x;
                         break;
         }
-	ret1 = NhlSetValues(tnew->title.y_axis_id,
+	ret1 = NhlVASetValues(tnew->title.y_axis_id,
 		NhlNtxFont,tnew->title.y_axis_font,
                 NhlNtxString,tnew->title.y_axis_string,
                 NhlNtxPosXF,tnew->title.y_axis_pos_x,
@@ -572,15 +572,15 @@ static NhlErrorTypes    TitleSetValues
 /*
 * Now need to check to make sure text does not encroach upon viewport
 */
-	NhlGetValues(tnew->title.y_axis_id,
+	NhlVAGetValues(tnew->title.y_axis_id,
 		NhlNvpXF,&tmpxy,
 		NhlNvpWidthF,&tmpwh,NULL);
 
-	if(tnew->title.y_axis_side == LEFT) {
+	if(tnew->title.y_axis_side == NhlLEFT) {
 		if(tmpxy+tmpwh > tnew->view.x){
 			tnew->title.y_axis_pos_x -= (tmpxy+tmpwh) 
 				- tnew->view.x + (tnew->title.y_axis_font_height*tnew->title.delta);
-			NhlSetValues(tnew->title.y_axis_id,
+			NhlVASetValues(tnew->title.y_axis_id,
 				NhlNtxPosXF,tnew->title.y_axis_pos_x,
 				NULL);
 		}
@@ -590,7 +590,7 @@ static NhlErrorTypes    TitleSetValues
 					+ tnew->view.width)
                                         - tmpxy + (tnew->title.y_axis_font_height*tnew->title.delta);
 
-			NhlSetValues(tnew->title.y_axis_id,
+			NhlVASetValues(tnew->title.y_axis_id,
 				NhlNtxPosXF, tnew->title.y_axis_pos_x ,
 				NULL);
 		}
@@ -598,23 +598,23 @@ static NhlErrorTypes    TitleSetValues
 
 	
 	switch(tnew->title.x_axis_side) {
-                case TOP:
+                case NhlTOP:
                         switch(tnew->title.x_axis_position) {
-                                case RIGHT:
+                                case NhlRIGHT:
                                         tnew->title.x_axis_pos_x =
                                                 tnew->view.x
                                                 +tnew->view.width
                                                 +tnew->title.x_axis_offset_x;
                                         break;
-                                case LEFT:
+                                case NhlLEFT:
                                         tnew->title.x_axis_pos_x =
                                                 tnew->view.x
                                                 +tnew->title.x_axis_offset_x;
                                         break;
                                 default:
-                                        NhlPError(WARNING,E_UNKNOWN,"TitleSetValues: X Axis title can only appear on RIGHT, LEFT, or CENTER side, defaulting to CENTER");
-					ret= WARNING;
-                                case CENTER:
+                                        NhlPError(NhlWARNING,NhlEUNKNOWN,"TitleSetValues: X Axis title can only appear on NhlRIGHT, NhlLEFT, or NhlCENTER side, defaulting to NhlCENTER");
+					ret= NhlWARNING;
+                                case NhlCENTER:
                                         tnew->title.x_axis_pos_x =
                                                 tnew->view.x
                                                 + (tnew->view.width/2.0)
@@ -627,25 +627,25 @@ static NhlErrorTypes    TitleSetValues
                                 + tnew->title.x_axis_offset_y;
                         break;
                 default:
-                        NhlPError(WARNING,E_UNKNOWN,"TitleSetValues: X Axis title can only appear on TOP or BOTTOM side of plot, using BOTTOM");
-                        ret = WARNING;
-                case BOTTOM:
+                        NhlPError(NhlWARNING,NhlEUNKNOWN,"TitleSetValues: X Axis title can only appear on NhlTOP or NhlBOTTOM side of plot, using NhlBOTTOM");
+                        ret = NhlWARNING;
+                case NhlBOTTOM:
                         switch(tnew->title.x_axis_position) {
-                                case RIGHT:
+                                case NhlRIGHT:
                                         tnew->title.x_axis_pos_x =
                                                 tnew->view.x
                                                 +tnew->view.width
                                                 +tnew->title.x_axis_offset_x;
                                         break;
-                                case LEFT:
+                                case NhlLEFT:
                                         tnew->title.x_axis_pos_x =
                                                 tnew->view.x
                                                 +tnew->title.x_axis_offset_x;
                                         break;
                                 default:
-                                        NhlPError(WARNING,E_UNKNOWN,"TitleSetValues: X Axis title can only appear on RIGHT, LEFT, or CENTER side, defaulting to CENTER");
-                                        ret = WARNING;
-                                case CENTER:
+                                        NhlPError(NhlWARNING,NhlEUNKNOWN,"TitleSetValues: X Axis title can only appear on NhlRIGHT, NhlLEFT, or NhlCENTER side, defaulting to NhlCENTER");
+                                        ret = NhlWARNING;
+                                case NhlCENTER:
                                         tnew->title.x_axis_pos_x =
                                                 tnew->view.x
                                                 + (tnew->view.width/2.0)
@@ -659,7 +659,7 @@ static NhlErrorTypes    TitleSetValues
                                 + tnew->title.x_axis_offset_y;
                         break;
         }
-	ret1 = NhlSetValues(tnew->title.x_axis_id,
+	ret1 = NhlVASetValues(tnew->title.x_axis_id,
                 NhlNtxFont,tnew->title.x_axis_font,
                 NhlNtxString,tnew->title.x_axis_string,
                 NhlNtxPosXF,tnew->title.x_axis_pos_x,
@@ -678,14 +678,14 @@ static NhlErrorTypes    TitleSetValues
 /*
 * Need to check to make sure xaxis title doesn't encroach on viewport
 */
-	NhlGetValues(tnew->title.x_axis_id,
+	NhlVAGetValues(tnew->title.x_axis_id,
 		NhlNvpYF,&tmpxy,
 		NhlNvpHeightF,&tmpwh,NULL);
 
-	if(tnew->title.x_axis_side == TOP) {
+	if(tnew->title.x_axis_side == NhlTOP) {
 		if(tmpxy - tmpwh < tnew->view.y ){
 			tnew->title.x_axis_pos_y += tnew->view.y - (tmpxy - tmpwh ) + (tnew->title.delta*tnew->title.x_axis_font_height);
-			NhlSetValues(tnew->title.x_axis_id,
+			NhlVASetValues(tnew->title.x_axis_id,
 				NhlNtxPosYF,tnew->title.x_axis_pos_y,
 				NULL);
 		}
@@ -693,17 +693,17 @@ static NhlErrorTypes    TitleSetValues
 		if(tmpxy > tnew->view.y - tnew->view.height) {
 			tnew->title.x_axis_pos_y -= tmpxy - (tnew->view.y - tnew->view.height)+(tnew->title.delta*tnew->title.x_axis_font_height);
 
-			NhlSetValues(tnew->title.x_axis_id,
+			NhlVASetValues(tnew->title.x_axis_id,
 				NhlNtxPosYF, tnew->title.x_axis_pos_y ,
 				NULL);
 		}
 	}
 
 	switch(tnew->title.main_side) {
-                case BOTTOM:
-                        if((tnew->title.x_axis_side == BOTTOM)
+                case NhlBOTTOM:
+                        if((tnew->title.x_axis_side == NhlBOTTOM)
                                 &&(tnew->title.x_axis_on)) {
-                                NhlGetValues(tnew->title.x_axis_id,
+                                NhlVAGetValues(tnew->title.x_axis_id,
                                         NhlNvpYF,&tmpxy,
                                         NhlNvpHeightF,&tmpwh,NULL);
                                 main_location = tmpxy - tmpwh;
@@ -712,21 +712,21 @@ static NhlErrorTypes    TitleSetValues
                                         - tnew->view.height;
                         }
                         switch(tnew->title.main_position) {
-                                case RIGHT:
+                                case NhlRIGHT:
                                         tnew->title.main_pos_x =
                                                 tnew->view.x
                                                 +tnew->view.width
                                                 +tnew->title.main_offset_x;
                                         break;
-                                case LEFT:
+                                case NhlLEFT:
                                         tnew->title.main_pos_x =
                                                 tnew->view.x
                                                 +tnew->title.main_offset_x;
                                         break;
                                 default:
-                                        NhlPError(WARNING,E_UNKNOWN,"TitleSetValues: X Axis title can only appear on RIGHT, LEFT, or CENTER side, defaulting to CENTER");
-                                        ret = WARNING;
-                                case CENTER:
+                                        NhlPError(NhlWARNING,NhlEUNKNOWN,"TitleSetValues: X Axis title can only appear on NhlRIGHT, NhlLEFT, or NhlCENTER side, defaulting to NhlCENTER");
+                                        ret = NhlWARNING;
+                                case NhlCENTER:
                                         tnew->title.main_pos_x =
                                                 tnew->view.x
                                                 + (tnew->view.width/2.0)
@@ -739,33 +739,33 @@ static NhlErrorTypes    TitleSetValues
                                 + tnew->title.main_offset_y;
                         break;
                 default:
-                        NhlPError(WARNING,E_UNKNOWN,"TitleSetValues: Main title can only appear on TOP or BOTTOM side of plot, defaulting to TOP");
-                        ret = WARNING;
-                case TOP:
-                        if((tnew->title.x_axis_side == TOP)
+                        NhlPError(NhlWARNING,NhlEUNKNOWN,"TitleSetValues: Main title can only appear on NhlTOP or NhlBOTTOM side of plot, defaulting to NhlTOP");
+                        ret = NhlWARNING;
+                case NhlTOP:
+                        if((tnew->title.x_axis_side == NhlTOP)
                                 &&(tnew->title.x_axis_on)) {
-                                NhlGetValues(tnew->title.x_axis_id,
+                                NhlVAGetValues(tnew->title.x_axis_id,
                                         NhlNvpYF,&tmpxy,NULL);
                                 main_location = tmpxy;
                         } else {
                                 main_location = tnew->view.y;
                         }
                         switch(tnew->title.main_position) {
-                                case RIGHT:
+                                case NhlRIGHT:
                                         tnew->title.main_pos_x =
                                                 tnew->view.x
                                                 +tnew->view.width
                                                 +tnew->title.main_offset_x;
                                         break;
-                                case LEFT:
+                                case NhlLEFT:
                                         tnew->title.main_pos_x =
                                                 tnew->view.x
                                                 +tnew->title.main_offset_x;
                                         break;
                                 default:
-                                        NhlPError(WARNING,E_UNKNOWN,"TitleSetValues: X Axis title can only appear on RIGHT, LEFT, or CENTER side, defaulting to CENTER");
-                                        ret = WARNING;
-                                case CENTER:
+                                        NhlPError(NhlWARNING,NhlEUNKNOWN,"TitleSetValues: X Axis title can only appear on NhlRIGHT, NhlLEFT, or NhlCENTER side, defaulting to NhlCENTER");
+                                        ret = NhlWARNING;
+                                case NhlCENTER:
                                         tnew->title.main_pos_x =
                                                 tnew->view.x
                                                 + (tnew->view.width/2.0)
@@ -778,7 +778,7 @@ static NhlErrorTypes    TitleSetValues
                                 + tnew->title.main_offset_y;
                         break;
         }
-	ret1 = NhlSetValues(tnew->title.main_id,
+	ret1 = NhlVASetValues(tnew->title.main_id,
 		NhlNtxFont,tnew->title.main_font,
                 NhlNtxString,tnew->title.main_string,
                 NhlNtxPosXF,tnew->title.main_pos_x,
@@ -798,11 +798,11 @@ static NhlErrorTypes    TitleSetValues
 * Need to check to make sure a) doesnt overlap with xaxis title b) doesn't
 * encroach on viewport
 */
-	NhlGetValues(tnew->title.main_id,
+	NhlVAGetValues(tnew->title.main_id,
 		NhlNvpYF,&tmpxy,
 		NhlNvpHeightF,&tmpwh,NULL);
 	if(tnew->title.x_axis_side == tnew->title.main_side) {
-		NhlGetValues(tnew->title.x_axis_id,
+		NhlVAGetValues(tnew->title.x_axis_id,
 			NhlNvpYF,&tmpxy1,
 			NhlNvpHeightF,&tmpwh1,NULL);
 	} else {
@@ -810,17 +810,17 @@ static NhlErrorTypes    TitleSetValues
 		tmpwh1 = tnew->view.height;
 	}
 
-	if(tnew->title.main_side == TOP) {
+	if(tnew->title.main_side == NhlTOP) {
 		if((tmpxy - tmpwh) < tmpxy1) {
 			tnew->title.main_pos_y += tmpxy1 - (tmpxy - tmpwh)+ (tnew->title.delta * tnew->title.main_font_height);	
-			NhlSetValues(tnew->title.main_id,
+			NhlVASetValues(tnew->title.main_id,
 				NhlNtxPosYF,tnew->title.main_pos_y,
 				NULL);
 		} 
 	} else {
 		if(tmpxy > (tmpxy1 - tmpwh1)) {
 			tnew->title.main_pos_y -= tmpxy - (tmpxy1 - tmpwh1)+ (tnew->title.delta * tnew->title.main_font_height);
-			NhlSetValues(tnew->title.main_id,
+			NhlVASetValues(tnew->title.main_id,
 				NhlNtxPosYF,tnew->title.main_pos_y,
 				NULL);
 		}
@@ -860,20 +860,20 @@ static NhlErrorTypes    TitleSetValues
 /*ARGSUSED*/
 static NhlErrorTypes    TitleInitialize
 #if  __STDC__
-(LayerClass class, Layer req,Layer new,_NhlArgList args, int num_args)
+(NhlLayerClass class, NhlLayer req,NhlLayer new,_NhlArgList args, int num_args)
 #else
 (class,req,new,args,num_args)
-        LayerClass	class;
-        Layer		req;
-        Layer		new;
+        NhlLayerClass	class;
+        NhlLayer	req;
+        NhlLayer	new;
         _NhlArgList	args;
         int		num_args;
 #endif
 {
-	TitleLayer tnew = (TitleLayer) new;
-	TitleLayer treq = (TitleLayer) req;
-	char buffer[MAXRESNAMLEN];
-	NhlErrorTypes ret = NOERROR, ret1 = NOERROR;
+	NhlTitleLayer tnew = (NhlTitleLayer) new;
+	NhlTitleLayer treq = (NhlTitleLayer) req;
+	char buffer[_NhlMAXRESNAMLEN];
+	NhlErrorTypes ret = NhlNOERROR, ret1 = NhlNOERROR;
 	float tmpxy,tmpwh,main_location,tmpxy1,tmpwh1;
 
 	tnew->title.delta = (float)fabs((double)tnew->title.delta);
@@ -927,23 +927,23 @@ static NhlErrorTypes    TitleInitialize
 * title objects and create them, even if they are turned off.
 */
 	switch(tnew->title.y_axis_side) {
-		case RIGHT:
+		case NhlRIGHT:
 			switch(tnew->title.y_axis_position) {
-				case TOP:
+				case NhlTOP:
 					tnew->title.y_axis_pos_y = 
 						tnew->view.y 
 						+ tnew->title.y_axis_offset_y;
 					break;
-				case BOTTOM:
+				case NhlBOTTOM:
 					tnew->title.y_axis_pos_y =
 						tnew->view.y 
 						- tnew->view.height
 						+ tnew->title.y_axis_offset_y;
 					break;
 				default:
-					NhlPError(WARNING,E_UNKNOWN,"TitleInitialize: Y Axis title can only be positioned on TOP, BOTTOM, or CENTER, defaulting to CENTER");
-					ret = WARNING;
-				case CENTER:
+					NhlPError(NhlWARNING,NhlEUNKNOWN,"TitleInitialize: Y Axis title can only be positioned on NhlTOP, NhlBOTTOM, or NhlCENTER, defaulting to NhlCENTER");
+					ret = NhlWARNING;
+				case NhlCENTER:
 					tnew->title.y_axis_pos_y =
 						tnew->view.y
 						- (tnew->view.height/2.0)
@@ -957,25 +957,25 @@ static NhlErrorTypes    TitleInitialize
 				+tnew->title.y_axis_offset_x;
 			break;
 		default: 
-			NhlPError(WARNING,E_UNKNOWN,"TitleInitialize: Y Axis title can only appear on LEFT or RIGHT side of plot, using LEFT");
-			ret = WARNING;
-		case LEFT:
+			NhlPError(NhlWARNING,NhlEUNKNOWN,"TitleInitialize: Y Axis title can only appear on NhlLEFT or NhlRIGHT side of plot, using NhlLEFT");
+			ret = NhlWARNING;
+		case NhlLEFT:
 			switch(tnew->title.y_axis_position) {
-				case TOP:
+				case NhlTOP:
 					tnew->title.y_axis_pos_y = 
 						tnew->view.y 
 						+ tnew->title.y_axis_offset_y;
 					break;
-				case BOTTOM:
+				case NhlBOTTOM:
 					tnew->title.y_axis_pos_y =
 						tnew->view.y 
 						- tnew->view.height
 						+ tnew->title.y_axis_offset_y;
 					break;
 				default:
-					NhlPError(WARNING,E_UNKNOWN,"TitleInitialize: Y Axis title can only be positioned on TOP, BOTTOM, or CENTER, defaulting to CENTER");
-					ret = WARNING;
-				case CENTER:
+					NhlPError(NhlWARNING,NhlEUNKNOWN,"TitleInitialize: Y Axis title can only be positioned on NhlTOP, NhlBOTTOM, or NhlCENTER, defaulting to NhlCENTER");
+					ret = NhlWARNING;
+				case NhlCENTER:
 					tnew->title.y_axis_pos_y =
 						tnew->view.y
 						- (tnew->view.height/2.0)
@@ -991,8 +991,8 @@ static NhlErrorTypes    TitleInitialize
 	}
 	strcpy(buffer,tnew->base.name);
 	strcat(buffer,".YAxis");
-	ret1 = NhlCreate(&(tnew->title.y_axis_id),
-		buffer,textItemLayerClass,
+	ret1 = NhlVACreate(&(tnew->title.y_axis_id),
+		buffer,NhltextItemLayerClass,
 		tnew->base.id,
 		NhlNtxFont,tnew->title.y_axis_font,
 		NhlNtxString,tnew->title.y_axis_string,
@@ -1012,15 +1012,15 @@ static NhlErrorTypes    TitleInitialize
 /*
 * Need to check to make sure yaxis title doesn't encroach on viewport
 */
-	NhlGetValues(tnew->title.y_axis_id,
+	NhlVAGetValues(tnew->title.y_axis_id,
 		NhlNvpXF,&tmpxy,
 		NhlNvpWidthF,&tmpwh,NULL);
 
-	if(tnew->title.y_axis_side == LEFT) {
+	if(tnew->title.y_axis_side == NhlLEFT) {
 		if(tmpxy+tmpwh > tnew->view.x){
 			tnew->title.y_axis_pos_x -= (tmpxy+tmpwh) 
 				- tnew->view.x + (tnew->title.delta * tnew->title.y_axis_font_height);
-			NhlSetValues(tnew->title.y_axis_id,
+			NhlVASetValues(tnew->title.y_axis_id,
 				NhlNtxPosXF,tnew->title.y_axis_pos_x,
 				NULL);
 		}
@@ -1030,30 +1030,30 @@ static NhlErrorTypes    TitleInitialize
 					+ tnew->view.width)
                                         - tmpxy + (tnew->title.delta * tnew->title.y_axis_font_height);
 
-			NhlSetValues(tnew->title.y_axis_id,
+			NhlVASetValues(tnew->title.y_axis_id,
 				NhlNtxPosXF, tnew->title.y_axis_pos_x ,
 				NULL);
 		}
 	}
 
 	switch(tnew->title.x_axis_side) {
-		case TOP:
+		case NhlTOP:
 			switch(tnew->title.x_axis_position) {
-				case RIGHT:
+				case NhlRIGHT:
 					tnew->title.x_axis_pos_x =
 						tnew->view.x 
 						+tnew->view.width
 						+tnew->title.x_axis_offset_x;
 					break;
-				case LEFT:
+				case NhlLEFT:
 					tnew->title.x_axis_pos_x =
 						tnew->view.x
 						+tnew->title.x_axis_offset_x;
 					break;
 				default:
-					NhlPError(WARNING,E_UNKNOWN,"TitleInitialize: X Axis title can only appear on RIGHT, LEFT, or CENTER side, defaulting to CENTER");
-					ret = WARNING;
-				case CENTER:
+					NhlPError(NhlWARNING,NhlEUNKNOWN,"TitleInitialize: X Axis title can only appear on NhlRIGHT, NhlLEFT, or NhlCENTER side, defaulting to NhlCENTER");
+					ret = NhlWARNING;
+				case NhlCENTER:
 					tnew->title.x_axis_pos_x =
 						tnew->view.x
 						+ (tnew->view.width/2.0)
@@ -1066,25 +1066,25 @@ static NhlErrorTypes    TitleInitialize
 				+ tnew->title.x_axis_offset_y;
 			break;
 		default: 
-			NhlPError(WARNING,E_UNKNOWN,"TitleInitialize: X Axis title can only appear on TOP or BOTTOM side of plot, using BOTTOM");
-			ret = WARNING;
-		case BOTTOM:
+			NhlPError(NhlWARNING,NhlEUNKNOWN,"TitleInitialize: X Axis title can only appear on NhlTOP or NhlBOTTOM side of plot, using NhlBOTTOM");
+			ret = NhlWARNING;
+		case NhlBOTTOM:
 			switch(tnew->title.x_axis_position) {
-				case RIGHT:
+				case NhlRIGHT:
 					tnew->title.x_axis_pos_x =
 						tnew->view.x 
 						+tnew->view.width
 						+tnew->title.x_axis_offset_x;
 					break;
-				case LEFT:
+				case NhlLEFT:
 					tnew->title.x_axis_pos_x =
 						tnew->view.x
 						+tnew->title.x_axis_offset_x;
 					break;
 				default:
-					NhlPError(WARNING,E_UNKNOWN,"TitleInitialize: X Axis title can only appear on RIGHT, LEFT, or CENTER side, defaulting to CENTER");
-					ret = WARNING;
-				case CENTER:
+					NhlPError(NhlWARNING,NhlEUNKNOWN,"TitleInitialize: X Axis title can only appear on NhlRIGHT, NhlLEFT, or NhlCENTER side, defaulting to NhlCENTER");
+					ret = NhlWARNING;
+				case NhlCENTER:
 					tnew->title.x_axis_pos_x =
 						tnew->view.x
 						+ (tnew->view.width/2.0)
@@ -1104,8 +1104,8 @@ static NhlErrorTypes    TitleInitialize
 * in the resource file.
 */
 	strcat(buffer,".XAxis");
-	ret1 = NhlCreate(&(tnew->title.x_axis_id),
-		buffer,textItemLayerClass,
+	ret1 = NhlVACreate(&(tnew->title.x_axis_id),
+		buffer,NhltextItemLayerClass,
 		tnew->base.id,
 		NhlNtxFont,tnew->title.x_axis_font,
 		NhlNtxString,tnew->title.x_axis_string,
@@ -1125,14 +1125,14 @@ static NhlErrorTypes    TitleInitialize
 /*
 * Need to check to make sure xaxis title doesn't encroach on viewport
 */
-	NhlGetValues(tnew->title.x_axis_id,
+	NhlVAGetValues(tnew->title.x_axis_id,
 		NhlNvpYF,&tmpxy,
 		NhlNvpHeightF,&tmpwh,NULL);
 
-	if(tnew->title.x_axis_side == TOP) {
+	if(tnew->title.x_axis_side == NhlTOP) {
 		if(tmpxy - tmpwh < tnew->view.y ){
 			tnew->title.x_axis_pos_y += tnew->view.y - (tmpxy - tmpwh ) + (tnew->title.delta * tnew->title.x_axis_font_height);
-			NhlSetValues(tnew->title.x_axis_id,
+			NhlVASetValues(tnew->title.x_axis_id,
 				NhlNtxPosYF,tnew->title.x_axis_pos_y,
 				NULL);
 		}
@@ -1140,16 +1140,16 @@ static NhlErrorTypes    TitleInitialize
 		if(tmpxy > tnew->view.y - tnew->view.height) {
 			tnew->title.x_axis_pos_y -= tmpxy - (tnew->view.y - tnew->view.height)+ (tnew->title.delta * tnew->title.x_axis_font_height);
 
-			NhlSetValues(tnew->title.x_axis_id,
+			NhlVASetValues(tnew->title.x_axis_id,
 				NhlNtxPosYF, tnew->title.x_axis_pos_y ,
 				NULL);
 		}
 	}
 	switch(tnew->title.main_side) {
-		case BOTTOM:
-			if((tnew->title.x_axis_side == BOTTOM)
+		case NhlBOTTOM:
+			if((tnew->title.x_axis_side == NhlBOTTOM)
 				&&(tnew->title.x_axis_on)) {
-				NhlGetValues(tnew->title.x_axis_id,
+				NhlVAGetValues(tnew->title.x_axis_id,
 					NhlNvpYF,&tmpxy,
 					NhlNvpHeightF,&tmpwh,NULL);
 				main_location = tmpxy - tmpwh;
@@ -1158,21 +1158,21 @@ static NhlErrorTypes    TitleInitialize
 					- tnew->view.height;
 			}
 			switch(tnew->title.main_position) {
-				case RIGHT:
+				case NhlRIGHT:
 					tnew->title.main_pos_x =
 						tnew->view.x 
 						+tnew->view.width
 						+tnew->title.main_offset_x;
 					break;
-				case LEFT:
+				case NhlLEFT:
 					tnew->title.main_pos_x =
 						tnew->view.x
 						+tnew->title.main_offset_x;
 					break;
 				default:
-					NhlPError(WARNING,E_UNKNOWN,"TitleInitialize: X Axis title can only appear on RIGHT, LEFT, or CENTER side, defaulting to CENTER");
-					ret = WARNING;
-				case CENTER:
+					NhlPError(NhlWARNING,NhlEUNKNOWN,"TitleInitialize: X Axis title can only appear on NhlRIGHT, NhlLEFT, or NhlCENTER side, defaulting to NhlCENTER");
+					ret = NhlWARNING;
+				case NhlCENTER:
 					tnew->title.main_pos_x =
 						tnew->view.x
 						+ (tnew->view.width/2.0)
@@ -1185,33 +1185,33 @@ static NhlErrorTypes    TitleInitialize
 				+ tnew->title.main_offset_y;
 			break;
 		default: 
-			NhlPError(WARNING,E_UNKNOWN,"TitleInitialize: Main title can only appear on TOP or BOTTOM side of plot, defaulting to TOP");
-			ret = WARNING;
-		case TOP:
-			if((tnew->title.x_axis_side == TOP)
+			NhlPError(NhlWARNING,NhlEUNKNOWN,"TitleInitialize: Main title can only appear on NhlTOP or NhlBOTTOM side of plot, defaulting to NhlTOP");
+			ret = NhlWARNING;
+		case NhlTOP:
+			if((tnew->title.x_axis_side == NhlTOP)
 				&&(tnew->title.x_axis_on)) {
-				NhlGetValues(tnew->title.x_axis_id,
+				NhlVAGetValues(tnew->title.x_axis_id,
 					NhlNvpYF,&tmpxy,NULL);
 				main_location = tmpxy;
 			} else {
 				main_location = tnew->view.y;
 			}
 			switch(tnew->title.main_position) {
-				case RIGHT:
+				case NhlRIGHT:
 					tnew->title.main_pos_x =
 						tnew->view.x 
 						+tnew->view.width
 						+tnew->title.main_offset_x;
 					break;
-				case LEFT:
+				case NhlLEFT:
 					tnew->title.main_pos_x =
 						tnew->view.x
 						+tnew->title.main_offset_x;
 					break;
 				default:
-					NhlPError(WARNING,E_UNKNOWN,"TitleInitialize: X Axis title can only appear on RIGHT, LEFT, or CENTER side, defaulting to CENTER");
-					ret = WARNING;
-				case CENTER:
+					NhlPError(NhlWARNING,NhlEUNKNOWN,"TitleInitialize: X Axis title can only appear on NhlRIGHT, NhlLEFT, or NhlCENTER side, defaulting to NhlCENTER");
+					ret = NhlWARNING;
+				case NhlCENTER:
 					tnew->title.main_pos_x =
 						tnew->view.x
 						+ (tnew->view.width/2.0)
@@ -1230,8 +1230,8 @@ static NhlErrorTypes    TitleInitialize
 * in the resource file.
 */
 	strcat(buffer,".Main");
-	ret1 = NhlCreate(&(tnew->title.main_id),
-		buffer,textItemLayerClass,
+	ret1 = NhlVACreate(&(tnew->title.main_id),
+		buffer,NhltextItemLayerClass,
 		tnew->base.id,
 		NhlNtxFont,tnew->title.main_font,
 		NhlNtxString,tnew->title.main_string,
@@ -1252,11 +1252,11 @@ static NhlErrorTypes    TitleInitialize
 /*
 * Need to check to make sure main title doesn't encroach on viewport
 */
-	NhlGetValues(tnew->title.main_id,
+	NhlVAGetValues(tnew->title.main_id,
 		NhlNvpYF,&tmpxy,
 		NhlNvpHeightF,&tmpwh,NULL);
 	if(tnew->title.x_axis_side == tnew->title.main_side) {
-		NhlGetValues(tnew->title.x_axis_id,
+		NhlVAGetValues(tnew->title.x_axis_id,
 			NhlNvpYF,&tmpxy1,
 			NhlNvpHeightF,&tmpwh1,NULL);
 	} else {
@@ -1264,17 +1264,17 @@ static NhlErrorTypes    TitleInitialize
 		tmpwh1 = tnew->view.height;
 	}
 
-	if(tnew->title.main_side == TOP) {
+	if(tnew->title.main_side == NhlTOP) {
 		if((tmpxy - tmpwh) < tmpxy1) {
 			tnew->title.main_pos_y += tmpxy1 - (tmpxy - tmpwh)+ (tnew->title.delta * tnew->title.main_font_height);	
-			NhlSetValues(tnew->title.main_id,
+			NhlVASetValues(tnew->title.main_id,
 				NhlNtxPosYF,tnew->title.main_pos_y,
 				NULL);
 		} 
 	} else {
 		if(tmpxy > (tmpxy1 - tmpwh1)) {
 			tnew->title.main_pos_y -= tmpxy - (tmpxy1 - tmpwh1)+ (tnew->title.delta * tnew->title.main_font_height);
-			NhlSetValues(tnew->title.main_id,
+			NhlVASetValues(tnew->title.main_id,
 				NhlNtxPosYF,tnew->title.main_pos_y,
 				NULL);
 		}
@@ -1294,21 +1294,21 @@ static NhlErrorTypes    TitleInitialize
  *
  * Out Args:	NONE
  *
- * Return Values:	NOERROR	
+ * Return Values:	NhlNOERROR	
  *
  * Side Effects:	NONE
  */
 static NhlErrorTypes     TitleDestroy
 #if	__STDC__
 (
-        Layer	inst
+        NhlLayer	inst
 )
 #else
 (inst)
-	Layer	inst;
+	NhlLayer	inst;
 #endif
 {
-	TitleLayer tinst = (TitleLayer) inst;
+	NhlTitleLayer tinst = (NhlTitleLayer) inst;
 
 	if(tinst->title.main_string != Main)
 		NhlFree(tinst->title.main_string);
@@ -1319,7 +1319,7 @@ static NhlErrorTypes     TitleDestroy
 	NhlDestroy(tinst->title.main_id);
 	NhlDestroy(tinst->title.x_axis_id);
 	NhlDestroy(tinst->title.y_axis_id);
-	return(NOERROR);
+	return(NhlNOERROR);
 }
 
 /*
@@ -1333,7 +1333,7 @@ static NhlErrorTypes     TitleDestroy
  *
  * Return Values:	NONE
  *
- * Side Effects:	NOERROR
+ * Side Effects:	NhlNOERROR
  */
 static NhlErrorTypes    TitleClassInitialize
 #if __STDC__
@@ -1343,16 +1343,16 @@ static NhlErrorTypes    TitleClassInitialize
 #endif
 {
 	NhlConvertArg	titlepos[] = {
-				{NHLSTRENUM,	TOP,	"top"},
-				{NHLSTRENUM,	BOTTOM,	"bottom"},
-				{NHLSTRENUM,	LEFT,	"left"},
-				{NHLSTRENUM,	RIGHT,	"right"},
-				{NHLSTRENUM,	CENTER,	"center"}
+				{NhlSTRENUM,	NhlTOP,		"top"},
+				{NhlSTRENUM,	NhlBOTTOM,	"bottom"},
+				{NhlSTRENUM,	NhlLEFT,	"left"},
+				{NhlSTRENUM,	NhlRIGHT,	"right"},
+				{NhlSTRENUM,	NhlCENTER,	"center"}
 				};
 
 	NhlRegisterConverter(NhlTString,NhlTTitlePositions,NhlCvtStringToEnum,
 				titlepos,NhlNumber(titlepos),False,NULL);
-	return(NOERROR);
+	return(NhlNOERROR);
 }
 
 /*
@@ -1370,13 +1370,13 @@ static NhlErrorTypes    TitleClassInitialize
  */
 static NhlErrorTypes TitleDraw
 #if  __STDC__
-(Layer instance)
+(NhlLayer instance)
 #else
 (instance)
-	Layer	instance;
+	NhlLayer	instance;
 #endif
 {
-	TitleLayer tinstance = (TitleLayer) instance;
+	NhlTitleLayer tinstance = (NhlTitleLayer) instance;
 
 	if(tinstance->title.main_on)
 		NhlDraw(tinstance->title.main_id);
@@ -1384,7 +1384,7 @@ static NhlErrorTypes TitleDraw
 		NhlDraw(tinstance->title.x_axis_id);
 	if(tinstance->title.y_axis_on)
 		NhlDraw(tinstance->title.y_axis_id);
-	return(NOERROR);
+	return(NhlNOERROR);
 }
 
 /*
@@ -1405,17 +1405,17 @@ static NhlErrorTypes TitleDraw
  */
 static NhlErrorTypes TitleGetBB
 #if	__STDC__
-(Layer instance, NhlBoundingBox *thebox)
+(NhlLayer instance, NhlBoundingBox *thebox)
 #else
 (instance,thebox)
-	Layer instance;
+	NhlLayer instance;
 	NhlBoundingBox *thebox;
 #endif
 {
-	TitleLayer tinstance = (TitleLayer) instance;
+	NhlTitleLayer tinstance = (NhlTitleLayer) instance;
 	float x0,y0,width,height;
 
-	NhlGetValues(tinstance->title.main_id,
+	NhlVAGetValues(tinstance->title.main_id,
 		NhlNvpXF,&x0,
 		NhlNvpYF,&y0,
 		NhlNvpWidthF,&width,
@@ -1423,7 +1423,7 @@ static NhlErrorTypes TitleGetBB
 
 	_NhlAddBBInfo(y0,y0-height,x0+width,x0,thebox);
 
-	NhlGetValues(tinstance->title.x_axis_id,
+	NhlVAGetValues(tinstance->title.x_axis_id,
 		NhlNvpXF,&x0,
 		NhlNvpYF,&y0,
 		NhlNvpWidthF,&width,
@@ -1431,7 +1431,7 @@ static NhlErrorTypes TitleGetBB
 
 	_NhlAddBBInfo(y0,y0-height,x0+width,x0,thebox);
 
-	NhlGetValues(tinstance->title.y_axis_id,
+	NhlVAGetValues(tinstance->title.y_axis_id,
 		NhlNvpXF,&x0,
 		NhlNvpYF,&y0,
 		NhlNvpWidthF,&width,
@@ -1439,7 +1439,5 @@ static NhlErrorTypes TitleGetBB
 
 	_NhlAddBBInfo(y0,y0-height,x0+width,x0,thebox);
 
-	return(NOERROR);
+	return(NhlNOERROR);
 }
-
-

@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrTable.c,v 1.9 1994-01-24 16:26:31 ethan Exp $
+ *      $Id: CoordArrTable.c,v 1.10 1994-01-27 21:21:53 boote Exp $
  */
 /************************************************************************
 *									*
@@ -71,24 +71,25 @@ MissingXSet
 	unsigned int	offset;
 #endif
 {
-	Layer	l = (Layer)base;
+	NhlLayer	l = (NhlLayer)base;
 
-	if(l->base.layer_class == coordArrTableFloatLayerClass){
-		CoordArrTableFloatLayer	catl = (CoordArrTableFloatLayer)l;
+	if(l->base.layer_class == NhlcoordArrTableFloatLayerClass){
+		NhlCoordArrTableFloatLayer	catl =
+						(NhlCoordArrTableFloatLayer)l;
 
 		catl->catfloat.missing_x_set = False;
 		catl->catfloat.missing_x = 0.0;
 	}
-	else if(l->base.layer_class == coordArrTableIntLayerClass){
-		CoordArrTableIntLayer	catl = (CoordArrTableIntLayer)l;
+	else if(l->base.layer_class == NhlcoordArrTableIntLayerClass){
+		NhlCoordArrTableIntLayer	catl = (NhlCoordArrTableIntLayer)l;
 
 		catl->catint.missing_x_set = False;
 		catl->catint.missing_x = 0;
 	}
 	else
-		return FATAL;
+		return NhlFATAL;
 
-	return NOERROR;
+	return NhlNOERROR;
 }
 /*ARGSUSED*/
 static NhlErrorTypes
@@ -108,24 +109,24 @@ MissingYSet
 	unsigned int	offset;
 #endif
 {
-	Layer	l = (Layer)base;
+	NhlLayer	l = (NhlLayer)base;
 
-	if(l->base.layer_class == coordArrTableFloatLayerClass){
-		CoordArrTableFloatLayer	catl = (CoordArrTableFloatLayer)l;
+	if(l->base.layer_class == NhlcoordArrTableFloatLayerClass){
+		NhlCoordArrTableFloatLayer	catl = (NhlCoordArrTableFloatLayer)l;
 
 		catl->catfloat.missing_y_set = False;
 		catl->catfloat.missing_y = 0.0;
 	}
-	else if(l->base.layer_class == coordArrTableIntLayerClass){
-		CoordArrTableIntLayer	catl = (CoordArrTableIntLayer)l;
+	else if(l->base.layer_class == NhlcoordArrTableIntLayerClass){
+		NhlCoordArrTableIntLayer	catl = (NhlCoordArrTableIntLayer)l;
 
 		catl->catint.missing_y_set = False;
 		catl->catint.missing_y = 0;
 	}
 	else
-		return FATAL;
+		return NhlFATAL;
 
-	return NOERROR;
+	return NhlNOERROR;
 }
 /*ARGSUSED*/
 static NhlErrorTypes
@@ -145,24 +146,24 @@ MaxXSet
 	unsigned int	offset;
 #endif
 {
-	Layer	l = (Layer)base;
+	NhlLayer	l = (NhlLayer)base;
 
-	if(l->base.layer_class == coordArrTableFloatLayerClass){
-		CoordArrTableFloatLayer	catl = (CoordArrTableFloatLayer)l;
+	if(l->base.layer_class == NhlcoordArrTableFloatLayerClass){
+		NhlCoordArrTableFloatLayer	catl = (NhlCoordArrTableFloatLayer)l;
 
 		catl->catfloat.max_x_set = False;
 		catl->catfloat.max_x = 0.0;
 	}
-	else if(l->base.layer_class == coordArrTableIntLayerClass){
-		CoordArrTableIntLayer	catl = (CoordArrTableIntLayer)l;
+	else if(l->base.layer_class == NhlcoordArrTableIntLayerClass){
+		NhlCoordArrTableIntLayer	catl = (NhlCoordArrTableIntLayer)l;
 
 		catl->catint.max_x_set = False;
 		catl->catint.max_x = 0;
 	}
 	else
-		return FATAL;
+		return NhlFATAL;
 
-	return NOERROR;
+	return NhlNOERROR;
 }
 /*ARGSUSED*/
 static NhlErrorTypes
@@ -182,24 +183,24 @@ MaxYSet
 	unsigned int	offset;
 #endif
 {
-	Layer	l = (Layer)base;
+	NhlLayer	l = (NhlLayer)base;
 
-	if(l->base.layer_class == coordArrTableFloatLayerClass){
-		CoordArrTableFloatLayer	catl = (CoordArrTableFloatLayer)l;
+	if(l->base.layer_class == NhlcoordArrTableFloatLayerClass){
+		NhlCoordArrTableFloatLayer	catl = (NhlCoordArrTableFloatLayer)l;
 
 		catl->catfloat.max_y_set = False;
 		catl->catfloat.max_y = 0.0;
 	}
-	else if(l->base.layer_class == coordArrTableIntLayerClass){
-		CoordArrTableIntLayer	catl = (CoordArrTableIntLayer)l;
+	else if(l->base.layer_class == NhlcoordArrTableIntLayerClass){
+		NhlCoordArrTableIntLayer	catl = (NhlCoordArrTableIntLayer)l;
 
 		catl->catint.max_y_set = False;
 		catl->catint.max_y = 0;
 	}
 	else
-		return FATAL;
+		return NhlFATAL;
 
-	return NOERROR;
+	return NhlNOERROR;
 }
 /*ARGSUSED*/
 static NhlErrorTypes
@@ -219,24 +220,24 @@ MinXSet
 	unsigned int	offset;
 #endif
 {
-	Layer	l = (Layer)base;
+	NhlLayer	l = (NhlLayer)base;
 
-	if(l->base.layer_class == coordArrTableFloatLayerClass){
-		CoordArrTableFloatLayer	catl = (CoordArrTableFloatLayer)l;
+	if(l->base.layer_class == NhlcoordArrTableFloatLayerClass){
+		NhlCoordArrTableFloatLayer	catl = (NhlCoordArrTableFloatLayer)l;
 
 		catl->catfloat.min_x_set = False;
 		catl->catfloat.min_x = 0.0;
 	}
-	else if(l->base.layer_class == coordArrTableIntLayerClass){
-		CoordArrTableIntLayer	catl = (CoordArrTableIntLayer)l;
+	else if(l->base.layer_class == NhlcoordArrTableIntLayerClass){
+		NhlCoordArrTableIntLayer	catl = (NhlCoordArrTableIntLayer)l;
 
 		catl->catint.min_x_set = False;
 		catl->catint.min_x = 0;
 	}
 	else
-		return FATAL;
+		return NhlFATAL;
 
-	return NOERROR;
+	return NhlNOERROR;
 }
 /*ARGSUSED*/
 static NhlErrorTypes
@@ -256,27 +257,27 @@ MinYSet
 	unsigned int	offset;
 #endif
 {
-	Layer	l = (Layer)base;
+	NhlLayer	l = (NhlLayer)base;
 
-	if(l->base.layer_class == coordArrTableFloatLayerClass){
-		CoordArrTableFloatLayer	catl = (CoordArrTableFloatLayer)l;
+	if(l->base.layer_class == NhlcoordArrTableFloatLayerClass){
+		NhlCoordArrTableFloatLayer	catl = (NhlCoordArrTableFloatLayer)l;
 
 		catl->catfloat.min_y_set = False;
 		catl->catfloat.min_y = 0.0;
 	}
-	else if(l->base.layer_class == coordArrTableIntLayerClass){
-		CoordArrTableIntLayer	catl = (CoordArrTableIntLayer)l;
+	else if(l->base.layer_class == NhlcoordArrTableIntLayerClass){
+		NhlCoordArrTableIntLayer	catl = (NhlCoordArrTableIntLayer)l;
 
 		catl->catint.min_y_set = False;
 		catl->catint.min_y = 0;
 	}
 	else
-		return FATAL;
+		return NhlFATAL;
 
-	return NOERROR;
+	return NhlNOERROR;
 }
 
-#define	Oset(field)	NhlOffset(CoordArrTableFloatLayerRec,catfloat.field)
+#define	Oset(field)	NhlOffset(NhlCoordArrTableFloatLayerRec,catfloat.field)
 static NhlResource fltresources[] = {
 	{NhlNctXTable,NhlCctXTable,NhlTGenArray,sizeof(NhlGenArray),
 		Oset(xtable),NhlTImmediate,(NhlPointer)NULL},
@@ -322,7 +323,7 @@ static NhlResource fltresources[] = {
 };
 #undef Oset
 
-#define	Oset(field)	NhlOffset(CoordArrTableIntLayerRec,catint.field)
+#define	Oset(field)	NhlOffset(NhlCoordArrTableIntLayerRec,catint.field)
 static NhlResource intresources[] = {
 	{NhlNctXTable,NhlCctXTable,NhlTGenArray,sizeof(NhlGenArray),
 		Oset(xtable),NhlTImmediate,(NhlPointer)NULL},
@@ -368,7 +369,7 @@ static NhlResource intresources[] = {
 };
 #undef Oset
 
-#define	Oset(field)	NhlOffset(CoordArrTableLayerRec,cat.field)
+#define	Oset(field)	NhlOffset(NhlCoordArrTableLayerRec,cat.field)
 static NhlResource resources[] = {
 	{NhlNdiType,NhlCdiType,NhlTString,sizeof(NhlString),
 		Oset(type_string),NhlTImmediate,(NhlPointer)NULL}
@@ -379,7 +380,7 @@ static NhlResource resources[] = {
 
 static NhlErrorTypes CoordArrTableClassPartInitialize(
 #if	NhlNeedProto
-	LayerClass	lc	/* lc to init	*/
+	NhlLayerClass	lc	/* lc to init	*/
 #endif
 );
 
@@ -391,9 +392,9 @@ static NhlErrorTypes CoordArrTableClassInitialize(
 
 static NhlErrorTypes CoordArrTableFloatInitialize(
 #if	NhlNeedProto
-	LayerClass	lc,	/* class	*/
-	Layer		req,	/* requested	*/
-	Layer		new,	/* new		*/
+	NhlLayerClass	lc,	/* class	*/
+	NhlLayer	req,	/* requested	*/
+	NhlLayer	new,	/* new		*/
 	_NhlArgList	args,	/* args		*/
 	int		nargs	/* nargs	*/
 #endif
@@ -401,9 +402,9 @@ static NhlErrorTypes CoordArrTableFloatInitialize(
 
 static NhlErrorTypes CoordArrTableIntInitialize(
 #if	NhlNeedProto
-	LayerClass	lc,	/* class	*/
-	Layer		req,	/* requested	*/
-	Layer		new,	/* new		*/
+	NhlLayerClass	lc,	/* class	*/
+	NhlLayer	req,	/* requested	*/
+	NhlLayer	new,	/* new		*/
 	_NhlArgList	args,	/* args		*/
 	int		nargs	/* nargs	*/
 #endif
@@ -411,9 +412,9 @@ static NhlErrorTypes CoordArrTableIntInitialize(
 
 static NhlErrorTypes CoordArrTableInitialize(
 #if	NhlNeedProto
-	LayerClass	lc,	/* class	*/
-	Layer		req,	/* requested	*/
-	Layer		new,	/* new		*/
+	NhlLayerClass	lc,	/* class	*/
+	NhlLayer	req,	/* requested	*/
+	NhlLayer	new,	/* new		*/
 	_NhlArgList	args,	/* args		*/
 	int		nargs	/* nargs	*/
 #endif
@@ -421,9 +422,9 @@ static NhlErrorTypes CoordArrTableInitialize(
 
 static NhlErrorTypes CoordArrTableSetValues(
 #if	NhlNeedProto
-	Layer		old,		/* old		*/
-	Layer		req,		/* requested	*/
-	Layer		new,		/* new		*/
+	NhlLayer	old,		/* old		*/
+	NhlLayer	req,		/* requested	*/
+	NhlLayer	new,		/* new		*/
 	_NhlArgList	args,		/* args to set	*/
 	int		nargs		/* nargs	*/
 #endif
@@ -431,9 +432,9 @@ static NhlErrorTypes CoordArrTableSetValues(
 
 static NhlErrorTypes CoordArrTableFloatSetValues(
 #if	NhlNeedProto
-	Layer		old,		/* old		*/
-	Layer		req,		/* requested	*/
-	Layer		new,		/* new		*/
+	NhlLayer	old,		/* old		*/
+	NhlLayer	req,		/* requested	*/
+	NhlLayer	new,		/* new		*/
 	_NhlArgList	args,		/* args to set	*/
 	int		nargs		/* nargs	*/
 #endif
@@ -441,9 +442,9 @@ static NhlErrorTypes CoordArrTableFloatSetValues(
 
 static NhlErrorTypes CoordArrTableIntSetValues(
 #if	NhlNeedProto
-	Layer		old,		/* old		*/
-	Layer		req,		/* requested	*/
-	Layer		new,		/* new		*/
+	NhlLayer	old,		/* old		*/
+	NhlLayer	req,		/* requested	*/
+	NhlLayer	new,		/* new		*/
 	_NhlArgList	args,		/* args to set	*/
 	int		nargs		/* nargs	*/
 #endif
@@ -451,30 +452,30 @@ static NhlErrorTypes CoordArrTableIntSetValues(
 
 static NhlErrorTypes CoordArrTableDestroy(
 #if	NhlNeedProto
-	Layer	l	/* layer to destroy	*/
+	NhlLayer	l	/* layer to destroy	*/
 #endif
 );
 
 static NhlErrorTypes CoordArrTableFloatDestroy(
 #if	NhlNeedProto
-	Layer	l	/* layer to destroy	*/
+	NhlLayer	l	/* layer to destroy	*/
 #endif
 );
 
 static NhlErrorTypes CoordArrTableIntDestroy(
 #if	NhlNeedProto
-	Layer	l	/* layer to destroy	*/
+	NhlLayer	l	/* layer to destroy	*/
 #endif
 );
 
-CoordArrTableFloatLayerClassRec coordArrTableFloatLayerClassRec = {
-	/* BaseLayerClassPart */
+NhlCoordArrTableFloatLayerClassRec NhlcoordArrTableFloatLayerClassRec = {
+	/* NhlBaseLayerClassPart */
 	{
 /* class_name			*/	"CoordArrTableFloat",
 /* nrm_class			*/	NrmNULLQUARK,
-/* layer_size			*/	sizeof(CoordArrTableFloatLayerRec),
+/* layer_size			*/	sizeof(NhlCoordArrTableFloatLayerRec),
 /* class_inited			*/	False,
-/* superclass			*/	(LayerClass)&objLayerClassRec,
+/* superclass			*/	(NhlLayerClass)&NhlobjLayerClassRec,
 
 /* resources			*/	fltresources,
 /* num_resources		*/	NhlNumber(fltresources),
@@ -489,20 +490,20 @@ CoordArrTableFloatLayerClassRec coordArrTableFloatLayerClassRec = {
 /* layer_reparent		*/	NULL,
 /* layer_destroy		*/	CoordArrTableFloatDestroy
 	},
-	/* CoordArrTableFloatLayerPart */
+	/* NhlCoordArrTableFloatLayerPart */
 	{
 /* foo				*/	0
 	}
 };
 
-CoordArrTableIntLayerClassRec coordArrTableIntLayerClassRec = {
-	/* BaseLayerClassPart */
+NhlCoordArrTableIntLayerClassRec NhlcoordArrTableIntLayerClassRec = {
+	/* NhlBaseLayerClassPart */
 	{
 /* class_name			*/	"CoordArrTableInt",
 /* nrm_class			*/	NrmNULLQUARK,
-/* layer_size			*/	sizeof(CoordArrTableIntLayerRec),
+/* layer_size			*/	sizeof(NhlCoordArrTableIntLayerRec),
 /* class_inited			*/	False,
-/* superclass			*/	(LayerClass)&objLayerClassRec,
+/* superclass			*/	(NhlLayerClass)&NhlobjLayerClassRec,
 
 /* resources			*/	intresources,
 /* num_resources		*/	NhlNumber(intresources),
@@ -517,20 +518,20 @@ CoordArrTableIntLayerClassRec coordArrTableIntLayerClassRec = {
 /* layer_reparent		*/	NULL,
 /* layer_destroy		*/	CoordArrTableIntDestroy
 	},
-	/* CoordArrTableIntLayerPart */
+	/* NhlCoordArrTableIntLayerPart */
 	{
 /* foo				*/	0
 	}
 };
 
-CoordArrTableLayerClassRec coordArrTableLayerClassRec = {
-	/* BaseLayerClassPart */
+NhlCoordArrTableLayerClassRec NhlcoordArrTableLayerClassRec = {
+	/* NhlBaseLayerClassPart */
 	{
 /* class_name			*/	"CoordArrTable",
 /* nrm_class			*/	NrmNULLQUARK,
-/* layer_size			*/	sizeof(CoordArrTableLayerRec),
+/* layer_size			*/	sizeof(NhlCoordArrTableLayerRec),
 /* class_inited			*/	False,
-/* superclass			*/	(LayerClass)&dataItemLayerClassRec,
+/* superclass			*/	(NhlLayerClass)&NhldataItemLayerClassRec,
 
 /* resources			*/	resources,
 /* num_resources		*/	NhlNumber(resources),
@@ -554,19 +555,22 @@ CoordArrTableLayerClassRec coordArrTableLayerClassRec = {
 /* layer_post_draw		*/	NULL,
 /* layer_clear			*/	NULL
 	},
-	/* DataItemLayerClassPart */
+	/* NhlDataItemLayerClassPart */
 	{
 /* foo				*/	0
 	},
-	/* CoordArrTableLayerClassPart */
+	/* NhlCoordArrTableLayerClassPart */
 	{
 /* foo				*/	0
 	}
 };
 	
-LayerClass coordArrTableLayerClass = (LayerClass)&coordArrTableLayerClassRec;
-LayerClass coordArrTableFloatLayerClass = (LayerClass)&coordArrTableFloatLayerClassRec;
-LayerClass coordArrTableIntLayerClass = (LayerClass)&coordArrTableIntLayerClassRec;
+NhlLayerClass NhlcoordArrTableLayerClass =
+				(NhlLayerClass)&NhlcoordArrTableLayerClassRec;
+NhlLayerClass NhlcoordArrTableFloatLayerClass = 
+			(NhlLayerClass)&NhlcoordArrTableFloatLayerClassRec;
+NhlLayerClass NhlcoordArrTableIntLayerClass =
+			(NhlLayerClass)&NhlcoordArrTableIntLayerClassRec;
 
 static	NrmQuark	floatQ = NrmNULLQUARK;
 static	NrmQuark	intQ = NrmNULLQUARK;
@@ -608,31 +612,31 @@ CvtGenObjToFloatObj
 	int			num_args;
 #endif
 {
-	CoordArrTableLayer	catl = NULL;
+	NhlCoordArrTableLayer	catl = NULL;
 	NhlSArg			sargs[30];
 	int			nargs=0,i,j,*lens;
 	float			**flttable,*fltvect;
 	NhlGenArray		xtbl = NULL, ytbl = NULL;
-	NhlErrorTypes		ret = NOERROR;
+	NhlErrorTypes		ret = NhlNOERROR;
 
 	if(num_args != 0){
-		NhlPError(FATAL,E_UNKNOWN,
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
 				"CvtGenObjToFloatObj:Called w/wrong args");
-		return FATAL;
+		return NhlFATAL;
 	}
 
-	catl = (CoordArrTableLayer)_NhlGetLayer(*(int*)(from->addr));
-	if((catl == NULL)||(catl->base.layer_class != coordArrTableLayerClass)){
-		NhlPError(FATAL,E_UNKNOWN,
+	catl = (NhlCoordArrTableLayer)_NhlGetLayer(*(int*)(from->addr));
+	if((catl == NULL)||(catl->base.layer_class != NhlcoordArrTableLayerClass)){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
 		"CvtGenObjToFloatObj:Called w/ improper \"from\" object");
-		return FATAL;
+		return NhlFATAL;
 	}
 
 	if(catl->cat.type == floatQ){
-		CoordArrTableFloatLayer	l =
-				(CoordArrTableFloatLayer)catl->cat.child;
-		CoordArrTableFloatLayerPart	*child =
-				(CoordArrTableFloatLayerPart*)&l->catfloat;
+		NhlCoordArrTableFloatLayer	l =
+				(NhlCoordArrTableFloatLayer)catl->cat.child;
+		NhlCoordArrTableFloatLayerPart	*child =
+				(NhlCoordArrTableFloatLayerPart*)&l->catfloat;
 
 		NhlSetSArg(&sargs[nargs++],NhlNctXTable,child->xtable);
 		NhlSetSArg(&sargs[nargs++],NhlNctYTable,child->ytable);
@@ -654,10 +658,10 @@ CvtGenObjToFloatObj
 	}
 	else if(catl->cat.type == intQ){
 		int	*intvect,**inttable;
-		CoordArrTableIntLayer	l =
-					(CoordArrTableIntLayer)catl->cat.child;
-		CoordArrTableIntLayerPart	*child =
-					(CoordArrTableIntLayerPart*)&l->catint;
+		NhlCoordArrTableIntLayer	l =
+				(NhlCoordArrTableIntLayer)catl->cat.child;
+		NhlCoordArrTableIntLayerPart	*child =
+				(NhlCoordArrTableIntLayerPart*)&l->catint;
 
 		NhlSetSArg(&sargs[nargs++],NhlNctXTableLengths,
 							child->xtable_lens);
@@ -681,7 +685,7 @@ CvtGenObjToFloatObj
 		if(child->xtable != NULL){
 			xtbl = _NhlCopyGenArray(child->xtable,True);
 			if(xtbl == NULL)
-				return FATAL;
+				return NhlFATAL;
 			inttable = (int**)xtbl->data;
 			flttable = (float**)xtbl->data;
 			lens = (int*)child->xtable_lens->data;
@@ -691,7 +695,7 @@ CvtGenObjToFloatObj
 					fltvect = NhlConvertMalloc
 							(sizeof(float)*lens[i]);
 					if(fltvect == NULL)
-						return FATAL;
+						return NhlFATAL;
 					for(j=0;j < lens[i];j++){
 						fltvect[j] = (float)intvect[j];
 					}
@@ -705,7 +709,7 @@ CvtGenObjToFloatObj
 		if(child->ytable != NULL){
 			ytbl = _NhlCopyGenArray(child->ytable,True);
 			if(ytbl == NULL)
-				return FATAL;
+				return NhlFATAL;
 			inttable = (int**)ytbl->data;
 			flttable = (float**)ytbl->data;
 			lens = (int*)child->ytable_lens->data;
@@ -715,7 +719,7 @@ CvtGenObjToFloatObj
 					fltvect = NhlConvertMalloc
 							(sizeof(float)*lens[i]);
 					if(fltvect == NULL)
-						return FATAL;
+						return NhlFATAL;
 					for(j=0;j < lens[i];j++){
 						fltvect[j] = (float)intvect[j];
 					}
@@ -728,13 +732,13 @@ CvtGenObjToFloatObj
 		}
 	}
 	else{
-		return FATAL;
+		return NhlFATAL;
 	}
 
 	NhlSetSArg(&sargs[nargs++],NhlNctCopyTables,False);
 
 	ret = NhlALCreate((int*)to->addr,"no.name",
-			coordArrTableFloatLayerClass,catl->base.id,sargs,nargs);
+			NhlcoordArrTableFloatLayerClass,catl->base.id,sargs,nargs);
 
 	NhlFreeGenArray(xtbl);
 	NhlFreeGenArray(ytbl);
@@ -773,14 +777,14 @@ CoordArrTableClassInitialize
 ()
 #endif
 {
-	NhlErrorTypes	ret = NOERROR;
+	NhlErrorTypes	ret = NhlNOERROR;
 
 	floatQ = NrmStringToQuark(NhlTFloat);
 	intQ = NrmStringToQuark(NhlTInteger);
 
 	ret = NhlRegisterConverter(
-			coordArrTableLayerClass->base_class.class_name,
-			coordArrTableFloatLayerClass->base_class.class_name,
+			NhlcoordArrTableLayerClass->base_class.class_name,
+			NhlcoordArrTableFloatLayerClass->base_class.class_name,
 			CvtGenObjToFloatObj,NULL,0,False,NULL);
 
 	return ret;
@@ -793,7 +797,7 @@ CoordArrTableClassInitialize
  *		class record of this class and of all sub-classes.
  *
  * In Args:	
- *		LayerClass	lc	pointer to class structure
+ *		NhlLayerClass	lc	pointer to class structure
  *
  * Out Args:	
  *
@@ -805,18 +809,18 @@ static NhlErrorTypes
 CoordArrTableClassPartInitialize
 #if	__STDC__
 (
-	LayerClass	lc	/* pointer to class structure	*/
+	NhlLayerClass	lc	/* pointer to class structure	*/
 )
 #else
 (lc)
-	LayerClass	lc;	/* pointer to class structure	*/
+	NhlLayerClass	lc;	/* pointer to class structure	*/
 #endif
 {
 	NhlErrorTypes		ret, lret;
 
-	ret = _NhlRegisterChildClass(lc,coordArrTableFloatLayerClass,True,
+	ret = _NhlRegisterChildClass(lc,NhlcoordArrTableFloatLayerClass,True,
 								False,NULL);
-	lret = _NhlRegisterChildClass(lc,coordArrTableIntLayerClass,True,
+	lret = _NhlRegisterChildClass(lc,NhlcoordArrTableIntLayerClass,True,
 								False,NULL);
 	return MIN(lret,ret);
 }
@@ -827,8 +831,8 @@ CoordArrTableClassPartInitialize
 	ncat->cat##type.dim##table_lens =				\
 		_NhlCopyGenArray((NhlGenArray)ncat->cat##type.dim##table_lens,(NhlBoolean)True);	\
 	if(ncat->cat##type.dim##table_lens == NULL){			\
-		NhlPError(FATAL,ENOMEM,NULL);				\
-		return FATAL;						\
+		NhlPError(NhlFATAL,ENOMEM,NULL);				\
+		return NhlFATAL;						\
 	}								\
 	}								\
 }
@@ -839,8 +843,8 @@ CoordArrTableClassPartInitialize
 	ncat->cat##type.dim##table =					\
 		_NhlCopyGenArray((NhlGenArray)ncat->cat##type.dim##table,(NhlBoolean)True);	\
 	if(ncat->cat##type.dim##table == NULL){				\
-		NhlPError(FATAL,ENOMEM,NULL);				\
-		return FATAL;						\
+		NhlPError(NhlFATAL,ENOMEM,NULL);				\
+		return NhlFATAL;						\
 	}								\
 	if(ncat->cat##type.copy_tables){				\
 		type	**vals,*ovect,*nvect;				\
@@ -857,8 +861,8 @@ CoordArrTableClassPartInitialize
 									\
 			nvect = NhlMalloc(sizeof(type)*lens[i]);	\
 			if(nvect == NULL){				\
-				NhlPError(FATAL,ENOMEM,NULL);		\
-				return FATAL;				\
+				NhlPError(NhlFATAL,ENOMEM,NULL);		\
+				return NhlFATAL;				\
 			}						\
 			memcpy((char*)nvect,(char*)ovect,sizeof(type)*lens[i]);	\
 			vals[i] = nvect;				\
@@ -881,14 +885,14 @@ CoordArrTableClassPartInitialize
 		gen2 = ncat->cat##type.dim##table_lens;			\
 		if((gen->num_dimensions != 1) ||			\
 					(gen2->num_dimensions != 1)){	\
-			NhlPError(WARNING,E_UNKNOWN,			\
+			NhlPError(NhlWARNING,NhlEUNKNOWN,			\
 		"%s:%s and %s must one dimensional arrays:ignoring",	\
 					error_lead,NhlNct##DIM##Table,	\
 					NhlNct##DIM##TableLengths);	\
 			inv##dim = True;				\
 		}							\
 		else if(gen->len_dimensions[0]!=gen2->len_dimensions[0]){\
-			NhlPError(WARNING,E_UNKNOWN,			\
+			NhlPError(NhlWARNING,NhlEUNKNOWN,			\
 	"%s:%s and %s must be arrays of the same length:ignoring",	\
 					error_lead,NhlNct##DIM##Table,	\
 					NhlNct##DIM##TableLengths);	\
@@ -897,7 +901,7 @@ CoordArrTableClassPartInitialize
 	}								\
 	else if((ncat->cat##type.dim##table != NULL) ||			\
 			(ncat->cat##type.dim##table_lens != NULL)){	\
-		NhlPError(WARNING,E_UNKNOWN,				\
+		NhlPError(NhlWARNING,NhlEUNKNOWN,				\
 		"%s:%s and %s must be set together:resetting both",	\
 					error_lead,NhlNct##DIM##Table,	\
 					NhlNct##DIM##TableLengths);	\
@@ -1006,10 +1010,10 @@ CoordArrTableClassPartInitialize
 	CHECK_TABLES(type,dim,DIM)					\
 									\
 	if(inv##dim){							\
-		NhlPError(FATAL,E_UNKNOWN,				\
+		NhlPError(NhlFATAL,NhlEUNKNOWN,				\
 		"%s:Resources specifying %s dimension are invalid",	\
 						error_lead,#DIM);	\
-		return FATAL;						\
+		return NhlFATAL;						\
 	}								\
 									\
 	if(!imp##dim){							\
@@ -1024,9 +1028,9 @@ CoordArrTableClassPartInitialize
 
 #define INIT_FUNC(name,type)\
 {									\
-	char		*error_lead = #name "Initialize";		\
-	name##Layer	ncat = (name##Layer)new;			\
-	NhlBoolean	impy = False, impx = False;			\
+	char			*error_lead = #name "Initialize";	\
+	Nhl##name##Layer	ncat = (Nhl##name##Layer)new;		\
+	NhlBoolean		impy = False, impx = False;		\
 									\
 	/*								\
 	 * insure accuracy, and copy Table & Table_lens			\
@@ -1035,9 +1039,9 @@ CoordArrTableClassPartInitialize
 	INIT_TABLES(type,x,X)						\
 									\
 	if(impx && impy){						\
-		NhlPError(FATAL,E_UNKNOWN,				\
+		NhlPError(NhlFATAL,NhlEUNKNOWN,				\
 		"%s:Cannot have Implied X and Y values",error_lead);	\
-		return FATAL;						\
+		return NhlFATAL;						\
 	}								\
 									\
 	/*								\
@@ -1046,7 +1050,7 @@ CoordArrTableClassPartInitialize
 	CHECK_MINMAX(type,x,y)						\
 	CHECK_MINMAX(type,y,x)						\
 									\
-	return NOERROR;							\
+	return NhlNOERROR;							\
 }		
 
 /*
@@ -1056,9 +1060,9 @@ CoordArrTableClassPartInitialize
  *		class object.
  *
  * In Args:	
- *	LayerClass	lc,	class
- *	Layer		req,	requested
- *	Layer		new,	new
+ *	NhlLayerClass	lc,	class
+ *	NhlLayer		req,	requested
+ *	NhlLayer		new,	new
  *	_NhlArgList	args,	args
  *	int		nargs	nargs
  *
@@ -1073,17 +1077,17 @@ static NhlErrorTypes
 CoordArrTableFloatInitialize
 #if	__STDC__
 (
-	LayerClass	lc,	/* class	*/
-	Layer		req,	/* requested	*/
-	Layer		new,	/* new		*/
+	NhlLayerClass	lc,	/* class	*/
+	NhlLayer		req,	/* requested	*/
+	NhlLayer		new,	/* new		*/
 	_NhlArgList	args,	/* args		*/
 	int		nargs	/* nargs	*/
 )
 #else
 (lc,req,new,args,nargs)
-	LayerClass	lc;	/* class	*/
-	Layer		req;	/* requested	*/
-	Layer		new;	/* new		*/
+	NhlLayerClass	lc;	/* class	*/
+	NhlLayer		req;	/* requested	*/
+	NhlLayer		new;	/* new		*/
 	_NhlArgList	args;	/* args		*/
 	int		nargs;	/* nargs	*/
 #endif
@@ -1096,9 +1100,9 @@ INIT_FUNC(CoordArrTableFloat,float)
  *		class object.
  *
  * In Args:	
- *	LayerClass	lc,	class
- *	Layer		req,	requested
- *	Layer		new,	new
+ *	NhlLayerClass	lc,	class
+ *	NhlLayer		req,	requested
+ *	NhlLayer		new,	new
  *	_NhlArgList	args,	args
  *	int		nargs	nargs
  *
@@ -1113,17 +1117,17 @@ static NhlErrorTypes
 CoordArrTableIntInitialize
 #if	__STDC__
 (
-	LayerClass	lc,	/* class	*/
-	Layer		req,	/* requested	*/
-	Layer		new,	/* new		*/
+	NhlLayerClass	lc,	/* class	*/
+	NhlLayer		req,	/* requested	*/
+	NhlLayer		new,	/* new		*/
 	_NhlArgList	args,	/* args		*/
 	int		nargs	/* nargs	*/
 )
 #else
 (lc,req,new,args,nargs)
-	LayerClass	lc;	/* class	*/
-	Layer		req;	/* requested	*/
-	Layer		new;	/* new		*/
+	NhlLayerClass	lc;	/* class	*/
+	NhlLayer		req;	/* requested	*/
+	NhlLayer		new;	/* new		*/
 	_NhlArgList	args;	/* args		*/
 	int		nargs;	/* nargs	*/
 #endif
@@ -1138,9 +1142,9 @@ INIT_FUNC(CoordArrTableInt,int)
  *		class object.
  *
  * In Args:	
- *	LayerClass	lc,	class
- *	Layer		req,	requested
- *	Layer		new,	new
+ *	NhlLayerClass	lc,	class
+ *	NhlLayer		req,	requested
+ *	NhlLayer		new,	new
  *	_NhlArgList	args,	args
  *	int		nargs	nargs
  *
@@ -1155,34 +1159,34 @@ static NhlErrorTypes
 CoordArrTableInitialize
 #if	__STDC__
 (
-	LayerClass	lc,	/* class	*/
-	Layer		req,	/* requested	*/
-	Layer		new,	/* new		*/
+	NhlLayerClass	lc,	/* class	*/
+	NhlLayer		req,	/* requested	*/
+	NhlLayer		new,	/* new		*/
 	_NhlArgList	args,	/* args		*/
 	int		nargs	/* nargs	*/
 )
 #else
 (lc,req,new,args,nargs)
-	LayerClass	lc;	/* class	*/
-	Layer		req;	/* requested	*/
-	Layer		new;	/* new		*/
+	NhlLayerClass	lc;	/* class	*/
+	NhlLayer		req;	/* requested	*/
+	NhlLayer		new;	/* new		*/
 	_NhlArgList	args;	/* args		*/
 	int		nargs;	/* nargs	*/
 #endif
 {
 	char			*error_lead = "CoordArrTableInitialize";
-	CoordArrTableLayer	ncat = (CoordArrTableLayer)new;
-	LayerClass		child_class=NULL;
+	NhlCoordArrTableLayer	ncat = (NhlCoordArrTableLayer)new;
+	NhlLayerClass		child_class=NULL;
 	int			tchild;
-	char			name[MAXRESNAMLEN];
+	char			name[_NhlMAXRESNAMLEN];
 	NhlErrorTypes		ret;
 
 	if(ncat->cat.type_string == NULL){
-		NhlPError(FATAL,E_UNKNOWN,
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
 		"%s:The %s resource must be specified to create a %s object",
 				error_lead,NhlNdiType,_NhlClassName(lc));
 
-		return FATAL;
+		return NhlFATAL;
 	}
 
 	ncat->cat.type = NrmStringToQuark(ncat->cat.type_string);
@@ -1196,11 +1200,11 @@ CoordArrTableInitialize
 	 */
 	strcpy(name,ncat->base.name);
 	if(ncat->cat.type == floatQ){
-		child_class = coordArrTableFloatLayerClass;
+		child_class = NhlcoordArrTableFloatLayerClass;
 		strcat(name,".FLT");
 	}
 	else if(ncat->cat.type == intQ){
-		child_class = coordArrTableIntLayerClass;
+		child_class = NhlcoordArrTableIntLayerClass;
 		strcat(name,".INT");
 	}
 
@@ -1229,32 +1233,32 @@ static NhlErrorTypes
 CoordArrTableSetValues
 #if	__STDC__
 (
-	Layer		old,		/* old		*/
-	Layer		req,		/* requested	*/
-	Layer		new,		/* new		*/
+	NhlLayer	old,		/* old		*/
+	NhlLayer	req,		/* requested	*/
+	NhlLayer	new,		/* new		*/
 	_NhlArgList	args,		/* args to set	*/
 	int		nargs		/* nargs	*/
 )
 #else
 (old,req,new,args,nargs)
-	Layer		old;		/* old		*/
-	Layer		req;		/* requested	*/
-	Layer		new;		/* new		*/
+	NhlLayer	old;		/* old		*/
+	NhlLayer	req;		/* requested	*/
+	NhlLayer	new;		/* new		*/
 	_NhlArgList	args;		/* args to set	*/
 	int		nargs;		/* nargs	*/
 #endif
 {
 	char			*error_lead = "CoordArrTableSetValues";
-	NhlErrorTypes		ret = NOERROR;
-	CoordArrTableLayer	ncat = (CoordArrTableLayer)new;
-	CoordArrTableLayer	ocat = (CoordArrTableLayer)old;
+	NhlErrorTypes		ret = NhlNOERROR;
+	NhlCoordArrTableLayer	ncat = (NhlCoordArrTableLayer)new;
+	NhlCoordArrTableLayer	ocat = (NhlCoordArrTableLayer)old;
 
 	if(ncat->cat.type_string != ocat->cat.type_string){
-		NhlPError(WARNING,E_UNKNOWN,
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
 			"%s:%s is setable only at create time - ignoring!",
 							error_lead,NhlNdiType);
 		ncat->cat.type_string = ocat->cat.type_string;
-		ret = WARNING;
+		ret = NhlWARNING;
 	}
 
 	return	ret;
@@ -1273,7 +1277,7 @@ CoordArrTableSetValues
 		CHECK_TABLES(type,dim,DIM)				\
 									\
 		if(inv##dim){						\
-			NhlPError(WARNING,E_UNKNOWN,			\
+			NhlPError(NhlWARNING,NhlEUNKNOWN,			\
 			"%s:invalid %s dimension: resetting %s and %s",	\
 				error_lead,#DIM,NhlNct##DIM##Table,	\
 					NhlNct##DIM##TableLengths);	\
@@ -1314,20 +1318,20 @@ CoordArrTableSetValues
 
 #define	SETVAL_FUNC(name,type)\
 {									\
-	char		*error_lead = #name "SetValues";		\
-	name##Layer	ncat = (name##Layer)new;			\
-	name##Layer	ocat = (name##Layer)old;			\
-	NhlBoolean	impx = False, impy = False;			\
-	NhlErrorTypes	ret = NOERROR;					\
+	char			*error_lead = #name "SetValues";	\
+	Nhl##name##Layer	ncat = (Nhl##name##Layer)new;		\
+	Nhl##name##Layer	ocat = (Nhl##name##Layer)old;		\
+	NhlBoolean		impx = False, impy = False;		\
+	NhlErrorTypes		ret = NhlNOERROR;			\
 									\
 	SET_TABLES(type,x,X)						\
 	SET_TABLES(type,x,X)						\
 									\
 	if(impx && impy){						\
-		NhlPError(WARNING,E_UNKNOWN,				\
+		NhlPError(NhlWARNING,NhlEUNKNOWN,				\
 		"%s:Cannot have Implied X and Y values:resetting",	\
 							error_lead);	\
-		ret = MIN(ret,WARNING);					\
+		ret = MIN(ret,NhlWARNING);				\
 		ncat->cat##type.xtable = ocat->cat##type.xtable;	\
 		ncat->cat##type.ytable = ocat->cat##type.ytable;	\
 		ncat->cat##type.xtable_lens = ocat->cat##type.xtable_lens;\
@@ -1379,17 +1383,17 @@ static NhlErrorTypes
 CoordArrTableFloatSetValues
 #if	__STDC__
 (
-	Layer		old,		/* old		*/
-	Layer		req,		/* requested	*/
-	Layer		new,		/* new		*/
+	NhlLayer		old,		/* old		*/
+	NhlLayer		req,		/* requested	*/
+	NhlLayer		new,		/* new		*/
 	_NhlArgList	args,		/* args to set	*/
 	int		nargs		/* nargs	*/
 )
 #else
 (old,req,new,args,nargs)
-	Layer		old;		/* old		*/
-	Layer		req;		/* requested	*/
-	Layer		new;		/* new		*/
+	NhlLayer		old;		/* old		*/
+	NhlLayer		req;		/* requested	*/
+	NhlLayer		new;		/* new		*/
 	_NhlArgList	args;		/* args to set	*/
 	int		nargs;		/* nargs	*/
 #endif
@@ -1413,17 +1417,17 @@ static NhlErrorTypes
 CoordArrTableIntSetValues
 #if	__STDC__
 (
-	Layer		old,		/* old		*/
-	Layer		req,		/* requested	*/
-	Layer		new,		/* new		*/
+	NhlLayer		old,		/* old		*/
+	NhlLayer		req,		/* requested	*/
+	NhlLayer		new,		/* new		*/
 	_NhlArgList	args,		/* args to set	*/
 	int		nargs		/* nargs	*/
 )
 #else
 (old,req,new,args,nargs)
-	Layer		old;		/* old		*/
-	Layer		req;		/* requested	*/
-	Layer		new;		/* new		*/
+	NhlLayer		old;		/* old		*/
+	NhlLayer		req;		/* requested	*/
+	NhlLayer		new;		/* new		*/
 	_NhlArgList	args;		/* args to set	*/
 	int		nargs;		/* nargs	*/
 #endif
@@ -1433,9 +1437,9 @@ SETVAL_FUNC(CoordArrTableInt,int)
  * Function:	CoordArrTableDestroy
  *
  * Description:	This function free's any memory that has been allocated
- *		on behalf of this instance of the CoordArrTableLayerClass.
+ *		on behalf of this instance of the NhlCoordArrTableLayerClass.
  *
- * In Args:	Layer	l
+ * In Args:	NhlLayer	l
  *
  * Out Args:	
  *
@@ -1447,14 +1451,14 @@ static NhlErrorTypes
 CoordArrTableDestroy
 #if	__STDC__
 (
-	Layer	l	/* layer to destroy	*/
+	NhlLayer	l	/* layer to destroy	*/
 )
 #else
 (l)
-	Layer	l;	/* layer to destroy	*/
+	NhlLayer	l;	/* layer to destroy	*/
 #endif
 {
-	CoordArrTableLayer	catl = (CoordArrTableLayer)l;
+	NhlCoordArrTableLayer	catl = (NhlCoordArrTableLayer)l;
 
 	/*
 	 * Don't free type_string - it points into Quarks.c's data
@@ -1463,26 +1467,26 @@ CoordArrTableDestroy
 	if(catl->cat.child != NULL)
 		return _NhlDestroyChild(catl->cat.child->base.id,l);
 
-	return NOERROR;
+	return NhlNOERROR;
 }
 
 #define DESTROY_FUNC(name,type)\
 {									\
-	name##Layer	ncat = (name##Layer)l;				\
+	Nhl##name##Layer	ncat = (Nhl##name##Layer)l;		\
 									\
 	FREE_TABLES(type,x,n)						\
 	FREE_TABLES(type,y,n)						\
 									\
-	return NOERROR;							\
+	return NhlNOERROR;						\
 }		
 
 /*
  * Function:	CoordArrTableFloatDestroy
  *
  * Description:	This function free's any memory that has been allocated
- *		on behalf of this instance of the CoordArrTableFloatLayerClass.
+ *		on behalf of this instance of the NhlCoordArrTableFloatLayerClass.
  *
- * In Args:	Layer	l
+ * In Args:	NhlLayer	l
  *
  * Out Args:	
  *
@@ -1494,11 +1498,11 @@ static NhlErrorTypes
 CoordArrTableFloatDestroy
 #if	__STDC__
 (
-	Layer	l	/* layer to destroy	*/
+	NhlLayer	l	/* layer to destroy	*/
 )
 #else
 (l)
-	Layer	l;	/* layer to destroy	*/
+	NhlLayer	l;	/* layer to destroy	*/
 #endif
 DESTROY_FUNC(CoordArrTableFloat,float)
 
@@ -1506,9 +1510,9 @@ DESTROY_FUNC(CoordArrTableFloat,float)
  * Function:	CoordArrTableIntDestroy
  *
  * Description:	This function free's any memory that has been allocated
- *		on behalf of this instance of the CoordArrTableIntLayerClass.
+ *		on behalf of this instance of the NhlCoordArrTableIntLayerClass.
  *
- * In Args:	Layer	l
+ * In Args:	NhlLayer	l
  *
  * Out Args:	
  *
@@ -1520,11 +1524,11 @@ static NhlErrorTypes
 CoordArrTableIntDestroy
 #if	__STDC__
 (
-	Layer	l	/* layer to destroy	*/
+	NhlLayer	l	/* layer to destroy	*/
 )
 #else
 (l)
-	Layer	l;	/* layer to destroy	*/
+	NhlLayer	l;	/* layer to destroy	*/
 #endif
 DESTROY_FUNC(CoordArrTableInt,int)
 
