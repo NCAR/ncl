@@ -1,5 +1,5 @@
 /*
- *	$Id: xattribute.c,v 1.1 1994-03-30 02:11:37 fred Exp $
+ *	$Id: xattribute.c,v 1.2 1994-05-28 00:44:54 fred Exp $
  */
 /*
  *      File:		xattribute.c
@@ -35,7 +35,7 @@ static	int	set_foreground_color(dpy, gc, color_pal, index)
 	Pixeltype	pixel;
 
 	if (index > (MAX_COLORS - 1)) {
-		return(-1);
+		return(ERR_MAX_COLOR);
 	}
 
 	pixel = color_pal[index];
@@ -455,7 +455,7 @@ X11_SetColorRepresentation(gksc)
 	Visual		*visual;
 
 	if (index > (MAX_COLORS - 1)) {
-		return(-1);
+		return(ERR_MAX_COLOR);
 	}
 
 	if (! xi->color_ava) return(0);	/* not a color device	*/
@@ -472,7 +472,7 @@ X11_SetColorRepresentation(gksc)
                 if (!XAllocColor(dpy, cmap, &rgbptr[0])) {
 
 			/* error allocating color cell	*/
-                        return(-1);
+                        return(ERR_ALLOC_COLOR);
 		}
 
 		color_pal[index] = rgbptr->pixel;
@@ -507,7 +507,7 @@ X11_SetColorRepresentation(gksc)
 				0, pixel_return, 1) == 0) {
 
 			/* error allocating color cell	*/
-			return (-1);
+			return (ERR_ALLOC_COLOR);
 		}
 
 		/* 

@@ -1,5 +1,5 @@
 /*
- *	$Id: xoutput.c,v 1.1 1994-03-30 02:11:41 fred Exp $
+ *	$Id: xoutput.c,v 1.2 1994-05-28 00:44:58 fred Exp $
  */
 /*
  *      File:		xoutput.c
@@ -80,16 +80,16 @@ static	hatch_fill(dpy, win, pptr, n, hatch_index, fill_gc, bg_gc)
 
 
 	/*	
-	 *		create pixmap for tile	
+	 *	Create pixmap for tile.
 	 *	This needs to be done for each invocation of
 	 *	the polygon routine because once a tile is
-	 *	set in a GC, X does not allow it to be changed
+	 *	set in a GC, X does not allow it to be changed.
 	 */
 	if (! (tile.tileid = XCreatePixmap(dpy, win, tile.width, tile.height, 
 			DefaultDepth(dpy,DefaultScreen(dpy))))) {
 
-		ESprintf(E_UNKNOWN, "XCreatePixmap(,,,,)");
-		return(ERR_LOCAL);
+		ESprintf(ERR_CRT_PIXMAP, "XCreatePixmap(,,,,)");
+		return(ERR_CRT_PIXMAP);
 	}
 
 	tile.P[1].x = tile.P[2].x = tile.width;
@@ -517,42 +517,42 @@ static	cell_array(dpy, win, gc, color_pal, P, Q, R, nx, ny, xptr)
 	 * don't know how to handle a cell array with zero dimension
 	 */
 	if (nx == 0 || ny == 0) {
-		ESprintf(E_UNKNOWN, "Cell array has zero width or height");
-		return(ERR_LOCAL);
+		ESprintf(ERR_CELL_WIDTH, "Cell array has zero width or height");
+		return(ERR_CELL_WIDTH);
 	}
 
 	if (!(rows = (int *) malloc ((unsigned) ny * sizeof (int)))) {
-		ESprintf(errno, "malloc(%d)", ny * sizeof(int));
-		return(ERR_LOCAL);
+		ESprintf(ERR_CELL_MEMORY, "malloc(%d)", ny * sizeof(int));
+		return(ERR_CELL_MEMORY);
 	}
 	if (!(cols = (int *) malloc ((unsigned) nx * sizeof (int)))) {
-		ESprintf(errno, "malloc(%d)", ny * sizeof(int));
-		return(ERR_LOCAL);
+		ESprintf(ERR_CELL_MEMORY, "malloc(%d)", ny * sizeof(int));
+		return(ERR_CELL_MEMORY);
 	}
 	if (!(index_array = (int *) malloc ((unsigned) nx * sizeof (int)))) {
-		ESprintf(errno, "malloc(%d)", nx * sizeof(int));
-		return(ERR_LOCAL);
+		ESprintf(ERR_CELL_MEMORY, "malloc(%d)", nx * sizeof(int));
+		return(ERR_CELL_MEMORY);
 	}
 
 	if (!(ximage = XCreateImage(dpy, visual, depth, ZPixmap, 0, NULL,
 		image_width, image_height, 32, 0))) {
 
-		ESprintf(errno, "XCreateImage(,,,,,,)");
-		return(ERR_LOCAL);
+		ESprintf(ERR_CRT_IMAGE, "XCreateImage(,,,,,,)");
+		return(ERR_CRT_IMAGE);
 	}
 
 	image_size = ximage->bytes_per_line * image_height;
 
 	if (!(ximage->data = malloc(image_size))) {
-		ESprintf(errno, "malloc(%d)", image_size);
-		return(ERR_LOCAL);
+		ESprintf(ERR_IMAGE_MEMORY, "malloc(%d)", image_size);
+		return(ERR_IMAGE_MEMORY);
 	}
 	data = ximage->data;
 	pad = ximage->bytes_per_line - image_width;
 
 	if (ximage->bits_per_pixel % 8) {
-		ESprintf(E_UNKNOWN, "Pixel size must be byte multible");
-		return(ERR_LOCAL);
+		ESprintf(ERR_PIXEL_SIZE, "Pixel size must be byte multiple");
+		return(ERR_PIXEL_SIZE);
 	}
 
 	pixel_size = ximage->bits_per_pixel / 8;

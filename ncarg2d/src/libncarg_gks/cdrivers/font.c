@@ -1,5 +1,5 @@
 /*
- *	$Id: font.c,v 1.1 1994-03-30 02:11:19 fred Exp $
+ *	$Id: font.c,v 1.2 1994-05-28 00:44:37 fred Exp $
  */
 /*
  *	File		font.c
@@ -208,7 +208,7 @@ static	int	decodefont(fontcap_raw, var_space)
 
 			if (! fcap_template.char_des[i].p_c) {
 				ESprintf(errno, "malloc()");
-				return(ERR_LOCAL);
+				return(ERR_FCAP_MEMORY);
 			}
 
 
@@ -222,7 +222,7 @@ static	int	decodefont(fontcap_raw, var_space)
 
 			if (! fcap_current.char_des[i].p_c) {
 				ESprintf(errno, "malloc()");
-				return(ERR_LOCAL);
+				return(ERR_FCAP_MEMORY);
 			}
 		}
 
@@ -303,7 +303,7 @@ static	int	read_fontcap(fontcap, var_space)
 	 */
 	if (! (fontcap_raw = (Fontcap_raw *) malloc (sizeof (Fontcap_raw)))) {
 		ESprintf(errno, "malloc()");
-		return(ERR_LOCAL);
+		return(ERR_FCAP_MEMORY);
 	}
 
 	/*
@@ -312,7 +312,7 @@ static	int	read_fontcap(fontcap, var_space)
 	if ((fd = open(fontcap,0)) < 0) {
 		if (fontcap_raw) free ((char *) fontcap_raw);
 		ESprintf(errno, "open(%s, 0)", fontcap);
-		return(ERR_LOCAL);
+		return(ERR_FCAP_OPEN);
 	}
 
 	if ((read(fd,(char *) fontcap_raw, sizeof(Fontcap_raw))) 
@@ -321,7 +321,7 @@ static	int	read_fontcap(fontcap, var_space)
 		if (fontcap_raw) free ((char *) fontcap_raw);
 		(void) close (fd);
 		ESprintf(errno, "read(%d, ,)", fd);
-		return(ERR_LOCAL);
+		return(ERR_FCAP_READ);
 	}
 
 	/*
@@ -365,16 +365,16 @@ int	SetFont(font_index, var_space)
 	int	rc;
 
 	if (font_index >= fonttblsize) {
-		ESprintf(E_UNKNOWN, "Invalid font index(%d)", font_index);
+		ESprintf(ERR_FONT_INDEX, "Invalid font index(%d)", font_index);
 		font_index = DEFAULTFONTINDEX;
-		status = 1;
+		status = ERR_FONT_INDEX;
 	}
 
 	/*
 	 *	get full path to the fontcap
 	 */
 	if ((fcap = getFcapname(fontList[font_index])) == NULL) {
-		return(ERR_LOCAL);
+		return(ERR_FCAP_NAME);
 	}
 
 	/* 

@@ -1,5 +1,5 @@
 /*
- *	$Id: gksc.c,v 1.1 1994-03-30 02:11:25 fred Exp $
+ *	$Id: gksc.c,v 1.2 1994-05-28 00:44:43 fred Exp $
  */
 /*
  *      File:		gksc.c
@@ -120,12 +120,12 @@ GKSC	*CreateGKSC(dev_name)
 	}
 
 	if ((gksc = (GKSC *) malloc (sizeof (GKSC))) == (GKSC *) NULL) {
-		ESprintf(errno, "malloc(%d)", sizeof(GKSC));
+		ESprintf(ERR_DEV_MEMORY, "malloc(%d)", sizeof(GKSC));
 		return((GKSC *) NULL);
 	}
 
 	if ((gksc->gd = insert_table(gksc)) < 0) {
-		ESprintf(E_UNKNOWN, "Too many open devices");
+		ESprintf(ERR_DEV_NUM, "Too many open devices");
 		return((GKSC *) NULL);
 	}
 
@@ -134,7 +134,8 @@ GKSC	*CreateGKSC(dev_name)
 	gksc->p.size = gks_dev->sizeof_point;
 	gksc->p.list = (GKSC_Ptr) malloc (INITIAL_MAL * gksc->p.size);
 	if (! gksc->p.list) {
-		ESprintf(errno, "malloc(%d)", INITIAL_MAL * gksc->p.size);
+		ESprintf(ERR_DEV_MEMORY, "malloc(%d)", 
+ 			INITIAL_MAL * gksc->p.size);
 		return ((GKSC *) NULL);
 	}
 	gksc->p.list_size = INITIAL_MAL;
@@ -144,7 +145,8 @@ GKSC	*CreateGKSC(dev_name)
 	gksc->s.size = gks_dev->sizeof_string;
 	gksc->s.list = (GKSC_Ptr) malloc (INITIAL_MAL * gksc->s.size);
 	if (! gksc->s.list) {
-		ESprintf(errno, "malloc(%d)", INITIAL_MAL * gksc->s.size);
+		ESprintf(ERR_DEV_MEMORY, "malloc(%d)", 
+			INITIAL_MAL * gksc->s.size);
 		return ((GKSC *) NULL);
 	}
 	gksc->s.list_size = INITIAL_MAL;
@@ -154,7 +156,8 @@ GKSC	*CreateGKSC(dev_name)
 	gksc->i.size = gks_dev->sizeof_int;
 	gksc->i.list = (GKSC_Ptr) malloc (INITIAL_MAL * gksc->i.size);
 	if (! gksc->i.list) {
-		ESprintf(errno, "malloc(%d)", INITIAL_MAL * gksc->i.size);
+		ESprintf(ERR_DEV_MEMORY, "malloc(%d)", 
+			INITIAL_MAL * gksc->i.size);
 		return ((GKSC *) NULL);
 	}
 	gksc->i.list_size = INITIAL_MAL;
@@ -164,7 +167,8 @@ GKSC	*CreateGKSC(dev_name)
 	gksc->f.size = gks_dev->sizeof_float;
 	gksc->f.list = (GKSC_Ptr) malloc (INITIAL_MAL * gksc->f.size);
 	if (! gksc->f.list) {
-		ESprintf(errno, "malloc(%d)", INITIAL_MAL * gksc->f.size);
+		ESprintf(ERR_DEV_MEMORY, "malloc(%d)", 
+			INITIAL_MAL * gksc->f.size);
 		return ((GKSC *) NULL);
 	}
 	gksc->f.list_size = INITIAL_MAL;
@@ -174,7 +178,8 @@ GKSC	*CreateGKSC(dev_name)
 	gksc->x.size = gks_dev->sizeof_index;
 	gksc->x.list = (GKSC_Ptr) malloc (INITIAL_MAL * gksc->x.size);
 	if (! gksc->x.list) {
-		ESprintf(errno, "malloc(%d)", INITIAL_MAL * gksc->x.size);
+		ESprintf(ERR_DEV_MEMORY, "malloc(%d)", 
+			INITIAL_MAL * gksc->x.size);
 		return ((GKSC *) NULL);
 	}
 	gksc->x.list_size = INITIAL_MAL;
@@ -184,7 +189,8 @@ GKSC	*CreateGKSC(dev_name)
 	gksc->rgb.size = gks_dev->sizeof_rgb;
 	gksc->rgb.list = (GKSC_Ptr)malloc(INITIAL_MAL * gksc->rgb.size);
 	if (! gksc->rgb.list) {
-		ESprintf(errno, "malloc(%d)", INITIAL_MAL * gksc->rgb.size);
+		ESprintf(ERR_DEV_MEMORY, "malloc(%d)", 
+			INITIAL_MAL * gksc->rgb.size);
 		return ((GKSC *) NULL);
 	}
 	gksc->rgb.list_size = INITIAL_MAL;
@@ -213,7 +219,6 @@ static	GKSC_Ptr	gks_mem_manage(comp_data, size)
 		 */
 		ptr = (GKSC_Ptr) malloc(comp_data->list_size * comp_data->size);
 		comp_data->list = ptr;
-		ESprintf(errno, "malloc(%d)", size * comp_data->size);
 		return((GKSC_Ptr) NULL);
 	}
 	comp_data->list_size = (unsigned) size;
@@ -294,7 +299,11 @@ int	WriteToGKSC(gksc, gks_opcode, total_i, num_i_sent, ints,
 		 * requirements
 		 */
 		if (gksc->s.list_size < (total_c+1)) {
-			(void)gks_mem_manage((ComplexData *)&gksc->s,total_c+1);
+			if (gks_mem_manage((ComplexData *)&gksc->s,total_c+1)
+					== (GKSC_Ptr) NULL) {
+				ESprintf(ERR_INTRNL_MEMORY, "malloc");
+				return(ERR_INTRNL_MEMORY);
+			}
 		}
 		gksc->s.convert(gksc->ddp, chars, &gksc->s, &num_c_sent, rtc);
 		gksc->i.convert(gksc->ddp, ints, &gksc->i, &num_i_sent, rtc);
@@ -323,7 +332,11 @@ int	WriteToGKSC(gksc, gks_opcode, total_i, num_i_sent, ints,
 
 	case	GKS_POLYLINE:
 		if (gksc->p.list_size < total_f) {
-			(void) gks_mem_manage((ComplexData *) &gksc->p,total_f);
+			if (gks_mem_manage((ComplexData *)&gksc->p,total_f) 
+					== (GKSC_Ptr) NULL) {
+				ESprintf(ERR_INTRNL_MEMORY, "malloc");
+				return(ERR_INTRNL_MEMORY);
+			}
 		}
 		gksc->p.convert(gksc->ddp, fxs, fys, &gksc->p ,&num_f_sent,rtc);
 		gksc->opcode = POLYLINE;
@@ -331,7 +344,11 @@ int	WriteToGKSC(gksc, gks_opcode, total_i, num_i_sent, ints,
 
 	case	GKS_POLYMARKER:
 		if (gksc->p.list_size < total_f) {
-			(void) gks_mem_manage((ComplexData *) &gksc->p,total_f);
+			if (gks_mem_manage((ComplexData *)&gksc->p,total_f)
+					== (GKSC_Ptr) NULL) {
+				ESprintf(ERR_INTRNL_MEMORY, "malloc");
+				return(ERR_INTRNL_MEMORY);
+			}
 		}
 		gksc->p.convert(gksc->ddp, fxs, fys, &gksc->p, &num_f_sent,rtc);
 		gksc->opcode = POLYMARKER;
@@ -345,7 +362,11 @@ int	WriteToGKSC(gksc, gks_opcode, total_i, num_i_sent, ints,
 		 * requirements
 		 */
 		if (gksc->s.list_size < (total_c+1)) {
-			(void)gks_mem_manage((ComplexData *)&gksc->s,total_c+1);
+			if (gks_mem_manage((ComplexData *)&gksc->s,total_c+1)
+					== (GKSC_Ptr) NULL) {
+				ESprintf(ERR_INTRNL_MEMORY, "malloc");
+				return(ERR_INTRNL_MEMORY);
+			}
 		}
 		gksc->p.convert(gksc->ddp, fxs, fys, &gksc->p, &num_f_sent,rtc);
 		gksc->s.convert(gksc->ddp, chars, &gksc->s, &num_c_sent,rtc);
@@ -354,7 +375,11 @@ int	WriteToGKSC(gksc, gks_opcode, total_i, num_i_sent, ints,
 
 	case	GKS_FILL_AREA:
 		if (gksc->p.list_size < total_f) {
-			(void) gks_mem_manage((ComplexData *) &gksc->p,total_f);
+			if (gks_mem_manage((ComplexData *)&gksc->p,total_f)
+					== (GKSC_Ptr) NULL) {
+				ESprintf(ERR_INTRNL_MEMORY, "malloc");
+				return(ERR_INTRNL_MEMORY);
+			}
 		}
 		gksc->p.convert(gksc->ddp, fxs, fys, &gksc->p, &num_f_sent,rtc);
 		gksc->opcode = FILL_AREA;
@@ -362,13 +387,25 @@ int	WriteToGKSC(gksc, gks_opcode, total_i, num_i_sent, ints,
 
 	case	GKS_CELL_ARRAY:
 		if (gksc->i.list_size < total_i) {
-			(void) gks_mem_manage((ComplexData *) &gksc->i,total_i);
+			if (gks_mem_manage((ComplexData *)&gksc->i,total_i)
+					== (GKSC_Ptr) NULL) {
+				ESprintf(ERR_INTRNL_MEMORY, "malloc");
+				return(ERR_INTRNL_MEMORY);
+			}
 		}
 		if (gksc->p.list_size < total_f) {
-			(void) gks_mem_manage((ComplexData *) &gksc->p,total_f);
+			if (gks_mem_manage((ComplexData *)&gksc->p,total_f)
+					== (GKSC_Ptr) NULL) {
+				ESprintf(ERR_INTRNL_MEMORY, "malloc");
+				return(ERR_INTRNL_MEMORY);
+			}
 		}
 		if (gksc->x.list_size < total_x) {
-			(void) gks_mem_manage((ComplexData *) &gksc->x,total_x);
+			if (gks_mem_manage((ComplexData *)&gksc->x,total_x)
+					== (GKSC_Ptr) NULL) {
+				ESprintf(ERR_INTRNL_MEMORY, "malloc");
+				return(ERR_INTRNL_MEMORY);
+			}
 		}
 
 		gksc->i.convert(gksc->ddp, ints, &gksc->i, &num_i_sent,rtc);
@@ -389,7 +426,11 @@ int	WriteToGKSC(gksc, gks_opcode, total_i, num_i_sent, ints,
 
 	case	GKS_SET_POLYLINE_COLOR_INDEX:
 		if (gksc->x.list_size < total_x) {
-			(void) gks_mem_manage((ComplexData *) &gksc->x,total_x);
+			if (gks_mem_manage((ComplexData *)&gksc->x,total_x)
+					== (GKSC_Ptr) NULL) {
+				ESprintf(ERR_INTRNL_MEMORY, "malloc");
+				return(ERR_INTRNL_MEMORY);
+			}
 		}
 		gksc->x.convert(gksc->ddp, indexes, &gksc->x, &num_x_sent, rtc);
 		gksc->opcode = SET_POLYLINE_COLOR_INDEX;
@@ -463,10 +504,18 @@ int	WriteToGKSC(gksc, gks_opcode, total_i, num_i_sent, ints,
 
 	case	GKS_SET_COLOR_REPRESENTATION:
 		if (gksc->x.list_size < total_x) {
-			(void) gks_mem_manage((ComplexData *) &gksc->x,total_x);
+			if (gks_mem_manage((ComplexData *)&gksc->x,total_x)
+					== (GKSC_Ptr) NULL) {
+				ESprintf(ERR_INTRNL_MEMORY, "malloc");
+				return(ERR_INTRNL_MEMORY);
+			}
 		}
 		if (gksc->rgb.list_size < total_f) {
-			(void)gks_mem_manage((ComplexData *)&gksc->rgb,total_f);
+			if (gks_mem_manage((ComplexData *)&gksc->rgb,total_f)
+					== (GKSC_Ptr) NULL) {
+				ESprintf(ERR_INTRNL_MEMORY, "malloc");
+				return(ERR_INTRNL_MEMORY);
+			}
 		}
 
 		gksc->x.convert(gksc->ddp, indexes, &gksc->x, &num_x_sent, rtc);
@@ -494,7 +543,11 @@ int	WriteToGKSC(gksc, gks_opcode, total_i, num_i_sent, ints,
 
 	case	GKS_ESCAPE:
 		if (gksc->s.list_size < (total_c+1)) {
-			(void)gks_mem_manage((ComplexData *)&gksc->s,total_c+1);
+			if (gks_mem_manage((ComplexData *)&gksc->s,total_c+1)
+					== (GKSC_Ptr) NULL) {
+				ESprintf(ERR_INTRNL_MEMORY, "malloc");
+				return(ERR_INTRNL_MEMORY);
+			}
 		}
 
 		gksc->i.convert(gksc->ddp, ints, &gksc->i, &num_i_sent, rtc);

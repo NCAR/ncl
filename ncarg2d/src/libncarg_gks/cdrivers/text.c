@@ -1,5 +1,5 @@
 /*
- *	$Id: text.c,v 1.1 1994-03-30 02:11:31 fred Exp $
+ *	$Id: text.c,v 1.2 1994-05-28 00:44:52 fred Exp $
  */
 /*
  *	File		text.c
@@ -128,13 +128,10 @@ int	SetTextAttribute(ta, mask)
 
 		status = SetFont(ta->text_font, &TextInfo.var_space);
 		if (status != 0) {
-			if (status = 1) {
-				status = ERR_LOCAL;	/* warning	*/
-			}
-			else {
-				/*
-				 * error processing font. No need to go on
-				 */
+			/*
+			 *  return unless warning message.
+			 */
+			if (status != ERR_FONT_INDEX) {
 				return(status);
 			}
 		}

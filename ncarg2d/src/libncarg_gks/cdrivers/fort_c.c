@@ -212,7 +212,7 @@ int	ggkwdr_(wk_id, gks_opcode, continuation,
 		 * create a gksc for this device
 		 */
 		if (! (gksc = CreateGKSC(dev_name))) {
-			*status = ERR_LOCAL;
+			*status = ErrGetNum();
 			c2f_strncpy(err_msg, ErrGetMsg(), ERR_MSG_MAX);
 #ifdef cray
 			strncpy( _fcdtocp(err_msg_), err_msg, length );
@@ -240,12 +240,10 @@ int	ggkwdr_(wk_id, gks_opcode, continuation,
 			*total_c, *num_c_sent, chars);
 
 	if (*status != 0) {
-		if (*status == ERR_LOCAL) {
-			c2f_strncpy(err_msg, ErrGetMsg(), ERR_MSG_MAX);
+		c2f_strncpy(err_msg, ErrGetMsg(), ERR_MSG_MAX);
 #ifdef cray
-			strncpy( _fcdtocp(err_msg_), err_msg, length );
+		strncpy( _fcdtocp(err_msg_), err_msg, length );
 #endif
-		}
 		return(-1);
 	}
 	
@@ -271,7 +269,7 @@ int	ggkwdr_(wk_id, gks_opcode, continuation,
 	 */
 	*status = ExecGKSC(gksc);
 	if (*status != 0) {
-		if (*status == ERR_LOCAL) {
+		if (*status != 0) {
 			c2f_strncpy(err_msg, ErrGetMsg(), ERR_MSG_MAX);
 #ifdef cray
 			strncpy( _fcdtocp(err_msg_), err_msg, length );
@@ -291,7 +289,7 @@ int	ggkwdr_(wk_id, gks_opcode, continuation,
 			total_f, num_f_sent, fxs, fys,
 			total_c, num_c_sent, chars);
 
-		if (*status == ERR_LOCAL) {
+		if (*status != 0) {
 			c2f_strncpy(err_msg, ErrGetMsg(), ERR_MSG_MAX);
 #ifdef cray
 			strncpy( _fcdtocp(err_msg_), err_msg, length );

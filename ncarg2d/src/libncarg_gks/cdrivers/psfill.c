@@ -1,5 +1,5 @@
 /*
- *	$Id: psfill.c,v 1.2 1994-05-11 23:29:56 fred Exp $
+ *	$Id: psfill.c,v 1.3 1994-05-28 00:44:50 fred Exp $
  */
 /*
  *      File:           ps_fill.c
@@ -355,7 +355,6 @@ static void ascsrt(float xa[], int ip[], int n)
         int i;
 
         if (n <= 0) {
-                printf (" ascsrt -- n too small\n");
                 return;
         }
         else if (n == 1) {

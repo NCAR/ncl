@@ -1,5 +1,5 @@
 /*
- *	$Id: gks_device.c,v 1.1 1994-03-30 02:11:23 fred Exp $
+ *	$Id: gks_device.c,v 1.2 1994-05-28 00:44:41 fred Exp $
  */
 /*
  *      File:		gks_device.c
@@ -200,6 +200,6 @@ GKSdev	*GKS_GetDevByName(name)
 	/*
 	 * device not found
 	 */
-	ESprintf(E_UNKNOWN, "device not found (%s)", name);
+	ESprintf(ERR_OPN_DEV, "device not found (%s)", name);
 	return ((GKSdev *) NULL);
 }

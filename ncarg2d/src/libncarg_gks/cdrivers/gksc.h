@@ -1,5 +1,5 @@
 /*
- *	$Id: gksc.h,v 1.1 1994-03-30 02:11:26 fred Exp $
+ *	$Id: gksc.h,v 1.2 1994-05-28 00:44:44 fred Exp $
  */
 /*
  *      File:		gksc.h
@@ -166,7 +166,6 @@ typedef	struct	GKSC_	{
 /*
  *	some error codes
  */
-#define	ERR_LOCAL	-113	/* misc. error for X driver             */
 #define	ERR_INV_OPCODE	-109	/* invalid or unsupported opcode	*/
 #define	ERR_INV_WK_ID	20	/* invalid workstation id		*/
 #define	ERR_OPN_DEV	26	/* error opening device			*/
@@ -182,6 +181,38 @@ typedef	struct	GKSC_	{
 #define	ERR_INV_CODE	101	/* invalid code in string		*/
 #define	ERR_INV_ESCAPE	180	/* escape function not supported	*/
 
+/*
+ *  local X driver errors.
+ */
+#define ERR_FCAP_MEMORY	   -200	/* memory allocation in fcap processing */
+#define ERR_FCAP_OPEN      -201	/* error opening fontcap                */
+#define ERR_FCAP_READ      -202	/* error reading fontcap                */
+#define ERR_FONT_INDEX     -203	/* error reading fontcap                */
+#define ERR_DEV_MEMORY     -204	/* memory allocation in device setup    */
+#define ERR_DEV_NUM        -205	/* too many open devices                */
+#define ERR_INTRNL_MEMORY  -206	/* error in internal memory management  */
+#define ERR_DTABLE_MEMORY  -207	/* error in device dependent table mem  */
+#define ERR_NO_DISPLAY     -208	/* DISPLAY environment variable not set */
+#define ERR_OPN_DISPLAY    -209	/* Error opening X display              */
+#define ERR_WIN_ATTRIB     -210	/* Error getting window attributes      */
+#define ERR_CRT_PIXMAP     -211	/* Error getting window attributes      */
+#define ERR_CELL_WIDTH     -212	/* Cell array has zero width or height  */
+#define ERR_CELL_MEMORY    -213	/* memory error processing cell array   */
+#define ERR_CRT_IMAGE      -214	/* error creating X image               */
+#define ERR_IMAGE_MEMORY   -215	/* memory error creting X image         */
+#define ERR_PIXEL_SIZE     -216	/* pixel size must be byte multiple     */
+#define ERR_FCAP_NAME      -217	/* error retrieving fontcap name        */
+#define ERR_INV_INDEX      -218	/* invalid index into GKS wks. ids      */
+#define ERR_MAX_COLOR      -219	/* color index too big                  */
+#define ERR_ALLOC_COLOR    -220	/* cannot allocate color                */
+
+/*
+ *  local PostScript output errors.
+ */
+#define ERR_EPS_PAGES	   -300	/* EPS can have only a single page      */
+#define ERR_PS_MEMORY	   -301	/* error in device dependent table mem  */
+#define ERR_OPN_PS         -302	/* error opening output file            */
+#define ERR_PS_CHAR        -303	/* PS char not available for requested  */
 
 extern	GKSC    *CreateGKSC(
 #ifdef	NeedFuncProto

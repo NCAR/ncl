@@ -1,5 +1,5 @@
 /*
- *	$Id: ps.c,v 1.3 1994-04-28 23:30:17 fred Exp $
+ *	$Id: ps.c,v 1.4 1994-05-28 00:44:47 fred Exp $
  */
 /*
  *
@@ -1807,12 +1807,13 @@ static int check_EPS (GKSC *gksc)
         if (((psa->type == EPSF) || (psa->type == EPSI)) &&
         	(psa->page_number > 1)) {
 			if (first_call) {
-        		  ESprintf(E_UNKNOWN,"PS: Encapsulated PostScript files"
-        			  " cannot have more than one picture.\n");
+        		  ESprintf(ERR_EPS_PAGES,
+				"PS: Encapsulated PostScript files"
+        			" cannot have more than one picture.\n");
 			  (void) ps_CloseWorkstation(gksc);
 			  first_call = FALSE;
 			}
-        		return(ERR_LOCAL);
+        		return(ERR_EPS_PAGES);
         }
         return(0);
 }
@@ -1919,8 +1920,8 @@ ps_OpenWorkstation(GKSC *gksc)
 
 	psa = (PSddp *) malloc (sizeof (PSddp));
         if (psa == (PSddp *) NULL) {
-		ESprintf(errno, "PS: malloc(%d)", sizeof(PSddp));
-		return(ERR_LOCAL);
+		ESprintf(ERR_PS_MEMORY, "PS: malloc(%d)", sizeof(PSddp));
+		return(ERR_PS_MEMORY);
 	}
 
 	gksc->ddp = (GKSC_Ptr) psa;
@@ -1969,9 +1970,9 @@ ps_OpenWorkstation(GKSC *gksc)
                 strcat(ctmp,"\"");
                 strcat(ctmp+1,psa->output_file);
                 strcat(ctmp+1+strlen(psa->output_file),"\"");
-                ESprintf(errno, "PS: fopen(%s, \"w\")", ctmp);
+                ESprintf(ERR_OPN_PS, "PS: fopen(%s, \"w\")", ctmp);
 		free(ctmp);
-                return(ERR_LOCAL);
+                return(ERR_OPN_PS);
 	}
 	psa->file_pointer = fp;
 	
@@ -2247,13 +2248,13 @@ ps_Text(gksc)
 		 */
 		found = MapFonts(psa, (int) (ctmp & 255), &fc);
 		if (found < 0) {
-                	ESprintf(E_UNKNOWN,"PS:   PostScript equivalent "
+                	ESprintf(ERR_PS_CHAR,"PS:   PostScript equivalent "
 				"character "
 			    	"not available for character with ASCII \n"
                             	"   decimal equivalent %d in font %d "
 			    	"-- string not plotted, use Plotchar",
 			    	(int) ctmp, psa->attributes.text_font);
-                	return(ERR_LOCAL);
+                  	return(ERR_PS_CHAR);
 		}
 
 		/*

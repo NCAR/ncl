@@ -1,5 +1,5 @@
 /*
- *	$Id: xcontrol.c,v 1.1 1994-03-30 02:11:39 fred Exp $
+ *	$Id: xcontrol.c,v 1.2 1994-05-28 00:44:56 fred Exp $
  */
 /*
  *      File:		xcontrol.c
@@ -360,8 +360,8 @@ X11_OpenWorkstation(gksc)
 	XSizeHints	*xshptr;
 
 	if ((xi = (Xddp *) malloc (sizeof (Xddp))) == (Xddp *) NULL) {
-		ESprintf(errno, "malloc(%d)", sizeof(Xddp));
-		return(ERR_LOCAL);
+		ESprintf(ERR_DTABLE_MEMORY, "malloc(%d)", sizeof(Xddp));
+		return(ERR_DTABLE_MEMORY);
 	}
 
 	gksc->ddp = (GKSC_Ptr) xi;
@@ -370,14 +370,15 @@ X11_OpenWorkstation(gksc)
 	 *	establish connection to sever
 	 */
 	if ((dpy_name = getenv("DISPLAY")) == NULL) {
-		ESprintf(E_UNKNOWN, "X11 \"DISPLAY\" env. variable not set");
-		return(ERR_LOCAL);
+		ESprintf(ERR_NO_DISPLAY, 
+			"X11 \"DISPLAY\" env. variable not set");
+		return(ERR_NO_DISPLAY);
 	}
 
 	if ((dpy = XOpenDisplay(dpy_name)) == NULL) {
-		ESprintf(E_UNKNOWN, "  Error on opening X display (%s)", 
+		ESprintf(ERR_OPN_DISPLAY, "  Error on opening X display (%s)", 
 			dpy_name);
-		return(ERR_LOCAL);
+		return(ERR_OPN_DISPLAY);
 	}
 
 	/*
@@ -502,8 +503,8 @@ X11_OpenWorkstation(gksc)
 	 *	coordinate translation macros
 	 */
 	if (XGetWindowAttributes(dpy, win, &xwa) == 0) {
-		ESprintf(E_UNKNOWN, "XGetWindowAttributes(,,)");
-		return(ERR_LOCAL);
+		ESprintf(ERR_WIN_ATTRIB, "XGetWindowAttributes(,,)");
+		return(ERR_WIN_ATTRIB);
 	}
 
 
@@ -601,8 +602,8 @@ X11P_OpenWorkstation(gksc)
 	win = drawable;
 
 	if ((xi = (Xddp *) malloc (sizeof (Xddp))) == (Xddp *) NULL) {
-		ESprintf(errno, "malloc(%d)", sizeof(Xddp));
-		return(ERR_LOCAL);
+		ESprintf(ERR_DTABLE_MEMORY, "malloc(%d)", sizeof(Xddp));
+		return(ERR_DTABLE_MEMORY);
 	}
 
 	gksc->ddp = (GKSC_Ptr) xi;
@@ -611,14 +612,15 @@ X11P_OpenWorkstation(gksc)
 	 *	establish connection to sever
 	 */
 	if ((dpy_name = getenv("DISPLAY")) == NULL) {
-		ESprintf(E_UNKNOWN, "X11 \"DISPLAY\" env. variable not set");
-		return(ERR_LOCAL);
+		ESprintf(ERR_NO_DISPLAY, 
+			"X11 \"DISPLAY\" env. variable not set");
+		return(ERR_NO_DISPLAY);
 	}
 
 	if ((dpy = XOpenDisplay(dpy_name)) == NULL) {
-		ESprintf(E_UNKNOWN, "  Error on opening X display (%s)", 
+		ESprintf(ERR_OPN_DISPLAY, "  Error on opening X display (%s)", 
 			dpy_name);
-		return(ERR_LOCAL);
+		return(ERR_OPN_DISPLAY);
 	}
 
 	/*
@@ -665,8 +667,8 @@ X11P_OpenWorkstation(gksc)
 	 *	coordinate translation macros
 	 */
 	if (XGetWindowAttributes(dpy, win, &xwa) == 0) {
-		ESprintf(E_UNKNOWN, "XGetWindowAttributes(,,)");
-		return(ERR_LOCAL);
+		ESprintf(ERR_WIN_ATTRIB, "XGetWindowAttributes(,,)");
+		return(ERR_WIN_ATTRIB);
 	}
 
 
@@ -713,13 +715,12 @@ X11_ActivateWorkstation(gksc)
 
 
 	/*
-	 *	find out how big window is. calculate
-	 *	coordinate translation macros
+	 *	Find out how big the window is; calculate the
+	 *	coordinate translation macros.
 	 */
-
 	if (XGetWindowAttributes(dpy, win, &xwa) == 0) {
-		ESprintf(E_UNKNOWN, "XGetWindowAttributes(,,)");
-		return(ERR_LOCAL);
+		ESprintf(ERR_WIN_ATTRIB, "XGetWindowAttributes(,,)");
+		return(ERR_WIN_ATTRIB);
 	}
 
 	square_screen = ComputeLargestSquare(
@@ -795,8 +796,8 @@ X11_ClearWorkstation(gksc)
 	 *	macros. (The user may have resized the window between frames).
 	 */
 	if (XGetWindowAttributes(dpy, win, &xwa) == 0) {
-		ESprintf(E_UNKNOWN, "XGetWindowAttributes(,,)");
-		return(ERR_LOCAL);
+		ESprintf(ERR_WIN_ATTRIB, "XGetWindowAttributes(,,)");
+		return(ERR_WIN_ATTRIB);
 	}
 
 	square_screen = ComputeLargestSquare(
