@@ -1,4 +1,4 @@
-C	$Id: ffex05.f,v 1.1 1993-04-08 22:35:45 haley Exp $
+C	$Id: ffex05.f,v 1.2 1993-04-15 17:25:18 dbrown Exp $
 C
       PROGRAM FFEX05
 C
@@ -30,7 +30,6 @@ C
 C
       DIMENSION RGB2(3,NCLRS2)
       DIMENSION ICLR2(NCLRS2)
-      COMMON ICLR2
 C
 C Empirically determined vector thinning data
 C Starting from the pole, each row of vectors is weeded, mod the
