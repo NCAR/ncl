@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.19 1999-07-07 14:22:44 haley Exp $
+;      $Id: gsn_code.ncl,v 1.20 1999-07-21 22:29:09 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -3573,6 +3573,7 @@ begin
         end if
 
     plot_object@data = data_object
+;
 ; If gsnShape was set to True, then resize the X or Y axis so that
 ; the scales are proportionally correct.
 
