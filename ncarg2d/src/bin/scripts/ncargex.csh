@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.89 1995-07-28 19:46:32 kennison Exp $
+#   $Id: ncargex.csh,v 1.90 1995-09-18 19:34:02 haley Exp $
 #
 
 if ($#argv < 1) goto usage
@@ -1063,6 +1063,7 @@ invalid:
       breaksw
 
     case "-noX11":
+    case "-nox11":
       shift
       set X11_option = "-noX11"
       breaksw

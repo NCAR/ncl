@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargf77.csh,v 1.24 1995-05-22 19:54:04 haley Exp $
+#   $Id: ncargf77.csh,v 1.25 1995-09-18 19:34:02 haley Exp $
 #
 
 #*********************************************#
@@ -139,6 +139,7 @@ foreach arg ($argv)
         breaksw
 
     case "-noX11"
+    case "-nox11"
         set stub_file = $ro/ggkwdr_stub.o
         set xlib = ""
         breaksw
