@@ -1,5 +1,5 @@
 C
-C       $Id: vvhluint.f,v 1.4 1996-02-08 20:07:59 dbrown Exp $
+C       $Id: vvhluint.f,v 1.5 1996-03-29 19:20:59 dbrown Exp $
 C
 C This module contains interface routines for VectorPlot and VecAnno
 C
@@ -126,15 +126,15 @@ C
       VFRC = ARS(9)
       VRLN = ARS(10)
       VRMG = ARS(11)
-      FAMN = ARS(12)
-      FAMX = ARS(13)
-      FAIR = ARS(14)
-      FAWR = ARS(15)
-      FAWF = ARS(16)
-      FAXR = ARS(17)
-      FAXF = ARS(18)
-      FAYR = ARS(19)
-      FAYF = ARS(20)
+      FAMN = MIN(1.0,MAX(0.0,ARS(12)))
+      FAMX = MIN(1.0,MAX(0.0,ARS(13)))
+      FAIR = MIN(1.0,MAX(0.0,ARS(14)))
+      FAWR = MIN(1.0,MAX(0.0,ARS(15)))
+      FAWF = MIN(1.0,MAX(0.0,ARS(16)))
+      FAXR = MIN(1.0,MAX(0.0,ARS(17)))
+      FAXF = MIN(1.0,MAX(0.0,ARS(18)))
+      FAYR = MIN(1.0,MAX(0.0,ARS(19)))
+      FAYF = MIN(1.0,MAX(0.0,ARS(20)))
       IAFO = INT(ARS(21))
 C
       CALL VVILNS(DRL,VFR,IAV)
@@ -282,15 +282,15 @@ C
       VFRC = ARS(9)
       VRLN = ARS(10)
       VRMG = ARS(11)
-      FAMN = ARS(12)
-      FAMX = ARS(13)
-      FAIR = ARS(14)
-      FAWR = ARS(15)
-      FAWF = ARS(16)
-      FAXR = ARS(17)
-      FAXF = ARS(18)
-      FAYR = ARS(19)
-      FAYF = ARS(20)
+      FAMN = MIN(1.0,MAX(0.0,ARS(12)))
+      FAMX = MIN(1.0,MAX(0.0,ARS(13)))
+      FAIR = MIN(1.0,MAX(0.0,ARS(14)))
+      FAWR = MIN(1.0,MAX(0.0,ARS(15)))
+      FAWF = MIN(1.0,MAX(0.0,ARS(16)))
+      FAXR = MIN(1.0,MAX(0.0,ARS(17)))
+      FAXF = MIN(1.0,MAX(0.0,ARS(18)))
+      FAYR = MIN(1.0,MAX(0.0,ARS(19)))
+      FAYF = MIN(1.0,MAX(0.0,ARS(20)))
       IAFO = INT(ARS(21))
 C
       XVPL = DRS(1)

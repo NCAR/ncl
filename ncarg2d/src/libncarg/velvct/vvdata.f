@@ -1,5 +1,5 @@
 C
-C       $Id: vvdata.f,v 1.7 1996-01-19 17:21:44 dbrown Exp $
+C       $Id: vvdata.f,v 1.8 1996-03-29 19:20:58 dbrown Exp $
 C
       BLOCK DATA VVDATA
 C
@@ -400,7 +400,7 @@ C
 C
 C FAWR -- 'AWR' -- arrow width (reference)
 C
-      DATA FAWR / 0.03 /
+      DATA FAWR / 0.1 /
 C
 C FAWF -- 'AWF' -- arrow width (minimum)
 C

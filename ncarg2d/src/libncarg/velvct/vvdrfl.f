@@ -1,5 +1,5 @@
 C
-C       $Id: vvdrfl.f,v 1.2 1996-02-07 18:11:47 dbrown Exp $
+C       $Id: vvdrfl.f,v 1.3 1996-03-29 19:20:58 dbrown Exp $
 C
       SUBROUTINE VVDRFL (XB,YB,XE,YE,VLN,LBL,NC,IAM,VVUDMV,IDA)
 C
@@ -186,7 +186,7 @@ C
          IF (FAWF.GT.0) THEN
             WSZ = FWMN + MAX(0.0,FWRF-FWMN)*FMG
          ELSE
-            WSZ = VLL*FAWR
+            WSZ = VLL*FAWR*0.5
          END IF
          IF (FAXF.GT.0) THEN
             XSZ = FXMN + MAX(0.0,FXRF-FXMN)*FMG
@@ -200,12 +200,11 @@ C
          ELSE
             YSZ = WSZ+VLL*FAYR
          END IF
+C
          ARROWX(1) = VLL*AROX(1)
-         ARROWX(2) = -ESZ
          ARROWX(3) = -XSZ
          ARROWX(4) = 0.0
          ARROWX(5) = -XSZ
-         ARROWX(6) = -ESZ
          ARROWX(7) = VLL*AROX(7)
          ARROWX(8) = VLL*AROX(8)
          ARROWY(1) = -WSZ
@@ -216,6 +215,19 @@ C
          ARROWY(6) = WSZ
          ARROWY(7) = WSZ
          ARROWY(8) = -WSZ
+C
+         IF (WSZ.GT.0.0) THEN
+C
+C Find point of intersection of line between rear arrowhead tip and 
+C the X interior point and the line forming the edge of the arrow body
+C using ratio of similar triangles
+C
+            ARROWX(2) = -(ESZ + ABS(XSZ-ESZ)*WSZ/(WSZ+YSZ))
+         ELSE
+            ARROWX(2) = -ESZ
+         END IF
+         ARROWX(6) = ARROWX(2)
+C
       END IF
       IF (FAXR .LE. 0.4) THEN
          RMG = ARROWY(6)
@@ -444,6 +456,7 @@ C
 C
 C Fill in the reference arrow data
 C
+      WID = 0.5 * FAWR
       AROX(1) = -1.0
       AROX(2) = -FAIR
       AROX(3) = -FAXR
@@ -452,17 +465,30 @@ C
       AROX(6) = -FAIR
       AROX(7) = -1.0
       AROX(8) = -1.0
-      AROY(1) = -FAWR
-      AROY(2) = -FAWR
-      AROY(3) = -FAWR-FAYR
+      AROY(1) = -WID
+      AROY(2) = -WID
+      AROY(3) = -WID-FAYR
       AROY(4) = 0.0
-      AROY(5) = FAWR+FAYR
-      AROY(6) = FAWR
-      AROY(7) = FAWR
-      AROY(8) = -FAWR
+      AROY(5) = WID+FAYR
+      AROY(6) = WID
+      AROY(7) = WID
+      AROY(8) = -WID
+C
+      IF (WID.GT.0.0) THEN
+C
+C Find point of intersection of line between rear arrowhead tip and 
+C the X interior point and the line forming the edge of the arrow body
+C using ratio of similar triangles
+C
+         AROX(2) = - (FAIR + ABS(FAXR-FAIR)*WID/(WID+FAYR))
+      ELSE
+         AROX(2) = -FAIR
+      END IF
+      AROX(6) = AROX(2)
+C
       VRL = DVMX
       IF (VRLN.GT.0.0) VRL = VRLN*FW2W
-      FWRF = VRL*FAWR
+      FWRF = VRL*WID
       FWMN = FWRF*FAWF
       FXRF = VRL*FAXR
       FXMN = FXRF*FAXF
@@ -470,6 +496,6 @@ C
       FIMN = FIRF*FAXF
       FYRF = VRL*FAYR
       FYMN = FYRF*FAYF
-
+C
       RETURN
       END
