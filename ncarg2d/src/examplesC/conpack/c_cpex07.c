@@ -1,5 +1,5 @@
 /*
- *	$Id: c_cpex07.c,v 1.3 1994-06-21 14:59:44 haley Exp $
+ *	$Id: c_cpex07.c,v 1.4 1994-08-24 16:02:01 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -17,7 +17,7 @@ main()
  * Declare required data arrays and workspace arrays.
  */
     float zdat[14][23],rwrk[1000], xcra[1000],ycra[1000];
-    float time,zmin,zmax,zval;
+    float zmin,zmax,zval;
     int iwrk[1000],iama[12000],iaia[10],igia[10],lind[14];
     int i;
     Gasfs iasf;
@@ -77,10 +77,6 @@ main()
  */
     gendat(zdat,23,23,14,20,20,-136.148,451.834);
 /*
- * Get the current elapsed time, in seconds.
- */
-    time = 0.;
-/*
  * Force the plot into the upper portion of the frame.
  */
     c_cpsetr ("VPB - VIEWPORT BOTTOM",.25);
@@ -133,7 +129,7 @@ main()
  * Compute and print statistics for the plot, label it, and put a
  * boundary line at the edge of the plotter frame.
  */
-    capsap ("EXAMPLE 7",time,iama,12000);
+    capsap ("EXAMPLE 7",iama,12000);
     labtop ("EXAMPLE 7",.017);
     bndary();
 /*

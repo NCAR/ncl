@@ -1,5 +1,5 @@
 /*
- *	$Id: c_cpex04.c,v 1.2 1994-06-21 14:59:40 haley Exp $
+ *	$Id: c_cpex04.c,v 1.3 1994-08-24 16:01:57 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -21,7 +21,6 @@ main()
  */
     int iwrk[1000], iama[30000],iara[10],igra[10];
     int i;
-    float time;
     Gasfs iasf;
 /*
  * Declare an array to hold line labels.
@@ -106,10 +105,6 @@ main()
     c_sfseti ("ANGLE OF FILL LINES",45);
     c_sfsetr ("SPACING OF FILL LINES",.000625);
 /*
- * get the current elapsed time, in seconds.
- */
-       time=0;
-/*
  * turn on the positioning of labels by the penalty scheme and provide a
  * little more room for x and y coordinates defining contour lines, so
  * as not to have labels right next to each other on a contour line.
@@ -177,9 +172,8 @@ main()
 /*
  * compute and print statistics for the plot and label it.
  */
-    capsap ("EXAMPLE 4",time,iama,30000);
+    capsap ("EXAMPLE 4",iama,30000);
     labtop ("EXAMPLE 4",.017);
-
 /*
  * put a boundary line at the edge of the plotter frame.
  */

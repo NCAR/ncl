@@ -1,5 +1,5 @@
 /*
- *	$Id: c_cpexcc.c,v 1.2 1994-06-21 14:59:49 haley Exp $
+ *	$Id: c_cpexcc.c,v 1.3 1994-08-24 16:02:03 haley Exp $
  */
 #include <math.h>
 #include <ncarg/ncargC.h>
@@ -89,21 +89,15 @@ float fran()
     return(rseq[iseq-1]);
 }
 
-void capsap (labl,time,iama,lama)
+void capsap (labl,iama,lama)
 char *labl;
-float time;
 int *iama, lama;
 {
-    float dumi;
     int iiwu, irwu, iamu;
-    extern float second();
 /*
- * Compute and print the time required to draw the contour plot and how
- * much space was used in the various arrays.
+ * Compute and print how much space was used in the various arrays.
  */
-    time=second(dumi)-time;
     printf("PLOT TITLE WAS %s\n",labl );
-    printf("TIME TO DRAW PLOT WAS %g\n",time);
     c_cpgeti("IWU - INTEGER WORKSPACE USAGE",&iiwu);
     c_cpgeti("RWU - REAL WORKSPACE USAGE",&irwu);
     printf("INTEGER WORKSPACE USED %d\n",iiwu );
@@ -218,26 +212,4 @@ void dfclrs()
     for( i = 0; i < 15; i++ ) {
         gset_colr_rep(WKID,i+1,&rgbv[i]);
     }
-}
-
-float second (dumi)
-float dumi;
-{
-    static int iflg = 0;
-
-    if (!iflg)  {
-        iflg=1;
-        printf( "**************************************************\n" );
-        printf( "** THE DUMMY FUNCTION 'SECOND' HAS BEEN CALLED. **\n" );
-        printf( "** A ZERO WILL BE RETURNED AS ITS VALUE.  THIS  **\n" );
-        printf( "** MEANS THAT TIMING INFORMATION PRINTED WILL   **\n" );
-        printf( "** BE WRONG.  TO GET ACTUAL TIMINGS, YOU SHOULD **\n" );
-        printf( "** REPLACE THIS FUNCTION WITH ONE HAVING AS ITS **\n" );
-        printf( "** VALUE THE ELAPSED CPU TIME, IN SECONDS.  ON  **\n" );
-        printf( "** THE CRAY, UNDER COS, THE SYSTEM FUNCTION     **\n" );
-        printf( "** CALLED 'SECOND' DOES THIS, SO YOU CAN JUST   **\n" );
-        printf( "** DELETE THE DUMMY ONE.                        **\n" );
-        printf( "**************************************************\n" );
-    }
-    return(0.);
 }

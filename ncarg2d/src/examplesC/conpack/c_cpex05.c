@@ -1,5 +1,5 @@
 /*
- *	$Id: c_cpex05.c,v 1.2 1994-06-21 14:59:41 haley Exp $
+ *	$Id: c_cpex05.c,v 1.3 1994-08-24 16:01:59 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -20,7 +20,6 @@ main()
  * Declare an array to hold the data to be contoured.
  */
     float zdat[53][37],rwrk[5000],xcra[1000],ycra[1000];
-    float time;
     int iwrk[1000],iama[40000],iara[10],igra[10],lind[20];
     int i;
     extern int shadam();
@@ -71,10 +70,6 @@ main()
     c_sfseti ("TYPE OF FILL",-4);
     c_sfseti ("ANGLE OF FILL LINES",15);
     c_sfsetr ("SPACING OF FILL LINES",.000625);
-/*
- * Get the current elapsed time, in seconds.
- */
-        time=0;
 /*
  * Turn off line labels.
  */
@@ -134,7 +129,7 @@ main()
 /*
  * Compute and print statistics for the plot and label it.
  */
-    capsap ("EXAMPLE 5",time,iama,40000);
+    capsap ("EXAMPLE 5",iama,40000);
     labtop ("EXAMPLE 5",.017);
 /*
  * Put a boundary line at the edge of the plotter frame.

@@ -1,5 +1,5 @@
 /*
- *	$Id: c_cpex06.c,v 1.2 1994-06-21 14:59:42 haley Exp $
+ *	$Id: c_cpex06.c,v 1.3 1994-08-24 16:02:00 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -17,7 +17,7 @@ main()
  * Declare required data arrays and workspace arrays.
  */
     float zdat[23][27],rwrk[5000];
-    float clev,time;
+    float clev;
     int iclu, iclv, i,nclv;
     int iwrk[1000],iama[10000];
     Gasfs iasf;
@@ -72,10 +72,6 @@ main()
  * Generate an array of test data.
  */
     gendat (zdat,27,27,23,25,25,-362.362e11,451.834e11);
-/*
- * Get the current elapsed time, in seconds.
- */
-    time=0;
 /*
  * Increase the approximate number of contour levels used.
  */
@@ -166,7 +162,7 @@ main()
  * Compute and print statistics for the plot, label it, and put a
  * boundary line at the edge of the plotter frame.
  */
-    capsap ("EXAMPLE 6",time,iama,10000);
+    capsap ("EXAMPLE 6",iama,10000);
     labtop ("EXAMPLE 6",.017);
     bndary();
 /*

@@ -1,5 +1,5 @@
 /*
- *	$Id: c_cpex02.c,v 1.2 1994-06-21 14:59:38 haley Exp $
+ *	$Id: c_cpex02.c,v 1.3 1994-08-24 16:01:54 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -16,7 +16,6 @@ main()
  * Declare an array to hold the data to be contoured.
  */
     float zdat[33][33],rwrk[5000],xcra[1000],ycra[1000];
-    float time;
 /*
  * declare the required real and integer workspaces.
  */
@@ -130,10 +129,6 @@ main()
  */
         gendat(zdat,33,33,33,20,20,.000025,.000075);
 /*
- * get the current elapsed time, in seconds.
- */
-        time=0.;
-/*
  * move the viewport to the proper quadrant.
  */
         c_cpsetr("VPL - VIEWPORT LEFT EDGE",.0250+.4875*(float)((iplt-1)%2));
@@ -198,9 +193,8 @@ main()
  * compute and print statistics for the plot and label it.
  */
         sprintf( labl, "EXAMPLE 2-%d", iplt );
-        capsap (labl,time,iama,20000);
+        capsap (labl,iama,20000);
         labtop (labl,.017);
-
     }
 /*
  * put a boundary line at the edge of the plotter frame.

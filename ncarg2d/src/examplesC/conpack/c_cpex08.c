@@ -1,5 +1,5 @@
 /*
- *	$Id: c_cpex08.c,v 1.3 1994-06-21 14:59:45 haley Exp $
+ *	$Id: c_cpex08.c,v 1.4 1994-08-24 16:02:02 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -25,7 +25,7 @@ main()
     float zdat[40][40],rwrk[1000],xcra[5000],ycra[5000];
     int iwrk[1000],iama[100000],iaia[10],igia[10];
     int i,lind[14];
-    float time,p1[2],p2[2],p3[2],p4[2];
+    float p1[2],p2[2],p3[2],p4[2];
     Gasfs iasf;
 /*
  * Declare a routine to color the areas represented by the area map.
@@ -108,10 +108,6 @@ main()
  * Generate an array of test data.
  */
     gendat (zdat,40,40,40,15,15,-10.,110.);
-/*
- * Get the current elapsed time, in seconds.
- */
-    time = 0;
 /*
  * Initialize the area map.
  */
@@ -205,7 +201,7 @@ main()
  * Compute and print statistics for the plot, label it, and put a
  * boundary line at the edge of the plotter frame.
  */
-    capsap ("EXAMPLE 8",time,iama,100000);
+    capsap ("EXAMPLE 8",iama,100000);
     labtop ("EXAMPLE 8",.017);
     bndary();
 /*

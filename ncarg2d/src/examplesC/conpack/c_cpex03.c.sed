@@ -1,5 +1,5 @@
 /*
- *	$Id: c_cpex03.c.sed,v 1.2 1994-06-21 14:59:39 haley Exp $
+ *	$Id: c_cpex03.c.sed,v 1.3 1994-08-24 16:01:56 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -29,7 +29,7 @@ main()
     float zdat[33][33], rwrk[5000],p1[2],p2[2],p3[2],p4[2];
     int iwrk[1000],iama[20000];
     int i, j, iplt,iclv,iclu,nclv;
-    float xvpl, xvpr, yvpb, yvpt, time;
+    float xvpl, xvpr, yvpb, yvpt;
 
 /*
  * Declare the arrays needed by ARSCAM for x/y coordinates.
@@ -217,9 +217,6 @@ main()
             c_set    (xvpl,xvpr,yvpb,yvpt,0.,1.,0.,1.,1);
             for( i = 0; i < 33; i++ ) {
                 for( j = 0; j < 33; j++ ) {
-/*
- * Get the current elapsed time, in seconds.
- */
                     cpmpc2_.xfij[i][j]=(float)i/32.+((float)(16-i)/64.)*
                       ((float)(16-abs(j-16))/16.);
                     cpmpc2_.yfij[i][j]=(float)j/32.+((float)(16-j)/64.)*
@@ -280,7 +277,7 @@ main()
  * Compute and print statistics for the plot and label it.
  */
         sprintf( labl, "EXAMPLE 3-%d", iplt );
-        capsap (labl,time,iama,20000);
+        capsap (labl,iama,20000);
         labtop (labl,.017);
     }
 /*
