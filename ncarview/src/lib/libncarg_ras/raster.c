@@ -1,5 +1,5 @@
 /*
- *	$Id: raster.c,v 1.28 1993-11-03 18:19:19 clyne Exp $
+ *	$Id: raster.c,v 1.29 1995-01-10 17:26:24 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -44,6 +44,8 @@ int	OptionInX = 0;
 int	OptionInY = 0;
 int	OptionInInvert = False;
 int	OptionIndexed = False;
+int	OptionInOffset = 0;
+int	OptionOutCMap = 0;
 
 char	*NrtProgramName;
 
@@ -176,6 +178,20 @@ RasterInit(argc, argv)
 		}
 		else if (!strcmp(argv[i], "-indexed")) {
 			OptionIndexed = True;
+			(void) argdel(argc, argv, i);
+		}
+		else if (!strcmp(argv[i], "-outcmap")) {
+			OptionOutCMap = True;
+			(void) argdel(argc, argv, i);
+		}
+		else if (!strcmp(argv[i], "-inoffset")) {
+			if (i >= (*argc-1)) {
+				(void) ESprintf(RAS_E_NO_OPTION_PARM,
+					"%s", argv[i]);
+				return(RAS_ERROR);
+			}
+			(void) argdel(argc, argv, i);
+			OptionInOffset = atoi(argv[i]);
 			(void) argdel(argc, argv, i);
 		}
 		else {
