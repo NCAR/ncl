@@ -1,12 +1,9 @@
-#	$Id: yMakefile,v 1.13 1992-02-27 22:24:42 clyne Exp $
+#	$Id: yMakefile,v 1.14 1992-02-27 22:26:11 clyne Exp $
 #
 #	Makefile for libraster - libraries for dealing with
 #	a variety of raster image formats.
 #
 
-#
-# test comment
-#
 
 #define	BuildRasterHDF
 #define	BuildRasterHPLaser
