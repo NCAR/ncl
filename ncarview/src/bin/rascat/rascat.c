@@ -1,5 +1,5 @@
 /*
- *      $Id: rascat.c,v 1.21 1994-06-03 22:16:10 clyne Exp $
+ *      $Id: rascat.c,v 1.22 1995-01-10 17:29:11 clyne Exp $
  */
 /*
  *	File:		rascat.c
@@ -497,7 +497,17 @@ main(argc, argv)
 
 			if (do_quant) {
 				new = quant_ras ? quant_ras : dst;
-				rc = RasterDither(tmp, new, opt.do_verbose);
+				if (opt.outtype == RAS_INDEXED) {
+					rc = RasterDither(
+						tmp, new, opt.do_verbose
+					);
+				}
+				else {
+					rc = Raster8to24bit(
+						tmp, new, opt.do_verbose
+					);
+				}
+
 				if (rc != RAS_OK) {
 					(void) fprintf(
 						stderr, 
