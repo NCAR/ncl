@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.80 2000-09-29 17:53:16 ethan Exp $
+ *      $Id: Machine.c,v 1.81 2002-06-19 16:23:56 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -2043,12 +2043,22 @@ void _NclRemapParameters
 						NULL,
 						TEMPORARY
 						);
-					_NclDestroyObj((NclObj)tmp_var1);
+					if(tmp_var1->obj.ref_count == 0 ) {
+						_NclDestroyObj((NclObj)tmp_var1);
+					} else {
+						tmp_var1->var.thesym=NULL;
+						tmp_var1->var.sel_rec =NULL;
+					}
 					tmp_fp->func_ret_value.u.data_var = tmp_var;
 					check_ret_status = 0;
 					
 				} else {
-					_NclDestroyObj((NclObj)data.u.data_var);
+					if(data.u.data_var->obj.ref_count == 0 ) {
+						_NclDestroyObj((NclObj)data.u.data_var);
+					} else {
+						data.u.data_var->var.thesym=NULL;
+						data.u.data_var->var.sel_rec =NULL;
+					}
 				}
 			default:
 				break;
@@ -2065,7 +2075,12 @@ void _NclRemapParameters
 				if(data.u.data_var->var.thesym != NULL) {
 					data.u.data_var->var.thesym->type = UNDEF;
 				}
-				_NclDestroyObj((NclObj)data.u.data_var);
+				if(data.u.data_var->obj.ref_count == 0 ) {
+					_NclDestroyObj((NclObj)data.u.data_var);
+				} else {
+					data.u.data_var->var.thesym=NULL;
+					data.u.data_var->var.sel_rec =NULL;
+				}
 			default:
 				break;
 			}
@@ -2120,7 +2135,13 @@ if(the_list != NULL) {
 						if(tmp_var == NULL) { 
 							NhlPError(NhlWARNING,NhlEUNKNOWN,"_NclRemapParameters: Argument (%d) to function or procedure was coerced before calling and can not be coerced back, arguments value remains unchanged",i);
 						} else {
-							_NclDestroyObj((NclObj)data.u.data_var);
+							if(data.u.data_var->obj.ref_count == 0 ) {
+								_NclDestroyObj((NclObj)data.u.data_var);
+							} else {
+								data.u.data_var->var.thesym=NULL;
+								data.u.data_var->var.sel_rec =NULL;
+								data.u.data_var->var.var_type =NORMAL;
+							}
 							data.u.data_var = tmp_var;
 						}
 					} else {
@@ -2147,7 +2168,12 @@ if(the_list != NULL) {
 */
 				
 					if((the_list->the_elements[i].var_ptr != NULL)&&(anst_var->obj.id != the_list->the_elements[i].var_ptr->obj.id)) {
-						_NclDestroyObj((NclObj)the_list->the_elements[i].var_ptr);
+						if(the_list->the_elements[i].var_ptr->obj.ref_count == 0 ) {
+							_NclDestroyObj((NclObj)the_list->the_elements[i].var_ptr);
+						} else {
+							the_list->the_elements[i].var_ptr->var.thesym=NULL;
+							the_list->the_elements[i].var_ptr->var.sel_rec =NULL;
+						}
 					}
 
 					value_ref_count = _NclGetObjRefCount(data.u.data_var->var.thevalue_id);
@@ -2171,7 +2197,13 @@ if(the_list != NULL) {
 								NULL,
 								TEMPORARY
 								);
-							_NclDestroyObj((NclObj)tmp_var1);
+							if(tmp_var1->obj.ref_count == 0 ) {
+								_NclDestroyObj((NclObj)tmp_var1);
+							} else {
+								tmp_var1->var.thesym = NULL;
+								tmp_var1->var.sel_rec = NULL;
+								tmp_var1->var.var_type =NORMAL;
+							}
 							tmp_fp->func_ret_value.u.data_var = tmp_var;
 							check_ret_status = 0;
 					} else if((check_ret_status)&&(tmp_fp->func_ret_value.u.data_var->obj.id == data.u.data_var->obj.id)){
@@ -2200,7 +2232,13 @@ if(the_list != NULL) {
 							NULL,
 							TEMPORARY
 							);
-						_NclDestroyObj((NclObj)tmp_var1);
+						if(tmp_var1->obj.ref_count == 0 ) {
+							_NclDestroyObj((NclObj)tmp_var1);
+						} else {
+							tmp_var1->var.thesym = NULL;
+							tmp_var1->var.sel_rec = NULL;
+							tmp_var1->var.var_type =NORMAL;
+						}
 						tmp_fp->func_ret_value.u.data_var = tmp_var;
 						check_ret_status = 0;
 					} else {
@@ -2216,20 +2254,45 @@ if(the_list != NULL) {
 							tmp_md = (NclMultiDValData)_NclGetObj(data.u.data_var->var.thevalue_id);
 							if((tmp_md->obj.id == tmp_fp->func_ret_value.u.data_var->obj.id)&&(value_ref_count ==1)) {
 
-								data.u.data_var->obj.status = TEMPORARY;
-								tmp_md = _NclStripVarData(data.u.data_var);
-								_NclDestroyObj((NclObj)data.u.data_var);
+/* 6.18.02 NEEDS SOME THOUGHT!! */
+								if(data.u.data_var->obj.ref_count == 0 ) {
+									data.u.data_var->obj.status = TEMPORARY;
+									tmp_md = _NclStripVarData(data.u.data_var);
+									_NclDestroyObj((NclObj)data.u.data_var);
+								} else {
+/* Need to copy value */
+									data.u.data_var->var.thesym = NULL;
+									data.u.data_var->var.sel_rec = NULL;
+									data.u.data_var->var.var_type =NORMAL;
+								}
 								
 							} else {
-								_NclDestroyObj((NclObj)data.u.data_var);
+								if(data.u.data_var->obj.ref_count == 0 ) {
+									_NclDestroyObj((NclObj)data.u.data_var);
+								} else {
+									data.u.data_var->var.thesym = NULL;
+									data.u.data_var->var.sel_rec = NULL;
+									data.u.data_var->var.var_type =NORMAL;
+								}
 							}
 						} else {
-							_NclDestroyObj((NclObj)data.u.data_var);
+							if(data.u.data_var->obj.ref_count == 0 ) {
+								_NclDestroyObj((NclObj)data.u.data_var);
+							} else {
+								data.u.data_var->var.thesym = NULL;
+								data.u.data_var->var.sel_rec = NULL;
+								data.u.data_var->var.var_type =NORMAL;
+							}
 						}
 					}
 				} else {
 					if((the_list->the_elements[i].var_ptr != NULL)&&(anst_var->obj.id != the_list->the_elements[i].var_ptr->obj.id)) {
-						_NclDestroyObj((NclObj)the_list->the_elements[i].var_ptr);
+						if(the_list->the_elements[i].var_ptr->obj.ref_count == 0 ) {
+							_NclDestroyObj((NclObj)the_list->the_elements[i].var_ptr);
+						} else {
+							the_list->the_elements[i].var_ptr->var.thesym = NULL;
+							the_list->the_elements[i].var_ptr->var.sel_rec = NULL;
+						}
 					}
 				}
 			} else if(the_list->the_elements[i].var_sym != NULL){
@@ -2268,7 +2331,13 @@ if(the_list != NULL) {
 							NULL,
 							TEMPORARY
 							);
-						_NclDestroyObj((NclObj)tmp_var1);
+						if(tmp_var1->obj.ref_count == 0) {
+							_NclDestroyObj((NclObj)tmp_var1);
+						} else {
+							tmp_var1->var.thesym = NULL;
+							tmp_var1->var.sel_rec = NULL;
+							tmp_var1->var.var_type =NORMAL;
+						}
 						tmp_fp->func_ret_value.u.data_var = tmp_var;
 						check_ret_status = 0;
 						
@@ -2298,11 +2367,23 @@ if(the_list != NULL) {
 							NULL,
 							TEMPORARY
 							);
-						_NclDestroyObj((NclObj)tmp_var1);
+						if(tmp_var1->obj.ref_count == 0) {
+							_NclDestroyObj((NclObj)tmp_var1);
+						} else {
+							tmp_var1->var.thesym = NULL;
+							tmp_var1->var.sel_rec = NULL;
+							tmp_var1->var.var_type =NORMAL;
+						}
 						tmp_fp->func_ret_value.u.data_var = tmp_var;
 						check_ret_status = 0;
 				} else {
-					_NclDestroyObj((NclObj)data.u.data_var);
+					if(data.u.data_var->obj.ref_count == 0) {
+						_NclDestroyObj((NclObj)data.u.data_var);
+					} else {
+						data.u.data_var->var.thesym = NULL;
+						data.u.data_var->var.sel_rec = NULL;
+						data.u.data_var->var.var_type =NORMAL;
+					}
 				}
 			} else {
 /*
@@ -2329,9 +2410,20 @@ if(the_list != NULL) {
 							TEMPORARY
 							);
 						if((the_list->the_elements[i].var_ptr != NULL)&&(tmp_var1->obj.id != the_list->the_elements[i].var_ptr->obj.id)) {
-							_NclDestroyObj((NclObj)the_list->the_elements[i].var_ptr);
+							if(the_list->the_elements[i].var_ptr->obj.ref_count == 0) {
+								_NclDestroyObj((NclObj)the_list->the_elements[i].var_ptr);
+							} else {
+								the_list->the_elements[i].var_ptr->var.thesym = NULL;
+								the_list->the_elements[i].var_ptr->var.sel_rec = NULL;
+							}
 						}
-						_NclDestroyObj((NclObj)tmp_var1);
+						if(tmp_var1->obj.ref_count == 0) {
+							_NclDestroyObj((NclObj)tmp_var1);
+						} else {
+							tmp_var1->var.thesym = NULL;
+							tmp_var1->var.sel_rec= NULL;
+							tmp_var1->var.var_type =NORMAL;
+						}
 					
 						tmp_fp->func_ret_value.u.data_var = tmp_var;
 						check_ret_status = 0;
@@ -2363,16 +2455,38 @@ if(the_list != NULL) {
 							TEMPORARY
 							);
 						if((the_list->the_elements[i].var_ptr != NULL)&&(tmp_var1->obj.id != the_list->the_elements[i].var_ptr->obj.id)) {
-							_NclDestroyObj((NclObj)the_list->the_elements[i].var_ptr);
+							if(the_list->the_elements[i].var_ptr->obj.ref_count == 0) {
+								_NclDestroyObj((NclObj)the_list->the_elements[i].var_ptr);
+							} else {
+								the_list->the_elements[i].var_ptr->var.thesym = NULL;
+								the_list->the_elements[i].var_ptr->var.sel_rec= NULL;
+							}
 						}
-						_NclDestroyObj((NclObj)tmp_var1);
+						if(tmp_var1->obj.ref_count == 0) {
+							_NclDestroyObj((NclObj)tmp_var1);
+						} else {
+							tmp_var1->var.thesym = NULL;
+							tmp_var1->var.sel_rec= NULL;
+							tmp_var1->var.var_type =NORMAL;
+						}
 						tmp_fp->func_ret_value.u.data_var = tmp_var;
 						check_ret_status = 0;
 				} else {
 					if((the_list->the_elements[i].var_ptr != NULL)&&(data.u.data_var->obj.id != the_list->the_elements[i].var_ptr->obj.id)&&(((NclVar)the_list->the_elements[i].var_ptr)->obj.status != PERMANENT)) {
-						_NclDestroyObj((NclObj)the_list->the_elements[i].var_ptr);
+						if(the_list->the_elements[i].var_ptr->obj.ref_count == 0) {
+							_NclDestroyObj((NclObj)the_list->the_elements[i].var_ptr);
+						} else {
+							the_list->the_elements[i].var_ptr->var.thesym = NULL;
+							the_list->the_elements[i].var_ptr->var.sel_rec= NULL;
+						}
 					}
-					_NclDestroyObj((NclObj)data.u.data_var);
+					if(data.u.data_var->obj.ref_count ==0 ){
+						_NclDestroyObj((NclObj)data.u.data_var);
+					} else {	
+						data.u.data_var->var.thesym = NULL;
+						data.u.data_var->var.sel_rec= NULL;
+						data.u.data_var->var.var_type = NORMAL;
+					}
 				}
 			}
 		} else if(the_list->the_elements[i].p_type == VALUE_P) {
@@ -2403,7 +2517,13 @@ if(the_list != NULL) {
 							NULL,
 							TEMPORARY
 							);
-						_NclDestroyObj((NclObj)tmp_var1);
+						if(tmp_var1->obj.ref_count ==0) {
+							_NclDestroyObj((NclObj)tmp_var1);
+						} else {
+							tmp_var1->var.thesym = NULL;
+							tmp_var1->var.sel_rec= NULL;
+							tmp_var1->var.var_type = NORMAL;
+						}
 						tmp_fp->func_ret_value.u.data_var = tmp_var;
 						check_ret_status = 0;
 						
@@ -2434,7 +2554,13 @@ if(the_list != NULL) {
 							NULL,
 							TEMPORARY
 							);
-						_NclDestroyObj((NclObj)tmp_var1);
+						if(tmp_var1->obj.ref_count ==0) {
+							_NclDestroyObj((NclObj)tmp_var1);
+						} else {
+							tmp_var1->var.thesym = NULL;
+							tmp_var1->var.sel_rec= NULL;
+							tmp_var1->var.var_type = NORMAL;
+						}
 						tmp_fp->func_ret_value.u.data_var = tmp_var;
 						check_ret_status = 0;
 				} else {
@@ -2454,7 +2580,13 @@ if(the_list != NULL) {
 						_NclDestroyObj((NclObj)data.u.data_var);
 						tmp_md->obj.status = PERMANENT;
 					} else {
-						_NclDestroyObj((NclObj)data.u.data_var);
+						if(data.u.data_var->obj.ref_count ==0) {
+							_NclDestroyObj((NclObj)data.u.data_var);
+						} else {
+							data.u.data_var->var.thesym = NULL;
+							data.u.data_var->var.sel_rec= NULL;
+							data.u.data_var->var.var_type = NORMAL;
+						}
 					}
 				}
 			} else {
