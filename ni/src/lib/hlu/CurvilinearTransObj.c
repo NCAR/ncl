@@ -1,5 +1,5 @@
 /*
- *      $Id: CurvilinearTransObj.c,v 1.2 2004-10-05 22:50:33 dbrown Exp $
+ *      $Id: CurvilinearTransObj.c,v 1.3 2004-12-23 20:07:24 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -522,6 +522,42 @@ static void SetUpIndexArrays
 	return;
 }
 
+static void DetermineCoordHandedness
+#if	NhlNeedProto
+(NhlCurvilinearTransObjLayerPart *crp)
+#else
+(crp)
+	NhlCurvilinearTransObjLayerPart *crp;
+#endif
+{
+	double *xdata = (double *)crp->x_crv_ga->data;
+	double *ydata = (double *)crp->y_crv_ga->data;
+	int ysz = crp->x_crv_ga->len_dimensions[0];
+	int xsz = crp->x_crv_ga->len_dimensions[1];
+	int ydir,xdir;
+	int i,j;
+
+	for (j = 0,xdir = 0; j < ysz; j++) {
+		if (*(xdata + j * xsz + xsz - 1) >= *(xdata + j * xsz))
+			xdir++;
+		else
+			xdir--;
+	}
+	for (i = 0,ydir = 0; i < xsz; i++) {
+		if (*(ydata + (ysz -1) * xsz + i) >= *(ydata + i))
+			ydir++;
+		else
+			ydir--;
+	}
+	if ((xdir < 0 && ydir > 0) || (xdir > 0 && ydir < 0)) {
+		crp->handedness_sign = -1;
+	}
+	else {
+		crp->handedness_sign = 1;
+	}
+	return;
+}
+
 
 static NhlErrorTypes SetUpTrans
 #if	NhlNeedProto
@@ -683,6 +719,8 @@ static NhlErrorTypes SetUpTrans
 			  error_lead,NhlNtrXCoordPoints,NhlNtrYCoordPoints);
 		return NhlFATAL;
 	}
+	if (new_coords)
+		DetermineCoordHandedness(crp);
 		
 
 	if (tp->x_min < crp->x_crv_min) {
@@ -1309,11 +1347,11 @@ static NhlErrorTypes CrNDCToWin
  * line (x0,y0),(x1,y1)
  */
 
-#define RIGHTOF(xp,yp,x0,y0,x1,y1) \
- 	((x0)-(xp))*((yp)-(y1))-((x1)-(xp))*((yp)-(y0))
-#define RIGHTOFD(xp,yp,x0,y0,x1,y1) \
- 	(double)((x0)-(xp))*(double)((yp)-(y1))-\
-	(double)((x1)-(xp))*(double)((yp)-(y0))
+#define RIGHTOF(sign,xp,yp,x0,y0,x1,y1)			\
+ 	(sign * ((x0)-(xp))*((yp)-(y1))-((x1)-(xp))*((yp)-(y0)))
+#define RIGHTOFD(sign,xp,yp,x0,y0,x1,y1)		\
+ 	(sign * ((double)((x0)-(xp))*(double)((yp)-(y1))-	\
+		 (double)((x1)-(xp))*(double)((yp)-(y0))))
 
 
 /*
@@ -1371,6 +1409,7 @@ static NhlBoolean IsInCompcBox
 	double sdst;
 	double sideprev,sidenext,sidebend;
 	int i;
+	int sign = crp->handedness_sign;
 
 /*
  * traverse the edge of the compc box counterclockwise to find
@@ -1459,9 +1498,9 @@ static NhlBoolean IsInCompcBox
  * right.
  */
 	
-	sideprev = RIGHTOFD(x,y,*(xp+iyp*xsz+ixp),*(yp+iyp*xsz+ixp),
+	sideprev = RIGHTOFD(sign,x,y,*(xp+iyp*xsz+ixp),*(yp+iyp*xsz+ixp),
 			   *(xp+iym*xsz+ixm),*(yp+iym*xsz+ixm));
-	sidenext = RIGHTOFD(x,y,*(xp+iym*xsz+ixm),*(yp+iym*xsz+ixm),
+	sidenext = RIGHTOFD(sign,x,y,*(xp+iym*xsz+ixm),*(yp+iym*xsz+ixm),
 			   *(xp+iyn*xsz+ixn),*(yp+iyn*xsz+ixn));
 
 	if (sideprev <= 0.0 && sidenext <= 0.0)
@@ -1469,7 +1508,7 @@ static NhlBoolean IsInCompcBox
 	else if (sideprev >= 0.0 && sidenext >= 0.0)
 		return False;
 
-	sidebend = RIGHTOFD(*(xp+iyn*xsz+ixn),*(yp+iyn*xsz+ixn),
+	sidebend = RIGHTOFD(sign,*(xp+iyn*xsz+ixn),*(yp+iyn*xsz+ixn),
 			   *(xp+iyp*xsz+ixp),*(yp+iyp*xsz+ixp),
 			   *(xp+iym*xsz+ixm),*(yp+iym*xsz+ixm));
 
@@ -1621,6 +1660,7 @@ static NhlErrorTypes GetFracCoordsD
 	double sfos,sdos;
 	double xtm,ytm;
 	NhlBoolean do_bin = False;
+	int sign = 1;
 	
 /*
  * first use Newton's rule (10 tries), and if that doesn't work try a binary
@@ -1628,7 +1668,7 @@ static NhlErrorTypes GetFracCoordsD
  */
 	fx = 0.5;
 	for (i = 0; i < 10; i++) {
-		sfos = RIGHTOF((double)x,(double)y,
+		sfos = RIGHTOF(sign,(double)x,(double)y,
 			       ((1.0 - fx) * xlt + fx * xrt),
 			       ((1.0 - fx) * ylt + fx * yrt),
 			       ((1.0 - fx) * xlb + fx * xrb),
@@ -1661,7 +1701,7 @@ static NhlErrorTypes GetFracCoordsD
 		while (fabs(fx2-fx1) > EPS) {
 
 			fx = 0.5 * (fx1 + fx2);
-			sfos =  RIGHTOF((double)x,(double)y,
+			sfos =  RIGHTOF(sign,(double)x,(double)y,
 					((1.0 - fx) * xlt + fx * xrt),
 					((1.0 - fx) * ylt + fx * yrt),
 					((1.0 - fx) * xlb + fx * xrb),
@@ -1747,6 +1787,7 @@ static NhlErrorTypes GetFracCoords
 	float sfos,sdos;
 	float xtm,ytm;
 	NhlBoolean do_bin = False;
+	int sign = crp->handedness_sign;
 	
 /*
  * first use Newton's rule (10 trys), and if that doesn't work try a binary
@@ -1754,7 +1795,7 @@ static NhlErrorTypes GetFracCoords
  */
 	fx = 0.5;
 	for (i = 0; i < 10; i++) {
-		sfos = RIGHTOF(x,y,
+		sfos = RIGHTOF(sign,x,y,
 			       ((1.0 - fx) * xlt + fx * xrt),
 			       ((1.0 - fx) * ylt + fx * yrt),
 			       ((1.0 - fx) * xlb + fx * xrb),
@@ -1787,7 +1828,7 @@ static NhlErrorTypes GetFracCoords
 		while (fabs(fx2-fx1) > EPS) {
 
 			fx = 0.5 * (fx1 + fx2);
-			sfos =  RIGHTOF(x,y,
+			sfos =  RIGHTOF(sign,x,y,
 					((1.0 - fx) * xlt + fx * xrt),
 					((1.0 - fx) * ylt + fx * yrt),
 					((1.0 - fx) * xlb + fx * xrb),
@@ -1887,6 +1928,7 @@ static NhlErrorTypes CrDataToCompc
 			subret = GetFracCoordsD(crp,xt,yt,
 						&xo,&yo);
 			xout[i] = xo;
+			yout[i] = crp->compc_y_max - yo;
 			yout[i] = yo;
 			ret = MIN(ret,subret);
 			continue;
@@ -1899,6 +1941,7 @@ static NhlErrorTypes CrDataToCompc
 		subret = GetFracCoordsD(crp,xt,yt,&xo,&yo);
 
 		xout[i] = xo;
+		yout[i] = crp->compc_y_max - yo;
 		yout[i] = yo;
 			
 		ret = MIN(ret,subret);
