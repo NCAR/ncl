@@ -29,7 +29,7 @@ extern void NGCALLF(ddrveof,DDRVEOF)(double *,int *,int *,int *,int *,
 extern void NGCALLF(dncldrv,dncldrv)(double *,double *,int *,int *,int *,
                                      int *,double *,int *,double *,double *,
                                      float *,double *,int *,int *,double *,
-                                     double *,int *,double *, int *,
+                                     double *,double *,int *,double *, int *,
                                      double *,int *,int *,int *,int *,int*);
 
 extern void NGCALLF(deofts7,DEOFTS7)(double *,int *,int *,int *,int *,
@@ -844,7 +844,7 @@ NhlErrorTypes eofcov_pcmsg_W( void )
 /*
  * Work array variables.
  */
-  double *tmp_x, *cssm, *work, *weval;
+  double *tmp_x, *cssm, *work, *weval, *evecx;
   int   *iwork, *ifail;
   int lcssm, lwork, liwork, lifail;
 /*
@@ -978,6 +978,7 @@ NhlErrorTypes eofcov_pcmsg_W( void )
   iwork  =    (int *)calloc(liwork,sizeof(int));
   ifail  =    (int *)calloc(lifail,sizeof(int));
   tmp_x  = (double *)calloc(total_size_x,sizeof(double));
+  evecx  =  (double *)calloc(total_size_evec,sizeof(double));
   if( cssm == NULL || work == NULL || weval == NULL || iwork == NULL || 
       ifail == NULL || tmp_x == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_pcmsg: Unable to allocate memory for work arrays");
@@ -988,8 +989,8 @@ NhlErrorTypes eofcov_pcmsg_W( void )
  */
   NGCALLF(dncldrv,DNCLDRV)(dx,tmp_x,&nrow,&ncol,&nobs,&msta,
                            &missing_dx.doubleval,neval,eval,evec,pcvar,
-                           trace,&iopt,&jopt,dpcmsg,cssm,&lcssm,work,&lwork,
-                           weval,iwork,&liwork,ifail,&lifail,&ier);
+                           trace,&iopt,&jopt,dpcmsg,evecx,cssm,&lcssm,
+						   work,&lwork,weval,iwork,&liwork,ifail,&lifail,&ier);
 /*
  * Check various possible error messages.
  */
@@ -1018,6 +1019,7 @@ NhlErrorTypes eofcov_pcmsg_W( void )
   NclFree(iwork);
   NclFree(ifail);
   NclFree(tmp_x);
+  NclFree(evecx);
 /*
  * Return values. 
  */
@@ -1259,7 +1261,7 @@ NhlErrorTypes eofcor_pcmsg_W( void )
 /*
  * Work array variables.
  */
-  double *tmp_x, *cssm, *work, *weval;
+  double *tmp_x, *cssm, *work, *weval, *evecx;
   int    *iwork, *ifail;
   int lcssm, lwork, liwork, lifail;
 /*
@@ -1393,6 +1395,7 @@ NhlErrorTypes eofcor_pcmsg_W( void )
   iwork  =    (int *)calloc(liwork,sizeof(int));
   ifail  =    (int *)calloc(lifail,sizeof(int));
   tmp_x  = (double *)calloc(total_size_x,sizeof(double));
+  evecx  =  (double *)calloc(total_size_evec,sizeof(double));
   if( cssm == NULL || work == NULL || weval == NULL || iwork == NULL || 
       ifail == NULL || tmp_x == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcor_pcmsg: Unable to allocate memory for work arrays");
@@ -1403,8 +1406,8 @@ NhlErrorTypes eofcor_pcmsg_W( void )
  */
   NGCALLF(dncldrv,DNCLDRV)(dx,tmp_x,&nrow,&ncol,&nobs,&msta,
                            &missing_dx.doubleval,neval,eval,evec,pcvar,
-                           trace,&iopt,&jopt,dpcmsg,cssm,&lcssm,work,&lwork,
-                           weval,iwork,&liwork,ifail,&lifail,&ier);
+                           trace,&iopt,&jopt,dpcmsg,evecx,cssm,&lcssm,
+						   work,&lwork,weval,iwork,&liwork,ifail,&lifail,&ier);
 /*
  * Check various possible error messages.
  */
@@ -1433,6 +1436,7 @@ NhlErrorTypes eofcor_pcmsg_W( void )
   NclFree(iwork);
   NclFree(ifail);
   NclFree(tmp_x);
+  NclFree(evecx);
 /*
  * Return values. 
  */

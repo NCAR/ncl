@@ -56,6 +56,15 @@ extern NhlErrorTypes svdcov_sv_W(void);
 extern NhlErrorTypes svdstd_sv_W(void);
 extern NhlErrorTypes sindex_yrmo_W(void);
 extern NhlErrorTypes snindex_yrmo_W(void);
+extern NhlErrorTypes x_skewt_W(void);
+extern NhlErrorTypes y_skewt_W(void);
+extern NhlErrorTypes tmr_skewt_W(void);
+extern NhlErrorTypes tda_skewt_W(void);
+extern NhlErrorTypes satlft_skewt_W(void);
+extern NhlErrorTypes ptlcl_skewt_W(void);
+extern NhlErrorTypes showal_skewt_W(void);
+extern NhlErrorTypes pw_skewt_W(void);
+extern NhlErrorTypes cape_thermo_W(void);
 
 extern NhlErrorTypes dv2uvf_W(void);
 extern NhlErrorTypes dv2uvg_W(void);
@@ -199,6 +208,7 @@ extern NhlErrorTypes wmdrft_W(void);
 extern NhlErrorTypes wmlabs_W(void);
 
 extern NhlErrorTypes regcoef_W(void);
+extern NhlErrorTypes regCoef_W(void);
 extern NhlErrorTypes regline_W(void);
 extern NhlErrorTypes stat2_W(void);
 extern NhlErrorTypes stat_trim_W(void);
@@ -240,6 +250,8 @@ extern NhlErrorTypes wgt_runave_W(void);
 extern NhlErrorTypes wgt_areaave_W(void);
 extern NhlErrorTypes wgt_volave_W(void);
 extern NhlErrorTypes dtrend_W(void);
+extern NhlErrorTypes local_min_W(void);
+extern NhlErrorTypes local_max_W(void);
 extern NhlErrorTypes fluxEddy_W(void);
 extern NhlErrorTypes cz2ccm_W(void);
 extern NhlErrorTypes specx_anal_W(void);
@@ -624,6 +636,111 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",2,NclANY);nargs++;
 
     NclRegisterFunc(snindex_yrmo_W,args,"snindex_yrmo",nargs);
+/*
+ * Register "x_skewt".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(2);
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+
+    NclRegisterFunc(x_skewt_W,args,"x_skewt",nargs);
+/*
+ * Register "y_skewt".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(1);
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+
+    NclRegisterFunc(y_skewt_W,args,"y_skewt",nargs);
+/*
+ * Register "tmr_skewt".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(2);
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+
+    NclRegisterFunc(tmr_skewt_W,args,"tmr_skewt",nargs);
+/*
+ * Register "tda_skewt".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(2);
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+
+    NclRegisterFunc(tda_skewt_W,args,"tda_skewt",nargs);
+/*
+ * Register "satlft_skewt".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(2);
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+
+    NclRegisterFunc(satlft_skewt_W,args,"satlft_skewt",nargs);
+/*
+ * Register "ptlcl_skewt".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(5);
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+
+    NclRegisterProc(ptlcl_skewt_W,args,"ptlcl_skewt",nargs);
+/*
+ * Register "showal_skewt".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(3);
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+
+    NclRegisterFunc(showal_skewt_W,args,"showal_skewt",nargs);
+/*
+ * Register "pw_skewt".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(2);
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+
+    NclRegisterFunc(pw_skewt_W,args,"pw_skewt",nargs);
+/*
+ * Register "cape_thermo".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(4);
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+
+    NclRegisterFunc(cape_thermo_W,args,"cape_thermo",nargs);
 /*
  * Register "dv2uvf".
  *
@@ -2418,6 +2535,17 @@ void NclAddUserFuncs(void)
 
     NclRegisterFunc(regcoef_W,args,"regcoef",nargs);
 /*
+ * Register "regCoef".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(2);
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+
+    NclRegisterFunc(regCoef_W,args,"regCoef",nargs);
+/*
  * Register "regline".
  *
  * Create private argument array.
@@ -2838,6 +2966,28 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
     SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
     NclRegisterFunc(dtrend_W,args,"dtrend",nargs);
+
+/*
+ * Register "local_min".
+ */
+    nargs = 0;
+    args = NewArgs(3);
+    SetArgTemplate(args,nargs,"numeric",2,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+    NclRegisterFunc(local_min_W,args,"local_min",nargs);
+
+/*
+ * Register "local_max".
+ */
+    nargs = 0;
+    args = NewArgs(3);
+    SetArgTemplate(args,nargs,"numeric",2,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+    NclRegisterFunc(local_max_W,args,"local_max",nargs);
 
 /*
  * Register "fluxEddy".
