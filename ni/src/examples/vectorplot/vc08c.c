@@ -1,5 +1,5 @@
 /*
- *      $Id: vc08c.c,v 1.2 1997-03-16 17:33:06 haley Exp $
+ *      $Id: vc08c.c,v 1.3 1997-04-11 18:52:56 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -42,20 +42,21 @@ int vccolors[14] = {26,28,30,33,36,39,42,45,48,51,54,56,58,60};
 
 main()
 {
-  int NCGM=0, X11=1, PS=0;
-  int appid,wid,vcid,vfield,mapid,txid1,txid2;
-  int rlist;
-  float U[NLAT][NLON],V[NLAT][NLON];
+    int NCGM=0, X11=1, PS=0;
+    int appid,wid,vcid,vfield,mapid,txid1,txid2;
+    int rlist;
+    float U[NLAT][NLON],V[NLAT][NLON];
 /*
  * Declare variables for getting information from netCDF file.
  */
-  int vf, u_id, v_id, lon_id, lat_id;
-  int  i, flen;
-  long lonlen, latlen, start[4], count[4];
-  float lon[NLON], lat[NLAT];
-  char filename[256], recname[50];
-  const char *dir = _NGGetNCARGEnv("data");
-  char title[256], subtitle[256], txtstring[256];
+    int vf, u_id, v_id, lon_id, lat_id;
+    int  i, flen;
+    long lonlen, latlen, start[4], count[4];
+    int icount[2];
+    float lon[NLON], lat[NLAT];
+    char filename[256], recname[50];
+    const char *dir = _NGGetNCARGEnv("data");
+    char title[256], subtitle[256], txtstring[256];
 /*
  * Open the netCDF file.
  */
@@ -145,12 +146,12 @@ main()
  * are a function of time, level, latitude and longitude.  Use the
  * 1st time & level.
  */
-    count[0] = latlen;
-    count[1] = lonlen;
+    icount[0] = latlen;
+    icount[1] = lonlen;
 
     NhlRLClear(rlist);
-    NhlRLSetMDFloatArray(rlist,NhlNvfUDataArray,&U[0][0],2,(int *)count);
-    NhlRLSetMDFloatArray(rlist,NhlNvfVDataArray,&V[0][0],2,(int *)count);
+    NhlRLSetMDFloatArray(rlist,NhlNvfUDataArray,&U[0][0],2,icount);
+    NhlRLSetMDFloatArray(rlist,NhlNvfVDataArray,&V[0][0],2,icount);
     NhlRLSetFloat(rlist,NhlNvfXCStartV,lon[0]);
     NhlRLSetFloat(rlist,NhlNvfXCEndV, lon[lonlen-1]);
     NhlRLSetFloat(rlist,NhlNvfYCStartV,lat[0]);

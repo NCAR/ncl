@@ -1,12 +1,12 @@
 #
-#   $Id: yMakefile,v 1.6 1995-06-13 21:12:10 haley Exp $
+#   $Id: yMakefile,v 1.7 1997-04-11 18:52:47 haley Exp $
 #
 #   Makefile for HLU Legend examples
 #
 
 MYNAME      = legend
 
-PROG_LIBS   =   $(HLULIBS) $(CNCARGLIBS) $(NCARGLIBS)
+PROG_LIBS   =   $(HLULIBS) $(NCARGLIBS)
 EXTRA_LIBS  =   $(XMOTIFCLIENTLIBS)
 SYS_LIBS    =   $(CTOFLIBS) -lm
 

@@ -1,12 +1,12 @@
 #
-#   $Id: yMakefile,v 1.15 1995-10-16 22:28:50 haley Exp $
+#   $Id: yMakefile,v 1.16 1997-04-11 18:52:48 haley Exp $
 #
 #   Makefile for HLU MapPlot examples
 #
 
 MYNAME      = mapplot
 
-PROG_LIBS   =   $(HLULIBS) $(CNCARGLIBS) $(NCARGLIBS)
+PROG_LIBS   =   $(HLULIBS) $(NCARGLIBS)
 EXTRA_LIBS  =   $(XMOTIFCLIENTLIBS)
 SYS_LIBS    =   $(CTOFLIBS) -lm
 

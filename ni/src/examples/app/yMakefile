@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.5 1995-09-28 14:24:57 haley Exp $
+#      $Id: yMakefile,v 1.6 1997-04-11 18:52:33 haley Exp $
 #
 #########################################################################
 #									#
@@ -20,7 +20,7 @@
 #	Description:	
 MYNAME      = app
 
-PROG_LIBS   =   $(HLULIBS) $(CNCARGLIBS) $(NCARGLIBS)
+PROG_LIBS   =   $(HLULIBS) $(NCARGLIBS)
 EXTRA_LIBS  =   $(XLIB)
 SYS_LIBS    =   $(CTOFLIBS) -lm
 

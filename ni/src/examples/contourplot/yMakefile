@@ -1,12 +1,12 @@
 #
-#   $Id: yMakefile,v 1.30 1997-03-14 17:17:08 haley Exp $
+#   $Id: yMakefile,v 1.31 1997-04-11 18:56:57 haley Exp $
 #
 #   Makefile for HLU ContourPlot examples
 #
 
 MYNAME      = contourplot
 
-PROG_LIBS   = $(HLULIBS) $(CNCARGLIBS) $(NCARGLIBS)
+PROG_LIBS   = $(HLULIBS) $(NCARGLIBS)
 EXTRA_LIBS  = $(XMOTIFCLIENTLIBS) -lnetcdf
 SYS_LIBS    = $(CTOFLIBS) -lm
 

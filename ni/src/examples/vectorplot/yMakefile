@@ -1,12 +1,12 @@
 #
-#   $Id: yMakefile,v 1.15 1997-03-13 17:22:13 haley Exp $
+#   $Id: yMakefile,v 1.16 1997-04-11 18:52:56 haley Exp $
 #
 #   Makefile for HLU VectorPlot examples
 #
 
 MYNAME      = vectorplot
 
-PROG_LIBS   = $(HLULIBS) $(CNCARGLIBS) $(NCARGLIBS)
+PROG_LIBS   = $(HLULIBS) $(NCARGLIBS)
 EXTRA_LIBS  = $(XMOTIFCLIENTLIBS) -lnetcdf
 SYS_LIBS    = $(CTOFLIBS) -lm
 

@@ -1,12 +1,12 @@
 #
-#   $Id: yMakefile,v 1.8 1995-06-29 21:59:56 dbrown Exp $
+#   $Id: yMakefile,v 1.9 1997-04-11 18:52:53 haley Exp $
 #
 #   Makefile for HLU TickMark examples
 #
 
 MYNAME  = tickmark
 
-PROG_LIBS   =   $(HLULIBS) $(CNCARGLIBS) $(NCARGLIBS)
+PROG_LIBS   =   $(HLULIBS) $(NCARGLIBS)
 EXTRA_LIBS  =   $(XLIB)
 SYS_LIBS    =   $(CTOFLIBS) -lm
 

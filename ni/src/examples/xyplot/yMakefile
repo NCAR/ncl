@@ -1,12 +1,12 @@
 #
-#   $Id: yMakefile,v 1.38 1997-04-08 20:11:33 haley Exp $
+#   $Id: yMakefile,v 1.39 1997-04-11 18:52:57 haley Exp $
 #
 #   Makefile for HLU XYPlot examples
 #
 
 MYNAME = xyplot
 
-PROG_LIBS   =   $(HLULIBS) $(CNCARGLIBS) $(NCARGLIBS)
+PROG_LIBS   =   $(HLULIBS) $(NCARGLIBS)
 EXTRA_LIBS  =   $(XMOTIFCLIENTLIBS) -lnetcdf
 SYS_LIBS    =   $(CTOFLIBS) -lm 
 

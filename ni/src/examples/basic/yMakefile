@@ -1,12 +1,12 @@
 #
-#   $Id: yMakefile,v 1.14 1996-07-10 18:37:03 haley Exp $
+#   $Id: yMakefile,v 1.15 1997-04-11 18:52:38 haley Exp $
 #
 #   Makefile for HLU Basic examples
 #
 
 MYNAME   = basic
 
-PROG_LIBS   =   $(HLULIBS) $(CNCARGLIBS) $(NCARGLIBS)
+PROG_LIBS   =   $(HLULIBS) $(NCARGLIBS)
 EXTRA_LIBS  =   $(XMOTIFCLIENTLIBS)
 SYS_LIBS    =   $(CTOFLIBS) -lm
 
