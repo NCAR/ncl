@@ -1,5 +1,5 @@
 /*
- *	$Id: Rules,v 1.27 1995-03-27 21:15:48 haley Exp $
+ *	$Id: Rules,v 1.28 1995-06-13 21:04:29 haley Exp $
  */
 /* 
    This file contains Makefile macros.  Proper spacing is achieved
@@ -539,40 +539,36 @@ CleanFilesTarget(library)
 #endif	/* PartialLibraryRoot */
 
 /*
- * Macro:	HLUCExampleTarget
+ * Macro:	ExampleTarget
  *
- * Description:	Sources for HLUCExampleTarget are any file that needs to be
- *		copied to the HLUEXPATH - currently only $name.h $name.data
- *		Makefile.$name and $name.resfile are supported by the nhlex
- *		script.
+ * Description:	Sources for CExampleTarget are any of the ncargex or
+ *      ng4ex C example files.
  */
-#ifndef	HLUCExampleTarget
-#define HLUCExampleTarget(program,objects)\
+#ifndef	CExampleTarget
+#define CExampleTarget(program,objects)\
 ]\
 examples:: program]\
 ]\
 _CLinkProgram(program,objects,NullArgument)\
 ]\
 CleanFilesTarget(program objects)
-#endif	/* HLUCExampleTarget */
+#endif	/* CExampleTarget */
 
 /*
- * Macro:	HLUFExampleTarget
+ * Macro:	FExampleTarget
  *
- * Description:	Sources for HLUFExampleTarget are any file that needs to be
- *		copied to the HLUEXPATH - currently only $name.h $name.data
- *		Makefile.$name and $name.resfile are supported by the nhlex
- *		script.
+ * Description:	Sources for FExampleTarget are any of the ncargex or
+ *      ng4ex Fortran example files.
  */
-#ifndef	HLUFExampleTarget
-#define HLUFExampleTarget(program,objects)\
+#ifndef	FExampleTarget
+#define FExampleTarget(program,objects)\
 ]\
 examples:: program]\
 ]\
 _FortranLinkProgram(program,objects,NullArgument)\
 ]\
 CleanFilesTarget(program objects)
-#endif	/* HLUFExampleTarget */
+#endif	/* FExampleTarget */
 
 /*
  * Macro:	DependTarget
