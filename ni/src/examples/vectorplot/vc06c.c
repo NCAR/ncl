@@ -1,5 +1,5 @@
-/*
- *      
+/*  
+ *  $Id: vc06c.c,v 1.2 1996-06-26 16:05:23 haley Exp $    
  */
 /***********************************************************************
 *                                                                      *
@@ -16,7 +16,6 @@
  *              PO 3000, Boulder, Colorado
  *
  *  Date:       June 19, 1996
- *
  *
  *    Description:  This example demonstrates several features of
  *                 VectorPlot:
@@ -78,7 +77,6 @@ main(int argc, char *argv[])
     int   uv, p, u_id, v_id, p_id, ncid, lon_id, lat_id, FRAME_COUNT;
     int  i, mindistval, icount[3], longitudeval;
     float val;
-    float   lon[73], lat[73];
     long  start[2], count[2], lonlen, latlen; 
     float CenLonF;
     char  filenameUV[256];
@@ -99,44 +97,6 @@ main(int argc, char *argv[])
  */
     sprintf( filenamePsl, "%s/cdf/941110_P.cdf", dirPsl );
     p = ncopen(filenamePsl,NC_NOWRITE);
-/*
- * Get the U and V and lat/lon dimensions.
- */
-    lat_id = ncdimid(uv,"lat");
-    lon_id = ncdimid(uv,"lon");
-    u_id = ncvarid(uv,"u");
-    v_id = ncvarid(uv,"v");
-    ncdiminq(uv,lat_id,(char *)0,&latlen);
-    ncdiminq(uv,lon_id,(char *)0,&lonlen);
-    lat_id = ncvarid(uv,"lat");
-    lon_id = ncvarid(uv,"lon");
- 
-    start[0] = start[1] = 0;
-    count[0] = latlen; count[1] = lonlen;
-    ncvarget(uv,u_id,(long const *)start,(long const *)count,U);
-    ncvarget(uv,v_id,(long const *)start,(long const *)count,V);
-    count[0] = latlen;
-    ncvarget(uv,lat_id,(long const *)start,(long const *)count,lat);
-    count[0] = lonlen;
-    ncvarget(uv,lon_id,(long const *)start,(long const *)count,lon);
-/*
- * Get the PSL and lat/lon dimensions.
- */
-    lat_id = ncdimid(p,"lat");
-    lon_id = ncdimid(p,"lon");
-    p_id = ncvarid(p,"Psl");
-    ncdiminq(p,lat_id,(char *)0,&latlen);
-    ncdiminq(p,lon_id,(char *)0,&lonlen);
-    lat_id = ncvarid(p,"lat");
-    lon_id = ncvarid(p,"lon");
-
-    start[0] = start[1] = 0;
-    count[0] = latlen; count[1] = lonlen;
-    ncvarget(p,p_id,(long const *)start,(long const *)count,PSL);
-    count[0] = latlen;
-    ncvarget(p,lat_id,(long const *)start,(long const *)count,lat);
-    count[0] = lonlen;
-    ncvarget(p,lon_id,(long const *)start,(long const *)count,lon);
 /*
  * Initialize the high level utility library
  */
@@ -178,30 +138,19 @@ main(int argc, char *argv[])
         NhlCreate(&wid,"vc06Work",NhlpsWorkstationClass,appid,rlist);
     }
 /*
- * Create a VectorField data object using the data set defined above.
- * By default the array bounds will define the data boundaries (zero-based,
- * as in C language conventions)
- */
-/*
  * Get the U and V and lat/lon dimensions.
  */
     lat_id = ncdimid(uv,"lat");
     lon_id = ncdimid(uv,"lon");
-    u_id = ncvarid(ncid,"u");
-    v_id = ncvarid(ncid,"v");
+    u_id = ncvarid(uv,"u");
+    v_id = ncvarid(uv,"v");
     ncdiminq(uv,lat_id,(char *)0,&latlen);
     ncdiminq(uv,lon_id,(char *)0,&lonlen);
-    lat_id = ncvarid(uv,"lat");
-    lon_id = ncvarid(uv,"lon");
 
     start[0] = start[1] = 0;
     count[0] = latlen; count[1] = lonlen;
     ncvarget(uv,u_id,(long const *)start,(long const *)count,U);
     ncvarget(uv,v_id,(long const *)start,(long const *)count,V);
-    count[0] = latlen;
-    ncvarget(uv,lat_id,(long const *)start,(long const *)count,lat);
-    count[0] = lonlen;
-    ncvarget(uv,lon_id,(long const *)start,(long const *)count,lon);
 /*
  * Create a ScalarField data object using the data set defined above.
  * By default the array bounds will define the data boundaries (zero-based,
@@ -225,17 +174,10 @@ main(int argc, char *argv[])
     p_id = ncvarid(p,"Psl");
     ncdiminq(p,lat_id,(char *)0,&latlen);
     ncdiminq(p,lon_id,(char *)0,&lonlen);
-    lat_id = ncvarid(p,"lat");
-    lon_id = ncvarid(p,"lon");
 
     start[0] = start[1] = 0;
     count[0] = latlen; count[1] = lonlen;
     ncvarget(p,p_id,(long const *)start,(long const *)count,PSL);
-    count[0] = latlen;
-    ncvarget(p,lat_id,(long const *)start,(long const *)count,lat);
-    count[0] = lonlen;
-    ncvarget(p,lon_id,(long const *)start,(long const *)count,lon);
-
     icount[0] = latlen; icount[1] = lonlen;
 
     NhlRLClear(rlist);
@@ -294,22 +236,22 @@ main(int argc, char *argv[])
  * and the value of vcMinDistanceF
  */
         longitudeval = (int)(i * 360./(FRAME_COUNT-1) + 0.5);
-        
+
         if (longitudeval < 10) {
             sprintf(slongitude,"%d:S:o:N:",longitudeval);
         }
         else {
-            if (longitudeval < 100) {
+            if (longitudeval < 100){
                 sprintf(slongitude,"%d:S:o:N:",longitudeval);
             }
             else {
                 sprintf(slongitude,"%d:S:o:N:",longitudeval);
             }
         }
-      
+        
         val = ((FRAME_COUNT-1) - i) * 0.0175/(FRAME_COUNT-1);
         mindistval = (int)(10000*val + 0.5);
-      
+        
         if (mindistval < 10){
             sprintf(smindist,"%s%d",smindist0,mindistval);
         }
@@ -317,14 +259,13 @@ main(int argc, char *argv[])
             if (mindistval < 100){
                 sprintf(smindist,"%s%d",smindist1,mindistval);
             }
-            else
-              {
-                  sprintf(smindist,"%s%d",smindist2,mindistval);
-              }
+            else {
+                sprintf(smindist,"%s%d",smindist2,mindistval);
+            }
         }
 
         NhlRLClear(rlist);
-
+        
         strcpy(title,"Varying vcMinDistanceF :: ");
         strcat(title,smindist);
 
@@ -332,7 +273,7 @@ main(int argc, char *argv[])
         NhlRLSetString(rlist,NhlNtiXAxisString,slongitude);
         NhlRLSetFloat(rlist,NhlNvcMinDistanceF,val);
         NhlSetValues(vcid,rlist);
-      
+
         NhlDraw(mpid);
         NhlFrame(wid);
 
@@ -346,3 +287,4 @@ main(int argc, char *argv[])
     NhlClose();
     exit(0);
 }
+
