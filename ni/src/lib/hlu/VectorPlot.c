@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.c,v 1.82 2003-09-10 21:30:00 dbrown Exp $
+ *      $Id: VectorPlot.c,v 1.83 2003-09-25 23:48:10 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3191,7 +3191,7 @@ static NhlErrorTypes vcInitDraw
                 vcp->yc1 = 0;
                 vcp->ycn = ycount - 1;
         }
-	else if (tfp->grid_type == NhltrCURVILINEAR) {
+	else if (tfp->grid_type >= NhltrCURVILINEAR) {
                 int xcount,ycount;
 
 		xcount = vcp->vfp->x_arr->len_dimensions[1];
