@@ -1,5 +1,5 @@
 /*
- *	$Id: wks.h.sed,v 1.2 1993-01-11 20:53:56 don Exp $
+ *	$Id: wks.h.sed,v 1.3 1993-03-11 19:51:47 haley Exp $
  */
 /***********************************************************************
 * 
@@ -19,7 +19,7 @@
 #define DEFAULT_GKS_BUFSIZE	SED_GKS_BUFFER_SIZE
 
 #define DEFAULT_GKS_OUTPUT	"gmeta"
-#define DEFAULT_TRANSLATOR	"cgmtrans"
+#define DEFAULT_TRANSLATOR	"ctrans"
 
 #define MAX_UNITS		256
 
