@@ -24,153 +24,92 @@ recognizes the following values of IMAP:
 .IP "IMAP = 0"
 .RS
 .IP "Type of mapping" 3
-None. When
-IMAP is zero,
-the routine
-PCMPXY is
-being asked
-for
-information
-about its
-capabilities
-with respect
-to a
-particular
-mapping.
+None. When IMAP is zero, the routine PCMPXY is being asked for information
+about its capabilities with respect to a particular mapping.
 .IP XINP 3
-Input: the
-real
-equivalent of
-a possible
-value of IMAP
-about which
-information
+Input: the real equivalent of a possible value of IMAP about which information
 is desired.
 .IP YINP 3
-Output
-(real): 0.
-says that the
-mapping
-specified by
-XINP is not
-available, 1.
-that it is
-available, 2.
-that its
-inverse is
-available,
-and 3. that
-both it and
-its inverse
-are available.
+Output (real): 0. says that the mapping specified by XINP is not available, 1.
+that it is available, 2. that its inverse is available, and 3. that both it and
+its inverse are available.
 .RE
 .IP "IMAP = 1"
 .RS
 .IP "Type of mapping" 3
-Ezmap
-projection.
+Ezmap projection.
 .IP XINP 3
-Longitude, in
-degrees.
+Longitude, in degrees.
 .IP YINP 3
-Latitude, in
-degrees.
+Latitude, in degrees.
 .RE
 .IP "IMAP = 2"
 .RS
 .IP "Type of mapping" 3
-Rho/theta
-mapping.
+Rho/theta mapping.
 .IP XINP 3
-Rho, in user
-units.
+Rho, in user units.
 .IP YINP 3
-Theta, in
-degrees.
+Theta, in degrees.
 .RE
 .IP "IMAP = 3"
 .RS
 .IP "Type of mapping" 3
-Projection
-from an
-arbitrary
-parallelogram
-in 3-space to
-an image
-plane. This is
-implemented
-using a
-package which
-is currently
-under
-development
-and is not yet
-generally
-available.
+Projection from an arbitrary parallelogram in 3-space to an image plane. This is
+implemented using a package which is currently under development and is not yet
+generally available.
 .IP XINP 3
-A multiplier
-for a unit
-vector along
-one edge of
-the
-parallelogram.
+A multiplier for a unit vector along one edge of the parallelogram.
 .IP YINP 3
-A multiplier
-for a unit
-vector along
-an
-intersecting
-edge of the
-parallelogram.
+A multiplier for a unit vector along an intersecting edge of the parallelogram.
+.RE
+.IP "IMAP = 4"
+.RS
+.IP "Type of mapping" 3
+A version of the EZMAP projection that is intended to be used to label specific
+points on the surface of the globe.  When 'MA' = 4, use "0." for each of the
+arguments XPOS, YPOS, and ANGD in calls to PCHIQU and PCMEQU.  Initially, each
+label is assumed to be placed at the point on the globe with latitude zero and
+longitude zero and to be written along the equator.  Three rotations are then
+performed to move the label to the point (PLAT,PLON) in such a way that it
+makes an angle PANG with the local eastward-pointing vector.  Finally, the
+EZMAP routine MAPTRA is called to project the label as specified by the current
+state of EZMAP.  The desired values of PANG, PLAT, and PLON (in degrees) are
+passed to PCMPXY in the labelled common block PCMP04, which contains just those
+three variables, in that order.  Use the ncargex command to see the following
+relevant example: cpex10.
+.IP XINP 3
+Longitude, in degrees.
+.IP YINP 3
+Latitude, in degrees.
 .RE
 .IP "IMAP = 100"
 .RS
 .IP "Type of mapping" 3
-The identity
-mapping, but
-returns 1.E12
-outside a
-specified
-viewport. Used
-by the utility
-Scrolled_title to do
-clipping at
-the edges of
-the viewport.
+The identity mapping, but returns 1.E12 outside a specified viewport. Used
+by the utility Scrolled_title to do clipping at the edges of the viewport.
 .IP XINP 3
-X coordinate,
-in the
-fractional
-system.
+X coordinate, in the fractional system.
 .IP YINP 3
-Y coordinate,
-in the
-fractional
-system.
+Y coordinate, in the fractional system.
 .RE
 .IP "other > 0"
 .RS
 .IP "Type of mapping" 3
-The identity
-mapping.
+The identity mapping.
 .IP XINP 3
-Any real
-value.
+Any real value.
 .IP YINP 3
-Any real
-value.
+Any real value.
 .RE
 .IP "other < 0"
 .RS
 .IP "Type of mapping" 3
-An inverse
-mapping.
+An inverse mapping.
 .IP XINP 3
-A mapped X
-coordinate.
+A mapped X coordinate.
 .IP YINP 3
-A mapped Y
-coordinate.
+A mapped Y coordinate.
 .RE
 .RE
 .IP "" 12
