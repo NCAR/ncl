@@ -426,7 +426,7 @@ NhlErrorTypes pres_hybrid_ccm_W( void )
 /*
  * Various.
  */
-  int i, j, index_phy, nlat, nlon, klvl, klvlnlatnlon;
+  int i, j, index_psfc, index_phy, nlat, nlon, klvl, nlatnlon, klvlnlatnlon;
   int size_leftmost, size_phy;
 /*
  * Retrieve parameters
@@ -484,7 +484,8 @@ NhlErrorTypes pres_hybrid_ccm_W( void )
   }
   nlat = dsizes_psfc[ndims_psfc-2];
   nlon = dsizes_psfc[ndims_psfc-1];
-  klvlnlatnlon = klvl * nlat * nlon;
+  nlatnlon     = nlat * nlon;
+  klvlnlatnlon = klvl * nlatnlon;
 /*
  * Determine type of output.
  */
@@ -532,7 +533,7 @@ NhlErrorTypes pres_hybrid_ccm_W( void )
  * Coerce psfc.
  */
   if(type_psfc != NCL_double) {
-    tmp_psfc = (double*)calloc(nlat*nlon,sizeof(double));
+    tmp_psfc = (double*)calloc(nlatnlon,sizeof(double));
     if( tmp_psfc == NULL ) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"pres_hybrid_ccm: Unable to allocate memory for coercing psfc array to double precision");
       return(NhlFATAL);
@@ -561,20 +562,20 @@ NhlErrorTypes pres_hybrid_ccm_W( void )
 /*
  * Call function.
  */
-  index_phy = 0;
+  index_psfc = index_phy = 0;
   for( i = 0; i < size_leftmost; i++ ) {
     if(type_psfc != NCL_double) {
 /*
  * Coerce subsection of psfc (tmp_psfc) to double.
  */
-      coerce_subset_input_double(psfc,tmp_psfc,i,type_psfc,nlat*nlon,0,
-                                 NULL,NULL);
+      coerce_subset_input_double(psfc,tmp_psfc,index_psfc,type_psfc,
+                                 nlatnlon,0,NULL,NULL);
     }
     else {
 /*
  * Point tmp_psfc to appropriate location in psfc.
  */
-      tmp_psfc = &((double*)psfc)[i];
+      tmp_psfc = &((double*)psfc)[index_psfc];
     }
 
     if(type_phy == NCL_double) tmp_phy = &((double*)phy)[index_phy];
@@ -589,7 +590,8 @@ NhlErrorTypes pres_hybrid_ccm_W( void )
         ((float*)phy)[index_phy+j] = (float)tmp_phy[j];
       }
     }
-    index_phy += klvlnlatnlon;
+    index_psfc += nlatnlon;
+    index_phy  += klvlnlatnlon;
   }
 /*
  * Free memory.
@@ -627,8 +629,8 @@ NhlErrorTypes dpres_hybrid_ccm_W( void )
 /*
  * Various.
  */
-  int i, j, index_phy, nlat, nlon, klvl, klvl1, klvl1nlatnlon;
-  int size_leftmost, size_phy;
+  int i, j, nlat, nlon, klvl, klvl1, nlatnlon, klvl1nlatnlon;
+  int index_psfc, index_phy, size_leftmost, size_phy;
 /*
  * Retrieve parameters
  *
@@ -686,7 +688,8 @@ NhlErrorTypes dpres_hybrid_ccm_W( void )
   }
   nlat = dsizes_psfc[ndims_psfc-2];
   nlon = dsizes_psfc[ndims_psfc-1];
-  klvl1nlatnlon = klvl1 * nlat * nlon;
+  nlatnlon      = nlat * nlon;
+  klvl1nlatnlon = klvl1 * nlatnlon;
 /*
  * Determine type of output.
  */
@@ -734,7 +737,7 @@ NhlErrorTypes dpres_hybrid_ccm_W( void )
  * Coerce psfc.
  */
   if(type_psfc != NCL_double) {
-    tmp_psfc = (double*)calloc(nlat*nlon,sizeof(double));
+    tmp_psfc = (double*)calloc(nlatnlon,sizeof(double));
     if( tmp_psfc == NULL ) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"dpres_hybrid_ccm: Unable to allocate memory for coercing psfc array to double precision");
       return(NhlFATAL);
@@ -762,20 +765,20 @@ NhlErrorTypes dpres_hybrid_ccm_W( void )
 /*
  * Call function.
  */
-  index_phy = 0;
+  index_psfc = index_phy = 0;
   for( i = 0; i < size_leftmost; i++ ) {
     if(type_psfc != NCL_double) {
 /*
  * Coerce subsection of psfc (tmp_psfc) to double.
  */
-      coerce_subset_input_double(psfc,tmp_psfc,i,type_psfc,nlat*nlon,0,
-                                 NULL,NULL);
+      coerce_subset_input_double(psfc,tmp_psfc,index_psfc,type_psfc,
+                                 nlatnlon,0,NULL,NULL);
     }
     else {
 /*
  * Point tmp_psfc to appropriate location in psfc.
  */
-      tmp_psfc = &((double*)psfc)[i];
+      tmp_psfc = &((double*)psfc)[index_psfc];
     }
 
     if(type_phy == NCL_double) tmp_phy = &((double*)phy)[index_phy];
@@ -790,7 +793,8 @@ NhlErrorTypes dpres_hybrid_ccm_W( void )
         ((float*)phy)[index_phy+j] = (float)tmp_phy[j];
       }
     }
-    index_phy += klvl1nlatnlon;
+    index_phy  += klvl1nlatnlon;
+    index_psfc += nlatnlon;
   }
 /*
  * Free memory.

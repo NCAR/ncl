@@ -7,10 +7,10 @@
 #include "wrapper.h"
 
 extern void NGCALLF(daamom1,daamom1)(double*,double*,double*,double*,int*,
-				     int*,int*,double*,double*);
+                                     int*,int*,double*,double*);
 
 extern void NGCALLF(daamom3,daamom3)(double*,double*,double*,double*,int*,
-				     int*,int*,double*,double*);
+                                     int*,int*,double*,double*);
 
 extern void NGCALLF(dcosweight,DCOSWEIGHT)(double*,int*,double*);
 
@@ -104,10 +104,10 @@ NhlErrorTypes angmom_atm_W( void )
   else {
     if(ndims_dp == ndims_u) {
       for(i = 0; i < ndims_u; i++ ) {
-	if(dsizes_u[i] != dsizes_dp[i]) {
-	  NhlPError(NhlFATAL,NhlEUNKNOWN,"angmom_atm: dp must either be a one-dimensional array of size 'klev', or the same size as u");
-	  return(NhlFATAL);
-	}
+        if(dsizes_u[i] != dsizes_dp[i]) {
+          NhlPError(NhlFATAL,NhlEUNKNOWN,"angmom_atm: dp must either be a one-dimensional array of size 'klev', or the same size as u");
+          return(NhlFATAL);
+        }
       }
     }
   }
@@ -152,8 +152,8 @@ NhlErrorTypes angmom_atm_W( void )
     if(type_dp != NCL_double) {
       tmp_dp = (double*)calloc(klevnlatnlon,sizeof(double));
       if( tmp_dp == NULL ) {
-	NhlPError(NhlFATAL,NhlEUNKNOWN,"angmom_atm: Unable to allocate memory for coercing dp array to double precision");
-	return(NhlFATAL);
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"angmom_atm: Unable to allocate memory for coercing dp array to double precision");
+        return(NhlFATAL);
       }
     }
   }
@@ -219,13 +219,14 @@ NhlErrorTypes angmom_atm_W( void )
 /*
  * Coerce subsection of u (tmp_u) to double.
  */
-      coerce_subset_input_double(u,tmp_u,i,type_u,klevnlatnlon,0,NULL,NULL);
+      coerce_subset_input_double(u,tmp_u,index_dp,type_u,klevnlatnlon,
+                                 0,NULL,NULL);
     }
     else {
 /*
  * Point tmp_u to appropriate location in u.
  */
-      tmp_u = &((double*)u)[i];
+      tmp_u = &((double*)u)[index_dp];
     }
 
     if(type_angmom == NCL_double) tmp_angmom = &((double*)angmom)[i];
@@ -240,21 +241,21 @@ NhlErrorTypes angmom_atm_W( void )
 /*
  * Coerce subsection of dp (tmp_dp) to double.
  */
-	coerce_subset_input_double(dp,tmp_dp,index_dp,type_dp,klevnlatnlon,
-				   0,NULL,NULL);
+        coerce_subset_input_double(dp,tmp_dp,index_dp,type_dp,klevnlatnlon,
+                                   0,NULL,NULL);
       }
       else {
 /*
  * Point tmp_dp to appropriate location in dp.
  */
-	tmp_dp = &((double*)dp)[index_dp];
+        tmp_dp = &((double*)dp)[index_dp];
       }
       NGCALLF(daamom3,DAAMOM3)(tmp_u,tmp_dp,tmp_lat,tmp_wgt,&nlon,&nlat,&klev,
-			       &missing_du.doubleval,tmp_angmom);
+                               &missing_du.doubleval,tmp_angmom);
     }
     else {
       NGCALLF(daamom1,DAAMOM1)(tmp_u,tmp_dp,tmp_lat,tmp_wgt,&nlon,&nlat,&klev,
-			       &missing_du.doubleval,tmp_angmom);
+                               &missing_du.doubleval,tmp_angmom);
     }
 /*
  * Copy output values from temporary tmp_angmom to angmom.
