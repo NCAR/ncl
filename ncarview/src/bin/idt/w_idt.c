@@ -1,5 +1,5 @@
 /*
- *	$Id: w_idt.c,v 1.19 1992-04-03 23:21:27 clyne Exp $
+ *	$Id: w_idt.c,v 1.20 1992-08-10 22:05:01 clyne Exp $
  */
 /*
  *	w_idt.c
@@ -99,6 +99,10 @@ static  XtResource      resources[] = {
         {
 	"version", "Version", XtRBoolean, sizeof (Boolean),
                 XtOffset(AppDataPtr, version), XtRString, "False" 
+	},
+        {
+	"oldidt", "oldidt", XtRBoolean, sizeof (Boolean),
+                XtOffset(AppDataPtr, oldidt), XtRString, "False" 
 	}
 };
 
@@ -152,7 +156,8 @@ static	XrmOptionDescRec 	options[] = {
 	{"-background",	"*translatorBackground",XrmoptionSepArg,	NULL},
 	{"-reverse",	"*translatorReverse",	XrmoptionNoArg,		"True"},
 	{"-pal",	"*translatorPal",	XrmoptionSepArg,	NULL},
-	{"-Version",	"*version",		XrmoptionNoArg,		"True"}
+	{"-Version",	"*version",		XrmoptionNoArg,		"True"},
+	{"-oldidt",	"*oldidt",		XrmoptionNoArg,		"True"}
 };
 
 
@@ -421,13 +426,16 @@ static	char	**get_trans_commandline(targc, app_data)
 	/*
 	 * the translator is the first arg
 	 */
-	targv[i] = icMalloc((unsigned) 
+	targv[0] = icMalloc((unsigned) 
 		(strlen(binpath) + strlen("/") + (strlen(TRANSLATOR) + 1)));
 
-	(void) strcpy(targv[i], binpath);
-	(void) strcat(targv[i], "/");
-	(void) strcat(targv[i], TRANSLATOR);
-	i++;
+	(void) strcpy(targv[0], binpath);
+	(void) strcat(targv[0], "/");
+	(void) strcat(targv[0], TRANSLATOR);
+
+	targv[1] = "-wid";	/* window id option specifier		*/
+	targv[2] = NULL;	/* hold targv[2] for the window id	*/
+	i=3;
 
 	/*
 	 * now stuff the command line options in

@@ -1,5 +1,5 @@
 /*
- *	$Id: display.c,v 1.6 1992-04-03 23:20:43 clyne Exp $
+ *	$Id: display.c,v 1.7 1992-08-10 22:04:35 clyne Exp $
  */
 /*
  *	Display.c
@@ -47,33 +47,51 @@ static	PlotCommandValues	pcvs[MAX_DISPLAYS];
  *	OpenDisplay also sets some of the default values for idt commands
  * on entry
  *	*metafile	: name of metafile to translate
+ *	wid		: window id for transator to display in
  *
  * on exit
  *	return		: -1 => error spawning translator; else connection id 
  */
-int	OpenDisplay(metafile)
-	char	*metafile;
+int	OpenDisplay()
 {
-
 	int	id;		/* connection id		*/
-	char	*s;
 
-	extern	char	*TalkTo();
 
 	if (numUsed >= MAX_DISPLAYS) {
 		return (-1);	/* too many connections		*/
 	}
-
         /*
 	 * find a free id
 	 */
         for(id = 0; id < MAX_DISPLAYS && ((usedMask >> id) & 1); id++);
+
+	numUsed++;
+	usedMask |= (1 << id); /* update bitmap to include new addition*/
+	return(id);			/* return users file descriptor	*/
+}
+
+int	StartTranslator(id, metafile, wid)
+	int	id;
+	char	*metafile;
+	int	wid;
+{
+	char	*s;
+	char	widbuf[10];
+
+	extern	char	*TalkTo();
+
 
 	/*
 	 * append the metafile name to the end of the translator command
 	 * line
 	 */
 	tArgv[tArgc - 1] = metafile;
+
+	/*
+	 * stuff the window id in argv[2];
+	 */
+	sprintf(widbuf, "%d", wid);
+	tArgv[2] = widbuf;
 
 	if (OpenTranslator(id, tArgv, hFD) < 0) {
 		return(-1);	/* can't get a translator for this metafile*/
@@ -102,9 +120,7 @@ int	OpenDisplay(metafile)
 	(void) strncpy(pcvs[id].set_window, "0.0 0.0 1.0 1.0", MAX_DATA_LEN - 1);
 
 
-	numUsed++;
-	usedMask |= (1 << id); /* update bitmap to include new addition*/
-	return(id);			/* return users file descriptor	*/
+	return(1);
 }
 
 /*
@@ -140,6 +156,8 @@ void	CloseDisplay(id)
  *	*program_name	: the name of the program, used for generating error
  *			  messages
  *	targv		: the translator command line
+ *			  targv[0] = translator name
+ *			  targv[2] is not used
  *	targc		: size of targv.
  *	history		: if true record all commands sent to translator to
  *			  a history file

@@ -1,5 +1,5 @@
 /*
- *	$Id: w_file.c,v 1.6 1992-04-03 23:21:19 clyne Exp $
+ *	$Id: w_file.c,v 1.7 1992-08-10 22:04:53 clyne Exp $
  */
 /*
  *	w_file.c
@@ -41,7 +41,6 @@ static	char	*fileFinder = NULL;	/* current file finder	*/
 static	void	(*selectAction)();
 
 extern	char	*GetFiles();
-extern	AppData	App_Data;
 
 /*
  *	CreateFileSelectPopup()

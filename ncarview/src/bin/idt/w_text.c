@@ -1,5 +1,5 @@
 /*
- *	$Id: w_text.c,v 1.4 1992-04-03 23:21:34 clyne Exp $
+ *	$Id: w_text.c,v 1.5 1992-08-10 22:05:06 clyne Exp $
  */
 /*
  *	w_text.c
@@ -161,7 +161,6 @@ void	AppendText(t)
 
 	extern	char	*strrchr();
 	extern	char	*strchr();
-	extern AppData App_Data;
 
 
 	buf = icMalloc((unsigned) (strlen(t) + 1));

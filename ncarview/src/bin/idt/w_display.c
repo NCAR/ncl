@@ -1,5 +1,5 @@
 /*
- *	$Id: w_display.c,v 1.8 1992-04-03 23:21:15 clyne Exp $
+ *	$Id: w_display.c,v 1.9 1992-08-10 22:04:47 clyne Exp $
  */
 /*
  *	w_display.c
@@ -81,31 +81,41 @@ void	CreateDisplayPopup(button, metafile)
 {
 
 	Arg		args[10];
-	Widget	paned;
+	Widget	paned;		/* constraint widget		*/
+	Widget	canvas;		/* the drawing canvas		*/
+	Widget	popup;		/* top-level popup		*/
+	Widget	print;		/* "print" button widget	*/
 	Cardinal	n;
+	Window	win;		/* drawing canvas window id	*/
 
 	int	id;	/* translator connection id	*/
 
 	void	create_tip_top_panel(), create_top_panel(), 
-		create_middle_panel(), create_bottom_panel();
+		create_middle_panel(), create_print_menu();
+	Widget	create_bottom_panel();
+
+	popup = XtCreatePopupShell(metafile, topLevelShellWidgetClass, 
+				button, (ArgList) NULL, 0);
+
+	paned = XtCreateManagedWidget("paned",
+				panedWidgetClass,popup, (ArgList) NULL,0);
+
+	if (! App_Data.oldidt) {
+		canvas = XtCreateManagedWidget("canvas",
+				widgetClass,paned, (ArgList) NULL,0);
+	}
 
 	/*
 	 * open a connection to a translator
 	 */
-	if ((id = OpenDisplay(metafile)) < 0) {
+	if ((id = OpenDisplay())< 0) {
 		(void) fprintf(stderr, "Translator aborted\n");
 		return;
 	}
-
-	n = 0;
-	popUp[id] = XtCreatePopupShell(metafile, topLevelShellWidgetClass, 
-		button, args, n);
-
-	paned = XtCreateManagedWidget("paned",
-				panedWidgetClass,popUp[id], (ArgList) NULL,0);
+	popUp[id] = popup;
 
 	/*
-	 * The main display is made up of three sub-panels
+	 * The main display is made up of four sub-panels
 	 */
 	create_tip_top_panel(paned, id);
 
@@ -113,10 +123,40 @@ void	CreateDisplayPopup(button, metafile)
 
 	create_middle_panel(paned, id);
 
-	create_bottom_panel(paned, id);
+	print = create_bottom_panel(paned, id);
 
 
 	XtPopup(popUp[id], XtGrabNone);
+
+	if (! App_Data.oldidt) {
+		/*
+		 * enable button click events in the drawing canvas so the 
+		 * rubber-banding code in ZoomCoords() can get events from
+		 * the drawing window, not the top-level window
+		 */
+		win = (Window) XtWindow(canvas);
+		XSelectInput(XtDisplay(canvas), win, ButtonPressMask);
+	}
+	else {
+		win = (Window) -1;
+	}
+
+
+	/*
+	 * now that our drawing window has been mapped we can spawn
+	 * the translator and request it to drawn in the idt canvas
+	 */
+	if (StartTranslator(id, metafile, win)< 0) {
+		(void) fprintf(stderr, "Translator aborted\n");
+		return;
+	}
+
+	/*
+	 * now that the translator is up and running we can poll it to
+	 * find out what printing devices are available so we can create
+	 * our print menu dynamically
+	 */
+	create_print_menu(print, id);
 }
 
 
@@ -130,8 +170,9 @@ void	create_tip_top_panel(paned, id)
 	Cardinal	n;
 	Arg		args[10];
 
-	form = XtCreateManagedWidget("form",
-				formWidgetClass,paned, (ArgList) NULL,0);
+        n = 0;
+	XtSetArg(args[n], XtNskipAdjust, True);	n++;
+	form = XtCreateManagedWidget("form", formWidgetClass,paned, args,n);
 
         n = 0;
         scrollbar = XtCreateManagedWidget("scrollbar",
@@ -162,8 +203,9 @@ void	create_top_panel(paned, id)
 	Cardinal	n;
 	Arg		args[10];
 
-	form = XtCreateManagedWidget("form",
-				formWidgetClass,paned, (ArgList) NULL,0);
+        n = 0;
+	XtSetArg(args[n], XtNskipAdjust, True);	n++;
+	form = XtCreateManagedWidget("form", formWidgetClass,paned, args,n);
 
 	/*
 	 * create a pixmap for the playback button
@@ -249,8 +291,9 @@ static	void	create_middle_panel(paned, id)
 	Cardinal	n;
 	Arg		args[10];
 
-	form = XtCreateManagedWidget("form",
-				formWidgetClass,paned, (ArgList) NULL,0);
+        n = 0;
+	XtSetArg(args[n], XtNskipAdjust, True);	n++;
+	form = XtCreateManagedWidget("form", formWidgetClass,paned, args,n);
 
         n = 0;
         loop = XtCreateManagedWidget("loop", toggleWidgetClass,form,args,n);
@@ -290,24 +333,19 @@ static	void	create_middle_panel(paned, id)
 	XtAddCallback(set_window,XtNcallback,Set_Window,(XtPointer) id);
 }
 
-static	void	create_bottom_panel(paned, id) 
+static	Widget	create_bottom_panel(paned, id) 
 	Widget	paned;
 	int	id;
 {
 	Arg		args[10];
 	Widget	form;
 	Widget	save, current_frame, zoom, done;
-	Widget	print, menu, entry;
+	Widget	print;
 	Cardinal	n;
-	char	*alias_list,
-		**spooler_list,
-		**ptr;
 
-	extern	char	*TalkTo();
-	extern	char	**SpoolerList();
-
-	form = XtCreateManagedWidget("form",
-				formWidgetClass,paned, (ArgList) NULL,0);
+        n = 0;
+	XtSetArg(args[n], XtNskipAdjust, True);	n++;
+	form = XtCreateManagedWidget("form", formWidgetClass,paned, args,n);
 
         n = 0;
         done = XtCreateManagedWidget("done",commandWidgetClass,form,args,n);
@@ -319,14 +357,45 @@ static	void	create_bottom_panel(paned, id)
 				commandWidgetClass,form,args,n);
 	XtAddCallback(current_frame,XtNcallback,CurrentFrame,(XtPointer) id);
 
+	n = 0;
+	XtSetArg(args[n], XtNfromHoriz, current_frame);	n++;
+	print = XtCreateManagedWidget("print",menuButtonWidgetClass,
+								form,args,n);
+
+        n = 0;
+	XtSetArg(args[n], XtNfromHoriz, print);	n++;
+        save = XtCreateManagedWidget("save",commandWidgetClass,form,args,n);
+	XtAddCallback(save, XtNcallback, Save, (XtPointer) id);
+
+        n = 0;
+	XtSetArg(args[n], XtNfromHoriz, save);	n++;
+        zoom = XtCreateManagedWidget("zoom",commandWidgetClass,form,args,n);
+	XtAddCallback(zoom, XtNcallback, Zoom, (XtPointer) id);
+
+	return(print);
+}
+
+/*
+ *	dyanmically create a print menu by polling the translator to see
+ *	what printing devices are available
+ */
+void	create_print_menu(print, id)
+	Widget	print;
+	int	id;
+{
+
+	Widget		menu, entry;
+	Arg		args[10];
+	char		*alias_list,
+			**spooler_list,
+			**ptr;
+
+	extern	char	*TalkTo();
+	extern	char	**SpoolerList();
 
 	alias_list = TalkTo(id, "alias\n", SYNC);
 	spooler_list = SpoolerList(alias_list);
 	if (*spooler_list) {
-		n = 0;
-		XtSetArg(args[n], XtNfromHoriz, current_frame);	n++;
-		print = XtCreateManagedWidget("print",menuButtonWidgetClass,
-								form,args,n);
 
 		menu = XtCreatePopupShell("menu", 
 				simpleMenuWidgetClass, print, (ArgList) NULL,0);
@@ -341,23 +410,9 @@ static	void	create_bottom_panel(paned, id)
 	}
 	else {
 		Message(id, "Can't find  any spooled devices for printing");
-		n = 0;
-		XtSetArg(args[n], XtNfromHoriz, current_frame);	n++;
-		print = XtCreateManagedWidget("print",commandWidgetClass,
-								form,args,n);
-
-		XtAddCallback(print, XtNcallback, NoPrint, (XtPointer) id);
+		XtSetArg(args[0], XtNsensitive, False);
+		XtSetValues(print, args, 1);
 	}
-
-        n = 0;
-	XtSetArg(args[n], XtNfromHoriz, print);	n++;
-        save = XtCreateManagedWidget("save",commandWidgetClass,form,args,n);
-	XtAddCallback(save, XtNcallback, Save, (XtPointer) id);
-
-        n = 0;
-	XtSetArg(args[n], XtNfromHoriz, save);	n++;
-        zoom = XtCreateManagedWidget("zoom",commandWidgetClass,form,args,n);
-	XtAddCallback(zoom, XtNcallback, Zoom, (XtPointer) id);
 }
 
 /*
@@ -600,18 +655,6 @@ static  void    PrintSelect(widget, client_data, call_data)
 	command_Id.command = PRINT;
 
 	Command3((caddr_t) &command_Id, spooler);
-}
-
-/*ARGSUSED*/
-static  void    NoPrint(widget, client_data, call_data)
-	Widget  widget;
-	XtPointer       client_data,	/* display id	*/
-			call_data;	/* not used	*/
-{
-	int	id = (int) client_data;
-
-	Message(id, "No spooled devices found");
-
 }
 
 

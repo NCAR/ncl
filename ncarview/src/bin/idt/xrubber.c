@@ -1,5 +1,5 @@
 /*
- *	$Id: xrubber.c,v 1.5 1992-04-03 23:21:37 clyne Exp $
+ *	$Id: xrubber.c,v 1.6 1992-08-10 22:05:09 clyne Exp $
  */
 /*
  *	xrubber.c
@@ -258,9 +258,16 @@ static	rubber_band_window(dpy, root, fg, x, y,
 	while (1) {
 		if (XCheckMaskEvent(dpy, ButtonPressMask, &event)) {
 
+#ifdef	DEAD
 			root_x = event.xbutton.x;	/* position of sprite */
 			root_y = event.xbutton.y;
 			rubber_win= event.xbutton.subwindow;
+#else
+			root_x = event.xbutton.x_root;	/* position of sprite */
+			root_y = event.xbutton.y_root;
+			rubber_win = event.xbutton.window;
+#endif
+
 
 			/*
 			 * won't work if window is root

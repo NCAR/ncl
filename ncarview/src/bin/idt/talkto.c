@@ -1,5 +1,5 @@
 /*
- *	$Id: talkto.c,v 1.11 1992-04-03 23:29:04 clyne Exp $
+ *	$Id: talkto.c,v 1.12 1992-08-10 22:04:43 clyne Exp $
  */
 /*
  *	talkto.c
@@ -182,7 +182,6 @@ OpenTranslator(channel, argv, hfd)
 		*argptr++ = fd_ascii;
 		*argptr = NULL;
 		
-
 		execvp(argv[0], argv);
 		perror((char *) NULL);	/* should never get here	*/
 		_exit(127);
