@@ -21,8 +21,8 @@ LIBROOT		= /usr/local/lib
 INCROOT		= /usr/local/include
 MANROOT		= /usr/local/man
 TMPROOT		= /tmp
-LOCAL_LIB_SEARCH		= -L/X/X11/lib -L/usr/local/ncarg/lib -L/usr/local/lib
-LOCAL_INC_SEARCH		= -I/X/X11/include -I/usr/local/ncarg/include -I/usr/local/include
+LOCAL_LIB_SEARCH		= -L/X/X11/lib -L/usr/local/lib
+LOCAL_INC_SEARCH		= -I/X/X11/include -I/usr/local/include
 
 /*
 **  Order of assignment to LIB_SEARCH and to INC_SEARCH is
