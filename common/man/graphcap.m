@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: graphcap.m,v 1.4 1993-04-21 20:04:31 fred Exp $
+.\"	$Id: graphcap.m,v 1.5 1993-06-23 20:48:45 haley Exp $
 .\"
 .\" @(#)f77.1 1.4 86/07/31 SMI; 
 .TH GRAPHCAP 5NCARG "April 1993" NCAR "NCAR GRAPHICS"
@@ -8,7 +8,7 @@ graphcap \- A list of supported NCAR Graphics device definition files for use wi
 .SH DESCRIPTION
 .TP 15
 .B a60
-Abekas a60 raster image format (valid only for crtans).
+Abekas a60 raster image format (valid only for ctrans).
 .TP 15
 .B adm5
 ADM5 with the DEC RG1500 graphics board.
