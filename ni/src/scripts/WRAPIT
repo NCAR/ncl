@@ -1,5 +1,5 @@
 #!/bin/csh -f
-set version = 031209    # YYMMDD
+set version = 031210    # YYMMDD
 echo " " 
 echo "WRAPIT Version: "$version 
 if ($argv[1]:q == "-h") then
@@ -47,13 +47,13 @@ echo "  setenv LD_LIBRARY_PATH /usr/local/nag/lib:/contrib/lib"
 echo "OPTION: -n <so name> assigns a name to the created shared object, if"
 echo "  this option is not used then the name for the created shared object"
 echo "  is derived from the first fortran filename on the command line."
-echo "OPTION: -q32 is used to specify a 32-bit AIX operating environment."
-echo "  Note: the default is a 64-bit AIX operating envirnonment."
+echo "OPTION: -q32 is used to specify a 32-bit IRIX or AIX operating"
+echo "environment.  NOTE: the default is a 64-bit operating envirnonment."
 echo "OPTION: -r8 is used to promote floats of real*4 to real*8."
 echo " "
 echo "------------------------ Linux Compilers ---------------------------"
-echo WRAPIT works with the Portland Group f90 and the Lahey/Fujitsu f95
-echo compilers. 
+echo WRAPIT works with the Portland Group f90, Lahey/Fujitsu f95, and INTEL
+echo fortran compilers. 
 echo " " 
 echo "-------------------- Some Usage Examples ---------------------------"
 echo One argument
@@ -119,7 +119,7 @@ endif
 
 set real8 = 0     # off 
 set debug = 0     # off
-set nbits = 64    # default for AIX
+set nbits = 64    # default for AIX and IRIX
 
 # get a name for the shared object file
 set SharedObj = NONE
@@ -187,28 +187,38 @@ set args = ($argv)     # save list of remaining arguments
 
 # set the compiler options
 switch ($OS)
- case Linux:                        # determine Linux compiler present
+ case Linux:                         # determine Linux compiler present
    which pgf90                       # Portland Group compiler
    if ($status) then                 # no pgf90 compiler (status=1)
      which lf95                      # Lahey/Fujitsu compiler
      if ($status) then               # no lf95 compiler (status=1)
-       echo "NO f90/f95 COMPILER FOUND. CHECKING FOR f77 (or g77) COMPILER." 
-       which f77
-       if ($status) then             # no f77 compiler found (status=1)
-         which g77
-         if ($status) then           # no g77 compiler found (status=1)
-           echo "ERROR: NO f77 or g77 COMPILER FOUND, PLEASE CHECK YOUR PATH." 
-           exit
+       which ifc                     # Intel Fortran compiler
+       if ($status) then             # no ifc compiler (status=1)
+         echo "NO f90/f95 COMPILER FOUND. CHECKING FOR f77 (or g77) COMPILER." 
+         which f77
+         if ($status) then           # no f77 compiler found (status=1)
+           which g77
+           if ($status) then         # no g77 compiler found (status=1)
+             echo "ERROR: NO f77 or g77 COMPILER FOUND, PLEASE CHECK YOUR PATH."
+             exit
+           else
+             set f90c = g77          # use g77 (has to be there!)
+           endif
          else
-           set f90c = g77            # use g77 (has to be there!)
+           set f90c = f77            # f77
          endif
-       else
-         set f90c = f77              # f77
-       endif
-       if ($debug == 1) then
-         set fopts = "-c -ffortran-bounds-check"
-       else
-         set fopts = "-c -O"
+         if ($debug == 1) then
+           set fopts = "-c -ffortran-bounds-check"
+         else
+           set fopts = "-c -O"
+         endif
+       else                          # Intel fortran comoiler
+         set f90c = ifc
+         if ($debug == 1) then
+           set fopts = "-c -C -V"
+         else
+           set fopts = "-c -O2"   
+         endif
        endif
      else
        set f90c = lf95               # Lahey/Fujitsu compiler
@@ -234,11 +244,19 @@ switch ($OS)
      set fopts = "-c -q{$nbits} -qmaxmem=-1 -qarch=auto -O" 
    endif
    breaksw
- case IRIX64:                        # SGI 64-bit
-   if ($debug == 1) then
-     set fopts = "-64 -c -C"
-   else
-     set fopts = "-64 -c -O"
+ case IRIX64:                        # SGI 64-bit or 32-bit
+   if ($nbits == 32) then
+     if ($debug == 1) then
+       set fopts = "-n32 -c -C"
+     else
+       set fopts = "-n32 -c -O"
+     endif
+   else                             # 64-bit default
+     if ($debug == 1) then
+       set fopts = "-64 -c -C"
+     else
+       set fopts = "-64 -c -O"
+     endif
    endif
    breaksw
  case IRIX:                          # SGI 32-bit
@@ -290,14 +308,22 @@ if ($real8 == 1) then
        set fopts = "-c -q{$nbits} -qmaxmem=-1 -qarch=auto -O -qautodbl=dbl4"
      endif
      breaksw
-   case IRIX64:
-     if ($debug == 1) then
-       set fopts = "-64 -c -C -r8" 
-     else
-       set fopts = "-64 -c -O -r8" 
+   case IRIX64:                    # 64 bits or 32-bits
+     if ($nbits == 32) then
+       if ($debug == 1) then
+         set fopts = "-n32 -c -C -r8" 
+       else
+         set fopts = "-n32 -c -O -r8" 
+       endif
+     else                          # default is 64-bits
+       if ($debug == 1) then
+         set fopts = "-64 -c -C -r8" 
+       else
+         set fopts = "-64 -c -O -r8" 
+       endif
      endif
      breaksw
-   case IRIX:
+   case IRIX:                      # 32-bits
      if ($debug == 1) then
        set fopts = "-n32 -c -C -r8" 
      else
@@ -332,18 +358,24 @@ if ($real8 == 1) then
        set fopts = "-c -O -xtypemap=real:64"
      endif
      breaksw
-   default:                            # must be Linux
-     if ($f90c == "pgf90") then        # Portland Group
+   default:                          # must be Linux
+     if ($f90c == pgf90) then        # Portland Group
        if ($debug == 1) then
          set fopts = "-c -Mbounds -r8"
        else
          set fopts = "-c -O -r8"
        endif
-     else if ($f90c == "lf95") then    # Lahey/Fujitsu
+     else if ($f90c == lf95) then    # Lahey/Fujitsu
        if ($debug == 1) then
          set fopts = "-c --chk a,e,s --dbl"
        else
          set fopts = "-c -O --dbl"
+       endif
+     else if ($f90c == ifc) then     # INTEL  
+       if ($debug == 1) then
+         set fopts = "-c -C -r8 -V"
+       else
+         set fopts = "-c -O2 -r8"
        endif
      else
        if ($debug == 1) then           # g77 (f77)
@@ -357,9 +389,8 @@ if ($real8 == 1) then
 endif
 
 if ($debug == 1) then
-# echo "WRAPIT Version: "$version
   echo "OPERATING SYSTEM: "$OS
-  if ($OS == "AIX") then
+  if ($OS == "AIX" || $OS == "IRIX") then
     echo "nbits = "{$nbits}
   endif
   if ($OS == "Linux" || $OS == "Darwin") then
@@ -396,10 +427,18 @@ switch ($OS)
    breaksw
  case IRIX64:
 #  -woff turns off warning messages about variables not used or set
-   if ($debug == 1) then
-     cc -c -64 -woff 1174 -woff 1552 -I${NCARG_ROOT}/include WRAPIT.c
-   else
-     cc -c -64 -O -woff 1174 -woff 1552 -I${NCARG_ROOT}/include WRAPIT.c
+   if ($nbits == 32) then
+     if ($debug == 1) then
+       cc -c -n32 -woff 1174 -woff 1552 -I${NCARG_ROOT}/include WRAPIT.c
+     else
+       cc -c -n32 -O -woff 1174 -woff 1552 -I${NCARG_ROOT}/include WRAPIT.c
+     endif
+   else     # 64-bit default
+     if ($debug == 1) then
+       cc -c -64 -woff 1174 -woff 1552 -I${NCARG_ROOT}/include WRAPIT.c
+     else
+       cc -c -64 -O -woff 1174 -woff 1552 -I${NCARG_ROOT}/include WRAPIT.c
+     endif
    endif
    breaksw
  case IRIX:
@@ -430,7 +469,7 @@ switch ($OS)
      cc -c -O -I${NCARG_ROOT}/include WRAPIT.c
    endif
    breaksw
- default:          # OSF1, SunOS, Linux, FreeBSD
+ default:          # OSF1, SunOS, FreeBSD
    if ($debug == 1) then
      cc -c -I${NCARG_ROOT}/include WRAPIT.c
    else
@@ -491,15 +530,23 @@ switch ($OS)
      ld -G -b{$nbits} -bnoentry -bexpall -lm -lc -lxlf90 -lxlf -lxlopt $ld_suffix
    endif
    breaksw
- case IRIX64:
-   if ($debug == 1) then
-     ld -64 -v -V -shared $ld_suffix
-   else
-     ld -64 -shared $ld_suffix
+ case IRIX64:                      # IRIX64
+   if ($nbits == 32) then
+     if ($debug == 1) then
+       ld -n32 -v -V -shared $ld_suffix
+     else
+       ld -n32 -shared $ld_suffix
+     endif
+   else      # default 64-bits
+     if ($debug == 1) then
+       ld -64 -v -V -shared $ld_suffix
+     else
+       ld -64 -shared $ld_suffix
+     endif
    endif
    'rm' so_locations
    breaksw
- case IRIX:
+ case IRIX:                        # IRIX
    if ($debug == 1) then
      ld -n32 -v -V -shared $ld_suffix
    else
@@ -507,33 +554,35 @@ switch ($OS)
    endif
    'rm' so_locations
    breaksw
- case Linux:
-   if ($f90c == "pgf90") then   # PG compiler
+ case Linux:                       # Linux
+   if ($f90c == pgf90) then        # PG compiler
      if ($debug == 1) then
        $f90c -V -v -shared $ld_suffix
      else
        $f90c -shared $ld_suffix
      endif
-   else if ($f90c == "lf95") then    # LF compiler
+   else if ($f90c == lf95) then    # LF compiler
      $f90c --shared -lfj9f6 -lfj9i6 -lfj9e6 $ld_suffix
+   else if ($f90c == ifc) then     # INTEL compiler
+     $f90c -shared $ld_suffix
    else                         
-     ld -shared $ld_suffix      # g77
+     ld -shared $ld_suffix         # g77
    endif
    breaksw
  case FreeBSD:
-   ld -shared $ld_suffix        # g77
+   ld -shared $ld_suffix           # g77
    breaksw
- case OSF1:            # OSF1
+ case OSF1:                        # OSF1
    f90 -shared $ld_suffix
    'rm' so_locations
    breaksw
- case Darwin:          # MacOSX
+ case Darwin:                      # MacOSX
    cc -bundle -flat_namespace -undefined suppress $ld_suffix -lg2c
    breaksw
- case HP-UX:           # HP-UX
+ case HP-UX:                       # HP-UX
    ld -b $ld_suffix
    breaksw
- default:              # SunOS
+ default:                          # SunOS
    if ($debug == 1) then
      ld -V -G -lsunperf -lfsu -lfai2 -lfsumai -lsunmath -lF77 $ld_suffix
    else
