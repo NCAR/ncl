@@ -1,5 +1,5 @@
 /*
- *	$Id: bofred.c.sed,v 1.2 1992-10-02 18:54:07 ncargd Exp $
+ *	$Id: bofred.c.sed,v 1.3 1992-10-02 21:57:44 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -12,6 +12,7 @@
 ***********************************************************************/
 
 #include <stdio.h>
+#include <ncarg/ncarg_loc.h>
 
 /* Procedure bofred_(unit, fnum, ios, status)
  *
@@ -29,8 +30,6 @@
 bofred_(unit, fnum, ios, status)
 	long		*unit, *fnum, *ios, *status;
 {
-	char		*getenv();
-	char            *getFcapname();
 	int             fd;
 	char		fontname[32];
 	char		*pathname;

@@ -1,5 +1,5 @@
 /*
- *      $Id: wks.c.sed,v 1.3 1992-05-13 16:41:09 ncargd Exp $
+ *      $Id: wks.c.sed,v 1.4 1992-10-02 21:57:15 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -80,6 +80,13 @@
 #include <sys/file.h>
 #include "wks.h"
 
+#ifdef  sun
+#include <vfork.h>
+#define FORK    vfork
+#else
+#define FORK    fork
+#endif
+
 /*
 The table "mftab" is used to maintain the list of fake Fortran
 logical units. The file pointer, type of file, and any associated
@@ -103,7 +110,7 @@ main()
 	wrtwks_(&unit, (int *)string);
 	clswks_(&unit);
 }
-#endif STANDALONE
+#endif /* STANDALONE	*/
 
 /*************************************************************************
 *
@@ -247,11 +254,7 @@ opnwks_(unit, fname, status)
 
 		(void) pipe(pipes);
 
-#if defined(CRAY) || defined(RS6000) || (defined(sgi) && defined(mips))
-		if ( fork() == 0 )
-#else
-		if ( vfork() == 0 )
-#endif
+		if ( FORK() == 0 )
 		{
 			(void) close(pipes[1]);
 			(void) close(0); 
