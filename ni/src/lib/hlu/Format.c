@@ -1152,8 +1152,8 @@ NhlErrorTypes _NhlGetScaleInfo
         iodp = 0;
         iotz = 0;
 
-        cpinrc_();
-        cpnumb_(&value,&ndgd,&lmsd,&iexp,&lexp,
+        NGCALLF(cpinrc,CPINRC)();
+        NGCALLF(cpnumb,CPNUMB)(&value,&ndgd,&lmsd,&iexp,&lexp,
                          cex1,cex2,cex3,&lex1,&lex2,&lex3,
                          &ioma,&iodp,&iotz,cbuf,&nbuf,&ndgs,&ieva,
                          1,1,1,127);
