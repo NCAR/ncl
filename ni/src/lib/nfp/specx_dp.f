@@ -622,14 +622,14 @@ c .   (1) for both spc and x and nspcm1 to nspc.
           X(1) = SPC(1)
           CALL DSWRNAV(SPC(2),NSPCM1,WGT,JAVODD,KOPT,SPVAL,X(2),IER)
 
-c sum the smoothed spectral estimates
-
-C only half the width
-          XINFO(5) = (SPC(2)+SPC(NSPC))*0.5D0*DF
-          DO 150 N = 3,NSPC-1
-  150     XINFO(5) = XINFO(5) + SPC(N)*DF
-
       END IF
+
+c sum the spectral estimates
+C only half the width
+
+      XINFO(5) = (SPC(2)+SPC(NSPC))*0.5D0*DF
+      DO 150 N = 3,NSPC-1
+  150 XINFO(5) = XINFO(5) + SPC(N)*DF
 
       IF (SCL.EQ.0.D0) THEN
 C scale sum spcx to input variance
