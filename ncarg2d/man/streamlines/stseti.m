@@ -10,7 +10,7 @@ CALL STSETI (CNM,IVL)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void c_stseti(char *whch, int ival)
+void c_stseti(char *cnm, int ivl)
 .SH DESCRIPTION 
 .IP CNM 12
 (CHARACTER, input) is the name of a parameter to be
@@ -39,9 +39,9 @@ stex02,
 stex03.
 .SH ACCESS
 To use STSETI, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_stseti, load the 
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_stseti, load the 
 NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.
 .SH MESSAGES
 See the streamlines man page for a description of all Streamlines error
 messages and/or informational messages.
