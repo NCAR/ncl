@@ -1,5 +1,5 @@
 /*
- *      $Id: YDLINUX,v 1.1 2001-11-07 15:34:11 haley Exp $
+ *      $Id: YDLINUX,v 1.2 2002-02-22 03:21:18 haley Exp $
  */
 /************************************************************************
 *									*
@@ -30,7 +30,7 @@
 #define CppCommand '/usr/bin/cpp -traditional'
 #define	CCompiler	gcc
 #define	FCompiler	g77
-#define	CtoFLibraries	-Wl,-Bstatic '-L/usr/lib/gcc-lib/ppc-yellowdog-linux/egcs-2.95.3' -lg2c -Wl,-Bdynamic -lm
+#define	CtoFLibraries	-Wl,-Bstatic '-L/usr/lib/gcc-lib/ppc-yellowdog-linux/2.95.3' -lg2c -Wl,-Bdynamic -lm
 #define CcOptions      -ansi
 #define XToolLibrary	-lXt -lSM -lICE
 #define BuildShared NO
