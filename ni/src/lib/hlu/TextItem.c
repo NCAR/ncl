@@ -1,5 +1,5 @@
 /*
- *      $Id: TextItem.c,v 1.42 1998-02-24 02:21:17 dbrown Exp $
+ *      $Id: TextItem.c,v 1.43 1998-07-07 03:52:36 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -809,6 +809,7 @@ static NhlErrorTypes    TextItemDraw
 	c_pcsetr("PW",tlayer->text.real_ph_width);
 	c_pcseti("QU",tlayer->text.qual);
 	c_pcseti("FN",tlayer->text.font);
+        c_pcsetr("CL",tlayer->text.font_thickness);
 	c_pcseti("OC",_NhlGetGksCi
                  (tlayer->base.wkptr,tlayer->text.font_color));
 	c_pcseti("CC",_NhlGetGksCi
@@ -931,6 +932,7 @@ static NhlErrorTypes    TextItemSegDraw
 	c_pcsetr("CS",tlayer->text.constant_spacing);
 	c_pcsetr("PH",tlayer->text.real_ph_height);
 	c_pcsetr("PW",tlayer->text.real_ph_width);
+        c_pcsetr("CL",tlayer->text.font_thickness);
 	c_pcseti("QU",tlayer->text.qual);
 	if(tlayer->text.qual == 2){
 		Gtext_font_prec gtfp;

@@ -1,5 +1,5 @@
 /*
- *      $Id: Title.c,v 1.34 1998-07-06 22:40:08 dbrown Exp $
+ *      $Id: Title.c,v 1.35 1998-07-07 03:52:37 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -953,6 +953,85 @@ static NhlErrorTypes    ManageTitleTextItems
 	return(ret);
 }
 
+static NhlErrorTypes    CheckAndAdjustAttrs
+#if	NhlNeedProto
+(
+        NhlTitleLayer tnew,
+        NhlBoolean    init
+        )
+#else
+(tnew,init)
+        NhlTitleLayer tnew,
+        NhlBoolean    init
+#endif
+
+{
+	NhlErrorTypes ret = NhlNOERROR;
+        char *entry, *e_text;
+ 
+        entry = init ? "TitleInitialize" : "TitleSetValues" ;
+
+/*
+ * use_main_attributes is set then most of the Main text attributes are
+ * copied to the  coresponding X and Y axis fields. Direction and angle
+ * resources are not copied, because the Y Axis generally needs different
+ * values for these.
+ */
+	if( tnew->title.use_main_attributes ) {
+		tnew->title.x_axis_font = tnew->title.y_axis_font =
+			tnew->title.main_font;
+		tnew->title.y_axis_just = tnew->title.x_axis_just =
+			tnew->title.main_just;
+		tnew->title.y_axis_font_height =
+                        tnew->title.x_axis_font_height =
+			tnew->title.main_font_height;
+		tnew->title.y_axis_font_aspect =
+                        tnew->title.x_axis_font_aspect =
+			tnew->title.main_font_aspect;
+		tnew->title.y_axis_font_thickness =
+			tnew->title.x_axis_font_thickness=
+			tnew->title.main_font_thickness;
+                tnew->title.y_axis_font_quality =
+                        tnew->title.x_axis_font_quality =
+                        tnew->title.main_font_quality;
+                tnew->title.y_axis_font_color =
+                        tnew->title.x_axis_font_color =
+                        tnew->title.main_font_color;
+		tnew->title.y_axis_constant_spacing = 
+			tnew->title.x_axis_constant_spacing =
+			tnew->title.main_constant_spacing;
+		tnew->title.y_axis_func_code = 
+			tnew->title.x_axis_func_code =
+			tnew->title.main_func_code;
+	}
+/*
+ * Check constant spacing values
+ */
+
+	e_text = 
+		"%s: Constant spacing cannot be less than zero, defaulting %s";
+	if (tnew->title.main_constant_spacing < 0.0) {
+		tnew->title.main_constant_spacing = 0.0;
+		ret = MIN(ret,NhlWARNING);
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry,
+			  NhlNtiMainConstantSpacingF);
+	}
+	if (tnew->title.x_axis_constant_spacing < 0.0) {
+		tnew->title.x_axis_constant_spacing = 0.0;
+		ret = MIN(ret,NhlWARNING);
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry,
+			  NhlNtiXAxisConstantSpacingF);
+	}
+	if (tnew->title.y_axis_constant_spacing < 0.0) {
+		tnew->title.y_axis_constant_spacing = 0.0;
+		ret = MIN(ret,NhlWARNING);
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry,
+			  NhlNtiYAxisConstantSpacingF);
+	}
+        return ret;
+        
+}
+
 /*
  * Function:	TitleInitialize
  *
@@ -1019,64 +1098,11 @@ static NhlErrorTypes    TitleInitialize
                                 strlen(tnew->title.y_axis_string)+1);
                 strcpy(tnew->title.y_axis_string,treq->title.y_axis_string);
         }
-/*
-* use_main_attributes is set then all of the main attributes are copied to the
-* coresponding x and y axis fields. This make the creation and SetValues 
-* easier to implement plus GetValues is simplified
-*/
-	if( tnew->title.use_main_attributes ) {
-		tnew->title.x_axis_font = tnew->title.y_axis_font =
-			tnew->title.main_font;
-		tnew->title.y_axis_just = tnew->title.x_axis_just =
-			tnew->title.main_just;
-		tnew->title.y_axis_font_height =tnew->title.x_axis_font_height =
-			tnew->title.main_font_height;
-		tnew->title.y_axis_font_aspect =tnew->title.x_axis_font_aspect =
-			tnew->title.main_font_aspect;
-		tnew->title.y_axis_font_thickness =
-			tnew->title.x_axis_font_thickness=
-			tnew->title.main_font_thickness;
-		tnew->title.y_axis_angle = tnew->title.x_axis_angle =
-			tnew->title.main_angle;
-		tnew->title.y_axis_angle = tnew->title.x_axis_angle =
-			tnew->title.main_angle;
-		tnew->title.y_axis_constant_spacing = 
-			tnew->title.x_axis_constant_spacing =
-			tnew->title.main_constant_spacing;
-		tnew->title.y_axis_func_code = 
-			tnew->title.x_axis_func_code =
-			tnew->title.main_func_code;
-	}
-/*
- * check constant spacing values
- */
 
-	e_text = 
-		"%s: Constant spacing cannot be less than zero, defaulting %s";
-	if (tnew->title.main_constant_spacing < 0.0) {
-		tnew->title.main_constant_spacing = 0.0;
-		ret = MIN(ret,NhlWARNING);
-		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
-			  "TitleInitialize",NhlNtiMainConstantSpacingF);
-	}
-	if (tnew->title.x_axis_constant_spacing < 0.0) {
-		tnew->title.x_axis_constant_spacing = 0.0;
-		ret = MIN(ret,NhlWARNING);
-		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
-			  "TitleInitialize",NhlNtiXAxisConstantSpacingF);
-	}
-	if (tnew->title.y_axis_constant_spacing < 0.0) {
-		tnew->title.y_axis_constant_spacing = 0.0;
-		ret = MIN(ret,NhlWARNING);
-		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
-			  "TitleInitialize",NhlNtiYAxisConstantSpacingF);
-	}
-/*
-* Compute locations of text items based on x,y,width and height for current
-* title objects and create them, even if they are turned off.
-*/
-        ret1 = ManageTitleTextItems(tnew,True);
+        ret1 = CheckAndAdjustAttrs(tnew,True);
+        ret = MIN(ret1,ret);
         
+        ret1 = ManageTitleTextItems(tnew,True);
 	return(MIN(ret1,ret));
 }
 		
@@ -1246,50 +1272,9 @@ static NhlErrorTypes    TitleSetValues
 
 	tnew->title.delta = (float)fabs((double)tnew->title.delta);
 
-        if( tnew->title.use_main_attributes ) {
-                tnew->title.x_axis_font = tnew->title.y_axis_font =
-                        tnew->title.main_font;
-                tnew->title.y_axis_just = tnew->title.x_axis_just =
-                        tnew->title.main_just;
-                tnew->title.y_axis_font_height =tnew->title.x_axis_font_height =
-                        tnew->title.main_font_height;
-                tnew->title.y_axis_font_aspect =tnew->title.x_axis_font_aspect =
-                        tnew->title.main_font_aspect;
-                tnew->title.y_axis_font_thickness =
-                        tnew->title.x_axis_font_thickness=
-                        tnew->title.main_font_thickness;
-                tnew->title.y_axis_angle = tnew->title.x_axis_angle =
-                        tnew->title.main_angle;
-                tnew->title.y_axis_angle = tnew->title.x_axis_angle =
-                        tnew->title.main_angle;
-                tnew->title.y_axis_constant_spacing =
-                        tnew->title.x_axis_constant_spacing =
-                        tnew->title.main_constant_spacing;
-                tnew->title.y_axis_func_code =
-                        tnew->title.x_axis_func_code =
-                        tnew->title.main_func_code;
-        }
-
-	e_text = 
-		"%s: Constant spacing cannot be less than zero, defaulting %s";
-	if (tnew->title.main_constant_spacing < 0.0) {
-		tnew->title.main_constant_spacing = 0.0;
-		ret = MIN(ret,NhlWARNING);
-		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
-			  "TitleSetValues",NhlNtiMainConstantSpacingF);
-	}
-	if (tnew->title.x_axis_constant_spacing < 0.0) {
-		tnew->title.x_axis_constant_spacing = 0.0;
-		ret = MIN(ret,NhlWARNING);
-		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
-			  "TitleSetValues",NhlNtiXAxisConstantSpacingF);
-	}
-	if (tnew->title.y_axis_constant_spacing < 0.0) {
-		tnew->title.y_axis_constant_spacing = 0.0;
-		ret = MIN(ret,NhlWARNING);
-		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
-			  "TitleSetValues",NhlNtiYAxisConstantSpacingF);
-	}
+        ret1 = CheckAndAdjustAttrs(tnew,False);
+        ret = MIN(ret1,ret);
+        
         ret1 = ManageTitleTextItems(tnew,False);
         
 	return(MIN(ret,ret1));
