@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: rascat.m,v 1.5 1993-01-16 00:02:42 clyne Exp $
+.\"	$Id: rascat.m,v 1.6 1993-01-16 03:35:52 clyne Exp $
 .\"
 .TH RASCAT 1NCARG "January 1993" NCARG "NCAR GRAPHICS"
 .SH NAME
@@ -52,7 +52,7 @@ the resulting concatenated file will be in the format
 of the first file processed. 
 .B rascat 
 understands the following file name extensions: 
-.BR .abekas , 
+.BR .a60 , 
 .BR .avs , 
 .BR .hdf ,
 .BR .nrif ,

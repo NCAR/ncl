@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ctrans.m,v 1.13 1993-01-16 00:02:16 clyne Exp $
+.\"	$Id: ctrans.m,v 1.14 1993-01-16 03:35:50 clyne Exp $
 .\"
 .\" ctrans 3.2 
 .TH CTRANS 1NCARG "January 1993" NCARG "NCAR GRAPHICS"
@@ -92,7 +92,7 @@ under release 4 and 5, version 11 of
 .LP
 .B ctrans
 can also translate metacode into the following raster formats: 
-.B abekas, avs, hdf, nrif, sun
+.B a60, avs, hdf, nrif, sun
 and
 .BR xwd .
 The device specifier for these raster
@@ -476,7 +476,7 @@ device.
 The following options are available when 
 .I device 
 is 
-.B abekas, avs, hdf, nrif, sun, 
+.B a60, avs, hdf, nrif, sun, 
 or 
 .BR xwd :
 .TP
