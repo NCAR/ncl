@@ -1,5 +1,5 @@
 /*
- *      $Id: ScalarField.h,v 1.5 1998-04-16 03:09:03 dbrown Exp $
+ *      $Id: ScalarField.h,v 1.6 2002-07-02 01:26:40 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -30,6 +30,7 @@
 #define NhlNsfDataArray		"sfDataArray"
 #define	NhlNsfXArray		"sfXArray"
 #define	NhlNsfYArray		"sfYArray"
+#define	NhlNsfGridType		"sfGridType"
 #define	NhlNsfSubsetByIndex	"sfSubsetByIndex"
 #define	NhlNsfCopyData		"sfCopyData"
 #define NhlNsfExchangeDimensions	"sfExchangeDimensions"
@@ -65,6 +66,7 @@
 #define NhlCsfDataArray		"SfDataArray"
 #define	NhlCsfXArray		"SfXArray"
 #define	NhlCsfYArray		"SfYArray"
+#define	NhlCsfGridType		"SfGridType"
 #define	NhlCsfSubsetByIndex	"SfSubsetByIndex"
 #define	NhlCsfCopyData		"SfCopyData"
 #define NhlCsfExchangeDimensions	"SfExchangeDimensions"

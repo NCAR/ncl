@@ -1,5 +1,5 @@
 /*
- *      $Id: ScalarField.c,v 1.34 2002-03-18 21:20:06 dbrown Exp $
+ *      $Id: ScalarField.c,v 1.35 2002-07-02 01:26:39 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -23,6 +23,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
+#include <float.h>
 #include <ncarg/hlu/hluutil.h>
 #include <ncarg/hlu/ScalarFieldP.h>
 
@@ -47,6 +48,9 @@ static NhlResource resources[] = {
 		 Oset(x_arr),NhlTImmediate,_NhlUSET((NhlPointer)NULL),0,NULL},
 	{NhlNsfYArray,NhlCsfYArray,NhlTGenArray,sizeof(NhlGenArray),
 		 Oset(y_arr),NhlTImmediate,_NhlUSET((NhlPointer)NULL),0,NULL},
+	{NhlNsfGridType,NhlCsfGridType,NhlTGridType,sizeof(NhlGridType),
+	 	Oset(grid_type),NhlTImmediate,
+	 	_NhlUSET((NhlPointer)NhlSPHERICALGRID),0,NULL},
 	{NhlNsfCopyData,NhlCdiCopyData,NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(copy_arrays),NhlTImmediate,
 		 _NhlUSET((NhlPointer)True),0,NULL},
@@ -940,6 +944,17 @@ ValidCoordArray
 				  NhlEUNKNOWN,e_text,entry_name,name,name);
 			return False;
 		}
+		if ((ctype == sfXCOORD && 
+		     !(sfp->y_arr && sfp->y_arr->num_dimensions == 2)) ||
+		    (ctype == sfYCOORD && 
+		     !(sfp->x_arr && sfp->x_arr->num_dimensions == 2))) {
+			e_text = 
+    "%s: 2d X and Y coordinate arrays must have matching shape: defaulting %s";
+			NhlPError(NhlWARNING,
+				  NhlEUNKNOWN,e_text,entry_name,name);
+			return False;
+		}
+			
 		/* for now at this point assume that grid is okay */
 		return True;
 	}
@@ -1440,7 +1455,6 @@ GetSubsetBounds2D
 	NhlErrorTypes   ret = NhlNOERROR,subret = NhlNOERROR;
 	NhlBoolean      do_subset = False;
 	NhlBoolean	rev;
-	int		i,j;
 	NhlGenArray	*subset_start,*subset_end;
         NhlGenArray     out_ga;
 	NhlBoolean	nullstart = False,nullend = False;
@@ -1449,63 +1463,66 @@ GetSubsetBounds2D
 	float		*fp, *nfp;
 	int		rem,stride;
 	float           min, max;
-	int		imin,imax,jmin,jmax;
+	int		yi,xi;
+	int		yimin,yimax,ximin,ximax;
+	int		out_len[2];
 
 	fp = (float *) (*c_array)->data;
 
-	min = max = fp[0];
-	imin = imax = jmin = jmax = 0;
-	for (i = 0; i < sfp->y_el_count; i++) {
-		for (j = 0; j < sfp->x_el_count; j++) {
-			float val = *(fp + i * sfp->x_el_count + j);
+	min = FLT_MAX;
+	max = -FLT_MAX;
+	yimin = yimax = ximin = ximax = 0;
+	for (yi = 0; yi < sfp->y_el_count; yi++) {
+		for (xi = 0; xi < sfp->x_el_count; xi++) {
+			float val = *(fp + yi * sfp->x_el_count + xi);
 			if (val < min) {
 				min = val;
-				imin = i;
-				jmin = j;
+				yimin = yi;
+				ximin = xi;
 			}
 			if (val > max) {
 				max = val;
-				imax = i;
-				jmax = j;
+				yimax = yi;
+				ximax = xi;
 			}
 		}
 	}
 	if (ctype == sfXCOORD) {
-		if (jmin == jmax) 
-			rev = imin > imax;
+		if (ximin == ximax) 
+			rev = yimin > yimax;
 		else
-			rev = jmin > jmax;
+			rev = ximin > ximax;
 		c_name = "X coordinate";
 		if (rev) {
 			*cstart = max;
 			*cend = min;
-			sfp->xc_start_el = imax * sfp->x_el_count + jmax; 
-			sfp->xc_end_el = imin * sfp->x_el_count + jmin; 
+			sfp->xc_start_el = yimax * sfp->x_el_count + ximax; 
+			sfp->xc_end_el = yimin * sfp->x_el_count + ximin; 
 		}
 		else {
 			*cstart = min;
 			*cend = max;
-			sfp->xc_start_el = imin * sfp->x_el_count + jmin; 
-			sfp->xc_end_el = imax * sfp->x_el_count + jmax; 
+			sfp->xc_start_el = yimin * sfp->x_el_count + ximin; 
+			sfp->xc_end_el = yimax * sfp->x_el_count + ximax; 
 		}
 	}
 	else {
-		if (imin == imax)
-			rev = jmin > jmax;
+		if (yimin == yimax)
+			rev = ximin > ximax;
 		else
-			rev = imin > imax;
+			rev = yimin > yimax;
 		c_name = "Y coordinate";
 		if (rev) {
 			*cstart = max;
 			*cend = min;
-			sfp->yc_start_el = imax * sfp->x_el_count + jmax; 
-			sfp->yc_end_el = imin * sfp->x_el_count + jmin; 
+			sfp->yc_start_el = yimax * sfp->x_el_count + ximax; 
+			sfp->yc_end_el = yimin * sfp->x_el_count + ximin; 
 		}
 		else {
 			*cstart = min;
 			*cend = max;
-			sfp->yc_start_el = imin * sfp->x_el_count + jmin; 
-			sfp->yc_end_el = imax * sfp->x_el_count + jmax; 
+			sfp->yc_start_el = yimin * sfp->x_el_count + ximin; 
+			sfp->yc_end_el = yimax * sfp->x_el_count + ximax; 
 		}
 	}
 
@@ -1519,18 +1536,21 @@ GetSubsetBounds2D
 		*scend = *cend;
 		return NhlNOERROR;
 	}
-	for (i = yistart; i <= yiend; i++) {
-		for (j = xistart; j <= xiend; j++) {
-			float val = *(fp + i * sfp->x_el_count + j);
+	min = FLT_MAX;
+	max = -FLT_MAX;
+	yimin = yimax = ximin = ximax = 0;
+	for (yi = yistart; yi <= yiend; yi++) {
+		for (xi = xistart; xi <= xiend; xi++) {
+			float val = *(fp + yi * sfp->x_el_count + xi);
 			if (val < min) {
 				min = val;
-				imin = i;
-				jmin = j;
+				yimin = yi;
+				ximin = xi;
 			}
 			if (val > max) {
 				max = val;
-				imax = i;
-				jmax = j;
+				yimax = yi;
+				ximax = xi;
 			}
 		}
 	}
@@ -1542,6 +1562,53 @@ GetSubsetBounds2D
 		*scstart = min;
 		*scend = max;
 	}
+	out_len[0] =  yiend - yistart + 1;
+	out_len[1] =  xiend - xistart + 1;
+	if (overwrite_ok) 
+		nfp = fp;
+	else {
+		if ((nfp = (float *) 
+		     NhlConvertMalloc(out_len[1] * out_len[0] * 
+				      sizeof(float))) == NULL) {
+			e_text = "%s: dynamic memory allocation error";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+				  e_text,entry_name);
+			return NhlFATAL;
+		}
+	}
+	for (yi = 0; yi < out_len[0]; yi++) {
+		for (xi = 0; xi < out_len[1]; xi++) {
+			*(nfp+(yi * out_len[1] + xi)) = 
+				*(fp + sfp->x_el_count * (yistart+yi) +
+				  xistart+xi);
+		}
+	}
+
+	if ((out_ga = (NhlGenArray) 
+	     NhlConvertMalloc(sizeof(NhlGenArrayRec)))
+	    == NULL) {
+		e_text = "%s: dynamic memory allocation error";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			  e_text,entry_name);
+		return NhlFATAL;
+	}
+	out_ga->num_dimensions = 2;
+	if ((out_ga->len_dimensions = (int *)
+	     NhlConvertMalloc(2 * sizeof(int))) == NULL) {
+		e_text = "%s: dynamic memory allocation error";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			  e_text,entry_name);
+		return NhlFATAL;
+	}
+	out_ga->len_dimensions[0] = out_len[0];
+	out_ga->len_dimensions[1] = out_len[1];
+	out_ga->num_elements = out_len[0] * out_len[1];
+	out_ga->typeQ = Qfloat;
+	out_ga->size = sizeof(float);
+	out_ga->data = (NhlPointer)nfp;
+	out_ga->my_data = True;
+	*c_array = out_ga;
+
 	return NhlNOERROR;
 #if 0		
 
@@ -2588,6 +2655,7 @@ CvtGenSFObjToFloatSFObj
 
 	sffp->data_min = dmin;
 	sffp->data_max = dmax;
+	sffp->grid_type = sfp->grid_type; /* only matters if 2D coords */
 	sffp->changed = sfp->changed;
         sfp->up_to_date = True;
         
@@ -3470,6 +3538,16 @@ ScalarFieldSetValues
 	}
 	if (sfp->subset_by_index != osfp->subset_by_index)
 		status = True;
+	/* 
+	 * 2-D coordinates are interdependent so if one is changed the
+	 * other changes as well
+	 */
+	if (sfp->x_arr && sfp->x_arr->num_dimensions == 2 &&
+	    (sfp->changed & _NhlsfXARR_CHANGED ||
+	     sfp->changed & _NhlsfYARR_CHANGED)) {
+		sfp->changed |= _NhlsfXARR_CHANGED;
+		sfp->changed |= _NhlsfYARR_CHANGED;
+	}
                 
         _NhlDataChanged((NhlDataItemLayer)new,status);
 

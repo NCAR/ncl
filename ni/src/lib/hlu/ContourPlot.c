@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.110 2002-03-18 21:20:05 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.111 2002-07-02 01:26:39 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -28,6 +28,7 @@
 #include <ncarg/hlu/IrregularTransObjP.h>
 #include <ncarg/hlu/MapTransObj.h>
 #include <ncarg/hlu/CurvilinearTransObjP.h>
+#include <ncarg/hlu/SphericalTransObjP.h>
 #include <ncarg/hlu/ConvertersP.h>
 #include <ncarg/hlu/FortranP.h>
 
@@ -3445,8 +3446,9 @@ static NhlErrorTypes GetDataBound
                 
 
 	if (cnp->trans_obj->base.layer_class->base_class.class_name ==
-	    NhlcurvilinearTransObjClass->base_class.class_name) {
-
+	    NhlcurvilinearTransObjClass->base_class.class_name ||
+	    cnp->trans_obj->base.layer_class->base_class.class_name ==
+	    NhlsphericalTransObjClass->base_class.class_name) {
 		if (_NhlIsOverlay(cl->base.id)) {
 			*xlinear = False;
 			*ylinear = False;
@@ -5774,14 +5776,25 @@ static NhlErrorTypes SetUpCrvTransObj
 	int			tmpid;
         NhlSArg			sargs[32];
         int			nargs = 0;
+	NhlClass		trans_class;
+
+	switch (cnp->sfp->grid_type) {
+	case NhlBASICGRID:
+		trans_class =  NhlcurvilinearTransObjClass;
+		break;
+	case NhlSPHERICALGRID:
+		trans_class =  NhlsphericalTransObjClass;
+		break;
+	}
 
 	entry_name = (init) ? "ContourPlotInitialize" : "ContourPlotSetValues";
+	
 
 	if (init)
 		tfp->trans_obj = NULL;
-	if (tfp->trans_obj &&
+	if (tfp->trans_obj && 
             tfp->trans_obj->base.layer_class->base_class.class_name !=
-	    NhlcurvilinearTransObjClass->base_class.class_name) {
+	    trans_class->base_class.class_name) {
 		subret = NhlDestroy(tfp->trans_obj->base.id);
 		if ((ret = MIN(ret,subret)) < NhlWARNING) {
 			e_text = "%s: Error destroying irregular trans object";
@@ -5824,7 +5837,7 @@ static NhlErrorTypes SetUpCrvTransObj
 		strcat(buffer,".Trans");
 
 		subret = NhlALCreate(&tmpid,buffer,
-				     NhlcurvilinearTransObjClass,
+				     trans_class,
 				     cnew->base.id,sargs,nargs);
 
 		ret = MIN(subret,ret);

@@ -1,5 +1,5 @@
 /*
- *      $Id: DataItem.h,v 1.7 1995-04-07 10:41:34 boote Exp $
+ *      $Id: DataItem.h,v 1.8 2002-07-02 01:26:39 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -23,6 +23,18 @@
 #define _NDataItem_h
 #include <ncarg/hlu/Base.h>
 #include <ncarg/hlu/DataMgr.h>
+
+/*
+ * This type applies to 2D (or maybe eventually 3D .. nD) coordinate arrays,
+ */
+
+typedef enum _NhlGridType {
+	NhlBASICGRID,
+	NhlSPHERICALGRID
+} NhlGridType;
+
+#define NhlTGridType "GridType"
+	
 
 /*
  * These resources are not actually in the DataItem record, but the

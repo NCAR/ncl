@@ -1,5 +1,5 @@
 /*
- *      $Id: DataItem.c,v 1.16 1997-07-25 21:11:58 dbrown Exp $
+ *      $Id: DataItem.c,v 1.17 2002-07-02 01:26:39 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -26,6 +26,7 @@
 #include <string.h>
 #include <ncarg/hlu/DataItemP.h>
 #include <ncarg/hlu/DataMgrF.h>
+#include <ncarg/hlu/ConvertersP.h>
 
 #define	PFIX	"-mgr"
 
@@ -44,7 +45,13 @@ static NhlResource resources[] = {
 			Oset(no_manager), NhlTImmediate,(NhlPointer)False,
           		_NhlRES_PRIVATE,NULL}
 };
+
 #undef Oset
+static NhlErrorTypes DataItemClassInitialize(
+#if	NhlNeedProto
+	void
+#endif
+);
 
 static NhlErrorTypes DataItemClassPartInitialize(
 #if	NhlNeedProto
@@ -107,7 +114,7 @@ NhlDataItemClassRec NhldataItemClassRec = {
 /* num_class_callbacks		*/	0,
 
 /* class_part_initialize	*/	DataItemClassPartInitialize,
-/* class_initialize		*/	NULL,
+/* class_initialize		*/	DataItemClassInitialize,
 /* layer_initialize		*/	DataItemInitialize,
 /* layer_set_values		*/	DataItemSetValues,
 /* layer_set_values_hook	*/	DataItemSetValuesHook,
@@ -142,9 +149,45 @@ NhlClass NhldataItemClass = (NhlClass)&NhldataItemClassRec;
 
 /************************************************************************
 *									*
-*	Methode definitions						*
+*	Method definitions						*
 *									*
 ************************************************************************/
+
+/*
+ * Function:	DataItemClassInitialize
+ *
+ * Description:
+ *
+ * In Args:	NONE
+ *
+ * Out Args:	NONE
+ *
+ * Return Values:	ErrorConditions
+ *
+ * Side Effects:	NONE
+ */
+static NhlErrorTypes
+DataItemClassInitialize
+#if	NhlNeedProto
+(
+	void
+)
+#else
+()
+#endif
+{
+
+        _NhlEnumVals   gridtypelist[] = {
+        {NhlBASICGRID,		"BasicGrid"},
+        {NhlSPHERICALGRID, 	"SphericalGrid"},
+        };
+
+
+	_NhlRegisterEnumType(NhldataItemClass,NhlTGridType,
+		gridtypelist,NhlNumber(gridtypelist));
+
+	return NhlNOERROR;
+}
 
 /*
  * Function:	DataItemClassPartInitialize
