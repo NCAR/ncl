@@ -1,6 +1,6 @@
 NCARG		= ../../../..
 #
-#	$Id: yMakefile,v 1.14 1993-04-04 21:23:15 clyne Exp $
+#	$Id: yMakefile,v 1.15 1993-04-19 20:01:30 clyne Exp $
 #
 
 MYNAME1		= $(ROBJPATH)/libictrans.o
@@ -48,7 +48,7 @@ CleanTarget
 
 ictrans_wks.c: ictrans_wks.c.sed Makefile
         @$(CALLCONV) $(SYSTEM_INCLUDE) ictrans_wks.c \
-        initic ictarg opnwks clswks wrtwks rdwks begwks lstwks
+        initic ictarg opnwks clswks wrtwks rdwks begwks lstwks flswks
 
 # Files that need to know installation directories
 
