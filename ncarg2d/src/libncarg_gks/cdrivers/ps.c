@@ -1,5 +1,5 @@
 /*
- *	$Id: ps.c,v 1.15 1997-05-29 17:26:02 fred Exp $
+ *	$Id: ps.c,v 1.16 1997-05-29 17:33:35 fred Exp $
  */
 /*
  *
@@ -415,7 +415,7 @@ void PSpreamble (PSddp *psa, preamble_type type)
 			(void) fprintf(fp, "%%!PS-Adobe-2.0 EPSF-2.0\n");
 		}
 		else {
-			(void) fprintf(fp, "%%%!PS-Adobe-2.0\n");
+			(void) fprintf(fp, "%%!PS-Adobe-2.0\n");
 		}
 		(void) fprintf(fp, "%%%%DocumentFonts: (at end)\n");
 		if (psa->type == RPS) {
