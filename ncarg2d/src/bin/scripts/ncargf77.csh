@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargf77.csh,v 1.26 1997-01-30 15:23:44 haley Exp $
+#   $Id: ncargf77.csh,v 1.27 1997-03-10 23:19:44 haley Exp $
 #
 
 #*********************************************#
@@ -40,8 +40,9 @@ set stub_file   = ""
 #
 set libncarg  =  "-lncarg"
 set libgks     = "-lncarg_gks"
+set libmath     = "-lngmath"
 set libncarg_c = "-lncarg_c"
-set ncarg_libs  = "$libncarg $libgks $libncarg_c"
+set ncarg_libs  = "$libncarg $libgks $libncarg_c $libmath"
 
 set libmath  = "-lm"
 

@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ncargcc.csh,v 1.38 1997-03-05 19:53:02 haley Exp $
+#	$Id: ncargcc.csh,v 1.39 1997-03-10 23:19:42 haley Exp $
 #
 
 #*********************************************#
@@ -43,9 +43,10 @@ set super  = "$ro/libdashsupr.o $ro/libconrcspr.o $ro/libconras.o"
 #
 set libncarg    = "-lncarg"
 set libgks      = "-lncarg_gks"
+set libmath     = "-lngmath"
 set libncarg_c  = "-lncarg_c"
 set libcbind    = "-lncargC"
-set ncarg_libs  = "$libcbind $libncarg $libgks $libncarg_c"
+set ncarg_libs  = "$libcbind $libncarg $libgks $libncarg_c $libmath"
 
 set robjs
 
