@@ -1,0 +1,114 @@
+
+#
+#      $Id: yMakefile,v 1.1 1993-09-24 23:41:27 ethan Exp $
+#
+#########################################################################
+#									#
+#			   Copyright (C)  1993				#
+#	     University Corporation for Atmospheric Research		#
+#			   All Rights Reserved				#
+#									#
+#########################################################################
+#
+#	File:		
+#
+#	Author:		Ethan Alpert
+#			National Center for Atmospheric Research
+#			PO 3000, Boulder, Colorado
+#
+#	Date:		Fri Sep 24 09:53:33 MDT 1993
+#
+#	Description:	
+#
+#	Usage:
+#
+#	Environment:
+#
+#	Files:
+#
+#
+#	Options:
+#ifndef NCLProgram
+#define NCLProgram(program,objects,deplib)\
+]\
+all:: program]\
+]\
+program: objects deplib]\
+        $(CC_LD) $(CC_LDOPTIONS) -o program objects $(PROG_LIBS) $(CSTATIC) $(LDLIBS) $(CDYNAMIC) $(EXTRA_LDLIBS)]\
+]\
+InstallTarget(program,$(INSTALL_BIN),$(BINPATH))\
+CleanFilesTarget(program objects)
+#endif
+
+#ifndef NCLLibraryTarget
+#define NCLLibraryTarget(library,objects)\
+]\
+all:: library]\
+]\
+library:: objects]\
+        -$(RM) library]\
+        @$(AR_QUICK) library objects]\
+        $(RANLIB) library]\
+]\
+InstallLibTarget(library)]\
+CleanFilesTarget(library objects)
+#endif  /* LibraryTarget */
+
+#ifdef  HPUX_snakeArch
+SYS_LIBS        =       $(CTOFLIBS) -lm -lPW -ll
+#else
+SYS_LIBS        =       $(CTOFLIBS) -lm 
+#endif
+
+
+
+
+MYNAME = ncl
+
+PROG_LIBS	=	$(HLULIBS) $(CNCARGLIBS) $(NCARGLIBS)
+EXTRA_LIBS	=	-ll $(NCDFLIBS) $(XMOTIFCLIENTLIBS)
+
+HDRS	= Files.h Functions.h Graphics.h Keywords.h Literal.h Machine.h \
+	NclApi.h OpsList.h Procedures.h SrcTree.h Symbol.h Variable.h \
+	defs.h y.tab.h
+
+API_SRCS	= NclApi.c
+
+ALLSRCS		= $(API_SRCS) $(SRCS)
+
+SRCS	= Machine.c Memory.c Ncl.c Printtoken.c SrcTree.c Symbol.c Translate.c \
+	ncl.y ncl.l yywrap.c y.tab.c lex.yy.c
+
+API_OBJS	= NclApi.o
+
+OBJS	= Machine.o Memory.o Ncl.o Printtoken.o SrcTree.o Symbol.o Translate.o \
+	lex.yy.o y.tab.o yywrap.o
+
+ALLOBJS	= $(API_OBJS) $(OBJS)
+
+InstallTarget(ncl,$(INSTALL_INC),$(XAPPPATH))
+InstallTarget(libncl.a,$(INSTALL_LIB),$(LIBPATH))
+DependTarget($(ALLSRCS))
+NCLProgram($(MYNAME), $(OBJS), $(DEPLIBS))
+NCLLibraryTarget(libncl.a, $(ALLOBJS))
+
+# Special dependencies
+
+lex.yy.c: ncl.l
+	lex ncl.l
+
+y.tab.c: ncl.y
+	$(YACC) -d -t -v ncl.y
+
+y.tab.h: ncl.y
+	$(YACC) -d -t -v ncl.y
+
+Ncl.c: y.tab.h
+
+Printtoken.c: y.tab.h
+
+SrcTree.c: y.tab.h
+
+Translate.c: y.tab.h
+
+yywrap.c: y.tab.h

@@ -1,0 +1,569 @@
+/*
+ *      $Id: Symbol.c,v 1.1 1993-09-24 23:41:05 ethan Exp $
+ */
+/************************************************************************
+*									*
+*			     Copyright (C)  1993			*
+*	     University Corporation for Atmospheric Research		*
+*			     All Rights Reserved			*
+*									*
+************************************************************************/
+/*
+ *	File:		Symbol.c
+ *
+ *	Author:		Ethan Alpert
+ *			National Center for Atmospheric Research
+ *			PO 3000, Boulder, Colorado
+ *
+ *	Date:		Mon Jun 28 14:49:28 MDT 1993
+ *
+ *	Description:	
+ */
+#include <stdio.h>
+#include <errno.h>
+#include <ncarg/hlu/hlu.h>
+#include <defs.h>
+#include <Keywords.h>
+#include <Symbol.h>
+
+/*
+* The following is a pointer to the top of the symbol table stack.
+* It holds a list of pointers to the various scope levels.
+*/
+static NclSymTableListNode *thetablelist;
+
+
+/*
+ * Function:	_NclInitSymbol
+ *
+ * Description:	initializes the symbol table list
+ *
+ * In Args:	NONE
+ *
+ * Out Args:	NONE
+ *
+ * Returns:	1 on succes, 0 on failer
+ * Side Effect:	NONE
+ */
+
+int _NclInitSymbol
+#if __STDC__ 
+(void)
+#else
+()
+#endif
+{
+	int i;
+	NclSymbol *tmp;
+
+	thetablelist = (NclSymTableListNode *) NclMalloc((unsigned)
+				sizeof(NclSymTableListNode));
+	if(thetablelist == NULL) {
+		NhlPError(FATAL,errno,"InitSymbol: Can't create symbol table list");
+		return(0);
+	}
+
+	thetablelist->level = 0;
+	thetablelist->cur_offset = 0;
+	thetablelist->this_scope = (NclSymTableElem*) NclMalloc((unsigned) 
+		sizeof(NclSymTableElem) * NCL_SYM_TAB_SIZE);
+	thetablelist->previous = NULL;
+
+	if(thetablelist->this_scope == NULL) {
+		NhlPError(FATAL,errno,"InitSymbol: Can't create symbol table");
+		return(0);
+	}
+/*
+* Clear first symbol table
+*/
+	for(i = 0; i< NCL_SYM_TAB_SIZE; i++) {
+		thetablelist->this_scope[i].nelem = 0;
+		thetablelist->this_scope[i].thelist = NULL;
+	}
+
+/*
+* This is where all the keywords get defined. See keywords.h for the
+* data structure and list.
+*/
+	i = 0;
+	while(keytab[i].keyword != NULL) {
+		tmp = _NclAddSym(keytab[i].keyword,keytab[i].token);
+		i++;
+		if(tmp == NULL) {
+			NhlPError(FATAL,E_UNKNOWN,"InitSymbol: An error occurred while adding keywords, can't continue");
+			return(0);
+			
+		}
+	}
+/*
+* After keywords are defined a new scope must be created. The Zero
+* level scope is just for keywords and does not need any memory on the
+* stack.
+*/
+	return(_NclNewScope());
+}
+
+
+/*
+ * Function:	_NclNewScope
+ *
+ * Description:	allocates and pushes a new symbol table on to the symbol
+ *		table list. This new scope is usually a function but can
+ *		be a separate block too. All symbols added to this symbol
+ *		table will are local to this block , function or procedure.
+ *
+ * In Args:	NONE
+ *
+ * Out Args:	NONE
+ *
+ * Returns:	
+ * Side Effect:	
+ */
+int _NclNewScope
+#if __STDC__
+(void)
+#else
+()
+#endif
+{
+	int i;
+	NclSymTableListNode *new = (NclSymTableListNode*) NclMalloc((unsigned)
+					sizeof(NclSymTableListNode));
+	
+	if(new == NULL) {
+		NhlPError(FATAL, errno, "NewScope: Can't create a new symbol table node");
+		return(0);
+	}
+
+	new->this_scope = (NclSymTableElem *) NclMalloc((unsigned)
+				sizeof(NclSymTableElem) * NCL_SYM_TAB_SIZE);
+
+
+	if(new->this_scope == NULL) {
+		NhlPError(FATAL, errno, "NewScope: Can't create a new symbol table");
+		return(0);
+	}
+
+/* 
+* Everytime a new symbol is added to this scope this value is incremented
+* It will be a multiplier to use to figure out the location of the identifiers
+* value with respect to the frames base pointer.
+*/
+	new->cur_offset = 0;
+
+	new->level = thetablelist->level + 1;
+	new->previous = thetablelist;
+	thetablelist = new;
+	
+	for(i = 0; i< NCL_SYM_TAB_SIZE; i++) {
+		thetablelist->this_scope[i].nelem = 0;
+		thetablelist->this_scope[i].thelist = NULL;
+	}
+	return(1);
+
+}
+
+
+/*
+ * Function:	_NclPopScope
+ *
+ * Description:	Returns a pointer to the symbol table. This will be save
+ *		with the block, function or procedure data for use in pushing
+ *		arguments and local variables on the stack. 
+ *
+ * In Args:	NONE
+ *
+ *
+ * Returns:	Returns pointer to symbol table on top of stack
+ *
+ * Side Effect:	
+ */
+NclSymTableListNode * _NclPopScope 
+#if __STDC__
+(void)
+#else
+()
+#endif
+{
+	NclSymTableListNode *tmp;
+	NclSymTableListNode *tmp1;
+	
+	if(thetablelist == NULL) {
+		NhlPError(FATAL,E_UNKNOWN,"PopScope: Symbol table stack underflow");
+		return(NULL);
+	}
+
+	tmp = thetablelist;
+	tmp1 = thetablelist->previous;
+	tmp->previous = NULL;
+	thetablelist = tmp1;
+	return(tmp);
+}
+
+
+/*
+ * Function:	hash_pjw
+ *
+ * Description:	hash function used for hashing symbol table entries.
+ *		This function was recommended by the dragon book.
+ *
+ * In Args:	name 	string to be hashed
+ *
+ * Out Args:	NONE
+ *
+ * Scope:	
+ * Returns:	integer between 0 and NCL_SYM_TAB_SIZE
+ * Side Effect:	NONE
+ */
+static unsigned int hash_pjw
+#if __STDC__
+(char *name)
+#else
+( name )
+char *name;
+#endif
+{
+        char *p;
+        unsigned h =0, g;
+
+        for(p = name; *p != '\0'; p = p +1) {
+                h = (h<<4) + (*p);
+                if(g = h & 0xf0000000) {
+                        h = h^ (g >> 24);
+                        h = h ^ g;
+                }
+        }
+
+        return (h % NCL_SYM_TAB_SIZE);
+}
+
+
+
+
+/*
+ * Function:	_NclAddSym
+ *
+ * Description:	Adds a symbol to the top symbol table
+ *
+ * In Args:	name	name of symbol.
+ *		type    integer type indentifier which corresponds to token
+ *			list in ncl.y
+ *
+ * Out Args:	NONE
+ *
+ * Returns:	Returns pointer to new symbol table entry.
+ * Side Effect:	Changes symbol table data.
+ */
+NclSymbol *_NclAddSym
+#if __STDC__
+(char *name,int type)
+#else
+(name,type)
+	char *name;
+	int  type;
+#endif
+{
+	NclSymbol *s;
+	int 	index;
+	
+
+	index = hash_pjw(name);
+	s = (NclSymbol*)NclMalloc((unsigned)sizeof(NclSymbol));
+	if(s == NULL) {
+		NhlPError(FATAL,errno,"NclAddSym: Unable to create new symbol table entry");
+		return(s);
+	}
+	
+	strncpy(s->name,name,NCL_MAX_STRING);
+	s->level = thetablelist->level;
+	s->type = type;
+	s->ind = index;
+	thetablelist->this_scope[index].nelem++;
+	if(thetablelist->this_scope[index].thelist != NULL) {
+		thetablelist->this_scope[index].thelist->sympre = s;
+	}
+	s->symnext = thetablelist->this_scope[index].thelist;
+	s->sympre = NULL;
+	thetablelist->this_scope[index].thelist = s;
+	s->u.var = NULL;
+	s->offset = thetablelist->cur_offset++;
+	return(s);
+}
+
+/*
+ * Function:	_NclDeleteSym
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+void _NclDeleteSym
+#if __STDC__
+(NclSymbol *sym)
+#else
+(sym)
+	NclSymbol *sym;
+#endif
+{
+	NclSymTableListNode *step;
+	NclSymbol *tmp,*tmp2;
+	int i;
+
+	step = thetablelist;
+	while(step != NULL) {
+		if(step->level == sym->level) 	
+			break;
+		else 
+			step = step->previous;
+	}
+	step->this_scope[sym->ind].nelem--;
+	sym->sympre->symnext = sym->symnext;
+	switch(sym->type) {
+	case UNDEF:
+		break;
+	case VAR:
+/*
+*
+* ------> Need checks to see if actual strorage needs to be freed<--
+*
+*/
+		if(sym->u.var != NULL) {
+			NclFree(sym->u.var);
+		}
+		break;
+	case DFILE:
+	if(sym->u.file != NULL) {
+		for(i = 0; i< NCL_SYM_TAB_SIZE; i++) {
+			if(sym->u.file->filescope->this_scope[i].nelem > 0) {
+				tmp = sym->u.file->filescope->this_scope[i].thelist;
+				while(tmp != NULL) {
+					tmp2 = tmp->symnext;
+					NclFree(tmp);
+					tmp = tmp2;
+				}
+			}
+		}
+	}
+	break;
+	case PROC:
+	case UNDEFFILEVAR:
+	case FILEVAR:
+	case EPROC:
+	case NPROC:
+	case FUNC:
+	case EFUNC:
+	case NFUNC:
+	case VBLKNAME:
+	default:
+                break;
+
+	}
+	NclFree(sym);
+}
+
+/*
+ * Function:	_NclLookUp
+ *
+ * Description:	 searches entire list of symbol tables for name. If not
+ *		found returns NULL otherwise it returns a pointer to 
+ *		the symbol table entry.
+ *
+ * In Args:	name	name of symbol desired
+ *
+ * Returns:	Returns either NULL if not found or the symbol table
+ *		entry pointer.
+ *
+ * Side Effect:	NONE
+ */
+NclSymbol *_NclLookUp
+#if __STDC__
+(char *name)
+#else
+(name)
+char *name;
+#endif
+{
+	NclSymbol *s;
+	NclSymTableListNode *st;
+	int index;
+
+	index = hash_pjw(name);
+	st = thetablelist;
+/*
+* Searches all scopes in current symbol table list.
+*/
+	while(st != NULL) {	
+		s = st->this_scope[index].thelist;
+		while(s != NULL) {
+			if(strcmp(s->name,name) == 0)
+				return(s);
+			s = s->symnext;
+		}
+		st = st->previous;
+	}
+	return(NULL);
+}
+
+
+/*
+ * Function:	_NclLookUpInScope
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+NclSymbol *_NclLookUpInScope
+#if __STDC__
+(NclSymTableListNode * thetable, char *name)
+#else
+(thetable, name)
+NclSymTableListNode *thetable;
+char *name;
+#endif
+{
+	NclSymbol *s;
+	int index;
+
+	index = hash_pjw(name);
+/*
+* Searches all scopes in current symbol table list.
+*/
+	s = thetable->this_scope[index].thelist;
+	while(s != NULL) {
+		if(strcmp(s->name,name) == 0)
+			return(s);
+		s = s->symnext;
+	}
+	return(NULL);
+}
+
+NclSymbol *_NclAddInScope
+#if  __STDC__
+(NclSymTableListNode *thetable, char* name, int type)
+#else
+(thetable,name,type)
+	NclSymTableListNode 	*thetable;
+	char			*name;
+	int			type;
+#endif
+{
+
+	NclSymbol *s;
+	int 	index;
+	
+
+	index = hash_pjw(name);
+	s = (NclSymbol*)NclMalloc((unsigned)sizeof(NclSymbol));
+	if(s == NULL) {
+		NhlPError(FATAL,errno,"NclAddSymInScope: Unable to create new symbol table entry");
+		return(s);
+	}
+	
+	strncpy(s->name,name,NCL_MAX_STRING);
+	s->level = -1;
+	s->type = type;
+	s->ind = index;
+	thetable->this_scope[index].nelem++;
+	if(thetable->this_scope[index].thelist != NULL) {
+		thetable->this_scope[index].thelist->sympre = s;
+	}
+	s->symnext = thetable->this_scope[index].thelist;
+	s->sympre = NULL;
+	thetable->this_scope[index].thelist = s;
+	s->u.var = NULL;
+	s->offset = thetable->cur_offset++;
+	return(s);
+}
+
+NclSymbol *_NclDeleteSymInScope
+#if __STDC__
+(NclSymTableListNode *thetable, NclSymbol *sym)
+#else
+(thetable, sym)
+NclSymTableListNode *thetable;
+NclSymbol *sym;
+#endif
+{
+	NclSymTableListNode *step;
+	NclSymbol *tmp,*tmp2;
+	int i;
+
+	thetable->this_scope[sym->ind].nelem--;
+	sym->sympre->symnext = sym->symnext;
+	switch(sym->type) {
+	case UNDEFFILEVAR:
+	case FILEVAR:
+/*
+*
+* ------> Need checks to see if actual strorage needs to be freed<------
+*
+*/
+		if(sym->u.fvar != NULL) {
+			NclFree(sym->u.fvar);
+		}
+		break;
+	default:
+                break;
+
+	}
+	NclFree(sym);
+}
+
+
+NclSymbol *_NclChangeSymbolType 
+#if __STDC__
+(NclSymbol *thesym,int type)
+#else
+(thesym,type)
+NclSymbol *thesym;
+int type;
+#endif
+{
+	thesym->type = type;
+	return(thesym);
+}
+
+
+void _NclPrintSym
+#if __STDC__
+(FILE *fp) 
+#else
+(fp)
+	FILE *fp;
+#endif
+{
+	NclSymTableListNode *st;
+	NclSymbol *s;
+	int i;
+
+	st = thetablelist;
+
+	while(st != NULL) {
+		fprintf(fp,"Level: %d\n",st->level);
+		fprintf(fp,"Current Offset: %d\n",st->cur_offset);
+		for(i = 0; i < NCL_SYM_TAB_SIZE; i++) {
+			if(st->this_scope[i].nelem != 0) {
+				fprintf(fp,"\tIndex: %d\n",i);
+				s = st->this_scope[i].thelist;
+				while(s != NULL) {
+					fprintf(fp,"\t\t: %d) %s\n",s->offset,s->name);
+					s = s->symnext;
+				}
+			}
+			
+		}
+		st = st->previous;
+	}
+}
