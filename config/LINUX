@@ -1,5 +1,5 @@
 /*
- *      $Id: LINUX,v 1.13 2002-11-21 21:07:11 haley Exp $
+ *      $Id: LINUX,v 1.14 2002-12-09 23:30:59 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -29,7 +29,7 @@
 #define CppCommand '/usr/bin/cpp -traditional'
 #define CCompiler   gcc
 #define FCompiler   g77
-#define CtoFLibraries   -lg2c -lm
+#define CtoFLibraries   -lg2c -lgcc -lm
 #define CcOptions      -ansi
 #define XToolLibrary    -lXt -lSM -lICE
 #define BuildShared NO
