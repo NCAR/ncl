@@ -1,0 +1,236 @@
+#include <stdio.h>
+
+/*
+ * The following are the required NCAR Graphics include files.
+ * They should be located in ${NCARG_ROOT}/include.
+ */
+#include "wrapper.h"
+
+extern void NGCALLF(dpreshybrid,DPRESHYBRID)(double*,double*,double*,
+                                             double*,int*,double*);
+
+NhlErrorTypes pres_hybrid_W( void )
+{
+/*
+ * Input variables
+ */
+  void *psfc, *p0, *hya, *hyb;
+  double *tmp_psfc, *tmp_p0, *tmp_hya, *tmp_hyb;
+  int ndims_psfc, dsizes_psfc[NCL_MAX_DIMENSIONS];
+  int dsizes_hya[NCL_MAX_DIMENSIONS], dsizes_hyb[NCL_MAX_DIMENSIONS];
+  NclBasicDataTypes type_p0, type_psfc, type_hya, type_hyb;
+/*
+ * Output variables
+ */
+  void *phy;
+  double *tmp_phy;
+  int ndims_phy, *dsizes_phy;
+  NclBasicDataTypes type_phy;
+/*
+ * Various.
+ */
+  int i, j, index_phy, klvl, size_leftmost, size_phy;
+/*
+ * Retrieve parameters
+ *
+ * Note that any of the pointer parameters can be set to NULL,
+ * which implies you don't care about its value.
+ */
+  psfc = (void*)NclGetArgValue(
+          0,
+          4,
+          &ndims_psfc, 
+          dsizes_psfc,
+          NULL,
+          NULL,
+          &type_psfc,
+          2);
+  p0 = (void*)NclGetArgValue(
+          1,
+          4,
+          NULL,
+          NULL,
+          NULL,
+          NULL,
+          &type_p0,
+          2);
+  hya = (void*)NclGetArgValue(
+          2,
+          4,
+          NULL,
+          dsizes_hya,
+          NULL,
+          NULL,
+          &type_hya,
+          2);
+  hyb = (void*)NclGetArgValue(
+          3,
+          4,
+          NULL,
+          dsizes_hyb,
+          NULL,
+          NULL,
+          &type_hyb,
+          2);
+/*
+ * Check dimensions.
+ */
+  klvl = dsizes_hya[0];
+  if( dsizes_hyb[0] != klvl) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"pres_hybrid: The 'hyb' array must be the same length as 'hya'");
+    return(NhlFATAL);
+  }
+/*
+ * Determine type of output.
+ */
+  if( type_p0 != NCL_double && type_psfc != NCL_double && 
+     type_hya != NCL_double && type_hyb != NCL_double) {
+    type_phy = NCL_float;
+  }
+  else {
+    type_phy = NCL_double;
+  }
+/*
+ * Calculate total size of output array.
+ */
+  if(ndims_psfc == 1 && dsizes_psfc[0] == 1) {
+    ndims_phy = 1;
+  }
+  else {
+    ndims_phy = ndims_psfc + 1;
+  }
+
+  dsizes_phy = (int*)calloc(ndims_phy,sizeof(int));  
+  if( dsizes_phy == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"pres_hybrid: Unable to allocate memory for holding dimension sizes");
+    return(NhlFATAL);
+  }
+
+  size_leftmost = 1;
+/*
+ * psfc is not a scalar, so phy will be an (ndims_psfc+1)-D array of length 
+ * N x klvl, where N represents the dimensions of psfc.
+ */
+  for( i = 0; i < ndims_psfc; i++ ) {
+    size_leftmost *= dsizes_psfc[i];
+    dsizes_phy[i] = dsizes_psfc[i];
+  }
+  size_phy = size_leftmost * klvl;
+  dsizes_phy[ndims_phy-1] = klvl;
+/*
+ * Coerce data to double if necessary.
+ */
+  if(type_p0 != NCL_double) {
+    tmp_p0 = (double*)calloc(1,sizeof(double));
+    if( tmp_p0 == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"pres_hybrid: Unable to allocate memory for coercing p0 array to double precision");
+      return(NhlFATAL);
+    }
+    coerce_subset_input_double(p0,tmp_p0,0,type_p0,1,0,NULL,NULL);
+  }
+  else {
+    tmp_p0 = &((double*)p0)[0];
+  }
+/*
+ * Coerce psfc.
+ */
+  if(type_psfc != NCL_double) {
+    tmp_psfc = (double*)calloc(1,sizeof(double));
+    if( tmp_psfc == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"pres_hybrid: Unable to allocate memory for coercing psfc array to double precision");
+      return(NhlFATAL);
+    }
+  }
+/*
+ * Coerce hya.
+ */
+  if(type_hya != NCL_double) {
+    tmp_hya = (double*)calloc(klvl,sizeof(double));
+    if( tmp_hya == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"pres_hybrid: Unable to allocate memory for coercing hya array to double precision");
+      return(NhlFATAL);
+    }
+    coerce_subset_input_double(hya,tmp_hya,0,type_hya,klvl,0,NULL,NULL);
+  }
+  else {
+    tmp_hya = &((double*)hya)[0];
+  }
+/*
+ * Coerce hyb.
+ */
+  if(type_hyb != NCL_double) {
+    tmp_hyb = (double*)calloc(klvl,sizeof(double));
+    if( tmp_hyb == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"pres_hybrid: Unable to allocate memory for coercing hyb array to double precision");
+      return(NhlFATAL);
+    }
+    coerce_subset_input_double(hyb,tmp_hyb,0,type_hyb,klvl,0,NULL,NULL);
+  }
+  else {
+    tmp_hyb = &((double*)hyb)[0];
+  }
+/*
+ * Allocate space for output array.
+ */
+  if(type_phy == NCL_float) {
+    phy     = (void*)calloc(size_phy,sizeof(float));
+    tmp_phy = (double*)calloc(klvl,sizeof(double));
+    if(tmp_phy == NULL || phy == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"pres_hybrid: Unable to allocate memory for output array");
+      return(NhlFATAL);
+    }
+  }
+  else {
+    phy = (void*)calloc(size_phy,sizeof(double));
+    if(phy == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"pres_hybrid: Unable to allocate memory for output array");
+      return(NhlFATAL);
+    }
+  }
+
+/*
+ * Call function.
+ */
+  index_phy = 0;
+  for( i = 0; i < size_leftmost; i++ ) {
+    if(type_psfc != NCL_double) {
+/*
+ * Coerce subsection of psfc (tmp_psfc) to double.
+ */
+      coerce_subset_input_double(psfc,tmp_psfc,i,type_psfc,1,0,NULL,NULL);
+    }
+    else {
+/*
+ * Point tmp_psfc to appropriate location in psfc.
+ */
+      tmp_psfc = &((double*)psfc)[i];
+    }
+
+    if(type_phy == NCL_double) tmp_phy = &((double*)phy)[index_phy];
+
+    NGCALLF(dpreshybrid,DPRESHYBRID)(tmp_p0,tmp_psfc,tmp_hya,tmp_hyb,&klvl,
+                                     tmp_phy);
+/*
+ * Copy output values from temporary tmp_phy to phy.
+ */
+    if(type_phy != NCL_double) {
+      for( j = 0; j < klvl; j++ ) {
+        ((float*)phy)[index_phy+j] = (float)tmp_phy[j];
+      }
+    }
+    index_phy += klvl;
+  }
+/*
+ * Free memory.
+ */
+  if(type_psfc != NCL_double) NclFree(tmp_psfc);
+  if(type_p0   != NCL_double) NclFree(tmp_p0);
+  if(type_hya  != NCL_double) NclFree(tmp_hya);
+  if(type_hyb  != NCL_double) NclFree(tmp_hyb);
+  if(type_phy  != NCL_double) NclFree(tmp_phy);
+/*
+ * Return.
+ */
+  return(NclReturnValue(phy,ndims_phy,dsizes_phy,NULL,type_phy,0));
+}
+

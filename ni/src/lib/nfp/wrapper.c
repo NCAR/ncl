@@ -233,7 +233,7 @@ extern NhlErrorTypes hydro_W(void);
 extern NhlErrorTypes linmsg_W(void);
 extern NhlErrorTypes linint1_W(void);
 extern NhlErrorTypes linint2_W(void);
-
+extern NhlErrorTypes pres_hybrid_W(void);
 extern NhlErrorTypes pslhyp_W(void);
 extern NhlErrorTypes pslec_W(void);
 extern NhlErrorTypes pslhor_W(void);
@@ -2835,6 +2835,20 @@ void NclAddUserFuncs(void)
 
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
     NclRegisterFunc(linint2_W,args,"linint2",nargs);
+
+/*
+ * Register "pres_hybrid".
+ */
+    nargs = 0;
+    args = NewArgs(4);
+
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+
+    NclRegisterFunc(pres_hybrid_W,args,"pres_hybrid",nargs);
 
 /*
  * Register "pslhyp".

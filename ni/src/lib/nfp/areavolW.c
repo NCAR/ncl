@@ -104,6 +104,11 @@ NhlErrorTypes wgt_areaave_W( void )
  */
   ndims_ave  = max(1,ndims_x-2);
   dsizes_ave = (int*)calloc(ndims_ave,sizeof(int));  
+  if( dsizes_ave == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_areaave: Unable to allocate memory for holding dimension sizes");
+    return(NhlFATAL);
+  }
+
   dsizes_ave[0] = 1;
 
   total_leftmost = 1;
@@ -326,6 +331,10 @@ NhlErrorTypes wgt_volave_W( void )
  */
   ndims_ave  = max(1,ndims_x-3);
   dsizes_ave = (int*)calloc(ndims_ave,sizeof(int));  
+  if( dsizes_ave == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_volave: Unable to allocate memory for holding dimension sizes");
+    return(NhlFATAL);
+  }
   dsizes_ave[0] = 1;
 
   total_leftmost = 1;
