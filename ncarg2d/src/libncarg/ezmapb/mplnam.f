@@ -1,5 +1,5 @@
 C
-C $Id: mplnam.f,v 1.2 1998-04-17 22:11:00 kennison Exp $
+C $Id: mplnam.f,v 1.3 1998-04-28 20:45:23 kennison Exp $
 C
       SUBROUTINE MPLNAM (FLNM,ILVL,IAMA)
 C
@@ -171,6 +171,9 @@ C
         END IF
 C
         IF (IOAL.NE.IOAR) THEN
+          NPTS=NNMS/2
+          CALL HLUMPCHLN (+1,ILTY,IOAL,IOAR,NPTS,PNTS)
+          IF (NPTS.LE.1) GO TO 106
           CALL MAPITA (PNTS(1),PNTS(2),0,IAMA,IGI1,IOAL,IOAR)
           IF (ICFELL('MPLNAM',3).NE.0) GO TO 907
           DO 107 I=3,NNMS-3,2
@@ -181,6 +184,7 @@ C
           IF (ICFELL('MPLNAM',5).NE.0) GO TO 907
           CALL MAPIQA (IAMA,IGI1,IOAL,IOAR)
           IF (ICFELL('MPLNAM',6).NE.0) GO TO 907
+          CALL HLUMPCHLN (-1,ILTY,IOAL,IOAR,NPTS,PNTS)
         END IF
 C
         GO TO 106

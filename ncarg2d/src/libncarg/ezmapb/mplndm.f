@@ -1,5 +1,5 @@
 C
-C $Id: mplndm.f,v 1.2 1998-04-24 22:26:13 kennison Exp $
+C $Id: mplndm.f,v 1.3 1998-04-28 20:45:24 kennison Exp $
 C
       SUBROUTINE MPLNDM (FLNM,ILVL,IAMA,XCRA,YCRA,MCRA,IAAI,IAGI,MNOG,
      +                                                           ULPR)
@@ -147,7 +147,9 @@ C
         END IF
 C
         IF (ILTY.LE.ILVL) THEN
-          CALL MPCHLN (+1,ILTY,IOAL,IOAR)
+          NPTS=NNMS/2
+          CALL HLUMPCHLN (+2,ILTY,IOAL,IOAR,NPTS,PNTS)
+          IF (NPTS.LE.1) GO TO 106
           CALL MAPITM (PNTS(1),PNTS(2),0,
      +                          IAMA,XCRA,YCRA,MCRA,IAAI,IAGI,MNOG,ULPR)
           IF (ICFELL('MPLNDM',2).NE.0) GO TO 907
@@ -161,7 +163,7 @@ C
           IF (ICFELL('MPLNDM',4).NE.0) GO TO 907
           CALL MAPIQM (         IAMA,XCRA,YCRA,MCRA,IAAI,IAGI,MNOG,ULPR)
           IF (ICFELL('MPLNDM',5).NE.0) GO TO 907
-          CALL MPCHLN (-1,ILTY,IOAL,IOAR)
+          CALL HLUMPCHLN (-2,ILTY,IOAL,IOAR,NPTS,PNTS)
         END IF
 C
         GO TO 106
