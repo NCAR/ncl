@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.99 2004-11-18 22:56:23 haley Exp $
+#      $Id: yMakefile,v 1.100 2004-11-19 22:21:00 haley Exp $
 #
 #########################################################################
 #																		#
@@ -15,7 +15,7 @@
 #				National Center for Atmospheric Research
 #				POB 3000, Boulder, Colorado
 #
-#	Date:		$Date: 2004-11-18 22:56:23 $
+#	Date:		$Date: 2004-11-19 22:21:00 $
 #
 #	Description:	
 #
@@ -66,9 +66,9 @@ DODS_LIBS	= -lnc-dods -ldap\+\+ -lcurl -lrx -lxml2 -lpthread -lssl -liconv
 CC_LD		= xlC_r
 #else
 DODS_LIBS	= -lnc-dods -ldap\+\+ -lcurl -lrx -lxml2 -lpthread -lssl
-NCDFLIBS	= $(DODS_LIBS)
 CC_LD		= g\+\+
 #endif
+NCDFLIBS	= $(DODS_LIBS)
 #endif
 
 #ifdef  HPUX
