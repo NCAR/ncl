@@ -1,5 +1,5 @@
 /*
- *  $Id: s_gopwk.c,v 1.5 2003-03-04 16:02:13 haley Exp $
+ *  $Id: s_gopwk.c,v 1.6 2004-08-01 17:12:20 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -43,7 +43,7 @@ struct common {
 extern struct common {
 #endif
     int ers, erf, cuflag, xermsg[160], mxermg;
-} NGCALLF(gkeror,GKEROR);
+} NGCALLC(gkeror,GKEROR);
 
 void gopen_ws
 #ifdef NeedFuncProto
@@ -89,10 +89,10 @@ void gopen_ws
             else {
                 error_num = 163;
                 fctid = 2;
-                NGCALLF(gkeror,GKEROR).ers = 1;
+                NGCALLC(gkeror,GKEROR).ers = 1;
                 NGCALLF(gerhnd,GERHND)( &error_num, &fctid, 
-                                        &NGCALLF(gkeror,GKEROR).erf );
-                NGCALLF(gkeror,GKEROR).ers = 0;
+                                        &NGCALLC(gkeror,GKEROR).erf );
+                NGCALLC(gkeror,GKEROR).ers = 0;
                 return;
             }
         }
@@ -114,10 +114,10 @@ void gopen_ws
                 if( !isdigit( conn_id[i] ) ) {
                     error_num = 21;
                     fctid = 2;
-                    NGCALLF(gkeror,GKEROR).ers = 1;
+                    NGCALLC(gkeror,GKEROR).ers = 1;
                     NGCALLF(gerhnd,GERHND)( &error_num, &fctid, 
-                                            &NGCALLF(gkeror,GKEROR).erf );
-                    NGCALLF(gkeror,GKEROR).ers = 0;
+                                            &NGCALLC(gkeror,GKEROR).erf );
+                    NGCALLC(gkeror,GKEROR).ers = 0;
                     return;
                 }
             }

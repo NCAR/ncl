@@ -1,5 +1,5 @@
 /*
- *	$Id: s_gesc.c,v 1.4 2000-08-22 15:08:46 haley Exp $
+ *	$Id: s_gesc.c,v 1.5 2004-08-01 17:12:20 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -50,7 +50,7 @@ struct common {
 extern struct common {
 #endif
     int ers, erf, cuflag, xermsg[160], mxermg;
-} NGCALLF(gkeror,GKEROR);
+} NGCALLC(gkeror,GKEROR);
 
 void gescape
 #ifdef NeedFuncProto
@@ -98,18 +98,18 @@ void gescape
 		if(!in_data || !in_data->escape_r1.data){
 			error_num = 182;
 			eesc = 11;
-			NGCALLF(gkeror,GKEROR).ers = 1;
-			NGCALLF(gerhnd,GERHND)( &error_num, &eesc, &NGCALLF(gkeror,GKEROR).erf );
-			NGCALLF(gkeror,GKEROR).ers = 0;
+			NGCALLC(gkeror,GKEROR).ers = 1;
+			NGCALLF(gerhnd,GERHND)( &error_num, &eesc, &NGCALLC(gkeror,GKEROR).erf );
+			NGCALLC(gkeror,GKEROR).ers = 0;
 			return;
 		}
 		error_num = _NGCescape(func_id,
 					(_NGCesc*)in_data->escape_r1.data);
 		if(error_num != 0){
 			eesc = 11;
-			NGCALLF(gkeror,GKEROR).ers = 1;
-			NGCALLF(gerhnd,GERHND)( &error_num, &eesc, &NGCALLF(gkeror,GKEROR).erf );
-			NGCALLF(gkeror,GKEROR).ers = 0;
+			NGCALLC(gkeror,GKEROR).ers = 1;
+			NGCALLF(gerhnd,GERHND)( &error_num, &eesc, &NGCALLC(gkeror,GKEROR).erf );
+			NGCALLC(gkeror,GKEROR).ers = 0;
 		}
 		return;
 	}
@@ -139,9 +139,9 @@ void gescape
 			if( isize > MAX_FILE_LEN ) {
 				error_num = 182;
 				eesc = 11;
-				NGCALLF(gkeror,GKEROR).ers = 1;
-				NGCALLF(gerhnd,GERHND)( &error_num, &eesc, &NGCALLF(gkeror,GKEROR).erf );
-				NGCALLF(gkeror,GKEROR).ers = 0;
+				NGCALLC(gkeror,GKEROR).ers = 1;
+				NGCALLF(gerhnd,GERHND)( &error_num, &eesc, &NGCALLC(gkeror,GKEROR).erf );
+				NGCALLC(gkeror,GKEROR).ers = 0;
 				return;
 			}
 	      	}
@@ -197,9 +197,9 @@ void gescape
 
 			error_num = 2204;
 			eesc = 11;
-			NGCALLF(gkeror,GKEROR).ers = 1;
-			NGCALLF(gerhnd,GERHND)( &error_num, &eesc, &NGCALLF(gkeror,GKEROR).erf );
-			NGCALLF(gkeror,GKEROR).ers = 0;
+			NGCALLC(gkeror,GKEROR).ers = 1;
+			NGCALLF(gerhnd,GERHND)( &error_num, &eesc, &NGCALLC(gkeror,GKEROR).erf );
+			NGCALLC(gkeror,GKEROR).ers = 0;
 			return;
 		}
 
@@ -220,9 +220,9 @@ void gescape
 		if(!*out_data){
 			error_num = 2204;
 			eesc = 11;
-			NGCALLF(gkeror,GKEROR).ers = 1;
-			NGCALLF(gerhnd,GERHND)( &error_num, &eesc, &NGCALLF(gkeror,GKEROR).erf );
-			NGCALLF(gkeror,GKEROR).ers = 0;
+			NGCALLC(gkeror,GKEROR).ers = 1;
+			NGCALLF(gerhnd,GERHND)( &error_num, &eesc, &NGCALLC(gkeror,GKEROR).erf );
+			NGCALLC(gkeror,GKEROR).ers = 0;
 			return;
 		}
 
@@ -230,9 +230,9 @@ void gescape
 		if(!tchptr){
 			error_num = 2204;
 			eesc = 11;
-			NGCALLF(gkeror,GKEROR).ers = 1;
-			NGCALLF(gerhnd,GERHND)( &error_num, &eesc, &NGCALLF(gkeror,GKEROR).erf );
-			NGCALLF(gkeror,GKEROR).ers = 0;
+			NGCALLC(gkeror,GKEROR).ers = 1;
+			NGCALLF(gerhnd,GERHND)( &error_num, &eesc, &NGCALLC(gkeror,GKEROR).erf );
+			NGCALLC(gkeror,GKEROR).ers = 0;
 			return;
 		}
 
