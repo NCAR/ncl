@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.5 1992-10-28 23:23:10 haley Exp $
+#	$Id: yMakefile,v 1.6 1992-11-02 14:39:01 haley Exp $
 #
 NCARG	= ../../../..
 
@@ -14,6 +14,14 @@ SCRIPTS = cgmtrans ncargf77 ncargcc ncargversion sunplot \
 #endif
 
 all:: $(SCRIPTS)
+
+ncargversion:	sedscript
+	@sed -f sedscript < version.sed > ncargversion
+	@$(RM) sedscript
+
+sedscript:      Makefile
+	@echo 's+VERSION+$(VERSION)+' > $@
+	@echo '$$a\' >> $@
 
 #if defined(cray) || defined(CRAY2)
 ncargf77: ncargf77.cry Makefile
