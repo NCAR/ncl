@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.75 1998-06-02 20:32:50 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.76 1998-07-15 00:40:41 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -4932,7 +4932,7 @@ static NhlErrorTypes InitCoordBounds
         
         if (cnp->use_irr_trans) {
                 if (cnp->sfp->x_arr && ! tfp->x_axis_type_set) {
-			if (! ocl || (cnp->data_changed  &&
+			if (! cnp->osfp || (cnp->data_changed  &&
 			    (cnp->sfp->changed & _NhlsfXARR_CHANGED)))
 				tfp->x_axis_type = NhlIRREGULARAXIS;
 		}
@@ -4944,7 +4944,7 @@ static NhlErrorTypes InitCoordBounds
 			x_data_reversed = False;
                 }
                 if (cnp->sfp->y_arr && ! tfp->y_axis_type_set) {
-			if (! ocl || (cnp->data_changed  &&
+			if (! cnp->osfp || (cnp->data_changed  &&
 			    (cnp->sfp->changed & _NhlsfYARR_CHANGED)))
 				tfp->y_axis_type = NhlIRREGULARAXIS;
 		}

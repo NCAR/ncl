@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlot.c,v 1.44 1998-06-02 20:32:57 dbrown Exp $
+ *      $Id: StreamlinePlot.c,v 1.45 1998-07-15 00:40:46 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2493,8 +2493,8 @@ static NhlErrorTypes InitCoordBounds
         
         if (stp->use_irr_trans) {
                 if (stp->vfp->x_arr && ! tfp->x_axis_type_set) {
-			if (! ostl || (stp->data_changed  &&
-			    (stp->vfp->changed & _NhlsfXARR_CHANGED)))
+			if (! stp->ovfp || (stp->data_changed  &&
+			    (stp->vfp->changed & _NhlvfXARR_CHANGED)))
 				tfp->x_axis_type = NhlIRREGULARAXIS;
 		}
                 if (! stp->vfp->x_arr && tfp->x_axis_type == NhlIRREGULARAXIS)
@@ -2505,8 +2505,8 @@ static NhlErrorTypes InitCoordBounds
 			x_data_reversed = False;
                 }
                 if (stp->vfp->y_arr && ! tfp->y_axis_type_set) {
-			if (! ostl || (stp->data_changed  &&
-			    (stp->vfp->changed & _NhlsfYARR_CHANGED)))
+			if (! stp->ovfp || (stp->data_changed  &&
+			    (stp->vfp->changed & _NhlvfYARR_CHANGED)))
 				tfp->y_axis_type = NhlIRREGULARAXIS;
 		}
                 if (! stp->vfp->y_arr && tfp->y_axis_type == NhlIRREGULARAXIS)

@@ -1,5 +1,5 @@
 /*
- *      $Id: ScalarField.c,v 1.31 1998-04-16 03:09:01 dbrown Exp $
+ *      $Id: ScalarField.c,v 1.32 1998-07-15 00:40:45 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2291,6 +2291,7 @@ ScalarFieldInitialize
 	NhlGenArray		ga;
          _NhlConvertContext	context = NULL;
 
+	sfp->changed = 0;
         context = _NhlCreateConvertContext(new);
 	sfp->sffloat = NULL;
         sfp->up_to_date = False;
@@ -2313,6 +2314,7 @@ ScalarFieldInitialize
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return NhlFATAL;
 	}
+	sfp->changed |= _NhlsfDARR_CHANGED;
 	sfp->x_el_count = sfp->d_arr->len_dimensions[1];
 	sfp->y_el_count = sfp->d_arr->len_dimensions[0];
         
@@ -2339,6 +2341,7 @@ ScalarFieldInitialize
                                           NhlEUNKNOWN,e_text,entry_name);
                                 return NhlFATAL;
                         }
+			sfp->changed |= _NhlsfXARR_CHANGED;
                 }
 	}
 
@@ -2365,6 +2368,7 @@ ScalarFieldInitialize
                                           NhlEUNKNOWN,e_text,entry_name);
                                 return NhlFATAL;
                         }
+			sfp->changed |= _NhlsfYARR_CHANGED;
                 }
 	}
 

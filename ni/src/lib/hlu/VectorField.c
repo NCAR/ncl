@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorField.c,v 1.18 1998-04-16 03:09:17 dbrown Exp $
+ *      $Id: VectorField.c,v 1.19 1998-07-15 00:40:48 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3200,6 +3200,7 @@ VectorFieldInitialize
 	NhlGenArray		ga;
          _NhlConvertContext	context = NULL;
 
+	vfp->changed = 0;
         context = _NhlCreateConvertContext(new);
 	vfp->vffloat = NULL;
 	vfp->use_d_arr = False;
@@ -3295,6 +3296,7 @@ VectorFieldInitialize
                                           NhlEUNKNOWN,e_text,entry_name);
                                 return NhlFATAL;
                         }
+			vfp->changed |= _NhlvfXARR_CHANGED;
                 }
 	}
 
@@ -3321,6 +3323,7 @@ VectorFieldInitialize
                                           NhlEUNKNOWN,e_text,entry_name);
                                 return NhlFATAL;
                         }
+			vfp->changed |= _NhlvfYARR_CHANGED;
                 }
 	}
 
@@ -3578,9 +3581,10 @@ VectorFieldSetValues
 
 /*
  * The changed bit field records changes to the X and Y coordinate array
- * as passed to the ScalarFieldFloat object. Changes to the array itself
+ * as passed to the VectorFieldFloat object. Changes to the array itself
  * count, but also subsection and stride changes.
  */
+	vfp->changed = 0;
         context = _NhlCreateConvertContext(new);
 	if (vfp->d_arr != ovfp->d_arr) {
                 NhlBoolean reset = False;

@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.c,v 1.50 1998-06-02 20:33:00 dbrown Exp $
+ *      $Id: VectorPlot.c,v 1.51 1998-07-15 00:40:48 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3762,8 +3762,8 @@ static NhlErrorTypes InitCoordBounds
         
         if (vcp->use_irr_trans) {
                 if (vcp->vfp->x_arr && ! tfp->x_axis_type_set) {
-			if (! ovcl || (vcp->data_changed  &&
-			    (vcp->vfp->changed & _NhlsfXARR_CHANGED)))
+			if (! vcp->ovfp || (vcp->data_changed  &&
+			    (vcp->vfp->changed & _NhlvfXARR_CHANGED)))
 				tfp->x_axis_type = NhlIRREGULARAXIS;
 		}
                 if (! vcp->vfp->x_arr && tfp->x_axis_type == NhlIRREGULARAXIS)
@@ -3774,8 +3774,8 @@ static NhlErrorTypes InitCoordBounds
 			x_data_reversed = False;
                 }
                 if (vcp->vfp->y_arr && ! tfp->y_axis_type_set) {
-			if (! ovcl || (vcp->data_changed  &&
-			    (vcp->vfp->changed & _NhlsfYARR_CHANGED)))
+			if (! vcp->ovfp || (vcp->data_changed  &&
+			    (vcp->vfp->changed & _NhlvfYARR_CHANGED)))
 				tfp->y_axis_type = NhlIRREGULARAXIS;
 		}
                 if (! vcp->vfp->y_arr && tfp->y_axis_type == NhlIRREGULARAXIS)
