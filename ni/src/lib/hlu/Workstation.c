@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.45 1996-02-28 02:04:01 dbrown Exp $
+ *      $Id: Workstation.c,v 1.46 1996-03-01 18:24:38 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1098,6 +1098,9 @@ static NhlErrorTypes WorkstationInitialize
 	newl->work.default_lineinfo = newl->work.private_lineinfo;
 	newl->work.default_markinfo = newl->work.private_markinfo;
 	newl->work.default_fillinfo = newl->work.private_fillinfo;
+	newl->work.lip = &newl->work.private_lineinfo;
+	newl->work.mip = &newl->work.private_markinfo;
+	newl->work.fip = &newl->work.private_fillinfo;
 
 /*
  * Create the default GraphicStyle object
