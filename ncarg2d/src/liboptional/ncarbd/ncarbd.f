@@ -1,5 +1,5 @@
 C
-C	$Id: ncarbd.f,v 1.2 1993-08-06 18:11:05 haley Exp $
+C	$Id: ncarbd.f,v 1.3 1993-09-23 17:17:54 kennison Exp $
 C
       SUBROUTINE NCARBD
       CALL AGDFLT
@@ -24,13 +24,13 @@ C
       CALL PCBLDA
       CALL PWRXBD
       CALL PWRYBD
+      CALL SEBLDA
       CALL SFBLDA
       CALL SLBLDA
       CALL SRFABD
       CALL STDATA
       CALL TDBLDA
       CALL THREBD
-      CALL UERRBD
       CALL UTILBD
       CALL VELDAT
       CALL VVDATA
