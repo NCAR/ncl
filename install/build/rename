@@ -1,7 +1,7 @@
 #!/usr/local/bin/perl
 
 #
-#      $Id: rename,v 1.1 1993-02-20 00:10:20 clyne Exp $
+#      $Id: rename,v 1.2 1993-03-10 16:46:45 clyne Exp $
 #
 #########################################################################
 #									#
@@ -37,10 +37,22 @@ if (!@ARGV) {
 	@ARGV = <STDIN>;
 	chop (@ARGV);
 }
+
+#
+# brain damaged AIX version of perl won't rename directories.
+#
+$os = `/bin/uname -s`;
+chop $os;
+
 for (@ARGV) {
 	$old = $_;
 	eval $op;
 	die $@ if $@;
-	rename ($old, $_) unless $old eq $_;
+	if ($os eq "AIX") {
+		system("/bin/mv $old $_") unless $old eq $_;
+	}
+	else {
+		rename ($old, $_) unless $old eq $_;
+	}
 }
 exit 0;
