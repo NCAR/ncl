@@ -852,7 +852,7 @@ long UnPackIntHeader(CCMFileRec *therec,FILE* fd, CCMI *header,int start_block, 
 /*
 * This is a kludgy test to avoid a core dump
 */
-		if((( finish_block * BLOCK_SIZE + finish_offset *WORD_SIZE) - (start_block* BLOCK_SIZE +  start_offset * WORD_SIZE)) != n ) {
+		if(((( finish_block * BLOCK_SIZE + (finish_offset-1) *WORD_SIZE)/WORD_SIZE) - ((start_block* BLOCK_SIZE +  start_offset * WORD_SIZE)/WORD_SIZE)) != n ) {
 			NhlPError( NhlFATAL,NhlEUNKNOWN,"CCM file is not a CRAY binary. Non CRAY binary files are not currently supported by NCL.\nUse \"ccm2nc\" to convert file to netCDF. (Currently, as of 1999, found at: http://goldhill.cgd.ucar.edu/cms/ccm3/tools/)");
 			return(-1);
 		}
