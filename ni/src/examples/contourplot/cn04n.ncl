@@ -77,7 +77,7 @@ end if
 len_dims(0) = PLOTS
 len_dims(1) = N
 len_dims(2) = M
-z = asciiread("data",len_dims,"float")
+z = asciiread("cn04n.asc",len_dims,"float")
 
 dataid = create "Gendat" scalarFieldClass appid
         "sfDataArray" : z(0,:,:)
