@@ -1,5 +1,5 @@
 C
-C	$Id: wmstnm.f,v 1.3 1994-12-16 17:52:04 fred Exp $
+C	$Id: wmstnm.f,v 1.4 1996-05-31 19:56:42 fred Exp $
 C
       SUBROUTINE WMSTNM(X,Y,IMDAT)
 C
@@ -274,7 +274,7 @@ C
       SYMPOS(2,NUMSYM) = YNDC-0.72*WBSHFT
 C
 C  If the wind speed is not calm, revise the symbol positions based 
-C  on the wind barb direction and rectangular area containing  the 
+C  on the wind barb direction and the rectangular area containing the 
 C  tick marks on the barb.
 C
       IF (FF .EQ. 0) GO TO 220
@@ -282,9 +282,19 @@ C
       CALL WMGETR('WXR',BRBEXT(3))
       CALL WMGETR('WYB',BRBEXT(2))
       CALL WMGETR('WYT',BRBEXT(4))
-      IF (BANGD.GE.0. .AND. BANGD.LE.50.) THEN
+      IF (BANGD .EQ. 0.) THEN
 C
-C  If CM is present, find the intersection of its text extent box
+C  Move CH, CM, and TT to the left.
+C
+        CALL WMCEXT(ISYM,IFNTNM(ISYM),SYMPOS(1,ISYM),SYMPOS(2,ISYM),
+     +            CHRS(ISYM),SIZ,CHREXT)
+        OFFSET = EPS+0.5*(CHREXT(3)-CHREXT(1))
+        SYMPOS(1,1) = SYMPOS(1,1)-OFFSET
+        SYMPOS(1,2) = SYMPOS(1,2)-OFFSET
+        SYMPOS(1,3) = SYMPOS(1,3)-OFFSET
+      ELSE IF (BANGD.GT.0. .AND. BANGD.LE.50.) THEN
+C
+C  If CH is present, find the intersection of its text extent box
 C  with that of the extent box of the wind barb, and move symbols
 C  CH, CM, and TT left by a suitable amount.
 C
@@ -298,6 +308,11 @@ C
           ENDIF
         ENDIF
         ORIG = SYMPOS(2,2)
+C
+C  If CM is present, find the intersection of its text extent box
+C  with that of the extent box of the wind barb, and move symbols
+C  CM, and TT left by a suitable amount.
+C
         IF (IPRSNT(2) .EQ. 1) THEN
           ISYM = 2
           CALL WMCEXT(ISYM,IFNTNM(ISYM),SYMPOS(1,ISYM),SYMPOS(2,ISYM),
@@ -306,7 +321,7 @@ C
           IF (IFLG .EQ. 1) THEN
             SYMPOS(1,ISYM) = BRBEXT(1)-EPS-0.5*(CHREXT(3)-CHREXT(1))
             ODIFF = ABS(ORIG-SYMPOS(1,ISYM))
-            SYMPOS(1,4) = SYMPOS(1,4)-ODIFF
+            SYMPOS(1,3) = SYMPOS(1,3)-ODIFF
           ENDIF
         ENDIF
 C
