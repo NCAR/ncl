@@ -172,8 +172,10 @@ extern NhlErrorTypes dsgrid3d_W(void);
 extern NhlErrorTypes dsgrid3_W(void);
 extern NhlErrorTypes dspnt2s_W(void);
 extern NhlErrorTypes dspnt2d_W(void);
+extern NhlErrorTypes dspnt2_W(void);
 extern NhlErrorTypes dspnt3s_W(void);
 extern NhlErrorTypes dspnt3d_W(void);
+extern NhlErrorTypes dspnt3_W(void);
 extern NhlErrorTypes dssetp_W(void);
 extern NhlErrorTypes dsgetp_W(void);
 
@@ -3208,6 +3210,23 @@ void NclAddUserFuncs(void)
  */
         NclRegisterProc(dspnt2d_W,args,"dspnt2d",nargs);
 /*
+ * Register "dspnt2".
+ *
+ * Create private argument array
+ */
+        nargs = 0;
+        args = NewArgs(5);
+
+        SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+/*
+ * Register wrapper function pointer and argument templates.
+ */
+        NclRegisterFunc(dspnt2_W,args,"dspnt2",nargs);
+/*
  * Register "dspnt3s".
  *
  * Create private argument array
@@ -3253,6 +3272,26 @@ void NclAddUserFuncs(void)
  * Register wrapper function pointer and argument templates.
  */
         NclRegisterProc(dspnt3d_W,args,"dspnt3d",nargs);
+
+/*
+ * Register "dspnt3".
+ *
+ * Create private argument array
+ */
+        nargs = 0;
+        args = NewArgs(7);
+
+        SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+/*
+ * Register wrapper function pointer and argument templates.
+ */
+        NclRegisterFunc(dspnt3_W,args,"dspnt3",nargs);
 
 
 /*
