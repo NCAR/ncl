@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.42 2000-07-26 20:51:01 haley Exp $
+;      $Id: gsn_code.ncl,v 1.43 2000-08-25 17:56:38 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -1513,6 +1513,7 @@ end
 ; This procedure takes the array of plots and draws them all on one     ;
 ; workstation in the configuration specified by dims.                   ;
 ;                                                                       ;
+;   gsnPanelRemainder                                                   ;
 ; plots will be drawn in 2 rows and 3 columns.                          ;
 ;                                                                       ;
 ; However, if you set gsnPanelRowSpec to True, and dims to an array of  ;
@@ -1544,6 +1545,8 @@ begin
     x_rgt          = get_res_value(res,"gsnPanelRight",1.)
     y_bot          = get_res_value(res,"gsnPanelBottom",0.)
     y_top          = get_res_value(res,"gsnPanelTop",1.)
+    remainder      = get_res_value(res,"gsnPanelRemainder","bottom")
+
     if(isatt(res,"gsnPanelFigureStrings"))
       is_figure_strings = True
       panel_strings = get_res_value(res,"gsnPanelFigureStrings","")      
@@ -1667,8 +1670,16 @@ begin
     if(nplots.gt.npanels)
       print("Warning: gsn_panel: you have more plots than you have panels.")
       print("Only " + npanels + " plots will be drawn.")
+      nplots = npanels
     end if
 ;
+; Calculate how many plots will be left in the last row if the
+; number of plots doesn't equal rows*columns.  A value of zero
+; indicates that there are either exactly rows*cols plots, or that
+; there are more plots than there are provided rows and columns.
+;
+  num_plots_in_odd_row = nplots % cols
+        "cnInfoLabelFontHeightF" : font_height
       end getvalues
     else
       if(plot_type.eq."vector") then
@@ -1780,9 +1791,7 @@ begin
     dy = scale * (top - vpy) ; Calculate distance from plot's top position
                              ; to its topmost annotation.
 
-    xpos = x_lft + xwsp + dx +(xsp/2.+new_total_width*ispan(0,cols-1,1))
     ypos = y_top - ywsp - dy -(ysp/2.+new_total_height*ispan(0,rows-1,1))
-
   ywsp = ywsp_perc/100. * new_plot_height
 
   new_total_width  = 2.*xwsp + new_plot_width  ; Calculate new total width
@@ -1815,32 +1824,50 @@ begin
 ;
 ; Loop through each plot and draw it in the new scaled-down size.
     end if
-    do i = 0,rows-1
+    nplot = 0
+    i = 0
+    do while(nplot.lt.nplots)
+      num_plots_left = nplots - nplot
 ;
-; Before we add plots to a row, check to see if we have enough plots
+; Before we add plots to a row, need to figure out how many go in
+; this row. First check to see if we have enough plots
 ; left to fill that row.  If not, then center the remaining plots.
+; The user can specify whether the remaining plots should be at the
+; top, or the bottom.
 ;
-      if(panel_center)
-        num_plots_left = dimsizes(plot) - i*cols
-
-        if(num_plots_left.lt.cols)
+      new_cols = cols    ; Start off with the default of "cols" columns
+      xsp      = xrange - new_total_width*cols  ; space before plots. 
 ;
-; Not enough plots to fill row, so center remaining plots rather
-; than left-justifying them.
+; Figure out if there are going to be less than "cols" plots
+; in this row.
+;
+      if(panel_center.and.num_plots_in_odd_row) then
+        if((i.eq.0.and.(remainder.eq."top".or.remainder.eq."TOP".or. \
+                        remainder.eq."Top")).or.(num_plots_left.lt.cols.and.\
+                        (remainder.eq."bottom".or.remainder.eq."BOTTOM".or.\
+                         remainder.eq."Bottom")))
+          new_cols = num_plots_in_odd_row
+;
+; Since we don't have a nice even number of plots to fill out every
+; column specified, we need to deal with this remainder of plots. 
+; They can either be dealt with in the first row (remainder == "top")
+; or in the last row, and they can either be centered or left-justified.
+; If they are left-justified, we don't need to do anything different,
+; since we can just use our regular calculation for "xpos" for this.
+;
+; By default, we want to center the remaining plots, so we need to
+; calculate new spacings.
 ; 
-          num_miss_plots = cols - num_plots_left
-          if(num_miss_plots.gt.0.and.num_miss_plots.lt.cols)
-            delete(xpos)
-            xsp = xrange - new_total_width*(cols-num_miss_plots)
-            xpos = x_lft + xwsp + dx +(xsp/2.+new_total_width*\
-                   ispan(0,cols-num_miss_plots-1,1))
-          end if
+          xsp = xrange - new_total_width*(num_plots_in_odd_row)
         end if
       end if
+;
+; Variable to hold original viewport coordinates, and annotations (if
+; they exist).
+	  xpos = x_lft + xwsp + dx +(xsp/2.+new_total_width*ispan(0,new_cols-1,1))
   old_vp = new((/nplots,4/),float)
-      do j = 0,cols-1
-        nplot = i*cols+j
-        if(nplot .lt. dimsizes(plot))
+      do j = 0,new_cols-1
+        if(nplot .lt. nplots)
           if(.not.ismissing(plot(nplot)))
             pplot = plot(nplot)
             getvalues pplot
@@ -1916,8 +1943,11 @@ begin
             delete(pplot)
 ;
 ; Save this plot.
+        nplot = nplot + 1
       end do  ; end of columns
-    end do    ; end of rows
+      delete(xpos)
+      i = i + 1   ; increment rows
+    end do    ; end of plots
             gsres = True
             gsres@gsLineThicknessF = 5.0
             gsn_polyline_ndc(wks,(/lft,rgt,rgt,lft,lft/), \
