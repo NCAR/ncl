@@ -1,6 +1,6 @@
 
 /*
- *      $Id: MathTemplate2.c.sed,v 1.1 1996-12-17 18:43:09 ethan Exp $
+ *      $Id: MathTemplate2.c.sed,v 1.2 1996-12-18 16:22:00 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -43,7 +43,7 @@ NhlErrorTypes _NclFUNCNAME
 
 	value0 = (ARG0TYPE*)NclGetArgValue(
 			0,
-			1,
+			2,
 			&n_dims0,
 			dimsizes0,
 			&missing0,
@@ -55,8 +55,8 @@ NhlErrorTypes _NclFUNCNAME
 	}
 
 	value1 = (ARG1TYPE*)NclGetArgValue(
-			0,
 			1,
+			2,
 			&n_dims1,
 			dimsizes1,
 			&missing1,
