@@ -24,6 +24,17 @@
 #define min(x,y)  ((x) < (y) ? (x) : (y))
 #define max(x,y)  ((x) > (y) ? (x) : (y))
 
+extern void NGCALLF(dsvdlap,DSVDLAP)(double *,double *,int *,int *,int *,
+                                     int *,int *,int *,double  *,int *,
+                                     double *,int *,double *, double *,
+                                     double *, double *, double *,int *);
+
+extern void NGCALLF(dsvdsv,DSVDSV)(double *,double *, int *,int *,int *,
+                                   int *,int *,int *,double *, int *,
+                                   double *, double *,double *, double *,
+                                   double *,double *, double *,int *,
+                                   double *,int *,int *);
+
 NhlErrorTypes svdcov_W( void )
 {
 /*
@@ -954,8 +965,16 @@ NhlErrorTypes svdcov_sv_W( void )
  * Output array variables
  */
   double *svdpcv;
-  float *rsvdpcv;
+  float *rsvdpcv, *rsv;
   int ndims_svdpcv, dsizes_svdpcv[1];
+/*
+ * Attribute variables
+ */
+  int att_id;
+  int dsizes[NCL_MAX_DIMENSIONS];
+  NclMultiDValData att_md, return_md;
+  NclVar tmp_var;
+  NclStackEntry return_data;
 /*
  * Various
  */
@@ -1131,9 +1150,9 @@ NhlErrorTypes svdcov_sv_W( void )
   free((double*)crv);
   free((double*)u);
   free((double*)vt);
-  free((double*)sv);
+
 /*
- * Return output grid to NCL.
+ * Set up variable to return.
  */
   if( tmp_md[0]->multidval.data_type == NCL_float ) {
 	if(tmp1_md[0]->obj.id != tmp_md[0]->obj.id) 
@@ -1149,15 +1168,121 @@ NhlErrorTypes svdcov_sv_W( void )
 	}
 	rsvdpcv = (float *)NclMalloc(*nsvd*sizeof(float));
 	for( i = 0; i < *nsvd; i++ ) rsvdpcv[i] = (float)svdpcv[i];
-/*
- * Free up memory.
- */
 	free((double*)svdpcv);
-	return(NclReturnValue( (void *)rsvdpcv, 1, dsizes_svdpcv, NULL, NCL_float, 0));
+
+	return_md = _NclCreateVal(
+				  NULL,
+				  NULL,
+				  Ncl_MultiDValData,
+				  0,
+				  (void*)rsvdpcv,
+				  NULL,
+				  1,
+				  dsizes_svdpcv,
+				  TEMPORARY,
+				  NULL,
+				  (NclObjClass)nclTypefloatClass
+				 );
+/*
+ * Set up attributes to return.
+ */
+	att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
+/*
+ * Convert doubles to floats.
+ */
+	rsv = (float *)NclMalloc(nsvmx*sizeof(float));
+	if( rsv == NULL ) {
+	  NhlPError(NhlFATAL,NhlEUNKNOWN,"svdcov_sv: Unable to allocate memory for attributes");
+	  return(NhlFATAL);
+	}
+	
+	for(i = 0; i < nsvmx; i++) rsv[i] = (float)sv[i];
+	free((double*)sv);
+
+	dsizes[0] = nsvmx;
+	att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         (void*)rsv,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         (NclObjClass)nclTypefloatClass
+                         );
+	_NclAddAtt(
+			   att_id,
+			   "sv",
+			   att_md,
+			   NULL
+			   );
+
   }
+
   else {
-    return(NclReturnValue( (void *) svdpcv, 1, dsizes_svdpcv, NULL, NCL_double, 0));
+	return_md = _NclCreateVal(
+				  NULL,
+				  NULL,
+				  Ncl_MultiDValData,
+				  0,
+				  (void*)svdpcv,
+				  NULL,
+				  1,
+				  dsizes_svdpcv,
+				  TEMPORARY,
+				  NULL,
+				  (NclObjClass)nclTypedoubleClass
+				 );
+/*
+ * Set up attributes to return.
+ */
+	att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
+
+	dsizes[0] = nsvmx;
+	att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         (void*)sv,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         (NclObjClass)nclTypedoubleClass
+                         );
+	_NclAddAtt(
+			   att_id,
+			   "sv",
+			   att_md,
+			   NULL
+			   );
   }
+  tmp_var = _NclVarCreate(
+                          NULL,
+                          NULL,
+                          Ncl_Var,
+                          0,
+                          NULL,
+                          return_md,
+                          NULL,
+                          att_id,
+                          NULL,
+                          RETURNVAR,
+                          NULL,
+                          TEMPORARY
+                          );
+/*
+ * Return output grid and attributes to NCL.
+ */
+  return_data.kind = NclStk_VAR;
+  return_data.u.data_var = tmp_var;
+  _NclPlaceReturn(return_data);
+  return(NhlNOERROR);
 }
 
 
@@ -1181,8 +1306,16 @@ NhlErrorTypes svdstd_sv_W( void )
  * Output array variables
  */
   double *svdpcv;
-  float *rsvdpcv;
+  float *rsvdpcv, *rsv;
   int ndims_svdpcv, dsizes_svdpcv[1];
+/*
+ * Attribute variables
+ */
+  int att_id;
+  int dsizes[NCL_MAX_DIMENSIONS];
+  NclMultiDValData att_md, return_md;
+  NclVar tmp_var;
+  NclStackEntry return_data;
 /*
  * Various
  */
@@ -1358,9 +1491,8 @@ NhlErrorTypes svdstd_sv_W( void )
   free((double*)crv);
   free((double*)u);
   free((double*)vt);
-  free((double*)sv);
 /*
- * Return output grid to NCL.
+ * Set up variable to return.
  */
   if( tmp_md[0]->multidval.data_type == NCL_float ) {
 	if(tmp1_md[0]->obj.id != tmp_md[0]->obj.id) 
@@ -1376,15 +1508,121 @@ NhlErrorTypes svdstd_sv_W( void )
 	}
 	rsvdpcv = (float *)NclMalloc(*nsvd*sizeof(float));
 	for( i = 0; i < *nsvd; i++ ) rsvdpcv[i] = (float)svdpcv[i];
-/*
- * Free up memory.
- */
 	free((double*)svdpcv);
-	return(NclReturnValue( (void *)rsvdpcv, 1, dsizes_svdpcv, NULL, NCL_float, 0));
+
+	return_md = _NclCreateVal(
+				  NULL,
+				  NULL,
+				  Ncl_MultiDValData,
+				  0,
+				  (void*)rsvdpcv,
+				  NULL,
+				  1,
+				  dsizes_svdpcv,
+				  TEMPORARY,
+				  NULL,
+				  (NclObjClass)nclTypefloatClass
+				 );
+/*
+ * Set up attributes to return.
+ */
+	att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
+/*
+ * Convert doubles to floats.
+ */
+	rsv = (float *)NclMalloc(nsvmx*sizeof(float));
+	if( rsv == NULL ) {
+	  NhlPError(NhlFATAL,NhlEUNKNOWN,"svdstd_sv: Unable to allocate memory for attributes");
+	  return(NhlFATAL);
+	}
+	
+	for(i = 0; i < nsvmx; i++) rsv[i] = (float)sv[i];
+	free((double*)sv);
+
+	dsizes[0] = nsvmx;
+	att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         (void*)rsv,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         (NclObjClass)nclTypefloatClass
+                         );
+	_NclAddAtt(
+			   att_id,
+			   "sv",
+			   att_md,
+			   NULL
+			   );
+
   }
+
   else {
-    return(NclReturnValue( (void *) svdpcv, 1, dsizes_svdpcv, NULL, NCL_double, 0));
+	return_md = _NclCreateVal(
+				  NULL,
+				  NULL,
+				  Ncl_MultiDValData,
+				  0,
+				  (void*)svdpcv,
+				  NULL,
+				  1,
+				  dsizes_svdpcv,
+				  TEMPORARY,
+				  NULL,
+				  (NclObjClass)nclTypedoubleClass
+				 );
+/*
+ * Set up attributes to return.
+ */
+	att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
+
+	dsizes[0] = nsvmx;
+	att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         (void*)sv,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         (NclObjClass)nclTypedoubleClass
+                         );
+	_NclAddAtt(
+			   att_id,
+			   "sv",
+			   att_md,
+			   NULL
+			   );
   }
+  tmp_var = _NclVarCreate(
+                          NULL,
+                          NULL,
+                          Ncl_Var,
+                          0,
+                          NULL,
+                          return_md,
+                          NULL,
+                          att_id,
+                          NULL,
+                          RETURNVAR,
+                          NULL,
+                          TEMPORARY
+                          );
+/*
+ * Return output grid and attributes to NCL.
+ */
+  return_data.kind = NclStk_VAR;
+  return_data.u.data_var = tmp_var;
+  _NclPlaceReturn(return_data);
+  return(NhlNOERROR);
 }
 
 

@@ -102,6 +102,15 @@ NhlErrorTypes wgt_runave_W( void )
   total_size_x = size_x * npts;
 
 /*
+ * Types of input arrays must both be doubles or floats.
+ */
+  if( !(type_x == NCL_double && type_wgt == NCL_double) &&
+      !(type_x ==  NCL_float && type_wgt == NCL_float)  &&
+      !(type_x == NCL_double && type_wgt == NCL_float)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_runave: The types of the first two input arrays must be float/float, double/double, or double/float");
+    return(NhlFATAL);
+  }
+/*
  * Coerce data to double if necessary. Since we have to make a copy of
  * the first input array anyway (the input array will be overwritten by
  * output array), we coerce it no matter what.
@@ -279,6 +288,13 @@ NhlErrorTypes runave_W( void )
     size_x *= dsizes_x[i];
   }
   total_size_x = size_x * npts;
+/*
+ * Type of input array must double or float.
+ */
+  if( type_x != NCL_double && type_x != NCL_float) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"runave: The type of the first input array must be float or double");
+    return(NhlFATAL);
+  }
 /*
  * Coerce data to double if necessary. Since we have to make a copy of
  * the first input array anyway (the input array will be overwritten by
