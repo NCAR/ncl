@@ -15,15 +15,32 @@
 #define	MAXFUNCPERCLASS	35	/* maximum CGM elements in a CGM class	*/
 
 /* 
- *	Class 2 defines
+ *	Class 1 defines
  */
 
-#define	INDEXED	0
-#define	DIRECT	1
+#define	VDC_IS_INT	0
+#define	VDC_IS_REAL	1
+
+#define	REAL_MODE_FLOAT	0
+#define	REAL_MODE_FIXED	1
+
+#define	BASIC_7_BIT	0
+#define	BASIC_8_BIT	1
+#define	EXTENDED_7_BIT	2
+#define	EXTENDED_8_BIT	3
+
+/* 
+ *	Class 2 defines
+ */
+#define	MODE_ABSTRACT	0
+#define	MODE_METRIC	1
+
+#define	MODE_INDEXED	0
+#define	MODE_DIRECT	1
 
 
-#define ABSOLUTE	0
-#define SCALED		1
+#define MODE_ABSOLUTE	0
+#define MODE_SCALED	1
 
 /*
  *	Class 5 defines
@@ -48,6 +65,33 @@
 
 
 
+/*
+ *	text precision
+ */
+#define	PREC_STRING	0
+#define	PREC_CHAR	1
+#define	PREC_STROKE	2
+
+/*  text path   */
+#define PATH_RIGHT      0       /* text path is right   */
+#define PATH_LEFT       1       /* text path is left    */
+#define PATH_UP         2       /* text path is up      */
+#define PATH_DOWN       3       /* text path is down    */
+
+/*enumerated type values for the CGM element text alignment     */
+#define A_NORM_H        0       /*normal horizontal     */
+#define A_LEFT          1
+#define A_CENTER        2
+#define A_RIGHT         3
+#define A_CO_HOR        4       /*continous horizontal  */
+
+#define A_NORM_V        0       /*normal vertical       */
+#define A_TOP           1
+#define A_CAP           2
+#define A_HALF          3
+#define A_BASE          4
+#define A_BOTTOM        5
+#define A_CO_VER        6       /*continous vertical    */
 
 /*	interior style	*/
 #define	HOLLOW_S	0	
@@ -59,10 +103,10 @@
 /*	hatch	index	*/
 #define	HORIZONTAL	1
 #define	VERTICAL	2
-#define	POSSITIVE	3
+#define	POSITIVE	3
 #define	NEGATIVE	4
 #define	HORIZ_VERT	5
-#define	POSS_NEG	6
+#define	POS_NEG	6
 
 /*	hatch index help	*/
 #define	H_ANGLE		0.0

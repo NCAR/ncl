@@ -1,5 +1,5 @@
 /*
- *	$Id: cgm_tools.c,v 1.15 1992-04-08 19:28:45 clyne Exp $
+ *	$Id: cgm_tools.c,v 1.16 1992-07-16 19:32:38 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -443,9 +443,9 @@ CGM_flush(cgm_fd)
  *	return		: == NULL => error creating directory, else
  *			  points to a directory
  */	
-Directory	*CGM_directory(cgm_fd, verbose)
+Directory	*CGM_directory(cgm_fd, fp)
 	Cgm_fd	cgm_fd;
-	boolean	verbose;
+	FILE	*fp;
 {
 	int	frame_count = 0;
 	Directory *init_dir();
@@ -489,7 +489,7 @@ Directory	*CGM_directory(cgm_fd, verbose)
 	/*
 	 *	parse until the end of file or an error
 	 */
-	if (verbose) (void) fprintf(stdout, "Building CGM table of contents\n");
+	if (fp) (void) fprintf(fp, "Building CGM table of contents\n");
 	while ((error = CGM_read(cgm_fd, buf)) > 0) {
 
 		/* 
@@ -529,10 +529,10 @@ Directory	*CGM_directory(cgm_fd, verbose)
 		if (GETBITS(buf[2], FRAME_POS, LEN )) {
 
 			frame_count++;
-			if (verbose) {
+			if (fp) {
 				if ((frame_count % 50) == 0) {
 					(void) fprintf(
-						stdout,
+						fp,
 						"	Read %d frames\n", 
 						frame_count
 					);
@@ -632,7 +632,7 @@ Directory	*CGM_directory(cgm_fd, verbose)
 			
 	record++;
 	}
-	if (verbose) (void) fprintf(stdout,"Read %d frames\n", frame_count);
+	if (fp) (void) fprintf(fp,"Read %d frames\n", frame_count);
 
 	/*
 	 *	reset the file pointer to the beginning of the file
