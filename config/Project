@@ -1,5 +1,5 @@
 /*
- *      $Id: Project,v 1.37 1997-05-15 14:31:02 haley Exp $
+ *      $Id: Project,v 1.38 1997-09-04 15:46:50 boote Exp $
  */
 /************************************************************************
 *									*
@@ -290,6 +290,7 @@ ICTRANSLIBSRC	= $(NVIEWLIBSRC)/libictrans
 NCARGRASLIBSRC	= $(NVIEWLIBSRC)/libncarg_ras
 HLULIBSRC	= $(NILIBSRC)/hlu
 NGOLIBSRC	= $(NILIBSRC)/ngo
+XCBLIBSRC	= $(NILIBSRC)/xcb
 NCLLIBSRC	= $(NISRC)/ncl
 
 #ifdef	BuildShared
@@ -302,6 +303,7 @@ CGMLIB		= -lNGcgm
 NCARGRASLIB	= -lNGras
 HLULIB		= -lNGhlu
 NGOLIB		= -lNGgo
+XCBLIB		= -lXcb
 NCLLIB		=
 NCLAPILIB	= -lNGncl
 
@@ -331,6 +333,7 @@ CGMLIB		= _UseLib(-L$(CGMLIBSRC),-lcgm)
 NCARGRASLIB	= _UseLib(-L$(NCARGRASLIBSRC),-lncarg_ras)
 HLULIB		= _UseLib(-L$(HLULIBSRC),-lhlu)
 NGOLIB		= _UseLib(-L$(NGOLIBSRC),-lngo)
+XCBLIB		= _UseLib(-L$(XCBLIBSRC),-lXcb)
 NCLLIB		= _UseLib(-L$(NCLLIBSRC),-lncl)
 NCLAPILIB	= _UseLib(-L$(NCLLIBSRC),-lnclapi)
 
