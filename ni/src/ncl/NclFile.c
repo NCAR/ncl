@@ -876,6 +876,7 @@ int vtype;
 	int output_dim_sizes[NCL_MAX_DIMENSIONS];
 	NclSelection *sel;
 	float tmpf;
+	int tmpi;
 	int swap_size;
 	void *swap_space = NULL;
 /*
@@ -908,24 +909,36 @@ int vtype;
 					finish[sel->dim_num] = sel->u.sub.finish;
 					stride[sel->dim_num] = sel->u.sub.stride;
 
-					if(finish[sel->dim_num] < start[sel->dim_num]) {
-						compare_sel[sel->dim_num] = NCLFILE_DEC;
-						has_reverse = 1;
-					} else {
+				} else {
+					stride[sel->dim_num] = sel->u.sub.stride;
+				}
+				if(finish[sel->dim_num] < start[sel->dim_num]) {
+					if(stride[sel->dim_num] < 0) {
+						tmpi = finish[sel->dim_num] + (start[sel->dim_num] - finish[sel->dim_num]) % abs(stride[sel->dim_num]);
+						finish[sel->dim_num] = start[sel->dim_num];
+						start[sel->dim_num] = tmpi;
 						compare_sel[sel->dim_num] = NCLFILE_INC;
+						stride[sel->dim_num] = -(stride[sel->dim_num]); 
+					} else {
+						compare_sel[sel->dim_num] = NCLFILE_DEC;
+						stride[sel->dim_num] = -(stride[sel->dim_num]); 
+						has_reverse = 1;
 					}
 				} else {
-					if(finish[sel->dim_num] < start[sel->dim_num]) {
+					if(stride[sel->dim_num] < 0) {
 						has_reverse = 1;
-					} 
-					stride[sel->dim_num] = sel->u.sub.stride;
-					if(finish[sel->dim_num] < start[sel->dim_num]) {
-						compare_sel[sel->dim_num] = NCLFILE_DEC;
-					} else {
-						compare_sel[sel->dim_num] = NCLFILE_INC;
-					}
+                                                tmpi = finish[sel->dim_num] - (finish[sel->dim_num] - start[sel->dim_num]) % abs(stride[sel->dim_num]);
+                                                finish[sel->dim_num] = start[sel->dim_num];
+                                                start[sel->dim_num] = tmpi;
+                                                compare_sel[sel->dim_num] = NCLFILE_DEC;
+                                                stride[sel->dim_num] = (stride[sel->dim_num]);
+                                        } else {
+                                                compare_sel[sel->dim_num] = NCLFILE_INC;
+                                                stride[sel->dim_num] = (stride[sel->dim_num]);
+                                        }
+
 				}
-				if(stride[sel->dim_num] > 1) 
+				if(abs(stride[sel->dim_num]) > 1) 
 					has_stride = 1;
 				if(stride[sel->dim_num] != 0)  {
 					tmpf = (float)fabs(((float)sel->u.sub.stride));
@@ -1083,7 +1096,7 @@ int vtype;
 				case NCLFILE_INC:
 					current_index[i] = start[i];
 					current_finish[i] = finish[i];
-					real_stride[i] = stride[i];
+					real_stride[i] = abs(stride[i]);
 					break;
 				case NCLFILE_DEC:
 /*
@@ -1160,7 +1173,7 @@ int vtype;
 */
                                         n_elem_block *= output_dim_sizes[index_map[i]];
                                         current_finish[index_map[i]] = finish[index_map[i]];
-                                        real_stride[index_map[i]] = stride[index_map[i]];
+                                        real_stride[index_map[i]] = abs(stride[index_map[i]]);
                                 } else {
                                         switch(compare_sel[index_map[i]]) {
                                         case NCLFILE_INC:
@@ -1624,12 +1637,12 @@ int vtype;
 						n_elem_block *= output_dim_sizes[i];
 						switch(compare_sel[i]) {
 						case NCLFILE_DEC:
-							real_stride[i] = -abs(stride[i]);
+							real_stride[i] = (stride[i]);
 							current_finish[i] = start[i];
 							current_index[i] = finish[i];
 							break;
 						case NCLFILE_INC:
-							real_stride[i] = abs(stride[i]);
+							real_stride[i] = (stride[i]);
 							current_finish[i] = finish[i];
 							current_index[i] = start[i];
 							break;
@@ -1637,10 +1650,10 @@ int vtype;
 					} else {
 						switch(compare_sel[i]) {
 						case NCLFILE_DEC:
-							real_stride[i] = -abs(stride[i]);
+							real_stride[i] = (stride[i]);
 							break;
 						case NCLFILE_INC:
-							real_stride[i] = abs(stride[i]);
+							real_stride[i] = (stride[i]);
 							break;
 						}
 						current_index[i] = start[i];
@@ -2514,7 +2527,7 @@ int type;
 	NclSelection *sel;
 	float tmpf;
 	NclScalar *tmp_mis;
-	int tmp_size = 1;
+	int tmp_size = 1,tmpi;
 	void *data_type;
 	NclBasicDataTypes from_type,to_type;
 	NclObjTypes obj_type;
@@ -2544,26 +2557,55 @@ int type;
 							start[sel->dim_num] = sel->u.sub.start;
 							finish[sel->dim_num] = sel->u.sub.finish;
 							stride[sel->dim_num] = sel->u.sub.stride;
-							if(finish[sel->dim_num] < start[sel->dim_num]) {
-								compare_sel[sel->dim_num] = NCLFILE_DEC;
-								has_reverse = 1;
-							} else {
-								compare_sel[sel->dim_num] = NCLFILE_INC;
-							}
 						} else {
 							stride[sel->dim_num] = sel->u.sub.stride;
-							if(finish[sel->dim_num] < start[sel->dim_num]) {
+						}
+						if(finish[sel->dim_num] < start[sel->dim_num]) {
+							if(stride[sel->dim_num] < 0) {
+								tmpi = finish[sel->dim_num] + (start[sel->dim_num] - finish[sel->dim_num]) % abs(stride[sel->dim_num]);
+								finish[sel->dim_num] = start[sel->dim_num];
+								start[sel->dim_num] = tmpi;
+								compare_sel[sel->dim_num] = NCLFILE_INC;
+								stride[sel->dim_num] = -(stride[sel->dim_num]); 
+							} else {
 								compare_sel[sel->dim_num] = NCLFILE_DEC;
+								stride[sel->dim_num] = -(stride[sel->dim_num]); 
 								has_reverse = 1;
+							}
+						} else {
+							if(stride[sel->dim_num] < 0) {
+								has_reverse = 1;
+								tmpi = finish[sel->dim_num] - (finish[sel->dim_num] - start[sel->dim_num]) % abs(stride[sel->dim_num]);
+								finish[sel->dim_num] = start[sel->dim_num];
+								start[sel->dim_num] = tmpi;
+								compare_sel[sel->dim_num] = NCLFILE_DEC;
+								stride[sel->dim_num] = (stride[sel->dim_num]);
 							} else {
 								compare_sel[sel->dim_num] = NCLFILE_INC;
+								stride[sel->dim_num] = (stride[sel->dim_num]);
 							}
 						}
-						if(stride[sel->dim_num] > 1) {
+
+						if(abs(stride[sel->dim_num]) > 1) {
 							has_stride = 1;
 						}
-						tmpf = (float)fabs(((float)sel->u.sub.stride));
+						if(stride[sel->dim_num] != 0)  {
+							tmpf = (float)fabs(((float)sel->u.sub.stride));
+						} else {
+							NhlPError(NhlWARNING,NhlEUNKNOWN,"Invalid stride: stride must be possitive non-zero integer");
+							stride[sel->dim_num] = 1;
+							tmpf = 1;
+						}
 						n_elem = (int)(fabs(((float)(finish[sel->dim_num] -start[sel->dim_num])))/tmpf) + 1;
+
+						if((sel->u.sub.start > thefile->file.var_info[index]->dim_sizes[sel->dim_num]-1)||(sel->u.sub.start < 0)) {
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"Subscript out of range, error in subscript #%d",i);
+                                        		return(NhlFATAL);
+                                		}
+                                		if((sel->u.sub.finish> thefile->file.var_info[index]->dim_sizes[sel->dim_num]-1)||(sel->u.sub.finish < 0)) {
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"Subscript out of range, error in subscript #%d",i);
+                                        		return(NhlFATAL);
+                                		}
 						if(sel->dim_num != i) {
 							has_reorder = 1;
 						}
@@ -2727,7 +2769,7 @@ int type;
 						if(i > block_write_limit) {
 							n_elem_block *= selection_dim_sizes[i];
 							current_finish[i] = finish[i];
-							real_stride[i] = stride[i];
+							real_stride[i] = abs(stride[i]);
 						} else {
 							current_finish[index_map[i]] = current_index[index_map[i]];
 							real_stride[index_map[i]] = 1;

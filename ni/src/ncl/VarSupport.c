@@ -1,5 +1,5 @@
 /*
- *      $Id: VarSupport.c,v 1.15 1996-05-09 23:30:48 ethan Exp $
+ *      $Id: VarSupport.c,v 1.16 1996-10-15 00:05:35 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -512,11 +512,7 @@ NhlErrorTypes _NclBuildCoordRSelection
 				return(NhlFATAL);
 			}
 
-			if(sel->u.sub.start <= sel->u.sub.finish) {
-				sel->u.sub.stride = 1;
-			} else {
-				sel->u.sub.stride = -1;
-			}
+			sel->u.sub.stride = 1;
 
 		}
 		if(range->stride != NULL) {
@@ -646,11 +642,7 @@ NhlErrorTypes _NclBuildRSelection
 				return(NhlFATAL);
 			}
 
-			if(sel->u.sub.start <= sel->u.sub.finish) {
-				sel->u.sub.stride = 1;
-			} else {
-				sel->u.sub.stride = -1;
-			}
+			sel->u.sub.stride = 1;
 
 		}
 		if(range->stride != NULL) {

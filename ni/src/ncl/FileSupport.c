@@ -1,6 +1,6 @@
 
 /*
- *      $Id: FileSupport.c,v 1.10 1996-07-16 20:58:11 ethan Exp $
+ *      $Id: FileSupport.c,v 1.11 1996-10-15 00:05:31 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -203,11 +203,7 @@ NhlErrorTypes _NclBuildFileCoordRSelection
                                 return(NhlFATAL);
                         }
 
-                        if(sel->u.sub.start <= sel->u.sub.finish) {
-                                sel->u.sub.stride = 1;
-                        } else {
-                                sel->u.sub.stride = -1;
-                        }
+                        sel->u.sub.stride = 1;
 
 
 		} else {
@@ -259,12 +255,7 @@ NhlErrorTypes _NclBuildFileCoordRSelection
                                 return(NhlFATAL);
                         }
 
-			if(sel->u.sub.start <= sel->u.sub.finish) {
-				sel->u.sub.stride = 1;
-			} else {
-				sel->u.sub.stride = -1;
-			}
-
+			sel->u.sub.stride = 1;
 		}
 		if(range->stride != NULL) {
 			if(!_NclScalarCoerce(
@@ -517,11 +508,7 @@ NhlErrorTypes _NclBuildFileRSelection
 				return(NhlFATAL);
 			}
 
-			if(sel->u.sub.start <= sel->u.sub.finish) {
-				sel->u.sub.stride = 1;
-			} else {
-				sel->u.sub.stride = -1;
-			}
+			sel->u.sub.stride = 1;
 
 		}
 		if(range->stride != NULL) {
