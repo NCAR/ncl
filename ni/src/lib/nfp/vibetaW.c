@@ -45,59 +45,60 @@ NhlErrorTypes vibeta_W( void )
  * implies you don't care about its value.
  */
   p = (void*)NclGetArgValue(
-           0,
-           6,
-           &ndims_p, 
-           dsizes_p,
-           NULL,
-           NULL,
-           &type_p,
-           2);
+                            0,
+                            6,
+                            &ndims_p, 
+                            dsizes_p,
+                            NULL,
+                            NULL,
+                            &type_p,
+                            2);
+
   x = (void*)NclGetArgValue(
-           1,
-           6,
-           &ndims_x, 
-           dsizes_x,
-           &missing_x,
-           &has_missing_x,
-           &type_x,
-           2);
+                            1,
+                            6,
+                            &ndims_x, 
+                            dsizes_x,
+                            &missing_x,
+                            &has_missing_x,
+                            &type_x,
+                            2);
   linlog = (int*)NclGetArgValue(
-           2,
-           6,
-           NULL,
-           NULL,
-           NULL,
-           NULL,
-           NULL,
-           2);
+                                2,
+                                6,
+                                NULL,
+                                NULL,
+                                NULL,
+                                NULL,
+                                NULL,
+                                2);
   psfc = (void*)NclGetArgValue(
-           3,
-           6,
-           &ndims_psfc, 
-           dsizes_psfc,
-           &missing_psfc,
-           &has_missing_psfc,
-           &type_psfc,
-           2);
+                               3,
+                               6,
+                               &ndims_psfc, 
+                               dsizes_psfc,
+                               &missing_psfc,
+                               &has_missing_psfc,
+                               &type_psfc,
+                               2);
   pbot = (void*)NclGetArgValue(
-           4,
-           6,
-           NULL,
-           dsizes_pbot,
-           NULL,
-           NULL,
-           &type_pbot,
-           2);
+                               4,
+                               6,
+                               NULL,
+                               dsizes_pbot,
+                               NULL,
+                               NULL,
+                               &type_pbot,
+                               2);
   ptop = (void*)NclGetArgValue(
-           5,
-           6,
-           NULL,
-           dsizes_ptop,
-           NULL,
-           NULL,
-           &type_ptop,
-           2);
+                               5,
+                               6,
+                               NULL,
+                               dsizes_ptop,
+                               NULL,
+                               NULL,
+                               &type_ptop,
+                               2);
 /*
  * Some error checking.
  */
@@ -106,7 +107,9 @@ NhlErrorTypes vibeta_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"vibeta: 'psfc' must have one less dimension than 'x' or else be a constant" );
     return(NhlFATAL);
   }
-
+/*
+ * Calculate size of input arrays.
+ */
   total_size_psfc = 1;
   for( i = 0; i < ndims_x-1; i++ ) {
     if( dsizes_psfc[i] != dsizes_x[i] ) {
@@ -117,11 +120,29 @@ NhlErrorTypes vibeta_W( void )
   }
   total_size_x = total_size_psfc * dsizes_x[ndims_x-1];
 
-  if( dsizes_p[0] != dsizes_x[ndims_x-1] ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"vibeta: The rightmost dimension of x and p must be the same size" );
-    return(NhlFATAL);
+/*
+ * p can either be a one-dimensional array with the same size as the
+ * last dimension of x, or the same size as x.
+ */
+  if(ndims_p==1) {
+    if( dsizes_p[0] != dsizes_x[ndims_x-1] ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"vibeta: The rightmost dimension of x and p must be the same size" );
+      return(NhlFATAL);
+    }
   }
-  nlev = dsizes_p[0];
+  else {
+    if(ndims_p != ndims_x) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"vibeta: p must either be one-dimensional and equal in length to the rightmost dimension of x, or p must be the same size as x" );
+      return(NhlFATAL);
+    }
+    for(i = 0; i < ndims_x; i++ ) {
+      if( dsizes_p[i] != dsizes_x[i] ) {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"vibeta: p must either be one-dimensional and equal in length to the rightmost dimension of x, or p must be the same size as x" );
+        return(NhlFATAL);
+      }
+    }
+  }
+  nlev = dsizes_p[ndims_p-1];
 
   if( nlev < 3 || nlev > 150) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"vibeta: nlev must be at least 3 and less than 151" );
@@ -144,12 +165,14 @@ NhlErrorTypes vibeta_W( void )
     return(NhlFATAL);
   }
 /*
- * Coerce p to double if necessary.
+ * Create memory to allocate p to double precision if necessary.
  */
-  tmp_p = coerce_input_double(p,type_p,dsizes_p[0],0,NULL,NULL);
-  if( tmp_p == NULL ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"vibeta: Unable to allocate memory for coercing p array to double precision");
-    return(NhlFATAL);
+  if(type_p != NCL_double) {
+    tmp_p = (double*)calloc(nlev,sizeof(double));
+    if( tmp_p == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"vibeta: Unable to allocate memory for coercing p array to double precision");
+      return(NhlFATAL);
+    }
   }
 /*
  * Coerce psfc to double if necessary.
@@ -187,15 +210,9 @@ NhlErrorTypes vibeta_W( void )
     return(NhlFATAL);
   }
 
-  if(tmp_p[nlev-1] < *tmp_ptop) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"vibeta: The last element of 'p' must be greater than or equal to ptop" );
-    return(NhlFATAL);
-  }
-
 /*
  * Set some other input parameters. 
  */
-  plvcrt = tmp_p[nlev-1];
   xsfc = tmp_x[0];
 /*
  * Allocate space for output value.
@@ -225,6 +242,29 @@ NhlErrorTypes vibeta_W( void )
  */
   l = 0;
   for( i = 0; i < total_size_psfc; i++ ) {
+
+/*
+ * Coerce p to double precision if necessary. If p is one-dimensional,
+ * the coercion will only happen the first time through this loop.
+ */
+    if(ndims_p != 1 || (ndims_p == 1 && !i)) {
+      if(type_p != NCL_double) {
+        coerce_subset_input_double(p,tmp_p,l,type_p,nlev,0,NULL,NULL);
+      }
+      else {
+/*
+ * Point tmp_p to p.
+ */
+        tmp_p = &((double*)p)[l];
+      }
+
+      if(tmp_p[nlev-1] < *tmp_ptop) {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"vibeta: The last element of 'p' must be greater than or equal to ptop" );
+        return(NhlFATAL);
+      }
+      plvcrt = tmp_p[nlev-1];
+    }
+    
     if(type_vint == NCL_double) tmp_vint  = &((double*)vint)[i];
 
     NGCALLF(dvibeta,DVIBETA)(tmp_p,&tmp_x[l],&nlev,&missing_dx.doubleval,
