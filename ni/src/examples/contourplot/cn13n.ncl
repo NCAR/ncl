@@ -37,13 +37,15 @@ begin
 ;
 ;  Colors for contour fill areas varying from blue to red.
 ;
+  ii = new(NCOLORS-2,float)
+  do i = 1,NCOLORS-2
+    ii(i-1) = i
+  end do
   cmap( 0,:) = (/0.00, 0.00, 0.00/)
   cmap( 1,:) = (/1.00, 1.00, 1.00/)
-  do i = 1,NCOLORS-2
-    cmap(i+1,0) = (1.0*(i-1))/((NCOLORS-3)*1.0)
-    cmap(i+1,1) = 0.
-    cmap(i+1,2) = (1.0*((NCOLORS-2)-i))/((NCOLORS-3)*1.0)
-  end do
+  cmap(2:NCOLORS-1,0) = (1.0*(ii-1))/((NCOLORS-3)*1.0)
+  cmap(2:NCOLORS-1,1) = 0.
+  cmap(2:NCOLORS-1,2) = (1.0*((NCOLORS-2)-ii))/((NCOLORS-3)*1.0)
 ;
 ; Create an application object.
 ;
@@ -100,6 +102,7 @@ begin
 ; Calculate nice range of x,y values, and then get their
 ; corresponding lon,lat values.
 ;
+  delete(ii)
   ii = new((/NCLS,NCLS/),float)
   ii!0 = "x"
   ii!1 = "y"
