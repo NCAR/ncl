@@ -1,5 +1,5 @@
 C
-C $Id: mapaci.f,v 1.7 1994-03-18 23:18:45 kennison Exp $
+C $Id: mapaci.f,v 1.8 1998-05-23 20:24:34 kennison Exp $
 C
       FUNCTION MAPACI (IAI)
 C

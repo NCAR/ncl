@@ -1,5 +1,5 @@
 C
-C $Id: mapiqa.f,v 1.5 1998-04-16 20:26:45 kennison Exp $
+C $Id: mapiqa.f,v 1.6 1998-05-23 20:24:41 kennison Exp $
 C
       SUBROUTINE MAPIQA (IAMP,IGRP,IDLT,IDRT)
 C

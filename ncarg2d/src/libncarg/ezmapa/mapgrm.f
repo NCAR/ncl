@@ -1,5 +1,5 @@
 C
-C $Id: mapgrm.f,v 1.9 1998-04-16 20:26:45 kennison Exp $
+C $Id: mapgrm.f,v 1.10 1998-05-23 20:24:39 kennison Exp $
 C
       SUBROUTINE MAPGRM (IAM,XCS,YCS,MCS,IAI,IAG,MAI,LPR)
 C
@@ -10,12 +10,15 @@ C common blocks and the variables in them.
 C
       COMMON /MAPCM1/ IPRJ,PHOC,IROD,RSNO,RCSO,RSNR,RCSR
       SAVE /MAPCM1/
+C
       COMMON /MAPCM2/ UMIN,UMAX,VMIN,VMAX,UEPS,VEPS,UCEN,VCEN,URNG,VRNG,
      +                BLAM,SLAM,BLOM,SLOM,ISSL
       SAVE /MAPCM2/
+C
       COMMON /MAPCM4/ INTF,JPRJ,PHIA,PHIO,ROTA,ILTS,PLA1,PLA2,PLA3,PLA4,
      +                PLB1,PLB2,PLB3,PLB4,PLTR,GRID,IDSH,IDOT,LBLF,PRMF,
-     +                ELPF,XLOW,XROW,YBOW,YTOW,IDTL,GRDR,SRCH,ILCW
+     +                ELPF,XLOW,XROW,YBOW,YTOW,IDTL,GRDR,SRCH,ILCW,GRLA,
+     +                GRLO,GRPO
       LOGICAL         INTF,LBLF,PRMF,ELPF
       SAVE /MAPCM4/
 C
@@ -45,6 +48,13 @@ C
 C If the grid is suppressed, do nothing.
 C
       IF (GRID.LE.0.) RETURN
+C
+C Otherwise, set the latitude and longitude grid spacings.
+C
+      GLAT=GRID
+      GLON=GRID
+      IF (GRLA.GT.0.) GLAT=GRLA
+      IF (GRLO.GT.0.) GLON=GRLO
 C
 C Reset the color index and dash pattern for the grid.
 C
@@ -105,47 +115,52 @@ C
 C RLON is the smallest longitude for which a meridian is to be drawn,
 C XLON the biggest.  Avoid drawing a given meridian twice.
 C
-      RLON=GRID*FLOOR(SLON/GRID)
-      XLON=GRID*CLING(BLON/GRID)
+      RLON=GLON*FLOOR(SLON/GLON)
+      XLON=GLON*CLING(BLON/GLON)
       IF (.NOT.(XLON-RLON.GT.359.9999)) GO TO 10008
       IF (.NOT.(IPRJ.EQ.1)) GO TO 10009
-      RLON=GRID*CLING((PHOC-179.9999)/GRID)
-      XLON=GRID*FLOOR((PHOC+179.9999)/GRID)
+      RLON=GLON*CLING((PHOC-179.9999)/GLON)
+      XLON=GLON*FLOOR((PHOC+179.9999)/GLON)
       GO TO 10010
 10009 CONTINUE
       IF (.NOT.(IPRJ.GE.2.AND.IPRJ.LE.9)) GO TO 10011
-      XLON=XLON-GRID
-      IF (XLON-RLON.GT.359.9999) XLON=XLON-GRID
+      XLON=XLON-GLON
+      IF (XLON-RLON.GT.359.9999) XLON=XLON-GLON
 10010 CONTINUE
 10011 CONTINUE
 10008 CONTINUE
 C
-C OLAT is the latitude at which meridians which are not multiples of 90
-C are to stop.  (Except on certain fast-path cylindrical projections,
-C only the meridians at longitudes which are multiples of 90 run all
-C the way to the poles.  This avoids a lot of clutter.)
+C OLAT is the latitude at which meridians which do not extend all the
+C way to the poles are to stop.
 C
       IF (.NOT.(IPRJ.EQ.10.OR.IPRJ.EQ.11)) GO TO 10012
       OLAT=90.
       GO TO 10013
 10012 CONTINUE
-      OLAT=GRID*FLOOR(89.9999/GRID)
+      IF (.NOT.(INT(GRPO/1000.).EQ.0)) GO TO 10014
+      OLAT=GLAT*FLOOR(89.9999/GLAT)
+      GO TO 10015
+10014 CONTINUE
+      OLAT=GLAT*FLOOR(MIN(89.9999,REAL(INT(GRPO/1000.)))/GLAT)
+10015 CONTINUE
 10013 CONTINUE
 C
 C Draw the meridians.
 C
-      RLON=RLON-GRID
-  101 RLON=RLON+GRID
+      RLON=RLON-GLON
+  101 RLON=RLON+GLON
       XLAT=OLAT
-      IF (AMOD(RLON,90.).EQ.0.) XLAT=90.
-      RLAT=AMAX1(SLAT,-XLAT)
-      XLAT=AMIN1(BLAT,XLAT)
-      IF (.NOT.(IMF)) GO TO 10014
+      IF (.NOT.(MOD(GRPO,1000.).GT.0.)) GO TO 10016
+      IF (MOD(RLON,MOD(GRPO,1000.)).EQ.0.) XLAT=90.
+10016 CONTINUE
+      RLAT=MAX(SLAT,-XLAT)
+      XLAT=MIN(BLAT,XLAT)
+      IF (.NOT.(IMF)) GO TO 10017
       DLAT=.2*(XLAT-RLAT)
-      GO TO 10015
-10014 CONTINUE
+      GO TO 10018
+10017 CONTINUE
       DLAT=(XLAT-RLAT)/CLING((XLAT-RLAT)/GRDR)
-10015 CONTINUE
+10018 CONTINUE
       CALL MAPITM (RLAT,RLON,0,IAM,XCS,YCS,MCS,IAI,IAG,MAI,LPR)
       IF (ICFELL('MAPGRM',3).NE.0) RETURN
   102 RLAT=RLAT+DLAT
@@ -154,43 +169,45 @@ C
       IF (RLAT.LT.XLAT-.5*DLAT) GO TO 102
       CALL MAPIQM (IAM,XCS,YCS,MCS,IAI,IAG,MAI,LPR)
       IF (ICFELL('MAPGRM',5).NE.0) RETURN
-      IF (RLON.LT.XLON-.5*GRID) GO TO 101
+      IF (RLON.LT.XLON-.5*GLON) GO TO 101
 C
-C Round the latitude limits to appropriate multiples of GRID.
+C Round the latitude limits to appropriate multiples of GLAT.
 C
-      SLAT=GRID*FLOOR(SLAT/GRID)
-      IF (SLAT.LE.-90.) SLAT=SLAT+GRID
-      BLAT=GRID*CLING(BLAT/GRID)
-      IF (BLAT.GE.90.) BLAT=BLAT-GRID
+      SLAT=GLAT*FLOOR(SLAT/GLAT)
+      IF (SLAT.LE.-90.) SLAT=SLAT+GLAT
+      BLAT=GLAT*CLING(BLAT/GLAT)
+      IF (BLAT.GE.90.) BLAT=BLAT-GLAT
 C
 C If a fast-path cylindrical equidistant projection is in use and either
 C or both of the poles is within the (rectangular) perimeter, arrange
 C for the parallels at -90 and/or +90 to be drawn.
 C
-      IF (.NOT.(IPRJ.EQ.10)) GO TO 10016
+      IF (.NOT.(IPRJ.EQ.10)) GO TO 10019
       CALL MAPTRN (-90.,PHOC,U,V)
       IF (ICFELL('MAPGRM',6).NE.0) RETURN
       IF (U.GE.UMIN.AND.U.LE.UMAX.AND.V.GE.VMIN.AND.V.LE.VMAX)
-     +                                                  SLAT=SLAT-GRID
+     +                                                  SLAT=SLAT-GLAT
       CALL MAPTRN (90.,PHOC,U,V)
       IF (ICFELL('MAPGRM',7).NE.0) RETURN
       IF (U.GE.UMIN.AND.U.LE.UMAX.AND.V.GE.VMIN.AND.V.LE.VMAX)
-     +                                                  BLAT=BLAT+GRID
-10016 CONTINUE
+     +                                                  BLAT=BLAT+GLAT
+10019 CONTINUE
 C
 C Draw the parallels.
 C
-      XLAT=SLAT-GRID
-  103 XLAT=XLAT+GRID
-      RLAT=AMAX1(-90.,AMIN1(90.,XLAT))
+      XLAT=SLAT-GLAT
+  103 XLAT=XLAT+GLAT
+      RLAT=MAX(-90.,MIN(90.,XLAT))
+      IF (.NOT.(INT(GRPO/1000.).EQ.0.OR.ABS(RLAT).LE.REAL(INT(GRPO/1000.
+     +)))) GO TO 10020
       RLON=FLOOR(SLON)
-      XLON=AMIN1(CLING(BLON),RLON+360.)
-      IF (.NOT.(IPF)) GO TO 10017
+      XLON=MIN(CLING(BLON),RLON+360.)
+      IF (.NOT.(IPF)) GO TO 10021
       DLON=.2*(XLON-RLON)
-      GO TO 10018
-10017 CONTINUE
+      GO TO 10022
+10021 CONTINUE
       DLON=(XLON-RLON)/CLING((XLON-RLON)/GRDR)
-10018 CONTINUE
+10022 CONTINUE
       CALL MAPITM (RLAT,RLON,0,IAM,XCS,YCS,MCS,IAI,IAG,MAI,LPR)
       IF (ICFELL('MAPGRM',8).NE.0) RETURN
   104 RLON=RLON+DLON
@@ -199,7 +216,8 @@ C
       IF (RLON.LT.XLON-.5*DLON) GO TO 104
       CALL MAPIQM (IAM,XCS,YCS,MCS,IAI,IAG,MAI,LPR)
       IF (ICFELL('MAPGRM',10).NE.0) RETURN
-      IF (XLAT.LT.BLAT-.5*GRID) GO TO 103
+10020 CONTINUE
+      IF (XLAT.LT.BLAT-.5*GLAT) GO TO 103
 C
 C Restore the color index, and dash pattern.
 C

@@ -1,5 +1,5 @@
 C
-C $Id: mprdnm.f,v 1.1 1995-07-01 00:04:55 kennison Exp $
+C $Id: mprdnm.f,v 1.2 1998-05-23 20:24:53 kennison Exp $
 C
       SUBROUTINE MPRDNM (IFDE,CHRS,LCHR,MCHR,NCHR,INUM)
 C

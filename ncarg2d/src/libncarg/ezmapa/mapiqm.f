@@ -1,5 +1,5 @@
 C
-C $Id: mapiqm.f,v 1.5 1998-04-16 20:26:46 kennison Exp $
+C $Id: mapiqm.f,v 1.6 1998-05-23 20:24:42 kennison Exp $
 C
       SUBROUTINE MAPIQM (IAM,XCS,YCS,MCS,IAI,IAG,MAI,LPR)
 C
