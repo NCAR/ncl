@@ -1,5 +1,5 @@
 /*
- *	$Id: glob.c,v 1.8 1992-09-01 23:38:51 clyne Exp $
+ *	$Id: glob.c,v 1.9 1992-11-03 23:52:14 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -33,7 +33,7 @@ static int	to_child[2],
 #define	MAX_LINE_LEN	80
 #define	SMALL_MALLOC_BLOCK	10
 
-#define	ACK	"/bin/echo ''\n"
+#define	ACK	"/bin/echo \001\n"
 
 /*
  *	talkto
@@ -183,7 +183,7 @@ glob(s, r_argv, r_argc)
 	(void) strcat(outbuf, "\n");
 
 	/*
-	 * send "echo whatever" to shell. Also send a  so we get an
+	 * send "echo whatever" to shell. Also send a \001 so we get an
 	 * ack back. We need that ack in case the string send doen't 
 	 * generate a responce to stdout. i.e. a shell error
 	 */
@@ -197,11 +197,11 @@ glob(s, r_argv, r_argc)
 	while (1) {	/* read until receive ack or buffer is full	*/
 		cptr = inBuf + nbytes;
 		nbytes += read(to_parent[0], cptr, 4*BUFSIZ - nbytes);
-		if ((inBuf[nbytes - 2] == '') || nbytes == 4*BUFSIZ) break; 
+		if ((inBuf[nbytes - 2] == '\001') || nbytes == 4*BUFSIZ) break; 
 	}
 
 
-	if (inBuf[0] == '') return;	/* shell syntax error probably	*/
+	if (inBuf[0] == '\001') return;	/* shell syntax error probably	*/
 
 	/*
 	 * replace terminating newline with a null terminator
