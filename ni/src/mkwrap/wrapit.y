@@ -6,6 +6,8 @@
 #include <ncarg/ncl/NclDataDefs.h>
 #include "WSymbol.h"
 #include "fstrings.h"
+
+void yyerror(char *);
 extern char* gettxt();
 typedef struct wrap_src_node_list {
 	void *node;
