@@ -1,6 +1,4 @@
-C
-C	$Id: ftex07.f,v 1.1 2002-08-03 00:37:31 fred Exp $
-C
+
       PROGRAM FTEX07
 C
 C  This program illustrates the use of curvs1 and curvs2 to

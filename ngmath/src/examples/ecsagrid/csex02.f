@@ -1,6 +1,4 @@
-C
-C       $Id: csex02.f,v 1.2 1999-01-28 23:55:28 fred Exp $
-C
+
       PROGRAM CSEX02
 C
 C  Show the effects of changing the weighting array.
@@ -92,10 +90,15 @@ C
 C
 C  This subroutine uses NCAR Graphics to plot curves.
 C
-C  Define error file, Fortran unit number, workstation type,
-C  and workstation ID.
+C Define the error file, the Fortran unit number, the workstation type,
+C and the workstation ID to be used in calls to GKS routines.
 C
-      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1, IWKID=1)
+C     PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1,  IWKID=1)   ! NCGM
+C     PARAMETER (IERRF=6, LUNIT=2, IWTYPE=8,  IWKID=1)   ! X Windows
+C     PARAMETER (IERRF=6, LUNIT=2, IWTYPE=11, IWKID=1)   ! PDF
+C     PARAMETER (IERRF=6, LUNIT=2, IWTYPE=20, IWKID=1)   ! PostScript
+C
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1,  IWKID=1)
 C
 C  Vertical position for initial curve.
 C

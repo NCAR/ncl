@@ -1,6 +1,4 @@
-C
-C     $Id: ftex07d.f,v 1.1 2003-08-05 22:34:23 haley Exp $
-C
+
       PROGRAM FTEX07D
 C
 C  This program illustrates the use of CURVS1DP and CURVS2DP to

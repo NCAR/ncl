@@ -1,6 +1,4 @@
-C
-C       $Id: cssex02.f,v 1.10 2000-09-20 06:10:50 fred Exp $
-C
+
        PROGRAM CSSEX02
 C 
 C  Define random points and functional values on the globe, 

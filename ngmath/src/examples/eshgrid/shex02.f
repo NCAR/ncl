@@ -1,7 +1,5 @@
-C
-C  $Id: shex02.f,v 1.1 1999-08-21 20:20:08 fred Exp $
-C
-      PROGRAM SHEX03
+
+      PROGRAM SHEX02
 C
 C  Do a 3D approximation of an ellipsoid.
 C
@@ -31,10 +29,15 @@ C
       DIMENSION X(NDATA), Y(NDATA), Z(NDATA), F(NDATA)
       DIMENSION IWK(NIWK), RWK(NRWK)
 C
-C  Define error file, Fortran unit number, and workstation type,
-C  and workstation ID (these values are used by GKS).
+C Define the error file, the Fortran unit number, the workstation type,
+C and the workstation ID to be used in calls to GKS routines.
 C
-      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1, IWKID=1)
+C     PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1,  IWKID=1)   ! NCGM
+C     PARAMETER (IERRF=6, LUNIT=2, IWTYPE=8,  IWKID=1)   ! X Windows
+C     PARAMETER (IERRF=6, LUNIT=2, IWTYPE=11, IWKID=1)   ! PDF
+C     PARAMETER (IERRF=6, LUNIT=2, IWTYPE=20, IWKID=1)   ! PostScript
+C
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1,  IWKID=1)
 C
 C  Define arrays for use in plotting the isosurface.
 C

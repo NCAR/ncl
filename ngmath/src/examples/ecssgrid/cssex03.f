@@ -1,6 +1,4 @@
-C
-C       $Id: cssex03.f,v 1.3 2000-09-20 06:10:50 fred Exp $
-C
+
       PROGRAM CSSEX03
 C
 C  Do a comparison of CSSGRID with NATGRIDS for interpolation on

@@ -1,3 +1,4 @@
+
       PROGRAM NNEX06
 C
 C  Code to illustrate the use of single point mode.
@@ -8,11 +9,15 @@ C
       REAL X(ISLIM), Y(ISLIM), Z(ISLIM)
       REAL XI(NUMXOUT),YI(NUMYOUT),ZI(NUMXOUT,NUMYOUT)
 C
-C Define error file, Fortran unit number, and workstation type,
-C and workstation ID.
+C Define the error file, the Fortran unit number, the workstation type,
+C and the workstation ID to be used in calls to GKS routines.
 C
-      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1, IWKID=1)
-
+C     PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1,  IWKID=1)   ! NCGM
+C     PARAMETER (IERRF=6, LUNIT=2, IWTYPE=8,  IWKID=1)   ! X Windows
+C     PARAMETER (IERRF=6, LUNIT=2, IWTYPE=11, IWKID=1)   ! PDF
+C     PARAMETER (IERRF=6, LUNIT=2, IWTYPE=20, IWKID=1)   ! PostScript
+C
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1,  IWKID=1)
 C
       INTEGER I,J,IWORK(IDIM)
 C
