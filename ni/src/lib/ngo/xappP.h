@@ -1,5 +1,5 @@
 /*
- *      $Id: xappP.h,v 1.4 1997-06-11 20:47:26 boote Exp $
+ *      $Id: xappP.h,v 1.5 1997-07-02 15:30:56 boote Exp $
  */
 /************************************************************************
 *									*
@@ -43,15 +43,7 @@ typedef struct _NgXAppMgrPart {
 	int			loadfile;
         int			browse_window;
 
-	NhlString		vis_name;
-	XcbMode			color_mode;
-	int			max_colors;
-	int			min_colors;
-	int			red_levels;
-	int			green_levels;
-	int			blue_levels;
-	int			rgb_error;
-
+	Widget			app_widget;
 	NgXAppExportRec		x;
 	_NgXmStringBucket	xmstrings[_NgNUMXmSTRINGBUCKETS];
 

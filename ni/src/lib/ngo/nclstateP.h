@@ -1,5 +1,5 @@
 /*
- *      $Id: nclstateP.h,v 1.2 1996-10-16 16:21:24 boote Exp $
+ *      $Id: nclstateP.h,v 1.3 1997-07-02 15:30:54 boote Exp $
  */
 /************************************************************************
 *									*
@@ -73,6 +73,9 @@ typedef struct _NgNclStatePart {
 	_NhlCBList	submitcb;
 	_NhlCBList	promptcb;
 	_NhlCBList	resetcb;
+
+	NhlBoolean	post_submit_installed;
+	_NhlCBList	post_submitcb;
 
 	_NhlCB		appdestroy_cb;
 

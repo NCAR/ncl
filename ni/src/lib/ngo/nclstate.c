@@ -1,5 +1,5 @@
 /*
- *      $Id: nclstate.c,v 1.8 1997-06-24 15:00:04 dbrown Exp $
+ *      $Id: nclstate.c,v 1.9 1997-07-02 15:30:53 boote Exp $
  */
 /************************************************************************
 *									*
@@ -44,6 +44,7 @@ static _NhlRawObjCB callbacks[] = {
 	{NgCBnsSubmit,Oset(submitcb),0,NULL,NULL},
 	{NgCBnsPrompt,Oset(promptcb),0,NULL,NULL},
 	{NgCBnsReset,Oset(resetcb),0,NULL,NULL},
+	{NgCBnsPostSubmit,Oset(post_submitcb),0,NULL,NULL},
 };
 #undef	Oset
 
@@ -793,6 +794,8 @@ NclStateInitialize
 
 	ns->func_tree = NULL;
 
+	ns->post_submit_installed = False;
+
 	NclSetPromptFunc(PromptFunc,&ns->line);
 	(void)NclInitServer();
 	NclSetOutputStream((FILE*)nncl);
@@ -814,6 +817,7 @@ NclStateInitialize
 
 
 	(void)UpdateFuncList((NhlPointer)nncl);
+
 
 	return NhlNOERROR;
 }
@@ -1063,6 +1067,37 @@ SubmitNclLine
 	return !ns->err;
 }
 
+static NhlBoolean
+PostSubmit
+(
+	NhlPointer	cdata
+)
+{
+	NgNclState	ncl = (NgNclState)cdata;
+	NgNclStatePart	*ns = &ncl->nclstate;
+	NhlArgVal	dummy;
+
+	NhlINITVAR(dummy);
+
+	_NhlCallObjCallbacks((NhlLayer)ncl,NgCBnsPostSubmit,dummy,dummy);
+	ncl->nclstate.post_submit_installed = False;
+
+	return True;
+}
+
+static void
+SubmitPostSubmit(
+	NgNclState	ncl
+)
+{
+	if(ncl->nclstate.post_submit_installed)
+		return;
+	ncl->nclstate.post_submit_installed = True;
+	NgAddWorkProc(ncl->nclstate.appmgr,PostSubmit,ncl);
+
+	return;
+}
+
 /*
  * Function:	NgNclSubmitLine
  *
@@ -1094,6 +1129,8 @@ NgNclSubmitLine
 
 	if(reset)
 		ResetNcl(ncl);
+
+	SubmitPostSubmit(ncl);
 
 	return SubmitNclLine(ncl,command);
 }
@@ -1181,6 +1218,8 @@ NgNclSubmitBlock
 
 	ResetNcl(ncl);
 	_NgStackFree(blk_buff,blk_stack);
+
+	SubmitPostSubmit(ncl);
 
 	return !ncl->nclstate.err;
 }

@@ -1,5 +1,5 @@
 /*
- *      $Id: nclstate.h,v 1.4 1997-06-24 15:00:05 dbrown Exp $
+ *      $Id: nclstate.h,v 1.5 1997-07-02 15:30:54 boote Exp $
  */
 /************************************************************************
 *									*
@@ -40,6 +40,7 @@ extern NhlClass NgnclStateClass;
 #define NgCBnsSubmit	"cb.nsSubmit"	/* cbdata.strval is submitted */
 #define NgCBnsPrompt	"cb.nsPrompt"	/* cbdata.ptrval=NgNclPromptCBData */
 #define NgCBnsReset	"cb.nsReset"	/* cbdata is not used	*/
+#define NgCBnsPostSubmit	"cb.nsPostSubmit"	/* cbdata not used */
 
 typedef struct _NgNclPromptCBDataRec{
 	int		line;

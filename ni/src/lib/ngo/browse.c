@@ -1,5 +1,5 @@
 /*
- *      $Id: browse.c,v 1.5 1997-06-23 21:06:18 dbrown Exp $
+ *      $Id: browse.c,v 1.6 1997-07-02 15:30:50 boote Exp $
  */
 /************************************************************************
 *									*
@@ -666,8 +666,8 @@ InitPane
                  NULL);
         pane->scroller = XtVaCreateManagedWidget
                 ("scroller", xmScrolledWindowWidgetClass,pane->topform,
-                 XmNscrollBarDisplayPolicy,XmAS_NEEDED,
-                 XmNscrollingPolicy, XmAUTOMATIC,
+                 XmNscrollBarDisplayPolicy,	XmAS_NEEDED,
+                 XmNscrollingPolicy,		XmAUTOMATIC,
                  NULL);
         pane->form = XtVaCreateManagedWidget
                 ("form", xmFormWidgetClass,pane->scroller,
