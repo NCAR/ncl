@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ncargcc.csh,v 1.2 1992-06-04 19:48:28 ncargd Exp $
+#	$Id: ncargcc.csh,v 1.3 1992-06-04 20:49:34 ncargd Exp $
 #
 
 set system="SED_SYSTEM_INCLUDE"
@@ -34,7 +34,7 @@ if ($system == "Cray2" || $system == "Cray") then
 else if ($system == "Sun4") then
   set f77libs     =       "-L/usr/lang/SC1.0 -lF77 -lV77 -lm"
 else if ($system == "RS6000") then
-  set f77libs     =       "-lxlf"
+  set f77libs     =       "-lm -lxlf"
 else if ($system == "DECRISC") then
   set f77libs     =       "-lots -lfor -lF77 -lI77 -lU77 -lutil -li -lm -lUfor"
 else if ($system == "HPUX") then
