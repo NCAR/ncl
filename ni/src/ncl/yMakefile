@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.52 1997-04-11 18:28:11 haley Exp $
+#      $Id: yMakefile,v 1.53 1997-04-11 21:16:14 haley Exp $
 #
 #########################################################################
 #									#
@@ -142,7 +142,7 @@ EXEOBJS		=	$(EXE_OBJS) $(OBJS)  $(HACKOBJS) \
 
 LibraryTarget($(MYLIB),$(ALLOBJS))
 LibraryTarget($(MYLIB_API),$(APIOBJS))
-BuildSharedLibTarget(libNGncl,$(APIOBJS),1,0,$(HLULIB) $(NCARGCLIB) -ll $(NCDFLIBS) $(HDFLIB) $(CTOFLIBS) -lm -lc)
+BuildSharedLibTarget(libNGncl,$(APIOBJS),1,0,$(HLULIB) $(CNCARGLIB) $(NCARGCLIB) -ll $(NCDFLIBS) $(HDFLIB) $(CTOFLIBS) -lm -lc)
 CProgram($(MYBIN),$(EXEOBJS),$(DEPLIBS))
 BuildIncludes($(INSTALL_HDRS),ncarg/ncl,../..)
 InstallTarget($(INSTALL_HDRS),$(INSTALL_INC),$(NCLINCPATH))
