@@ -2053,7 +2053,7 @@ int rw_status;
 		if((file_out->file.format_funcs->get_file_rec != NULL)&&((rw_status != -1)||(file_out->file.format_funcs->create_file_rec != NULL))) {
 			if(rw_status == -1) {
 				file_out->file.wr_status = rw_status;
-				file_out->file.private_rec = (*file_out->file.format_funcs->create_file_rec)(path);
+				file_out->file.private_rec = (*file_out->file.format_funcs->create_file_rec)(NrmStringToQuark(_NGResolvePath(NrmQuarkToString(path))));
 				if(file_out->file.private_rec == NULL) {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not create (%s)",NrmQuarkToString(path));
 					if(file_out_free) 
@@ -2062,7 +2062,7 @@ int rw_status;
 				}
 			} else {
 				file_out->file.wr_status = rw_status;
-				file_out->file.private_rec = (*file_out->file.format_funcs->get_file_rec)(path,rw_status);	
+				file_out->file.private_rec = (*file_out->file.format_funcs->get_file_rec)(NrmStringToQuark(_NGResolvePath(NrmQuarkToString(path))),rw_status);	
 				if(file_out->file.private_rec == NULL) {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not open (%s)",NrmQuarkToString(path));
 					if(file_out_free) 
