@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.h,v 1.26 1998-10-22 17:35:51 boote Exp $
+ *      $Id: Workstation.h,v 1.27 1998-10-27 20:05:34 boote Exp $
  */
 /************************************************************************
 *									*
@@ -254,6 +254,13 @@ extern int NhlGetGksCi(
 #if	NhlNeedProto
         int     /* pid */,
         NhlColorIndex     /* ci   */
+#endif
+);
+
+extern int NhlGetNamedColor(
+#if	NhlNeedProto
+	int		pid,
+	Const char	*name
 #endif
 );
 

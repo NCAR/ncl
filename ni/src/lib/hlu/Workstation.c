@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.86 1998-10-26 15:20:27 boote Exp $
+ *      $Id: Workstation.c,v 1.87 1998-10-27 20:05:32 boote Exp $
  */
 /************************************************************************
 *									*
@@ -819,6 +819,35 @@ FindCIMatch
 	}
 
 	return True;
+}
+
+int
+NhlGetNamedColor
+#if	NhlNeedProto
+(
+	int		pid,
+	Const char	*name
+)
+#else
+(pid,name)
+	int		pid;
+	Const char	*name;
+#endif
+{
+	char			func[]="NhlGetNamedColor";
+	NhlWorkstationLayer	wl = _NhlGetLayer(pid);
+	NGRGB			rgb;
+	int			index;
+
+	if(!wl || !_NhlIsWorkstation(wl)){
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s:Invalid Workstation",func));
+		return NhlFATAL;
+	}
+
+	if(_NhlLookupColor((NhlWorkstationClass)wl->base.layer_class,
+				name,&rgb) && FindCIMatch(wl,rgb,&index))
+		return index;
+	return NhlFATAL;
 }
 
 /*
