@@ -1,6 +1,6 @@
 #
 #
-#	$Id: yMakefile,v 1.3 1993-10-19 17:44:03 boote Exp $
+#	$Id: yMakefile,v 1.4 2001-04-12 15:55:48 haley Exp $
 #
 #
 #	Makefile for rassplit
@@ -19,11 +19,3 @@ SRCS		= rassplit.c
 
 CProgram($(MYNAME),$(OBJS),$(DEPLIBS))
 DependTarget($(SRCS))
-
-saber_src: $(SRCS)
-	#setopt load_flags $(CFLAGS) $(CINCS)
-	#load $(SRCS) $(LIBS)
-
-saber_obj: $(OBJS)
-	#setopt load_flags $(CFLAGS) $(CINCS)
-	#load $(OBJS) $(LIBS)

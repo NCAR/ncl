@@ -1,6 +1,6 @@
 #
 #
-#	$Id: yMakefile,v 1.1 1995-05-03 22:46:51 clyne Exp $
+#	$Id: yMakefile,v 1.2 2001-04-12 15:54:43 haley Exp $
 #
 #
 #	Makefile for ras2ccir601
@@ -20,11 +20,3 @@ SRCS		= ras2ccir601.c
 
 CProgram($(MYNAME),$(OBJS),$(DEP_LIBS))
 DependTarget($(SRCS))
-
-saber_src: $(SRCS)
-	#setopt load_flags $(CFLAGS) $(CINCS)
-	#load $(SRCS) $(LIBS)
-
-saber_obj: $(OBJS)
-	#setopt load_flags $(CFLAGS) $(CINCS)
-	#load $(OBJS) $(LIBS)

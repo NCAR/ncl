@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.27 1996-11-01 15:42:10 boote Exp $
+#	$Id: yMakefile,v 1.28 2001-04-12 15:51:28 haley Exp $
 #
 
 
@@ -113,15 +113,6 @@ BuildSharedLibTarget(libNGctrans,$(OBJS),1,0,$(NCARGRASLIB) $(CGMLIB) $(NCARGCLI
 BuildIncludes($(INCLUDES),ncarg,..)
 InstallTarget($(INCLUDES),$(INSTALL_INC),$(NCARGINCPATH))
 DependTarget($(SRCS))
-
-saber_src: $(SRCS)
-	#setopt load_flags $(CFLAGS) $(CINC)
-	#load $(SRCS) $(LIBS)
-
-saber_obj: $(OBJS)
-	#setopt load_flags $(CFLAGS) $(CINC)
-	#load $(OBJS) $(LIBS)
-
 
 lint:
 	$(LINT) $(CINC) $(SRCS) 1> lint.out 2>&1

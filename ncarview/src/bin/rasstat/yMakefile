@@ -1,6 +1,6 @@
 #
 #
-#	$Id: yMakefile,v 1.9 1993-10-19 17:44:09 boote Exp $
+#	$Id: yMakefile,v 1.10 2001-04-12 15:55:55 haley Exp $
 #
 #
 #	Makefile for rasstat
@@ -20,11 +20,3 @@ SRCS		= rasstat.c
 
 CProgram($(MYNAME),$(OBJS),$(DEP_LIBS))
 DependTarget($(SRCS))
-
-saber_src: $(SRCS)
-	#setopt load_flags $(CFLAGS) $(CINCS)
-	#load $(SRCS) $(LIBS)
-
-saber_obj: $(OBJS)
-	#setopt load_flags $(CFLAGS) $(CINCS)
-	#load $(OBJS) $(LIBS)

@@ -1,6 +1,6 @@
 #
 #
-#	$Id: yMakefile,v 1.13 1993-10-19 17:43:41 boote Exp $
+#	$Id: yMakefile,v 1.14 2001-04-12 15:55:08 haley Exp $
 #
 #
 #	Makefile for rascat
@@ -20,11 +20,3 @@ SRCS		= rascat.c
 
 CProgram($(MYNAME),$(OBJS),$(DEP_LIBS))
 DependTarget($(SRCS))
-
-saber_src: $(SRCS)
-	#setopt load_flags $(CFLAGS) $(CINCS)
-	#load $(SRCS) $(LIBS)
-
-saber_obj: $(OBJS)
-	#setopt load_flags $(CFLAGS) $(CINCS)
-	#load $(OBJS) $(LIBS)

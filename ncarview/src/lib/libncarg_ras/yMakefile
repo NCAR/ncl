@@ -1,4 +1,4 @@
-#	$Id: yMakefile,v 1.48 1996-11-01 15:42:21 boote Exp $
+#	$Id: yMakefile,v 1.49 2001-04-12 15:51:02 haley Exp $
 #
 #	Makefile for libraster - libraries for dealing with
 #	a variety of raster image formats.
@@ -120,7 +120,7 @@ GENERIC_OBJS =	raster.o cleartext.o error.o misc.o palette.o \
 GENERIC_SRCS =	raster.c cleartext.c error.c misc.c palette.c \
 		dither.c resample.c composite.c ntsc.c color.c \
 		rasterop.c generic.c memory.c $(DEVICE_SRCS)
-			
+
 OBJS		= $(GENERIC_OBJS)
 SRCS		= $(GENERIC_SRCS)
 
@@ -132,14 +132,6 @@ DependTarget($(SRCS))
 
 hdf.o:      Makefile
 raster.o:	Makefile
-
-saber_src: $(SRCS)
-	#setopt load_flags $(CFLAGS)
-	#load $(SRCS) -ldf
-
-saber_obj: $(OBJS)
-	#setopt load_flags $(CFLAGS)
-	#load $(OBJS) -ldf
 
 test: rasls.o rascopy.o
 	$(CC) $(CFLAGS) -o rasls rasls.o $(LOCLIB) -lmalloc
