@@ -1,5 +1,5 @@
 C
-C	$Id: gesc.f,v 1.4 1993-01-15 17:44:23 fred Exp $
+C	$Id: gesc.f,v 1.5 1993-02-26 00:35:03 fred Exp $
 C
       SUBROUTINE GESC(FCTID,LIDR,IDR,MLODR,LODR,ODR)
 C
@@ -51,8 +51,18 @@ C      -1396  --  Flag a pause in the X driver.
 C      -1397  --  Color table identifier for use by NCAR Interactive.
 C
       IF (FCTID .EQ. -1396) THEN
-        READ (IDR,501) IWKID
+C
+C  Decode the workstation ID.
+C
+        READ (IDR,501,ERR=130) IWKID
+        GO TO 140
   501   FORMAT(I5)
+  130   CONTINUE
+        ERS = 1
+        CALL GERHND(182,EESC,ERF)
+        ERS = 0
+        RETURN
+  140   CONTINUE
         CUFLAG = IWKID
         FCODE = 6
         CALL GZROI(0)
