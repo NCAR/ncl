@@ -1,5 +1,5 @@
 #!/bin/csh -f
-set version = 031230    # YYMMDD
+set version = 040112    # YYMMDD
 echo " " 
 echo "WRAPIT Version: "$version 
 if ($argv[1]:q == "-h") then
@@ -600,7 +600,7 @@ switch ($OS)
    breaksw
  case Darwin:                      # MacOSX
    if ($debug == 1) then
-     gcc -bundle -flat_namespace -undefined suppress $ld_suffix -lg2c
+     gcc -bundle -flat_namespace -undefined suppress $ld_suffix -L/sw/lib -lg2c
    else
      gcc -bundle -flat_namespace -undefined suppress $ld_suffix
    endif
