@@ -1,5 +1,5 @@
 C
-C	$Id: gzopwk.f,v 1.5 2000-12-21 22:27:43 fred Exp $
+C	$Id: gzopwk.f,v 1.6 2000-12-22 19:01:04 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -131,7 +131,7 @@ C  Color model for PostScript workstations.
 C
           ID(9) = CCMDL
 C
-C  Flage for suppressing bounding box and background color for PS.
+C  Flag for suppressing background color for PS.
 C
           ID(10) = CSUPR
 	ELSE IF (WTYPE.EQ.GXWE .OR. WTYPE.EQ.GXWC) THEN

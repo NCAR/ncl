@@ -1,5 +1,5 @@
 C
-C	$Id: gztowk.f,v 1.13 2000-08-22 15:08:35 haley Exp $
+C	$Id: gztowk.f,v 1.14 2000-12-22 19:01:05 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -69,6 +69,7 @@ C
             ID(6) = ID(7)
             ID(7) = ID(8)
             ID(8) = ID(9)
+            ID(9) = ID(10)
             NUMP  = 8
             CALL GGKWDR(IID,FCODE,0,NUMP,IL2,ID,IC1,IC2,IC,
      -                  RL1,RL2,RX,RY,STRL1,STRL2,ADESTR,RERR,XERMSG)

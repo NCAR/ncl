@@ -1,5 +1,5 @@
 /*
- *	$Id: ps.c,v 1.23 2000-12-21 22:27:51 fred Exp $
+ *	$Id: ps.c,v 1.24 2000-12-22 19:01:14 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -449,8 +449,7 @@ void PSpreamble (PSddp *psa, preamble_type type)
 		(void) fprintf(fp, "%%%%Creator: NCAR GKS\n");
 		(void) fprintf(fp, "%%%%CreationDate: %s %s\n",
 					__DATE__,__TIME__);
-                if ((psa->type != RPS) || (psa->suppress_flag != 1 &&
-                                           psa->suppress_flag != 3)) {
+                if (psa->type != RPS) {
 	       	  (void) fprintf(psa->file_pointer, "%%%%BoundingBox: ");
        		  (void) fprintf(psa->file_pointer, "%d ",
 			  (int) ((psa->scaling) * ((float)(psa->dspace.llx))));
@@ -1039,8 +1038,7 @@ static void PSinit(PSddp *psa, int *coords)
 	psa->sfill_spacing = PS_FILL_SPACING;
 
         /*
-         *  Flag to suppress putting out background color rectangle 
-         *  and/or the bounding box.
+         *  Flag to suppress putting out background color rectangle.
          */
         psa->suppress_flag = *(coords+6);
 
@@ -3167,7 +3165,14 @@ ps_SetColorRepresentation(gksc)
 
 	if ((index == 0)  && (psa->suppress_flag != 1) &&
                              (psa->suppress_flag != 2)) {
-		psa->background = TRUE;
+          /*
+           *  Do not flag the background setting if the defined
+           *  color is white.
+           */
+           if ((psa->color_map[0] != 1.) || (psa->color_map[1] != 1.) ||
+               (psa->color_map[2] != 1.)) {
+		  psa->background = TRUE;
+           }
 	}
 
 	if (psa->pict_empty == FALSE) {
@@ -3184,8 +3189,14 @@ ps_SetColorRepresentation(gksc)
 
 	  if ((index == 0) && (psa->suppress_flag != 1) &&
                               (psa->suppress_flag != 2)) {
-		  PSbackground(psa);
-		  psa->background = TRUE;
+           /*
+            *  Do not put out background if the defined color is white.
+            */
+            if ((psa->color_map[0] != 1.) || (psa->color_map[1] != 1.) ||
+                (psa->color_map[2] != 1.)) {
+	      PSbackground(psa);
+	      psa->background = TRUE;
+            }
 	  }
 	}
 
@@ -3431,7 +3442,7 @@ ps_Esc(gksc)
 		psa->ps_clip.ury = psa->dspace.ury;
 		psa->ps_clip.null = FALSE;
 		break;
-        case -1524:  /* Suppress background and/or bounding box */
+        case -1524:  /* Suppress background color */
                 strng = strtok(sptr, " ");
                 strng = strtok((char *) NULL, " ");
                 psa->suppress_flag = (int) atoi(strng);
