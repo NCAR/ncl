@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.70 1997-07-31 22:16:35 dbrown Exp $
+ *      $Id: XyPlot.c,v 1.71 1997-08-11 18:22:38 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -225,10 +225,6 @@ static NhlResource resources[] = {
 	{NhlNxyYStyle,NhlCxyYStyle,NhlTTickMarkStyle,sizeof(NhlTickMarkStyle),
 		Oset(y_style),NhlTImmediate,(NhlPointer)NhlLINEAR,
 		_NhlRES_DEFAULT,NULL},
-	{NhlNtrXTensionF,NhlCtrXTensionF,NhlTFloat,sizeof(float),
-		Oset(x_tension),NhlTString,"2.0",_NhlRES_DEFAULT,NULL},
-	{NhlNtrYTensionF,NhlCtrYTensionF,NhlTFloat,sizeof(float),
-		Oset(y_tension),NhlTString,"2.0",_NhlRES_DEFAULT,NULL},
 
 	{NhlNxyXIrregularPoints,NhlCxyXIrregularPoints,NhlTFloatGenArray,
 		sizeof(NhlPointer),Oset(x_irregular_points),NhlTImmediate,
@@ -297,6 +293,12 @@ static NhlResource resources[] = {
          	_NhlRES_DEFAULT|_NhlRES_INTERCEPTED,NULL},
 	{NhlNtrYMinF,NhlCtrYMinF,NhlTFloat,sizeof(float),Oset(y_min),
 		NhlTProcedure,(NhlPointer)ResUnset,
+         	_NhlRES_DEFAULT|_NhlRES_INTERCEPTED,NULL},
+	{NhlNtrXTensionF,NhlCtrXTensionF,NhlTFloat,sizeof(float),
+		Oset(x_tension),NhlTString,"2.0",
+         	_NhlRES_DEFAULT|_NhlRES_INTERCEPTED,NULL},
+	{NhlNtrYTensionF,NhlCtrYTensionF,NhlTFloat,sizeof(float),
+		Oset(y_tension),NhlTString,"2.0",
          	_NhlRES_DEFAULT|_NhlRES_INTERCEPTED,NULL},
 
 /*
@@ -866,7 +868,9 @@ XyPlotClassPartInitialize
 	char		*entry_name = "XyPlotClassPartInitialize";
 
 	/*
-	 * Register children objects
+	 * Register children objects:
+         * NOTE: order of registration should be the reverse of the
+         * desired 'canonical' order
 	 */
 	lret = _NhlRegisterChildClass(lc,NhlplotManagerClass,False,False,
 			NhlNlgDashIndex,NhlNlgDashIndexes,NhlNlgItemCount,
@@ -890,23 +894,16 @@ XyPlotClassPartInitialize
 			NhlNlgMonoLineLabelFontHeight,NhlNlgMonoLineThickness,
 			NhlNlgMonoMarkerColor,NhlNlgMonoMarkerIndex,
 			NhlNlgMonoMarkerSize,NhlNlgMonoMarkerThickness,
-			NhlNpmLabelBarDisplayMode,
+			NhlNpmLabelBarDisplayMode,NhlNpmLabelBarZone,
+                        NhlNpmLabelBarWidthF,NhlNpmLabelBarHeightF,
+                        NhlNpmLabelBarSide,NhlNpmLabelBarParallelPosF,
+                        NhlNpmLabelBarOrthogonalPosF,              
 			NULL);
 
 	if ((ret = MIN(ret,lret)) < NhlWARNING) {
 		e_text = "%s: error registering %s";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
 			  "NhlplotManagerClass");
-		return(NhlFATAL);
-	}
-
-
-	lret = _NhlRegisterChildClass(lc,NhllogLinTransObjClass,
-					False,True,NULL);
-	if ((ret = MIN(ret,lret)) < NhlWARNING) {
-		e_text = "%s: error registering %s";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
-			  "NhllogLinTransObjClass");
 		return(NhlFATAL);
 	}
         
@@ -916,6 +913,15 @@ XyPlotClassPartInitialize
 		e_text = "%s: error registering %s";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
 			  "NhlirregularTransObjClass");
+		return(NhlFATAL);
+	}
+
+	lret = _NhlRegisterChildClass(lc,NhltransObjClass,
+					False,True,NULL);
+	if ((ret = MIN(ret,lret)) < NhlWARNING) {
+		e_text = "%s: error registering %s";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
+			  "NhltransObjClass");
 		return(NhlFATAL);
 	}
 

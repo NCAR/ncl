@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.60 1997-08-06 19:26:47 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.61 1997-08-11 18:21:57 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -810,6 +810,9 @@ static NhlResource resources[] = {
 	{ NhlNtrXReverse,NhlCtrXReverse,NhlTBoolean,sizeof(NhlBoolean),
 		Oset(x_reverse),NhlTImmediate,
           	_NhlUSET((NhlPointer)False),_NhlRES_INTERCEPTED,NULL},
+	{NhlNtrXTensionF,NhlCtrXTensionF,NhlTFloat,sizeof(float),
+		Oset(x_tension),NhlTString,"2.0",
+         	_NhlRES_DEFAULT|_NhlRES_INTERCEPTED,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(y_min_set),NhlTImmediate,
 		 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
@@ -828,6 +831,9 @@ static NhlResource resources[] = {
 	{ NhlNtrYReverse,NhlCtrYReverse,NhlTBoolean,sizeof(NhlBoolean),
 		Oset(y_reverse),NhlTImmediate,
           	_NhlUSET((NhlPointer)False),_NhlRES_INTERCEPTED,NULL},
+	{NhlNtrYTensionF,NhlCtrYTensionF,NhlTFloat,sizeof(float),
+		Oset(y_tension),NhlTString,"2.0",
+         	_NhlRES_DEFAULT|_NhlRES_INTERCEPTED,NULL},
 
 	{ NhlNpmLabelBarDisplayMode,NhlCpmLabelBarDisplayMode,
 		 NhlTAnnotationDisplayMode,sizeof(NhlAnnotationDisplayMode),
@@ -1935,6 +1941,8 @@ ContourPlotClassPartInitialize
 
 /*
  * Register children objects
+ * NOTE: order of registration should be the reverse of the
+ * desired 'canonical' order
  */
 	subret = _NhlRegisterChildClass(lc,NhlplotManagerClass,
 					False,False,
@@ -2000,22 +2008,21 @@ ContourPlotClassPartInitialize
 			  "NhlplotManagerClass");
 		return(NhlFATAL);
 	}
-
-	subret = _NhlRegisterChildClass(lc,NhllogLinTransObjClass,
-					False,True,NULL);
-	if ((ret = MIN(ret,subret)) < NhlWARNING) {
-		e_text = "%s: error registering %s";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
-			  "NhllogLinTransObjClass");
-		return(NhlFATAL);
-	}
-        
         subret = _NhlRegisterChildClass(lc,NhlirregularTransObjClass,
 					False,True,NULL);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: error registering %s";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
 			  "NhlirregularTransObjClass");
+		return(NhlFATAL);
+	}
+
+        subret = _NhlRegisterChildClass(lc,NhltransObjClass,
+					False,True,NULL);
+	if ((ret = MIN(ret,subret)) < NhlWARNING) {
+		e_text = "%s: error registering %s";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
+			  "NhltransObjClass");
 		return(NhlFATAL);
 	}
 
@@ -5436,6 +5443,9 @@ static NhlErrorTypes SetUpIrrTransObj
 				(! yrev && ! cnp->y_reverse) ? False : True;
 			NhlSetSArg(&sargs[nargs++],NhlNtrYReverse,yrev);
 		}
+                NhlSetSArg(&sargs[nargs++],NhlNtrXTensionF,cnp->x_tension);
+                NhlSetSArg(&sargs[nargs++],NhlNtrYTensionF,cnp->y_tension);
+                
 		sprintf(buffer,"%s",cnnew->base.name);
 		strcat(buffer,".Trans");
 
@@ -5484,6 +5494,10 @@ static NhlErrorTypes SetUpIrrTransObj
 			NhlSetSArg(&sargs[nargs++],NhlNtrYReverse,yrev);
 		}
 	}
+        if (cnp->x_tension != ocnp->x_tension)
+                NhlSetSArg(&sargs[nargs++],NhlNtrXTensionF,cnp->x_tension);
+        if (cnp->y_tension != ocnp->y_tension)
+                NhlSetSArg(&sargs[nargs++],NhlNtrYTensionF,cnp->y_tension);
 	subret = NhlALSetValues(tfp->trans_obj->base.id,sargs,nargs);
 
 	if (nargs > 0) {
@@ -9402,6 +9416,11 @@ static NhlErrorTypes    cnComputeRefLevel
 	float	test_high = pow(10.0,cnp->max_data_format.sig_digits);
 	float	test_low  = pow(10.0,cnp->max_data_format.sig_digits - 1);
 
+        if (cnp->level_count == 1 || cnp->const_field || test_val == 0.0) {
+                cnp->ref_level = 0;
+                return ret;
+        }
+        
 	if (test_val < test_low) {
 		while (test_val < test_low) {
 			test_val *= 10.0;

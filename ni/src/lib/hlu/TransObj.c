@@ -1,5 +1,5 @@
 /*
- *      $Id: TransObj.c,v 1.23 1997-07-25 21:12:48 dbrown Exp $
+ *      $Id: TransObj.c,v 1.24 1997-08-11 18:22:26 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -24,19 +24,110 @@
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/TransObjP.h>
 
+/*
+ * Function:	ResourceUnset
+ *
+ * Description:	This function can be used to determine if a resource has
+ *		been set at initialize time either in the Create call or
+ *		from a resource data base. In order to use it the Boolean
+ *		'..resource_set' variable MUST directly proceed the name
+ *		of the resource variable it refers to in the LayerPart
+ *		struct. Also a .nores Resource for the resource_set variable
+ *		must directly preceed the Resource of interest in the 
+ *		Resource initialization list in this module.
+ *
+ * In Args:	
+ *		NrmName		name,
+ *		NrmClass	class,
+ *		NhlPointer	base,
+ *		unsigned int	offset
+ *
+ * Out Args:	
+ *
+ * Scope:	static
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+
+/*ARGSUSED*/
+static NhlErrorTypes
+ResourceUnset
+#if	NhlNeedProto
+(
+	NrmName		name,
+	NrmClass	class,
+	NhlPointer	base,
+	unsigned int	offset
+)
+#else
+(name,class,base,offset)
+	NrmName		name;
+	NrmClass	class;
+	NhlPointer	base;
+	unsigned int	offset;
+#endif
+{
+	char *cl = (char *) base;
+	NhlBoolean *set = (NhlBoolean *)(cl + offset - sizeof(NhlBoolean));
+
+	*set = False;
+
+	return NhlNOERROR;
+}
+
 static NhlResource resources[] =  {
 
 /* Begin-documented-resources */
 
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 NhlOffset(NhlTransObjLayerRec,trobj.x_min_set),
+		 NhlTImmediate,_NhlUSET((NhlPointer)True),
+         	 _NhlRES_PRIVATE,NULL},
+	{ NhlNtrXMinF,NhlCtrXMinF,NhlTFloat,sizeof(float),
+		NhlOffset(NhlTransObjLayerRec,trobj.x_min),
+		NhlTString,_NhlUSET("0.0"),0,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 NhlOffset(NhlTransObjLayerRec,trobj.x_max_set),
+		 NhlTImmediate,_NhlUSET((NhlPointer)True),
+         	 _NhlRES_PRIVATE,NULL},
+	{ NhlNtrXMaxF,NhlCtrXMaxF,NhlTFloat,sizeof(float),
+		NhlOffset(NhlTransObjLayerRec,trobj.x_max),
+		NhlTString,_NhlUSET("1.0"),0,NULL},
+	{ NhlNtrXReverse,NhlCtrXReverse,NhlTBoolean,sizeof(NhlBoolean),
+		NhlOffset(NhlTransObjLayerRec,trobj.x_reverse),
+		NhlTImmediate,_NhlUSET(False),0,NULL},
+	{ NhlNtrXLog,NhlCtrXLog,NhlTBoolean,sizeof(NhlBoolean),
+		NhlOffset(NhlTransObjLayerRec,trobj.x_log),
+		NhlTImmediate,_NhlUSET(False),0,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 NhlOffset(NhlTransObjLayerRec,trobj.y_min_set),
+		 NhlTImmediate,_NhlUSET((NhlPointer)True),
+         	 _NhlRES_PRIVATE,NULL},
+	{ NhlNtrYMinF,NhlCtrYMinF,NhlTFloat,sizeof(float),
+		NhlOffset(NhlTransObjLayerRec,trobj.y_min),
+		NhlTString,_NhlUSET("0.0"),0,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 NhlOffset(NhlTransObjLayerRec,trobj.y_max_set),
+		 NhlTImmediate,_NhlUSET((NhlPointer)True),
+         	 _NhlRES_PRIVATE,NULL},
+	{ NhlNtrYMaxF,NhlCtrYMaxF,NhlTFloat,sizeof(float),
+		NhlOffset(NhlTransObjLayerRec,trobj.y_max),
+		NhlTString,_NhlUSET("1.0"),0,NULL},
+	{ NhlNtrYReverse,NhlCtrYReverse,NhlTBoolean,sizeof(NhlBoolean),
+		NhlOffset(NhlTransObjLayerRec,trobj.y_reverse),
+         	NhlTImmediate,_NhlUSET(False),0,NULL},
+	{ NhlNtrYLog,NhlCtrYLog,NhlTBoolean,sizeof(NhlBoolean),
+		NhlOffset(NhlTransObjLayerRec,trobj.y_log),
+		NhlTImmediate,_NhlUSET(False),0,NULL},
 	{ NhlNtrOutOfRangeF, NhlCtrOutOfRangeF, NhlTFloat, sizeof(float),
-		NhlOffset(NhlTransObjLayerRec, trobj.out_of_range),
+		NhlOffset(NhlTransObjLayerRec,trobj.out_of_range),
 		NhlTString, _NhlUSET("1.0e12"),0,NULL },
-	{ NhlNtrResolutionF, NhlCtrResolutionF, NhlTFloat, sizeof(float),
-		NhlOffset(NhlTransObjLayerRec, trobj.resolution),
-		NhlTString, _NhlUSET("0.002"),0,NULL },
 
 /* End-documented-resources */
 
+	{ NhlNtrResolutionF, NhlCtrResolutionF, NhlTFloat, sizeof(float),
+		NhlOffset(NhlTransObjLayerRec, trobj.resolution),
+		NhlTString, _NhlUSET("0.002"),_NhlRES_PRIVATE,NULL },
 	{ NhlNtrChangeCount, NhlCtrChangeCount, NhlTInteger, sizeof(int),
 		NhlOffset(NhlTransObjLayerRec, trobj.change_count),
 		NhlTImmediate, _NhlUSET((NhlPointer) 0),
@@ -55,6 +146,16 @@ static NhlResource resources[] =  {
 		NhlTString, _NhlUSET("0.0"),_NhlRES_PRIVATE,NULL }
 
 };
+
+static NhlErrorTypes  TransSetValues(
+#if	NhlNeedProto
+        NhlLayer,          /* old */
+        NhlLayer,          /* reference */
+        NhlLayer,          /* new */
+        _NhlArgList,    /* args */
+        int             /* num_args*/
+#endif
+);
 
 static NhlErrorTypes TransSetTrans(
 #if	NhlNeedProto
@@ -103,7 +204,7 @@ static NhlErrorTypes TransObjClassPartInit(
 
 NhlTransObjClassRec NhltransObjClassRec = {
 	{
-/* class_name */        "transObjClass",
+/* class_name */        "transformationClass",
 /* nrm_class */         NrmNULLQUARK,
 /* layer_size */        sizeof(NhlTransObjLayerRec),
 /* class_inited */      False,
@@ -121,7 +222,7 @@ NhlTransObjClassRec NhltransObjClassRec = {
 /* class_part_initialize */     TransObjClassPartInit,
 /* class_initialize */  NULL,
 /* layer_initialize */  NULL,
-/* layer_set_values */  NULL,
+/* layer_set_values */  TransSetValues,
 /* layer_set_values_hook */  NULL,
 /* layer_get_values */  NULL,
 /* layer_reparent */  NULL,
@@ -182,6 +283,48 @@ TransObjClassPartInit
 	if(tlc->trobj_class.compc_to_win == NhlInheritTransPoint)
 		tlc->trobj_class.compc_to_win = sc->trobj_class.compc_to_win;
 	return NhlNOERROR;
+}
+
+
+/*
+ * Function:	TransSetValues
+ *
+ * Description:	SetValues method for IrregularTrans Objects
+ *
+ * In Args: 	All standard ones for set_values method.
+ *
+ * Out Args:	Same as all set_values methods;
+ *
+ * Return Values: Error status
+ *
+ * Side Effects: Allocates and copies space for array resources
+ */
+/*ARGSUSED*/
+static NhlErrorTypes TransSetValues
+#if	NhlNeedProto
+(NhlLayer old, NhlLayer reference, NhlLayer new, _NhlArgList args, int num_args)
+#else
+(old,reference, new,args,num_args)
+	NhlLayer old;
+	NhlLayer reference;
+	NhlLayer new;
+	_NhlArgList args;
+	int	num_args;
+#endif
+{
+	NhlTransObjLayer tnew = (NhlTransObjLayer) new;
+	NhlTransObjLayerPart *tp = &tnew->trobj;
+
+        if (_NhlArgIsSet(args,num_args,NhlNtrXMinF))
+                tp->x_min_set = True;
+        if (_NhlArgIsSet(args,num_args,NhlNtrXMaxF))
+                tp->x_max_set = True;
+        if (_NhlArgIsSet(args,num_args,NhlNtrYMinF))
+                tp->y_min_set = True;
+        if (_NhlArgIsSet(args,num_args,NhlNtrYMaxF))
+                tp->y_max_set = True;
+        
+        return NhlNOERROR;
 }
 
 static NhlErrorTypes

@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlot.c,v 1.31 1997-07-31 22:16:25 dbrown Exp $
+ *      $Id: StreamlinePlot.c,v 1.32 1997-08-11 18:22:22 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -276,6 +276,9 @@ static NhlResource resources[] = {
 	{ NhlNtrXReverse,NhlCtrXReverse,NhlTBoolean,sizeof(NhlBoolean),
 		Oset(x_reverse),NhlTImmediate,
           	_NhlUSET((NhlPointer)False),_NhlRES_INTERCEPTED,NULL},
+	{NhlNtrXTensionF,NhlCtrXTensionF,NhlTFloat,sizeof(float),
+		Oset(x_tension),NhlTString,"2.0",
+         	_NhlRES_DEFAULT|_NhlRES_INTERCEPTED,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(y_min_set),
 		 NhlTImmediate,_NhlUSET((NhlPointer)True),
@@ -297,6 +300,9 @@ static NhlResource resources[] = {
 		Oset(y_reverse),
 		NhlTImmediate,_NhlUSET((NhlPointer)False),
           	_NhlRES_INTERCEPTED,NULL},
+	{NhlNtrYTensionF,NhlCtrYTensionF,NhlTFloat,sizeof(float),
+		Oset(y_tension),NhlTString,"2.0",
+         	_NhlRES_DEFAULT|_NhlRES_INTERCEPTED,NULL},
 
 	{ NhlNpmLabelBarDisplayMode,NhlCpmLabelBarDisplayMode,
 		 NhlTAnnotationDisplayMode,sizeof(NhlAnnotationDisplayMode),
@@ -1170,6 +1176,8 @@ StreamlinePlotClassPartInitialize
 
 /*
  * Register children objects
+ * NOTE: order of registration should be the reverse of the
+ * desired 'canonical' order
  */
 	subret = _NhlRegisterChildClass(lc,NhlplotManagerClass,
 					False,False,
@@ -1185,15 +1193,6 @@ StreamlinePlotClassPartInitialize
 			  "NhlplotManagerClass");
 		return(NhlFATAL);
 	}
-
-	subret = _NhlRegisterChildClass(lc,NhllogLinTransObjClass,
-					False,True,NULL);
-	if ((ret = MIN(ret,subret)) < NhlWARNING) {
-		e_text = "%s: error registering %s";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
-			  "NhllogLinTransObjClass");
-		return(NhlFATAL);
-	}
         
         subret = _NhlRegisterChildClass(lc,NhlirregularTransObjClass,
 					False,True,NULL);
@@ -1201,6 +1200,15 @@ StreamlinePlotClassPartInitialize
 		e_text = "%s: error registering %s";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
 			  "NhlirregularTransObjClass");
+		return(NhlFATAL);
+	}
+
+	subret = _NhlRegisterChildClass(lc,NhltransObjClass,
+					False,True,NULL);
+	if ((ret = MIN(ret,subret)) < NhlWARNING) {
+		e_text = "%s: error registering %s";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
+			  "NhltransObjClass");
 		return(NhlFATAL);
 	}
         
@@ -3098,6 +3106,8 @@ static NhlErrorTypes SetUpIrrTransObj
 				(! yrev && ! stp->y_reverse) ? False : True;
 			NhlSetSArg(&sargs[nargs++],NhlNtrYReverse,yrev);
 		}
+                NhlSetSArg(&sargs[nargs++],NhlNtrXTensionF,stp->x_tension);
+                NhlSetSArg(&sargs[nargs++],NhlNtrYTensionF,stp->y_tension);
 		sprintf(buffer,"%s",stnew->base.name);
 		strcat(buffer,".Trans");
 
@@ -3146,6 +3156,10 @@ static NhlErrorTypes SetUpIrrTransObj
 			NhlSetSArg(&sargs[nargs++],NhlNtrYReverse,yrev);
 		}
 	}
+        if (stp->x_tension != ostp->x_tension)
+                NhlSetSArg(&sargs[nargs++],NhlNtrXTensionF,stp->x_tension);
+        if (stp->y_tension != ostp->y_tension)
+                NhlSetSArg(&sargs[nargs++],NhlNtrYTensionF,stp->y_tension);
 	subret = NhlALSetValues(tfp->trans_obj->base.id,sargs,nargs);
 
 	if (nargs > 0) {

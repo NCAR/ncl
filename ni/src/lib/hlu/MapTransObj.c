@@ -1,5 +1,5 @@
 /*
-*      $Id: MapTransObj.c,v 1.34 1997-07-25 21:12:22 dbrown Exp $
+*      $Id: MapTransObj.c,v 1.35 1997-08-11 18:22:16 dbrown Exp $
 */
 /************************************************************************
 *									*
@@ -438,7 +438,7 @@ extern int (_NHLCALLF(mapitd,MAPITD))(
 
 NhlMapTransObjClassRec NhlmapTransObjClassRec = {
 {
-/* class_name			*/	"mapTransObjClass",
+/* class_name			*/	"mapTransformationClass",
 /* nrm_class			*/	NrmNULLQUARK,
 /* layer_size			*/	sizeof(NhlMapTransObjLayerRec),
 /* class_inited			*/	False,

@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlotP.h,v 1.16 1997-07-25 21:11:50 dbrown Exp $
+ *      $Id: ContourPlotP.h,v 1.17 1997-08-11 18:22:07 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -221,12 +221,14 @@ typedef struct _NhlContourPlotLayerPart {
 	float		x_max;
 	NhlBoolean	x_log;
 	NhlBoolean	x_reverse;
+	float		x_tension;
 	NhlBoolean	y_min_set;
 	float 		y_min;
 	NhlBoolean	y_max_set;
 	float		y_max;
 	NhlBoolean	y_log;
 	NhlBoolean	y_reverse;
+	float		y_tension;
 	NhlGenArray	lbar_labels_res;
 	char		lbar_func_code;
 	NhllbLabelAlignmentMode lbar_alignment;

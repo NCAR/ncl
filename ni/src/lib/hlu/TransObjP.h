@@ -1,5 +1,5 @@
 /*
- *      $Id: TransObjP.h,v 1.13 1996-06-22 01:27:37 dbrown Exp $
+ *      $Id: TransObjP.h,v 1.14 1997-08-11 18:22:27 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -67,6 +67,19 @@ NhlLayer 	/* parent */
 );
 
 typedef struct _NhlTransObjLayerPart {
+	NhlBoolean	x_min_set;
+	float 		x_min;
+	NhlBoolean	x_max_set;
+	float		x_max;
+	int 		x_reverse;
+	int		x_log;
+        
+	NhlBoolean	y_min_set;
+	float 		y_min;
+	NhlBoolean	y_max_set;
+	float		y_max;
+	int 		y_reverse;
+	int		y_log;
 	float		out_of_range;
 	float		resolution;
 /*

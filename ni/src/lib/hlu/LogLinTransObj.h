@@ -1,5 +1,5 @@
 /*
- *      $Id: LogLinTransObj.h,v 1.3 1995-04-07 10:42:48 boote Exp $
+ *      $Id: LogLinTransObj.h,v 1.4 1997-08-11 18:22:15 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -23,26 +23,6 @@
 #define _NLogLinTransObj_h
 
 #include <ncarg/hlu/TransObj.h>
-
-#define NhlNtrXMinF	"trXMinF"
-#define NhlCtrXMinF	"TrXMinF"
-#define NhlNtrXMaxF	"trXMaxF"
-#define NhlCtrXMaxF	"TrXMaxF"
-#define NhlNtrXLog	"trXLog"
-#define NhlCtrXLog	"TrXLog"
-#define NhlNtrXReverse	"trXReverse"
-#define NhlCtrXReverse	"TrXReverse"
-
-
-#define NhlNtrYMinF	"trYMinF"
-#define NhlCtrYMinF	"TrYMinF"
-#define NhlNtrYMaxF	"trYMaxF"
-#define NhlCtrYMaxF	"TrYMaxF"
-#define NhlNtrYLog	"trYLog"
-#define NhlCtrYLog	"TrYLog"
-#define NhlNtrYReverse	"trYReverse"
-#define NhlCtrYReverse	"TrYReverse"
-
 
 extern NhlClass NhllogLinTransObjClass;
 

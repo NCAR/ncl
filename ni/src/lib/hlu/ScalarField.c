@@ -1,5 +1,5 @@
 /*
- *      $Id: ScalarField.c,v 1.25 1997-07-30 01:19:39 dbrown Exp $
+ *      $Id: ScalarField.c,v 1.26 1997-08-11 18:22:19 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1987,7 +1987,8 @@ CvtGenSFObjToFloatSFObj
 
 	sffp->data_min = dmin;
 	sffp->data_max = dmax;
-
+        sfp->up_to_date = True;
+        
 	return ret;
 }
 
@@ -2083,10 +2084,7 @@ ScalarFieldClassPartInitialize
 	NhlClass	lc;	/* pointer to class structure	*/
 #endif
 {
-	NhlErrorTypes		ret;
-
-	ret = _NhlRegisterChildClass(lc,NhlscalarFieldFloatClass,
-				     True,False,NULL);
+	NhlErrorTypes		ret = NhlNOERROR;
 
 	return ret;
 }
@@ -2139,6 +2137,8 @@ ScalarFieldInitialize
 	NhlGenArray		ga;
 
 	sfp->sffloat = NULL;
+        sfp->up_to_date = False;
+        
 	if (sfp->d_arr == NULL) {
 		e_text = 
 		 "%s:The %s resource must be specified to create a %s object";
@@ -2480,6 +2480,9 @@ ScalarFieldSetValues
 
         _NhlDataChanged((NhlDataItemLayer)new,status);
 
+        if (status)
+                sfp->up_to_date = False;
+
 	return	ret;
 }
 
@@ -2668,7 +2671,6 @@ static NhlErrorTypes    ScalarFieldGetValues
 	int		size;
 	NhlBoolean	nocopy = False, do_genarray;
 	float		tmp;
-	NhlBoolean	converted;
 	int		ival;
 	float		fval;
 		
@@ -2678,9 +2680,12 @@ static NhlErrorTypes    ScalarFieldGetValues
 		return NhlFATAL;
 	}
 
-	converted = sfp->sffloat != NULL;
-	if (converted)
-		sffp = &sfp->sffloat->sfieldfloat;
+	if (! (sfp->sffloat && sfp->up_to_date)) {
+		sfp->sffloat = ForceConvert(sfl);
+                if (sfp->sffloat == NULL)
+                        return NhlFATAL;
+        }
+        sffp = &sfp->sffloat->sfieldfloat;
 
         for( i = 0; i< num_args; i++ ) {
 		ga = NULL;
@@ -2703,74 +2708,44 @@ static NhlErrorTypes    ScalarFieldGetValues
 			typeQ = sfp->d_arr->typeQ;
 			size = sfp->d_arr->size;
                 }
-                else if (resQ == Qx_arr) {
-			do_genarray = True;
-			ndim = 1;
-			if (sfp->x_arr == NULL) {
-				dlen[0] = 0;
-				dlen[1] = 0;
-				data = NULL;
-				typeQ = Qfloat;
-				size = 0;
+                else if (resQ == Qx_arr && sfp->x_arr) {
+                        do_genarray = True;
+                        ndim = 1;
+                        dlen[0] = sfp->x_arr->len_dimensions[0];
+                        if (sfp->copy_arrays) {
+                                if ((data = CopyData(sfp->x_arr,resQ)) == NULL)
+                                        return NhlFATAL;
                         }
-			else {
-				dlen[0] = sfp->x_arr->len_dimensions[0];
-				if (sfp->copy_arrays) {
-					if ((data = CopyData(sfp->x_arr,resQ))
-					    == NULL)
-						return NhlFATAL;
-				}
-				else {
-					nocopy = True;
-					data = sfp->x_arr->data;
-				}
-				typeQ = sfp->x_arr->typeQ;
-				size = sfp->x_arr->size;
-			}
+                        else {
+                                nocopy = True;
+                                data = sfp->x_arr->data;
+                        }
+                        typeQ = sfp->x_arr->typeQ;
+                        size = sfp->x_arr->size;
                 }
-                else if (resQ == Qy_arr) {
-			do_genarray = True;
-			ndim = 1;
-			if (sfp->y_arr == NULL) {
-				dlen[0] = 0;
-				dlen[1] = 0;
-				data = NULL;
-				typeQ = Qfloat;
-				size = 0;
+                else if (resQ == Qy_arr && sfp->y_arr) {
+                        do_genarray = True;
+                        ndim = 1;
+                        dlen[0] = sfp->y_arr->len_dimensions[0];
+                        if (sfp->copy_arrays) {
+                                if ((data = CopyData(sfp->y_arr,resQ)) == NULL)
+                                        return NhlFATAL;
                         }
-			else {
-				dlen[0] = sfp->y_arr->len_dimensions[0];
-				if (sfp->copy_arrays) {
-					if ((data = CopyData(sfp->y_arr,resQ))
-					    == NULL)
-						return NhlFATAL;
-				}
-				else {
-					nocopy = True;
-					data = sfp->y_arr->data;
-				}
-				typeQ = sfp->y_arr->typeQ;
-				size = sfp->y_arr->size;
-			}
+                        else {
+                                nocopy = True;
+                                data = sfp->y_arr->data;
+                        }
+                        typeQ = sfp->y_arr->typeQ;
+                        size = sfp->y_arr->size;
                 }
-                else if (resQ == Qmissing_value) {
-			do_genarray = True;
-			ndim = 1;
-			if (sfp->missing_value == NULL) {
-				dlen[0] = 0;
-				data = NULL;
-				typeQ = Qfloat;
-				size = 0;
-                        }
-			else {
-				dlen[0] = 
-					sfp->missing_value->len_dimensions[0];
-				if ((data = CopyData(sfp->missing_value,resQ))
-				    == NULL)
-					return NhlFATAL;
-				typeQ = sfp->missing_value->typeQ;
-				size = sfp->missing_value->size;
-			}
+                else if (resQ == Qmissing_value && sfp->missing_value) {
+                        do_genarray = True;
+                        ndim = 1;
+                        dlen[0] = sfp->missing_value->len_dimensions[0];
+                        if ((data = CopyData(sfp->missing_value,resQ)) == NULL)
+                                return NhlFATAL;
+                        typeQ = sfp->missing_value->typeQ;
+                        size = sfp->missing_value->size;
                 }
                 else if (resQ == Qdata_min) {
 			do_genarray = True;
@@ -2784,13 +2759,6 @@ static NhlErrorTypes    ScalarFieldGetValues
 				size = sfp->data_min->size;
 			}
 			else {
-				if (! converted) {
-					sfp->sffloat = ForceConvert(sfl);
-					if (sfp->sffloat == NULL)
-						return NhlFATAL;
-					sffp = &sfp->sffloat->sfieldfloat;
-					converted = True;
-				}
 				if ((data = 
 				     CreateData(sffp->data_min,resQ)) == NULL)
 					return NhlFATAL;
@@ -2810,13 +2778,6 @@ static NhlErrorTypes    ScalarFieldGetValues
 				size = sfp->data_max->size;
 			}
 			else {
-				if (! converted) {
-					sfp->sffloat = ForceConvert(sfl);
-					if (sfp->sffloat == NULL)
-						return NhlFATAL;
-					sffp = &sfp->sffloat->sfieldfloat;
-					converted = True;
-				}
 				if ((data = 
 				     CreateData(sffp->data_max,resQ)) == NULL)
 					return NhlFATAL;
@@ -2940,13 +2901,6 @@ static NhlErrorTypes    ScalarFieldGetValues
 				size = sfp->x_subset_start->size;
 			}
 			else {
-				if (! converted) {
-					sfp->sffloat = ForceConvert(sfl);
-					if (sfp->sffloat == NULL)
-						return NhlFATAL;
-					sffp = &sfp->sffloat->sfieldfloat;
-					converted = True;
-				}
 				if ((data = 
 				     CreateData(sffp->x_start,resQ)) == NULL)
 					return NhlFATAL;
@@ -2966,13 +2920,6 @@ static NhlErrorTypes    ScalarFieldGetValues
 				size = sfp->x_subset_end->size;
 			}
 			else {
-				if (! converted) {
-					sfp->sffloat = ForceConvert(sfl);
-					if (sfp->sffloat == NULL)
-						return NhlFATAL;
-					sffp = &sfp->sffloat->sfieldfloat;
-					converted = True;
-				}
 				if ((data = 
 				     CreateData(sffp->x_end,resQ)) == NULL)
 					return NhlFATAL;
@@ -2992,13 +2939,6 @@ static NhlErrorTypes    ScalarFieldGetValues
 				size = sfp->y_subset_start->size;
 			}
 			else {
-				if (! converted) {
-					sfp->sffloat = ForceConvert(sfl);
-					if (sfp->sffloat == NULL)
-						return NhlFATAL;
-					sffp = &sfp->sffloat->sfieldfloat;
-					converted = True;
-				}
 				if ((data = 
 				     CreateData(sffp->y_start,resQ)) == NULL)
 					return NhlFATAL;
@@ -3018,13 +2958,6 @@ static NhlErrorTypes    ScalarFieldGetValues
 				size = sfp->y_subset_end->size;
 			}
 			else {
-				if (! converted) {
-					sfp->sffloat = ForceConvert(sfl);
-					if (sfp->sffloat == NULL)
-						return NhlFATAL;
-					sffp = &sfp->sffloat->sfieldfloat;
-					converted = True;
-				}
 				if ((data = 
 				     CreateData(sffp->y_end,resQ)) == NULL)
 					return NhlFATAL;
@@ -3036,13 +2969,6 @@ static NhlErrorTypes    ScalarFieldGetValues
 			if (sfp->x_index_start > -1)
 				ival = sfp->x_index_start;
 			else {
-				if (! converted) {
-					sfp->sffloat = ForceConvert(sfl);
-					if (sfp->sffloat == NULL)
-						return NhlFATAL;
-					sffp = &sfp->sffloat->sfieldfloat;
-					converted = True;
-				}
 				ival = sfp->ix_start;
 			}
 			*(int*)args[i].value.ptrval = ival;
@@ -3054,13 +2980,6 @@ static NhlErrorTypes    ScalarFieldGetValues
 			if (sfp->x_index_end > -1)
 				ival = sfp->x_index_end;
 			else {
-				if (! converted) {
-					sfp->sffloat = ForceConvert(sfl);
-					if (sfp->sffloat == NULL)
-						return NhlFATAL;
-					sffp = &sfp->sffloat->sfieldfloat;
-					converted = True;
-				}
 				ival = sfp->ix_end;
 			}
 			*(int*)args[i].value.ptrval = ival;
@@ -3072,13 +2991,6 @@ static NhlErrorTypes    ScalarFieldGetValues
 			if (sfp->y_index_start > -1)
 				ival = sfp->y_index_start;
 			else {
-				if (! converted) {
-					sfp->sffloat = ForceConvert(sfl);
-					if (sfp->sffloat == NULL)
-						return NhlFATAL;
-					sffp = &sfp->sffloat->sfieldfloat;
-					converted = True;
-				}
 				ival = sfp->iy_start;
 			}
 			*(int*)args[i].value.ptrval = ival;
@@ -3090,13 +3002,6 @@ static NhlErrorTypes    ScalarFieldGetValues
 			if (sfp->y_index_end > -1)
 				ival = sfp->y_index_end;
 			else {
-				if (! converted) {
-					sfp->sffloat = ForceConvert(sfl);
-					if (sfp->sffloat == NULL)
-						return NhlFATAL;
-					sffp = &sfp->sffloat->sfieldfloat;
-					converted = True;
-				}
 				ival = sfp->iy_end;
 			}
 			*(int*)args[i].value.ptrval = ival;
@@ -3105,13 +3010,6 @@ static NhlErrorTypes    ScalarFieldGetValues
 			*args[i].free_func = NULL;
                 }
                 else if (resQ == Qx_actual_start) {
-			if (! converted) {
-				sfp->sffloat = ForceConvert(sfl);
-				if (sfp->sffloat == NULL)
-					return NhlFATAL;
-				sffp = &sfp->sffloat->sfieldfloat;
-				converted = True;
-			}
 			fval = sfp->x_actual_start;
 			*(float*)args[i].value.ptrval = fval;
 			*args[i].type_ret = Qfloat;
@@ -3119,13 +3017,6 @@ static NhlErrorTypes    ScalarFieldGetValues
 			*args[i].free_func = NULL;
                 }
                 else if (resQ == Qx_actual_end) {
-			if (! converted) {
-				sfp->sffloat = ForceConvert(sfl);
-				if (sfp->sffloat == NULL)
-					return NhlFATAL;
-				sffp = &sfp->sffloat->sfieldfloat;
-				converted = True;
-			}
 			fval = sfp->x_actual_end;
 			*(float*)args[i].value.ptrval = fval;
 			*args[i].type_ret = Qfloat;
@@ -3133,13 +3024,6 @@ static NhlErrorTypes    ScalarFieldGetValues
 			*args[i].free_func = NULL;
                 }
                 else if (resQ == Qy_actual_start) {
-			if (! converted) {
-				sfp->sffloat = ForceConvert(sfl);
-				if (sfp->sffloat == NULL)
-					return NhlFATAL;
-				sffp = &sfp->sffloat->sfieldfloat;
-				converted = True;
-			}
 			fval = sfp->y_actual_start;
 			*(float*)args[i].value.ptrval = fval;
 			*args[i].type_ret = Qfloat;
@@ -3147,13 +3031,6 @@ static NhlErrorTypes    ScalarFieldGetValues
 			*args[i].free_func = NULL;
                 }
                 else if (resQ == Qy_actual_end) {
-			if (! converted) {
-				sfp->sffloat = ForceConvert(sfl);
-				if (sfp->sffloat == NULL)
-					return NhlFATAL;
-				sffp = &sfp->sffloat->sfieldfloat;
-				converted = True;
-			}
 			fval = sfp->y_actual_end;
 			*(float*)args[i].value.ptrval = fval;
 			*args[i].type_ret = Qfloat;

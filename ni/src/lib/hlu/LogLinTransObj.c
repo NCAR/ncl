@@ -1,5 +1,5 @@
 /*
- *      $Id: LogLinTransObj.c,v 1.30 1997-06-18 07:14:40 dbrown Exp $
+ *      $Id: LogLinTransObj.c,v 1.31 1997-08-11 18:22:14 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -26,38 +26,6 @@
 #include <math.h>
 
 
-static NhlResource resources[] = {
-
-/* Begin-documented-resources */
-
-	{ NhlNtrXMinF,NhlCtrXMinF,NhlTFloat,sizeof(float),
-		NhlOffset(NhlLogLinTransObjLayerRec,lltrans.x_min),
-		NhlTString,_NhlUSET("0.0"),0,NULL},
-	{ NhlNtrXMaxF,NhlCtrXMaxF,NhlTFloat,sizeof(float),
-		NhlOffset(NhlLogLinTransObjLayerRec,lltrans.x_max),
-		NhlTString,_NhlUSET("1.0"),0,NULL},
-	{ NhlNtrXLog,NhlCtrXLog,NhlTBoolean,sizeof(NhlBoolean),
-		NhlOffset(NhlLogLinTransObjLayerRec,lltrans.x_log),
-		NhlTImmediate,_NhlUSET(False),0,NULL},
-	{ NhlNtrXReverse,NhlCtrXReverse,NhlTBoolean,sizeof(NhlBoolean),
-		NhlOffset(NhlLogLinTransObjLayerRec,lltrans.x_reverse),
-		NhlTImmediate,_NhlUSET(False),0,NULL},
-	{ NhlNtrYMinF,NhlCtrYMinF,NhlTFloat,sizeof(float),
-		NhlOffset(NhlLogLinTransObjLayerRec,lltrans.y_min),
-		NhlTString,_NhlUSET("0.0"),0,NULL},
-	{ NhlNtrYMaxF,NhlCtrYMaxF,NhlTFloat,sizeof(float),
-		NhlOffset(NhlLogLinTransObjLayerRec,lltrans.y_max),
-		NhlTString,_NhlUSET("1.0"),0,NULL},
-	{ NhlNtrYLog,NhlCtrYLog,NhlTBoolean,sizeof(NhlBoolean),
-		NhlOffset(NhlLogLinTransObjLayerRec,lltrans.y_log),
-		NhlTImmediate,_NhlUSET(False),0,NULL},
-	{ NhlNtrYReverse,NhlCtrYReverse,NhlTBoolean,sizeof(NhlBoolean),
-		NhlOffset(NhlLogLinTransObjLayerRec,lltrans.y_reverse),
-		NhlTImmediate,_NhlUSET(False),0,NULL}
-
-/* End-documented-resources */
-
-};
 
 /*
 * BaseClass Methods defined
@@ -171,15 +139,15 @@ int* 	/*status*/
 
 NhlLogLinTransObjClassRec NhllogLinTransObjClassRec = {
         {
-/* class_name			*/	"logLinTransObjClass",
+/* class_name			*/	"logLinTransformationClass",
 /* nrm_class			*/	NrmNULLQUARK,
 /* layer_size			*/	sizeof(NhlLogLinTransObjLayerRec),
 /* class_inited			*/	False,
 /* superclass			*/	(NhlClass)&NhltransObjClassRec,
 /* cvt_table			*/	NULL,
 
-/* layer_resources		*/	resources,
-/* num_resources		*/	NhlNumber(resources),
+/* layer_resources		*/	NULL,
+/* num_resources		*/	0,
 /* all_resources		*/	NULL,
 /* callbacks			*/	NULL,
 /* num_callbacks		*/	0,
@@ -255,6 +223,15 @@ static NhlErrorTypes LlTransSetValues
 	NhlTransObjLayerPart	*tp = &lnew->trobj;
 	NhlTransObjLayerPart	*otp = &lold->trobj;
 
+        lnew->lltrans.x_min = tp->x_min;
+        lnew->lltrans.y_min = tp->y_min;
+        lnew->lltrans.x_max = tp->x_max;
+        lnew->lltrans.y_max = tp->y_max;
+        lnew->lltrans.x_reverse = tp->x_reverse;
+        lnew->lltrans.y_reverse = tp->y_reverse;
+        lnew->lltrans.x_log = tp->x_log;
+        lnew->lltrans.y_log = tp->y_log;
+        
 	lnew->lltrans.ul = lnew->lltrans.x_min;
 	lnew->lltrans.ur = lnew->lltrans.x_max;
 	lnew->lltrans.ut = lnew->lltrans.y_max;
@@ -449,6 +426,14 @@ static NhlErrorTypes LlTransSetValues
 			}
 		}
 	}
+            /* HACK!! Setting superclass private values -- otherwise would
+             need to use a SetValues hook for TransObj -- also would need to
+             add an Initialize hook. Note that LogLinTransObj does not
+             care about these values but IrregularTransObj needs them to be
+             up to date */
+        
+        tp->x_min_set = tp->x_max_set = False;
+        tp->y_min_set = tp->y_max_set = False;
 	
 	return(NhlNOERROR);
 
@@ -486,7 +471,16 @@ static NhlErrorTypes LlTransInitialize
 	NhlTransObjLayerPart	*tp = &lnew->trobj;
 	float tmp;
 
-	lnew->trobj.change_count++;
+	tp->change_count++;
+        lnew->lltrans.x_min = tp->x_min;
+        lnew->lltrans.y_min = tp->y_min;
+        lnew->lltrans.x_max = tp->x_max;
+        lnew->lltrans.y_max = tp->y_max;
+        lnew->lltrans.x_reverse = tp->x_reverse;
+        lnew->lltrans.y_reverse = tp->y_reverse;
+        lnew->lltrans.x_log = tp->x_log;
+        lnew->lltrans.y_log = tp->y_log;
+        
 	lnew->lltrans.ul = lnew->lltrans.x_min;
 	lnew->lltrans.ur = lnew->lltrans.x_max;
 	lnew->lltrans.ut = lnew->lltrans.y_max;
@@ -642,6 +636,14 @@ static NhlErrorTypes LlTransInitialize
 			return(NhlFATAL);
 		}
 	}
+            /* HACK!! Setting superclass private values -- otherwise would
+             need to use a SetValues hook for TransObj -- also would need to
+             add an Initialize hook. Note that LogLinTransObj does not
+             care about these values but IrregularTransObj needs them to be
+             up to date */
+        
+        tp->x_min_set = tp->x_max_set = False;
+        tp->y_min_set = tp->y_max_set = False;
 
 	return(NhlNOERROR);
 

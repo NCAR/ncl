@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlotP.h,v 1.5 1997-07-16 23:27:41 dbrown Exp $
+ *      $Id: StreamlinePlotP.h,v 1.6 1997-08-11 18:22:25 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -155,12 +155,14 @@ typedef struct _NhlStreamlinePlotLayerPart {
 	float		x_max;
 	NhlBoolean	x_log;
 	NhlBoolean	x_reverse;
+	float		x_tension;
 	NhlBoolean	y_min_set;
 	float 		y_min;
 	NhlBoolean	y_max_set;
 	float		y_max;
 	NhlBoolean	y_log;
 	NhlBoolean	y_reverse;
+	float		y_tension;
 
 	/* private resource */
 

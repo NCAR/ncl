@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorField.c,v 1.13 1997-07-30 01:19:41 dbrown Exp $
+ *      $Id: VectorField.c,v 1.14 1997-08-11 18:22:27 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2478,7 +2478,8 @@ CvtGenVFObjToFloatVFObj
 		vffp->v_max = tmax;
 	}
 
-
+        vfp->up_to_date = True;
+        
 	return ret;
 }
 
@@ -2581,10 +2582,7 @@ VectorFieldClassPartInitialize
 	NhlClass	lc;	/* pointer to class structure	*/
 #endif
 {
-	NhlErrorTypes		ret;
-
-	ret = _NhlRegisterChildClass(lc,NhlvectorFieldFloatClass,
-				     True,False,NULL);
+	NhlErrorTypes		ret = NhlNOERROR;
 
 	return ret;
 }
@@ -2638,6 +2636,7 @@ VectorFieldInitialize
 
 	vfp->vffloat = NULL;
 	vfp->use_d_arr = False;
+        vfp->up_to_date = False;
 
 	if (! vfp->d_arr &&
 	    (! vfp->u_arr || ! vfp->v_arr)) {
@@ -3184,6 +3183,8 @@ VectorFieldSetValues
 		status = True;
 
         _NhlDataChanged((NhlDataItemLayer)new,status);
+        if (status)
+                vfp->up_to_date = False;
 
 	return	ret;
 }
@@ -3373,137 +3374,104 @@ static NhlErrorTypes    VectorFieldGetValues
 	int		size;
 	NhlBoolean	nocopy = False, do_genarray;
 	float		tmp;
-	NhlBoolean	converted;
 	int		ival;
 	float		fval;
 
-#if 0		
-	if (vfp->d_arr == NULL) {
-		e_text = "%s: internal inconsistency";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return NhlFATAL;
-	}
-#endif
-	converted = vfp->vffloat != NULL;
-	if (converted)
-		vffp = &vfp->vffloat->vfieldfloat;
+        if (! (vfp->vffloat && vfp->up_to_date)) {
+                vfp->vffloat = ForceConvert(vfl);
+                if (vfp->vffloat == NULL)
+                        return NhlFATAL;
+        }
+        vffp = &vfp->vffloat->vfieldfloat;
+        
 
         for( i = 0; i< num_args; i++ ) {
 		ga = NULL;
 		resQ = args[i].quark;
 		do_genarray = False;
-                if (resQ == Qd_arr) {
-			if (vfp->d_arr != NULL) {
-				do_genarray = True;
-				ndim = 2;
-				dlen[0] = vfp->d_arr->len_dimensions[0];
-				dlen[1] = vfp->d_arr->len_dimensions[1];
-				if (vfp->copy_arrays) {
-					if ((data = CopyData(vfp->d_arr,resQ))
-					    == NULL)
-						return NhlFATAL;
-				}
-				else {
-					nocopy = True;
-					data = vfp->d_arr->data;
-				}
-				typeQ = vfp->d_arr->typeQ;
-				size = vfp->d_arr->size;
-			}
+                if (resQ == Qd_arr && vfp->d_arr) {
+                        do_genarray = True;
+                        ndim = 2;
+                        dlen[0] = vfp->d_arr->len_dimensions[0];
+                        dlen[1] = vfp->d_arr->len_dimensions[1];
+                        if (vfp->copy_arrays) {
+                                if ((data = CopyData(vfp->d_arr,resQ))== NULL)
+                                        return NhlFATAL;
+                        }
+                        else {
+                                nocopy = True;
+                                data = vfp->d_arr->data;
+                        }
+                        typeQ = vfp->d_arr->typeQ;
+                        size = vfp->d_arr->size;
                 }
-                if (resQ == Qu_arr) {
-			if (vfp->u_arr != NULL) {
-				do_genarray = True;
-				ndim = 2;
-				dlen[0] = vfp->u_arr->len_dimensions[0];
-				dlen[1] = vfp->u_arr->len_dimensions[1];
-				if (vfp->copy_arrays) {
-					if ((data = CopyData(vfp->u_arr,resQ))
-					    == NULL)
-						return NhlFATAL;
-				}
-				else {
-					nocopy = True;
-					data = vfp->u_arr->data;
-				}
-				typeQ = vfp->u_arr->typeQ;
-				size = vfp->u_arr->size;
-			}
+                if (resQ == Qu_arr && vfp->u_arr) {
+                        do_genarray = True;
+                        ndim = 2;
+                        dlen[0] = vfp->u_arr->len_dimensions[0];
+                        dlen[1] = vfp->u_arr->len_dimensions[1];
+                        if (vfp->copy_arrays) {
+                                if ((data = CopyData(vfp->u_arr,resQ)) == NULL)
+                                        return NhlFATAL;
+                        }
+                        else {
+                                nocopy = True;
+                                data = vfp->u_arr->data;
+                        }
+                        typeQ = vfp->u_arr->typeQ;
+                        size = vfp->u_arr->size;
                 }
-                if (resQ == Qv_arr) {
-			if (vfp->v_arr != NULL) {
-				do_genarray = True;
-				ndim = 2;
-				dlen[0] = vfp->v_arr->len_dimensions[0];
-				dlen[1] = vfp->v_arr->len_dimensions[1];
-				if (vfp->copy_arrays) {
-					if ((data = CopyData(vfp->v_arr,resQ))
-					    == NULL)
-						return NhlFATAL;
-				}
-				else {
-					nocopy = True;
-					data = vfp->v_arr->data;
-				}
-				typeQ = vfp->v_arr->typeQ;
-				size = vfp->v_arr->size;
-			}
+                if (resQ == Qv_arr && vfp->v_arr) {
+                        do_genarray = True;
+                        ndim = 2;
+                        dlen[0] = vfp->v_arr->len_dimensions[0];
+                        dlen[1] = vfp->v_arr->len_dimensions[1];
+                        if (vfp->copy_arrays) {
+                                if ((data = CopyData(vfp->v_arr,resQ)) == NULL)
+                                        return NhlFATAL;
+                        }
+                        else {
+                                nocopy = True;
+                                data = vfp->v_arr->data;
+                        }
+                        typeQ = vfp->v_arr->typeQ;
+                        size = vfp->v_arr->size;
                 }
-                else if (resQ == Qx_arr) {
+                else if (resQ == Qx_arr && vfp->x_arr) {
 			do_genarray = True;
 			ndim = 1;
-			if (vfp->x_arr == NULL) {
-				dlen[0] = 0;
-				dlen[1] = 0;
-				data = NULL;
-				typeQ = Qfloat;
-				size = 0;
+                        dlen[0] = vfp->x_arr->len_dimensions[0];
+                        if (vfp->copy_arrays) {
+                                if ((data = CopyData(vfp->x_arr,resQ)) == NULL)
+                                        return NhlFATAL;
                         }
-			else {
-				dlen[0] = vfp->x_arr->len_dimensions[0];
-				if (vfp->copy_arrays) {
-					if ((data = CopyData(vfp->x_arr,resQ))
-					    == NULL)
-						return NhlFATAL;
-				}
-				else {
-					nocopy = True;
-					data = vfp->x_arr->data;
-				}
-				typeQ = vfp->x_arr->typeQ;
-				size = vfp->x_arr->size;
-			}
+                        else {
+                                nocopy = True;
+                                data = vfp->x_arr->data;
+                        }
+                        typeQ = vfp->x_arr->typeQ;
+                        size = vfp->x_arr->size;
                 }
-                else if (resQ == Qy_arr) {
+                else if (resQ == Qy_arr && vfp->y_arr) {
 			do_genarray = True;
 			ndim = 1;
-			if (vfp->y_arr == NULL) {
-				dlen[0] = 0;
-				dlen[1] = 0;
-				data = NULL;
-				typeQ = Qfloat;
-				size = 0;
+                        dlen[0] = vfp->y_arr->len_dimensions[0];
+                        if (vfp->copy_arrays) {
+                                if ((data = CopyData(vfp->y_arr,resQ)) == NULL)
+                                        return NhlFATAL;
                         }
-			else {
-				dlen[0] = vfp->y_arr->len_dimensions[0];
-				if (vfp->copy_arrays) {
-					if ((data = CopyData(vfp->y_arr,resQ))
-					    == NULL)
-						return NhlFATAL;
-				}
-				else {
-					nocopy = True;
-					data = vfp->y_arr->data;
-				}
-				typeQ = vfp->y_arr->typeQ;
-				size = vfp->y_arr->size;
-			}
+                        else {
+                                nocopy = True;
+                                data = vfp->y_arr->data;
+                        }
+                        typeQ = vfp->y_arr->typeQ;
+                        size = vfp->y_arr->size;
                 }
                 else if (resQ == Qmissing_u_value) {
-			do_genarray = True;
-			ndim = 1;
-			if (vfp->missing_u_value == NULL &&
-			    vfp->single_missing) {
+			if (vfp->single_missing  && ! vfp->missing_u_value
+			    && vfp->missing_v_value) {
+                                do_genarray = True;
+                                ndim = 1;
 				dlen[0] = 
 				       vfp->missing_v_value->len_dimensions[0];
 				if ((data = 
@@ -3512,13 +3480,9 @@ static NhlErrorTypes    VectorFieldGetValues
 				typeQ = vfp->missing_v_value->typeQ;
 				size = vfp->missing_v_value->size;
 			}
-			else if (vfp->missing_u_value == NULL) {
-				dlen[0] = 0;
-				data = NULL;
-				typeQ = Qfloat;
-				size = 0;
-                        }
-			else {
+			else if (vfp->missing_u_value) {
+                                do_genarray = True;
+                                ndim = 1;
 				dlen[0] = 
 				       vfp->missing_u_value->len_dimensions[0];
 				if ((data = 
@@ -3529,10 +3493,9 @@ static NhlErrorTypes    VectorFieldGetValues
 			}
                 }
                 else if (resQ == Qmissing_v_value) {
-			do_genarray = True;
-			ndim = 1;
-			if (vfp->missing_v_value == NULL &&
-			    vfp->single_missing) {
+			if (vfp->single_missing && vfp->missing_u_value) {
+                                do_genarray = True;
+                                ndim = 1;
 				dlen[0] = 
 				       vfp->missing_u_value->len_dimensions[0];
 				if ((data = 
@@ -3541,13 +3504,9 @@ static NhlErrorTypes    VectorFieldGetValues
 				typeQ = vfp->missing_u_value->typeQ;
 				size = vfp->missing_u_value->size;
 			}
-			else if (vfp->missing_v_value == NULL) {
-				dlen[0] = 0;
-				data = NULL;
-				typeQ = Qfloat;
-				size = 0;
-                        }
-			else {
+			else if (vfp->missing_v_value) {
+                                do_genarray = True;
+                                ndim = 1;
 				dlen[0] = 
 				       vfp->missing_v_value->len_dimensions[0];
 				if ((data = 
@@ -3569,13 +3528,6 @@ static NhlErrorTypes    VectorFieldGetValues
 				size = vfp->mag_min->size;
 			}
 			else {
-				if (! converted) {
-					vfp->vffloat = ForceConvert(vfl);
-					if (vfp->vffloat == NULL)
-						return NhlFATAL;
-					vffp = &vfp->vffloat->vfieldfloat;
-					converted = True;
-				}
 				if ((data = 
 				     CreateData(vffp->mag_min,resQ)) == NULL)
 					return NhlFATAL;
@@ -3595,13 +3547,6 @@ static NhlErrorTypes    VectorFieldGetValues
 				size = vfp->mag_min->size;
 			}
 			else {
-				if (! converted) {
-					vfp->vffloat = ForceConvert(vfl);
-					if (vfp->vffloat == NULL)
-						return NhlFATAL;
-					vffp = &vfp->vffloat->vfieldfloat;
-					converted = True;
-				}
 				if ((data = 
 				     CreateData(vffp->mag_max,resQ)) == NULL)
 					return NhlFATAL;
@@ -3621,13 +3566,6 @@ static NhlErrorTypes    VectorFieldGetValues
 				size = vfp->u_min->size;
 			}
 			else {
-				if (! converted) {
-					vfp->vffloat = ForceConvert(vfl);
-					if (vfp->vffloat == NULL)
-						return NhlFATAL;
-					vffp = &vfp->vffloat->vfieldfloat;
-					converted = True;
-				}
 				if ((data = 
 				     CreateData(vffp->u_min,resQ)) == NULL)
 					return NhlFATAL;
@@ -3647,13 +3585,6 @@ static NhlErrorTypes    VectorFieldGetValues
 				size = vfp->u_min->size;
 			}
 			else {
-				if (! converted) {
-					vfp->vffloat = ForceConvert(vfl);
-					if (vfp->vffloat == NULL)
-						return NhlFATAL;
-					vffp = &vfp->vffloat->vfieldfloat;
-					converted = True;
-				}
 				if ((data = 
 				     CreateData(vffp->u_max,resQ)) == NULL)
 					return NhlFATAL;
@@ -3673,13 +3604,6 @@ static NhlErrorTypes    VectorFieldGetValues
 				size = vfp->v_min->size;
 			}
 			else {
-				if (! converted) {
-					vfp->vffloat = ForceConvert(vfl);
-					if (vfp->vffloat == NULL)
-						return NhlFATAL;
-					vffp = &vfp->vffloat->vfieldfloat;
-					converted = True;
-				}
 				if ((data = 
 				     CreateData(vffp->v_min,resQ)) == NULL)
 					return NhlFATAL;
@@ -3699,13 +3623,6 @@ static NhlErrorTypes    VectorFieldGetValues
 				size = vfp->v_min->size;
 			}
 			else {
-				if (! converted) {
-					vfp->vffloat = ForceConvert(vfl);
-					if (vfp->vffloat == NULL)
-						return NhlFATAL;
-					vffp = &vfp->vffloat->vfieldfloat;
-					converted = True;
-				}
 				if ((data = 
 				     CreateData(vffp->v_max,resQ)) == NULL)
 					return NhlFATAL;
@@ -3829,13 +3746,6 @@ static NhlErrorTypes    VectorFieldGetValues
 				size = vfp->x_subset_start->size;
 			}
 			else {
-				if (! converted) {
-					vfp->vffloat = ForceConvert(vfl);
-					if (vfp->vffloat == NULL)
-						return NhlFATAL;
-					vffp = &vfp->vffloat->vfieldfloat;
-					converted = True;
-				}
 				if ((data = 
 				     CreateData(vffp->x_start,resQ)) == NULL)
 					return NhlFATAL;
@@ -3855,13 +3765,6 @@ static NhlErrorTypes    VectorFieldGetValues
 				size = vfp->x_subset_end->size;
 			}
 			else {
-				if (! converted) {
-					vfp->vffloat = ForceConvert(vfl);
-					if (vfp->vffloat == NULL)
-						return NhlFATAL;
-					vffp = &vfp->vffloat->vfieldfloat;
-					converted = True;
-				}
 				if ((data = 
 				     CreateData(vffp->x_end,resQ)) == NULL)
 					return NhlFATAL;
@@ -3881,13 +3784,6 @@ static NhlErrorTypes    VectorFieldGetValues
 				size = vfp->y_subset_start->size;
 			}
 			else {
-				if (! converted) {
-					vfp->vffloat = ForceConvert(vfl);
-					if (vfp->vffloat == NULL)
-						return NhlFATAL;
-					vffp = &vfp->vffloat->vfieldfloat;
-					converted = True;
-				}
 				if ((data = 
 				     CreateData(vffp->y_start,resQ)) == NULL)
 					return NhlFATAL;
@@ -3907,13 +3803,6 @@ static NhlErrorTypes    VectorFieldGetValues
 				size = vfp->y_subset_end->size;
 			}
 			else {
-				if (! converted) {
-					vfp->vffloat = ForceConvert(vfl);
-					if (vfp->vffloat == NULL)
-						return NhlFATAL;
-					vffp = &vfp->vffloat->vfieldfloat;
-					converted = True;
-				}
 				if ((data = 
 				     CreateData(vffp->y_end,resQ)) == NULL)
 					return NhlFATAL;
@@ -3925,13 +3814,6 @@ static NhlErrorTypes    VectorFieldGetValues
 			if (vfp->x_index_start > -1)
 				ival = vfp->x_index_start;
 			else {
-				if (! converted) {
-					vfp->vffloat = ForceConvert(vfl);
-					if (vfp->vffloat == NULL)
-						return NhlFATAL;
-					vffp = &vfp->vffloat->vfieldfloat;
-					converted = True;
-				}
 				ival = vfp->ix_start;
 			}
 			*(int*)args[i].value.ptrval = ival;
@@ -3943,13 +3825,6 @@ static NhlErrorTypes    VectorFieldGetValues
 			if (vfp->x_index_end > -1)
 				ival = vfp->x_index_end;
 			else {
-				if (! converted) {
-					vfp->vffloat = ForceConvert(vfl);
-					if (vfp->vffloat == NULL)
-						return NhlFATAL;
-					vffp = &vfp->vffloat->vfieldfloat;
-					converted = True;
-				}
 				ival = vfp->ix_end;
 			}
 			*(int*)args[i].value.ptrval = ival;
@@ -3961,13 +3836,6 @@ static NhlErrorTypes    VectorFieldGetValues
 			if (vfp->y_index_start > -1)
 				ival = vfp->y_index_start;
 			else {
-				if (! converted) {
-					vfp->vffloat = ForceConvert(vfl);
-					if (vfp->vffloat == NULL)
-						return NhlFATAL;
-					vffp = &vfp->vffloat->vfieldfloat;
-					converted = True;
-				}
 				ival = vfp->iy_start;
 			}
 			*(int*)args[i].value.ptrval = ival;
@@ -3979,13 +3847,6 @@ static NhlErrorTypes    VectorFieldGetValues
 			if (vfp->y_index_end > -1)
 				ival = vfp->y_index_end;
 			else {
-				if (! converted) {
-					vfp->vffloat = ForceConvert(vfl);
-					if (vfp->vffloat == NULL)
-						return NhlFATAL;
-					vffp = &vfp->vffloat->vfieldfloat;
-					converted = True;
-				}
 				ival = vfp->iy_end;
 			}
 			*(int*)args[i].value.ptrval = ival;
@@ -3994,13 +3855,6 @@ static NhlErrorTypes    VectorFieldGetValues
 			*args[i].free_func = NULL;
                 }
                 else if (resQ == Qx_actual_start) {
-			if (! converted) {
-				vfp->vffloat = ForceConvert(vfl);
-				if (vfp->vffloat == NULL)
-					return NhlFATAL;
-				vffp = &vfp->vffloat->vfieldfloat;
-				converted = True;
-			}
 			fval = vfp->x_actual_start;
 			*(float*)args[i].value.ptrval = fval;
 			*args[i].type_ret = Qfloat;
@@ -4008,13 +3862,6 @@ static NhlErrorTypes    VectorFieldGetValues
 			*args[i].free_func = NULL;
                 }
                 else if (resQ == Qx_actual_end) {
-			if (! converted) {
-				vfp->vffloat = ForceConvert(vfl);
-				if (vfp->vffloat == NULL)
-					return NhlFATAL;
-				vffp = &vfp->vffloat->vfieldfloat;
-				converted = True;
-			}
 			fval = vfp->x_actual_end;
 			*(float*)args[i].value.ptrval = fval;
 			*args[i].type_ret = Qfloat;
@@ -4022,13 +3869,6 @@ static NhlErrorTypes    VectorFieldGetValues
 			*args[i].free_func = NULL;
                 }
                 else if (resQ == Qy_actual_start) {
-			if (! converted) {
-				vfp->vffloat = ForceConvert(vfl);
-				if (vfp->vffloat == NULL)
-					return NhlFATAL;
-				vffp = &vfp->vffloat->vfieldfloat;
-				converted = True;
-			}
 			fval = vfp->y_actual_start;
 			*(float*)args[i].value.ptrval = fval;
 			*args[i].type_ret = Qfloat;
@@ -4036,13 +3876,6 @@ static NhlErrorTypes    VectorFieldGetValues
 			*args[i].free_func = NULL;
                 }
                 else if (resQ == Qy_actual_end) {
-			if (! converted) {
-				vfp->vffloat = ForceConvert(vfl);
-				if (vfp->vffloat == NULL)
-					return NhlFATAL;
-				vffp = &vfp->vffloat->vfieldfloat;
-				converted = True;
-			}
 			fval = vfp->y_actual_end;
 			*(float*)args[i].value.ptrval = fval;
 			*args[i].type_ret = Qfloat;

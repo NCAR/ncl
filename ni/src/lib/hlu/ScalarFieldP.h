@@ -1,5 +1,5 @@
 /*
- *      $Id: ScalarFieldP.h,v 1.6 1995-11-21 20:18:59 dbrown Exp $
+ *      $Id: ScalarFieldP.h,v 1.7 1997-08-11 18:22:21 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -77,6 +77,7 @@ typedef struct _NhlScalarFieldLayerPart{
 	int		iy_start;
 	int		iy_end;
 
+        NhlBoolean	up_to_date;
 	NhlScalarFieldFloatLayer	sffloat;
 
 } NhlScalarFieldLayerPart;

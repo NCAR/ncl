@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularTransObj.c,v 1.33 1997-07-25 21:12:05 dbrown Exp $
+ *      $Id: IrregularTransObj.c,v 1.34 1997-08-11 18:22:10 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -54,57 +54,6 @@
 #include <ncarg/hlu/ConvertersP.h>
 #include <math.h>
 
-/*
- * Function:	ResourceUnset
- *
- * Description:	This function can be used to determine if a resource has
- *		been set at initialize time either in the Create call or
- *		from a resource data base. In order to use it the Boolean
- *		'..resource_set' variable MUST directly proceed the name
- *		of the resource variable it refers to in the LayerPart
- *		struct. Also a .nores Resource for the resource_set variable
- *		must directly preceed the Resource of interest in the 
- *		Resource initialization list in this module.
- *
- * In Args:	
- *		NrmName		name,
- *		NrmClass	class,
- *		NhlPointer	base,
- *		unsigned int	offset
- *
- * Out Args:	
- *
- * Scope:	static
- * Returns:	NhlErrorTypes
- * Side Effect:	
- */
-
-/*ARGSUSED*/
-static NhlErrorTypes
-ResourceUnset
-#if	NhlNeedProto
-(
-	NrmName		name,
-	NrmClass	class,
-	NhlPointer	base,
-	unsigned int	offset
-)
-#else
-(name,class,base,offset)
-	NrmName		name;
-	NrmClass	class;
-	NhlPointer	base;
-	unsigned int	offset;
-#endif
-{
-	char *cl = (char *) base;
-	NhlBoolean *set = (NhlBoolean *)(cl + offset - sizeof(NhlBoolean));
-
-	*set = False;
-
-	return NhlNOERROR;
-}
-
 static NhlResource resources[] = {
 
 /* Begin-documented-resources */
@@ -124,23 +73,6 @@ static NhlResource resources[] = {
 		  NhlOffset(NhlIrregularTransObjLayerRec,
 			    irtrans.x_inter_points_ga),NhlTImmediate,
 		  _NhlUSET(NULL) ,0,(NhlFreeFunc)NhlFreeGenArray },
-	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
-		 NhlOffset(NhlIrregularTransObjLayerRec,irtrans.x_max_set),
-		 NhlTImmediate,_NhlUSET((NhlPointer)True),
-         	 _NhlRES_PRIVATE,NULL},
-	{ NhlNtrXMaxF, NhlCtrXMaxF, NhlTFloat, sizeof(float),
-		NhlOffset(NhlIrregularTransObjLayerRec,irtrans.x_max),
-		  NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
-	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
-		 NhlOffset(NhlIrregularTransObjLayerRec,irtrans.x_min_set),
-		 NhlTImmediate,_NhlUSET((NhlPointer)True),
-         	 _NhlRES_PRIVATE,NULL},
-	{ NhlNtrXMinF, NhlCtrXMinF, NhlTFloat, sizeof(float),
-		  NhlOffset(NhlIrregularTransObjLayerRec,irtrans.x_min),
-		  NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
-	{ NhlNtrXReverse, NhlCtrXReverse, NhlTBoolean,sizeof(NhlBoolean),
-		NhlOffset(NhlIrregularTransObjLayerRec,irtrans.x_reverse),
-		NhlTImmediate,_NhlUSET(False) ,0,NULL},
 	{ NhlNtrXTensionF, NhlCtrXTensionF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlIrregularTransObjLayerRec,irtrans.x_tension),
 		NhlTString,_NhlUSET("2.0") ,0,NULL},
@@ -162,23 +94,6 @@ static NhlResource resources[] = {
 		  NhlOffset(NhlIrregularTransObjLayerRec,
 			    irtrans.y_inter_points_ga),NhlTImmediate,
 		  _NhlUSET(NULL) ,0,(NhlFreeFunc)NhlFreeGenArray },
-	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
-		 NhlOffset(NhlIrregularTransObjLayerRec,irtrans.y_max_set),
-		 NhlTImmediate,_NhlUSET((NhlPointer)True),
-         	 _NhlRES_PRIVATE,NULL},
-	{ NhlNtrYMaxF, NhlCtrYMaxF, NhlTFloat, sizeof(float),
-		  NhlOffset(NhlIrregularTransObjLayerRec,irtrans.y_max),
-		  NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
-	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
-		 NhlOffset(NhlIrregularTransObjLayerRec,irtrans.y_min_set),
-		 NhlTImmediate,_NhlUSET((NhlPointer)True),
-         	 _NhlRES_PRIVATE,NULL},
-	{ NhlNtrYMinF, NhlCtrYMinF, NhlTFloat, sizeof(float),
-		  NhlOffset(NhlIrregularTransObjLayerRec,irtrans.y_min),
-		  NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
-	{ NhlNtrYReverse, NhlCtrYReverse, NhlTBoolean,sizeof(NhlBoolean),
-		NhlOffset(NhlIrregularTransObjLayerRec,irtrans.y_reverse),
-		NhlTImmediate,_NhlUSET(0) ,0,NULL},
 	{ NhlNtrYTensionF, NhlCtrYTensionF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlIrregularTransObjLayerRec,irtrans.y_tension),
 		NhlTString,_NhlUSET("2.0") ,0,NULL},
@@ -405,7 +320,7 @@ static NrmQuark QtrYInterPoints;
 
 NhlIrregularTransObjClassRec NhlirregularTransObjClassRec = {
         {
-/* class_name			*/	"irregularTransObjClass",
+/* class_name			*/	"irregularTransformationClass",
 /* nrm_class			*/	NrmNULLQUARK,
 /* layer_size			*/	sizeof(NhlIrregularTransObjLayerRec),
 /* class_inited			*/	False,
@@ -483,6 +398,7 @@ static NhlErrorTypes IrTransSetValues
 {
 	NhlIrregularTransObjLayer inew = (NhlIrregularTransObjLayer) new;
 	NhlIrregularTransObjLayerPart *irp = &inew->irtrans;
+	NhlTransObjLayerPart	*tp = &inew->trobj;
 
 	if (_NhlArgIsSet(args,num_args,NhlNtrLowLevelLogOn)) {
 		/* assumed to be the only arg set */
@@ -629,6 +545,7 @@ static NhlErrorTypes SetUpTrans
 	NhlIrregularTransObjLayer iold = (NhlIrregularTransObjLayer)old;
 	NhlIrregularTransObjLayerPart *irp = &inew->irtrans;
 	NhlIrregularTransObjLayerPart *oirp = &iold->irtrans;
+	NhlTransObjLayerPart	*tp = &inew->trobj;
 	char *error_lead;
 	float *tmp;
 	float tmpf;
@@ -636,6 +553,13 @@ static NhlErrorTypes SetUpTrans
 	NhlErrorTypes ret = NhlNOERROR;
 	NhlStatus xstatus,ystatus;
 	NhlBoolean tmpb, new_x_coords = False, new_y_coords = False;
+        
+        irp->x_min = tp->x_min;
+        irp->y_min = tp->y_min;
+        irp->x_max = tp->x_max;
+        irp->y_max = tp->y_max;
+        irp->x_reverse = tp->x_reverse;
+        irp->y_reverse = tp->y_reverse;
 
 	if(c_or_s == SET) {
 		error_lead = "IrTransSetValues";
@@ -644,17 +568,17 @@ static NhlErrorTypes SetUpTrans
 			irp->x_min_set = False;
 			irp->x_max_set = False;
 		}
-		if (_NhlArgIsSet(args,nargs,NhlNtrXMinF))
+                if (tp->x_min_set)
 			irp->x_min_set = True;
-		if (_NhlArgIsSet(args,nargs,NhlNtrXMaxF))
+		if (tp->x_max_set)
 			irp->x_max_set = True;
 		if (_NhlArgIsSet(args,nargs,NhlNtrYCoordPoints)) {
 			irp->y_min_set = False;
 			irp->y_max_set = False;
 		}
-		if (_NhlArgIsSet(args,nargs,NhlNtrYMinF))
+		if (tp->y_min_set)
 			irp->y_min_set = True;
-		if (_NhlArgIsSet(args,nargs,NhlNtrYMaxF))
+		if (tp->y_max_set)
 			irp->y_max_set = True;
 		if (_NhlArgIsSet(args,nargs,NhlNtrXCoordPoints) ||
 		    _NhlArgIsSet(args,nargs,NhlNtrXAxisType) ||
@@ -688,7 +612,12 @@ static NhlErrorTypes SetUpTrans
 		irp->x_inter_points = NULL; 
 		irp->y_inter_points = NULL; 
 		irp->x_num_points = 0;
-		irp->y_num_points = 0;
+                irp->y_num_points = 0;
+                irp->x_min_set = tp->x_min_set;
+                irp->x_max_set = tp->x_max_set;
+                irp->y_min_set = tp->y_min_set;
+                irp->y_max_set = tp->y_max_set;
+                
 		if (! irp->x_min_set) irp->x_min = 0.0;
 		if (! irp->x_max_set) irp->x_max = 1.0;
 		if (! irp->y_min_set) irp->y_min = 0.0;
@@ -1185,6 +1114,13 @@ static NhlErrorTypes SetUpTrans
 		}
 	}
 
+            /* HACK!! Setting superclass private values -- otherwise would
+             need to use a SetValues hook for TransObj -- also would need to
+             add an Initialize hook */
+        
+        tp->x_min_set = tp->x_max_set = False;
+        tp->y_min_set = tp->y_max_set = False;
+        
 	return(ret);
 
 }

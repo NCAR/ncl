@@ -1,5 +1,5 @@
 /*
- *      $Id: LogLinPlot.c,v 1.23 1997-07-25 21:12:16 dbrown Exp $
+ *      $Id: LogLinPlot.c,v 1.24 1997-08-11 18:22:13 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -246,6 +246,8 @@ LogLinPlotClassPartInitialize
 
 /*
  * Register children objects
+ * NOTE: order of registration should be the reverse of the
+ * desired 'canonical' order
  */
 	subret = _NhlRegisterChildClass(lc,NhlplotManagerClass,
 					False,False,NULL);
@@ -253,7 +255,7 @@ LogLinPlotClassPartInitialize
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: error registering %s";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
-			  "NhloverlayClass");
+			  "NhlplotManagerClass");
 		return(NhlFATAL);
 	}
 
@@ -264,6 +266,15 @@ LogLinPlotClassPartInitialize
 		e_text = "%s: error registering %s";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
 			  "NhllogLinTransObjClass");
+		return(NhlFATAL);
+	}
+	subret = _NhlRegisterChildClass(lc,NhltransObjClass,
+					False,False,NULL);
+
+	if ((ret = MIN(ret,subret)) < NhlWARNING) {
+		e_text = "%s: error registering %s";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
+			  "NhltransObjClass");
 		return(NhlFATAL);
 	}
 

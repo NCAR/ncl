@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularPlot.c,v 1.24 1997-07-25 21:12:03 dbrown Exp $
+ *      $Id: IrregularPlot.c,v 1.25 1997-08-11 18:22:08 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -257,7 +257,7 @@ IrregularPlotClassPartInitialize
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: error registering %s";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
-			  "NhloverlayClass");
+			  "NhlplotManagerClass");
 		return(NhlFATAL);
 	}
 
@@ -267,7 +267,16 @@ IrregularPlotClassPartInitialize
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: error registering %s";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
-			  "NhlmapTransObjClass");
+			  "NhlirregularTransObjClass");
+		return(NhlFATAL);
+	}
+	subret = _NhlRegisterChildClass(lc,NhltransObjClass,
+					False,False,NULL);
+
+	if ((ret = MIN(ret,subret)) < NhlWARNING) {
+		e_text = "%s: error registering %s";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
+			  "NhltransObjClass");
 		return(NhlFATAL);
 	}
 

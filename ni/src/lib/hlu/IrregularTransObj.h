@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularTransObj.h,v 1.5 1995-05-03 03:11:12 dbrown Exp $
+ *      $Id: IrregularTransObj.h,v 1.6 1997-08-11 18:22:12 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -34,16 +34,10 @@ typedef enum {
 
 #define NhlNtrXAxisType		"trXAxisType"
 #define NhlCtrXAxisType		"TrXAxisType"
-#define NhlNtrXMinF     	"trXMinF"
-#define NhlCtrXMinF     	"TrXMinF"
-#define NhlNtrXMaxF     	"trXMaxF"
-#define NhlCtrXMaxF     	"TrXMaxF"
 #define NhlNtrXCoordPoints	"trXCoordPoints"
 #define NhlCtrXCoordPoints	"TrXCoordPoints"
 #define NhlNtrXInterPoints	"trXInterPoints"
 #define NhlCtrXInterPoints	"TrXInterPoints"
-#define NhlNtrXReverse		"trXReverse"
-#define NhlCtrXReverse		"TrXReverse"
 #define NhlNtrXTensionF		"trXTensionF"
 #define NhlCtrXTensionF		"TrXTensionF"
 #define NhlNtrXSamples		"trXSamples"
@@ -51,16 +45,10 @@ typedef enum {
 
 #define NhlNtrYAxisType		"trYAxisType"
 #define NhlCtrYAxisType		"TrYAxisType"
-#define NhlNtrYMinF     	"trYMinF"
-#define NhlCtrYMinF     	"TrYMinF"
-#define NhlNtrYMaxF     	"trYMaxF"
-#define NhlCtrYMaxF     	"TrYMaxF"
 #define NhlNtrYCoordPoints	"trYCoordPoints"
 #define NhlCtrYCoordPoints	"TrYCoordPoints"
 #define NhlNtrYInterPoints	"trYInterPoints"
 #define NhlCtrYInterPoints	"TrYInterPoints"
-#define NhlNtrYReverse		"trYReverse"
-#define NhlCtrYReverse		"TrYReverse"
 #define NhlNtrYTensionF		"trYTensionF"
 #define NhlCtrYTensionF		"TrYTensionF"
 #define NhlNtrYSamples		"trYSamples"

@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorFieldP.h,v 1.1 1995-11-21 20:19:06 dbrown Exp $
+ *      $Id: VectorFieldP.h,v 1.2 1997-08-11 18:22:30 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -90,6 +90,7 @@ typedef struct _NhlVectorFieldLayerPart{
 	int		iy_end;
 
 	NhlVectorFieldFloatLayer	vffloat;
+        NhlBoolean	up_to_date;
 
 } NhlVectorFieldLayerPart;
 
