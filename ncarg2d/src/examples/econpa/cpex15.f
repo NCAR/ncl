@@ -1,5 +1,5 @@
 C
-C $Id: cpex15.f,v 1.3 2002-03-29 17:36:29 kennison Exp $
+C $Id: cpex15.f,v 1.4 2003-03-03 21:11:53 kennison Exp $
 C
       PROGRAM CPEX15
 C
@@ -61,6 +61,8 @@ C
 C
 C Define colors to use for various purposes.
 C
+        CALL GSCR   (IWKID,0,0.,0.,0.)  !  black for the background
+        CALL GSCR   (IWKID,1,1.,1.,1.)  !  white for the foreground
         CALL GSCR   (IWKID,2,.5,.5,1.)  !  light blue (for labels)
         CALL GSCR   (IWKID,3,1.,1.,.5)  !  light yellow (for labels)
         CALL GSCR   (IWKID,4,1.,.5,.5)  !  light red (for labels)

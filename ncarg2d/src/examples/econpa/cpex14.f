@@ -1,5 +1,5 @@
 C
-C $Id: cpex14.f,v 1.5 2002-02-21 17:22:28 kennison Exp $
+C $Id: cpex14.f,v 1.6 2003-03-03 21:11:52 kennison Exp $
 C
       PROGRAM CPEX14
 C
@@ -95,9 +95,11 @@ C Turn clipping by GKS off.
 C
         CALL GSCLIP (0)
 C
-C Define the color red for use in a couple of frames below.
+C Define some basic colors to use.
 C
-        CALL GSCR (IWKID,199,1.,.4,.4)
+        CALL GSCR (IWKID,0,0.,0.,0.)  !  black for the background
+        CALL GSCR (IWKID,1,1.,1.,1.)  !  white for the foreground
+        CALL GSCR (IWKID,2,1.,.4,.4)  !  light red.
 C
 C Tell PLOTCHAR to use font number 25 (a filled font) and to outline
 C each character.
@@ -140,11 +142,12 @@ C
         PRINT * , '  WINDOW TOP EDGE:     ',YWDT
 C
 C Read color-index information and do the calls necessary to duplicate
-C the user's palette of colors.
+C the user's palette of colors.  To avoid redefining color indices 1 and
+C 2, we define color indices 11-138, rather than 1-128.
 C
         DO 101 I=1,128
           READ (29,'(I10,3F10.0)') ICNT,REDV,GRNV,BLUV
-          CALL GSCR (IWKID,ICNT,REDV,GRNV,BLUV)
+          CALL GSCR (IWKID,ICNT+10,REDV,GRNV,BLUV)
   101   CONTINUE
 C
 C Read the arrays XP, YP, and ICLR, as described above.
@@ -385,7 +388,9 @@ C
 C Do the GFA calls.  Note that, because the color specified by ICLR(I,J)
 C is thought of as being associated with the point (XP(I,J),YP(I,J)), we
 C fill boxes centered at the grid points (except along the edges), which
-C is a little different from filling the grid boxes themselves.
+C is a little different from filling the grid boxes themselves.  Note
+C also that we add 10 to each color index, because that's how they were
+C defined (in order to avoid redefining color indices 1 and 2).
 C
         DO 117 I=1,129
           DO 116 J=1,97
@@ -397,7 +402,7 @@ C
      +                     MAX(1.,MIN( 97.,REAL(J)+.5)),XTMP(3),YTMP(3))
             CALL CPMPXY (3,MAX(1.,MIN(129.,REAL(I)-.5)),
      +                     MAX(1.,MIN( 97.,REAL(J)+.5)),XTMP(4),YTMP(4))
-            CALL GSFACI (ICLR(I,J))
+            CALL GSFACI (ICLR(I,J)+10)
             CALL GFA    (4,XTMP,YTMP)
   116     CONTINUE
   117   CONTINUE
@@ -406,7 +411,7 @@ C In red, outline the mapped grid.
 C
         CALL PLOTIF (0.,0.,2)
         CALL GSLWSC (2.)
-        CALL GSPLCI (199)
+        CALL GSPLCI (2)
         CALL FRSTPT (XP(1,1),YP(1,1))
 C
         DO 118 I=2,129
@@ -486,7 +491,7 @@ C
             CALL CPMPXY (-3,XUSR,YUSR,XDAT,YDAT)
             IF (XDAT.GT..5.AND.XDAT.LT.129.5.AND.
      +          YDAT.GT..5.AND.YDAT.LT. 97.5) THEN
-              ICRA(I,J)=ICLR(NINT(XDAT),NINT(YDAT))
+              ICRA(I,J)=ICLR(NINT(XDAT),NINT(YDAT))+10
             ELSE
               ICRA(I,J)=0
             END IF
@@ -501,7 +506,7 @@ C In red, outline the bounding box.
 C
         CALL PLOTIF (0.,0.,2)
         CALL GSLWSC (2.)
-        CALL GSPLCI (199)
+        CALL GSPLCI (2)
         CALL FRSTPT (XPMN,YPMN)
         CALL VECTOR (XPMX,YPMN)
         CALL VECTOR (XPMX,YPMX)
@@ -547,7 +552,7 @@ C In red, outline the bounding box.
 C
         CALL PLOTIF (0.,0.,2)
         CALL GSLWSC (2.)
-        CALL GSPLCI (199)
+        CALL GSPLCI (2)
         CALL FRSTPT (XPMN,YPMN)
         CALL VECTOR (XPMX,YPMN)
         CALL VECTOR (XPMX,YPMX)
