@@ -1,5 +1,5 @@
 /*
- *	$Id: c_fthex05.c.sed,v 1.1 1994-07-29 14:24:30 haley Exp $
+ *	$Id: c_fthex05.c.sed,v 1.2 1994-08-16 19:41:41 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -163,7 +163,7 @@ main()
 /*
  * Put some labels on the plot.  First, the U axis.
  */
-	gset_line_colr_ind(BLACK);
+	gset_line_colr_ind(WHITE);
 	c_pwrzt (.5,0.,1.1,"U",1,3,-1,3,0);
 
 	for( ilab = 1; ilab <= 10; ilab++ ) {
