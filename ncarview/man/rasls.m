@@ -1,13 +1,13 @@
 .\"
-.\"	$Id: rasls.m,v 1.2 1993-01-16 03:55:06 don Exp $
+.\"	$Id: rasls.m,v 1.3 1993-02-16 17:33:03 don Exp $
 .\"
 .TH RASLS 1NCARG "January 1993" NCARG "NCAR VIEW"
 .SH NAME
 rasls \- list information on rasterfiles
 .SH SYNOPSIS
 \fBrasls\fP 
-[\fb\-type\fR]
-[\fb\-count\fR]
+[\fB\-type\fR]
+[\fB\-count\fR]
 [\fB\-verbose\fR]
 [\fB\-Version\fR]
 [files]

@@ -1,13 +1,13 @@
 .\"
-.\"	$Id: rassplit.m,v 1.1 1993-01-16 03:54:39 don Exp $
+.\"	$Id: rassplit.m,v 1.2 1993-02-16 17:33:04 don Exp $
 .\"
 .TH RASSPLIT 1NCARG "January 1993" NCARG "NCAR VIEW"
 .SH NAME
 rassplit \- split a multi-frame rasterfile into single-frame rasterfiles.
 .SH SYNOPSIS
 \fBrassplit\fP 
-[\fb\-f f1 f2 f3 ...\fR]
-[\fb\-ofmt output-format\fR]
+[\fB\-f f1 f2 f3 ...\fR]
+[\fB\-ofmt output-format\fR]
 [\fB\-verbose\fR]
 [\fB\-Version\fR]
 \fIrasterfile\fP
