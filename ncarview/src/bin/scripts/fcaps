@@ -1,3 +1,6 @@
+#
+#	$Id: fcaps,v 1.6 1991-07-31 17:13:38 clyne Exp $
+#
 #!/bin/csh -f
 #
 #	Name		fcaps
@@ -10,12 +13,19 @@
 #			directory.
 # 
 
-set dir = "/tmp/testlib"
+set dir = `ncargpar FONTCAPDIR`
 
-set dir = "${dir}/fontcaps"
+if ($status != 0) then
+	exit 1
+endif
+
+if (! -d "$dir") then
+  echo "Fontcap directory <$dir> does not exist."
+  exit 1
+endif
 
 cd $dir
 echo "The following fontcaps are installed to ${dir}:"
-foreach fcap (*)
+foreach fcap ("" *)
 	echo "	$fcap"
 end
