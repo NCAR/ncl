@@ -1,5 +1,5 @@
 #
-#   $Id: yMakefile,v 1.7 1995-04-28 19:30:16 haley Exp $
+#   $Id: yMakefile,v 1.8 1995-06-09 22:05:51 haley Exp $
 #
 #   Makefile for HLU ContourPlot examples
 #
@@ -13,7 +13,7 @@ SYS_LIBS    = $(CTOFLIBS) -lm
 CSRCS       = cn01c.c cn02c.c cn03c.c cn04c.c
 FSRCS       = cn01f.f cn02f.f cn03f.f cn04f.f
 NSRCS       = cn02n.ncl cn04n.ncl cn05n.ncl cn06n.ncl cn07n.ncl cn08n.ncl \
-			cn09n.ncl
+			cn09n.ncl cn10n.ncl
 COBJS       = cn01c.o cn02c.o cn03c.o cn04c.o
 FOBJS       = cn01f.o cn02f.o cn03f.o cn04f.o
 SRCS        = $(CSRCS) $(FSRCS)
