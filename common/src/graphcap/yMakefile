@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.13 2002-02-06 17:51:29 haley Exp $
+#	$Id: yMakefile,v 1.14 2002-02-22 00:50:25 haley Exp $
 #
 
 MYNAME	= graphcap
