@@ -3,7 +3,7 @@
 #include <ncarg/hlu/NresDB.h>
 #include <ncarg/hlu/Callbacks.h>
 #include "defs.h"
-#include <netcdf.h>
+#include "netcdf.h"
 #include "NclDataDefs.h"
 #include "NclFileInterfaces.h"
 #include "NclMdInc.h"
@@ -2503,6 +2503,12 @@ GribParamList* thevarrec;
 	int grid_size = 0;
 	unsigned char *bms = NULL;
 	int numeric = 0;
+	int secondary_bm;
+	int constant_widths;
+	int n_1o;
+	int n_2o;
+	int offset_1o;
+	int offset_2o;
 	
 
 
@@ -2553,7 +2559,13 @@ GribParamList* thevarrec;
 		binary_scale_factor = -binary_scale_factor;
 	}
 	sign  = (bds[6] & (char) 0200)? 1 : 0;
+/*
+* Compute exponent GRIB docs specify 7 bit exponent
+*/
 	tmpa = (float)(bds[6] & (char)0177);
+/*
+* Compute mantisa GRIB docs specify 24 bit mantisa no hidden bit
+*/
 	tmpb = (float)CnvtToDecimal(3,&(bds[7]));
 
 	reference_value = tmpb;
@@ -2580,9 +2592,17 @@ GribParamList* thevarrec;
 			tbits = 0;
 			total = (int)(((therec->bds_size - 11) * 8 - unused_bits)/ number_of_bits);
 			if(integer) {
-				data = (void*)NclMalloc((unsigned)sizeof(int)*grid_size);
+				if(*outdat == NULL) {
+					data = (void*)NclMalloc((unsigned)sizeof(int)*grid_size);
+				} else {
+					data = *outdat;
+				}
 			} else {
-				data = (void*)NclMalloc((unsigned)sizeof(float)*grid_size);
+				if(*outdat == NULL) {
+					data = (void*)NclMalloc((unsigned)sizeof(float)*grid_size);
+				} else {
+					data = *outdat;
+				}
 			}
 			while((index < grid_size)&&(dnum < total)) {
 				if(is_gpoint(bms,index)) {
@@ -2625,25 +2645,66 @@ GribParamList* thevarrec;
 		} else {
 			total = thevarrec->var_info.dim_sizes[thevarrec->var_info.num_dimensions-1] * thevarrec->var_info.dim_sizes[thevarrec->var_info.num_dimensions-2];
 			if(integer) {
-				data = (void*)NclMalloc((unsigned)sizeof(int)*total);
+				if(*outdat == NULL) {
+					data = (void*)NclMalloc((unsigned)sizeof(int)*total);
+				} else {
+					data = *outdat;
+				}
 				for(i = 0; i < total; i++) {
 					((int*)data)[i]= (int)reference_value;
 				}
 			} else {
-				data = (void*)NclMalloc((unsigned)sizeof(float)*total);
+				if(*outdat == NULL) {
+					data = (void*)NclMalloc((unsigned)sizeof(float)*total);
+				} else {
+					data = *outdat;
+				}
 				for(i = 0; i < total; i++) {
 					((float*)data)[i]= reference_value;
 				}
 			}
 			*outdat = data;
 		}
-	} else {
+	} else if((spherical_harm)&&(second_order)){
+		if(integer) {
+			*missing_value= (void*)NclMalloc((unsigned)sizeof(int));
+			*(int*)(*missing_value) = DEFAULT_MISSING_INT;
+		} else {
+			*missing_value= (void*)NclMalloc((unsigned)sizeof(float));
+			*(float*)(*missing_value) = DEFAULT_MISSING_FLOAT;
+		}
+		offset_1o = UnsignedCnvtToDecimal(2,&bds[11]);
+		offset_2o = UnsignedCnvtToDecimal(2,&bds[14]);
+		n_1o = UnsignedCnvtToDecimal(2,&bds[16]);
+		n_2o = UnsignedCnvtToDecimal(2,&bds[18]);
+		if(additional_flags) {
+			secondary_bm = (int)(bds[13]&(char)0040);
+			constant_widths = (int)(bds[13]&(char)0020);
+			printbinary(*(int*)&bds[13]);
+		} else {
+			secondary_bm = 0;
+			constant_widths = 0;
+		}
+		for(i = 0; i < n_1o; i++) {
+			fprintf(stdout,"%d)\t%d\n",i,UnsignedCnvtToDecimal(1,&bds[i+21]));
+		}
+		for(i=offset_1o;i <offset_2o ; i+=4) {
+			fprintf(stdout,"%d)\t",i);
+			printbinary(*(int*)&bds[i]);
+		}
+
+
+
+/*
 		if(spherical_harm)
 			NhlPError(NhlWARNING,NhlEUNKNOWN,"GribUnPack : Spherical Harmonics Detected can't un pack\n");
 		if(second_order)
 			NhlPError(NhlWARNING,NhlEUNKNOWN,"GribUnPack : Second Order Detected can't un pack\n");
 		*outdat = NULL;
 		*missing_value = NULL;
+*/
+	} else if(spherical_harm) {
+	} else {
 	}
 	NclFree(bds);
 	NclFree(bms);
@@ -2749,9 +2810,17 @@ GribParamList* thevarrec;
 			tbits = 0;
 			total = (int)(((therec->bds_size - 11) * 8 - unused_bits)/ number_of_bits);
 			if(integer) {
-				data = (void*)NclMalloc((unsigned)sizeof(int)*36*33);
+				if(*outdat == NULL) {
+					data = (void*)NclMalloc((unsigned)sizeof(int)*36*33);
+				} else {
+					data = *outdat;
+				}
 			} else {
-				data = (void*)NclMalloc((unsigned)sizeof(float)*36*33);
+				if(*outdat == NULL) {
+					data = (void*)NclMalloc((unsigned)sizeof(float)*36*33);
+				} else {
+					data = *outdat;
+				}
 			}
 			for(lat = 0; lat < 33; lat++) {
 				switch(lat) {
@@ -2840,19 +2909,28 @@ GribParamList* thevarrec;
 		} else {
 			total = thevarrec->var_info.dim_sizes[thevarrec->var_info.num_dimensions-1] * thevarrec->var_info.dim_sizes[thevarrec->var_info.num_dimensions-2];
 			if(integer) {
-				data = (void*)NclMalloc((unsigned)sizeof(int)*total);
+				if(*outdat == NULL) {
+					data = (void*)NclMalloc((unsigned)sizeof(int)*total);
+				} else {
+					data = *outdat;
+				}
 				for(i = 0; i < total; i++) {
 					((int*)data)[i]= (int)reference_value;
 				}
 			} else {
-				data = (void*)NclMalloc((unsigned)sizeof(float)*total);
+				if(*outdat == NULL) {
+					data = (void*)NclMalloc((unsigned)sizeof(float)*total);
+				} else {
+					data = *outdat;
+				}
 				for(i = 0; i < total; i++) {
 					((float*)data)[i]= reference_value;
 				}
 			}
 			*outdat = data;
 		}
-	} else {
+	} else if((second_order)&&(spherical_harm)) {
+
 		if(spherical_harm)
 			NhlPError(NhlWARNING,NhlEUNKNOWN,"GribUnPack : Spherical Harmonics Detected can't un pack\n");
 		if(second_order)
@@ -3016,11 +3094,20 @@ GribParamList* thevarrec;
 			}
 			total_gpoints = grid_size - (npole - 1);
 			if(integer) {
-				data = (void*)NclMalloc((unsigned)sizeof(int)*grid_size );
+				if(*outdat == NULL) {
+					data = (void*)NclMalloc((unsigned)sizeof(int)*grid_size );
+					*outdat = data;
+				} else {
+					data = *outdat;
+				}
 			} else {
-				data = (void*)NclMalloc((unsigned)sizeof(float)*grid_size );
+				if(*outdat == NULL) {
+					data = (void*)NclMalloc((unsigned)sizeof(float)*grid_size );
+					*outdat = data;
+				} else {
+					data = *outdat;
+				}
 			}
-			*outdat = data;
 			gpoint= 0;
 			if((polefirst)&&(npole >0)) {
 				X = UnsignedCnvtToDecimal(4,&(bds[i]));
@@ -3102,12 +3189,20 @@ GribParamList* thevarrec;
 		} else {
 			total = thevarrec->var_info.dim_sizes[thevarrec->var_info.num_dimensions-1] * thevarrec->var_info.dim_sizes[thevarrec->var_info.num_dimensions-2];
 			if(integer) {
-				data = (void*)NclMalloc((unsigned)sizeof(int)*total);
+				if(*outdat == NULL) {
+					data = (void*)NclMalloc((unsigned)sizeof(int)*total);
+				} else {
+					data = *outdat;
+				}
 				for(i = 0; i < total; i++) {
 					((int*)data)[i]= (int)reference_value;
 				}
 			} else {
-				data = (void*)NclMalloc((unsigned)sizeof(float)*total);
+				if(*outdat == NULL) {
+					data = (void*)NclMalloc((unsigned)sizeof(float)*total);
+				} else {
+					data = *outdat;
+				}
 				for(i = 0; i < total; i++) {
 					((float*)data)[i]= reference_value;
 				}
@@ -3713,6 +3808,40 @@ int** dimsizes_lon;
 			*dimsizes_lon= NULL;
 }
 
+void GdsSHGrid
+#if NhlNeedProto
+(GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon)
+#else
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon)
+GribParamList* thevarrec;
+float** lat;
+int* n_dims_lat;
+int** dimsizes_lat;
+float** lon;
+int* n_dims_lon;
+int** dimsizes_lon;
+#endif
+{
+	int j,k,m,type,mode;
+	unsigned char *gds = (unsigned char*)thevarrec->thelist->rec_inq->gds;
+
+
+	j = UnsignedCnvtToDecimal(2,&(gds[6]));
+	k = UnsignedCnvtToDecimal(2,&(gds[8]));
+	m = UnsignedCnvtToDecimal(2,&(gds[10]));
+	type = (int)gds[12]; 
+	mode = (int)gds[13];
+
+	*lat = NULL;
+	*n_dims_lat =  1;
+	*dimsizes_lat = NclMalloc(sizeof(int));
+	*(*dimsizes_lat) = j + 1;
+	*lon = NULL;
+	*n_dims_lon= 1;
+	*dimsizes_lon= NclMalloc(sizeof(int));
+	*(*dimsizes_lon) = j + 1;
+}
+
 void GdsCEGrid
 #if NhlNeedProto
 (GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon)
@@ -3840,7 +3969,7 @@ GridInfoRecord grid_gds[] = {
 		GenericUnPack,GdsGAGrid,NULL,"Gaussian Latitude/Longitude Grid", /*4*/
 		GenericUnPack,GdsSTGrid,NULL,"Polar Stereographic Projection Grid", /*5*/
 /**/		GenericUnPack,GdsOLGrid,NULL,"Oblique Lambert conformal, secant or tangent, conical or bipolar, projection", /*13*/
-		NULL,NULL,NULL,"Spherical Harmonic Coefficients", /*50*/
+		GenericUnPack,GdsSHGrid,NULL,"Spherical Harmonic Coefficients", /*50*/
 		NULL,NULL,NULL,"Space View perspecitve or orthographic grid", /*90*/
 		NULL,NULL,NULL,"Arakawa semi-staggered E-grid on rotated latitude/longitude grid-point array", /*201*/
 		NULL,NULL,NULL,"Arakawa filled E-grid on rotated latitude/longitude grid-point array" /*202*/

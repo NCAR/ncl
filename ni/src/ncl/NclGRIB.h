@@ -62,6 +62,27 @@ typedef struct _GribParamList GribParamList;
 typedef struct _GribInternalVarList GribInternalVarList;
 typedef struct _GribInternalVarRec GribInternalVarRec;
 typedef struct _NclGribFVarRec      NclGribFVarRec;
+typedef struct _NclGribCacheRec      NclGribCacheRec;
+typedef struct _NclGribCacheList      NclGribCacheList;
+
+struct _NclGribCacheList {
+	int grid_number;
+	int has_gds;
+	int grid_gds_tbl_index;
+	int n_dims;
+	int dimsizes[2];
+	int n_entries;
+	struct _NclGribCacheList *next;
+	struct _NclGribCacheRec *thelist;
+	struct _NclGribCacheRec *tail;
+};
+
+struct _NclGribCacheRec {
+	struct _NclGribCacheRec *prev;
+	struct _NclGribCacheRec *next;
+	GribRecordInqRec *rec;
+	NclMultiDValData thevalue;
+};
 
 struct _NclGribFVarRec {
         NclQuark var_name_quark;
@@ -201,6 +222,7 @@ int		n_lv_dims;
 GribDimInqRecList *lv_dims;
 int		n_grid_dims;
 GribDimInqRecList *grid_dims;
+NclGribCacheList *grib_grid_cache;
 };
 
 typedef int (*GribUnPackData)(
