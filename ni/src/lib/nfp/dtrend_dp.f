@@ -1,9 +1,14 @@
-C -----------------------------------------------------------
 C NCLFORTSTART
       SUBROUTINE DDTRNDX(X,NPTS,IOPT,XMEAN,XVARI,XVARO,C,IER)
+      IMPLICIT NONE
+      INTEGER NPTS, IOPT, IER
+      DOUBLE PRECISION X(NPTS),C(3)
       DOUBLE PRECISION XMEAN
       DOUBLE PRECISION XVARI
       DOUBLE PRECISION XVARO
+C NCLEND
+
+      INTEGER I, N
       DOUBLE PRECISION XCNTR
       DOUBLE PRECISION FN
       DOUBLE PRECISION SUMX
@@ -31,8 +36,8 @@ C .                          RETURN
 C .               IOPT = 0 : REMOVE THE MEAN ONLY
 C .               IOPT = 1 : REMOVE THE MEAN AND USE LINEAR LST SQRS TO
 C .                          DETREND
-C .               IOPT = 2 : REMOVE THE MEAN AND USE QUADRATIC LST SQRS TO
-C .                          DETRD
+C .               IOPT = 2 : REMOVE THE MEAN AND USE QUADRATIC 
+C .                          LST SQRS TO DETRD
 C .
 C .   OUTPUT
 C .
@@ -47,8 +52,6 @@ C .               C(2)  COEF OF FIRST POWER [SLOPE IF IOPT=1]
 C .               C(3)  COEF OF SECOND POWER
 C .   IER       - ERROR CODE
 
-      DOUBLE PRECISION X(NPTS),C(3)
-C NCLEND
 
       C(1) = 0.D0
       C(2) = 0.D0
@@ -58,25 +61,28 @@ C NCLEND
       IF (NPTS.LT.2) IER = -21
       IF (IER.NE.0) RETURN
 
-      N = NPTS
+      N  = NPTS
+      FN = DBLE(N)
 
 C CALCULATE THE MEAN AND VARIANCE OF THE INPUT SERIES
 
       XMEAN = 0.0D0
       XVARI = 0.0D0
-      DO 10 I = 1,N
-          XMEAN = XMEAN + X(I)
-   10 XVARI = XVARI + X(I)*X(I)
-      XVARI = (XVARI-XMEAN*XMEAN/DBLE(N))/DBLE(N)
-      XMEAN = XMEAN/DBLE(N)
+      DO I = 1,N
+         XMEAN = XMEAN + X(I)
+         XVARI = XVARI + X(I)*X(I)
+      END DO
+      XVARI = (XVARI-XMEAN*XMEAN/FN)/FN
+      XMEAN = XMEAN/FN
       XVARO = XVARI
 
       IF (IOPT.LT.0) RETURN
 
 C MUST AT LEAST WANT THE SERIES MEAN REMOVED (IOPT=0)
 
-      DO 20 I = 1,N
-   20 X(I) = X(I) - XMEAN
+      DO I = 1,N
+          X(I) = X(I) - XMEAN
+      END DO
 
       IF (IOPT.EQ.1) THEN
 
@@ -84,21 +90,24 @@ C MUST ALSO WANT LEAST SQUARES TREND LINE REMOVED
 
           C(2) = 0.D0
           XCNTR = DBLE(N+1)*0.5D0
-          DO 30 I = 1,N
-   30     C(2) = C(2) + X(I)* (DBLE(I)-XCNTR)
+          DO I = 1,N
+             C(2) = C(2) + X(I)* (DBLE(I)-XCNTR)
+          END DO
 
-          C(2) = C(2)*12.D0/DBLE(N* (N*N-1))
+C orig    C(2) = C(2)*12.D0/DBLE(N* (N*N-1))
+          C(2) = (C(2)/FN)*(12.D0/(FN*FN-1.D0))
+
 C Y-INTERCEPT
           C(1) = XMEAN - C(2)*XCNTR
 
-          DO 40 I = 1,N
-   40     X(I) = X(I) - C(2)* (DBLE(I)-XCNTR)
+          DO I = 1,N
+             X(I) = X(I) - C(2)* (DBLE(I)-XCNTR)
+          END DO
 
       ELSE IF (IOPT.EQ.2) THEN
 
 C MUST WANT QUADRATIC DETRENDING
 
-          FN = DBLE(N)
           SUMX = 0.D0
           SUMY = 0.D0
           SUMX2 = 0.D0
@@ -138,16 +147,18 @@ C MUST WANT QUADRATIC DETRENDING
 C CALCULATE THE VARIANCE OF THE DETRENDED SERIES
 C .   XBAR SHOULD BE ZERO TO MACHINE ACCURACY SUBTRACT IT OUT ANYWAY
 
-      XBAR = 0.0D0
+      XBAR  = 0.0D0
       XVARO = 0.0D0
-      DO 90 I = 1,N
-          XBAR = XBAR + X(I)
-   90 XVARO = XVARO + X(I)*X(I)
-      XVARO = (XVARO-XBAR*XBAR/DBLE(N))/DBLE(N)
+      DO I = 1,N
+         XBAR = XBAR + X(I)
+         XVARO = XVARO + X(I)*X(I)
+      END DO
+      XVARO = (XVARO-XBAR*XBAR/FN)/FN
 
-      XBAR = XBAR/DBLE(N)
-      DO 95 I = 1,N
-   95 X(I) = X(I) - XBAR
+      XBAR = XBAR/FN
+      DO I = 1,N
+         X(I) = X(I) - XBAR
+      END DO
 
       RETURN
       END
@@ -173,8 +184,8 @@ c .   x/ymsg   - missing code: if no msg values set to some number
 c .                            which will not be encountered.
 c .              ymsg will be used to fill missing values
 c .   iopt     - remove the mean of y prior to detrending
-C*PL*ERROR* Comment line too long
-c .              this does not affect the slope but does affect the y-intercept
+c .              this does not affect the slope but does affect 
+c .              the y-intercept
 c .   ydt      - detrended series
 c .              this could be "y" if original series not needed
 c .   slope    - slope (trend ... regression coef)
