@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: med.m,v 1.12 1993-05-04 22:03:54 haley Exp $
+.\"	$Id: med.m,v 1.13 1994-03-07 17:23:04 clyne Exp $
 .\"
 .\" @(#)med.l 1.0 90/02/15 NCAR; from UCB 4.3 and S5R4
 .tr ##
@@ -10,7 +10,7 @@ med \- NCAR CGM metafile frame editor
 .LP
 .B med
 [
-.BI \-e " script"
+.BI \-e " command"
 ]* [
 .BI \-f " sfilename"
 ] [
@@ -43,8 +43,8 @@ or to write frames from and read frames into the buffer. By default
 reads in commands from standard input.
 .SH OPTIONS
 .TP
-.BI \-e " script"
-.I script
+.BI \-e " command"
+.I command
 is a single
 .B med
 command. The valid
@@ -378,7 +378,16 @@ etc.).
 Write buffer. Write the addressed frames in the buffer to 
 .I metafile. 
 If no address is specified the entire buffer is written. If the file
-does not exist create it.
+does not exist create it. If no file name is specified
+.B med
+uses the last currently remembered file name, if any. The currently remembered
+file name is the file name from the most recent 
+.B edit
+command, or the file name 
+.B med
+was invoked with if no 
+.B edit 
+commands have been issued.
 .TP
 .BI ! " command"
 .br
