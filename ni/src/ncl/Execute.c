@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.102 1998-02-23 16:01:14 haley Exp $
+ *      $Id: Execute.c,v 1.103 1998-09-02 22:19:41 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -3009,6 +3009,9 @@ void CallASSIGN_VAR_COORD_OP(void) {
 						} else {
 							estatus = NhlFATAL;
 						}
+/* _NclWriteCoordVar destroys non-permanent input so the following is not needed
+* Rather than fix _NclWriteCoordVar to not free it was just easier to 
+* comment the followign out.
 						switch(data.kind) {
 						case NclStk_VAL: 
 							if(data.u.data_obj->obj.status != PERMANENT) 
@@ -3021,6 +3024,7 @@ void CallASSIGN_VAR_COORD_OP(void) {
 						default:
 							break;
 						}
+*/
 					} else {	
 						_NclCleanUpStack(1);
 					}

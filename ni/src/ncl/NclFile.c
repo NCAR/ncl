@@ -2612,6 +2612,13 @@ int rw_status;
 	if(file_out->file.format_funcs->get_var_names != NULL) {
 		name_list = (*file_out->file.format_funcs->get_var_names)(file_out->file.private_rec,&n_names);
 		file_out->file.n_vars = n_names;
+		if(n_names > NCL_MAX_FVARS) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"The file (%s) contains (%d) variable which  exceeds the number of allowable variables (%d), ",NrmQuarkToString(path),n_names,NCL_MAX_FVARS);
+			NclFree((void*)name_list);
+			if(file_out_free) 
+				NclFree((void*)file_out);
+			return(NULL);
+		}
 		for(i = 0; i < n_names; i++){
 			file_out->file.var_info[i] = (*file_out->file.format_funcs->get_var_info)(file_out->file.private_rec,name_list[i]);
 			if(file_out->file.format_funcs->get_var_att_names != NULL) {
@@ -2724,6 +2731,7 @@ int type;
 	NclSelection *sel;
 	float tmpf;
 	NclScalar *tmp_mis;
+	NclScalar tmp_scalar;
 	int tmp_size = 1,tmpi;
 	void *data_type;
 	NclBasicDataTypes from_type,to_type;
@@ -2929,7 +2937,8 @@ int type;
 					mis_md = FileReadVarAtt(thefile,var,NrmStringToQuark(NCL_MISSING_VALUE_ATT),NULL);
 					if(value->obj.status != PERMANENT) {
 						tmp_md = value;
-						_NclResetMissingValue(tmp_md,(NclScalar*) mis_md->multidval.val);
+						memcpy(&tmp_scalar,mis_md->multidval.val,mis_md->multidval.totalsize);
+						_NclResetMissingValue(tmp_md,(NclScalar*) &tmp_scalar);
 					} else {
 						tmp_md = _NclCopyVal(value,(NclScalar*)mis_md->multidval.val);
 					}

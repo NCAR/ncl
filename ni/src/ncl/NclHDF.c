@@ -1,5 +1,5 @@
 /*
- *      $Id: NclHDF.c,v 1.8 1997-09-05 22:13:11 ethan Exp $
+ *      $Id: NclHDF.c,v 1.9 1998-09-02 22:19:47 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -66,6 +66,7 @@ struct _HDFDimInqRec {
 	int dimid;
 	NclQuark name;
 	long size;
+	int is_unlimited;
 };
 	
 struct _HDFAttInqRec {
@@ -242,6 +243,8 @@ int wr_status;
 					(unsigned)sizeof(HDFDimInqRec));
 			(*stepdlptr)->next = NULL;
 			(*stepdlptr)->dim_inq->dimid = i;
+			(*stepdlptr)->dim_inq->is_unlimited = (i==dummy)?1:0;
+
 			sd_ncdiminq(cdfid,i,buffer,&((*stepdlptr)->dim_inq->size));
 			if((*stepdlptr)->dim_inq->size == 0) {
 				NhlPError(NhlWARNING,NhlEUNKNOWN,"HDF: %s is a zero length dimension some variables may be ignored",buffer);

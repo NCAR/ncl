@@ -3293,8 +3293,8 @@ int wr_status;
 		offset = nextoff;
 		grib_rec = NULL;
 	}
-	therec->grib_grid_cache = NULL;
 	if(therec != NULL ) {
+		therec->grib_grid_cache = NULL;
 /*
 * Next step is to sort by time and then level each of the variables in the list
 */

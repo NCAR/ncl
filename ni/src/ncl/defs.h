@@ -1,6 +1,6 @@
 
 /*
- *      $Id: defs.h,v 1.23 1996-09-04 22:00:29 ethan Exp $
+ *      $Id: defs.h,v 1.24 1998-09-02 22:19:50 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -27,7 +27,7 @@ extern "C" {
 #define _NCdefs_h
 
 #define NCL_MAX_DIMENSIONS 32
-#define NCL_MAX_FVARS 512
+#define NCL_MAX_FVARS 2048
 #define NCL_MAX_STRING 256
 #define NCL_MAX_ATTRIBUTES 32
 #define NCL_MAX_SYMS_PER_STMNT 300

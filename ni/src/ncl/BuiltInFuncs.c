@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.101 1998-07-28 16:48:32 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.102 1998-09-02 22:19:39 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -4034,7 +4034,7 @@ NhlErrorTypes _NclIabs
 		return(NhlFATAL);
 	}
 	if(tmp_md != NULL) {
-		out_val = (int*)NclMalloc(tmp_md->multidval.totalelements);
+		out_val = (int*)NclMalloc(sizeof(int)*tmp_md->multidval.totalelements);
 		if(tmp_md->multidval.missing_value.has_missing) {
 			for( i = 0 ; i < tmp_md->multidval.totalelements; i ++ ) {
 				if(((int*)tmp_md->multidval.val)[i] != tmp_md->multidval.missing_value.value.intval) {
