@@ -25,12 +25,13 @@
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
+#include <ncarg/hlu/PDFWorkstation.h>
 
 main()
 {
     int appid, wid, pid;
     int rlist;
-    int NCGM=0, X11=1, PS=0;
+    int NCGM=0, X11=1, PS=0, PDF=0;
 /*
  * Initialize the high level utility library
  */
@@ -73,6 +74,15 @@ main()
         NhlRLClear(rlist);
         NhlRLSetString(rlist,NhlNwkPSFileName,"./tm01c.ps");
         NhlCreate(&wid,"tm01Work",NhlpsWorkstationClass,
+                  NhlDEFAULT_APP,rlist);
+    }
+    else if (PDF) {
+/*
+ * Create a PDF workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkPDFFileName,"./tm01c.pdf");
+        NhlCreate(&wid,"tm01Work",NhlpdfWorkstationClass,
                   NhlDEFAULT_APP,rlist);
     }
 /*

@@ -25,6 +25,7 @@
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
+#include <ncarg/hlu/PDFWorkstation.h>
 
 #include "tm03c.h"
 
@@ -42,7 +43,7 @@ main()
 {
     int appid, wid, pid;
     int rlist;
-    int NCGM=0, X11=1, PS=0;
+    int NCGM=0, X11=1, PS=0, PDF=0;
 /*
  * Initialize the high level utility library
  */
@@ -86,6 +87,16 @@ main()
         NhlCreate(&wid,"tm03Work",NhlpsWorkstationClass,
                   NhlDEFAULT_APP,rlist);
     }
+    else if (PDF) {
+/*
+ * Create a PDF workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkPDFFileName,"./tm03c.pdf");
+        NhlCreate(&wid,"tm03Work",NhlpdfWorkstationClass,
+                  NhlDEFAULT_APP,rlist);
+    }
+
     NhlRLClear(rlist);
     NhlRLSetFloat(rlist,NhlNvpXF,.2);
     NhlRLSetFloat(rlist,NhlNvpYF,.8);
