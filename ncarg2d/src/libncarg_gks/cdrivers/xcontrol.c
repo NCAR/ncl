@@ -1,5 +1,5 @@
 /*
- *      $Id: xcontrol.c,v 1.22 2003-01-06 23:30:18 fred Exp $
+ *      $Id: xcontrol.c,v 1.23 2004-04-29 19:16:51 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -661,7 +661,7 @@ X11_Exec
                 ESprintf(ERR_WIN_ATTRIB,"Window Destroyed");
                 return(ERR_WIN_ATTRIB);
         }
-
+#if 0
         while(XCheckTypedEvent(xi->dpy,ClientMessage,&event) ||
                         XCheckMaskEvent(xi->dpy,StructureNotifyMask,&event)){
 
@@ -693,6 +693,7 @@ X11_Exec
                 ESprintf(ERR_WIN_ATTRIB,"Window Destroyed");
                 return(ERR_WIN_ATTRIB);
         }
+#endif
 
 DONE:
 
@@ -868,9 +869,42 @@ X11_ActivateWorkstation
         Xddp    *xi = (Xddp *) gksc->ddp;
         Display *dpy = xi->dpy;
         Window  win = xi->win;
-
+        XEvent                  event;
+        XClientMessageEvent     *xcme;
         XWindowAttributes       xwa;    /* Get window attributes        */
         CoordSpace      square_screen;
+
+        while(XCheckTypedEvent(xi->dpy,ClientMessage,&event) ||
+                        XCheckMaskEvent(xi->dpy,StructureNotifyMask,&event)){
+
+                switch (event.type) {
+                case    DestroyNotify:
+                        xi->dead = True;
+                        break;
+
+                case    ClientMessage:
+                        xcme = (XClientMessageEvent*)&event;
+                        xi->dead = True;
+                        break;
+
+                default:
+                        break;
+                }
+                if(xi->dead)
+                        break;
+        }
+        if(xi->dead){
+                free_all_colors(xi);
+                XFreeGC(xi->dpy,xi->line_gc);
+                XFreeGC(xi->dpy,xi->fill_gc);
+                XFreeGC(xi->dpy,xi->marker_gc);
+                XFreeGC(xi->dpy,xi->cell_gc);
+                XFreeGC(xi->dpy,xi->text_gc);
+                XFreeGC(xi->dpy,xi->bg_gc);
+                XCloseDisplay(xi->dpy);
+                ESprintf(ERR_WIN_ATTRIB,"Window Destroyed");
+                return(ERR_WIN_ATTRIB);
+        }
 
 
         /*
@@ -928,7 +962,40 @@ X11_UpdateWorkstation
 {
         Xddp    *xi = (Xddp *) gksc->ddp;
         Display *dpy = xi->dpy;
+        XEvent                  event;
+        XClientMessageEvent     *xcme;
 
+        while(XCheckTypedEvent(xi->dpy,ClientMessage,&event) ||
+                        XCheckMaskEvent(xi->dpy,StructureNotifyMask,&event)){
+
+                switch (event.type) {
+                case    DestroyNotify:
+                        xi->dead = True;
+                        break;
+
+                case    ClientMessage:
+                        xcme = (XClientMessageEvent*)&event;
+                        xi->dead = True;
+                        break;
+
+                default:
+                        break;
+                }
+                if(xi->dead)
+                        break;
+        }
+        if(xi->dead){
+                free_all_colors(xi);
+                XFreeGC(xi->dpy,xi->line_gc);
+                XFreeGC(xi->dpy,xi->fill_gc);
+                XFreeGC(xi->dpy,xi->marker_gc);
+                XFreeGC(xi->dpy,xi->cell_gc);
+                XFreeGC(xi->dpy,xi->text_gc);
+                XFreeGC(xi->dpy,xi->bg_gc);
+                XCloseDisplay(xi->dpy);
+                ESprintf(ERR_WIN_ATTRIB,"Window Destroyed");
+                return(ERR_WIN_ATTRIB);
+        }
         XSync(dpy, False);
         return(0);
 }
