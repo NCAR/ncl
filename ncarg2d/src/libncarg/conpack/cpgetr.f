@@ -1,6 +1,6 @@
 C
-C $Id: cpgetr.f,v 1.9 2000-08-22 15:02:46 haley Exp $
-C                                                                      
+C $Id: cpgetr.f,v 1.10 2000-09-15 17:10:54 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -128,7 +128,11 @@ C
         RETURN
 10005 CONTINUE
 C
-C Get the appropriate parameter value.
+C Get the appropriate parameter value.  (09/15/00) Because of a compiler
+C problem on certain systems, the following long IF statement has been
+C broken in two: we check for parameter names in the first half of the
+C alphabet in one IF and for parameter names in the second half of the
+C alphabet in another IF.
 C
       IF (WHCH(1:3).EQ.'AIA'.OR.WHCH(1:3).EQ.'aia') THEN
         RVAL=REAL(IAIA(JPAI))
@@ -270,7 +274,17 @@ C
         RVAL=REAL(ICLO)
       ELSE IF (WHCH(1:3).EQ.'MAP'.OR.WHCH(1:3).EQ.'map') THEN
         RVAL=REAL(IMPF)
-      ELSE IF (WHCH(1:3).EQ.'NCL'.OR.WHCH(1:3).EQ.'ncl') THEN
+      ELSE
+        GO TO 101
+      END IF
+C
+C Done.
+C
+      RETURN
+C
+C Check parameter names in the second half of the alphabet.
+C
+  101 IF (WHCH(1:3).EQ.'NCL'.OR.WHCH(1:3).EQ.'ncl') THEN
         RVAL=REAL(NCLV)
       ELSE IF (WHCH(1:3).EQ.'NEL'.OR.WHCH(1:3).EQ.'nel') THEN
         RVAL=REAL(NEXL)
