@@ -1,5 +1,5 @@
 /*
- *	$Id: devices.h,v 1.6 1992-03-23 21:44:59 clyne Exp $
+ *	$Id: devices.h,v 1.7 1992-04-03 00:03:40 don Exp $
  */
 typedef struct RasterDeviceStruct {
 	char			*name;
@@ -104,7 +104,7 @@ static RasterDevice rasdevices[] = {
 	ImageCount_
 },
 #endif
-#ifdef BuildRasterNrif
+#ifdef BuildRasterXWD
 {
 	"xwd", XWDOpen, XWDOpenWrite, 
 	XWDRead, XWDWrite, XWDClose, XWDPrintInfo,
