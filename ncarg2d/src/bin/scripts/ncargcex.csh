@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ncargcex.csh,v 1.18 1994-10-28 21:42:26 haley Exp $
+#	$Id: ncargcex.csh,v 1.19 1994-11-03 17:32:18 haley Exp $
 #
 
 #**************************#
@@ -148,8 +148,8 @@ set cbivar_list = ($ex_cbivar)
 #  Set conpack examples  #
 #                        #
 #************************#
-set ex_conpack  = (c_colcon)
-set conpack_list = ($ex_conpack)
+set ttr_conpack  = (c_colcon)
+set conpack_list = ($ttr_conpack)
 
 #**********************#
 #                      #
@@ -205,9 +205,10 @@ set softfill_list = ($ex_softfill)
 #                                        #
 #****************************************#
 set x11_list = (c_xwndws)
-set ex_list  = ($ex_autograph $ex_conpack $ex_ezmap $ex_gks $ex_labelbar \
+set ex_list  = ($ex_autograph $ex_ezmap $ex_gks $ex_labelbar \
                 $ex_plotchar ${ex_scrlld_title} $ex_softfill)
 
+set ttr_list = ($ttr_conpack)
 #****************************************#
 #                                        #
 # Default is to load in the X11 library. #
@@ -238,7 +239,7 @@ while ($#argv > 0)
     case "-all":
     case "-A":
       shift
-      set names=($names $ex_list)
+      set names=($names $ex_list $ttr_list)
       breaksw
         
     case "-autograph":
@@ -539,6 +540,17 @@ foreach known ($ex_list)
     break
   endif
 end
+
+
+if ( $ex_type == "Unknown" ) then
+  foreach known ($ttr_list)
+    if ("$name" == "$known") then
+      set ex_type=" Tutorial"
+      set temp_dir = "$tutor_dir"
+      break
+    endif
+  end
+endif
 
 #***************#
 #               #
