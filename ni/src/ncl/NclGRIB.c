@@ -2088,9 +2088,9 @@ unsigned int *nextoff;
 #endif
 {
         int i,ret1,ret2,ret3,ret4;
-        char test[5];
-        unsigned char nd[4];
-        unsigned char is[4];
+        char test[10];
+        unsigned char nd[10];
+        unsigned char is[10];
         unsigned int version;
         unsigned int size;
 
@@ -2109,6 +2109,9 @@ unsigned int *nextoff;
                 i += ret1;
                 if(ret1 > 0) {
                         if(is[0] == 'G') {
+/*
+				fprintf(stdout,"found G\n");
+*/
                                 ret2 = read(gribfile,(void*)&(is[1]),7);
                                 i += ret2;
                                 test[0] = is[0];
@@ -2116,7 +2119,14 @@ unsigned int *nextoff;
                                 test[2] = is[2];
                                 test[3] = is[3];
 				version = UnsignedCnvtToDecimal(1,&(is[7]));
-                                if((!strcmp(test,"GRIB"))&&(version ==1)){
+				test[4] = '\0';
+/*
+				fprintf(stdout,"%d\t%c%c%c%c\n",ret2,is[0],is[1],is[2],is[3]);
+*/
+                                if((!strncmp(test,"GRIB",4))&&(version ==1)){
+/*
+					fprintf(stdout,"found GRIB\n");
+*/
                                         *offset =  i - (ret1 + ret2);
 					size = UnsignedCnvtToDecimal(3,&(is[4]));
                                         ret3 = lseek(gribfile,i+size - (ret1 + ret2) - 4,SEEK_SET);
@@ -2125,7 +2135,11 @@ unsigned int *nextoff;
                                         test[1] = nd[1];
                                         test[2] = nd[2];
                                         test[3] = nd[3];
-                                        if(!strcmp("7777",test)) {
+					test[4] = '\0';
+                                        if(!strncmp("7777",test,4)) {
+/*
+					fprintf(stdout,"found 7777\n");
+*/
                                                 *nextoff = ret3 + ret4;
                                                 *totalsize = size;
                                                 return(GRIBOK);
