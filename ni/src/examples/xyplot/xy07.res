@@ -15,17 +15,12 @@
 ! Define DataSpec resources
 !
 *xyMarkLineMode:         MARKERS
-*xyData0*xyMarkerColor:  20 
+*xyData0*xyMarkerColor:  2
 *xyData0*xyMarkerSizeF:  .02
 *xyData0*xyMarker:       2
-*xyData1*xyMarkerColor:  45
+*xyData1*xyMarkerColor:  3
 *xyData1*xyMarkerSizeF:  .015
 *xyData1*xyMarker:       5
-!
-! Change the color map slightly
-!
-*wkBackgroundColor:      (/1.,1.,1./)
-*wkForegroundColor:      (/0.,0.,0./)
 !
 ! Define TickMark X axis resources
 !

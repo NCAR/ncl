@@ -1,5 +1,5 @@
 C
-C      $Id: xy07f.f,v 1.1 1995-04-24 21:26:29 haley Exp $
+C      $Id: xy07f.f,v 1.2 1995-04-25 22:15:49 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -19,6 +19,8 @@ C  Date:       Mon Apr 24 11:11:02 MST 1995
 C
 C  Description:   This example is similar to the ncargex Autograph
 C                 example "agex11".  It shows how to draw a "scattergram".
+C                 It also shows one way on how to modify the color map
+C                 so we can get a different background/foreground color.
 C
       external NhlFAppClass
       external NhlFXWorkstationClass
@@ -33,8 +35,9 @@ C
       real xdra(NPTS), ydra(NPTS)
 
       integer appid,xworkid,plotid,dataid(2)
-      integer list, i, j
+      integer list, i, j, len(2)
       real x
+      real cmap(3,4)
       character*10 datastr
       integer NCGM
 C
@@ -46,6 +49,25 @@ C Initialize the HLU library and set up resource template.
 C
       call NhlFInitialize
       call NhlFRLCreate(rlist,'setrl')
+C
+C Change the color map so we can have a white background, a black
+C foreground and two colors defined for our markers.  Color '1' is
+C the background color and '2' is the foreground color.
+C
+      cmap(1,1) = 1.
+      cmap(2,1) = 1.
+      cmap(3,1) = 1.
+      cmap(1,2) = 0.
+      cmap(2,2) = 0.
+      cmap(3,2) = 0.
+      cmap(1,3) = 1.
+      cmap(2,3) = 0.
+      cmap(3,3) = 0.
+      cmap(1,4) = 0.
+      cmap(2,4) = 0.
+      cmap(3,4) = 1.
+      len(1) = 3
+      len(2) = 4
 C
 C Create Application object.  The Application object name is used to
 C determine the name of the resource file, which is "xy07.res" in
@@ -62,6 +84,7 @@ C Create an NCGMWorkstation object.
 C
          call NhlFRLClear(rlist)
          call NhlFRLSetString(rlist,'wkMetaName','./xy07f.ncgm',ierr)
+         call NhlFRLSetMDFloatArray(rlist,'wkColorMap',cmap,2,len,ierr)
          call NhlFCreate(xworkid,'xy07Work',
      +        NhlFNcgmWorkstationClass,0,rlist,ierr)
       else
@@ -70,6 +93,7 @@ C Create an XWorkstation object.
 C
          call NhlFRLClear(rlist)
          call NhlFRLSetString(rlist,'wkPause','True',ierr)
+         call NhlFRLSetMDFloatArray(rlist,'wkColorMap',cmap,2,len,ierr)
          call NhlFCreate(xworkid,'xy07Work',NhlFXWorkstationClass,
      +        0,rlist,ierr)
       endif
