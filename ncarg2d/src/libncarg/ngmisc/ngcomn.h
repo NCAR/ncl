@@ -1,5 +1,5 @@
 C
-C $Id: ngcomn.h,v 1.16 2002-04-09 20:45:51 fred Exp $
+C $Id: ngcomn.h,v 1.17 2002-05-03 22:51:35 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -62,8 +62,8 @@ C               1=suppress both; 2= suppress bkg.; 3=suppress bb.
 C   LOGOCOL  -  Color index to be used for logos.
 C   LOGOSND  -  Secondary color index for logos.
 C   LOGOTYP  -  Logo type (1 = NCAR, 2 = UCAR).
-C   OXLOGO   -  Color index to be used for logos.
-C   OYLOGO   -  Secondary color index for logos.
+C   OXLOGO   -  Logo X coordinate position in NDC.
+C   OYLOGO   -  Logo Y coordinate position in NDC.
 C   OLSIZE   -  Logo size.
 C
       COMMON /NGCOMI/  IWKID, IFULLB,   IXPS,  ISTKMX,  IPTHMX, 
