@@ -1,5 +1,5 @@
 /*
- *      $Id: Transform.c,v 1.38 1998-04-16 03:09:12 dbrown Exp $
+ *      $Id: Transform.c,v 1.39 1998-05-14 21:41:10 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -461,20 +461,26 @@ TransformInitialize
 	if (! tfp->y_reverse_set)
 		tfp->y_reverse = False;
         
-        if (tfp->x_axis_type_set)
+        if (tfp->x_axis_type_set) {
                 tfp->x_log = tfp->x_axis_type == NhlLOGAXIS ? True : False;
+                tfp->x_log_set = True;
+        }
 	else if (tfp->x_log_set) {
                 tfp->x_axis_type = tfp->x_log ? NhlLOGAXIS : NhlLINEARAXIS;
+                tfp->x_axis_type_set = True;
         }
         else {
                 tfp->x_log = False;
                 tfp->x_axis_type = NhlLINEARAXIS;
         }
         
-        if (tfp->y_axis_type_set)
+        if (tfp->y_axis_type_set) {
                 tfp->y_log = tfp->y_axis_type == NhlLOGAXIS ? True : False;
+                tfp->y_log_set = True;
+        }
 	else if (tfp->y_log_set) {
                 tfp->y_axis_type = tfp->y_log ? NhlLOGAXIS : NhlLINEARAXIS;
+                tfp->y_axis_type_set = True;
         }
         else {
                 tfp->y_log = False;
@@ -555,16 +561,22 @@ static NhlErrorTypes TransformSetValues
 	if (_NhlArgIsSet(args,num_args,NhlNtrYAxisType))
 		tfp->y_axis_type_set = True;
         
-        if (tfp->x_axis_type_set)
+        if (tfp->x_axis_type_set) {
                 tfp->x_log = tfp->x_axis_type == NhlLOGAXIS ? True : False;
+                tfp->x_log_set = True;
+        }
 	else if (tfp->x_log_set) {
                 tfp->x_axis_type = tfp->x_log ? NhlLOGAXIS : NhlLINEARAXIS;
+                tfp->x_axis_type_set = True;
         }
         
-        if (tfp->y_axis_type_set)
+        if (tfp->y_axis_type_set) {
                 tfp->y_log = tfp->y_axis_type == NhlLOGAXIS ? True : False;
+                tfp->y_log_set = True;
+        }
 	else if (tfp->y_log_set) {
                 tfp->y_axis_type = tfp->y_log ? NhlLOGAXIS : NhlLINEARAXIS;
+                tfp->y_axis_type_set = True;
         }
 
         return NhlNOERROR;
@@ -2014,7 +2026,7 @@ extern NhlErrorTypes _NhltfCheckCoordBounds
 	}
 	if (! use_irr_trans && tfp->x_log && tfp->x_min <= 0.0) {
 		e_text = 
-		   "%s: Log style invalid for X coordinates: setting %s off";
+		 "%s: Log axis requires all positive extent: setting %s False";
 		ret = MIN(ret,NhlWARNING);
 		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,NhlNtrXLog);
 		tfp->x_log = False;
@@ -2025,10 +2037,10 @@ extern NhlErrorTypes _NhltfCheckCoordBounds
                  (tfp->x_min <= 0.0 ||
                   MIN(tfp->data_xstart,tfp->data_xend) <= 0.0 )) {
 		e_text = 
-		   "%s: Log style invalid for X coordinates: setting %s off";
+		   "%s: Log axis requires all positive extent: setting %s to LinearAxis (%s to False)";
 		ret = MIN(ret,NhlWARNING);
-		NhlPError(NhlWARNING,
-                          NhlEUNKNOWN,e_text,entry_name,NhlNtrXAxisType);
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
+                          NhlNtrXAxisType,NhlNtrXLog);
 		tfp->x_log = False;
                 tfp->x_axis_type = NhlLINEARAXIS;
         }
@@ -2059,25 +2071,25 @@ extern NhlErrorTypes _NhltfCheckCoordBounds
 		tfp->y_max = ftmp;
                 tfp->sticky_y_min_set = tfp->sticky_y_max_set = False;
 	}
-	if (! use_irr_trans && tfp->x_log && tfp->x_min <= 0.0) {
+	if (! use_irr_trans && tfp->y_log && tfp->y_min <= 0.0) {
 		e_text = 
-		   "%s: Log style invalid for X coordinates: setting %s off";
+		 "%s: Log axis requires all positive extent: setting %s False";
 		ret = MIN(ret,NhlWARNING);
-		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,NhlNtrXLog);
-		tfp->x_log = False;
-                tfp->x_axis_type = tfp->x_axis_type == NhlLOGAXIS ?
-                        NhlLINEARAXIS : tfp->x_axis_type;
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,NhlNtrYLog);
+		tfp->y_log = False;
+                tfp->y_axis_type = tfp->y_axis_type == NhlLOGAXIS ?
+                        NhlLINEARAXIS : tfp->y_axis_type;
 	}
-        else if (use_irr_trans && tfp->x_axis_type == NhlLOGAXIS &&
-                 (tfp->x_min <= 0.0 ||
-                  MIN(tfp->data_xstart,tfp->data_xend) <= 0.0 )) {
+        else if (use_irr_trans && tfp->y_axis_type == NhlLOGAXIS &&
+                 (tfp->y_min <= 0.0 ||
+                  MIN(tfp->data_ystart,tfp->data_yend) <= 0.0 )) {
 		e_text = 
-		   "%s: Log style invalid for X coordinates: setting %s off";
+		   "%s: Log axis requires all positive extent: setting %s to LinearAxis (%s to False)";
 		ret = MIN(ret,NhlWARNING);
-		NhlPError(NhlWARNING,
-                          NhlEUNKNOWN,e_text,entry_name,NhlNtrXAxisType);
-		tfp->x_log = False;
-                tfp->x_axis_type = NhlLINEARAXIS;
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
+                          NhlNtrYAxisType,NhlNtrYLog);
+		tfp->y_log = False;
+                tfp->y_axis_type = NhlLINEARAXIS;
         }
                 
         if (use_irr_trans) {
