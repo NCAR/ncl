@@ -2,10 +2,10 @@
 .na
 .nh
 .SH NAME
-Conrec_family_params - This document briefly describes all Conrec
+Conrec_family_params - Includes a brief description of all Conrec_family
 internal parameters.
 .SH DESCRIPTION 
-No parameter setting functions are available for the Conrec utility.
+No parameter setting functions are available for the Conrec_family utility.
 Parameters were set through common blocks CONRE1 and CONRE4.  There
 are three versions of the CONREC code.  The normal version is in
 the standard NCAR Graphics library.  The other two versions are in
@@ -160,7 +160,7 @@ Dash pattern for non-negative contour lines.
 .fi
 .SH SEE ALSO
 Online:
-conrec_family, conpack, ezcntr, conrec
+conrec_family, conpack, conpack_params, ezcntr, conrec
 Hardcopy:
 NCAR Graphics Contouring and Mapping Tutorial;
 NCAR Graphics Fundamentals, UNIX Version;

@@ -16,7 +16,7 @@ codes.  If you are writing new code, we suggest that you use the more
 general and rigorous Conpack contouring package.  All EZCNTR options
 set by default can be duplicated by the proper selection of Conpack parameters.
 .SH SYNOPSIS
-EZCNTR(Z,M,N) - draws a contour map based upon a set of default options.
+CALL EZCNTR(Z,M,N) - draws a contour map based upon a set of default options.
 .SH DESCRIPTION 
 .IP Z 12
 (an input array of type REAL) defining a two-dimensional field of
@@ -33,13 +33,13 @@ tcnqck.f, tcnsmt.f, and tcnsup.f.
 .SH ACCESS 
 EZCNTR can be invoked in four different ways to create
 contour plots which vary considerably in appearance.  The four variations
-include quick, standard, smooth, and super contour lines.  This progression
+include quick, normal, smooth, and super contour lines.  This progression
 represents a tradeoff between speed of computation and the appearance of the
 contour plots.  These variations are specified through selected command line
 options of the ncargf77 command.
 .sp
 To use EZCNTR, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  Other optional libraries
+ncarg_c, and ncarg_loc, preferably in that order.  Other optional libraries
 to create the quick, smooth, and super contours will
 automatically be linked by the ncargf77 command.
 To run a code called mycode.f which has one or more calls to

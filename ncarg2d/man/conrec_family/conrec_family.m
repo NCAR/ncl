@@ -6,16 +6,16 @@ Conrec_family - is a set of two dimensional contour mapping routines.
 There are options for generating standard contours, smoothing contour
 lines, labeling the contours, and removing crowded lines.
 .SH STATUS
-Conrec is obsolete.  It has been replaced by the contouring package,
+Conrec_family is obsolete.  It has been replaced by the contouring package,
 Conpack.  See the Conpack entry CPCNRC for a simple CONREC replacement.
 For more complex examples refer to the conpack and
 conpack_params man pages as well as the
 NCAR Graphics Contouring and Mapping Tutorial.
 .sp
-Conrec continues to be provided for compatibility of early NCAR Graphics
-codes.  If you are writing new code, we suggest that you use the more
-general and rigorous Conpack contouring package.  All Conrec options
-are available via Conpack parameters.
+Conrec_family continues to be provided for compatibility of early NCAR
+Graphics codes.  If you are writing new code, we suggest that you use the
+more general and rigorous Conpack contouring package.  All Conrec_family
+options are available via Conpack parameters.
 .SH SYNOPSIS
 EZCNTR(Z,M,N) - draws a contour map based upon a set of default options.
 .br
@@ -25,13 +25,13 @@ using options specified as input arguments.
 The Conrec family contains only two user callable entries, EZCNTR, and CONREC.
 However, these two entries can be invoked in four different ways to create
 contour plots which vary considerably in appearance.  The four variations
-include quick, standard, smooth, and super contour lines.  This progression
+include quick, normal, smooth, and super contour lines.  This progression
 represents a tradeoff between speed of computation and the appearance of the
 contour plots.  These variations are specified through selected command line
 options of the ncargf77 command.
 .sp
 To use EZCNTR or CONREC, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  Other optional libraries
+ncarg_c, and ncarg_loc, preferably in that order.  Other optional libraries
 to create the quick, smooth, and super contours will
 automatically be linked by the ncargf77 command.
 To run a code called mycode.f which has one or more calls to

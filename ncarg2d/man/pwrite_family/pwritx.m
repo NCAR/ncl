@@ -13,7 +13,7 @@ PLCHLQ entries of the Plotchar utility.
 PWRITX continues to be provided for compatibility of early NCAR Graphics
 codes.  If you are writing new code, we suggest that you use Plotchar.
 .SH SYNOPSIS
-PWRITX(X,Y,IDPC,NCHAR,JSIZE,JOR,JCTR)
+CALL PWRITX (X,Y,IDPC,NCHAR,JSIZE,JOR,JCTR)
 .SH DESCRIPTION 
 .IP X 12
 (an input parameter of type REAL) defining the X world coordinate of the
@@ -64,7 +64,7 @@ the IDPC character string.
 .fi
 .SH ACCESS 
 To use PWRITX, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+ncarg_c, ncarg_c, and ncarg_loc, preferably in that order.
 .SH MESSAGES
 Note that there is an important difference in how text sizes are
 handled in GKS versus PWRITX.  In GKS, text size is given in terms
@@ -72,7 +72,7 @@ of character heights.  In PWRITX, text size (JSIZE) is given in
 character width.
 .SH SEE ALSO
 Online:
-pwrite_family, pwritx,
+pwrite_family, pwrity,
 plotchar, plchhq, plchmq, plchlq
 .sp
 Hardcopy:  

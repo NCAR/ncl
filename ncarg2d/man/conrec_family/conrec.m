@@ -19,7 +19,7 @@ codes.  If you are writing new code, we suggest that you use the more
 general and rigorous Conpack contouring package.  All CONREC options
 can be duplicated by the proper selection of Conpack parameters.
 .SH SYNOPSIS
-CONREC(Z,L,M,N,FLO,HI,FINC,NSET,NHI,NDOT) - draws a contour map
+CALL CONREC(Z,L,M,N,FLO,HI,FINC,NSET,NHI,NDOT) - draws a contour map
 using options specified as input arguments.
 .SH DESCRIPTION 
 .IP Z 12
@@ -102,13 +102,13 @@ tcnqck.f, tcnsmt.f, and tcnsup.f.
 .SH ACCESS 
 CONREC can be invoked in four different ways to create
 contour plots which vary considerably in appearance.  The four variations
-include quick, standard, smooth, and super contour lines.  This progression
+include quick, normal, smooth, and super contour lines.  This progression
 represents a tradeoff between speed of computation and the appearance of the
 contour plots.  These variations are specified through selected command line
 options of the ncargf77 command.
 .sp
 To use CONREC, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  Other optional libraries
+ncarg_c, and ncarg_loc, preferably in that order.  Other optional libraries
 to create the quick, smooth, and super contours will
 automatically be linked by the ncargf77 command.
 To run a code called mycode.f which has one or more calls to
