@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.5 1993-03-21 01:53:28 haley Exp $
+#	$Id: yMakefile,v 1.6 1993-03-21 08:45:38 haley Exp $
 #
 NCARG	= ../..
 
@@ -11,10 +11,15 @@ MAN8	= ncargmv ncargtar
 
 MAN	= $(MAN1) $(MAN3) $(MAN5) $(MAN6) $(MAN8)
 
+#
+#	we always format
+#
+FORMAT	= $(MAN)
+
 all:
 
 preformatted:
-	@for name in $(MAN3); do\
+	@for name in $(FORMAT); do\
 	echo "Formatting $$name.m"; \
 	nroff -man $$name.m >$$name.p;\
 	done
@@ -37,9 +42,19 @@ install::
 #else	/* ! InstallManToLocal	*/
 
 install::
-	@for name in $(MAN3); do\
+	@for name in $(MAN1); do\
 	($(INSTALL) -m $(INSTALL_MAN) $${name}$(FORMAT_EXT) \
-	$(MAN3PATH)/$$name.$(MAN3_SECTION) );\
+	$(MAN1PATH)/$$name.$(MAN1_SECTION) );\
+	done
+
+	@for name in $(MAN5); do\
+	($(INSTALL) -m $(INSTALL_MAN) $${name}$(FORMAT_EXT) \
+	$(MAN5PATH)/$$name.$(MAN5_SECTION) );\
+	done
+
+	@for name in $(MAN8); do\
+	($(INSTALL) -m $(INSTALL_MAN) $${name}$(FORMAT_EXT) \
+	$(MAN8PATH)/$$name.$(MAN8_SECTION) );\
 	done
 
 #endif	/* InstallManToLocal	*/
