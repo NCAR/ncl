@@ -96,6 +96,9 @@ to 1/72 inch.
 This value must be specified before opening the
 PostScript workstation to which it will apply.  
 See descriptions for the parameters \'LX\', \'UX\', and \'UY\'.
+.IP "\'MC\'   -   Integer     -   depends on the workstation type" 
+The X11 workstation indicated by the integer should use a "mixed" X color
+model.  (-1) indicates the next X11 workstation created.
 .IP "\'ME\'   -   Character   -   depends on the workstation type" 
 A character string that
 specifies the metafile name that will be used by the next NCAR GKS
@@ -130,6 +133,9 @@ value specified in the Adobe PostScript specifications that is to
 apply to all PostScript interpreters.  A specific interpreter may
 allow for significantly larger paths.  See the documentation for
 your local PostScript interpreter to determine this value.
+.IP "\'PC\'   -   Integer     -   depends on the workstation type" 
+The X11 workstation indicated by the integer should use a "private" X color
+model.  (-1) indicates the next X11 workstation created.
 .IP "\'PE\'   -   Integer   -   10"
 Percentage error allowed in matching requested colors in X Window output
 where the window shares a single color map with all the other current
@@ -142,10 +148,6 @@ percentage) is selected.  The "nearest color" is the one in the current
 color table that is closest using the normal distance metric in the
 RGB color cube.  The percentage error is measured as a percentage of
 lenght of a diagonal of the RGB color cube.
-.IP "\'PR\'   -   Integer   -   0"
-Flags whether an X Window should share its color map (the default) or
-whether it should have its own private map, allowing for 256 colors
-to be allocated to that window.
 .IP "\'PI\'   -   Character   -   blanks"
 A character string that will be used for the picture name of the current
 picture in the PICTURE NAME element of an ncgm file.  The first picture 
@@ -153,6 +155,9 @@ must be named before the ncgm workstation is opened and subsequent
 pictures must be named immediately after creating the previous picture.  
 Not all pictures need be named and any picture that is not assigned a
 specific name is assigned blanks in the PICTURE NAME field of the ncgm.
+.IP "\'SC\'   -   Integer     -   depends on the workstation type" 
+The X11 workstation indicated by the integer should use a "shared" X color
+model.  (-1) indicates the next X11 workstation created.
 .IP "\'SE\'   -   Character   -   'GSEG'"
 Specifies a root name for segments created by NCAR GKS.  In the 
 default case, the segment name used will be constructed from GSEG by
