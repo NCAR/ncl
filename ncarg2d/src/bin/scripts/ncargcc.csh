@@ -1,12 +1,11 @@
 #!/bin/csh -f
 #
-#	$Id: ncargcc.csh,v 1.1.1.1 1992-04-17 22:34:45 ncargd Exp $
+#	$Id: ncargcc.csh,v 1.2 1992-06-04 19:48:28 ncargd Exp $
 #
 
 set system="SED_SYSTEM_INCLUDE"
 set cc="SED_CC"
 set loadopts = "SED_LD_CFLAGS"
-set floatopts = "SED_FLOAT_OPT"
 set l = `ncargpar LIBDIR`
 
 if (! -d "$l") then
@@ -28,6 +27,7 @@ endif
 
 set libgks	=	"$l/libncarg_gks.a"
 set liblocal	=	"$l/libncarg_loc.a"
+set libcbind    = "$l/libc_ncarg.a $l/libc_ncarg_gks.a"
 
 if ($system == "Cray2" || $system == "Cray") then
   set f77libs     =       "-L/lib -lf -lio -lm -lp -lsci -lu -lc"
@@ -36,7 +36,9 @@ else if ($system == "Sun4") then
 else if ($system == "RS6000") then
   set f77libs     =       "-lxlf"
 else if ($system == "DECRISC") then
-  set f77libs     =       "-lots -lfor -lF77 -lI77 -lU77 -lutil -lUfor -li -lm"
+  set f77libs     =       "-lots -lfor -lF77 -lI77 -lU77 -lutil -li -lm -lUfor"
+else if ($system == "HPUX") then
+  set f77libs     =       "-lf -lm"
 else if ($system == "SGI4D") then
   set f77libs     =       "-lF77 -lI77 -lU77 -lisam -lm -lc"
 else
@@ -44,8 +46,8 @@ else
 endif
 
 set smooth = "$l/libdashsmth.o"
-set quick = "$l/libdashline.o $l/libconrcqck.o $l/libconraq.o"
-set super = "$l/libdashsupr.o $l/libconrcspr.o $l/libconras.o"
+set quick = "$l/libc_conraq.o $l/libdashline.o $l/libconrcqck.o $l/libconraq.o"
+set super = "$l/libc_conras.o $l/libdashsupr.o $l/libconrcspr.o $l/libconras.o"
 
 set libs
 
@@ -86,11 +88,13 @@ foreach arg ($argv)
 	case "-conranquick":
 		echo "Quick Conran"
 		set libs = "$libs $l/libconraq.o"
+        set libcbind = "$libcbind $l/libc_conraq.o"
 		breaksw
 
 	case "-conransuper":
 		echo "Super Conran"
 		set libs = "$libs $l/libconras.o $l/libdashsupr.o"
+        set libcbind = "$libcbind $l/libc_conras.o"
 		breaksw
 
 	case "-conrecsmooth":
@@ -136,7 +140,7 @@ foreach arg ($argv)
 
 end
 
-set newargv = "$newargv $ctrans_libs $libncarg $libgks $liblocal $f77libs"
+set newargv = "$newargv $ctrans_libs $libs $libcbind $libncarg $libgks $liblocal $f77libs"
 
 echo $newargv
 eval $newargv

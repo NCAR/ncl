@@ -1,12 +1,11 @@
 #!/bin/csh -f
 #
-#	$Id: ncargcc.cry,v 1.1.1.1 1992-04-17 22:34:45 ncargd Exp $
+#	$Id: ncargcc.cry,v 1.2 1992-06-04 19:48:25 ncargd Exp $
 #
 
 set system="SED_SYSTEM_INCLUDE"
 set cc="SED_CC"
 set loadopts = "SED_LD_CFLAGS"
-set floatopts = "SED_FLOAT_OPT"
 set l = `ncargpar LIBDIR`
 
 if (! -d "$l") then
