@@ -1,5 +1,5 @@
 C
-C	$Id: gesc.f,v 1.14 1994-06-16 17:41:59 fred Exp $
+C	$Id: gesc.f,v 1.15 1994-06-17 22:04:58 fred Exp $
 C
       SUBROUTINE GESC(FCTID,LIDR,IDR,MLODR,LODR,ODR)
 C
@@ -274,12 +274,12 @@ C
 C  Set flag to indicate that the current picture is empty.
 C
         NOPICT = 0
-C
-C  PostScript escapes.
-C
       ELSE IF (FCTID .EQ. -1390) THEN
         ODR(1) = 'NCAR_GKS0A--VERSION_4.0'
-      ELSE IF (FCTID.GE.-1530 .AND. FCTID.LE.-1510) THEN
+C
+C  X11 window escapes.
+C
+      ELSE IF (FCTID.GE.-1410 .AND. FCTID.LE.-1400) THEN
 C
 C  Decode the workstation ID.
 C
@@ -293,6 +293,81 @@ C
         RETURN
 C
   160   CONTINUE
+C
+C  Return if not an X11 workstation.
+C
+        CALL GQWKC(IWKID,IER,ICONID,ITYP)
+        IF (ITYP.NE.GXWE .AND. ITYP.NE.GXWC) THEN
+          CUFLAG = -1
+          RETURN
+        ENDIF
+C
+        CUFLAG = IWKID
+        FCODE = 6
+        CALL GZROI(0)
+        IL1 = 1
+        IL2 = 1
+        ID(1) = FCTID
+C
+C  Send over the data record.
+C
+        IF (LIDR .EQ. 1) THEN
+          CONT = 0
+          STRL1 = 80
+          STRL2 = 80
+          STR(1:80) = IDR(1)
+          CALL GZTOWK
+          IF (RERR .NE. 0) THEN
+            ERS = 1
+            CALL GERHND(RERR,EESC,ERF)
+            ERS = 0
+            RETURN
+          ENDIF
+          CUFLAG = -1
+        ELSE IF (LIDR .GT. 1) THEN
+          CONT = 1
+          STRL1 = 80*LIDR
+          STRL2 = 80
+          LDRM1 = LIDR-1
+          DO 220 I=1,LDRM1
+            STR(1:80) = IDR(I)
+            IF (I .GT. 1) IL2 = 0
+            CALL GZTOWK
+            IF (RERR .NE. 0) THEN
+              ERS = 1
+              CALL GERHND(RERR,EESC,ERF)
+              ERS = 0
+              RETURN
+            ENDIF
+  220     CONTINUE
+          CONT = 0
+          STR(1:80) = IDR(LIDR)
+          CALL GZTOWK
+          IF (RERR .NE. 0) THEN
+            ERS = 1
+            CALL GERHND(RERR,EESC,ERF)
+            ERS = 0
+            RETURN
+          ENDIF
+          CUFLAG = -1
+        ENDIF
+C
+C  PostScript escapes.
+C
+      ELSE IF (FCTID.GE.-1530 .AND. FCTID.LE.-1510) THEN
+C
+C  Decode the workstation ID.
+C
+        READ (IDR,501,ERR=350) IWKID
+        GO TO 360
+C
+  350   CONTINUE
+        ERS = 1
+        CALL GERHND(182,EESC,ERF)
+        ERS = 0
+        RETURN
+C
+  360   CONTINUE
         CUFLAG = IWKID
 C
 C  If setting coordinates for positioning on the page, store them
@@ -349,7 +424,7 @@ C
           STRL1 = 80*LIDR
           STRL2 = 80
           LDRM1 = LIDR-1
-          DO 220 I=1,LDRM1
+          DO 320 I=1,LDRM1
             STR(1:80) = IDR(I)
             IF (I .GT. 1) IL2 = 0
             CALL GZTOWK
@@ -359,7 +434,7 @@ C
               ERS = 0
               RETURN
             ENDIF
-  220     CONTINUE
+  320     CONTINUE
           CONT = 0
           STR(1:80) = IDR(LIDR)
           CALL GZTOWK
@@ -369,6 +444,7 @@ C
             ERS = 0
             RETURN
           ENDIF
+          CUFLAG = -1
         ENDIF
       ELSE
 C

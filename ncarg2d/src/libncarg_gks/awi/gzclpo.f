@@ -1,8 +1,8 @@
 C
-C	$Id: gzclpo.f,v 1.1 1994-05-19 19:26:58 fred Exp $
+C       $Id: gzclpo.f,v 1.2 1994-06-17 22:05:04 fred Exp $
 C
       SUBROUTINE GZCLPO (XCCP,YCCP,NCCP,XCSP,YCSP,NCSP,
-     +                   RWRK,IWRK,NWRK,IERR)
+     +                        RWRK,IWRK,NWRK,IERR)
 C
       DIMENSION XCCP(NCCP),YCCP(NCCP)
       DIMENSION XCSP(NCSP),YCSP(NCSP)
@@ -15,7 +15,7 @@ C (XCSP(I),I=1,NCSP) and (YCSP(I),I=1,NCSP), and the real and integer
 C workspaces RWRK and IWRK, each of which is of length NWRK, generates
 C the set of polygons representing pieces of the subject polygon lying
 C inside the clip polygon and delivers each of them to be plotted
-C with GZPUTR.  Errors, in general, result in an immediate RETURN 
+C with GZPUTR.  Errors, in general, result in an immediate RETURN
 C with IERR non-zero; on a normal return, IERR
 C is zero.
 C
@@ -28,6 +28,7 @@ C July, 1992, issue of "Communications of the ACM" (Vol. 35, No. 7).
 C
 C This code was produced from an iftran master coded by David Kennison
 C at NCAR in 1994.
+C
 C
 C Define RBIG to be a large real number.
 C
@@ -70,7 +71,7 @@ C
         YCSPMX = MAX(YCSPMX,YCSP(I))
   100 CONTINUE
       IF (XCSPMN.GE.XCCP(1) .AND. XCSPMX.LE.XCCP(2) .AND.
-     +    YCSPMN.GE.YCCP(2) .AND. YCSPMX.LE.YCCP(3)) THEN 
+     +    YCSPMN.GE.YCCP(2) .AND. YCSPMX.LE.YCCP(3)) THEN
         CALL GZPUTR(NCSP,NCSP,XCSP,YCSP,1,IERR)
         RETURN
       ENDIF
@@ -521,11 +522,26 @@ C
                 RWRK(ITMP)=XCSP(INNP)
               END IF
 C
+              RWRK(ITMP+1)=RWRK(ITMP)
+C
               IWRK(ITMP+8)=SIGN(INNP,IWRK(ITMP+8))
               INNP=INNP+SIGN(1,IWRK(ITMP+8))
 C
             GO TO 10029
 10030       CONTINUE
+C
+C Compute a quantity that will be used to recognize the successor of
+C the horizontal edge.
+C
+            INNL=ABS(IWRK(ITMP+8))-SIGN(1,IWRK(ITMP+8))
+            IF (INNL.LE.0) THEN
+              IF (IWRK(ITMP+4).EQ.0) THEN
+                INNL=INNL+LCCP
+              ELSE
+                INNL=INNL+LCSP
+              END IF
+            END IF
+            INNL=-SIGN(INNL,IWRK(ITMP+8))
 C
 C Zero the pointer to the list of intersection points.
 C
@@ -537,6 +553,15 @@ C list of intersection points can easily be reclaimed.
 C
             ISWL=IPWL
 C
+C Initialize pointers used below.  The horizontal edge is considered
+C to intersect edges that it actually passes over.  If there are edges
+C in the AET with X coordinates equal to the X coordinate of the end of
+C the horizontal edge, it only intersects them if that is necessary in
+C order to make it and its successor be next to each other in the AET.
+C
+            IINN=-1
+            IINQ=0
+C
 C Generate the list of intersection points, either to the left ...
 C
             IF (IWRK(ITMP+7).NE.0) THEN
@@ -545,7 +570,13 @@ C
 C
 10031         CONTINUE
 C
-                IF (RWRK(ITMP).GE.RWRK(IDUM)) GO TO 10032
+                IF (RWRK(IDUM).LT.RWRK(ITMP)) GO TO 10032
+C
+                IF (IWRK(IDUM+4).EQ.IWRK(ITMP+4).AND.IWRK(IDUM+8).EQ.INN
+     +L) THEN
+                  IINQ=IINN
+                  GO TO 10032
+                END IF
 C
                 IF (IINT.EQ.0) THEN
                   IINT=IPWL+1
@@ -566,6 +597,8 @@ C
                 IWRK(IINN+3)=ITMP
                 IWRK(IINN+4)=0
 C
+                IF (RWRK(IDUM).GT.RWRK(ITMP)) IINQ=IINN
+C
                 IDUM=IWRK(IDUM+7)
 C
                 IF (IDUM.EQ.0) GO TO 10032
@@ -577,40 +610,66 @@ C
 C
 C ... or to the right.
 C
-            IF (IWRK(ITMP+6).NE.0) THEN
+            IF (IINQ.EQ.0) THEN
 C
-              IDUM=IWRK(ITMP+6)
+              IINT=0
+              IPWL=ISWL
+              IINN=-1
 C
-10034         CONTINUE
+              IF (IWRK(ITMP+6).NE.0) THEN
 C
-                IF (RWRK(ITMP).LE.RWRK(IDUM)) GO TO 10035
+                IDUM=IWRK(ITMP+6)
 C
-                IF (IINT.EQ.0) THEN
-                  IINT=IPWL+1
-                ELSE
-                  IWRK(IINN+4)=IPWL+1
-                END IF
+10034           CONTINUE
 C
-                IINN=IPWL+1
-                IPWL=IPWL+5
+                  IF (RWRK(IDUM).GT.RWRK(ITMP)) GO TO 10035
 C
-                IF (IPWL.GE.IPWU) THEN
-                  GO TO 10009
-                END IF
+                  IF (IWRK(IDUM+4).EQ.IWRK(ITMP+4).AND.IWRK(IDUM+8).EQ.I
+     +NNL) THEN
+                    IINQ=IINN
+                    GO TO 10035
+                  END IF
 C
-                RWRK(IINN)=RWRK(IDUM)
-                RWRK(IINN+1)=YBOS
-                IWRK(IINN+2)=ITMP
-                IWRK(IINN+3)=IDUM
-                IWRK(IINN+4)=0
+                  IF (IINT.EQ.0) THEN
+                    IINT=IPWL+1
+                  ELSE
+                    IWRK(IINN+4)=IPWL+1
+                  END IF
 C
-                IDUM=IWRK(IDUM+6)
+                  IINN=IPWL+1
+                  IPWL=IPWL+5
 C
-                IF (IDUM.EQ.0) GO TO 10035
+                  IF (IPWL.GE.IPWU) THEN
+                    GO TO 10009
+                  END IF
 C
-              GO TO 10034
-10035         CONTINUE
+                  RWRK(IINN)=RWRK(IDUM)
+                  RWRK(IINN+1)=YBOS
+                  IWRK(IINN+2)=ITMP
+                  IWRK(IINN+3)=IDUM
+                  IWRK(IINN+4)=0
 C
+                  IF (RWRK(IDUM).LT.RWRK(ITMP)) IINQ=IINN
+C
+                  IDUM=IWRK(IDUM+6)
+C
+                  IF (IDUM.EQ.0) GO TO 10035
+C
+                GO TO 10034
+10035           CONTINUE
+C
+              END IF
+C
+            END IF
+C
+C Clear entries at the end of the intersection list that don't need to
+C be considered to be intersections.  (This may clear the whole list.)
+C
+            IF (IINQ.EQ.0) THEN
+              IINT=0
+              IPWL=ISWL
+            ELSE IF (IINQ.GT.0) THEN
+              IWRK(IINQ+4)=0
             END IF
 C
 C If any intersection points were found, process them and then reclaim
@@ -739,7 +798,12 @@ C
                 YINT=.5*(YBOS+YTOS)
               END IF
 C
-              XINT=RWRK(ITMP+1)+(YINT-RWRK(ITMP+2))*RWRK(ITMP+3)
+              IF (ABS(RWRK(ITMP+3)).LT.ABS(RWRK(IWRK(IST2+1)+3))) THEN
+                XINT=RWRK(ITMP+1)+(YINT-RWRK(ITMP+2))*RWRK(ITMP+3)
+              ELSE
+                XINT=RWRK(IWRK(IST2+1)+1)+(YINT-RWRK(IWRK(IST2+1)+2))*
+     +               RWRK(IWRK(IST2+1)+3)
+              END IF
 C
             END IF
 C
@@ -853,31 +917,72 @@ C
 C
 C Dump out all the polygons that have been formed.
 C
+C THE FOLLOWING CODE HAS BEEN REPLACED BY CODE THAT CULLS OUT DUPLICATE
+C ADJACENT POINTS.  SINCE THE REPLACEMENT CODE IS SLOWER, IT WOULD BE
+C ADVANTAGEOUS TO FIGURE OUT (ABOVE) HOW TO PREVENT THE DUPLICATES FROM
+C SNEAKING IN.  ONCE THAT HAS BEEN DONE, THE FOLLOWING CODE CAN BE PUT
+C BACK IN:
+C
+C       MXYC=(IPWU-1-IPWL)/2
+C       IPXC=IPWL
+C       IPYC=IPWL+MXYC
+C       WHILE (IPPL.NE.0)
+C         NXYC=0
+C         ITMP=IWRK(IPPL)
+C         WHILE (ITMP.NE.0)
+C           NXYC=NXYC+1
+C           IF (NXYC.GE.MXYC)
+C             INVOKE (WORKSPACE-TOO-SMALL,NR)
+C           END IF
+C           RWRK(IPXC+NXYC)=RWRK(ITMP)
+C           RWRK(IPYC+NXYC)=RWRK(ITMP+1)
+C           ITMP=IWRK(ITMP+2)
+C         END WHILE
+C         NXYC=NXYC+1
+C         RWRK(IPXC+NXYC)=RWRK(IWRK(IPPL))
+C         RWRK(IPYC+NXYC)=RWRK(IWRK(IPPL)+1)
+C         CALL URPP (RWRK(IPXC+1),RWRK(IPYC+1),NXYC)
+C         IPPL=IWRK(IPPL+2)
+C       END WHILE
+C
       MXYC=(IPWU-1-IPWL)/2
+      IF (MXYC.LT.1) THEN
+        GO TO 10009
+      END IF
       IPXC=IPWL
       IPYC=IPWL+MXYC
-10057 CONTINUE
-      IF (.NOT.(IPPL.NE.0)) GO TO 10058
-        NXYC=0
-        ITMP=IWRK(IPPL)
-10059   CONTINUE
-        IF (.NOT.(ITMP.NE.0)) GO TO 10060
-          NXYC=NXYC+1
-          IF (NXYC.GE.MXYC) THEN
-            GO TO 10009
-          END IF
-          RWRK(IPXC+NXYC)=RWRK(ITMP)
-          RWRK(IPYC+NXYC)=RWRK(ITMP+1)
-          ITMP=IWRK(ITMP+2)
-        GO TO 10059
-10060   CONTINUE
-        NXYC=NXYC+1
-        RWRK(IPXC+NXYC)=RWRK(IWRK(IPPL))
-        RWRK(IPYC+NXYC)=RWRK(IWRK(IPPL)+1)
-        CALL GZPUTR(NXYC,NXYC,RWRK(IPXC+1),RWRK(IPYC+1),1,IERR)
-        IPPL=IWRK(IPPL+2)
-      GO TO 10057
 10058 CONTINUE
+      IF (.NOT.(IPPL.NE.0)) GO TO 10059
+        NXYC=1
+        ITMP=IWRK(IPPL)
+        RWRK(IPXC+1)=RWRK(ITMP  )
+        RWRK(IPYC+1)=RWRK(ITMP+1)
+        ITMP=IWRK(ITMP+2)
+10060   CONTINUE
+        IF (.NOT.(ITMP.NE.0)) GO TO 10061
+          IF (RWRK(ITMP).NE.RWRK(IPXC+NXYC).OR.RWRK(ITMP+1).NE.RWRK(IPYC
+     ++NXYC)) THEN
+            NXYC=NXYC+1
+            IF (NXYC.GE.MXYC) THEN
+              GO TO 10009
+            END IF
+            RWRK(IPXC+NXYC)=RWRK(ITMP)
+            RWRK(IPYC+NXYC)=RWRK(ITMP+1)
+          END IF
+          ITMP=IWRK(ITMP+2)
+        GO TO 10060
+10061   CONTINUE
+        IF (RWRK(IPXC+NXYC).NE.RWRK(IPXC+1).OR.RWRK(IPYC+NXYC).NE.RWRK(I
+     +PYC+1)) THEN
+          NXYC=NXYC+1
+          RWRK(IPXC+NXYC)=RWRK(IPXC+1)
+          RWRK(IPYC+NXYC)=RWRK(IPYC+1)
+        END IF
+        IF (NXYC.GE.4) 
+     +        CALL GZPUTR(NXYC,NXYC,RWRK(IPXC+1),RWRK(IPYC+1),1,IERR)
+        IPPL=IWRK(IPPL+2)
+      GO TO 10058
+10059 CONTINUE
 C
 C Normal exit.
 C
@@ -891,7 +996,7 @@ C
 C
 C Loop through all the points of intersection.
 C
-10062   CONTINUE
+10063   CONTINUE
 C
 C Extract the coordinates of the point of intersection and the indices
 C of the two AET nodes describing the edges that intersected.
@@ -913,20 +1018,20 @@ C
             IIN1=IINT
             IIN2=IWRK(IINT+4)
 C
-10063       CONTINUE
+10064       CONTINUE
 C
               IF (IIN2.EQ.0) THEN
                 IERR=1
-                GO TO 10065
+                GO TO 10066
               END IF
 C
-              IF (IWRK(IWRK(IIN2+2)+6).EQ.IWRK(IIN2+3)) GO TO 10066
+              IF (IWRK(IWRK(IIN2+2)+6).EQ.IWRK(IIN2+3)) GO TO 10067
 C
               IIN1=IIN2
               IIN2=IWRK(IIN2+4)
 C
-            GO TO 10063
-10066       CONTINUE
+            GO TO 10064
+10067       CONTINUE
 C
             IWRK(IIN1+4)=IWRK(IIN2+4)
             IWRK(IIN2+4)=IINT
@@ -951,7 +1056,7 @@ C
 C
               IF (IWRK(IPE1+9).EQ.0.OR.IWRK(IPE2+9).EQ.0) THEN
                 IERR=2
-                GO TO 10065
+                GO TO 10066
               END IF
 C
               IF (IG03.NE.0) THEN
@@ -1017,7 +1122,7 @@ C Process a local minimum.
 C
             IF (IWRK(IPE1+9).NE.0.OR.IWRK(IPE2+9).NE.0) THEN
               IERR=3
-              GO TO 10065
+              GO TO 10066
             END IF
 C
             IF (IG03.NE.0) THEN
@@ -1064,7 +1169,7 @@ C Process a left intersection.
 C
             IF (IWRK(IPE2+9).EQ.0) THEN
               IERR=4
-              GO TO 10065
+              GO TO 10066
             END IF
 C
             IF (IG03.NE.0) THEN
@@ -1094,7 +1199,7 @@ C Process a right intersection.
 C
             IF (IWRK(IPE1+9).EQ.0) THEN
               IERR=5
-              GO TO 10065
+              GO TO 10066
             END IF
 C
             IF (IG03.NE.0) THEN
@@ -1125,7 +1230,7 @@ C Process a local maximum.
 C
             IF (IWRK(IPE1+9).EQ.0.OR.IWRK(IPE2+9).EQ.0) THEN
               IERR=6
-              GO TO 10065
+              GO TO 10066
             END IF
 C
             IPP1=IWRK(IPE1+9)
@@ -1168,14 +1273,14 @@ C
                 IPPL=IWRK(IPP1+2)
               ELSE
                 ISPL=IPPL
-10079           CONTINUE
+10080           CONTINUE
                   IF (IWRK(ISPL+2).EQ.IPP1) THEN
                     IWRK(ISPL+2)=IWRK(IPP1+2)
-                    GO TO 10080
+                    GO TO 10081
                   END IF
                   ISPL=IWRK(ISPL+2)
-                GO TO 10079
-10080           CONTINUE
+                GO TO 10080
+10081           CONTINUE
               END IF
 C
               IWRK(IPP1)=IG03
@@ -1185,12 +1290,12 @@ C Any AET node that referenced IPP1 must now reference IPP2 instead.
 C
               IDUM=IAET
 C
-10081         CONTINUE
-              IF (.NOT.(IDUM.NE.0)) GO TO 10082
+10082         CONTINUE
+              IF (.NOT.(IDUM.NE.0)) GO TO 10083
                 IF (IWRK(IDUM+9).EQ.IPP1) IWRK(IDUM+9)=IPP2
                 IDUM=IWRK(IDUM+6)
-              GO TO 10081
-10082         CONTINUE
+              GO TO 10082
+10083         CONTINUE
 C
             END IF
 C
@@ -1221,12 +1326,12 @@ C
 C
 C Quit if there are no more points of intersection to process.
 C
-          IF (IINT.EQ.0) GO TO 10083
+          IF (IINT.EQ.0) GO TO 10084
 C
 C End of loop on points of intersection.
 C
-        GO TO 10062
-10083   CONTINUE
+        GO TO 10063
+10084   CONTINUE
 C
 C End of internal procedure to process a list of intersections.
 C
@@ -1329,7 +1434,7 @@ C We have arrived at a local maximum, so handle that case.
 C
           IF (IWRK(ITMP+6).EQ.0) THEN
             IERR=7
-            GO TO 10065
+            GO TO 10066
           END IF
 C
           IPP1=IWRK(ITMP+9)
@@ -1339,7 +1444,7 @@ C
 C
             IF (IPP1.EQ.0.OR.IPP2.EQ.0) THEN
               IERR=8
-              GO TO 10065
+              GO TO 10066
             END IF
 C
             IF (IG03.NE.0) THEN
@@ -1387,14 +1492,14 @@ C
                 IPPL=IWRK(IPP1+2)
               ELSE
                 ISPL=IPPL
-10088           CONTINUE
+10089           CONTINUE
                   IF (IWRK(ISPL+2).EQ.IPP1) THEN
                     IWRK(ISPL+2)=IWRK(IPP1+2)
-                    GO TO 10089
+                    GO TO 10090
                   END IF
                   ISPL=IWRK(ISPL+2)
-                GO TO 10088
-10089           CONTINUE
+                GO TO 10089
+10090           CONTINUE
               END IF
 C
               IWRK(IPP1)=IG03
@@ -1404,12 +1509,12 @@ C Any AET node that referenced IPP1 must now reference IPP2 instead.
 C
               IDUM=IAET
 C
-10090         CONTINUE
-              IF (.NOT.(IDUM.NE.0)) GO TO 10091
+10091         CONTINUE
+              IF (.NOT.(IDUM.NE.0)) GO TO 10092
                 IF (IWRK(IDUM+9).EQ.IPP1) IWRK(IDUM+9)=IPP2
                 IDUM=IWRK(IDUM+6)
-              GO TO 10090
-10091         CONTINUE
+              GO TO 10091
+10092         CONTINUE
 C
             END IF
 C
@@ -1455,7 +1560,7 @@ C
         IERR=3
         RETURN
 C
-10065 CONTINUE
+10066 CONTINUE
         IERR=3+IERR
         RETURN
 C
