@@ -404,51 +404,51 @@
 !       data specified, and retains that value.
 ! xy01.xy01Work.xyPlot.trYMaxF                     : dynamic
 !
-! Overlay resources
+! PlotManager resources
 ! =================
 !
-!       These resources determine whether the Overlay object
+!       These resources determine whether the PlotManager
 !       displays a Title, TickMark, Legend, and/or LabelBar object.
 !       Each one has four settings: 
 !
 !       NOCREATE 
-!         If ov*DisplayMode has this value when the base plot
-!         containing the Overlay object is created, the Overlay does
-!         not create that object. The base plot will never be able to 
+!         If pm*DisplayMode has this value when the Plot object
+!         is created, the PlotManager does
+!         not create that object. The Base Plot will never be able to 
 !         display an object belonging to itself during its lifetime, 
-!         and attempts  to change the value of ov*DisplayMode later
-!         will fail with an WARNING message. However, the base plot 
-!         still would be able display an object initially belonging to
-!         the Overlay of an added member plot object. 
+!         and attempts  to change the value of pm*DisplayMode later
+!         will fail with an WARNING message. However, the Base Plot 
+!         still would be able display an object belonging to a Plot added
+!         as an Overlay. 
 !       NEVER 
-!         If ov*DisplayMode has this value when the base plot 
-!         containing the Overlay object is created, the Overlay does 
+!         If pm*DisplayMode has this value when the Plot is created, 
+!         the PlotManager does 
 !         create the object, but it will not be drawn. There is 
-!         no restriction on changing the value of ov*DisplayMode
+!         no restriction on changing the value of pm*DisplayMode
 !         at a later time. 
 !       ALWAYS 
-!         If ov*DisplayMode has this value when the base plot 
-!         containing the Overlay object is created, the Overlay 
+!         If pm*DisplayMode has this value when the Base Plot 
+!         is created, the PlotManager 
 !         creates the object that will be drawn assuming it meets 
 !         all conditions of displayability set by the object 
 !         itself. There is no restriction on changing the value of 
-!         ov*DisplayMode at a later time. 
+!         pm*DisplayMode at a later time. 
 !       CONDITIONAL 
-!         If ov*DisplayMode has this value when the base plot 
-!         containing the Overlay object is created, the Overlay 
+!         If pm*DisplayMode has this value when the Base Plot 
+!         is created, the PlotManager 
 !         creates the object that may be drawn assuming it meets all 
 !         conditions of displayability set by the object 
-!         itself. If the object initially belongs to an Overlay 
-!         whose base plot becomes a member of a composite overlay 
+!         itself. If the object initially belongs to a PlotManager 
+!         whose base plot becomes a member of a compound plot 
 !         plot, the object will be displayed only if no other
-!         objects belonging to other plots in the composite overlay 
+!         objects belonging to other plots in the compound plot 
 !         have already been displayed. The sequential ordering of plots
-!         belonging to the composite overlay determines the order in
+!         belonging to the compound plot determines the order in
 !         which objects are considered. 
-! xy01.xy01Work.xyPlot.ovTitleDisplayMode          : NOCREATE 
-! xy01.xy01Work.xyPlot.ovTickMarkDisplayMode       : NOCREATE 
-! xy01.xy01Work.xyPlot.ovLegendDisplayMode         : NOCREATE 
-! xy01.xy01Work.xyPlot.ovLabelBarDisplayMode       : NOCREATE 
+! xy01.xy01Work.xyPlot.pmTitleDisplayMode          : NOCREATE 
+! xy01.xy01Work.xyPlot.pmTickMarkDisplayMode       : NOCREATE 
+! xy01.xy01Work.xyPlot.pmLegendDisplayMode         : NOCREATE 
+! xy01.xy01Work.xyPlot.pmLabelBarDisplayMode       : NOCREATE 
 !
 
 

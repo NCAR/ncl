@@ -2,7 +2,7 @@
 ! XyPlot resources
 !
 xy04.xy04Work.xyPlot.vpYF:                   0.9
-xy04.xy04Work.xyPlot.ovLegendDisplayMode:    conditional
+xy04.xy04Work.xyPlot.pmLegendDisplayMode:    conditional
 xy04.xy04Work.xyPlot.xyLineLabelFontHeightF: 0.02
 !
 ! XyDataSpec resources.  The xyDataSpec object that has the same
