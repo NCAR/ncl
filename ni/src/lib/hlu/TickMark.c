@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.c,v 1.80 2001-12-13 01:57:46 dbrown Exp $
+ *      $Id: TickMark.c,v 1.81 2002-08-13 22:13:34 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2318,7 +2318,7 @@ static NhlErrorTypes	TickMarkClassInitialize
 
 	_NhlInitializeClass(NhlmultiTextClass);
 
-	_NhlRegisterEnumType(NhltickMarkClass,NhlTTickMarkMode,tmarkmodes,
+	_NhlRegisterEnumType(NhlbaseClass,NhlTTickMarkMode,tmarkmodes,
 							NhlNumber(tmarkmodes));
 	_NhlRegisterEnumType(NhlbaseClass,NhlTTickMarkStyle,tmarkstyles,
 							NhlNumber(tmarkstyles));

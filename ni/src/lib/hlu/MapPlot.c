@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.88 2002-08-10 00:36:22 dbrown Exp $
+ *      $Id: MapPlot.c,v 1.89 2002-08-13 22:13:33 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -503,7 +503,7 @@ static NhlResource resources[] = {
 	{ NhlNtmLabelAutoStride, NhlCLabelAutoStride, 
 	  NhlTBoolean, sizeof(NhlBoolean),
 	  Oset(label_auto_stride),
-	  NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
+	  NhlTImmediate,_NhlUSET((NhlPointer)True),_NhlRES_INTERCEPTED,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 	 Oset(xb_major_length_set),NhlTImmediate,_NhlUSET((NhlPointer)True),
 	 _NhlRES_PRIVATE,NULL},
@@ -602,7 +602,20 @@ static NhlResource resources[] = {
 	 _NhlRES_PRIVATE,NULL},
 	{NhlNtmYRLabelsOn,NhlCtmYRLabelsOn,NhlTBoolean,
 	 sizeof(NhlBoolean),Oset(yr_labels_on),NhlTProcedure,
-	 _NhlUSET((NhlPointer)_NhlResUnset),_NhlRES_INTERCEPTED,NULL}
+	 _NhlUSET((NhlPointer)_NhlResUnset),_NhlRES_INTERCEPTED,NULL},
+
+	{ NhlNtmXBMode,NhlCtmXBMode,NhlTTickMarkMode,sizeof(NhlTickMarkMode),
+	  Oset(xb_mode),NhlTImmediate,_NhlUSET((NhlPointer) -1),
+	  _NhlRES_PRIVATE,NULL},
+	{ NhlNtmXTMode,NhlCtmXTMode,NhlTTickMarkMode,sizeof(NhlTickMarkMode),
+	  Oset(xt_mode),NhlTImmediate,_NhlUSET((NhlPointer) -1),
+	  _NhlRES_PRIVATE,NULL},
+	{ NhlNtmYLMode,NhlCtmYLMode,NhlTTickMarkMode,sizeof(NhlTickMarkMode),
+	  Oset(yl_mode),NhlTImmediate,_NhlUSET((NhlPointer) -1),
+	  _NhlRES_PRIVATE,NULL},
+	{ NhlNtmYRMode,NhlCtmYRMode,NhlTTickMarkMode,sizeof(NhlTickMarkMode),
+	  Oset(yr_mode),NhlTImmediate,_NhlUSET((NhlPointer) -1),
+	  _NhlRES_PRIVATE,NULL}
 
 };
 #undef Oset
@@ -1206,6 +1219,22 @@ MapPlotInitialize
                 mpp->grid_spacing = 15.0;
         if (mpp->grid_lat_spacing <= 0.0) mpp->grid_lat_spacing = 15.0;
         if (mpp->grid_lon_spacing <= 0.0) mpp->grid_lon_spacing = 15.0;
+/*
+ * tickmark modes cannot be set for now; hopefully this will change
+ */
+
+	if ((int) mpp->xb_mode != -1 ||
+	    (int) mpp->xt_mode != -1 ||
+	    (int) mpp->yl_mode != -1 ||
+	    (int) mpp->yr_mode != -1) {
+		e_text = "%s: tm[XB|XT|YL|YR]Mode resources are not currently enabled for MapPlot tick marks";
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+		 (int) mpp->xb_mode = (int)mpp->xt_mode =  
+			 (int)mpp->yl_mode = (int)mpp->yr_mode =
+			 -1;
+	}
+
+		
                 
 /*
  * Necessary to initialize these for NDCToData to work correctly.
@@ -1546,6 +1575,20 @@ static NhlErrorTypes MapPlotSetValues
 		mpp->yl_labels_on_set = True;
 	if (_NhlArgIsSet(args,num_args,NhlNtmYRLabelsOn)) 
 		mpp->yr_labels_on_set = True;
+
+/*
+ * tickmark modes cannot be set for now; hopefully this will change
+ */
+	if ((int) mpp->xb_mode != -1 ||
+	    (int) mpp->xt_mode != -1 ||
+	    (int) mpp->yl_mode != -1 ||
+	    (int) mpp->yr_mode != -1) {
+		e_text = "%s: tm[XB|XT|YL|YR]Mode resources are not currently enabled for MapPlot tick marks";
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+		 (int) mpp->xb_mode = (int)mpp->xt_mode =  
+			 (int)mpp->yl_mode = (int)mpp->yr_mode =
+			 -1;
+	}
         
         
 /* Set up the Map data handler */
@@ -3784,7 +3827,7 @@ static NhlErrorTypes GetXAxisTicks
 		if (minlat > lat[i]) minlat = lat[i];
 		if (maxlat < lat[i]) maxlat = lat[i];
 	}
-	if ((maxlon - minlon) < (maxlat - minlat))
+	if (1.45 * (maxlon - minlon) < (maxlat - minlat))
 		dolat = True;
 	
 	for (i = 1; i < 101; i++) {
@@ -3918,6 +3961,7 @@ static NhlErrorTypes GetXAxisTicks
 			MIN(isl[seg_count],iel[seg_count]);
 		seg_count++;
 		start_ix = ts[i].status == _OUTOFRANGE ? -1 : ts[i].index;
+		status = ts[i].status;
 		end_ix = -1;
 	}
 	if (start_ix > -1 && start_ix < 86 && end_ix == -1) {
@@ -3993,11 +4037,13 @@ static NhlErrorTypes GetXAxisTicks
 						 &(lat[eix[i]]),&(lon[eix[i]]),
 						 &(xw[eix[i]]),&dy,
 						 &rlat,&xwin,&ywin);
+#if 0
 					if (*count > 0) {
 						if (fabs(xwin - (*values)
 						    [*count - 1]) < xspan / 10)
 							continue;
 					}
+#endif
 					NGCALLF(mdlach,MDLACH)
 						(&rlat,label,&nchr,128);
 					label[nchr] = '\0';
@@ -4034,11 +4080,13 @@ static NhlErrorTypes GetXAxisTicks
 					 &(lat[eix[i]]),&(lon[eix[i]]),
 					 &(xw[eix[i]]),&dy,
 					 &rlon,&xwin,&ywin);
+#if 0
 				if (*count > 0) {
 					if (fabs(xwin - (*values)[*count - 1])
 					    < xspan / 10)
 						continue;
 				}
+#endif
 				NGCALLF(mdloch,MDLOCH)
 					(&rlon,label,&nchr,128);
 				label[nchr] = '\0';
@@ -4151,7 +4199,7 @@ static NhlErrorTypes GetYAxisTicks
 		if (minlat > lat[i]) minlat = lat[i];
 		if (maxlat < lat[i]) maxlat = lat[i];
 	}
-	if ((maxlat - minlat) < (maxlon - minlon))
+	if (1.45 * (maxlat - minlat) < (maxlon - minlon))
 		dolon = True;
 	
 	for (i = 1; i < 101; i++) {
@@ -4285,6 +4333,7 @@ static NhlErrorTypes GetYAxisTicks
 			MIN(isl[seg_count],iel[seg_count]);
 		seg_count++;
 		start_ix = ts[i].status == _OUTOFRANGE ? -1 : ts[i].index;
+		status = ts[i].status;
 		end_ix = -1;
 	}
 	if (start_ix > -1 && start_ix < 86 && end_ix == -1) {
@@ -4360,11 +4409,13 @@ static NhlErrorTypes GetYAxisTicks
 						 &(lat[eix[i]]),&(lon[eix[i]]),
 						 &dx,&(yw[eix[i]]),
 						 &rlon,&xwin,&ywin);
+#if 0
 					if (*count > 0) {
 						if (fabs(ywin - (*values)
 						    [*count - 1]) < yspan / 10)
 							continue;
 					}
+#endif
 					NGCALLF(mdloch,MDLOCH)
 						(&rlon,label,&nchr,128);
 					label[nchr] = '\0';
@@ -4401,11 +4452,13 @@ static NhlErrorTypes GetYAxisTicks
 					 &(lat[eix[i]]),&(lon[eix[i]]),
 					 &dx,&(yw[eix[i]]),
 					 &rlat,&xwin,&ywin);
+#if 0
 				if (*count > 0) {
 					if (fabs(ywin - (*values)[*count - 1])
 					    < yspan / 10)
 						continue;
 				}
+#endif
 				NGCALLF(mdlach,MDLACH)
 					(&rlat,label,&nchr,128);
 				label[nchr] = '\0';
@@ -4470,6 +4523,7 @@ static NhlErrorTypes ManageTickMarks
 	NhlBoolean xbon,ylon,xton,yron;
 	NhlBoolean xb_labels_on,yl_labels_on,xt_labels_on,yr_labels_on;
 	NhlBoolean update = False;
+	int projection;
 	int i;
 
  	if (! tfp->plot_manager_on)
@@ -4658,9 +4712,23 @@ static NhlErrorTypes ManageTickMarks
 		       NhlNmpTopWindowF,&t,
 		       NhlNmpLeftWindowF,&l,
 		       NhlNmpRightWindowF,&r,
+		       NhlNmpProjection,&projection,
 		       NULL);
-
-		
+/*
+ * kludge fix for precision problem in mercator and robinson limits
+ */
+	if (projection == NhlMERCATOR) {
+		float pi_single = 3.14159;
+		l = MAX(l,-pi_single);
+		b = MAX(b,-pi_single);
+		r = MIN(r,pi_single);
+		t = MIN(t,pi_single);
+	}
+	else if (projection == NhlROBINSON) {
+		float vlim = 0.507199;
+		b = MAX(b,-vlim);
+		t = MIN(t,vlim);
+	}
 	subret = GetXAxisTicks(tfp,l,r,b,&xbcount,&xbvalues,&xblabels);
 	ret = MIN(subret,ret);
 	subret = GetXAxisTicks(tfp,l,r,t,&xtcount,&xtvalues,&xtlabels);
