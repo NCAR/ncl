@@ -1,5 +1,5 @@
 C
-C	$Id: gzopwk.f,v 1.1 1998-03-13 22:10:26 dbrown Exp $
+C	$Id: gzopwk.f,v 1.2 1999-03-25 00:23:00 fred Exp $
 C
       SUBROUTINE GZOPWK(WKID,CONID,WTYPE)
 C
@@ -85,20 +85,14 @@ C
         OPS = GWSOP
       ENDIF
 C
-C  Add the workstation identifier to the set of open workstations.
-C
-      NOPWK = NOPWK+1
-      SOPWK(NOPWK) = WKID
-      SWKTP(NOPWK) = WTYPE
-C
 C  Pass information across the workstation interface.
 C
         FCODE = -3
         CONT  = 0
         CALL GZROI(0)
         IF (WTYPE.GE.GPSMIN .AND. WTYPE.LE.GPSMAX) THEN
-          IL1   = 8
-          IL2   = 8
+          IL1   = 9
+          IL2   = 9
           ID(1) = WKID
           ID(2) = CONID
           ID(3) = WTYPE
@@ -113,6 +107,10 @@ C
 C  Scale factor for PostScript workstations.
 C
           ID(8) = CPSCL
+C
+C  Color model for PostScript workstations.
+C
+          ID(9) = CCMDL
 	ELSE IF (WTYPE.EQ.GXWE .OR. WTYPE.EQ.GXWC) THEN
 	  IL1   = 4
 	  IL2   = 4
@@ -138,6 +136,12 @@ C
           ERS = 0
           RETURN
         ENDIF
+C
+C  Add the workstation identifier to the set of open workstations.
+C
+      NOPWK = NOPWK+1
+      SOPWK(NOPWK) = WKID
+      SWKTP(NOPWK) = WTYPE
 C
 C  Set the file name for an MO workstation back to default; set the
 C  positioning coordinates back to defaults; set the PostScript 

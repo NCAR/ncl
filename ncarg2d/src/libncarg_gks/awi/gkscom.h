@@ -19,7 +19,7 @@ C  Details on all GKS COMMON variables are in the GKS BLOCKDATA.
      +               CNT   , LSNT(2)       , NTWN(2,4)     , NTVP(2,4),
      +               CCLIP , SWKTP(MXNWK)  , NOPICT, NWKTP ,
      +               LXWKID(MXNWK) , ECONID, CLLX  , CLLY  , CURX  ,
-     +               CURY  , CPSCL , COLMOD 
+     +               CURY  , CPSCL , CCMDL,  COLMOD 
       INTEGER        SOPWK , SACWK , CPLI  , CLN   , CPLCI , CLNA  ,
      +               CLWSCA, CPLCIA, CPMI  , CMK   , CPMCI , CMKA  ,
      +               CMKSA , CPMCIA, CTXI  , CTXFP , CTXCI , CTXFPA,
@@ -27,7 +27,7 @@ C  Details on all GKS COMMON variables are in the GKS BLOCKDATA.
      +               CFAIS , CFASI , CFACI , CFAISA, CFASIA, CFACIA,
      +               CNT   , LSNT  , CCLIP , SWKTP , NOPICT, NWKTP ,
      +               LXWKID, ECONID, CLLX  , CLLY  , CURX  , CURY  ,
-     +               CPSCL , COLMOD
+     +               CPSCL , CCMDL,  COLMOD
       REAL           NTWN  , NTVP
       COMMON /GKETBI/IERNMS(NUMERS)
       INTEGER IERNMS

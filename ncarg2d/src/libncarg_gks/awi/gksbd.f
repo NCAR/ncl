@@ -1,5 +1,5 @@
 C
-C	$Id: gksbd.f,v 1.16 1996-09-30 23:36:15 fred Exp $
+C	$Id: gksbd.f,v 1.17 1999-03-25 00:22:56 fred Exp $
 C
       BLOCKDATA GKSBD
 C
@@ -103,6 +103,7 @@ C       CLLY   -- LOWER LEFT Y COORDINATE FOR POSITIONING PICTURE ON PAGE
 C       CURX   -- UPPER RIGHT X COORDINATE FOR POSITIONING PICTURE ON PAGE
 C       CURY   -- UPPER RIGHT Y COORDINATE FOR POSITIONING PICTURE ON PAGE
 C       CPSCL  -- SCALE FACTOR FOR POSTSCRIPT WORKSTATIONS
+C       CCMDL  -- Flag for CMYK color model or RGB color model
 C       COLMOD -- Color Model for X color allocation
 C-----------------------------------------------------------------------
 C
@@ -202,6 +203,7 @@ C-----------------------------------------------------------------------
       DATA GFNAME/'DEFAULT'/
       DATA GSEGRT/'GSEG'/
       DATA CLLX,CLLY,CURX,CURY,CPSCL/-9999,-9999,-9999,-9999,-1/
+      DATA CCMDL/1/
       DATA COLMOD/-1/
 C
       DATA IERNMS/    1,    2,    3,    4,    5,    6,    7,    8,

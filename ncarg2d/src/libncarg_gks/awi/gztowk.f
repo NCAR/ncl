@@ -1,5 +1,5 @@
 C
-C	$Id: gztowk.f,v 1.10 1998-03-18 02:00:14 fred Exp $
+C	$Id: gztowk.f,v 1.11 1999-03-25 00:23:03 fred Exp $
 C
       SUBROUTINE GZTOWK
 C
@@ -49,7 +49,8 @@ C
             ID(5) = ID(6)
             ID(6) = ID(7)
             ID(7) = ID(8)
-            NUMP  = 7
+            ID(8) = ID(9)
+            NUMP  = 8
             CALL GGKWDR(IID,FCODE,0,NUMP,IL2,ID,IC1,IC2,IC,
      -                  RL1,RL2,RX,RY,STRL1,STRL2,ADESTR,RERR,XERMSG)
             IF (RERR .LE. -100) RETURN

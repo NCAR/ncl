@@ -1,5 +1,5 @@
 C
-C	$Id: gevtm.f,v 1.2 1994-05-07 00:51:15 fred Exp $
+C	$Id: gevtm.f,v 1.3 1999-03-25 00:22:55 fred Exp $
 C
       SUBROUTINE GEVTM(X0,Y0,DX,DY,PHI,SX,SY,SW,MOUT)
 C
@@ -13,8 +13,8 @@ C
 C
 C  Check if GKS is in the proper state.
 C
-      CALL GZCKST(8,EEVTM,IER)
-      IF (IER .NE. 0) RETURN
+C     CALL GZCKST(8,EEVTM,IER)
+C     IF (IER .NE. 0) RETURN
 C
 C  The transformation takes place in NDC space, so do the
 C  appropriate conversions.

@@ -1,5 +1,5 @@
 C
-C	$Id: gesc.f,v 1.25 1997-02-19 00:30:51 fred Exp $
+C	$Id: gesc.f,v 1.26 1999-03-25 00:22:54 fred Exp $
 C
       SUBROUTINE GESC(FCTID,LIDR,IDR,MLODR,LODR,ODR)
 C
@@ -100,7 +100,8 @@ C      -1518  --  Line joins.
 C      -1519  --  Line caps.
 C      -1520  --  Miter limit.
 C      -1521  --  Coordinate points for picture positioning.
-C      -1522  --  Scale factor for PS coordintaes
+C      -1522  --  Scale factor for PS coordintaes.
+C      -1523  --  Select CMYK color model or RGB model.
 C
       IF (FCTID .EQ. -1399) THEN
 C
@@ -661,7 +662,14 @@ C
 C  Coordinate scale factor for next PostScript workstation opened.
 C
         IF (FCTID .EQ. -1522) THEN
-          READ(IDR(1)(1:5),520) CPSCL
+          READ(IDR(1)(1:5),501) CPSCL
+          RETURN
+        ENDIF 
+C
+C  Color model selection (1=RGB, 0=CMYK).
+C
+        IF (FCTID .EQ. -1523) THEN
+          READ(IDR(1)(1:5),501) CCMDL
           RETURN
         ENDIF 
 C
