@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.7 1993-10-19 17:24:11 boote Exp $
+#	$Id: yMakefile,v 1.8 1994-02-04 17:11:49 haley Exp $
 #
 
 CSRCS = \
@@ -9,7 +9,7 @@ CSRCS = \
 SED_SRCS = \
 	c_cbex01.c c_agex07.c c_mpex05.c
 
-GENERIC_SRCS = $(CSRCS) $(SED_SRCS) $(FSRCS)
+GENERIC_SRCS = $(CSRCS)
 
 InstallTarget($(GENERIC_SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
 CleanFilesTarget($(SED_SRCS))
