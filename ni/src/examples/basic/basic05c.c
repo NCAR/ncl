@@ -1,5 +1,5 @@
 /*
- * $Id: basic05c.c,v 1.5 1995-05-01 22:06:48 scheitln Exp $
+ * $Id: basic05c.c,v 1.6 1995-05-10 17:13:08 scheitln Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -27,8 +27,6 @@
 *             and create a completely new colormap.
 *
 */
-
-#include <strings.h>
 
 #include <ncarg/hlu/App.h>
 #include <ncarg/hlu/ResList.h>
