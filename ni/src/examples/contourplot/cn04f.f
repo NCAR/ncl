@@ -1,5 +1,5 @@
 C
-C     $Id: cn04f.f,v 1.2 1995-04-01 22:20:45 dbrown Exp $
+C     $Id: cn04f.f,v 1.3 1995-04-03 05:11:49 haley Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -48,7 +48,7 @@ C
 C
 C Default is to display output to an X workstation
 C
-     NCGM=0
+      NCGM=0
 C
 C This program emulates the output of cpex02 with a few differences:
 C 1. Because the information label is implemented as an HLU Annotation
