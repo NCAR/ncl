@@ -47,15 +47,11 @@ end
 
 cp ${file}.sed $file
 
-if ($system == "Cray2" || $system == "Cray") then
+if ($system == "Cray2" || $system == "Cray" || $system == "Cray3") then
 echo "Converting to $system C/f77 calling conventions for $file"
 endif
 
 if ($system == "Ardent") then
-echo "Converting to $system calling conventions for $file"
-endif
-
-if ($system == "Ultrix-VAX-Fortran") then
 echo "Converting to $system calling conventions for $file"
 endif
 
@@ -68,7 +64,7 @@ echo "Converting to $system calling conventions for $file"
 endif
 
 
-if ($system == "Cray2" || $system == "Cray" || $system == "Ultrix-VAX-Fortran") then
+if ($system == "Cray2" || $system == "Cray" || $system == "Cray3") then
 
 	foreach i ($functions)
 		set newname = `echo $i | tr '[a-z]' '[A-Z]'`
