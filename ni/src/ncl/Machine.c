@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.42 1995-06-17 01:21:33 ethan Exp $
+ *      $Id: Machine.c,v 1.43 1995-07-18 19:42:45 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1640,7 +1640,7 @@ if(the_list != NULL) {
 							_NclDestroyObj((NclObj)the_list->the_elements[i].var_ptr);
 						}
 					}
-				} else if(the_list->the_elements[i].var_sym != NULL){
+				} else if((the_list->the_elements[i].var_sym != NULL)&&(data.u.data_obj->obj.obj_type & Ncl_Var)){
 /*
 * -----------> Not really sure about DONT_CARE <------------
 */
