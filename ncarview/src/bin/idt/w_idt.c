@@ -1,5 +1,5 @@
 /*
- *	$Id: w_idt.c,v 1.20 1992-08-10 22:05:01 clyne Exp $
+ *	$Id: w_idt.c,v 1.21 1992-08-11 17:11:39 clyne Exp $
  */
 /*
  *	w_idt.c
@@ -101,7 +101,7 @@ static  XtResource      resources[] = {
                 XtOffset(AppDataPtr, version), XtRString, "False" 
 	},
         {
-	"oldidt", "oldidt", XtRBoolean, sizeof (Boolean),
+	"oldIdt", "OldIdt", XtRBoolean, sizeof (Boolean),
                 XtOffset(AppDataPtr, oldidt), XtRString, "False" 
 	}
 };
