@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.4 1993-01-27 02:18:21 haley Exp $
+#	$Id: yMakefile,v 1.5 1993-01-27 02:24:16 haley Exp $
 #
 NCARG	= ../../../..
 
@@ -29,7 +29,7 @@ FCPP_OBJS	= fndarg.f metred.f mninst.f trans.f trassn.f \
 		trlate.f trndat.f
 
 LIBS = $(LIBPATH)/libncarg.a $(LIBPATH)/libncarg_gks.a $(LIBPATH)/libncarg_c.a \
-	$(LIBPATH)/libncarg_loc.a -lX11
+	$(LIBPATH)/libncarg_loc.a
 
 all:: pre2ncgm.prog
 
