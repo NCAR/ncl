@@ -21,15 +21,15 @@ C
       CALL GQTXAL(IER,IHZ,IDUM)
 C
         ICENT = IHZ-2
-        IF (IHZ .EQ. 0) ICENT = -1
-        CNTR = FLOAT(ICENT)
+	IF (IHZ .EQ. 0) ICENT = -1
+	CNTR = FLOAT(ICENT)
 C
 C Determine character height.
 C
       CALL GQCHH (IER,CHARH)
 C
-         YPORT  = VP(4) - VP(3)
-        SIZE = CHARH * YPORT
+	 YPORT  = VP(4) - VP(3)
+	SIZE = CHARH * YPORT
 C
 C Determine character orientation.
 C

@@ -1,7 +1,4 @@
 C
-C       $Id: hstmed.f,v 1.2 1993-12-03 21:16:28 kennison Exp $
-C
-C
 C *****************************************************
 C
       SUBROUTINE HSTMED(DATARR,NPTS2,WRK2,MED)

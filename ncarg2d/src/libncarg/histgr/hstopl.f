@@ -1,4 +1,3 @@
-C
 C *************************************************************
 C
       SUBROUTINE HSTOPL(IOPT)
@@ -21,13 +20,13 @@ C
      -       FREQNC, HWIND(4), COLSHA, COLREC, COLAXI, COLMED, COLTEX,
      -       COLTIT, COLPER, DRAWL, SPACE, LABMAX, CHARL, HEIGHT,
      -       ORIENT, COLSH2, SETSPA, SETSP2, MVALU, SETMVA, SETEPS,
-     -       NMVAL, PMVAL
+     -       NMVAL, PMVAL, PERTIT
       LOGICAL HORZNT, PERCNT, MIDVAL, SHADE, MEDIAN, PERIM, HFRAME,
      -        LISTOP, WINDOW, COLORS, HSTFOR, TITLE, LABEL, FREQNC,
-     -        DRAWL, SPACE, CHARL, MVALU, NMVAL, PMVAL
-      COMMON /HSTGC2/ STRFOR, STRTIT, STRLAB, STRFRE, LABTEX
+     -        DRAWL, SPACE, CHARL, MVALU, NMVAL, PMVAL, PERTIT
+      COMMON /HSTGC2/ STRFOR, STRTIT, STRLAB, STRFRE, STRPER, LABTEX
       CHARACTER*96  STRTIT
-      CHARACTER*55  STRFOR, STRLAB, STRFRE
+      CHARACTER*55  STRFOR, STRLAB, STRFRE, STRPER
       CHARACTER*15 LABTEX(30)
       CHARACTER*7  IOPT
       CHARACTER*2  TAG, OPT
@@ -58,7 +57,7 @@ C
         SHADE = .TRUE.
         DRAWL = .FALSE.
         MEDIAN = .FALSE.
-        MVALU  = .FALSE.
+	MVALU  = .FALSE.
         PERIM = .FALSE.
         HFRAME = .TRUE.
         LISTOP = .FALSE.
@@ -78,15 +77,19 @@ C
         COLPER = 1
         SETSPA = 2.
         SETSP2 = -1.
-        NMVAL = .TRUE.
-        PMVAL = .TRUE.
-        SETMVA = -999.
-        SETEPS = 1.E-10
+	NMVAL = .TRUE.
+	PMVAL = .TRUE.
+	SETMVA = -999.
+	SETEPS = 1.E-10
         HSTFOR = .FALSE.
         STRFOR = '(G10.3)'
+	STRTIT = ' '
+	STRFRE = 'FREQUENCY'
+	STRPER = 'PERCENT OCCURRENCE'
         TITLE = .FALSE.
         LABEL = .FALSE.
         FREQNC = .FALSE.
+	PERTIT = .FALSE.
         CHARL = .FALSE.
         HEIGHT = 2
         ORIENT = 0
@@ -251,13 +254,13 @@ C
 C  SWITCH ON
 C
           IF (OPT .EQ. 'ON') THEN
-            NMVAL = .TRUE.
+	    NMVAL = .TRUE.
             RETURN
 C
 C  SWITCH OFF
 C
           ELSEIF (OPT .EQ. 'OF') THEN
-            NMVAL = .FALSE.
+	    NMVAL = .FALSE.
             RETURN
           ELSE
                 GOTO 900
@@ -270,13 +273,13 @@ C
 C  SWITCH ON
 C
           IF (OPT .EQ. 'ON') THEN
-            PMVAL = .TRUE.
+	    PMVAL = .TRUE.
             RETURN
 C
 C  SWITCH OFF
 C
           ELSEIF (OPT .EQ. 'OF') THEN
-            PMVAL = .FALSE.
+	    PMVAL = .FALSE.
             RETURN
           ELSE
                 GOTO 900

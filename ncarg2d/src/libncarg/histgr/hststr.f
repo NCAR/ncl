@@ -1,4 +1,5 @@
 C
+C
 C *****************************************************
 C
         SUBROUTINE HSTSTR(LABEL,FIRST,LAST)
