@@ -1,5 +1,5 @@
 /*
- *      $Id: Convert.c,v 1.17 1997-08-06 20:18:24 boote Exp $
+ *      $Id: Convert.c,v 1.18 1997-09-19 20:08:22 boote Exp $
  */
 /************************************************************************
 *									*
@@ -118,8 +118,10 @@ _NhlConvertContextClass
 	NhlClass		ref_class;
 #endif
 {
+	char	func[]="_NhlConvertContextClass";
+
 	if(ctxt->ref != NULL){
-		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s:Class not settable"));
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s:Class not settable",func));
 		return;
 	}
 
