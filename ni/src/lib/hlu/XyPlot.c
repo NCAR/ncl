@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.64 1996-11-18 22:21:55 dbrown Exp $
+ *      $Id: XyPlot.c,v 1.65 1996-12-05 00:43:35 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -142,7 +142,7 @@ static NhlResource data_resources[] = {
 		sizeof(NhlBoolean),Oset(mono_marker_color),NhlTImmediate,
 		(NhlPointer)False,_NhlRES_DEFAULT,NULL},
 
-	{".not",".not",NhlTBoolean,sizeof(NhlBoolean),Oset(marker_size_set),
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),Oset(marker_size_set),
 		NhlTImmediate,(NhlPointer)True,_NhlRES_NOACCESS,NULL},
 	{NhlNxyMarkerSizeF,NhlCxyMarkerSizeF,NhlTFloat,
 		sizeof(float),Oset(marker_size),NhlTProcedure,
@@ -188,7 +188,7 @@ static NhlResource data_resources[] = {
 		sizeof(NhlGenArray),Oset(lg_label_strings),NhlTImmediate,
 		(NhlPointer)NULL,_NhlRES_DEFAULT,(NhlFreeFunc)NhlFreeGenArray},
 
-	{".not",".not",NhlTBoolean,sizeof(NhlBoolean),Oset(dash_seg_len_set),
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),Oset(dash_seg_len_set),
 		NhlTImmediate,(NhlPointer)True,_NhlRES_NOACCESS,NULL},
 	{NhlNxyLineDashSegLenF,NhlCxyLineDashSegLenF,NhlTFloat,
 		sizeof(float),Oset(dash_seg_len),NhlTProcedure,
