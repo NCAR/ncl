@@ -28,7 +28,7 @@ C
 C
 C Retrieve an array of test data.
 C
-        OPEN (11,FILE='dat2',STATUS='OLD')
+        OPEN (11,FILE='ccpila.dat',STATUS='OLD')
 	DO 10, I=1,M
 	  READ (11,*) (ZDAT(I,J),J=1,N)
  10	CONTINUE
