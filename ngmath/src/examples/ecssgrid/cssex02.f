@@ -1,5 +1,5 @@
 C
-C       $Id: cssex02.f,v 1.6 1999-10-22 16:46:04 fred Exp $
+C       $Id: cssex02.f,v 1.7 1999-12-13 20:26:53 fred Exp $
 C
        PROGRAM CSSEX02
 C 
@@ -345,7 +345,7 @@ C  The function used is a sum of exponentials.
 C  
 C  This code was originally written by David Kennison at NCAR.
 C
-      EXTERNAL BD
+      EXTERNAL CSSCCBD
       COMMON /CSSBD1/R0,R1,R2
       COMMON /CSSCMN/ CMUL(160),NCNT,NLOW,NHGH,RLOW,RHGH,RMIN,RMAX,
      +                XCOC(160),YCOC(160),ZCOC(160)
