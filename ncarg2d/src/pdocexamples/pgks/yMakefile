@@ -1,12 +1,51 @@
 #
-#	$Id: yMakefile,v 1.3 1994-07-13 17:29:00 fred Exp $
+#	$Id: yMakefile,v 1.4 1995-06-14 00:06:07 haley Exp $
 #
 MYNAME	= pgks
 
-GENERIC_SRCS =	pgkex01.f pgkex02.f pgkex03.f pgkex04.f pgkex05.f pgkex06.f \
+SRCS =	pgkex01.f pgkex02.f pgkex03.f pgkex04.f pgkex05.f pgkex06.f \
 		pgkex07.f pgkex08.f pgkex09.f pgkex10.f pgkex11.f pgkex12.f \
 		pgkex13.f pgkex14.f pgkex15.f pgkex16.f pgkex17.f pgkex18.f \
 		pgkex19.f pgkex20.f pgkex21.f pgkex22.f pgkex23.f pgkex24.f \
 		pgkex25.f pgkex26.f
 
-InstallTarget($(GENERIC_SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
+OBJS =	pgkex01.o pgkex02.o pgkex03.o pgkex04.o pgkex05.o pgkex06.o \
+		pgkex07.o pgkex08.o pgkex09.o pgkex10.o pgkex11.o pgkex12.o \
+		pgkex13.o pgkex14.o pgkex15.o pgkex16.o pgkex17.o pgkex18.o \
+		pgkex19.o pgkex20.o pgkex21.o pgkex22.o pgkex23.o pgkex24.o \
+		pgkex25.o pgkex26.o
+
+PROG_LIBS		= $(NCARGLIBS)
+SYS_LIBS		= -lm
+EXTRA_LIBS		= $(XLIB)
+EXTRA_DEFINES	= -DSED_WSTYPE=1
+
+InstallTarget($(SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
+
+FExampleTarget(pgkex01,pgkex01.o)
+FExampleTarget(pgkex02,pgkex02.o)
+FExampleTarget(pgkex03,pgkex03.o)
+FExampleTarget(pgkex04,pgkex04.o)
+FExampleTarget(pgkex05,pgkex05.o)
+FExampleTarget(pgkex06,pgkex06.o)
+FExampleTarget(pgkex07,pgkex07.o)
+FExampleTarget(pgkex08,pgkex08.o)
+FExampleTarget(pgkex09,pgkex09.o)
+FExampleTarget(pgkex10,pgkex10.o)
+FExampleTarget(pgkex11,pgkex11.o)
+FExampleTarget(pgkex12,pgkex12.o)
+FExampleTarget(pgkex13,pgkex13.o)
+FExampleTarget(pgkex14,pgkex14.o)
+FExampleTarget(pgkex15,pgkex15.o)
+FExampleTarget(pgkex16,pgkex16.o)
+FExampleTarget(pgkex17,pgkex17.o)
+FExampleTarget(pgkex18,pgkex18.o)
+FExampleTarget(pgkex19,pgkex19.o)
+FExampleTarget(pgkex20,pgkex20.o)
+FExampleTarget(pgkex21,pgkex21.o)
+FExampleTarget(pgkex22,pgkex22.o)
+FExampleTarget(pgkex23,pgkex23.o)
+FExampleTarget(pgkex24,pgkex24.o)
+FExampleTarget(pgkex25,pgkex25.o)
+FExampleTarget(pgkex26,pgkex26.o)
+

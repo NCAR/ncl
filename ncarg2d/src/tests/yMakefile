@@ -1,10 +1,10 @@
 #
-#	$Id: yMakefile,v 1.9 1994-08-24 17:12:53 kennison Exp $
+#	$Id: yMakefile,v 1.10 1995-06-14 00:08:42 haley Exp $
 #
 
 MYNAME	= tests
 
-TESTS = \
+SRCS = \
 	tagupw.f tareas.f tautog.f tcnqck.f tcnsmt.f tcnsup.f tcolcv.f \
 	tconan.f tconaq.f tconas.f tconpa.f tconre.f tdashc.f tdashl.f \
 	tdashp.f tdashs.f tdshpk.f tezmap.f tezmpa.f tgflas.f tgrida.f \
@@ -12,5 +12,59 @@ TESTS = \
 	tppack.f tpwrtx.f tpwry.f  tpwrzi.f tpwrzs.f tpwrzt.f tseter.f \
 	tsoftf.f tsrfac.f tstitl.f tstrml.f tthree.f tvelvc.f
 
-InstallTarget($(TESTS),$(INSTALL_LIB),$(TESTSPATH))
+OBJS = \
+	tagupw.o tareas.o tautog.o tcnqck.o tcnsmt.o tcnsup.o tcolcv.o \
+	tconan.o tconaq.o tconas.o tconpa.o tconre.o tdashc.o tdashl.o \
+	tdashp.o tdashs.o tdshpk.o tezmap.o tezmpa.o tgflas.o tgrida.o \
+	thafto.o thstgr.o thstmv.o tisohr.o tisosr.o tlblba.o tpltch.o \
+	tppack.o tpwrtx.o tpwry.o  tpwrzi.o tpwrzs.o tpwrzt.o tseter.o \
+	tsoftf.o tsrfac.o tstitl.o tstrml.o tthree.o tvelvc.o
 
+PROG_LIBS		= $(NCARGLIBS)
+SYS_LIBS		= -lm
+EXTRA_LIBS		= $(XLIB)
+EXTRA_DEFINES	= -DSED_WSTYPE=1
+
+InstallTarget($(SRCS),$(INSTALL_LIB),$(TESTSPATH))
+
+FExampleTarget(tagupw,tagupw.o)
+FExampleTarget(tareas,tareas.o)
+FExampleTarget(tautog,tautog.o)
+FExampleTarget(tcnqck,tcnqck.o)
+FExampleTarget(tcnsmt,tcnsmt.o)
+FExampleTarget(tcnsup,tcnsup.o)
+FExampleTarget(tcolcv,tcolcv.o)
+FExampleTarget(tconan,tconan.o)
+FExampleTarget(tconaq,tconaq.o)
+FExampleTarget(tconas,tconas.o)
+FExampleTarget(tconpa,tconpa.o)
+FExampleTarget(tconre,tconre.o)
+FExampleTarget(tdashc,tdashc.o)
+FExampleTarget(tdashl,tdashl.o)
+FExampleTarget(tdashp,tdashp.o)
+FExampleTarget(tdashs,tdashs.o)
+FExampleTarget(tdshpk,tdshpk.o)
+FExampleTarget(tezmap,tezmap.o)
+FExampleTarget(tezmpa,tezmpa.o)
+FExampleTarget(tgflas,tgflas.o)
+FExampleTarget(tgrida,tgrida.o)
+FExampleTarget(thafto,thafto.o)
+FExampleTarget(thstgr,thstgr.o)
+FExampleTarget(thstmv,thstmv.o)
+FExampleTarget(tisohr,tisohr.o)
+FExampleTarget(tisosr,tisosr.o)
+FExampleTarget(tlblba,tlblba.o)
+FExampleTarget(tpltch,tpltch.o)
+FExampleTarget(tppack,tppack.o)
+FExampleTarget(tpwrtx,tpwrtx.o)
+FExampleTarget(tpwry,tpwry.o)
+FExampleTarget( tpwrzi, tpwrzi.o)
+FExampleTarget(tpwrzs,tpwrzs.o)
+FExampleTarget(tpwrzt,tpwrzt.o)
+FExampleTarget(tseter,tseter.o)
+FExampleTarget(tsoftf,tsoftf.o)
+FExampleTarget(tsrfac,tsrfac.o)
+FExampleTarget(tstitl,tstitl.o)
+FExampleTarget(tstrml,tstrml.o)
+FExampleTarget(tthree,tthree.o)
+FExampleTarget(tvelvc,tvelvc.o)
