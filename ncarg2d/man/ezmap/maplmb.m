@@ -1,9 +1,7 @@
 .TH MAPLMB 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .na
 .nh
-.SH NAME@@@
-SVG programmer nees to look at this man page.
-.sp
+.SH NAME
 MAPLMB - Draws a limb line.
 .SH SYNOPSIS
 CALL MAPLMB
@@ -25,8 +23,8 @@ NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks, and
 ncarg_loc, preferably in that order.
 .SH SEE ALSO
 Online:
-Ezmap,
-Ezmap_params,
+ezmap,
+ezmap_params,
 mapaci,
 mapbla,
 mapdrw,
@@ -77,9 +75,8 @@ ncarg_cbind
 .sp
 Hardcopy:  
 NCAR Graphics Contouring and Mapping Tutorial; 
-"NCAR Graphics User's Guide, Version 2.00"
 .SH COPYRIGHT
-(c) Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
+Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research
 .br
 All Rights Reserved
