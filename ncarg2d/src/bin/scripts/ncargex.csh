@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.122 2001-02-09 17:12:37 haley Exp $
+#   $Id: ncargex.csh,v 1.123 2001-06-14 17:30:18 haley Exp $
 #                                                                      
 #                Copyright (C)  2000
 #        University Corporation for Atmospheric Research
@@ -1603,6 +1603,12 @@ switch ($name)
     case shex01:
     case shex02:
     case shex03:
+    case wmex01:
+    case wmex02:
+    case wmex03:
+    case wmex04:
+    case wmex13:
+    case wmex14:
     case c_csex01:
     case c_csex02:
     case c_csex03:
