@@ -1,5 +1,5 @@
 C
-C	$Id: gksbd.f,v 1.26 2004-07-23 18:11:39 fred Exp $
+C	$Id: gksbd.f,v 1.27 2004-07-23 21:13:46 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -213,7 +213,7 @@ C       RERR   -- RETURN VARIABLE FOR ERROR INDICATOR
 C       STR    -- CHARACTER VARIABLE FOR PASSING CHARACTERS
 C
 C-----------------------------------------------------------------------
-      DATA KSLEV,WK/0, 17/
+      DATA KSLEV,WK/0, 20/
       DATA LSWK/1,3,7,8,9,10,11,12,20,21,22,23,24,25,26,27,28,29,30,31/       
       DATA MOPWK,MACWK,MNT
      +    /   15,   15,  1/
