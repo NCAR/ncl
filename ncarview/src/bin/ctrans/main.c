@@ -1,5 +1,5 @@
 /*
- *	$Id: main.c,v 1.27 1993-01-11 21:19:23 clyne Exp $
+ *	$Id: main.c,v 1.28 1993-01-12 20:12:51 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -43,7 +43,7 @@
  *	a global structure that contains values of command line options
  */
 static	struct	{
-	char	*device;		/* the device name		*/
+	char	*device;	/* the device name		*/
 	char	*font;		/* the font name		*/
 	int	movie;		/* movie or batch mode		*/
 	boolean	soft_fill;	/* software fill of polygons	*/
@@ -58,6 +58,7 @@ static	struct	{
 	boolean	version;	/* print the verison number	*/
 	boolean	verbose;	/* operate in verbose mode	*/
 	boolean	help;		/* print usage string		*/
+	boolean	pause;		/* pause between frames		*/
 	} opt;
 	
 
@@ -77,6 +78,7 @@ static	OptDescRec	set_options[] = {
         {"Version", 0, NULL, "Print version and exit"},
         {"verbose", 0, NULL, "Operate in verbose mode"},
         {"help", 0, NULL, "Print usage and exit"},
+        {"pause", 0, NULL, "Pause between frames until user hits <RETURN>"},
 	{NULL}
 	};
 
@@ -114,6 +116,8 @@ static	Option	get_options[] = {
         {"verbose",NCARGCvtToBoolean,(Voidptr)&opt.verbose,sizeof(opt.verbose)
 	},
         {"help",NCARGCvtToBoolean,(Voidptr)&opt.help,sizeof(opt.help)
+	},
+        {"pause",NCARGCvtToBoolean,(Voidptr)&opt.pause,sizeof(opt.pause)
 	},
 	{NULL
 	}
@@ -211,16 +215,18 @@ static	void	cleanup(err)
 	exit(err);
 }
 
-int	process(record, batch, sleep_time, verbose, do_all)
+int	process(record, batch, sleep_time, tty, verbose, do_all)
 	int		record;
 	boolean		batch;
 	unsigned	sleep_time;
+	FILE		*tty;
 	boolean		verbose;
 	boolean		do_all;
 {
 	CtransRC	ctrc;
 	static		int	frame_count = 1;
 	int		status = 0;
+	boolean		abort = FALSE;
 
 	do {
 		ctrc = ctrans(record);
@@ -238,15 +244,23 @@ int	process(record, batch, sleep_time, verbose, do_all)
 			break;
 
 		case	EOM:
+			abort = TRUE;
 			do_all = FALSE;
 			break;
 		}
 	
-		if (verbose) {
+		if (verbose  && ! abort) {
 			fprintf( logFP, "plotted %d frames\n", frame_count++);
 		}
 
-		if (batch) {
+		if (tty && ! abort) {
+			int	c;
+			while ((c = getc(tty)) != EOF) {
+				if (c == '\n') break;
+			}
+			if (c == EOF)  return(-1);
+
+		} else if (batch && ! abort) {
 			if (sleep_time>0) sleep(sleep_time);
 			CtransClear();
 		}
@@ -295,6 +309,7 @@ char	**argv;
 					/*
 					 * list of metafiles to process
 					 */
+	FILE	*tty = NULL;		/* tty for prompting user	*/
 
 	char	**meta_files;
 	int	i,j;
@@ -334,8 +349,27 @@ char	**argv;
 		cleanup(1);
 	}
 
-	batch = opt.movie != -1;
-	sleep_time = opt.movie;
+	/*
+ 	 * the pause option and the movie option option are mutually
+	 * exclusive. ignore the movie option if both are present
+	 */
+	if (! opt.pause) {
+		batch = opt.movie != -1;
+		sleep_time = opt.movie;
+	}
+	else {
+		/*
+		 * open tty to read user prompt
+		 */
+		char	*tty_in = "/dev/tty";
+		if (! (tty = fopen(tty_in, "r"))) {
+			fprintf(
+				logFP, "%s : Error opening tty(%s) [ %s ]\n",
+				progName, tty_in, sys_errlist[errno]
+			);
+			cleanup(1);
+		}
+	}
 
 	if (opt.version) {
 		PrintVersion(progName);
@@ -401,7 +435,7 @@ char	**argv;
 	/*
 	 *	init ctrans
 	 */
-	if (init_ctrans(&argc, argv, gcap, fcap, TRUE, batch) != OK) {
+	if (init_ctrans(&argc, argv, gcap, fcap, batch) != OK) {
 		log_ct(FATAL);
 		cleanup(1);
 	}
@@ -492,7 +526,7 @@ char	**argv;
 			 *	unrecoverable error occurs
 			 */
 			if (process(NEXT, batch, (unsigned) 
-					sleep_time, opt.verbose,TRUE) < 0) {
+					sleep_time, tty, opt.verbose,TRUE) < 0){
 				eStatus = 1;
 			}
 		}
@@ -503,7 +537,7 @@ char	**argv;
 			i = 0;
 			while (record[i] != -1) {
 				if (process(record[i++], batch, (unsigned) 
-					sleep_time, opt.verbose,FALSE) < 0) {
+					sleep_time, tty, opt.verbose,FALSE)< 0){
 
 					eStatus = 1;
 				}
