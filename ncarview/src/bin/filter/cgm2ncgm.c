@@ -1,5 +1,5 @@
 /*
- *	$Id: cgm2ncgm.c,v 1.9 1995-03-16 23:00:55 haley Exp $
+ *	$Id: cgm2ncgm.c,v 1.10 1995-03-16 23:05:35 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -104,7 +104,7 @@ static int	get_next_instr(instr)
 				return(-1);
 			}
 		}
-		bcopy((char *) bufPtr, (char *) instr->buf, (int) leftOver);
+		memmove((void *) instr->buf, (const void *) bufPtr, (size_t) leftOver);
 		dataAva -= leftOver;	/* update buffers	*/
 		bufPtr += leftOver;
 		instr->data += leftOver;
@@ -165,7 +165,7 @@ static int	get_next_instr(instr)
 		if (get_data(len) != len)
 			return(-1);	/* error	*/
 	}	
-	bcopy((char *) bufPtr, (char *) instr->data, (int) len);
+	memmove((void *) instr->data, (const void *) bufPtr, (size_t) len);
 	dataAva -= (len);
 	bufPtr += (len);
 
