@@ -1,5 +1,5 @@
 /*
- *      $Id: TextItem.c,v 1.48 1999-04-08 21:24:45 dbrown Exp $
+ *      $Id: TextItem.c,v 1.49 2000-02-24 02:08:49 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -371,7 +371,23 @@ DoPcCalc
 		c_pcseti("FN",tnew->text.font);
 	c_getset(&fl,&fr,&fb,&ft,&ul,&ur,&ub,&ut,&ll);
 
+/*
+ * Instead of setting the identity transformation using a maximum viewport,
+ * we now just change the window to match the current viewport. The
+ * view bb calculation should not be affected. We can also make the same
+ * change when drawing, regardless of the clipping, which should
+ * always be off during a draw. Text shouldn't have a problem even if
+ * clipping is on, because nothing is ever drawn outside the TextItem
+ * viewport (by TextItem, that is).
+ * The reason to bother with this change is we are compensating for 
+ * a GKS problem: if a frame is open and has been drawn on, then all
+ * changes to the viewport get written into the GKS metafile as 
+ * CLIP RECTANGLEs. The many calls to DoPcCalc could result in a cascade 
+ * of useless flip-flopping CLIP RECTANGLE output (over 500 in a row
+ * were counted). 
+ */ 
 
+	c_set(fl,fr,fb,ft,fl,fr,fb,ft,ll);
 	ret1 = FigureAndSetTextBBInfo(tnew);
 	c_set(fl,fr,fb,ft,ul,ur,ub,ut,ll);
 
@@ -412,7 +428,6 @@ static NhlErrorTypes    TextItemInitialize
 	char			*tmp;
 	NhlErrorTypes		ret=NhlNOERROR,ret1 = NhlNOERROR;
 	float			x,y,width,height;
-	float			tmpvx0,tmpvx1,tmpvy0,tmpvy1;
 	NhlBoolean		do_view_trans = False;
 
         tnew->text.new_draw_req = True;
@@ -835,7 +850,7 @@ static NhlErrorTypes    TextItemDraw
 		NULL);
         tlayer->text.new_draw_req = False;
         
-	c_set(0.0,1.0,0.0,1.0,0.0,1.0,0.0,1.0,1);
+	c_set(fl,fr,fb,ft,fl,fr,fb,ft,1);
 
 /* first draw the perimeter: it may have a solid background */
 
@@ -939,7 +954,8 @@ static NhlErrorTypes    TextItemSegDraw
 	sprintf(buf,"%c",tlayer->text.func_code);
 	c_pcsetc("FC",buf);
 
-	c_set(0.0,1.0,0.0,1.0,0.0,1.0,0.0,1.0,1);
+	c_set(fl,fr,fb,ft,fl,fr,fb,ft,1);
+
 	gset_linewidth((Gdouble)tlayer->text.font_thickness);
 	gset_line_colr_ind((Gint)_NhlGetGksCi(tlayer->base.wkptr,tlayer->text.font_color));
 	gset_line_colr_ind((Gint)_NhlGetGksCi(tlayer->base.wkptr,tlayer->text.font_color));
@@ -1068,7 +1084,6 @@ static NhlErrorTypes FigureAndSetTextBBInfo
 *         P0              P3                                                   
 */
 
-	c_set(0.0,1.0,0.0,1.0,0.0,1.0,0.0,1.0,1);
 /*
  * Plotchar Center option is now always set to -1.0. This is required in order
  * to get justification to work correctly for text that uses the position-
