@@ -1,5 +1,5 @@
 /*
- *      $Id: datasourcegrid.c,v 1.5 1999-03-12 23:33:02 dbrown Exp $
+ *      $Id: datasourcegrid.c,v 1.6 1999-06-02 03:40:07 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -34,13 +34,13 @@
 #define INVALID_INPUT "Invalid input"
 #define INVALID_SHAPE "Dimension size or count error"
 
+static NhlBoolean Colors_Set = False;
 static Pixel Foreground,Background;
 static char *Buffer;
 static int  Buflen;
 static int  Max_Width;
 static int  CWidth;
 static Dimension  Row_Height;
-static XmString  Edit_Save_String = NULL;
 static  NrmQuark QTestVar = NrmNULLQUARK;
 
 static int DataIndex(
@@ -928,12 +928,11 @@ EditCB
         XmLGridCallbackStruct *cb = (XmLGridCallbackStruct *) cb_data;
         XmLGridColumn colptr;
         XmLGridRow rowptr;
-        Widget text;
 	char *new_string,*save_text = NULL;
 	int data_ix;
 
 #if DEBUG_DATA_SOURCE_GRID
-	printf("entered EditCB\n");
+	printf("entered DataSourceGrid EditCB\n");
 #endif
 
 
@@ -941,50 +940,47 @@ EditCB
 	rowptr = XmLGridGetRow(pub->grid,XmCONTENT,cb->row);
 
         switch (cb->reason) {
+            case XmCR_EDIT_INSERT:
+#if DEBUG_DATA_SOURCE_GRID      
+                    fprintf(stderr,"edit insert\n");
+#endif
+                    XtVaSetValues(dsp->text,
+                                  XmNcursorPosition,0,
+                                  XmNborderWidth,2,
+                                  XmNcursorPositionVisible,True,
+				  XmNbackground,dsp->go->go.select_pixel,
+                                  NULL);
+		    if (! dsp->text_dropped) {
+			    XmTextSetInsertionPosition(dsp->text,0);
+		    }
+		    else {
+			    char *cur_string;
+			    dsp->text_dropped = False;
+			    XmStringGetLtoR(dsp->edit_save_string,
+					    XmFONTLIST_DEFAULT_TAG,
+					    &cur_string);
+			    XmTextInsert(dsp->text,0,cur_string);
+			    XmTextSetInsertionPosition(dsp->text,
+						       strlen(cur_string));
+			    XtFree(cur_string);
+		    }
+		    dsp->in_edit = True;
+                    return;
             case XmCR_EDIT_BEGIN:
 #if DEBUG_DATA_SOURCE_GRID
                     fprintf(stderr,"edit begin\n");
 #endif
 
-		    if (Edit_Save_String)
-			    XmStringFree(Edit_Save_String);
+		    if (dsp->edit_save_string)
+			    XmStringFree(dsp->edit_save_string);
                     XtVaGetValues
                             (pub->grid,
                              XmNcolumnPtr,colptr,
                              XmNrowPtr,rowptr,
-                             XmNcellString,&Edit_Save_String,
+                             XmNcellString,&dsp->edit_save_string,
                              NULL);
         
-                    XtVaGetValues(pub->grid,
-                                  XmNtextWidget,&text,
-                                  NULL);
-                    XtVaSetValues(text,
-				  XmNbackground,dsp->go->go.select_pixel,
-                                  NULL);
-		    dsp->in_edit = True;
-                    return;
-            case XmCR_EDIT_INSERT:
-#if DEBUG_DATA_SOURCE_GRID      
-                    fprintf(stderr,"edit insert\n");
-#endif
-		    if (Edit_Save_String)
-			    XmStringFree(Edit_Save_String);
-		    Edit_Save_String = NULL;
-                    XtVaGetValues
-                            (pub->grid,
-                             XmNcolumnPtr,colptr,
-                             XmNrowPtr,rowptr,
-                             XmNcellString,&Edit_Save_String,
-			     NULL);
-
-                    XtVaGetValues(pub->grid,
-                                  XmNtextWidget,&text,
-                                  NULL);
-
-                    XtVaSetValues(text,
-                                  XmNcursorPosition,0,
-                                  XmNborderWidth,2,
-                                  XmNcursorPositionVisible,True,
+                    XtVaSetValues(dsp->text,
 				  XmNbackground,dsp->go->go.select_pixel,
                                   NULL);
 		    dsp->in_edit = True;
@@ -993,14 +989,7 @@ EditCB
 #if DEBUG_DATA_SOURCE_GRID      
                     fprintf(stderr,"edit cancel\n");
 #endif
-
-		    if (Edit_Save_String)
-			    XmStringFree(Edit_Save_String);
-		    Edit_Save_String = NULL;
-                    XtVaGetValues(pub->grid,
-                                  XmNtextWidget,&text,
-                                  NULL);
-                    XtVaSetValues(text,
+                    XtVaSetValues(dsp->text,
 				  XmNbackground,dsp->go->go.edit_field_pixel,
                                   NULL);
 		    dsp->in_edit = False;
@@ -1010,10 +999,7 @@ EditCB
                     fprintf(stderr,"edit complete\n");
 #endif
 
-                    XtVaGetValues(pub->grid,
-                                  XmNtextWidget,&text,
-                                  NULL);
-                    XtVaSetValues(text,
+                    XtVaSetValues(dsp->text,
 				  XmNbackground,dsp->go->go.edit_field_pixel,
                                   NULL);
 
@@ -1024,24 +1010,21 @@ EditCB
  * Only get here on edit complete
  */
 
-	XtVaGetValues(pub->grid,
-		      XmNtextWidget,&text,
-		      NULL);
-	new_string = XmTextGetString(text);
+	new_string = XmTextGetString(dsp->text);
 
 	data_ix = DataIndex(dsp,cb->row);
-	if (Edit_Save_String) {
-		XmStringGetLtoR
-			(Edit_Save_String,XmFONTLIST_DEFAULT_TAG,&save_text);
+	if (dsp->edit_save_string) {
+		XmStringGetLtoR(dsp->edit_save_string,
+				XmFONTLIST_DEFAULT_TAG,&save_text);
 	}
 	if (! new_string ||
 	    (save_text && ! strcmp(new_string,save_text)) ||
 	    ! QualifyAndInsertVariable(dsp,data_ix,new_string)) {
-		if (Edit_Save_String)
+		if (dsp->edit_save_string)
 			XtVaSetValues(pub->grid,
 				      XmNcolumn,1,
 				      XmNrow,cb->row,
-				      XmNcellString,Edit_Save_String,
+				      XmNcellString,dsp->edit_save_string,
 				      NULL);
 	}
 	else {
@@ -1079,10 +1062,6 @@ EditCB
 				  _NgDATAPROFILE,dprof,True,NULL,True);
 
 	}
-	
-	if (Edit_Save_String)
-		XmStringFree(Edit_Save_String);
-	Edit_Save_String = NULL;
 	if (save_text)
 		XtFree(save_text);
 
@@ -1100,22 +1079,17 @@ SelectCB
         NgDataSourceGridRec *dsp = (NgDataSourceGridRec *)data;
 	NgDataSourceGrid *pub = &dsp->public;
         XmLGridCallbackStruct *cb = (XmLGridCallbackStruct *) cb_data;
-	static int first = True;
         Boolean	editable;
 	XmLGridColumn colptr;
 	XmLGridRow rowptr;
 
 #if DEBUG_DATA_SOURCE_GRID      
-	fprintf(stderr,"entered SelectCB\n");
+	fprintf(stderr,"entered DataSourceGrid SelectCB\n");
 #endif
 
-        if (cb->row == dsp->selected_row && Edit_Save_String)
-                return;
+        if (! Colors_Set) {
 
-        if (first) {
-
-                first = False;
-                
+                Colors_Set = True;
         
                 colptr = XmLGridGetColumn(pub->grid,XmCONTENT,0);
                 rowptr = XmLGridGetRow(pub->grid,XmHEADING,0);
@@ -1127,16 +1101,8 @@ SelectCB
                               NULL);
         }
 
-	colptr = XmLGridGetColumn(pub->grid,XmCONTENT,1);
 
 	if (dsp->selected_row > -1) {
-
-		rowptr = XmLGridGetRow(pub->grid,XmCONTENT,dsp->selected_row);
-		XtVaGetValues(pub->grid,
-			      XmNcolumnPtr,colptr,
-			      XmNrowPtr,rowptr,
-			      XmNcellEditable,&editable,
-			      NULL);
 
                     /* restore last selected */
 		XtVaSetValues(pub->grid,
@@ -1149,7 +1115,9 @@ SelectCB
 			XmLGridEditComplete(pub->grid);
 		}
 	}
+	colptr = XmLGridGetColumn(pub->grid,XmCONTENT,1);
 	rowptr = XmLGridGetRow(pub->grid,XmCONTENT,cb->row);
+
 	XtVaGetValues(pub->grid,
 		      XmNcolumnPtr,colptr,
 		      XmNrowPtr,rowptr,
@@ -1162,7 +1130,18 @@ SelectCB
                       XmNcellBackground,Foreground,
                       NULL);
 	if (editable) {
-		XmLGridEditBegin(pub->grid,True,cb->row,1);
+
+		if (! dsp->text_dropped) {
+			if (dsp->edit_save_string)
+				XmStringFree(dsp->edit_save_string);
+			XtVaGetValues
+				(pub->grid,
+				 XmNcolumnPtr,colptr,
+				 XmNrowPtr,rowptr,
+				 XmNcellString,&dsp->edit_save_string,
+				 NULL);
+		}
+		XmLGridEditBegin(pub->grid,True,cb->row,True);
 	}
 
 	dsp->selected_row = cb->row;
@@ -1295,9 +1274,11 @@ FocusEH
 #if DEBUG_DATA_SOURCE_GRID      
                     fprintf(stderr,"focus out\n");
 #endif
+#if 0
 		if (dsp->in_edit) {
 			XmLGridEditComplete(dsp->public.grid);
 		}
+#endif
 		return;
 	case FocusIn:
 #if DEBUG_DATA_SOURCE_GRID      
@@ -1306,6 +1287,113 @@ FocusEH
 		break;
 	}
         
+	return;
+}
+
+static void StartCellDropCB 
+(
+	Widget		w,
+	XtPointer	udata,
+	XtPointer	cb_data
+)
+{
+        NgDataSourceGridRec *dsp = (NgDataSourceGridRec *)udata;
+	NgDataSourceGrid *pub = &dsp->public;
+        XmLGridCallbackStruct *cb = (XmLGridCallbackStruct *)cb_data;
+        XmLGridRow	rowptr;
+        XmLGridColumn	colptr;
+
+#if DEBUG_DATA_SOURCE_GRID      
+	fprintf(stderr,"in datasourcegrid start cell drop cb\n");
+#endif        
+	rowptr = XmLGridGetRow(pub->grid,XmCONTENT,cb->row);
+        colptr = XmLGridGetColumn(pub->grid,XmCONTENT,cb->column);
+
+	if (cb->column != 1)
+		return;
+
+	if (dsp->edit_save_string)
+		XmStringFree(dsp->edit_save_string);
+		
+	XtVaGetValues
+		(pub->grid,
+		 XmNcolumnPtr,colptr,
+		 XmNrowPtr,rowptr,
+		 XmNcellString,&dsp->edit_save_string,
+		 NULL);
+	return;
+}
+
+static void CellDropCB 
+(
+	Widget		w,
+	XtPointer	udata,
+	XtPointer	cb_data
+)
+{
+        NgDataSourceGridRec *dsp = (NgDataSourceGridRec *)udata;
+	NgDataSourceGrid *pub = &dsp->public;
+        XmLGridCallbackStruct *cb = (XmLGridCallbackStruct *)cb_data;
+        Boolean	editable;
+	XmLGridColumn colptr;
+	XmLGridRow rowptr;
+
+#if DEBUG_DATA_SOURCE_GRID      
+	fprintf(stderr,"in datasourcegrid cell drop cb\n");
+#endif        
+
+	if (cb->column != 1)
+		return;
+
+        if (! Colors_Set) {
+
+                Colors_Set = True;
+        
+                colptr = XmLGridGetColumn(pub->grid,XmCONTENT,0);
+                rowptr = XmLGridGetRow(pub->grid,XmHEADING,0);
+                XtVaGetValues(pub->grid,
+                              XmNcolumnPtr,colptr,
+                              XmNrowPtr,rowptr,
+                              XmNcellForeground,&Foreground,
+                              XmNcellBackground,&Background,
+                              NULL);
+        }
+
+	if (dsp->selected_row > -1) {
+
+                    /* restore last selected */
+		XtVaSetValues(pub->grid,
+			      XmNcolumn,0,
+			      XmNrow,dsp->selected_row,
+			      XmNcellForeground,Foreground,
+			      XmNcellBackground,Background,
+			      NULL);
+		if (dsp->in_edit) {
+			XmLGridEditComplete(pub->grid);
+		}
+	}
+
+	colptr = XmLGridGetColumn(pub->grid,XmCONTENT,1);
+	rowptr = XmLGridGetRow(pub->grid,XmCONTENT,cb->row);
+
+	XtVaGetValues(pub->grid,
+		      XmNcolumnPtr,colptr,
+		      XmNrowPtr,rowptr,
+		      XmNcellEditable,&editable,
+		      NULL);
+        XtVaSetValues(pub->grid,
+                      XmNcolumn,0,
+                      XmNrow,cb->row,
+                      XmNcellForeground,Background,
+                      XmNcellBackground,Foreground,
+                      NULL);
+	if (editable) {
+		dsp->text_dropped = True;
+		XmLGridEditBegin(pub->grid,True,cb->row,True);
+	}
+
+	dsp->selected_row = cb->row;
+	
 	return;
 }
 
@@ -1322,7 +1410,6 @@ NgDataSourceGrid *NgCreateDataSourceGrid
         NgDataSourceGrid *data_source_grid;
         int nattrs;
         static NhlBoolean first = True;
-	Widget text;
 
         if (first) {
                 Buffer = NhlMalloc(BUFINC);
@@ -1340,6 +1427,8 @@ NgDataSourceGrid *NgCreateDataSourceGrid
 	dsp->selected_row = -1;
 	dsp->parent = parent;
 	dsp->in_edit = False;
+	dsp->edit_save_string = NULL;
+	dsp->text_dropped = False;
         
         data_source_grid->grid = XtVaCreateManagedWidget
                 ("DataSourceGrid",
@@ -1358,10 +1447,14 @@ NgDataSourceGrid *NgCreateDataSourceGrid
 		(data_source_grid->grid,XmNeditCallback,EditCB,dsp);
         XtAddCallback
 		(data_source_grid->grid,XmNselectCallback,SelectCB,dsp);
+        XtAddCallback(data_source_grid->grid,
+		      XmNcellDropCallback,CellDropCB,dsp);
+        XtAddCallback(data_source_grid->grid,
+		      XmNcellStartDropCallback,StartCellDropCB,dsp);
 	XtVaGetValues(data_source_grid->grid,
-		      XmNtextWidget,&text,
+		      XmNtextWidget,&dsp->text,
 		      NULL);
-        XtAddEventHandler(text,FocusChangeMask,
+        XtAddEventHandler(dsp->text,FocusChangeMask,
                           False,FocusEH,dsp);
         
         return data_source_grid;
@@ -1426,6 +1519,8 @@ void NgDestroyDataSourceGrid
         dsp = (NgDataSourceGridRec *) data_source_grid;
         if (!dsp) return;
 
+	if (dsp->edit_save_string)
+		XmStringFree(dsp->edit_save_string);
         NhlFree(dsp);
         
         return;

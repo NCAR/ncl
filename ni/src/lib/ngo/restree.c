@@ -1,5 +1,5 @@
 /*
- *      $Id: restree.c,v 1.22 1999-05-27 02:28:34 dbrown Exp $
+ *      $Id: restree.c,v 1.23 1999-06-02 03:40:08 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1608,10 +1608,10 @@ static void UnFocusCB
 	fprintf(stderr,"unfocusing edit row %d %d\n",
 		rtp->edit_row,rtp->manual_edit_started);
 #endif
-
+#if 0
 	if (rtp->manual_edit_started)
 		XmLGridEditComplete(rtp->restree.tree);
-	
+#endif	
 	return;
 }
 
@@ -1676,7 +1676,86 @@ static void FocusCB
         
         return;
 }
+static void StartCellDropCB 
+(
+	Widget		w,
+	XtPointer	udata,
+	XtPointer	cb_data
+)
+{
+	NgResTreeRec *rtp = (NgResTreeRec *) udata;
+        NgResTree *pub_rtp = &rtp->restree;
+        XmLGridCallbackStruct *cb = (XmLGridCallbackStruct *)cb_data;
+        XmLGridRow	rowptr;
+        XmLGridColumn	colptr;
 
+#if DEBUG_RESTREE
+	fprintf(stderr,"in restree start cell drop cb\n");
+#endif        
+	rowptr = XmLGridGetRow(pub_rtp->tree,XmCONTENT,cb->row);
+        colptr = XmLGridGetColumn(pub_rtp->tree,XmCONTENT,cb->column);
+
+	if (cb->column != 2)
+		return;
+
+	if (rtp->selected_row_xmstr)
+		XmStringFree(rtp->selected_row_xmstr);
+	XtVaGetValues
+		(pub_rtp->tree,
+		 XmNcolumnPtr,colptr,
+		 XmNrowPtr,rowptr,
+		 XmNcellString,&rtp->selected_row_xmstr,
+		 NULL);
+
+	return;
+}
+
+static void CellDropCB 
+(
+	Widget		w,
+	XtPointer	udata,
+	XtPointer	cb_data
+)
+{
+	NgResTreeRec *rtp = (NgResTreeRec *) udata;
+        NgResTree *pub_rtp = &rtp->restree;
+        XmLGridCallbackStruct *cb = (XmLGridCallbackStruct *)cb_data;
+
+#if DEBUG_RESTREE
+	fprintf(stderr,"in restree cell drop cb\n");
+#endif        
+
+	if (cb->column != 2)
+		return;
+
+        if (rtp->edit_row != cb->row) {
+		XtVaSetValues(pub_rtp->tree,
+			      XmNrow,rtp->edit_row,
+			      XmNcolumnRangeStart,1,
+			      XmNcolumnRangeEnd,2,
+			      XmNcellBackground,
+			      rtp->go->go.edit_field_pixel,
+			      NULL);
+	}
+	XtVaSetValues(pub_rtp->tree,
+		      XmNcolumn,2,
+		      XmNrow,cb->row,
+		      XmNcellBackground,rtp->go->go.select_pixel,
+		      NULL);
+
+	rtp->edit_row = cb->row;
+	rtp->text_dropped = True;
+
+	XmLGridEditBegin(pub_rtp->tree,True,cb->row,2);
+
+        if (rtp->size_update_req) {
+                if (pub_rtp->geo_notify && pub_rtp->geo_data)
+                        (*pub_rtp->geo_notify)(pub_rtp->geo_data);
+                rtp->size_update_req = False;
+        }
+	
+	return;
+}
 static void RemoveFromSetValList 
 (
         NgResTreeRec	*rtp,
@@ -1995,9 +2074,6 @@ static void RestoreSensitivity
 		      XmNcellBackground,rtp->go->go.edit_field_pixel,
                       NULL);
         XtVaSetValues(rtp->text,
-#if 0
-                      XmNvalue,rtp->selected_row_xmstr,
-#endif
 		      XmNbackground,rtp->go->go.edit_field_pixel,
                       NULL);
 
@@ -2506,6 +2582,40 @@ static void EditCB
         
         switch (cb->reason) {
 	    char	*cur_string;
+            case XmCR_EDIT_INSERT:
+#if DEBUG_RESTREE        
+                    fprintf(stderr,"edit insert\n");
+#endif
+                    XtVaSetValues(rtp->text,
+                                  XmNborderWidth,2,
+                                  XmNcursorPositionVisible,True,
+				  XmNbackground,rtp->go->go.select_pixel,
+                                  NULL);
+		    if (! rtp->text_dropped) {
+			    if (rtp->selected_row_xmstr)
+				    XmStringFree(rtp->selected_row_xmstr);
+			    XtVaGetValues
+				    (pub_rtp->tree,
+				     XmNcolumnPtr,colptr,
+				     XmNrowPtr,rowptr,
+				     XmNcellString,&rtp->selected_row_xmstr,
+				     NULL);
+			    XmTextSetInsertionPosition(rtp->text,0);
+		    }
+		    else {
+			    char *cur_string;
+			    rtp->text_dropped = False;
+			    XmStringGetLtoR(rtp->selected_row_xmstr,
+					    XmFONTLIST_DEFAULT_TAG,
+					    &cur_string);
+			    XmTextInsert(rtp->text,0,cur_string);
+			    XmTextSetInsertionPosition(rtp->text,
+						       strlen(cur_string));
+			    XtFree(cur_string);
+		    }
+		    rtp->manual_edit_started = True;
+                    
+                    return;
             case XmCR_EDIT_BEGIN:
 #if DEBUG_RESTREE        
                     fprintf(stderr,"edit begin\n");
@@ -2544,30 +2654,6 @@ static void EditCB
 #endif
 		    rtp->manual_edit_started = False;
                     break;
-            case XmCR_EDIT_INSERT:
-#if DEBUG_RESTREE        
-                    fprintf(stderr,"edit insert\n");
-#endif
-		    if (rtp->selected_row_xmstr)
-			    XmStringFree(rtp->selected_row_xmstr);
-		    XtVaGetValues
-			    (pub_rtp->tree,
-			     XmNcolumnPtr,colptr,
-			     XmNrowPtr,rowptr,
-			     XmNcellString,&rtp->selected_row_xmstr,
-			     NULL);
-		    rtp->manual_edit_started = True;
-                    XtVaSetValues(rtp->text,
-                                  XmNcursorPosition,0,
-                                  XmNborderWidth,2,
-                                  XmNcursorPositionVisible,True,
-				  XmNbackground,rtp->go->go.select_pixel,
-                                  NULL);
-#if 0
-                    XmTextSetInsertionPosition(rtp->text,0);
-#endif
-                    
-                    return;
         }
         if (update) {
                 rtResData *resp;
@@ -3771,6 +3857,7 @@ NgResTree *NgCreateResTree
         rtp->htmlview_count = 0;
         rtp->duping_data_list = False;
 	rtp->setval_cb = NULL;
+	rtp->text_dropped = False;
                 
         pub_rtp->tree = XtVaCreateManagedWidget
                 ("ResTree",xmlTreeWidgetClass,parent,
@@ -3828,6 +3915,9 @@ NgResTree *NgCreateResTree
         XtAddCallback(rtp->text,XmNlosingFocusCallback,UnFocusCB,rtp);
         XtAddCallback(pub_rtp->tree,XmNselectCallback,SelectCB,rtp);
         XtAddCallback(pub_rtp->tree,XmNcellFocusCallback,FocusCB,rtp);
+        XtAddCallback(pub_rtp->tree,XmNcellDropCallback,CellDropCB,rtp);
+        XtAddCallback(pub_rtp->tree,XmNcellStartDropCallback,
+		      StartCellDropCB,rtp);
 
         if (ret < NhlWARNING) {
                 NhlFree(rtp);

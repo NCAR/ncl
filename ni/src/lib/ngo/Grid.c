@@ -1,5 +1,5 @@
 /*
- *      $Id: Grid.c,v 1.6 1999-05-22 00:36:12 dbrown Exp $
+ *      $Id: Grid.c,v 1.7 1999-06-02 03:40:06 dbrown Exp $
  */
 /*
 (c) Copyright 1994, 1995, 1996 Microline Software, Inc.  ALL RIGHTS RESERVED
@@ -769,6 +769,12 @@ static XtResource resources[] =
 		XmNcellDropCallback, XmCCallback,
 		XmRCallback, sizeof(XtCallbackList),
 		XtOffset(XmLGridWidget, grid.cellDropCallback),
+		XmRImmediate, (XtPointer)0,
+		},
+		{
+		XmNcellStartDropCallback, XmCCallback,
+		XmRCallback, sizeof(XtCallbackList),
+		XtOffset(XmLGridWidget, grid.cellStartDropCallback),
 		XmRImmediate, (XtPointer)0,
 		},
 		{
@@ -7234,6 +7240,7 @@ XtPointer clientData, callData;
 	Atom *exportTargets;
 	Arg args[10];
 	int row, col, i, n, valid;
+	XmLGridCallbackStruct gcbs;
 
 	g = (XmLGridWidget)w;
 	cbs = (XmDropProcCallbackStruct *)callData;
@@ -7263,6 +7270,14 @@ XtPointer clientData, callData;
 		XmDropTransferStart(cbs->dragContext, args, 2);
 		return;
 		}
+	gcbs.columnType = ColPosToType(g, col);
+	gcbs.column = ColPosToTypePos(g, gcbs.columnType, col);
+	gcbs.rowType = RowPosToType(g, row);
+	gcbs.row = RowPosToTypePos(g, gcbs.rowType, row);
+	gcbs.reason = XmCR_START_CELL_DROP;
+	XtCallCallbackList((Widget)g, g->grid.cellStartDropCallback,
+			   (XtPointer)&gcbs);
+	
 	g->grid.dropLoc.row = row;
 	g->grid.dropLoc.col = col;
 	cbs->operation = (long)XmDROP_COPY;
@@ -7328,7 +7343,9 @@ Cardinal *nparam;
 
 	if (*nparam != 1)
 		return;
-
+#if 0
+	printf("in Select\n");
+#endif
 	if (XmLIsGrid(w))
 		g = (XmLGridWidget)w;
 	else
@@ -7399,6 +7416,15 @@ Cardinal *nparam;
 			return;
 		if (row == -1 || col == -1)
 			return;
+#if 0
+		/* still need to figure this one out -- problem with
+		   selection after an invalid edit string in datasourcegrid */
+		   
+		if (g->grid.inMode != InNormal) {
+			printf("not InNormal\n");
+			return;
+			}
+#endif
 		if (RowPosToType(g, row) == XmCONTENT &&
 			ColPosToType(g, col) == XmCONTENT)
 			{
@@ -7505,6 +7531,9 @@ Cardinal *nparam;
 			cbs.column = ColPosToTypePos(g, cbs.columnType, col);
 			cbs.rowType = RowPosToType(g, row);
 			cbs.row = RowPosToTypePos(g, cbs.rowType, row);
+#if 0
+			printf("calling selectCallbacks\n");
+#endif
 			XtCallCallbackList((Widget)g, g->grid.selectCallback,
 				(XtPointer)&cbs);
 			}

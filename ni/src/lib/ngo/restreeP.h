@@ -1,5 +1,5 @@
 /*
- *      $Id: restreeP.h,v 1.7 1999-05-22 00:36:26 dbrown Exp $
+ *      $Id: restreeP.h,v 1.8 1999-06-02 03:40:08 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -176,6 +176,7 @@ typedef struct _NgResTreeRec
         int			edit_row;
         int			focus_row;
 	Boolean			manual_edit_started;
+	Boolean			text_dropped;
         rtSetValNode		*set_val_list;
         Boolean			scroll_cbs_installed;
         Widget			text;

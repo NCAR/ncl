@@ -1,5 +1,5 @@
 /*
- *      $Id: hlupage.c,v 1.23 1999-05-22 00:36:19 dbrown Exp $
+ *      $Id: hlupage.c,v 1.24 1999-06-02 03:40:07 dbrown Exp $
  */
 /*******************************************x*****************************
 *									*
@@ -25,6 +25,7 @@
 #include <ncarg/ngo/graphic.h>
 #include <ncarg/ngo/xinteract.h>
 #include <ncarg/ngo/stringutil.h>
+#include <ncarg/ngo/Grid.h>
 
 #include <Xm/Xm.h>
 #include <Xm/Form.h>
@@ -401,7 +402,26 @@ static void SetInputDataFlag
 	}
 	if (! datavar_count) 
 		rec->has_input_data = False;
-
+/*
+ * Since updates occurring as a result of changes to the data object 
+ * indirectly result in changes to the view object, it is necessary to 
+ * set the draw_req flag here
+ */
+	if (rec->new_data) {
+		NhlLayer l = _NhlGetLayer(rec->hlu_id);
+		if (l && _NhlIsView(l)) {
+			NhlLayer tl;
+			int top_id = _NhlTopLevelView(rec->hlu_id);
+			tl = _NhlGetLayer(top_id);
+			if (tl) {
+				NgHluData hdata = 
+					(NgHluData) tl->base.gui_data2;
+				if (hdata)
+					hdata->draw_req = True;
+			}
+		}
+	}
+		
 	return;
 }
 
@@ -2048,6 +2068,12 @@ CreateUpdate
 		rec->class->base_class.class_name,rec->hlu_id);
 #endif
 
+        /*
+	 * First complete any edits in progress, either in the data profile 
+	 * grid, or in the restree.
+	 */
+	XmLGridEditComplete(rec->data_source_grid->grid);
+	XmLGridEditComplete(rec->res_tree->tree);
 	UpdateDataProfileFromResTree(page);
 	SetInputDataFlag(rec);
         rec->do_setval_cb = False;
@@ -2530,14 +2556,17 @@ static NhlErrorTypes UpdateHluPage
         brPage *page
 )
 {
+        brPageData	*pdp = page->pdata;
+	brHluPageRec	*rec = (brHluPageRec	*)pdp->type_rec;
+        NgHluPage 	*pub = &rec->public;
         int		wk_id;
         NhlBoolean	work_created;
 
 #if DEBUG_HLUPAGE
         fprintf(stderr,"in UpdateHluPage\n");
 #endif
-        
         wk_id = GetWorkstation(page,&work_created);
+
 	CreateUpdate(page,wk_id,False,False);
 
         return NhlNOERROR;

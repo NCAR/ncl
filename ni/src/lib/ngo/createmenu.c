@@ -1,5 +1,5 @@
 /*
- *      $Id: createmenu.c,v 1.10 1999-02-23 03:56:44 dbrown Exp $
+ *      $Id: createmenu.c,v 1.11 1999-06-02 03:40:07 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -106,7 +106,10 @@ static void CreateCB
  */
                 
         sprintf(buf,"%s = new(1,graphic)\n",varname);
-        (void)NgNclSubmitBlock(priv->go->go.nclstate,buf);
+        if (!NgNclSubmitBlock(priv->go->go.nclstate,buf)) {
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"unable to open hlu page"));
+                return;
+        }
 
         qname = NrmStringToQuark(vartext);
 

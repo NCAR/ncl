@@ -1,5 +1,5 @@
 /*
- *      $Id: app.c,v 1.19 1999-05-27 02:28:32 dbrown Exp $
+ *      $Id: app.c,v 1.20 1999-06-02 03:40:07 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -181,6 +181,12 @@ static void GetColormapsInPath
  * into which the colormap should fit.
  */
 	
+	if (! path) {
+		NHLPERROR((NhlWARNING,NhlEUNKNOWN,
+	   "Invalid directory encountered in colormap path specification"));
+		return;
+	}
+
 	if ((dp = opendir(path)) == NULL) {
 		NHLPERROR((NhlWARNING,NhlEUNKNOWN,
 			   "Invalid colormap directory: %s",path));
