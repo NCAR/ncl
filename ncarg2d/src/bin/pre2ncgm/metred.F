@@ -1,5 +1,5 @@
 C
-C	$Id: metred.F,v 1.1.1.1 1992-04-17 22:34:52 ncargd Exp $
+C	$Id: metred.F,v 1.2 1994-01-18 18:12:57 haley Exp $
 C
       SUBROUTINE METRED(IOS,STATUS)
 C
@@ -96,7 +96,7 @@ C
 C  READ IN A METAFILE RECORD
 C
       CALL BINRED(0,MNWRDS,MBUFER,IOS,IER)
-#if defined(ultrix) && defined(mips)
+#if (defined(ultrix) && defined(mips)) || (defined(__alpha) && defined(__osf__))
       DO 220 J=1,360
         IB1 = IAND(ISHIFT(MBUFER(J),-24),255)
         IB2 = IAND(ISHIFT(MBUFER(J),-16),255)
