@@ -1,5 +1,5 @@
 #
-#   $Id: yMakefile,v 1.8 1998-12-08 00:15:01 fred Exp $
+#   $Id: yMakefile,v 1.9 1999-03-25 03:47:59 haley Exp $
 #
 #   Makefile for HLU Ngmath examples
 #
@@ -21,7 +21,9 @@ RESFILES    = nm03.res
 
 InstallTarget($(SRCS),$(INSTALL_LIB),$(HLUEXROOT)/$(MYNAME))
 InstallTarget($(RESFILES),$(INSTALL_LIB),$(RESFILEROOT)/$(MYNAME))
+#if !defined(CRAY)
 InstallTarget($(NSRCS),$(INSTALL_LIB),$(NCLEXROOT)/$(MYNAME))
+#endif
 
 CExampleTarget(nm01c,nm01c.o)
 CExampleTarget(nm02c,nm02c.o)

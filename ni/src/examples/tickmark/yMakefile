@@ -1,5 +1,5 @@
 #
-#   $Id: yMakefile,v 1.9 1997-04-11 18:52:53 haley Exp $
+#   $Id: yMakefile,v 1.10 1999-03-25 03:48:03 haley Exp $
 #
 #   Makefile for HLU TickMark examples
 #
@@ -22,7 +22,9 @@ INCLUDES = tm03c.h
 EXFILES  = $(SRCS) $(INCLUDES)
 
 InstallTarget($(EXFILES),$(INSTALL_LIB),$(HLUEXROOT)/$(MYNAME))
+#if !defined(CRAY)
 InstallTarget($(NSRCS),$(INSTALL_LIB),$(NCLEXROOT)/$(MYNAME))
+#endif
 InstallTarget($(RESFILES),$(INSTALL_LIB),$(RESFILEROOT)/$(MYNAME))
 
 CExampleTarget(tm01c,tm01c.o)

@@ -1,5 +1,5 @@
 #
-#   $Id: yMakefile,v 1.9 1997-04-11 18:52:50 haley Exp $
+#   $Id: yMakefile,v 1.10 1999-03-25 03:48:01 haley Exp $
 #
 #   Makefile for HLU VectorPlot examples
 #
@@ -24,7 +24,9 @@ EXFILES     = $(SRCS) $(INCLUDES)
 
 InstallTarget($(EXFILES),$(INSTALL_LIB),$(HLUEXROOT)/$(MYNAME))
 InstallTarget($(RESFILES),$(INSTALL_LIB),$(RESFILEROOT)/$(MYNAME))
+#if !defined(CRAY)
 InstallTarget($(NSRCS),$(INSTALL_LIB),$(NCLEXROOT)/$(MYNAME))
+#endif
 
 CExampleTarget(st01c,st01c.o)
 CExampleTarget(st02c,st02c.o)

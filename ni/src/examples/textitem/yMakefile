@@ -1,5 +1,5 @@
 #
-#   $Id: yMakefile,v 1.19 1997-04-11 18:52:52 haley Exp $
+#   $Id: yMakefile,v 1.20 1999-03-25 03:48:02 haley Exp $
 #
 #   Makefile for HLU TextItem examples
 #
@@ -22,7 +22,9 @@ NCGMS     = tx04c.ncgm tx04f.ncgm tx04n.ncgm
 RESFILES  = tx01.res tx02.res tx03.res
 
 InstallTarget($(SRCS),$(INSTALL_LIB),$(HLUEXROOT)/$(MYNAME))
+#if !defined(CRAY)
 InstallTarget($(NSRCS),$(INSTALL_LIB),$(NCLEXROOT)/$(MYNAME))
+#endif
 InstallTarget($(RESFILES),$(INSTALL_LIB),$(RESFILEROOT)/$(MYNAME))
 
 CExampleTarget(tx01c,tx01c.o)

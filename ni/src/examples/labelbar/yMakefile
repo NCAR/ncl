@@ -1,5 +1,5 @@
 #
-#   $Id: yMakefile,v 1.8 1997-04-11 18:52:45 haley Exp $
+#   $Id: yMakefile,v 1.9 1999-03-25 03:47:56 haley Exp $
 #
 #   Makefile for HLU LabeBar examples
 #
@@ -20,7 +20,9 @@ OBJS      = $(COBJS) $(FOBJS)
 RESFILES  = lb01.res lb02.res
 
 InstallTarget($(SRCS),$(INSTALL_LIB),$(HLUEXROOT)/$(MYNAME))
+#if !defined(CRAY)
 InstallTarget($(NSRCS),$(INSTALL_LIB),$(NCLEXROOT)/$(MYNAME))
+#endif
 InstallTarget($(RESFILES),$(INSTALL_LIB),$(RESFILEROOT)/$(MYNAME))
 
 CExampleTarget(lb01c,lb01c.o)

@@ -1,5 +1,5 @@
 #
-#   $Id: yMakefile,v 1.39 1997-04-11 18:52:57 haley Exp $
+#   $Id: yMakefile,v 1.40 1999-03-25 03:48:07 haley Exp $
 #
 #   Makefile for HLU XYPlot examples
 #
@@ -33,7 +33,9 @@ NCGMS      = xy11c.ncgm xy11f.ncgm xy12c.ncgm
 EXFILES    = $(SRCS) $(INCLUDES)
 
 InstallTarget($(EXFILES),$(INSTALL_LIB),$(HLUEXROOT)/$(MYNAME))
+#if !defined(CRAY)
 InstallTarget($(NSRCS),$(INSTALL_LIB),$(NCLEXROOT)/$(MYNAME))
+#endif
 InstallTarget($(RESFILES),$(INSTALL_LIB),$(RESFILEROOT)/$(MYNAME))
 InstallTarget($(ASCDATA),$(INSTALL_LIB),$(DATAROOT)/asc)
 

@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.6 1997-04-11 18:52:33 haley Exp $
+#      $Id: yMakefile,v 1.7 1999-03-25 03:47:47 haley Exp $
 #
 #########################################################################
 #									#
@@ -35,7 +35,9 @@ NCGMS     = ap01c.ncgm ap01f.ncgm
 RESFILES  = ap01.res
 
 InstallTarget($(SRCS),$(INSTALL_LIB),$(HLUEXROOT)/$(MYNAME))
+#if !defined(CRAY)
 InstallTarget($(NSRCS),$(INSTALL_LIB),$(NCLEXROOT)/$(MYNAME))
+#endif
 InstallTarget($(RESFILES),$(INSTALL_LIB),$(RESFILEROOT)/$(MYNAME))
 
 CExampleTarget(ap01c,ap01c.o)
