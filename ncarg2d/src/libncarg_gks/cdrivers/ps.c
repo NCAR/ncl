@@ -1,5 +1,5 @@
 /*
- *	$Id: ps.c,v 1.24 2000-12-22 19:01:14 fred Exp $
+ *	$Id: ps.c,v 1.25 2001-01-23 22:26:40 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -3424,7 +3424,6 @@ ps_Esc(gksc)
 	case -1521:  /* Corner points for positioning plot on the page */
 		rscale = 1./psa->scaling;
 		strng = strtok(sptr, " ");
-		strng = strtok((char *) NULL, " ");
 		psa->dspace.llx = (int) (rscale * (float) atoi(strng));
 		strng = strtok((char *) NULL, " ");
 		psa->dspace.lly = (int) (rscale * (float) atoi(strng));

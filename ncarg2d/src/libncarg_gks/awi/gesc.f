@@ -1,5 +1,5 @@
 C
-C	$Id: gesc.f,v 1.29 2000-12-21 22:27:42 fred Exp $
+C	$Id: gesc.f,v 1.30 2001-01-23 22:26:06 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -675,17 +675,18 @@ C  for use with the next OPEN WORKSTATION.  This call can be made
 C  with no workstations open.
 C
         IF (FCTID .EQ. -1521) THEN
+          CUFLAG = -1
           READ(IDR(1)( 2:10),520) CLLX
           READ(IDR(1)(12:20),520) CLLY
           READ(IDR(1)(22:30),520) CURX
           READ(IDR(1)(32:40),520) CURY
   520     FORMAT(I9)
-          RETURN
         ENDIF 
 C
 C  Coordinate scale factor for next PostScript workstation opened.
 C
         IF (FCTID .EQ. -1522) THEN
+          CUFLAG = -1
           READ(IDR(1)(1:5),501) CPSCL
           RETURN
         ENDIF 
@@ -704,12 +705,12 @@ C
           RETURN
         ENDIF 
 C
-C  Return if not a PostScript workstation.
+C  Return if not a PostScript workstation, unless FCTID = -1521.
 C
         CALL GQWKC(IWKID,IER,ICONID,ITYP)
         IF (ITYP.GT.GPSMAX .OR. ITYP.LT.GPSMIN) THEN
           CUFLAG = -1
-          RETURN 
+          IF (FCTID .NE. -1521) RETURN
         ENDIF
 C
         FCODE = 6
