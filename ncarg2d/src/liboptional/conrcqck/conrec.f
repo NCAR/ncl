@@ -1,5 +1,5 @@
 C
-C	$Id: conrec.f,v 1.1.1.1 1992-04-17 22:35:04 ncargd Exp $
+C	$Id: conrec.f,v 1.2 1999-03-23 15:55:31 haley Exp $
 C
       SUBROUTINE CONREC (Z,L,M,N,FLO,HI,FINC,NSET,NHI,NDOT)
 C
@@ -273,9 +273,10 @@ C
       DIMENSION       WIND(4)    ,VIEW(4)    ,RECT(4)
 C
       COMMON /CONRE1/ IOFFP      ,SPVAL
-      COMMON /CONRE4/ ISIZEM     ,ISIZEP     ,NLA        ,NLM        ,
-     1                XLT        ,YBT        ,SIDE       ,ISOLID     ,
-     2                EXT        ,IOFFD      ,IOFFM
+      COMMON /CONRE4/ ISIZEL     ,ISIZEM     ,ISIZEP     ,NREP       ,
+     1                NCRT       ,ILAB       ,NULBLL     ,IOFFD      ,
+     2                EXT        ,IOFFM      ,ISOLID     ,NLA        ,
+     3                NLM        ,XLT        ,YBT        ,SIDE
       COMMON /CONRE5/ SCLY
 C
 C
