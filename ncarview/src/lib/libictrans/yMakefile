@@ -1,4 +1,7 @@
 NCARG		= ../../../..
+#
+#	$Id: yMakefile,v 1.6 1992-02-13 18:27:11 clyne Exp $
+#
 
 LOCINCDIR	= ../../include
 LOCLIBDIR	= ../../../lib

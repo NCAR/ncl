@@ -1,5 +1,5 @@
 /*
- *	$Id: ictrans.c,v 1.8 1991-12-30 12:33:09 clyne Exp $
+ *	$Id: ictrans.c,v 1.9 1992-02-13 18:27:07 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -57,6 +57,7 @@ static	struct	{
 	FloatType_ 	line_scale;	/* additional line scaling	*/
 	StringType_     pal;            /* optional color palette       */
 	IntType_	fd;		/* output file descriptor	*/
+	BoolType_	version;	/* software fill of piolygons	*/
 	} commLineOpt;
 
 static	OptDescRec	set_options[] = {
@@ -69,6 +70,7 @@ static	OptDescRec	set_options[] = {
 	{"lscale", OptSepArg, "-1"},	
         {"pal", OptSepArg, NULL},
         {"fdn", OptSepArg, "-1"},
+        {"Version", OptIsArg, "false"},
 	{NULL}
 	};
 
@@ -91,6 +93,8 @@ static	Option	get_options[] = {
 							sizeof(StringType_)},
 	{"fdn", IntType, (unsigned long) &(commLineOpt.fd),
 							sizeof(IntType_)},
+	{"Version", BoolType, (unsigned long) &commLineOpt.version, 
+						sizeof (BoolType_ )},
 
 	{NULL}
 	};
@@ -147,6 +151,10 @@ ICTrans(argc, argv, mem_cgm)
 	 */
 	getOptions((caddr_t) 0, get_options);
 
+	if (commLineOpt.version) {
+		PrintVersion(programName);
+		exit(0);
+	}
 	/*
 	 * set line scaling options
 	 */
