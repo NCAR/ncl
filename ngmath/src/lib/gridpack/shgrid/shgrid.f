@@ -85,8 +85,7 @@ C
           DO 40 K=1,NZO
             FF(I,J,K) = SH3VAL(XO(I),YO(J),ZO(K),N,X,Y,Z,F,
      +                         NMCELS,IWK(1),IWK(N+1),RWK(N+1),
-     +                         RWK(N+4),RMAX,RWK(N+7),RWK(2*N+7),
-     +                         IER)
+     +                         RWK(N+4),RMAX,RWK(N+7),RWK(2*N+7))
    40     CONTINUE
    30   CONTINUE
    20 CONTINUE

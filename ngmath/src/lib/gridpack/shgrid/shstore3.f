@@ -1,5 +1,5 @@
 C
-C       $Id: shstore3.f,v 1.1 1999-08-19 21:18:11 fred Exp $
+C       $Id: shstore3.f,v 1.2 1999-09-11 00:50:23 fred Exp $
 C
       SUBROUTINE SHSTORE3 (N,X,Y,Z,NR, LCELL,LNEXT,XYZMIN,
      +                    XYZDEL,IER)
@@ -163,14 +163,16 @@ C
 C  Invalid input parameter.
 C
     4 CONTINUE
-      CALL SHERR (1,'SHSTORE3 - N < 2',16)
+      CALL SHERR (1,'SHSTORE3 - number of input data must be > 9',41)
       IER = 1
       RETURN
 C
 C  Nonpositive XYZDEL component.
 C
     5 CONTINUE
-      CALL SHERR (2,'SHSTORE3 - NR < 1',17)
+      CALL SHERR (7,
+     +            'SHSTORE3 - cell grid dimensions must be positive',
+     +             48)
       IER = 2
       RETURN
       END

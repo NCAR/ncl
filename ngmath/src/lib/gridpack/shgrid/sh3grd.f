@@ -1,5 +1,5 @@
 C
-C       $Id: sh3grd.f,v 1.1 1999-08-19 21:18:08 fred Exp $
+C       $Id: sh3grd.f,v 1.2 1999-09-11 00:50:22 fred Exp $
 C
       SUBROUTINE SH3GRD (PX,PY,PZ,N,X,Y,Z,F,NR,LCELL,LNEXT,
      +                   XYZMIN,XYZDEL,RMAX,RSQ,A, Q,QX,QY,
@@ -251,7 +251,7 @@ C
       IER = 12
       RETURN
    35 CONTINUE
-      CALL SHERR (1,'SH3GRD - search radius must be positive',39)
+      CALL SHERR (14,'SH3GRD - search radius must be positive',39)
       IER = 13
       RETURN
 C
@@ -259,7 +259,8 @@ C  No cells contain a point within RMAX of P, or
 C  SW = 0 and thus DS .GE. RSQ(L) for all L.
 C
     6 CONTINUE
-      CALL SHERR (1,'SH3GRD - no cells contain a point within RMAX of P'
+      CALL SHERR (13,
+     +            'SH3GRD - no cells contain a point within RMAX of P'      
      +            ,50)
       Q = 0.
       QX = 0.
