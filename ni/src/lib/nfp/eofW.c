@@ -877,10 +877,10 @@ NhlErrorTypes eofcov_pcmsg_W( void )
  */
   void *x, *pcmsg;
   double *dx, *dpcmsg;
+  float *rpcmsg;
   int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
   NclScalar missing_x, missing_rx, missing_dx;
   NclBasicDataTypes type_x, type_pcmsg;
-  NclTypeClass type_pcrit_class;
   int nrow, ncol, nobs, msta, total_size_x;
   int *neval, iopt = 0, jopt = 0, i, ier = 0;
 /*
@@ -968,14 +968,26 @@ NhlErrorTypes eofcov_pcmsg_W( void )
  */
   coerce_missing(type_x,has_missing_x,&missing_x,&missing_dx,&missing_rx);
 /*
- * Coerce x and pcmsg to double if necessary.
+ * Coerce x to double if necessary.
  */
   dx = coerce_input_double(x,type_x,total_size_x,has_missing_x,&missing_x,
                            &missing_dx);
-  dpcmsg = coerce_input_double(pcmsg,type_pcmsg,1,0,NULL,NULL);
-  if( dx == NULL || dpcmsg == NULL) {
+  if(dx == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_pcmsg: Unable to allocate memory for coercing input to double precision");
     return(NhlFATAL);
+  }
+/*  
+ * Go ahead and make a separate copy of pcmsg, even if it is already 
+ * double, because we'll need to return that double later. We
+ * don't want to return it as a pointer to the original double
+ * value.
+ */
+  if(type_pcmsg != NCL_double) {
+    dpcmsg = coerce_input_double(pcmsg,type_pcmsg,1,0,NULL,NULL);
+  }
+  else {
+    dpcmsg  = (double*)calloc(1,sizeof(double));
+    *dpcmsg = ((double*)pcmsg)[0];
   }
 /*
  * Check dpcmsg
@@ -1057,7 +1069,6 @@ NhlErrorTypes eofcov_pcmsg_W( void )
  * Free unneeded memory.
  */
   if((void*)dx     != x)     NclFree(dx);
-  if((void*)dpcmsg != pcmsg) NclFree(dpcmsg);
   NclFree(work);
   NclFree(cssm);
   NclFree(weval);
@@ -1267,33 +1278,55 @@ NhlErrorTypes eofcov_pcmsg_W( void )
                NULL
                );
   }
+
 /*
- * pcmsg is returned as the attribute "pcrit" and is returned as its
- * original type.
+ * Return pcmsg as an attribute "pcrit" of type float or double.
  */
   dsizes[0] = 1;
-  type_pcrit_class = (NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(type_pcmsg)));
-  att_md = _NclCreateVal(
-                         NULL,
-                         NULL,
-                         Ncl_MultiDValData,
-                         0,
-                         pcmsg,
-                         NULL,
-                         1,
-                         dsizes,
-                         TEMPORARY,
-                         NULL,
-                         (NclObjClass)type_pcrit_class
-                         );
+  if(type_pcmsg != NCL_double) {
+    NclFree(dpcmsg);
+    if(type_pcmsg != NCL_float) {
+      rpcmsg = coerce_input_float(pcmsg,type_pcmsg,1,0,NULL,NULL);
+    }
+    else {
+      rpcmsg  = (float*)calloc(1,sizeof(float));
+      *rpcmsg = ((float*)pcmsg)[0];
+    }
+    att_md = _NclCreateVal(
+                           NULL,
+                           NULL,
+                           Ncl_MultiDValData,
+                           0,
+                           (void*)rpcmsg,
+                           NULL,
+                           1,
+                           dsizes,
+                           TEMPORARY,
+                           NULL,
+                           (NclObjClass)nclTypefloatClass
+                           );
+  }
+  else {
+    att_md = _NclCreateVal(
+                           NULL,
+                           NULL,
+                           Ncl_MultiDValData,
+                           0,
+                           (void*)dpcmsg,
+                           NULL,
+                           1,
+                           dsizes,
+                           TEMPORARY,
+                           NULL,
+                           (NclObjClass)nclTypedoubleClass
+                           );
+  }
   _NclAddAtt(
              att_id,
              "pcrit",
              att_md,
              NULL
              );
-
-
 /*
  * eof_function is returned to indicate which function was used.
  */
@@ -1352,10 +1385,10 @@ NhlErrorTypes eofcor_pcmsg_W( void )
  */
   void *x, *pcmsg;
   double *dx, *dpcmsg;
+  float *rpcmsg;
   int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
   NclScalar missing_x, missing_rx, missing_dx;
   NclBasicDataTypes type_x, type_pcmsg;
-  NclTypeClass type_pcrit_class;
   int nrow, ncol, nobs, msta, total_size_x;
   int *neval, iopt = 0, jopt = 1, i, ier = 0;
 /*
@@ -1443,14 +1476,26 @@ NhlErrorTypes eofcor_pcmsg_W( void )
  */
   coerce_missing(type_x,has_missing_x,&missing_x,&missing_dx,&missing_rx);
 /*
- * Coerce x and pcmsg to double if necessary.
+ * Coerce x to double if necessary.
  */
   dx = coerce_input_double(x,type_x,total_size_x,has_missing_x,&missing_x,
                            &missing_dx);
-  dpcmsg = coerce_input_double(pcmsg,type_pcmsg,1,0,NULL,NULL);
-  if( dx == NULL || dpcmsg == NULL) {
+  if(dx == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcor_pcmsg: Unable to allocate memory for coercing input to double precision");
     return(NhlFATAL);
+  }
+/*  
+ * Go ahead and make a separate copy of pcmsg, even if it is already 
+ * double, because we'll need to return that double later. We
+ * don't want to return it as a pointer to the original double
+ * value.
+ */
+  if(type_pcmsg != NCL_double) {
+    dpcmsg = coerce_input_double(pcmsg,type_pcmsg,1,0,NULL,NULL);
+  }
+  else {
+    dpcmsg  = (double*)calloc(1,sizeof(double));
+    *dpcmsg = ((double*)pcmsg)[0];
   }
 /*
  * Check dpcmsg
@@ -1531,8 +1576,7 @@ NhlErrorTypes eofcor_pcmsg_W( void )
 /*
  * Free unneeded memory.
  */
-  if((void*)dx     != x)     NclFree(dx);
-  if((void*)dpcmsg != pcmsg) NclFree(dpcmsg);
+  if((void*)dx != x) NclFree(dx);
   NclFree(work);
   NclFree(cssm);
   NclFree(weval);
@@ -1743,31 +1787,53 @@ NhlErrorTypes eofcor_pcmsg_W( void )
                );
   }
 /*
- * pcmsg is returned as the attribute "pcrit" and is returned as its
- * original type.
+ * Return pcmsg as an attribute "pcrit" of type float or double.
  */
   dsizes[0] = 1;
-  type_pcrit_class = (NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(type_pcmsg)));
-  att_md = _NclCreateVal(
-                         NULL,
-                         NULL,
-                         Ncl_MultiDValData,
-                         0,
-                         pcmsg,
-                         NULL,
-                         1,
-                         dsizes,
-                         TEMPORARY,
-                         NULL,
-                         (NclObjClass)type_pcrit_class
-                         );
+  if(type_pcmsg != NCL_double) {
+    NclFree(dpcmsg);
+    if(type_pcmsg != NCL_float) {
+      rpcmsg = coerce_input_float(pcmsg,type_pcmsg,1,0,NULL,NULL);
+    }
+    else {
+      rpcmsg  = (float*)calloc(1,sizeof(float));
+      *rpcmsg = ((float*)pcmsg)[0];
+    }
+    att_md = _NclCreateVal(
+                           NULL,
+                           NULL,
+                           Ncl_MultiDValData,
+                           0,
+                           (void*)rpcmsg,
+                           NULL,
+                           1,
+                           dsizes,
+                           TEMPORARY,
+                           NULL,
+                           (NclObjClass)nclTypefloatClass
+                           );
+  }
+  else {
+    att_md = _NclCreateVal(
+                           NULL,
+                           NULL,
+                           Ncl_MultiDValData,
+                           0,
+                           (void*)dpcmsg,
+                           NULL,
+                           1,
+                           dsizes,
+                           TEMPORARY,
+                           NULL,
+                           (NclObjClass)nclTypedoubleClass
+                           );
+  }
   _NclAddAtt(
              att_id,
              "pcrit",
              att_md,
              NULL
              );
-
 /*
  * eof_function is returned to indicate which function was used.
  */
