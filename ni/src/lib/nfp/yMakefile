@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.69 2003-03-21 05:01:29 haley Exp $
+#      $Id: yMakefile,v 1.70 2003-04-18 16:49:08 haley Exp $
 #
 #########################################################################
 #									#
@@ -22,8 +22,18 @@
 MYNAME		=	libnfp
 
 EXTRA_INCLUDES  = -I../../ncl
+EXTRA_DEFINES  = $(UDUNITS_DEFS)
 
 HDRS = wrapper.h
+
+#ifdef BuildUdunits
+UDUNITS_DEFS = -DBuildUdunits
+UDUNITS_SRCS = udunitsW.c
+UDUNITS_OBJS = udunitsW.o
+#else
+#define UDUNITS_SRCS
+#define UDUNITS_OBJS
+#endif
 
 CSRCS = areavolW.c betaincW.c bytesW.c calcorcW.c cdf_dpW.c chiinvW.c \
 	conformW.c csagridW.c cssgridW.c cz2ccmW.c datesW.c drwvctc.c \
@@ -37,7 +47,7 @@ CSRCS = areavolW.c betaincW.c bytesW.c calcorcW.c cdf_dpW.c chiinvW.c \
 	shgridW.c sindexW.c slpW.c skewtW.c smth9W.c sortW.c specxW.c sph2W.c \
 	sphintW.c sstoiW.c statW.c svdW.c taperW.c tdpackW.c tempnamW.c \
 	trvsphW.c varimaxW.c vibetaW.c waveletW.c wgneW.c wmapW.c \
-	writematrixW.c wrunaveW.c wrapper.c udunitsW.c utilW.c vinth2pW.c \
+	writematrixW.c wrunaveW.c wrapper.c utilW.c vinth2pW.c \
 	vinth2peW.c zonmpsiW.c 
 
 COBJS = areavolW.o betaincW.o bytesW.o calcorcW.o cdf_dpW.o chiinvW.o \
@@ -52,7 +62,7 @@ COBJS = areavolW.o betaincW.o bytesW.o calcorcW.o cdf_dpW.o chiinvW.o \
 	shgridW.o sindexW.o slpW.o skewtW.o smth9W.o sortW.o specxW.o sph2W.o \
 	sphintW.o sstoiW.o statW.o svdW.o taperW.o tdpackW.o tempnamW.o \
 	trvsphW.o varimaxW.o vibetaW.o waveletW.o wgneW.o wmapW.o \
-	writematrixW.o wrunaveW.o wrapper.o udunitsW.o utilW.o vinth2pW.o \
+	writematrixW.o wrunaveW.o wrapper.o utilW.o vinth2pW.o \
 	vinth2peW.o zonmpsiW.o 
 
 FSRCS = aam.f areaAve.f areaAve2.f areaRmse.f areaRmse2.f areaSum2.f \
@@ -93,7 +103,7 @@ FOBJS = aam.o areaAve.o areaAve2.o areaRmse.o areaRmse2.o areaSum2.o \
 	vinth2p_ecmwf.o volAve.o volRmse.o wavelet.o writematrix.o \
 	wrunave_dp.o zon_mpsi.o
 
-OBJS = $(COBJS) $(FOBJS) $(EXFOBJS)
+OBJS = $(COBJS) $(FOBJS) $(EXFOBJS) $(UDUNITS_OBJS)
 
 BuildSharedLibTarget(libNGnfp,$(OBJS),1,0,$(NCARGLIB) $(NCARGGKSLIB) $(NCARGCLIB) $(CTOFLIBS) -lm -lc)
 LibraryTarget($(MYNAME),$(OBJS))

@@ -367,8 +367,11 @@ extern NhlErrorTypes day_of_week_W(void);
 extern NhlErrorTypes isleapyear_W(void);
 extern NhlErrorTypes greg2jul_W(void);
 extern NhlErrorTypes jul2greg_W(void);
+
+#ifdef BuildUdunits
 extern NhlErrorTypes ut_calendar_W(void);
 extern NhlErrorTypes ut_inv_calendar_W(void);
+#endif
 
 extern NhlErrorTypes angmom_atm_W(void);
 extern NhlErrorTypes relhum_W(void);
@@ -4720,6 +4723,7 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
     NclRegisterFunc(jul2greg_W,args,"jul2greg",nargs);
 
+#ifdef BuildUdunits
 /*
  * Register "ut_calendar".
  */
@@ -4745,6 +4749,7 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"string",1,dimsizes);nargs++;
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
     NclRegisterFunc(ut_inv_calendar_W,args,"ut_inv_calendar",nargs);
+#endif
 
 /*
  * Register "angmom_atm".
