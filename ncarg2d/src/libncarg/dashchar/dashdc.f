@@ -1,5 +1,5 @@
 C
-C	$Id: dashdc.f,v 1.3 2000-08-22 15:03:16 haley Exp $
+C	$Id: dashdc.f,v 1.4 2003-06-02 19:15:16 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -206,7 +206,7 @@ C SPECIFIED IN ITS ARGUMENTS. THIS INTERNAL REPRESENTATION IS PASSED
 C TO ROUTINE CFVLD IN THE COMMON-BLOCK DASHD1.
 C
       CHARACTER*(*) IPAT
-      CHARACTER*1   IBLK, IGAP, ISOL, ICR
+      CHARACTER*1   ICR
       CHARACTER*16  IPC(100)
 C
 C DASHD1 AND DASHD2 ARE USED
@@ -233,16 +233,21 @@ C THE NEXT CALL.
 C
       COMMON /DSAVE6/ MASK, NCHRWD, NBWD, MNCST1
 C
+C Make definitions of a blank, a gap, and a solid externally visible.
+C
+      COMMON /BLGASO/ IBLK,IGAP,ISOL
+      CHARACTER*1     IBLK,IGAP,ISOL
+C
 C NECESSARY ON SOME MACHINES TO GET BLOCK DATA LOADED
 C
       EXTERNAL DASHBD
+C
 C SAVE ALL VARIABLES
+C
       SAVE
 C
-C INITIALIZE CHARACTER FLAGS
-C
-      DATA IBLK,IGAP,ISOL/' ','''','$'/
 C THE FOLLOWING CALL IS FOR LIBRARY STATISTICS GATHERING AT NCAR
+C
       CALL Q8QST4 ('GRAPHX', 'DASHCHAR', 'DASHDC', 'VERSION  1')
 C
 C     NC IS THE NUMBER OF CHARACTERS IN IPAT
