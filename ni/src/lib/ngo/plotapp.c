@@ -1,5 +1,5 @@
 /*
- *      $Id: plotapp.c,v 1.7 1999-09-28 00:47:32 dbrown Exp $
+ *      $Id: plotapp.c,v 1.8 1999-10-05 23:16:21 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3389,4 +3389,26 @@ extern NhlErrorTypes NgHandleSyntheticResource
 		   "NgHandleSyntheticResource: invalid synthetic resource"));
 
 	return NhlFATAL;
+}
+
+extern NhlString NgPlotAppName
+(
+	int		go_id,
+	NrmQuark	qplotstyle
+)
+{
+	PlotApp		papp = PlotAppList;
+
+	while (papp) {
+		if (papp->qname == qplotstyle) {
+			break;
+		}
+		papp = papp->next;
+	}
+	if (! papp) {
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+			   "NgPlotAppName: invalid plot style"));
+		return NULL;
+	}
+	return NrmQuarkToString(papp->qstyle_name);
 }

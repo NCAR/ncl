@@ -1,5 +1,5 @@
 /*
- *      $Id: browse.c,v 1.32 1999-09-30 21:42:29 dbrown Exp $
+ *      $Id: browse.c,v 1.33 1999-10-05 23:16:20 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -189,149 +189,6 @@ BrowseDestroy
 	return NhlNOERROR;
 }
 
-#if	NOT
-static Widget
-CreateMenuBar
-(
-	NgGO	go
-)
-{
-	NgBrowsePart	*np = &((NgBrowse)go)->browse;
-	Widget		menubar,menush,fmenu,emenu;
-	Widget		vmenu,omenu,wmenu,hmenu;
-	Widget		file,edit,view,options,window,help;
-	Widget		addfile,load,close,quit,ncledit;
-        
-	menubar = XtVaCreateManagedWidget
-                ("menubar",xmRowColumnWidgetClass,
-                 go->go.manager,
-                 XmNrowColumnType,	XmMENU_BAR,
-                 NULL);
-
-	menush = XtVaCreatePopupShell
-                ("menush",xmMenuShellWidgetClass,
-                 go->go.shell,
-		XmNwidth,		5,
-		XmNheight,		5,
-		XmNallowShellResize,	True,
-		XtNoverrideRedirect,	True,
-		XmNdepth,		XcbGetDepth(go->go.xcb),
-		XmNcolormap,		XcbGetColormap(go->go.xcb),
-		XmNvisual,		XcbGetVisual(go->go.xcb),
-		NULL);
-	fmenu = XtVaCreateWidget
-                ("fmenu",xmRowColumnWidgetClass,menush,
-                 XmNrowColumnType,	XmMENU_PULLDOWN,
-                 NULL);
-
-	emenu = XtVaCreateWidget
-                ("emenu",xmRowColumnWidgetClass,menush,
-                 XmNrowColumnType,	XmMENU_PULLDOWN,
-                 NULL);
-
-	vmenu = XtVaCreateWidget
-                ("vmenu",xmRowColumnWidgetClass,menush,
-                 XmNrowColumnType,	XmMENU_PULLDOWN,
-                 NULL);
-
-	omenu = XtVaCreateWidget
-                ("omenu",xmRowColumnWidgetClass,menush,
-                 XmNrowColumnType,	XmMENU_PULLDOWN,
-                 NULL);
-
-	wmenu = XtVaCreateWidget
-                ("wmenu",xmRowColumnWidgetClass,menush,
-                 XmNrowColumnType,	XmMENU_PULLDOWN,
-                 NULL);
-
-	hmenu = XtVaCreateWidget
-                ("hmenu",xmRowColumnWidgetClass,menush,
-                 XmNrowColumnType,	XmMENU_PULLDOWN,
-                 NULL);
-
-	file = XtVaCreateManagedWidget
-                ("file",xmCascadeButtonGadgetClass,
-                 menubar,
-                 XmNsubMenuId,	fmenu,
-                 NULL);
-
-	edit = XtVaCreateManagedWidget
-                ("edit",xmCascadeButtonGadgetClass,
-                 menubar,
-                 XmNsubMenuId,	emenu,
-                 NULL);
-
-	view = XtVaCreateManagedWidget
-                ("view",xmCascadeButtonGadgetClass,
-                 menubar,
-                 XmNsubMenuId,	vmenu,
-                 NULL);
-
-	options = XtVaCreateManagedWidget
-                ("options",xmCascadeButtonGadgetClass,
-                 menubar,
-                 XmNsubMenuId,	omenu,
-                 NULL);
-
-	window = XtVaCreateManagedWidget
-                ("window",xmCascadeButtonGadgetClass,
-                 menubar,
-                 XmNsubMenuId,	wmenu,
-                 NULL);
-
-	help = XtVaCreateManagedWidget
-                ("help",xmCascadeButtonGadgetClass,
-                 menubar,
-                 XmNsubMenuId,	hmenu,
-                 NULL);
-
-	XtVaSetValues
-                (menubar,
-                 XmNmenuHelpWidget,	help,
-                 NULL);
-
-	addfile = XtVaCreateManagedWidget
-                ("addFile",xmPushButtonGadgetClass,
-                 fmenu,
-                 NULL);
-	XtAddCallback(addfile,XmNactivateCallback,_NgGODefActionCB,NULL);
-
-	load = XtVaCreateManagedWidget
-                ("loadScript",xmPushButtonGadgetClass,
-                 fmenu,
-                 NULL);
-	XtAddCallback(load,XmNactivateCallback,_NgGODefActionCB,NULL);
-
-	close = XtVaCreateManagedWidget
-                ("closeWindow",xmPushButtonGadgetClass,
-                 fmenu,
-                 NULL);
-	XtAddCallback(close,XmNactivateCallback,_NgGODefActionCB,NULL);
-
-	quit = XtVaCreateManagedWidget
-                ("quitApplication",xmPushButtonGadgetClass,
-                 fmenu,
-                 NULL);
-	XtAddCallback(quit,XmNactivateCallback,_NgGODefActionCB,NULL);
-        
-	ncledit = XtVaCreateManagedWidget
-                ("nclWindow",xmPushButtonGadgetClass,
-                 wmenu,
-                 NULL);
-	XtAddCallback(ncledit,XmNactivateCallback,_NgGODefActionCB,NULL);
-
-	XtManageChild(fmenu);
-	XtManageChild(emenu);
-	XtManageChild(vmenu);
-	XtManageChild(omenu);
-	XtManageChild(wmenu);
-	XtManageChild(hmenu);
-
-        return menubar;
-        
-}
-#endif
-
 /*
  * Sets the folder size to the greater of the available space
  * in the clip window and the size of the page. It returns the size of
@@ -441,6 +298,17 @@ static char *PageString
 			    strcat(string,"->");
 		    }
                     strcat(string,NrmQuarkToString(page->qvar));
+                    break;
+            case _brHLUVAR:
+		    if (! (page->qfile && abbrev)) {
+			    strcpy(string,NrmQuarkToString(page->qvar));
+			    break;
+		    }
+		    else {
+			    char *name = NrmQuarkToString(page->qvar);
+			    char *array = NrmQuarkToString(page->qfile);
+			    strcpy(string,&name[strlen(array)]);
+		    }
                     break;
 	    case _brNULL:
 		    strcpy(string,"<null>");
@@ -1141,11 +1009,19 @@ UpdateTabs
 			qfile = page->qfile;
 			name = PageString(pane,page,False);
 			break;
+		case _brPLOTVAR:
+			qfile = page->qvar;
+			name = PageString(pane,page,False);
+			break;
 		case _brFILEVAR:
+		case _brHLUVAR:
 			if (page->qfile == qfile)
 				name = PageString(pane,page,True);
-			else	
+			else {
 				name = PageString(pane,page,False);
+				if (page->qfile > NrmNULLQUARK)
+					qfile = page->qfile;
+			}
 			break;
 		}
                 xmname = NgXAppCreateXmString(go->go.appmgr,name);
@@ -1282,6 +1158,53 @@ InsertPage
                     XmLArrayAdd(pane->pagelist,pos,1);
 		    pane->pagecount++;
                     XmLArraySet(pane->pagelist,pos,page);
+		    break;
+  	    case _brPLOTVAR:
+                    XmLArrayAdd(pane->pagelist,pos,1);
+		    pane->pagecount++;
+                    XmLArraySet(pane->pagelist,pos,page);
+                    for (i = 1; i < pane->pagecount; i++) {
+                            pp = XmLArrayGet(pane->pagelist,i);
+                            if (page->qvar == pp->qfile) {
+                                    if (startpos == -1) {
+                                            startpos = endpos = i;
+                                            continue;
+                                    }
+                                    endpos = i;
+                            }
+                            else if (startpos != -1) {
+                                    break;
+                            }
+                    }
+                    if (startpos > 1)
+                            XmLArrayMove(pane->pagelist,
+                                         1,startpos,endpos-startpos+1);
+                    break;
+	    case _brHLUVAR:
+                    for (i = 0; i < pane->pagecount; i++) {
+                            pp = XmLArrayGet(pane->pagelist,i);
+                            if (page->qfile == pp->qvar ||
+				page->qfile == pp->qfile) {
+                                    if (startpos == -1) {
+                                            if (pp->type == _brPLOTVAR &&
+						page->qfile == pp->qvar)
+                                                    pos = 1;
+                                            startpos = endpos = i;
+                                            continue;
+                                    }
+                                    endpos = i;
+                            }
+                            else if (startpos != -1) {
+                                    break;
+                            }
+                    }
+                    if (startpos > 0)
+                            XmLArrayMove(pane->pagelist,
+                                         0,startpos,endpos-startpos+1);
+                    XmLArrayAdd(pane->pagelist,pos,1);
+		    pane->pagecount++;
+                    XmLArraySet(pane->pagelist,pos,page);
+		    break;
         }
 
 
@@ -2554,8 +2477,14 @@ extern NgPageId NgOpenPage(
             case _brHLUVAR:
                     if (qcount < 1 || qname[0] == NrmNULLQUARK)
                             return NgNoPage;
-                    page = UpdatePanes(go,_brHLUVAR,
-                                       qname[0],NrmNULLQUARK,False,init_data);
+		    if (qcount == 2) {
+			    page = UpdatePanes
+				    (go,_brHLUVAR,
+				     qname[0],qname[1],False,init_data);
+			    break;
+		    }
+		    page = UpdatePanes(go,_brHLUVAR,
+				       qname[0],NrmNULLQUARK,False,init_data);
                     break;
             case _brHTML:
                     page = UpdatePanes(go,_brHTML,

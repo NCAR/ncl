@@ -1,5 +1,5 @@
 /*
- *      $Id: graphic.h,v 1.6 1999-07-30 03:20:53 dbrown Exp $
+ *      $Id: graphic.h,v 1.7 1999-10-05 23:16:20 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -34,6 +34,7 @@
 #define ndvOBJECTLIST "ndvObjectList"
 #define ndvCLASS      "ndvClass"
 #define ndvWKS	      "ndvWks"
+#define ndvPLOTNAME   "ndvPlotName"
 
 #define NgRESDATA_ALLOC_UNIT 16
 

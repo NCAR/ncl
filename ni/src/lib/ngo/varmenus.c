@@ -1,5 +1,5 @@
 /*
- *      $Id: varmenus.c,v 1.13 1999-09-11 01:07:03 dbrown Exp $
+ *      $Id: varmenus.c,v 1.14 1999-10-05 23:16:27 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -23,6 +23,7 @@
 #include <ncarg/ngo/varmenusP.h>
 #include <ncarg/ngo/xutil.h>
 #include <ncarg/ngo/sort.h>
+#include <ncarg/ngo/graphic.h>
 
 #include <Xm/Xm.h>
 #include <Xm/Protocols.h>
@@ -282,7 +283,91 @@ FileVarMenu
 
         return;
 }
+static void DoHluVarButtons
+(
+	VarMenusRec	*vp,
+	NgVarRec	*vrec
+)
+{
+	int		i,count,show_count,used;
+	NhlBoolean	*show;
+	NclApiDataList		*dl;
+	static NrmQuark qplotname = NrmNULLQUARK;
 
+	if (qplotname == NrmNULLQUARK)
+		qplotname = NrmStringToQuark(ndvPLOTNAME);
+
+	vrec->qvars = NclGetHLUVarSymNames(&count);
+	NgSortQuarkList(vrec->qvars,count,False);
+	show = NhlMalloc(count * sizeof(NhlBoolean));
+
+	for (i = 0,show_count = 0; i < count; i++) {
+		char *name = NrmQuarkToString(vrec->qvars[i]);
+		if (strncmp(name,"_Ng",3) == 0) {
+			show[i] = False;
+			continue;
+		}
+		dl = NclGetVarInfo(vrec->qvars[i]);
+		if (dl->u.var->n_atts) {
+			int j;
+			NhlBoolean found = False;
+			NrmQuark *attnames = dl->u.var->attnames;
+			for (j = 0; j < dl->u.var->n_atts; j++)
+				if (attnames[j] == qplotname) {
+					found = True;
+					break;
+				}
+			if (found) {
+				show[i] = False;
+				continue;
+			}
+		}
+		NclFreeDataList(dl);
+		show[i] = True;
+		show_count++;
+	}
+	if (show_count > vrec->alloced) {
+                vrec->vbuttons = NhlRealloc(vrec->vbuttons,
+                                            count * sizeof(Widget));
+		for (i = vrec->alloced; i < show_count; i++) {
+			vrec->vbuttons[i] = XtVaCreateWidget
+				("vbutton",xmCascadeButtonGadgetClass,
+				 vrec->menu,NULL);
+			XtAddCallback
+				(vrec->vbuttons[i],
+				 XmNactivateCallback,vp->hluvar_cb,
+				 vp->udata);
+		}
+		vrec->alloced = show_count;
+	}
+	used = 0;
+        for (i = 0; i < count; i++) {
+                XmString xmname;
+                char *name;
+
+		if (! show[i])
+			continue;
+		name = NrmQuarkToString(vrec->qvars[i]);
+
+#if DEBUG_VAR_MENUS        
+		fprintf(stderr,"symbol name %s\n",name);
+#endif        
+                
+                xmname = NgXAppCreateXmString(vp->appmgr,name);
+                
+                XtVaSetValues(vrec->vbuttons[used],
+                              XmNlabelString,xmname,
+			      XmNuserData,vrec->qvars[i],
+                              NULL);
+                NgXAppFreeXmString(vp->appmgr,xmname);
+                used++;
+        }
+        XtManageChildren(vrec->vbuttons,used);
+        vrec->in_use = used;
+	vrec->modified = False;
+	
+	NhlFree(show);
+}
 static void VarMenuCB 
 (
 	Widget		w,
@@ -316,8 +401,8 @@ static void VarMenuCB
 		vrec->qvars = NclGetProcFuncSymNames(&count);
 		break;
 	case _vmHLUVAR:
-		vrec->qvars = NclGetHLUVarSymNames(&count);
-		break;
+		DoHluVarButtons(vp,vrec);
+		return;
 	case _vmREGULAR:
 		vrec->qvars = NclGetVarSymNames(&count);
 		break;
@@ -347,16 +432,7 @@ static void VarMenuCB
                         }
                         break;
                 case _vmHLUVAR:
-                        for (i = vrec->alloced; i < count; i++) {
-                                vrec->vbuttons[i] = XtVaCreateWidget
-                                        ("vbutton",xmCascadeButtonGadgetClass,
-                                         vrec->menu,NULL);
-                                XtAddCallback
-                                        (vrec->vbuttons[i],
-                                         XmNactivateCallback,vp->hluvar_cb,
-                                         vp->udata);
-                        }
-                        break;
+			return;
                 case _vmREGULAR:
                         for (i = vrec->alloced; i < count; i++) {
                                 vrec->vbuttons[i] = XtVaCreateWidget

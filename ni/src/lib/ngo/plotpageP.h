@@ -1,5 +1,5 @@
 /*
- *      $Id: plotpageP.h,v 1.1 1999-08-11 23:41:58 dbrown Exp $
+ *      $Id: plotpageP.h,v 1.2 1999-10-05 23:16:25 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -26,6 +26,7 @@
 #include <ncarg/ngo/plotpage.h>
 #include <ncarg/ngo/datasourcegrid.h>
 #include <ncarg/ngo/datavargrid.h>
+#include <ncarg/ngo/plottree.h>
 
 #define DEBUG_PLOTPAGE 0
 
@@ -66,6 +67,8 @@ typedef struct _brPlotPageRec
 	NhlBoolean	has_input_data;
         NhlBoolean	new_data;
         Widget		create_update;
+	Widget		link_tgl;
+	NgPlotTree	*plot_tree;
         _plotState	state;
 	int		hlu_count;
         int		*hlu_ids;
