@@ -1,5 +1,5 @@
 /*
- *	$Id: ps.c,v 1.18 1999-03-25 00:23:39 fred Exp $
+ *	$Id: ps.c,v 1.19 1999-04-28 21:26:13 fred Exp $
  */
 /*
  *
@@ -669,6 +669,7 @@ void PSpreamble (PSddp *psa, preamble_type type)
 		(void) fprintf(fp, "/D {setdash} def\n");
 		(void) fprintf(fp, "/I {currentdash} def\n");
 		(void) fprintf(fp, "/H {currentlinewidth} def\n");
+                (void) fprintf(fp, "/G {currentrgbcolor} def\n");
                 if (c_model != 0) {
 		  (void) fprintf(fp, "/R {setrgbcolor} def\n");
                 }
