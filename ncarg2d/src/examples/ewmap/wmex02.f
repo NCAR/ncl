@@ -1,10 +1,15 @@
 C
-C	$Id: wmex02.f,v 1.6 1994-10-27 15:36:03 haley Exp $
+C	$Id: wmex02.f,v 1.7 1994-10-27 23:19:14 fred Exp $
 C
       PROGRAM WMEX02
 C
 C  An example of using the tools in the weather map library to
 C  create a color weather map.  
+C
+C  By default, the plot has a white background, to produce a plot
+C  with a black background, set IBTYPE=1 below.
+C
+      PARAMETER (IBTYPE=0)
 C
 C  Define error file, Fortran unit number, and workstation type,
 C  and workstation ID.
@@ -370,11 +375,7 @@ C  Set up color indices to use for temperature regions.
 C
       DATA IC60S,IC70S,IC80S,IC90S,IC100S/6,5,4,3,2/
 C
-C  In the default case the plot is drawn with a white background 
-C  (variable IBTYPE=0) below; to draw a plot adjusted for a black 
-C  background, set IBTYPE=1 below.
-C
-      DATA IBTYPE,IWBACK,IBBACK/0,0,1/
+      DATA IWBACK,IBBACK/0,1/
 C
 C Open GKS.
 C
