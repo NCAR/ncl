@@ -1,5 +1,5 @@
 /*
- *	$Id: text.c,v 1.9 1991-10-09 14:37:12 clyne Exp $
+ *	$Id: text.c,v 1.10 1991-12-06 08:56:40 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -756,6 +756,7 @@ Ct_err	Text(cgmc)
 #else
 		if (index >=0 && index < F_NUMCHAR(fcap_template)){
 #endif
+			if (numstroke) {
 
 
 			/* calculate possistion of THIS character for
@@ -838,6 +839,7 @@ Ct_err	Text(cgmc)
 			}
 			k = 0;
 #endif
+			}	/* if numstroke	*/
 
 			/* calculate possistion of NEXT character for
 			 * for variable space font
