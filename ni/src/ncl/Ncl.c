@@ -101,6 +101,10 @@ main() {
 	extern int yydebug;
 	yydebug = 1;
 #endif
+error_fp = stderr;
+stdout_fp = stdout;
+stdin_fp = stdin;
+	
 	ncopts = NC_VERBOSE;
 
 	cmd_line =isatty(fileno(stdin));

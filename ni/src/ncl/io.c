@@ -45,9 +45,9 @@ typedef struct str_load_list NclStrLoadList;
 typedef struct file_load_list NclFileLoadList;
 typedef struct ninbuf NclInputBuffer;
 
-FILE *error_fp = stderr;
-FILE *stdout_fp = stdout;
-FILE *stdin_fp = stdin;
+FILE *error_fp = NULL;
+FILE *stdout_fp = NULL;
+FILE *stdin_fp = NULL;
 int pager_id;
 
 void *prompt_user_data = NULL;
