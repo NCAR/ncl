@@ -1,5 +1,5 @@
 /*
- *	$Id: gcap.c,v 1.42 1994-03-30 22:56:53 clyne Exp $
+ *	$Id: gcap.c,v 1.43 1995-01-10 00:22:22 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -56,6 +56,14 @@
 #include "translate.h"
 #include "format.h"
 #include "gcapdev.h"
+
+/*
+**      clamp a value between `MIN' and `MAX'
+*/
+#define CLAMP(VAL,MIN,MAX)       \
+			VAL = VAL < (MIN) ? (MIN) : VAL; \
+			VAL = VAL > (MAX) ? (MAX) : VAL;
+
 
 FILE	*tty = (FILE *) NULL;
 extern	boolean	Batch;
@@ -579,6 +587,7 @@ CGMC *c;
 	int	cgmc_index;	/* index into the cgmc color list	*/
 
 	extern void	gcap_pointflush(), gcap_fillcolour();
+	extern	long	clipxmax, clipxmin, clipymax, clipymin;
 
 	nx = c->i[0];
 	ny = c->i[1];
@@ -664,6 +673,19 @@ CGMC *c;
 			coord_buf[2].y = (int) y2;
 			coord_buf[3].x = (int) x3;
 			coord_buf[3].y = (int) y3;
+
+			/*
+			**	clip the cell
+			*/
+			CLAMP(coord_buf[0].x,clipxmin,clipxmax);
+			CLAMP(coord_buf[0].y,clipymin,clipymax);
+			CLAMP(coord_buf[1].x,clipxmin,clipxmax);
+			CLAMP(coord_buf[1].y,clipymin,clipymax);
+			CLAMP(coord_buf[2].x,clipxmin,clipxmax);
+			CLAMP(coord_buf[2].y,clipymin,clipymax);
+			CLAMP(coord_buf[3].x,clipxmin,clipxmax);
+			CLAMP(coord_buf[3].y,clipymin,clipymax);
+
 			coord_buf_num = 4;	/* need to reset each time */
 			gcap_pointflush(coord_buf, &coord_buf_num,TRUE,FALSE);
 
@@ -796,7 +818,7 @@ CGMC *c;
 	 *	The device has nothing so just draw a box or we need
 	 * 	to clip the cell array in which case we punt at this point.
 	 */
-	else if (!RASTER_SIMULATE || clip) {
+	else if (!RASTER_SIMULATE) {
 		gcap_line(c->p[0].x,c->p[0].y,c->p[1].x,c->p[0].y);
 		gcap_line(c->p[1].x,c->p[0].y,c->p[1].x,c->p[1].y);
 		gcap_line(c->p[1].x,c->p[1].y,c->p[0].x,c->p[1].y);
