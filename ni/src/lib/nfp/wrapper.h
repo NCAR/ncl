@@ -41,4 +41,6 @@ extern void compute_nlatnlon(int *, int, int *, int *, int *, int *, int *);
 extern void compute_nlatanlona(int *,int *,int,int,int *,int *,int *,int *,
                                int *,int *,int *,int *,int *);
 
+extern void print_minmax(void *,int,NclBasicDataTypes);
+
 

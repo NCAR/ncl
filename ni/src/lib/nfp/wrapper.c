@@ -31,6 +31,9 @@
  */
 #include <ncarg/ngmath.h>
 
+#define min(x,y)   ((x) < (y) ? (x) : (y))
+#define max(x,y)   ((x) > (y) ? (x) : (y))
+
 /*
  * Declare wrapper function
  */
@@ -4076,5 +4079,38 @@ int *size_out
   for(i = 0; i < ndims_in-2; i++) *size_leftmost *= dsizes_in[i];
   *size_in  = *size_leftmost * *nlatanlona; 
   *size_out = *size_leftmost * *nlatbnlonb;
+}
+
+/*
+ * Prints min/max of input data.
+ */
+void print_minmax(
+void *x,
+int size_x,
+NclBasicDataTypes type_x
+)
+{
+  double xmin, xmax;
+  int i;
+  if(type_x != NCL_double) {
+	xmin = xmax = (double)((float*)x)[0];
+  }
+  else {
+	xmin = xmax = ((double*)x)[0];
+  }
+  
+  if(type_x != NCL_double) {
+	for( i = 1; i < size_x; i++ ) {
+	  xmin = min(xmin,(double)((float*)x)[i]);
+	  xmax = max(xmax,(double)((float*)x)[i]);
+	}
+  }
+  else {
+	for( i = 1; i < size_x; i++ ) {
+	  xmin = min(xmin,((double*)x)[i]);
+	  xmax = max(xmax,((double*)x)[i]);
+	}
+  }
+  printf("xmin = %g xmax = %g\n", xmin, xmax );
 }
 
