@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.4 1993-02-15 00:14:06 haley Exp $
+#	$Id: yMakefile,v 1.5 1993-04-16 17:02:14 haley Exp $
 #
 NCARG	= ../../../..
 
@@ -8,15 +8,13 @@ FSPLIT	= ncarguncat
 MYNAME	= emisc
 
 GENERIC_SRCS = \
-	 arex01.f coex01.f coex02.f coex03.f cbex01.f slex01.f bnchmk.f
+	 bnchmk.f example.f
 
 GENERIC_OBJS = \
-	 arex01.o coex01.o coex02.o coex03.o cbex01.o slex01.o bnchmk.o
-
-OTHER_SRCS = example.f
+	 bnchmk.o example.o
 
 install::
-	@for file in $(GENERIC_SRCS) $(OTHER_SRCS); do\
+	@for file in $(GENERIC_SRCS); do\
 	($(INSTALL) -m $(INSTALL_LIB) $$file $(EXAMPLESPATH));\
 	done
 
