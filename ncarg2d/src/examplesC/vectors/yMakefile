@@ -1,32 +1,11 @@
 #
-#	$Id: yMakefile,v 1.7 1994-08-16 19:35:18 stautler Exp $
+#	$Id: yMakefile,v 1.8 1994-10-31 04:17:02 haley Exp $
 #
 
-CSRCS = c_tvelvc.c c_ffex02.c
+EXAMPLES = c_fcover.c c_ffex02.c c_ffex05.c c_vvex01.c c_vvex02.c c_vvex03.c
 
-SED_SRCS = c_fcover.c c_ffex05.c c_vvex01.c c_vvex02.c c_vvex03.c
+TESTS = c_tvelvc.c 
 
-GENERIC_SRCS = $(CSRCS) $(SED_SRCS)
 
-InstallTarget($(GENERIC_SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
-CleanFilesTarget($(SED_SRCS))
-
-c_fcover.c: c_fcover.c.sed Makefile
-	@-$(RM) $@
-	@$(CALLCONV) $(SYSTEM_INCLUDE) $@ vvudmv
-
-c_ffex05.c: c_ffex05.c.sed Makefile
-	@-$(RM) $@
-	@$(CALLCONV) $(SYSTEM_INCLUDE) $@ vvudmv
-
-c_vvex01.c: c_vvex01.c.sed Makefile
-	@-$(RM) $@
-	@$(CALLCONV) $(SYSTEM_INCLUDE) $@ vvudmv gngpat
-
-c_vvex02.c: c_vvex02.c.sed Makefile
-	@-$(RM) $@
-	@$(CALLCONV) $(SYSTEM_INCLUDE) $@ gngpat
-
-c_vvex03.c: c_vvex03.c.sed Makefile
-	@-$(RM) $@
-	@$(CALLCONV) $(SYSTEM_INCLUDE) $@ vvmap vvumxy
+InstallTarget($(EXAMPLES),$(INSTALL_LIB),$(EXAMPLESPATH))
+InstallTarget($(TESTS),$(INSTALL_LIB),$(TESTSPATH))
