@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclVar.c,v 1.54 1998-11-24 18:06:35 ethan Exp $
+ *      $Id: NclVar.c,v 1.55 1998-11-24 21:27:39 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -2515,7 +2515,9 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 				}
 				break;
 			}
-			if((lhs_n_elem != 1)||((lhs_n_elem == 1)&&(rhs_md->multidval.totalelements ==1))||((lhs_n_elem == 1)&&(rhs_md->multidval.n_dims >= i)&&(rhs_md->multidval.dim_sizes[i] == 1))){
+			if((lhs_n_elem != 1)||((lhs_n_elem == 1)&&(rhs_md->multidval.totalelements ==1))||((lhs_n_elem == 1)&&(rhs_md->multidval.n_dims > j )&&(rhs_md->multidval.dim_sizes[j] == 1))){
+
+if(rhs_md->multidval.totalelements !=1) {
 				if(rhs->var.dim_info[j].dim_quark > 0) {
 #ifdef NCLVARDEBUG
 					fprintf(stdout,"case 25\n");
@@ -2694,6 +2696,7 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 						lhs->var.dim_info[lhs_sel_ptr->selection[i].dim_num].dim_quark = -1;
 					}
 				}
+}
 				i++;
 				j++;
 			} else {
