@@ -1,5 +1,5 @@
 /*
- *      $Id: Contour.c,v 1.27 1994-09-23 23:36:37 dbrown Exp $
+ *      $Id: Contour.c,v 1.28 1994-09-27 00:50:28 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -129,9 +129,6 @@ static NhlResource resources[] = {
 	{ NhlNcnMaxLevelValF,NhlCcnMaxLevelValF,NhlTFloat,sizeof(float),
 		  Oset(max_level_val),
 		  NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
-	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
-		 Oset(llabel_interval_set),
-		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{NhlNcnLevels, NhlCcnLevels,  NhlTFloatGenArray,
 		 sizeof(NhlPointer),Oset(levels),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
@@ -290,6 +287,9 @@ static NhlResource resources[] = {
 
 	{NhlNcnLineLabelsOn,NhlCcnLineLabelsOn,NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(line_lbls.on),
+		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 Oset(llabel_interval_set),
 		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{NhlNcnLineLabelInterval,NhlCcnLineLabelInterval,
 		  NhlTFloat,sizeof(float),
@@ -3285,7 +3285,7 @@ static NhlErrorTypes AddDataBoundToAreamap
 			yinc = (ya[i+1] - ya[i]) / _cnMAPBOUNDINC;
 			if (! started) {
 				_NhlMapita(cnp->aws,ya[i],xa[i],
-					   0,10,-1,0,entry_name);
+					   0,3,-1,0,entry_name);
 #if 0
 				c_mapit(ya[i],xa[i],0);
 #endif
@@ -3293,7 +3293,7 @@ static NhlErrorTypes AddDataBoundToAreamap
 			}
 			for (j = 0; j < _cnMAPBOUNDINC + 1; j++) {
 				_NhlMapita(cnp->aws,ya[i]+j*yinc,xa[i]+j*xinc,
-					   2,10,-1,0,entry_name);
+					   2,3,-1,0,entry_name);
 #if 0
 				c_mapit(ya[i]+j*yinc,xa[i]+j*xinc,1);
 #endif
@@ -3763,9 +3763,6 @@ static NhlErrorTypes SetUpLLTransObj
 
 		NhlSetSArg(&sargs[nargs++],NhlNtrXReverse,cnp->x_reverse);
 		NhlSetSArg(&sargs[nargs++],NhlNtrYReverse,cnp->y_reverse);
-		NhlSetSArg(&sargs[nargs++],NhlNtrOutOfRangeF,
-			   cnp->out_of_range_val);
-
 		sprintf(buffer,"%s",cnnew->base.name);
 		strcat(buffer,".Trans");
 
@@ -3804,10 +3801,6 @@ static NhlErrorTypes SetUpLLTransObj
 		NhlSetSArg(&sargs[nargs++],NhlNtrXLog,cnp->x_log);
 	if (cnp->y_log != ocnp->y_log)
 		NhlSetSArg(&sargs[nargs++],NhlNtrYLog,cnp->y_log);
-
-	if (cnp->out_of_range_val != ocnp->out_of_range_val)
-		NhlSetSArg(&sargs[nargs++],NhlNtrOutOfRangeF,
-			   cnp->out_of_range_val);
 
 	subret = NhlALSetValues(tfp->trans_obj->base.id,sargs,nargs);
 	if (nargs > 0)
@@ -4062,8 +4055,6 @@ static NhlErrorTypes SetUpIrrTransObj
 
 		NhlSetSArg(&sargs[nargs++],NhlNtrXReverse,cnp->x_reverse);
 		NhlSetSArg(&sargs[nargs++],NhlNtrYReverse,cnp->y_reverse);
-		NhlSetSArg(&sargs[nargs++],NhlNtrOutOfRangeF,
-			   cnp->out_of_range_val);
 
 		sprintf(buffer,"%s",cnnew->base.name);
 		strcat(buffer,".Trans");
@@ -4089,10 +4080,6 @@ static NhlErrorTypes SetUpIrrTransObj
 		NhlSetSArg(&sargs[nargs++],NhlNtrXReverse,cnp->x_reverse);
 	if (cnp->y_reverse != ocnp->y_reverse)
 		NhlSetSArg(&sargs[nargs++],NhlNtrYReverse,cnp->y_reverse);
-
-	if (cnp->out_of_range_val != ocnp->out_of_range_val)
-		NhlSetSArg(&sargs[nargs++],NhlNtrOutOfRangeF,
-			   cnp->out_of_range_val);
 
 	subret = NhlALSetValues(tfp->trans_obj->base.id,sargs,nargs);
 
@@ -6704,7 +6691,7 @@ static NhlErrorTypes    ManageDynamicArrays
 	ocnp->fill_colors = changed ? NULL : cnp->fill_colors;
 	cnp->fill_colors = ga;
 
-	if (init || need_check || 
+	if (init || changed || 
 	    cnp->below_min.on != ocnp->below_min.on ||
 	    cnp->above_max.on != ocnp->above_max.on) {
 		int len, spacing;
@@ -6783,7 +6770,7 @@ static NhlErrorTypes    ManageDynamicArrays
 	ocnp->fill_patterns = changed ? NULL : cnp->fill_patterns;
 	cnp->fill_patterns = ga;
 
-	if (init || need_check || 
+	if (init || changed || 
 	    cnp->below_min.on != ocnp->below_min.on ||
 	    cnp->above_max.on != ocnp->above_max.on) {
 		ip = (int *) ga->data;
@@ -6872,7 +6859,7 @@ static NhlErrorTypes    ManageDynamicArrays
 	ocnp->fill_scales = changed ? NULL : cnp->fill_scales;
 	cnp->fill_scales = ga;
 	
-	if (init || need_check || 
+	if (init || changed || 
 	    cnp->below_min.on != ocnp->below_min.on ||
 	    cnp->above_max.on != ocnp->above_max.on) {
 		fp = (float *) ga->data;
