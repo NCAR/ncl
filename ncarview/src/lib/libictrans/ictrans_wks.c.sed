@@ -1,5 +1,5 @@
 /*
- *	$Id: ictrans_wks.c.sed,v 1.11 1993-02-09 17:02:18 haley Exp $
+ *	$Id: ictrans_wks.c.sed,v 1.12 1993-02-11 21:43:18 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -208,11 +208,7 @@ opnwks_(unit, fname, status)
 
 		(void) pipe(pipes);
 
-#ifdef SYSV
 		if ( fork() == 0 )
-#else
-		if ( vfork() == 0 )
-#endif /* SYSV	*/
 		{
 			(void) close(pipes[1]);
 			(void) close(0); (void) dup(pipes[0]);

@@ -1,5 +1,5 @@
 /*
- *	$Id: talkto.c,v 1.20 1993-02-01 16:27:47 clyne Exp $
+ *	$Id: talkto.c,v 1.21 1993-02-11 21:43:32 clyne Exp $
  */
 /*
  *	talkto.c
@@ -29,13 +29,6 @@
 #ifndef	CRAY
 #include <sys/wait.h>
 #include <sys/resource.h>
-#endif
-
-#ifndef	sun
-#define	FORK	fork
-#else
-#include <vfork.h>
-#define	FORK	vfork
 #endif
 
 #include <ncarg/c.h>
@@ -282,7 +275,7 @@ int	OpenTranslator(channel, argv, hfd)
 	}
 		
 
-	pid = FORK();
+	pid = fork();
 	switch	(pid)	{
 	case	-1:
 		perror("fork");

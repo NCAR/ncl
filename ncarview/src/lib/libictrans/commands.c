@@ -1,5 +1,5 @@
 /*
- *	$Id: commands.c,v 1.22 1993-01-13 21:04:41 clyne Exp $
+ *	$Id: commands.c,v 1.23 1993-02-11 21:43:15 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -29,13 +29,6 @@
 #include <ncarg/cgm_tools.h>
 #include <ncarg/ctrans.h>
 #include "ictrans.h"
-
-#ifdef	sun
-#include <vfork.h>
-#define	FORK	vfork
-#else
-#define	FORK	fork
-#endif
 
 IcState	icState = {
 		FALSE, 1, 1, 1, 0, 0, FALSE, 0, NULL, NULL, NULL, NULL, NULL,
@@ -1442,9 +1435,9 @@ char	*s;
 	int	pid, w;
 	register void (*istat)(), (*qstat)();
 
-	extern int FORK(), execl(), wait();
+	extern int fork(), execl(), wait();
 
-	if((pid = FORK()) == 0) {
+	if((pid = fork()) == 0) {
 		(void) execl("/bin/csh", "sh", "-c", s, (char *)0);
 		_exit(127);
 	}

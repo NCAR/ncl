@@ -1,5 +1,5 @@
 /*
- *	$Id: spooler.c,v 1.11 1992-10-08 21:35:33 clyne Exp $
+ *	$Id: spooler.c,v 1.12 1993-02-11 21:43:20 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -31,12 +31,6 @@
 #include	<ncarg/c.h>
 #include	"ictrans.h"
 #include	"spooler.h"
-
-#ifdef	sun
-#include <vfork.h>
-#define	fork	vfork
-#endif
-
 
 static	Spoolers	spoolers = {NULL, 0, 0};
 static	Spooler		*currentSpooler = NULL;
