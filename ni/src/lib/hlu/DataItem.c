@@ -1,5 +1,5 @@
 /*
- *      $Id: DataItem.c,v 1.11 1995-12-19 20:39:04 boote Exp $
+ *      $Id: DataItem.c,v 1.12 1996-04-04 16:52:28 boote Exp $
  */
 /************************************************************************
 *									*
@@ -412,13 +412,8 @@ _NhlDataChanged
 
 	l->dataitem.change_called = True;
 
-	if(status){
+	if(status)
 		_NhlDataItemModified((NhlLayer)l->dataitem.manager);
-		return;
-	}
-
-	NhlPError(NhlFATAL,NhlEUNKNOWN,
-"_NhlDataChanged:Should only be called by DataItem sub-classes with Managers");
 
 	return;
 }
