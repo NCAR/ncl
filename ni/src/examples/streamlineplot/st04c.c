@@ -1,5 +1,5 @@
 /*
- *      $Id: st04c.c,v 1.2 1996-06-28 17:02:03 haley Exp $
+ *      $Id: st04c.c,v 1.3 1996-10-09 19:23:20 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -77,7 +77,8 @@ main(int argc, char *argv[])
 {
     int NCGM=1, X11=0, PS=0;
     int i, j, time, d, h;
-    int appid, wid, cnid, vcid, stid, txid, amid, mpid, tmid;
+    int appid, wid, cnid, vcid, stid, txid, amid, mpid, tmid, stdmid;
+    long stid_len;
     int vfield, vfield2, sfield, sfield2;
     int rlist, len_dims[2];
     long strt[1], cnt[1];
@@ -88,10 +89,10 @@ main(int argc, char *argv[])
     float *lon, *lat;
     float *X, *Y;
     char  filename[256];
-    char  rftime[9];
+    char  *rftime;
     const char *dir = _NGGetNCARGEnv("data");
     char hour[3], day[3], mainstring[17];
-    extern void get_2d_array();
+    extern void get_2d_array(float *, long, long, int, int, long);
 /*
  * Initialize the high level utility library
  */
@@ -105,7 +106,7 @@ main(int argc, char *argv[])
     NhlRLSetString(rlist,NhlNappDefaultParent,"True");
     NhlCreate(&appid,"st04",NhlappClass,NhlDEFAULT_APP,rlist);
 
-    if (NCGM) {
+    if (NCGM == 1) {
 /*
  * Create a meta file workstation.
  */
@@ -306,14 +307,19 @@ main(int argc, char *argv[])
     ncdiminq(ncid[1],tmid,(char *)0,&timelen);
     tmid = ncvarid(ncid[1],"timestep");
     timestep = (long *)malloc(sizeof(long)*timelen);
+
     strt[0] = 0;
     cnt[0] = timelen;
     ncvarget(ncid[1],tmid,(long const *)strt,(long const *)cnt,timestep);
     sprintf( hour, "00");
     sprintf( day, "05");
     
+    stdmid = ncdimid(ncid[1],"timelen");
+    ncdiminq(ncid[1], stdmid, (char *)0, &stid_len );
     tmid = ncvarid(ncid[1],"reftime");
-    strt[0] = 0; cnt[0] = 8;
+    rftime = (char *)malloc((stid_len+1)*sizeof(char));
+
+    strt[0] = 0; cnt[0] = stid_len;
     ncvarget(ncid[1],tmid,(long const *)strt,(long const *)cnt,rftime);
 
     for( i = 0; i <= TIMESTEPS-1; i++ ) {
@@ -339,7 +345,7 @@ main(int argc, char *argv[])
 /*
  * Set the new title string
  */
-            sprintf(mainstring, "%s%s %s:00",rftime, day, hour);
+            sprintf(mainstring, "%8s%2s %2s:00",rftime, day, hour);
             printf("%s\n",mainstring);
             NhlRLClear(rlist);
             NhlRLSetString(rlist,NhlNtiMainString,mainstring);
@@ -416,14 +422,14 @@ main(int argc, char *argv[])
  */
 void get_2d_array(
     float *array,
-    int latlen,
-    int lonlen,
+    long latlen,
+    long lonlen,
     int fid,
     int aid,
-    int timestep                  
+    long timestep                  
 )
 {
-    int start[3], count[3];
+    long start[3], count[3];
 
     start[0] = timestep;
     start[1] = start[2] = 0;

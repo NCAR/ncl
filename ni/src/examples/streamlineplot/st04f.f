@@ -1,5 +1,5 @@
 C
-C      $Id: st04f.f,v 1.1 1996-06-28 17:02:03 haley Exp $
+C      $Id: st04f.f,v 1.2 1996-10-09 19:23:21 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -77,6 +77,7 @@ C
       character*2 hour, day
       character*16 mainstring
       character*256 filename
+      character*256 dir
       character*8 rftime
       character*50 recname
       character*13 cdffiles(6)
@@ -97,7 +98,6 @@ C directory so the application looks for a resource file in the working
 C directory. 
 C
       call NhlFRLCreate(rlist,'setrl')
-      call NhlFRLCreate(grlist,'getrl')
 
       call NhlFRLClear(rlist)
       call NhlFRLSetString(rlist,'appUsrDir','./',ierr)
@@ -135,21 +135,23 @@ C
 C
 C Open the netCDF files.
 C
+      call gngpat(dir,'data',ierr)
+      do 10 i=1,256
+          if( dir(i:i).eq.char(0) ) then
+              dir(i:i+4) = '/cdf/'
+              flen = i+4
+              go to 15
+          endif
+ 10   continue
+ 15   filename(1:flen) = dir
       do 20 j = 1,6
-         flen = 5 + len(cdffiles(j))
-         call gngpat(filename,'data',ierr)
-         do 10 i=1,256
-            if( filename(i:i).eq.char(0) ) then
-               filename(i:i+flen) = '/cdf/' // cdffiles(j)
-               goto 15
-            endif
- 10      continue
+          filename(flen+1:flen+1+len(cdffiles(j))) = cdffiles(j)
+          ncid(j) = ncopn(filename,0,ierr)
+ 20   continue
 C      
 C The second argument to 'ncopn' should be NCNOWRIT, but since we
 C can't include 'netcdf.inc', we are using the value '0' instead.
 C
- 15      ncid(j) = ncopn(filename,0,ierr)
- 20   continue
 C
 C Get the lat/lon dimensions (they happen to be the
 C same for all files in this case)
@@ -367,7 +369,7 @@ C
 C Get U and V values
 C
             call get_2d_array(X,latlen,lonlen,ncid(1),uid,i+1)
-            call get_2d_array(Y,latlen,lonlen,ncid(1),vid,i+1)
+            call get_2d_array(Y,latlen,lonlen,ncid(2),vid,i+1)
 
             call NhlFRLClear(rlist)
             call NhlFRLSetMDFloatArray(rlist,'vfUDataArray',X,2,
