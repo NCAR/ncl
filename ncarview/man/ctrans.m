@@ -15,6 +15,12 @@ ctrans \- a Computer Graphics Metafile ( \fICGM\fR ) translator
 ] [
 .B \-soft
 ] [
+.BI \-lmin " min" 
+] [
+.BI \-lmax " max" 
+] [
+.BI \-lscale " scale" 
+] [
 .I device\-specific options
 ] 
 [
@@ -165,10 +171,39 @@ bookkeeping. Without a specified
 processes the entire metafile.
 .TP 
 .B \-soft
-Unconditionally perform sofware filling of all filled polygons. This
+Unconditionally perform software filling of all filled polygons. This
 option may be useful for devices which have limits on the number of
 vertices describing a polygon. On some devices this number is known and
 software filling is performed, as appropriate, without user specification.
+.TP
+.BI \-lmin " min"
+On devices which support line width scaling all lines are guaranteed to be
+scaled at least
+.I min
+times the default line width for that device. This option effectively 
+insures that the minimum value for the CGM element "LINE WIDTH" is 
+.IR min . 
+.TP
+.BI \-lmax " max"
+On devices which support line width scaling all lines are guaranteed to be
+scaled at most
+.I max
+times the default line width for that device. This option effectively 
+insures that the maximum value for the CGM element "LINE WIDTH" is 
+.IR max . 
+The results of setting 
+.I max
+less then 
+.I min
+are undefined.
+.TP
+.BI \-lscale " scale"
+On devices which support line width scaling all lines will be scaled
+.I scale
+times the default line width for that device. This option is subject to 
+modification by the 
+.BR -lmin " and " -lmax 
+options.
 .PP
 .SH DEVICE-SPECIFIC OPTIONS:
 .PP

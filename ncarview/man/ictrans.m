@@ -12,6 +12,12 @@ ictrans \- user interface to the CGM translator
 ] [
 .B \-soft
 ] [
+.BI \-lmin " min"
+] [
+.BI \-lmax " max"
+] [
+.BI \-lscale " scale"
+] [
 .I device\-specific options
 ] 
 .IR metafile .\|.\|.
@@ -103,6 +109,35 @@ software filling is performed, as appropriate, without user specification.
 .SH DEVICE SPECIFIC OPTIONS
 Some ictrans options are only available for a subset of the supported 
 devices. The following is a list of such options.
+.TP
+.BI \-lmin " min"
+On devices which support line width scaling all lines are guaranteed to be
+scaled at least
+.I min
+times the default line width for that device. This option effectively 
+insures that the minimum value for the CGM element "LINE WIDTH" is 
+.IR min . 
+.TP
+.BI \-lmax " max"
+On devices which support line width scaling all lines are guaranteed to be
+scaled at most
+.I max
+times the default line width for that device. This option effectively 
+insures that the maximum value for the CGM element "LINE WIDTH" is 
+.IR max . 
+The results of setting 
+.I max
+less then 
+.I min
+are undefined.
+.TP
+.BI \-lscale " scale"
+On devices which support line width scaling all lines will be scaled
+.I scale
+times the default line width for that device. This option is subject to 
+modification by the 
+.BR -lmin " and " -lmax 
+options.
 .TP
 .BI \-geom " geom"
 .I geom 
