@@ -1704,7 +1704,7 @@ NhlErrorTypes reg_multlin_W( void )
   }
 
   NGCALLF(dzregr1,DZREGR1)(&npts,&mpts,tmp_y,&missing_dy.doubleval,tmp_x,
-                           &missing_dx.doubleval,tmp_coef,resid,con,cnorm);
+                           &missing_dx.doubleval,tmp_coef,resid,&con,cnorm);
 
   if(type_x    != NCL_double) NclFree(tmp_x);
   if(type_y    != NCL_double) NclFree(tmp_y);
