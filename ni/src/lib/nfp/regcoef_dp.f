@@ -98,7 +98,11 @@ C v[b] in book {variance of B}
           VB = SSQ/XVAR
           SQRTVB = DSQRT(VB)
 C t-statistic
-          TVAL = (RCOEF-RNULL)/DSQRT(VB)
+          IF (SQRTVB.GT.0.D0) then
+              TVAL = (RCOEF-RNULL)/SQRTVB
+          ELSE
+              TVAL = YMSG
+          END IF
 C degrees of freedom
           DF = XYN - 2.D0
       ELSE
