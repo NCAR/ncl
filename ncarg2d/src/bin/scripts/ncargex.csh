@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.30 1993-04-09 14:09:14 haley Exp $
+#   $Id: ncargex.csh,v 1.31 1993-04-12 14:41:53 haley Exp $
 #
 
 #********************#
@@ -13,7 +13,7 @@ if ($#argv < 1) then
   echo "               [-allfundamental,-F] [-alltutorial,-U] [-areas]   "
   echo "               [-autograph] [-bivar] [-colconv] [-conpack]       "
   echo "               [-conran_family] [-conrec_family] [-dashline]     "
-  echo "               [-ezmap] [-field_flow] [-gflash] [-gridall]        "
+  echo "               [-ezmap] [-field_flow] [-gflash] [-gridall]       "
   echo "               [-halftone] [-histogram] [-isosrfhr] [-isosurface]"
   echo "               [-labelbar] [-ngmisc] [-plotchar] [-pwrite_family]"
   echo "               [-scrolled_title] [-softfill] [-spps]             "
@@ -68,8 +68,7 @@ endif
 set ex_areas   = (arex01)
 set tst_areas  = (tareas)
 set ttr_areas  = (cardb1 caredg carline cardb2 carfill carmap)
-set fnd_areas
-set areas_list = ($ex_areas $tst_areas $ttr_areas $fnd_areas)
+set areas_list = ($ex_areas $tst_areas $ttr_areas)
 
 #**************************#
 #                          #
@@ -79,12 +78,9 @@ set areas_list = ($ex_areas $tst_areas $ttr_areas $fnd_areas)
 set ex_autograph   = (agex01 agex02 agex03 agex04 agex05 agex06 agex07 \
                       agex08 agex09 agex10 agex11 agex12 agex13)
 set tst_autograph  = (tautog tagupw)
-set ttr_autograph
 set fnd_autograph  = (fagaxclr fagaxlbl fagaxmax fagcuclr fagcudsh fagezmxy \
                       fagezmy fagezxy fagezy fagilclr fagovrvw)
-
-set autograph_list = ($ex_autograph $tst_autograph $ttr_autograph \
-                      $fnd_autograph)
+set autograph_list = ($ex_autograph $tst_autograph $fnd_autograph)
 
 #******************************#
 #                              #
@@ -92,21 +88,17 @@ set autograph_list = ($ex_autograph $tst_autograph $ttr_autograph \
 #                              #
 #******************************#
 set ex_cbivar   = (cbex01)
-set tst_cbivar
 set ttr_cbivar  = (cidsfft)
-set fnd_cbivar
-set cbivar_list = ($ex_cbivar $tst_cbivar $ttr_cbivar $fnd_cbivar)
+set cbivar_list = ($ex_cbivar $ttr_cbivar)
 
 #************************#
 #                        #
 #  Set colconv examples  #
 #                        #
 #************************#
-set ex_colconv 
 set tst_colconv  = (tcolcv)
-set ttr_colconv
 set fnd_colconv  = (fcce01 fcce02)
-set colconv_list = ($ex_colconv $tst_colconv $ttr_colconv $fnd_colconv)
+set colconv_list = ($tst_colconv $fnd_colconv)
 
 #************************#
 #                        #
@@ -115,7 +107,7 @@ set colconv_list = ($ex_colconv $tst_colconv $ttr_colconv $fnd_colconv)
 #************************#
 set ex_conpack   = (cpex01 cpex02 cpex03 cpex04 cpex05 cpex06 cpex07 \
                     cpex08 cpex09 ${ex_cbivar})
-set tst_conpack  = (tconpa ${tst_cbivar})
+set tst_conpack  = (tconpa)
 set ttr_conpack  = (ccpback ccpcff ccpcfx ccpcica ccpcir ccpcis ccpcit ccpclc \
                     ccpcld ccpcldm ccpcldr ccpcll ccpclu ccpcnrc ccpdflt \
                     ccpezct ccpfil ccpga ccphand ccphcf ccphl ccphlt ccpila \
@@ -125,43 +117,32 @@ set ttr_conpack  = (ccpback ccpcff ccpcfx ccpcica ccpcir ccpcis ccpcit ccpclc \
                     ccppc2 ccppc3 ccppc4 ccppkcl ccpt2d ccprc ccprect ccprwc \
                     ccprwu ccpscam ccpset ccpsps1 ccpsps2 ccpspv ccptitle \
                     ccpvp ccpvs colcon ${ttr_cbivar})
-set fnd_conpack  = (${fnd_cbivar})
-set conpack_list = ($ex_conpack $tst_conpack $ttr_conpack $fnd_conpack)
+set conpack_list = ($ex_conpack $tst_conpack $ttr_conpack)
 
 #******************************#
 #                              #
 #  Set conran_family examples  #
 #                              #
 #******************************#
-set ex_cnrn_family 
 set tst_cnrn_family  = (tconan tconaq tconas)
-set ttr_cnrn_family
-set fnd_cnrn_family
-set cnrn_family_list = (${ex_cnrn_family} ${tst_cnrn_family} \
-                        ${ttr_cnrn_family} ${fnd_cnrn_family})
+set cnrn_family_list = (${tst_cnrn_family})
 
 #******************************#
 #                              #
 #  Set conrec_family examples  #
 #                              #
 #******************************#
-set ex_cnrc_family 
 set tst_cnrc_family  = (tconre tcnqck tcnsmt tcnsup)
-set ttr_cnrc_family
-set fnd_cnrc_family
-set cnrc_family_list = (${ex_cnrc_family} ${tst_cnrc_family} \
-                        ${ttr_cnrc_family} ${fnd_cnrc_family})
+set cnrc_family_list = (${tst_cnrc_family})
 
 #*************************#
 #                         #
 #  Set dashline examples  #
 #                         #
 #*************************#
-set ex_dashline 
 set tst_dashline  = (tdashc tdashl tdashp tdashs)
-set ttr_dashline
-set fnd_dashline = (fdlcurvd fdldashc fdldashd fdlsmth)
-set dashline_list = ($ex_dashline $tst_dashline $ttr_dashline $fnd_dashline)
+set fnd_dashline  = (fdlcurvd fdldashc fdldashd fdlsmth)
+set dashline_list = ($tst_dashline $fnd_dashline)
 
 #**********************#
 #                      #
@@ -175,76 +156,56 @@ set ttr_ezmap  = (cezmap1 cezmap2 cezmap3 cmpclr cmpdd cmpdrw cmpel \
                   cmpfil cmpgci cmpgrd cmpgrp cmpita cmpitm cmplab cmplbl \
                   cmplot cmpmsk cmpou cmppos cmpsat cmpsup cmptit cmptra \
                   cmpusr)
-set fnd_ezmap
-set ezmap_list = ($ex_ezmap $tst_ezmap $ttr_ezmap $fnd_ezmap)
+set ezmap_list = ($ex_ezmap $tst_ezmap $ttr_ezmap)
 
 #***********************#
 #                       #
 #  Set gflash examples  #
 #                       #
 #***********************#
-set ex_gflash 
 set tst_gflash  = (tgflas)
-set ttr_gflash
-set fnd_gflash
-set gflash_list = ($ex_gflash $tst_gflash $ttr_gflash $fnd_gflash)
+set gflash_list = ($tst_gflash)
 
 #************************#
 #                        #
 #  Set gridall examples  #
 #                        #
 #************************#
-set ex_gridall 
 set tst_gridall  = (tgrida)
-set ttr_gridall
-set fnd_gridall
-set gridall_list = ($ex_gridall $tst_gridall $ttr_gridall $fnd_gridall)
+set gridall_list = ($tst_gridall)
 
 #*************************#
 #                         #
 #  Set halftone examples  #
 #                         #
 #*************************#
-set ex_halftone 
 set tst_halftone  = (thafto)
-set ttr_halftone
-set fnd_halftone
-set halftone_list = ($ex_halftone $tst_halftone $ttr_halftone $fnd_halftone)
+set halftone_list = ($tst_halftone)
 
 #**************************#
 #                          #
 #  Set histogram examples  #
 #                          #
 #**************************#
-set ex_histogram 
 set tst_histogram  = (thstgr)
-set ttr_histogram
-set fnd_histogram
-set histogram_list = ($ex_histogram $tst_histogram $ttr_histogram \
-                      $fnd_histogram)
+set histogram_list = ($tst_histogram)
 
 #***********************#
 #                       #
 # set isosrfhr examples #
 #                       #
 #***********************#
-set ex_isosrfhr 
 set tst_isosrfhr  = (tisohr)
-set ttr_isosrfhr
-set fnd_isosrfhr
-set isosrfhr_list = ($ex_isosrfhr $tst_isosrfhr $ttr_isosrfhr $fnd_isosrfhr)
+set isosrfhr_list = ($tst_isosrfhr)
 
 #*************************#
 #                         #
 # set isosurface examples #
 #                         #
 #*************************#
-set ex_isosurface 
 set tst_isosurface  = (tisosr tpwrzi)
-set ttr_isosurface
-set fnd_isosurface = (fiseziso fisissrf fispwrzi)
-set isosurface_list = ($ex_isosurface $tst_isosurface $ttr_isosurface \
-                       $fnd_isosurface)
+set fnd_isosurface  = (fiseziso fisissrf fispwrzi)
+set isosurface_list = ($tst_isosurface $fnd_isosurface)
 
 #***********************#
 #                       #
@@ -253,20 +214,15 @@ set isosurface_list = ($ex_isosurface $tst_isosurface $ttr_isosurface \
 #***********************#
 set ex_labelbar   = (elblba)
 set tst_labelbar  = (tlblba)
-set ttr_labelbar
-set fnd_labelbar
-set labelbar_list = ($ex_labelbar $tst_labelbar $ttr_labelbar $fnd_labelbar)
+set labelbar_list = ($ex_labelbar $tst_labelbar)
 
 #*********************#
 #                     #
 # set ngmisc examples #
 #                     #
 #*********************#
-set ex_ngmisc
-set tst_ngmisc
-set ttr_ngmisc
-set fnd_ngmisc = (fngngdts fngwsym)
-set ngmisc_list = ($ex_ngmisc $tst_ngmisc $ttr_ngmisc $fnd_ngmisc)
+set fnd_ngmisc  = (fngngdts fngwsym)
+set ngmisc_list = ($fnd_ngmisc)
 
 #***********************#
 #                       #
@@ -275,20 +231,16 @@ set ngmisc_list = ($ex_ngmisc $tst_ngmisc $ttr_ngmisc $fnd_ngmisc)
 #***********************#
 set ex_plotchar   = (epltch)
 set tst_plotchar  = (tpltch)
-set ttr_plotchar
-set fnd_plotchar = (fpchiqu fpcloqu fpcfonts)
-set plotchar_list = ($ex_plotchar $tst_plotchar $ttr_plotchar $fnd_plotchar)
+set fnd_plotchar  = (fpchiqu fpcloqu fpcfonts)
+set plotchar_list = ($ex_plotchar $tst_plotchar $fnd_plotchar)
 
 #****************************#
 #                            #
 # set pwrite_family examples #
 #                            #
 #****************************#
-set ex_pwrite 
 set tst_pwrite  = (tpwrtx tpwry)
-set ttr_pwrite
-set fnd_pwrite
-set pwrite_list = ($ex_pwrite $tst_pwrite $ttr_pwrite $fnd_pwrite)
+set pwrite_list = ($tst_pwrite)
 
 #*****************************#
 #                             #
@@ -297,10 +249,9 @@ set pwrite_list = ($ex_pwrite $tst_pwrite $ttr_pwrite $fnd_pwrite)
 #*****************************#
 set ex_scrlld_title   = (slex01)
 set tst_scrlld_title  = (tstitl)
-set ttr_scrlld_title
-set fnd_scrlld_title = (fslfont)
+set fnd_scrlld_title  = (fslfont)
 set scrlld_title_list = (${ex_scrlld_title} ${tst_scrlld_title} \
-                         ${ttr_scrlld_title} ${fnd_scrlld_title})
+                         ${fnd_scrlld_title})
 
 #***********************#
 #                       #
@@ -309,10 +260,8 @@ set scrlld_title_list = (${ex_scrlld_title} ${tst_scrlld_title} \
 #***********************#
 set ex_softfill   = (sfex01 sfex02)
 set tst_softfill  = (tsoftf)
-set ttr_softfill
 set fnd_softfill  = (fsfwrld fsfsgfa)
-set softfill_list = ($ex_softfill $tst_softfill $ttr_softfill \
-                         $fnd_softfill)
+set softfill_list = ($ex_softfill $tst_softfill $fnd_softfill)
 
 #*******************#
 #                   #
@@ -320,10 +269,8 @@ set softfill_list = ($ex_softfill $tst_softfill $ttr_softfill \
 #                   #
 #*******************#
 set ex_spps   = (splogy sprevx spset1 spset2)
-set tst_spps
-set ttr_spps
-set fnd_spps = (fspcurve fspline fsppoint fspponts)
-set spps_list = ($ex_spps $tst_spps $ttr_spps $fnd_spps)
+set fnd_spps  = (fspcurve fspline fsppoint fspponts)
+set spps_list = ($ex_spps $fnd_spps)
 
 #**************************#
 #                          #
@@ -332,10 +279,9 @@ set spps_list = ($ex_spps $tst_spps $ttr_spps $fnd_spps)
 #**************************#
 set ex_streamlines   = (stex01 stex02 stex03)
 set tst_streamlines  = (tstrml)
-set ttr_streamlines
-set fnd_streamlines = (fstream ffex00 ffex01 ffex03 ffex04)
+set fnd_streamlines  = (fstream ffex00 ffex01 ffex03 ffex04)
 set streamlines_list = ($ex_streamlines $tst_streamlines \
-                        $ttr_streamlines $fnd_streamlines)
+                        $fnd_streamlines)
 
 #**********************#
 #                      #
@@ -344,20 +290,17 @@ set streamlines_list = ($ex_streamlines $tst_streamlines \
 #**********************#
 set ex_surface   = (srex01)
 set tst_surface  = (tsrfac tpwrzs)
-set ttr_surface
-set fnd_surface = (fsrezsrf fsrpwrzs fsrsrfac)
-set surface_list = ($ex_surface $tst_surface $ttr_surface $fnd_surface)
+set fnd_surface  = (fsrezsrf fsrpwrzs fsrsrfac)
+set surface_list = ($ex_surface $tst_surface $fnd_surface)
 
 #*********************#
 #                     #
 # set threed examples #
 #                     #
 #*********************#
-set ex_threed 
 set tst_threed  = (tthree tpwrzt)
-set ttr_threed
-set fnd_threed = (fthex01 fthex02 fthex03 fthex04 fthex05)
-set threed_list = ($ex_threed $tst_threed $ttr_threed $fnd_threed)
+set fnd_threed  = (fthex01 fthex02 fthex03 fthex04 fthex05)
+set threed_list = ($tst_threed $fnd_threed)
 
 #**********************#
 #                      #
@@ -366,9 +309,8 @@ set threed_list = ($ex_threed $tst_threed $ttr_threed $fnd_threed)
 #**********************#
 set ex_vectors   = (vvex01 vvex02)
 set tst_vectors  = (tvelvc)
-set ttr_vectors
-set fnd_vectors = (ffex00 ffex01 ffex02 ffex05)
-set vectors_list = ($ex_vectors $tst_vectors $ttr_vectors $fnd_vectors)
+set fnd_vectors  = (ffex00 ffex01 ffex02 ffex05)
+set vectors_list = ($ex_vectors $tst_vectors $fnd_vectors)
 
 #****************************************#
 #                                        #
@@ -378,21 +320,20 @@ set vectors_list = ($ex_vectors $tst_vectors $ttr_vectors $fnd_vectors)
 #****************************************#
 set ex_field   = (stex01 stex02 stex03 vvex01 vvex02)
 set tst_field  = (tstrml tvelvc)
-set ttr_field
 set fnd_field  = (ffex00 ffex01 ffex02 ffex03 ffex04 ffex05)
-set field_list = ($ex_field $tst_field $ttr_field $fnd_field)
+set field_list = ($ex_field $tst_field $fnd_field)
 
 #******************#
 #                  #
 # set gks examples #
 #                  #
 #******************#
-set ex_gks
-set tst_gks
-set ttr_gks
-set fnd_gks = (fgkgpl fgkgpm fgkgtx fgklnclr fgklnwth fgke01 fgke02 fgke03 \
-               fgke04 fcell fcell0 fgpm01)
-set gks_list = ($ex_gks $tst_gks $ttr_gks $fnd_gks)
+set fnd_gks  = (fgkgpl fgkgpm fgkgtx fgklnclr fgklnwth fgke01 fgke02 fgke03 \
+                fgke04 fcell fcell0 fgpm01)
+set pdc_gks  = (pgkex01 pgkex02 pgkex03 pgkex04 pgkex05 pgkex06 pgkex07 \
+                pgkex08 pgkex09 pgkex10 pgkex11 pgkex12 pgkex13 pgkex14 \
+                pgkex15 pgkex16 pgkex17 pgkex18 pgkex19 pgkex20 pgkex21)
+set gks_list = ($fnd_gks $pdc_gks)
 
 #****************************#
 #                            #
@@ -400,10 +341,8 @@ set gks_list = ($ex_gks $tst_gks $ttr_gks $fnd_gks)
 #                            #
 #****************************#
 set ex_misc   = (coex01 coex02 coex03 example bnchmk)
-set tst_misc
-set ttr_misc
-set fnd_misc = (fcoord fcoord1 fcoord2)
-set misc_list = ($ex_misc $tst_misc $ttr_misc $fnd_misc)
+set fnd_misc  = (fcoord fcoord1 fcoord2)
+set misc_list = ($ex_misc $fnd_misc)
 
 #*************************************************************#
 #                                                             #
@@ -417,36 +356,26 @@ set ttr_overlap = (mpex03 mpex05 arex01 sfex01 tsoftf)
 #               SET LISTS OF VARIOUS TYPES OF EXAMPLES                #
 #                                                                     #
 #*********************************************************************#
-set ex_list = ($ex_areas $ex_autograph $ex_colconv $ex_conpack \
-               ${ex_cnrn_family} ${ex_cnrc_family} $ex_dashline $ex_ezmap \
-               $ex_field $ex_gflash $ex_gridall $ex_halftone $ex_histogram \
-               $ex_isosrfhr $ex_isosurface $ex_labelbar $ex_ngmisc \
-               $ex_plotchar $ex_pwrite ${ex_scrlld_title} $ex_softfill \
-               $ex_spps $ex_surface $ex_threed $ex_gks $ex_misc)
+set ex_list  = ($ex_areas $ex_autograph $ex_conpack $ex_ezmap $ex_field \
+                $ex_labelbar $ex_plotchar ${ex_scrlld_title} $ex_softfill \
+                $ex_spps ${ex_streamlines} $ex_surface $ex_vectors $ex_misc)
 
 set tst_list = ($tst_areas $tst_autograph $tst_colconv $tst_conpack \
                 ${tst_cnrn_family} ${tst_cnrc_family} $tst_dashline \
                 $tst_ezmap $tst_field $tst_gflash $tst_gridall $tst_halftone \
                 $tst_histogram $tst_isosrfhr $tst_isosurface $tst_labelbar \
-                $tst_ngmisc $tst_plotchar $tst_pwrite ${tst_scrlld_title} \
-                $tst_softfill $tst_spps $tst_surface $tst_threed $tst_gks \
-                $tst_misc)
+                $tst_plotchar $tst_pwrite ${tst_scrlld_title} \
+                $tst_softfill ${tst_streamlines} $tst_surface $tst_threed \
+                $tst_vectors)
 
-set ttr_list = ($ttr_areas $ttr_autograph $ttr_colconv $ttr_conpack \
-                ${ttr_cnrn_family} ${ttr_cnrc_family} $ttr_dashline \
-                $ttr_ezmap $ttr_field $ttr_gflash $ttr_gridall $ttr_halftone \
-                $ttr_histogram $ttr_isosrfhr $ttr_isosurface $ttr_labelbar \
-                $ttr_ngmisc $ttr_plotchar $ttr_pwrite ${ttr_scrlld_title} \
-                $ttr_softfill $ttr_spps $ttr_surface $ttr_threed $ttr_gks \
-                $ttr_misc)
+set ttr_list = ($ttr_areas $ttr_conpack $ttr_ezmap)
 
-set fnd_list = ($fnd_areas $fnd_autograph $fnd_colconv $fnd_conpack \
-                ${fnd_cnrn_family} ${fnd_cnrc_family} $fnd_dashline \
-                $fnd_ezmap $fnd_field $fnd_gflash $fnd_gridall $fnd_halftone \
-                $fnd_histogram $fnd_isosrfhr $fnd_isosurface $fnd_labelbar \
-                $fnd_ngmisc $fnd_plotchar $fnd_pwrite ${fnd_scrlld_title} \
-                $fnd_softfill $fnd_spps $fnd_surface $fnd_threed $fnd_gks \
-                $fnd_misc)
+set fnd_list = ($fnd_autograph $fnd_colconv $fnd_dashline $fnd_field $fnd_gks \
+                $fnd_isosurface $fnd_ngmisc $fnd_plotchar ${fnd_scrlld_title} \
+                $fnd_softfill $fnd_spps ${fnd_streamlines} $fnd_surface \
+                $fnd_threed $fnd_vectors $fnd_misc)
+
+set pdc_list = ($pdc_gks)
 
 #*********************************#
 #                                 #
@@ -469,7 +398,8 @@ while ($#argv > 0)
         case "-all":
         case "-A":
             shift
-            set names=($ex_list $tst_list $ttr_list $fnd_list)
+            set names=($ex_list $tst_list $ttr_list $fnd_list $pdoc_list)
+            set NoInteractiveGKS
             breaksw
 
         case "-allexamples":
@@ -494,6 +424,13 @@ while ($#argv > 0)
         case "-F":
             shift
             set names=($fnd_list)
+            set NoInteractiveGKS
+            breaksw
+        
+        case "-allpdocexamples":
+        case "-P":
+            shift
+            set names=($pdc_list)
             breaksw
         
         case "-areas":
@@ -634,6 +571,7 @@ while ($#argv > 0)
         case "-gks":
             shift
             set names=($gks_list)
+            set NoInteractiveGKS
             breaksw
 
         case "-misc":
@@ -974,6 +912,16 @@ if (! $?NoRunOption) then
         breaksw
         case ffex05:
             ncargrun -o $name.ncgm $name < ffex05.dat
+        breaksw
+        case fgke01:
+        case fgke04:
+#
+# We don't want to execute these two examples if the person is running an
+# "all" target of some kind because generally you want to go away and come 
+# back when the "all" is done.  Since these are interactive examples, they 
+# will sit and wait for a mouse click before continuing on to the next example.
+#
+            if (! $?NoInteractiveGKS) $name
         breaksw
         case fgke03:
             $name
