@@ -299,7 +299,7 @@ NclQuark *dimnames;
 			thefile->file.n_vars++;
 			return(NhlNOERROR);
 		} else {
-			NhlPError(NhlWARNING,NhlEUNKNOWN,"FileAddVar: Variable %s is already defined, can not redefine");
+			NhlPError(NhlWARNING,NhlEUNKNOWN,"FileAddVar: Variable %s is already defined, can not redefine",NrmQuarkToString(varname));
 			return(NhlWARNING);
 		}
 	} else {
