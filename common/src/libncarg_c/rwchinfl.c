@@ -2,10 +2,9 @@
 
 #include <ncarg/c.h>
 #include <sys/file.h>
-
+#include <fcntl.h>
 
 #if defined (cray)
-#include <fcntl.h>
 #include <sys/types.h>
 #include <fortran.h>
 #endif
