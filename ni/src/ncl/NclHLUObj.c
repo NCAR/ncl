@@ -385,8 +385,14 @@ FILE * fp;
 	Const char *cname;
 	int ret=0;
 
-	name = NhlName(hlu_ptr->hlu.hlu_id);
-	cname = NhlClassName(hlu_ptr->hlu.hlu_id);
+	if (hlu_ptr->hlu.hlu_id <= 0) {
+		name = "no name";
+		cname = "no class";
+	}
+	else {
+		name = NhlName(hlu_ptr->hlu.hlu_id);
+		cname = NhlClassName(hlu_ptr->hlu.hlu_id);
+	}
 
 	ret = nclfprintf(fp,"%s\t%s\t%d", name,cname,hlu_ptr->hlu.hlu_id);
 	if(ret < 0) {
