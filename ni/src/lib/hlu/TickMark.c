@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.c,v 1.76 2001-04-10 23:44:10 dbrown Exp $
+ *      $Id: TickMark.c,v 1.77 2001-08-30 18:49:14 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -9328,7 +9328,7 @@ static NhlErrorTypes TickMarkGetValues
         int             nargs;
 #endif
 {
-	int		i;
+	int		i,j;
 	NhlGenArray	ga;
 	NhlString	ts;
 	NhlBoolean      create_ok;
@@ -9351,51 +9351,115 @@ static NhlErrorTypes TickMarkGetValues
 		}
 		if(args[i].quark == QXBValues) {
 			ga = tmp->x_b_values;
- 			create_ok = True;
+			if (tmp->x_b_nmajor > 0) {
+				create_ok = True;
+			}
 		}
 		if(args[i].quark == QXBMinorValues) {
 			ga = tmp->x_b_minor_values;
- 			create_ok = True;
+			if (tmp->x_b_nminor > 0) {
+				create_ok = True;
+			}
 		}
 		if(args[i].quark == QXTValues) {
 			ga = tmp->x_t_values;
- 			create_ok = True;
+			if (tmp->x_t_nmajor > 0) {
+				create_ok = True;
+			}
 		}
 		if(args[i].quark == QXTMinorValues) {
 			ga = tmp->x_t_minor_values;
- 			create_ok = True;
+			if (tmp->x_t_nminor > 0) {
+				create_ok = True;
+			}
 		}
 		if(args[i].quark == QYLValues) {
 			ga = tmp->y_l_values;
- 			create_ok = True;
+			if (tmp->y_l_nmajor > 0) {
+				create_ok = True;
+			}
 		}
 		if(args[i].quark == QYLMinorValues) {
 			ga = tmp->y_l_minor_values;
- 			create_ok = True;
+			if (tmp->y_l_nminor > 0) {
+				create_ok = True;
+			}
 		}
 		if(args[i].quark == QYRValues) {
 			ga = tmp->y_r_values;
- 			create_ok = True;
+			if (tmp->y_r_nmajor > 0) {
+				create_ok = True;
+			}
 		}
 		if(args[i].quark == QYRMinorValues) {
 			ga = tmp->y_r_minor_values;
- 			create_ok = True;
+			if (tmp->y_r_nminor > 0) {
+				create_ok = True;
+			}
 		}
 		if(args[i].quark == QXBLabels) {
 			ga = tmp->x_b_labels;
- 			create_ok = True;
+			if (ga && ga->num_elements < tmp->x_b_nmajor) {
+				ga = NULL;
+			}
+			/*
+			 * return a NULL array unless at least 
+			 * one string is non-NULL
+			 */
+			for (j = 0; j < tmp->x_b_nmajor; j++) {
+				if (tmp->x_b_major_labels[j] != NULL) {
+					create_ok = True;
+					break;
+				}
+			}
 		}
 		if(args[i].quark == QXTLabels) {
 			ga = tmp->x_t_labels;
- 			create_ok = True;
+			if (ga && ga->num_elements < tmp->x_t_nmajor) {
+				ga = NULL;
+			}
+			/*
+			 * return a NULL array unless at least 
+			 * one string is non-NULL
+			 */
+			for (j = 0; j < tmp->x_t_nmajor; j++) {
+				if (tmp->x_t_major_labels[j] != NULL) {
+					create_ok = True;
+					break;
+				}
+			}
 		}
 		if(args[i].quark == QYLLabels) {
 			ga = tmp->y_l_labels;
- 			create_ok = True;
+			if (ga && ga->num_elements < tmp->y_l_nmajor) {
+				ga = NULL;
+			}
+			/*
+			 * return a NULL array unless at least 
+			 * one string is non-NULL
+			 */
+			for (j = 0; j < tmp->y_l_nmajor; j++) {
+				if (tmp->y_l_major_labels[j] != NULL) {
+					create_ok = True;
+					break;
+				}
+			}
 		}
 		if(args[i].quark == QYRLabels) {
 			ga = tmp->y_r_labels;
- 			create_ok = True;
+			if (ga && ga->num_elements < tmp->y_r_nmajor) {
+				ga = NULL;
+			}
+			/*
+			 * return a NULL array unless at least 
+			 * one string is non-NULL
+			 */
+			for (j = 0; j < tmp->y_r_nmajor; j++) {
+				if (tmp->y_r_major_labels[j] != NULL) {
+					create_ok = True;
+					break;
+				}
+			}
 		}
 
 		if(ga != NULL) {
