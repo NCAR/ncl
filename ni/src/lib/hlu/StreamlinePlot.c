@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlot.c,v 1.35 1997-09-23 00:03:00 dbrown Exp $
+ *      $Id: StreamlinePlot.c,v 1.36 1997-09-30 01:13:21 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -4453,6 +4453,9 @@ void (_NHLCALLF(hlustmpxy,HLUSTMPXY))
 		_NhlDataToWin(Overlay_Trans_Obj,
 			      &xdata, &ydata,1,xus,yus,
 			      &status,NULL,NULL);
+#if 0
+	printf("compc %f %f : win %f %f\n", *xda, *yda, *xus, *yus);
+#endif
 		if(status) {
 			*ist = -5;
 			return;
@@ -4536,7 +4539,7 @@ void (_NHLCALLF(hlustimxy,HLUSTIMXY))
 		*ist = -1;
 	}
 #if 0
-	printf("win %f %f : compc %f %f", *xus, *yus, *xda, *yda);
+	printf("win %f %f : compc %f %f\n", *xus, *yus, *xda, *yda);
 #endif
 
 	return;
@@ -4696,7 +4699,7 @@ void (_NHLCALLF(hlustmpta,HLUSTMPTA))
 		}
 	retry1:
 		duv = pvfrac / Vnml;
-		cos_lat = cos(*yda * DEG2RAD);
+		cos_lat = cos(ydata * DEG2RAD);
 		dtx = *du / cos_lat;
 		dty = *dv;
 		while ( count < max_count) {
@@ -4759,7 +4762,6 @@ void (_NHLCALLF(hlustmpta,HLUSTMPTA))
 			printf ("errno - %d\n",errno);
 	}
 
-			
 	return;
 }
 

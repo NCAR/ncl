@@ -1,5 +1,5 @@
 /*
- *      $Id: XWorkstation.c,v 1.28 1997-09-23 00:03:19 dbrown Exp $
+ *      $Id: XWorkstation.c,v 1.29 1997-09-30 01:13:26 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -100,6 +100,14 @@ static NhlErrorTypes XWorkstationSetValues(
 #endif
 );
 
+static NhlErrorTypes XWorkstationGetValues(
+#if	NhlNeedProto
+	NhlLayer	l,
+	_NhlArgList	args,
+	int		nargs
+#endif
+);
+
 static NhlErrorTypes XWorkstationOpen(
 #if	NhlNeedProto
 	NhlLayer	l
@@ -117,6 +125,9 @@ static NhlErrorTypes XWorkstationAllocateColors(
 	NhlLayer l
 #endif
 );
+
+static NrmQuark Qtitle = NrmNULLQUARK;
+static NrmQuark Qicon_title = NrmNULLQUARK;
 
 NhlXWorkstationClassRec NhlxWorkstationClassRec = {
         {
@@ -141,7 +152,7 @@ NhlXWorkstationClassRec NhlxWorkstationClassRec = {
 /* layer_initialize		*/	XWorkstationInitialize,
 /* layer_set_values		*/	XWorkstationSetValues,
 /* layer_set_values_hook	*/	NULL,
-/* layer_get_values		*/	NULL,
+/* layer_get_values		*/	XWorkstationGetValues,
 /* layer_reparent		*/	NULL,
 /* layer_destroy		*/	NULL,
 
@@ -234,6 +245,9 @@ XWorkstationClassInitialize
 
 	(void)_NhlRegisterEnumType(NhlxWorkstationClass,NhlTXColorMode,cmvals,
 		NhlNumber(cmvals));
+
+        Qtitle = NrmStringToQuark(NhlNwkTitle);
+        Qicon_title = NrmStringToQuark(NhlNwkIconTitle);
 
 	return NhlNOERROR;
 }
@@ -410,6 +424,68 @@ static NhlErrorTypes XWorkstationSetValues
 				xp->xcolor_mode = op->xcolor_mode;
 			}
 		}
+	}
+
+	return ret;
+}
+
+/*
+ * Function:	XWorkstationGetValues
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+static NhlErrorTypes
+XWorkstationGetValues
+#if	NhlNeedProto
+(
+	NhlLayer	l,
+	_NhlArgList	args,
+	int		nargs
+)
+#else
+(l,args,nargs)
+	NhlLayer	l;
+	_NhlArgList	args;
+	int		nargs;
+#endif
+{
+	char			func[] = "XWorkstationGetValues";
+	NhlErrorTypes		ret = NhlNOERROR;
+	NhlXWorkstationLayerPart *xp = &((NhlXWorkstationLayer)l)->xwork;
+	int			i,size;
+        NhlString		string,res;
+        
+	for(i=0;i<nargs;i++){
+                string = NULL;
+		if((args[i].quark == Qtitle) && xp->xwinconfig.title){
+                        size = strlen(xp->xwinconfig.title)+1;
+                        string = xp->xwinconfig.title;
+                        res = NhlNwkTitle;
+                }
+                else if ((args[i].quark == Qicon_title) &&
+                         xp->xwinconfig.icon_title){
+                        size = strlen(xp->xwinconfig.icon_title)+1;
+                        string = xp->xwinconfig.icon_title;
+                        res = NhlNwkIconTitle;
+                }
+                if (string) {
+			*(NhlString*)args[i].value.ptrval = NhlMalloc(size);
+			if(*(NhlString*)args[i].value.ptrval == NULL){
+				NhlPError(NhlWARNING,ENOMEM,
+				"%s:Unable to allocate memory to retrieve %s",
+							func,res);
+				ret = MIN(ret,NhlWARNING);
+			}
+			strcpy(*(NhlString*)args[i].value.ptrval,string);
+                }
 	}
 
 	return ret;

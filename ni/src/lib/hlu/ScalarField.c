@@ -1,5 +1,5 @@
 /*
- *      $Id: ScalarField.c,v 1.26 1997-08-11 18:22:19 dbrown Exp $
+ *      $Id: ScalarField.c,v 1.27 1997-09-30 01:13:18 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1314,7 +1314,7 @@ GetSubsetBounds
  * would exceed the max index. In this case subtract -- it is not possible
  * to include the complete data range.
  */
-	rem = *icend % stride;
+	rem = (*icend - *icstart) % stride;
 	if (rem  > 0) {
 		if (*icend + stride - rem <= range)
 			*icend += stride - rem;
@@ -1464,14 +1464,14 @@ GetSubsetBoundsIrregular
 
 		if (! rev) { 
 			for (i = 0; i < len; i++) {
-				if (*scstart >= *(fp + i)) {
-					*icstart = i;
+				if (*scstart < *(fp + i)) {
+					*icstart = MAX(i-1,0);
 					break;
 				}
 			}
 			for (i = len - 1; i >= 0; i--) {
-				if (*scend <= *(fp + i)) {
-					*icend = i;
+				if (*scend > *(fp + i)) {
+					*icend = MIN(i+1,len-1);
 					break;
 				}
 			}
@@ -1510,7 +1510,7 @@ GetSubsetBoundsIrregular
  * would exceed the max index. In this case subtract -- it is not possible
  * to include the complete data range.
  */
-	rem = *icend % stride;
+	rem = (*icend - *icstart) % stride;
 	if (rem  > 0) {
 		if (*icend + stride - rem <= len -1)
 			*icend += stride - rem;
@@ -1525,11 +1525,11 @@ GetSubsetBoundsIrregular
  * space will eventually be freed (I think) by the Converter 
  * memory management routines.
  */
-	if (*icstart > 0 || *icend < len - 1) {
-		int nlen = *icend - *icstart + 1;
+	if (*icstart > 0 || *icend < len - 1 || stride > 1) {
+		int nlen = (*icend - *icstart) / stride + 1;
 		if (overwrite_ok) {
 			for (i = 0; i < nlen; i++) {
-				fp[i] = fp[*icstart+i];
+				fp[i] = fp[*icstart+i*stride];
 			}
 			(*c_array)->num_elements = nlen;
 		}
@@ -1542,7 +1542,9 @@ GetSubsetBoundsIrregular
 					  e_text,entry_name);
 				return NhlFATAL;
 			}
-			memcpy(nfp,&(fp[*icstart]),nlen * sizeof(float));
+			for (i = 0; i < nlen; i++) {
+				nfp[i] = fp[*icstart+i*stride];
+			}
 			if ((out_ga = (NhlGenArray) 
 			     NhlConvertMalloc(sizeof(NhlGenArrayRec)))
 			    == NULL) {
@@ -2789,7 +2791,14 @@ static NhlErrorTypes    ScalarFieldGetValues
 			do_genarray = True;
 			ndim = 1;
 			dlen[0] = 1;
-			if (sfp->x_start != NULL) {
+			if (sfp->x_arr) {
+				tmp = ((float*)sfp->x_arr->data)[0];
+				if ((data = CreateData(tmp,resQ)) == NULL)
+					return NhlFATAL;
+				typeQ = Qfloat;
+				size = sizeof(float);
+			}
+			else if (sfp->x_start != NULL) {
 				if ((data = CopyData(sfp->x_start,resQ))
 				    == NULL)
 					return NhlFATAL;
@@ -2815,19 +2824,27 @@ static NhlErrorTypes    ScalarFieldGetValues
 			do_genarray = True;
 			ndim = 1;
 			dlen[0] = 1;
-			if (sfp->x_end != NULL) {
+			if (sfp->x_arr) {
+				tmp = ((float*)sfp->x_arr->data)
+					[sfp->x_arr->len_dimensions[0]-1];
+				if ((data = CreateData(tmp,resQ)) == NULL)
+					return NhlFATAL;
+				typeQ = Qfloat;
+				size = sizeof(float);
+			}
+			else if (sfp->x_end != NULL) {
 				if ((data = CopyData(sfp->x_end,resQ))
 				    == NULL)
 					return NhlFATAL;
 				typeQ = sfp->x_end->typeQ;
 				size = sfp->x_end->size;
 			}
-			else if (sfp->x_subset_start != NULL) {
-				if ((data = CopyData(sfp->x_subset_start,resQ))
+			else if (sfp->x_subset_end != NULL) {
+				if ((data = CopyData(sfp->x_subset_end,resQ))
 				    == NULL)
 					return NhlFATAL;
-				typeQ = sfp->x_subset_start->typeQ;
-				size = sfp->x_subset_start->size;
+				typeQ = sfp->x_subset_end->typeQ;
+				size = sfp->x_subset_end->size;
 			}
 			else {
 				tmp = sfp->d_arr->len_dimensions[1] - 1;
@@ -2841,7 +2858,14 @@ static NhlErrorTypes    ScalarFieldGetValues
 			do_genarray = True;
 			ndim = 1;
 			dlen[0] = 1;
-			if (sfp->y_start != NULL) {
+			if (sfp->y_arr) {
+				tmp = ((float*)sfp->y_arr->data)[0];
+				if ((data = CreateData(tmp,resQ)) == NULL)
+					return NhlFATAL;
+				typeQ = Qfloat;
+				size = sizeof(float);
+			}
+			else if (sfp->y_start != NULL) {
 				if ((data = CopyData(sfp->y_start,resQ))
 				    == NULL)
 					return NhlFATAL;
@@ -2867,19 +2891,27 @@ static NhlErrorTypes    ScalarFieldGetValues
 			do_genarray = True;
 			ndim = 1;
 			dlen[0] = 1;
-			if (sfp->y_end != NULL) {
+			if (sfp->y_arr) {
+				tmp = ((float*)sfp->y_arr->data)
+					[sfp->y_arr->len_dimensions[0]-1];
+				if ((data = CreateData(tmp,resQ)) == NULL)
+					return NhlFATAL;
+				typeQ = Qfloat;
+				size = sizeof(float);
+			}
+			else if (sfp->y_end != NULL) {
 				if ((data = CopyData(sfp->y_end,resQ))
 				    == NULL)
 					return NhlFATAL;
 				typeQ = sfp->y_end->typeQ;
 				size = sfp->y_end->size;
 			}
-			else if (sfp->y_subset_start != NULL) {
-				if ((data = CopyData(sfp->y_subset_start,resQ))
+			else if (sfp->y_subset_end != NULL) {
+				if ((data = CopyData(sfp->y_subset_end,resQ))
 				    == NULL)
 					return NhlFATAL;
-				typeQ = sfp->y_subset_start->typeQ;
-				size = sfp->y_subset_start->size;
+				typeQ = sfp->y_subset_end->typeQ;
+				size = sfp->y_subset_end->size;
 			}
 			else {
 				tmp = sfp->d_arr->len_dimensions[0] - 1;
