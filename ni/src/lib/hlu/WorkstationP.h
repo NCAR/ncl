@@ -1,5 +1,5 @@
 /*
- *      $Id: WorkstationP.h,v 1.22 1998-10-22 17:35:51 boote Exp $
+ *      $Id: WorkstationP.h,v 1.23 1998-10-28 00:46:59 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -154,6 +154,7 @@ typedef struct _NhlWorkstationLayerPart{
 	NhlBoolean		reset;
 	NhlBoolean		set_public;
 	int			graphic_style_id;
+	_NhlCB			def_gs_destroy_cb;
 
 	_NhlLineStyleInfo	default_lineinfo;
 	_NhlLineStyleInfo	public_lineinfo;

@@ -1,5 +1,5 @@
 /*
- *      $Id: SplineCoord.c,v 1.7 1998-03-11 18:35:51 dbrown Exp $
+ *      $Id: SplineCoord.c,v 1.8 1998-10-28 00:46:57 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -256,7 +256,7 @@ NhlStatus *ystatus)
 				NhlFree(thedat->fx_orig_forward);
 				thedat->fx_orig_forward= NULL;
 				NhlFree(thedat->x_coefs_forward);
-				thedat->x_coefs_inverse = NULL;
+				thedat->x_coefs_forward = NULL;
 				xret = NhlWARNING;
 				NhlPError(NhlWARNING,NhlEUNKNOWN,"Spline: A non-monotonic coordinate vector was passed to CreateSplineApprox");
 			}
@@ -397,7 +397,7 @@ ERROR
 				NhlFree(thedat->fy_orig_forward);
 				thedat->fy_orig_forward= NULL;
 				NhlFree(thedat->y_coefs_forward);
-				thedat->y_coefs_inverse = NULL;
+				thedat->y_coefs_forward = NULL;
 				thedat->ystatus = *ystatus = NhlINVERSE;
 				NhlPError(NhlWARNING,NhlEUNKNOWN,"Spline: A non-monotonic coordinate vector was passed to CreateSplineApprox");
 			}
@@ -466,6 +466,7 @@ NhlErrorTypes _NhlDestroySplineCoordApprox
 	NhlFree(thedat->y_orig_inverse);
 	NhlFree(thedat->fy_orig_inverse);
 	NhlFree(thedat->y_coefs_inverse);
+	memset(thedat,(char) 0,sizeof(NhlCoordDat));
 	return(NhlNOERROR);
 }
 
