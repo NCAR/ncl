@@ -1,5 +1,5 @@
 /*
- *      $Id: cn01c.c,v 1.6 1995-06-27 00:47:46 dbrown Exp $
+ *      $Id: cn01c.c,v 1.7 1996-01-04 16:46:34 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -18,8 +18,8 @@
  *  Date:       Tue Oct  4 18:48:08 MDT 1994
  *
  *  Description:    Given a simple mathematically generated data set,
- *		    demonstrates ContourPlot with all resources (other than
- *		    cnScalarFieldData) set to their default value.
+ *                  demonstrates ContourPlot with all resources (other than
+ *                  cnScalarFieldData) set to their default value.
  */
 
 #include <math.h>
@@ -43,13 +43,13 @@ static const int M=25, N=25;
 
 main(int argc, char *argv[])
 {
-    float	T[25 * 25];
-    int		len_dims[2];
-    int		appid,wid,dataid,cnid;
-    int		srlist;
-    float	x,y;
-    int		i,j;
-    int		NCGM=0, X11=1, PS=0;
+    float   T[25 * 25];
+    int     len_dims[2];
+    int     appid,wid,dataid,cnid;
+    int     srlist;
+    float   x,y;
+    int     i,j;
+    int     NCGM=0, X11=1, PS=0;
 
 /* create a simple bull's eye pattern test data set */
 
