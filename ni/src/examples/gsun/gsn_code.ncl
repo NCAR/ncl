@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.137 2004-03-30 06:20:48 haley Exp $
+;      $Id: gsn_code.ncl,v 1.138 2004-04-01 22:27:50 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -71,7 +71,8 @@ undef("gsnp_uniform_tickmark_labels")
 undef("gsnp_shape_plot")
 undef("gsnp_scale_plot")
 undef("check_for_tickmarks_off")
-undef("compute_ps_device_coords")
+undef("compute_device_coords")
+undef("reset_device_coords")
 undef("maximize_output")
 undef("draw_and_frame")
 undef("create_canvas")
@@ -679,9 +680,10 @@ begin
   return(ret_res)
 end
 
+
 ;***********************************************************************;
 ; Function : get_res_value                                              ;
-;                res:logical                                            ;
+;                res                                                    ;
 ;            resname:string                                             ;
 ;        default_val                                                    ;
 ;                                                                       ;
@@ -689,12 +691,12 @@ end
 ; so, it returns its value and removes it from the resource list.       ;
 ; Otherwise, it returns the default value which is the last argument    ;
 ; passed in.                                                            ;
-;                                                                       ;
 ;***********************************************************************;
-function get_res_value(res:logical,resname:string,default_val)
-local return_val
+function get_res_value(res,resname:string,default_val)
+local res_value
 begin
-  if(res.and..not.any(ismissing(getvaratts(res)))) then
+  if(((typeof(res).eq."logical".and.res).or.(typeof(res).ne."logical")).and.\
+     .not.any(ismissing(getvaratts(res)))) then
     if(isatt(res,resname)) then
       return_val = res@$resname$
       delete(res@$resname$)
@@ -704,7 +706,6 @@ begin
   else
     return_val = default_val
   end if
-
   return(return_val)
 end
 
@@ -721,7 +722,7 @@ end
 ;                                                                       ;
 ;***********************************************************************;
 function get_res_value_keep(res,resname:string,default_val)
-local return_val
+local res_value
 begin
   if(((typeof(res).eq."logical".and.res).or.(typeof(res).ne."logical")).and.\
      .not.any(ismissing(getvaratts(res)))) then
@@ -733,9 +734,9 @@ begin
   else
     return_val = default_val
   end if
-
   return(return_val)
 end
+
 
 ;***********************************************************************;
 ; This function peruses two arrays of the same length and returns pairs ;
@@ -1535,7 +1536,7 @@ begin
 end
 
 ;**********************************************************************;
-; Function : compute_ps_device_coords                                  ;
+; Function : compute_device_coords                                     ;
 ;                bb(:,4) : float                                       ;
 ;                  res : logical                                       ;
 ;                                                                      ;
@@ -1557,7 +1558,7 @@ end
 ;                        default is 0.5)                               ;
 ;                                                                      ;
 ;**********************************************************************;
-function compute_ps_device_coords(bb,res)
+function compute_device_coords(bb,res)
 local coords, top, bot, lft, rgt, dpi, dpi_pw, dpi_ph, dpi_margin, \
       paper_width, paper_height, paper_margin
 begin
@@ -1652,11 +1653,11 @@ begin
 
 ;  if(bot.lt.0.or.bot.gt.1.or.top.lt.0.or.top.gt.1.or. \
 ;     lft.lt.0.or.lft.gt.1.or.rgt.lt.0.or.rgt.gt.1)
-;    print("compute_ps_device_coords: warning: bounding box values should be between 0 and 1 inclusive. Will continue anyway.")
+;    print("compute_device_coords: warning: bounding box values should be between 0 and 1 inclusive. Will continue anyway.")
 ;  end if
 
   if(bot.ge.top.or.lft.ge.rgt)
-    print("compute_ps_device_coords: bottom must be < top and left < right")
+    print("compute_device_coords: bottom must be < top and left < right")
     return((/0,0,0,0/))
   end if
 ;
@@ -1757,6 +1758,27 @@ begin
   return(coords)
 end
 
+;***********************************************************************;
+; Procedure : reset_device_coords                                       ;
+;                wks:graphic                                            ;
+;                                                                       ;
+; This procedure resets the PS/PDF device coordinates back to their     ;
+; default values. The default values will be whatever ones the user     ;
+; might have set when they called gsn_open_wks, or the defaults that    ;
+; NCL uses if none are set.                                             ;
+;***********************************************************************;
+
+procedure reset_device_coordinates(wks)
+begin
+  setvalues wks
+    "wkOrientation"  : get_res_value(wks,"wkOrientation",   0)
+    "wkDeviceLowerX" : get_res_value(wks,"wkDeviceLowerX", 36)
+    "wkDeviceLowerY" : get_res_value(wks,"wkDeviceLowerY",126)
+    "wkDeviceUpperX" : get_res_value(wks,"wkDeviceUpperX",576)
+    "wkDeviceUpperY" : get_res_value(wks,"wkDeviceUpperY",666)
+  end setvalues
+end
+
 
 ;***********************************************************************;
 ; Procedure : maximize_output                                           ;
@@ -1795,7 +1817,7 @@ begin
 ; Calculate device coords to maximize these plots on the PDF or PS 
 ; workstation.
 ;
-    coords = compute_ps_device_coords(bb,res2)
+    coords = compute_device_coords(bb,res2)
 
 ;
 ; Using the coordinate values just calculated, set them in the
@@ -1874,18 +1896,7 @@ begin
 ;
 ; NhlGetBB(plot) will work on an array of plots as well.
 ;
-      coords = compute_ps_device_coords(NhlGetBB(plot),maxbb)
-;
-; Before we set device coordinates, retrieve the old ones so we can
-; set them back later.
-;
-      getvalues wks
-        "wkOrientation"  : old_orientation
-        "wkDeviceLowerX" : old_dlx
-        "wkDeviceLowerY" : old_dly
-        "wkDeviceUpperX" : old_dux
-        "wkDeviceUpperY" : old_duy
-      end getvalues
+      coords = compute_device_coords(NhlGetBB(plot),maxbb)
 ;
 ; Set device coordinates to new ones.
 ;
@@ -1907,23 +1918,17 @@ begin
     frame(wks)           ; advance the frame
 ;
 ; Only set the device coordinates back if the frame is advanced, because 
-; if we do it when the frame hasn't been advanced, then that basically 
-; undoes the original setting of the device coordinates.l
+; if we do it when the frame hasn't been advanced, then anything that
+; gets drawn on this plot later will be drawn under the old device
+; coordinates.
 ;
 ; This means that the user will have to be aware that if he/she decides to
 ; advance the frame him/herself, then any subsequent plots draw (in which
 ; the device coordinates are not recalculated), may be drawn incorrectly.
 ;
     if(max_device) then
-      setvalues wks
-        "wkOrientation"  : old_orientation
-        "wkDeviceLowerX" : old_dlx
-        "wkDeviceLowerY" : old_dly
-        "wkDeviceUpperX" : old_dux
-        "wkDeviceUpperY" : old_duy
-      end setvalues
+      reset_device_coordinates(wks)
     end if
-
   end if
 
 end
@@ -2154,6 +2159,18 @@ begin
     attsetvalues_check(ps,wkresnew)
     delete(wkresnew)
 
+;
+; Retrieve the device coordinates and the orientation so we can
+; reset them later if necessary.
+;
+    getvalues ps
+      "wkOrientation"  : ps@wkOrientation
+      "wkDeviceLowerX" : ps@wkDeviceLowerX
+      "wkDeviceLowerY" : ps@wkDeviceLowerY
+      "wkDeviceUpperX" : ps@wkDeviceUpperX
+      "wkDeviceUpperY" : ps@wkDeviceUpperY
+    end getvalues
+
     return(ps)
 end
 
@@ -2212,6 +2229,18 @@ begin
 ;
     attsetvalues_check(pdf,wkresnew)
     delete(wkresnew)
+
+;
+; Retrieve the device coordinates and the orientation so we can
+; reset them later if necessary.
+;
+    getvalues pdf
+      "wkOrientation"  : pdf@wkOrientation
+      "wkDeviceLowerX" : pdf@wkDeviceLowerX
+      "wkDeviceLowerY" : pdf@wkDeviceLowerY
+      "wkDeviceUpperX" : pdf@wkDeviceUpperX
+      "wkDeviceUpperY" : pdf@wkDeviceUpperY
+    end getvalues
 
     return(pdf)
 end
