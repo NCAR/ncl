@@ -17,6 +17,18 @@ projecting square caps are used.
 This value applies to the specific
 workstation specified in a previous call to NGSETI to set a value
 for the \'WO\' parameter (see below).  
+.IP "\'CL\'   -   Integer   -   1"
+Specifies whether clipping to NDC space is on in NCAR GKS.  A 
+value of "1" will turn clipping on and a value of "0" will turn 
+it off.  This flag
+controls whether filled areas and polylines are clipped if they
+go out of the world coordinate rectangle that gets mapped onto
+NDC space.  This clipping is not to be confused with the clipping
+that is controlled by the GKS GSCLIP function - that function
+controls whether clipping is to be done to the viewport of the
+current normalization transformation, not to NDC space itself
+(unless the viewport of the current normalization transformation
+is the entirety of NDC space).
 .IP "\'CO\'   -   Integer   -   25"
 A positive integer specifying a scale factor for the integer coordinate values
 in PostScript output from NCAR GKS.  This value will apply to the
