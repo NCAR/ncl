@@ -1,6 +1,6 @@
 
 /*
- *      $Id: rascat.c,v 1.3 1992-03-26 19:31:49 clyne Exp $
+ *      $Id: rascat.c,v 1.4 1992-03-30 17:27:13 clyne Exp $
  */
 /*
  *	File:		rascat.c
@@ -51,29 +51,34 @@
  *
  *			- 	Read from standard input. The default.
  *
+ *			-scale <factor>
+ *				Scale the input image by <factor>
+ *
+ *			-resolution <nx>x<ny>
+ *				Resample the input image to the resolution
+ *				'nx'x'ny'.
+ *
+ *			-ralgo	[NN|BL]
+ *				Specify Nearest Neighbor (NN) or Bilinear 
+ *				interpolation (BL) algorithm for resampling.
+ *
  *	Environment:
  *				
  */
 #include <stdio.h>
+#include <errno.h>
+
 #ifdef	SYSV
 #include <strings.h>
 #else
 #include <string.h>
 #endif
+
 #include <ncarv.h>
 #include <ncarg_ras.h>
 
-static	void	Usage(msg) 
-	char	*msg;
-{
-	char	*opts = "[-v] [-ifmt format] [-ofmt format] [-win nx ny x y] [-o file] [ - | file... ]";
 
-	if (msg) {
-		fprintf(stderr, "rascat: %s\n", msg);
-	}
-	fprintf(stderr, "Usage: rascat %s\n", opts);
-	PrintOptionHelp(stderr);
-}
+int	cvt_to_rsfunc();
 
 typedef struct	Subregion_ {
 	int	nx;
@@ -86,13 +91,16 @@ typedef struct	Subregion_ {
  * 	command line options
  */
 static	struct	{
-	boolean	do_verbose;
-	boolean	do_version;
+	boolean		do_verbose;
+	boolean		do_version;
 	Subregion	win;
-	boolean	do_stdin;
-	char	*dstfile;
-	char	*srcformat;
-	char	*dstformat;
+	boolean		do_stdin;
+	char		*dstfile;
+	char		*srcformat;
+	char		*dstformat;
+	float		scale;
+	Dimension	resolution;
+	int		(*resample)();
 	} opt;
 
 static  OptDescRec      set_options[] = {
@@ -103,6 +111,9 @@ static  OptDescRec      set_options[] = {
 	{"output", 1, "stdout", "Specify output file"},
 	{"ifmt", 1, NULL, "Specify format of input file"},
 	{"ofmt", 1, NULL, "Specify format of output file"},
+	{"scale", 1, "0.0", "Specify image scaling factor"},
+	{"resolution", 1, "0x0", "Specify output image resolution"},
+	{"ralgo", 1, "NN", "Specify resampling algo, NN or BL"},
 	{NULL},
 };
 
@@ -125,6 +136,13 @@ static	Option get_options[] = {
 	{"ofmt", NCARGCvtToString, (Voidptr) &opt.dstformat, 
 							sizeof(opt.dstformat)
 	},
+	{"scale", NCARGCvtToFloat, (Voidptr) &opt.scale, sizeof(opt.scale)
+	},
+	{"resolution", NCARGCvtToDimension, (Voidptr) &opt.resolution, 
+							sizeof(opt.resolution)
+	},
+	{"ralgo", cvt_to_rsfunc, (Voidptr) &opt.resample, sizeof(opt.resample)
+	},
 	{NULL
 	}
 };
@@ -134,29 +152,48 @@ static	Option get_options[] = {
  * default input file
  */
 static	char	*stdin_array[] = {"stdin"};
+static	char	*progName;
+
+static	void	Usage(msg) 
+	char	*msg;
+{
+	char	*opts = "[-v] [-ifmt format] [-ofmt format] [-win nx ny x y] [-o file] [-scale factor | -res resolution [ -ralgo NN | BL]] [ - | file... ]";
+
+	if (msg) {
+		fprintf(stderr, "%s: %s\n", progName, msg);
+	}
+	fprintf(stderr, "Usage: %s %s\n", progName, opts);
+	PrintOptionHelp(stderr);
+	exit(1);
+}
 
 
 main(argc, argv)
 	int	argc;
 	char	*argv[];
 {
-	int	do_window  = False;
+	boolean		do_window  = False;
+	boolean		do_scale  = False;
+	boolean		do_res  = False;
 
-	char	*Comment = "Created by rascat";
-	char	*arg;
-	Raster	*src, *dst, *RasterOpen(), *RasterOpenWrite();
-	int	frame = 0;
-	int	status;
-	int	nX, nY;
-	RasterEncoding	rasterType;
+	char		*Comment = "Created by rascat";
+	char		*arg;
+	Raster		*src, *dst;
+	int		frame = 0;	/* num frames processed		*/
+	int		rc;		/* return codes			*/
+	int		nX, nY;		/* source dimension		*/
+	RasterEncoding	rasterType;	/* source encoding type		*/
 	Subregion	*win;
-	int	rcount;		/* number of files to process	*/
-	char	**rfiles;	/* the input files		*/
-	int	i;
+	int		rcount;		/* number of files to process	*/
+	char		**rfiles;	/* the input files		*/
+	int		pipe_count = 0;	/* number filters in pipeline	*/
+	Raster	*win_ras = (Raster *) NULL;
+	Raster	*sca_ras = (Raster *) NULL;
+	int		err;		/* exit rc			*/
+	int		i;
 
-	char	*prog_name;
 
-	prog_name = (prog_name = strrchr(argv[0],'/')) ? ++prog_name : *argv;
+	progName = (progName = strrchr(argv[0],'/')) ? ++progName : *argv;
 
 	(void) RasterInit(&argc, argv);
 
@@ -164,7 +201,7 @@ main(argc, argv)
 	if (ParseOptionTable(&argc, argv, set_options) < 0) {
 		fprintf(
 			stderr, "%s : Error parsing options - %s\n", 
-			prog_name, ErrGetMsg()
+			progName, ErrGetMsg()
 		);
 		exit(1);
 	}
@@ -175,21 +212,34 @@ main(argc, argv)
 	if (GetOptions(get_options) < 0) {
 		fprintf(
 			stderr, "%s : Error getting options - %s\n", 
-			prog_name, ErrGetMsg()
+			progName, ErrGetMsg()
 		);
 		Usage(NULL);
-		exit(1);
+	}
+
+	if (opt.do_version) {
+		PrintVersion(progName);
+		exit(0);
 	}
 
 
 	win = &opt.win;
 	do_window = win->nx != -1;
+	do_scale = opt.scale != 0;
+	do_res = (! (opt.resolution.nx == 0 && opt.resolution.ny == 0));
 
 
-	if (opt.do_version) {
-		PrintVersion(prog_name);
-		exit(0);
+	if (do_scale && do_res) {
+		Usage("-scale and -res are mutually exclusive options");
 	}
+
+	/*
+	 * count the number of image filters
+	 */
+	if (do_window) pipe_count++;
+	if (do_scale) pipe_count++;
+	if (do_res) pipe_count++;
+
 
 	/*
 	 * make  sure no options left on command line
@@ -198,10 +248,9 @@ main(argc, argv)
 		if (*argv[i] == '-') {
 			fprintf(
 				stderr, "%s: Invalid option - %s\n", 
-				prog_name, argv[i]
+				progName, argv[i]
 			);
 			Usage(NULL);
-			exit(1);
 		}
 	}
 
@@ -218,6 +267,7 @@ main(argc, argv)
 	}
 
 	dst = (Raster *) NULL;
+	err = 0;
 	for(i=0; i<rcount; i++) {
 
 		/* Open the source file and read the header. */
@@ -225,30 +275,18 @@ main(argc, argv)
 		src = RasterOpen(rfiles[i], opt.srcformat);
 		if (src == (Raster *) NULL) {
 			(void) RasterPrintError(rfiles[i]);
+			err++;
 			continue;
 		}
 
-		status = RasterRead(src);
-		if (status != RAS_OK) {
+		rc = RasterRead(src);
+		if (rc != RAS_OK) {
 			(void) RasterPrintError(rfiles[i]);
 			(void) RasterClose(src);
+			err++;
 			continue;
 		}
 
-		if (!do_window) {
-			win->x = 0; win->nx = src->nx;
-			win->y = 0; win->ny = src->ny;
-		}
-		else {
-			if (win->x < 0 || win->x > src->nx - 1 ||
-				win->y < 0 || win->y > src->ny - 1 ||
-				(win->x + win->nx - 1) > (src->nx - 1) ||
-				(win->y + win->ny - 1) > (src->ny - 1)) {
-
-				fprintf(stderr, "Window out of range\n");
-				exit(1);
-			}
-		}
 
 		/*
 		 * if this is the first time through open the destination
@@ -257,40 +295,76 @@ main(argc, argv)
 		 * file.
 		 */
 		if (! dst) {
+			int	nx, ny;
+			int	pipe_count_ = pipe_count;
 			/*
 			 * if output is stdout and output format is unspecified
 			 * use the input format. If thats not specified 
 			 * use whatever format the first input file is
 			 */
-			if (!strcmp(opt.dstfile,"stdout") && opt.dstformat == NULL){
+			if (!strcmp(opt.dstfile,"stdout") && 
+				opt.dstformat == NULL)
+			{
+
 				opt.dstformat = src->format;
 			}
 
-			if (src->type == RAS_INDEXED) {
-				dst = RasterOpenWrite(
-					opt.dstfile,win->nx,win->ny, Comment, 
-					RAS_INDEXED, opt.dstformat
-				);
-				if (dst == (Raster *) NULL) {
-					(void) RasterPrintError((char *) NULL);
-					(void) RasterClose(src);
-					exit(1);
-				}
-				rasterType = RAS_INDEXED;
+			nx = src->nx;
+			ny = src->ny;
+
+			if (do_window) {
+				pipe_count_--;
+				nx = win->nx;
+				ny = win->ny;
+
+				check_win(win, src);
+
+				if (pipe_count_ > 0) {
+					win_ras = RasterCreate(nx,ny,src->type);
+					if (! win_ras) {
+						fprintf(stderr, 
+						"%s : RasterCreate() : %s\n",
+						progName, RasterGetError());
+					}
+				} 
 			}
 			else {
-				dst = RasterOpenWrite(
-					opt.dstfile, win->nx, win->ny, Comment, 
-					RAS_DIRECT, opt.dstformat
-				);
-				if (dst == (Raster *) NULL) {
-					(void) RasterPrintError((char *) NULL);
-					(void) RasterClose(src);
-					exit(1);
-				}
-				rasterType = RAS_DIRECT;
+				win->x = 0; win->nx = src->nx;
+				win->y = 0; win->ny = src->ny;
 			}
-			
+
+			if (do_scale || do_res) {
+				pipe_count_--;
+				if (do_scale) {
+					nx *= opt.scale;
+					ny *= opt.scale;
+				}
+				else if (do_res) {
+					nx = opt.resolution.nx;
+					ny = opt.resolution.ny;
+				}
+				if (pipe_count_ > 0) {
+					sca_ras = RasterCreate(nx,ny,src->type);
+					if (! sca_ras) {
+						fprintf(stderr, 
+						"%s : RasterCreate() : %s\n",
+						progName, RasterGetError());
+					}
+				} 
+			}
+
+
+			dst = RasterOpenWrite(
+				opt.dstfile,nx,ny, Comment, 
+				src->type, opt.dstformat
+			);
+			if (dst == (Raster *) NULL) {
+				(void) RasterPrintError((char *) NULL);
+				(void) RasterClose(src);
+				exit(1);
+			}
+
+			rasterType = src->type;;
 			nX = src->nx;
 			nY = src->ny;
 		}
@@ -314,10 +388,33 @@ main(argc, argv)
 		}
 
 		do {
-			RasterOp(src, dst, win->x, win->y, win->nx, win->ny,0,0,0);
+			Raster	*tmp = src;
+			Raster	*new = src;
+			if (do_window || pipe_count == 0) {
+				new = win_ras ? win_ras : dst;
+				RasterOp(
+					tmp,new,win->x,win->y,
+					win->nx, win->ny,0,0,0
+				);
+				tmp = win_ras;
+			}
 
-			status = RasterWrite(dst);
-			if (status != RAS_OK) {
+			if (do_scale || do_res) {
+				new = sca_ras ? sca_ras : dst;
+				rc = opt.resample(tmp, new, opt.do_verbose);
+				if (rc != RAS_OK) {
+					fprintf(
+						stderr, 
+						"%s: Resampling failed : %s\n",
+						progName, RasterGetError()
+						);
+					exit(1);
+				}
+				tmp = sca_ras;
+			}
+
+			rc = RasterWrite(dst);
+			if (rc != RAS_OK) {
 				(void) RasterPrintError((char *) NULL);
 				exit(1);
 			}
@@ -329,15 +426,15 @@ main(argc, argv)
 				);
 			}
 		
-			status = RasterRead(src);
-		} while ( status == RAS_OK );
+			rc = RasterRead(src);
+		} while ( rc == RAS_OK );
 
-		if (status == RAS_ERROR) {
+		if (rc == RAS_ERROR) {
 			(void) RasterPrintError((char *) NULL);
 		}
 		(void) RasterClose(src);
 	}
-	exit(0);
+	exit(err);
 }
 
 RasterCopy(src, dst, src_x, src_y, src_nx, src_ny)
@@ -411,3 +508,43 @@ RasterOp(src, dst, src_x, src_y, src_nx, src_ny, dst_x, dst_y, op)
 	}
 }
 
+
+static	int	cvt_to_rsfunc(from, to)
+	char	*from;
+	Voidptr to;
+{
+	int	(**fptr)() = (int (**)()) to;
+
+	extern	int	RasterResampleBilinear();
+	extern	int	RasterResampleNearestNeighbor();
+
+	if (! from) {
+		*fptr = RasterResampleNearestNeighbor;
+	}
+	else if (strcmp(from, "NN") == 0) {
+		*fptr = RasterResampleNearestNeighbor;
+	}
+	else if (strcmp(from, "BL") == 0) {
+		*fptr = RasterResampleBilinear;
+	}
+	else {
+		ESprintf(EINVAL, "Convert(%s) to function failed", from);
+		return(-1);
+	}
+	return(1);
+}
+
+
+check_win(win, src)
+	Subregion	*win;
+	Raster		*src;
+{
+	if (win->x < 0 || win->x > src->nx - 1 ||
+		win->y < 0 || win->y > src->ny - 1 ||
+		(win->x + win->nx - 1) > src->nx - 1 ||
+		(win->y + win->ny - 1) > src->ny - 1) {
+
+		fprintf(stderr,"Window out of range\n");
+		exit(1);
+	}
+}
