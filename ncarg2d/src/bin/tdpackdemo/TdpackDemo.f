@@ -4,7 +4,7 @@ C
 C Declare parameters specifying the maximum sizes of the data-defining
 C arrays and the size of the triangle-list array.
 C
-        PARAMETER (IMAX=101,JMAX=101,KMAX=101,MTRI=100000)
+	PARAMETER (IMAX=81,JMAX=81,KMAX=81,MTRI=80000)
 C
 C Declare local dimensioned variables to hold data defining a simple
 C surface or an isosurface.
