@@ -1,0 +1,33 @@
+#
+#       $Id: yMakefile,v 1.1 1999-04-02 23:06:07 kennison Exp $
+#
+MYNAME  = ezmapc
+
+GENERIC_SRCS = \
+	adjlz0.f asinz0.f dmspz0.f e0fnz0.f e1fnz0.f e2fnz0.f e3fnz0.f \
+	e4fnz0.f gtpzbd.f mlfnz0.f mpdfal.f mpgcan.f mptruf.f mptrui.f \
+	mputin.f msfnz0.f pakcz0.f pakdz0.f pakrz0.f paksz0.f phi1z0.f \
+	phi2z0.f phi3z0.f phi4z0.f pj01z0.f pj02z0.f pj03z0.f pj04z0.f \
+	pj05z0.f pj06z0.f pj07z0.f pj08z0.f pj09z0.f pj10z0.f pj11z0.f \
+	pj12z0.f pj13z0.f pj14z0.f pj15z0.f pj16z0.f pj17z0.f pj18z0.f \
+	pj19z0.f pj20z0.f pj21z0.f pj22z0.f pj23z0.f pjinit.f qsfnz0.f \
+	raddz0.f seraz0.f sphdz0.f tsfnz0.f untfz0.f
+
+GENERIC_OBJS = \
+	adjlz0.o asinz0.o dmspz0.o e0fnz0.o e1fnz0.o e2fnz0.o e3fnz0.o \
+	e4fnz0.o gtpzbd.o mlfnz0.o mpdfal.o mpgcan.o mptruf.o mptrui.o \
+	mputin.o msfnz0.o pakcz0.o pakdz0.o pakrz0.o paksz0.o phi1z0.o \
+	phi2z0.o phi3z0.o phi4z0.o pj01z0.o pj02z0.o pj03z0.o pj04z0.o \
+	pj05z0.o pj06z0.o pj07z0.o pj08z0.o pj09z0.o pj10z0.o pj11z0.o \
+	pj12z0.o pj13z0.o pj14z0.o pj15z0.o pj16z0.o pj17z0.o pj18z0.o \
+	pj19z0.o pj20z0.o pj21z0.o pj22z0.o pj23z0.o pjinit.o qsfnz0.o \
+	raddz0.o seraz0.o sphdz0.o tsfnz0.o untfz0.o
+
+SOURCES = $(GENERIC_SRCS)
+
+OBJECTS	= $(GENERIC_OBJS)
+
+PartialLibraryTarget(libncarg.a,$(OBJECTS))
+PartialSourceLibraryTarget($(MYNAME),srcncarg.a,$(SOURCES))
+
+PartialLibraryTarget(libNGmp.a,$(OBJECTS))

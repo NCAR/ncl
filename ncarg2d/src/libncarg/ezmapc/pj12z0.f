@@ -1,0 +1,96 @@
+C
+C $Id: pj12z0.f,v 1.1 1999-04-02 23:05:59 kennison Exp $
+C
+      SUBROUTINE PJ12Z0 (COORD,CRDIO,INDIC)
+C
+C -- A Z I M U T H A L   E Q U I D I S T A N T
+C
+      IMPLICIT DOUBLE PRECISION (A-Z)
+      INTEGER IERROR,IPEMSG,IPELUN,IPPARM,IPPLUN
+      INTEGER INDIC
+      DIMENSION GEOG(2),PROJ(2),COORD(2),CRDIO(2)
+C **** PARAMETERS **** A,LON0,LAT0,X0,Y0,SINPH0,COSPH0 *****************
+      COMMON /ERRMZ0/ IERROR
+      COMMON /PRINZ0/ IPEMSG,IPELUN,IPPARM,IPPLUN
+      COMMON /PJ12/ A,LON0,X0,Y0,COSPH0,LAT0,SINPH0
+      DATA HALFPI /1.5707963267948966D0/
+      DATA EPSLN /1.0D-10/
+      DATA ZERO,ONE,TWO /0.0D0,1.0D0,2.0D0/
+C
+C -- F O R W A R D   . . .
+C
+      IF (INDIC .EQ. 0) THEN
+C
+         GEOG(1) = COORD(1)
+         GEOG(2) = COORD(2)
+         IERROR = 0
+         LON = ADJLZ0 (GEOG(1) - LON0)
+         SINPHI = SIN (GEOG(2))
+         COSPHI = COS (GEOG(2))
+         COSLON = COS (LON)
+         G = SINPH0 * SINPHI + COSPH0 * COSPHI * COSLON
+         IF (ABS(ABS(G) - ONE) .GE. EPSLN) GO TO 140
+         KSP = ONE
+         IF (G .GE. ZERO) GO TO 160
+         CON = TWO * HALFPI * A
+         IF (IPEMSG .EQ. 0) WRITE (IPELUN,2020) CON
+ 2020    FORMAT (' POINT PROJECTS INTO CIRCLE OF RADIUS =',F12.2,
+     .           ' METERS')
+         IERROR = 123
+         RETURN
+  140    Z = ACOS (G)
+         KSP = Z / SIN (Z)
+  160    PROJ(1) = X0 + A * KSP * COSPHI * SIN (LON)
+         PROJ(2) = Y0 + A * KSP * (COSPH0 * SINPHI - SINPH0 * COSPHI *
+     .             COSLON)
+         CRDIO(1) = PROJ(1)
+         CRDIO(2) = PROJ(2)
+         RETURN
+      END IF
+C
+C -- I N V E R S E   . . .
+C
+      IF (INDIC .EQ. 1) THEN
+C
+         PROJ(1) = COORD(1)
+         PROJ(2) = COORD(2)
+         IERROR = 0
+         X = PROJ(1) - X0
+         Y = PROJ(2) - Y0
+         RH = SQRT (X * X + Y * Y)
+         IF (RH .LE. (TWO * HALFPI * A)) GO TO 230
+         IF (IPEMSG .EQ. 0) WRITE (IPELUN,2030)
+ 2030    FORMAT (/' ERROR PJ12Z0'/
+     .            ' INPUT DATA ERROR')
+         IERROR = 125
+         RETURN
+  230    Z = RH / A
+         SINZ = SIN (Z)
+         COSZ = COS (Z)
+         GEOG(1) = LON0
+         IF (ABS(RH) .GT. EPSLN) GO TO 240
+         GEOG(2) = LAT0
+         CRDIO(1) = GEOG(1)
+         CRDIO(2) = GEOG(2)
+         RETURN
+  240    GEOG(2) = ASINZ0 (COSZ * SINPH0 + Y * SINZ * COSPH0 / RH)
+         CON = ABS (LAT0) - HALFPI
+         IF (ABS (CON) .GT. EPSLN) GO TO 260
+         IF (LAT0 .LT. ZERO) GO TO 250
+         GEOG(1) = ADJLZ0 (LON0 + ATAN2 (X , -Y))
+         CRDIO(1) = GEOG(1)
+         CRDIO(2) = GEOG(2)
+         RETURN
+  250    GEOG(1) = ADJLZ0 (LON0 - ATAN2 (-X , Y))
+         CRDIO(1) = GEOG(1)
+         CRDIO(2) = GEOG(2)
+         RETURN
+  260    CON = COSZ - SINPH0 * SIN (GEOG(2))
+         IF (ABS(CON).LT.EPSLN.AND.ABS(X).LT.EPSLN) RETURN
+         GEOG(1) = ADJLZ0 (LON0 + ATAN2 ((X*SINZ*COSPH0) , (CON*RH)))
+         CRDIO(1) = GEOG(1)
+         CRDIO(2) = GEOG(2)
+         RETURN
+      END IF
+C
+      END
