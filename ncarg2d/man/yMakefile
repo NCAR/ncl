@@ -1,34 +1,14 @@
 #
-#	$Id: yMakefile,v 1.5 1993-02-24 22:41:50 haley Exp $
+#	$Id: yMakefile,v 1.6 1993-03-11 15:10:04 haley Exp $
 #
 NCARG	= ../..
 
 #if ! defined BuildNCARGSourceLibrary
-MANS = \
-	areas autograph colconv conran conraq conras \
-	conrcq conrcspr conrec dashchar dashline \
-	dashsmth dashsupr ezmap.exam ezmap ezmapa \
-	gridal hafton histgr isosrf isosrfhr plotchar pre2ncgm \
-	psblack pswhite \
-	pwritx pwrity pwrzi pwrzs pwrzt srface \
-	strmln threed velvct ncargf77 plt \
-	ncargintro ncargcc ncargmac ncargmac3 ncarg_gks\
-	cgmtrans ftrans \
-	ncargex ncargcex ncargrun findg colconv conpack gflash labelbar \
-	plotchar softfill stitle
+MANS = pre2ncgm psblack pswhite ncargf77 ncargcc ncarg_gks cgmtrans ftrans \
+	ncargex ncargcex ncargrun findg ncarg_cbind ncarg_gks_cbind ncargversion
 #else
-MANS = \
-	areas autograph colconv conran conraq conras \
-	conrcq conrcspr conrec dashchar dashline \
-	dashsmth dashsupr ezmap.exam ezmap ezmapa \
-	gridal hafton histgr isosrf isosrfhr plotchar pre2ncgm \
-	psblack pswhite \
-	pwritx pwrity pwrzi pwrzs pwrzt srface \
-	strmln threed velvct ncargf77 plt \
-	ncargintro ncargcc ncargmac ncargmac3 ncarg_gks\
-	ncargsrc cgmtrans ftrans \
-	ncargex ncargcex ncargrun findg colconv conpack gflash labelbar \
-	plotchar softfill stitle
+MANS = pre2ncgm psblack pswhite ncargf77 ncargcc ncarg_gks ncargsrc cgmtrans \
+	ftrans ncargex ncargcex ncargrun findg ncargversion
 #endif
 
 all:
