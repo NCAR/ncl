@@ -1,5 +1,5 @@
 C
-C $Id: mdrged.f,v 1.1 2001-11-02 22:40:58 kennison Exp $
+C $Id: mdrged.f,v 1.2 2001-11-14 23:15:52 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -30,14 +30,14 @@ C RANGS/GSHHS database and, if so, to edit it to fix the problem.
 C
 C Declare all the arrays defining the editing commands.
 C
-        PARAMETER    (NPOL=137,NINT=641)
+        PARAMETER    (NPOL=137,NINS=641)
 C
         CHARACTER*19 PNAM(NPOL)
         INTEGER      IBEG(NPOL)
         INTEGER      ISPX(NPOL)
         INTEGER      ISPY(NPOL)
 C
-        INTEGER      INTS(NINT)
+        INTEGER      INTS(NINS)
 C
 C TNAM is a variable in which to construct a polygon name to be tested
 C against the ones in the edit list.
@@ -210,7 +210,7 @@ C
         DATA INTS(  87) /      105 /
         DATA INTS(  88) /   806834 /
         DATA INTS(  89) /   793467 /
-        DATA ISPX(  18) /   256666 /
+        DATA ISPX(  18) /   256667 /
         DATA ISPY(  18) /   999722 /
         DATA INTS(  90) /        0 /
         DATA PNAM(  19) / '0-000870-144-077-0A' /
@@ -466,7 +466,7 @@ C
         DATA INTS( 223) /       -4 /
         DATA INTS( 224) /       -3 /
         DATA INTS( 225) /       -2 /
-        DATA ISPX(  48) /   250555 /
+        DATA ISPX(  48) /   250556 /
         DATA ISPY(  48) /   523333 /
         DATA INTS( 226) /        0 /
         DATA PNAM(  49) / '0-018157-034-292-0A' /
@@ -585,7 +585,7 @@ C
         DATA IBEG(  62) /      287 /
         DATA INTS( 287) /       14 /
         DATA INTS( 288) /   497507 /
-        DATA INTS( 289) /   505388 /
+        DATA INTS( 289) /   505389 /
         DATA INTS( 290) /       -4 /
         DATA INTS( 291) /       -3 /
         DATA INTS( 292) /       -2 /
@@ -699,7 +699,7 @@ C
         DATA INTS( 352) /   897674 /
         DATA INTS( 353) /   522557 /
         DATA ISPX(  74) /   900028 /
-        DATA ISPY(  74) /   519527 /
+        DATA ISPY(  74) /   519528 /
         DATA INTS( 354) /        0 /
         DATA PNAM(  75) / '0-174934-150-024-1A' /
         DATA IBEG(  75) /      355 /
@@ -1039,7 +1039,7 @@ C
         DATA PNAM( 116) / '2-017367-121-278-1A' /
         DATA IBEG( 116) /      526 /
         DATA INTS( 526) /       -4 /
-        DATA ISPX( 116) /   523778 /
+        DATA ISPX( 116) /   523779 /
         DATA ISPY( 116) /    25817 /
         DATA INTS( 527) /        0 /
         DATA PNAM( 117) / '2-017402-087-279-1A' /
@@ -1283,8 +1283,8 @@ C
         DO 104 I=1,NCRA
           IF (XCRA(I).NE.0..AND.XCRA(I).NE.1..AND.
      +        YCRA(I).NE.0..AND.YCRA(I).NE.1.) THEN
-            IF (INT(1000000.*XCRA(I)).NE.ISPX(IPLO).OR.
-     +          INT(1000000.*YCRA(I)).NE.ISPY(IPLO)) THEN
+            IF (NINT(1000000.*XCRA(I)).NE.ISPX(IPLO).OR.
+     +          NINT(1000000.*YCRA(I)).NE.ISPY(IPLO)) THEN
               IALP=IALP+1
               GO TO 101
             END IF
