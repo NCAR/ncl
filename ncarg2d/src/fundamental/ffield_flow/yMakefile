@@ -1,0 +1,17 @@
+#
+#	$Id: yMakefile,v 1.1 1993-04-08 22:35:47 haley Exp $
+#
+NCARG	= ../../../..
+
+MYNAME	= ffield_flow
+
+GENERIC_SRCS = ffex00.f ffex01.f ffex02.f ffex03.f ffex04.f ffex05.f
+
+install::
+	@for file in $(GENERIC_SRCS); do\
+	($(INSTALL) -m $(INSTALL_LIB) $$file $(EXAMPLESPATH));\
+	done
+
+MakefileTarget
+CleanTarget
+UpdateTarget
