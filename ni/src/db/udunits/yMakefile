@@ -1,0 +1,9 @@
+#
+#       $Id: yMakefile,v 1.1 2003-02-26 19:33:20 haley Exp $
+#
+FILES		= udunits.dat
+
+UDPATH	= $(LIBNCARGPATH)/udunits
+INSTALL_UD = $(INSTALL_DB)
+
+InstallTarget($(FILES),$(INSTALL_UD),$(UDPATH))
