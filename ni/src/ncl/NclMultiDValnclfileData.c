@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValnclfileData.c,v 1.5 1996-10-11 23:17:11 ethan Exp $
+ *      $Id: NclMultiDValnclfileData.c,v 1.6 1997-06-20 22:45:25 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -578,8 +578,15 @@ static NhlErrorTypes MultiDVal_nclfile_md_WriteSection
 				((val[from] == value_md->multidval.missing_value.value.intval) ? 
 				target_md->multidval.missing_value.value.intval 
 				: val[from]);
+			if( val[from] != value_md->multidval.missing_value.value.intval) {
+				(void)_NclAddParent((NclObj)_NclGetObj(val[from]),(NclObj)target_md);
+				_NclSetStatus((NclObj)_NclGetObj(*val),PERMANENT);
+			}
 		} else {
 			((int*)target_md->multidval.val)[to] = val[from];
+			(void)_NclAddParent((NclObj)_NclGetObj(val[from]),(NclObj)target_md);
+			_NclSetStatus((NclObj)_NclGetObj(*val),PERMANENT);
+
 		}
 		if(compare_sel[n_dims_target-1] <0) {
 			current_index[n_dims_target -1 ] += strider[n_dims_target-1];
@@ -855,7 +862,14 @@ static NhlErrorTypes MultiDVal_nclfile_s_WriteSection
 		for(i = 0; i < n_dims_target;i++) {
 			to = to + (current_index[i] * multiplier[i]);
 		}
+		if((target_md->multidval.missing_value.has_missing)&&(target_md->multidval.missing_value.value.objval != ((int*)target_md->multidval.val)[to])) {
+			_NclDelParent((NclObj)_NclGetObj(((int*)target_md->multidval.val)[to]),(NclObj)target_md);
+		} else {
+			_NclDelParent((NclObj)_NclGetObj(((int*)target_md->multidval.val)[to]),(NclObj)target_md);
+		}
 		((int*)target_md->multidval.val)[to] = *val;
+		(void)_NclAddParent((NclObj)_NclGetObj(*val),(NclObj)target_md);
+		_NclSetStatus((NclObj)_NclGetObj(*val),PERMANENT);
 		if(compare_sel[n_dims_target-1] <0) {
 			current_index[n_dims_target -1 ] += strider[n_dims_target-1];
 		} else {
