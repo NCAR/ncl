@@ -1,0 +1,114 @@
+#
+#	$Id: yMakefile,v 1.1 1992-06-24 20:51:51 clyne Exp $
+#
+
+NCARG		= ../../../..
+
+MYNAME		= scripts
+
+SCRIPTS		= ncarvversion ctlib gcaps fcaps 
+
+RASTER_SPECIFIERS	= \sun xwd nrif hdf
+
+
+#ifdef	BuildClearTextctrans
+CTXT_SPECIFIER = CTXT
+#endif
+
+
+#
+#	Sun Cgi libraries
+#
+
+#ifdef BuildCGIctrans
+CGILIBS		= $(DCGILIBS)
+CGI_SPECIFIER	= cgi
+#endif BuildCGIctrans
+
+#
+#	X11 libraries
+#
+#ifdef BuildXlibDependentCode
+X11LIBS		= $(DX11LIBS)
+X11_SPECIFIER	= X11 xbfr
+#endif BuildXlibDependentCode
+
+#
+#	Sun SunView libraries
+#
+#ifdef BuildSunViewctrans
+SUNLIBS		= $(DSUNLIBS)
+SUN_SPECIFIER	= sunview sunraster
+#endif
+
+#
+#       local libraries  (All of these are in $(LIBDIR).)
+#
+CTRANS_LIBS_A   = libictrans.o libctrans.o libcgm.a libncarv.a \
+		  libncarg_ras.a libhdf.a
+
+GENLIBS 	= -lm
+
+DCGILIBS	= -lcgi -lsuntool -lsunwindow -lpixrect
+
+#ifdef BuildCGIctrans
+DSUNLIBS	= 
+#else
+DSUNLIBS	=  -lsuntool -lsunwindow -lpixrect
+#endif
+
+#if defined(CRAY)
+DX11LIBS	= -lX11 -lnet
+#else
+#if defined(sgi)
+DX11LIBS	= -lX11 -lbsd
+#else
+DX11LIBS	= -lX11
+#endif
+#endif
+
+CTRANS_LIBS_B   = $(X11LIBS) $(CGILIBS) $(SUNLIBS) $(GENLIBS)
+
+DEVICE_SPECIFIERS = \
+	$(RASTER_SPECIFIERS) $(CTXT_SPECIFIER) $(CGI_SPECIFIER) \
+	$(SUN_SPECIFIER) $(X11_SPECIFIER)
+
+all:: $(SCRIPTS)
+
+gcaps:	gcaps.csh Makefile
+	@sed \
+	-e 's+DEVICES+$(DEVICE_SPECIFIERS)+' \
+	-e 's+VERSION+$(VERSION)+' \
+	< gcaps.csh > gcaps
+
+fcaps:	fcaps.csh Makefile
+	@sed \
+	-e 's+VERSION+$(VERSION)+' \
+	< fcaps.csh > fcaps
+
+ncarvversion:	sedscript
+	@sed -f sedscript < version.sed > ncarvversion
+	@$(RM) sedscript
+
+sedscript:      Makefile
+	@echo 's+VERSION+$(VERSION)+' > $@
+	@echo '$$a\' >> $@
+#ifdef	BuildUnsupportedAthenaApplications
+	@echo 'echo "NCAR Interactive Installed"' >> $@
+#endif
+
+
+ctlib:	ctlib.csh Makefile
+	@sed \
+	-e 's+CTRANS_LIBS_A+$(CTRANS_LIBS_A)+' \
+	-e 's+CTRANS_LIBS_B+$(CTRANS_LIBS_B)+' \
+	< ctlib.csh > ctlib
+
+InstallTarget($(SCRIPTS),$(INSTALL_BIN),$(BINDIR))
+MakefileTarget
+CleanTarget
+
+clean::
+	@-$(RM) fcaps gcaps ctlib ncarvversion
+
+install::
