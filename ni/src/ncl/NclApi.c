@@ -1,5 +1,5 @@
 /*
- *      $Id: NclApi.c,v 1.31 1996-07-25 19:47:08 ethan Exp $
+ *      $Id: NclApi.c,v 1.32 1996-07-25 20:28:13 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -38,6 +38,7 @@ extern "C" {
 #include <netcdf.h>
 #include "DataSupport.h"
 #include "NclCallBacksI.h"
+#include "NclMdInc.h"
 
 int force_reset = 0;
 int start_state = 0;
@@ -761,6 +762,59 @@ NclQuark attname
 #endif
 {
 	return(_NclReadVarCoordAtt(var_sym_name,coordname,attname));
+}
+
+char *NclTypeToString
+#if 	NhlNeedProto
+(void *val, int data_type) 
+#else
+(val, data_type) 
+void *val;
+int data_type;
+#endif
+{
+	char buffer[256];
+	char *out;
+
+
+	switch(data_type) {
+	case NCLAPI_short:
+		sprintf(buffer,nclTypeshortClassRec.type_class.format,*(short*)val);
+		break;
+	case NCLAPI_int:
+		sprintf(buffer,nclTypeintClassRec.type_class.format,*(int*)val);
+		break;
+	case NCLAPI_long:
+		sprintf(buffer,nclTypelongClassRec.type_class.format,*(long*)val);
+		break;
+	case NCLAPI_float:
+		sprintf(buffer,nclTypefloatClassRec.type_class.format,*(float*)val);
+		break;
+	case NCLAPI_double:
+		sprintf(buffer,nclTypedoubleClassRec.type_class.format,*(double*)val);
+		break;
+	case NCLAPI_char:
+		sprintf(buffer,nclTypecharClassRec.type_class.format,*(char*)val);
+		break;
+	case NCLAPI_byte:
+		sprintf(buffer,nclTypebyteClassRec.type_class.format,*(byte*)val);
+		break;
+	case NCLAPI_string:
+		sprintf(buffer,nclTypestringClassRec.type_class.format,NrmQuarkToString(*(NclQuark*)val));
+		break;
+	case NCLAPI_logical:
+		if(*(int*)val)  {
+			sprintf(buffer,"True");
+		} else {
+			sprintf(buffer,"False");
+		}
+		break;
+	default:
+		return(NULL);
+	}
+	out = (char*)NclMalloc(strlen(buffer)+1);
+	strcpy(out,buffer);
+	return(out);
 }
 
 #ifdef __cplusplus

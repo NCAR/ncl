@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclApi.h,v 1.12 1996-07-25 19:47:10 ethan Exp $
+ *      $Id: NclApi.h,v 1.13 1996-07-25 20:28:15 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -330,6 +330,12 @@ NclQuark /*attname*/
 
 
 
+extern char *NclTypeToString(
+#if     NhlNeedProto
+void * /*val*/, 
+int /*data_type*/
+#endif
+);
 
 
 #ifdef __cplusplus
