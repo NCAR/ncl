@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: paths.UNICOS_YMP,v 1.1 1993-02-20 00:13:19 clyne Exp $
+#      $Id: paths.UNICOS_YMP,v 1.2 1995-06-12 21:31:02 haley Exp $
 #
 #########################################################################
 #									#
@@ -35,6 +35,8 @@
 set bin_path = /usr/local/bin
 set inc_path = /usr/local/include
 set lib_path = /usr/local/lib
+set htmldoc_path = /usr/local/http/droot/ncarg
+set psdoc_path = /usr/local/lib/ncarg/doc
 set man_path = /usr/man
 set manl = manl
 exit 0

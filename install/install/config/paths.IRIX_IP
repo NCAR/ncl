@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: paths.IRIX_IP,v 1.1 1993-02-20 00:13:08 clyne Exp $
+#      $Id: paths.IRIX_IP,v 1.2 1995-06-12 21:30:59 haley Exp $
 #
 #########################################################################
 #									#
@@ -36,6 +36,8 @@ set bin_path = /usr/local/bin
 set inc_path = /usr/local/include
 set lib_path = /usr/local/lib
 set man_path = /usr/local/man
+set htmldoc_path = /usr/local/http/droot/ncarg
+set psdoc_path = /usr/local/lib/ncarg/doc
 set man1 = cat1
 set man3 = cat3
 set man5 = cat5

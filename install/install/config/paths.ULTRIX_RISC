@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: paths.ULTRIX_RISC,v 1.1 1993-02-20 00:13:17 clyne Exp $
+#      $Id: paths.ULTRIX_RISC,v 1.2 1995-06-12 21:31:01 haley Exp $
 #
 #########################################################################
 #									#
@@ -36,6 +36,8 @@ set bin_path = /usr/local/bin
 set inc_path = /usr/local/include
 set lib_path = /usr/local/lib
 set man_path = /usr/local/man
+set htmldoc_path = /usr/local/http/droot/ncarg
+set psdoc_path = /usr/local/lib/ncarg/doc
 set man1 = man1
 set man3 = man3
 set man5 = man5
