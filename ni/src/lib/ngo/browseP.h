@@ -1,5 +1,5 @@
 /*
- *      $Id: browseP.h,v 1.5 1998-01-08 01:19:23 dbrown Exp $
+ *      $Id: browseP.h,v 1.6 1999-02-23 03:56:44 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -37,12 +37,31 @@
 */
 #define DEBUG_DATABROWSER 0
 #define brMAX_PANES 16
-        
+
+/*
+ * Each page points to the tab that is currently connected to it. Because
+ * of the way the XmLTab widget works, tabs, once created always stay in
+ * the same order with respect to each other. "Shuffling" of tabs is
+ * accomplished by reassigning them to the current correct page. Only
+ * tabs at the end of the list, not associated with a page currently, 
+ * ever become unmanaged. Each pane contains a list of its tabs in an
+ * XmLArray.
+ */
+         
 typedef struct _brTab
 {
         Widget			tab;
         NhlBoolean		managed;
 } brTab, *brTabList;       
+
+/*
+ * The basic structure used to identify a page instance. It contains 
+ * non-type specific data only. It contains a pointer to a page data
+ * structure instance, brPageData. Somewhat like the tab list, the pane 
+ * contains lists of the brPageData structures (separate lists for
+ * each page type). These can be reused as pages of each type come and
+ * go. 
+ */
 
 typedef struct _brPage 
 {
@@ -55,6 +74,13 @@ typedef struct _brPage
 	struct _brPageData	*pdata;
 } brPage, *brPageList;
 	
+/*
+ * Each pane contains a list of active pages, plus a list of the tabs, and
+ * lists of brPageData structures (one for each page type). It also contains
+ * references to the widgets that make up the pane. It keeps track of the
+ * state of the pane including which page is the "active" page.
+ */
+
 typedef struct _brPane 
 {
         NgGO			go;
@@ -80,9 +106,13 @@ typedef struct _brPane
         int			remove_pos;
         int			active_pos;
         brPage			*active_page;
-        int			htmlview_count;
-        XmLArray		htmlview_list;
+	int			htmlview_count;
+	XmLArray		htmlview_list;
 } brPane;
+
+/*
+ * Function pointers for page operations
+ */
 
 typedef void (*DestroyPageFunc) (
 	NhlPointer data
@@ -111,6 +141,16 @@ typedef NhlErrorTypes (*UpdatePage) (
         brPage *page
 );
 
+typedef NhlErrorTypes (*PageMessageNotify) (
+        brPage *page
+);
+
+/*
+ * brPageData structures contain pointers to functions that implement 
+ * each page type. Once these have been initialized once, they are preserved
+ * on the page data lists of each pane, when a particular page goes away.
+ */
+
 typedef struct _brPageData 
 {
 	struct _brPageData	*next;
@@ -122,12 +162,15 @@ typedef struct _brPageData
 	DestroyPageFunc		destroy_page;
 	AdjustPageGeoFunc	adjust_page_geo;
 	DeactivatePageFunc	deactivate_page;
-        PageOutputNotify	page_output_notify;
-        PageInputNotify		page_input_notify;
         PageFocusNotify		page_focus_notify;
         PublicPageData		public_page_data;
         UpdatePage		update_page;
+	PageMessageNotify	page_message_notify;
 } brPageData, *brPageDataList;
+
+/*
+ * this structure is not currently used
+ */
 
 typedef struct _brHistory
 {
@@ -138,6 +181,10 @@ typedef struct _brHistory
         NgVcrControl		vcr;
         Widget			text;
 } brHistory;
+
+/*
+ * overall control of the panes in a browser instance.
+ */
 
 typedef struct _brPaneControl
 {
@@ -154,6 +201,10 @@ typedef struct _brPaneControl
 
 typedef struct _NgBrowseClassRec *NgBrowseClass;
 typedef struct _NgBrowseRec *NgBrowse;
+
+/*
+ * the browser instance part
+ */
 
 typedef struct _NgBrowsePart {
 /* required fields */
@@ -172,7 +223,8 @@ typedef struct _NgBrowseRec {
 } NgBrowseRec;
 
 typedef struct _NgBrowseClassPart {
-	int		foo;
+	XmLArray	hidden_page_state;
+	XmLArray	page_messages;
 } NgBrowseClassPart;
 
 typedef struct _NgBrowseClassRec {
@@ -195,11 +247,17 @@ extern brPane *_NgGetPaneOfPage(
         NgPageId	page_id
         );
 
+extern brPage *_NgGetPageRef(
+        int		goid,
+        NgPageId	page_id
+        );
+
 extern void _NgGetPaneVisibleArea(
         NhlLayer go,
         brPane *pane,
         XRectangle *rect
         );
+
 
 extern NgBrowseClassRec	NgbrowseClassRec;
 

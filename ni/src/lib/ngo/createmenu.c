@@ -1,5 +1,5 @@
 /*
- *      $Id: createmenu.c,v 1.9 1999-01-11 19:36:22 dbrown Exp $
+ *      $Id: createmenu.c,v 1.10 1999-02-23 03:56:44 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -24,6 +24,7 @@
 #include <ncarg/ngo/nclstate.h>
 #include <ncarg/ngo/browse.h>
 #include <ncarg/ngo/dataprofile.h>
+#include <ncarg/ngo/hlupage.h>
 
 #include <Xm/Xm.h>
 #include <Xm/Protocols.h>
@@ -77,7 +78,9 @@ static void CreateCB
         XmAnyCallbackStruct	*xmcb = (XmAnyCallbackStruct*)cb_data;
         NgGO		browse;
         char		buf[256];
-        NhlString 	varname;
+        NhlString 	varname,class_name;
+	NgDataProfile	dprof = NULL;
+	brHluObjCreateRec hlu_create_rec;
         
         NgAppEnumerateGO(priv->go->go.appmgr,GetBrowser,&browse_id);
         browse = (NgGO) _NhlGetLayer(browse_id);
@@ -106,37 +109,39 @@ static void CreateCB
         (void)NgNclSubmitBlock(priv->go->go.nclstate,buf);
 
         qname = NrmStringToQuark(vartext);
+
         page_id = NgOpenPage(browse_id,_brHLUVAR,&qname,1);
         if (page_id <= NgNoPage) {
 		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"unable to open hlu page"));
                 return;
         }
-        hlu_page = (NgHluPage *)NgPageData(browse_id,page_id);
-        if (! hlu_page) {
-                NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-			   "unable to get public page data"));
-                return;
-        }
-        hlu_page->class_name = priv->create_class->base_class.class_name;
          
-	if (NgHasDataProfile(browse,hlu_page->class_name)) {
-		hlu_page->data_profile = NgGetDataProfile
-			(browse,hlu_page->class_name);
-		if (! hlu_page->data_profile) {
-			NHLPERROR((NhlWARNING,NhlEUNKNOWN,
-				   "error creating data profile"));
-		}
-		else { 
-			hlu_page->data_profile->linked = False;
-		}
-	}
+	class_name = NgHasDataProfile
+		(priv->go,priv->create_class->base_class.class_name) ?
+		priv->create_class->base_class.class_name : NULL;
 
-        if (NgUpdatePage(browse_id,page_id) < NhlWARNING) {
-                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"error updating hlu page"));
-                return;
-        }
-        
-        NgPageOutputNotify(browse_id,page_id,_brNULL,NULL);
+	dprof = NgNewDataProfile(browse,class_name);
+	if (! dprof) {
+		NHLPERROR((NhlWARNING,NhlEUNKNOWN,
+			   "error creating data profile"));
+	}	
+	else { 
+		dprof->linked = False;
+	}
+	hlu_create_rec.obj_id = NhlNULLOBJID;
+	hlu_create_rec.class_name =  priv->create_class->base_class.class_name;
+	hlu_create_rec.plot_style = NULL;
+	hlu_create_rec.plot_style_dir = NULL;
+	hlu_create_rec.has_input_data = False;
+	hlu_create_rec.state = _hluNOTCREATED;
+	hlu_create_rec.dprof = dprof;
+
+	NgPostPageMessage(browse_id,NgNoPage,
+			  _NgNOMESSAGE,_brHLUVAR,NrmNULLQUARK,
+			  qname,_NgHLUOBJCREATE,
+			  (NhlPointer)&hlu_create_rec,True,
+			  NULL,True);
+
         if (! browse->go.up)
                 NgGOPopup(browse_id);
         

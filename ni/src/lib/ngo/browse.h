@@ -1,5 +1,5 @@
 /*
- *      $Id: browse.h,v 1.8 1999-01-11 19:36:22 dbrown Exp $
+ *      $Id: browse.h,v 1.9 1999-02-23 03:56:44 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -47,13 +47,63 @@ typedef enum _brPageType
 #define NgNoPage 0
 typedef int NgPageId;
 
+/*
+ * Currently defined page message types
+ */
+
+typedef enum _NgPageMessageType
+{
+	_NgNOMESSAGE,	   /* the null message */
+	_NgHLUOBJCREATE,   /* msg type: brHluObjCreate - hlupage.h */
+	_NgDATAPROFILE,    /* msg type: NgDataProfile - dataprofile.h */
+	_NgDATAPROFILELINK_REQ,
+	_NgVARDATA,  	   /* msg type: NgVarData     - dataprofile.h */
+	_NgVARDATALINK_REQ,
+	_NgDOSETVALCB	   /* msg type: NhlBoolean */
+} NgPageMessageType;
+
+/*
+ * Page messages are stored using this struct. The BrowseClass part keeps
+ * these in a XmLArray until they are retrieved. 
+ */
+
+typedef struct _NgPageMessageRec {
+	NgPageMessageType	mtype;
+        NgPageId		from_id;
+	NgPageMessageType	reply_req;
+	brPageType		to_type;
+        NrmQuark		to_qvar;
+        NrmQuark		to_qfile;
+	NhlPointer		message;
+	NhlFreeFunc		message_free;
+} NgPageMessageRec, *NgPageMessage;
+
+/*
+ * Pages use this struct as a uniform way to hold information about
+ * who and what responses are needed to messages
+ */
+
+typedef struct _NgPageReplyRec {
+	NgPageMessageType	req;
+	NgPageId		id;
+	NrmQuark		qfile;
+	NrmQuark		qvar;
+} NgPageReplyRec, *NgPageReply;
+
+/*
+ * This structure stores the state of pages when they are 'hidden' by the
+ * user. A list of these is kept in the BrowseClass part struct.
+ */
+typedef struct _NgPageSaveStateRec {
+	NgPageId	page_id;
+	NrmQuark	qvar;
+	NrmQuark	qfile;
+	NhlPointer	page_state;
+	NhlFreeFunc	page_state_free;
+} NgPageSaveStateRec, *NgPageSaveState;
+
 typedef void (*AdjustPageGeoFunc) (
  	NhlPointer data
-);
-
-typedef void (*PageOutputNotify) (
-        NhlPointer	pdata,
-        NgPageId	page_id
 );
 
 extern NgPageId NgOpenPage(
@@ -98,5 +148,47 @@ extern NhlErrorTypes NgPageSetVisible(
         XRectangle	*rect
         );
 
+extern void NgPageMessageNotify(
+        int		goid,
+        NgPageId	page_id
+        );
+
+extern NhlErrorTypes NgSavePageState(
+	int			goid,
+	int			page_id,
+        NrmQuark		qfile,
+        NrmQuark		qvar,
+	NhlPointer		page_state,
+	NhlFreeFunc		page_state_free
+	);
+
+extern NhlErrorTypes NgPostPageMessage(
+	int			goid,
+	int			from_id,
+	NgPageMessageType	reply_req,
+	brPageType		to_type,
+        NrmQuark		to_qfile,
+        NrmQuark		to_qvar,
+	NgPageMessageType	mtype,
+	NhlPointer		message,
+	NhlBoolean		overwrite,
+	NhlFreeFunc		message_free,
+	NhlBoolean		notify
+	);
+
+extern int NgRetrievePageMessages(            /* returns message count */
+	int			goid,
+	brPageType		to_type,
+        NrmQuark		to_qfile,
+        NrmQuark		to_qvar,
+	NgPageMessage		**messages
+	);
+
+extern void NgDeletePageMessages(
+	int		goid,
+	int		count,
+	NgPageMessage	*messages,
+	NhlBoolean	delete_message_data
+	);
 
 #endif	/* _NG_BROWSE_H */

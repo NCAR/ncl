@@ -1,5 +1,5 @@
 /*
- *      $Id: xwk.c,v 1.11 1998-11-20 04:11:04 dbrown Exp $
+ *      $Id: xwk.c,v 1.12 1999-02-23 03:56:56 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -287,6 +287,7 @@ NgXWorkPreOpenCB
         NclApiVarInfoRec 	*vinfo;
         NclApiDataList		*dlist = NULL;
 	NgWksObj 		wko;
+	NgHluData		hdata;
 
 	/*
 	 * Eventually, set up a *controlling* window, that doesn't actually
@@ -313,15 +314,18 @@ NgXWorkPreOpenCB
 	 * workstation gets put into the ViewTree. So the NgXwk creates it.
 	 * It will still be freed by the ViewTree.
 	 */
+	hdata = NgGetHluData();
 	wko = NhlMalloc(sizeof(NgWksObjRec));
-	if(!wko){
+	if(! (wko && hdata)){
 		NHLPERROR((NhlFATAL,ENOMEM,NULL));
 		return;
 	}	
 	/* only fill in the wrapper id at this point */
 	wko->wks_wrap_id = xwkid;
 	wko->auto_refresh = True;
-	wk->base.gui_data2 = (NhlPointer) wko;
+	hdata->gdata = (NhlPointer) wko;
+	
+	wk->base.gui_data2 = (NhlPointer) hdata;
 
 	selected_work = NgAppGetSelectedWork(appmgr,False,NULL);
 
@@ -593,7 +597,10 @@ XWkDestroy
 		int	nclstate=NhlDEFAULT_APP;
 		char	*ref;
 		char	cmdbuff[1024];
-		NgWksObj	wkobj = (NgWksObj) xp->xwork->base.gui_data2;
+		NgHluData hdata = (NgHluData) xp->xwork->base.gui_data2;
+		NgWksObj	wkobj;
+
+		wkobj = hdata ? (NgWksObj) hdata->gdata : NULL;
 
 		if (wkobj) {
 			/* turn off auto refresh */
@@ -624,6 +631,8 @@ XWkDestroy
 			XtRemoveEventHandler(xp->graphics,ButtonPressMask,
 					     False,MapGraphicsEH,xwk);
 	}
+	if (xp->views)
+		NhlFree(xp->views);
 
 	_NhlCBDelete(xp->broker_destroyCB);
 	if(xp->my_broker)
@@ -754,6 +763,7 @@ AutoRefreshOptionCB
 	XmToggleButtonCallbackStruct	*xmcb = 
 		(XmToggleButtonCallbackStruct*)cbdata;
 	NgXWk			xwk = (NgXWk)udata;
+	NgHluData		hdata = xwk->xwk.xwork->base.gui_data2;
 	NgWksObj		wksobj;
 
 #if DEBUG_XWK
@@ -761,7 +771,7 @@ AutoRefreshOptionCB
 #endif
 	xwk->xwk.auto_refresh = xmcb->set;
 
-	wksobj = (NgWksObj) xwk->xwk.xwork->base.gui_data2;
+	wksobj = hdata ? (NgWksObj) hdata->gdata : NULL;
 	if (wksobj)
 		wksobj->auto_refresh = xwk->xwk.auto_refresh;
 

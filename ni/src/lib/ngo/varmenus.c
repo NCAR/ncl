@@ -1,5 +1,5 @@
 /*
- *      $Id: varmenus.c,v 1.10 1998-09-30 18:42:34 dbrown Exp $
+ *      $Id: varmenus.c,v 1.11 1999-02-23 03:56:54 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -567,7 +567,7 @@ NgCreateVarMenus
         
         vp->filevars.priv = (NhlPointer) fvar;
         
-	menush = XtVaCreatePopupShell("override_sh",xmMenuShellWidgetClass,
+	menush = XtVaCreatePopupShell("VarMenus",xmMenuShellWidgetClass,
 						                 parent,
 		XmNwidth,		5,
 		XmNheight,		5,
@@ -580,7 +580,7 @@ NgCreateVarMenus
 
         if (vp->hluvar_cb) {
                 vp->hluvars.menu = XtVaCreateWidget
-                        ("Hlu Vars",xmRowColumnWidgetClass,menush,
+                        ("HluVarsMenu",xmRowColumnWidgetClass,menush,
                          XmNrowColumnType,	XmMENU_PULLDOWN,
                          XmNuserData,	&vp->hluvars,
                          NULL);
@@ -589,7 +589,7 @@ NgCreateVarMenus
 
                 vmenus->hluvars_mbutton = vp->hluvars.mbutton =
                         XtVaCreateManagedWidget
-                        ("Hlu Vars",xmCascadeButtonGadgetClass,
+                        ("HluVarsBtn",xmCascadeButtonGadgetClass,
                          parent,
                          XmNsubMenuId,	vp->hluvars.menu,
                          NULL);
@@ -619,7 +619,7 @@ NgCreateVarMenus
                 
                 vmenus->regvars_mbutton = vp->regvars.mbutton =
                         XtVaCreateManagedWidget
-                        ("Regular Vars",xmCascadeButtonGadgetClass,
+                        ("RegVarsBtn",xmCascadeButtonGadgetClass,
                          parent,
                          XmNsubMenuId,	vp->regvars.menu,
                          NULL);
@@ -649,7 +649,7 @@ NgCreateVarMenus
 
                 vmenus->filerefs_mbutton = vp->filerefs.mbutton =
                         XtVaCreateManagedWidget
-                        ("Files",xmCascadeButtonGadgetClass,
+                        ("FilesBtn",xmCascadeButtonGadgetClass,
                          parent,
                          XmNsubMenuId,	vp->filerefs.menu,
                          NULL);
@@ -678,7 +678,7 @@ NgCreateVarMenus
 
                 vmenus->filevars_mbutton = vp->filevars.mbutton =
                         XtVaCreateManagedWidget
-                        ("File Vars",xmCascadeButtonGadgetClass,
+                        ("FileVarsBtn",xmCascadeButtonGadgetClass,
                          parent,
                          XmNsubMenuId,	vp->filevars.menu,
                          NULL);

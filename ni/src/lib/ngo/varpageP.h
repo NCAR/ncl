@@ -1,5 +1,5 @@
 /*
- *      $Id: varpageP.h,v 1.7 1998-12-16 23:51:42 dbrown Exp $
+ *      $Id: varpageP.h,v 1.8 1999-02-23 03:56:55 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -32,12 +32,6 @@
 
 #define DEBUG_VARPAGE 0
 
-typedef struct _vpReceiverPage
-{
-        NgPageId	page_id;
-        NhlPointer	page_data;
-	NhlBoolean      notify_req;
-} vpReceiverPage;
 
 typedef struct _brVarPageRec 
 {
@@ -55,12 +49,11 @@ typedef struct _brVarPageRec
         Widget		datagrid_toggle;
         NgPlotSpecMenu  *plotspecmenu;
         NhlBoolean	datagrid_managed;
+	NgVarData	vdata;
         long		*start;
         long		*finish;
         long		*stride;
-        int		receiver_count;
-        vpReceiverPage  *receiver_pages;
-        NgVarDataRec	*output;
+	XmLArray	datalinks;
 } brVarPageRec;
 
 extern brPageData *
@@ -68,7 +61,8 @@ NgGetVarPage(
 	NgGO		go,
         brPane		*pane,
 	brPage		*page,
-        brPage		*copy_page
+        brPage		*copy_page,
+	NgPageSaveState save_state
         );
 
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: app.h,v 1.10 1998-11-18 19:45:15 dbrown Exp $
+ *      $Id: app.h,v 1.11 1999-02-23 03:56:42 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -22,7 +22,7 @@
 #ifndef	_NG_APPMGR_H
 #define	_NG_APPMGR_H
 
-#include <ncarg/hlu/Base.h>
+#include <ncarg/hlu/BaseP.h>
 #include <ncarg/ngo/ngo.h>
 
 #define Ng_SELECTED_WORK	"_NgSelectedWork"
@@ -104,6 +104,7 @@ typedef struct NgCBWPRec NgCBWPRec, *NgCBWP;
 
 typedef NhlBoolean (*NgCBWPCopyFunc)(
 	NhlArgVal	cbdata,
+	NhlArgVal	udata,
 	NhlArgVal	*ret
 );
 

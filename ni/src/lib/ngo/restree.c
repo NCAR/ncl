@@ -1,5 +1,5 @@
 /*
- *      $Id: restree.c,v 1.17 1998-12-16 23:51:39 dbrown Exp $
+ *      $Id: restree.c,v 1.18 1999-02-23 03:56:52 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1603,79 +1603,18 @@ static void UnFocusCB
         rtResData	*res_data;
         int 		i;
 
-	return;
-#if 0        
-        rowptr = XmLGridGetRow(pub_rtp->tree,XmCONTENT,rtp->edit_row);
-        colptr = XmLGridGetColumn(pub_rtp->tree,XmCONTENT,2);
-                
-        XtVaGetValues(pub_rtp->tree,
-                      XmNcolumnPtr,colptr,
-                      XmNrowPtr,rowptr,
-                      XmNcellEditable,&editable,
-                      XmNuserData,&ndata,
-                      NULL);
 
-#if 0                
-        if (ndata) {
-                res_data = (rtResData *)ndata->info;
 #if DEBUG_RESTREE
-                fprintf(stderr,"unfocusing edit row %d %s -- %s\n",
-                       rtp->edit_row,
-                       NrmQuarkToString(res_data[i].res->nrm_name),
-                       editable ? "editable" : "not editable");
+	fprintf(stderr,"unfocusing edit row %d %d\n",
+		rtp->edit_row,rtp->manual_edit_started);
 #endif
-        }
-        else {
-                for (i = 0; i < rtp->res_data_count; i++)
-                       if (rtp->res_data[i].ndata &&
-                           rtp->edit_row == rtp->res_data[i].ndata->row) {
-#if DEBUG_RESTREE
-                               fprintf(stderr,
-				       "unfocusing edit row %d %s -- %s\n",
-#endif
-                                      rtp->edit_row,
-                                      NrmQuarkToString
-                                      (rtp->res_data[i].res->nrm_name),
-                                      editable ? "editable" : "not editable");
-                               break;
-                       }
-        }
-        
-#endif        
-        if (! rtp->enum_info.up) {
-                if (editable) {
-                        XtVaSetValues(pub_rtp->tree,
-                                      XmNcolumn,2,
-                                      XmNrow,rtp->edit_row,
-                                      XtVaTypedArg,XmNcellBackground,
-                                      XmRString,"#d0d0d0",8,
-                                      NULL);
-                        XtVaSetValues(rtp->text,
-                                      XtVaTypedArg,XmNbackground,
-                                      XmRString,"#d0d0d0",8,
-                                      NULL);
-                }
-                else {
-                        XtVaSetValues(pub_rtp->tree,
-                                      XmNcolumn,2,
-                                      XmNrow,rtp->edit_row,
-                                      XmNcellBackground,Background,
-                                      NULL);
-                        XtVaSetValues(rtp->text,
-                                      XmNbackground,Background,
-                                      NULL);
-                }
-        }
 
-	if (rtp->manual_edit_started) {
-		XmLGridEditCancel(pub_rtp->tree);
-#if 0
-		XtUngrabKeyboard(rtp->text,CurrentTime);
-#endif
-	}
+	if (rtp->manual_edit_started)
+		XmLGridEditComplete(rtp->restree.tree);
+	
 	return;
-#endif        
 }
+
 static void FocusCB 
 (
 	Widget		w,
@@ -1690,10 +1629,6 @@ static void FocusCB
         XmLGridRow	rowptr;
         XmLGridColumn	colptr;
 
-#if 0
-        if (cb->column == 1)
-               XmLGridSetFocus(w,cb->row,2);
-#endif
         if (cb->reason == XmCR_CELL_FOCUS_IN) {
                 XmLGridRow	rowptr;
                 rtNodeData	*ndata;
@@ -3251,6 +3186,30 @@ void NgResTreeAddResList
         return;
 }
 
+NhlString NgResTreeGetSetValue
+(
+        NgResTree	*res_tree,
+	NrmQuark	resq
+        )
+{
+        NgResTreeRec *rtp;
+	rtSetValNode *svp;
+
+#if DEBUG_RESTREE
+	fprintf(stderr,"in res tree add res list\n");
+#endif
+
+        rtp = (NgResTreeRec *) res_tree;
+        if (!rtp) 
+		return NULL;
+        
+        for (svp = rtp->set_val_list; svp != NULL; svp = svp->next) {
+		if (resq == svp->res_data->res->nrm_name)
+			return (svp->res_data->value);
+        }
+	return NULL;
+}
+
 static void FreeSubNodes
 (
         rtNodeData	*ndata
@@ -3448,9 +3407,11 @@ NhlErrorTypes NgUpdateResTree
         if (rtp->qnames)
                 NhlFree(rtp->qnames);
         if (rtp->class_info) {
-                for (i = 0; i < rtp->class_count; i++)
-                        if (rtp->class_info->cntrl_info)
-                                NhlFree(rtp->class_info->cntrl_info);
+                for (i = 0; i < rtp->class_count; i++) {
+			rtClassInfo *cip = &rtp->class_info[i];
+                        if (cip->cntrl_info)
+                                NhlFree(cip->cntrl_info);
+		}
                 NhlFree(rtp->class_info);
         }
         if (rtp->res_data)
@@ -3793,9 +3754,11 @@ void NgDestroyResTree
         if (rtp->qnames)
                 NhlFree(rtp->qnames);
         if (rtp->class_info) {
-                for (i = 0; i < rtp->class_count; i++)
-                        if (rtp->class_info->cntrl_info)
-                                NhlFree(rtp->class_info->cntrl_info);
+                for (i = 0; i < rtp->class_count; i++) {
+			rtClassInfo *cip = &rtp->class_info[i];
+                        if (cip->cntrl_info)
+                                NhlFree(cip->cntrl_info);
+		}
                 NhlFree(rtp->class_info);
         }
 

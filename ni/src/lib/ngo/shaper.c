@@ -1,5 +1,5 @@
 /*
- *      $Id: shaper.c,v 1.11 1998-12-16 23:51:41 dbrown Exp $
+ *      $Id: shaper.c,v 1.12 1999-02-23 03:56:53 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -300,7 +300,7 @@ UpdateShaperCoord
 	shaper->new_coord = False;
 
         if (output_notify && si->pdata)
-                (*si->output_notify)(si->pdata,NgNoPage);
+                NgVarPageDataUpdate(si->pdata);
         
 	return;
  

@@ -1,5 +1,5 @@
 /*
- *      $Id: browse.c,v 1.23 1998-12-16 23:51:30 dbrown Exp $
+ *      $Id: browse.c,v 1.24 1999-02-23 03:56:43 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -58,6 +58,10 @@ static XtActionsRec browseactions[] = {
 	{ "TabFocusAction", TabFocusAction }
 };
 
+static NhlErrorTypes BrowseClassPartInitialize(
+        NhlClass        lc
+);
+
 static NhlErrorTypes BrowseInitialize(
 	NhlClass	lc,
 	NhlLayer	req,
@@ -100,7 +104,7 @@ NgBrowseClassRec NgbrowseClassRec = {
 /* class_callbacks	*/	NULL,
 /* num_class_callbacks	*/	0,
 
-/* class_part_initialize*/	NULL,
+/* class_part_initialize*/	BrowseClassPartInitialize,
 /* class_initialize	*/	NULL,
 /* layer_initialize	*/	BrowseInitialize,
 /* layer_set_values	*/	NULL,
@@ -129,6 +133,20 @@ NhlClass NgbrowseClass = (NhlClass)&NgbrowseClassRec;
 
 static NgPageId CurrentPageId = 0;
 
+static NhlErrorTypes
+BrowseClassPartInitialize
+(
+        NhlClass        lc
+)
+{
+	NgBrowseClassRec *bclass = (NgBrowseClassRec *) lc;
+	NgBrowseClassPart *bcp = &bclass->browse_class;
+
+	bcp->hidden_page_state = NULL;
+	bcp->page_messages = NULL;
+
+	return NhlNOERROR;
+}
 static NhlErrorTypes
 BrowseInitialize
 (
@@ -1157,7 +1175,6 @@ UpdateTabs
 	return;
 }
 
-
 static int
 InsertPage
 (
@@ -1347,6 +1364,33 @@ HluVarDeleteCB
 	return;
 }
 
+static NgPageSaveState GetPageSaveState
+(
+	NgBrowse	browse,
+        NrmQuark	qvar,
+        NrmQuark	qfile
+)
+{
+	NgBrowseClassRec *bclass = (NgBrowseClassRec *) 
+		browse->base.layer_class;
+	NgBrowseClassPart *bcp = &bclass->browse_class;
+	NgPageSaveState ps_state;
+	int i,count;
+
+	if (! bcp->hidden_page_state)
+		return NULL;
+
+	count = XmLArrayGetCount(bcp->hidden_page_state);
+
+	for (i = 0; i < count; i++) {
+		ps_state = XmLArrayGet(bcp->hidden_page_state,i);
+		if (ps_state->qvar == qvar && ps_state->qfile == qfile) {
+			return ps_state;
+		}
+	}
+	return NULL;
+}
+
 static brPage *AddPage
 (
 	NgGO		go,
@@ -1364,7 +1408,8 @@ static brPage *AddPage
         int		pos;
         Dimension	tab_height;
         Dimension	w,h;
-        
+	NgPageSaveState ps_state = NULL;
+      
         page = NhlMalloc(sizeof(brPage));
         if (!page) {
                 e_text = "%s: dynamic memory allocation error";
@@ -1380,8 +1425,13 @@ static brPage *AddPage
         
         if (copy_page) /* assumes the 'copy_page' will be deleted */
                 page->id = copy_page->id;
-        else
-                page->id = ++CurrentPageId;
+        else {
+		ps_state = GetPageSaveState(browse,qvar,qfile);
+		if (ps_state)
+			page->id = ps_state->page_id;
+		else
+			page->id = ++CurrentPageId;
+	}
         
 #if	DEBUG_DATABROWSER & DEBUG_FOLDER
         fprintf(stderr,"AddPage: %x -- pane %d %s\n",
@@ -1401,16 +1451,17 @@ static brPage *AddPage
 
         switch (type) {
         case _brREGVAR:
-		page->pdata = NgGetVarPage(go,pane,page,copy_page);
+		page->pdata = NgGetVarPage(go,pane,page,copy_page,ps_state);
 		break;
         case _brFILEVAR:
-		page->pdata = NgGetVarPage(go,pane,page,copy_page);
+		page->pdata = NgGetVarPage(go,pane,page,copy_page,ps_state);
                 break;
         case _brFILEREF:
-		page->pdata = NgGetFileRefPage(go,pane,page,copy_page);
+		page->pdata = NgGetFileRefPage
+			(go,pane,page,copy_page,ps_state);
                 break;
         case _brHLUVAR:
-		page->pdata = NgGetHluPage(go,pane,page,copy_page);
+		page->pdata = NgGetHluPage(go,pane,page,copy_page,ps_state);
                 break;
         }
         if (!page->pdata) {
@@ -1430,6 +1481,13 @@ static brPage *AddPage
 
         return page;
 }
+
+/*
+ * RemovePage disconnects a page from its current tab in a pane, in
+ * preparation for moving it to another position (tab) in the same pane.
+ * So this is not at all the same as 'DeletePage', which destroy the  
+ * page as an entity.
+ */
 
 static brPage *
 RemovePage
@@ -1455,16 +1513,6 @@ static void DeletePage(
         )
 {
         int i;
-
-#if 0        
-        for (i = 0; i < pane->htmlview_count; i++) {
-                NgHtmlView *hv = XmLArrayGet(pane->htmlview_list,i);
-                if (page->id == hv->user_page_id) {
-                        _NgUnmapHtmlView(hv);
-                        hv->user_page_id = NgNoPage;
-                }
-        }
-#endif        
         
         if (pane->active_page == page)
                 pane->active_page = NULL;
@@ -1474,6 +1522,8 @@ static void DeletePage(
                 fprintf(stderr,"DeletePage: %x -- pane %d %s\n",
                        page,PaneNumber(go,pane),PageString(pane,page));
 #endif
+		if (page->pdata->deactivate_page)
+			(*page->pdata->deactivate_page)(page);
                 page->pdata->in_use = False;
                 NclFreeDataList(page->pdata->dl);
                 page->pdata->dl = NULL;
@@ -1569,7 +1619,7 @@ UpdatePanes
  * In order for functions that depend on getting the pane based on the
  * page id to work, it is necessary to update the page lists before the page is
  * actually created. The page will be added to its new pane in the AddPage
- * function, before the NgGet...Page call. Note the page cannot actually
+ * function, before the NgGet...Page call. Note that a copied page cannot 
  * be deleted until the new page is created, so that the data structures can
  * be copied.
  */
@@ -1773,41 +1823,6 @@ static void BrowseFileVarCB
 	return;
 }
 
-static void BrowseHluVarCB 
-(
-	Widget		w,
-	XtPointer	udata,
-	XtPointer	cb_data
-)
-{
-	NgGO		go = (NgGO) udata;
-	NgBrowse	browse = (NgBrowse)udata;
-	NgBrowsePart	*np = &browse->browse;
-	NrmQuark	qvar;
-        brPage		*page;
-        brPane		*pane;
-        static timer_data tdata;
-
-#if	DEBUG_DATABROWSER & DEBUG_ENTRY
-	fprintf(stderr,"BrowseFileCB(IN)\n");
-#endif
-	XtVaGetValues(w,
-		      XmNuserData,&qvar,
-		      NULL);
-
-#if	DEBUG_DATABROWSER & DEBUG_FOLDER
-	fprintf(stderr,"browsing file %s\n", NrmQuarkToString(qfile));
-#endif
-        
-        tdata.go = go;
-        tdata.qvar = qvar;
-        tdata.type = _brHLUVAR;
-        
-        XtAppAddTimeOut(go->go.x->app,50,BrowseTimeoutCB,&tdata);
-
-	return;
-}
-
 static NgVarMenus
 CreateVarMenus
 (
@@ -1826,7 +1841,7 @@ CreateVarMenus
                  NULL);
         
 	menubar = XtVaCreateManagedWidget
-                ("menubar",xmRowColumnWidgetClass,
+                ("BrowseMenu",xmRowColumnWidgetClass,
                  parent,
                  XmNrowColumnType,	XmMENU_BAR,
                  XmNleftAttachment,	XmATTACH_WIDGET,
@@ -2212,6 +2227,7 @@ BrowseCreateWin
 	_NhlAddObjCallback(ncl,NgCBnsObject,sel,FileRefDeleteCB,user_data);
         sel.lngval = NgNclCBDELETE_HLUVAR;
 	_NhlAddObjCallback(ncl,NgCBnsObject,sel,HluVarDeleteCB,user_data);
+
 	return True;
 }
 
@@ -2270,6 +2286,39 @@ extern brPane *_NgGetPaneOfPage(
                         brPage *page = (brPage *)XmLArrayGet(pane->pagelist,j);
                         if (page->id == page_id)
                                 return pane;
+                }
+        }
+        return NULL;
+}
+
+extern brPage *_NgGetPageRef(
+        int		goid,
+        NgPageId	page_id
+        )
+{
+        char func[] = "_NgGetPageRef";
+        NhlLayer go = _NhlGetLayer(goid);
+	NgBrowse	browse;
+	NgBrowsePart	*np;
+        brPane *pane;
+        int i,j;
+        
+        if (! go) {
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s: invalid layer id",
+                           func));
+                return NULL;
+        }
+        browse  = (NgBrowse)go;
+        np = &browse->browse;
+
+            /* find the pane */
+
+        for (i = 0; i < np->pane_ctrl.current_count; i++) {
+                pane = np->pane_ctrl.panes[i];
+                for (j = 0; j < pane->pagecount; j++) {
+                        brPage *page = (brPage *)XmLArrayGet(pane->pagelist,j);
+                        if (page->id == page_id)
+                                return page;
                 }
         }
         return NULL;
@@ -2339,27 +2388,6 @@ static brPage *GetPageReference
         }
         return NULL;
 }
-
-extern void NgPageOutputNotify(
-        int		goid,
-        NgPageId	page_id,
-        brPageType	output_page_type,
-        NhlPointer	output_data
-        )
-{
-        NgGO		go = (NgGO)_NhlGetLayer(goid);
-        brPage		*page = GetPageReference(go,page_id);
-
-        if (! page)
-                return;
-        if (! page->pdata->page_input_notify)
-                return;
-        
-        (*page->pdata->page_input_notify)(page,output_page_type,output_data);
-
-        return;
-}
-
         
 extern NhlPointer NgPageData(
         int		goid,
@@ -2393,7 +2421,7 @@ extern NhlErrorTypes NgUpdatePage
 
         if (! page)
                 return NhlFATAL;
-        if (! page->pdata->page_input_notify)
+        if (! page->pdata->update_page)
                 return NhlFATAL;
 
         return ((*page->pdata->update_page)(page));
@@ -2535,6 +2563,257 @@ extern NhlErrorTypes NgDeletePage(
 
 	return NhlNOERROR;
 }
+
+/*
+ * this function is used to save the state of a page that is "hidden",
+ * (removed from view in the browser, generally by a user action) but 
+ * still has a valid reference. If the page is restored this data allows
+ * the same page id to be used, and any page-type specific elements to
+ * be restored (as implemented in each page type). 
+ */
+
+extern NhlErrorTypes NgSavePageState
+(
+	int			goid,
+	int			page_id,
+        NrmQuark		qfile,
+        NrmQuark		qvar,
+	NhlPointer		page_state,
+	NhlFreeFunc		page_state_free
+	)
+
+{
+	NgGO go = (NgGO) _NhlGetLayer(goid);
+	NgPageSaveState ps_state;
+	NgBrowseClassRec *bclass;
+	NgBrowseClassPart *bcp;
+
+	bclass = (NgBrowseClassRec *) go->base.layer_class;
+	bcp = &bclass->browse_class;
+	if (! bcp->hidden_page_state) {
+		bcp->hidden_page_state = XmLArrayNew(0,0);
+		if (! bcp->hidden_page_state) {
+			NHLPERROR((NhlFATAL,ENOMEM,NULL));
+			return NhlFATAL;
+		}
+	}
+
+	ps_state = NhlMalloc(sizeof(NgPageSaveStateRec));
+	if (! ps_state) {
+		NHLPERROR((NhlFATAL,ENOMEM,NULL));
+		return NhlFATAL;
+	}
+	ps_state->page_id = page_id;
+	ps_state->qvar = qvar;
+	ps_state->qfile = qfile;
+	ps_state->page_state = page_state;
+	ps_state->page_state_free = page_state_free;
+	
+	XmLArrayAdd(bcp->hidden_page_state,0,1);
+	XmLArraySet(bcp->hidden_page_state,0,ps_state);
+
+	return NhlNOERROR;
+}
+
+extern void NgPageMessageNotify
+(
+	int	goid,
+	int	page_id
+)
+{
+	brPage *page = _NgGetPageRef(goid,page_id);
+
+	if (! page)
+		return;
+
+	if (page->pdata->page_message_notify)
+		(*page->pdata->page_message_notify)(page);
+
+	return;
+}
+
+extern NhlErrorTypes NgPostPageMessage
+(
+	int			goid,
+	int			from_id,
+	NgPageMessageType	reply_req,
+	brPageType		to_type,
+        NrmQuark		to_qfile,
+        NrmQuark		to_qvar,
+	NgPageMessageType	mtype,
+	NhlPointer		message,
+	NhlBoolean		overwrite,
+	NhlFreeFunc		message_free,
+	NhlBoolean		notify
+	)
+
+{
+	NgGO go = (NgGO) _NhlGetLayer(goid);
+	NgPageMessage pmesg;
+	NgBrowseClassRec *bclass;
+	NgBrowseClassPart *bcp;
+	int i,count,pos = -1,page_id;
+	NhlBoolean message_replaced = False;
+
+	/* 
+	 * messages belonging to each page type are stored contiguously
+	 * to make them easy to retrieve as a single entity. Note the
+	 * order is most recent message first. So a message reader that
+	 * wants to read messages in the same order as the original messages
+	 * should read them backwards.
+	 */
+
+	bclass = (NgBrowseClassRec *) go->base.layer_class;
+	bcp = &bclass->browse_class;
+
+	if (! bcp->page_messages) {
+		bcp->page_messages = XmLArrayNew(0,0);
+		if (! bcp->page_messages) {
+			NHLPERROR((NhlFATAL,ENOMEM,NULL));
+			return NhlFATAL;
+		}
+	}
+
+	count = XmLArrayGetCount(bcp->page_messages);
+
+	if (overwrite) {
+		for (i = 0; i < count; i++) {
+			pmesg = XmLArrayGet(bcp->page_messages,i);
+			if (pmesg->to_qvar == to_qvar && 
+			    pmesg->to_qfile == to_qfile &&
+			    pmesg->from_id == from_id &&
+			    pmesg->to_type == to_type &&
+			    pmesg->mtype == mtype) {
+				if (pmesg->message_free)
+					(pmesg->message_free)(pmesg->message);
+				pmesg->message_free = message_free;
+				pmesg->message = message;
+				pmesg->reply_req = reply_req;
+				message_replaced = True;
+				break;
+			}
+		}
+		/* no message to overwrite, so just insert the message */
+	}
+
+	if (! message_replaced) {
+		for (i = 0; i < count; i++) {
+			pmesg = XmLArrayGet(bcp->page_messages,i);
+			if (pmesg->to_qvar == to_qvar && 
+			    pmesg->to_qfile == to_qfile) {
+				pos = i;
+				break;
+			}
+		}
+		if (pos < 0)
+			pos = 0;
+
+		pmesg = NhlMalloc(sizeof(NgPageMessageRec));
+		if (! pmesg) {
+			NHLPERROR((NhlFATAL,ENOMEM,NULL));
+			return NhlFATAL;
+		}
+		pmesg->from_id = from_id;
+		pmesg->to_type = to_type;
+		pmesg->to_qvar = to_qvar;
+		pmesg->to_qfile = to_qfile;
+		pmesg->mtype = mtype;
+		pmesg->message = message;
+		pmesg->message_free = message_free;
+		pmesg->reply_req = reply_req;
+	
+		XmLArrayAdd(bcp->page_messages,pos,1);
+		XmLArraySet(bcp->page_messages,pos,pmesg);
+	}
+
+	if (notify) {
+		page_id = NgGetPageId(go->base.id,to_qvar,to_qfile);
+		if (page_id > NgNoPage) {
+#if 0
+			NgUpdatePage(go->base.id,page_id);
+#endif
+			NgPageMessageNotify(goid,page_id);
+		}
+	}
+
+	return NhlNOERROR;
+}
+
+            /* returns message count */
+extern int NgRetrievePageMessages
+(
+	int			goid,
+	brPageType		to_type,
+        NrmQuark		to_qfile,
+        NrmQuark		to_qvar,
+	NgPageMessage		**messages
+	)
+{
+	NgGO go = (NgGO) _NhlGetLayer(goid);
+	NgPageMessage pmesg;
+	NgBrowseClassRec *bclass;
+	NgBrowseClassPart *bcp;
+	int i,start_pos = -1,end_pos,count;
+
+	bclass = (NgBrowseClassRec *) go->base.layer_class;
+	bcp = &bclass->browse_class;
+	*messages = NULL;
+	if (! bcp->page_messages) {
+		bcp->page_messages = XmLArrayNew(0,0);
+		if (! bcp->page_messages) {
+			NHLPERROR((NhlFATAL,ENOMEM,NULL));
+			return NhlFATAL;
+		}
+	}
+	count = XmLArrayGetCount(bcp->page_messages);
+
+	for (i = 0; i < count; i++) {
+		pmesg = XmLArrayGet(bcp->page_messages,i);
+		if (pmesg->to_qvar == to_qvar && pmesg->to_qfile == to_qfile) {
+			if (start_pos < 0) {
+				end_pos = start_pos = i;
+			}
+			else {
+				end_pos = i;
+			}
+		}
+		if (start_pos > 0)
+			break;
+	}
+	if (start_pos < 0)
+		return 0;
+	count = end_pos - start_pos + 1;
+	*messages = (NgPageMessage*)NhlMalloc(sizeof(NgPageMessage *) * count);
+
+	for (i = 0; i < count; i++) {
+		(*messages)[i] = (NgPageMessage)
+			XmLArrayGet(bcp->page_messages,start_pos + i);
+	}
+	XmLArrayDel(bcp->page_messages,start_pos,count);
+
+
+	return count;
+}
+
+extern void NgDeletePageMessages
+(
+	int		goid,
+	int		count,
+	NgPageMessage	*messages,
+	NhlBoolean	delete_message_data
+	)
+{
+	int i;
+
+	for (i = 0; i < count; i++) {
+		if (delete_message_data && messages[i]->message_free)
+			(messages[i]->message_free)(messages[i]->message);
+		NhlFree(messages[i]);
+	}
+	NhlFree(messages);
+	return;
+}
+
 
 static void TabFocusAction
 (
