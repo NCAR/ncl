@@ -1,5 +1,5 @@
 /*
- *	$Id: X_pixdump.c,v 1.6 1991-03-12 15:59:53 clyne Exp $
+ *	$Id: X_pixdump.c,v 1.7 1991-03-12 16:03:16 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -14,21 +14,9 @@
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
-<<<<<<< X_pixdump.c
 #include <X11/XWDFile.h>
 #include <ncarv.h>
 
-=======
-
-#ifdef	RS6000
-#include <X11/Xmd.h>
-#endif
-
-#include "XWDFile.h"
-#include <stdio.h>
-
-
->>>>>>> 1.5
 typedef unsigned long Pixel;
 
 
