@@ -48,7 +48,7 @@ C
 C
 C P and Q are separated by 180 degrees.
 C
-        CSRCLEN = 4.*ATAN(1.)
+        CSARCLEN = 4.*ATAN(1.)
       ELSEIF (D .GE. 4.) THEN
 C
 C P and Q coincide.

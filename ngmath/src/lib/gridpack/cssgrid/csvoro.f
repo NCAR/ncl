@@ -19,7 +19,7 @@ C      An array, dimensioned for NPTS, containing the Z Cartesian
 C      coordinates of the input data points. 
 C    NI (Input)
 C      The index of the input coordinate for which you want
-C      to determine the Voronoi polygon (0 .LE. NI .LE. N).
+C      to determine the Voronoi polygon (0 .LE. NI .LE. NPTS).
 C    NF (Input)
 C      Flag indicating if this is the first call to CSVORO
 C      to retrieve Voronoi polygons for this dataset (1=yes,

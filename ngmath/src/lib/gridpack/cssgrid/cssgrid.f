@@ -22,8 +22,8 @@ C
 C    X,Y,Z = Arrays containing Cartesian coordinates of the nodes.  
 C            X(I)**2 + Y(I)**2 + Z(I)**2 = 1 for I = 1 to N.
 C
-C    F     = Array containing data values.  F(I) is associated
-C            (X(I),Y(I),Z(I)).
+C    F     = Array containing data values.  F(I) is associated with
+C            (X(I),Y(I),Z(I)) for I = 1 to N.
 C
 C    NI,NJ = Number of rows and columns in the uniform grid.  
 C            1 .LE. NI .LE. NROW and 1 .LE. NJ.
@@ -31,7 +31,7 @@ C
 C    PLAT,PLON = Arrays of length NI and NJ, respectively, containing 
 C                the latitudes and longitudes of the grid lines.
 C
-C    FF   = NROW by NCOL array with NROW .GE. NI and NCOL .GE. NJ.
+C    FF   = NI by NJ array containing the interpolated values.
 C
 C    IWK  = An integer workspace of length 15*N.
 C
