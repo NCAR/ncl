@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.93 2004-03-10 02:01:38 dbrown Exp $
+#      $Id: yMakefile,v 1.94 2004-03-10 02:05:07 dbrown Exp $
 #
 #########################################################################
 #																		#
@@ -15,7 +15,7 @@
 #				National Center for Atmospheric Research
 #				POB 3000, Boulder, Colorado
 #
-#	$Date: 2004-03-10 02:01:38 $
+#	$Date: 2004-03-10 02:05:07 $
 #
 #	Description:	
 #
@@ -49,7 +49,6 @@ HDFEOS_OBJS = NclHDFEOS.o
 #define UDUNITSLIB
 #endif
 
-#undef BuildV5D
 # if !defined(BuildV5D)
 # define    V5DLIB
 # endif
