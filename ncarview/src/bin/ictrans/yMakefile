@@ -24,13 +24,12 @@ LOCLIB		= $(ROBJPATH)/libictrans_.o $(ROBJPATH)/libctrans.o \
 		$(LIBPATH)/libncarg_c.a
 
 #ifdef  sgi
-GENLIBS		= $(NETCDFLIB) $(HDFLIB) -lm -lmalloc
+GENLIBS		= $(NETCDFLIB) $(HDFLIB) $(CDYNAMIC) -lm -lmalloc
 #else
-GENLIBS		= $(NETCDFLIB) $(HDFLIB) -lm
+GENLIBS		= $(NETCDFLIB) $(HDFLIB) $(CDYNAMIC) -lm
 #endif
 
-LIBS		= $(LOCLIB) $(CSTATIC) $(X11LIBS) $(SUNLIBS) $(CDYNAMIC) \
-		$(GENLIBS)
+LIBS		= $(LOCLIB) $(CSTATIC) $(X11LIBS) $(SUNLIBS) $(GENLIBS)
 
 SRCS		= main.c 
 OBJS		= main.o 

@@ -1,6 +1,6 @@
 NCARG	= ../../../..
 #
-#	$Id: yMakefile,v 1.24 1993-03-26 23:19:08 haley Exp $
+#	$Id: yMakefile,v 1.25 1993-03-28 14:49:37 haley Exp $
 #
 
 
@@ -27,13 +27,12 @@ LOCLIB		= $(ROBJPATH)/libctrans.o $(LIBPATH)/libcgm.a \
 		$(LIBPATH)/libncarg_ras.a $(LIBPATH)/libncarg_c.a
 
 #ifdef	sgi
-GENLIBS 	= $(NETCDFLIB) $(HDFLIB) -lm -lmalloc
+GENLIBS 	= $(NETCDFLIB) $(HDFLIB) $(CDYNAMIC) -lm -lmalloc
 #else
-GENLIBS 	= $(NETCDFLIB) $(HDFLIB) -lm 
+GENLIBS 	= $(NETCDFLIB) $(HDFLIB) $(CDYNAMIC) -lm 
 #endif
 
-LIBS		= $(LOCLIB) $(CSTATIC) $(X11LIBS) $(SUNLIBS) $(CDYNAMIC) \
-		$(GENLIBS)
+LIBS		= $(LOCLIB) $(CSTATIC) $(X11LIBS) $(SUNLIBS) $(GENLIBS)
 
 SRCS		=  main.c 
 OBJS		=  main.o 

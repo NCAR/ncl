@@ -1,6 +1,6 @@
 #
 #
-#	$Id: yMakefile,v 1.13 1993-03-26 23:21:08 haley Exp $
+#	$Id: yMakefile,v 1.14 1993-03-28 14:50:28 haley Exp $
 #
 #	Makefile for rasview
 #
@@ -16,8 +16,8 @@ OBJS		= rasdraw.o rasview.o
 
 XLIBS		= $(XTOOLLIB) $(XLIB)
 
-LIBS		= $(LOCLIBS) $(CSTATIC) $(XLIBS) $(CDYNAMIC) $(NETCDFLIB) \
-			$(HDFLIB) -lm
+LIBS		= $(LOCLIBS) $(CSTATIC) $(XLIBS) $(NETCDFLIB) $(HDFLIB) \
+				$(CDYNAMIC) -lm
 
 CDEFINES	= 
 
