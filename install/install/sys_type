@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: sys_type,v 1.14 1998-03-04 19:59:47 haley Exp $
+#      $Id: sys_type,v 1.15 1998-03-04 20:51:19 haley Exp $
 #
 #########################################################################
 #									#
@@ -48,7 +48,7 @@ endif
 #        ULTRIX_RISC IRIX_IP IRIX64_IP UNICOS_YMP UNICOS_J90 UNICOS_C90 \
 #        UNICOS_T90 OSF1_alpha LINUX_PC Solaris_PC UNIXSV_Fujitsu300)
 set systems = ( \
-		HPUX_HP9000_7xx AIX_RS6000 Solaris_sun4 IRIX_n32_IP IRIX_64_IP \
+		HPUX_HP9000_7xx AIX_RS6000 Solaris_sun4 IRIX_IP \
         UNICOS_J90 UNICOS_C90 OSF1_alpha LINUX_PC)
 
 #

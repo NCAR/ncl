@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: INSTALL,v 1.13 1998-03-04 19:59:43 haley Exp $
+#      $Id: INSTALL,v 1.14 1998-03-04 20:51:19 haley Exp $
 #
 #########################################################################
 #                                                                       #
@@ -87,7 +87,8 @@ cat <<EOF
      The use of this Software is governed by a License Agreement.
 
 
-      I see you are running on a Silicon Graphics system.
+      I see you are either running on a Silicon Graphics (SGI) system
+      or have selected to install binaries for an SGI.
   
       On some SGI systems, three different options are supported for
       building libraries and binaries. These options are '-n32', '-64',
@@ -164,7 +165,7 @@ cat <<EOF
 
 
         1.  Ordering information
-        2.  Install software
+        2.  Install software for a $SYSTEM_TO_INSTALL system
         3.  Remove installed software
         4.  Help
 
