@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.160 2004-04-02 20:29:01 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.161 2004-04-14 16:22:26 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -4614,8 +4614,10 @@ end
 ;       are used to title the top left, center, and right of the plot   ;
 ;       (in addition, the regular resource "tiMainString" can be set to ;
 ;       create a regular title).                                        ;
-;    3. If the special GSUN resource "gsnZonalMean" is set to True, then;
-;       a zonal mean XY plot is drawn.
+;    3. If the special GSUN resource "gsnZonalMean" is set to True,     ;
+;       then a zonal mean XY plot is drawn.                             ;
+;   3a. In addition, if "gsnZonalMeanYRefLine" is set, then a vertical  ;
+;       line is drawn at this value. Otherwise, a line is drawn at 0.   ;
 ;    4. If the resource "cnFillOn" is set to True, then a labelbar is   ;
 ;       drawn and line labels are turned off.                           ;
 ;    5. If data has an attribute called "long_name," and "gsnLeftString";
@@ -4651,6 +4653,7 @@ begin
     zonal_mean_plot = get_res_value(res2,"gsnZonalMean",False)
     zonal_xmin      = isatt(res2,"gsnZonalMeanXMinF")
     zonal_xmax      = isatt(res2,"gsnZonalMeanXMaxF")
+    zonal_ref       = get_res_value(res2,"gsnZonalMeanYRefLine",0.)
 
     if(zonal_xmin) then
       trxmin = get_res_value(res2,"gsnZonalMeanXMinF",1.)
@@ -4706,7 +4709,7 @@ begin
           nmeans = dimsizes(zmeans2)
           zmeans = new((/2,nmeans/),typeof(zmeans2))
           zmeans(0,:) = zmeans2
-          zmeans(1,:) = fspan(0.,0.,nmeans)
+          zmeans(1,:) = fspan(zonal_ref,zonal_ref,nmeans)
         else
           zmeans = zmeans2
         end if
