@@ -1,35 +1,43 @@
 C
-C	$Id: entsr.f,v 1.1.1.1 1992-04-17 22:32:36 ncargd Exp $
+C $Id: entsr.f,v 1.2 1993-09-23 17:21:17 kennison Exp $
 C
-      SUBROUTINE ENTSR(IROLD,IRNEW)
+      SUBROUTINE ENTSR (IROLD,IRNEW)
 C
-C  THIS ROUTINE RETURNS IROLD = LRECOV AND SETS LRECOV = IRNEW.
+C This routine returns, in IROLD, the current value of the recovery
+C flag.  If the value of IRNEW is non-zero, ENTSR also resets the
+C recovery flag: IRNEW = 1 activates recovery; IRNEW = 2 deactivates
+C recovery.
 C
-C  IF THERE IS AN ACTIVE ERROR STATE, THE MESSAGE IS PRINTED
-C  AND EXECUTION STOPS.
+C The common blocks SECOMI and SECOMC are used to hold shared variables
+C of types INTEGER and CHARACTER, respectively, for the routine SETER
+C and associated routines.  For descriptions of these variables and for
+C default values of them, see the block data routine SEBLDA.
 C
-C  IRNEW = 0 LEAVES LRECOV UNCHANGED, WHILE
-C  IRNEW = 1 GIVES RECOVERY AND
-C  IRNEW = 2 TURNS RECOVERY OFF.
+        COMMON /SECOMI/ IERRU,IERRF,IRECF,LOMSG
+        SAVE   /SECOMI/
 C
-C  ERROR STATES -
+        COMMON /SECOMC/ ERMSG
+          CHARACTER*113 ERMSG
+        SAVE   /SECOMC/
 C
-C    1 - ILLEGAL VALUE OF IRNEW.
-C    2 - CALLED WHILE IN AN ERROR STATE.
+C Check for an illegal value of IRNEW.
 C
+        IF (IRNEW.LT.0.OR.IRNEW.GT.2)
+     +     CALL SETER ('ENTSR - ILLEGAL VALUE OF THE RECOVERY FLAG',1,2)
 C
-      LOGICAL TEMP
-      IF (IRNEW.LT.0 .OR. IRNEW.GT.2)
-     1   CALL SETER(' ENTSR - ILLEGAL VALUE OF IRNEW',1,2)
+C Return the previous value of IRECF in IROLD and, if IRNEW is nonzero,
+C reset IRECF to that value.
 C
-      TEMP = IRNEW.NE.0
-      IROLD = I8SAV(2,IRNEW,TEMP)
+        IROLD=IRECF
+        IF (IRNEW.NE.0) IRECF=IRNEW
 C
-C  IF HAVE AN ERROR STATE, STOP EXECUTION.
+C Check for an uncleared prior error that is now unrecoverable.
 C
-      IF (I8SAV(1,0,.FALSE.) .NE. 0) CALL SETER
-     1   (' ENTSR - CALLED WHILE IN AN ERROR STATE',2,2)
+        IF (IERRF.NE.0.AND.IRECF.EQ.2)
+     +       CALL SETER ('ENTSR - PRIOR ERROR IS NOW UNRECOVERABLE',2,2)
 C
-      RETURN
+C Done.
+C
+        RETURN
 C
       END

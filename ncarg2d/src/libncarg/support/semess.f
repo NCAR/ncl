@@ -1,9 +1,12 @@
 C
-C $Id: errof.f,v 1.2 1993-09-23 17:21:22 kennison Exp $
+C $Id: semess.f,v 1.1 1993-09-23 17:21:36 kennison Exp $
 C
-      SUBROUTINE ERROF
+      FUNCTION SEMESS ()
 C
-C This routine just turns off the error flag.
+        CHARACTER*113 SEMESS
+C
+C The value of this function is the current error message (blanks if
+C there is no current error).
 C
 C The common blocks SECOMI and SECOMC are used to hold shared variables
 C of types INTEGER and CHARACTER, respectively, for the routine SETER
@@ -17,9 +20,13 @@ C
           CHARACTER*113 ERMSG
         SAVE   /SECOMC/
 C
-C Do it.
+C Return the message.
 C
-        IERRF=0
+        IF (IERRF.NE.0) THEN
+          SEMESS=ERMSG
+        ELSE
+          SEMESS=' '
+        END IF
 C
 C Done.
 C

@@ -1,28 +1,38 @@
 C
-C	$Id: retsr.f,v 1.1.1.1 1992-04-17 22:32:36 ncargd Exp $
+C $Id: retsr.f,v 1.2 1993-09-23 17:21:32 kennison Exp $
 C
-      SUBROUTINE RETSR(IROLD)
+      SUBROUTINE RETSR (IROLD)
 C
-C  THIS ROUTINE SETS LRECOV = IROLD.
+C This routine restores a saved value of the recovery flag.  If there
+C is an active error state and recovery is deactivated, the error
+C message is printed and execution stops.
 C
-C  IF THE CURRENT ERROR BECOMES UNRECOVERABLE,
-C  THE MESSAGE IS PRINTED AND EXECUTION STOPS.
+C The common blocks SECOMI and SECOMC are used to hold shared variables
+C of types INTEGER and CHARACTER, respectively, for the routine SETER
+C and associated routines.  For descriptions of these variables and for
+C default values of them, see the block data routine SEBLDA.
 C
-C  ERROR STATES -
+        COMMON /SECOMI/ IERRU,IERRF,IRECF,LOMSG
+        SAVE   /SECOMI/
 C
-C    1 - ILLEGAL VALUE OF IROLD.
+        COMMON /SECOMC/ ERMSG
+          CHARACTER*113 ERMSG
+        SAVE   /SECOMC/
 C
-      IF (IROLD.LT.1 .OR. IROLD.GT.2)
-     1  CALL SETER(' RETSR - ILLEGAL VALUE OF IROLD',1,2)
+C If the given value of IROLD is illegal, that's an error.
 C
-      ITEMP=I8SAV(2,IROLD,.TRUE.)
+        IF (IROLD.LT.1.OR.IROLD.GT.2)
+     +         CALL SETER ('RETSR - ILLEGAL VALUE OF RECOVERY FLAG',1,2)
 C
-C  IF THE CURRENT ERROR IS NOW UNRECOVERABLE, PRINT AND STOP.
+        IRECF=IROLD
 C
-      IF (IROLD.EQ.1 .OR. I8SAV(1,0,.FALSE.).EQ.0) RETURN
+C Check for an uncleared prior error that is now unrecoverable.
 C
-        CALL EPRIN
-        CALL FDUM
-        STOP
+        IF (IERRF.NE.0.AND.IRECF.EQ.2)
+     +       CALL SETER ('RETSR - PRIOR ERROR IS NOW UNRECOVERABLE',2,2)
+C
+C Done.
+C
+        RETURN
 C
       END

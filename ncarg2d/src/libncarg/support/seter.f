@@ -1,101 +1,143 @@
 C
-C	$Id: seter.f,v 1.2 1993-03-20 01:43:48 fred Exp $
+C $Id: seter.f,v 1.3 1993-09-23 17:21:38 kennison Exp $
 C
-      SUBROUTINE SETER(MESSG,NERR,IOPT)
+      SUBROUTINE SETER (MESSG,NERRF,IROPT)
 C
-C  SETER SETS LERROR = NERR, OPTIONALLY PRINTS THE MESSAGE AND DUMPS
-C  ACCORDING TO THE FOLLOWING RULES...
+        CHARACTER*(*) MESSG
 C
-C    IF IOPT = 1 AND RECOVERING      - JUST REMEMBER THE ERROR.
-C    IF IOPT = 1 AND NOT RECOVERING  - PRINT AND STOP.
-C    IF IOPT = 2                     - PRINT, DUMP AND STOP.
+C This routine is called when an error occurs.  The arguments specify
+C an error message, an error number, and an option indicating whether
+C the error is recoverable or fatal.  Exactly how the error is handled
+C depends not only on the values of these arguments, but also on the
+C values of internal variables specifying whether recovery mode is in
+C effect and whether a previous error has occurred and not yet been
+C recovered from and cleared.
 C
-C  INPUT
+C If no uncleared recoverable error has occurred and there are no
+C errors in the arguments, then the following apply:
 C
-C    MESSG  - THE ERROR MESSAGE (130 CHARACTERS MAXIMUM)
-C    NERR   - THE ERROR NUMBER. MUST HAVE NERR NON-ZERO.
-C    IOPT   - THE OPTION. MUST HAVE IOPT=1 OR 2.
+C   IROPT = 1, recovery mode active      -  just remember the error.
+C   IROPT = 1, recovery mode not active  -  print and stop.
+C   IROPT = 2                            -  print, dump, and stop.
 C
-C  ERROR STATES -
+C Input:
 C
-C    1 - MESSAGE LENGTH NOT POSITIVE.
-C    2 - CANNOT HAVE NERR=0.
-C    3 - AN UNRECOVERED ERROR FOLLOWED BY ANOTHER ERROR.
-C    4 - BAD VALUE FOR IOPT.
+C   MESSG  - the error message (113 characters maximum).  The error
+C            message should contain the name of the routine in which
+C            the error occurred, followed by a blank, then a hyphen
+C            (minus sign), then another blank, and then a short
+C            description of the error.
+C   NERRF  - the error number - must be non-zero.
+C   IROPT  - the option - must have IROPT = 1 or 2.
 C
+C Error states:
 C
-C  FORCE LOAD OF BLOCKDATA
+C   1 - message length not positive.
+C   2 - NERRF equal to 0.
+C   3 - an unrecovered error followed by another error.
+C   4 - bad value for IROPT (less than 1 or greater than 2).
 C
-      EXTERNAL UERRBD
-      CHARACTER*(*) MESSG
-      COMMON /UERRF/IERF
+C Force load of the BLOCK DATA subroutine.
 C
-C  THE UNIT FOR ERROR MESSAGES IS I1MACH(4)
+        EXTERNAL SEBLDA
 C
-      IF (IERF .EQ. 0) THEN
-      IERF = I1MACH(4)
-      ENDIF
+C The common blocks SECOMI and SECOMC are used to hold shared variables
+C of types INTEGER and CHARACTER, respectively, for the routine SETER
+C and associated routines.  For descriptions of these variables and for
+C default values of them, see the block data routine SEBLDA.
 C
-      NMESSG = LEN(MESSG)
-      IF (NMESSG.GE.1) GO TO 10
+        COMMON /SECOMI/ IERRU,IERRF,IRECF,LOMSG
+        SAVE   /SECOMI/
 C
-C  A MESSAGE OF NON-POSITIVE LENGTH IS FATAL.
+        COMMON /SECOMC/ ERMSG
+          CHARACTER*113 ERMSG
+        SAVE   /SECOMC/
 C
-        WRITE(IERF,9000)
- 9000   FORMAT(' ERROR    1 IN SETER - MESSAGE LENGTH NOT POSITIVE.')
-        GO TO 60
+C The unit number for error messages is I1MACH(4).  Save that value,
+C if it has not already been done.
 C
-   10 CONTINUE
-      IF (NERR.NE.0) GO TO 20
+        IF (IERRU.EQ.0) IERRU=I1MACH(4)
 C
-C  CANNOT TURN THE ERROR STATE OFF USING SETER.
+C Check for various error conditions.  The low-order bits of IERRC
+C are used to keep track of which such errors have occurred.
 C
-        WRITE(IERF,9001)
- 9001   FORMAT(' ERROR    2 IN SETER - CANNOT HAVE NERR=0'/
-     1         ' THE CURRENT ERROR MESSAGE FOLLOWS'/)
-        CALL E9RIN(MESSG,NERR,.TRUE.)
-        ITEMP=I8SAV(1,1,.TRUE.)
-        GO TO 50
+        IERRC=0
 C
-C  SET LERROR AND TEST FOR A PREVIOUS UNRECOVERED ERROR.
+C Check for a message of length zero or less.
 C
- 20   CONTINUE
-      IF (I8SAV(1,NERR,.TRUE.).EQ.0) GO TO 30
+        IF (LEN(MESSG).LE.0) THEN
+          IERRC=IERRC+1
+          WRITE (IERRU,1001)
+        END IF
 C
-        WRITE(IERF,9002)
- 9002   FORMAT(' ERROR    3 IN SETER -',
-     1         ' AN UNRECOVERED ERROR FOLLOWED BY ANOTHER ERROR.'//
-     2         ' THE PREVIOUS AND CURRENT ERROR MESSAGES FOLLOW.'///)
-        CALL EPRIN
-        CALL E9RIN(MESSG,NERR,.TRUE.)
-        GO TO 50
+C Check for NERRF = 0.
 C
-C  SAVE THIS MESSAGE IN CASE IT IS NOT RECOVERED FROM PROPERLY.
+        IF (NERRF.EQ.0) THEN
+          IERRC=IERRC+2
+          WRITE (IERRU,1002)
+        END IF
 C
- 30   CALL E9RIN(MESSG,NERR,.TRUE.)
+C Check for a previous unrecovered error.
 C
-      IF (IOPT.EQ.1 .OR. IOPT.EQ.2) GO TO 40
+        IF (IERRF.NE.0) THEN
+          IERRC=IERRC+4
+          WRITE (IERRU,1003)
+        END IF
 C
-C  MUST HAVE IOPT = 1 OR 2.
+C Check for an illegal value of the recovery flag.
 C
-        WRITE(IERF,9003)
- 9003   FORMAT(' ERROR    4 IN SETER - BAD VALUE FOR IOPT'//
-     1         ' THE CURRENT ERROR MESSAGE FOLLOWS'///)
-        GO TO 50
+        IF (IROPT.NE.1.AND.IROPT.NE.2) THEN
+          IERRC=IERRC+8
+          WRITE (IERRU,1004)
+        END IF
 C
-C  TEST FOR RECOVERY.
+C If one of the error conditions applies, print the appropriate
+C information and quit.
 C
- 40   CONTINUE
-      IF (IOPT.EQ.2) GO TO 50
+        IF (IERRC.NE.0) THEN
+          IF (MOD(IERRC/4,2).NE.0) THEN
+            WRITE (IERRU,1005) IERRF,ERMSG(1:LOMSG)
+          END IF
+          IF (MOD(IERRC,2).EQ.0) THEN
+            WRITE (IERRU,1006) NERRF,MESSG(1:ICLOEM(MESSG))
+          END IF
+          CALL FDUM
+          STOP
+        END IF
 C
-      IF (I8SAV(2,0,.FALSE.).EQ.1) RETURN
+C Save the error message and error number.
 C
-      CALL EPRIN
-      CALL FDUM
-      STOP 999
+        IERRF=NERRF
+        ERMSG=MESSG
+        LOMSG=ICLOEM(ERMSG)
 C
- 50   CALL EPRIN
- 60   CALL FDUM
-      STOP 998
+C If recovery mode is activated and the error is recoverable, return
+C to the caller for recovery action.
+C
+        IF (IRECF.EQ.1.AND.IROPT.EQ.1) RETURN
+C
+C Otherwise, print the error message.
+C
+        WRITE (IERRU,1007) IERRF,ERMSG(1:LOMSG)
+C
+C If the error is fatal, call the dump routine.
+C
+        IF (IROPT.EQ.2) CALL FDUM
+C
+C Quit.
+C
+        STOP
+C
+C Formats used above.
+C
+ 1001 FORMAT (' ERROR    1 IN SETER - MESSAGE LENGTH IS NOT POSITIVE')
+ 1002 FORMAT (' ERROR    2 IN SETER - ILLEGAL VALUE FOR ERROR NUMBER')
+ 1003 FORMAT (' ERROR    3 IN SETER - AN UNCLEARED PRIOR ERROR EXISTS')
+ 1004 FORMAT (' ERROR    4 IN SETER - ILLEGAL VALUE FOR RECOVERY FLAG')
+ 1005 FORMAT (' ... MESSAGE FOR UNCLEARED PRIOR ERROR IS AS FOLLOWS:'/
+     +        ' ... ERROR ',I4,' IN ',A)
+ 1006 FORMAT (' ... MESSAGE FOR CURRENT CALL TO SETER IS AS FOLLOWS:'/
+     +        ' ... ERROR ',I4,' IN ',A)
+ 1007 FORMAT (' ERROR ',I4,' IN ',A)
 C
       END
