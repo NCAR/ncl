@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: fontcap.m,v 1.5 1995-10-13 15:10:38 haley Exp $
+.\"	$Id: fontcap.m,v 1.6 1998-02-04 15:27:13 haley Exp $
 .\"
 .\" @(#)f77.1 1.4 86/07/31 SMI; 
 .TH FONTCAP 5NCARG "April 1993" NCAR "NCAR GRAPHICS"
@@ -111,7 +111,7 @@ ctrans(1NCARG), fontc(5NCARG), ncarg_env(5NCARG)
 Hardcopy:
 NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
-Copyright (C) 1987-1995
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

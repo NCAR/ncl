@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: graphc.m,v 1.5 1995-10-13 15:10:39 haley Exp $
+.\"	$Id: graphc.m,v 1.6 1998-02-04 15:27:13 haley Exp $
 .\"
 .TH GRAPHC 1NCARG "April 1993" NCAR "NCAR GRAPHICS"
 .SH NAME
@@ -24,7 +24,7 @@ different system architectures.
 Online:
 ctrans(1NCARG), graphcap(5NCARG)
 .SH COPYRIGHT
-Copyright (C) 1987-1995
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br
