@@ -1,8 +1,8 @@
 %{
 #include <stdio.h>
-/*
+#ifdef IRIX
 #include <pfmt.h>
-*/
+#endif
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/NresDB.h>
 #include "defs.h"

@@ -10,12 +10,18 @@ extern "C" {
 #include "Machine.h"
 #include <unistd.h>
 
-extern FILE *nclin;
 FILE *thefptr;
 FILE *theoptr;
 int cmd_line;
 extern int cur_line_number;
-extern int _yyparse();
+
+#ifdef SunOs
+extern FILE *nclin;
+extern int nclparse();
+#else
+extern FILE *yyin;
+extern int yyparse();
+#endif /*SunOs*/
 
 #define BUFF_SIZE 512
 
@@ -44,7 +50,11 @@ main() {
 
 	if(cmd_line)	
 		fprintf(stdout,"ncl %d> ",0);
+#ifdef SunOs
 	nclparse();
+#else
+	yyparse();
+#endif
 	fclose(thefptr);
 	fprintf(stdout,"Number of unfreed objects %d\n",_NclNumObjs());
 	_NclPrintUnfreedObjs(stdout);

@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.14 1994-07-27 18:14:18 ethan Exp $
+#      $Id: yMakefile,v 1.15 1994-07-27 20:30:44 ethan Exp $
 #
 #########################################################################
 #									#
@@ -31,14 +31,17 @@
 MYBIN		=	ncl
 MYLIB		=	libncl.a
 
-EXTRA_DEFINES	=
 
 #ifdef  HPUX
 ARCH_LIBS	=	-lPW
 #endif
 
 PROG_LIBS	=	$(HLULIBS) $(CNCARGLIBS) $(NCARGLIBS)
+#ifdef  UseInstalled
+DEPLIBS		=
+#else
 DEPLIBS		=	$(DEPHLULIBS) $(DEPCNCARGLIBS) $(DEPNCARGLIBS)
+#endif
 EXTRA_LIBS	=	-ll $(NCDFLIBS) $(XLIB)
 SYS_LIBS	=	$(CTOFLIBS) -lm $(ARCH_LIBS)
 

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Symbol.h,v 1.9 1994-07-14 20:47:22 ethan Exp $
+ *      $Id: Symbol.h,v 1.10 1994-07-27 20:30:35 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -263,7 +263,7 @@ void
 #endif
 );
 
-NhlLayerClass _NclGetClassPtr(
+struct _NhlLayerClassRec* _NclGetClassPtr(
 #ifdef  NhlNeedProto
 int /* class_q */
 #endif

@@ -1,5 +1,5 @@
 /*
- *      $Id: VarSupport.h,v 1.2 1994-07-21 00:19:05 ethan Exp $
+ *      $Id: VarSupport.h,v 1.3 1994-07-27 20:30:39 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -53,9 +53,9 @@ NclScalar *             /*new_missing*/
 
 extern NhlErrorTypes  _NclBuildRSelection(
 #if     NhlNeedProto
-struct _NclVarRec * /*var*/,
-struct _NclRangeRec * /*range*/,
-struct _NclSelection* /*sel*/,
+NclVar  /*var*/,
+NclRangeRec* /*range*/,
+NclSelection* /*sel*/,
 int /*dim_num*/,
 char * /*dim_name*/
 #endif

@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.21 1994-07-21 00:18:47 ethan Exp $
+ *      $Id: Execute.c,v 1.22 1994-07-27 20:30:19 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -31,13 +31,13 @@ extern "C" {
 #include "defs.h"
 #include "Symbol.h"
 #include "NclVar.h"
+#include "Machine.h"
 #include "NclFileInterfaces.h"
 #include "NclFile.h"
 #include "NclFileVar.h"
 #include "FileSupport.h"
 #include "DataSupport.h"
 #include "VarSupport.h"
-#include "Machine.h"
 #include "NclMdInc.h"
 #include "OpsList.h"
 #include "OpsFuncs.h"

@@ -9,13 +9,23 @@ extern int loading;
 extern char *cur_load_file;
 extern int cur_line_number;
 extern int top_level_line;
-extern FILE *nclin;
 extern int cmd_line;
+#ifdef SunOs
+extern FILE *nclin;
 extern int ncllineno;
 int nclwrap() 
+#else 
+extern FILE *yyin;
+extern int yylineno;
+int yywrap() 
+#endif /*SunOs*/
 {
 	if(loading) {
+#ifdef SunOs
 		nclin = stdin;
+#else
+		yyin = stdin;
+#endif
 		loading = 0;
 /*
 * Yeah I know the loses the pointer but the allocated string must

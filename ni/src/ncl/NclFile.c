@@ -2,8 +2,10 @@
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/NresDB.h>
 #include "defs.h"
+#include "Symbol.h"
 #include <math.h>
 #include "NclVar.h"
+#include "Machine.h"
 #include "NclFile.h"
 #include "NclFileInterfaces.h"
 #include "DataSupport.h"

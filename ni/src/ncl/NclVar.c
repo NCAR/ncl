@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclVar.c,v 1.1 1994-07-14 20:47:06 ethan Exp $
+ *      $Id: NclVar.c,v 1.2 1994-07-27 20:30:33 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -25,6 +25,7 @@
 #include "defs.h"
 #include "Symbol.h"
 #include "NclMdInc.h"
+#include "Machine.h"
 #include "NclAtt.h"
 #include "NclVar.h"
 #include "DataSupport.h"
