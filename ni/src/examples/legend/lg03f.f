@@ -16,8 +16,6 @@ C      Date:           Fri Jan 13 18:31:18 MDT 1995
 C
 C      Description:    Demonstrates a Legend of 5 markers.
 C
-      external nhlfhlulayerclass
-      external nhlfreslistlayerclass
       external nhlfapplayerclass
       external nhlflegendlayerclass
       external nhlfxworkstationlayerclass

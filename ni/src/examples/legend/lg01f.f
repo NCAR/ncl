@@ -17,8 +17,6 @@ C
 C      Description:    Demonstrates the Legend Object defaults.
 C
 
-      external nhlfhlulayerclass
-      external nhlfreslistlayerclass
       external nhlfapplayerclass
       external nhlflegendlayerclass
       external nhlfxworkstationlayerclass
