@@ -1,5 +1,5 @@
 /*
- *	$Id: ctrans.c,v 1.16 1992-02-11 14:58:59 clyne Exp $
+ *	$Id: ctrans.c,v 1.17 1992-02-25 18:23:27 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -721,15 +721,16 @@ CGMC	*c;
 }
 
 /*
- *	if the cgmc contains a escape element process it and fetch the
- *	next element into the cgmc and repeat
+ *	if the cgmc contains a escape element or a noop process it and 
+ *	fetch the next element into the cgmc and repeat
  */
 DoEscapes(cgmc)
 	CGMC	*cgmc;
 {
-	while (cgmc->class == ESC_ELEMENT && cgmc->command == ESCAPE) {
-		Process(cgmc);
+	while ((cgmc->class == ESC_ELEMENT && cgmc->command == ESCAPE) ||
+		(cgmc->class == DEL_ELEMENT && cgmc->command == NOOP)) {
 
+		Process(cgmc);
 		Instr_Dec(cgmc);
 	}
 }
