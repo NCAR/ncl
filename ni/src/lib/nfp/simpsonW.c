@@ -201,7 +201,7 @@ NhlErrorTypes simpne_W( void )
 /*
  * Declare various variables for random purposes.
  */
-  int i, index_xy, npts, size_leftmost;
+  int i, index_y, npts, size_leftmost;
 
 /*
  * Retrieve arguments.
@@ -226,23 +226,33 @@ NhlErrorTypes simpne_W( void )
           &type_y,
           2);
 
-  if(ndims_x != ndims_y) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"simpne: The input arrays must be the same size");
-    return(NhlFATAL);
+/*
+ * Check dimensions of X and Y. They must either be the same size,
+ * or X can be 1D and equal in length to the rightmost dimension of Y.
+ */
+  if(ndims_x == ndims_y) {
+    for(i = 0; i < ndims_x; i++) {
+      if(dsizes_x[i] != dsizes_y[i]) {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"simpne: If the input arrays have the same number of dimensions, they must be the same size.");
+        return(NhlFATAL);
+      }
+    }
   }
-  for(i = 0; i < ndims_x; i++) {
-    if(dsizes_x[i] != dsizes_y[i]) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"simpne: The input arrays must be the same size");
+  else {
+    if( ndims_x != 1 ||
+       (ndims_x == 1 && dsizes_x[0] != dsizes_y[ndims_y-1])) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"simpne: x must be the same size as y, or a 1D array equal in length to y's rightmost dimension.");
       return(NhlFATAL);
     }
   }
-  npts = dsizes_x[ndims_x-1];
+
+  npts = dsizes_y[ndims_y-1];
 
 /*
  * Compute size of the output array (size_leftmost).
  */
-  if(ndims_x > 1) {
-    ndims_simpne = ndims_x-1;
+  if(ndims_y > 1) {
+    ndims_simpne = ndims_y-1;
   }
   else {
     ndims_simpne = 1;
@@ -250,9 +260,9 @@ NhlErrorTypes simpne_W( void )
   dsizes_simpne = (int*)calloc(ndims_simpne,sizeof(int));
   size_leftmost = 1;
   if(ndims_simpne > 1) {
-    for( i = 0; i < ndims_x-1; i++ ) {
-      dsizes_simpne[i] = dsizes_x[i];
-      size_leftmost    *= dsizes_x[i];
+    for( i = 0; i < ndims_y-1; i++ ) {
+      dsizes_simpne[i] = dsizes_y[i];
+      size_leftmost    *= dsizes_y[i];
     }
   }
   else {
@@ -291,12 +301,12 @@ NhlErrorTypes simpne_W( void )
     }
   }
   if(type_simpne == NCL_double) {
-    simpne      = (void*)calloc(size_leftmost,sizeof(double));
+    simpne                   = (void*)calloc(size_leftmost,sizeof(double));
     missing_simpne.doubleval = missing_dy.doubleval;
   }
   else {
-    simpne      = (void*)calloc(size_leftmost,sizeof(float));
-    tmp_simpne  = (double*)calloc(1,sizeof(double));
+    simpne                  = (void*)calloc(size_leftmost,sizeof(float));
+    tmp_simpne              = (double*)calloc(1,sizeof(double));
     missing_simpne.floatval = missing_ry.floatval;
   }
 
@@ -306,53 +316,71 @@ NhlErrorTypes simpne_W( void )
   }
 
 /*
- * Call the Fortran version of this routine.
+ * If X is 1D, convert it to double here, and don't worry about it
+ * inside the loop. If it is n-D, then we'll convert each chunk of
+ * it inside the loop.
  */
-
-  nmiss = index_xy = 0;
-  for( i = 0; i < size_leftmost; i++ ) {
+  if(ndims_x == 1) {
     if(type_x != NCL_double) {
 /*
  * Coerce npts subsection of x (tmp_x) to double.
  */
-      coerce_subset_input_double(x,tmp_x,index_xy,type_x,npts,has_missing_x,
+      coerce_subset_input_double(x,tmp_x,0,type_x,npts,has_missing_x,
                                  &missing_x,&missing_dx);
     }
     else {
 /*
- * Point tmp_x to appropriate location in f/simpne.
+ * Point tmp_x to x.
  */
-      tmp_x = &((double*)x)[index_xy];
+      tmp_x = &((double*)x)[0];
+    }
+  }
+
+/*
+ * Call the Fortran version of this routine.
+ */
+  nmiss = index_y = 0;
+  for( i = 0; i < size_leftmost; i++ ) {
+/*
+ * Coerce subset of x to double if necessary. 
+ */
+    if(ndims_x > 1) {
+      if(type_x != NCL_double) {
+        coerce_subset_input_double(x,tmp_x,index_y,type_x,npts,has_missing_x,
+                                   &missing_x,&missing_dx);
+      }
+      else {
+        tmp_x = &((double*)x)[index_y];
+      }
     }
 
-    if(type_y != NCL_double) {
 /*
- * Coerce npts subsection of y (tmp_y) to double.
+ * Coerce subset of y to double if necessary. 
  */
-      coerce_subset_input_double(y,tmp_y,index_xy,type_y,npts,has_missing_y,
+    if(type_y != NCL_double) {
+      coerce_subset_input_double(y,tmp_y,index_y,type_y,npts,has_missing_y,
                                  &missing_y,&missing_dy);
     }
     else {
-/*
- * Point tmp_y to appropriate location in f/simpne.
- */
-      tmp_y = &((double*)y)[index_xy];
+      tmp_y = &((double*)y)[index_y];
     }
 
+/*
+ * Point tmp_simpne to appropriate location in simpne if necessary.
+ */
     if(type_simpne == NCL_double) {
       tmp_simpne = &((double*)simpne)[i];
     }
 
 /*
- * If any missing values are present, put missing values in this
- * particular value of s and continue.
+ * x should not have missing values. If it does, we put a missing
+ * value in the place of the output value.
  */
     found_missing_x = contains_missing(tmp_x,npts,has_missing_x,
                                        missing_dx.doubleval);
     if(found_missing_x) {
       nmiss++;
-      set_subset_output_missing(simpne,i,type_simpne,1,
-                                missing_dy.doubleval);
+      set_subset_output_missing(simpne,i,type_simpne,1,missing_dy.doubleval);
     }
     else {
       NGCALLF(dsimpne,DSIMPNE)(&npts,tmp_x,tmp_y,&missing_dy.doubleval,
@@ -362,7 +390,7 @@ NhlErrorTypes simpne_W( void )
         coerce_output_float_only(simpne,tmp_simpne,1,i);
       }
     }
-    index_xy += npts;
+    index_y += npts;
   }
 
 /*
