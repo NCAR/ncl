@@ -1,5 +1,5 @@
 /*
- *	$Id: gksc.c,v 1.3 1994-06-08 16:57:35 boote Exp $
+ *	$Id: gksc.c,v 1.4 1994-06-14 21:24:44 boote Exp $
  */
 /*
  *      File:		gksc.c
@@ -259,10 +259,28 @@ static	GKSC_Ptr	gks_mem_manage(comp_data, size)
  *			  by 'gks_opcode'
  */
 
-int	WriteToGKSC(gksc, gks_opcode, total_i, num_i_sent, ints, 
-		total_x, num_x_sent, indexes, total_f, num_f_sent, 
-		fxs, fys, total_c, num_c_sent, chars)
-
+int	WriteToGKSC
+#if	NeedFuncProto
+(
+	GKSC	*gksc,
+	int	gks_opcode,
+	int	total_i,
+	int	num_i_sent,
+	int	*ints,
+	int	total_x,
+	int	num_x_sent,
+	int	*indexes,
+	int	total_f,
+	int	num_f_sent,
+	float	*fxs,
+	float	*fys,
+	int	total_c,
+	int	num_c_sent,
+	int	*chars
+)
+#else
+(gksc,gks_opcode,total_i,num_i_sent,ints,total_x,num_x_sent,indexes,
+total_f,num_f_sent,fxs,fys,total_c,num_c_sent,chars)
 	GKSC	*gksc;
 	int	gks_opcode;
 
@@ -281,7 +299,7 @@ int	WriteToGKSC(gksc, gks_opcode, total_i, num_i_sent, ints,
 	int	total_c,
 		num_c_sent,
 		*chars;
-
+#endif
 {
 
 	int		rtc = RAW_TO_COOKED;	/* data conversion direction */

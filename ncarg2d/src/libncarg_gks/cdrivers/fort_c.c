@@ -1,5 +1,5 @@
 /*
- *      $Id: fort_c.c,v 1.3 1994-06-08 16:57:27 boote Exp $
+ *      $Id: fort_c.c,v 1.4 1994-06-14 21:24:41 boote Exp $
  */
 /************************************************************************
 *									*
@@ -143,8 +143,8 @@ _GKCALLF(ggkwdr,GGKWDR)
 	float		*fxs,
 	float		*fys,
 	int		*total_c,
-	int		*chars,
 	int		*num_c_sent,
+	int		*chars,
 	int		*status,
 #ifdef UNICOS
 	_fcd	err_msg_
@@ -174,8 +174,8 @@ err_msg)
 	float		*fxs;
 	float		*fys;
 	int		*total_c;
-	int		*chars;
 	int		*num_c_sent;
+	int		*chars;
 	int		*status;
 #ifdef UNICOS
 	_fcd	err_msg_;
