@@ -3852,6 +3852,7 @@ int wr_status;
 				grib_rec->pds_size = CnvtToDecimal(3,&(buffer[0]));
 				grib_rec->pds =  NclMalloc((unsigned)grib_rec->pds_size);
 				if (grib_rec->pds_size > tmp_size) {
+					fseek(fd,offset+(version?8:4),SEEK_SET);
 					fread((void*)grib_rec->pds,1,grib_rec->pds_size,fd);
 				}
 				else {
