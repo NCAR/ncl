@@ -1,5 +1,5 @@
 /*
- *      $Id: VecAnno.c,v 1.5 1996-02-26 21:46:14 dbrown Exp $
+ *      $Id: VecAnno.c,v 1.6 1996-04-10 23:14:53 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -902,6 +902,10 @@ VecAnnoDestroy
 	NhlVecAnnoLayer	val = (NhlVecAnnoLayer)l;
 	NhlVecAnnoLayerPart *vap = (NhlVecAnnoLayerPart *) &val->vecanno;
 
+	if (vap->d_params != NULL)
+		NhlFree(vap->d_params);
+	if (vap->a_params != NULL)
+		NhlFree(vap->a_params);
 	NhlFree(vap->string1);
 	NhlFree(vap->string2);
 	NhlDestroy(vap->textitem1);
