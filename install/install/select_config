@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: select_config,v 1.5 1995-06-07 17:17:40 haley Exp $
+#      $Id: select_config,v 1.6 1995-06-13 16:53:32 haley Exp $
 #
 #########################################################################
 #                                                                       #
@@ -156,9 +156,7 @@ EOF
 	example, if you only need to install the HTML documentation, you
 	should select the Custom Installation. In addition, the custom
 	installation allows you to choose the installation paths of the
-	PostScript and HTML documentation directories.  It is recommended
-	that you install the PostScript documentation to the directory
-	NCARG_ROOT/lib/ncarg/doc, just for the sake of consistency.
+	PostScript and HTML documentation directories.
 EOF
             else
   			  cat <<EOF > /dev/tty
