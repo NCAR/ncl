@@ -1,13 +1,13 @@
 #
-#	$Id: yMakefile,v 1.24 1994-04-19 13:48:23 haley Exp $
+#	$Id: yMakefile,v 1.25 1994-05-27 16:53:07 haley Exp $
 #
 
 #ifdef	BuildNCARGSourceLibrary
 SRC_SCRIPTS	=	ncargsrc ncargsrcy
 #endif
 
-SCRIPTS = cgmtrans ncargf77 ncargfile ncargcc ncargversion \
-	ncargrun ftrans ncargex ncargcex pre2ncgm plt $(SRC_SCRIPTS)
+SCRIPTS = ncargf77 ncargfile ncargcc ncargversion \
+	ncargrun ncargex ncargcex pre2ncgm plt $(SRC_SCRIPTS)
 
 InstallTarget($(SCRIPTS),$(INSTALL_BIN),$(BINPATH))
 CleanFilesTarget(ncargf77 ncargcc ncargex ncargcex ncargsrc ncargsrcy ncargversion ncargfile)
