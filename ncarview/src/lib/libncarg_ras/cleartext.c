@@ -1,5 +1,5 @@
 /*
- *	$Id: cleartext.c,v 1.4 1992-03-23 21:44:52 clyne Exp $
+ *	$Id: cleartext.c,v 1.5 1992-09-10 21:07:59 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -29,25 +29,25 @@
  *		
  */
 #include <stdio.h>
+#include <stdlib.h>
+#include <errno.h>
 #include <fcntl.h>
 #include <string.h>
 #include "ncarg_ras.h"
 
 static char	*FormatName = "cleartext";
-extern char	*ProgramName;
 
 Raster *
 ClearTextOpen(name)
 	char	*name;
 {
 	Raster	*ras;
-	char	*calloc();
 
 	(void) fprintf(stderr, "ClearTextOpen(%s)\n", name);
 
 	ras = (Raster *) calloc(sizeof(Raster), 1);
 	if (ras == (Raster *) NULL) {
-		(void) RasterSetError(RAS_E_SYSTEM);
+		(void) ESprintf(errno, "ClearTextOpen(%s)", name);
 		return( (Raster *) NULL );
 	}
 
@@ -74,13 +74,13 @@ ClearTextOpenWrite(name, nx, ny, comment, encoding)
 	Raster		*ras;
 
 	if (name == (char *) NULL) {
-		(void) RasterSetError(RAS_E_NULL_NAME);
+		(void) ESprintf(RAS_E_NULL_NAME,"ClearTextOpenWrite(%s)", name);
 		return( (Raster *) NULL );
 	}
 
 	ras = (Raster *) calloc(sizeof(Raster), 1);
 	if (ras == (Raster *) NULL) {
-		(void) RasterSetError(RAS_E_SYSTEM);
+		(void) ESprintf(errno, "ClearTextOpenWrite(%s)", name);
 		return( (Raster *) NULL );
 	}
 
@@ -115,7 +115,8 @@ ClearTextOpenWrite(name, nx, ny, comment, encoding)
 		ras->data = (unsigned char *) calloc((unsigned) ras->length, 1);
 	}
 	else {
-		(void) RasterSetError(RAS_E_UNSUPPORTED_ENCODING);
+		(void) ESprintf(RAS_E_UNSUPPORTED_ENCODING,
+			"ClearTextOpenWrite(encoding=%d)", encoding);
 		return( (Raster *) NULL );
 	}
 
