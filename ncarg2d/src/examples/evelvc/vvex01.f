@@ -1,5 +1,5 @@
 C
-C       $Id: vvex01.f,v 1.6 1994-07-08 16:29:17 stautler Exp $
+C       $Id: vvex01.f,v 1.7 1994-10-24 21:22:10 haley Exp $
 C
       PROGRAM VVEX01
 C
@@ -18,9 +18,10 @@ C
 C The contour, vector field component, and area map array declarations:
 C
       PARAMETER (MSIZE=33, NSIZE=33)
+      PARAMETER (LAMA=25000)
       DIMENSION ZDAT(MSIZE,NSIZE)
       DIMENSION U(60,60), V(60,60)
-      DIMENSION IAMA(20000)
+      DIMENSION IAMA(LAMA)
 C
 C Workspace arrays for Conpack:
 C
@@ -135,7 +136,7 @@ C
 C
 C Initialize the area map and draw the contour labels into it.
 C
-      CALL ARINAM (IAMA,20000)
+      CALL ARINAM (IAMA,LAMA)
       CALL CPLBAM (ZDAT,RWRK,IWRK,IAMA)
 C
 C Vectors setup:
