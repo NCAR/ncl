@@ -1,9 +1,9 @@
 #
-#	$Id: yMakefile,v 1.3 1993-04-01 23:51:11 haley Exp $
+#	$Id: yMakefile,v 1.4 1993-04-20 19:04:21 haley Exp $
 #
 NCARG	= ../../..
 
-MAN3 = dandr ezisos init3d isgeti isgetr isoscr isosrf isosrfhr isosurface \
+MAN3 = dandr ezisos init3d isgeti isgetr isosrf isosrfhr isosurface \
 	isosurface_params isseti issetr pwrzi
 
 MAN = $(MAN3)
