@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.48 1995-05-30 19:48:00 boote Exp $
+ *      $Id: XyPlot.c,v 1.49 1995-05-30 23:36:12 boote Exp $
  */
 /************************************************************************
 *									*
@@ -910,8 +910,7 @@ XyResetExtents
 	nargs = 0;
 	NhlSetSArg(&sargs[nargs++],NhlNpmUpdateReq,True);
 	return _NhlManageOverlay(&newxy->overlay,(NhlLayer)xnew,
-			(NhlLayer)xnew,_NhlSETVALUES,
-			sargs,nargs,func);
+			(NhlLayer)xnew,_NhlUPDATEDATA,sargs,nargs,func);
 }
 
 /*
