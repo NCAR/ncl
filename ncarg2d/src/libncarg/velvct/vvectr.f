@@ -1,5 +1,5 @@
 C
-C       $Id: vvectr.f,v 1.11 1995-01-23 22:48:54 dbrown Exp $
+C       $Id: vvectr.f,v 1.12 1995-10-27 23:25:23 dbrown Exp $
 C
       SUBROUTINE VVECTR (U,V,P,IAM,VVUDMV,WRK)
 C
@@ -48,7 +48,7 @@ C
 C IPLVLS - Maximum number of color threshold level values
 C IPAGMX - Maximum number of area groups allowed in the area map
 C
-      PARAMETER (IPLVLS = 64, IPAGMX = 64)
+      PARAMETER (IPLVLS = 256, IPAGMX = 64)
 C
 C Integer and real common block variables
 C
@@ -56,8 +56,8 @@ C
       COMMON /VVCOM/
      +                IUD1       ,IVD1       ,IPD1       ,IXDM       ,
      +                IYDN       ,VLOM       ,VHIM       ,ISET       ,
-     +                VMXL       ,VFRC       ,IXIN       ,IYIN       ,
-     +                ISVF       ,UUSV       ,UVSV       ,
+     +                VRMG       ,VMXL       ,VFRC       ,IXIN       ,
+     +                IYIN       ,ISVF       ,UUSV       ,UVSV       ,
      +                UPSV       ,IMSK       ,ICPM       ,UVPS       ,
      +                UVPL       ,UVPR       ,UVPB       ,UVPT       ,
      +                UWDL       ,UWDR       ,UWDB       ,UWDT       ,
@@ -159,12 +159,14 @@ C XW,YW - position of the string in window coordinates
 C
 C Vector length adjustment
 C
+C RAT - Temporary ratio variable
 C IAV - Adjust vector length flag
 C VFR - Length in fractional coordinates of the adjusted minimum
 C       vector
 C VA  - adjusted length of current vector
 C RA  - ratio of adjusted length to current length
 C SMN,SMX - saved value of DVMN and DVMX so they can be restored
+C DRL - length of reference vector in NDC
 C
 C Other variables
 C
@@ -193,13 +195,13 @@ C
       IF (IMSK.GT.0) THEN
          IF (IAM(7).GT.IPAGMX) THEN
             CSTR(1:29)='VVECTR - TOO MANY AREA GROUPS'
-            CALL SETER (CSTR(1:29),1,2)
-            STOP
+            CALL SETER (CSTR(1:29),1,1)
+            RETURN
          END IF
          IF (IAM(7).LE.0) THEN
             CSTR(1:25)='VVECTR - INVALID AREA MAP'
-            CALL SETER (CSTR(1:29),2,2)
-            STOP
+            CALL SETER (CSTR(1:29),2,1)
+            RETURN
          END IF
       END IF
 C
@@ -219,6 +221,7 @@ C
       IAV = 0
       SMN=DVMN
       SMX=DVMX
+      DRL = DVMX
 C 
 C Save the current color and linewidth, then set the vector
 C linewidth. Color must be set on a per vector basis within the 
@@ -243,21 +246,6 @@ C
          VMX=0.0
          GOTO 9800
       END IF
-C
-C Determine the maximum vector length to use for drawing in 
-C fractional coordinates. The value is also calculated in user
-C coordinates, for effienciency in the VVMPXY routine. But note
-C that the user coordinate value may not be useful if the user
-C coordinate system is not uniform.
-C
-C If the parameter VMXL is greater than 0.0 the user has specified 
-C a length for the maximum vector value 
-C as a fraction of the viewspace width.
-C
-      IF (VMXL .GT. 0.0) THEN
-         DVMX=VMXL*FW2W
-         RLEN=DVMX*(WXMX-WXMN)/FW2W
-      END IF
 C         
 C Determine the maximum vector magnitude to use. If VHIM is less than
 C 0.0 then it becomes the size to use, unconditionally. Otherwise,
@@ -280,10 +268,136 @@ C
          UVMN = ABS(VLOM)
       END IF
 C
+C Determine the length of the maximum, minimum and reference
+C vector magnitudes in NDC. Once these values are calculated
+C the maximum vector length only is used for scaling purposes
+C in the VVMPXY routine. Its value is also calculated in user
+C coordinates. This value may not be useful to VVMPXY if the 
+C user coordinate system is not uniform.
+C
+C There are a number of ways these lengths may be determined,
+C depending on whether the user has specified (1) a 
+C reference magnitude, (2) a reference length, or (3) a fractional
+C size for the minimum magnitude.
+C
+      VFRC = MIN(1.0, VFRC)
+C
+C If the field is uniform, special conditions apply
+C
+      IF (UVMX - UVMN .LE. 0.0) THEN
+         IF (VMXL .GT. 0.0 .AND. VRMG .GT. 0.0) THEN
+            DRL=VMXL*FW2W
+            DVMX=DRL*UVMX/VRMG
+         ELSE IF (VRMG .GT. 0.0) THEN
+            DRL=DVMX*VRMG/UVMX
+         ELSE IF (VMXL .GT. 0.0) THEN
+            DVMX=VMXL*FW2W
+            DRL=DVMX
+         END IF
+         VFR=DRL
+         DVMN=VFR
+C
+C If no reference magnitude specified, the maximum magnitude
+C is used as the reference magnitude
+C
+      ELSE IF (VRMG .LE. 0.0) THEN
+         IF (VMXL .GT. 0.0) THEN
+            DVMX=VMXL*FW2W
+         END IF
+         DRL=DVMX
+         IF (VFRC .GT. 0.0) THEN
+            IAV=1
+            VFRC = MIN(1.0, VFRC)
+            VFR=VFRC*DVMX
+            DVMN=VFR
+         ELSE
+            DVMN=DVMX*(UVMN/UVMX)
+            VFR=DVMN
+         END IF
+C
+C If the reference magnitude is less than the minimum magnitude,
+C the fractional size is ignored if a reference length is also
+C specified. Otherwise, the fractional size determines not the
+C minimum magnitude length, but the reference magnitude length.
+C
+      ELSE IF (VRMG .LE. UVMN) THEN
+         IAV=1
+         IF (VMXL .GT. 0.0) THEN
+            DRL=VMXL*FW2W
+            DVMX=DRL*UVMX/VRMG
+         ELSE IF (VFRC .GT. 0.0) THEN
+            DRL=DVMX*VFRC
+         ELSE
+            DRL=DVMX*VRMG/UVMX
+         END IF
+         DVMN=DRL*UVMN/VRMG
+         VFR=DVMN
+C
+C A reference magnitude is specified, as well as a fractional
+C magnitude. The min magnitude length is the fractional size 
+C times the reference length. If a reference length is specified, 
+C it becomes the length of the reference magnitude.  The maximum
+C magnitude is determined proportionally. If no reference length
+C is specified, the reference length is set proportionally
+C the default size assigned to the maximum magnitude.
+C
+      ELSE IF (VFRC .GT. 0.0) THEN
+         IAV=1
+         IF (VMXL .GT. 0.0) THEN
+            DRL=VMXL*FW2W
+            VFR=VFRC*DRL
+            DVMN=VFR
+            DVMX=DVMN+(DRL-DVMN)*(UVMX-UVMN)/(VRMG-UVMN)
+         ELSE
+            RAT=(VRMG-UVMN)/(UVMX-UVMN)
+            DRL=DVMX*RAT/(1.0-VFRC+VFRC*RAT)
+            VFR=VFRC*DRL
+            DVMN=VFR
+         END IF
+C
+C A reference magnitude is specified. If a reference length is 
+C specified, it becomes the length of the reference magnitude.
+C Otherwise the reference magnitude's length is proportional
+C to the default length assigned to the maximum magnitude.
+C The min magnitude length is then determined proportionally
+C to both these values.
+C
+      ELSE
+         IF (VMXL .GT. 0.0) THEN
+            DRL=VMXL*FW2W
+            DVMX=DRL*UVMX/VRMG
+            VFR=DRL*UVMN/VRMG
+            DVMN=VFR
+         ELSE
+            DRL=DVMX*VRMG/UVMX
+            VFR=DVMX*UVMN/UVMX
+            DVMN=VFR
+         END IF
+      END IF
+      IF (DVMX .GT. 2 *(XVPR - XVPL)) THEN
+         CSTR(1:36)='VVECTR - VECTOR NDC LENGTH TOO GREAT'
+         CALL SETER (CSTR(1:36),3,1)
+         RETURN
+      END IF
+      RLEN=DVMX*(WXMX-WXMN)/FW2W
+C
+C If the reference magnitude is greater than 0.0, the scale factors
+C are based on the reference magnitude; otherwise they are based on
+C the maximum magnitude.
 C Compute scale factors.
 C
-      SXDC=DVMX/UVMX
-      SYDC=DVMX/UVMX
+C      IF (VRMG .GT. 0.0 .AND. 
+C
+C     +     (VMXL .GT. 0.0 .OR. IAV .EQ. 1)) THEN
+C         SXDC=DVMX/VRMG
+C         SYDC=DVMX/VRMG
+C      ELSE
+         SXDC=DVMX/UVMX
+         SYDC=DVMX/UVMX
+C      END IF
+C
+C Set the scaling for the optional vector labels
+C
       IDP = IDPF
       IF (UVMN.NE.0.0 .AND. (ABS(UVMN).LT.0.1 .OR. ABS(UVMN).GE.1.E5))
      +    IDP = 1
@@ -292,21 +406,6 @@ C
       ASH = 1.0
       IF (IDP .NE. 0) ASH =
      +     10.**(3-IFIX(ALOG10(AMAX1(ABS(UVMN),ABS(UVMX)))-500.)-500)
-C
-C Set the vector adjustment flag and calculate the minimum vector 
-C adjustment value if required. Note the vector adjustment flag can
-C only be enabled if there is a non-uniform field.
-C
-      IF (UVMX - UVMN .LE. 0.0) THEN
-         DVMN = DVMX
-      ELSE IF (VFRC .GT. 0.0) THEN
-         VFRC = MIN(1.0, VFRC)
-         VFR=VFRC*DVMX
-         DVMN = VFR
-         IAV=1
-      ELSE
-         DVMN = DVMX * (UVMN / UVMX)
-      END IF
 C
 C Calculate the grid interval represented by adjacent array
 C elements along each axis
@@ -537,7 +636,9 @@ C
       IF (IZF .EQ. 0) THEN
 C
          IF (CMXT(1:1) .NE. ' ') THEN
-            IF (VHIM .LT. 0.0) THEN
+            IF (VRMG .GT. 0.0) THEN
+               CALL VVARTX(CMXT,IMXP,FMXX,FMXY,FMXS,IMXC,VRMG,DRL)
+            ELSE IF (VHIM .LT. 0.0) THEN
                CALL VVARTX(CMXT,IMXP,FMXX,FMXY,FMXS,IMXC,UVMX,DVMX)
             ELSE
                CALL VVARTX(CMXT,IMXP,FMXX,FMXY,FMXS,IMXC,VMX,RDMX)
@@ -632,7 +733,7 @@ C
 C IPLVLS - Maximum number of color threshold level values
 C IPAGMX - Maximum number of area groups allowed in the area map
 C
-      PARAMETER (IPLVLS = 64, IPAGMX = 64)
+      PARAMETER (IPLVLS = 256, IPAGMX = 64)
 C
 C Integer and real common block variables
 C
@@ -640,8 +741,8 @@ C
       COMMON /VVCOM/
      +                IUD1       ,IVD1       ,IPD1       ,IXDM       ,
      +                IYDN       ,VLOM       ,VHIM       ,ISET       ,
-     +                VMXL       ,VFRC       ,IXIN       ,IYIN       ,
-     +                ISVF       ,UUSV       ,UVSV       ,
+     +                VRMG       ,VMXL       ,VFRC       ,IXIN       ,
+     +                IYIN       ,ISVF       ,UUSV       ,UVSV       ,
      +                UPSV       ,IMSK       ,ICPM       ,UVPS       ,
      +                UVPL       ,UVPR       ,UVPB       ,UVPT       ,
      +                UWDL       ,UWDR       ,UWDB       ,UWDT       ,

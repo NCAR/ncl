@@ -1,5 +1,5 @@
 C
-C       $Id: vvdata.f,v 1.5 1993-12-03 21:27:22 kennison Exp $
+C       $Id: vvdata.f,v 1.6 1995-10-27 23:25:21 dbrown Exp $
 C
       BLOCK DATA VVDATA
 C
@@ -21,7 +21,7 @@ C
 C IPLVLS - Maximum number of color threshold level values
 C IPAGMX - Maximum number of area groups allowed in the area map
 C
-      PARAMETER (IPLVLS = 64, IPAGMX = 64)
+      PARAMETER (IPLVLS = 256, IPAGMX = 64)
 C
 C Integer and real common block variables
 C
@@ -29,8 +29,8 @@ C
       COMMON /VVCOM/
      +                IUD1       ,IVD1       ,IPD1       ,IXDM       ,
      +                IYDN       ,VLOM       ,VHIM       ,ISET       ,
-     +                VMXL       ,VFRC       ,IXIN       ,IYIN       ,
-     +                ISVF       ,UUSV       ,UVSV       ,
+     +                VRMG       ,VMXL       ,VFRC       ,IXIN       ,
+     +                IYIN       ,ISVF       ,UUSV       ,UVSV       ,
      +                UPSV       ,IMSK       ,ICPM       ,UVPS       ,
      +                UVPL       ,UVPR       ,UVPB       ,UVPT       ,
      +                UWDL       ,UWDR       ,UWDB       ,UWDT       ,

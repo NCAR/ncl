@@ -1,5 +1,5 @@
 C
-C       $Id: vvinit.f,v 1.8 1993-12-03 21:27:46 kennison Exp $
+C       $Id: vvinit.f,v 1.9 1995-10-27 23:25:24 dbrown Exp $
 C
 C-----------------------------------------------------------------------
 C
@@ -42,7 +42,7 @@ C
 C IPLVLS - Maximum number of color threshold level values
 C IPAGMX - Maximum number of area groups allowed in the area map
 C
-      PARAMETER (IPLVLS = 64, IPAGMX = 64)
+      PARAMETER (IPLVLS = 256, IPAGMX = 64)
 C
 C Integer and real common block variables
 C
@@ -50,8 +50,8 @@ C
       COMMON /VVCOM/
      +                IUD1       ,IVD1       ,IPD1       ,IXDM       ,
      +                IYDN       ,VLOM       ,VHIM       ,ISET       ,
-     +                VMXL       ,VFRC       ,IXIN       ,IYIN       ,
-     +                ISVF       ,UUSV       ,UVSV       ,
+     +                VRMG       ,VMXL       ,VFRC       ,IXIN       ,
+     +                IYIN       ,ISVF       ,UUSV       ,UVSV       ,
      +                UPSV       ,IMSK       ,ICPM       ,UVPS       ,
      +                UVPL       ,UVPR       ,UVPB       ,UVPT       ,
      +                UWDL       ,UWDR       ,UWDB       ,UWDT       ,
@@ -136,8 +136,8 @@ C
       IYDN=N
       IF (IXDM.GT.IUD1 .OR. IXDM.GT.IVD1) THEN
          CSTR(1:45)='VVINIT - U AND/OR V ARRAY DIMENSIONS EXCEEDED'
-         CALL SETER (CSTR(1:45),1,2)
-         STOP
+         CALL SETER (CSTR(1:45),1,1)
+         RETURN
       END IF
 C
 C Initialize and transfer some arguments to local variables.
@@ -344,8 +344,8 @@ C Check for error condition
 C
          IF (IPD1 .LT. IXDM) THEN
             CSTR(1:31)='VVINIT - SCALAR ARRAY TOO SMALL'
-            CALL SETER (CSTR(1:31),2,2)
-            STOP
+            CALL SETER (CSTR(1:31),2,1)
+            RETURN
          END IF
 C
 C Find the max and min scalar values when necessary

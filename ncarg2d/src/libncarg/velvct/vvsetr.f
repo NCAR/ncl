@@ -1,5 +1,5 @@
 C
-C       $Id: vvsetr.f,v 1.10 1993-12-03 21:28:05 kennison Exp $
+C       $Id: vvsetr.f,v 1.11 1995-10-27 23:25:26 dbrown Exp $
 C
 C
 C-----------------------------------------------------------------------
@@ -31,7 +31,7 @@ C
 C IPLVLS - Maximum number of color threshold level values
 C IPAGMX - Maximum number of area groups allowed in the area map
 C
-      PARAMETER (IPLVLS = 64, IPAGMX = 64)
+      PARAMETER (IPLVLS = 256, IPAGMX = 64)
 C
 C Integer and real common block variables
 C
@@ -39,8 +39,8 @@ C
       COMMON /VVCOM/
      +                IUD1       ,IVD1       ,IPD1       ,IXDM       ,
      +                IYDN       ,VLOM       ,VHIM       ,ISET       ,
-     +                VMXL       ,VFRC       ,IXIN       ,IYIN       ,
-     +                ISVF       ,UUSV       ,UVSV       ,
+     +                VRMG       ,VMXL       ,VFRC       ,IXIN       ,
+     +                IYIN       ,ISVF       ,UUSV       ,UVSV       ,
      +                UPSV       ,IMSK       ,ICPM       ,UVPS       ,
      +                UVPL       ,UVPR       ,UVPB       ,UVPT       ,
      +                UWDL       ,UWDR       ,UWDB       ,UWDT       ,
@@ -112,8 +112,8 @@ C
       IF (LEN(CNM).LT.3) THEN
         CSTR(1:46)='VVSETI OR VVSETR - PARAMETER NAME TOO SHORT - '
         CSTR(47:46+LEN(CNM))=CNM
-        CALL SETER (CSTR(1:46+LEN(CNM)),1,2)
-        STOP
+        CALL SETER (CSTR(1:46+LEN(CNM)),1,1)
+        RETURN
       END IF
 C
 C Check for incorrect use of the index parameter.
@@ -123,8 +123,8 @@ C
          IF (IPAI.LT.1.OR.IPAI.GT.IPLVLS) THEN
             CSTR(1:46)='VVSETI OR VVSETR - SETTING XXX - PAI INCORRECT'
             CSTR(28:30)=CNM(1:3)
-            CALL SETER (CSTR(1:46),2,2)
-            STOP
+            CALL SETER (CSTR(1:46),2,1)
+            RETURN
          END IF
       END IF
 C
@@ -148,6 +148,8 @@ C
          VHIM=RVL 
       ELSE IF (CNM(1:3).EQ.'SET'.OR. CNM(1:3).EQ.'set') THEN
          ISET=INT(RVL)
+      ELSE IF (CNM(1:3).EQ.'VRM'.OR. CNM(1:3).EQ.'vrm') THEN
+         VRMG=RVL
       ELSE IF (CNM(1:3).EQ.'VRL'.OR. CNM(1:3).EQ.'vrl') THEN
          VMXL=RVL
       ELSE IF (CNM(1:3).EQ.'VFR'.OR. CNM(1:3).EQ.'vfr') THEN
@@ -298,8 +300,8 @@ C
       ELSE
         CSTR(1:46)='VVSETI OR VVSETR - PARAMETER NAME NOT KNOWN - '
         CSTR(47:49)=CNM(1:3)
-        CALL SETER (CSTR(1:49),3,2)
-        STOP
+        CALL SETER (CSTR(1:49),3,1)
+        RETURN
       END IF
 C
       GOTO 9900
@@ -308,8 +310,8 @@ C
 C
       CSTR(1:50)='VVSETI OR VVSETR - PARAMETER VALUE OUT OF RANGE - '
       CSTR(51:53)=CNM(1:3)
-      CALL SETER (CSTR(1:53),4,2)
-      STOP
+      CALL SETER (CSTR(1:53),4,1)
+      RETURN
 C      
  9900 CONTINUE
 C

@@ -1,5 +1,5 @@
 C
-C       $Id: vvgetc.f,v 1.8 1993-12-03 21:27:34 kennison Exp $
+C       $Id: vvgetc.f,v 1.9 1995-10-27 23:25:23 dbrown Exp $
 C
 C
 C-----------------------------------------------------------------------
@@ -32,7 +32,7 @@ C
 C IPLVLS - Maximum number of color threshold level values
 C IPAGMX - Maximum number of area groups allowed in the area map
 C
-      PARAMETER (IPLVLS = 64, IPAGMX = 64)
+      PARAMETER (IPLVLS = 256, IPAGMX = 64)
 C
 C Integer and real common block variables
 C
@@ -40,8 +40,8 @@ C
       COMMON /VVCOM/
      +                IUD1       ,IVD1       ,IPD1       ,IXDM       ,
      +                IYDN       ,VLOM       ,VHIM       ,ISET       ,
-     +                VMXL       ,VFRC       ,IXIN       ,IYIN       ,
-     +                ISVF       ,UUSV       ,UVSV       ,
+     +                VRMG       ,VMXL       ,VFRC       ,IXIN       ,
+     +                IYIN       ,ISVF       ,UUSV       ,UVSV       ,
      +                UPSV       ,IMSK       ,ICPM       ,UVPS       ,
      +                UVPL       ,UVPR       ,UVPB       ,UVPT       ,
      +                UWDL       ,UWDR       ,UWDB       ,UWDT       ,
@@ -113,8 +113,8 @@ C
       IF (LEN(CNM).LT.3) THEN
         CSTR(1:36)='VVGETC - PARAMETER NAME TOO SHORT - '
         CSTR(37:36+LEN(CNM))=CNM
-        CALL SETER (CSTR(1:36+LEN(CNM)),1,2)
-      STOP
+        CALL SETER (CSTR(1:36+LEN(CNM)),1,1)
+        RETURN
       END IF
 C
 C Get the proper parameter.
@@ -135,8 +135,8 @@ C
 C
          CSTR(1:36)='VVGETC - PARAMETER NAME NOT KNOWN - '
          CSTR(37:39)=CNM(1:3)
-         CALL SETER (CSTR(1:39),2,2)
-         STOP
+         CALL SETER (CSTR(1:39),2,1)
+         RETURN
 C
       END IF
 C

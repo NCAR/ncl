@@ -1,5 +1,5 @@
 C
-C       $Id: vvdraw.f,v 1.5 1993-12-03 21:27:26 kennison Exp $
+C       $Id: vvdraw.f,v 1.6 1995-10-27 23:25:22 dbrown Exp $
 C
       SUBROUTINE VVDRAW (XB,YB,XE,YE,VLN,LBL,NC,IAM,VVUDMV,IDA)
 C
@@ -35,7 +35,7 @@ C
 C IPLVLS - Maximum number of color threshold level values
 C IPAGMX - Maximum number of area groups allowed in the area map
 C
-      PARAMETER (IPLVLS = 64, IPAGMX = 64)
+      PARAMETER (IPLVLS = 256, IPAGMX = 64)
 C
 C Integer and real common block variables
 C
@@ -43,8 +43,8 @@ C
       COMMON /VVCOM/
      +                IUD1       ,IVD1       ,IPD1       ,IXDM       ,
      +                IYDN       ,VLOM       ,VHIM       ,ISET       ,
-     +                VMXL       ,VFRC       ,IXIN       ,IYIN       ,
-     +                ISVF       ,UUSV       ,UVSV       ,
+     +                VRMG       ,VMXL       ,VFRC       ,IXIN       ,
+     +                IYIN       ,ISVF       ,UUSV       ,UVSV       ,
      +                UPSV       ,IMSK       ,ICPM       ,UVPS       ,
      +                UVPL       ,UVPR       ,UVPB       ,UVPT       ,
      +                UWDL       ,UWDR       ,UWDB       ,UWDT       ,
@@ -205,8 +205,7 @@ C
 C
          XC = CFUX(XC)
          YC = CFUY(YC)
-         CALL VVTXLN(LBL,10,IB,IE)
-         CALL PLCHLQ(XC,YC,LBL(IB:IE),FLBS*FW2W,PRTOD*PHI,0.0)
+         CALL PLCHLQ(XC,YC,LBL(1:NC),FLBS*FW2W,PRTOD*PHI,0.0)
 C
       END IF
 C

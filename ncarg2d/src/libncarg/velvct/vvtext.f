@@ -1,5 +1,5 @@
 C
-C       $Id: vvtext.f,v 1.7 1993-12-03 21:28:09 kennison Exp $
+C       $Id: vvtext.f,v 1.8 1995-10-27 23:25:26 dbrown Exp $
 C
 C This module contains four subroutines for text support of the
 C VELVCT utility. 
@@ -66,7 +66,7 @@ C
 C IPLVLS - Maximum number of color threshold level values
 C IPAGMX - Maximum number of area groups allowed in the area map
 C
-      PARAMETER (IPLVLS = 64, IPAGMX = 64)
+      PARAMETER (IPLVLS = 256, IPAGMX = 64)
 C
 C Integer and real common block variables
 C
@@ -74,8 +74,8 @@ C
       COMMON /VVCOM/
      +                IUD1       ,IVD1       ,IPD1       ,IXDM       ,
      +                IYDN       ,VLOM       ,VHIM       ,ISET       ,
-     +                VMXL       ,VFRC       ,IXIN       ,IYIN       ,
-     +                ISVF       ,UUSV       ,UVSV       ,
+     +                VRMG       ,VMXL       ,VFRC       ,IXIN       ,
+     +                IYIN       ,ISVF       ,UUSV       ,UVSV       ,
      +                UPSV       ,IMSK       ,ICPM       ,UVPS       ,
      +                UVPL       ,UVPR       ,UVPB       ,UVPT       ,
      +                UWDL       ,UWDR       ,UWDB       ,UWDT       ,
@@ -151,7 +151,7 @@ C will align properly), the space height is calculated as half the
 C remainder when the vector height is subtracted from a multiple
 C (PSPFC2) of the text height.
 C
-      PARAMETER (PSPFC1=0.15,PSPFC2=2.0)
+      PARAMETER (PSPFC1=0.5,PSPFC2=2.0)
       REAL IAR(4)
       INTEGER IDM
       DATA IDM / 0 /
@@ -189,8 +189,8 @@ C
          HA = 0.0
       ELSE
          C1 = HDSZ
-         IF (WA .LT. FAMN*FW2W) C1 = FAMN*FW2W*HDSZ/WA
-         IF (WA .GT. FAMX*FW2W) C1 = FAMX*FW2W*HDSZ/WA
+         IF (WA*C1 .LT. FAMN*FW2W) C1 = FAMN*FW2W/WA
+         IF (WA*C1 .GT. FAMX*FW2W) C1 = FAMX*FW2W/WA
          HA = 2.0*C1*WA*HSIN
       END IF
 C
