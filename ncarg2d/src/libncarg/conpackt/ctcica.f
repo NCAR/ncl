@@ -1,5 +1,5 @@
 C
-C $Id: ctcica.f,v 1.1 2003-05-28 15:44:28 kennison Exp $
+C $Id: ctcica.f,v 1.2 2004-01-27 20:48:31 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -164,8 +164,8 @@ C
 C
 C Compute some required tolerance values.
 C
-      TOL1=.0001*MIN(ABS(XVPR-XVPL),ABS(YVPT-YVPB))
-      TOL2=.5000*MIN(ABS(XVPR-XVPL),ABS(YVPT-YVPB))
+      TOL1=.00001*MIN(ABS(XVPR-XVPL),ABS(YVPT-YVPB))
+      TOL2=.50000*MIN(ABS(XVPR-XVPL),ABS(YVPT-YVPB))
 C
 C Initialize the cell array to contain the off-grid value of IAID.
 C
@@ -324,17 +324,11 @@ C
       FVA2=RPNT(IPP2+4)
       FVA3=RPNT(IPP3+4)
 C
-C Compute the lengths of the sides of the triangle and its area times 4.
+C Compute the lengths of the sides of the triangle.
 C
       DN12=SQRT(XD12**2+YD12**2)
       DN23=SQRT(XD23**2+YD23**2)
       DN31=SQRT(XD31**2+YD31**2)
-C
-      A123=HERO(DN12,DN23,DN31)
-C
-C Avoid dividing by zero.
-C
-      IF (A123.EQ.0.) GO TO 101
 C
 C Set loop limits so as to examine the center points of all cells of
 C the cell array that overlap the bounding box of the triangle.
@@ -370,9 +364,14 @@ C
             DNC1=SQRT((XCFC-XCF1)**2+(YCFC-YCF1)**2)
             DNC2=SQRT((XCFC-XCF2)**2+(YCFC-YCF2)**2)
             DNC3=SQRT((XCFC-XCF3)**2+(YCFC-YCF3)**2)
-            CALL CTGVAI ((FVA1*HERO(DN23,DNC2,DNC3)+
-     +                    FVA2*HERO(DN31,DNC3,DNC1)+
-     +                    FVA3*HERO(DN12,DNC1,DNC2))/A123,ICRA(I,J))
+            ATR1=HERO(DN23,DNC2,DNC3)
+            ATR2=HERO(DN31,DNC3,DNC1)
+            ATR3=HERO(DN12,DNC1,DNC2)
+            ATOT=ATR1+ATR2+ATR3
+            IF (ATOT.NE.0.) THEN
+              CALL CTGVAI ((ATR1*FVA1+ATR2*FVA2+ATR3*FVA3)/ATOT,
+     +                                                ICRA(I,J))
+            END IF
           END IF
 10006   CONTINUE
 10005 CONTINUE
