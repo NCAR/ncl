@@ -645,7 +645,7 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",(int) NclANY,NclANY);nargs++;
     dimsizes[0] = 1;
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
-    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
 
     NclRegisterFunc(eof_W,args,"eof",nargs);
 
@@ -659,7 +659,7 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",(int) NclANY,NclANY);nargs++;
     SetArgTemplate(args,nargs,"numeric",(int) NclANY,NclANY);nargs++;
     dimsizes[0] = 1;
-    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
 
     NclRegisterFunc(eof_ts_W,args,"eof_ts",nargs);
 /*
@@ -684,7 +684,7 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",(int) NclANY,NclANY);nargs++;
     dimsizes[0] = 1;
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
-    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
 
     NclRegisterFunc(eofcov_tr_W,args,"eofcov_tr",nargs);
 /*
@@ -5216,7 +5216,7 @@ void NclAddUserFuncs(void)
 /*
  *  Register attcreate.
  */
-	/*
+/*
     nargs = 0;
     args = NewArgs(4);
     dimsizes[0] = 1;
@@ -5225,7 +5225,7 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args, nargs, "graphic", 1, dimsizes);  nargs++;
     SetArgTemplate(args, nargs, "logical", 1, dimsizes);  nargs++;
     NclRegisterFunc(attcreate_W, args, "attcreate", nargs);
-	*/
+*/
 /*
  *  Register nice_mnmxintvl.
  */
