@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.1.1.1 1992-04-17 22:29:38 ncargd Exp $
+#	$Id: yMakefile,v 1.2 1992-09-23 22:49:56 don Exp $
 #
 NCARG	= ../../..
 
@@ -43,7 +43,7 @@ GRAPHCAPS = \
 all::
 
 install:: $(GRAPHCAPS)
-	@$(MV) $(GRAPHCAPS) $(GRAPHCAPDIR)
+	@$(MV) $(GRAPHCAPS) $(GRAPHCAPPATH)
 
 adm5:  adm5.gc
 	@echo "	Processing graphcap $@"
