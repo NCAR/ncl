@@ -1,5 +1,5 @@
 C
-C $Id: mapgrd.f,v 1.6 1994-12-06 00:50:30 kennison Exp $
+C $Id: mapgrd.f,v 1.7 1995-12-13 18:29:22 kennison Exp $
 C
       SUBROUTINE MAPGRD
 C
@@ -141,7 +141,7 @@ C
       RLAT=MAX(SLAT,-XLAT)
       XLAT=MIN(BLAT,XLAT)
       IF (IMF) THEN
-        DLAT=.25*(XLAT-RLAT)
+        DLAT=.2*(XLAT-RLAT)
       ELSE
         DLAT=(XLAT-RLAT)/CLING((XLAT-RLAT)/GRDR)
       END IF
@@ -150,8 +150,8 @@ C
   102 RLAT=RLAT+DLAT
       CALL MAPIT (RLAT,RLON,1)
       IF (ICFELL('MAPGRD',4).NE.0) RETURN
-      IF (RLAT.LT.XLAT-.9999) GO TO 102
-      IF (RLON.LT.XLON-.9999) GO TO 101
+      IF (RLAT.LT.XLAT-.5*DLAT) GO TO 102
+      IF (RLON.LT.XLON-.5*GRID) GO TO 101
 C
 C Round the latitude limits to appropriate multiples of GRID.
 C
@@ -183,7 +183,7 @@ C
       RLON=FLOOR(SLON)
       XLON=MIN(CLING(BLON),RLON+360.)
       IF (IPF) THEN
-        DLON=.25*(XLON-RLON)
+        DLON=.2*(XLON-RLON)
       ELSE
         DLON=(XLON-RLON)/CLING((XLON-RLON)/GRDR)
       END IF
@@ -192,8 +192,8 @@ C
   104 RLON=RLON+DLON
       CALL MAPIT (RLAT,RLON,1)
       IF (ICFELL('MAPGRD',8).NE.0) RETURN
-      IF (RLON.LT.XLON-.9999) GO TO 104
-      IF (XLAT.LT.BLAT-.9999) GO TO 103
+      IF (RLON.LT.XLON-.5*DLON) GO TO 104
+      IF (XLAT.LT.BLAT-.5*GRID) GO TO 103
 C
 C Restore the color index, dotting, and dash pattern.
 C
