@@ -1,6 +1,6 @@
 
 /*
- *      $Id: MultiDValMonoOpTemplate.c.sed,v 1.1 1994-07-14 20:46:09 ethan Exp $
+ *      $Id: MultiDValMonoOpTemplate.c.sed,v 1.2 1994-12-23 01:17:54 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -21,7 +21,7 @@
  *	Description:	
  */
 static NclData MultiDVal_DATATYPE_md_FUNCNAME
-#if __STDC__
+#if	NhlNeedProto
 (NclData self, NclData result)
 #else
 (self,result)
@@ -86,7 +86,7 @@ NclData result;
 	return((NclData)output_md);
 }
 static NclData MultiDVal_DATATYPE_s_FUNCNAME
-#if __STDC__
+#if	NhlNeedProto
 (NclData self, NclData result)
 #else
 (self,result)

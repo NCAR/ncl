@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: NclCoordVar.c,v 1.1 1994-12-22 01:46:27 ethan Exp $
+ *      $Id: NclCoordVar.c,v 1.2 1994-12-23 01:18:09 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -81,7 +81,7 @@ NclObjClass nclCoordVarClass = (NclObjClass)&nclCoordVarClassRec;
 
 
 struct _NclVarRec *_NclCoordVarCreate
-#if  __STDC__
+#if	NhlNeedProto
 (NclVar inst,
 NclObjClass theclass,
 NclObjTypes obj_type,

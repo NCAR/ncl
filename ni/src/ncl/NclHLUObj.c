@@ -8,14 +8,14 @@
 #include "NclHLUObj.h"
 #ifdef MAKEAPI
 extern void _NclAddToDelList(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 int /*id*/,
 NclQuark /*name*/,
 NhlLayerClass /*cl_ptr*/
 #endif
 );
 extern void _NclAddToNewList(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 int /*id*/,
 NclQuark /*name*/,
 NhlLayerClass /*cl_ptr*/
@@ -23,7 +23,7 @@ NhlLayerClass /*cl_ptr*/
 );
 #endif /*MAKEAPI*/
 static NhlErrorTypes HLUObjAddParent
-#if __STDC__
+#if	NhlNeedProto
 (NclObj theobj, NclObj parent)
 #else 
 (theobj, parent)
@@ -42,7 +42,7 @@ NclObj parent;
 }
 
 static NhlErrorTypes HLUObjDelParent
-#if __STDC__
+#if	NhlNeedProto
 (NclObj theobj, NclObj parent)
 #else 
 (theobj, parent)
@@ -88,7 +88,7 @@ NclObj parent;
 }
 
 static void HLUObjDestroy
-#if  __STDC__
+#if	NhlNeedProto
 (NclObj  self)
 #else
 (self)
@@ -128,12 +128,12 @@ static void HLUObjDestroy
 }
 
 static NhlErrorTypes DelHLUChild
-#if __STDC__
-(NclHLUObj self, int child_id)
+#if	NhlNeedProto
+(NclHLUObj self,  int child_id)
 #else
 (self, child_id)
 NclHLUObj self;
-NclQuark child_id;
+int child_id;
 #endif
 {
 	NclHLUChildList *step,*tmp;
@@ -163,12 +163,12 @@ NclQuark child_id;
 }
 
 static NhlErrorTypes AddHLUChild
-#if  __STDC__
+#if	NhlNeedProto
 (NclHLUObj self, int child_id)
 #else
 (self, child_id)
 NclHLUObj self;
-NclQuark child_id;
+int child_id;
 #endif
 {
 	NclHLUChildList *tmp;
@@ -206,7 +206,7 @@ NclObjClass nclHLUObjClass = (NclObjClass)&nclHLUObjClassRec;
 
 
 struct _NclHLUObjRec * _NclHLUObjCreate
-#if     __STDC__
+#if	NhlNeedProto
 (NclObj inst , NclObjClass theclass , NclObjTypes obj_type , unsigned int obj_type_mask, NclStatus status, int id,int parentid,NhlLayerClass class_ptr)
 #else
 (inst , theclass , obj_type ,obj_type_mask, status,id,parentid,class_ptr)

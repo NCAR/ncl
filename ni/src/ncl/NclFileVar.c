@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: NclFileVar.c,v 1.3 1994-07-27 20:30:28 ethan Exp $
+ *      $Id: NclFileVar.c,v 1.4 1994-12-23 01:18:23 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -123,7 +123,7 @@ char * 		/*dim_name */
 );
 
 static void	FileVarPrint
-#if  __STDC__
+#if	NhlNeedProto
 (NclObj theobj,FILE *fp)
 #else
 (theobj,fp)
@@ -195,7 +195,7 @@ NclObjClass nclFileVarClass = (NclObjClass)&nclFileVarClassRec;
 
 
 struct _NclVarRec *_NclFileVarCreate
-#if  __STDC__
+#if	NhlNeedProto
 (NclVar inst,
 NclObjClass theclass,
 NclObjTypes obj_type,
@@ -241,7 +241,7 @@ char *var_name)
 }
 
 static void FileVarDestroy
-#if  __STDC__
+#if	NhlNeedProto
 (struct _NclObjRec*	self)
 #else
 (self)
@@ -274,7 +274,7 @@ struct _NclObjRec*	self;
 
 
 static NhlErrorTypes FileVarWriteAtt
-#if	__STDC__
+#if	NhlNeedProto
 (struct _NclVarRec *self, char *attname, struct _NclMultiDValDataRec *value, struct _NclSelectionRecord *sel_ptr)
 #else
 (self, attname, value, sel_ptr)
@@ -301,7 +301,7 @@ struct _NclSelectionRecord *sel_ptr;
 }
 
 static struct _NclMultiDValDataRec *FileVarReadAtt
-#if	__STDC__
+#if	NhlNeedProto
 (struct _NclVarRec *self, char *attname, struct _NclSelectionRecord *sel_ptr)
 #else
 (self, attname, sel_ptr)
@@ -324,7 +324,7 @@ struct _NclSelectionRecord *sel_ptr;
 }
 
 static int FileVarIsAAtt
-#if  	__STDC__
+#if	NhlNeedProto
 (struct _NclVarRec * self, char* attname)
 #else
 (self, attname)
@@ -350,7 +350,7 @@ char* attname;
 }
 
 static int FileVarIsADim
-#if  __STDC__
+#if	NhlNeedProto
 (struct _NclVarRec * self, char * dimname)
 #else
 (self, dimname)
@@ -375,7 +375,7 @@ char * dimname;
 }
 
 static struct _NclMultiDValDataRec *FileVarReadDim
-#if  __STDC__
+#if	NhlNeedProto
 (struct _NclVarRec *self, char *dim_name, long dim_num)
 #else
 (self, dim_name, dim_num)
@@ -461,7 +461,7 @@ char *dim_name;
 }
 
 static int FileVarIsACoord
-#if  __STDC__
+#if	NhlNeedProto
 (struct _NclVarRec *self, char *coordname)
 #else
 (self, coordname)
@@ -488,7 +488,7 @@ char *coordname;
 }
 
 static struct _NclVarRec *FileVarReadCoord
-#if	__STDC__
+#if	NhlNeedProto
 (struct _NclVarRec *self, char *coord_name, struct _NclSelectionRecord *sel_ptr)
 #else
 (self, coord_name, sel_ptr)
@@ -511,7 +511,7 @@ struct _NclSelectionRecord *sel_ptr;
 }
 
 static NhlErrorTypes FileVarWriteCoord
-#if	__STDC__
+#if	NhlNeedProto
 (struct _NclVarRec *self, struct _NclMultiDValDataRec *value, char *coord_name, struct _NclSelectionRecord *sel_ptr)
 #else
 (self, value, coord_name, sel_ptr)

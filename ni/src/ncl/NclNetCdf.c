@@ -1,5 +1,5 @@
 /*
- *      $Id: NclNetCdf.c,v 1.8 1994-09-14 15:24:29 haley Exp $
+ *      $Id: NclNetCdf.c,v 1.9 1994-12-23 01:18:57 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -88,7 +88,7 @@ NetCdfAttInqRecList *file_atts;
 
 
 static NclBasicDataTypes NetMapToNcl 
-#if __STDC__
+#if	NhlNeedProto
 (void* the_type)
 #else
 (the_type)
@@ -114,7 +114,7 @@ static NclBasicDataTypes NetMapToNcl
 }
 
 static void *NetMapFromNcl
-#if __STDC__
+#if	NhlNeedProto
 (NclBasicDataTypes the_type)
 #else
 (the_type)
@@ -157,7 +157,7 @@ static void *NetMapFromNcl
 
 
 static void *NetGetFileRec
-#if  __STDC__
+#if	NhlNeedProto
 (NclQuark path,int wr_status)
 #else
 (path,wr_status)
@@ -282,7 +282,7 @@ int wr_status;
 }
 
 static void NetFreeFileRec
-#if __STDC__
+#if	NhlNeedProto
 (void* therec)
 #else
 (therec)
@@ -326,7 +326,7 @@ void *therec;
 }
 
 static NclQuark* NetGetVarNames
-#if __STDC__
+#if	NhlNeedProto
 (void* therec, int *num_vars)
 #else
 (therec, num_vars)
@@ -350,7 +350,7 @@ int *num_vars;
 }
 
 static NclFVarRec *NetGetVarInfo
-#if __STDC__
+#if	NhlNeedProto
 (void *therec, NclQuark var_name)
 #else
 (therec, var_name)
@@ -388,7 +388,7 @@ NclQuark var_name;
 }
 
 static NclQuark *NetGetDimNames
-#if __STDC__
+#if	NhlNeedProto
 (void* therec, int* num_dims)
 #else
 (therec,num_dims)
@@ -412,7 +412,7 @@ int *num_dims;
 }
 
 static NclFDimRec *NetGetDimInfo
-#if  __STDC__
+#if	NhlNeedProto
 (void* therec, NclQuark dim_name_q)
 #else
 (therec,dim_name_q)
@@ -438,7 +438,7 @@ NclQuark dim_name_q;
 	return(NULL);
 }
 static NclQuark *NetGetAttNames
-#if  __STDC__
+#if	NhlNeedProto
 (void* therec,int *num_atts)
 #else
 (therec,num_atts)
@@ -462,7 +462,7 @@ int *num_atts;
 }
 
 static NclFAttRec* NetGetAttInfo
-#if  __STDC__
+#if	NhlNeedProto
 (void* therec, NclQuark att_name_q)
 #else
 (therec, att_name_q)
@@ -499,7 +499,7 @@ NclQuark att_name_q;
 }
 
 static NclQuark *NetGetVarAttNames
-#if  __STDC__
+#if	NhlNeedProto
 (void *therec , NclQuark thevar, int* num_atts)
 #else
 (therec , thevar, num_atts)
@@ -533,7 +533,7 @@ int* num_atts;
 }
 
 static NclFAttRec *NetGetVarAttInfo
-#if  __STDC__
+#if	NhlNeedProto
 (void *therec, NclQuark thevar, NclQuark theatt)
 #else
 (therec, thevar, theatt)
@@ -578,7 +578,7 @@ NclQuark theatt;
 }
 
 static NclFVarRec *NetGetCoordInfo
-#if  __STDC__
+#if	NhlNeedProto
 (void* therec, NclQuark thevar)
 #else
 (therec, thevar)
@@ -591,7 +591,7 @@ NclQuark thevar;
 
 
 static void *NetReadVar
-#if __STDC__
+#if	NhlNeedProto
 (void* therec, NclQuark thevar, long* start, long* finish,long* stride,void* storage)
 #else
 (therec, thevar, start, finish,stride,storage)
@@ -665,7 +665,7 @@ void* storage;
 }
 
 static void *NetReadCoord
-#if __STDC__
+#if	NhlNeedProto
 (void* therec, NclQuark thevar, long* start, long* finish,long* stride,void* storage)
 #else
 (therec, thevar, start, finish,stride,storage)
@@ -682,7 +682,7 @@ void* storage;
 
 
 static void *NetReadAtt
-#if  __STDC__
+#if	NhlNeedProto
 (void *therec,NclQuark theatt,void* storage)
 #else
 (therec,theatt,storage)
@@ -725,7 +725,7 @@ void* storage;
 }
 
 static void *NetReadVarAtt
-#if __STDC__
+#if	NhlNeedProto
 (void * therec, NclQuark thevar, NclQuark theatt, void * storage)
 #else
 (therec, thevar, theatt, storage)
@@ -783,7 +783,7 @@ void* storage;
 	return(NULL);
 }
 static NhlErrorTypes NetWriteVar
-#if  __STDC__
+#if	NhlNeedProto
 (void * therec, NclQuark thevar, void *data, long* start, long *finish,long *stride)
 #else
 (therec, thevar, data, start, finish,stride)
@@ -859,7 +859,7 @@ long *stride;
 	
 }
 static NhlErrorTypes NetWriteCoord
-#if __STDC__
+#if	NhlNeedProto
 (void *therec, NclQuark thevar, void* data, long* start, long* finish,long* stride)
 #else
 (therec, thevar, data, start, finish,stride)
@@ -876,7 +876,7 @@ long* stride;
 
 
 static NhlErrorTypes NetWriteAtt
-#if  __STDC__
+#if	NhlNeedProto
 (void *therec, NclQuark theatt, void *data )
 #else
 (therec, theatt, data )
@@ -931,7 +931,7 @@ void *data;
 }
 
 static NhlErrorTypes NetWriteVarAtt 
-#if __STDC__
+#if	NhlNeedProto
 (void *therec, NclQuark thevar, NclQuark theatt, void* data)
 #else
 (therec,thevar, theatt,  data )
@@ -996,7 +996,7 @@ void* data;
 }
 
 static NhlErrorTypes NetAddDim
-#if  __STDC__
+#if	NhlNeedProto
 (void* therec, NclQuark thedim, int size)
 #else
 (therec, thedim, size)
@@ -1054,7 +1054,7 @@ int size;
 }
 
 static NhlErrorTypes NetAddVar
-#if __STDC__
+#if	NhlNeedProto
 (void* therec, NclQuark thevar, NclBasicDataTypes data_type, int n_dims,NclQuark *dim_names, long* dim_sizes)
 #else
 (therec,thevar,data_type,n_dims,dim_names,dim_sizes)
@@ -1151,7 +1151,7 @@ long* dim_sizes;
 }
 
 static NhlErrorTypes NetAddCoordVar
-#if __STDC__
+#if	NhlNeedProto
 (void *therec, NclQuark thevar,NclBasicDataTypes data_type)
 #else
 (therec,thevar,data_type)
@@ -1232,7 +1232,7 @@ NclBasicDataTypes data_type;
 }
 
 static NhlErrorTypes NetRenameDim
-#if __STDC__
+#if	NhlNeedProto
 (void* therec, NclQuark from, NclQuark to)
 #else
 (therec, from, to)
@@ -1270,7 +1270,7 @@ NclQuark to;
 }
 
 static NhlErrorTypes NetAddAtt
-#if __STDC__
+#if	NhlNeedProto
 (void *therec,NclQuark theatt, NclBasicDataTypes data_type, int n_items, void * values)
 #else
 (therec,theatt,data_type,n_items,values)
@@ -1336,7 +1336,7 @@ static NhlErrorTypes NetAddAtt
 }
 
 static NhlErrorTypes NetAddVarAtt
-#if __STDC__
+#if	NhlNeedProto
 (void *therec,NclQuark thevar, NclQuark theatt, NclBasicDataTypes data_type, int n_items, void * values)
 #else
 (therec,thevar,theatt,data_type,n_items,values)
@@ -1446,7 +1446,7 @@ NclFormatFunctionRec NetCdfRec = {
 /* NclMapNclTypeToFormat   map_ncl_type_to_format; */	NetMapFromNcl
 };
 NclFormatFunctionRecPtr NetCdfAddFileFormat 
-#if  __STDC__
+#if	NhlNeedProto
 (void)
 #else 
 ()

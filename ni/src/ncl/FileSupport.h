@@ -1,5 +1,5 @@
 /*
- *      $Id: FileSupport.h,v 1.1 1994-07-14 20:45:51 ethan Exp $
+ *      $Id: FileSupport.h,v 1.2 1994-12-23 01:17:29 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -45,14 +45,14 @@ char * /*dim_name*/
 );
 
 extern NclObjTypes _NclFileVarRepValue(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NclFile /* thefile */,
 NclQuark /* var */
 #endif
 );
 
 extern struct _NclMultiDValDataRec* _NclFileVarCoerce(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NclFile /* thefile */,
 NclQuark /* var */,
 NclObjTypes             /*coerce_to_obj*/,
@@ -61,14 +61,14 @@ NclScalar *             /*new_missing*/
 );
 
 extern int _NclFileIsVar(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NclFile /*thefile */,
 NclQuark /* name */
 #endif
 );
 
 extern NhlErrorTypes _NclFileWriteVar(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NclFile /*thefile */,
 NclQuark /*var_name*/,
 struct _NclMultiDValDataRec * /* value */,
@@ -77,7 +77,7 @@ struct _NclSelectionRecord * /* sel_ptr */
 );
 
 extern NhlErrorTypes _NclFileWriteVarVar(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NclFile /*thefile */,
 NclQuark /*lhs_var_name*/,
 struct _NclSelectionRecord * /* lhs_sel_ptr */,
@@ -87,7 +87,7 @@ struct _NclSelectionRecord * /* rhs_sel_ptr */
 );
 
 extern struct _NclVarRec *_NclFileReadVar(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NclFile /*thefile*/,
 NclQuark /* var_name */,
 struct _NclSelectionRecord * /*sel_ptr*/
@@ -95,7 +95,7 @@ struct _NclSelectionRecord * /*sel_ptr*/
 );
 
 extern struct _NclMultiDValDataRec *_NclFileReadVarValue(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NclFile /*thefile*/,
 NclQuark /*var_name */,
 struct _NclSelectionRecord * /*sel_ptr*/
@@ -103,14 +103,14 @@ struct _NclSelectionRecord * /*sel_ptr*/
 );
 
 extern int _NclFileIsAtt(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NclFile /*thefile */,
 NclQuark /* name */
 #endif
 );
 
 extern struct _NclMultiDValDataRec* _NclFileReadAtt(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NclFile /* thefile */,
 NclQuark /* attname */,
 struct _NclSelectionRecord* /* sel_ptr*/
@@ -118,7 +118,7 @@ struct _NclSelectionRecord* /* sel_ptr*/
 );
 
 extern NhlErrorTypes _NclFileWriteAtt(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NclFile /*thefile;*/,
 NclQuark  /*attname;*/,
 struct _NclMultiDValDataRec*  /*value;*/,
@@ -127,7 +127,7 @@ struct _NclSelectionRecord * /*sel_ptr;*/
 );
 
 extern int _NclFileIsVarAtt(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NclFile /*file*/,
 NclQuark /* var */,
 NclQuark /* attname*/
@@ -135,7 +135,7 @@ NclQuark /* attname*/
 );
 
 extern struct _NclMultiDValDataRec *_NclFileReadVarAtt(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NclFile /* thefile */,
 NclQuark /* var */,
 NclQuark /* attname */,
@@ -144,7 +144,7 @@ struct _NclSelectionRecord* /*sel_ptr*/
 );
 
 extern NhlErrorTypes _NclFileWriteVarAtt(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NclFile /* thefile */,
 NclQuark /* var */,
 NclQuark /* attname */,
@@ -154,7 +154,7 @@ struct _NclSelectionRecord* /* sel_ptr*/
 );
 
 extern int _NclFileVarIsDim(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NclFile /*thefile */,
 NclQuark /* var*/,
 NclQuark /* dimname */
@@ -162,14 +162,14 @@ NclQuark /* dimname */
 );
 
 extern int _NclFileIsDim(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NclFile /*thefile */,
 NclQuark /* dimname */
 #endif
 );
 
 extern struct _NclMultiDValDataRec *_NclFileReadDim(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NclFile /*thefile*/,
 NclQuark /*dim_name*/,
 long /*dim_num*/
@@ -177,7 +177,7 @@ long /*dim_num*/
 );
 
 extern NhlErrorTypes _NclFileWriteDim(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NclFile /*thefile*/,
 NclQuark /*dim_name*/,
 long /*dim_num */
@@ -185,7 +185,7 @@ long /*dim_num */
 );
 
 extern struct _NclMultiDValDataRec *_NclFileVarReadDim(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NclFile /*thefile*/,
 NclQuark /*var_name */,
 NclQuark /*dim_name*/,
@@ -194,7 +194,7 @@ long /*dim_num*/
 );
 
 extern NhlErrorTypes _NclFileVarWriteDim(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NclFile /*thefile*/,
 NclQuark /* var_name */,
 NclQuark /*dim_name*/,
@@ -203,14 +203,14 @@ long /*dim_num */
 );
 
 extern int _NclFileVarIsCoord(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NclFile /*thefile */,
 NclQuark /*coord_name */
 #endif
 );
 
 extern struct _NclVarRec *_NclFileReadCoord(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NclFile /* thefile */,
 NclQuark /* coord_name */,
 struct _NclSelectionRecord* /* sel_ptr */
@@ -218,7 +218,7 @@ struct _NclSelectionRecord* /* sel_ptr */
 );
 
 extern NhlErrorTypes _NclFileWriteCoord(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NclFile /* thefile */,
 NclQuark /* coord_name */,
 struct _NclMultiDValDataRec* /*value*/,

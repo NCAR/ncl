@@ -1,6 +1,6 @@
 
 /*
- *      $Id: string_ops.c.sed,v 1.5 1994-10-29 00:58:18 ethan Exp $
+ *      $Id: string_ops.c.sed,v 1.6 1994-12-23 01:19:31 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -36,20 +36,20 @@
 
 
 static void NclMultiDValstringPrint(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NclObj  /* self */,
 	FILE *	/*fp*/
 #endif
 );
 static void MultiDValDestroy(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NclObj	self
 #endif
 );
 /* 0 on match, non zero on non-match just like real strcmp */
 /*
 static int my_strcmp
-#if  __STDC__
+#if	NhlNeedProto
 (string s1,string s2)
 #else 
 (s1,s2)
@@ -68,7 +68,7 @@ string s2;
 */
 
 static string combine_strings
-#if  __STDC__
+#if	NhlNeedProto
 (string ls,string rs,string mis_ls, string mis_rs,string mis)
 #else
 (ls,rs,mis_ls,mis_rs,mis)
@@ -106,7 +106,7 @@ string mis;
 }
 
 static string select_string_lt
-#if  __STDC__
+#if	NhlNeedProto
 (string ls,string rs,string mis_ls, string mis_rs,string mis)
 #else
 (ls,rs,mis_ls,mis_rs,mis)
@@ -157,7 +157,7 @@ string mis;
 	}
 }
 static string select_string_gt
-#if  __STDC__
+#if	NhlNeedProto
 (string ls,string rs,string mis_ls, string mis_rs,string mis)
 #else
 (ls,rs,mis_ls,mis_rs,mis)
@@ -207,7 +207,7 @@ string mis;
 	}
 }
 static int cmp_string_lt
-#if  __STDC__
+#if	NhlNeedProto
 (string ls,string rs)
 #else
 (ls,rs)
@@ -249,7 +249,7 @@ string rs;
 }
 
 static int cmp_string_gt
-#if  __STDC__
+#if	NhlNeedProto
 (string ls,string rs)
 #else
 (ls,rs)
@@ -291,7 +291,7 @@ string rs;
 }
 
 static int cmp_string_le
-#if  __STDC__
+#if	NhlNeedProto
 (string ls,string rs)
 #else
 (ls,rs)
@@ -332,7 +332,7 @@ string rs;
 	}
 }
 static int cmp_string_ge
-#if  __STDC__
+#if	NhlNeedProto
 (string ls,string rs)
 #else
 (ls,rs)
@@ -376,7 +376,7 @@ string rs;
 INSERTTMPSTRING
 
 static NclData NclMultiDValstringDup
-#if  __STDC__
+#if	NhlNeedProto
 (NclData self,NclScalar *new_missing)
 #else
 (self,new_missing)
@@ -421,7 +421,7 @@ NclScalar *new_missing;
 		NULL));
 }
 static NclData MultiDVal_string_mdmd_Plus
-#if __STDC__
+#if	NhlNeedProto
 (NclData self, NclData other, NclData result)
 #else
 (self,other,result)
@@ -526,7 +526,7 @@ NclData result;
 	return((NclData)output_md);
 }
 static NclData MultiDVal_string_mds_Plus
-#if __STDC__
+#if	NhlNeedProto
 (NclData self, NclData other, NclData result)
 #else
 (self,other,result)
@@ -635,7 +635,7 @@ NclData result;
 	return((NclData)output_md);
 } 
 static NclData MultiDVal_string_smd_Plus
-#if __STDC__
+#if	NhlNeedProto
 (NclData self, NclData other, NclData result)
 #else
 (self,other,result)
@@ -740,7 +740,7 @@ NclData result;
 	return((NclData)output_md);
 } 
 static NclData MultiDVal_string_ss_Plus
-#if __STDC__
+#if	NhlNeedProto
 (NclData self, NclData other, NclData result)
 #else
 (self,other,result)
@@ -826,7 +826,7 @@ NclData result;
 } 
 
 static NclData MultiDVal_string_mdmd_Eq
-#if __STDC__
+#if	NhlNeedProto
 (NclData self, NclData other, NclData result)
 #else
 (self,other,result)
@@ -929,7 +929,7 @@ NclData result;
 	return((NclData)output_md);
 }
 static NclData MultiDVal_string_mds_Eq
-#if __STDC__
+#if	NhlNeedProto
 (NclData self, NclData other, NclData result)
 #else
 (self,other,result)
@@ -1031,7 +1031,7 @@ NclData result;
 	return((NclData)output_md);
 } 
 static NclData MultiDVal_string_smd_Eq
-#if __STDC__
+#if	NhlNeedProto
 (NclData self, NclData other, NclData result)
 #else
 (self,other,result)
@@ -1133,7 +1133,7 @@ NclData result;
 	return((NclData)output_md);
 } 
 static NclData MultiDVal_string_ss_Eq
-#if __STDC__
+#if	NhlNeedProto
 (NclData self, NclData other, NclData result)
 #else
 (self,other,result)
@@ -1222,7 +1222,7 @@ NclData result;
 	return((NclData)output_md);
 } 
 static NclData MultiDVal_string_mdmd_Ne
-#if __STDC__
+#if	NhlNeedProto
 (NclData self, NclData other, NclData result)
 #else
 (self,other,result)
@@ -1325,7 +1325,7 @@ NclData result;
 	return((NclData)output_md);
 }
 static NclData MultiDVal_string_mds_Ne
-#if __STDC__
+#if	NhlNeedProto
 (NclData self, NclData other, NclData result)
 #else
 (self,other,result)
@@ -1427,7 +1427,7 @@ NclData result;
 	return((NclData)output_md);
 } 
 static NclData MultiDVal_string_smd_Ne
-#if __STDC__
+#if	NhlNeedProto
 (NclData self, NclData other, NclData result)
 #else
 (self,other,result)
@@ -1529,7 +1529,7 @@ NclData result;
 	return((NclData)output_md);
 } 
 static NclData MultiDVal_string_ss_Ne
-#if __STDC__
+#if	NhlNeedProto
 (NclData self, NclData other, NclData result)
 #else
 (self,other,result)
@@ -1775,7 +1775,7 @@ NclObjClass nclMultiDValstringDataClass = (NclObjClass)&nclMultiDValstringDataCl
 
 
 NclMultiDValData _NclMultiDValstringCreate
-#if __STDC__
+#if	NhlNeedProto
 (NclObj inst,NclObjClass theclass,NclObjTypes obj_type,unsigned int obj_type_mask,void *val,NclScalar *missing_value,int n_dims, int *dim_sizes,NclStatus status,NclSelectionRecord *sel_rec)
 #else
 (inst,theclass,obj_type,obj_type_mask,val,missing_value,n_dims,dim_sizes,status,sel_rec)
@@ -1857,7 +1857,7 @@ NclSelectionRecord *sel_rec;
 }
 
 static void NclMultiDValstringPrint
-#if __STDC__
+#if	NhlNeedProto
 (NclObj self, FILE *fp)
 #else 
 (self,fp)
@@ -1906,7 +1906,7 @@ FILE *fp;
 }
 
 static void MultiDValDestroy
-#if  __STDC__
+#if	NhlNeedProto
 (NclObj	self)
 #else
 (self)

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: AddBuiltIns.c,v 1.5 1994-07-14 20:45:31 ethan Exp $
+ *      $Id: AddBuiltIns.c,v 1.6 1994-12-23 01:17:08 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -30,7 +30,7 @@ extern "C" {
 
 
 void _NclAddBuiltIns
-#if  __STDC__
+#if	NhlNeedProto
 (void)
 #else 
 ()

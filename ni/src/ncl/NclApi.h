@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclApi.h,v 1.5 1994-11-10 20:59:30 ethan Exp $
+ *      $Id: NclApi.h,v 1.6 1994-12-23 01:18:06 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -31,44 +31,44 @@ extern "C" {
 #define NCLAPI_DEL_TMP_VAR "delete(__N_C_L__T_M_P__)"
 
 extern int NclInitServer(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NhlErrorTypes /*error_level*/
 #endif
 );
 
 extern void NclCloseServer(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void
 #endif
 );
 
 extern int NclSubmitBlock1(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	char *	/*script*/,
 	int	/*script_size*/
 #endif
 );
 
 extern int NclSubmitBlock2(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	char *script[]
 #endif
 );
 
 extern int NclSubmitCommand(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	char * /*command*/
 #endif
 );
 
 extern void NclPrintErrorMsgs(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	void
 #endif
 );
 
 extern int NclGetErrorId(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void
 #endif
 );

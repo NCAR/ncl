@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValfloatData.c.specific,v 1.4 1994-11-07 15:07:48 boote Exp $
+ *      $Id: NclMultiDValfloatData.c.specific,v 1.5 1994-12-23 01:18:43 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -25,7 +25,7 @@
 #include "NclMultiDVallogicalData.h"
 
 static struct _NclDataRec *MultiDVal_float_md_Coerce
-#if  __STDC__
+#if	NhlNeedProto
 (NclData self,NclObjTypes coerce_to_obj,NclScalar *new_missing)
 #else
 (self,coerce_to_obj,new_missing)
@@ -134,7 +134,7 @@ static struct _NclDataRec *MultiDVal_float_md_Coerce
 	}
 }
 static struct _NclDataRec *MultiDVal_float_s_Coerce
-#if  __STDC__
+#if	NhlNeedProto
 (NclData self,NclObjTypes coerce_to_obj,NclScalar *new_missing)
 #else
 (self,coerce_to_obj,new_missing)

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDVallongData.c.specific,v 1.5 1994-12-21 01:57:07 ethan Exp $
+ *      $Id: NclMultiDVallongData.c.specific,v 1.6 1994-12-23 01:18:49 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -27,7 +27,7 @@
 #include "NclMultiDValintData.h"
 
 static struct _NclDataRec *MultiDVal_long_md_Coerce
-#if  __STDC__
+#if	NhlNeedProto
 (NclData self,NclObjTypes coerce_to_obj,NclScalar *new_missing)
 #else
 (self,coerce_to_obj,new_missing)
@@ -206,7 +206,7 @@ static struct _NclDataRec *MultiDVal_long_md_Coerce
 	}
 }
 static struct _NclDataRec *MultiDVal_long_s_Coerce
-#if  __STDC__
+#if	NhlNeedProto
 (NclData self,NclObjTypes coerce_to_obj,NclScalar *new_missing)
 #else
 (self,coerce_to_obj,new_missing)

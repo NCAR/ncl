@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: NclHLUVar.c,v 1.1 1994-10-29 00:57:45 ethan Exp $
+ *      $Id: NclHLUVar.c,v 1.2 1994-12-23 01:18:28 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -81,7 +81,7 @@ NclObjClass nclHLUVarClass = (NclObjClass)&nclHLUVarClassRec;
 
 
 struct _NclVarRec *_NclHLUVarCreate
-#if  __STDC__
+#if	NhlNeedProto
 (NclVar inst,
 NclObjClass theclass,
 NclObjTypes obj_type,

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.h,v 1.14 1994-12-22 01:42:21 ethan Exp $
+ *      $Id: Machine.h,v 1.15 1994-12-23 01:17:42 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -148,46 +148,38 @@ NclExecuteReturnStatus _NclExecute(
 #endif
 );
 extern NhlErrorTypes _NclPush(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NclStackEntry /*data*/
 #endif
 );
 
 extern NclStackEntry _NclPop(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void 
 #endif
 );
 
 extern void _NclResetMachine(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void
 #endif
 );
 
 extern NhlErrorTypes _NclInitMachine(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void
 #endif
 );
-
 extern int _NclPutIntInstr(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 int /* val */,
-int	/* line */,
-char * /* file*/
-#endif
-);
-extern int _NclPutRealInstr(
-#ifdef NhlNeedProto
-float /* val */,
 int	/* line */,
 char * /* file*/
 #endif
 );
 
 extern int _NclPutInstr(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NclValue /*val*/,
 int	/* line */,
 char * /* file*/
@@ -195,13 +187,13 @@ char * /* file*/
 );
 
 extern int _NclGetCurrentOffset(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void
 #endif
 );
 
 extern int _NclPutInstrAt(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 int 	/* offset */,
 NclValue /*val*/,
 int	/* line */,
@@ -210,7 +202,7 @@ char * /* file*/
 );
 
 extern void _NclPrintMachine(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 int	/* from */,
 int	/* to */,
 FILE*	/* fp */
@@ -218,57 +210,57 @@ FILE*	/* fp */
 );
 
 extern void _NclNewMachine(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void
 #endif
 );
 
 extern void *_NclPopMachine(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void
 #endif
 );
 
 extern void _NclPushMachine(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void * /*the_mach_rec */
 #endif
 );
 
 extern int _NclGetCurrentOffset(
-#ifdef NhlNeedProto 
+#if	NhlNeedProto
 void
 #endif
 );
 
 
 extern NclValue *_NclGetCurrentMachine(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void
 #endif
 );
 
 extern int *_NclGetCurrentLineRec(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void
 #endif
 );
 
 extern char **_NclGetCurrentFileNameRec(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void
 #endif
 );
 
 extern NclStackEntry _NclGetArg(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 int  /*arg_num*/,
 int  /*total_arg*/
 #endif
 );
 
 extern NhlErrorTypes _NclPutArg(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NclStackEntry /* data */,
 int  /*arg_num*/,
 int  /*total_arg*/
@@ -276,21 +268,21 @@ int  /*total_arg*/
 );
 
 extern NclStackEntry *_NclPeek(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 int  /*offset*/
 #endif
 );
 
 
 extern NhlErrorTypes _NclPutRec(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NclSymbol * /*n_items*/,
 NclStackEntry * /*therec*/
 #endif
 );
 
 extern NhlErrorTypes _NclPutLevel1Var(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 int	/*offset*/,
 NclStackEntry * /*therec*/
 #endif
@@ -299,52 +291,52 @@ NclStackEntry * /*therec*/
 #define WRITE_IT  1
 #define READ_IT	2
 extern NclStackEntry *_NclRetrieveRec(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NclSymbol * /*n_items*/,
 int 	/*access_type*/
 #endif
 );
 
 extern NclStackEntry *_NclGetLevel1Var(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 int	/*offset*/
 #endif
 );
 
 extern void *_NclLeaveFrame(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 int /* caller_level */
 #endif
 );
 
 extern NhlErrorTypes _NclPushFrame(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 struct _NclSymbol * /* thesym*/,
 unsigned long /* offset */
 #endif
 );
 
 extern void _NclPopFrame(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 int /*popping_from*/
 #endif
 );
 
 extern int _NclFinishFrame(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void
 #endif
 );
 
 extern void _NclAddObjToParamList(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 struct _NclObjRec * /* obj */,
 int /* arg_num */
 #endif
 );
 
 extern void _NclRemapParameters(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 int /* nargs*/,
 int /* cur_off */,
 void * /*previous_fp*/,
@@ -353,7 +345,7 @@ int /* from */
 );
 
 extern void _NclRemapIntrParameters(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 int /*nargs*/,
 void * /*previous_fp*/,
 int /*from*/
@@ -361,33 +353,41 @@ int /*from*/
 );
 
 extern void _NclDumpStack(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 FILE * /*fp*/,
 int /*off*/
 #endif
 );
 
 extern NhlErrorTypes _NclPlaceReturn(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 struct _NclStackEntry data
 #endif
 );
 
 extern void _NclCleanUpStack(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 int /*n*/
 #endif
 );
 
 extern void _NclAbortFrame(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void
 #endif
 );
 
 extern void _NclClearToStackBase(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void
+#endif
+);
+
+extern int _NclPutRealInstr(
+#if	NhlNeedProto
+float	/*val*/,
+int	/* line */,
+char * /*file*/
 #endif
 );
 #ifdef __cplusplus

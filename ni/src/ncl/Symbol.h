@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Symbol.h,v 1.12 1994-11-07 03:02:27 ethan Exp $
+ *      $Id: Symbol.h,v 1.13 1994-12-23 01:19:17 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -148,14 +148,14 @@ typedef struct _NclSymTableListNode {
 
 
 extern NclSymbol *_NclLookUpInScope(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NclSymTableListNode	* /*thetable*/,
 char			* /*name*/
 #endif
 );
 
 extern NclSymbol *_NclAddInScope(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NclSymTableListNode     * /*thetable*/,
 	char			* /* name */,
 	int			  /* type */
@@ -163,96 +163,96 @@ extern NclSymbol *_NclAddInScope(
 );
 
 extern void _NclDeleteSymInScope(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NclSymTableListNode * /*thetable*/,
 NclSymbol * /*sym*/
 #endif
 );
 
 extern NclSymbol *_NclLookUp(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 char  * /* name */
 #endif
 );
 
 extern NclSymbol *_NclAddSym(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 char * /* name */,
 int  /* type */
 #endif
 );
 
 extern NclSymbol *_NclAddUniqueSym(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 char * /*name */,
 int /* type */
 #endif
 );
 
 extern void _NclDeleteSym(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NclSymbol * /*sym*/
 #endif
 );
 
 extern int _NclInitSymbol (
-#ifdef NhlNeedProto 
+#if	NhlNeedProto
 void 
 #endif
 );
 
 extern int _NclNewScope(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void
 #endif
 );
 
 extern NclSymTableListNode *_NclPopScope(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void
 #endif
 );
 
 extern void _NclPrintSymbol(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NclSymbol * /*sym*/,
 FILE  * /*fp*/
 #endif
 );
 
 extern NclSymbol *_NclChangeSymbolType(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NclSymbol * /*thesym*/,
 int	/* type */
 #endif
 );
 
 extern int _NclGetCurrentScopeLevel(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void
 #endif
 );
 
 void _NclResetNewSymStack(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void
 #endif
 );
 
 void _NclDeleteNewSymStack(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void
 #endif
 );
 
 void _NclAddIntrinsics(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void
 #endif
 );
 
 void _NclAddBuiltIns(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void
 #endif
 );
@@ -262,20 +262,20 @@ char * /* var_name */
 #endif
 );
 void _NclAddHLUObjs(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void
 #endif
 );
 
 struct _NhlLayerClassRec* _NclGetClassPtr(
-#ifdef  NhlNeedProto
+#if	NhlNeedProto
 int /* class_q */
 #endif
 );
 
 
 void _NclRegisterFunc(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NclBuiltInFuncWrapper /* thefunctptr */,
 NclArgTemplate *      /* args */,
 char *                /* fname */,
@@ -285,7 +285,7 @@ int 		      /* ftype */
 );
 
 void _NclRegisterProc(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NclBuiltInProcWrapper /* theproctptr */,
 NclArgTemplate *      /* args */,
 char *                /* fname */,

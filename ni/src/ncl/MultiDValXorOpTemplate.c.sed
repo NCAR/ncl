@@ -1,6 +1,6 @@
 
 /*
- *      $Id: MultiDValXorOpTemplate.c.sed,v 1.1 1994-07-14 20:46:18 ethan Exp $
+ *      $Id: MultiDValXorOpTemplate.c.sed,v 1.2 1994-12-23 01:18:02 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -21,7 +21,7 @@
  *	Description:	
  */
 static NclData MultiDVal_DATATYPE_mdmd_FUNCNAME
-#if __STDC__
+#if	NhlNeedProto
 (NclData self, NclData other, NclData result)
 #else
 (self,other,result)
@@ -128,7 +128,7 @@ NclData result;
 	return((NclData)output_md);
 }
 static NclData MultiDVal_DATATYPE_mds_FUNCNAME
-#if __STDC__
+#if	NhlNeedProto
 (NclData self, NclData other, NclData result)
 #else
 (self,other,result)
@@ -234,7 +234,7 @@ NclData result;
 	return((NclData)output_md);
 } 
 static NclData MultiDVal_DATATYPE_smd_FUNCNAME
-#if __STDC__
+#if	NhlNeedProto
 (NclData self, NclData other, NclData result)
 #else
 (self,other,result)
@@ -340,7 +340,7 @@ NclData result;
 	return((NclData)output_md);
 } 
 static NclData MultiDVal_DATATYPE_ss_FUNCNAME
-#if __STDC__
+#if	NhlNeedProto
 (NclData self, NclData other, NclData result)
 #else
 (self,other,result)

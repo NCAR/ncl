@@ -1,6 +1,6 @@
 
 /*
- *      $Id: MultiDValFunctionOpTemplate.c.sed,v 1.2 1994-09-01 17:41:21 ethan Exp $
+ *      $Id: MultiDValFunctionOpTemplate.c.sed,v 1.3 1994-12-23 01:17:48 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -23,7 +23,7 @@
 #include <INCLUDE.h>
 
 static NclData MultiDVal_DATATYPE_mdmd_FUNCNAME
-#if __STDC__
+#if	NhlNeedProto
 (NclData self, NclData other, NclData result)
 #else
 (self,other,result)
@@ -135,7 +135,7 @@ NclData result;
 }
 
 static NclData MultiDVal_DATATYPE_mds_FUNCNAME
-#if __STDC__
+#if	NhlNeedProto
 (NclData self, NclData other, NclData result)
 #else
 (self,other,result)
@@ -240,7 +240,7 @@ NclData result;
 } 
 
 static NclData MultiDVal_DATATYPE_smd_FUNCNAME
-#if __STDC__
+#if	NhlNeedProto
 (NclData self, NclData other, NclData result)
 #else
 (self,other,result)
@@ -345,7 +345,7 @@ NclData result;
 } 
 
 static NclData MultiDVal_DATATYPE_ss_FUNCNAME
-#if __STDC__
+#if	NhlNeedProto
 (NclData self, NclData other, NclData result)
 #else
 (self,other,result)

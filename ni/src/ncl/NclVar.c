@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclVar.c,v 1.7 1994-12-21 01:57:01 ethan Exp $
+ *      $Id: NclVar.c,v 1.8 1994-12-23 01:18:59 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -237,7 +237,7 @@ NclObjClass nclVarClass = (NclObjClass)&nclVarClassRec;
 
 
 static struct _NclDataRec *	VarValRead
-#if  __STDC__
+#if	NhlNeedProto
 (NclVar	self,NclSelectionRecord *sel_ptr,NclScalar *new_missing)
 #else
 (self,sel_ptr,new_missing)
@@ -296,7 +296,7 @@ NclScalar *new_missing;
 }
 /*
 static int VarSetStatus
-#if     __STDC__
+#if	NhlNeedProto
 (NclObj  self, NclStatus requested)
 #else
 (NclObj  self, NclStatus requested)
@@ -316,7 +316,7 @@ NclStatus requested;
 */
 
 static void	VarPrint
-#if  __STDC__
+#if	NhlNeedProto
 (NclObj theobj,FILE *fp)
 #else
 (theobj,fp)
@@ -410,7 +410,7 @@ FILE *fp;
 }
 
 struct _NclVarRec *_NclVarCreate
-#if  __STDC__
+#if	NhlNeedProto
 (NclVar inst,
 NclObjClass theclass,
 NclObjTypes obj_type,
@@ -583,7 +583,7 @@ char *var_name)
 }
 
 static void VarDestroy
-#if  __STDC__
+#if	NhlNeedProto
 (struct _NclObjRec*	self)
 #else
 (self)
@@ -614,7 +614,7 @@ struct _NclObjRec*	self;
 
 
 static struct _NclDataRec * VarCoerce
-#if	__STDC__
+#if	NhlNeedProto
 (struct _NclVarRec* self, NclObjTypes coerce_to_obj, NclScalar *new_missing)
 #else
 (self,coerce_to_obj,new_missing)
@@ -637,7 +637,7 @@ NclScalar *new_missing;
 
 
 static NclObjTypes VarValRep
-#if	__STDC__	
+#if	NhlNeedProto
 (struct _NclVarRec* self)
 #else
 (self)
@@ -654,7 +654,7 @@ static NclObjTypes VarValRep
 }
 
 static NhlErrorTypes VarWriteAtt
-#if	__STDC__
+#if	NhlNeedProto
 (struct _NclVarRec *self, char *attname, struct _NclMultiDValDataRec *value, struct _NclSelectionRecord *sel_ptr)
 #else
 (self, attname, value, sel_ptr)
@@ -725,7 +725,7 @@ struct _NclSelectionRecord *sel_ptr;
 }
 
 static struct _NclMultiDValDataRec *VarReadAtt
-#if	__STDC__
+#if	NhlNeedProto
 (struct _NclVarRec *self, char *attname, struct _NclSelectionRecord *sel_ptr)
 #else
 (self, attname, sel_ptr)
@@ -738,7 +738,7 @@ struct _NclSelectionRecord *sel_ptr;
 }
 
 static int VarIsAAtt
-#if  	__STDC__
+#if	NhlNeedProto
 (struct _NclVarRec * self, char* attname)
 #else
 (self, attname)
@@ -750,7 +750,7 @@ char* attname;
 	
 }
 static int VarIsADim
-#if     __STDC__
+#if	NhlNeedProto
 (struct _NclVarRec *self, char* dimname)
 #else
 (self, dimname)
@@ -770,7 +770,7 @@ char* dimname;
 }
 
 static struct _NclMultiDValDataRec *VarReadDim
-#if     __STDC__
+#if	NhlNeedProto
 (struct  _NclVarRec* self, char* dim_name, long dim_num)
 #else
 (self, dim_name, dim_num)
@@ -843,7 +843,7 @@ long dim_num;
 
 
 static struct _NclDimRec *VarGetDimInfo
-#if     __STDC__
+#if	NhlNeedProto
 (struct _NclVarRec* self, char *dim_name, long dim_num)
 #else
 (self,dim_name,dim_num)
@@ -867,7 +867,7 @@ long dim_num;
 }
 
 static NhlErrorTypes VarWriteDim
-#if     __STDC__
+#if	NhlNeedProto
 (struct  _NclVarRec *self, long dim_num, char *dim_name)
 #else
 (self,dim_num,dim_name)
@@ -917,7 +917,7 @@ char *dim_name;
 
 
 static int VarIsACoord
-#if     __STDC__
+#if	NhlNeedProto
 (struct _NclVarRec *self, char* coordname)
 #else
 (self, coordname)
@@ -943,7 +943,7 @@ char* coordname;
 
 
 static NhlErrorTypes VarWrite
-#if  __STDC__
+#if	NhlNeedProto
 (NclVar self,struct _NclMultiDValDataRec *value, NclSelectionRecord *sel_ptr)
 #else
 (self,value,sel_ptr)
@@ -1149,7 +1149,7 @@ NclSelectionRecord *sel_ptr;
 	}
 }
 static struct _NclVarRec *VarReadCoord
-#if     __STDC__
+#if	NhlNeedProto
 (struct  _NclVarRec* self, char *coord_name, struct _NclSelectionRecord *sel_ptr)
 #else
 (self,coord_name,sel_ptr)
@@ -1188,7 +1188,7 @@ struct _NclSelectionRecord *sel_ptr;
 	}
 }
 static NhlErrorTypes VarWriteCoord
-#if     __STDC__
+#if	NhlNeedProto
 (struct  _NclVarRec* self, struct  _NclMultiDValDataRec* value, char* coord_name, struct  _NclSelectionRecord *sel_ptr)
 #else
 (self, value, coord_name, sel_ptr)
@@ -1228,7 +1228,7 @@ struct  _NclSelectionRecord *sel_ptr;
 	}
 }
 static struct _NclVarRec *	VarRead
-#if  __STDC__
+#if	NhlNeedProto
 (NclVar	self,NclSelectionRecord *sel_ptr)
 #else
 (self,sel_ptr,new_missing)
@@ -1317,7 +1317,7 @@ NclSelectionRecord *sel_ptr;
 	}
 }
 static NhlErrorTypes VarDelParent
-#if	__STDC__
+#if	NhlNeedProto
 (struct _NclObjRec *theobj, struct _NclObjRec *parent)
 #else
 (theobj, parent)
@@ -1366,7 +1366,7 @@ struct _NclObjRec *parent;
 }
 
 static NhlErrorTypes VarAddParent
-#if	__STDC__
+#if	NhlNeedProto
 (struct _NclObjRec *theobj, struct _NclObjRec *parent)
 #else
 (theobj, parent)
@@ -1391,7 +1391,7 @@ struct _NclObjRec *parent;
 }
 
 static struct _NclVarRec * VarCopy
-#if __STDC__
+#if	NhlNeedProto
 (struct _NclVarRec *thevar, NclScalar *new_missing, struct _NclVarRec *storage)
 #else
 (thevar,new_missing, storage)
@@ -1455,7 +1455,7 @@ struct _NclVarRec *storage;
 }
 
 static NhlErrorTypes VarVarWrite
-#if __STDC__
+#if	NhlNeedProto
 (struct _NclVarRec * lhs, struct _NclSelectionRecord * lhs_sel_ptr, struct _NclVarRec * rhs, struct _NclSelectionRecord * rhs_sel_ptr)
 #else
 (lhs, lhs_sel_ptr, rhs, rhs_sel_ptr)

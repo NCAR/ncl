@@ -1,5 +1,5 @@
 /*
- *      $Id: Symbol.c,v 1.16 1994-11-17 20:53:32 boote Exp $
+ *      $Id: Symbol.c,v 1.17 1994-12-23 01:19:15 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -42,7 +42,7 @@ extern "C" {
 #include "NclApi.h"
 
 extern void _NclAddFileFormats(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void
 #endif
 );
@@ -73,7 +73,7 @@ static int new_sym_i = 0;
  */
 
 int _NclInitSymbol
-#if __STDC__ 
+#if	NhlNeedProto
 (void)
 #else
 ()
@@ -135,7 +135,7 @@ int _NclInitSymbol
 
 
 void _NclRegisterFunc
-#if  __STDC__
+#if	NhlNeedProto
 (NclBuiltInFuncWrapper thefuncptr,NclArgTemplate *args,char* fname,int nargs,int ftype)
 #else 
 (thefuncptr,args, fname,nargs,ftype)
@@ -168,7 +168,7 @@ void _NclRegisterFunc
 	}
 }
 void _NclRegisterProc
-#if  __STDC__
+#if	NhlNeedProto
 (NclBuiltInProcWrapper theprocptr,NclArgTemplate *args,char* fname,int nargs,int ftype)
 #else 
 (theprocptr,args, fname,nargs,ftype)
@@ -218,7 +218,7 @@ void _NclRegisterProc
  * Side Effect:	
  */
 int _NclNewScope
-#if __STDC__
+#if	NhlNeedProto
 (void)
 #else
 ()
@@ -277,7 +277,7 @@ int _NclNewScope
  * Side Effect:	
  */
 NclSymTableListNode * _NclPopScope 
-#if __STDC__
+#if	NhlNeedProto
 (void)
 #else
 ()
@@ -314,7 +314,7 @@ NclSymTableListNode * _NclPopScope
  * Side Effect:	NONE
  */
 static unsigned int hash_pjw
-#if __STDC__
+#if	NhlNeedProto
 (char *name)
 #else
 ( name )
@@ -336,7 +336,7 @@ char *name;
 }
 
 NclSymbol *_NclAddUniqueSym
-#if __STDC__
+#if	NhlNeedProto
 (char *name,int type)
 #else
 (name,type)
@@ -370,7 +370,7 @@ NclSymbol *_NclAddUniqueSym
  * Side Effect:	Changes symbol table data.
  */
 NclSymbol *_NclAddSym
-#if __STDC__
+#if	NhlNeedProto
 (char *name,int type)
 #else
 (name,type)
@@ -412,7 +412,7 @@ NclSymbol *_NclAddSym
 
 
 void _NclResetNewSymStack
-#if __STDC__
+#if	NhlNeedProto
 (void)
 #else
 ()
@@ -422,7 +422,7 @@ void _NclResetNewSymStack
 }
 
 void _NclDeleteNewSymStack
-#if __STDC__
+#if	NhlNeedProto
 (void)
 #else
 ()
@@ -466,7 +466,7 @@ void _NclDeleteNewSymStack
  * Side Effect:	
  */
 int _NclGetCurrentScopeLevel
-#if __STDC__
+#if	NhlNeedProto
 (void)
 #else
 ()
@@ -490,7 +490,7 @@ int _NclGetCurrentScopeLevel
  * Side Effect:	
  */
 void _NclDeleteSym
-#if __STDC__
+#if	NhlNeedProto
 (NclSymbol *sym)
 #else
 (sym)
@@ -584,7 +584,7 @@ void _NclDeleteSym
  * Side Effect:	NONE
  */
 NclSymbol *_NclLookUp
-#if __STDC__
+#if	NhlNeedProto
 (char *name)
 #else
 (name)
@@ -627,7 +627,7 @@ char *name;
  * Side Effect:	
  */
 NclSymbol *_NclLookUpInScope
-#if __STDC__
+#if	NhlNeedProto
 (NclSymTableListNode * thetable, char *name)
 #else
 (thetable, name)
@@ -652,7 +652,7 @@ char *name;
 }
 
 NclSymbol *_NclAddInScope
-#if  __STDC__
+#if	NhlNeedProto
 (NclSymTableListNode *thetable, char* name, int type)
 #else
 (thetable,name,type)
@@ -690,7 +690,7 @@ NclSymbol *_NclAddInScope
 }
 
 void _NclDeleteSymInScope
-#if __STDC__
+#if	NhlNeedProto
 (NclSymTableListNode *thetable, NclSymbol *sym)
 #else
 (thetable, sym)
@@ -723,7 +723,7 @@ NclSymbol *sym;
 
 
 NclSymbol *_NclChangeSymbolType 
-#if __STDC__
+#if	NhlNeedProto
 (NclSymbol *thesym,int type)
 #else
 (thesym,type)
@@ -737,7 +737,7 @@ int type;
 
 
 void _NclPrintSym
-#if __STDC__
+#if	NhlNeedProto
 (FILE *fp) 
 #else
 (fp)
@@ -770,7 +770,7 @@ void _NclPrintSym
 }
 
 void _NclAddSingleObj
-#if __STDC__
+#if	NhlNeedProto
 (char *name,struct _NhlLayerClassRec *the_ptr)
 #else
 (name,the_ptr)
@@ -786,7 +786,7 @@ void _NclAddSingleObj
 }
 
 NclApiDataList *_NclGetFileVarInfo
-#if __STDC__
+#if	NhlNeedProto
 (NclQuark file_var)
 #else
 (file_var)
@@ -854,7 +854,7 @@ NclApiDataList *_NclGetFileVarInfo
 }
 
 NclApiDataList *_NclGetDefinedFileInfo
-#if __STDC__
+#if	NhlNeedProto
 (void)
 #else
 ()
@@ -928,7 +928,7 @@ NclApiDataList *_NclGetDefinedFileInfo
 }
 
 NclApiDataList *_NclGetDefinedProcFuncInfo
-#if __STDC__
+#if	NhlNeedProto
 (void)
 #else
 ()
@@ -1015,7 +1015,7 @@ NclApiDataList *_NclGetDefinedProcFuncInfo
 }
 
 int _NclGetHLUObjId
-#if __STDC__
+#if	NhlNeedProto
 (char *varname)
 #else
 (varname)
@@ -1046,7 +1046,7 @@ int _NclGetHLUObjId
 }
 
 NclApiDataList * _NclGetDefinedHLUInfo
-#if __STDC__
+#if	NhlNeedProto
 (void)
 #else
 ()
@@ -1113,7 +1113,7 @@ NclApiDataList * _NclGetDefinedHLUInfo
 	return(thelist);
 }
 NclApiDataList *_NclGetDefinedVarInfo
-#if __STDC__
+#if	NhlNeedProto
 (void)
 #else
 ()
@@ -1186,7 +1186,7 @@ NclApiDataList *_NclGetDefinedVarInfo
 	return(thelist);
 }
 void _NclFreeApiDataList
-#if __STDC__
+#if	NhlNeedProto
 (void* l)
 #else
 (l)
@@ -1237,7 +1237,7 @@ void _NclFreeApiDataList
 }
 
 extern struct _NclExtValueRec *_NclGetVarValue
-#if __STDC__
+#if	NhlNeedProto
 (NclSymbol *the_sym, int copy_data)
 #else
 (the_sym, copy_data)

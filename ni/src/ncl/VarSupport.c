@@ -1,5 +1,5 @@
 /*
- *      $Id: VarSupport.c,v 1.5 1994-12-22 01:42:40 ethan Exp $
+ *      $Id: VarSupport.c,v 1.6 1994-12-23 01:19:23 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -35,7 +35,7 @@
 
 
 struct _NclVarRec* _NclVarNclCreate
-#if  __STDC__
+#if	NhlNeedProto
 (struct _NclVarRec * inst, struct _NclObjClassRec * theclass, NclObjTypes obj_type, unsigned int obj_type_mask, struct _NclSymbol  *thesym, struct _NclMultiDValDataRec *value, struct _NclDimRec *dim_info, int att_id, int* coords, NclVarTypes var_type, char *var_name)
 #else
 (inst, theclass, obj_type, obj_type_mask, thesym, value, dim_info, att_id, coords, var_type, var_name)
@@ -64,7 +64,7 @@ char *var_name;
 }
 
 NclObjTypes _NclGetVarRepValue
-#if __STDC__
+#if	NhlNeedProto
 (struct _NclVarRec * self)
 #else
 (self)
@@ -90,7 +90,7 @@ struct _NclVarRec * self;
 }
 
 struct _NclMultiDValDataRec* _NclCoerceVar
-#if  __STDC__
+#if	NhlNeedProto
 (struct _NclVarRec * self, NclObjTypes coerce_obj_to,NclScalar *new_missing)
 #else
 (self, coerce_obj_to,new_missing)
@@ -116,7 +116,7 @@ NclScalar *new_missing;
 }
 
 struct _NclVarRec *_NclVarRead
-#if   __STDC__
+#if	NhlNeedProto
 (struct _NclVarRec *var,struct _NclSelectionRecord * sel_ptr)
 #else
 (var,sel_ptr)
@@ -140,7 +140,7 @@ struct _NclSelectionRecord *sel_ptr;
 	return(NULL);
 }
 struct _NclMultiDValDataRec *_NclVarValueRead
-#if   __STDC__
+#if	NhlNeedProto
 (struct _NclVarRec *var,struct _NclSelectionRecord * sel_ptr,NclScalar *new_missing)
 #else
 (var,sel_ptr,new_missing)
@@ -166,7 +166,7 @@ NclScalar *new_missing;
 }
 
 NhlErrorTypes _NclBuildRSelection
-#if  __STDC__
+#if	NhlNeedProto
 (struct _NclVarRec *var,struct _NclRangeRec * range, struct _NclSelection* sel,int  dim_num, char * dim_name)
 #else
 (var,range,sel,dim_num,dim_name)
@@ -289,7 +289,7 @@ NhlErrorTypes _NclBuildRSelection
 
 
 int _NclVarIsAtt
-#if     __STDC__
+#if	NhlNeedProto
 (struct _NclVarRec *self, char * attname)
 #else
 (self, attname)
@@ -316,7 +316,7 @@ char * attname;
 
 
 NhlErrorTypes _NclWriteAtt
-#if     __STDC__
+#if	NhlNeedProto
 (struct _NclVarRec * self, char    * attname, struct  _NclMultiDValDataRec * value, struct _NclSelectionRecord *sel_ptr)
 #else
 ( self, attname,value, sel_ptr)
@@ -344,7 +344,7 @@ struct  _NclSelectionRecord * sel_ptr;
 }
 
 struct _NclMultiDValDataRec *_NclReadAtt
-#if     __STDC__
+#if	NhlNeedProto
 (struct _NclVarRec *self, char    *attname, struct  _NclSelectionRecord * sel_ptr)
 #else
 (self, attname, sel_ptr)
@@ -371,7 +371,7 @@ struct  _NclSelectionRecord* sel_ptr;
 }
 
 int _NclIsDim
-#if     __STDC__
+#if	NhlNeedProto
 (struct _NclVarRec *self,char * dimname)
 #else
 (self,dimname)
@@ -397,7 +397,7 @@ char * dimname;
 }
 
 struct _NclMultiDValDataRec *_NclReadDim
-#if     __STDC__
+#if	NhlNeedProto
 (struct _NclVarRec *self, char *dim_name, long dim_num)
 #else
 (self,dim_name,dim_num)
@@ -451,7 +451,7 @@ char *dim_name;
 }
 
 int _NclIsCoord
-#if     __STDC__
+#if	NhlNeedProto
 (struct _NclVarRec * self ,char *coordname)
 #else
 (self,coordname)
@@ -477,7 +477,7 @@ char *coordname;
 }
 
 struct _NclVarRec *_NclReadCoordVar
-#if     __STDC__
+#if	NhlNeedProto
 (struct  _NclVarRec *self, char *coord_name, struct  _NclSelectionRecord *sel_ptr)
 #else
 (self, coord_name, sel_ptr)
@@ -504,7 +504,7 @@ struct  _NclSelectionRecord *sel_ptr;
 }
 
 NhlErrorTypes _NclWriteCoordVar
-#if     __STDC__
+#if	NhlNeedProto
 (struct  _NclVarRec *self, struct  _NclMultiDValDataRec  *value, char *coord_name, struct  _NclSelectionRecord *sel_ptr)
 #else
 (self, value, coord_name, sel_ptr)
@@ -532,7 +532,7 @@ struct  _NclSelectionRecord *sel_ptr;
 }
 
 NhlErrorTypes _NclAssignToVar
-#if     __STDC__
+#if	NhlNeedProto
 (struct _NclVarRec *self, struct _NclMultiDValDataRec *value, struct _NclSelectionRecord* sel_ptr)
 #else 
 (self, value, sel_ptr)
@@ -560,7 +560,7 @@ struct _NclSelectionRecord* sel_ptr;
 }
 
 struct _NclDimRec *_NclGetDimInfo
-#if     __STDC__
+#if	NhlNeedProto
 (struct _NclVarRec *self, char *dim_name, long dim_num)
 #else
 (self,dim_name,dim_num)
@@ -585,7 +585,7 @@ long dim_num;
 	return(NULL);
 }
 NhlErrorTypes  _NclBuildVSelection
-#if  __STDC__
+#if	NhlNeedProto
 (struct _NclVarRec *var,struct _NclVecRec * vec, struct _NclSelection* sel,int  dim_num,char* dim_name)
 #else
 (var,vec,sel,dim_num,dim_name)
@@ -669,7 +669,7 @@ NhlErrorTypes  _NclBuildVSelection
 
 
 NhlErrorTypes _NclAssignVarToVar
-#if __STDC__
+#if	NhlNeedProto
 (struct _NclVarRec* lhs,NclSelectionRecord *lhs_sel_ptr,struct _NclVarRec *rhs,NclSelectionRecord *rhs_sel_ptr)
 #else
 (lhs,lhs_sel_ptr,rhs,rhs_sel_ptr)
@@ -698,7 +698,7 @@ NclSelectionRecord *rhs_sel_ptr;
 }
 
 struct _NclVarRec* _NclCopyVar
-#if  __STDC__
+#if	NhlNeedProto
 (struct _NclVarRec * var,NclScalar *new_missing, struct _NclVarRec * storage)
 #else 
 (var,new_missing,storage)

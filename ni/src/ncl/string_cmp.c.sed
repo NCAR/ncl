@@ -1,6 +1,6 @@
 
 /*
- *      $Id: string_cmp.c.sed,v 1.1 1994-07-14 20:47:51 ethan Exp $
+ *      $Id: string_cmp.c.sed,v 1.2 1994-12-23 01:19:28 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -21,7 +21,7 @@
  *	Description:	
  */
 static NclData MultiDVal_string_mdmd_FUNCNAME
-#if __STDC__
+#if	NhlNeedProto
 (NclData self, NclData other, NclData result)
 #else
 (self,other,result)
@@ -128,7 +128,7 @@ NclData result;
 	return((NclData)output_md);
 }
 static NclData MultiDVal_string_mds_FUNCNAME
-#if __STDC__
+#if	NhlNeedProto
 (NclData self, NclData other, NclData result)
 #else
 (self,other,result)
@@ -231,7 +231,7 @@ NclData result;
 	return((NclData)output_md);
 } 
 static NclData MultiDVal_string_smd_FUNCNAME
-#if __STDC__
+#if	NhlNeedProto
 (NclData self, NclData other, NclData result)
 #else
 (self,other,result)
@@ -335,7 +335,7 @@ NclData result;
 	return((NclData)output_md);
 } 
 static NclData MultiDVal_string_ss_FUNCNAME
-#if __STDC__
+#if	NhlNeedProto
 (NclData self, NclData other, NclData result)
 #else
 (self,other,result)

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValshortData.c.specific,v 1.5 1994-12-21 01:57:04 ethan Exp $
+ *      $Id: NclMultiDValshortData.c.specific,v 1.6 1994-12-23 01:18:53 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -29,7 +29,7 @@
 
 
 static struct _NclDataRec *MultiDVal_short_md_Coerce
-#if  __STDC__
+#if	NhlNeedProto
 (NclData self,NclObjTypes coerce_to_obj,NclScalar *new_missing)
 #else
 (self,coerce_to_obj,new_missing)
@@ -278,7 +278,7 @@ static struct _NclDataRec *MultiDVal_short_md_Coerce
 	}
 }
 static struct _NclDataRec *MultiDVal_short_s_Coerce
-#if  __STDC__
+#if	NhlNeedProto
 (NclData self,NclObjTypes coerce_to_obj,NclScalar *new_missing)
 #else
 (self,coerce_to_obj,new_missing)

@@ -7,14 +7,14 @@ typedef struct _NclHLUObjRec *NclHLUObj;
 typedef NhlErrorTypes (*NclAddHLUChild)(
 #if  NhlNeedProto
 NclHLUObj	/* self */,
-int /*sym_q*/
+int 	/*child_id*/
 #endif
 );
 
 typedef NhlErrorTypes (*NclDelHLUChild)(
 #if  NhlNeedProto
 NclHLUObj	/* self */,
-int /*sym_q*/
+int /*child_id*/
 #endif
 );
 

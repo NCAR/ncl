@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: AddIntrinsics.c,v 1.9 1994-10-29 00:57:09 ethan Exp $
+ *      $Id: AddIntrinsics.c,v 1.10 1994-12-23 01:17:15 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -32,138 +32,138 @@ extern "C" {
 #include "parser.h"
 
 extern NhlErrorTypes _NclINhlDataToNDC(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void
 #endif
 );
 
 extern NhlErrorTypes _NclINhlNDCToData(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void
 #endif
 );
 
 extern NhlErrorTypes _NclIAddFile(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void
 #endif
 );
 extern NhlErrorTypes _NclIClear(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void
 #endif 
 );
 extern NhlErrorTypes  _NclIUpdate(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void
 #endif 
 );
 extern NhlErrorTypes  _NclIFrame(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void
 #endif 
 );
 extern NhlErrorTypes  _NclIPrint(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void
 #endif 
 );
 extern NhlErrorTypes  _NclIDelete(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void
 #endif
 );
 extern NhlErrorTypes  _NclIDraw(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void
 #endif
 );
 
 extern NhlErrorTypes  _NclIDestroy(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void
 #endif
 );
 extern NhlErrorTypes  _NclIDumpStk(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void
 #endif
 );
 
 extern NhlErrorTypes  _NclISizeOf(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void
 #endif
 );
 
 extern NhlErrorTypes  _NclIDimSizes(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void
 #endif
 );
 
 extern NhlErrorTypes  _NclIAny(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void
 #endif
 );
 
 extern NhlErrorTypes  _NclIAll(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void
 #endif
 );
 
 extern NhlErrorTypes _NclIAddToOverlay(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void
 #endif
 );
 
 extern NhlErrorTypes _NclIIsMissing(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void
 #endif
 );
 
 extern NhlErrorTypes _NclIListVariables(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void
 #endif
 );
 
 extern NhlErrorTypes _NclIListFiles(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void
 #endif
 );
 
 extern NhlErrorTypes _NclIListFuncs(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void
 #endif
 );
 
 extern NhlErrorTypes _NclIListFileVariables(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void
 #endif
 );
 
 extern NhlErrorTypes _NclIListHLUObjs(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void
 #endif
 );
 
 extern NhlErrorTypes _NclIPSetRL(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void
 #endif
 );
 
 void _NclAddIntrinsics
-#if  __STDC__
+#if	NhlNeedProto
 (void)
 #else 
 ()

@@ -1,5 +1,5 @@
 /*
- *      $Id: AttSupport.c,v 1.2 1994-09-01 17:41:09 ethan Exp $
+ *      $Id: AttSupport.c,v 1.3 1994-12-23 01:17:17 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -27,7 +27,7 @@
 
 
 void _NclAddAttParent
-#if __STDC__
+#if	NhlNeedProto
 (int id , NclObj parent)
 #else
 (id , parent)
@@ -57,7 +57,7 @@ NclObj parent;
 }
 
 NhlErrorTypes _NclAddAtt
-#if __STDC__
+#if	NhlNeedProto
 (int id, char * attname, struct _NclMultiDValDataRec  *value, NclSelectionRecord * sel_ptr)
 #else
 (id,attname,value,sel_ptr)
@@ -87,7 +87,7 @@ NclSelectionRecord * sel_ptr;
 }
 
 void _NclDeleteAttParent
-#if __STDC__
+#if	NhlNeedProto
 (int id, NclObj parent)
 #else
 (id, parent)
@@ -118,7 +118,7 @@ NclObj parent;
 }
 
 int _NclIsAtt
-#if __STDC__
+#if	NhlNeedProto
 (int id, char *name)
 #else
 (id, name)
@@ -146,7 +146,7 @@ char *name;
 }
 
 struct _NclMultiDValDataRec* _NclGetAtt
-#if __STDC__
+#if	NhlNeedProto
 (int id, char *attname, NclSelectionRecord *sel_ptr)
 #else
 (id, attname, sel_ptr)
@@ -176,7 +176,7 @@ NclSelectionRecord *sel_ptr;
 }
 
 void _NclDeleteAtt
-#if __STDC__
+#if	NhlNeedProto
 (int id, char * attname)
 #else
 (id, attname)
@@ -206,7 +206,7 @@ char * attname;
 
 
 struct _NclAttRec * _NclCopyAtt
-#if    __STDC__ 
+#if	NhlNeedProto
 (struct _NclAttRec * theattobj, struct _NclAttRec * storage)
 #else
 (theattobj, storage)

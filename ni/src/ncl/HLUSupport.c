@@ -9,7 +9,7 @@
 
 
 NhlErrorTypes _NclDelHLUChild
-#if __STDC__
+#if	NhlNeedProto
 (NclHLUObj ptmp,int nclhlu_id)
 #else
 (ptmp,nclhlu_id)
@@ -36,7 +36,7 @@ int nclhlu_id;
 
 
 NhlErrorTypes _NclAddHLUChild
-#if __STDC__
+#if	NhlNeedProto
 (NclHLUObj ptmp,int nclhlu_id)
 #else
 (ptmp,nclhlu_id)

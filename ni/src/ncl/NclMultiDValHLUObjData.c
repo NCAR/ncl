@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValHLUObjData.c,v 1.3 1994-09-01 17:41:40 ethan Exp $
+ *      $Id: NclMultiDValHLUObjData.c,v 1.4 1994-12-23 01:18:35 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -32,7 +32,7 @@
 
 
 static struct _NclDataRec *MultiDVal_HluObj_ReadSection
-#if  __STDC__
+#if	NhlNeedProto
 (NclData self, NclSelectionRecord * sel,NclScalar *missing)
 #else
 (self,sel,missing)
@@ -318,7 +318,7 @@ static struct _NclDataRec *MultiDVal_HluObj_ReadSection
 
 
 static NhlErrorTypes MultiDVal_HLUObj_md_WriteSection
-#if  __STDC__
+#if	NhlNeedProto
 (NclData target, NclSelectionRecord * sel, struct _NclDataRec* value)
 #else
 (target,sel,value)
@@ -617,7 +617,7 @@ static NhlErrorTypes MultiDVal_HLUObj_md_WriteSection
 	return(NhlNOERROR);
 }
 static NhlErrorTypes MultiDVal_HLUObj_s_WriteSection
-#if  __STDC__
+#if	NhlNeedProto
 (NclData target, NclSelectionRecord * sel, struct _NclDataRec* value)
 #else
 (target,sel,value)
@@ -872,7 +872,7 @@ static NhlErrorTypes MultiDVal_HLUObj_s_WriteSection
 
 
 static void MultiDVal_HLUObj_ResetMissing
-#if  __STDC__
+#if	NhlNeedProto
 (NclData self, NclScalar *missing)
 #else
 (self,missing)
@@ -914,7 +914,7 @@ static void MultiDVal_HLUObj_ResetMissing
 }
 
 static NhlErrorTypes MultiDVal_HLUObj_ReadWriteSection
-#if  __STDC__
+#if	NhlNeedProto
 (NclData to_data, NclSelectionRecord * to_selection, NclData from_data, NclSelectionRecord *from_selection)
 #else
 (to_data,to_selection,from_data,from_selection)
@@ -1362,7 +1362,7 @@ NclSelectionRecord *from_selection;
 }
 
 static void MultiDVal_HLUObj_Destroy
-#if  __STDC__
+#if	NhlNeedProto
 (NclObj self)
 #else
 (self)
@@ -1393,7 +1393,7 @@ static void MultiDVal_HLUObj_Destroy
 }
 
 static NclData NclMultiDValhluDup
-#if  __STDC__
+#if	NhlNeedProto
 (NclData self,NclScalar *new_missing)
 #else
 (self,new_missing)
@@ -1505,7 +1505,7 @@ NclObjClass nclMultiDValHLUObjDataClass = (NclObjClass)&nclMultiDValHLUObjDataCl
 
 
 struct _NclMultiDValDataRec * _NclMultiDValHLUObjDataCreate
-#if __STDC__
+#if	NhlNeedProto
 (NclObj inst,NclObjClass theclass,NclObjTypes obj_type,unsigned int obj_type_mask,void *val,NclScalar *missing_value,int n_dims, int *dim_sizes,NclStatus status,NclSelectionRecord *sel_rec)
 #else
 (inst,theclass,obj_type,obj_type_mask, val,missing_value,n_dims,dim_sizes,status,sel_rec)

@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.29 1994-12-22 01:42:17 ethan Exp $
+ *      $Id: Execute.c,v 1.30 1994-12-23 01:17:23 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -50,7 +50,7 @@ extern int cmd_line;
 
 
 NclExecuteReturnStatus _NclExecute
-#if __STDC__
+#if	NhlNeedProto
 (unsigned long start_offset)
 #else 
 (start_offset) 

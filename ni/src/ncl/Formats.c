@@ -18,7 +18,7 @@ int num_formats = 0;
 
 
 void _NclRegisterFormat
-#if  __STDC__
+#if	NhlNeedProto
 (NclAddFileFormat thefunc,char* file_extension)
 #else
 (thefunc,file_extension)
@@ -55,7 +55,7 @@ char* file_extension;
 }
 
 NclFormatFunctionRecPtr _NclGetFormatFuncs
-#if  __STDC__
+#if	NhlNeedProto
 (NclQuark file_extension)
 #else 
 (file_extension)

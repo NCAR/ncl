@@ -10,13 +10,13 @@ extern "C" {
 #include "NclFileInterfaces.h"
 
 extern NclFormatFunctionRecPtr NetCdfAddFileFormat(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void
 #endif
 );
 
 void _NclAddFileFormats
-#if  __STDC__
+#if	NhlNeedProto
 (void)
 #else 
 ()

@@ -33,7 +33,7 @@ extern int cmd_line;
  * Side Effect:	
  */
 void _NclTransTerminate
-#if __STDC__
+#if	NhlNeedProto
 (void)
 #else
 ()
@@ -56,7 +56,7 @@ void _NclTransTerminate
  * Side Effect:	
  */
 int _NclTranslate
-#if __STDC__
+#if	NhlNeedProto
 (void *root,FILE *fp)
 #else
 (root,fp)

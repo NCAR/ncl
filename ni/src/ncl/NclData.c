@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclData.c,v 1.4 1994-10-29 00:57:35 ethan Exp $
+ *      $Id: NclData.c,v 1.5 1994-12-23 01:18:11 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -54,7 +54,7 @@ NclObjClass nclObjClass = (NclObjClass)&nclObjClassRec;
 
 
 static NhlErrorTypes NclDataInitializePart(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NclObjClass	/*self*/
 #endif
 );
@@ -107,7 +107,7 @@ NclDataClassRec nclDataClassRec = {
 NclObjClass nclDataClass = (NclObjClass)&nclDataClassRec;
 
 static NhlErrorTypes NclDataInitializePart
-#if  __STDC__
+#if	NhlNeedProto
 (NclObjClass self)
 #else
 (self)
@@ -453,7 +453,7 @@ static NhlErrorTypes NclDataInitializePart
 * heirarchy
 */
 int _NclSetStatus
-#if     __STDC__
+#if	NhlNeedProto
 (NclObj  obj , NclStatus requested)
 #else 
 (obj , requested)
@@ -476,7 +476,7 @@ NclStatus requested;
 }
 
 struct _NclDataRec * _NclDataCreate
-#if     __STDC__
+#if	NhlNeedProto
 (NclObj inst , NclObjClass theclass , NclObjTypes obj_type , unsigned int obj_type_mask, NclStatus status)
 #else
 (inst , theclass , obj_type ,obj_type_mask, status)
@@ -491,7 +491,7 @@ NclStatus status;
 }
 
 struct _NclObjRec * _NclObjCreate
-#if     __STDC__
+#if	NhlNeedProto
 (NclObj inst , NclObjClass theclass , NclObjTypes obj_type , unsigned int obj_type_mask, NclStatus status)
 #else
 (inst , theclass , obj_type ,obj_type_mask, status)
@@ -524,7 +524,7 @@ NclStatus status;
 
 
 static int ObjSetStatus
-#if  __STDC__
+#if	NhlNeedProto
 (NclObj self, NclStatus requested )
 #else
 (self, requested )
@@ -547,7 +547,7 @@ static int current_size = OBJ_LIST_START_SIZE;
 
 
 void _NclUnRegisterObj
-#if	__STDC__
+#if	NhlNeedProto
 (NclObj self)
 #else
 (self)
@@ -582,7 +582,7 @@ NclObj self;
 }
 
 static char *_NclStatusString
-#if __STDC__
+#if	NhlNeedProto
 (NclStatus status)
 #else
 (status)
@@ -601,7 +601,7 @@ NclStatus status;
 	}
 }
 void _NclPrintUnfreedObjs
-#if	__STDC__
+#if	NhlNeedProto
 (FILE *fp)
 #else
 (fp)
@@ -635,7 +635,7 @@ FILE *fp;
 	}
 }
 int _NclNumObjs
-#if 	__STDC__
+#if	NhlNeedProto
 (void)
 #else
 ()
@@ -661,7 +661,7 @@ int _NclNumObjs
 }
 int num_get_obj = 0;
 void _NclNumGetObjCals
-#if __STDC__
+#if	NhlNeedProto
 (FILE *fp)
 #else
 (fp)
@@ -672,7 +672,7 @@ FILE *fp;
 }
 
 struct _NclObjRec *_NclGetObj 
-#if __STDC__
+#if	NhlNeedProto
 (int id)
 #else 
 (id)
@@ -702,7 +702,7 @@ struct _NclObjRec *_NclGetObj
 	}
 }
 int _NclRegisterObj
-#if	__STDC__
+#if	NhlNeedProto
 (NclObj self)
 #else
 (self)
@@ -747,7 +747,7 @@ NclObj self;
 }
 
 void _NclObjsSize
-#if __STDC__
+#if	NhlNeedProto
 (FILE *fp)
 #else
 (fp)

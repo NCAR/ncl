@@ -1,5 +1,5 @@
 /*
- *      $Id: NclAtt.c,v 1.4 1994-10-29 00:57:33 ethan Exp $
+ *      $Id: NclAtt.c,v 1.5 1994-12-23 01:18:07 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -30,7 +30,7 @@
 
 
 static void AttDestroyObj
-#if  __STDC__
+#if	NhlNeedProto
 (NclObj att)
 #else
 (att)
@@ -57,7 +57,7 @@ NclObj att;
 	return;
 }
 static int AttIsAttFunction 
-#if  __STDC__
+#if	NhlNeedProto
 (NclAtt theattobj, char* attname)
 #else 
 (theattobj,attname)
@@ -84,7 +84,7 @@ static int AttIsAttFunction
 
 
 static struct _NclMultiDValDataRec * AttGetFunction
-#if  __STDC__
+#if	NhlNeedProto
 (NclAtt theattobj, char* attname,NclSelectionRecord * sel_ptr)
 #else
 (theattobj, attname,sel_ptr)
@@ -123,7 +123,7 @@ NclSelectionRecord * sel_ptr;
         }
 }
 static NhlErrorTypes AttAddFunction
-#if  __STDC__
+#if	NhlNeedProto
 (NclAtt theattobj, char* attname, NclMultiDValData value, NclSelectionRecord * sel_ptr)
 #else
 (theattobj, attname , value,  sel_ptr)
@@ -256,7 +256,7 @@ NclSelectionRecord * sel_ptr;
 }
 
 static void AttPrint
-#if __STDC__
+#if	NhlNeedProto
 (NclObj theobj,FILE *fp)
 #else
 (theobj,fp)
@@ -277,7 +277,7 @@ FILE *fp;
 }
 
 static NhlErrorTypes AttAddParent
-#if __STDC__
+#if	NhlNeedProto
 (struct _NclObjRec * theobj, NclObj parent)
 #else
 ( theobj, parent)
@@ -305,7 +305,7 @@ NclObj parent;
 }
 
 static NhlErrorTypes AttDelParent
-#if __STDC__
+#if	NhlNeedProto
 (struct _NclObjRec * theobj, NclObj parent)
 #else
 ( theobj, parent)
@@ -342,7 +342,7 @@ NclObj parent;
 }
 
 static void AttDelFunction
-#if  __STDC__
+#if	NhlNeedProto
 (struct _NclAttRec * theattobj, char *attname)
 #else
 (theattobj, attname)
@@ -383,7 +383,7 @@ char *attname;
 }
 
 static NclAtt AttCopy
-#if   __STDC__
+#if	NhlNeedProto
 (struct _NclAttRec * theattobj, struct _NclAttRec * storage)
 #else
 (theattobj, storage)
@@ -440,7 +440,7 @@ NclAttClassRec nclAttClassRec = {
 NclObjClass nclAttClass = (NclObjClass)&nclAttClassRec;
 
 int _NclAttCreate
-#if  __STDC__
+#if	NhlNeedProto
 (struct _NclObjRec *inst, struct _NclObjClassRec *theclass, NclObjTypes obj_type, unsigned int obj_type_mask, struct _NclObjRec *parent)
 #else 
 (inst, theclass, obj_type, obj_type_mask, parent)

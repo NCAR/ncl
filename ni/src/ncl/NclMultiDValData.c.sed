@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValData.c.sed,v 1.5 1994-12-22 01:42:27 ethan Exp $
+ *      $Id: NclMultiDValData.c.sed,v 1.6 1994-12-23 01:18:31 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -31,7 +31,7 @@
 
 
 static NclData MultiDVal_DATATYPE_md_Coerce(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NclData /* self */,
 NclObjTypes /* coerce_to_obj */,
 NclScalar * /*new_missing*/
@@ -39,7 +39,7 @@ NclScalar * /*new_missing*/
 );
 
 static NclData MultiDVal_DATATYPE_s_Coerce(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NclData /* self */,
 NclObjTypes /* coerce_to_obj */,
 NclScalar * /*new_missing*/
@@ -48,19 +48,19 @@ NclScalar * /*new_missing*/
 
 
 static void NclMultiDValDATATYPEPrint(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NclObj /* self */,
 	FILE *	/*fp*/
 #endif
 );
 static void MultiDValDestroy(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NclObj	self
 #endif
 );
 
 static NclData NclMultiDValDATATYPEDup (
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NclData /*self*/,
 NclScalar * /*new_missing*/
 #endif
@@ -231,7 +231,7 @@ NclObjClass nclMultiDValDATATYPEDataClass = (NclObjClass)&nclMultiDValDATATYPEDa
 
 
 NclMultiDValData _NclMultiDValDATATYPECreate
-#if __STDC__
+#if	NhlNeedProto
 (NclObj inst,NclObjClass theclass,NclObjTypes obj_type,unsigned int obj_type_mask,void *val,NclScalar *missing_value,int n_dims, int *dim_sizes,NclStatus status,NclSelectionRecord *sel_rec)
 #else
 (inst,theclass,obj_type,obj_type_mask, val,missing_value,n_dims,dim_sizes,status,sel_rec)
@@ -311,7 +311,7 @@ NclSelectionRecord *sel_rec;
 }
 
 static NclData NclMultiDValDATATYPEDup
-#if  __STDC__
+#if	NhlNeedProto
 (NclData self,NclScalar *new_missing)
 #else
 (self,new_missing)
@@ -357,7 +357,7 @@ NclScalar *new_missing;
 }
 
 static void NclMultiDValDATATYPEPrint
-#if __STDC__
+#if	NhlNeedProto
 (NclObj self, FILE *fp)
 #else 
 (self,fp)
@@ -402,7 +402,7 @@ FILE *fp;
 }
 
 static void MultiDValDestroy
-#if  __STDC__
+#if	NhlNeedProto
 (NclObj	self)
 #else
 (self)

@@ -20,7 +20,7 @@ extern "C" {
 #include "ApiRecords.h"
 
 NhlErrorTypes _NclIListHLUObjs
-#if  __STDC__
+#if	NhlNeedProto
 (void)
 #else
 ()
@@ -46,7 +46,7 @@ NhlErrorTypes _NclIListHLUObjs
 	return(NhlNOERROR);
 }
 NhlErrorTypes _NclIListVariables
-#if  __STDC__
+#if	NhlNeedProto
 (void)
 #else
 ()
@@ -85,7 +85,7 @@ NhlErrorTypes _NclIListVariables
 }
 
 NhlErrorTypes _NclIListFiles
-#if  __STDC__
+#if	NhlNeedProto
 (void)
 #else
 ()
@@ -122,7 +122,7 @@ NhlErrorTypes _NclIListFiles
 }
 
 NhlErrorTypes _NclIListFuncs
-#if  __STDC__
+#if	NhlNeedProto
 (void)
 #else
 ()
@@ -193,7 +193,7 @@ NhlErrorTypes _NclIListFuncs
 
 
 NhlErrorTypes _NclIListFileVariables
-#if  __STDC__
+#if	NhlNeedProto
 (void)
 #else
 ()
@@ -244,7 +244,7 @@ NhlErrorTypes _NclIListFileVariables
 
 
 NhlErrorTypes _NclINhlDataToNDC
-#ifdef __STDC__
+#if	NhlNeedProto
 (void)
 #else
 ()
@@ -326,7 +326,7 @@ NhlErrorTypes _NclINhlDataToNDC
 }
 
 NhlErrorTypes _NclINhlNDCToData
-#ifdef __STDC__
+#if	NhlNeedProto
 (void)
 #else
 ()
@@ -407,7 +407,7 @@ NhlErrorTypes _NclINhlNDCToData
 	}
 }
 NhlErrorTypes _NclIIsMissing
-#ifdef __STDC__
+#if	NhlNeedProto
 (void)
 #else
 ()
@@ -454,7 +454,7 @@ NhlErrorTypes _NclIIsMissing
 
 
 NhlErrorTypes _NclIAddToOverlay
-#if  __STDC__
+#if	NhlNeedProto
 (void)
 #else
 ()
@@ -503,7 +503,7 @@ NhlErrorTypes _NclIAddToOverlay
 	return(NhlNOERROR);
 }
 NhlErrorTypes _NclIAddFile
-#if  __STDC__
+#if	NhlNeedProto
 (void)
 #else
 ()
@@ -572,7 +572,7 @@ NhlErrorTypes _NclIAddFile
 }
 
 NhlErrorTypes _NclIAny
-#if __STDC__
+#if	NhlNeedProto
 (void)
 #else
 ()
@@ -654,7 +654,7 @@ NhlErrorTypes _NclIAny
 	return(NhlNOERROR);
 }
 NhlErrorTypes _NclIAll
-#if __STDC__
+#if	NhlNeedProto
 (void)
 #else
 ()
@@ -736,7 +736,7 @@ NhlErrorTypes _NclIAll
 }
 
 NhlErrorTypes _NclISizeOf
-#if  __STDC__
+#if	NhlNeedProto
 (void)
 #else
 ()
@@ -787,7 +787,7 @@ NhlErrorTypes _NclISizeOf
 }
 
 NhlErrorTypes _NclIDimSizes
-#if  __STDC__
+#if	NhlNeedProto
 (void)
 #else
 ()
@@ -841,7 +841,7 @@ NhlErrorTypes _NclIDimSizes
 }
 
 NhlErrorTypes _NclIDumpStk
-#if  __STDC__
+#if	NhlNeedProto
 (void)
 #else
 ()
@@ -905,7 +905,7 @@ NhlErrorTypes _NclIDumpStk
 }
 
 NhlErrorTypes _NclIFrame
-#if  __STDC__
+#if	NhlNeedProto
 (void)
 #else
 ()
@@ -950,7 +950,7 @@ NhlErrorTypes _NclIFrame
 	return(ret);
 }
 NhlErrorTypes _NclIClear
-#if  __STDC__
+#if	NhlNeedProto
 (void)
 #else
 ()
@@ -995,7 +995,7 @@ NhlErrorTypes _NclIClear
 }
 
 NhlErrorTypes _NclIDestroy
-#if  __STDC__
+#if	NhlNeedProto
 (void)
 #else
 ()
@@ -1066,7 +1066,7 @@ NhlErrorTypes _NclIDestroy
 	return(_NclPutArg(data,0,1));
 }
 NhlErrorTypes _NclIUpdate
-#if  __STDC__
+#if	NhlNeedProto
 (void)
 #else
 ()
@@ -1115,7 +1115,7 @@ NhlErrorTypes _NclIUpdate
 }
 
 NhlErrorTypes _NclIDraw
-#if  __STDC__
+#if	NhlNeedProto
 (void)
 #else
 ()
@@ -1162,7 +1162,7 @@ NhlErrorTypes _NclIDraw
 }
 
 NhlErrorTypes _NclIPrint
-#if  __STDC__
+#if	NhlNeedProto
 (void)
 #else
 ()
@@ -1189,7 +1189,7 @@ NhlErrorTypes _NclIPrint
 }
 
 NhlErrorTypes _NclIDelete
-#if  __STDC__
+#if	NhlNeedProto
 (void)
 #else
 ()
@@ -1253,7 +1253,7 @@ NhlErrorTypes _NclIDelete
 	
 }
 NhlErrorTypes _NclDualOp
-#if  __STDC__
+#if	NhlNeedProto
 (NclStackEntry lhs, NclStackEntry rhs,NclStackEntry *result,int operation)
 #else
 (lhs, rhs,result,operation)
@@ -1417,7 +1417,7 @@ int operation;
 
 
 NhlErrorTypes _NclMonoOp
-#if  __STDC__
+#if	NhlNeedProto
 (NclStackEntry operand, NclStackEntry *result, int operation)
 #else
 (operand, result,operation)
@@ -1453,7 +1453,7 @@ int operation;
 
 
 NhlErrorTypes _NclBuildArray
-#if __STDC__
+#if	NhlNeedProto
 (int n_items,NclStackEntry *result)
 #else
 (n_items,result)
@@ -1825,7 +1825,7 @@ NhlErrorTypes _NclBuildArray
 }
 
 NhlErrorTypes _NclProcCallOp
-#if __STDC__
+#if	NhlNeedProto
 (NclSymbol *proc,int caller_level)
 #else
 (proc,caller_level)
@@ -1889,7 +1889,7 @@ NhlErrorTypes _NclProcCallOp
 	return(ret);
 }
 NhlErrorTypes _NclFuncCallOp
-#if __STDC__
+#if	NhlNeedProto
 (NclSymbol *func,int caller_level)
 #else
 (func,caller_level)
@@ -1962,7 +1962,7 @@ NhlErrorTypes _NclFuncCallOp
 static int ncl_private_rl_list = 0;
 
 int _NclGetExtRLList
-#if  __STDC__
+#if	NhlNeedProto
 (void)
 #else
 ()
@@ -1971,7 +1971,7 @@ int _NclGetExtRLList
 	return(ncl_private_rl_list);
 }
 NhlErrorTypes _NclIPSetRL
-#if  __STDC__
+#if	NhlNeedProto
 (void)
 #else
 ()
@@ -2001,7 +2001,7 @@ NhlErrorTypes _NclIPSetRL
 
 
 NclStackEntry _NclCreateHLUObjOp
-#if __STDC__
+#if	NhlNeedProto
 (int nres,char *the_hlu_obj, NclSymbol *the_hlu_obj_class, NclMultiDValData parent)
 #else
 (nres,the_hlu_obj, the_hlu_obj_class, parent)
@@ -2151,7 +2151,7 @@ NclStackEntry _NclCreateHLUObjOp
 }
 
 NclStackEntry _NclGetHLUObjOp
-#if __STDC__
+#if	NhlNeedProto
 (NclMultiDValData the_hlu_data_obj,NclQuark res_name)
 #else
 (the_hlu_data_obj,res_name)
@@ -2231,7 +2231,7 @@ NclQuark res_name;
 }
 
 NhlErrorTypes _NclSetHLUObjOp
-#if __STDC__
+#if	NhlNeedProto
 (NclMultiDValData the_hlu_data_obj, int nres)
 #else
 (the_hlu_data_obj,nres)
@@ -2344,7 +2344,7 @@ int nres;
 }
 
 NhlErrorTypes _NclNewOp
-#if  __STDC__
+#if	NhlNeedProto
 (NclSymbol*  data_type, NclStackEntry size_expr, NclStackEntry missing_expr)
 #else
 (data_type, size_expr, missing_expr)

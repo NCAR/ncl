@@ -1,5 +1,5 @@
 int MultiDVal_DATATYPE_is_mis
-#if  __STDC__   
+#if	NhlNeedProto
 (NclData self, void *v_one)
 #else
 (self, v_one)

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: defs.h,v 1.17 1994-11-07 03:02:33 ethan Exp $
+ *      $Id: defs.h,v 1.18 1994-12-23 01:19:25 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -62,43 +62,43 @@ typedef struct _NclGenericVal {
 } NclGenericVal;
 
 extern void *NclMalloc(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 unsigned  int	/* size */
 #endif
 );
 
 extern void *NclCalloc(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 unsigned int	/* num */,
 unsigned int	/* size */
 #endif
 );
 
 extern void *NclRealloc(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void 	*  /* ptr */	,
 unsigned int	/* size */
 #endif
 );
 
 extern NhlErrorTypes NclFree(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void * /* size */
 #endif
 );
 
 extern FILE* _NclGetOutputStream(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void
 #endif
 );
 extern FILE* _NclGetInputStream(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void
 #endif
 );
 extern FILE* _NclGetErrorStream(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void
 #endif
 );
@@ -134,7 +134,7 @@ void
 
 
 typedef int (*NclVaPrintFunc)(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 FILE* /*fp*/,
 const char* /*fmt*/,
 va_list /*arg*/

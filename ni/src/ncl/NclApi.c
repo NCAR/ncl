@@ -1,5 +1,5 @@
 /*
- *      $Id: NclApi.c,v 1.11 1994-12-01 22:12:36 ethan Exp $
+ *      $Id: NclApi.c,v 1.12 1994-12-23 01:18:04 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -37,8 +37,13 @@ extern "C" {
 #include <netcdf.h>
 
 FILE *the_err_file;
+#ifdef SunOS
+extern FILE *nclin;
+extern int nclparse(int);
+#else
 extern FILE *yyin;
 extern int yyparse(int);
+#endif
 int fd[2];
 
 extern char *the_input_buffer;
@@ -54,7 +59,7 @@ extern FILE* error_fp;
 extern FILE* stdout_fp;
 
 int NclInitServer
-#if __STDC__
+#if	NhlNeedProto
 (NhlErrorTypes error_level)
 #else
 (error_level)
@@ -62,8 +67,13 @@ int NclInitServer
 #endif
 {
 #ifdef YYDEBUG
-        extern int yydebug;
+#ifdef SunOS
+        extern int ncldebug;
+        ncldebug = 1;
+#else
         yydebug = 1;
+        extern int yydebug;
+#endif
 #endif
 	ncopts = NC_VERBOSE;
 /*
@@ -95,7 +105,7 @@ int NclInitServer
 }
 
 void NclCloseServer
-#if __STDC__
+#if	NhlNeedProto
 (void)
 #else
 ()
@@ -105,7 +115,7 @@ void NclCloseServer
 }
 
 int NclSubmitBlock1
-#if __STDC__
+#if	NhlNeedProto
 (char *script,int script_size)
 #else
 (script,script_size)
@@ -125,7 +135,11 @@ int NclSubmitBlock1
 	*the_input_buffer_ptr = '\n';
 	the_input_buffer_ptr = the_input_buffer;
         the_input_buffer_size = script_size+1;
+#ifdef SunOS
+        if(nclparse((first? 1: 0))==1) {
+#else
         if(yyparse((first? 1: 0))==1) {
+#endif
 		first = 0;
                 return(0);
         } else {
@@ -135,7 +149,7 @@ int NclSubmitBlock1
 }
 
 int NclSubmitBlock2
-#if __STDC__
+#if	NhlNeedProto
 (char *script[])
 #else
 (script)
@@ -167,7 +181,11 @@ int NclSubmitBlock2
 	*the_input_buffer_ptr = '\n';
 	the_input_buffer_size = size +1;
 	the_input_buffer_ptr = the_input_buffer;
+#ifdef SunOS
+        if(nclparse((first?1:0))==1) {
+#else
         if(yyparse((first?1:0))==1) {
+#endif
 		first = 0;
                 return(0);
         } else {
@@ -177,7 +195,7 @@ int NclSubmitBlock2
 }
 
 int NclSubmitCommand
-#if __STDC__
+#if	NhlNeedProto
 (char * command)
 #else
 (command)
@@ -187,7 +205,11 @@ int NclSubmitCommand
 	static int first = 1;
 	the_input_buffer_ptr = the_input_buffer = command;
 	the_input_buffer_size = strlen(command);
+#ifdef SunOS
+	if(nclparse((first?1:0))==1) {
+#else
 	if(yyparse((first?1:0))==1) {
+#endif
 		first = 0;
                 return(0);
         } else {
@@ -197,7 +219,7 @@ int NclSubmitCommand
 }
 
 void NclPrintErrorMsgs
-#if __STDC__
+#if	NhlNeedProto
 (void)
 #else
 ()
@@ -215,7 +237,7 @@ void NclPrintErrorMsgs
 }
 
 int NclGetErrorId 
-#if __STDC__
+#if	NhlNeedProto
 (void)
 #else 
 ()
@@ -226,7 +248,7 @@ int NclGetErrorId
 
 
 struct _NclApiDataList* NclGetProcFuncList
-#if __STDC__
+#if	NhlNeedProto
 (void)
 #else
 ()
@@ -236,7 +258,7 @@ struct _NclApiDataList* NclGetProcFuncList
 } 
 
 struct _NclApiDataList* NclGetVarList
-#if __STDC__
+#if	NhlNeedProto
 (void)
 #else
 ()
@@ -246,7 +268,7 @@ struct _NclApiDataList* NclGetVarList
 }
 
 struct _NclApiDataList* NclGetFileList
-#if __STDC__
+#if	NhlNeedProto
 (void)
 #else
 ()
@@ -256,7 +278,7 @@ struct _NclApiDataList* NclGetFileList
 }
 
 struct _NclApiDataList* NclGetFileVarsList
-#if __STDC__
+#if	NhlNeedProto
 (NclQuark filevar)
 #else
 (filevar)
@@ -267,7 +289,7 @@ struct _NclApiDataList* NclGetFileVarsList
 }
 
 void NclFreeDataList
-#if __STDC__
+#if	NhlNeedProto
 (NclApiDataList *dlist)
 #else
 (dlist)
@@ -278,7 +300,7 @@ NclApiDataList *dlist;
 		_NclFreeApiDataList((void*)dlist);
 }
 int NclGetHLUObjId
-#if __STDC__
+#if	NhlNeedProto
 (char *varname)
 #else
 (varname)
@@ -289,7 +311,7 @@ int NclGetHLUObjId
 }
 
 struct _NclApiDataList* NclGetHLUObjsList
-#if __STDC__
+#if	NhlNeedProto
 (void)
 #else
 ()
@@ -301,7 +323,7 @@ struct _NclApiDataList* NclGetHLUObjsList
 
 
 struct _NclExtValueRec *NclGetVarValue
-#if __STDC__
+#if	NhlNeedProto
 (char *var_name,int copy_data)
 #else
 (var_name,copy_data)
@@ -316,7 +338,7 @@ struct _NclExtValueRec *NclGetVarValue
 }
 
 NclExtValueRec *NclGetExprValue
-#if __STDC__
+#if	NhlNeedProto
 (char * expression)
 #else
 (expression)
@@ -353,7 +375,7 @@ NclExtValueRec *NclGetExprValue
 }
 
 void NclFreeExtValue
-#if __STDC__
+#if	NhlNeedProto
 (NclExtValueRec* val)
 #else
 (val)
@@ -371,7 +393,7 @@ static NclApiDataList *new_list = NULL;
 static NclApiDataList *del_list = NULL;
 
 void _NclAddToNewList
-#if __STDC__
+#if	NhlNeedProto
 (int id,NclQuark name,NhlLayerClass cl_ptr)
 #else
 (id,name,cl_ptr)
@@ -393,7 +415,7 @@ NhlLayerClass cl_ptr;
 }
 
 void _NclAddToDelList
-#if __STDC__
+#if	NhlNeedProto
 (int id,NclQuark name,NhlLayerClass cl_ptr)
 #else
 (id,name,cl_ptr)
@@ -415,7 +437,7 @@ NhlLayerClass cl_ptr;
 }
 
 struct _NclApiDataList* NclGetNewHLUObjsList
-#if __STDC__
+#if	NhlNeedProto
 (void)
 #else
 ()
@@ -429,7 +451,7 @@ struct _NclApiDataList* NclGetNewHLUObjsList
 }
 
 struct _NclApiDataList* NclGetDelHLUObjsList
-#if __STDC__
+#if	NhlNeedProto
 (void)
 #else
 ()

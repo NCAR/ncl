@@ -4,9 +4,11 @@
 
 #ifdef DEBUG
 #include <assert.h>
+/*
 #define ASSERT(expr) (assert(expr))
-#else
+*/
 #define ASSERT(expr)
+#else
 #endif
 
 typedef enum  {

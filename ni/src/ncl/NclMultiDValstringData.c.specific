@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValstringData.c.specific,v 1.3 1994-09-01 17:41:56 ethan Exp $
+ *      $Id: NclMultiDValstringData.c.specific,v 1.4 1994-12-23 01:18:55 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -23,7 +23,7 @@
 /*ARGSUSED*/
 #include "NclMultiDVallogicalData.h"
 static NclData MultiDVal_string_md_Coerce
-#if  __STDC__
+#if	NhlNeedProto
 (NclData  self, NclObjTypes coerce_to_obj, NclScalar* new_missing)
 #else
 (self, coerce_to_obj, new_missing)
@@ -56,7 +56,7 @@ static NclData MultiDVal_string_md_Coerce
 
 /*ARGSUSED*/
 static NclData MultiDVal_string_s_Coerce
-#if  __STDC__
+#if	NhlNeedProto
 (NclData self, NclObjTypes coerce_to_obj, NclScalar* new_missing)
 #else
 (self, coerce_to_obj,new_missing)

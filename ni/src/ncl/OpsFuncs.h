@@ -1,6 +1,6 @@
 
 /*
- *      $Id: OpsFuncs.h,v 1.7 1994-08-25 18:00:58 ethan Exp $
+ *      $Id: OpsFuncs.h,v 1.8 1994-12-23 01:19:05 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -25,7 +25,7 @@
 
 
 NhlErrorTypes _NclDualOp(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NclStackEntry /*lhs*/,
 NclStackEntry /*rhs*/,
 NclStackEntry */*result*/,
@@ -34,7 +34,7 @@ int	/* operation */
 );
 
 NhlErrorTypes _NclMonoOp(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NclStackEntry /*operand*/,
 NclStackEntry * /*result */,
 int  /* operation*/
@@ -42,27 +42,27 @@ int  /* operation*/
 );
 
 NhlErrorTypes _NclBuildArray(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 int	/*n_items*/,
 NclStackEntry */*result*/
 #endif
 );
 
 NhlErrorTypes _NclFuncCallOp(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NclSymbol * /*func*/,
 int /*caller_level*/
 #endif
 );
 NhlErrorTypes _NclProcCallOp(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NclSymbol *  /* proc*/,
 int /*caller_level*/
 #endif
 );
 
 NclStackEntry _NclCreateHLUObjOp(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 int /*nres*/,
 char * /*the_hlu_obj*/,
 NclSymbol * /*the_hlu_obj_class*/,
@@ -70,21 +70,21 @@ NclMultiDValData /*the_hlu_obj_parent*/
 #endif
 );
 NclStackEntry _NclGetHLUObjOp(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NclMultiDValData /*the_hlu_data_obj*/,
 NclQuark /*res_name*/
 #endif
 );
 
 NhlErrorTypes _NclSetHLUObjOp(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NclMultiDValData /*the_hlu_data_obj*/,
 int /*nres*/
 #endif
 );
 
 NhlErrorTypes _NclNewOp(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NclSymbol*  /*data_type*/,
 NclStackEntry /*size_expr*/,
 NclStackEntry /*missing_expr*/

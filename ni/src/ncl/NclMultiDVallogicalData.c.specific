@@ -1,6 +1,6 @@
 
 static NclData MultiDVal_logical_md_Coerce
-#if  __STDC__
+#if	NhlNeedProto
 (NclData  self, NclObjTypes coerce_to_obj, NclScalar* new_missing)
 #else
 (self, coerce_to_obj, new_missing)
@@ -32,7 +32,7 @@ static NclData MultiDVal_logical_md_Coerce
 }
 
 static NclData MultiDVal_logical_s_Coerce
-#if  __STDC__
+#if	NhlNeedProto
 (NclData self, NclObjTypes coerce_to_obj, NclScalar* new_missing)
 #else
 (self, coerce_to_obj,new_missing)

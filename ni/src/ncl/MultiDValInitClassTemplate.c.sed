@@ -1,6 +1,6 @@
 /*ARGSUSED*/
 static NhlErrorTypes CvtHLUGENTYPEREPToNclData
-#if __STDC__
+#if	NhlNeedProto
 (NrmValue *from, NrmValue *to, NhlConvertArgList args, int nargs)
 #else
 (from, to, args, nargs)
@@ -47,7 +47,7 @@ int nargs;
 }
 /*ARGSUSED*/
 static NhlErrorTypes CvtHLUTYPEREPToNclData
-#if __STDC__
+#if	NhlNeedProto
 (NrmValue *from, NrmValue *to, NhlConvertArgList args, int nargs)
 #else
 (from, to, args, nargs)
@@ -76,7 +76,7 @@ int nargs;
 }
 
 static NhlErrorTypes MultiDVal_DATATYPE_InitClass
-#if __STDC__
+#if	NhlNeedProto
 (void)
 #else
 ()

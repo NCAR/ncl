@@ -32,7 +32,7 @@ FILE *stdout_fp = stdout;
 FILE *stdin_fp = stdin;
 
 FILE *_NclGetErrorStream
-#if __STDC__
+#if	NhlNeedProto
 (void)
 #else
 ()
@@ -41,7 +41,7 @@ FILE *_NclGetErrorStream
 	return(error_fp);
 }
 FILE *_NclGetInputStream
-#if __STDC__
+#if	NhlNeedProto
 (void)
 #else
 ()
@@ -50,7 +50,7 @@ FILE *_NclGetInputStream
 	return(stdin_fp);
 }
 FILE *_NclGetOutputStream
-#if __STDC__
+#if	NhlNeedProto
 (void)
 #else
 ()
@@ -84,7 +84,7 @@ void nclfprintf
 }
 
 void _NclSetPrintFunc
-#if __STDC__
+#if	NhlNeedProto
 (NclVaPrintFunc thepit)
 #else
 (thepit)
@@ -110,7 +110,7 @@ extern int the_input_buffer_size;
 
 
 void _NclPushNewInputStr
-#if __STDC__
+#if	NhlNeedProto
 (char* tmp_input,const char* name,int size,int cline_number)
 #else
 (tmp_input,name,size,cline_number)
@@ -151,7 +151,7 @@ void _NclPushNewInputStr
 	return;
 }
 char *_NclPopInputStr
-#if __STDC__
+#if	NhlNeedProto
 (void)
 #else
 ()
@@ -177,7 +177,7 @@ char *_NclPopInputStr
 NclFileLoadList file_list;
 
 void _NclPushNewInputFile
-#if __STDC__
+#if	NhlNeedProto
 (FILE *fp,const char *name,int cline_number)
 #else
 (fp,name,cline_number)
@@ -225,7 +225,7 @@ int cline_number;
 }
 
 FILE *_NclPopInputFile
-#if __STDC__
+#if	NhlNeedProto
 (void)
 #else
 ()

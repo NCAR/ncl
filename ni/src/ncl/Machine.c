@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.28 1994-12-21 01:57:17 ethan Exp $
+ *      $Id: Machine.c,v 1.29 1994-12-23 01:17:38 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -173,7 +173,7 @@ static void SetUpOpsStrings() {
 }
 
 static NhlErrorTypes IncreaseStackSize
-#if __STDC__
+#if	NhlNeedProto
 (void)
 #else
 ()
@@ -199,7 +199,7 @@ static NhlErrorTypes IncreaseStackSize
 	}
 }
 NclValue *_NclGetCurrentMachine
-#if __STDC__
+#if	NhlNeedProto
 (void)
 #else
 ()
@@ -209,7 +209,7 @@ NclValue *_NclGetCurrentMachine
 }
 
 NclStackEntry *_NclPeek
-#if  __STDC__
+#if	NhlNeedProto
 (int offset)
 #else
 (offset)
@@ -220,7 +220,7 @@ NclStackEntry *_NclPeek
 }
 
 NhlErrorTypes _NclPutArg
-#if  __STDC__
+#if	NhlNeedProto
 (NclStackEntry data, int arg_num,int total_args)
 #else
 (data,arg_num,total_args)
@@ -244,7 +244,7 @@ int total_args;
 }
 
 NclStackEntry _NclGetArg
-#if  __STDC__
+#if	NhlNeedProto
 (int arg_num,int total_args)
 #else
 (arg_num,total_args)
@@ -266,7 +266,7 @@ int total_args;
 }
 
 int *_NclGetCurrentLineRec
-#if __STDC__
+#if	NhlNeedProto
 (void)
 #else
 ()
@@ -276,7 +276,7 @@ int *_NclGetCurrentLineRec
 }
 
 char **_NclGetCurrentFileNameRec
-#if __STDC__
+#if	NhlNeedProto
 (void)
 #else
 ()
@@ -286,7 +286,7 @@ char **_NclGetCurrentFileNameRec
 }
 
 void _NclNewMachine
-#if __STDC__
+#if	NhlNeedProto
 (void)
 #else
 ()
@@ -310,7 +310,7 @@ void _NclNewMachine
 }
 
 void *_NclPopMachine
-#if __STDC__
+#if	NhlNeedProto
 (void)
 #else
 ()
@@ -326,7 +326,7 @@ void *_NclPopMachine
 	return((void*)the_rec);
 }
 void _NclPushMachine
-#if __STDC__
+#if	NhlNeedProto
 (void * the_mach_rec)
 #else
 (the_mach_rec)
@@ -344,7 +344,7 @@ void _NclPushMachine
 }
 
 void _NclResetMachine
-#if __STDC__
+#if	NhlNeedProto
 (void)
 #else
 ()
@@ -368,7 +368,7 @@ void _NclResetMachine
 
 
 static NhlErrorTypes IncreaseMachineSize
-#if __STDC__
+#if	NhlNeedProto
 (void)
 #else 
 ()
@@ -395,7 +395,7 @@ static NhlErrorTypes IncreaseMachineSize
 	
 
 NhlErrorTypes _NclInitMachine
-#if __STDC__
+#if	NhlNeedProto
 (void)
 #else
 ()
@@ -446,7 +446,7 @@ NhlErrorTypes _NclInitMachine
 }
 
 NhlErrorTypes _NclPutLevel1Var
-#if  __STDC__
+#if	NhlNeedProto
 (int offset,NclStackEntry *therec) 
 #else
 (offset,therec)
@@ -463,7 +463,7 @@ NhlErrorTypes _NclPutLevel1Var
 	}
 }
 NclStackEntry *_NclGetLevel1Var
-#if  __STDC__
+#if	NhlNeedProto
 (int offset) 
 #else
 (offset)
@@ -479,7 +479,7 @@ NclStackEntry *_NclGetLevel1Var
 
 
 NclStackEntry *_NclRetrieveRec
-#if  __STDC__
+#if	NhlNeedProto
 (NclSymbol* the_sym,int access_type)
 #else
 (the_sym,access_type)
@@ -529,7 +529,7 @@ int access_type;
 static struct _NclFrameList flist ;
 
 static void SaveFramePtrNLevel
-#if __STDC__
+#if	NhlNeedProto
 (unsigned int tmp_fp,int level,unsigned int tmp_sb)
 #else
 (tmp_fp,level,tmp_sb)
@@ -559,7 +559,7 @@ static void SaveFramePtrNLevel
 }
 
 void _NclAbortFrame
-#if __STDC__
+#if	NhlNeedProto
 (void)
 #else
 ()
@@ -585,7 +585,7 @@ void _NclAbortFrame
 }
 
 void _NclClearToStackBase
-#if __STDC__
+#if	NhlNeedProto
 (void)
 #else
 ()
@@ -596,7 +596,7 @@ void _NclClearToStackBase
 
 
 static int SetNextFramePtrNLevel
-#if __STDC__
+#if	NhlNeedProto
 (void)
 #else
 ()
@@ -621,7 +621,7 @@ static int SetNextFramePtrNLevel
 }
 
 void _NclPopFrame
-#if  __STDC__
+#if	NhlNeedProto
 (int popping_from)
 #else 
 (popping_from)
@@ -663,7 +663,7 @@ void _NclPopFrame
 	}
 }
 NhlErrorTypes _NclPushFrame
-#if __STDC__
+#if	NhlNeedProto
 (struct _NclSymbol *the_sym,unsigned long next_instr_offset)
 #else
 (the_sym,next_instr_offset)
@@ -766,7 +766,7 @@ NhlErrorTypes _NclPushFrame
 }
 
 int _NclFinishFrame
-#if __STDC__
+#if	NhlNeedProto
 (void)
 #else
 ()
@@ -776,7 +776,7 @@ int _NclFinishFrame
 }
 
 void *_NclLeaveFrame
-#if __STDC__
+#if	NhlNeedProto
 (int caller_level)
 #else
 (caller_level)
@@ -794,7 +794,7 @@ void *_NclLeaveFrame
 }
 
 NhlErrorTypes _NclPush
-#if __STDC__
+#if	NhlNeedProto
 (NclStackEntry data)
 #else
 (data)
@@ -816,7 +816,7 @@ NhlErrorTypes _NclPush
 }
 
 NclStackEntry _NclPop
-#if __STDC__
+#if	NhlNeedProto
 (void)
 #else
 ()
@@ -837,7 +837,7 @@ NclStackEntry _NclPop
 	}
 }
 int _NclPutIntInstr
-#if __STDC__
+#if	NhlNeedProto
 (int val,int line,char* file)
 #else
 (val,line,file)
@@ -871,42 +871,9 @@ int _NclPutIntInstr
 	return(old_offset);
 }
 
-int _NclPutRealInstr
-#if __STDC__
-(float val,int line,char* file)
-#else
-(val,line,file)
-	float val;
-	int line;
-	char *file;
-#endif
-{
-/* 
-* Sometimes the parser needs to know the offset of the instruction it put
-* into the instruction list (i.e. function return addresses, loops and 
-* conditionals. Therefore it is necessary to return the offset of the instruct
-* being placed in the list.
-*/
-	int old_offset = (int)(mstk->the_rec->pc - mstk->the_rec->themachine);
 
-/*
-* Check for overflow
-*/
-	if(mstk->the_rec->pc >= &(mstk->the_rec->themachine[mstk->the_rec->current_machine_size -1])) {
-/*
-* Will take care of updating mstk->the_rec->pc
-*/
-		IncreaseMachineSize();
-	}
-	*((float*)mstk->the_rec->pc++) = val;
-	*(mstk->the_rec->lc++) = line;
-	*(mstk->the_rec->fn++) = file;
-	mstk->the_rec->pcoffset = (int)(mstk->the_rec->pc - mstk->the_rec->themachine);
-
-	return(old_offset);
-}
 int _NclPutInstr
-#if __STDC__
+#if	NhlNeedProto
 (NclValue val,int line, char* file)
 #else
 (val,line,file)
@@ -941,7 +908,7 @@ int _NclPutInstr
 }
 
 int _NclGetCurrentOffset
-#if __STDC__
+#if	NhlNeedProto
 (void)
 #else
 ()
@@ -951,7 +918,7 @@ int _NclGetCurrentOffset
 }
 
 int _NclPutInstrAt
-#if __STDC__
+#if	NhlNeedProto
 (int offset,NclValue val,int line, char* file)
 #else 
 (offset, val, line, file)
@@ -979,7 +946,7 @@ int _NclPutInstrAt
 
 
 void _NclPrintMachine
-#if  __STDC__
+#if	NhlNeedProto
 (int from, int to,FILE* fp)
 #else
 (from,to,fp)
@@ -1268,7 +1235,7 @@ void _NclPrintMachine
 
 
 extern void _NclAddObjToParamList
-#if  __STDC__
+#if	NhlNeedProto
 (struct _NclObjRec *obj, int arg_num)
 #else
 (obj,arg_num)
@@ -1320,7 +1287,7 @@ extern void _NclAddObjToParamList
 }
 /*ARGSUSED*/
 void _NclRemapIntrParameters
-#if  __STDC__ 
+#if	NhlNeedProto
 (int nargs, void *previous_fp, int from)
 #else
 (nargs,previous_fp,from)
@@ -1399,7 +1366,7 @@ int from;
 	}
 }
 void _NclRemapParameters
-#if __STDC__
+#if	NhlNeedProto
 (int nargs,int cur_off,void *previous_fp,int from)
 #else
 (nargs,cur_off,previous_fp,from)
@@ -1851,7 +1818,7 @@ void _NclRemapParameters
 }
 
 void _NclDumpStack
-#if __STDC__
+#if	NhlNeedProto
 (FILE *fp,int off)
 #else 
 (fp,off) 
@@ -1966,7 +1933,7 @@ void _NclDumpStack
 }
 
 NhlErrorTypes _NclPlaceReturn
-#if __STDC__
+#if	NhlNeedProto
 (struct _NclStackEntry data)
 #else
 (data)
@@ -1978,7 +1945,7 @@ NhlErrorTypes _NclPlaceReturn
 }
 
 void _NclCleanUpStack
-#if  __STDC__
+#if	NhlNeedProto
 (int n)
 #else
 (n)
@@ -2009,6 +1976,40 @@ void _NclCleanUpStack
 	}
 }
 
+int _NclPutRealInstr
+#if	NhlNeedProto
+(float val, int line, char* file)
+#else
+(val,line,file)
+float val;
+int line;
+char *file;
+#endif
+{
+/* 
+* Sometimes the parser needs to know the offset of the instruction it put
+* into the instruction list (i.e. function return addresses, loops and 
+* conditionals. Therefore it is necessary to return the offset of the instruct
+* being placed in the list.
+*/
+	int old_offset = (int)(mstk->the_rec->pc - mstk->the_rec->themachine);
+
+/*
+* Check for overflow
+*/
+	if(mstk->the_rec->pc >= &(mstk->the_rec->themachine[mstk->the_rec->current_machine_size -1])) {
+/*
+* Will take care of updating mstk->the_rec->pc
+*/
+		IncreaseMachineSize();
+	}
+	*((float*)mstk->the_rec->pc++) = val;
+	*(mstk->the_rec->lc++) = line;
+	*(mstk->the_rec->fn++) = file;
+	mstk->the_rec->pcoffset = (int)(mstk->the_rec->pc - mstk->the_rec->themachine);
+
+	return(old_offset);
+}
 #ifdef __cplusplus
 }
 #endif

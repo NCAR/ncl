@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValData.c,v 1.2 1994-09-01 17:41:33 ethan Exp $
+ *      $Id: NclMultiDValData.c,v 1.3 1994-12-23 01:18:30 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -29,7 +29,7 @@
 #include "NclMultiDValData.h"
 
 static NhlErrorTypes MultiDValAddParent
-#if __STDC__
+#if	NhlNeedProto
 (NclObj theobj, NclObj parent)
 #else 
 (theobj, parent)
@@ -48,7 +48,7 @@ NclObj parent;
 }
 
 static NhlErrorTypes MultiDValDelParent
-#if __STDC__
+#if	NhlNeedProto
 (NclObj theobj, NclObj parent)
 #else 
 (theobj, parent)
@@ -149,7 +149,7 @@ NclObjClass nclMultiDValDataClass = (NclObjClass)&nclMultiDValDataClassRec;
 
 
 struct _NclMultiDValDataRec * _NclMultiDValDataCreate
-#if     __STDC__
+#if	NhlNeedProto
 (NclObj inst , NclObjClass theclass , NclObjTypes obj_type , unsigned int obj_type_mask, NclStatus status)
 #else
 (inst , theclass , obj_type ,obj_type_mask, status)

@@ -1,5 +1,5 @@
 /*
- *      $Id: DataSupport.c,v 1.8 1994-12-21 01:57:25 ethan Exp $
+ *      $Id: DataSupport.c,v 1.9 1994-12-23 01:17:19 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -49,7 +49,7 @@ extern void _NclInitDataClasses
 
 
 NclMultiDValData _NclStringMdToCharMd
-#if __STDC__
+#if	NhlNeedProto
 (NclMultiDValData str_md)
 #else
 (str_md)
@@ -100,7 +100,7 @@ NclMultiDValData str_md;
 		NULL));
 }
 NclMultiDValData _NclCharMdToStringMd
-#if __STDC__
+#if	NhlNeedProto
 (NclMultiDValData char_md)
 #else
 (char_md)
@@ -162,7 +162,7 @@ NclMultiDValData char_md;
 */
 
 long _NclObjTypeToName
-#if  __STDC__ 
+#if	NhlNeedProto
 (NclObjTypes obj)
 #else
 (obj)
@@ -197,7 +197,7 @@ long _NclObjTypeToName
 	}
 }
 unsigned int _NclKeywordToObjType
-#if  __STDC__ 
+#if	NhlNeedProto
 (struct _NclSymbol *keywd)
 #else
 (keywd)
@@ -239,7 +239,7 @@ unsigned int _NclKeywordToObjType
 }
 
 NclObjTypes _NclBasicDataTypeToObjType
-#if __STDC__
+#if	NhlNeedProto
 (NclBasicDataTypes dt)
 #else
 (dt)
@@ -273,7 +273,7 @@ NclObjTypes _NclBasicDataTypeToObjType
 }
 
 NclBasicDataTypes _NclKeywordToDataType
-#if  __STDC__
+#if	NhlNeedProto
 (struct _NclSymbol *keywd)
 #else
 (keywd)
@@ -316,7 +316,7 @@ NclBasicDataTypes _NclKeywordToDataType
 
 
 int _NclSizeOf
-#if  __STDC__
+#if	NhlNeedProto
 (NclBasicDataTypes data_type)
 #else 
 (data_type)
@@ -348,7 +348,7 @@ NclBasicDataTypes data_type;
 }
 
 void _NclDestroyObj
-#if  __STDC__
+#if	NhlNeedProto
 (NclObj obj)
 #else
 (obj)
@@ -377,7 +377,7 @@ void _NclDestroyObj
 
 
 int _NclScalarCoerce
-#if  __STDC__
+#if	NhlNeedProto
 (void *from,NclBasicDataTypes frtype,void *to,NclBasicDataTypes totype)
 #else
 (from,frtype,to,totype)
@@ -492,7 +492,7 @@ NclBasicDataTypes totype;
 }
 
 void _NclPrint
-#if  __STDC__
+#if	NhlNeedProto
 (NclObj obj,FILE *fp)
 #else 
 (obj,fp)
@@ -521,7 +521,7 @@ FILE *fp;
 
 
 NclMultiDValData _NclCoerceData
-#if  __STDC__
+#if	NhlNeedProto
 (NclMultiDValData obj, NclObjTypes coerce_to,NclScalar *new_missing)
 #else
 (obj, coerce_to,new_missing)
@@ -550,7 +550,7 @@ NclScalar *new_missing;
 }
 
 NhlErrorTypes _NclCallDualOp
-#if  __STDC__
+#if	NhlNeedProto
 (NclMultiDValData lhs_data_obj, NclMultiDValData rhs_data_obj, int operation, NclObj *result)
 #else
 (lhs_data_obj, rhs_data_obj, operation,result)
@@ -677,7 +677,7 @@ NclObj *result;
 
 
 NhlErrorTypes _NclCallMonoOp
-#if  __STDC__
+#if	NhlNeedProto
 (NclMultiDValData operand, NclObj *result, int operation)
 #else
 (operand, result,operation)
@@ -720,7 +720,7 @@ int operation;
 
 
 int _NclIsMissing 
-#if __STDC__
+#if	NhlNeedProto
 (NclMultiDValData self, void* val)
 #else 
 (self, val)
@@ -745,7 +745,7 @@ void* val;
 	return(0);
 }
 struct _NclMultiDValDataRec* _NclCopyVal
-#if     __STDC__
+#if	NhlNeedProto
 (struct _NclMultiDValDataRec * self,NclScalar *new_missing)
 #else
 (self,new_missing)
@@ -771,7 +771,7 @@ NclScalar *new_missing;
 }
 
 void _NclResetMissingValue
-#if	__STDC__
+#if	NhlNeedProto
 (struct _NclMultiDValDataRec * self,NclScalar *missing)
 #else
 (self,missing)
@@ -800,7 +800,7 @@ void _NclResetMissingValue
 
 
 struct _NclMultiDValDataRec * _NclCreateVal
-#if	__STDC__
+#if	NhlNeedProto
 ( NclObj inst, NclObjClass theclass, NclObjTypes obj_type, unsigned int obj_type_mask, void *val, NclScalar *missing_value, int n_dims, int *dim_sizes, NclStatus status, NclSelectionRecord *sel_rec)
 #else 
 ( inst, theclass, obj_type, obj_type_mask, val, missing_value, n_dims, dim_sizes, status, sel_rec)
@@ -957,7 +957,7 @@ NclSelectionRecord *sel_rec;
 
 
 NhlErrorTypes _NclAddParent
-#if __STDC__
+#if	NhlNeedProto
 (struct _NclObjRec * theobj, struct _NclObjRec* parent)
 #else
 ( theobj,  parent)
@@ -984,7 +984,7 @@ struct _NclObjRec* parent;
 }
 
 NhlErrorTypes _NclDelParent
-#if __STDC__
+#if	NhlNeedProto
 (struct _NclObjRec * theobj, struct _NclObjRec* parent)
 #else
 (theobj, parent)
@@ -1011,7 +1011,7 @@ struct _NclObjRec* parent;
 
 
 extern int _NclGetObjRefCount
-#if __STDC__
+#if	NhlNeedProto
 (int the_id)
 #else
 (the_id)
@@ -1030,7 +1030,7 @@ extern int _NclGetObjRefCount
 
 
 extern char* _NclBasicDataTypeToName
-#if     __STDC__
+#if	NhlNeedProto
 (NclBasicDataTypes dt)
 #else
 (dt)
@@ -1077,7 +1077,7 @@ NclBasicDataTypes dt;
 }
 
 extern NclBasicDataTypes _NclPromoteType
-#if     __STDC__
+#if	NhlNeedProto
 (NclBasicDataTypes dt)
 #else
 (dt)

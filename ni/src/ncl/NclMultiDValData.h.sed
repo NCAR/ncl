@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValData.h.sed,v 1.3 1994-09-01 17:41:38 ethan Exp $
+ *      $Id: NclMultiDValData.h.sed,v 1.4 1994-12-23 01:18:33 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -55,7 +55,7 @@ typedef struct _NclMultiDValDATATYPEDataClassRec* NclMultiDValDATATYPEDataClass;
 extern NclObjClass nclMultiDValDATATYPEDataClass;
 
 NclMultiDValData _NclMultiDValDATATYPECreate(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NclObj 		/* inst */,
 NclObjClass     /* theclass */,
 NclObjTypes     /* obj_type */,

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Memory.c,v 1.9 1994-08-25 18:00:33 ethan Exp $
+ *      $Id: Memory.c,v 1.10 1994-12-23 01:17:44 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -36,7 +36,7 @@ unsigned long total = 0;
 
 void
 *NclMalloc
-#if     __STDC__
+#if	NhlNeedProto
 (
         unsigned int    size    /* size of memory requested     */
 )
@@ -61,7 +61,7 @@ void
 
 NhlErrorTypes
 NclFree
-#if     __STDC__
+#if	NhlNeedProto
 (
         void            *ptr    /* pointer to memory to free    */
 )
@@ -118,7 +118,7 @@ NclFree
  */
 void
 *NclCalloc
-#if	__STDC__
+#if	NhlNeedProto
 (
 	unsigned int	num,	/* number of elements		*/
 	unsigned int	size	/* size of each element		*/
@@ -161,7 +161,7 @@ void
  */
 void
 *NclRealloc
-#if	__STDC__
+#if	NhlNeedProto
 (
 	void		*ptr,	/* pointer to old memory	*/
 	unsigned int	size	/* size of memory requested	*/
@@ -188,7 +188,7 @@ void
 
 
 void _NclFreeSubRec 
-#if __STDC__
+#if	NhlNeedProto
 (struct _NclSubRec * sub_rec)
 #else 
 (sub_rec)

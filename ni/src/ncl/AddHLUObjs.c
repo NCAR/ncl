@@ -2,7 +2,7 @@
 
 
 /*
- *      $Id: AddHLUObjs.c,v 1.6 1994-11-07 03:02:12 ethan Exp $
+ *      $Id: AddHLUObjs.c,v 1.7 1994-12-23 01:17:13 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -30,7 +30,7 @@ extern "C" {
 #include <ncarg/hlu/BaseP.h>
 
 extern void _NclAddSingleObj(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 char * /*name*/,
 struct _NhlLayerClassRec * /* the_ptr */
 #endif
@@ -56,7 +56,7 @@ extern NhlLayerClass NhlappLayerClass;
 
 
 void _NclAddHLUObjs
-#if __STDC__
+#if	NhlNeedProto
 (void)
 #else
 ()

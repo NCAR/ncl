@@ -9,7 +9,7 @@ extern "C" {
 #ifdef DEBUGER
 
 void printtoken
-#if __STDC__
+#if	NhlNeedProto
 (int type,char* name)
 #else
 (type,name)

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: SrcTree.c,v 1.20 1994-12-22 01:42:31 ethan Exp $
+ *      $Id: SrcTree.c,v 1.21 1994-12-23 01:19:09 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -96,7 +96,7 @@ char *ref_node_names[] = { "Ncl_READIT", "Ncl_WRITEIT", "Ncl_PARAMIT" };
  * Side Effect:	Possible memory allocation.
  */
 void _NclRegisterNode
-#if __STDC__
+#if	NhlNeedProto
 (struct ncl_genericnode *thenode)
 #else
 (thenode) 
@@ -140,7 +140,7 @@ void _NclRegisterNode
  * Side Effect:	If called before freeing the tree memory leaks will occur!
  */
 void _NclResetNodeList
-#if __STDC__
+#if	NhlNeedProto
 (void)
 #else 
 ()
@@ -154,7 +154,7 @@ void _NclResetNodeList
 
 
 void _NclGenericDestroy
-#if  __STDC__
+#if	NhlNeedProto
 (struct ncl_genericnode *thenode)
 #else
 (thenode)
@@ -166,7 +166,7 @@ void _NclGenericDestroy
 
 
 void *_NclMakeBreakCont
-#if  __STDC__
+#if	NhlNeedProto
 (NclSymbol *thesym)
 #else
 (thesym)
@@ -202,7 +202,7 @@ void *_NclMakeBreakCont
  * Side Effect:	
  */
 void *_NclMakeReturn
-#if  __STDC__
+#if	NhlNeedProto
 (void * return_expr)
 #else
 (return_expr) 
@@ -240,7 +240,7 @@ void *_NclMakeReturn
  * Side Effect:	
  */
 void *_NclMakeIfThen
-#if  __STDC__
+#if	NhlNeedProto
 (void * conditional_expr, NclSrcListNode * block_stmnt_list)
 #else
 (conditional_expr, block_stmnt_list)
@@ -280,7 +280,7 @@ NclSrcListNode * block_stmnt_list;
  * Side Effect:	
  */
 void *_NclMakeIfThenElse
-#if  __STDC__
+#if	NhlNeedProto
 (void * conditional_expr, NclSrcListNode * block_stmnt_list1, NclSrcListNode * block_stmnt_list2)
 #else
 (conditional_expr, block_stmnt_list1, block_stmnt_list2)
@@ -310,7 +310,7 @@ NclSrcListNode * block_stmnt_list2;
 
 
 void _NclGResDestroy
-#if __STDC__
+#if	NhlNeedProto
 (struct ncl_genericnode *thenode)
 #else
 (thenode)
@@ -336,7 +336,7 @@ void _NclGResDestroy
  * Side Effect:	
  */
 void *_NclMakeGetResource
-#if __STDC__
+#if	NhlNeedProto
 (char *resname, void *target_idn)
 #else
 (resname , target_idn)
@@ -359,7 +359,7 @@ void *_NclMakeGetResource
 }
 
 void _NclResDestroy
-#if __STDC__
+#if	NhlNeedProto
 (struct ncl_genericnode *thenode)
 #else
 (thenode)
@@ -384,7 +384,7 @@ void _NclResDestroy
  * Side Effect:	
  */
 void *_NclMakeResource
-#if __STDC__
+#if	NhlNeedProto
 (char *resname, void *expr)
 #else
 (resname , expr)
@@ -421,7 +421,7 @@ void *_NclMakeResource
  */
 /*
 extern void *_NclMakeObjRef
-#ifdef __STDC__
+#if	NhlNeedProto
 (NclSymbol* obj)
 #else
 (obj)
@@ -455,7 +455,7 @@ extern void *_NclMakeObjRef
  * Side Effect:	
  */
 void *_NclMakeVis
-#if  __STDC__
+#if	NhlNeedProto
 (void *obj_name_expr,NclSymbol *objtype,void *objparent,NclSrcListNode* resource_list,NclSrcTreeTypes nodetype)
 #else
 (obj_name_expr,objtype,objparent,resource_list,nodetype)
@@ -484,7 +484,7 @@ NclSrcTreeTypes nodetype;
 }
 
 void *_NclMakeSGVis
-#if  __STDC__
+#if	NhlNeedProto
 (void *objname,NclSrcListNode* resource_list,NclSrcTreeTypes nodetype)
 #else
 (objname,resource_list,nodetype)
@@ -521,7 +521,7 @@ NclSrcTreeTypes nodetype;
  * Side Effect:	
  */
 NclSrcListNode *_NclMakeNewListNode
-#if  __STDC__
+#if	NhlNeedProto
 (void)
 #else
 ()
@@ -554,7 +554,7 @@ NclSrcListNode *_NclMakeNewListNode
  * Side Effect:	
  */
 void *_NclMakeDoFromTo
-#if  __STDC__
+#if	NhlNeedProto
 (void* var, void *start_expr, void *end_expr, NclSrcListNode *block_stmnt_list)
 #else
 (var,start_expr,end_expr,block_stmnt_list)
@@ -600,7 +600,7 @@ NclSrcListNode * block_stmnt_list;
  * Side Effect:	
  */
 void *_NclMakeDoFromToStride
-#if  __STDC__
+#if	NhlNeedProto
 (void *var, void *start_expr, void *end_expr, void *stride_expr, NclSrcListNode *block_stmnt_list)
 #else
 (var,start_expr,end_expr,stride_expr,block_stmnt_list)
@@ -649,7 +649,7 @@ NclSrcListNode *block_stmnt_list;
  * Side Effect:	
  */
 void *_NclMakeProcCall
-#if  __STDC__
+#if	NhlNeedProto
 (NclSymbol * proc, NclSrcListNode * arg_list,NclSrcTreeTypes type)
 #else
 (proc, arg_list,type)
@@ -676,7 +676,7 @@ NclSrcTreeTypes type;
 }
 
 void _NclAddProcFuncInfoToSym
-#if __STDC__
+#if	NhlNeedProto
 (NclSymbol * pf_sym,NclSrcListNode *dec_list)
 #else
 (pf_sym,dec_list)
@@ -754,7 +754,7 @@ NclSrcListNode *dec_list;
  * Side Effect:	
  */
 void *_NclMakeNFunctionDef
-#if  __STDC__
+#if	NhlNeedProto
 (NclSymbol *func, NclSrcListNode * dec_list,  void *block, NclSymTableListNode* thescope)
 #else 
 (func,dec_list,block,thescope)
@@ -798,7 +798,7 @@ NclSymTableListNode* thescope;
 }
 
 void _NclEFunctionDefDestroy
-#if __STDC__
+#if	NhlNeedProto
 (struct ncl_genericnode *thenode)
 #else 
 (thenode)
@@ -825,7 +825,7 @@ void _NclEFunctionDefDestroy
  * Side Effect:	
  */
 void* _NclMakeEFunctionDef
-#if  __STDC__
+#if	NhlNeedProto
 (NclSymbol *func, NclSrcListNode *dec_list, char *path_info_string,NclSymTableListNode* thescope)
 #else
 (func, dec_list, path_info_string,thescope)
@@ -869,7 +869,7 @@ NclSymTableListNode *thescope;
  * Side Effect:	
  */
 void* _NclMakeLocalVarDec
-#if  __STDC__
+#if	NhlNeedProto
 (NclSymbol* var, NclSrcListNode *dim_size_list, NclSymbol *param_type)
 #else 
 (var,dim_size_list,param_type)
@@ -912,7 +912,7 @@ NclSymbol* param_type;
  * Side Effect:	
  */
 void * _NclMakeDimSizeNode
-#if  __STDC__
+#if	NhlNeedProto
 (int size)
 #else
 (size)
@@ -955,7 +955,7 @@ void * _NclMakeDimSizeNode
  * Side Effect:	
  */
 void * _NclMakeProcDef
-#if  __STDC__
+#if	NhlNeedProto
 (NclSymbol *var, NclSrcListNode *arg_list, void* block,NclSymTableListNode *thescope)
 #else 
 (var, arg_list, block,thescope)
@@ -1040,7 +1040,7 @@ NclSymTableListNode *thescope;
 }
 
 void _NclEProcDestroy
-#if  __STDC__
+#if	NhlNeedProto
 (struct ncl_genericnode *thenode)
 #else
 (thenode)
@@ -1066,7 +1066,7 @@ void _NclEProcDestroy
  * Side Effect:	
  */
 void* _NclMakeExternalProcDef
-#if  __STDC__
+#if	NhlNeedProto
 (NclSymbol *var,NclSrcListNode *dec_list, char* path_info_string,NclSymTableListNode *thescope)
 #else
 (var,dec_list,path_info_string,thescope)
@@ -1111,7 +1111,7 @@ NclSymTableListNode *thescope;
  * Side Effect:	
  */
 void* _NclMakeAssignment
-#if  __STDC__
+#if	NhlNeedProto
 (void *name_ref, void *expr)
 #else
 (name_ref,expr)
@@ -1152,7 +1152,7 @@ void *expr;
  * Side Effect:	
  */
 void* _NclMakeIdnRef
-#if  __STDC__
+#if	NhlNeedProto
 (void *name, NclSrcListNode *subscript_list)
 #else
 (name, subscript_list)
@@ -1191,7 +1191,7 @@ NclSrcListNode *subscript_list;
  * Side Effect:	
  */
 void* _NclMakeIntSubscript
-#if  __STDC__
+#if	NhlNeedProto
 (void * subexpr, char * dimname )
 #else  
 (subexpr,dimname)
@@ -1221,7 +1221,7 @@ char * dimname;
 }
 
 void _NclCoordSubscriptDestroy
-#if __STDC__
+#if	NhlNeedProto
 (struct ncl_genericnode *thenode)
 #else
 (thenode)
@@ -1246,7 +1246,7 @@ void _NclCoordSubscriptDestroy
  * Side Effect:	
  */
 void* _NclMakeCoordSubscript
-#if __STDC__
+#if	NhlNeedProto
 (void *subexpr, char *dimname)
 #else
 (subexpr, dimname)
@@ -1290,7 +1290,7 @@ char *dimname;
  * Side Effect:	
  */
 void* _NclMakeSingleIndex
-#if  __STDC__
+#if	NhlNeedProto
 (void *expr)
 #else
 (expr)
@@ -1329,7 +1329,7 @@ void* _NclMakeSingleIndex
  * Side Effect:	
  */
 void* _NclMakeRangeIndex
-#if  __STDC__
+#if	NhlNeedProto
 (void * start_expr, void * end_expr, void* stride)
 #else
 (start_expr,end_expr,stride)
@@ -1372,7 +1372,7 @@ void * stride;
  * Side Effect:	
  */
 void * _NclMakeUnaryExpr
-#if  __STDC__
+#if	NhlNeedProto
 (void * expr, NclSrcTreeTypes type)
 #else
 (expr,type)
@@ -1410,7 +1410,7 @@ NclSrcTreeTypes type;
  * Side Effect:	
  */
 void *_NclMakeIdnExpr
-#if __STDC__
+#if	NhlNeedProto
 (void *idn_ref_node)
 #else 
 (idn_ref_node)
@@ -1444,7 +1444,7 @@ void *_NclMakeIdnExpr
  * Side Effect:	
  */
 void * _NclMakeExpr
-#if  __STDC__
+#if	NhlNeedProto
 (void * left_expr, void * right_expr, NclSrcTreeTypes type)
 #else
 (left_expr,right_expr,type)
@@ -1485,7 +1485,7 @@ NclSrcTreeTypes type;
  * Side Effect:	
  */
 void * _NclMakeRealExpr
-#if __STDC__
+#if	NhlNeedProto
 (float real,char *string_rep)
 #else
 (real,string_rep)
@@ -1535,7 +1535,7 @@ char *string_rep;
  * Side Effect:	
  */
 void * _NclMakeIntExpr
-#if  __STDC__
+#if	NhlNeedProto
 (int integer,char* string_rep)
 #else
 (integer,string_rep)
@@ -1565,7 +1565,7 @@ char* string_rep;
 
 
 void _NclStringExprDestroy
-#if __STDC__
+#if	NhlNeedProto
 (struct ncl_genericnode *thenode)
 #else
 (thenode)
@@ -1590,7 +1590,7 @@ void _NclStringExprDestroy
  * Side Effect:	
  */
 void * _NclMakeStringExpr
-#if  __STDC__
+#if	NhlNeedProto
 (char * str)
 #else
 (str)
@@ -1631,7 +1631,7 @@ char * str;
  * Side Effect:	
  */
 void * _NclMakeFuncCall
-#if  __STDC__
+#if	NhlNeedProto
 (NclSymbol * fname, NclSrcListNode * argument_list,NclSrcTreeTypes type)
 #else
 (fname, argument_list,type)
@@ -1673,7 +1673,7 @@ NclSrcTreeTypes type;
  * Side Effect:	
  */
 void *_NclMakeArrayNode
-#if  __STDC__
+#if	NhlNeedProto
 (NclRclList* rc_list)
 #else
 (rc_list)
@@ -1712,7 +1712,7 @@ NclRclList* rc_list;
  * Side Effect:	
  */
 NclRclList *_NclMakeRowList
-#if __STDC__
+#if	NhlNeedProto
 (void)
 #else
 ()
@@ -1742,7 +1742,7 @@ NclRclList *_NclMakeRowList
  * Side Effect:	
  */
 void *_NclMakeWhile
-#if  __STDC__
+#if	NhlNeedProto
 (void * cond_expr, NclSrcListNode * statements)
 #else
 (cond_expr, statements)
@@ -1781,7 +1781,7 @@ NclSrcListNode * statements;
  * Side Effect:	
  */
 void *_NclMakeBlock
-#if  __STDC__
+#if	NhlNeedProto
 (NclSrcListNode *statements)
 #else
 (statements)
@@ -1804,7 +1804,7 @@ NclSrcListNode *statements;
 }
 
 void putspace
-#if __STDC__
+#if	NhlNeedProto
 (int i,FILE *fp)
 #else
 (i,fp)
@@ -1820,7 +1820,7 @@ void putspace
 }
 
 void _NclPrintSymbol
-#if  __STDC__
+#if	NhlNeedProto
 (NclSymbol *sym,FILE *fp)
 #else
 (sym,fp)
@@ -1948,7 +1948,7 @@ void _NclPrintSymbol
 }
 
 void _NclPrintTree
-#if __STDC__
+#if	NhlNeedProto
 (void *root,FILE *fp)
 #else
 (root,fp)
@@ -2681,7 +2681,7 @@ if(groot != NULL) {
 
 
 void _NclFileVarDestroy
-#if  __STDC__
+#if	NhlNeedProto
 (struct ncl_genericnode *thenode)
 #else
 (thenode)
@@ -2692,7 +2692,7 @@ void _NclFileVarDestroy
 	NclFree((void*)tmp);
 }
 void *_NclMakeFileVarRef
-#if  __STDC__
+#if	NhlNeedProto
 (NclSymbol *dfile,char * filevar, NclSrcListNode * subscript_list, int type )
 #else
 (dfile ,filevar, subscript_list ,type)
@@ -2722,7 +2722,7 @@ int type;
 
 
 void *_NclMakeVarRef
-#if  __STDC__
+#if	NhlNeedProto
 (NclSymbol *var,NclSrcListNode *subscript_list)
 #else
 (var,subscript_list)
@@ -2749,7 +2749,7 @@ NclSrcListNode *subscript_list;
 }
 
 void *_NclMakeVarDimRef
-#if  __STDC__
+#if	NhlNeedProto
 (NclSymbol *var,void*  dim_expr)
 #else
 (var,dim_expr)
@@ -2774,7 +2774,7 @@ void *dim_expr;
 	return((void*)tmp);
 }
 void _NclFileVarDimNumRefDestroy
-#if __STDC__
+#if	NhlNeedProto
 (struct ncl_genericnode *thenode)
 #else
 (thenode)
@@ -2786,7 +2786,7 @@ void _NclFileVarDimNumRefDestroy
 	NclFree((void*)tmp);
 }
 void *_NclMakeFileVarDimRef
-#if  __STDC__
+#if	NhlNeedProto
 (NclSymbol *var,char *filevar,void *dim_expr)
 #else
 (var,filevar,dim_expr)
@@ -2814,7 +2814,7 @@ void *dim_expr;
 }
 
 void _NclFileVarAttRefDestroy
-#if  __STDC__
+#if	NhlNeedProto
 (struct ncl_genericnode *thenode)
 #else 
 (thenode)
@@ -2825,7 +2825,7 @@ void _NclFileVarAttRefDestroy
 	NclFree((void*)tmp);
 }
 void *_NclMakeFileVarAttRef
-#if  __STDC__
+#if	NhlNeedProto
 (NclSymbol *file,char* filevar, char *attname,NclSrcListNode *subscript_list)
 #else
 (file,filevar,attname,subscript_list)
@@ -2855,7 +2855,7 @@ NclSrcListNode *subscript_list;
 	return((void*)tmp);
 }
 void _NclVarAttRefDestroy
-#if  __STDC__
+#if	NhlNeedProto
 (struct ncl_genericnode *thenode)
 #else 
 (thenode)
@@ -2866,7 +2866,7 @@ void _NclVarAttRefDestroy
 	NclFree((void*)tmp);
 }
 void *_NclMakeVarAttRef
-#if  __STDC__
+#if	NhlNeedProto
 (NclSymbol *var,char *attname,NclSrcListNode *subscript_list)
 #else
 (var,attname,subscript_list)
@@ -2894,7 +2894,7 @@ NclSrcListNode *subscript_list;
 	return((void*)tmp);
 }
 void _NclFileVarCoordRefDestroy
-#if __STDC__
+#if	NhlNeedProto
 (struct ncl_genericnode *thenode)
 #else
 (thenode)
@@ -2906,7 +2906,7 @@ void _NclFileVarCoordRefDestroy
 	NclFree((void*)tmp);
 }
 void *_NclMakeFileVarCoordRef
-#if  __STDC__
+#if	NhlNeedProto
 (NclSymbol *var,char* filevar, char *coord,NclSrcListNode *subscript_list)
 #else
 (var,coord,filevar,subscript_list)
@@ -2936,7 +2936,7 @@ NclSrcListNode *subscript_list;
 	return((void*)tmp);
 }
 void _NclVarCoordRefDestroy
-#if __STDC__
+#if	NhlNeedProto
 (struct ncl_genericnode *thenode)
 #else
 (thenode)
@@ -2948,7 +2948,7 @@ void _NclVarCoordRefDestroy
 	NclFree((void*)tmp);
 }
 void *_NclMakeVarCoordRef
-#if  __STDC__
+#if	NhlNeedProto
 (NclSymbol *var,char *coord,NclSrcListNode *subscript_list)
 #else
 (var,coord,subscript_list)
@@ -2979,7 +2979,7 @@ NclSrcListNode *subscript_list;
 
 
 void *_NclMakeNewOp
-#ifdef __STDC__
+#if	NhlNeedProto
 (void * size_expr, struct _NclSymbol * datatype,void *missing_expr)
 #else
 (size_expr,datatype,missing_expr)
@@ -3009,7 +3009,7 @@ void *missing_expr;
 
 
 void _NclFreeTree
-#if __STDC__
+#if	NhlNeedProto
 (void )
 #else
 ()

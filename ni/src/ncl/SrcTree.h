@@ -1,6 +1,6 @@
 
 /*
- *      $Id: SrcTree.h,v 1.12 1994-12-22 01:42:34 ethan Exp $
+ *      $Id: SrcTree.h,v 1.13 1994-12-23 01:19:12 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -595,20 +595,20 @@ typedef struct ncl_newnode{
 }NclNew;
 
 extern void *_NclMakeReturn(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void *	/*return_expr*/
 #endif
 );
 
 extern void *_NclMakeIfThen(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void * /*conditional_expr*/,
 NclSrcListNode * /*block_stmnt_list*/
 #endif
 );
 
 extern void *_NclMakeIfThenElse(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void * /*conditional_expr*/,
 NclSrcListNode * /*block_stmnt_list1*/,
 NclSrcListNode * /*block_stmnt_list2*/
@@ -616,14 +616,14 @@ NclSrcListNode * /*block_stmnt_list2*/
 );
 
 extern void *_NclMakeSGVis(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void * /*objname*/,
 NclSrcListNode *  /*objtype*/,
 NclSrcTreeTypes /*nodetype*/
 #endif
 );
 extern void *_NclMakeVis(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void * /*obj_name_expr*/,
 NclSymbol* /*objtype*/,
 void */*objparent*/,
@@ -633,13 +633,13 @@ NclSrcTreeTypes /*nodetype*/
 );
 
 extern NclSrcListNode *_NclMakeNewListNode(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void
 #endif
 );
 
 extern void *_NclMakeDoFromTo(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void* /*var*/,
 void *	/*start_expr*/,
 void *  /*end_expr*/,
@@ -648,7 +648,7 @@ NclSrcListNode * /*block_stmnt_list */
 );
 
 extern void *_NclMakeDoFromToStride(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void* /*var*/,
 void *	/*start_expr*/,
 void *  /*end_expr*/,
@@ -658,7 +658,7 @@ NclSrcListNode * /*block_stmnt_list */
 );
 
 extern void *_NclMakeProcCall(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NclSymbol * /* proc */,
 NclSrcListNode * /* arg_list */,
 NclSrcTreeTypes /* type */
@@ -666,7 +666,7 @@ NclSrcTreeTypes /* type */
 );
 
 extern void *_NclMakeNFunctionDef(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NclSymbol * /* func */,
 NclSrcListNode * /*dec_list*/,
 void*		/* block */,
@@ -675,7 +675,7 @@ NclSymTableListNode * /*scope*/
 );
 
 extern void* _NclMakeEFunctionDef(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NclSymbol * /* func */,
 NclSrcListNode * /*dec_list*/,
 char *		/* path_info_string */,
@@ -684,7 +684,7 @@ NclSymTableListNode * /*scope*/
 );
 
 extern void* _NclMakeLocalVarDec(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NclSymbol* /* var */,
 NclSrcListNode * /*dim_size_list */,
 NclSymbol*	/* param_type */
@@ -692,13 +692,13 @@ NclSymbol*	/* param_type */
 );
 
 extern void * _NclMakeDimSizeNode(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 int /* size */
 #endif
 );
 
 extern void * _NclMakeProcDef(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NclSymbol * /*var*/,
 NclSrcListNode * /*arg_list */,
 void*	/*block*/,
@@ -707,7 +707,7 @@ NclSymTableListNode * /*thescope*/
 );
 
 extern void* _NclMakeExternalProcDef(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NclSymbol * /* var */,
 NclSrcListNode * /*dec_list */,
 char* /*path_info_string*/,
@@ -716,41 +716,41 @@ NclSymTableListNode * /*thescope*/
 );
 
 extern void* _NclMakeAssignment(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void * /*name_ref */,
 void * /*expr */
 #endif
 );
 
 extern void* _NclMakeIdnRef(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void * /* name */,
 NclSrcListNode * /* subscript_list */
 #endif
 );
 
 extern void* _NclMakeIntSubscript(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void * /* subexpr */,
 char * /* dimname */
 #endif
 );
 
 extern void* _NclMakeCoordSubscript(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	void * /*subexpr*/,
 	char * /* dimname */
 #endif
 );
 
 extern void* _NclMakeSingleIndex(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	void * /*expr*/
 #endif
 );
 
 extern void* _NclMakeRangeIndex(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	void * /*start_expr*/,
 	void * /*end_expr */,
 	void * /*stride */
@@ -758,20 +758,20 @@ extern void* _NclMakeRangeIndex(
 );
 
 extern void * _NclMakeUnaryExpr(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	void * /*expr */,
 	NclSrcTreeTypes /* type */
 #endif
 );	
 
 extern void *_NclMakeIdnExpr(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	void * /*idn_ref_node*/
 #endif
 );
 
 extern void * _NclMakeExpr(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	void * /* left_expr */,
 	void * /* right_expr */,
 	NclSrcTreeTypes /* type */
@@ -779,27 +779,27 @@ extern void * _NclMakeExpr(
 );
 
 extern void * _NclMakeRealExpr(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	float /*real*/,
 	char * /*string_rep*/
 #endif
 );
 
 extern void * _NclMakeIntExpr(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	int /* integer */,
 	char * /*string_rep*/
 #endif
 );
 
 extern void * _NclMakeStringExpr(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	char * /* string */
 #endif
 );
 
 extern void * _NclMakeFuncCall(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NclSymbol * /*fname*/,
 	NclSrcListNode * /*argument_list*/,
 	NclSrcTreeTypes  /*type*/
@@ -807,38 +807,38 @@ extern void * _NclMakeFuncCall(
 );
 
 extern void *_NclMakeArrayNode(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NclRclList* /*rc_list*/
 #endif
 );
 
 extern NclRclList *_NclMakeRowList(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	void
 #endif
 );
 
 extern void *_NclMakeWhile(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	void * /*cond_expr*/,
 	NclSrcListNode * /*statements*/
 #endif
 );
 
 extern void *_NclMakeBlock(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NclSrcListNode * /* statements */
 #endif
 );
 
 extern void *_NclMakeFileRef(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NclSymbol * /* dfile */
 #endif
 );
 
 extern void *_NclMakeFileVarRef(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NclSymbol * /* dfile */,
 	char * /* filevar */,
 	NclSrcListNode * /* subscript_list */,
@@ -849,7 +849,7 @@ extern void *_NclMakeFileVarRef(
 
 
 extern void *_NclMakeFileAttRef(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NclSymbol * /* dfile */,	
 	char *	    /* attname */,
 	NclSrcListNode * /* subscript_list */
@@ -857,20 +857,20 @@ extern void *_NclMakeFileAttRef(
 );
 
 extern void *_NclMakeVarRef(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NclSymbol * /* var */,
 	NclSrcListNode * /* subscript_list */
 #endif
 );	
 
 extern void *_NclMakeVarDimRef(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NclSymbol * /* var */,
 	void*	/* dimnumexpr */
 #endif
 );
 extern void *_NclMakeFileVarDimRef(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NclSymbol * /* var */,
 	char *	/*filevar*/,
 	void*	/* dimexpr */
@@ -878,7 +878,7 @@ extern void *_NclMakeFileVarDimRef(
 );
 
 extern void *_NclMakeFileVarAttRef(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NclSymbol * /* var */,
 	char * /* filevar */,
 	char * /* attname */,
@@ -886,7 +886,7 @@ extern void *_NclMakeFileVarAttRef(
 #endif
 );
 extern void *_NclMakeVarAttRef(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NclSymbol * /* var */,
 	char * /* attname */,
 	NclSrcListNode * /*subscript_list*/
@@ -894,7 +894,7 @@ extern void *_NclMakeVarAttRef(
 );
 
 extern void *_NclMakeFileVarCoordRef(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NclSymbol * /* var */,
 	char * /* filevar*/,
 	char * /* coord */,
@@ -902,7 +902,7 @@ extern void *_NclMakeFileVarCoordRef(
 #endif
 );
 extern void *_NclMakeVarCoordRef(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NclSymbol * /* var */,
 	char * /* coord */,
 	NclSrcListNode * /* subscript_list */
@@ -911,64 +911,64 @@ extern void *_NclMakeVarCoordRef(
 
 
 extern void *_NclMakeUndefErrorRef(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NclSymbol * /* var */
 #endif
 );
 
 extern void *_NclMakeGetResource(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	char * /*resname*/,
 	void* /*var */
 #endif
 );
 extern void *_NclMakeResource(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	char * /*resname*/,
 	void* /*expr*/
 #endif
 );
 /*
 extern void *_NclMakeObjRef(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 	NclSymbol * obj
 #endif
 );
 */
 extern void *_NclMakeEoln(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void
 #endif
 );
 
 extern void *_NclMakeBreakCont(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NclSymbol * /*thesym*/
 #endif
 );
 
 extern void _NclPrintTree(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void * /*root*/,
 FILE * /*fp*/
 #endif
 );
 
 extern void _NclFreeTree(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void 
 #endif
 );
 
 void _NclAddProcFuncInfoToSym(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 struct _NclSymbol * /*pf_sym*/,
 NclSrcListNode * /*dec_list*/
 #endif
 );
 
 void *_NclMakeNewOp(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void * /*size_expr*/,
 struct _NclSymbol * /*datatype*/,
 void * /*size_expr*/

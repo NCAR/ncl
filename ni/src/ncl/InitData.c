@@ -1,6 +1,6 @@
 
 /*
- *      $Id: InitData.c,v 1.1 1994-07-14 20:45:55 ethan Exp $
+ *      $Id: InitData.c,v 1.2 1994-12-23 01:17:35 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -31,7 +31,7 @@
 
 
 static NhlErrorTypes CallInitializePart
-#if  __STDC__
+#if	NhlNeedProto
 (NclObjClass oc,NclObjClass asuper_class)
 #else 
 (oc,asuper_class)
@@ -59,7 +59,7 @@ NclObjClass asuper_class;
 
 
 static NhlErrorTypes CallInitializeClass
-#if  __STDC__
+#if	NhlNeedProto
 (NclObjClass	oc)
 #else
 (oc)
@@ -98,7 +98,7 @@ NclObjClass oc;
 
 
 NhlErrorTypes _NclInitClass
-#if  __STDC__
+#if	NhlNeedProto
 (NclObjClass  oc)
 #else
 (oc)

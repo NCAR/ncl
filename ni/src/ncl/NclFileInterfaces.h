@@ -25,13 +25,13 @@ struct _NclFDimRec {
 };	
 
 typedef NclFormatFunctionRecPtr (*NclAddFileFormat) (
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void
 #endif
 );
 
 typedef void (*NclFreeFileRecFunc)(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void *
 #endif
 );
@@ -41,7 +41,7 @@ void *
 * file.
 */
 typedef void * (*NclGetFileRecFunc)(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NclQuark ,	/* Path name of file to be opened */
 int 		/* 0 for read/write, 1 for read only */
 #endif
@@ -52,7 +52,7 @@ int 		/* 0 for read/write, 1 for read only */
 * variables in the file.
 */
 typedef NclQuark* (*NclGetVarNamesFunc)(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void *,	 /* Private record used to identify which file is being accessed */
 int *	 /* Returns the number of variables in file */
 #endif
@@ -62,7 +62,7 @@ int *	 /* Returns the number of variables in file */
 * Returns a structure containg type, dimension names and dimension sizes
 */
 typedef NclFVarRec* (*NclGetVarInfoFunc)(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void *, /* Private record used to identify which file is being accessed */
 NclQuark /* variable name */
 #endif
@@ -72,7 +72,7 @@ NclQuark /* variable name */
 * Returns an array of dimension names
 */
 typedef NclQuark* (*NclGetDimNamesFunc)(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void *, /* Private record used to identify which file is being accessed */
 int *  /* Returns the number of dimensions in file */
 #endif
@@ -82,7 +82,7 @@ int *  /* Returns the number of dimensions in file */
 * Returns information on individual dimension
 */
 typedef NclFDimRec *(*NclGetDimInfoFunc)(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void *,  /* Private record used to identify which file is being accessed */
 NclQuark	/* name of dimension */
 #endif
@@ -93,7 +93,7 @@ NclQuark	/* name of dimension */
 * though
 */
 typedef NclQuark* (*NclGetAttNamesFunc)(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void *,  /* Private record used to identify which file is being accessed */
 int *	/* number of attributes in return list */	
 #endif
@@ -104,7 +104,7 @@ int *	/* number of attributes in return list */
 * elements
 */
 typedef NclFAttRec *(*NclGetAttInfoFunc)(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void *, 
 NclQuark  /* name of attribute requested */
 #endif
@@ -114,7 +114,7 @@ NclQuark  /* name of attribute requested */
 * Returns all atribute names belonging to the variable 
 */
 typedef NclQuark* (*NclGetVarAttNamesFunc)(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void *,  /* Private record used to identify which file is being accessed */
 NclQuark, /* the variable */
 int *	/* number of attributes in return list */	
@@ -125,7 +125,7 @@ int *	/* number of attributes in return list */
 * Returns information about type and size of attribute
 */
 typedef NclFAttRec *(*NclGetVarAttInfoFunc)(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void *,	
 NclQuark, /* Variable name */
 NclQuark  /* Atribute name */
@@ -136,7 +136,7 @@ NclQuark  /* Atribute name */
 * Returns information about type and size of coordinate variable
 */
 typedef NclFVarRec *(*NclGetCoordInfoFunc)(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void *,
 NclQuark  /* dimension name */
 #endif
@@ -146,7 +146,7 @@ NclQuark  /* dimension name */
 * Reads the data out of a coordinate variable
 */
 typedef void *(*NclReadCoordFunc)(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void *,
 NclQuark,  /* Var record of coordinate */
 long *,	 /* Beginning index */
@@ -157,7 +157,7 @@ void *
 );
 
 typedef void *(*NclReadNoStrideCoordFunc)(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void *,
 NclQuark,  /* Var record of coordinate */
 long *,	 /* Beginning index */
@@ -170,7 +170,7 @@ void *
 * Reads the data out of a variable
 */
 typedef void *(*NclReadVarFunc)(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void *,
 NclQuark,  /* Var record of coordinate */
 long*,	 /* Beginning index */
@@ -181,7 +181,7 @@ void *
 );
 
 typedef void *(*NclReadNoStrideVarFunc)(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void *,
 NclQuark,  /* Var record of coordinate */
 long*,	 /* Beginning index */
@@ -195,7 +195,7 @@ void *
 */
 
 typedef void *(*NclReadAttFunc)(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void *,
 NclQuark, /* Attribute record */
 void *
@@ -206,7 +206,7 @@ void *
 * Read data out of a file attribute
 */
 typedef void *(*NclReadVarAttFunc)(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void *,
 NclQuark, /* var record */
 NclQuark, /* Attribute record */
@@ -215,7 +215,7 @@ void *
 );
 
 typedef NhlErrorTypes (*NclWriteCoordFunc)(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void *,
 NclQuark,
 void *,		       /* Pointer to block of data */
@@ -226,7 +226,7 @@ long *
 );
 
 typedef NhlErrorTypes (*NclWriteNoStrideCoordFunc)(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void *,
 NclQuark,
 void *,		       /* Pointer to block of data */
@@ -236,7 +236,7 @@ long *			/* ending index */
 );
 
 typedef NhlErrorTypes (*NclWriteVarFunc)(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void *,
 NclQuark,  /* Variable to write to */
 void *,		       /* Pointer to block of data */
@@ -247,7 +247,7 @@ long *
 );
 
 typedef NhlErrorTypes (*NclWriteNoStrideVarFunc)(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void *,
 NclQuark,  /* Variable to write to */
 void *,		       /* Pointer to block of data */
@@ -257,7 +257,7 @@ long *			/* ending index */
 );
 
 typedef NhlErrorTypes (*NclWriteAttFunc)(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void *,
 NclQuark,	/* the attribute */
 void *		/* Block of data */
@@ -266,7 +266,7 @@ void *		/* Block of data */
 
 
 typedef NhlErrorTypes (*NclWriteVarAttFunc)(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void *,
 NclQuark,	/* the att quark */
 NclQuark,	/* the var quark */
@@ -276,7 +276,7 @@ void *		/* Block of data */
 
 
 typedef NhlErrorTypes (*NclRenameDimFunc) (
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void *,
 NclQuark  /* from */,
 NclQuark  /* to */
@@ -284,7 +284,7 @@ NclQuark  /* to */
 );
 
 typedef NhlErrorTypes (*NclAddDimFunc) (
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void *,
 NclQuark,
 int
@@ -292,14 +292,14 @@ int
 );
 
 typedef NhlErrorTypes (*NclAddVarCoordFunc) (
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void*, /* record */
 NclQuark, /*var_name */
 NclBasicDataTypes /*data_type*/
 #endif
 );
 typedef NhlErrorTypes (*NclAddVarFunc) (
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void*, /* record */
 NclQuark, /*var_name */
 NclBasicDataTypes, /* data_type */
@@ -310,7 +310,7 @@ long * /* dim_sizes */
 );
 
 typedef NhlErrorTypes (*NclAddVarAttFunc) (
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void * /*therec*/,
 NclQuark /*thevar*/,
 NclQuark /*theatt*/,
@@ -321,7 +321,7 @@ void * /*values*/
 );
 
 typedef NhlErrorTypes (*NclAddAttFunc) (
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void * /*therec*/,
 NclQuark /*theatt*/,
 NclBasicDataTypes /*data_type*/,
@@ -331,13 +331,13 @@ void * /*values*/
 );
 
 typedef NclBasicDataTypes (*NclMapFormatTypeToNcl)(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 void *
 #endif
 );
 
 typedef void* (*NclMapNclTypeToFormat)(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NclBasicDataTypes
 #endif
 );
@@ -377,14 +377,14 @@ NclMapNclTypeToFormat	map_ncl_type_to_format;
 };
 
 extern void _NclRegisterFormat(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
         NclAddFileFormat /* add_format */,
         char*   /* file_extension */
 #endif
 );
 
 extern NclFormatFunctionRecPtr _NclGetFormatFuncs(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NclQuark /* file_extension */
 #endif
 );

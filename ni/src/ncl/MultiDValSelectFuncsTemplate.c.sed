@@ -1,6 +1,6 @@
 
 /*
- *      $Id: MultiDValSelectFuncsTemplate.c.sed,v 1.1 1994-07-14 20:46:11 ethan Exp $
+ *      $Id: MultiDValSelectFuncsTemplate.c.sed,v 1.2 1994-12-23 01:17:56 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -22,7 +22,7 @@
  */
 
 static struct _NclDataRec *MultiDVal_DATATYPE_ReadSection
-#if  __STDC__
+#if	NhlNeedProto
 (NclData self, NclSelectionRecord * sel,NclScalar *missing)
 #else
 (self,sel,missing)
@@ -308,7 +308,7 @@ static struct _NclDataRec *MultiDVal_DATATYPE_ReadSection
 
 
 static NhlErrorTypes MultiDVal_DATATYPE_md_WriteSection
-#if  __STDC__
+#if	NhlNeedProto
 (NclData target, NclSelectionRecord * sel, struct _NclDataRec* value)
 #else
 (target,sel,value)
@@ -607,7 +607,7 @@ static NhlErrorTypes MultiDVal_DATATYPE_md_WriteSection
 	return(NhlNOERROR);
 }
 static NhlErrorTypes MultiDVal_DATATYPE_s_WriteSection
-#if  __STDC__
+#if	NhlNeedProto
 (NclData target, NclSelectionRecord * sel, struct _NclDataRec* value)
 #else
 (target,sel,value)
@@ -862,7 +862,7 @@ static NhlErrorTypes MultiDVal_DATATYPE_s_WriteSection
 
 
 static void MultiDVal_DATATYPE_ResetMissing
-#if  __STDC__
+#if	NhlNeedProto
 (NclData self, NclScalar *missing)
 #else
 (self,missing)
@@ -904,7 +904,7 @@ static void MultiDVal_DATATYPE_ResetMissing
 }
 
 static NhlErrorTypes MultiDVal_DATATYPE_ReadWriteSection
-#if  __STDC__
+#if	NhlNeedProto
 (NclData to_data, NclSelectionRecord * to_selection, NclData from_data, NclSelectionRecord *from_selection)
 #else
 (to_data,to_selection,from_data,from_selection)

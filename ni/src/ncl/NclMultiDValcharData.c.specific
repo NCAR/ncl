@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValcharData.c.specific,v 1.4 1994-09-01 17:41:45 ethan Exp $
+ *      $Id: NclMultiDValcharData.c.specific,v 1.5 1994-12-23 01:18:39 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -22,7 +22,7 @@
  */
 #include "NclMultiDVallogicalData.h"
 static NclData MultiDVal_char_md_Coerce
-#if  __STDC__
+#if	NhlNeedProto
 (NclData  self, NclObjTypes coerce_to_obj, NclScalar* new_missing)
 #else
 (self, coerce_to_obj, new_missing)
@@ -56,7 +56,7 @@ static NclData MultiDVal_char_md_Coerce
 }
 
 static NclData MultiDVal_char_s_Coerce
-#if  __STDC__
+#if	NhlNeedProto
 (NclData self, NclObjTypes coerce_to_obj, NclScalar* new_missing)
 #else
 (self, coerce_to_obj,new_missing)

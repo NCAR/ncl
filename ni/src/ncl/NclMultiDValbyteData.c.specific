@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValbyteData.c.specific,v 1.3 1994-12-21 01:57:11 ethan Exp $
+ *      $Id: NclMultiDValbyteData.c.specific,v 1.4 1994-12-23 01:18:38 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -23,7 +23,7 @@
 #include "NclMultiDValfloatData.h"
 #include "NclMultiDVallogicalData.h"
 static NclData MultiDVal_byte_md_Coerce
-#if  __STDC__
+#if	NhlNeedProto
 (NclData  self, NclObjTypes coerce_to_obj, NclScalar* new_missing)
 #else
 (self, coerce_to_obj, new_missing)
@@ -93,7 +93,7 @@ static NclData MultiDVal_byte_md_Coerce
 }
 
 static NclData MultiDVal_byte_s_Coerce
-#if  __STDC__
+#if	NhlNeedProto
 (NclData self, NclObjTypes coerce_to_obj, NclScalar* new_missing)
 #else
 (self, coerce_to_obj,new_missing)

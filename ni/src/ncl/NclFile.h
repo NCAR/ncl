@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclFile.h,v 1.1 1994-07-14 20:46:31 ethan Exp $
+ *      $Id: NclFile.h,v 1.2 1994-12-23 01:18:19 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -31,14 +31,14 @@ typedef NclFileRec *NclFile;
 typedef NclFileClassRec *NclFileClass;
 
 typedef NclObjTypes (*NclFileVarRepValueFunc)(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NclFile	/* thefile */,
 NclQuark /* var */
 #endif
 );
 
 typedef struct _NclMultiDValDataRec* (*NclFileVarCoerceFunc)(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NclFile /* thefile */,
 NclQuark /* var */,
 NclObjTypes             /*coerce_to_obj*/,
@@ -47,7 +47,7 @@ NclScalar *             /*new_missing*/
 );
 
 typedef int (*NclFileVarIsAFunc)(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NclFile /*thefile */,
 NclQuark /* var */,
 NclQuark /* name */
@@ -55,14 +55,14 @@ NclQuark /* name */
 );
 
 typedef int (*NclFileIsAFunc)(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NclFile /*thefile */,
 NclQuark /* name */
 #endif
 );
 
 typedef NhlErrorTypes (*NclAssignFileVarFunc)(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NclFile /*thefile */,
 NclQuark /*var_name*/,
 struct _NclMultiDValDataRec * /* value */,
@@ -71,7 +71,7 @@ struct _NclSelectionRecord * /* sel_ptr */
 );
 
 typedef struct _NclVarRec* (*NclGetFileVarFunc)(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NclFile /*thefile*/,
 NclQuark /* var_name */,
 struct _NclSelectionRecord * /*sel_ptr*/
@@ -79,7 +79,7 @@ struct _NclSelectionRecord * /*sel_ptr*/
 );
 
 typedef struct _NclMultiDValDataRec* (*NclGetFileVarValFunc)(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NclFile /*thefile*/,
 NclQuark /*var_name */,
 struct _NclSelectionRecord * /*sel_ptr*/
@@ -87,7 +87,7 @@ struct _NclSelectionRecord * /*sel_ptr*/
 );
 
 typedef struct _NclMultiDValDataRec * (*NclReadVarAttributeFunc)(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NclFile /* thefile */, 
 NclQuark /* var */,
 NclQuark /* attname */, 
@@ -96,7 +96,7 @@ struct _NclSelectionRecord* /*sel_ptr*/
 );
 
 typedef NhlErrorTypes (*NclWriteVarAttributeFunc)(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NclFile /* thefile */,
 NclQuark /* var */,
 NclQuark /* attname */,
@@ -106,7 +106,7 @@ struct _NclSelectionRecord* /* sel_ptr*/
 );
 
 typedef struct _NclMultiDValDataRec * (*NclReadAttributeFunc)(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NclFile /* thefile */,
 NclQuark /* attname */,
 struct _NclSelectionRecord* /* sel_ptr*/
@@ -114,7 +114,7 @@ struct _NclSelectionRecord* /* sel_ptr*/
 );
 
 typedef NhlErrorTypes (*NclWriteAttributeFunc)(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NclFile /* thefile */,
 NclQuark /* attname */,
 struct _NclMultiDValDataRec* /*value*/,
@@ -123,7 +123,7 @@ struct _NclSelectionRecord * /*sel_ptr*/
 );
 
 typedef struct _NclMultiDValDataRec * (*NclReadVarDimensionFunc)(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NclFile /*thefile*/,
 NclQuark /* var */,
 NclQuark /*dim_name*/,
@@ -132,7 +132,7 @@ long /*dim_num*/
 );
 
 typedef NhlErrorTypes (*NclWriteVarDimensionFunc)(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NclFile /*thefile*/, 
 NclQuark /* var */,
 NclQuark /*dim_name*/, 
@@ -141,7 +141,7 @@ long /*dim_num */
 );
 
 typedef struct _NclMultiDValDataRec * (*NclReadDimensionFunc)(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NclFile /*thefile*/,
 NclQuark /*dim_name*/,
 long /*dim_num*/
@@ -149,7 +149,7 @@ long /*dim_num*/
 );
 
 typedef NhlErrorTypes (*NclWriteDimensionFunc)(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NclFile /*thefile*/, 
 NclQuark /*dim_name*/, 
 long /*dim_num */
@@ -157,7 +157,7 @@ long /*dim_num */
 );
 
 typedef struct _NclVarRec * (*NclReadFileCoordFunc)(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NclFile /* thefile */,
 NclQuark /* coord_name */,
 struct _NclSelectionRecord* /* sel_ptr */
@@ -165,7 +165,7 @@ struct _NclSelectionRecord* /* sel_ptr */
 );
 
 typedef NhlErrorTypes (*NclWriteFileCoordFunc)(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NclFile /* thefile */,
 NclQuark /* coord_name */,
 struct _NclMultiDValDataRec* /*value*/,
@@ -175,7 +175,7 @@ struct _NclSelectionRecord* /* sel_ptr */
 
 
 typedef NhlErrorTypes (*NclAssignFileVarVarFunc)(
-#ifdef NhlNeedProto
+#if	NhlNeedProto
 NclFile /* thefile */,
 NclQuark /*lhs_var*/,
 struct _NclSelectionRecord* /*lhs_sel_ptr*/,
@@ -250,7 +250,7 @@ extern NclObjClass nclFileClass;
 extern NclFileClassRec nclFileClassRec;
 
 extern NclFile _NclCreateFile(
-#ifdef NhlNeedProto 
+#if	NhlNeedProto
 	NclObj	/* inst */,
 	NclObjClass /*theclass*/,
 	NclObjTypes /* obj_type */,
