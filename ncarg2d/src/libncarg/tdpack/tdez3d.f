@@ -1,5 +1,5 @@
 C
-C $Id: tdez3d.f,v 1.6 2000-09-13 17:12:57 fred Exp $
+C $Id: tdez3d.f,v 1.7 2001-07-02 21:43:39 haley Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -108,7 +108,7 @@ C    would draw a isosurface (using an isovalue of 1.) in shades of
 C    cyan with a black background and with a default eye position 
 C    selected.
 C
-C------------------------------------------------------------------------------
+C--------------------------------------------------------------------------
 C
 C  Set the maximum number of triangles.
 C
@@ -139,7 +139,7 @@ C  near 0 give brighter colors and values near 1 give pastel shades.
 C  Values of SHDR near 0 give a narrow range of shades and values near
 C  1 give a wide range of shades.
 C
-      DATA SHDE,SHDR / .0 , 0.8 /
+      DATA SHDE,SHDR / 0.0 , 0.8 /
 C
 C  Factor for converting from degrees to radians.
 C
@@ -222,7 +222,7 @@ C
         ZEYE = ZMID+R*COS(DTOR*ANG2)
       ELSE
 C
-C  Convert the user-specified eye position to Cartesian coordinatres.
+C  Convert the user-specified eye position to Cartesian coordinates.
 C
         R = RMULT*SQRT(XRNG*XRNG + YRNG*YRNG + ZRNG*ZRNG)
         XEYE = XMID+R*SIN(DTOR*PHI)*COS(DTOR*THETA)

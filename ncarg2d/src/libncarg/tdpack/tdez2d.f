@@ -1,5 +1,5 @@
 C
-C $Id: tdez2d.f,v 1.6 2000-09-13 17:12:57 fred Exp $
+C $Id: tdez2d.f,v 1.7 2001-07-02 21:43:39 haley Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -104,7 +104,7 @@ C
 C    would draw a surface in shades of cyan with a black background and
 C    with a default eye position selected.
 C
-C------------------------------------------------------------------------------
+C--------------------------------------------------------------------------
 C
 C  Set the maximum number of triangles.
 C
@@ -209,7 +209,7 @@ C
       ENDIF
       CALL TDSTRI (X,NX,Y,NY,Z,NX,RTRI,MTRI,NTRI,JST)
       IF (NTRI .EQ. MTRI) THEN
-        PRINT * , 'Triangle list overflow in TDITRI'
+        PRINT * , 'Triangle list overflow in TDSTRI'
         STOP
       END IF
 C
