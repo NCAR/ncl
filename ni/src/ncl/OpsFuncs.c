@@ -1966,6 +1966,8 @@ static int ncl_private_rl_list = 0;
 int _NclGetExtRLList
 #if  __STDC__
 (void)
+#else
+()
 #endif
 {
 	return(ncl_private_rl_list);
