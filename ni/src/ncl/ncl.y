@@ -338,7 +338,6 @@ statement :     					{ $$ = NULL; }
 	| 	error 					{ 
 								$$ = NULL ; 
 								ERROR("error in statement"); 
-								yyerrok;
 							}
 	| 	STOP RECORD				{
 /*
