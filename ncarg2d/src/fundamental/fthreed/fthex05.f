@@ -28,7 +28,7 @@ C
 C
 C Declare a function W(U,V) that defines the surface to be drawn.
 C
-        WFUN(U,V)=.5+.25*SIN(5.*U)+.25*COS(5.*V)
+        WFUN(UU,VV)=.5+.25*SIN(5.*UU)+.25*COS(5.*VV)
 C
 C Turn off frame advances by SRFACE.
 C
