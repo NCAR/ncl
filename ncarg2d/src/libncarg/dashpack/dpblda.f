@@ -1,6 +1,6 @@
 C
-C $Id: dpblda.f,v 1.5 2000-08-22 15:03:22 haley Exp $
-C                                                                      
+C $Id: dpblda.f,v 1.6 2004-11-16 21:30:32 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -216,7 +216,7 @@ C
 C TENS is the internal parameter 'TCS' (for "Tension on Cubic Splines");
 C if it is set non-negative, it turns on smoothing of the lines drawn;
 C the value zero says to use cubic splines; values greater than zero
-C say to use splines under tension and specify what the tension to use.
+C say to use splines under tension and specify what tension to use.
 C Values greater than about 15 should be avoided, as they can cause
 C overflows in the smoothing routines.  Note that DPSMTH always smooths;
 C it treats a negative value of TENS as zero and uses cubic splines.

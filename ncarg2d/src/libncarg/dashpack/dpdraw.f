@@ -1,6 +1,6 @@
 C
-C $Id: dpdraw.f,v 1.9 2000-08-22 15:03:22 haley Exp $
-C                                                                      
+C $Id: dpdraw.f,v 1.10 2004-11-16 21:30:32 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -98,6 +98,10 @@ C Declare a couple of character temporaries to use.
 C
         CHARACTER*1 CHRL,CHRN
 C
+C Declare variables to receive the current window and viewport.
+C
+        DIMENSION WNDW(4),VPRT(4)
+C
 C Declare local variables to be saved from one call to the next.  The
 C meanings of the mnemonics are as follows: "ICPE" stands for "Index of
 C Current Pattern Element", "IDPE" for "Integer parts of Dash Pattern
@@ -110,10 +114,10 @@ C "RDPE" for "Real parts of Dash Pattern Elements", "RSPX" for "Real
 C Saved Point X's", "RSPY" for "Real Saved Point Y's", "RSSA" for "Real
 C Saved String Angles", "RSSX" for "Real Saved String X's", "RSSY" for
 C "Real Saved String Y's", "WCPE" for "Width of Current Pattern
-C Element", "XCGF" for "X Coordinate at start of Gap", Fractional
+C Element", "XCGF" for "X Coordinate at start of Gap, Fractional
 C system", "XCLF" for "X Coordinate of Last point, Fractional system",
-C "YCGF" for "Y Coordinate at start of Gap, Fractional", and "YCLF" for
-C "Y Coordinate of Last point, Fractional system".
+C "YCGF" for "Y Coordinate at start of Gap, Fractional system", and
+C "YCLF" for "Y Coordinate of Last point, Fractional system".
 C
         SAVE ICPE,IDPE,IDST,IFPF,ISSP,NBCS,NDPE,NPSB,NSSB,RDPE,
      +       RSPX,RSPY,RSSA,RSSX,RSSY,WCPE,XCGF,XCLF,YCGF,YCLF
@@ -140,9 +144,10 @@ C
 C
 C If the current dash pattern has never been decomposed into its
 C constituent elements (or if that has not been done since the last
-C time some descriptor of the dash pattern was changed), do that now.
+C time some descriptor of the dash pattern was changed) and this call
+C is not just a buffer-dump call, do that now.
 C
-        IF (IDPI.EQ.0) THEN
+        IF (IDPI.EQ.0.AND.IFVL.LT.2) THEN
 C
 C Initialize the number of dash-pattern elements found and the number
 C of break characters seen.
@@ -219,13 +224,18 @@ C
 C
               ELSE IF (CHRN.NE.CHRB) THEN
 C
-                IF (CHRL.EQ.CHRB.OR.CHRL.EQ.CHRG.OR.CHRL.EQ.CHRS) THEN
+                IF (CHRL.EQ.CHRB.OR.CHRL.EQ.CHRG.OR.CHRL.EQ.CHRS.OR.
+     +              ICHAR(CHRL).GT.127.OR.ICHAR(CHRN).GT.127) THEN
 C
-                  IF (CHRL.NE.CHRB.AND.RLS1.NE.0.) THEN
-                    IF (NDPE.GE.LDPA) GO TO 103
-                    NDPE=NDPE+1
-                    IDPE(NDPE)=+1
-                    RDPE(NDPE)=RLS1*WCHR
+                  IF (CHRL.EQ.CHRG.OR.CHRL.EQ.CHRS.OR.
+     +                ICHAR(CHRL).GT.127.OR.ICHAR(CHRN).GT.127) THEN
+                    IF (RLS1.NE.0..OR.
+     +                  ICHAR(CHRL).GT.127.OR.ICHAR(CHRN).GT.127) THEN
+                      IF (NDPE.GE.LDPA) GO TO 103
+                      NDPE=NDPE+1
+                      IDPE(NDPE)=+1
+                      RDPE(NDPE)=MAX(.01,RLS1)*WCHR
+                    END IF
                   END IF
 C
                   IF (NDPE.GE.LDPA) GO TO 103
@@ -238,7 +248,7 @@ C
                 IDPE(NDPE)=IDPE(NDPE)+1
                 RDPE(NDPE)=RDPE(NDPE)+WCHR
 C
-                IF (ISCF.NE.0) CHRN=CHRB
+                IF (ISCF.NE.0.AND.ICHAR(CHRN).LT.128) CHRN=CHRB
 C
               ELSE
 C
@@ -260,7 +270,7 @@ C
                   IF (NDPE.GE.LDPA) GO TO 103
                   NDPE=NDPE+1
                   IDPE(NDPE)=+1
-                  RDPE(NDPE)=RLS1*WCHR
+                  RDPE(NDPE)=MAX(.01,RLS1)*WCHR
                 END IF
 C
               END IF
@@ -276,8 +286,9 @@ C
               RDPE(1)=1.
             END IF
 C
-C If PLCHHQ is to be used, post-process the list to compute the correct
-C gap lengths for the character-string elements.
+C If PLCHHQ is to be used, post-process the list to compute correct gap
+C lengths for character-string elements; gap lengths for symbols are not
+C recomputed.
 C
             IF (IPCF.EQ.0) THEN
 C
@@ -294,17 +305,21 @@ C
                   IFCH=IDPE(I)/LDPA
                   ILCH=MOD(IDPE(I),LDPA)
 C
-                  CALL PLCHHQ (CFUX(.5),CFUY(.5),CHDP(IFCH:ILCH),
-     +                                              WCHR,360.,0.)
-                  IF (ICFELL('DPDRAW',4).NE.0) RETURN
+                  IF (ICHAR(CHDP(IFCH:IFCH)).LE.127) THEN
 C
-                  CALL PCGETR ('XB - X COORDINATE AT BEGINNING',XBEG)
-                  IF (ICFELL('DPDRAW',5).NE.0) RETURN
+                    CALL PLCHHQ (CFUX(.5),CFUY(.5),CHDP(IFCH:ILCH),
+     +                                                WCHR,360.,0.)
+                    IF (ICFELL('DPDRAW',4).NE.0) RETURN
 C
-                  CALL PCGETR ('XE - X COORDINATE AT END',XEND)
-                  IF (ICFELL('DPDRAW',6).NE.0) RETURN
+                    CALL PCGETR ('XB - X COORDINATE AT BEGINNING',XBEG)
+                    IF (ICFELL('DPDRAW',5).NE.0) RETURN
 C
-                  RDPE(I)=RLS2*WCHR+MAX(0.,XEND-XBEG)
+                    CALL PCGETR ('XE - X COORDINATE AT END',XEND)
+                    IF (ICFELL('DPDRAW',6).NE.0) RETURN
+C
+                    RDPE(I)=RLS2*WCHR+MAX(0.,XEND-XBEG)
+C
+                  END IF
 C
                 END IF
 C
@@ -318,7 +333,9 @@ C
           END IF
 C
 C Set the fast-path flag to -1 if the pattern is nothing but gap, to
-C +1 if the pattern is nothing but solid, and to 0 otherwise.
+C +1 if the pattern is nothing but solid, and to 0 otherwise.  Also,
+C in the final case, remove any "dummy" gap at the end of the list
+C that duplicates one at the beginning of the list.
 C
   105     IF (NDPE.EQ.1.AND.IDPE(1).LT.0) THEN
             IFPF=-1
@@ -326,7 +343,40 @@ C
             IFPF=+1
           ELSE
             IFPF=0
+            IF (IDPE(1).EQ.1.AND.IDPE(NDPE).EQ.1) NDPE=NDPE-1
           END IF
+C
+C Debug prints ...
+C
+C         IF (IDPS.GE.0) THEN
+C           PRINT '(''IN DPDRAW - XCPF, YCPF, IFVL = '',2E12.4,I4)' ,
+C    +            XCPF,YCPF,IFVL
+C           PRINT '(I4''-ELEMENT LIST'',4X,I4,2X,A)' ,
+C    +            NDPE,NCHR,CHDP(1:NCHR)
+C           DO 999 I=1,NDPE
+C             IF (IDPE(I).LT.0) THEN
+C               PRINT '(I6,E12.4,''  GAP      '')' , I,RDPE(I)
+C             ELSE IF (IDPE(I).EQ.0) THEN
+C               PRINT '(I6,E12.4,''  SOLID    '')' , I,RDPE(I)
+C             ELSE IF (IDPE(I).EQ.1) THEN
+C               PRINT '(I6,E12.4,''  DUMMY GAP'')' , I,RDPE(I)
+C             ELSE
+C               IFCH=IDPE(I)/LDPA
+C               ILCH=MOD(IDPE(I),LDPA)
+C               LNTH=ILCH-IFCH+1
+C               IF (LNTH.NE.1) THEN
+C                 PRINT '(I6,E12.4,''  STRING   '',I4,2X,A)' ,
+C    +                  I,RDPE(I),LNTH,CHDP(IFCH:ILCH)
+C               ELSE IF (ICHAR(CHDP(IFCH:ILCH)).LT.128) THEN
+C                 PRINT '(I6,E12.4,''  STRING   '',I4,2X,A)' ,
+C    +                  I,RDPE(I),LNTH,CHDP(IFCH:ILCH)
+C               ELSE
+C                 PRINT '(I6,E12.4,''  SYMBOL   '',6X,A)' ,
+C    +                  I,RDPE(I),CHAR(ICHAR(CHDP(IFCH:ILCH))-128)
+C               END IF
+C             END IF
+C 999       CONTINUE
+C         END IF
 C
 C Set the dash-pattern-initialized flag.
 C
@@ -682,15 +732,48 @@ C
 C
                   END IF
 C
-                  IF (IPCF.EQ.0) THEN
+                  IF (ICHAR(CHDP(IFCH:IFCH)).GT.127) THEN
+C
+                    CALL GQCNTN (IERR,NTIU)
+C
+                    IF (IERR.NE.0) THEN
+                      CALL SETER('DPDRAW - ERROR EXIT FROM GQCNTN',21,1)
+                      RETURN
+                    END IF
+C
+                    CALL GQNT (NTIU,IERR,WNDW,VPRT)
+C
+                    IF (IERR.NE.0) THEN
+                      CALL SETER ('DPDRAW - ERROR EXIT FROM GQNT',22,1)
+                      RETURN
+                    END IF
+C
+                    CALL DPDSYM (WNDW(1)+(RSSX(I)-VPRT(1))/
+     +                                   (VPRT(2)-VPRT(1))*
+     +                                   (WNDW(2)-WNDW(1)),
+     +                           WNDW(3)+(RSSY(I)-VPRT(3))/
+     +                                   (VPRT(4)-VPRT(3))*
+     +                                   (WNDW(4)-WNDW(3)),
+     +                           CHAR(ICHAR(CHDP(IFCH:IFCH))-128),
+     +                           WCHR*(WNDW(2)-WNDW(1))/
+     +                                (VPRT(2)-VPRT(1)),
+     +                           ANGD)
+C
+                  ELSE IF (IPCF.EQ.0) THEN
+C
                     CALL PLCHHQ (XTMP,YTMP,CHDP(IFCH:ILCH),WCHR,ANGD,0.)
-                    IF (ICFELL('DPDRAW',21).NE.0) RETURN
-                  ELSE IF (IPCF.EQ.1) THEN
-                    CALL PLCHMQ (XTMP,YTMP,CHDP(IFCH:ILCH),WCHR,ANGD,0.)
-                    IF (ICFELL('DPDRAW',22).NE.0) RETURN
-                  ELSE
-                    CALL PLCHLQ (XTMP,YTMP,CHDP(IFCH:ILCH),WCHR,ANGD,0.)
                     IF (ICFELL('DPDRAW',23).NE.0) RETURN
+C
+                  ELSE IF (IPCF.EQ.1) THEN
+C
+                    CALL PLCHMQ (XTMP,YTMP,CHDP(IFCH:ILCH),WCHR,ANGD,0.)
+                    IF (ICFELL('DPDRAW',24).NE.0) RETURN
+C
+                  ELSE
+C
+                    CALL PLCHLQ (XTMP,YTMP,CHDP(IFCH:ILCH),WCHR,ANGD,0.)
+                    IF (ICFELL('DPDRAW',25).NE.0) RETURN
+C
                   END IF
 C
   115           CONTINUE
