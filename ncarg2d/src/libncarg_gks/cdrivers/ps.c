@@ -1,5 +1,5 @@
 /*
- *	$Id: ps.c,v 1.19 1999-04-28 21:26:13 fred Exp $
+ *	$Id: ps.c,v 1.20 2000-02-11 23:23:57 fred Exp $
  */
 /*
  *
@@ -2091,6 +2091,11 @@ ps_ActivateWorkstation(gksc)
 ps_DeactivateWorkstation(gksc)
 	GKSC	*gksc;
 {
+        PSddp   *psa;
+
+        psa = (PSddp *) gksc->ddp;
+
+        (void) fflush(psa->file_pointer);
 	return(0);
 }
 
