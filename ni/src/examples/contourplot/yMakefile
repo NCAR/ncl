@@ -1,5 +1,5 @@
 #
-#   $Id: yMakefile,v 1.15 1995-09-28 19:24:44 haley Exp $
+#   $Id: yMakefile,v 1.16 1995-10-06 16:19:50 haley Exp $
 #
 #   Makefile for HLU ContourPlot examples
 #
@@ -10,12 +10,12 @@ PROG_LIBS   = $(HLULIBS) $(CNCARGLIBS) $(NCARGLIBS)
 EXTRA_LIBS  = $(XMOTIFCLIENTLIBS) -lnetcdf
 SYS_LIBS    = $(CTOFLIBS) -lm
 
-CSRCS       = cn01c.c cn02c.c cn03c.c cn04c.c cn05c.c cn08c.c cn09c.c cn10c.c cn11c.c
-FSRCS       = cn01f.f cn02f.f cn03f.f cn04f.f cn05f.f cn08f.f cn09f.f cn10f.f cn11f.f
+CSRCS       = cn01c.c cn02c.c cn03c.c cn04c.c cn05c.c cn07c.c cn08c.c cn09c.c cn10c.c cn11c.c
+FSRCS       = cn01f.f cn02f.f cn03f.f cn04f.f cn05f.f cn07f.f cn08f.f cn09f.f cn10f.f cn11f.f
 NSRCS       = cn01n.ncl cn02n.ncl cn04n.ncl cn05n.ncl cn06n.ncl \
 		cn07n.ncl cn08n.ncl cn09n.ncl cn10n.ncl
-COBJS       = cn01c.o cn02c.o cn03c.o cn04c.o cn05c.o cn08c.o cn09c.o cn10c.o cn11c.o
-FOBJS       = cn01f.o cn02f.o cn03f.o cn04f.o cn05f.o cn08f.o cn09f.o cn10f.o cn11f.o
+COBJS       = cn01c.o cn02c.o cn03c.o cn04c.o cn05c.o cn07c.o cn08c.o cn09c.o cn10c.o cn11c.o
+FOBJS       = cn01f.o cn02f.o cn03f.o cn04f.o cn05f.o cn07f.o cn08f.o cn09f.o cn10f.o cn11f.o
 SRCS        = $(CSRCS) $(FSRCS)
 OBJS        = $(COBJS) $(FOBJS)
 INCLUDES    = cn03c.h cn11c.h
@@ -34,6 +34,7 @@ CExampleTarget(cn03c,cn03c.o)
 CExampleTarget(cn04c,cn04c.o)
 CExampleTarget(cn05c,cn05c.o)
 CExampleTarget(cn09c,cn09c.o)
+CExampleTarget(cn07c,cn07c.o)
 CExampleTarget(cn08c,cn08c.o)
 CExampleTarget(cn10c,cn10c.o)
 CExampleTarget(cn11c,cn11c.o)
@@ -42,6 +43,7 @@ FExampleTarget(cn02f,cn02f.o)
 FExampleTarget(cn03f,cn03f.o)
 FExampleTarget(cn04f,cn04f.o)
 FExampleTarget(cn05f,cn05f.o)
+FExampleTarget(cn07f,cn07f.o)
 FExampleTarget(cn08f,cn08f.o)
 FExampleTarget(cn09f,cn09f.o)
 FExampleTarget(cn10f,cn10f.o)
