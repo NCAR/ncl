@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: nhlex.csh,v 1.3 1994-10-20 18:18:30 dbrown Exp $
+#   $Id: nhlex.csh,v 1.4 1994-12-05 22:52:41 haley Exp $
 #
 
 if (SED_VERBOSE) then
@@ -8,7 +8,7 @@ if (SED_VERBOSE) then
 endif
 
 if ($#argv < 1) then
-echo "usage: nhlex [-all,-A] [-allexamples,-E] [-clean] [-n] names	"
+echo "usage: nhlex [-A] [-clean] [-n] names	"
 echo ""
 echo "See <nhlex(1) man page>"
 echo ""
@@ -25,7 +25,7 @@ if ($status != 0) then
         exit 1
 endif
 
-set example_dir=$lib_dir/ncarg/hlu/examples
+set example_dir="`ncargpath SED_NCARGDIR`/SED_HLUDIR/examples"
 
 if (! -d "$example_dir") then
   echo "Example directory <$example_dir> does not exist."
@@ -56,6 +56,11 @@ while ($#argv > 0)
             set NoRunOption
             breaksw
         
+        case "-list":
+            shift
+            set List
+            breaksw
+
         case "-*":
             echo "$0 : Unknown option <$1>"
             exit 1
@@ -67,6 +72,17 @@ while ($#argv > 0)
             breaksw
     endsw
 end
+
+#***********************************************#
+#                                               #
+# If you just want to see what list of examples #
+# you have asked for, list them and exit.       #
+#                                               #
+#***********************************************#
+if ($?List) then
+   echo $names
+   exit
+endif
 
 foreach name ($names)
 
@@ -81,10 +97,16 @@ set rmfiles
 echo ""
 echo "NCAR Graphics High Level Utility Example <$name>"
 
-set c_files = $name.c
-set m_files = Makefile.$name
+unset fortran
 
-set copy_files = "$c_files $m_files"
+if ( -e "$example_dir/$name.c") then
+  set src_files = $name.c
+else
+  set src_files = $name.f
+  set fortran
+endif
+
+set copy_files = "$src_files"
 
 if ( -e "$example_dir/$name.res") then
     set r_file = $name.res
@@ -101,14 +123,7 @@ if ( -e "$example_dir/$name.data") then
     set copy_files = "$copy_files $data_file"
 endif
 
-set rmfiles = $name.o
-
-
-if (! $?NoRunOption) then
-    set copy_files="$copy_files $name"
-endif
-
-set rmfiles=($rmfiles $copy_files)
+set rmfiles = ($name $name.o $copy_files)
 
 foreach file($copy_files)
     echo "  Copying $file"
@@ -117,10 +132,22 @@ end
 
 if (! $?NoRunOption) then
     echo ""
+    echo "Compiling and linking..."
+    if (! $?fortran) then
+      nhlcc -o $name $src_files
+    else
+      nhlf77 -o $name $src_files
+    endif
+    if ($status != 0) then
+        echo ""
+        echo "The compile and link failed."
+        echo ""
+        exit
+    endif
     echo "Executing <$name>..."
     echo ""
 
-    $name
+    ./$name
 
     echo ""
     echo "Finished Executing <$name>..."

@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.5 1994-10-19 19:16:56 dbrown Exp $
+#      $Id: yMakefile,v 1.6 1994-12-05 22:52:42 haley Exp $
 #
 #########################################################################
 #									#
@@ -48,6 +48,8 @@ nhlex: nhlex.csh Makefile
 	-e 's+SED_HLUUSRRESENVNAME+$(HLUUSRRESENVNAME)+' \
 	-e 's+SED_DEBUG+$(SCRIPT_DEBUG)+' \
 	-e 's+SED_VERBOSE+$(SCRIPT_VERBOSE)+' \
+	-e 's+SED_NCARGDIR+$(NCARGDIR)+' \
+	-e 's+SED_HLUDIR+$(HLUDIR)+' \
 	-e 's+SED_LIBROOT+$(LIBROOT)+' \
 	-e 's+SED_EXAMPLES+$(EXAMPLES)+' \
 	< nhlex.csh > nhlex
