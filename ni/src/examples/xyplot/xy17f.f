@@ -1,5 +1,5 @@
 C
-C      $Id: xy17f.f,v 1.1 1997-04-08 20:11:04 haley Exp $
+C      $Id: xy17f.f,v 1.2 1997-04-10 19:34:59 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                     C
@@ -50,9 +50,9 @@ C
       data y3val /-20.0, -10.0, 0.0, 10.0, 20.0/
  
       character*5 y1lab(5), y2lab(6), y3lab(5)
-      data y1lab /'-90.0', '-80.0', '-70.0', '-60.0', '-50.0'/
-      data y2lab /'10.0', '20.0', '30.0', '40.0', '50.0', '60.0'/
-      data y3lab /'-20.0', '-10.0', '0.0', '10.0', '20.0'/
+      data y1lab /'-90.', '-80.', '-70.', '-60.', '-50.'/
+      data y2lab /'10.', '20.', '30.', '40.', '50.', '60.'/
+      data y3lab /'-20.', '-10.', '0.', '10.', '20.'/
 
       character*256 filename
 
