@@ -1,5 +1,5 @@
 /*
- *      $Id: NclApi.c,v 1.12 1994-12-23 01:18:04 ethan Exp $
+ *      $Id: NclApi.c,v 1.13 1995-02-24 00:24:45 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -27,6 +27,7 @@ extern "C" {
 #include <stdio.h>
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/NresDB.h>
+#include <ncarg/hlu/App.h>
 #include "defs.h"
 #include "NclData.h"
 #include "Symbol.h"
@@ -66,6 +67,7 @@ int NclInitServer
 	NhlErrorTypes error_level;
 #endif
 {
+	int appid;
 #ifdef YYDEBUG
 #ifdef SunOS
         extern int ncldebug;
@@ -80,7 +82,9 @@ int NclInitServer
 	thefptr = fopen("ncl.tree","w");
         theoptr = fopen("ncl.seq","w");
 */
-	NhlOpen();
+	NhlInitialize();
+	NhlVACreate(&appid,"ncl",NhlappLayerClass,NhlDEFAULT_APP,
+                NhlNappDefaultParent,1,NULL);
 
 
 	

@@ -14,6 +14,7 @@ extern "C" {
 #include <unistd.h>
 #include <ncarg/hlu/ConvertP.h>
 #include <ncarg/hlu/Error.h>
+#include <ncarg/hlu/App.h>
 #include <netcdf.h>
 
 FILE *thefptr;
@@ -39,6 +40,7 @@ extern FILE *stdin_fp ;
 main() {
 
 	int errid = -1;
+	int appid;
 #ifdef YYDEBUG
 	extern int yydebug;
 	yydebug = 1;
@@ -58,7 +60,9 @@ main() {
 	thefptr = NULL;
 	theoptr = NULL;
 #endif
-	NhlOpen();
+	NhlInitialize();
+	NhlVACreate(&appid,"ncl",NhlappLayerClass,NhlDEFAULT_APP,
+		NhlNappDefaultParent,1,NULL);
 	errid = NhlErrGetID();
 	NhlVASetValues(errid,
 		NhlNerrFilePtr,stdout,NULL);
