@@ -21,7 +21,7 @@ extern void printtoken(
 char *cur_line_text = NULL;
 char *cur_line_text_pos = NULL;
 int cur_line_length = 0;
-int cur_line_number= 0;
+int cur_line_number= -1;
 int last_line_length = 0;
 int ok_to_start_vsblk = 0;
 int cur_line_maxsize = 0;
@@ -33,7 +33,7 @@ int the_input_buffer_size = 0;
 extern int cmd_line;
 extern int cmd_line_is_set;
 extern char *cur_load_file;
-
+int inc_line = 1;
 int _NclParseString
 #if NhlNeedProto
 (char *str,int reset)
@@ -51,8 +51,28 @@ int reset;
 
 int rec = 0;
 FILE *recfp;
+void SetLine
+#if NhlNeedProto
+(int line)
+#else
+(line)
+int line;
+#endif
+{
+        cur_line_number = line;
+        return;
+}
 
-
+void IncLine
+#if NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	cur_line_number++;
+	return;
+}
 void CopyIt
 #if NhlNeedProto
 (char **cltp,int *cll,int ylg,char* ytxt)
@@ -77,6 +97,7 @@ char* ytxt;
 #define MAX_INCLUDE_DEPTH 20
 YY_BUFFER_STATE include_stack[MAX_INCLUDE_DEPTH];
 int line_numbers[MAX_INCLUDE_DEPTH];
+char *file_names[MAX_INCLUDE_DEPTH];
 
 void _NclResetScanner
 #if NhlNeedProto
@@ -88,9 +109,15 @@ void _NclResetScanner
 	if ( --loading < 0 ) {
 		return;
 	} else {
+/*
 		yy_delete_buffer( YY_CURRENT_BUFFER );
+*/
 		yy_switch_to_buffer(include_stack[loading] );
-		cur_line_number = line_numbers[loading];
+/*
+		yy_flush_buffer(include_stack[loading]);
+*/
+		SetLine(line_numbers[loading]);
+		cur_load_file = file_names[loading];
 		if(yyin != NULL) {
 			if(loading) {
 				cmd_line = (isatty(fileno(yyin))?1:0);
@@ -104,7 +131,6 @@ void _NclResetScanner
 		} else {
 			cmd_line = 0;
 		}
-			
 	}
 }
 %}
@@ -114,17 +140,36 @@ let	[_a-zA-Z]
 alnum   [_a-zA-Z0-9]
 white	[\t ]
 digit	[0-9]
-%START AA 
 %x incl
 %%
+	if(inc_line) {
+		IncLine();
+		if(cmd_line == 1) {
+			fprintf(stdout,"ncl %d> ",cur_line_number);
+		} else if(cmd_line == 2) {
+			_NclCallPromptFunc(cur_line_number);
+		} 
+		inc_line = 0;
+	} 
 "load" 	{ 
 		BEGIN incl;
 	}
 <incl>[ \t]*      {
 	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
 }
-<incl>["][^"\t\n]*["] {
+<incl>["][^"\n]*[\n] {
+	NhlPError(NhlFATAL,NhlEUNKNOWN,"Syntax Error : \\n not allowed in strings");
+	IncLine();
+	if(cmd_line == 1) {
+		fprintf(stdout,"ncl %d> ",cur_line_number);
+        } else if(cmd_line == 2) {
+        	_NclCallPromptFunc(cur_line_number);
+        }
+	BEGIN 0;
+}
+<incl>["][^"\n]*["] {
 	char *tmp;
+	FILE *tmpfile = NULL;
 
 	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
 	tmp = strrchr(yytext,'\"');
@@ -135,21 +180,21 @@ digit	[0-9]
 		fprintf( stderr, "Includes nested too deeply" );
 		exit( 1 );
 	}
-	line_numbers[loading] = cur_line_number ;
-	
+	line_numbers[loading] = cur_line_number;
+	SetLine(0);
+	file_names[loading] = cur_load_file;
 	include_stack[loading++] = YY_CURRENT_BUFFER;
-	yyin = fopen( tmp, "r" );
-	if(yyin != NULL) {
+	tmpfile = fopen( _NGResolvePath(tmp), "r" );
+	if(tmpfile != NULL) {
+		yyin = tmpfile;
 		yy_switch_to_buffer(yy_create_buffer( yyin, YY_BUF_SIZE ) );
 		cmd_line = isatty(fileno(yyin));
+		cur_load_file = NclMalloc((unsigned)strlen(tmp)+1);
+		strcpy(cur_load_file,tmp);
 	} else {
-		loading--;	
-		yy_switch_to_buffer( include_stack[loading] );
-		cur_line_number = line_numbers[loading];
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not open (%s)\n",tmp);
-/*
-* reset to previous buffer
-*/
+		_NclResetScanner();
+		SetLine(line_numbers[loading]);
 	}
 
 	BEGIN 0;
@@ -160,33 +205,12 @@ digit	[0-9]
 	} else {
 		yy_delete_buffer( YY_CURRENT_BUFFER );
 		yy_switch_to_buffer(include_stack[loading] );
-		cur_line_number = line_numbers[loading];
+		SetLine(line_numbers[loading]);
+
+		cur_load_file = file_names[loading];
 	}
-}
-<AA>[^\n^\177] {
-	cur_line_number++;
-	BEGIN 0;
-	yyless(yyleng-1);
-}
-<AA>[\177] {
-	BEGIN 0;
-	return(EOFF);
-}
-<AA>[\n] {
-	cur_line_number++;
-	printtoken(yytext[0],(char*)NULL); 
-	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
-	if(rec == 1) {
-		fprintf(recfp,"%s",cur_line_text);
-	}
-	last_line_length = cur_line_length;
-	cur_line_length = 0;
-	*cur_line_text_pos = '\0';
-	cur_line_text_pos = &(cur_line_text[0]);
-	return EOLN;
 }
 [\\][ \t]*[\n] {
-	BEGIN AA;
 	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
 	if(rec == 1) {
 		fprintf(recfp,"%s",cur_line_text);
@@ -207,11 +231,19 @@ digit	[0-9]
 	cur_line_length = 0;
 	*cur_line_text_pos = '\0';
 	cur_line_text_pos = &(cur_line_text[0]);
-	cur_line_number++;
+	inc_line = 1;
 	return EOLN;
 }
 [\n] {
 	printtoken(EOLN,(char*)NULL);
+/*
+	if(cur_line_length == 0) {
+		IncLine();
+	} else {
+		BEGIN NEWLINE;
+	}
+*/
+	inc_line = 1;
 	cur_line_length += yyleng;
 	if(rec == 1) {
 		fprintf(recfp,"%s\n",cur_line_text);
@@ -220,7 +252,6 @@ digit	[0-9]
 	cur_line_length = 0;
 	*cur_line_text_pos = '\0';
 	cur_line_text_pos = &(cur_line_text[0]);
-	BEGIN AA;
 	return EOLN;
 }
 [ \t] { 

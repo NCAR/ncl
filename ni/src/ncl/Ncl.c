@@ -85,9 +85,10 @@ main() {
 	_NclInitDataClasses();
 
 	_NhlRegSymConv(NULL,NhlTGenArray,NhlTNclData,NhlTGenArray,NhlTGenArray);
-
+/*
 	if(cmd_line)	
 		fprintf(stdout_fp,"ncl %d> ",0);
+*/
 #if     defined(SunOS) && (MAJOR == 4)
 	nclparse(1);
 #else

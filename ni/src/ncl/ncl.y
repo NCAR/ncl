@@ -28,6 +28,7 @@ extern char *cur_line_text;
 extern int ok_to_start_vsblk;
 #define ERROR(x)  NhlPError(NhlFATAL,NhlEUNKNOWN,"%s",(x))
 int is_error = 0;
+int block_syntax_error = 0;
 int ret_urn = 0;
 /*
 extern int _NclTranslate(
@@ -124,7 +125,7 @@ statement_list :  statement eoln			{
 								fprintf(stdout,"is_error0 %d\n",is_error);
 								fflush(stdout);
 */
-								if(($1 != NULL)&&!(is_error)) {
+								if(($1 != NULL)&&!(is_error||block_syntax_error)) {
 									_NclPrintTree($1,thefptr);
 									strt = _NclTranslate($1,thefptr);
 									_NclTransTerminate();
@@ -140,11 +141,10 @@ statement_list :  statement eoln			{
 									_NclDeleteNewSymStack();
 									_NclFreeTree();
 									is_error = 0;
-								}
-								if(cmd_line == 1) {
-									fprintf(stdout,"ncl %d> ",cur_line_number);
-								} else if(cmd_line == 2) {
-									_NclCallPromptFunc(cur_line_number);
+									if(block_syntax_error) {
+										NhlPError(NhlFATAL,NhlEUNKNOWN,"Syntax Error in block, block not executed");
+										block_syntax_error = 0;
+									}
 								}
 							}
 	| statement_list statement eoln			{		
@@ -153,7 +153,7 @@ statement_list :  statement eoln			{
 								fprintf(stdout,"is_error1 %d\n",is_error);
 								fflush(stdout);
 */
-								if(($2 != NULL) && !(is_error)) {
+								if(($2 != NULL) && !(is_error||block_syntax_error)) {
 									_NclPrintTree($2,thefptr);
 									strt = _NclTranslate($2,thefptr);
 									_NclTransTerminate();
@@ -169,11 +169,10 @@ statement_list :  statement eoln			{
 									_NclDeleteNewSymStack();
 									_NclFreeTree();
 									is_error = 0;
-								}
-								if(cmd_line == 1) {
-									fprintf(stdout,"ncl %d> ",cur_line_number);
-								} else if(cmd_line == 2) {
-									_NclCallPromptFunc(cur_line_number);
+									if(block_syntax_error) {
+										NhlPError(NhlFATAL,NhlEUNKNOWN,"Syntax Error in block, block not executed");
+										block_syntax_error = 0;
+									}
 								}
 							}
 	| statement_list RECORD STRING eoln		{ 
@@ -188,11 +187,6 @@ statement_list :  statement eoln			{
 									NhlPError(NhlWARNING,errno,"Could not open record file");
 									rec = 0;
 								}
-								if(cmd_line == 1) {
-									fprintf(stdout,"ncl %d> ",cur_line_number);
-								} else if(cmd_line == 2) {
-									_NclCallPromptFunc(cur_line_number);
-								}
 							}
 	| RECORD STRING eoln				{ 
 								recfp = fopen(_NGResolvePath($2),"w"); 
@@ -202,28 +196,19 @@ statement_list :  statement eoln			{
 									NhlPError(NhlWARNING,errno,"Could not open record file");
 									rec = 0;
 								}
-								if(cmd_line == 1) {
-									fprintf(stdout,"ncl %d> ",cur_line_number);
-								} else if(cmd_line == 2) {
-									_NclCallPromptFunc(cur_line_number);
-								}
 							}
 ;
 block_statement_list : statement eoln { 	
+
 								
-								if(cmd_line) {
-									if(is_error) {
-										_NclDeleteNewSymStack();	
-										is_error = 0;
-										$1 = NULL;
-									} else {
-										_NclResetNewSymStack();
-									}
-									if(cmd_line == 1) {
-										fprintf(stdout,"ncl %d> ",cur_line_number);
-									} else if(cmd_line == 2) {
-										_NclCallPromptFunc(cur_line_number);
-									}
+								if(is_error) {
+									if(!cmd_line)
+										block_syntax_error = 1;
+									_NclDeleteNewSymStack();	
+									is_error = 0;
+									$1 = NULL;
+								} else {
+									_NclResetNewSymStack();
 								}
 								if($1 != NULL) {
 									$$ = _NclMakeNewListNode();
@@ -238,20 +223,16 @@ block_statement_list : statement eoln {
 * This looping is necessary because ordering needs to be maintained for statement_lists
 */
 								NclSrcListNode *step;
-								if(cmd_line){
-									if(is_error) {
-										_NclDeleteNewSymStack();	
-										$2 = NULL;
-										is_error = 0;
-									} else {
-										_NclResetNewSymStack();
-									}
-									if(cmd_line == 1) {
-										fprintf(stdout,"ncl %d> ",cur_line_number);
-									} else if(cmd_line == 2) {
-										_NclCallPromptFunc(cur_line_number);
-									}
+								if(is_error) {
+									if(!cmd_line)
+										block_syntax_error = 1;
+									_NclDeleteNewSymStack();	
+									is_error = 0;
+									$2 = NULL;
+								} else {
+									_NclResetNewSymStack();
 								}
+							
 								if($1 == NULL) {
 									if($2 != NULL) {
 										$$ = _NclMakeNewListNode();
@@ -283,11 +264,6 @@ block_statement_list : statement eoln {
 									rec = 0;
 								}
 								$$ = $1;
-								if(cmd_line == 1) {
-									fprintf(stdout,"ncl %d> ",cur_line_number);
-								} else if(cmd_line == 2) {
-									_NclCallPromptFunc(cur_line_number);
-								}
 							}
 	| RECORD STRING eoln				{ 
 								recfp = fopen(_NGResolvePath($2),"w"); 
@@ -297,11 +273,6 @@ block_statement_list : statement eoln {
 									NhlPError(NhlWARNING,errno,"Could not open record file");
 									rec = 0;
 								}
-								if(cmd_line == 1) {
-									fprintf(stdout,"ncl %d> ",cur_line_number);
-								} else if(cmd_line == 2) {
-									_NclCallPromptFunc(cur_line_number);
-								}
 								$$ = NULL;
 							}
 ;
@@ -309,11 +280,6 @@ block_statement_list : statement eoln {
 opt_eoln : 		{ /* do nothing */ }
 	| opt_eoln eoln	{ 
 				yyerrok;
-				if(cmd_line == 1) {
-					fprintf(stdout,"ncl %d> ",cur_line_number);
-				} else if(cmd_line == 2) {
-					_NclCallPromptFunc(cur_line_number);
-				}
 			}	
 ;
 
@@ -372,6 +338,7 @@ statement :     					{ $$ = NULL; }
 	| 	error 					{ 
 								$$ = NULL ; 
 								ERROR("error in statement"); 
+								yyerrok;
 							}
 	| 	STOP RECORD				{
 /*
@@ -521,11 +488,6 @@ get_resource_list : get_resource eoln		{
 							} else {
 								$$ = NULL;
 							}
-							if(cmd_line == 1) {
-								fprintf(stdout,"ncl %d> ",cur_line_number);
-							} else if(cmd_line == 2) {
-								_NclCallPromptFunc(cur_line_number);
-							}
 						}
 	| get_resource_list get_resource eoln	{
 							if($1 == NULL) {
@@ -545,11 +507,6 @@ get_resource_list : get_resource eoln		{
 								if((is_error)&&(cmd_line)) {
 									is_error = 0;
 								}
-							}
-							if(cmd_line == 1) {
-								fprintf(stdout,"ncl %d> ",cur_line_number);
-							} else if(cmd_line == 2) {
-								_NclCallPromptFunc(cur_line_number);
 							}
 						}
 ;
@@ -593,11 +550,6 @@ resource_list : resource eoln			{
 							} else {
 								$$ = NULL;
 							}
-							if(cmd_line == 1) {
-								fprintf(stdout,"ncl %d> ",cur_line_number);
-							} else if(cmd_line == 2) {
-								_NclCallPromptFunc(cur_line_number);
-							}
 						}
 						
 	| resource_list resource eoln		{
@@ -623,11 +575,6 @@ resource_list : resource eoln			{
 								}
 						
 							}
-							if(cmd_line == 1) {
-								fprintf(stdout,"ncl %d> ",cur_line_number);
-							} else if(cmd_line == 2) {
-								_NclCallPromptFunc(cur_line_number);
-							}
 						}	
 	| resource_list error eoln		{
 							$$ = $1;
@@ -635,11 +582,6 @@ resource_list : resource eoln			{
 /*
 							_NclDeleteNewSymStack();	
 */
-							if(cmd_line == 1) {
-								fprintf(stdout,"ncl %d> ",cur_line_number);
-							} else if(cmd_line == 2) {
-								_NclCallPromptFunc(cur_line_number);
-							}
 						}
 ;
 
@@ -1702,18 +1644,20 @@ yyerror
 
 	if(is_error < NCL_MAX_ERROR) {
 		if(yytext[0] == '\n') {
+			fprintf(stderr,"In yyerror and yytext == \\n and loading == %d\n",loading);
 			sprintf(error_buffer,"%s\n",cur_line_text);
 			len = strlen(error_buffer);
 			for(i=0; i<last_line_length-1;i++) sprintf(&(error_buffer[len+i]),"-");
 			sprintf(&(error_buffer[len+last_line_length-1]),"^\n");
 			if(loading) {
-				NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: line %d in file %s before or near \\n \n%s\n",s,cur_line_number,cur_load_file,error_buffer);
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: line %d in file %s before or near \\n \n%s\n",s,cur_line_number + 1,cur_load_file,error_buffer);
 			} else if(cmd_line){
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: line %d before or near \\n \n%s\n",s,cur_line_number,error_buffer);
 			} else {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: line %d before or near \\n \n%s\n",s,cur_line_number+1,error_buffer);
 			} 
 		} else {
+			fprintf(stderr,"In yyerror and yytext != \\n and loading == %d\n",loading);
 			sprintf((char*)&(error_buffer[0]),"%s\n",cur_line_text);
 			len = strlen(error_buffer);
 			for(i=0; i<cur_line_length-1;i++) sprintf(&(error_buffer[len+i]),"-");
