@@ -29,7 +29,8 @@ GENLIBS		= $(NETCDFLIB) $(HDFLIB) -lm -lmalloc
 GENLIBS		= $(NETCDFLIB) $(HDFLIB) -lm
 #endif
 
-LIBS		= $(LOCLIB) $(X11LIBS) $(SUNLIBS) $(GENLIBS)
+LIBS		= $(LOCLIB) $(CSTATIC) $(X11LIBS) $(SUNLIBS) $(CDYNAMIC) \
+		$(GENLIBS)
 
 SRCS		= main.c 
 OBJS		= main.o 

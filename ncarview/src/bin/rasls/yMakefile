@@ -1,6 +1,6 @@
 #
 #
-#	$Id: yMakefile,v 1.1 1993-01-16 00:43:04 don Exp $
+#	$Id: yMakefile,v 1.2 1993-03-26 23:20:56 haley Exp $
 #
 #
 #	Makefile for rasls
@@ -11,8 +11,15 @@ NCARG = ../../../..
 
 MYNAME		= rasls
 
-LIBS		= $(LIBPATH)/libncarg_ras.a \
-		$(LIBPATH)/libncarg_c.a $(NETCDFLIB) $(HDFLIB) -lm
+LOCLIBS		= $(LIBPATH)/libncarg_ras.a $(LIBPATH)/libncarg_c.a
+
+#if defined(Solaris) && defined(sun4)
+GENLIBS = $(NETCDFLIB) $(HDFLIB) /usr/ucblib/libucb.a -lm
+#else
+GENLIBS = $(NETCDFLIB) $(HDFLIB) -lm
+#endif
+
+LIBS = $(LOCLIBS) $(GENLIBS)
 
 CDEFINES	= 
 

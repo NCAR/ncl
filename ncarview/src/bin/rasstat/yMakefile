@@ -1,6 +1,6 @@
 #
 #
-#	$Id: yMakefile,v 1.7 1992-09-28 16:10:14 don Exp $
+#	$Id: yMakefile,v 1.8 1993-03-26 23:21:04 haley Exp $
 #
 #
 #	Makefile for rasstat
@@ -11,8 +11,15 @@ NCARG = ../../../..
 
 MYNAME	= rasstat
 
-LIBS		= $(LIBPATH)/libncarg_ras.a \
-		$(LIBPATH)/libncarg_c.a $(NETCDFLIB) $(HDFLIB) -lm
+LOCLIBS		= $(LIBPATH)/libncarg_ras.a $(LIBPATH)/libncarg_c.a
+
+#if defined(Solaris) && defined(sun4)
+GENLIBS =  $(NETCDFLIB) $(HDFLIB) /usr/ucblib/libucb.a -lm
+#else
+GENLIBS =  $(NETCDFLIB) $(HDFLIB) -lm
+#endif
+
+LIBS = $(LOCLIBS) $(GENLIBS)
 
 CDEFINES	= 
 

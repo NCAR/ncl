@@ -1,6 +1,6 @@
 #
 #
-#	$Id: yMakefile,v 1.14 1992-09-25 16:20:49 clyne Exp $
+#	$Id: yMakefile,v 1.15 1993-03-26 23:20:32 haley Exp $
 #
 #
 #	Makefile for idt -- Interactive Image Display Tool
@@ -19,11 +19,9 @@ LOCLIB	= \
 
 XLIBS	= $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(EXTENSIONLIB) $(XLIB)
 
-LIBS	= $(LOCLIB) $(XLIBS)
-
-
 GENLIBS = -lm
 
+LIBS	= $(LOCLIB) $(CSTATIC) $(XLIBS) $(CDYNAMIC) $(GENLIBS)
 
 EQUALHACK = =
 

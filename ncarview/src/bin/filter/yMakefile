@@ -1,6 +1,6 @@
 #
 #
-#	$Id: yMakefile,v 1.6 1992-09-09 15:06:39 clyne Exp $
+#	$Id: yMakefile,v 1.7 1993-03-26 23:19:22 haley Exp $
 #
 #
 #	Makefile for cgm filters -- filter between NCAR CGM and vanilla CGM
@@ -11,7 +11,11 @@ NCARG = ../../../..
 
 MYNAME	= filter
 
-LIBS		= $(LIBPATH)/libcgm.a $(LIBPATH)/libncarg_c.a
+#if defined(Solaris) && defined(sun4)
+GENLIBS = /usr/ucblib/libucb.a
+#endif
+
+LIBS		= $(LIBPATH)/libcgm.a $(LIBPATH)/libncarg_c.a $(GENLIBS)
 
 CDEFINES	= -I../../include
 

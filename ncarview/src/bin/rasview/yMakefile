@@ -1,6 +1,6 @@
 #
 #
-#	$Id: yMakefile,v 1.12 1992-10-02 21:16:49 don Exp $
+#	$Id: yMakefile,v 1.13 1993-03-26 23:21:08 haley Exp $
 #
 #	Makefile for rasview
 #
@@ -8,7 +8,7 @@ NCARG		= ../../../..
 
 MYNAME		= rasview
 
-LOCLIB		= $(LIBPATH)/libncarg_ras.a $(LIBPATH)/libncarg_c.a
+LOCLIBS		= $(LIBPATH)/libncarg_ras.a $(LIBPATH)/libncarg_c.a
 
 SRCS		= rasdraw.c rasview.c
 
@@ -16,7 +16,8 @@ OBJS		= rasdraw.o rasview.o
 
 XLIBS		= $(XTOOLLIB) $(XLIB)
 
-LIBS		= $(LOCLIB) $(XLIBS) $(NETCDFLIB) $(HDFLIB) -lm
+LIBS		= $(LOCLIBS) $(CSTATIC) $(XLIBS) $(CDYNAMIC) $(NETCDFLIB) \
+			$(HDFLIB) -lm
 
 CDEFINES	= 
 

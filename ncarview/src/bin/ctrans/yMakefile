@@ -1,6 +1,6 @@
 NCARG	= ../../../..
 #
-#	$Id: yMakefile,v 1.23 1993-01-20 16:02:19 haley Exp $
+#	$Id: yMakefile,v 1.24 1993-03-26 23:19:08 haley Exp $
 #
 
 
@@ -32,8 +32,8 @@ GENLIBS 	= $(NETCDFLIB) $(HDFLIB) -lm -lmalloc
 GENLIBS 	= $(NETCDFLIB) $(HDFLIB) -lm 
 #endif
 
-LIBS		= $(LOCLIB) $(X11LIBS) $(SUNLIBS) $(GENLIBS)
-
+LIBS		= $(LOCLIB) $(CSTATIC) $(X11LIBS) $(SUNLIBS) $(CDYNAMIC) \
+		$(GENLIBS)
 
 SRCS		=  main.c 
 OBJS		=  main.o 

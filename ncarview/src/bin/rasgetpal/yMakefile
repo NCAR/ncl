@@ -1,6 +1,6 @@
 #
 #
-#	$Id: yMakefile,v 1.1 1993-01-16 03:18:54 don Exp $
+#	$Id: yMakefile,v 1.2 1993-03-26 23:20:52 haley Exp $
 #
 #
 #	Makefile for rasgetpal
@@ -11,8 +11,15 @@ NCARG = ../../../..
 
 MYNAME		= rasgetpal
 
-LIBS		= $(LIBPATH)/libncarg_ras.a \
-		$(LIBPATH)/libncarg_c.a $(NETCDFLIB) $(HDFLIB) -lm
+LOCLIBS		= $(LIBPATH)/libncarg_ras.a $(LIBPATH)/libncarg_c.a
+
+#if defined(Solaris) && defined(sun4)
+GENLIBS = $(NETCDFLIB) $(HDFLIB) /usr/ucblib/libucb.a -lm
+#else
+GENLIBS = $(NETCDFLIB) $(HDFLIB) -lm
+#endif
+
+LIBS = $(LOCLIBS) $(GENLIBS)
 
 CDEFINES	= 
 
