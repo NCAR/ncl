@@ -1,5 +1,5 @@
 C
-C $Id: arex01.f,v 1.3 1995-04-19 17:28:23 kennison Exp $
+C $Id: arex01.f,v 1.4 1995-04-28 19:43:25 kennison Exp $
 C
       PROGRAM EXMPLE
 C
@@ -283,7 +283,7 @@ C
 C ARCOMN contains variables which are used by all the AREAS routines.
 C
         COMMON /ARCOMN/ IAD,IAU,ILC,RLC,ILM,RLM,ILP,RLP,IBS,RBS,DBS,IDB,
-     +                  IDC,IDI,IRC,RLA,RWA,RDI,RSI
+     +                  IDC,IDI,IRC(16),RLA,RWA,RDI,RSI
         SAVE   /ARCOMN/
 C
 C The common block ARCOM1 is used to communicate with the arrow-drawing
