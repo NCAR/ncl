@@ -289,6 +289,7 @@ NhlClass class_ptr;
 #endif
 {
 	NclHLUObj tmp,ptmp;
+	NclObjClass	cptr = (theclass ? theclass : nclHLUObjClass);
 
 	if(inst == NULL) {
 		tmp = (NclHLUObj)NclMalloc((unsigned)sizeof(NclHLUObjRec));
@@ -302,12 +303,12 @@ NhlClass class_ptr;
 #ifdef MAKEAPI
 	_NclAddToNewList(tmp->hlu.hlu_id,NrmStringToQuark(NhlName(tmp->hlu.hlu_id)),tmp->hlu.class_ptr);
 #endif /*MAKEAPI*/
-        (void)_NclObjCreate((NclObj)tmp , (theclass==NULL ? nclHLUObjClass: theclass) , obj_type ,(obj_type_mask | Ncl_HLUObj), status);
+        (void)_NclObjCreate((NclObj)tmp , cptr , obj_type ,(obj_type_mask | Ncl_HLUObj), status);
 	if(parentid > -1) {
 		ptmp = (NclHLUObj)_NclGetObj(parentid);
 		_NclAddHLUChild(ptmp,tmp->obj.id);
 	}
-	if(theclass == NULL) {
+	if(cptr == nclHLUObjClass) {
 		_NclCallCallBacks((NclObj)tmp,CREATED);
 	}
 	return(tmp);

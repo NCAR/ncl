@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: NclHLUVar.c,v 1.5 1995-06-03 00:45:44 ethan Exp $
+ *      $Id: NclHLUVar.c,v 1.6 1995-06-08 15:35:01 boote Exp $
  */
 /************************************************************************
 *									*
@@ -165,18 +165,15 @@ NclStatus status)
 #endif
 {
 	NclHLUVar hvar = NULL;
+	NclObjClass	cptr = (theclass ? theclass : nclHLUVarClass);
 
 	if(inst != NULL) {
 		hvar = (NclHLUVar) inst;
 	} else {
 		hvar = (NclHLUVar) NclMalloc(sizeof(NclHLUVarRec));
 	}
-	if(theclass != NULL) {
-		_NclVarCreate((NclVar)hvar,theclass,obj_type,obj_type_mask | Ncl_HLUVar,thesym,value,dim_info,att_id,coords,var_type,var_name,status);
-	} else {
-		_NclVarCreate((NclVar)hvar,(NclObjClass)&nclHLUVarClassRec,obj_type,obj_type_mask | Ncl_HLUVar,thesym,value,dim_info,att_id,coords,var_type,var_name,status);
-	}
-	if(theclass == NULL) {
+	_NclVarCreate((NclVar)hvar,cptr,obj_type,obj_type_mask | Ncl_HLUVar,thesym,value,dim_info,att_id,coords,var_type,var_name,status);
+	if(cptr == nclHLUVarClass) {
 		_NclCallCallBacks((NclObj)hvar,CREATED);
 	}
 	return((NclVar)hvar);

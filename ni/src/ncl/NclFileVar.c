@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: NclFileVar.c,v 1.8 1995-06-03 00:45:39 ethan Exp $
+ *      $Id: NclFileVar.c,v 1.9 1995-06-08 15:34:59 boote Exp $
  */
 /************************************************************************
 *									*
@@ -289,6 +289,7 @@ char *var_name,NclStatus status)
 {
 	NclFileVar fvar = NULL;
 	NclFile thefile;
+	NclObjClass	cptr = (theclass ? theclass : nclFileVarClass);
 
 	thefile = (NclFile)_NclGetObj(*(int*)value->multidval.val);
 	if(inst != NULL) {
@@ -296,13 +297,9 @@ char *var_name,NclStatus status)
 	} else {
 		fvar = (NclFileVar) NclMalloc(sizeof(NclFileVarRec));
 	}
-	if(theclass != NULL) {
-		_NclVarCreate((NclVar)fvar,theclass,obj_type,obj_type_mask | Ncl_FileVar,thesym,value,dim_info,att_id,coords,var_type,var_name,status);
-	} else {
-		_NclVarCreate((NclVar)fvar,(NclObjClass)&nclFileVarClassRec,obj_type,obj_type_mask | Ncl_FileVar,thesym,value,dim_info,att_id,coords,var_type,var_name,status);
-	}
+	_NclVarCreate((NclVar)fvar,cptr,obj_type,obj_type_mask | Ncl_FileVar,thesym,value,dim_info,att_id,coords,var_type,var_name,status);
 	_NclAddParent((NclObj)thefile,(NclObj)fvar);
-	if(theclass == NULL) {
+	if(cptr == nclFileVarClass) {
 		_NclCallCallBacks((NclObj)fvar,CREATED);
 	}
 	return((NclVar)fvar);

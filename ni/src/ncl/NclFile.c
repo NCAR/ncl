@@ -1787,7 +1787,7 @@ int rw_status;
 	} else {
 		NhlPError(NhlWARNING,NhlEUNKNOWN,"Could not get attribute names for file (%s), no attributes added ",NrmQuarkToString(path));
 	}
-	if(theclass == NULL) {
+	if(class_ptr == nclFileClass){
 		_NclCallCallBacks((NclObj)file_out,CREATED);
 	}
 	return(file_out);

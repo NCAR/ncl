@@ -1,5 +1,5 @@
 /*
- *      $Id: NclApi.c,v 1.23 1995-06-07 23:07:24 ethan Exp $
+ *      $Id: NclApi.c,v 1.24 1995-06-08 15:34:57 boote Exp $
  */
 /************************************************************************
 *									*
@@ -78,7 +78,7 @@ extern int cur_line_number;
 extern FILE* error_fp;
 extern FILE* stdout_fp;
 
-void NclServerReset
+void NclResetServer
 #if 	NhlNeedProto
 (void)
 #else

@@ -1,5 +1,5 @@
 /*
- *      $Id: DataSupport.c,v 1.16 1995-06-07 17:38:37 ethan Exp $
+ *      $Id: DataSupport.c,v 1.17 1995-06-08 15:34:55 boote Exp $
  */
 /************************************************************************
 *									*
@@ -177,7 +177,7 @@ unsigned int type;
 			break;
 		}
 		while(cl != NULL) {
-			ret1 = (*(NclCallBack*)cl->func)(call_data,cl->user_data);
+			ret1 = (*(NclCallBack)cl->func)(call_data,cl->user_data);
 			if(ret1 < ret) {	
 				ret = ret1;
 			}
