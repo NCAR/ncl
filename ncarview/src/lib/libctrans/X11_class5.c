@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class5.c,v 1.3 1991-04-04 16:01:04 clyne Exp $
+ *	$Id: X11_class5.c,v 1.4 1991-05-16 11:41:19 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -85,7 +85,9 @@ CGMC *c;
 	Pixeltype	planedummy[1];		/* not used	*/
 	Pixeltype	pixel_return[1];	/* device index	*/
 
-	Ct_err	BackColr();
+	int	start = 0;
+
+	Ct_err	X11_BackColr();
 
 	/* see if device supports colour	*/
 	if (!Color_ava)
@@ -100,6 +102,16 @@ CGMC *c;
 	MARKER_COLOUR_DAMAGE = TRUE;
 	LINE_COLOUR_DAMAGE = TRUE;
 
+	/*
+	 * This is a hack to ensure background color gets set correctly
+	 * in the case that colr table index 0 is changed *and* no
+	 * coresponding CGM BACKGROUND COLOUR is received
+	 */
+	if (c->ci[start] == 0) {
+		(void) X11_BackColr(c);
+		start++;	/* skip index 0 for the rest of this func */
+	}
+
 	/* 
 	 *	see what type of visual we have (read only or read/write)
 	 */
@@ -109,7 +121,8 @@ CGMC *c;
 
 
 		/*	load the colours from the cgmc into the colour map */
-		for(i=0,index=c->ci[0];index<(c->ci[0]+c->CDnum);i++,index++) {
+		i = start;
+		for(index=c->ci[i]; i < c->CDnum; i++,index++) {
 
 
 		/* convert CGM rgb values to X rgb values	*/
@@ -118,7 +131,7 @@ CGMC *c;
                 if (!XAllocColor(dpy, Cmap, &color)) {
 
 			/* error allocating color cell	*/
-			ct_error(NT_CAE,"");
+			ct_error(NT_CAE,"Too many colors allocated");
                         return (pre_err);
 		}
 
@@ -127,19 +140,14 @@ CGMC *c;
 
 		}
 
-		/*
-		 * This is a hack to ensure background color gets set correctly
-		 * in the case that colr table index 0 is changed *and* no
-		 * coresponding CGM BACKGROUND COLOUR is received
-		 */
-		if (index == 0) (void) BackColr(c);
 		return (OK);
 	}
  
 	/*	
 	 * load the colours from the cgmc into the colour map 
 	 */
-	for (index=c->ci[0], i = 0 ;index< (c->ci[0] + c->CDnum); index++,i++) {
+	i = start;
+	for (index=c->ci[i]; i<c->CDnum; index++,i++) {
 		/*
 		 * if this index has not had a cell allocated to it previously
 		 * we need to do it now.
@@ -152,7 +160,7 @@ CGMC *c;
 					0, pixel_return, 1) == 0) {
 
 				/* error allocating color cell	*/
-				ct_error(NT_CAE,"");
+				ct_error(NT_CAE,"Too many colors allocated");
 				return (SICK);
 			}
 
@@ -177,7 +185,6 @@ CGMC *c;
 		 *	store the colour in the map
 		 */
 		XStoreColor(dpy, Cmap, &color);
-		if (index == 0) (void) BackColr(c);
 	}
 	return (OK);
 }

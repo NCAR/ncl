@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class4.c,v 1.4 1991-04-02 16:05:53 clyne Exp $
+ *	$Id: X11_class4.c,v 1.5 1991-05-16 11:41:14 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -49,7 +49,6 @@
 #endif
 
 extern  Ct_err	Instr_Dec();
-extern	Ct_err	set_background_colr();
 
 extern	Colormap	Cmap;
 
@@ -157,13 +156,6 @@ CGMC *c;
 		LINE_TYPE_DAMAGE = FALSE;
 	}
 
-	/*
-	 * see if background color has changed
-	 */
-	if (BACKCOLR_DAMAGE ) {
-		(void) set_background_colr(BACKCOLR);
-		BACKCOLR_DAMAGE = FALSE;
-	}
 	startedDrawing = TRUE;
 
 	/*
@@ -266,13 +258,6 @@ CGMC *c;
 		MARKER_COLOUR_DAMAGE = FALSE;
 	}
 
-	/*
-	 * see if background color has changed
-	 */
-	if (BACKCOLR_DAMAGE ) {
-		(void) set_background_colr(BACKCOLR);
-		BACKCOLR_DAMAGE = FALSE;
-	}
 	startedDrawing = TRUE;
 
 	/*
@@ -441,13 +426,6 @@ CGMC *c;
 		CLIP_DAMAGE = FALSE;
 	}
 
-	/*
-	 * see if background color has changed
-	 */
-	if (BACKCOLR_DAMAGE ) {
-		(void) set_background_colr(BACKCOLR);
-		BACKCOLR_DAMAGE = FALSE;
-	}
 	startedDrawing = TRUE;
 
 	/*
@@ -734,13 +712,6 @@ CGMC *c;
 	Etype	mode;		/* cell representation mode		*/
 
 
-	/*
-	 * see if background color has changed
-	 */
-	if (BACKCOLR_DAMAGE ) {
-		(void) set_background_colr(BACKCOLR);
-		BACKCOLR_DAMAGE = FALSE;
-	}
 	startedDrawing = TRUE;
 		
 	/*

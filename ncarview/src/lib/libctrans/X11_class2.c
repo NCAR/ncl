@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class2.c,v 1.3 1991-04-30 17:27:26 clyne Exp $
+ *	$Id: X11_class2.c,v 1.4 1991-05-16 11:41:11 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -38,19 +38,25 @@
 extern	struct	device	devices[];
 extern	int	currdev;
 
-Ct_err	set_background_colr(colr)
-	CDtype	colr;
+Ct_err	X11_BackColr(c)
+	CGMC	*c;
+	
 {
+	CDtype	colr;
 	Pixeltype	pixel;
 	Pixeltype	planedummy[1];
 	Pixeltype	pixel_return[1];
 	extern	boolean	startedDrawing;
-	XColor color;
 
 	extern	Colormap	Cmap;
 	extern	boolean		Colordef[];
 	extern	Pixeltype	Colortab[];
 	extern	boolean		Color_ava;
+
+	static  XColor  color = {
+		0,0,0,0,(DoRed | DoGreen | DoBlue), '\0'
+		};
+
 	
 	if (! Color_ava) return (OK);
 
@@ -59,6 +65,7 @@ Ct_err	set_background_colr(colr)
 		return (SICK);
 	}
 
+	colr = c->cd[0];
 
 	/*
 	 *	convert CGM rgb values to X rgb values
