@@ -1,5 +1,5 @@
 /*
- *	$Id: w_idt.c,v 1.5 1991-02-05 13:15:38 clyne Exp $
+ *	$Id: w_idt.c,v 1.6 1991-02-06 15:12:07 clyne Exp $
  */
 /*
  *	w_idt.c
@@ -64,7 +64,7 @@ static	String fallback_resources[] = {
 	"*file*selection.value:	\ ",
 	"*file*selection*value.translations: #override \\n\
 		 <Key>Return: okFileTranslation()",
-	"*file*textDisplay*Text*translations: #override \\n\
+	"*file*Text.translations: #override \\n\
 		 <Key>Return: selectFileTranslation() \\n\
 		 <Btn1Down>: select-start() selectFileTranslation()",
 	"*simpleDialog*dialog*value.translations: #override \\n\
@@ -172,7 +172,7 @@ create_main_panel(parent)
 
 	extern	void	InitText(), AppendText();
 
-	char *line1 = " Copyright (C) 1990 - All Rights Resevered    \n";
+	char *line1 = " Copyright (C) 1990 - All Rights Reserved    \n";
 	char *line2 = " University Corporations for Atmospheric Research   \n";
 	char *line3 = " NCAR View - UNIX Version 3.01   \n";
 	char *header;
