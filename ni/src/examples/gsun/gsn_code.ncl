@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.12 1999-03-15 23:17:09 haley Exp $
+;      $Id: gsn_code.ncl,v 1.13 1999-03-17 20:24:58 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -44,7 +44,6 @@ undef("gsn_open_x11")
 undef("gsn_open_ncgm")
 undef("gsn_open_wks")
 undef("gsn_define_colormap")
-undef("gsn_define_named_colormap")
 undef("gsn_retrieve_colormap")
 undef("gsn_panel")
 undef("gsn_contour")
@@ -99,10 +98,18 @@ undef("gsn_xy")
     else
       res_file = "gsnapp"
     end if
-       
-    ncgm = create res_file ncgmWorkstationClass defaultapp 
-      "wkMetaName" : name
-    end create
+    maxbb@gsnPanelBottom = get_res_value(res,"gsnPanelBottom",0.)
+  end if
+  if(isatt(res,"gsnPanelTop"))
+    maxbb@gsnPanelTop    = get_res_value(res,"gsnPanelTop",1.)
+  end if
+
+  return(maxbb)
+end
+
+;***********************************************************************;
+; Function : gsn_open_ncgm                                              ;
+;               name : name of output cgm file                          ;
 ;                                                                       ;
 ; This function opens an NCGM output file called "<name>.ncgm" and      ;
 ; returns the workstation id. If "name" is an empty string, then the    ;
@@ -118,10 +125,16 @@ begin
       ncgm = create res_file ncgmWorkstationClass defaultapp 
         "wkMetaName" : name
         "wkColorMap" : name@wkColorMap
-    window = create name + "_x11" xWorkstationClass defaultapp
+      end create
+    else
       ncgm = create res_file ncgmWorkstationClass defaultapp 
-    end create
+        "wkMetaName" : name
+      end create
+    end if
 
+
+    return(ncgm)
+end
 
 ;***********************************************************************;
 ; Function : gsn_open_x11                                               ;
@@ -143,10 +156,18 @@ begin
       res_file = "gsnapp"
     end if
 
-    ps = create res_file psWorkstationClass defaultapp
+    if(isatt(name,"wkColorMap"))
+      ps = create res_file psWorkstationClass defaultapp
+        "wkColorMap"   : name@wkColorMap
         "wkPSFileName" : name
         "wkPSFormat"   : type
-    end create
+      end create
+    else
+      ps = create res_file psWorkstationClass defaultapp
+        "wkPSFileName" : name
+        "wkPSFormat"   : type
+      end create
+    end if
 
     res_file = get_res_value_keep(name,"res_file","gsnapp")
     resltn   = get_res_value_keep(type,"wkPSResolution",1800)
@@ -203,15 +224,27 @@ begin
     else
         ps_file = res_file + "." + type
     end if
+
       i = name_len-1      ; Start checking if a directory pathname
       not_found = True    ; was specified for the resource file.
+      do while(not_found.and.i.ge.0)
+        if(name_char(i).eq."/")
+          res_dir  = chartostring(name_char(0:i))
+; Check if color map being set.
+        i = i - 1
+      end do
+
+      ps_file@wkColorMap   = type@wkColorMap
+      res_file = chartostring(name_char(i+1:name_len-1))
+
+      if(isatt(name,"appUsrDir").and.not_found)
         res_dir = name@appUsrDir   ; No directory specified.
       end if
     end if
 
     ncgm_file = get_res_value_keep(type,"wkMetaName",res_file + ".ncgm")
     ncgm_file@res_file = res_file
-        wks = gsn_open_x11(res_file)
+
     ps_file = get_res_value_keep(type,"wkPSFileName",res_file + "." + type)
     ps_file@res_file = res_file
 
@@ -220,7 +253,8 @@ begin
 ;
                 wks = gsn_open_ncgm(ncgm_file)
 ; passed automatically through "type".
-                 print(type + " is an illegal workstation type")
+                 print("Error: "+ type + " is an illegal workstation type.")
+    if(isatt(type,"wkColorMap"))
       ncgm_file@wkColorMap = type@wkColorMap
       x_file@wkColorMap    = type@wkColorMap
     end if
@@ -287,36 +321,52 @@ i, j, old_vpx, old_vpy, old_vpwidth, old_vpheight, callframe
 ;               resources: optional resources                           ;
       if(isatt(resources,"gsnPanelLeft"))
         x_lft = resources@gsnPanelLeft
-        if(x_lft.lt.0..or.x_lft.gt.1.)
-          print("Warning: attribute gsnPanelLeft must be >= 0.0 and <= 1.0")
+        if(x_lft.lt.0..or.x_lft.ge.1.)
+          print("Warning: attribute gsnPanelLeft must be >= 0.0 and < 1.0")
           print("Defaulting to 0.")
           x_lft = 0.0
         end if
       end if
+; variable returned from a previous call to "gsn_open_wks") in the same ;
       if(isatt(resources,"gsnPanelRight"))
         x_rgt = resources@gsnPanelRight
-        if(x_rgt.lt.0..or.x_rgt.gt.1.)
-          print("Warning: attribute gsnPanelRight must be >= 0.0 and <= 1.0")
+        if(x_rgt.le.0..or.x_rgt.gt.1.)
+          print("Warning: attribute gsnPanelRight must be > 0.0 and <= 1.0")
           print("Defaulting to 1.")
           x_rgt = 1.0
         end if
       end if
+; one of the gsn_* plotting functions). "x" and "y" are the x and y     ;
       if(isatt(resources,"gsnPanelTop"))
         y_top = resources@gsnPanelTop
-        if(y_top.lt.0..or.y_top.gt.1.)
-          print("Warning: attribute gsnPanelTop must be >= 0.0 and <= 1.0")
+        if(y_top.le.0..or.y_top.gt.1.)
+          print("Warning: attribute gsnPanelTop must be > 0.0 and <= 1.0")
           print("Defaulting to 1.")
           y_top = 1.0
         end if
       end if
+
       if(isatt(resources,"gsnPanelBottom"))
         y_bot = resources@gsnPanelBottom
-        if(y_bot.lt.0..or.y_bot.gt.1.)
-          print("Warning: attribute gsnPanelBottom must be >= 0.0 and <= 1.0")
+        if(y_bot.lt.0..or.y_bot.ge.1.)
+          print("Warning: attribute gsnPanelBottom must be >= 0.0 and < 1.0")
           print("Defaulting to 0.")
           y_bot = 0.0
         end if
       end if
+
+      if(x_rgt.le.x_lft)
+        print("Error: attribute gsnPanelRight ("+x_rgt+") must be greater")
+        print("       than gsnPanelLeft ("+x_lft+").")
+        exit
+      end if
+
+      if(y_top.le.y_bot)
+        print("Error: attribute gsnPanelTop ("+y_top+") must be greater")
+        print("       than gsnPanelBottom ("+y_bot+").")
+        exit
+      end if
+begin
     end if
 end
 ;
@@ -447,228 +497,22 @@ end
 ; Procedure : gsn_define_colormap                                       ;
 ;                   wks: workstation object                             ;
 ;                  cmap: Colormap                                       ;
-; Procedure : gsn_define_named_colormap                                 ;
-;                   wks: workstation object                             ;
-;                  cmap: Colormap (n x 3 array)                         ;
-;                                                                       ;
-; This procedure defines a color map for workstation "wks" using colors ;
-; specified by strings containing names and/or RGB values.              ;
-;***********************************************************************;
-
-procedure gsn_define_named_colormap(wks:graphic, cmap[*]:string)
-begin
-    setvalues wks
-        "wkColorMap" : cmap
-    end setvalues
-end
-
-;***********************************************************************;
 ;                                                                       ;
 ; This procedure defines a color map for workstation "wks" (the         ;
-;            color_map : Color map name (string)                        ;
-;                                                                       ;
-; This function returns the desired predefined color map.  Two pre-     ;
-; defined color maps concatenated together can also be returned.        ;
-; "wks" is the workstation id, and "color_map" is the name of the color ;
-; map(s) you want returned.  If two color maps are desired, then        ;
-; "color_map" should be two names with a "+" in the middle.             ;
-;                                                                       ;
-; For example, if you want to retrieve the color maps "temp1" and       ;
-; "default", then "color_map" should be "temp1+default". If the string  ;
-; before or after the "+" is empty, then the current color map is used. ;
-; For example, "+temp1" will return the current color map with the      ;
-; "temp1" color map appended. If color_map is "", then just the current ;
-; color map is returned.                                                ;
-;                                                                       ;
-; The current valid color maps are the nine predefined color maps       ;
-; ("default", "cyclic", "gscyclic", "gsltod", "gsdtol", "uniform",      ;
-; "temp1", "psgcap", "example") or the two color maps that have named   ;
-; colors ("name_x" and "name_s")                                        ;
-;                                                                       ;
-; If the resultant map is more than 256 colors, then just the current   ;
-; color map is returned.                                                ;
-;                                                                       ;
-; To see what the named colors are, go to:                              ;
-;                                                                       ;
-; http://ngwww.ucar.edu/ngdoc/ng/ug/ncl/gsun/appendix.html#gsn_retrieve_colormap;
 ; variable returned from a previous call to "gsn_open_wks") using float ;
+; RGB values or a pre-defined color name.                               ;
+;***********************************************************************;
+procedure gsn_define_colormap(wks:graphic, cmap)
+begin
   dim_cmap = dimsizes(cmap)
 
-function gsn_retrieve_colormap(wks:graphic, cmap_name: string)
-local cmap, current_cmap, valid_names, ncol1, ncol2
+  if((typeof(cmap).eq."float".and.(dimsizes(dim_cmap).ne.2.or.\
                                    dim_cmap(1).ne.3)).or.\
-
-; Names of color maps.
-    named_colors     = (/"name_x","name_s"/) ; color maps with named colors
-    predefined_names = (/"default", "cyclic", "gscyclic", "gsltod", \
-                         "gsdtol", "uniform", "temp1", "psgcap", \
-                         "example","red-blue",""/)
-
-    cmap1_name     = cmap_name
-    retrieve_cmap2 = False
-
      (typeof(cmap).eq."string".and.dimsizes(dim_cmap).ne.1))
-        "wkColorMap" : current_cmap   ; Retrieve current color map.
+    print("Warning: gsn_define_colormap: cmap must either be an n x 3 float array,")
     print("a single pre-defined colormap name, or a 1-dimensional string array of named colors.")
   else
-    cmap_name_char = stringtochar(cmap_name)  ; convert to character array
-    cmap_len = dimsizes(cmap_name_char)       ; length of string
-
-; If the string is empty, return the current color map in use.
-    if(cmap_len.eq.0)
-        return(current_cmap)
-    else
-        not_found = True
-        i = 0
-        do while(not_found.and.(i.lt.cmap_len))
-          if(cmap_name_char(i).eq."+")
-            if(i.gt.0)
-              cmap1_name = chartostring(cmap_name_char(0:i-1))
-            else
-              cmap1_name = ""
-            end if
-            if(i.lt.cmap_len-1)
-              cmap2_name = chartostring(cmap_name_char(i+1:cmap_len-1))
-            else
-              cmap2_name = ""
-            end if
-            not_found = False
-            retrieve_cmap2 = True
-          end if
-          i = i + 1
-        end do
-    end if
-
-; Check if cmap1_name and/or cmap2_name are valid color map names.
-
-    if(.not.any(cmap1_name.eq.predefined_names).and.\
-       .not.any(cmap1_name.eq.named_colors))
-      print("'" + cmap1_name + "' is an invalid color map name.")
-      print("Returning the current color map.")
-      return(current_cmap)
-    end if
-
-    if(retrieve_cmap2.and.(.not.any(cmap2_name.eq.predefined_names).and.\
-                           .not.any(cmap2_name.eq.named_colors)))
-      print("'" + cmap2_name + "' is an invalid color map name.")
-      print("Returning the current color map.")
-      return(current_cmap)
-    end if
-
-; Get the first color map.  It will either be the current color map, one
-; of the predefined colormaps, or a special color map.
-
-    if(cmap1_name.eq."")
-      cmap1 = current_cmap
-    else
-      if(any(cmap1_name.eq.predefined_names))
-        setvalues wks
-            "wkColorMap" : cmap1_name  ; Set cmap1 by name.
-        end setvalues
-
-        getvalues wks
-          "wkColorMap"   : cmap1       ; Retrieve this cmap.
-        end getvalues
-
-        setvalues wks
-            "wkColorMap" : current_cmap  ; Set the original cmap back.
-        end setvalues
-      else
-; Open the netCDF file that contains the color maps with named colors
-        color_file = addfile("$NCARG_ROOT/lib/ncarg/data/cdf/color.nc","r")
-        if(cmap1_name.eq."name_x")
-          cmap1 = color_file->cmap_x  ; RGB values for named colormap
-        else
-          cmap1 = color_file->cmap_s  ; RGB values for named colormap
-        end if
-      end if
-    end if
-
-    cmap1_len = dimsizes(cmap1(:,0))  ; length of first color map.
-    ntotal = cmap1_len
-
-; Get the second color map.  It will either be the current color map, one
-; of the predefined colormaps, or a color map with named colors.
-
-    if(retrieve_cmap2)
-      if(cmap2_name.eq."")
-        cmap2 = current_cmap
-      else
-        if(any(cmap2_name.eq.predefined_names))
-          setvalues wks
-              "wkColorMap" : cmap2_name  ; Set cmap2 by name.
-          end setvalues
-
-          getvalues wks
-            "wkColorMap"   : cmap2       ; Retrieve this cmap.
-          end getvalues
-
-          setvalues wks
-              "wkColorMap" : current_cmap  ; Set the original cmap back.
-          end setvalues
-        else
-  ; Open the netCDF file that contains the color maps with named colors
-          color_file = addfile("$NCARG_ROOT/lib/ncarg/data/cdf/color.nc","r")
-          if(cmap2_name.eq."name_x")
-            cmap2 = color_file->cmap_x  ; RGB values for named colormap
-          else
-            cmap2 = color_file->cmap_s  ; RGB values for named colormap
-          end if
-        end if
-      end if
-      cmap2_len = dimsizes(cmap2(:,0))  ; length of second color map.
-      ntotal = cmap1_len + cmap2_len
-    end if
-
-; If # of colors is greater than 256, then return current color map in use.
-
-    if(ntotal.gt.256)
-        print("Maximum color map length exceeded. Limit is 256,")
-        print("requested length is " + ntotal + ".")
-        print("Returning current color map.")
-        return(current_cmap)
-    end if
-
-    if(.not.retrieve_cmap2)
-        return(cmap1)    ; Only retrieving one color map.
-    else        
-; Create new color map that will contain both requested color maps.
-        new_cmap = new((/ntotal,3/),float)
-        delete(new_cmap@_FillValue)
-        new_cmap(0:cmap1_len-1,:)       = (/cmap1/)
-        new_cmap(cmap1_len:ntotal-1,:)  = (/cmap2/)
-
-; Check if the first color map is a color map with names. If so, then
-; we need to transfer the attribute values properly.
-        if(any(cmap1_name.eq.named_colors))
-          cmap1_atts = onedtond(getvaratts(cmap1),(/cmap1_len,2/))
-
-; Pass the named colors onto this new map.
-          do i=0,cmap1_len-1
-            color_name = cmap1_atts(i,0)
-            Color_Name = cmap1_atts(i,1)
-            new_cmap@$color_name$ = cmap1@$color_name$
-            new_cmap@$Color_Name$ = cmap1@$Color_Name$
-          end do
-          delete(cmap1_atts)
-        end if
-
-; Check if the second color map is a color map with names. If so, then
-; we need to transfer the attribute values properly.
-        if(any(cmap2_name.eq.named_colors))
-          cmap2_atts = onedtond(getvaratts(cmap2),(/cmap2_len,2/))
-
-; Pass the named colors onto this new map.
-          do i=0,cmap2_len-1
-            color_name = cmap2_atts(i,0)
-            Color_Name = cmap2_atts(i,1)
-            new_cmap@$color_name$ = cmap2@$color_name$ + cmap1_len
-            new_cmap@$Color_Name$ = cmap2@$Color_Name$ + cmap1_len
-          end do
-          delete(cmap2_atts)
-        end if
-        return(new_cmap)
-    end if
+    setvalues wks
         "wkColorMap" : cmap
     end setvalues
   end if
