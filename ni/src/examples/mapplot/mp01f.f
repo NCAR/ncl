@@ -1,5 +1,5 @@
 C
-C     $Id: mp01f.f,v 1.8 1995-06-22 21:08:16 haley Exp $
+C     $Id: mp01f.f,v 1.9 1997-10-08 18:16:48 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -89,14 +89,13 @@ C all the outlines (Geophysical, National, and US States).
 C
       call NhlFRLClear(rlist)
       call NhlFRLSetstring(rlist,'tiMainString','mp01f - Frame 2',ierr)
-      call NhlFRLSetfloat(rlist,'vpYF',0.85,ierr)
-      call NhlFRLSetfloat(rlist,'vpXF',0.15,ierr)
-      call NhlFRLsetfloat(rlist,'vpHeightF',0.7,ierr)
-      call NhlFRLsetfloat(rlist,'vpWidthF',0.7,ierr)
+      call NhlFRLSetfloat(rlist,'vpYF',0.9,ierr)
+      call NhlFRLsetfloat(rlist,'vpHeightF',0.8,ierr)
       call NhlFRLSetstring(rlist,'mpFillOn','TRUE',ierr)
       call NhlFRLSetstring(rlist,'mpOutlineBoundarySets',
      1  'allBoundaries',ierr)
       call NhlFRLSetstring(rlist,'mpProjection','orthographic',ierr)
+      call NhlFRLSetString(rlist,'mpPerimOn','true',ierr)
       call NhlFRLSetfloat(rlist,'mpCenterLatF',10.0,ierr)
       call NhlFRLSetfloat(rlist,'mpCenterLonF',-90.0,ierr)
       call NhlFRLSetfloat(rlist,'mpCenterRotF',45.0,ierr)

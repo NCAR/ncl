@@ -86,6 +86,7 @@ begin
         "mpFillOn" : "true"
         "mpOutlineBoundarySets" : "allBoundaries"
         "mpProjection" : "orthographic"
+        "mpPerimOn" : "true"
         "mpCenterLatF" : 10.0
         "mpCenterLonF" : -90.0
         "mpCenterRotF" : 45.0

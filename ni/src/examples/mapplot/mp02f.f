@@ -1,5 +1,5 @@
 C
-C     $Id: mp02f.f,v 1.11 1995-06-22 21:08:19 haley Exp $
+C     $Id: mp02f.f,v 1.12 1997-10-08 18:16:50 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -100,6 +100,7 @@ C
      1    ierr)
       call NhlFRLSetstring(rlist,'mpFillOn','TRUE',ierr)
       call NhlFRLSetstring(rlist,'mpProjection','orthographic',ierr)
+      call NhlFRLSetString(rlist,'mpPerimOn','true',ierr)
       call NhlFRLSetfloat(rlist,'mpCenterLatF',10.0,ierr)
       call NhlFRLSetfloat(rlist,'mpCenterLonF',-90.0,ierr)
       call NhlFRLSetfloat(rlist,'mpCenterRotF',45.0,ierr)

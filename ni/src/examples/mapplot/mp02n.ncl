@@ -86,6 +86,7 @@ begin
         "tiMainString" : "mp02n - Frame 1"
         "mpFillOn" : "True"
         "mpProjection" : "Orthographic"
+        "mpPerimOn" : "true"
         "mpCenterLatF" : 10.0
         "mpCenterLonF" : -90.0
         "mpCenterRotF" : 45.0

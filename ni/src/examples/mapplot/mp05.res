@@ -4,6 +4,7 @@
 ! Position each map in a different location in the viewport
 ! with the "vp" resources.
 !
+*mpPerimOn:                   true
 *map0*mpProjection:           LambertConformal
 *map0*vpXF:                   0.025
 *map0*vpYF:                   0.87

@@ -48,6 +48,7 @@
 !
 *mp03Work.Map1*mpGridAndLimbOn  : false
 *mp03Work.Map1*mpLabelsOn  : false
+*mpPerimOn  : true
 !
 ! set the formatting of the Max data value (which by default controls the
 ! formatting of all numeric labels in the plot)

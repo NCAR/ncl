@@ -1,5 +1,5 @@
 /*
- *      $Id: mp01c.c,v 1.8 1995-06-22 21:08:15 haley Exp $
+ *      $Id: mp01c.c,v 1.9 1997-10-08 18:16:48 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -96,10 +96,9 @@ main(int argc, char *argv[])
     NhlRLSetString(rlist,NhlNmpFillOn,"true");
     NhlRLSetString(rlist,NhlNmpOutlineBoundarySets,"allBoundaries"); 
     NhlRLSetString(rlist,NhlNmpProjection,"orthographic");
-    NhlRLSetFloat(rlist,NhlNvpXF,0.15);
-    NhlRLSetFloat(rlist,NhlNvpYF,0.85);
-    NhlRLSetFloat(rlist,NhlNvpWidthF,0.7);
-    NhlRLSetFloat(rlist,NhlNvpHeightF,0.7);
+    NhlRLSetString(rlist,NhlNmpPerimOn,"true");
+    NhlRLSetFloat(rlist,NhlNvpYF,0.9);
+    NhlRLSetFloat(rlist,NhlNvpHeightF,0.8);
     NhlRLSetFloat(rlist,NhlNmpCenterLatF,10.0);
     NhlRLSetFloat(rlist,NhlNmpCenterLonF,-90.0);
     NhlRLSetFloat(rlist,NhlNmpCenterRotF,45.0);

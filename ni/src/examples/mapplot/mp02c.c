@@ -1,5 +1,5 @@
 /*
- *      $Id: mp02c.c,v 1.9 1995-06-22 21:08:18 haley Exp $
+ *      $Id: mp02c.c,v 1.10 1997-10-08 18:16:49 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -105,6 +105,7 @@ main(int argc, char *argv[])
     NhlRLSetString(rlist,NhlNtiMainString,"mp02c - Frame 1");
     NhlRLSetString(rlist,NhlNmpFillOn,"True");
     NhlRLSetString(rlist,NhlNmpProjection,"Orthographic");
+    NhlRLSetString(rlist,NhlNmpPerimOn,"true");
     NhlRLSetFloat(rlist,NhlNmpCenterLatF,10.0);
     NhlRLSetFloat(rlist,NhlNmpCenterLonF,-90.0);
     NhlRLSetFloat(rlist,NhlNmpCenterRotF,45.0);
