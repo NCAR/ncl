@@ -142,20 +142,33 @@
 #define	MF_DEFAULTS_ID	12
 
 /*
+ *	Picture Descriptor Elements
+ */
+#define	PIC_DEC_ELEMENT	2
+
+#define	SCALE_MODE_ID	1
+
+
+/*
  *	cgm graphical primitive elements (class 4)
  */
 #define	GRP_ELEMENT		4
 
+#define	TEXT_ID			4
 #define POLYGON_ID		7
+#define POLYGON_SET_ID		8
 #define CELL_ARRAY_ID		9
+#define G_D_P_ID		10
 
 /*
  *	cgm attribute elements (class 4)
  */
 #define	ATT_ELEMENT		5
 
+#define	TEXT_ALIGN_ID		18
 #define	INTERIOR_STYLE_ID	22
 #define	FILL_COLOUR_ID		23
+#define	PATTERN_TAB_ID		32
 #define COLOR_TABLE_ID		34
 
 /*
