@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlotP.h,v 1.10 1995-03-03 20:14:55 dbrown Exp $
+ *      $Id: MapPlotP.h,v 1.11 1995-03-13 21:47:30 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -52,8 +52,11 @@ typedef struct _NhlmpLineAttrs {
 } NhlmpLineAttrs;
 
 typedef struct _NhlmpFillAttrs {
+	NhlBoolean	color_set;
 	int		color;
+	NhlBoolean	pattern_set;
 	int		pattern;
+	NhlBoolean	scale_set;
 	float		scale;
 } NhlmpFillAttrs;
 

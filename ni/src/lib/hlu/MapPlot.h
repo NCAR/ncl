@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.h,v 1.8 1995-03-03 20:14:54 dbrown Exp $
+ *      $Id: MapPlot.h,v 1.9 1995-03-13 21:47:29 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -75,8 +75,8 @@ typedef enum _NhlMapShapeMode {
 #define NhlmpUSSTATESLAND	"usstatesland"
 #define NhlmpUSSTATESWATER	"usstateswater"
 
-#define NhlmpUNSETCOLOR		NhlTRANSPARENT
-#define NhlmpUNSETFILLPATTERN	NhlHOLLOWFILL
+#define NhlmpUNSETCOLOR		NhlNULLCOLOR
+#define NhlmpUNSETFILLPATTERN	NhlNULLFILL
 #define NhlmpUNSETFILLSCALE	0.0
 
 #define NhlmpDEFAULTGROUPINDEX		0

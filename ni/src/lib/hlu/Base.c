@@ -1,5 +1,5 @@
 /*
- *      $Id: Base.c,v 1.8 1994-12-16 20:03:52 boote Exp $
+ *      $Id: Base.c,v 1.9 1995-03-13 21:47:15 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -22,10 +22,17 @@
  *			layer.
  */
 #include <stdio.h>
-
+#include <limits.h>
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/ResourcesP.h>
+#include <ncarg/hlu/ConvertersP.h>
 #include <ncarg/hlu/BaseP.h>
+
+static NhlErrorTypes BaseClassInitialize(
+#if	NhlNeedProto
+	void
+#endif
+);
 
 static NhlErrorTypes BaseLayerClassPartInitialize(
 #if	NhlNeedProto
@@ -65,7 +72,7 @@ NhlObjLayerClassRec NhlobjLayerClassRec = {
 /* all_resources		*/	NULL,
 
 /* class_part_initialize	*/	BaseLayerClassPartInitialize,
-/* class_initialize		*/	NULL,
+/* class_initialize		*/	BaseClassInitialize,
 /* layer_initialize		*/	NULL,
 /* layer_set_values		*/	NULL,
 /* layer_set_values_hook	*/	NULL,
@@ -88,7 +95,7 @@ NhlLayerClassRec NhllayerClassRec = {
 /* all_resources		*/	NULL,
 
 /* class_part_initialize	*/	BaseLayerClassPartInitialize,
-/* class_initialize		*/	NULL,
+/* class_initialize		*/	BaseClassInitialize,
 /* layer_initialize		*/	NULL,
 /* layer_set_values		*/	NULL,
 /* layer_set_values_hook	*/	NULL,
@@ -110,6 +117,50 @@ NhlLayerClassRec NhllayerClassRec = {
 NhlLayerClass NhllayerClass = (NhlLayerClass)&NhllayerClassRec;
 NhlLayerClass NhlbaseLayerClass = (NhlLayerClass)&NhllayerClassRec;
 NhlLayerClass NhlobjLayerClass = (NhlLayerClass)&NhlobjLayerClassRec;
+
+/*
+ * Function:	BaseClassInitialize
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	static
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+static NhlErrorTypes
+BaseClassInitialize
+#if	NhlNeedProto
+(
+	void
+)
+#else
+()
+#endif
+{
+	NhlErrorTypes	ret = NhlNOERROR, lret = NhlNOERROR;
+
+
+	_NhlEnumVals	objidvals[] = {
+		{NhlNULLOBJID,	"nullobjid"}
+	};
+	NhlConvertArg	objidargs[] = {
+		{NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)-1)},
+		{NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)INT_MAX)}
+	};
+
+	(void)_NhlRegisterEnumType(NhlTObjId,objidvals,NhlNumber(objidvals));
+	(void)NhlRegisterConverter(NhlTScalar,NhlTObjId,_NhlCvtScalarToIndex,
+				   objidargs,NhlNumber(objidargs),False,NULL);
+	(void)NhlRegisterConverter(NhlTGenArray,NhlTObjIdGenArray,
+		_NhlCvtGenArrayToIndexGenArray,objidargs,NhlNumber(objidargs),
+		False,NULL);
+
+	return MIN(ret,lret);
+}
 
 /*
  * Function:	BaseLayerClassPartInitialize

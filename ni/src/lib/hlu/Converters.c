@@ -1,5 +1,5 @@
 /*
- *      $Id: Converters.c,v 1.31 1995-03-10 01:48:46 boote Exp $
+ *      $Id: Converters.c,v 1.32 1995-03-13 21:47:22 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1019,6 +1019,162 @@ _NhlRegisterEnumType
 	return NhlNOERROR;
 }
 
+NhlErrorTypes
+_NhlCvtScalarToIndex
+#if	NhlNeedProto
+(
+	NrmValue		*from,
+	NrmValue		*to,
+	NhlConvertArgList	args,
+	int			nargs
+)
+#else
+(from,to,args,nargs)
+	NrmValue		*from;
+	NrmValue		*to;
+	NhlConvertArgList	args;
+	int			nargs;
+#endif
+{
+	char		func[] = "_NhlCvtScalarToIndex";
+	int		tint;
+	NrmValue	ival;
+
+	if(nargs != 2){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+				"%s:Called with improper number of args",func);
+		to->size = 0;
+		return NhlFATAL;
+	}
+
+	ival.size = sizeof(int);
+	ival.data.ptrval = &tint;
+	if(_NhlReConvertData(from->typeQ,intQ,from,&ival) < NhlWARNING){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+				"%s:Unable to convert from %s to %s",func,
+				NrmQuarkToString(from->typeQ),NhlTInteger);
+		return NhlFATAL;
+	}
+
+	if(tint < args[0].data.intval || tint > args[1].data.intval){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			"%s:Value %d is not within index range %d - %d",func,
+			tint,args[0].data.intval,args[1].data.intval);
+		return NhlFATAL;
+	}
+
+	if((to->size > 0) && (to->data.ptrval != NULL)){
+		/* caller provided space */
+
+		if(to->size < sizeof(int)){
+			/* not large enough */
+			to->size = sizeof(int);
+			return NhlFATAL;
+		}
+
+		to->size = sizeof(int);
+		*((int *)(to->data.ptrval)) = tint;
+
+		return NhlNOERROR;
+	}
+	else{
+		static int val;
+
+		to->size = sizeof(int);
+		val = tint;
+		to->data.ptrval = &val;
+		return NhlNOERROR;
+	}
+}
+
+NhlErrorTypes
+_NhlCvtGenArrayToIndexGenArray
+#if	NhlNeedProto
+(
+	NrmValue		*from,
+	NrmValue		*to,
+	NhlConvertArgList	args,
+	int			nargs
+)
+#else
+(from,to,args,nargs)
+	NrmValue		*from;
+	NrmValue		*to;
+	NhlConvertArgList	args;
+	int			nargs;
+#endif
+{
+	char		func[] = "_NhlCvtGenArrayToIndexGenArray";
+	char		buff[_NhlMAXRESNAMLEN];
+	char		*indxgen_name;
+	NhlGenArray	tgen;
+	int		*tint,i;
+	NrmValue	ival;
+
+	if(nargs != 2){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+				"%s:Called with improper number of args",func);
+		to->size = 0;
+		return NhlFATAL;
+	}
+
+	ival.size = sizeof(NhlGenArray);
+	ival.data.ptrval = &tgen;
+	if(_NhlReConvertData(from->typeQ,intgenQ,from,&ival) < NhlWARNING){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+				"%s:Unable to convert from %s to %s",func,
+				NrmQuarkToString(from->typeQ),
+				NhlTIntegerGenArray);
+		return NhlFATAL;
+	}
+
+	tint = (int*)tgen->data;
+
+	for(i=0;i < tgen->num_elements;i++){
+		if(tint[i] < args[0].data.intval ||
+						tint[i] > args[1].data.intval){
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+			"%s:Value %d is not within index range %d - %d",func,
+			tint[i],args[0].data.intval,args[1].data.intval);
+			return NhlFATAL;
+		}
+	}
+
+	indxgen_name = NrmQuarkToString(to->typeQ);
+	strcpy(buff,indxgen_name);
+	indxgen_name = strstr(buff,NhlTGenArray);
+	if(!indxgen_name){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:Invalid \"to\" type %s ???",
+			func,NrmQuarkToString(to->typeQ));
+		return NhlFATAL;
+	}
+	*indxgen_name = '\0';
+	tgen->typeQ = NrmStringToQuark(buff);
+
+	if((to->size > 0) && (to->data.ptrval != NULL)){
+		/* caller provided space */
+
+		if(to->size < sizeof(NhlGenArray)){
+			/* not large enough */
+			to->size = sizeof(NhlGenArray);
+			return NhlFATAL;
+		}
+
+		to->size = sizeof(NhlGenArray);
+		*((NhlGenArray *)(to->data.ptrval)) = tgen;
+
+		return NhlNOERROR;
+	}
+	else{
+		static NhlGenArray val;
+
+		to->size = sizeof(NhlGenArray);
+		val = tgen;
+		to->data.ptrval = &val;
+		return NhlNOERROR;
+	}
+}
+
 /************************************************************************
 *									*
 * This section has all the converters from Scalar values to other	*
@@ -1915,7 +2071,6 @@ CvtArgs									\
 									\
 	if((from->typeQ == to->typeQ) || (fromgen == NULL)){		\
 		togen = fromgen;					\
-		togen->size = sizeof(totype);				\
 	}								\
 	else{								\
 		fromval = fromgen->data;				\

@@ -1,5 +1,5 @@
 /*
- *      $Id: OverlayP.h,v 1.13 1995-02-17 10:23:24 boote Exp $
+ *      $Id: OverlayP.h,v 1.14 1995-03-13 21:47:36 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -78,6 +78,14 @@ typedef struct _NhlOverlayLayerPart {
 	NhlGenArray		overlay_ids;	/* read only */
 	NhlGenArray		pre_draw_order;
 	NhlGenArray		post_draw_order;
+
+	NhlGenArray		anno_view_ids;
+	NhlGenArray		annotation_ids;
+	NhlBoolean		fit_to_bb;
+	float			bb_left;
+	float			bb_right;
+	float			bb_top;
+	float			bb_bottom;
 
 	NhlAnnotationDisplayMode	display_tickmarks;
 	int				tickmark_zone;
@@ -166,6 +174,11 @@ typedef struct _NhlOverlayLayerPart {
 	int			overlay_count;
 	NhlovRec		**ov_recs;
 
+	int			anno_alloc;
+	int			anno_count;
+	int			anno_ix;
+	int			*view_ids;
+	int			*anno_ids;
 	NhlLayer		tickmarks;
 	NhlLayer		titles;
 	NhlLayer		labelbar;

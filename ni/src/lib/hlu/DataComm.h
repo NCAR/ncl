@@ -1,5 +1,5 @@
 /*
- *      $Id: DataComm.h,v 1.8 1995-02-17 18:26:23 boote Exp $
+ *      $Id: DataComm.h,v 1.9 1995-03-13 21:47:25 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -25,9 +25,6 @@
 
 #define	NhlNdcDelayCompute	"dcDelayCompute"
 #define	NhlCdcDelayCompute	"DcDelayCompute"
-
-#define NhlTObjId		"ObjId"
-#define NhlTObjIdGenArray	"ObjIdGenArray"
 
 /*
  * Class declarations

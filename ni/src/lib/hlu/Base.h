@@ -1,5 +1,5 @@
 /*
- *      $Id: Base.h,v 1.5 1995-02-17 10:22:55 boote Exp $
+ *      $Id: Base.h,v 1.6 1995-03-13 21:47:16 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -27,6 +27,11 @@
 
 extern NhlLayerClass NhlobjLayerClass;
 extern NhlLayerClass NhlbaseLayerClass;
+
+#define NhlNULLOBJID -1
+
+#define NhlTObjId		"ObjId"
+#define NhlTObjIdGenArray	"ObjIdGenArray"
 
 extern int NhlGetParentWorkstation(
 #if	NhlNeedProto

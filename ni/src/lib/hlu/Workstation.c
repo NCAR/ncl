@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.29 1995-03-06 06:03:32 boote Exp $
+ *      $Id: Workstation.c,v 1.30 1995-03-13 21:47:37 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -673,162 +673,6 @@ NhlWorkstationLayerClassRec NhlworkstationLayerClassRec = {
 
 NhlLayerClass NhlworkstationLayerClass = (NhlLayerClass)&NhlworkstationLayerClassRec;
 
-NhlErrorTypes
-NhlCvtScalarToIndex
-#if	NhlNeedProto
-(
-	NrmValue		*from,
-	NrmValue		*to,
-	NhlConvertArgList	args,
-	int			nargs
-)
-#else
-(from,to,args,nargs)
-	NrmValue		*from;
-	NrmValue		*to;
-	NhlConvertArgList	args;
-	int			nargs;
-#endif
-{
-	char		func[] = "NhlCvtScalarToIndex";
-	int		tint;
-	NrmValue	ival;
-
-	if(nargs != 2){
-		NhlPError(NhlFATAL,NhlEUNKNOWN,
-				"%s:Called with improper number of args",func);
-		to->size = 0;
-		return NhlFATAL;
-	}
-
-	ival.size = sizeof(int);
-	ival.data.ptrval = &tint;
-	if(_NhlReConvertData(from->typeQ,intQ,from,&ival) < NhlWARNING){
-		NhlPError(NhlFATAL,NhlEUNKNOWN,
-				"%s:Unable to convert from %s to %s",func,
-				NrmQuarkToString(from->typeQ),NhlTInteger);
-		return NhlFATAL;
-	}
-
-	if(tint < args[0].data.intval || tint > args[1].data.intval){
-		NhlPError(NhlFATAL,NhlEUNKNOWN,
-			"%s:Value %d is not within index range %d - %d",func,
-			tint,args[0].data.intval,args[1].data.intval);
-		return NhlFATAL;
-	}
-
-	if((to->size > 0) && (to->data.ptrval != NULL)){
-		/* caller provided space */
-
-		if(to->size < sizeof(int)){
-			/* not large enough */
-			to->size = sizeof(int);
-			return NhlFATAL;
-		}
-
-		to->size = sizeof(int);
-		*((int *)(to->data.ptrval)) = tint;
-
-		return NhlNOERROR;
-	}
-	else{
-		static int val;
-
-		to->size = sizeof(int);
-		val = tint;
-		to->data.ptrval = &val;
-		return NhlNOERROR;
-	}
-}
-
-NhlErrorTypes
-NhlCvtGenArrayToIndexGenArray
-#if	NhlNeedProto
-(
-	NrmValue		*from,
-	NrmValue		*to,
-	NhlConvertArgList	args,
-	int			nargs
-)
-#else
-(from,to,args,nargs)
-	NrmValue		*from;
-	NrmValue		*to;
-	NhlConvertArgList	args;
-	int			nargs;
-#endif
-{
-	char		func[] = "NhlCvtGenArrayToIndexGenArray";
-	char		buff[_NhlMAXRESNAMLEN];
-	char		*indxgen_name;
-	NhlGenArray	tgen;
-	int		*tint,i;
-	NrmValue	ival;
-
-	if(nargs != 2){
-		NhlPError(NhlFATAL,NhlEUNKNOWN,
-				"%s:Called with improper number of args",func);
-		to->size = 0;
-		return NhlFATAL;
-	}
-
-	ival.size = sizeof(NhlGenArray);
-	ival.data.ptrval = &tgen;
-	if(_NhlReConvertData(from->typeQ,intgenQ,from,&ival) < NhlWARNING){
-		NhlPError(NhlFATAL,NhlEUNKNOWN,
-				"%s:Unable to convert from %s to %s",func,
-				NrmQuarkToString(from->typeQ),
-				NhlTIntegerGenArray);
-		return NhlFATAL;
-	}
-
-	tint = (int*)tgen->data;
-
-	for(i=0;i < tgen->num_elements;i++){
-		if(tint[i] < args[0].data.intval ||
-						tint[i] > args[1].data.intval){
-			NhlPError(NhlFATAL,NhlEUNKNOWN,
-			"%s:Value %d is not within index range %d - %d",func,
-			tint[i],args[0].data.intval,args[1].data.intval);
-			return NhlFATAL;
-		}
-	}
-
-	indxgen_name = NrmQuarkToString(to->typeQ);
-	strcpy(buff,indxgen_name);
-	indxgen_name = strstr(buff,NhlTGenArray);
-	if(!indxgen_name){
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:Invalid \"to\" type %s ???",
-			func,NrmQuarkToString(to->typeQ));
-		return NhlFATAL;
-	}
-	*indxgen_name = '\0';
-	tgen->typeQ = NrmStringToQuark(buff);
-
-	if((to->size > 0) && (to->data.ptrval != NULL)){
-		/* caller provided space */
-
-		if(to->size < sizeof(NhlGenArray)){
-			/* not large enough */
-			to->size = sizeof(NhlGenArray);
-			return NhlFATAL;
-		}
-
-		to->size = sizeof(NhlGenArray);
-		*((NhlGenArray *)(to->data.ptrval)) = tgen;
-
-		return NhlNOERROR;
-	}
-	else{
-		static NhlGenArray val;
-
-		to->size = sizeof(NhlGenArray);
-		val = tgen;
-		to->data.ptrval = &val;
-		return NhlNOERROR;
-	}
-}
-
 /*
  * Function:	WorkstationClassInitialize
  *
@@ -922,21 +766,21 @@ WorkstationClassInitialize
 		NhlNumber(markervals));
 	(void)_NhlRegisterEnumType(NhlTMarkLineMode,mrkline,NhlNumber(mrkline));
 
-	(void)NhlRegisterConverter(NhlTScalar,NhlTDashIndex,NhlCvtScalarToIndex,
+	(void)NhlRegisterConverter(NhlTScalar,NhlTDashIndex,_NhlCvtScalarToIndex,
 		dashargs,NhlNumber(dashargs),False,NULL);
 	(void)NhlRegisterConverter(NhlTScalar,NhlTColorIndex,
-		NhlCvtScalarToIndex,colorargs,NhlNumber(colorargs),False,NULL);
-	(void)NhlRegisterConverter(NhlTScalar,NhlTFillIndex,NhlCvtScalarToIndex,
+		_NhlCvtScalarToIndex,colorargs,NhlNumber(colorargs),False,NULL);
+	(void)NhlRegisterConverter(NhlTScalar,NhlTFillIndex,_NhlCvtScalarToIndex,
 		fillargs,NhlNumber(fillargs),False,NULL);
 
 	(void)NhlRegisterConverter(NhlTGenArray,NhlTDashIndexGenArray,
-		NhlCvtGenArrayToIndexGenArray,dashargs,NhlNumber(dashargs),
+		_NhlCvtGenArrayToIndexGenArray,dashargs,NhlNumber(dashargs),
 		False,NULL);
 	(void)NhlRegisterConverter(NhlTGenArray,NhlTColorIndexGenArray,
-		NhlCvtGenArrayToIndexGenArray,colorargs,NhlNumber(colorargs),
+		_NhlCvtGenArrayToIndexGenArray,colorargs,NhlNumber(colorargs),
 		False,NULL);
 	(void)NhlRegisterConverter(NhlTGenArray,NhlTFillIndexGenArray,
-		NhlCvtGenArrayToIndexGenArray,fillargs,NhlNumber(fillargs),
+		_NhlCvtGenArrayToIndexGenArray,fillargs,NhlNumber(fillargs),
 		False,NULL);
 
 	intQ = NrmStringToQuark(NhlTInteger);

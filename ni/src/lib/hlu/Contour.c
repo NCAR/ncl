@@ -1,5 +1,5 @@
 /*
- *      $Id: Contour.c,v 1.52 1995-03-03 20:14:44 dbrown Exp $
+ *      $Id: Contour.c,v 1.53 1995-03-13 21:47:20 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2642,16 +2642,17 @@ NhlLayer inst;
 
 	if (cntp->overlay_status == _tfCurrentOverlayMember ||
 	    cntp->overlay_status == _tfCurrentOverlayBase) {
-		ovbase_id = cntp->overlay_object->base.parent->base.id;
 		if (cnp->info_anno_id != -1) {
-			subret = NhlUnregisterAnnotation(ovbase_id,
-							 cnp->info_anno_id);
+			subret = _NhlUnregisterAnnotation(cntp->overlay_object,
+					 _NhlGetLayer(cnp->info_anno_id),
+							  NULL);
 			if ((ret = MIN(subret,ret)) < NhlWARNING)
 				return NhlFATAL;
 		}
 		if (cnp->constf_anno_id != -1) {
-			subret = NhlUnregisterAnnotation(ovbase_id,
-							 cnp->constf_anno_id);
+			subret = _NhlUnregisterAnnotation(cntp->overlay_object,
+					 _NhlGetLayer(cnp->constf_anno_id),
+							  NULL);
 			if ((ret = MIN(subret,ret)) < NhlWARNING)
 				return NhlFATAL;
 		}
@@ -3805,7 +3806,7 @@ static NhlErrorTypes UpdateLineAndLabelParams
 	c_cpseti("NCL",cnp->level_count); 
 	clvp = (float *) cnp->levels->data;
 	clup = (int *) cnp->level_flags->data;
-	c_cpseti("DPU",1); /* dash pattern use flag */
+	c_cpseti("DPU",-1); /* dash pattern use flag */
 
 	cnp->gks_line_colors[0] = cnp->mono_line_color ?
 		_NhlGetGksCi(cl->base.wkptr,cnp->line_color) : 
@@ -3864,13 +3865,13 @@ static NhlErrorTypes UpdateLineAndLabelParams
 	}
 	else if (cnp->llabel_placement == NhlcnCONSTANT) {
 		*do_labels = True;
-#if 0
 		c_cpseti("LLP",1);
 		c_cpsetr("DPS",cnp->line_lbls.real_height / cl->view.width);
 		c_cpsetr("DPV",.015);
-#endif
+#if 0
 		c_cpsetr("RC3",0.0);
 		c_cpseti("LLP",2);
+#endif
 		if (cnp->line_lbls.angle < 0.0) 
 			c_cpseti("LLO",1); /* angle to contour direction */
 		else {
@@ -6044,12 +6045,13 @@ static NhlErrorTypes ManageAnnotation
  * its own base, ensuring that it will always follow the overlay.
  */
 		if (tfp->overlay_on)
-			subret = NhlRegisterAnnotation(cnnew->base.id,
-						       *idp);
+			subret = _NhlRegisterAnnotation(cnp->overlay_object,
+							_NhlGetLayer(*idp),
+							NULL);
 		else 
-			subret = NhlRegisterAnnotation(
-				    tfp->overlay_object->base.parent->base.id,
-				    *idp);
+			subret = _NhlRegisterAnnotation(tfp->overlay_object,
+							_NhlGetLayer(*idp),
+							NULL);
 		if ((ret = MIN(subret,ret)) < NhlWARNING) {
 			e_text = "%s: error registering annotation layer";
 			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
@@ -8665,11 +8667,11 @@ void   (_NHLCALLF(cpchcl,CPCHCL))
 
 {
 
-	int pai, dpix, slen, jcrt, jsize = 4;
-        float p0, p1;
+	char func[] = "hlu_CPCHCL";
+	int i, pai, dpix;
 	char buffer[NhlDASHBUFSIZE];
 	int lcol;
-	float thickness;
+	float thickness, tf;
 	float *thp = (float *) Cnp->line_thicknesses->data;
 	int   *dpp = (int *) Cnp->line_dash_patterns->data;
 
@@ -8706,49 +8708,100 @@ void   (_NHLCALLF(cpchcl,CPCHCL))
 		dpix = reg_attrs->perim_dpat;
 	}
 		
+	memset((void *) buffer,'\0', sizeof(buffer)*sizeof(char));
+
+	c_pcseti("FN",0);
+	c_pcseti("CL",1);
  	c_pcseti("CC",-1);
 	c_pcseti("OC",-1);
-	gset_linewidth(thickness);
-	if (lcol > NhlTRANSPARENT)
-		gset_line_colr_ind(lcol);
+	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
+	
+	/*
+	 * Reset DashPack so we know what state we are starting from.
+	 */
+	_NHLCALLF(dprset,DPRSET)();
+	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 
-	if (dpix > Cnp->dtable_len)
+	c_dpsetc("CRG","'");
+	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
+
+	if (dpix < 0) 
+		dpix = NhlSOLIDLINE;
+	else if (dpix > Cnp->dtable_len)
 	    dpix = 1 + (dpix - 1) % Cnp->dtable_len;
-	slen = strlen(Cnp->dtable[dpix]);
-	p0 =  (float) c_kfpy(0.0);
-	p1 = Cnp->line_dash_seglen;
-	p1 = (float) c_kfpy(p1);
-	jcrt = (int) ((p1 - p0) / slen + 0.5);
-	jcrt = jcrt > 1 ? jcrt : 1;
-	strcpy(buffer,Cnp->dtable[dpix]);
+	strncpy(buffer,Cnp->dtable[dpix],sizeof(buffer) - 1);
 
-#if 0
+	tf = Cnp->line_dash_seglen / (strlen(buffer)+.5);
+	c_dpsetr("WOG",tf);
+	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
+	c_dpsetr("WOS",tf);
+	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
+
+	if (lcol == NhlTRANSPARENT) {
+		for (i = 0; i < strlen(buffer); i++)
+			buffer[i] = '\'';
+	}
+	else{
+	        gset_line_colr_ind((Gint)lcol);
+		(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
+	}
+
+        gset_linewidth(thickness);
+	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
+
+
 	if (pai > 0 && Cnp->llabel_placement == NhlcnCONSTANT) {
-		int tstart;
+		int buff_size = sizeof(buffer) - strlen(buffer) - 1;
+		char *tchar = &buffer[strlen(buffer)];
+		char *ts = ((NhlString *) Cnp->line_lbls.text)[pai-1];
 		NhlcnLevelUseMode *lup = 
 			(NhlcnLevelUseMode *) Cnp->level_flags->data;
-		
-		p1 = Cnp->line_lbls.height;
-		p1 = c_kfpy(p1);
-		jsize = (int) (p1 - p0);
-		jsize = jsize > 3 ? jsize : 4;
+		int llcol, j;
 
 		llcol = Cnp->line_lbls.mono_color ?
 			(int) Cnp->line_lbls.colors : 
 				Cnp->line_lbls.colors[pai-1];
-		if (llcol > NhlTRANSPARENT)
-			gset_text_colr_ind(llcol);
-		if (lup[pai-1] > NhlcnLINEONLY) {
-			tstart = slen - strlen(((NhlString *)
-						Cnp->line_lbls.text)[pai-1]);
-			strcpy(&buffer[tstart],
-			       ((NhlString *)Cnp->line_lbls.text)[pai-1]);
+		
+
+		if (llcol == NhlTRANSPARENT && lup[pai-1] > NhlcnLINEONLY) {
+			/*
+			 * Put spaces in for label.
+			 */
+			j = MIN(strlen(ts) * 2 + 1,buff_size);
+			for(i=0;i < j-1;i+=2){
+				tchar[i] = ' ';
+				tchar[i+1] = '|';
+			}
+		}
+		else if (lup[pai-1] > NhlcnLINEONLY) {
+			/*
+			 * Add breaks in at each space of the label.
+			 */
+			i=0;
+			j=0;
+			while (i < buff_size && ts[j] != '\0'){
+				if (ts[j] == ' ')
+					tchar[i++] = '|';
+				tchar[i++] = ts[j++];
+			}
+			
+			c_pcseti("OC",llcol);
+			c_pcseti("CC",llcol);
+			c_pcsetr("PH",Cnp->line_lbls.pheight);
+			c_pcsetr("PW",Cnp->line_lbls.pwidth);
+			c_pcseti("CS",Cnp->line_lbls.cspacing);
+			c_pcseti("FN",Cnp->line_lbls.font);
+			c_pcseti("QU",Cnp->line_lbls.quality);
+			c_pcsetc("FC",Cnp->line_lbls.fcode);
+			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 		}
 	}
-	
-#endif
-	c_dashdc(buffer,jcrt,jsize);
-	
+
+	c_dpsetc("DPT",buffer);
+	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
+	c_dpsetr("WOC",Cnp->line_lbls.real_height);
+	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
+
 	return;
 }
 

@@ -658,24 +658,44 @@ static NhlErrorTypes parse_field_type(void)
 	return NhlNOERROR;
 }
 
-static char *find_exp(char *start)
+static char *find_exp
+#if	NhlNeedProto
+(
+	NhlFormatRec *format,
+	char *start,
+	char *search1,
+	char *search2,
+	NhlBoolean *has_mantissa
+)
+#else
+(format,start,search1,search2,has_mantissa)
+	NhlFormatRec *format;
+	char *start;
+	char *search1;
+	char *search2;
+	NhlBoolean *has_mantissa;
+#endif
 {
-        char cexp = 'e';
+        char *cp = NULL;
 
-        switch (Format.exp_type) {
+	*has_mantissa = True;
+        switch (format->exp_type) {
         case NhlffELITTLE:
-                cexp = 'e';
-                break;
         case NhlffEBIG:
-                cexp = 'E';
+		cp = strstr((const char *)start,(const char *)search2);
+		if (cp == start) 
+			*has_mantissa = False;
                 break;
         case NhlffASTERISK:
-                cexp = 'x';
-                break;
         case NhlffSUPERSCRIPT:
-                cexp = ':';
+		cp = strstr((const char *)start,(const char *)search1);
+		if (cp == NULL) {
+			cp = strstr((const char *)start,(const char *)search2);
+			*has_mantissa = False;
+		}
+                break;
         }
-        return strchr((const char *)start,(int)cexp);
+        return cp;
 }
 
 
@@ -820,6 +840,7 @@ NhlString _NhlFormatFloat
         int field_width,apparent_fwidth;
 	NhlBoolean left_justify = False;
 	int set_ppos,move_cnt = 0;
+	NhlBoolean has_mantissa;
 
 	lmsd = format->left_sig_digit;
         if (format->left_sig_digit_flag) {
@@ -874,13 +895,6 @@ NhlString _NhlFormatFloat
 			       strlen(cex1[ix]),strlen(cex2[ix]),
 			       strlen(cex3[ix]),128);
 
-/*
- * If not a forced float field find the position of possible exponent.
- * (NULL means the exponent has been left out.)
- */
-	if (format->field_type != NhlffFLOATFLD)
-                exp_pos = find_exp(cbuf);
-
 
 /*
  * Add a leading zero if appropriate.
@@ -924,6 +938,25 @@ NhlString _NhlFormatFloat
                 cbuf[0] = ' ';
                 nbuf++;
         }
+
+/*
+ * If not a forced float field find the position of possible exponent.
+ * (NULL means the exponent has been left out.)
+ */
+	if (format->field_type != NhlffFLOATFLD) {
+                exp_pos = find_exp(format,cbuf,
+				   cex1[ix],cex2[ix],&has_mantissa);
+		if (! has_mantissa) {
+			if (format->exp_type == NhlffASTERISK) {
+				exp_len[ix] = 4;
+			}
+			else if (format->exp_type == NhlffSUPERSCRIPT) {
+				exp_len[ix] = 5;
+				len_diff[ix] = 6;
+			}
+		}
+	}
+
 /*
  * If replacing the decimal or adding trailing zeros find the position of
  * the decimal point. Note that a trailing zero may need to be inserted

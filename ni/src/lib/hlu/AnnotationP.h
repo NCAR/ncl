@@ -1,5 +1,5 @@
 /*
- *      $Id: AnnotationP.h,v 1.3 1994-06-24 00:39:19 dbrown Exp $
+ *      $Id: AnnotationP.h,v 1.4 1995-03-13 21:47:14 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -23,6 +23,7 @@
 #define _NAnnotationP_h
 
 #include <ncarg/hlu/ViewP.h>
+#include <ncarg/hlu/OverlayI.h>
 #include <ncarg/hlu/Annotation.h>
 
 /* private resource */

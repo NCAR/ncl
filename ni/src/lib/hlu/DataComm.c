@@ -1,5 +1,5 @@
 /*
- *      $Id: DataComm.c,v 1.25 1995-03-03 02:56:26 boote Exp $
+ *      $Id: DataComm.c,v 1.26 1995-03-13 21:47:24 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -655,10 +655,6 @@ DataCommClassInitialize
 	ret = MIN(ret,lret);
 	lret = NhlRegisterConverter(NhlTScalar,_NhlTDataList,CvtScalarToData,
 							NULL,0,False,NULL);
-
-	(void)_NhlRegisterTypes(NhlTInteger,NhlTObjId,NULL);
-	(void)_NhlRegisterTypes(NhlTIntegerGenArray,NhlTObjIdGenArray,NULL);
-
 	return MIN(ret,lret);
 }
 

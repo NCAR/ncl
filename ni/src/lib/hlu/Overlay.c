@@ -1,5 +1,5 @@
 /*
- *      $Id: Overlay.c,v 1.34 1995-03-03 20:14:57 dbrown Exp $
+ *      $Id: Overlay.c,v 1.35 1995-03-13 21:47:32 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -89,12 +89,37 @@ static NhlResource resources[] = {
 
 /* Begin-documented-resources */
 
-	{NhlNovOverlayIds,NhlCovOverlayIds,NhlTIntegerGenArray,
-		sizeof(NhlPointer),
-		Oset(overlay_ids),
+	{NhlNovOverlayIds,NhlCovOverlayIds,NhlTObjIdGenArray,
+		sizeof(NhlPointer),Oset(overlay_ids),
 		NhlTImmediate,_NhlUSET(NULL),0,(NhlFreeFunc)NhlFreeGenArray},
 
+/* Bounding Box resources */
+
+	{ NhlNovFitToBB,NhlCovFitToBB,NhlTBoolean,
+		  sizeof(NhlBoolean),Oset(fit_to_bb),
+		  NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL},
+	{ NhlNovBBLeftF, NhlCovBBLeftF,NhlTFloat, sizeof(float),
+		  Oset(bb_left),NhlTString,
+		  _NhlUSET("0.0"),0,NULL},
+	{ NhlNovBBRightF, NhlCovBBRightF,NhlTFloat, sizeof(float),
+		  Oset(bb_right),NhlTString,
+		  _NhlUSET("1.0"),0,NULL},
+	{ NhlNovBBBottomF,NhlCovBBBottomF,NhlTFloat, sizeof(float),
+		  Oset(bb_left),NhlTString,
+		  _NhlUSET("0.0"),0,NULL},
+	{ NhlNovBBTopF, NhlCovBBTopF,NhlTFloat, sizeof(float),
+		  Oset(bb_left),NhlTString,
+		  _NhlUSET("1.0"),0,NULL},
+
 /* Annotation resources  */
+
+	{NhlNovAnnoViews,NhlCovAnnoViews,NhlTObjIdGenArray,
+		sizeof(NhlPointer),Oset(anno_view_ids),
+		NhlTImmediate,_NhlUSET(NULL),0,(NhlFreeFunc)NhlFreeGenArray},
+	{NhlNovAnnotations,NhlCovAnnotations,NhlTObjIdGenArray,
+		sizeof(NhlPointer),Oset(annotation_ids),
+		NhlTImmediate,_NhlUSET(NULL),0,(NhlFreeFunc)NhlFreeGenArray},
+
 
 	{ NhlNovTitleDisplayMode,NhlCovTitleDisplayMode,
 		  NhlTAnnotationDisplayMode,sizeof(NhlAnnotationDisplayMode),
@@ -593,10 +618,12 @@ NhlOverlayLayerClassRec NhloverlayLayerClassRec = {
 
 NhlLayerClass NhloverlayLayerClass = (NhlLayerClass)&NhloverlayLayerClassRec;
 
-static NrmQuark Overlay_Ids;
-static NrmQuark Overlay_Recs;
-static NrmQuark Pre_Draw_Order;
-static NrmQuark Post_Draw_Order;
+static NrmQuark Qoverlay_ids;
+static NrmQuark Qoverlay_recs;
+static NrmQuark Qpre_draw_order;
+static NrmQuark Qpost_draw_order;
+static NrmQuark Qanno_views;
+static NrmQuark Qannotations;
 
 /* static variables referenced by the low-level library mapping functions */
 
@@ -638,10 +665,12 @@ OverlayClassInitialize
         _NhlRegisterEnumType(NhlTAnnotationDisplayMode,annotationdisplaylist,
 					     NhlNumber(annotationdisplaylist));
 
-	Overlay_Ids = NrmStringToQuark(NhlNovOverlayIds);
-	Overlay_Recs = NrmStringToQuark(NhlNovOverlayRecs);
-	Pre_Draw_Order = NrmStringToQuark(NhlNovPreDrawOrder);
-	Post_Draw_Order = NrmStringToQuark(NhlNovPostDrawOrder);
+	Qoverlay_ids = NrmStringToQuark(NhlNovOverlayIds);
+	Qoverlay_recs = NrmStringToQuark(NhlNovOverlayRecs);
+	Qpre_draw_order = NrmStringToQuark(NhlNovPreDrawOrder);
+	Qpost_draw_order = NrmStringToQuark(NhlNovPostDrawOrder);
+	Qanno_views = NrmStringToQuark(NhlNovAnnoViews);
+	Qannotations = NrmStringToQuark(NhlNovAnnotations);
 
 	return NhlNOERROR;
 }
@@ -792,6 +821,10 @@ OverlayInitialize
 	ovp->legend = NULL;
 	ovp->x_irr = NULL;
 	ovp->y_irr = NULL;
+	ovp->anno_alloc = 0;
+	ovp->anno_count = 0;
+	ovp->view_ids = NULL;
+	ovp->anno_ids = NULL;
 
 /*
  * Initialize unitialized resource values
@@ -1172,11 +1205,12 @@ static NhlErrorTypes	OverlayGetValues
 	int 			i,j;
 	int			*ids;
 	NhlGenArray		ga;
-	NhlovRec			**ov_recs;
+	NhlovRec		**ov_recs;
+	int			count;
 
 	for ( i = 0; i< num_args; i++ ) {
 
-		if (args[i].quark == Overlay_Ids) {
+		if (args[i].quark == Qoverlay_ids) {
 
 			if ((ids = (int *) NhlMalloc(ovp->overlay_count * 
 						     sizeof(int))) == NULL) {
@@ -1204,7 +1238,7 @@ static NhlErrorTypes	OverlayGetValues
 			ga->my_data = True;
 			*((NhlGenArray *)(args[i].value.ptrval)) = ga;
 		}
-		else if (args[i].quark == Overlay_Recs) {
+		else if (args[i].quark == Qoverlay_recs) {
 				
 			ov_recs = (NhlovRec **) 
 			      NhlMalloc(ovp->overlay_count * 
@@ -1247,7 +1281,55 @@ static NhlErrorTypes	OverlayGetValues
 			ga->my_data = True;
 			*((NhlGenArray *)(args[i].value.ptrval)) = ga;
 		}
-			
+		else if (args[i].quark == Qanno_views && ovp->anno_count > 0) {
+
+			count = ovp->anno_count;
+			ids = (int *) NhlMalloc(count * sizeof(int));
+
+			if (ids == NULL) {
+				e_text = "%s: dynamic memory allocation error";
+				NhlPError(NhlFATAL,NhlEUNKNOWN,
+					  e_text,entry_name);
+				return NhlFATAL;
+			}
+			memcpy(ids,ovp->view_ids,count * sizeof(int));
+
+			if ((ga = NhlCreateGenArray((NhlPointer)ids,
+						    NhlTInteger,sizeof(int),
+						    1,&count)) 
+			    == NULL) {
+				e_text = "%s: error creating %s GenArray";
+				NhlPError(NhlFATAL,NhlEUNKNOWN,
+					  e_text,entry_name,NhlNovAnnoViews);
+				return NhlFATAL;
+			}
+			ga->my_data = True;
+			*((NhlGenArray *)(args[i].value.ptrval)) = ga;
+		}
+		else if (args[i].quark == Qannotations && ovp->anno_count > 0){
+			count = ovp->anno_count;
+			ids = (int *) NhlMalloc(count * sizeof(int));
+
+			if (ids == NULL) {
+				e_text = "%s: dynamic memory allocation error";
+				NhlPError(NhlFATAL,NhlEUNKNOWN,
+					  e_text,entry_name);
+				return NhlFATAL;
+			}
+			memcpy(ids,ovp->anno_ids,count * sizeof(int));
+
+			if ((ga = NhlCreateGenArray((NhlPointer)ids,
+						    NhlTInteger,sizeof(int),
+						    1,&count)) 
+			    == NULL) {
+				e_text = "%s: error creating %s GenArray";
+				NhlPError(NhlFATAL,NhlEUNKNOWN,
+					  e_text,entry_name,NhlNovAnnoViews);
+				return NhlFATAL;
+			}
+			ga->my_data = True;
+			*((NhlGenArray *)(args[i].value.ptrval)) = ga;
+		}
 	}
 	return(NhlNOERROR);
 }
@@ -1292,6 +1374,21 @@ NhlLayer inst;
 		e_text = "%s: inconsistency in overlay count";
 		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
 	}
+/*
+ * Remove any annotations added by the user
+ */
+
+	while (ovp->anno_count > 0) {
+		subret = _NhlRemoveAnnotation(inst,
+			      _NhlGetLayer(ovp->anno_ids[ovp->anno_count - 1]),
+					   entry_name);
+		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
+	}
+	if (ovp->view_ids != NULL) {
+		NhlFree(ovp->view_ids);
+		NhlFree(ovp->anno_ids);
+	}
+
 /*
  * Free the overlay base record and the overlay record pointer array,
  * including each element's annotation list. External annotations 
@@ -2525,6 +2622,176 @@ static NhlErrorTypes InternalGetBB
 	return ret;
 }
 
+
+/*
+ * Function:	SetAnnotations
+ *
+ * Description: Sets up annotations specified in the ovAnnoViews resource
+ *
+ * In Args:	NhlOverlayLayerPart	*ovp - pointer to the overlay part
+ *		int			init - called from Initialize?
+ *		NhlString		entry_name
+ *
+ * Out Args:
+ *
+ * Return Values:	ErrorConditions
+ *
+ * Side Effects:	NONE
+ */
+static NhlErrorTypes
+SetAnnotations
+#if	NhlNeedProto
+(
+	NhlOverlayLayer		ovl,
+	NhlBoolean		init,
+	NhlString		entry_name
+)
+#else
+(ovl,init,entry_name)
+	NhlOverlayLayer		ovl;
+	NhlBoolean		init;
+	NhlString		entry_name;
+#endif
+{
+	NhlErrorTypes	ret = NhlNOERROR, subret = NhlNOERROR;
+	NhlString	e_text;
+	NhlOverlayLayerPart	*ovp = &ovl->overlay;
+	int 		count = ovp->anno_view_ids->num_elements;
+	int 		*idp = (int *) ovp->anno_view_ids->data;
+	int 		i, j, anno_id;
+	int		*save_view_ids, *save_anno_ids;
+	int		lanno_count;
+
+	if (init || ovp->anno_count == 0) {
+		for (i = 0; i < count; i++) {
+			NhlLayer view = _NhlGetLayer(idp[i]);
+
+			if (view == NULL || ! _NhlIsView(view)) {
+				e_text = "%s: invalid View object id";
+				NhlPError(NhlFATAL,
+					  NhlEUNKNOWN,e_text,entry_name);
+				return NhlFATAL;
+			}
+			if ((anno_id = _NhlAddAnnotation((NhlLayer)ovl,
+						      view,entry_name)) < 0) {
+				return (NhlErrorTypes) anno_id;
+			}
+		}
+		return NhlNOERROR;
+	}
+
+/*
+ * Remove all public annotations that are not in the SetValues list;
+ * note that the anno_count member is decremented for each annotation
+ * that gets removed.
+ */
+	for (i = 0; ;) {
+		NhlBoolean found = False;
+
+		if (i == ovp->anno_count)
+			break;
+		for (j=0; j < count; j++) {
+			if (idp[j] == ovp->view_ids[i]) {
+				found = True;
+				break;
+			}
+		}
+		if (found)
+			i++;
+		else {
+			subret = _NhlRemoveAnnotation((NhlLayer)ovl,
+					 _NhlGetLayer(ovp->anno_ids[i]),
+						      entry_name);
+			if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
+		}
+	}
+
+	lanno_count = ovp->anno_count;
+	
+/*
+ * Now save the remaining lists in temporary storage
+ */	
+
+	if (lanno_count > 0) {
+		save_view_ids = NhlMalloc(sizeof(int) * ovp->anno_count);
+		save_anno_ids = NhlMalloc(sizeof(int) * ovp->anno_count);
+		if (save_view_ids == NULL || save_anno_ids == NULL) {
+			e_text = "%s: dynamic memory allocation error";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			return NhlFATAL;
+		}
+		memcpy(save_view_ids,
+		       ovp->view_ids,sizeof(int) * ovp->anno_count);
+		memcpy(save_anno_ids,
+		       ovp->anno_ids,sizeof(int) * ovp->anno_count);
+	}
+/*
+ * Make sure the original anno lists are big enough for the specified
+ * annotation array
+ */
+	while (ovp->anno_alloc <  count) {
+		ovp->anno_alloc += NhlOV_ALLOC_UNIT;
+
+		ovp->view_ids = (int *) 
+			NhlRealloc(ovp->view_ids,
+				   ovp->anno_alloc * sizeof(int));
+		ovp->anno_ids = (int *) 
+			NhlRealloc(ovp->anno_ids,
+				   ovp->anno_alloc * sizeof(int));
+		if (ovp->view_ids == NULL || ovp->anno_ids == NULL) {
+			e_text = "%s: dynamic memory allocation error";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			return (int) NhlFATAL;
+		}
+	}
+		
+/*
+ * Reset the anno_count to 0, and rebuild the anno-list
+ */
+	ovp->anno_count = 0;
+
+	for (i = 0; i < count; i++) {
+		NhlBoolean found = False;
+
+		/* found should never get set True if lanno_count == 0 */
+
+		for (j = 0; j < lanno_count; j++) {
+			if (idp[i] == save_view_ids[j]) {
+				found = True;
+				break;
+			}
+		}
+		if (found) {
+			ovp->view_ids[i] = save_view_ids[j];
+			ovp->anno_ids[i] = save_anno_ids[j];
+			ovp->anno_count++;
+		}
+		else {
+			/* Note: anno_count incremented in AddAnnotation */
+
+			NhlLayer view = _NhlGetLayer(idp[i]);
+
+			if (view == NULL || ! _NhlIsView(view)) {
+				e_text = "%s: invalid View object id";
+				NhlPError(NhlFATAL,
+					  NhlEUNKNOWN,e_text,entry_name);
+				return NhlFATAL;
+			}
+			if ((anno_id = _NhlAddAnnotation((NhlLayer)ovl,view,
+							 entry_name)) < 0) {
+				return (NhlErrorTypes) anno_id;
+			}
+		}
+	}
+
+	if (lanno_count > 0) {
+		NhlFree(save_view_ids);
+		NhlFree(save_anno_ids);
+	}
+
+	return NhlNOERROR;
+
+}
 /*
  * Function:	ManageAnnotations
  *
@@ -2566,6 +2833,13 @@ ManageAnnotations
 	NhlAnnoRec		*anlp = ovp->ov_recs[0]->anno_list;
 
 	entry_name = init ? "OverlayInitialize" : "OverlaySetValues";
+
+	if ((init && ovp->anno_view_ids != NULL) ||
+	    _NhlArgIsSet(args,num_args,NhlNovAnnoViews)) {
+		subret = SetAnnotations(ovnew,init,entry_name);
+		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
+	}
+
 	while (anlp != NULL) {
 		if (anlp->status > NhlNOCREATE) {
 			switch (anlp->type) {
@@ -3115,15 +3389,18 @@ ManageTickMarks
 	
 	trobj_name = (trobj->base.layer_class)->base_class.class_name;
 
-	if (trobj_name== NhllogLinTransObjLayerClass->base_class.class_name) {
+	if (trobj_name == 
+	    NhllogLinTransObjLayerClass->base_class.class_name) {
 		ovp->x_tm_style = (x_log == 1) ? NhlLOG : NhlLINEAR;
 		ovp->y_tm_style = (y_log == 1) ? NhlLOG : NhlLINEAR;
 	}
-	else if (trobj_name==NhlirregularTransObjLayerClass->base_class.class_name) {
+	else if (trobj_name ==
+		 NhlirregularTransObjLayerClass->base_class.class_name) {
 		ovp->x_tm_style = NhlLINEAR;
 		ovp->y_tm_style = NhlLINEAR;
 	}
-	else if (trobj_name==NhlmapTransObjLayerClass->base_class.class_name) {
+	else if (trobj_name ==
+		 NhlmapTransObjLayerClass->base_class.class_name) {
 		e_text = 
 	"%s: MAP tick mark style not yet implemented; turning tick marks off";
 		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
@@ -4701,6 +4978,555 @@ _NHLCALLF(nhlf_removefromoverlay,NHLF_REMOVEFROMOVERLAY)
 }
 
 /*
+ * Function:	NhlAddAnnotation
+ *
+ * Description:	
+ *
+ * In Args:	overlay_base_id	id of overlay base plot
+ *		anno_view_id	id of View object
+ *
+ * Out Args:	
+ *
+ * Return Values: if successful, anno_id id of Annotation object 
+ *		  otherwise: Error Conditions
+ *
+ * Side Effects: NONE
+ */	
+
+int NhlAddAnnotation
+#if	NhlNeedProto
+(int overlay_base_id, int anno_view_id)
+#else
+(overlay_base_id, annotation_id)
+        int overlay_base_id;
+	int anno_view_id;
+#endif
+{
+	char			*e_text;
+	char			*entry_name = "NhlAddAnnotation";
+	NhlLayer		base = _NhlGetLayer(overlay_base_id);
+	NhlLayer		anno_view = _NhlGetLayer(anno_view_id);
+	NhlTransformLayerPart	*base_tfp;
+
+	if (base == NULL || ! _NhlIsTransform(base)) {
+		e_text = "%s: invalid base plot id";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
+	}
+/*
+ * Make sure the base plot has an overlay; if so extract the overlay
+ * layer pointer from the base plot's transform layer.
+ */
+	base_tfp = &(((NhlTransformLayer)base)->trans);
+	if (! base_tfp->overlay_on ||
+	    base_tfp->overlay_object == NULL || 
+	    ! _NhlIsTransform(base_tfp->overlay_object)) {
+		e_text = "%s: no overlay initialized for base plot";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
+	}
+/*
+ * Test the anno view layer pointer.
+ */
+	if (anno_view == NULL || ! _NhlIsView(anno_view)) {
+		e_text = "%s: invalid View object id";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
+	}
+
+	return (_NhlAddAnnotation(base_tfp->overlay_object,
+				  anno_view,entry_name));
+
+
+}
+
+/*
+ * Function:	nhlf_addannotation
+ *
+ * Description:	Fortran wrapper for NhlAddAnnotation
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	global private fortran
+ * Returns:	void
+ * Side Effect:	
+ */
+void
+_NHLCALLF(nhlf_addannotation,NHLF_ADDANNOTATION)
+#if	NhlNeedProto
+(
+	int	*overlay_base,
+	int	*anno_view,
+	int	*anno_id,
+	int	*err
+)
+#else
+(overlay_base,annotation,anno_id,err)
+	int	*overlay_base;
+	int	*anno_view;
+	int	*anno_id;
+	int	*err;
+#endif
+{
+	*anno_id = NhlAddAnnotation(*overlay_base,*anno_view);
+	*err = (*anno_id < 0) ? *anno_id : NhlNOERROR;
+
+	return;
+}
+
+
+/*
+ * Function:	_NhlAddAnnotation
+ *
+ * Description:	
+ *
+ * In Args:	overlay		Overlay object layer
+ *		anno_view	View object layer
+ *		entry_name	interface name reported to caller in case
+ *				of error. If NULL will be set to
+ *				_NhlAddAnnotation
+ * Out Args:	NONE
+ *
+ * Return Values: id of Annotation object if successful;
+ *		  otherwise: Error Conditions
+ *
+ * Side Effects: NONE
+ */	
+
+int _NhlAddAnnotation
+#if	NhlNeedProto
+(
+	NhlLayer	overlay, 
+	NhlLayer	anno_view,
+	NhlString	entry_name
+)
+#else
+(overlay, annotation, entry_name,anno_id)
+	NhlLayer	overlay; 
+	NhlLayer	anno_view;
+	NhlString	entry_name;
+#endif
+{
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
+	char			*e_text;
+	NhlOverlayLayerPart	*ovp = &((NhlOverlayLayer)overlay)->overlay;
+	int			anno_id;
+
+	if (entry_name == NULL) entry_name = "_NhlAddAnnotation";
+
+	if ((anno_id = _NhlGetAnnotationId(overlay,
+					   anno_view,entry_name)) >= 0) {
+		e_text = "%s: View object is already an annotation in overlay";
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+		return (int) NhlWARNING;
+	}
+		
+/*
+ * Make sure there are enough elements in the anno_view and annotation
+ * arrays.
+ */
+	if (ovp->anno_alloc == ovp->anno_count) {
+		ovp->anno_alloc += NhlOV_ALLOC_UNIT;
+		if (ovp->view_ids == NULL)
+			ovp->view_ids = (int *) 
+				NhlMalloc(ovp->anno_alloc * sizeof(int));
+		else
+			ovp->view_ids = (int *) 
+				NhlRealloc(ovp->view_ids,
+					   ovp->anno_alloc * sizeof(int));
+		if (ovp->view_ids == NULL) {
+			e_text = "%s: dynamic memory allocation error";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			return (int) NhlFATAL;
+		}
+		if (ovp->anno_ids == NULL)
+			ovp->anno_ids = (int *) 
+				NhlMalloc(ovp->anno_alloc * sizeof(int));
+		else
+			ovp->anno_ids = (int *) 
+				NhlRealloc(ovp->anno_ids,
+					   ovp->anno_alloc * sizeof(int));
+		if (ovp->anno_ids == NULL) {
+			e_text = "%s: dynamic memory allocation error";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			return (int) NhlFATAL;
+		}
+	}
+	
+/*
+ * Add the View to the anno_view array
+ */
+
+	ovp->view_ids[ovp->anno_count] = anno_view->base.id;
+
+/*
+ * Create an Annotation object, giving it the same name as the View
+ * object, and making its parent the Overlay base plot object.
+ * Then add the Annotation to the annotation object array and 
+ * increment the annotation count.
+ */
+
+	subret = NhlVACreate(&anno_id,anno_view->base.name,
+			     NhlannotationLayerClass,
+			     overlay->base.parent->base.id,
+			     NhlNanPlotId, anno_view->base.id,
+			     NULL);
+	if ((ret = MIN(ret,subret)) < NhlWARNING) return (int) ret;
+
+	ovp->anno_ids[ovp->anno_count] = anno_id;
+	ovp->anno_count++;
+
+/*
+ * Register the annotation
+ */
+
+	subret = _NhlRegisterAnnotation(overlay,
+					_NhlGetLayer(anno_id),entry_name);
+
+	ret =  MIN(subret,ret);
+
+	return (ret < NhlNOERROR) ? (int) ret : anno_id;
+
+}
+
+/*
+ * Function:	NhlRemoveAnnotation
+ *
+ * Description:	
+ *
+ * In Args:	overlay_base_id	id of overlay base plot
+ *		anno_id		id of Annotation object
+ *
+ * Out Args:	NONE
+ *
+ * Return Values: Error Conditions
+ *
+ * Side Effects: NONE
+ */	
+
+NhlErrorTypes NhlRemoveAnnotation
+#if	NhlNeedProto
+(
+	int overlay_base_id, 
+	int anno_id
+)
+#else
+(overlay_base_id, anno_id)
+        int overlay_base_id;
+	int anno_id;
+#endif
+{
+	char			*e_text;
+	char			*entry_name = "NhlRemoveAnnotation";
+	NhlLayer		base = _NhlGetLayer(overlay_base_id);
+	NhlLayer		annotation = _NhlGetLayer(anno_id);
+	NhlTransformLayerPart	*base_tfp;
+
+	if (base == NULL || ! _NhlIsTransform(base)) {
+		e_text = "%s: invalid base plot id";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
+	}
+/*
+ * Make sure the base plot has an overlay; if so extract the overlay
+ * layer pointer from the base plot's transform layer.
+ */
+	base_tfp = &(((NhlTransformLayer)base)->trans);
+	if (! base_tfp->overlay_on ||
+	    base_tfp->overlay_object == NULL || 
+	    ! _NhlIsTransform(base_tfp->overlay_object)) {
+		e_text = "%s: no overlay initialized for base plot";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
+	}
+/*
+ * Test the annotation layer pointer.
+ */
+	if (annotation == NULL || ! _NhlIsObj(annotation) ||
+	(annotation->base.layer_class)->base_class.class_name !=
+	    NhlannotationLayerClass->base_class.class_name) {
+		e_text = "%s: invalid Annotation object id";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
+	}
+
+	return (_NhlRemoveAnnotation(base_tfp->overlay_object,
+				     annotation,entry_name));
+
+}
+
+/*
+ * Function:	nhlf_removeannotation
+ *
+ * Description:	Fortran wrapper for NhlRemoveAnnotation
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	global private fortran
+ * Returns:	void
+ * Side Effect:	
+ */
+void
+_NHLCALLF(nhlf_removeannotation,NHLF_REMOVEANNOTATION)
+#if	NhlNeedProto
+(
+	int	*overlay_base,
+	int	*anno_view,
+	int	*err
+)
+#else
+(overlay_base,annotation,err)
+	int	*overlay_base;
+	int	*anno_view;
+	int	*err;
+#endif
+{
+	*err = NhlRemoveAnnotation(*overlay_base,*anno_view);
+
+	return;
+}
+
+/*
+ * Function:	_NhlRemoveAnnotation
+ *
+ * Description:	
+ *
+ * In Args:	overlay		Overlay object layer
+ *		anno_view	View object layer
+ *		entry_name	interface name reported to caller in case
+ *				of error. If NULL will be set to
+ *				_NhlRemoveAnnotation
+ * Out Args:	NONE
+ *
+ * Return Values: Error Conditions
+ *
+ * Side Effects: NONE
+ */	
+
+NhlErrorTypes _NhlRemoveAnnotation
+#if	NhlNeedProto
+(
+	NhlLayer	overlay, 
+	NhlLayer	annotation,
+	NhlString	entry_name
+)
+#else
+(overlay, annotation, entry_name)
+	NhlLayer	overlay; 
+	NhlLayer	annotation;
+	NhlString	entry_name;
+#endif
+{
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
+	char			*e_text;
+	NhlOverlayLayerPart	*ovp = &((NhlOverlayLayer)overlay)->overlay;
+	int			anno_ix = -1;
+	int			i;
+
+	for (i = 0; i < ovp->anno_count; i++) {
+		if (ovp->anno_ids[i] == annotation->base.id) {
+			anno_ix = i;
+			break;
+		}
+	}
+	if (anno_ix < 0) {
+		e_text = "%s: Annotation object not in Overlay";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
+	}
+/*
+ * Unregister the Annotation
+ */
+
+	subret = _NhlUnregisterAnnotation(overlay,annotation,entry_name);
+	if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
+
+/*
+ * Delete the Annotation and View ids from their respective arrays
+ */
+
+	for (i = anno_ix; i < ovp->anno_count - 1; i++) {
+		ovp->view_ids[i] = ovp->view_ids[i+1];
+		ovp->anno_ids[i] = ovp->anno_ids[i+1];
+	}
+	ovp->anno_count--;
+
+/*
+ * Destroy the Annotation
+ */
+	
+	subret = NhlDestroy(annotation->base.id);
+
+	ret = MIN(subret,ret);
+
+	return ret;
+}
+
+/*
+ * Function:	NhlGetAnnotationId
+ *
+ * Description:	
+ *
+ * In Args:	overlay_base_id	id of overlay base plot
+ *		anno_view_id	id of View object
+ *
+ * Out Args:	NONE
+ *
+ * Return Values: Error Conditions
+ *
+ * Side Effects: NONE
+ */	
+
+int NhlGetAnnotationId
+#if	NhlNeedProto
+(int overlay_base_id, int anno_view_id)
+#else
+(overlay_base_id, annotation_id)
+        int overlay_base_id;
+	int annotation_id;
+#endif
+{
+	char			*e_text;
+	char			*entry_name = "NhlGetAnnotationId";
+	NhlLayer		base = _NhlGetLayer(overlay_base_id);
+	NhlLayer		anno_view = _NhlGetLayer(anno_view_id);
+	NhlTransformLayerPart	*base_tfp;
+	int			anno_id;
+
+	if (base == NULL || ! _NhlIsTransform(base)) {
+		e_text = "%s: invalid overlay plot id";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
+	}
+
+/*
+ * Make sure the base plot has an overlay; if so extract the overlay
+ * layer pointer from the base plot's transform layer.
+ */
+	base_tfp = &(((NhlTransformLayer)base)->trans);
+	if (! base_tfp->overlay_on ||
+	    base_tfp->overlay_object == NULL || 
+	    ! _NhlIsTransform(base_tfp->overlay_object)) {
+		e_text = "%s: no overlay initialized for base plot";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
+	}
+
+/*
+ * Test the anno view layer pointer.
+ */
+
+	if (anno_view == NULL || ! _NhlIsView(anno_view)) {
+		e_text = "%s: invalid annotation id";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
+	}
+
+	anno_id = _NhlGetAnnotationId(base_tfp->overlay_object,
+				      anno_view,entry_name);
+
+	if (anno_id < 0) {
+		e_text = "%s: View object is not an annotation in overlay";
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+	}
+	return anno_id;
+}
+
+
+/*
+ * Function:	nhlf_getannotationid
+ *
+ * Description:	Fortran wrapper for NhlGetAnnotationId
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	global private fortran
+ * Returns:	void
+ * Side Effect:	
+ */
+void
+_NHLCALLF(nhlf_getannotationid,NHLF_GETANNOTATIONID)
+#if	NhlNeedProto
+(
+	int	*overlay_base,
+	int	*anno_view,
+	int	*id,
+	int	*err
+)
+#else
+(overlay_base,annotation,id,err)
+	int	*overlay_base;
+	int	*anno_view;
+	int	*id;
+	int	*err;
+#endif
+{
+	*id = NhlGetAnnotationId(*overlay_base,*anno_view);
+
+	*err = (*id < 0) ?  *id : NhlNOERROR;
+
+	return;
+}
+
+/*
+ * Function:	_NhlGetAnnotationId
+ *
+ * Description:	
+ *
+ * In Args:	overlay		overlay object layer
+ *		anno_view	View object layer
+ *		entry_name	interface name reported to caller in case
+ *				of error. If NULL will be set to
+ *				_NhlGetAnnotationId
+ *
+ * Out Args:	NONE
+ *
+ * Return Values: Error Conditions
+ *
+ * Side Effects: NONE
+ */	
+
+int _NhlGetAnnotationId
+#if	NhlNeedProto
+(
+	NhlLayer	overlay, 
+	NhlLayer	anno_view,
+	NhlString	entry_name
+)
+#else
+(overlay, annotation, entry_name)
+	NhlLayer	overlay; 
+	NhlLayer	anno_view;
+	NhlString	entry_name;
+#endif
+{
+	NhlOverlayLayerPart	*ovp = &((NhlOverlayLayer)overlay)->overlay;
+	int			i;
+
+	if (entry_name == NULL) entry_name = "_NhlGetAnnotationId";
+
+	if (ovp->view_ids == NULL)
+		return (int) NhlWARNING;
+
+	ovp->anno_ix = -1;
+	for (i = 0; i < ovp->anno_count; i++) {
+		if (ovp->view_ids[i] == anno_view->base.id) {
+			ovp->anno_ix = i;
+			return (ovp->anno_ids[i]);
+		}
+	}
+	return (int) NhlWARNING;
+
+}
+
+
+/*
  * Function:	NhlRegisterAnnotation
  *
  * Description:	Registers an annotation with an overlay base plot. An
@@ -4738,19 +5564,11 @@ NhlErrorTypes NhlRegisterAnnotation
 	int annotation_id;
 #endif
 {
-	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	char			*e_text;
 	char			*entry_name = "NhlRegisterAnnotation";
 	NhlLayer		base = _NhlGetLayer(overlay_base_id);
 	NhlLayer		annotation = _NhlGetLayer(annotation_id);
-	NhlOverlayLayer		overlay;
 	NhlTransformLayerPart	*base_tfp;
-	NhlAnnoRec		*anrp;
-	int			pid,zone;
-	NhlPosition		side;
-	NhlJustification	just;
-	float			ortho, parallel,data_x,data_y;
-	NhlBoolean		on,resize_notify,track_data;
 
 	if (base == NULL || ! _NhlIsTransform(base)) {
 		e_text = "%s: invalid overlay plot id";
@@ -4769,7 +5587,7 @@ NhlErrorTypes NhlRegisterAnnotation
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return NhlFATAL;
 	}
-	overlay = (NhlOverlayLayer) base_tfp->overlay_object;
+
 /*
  * Test the annotation layer pointer; if valid get its resource values.
  */
@@ -4778,67 +5596,9 @@ NhlErrorTypes NhlRegisterAnnotation
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return NhlFATAL;
 	}
-	subret = NhlVAGetValues(annotation_id,
-				NhlNanOn,&on,
-				NhlNanResizeNotify,&resize_notify,
-				NhlNanPlotId,&pid,
-				NhlNanZone,&zone,
-				NhlNanSide,&side,
-				NhlNanJust,&just,
-				NhlNanOrthogonalPosF,&ortho,
-				NhlNanParallelPosF,&parallel,
-				NhlNanTrackData,&track_data,
-				NhlNanDataXF,&data_x,
-				NhlNanDataYF,&data_y,
-				NULL);
 
-	if ((ret = MIN(subret,ret)) < NhlWARNING) return NhlFATAL;
-#if 0
-/*
- * Make sure that a View class object has been attached to the 
- * Annotation
- */
-
-	if (((view_layer = _NhlGetLayer(pid)) == NULL) ||
-	    ! _NhlIsView(view_layer)) {
-		e_text = "%s: annotation has no valid View object attached";
-		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
-		return NhlWARNING;
-	}
-#endif
-
-/*
- * Record the annotation in the overlay's data structures; a pointer
- * to the new annotation record is returned.
- */ 
-	if ((anrp = RecordAnnotation(overlay,ovEXTERNAL,
-				     NhlALWAYS,zone)) == NULL) {
-		e_text = "%s: error registering annotation";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return NhlFATAL;
-	}
-/*
- * Fill in the fields of the annotation record that the recording function
- * does not initialize.
- */
-	anrp->status = on ? NhlALWAYS : NhlNEVER;
-	anrp->anno_id = annotation_id;
-	anrp->plot_id = pid;
-	anrp->resize_notify = resize_notify;
-	anrp->side = side;
-	anrp->just = just;
-	anrp->para_pos = parallel;
-	anrp->ortho_pos = ortho;
-	anrp->track_data = track_data;
-	anrp->data_x = data_x;
-	anrp->data_y = data_y;
-
-	subret = NhlVASetValues(annotation_id,
-				NhlNanOverlayBaseId,overlay_base_id,
-				NULL);
-	ret = MIN(subret,ret);
-
-	return ret;
+	return (_NhlRegisterAnnotation(base_tfp->overlay_object,
+				       annotation,entry_name));
 }
 
 /*
@@ -4876,6 +5636,97 @@ _NHLCALLF(nhlf_registerannotation,NHLF_REGISTERANNOTATION)
 
 
 /*
+ * Function:	_NhlRegisterAnnotation
+ *
+ * Description:	
+ *
+ * In Args:	overlay		Overlay object layer
+ *		annotation	Annotation object layer
+ *
+ * Out Args:	NONE
+ *
+ * Return Values: Error Conditions
+ *
+ * Side Effects: NONE
+ */	
+
+NhlErrorTypes _NhlRegisterAnnotation
+#if	NhlNeedProto
+(
+	NhlLayer	overlay, 
+	NhlLayer	annotation,
+	NhlString	entry_name
+)
+#else
+(overlay, annotation, entry_name)
+	NhlLayer	overlay; 
+	NhlLayer	annotation;
+	NhlString	entry_name;
+#endif
+
+{
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
+	char			*e_text;
+	NhlAnnoRec		*anrp;
+	int			pid,zone;
+	NhlPosition		side;
+	NhlJustification	just;
+	float			ortho, parallel,data_x,data_y;
+	NhlBoolean		on,resize_notify,track_data;
+
+	if (entry_name == NULL) entry_name = "_NhlRegisterAnnotation";
+
+	subret = NhlVAGetValues(annotation->base.id,
+				NhlNanOn,&on,
+				NhlNanResizeNotify,&resize_notify,
+				NhlNanPlotId,&pid,
+				NhlNanZone,&zone,
+				NhlNanSide,&side,
+				NhlNanJust,&just,
+				NhlNanOrthogonalPosF,&ortho,
+				NhlNanParallelPosF,&parallel,
+				NhlNanTrackData,&track_data,
+				NhlNanDataXF,&data_x,
+				NhlNanDataYF,&data_y,
+				NULL);
+
+	if ((ret = MIN(subret,ret)) < NhlWARNING) return NhlFATAL;
+
+/*
+ * Record the annotation in the overlay's data structures; a pointer
+ * to the new annotation record is returned.
+ */ 
+	if ((anrp = RecordAnnotation((NhlOverlayLayer)overlay,ovEXTERNAL,
+				     NhlALWAYS,zone)) == NULL) {
+		e_text = "%s: error registering annotation";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
+	}
+/*
+ * Fill in the fields of the annotation record that the recording function
+ * does not initialize.
+ */
+	anrp->status = on ? NhlALWAYS : NhlNEVER;
+	anrp->anno_id = annotation->base.id;
+	anrp->plot_id = pid;
+	anrp->resize_notify = resize_notify;
+	anrp->side = side;
+	anrp->just = just;
+	anrp->para_pos = parallel;
+	anrp->ortho_pos = ortho;
+	anrp->track_data = track_data;
+	anrp->data_x = data_x;
+	anrp->data_y = data_y;
+
+	subret = NhlVASetValues(annotation->base.id,
+				NhlNanOverlayBaseId,overlay->base.id,
+				NULL);
+	ret = MIN(subret,ret);
+
+	return ret;
+}
+
+/*
  * Function:	NhlUnregisterAnnotation
  *
  * Description:	
@@ -4899,16 +5750,11 @@ NhlErrorTypes NhlUnregisterAnnotation
 	int annotation_id;
 #endif
 {
-	NhlErrorTypes		ret = NhlNOERROR;
 	char			*e_text;
 	char			*entry_name = "NhlUnregisterAnnotation";
 	NhlLayer		base = _NhlGetLayer(overlay_base_id);
 	NhlLayer		annotation = _NhlGetLayer(annotation_id);
-	NhlOverlayLayer		overlay;
 	NhlTransformLayerPart	*base_tfp;
-	NhlOverlayLayerPart	*ovp;
-	NhlAnnoRec		*anrp;
-	int			i, found = False;
 
 	if (base == NULL || ! _NhlIsTransform(base)) {
 		e_text = "%s: invalid overlay plot id";
@@ -4927,7 +5773,6 @@ NhlErrorTypes NhlUnregisterAnnotation
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return NhlFATAL;
 	}
-	overlay = (NhlOverlayLayer) base_tfp->overlay_object;
 /*
  * Test the annotation layer pointer.
  */
@@ -4937,39 +5782,8 @@ NhlErrorTypes NhlUnregisterAnnotation
 		return NhlFATAL;
 	}
 
-	ovp = &overlay->overlay;
-
-	for (i = 0; i < ovp->overlay_count; i++) {
-		
-		if ((anrp = ovp->ov_recs[i]->anno_list) == NULL)
-			continue;
-
-		if (anrp->anno_id == annotation_id) {
-			ovp->ov_recs[i]->anno_list = anrp->next;
-			NhlFree(anrp);
-			found = True;
-			break;
-		}
-		while (anrp->next != NULL) {
-			if (anrp->next->anno_id == annotation_id) {
-				NhlAnnoRec	*free_anno = anrp->next;
-				anrp->next = free_anno->next;
-				NhlFree(free_anno);
-				found = True;
-				break;
-			}
-			anrp = anrp->next;
-		}
-	}
-	if (! found) {
-		e_text = "%s: annotation not found";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return NhlFATAL;
-	}
-	ret = NhlVASetValues(annotation_id,
-			     NhlNanOverlayBaseId,-1,NULL);
-
-	return ret;
+	return (_NhlUnregisterAnnotation(base_tfp->overlay_object,
+					 annotation,entry_name));
 
 }
 
@@ -5004,6 +5818,80 @@ _NHLCALLF(nhlf_unregisterannotation,NHLF_UNREGISTERANNOTATION)
 	*err = NhlUnregisterAnnotation(*overlay_base,*annotation);
 
 	return;
+}
+
+/*
+ * Function:	_NhlUnregisterAnnotation
+ *
+ * Description:	
+ *
+ * In Args:	overlay		Overlay object layer
+ *		annotation	Annotation object layer
+ *		entry_name	interface name reported to caller in case
+ *				of error. If NULL will be set to
+ *				_NhlUnregisterAnnotation
+ *
+ * Out Args:	NONE
+ *
+ * Return Values: Error Conditions
+ *
+ * Side Effects: NONE
+ */	
+
+NhlErrorTypes _NhlUnregisterAnnotation
+#if	NhlNeedProto
+(
+	NhlLayer	overlay, 
+	NhlLayer	annotation,
+	NhlString	entry_name
+)
+#else
+(overlay, annotation, entry_name)
+	NhlLayer	overlay; 
+	NhlLayer	annotation;
+	NhlString	entry_name;
+#endif
+{
+	NhlErrorTypes		ret = NhlNOERROR;
+	char			*e_text;
+	NhlOverlayLayerPart	*ovp;
+	NhlAnnoRec		*anrp;
+	int			i, found = False;
+
+	ovp = &((NhlOverlayLayer)overlay)->overlay;
+
+	for (i = 0; i < ovp->overlay_count; i++) {
+		
+		if ((anrp = ovp->ov_recs[i]->anno_list) == NULL)
+			continue;
+
+		if (anrp->anno_id == annotation->base.id) {
+			ovp->ov_recs[i]->anno_list = anrp->next;
+			NhlFree(anrp);
+			found = True;
+			break;
+		}
+		while (anrp->next != NULL) {
+			if (anrp->next->anno_id == annotation->base.id) {
+				NhlAnnoRec	*free_anno = anrp->next;
+				anrp->next = free_anno->next;
+				NhlFree(free_anno);
+				found = True;
+				break;
+			}
+			anrp = anrp->next;
+		}
+	}
+	if (! found) {
+		e_text = "%s: annotation not found";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
+	}
+	ret = NhlVASetValues(annotation->base.id,
+			     NhlNanOverlayBaseId,-1,NULL);
+
+	return ret;
+
 }
 
 /*

@@ -1,5 +1,5 @@
 /*
- *      $Id: OverlayI.h,v 1.8 1995-02-19 08:18:26 boote Exp $
+ *      $Id: OverlayI.h,v 1.9 1995-03-13 21:47:35 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -79,6 +79,66 @@ extern NhlErrorTypes _NhlManageOverlay(
 	NhlSArgList	sargs,
 	int		nargs,
 	char		*entry_name				   
+#endif
+);
+
+/* 
+ * private versions of the Annotation interface functions:
+ * assumes layer pointers are valid. If entry_name string is NULL,
+ * one is supplied.
+ */
+
+extern int _NhlAddAnnotation(
+#if	NhlNeedProto
+        NhlLayer	overlay,
+	NhlLayer	anno_view,
+	NhlString	entry_name
+#endif
+);
+
+extern NhlErrorTypes _NhlRemoveAnnotation(
+#if	NhlNeedProto
+        NhlLayer	overlay,
+	NhlLayer	annotation,
+	NhlString	entry_name
+#endif
+);
+
+int _NhlGetAnnotationId(
+#if	NhlNeedProto
+        NhlLayer	overlay,
+	NhlLayer	anno_view,
+	NhlString	entry_name
+#endif
+);
+
+extern NhlErrorTypes NhlRegisterAnnotation(
+#if	NhlNeedProto
+        int	overlay_base_id,
+	int	annotation_id
+#endif
+);
+
+extern NhlErrorTypes NhlUnregisterAnnotation(
+#if	NhlNeedProto
+        int	overlay_base_id,
+	int	annotation_id
+#endif
+);
+
+extern NhlErrorTypes _NhlRegisterAnnotation(
+#if	NhlNeedProto
+        NhlLayer	overlay,
+	NhlLayer	annotation,
+	NhlString	entry_name
+#endif
+);
+
+extern NhlErrorTypes _NhlUnregisterAnnotation(
+#if	NhlNeedProto
+        NhlLayer	overlay,
+	NhlLayer	annotation,
+	NhlString	entry_name
 #endif
 );
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: Overlay.h,v 1.13 1995-01-25 01:15:44 dbrown Exp $
+ *      $Id: Overlay.h,v 1.14 1995-03-13 21:47:34 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -43,6 +43,15 @@ typedef enum _NhlAnnotationDisplayMode {
 #define NhlNovOverlayIds	".ovOverlayIds"
 #define NhlNovPreDrawOrder	".ovPreDrawOrder"
 #define NhlNovPostDrawOrder	".ovPostDrawOrder"
+
+#define NhlNovAnnoViews		"ovAnnoViews"
+#define NhlNovAnnotations	">ovAnnotations"
+#define NhlNovFitToBB		"ovFitToBB"
+#define NhlNovBBLeftF		"ovBBLeftF"
+#define NhlNovBBRightF		"ovBBRightF"
+#define NhlNovBBBottomF		"ovBBBottomF"
+#define NhlNovBBTopF		"ovBBTopF"
+
 #define NhlNovTitleDisplayMode	"ovTitleDisplayMode"
 #define NhlNovTitleZone		"ovTitleZone"
 #define NhlNovTickMarkDisplayMode	"ovTickMarkDisplayMode"
@@ -78,6 +87,15 @@ typedef enum _NhlAnnotationDisplayMode {
 #define NhlCovOverlayIds	".OvOverlayIds"
 #define NhlCovPreDrawOrder	".OvPreDrawOrder"
 #define NhlCovPostDrawOrder	".OvPostDrawOrder"
+
+#define NhlCovAnnoViews		"OvAnnoViews"
+#define NhlCovAnnotations	".OvAnnotations"
+#define NhlCovFitToBB		"OvFitToBB"
+#define NhlCovBBLeftF		"OvBBLeftF"
+#define NhlCovBBRightF		"OvBBRightF"
+#define NhlCovBBBottomF		"OvBBBottomF"
+#define NhlCovBBTopF		"OvBBTopF"
+
 #define NhlCovTitleDisplayMode	"OvTitleDisplayMode"
 #define NhlCovTitleZone		"OvTitleZone"
 #define NhlCovTickMarkDisplayMode	"OvTickMarkDisplayMode"
@@ -125,18 +143,26 @@ extern NhlErrorTypes NhlRemoveFromOverlay(
 #endif
 );
 
-extern NhlErrorTypes NhlRegisterAnnotation(
+extern int NhlAddAnnotation(
 #if	NhlNeedProto
         int	overlay_base_id,
-	int	annotation_id
+	int	anno_view_id
 #endif
 );
 
-extern NhlErrorTypes NhlUnregisterAnnotation(
+extern NhlErrorTypes NhlRemoveAnnotation(
 #if	NhlNeedProto
         int	overlay_base_id,
-	int	annotation_id
+	int	anno_id
 #endif
 );
+
+int NhlGetAnnotationId(
+#if	NhlNeedProto
+        int	overlay_base_id,
+	int	anno_view_id
+#endif
+);
+
 
 #endif /*_NOverlay_h */
