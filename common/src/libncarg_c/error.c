@@ -1,5 +1,5 @@
 /*
- *      $Id: error.c,v 1.6 2000-08-22 04:03:31 haley Exp $
+ *      $Id: error.c,v 1.7 2002-02-21 22:52:28 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -114,15 +114,15 @@ const char	*ESprintf(err_code, format, va_alist)
 #endif
 {
 	va_list	ap;
-	extern	int	sys_nerr;
-	extern	char	*sys_errlist[];
+	extern	int	errno;
+	extern	char	*strerror(int);
 	const char	*message;
 
 	if (! isInitialized) {
 		/*
 		 * add the unix system/library error list
 		 */
-		(void) ErrorList(0, sys_nerr, (const char **) sys_errlist);
+		(void) ErrorList(0, errno, (const char **) strerror(errno));
 		isInitialized  = 1;
 	}
 
@@ -186,8 +186,8 @@ const char	*LFESprintf(err_code, file, line, format, va_alist)
 #endif
 {
 	va_list	ap;
-	extern	int	sys_nerr;
-	extern	char	*sys_errlist[];
+	extern	int	errno;
+	extern	char	*strerror(int);
 	const char	*message;
 	char		buf[1024];
 
@@ -195,7 +195,7 @@ const char	*LFESprintf(err_code, file, line, format, va_alist)
 		/*
 		 * add the unix system/library error list
 		 */
-		(void) ErrorList(0, sys_nerr, (const char **) sys_errlist);
+		(void) ErrorList(0, errno, (const char **) strerror(errno));
 		isInitialized  = 1;
 	}
 
