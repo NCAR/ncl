@@ -1,5 +1,5 @@
 /*
- *      $Id: Converters.c,v 1.13 1994-05-27 20:21:04 ethan Exp $
+ *      $Id: Converters.c,v 1.14 1994-06-17 21:17:27 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1432,6 +1432,120 @@ static NhlErrorTypes NhlCvtGenTo1DFloatGen
 	} 
 }
 
+static NhlErrorTypes NhlCvtGenToFloatGen
+#if	__STDC__
+(
+	NrmValue		*from,	/* ptr to from data		*/
+	NrmValue		*to,	/* ptr to to data		*/
+ 	NhlConvertArgList	args,	/* add'n args for conversion	*/
+	int			nargs	/* number of args		*/
+)
+#else
+(from,to,args,nargs)
+	NrmValue		*from;	/* ptr to from data		*/
+	NrmValue		*to;	/* ptr to to data		*/
+ 	NhlConvertArgList	args;	/* add'n args for conversion	*/
+	int			nargs;	/* number of args		*/
+#endif
+{
+	NhlGenArray tgen;
+	NhlGenArray gen;
+	char *name  = "NhlCvtGenToFloatGen";
+	NhlErrorTypes	ret = NhlNOERROR;
+	float *to_data = NULL;
+	int i;
+
+
+	if(nargs != 0){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+				"%s:Called with improper number of args",name);
+		to->size = 0;
+		return NhlFATAL;
+	}
+
+	gen = from->data.ptrval;
+
+	if(gen->typeQ == floatQ) {
+		memcpy((void*)to->data.ptrval,(void*)&gen,to->size);
+		return(NhlNOERROR);
+	} else {
+		if(gen->typeQ ==intQ) {
+			int *from_data;
+			from_data = (int*) gen->data;
+			to_data = (float*)NhlConvertMalloc(
+				gen->num_elements*sizeof(float));
+			for(i = 0; i < gen->num_elements; i++) {
+				to_data[i] = (float)from_data[i];
+			}
+		} else if(gen->typeQ == longQ) {
+			long *from_data;
+			from_data = (long*)gen->data;
+
+
+			to_data = (float*)NhlConvertMalloc(
+				gen->num_elements*sizeof(float));
+			for(i = 0; i < gen->num_elements; i++) {
+				to_data[i] = (float)from_data[i];
+			}
+		} else if(gen->typeQ == shortQ) {
+			short *from_data;
+			to_data = (float*)NhlConvertMalloc(
+				gen->num_elements*sizeof(float));
+			for(i = 0; i < gen->num_elements; i++) {
+				to_data[i] = (float)from_data[i];
+			}
+		} else if(gen->typeQ == doubleQ) {
+			double *from_data;
+
+			NhlPError(NhlWARNING,NhlEUNKNOWN,"%s: Conversion may cause loss of information",name);
+			to_data = (float*)NhlConvertMalloc(
+				gen->num_elements*sizeof(float));
+			from_data = (double*)gen->data;
+			for(i = 0; i < gen->num_elements; i++) {
+				to_data[i] = (float)from_data[i];
+			}
+		} else if(gen->typeQ == stringQ) {
+			char **from_data;
+			
+			to_data = (float*)NhlConvertMalloc(
+				gen->num_elements*sizeof(float));
+			from_data = (char**)gen->data;
+			for(i = 0; i< gen->num_elements; i++) {	
+				to_data[i] = (float)atof(from_data[i]);
+			}
+		} else if(gen->typeQ == quarkQ) {
+			int *from_data;
+			
+			to_data = (float*)NhlConvertMalloc(
+				gen->num_elements*sizeof(float));
+			from_data = (int*)gen->data;
+			for(i = 0; i< gen->num_elements; i++) {	
+				to_data[i] = (float)
+					atof(NrmQuarkToString(from_data[i]));
+			}
+		} else {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: Conversion for (%s) type to 1DFloatGenArray not supported",name,NrmQuarkToString(gen->typeQ));
+			return NhlFATAL;
+		}
+		tgen = (NhlGenArray)NhlConvertMalloc(
+						     sizeof(NhlGenArrayRec));
+		tgen->num_dimensions = gen->num_dimensions;
+		tgen->len_dimensions = (int *)
+			NhlConvertMalloc(gen->num_dimensions * 
+					 sizeof(int));
+		for (i = 0; i < gen->num_dimensions; i++)
+			tgen->len_dimensions[i] =
+				gen->len_dimensions[i];
+		tgen->num_elements = gen->num_elements;
+		tgen->typeQ = floatQ;
+		tgen->size = sizeof(float);
+		tgen->data = (NhlPointer)to_data;
+		tgen->my_data = True;
+		memcpy((void*)to->data.ptrval,(void*)&tgen,to->size);
+		return(NhlNOERROR);
+	} 
+}
+
 /*
  * Function:	NhlCvtGenToString
  *
@@ -2393,116 +2507,116 @@ _NhlConvertersInitialize
 #endif
 {
 	NhlConvertArg	BoolEnumList[] = {
-			{NhlSTRENUM,	True,	"true"},
-			{NhlSTRENUM,	False,	"false"},
-			{NhlSTRENUM,	True,	"yes"},
-			{NhlSTRENUM,	False,	"no"},
-			{NhlSTRENUM,	True,	"on"},
-			{NhlSTRENUM,	False,	"off"},
-			{NhlSTRENUM,	True,	"1"},
-			{NhlSTRENUM,	False,	"0"}
+			{NhlSTRENUM,	True,	_NhlUSET("true")},
+			{NhlSTRENUM,	False,	_NhlUSET("false")},
+			{NhlSTRENUM,	True,	_NhlUSET("yes")},
+			{NhlSTRENUM,	False,	_NhlUSET("no")},
+			{NhlSTRENUM,	True,	_NhlUSET("on")},
+			{NhlSTRENUM,	False,	_NhlUSET("off")},
+			{NhlSTRENUM,	True,	_NhlUSET("1")},
+			{NhlSTRENUM,	False,	_NhlUSET("0")}
 			};
 
 	NhlConvertArg	FontEnumList[] = {
-			{NhlSTRENUM,	0,	"pwritx"},
-			{NhlSTRENUM,	0,	"0"},
-			{NhlSTRENUM,	1,	"default"},
-			{NhlSTRENUM,	1,	"1"},
-			{NhlSTRENUM,	2,	"cartographic_roman"},
-			{NhlSTRENUM,	2,	"2"},
-			{NhlSTRENUM,	3,	"cartographic_greek"},
-			{NhlSTRENUM,	3,	"3"},
-			{NhlSTRENUM,	4,	"simplex_roman"},
-			{NhlSTRENUM,	4,	"4"},
-			{NhlSTRENUM,	5,	"simplex_greek"},
-			{NhlSTRENUM,	5,	"5"},
-			{NhlSTRENUM,	6,	"simplex_script"},
-			{NhlSTRENUM,	6,	"6"},
-			{NhlSTRENUM,	7,	"complex_roman"},
-			{NhlSTRENUM,	7,	"7"},
-			{NhlSTRENUM,	8,	"complex_greek"},
-			{NhlSTRENUM,	8,	"8"},
-			{NhlSTRENUM,	9,	"complex_script"},
-			{NhlSTRENUM,	9,	"9"},
-			{NhlSTRENUM,	10,	"complex_italic"},
-			{NhlSTRENUM,	10,	"10"},
-			{NhlSTRENUM,	11,	"complex_cyrillic"},
-			{NhlSTRENUM,	11,	"11"},
-			{NhlSTRENUM,	12,	"duplex_roman"},
-			{NhlSTRENUM,	12,	"12"},
-			{NhlSTRENUM,	13,	"triplex_roman"},
-			{NhlSTRENUM,	13,	"13"},
-			{NhlSTRENUM,	14,	"triplex_italic"},
-			{NhlSTRENUM,	14,	"14"},
-			{NhlSTRENUM,	15,	"gothic_german"},
-			{NhlSTRENUM,	15,	"15"},
-			{NhlSTRENUM,	16,	"gothic_english"},
-			{NhlSTRENUM,	16,	"16"},
-			{NhlSTRENUM,	17,	"gothic_italian"},
-			{NhlSTRENUM,	17,	"17"},
-			{NhlSTRENUM,	18,	"math_symbols"},
-			{NhlSTRENUM,	18,	"18"},
-			{NhlSTRENUM,	19,	"symbol_set1"},
-			{NhlSTRENUM,	19,	"19"},
-			{NhlSTRENUM,	20,	"symbol_set2"},
-			{NhlSTRENUM,	20,	"20"},
-			{NhlSTRENUM,	21,	"helvetica"},
-			{NhlSTRENUM,	21,	"21"},
-			{NhlSTRENUM,	22,	"helvetica-bold"},
-			{NhlSTRENUM,	22,	"22"},
-			{NhlSTRENUM,	25,	"times-roman"},
-			{NhlSTRENUM,	25,	"25"},
-			{NhlSTRENUM,	26,	"times-bold"},
-			{NhlSTRENUM,	26,	"26"},
-			{NhlSTRENUM,	29,	"courier"},
-			{NhlSTRENUM,	29,	"29"},
-			{NhlSTRENUM,	30,	"courier-bold"},
-			{NhlSTRENUM,	30,	"30"},
-			{NhlSTRENUM,	33,	"greek"},
-			{NhlSTRENUM,	33,	"33"},
-			{NhlSTRENUM,	34,	"math-symbols"},
-			{NhlSTRENUM,	34,	"34"},
-			{NhlSTRENUM,	35,	"text-symbols"},
-			{NhlSTRENUM,	35,	"35"},
-			{NhlSTRENUM,	36,	"weather1"},
-			{NhlSTRENUM,	36,	"36"},
-			{NhlSTRENUM,	37,	"weather2"},
-			{NhlSTRENUM,	37,	"37"}
+			{NhlSTRENUM,	0,	_NhlUSET("pwritx")},
+			{NhlSTRENUM,	0,	_NhlUSET("0")},
+			{NhlSTRENUM,	1,	_NhlUSET("default")},
+			{NhlSTRENUM,	1,	_NhlUSET("1")},
+			{NhlSTRENUM,	2,	_NhlUSET("cartographic_roman")},
+			{NhlSTRENUM,	2,	_NhlUSET("2")},
+			{NhlSTRENUM,	3,	_NhlUSET("cartographic_greek")},
+			{NhlSTRENUM,	3,	_NhlUSET("3")},
+			{NhlSTRENUM,	4,	_NhlUSET("simplex_roman")},
+			{NhlSTRENUM,	4,	_NhlUSET("4")},
+			{NhlSTRENUM,	5,	_NhlUSET("simplex_greek")},
+			{NhlSTRENUM,	5,	_NhlUSET("5")},
+			{NhlSTRENUM,	6,	_NhlUSET("simplex_script")},
+			{NhlSTRENUM,	6,	_NhlUSET("6")},
+			{NhlSTRENUM,	7,	_NhlUSET("complex_roman")},
+			{NhlSTRENUM,	7,	_NhlUSET("7")},
+			{NhlSTRENUM,	8,	_NhlUSET("complex_greek")},
+			{NhlSTRENUM,	8,	_NhlUSET("8")},
+			{NhlSTRENUM,	9,	_NhlUSET("complex_script")},
+			{NhlSTRENUM,	9,	_NhlUSET("9")},
+			{NhlSTRENUM,	10,	_NhlUSET("complex_italic")},
+			{NhlSTRENUM,	10,	_NhlUSET("10")},
+			{NhlSTRENUM,	11,	_NhlUSET("complex_cyrillic")},
+			{NhlSTRENUM,	11,	_NhlUSET("11")},
+			{NhlSTRENUM,	12,	_NhlUSET("duplex_roman")},
+			{NhlSTRENUM,	12,	_NhlUSET("12")},
+			{NhlSTRENUM,	13,	_NhlUSET("triplex_roman")},
+			{NhlSTRENUM,	13,	_NhlUSET("13")},
+			{NhlSTRENUM,	14,	_NhlUSET("triplex_italic")},
+			{NhlSTRENUM,	14,	_NhlUSET("14")},
+			{NhlSTRENUM,	15,	_NhlUSET("gothic_german")},
+			{NhlSTRENUM,	15,	_NhlUSET("15")},
+			{NhlSTRENUM,	16,	_NhlUSET("gothic_english")},
+			{NhlSTRENUM,	16,	_NhlUSET("16")},
+			{NhlSTRENUM,	17,	_NhlUSET("gothic_italian")},
+			{NhlSTRENUM,	17,	_NhlUSET("17")},
+			{NhlSTRENUM,	18,	_NhlUSET("math_symbols")},
+			{NhlSTRENUM,	18,	_NhlUSET("18")},
+			{NhlSTRENUM,	19,	_NhlUSET("symbol_set1")},
+			{NhlSTRENUM,	19,	_NhlUSET("19")},
+			{NhlSTRENUM,	20,	_NhlUSET("symbol_set2")},
+			{NhlSTRENUM,	20,	_NhlUSET("20")},
+			{NhlSTRENUM,	21,	_NhlUSET("helvetica")},
+			{NhlSTRENUM,	21,	_NhlUSET("21")},
+			{NhlSTRENUM,	22,	_NhlUSET("helvetica-bold")},
+			{NhlSTRENUM,	22,	_NhlUSET("22")},
+			{NhlSTRENUM,	25,	_NhlUSET("times-roman")},
+			{NhlSTRENUM,	25,	_NhlUSET("25")},
+			{NhlSTRENUM,	26,	_NhlUSET("times-bold")},
+			{NhlSTRENUM,	26,	_NhlUSET("26")},
+			{NhlSTRENUM,	29,	_NhlUSET("courier")},
+			{NhlSTRENUM,	29,	_NhlUSET("29")},
+			{NhlSTRENUM,	30,	_NhlUSET("courier-bold")},
+			{NhlSTRENUM,	30,	_NhlUSET("30")},
+			{NhlSTRENUM,	33,	_NhlUSET("greek")},
+			{NhlSTRENUM,	33,	_NhlUSET("33")},
+			{NhlSTRENUM,	34,	_NhlUSET("math-symbols")},
+			{NhlSTRENUM,	34,	_NhlUSET("34")},
+			{NhlSTRENUM,	35,	_NhlUSET("text-symbols")},
+			{NhlSTRENUM,	35,	_NhlUSET("35")},
+			{NhlSTRENUM,	36,	_NhlUSET("weather1")},
+			{NhlSTRENUM,	36,	_NhlUSET("36")},
+			{NhlSTRENUM,	37,	_NhlUSET("weather2")},
+			{NhlSTRENUM,	37,	_NhlUSET("37")}
 			};
 
 	NhlConvertArg	FontIntEnumList[] = {
-			{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)0},
-			{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)1},
-			{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)2},
-			{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)3},
-			{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)4},
-			{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)5},
-			{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)6},
-			{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)7},
-			{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)8},
-			{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)9},
-			{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)10},
-			{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)11},
-			{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)12},
-			{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)13},
-			{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)14},
-			{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)15},
-			{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)16},
-			{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)17},
-			{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)18},
-			{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)19},
-			{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)20},
-			{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)21},
-			{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)22},
-			{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)25},
-			{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)26},
-			{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)29},
-			{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)30},
-			{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)33},
-			{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)34},
-			{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)35},
-			{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)36},
-			{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)37}
+			{NhlIMMEDIATE,	sizeof(int),_NhlUSET((NhlPointer)0)},
+			{NhlIMMEDIATE,	sizeof(int),_NhlUSET((NhlPointer)1)},
+			{NhlIMMEDIATE,	sizeof(int),_NhlUSET((NhlPointer)2)},
+			{NhlIMMEDIATE,	sizeof(int),_NhlUSET((NhlPointer)3)},
+			{NhlIMMEDIATE,	sizeof(int),_NhlUSET((NhlPointer)4)},
+			{NhlIMMEDIATE,	sizeof(int),_NhlUSET((NhlPointer)5)},
+			{NhlIMMEDIATE,	sizeof(int),_NhlUSET((NhlPointer)6)},
+			{NhlIMMEDIATE,	sizeof(int),_NhlUSET((NhlPointer)7)},
+			{NhlIMMEDIATE,	sizeof(int),_NhlUSET((NhlPointer)8)},
+			{NhlIMMEDIATE,	sizeof(int),_NhlUSET((NhlPointer)9)},
+			{NhlIMMEDIATE,	sizeof(int),_NhlUSET((NhlPointer)10)},
+			{NhlIMMEDIATE,	sizeof(int),_NhlUSET((NhlPointer)11)},
+			{NhlIMMEDIATE,	sizeof(int),_NhlUSET((NhlPointer)12)},
+			{NhlIMMEDIATE,	sizeof(int),_NhlUSET((NhlPointer)13)},
+			{NhlIMMEDIATE,	sizeof(int),_NhlUSET((NhlPointer)14)},
+			{NhlIMMEDIATE,	sizeof(int),_NhlUSET((NhlPointer)15)},
+			{NhlIMMEDIATE,	sizeof(int),_NhlUSET((NhlPointer)16)},
+			{NhlIMMEDIATE,	sizeof(int),_NhlUSET((NhlPointer)17)},
+			{NhlIMMEDIATE,	sizeof(int),_NhlUSET((NhlPointer)18)},
+			{NhlIMMEDIATE,	sizeof(int),_NhlUSET((NhlPointer)19)},
+			{NhlIMMEDIATE,	sizeof(int),_NhlUSET((NhlPointer)20)},
+			{NhlIMMEDIATE,	sizeof(int),_NhlUSET((NhlPointer)21)},
+			{NhlIMMEDIATE,	sizeof(int),_NhlUSET((NhlPointer)22)},
+			{NhlIMMEDIATE,	sizeof(int),_NhlUSET((NhlPointer)25)},
+			{NhlIMMEDIATE,	sizeof(int),_NhlUSET((NhlPointer)26)},
+			{NhlIMMEDIATE,	sizeof(int),_NhlUSET((NhlPointer)29)},
+			{NhlIMMEDIATE,	sizeof(int),_NhlUSET((NhlPointer)30)},
+			{NhlIMMEDIATE,	sizeof(int),_NhlUSET((NhlPointer)33)},
+			{NhlIMMEDIATE,	sizeof(int),_NhlUSET((NhlPointer)34)},
+			{NhlIMMEDIATE,	sizeof(int),_NhlUSET((NhlPointer)35)},
+			{NhlIMMEDIATE,	sizeof(int),_NhlUSET((NhlPointer)36)},
+			{NhlIMMEDIATE,	sizeof(int),_NhlUSET((NhlPointer)37)}
 			};
 
 	NhlConvertArg   fontgentoenumdat[] = {
@@ -2595,6 +2709,8 @@ _NhlConvertersInitialize
 		NhlCvtGenTo1DIntGen,NULL,0,False,NULL);
 	(void)NhlRegisterConverter(NhlTGenArray,NhlT1DStringGenArray,
 		NhlCvtGenTo1DStringGen,NULL,0,False,NULL);
+	(void)NhlRegisterConverter(NhlTGenArray,NhlTFloatGenArray,
+		NhlCvtGenToFloatGen,NULL,0,False,NULL);
 
 	return;
 }
