@@ -4,14 +4,14 @@
 #include "idt.h"
 
 extern	char	*GetFiles(
-#ifndef	NeedFuncProto
+#ifdef	NeedFuncProto
 	char	*file_filter,
 	int	*longest
 #endif
 );
 
 extern	void SetFileSelection(
-#ifndef	NeedFuncProto
+#ifdef	NeedFuncProto
 	char	*file,
 	FuncPtrPasser	select_action
 #endif
