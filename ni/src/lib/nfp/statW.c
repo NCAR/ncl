@@ -2129,7 +2129,7 @@ NhlErrorTypes dim_stat4_W( void )
 /*
  * various
  */
-  int i, total_leftmost, ier = 0, index_x, index_stat, npts;
+  int i, total_leftmost, ier = 0, index_x, npts;
   double xsd, *tmp_x;
 /*
  * Retrieve parameters
@@ -2183,7 +2183,7 @@ NhlErrorTypes dim_stat4_W( void )
 /*
  * Call the f77 version of 'dim_stat4' with the full argument list.
  */
-  index_x = index_stat = 0;
+  index_x = 0;
   for(i = 0; i < total_leftmost; i++) {
     if(type_x != NCL_double) {
 /*
@@ -2201,19 +2201,18 @@ NhlErrorTypes dim_stat4_W( void )
       return(NhlFATAL);
     }
     if(type_x != NCL_double) {
-      ((float*)stat)[index_stat]   = (float)dxmean;
-      ((float*)stat)[index_stat+1] = (float)dxvar;
-      ((float*)stat)[index_stat+2] = (float)dxskew;
-      ((float*)stat)[index_stat+3] = (float)dxkurt;
+      ((float*)stat)[i]                  = (float)dxmean;
+      ((float*)stat)[i+total_leftmost]   = (float)dxvar;
+      ((float*)stat)[i+2*total_leftmost] = (float)dxskew;
+      ((float*)stat)[i+3*total_leftmost] = (float)dxkurt;
     }
     else {
-      ((double*)stat)[index_stat]   = dxmean;
-      ((double*)stat)[index_stat+1] = dxvar;
-      ((double*)stat)[index_stat+2] = dxskew;
-      ((double*)stat)[index_stat+3] = dxkurt;
+      ((double*)stat)[i]                  = dxmean;
+      ((double*)stat)[i+total_leftmost]   = dxvar;
+      ((double*)stat)[i+2*total_leftmost] = dxskew;
+      ((double*)stat)[i+3*total_leftmost] = dxkurt;
     }
     index_x    += npts;
-    index_stat += 4;
   }
 /*
  * free memory.
