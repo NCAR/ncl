@@ -44,7 +44,7 @@ C  Label the plot using Plotchar.
 C
       CALL PCSETI('FN',25)
       CALL PCSETI('CC',2)
-      CALL PCSETI('AS',0.)
+      CALL PCSETR('AS',0.)
       CALL PLCHHQ(.5,.98,'Same string',.032,0.,0.)
       CALL PLCHHQ(.5,.92,'using various fonts',.032,0.,0.)
 C
