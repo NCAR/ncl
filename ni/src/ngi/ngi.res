@@ -1,5 +1,5 @@
 !
-!      $Id: ngi.res,v 1.6 1997-02-27 20:20:35 boote Exp $
+!      $Id: ngi.res,v 1.7 1997-03-04 03:08:53 dbrown Exp $
 !
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !									!
@@ -32,8 +32,8 @@
 
 NgNGO*loadfileMGR.pattern:	*.ncl
 NgNGO*loadfileMGR.directory:	.
-NgNGO*addfileMGR.pattern:	*.{cdf,nc,grb}
-NgNGO*addfileMGR.directory:	.
+NgNGO*addfileMGR*pattern:	*.{cdf,nc,grb}
+NgNGO*addfileMGR*directory:	.
 
 !*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!
 
@@ -276,12 +276,113 @@ ncledit*reset.sensitive:		False
 
 addfile*vname.resizeWidth:		True
 addfile*vname.value:			\ 
-addfile*midtxt.labelString:		= addfile(\"[ ]\",\"
-addfile*endtxt.labelString:		\")
 
 addfile*vname.rightAttachment:		ATTACH_NONE
-addfile*midtxt.rightAttachment:		ATTACH_NONE
 addfile*rwoptMenu.rightAttachment:	ATTACH_NONE
+
+addfile*varform.topOffset: 10
+addfile*varform.bottomOffset: 10
+addfile*varform.rightOffset: 10
+addfile*varlabel.labelString: Variables
+addfile*addfile_fsb*OK.shadowThickness: 0
+addfile*filterform.rightOffset: 10
+addfile*filterform.leftOffset: 10
+addfile*SelectText.leftOffset: 10
+addfile*SelectText.rightOffset: 10
+addfile*sizelabel.leftOffset: 0
+addfile*sizelabel.bottomOffset: 10
+addfile*sizeframe.bottomOffset: 10
+addfile*datelabel.leftOffset: 0
+addfile*datelabel.bottomOffset: 10
+addfile*dateframe.bottomOffset: 10
+addfile*dateframe.rightOffset: 10
+addfile*sep.bottomOffset: 5
+addfile*sep.leftOffset: 0
+addfile*sep.rightOffset: 0
+addfile*applyform.bottomOffset: 5
+addfile*workareaform.bottomOffset: 0
+addfile*workareaform.leftOffset: 0
+addfile*workareaform.topOffset: 0
+addfile*workareaform.rightOffset: 0
+
+addfile*ItemsList.translations:  #override     \
+        Button1<Motion>:        ListBeginSelect() \n\
+        <Btn1Down>:             ListBeginSelect() \
+                                ListEndSelect() \
+                                SelectFileAction() \n\
+        <Btn1Up>:               ListEndSelect() \
+                                SelectFileAction() \n\
+        <Btn1Up>(2+):           ListEndSelect() \
+                                OpenDataFileAction() \n\
+        <Key>Return:            OpenDataFileAction() \n\
+        <Select>:               SelectFileAction() \n\
+        <Key>osfUp:             ListPrevItem() \
+                                SelectFileAction() \n\
+        <Key>osfDown:           ListNextItem() \
+                                SelectFileAction() \n\
+        <Key>osfPageUp:         ListPrevPage() \
+                                SelectFileAction() \n\
+        <Key>osfPageDown:       ListNextPage() \
+                                SelectFileAction() \n\
+        <Btn3Down>:             ListBeginSelect() \
+                                ListEndSelect() \
+                                SelectFileAction() \
+                                InfoPopupAction(2) \n\
+        <Btn3Up>:               ListEndSelect() \
+                                InfoPopdownAction(2)
+
+
+addfile*DirList.translations:  #override       \
+        <Key>Return:            FilterAction() \n\
+        <Select>:               FilterTextAction() \n\
+        <Btn1Up>(2+):           ListBeginSelect() \
+                                ListEndSelect() \
+                                FilterAction() \n\
+        <Btn1Down>,<Btn1Up>:    ListBeginSelect() \
+                                ListEndSelect() \
+                                FilterTextAction() \n\
+        <Key>osfUp:             ListPrevItem() \
+                                FilterTextAction() \n\
+        <Key>osfDown:           ListNextItem() \
+                                FilterTextAction() \n\
+        <Key>osfPageUp:         ListPrevPage() \
+                                FilterTextAction() \n\
+        <Key>osfPageDown:       ListNextPage() \
+                                FilterTextAction()
+
+addfile*FilterText.translations:  #override    \
+        <Key>Return:            FilterAction() \n\
+        <Key>osfUp:             ListUpOrDownAction(0) \n\
+        <Key>osfDown:           ListUpOrDownAction(1) \n\
+        <Key>osfPageUp:         ListUpOrDownAction(2) \n\
+        <Key>osfPageDown:       ListUpOrDownAction(3)
+
+addfile*SelectText.translations:  #override    \
+        <Key>osfUp:             ListUpOrDownAction(0)\n\
+        <Key>osfDown:           ListUpOrDownAction(1) \n\
+        <Key>osfPageUp:         ListUpOrDownAction(2) \n\
+        <Key>osfPageDown:       ListUpOrDownAction(3)
+
+addfile*VarList.translations:  #override       \
+        Button3<Motion>:        ListButtonMotion() \
+                                CheckInfoPopupAction(1) \n\
+        <Btn1Down>:             ListBeginSelect() \
+                                InfoPopupAction(0) \n\
+        <Btn1Up>:               ListEndSelect() \
+                                InfoPopdownAction(0) \n\
+        Button1<Motion>:        ListButtonMotion() \
+                                CheckInfoPopupAction(0) \n\
+        <Btn3Down>:             ListBeginSelect() \
+                                InfoPopupAction(1) \n\
+        <Btn3Up>:               ListEndSelect() \
+                                InfoPopdownAction(1)
+
+addfile*Start_Stop.translations: #override \
+        <Btn1Down>,<Btn1Up>: ArmAndActivate() VcrToggleAction(0)
+
+! for development
+addfile*directory:     /traver/dev/IRIS_IRIX_6_2_/lib/ncarg/data/cdf
+addfile*directory:     /fs/scd/home1/ncargd/dev/IRIS_IRIX_6_2_/lib/ncarg/data/cdf/
 
 !*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!
 
