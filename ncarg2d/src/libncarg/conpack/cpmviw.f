@@ -1,5 +1,5 @@
 C
-C $Id: cpmviw.f,v 1.1 1994-03-17 01:51:24 kennison Exp $
+C $Id: cpmviw.f,v 1.2 1994-03-29 22:54:45 kennison Exp $
 C
       SUBROUTINE CPMVIW (IWKO,IWKN,LWKN)
 C
@@ -73,6 +73,8 @@ C
 C
 C First, zero the local pointers and lengths and, at the same time,
 C compute the total space required in the new array.
+C
+      ITMP=0
 C
       DO 10001 I=1,2
         LCLI(I)=0
