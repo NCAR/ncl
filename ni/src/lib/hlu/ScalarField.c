@@ -1,5 +1,5 @@
 /*
- *      $Id: ScalarField.c,v 1.29 1998-01-24 01:51:44 dbrown Exp $
+ *      $Id: ScalarField.c,v 1.30 1998-03-11 18:35:49 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2389,7 +2389,6 @@ ScalarFieldSetValues
 			sfp->d_arr = osfp->d_arr;
 		}
 		else {
-			NhlFreeGenArray(osfp->d_arr);
 			if ((ga = 
 			     _NhlCopyGenArray(sfp->d_arr,
 					      sfp->copy_arrays)) == NULL) {
@@ -2399,6 +2398,7 @@ ScalarFieldSetValues
 				return NhlFATAL;
 			}
 			sfp->d_arr = ga;
+			NhlFreeGenArray(osfp->d_arr);
 			status = True;
 		}
 	}
@@ -2425,7 +2425,6 @@ ScalarFieldSetValues
                         sfp->x_arr = osfp->x_arr;
                 }
                 else {
-                        NhlFreeGenArray(osfp->x_arr);
                         if ((sfp->x_arr = _NhlCopyGenArray
                              (sfp->x_arr,sfp->copy_arrays)) == NULL) {
                                 e_text = "%s: dynamic memory allocation error";
@@ -2433,6 +2432,7 @@ ScalarFieldSetValues
                                           NhlEUNKNOWN,e_text,entry_name);
                                 return NhlFATAL;
                         }
+                        NhlFreeGenArray(osfp->x_arr);
                 }
                 status = True;
 	}
@@ -2458,7 +2458,6 @@ ScalarFieldSetValues
                         sfp->y_arr = osfp->y_arr;
                 }
                 else {
-                        NhlFreeGenArray(osfp->y_arr);
                         if ((sfp->y_arr = _NhlCopyGenArray
                              (sfp->y_arr,sfp->copy_arrays)) == NULL) {
                                 e_text = "%s: dynamic memory allocation error";
@@ -2466,6 +2465,7 @@ ScalarFieldSetValues
                                           NhlEUNKNOWN,e_text,entry_name);
                                 return NhlFATAL;
                         }
+                        NhlFreeGenArray(osfp->y_arr);
                 }
                 status = True;
 	}
@@ -3312,6 +3312,7 @@ static NhlErrorTypes    CheckCopyVType
 #endif
 {
 	char		*e_text;
+        NhlGenArray	tga;
 
 /*
  * if null_ok and the copy genarray is Null, sets the return genarray to
@@ -3332,14 +3333,14 @@ static NhlErrorTypes    CheckCopyVType
 		return NhlWARNING;
 	}
 
-	if (*ga != NULL) NhlFreeGenArray(*ga);
-
+        tga = *ga;
 	if ((*ga = _NhlCopyGenArray(copy_ga,True)) == NULL) {
 		e_text = "%s: dynamic memory allocation error";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		*ga = NULL;
 		return NhlFATAL;
 	}
+	if (tga != NULL) NhlFreeGenArray(tga);
 
 	return NhlNOERROR;
 }

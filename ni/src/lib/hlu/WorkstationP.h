@@ -1,5 +1,5 @@
 /*
- *      $Id: WorkstationP.h,v 1.18 1998-02-24 02:21:19 dbrown Exp $
+ *      $Id: WorkstationP.h,v 1.19 1998-03-11 18:36:11 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -83,6 +83,18 @@ typedef NhlErrorTypes (*NhlWorkstationMarker)(
 #endif
 );
 
+#define _NhlwkLLUActivate   0
+#define _NhlwkLLUDeactivate 1
+#define _NhlwkLLUClear      2
+#define _NhlwkLLUClose      3
+
+typedef void (*NhlWorkstationNotify)(
+#if	NhlNeedProto
+	NhlLayer	wl,
+        int		action
+#endif
+);
+
 #define NhlWK_ALLOC_UNIT 16
 
 /*
@@ -92,12 +104,14 @@ typedef NhlErrorTypes (*NhlWorkstationMarker)(
  * w/o any interaction with the Workstation class interface.
  */
 
-#define MAX_OPEN_WKS (14)
+#define MAX_OPEN_WKS (15)
 
 /*
  * This is used as the Inheritance constant
  */
 #define NhlInheritCurrentWksCount NULL
+#define NhlInheritGksWksRecs NULL
+#define NhlInheritHluWksFlag NULL
 #define NhlInheritPalette ((int)-1)
 #define NhlInheritOpen ((NhlWorkstationProc)_NhlInherit)
 #define NhlInheritClose ((NhlWorkstationProc)_NhlInherit)
@@ -109,7 +123,9 @@ typedef NhlErrorTypes (*NhlWorkstationMarker)(
 #define NhlInheritLineTo ((NhlWorkstationLineTo)_NhlInherit)
 #define NhlInheritFill   ((NhlWorkstationFill)_NhlInherit)
 #define NhlInheritMarker ((NhlWorkstationMarker)_NhlInherit)
+#define NhlInheritNotify ((NhlWorkstationNotify)_NhlInherit)
 
+        
 typedef struct _NhlWorkstationLayerPart{
 	/* User settable resource fields */
 
@@ -157,6 +173,7 @@ typedef struct _NhlWorkstationLayerPart{
         int		def_plot_id;
 	NhlPrivateColor	private_color_map[_NhlMAX_COLOR_MAP];
 	NhlBoolean	cmap_changed;
+        NhlBoolean	activated;
 
 	int edge_char_size;
 	int edge_dash_dollar_size;
@@ -180,8 +197,17 @@ typedef struct _NhlWorkstationLayerRec{
 	NhlWorkstationLayerPart	work;
 } NhlWorkstationLayerRec;
 
+typedef struct _wkGksWksRec 
+{
+        int gks_id;
+        int hlu_id;
+        int gks_type;
+} wkGksWksRec;
+
 typedef struct _NhlWorkstationClassPart{
         int			*current_wks_count;
+	wkGksWksRec		*gks_wks_recs;
+        NhlBoolean		*hlu_wks_flag;
 	NhlColor		def_background;
 	int			pal;
 	NhlWorkstationProc	open_work;
@@ -194,6 +220,7 @@ typedef struct _NhlWorkstationClassPart{
 	NhlWorkstationLineTo	lineto_work;
 	NhlWorkstationFill      fill_work;
 	NhlWorkstationMarker    marker_work;
+        NhlWorkstationNotify    notify_work;
 } NhlWorkstationClassPart;
 
 typedef struct _NhlWorkstationClassRec{
@@ -208,6 +235,14 @@ extern NhlWorkstationClassRec NhlworkstationClassRec;
  * probably won't be called by sub-classes, although sub-classes will
  * re-define the actual method function that gets called by these.)
  */
+
+extern	NhlErrorTypes _NhlUpdateGksWksRecs(
+#if	NhlNeedProto
+	NhlLayer	wl,
+        NhlBoolean	add,   /* add workstation if True, delete if False */
+        int		*gks_id /* id to use for next open */
+#endif
+);
 
 extern	NhlErrorTypes _NhlAllocateColors(
 #if	NhlNeedProto

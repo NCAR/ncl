@@ -1,5 +1,5 @@
 /*
- *      $Id: Base.c,v 1.27 1997-10-21 01:55:23 dbrown Exp $
+ *      $Id: Base.c,v 1.28 1998-03-11 18:35:45 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -888,14 +888,17 @@ _NhlBaseRemoveChild
 		return;
 	}
 
-	NhlINITVAR(cbdata);
-	NhlINITVAR(sel);
-	cc.reason = _NhlobjCCRemove;
-	cc.old = l->base.parent->base.id;
-	cc.child = l->base.id;
-	cbdata.ptrval = &cc;
-	sel.lngval = 0; /* ignored */
-	_NhlCallObjCallbacks(l->base.parent,_NhlCBobjChildChange,sel,cbdata);
+        if (! l->base.parent->base.being_destroyed) {
+                NhlINITVAR(cbdata);
+                NhlINITVAR(sel);
+                cc.reason = _NhlobjCCRemove;
+                cc.old = l->base.parent->base.id;
+                cc.child = l->base.id;
+                cbdata.ptrval = &cc;
+                sel.lngval = 0; /* ignored */
+                _NhlCallObjCallbacks
+                        (l->base.parent,_NhlCBobjChildChange,sel,cbdata);
+        }
 
 	return;
 }

@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorField.c,v 1.16 1998-01-24 01:51:48 dbrown Exp $
+ *      $Id: VectorField.c,v 1.17 1998-03-11 18:35:54 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2228,6 +2228,7 @@ CvtGenVFObjToFloatVFObj
 	vfp->y_stride = MAX(1,vfp->y_stride);
 	vffp->y_stride = vfp->y_stride;
 	vfp->vffloat  = vffl;
+        vffp->polar_data = vfp->polar_data;
 	
 /*
  * Convert, validate, and set the X and Y irregular coordinate arrays,
@@ -2245,7 +2246,6 @@ CvtGenVFObjToFloatVFObj
 			vfp->x_arr = NULL;
 		}
 		if (ValidCoordArray(vfp,x_arr,vfXCOORD,entry_name)) {
-			NhlSetSArg(&sargs[nargs++],NhlNvfXArray,x_arr);
 			xirr = True;
 		}
 		else {
@@ -2290,7 +2290,6 @@ CvtGenVFObjToFloatVFObj
 			vfp->y_arr = NULL;
 		}
 		if (ValidCoordArray(vfp,y_arr,vfYCOORD,entry_name)) {
-			NhlSetSArg(&sargs[nargs++],NhlNvfYArray,y_arr);
 			yirr = True;
 		}
 		else {
@@ -2988,7 +2987,6 @@ VectorFieldSetValues
 			vfp->d_arr = ovfp->d_arr;
                 }
 		else if (vfp->d_arr) {
-			NhlFreeGenArray(ovfp->d_arr);
 			if ((ga = 
 			     _NhlCopyGenArray(vfp->d_arr,
 					      vfp->copy_arrays)) == NULL) {
@@ -2998,6 +2996,7 @@ VectorFieldSetValues
 				return NhlFATAL;
 			}
 			vfp->d_arr = ga;
+			NhlFreeGenArray(ovfp->d_arr);
 			status = True;
 		}
 	}
@@ -3055,7 +3054,6 @@ VectorFieldSetValues
                 }
 		else {
                         if (vfp->u_arr != ovfp->u_arr) {
-                                NhlFreeGenArray(ovfp->u_arr);
                                 if ((ga = _NhlCopyGenArray
                                      (vfp->u_arr,vfp->copy_arrays)) == NULL) {
                                         e_text =
@@ -3065,10 +3063,10 @@ VectorFieldSetValues
                                         return NhlFATAL;
                                 }
                                 vfp->u_arr = ga;
+                                NhlFreeGenArray(ovfp->u_arr);
                                 status = True;
                         }
                         if (vfp->v_arr != ovfp->v_arr) {
-                                NhlFreeGenArray(ovfp->v_arr);
                                 if ((ga = _NhlCopyGenArray
                                      (vfp->v_arr,vfp->copy_arrays)) == NULL) {
                                         e_text =
@@ -3078,6 +3076,7 @@ VectorFieldSetValues
                                         return NhlFATAL;
                                 }
                                 vfp->v_arr = ga;
+                                NhlFreeGenArray(ovfp->v_arr);
                                 status = True;
                         }
                 }
@@ -3109,7 +3108,6 @@ VectorFieldSetValues
                         vfp->x_arr = ovfp->x_arr;
                 }
                 else {
-                        NhlFreeGenArray(ovfp->x_arr);
                         if ((vfp->x_arr = _NhlCopyGenArray
                              (vfp->x_arr,vfp->copy_arrays)) == NULL) {
                                 e_text = "%s: dynamic memory allocation error";
@@ -3117,6 +3115,7 @@ VectorFieldSetValues
                                           NhlEUNKNOWN,e_text,entry_name);
                                 return NhlFATAL;
                         }
+                        NhlFreeGenArray(ovfp->x_arr);
                 }
                 status = True;
 	}
@@ -3142,7 +3141,6 @@ VectorFieldSetValues
                         vfp->y_arr = ovfp->y_arr;
                 }
                 else {
-                        NhlFreeGenArray(ovfp->y_arr);
                         if ((vfp->y_arr = _NhlCopyGenArray
                              (vfp->y_arr,vfp->copy_arrays)) == NULL) {
                                 e_text = "%s: dynamic memory allocation error";
@@ -3150,6 +3148,7 @@ VectorFieldSetValues
                                           NhlEUNKNOWN,e_text,entry_name);
                                 return NhlFATAL;
                         }
+                        NhlFreeGenArray(ovfp->y_arr);
                 }
                 status = True;
 	}
@@ -4187,6 +4186,7 @@ static NhlErrorTypes    CheckCopyVType
 #endif
 {
 	char		*e_text;
+        NhlGenArray	tga;
 
 /*
  * if null_ok and the copy genarray is Null, sets the return genarray to
@@ -4207,14 +4207,14 @@ static NhlErrorTypes    CheckCopyVType
 		return NhlWARNING;
 	}
 
-	if (*ga != NULL) NhlFreeGenArray(*ga);
-
+        tga = *ga;
 	if ((*ga = _NhlCopyGenArray(copy_ga,True)) == NULL) {
 		e_text = "%s: dynamic memory allocation error";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		*ga = NULL;
 		return NhlFATAL;
 	}
+	if (tga != NULL) NhlFreeGenArray(tga);
 
 	return NhlNOERROR;
 }

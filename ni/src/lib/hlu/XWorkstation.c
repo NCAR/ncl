@@ -1,5 +1,5 @@
 /*
- *      $Id: XWorkstation.c,v 1.29 1997-09-30 01:13:26 dbrown Exp $
+ *      $Id: XWorkstation.c,v 1.30 1998-03-11 18:36:12 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -166,7 +166,9 @@ NhlXWorkstationClassRec NhlxWorkstationClassRec = {
 /* layer_clear			*/	NULL
         },
         {
-/* current_wks_count	*/	NhlInheritCurrentWksCount,                
+/* current_wks_count	*/	NhlInheritCurrentWksCount, 
+/* gks_wks_recs		*/	NhlInheritGksWksRecs,
+/* hlu_wks_flag		*/	NhlInheritHluWksFlag,
 /* def_background	*/	{0.0,0.0,0.0},
 /* pal			*/	NhlInheritPalette,
 /* open_work		*/	XWorkstationOpen,
@@ -178,7 +180,8 @@ NhlXWorkstationClassRec NhlxWorkstationClassRec = {
 /* clear_work		*/	XWorkstationClear,
 /* lineto_work 		*/	NhlInheritLineTo,
 /* fill_work		*/	NhlInheritFill,
-/* marker_work		*/	NhlInheritMarker
+/* marker_work		*/	NhlInheritMarker,
+/* notify_work		*/	NULL
 	},
 	{
 /* foo */	NULL
@@ -286,8 +289,17 @@ static NhlErrorTypes XWorkstationInitialize
 {
 	char			*error_lead="XWorkstationInitialize";
 	NhlXWorkstationLayer	wnew = (NhlXWorkstationLayer) new;
+	NhlWorkstationClassPart	*wcp =
+				&((NhlWorkstationClass)class)->work_class;
 	NhlErrorTypes		ret = NhlNOERROR;
 	char			*tstr;
+        
+	if(*wcp->current_wks_count >= MAX_OPEN_WKS){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+              "%s: Limit reached for number of simultaneous GKS Workstations",
+			error_lead);
+		return NhlFATAL;
+	}
 
 	if(!wnew->xwork.pause_set) wnew->xwork.pause = True;
 
@@ -583,6 +595,8 @@ XWorkstationOpen
 	char				func[]="XWorkstationOpen";
 	NhlXWorkstationLayer		xl = (NhlXWorkstationLayer)l;
 	NhlXWorkstationLayerPart	*xp = &xl->xwork;
+	NhlWorkstationClassPart	*wcp =
+		&((NhlWorkstationClass)xl->base.layer_class)->work_class;
 	int				i=2;
 	_NGCXGetSizeChg			xgsc;
 	Gescape_in_data			gesc_in_xgsc;
@@ -598,10 +612,12 @@ XWorkstationOpen
 			"Unknown workstation connection id");
 		return(NhlFATAL);
 	}
+#if 0        
 	while(wksisopn(i)) {
 		i++;
 	}
 	xl->work.gkswksid = i;
+#endif        
 
 	switch (xp->xcolor_mode){
 		case NhlPRIVATE:
@@ -620,6 +636,8 @@ XWorkstationOpen
 	gesc_in_xwconf.escape_r1.size = 0;
 	gescape(NGESC_CNATIVE,&gesc_in_xwconf,NULL,NULL);
 
+        _NhlUpdateGksWksRecs(l,True,&xl->work.gkswksid);
+        *wcp->hlu_wks_flag = True;
 	_NHLCALLF(gopwk,GOPWK)(&(xl->work.gkswksid),&(xl->work.gkswksconid),
 		&(xl->work.gkswkstype));
 	if(_NhlLLErrCheckPrnt(NhlFATAL,func))

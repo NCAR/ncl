@@ -1,5 +1,5 @@
 /*
- *      $Id: PSWorkstation.c,v 1.11 1997-08-14 16:30:19 dbrown Exp $
+ *      $Id: PSWorkstation.c,v 1.12 1998-03-11 18:35:48 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -144,7 +144,7 @@ NhlPSWorkstationClassRec NhlpsWorkstationClassRec = {
 /* layer_initialize		*/	PSWorkstationInitialize,
 /* layer_set_values		*/	PSWorkstationSetValues,
 /* layer_set_values_hook	*/	NULL,
-/* layer_get_values		*/	NULL,
+/* layer_get_values		*/	PSWorkstationGetValues,
 /* layer_reparent		*/	NULL,
 /* layer_destroy		*/	PSWorkstationDestroy,
 
@@ -158,7 +158,9 @@ NhlPSWorkstationClassRec NhlpsWorkstationClassRec = {
 /* layer_clear			*/	NULL
         },
         {
-/* current_wks_count	*/	NhlInheritCurrentWksCount,                
+/* current_wks_count	*/	NhlInheritCurrentWksCount,
+/* gks_wks_recs		*/	NhlInheritGksWksRecs, 
+/* hlu_wks_flag		*/	NhlInheritHluWksFlag,
 /* def_background	*/	{1.0,1.0,1.0},
 /* pal			*/	NhlInheritPalette,
 /* open_work		*/	PSWorkstationOpen,
@@ -170,7 +172,8 @@ NhlPSWorkstationClassRec NhlpsWorkstationClassRec = {
 /* clear_work		*/	NhlInheritClear,
 /* lineto_work		*/	NhlInheritLineTo,
 /* fill_work		*/	NhlInheritFill,
-/* marker_work		*/	NhlInheritMarker
+/* marker_work		*/	NhlInheritMarker,
+/* notify_work		*/	NULL
 	},
 	{
 /* foo	*/			0

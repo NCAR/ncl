@@ -1,5 +1,5 @@
 /*
- *      $Id: NcgmWorkstation.c,v 1.31 1998-02-27 23:16:01 dbrown Exp $
+ *      $Id: NcgmWorkstation.c,v 1.32 1998-03-11 18:35:47 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -136,6 +136,13 @@ static NhlErrorTypes NcgmWorkstationClear(
 #endif
 );
 
+static void NcgmWorkstationNotify(
+#if	NhlNeedProto
+	NhlLayer	l,	/* instance	*/
+        int		action
+#endif
+);
+
 
 NhlNcgmWorkstationClassRec NhlncgmWorkstationClassRec = {
         {
@@ -159,7 +166,7 @@ NhlNcgmWorkstationClassRec NhlncgmWorkstationClassRec = {
 /* layer_initialize		*/	NcgmWorkstationInitialize,
 /* layer_set_values		*/	NcgmWorkstationSetValues,
 /* layer_set_values_hook	*/	NULL,
-/* layer_get_values		*/	NULL,
+/* layer_get_values		*/	NcgmWorkstationGetValues,
 /* layer_reparent		*/	NULL,
 /* layer_destroy		*/	NcgmWorkstationDestroy,
 
@@ -174,6 +181,8 @@ NhlNcgmWorkstationClassRec NhlncgmWorkstationClassRec = {
         },
         {
 /* current_wks_count	*/	NhlInheritCurrentWksCount,                
+/* wks_hlu_ids		*/	NhlInheritGksWksRecs,
+/* hlu_wks_flag		*/	NhlInheritHluWksFlag,
 /* def_background	*/	{0.0,0.0,0.0},
 /* pal			*/	NhlInheritPalette,
 /* open_work		*/	NcgmWorkstationOpen,
@@ -185,7 +194,8 @@ NhlNcgmWorkstationClassRec NhlncgmWorkstationClassRec = {
 /* clear_work		*/	NcgmWorkstationClear,
 /* lineto_work		*/	NhlInheritLineTo,
 /* fill_work		*/	NhlInheritFill,
-/* marker_work		*/	NhlInheritMarker
+/* marker_work		*/	NhlInheritMarker,
+/* notify_work		*/	NcgmWorkstationNotify
 	},
 	{
 /* current_ncgm_wkid	*/	NhlNULLOBJID
@@ -269,9 +279,27 @@ static NhlErrorTypes NcgmWorkstationInitialize
 	if(!tfname){
 		tfname = DEFAULT_META_NAME;
 	}
-
-	np->meta_name = (char*)NhlMalloc(strlen(tfname) + 1);
-	strcpy(np->meta_name,tfname);
+        if (wclass->ncgm_class.last_base_meta_name &&
+            ! strcmp(tfname,wclass->ncgm_class.last_base_meta_name)) {
+                char suffix[8];
+                np->suffix = ++wclass->ncgm_class.base_meta_name_count;
+                
+                sprintf(suffix,"%d",np->suffix);
+                np->meta_name = (char*)NhlMalloc
+                        (strlen(tfname) + strlen(suffix) + 1);
+                sprintf(np->meta_name,"%s%s",tfname,suffix);
+        }
+        else {
+                np->suffix = 0;
+                np->meta_name = (char*)NhlMalloc(strlen(tfname) + 1);
+                strcpy(np->meta_name,tfname);
+                wclass->ncgm_class.base_meta_name_count = 0;
+                if (wclass->ncgm_class.last_base_meta_name)
+                        NhlFree(wclass->ncgm_class.last_base_meta_name);
+                wclass->ncgm_class.last_base_meta_name =
+                        (char*)NhlMalloc(strlen(tfname) + 1);
+                strcpy(wclass->ncgm_class.last_base_meta_name,tfname);
+        }
 
 	while(1){
 		int	opn, ierr;
@@ -317,6 +345,8 @@ static NhlErrorTypes NcgmWorkstationClassPartInitialize
 	NhlClass	sc = wlc->base_class.superclass;
 
 	wlc->ncgm_class.current_ncgm_wkid = NhlNULLOBJID;
+        wlc->ncgm_class.last_base_meta_name = NULL;
+        wlc->ncgm_class.base_meta_name_count = 0;
 
 	return(NhlNOERROR);
 }
@@ -345,6 +375,25 @@ static NhlErrorTypes NcgmWorkstationDestroy
 	NhlNcgmWorkstationLayer winst = (NhlNcgmWorkstationLayer)inst;
 	NhlNcgmWorkstationClass wclass = (NhlNcgmWorkstationClass)inst->base.layer_class;
 
+            /* unreserve the name associated with the workstation being
+               destroyed */
+        
+        if (wclass->ncgm_class.last_base_meta_name &&
+            ! strncmp(winst->ncgm.meta_name,
+                      wclass->ncgm_class.last_base_meta_name,
+                      strlen(wclass->ncgm_class.last_base_meta_name))) {
+                
+                if (wclass->ncgm_class.base_meta_name_count == 0) {
+                        NhlFree(wclass->ncgm_class.last_base_meta_name);
+                        wclass->ncgm_class.last_base_meta_name = NULL;
+                }
+                
+                if (winst->ncgm.suffix == 
+                    wclass->ncgm_class.base_meta_name_count &&
+                    wclass->ncgm_class.base_meta_name_count > 0) {
+                        wclass->ncgm_class.base_meta_name_count--;
+                }
+        }
 	NhlFree(winst->ncgm.meta_name);
 
 	return(NhlNOERROR);
@@ -467,27 +516,19 @@ UpdateGKSState
 	NhlNcgmWorkstationLayerPart	*np = &wl->ncgm;
 	NhlErrorTypes subret = NhlNOERROR,retcode= NhlNOERROR;
 	NhlBoolean new = False;
-	int i = 3;
 
 	if (wlc->ncgm_class.current_ncgm_wkid == NhlNULLOBJID) {
 		new = True;
 	}
 	else if (wlc->ncgm_class.current_ncgm_wkid != l->base.id) {
-	        subret = TempClose(
-			      _NhlGetLayer(wlc->ncgm_class.current_ncgm_wkid),
-				   func);
+	        subret = TempClose
+                        (_NhlGetLayer(wlc->ncgm_class.current_ncgm_wkid),func);
 		if ((retcode = MIN(retcode,subret)) < NhlWARNING)
 			return retcode;
 		new = True;
 	}
 	if (new) {
-		int action = 1;
-		while(wksisopn(i)) {
-			i++;
-		}
-		wl->work.gkswksid = i;
 		if (np->new_frame) {
-			action = 2;
 			np->new_frame = False;
 		}
                                 
@@ -545,19 +586,24 @@ NcgmWorkstationOpen
 
 	if (wlc->ncgm_class.current_ncgm_wkid != instance->base.id &&
 	    wlc->ncgm_class.current_ncgm_wkid != NhlNULLOBJID) {
-	        subret = TempClose(
-			      _NhlGetLayer(wlc->ncgm_class.current_ncgm_wkid),
-				   func);
+	        subret = TempClose
+                        (_NhlGetLayer(wlc->ncgm_class.current_ncgm_wkid),func);
 		if ((retcode = MIN(retcode,subret)) < NhlWARNING)
 			return retcode;
 	}
 	wlc->ncgm_class.current_ncgm_wkid = instance->base.id;
-	winstance->ncgm.opened = True;
 	winstance->ncgm.started = False;
 	winstance->ncgm.new_frame = True;
 	winstance->ncgm.update_colors = False;
+	winstance->ncgm.opened = True;
 
 	subret = (*NhlworkstationClassRec.work_class.open_work)(instance);
+        if (subret < NhlWARNING) {
+                winstance->ncgm.opened = False;
+                return NhlFATAL;
+        }
+        
+        
 #if DEBUG_NCGM
 	fprintf(stderr,"opened metafile %s\n",winstance->ncgm.meta_name);
 #endif
@@ -855,8 +901,7 @@ NcgmWorkstationUpdate
  * call to avoid empty frames in certain situations. 
  */
 	if (! np->started) {
-                subret = TempClose(_NhlGetLayer
-				   (wlc->ncgm_class.current_ncgm_wkid),func);
+                subret = TempClose(l,func);
 		retcode = MIN(retcode,subret);
 		wlc->ncgm_class.current_ncgm_wkid = NhlNULLOBJID;
 		np->new_frame = False;
@@ -919,8 +964,7 @@ NcgmWorkstationClear
 /*
  * always closs the ncgm on a clear to avoid empty frames
  */
-	subret = TempClose(_NhlGetLayer(wlc->ncgm_class.current_ncgm_wkid),
-			   func);
+	subret = TempClose(l,func);
 	retcode = MIN(retcode,subret);
 	wlc->ncgm_class.current_ncgm_wkid = NhlNULLOBJID;
 	np->new_frame = True;
@@ -929,5 +973,61 @@ NcgmWorkstationClear
 	return retcode;
 }
 
+/*
+ * Function:	NcgmWorkstationNotify
+ *
+ * Description:	This function is used to notify a workstation about
+ *              operations performed at the LLU level
+ *
+ *
+ * In Args:	
+ *		NhlLayer	l	workstation layer to update
+ *              int             action  the operation performed
+ *               _NhlwkLLUActivate   0
+ *		 _NhlwkLLUDeactivate 1
+ *		 _NhlwkLLUClear      2
+ *		 _NhlwkLLUClose      3
+ *
+ * Out Args:	
+ *
+ * Scope:	static
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+
+static void NcgmWorkstationNotify(
+#if	NhlNeedProto
+	NhlLayer	l,	/* instance	*/
+        int		action
+#endif
+        )
+{
+	NhlNcgmWorkstationLayer	wl = (NhlNcgmWorkstationLayer)l;
+	char			func[] = "NcgmWorkstationNotify";
+	NhlNcgmWorkstationClass wlc = 
+		(NhlNcgmWorkstationClass)l->base.layer_class;
+        NhlErrorTypes subret = NhlNOERROR;
+
+        switch (action) {
+            case _NhlwkLLUActivate:
+                    NcgmWorkstationActivate(l);
+                    break;
+            case _NhlwkLLUDeactivate:
+                    NcgmWorkstationDeactivate(l);
+                    TempClose(l,func);
+                    wlc->ncgm_class.current_ncgm_wkid = NhlNULLOBJID;
+                    break;
+            case _NhlwkLLUClear:
+                    NcgmWorkstationClear(l);
+                    break;
+            case _NhlwkLLUClose:
+                    NcgmWorkstationClose(l);
+                    break;
+        }
+        return;
+}
+
+                    
+                    
 
 

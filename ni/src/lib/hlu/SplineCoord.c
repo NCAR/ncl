@@ -1,5 +1,5 @@
 /*
- *      $Id: SplineCoord.c,v 1.6 1995-03-14 21:06:04 haley Exp $
+ *      $Id: SplineCoord.c,v 1.7 1998-03-11 18:35:51 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -201,7 +201,7 @@ NhlStatus *ystatus)
 						log10(thedat->fx_orig_inverse[i]);
 				}
 			} 
-/* FORTRAN */		_NHLCALLF(curv1,CURV1)(&(thedat->nx_inverse),
+/* FORTRAN */		_NHLCALLF(nhlcurv1,NHLCURV1)(&(thedat->nx_inverse),
 				thedat->x_orig_inverse,
 				thedat->fx_orig_inverse,
 				&dir0,&dirn,&iop,
@@ -227,7 +227,7 @@ NhlStatus *ystatus)
 					thedat->fx_orig_forward[sample * i + j]
 					= thedat->x_orig_inverse[i] + ((float)j * 
 						interval);
-/* FORTRAN */				_NHLCALLF(curv2,CURV2)(&(thedat->fx_orig_forward[sample 
+/* FORTRAN */				_NHLCALLF(nhlcurv2,NHLCURV2)(&(thedat->fx_orig_forward[sample 
 							* i+j]),
 						&(thedat->x_orig_forward[sample 
 							* i+j]),
@@ -262,7 +262,7 @@ NhlStatus *ystatus)
 			}
 			if((xdirection == NhlDECREASING)||
 					(xdirection == NhlINCREASING)) {
-/* FORTRAN */			_NHLCALLF(curv1,CURV1)(&(thedat->nx_forward),
+/* FORTRAN */			_NHLCALLF(nhlcurv1,NHLCURV1)(&(thedat->nx_forward),
 					thedat->x_orig_forward,
 					thedat->fx_orig_forward,
 					&dir0,&dirn,&iop,
@@ -338,7 +338,7 @@ NhlStatus *ystatus)
 						log10(thedat->fy_orig_inverse[i]);
 				}
 			} 
-/* FORTRAN */		_NHLCALLF(curv1,CURV1)(&(thedat->ny_inverse),
+/* FORTRAN */		_NHLCALLF(nhlcurv1,NHLCURV1)(&(thedat->ny_inverse),
 				thedat->y_orig_inverse,
 				thedat->fy_orig_inverse,
 				&dir0,&dirn,&iop,
@@ -363,7 +363,7 @@ NhlStatus *ystatus)
 					thedat->fy_orig_forward[sample * i + j]
 					= thedat->y_orig_inverse[i] + ((float)j * 
 						interval);
-/* FORTRAN */				_NHLCALLF(curv2,CURV2)(&(thedat->fy_orig_forward[sample 
+/* FORTRAN */				_NHLCALLF(nhlcurv2,NHLCURV2)(&(thedat->fy_orig_forward[sample 
 							* i+j]),
 						&(thedat->y_orig_forward[sample 
 							* i+j]),
@@ -403,7 +403,7 @@ ERROR
 			}
 			if((ydirection == NhlDECREASING)||
 					(ydirection == NhlINCREASING)) {
-/* FORTRAN */			_NHLCALLF(curv1,CURV1)(&(thedat->ny_forward),
+/* FORTRAN */			_NHLCALLF(nhlcurv1,NHLCURV1)(&(thedat->ny_forward),
 					thedat->y_orig_forward,
 					thedat->fy_orig_forward,
 					&dir0,&dirn,&iop,
@@ -526,7 +526,7 @@ NhlErrorTypes _NhlEvalSplineCoordForward
 				ret = NhlWARNING;
 			}
 */
-/* FORTRAN */		_NHLCALLF(curv2,CURV2)(&x_prime,xout,&(thedat->nx_forward),
+/* FORTRAN */		_NHLCALLF(nhlcurv2,NHLCURV2)(&x_prime,xout,&(thedat->nx_forward),
 					thedat->x_orig_forward,
 					thedat->fx_orig_forward,
 					thedat->x_coefs_forward,
@@ -557,7 +557,7 @@ NhlErrorTypes _NhlEvalSplineCoordForward
 				ret = NhlWARNING;
 			}
 */
-/* FORTRAN */		_NHLCALLF(curv2,CURV2)(&y_prime,yout,&(thedat->ny_forward),
+/* FORTRAN */		_NHLCALLF(nhlcurv2,NHLCURV2)(&y_prime,yout,&(thedat->ny_forward),
 					thedat->y_orig_forward,
 					thedat->fy_orig_forward,
 					thedat->y_coefs_forward,
@@ -628,7 +628,7 @@ NhlErrorTypes _NhlEvalSplineCoordInverse
 				ret = NhlWARNING;
 			}
 */
-/* FORTRAN */		_NHLCALLF(curv2,CURV2)(&x_prime,xout,&(thedat->nx_inverse),
+/* FORTRAN */		_NHLCALLF(nhlcurv2,NHLCURV2)(&x_prime,xout,&(thedat->nx_inverse),
 					thedat->x_orig_inverse,
 					thedat->fx_orig_inverse,
 					thedat->x_coefs_inverse,
@@ -659,7 +659,7 @@ NhlErrorTypes _NhlEvalSplineCoordInverse
 				ret = NhlWARNING;
 			}
 */
-/* FORTRAN */		_NHLCALLF(curv2,CURV2)(&y_prime,yout,&(thedat->ny_inverse),
+/* FORTRAN */		_NHLCALLF(nhlcurv2,NHLCURV2)(&y_prime,yout,&(thedat->ny_inverse),
 					thedat->y_orig_inverse,
 					thedat->fy_orig_inverse,
 					thedat->y_coefs_inverse,
@@ -756,7 +756,7 @@ NhlErrorTypes _NhlMultiEvalSplineCoordForward
 				tmp = (float)log10(x[i]);
 			else 
 				tmp = x[i];
-/* FORTRAN */		_NHLCALLF(curv2,CURV2)(&tmp,&(xout[i]),&(thedat->nx_forward),
+/* FORTRAN */		_NHLCALLF(nhlcurv2,NHLCURV2)(&tmp,&(xout[i]),&(thedat->nx_forward),
 					thedat->x_orig_forward,
 					thedat->fx_orig_forward,
 					thedat->x_coefs_forward,
@@ -776,7 +776,7 @@ NhlErrorTypes _NhlMultiEvalSplineCoordForward
 				tmp = (float)log10(y[i]);
 			else 
 				tmp = y[i];
-/* FORTRAN */		_NHLCALLF(curv2,CURV2)(&tmp,&(yout[i]),&(thedat->ny_forward),
+/* FORTRAN */		_NHLCALLF(nhlcurv2,NHLCURV2)(&tmp,&(yout[i]),&(thedat->ny_forward),
 					thedat->y_orig_forward,
 					thedat->fy_orig_forward,
 					thedat->y_coefs_forward,
@@ -855,7 +855,7 @@ NhlErrorTypes _NhlMultiEvalSplineCoordInverse
 			itab[1] = 0;
 			itab[2] = 0;
 			if((xmissing == NULL)||(x[i] != *xmissing)){
-/* FORTRAN */		_NHLCALLF(curv2,CURV2)(&(x[i]),&(xout[i]),&(thedat->nx_inverse),
+/* FORTRAN */		_NHLCALLF(nhlcurv2,NHLCURV2)(&(x[i]),&(xout[i]),&(thedat->nx_inverse),
 					thedat->x_orig_inverse,
 					thedat->fx_orig_inverse,
 					thedat->x_coefs_inverse,
@@ -873,7 +873,7 @@ NhlErrorTypes _NhlMultiEvalSplineCoordInverse
 			itab[1] = 0;
 			itab[2] = 0;
 			if((ymissing == NULL)||(y[i] != *ymissing)){
-/* FORTRAN */		_NHLCALLF(curv2,CURV2)(&(y[i]),&(yout[i]),&(thedat->ny_inverse),
+/* FORTRAN */		_NHLCALLF(nhlcurv2,NHLCURV2)(&(y[i]),&(yout[i]),&(thedat->ny_inverse),
 					thedat->y_orig_inverse,
 					thedat->fy_orig_inverse,
 					thedat->y_coefs_inverse,

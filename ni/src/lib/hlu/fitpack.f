@@ -32,7 +32,7 @@ C78759 at a cost of $495 US. A 340 page manual  is  available  for
 C$30  US  per  copy.  The  package  includes  examples and machine
 Creadable documentation.
 C
-      subroutine curv1 (n,x,y,slp1,slpn,islpsw,yp,temp,
+      subroutine nhlcurv1 (n,x,y,slp1,slpn,islpsw,yp,temp,
      *                  sigma,ierr)
 c
       integer n,islpsw,ierr
@@ -49,7 +49,7 @@ c compute an interpolatory spline under tension through
 c a sequence of functional values. the slopes at the two
 c ends of the curve may be specified or omitted.  for actual
 c computation of points on the curve it is necessary to call
-c the function curv2.
+c the function nhlcurv2.
 c
 c on input--
 c
@@ -210,7 +210,7 @@ c ..., n are a given set of observation weights. the
 c function determined is a spline under tension with third
 c derivative discontinuities at (x(i)), i = 2,..., n-1. for
 c actual computation of points on the curve it is necessary
-c to call the function curv2. the determination of the curve
+c to call the function nhlcurv2. the determination of the curve
 c is performed by subroutine curvss, the subroutine curvs
 c only decomposes the workspace for curvss.
 c
@@ -299,7 +299,7 @@ c
       return
       end
 
-      subroutine curv2 (t,ret,n,x,y,yp,sigma)
+      subroutine nhlcurv2 (t,ret,n,x,y,yp,sigma)
 c
       integer n
       real t,x(n),y(n),yp(n),sigma,ret
@@ -311,7 +311,7 @@ c                      a product of pleasant valley software
 c                  8603 altus cove, austin, texas 78759, usa
 c
 c this function interpolates a curve at a given point
-c using a spline under tension. the subroutine curv1 should
+c using a spline under tension. the subroutine nhlcurv1 should
 c be called earlier to determine certain necessary
 c parameters.
 c
@@ -334,11 +334,11 @@ c
 c   sigma contains the tension factor (its sign is ignored).
 c
 c the parameters n, x, y, yp, and sigma should be input
-c unaltered from the output of curv1.
+c unaltered from the output of nhlcurv1.
 c
 c on output--
 c
-c   curv2 contains the interpolated value.
+c   nhlcurv2 contains the interpolated value.
 c
 c none of the input parameters are altered.
 c
@@ -386,7 +386,7 @@ c                      a product of pleasant valley software
 c                  8603 altus cove, austin, texas 78759, usa
 c
 c this function differentiates a curve at a given point
-c using a spline under tension. the subroutine curv1 should
+c using a spline under tension. the subroutine nhlcurv1 should
 c be called earlier to determine certain necessary
 c parameters.
 c
@@ -409,7 +409,7 @@ c
 c   sigma contains the tension factor (its sign is ignored).
 c
 c the parameters n, x, y, yp, and sigma should be input
-c unaltered from the output of curv1.
+c unaltered from the output of nhlcurv1.
 c
 c on output--
 c
@@ -463,7 +463,7 @@ c                  8603 altus cove, austin, texas 78759, usa
 c
 c this function integrates a curve specified by a spline
 c under tension between two given limits. the subroutine
-c curv1 should be called earlier to determine necessary
+c nhlcurv1 should be called earlier to determine necessary
 c parameters.
 c
 c on input--
@@ -478,7 +478,7 @@ c
 c   x and y are arrays containing the abscissae and
 c   ordinates, respectively, of the specified points.
 c
-c   yp is an array from subroutine curv1 containing
+c   yp is an array from subroutine nhlcurv1 containing
 c   the values of the second derivatives at the nodes.
 c
 c and
@@ -486,7 +486,7 @@ c
 c   sigma contains the tension factor (its sign is ignored).
 c
 c the parameters n, x, y, yp, and sigma should be input
-c unaltered from the output of curv1.
+c unaltered from the output of nhlcurv1.
 c
 c on output--
 c
@@ -3095,7 +3095,7 @@ c ..., n are a given set of observation weights. the
 c function determined is a spline under tension with third
 c derivative discontinuities at (x(i)), i = 2,..., n-1. for
 c actual computation of points on the curve it is necessary
-c to call the function curv2.
+c to call the function nhlcurv2.
 c
 c on input--
 c

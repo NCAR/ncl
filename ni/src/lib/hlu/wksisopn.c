@@ -1,6 +1,6 @@
 
 /*
- *      $Id: wksisopn.c,v 1.2 1994-12-16 20:05:19 boote Exp $
+ *      $Id: wksisopn.c,v 1.3 1998-03-11 18:36:23 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -22,7 +22,7 @@
  *			the workstation list and returns either true(1) or
  *			false(0) if the workstation is currently open.
  */
-#include <ncarg/hlu/hluutil.h>
+#include <ncarg/hlu/WorkstationP.h>
 
 /*
  * Function:	
@@ -37,7 +37,7 @@
  *
  * Side Effects:
  */
-int	wksisopn
+NhlBoolean wksisopn
 #if	NhlNeedProto
 (int	n)
 #else
@@ -46,8 +46,19 @@ int	wksisopn
 #endif
 {
 	int i;
-	int errind,numopen,wkid,tmp = 1;
+	int errind,wkid,tmp = 1;
+        wkGksWksRec *gksrec = NhlworkstationClassRec.work_class.gks_wks_recs;
+        int numopen = *NhlworkstationClassRec.work_class.current_wks_count;
 
+        for (i = 0; i < numopen; i++) {
+                if (n == gksrec[i].gks_id)
+                        return True;
+                else if (n < gksrec[i].gks_id)
+                        return False;
+        }
+        return False;
+#if 0        
+                
 /* FORTRAN */ _NHLCALLF(gqopwk,GQOPWK)(&tmp,&errind,&numopen,&wkid);
 	if(wkid == n)
 		return(1);
@@ -58,4 +69,5 @@ int	wksisopn
 			return(1);
 	}
 	return(0);
+#endif        
 }

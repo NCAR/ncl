@@ -1,6 +1,6 @@
 
 /*
- *      $Id: wksisact.c,v 1.2 1994-12-16 20:05:18 boote Exp $
+ *      $Id: wksisact.c,v 1.3 1998-03-11 18:36:23 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -47,7 +47,14 @@ int	wksisact
 {
 	int i;
 	int errind,numact,wkid,tmp = 1;
+	int state;
+	i = n;
 
+/* FORTRAN */ _NHLCALLF(gqwks,GQWKS)(&i,&errind,&state);
+	if (state == 1)
+		 return (1);
+	return 0;
+#if 0
 /* FORTRAN */ _NHLCALLF(gqacwk,GQACWK)(&tmp,&errind,&numact,&wkid);
 	if(wkid == n)
 		return(1);
@@ -58,5 +65,6 @@ int	wksisact
 			return(1);
 	}
 	return(0);
+#endif
 }
 

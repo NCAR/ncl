@@ -1,5 +1,5 @@
 /*
- *      $Id: NcgmWorkstationP.h,v 1.7 1996-12-12 02:51:44 dbrown Exp $
+ *      $Id: NcgmWorkstationP.h,v 1.8 1998-03-11 18:35:47 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -29,12 +29,13 @@
 #define NCGM_WORKSTATION_TYPE 1
 
 typedef struct _NhlNcgmWorkstationLayerPart {
-	/* User setable resource fields */
+	/* User settable resource fields */
 
-	char 	*meta_name;
+	char 		*meta_name;
 
 	/* Private internal fields */
 
+        int        suffix;
 	NhlBoolean opened;
 	NhlBoolean started;
 	NhlBoolean new_frame;
@@ -55,6 +56,8 @@ typedef struct _NhlNcgmWorkstationLayerRec {
 
 typedef struct _NhlNcgmWorkstationClassPart {
 	int	current_ncgm_wkid;
+        char    *last_base_meta_name;
+        int     base_meta_name_count;
 } NhlNcgmWorkstationClassPart;
 
 typedef struct _NhlNcgmWorkstationClassRec {
