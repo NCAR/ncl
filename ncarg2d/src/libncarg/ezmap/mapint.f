@@ -1,5 +1,5 @@
 C
-C $Id: mapint.f,v 1.12 1999-04-19 21:29:48 kennison Exp $
+C $Id: mapint.f,v 1.13 1999-12-13 22:09:39 kennison Exp $
 C
       SUBROUTINE MAPINT
 C
@@ -402,7 +402,7 @@ C
       END IF
       RLN1=MOD(PLA2+3600.,360.)
       RLN2=MOD(PLA4+3600.,360.)
-      IF (RLN2.LT.RLN1) RLN2=RLN2+360.
+      IF (RLN2.LE.RLN1) RLN2=RLN2+360.
       NLTS=MAX(5,INT((RLT2-RLT1)/GRDR))+2
       NLNS=MAX(5,INT((RLN2-RLN1)/GRDR))+2
       XMIN=+1.E12
