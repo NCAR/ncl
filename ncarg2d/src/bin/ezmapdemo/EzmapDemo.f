@@ -1,5 +1,5 @@
 C
-C $Id: EzmapDemo.f,v 1.5 2001-08-31 20:15:14 kennison Exp $
+C $Id: EzmapDemo.f,v 1.6 2001-09-12 17:37:46 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -74,7 +74,7 @@ C Declare a character variable to hold a plot label.
 C
         CHARACTER*60 LABL
 C
-C Declar a temporary character variable to read labels and names into.
+C Declare a temporary character variable to read labels and names into.
 C
         CHARACTER*60 CHRT
 C
@@ -130,7 +130,7 @@ C
 C Set the default values of the variables that position the map on the
 C plotter frame.
 C
-        DATA XVPL,XVPR,YVPB,YVPT / .01,.99,.01,.99 /
+        DATA XVPL,XVPR,YVPB,YVPT / .1,.9,.1,.9 /
 C
 C Set the default values of the parameters that determine the projection
 C to be used.
@@ -190,6 +190,12 @@ C
 C Set the default value of the major label at the top of the plot.
 C
         DATA LABL / ' ' /
+C
+C Define the flag that controls whether or not lat/lon labels are to
+C be displayed and the variable that specifies the width of characters
+C to use in them.
+C
+        DATA ILLB,CSLL / -1,.012 /
 C
 C Define some quantities for the test during which the projection of
 C a global spiral is drawn.
@@ -464,7 +470,12 @@ C
           CALL MPUTIN (IPRJ,IZON,ISPH,PARA,0.D0,0.D0,0.D0,0.D0)
         END IF
         IF (NERRO(NERR).NE.0) GO TO 901
-        CALL GETSET (DUM1,DUM2,DUM3,DUM4,XWDL,XWDR,YWDB,YWDT,LNLG)
+        CALL GETSET (RVPL,RVPR,RVPB,RVPT,XWDL,XWDR,YWDB,YWDT,LNLG)
+        EPSI=1.E-6*MIN(RVPR-RVPL,RVPT-RVPB)
+        RVPL=RVPL+EPSI
+        RVPR=RVPR-EPSI
+        RVPB=RVPB+EPSI
+        RVPT=RVPT-EPSI
         PRINT * , ' '
         PRINT * , 'U/V limits used: ', XWDL,XWDR,YWDB,YWDT
         IF (ISTY.EQ.0) THEN
@@ -520,7 +531,16 @@ C
           CALL DRSPGD (ISPG,IZN0,PLT0,PLN0,CLT0,CLN0,
      +                      IZN8,PLT8,PLN8,CLT8,CLN8,CHSZ)
         END IF
-        IF (LABL.NE.' ') CALL PLCHHQ (CFUX(.5),CFUY(.95),
+        IF (ILLB.NE.0) THEN
+          P=REAL(SIGN(1,ILLB))
+          CALL PCSETI ('BF - BOX FLAG',0)
+          CALL MDLBLT (RVPL,RVPB,RVPL,RVPT,+P*CSLL,    0.,CSLL,0.,-P)
+          CALL MDLBLT (RVPR,RVPB,RVPR,RVPT,-P*CSLL,    0.,CSLL,0.,+P)
+          CALL MDLBLN (RVPL,RVPB,RVPR,RVPB,0.,+1.5*P*CSLL,CSLL,0.,0.)
+          CALL MDLBLN (RVPL,RVPT,RVPR,RVPT,0.,-1.5*P*CSLL,CSLL,0.,0.)
+          CALL PCSETI ('BF - BOX FLAG',3)
+        END IF
+        IF (LABL.NE.' ') CALL PLCHHQ (CFUX(.5),CFUY(.965),
      +                                LABL(1:MPILNB(LABL)),
      +                                          .018,0.,0.)
         IF (ILPT.NE.0) CALL DRPTLB (PTYP,IPRJ,IZON,ISPH,PARA,IPRF,
@@ -2169,6 +2189,32 @@ C
             END IF
 C
             PRINT * , ' '
+            IF (ILLB.EQ.0) THEN
+              PRINT * , 'The lat/lon label flag is 0 (no labels).'
+            ELSE IF (ILLB.EQ.-1) THEN
+              PRINT * , 'The lat/lon label flag is -1 (labels outside ma
+     +p edge).'
+            ELSE IF (ILLB.EQ.-1) THEN
+              PRINT * , 'The lat/lon label flag is +1 (labels inside map
+     + edge.)'
+            END IF
+            PRINT * , 'Current width of characters in labels: ',CSLL
+            PRINT * , ' '
+            PRINT * , 'Enter new lat/lon label flag:'
+            PRINT * , ' '
+            PRINT * , '   0=>no lat/lon labels'
+            PRINT * , '  -1=>labels outside map edge'
+            PRINT * , '  +1=>labels inside map edge'
+            PRINT * , ' '
+            CALL EMRDIN (ILLB,ILLB)
+            ILLB=MAX(-1,MIN(+1,ILLB))
+            PRINT * , ' '
+            PRINT * , 'Enter new character width:'
+            PRINT * , ' '
+            CALL EMRDRN (CSLL,CSLL)
+            CSLL=MAX(.001,MIN(.1,CSLL))
+C
+            PRINT * , ' '
             IF (ISPG.LT.0) THEN
               PRINT * , 'State Plane zones will not be drawn.'
             ELSE IF (ISPG.EQ.0) THEN
@@ -2276,7 +2322,7 @@ C
 C
           CALL INNPDP (IPDP,PTYP,PLAT,PLON,ROTA,LTYP,PLM1,PLM2,PLM3,
      +                 PLM4,IPRJ,IZON,ISPH,PARA,IDSL,ISPG,ODNM,ILVL,
-     +                 CHSZ,LABL)
+     +                 CHSZ,LABL,ILLB)
 C
           GO TO 105
 C
@@ -2398,11 +2444,21 @@ C
               CALL DRSPGD (ISPG,IZN0,PLT0,PLN0,CLT0,CLN0,
      +                          IZN8,PLT8,PLN8,CLT8,CLN8,CHSZ)
             END IF
-            IF (LABL.NE.' ') CALL PLCHHQ (CFUX(.5),CFUY(.95),
+            IF (ILLB.NE.0) THEN
+              P=REAL(SIGN(1,ILLB))
+              CALL PCSETI ('BF - BOX FLAG',0)
+              CALL MDLBLT(RVPL,RVPB,RVPL,RVPT,+P*CSLL,    0.,CSLL,0.,-P)
+              CALL MDLBLT(RVPR,RVPB,RVPR,RVPT,-P*CSLL,    0.,CSLL,0.,+P)
+              CALL MDLBLN(RVPL,RVPB,RVPR,RVPB,0.,+1.5*P*CSLL,CSLL,0.,0.)
+              CALL MDLBLN(RVPL,RVPT,RVPR,RVPT,0.,-1.5*P*CSLL,CSLL,0.,0.)
+              CALL PCSETI ('BF - BOX FLAG',3)
+            END IF
+            IF (LABL.NE.' ') CALL PLCHHQ (CFUX(.5),CFUY(.965),
      +                                    LABL(1:MPILNB(LABL)),
      +                                              .018,0.,0.)
             IF (ILPT.NE.0) CALL DRPTLB (PTYP,IPRJ,IZON,ISPH,PARA,IPRF,
      +                                                      ODNM,ILVL)
+            CALL SFLUSH
             IF (ISNG.NE.0) CALL GDAWK (2)
             IF (ISPS.NE.0) CALL GDAWK (3)
             CALL GACWK(1)
@@ -2910,7 +2966,7 @@ C
 
       SUBROUTINE INNPDP (IPDP,PTYP,PLAT,PLON,ROTA,LTYP,PLM1,PLM2,PLM3,
      +                   PLM4,IPRJ,IZON,ISPH,PARA,IDSL,ISPG,ODNM,ILVL,
-     +                   CHSZ,LABL)
+     +                   CHSZ,LABL,ILLB)
 C
         CHARACTER*(*) PTYP,LTYP,ODNM,LABL
         DIMENSION PLM1(2),PLM2(2),PLM3(2),PLM4(2)
@@ -2942,6 +2998,8 @@ C
 C
         LABL=' '
 C
+        ILLB=0
+C
         CALL ZERODA (PARA,15)
 C
         PRINT * , ' '
@@ -2962,6 +3020,7 @@ C
           PRINT * , 'Example 3 shows an original EZMAP transformation'
           PRINT * , 'called the Mercator.'
           PTYP='ME'
+          ILLB=-1
         ELSE IF (IPDP.EQ. 4) THEN
           PRINT * , 'Example 4 shows an original EZMAP transformation'
           PRINT * , 'called the Stereographic.'
@@ -2999,6 +3058,7 @@ C
           PRINT * , 'Example 11 shows an original EZMAP transformation'
           PRINT * , 'called the Cylindrical Equidistant.'
           PTYP='CE'
+          ILLB=-1
         ELSE IF (IPDP.EQ.12) THEN
           PRINT * , 'Example 12 shows a USGS transformation called the'
           PRINT * , 'UTM system (UTM="Universal Transverse Mercator"),'
@@ -3029,6 +3089,7 @@ C
           IZON=2800
           ISPH=0
           IDSL=4
+          ILLB=-1
         ELSE IF (IPDP.EQ.15) THEN
           PRINT * , 'Example 15 shows a USGS transformation called the'
           PRINT * , 'State Plane coordinate system.  The zone shown is'
@@ -3037,6 +3098,7 @@ C
           IZON=2600
           ISPH=8
           IDSL=4
+          ILLB=-1
         ELSE IF (IPDP.EQ.16) THEN
           PRINT * , 'Example 16 shows a USGS transformation called the'
           PRINT * , 'State Plane coordinate system.  The zone shown is'
@@ -3045,6 +3107,7 @@ C
           IZON=5001
           ISPH=8
           IDSL=4
+          ILLB=-1
         ELSE IF (IPDP.EQ.17) THEN
           PRINT * , 'Example 17 shows a USGS transformation called the'
           PRINT * , 'Alber''s Equal-Area Conic, in the Northern'
@@ -3386,6 +3449,7 @@ C
           PARA( 7)=          0.D0  !  FALSE EASTING
           PARA( 8)=          0.D0  !  FALSE NORTHING
           IDSL=4
+          ILLB=-1
         ELSE IF (IPDP.EQ.45) THEN
           PRINT * , 'Example 45 shows the State Plane zones for the'
           PRINT * , 'northeastern states of the lower 48, using the'
@@ -3402,6 +3466,7 @@ C
           ISPG=0
           CHSZ=.24
           LABL='STATE PLANE ZONES - NORTHEAST - NAD1927'
+          ILLB=-1
         ELSE IF (IPDP.EQ.46) THEN
           PRINT * , 'Example 46 shows the State Plane zones for the'
           PRINT * , 'northeastern states of the lower 48, using the'
@@ -3418,6 +3483,7 @@ C
           ISPG=8
           CHSZ=.24
           LABL='STATE PLANE ZONES - NORTHEAST - NAD1983'
+          ILLB=-1
         ELSE IF (IPDP.EQ.47) THEN
           PRINT * , 'Example 47 shows the State Plane zones for the'
           PRINT * , 'southeastern states of the lower 48, using the'
@@ -3434,6 +3500,7 @@ C
           ISPG=0
           CHSZ=.24
           LABL='STATE PLANE ZONES - SOUTHEAST - NAD1927'
+          ILLB=-1
         ELSE IF (IPDP.EQ.48) THEN
           PRINT * , 'Example 48 shows the State Plane zones for the'
           PRINT * , 'southeastern states of the lower 48, using the'
@@ -3450,6 +3517,7 @@ C
           ISPG=8
           CHSZ=.24
           LABL='STATE PLANE ZONES - SOUTHEAST - NAD1983'
+          ILLB=-1
         ELSE IF (IPDP.EQ.49) THEN
           PRINT * , 'Example 49 shows the State Plane zones for the'
           PRINT * , 'northeast central states of the lower 48, using'
@@ -3466,6 +3534,7 @@ C
           ISPG=0
           CHSZ=.24
           LABL='STATE PLANE ZONES - NORTHEAST CENTRAL - NAD1927'
+          ILLB=-1
         ELSE IF (IPDP.EQ.50) THEN
           PRINT * , 'Example 50 shows the State Plane zones for the'
           PRINT * , 'northeast central states of the lower 48, using'
@@ -3482,6 +3551,7 @@ C
           ISPG=8
           CHSZ=.24
           LABL='STATE PLANE ZONES - NORTHEAST CENTRAL - NAD1983'
+          ILLB=-1
         ELSE IF (IPDP.EQ.51) THEN
           PRINT * , 'Example 51 shows the State Plane zones for the'
           PRINT * , 'southeast central states of the lower 48, using'
@@ -3498,6 +3568,7 @@ C
           ISPG=0
           CHSZ=.24
           LABL='STATE PLANE ZONES - SOUTHEAST CENTRAL - NAD1927'
+          ILLB=-1
         ELSE IF (IPDP.EQ.52) THEN
           PRINT * , 'Example 52 shows the State Plane zones for the'
           PRINT * , 'southeast central states of the lower 48, using'
@@ -3514,6 +3585,7 @@ C
           ISPG=8
           CHSZ=.24
           LABL='STATE PLANE ZONES - SOUTHEAST CENTRAL - NAD1983'
+          ILLB=-1
         ELSE IF (IPDP.EQ.53) THEN
           PRINT * , 'Example 53 shows the State Plane zones for the'
           PRINT * , 'northwest central states of the lower 48, using'
@@ -3530,6 +3602,7 @@ C
           ISPG=0
           CHSZ=.24
           LABL='STATE PLANE ZONES - NORTHWEST CENTRAL - NAD1927'
+          ILLB=-1
         ELSE IF (IPDP.EQ.54) THEN
           PRINT * , 'Example 54 shows the State Plane zones for the'
           PRINT * , 'northwest central states of the lower 48, using'
@@ -3546,6 +3619,7 @@ C
           ISPG=8
           CHSZ=.24
           LABL='STATE PLANE ZONES - NORTHWEST CENTRAL - NAD1983'
+          ILLB=-1
         ELSE IF (IPDP.EQ.55) THEN
           PRINT * , 'Example 55 shows the State Plane zones for the'
           PRINT * , 'southwest central states of the lower 48, using'
@@ -3562,6 +3636,7 @@ C
           ISPG=0
           CHSZ=.24
           LABL='STATE PLANE ZONES - SOUTHWEST CENTRAL - NAD1927'
+          ILLB=-1
         ELSE IF (IPDP.EQ.56) THEN
           PRINT * , 'Example 56 shows the State Plane zones for the'
           PRINT * , 'southwest central states of the lower 48, using'
@@ -3578,6 +3653,7 @@ C
           ISPG=8
           CHSZ=.24
           LABL='STATE PLANE ZONES - SOUTHWEST CENTRAL - NAD1983'
+          ILLB=-1
         ELSE IF (IPDP.EQ.57) THEN
           PRINT * , 'Example 57 shows the State Plane zones for the'
           PRINT * , 'northwestern states of the lower 48, using the'
@@ -3594,6 +3670,7 @@ C
           ISPG=0
           CHSZ=.24
           LABL='STATE PLANE ZONES - NORTHWEST - NAD1927'
+          ILLB=-1
         ELSE IF (IPDP.EQ.58) THEN
           PRINT * , 'Example 58 shows the State Plane zones for the'
           PRINT * , 'northwestern states of the lower 48, using the'
@@ -3610,6 +3687,7 @@ C
           ISPG=8
           CHSZ=.24
           LABL='STATE PLANE ZONES - NORTHWEST - NAD1983'
+          ILLB=-1
         ELSE IF (IPDP.EQ.59) THEN
           PRINT * , 'Example 59 shows the State Plane zones for the'
           PRINT * , 'southwestern states of the lower 48, using the'
@@ -3626,6 +3704,7 @@ C
           ISPG=0
           CHSZ=.24
           LABL='STATE PLANE ZONES - SOUTHWEST - NAD1927'
+          ILLB=-1
         ELSE IF (IPDP.EQ.60) THEN
           PRINT * , 'Example 60 shows the State Plane zones for the'
           PRINT * , 'southwestern states of the lower 48, using the'
@@ -3642,6 +3721,7 @@ C
           ISPG=8
           CHSZ=.24
           LABL='STATE PLANE ZONES - SOUTHWEST - NAD1983'
+          ILLB=-1
         ELSE IF (IPDP.EQ.61) THEN
           PRINT * , 'Example 61 shows the State Plane zones for Alaska,'
           PRINT * , 'using the North American Datum of 1927.'
@@ -3657,6 +3737,7 @@ C
           ISPG=0
           CHSZ=.75
           LABL='STATE PLANE ZONES - ALASKA - NAD1927'
+          ILLB=-1
         ELSE IF (IPDP.EQ.62) THEN
           PRINT * , 'Example 62 shows the State Plane zones for Alaska,'
           PRINT * , 'using the North American Datum of 1983.'
@@ -3672,6 +3753,7 @@ C
           ISPG=8
           CHSZ=.75
           LABL='STATE PLANE ZONES - ALASKA - NAD1983'
+          ILLB=-1
         ELSE IF (IPDP.EQ.63) THEN
           PRINT * , 'Example 63 shows the State Plane zones for Hawaii,'
           PRINT * , 'using the North American Datum of 1927.'
@@ -3687,6 +3769,7 @@ C
           ISPG=0
           CHSZ=.075
           LABL='STATE PLANE ZONES - HAWAII - NAD1927'
+          ILLB=-1
         ELSE IF (IPDP.EQ.64) THEN
           PRINT * , 'Example 64 shows the State Plane zones for Hawaii,'
           PRINT * , 'using the North American Datum of 1927.'
@@ -3702,6 +3785,7 @@ C
           ISPG=8
           CHSZ=.075
           LABL='STATE PLANE ZONES - HAWAII - NAD1983'
+          ILLB=-1
         ELSE IF (IPDP.EQ.65) THEN
           PRINT * , 'Example 65 shows all the State Plane zones, using'
           PRINT * , 'the North American Datum of 1927.'
