@@ -3736,7 +3736,7 @@ NhlErrorTypes _NclINewDashPattern
 			}
 		}
 		for( j = 0; j < size1; j++) {
-			int *index = indexes + i * size0 + j;
+			int *index = indexes + i * size1 + j;
 			if (wks_is_missing) {
 				*index = ((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval;
 				continue;
@@ -4124,7 +4124,7 @@ NhlErrorTypes _NclINewMarker
 			}
 		}
 		for( j = 0; j < size1; j++) {
-			int *index = indexes + i * size0 + j;
+			int *index = indexes + i * size1 + j;
 			if (wks_is_missing) {
 				*index = ((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval;
 				continue;
