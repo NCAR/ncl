@@ -1,5 +1,5 @@
 /*
- *	$Id: commands.c,v 1.15 1992-08-10 22:07:21 clyne Exp $
+ *	$Id: commands.c,v 1.16 1992-08-11 14:57:18 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -639,6 +639,8 @@ int	iCPrint(ic)
 {
 	char		*binpath;
 	static	char	*translator = NULL;
+	DevWindow	*dev_win = &icState.dev_window;
+	char		dev_win_string[80];
 
 	if (!Toc) return(-1);
 
@@ -658,27 +660,34 @@ int	iCPrint(ic)
 
 	}
 
+	sprintf(
+		dev_win_string, "%f:%f:%f:%f", 
+		dev_win->llx, dev_win->lly, dev_win->urx, dev_win->ury
+	);
+
 	if (! doMemFile) {
-		print_file(ic, translator);
+		print_file(ic, translator, dev_win_string);
 	}
 	else {
-		print_mem_file(ic, translator);
+		print_mem_file(ic, translator, dev_win_string);
 	}
 
 	return(1);
 }
 
-print_mem_file(ic, translator)
+print_mem_file(ic, translator, dev_win_string)
 	ICommand	*ic;
 	char		*translator;
+	char		*dev_win_string;
 {
 	char		*tmpfile, *create_tmp_fname();
 	int		argc = 0;
-	char		*argv[5];
+	char		*argv[7];
 	FILE		*fp = ic->fp;
 	time_t		access_time;
 	struct stat	stat_buf;
 	int		sanity = 60;
+	static	char	*window_opt = "-window";
 
 
 	tmpfile = create_tmp_fname();
@@ -703,6 +712,8 @@ print_mem_file(ic, translator)
 	sleep(2);
 
 	argv[argc++] = translator;
+	argv[argc++] = window_opt;
+	argv[argc++] = dev_win_string;
 	argv[argc++] = tmpfile;
 	argv[argc] = NULL;
 
@@ -730,9 +741,10 @@ print_mem_file(ic, translator)
 	free((char*) tmpfile);
 }
 
-static	print_file(ic, translator)
+static	print_file(ic, translator, dev_win_string)
 	ICommand	*ic;
 	char		*translator;
+	char		*dev_win_string;
 {
 	int	i,j;
 	int	frame;
@@ -744,6 +756,7 @@ static	print_file(ic, translator)
 	char	**argv = NULL;
 	FILE	*fp = ic->fp;
 	static char	*record_opt = "-record";
+	static char	*window_opt = "-window";
 
 
 
@@ -755,11 +768,13 @@ static	print_file(ic, translator)
 		count += ic->cmd.src_frames.fc[i].num_frames; 
 	}
 
-	argv = (char **) icMalloc ((count + 5) * sizeof (char *));
+	argv = (char **) icMalloc ((count + 7) * sizeof (char *));
 
-	argv[0] = translator;
-	argv[1] = record_opt;
-	argc = 2;
+	argc = 0;
+	argv[argc++] = translator;
+	argv[argc++] = window_opt;
+	argv[argc++] = dev_win_string;
+	argv[argc++] = record_opt;
 
 	/*
 	 * build the arg list from the list of frames
