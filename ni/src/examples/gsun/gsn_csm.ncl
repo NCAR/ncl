@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.110 2002-11-12 16:47:10 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.111 2002-12-09 23:42:44 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -7455,7 +7455,11 @@ begin
           yref_fill_on    = True
           delete(res2@gsnAboveYRefLineColor)
         else
-          yref_line_above = -1  ; defaults to no fill.
+          if(isatt(res2,"gsnAboveYRefLineBarPatterns")) then
+            yref_line_above = 1    ; defaults to foreground.
+          else
+            yref_line_above = -1    ; defaults to no fill.
+          end if
         end if
 ;
 ; Determine color of fill below reference line(s).
@@ -7469,7 +7473,11 @@ begin
           yref_line_below = get_res_value(res2,"gsnBelowYRefLineColor",1)
           yref_fill_on    = True
         else
-          yref_line_below = -1    ; defaults to no fill.
+          if(isatt(res2,"gsnBelowYRefLineBarPatterns")) then
+            yref_line_below = 1    ; defaults to foreground.
+          else
+            yref_line_below = -1    ; defaults to no fill.
+          end if
         end if
 ;
 ; If yref_fill_on is True, and we have more than one curve, then there
@@ -7893,7 +7901,7 @@ begin
               ncb = dimsizes(bar_colors_below)
             end if
             if(mlt_below_bar_pttrns) then
-              npb = dimsizes(bar_colors_pttrns)
+              npb = dimsizes(bar_pttrns_below)
             end if
             do ii = 0,npts-1
               var_string2 = var_string + "below" + ii
@@ -7901,7 +7909,7 @@ begin
                 gsres@gsFillColor = bar_colors_below(ii%ncb)
               end if
               if(mlt_below_bar_pttrns) then
-                gsres@gsFillIndex = bar_colors_pttrns(ii%npb)
+                gsres@gsFillIndex = bar_pttrns_below(ii%npb)
               end if
               xy_object@$var_string2$ = gsn_add_polygon(wks,xy_object, \
                                                      xbelow(i,ii*5:ii*5+4), \
