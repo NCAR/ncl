@@ -1,5 +1,5 @@
 C
-C      $Id: st02f.f,v 1.2 1996-07-03 16:45:54 haley Exp $
+C      $Id: st02f.f,v 1.3 1997-05-22 16:46:59 haley Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -123,7 +123,7 @@ C Get the values of several resources that are set dynamically based
 C on the assumed NDC size of a grid cell. Each of this will be separately
 C modified in the course of this example to illustrate their effect.
 C
-      call NhlFRLClear(grlist,ierr)
+      call NhlFRLClear(grlist)
       call NhlFRLGetFloat(grlist,'stStepSizeF',stepsize,ierr)
       call NhlFRLGetFloat(grlist,'stArrowLengthF',arrowlength,ierr)
       call NhlFRLGetFloat(grlist,'stMinLineSpacingF',spacing,ierr)
@@ -131,7 +131,7 @@ C
 C
 C Increase the step size 
 C
-      call NhlFRLClear(rlist,ierr)
+      call NhlFRLClear(rlist)
       call NhlFRLSetString(rlist,'tiMainString','Larger Step Size',ierr)
       call NhlFRLSetFloat(rlist,'stStepSizeF',stepsize * 4.0,ierr)
       call NhlFSetValues(stid,rlist,ierr)
@@ -141,7 +141,7 @@ C
 C
 C Decrease the step size 
 C
-      call NhlFRLClear(rlist,ierr)
+      call NhlFRLClear(rlist)
       call NhlFRLSetString(rlist,'tiMainString','Smaller Step Size',
      1	   ierr)
       call NhlFRLSetFloat(rlist,'stStepSizeF',stepsize * 0.25,ierr)
@@ -152,7 +152,7 @@ C
 C
 C Increase the minimum line spacing 
 C
-      call NhlFRLClear(rlist,ierr)
+      call NhlFRLClear(rlist)
       call NhlFRLSetString(rlist,'tiMainString',
      1     'Larger Minimum Line Spacing',ierr)
       call NhlFRLSetFloat(rlist,'stStepSizeF',stepsize,ierr)
@@ -164,7 +164,7 @@ C
 C
 C Decrease the minimum line spacing
 C
-      call NhlFRLClear(rlist,ierr)
+      call NhlFRLClear(rlist)
       call NhlFRLSetString(rlist,'tiMainString',
      1     'Smaller Minimum Line Spacing',ierr)
       call NhlFRLSetFloat(rlist,'stMinLineSpacingF',spacing * 0.25,ierr)
@@ -175,7 +175,7 @@ C
 C
 C Increase the line starting grid stride 
 C
-      call NhlFRLClear(rlist,ierr)
+      call NhlFRLClear(rlist)
       call NhlFRLSetString(rlist,'tiMainString',
      1     'Larger Line Starting Grid Stride',ierr)
       call NhlFRLSetFloat(rlist,'stMinLineSpacingF',spacing,ierr)
@@ -187,7 +187,7 @@ C
 C
 C Decrease the line starting grid stride
 C
-      call NhlFRLClear(rlist,ierr)
+      call NhlFRLClear(rlist)
       call NhlFRLSetString(rlist,'tiMainString',
      1     'Smaller Line Starting Grid Stride',ierr)
       call NhlFRLSetInteger(rlist,'stLineStartStride',1,ierr)
@@ -198,7 +198,7 @@ C
 C
 C Increase the arrow size
 C
-      call NhlFRLClear(rlist,ierr)
+      call NhlFRLClear(rlist)
       call NhlFRLSetString(rlist,'tiMainString','Larger Arrows',ierr)
       call NhlFRLSetInteger(rlist,'stLineStartStride',2,ierr)
       call NhlFRLSetFloat(rlist,'stArrowLengthF',arrowlength*2.0,ierr)

@@ -1,5 +1,5 @@
 C
-C      $Id: st04f.f,v 1.3 1997-02-05 15:28:10 haley Exp $
+C      $Id: st04f.f,v 1.4 1997-05-22 16:47:00 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -81,8 +81,10 @@ C
       character*8 rftime
       character*50 recname
       character*13 cdffiles(6)
-      data cdffiles/'Ustorm.cdf   ','Vstorm.cdf   ','Pstorm.cdf   ',
-     +              'Tstorm.cdf   ','U500storm.cdf','V500storm.cdf'/
+      integer cdflens(6)
+      data cdffiles/'Ustorm.cdf','Vstorm.cdf','Pstorm.cdf',
+     +              'Tstorm.cdf','U500storm.cdf','V500storm.cdf'/
+      data cdflens/10,10,10,10,13,13/
       integer flen
 
       NCGM=1
@@ -145,7 +147,7 @@ C
  10   continue
  15   filename(1:flen) = dir
       do 20 j = 1,6
-          filename(flen+1:flen+1+len(cdffiles(j))) = cdffiles(j)
+          filename(flen+1:flen+cdflens(j)) = cdffiles(j)
           ncid(j) = ncopn(filename,0,ierr)
  20   continue
 C      
@@ -234,7 +236,7 @@ C
  40      continue
  41   continue
       
-      call NhlFRLClear(rlist,ierr)
+      call NhlFRLClear(rlist)
       call NhlFRLSetMDFloatArray(rlist,'sfDataArray',X,2,len_dims,ierr)
       call NhlFRLSetFloat(rlist,'sfXCStartV',lon(1),ierr)
       call NhlFRLSetFloat(rlist,'sfYCStartV',lat(1),ierr)
@@ -261,7 +263,7 @@ C
  49   continue
  50   continue
       
-      call NhlFRLClear(rlist,ierr)
+      call NhlFRLClear(rlist)
       call NhlFRLSetMDFloatArray(rlist,'sfDataArray',X,2,len_dims,ierr)
       call NhlFRLSetFloat(rlist,'sfXCStartV',lon(1),ierr)
       call NhlFRLSetFloat(rlist,'sfYCStartV',lat(1),ierr)

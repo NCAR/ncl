@@ -1,5 +1,5 @@
 C
-C      $Id: st03f.f,v 1.3 1997-02-05 15:28:10 haley Exp $
+C      $Id: st03f.f,v 1.4 1997-05-22 16:46:59 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -100,7 +100,7 @@ C
 C Open the netCDF file.
 C
       call gngpat(filename,'data',ierr)
-      flen = 18
+      flen = 17
       do 10 i=1,256
          if( filename(i:i).eq.char(0) ) then
             filename(i:i+flen)='/cdf/941110_UV.cdf'
@@ -190,7 +190,7 @@ C
 C 
 C Set the step size
 C
-      call NhlFRLClear(rlist,ierr)
+      call NhlFRLClear(rlist)
       call NhlFRLSetString(rlist,'tiMainString','Smaller Step Size',
      +     ierr)
       call NhlFRLSetFloat(rlist,'stStepSizeF',stepsize * 0.5,ierr)
