@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: Configure,v 1.18 2003-05-02 21:18:37 haley Exp $
+#      $Id: Configure,v 1.19 2003-05-22 21:30:16 haley Exp $
 #
 #########################################################################
 #									#
@@ -592,55 +592,69 @@ if (("$answer" != "") && ("$answer" != "$buildhdf")) then
 endif
 
 #
+# Only ask about UDUNITS and HDFEOS support if we are actually
+# planning to build NCL.
+#
+if (-e ni) then
+#
 # Udunits
 #
-if ($?verbose_option) then
-  cat <<"EOF"
+  if ($?verbose_option) then
+    cat <<"EOF"
 
 	The udunits library supports many different time formats,
 	and some of its functionality is available as built-in
 	functions in NCL. In order to have this functionality, you must
-        have the libudunits.a library installed on your system.
+        have the libudunits.a library installed on your system.  THIS
+        LIBRARY IS NOT NEEDED FOR BUILDING NCAR GRAPHICS.
 
 "EOF"
-endif
+  endif
 
-echo ""
-echo "Build Udunits support (optional) into NCL ($buildudunits)"
-echo "(requires the external Udunits library available from http://www.unidata.ucar.edu/packages/udunits/) "
-echo -n "Enter Return (default), y(yes), n(no), or q(quit) > "
-set answer="$<"
-if ("$answer" == "q") goto cleanup
-if (("$answer" != "") && ("$answer" != "$buildudunits")) then
+  echo ""
+  echo "Build Udunits support (optional) into NCL ($buildudunits)"
+  echo "(requires the external Udunits library available from http://www.unidata.ucar.edu/packages/udunits/) "
+  echo -n "Enter Return (default), y(yes), n(no), or q(quit) > "
+  set answer="$<"
+  if ("$answer" == "q") goto cleanup
+  if (("$answer" != "") && ("$answer" != "$buildudunits")) then
 	set buildudunits = $answer
 	set newbuildudunits
         set altered
-endif
+  endif
 
 #
 # HDFEOS
 #
-if ($?verbose_option) then
-  cat <<"EOF"
+  if ($?verbose_option) then
+    cat <<"EOF"
 
-	The hdfeos library supports the HDF-EOS data format, and
-	NCL has some capability to read these files in. In order
-        to have this functionality, you must have the HDFEOS libraries
-        installed on your system.
+	The hdfeos library supports the HDF-EOS data format, and NCL
+	has some capability to read these files in. In order to have
+	this functionality, you must have the HDFEOS libraries
+	installed on your system.  THIS LIBRARY IS NOT NEEDED FOR
+	BUILDING NCAR GRAPHICS.
 
 "EOF"
-endif
+  endif
 
-echo ""
-echo "Build HDFEOS support (optional) into NCL ($buildhdfeos)"
-echo "(requires the external HDFEOS libraries available from http://hdfeos.gsfc.nasa.gov/hdfeos/index.cfm) "
-echo -n "Enter Return (default), y(yes), n(no), or q(quit) > "
-set answer="$<"
-if ("$answer" == "q") goto cleanup
-if (("$answer" != "") && ("$answer" != "$buildhdfeos")) then
-	set buildhdfeos = $answer
-	set newbuildhdfeos
+  echo ""
+  echo "Build HDFEOS support (optional) into NCL ($buildhdfeos)"
+  echo "(requires the external HDFEOS libraries available from http://hdfeos.gsfc.nasa.gov/hdfeos/index.cfm) "
+  echo -n "Enter Return (default), y(yes), n(no), or q(quit) > "
+  set answer="$<"
+  if ("$answer" == "q") goto cleanup
+  if (("$answer" != "") && ("$answer" != "$buildhdfeos")) then
+  	set buildhdfeos = $answer
+  	set newbuildhdfeos
         set altered
+  endif
+else
+  set buildhdfeos  = "n"
+  set buildudunits = "n"
+  set newbuildhdfeos
+  set newbuildudunits
+  set altered
 endif
 
 #
