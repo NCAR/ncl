@@ -1,5 +1,5 @@
 C
-C	$Id: ncarbd.f,v 1.5 1996-08-23 20:37:27 haley Exp $
+C	$Id: ncarbd.f,v 1.6 2000-01-04 15:46:07 haley Exp $
 C
       SUBROUTINE NCARBD
       CALL AGDFLT
@@ -15,6 +15,7 @@ C
       CALL GFLSBD
       CALL GKSBD
       CALL GSEGDT
+      CALL GTPZBD
       CALL GWIBKD
       CALL HFINIT
       CALL HSTBKD
