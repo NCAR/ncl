@@ -1,5 +1,5 @@
 /*
- *      $Id: SGI_IRIX.n32,v 1.4 2002-11-27 15:26:23 haley Exp $
+ *      $Id: SGI_IRIX.n32,v 1.5 2003-08-02 03:48:15 haley Exp $
  */
 /************************************************************************
 *									*
@@ -37,7 +37,7 @@ SGIWARNSUPPRESS = SgiWarnSuppress
 #define	HdfDefines	-DIRIX
 #define	StdDefines	-DSYSV -D_XOPEN_SOURCE -D_XOPEN_SOURCE_EXTENDED=1
 #define CcOptions	-n32 -xansi -avoid_gp_overflow $(SGIWARNSUPPRESS)
-#define FcOptions	-n32
+#define FcOptions	-n32 -avoid_gp_overflow
 #define	LdCommand	ld -n32
 #define	RanLib		$(AR) m
 #define CtoFLibraries	-lftn -lm

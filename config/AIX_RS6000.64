@@ -1,5 +1,5 @@
 /*
- *      $Id: AIX_RS6000.64,v 1.4 2003-03-17 21:07:17 haley Exp $
+ *      $Id: AIX_RS6000.64,v 1.5 2003-08-02 03:48:15 haley Exp $
  */
 /************************************************************************
 *									*
@@ -23,12 +23,12 @@
  */
 #define HdfDefines    -DIBM6000 -DAIX5L64
 #define StdDefines    -DSYSV -D_POSIX_SOURCE -DRS6000 -D_XOPEN_SOURCE -D_XOPEN_SOURCE_EXTENDED=1 -DNGLONG2XINT
-#define CCompiler     xlc_r
-#define FCompiler     xlf_r
-#define CcOptions     -qarch=auto -q64
-#define FcOptions     -qarch=auto -q64
-#define LdCommand     ld
-#define ArCommand     ar
+#define CCompiler     xlc
+#define FCompiler     xlf
+#define CcOptions     -q64
+#define FcOptions     -q64
+#define LdCommand     ld -b64
+#define ArCommand     ar -X 64
 #define COptimizeFlag -O3 -qstrict
 #define FOptimizeFlag -O3 -qstrict
 #define Cstatic       -bnso
