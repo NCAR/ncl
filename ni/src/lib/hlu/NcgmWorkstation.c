@@ -1,5 +1,5 @@
 /*
- *      $Id: NcgmWorkstation.c,v 1.33 1998-03-13 22:19:22 dbrown Exp $
+ *      $Id: NcgmWorkstation.c,v 1.34 1998-03-23 22:47:04 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -541,7 +541,7 @@ UpdateGKSState
                 l->base.id,wl->work.gkswksid,np->meta_name);
 #endif
 		c_ngreop(wl->work.gkswksid,wl->work.gkswksconid,1,
-			 np->meta_name,2,
+			 np->meta_name,1,
 			 np->gks_iat,np->gks_rat,0,0,NULL);
 		if(_NhlLLErrCheckPrnt(NhlFATAL,func))
 			return NhlFATAL;
