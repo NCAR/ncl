@@ -1,5 +1,5 @@
 ;
-;      $Id: xy14n.ncl,v 1.2 1995-05-15 15:29:28 scheitln Exp $
+;      $Id: xy14n.ncl,v 1.3 1995-05-22 14:54:27 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -53,12 +53,25 @@ tr_data = (/                                                     \
      
 
 ;
+; Default is to display output to an X workstation
+;
+NCGM=0
+
+if (NCGM .eq. 1) then
+;
+; Create an ncgmWorkstation object.
+;
+  xworkid = create "simple" ncgmWorkstationClass defaultapp
+      "wkMetaName" : "xy14n.ncgm"
+  end create
+else
+;
 ; Set up an X11 output workstation.
 ;
-
-xworkid = create "simple" xWorkstationClass defaultapp
-    "wkPause" : "True"
-end create
+  xworkid = create "simple" xWorkstationClass defaultapp
+      "wkPause" : "True"
+  end create
+end if
 
 ;
 ; Create X-axis values using the NCL "new" and "do" statements.
