@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclTypeobj.c.specific,v 1.4 1995-05-01 22:07:49 ethan Exp $
+ *      $Id: NclTypeobj.c.specific,v 1.5 1995-11-03 00:01:02 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -26,7 +26,7 @@
 #include <ncarg/hlu/BaseP.h>
 #include <ncarg/hlu/DataComm.h>
 
-static void Ncl_Type_obj_print
+static NhlErrorTypes Ncl_Type_obj_print
 #if     NhlNeedProto
 (FILE *fp, void * val)
 #else
@@ -37,14 +37,20 @@ void *val;
 {
 
 	NclObj object;
+	int ret;
 
 
 	object = _NclGetObj(*(obj*)val);
 
 	if(object == NULL) {
-		nclfprintf(fp,"%d",*(obj*)val);
+		ret = nclfprintf(fp,"%d",*(obj*)val);
+		if(ret < 0) {
+                	return(NhlWARNING);
+        	} else {
+                	return(NhlNOERROR);
+        	}
 	} else {
-		_NclPrint(object,fp);
+		return(_NclPrint(object,fp));
 	}
 }
 

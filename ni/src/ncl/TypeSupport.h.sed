@@ -1,6 +1,6 @@
 
 /*
- *      $Id: TypeSupport.h.sed,v 1.1 1995-01-28 01:53:07 ethan Exp $
+ *      $Id: TypeSupport.h.sed,v 1.2 1995-11-03 00:01:10 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -49,7 +49,7 @@ double*		/* result */
 #endif
 );
 
-extern void _Nclprint(
+extern NhlErrorTypes _Nclprint(
 #if	NhlNeedProto
 NclTypeClass /* the_type */,
 FILE 	* /*fp*/,

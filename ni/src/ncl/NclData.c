@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclData.c,v 1.7 1995-06-03 00:45:31 ethan Exp $
+ *      $Id: NclData.c,v 1.8 1995-11-03 00:00:41 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -664,7 +664,7 @@ FILE *fp;
 				fprintf(fp,"Object Class: %s\n",objs[i].theobj->obj.class_ptr->obj_class.class_name);
 				fprintf(fp,"Object Status: %s\n",_NclStatusString(objs[i].theobj->obj.status));
 
-				_NclPrint(objs[i].theobj,fp);
+				(void) _NclPrint(objs[i].theobj,fp);
 			}
 			tmp = objs[i].next;
 			while(tmp != NULL) {
@@ -673,7 +673,7 @@ FILE *fp;
 				fprintf(fp,"Object Class: %s\n",tmp->theobj->obj.class_ptr->obj_class.class_name);
 				fprintf(fp,"Object Status: %s\n",_NclStatusString(tmp->theobj->obj.status));
 	
-				_NclPrint(tmp->theobj,fp);
+				(void)_NclPrint(tmp->theobj,fp);
 				tmp = tmp->next;			
 			}
 		}

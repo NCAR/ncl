@@ -1,6 +1,6 @@
 
 /*
- *      $Id: TypeSupport.c.sed,v 1.2 1995-03-01 00:36:21 ethan Exp $
+ *      $Id: TypeSupport.c.sed,v 1.3 1995-11-03 00:01:08 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -70,7 +70,7 @@ double *result;
 	} else {
 		tmp = (NclTypeClass)the_type->obj_class.super_class;
 		while(tmp != (NclTypeClass)nclTypeClass) {
-			if(tmp->type_class.print!= NULL) {
+			if(tmp->type_class.cmpf != NULL) {
 				return((*(tmp->type_class.cmpf))(lhs,rhs,lhs_m,rhs_m,digits,result));
 			} else {
 				tmp = (NclTypeClass)tmp->obj_class.super_class;
@@ -114,7 +114,7 @@ NclObjTypes obj_type_enum;
 	}
 }
 
-void _Nclprint
+NhlErrorTypes _Nclprint
 #if	NhlNeedProto
 (NclTypeClass the_type,FILE *fp,void* val)
 #else
@@ -127,12 +127,12 @@ void* val;
 	NclTypeClass tmp;
 
 	if(the_type->type_class.print != NULL) {
-		(*(the_type->type_class.print))(fp,val);
+		return((*(the_type->type_class.print))(fp,val));
 	} else {
 		tmp = (NclTypeClass)the_type->obj_class.super_class;
 		while(tmp != (NclTypeClass)nclTypeClass) {
 			if(tmp->type_class.print!= NULL) {
-				(*(tmp->type_class.print))(fp,val);
+				return((*(tmp->type_class.print))(fp,val));
 			} else {
 				tmp = (NclTypeClass)tmp->obj_class.super_class;
 			}

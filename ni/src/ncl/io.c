@@ -8,6 +8,14 @@ extern "C" {
 #include <ncarg/hlu/VarArg.h>
 
 #include "defs.h"
+#include <sys/types.h>
+#include <unistd.h>
+#include <sys/wait.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <signal.h>
+extern int errno;
+
 
 struct str_load_list {
 	char 	*buffer;
@@ -30,6 +38,7 @@ typedef struct file_load_list NclFileLoadList;
 FILE *error_fp = stderr;
 FILE *stdout_fp = stdout;
 FILE *stdin_fp = stdin;
+int pager_id;
 
 FILE *_NclGetErrorStream
 #if	NhlNeedProto
@@ -66,7 +75,7 @@ va_list
 );
 */
 NclVaPrintFunc pit = vfprintf;
-void nclfprintf
+int nclfprintf
 #if NhlNeedVarArgProto
 (FILE *fp,char *fmt,...)
 #else
@@ -76,11 +85,12 @@ void nclfprintf
 	va_dcl
 #endif
 {
+	int ret = 0;
 	va_list ap;
 	VA_START(ap,fmt);
-	(*pit)(fp,fmt,ap);
+	ret = (*pit)(fp,fmt,ap);
 	va_end(ap);
-	return;
+	return(ret);
 }
 
 void _NclSetPrintFunc
@@ -241,4 +251,118 @@ FILE *_NclPopInputFile
 	file_list.next = file_list.next->next;
 	NclFree(tmp);
 	return(fp);
+}
+
+
+
+int _nclfprintf_pager
+#if NhlNeedProto
+(FILE *fp,Const char *fmt,va_list ap)
+#else
+(fp,format,va_alist)
+	FILE *fp;
+	char *fmt;
+	va_list ap;
+#endif
+{
+	char buffer[2048];
+	int ret = 0;
+	int n;
+	int id,status;
+
+	n = vsprintf(buffer,fmt,ap);
+	ret = write(fileno(fp),(void*)buffer,n);
+	if(ret < 0) {
+		_NclSetPrintFunc(vfprintf);
+		signal(SIGPIPE,SIG_DFL);
+		if(pager_id != -1) {
+			while(( id = wait(&status)) != pager_id) {
+				if(errno == ECHILD) {
+					pager_id = -1;
+					break;
+				}
+			}
+		}
+		close(fileno(stdout_fp));
+		stdout_fp = stdout;
+	}
+	return(ret);
+}
+
+void _NclEndCmdLinePager
+#if NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	int id;
+	int status;
+
+	_NclSetPrintFunc(vfprintf);
+	close(fileno(stdout_fp));
+	signal(SIGPIPE,SIG_DFL);
+	if(pager_id != -1) {
+		while(( id = wait(&status)) != pager_id);
+	}
+	stdout_fp = stdout;
+	pager_id = -1;
+	return;
+	
+}
+void _NclStartCmdLinePager
+#if NhlNeedProto
+(void)
+#else
+() 
+#endif
+{
+	int fildes[2],new_pipe_fd;
+	int ret;
+	int id;
+	char *pager =NULL;
+	char *arg0 = NULL;
+
+	
+	ret = pipe(fildes);
+	id = fork();
+	if(id == 0) {
+		close(fildes[1]);	
+		close(fileno(stdin));
+		new_pipe_fd = dup(fildes[0]);
+		close(fildes[0]);
+		if(fdopen(new_pipe_fd,"rw") == NULL) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"Error Forking pager");
+			exit(0);
+		}
+		pager = getenv("PAGER");
+		if(pager == NULL) {
+			pager = "more";
+			arg0 = "more";
+		} else {
+			arg0 = strrchr(pager,(int)'/');
+			if(arg0 == NULL) {
+				arg0 = pager;
+			} else {
+				arg0++;
+			}
+		}
+		execlp(pager,arg0,NULL);
+		close(new_pipe_fd);
+		exit(0);
+	} else {
+		signal(SIGPIPE,SIG_IGN);
+		close(fildes[0]);
+		stdout_fp = fdopen(fildes[1],"w");
+		if(stdout_fp == NULL) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"Error Forking pager");
+			stdout_fp = stdout;
+			pager_id = -1;
+			_NclSetPrintFunc(vfprintf);
+		} else {
+			pager_id = id;
+			_NclSetPrintFunc(_nclfprintf_pager);
+		}
+		return;
+	}
 }

@@ -1,5 +1,5 @@
 /*
- *      $Id: NclAtt.c,v 1.9 1995-06-17 01:21:37 ethan Exp $
+ *      $Id: NclAtt.c,v 1.10 1995-11-03 00:00:40 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -258,7 +258,7 @@ NclSelectionRecord * sel_ptr;
         }
 }
 
-static void AttPrint
+static NhlErrorTypes AttPrint
 #if	NhlNeedProto
 (NclObj theobj,FILE *fp)
 #else
@@ -269,14 +269,19 @@ FILE *fp;
 {
 	NclAtt theattobj = (NclAtt)theobj;
 	NclAttList *tmp;
+	int ret = 0;
 	
 	tmp = theattobj->att.att_list;
-	nclfprintf(fp,"Number Of Attributes: %d\n",theattobj->att.n_atts);
-	while(tmp != NULL) {
-		nclfprintf(fp,"%s \n",tmp->attname);
+	ret = nclfprintf(fp,"Number Of Attributes: %d\n",theattobj->att.n_atts);
+	while((tmp != NULL)&&(ret>=0)) {
+		ret = nclfprintf(fp,"%s \n",tmp->attname);
 		tmp = tmp->next;
 	}
-	return;
+	if(ret < 0) {
+		return(NhlWARNING);
+	} else {
+		return(NhlNOERROR);
+	}
 }
 
 static NhlErrorTypes AttAddParent

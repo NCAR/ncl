@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.19 1995-06-17 01:21:19 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.20 1995-11-03 00:00:34 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -55,6 +55,7 @@ extern "C" {
 #include "TypeSupport.h"
 #include "NclBuiltInSupport.h"
 
+extern int cmd_line;
 
 NhlErrorTypes _NclIListHLUObjs
 #if	NhlNeedProto
@@ -65,25 +66,43 @@ NhlErrorTypes _NclIListHLUObjs
 {
         FILE *fp;
         NclApiDataList *tmp,*step;
-        int i;
+        int i,ret=0;
 	tmp = _NclGetDefinedHLUInfo();
 
+	if(cmd_line) {
+		_NclStartCmdLinePager();
+	}
 	fp = _NclGetOutputStream();
 	
 
 	step = tmp;
 	while(step != NULL) {
-		nclfprintf(fp,"\nVariable: %s\n",NrmQuarkToString(step->u.hlu->name));
+		ret = nclfprintf(fp,"\nVariable: %s\n",NrmQuarkToString(step->u.hlu->name));
+		if(ret < 0) {
+			_NclFreeApiDataList((void*)tmp);
+			return(NhlWARNING);
+		}
 		for(i = 0 ; i < step->u.hlu->n_objs; i++) {
 			if(step->u.hlu->objs[i].obj_name !=0) {
-				nclfprintf(fp,"\t%s\t%s\n",NrmQuarkToString(step->u.hlu->objs[i].obj_name),NrmQuarkToString(step->u.hlu->objs[i].obj_class));
+				ret = nclfprintf(fp,"\t%s\t%s\n",NrmQuarkToString(step->u.hlu->objs[i].obj_name),NrmQuarkToString(step->u.hlu->objs[i].obj_class));
+				if(ret < 0) {
+					_NclFreeApiDataList((void*)tmp);
+					return(NhlWARNING);
+				}
 			} else {
-				nclfprintf(fp,"\tmissing\n");
+				ret = nclfprintf(fp,"\tmissing\n");
+				if(ret < 0) {
+					_NclFreeApiDataList((void*)tmp);
+					return(NhlWARNING);
+				}
 			}
 		}
 		step = step->next;
 	}
 	_NclFreeApiDataList((void*)tmp);
+	if(cmd_line) {
+                _NclEndCmdLinePager();
+        }
 	return(NhlNOERROR);
 }
 NhlErrorTypes _NclIListVariables
@@ -95,33 +114,71 @@ NhlErrorTypes _NclIListVariables
 {
 	FILE *fp;
 	NclApiDataList *tmp,*step;
-	int i;
+	int i,ret=0;
 	
 
+	if(cmd_line) {
+		_NclStartCmdLinePager();
+	}
 	fp = _NclGetOutputStream();
 	tmp = _NclGetDefinedVarInfo();
 	step = tmp;
 
 	while(step != NULL) {
-		nclfprintf(fp,"\n%s\t%s ",NrmQuarkToString(step->u.var->data_type_quark),NrmQuarkToString(step->u.var->name));
-		for(i = 0; i < step->u.var->n_dims - 1; i++) {
-			nclfprintf(fp,"[ ");
-			if(step->u.var->dim_info[i].dim_quark != -1) {
-				nclfprintf(fp,"%s | ",NrmQuarkToString(step->u.var->dim_info[i].dim_quark));
-			}
-			nclfprintf(fp,"%d ] x ",step->u.var->dim_info[i].dim_size);
+		ret = nclfprintf(fp,"\n%s\t%s ",NrmQuarkToString(step->u.var->data_type_quark),NrmQuarkToString(step->u.var->name));
+		if(ret < 0) {
+			_NclFreeApiDataList((void*)tmp);
+			return(NhlWARNING);
 		}
-		nclfprintf(fp,"[ ");
+		for(i = 0; i < step->u.var->n_dims - 1; i++) {
+			ret = nclfprintf(fp,"[ ");
+			if(ret < 0) {
+				_NclFreeApiDataList((void*)tmp);
+				return(NhlWARNING);
+			}
+			if(step->u.var->dim_info[i].dim_quark != -1) {
+				ret = nclfprintf(fp,"%s | ",NrmQuarkToString(step->u.var->dim_info[i].dim_quark));
+				if(ret < 0) {
+					_NclFreeApiDataList((void*)tmp);
+					return(NhlWARNING);
+				}
+			}
+			ret = nclfprintf(fp,"%d ] x ",step->u.var->dim_info[i].dim_size);
+			if(ret < 0) {
+				_NclFreeApiDataList((void*)tmp);
+				return(NhlWARNING);
+			}
+		}
+		ret = nclfprintf(fp,"[ ");
+		if(ret < 0) {
+			_NclFreeApiDataList((void*)tmp);
+			return(NhlWARNING);
+		}
 		if(step->u.var->dim_info[step->u.var->n_dims - 1].dim_quark != -1) {
-                	nclfprintf(fp,"%s | ",NrmQuarkToString(step->u.var->dim_info[step->u.var->n_dims - 1].dim_quark));
+                	ret = nclfprintf(fp,"%s | ",NrmQuarkToString(step->u.var->dim_info[step->u.var->n_dims - 1].dim_quark));
+			if(ret < 0) {
+				_NclFreeApiDataList((void*)tmp);
+				return(NhlWARNING);
+			}
                 }
-                nclfprintf(fp,"%d ]\n",step->u.var->dim_info[step->u.var->n_dims - 1].dim_size);
+                ret = nclfprintf(fp,"%d ]\n",step->u.var->dim_info[step->u.var->n_dims - 1].dim_size);
+		if(ret < 0) {
+			_NclFreeApiDataList((void*)tmp);
+			return(NhlWARNING);
+		}
 		for(i = 0; i < step->u.var->n_atts; i++) {
-			nclfprintf(fp,"\t%s\n",NrmQuarkToString(step->u.var->attnames[i]));
+			ret = nclfprintf(fp,"\t%s\n",NrmQuarkToString(step->u.var->attnames[i]));
+			if(ret < 0) {
+				_NclFreeApiDataList((void*)tmp);
+				return(NhlWARNING);
+			}
 		}
 		step = step->next;
 	}
 	_NclFreeApiDataList((void*)tmp);
+	if(cmd_line) {
+                _NclEndCmdLinePager();
+        }
 	return(NhlNOERROR);
 }
 
@@ -135,30 +192,69 @@ NhlErrorTypes _NclIListFiles
 	FILE *fp;
 	NclApiDataList *tmp,*step;
 	int i;
+	int ret = 0;
 	
 
+	if(cmd_line) {
+		_NclStartCmdLinePager();
+	}
 	fp = _NclGetOutputStream();
 	tmp = _NclGetDefinedFileInfo();
 	step = tmp;
 	while(step != NULL) {
-		nclfprintf(fp,"\n%s\t%s\n",NrmQuarkToString(step->u.file->name),(step->u.file->wr_status ? "READ ONLY" : "READ/WRITE"));
-		nclfprintf(fp,"\t%s\n",NrmQuarkToString(step->u.file->path));
-		nclfprintf(fp,"\tDimensions:\n");
-		for(i = 0; i < step->u.file->n_dims; i++) {
-			nclfprintf(fp,"\t\t(%d) ",i);
-			if(step->u.file->dim_info[i].dim_quark != -1) {
-				nclfprintf(fp,"%s ",NrmQuarkToString(step->u.file->dim_info[i].dim_quark));
-			}
-			nclfprintf(fp,"%d\n",step->u.file->dim_info[i].dim_size);
+		ret = nclfprintf(fp,"\n%s\t%s\n",NrmQuarkToString(step->u.file->name),(step->u.file->wr_status ? "READ ONLY" : "READ/WRITE"));
+		if(ret < 0) {
+			_NclFreeApiDataList((void*)tmp);
+			return(NhlWARNING);
 		}
-		nclfprintf(fp,"\tAttributes:\n");
+		ret = nclfprintf(fp,"\t%s\n",NrmQuarkToString(step->u.file->path));
+		if(ret < 0) {
+			_NclFreeApiDataList((void*)tmp);
+			return(NhlWARNING);
+		}
+		ret = nclfprintf(fp,"\tDimensions:\n");
+		if(ret < 0) {
+			_NclFreeApiDataList((void*)tmp);
+			return(NhlWARNING);
+		}
+		for(i = 0; i < step->u.file->n_dims; i++) {
+			ret = nclfprintf(fp,"\t\t(%d) ",i);
+			if(ret < 0) {
+				_NclFreeApiDataList((void*)tmp);
+				return(NhlWARNING);
+			}
+			if(step->u.file->dim_info[i].dim_quark != -1) {
+				ret = nclfprintf(fp,"%s ",NrmQuarkToString(step->u.file->dim_info[i].dim_quark));
+				if(ret < 0) {
+					_NclFreeApiDataList((void*)tmp);
+					return(NhlWARNING);
+				}
+			}
+			ret = nclfprintf(fp,"%d\n",step->u.file->dim_info[i].dim_size);
+			if(ret < 0) {
+				_NclFreeApiDataList((void*)tmp);
+				return(NhlWARNING);
+			}
+		}
+		ret = nclfprintf(fp,"\tAttributes:\n");
+		if(ret < 0) {
+			_NclFreeApiDataList((void*)tmp);
+			return(NhlWARNING);
+		}
 		for(i = 0; i < step->u.file->n_atts; i++) {
-			nclfprintf(fp,"\t\t%s\n",NrmQuarkToString(step->u.file->attnames[i]));
+			ret = nclfprintf(fp,"\t\t%s\n",NrmQuarkToString(step->u.file->attnames[i]));
+			if(ret < 0) {
+				_NclFreeApiDataList((void*)tmp);
+				return(NhlWARNING);
+			}
 		}
 		step = step->next;
 	}
 	
 	_NclFreeApiDataList((void*)tmp);
+	if(cmd_line) {
+                _NclEndCmdLinePager();
+        }
 	return(NhlNOERROR);
 }
 
@@ -172,62 +268,133 @@ NhlErrorTypes _NclIListFuncs
 	FILE *fp;
 	NclApiDataList *tmp,*step;
 	int i,j;
+	int ret = 0;
 	
 
+	if(cmd_line) {
+		_NclStartCmdLinePager();
+	}
 	fp = _NclGetOutputStream();
 	tmp = _NclGetDefinedProcFuncInfo();
 	step = tmp;
 
 	while(step != NULL) {
-		nclfprintf(fp,"\n%s ", (step->u.func->kind ? "function" : "procedure"));
-		nclfprintf(fp,"%s (",NrmQuarkToString(step->u.func->name));
+		ret = nclfprintf(fp,"\n%s ", (step->u.func->kind ? "function" : "procedure"));
+		if(ret < 0) {
+			_NclFreeApiDataList((void*)tmp);
+        		return(NhlWARNING);
+		}
+		ret = nclfprintf(fp,"%s (",NrmQuarkToString(step->u.func->name));
+		if(ret < 0) {
+			_NclFreeApiDataList((void*)tmp);
+        		return(NhlWARNING);
+		}
 	
 		if(step->u.func->nparams > 0 ) {	
-			nclfprintf(fp,"\n");
+			ret = nclfprintf(fp,"\n");
+			if(ret < 0) {
+				_NclFreeApiDataList((void*)tmp);
+        			return(NhlWARNING);
+			}
 			for(i = 0; i < step->u.func->nparams - 1 ; i++) {
 /*
-				nclfprintf(fp,"\t%s ",step->u.func->theargs[i].arg_sym->name);
+				ret = nclfprintf(fp,"\t%s ",step->u.func->theargs[i].arg_sym->name);
+				if(ret < 0) {
+					_NclFreeApiDataList((void*)tmp);
+        				return(NhlWARNING);
+				}
 */
-				nclfprintf(fp,"\t");
+				ret = nclfprintf(fp,"\t");
+				if(ret < 0) {
+					_NclFreeApiDataList((void*)tmp);
+        				return(NhlWARNING);
+				}
 				if(step->u.func->theargs[i].is_dimsizes) {
 					for(j = 0; j < step->u.func->theargs[i].n_dims; j++ ) {
 						if(step->u.func->theargs[i].dim_sizes[j] > 0) {
-							nclfprintf(fp,"[%d]",step->u.func->theargs[i].dim_sizes[j]);
+							ret = nclfprintf(fp,"[%d]",step->u.func->theargs[i].dim_sizes[j]);
+							if(ret < 0) {
+								_NclFreeApiDataList((void*)tmp);
+        							return(NhlWARNING);
+							}
 						} else {
-							nclfprintf(fp,"[*]");
+							ret = nclfprintf(fp,"[*]");
+							if(ret < 0) {
+								_NclFreeApiDataList((void*)tmp);
+        							return(NhlWARNING);
+							}
 						}
 					}
 				}
 				if(step->u.func->theargs[i].arg_data_type != NULL) {
-					nclfprintf(fp,": %s,\n",step->u.func->theargs[i].arg_data_type->name);
+					ret = nclfprintf(fp,": %s,\n",step->u.func->theargs[i].arg_data_type->name);
+					if(ret < 0) {
+						_NclFreeApiDataList((void*)tmp);
+        					return(NhlWARNING);
+					}
 				} else {
-					nclfprintf(fp,",\n");
+					ret = nclfprintf(fp,",\n");
+					if(ret < 0) {
+						_NclFreeApiDataList((void*)tmp);
+        					return(NhlWARNING);
+					}
 				}
 			}
 /*
-			nclfprintf(fp,"\t%s ",step->u.func->theargs[step->u.func->nparams-1].arg_sym->name);
+			ret = nclfprintf(fp,"\t%s ",step->u.func->theargs[step->u.func->nparams-1].arg_sym->name);
+			if(ret < 0) {
+				_NclFreeApiDataList((void*)tmp);
+        			return(NhlWARNING);
+			}
 */
-			nclfprintf(fp,"\t");
+			ret = nclfprintf(fp,"\t");
+			if(ret < 0) {
+				_NclFreeApiDataList((void*)tmp);
+        			return(NhlWARNING);
+			}
 			if(step->u.func->theargs[step->u.func->nparams-1].is_dimsizes) {
 				for(j = 0; j < step->u.func->theargs[step->u.func->nparams-1].n_dims; j++ ) {
 					if(step->u.func->theargs[step->u.func->nparams-1].dim_sizes[j] > 0) {
-						nclfprintf(fp,"[%d]",step->u.func->theargs[step->u.func->nparams-1].dim_sizes[j]);
+						ret = nclfprintf(fp,"[%d]",step->u.func->theargs[step->u.func->nparams-1].dim_sizes[j]);
+						if(ret < 0) {
+							_NclFreeApiDataList((void*)tmp);
+        						return(NhlWARNING);
+						}
 					} else {
-						nclfprintf(fp,"[*]");
+						ret = nclfprintf(fp,"[*]");
+						if(ret < 0) {
+							_NclFreeApiDataList((void*)tmp);
+        						return(NhlWARNING);
+						}
 					}
 				}
 			}
 			if(step->u.func->theargs[step->u.func->nparams-1].arg_data_type != NULL) {
-				nclfprintf(fp,": %s\n",step->u.func->theargs[step->u.func->nparams-1].arg_data_type->name);
+				ret = nclfprintf(fp,": %s\n",step->u.func->theargs[step->u.func->nparams-1].arg_data_type->name);
+				if(ret < 0) {
+					_NclFreeApiDataList((void*)tmp);
+        				return(NhlWARNING);
+				}
 			} else {
-				nclfprintf(fp,"\n");
+				ret = nclfprintf(fp,"\n");
+				if(ret < 0) {
+					_NclFreeApiDataList((void*)tmp);
+        				return(NhlWARNING);
+				}
 			}
 		} 
-		nclfprintf(fp,")\n");
+		ret = nclfprintf(fp,")\n");
+		if(ret < 0) {
+			_NclFreeApiDataList((void*)tmp);
+        		return(NhlWARNING);
+		}
 		step = step->next;
 	}
 	
 	_NclFreeApiDataList((void*)tmp);
+	if(cmd_line) {
+                _NclEndCmdLinePager();
+        }
         return(NhlNOERROR);
 }
 
@@ -244,7 +411,7 @@ NhlErrorTypes _NclIListFileVariables
 	FILE *fp;
 	NclApiDataList *tmp,*step;
 	NclQuark file_q;
-	int i;
+	int i,ret =0;
 	
 
 	data = _NclGetArg(0,1,DONT_CARE);
@@ -255,28 +422,66 @@ NhlErrorTypes _NclIListFileVariables
 	case NclStk_VAL:
 		return(NhlFATAL);
 	}
+	if(cmd_line) {
+		_NclStartCmdLinePager();
+	}
 	fp = _NclGetOutputStream();
 	tmp = _NclGetFileVarInfo(file_q);
 	step = tmp;
 	while(step != NULL) {
-		nclfprintf(fp,"\n%s\t%s ",NrmQuarkToString(step->u.var->data_type_quark),NrmQuarkToString(step->u.var->name));
-		for(i = 0; i < step->u.var->n_dims - 1; i++) {
-			nclfprintf(fp,"[ ");
-			if(step->u.var->dim_info[i].dim_quark != -1) {
-				nclfprintf(fp,"%s | ",NrmQuarkToString(step->u.var->dim_info[i].dim_quark));
-			}
-			nclfprintf(fp,"%d ] x ",step->u.var->dim_info[i].dim_size);
+		ret = nclfprintf(fp,"\n%s\t%s ",NrmQuarkToString(step->u.var->data_type_quark),NrmQuarkToString(step->u.var->name));
+		if(ret < 0) {
+			_NclFreeApiDataList((void*)tmp);
+			return(NhlWARNING);
 		}
-		nclfprintf(fp,"[ ");
+		for(i = 0; i < step->u.var->n_dims - 1; i++) {
+			ret = nclfprintf(fp,"[ ");
+			if(ret < 0) {
+				_NclFreeApiDataList((void*)tmp);
+				return(NhlWARNING);
+			}
+			if(step->u.var->dim_info[i].dim_quark != -1) {
+				ret = nclfprintf(fp,"%s | ",NrmQuarkToString(step->u.var->dim_info[i].dim_quark));
+				if(ret < 0) {
+					_NclFreeApiDataList((void*)tmp);
+					return(NhlWARNING);
+				}
+			}
+			ret = nclfprintf(fp,"%d ] x ",step->u.var->dim_info[i].dim_size);
+			if(ret < 0) {
+				_NclFreeApiDataList((void*)tmp);
+				return(NhlWARNING);
+			}
+		}
+		ret = nclfprintf(fp,"[ ");
+		if(ret < 0) {
+			_NclFreeApiDataList((void*)tmp);
+			return(NhlWARNING);
+		}
 		if(step->u.var->dim_info[step->u.var->n_dims - 1].dim_quark != -1) {
-                	nclfprintf(fp,"%s | ",NrmQuarkToString(step->u.var->dim_info[step->u.var->n_dims - 1].dim_quark));
+                	ret = nclfprintf(fp,"%s | ",NrmQuarkToString(step->u.var->dim_info[step->u.var->n_dims - 1].dim_quark));
+			if(ret < 0) {
+				_NclFreeApiDataList((void*)tmp);
+				return(NhlWARNING);
+			}
                 }
-                nclfprintf(fp,"%d ]\n",step->u.var->dim_info[step->u.var->n_dims - 1].dim_size);
+                ret = nclfprintf(fp,"%d ]\n",step->u.var->dim_info[step->u.var->n_dims - 1].dim_size);
+		if(ret < 0) {
+			_NclFreeApiDataList((void*)tmp);
+			return(NhlWARNING);
+		}
 		for(i = 0; i < step->u.var->n_atts; i++) {
-			nclfprintf(fp,"\t%s\n",NrmQuarkToString(step->u.var->attnames[i]));
+			ret = nclfprintf(fp,"\t%s\n",NrmQuarkToString(step->u.var->attnames[i]));
+			if(ret < 0) {
+				_NclFreeApiDataList((void*)tmp);
+				return(NhlWARNING);
+			}
 		}
 		step = step->next;
 	}
+	if(cmd_line) {
+                _NclEndCmdLinePager();
+        }
 	_NclFreeApiDataList((void*)tmp);
         return(NhlNOERROR);
 }
@@ -1285,22 +1490,30 @@ NhlErrorTypes _NclIPrint
 {
 	NclStackEntry data;
 	FILE *fp;
+	NhlErrorTypes ret = NhlNOERROR;
 	
 
 	data = _NclGetArg(0,1,DONT_CARE);
+	if(cmd_line) {
+		_NclStartCmdLinePager();
+	}
 	fp = _NclGetOutputStream();
 
 	switch(data.kind) {
 	case NclStk_VAL:
-		_NclPrint((NclObj)data.u.data_obj,fp);
+		ret = _NclPrint((NclObj)data.u.data_obj,fp);
 		break;
 	case NclStk_VAR:
-		_NclPrint((NclObj)data.u.data_var,fp);
+		ret = _NclPrint((NclObj)data.u.data_var,fp);
 		break;
 	default:
+		ret = NhlNOERROR;
 		break;
 	}
-	return(NhlNOERROR);
+	if(cmd_line&&!(ret < NhlINFO)) {
+		_NclEndCmdLinePager();
+	}
+	return(ret);
 }
 
 NhlErrorTypes _NclIDelete

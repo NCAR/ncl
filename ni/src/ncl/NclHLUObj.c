@@ -194,7 +194,7 @@ int child_id;
 	return(NhlNOERROR);
 }
 
-static void HLUObjPrint
+static NhlErrorTypes HLUObjPrint
 #if	NhlNeedProto
 (NclObj self,FILE *fp)
 #else
@@ -206,11 +206,17 @@ FILE * fp;
 	NclHLUObj hlu_ptr = (NclHLUObj)self;
 	Const char *name;
 	Const char *cname;
+	int ret=0;
 
 	name = NhlName(hlu_ptr->hlu.hlu_id);
 	cname = NhlClassName(hlu_ptr->hlu.hlu_id);
 
-	nclfprintf(fp,"%s\t%s\t%d", name,cname,hlu_ptr->hlu.hlu_id);
+	ret = nclfprintf(fp,"%s\t%s\t%d", name,cname,hlu_ptr->hlu.hlu_id);
+	if(ret < 0) {
+		return(NhlWARNING);
+	} else {
+		return(NhlNOERROR);
+	}
 }
 
 static NhlErrorTypes InitializeHLUObjClass(

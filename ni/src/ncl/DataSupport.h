@@ -1,6 +1,6 @@
 
 /*
- *      $Id: DataSupport.h,v 1.8 1995-10-26 22:30:58 ethan Exp $
+ *      $Id: DataSupport.h,v 1.9 1995-11-03 00:00:39 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -90,7 +90,7 @@ NclScalar * /* coerce_obj_to */
 #endif
 );
 
-extern void _NclPrint(
+extern NhlErrorTypes _NclPrint(
 #if	NhlNeedProto
 struct _NclObjRec* /* self*/,
 FILE * /* fp*/

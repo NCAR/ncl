@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclTypestring.c.specific,v 1.2 1995-02-17 01:01:11 ethan Exp $
+ *      $Id: NclTypestring.c.specific,v 1.3 1995-11-03 00:01:05 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -23,7 +23,7 @@
 #include "NclTypelogical.h"
 #include "NclTypefloat.h"
 
-static void Ncl_Type_string_print
+static NhlErrorTypes Ncl_Type_string_print
 #if     NhlNeedProto
 (FILE *fp, void * val)
 #else
@@ -33,8 +33,15 @@ void *val;
 #endif
 {
         string *sp = (string*)val;
+	int ret;
 
-        nclfprintf(fp,"%s",NrmQuarkToString(*sp));
+        ret = nclfprintf(fp,"%s",NrmQuarkToString(*sp));
+	if(ret < 0) {
+                return(NhlWARNING);
+        } else {
+                return(NhlNOERROR);
+        }
+
 }
 
 

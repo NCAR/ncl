@@ -1,5 +1,5 @@
 /*
- *      $Id: DataSupport.c,v 1.21 1995-10-26 22:30:55 ethan Exp $
+ *      $Id: DataSupport.c,v 1.22 1995-11-03 00:00:37 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -773,7 +773,7 @@ NclBasicDataTypes totype;
 	}
 }
 
-void _NclPrint
+NhlErrorTypes _NclPrint
 #if	NhlNeedProto
 (NclObj obj,FILE *fp)
 #else 
@@ -785,20 +785,19 @@ FILE *fp;
 	NclObjClass oc;
 
 	if(obj == NULL)  {
-		return;
+		return(NhlWARNING);
 	} else {
 		oc = obj->obj.class_ptr;
 	}
 
 	while(oc != NULL) {
 		if(oc->obj_class.print != NULL)  {
-			(*(oc->obj_class.print))(obj,fp);
-			return;
+			return((*(oc->obj_class.print))(obj,fp));
 		} else {
 			oc = oc->obj_class.super_class;
 		}
 	} 
-	return;
+	return(NhlWARNING);
 }
 
 

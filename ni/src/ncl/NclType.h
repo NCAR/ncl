@@ -1,5 +1,5 @@
 /*
- *      $Id: NclType.h,v 1.3 1995-04-19 00:01:54 ethan Exp $
+ *      $Id: NclType.h,v 1.4 1995-11-03 00:00:53 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -94,7 +94,7 @@ int	/* nval */
 #endif
 );
 
-typedef void (*NclTypePrint) (
+typedef NhlErrorTypes (*NclTypePrint) (
 #if	NhlNeedProto
 FILE * /*fp */,
 void	* /*val*/

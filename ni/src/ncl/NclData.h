@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclData.h,v 1.7 1995-06-03 00:45:33 ethan Exp $
+ *      $Id: NclData.h,v 1.8 1995-11-03 00:00:43 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -89,7 +89,7 @@ NclStatus /*requested*/
 #endif
 );
 
-typedef void (*NclPrintFunction)(
+typedef NhlErrorTypes (*NclPrintFunction)(
 #if	NhlNeedProto
 NclObj /*self*/,
 FILE	*		/*fp*/

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: defs.h,v 1.20 1995-06-17 01:21:57 ethan Exp $
+ *      $Id: defs.h,v 1.21 1995-11-03 00:01:11 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -145,7 +145,7 @@ va_list /*arg*/
 #endif
 );
 
-extern void nclfprintf(
+extern int nclfprintf(
 #if	NhlNeedVarArgProto
 	FILE * /*fp*/,
 	char * /*fmt*/,
@@ -159,7 +159,16 @@ NclVaPrintFunc thepit
 #endif
 );
 
-
+void _NclStartCmdLinePager(
+#if NhlNeedProto
+void
+#endif
+);
+void _NclEndCmdLinePager(
+#if NhlNeedProto
+void
+#endif
+);
 #endif /*_NCdefs.h*/
 #ifdef __cplusplus
 }

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValData.c.sed,v 1.15 1995-09-19 23:07:42 ethan Exp $
+ *      $Id: NclMultiDValData.c.sed,v 1.16 1995-11-03 00:00:51 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1793,7 +1793,7 @@ NclScalar * missing;
 	return;
 }
 
-static void MultiDValPrint
+static NhlErrorTypes MultiDValPrint
 #if     NhlNeedProto
 (NclObj self, FILE *fp)
 #else
@@ -1808,6 +1808,7 @@ FILE *fp;
         int k,where,done = 0;
         int ndims = self_md->multidval.n_dims;
 	int el_size;
+	int ret = 0;
 
 
 	el_size = self_md->multidval.type->type_class.size;
@@ -1817,17 +1818,29 @@ FILE *fp;
         }
         while(!done) {
                 where = 0;
-                nclfprintf(fp,"(");
+                ret = nclfprintf(fp,"(");
+		if(ret < 0) {
+			return(NhlWARNING);
+		}
                 for(k = 0; k < ndims - 1; k++) {
-                        nclfprintf(fp,"%d,",i[k]);
+                        ret = nclfprintf(fp,"%d,",i[k]);
+			if(ret < 0) {
+				return(NhlWARNING);
+			}
                         where = (where + i[k]) * j[k+1];
                 }
-                nclfprintf(fp,"%d)\t",i[ndims-1]);
+                ret = nclfprintf(fp,"%d)\t",i[ndims-1]);
+		if(ret < 0) {
+			return(NhlWARNING);
+		}
                 where = where + i[ndims - 1];
 
 	
 		_Nclprint(self_md->multidval.type,fp,(void*)((char*)self_md->multidval.val + (where * el_size)));
-		nclfprintf(fp,"\n");
+		ret = nclfprintf(fp,"\n");
+		if(ret < 0) {
+			return(NhlWARNING);
+		}
                 i[ndims - 1]++;
                 if(i[ndims - 1] == j[ndims - 1]) {
                         for(k=ndims - 1;k >0;k--) {
@@ -1839,7 +1852,7 @@ FILE *fp;
                         if(i[0] == j[0]) done = 1;
                 }
         }
-        return;
+        return(NhlNOERROR);
 }
 
 static void MultiDValDestroy

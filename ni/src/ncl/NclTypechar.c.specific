@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclTypechar.c.specific,v 1.1 1995-01-28 01:52:13 ethan Exp $
+ *      $Id: NclTypechar.c.specific,v 1.2 1995-11-03 00:00:55 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -24,7 +24,7 @@
 #include "NclTypelogical.h"
 #include "NclTypefloat.h"
 
-static void Ncl_Type_char_print
+static NhlErrorTypes Ncl_Type_char_print
 #if     NhlNeedProto
 (FILE *fp, void * val)
 #else
@@ -34,8 +34,14 @@ void *val;
 #endif
 {
         char *sp = (char*)val;
+	int ret;
 
-        nclfprintf(fp,"%c",*sp);
+        ret = nclfprintf(fp,"%c",*sp);
+	if(ret < 0) {
+                return(NhlWARNING);
+        } else {
+                return(NhlNOERROR);
+        }
 }
 
 static NhlErrorTypes Ncl_Type_char_cmpf

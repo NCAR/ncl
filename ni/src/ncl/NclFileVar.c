@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: NclFileVar.c,v 1.11 1995-06-17 01:21:43 ethan Exp $
+ *      $Id: NclFileVar.c,v 1.12 1995-11-03 00:00:47 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -123,7 +123,7 @@ char * 		/*dim_name */
 #endif
 );
 
-static void	FileVarPrint
+static NhlErrorTypes FileVarPrint
 #if	NhlNeedProto
 (NclObj theobj,FILE *fp)
 #else
@@ -160,10 +160,10 @@ FILE *fp;
 			thefile = (NclFile)_NclGetObj(*(int*)theval->multidval.val);
 		}
 		if(thefile != NULL) {
-			_NclPrint((NclObj)thefile,fp);
+			return(_NclPrint((NclObj)thefile,fp));
 		}
 	}
-	return;
+	return(NhlNOERROR);;
 }
 
 static NhlErrorTypes InitializeFileVarClass(
