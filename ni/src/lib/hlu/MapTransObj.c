@@ -1,5 +1,5 @@
 /*
-*      $Id: MapTransObj.c,v 1.29 1996-06-22 01:27:33 dbrown Exp $
+*      $Id: MapTransObj.c,v 1.30 1996-07-20 00:37:45 dbrown Exp $
 */
 /************************************************************************
 *									*
@@ -507,6 +507,8 @@ static mpWinLimits Win_Limits[] = {
 };
 
 static NhlLayer Wkptr = NULL;
+static NrmQuark	Qdataxmin = NrmNULLQUARK;
+static NrmQuark	Qdataxmax =  NrmNULLQUARK;
 
 /*
 * Function:	MapSetTrans
@@ -1151,7 +1153,11 @@ static NhlErrorTypes  MapTransSetValues
 	NhlMapTransObjLayerPart	*omtp = &(mold->mptrans);
 	NhlErrorTypes ret = NhlNOERROR, subret = NhlNOERROR;
 	char *e_text, *entry_name = "MapTransSetValues";
-	
+
+	if (num_args == 2 && 
+	    (args[0].quark == Qdataxmin || args[0].quark == Qdataxmax))
+	    return NhlNOERROR;
+
 	mtp->trans_changed = True;
 	mnew->trobj.change_count++;
 
@@ -1679,6 +1685,9 @@ static NhlErrorTypes    MapTransClassInitialize
 						NhlNumber(limitmodelist));
         _NhlRegisterEnumType(NhlmapTransObjClass,NhlTProjection,projectionlist,
 						NhlNumber(projectionlist));
+
+	Qdataxmin = NrmStringToQuark(NhlNtrDataXMinF);
+	Qdataxmax = NrmStringToQuark(NhlNtrDataXMaxF);
 
 	return NhlNOERROR;
 }

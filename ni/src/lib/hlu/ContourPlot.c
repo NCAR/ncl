@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.42 1996-07-12 18:54:08 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.43 1996-07-20 00:37:40 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3053,6 +3053,13 @@ NhlLayer inst;
                 NhlFree(cnp->info_lbl.text);
 	if (cnp->constf_lbl.text != NULL)
                 NhlFree(cnp->constf_lbl.text);
+
+	if (cnp->predraw_dat != NULL)
+		_NhlDeleteViewSegment(inst,cnp->predraw_dat);
+	if (cnp->draw_dat != NULL)
+		_NhlDeleteViewSegment(inst,cnp->draw_dat);
+	if (cnp->postdraw_dat != NULL)
+		_NhlDeleteViewSegment(inst,cnp->postdraw_dat);
 
 	return(ret);
 }

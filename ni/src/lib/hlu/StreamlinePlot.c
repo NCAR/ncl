@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlot.c,v 1.15 1996-07-12 18:54:12 dbrown Exp $
+ *      $Id: StreamlinePlot.c,v 1.16 1996-07-20 00:37:47 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2218,6 +2218,13 @@ NhlLayer inst;
                 NhlFree(stp->zerof_lbl.text1);
 	if (stp->zerof_lbl.text2 != NULL)
                 NhlFree(stp->zerof_lbl.text2);
+
+	if (stp->predraw_dat != NULL)
+		_NhlDeleteViewSegment(inst,stp->predraw_dat);
+	if (stp->draw_dat != NULL)
+		_NhlDeleteViewSegment(inst,stp->draw_dat);
+	if (stp->postdraw_dat != NULL)
+		_NhlDeleteViewSegment(inst,stp->postdraw_dat);
 
 	return(ret);
 }

@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.c,v 1.22 1996-07-12 18:54:15 dbrown Exp $
+ *      $Id: VectorPlot.c,v 1.23 1996-07-20 00:37:52 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2839,6 +2839,12 @@ NhlLayer inst;
                 NhlFree(vcp->zerof_lbl.format.fstring);
 #endif
 
+	if (vcp->predraw_dat != NULL)
+		_NhlDeleteViewSegment(inst,vcp->predraw_dat);
+	if (vcp->draw_dat != NULL)
+		_NhlDeleteViewSegment(inst,vcp->draw_dat);
+	if (vcp->postdraw_dat != NULL)
+		_NhlDeleteViewSegment(inst,vcp->postdraw_dat);
 
 	return(ret);
 }

@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.61 1996-07-12 18:54:16 dbrown Exp $
+ *      $Id: XyPlot.c,v 1.62 1996-07-20 00:37:54 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2983,6 +2983,13 @@ NhlLayer inst;
 	NhlFreeGenArray(xp->missing_set);
 	NhlFreeGenArray(xp->xmissing);
 	NhlFreeGenArray(xp->ymissing);
+
+	if (xp->predraw_dat != NULL)
+		_NhlDeleteViewSegment(inst,xp->predraw_dat);
+	if (xp->draw_dat != NULL)
+		_NhlDeleteViewSegment(inst,xp->draw_dat);
+	if (xp->postdraw_dat != NULL)
+		_NhlDeleteViewSegment(inst,xp->postdraw_dat);
 
 	return(ret1);
 }

@@ -1,5 +1,5 @@
 /*
- *      $Id: Title.c,v 1.26 1996-05-11 03:32:28 dbrown Exp $
+ *      $Id: Title.c,v 1.27 1996-07-20 00:37:51 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1586,6 +1586,10 @@ static NhlErrorTypes     TitleDestroy
 	NhlDestroy(tinst->title.main_id);
 	NhlDestroy(tinst->title.x_axis_id);
 	NhlDestroy(tinst->title.y_axis_id);
+
+	if (tinst->title.trans_dat != NULL)
+		_NhlDeleteViewSegment(inst,tinst->title.trans_dat);
+
 	return(NhlNOERROR);
 }
 

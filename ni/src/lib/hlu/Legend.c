@@ -1,5 +1,5 @@
 /*
- *      $Id: Legend.c,v 1.49 1996-05-11 03:32:21 dbrown Exp $
+ *      $Id: Legend.c,v 1.50 1996-07-20 00:37:44 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -5717,6 +5717,9 @@ static NhlErrorTypes    LegendDestroy
 	}
 	if (lg_p->title_id >=0)
 		NhlDestroy(lg_p->title_id);
+
+	if (lg_p->trans_dat != NULL)
+		_NhlDeleteViewSegment(inst,lg_p->trans_dat);
 
 	return(NhlNOERROR);
 }

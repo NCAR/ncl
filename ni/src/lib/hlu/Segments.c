@@ -1,5 +1,5 @@
 /*
- *      $Id: Segments.c,v 1.4 1994-12-16 20:04:42 boote Exp $
+ *      $Id: Segments.c,v 1.5 1996-07-20 00:37:46 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -48,9 +48,17 @@ void lubksb3d();
 * are routinly created and freed some mechanism for reclaiming spent id may
 * be needed
 */
-
-static int id = 1;
+/*
+ * GKS only allows segment numbers from 1-99; it is now easily possible
+ * to go way beyond that with the HLU's so a method of retrieving 
+ * discarded segment ids is necessary
+ */
 #define SEG_NOT_SET -10
+#define MAX_SEG 100
+static NhlBoolean Init_Required = True;
+static char Id_Assigned[MAX_SEG];
+static int Id = 1;
+
 
 
 /*
@@ -93,6 +101,10 @@ void	_NhlDestroySegTransDat
 	if(transdat->id != SEG_NOT_SET) {
 /* FORTRAN */ _NHLCALLF(gdsg,GDSG)(&(transdat->id));
 	}
+	Id_Assigned[transdat->id] = 0;
+	if (transdat->id < Id)
+		Id = transdat->id;
+
 	NhlFree(transdat);
 	transdat = NULL;
 	return;
@@ -422,8 +434,25 @@ void	_NhlStartSegment
 	NhlTransDat	*transdat;
 #endif
 {
+	int i;
+	if (Init_Required) {
+		memset(&Id_Assigned,(char)0,MAX_SEG*sizeof(char));
+		Init_Required = False;
+	}
 	if(transdat->id == SEG_NOT_SET) {
-		transdat->id = id++;
+		if (Id == MAX_SEG) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+			     "_NhlStartSegment: no more segments available");
+			return;
+		}
+		transdat->id = Id;
+		Id_Assigned[Id] = 1;
+		for (i= Id;i<=MAX_SEG;i++) {
+			if (! Id_Assigned[i]) {
+				Id = i;
+				break;
+			}
+		}
 	}
 /* FORTRAN */ _NHLCALLF(gcrsg,GCRSG)(&(transdat->id));
 	return;

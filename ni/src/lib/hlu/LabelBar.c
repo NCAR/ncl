@@ -1,5 +1,5 @@
 /*
- *      $Id: LabelBar.c,v 1.48 1996-05-11 03:32:20 dbrown Exp $
+ *      $Id: LabelBar.c,v 1.49 1996-07-20 00:37:42 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -4461,6 +4461,9 @@ static NhlErrorTypes    LabelBarDestroy
 	}
 	if (lb_p->title_id >=0)
 		NhlDestroy(lb_p->title_id);
+
+	if (lb_p->trans_dat != NULL)
+		_NhlDeleteViewSegment(inst,lb_p->trans_dat);
 
 	return(NhlNOERROR);
 }

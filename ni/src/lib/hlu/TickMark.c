@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.c,v 1.48 1996-05-16 23:46:27 dbrown Exp $
+ *      $Id: TickMark.c,v 1.49 1996-07-20 00:37:49 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2069,6 +2069,9 @@ static NhlErrorTypes	TickMarkDestroy
 	NhlFree(tinst->tick.x_t_format.fstring);
 	NhlFree(tinst->tick.y_l_format.fstring);
 	NhlFree(tinst->tick.y_r_format.fstring);
+
+	if (tinst->tick.trans_dat != NULL)
+		_NhlDeleteViewSegment(inst,tinst->tick.trans_dat);
 	
 	return(NhlNOERROR);
 }
