@@ -1,5 +1,5 @@
 /*
- *  $Id: c_csex04.c,v 1.3 1999-01-28 23:55:27 fred Exp $
+ *  $Id: c_csex04.c,v 1.4 2002-05-03 20:31:38 fred Exp $
  */
 
 #include <math.h>
@@ -75,8 +75,8 @@ main ()
  *  Generate input data using the functiuon f(x,y) = y**2 - 0.5*y*x**2
  */
   for (i = 0; i < NI; i++) {
-    xi[i] = XMIN+(XMAX-XMIN)*dsrnd1();    
-    yi[i] = YMIN+(YMAX-YMIN)*dsrnd1();    
+    xi[i] = XMIN+(XMAX-(XMIN))*dsrnd1();    
+    yi[i] = YMIN+(YMAX-(YMIN))*dsrnd1();    
     zi[i] = yi[i]*yi[i] - 0.5*xi[i]*xi[i]*yi[i];
   }
 
@@ -84,10 +84,10 @@ main ()
  *  Create the output grid.
  */
   for (i = 0; i < NX; i++) {
-    xo[i] = XMIN+((float)i/(float)(NX-1))*(XMAX-XMIN);
+    xo[i] = XMIN+((float)i/(float)(NX-1))*(XMAX-(XMIN));
   }
   for (j = 0; j < NY; j++) {
-    yo[j] = YMIN+((float)j/(float)(NY-1))*(YMAX-YMIN);
+    yo[j] = YMIN+((float)j/(float)(NY-1))*(YMAX-(YMIN));
   }
 
 /*
