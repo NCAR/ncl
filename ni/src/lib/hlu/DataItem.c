@@ -1,5 +1,5 @@
 /*
- *      $Id: DataItem.c,v 1.3 1994-01-27 21:22:35 boote Exp $
+ *      $Id: DataItem.c,v 1.4 1994-02-01 18:22:31 boote Exp $
  */
 /************************************************************************
 *									*
@@ -61,6 +61,16 @@ static NhlErrorTypes DataItemInitialize(
 #endif
 );
 
+static NhlErrorTypes DataItemSetValues(
+#if	NhlNeedProto
+	NhlLayer	old,	/* old		*/
+	NhlLayer	req,	/* requested	*/
+	NhlLayer	new,	/* new		*/
+	_NhlArgList	args,	/* args		*/
+	int		nargs	/* nargs	*/
+#endif
+);
+
 static NhlErrorTypes DataItemSetValuesHook(
 #if	NhlNeedProto
 	NhlLayer	old,	/* old		*/
@@ -93,7 +103,7 @@ NhlDataItemLayerClassRec NhldataItemLayerClassRec = {
 /* class_part_initialize	*/	DataItemClassPartInitialize,
 /* class_initialize		*/	NULL,
 /* layer_initialize		*/	DataItemInitialize,
-/* layer_set_values		*/	NULL,
+/* layer_set_values		*/	DataItemSetValues,
 /* layer_set_values_hook	*/	DataItemSetValuesHook,
 /* layer_get_values		*/	NULL,
 /* layer_reparent		*/	NULL,
@@ -209,6 +219,9 @@ DataItemInitialize
 	char			tstring[_NhlMAXRESNAMLEN];
 	int			tint;
 
+	/* initialize field - used in setvalues/hook */
+	dinew->dataitem.change_called = True;
+
 	/*
 	 * if this object is being created by a converter as an internal
 	 * data set, then a Manager should not be created.
@@ -237,6 +250,46 @@ DataItemInitialize
 }
 
 /*
+ * Function:	DataItemSetValues
+ *
+ * Description:
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	static
+ * Returns:	void
+ * Side Effect:	
+ */
+/*ARGSUSED*/
+static NhlErrorTypes
+DataItemSetValues
+#if	__STDC__
+(
+	NhlLayer		old,	/* old		*/
+	NhlLayer		req,	/* requested	*/
+	NhlLayer		new,	/* new		*/
+	_NhlArgList		args,	/* args		*/
+	int			nargs	/* nargs	*/
+)
+#else
+(old,req,new,args,nargs)
+	NhlLayer		old;	/* old		*/
+	NhlLayer		req;	/* requested	*/
+	NhlLayer		new;	/* new		*/
+	_NhlArgList		args;	/* args		*/
+	int			nargs;	/* nargs	*/
+#endif
+{
+	NhlDataItemLayer	dil = (NhlDataItemLayer)new;
+
+	dil->dataitem.change_called = False;
+
+	return NhlNOERROR;
+}
+
+/*
  * Function:	DataItemSetValuesHook
  *
  * Description:
@@ -257,20 +310,26 @@ DataItemSetValuesHook
 	NhlLayer		old,	/* old		*/
 	NhlLayer		req,	/* requested	*/
 	NhlLayer		new,	/* new		*/
-	_NhlArgList	args,	/* args		*/
-	int		nargs	/* nargs	*/
+	_NhlArgList		args,	/* args		*/
+	int			nargs	/* nargs	*/
 )
 #else
 (old,req,new,args,nargs)
 	NhlLayer		old;	/* old		*/
 	NhlLayer		req;	/* requested	*/
 	NhlLayer		new;	/* new		*/
-	_NhlArgList	args;	/* args		*/
-	int		nargs;	/* nargs	*/
+	_NhlArgList		args;	/* args		*/
+	int			nargs;	/* nargs	*/
 #endif
 {
 	NhlDataItemLayer	dil = (NhlDataItemLayer)new;
 
+	if(!dil->dataitem.change_called){
+		dil->dataitem.change_called = True;
+		if(memcmp((void*)old,(void*)new,
+				new->base.layer_class->base_class.layer_size))
+			_NhlDataItemModified(dil->dataitem.manager);
+	}
 	return _NhlNotifyDataComm(dil->dataitem.manager);
 }
 
@@ -319,7 +378,7 @@ DataItemDestroy
  * Function:	_NhlDataChanged
  *
  * Description:	This function is used by sub-classes of the DataItem during
- *		a set-values, to notify the supre-class, and the manager
+ *		a set-values, to notify the super-class, and the manager
  *		that the data has changed.
  *
  * In Args:	
@@ -335,11 +394,13 @@ void
 _NhlDataChanged
 #if	__STDC__
 (
-	NhlDataItemLayer	l	/* data item layer	*/
+	NhlDataItemLayer	l,	/* data item layer	*/
+	NhlBoolean		status
 )
 #else
-(l)
+(l,status)
 	NhlDataItemLayer	l;	/* data item layer	*/
+	NhlBoolean		status;
 #endif
 {
 	if(!_NhlIsDataItem(l)){
@@ -348,7 +409,9 @@ _NhlDataChanged
 		return;
 	}
 
-	if(l->dataitem.manager != NULL){
+	l->dataitem.change_called = True;
+
+	if(status){
 		_NhlDataItemModified((NhlLayer)l->dataitem.manager);
 		return;
 	}

@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrTable.c,v 1.10 1994-01-27 21:21:53 boote Exp $
+ *      $Id: CoordArrTable.c,v 1.11 1994-02-01 18:22:20 boote Exp $
  */
 /************************************************************************
 *									*
@@ -20,9 +20,9 @@
  *	Description:	This class is used to communicate data in the format
  *			of CoordArrTable.
  */
-#include <stdio.h>
-#include <string.h>
-#include <ncarg/hlu/CoordArrTableP.h>
+#include <stdio.h> 
+#include <string.h> 
+#include <ncarg/hlu/CoordArrTableP.h> 
 
 /************************************************************************
 *									*
@@ -829,10 +829,11 @@ CoordArrTableClassPartInitialize
 {									\
 	if(ncat->cat##type.dim##table_lens != NULL){			\
 	ncat->cat##type.dim##table_lens =				\
-		_NhlCopyGenArray((NhlGenArray)ncat->cat##type.dim##table_lens,(NhlBoolean)True);	\
+	_NhlCopyGenArray((NhlGenArray)ncat->cat##type.dim##table_lens,	\
+						(NhlBoolean)True);	\
 	if(ncat->cat##type.dim##table_lens == NULL){			\
-		NhlPError(NhlFATAL,ENOMEM,NULL);				\
-		return NhlFATAL;						\
+		NhlPError(NhlFATAL,ENOMEM,NULL);			\
+		return NhlFATAL;					\
 	}								\
 	}								\
 }
@@ -841,31 +842,35 @@ CoordArrTableClassPartInitialize
 {									\
 	if(ncat->cat##type.dim##table != NULL){				\
 	ncat->cat##type.dim##table =					\
-		_NhlCopyGenArray((NhlGenArray)ncat->cat##type.dim##table,(NhlBoolean)True);	\
+	_NhlCopyGenArray((NhlGenArray)ncat->cat##type.dim##table,	\
+						(NhlBoolean)True);	\
 	if(ncat->cat##type.dim##table == NULL){				\
-		NhlPError(NhlFATAL,ENOMEM,NULL);				\
-		return NhlFATAL;						\
+		NhlPError(NhlFATAL,ENOMEM,NULL);			\
+		return NhlFATAL;					\
 	}								\
 	if(ncat->cat##type.copy_tables){				\
-		type	**vals,*ovect,*nvect;				\
-		int	*lens,i;					\
+		type	**vals##dim,*ovect##dim,*nvect##dim;		\
+		int	*lens##dim,i##dim;				\
 									\
-		vals = ncat->cat##type.dim##table->data;		\
-		lens = ncat->cat##type.dim##table_lens->data;		\
+		vals##dim = ncat->cat##type.dim##table->data;		\
+		lens##dim = ncat->cat##type.dim##table_lens->data;	\
 									\
-		for(i=0;i < ncat->cat##type.dim##table->num_elements;	\
-								i++){	\
-			ovect = vals[i];				\
-			if(ovect == NULL)				\
+		for(i##dim=0;						\
+			i##dim<ncat->cat##type.dim##table->num_elements;\
+							i##dim++){	\
+			ovect##dim = vals##dim[i##dim];			\
+			if(ovect##dim == NULL)				\
 				continue;				\
 									\
-			nvect = NhlMalloc(sizeof(type)*lens[i]);	\
-			if(nvect == NULL){				\
-				NhlPError(NhlFATAL,ENOMEM,NULL);		\
-				return NhlFATAL;				\
+			nvect##dim = NhlMalloc(sizeof(type)*		\
+						lens##dim[i##dim]);	\
+			if(nvect##dim == NULL){				\
+				NhlPError(NhlFATAL,ENOMEM,NULL);	\
+				return NhlFATAL;			\
 			}						\
-			memcpy((char*)nvect,(char*)ovect,sizeof(type)*lens[i]);	\
-			vals[i] = nvect;				\
+			memcpy((char*)nvect##dim,(char*)ovect##dim,	\
+				sizeof(type)*lens##dim[i##dim]);	\
+			vals##dim[i##dim] = nvect##dim;			\
 		}							\
 									\
 		ncat->cat##type.own_##dim = True;			\
@@ -877,22 +882,23 @@ CoordArrTableClassPartInitialize
 
 #define CHECK_TABLES(type,dim,DIM)\
 {									\
-	NhlGenArray	gen, gen2;					\
+	NhlGenArray	gen##DIM, gen2##DIM;				\
 									\
 	if((ncat->cat##type.dim##table != NULL) &&			\
 			(ncat->cat##type.dim##table_lens != NULL)){	\
-		gen = ncat->cat##type.dim##table;			\
-		gen2 = ncat->cat##type.dim##table_lens;			\
-		if((gen->num_dimensions != 1) ||			\
-					(gen2->num_dimensions != 1)){	\
-			NhlPError(NhlWARNING,NhlEUNKNOWN,			\
+		gen##DIM = ncat->cat##type.dim##table;			\
+		gen2##DIM = ncat->cat##type.dim##table_lens;		\
+		if((gen##DIM->num_dimensions != 1) ||			\
+				(gen2##DIM->num_dimensions != 1)){	\
+			NhlPError(NhlWARNING,NhlEUNKNOWN,		\
 		"%s:%s and %s must one dimensional arrays:ignoring",	\
 					error_lead,NhlNct##DIM##Table,	\
 					NhlNct##DIM##TableLengths);	\
 			inv##dim = True;				\
 		}							\
-		else if(gen->len_dimensions[0]!=gen2->len_dimensions[0]){\
-			NhlPError(NhlWARNING,NhlEUNKNOWN,			\
+		else if(gen##DIM->len_dimensions[0] !=			\
+					gen2##DIM->len_dimensions[0]){	\
+			NhlPError(NhlWARNING,NhlEUNKNOWN,		\
 	"%s:%s and %s must be arrays of the same length:ignoring",	\
 					error_lead,NhlNct##DIM##Table,	\
 					NhlNct##DIM##TableLengths);	\
@@ -901,7 +907,7 @@ CoordArrTableClassPartInitialize
 	}								\
 	else if((ncat->cat##type.dim##table != NULL) ||			\
 			(ncat->cat##type.dim##table_lens != NULL)){	\
-		NhlPError(NhlWARNING,NhlEUNKNOWN,				\
+		NhlPError(NhlWARNING,NhlEUNKNOWN,			\
 		"%s:%s and %s must be set together:resetting both",	\
 					error_lead,NhlNct##DIM##Table,	\
 					NhlNct##DIM##TableLengths);	\
@@ -918,14 +924,15 @@ CoordArrTableClassPartInitialize
 {									\
 	if((pre##cat->cat##type.dim##table != NULL) &&			\
 					pre##cat->cat##type.own_##dim){	\
-		type	**vals;						\
-		int	i;						\
+		type	**fvals##dim;					\
+		int	fi##dim;					\
 									\
-		vals = pre##cat->cat##type.dim##table->data;		\
+		fvals##dim = pre##cat->cat##type.dim##table->data;	\
 									\
-		for(i=0;i<pre##cat->cat##type.dim##table->num_elements;	\
-								i++)	\
-			NhlFree(vals[i]);				\
+		for(fi##dim=0;						\
+		fi##dim<pre##cat->cat##type.dim##table->num_elements;	\
+							fi##dim++)	\
+			NhlFree(fvals##dim[fi##dim]);			\
 	}								\
 	NhlFreeGenArray(pre##cat->cat##type.dim##table);		\
 }
@@ -940,66 +947,71 @@ CoordArrTableClassPartInitialize
 {									\
 	if(!ncat->cat##type.max_##dim##_set ||				\
 				!ncat->cat##type.min_##dim##_set){	\
-		NhlBoolean	initminmax = False;			\
-		int		*lens,i,j;				\
-		type		**vals,max=(type)0,min=(type)0;		\
+		NhlBoolean	init##dim = False;			\
+		int		*mlens##dim,mi##dim,mj##dim;		\
+		type		**mv##dim;				\
+		type		mx##dim=(type)0,mn##dim=(type)0;	\
 									\
 		if(ncat->cat##type.dim##table != NULL){			\
 									\
-			vals=(type**)ncat->cat##type.dim##table->data;	\
+			mv##dim=(type**)ncat->cat##type.dim##table->data;\
 									\
-			lens = (int*)ncat->cat##type.dim##table_lens->data;\
-			for(i=0;					\
-			i<ncat->cat##type.dim##table->len_dimensions[0];\
-								i++){	\
-				type	*vect;				\
+			mlens##dim =					\
+			(int*)ncat->cat##type.dim##table_lens->data;	\
 									\
-				if(vals[i] != NULL){			\
-					vect = vals[i];			\
-					for(j=0;j < lens[i];j++){	\
+			for(mi##dim=0;					\
+		mi##dim<ncat->cat##type.dim##table->len_dimensions[0];	\
+							mi##dim++){	\
+				type	*mvec##dim;			\
+									\
+				if(mv##dim[mi##dim] != NULL){		\
+					mvec##dim = mv##dim[mi##dim];	\
+					for(mj##dim=0;			\
+					mj##dim < mlens##dim[mi##dim];	\
+							mj##dim++){	\
 			if((ncat->cat##type.missing_##dim##_set) &&	\
-			(vect[j] == ncat->cat##type.missing_##dim))	\
+			(mvec##dim[mj##dim]==ncat->cat##type.missing_##dim))\
 							continue;	\
 									\
-						if(initminmax){		\
-						max = MAX(vect[j],max);	\
-						min = MIN(vect[j],min);	\
+						if(init##dim){		\
+			mx##dim = MAX(mvec##dim[mj##dim],mx##dim);	\
+			mn##dim = MIN(mvec##dim[mj##dim],mn##dim);	\
 						}			\
 						else{			\
-						max = vect[j];		\
-						min = vect[j];		\
-						initminmax=True;	\
+			mx##dim = mvec##dim[mj##dim];			\
+			mn##dim = mvec##dim[mj##dim];			\
+							init##dim=True;	\
 						}			\
 					}				\
 				}					\
 				else{					\
-					if(initminmax){			\
-					max = MAX(max,lens[i]);		\
-					min = MIN(min,(type)1.0);	\
+					if(init##dim){			\
+			mx##dim = MAX(mx##dim,mlens##dim[mi##dim]);	\
+			mn##dim = MIN(mn##dim,(type)1.0);		\
 					}				\
 					else{				\
-					max = lens[i];			\
-					min = (type)1.0;		\
-					initminmax=True;		\
+					mx##dim = mlens##dim[mi##dim];	\
+					mn##dim = (type)1.0;		\
+					init##dim=True;			\
 					}				\
 				}					\
 			}						\
 									\
 		}							\
 		else{							\
-			max = min = (type)1.0;				\
-			lens =						\
+			mx##dim = mn##dim = (type)1.0;			\
+			mlens##dim =					\
 			(int*)ncat->cat##type.otherdim##table_lens->data;\
-			for(i=0;					\
-		i<ncat->cat##type.otherdim##table_lens->len_dimensions[0];\
-								i++)	\
-				max = MAX(max,lens[i]);			\
+			for(mi##dim=0;					\
+	mi##dim<ncat->cat##type.otherdim##table_lens->len_dimensions[0];\
+							mi##dim++)	\
+				mx##dim = MAX(mx##dim,mlens##dim[mi##dim]);\
 		}							\
 									\
 		if(!ncat->cat##type.max_##dim##_set)			\
-			ncat->cat##type.max_##dim = max;		\
+			ncat->cat##type.max_##dim = mx##dim;		\
 		if(!ncat->cat##type.min_##dim##_set)			\
-			ncat->cat##type.min_##dim = min;		\
+			ncat->cat##type.min_##dim = mn##dim;		\
 	}								\
 }
 
@@ -1013,7 +1025,7 @@ CoordArrTableClassPartInitialize
 		NhlPError(NhlFATAL,NhlEUNKNOWN,				\
 		"%s:Resources specifying %s dimension are invalid",	\
 						error_lead,#DIM);	\
-		return NhlFATAL;						\
+		return NhlFATAL;					\
 	}								\
 									\
 	if(!imp##dim){							\
@@ -1041,7 +1053,7 @@ CoordArrTableClassPartInitialize
 	if(impx && impy){						\
 		NhlPError(NhlFATAL,NhlEUNKNOWN,				\
 		"%s:Cannot have Implied X and Y values",error_lead);	\
-		return NhlFATAL;						\
+		return NhlFATAL;					\
 	}								\
 									\
 	/*								\
@@ -1050,7 +1062,7 @@ CoordArrTableClassPartInitialize
 	CHECK_MINMAX(type,x,y)						\
 	CHECK_MINMAX(type,y,x)						\
 									\
-	return NhlNOERROR;							\
+	return NhlNOERROR;						\
 }		
 
 /*
@@ -1277,7 +1289,7 @@ CoordArrTableSetValues
 		CHECK_TABLES(type,dim,DIM)				\
 									\
 		if(inv##dim){						\
-			NhlPError(NhlWARNING,NhlEUNKNOWN,			\
+			NhlPError(NhlWARNING,NhlEUNKNOWN,		\
 			"%s:invalid %s dimension: resetting %s and %s",	\
 				error_lead,#DIM,NhlNct##DIM##Table,	\
 					NhlNct##DIM##TableLengths);	\
@@ -1296,24 +1308,22 @@ CoordArrTableSetValues
 {									\
 	if(ncat->cat##type.dim##table_lens !=				\
 				ocat->cat##type.dim##table_lens){	\
+		status = True;						\
 		COPY_TABLE_LEN(type,dim)				\
 		FREE_TABLE_LEN(type,dim,o)				\
-	}								\
-	if(ncat->cat##type.dim##table != ocat->cat##type.dim##table){	\
-		COPY_TABLE(type,dim)					\
-		FREE_TABLE(type,dim,o)					\
 	}								\
 									\
 	/*								\
 	 * if copy_tables is True, but own##dim is False -		\
-	 * need to copy the vectors.					\
+	 * need to copy the vectors also.				\
 	 */								\
-	if((ncat->cat##type.copy_tables)&&!ncat->cat##type.own_##dim){	\
-		NhlGenArray	tgen = ncat->cat##type.dim##table;	\
-									\
+	if((ncat->cat##type.dim##table!=ocat->cat##type.dim##table) ||	\
+	((ncat->cat##type.copy_tables)&&!ncat->cat##type.own_##dim)){	\
+		status = True;						\
 		COPY_TABLE(type,dim)					\
-		NhlFreeGenArray(tgen);					\
+		FREE_TABLE(type,dim,o)					\
 	}								\
+									\
 }
 
 #define	SETVAL_FUNC(name,type)\
@@ -1322,30 +1332,35 @@ CoordArrTableSetValues
 	Nhl##name##Layer	ncat = (Nhl##name##Layer)new;		\
 	Nhl##name##Layer	ocat = (Nhl##name##Layer)old;		\
 	NhlBoolean		impx = False, impy = False;		\
+	NhlBoolean		status = False;				\
 	NhlErrorTypes		ret = NhlNOERROR;			\
 									\
-	SET_TABLES(type,x,X)						\
+	SET_TABLES(type,y,Y)						\
 	SET_TABLES(type,x,X)						\
 									\
 	if(impx && impy){						\
-		NhlPError(NhlWARNING,NhlEUNKNOWN,				\
+		NhlPError(NhlWARNING,NhlEUNKNOWN,			\
 		"%s:Cannot have Implied X and Y values:resetting",	\
 							error_lead);	\
 		ret = MIN(ret,NhlWARNING);				\
 		ncat->cat##type.xtable = ocat->cat##type.xtable;	\
 		ncat->cat##type.ytable = ocat->cat##type.ytable;	\
-		ncat->cat##type.xtable_lens = ocat->cat##type.xtable_lens;\
-		ncat->cat##type.ytable_lens = ocat->cat##type.ytable_lens;\
+		ncat->cat##type.xtable_lens=ocat->cat##type.xtable_lens;\
+		ncat->cat##type.ytable_lens=ocat->cat##type.ytable_lens;\
 									\
 	}								\
 									\
 	FINISH_TABLES(type,y,Y)						\
 	FINISH_TABLES(type,x,X)						\
 									\
-	if(ncat->cat##type.missing_x != ocat->cat##type.missing_x)	\
+	if(ncat->cat##type.missing_x != ocat->cat##type.missing_x){	\
 		ncat->cat##type.missing_x_set = True;			\
-	if(ncat->cat##type.missing_y != ocat->cat##type.missing_y)	\
+		status = True;						\
+	}								\
+	if(ncat->cat##type.missing_y != ocat->cat##type.missing_y){	\
 		ncat->cat##type.missing_y_set = True;			\
+		status = True;						\
+	}								\
 									\
 	if(ncat->cat##type.max_x != ocat->cat##type.max_x)		\
 		ncat->cat##type.max_x_set = True;			\
@@ -1361,6 +1376,21 @@ CoordArrTableSetValues
 	 */								\
 	CHECK_MINMAX(type,x,y)						\
 	CHECK_MINMAX(type,y,x)						\
+									\
+	if(ncat->cat##type.max_x != ocat->cat##type.max_x)		\
+		status = True;						\
+	if(ncat->cat##type.min_x != ocat->cat##type.min_x)		\
+		status = True;						\
+	if(ncat->cat##type.max_y != ocat->cat##type.max_y)		\
+		status = True;						\
+	if(ncat->cat##type.min_y != ocat->cat##type.min_y)		\
+		status = True;						\
+	/*								\
+	 * Notify superclass that info has changed - This allows	\
+	 * the cached data to be marked as out-of-date.			\
+	 */								\
+	_NhlDataChanged((NhlDataItemLayer)new->base.parent,status);	\
+									\
 									\
 	return	ret;							\
 }

@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrays.c,v 1.7 1994-01-27 21:22:05 boote Exp $
+ *      $Id: CoordArrays.c,v 1.8 1994-02-01 18:22:26 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1226,7 +1226,7 @@ max = (type)ncarr->carr##type.otherdim##array->len_dimensions[0];	\
 {									\
 	if(ncarr->carr##type.dim##_cast_set){				\
 		if((imp##dim) && (ncarr->carr##type.dim##_cast != 1)){	\
-			NhlPError(NhlWARNING,NhlEUNKNOWN,			\
+			NhlPError(NhlWARNING,NhlEUNKNOWN,		\
 				"%s:%s must be one if %s is implied",	\
 					error_lead,NhlNca##DIM##Cast,	\
 						NhlNca##DIM##Array);	\
@@ -1535,7 +1535,7 @@ CoordArraysSetValues
 		CHECK_ARRAY(type,dim,DIM)				\
 									\
 		if(inv##dim){						\
-			NhlPError(NhlWARNING,NhlEUNKNOWN,			\
+			NhlPError(NhlWARNING,NhlEUNKNOWN,		\
 				"%s:invalid %s dimension: resetting %s",\
 				error_lead,#DIM,NhlNca##DIM##Array);	\
 									\
@@ -1551,6 +1551,7 @@ CoordArraysSetValues
 #define	FINISH_ARRAY(type,dim,DIM)\
 {									\
 	if(ncarr->carr##type.dim##array!=ocarr->carr##type.dim##array){	\
+		status = True;						\
 		COPY_ARRAY(type,dim)					\
 		FREE_ARRAY(type,dim,o)					\
 	}								\
@@ -1563,6 +1564,7 @@ CoordArraysSetValues
 			!ncarr->carr##type.dim##array->my_data){	\
 		NhlGenArray	tgen = ncarr->carr##type.dim##array;	\
 									\
+		status = True;						\
 		COPY_ARRAY(type,dim)					\
 		NhlFreeGenArray(tgen);					\
 	}								\
@@ -1574,13 +1576,14 @@ CoordArraysSetValues
 	Nhl##name##Layer	ncarr = (Nhl##name##Layer)new;		\
 	Nhl##name##Layer	ocarr = (Nhl##name##Layer)old;		\
 	NhlBoolean		impx = False, impy = False;		\
+	NhlBoolean		status = False;				\
 	NhlErrorTypes		ret = NhlNOERROR;			\
 									\
 	SET_ARRAY(type,x,X)						\
 	SET_ARRAY(type,x,X)						\
 									\
 	if(impx && impy){						\
-		NhlPError(NhlWARNING,NhlEUNKNOWN,				\
+		NhlPError(NhlWARNING,NhlEUNKNOWN,			\
 		"%s:Cannot have Implied X and Y values:resetting",	\
 							error_lead);	\
 		ret = MIN(ret,NhlWARNING);				\
@@ -1594,10 +1597,19 @@ CoordArraysSetValues
 	CHECK_CAST(type,y,Y)						\
 	CHECK_CAST(type,x,X)						\
 									\
-	if(ncarr->carr##type.missing_x != ocarr->carr##type.missing_x)	\
+	if(ncarr->carr##type.x_cast != ocarr->carr##type.x_cast)	\
+		status = True;						\
+	if(ncarr->carr##type.y_cast != ocarr->carr##type.y_cast)	\
+		status = True;						\
+									\
+	if(ncarr->carr##type.missing_x != ocarr->carr##type.missing_x){	\
 		ncarr->carr##type.missing_x_set = True;			\
-	if(ncarr->carr##type.missing_y != ocarr->carr##type.missing_y)	\
+		status = True;						\
+	}								\
+	if(ncarr->carr##type.missing_y != ocarr->carr##type.missing_y){	\
 		ncarr->carr##type.missing_y_set = True;			\
+		status = True;						\
+	}								\
 									\
 	if(ncarr->carr##type.max_x != ocarr->carr##type.max_x)		\
 		ncarr->carr##type.max_x_set = True;			\
@@ -1613,6 +1625,17 @@ CoordArraysSetValues
 	 */								\
 	CHECK_MINMAX(type,x,y)						\
 	CHECK_MINMAX(type,y,x)						\
+									\
+	if(ncarr->carr##type.max_x != ocarr->carr##type.max_x)		\
+		status = True;						\
+	if(ncarr->carr##type.min_x != ocarr->carr##type.min_x)		\
+		status = True;						\
+	if(ncarr->carr##type.max_y != ocarr->carr##type.max_y)		\
+		status = True;						\
+	if(ncarr->carr##type.min_y != ocarr->carr##type.min_y)		\
+		status = True;						\
+									\
+	_NhlDataChanged((NhlDataItemLayer)new->base.parent,status);	\
 									\
 	return	ret;							\
 }

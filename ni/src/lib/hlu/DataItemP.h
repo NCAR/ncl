@@ -1,5 +1,5 @@
 /*
- *      $Id: DataItemP.h,v 1.3 1994-01-27 21:22:39 boote Exp $
+ *      $Id: DataItemP.h,v 1.4 1994-02-01 18:22:34 boote Exp $
  */
 /************************************************************************
 *									*
@@ -45,6 +45,7 @@ typedef struct _NhlDataItemLayerPart{
 	 */
 	/* Private Fields */
 	NhlLayer	manager;
+	NhlBoolean	change_called;
 } NhlDataItemLayerPart;
 
 typedef struct _NhlDataItemLayerRec{
@@ -71,7 +72,8 @@ extern NhlDataItemLayerClassRec NhldataItemLayerClassRec;
  */
 extern void _NhlDataChanged(
 #ifdef	NhlNeedProto
-	NhlDataItemLayer	l
+	NhlDataItemLayer	l,
+	NhlBoolean		status
 #endif
 );
 

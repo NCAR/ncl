@@ -1,5 +1,5 @@
 /*
- *      $Id: DataMgr.c,v 1.3 1994-01-27 21:22:42 boote Exp $
+ *      $Id: DataMgr.c,v 1.4 1994-02-01 18:22:37 boote Exp $
  */
 /************************************************************************
 *									*
@@ -823,7 +823,7 @@ _NhlCloseDataConnection
 ************************************************************************/
 
 /*
- * Function:	_NhlDataModified
+ * Function:	_NhlDataItemModified
  *
  * Description:	This function is used by the DataItem class to notify
  *		the manager that it's cached data is out-of-date due
@@ -849,6 +849,9 @@ _NhlDataItemModified
 #endif
 {
 	NhlDataMgrLayer	mgr = (NhlDataMgrLayer)l;
+
+	if(mgr == NULL)
+		return;
 
 	mgr->datamgr.uptodate = False;
 

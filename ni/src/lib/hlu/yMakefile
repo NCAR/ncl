@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.6 1994-01-27 21:28:11 boote Exp $
+#      $Id: yMakefile,v 1.7 1994-02-01 18:22:40 boote Exp $
 #
 #########################################################################
 #									#
@@ -69,3 +69,26 @@ BuildIncludes($(HDRS),ncarg/hlu,../..)
 InstallTarget($(HDRS),$(INSTALL_INC),$(HLUINCPATH))
 InstallTarget(hluresfile,$(INSTALL_INC),$(LIBNCARGPATH))
 DependTarget($(SRCS))
+
+#if	defined(DEBUG) && defined(SunOS)
+
+DependTarget(CoordArrTable.tmp.c)
+CleanFilesTarget(CoordArrTable.tmp.o CoordArrTable.tmp.c CoordArrTable.sed.c)
+
+CoordArrTable.o:	CoordArrTable.tmp.o
+	$(CP) CoordArrTable.tmp.o CoordArrTable.o
+
+CoordArrTable.tmp.c:	CoordArrTable.sed.c
+	acc -Xc -P CoordArrTable.sed.c
+	perl -n \
+	-e "s%^SED_INC%#include%;" \
+	-e "print;" \
+	< CoordArrTable.sed.i > CoordArrTable.tmp.c
+	indent CoordArrTable.tmp.c
+
+CoordArrTable.sed.c:	Makefile CoordArrTable.c
+	perl -n \
+	-e "s%^#include%SED_INC%;" \
+	-e "print;" \
+	< CoordArrTable.c > CoordArrTable.sed.c
+#endif
