@@ -1,5 +1,5 @@
 /*
- *      $Id: Converters.c,v 1.50 1998-10-22 17:35:44 boote Exp $
+ *      $Id: Converters.c,v 1.51 1998-10-23 17:30:11 boote Exp $
  */
 /************************************************************************
 *									*
@@ -2021,11 +2021,15 @@ CvtArgs
 			return NhlFATAL;
 		}
 		strcpy(*tptr,from->data.strval);
+		strcpy(buff,NhlTString);
+		sgen = _NhlConvertCreateGenArray(data,NhlTString,
+						sizeof(NhlString),1,NULL);
 	}
-	else
+	else{
 		memcpy(data,(Const char *)&from->data,from->size);
-	strcpy(buff,NrmQuarkToString(from->typeQ));
-	sgen = _NhlConvertCreateGenArray(data,buff,from->size,1,NULL);
+		strcpy(buff,NrmQuarkToString(from->typeQ));
+		sgen = _NhlConvertCreateGenArray(data,buff,from->size,1,NULL);
+	}
 	if(!sgen){
 		NhlPError(NhlFATAL,ENOMEM,"%s:unable to create array",func);
 		return NhlFATAL;

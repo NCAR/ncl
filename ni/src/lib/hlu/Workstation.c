@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.84 1998-10-22 17:35:49 boote Exp $
+ *      $Id: Workstation.c,v 1.85 1998-10-23 17:30:12 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1419,6 +1419,7 @@ CvtStringToColorIndexGenArray
 	NrmValue		val;
 	NhlGenArray		sgen;
 	NhlErrorTypes		ret = NhlNOERROR;
+	NhlPointer		data;
 
 	if(nargs != 1){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -1437,16 +1438,55 @@ CvtStringToColorIndexGenArray
 	}
 	wl = (NhlWorkstationLayer)l->base.wkptr;
 
+	/*
+	 * First try and create a color Def String Array.
+	 */
 	sgen = _NhlStringToColorDefStringGenArray(
 			(NhlWorkstationClass)wl->base.layer_class,s1,True);
-	if(sgen){
-		val.size = sizeof(NhlGenArray);
-		val.data.ptrval = sgen;
+	/*
+	 * Then, try and create an old fashioned string Array
+	 */
+	if(!sgen)
+		sgen = _NhlStringToStringGenArray(s1);
 
-		return _NhlReConvertData(strgenQ,to->typeQ,&val,to);
+	/*
+	 * If all that failed, then treat the string as a single element
+	 * of a string array.
+	 */
+	if(!sgen){
+		data = NhlConvertMalloc(from->size);
+		if(data == NULL){
+			NhlPError(NhlFATAL,ENOMEM,"%s",func);
+			return NhlFATAL;
+		}
+
+		if(s1){
+			NhlString	*sptr = data;
+			*sptr = NhlConvertMalloc(strlen(s1)+1);
+			if(!*sptr){
+				NhlPError(NhlFATAL,ENOMEM,"%s",func);
+				return NhlFATAL;
+			}
+			strcpy(*sptr,s1);
+		}
+		else
+			*(NhlString *)data = NULL;
+
+		sgen = _NhlConvertCreateGenArray(data,NhlTString,
+						sizeof(NhlString),1,NULL);
+	}
+	/*
+	 * Now, if we don't have an sgen, we had a memory problem.
+	 */
+	if(!sgen){
+		NhlPError(NhlFATAL,ENOMEM,"%s:unable to create array",func);
+		return NhlFATAL;
 	}
 
-	return _NhlReConvertData(scalarQ,to->typeQ,from,to);
+	val.size = sizeof(NhlGenArray);
+	val.data.ptrval = sgen;
+
+	return _NhlReConvertData(strgenQ,to->typeQ,&val,to);
 }
 
 /*
