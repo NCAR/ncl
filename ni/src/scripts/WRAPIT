@@ -1,5 +1,5 @@
 #!/bin/csh -f
-set version = 031206    # YYMMDD
+set version = 031209    # YYMMDD
 echo " " 
 echo "WRAPIT Version: "$version 
 if ($argv[1]:q == "-h") then
@@ -535,9 +535,9 @@ switch ($OS)
    breaksw
  default:              # SunOS
    if ($debug == 1) then
-     ld -V -G -lsunperf -lfsu -lfai2 -lfsumai $ld_suffix
+     ld -V -G -lsunperf -lfsu -lfai2 -lfsumai -lsunmath -lF77 $ld_suffix
    else
-     ld -G -lsunperf -lfsu -lfai2 -lfsumai $ld_suffix
+     ld -G -lsunperf -lfsu -lfai2 -lfsumai -lsunmath -lF77 $ld_suffix
    endif
    breaksw
 endsw
