@@ -1,5 +1,5 @@
 /*
- *	$Id: parallax.c,v 1.6 1992-02-12 11:24:54 don Exp $
+ *	$Id: parallax.c,v 1.7 1992-02-12 14:23:54 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -113,7 +113,7 @@ ParallaxOpenWrite(name, nx, ny, comment, encoding)
 
 	ras = RasterCreate(nx, ny, encoding);
 
-	ras->name = (char *) calloc((unsigned) (strlen(FormatName) + 1), 1);
+	ras->name = (char *) calloc((unsigned) (strlen(name) + 1), 1);
 	(void) strcpy(ras->name, FormatName);
 
 	ras->format = (char *) calloc((unsigned) (strlen(FormatName) + 1), 1);
@@ -486,6 +486,7 @@ ParallaxClear()
 
 ParallaxPrintStatus()
 {
+	static int	arg;
 	static int	format;
 	static int	out;
 	static int	compout;

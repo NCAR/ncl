@@ -1,5 +1,5 @@
 /*
- *	$Id: xwd.c,v 1.4 1992-02-12 11:25:00 don Exp $
+ *	$Id: xwd.c,v 1.5 1992-02-12 14:24:00 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -46,6 +46,29 @@
 static char	*FormatName = "xwd";
 extern char	*ProgramName;
 static char	*Comment = "XWD file from NCAR raster utilities";
+
+/*ARGSUSED*/
+int
+XWDProbe(name)
+	char	*name;
+{
+#ifdef DEAD
+	int		status;
+	FILE		*fp;
+
+	if (name == (char *) NULL) return(False);
+
+	if (!strcmp(name, "stdin")) return(False);
+
+	fp = fopen(name, "r");
+	if (fp == (FILE *) NULL) {
+		(void) RasterSetError(RAS_E_SYSTEM);
+		return(RAS_ERROR);
+	}
+	
+	(void) fclose(fp);
+#endif DEAD
+}
 
 Raster *
 XWDOpen(name)
@@ -324,7 +347,7 @@ XWDRead(ras)
 	return(RAS_OK);
 }
 
-unsigned
+static	unsigned
 image_size(header)
 	XWDFileHeader *header;
 {
@@ -438,12 +461,13 @@ XWDWrite(ras)
 	int		nb;
 	int		i;
 	unsigned long	swaptest = 1;
+	XWDFileHeader	*dep = (XWDFileHeader *) ras->dep;
 
 	if (*(char *) &swaptest) {
-		_swaplong((char *) ras->dep, sizeof(XWDFileHeader));
+		_swaplong((char *) dep, sizeof(XWDFileHeader));
 	}
 
-	nb = write(ras->fd, (char *) ras->dep, sizeof(XWDFileHeader));
+	nb = write(ras->fd, (char *) dep, sizeof(XWDFileHeader));
 	if (nb != sizeof(XWDFileHeader)) return(RAS_EOF);
 
 	nb = write(ras->fd, Comment, strlen(Comment));

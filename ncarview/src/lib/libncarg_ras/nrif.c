@@ -1,5 +1,5 @@
 /*
- *	$Id: nrif.c,v 1.5 1992-02-12 11:24:51 don Exp $
+ *	$Id: nrif.c,v 1.6 1992-02-12 14:23:51 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -308,6 +308,7 @@ NrifRead(ras)
 		default:
 		  (void) RasterSetError(RAS_E_UNSUPPORTED_ENCODING);
 		  return(RAS_ERROR);
+		  break;
 	}
 
 	return(RAS_OK);
@@ -442,6 +443,7 @@ NrifOpenWrite(name, nx, ny, comment, encoding)
 		default:
 			(void) RasterSetError(RAS_E_UNSUPPORTED_ENCODING);
 			return( (Raster *) NULL );
+			break;
 	}
 
 	NrifSetFunctions(ras);
@@ -569,6 +571,7 @@ NrifWrite(ras)
 		default:
 			(void) RasterSetError(RAS_E_UNSUPPORTED_ENCODING);
 			return(RAS_ERROR);
+			break;
 	}
 	return(RAS_OK);
 }
@@ -629,6 +632,7 @@ char_encode(value, buf, nbytes)
 		default:
 			(void) RasterSetError(RAS_E_INTERNAL_PROGRAMMING);
 			return(RAS_ERROR);
+			break;
 	}
 	return(RAS_OK);
 }
