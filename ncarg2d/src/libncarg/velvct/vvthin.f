@@ -1,5 +1,5 @@
 C
-C       $Id: vvthin.f,v 1.1 1996-01-19 17:21:52 dbrown Exp $
+C       $Id: vvthin.f,v 1.2 1996-05-23 00:40:46 dbrown Exp $
 C
       SUBROUTINE VVTHIN (U,V,P,UFR,VFR)
 C
@@ -311,6 +311,9 @@ C
       MXX = (IXDM-1)/IXIN * IXIN + 1
 C
       DO 700 J=1,IYDN,IYIN
+         IF (UFR(1,J) .LT. 0.0) THEN
+            GO TO 700
+         END IF
          DO 650 I=1,IXDM,IXIN
             IF (UFR(I,J) .LT. 0.0) THEN
                IF (I.EQ.MXX) GO TO 700
@@ -387,7 +390,7 @@ C
                   UFR(II,JJ) = -1.0
                   GO TO 800
                ELSE IF (JJ.GE.MNJ) THEN
-                  GO TO 800
+                  GO TO 801
                ELSE
                   MNJ = ICM
                   GO TO 801
