@@ -1,5 +1,5 @@
 /*
- *      $Id: TransObjP.h,v 1.11 1996-02-26 21:46:12 dbrown Exp $
+ *      $Id: TransObjP.h,v 1.12 1996-06-19 16:56:22 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -68,6 +68,7 @@ NhlLayer 	/* parent */
 
 typedef struct _NhlTransObjLayerPart {
 	float		out_of_range;
+	float		resolution;
 /*
  * Each time the trans obj changes this field is incremented
  */
@@ -81,6 +82,7 @@ typedef struct _NhlTransObjLayerPart {
 	float		y;
 	float		width;
 	float		height;
+	int		point_count;
 }NhlTransObjLayerPart;
 
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: TransObj.c,v 1.17 1996-02-26 21:46:11 dbrown Exp $
+ *      $Id: TransObj.c,v 1.18 1996-06-19 16:56:21 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -31,6 +31,9 @@ static NhlResource resources[] =  {
 	{ NhlNtrOutOfRangeF, NhlCtrOutOfRangeF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlTransObjLayerRec, trobj.out_of_range),
 		NhlTString, _NhlUSET("1.0e12"),0,NULL },
+	{ NhlNtrResolutionF, NhlCtrResolutionF, NhlTFloat, sizeof(float),
+		NhlOffset(NhlTransObjLayerRec, trobj.resolution),
+		NhlTString, _NhlUSET("0.002"),0,NULL },
 
 /* End-documented-resources */
 
@@ -177,16 +180,20 @@ TransSetTrans
 	NhlLayer	vobj;
 #endif
 {
+	NhlErrorTypes ret;
 	NhlTransObjLayerPart	*tp = &((NhlTransObjLayer)tobj)->trobj;
 
 	tp->wkptr = vobj->base.wkptr;
 
-	return NhlVAGetValues(vobj->base.id,
-			NhlNvpXF,	&tp->x,
-			NhlNvpYF,	&tp->y,
-			NhlNvpWidthF,	&tp->width,
-			NhlNvpHeightF,	&tp->height,
-			NULL);
+	ret = NhlVAGetValues(vobj->base.id,
+			     NhlNvpXF,	&tp->x,
+			     NhlNvpYF,	&tp->y,
+			     NhlNvpWidthF,	&tp->width,
+			     NhlNvpHeightF,	&tp->height,
+			     NULL);
+	if (tp->resolution <= 0.0) tp->resolution = 0.002;
+	tp->point_count = (int) 
+		MAX(1.0,(tp->width + tp->height) / (2.0 * tp->resolution));
 }
 
 static NhlErrorTypes

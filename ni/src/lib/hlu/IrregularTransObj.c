@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularTransObj.c,v 1.24 1996-05-23 00:42:56 dbrown Exp $
+ *      $Id: IrregularTransObj.c,v 1.25 1996-06-19 16:56:19 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1738,6 +1738,7 @@ int upordown;
 	int i,npoints = 256;
 	float xdist,ydist,xc,yc,xd,yd;
 
+	npoints = irinst->trobj.point_count;
 /*
 * if true the moveto is being performed
 */
@@ -1792,6 +1793,7 @@ int upordown;
 	xdist = c_cufx(xpoints[1]) - c_cufx(xpoints[0]);
 	ydist = c_cufy(ypoints[1]) - c_cufy(ypoints[0]);
 	npoints = (int) ((float)npoints * (fabs(xdist)+fabs(ydist)));
+	npoints = npoints < 1 ? 1 : npoints;
 
 /*
  * If not clipped things are simpler
@@ -1818,14 +1820,6 @@ int upordown;
 		lasty = y;
 		return(NhlNOERROR);
 	}
-/*
- * Use some extra points depending on the ratio of the clipped portion
- * of the line to the visible portion (in data space)
- */
-#if 0
-	npoints = (int) ((float)npoints * (fabs(x-holdx) + fabs(y-holdy)) / 
-		    (fabs(currentx - lastx) + fabs(currenty-lasty)));
-#endif
 	xdist = x - holdx;
 	ydist = y - holdy;
 /*
@@ -1841,25 +1835,6 @@ int upordown;
 		xdist = x - lastx;
 		ydist = y - lasty;
 
-#if 0
-		for (i = 0; i < npoints; i++) {
-			xd = lastx + xdist *(i+1)/(float)npoints;
-			yd = lasty + ydist *(i+1)/(float)npoints;
-			IrDataToCompc(instance,&xd,&yd,1,
-				      &xc,&yc,NULL,NULL,&status);
-			if (! status) {
-				if (AdjustToEdge(irinst,holdx,holdy,
-					     &xd,&yd,&xc,&yc) < NhlNOERROR)
-					return NhlFATAL;
-				lastx = xd;
-				lasty = yd;
-				xdist = x - lastx;
-				ydist = y - lasty;
-				npoints -= i;
-				break;
-			}
-		}
-#endif
 		_NhlWorkstationLineTo(irinst->trobj.wkptr,
 				      c_cufx(xc),c_cufy(yc),1);
 	}
@@ -2058,8 +2033,8 @@ int n;
 	NhlBoolean open, done = False, first, firstpoint;
 	int count, pcount, cix, pix, status = 0, npoints = 256;
 	float xdist,ydist,tdist;
-	float xrat,yrat,xdor,xwor,ydor,ywor;
 
+	npoints = irinst->trobj.point_count;
 	open = (x[0] != x[n-1] || y[0] != y[n-1]) ?  True : False;
 	count = pcount = open ? n + 1 : n; 
 
@@ -2171,6 +2146,7 @@ int n;
 			int lcount;
 			ratio = dbuf[i-1] / tdist;
 			lcount = (int) (ratio * (float)npoints);
+			lcount = lcount > 1 ? lcount : 1;
 			xdist = x[i] - x[i-1];
 			ydist = y[i] - y[i-1];
 			for (j=0; j < lcount; j++) {
@@ -2208,30 +2184,6 @@ int n;
  * NDC viewspace that lines extending from the viewport edge to these
  * lines will be fully clipped.
  */
-	
-	if (irtp->x_reverse) {
-		xrat = (irtp->ur - irtp->ul) /
-			(irtp->x_min - irtp->x_max);
-		xdor = irtp->x_max;
-	}
-	else {
-		xrat = (irtp->ur - irtp->ul) /
-			(irtp->x_max - irtp->x_min);
-		xdor = irtp->x_min;
-	}
-	xwor = irtp->ul;
-	if (irtp->y_reverse) {
-		yrat = (irtp->ut - irtp->ub) /
-			(irtp->y_min - irtp->y_max);
-		ydor = irtp->y_max;
-	}
-	else {
-		yrat = (irtp->ut - irtp->ub) /
-			(irtp->y_max - irtp->y_min);
-		ydor = irtp->y_min;
-	}
-	ywor = irtp->ub;
-
 	pix = -1;
 	for (i = 0; i < count; i++) {
 		if (ixbuf[i] < 0) {
@@ -2354,6 +2306,7 @@ int n;
 		cy = y[ixbuf[i]];
 		ratio = dbuf[i-1] / tdist;
 		lcount = (int) (ratio * (float)npoints);
+		lcount = lcount > 1 ? lcount : 1;
 		xdist = cx - px;
 		ydist = cy - py;
 		started = False;
@@ -2365,6 +2318,7 @@ int n;
 			if (! status) {
 				if (! started) {
 					started = True;
+					if (lcount == 1) j--;
 					if (AdjustToEdge(irinst,px,py,cx,cy,
 							 &dx,&dy,&tx,&ty) 
 					    < NhlNOERROR)

@@ -1,5 +1,5 @@
 /*
- *      $Id: TransObj.h,v 1.7 1995-05-03 03:11:28 dbrown Exp $
+ *      $Id: TransObj.h,v 1.8 1996-06-19 16:56:22 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -28,6 +28,8 @@
 
 #define NhlNtrOutOfRangeF	"trOutOfRangeF"
 #define NhlCtrOutOfRangeF	"TrOutOfRangeF"
+#define NhlNtrResolutionF	"trResolutionF"
+#define NhlCtrResolutionF	"TrResolutionF"
 
 extern NhlClass NhltransObjClass;
 
