@@ -1,5 +1,5 @@
 ;
-; $Id: basic09n.ncl,v 1.1 1996-07-09 23:54:33 haley Exp $
+; $Id: basic09n.ncl,v 1.2 1996-07-10 14:48:26 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                       ;
@@ -46,7 +46,7 @@ if (NCGM .eq. 1) then
 ;
 ; Create an ncgmWorkstation object.
 ;
-  wks = create "wks" ncgmWorkstationClass defaultapp
+  wid = create "wks" ncgmWorkstationClass defaultapp
       "wkMetaName" : "basic09n.ncgm"
   end create
 else
@@ -54,7 +54,7 @@ else
 ;
 ; Create an XWorkstation object.
 ;
-    wks = create "wks" xWorkstationClass defaultapp
+    wid = create "wks" xWorkstationClass defaultapp
       "wkPause" : "True"
     end create
   else
@@ -62,7 +62,7 @@ else
 ;
 ; Create a PSWorkstation object.
 ;
-      wks = create "wks" psWorkstationClass defaultapp
+      wid = create "wks" psWorkstationClass defaultapp
         "wkPSFileName" : "basic09n.ps"
       end create
     end if
@@ -120,47 +120,60 @@ if (mod .ne. 0) then
   div = div +1
 end if
 
-txid = create "TextItem" textItemClass wks
+txid1 = create "TextItem" textItemClass wid
   "txFuncCode" : "*"
-  "txPosXF" : 0.5
+  "txPosXF" : 0.32
   "txPosYF" : 0.98
   "txFontHeightF" : 0.02
-  "txString" : "font number : font name     what it looks like"
+  "txFontColor" : 3
+  "txString" : "font number : font name"
+end create
+
+txid2 = create "TextItem" textItemClass wid
+  "txFuncCode" : "*"
+  "txPosXF" : 0.72
+  "txPosYF" : 0.98
+  "txFontHeightF" : 0.02
+  "txFontColor" : 5
+  "txString" : "font example"
 end create
 
 do j = 1,div
   k = 0.90
   do i=(j-1)*num_lines,min(num_fonts-1,j*num_lines-1)
-    txid1 = create "TextItem1" textItemClass wks
+    txid3 = create "TextItem1" textItemClass wid
       "txJust" : 2
       "txFuncCode" : "*"
       "txPosXF" : 0.1
       "txPosYF" : k
       "txFontHeightF" : 0.02
+      "txFontColor" : 3
       "txString" : fonts(i,0) + " : " + fonts(i,1)
     end create
-    txid2 = create "TextItem2" textItemClass wks
+    txid4 = create "TextItem2" textItemClass wid
       "txJust" : 2
       "txFont" : fonts(i,1)
       "txString" : "NCAR Graphics"
       "txPosXF" : 0.6
       "txPosYF" : k
+      "txFontColor" : 5
       "txFontHeightF" : 0.02
     end create
-    draw(txid)
     draw(txid1)
     draw(txid2)
-    delete(txid1)
-    delete(txid2)
+    draw(txid3)
+    draw(txid4)
+    delete(txid3)
+    delete(txid4)
     k = k - .05
   end do
-  frame(wks)
+  frame(wid)
 end do
 
 ;
 ; Clean up;
 ;
-delete(wks)
+delete(wid)
 
 ;
 ; End the ncl script.
