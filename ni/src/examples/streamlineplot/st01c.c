@@ -1,9 +1,9 @@
 /*
- *      $Id: st01c.c,v 1.1 1996-04-13 02:51:47 dbrown Exp $
+ *      $Id: st01c.c,v 1.2 1996-05-10 17:05:10 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
-*                Copyright (C)  1993                                   *
+*                Copyright (C)  1996                                   *
 *        University Corporation for Atmospheric Research               *
 *                All Rights Reserved                                   *
 *                                                                      *
