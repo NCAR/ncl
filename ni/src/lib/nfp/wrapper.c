@@ -170,6 +170,10 @@ extern NhlErrorTypes stat2_W(void);
 extern NhlErrorTypes stat_trim_W(void);
 extern NhlErrorTypes stat_medrng_W(void);
 extern NhlErrorTypes stat4_W(void);
+extern NhlErrorTypes dim_median_W(void);
+extern NhlErrorTypes dim_rmvmean_W(void);
+extern NhlErrorTypes dim_rmvmed_W(void);
+extern NhlErrorTypes dim_standardize_W(void);
 extern NhlErrorTypes esacr_W(void);
 extern NhlErrorTypes esacv_W(void);
 extern NhlErrorTypes esccr_W(void);
@@ -2286,6 +2290,48 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"integer",NclANY,NclANY);nargs++;
 
     NclRegisterProc(stat_medrng_W,args,"stat_medrng",nargs);
+/*
+ * Register "dim_median".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(1);
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+
+    NclRegisterFunc(dim_median_W,args,"dim_median",nargs);
+/*
+ * Register "dim_rmvmean".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(1);
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+
+    NclRegisterFunc(dim_rmvmean_W,args,"dim_rmvmean",nargs);
+/*
+ * Register "dim_rmvmed".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(1);
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+
+    NclRegisterFunc(dim_rmvmed_W,args,"dim_rmvmed",nargs);
+/*
+ * Register "dim_standardize".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(2);
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+
+    NclRegisterFunc(dim_standardize_W,args,"dim_standardize",nargs);
 /*
  * Register "esacr".
  *

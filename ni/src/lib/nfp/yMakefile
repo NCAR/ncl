@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.7 1999-12-16 20:10:39 haley Exp $
+#      $Id: yMakefile,v 1.8 2000-01-06 15:50:26 haley Exp $
 #
 #########################################################################
 #									#
@@ -26,14 +26,14 @@ EXTRA_INCLUDES  = -I../../ncl
 CSRCS = chiinvW.c csagridW.c cssgridW.c cz2ccmW.c datesW.c drwvctc.c \
 	dsgridW.c dtrendW.c eofW.c ezfftW.c fitgridW.c fluxEddyW.c \
 	hydroW.c int2pW.c julGregW.c linmsgW.c natgridW.c ncolorW.c ngmiscW.c \
-	regcoefW.c relhumW.c remapW.c rhombtriW.c shgridW.c sindexW.c slpW.c \
+	regcoefW.c relhumW.c remapW.c rhombtriW.c rmStndx_dp.f shgridW.c sindexW.c slpW.c \
 	smth9W.c specxW.c sph2W.c sphintW.c sstoiW.c statW.c svdW.c tdpackW.c \
 	trvsphW.c varimaxW.c vibetaW.c wmapW.c wrunaveW.c wrapper.c 
 
 COBJS = chiinvW.o csagridW.o cssgridW.o cz2ccmW.o datesW.o drwvctc.o \
 	dsgridW.o dtrendW.o eofW.o ezfftW.o fitgridW.o fluxEddyW.o \
 	hydroW.o int2pW.o julGregW.o linmsgW.o natgridW.o ncolorW.o ngmiscW.o \
-	regcoefW.o relhumW.o remapW.o rhombtriW.o shgridW.o sindexW.o slpW.o \
+	regcoefW.o relhumW.o remapW.o rhombtriW.o rmStndx_dp.o shgridW.o sindexW.o slpW.o \
 	smth9W.o specxW.o sph2W.o sphintW.o sstoiW.o statW.o svdW.o tdpackW.o \
 	trvsphW.o varimaxW.o vibetaW.o wmapW.o wrunaveW.o wrapper.o
 

@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 /*
 * The following are the required NCAR Graphics include files.
 * They should be located in ${NCARG_ROOT}/include
@@ -8,12 +9,40 @@
 #include <ncarg/ncl/defs.h>
 #include "Symbol.h"
 #include "NclMdInc.h"
+#include "Machine.h"
+#include <ncarg/ncl/NclVar.h>
+#include "DataSupport.h"
+#include "VarSupport.h"
+#include "NclCoordVar.h"
+#include <ncarg/ncl/NclCallBacksI.h>
 #include <ncarg/ncl/NclDataDefs.h>
 #include <ncarg/ncl/NclBuiltInSupport.h>
 #include <ncarg/gks.h>
 #include <math.h>
 
 #define max(x,y)  ((x) > (y) ? (x) : (y))
+
+extern void NGCALLF(stat2,STAT2)(float*, int*, float*, float*, float*, 
+				 float*, int*, int*); 
+extern void NGCALLF(stat4,STAT4)(float*, int*, float*, float*, float*, 
+				 float*, float*, float*, int*, int*); 
+extern void NGCALLF(stat2t,STAT2T)(float*, int*, float*, float*, float*, 
+				   float*, int*, float*, float*, int*); 
+extern void NGCALLF(medmrng,MEDMRNG)(float*, float*, int*, float*, float*,
+				     float*, float*, int*, int*); 
+extern void NGCALLF(rmvmean,RMVMEAN)(float*, int*, float*, int*);
+extern void NGCALLF(rmvmed,RMVMED)(float*, float*, int*, float*, int*);
+extern void NGCALLF(xstnd,XSTND)(float*, int*, float*, int*, int*);
+extern void NGCALLF(drmvmean,DRMVMEAN)(double*, int*, double*, int*);
+extern void NGCALLF(drmvmed,DRMVMED)(double*, double*, int*, double*, int*);
+extern void NGCALLF(dmedmrng,DMEDMRNG)(double*, double*, int*, double*, 
+				       double*, double*, double*, int*, int*); 
+extern void NGCALLF(dxstnd,DXSTND)(double*, int*, double*, int*, int*);
+extern void NGCALLF(esauto,ESAUTO)(float*, int*, float*, float*, float*, 
+				   int*, float*, float*, int*);
+extern void NGCALLF(escros,ESCROS)(float*, float*, int*, float*, float*, 
+				   float*, float*, float*, float*, int*, 
+				   float*, float*, int*);
 
 NhlErrorTypes stat2_W( void )
 {
@@ -254,7 +283,7 @@ NhlErrorTypes stat_trim_W( void )
  * Allocate space for work array.
  */
   npts = dsizes_x[ndims_x-1];
-  work = (float*)NclMalloc(npts*sizeof(int));
+  work = (float*)calloc(npts,sizeof(float));
   if (work == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"stat_trim: Unable to allocate space for work array\n" );
     return(NhlFATAL);
@@ -542,7 +571,7 @@ NhlErrorTypes stat_medrng_W( void )
  * Allocate space for work array.
  */
   npts = dsizes_x[ndims_x-1];
-  work = (float*)NclMalloc(npts*sizeof(int));
+  work = (float*)calloc(npts,sizeof(float));
   if (work == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"stat_medrng: Unable to allocate space for work array\n" );
     return(NhlFATAL);
@@ -554,7 +583,7 @@ NhlErrorTypes stat_medrng_W( void )
   npts = dsizes_x[ndims_x-1];
   for(i = 1; i <= total_elem_x; i++) {
 	NGCALLF(medmrng,MEDMRNG)(&x[l1],work,&npts,&xmsg,
-						   &xmedian[l2],&xmrange[l2],&xrange[l2],&nptused[l2],&ier);
+				 &xmedian[l2],&xmrange[l2],&xrange[l2],&nptused[l2],&ier);
 	l1 += npts;
 	l2++;
 	if (ier == 2) {
@@ -564,6 +593,631 @@ NhlErrorTypes stat_medrng_W( void )
   }
   free(work);
   return(NhlNOERROR);
+}
+
+
+NhlErrorTypes dim_median_W( void )
+{
+/*
+ * Input array variables
+ */
+  NclStackEntry data;
+  NclMultiDValData tmp_md = NULL, tmp1_md;
+  NclScalar missing;
+/*
+ * Output array variables
+ */
+  double *xmedian, *xrange, *xmrange, xmsg;
+  float *xrmedian;
+  int dsizes_median[NCL_MAX_DIMENSIONS];
+  int *nptused;
+  int ndims_median;
+/*
+ * various
+ */
+  int i, l1, l2, total_elements, ier = 0, npts, ndims;
+  double *work;
+/*
+ * Retrieve parameter.
+ *
+ * Note any of the pointer parameters can be set to NULL, which
+ * implies you don't care about its value.
+ */
+  data = _NclGetArg(0,1,DONT_CARE);
+  switch(data.kind) {
+  case NclStk_VAR:
+	tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+	break;
+  case NclStk_VAL:
+	tmp_md = (NclMultiDValData)data.u.data_obj;
+	break;
+  }
+
+/*
+ * Compute the total number of elements minus the last dimension.
+ */
+  ndims = tmp_md->multidval.n_dims;
+  ndims_median = max(ndims-1,1);
+  dsizes_median[0] = 1;
+  total_elements = 1;
+  for(i = 0; i < ndims-1; i++) {
+    total_elements *= tmp_md->multidval.dim_sizes[i];
+    dsizes_median[i] = tmp_md->multidval.dim_sizes[i];
+  }    
+/*
+ * Coerce input to double if necessary.
+ */
+  if(tmp_md->multidval.data_type != NCL_double) {
+    tmp1_md = _NclCoerceData(tmp_md,Ncl_Typedouble,NULL);
+    if(tmp1_md == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_median: Unable to convert input to double");
+      return(NhlFATAL);
+    }	
+/*
+ * Get the missing value if there is one.  Otherwise, get the default 
+ * missing value.
+ */
+    if(tmp_md->multidval.missing_value.has_missing) {
+      missing.floatval = tmp_md->multidval.missing_value.value.floatval;
+    }
+    else {
+      missing.floatval = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+
+    }
+    xmsg = (double)missing.floatval;
+  }
+  else {
+/*
+ * Input is already double, so no coercion needs to take place.
+ */
+    tmp1_md = tmp_md;
+/*
+ * Get the missing value if there is one.  Otherwise, get the default 
+ * missing value.
+ */
+    if(tmp_md->multidval.missing_value.has_missing) {
+      missing.doubleval = tmp_md->multidval.missing_value.value.doubleval;
+    }
+    else {
+      missing.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
+
+    }
+    xmsg = (double)missing.doubleval;
+  }
+
+/*
+ * Allocate space for output arrays.
+ */
+  xmedian = (double*)NclMalloc(total_elements*sizeof(double));
+  xrange  = (double*)NclMalloc(total_elements*sizeof(double));
+  xmrange = (double*)NclMalloc(total_elements*sizeof(double));
+  nptused = (int*)NclMalloc(total_elements*sizeof(int));
+  if (xmedian == NULL || xrange == NULL || xmrange == NULL || 
+      nptused == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_median: Unable to allocate space for output array\n" );
+    return(NhlFATAL);
+  }
+/*
+ * Allocate space for work array.
+ */
+  npts = tmp_md->multidval.dim_sizes[ndims-1];
+  work = (double*)calloc(npts,sizeof(double));
+  if (work == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_median: Unable to allocate space for work array\n" );
+    return(NhlFATAL);
+  }
+/*
+ * Call the f77 double version of 'medmrng' with the full argument list.
+ */
+  l1 = l2 = 0;
+  for(i = 1; i <= total_elements; i++) {
+    NGCALLF(dmedmrng,DMEDMRNG)(&((double*)tmp1_md->multidval.val)[l1],work,
+			       &npts,&xmsg,&xmedian[l2],&xmrange[l2],
+			       &xrange[l2],&nptused[l2],&ier);
+    l1 += npts;
+    l2++;
+    if (ier == 2) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_median: The input array contains all missing values");
+      return(NhlFATAL);
+    }
+  }
+/*
+ * Free unneeded memory.
+ */
+  free(xrange);
+  free(xmrange);
+  free(nptused);
+  free(work);
+
+/*
+ * Return float if input isn't double, otherwise return double.
+ */
+  if(tmp_md->multidval.data_type != NCL_double) {
+    xrmedian = (float*)NclMalloc(total_elements*sizeof(float));
+    if (xrmedian == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_median: Unable to allocate space for output array\n" );
+      return(NhlFATAL);
+    }
+/*
+ * Copy double values to float values.
+ */
+    for( i = 0; i < total_elements; i++ ) xrmedian[i] = (float)xmedian[i];
+
+    if(tmp_md->multidval.missing_value.has_missing) {
+      return(NclReturnValue((void*)xrmedian,ndims_median,dsizes_median,
+			    &missing,NCL_float,0));
+  }
+    else {
+      return(NclReturnValue((void*)xrmedian,ndims_median,dsizes_median,
+			    NULL,NCL_float,0));
+    }
+  }
+  else {
+    if(tmp_md->multidval.missing_value.has_missing) {
+      return(NclReturnValue((void*)xmedian,ndims_median,dsizes_median,
+			    &missing,NCL_double,0));
+  }
+    else {
+      return(NclReturnValue((void*)xmedian,ndims_median,dsizes_median,NULL,
+			    NCL_double,0));
+    }
+  }
+}
+
+
+NhlErrorTypes dim_rmvmean_W( void )
+{
+/*
+ * Input array variables
+ */
+  NclStackEntry data;
+  NclMultiDValData tmp_md = NULL;
+  double *x;
+  NclScalar missing;
+/*
+ * Output array variables
+ */
+  float *xrmvmean;
+  double xmsg;
+/*
+ * various
+ */
+  int i, l1, total_elements, ier = 0, npts, ndims;
+/*
+ * Retrieve parameter.
+ *
+ * Note any of the pointer parameters can be set to NULL, which
+ * implies you don't care about its value.
+ */
+  data = _NclGetArg(0,1,DONT_CARE);
+  switch(data.kind) {
+  case NclStk_VAR:
+	tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+	break;
+  case NclStk_VAL:
+	tmp_md = (NclMultiDValData)data.u.data_obj;
+	break;
+  }
+
+/*
+ * Compute the total number of elements minus the last dimension.
+ */
+  ndims = tmp_md->multidval.n_dims;
+  total_elements = 1;
+  for(i = 0; i < ndims-1; i++) {
+    total_elements *= tmp_md->multidval.dim_sizes[i];
+  }    
+  npts = tmp_md->multidval.dim_sizes[ndims-1];
+/*
+ * Copy input to double. Since we need to make an extra copy of the input
+ * array to keep the input array from being changed, we do the coercion
+ * no matter what.
+ */
+  x = (double*)NclMalloc(total_elements*npts*sizeof(double));
+  if(x == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_rmvmean: Unable to convert input to double");
+    return(NhlFATAL);
+  }	
+  if( tmp_md->multidval.data_type == NCL_double ) {
+    for(i = 0; i < total_elements*npts; i++) {
+      x[i] = ((double *)tmp_md->multidval.val)[i];
+    }
+  }
+  else if( tmp_md->multidval.data_type == NCL_float ) {
+    for(i = 0; i < total_elements*npts; i++) {
+      x[i] = (double)((float *)tmp_md->multidval.val)[i];
+    }
+  }
+  else {
+    for(i = 0; i < total_elements*npts; i++) {
+      x[i] = (double)((int *)tmp_md->multidval.val)[i];
+    }
+  }
+/*
+ * Get the missing value if there is one.  Otherwise, get the default 
+ * missing value.
+ */
+  if(tmp_md->multidval.missing_value.has_missing) {
+    if(tmp_md->multidval.data_type == NCL_double) {
+      missing.doubleval = tmp_md->multidval.missing_value.value.doubleval;
+      xmsg = missing.doubleval;
+    }
+    else {
+      missing.floatval = tmp_md->multidval.missing_value.value.floatval;
+      xmsg = (double)missing.floatval;
+    }
+  }
+  else {
+/*
+ * Get the missing value if there is one.  Otherwise, get the default 
+ * missing value.
+ */
+    if(tmp_md->multidval.data_type == NCL_double) {
+      missing.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
+      xmsg = missing.doubleval;
+    }
+    else {
+      missing.floatval = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+      xmsg = (double)missing.floatval;
+    }
+  }
+
+/*
+ * Call the f77 double version of 'rmvmean' with the full argument list.
+ */
+  l1 = 0;
+  for(i = 1; i <= total_elements; i++) {
+    NGCALLF(drmvmean,DRMVMEAN)(&x[l1],&npts,&xmsg,&ier);
+    l1 += npts;
+  }
+/*
+ * Return float if input isn't double, otherwise return double.
+ */
+  if(tmp_md->multidval.data_type != NCL_double) {
+    xrmvmean = (float*)NclMalloc(total_elements*npts*sizeof(float));
+    if (xrmvmean == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_rmvmean: Unable to allocate space for output array\n" );
+      return(NhlFATAL);
+    }
+/*
+ * Copy double values to float values.
+ */
+    for( i = 0; i < total_elements*npts; i++ ) {
+      xrmvmean[i] = (float)x[i];
+    }
+
+    free(x);
+    if(tmp_md->multidval.missing_value.has_missing) {
+      return(NclReturnValue((void*)xrmvmean,ndims,
+			    tmp_md->multidval.dim_sizes,&missing,
+			    NCL_float,0));
+    }
+    else {
+      return(NclReturnValue((void*)xrmvmean,ndims,
+			    tmp_md->multidval.dim_sizes,NULL,NCL_float,0));
+    }
+  }
+  else {
+    if(tmp_md->multidval.missing_value.has_missing) {
+      return(NclReturnValue((void*)x,ndims,tmp_md->multidval.dim_sizes,
+			    &missing,NCL_double,0));
+    }
+    else {
+      return(NclReturnValue((void*)x,ndims,tmp_md->multidval.dim_sizes,
+			    NULL,NCL_double,0));
+    }
+  }
+}
+
+
+NhlErrorTypes dim_rmvmed_W( void )
+{
+/*
+ * Input array variables
+ */
+  NclStackEntry data;
+  NclMultiDValData tmp_md = NULL;
+  double *x;
+  NclScalar missing;
+/*
+ * Output array variables
+ */
+  float *xrmvmedian;
+  double *work, xmsg;
+/*
+ * various
+ */
+  int i, l1, total_elements, ier = 0, npts, ndims;
+/*
+ * Retrieve parameter.
+ *
+ * Note any of the pointer parameters can be set to NULL, which
+ * implies you don't care about its value.
+ */
+  data = _NclGetArg(0,1,DONT_CARE);
+  switch(data.kind) {
+  case NclStk_VAR:
+	tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+	break;
+  case NclStk_VAL:
+	tmp_md = (NclMultiDValData)data.u.data_obj;
+	break;
+  }
+
+/*
+ * Compute the total number of elements minus the last dimension.
+ */
+  ndims = tmp_md->multidval.n_dims;
+  total_elements = 1;
+  for(i = 0; i < ndims-1; i++) {
+    total_elements *= tmp_md->multidval.dim_sizes[i];
+  }    
+  npts = tmp_md->multidval.dim_sizes[ndims-1];
+/*
+ * Copy input to double. Since we need to make an extra copy of the input
+ * array to keep the input array from being changed, we do the coercion
+ * no matter what.
+ */
+  x = (double*)NclMalloc(total_elements*npts*sizeof(double));
+  if(x == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_rmvmed: Unable to convert input to double");
+    return(NhlFATAL);
+  }
+  if( tmp_md->multidval.data_type == NCL_double ) {
+    for(i = 0; i < total_elements*npts; i++) {
+      x[i] = ((double *)tmp_md->multidval.val)[i];
+    }
+  }
+  else if( tmp_md->multidval.data_type == NCL_float ) {
+    for(i = 0; i < total_elements*npts; i++) {
+      x[i] = (double)((float *)tmp_md->multidval.val)[i];
+    }
+  }
+  else {
+    for(i = 0; i < total_elements*npts; i++) {
+      x[i] = (double)((int *)tmp_md->multidval.val)[i];
+    }
+  }
+/*
+ * Get the missing value if there is one.  Otherwise, get the default 
+ * missing value.
+ */
+  if(tmp_md->multidval.missing_value.has_missing) {
+    if(tmp_md->multidval.data_type == NCL_double) {
+      missing.doubleval = tmp_md->multidval.missing_value.value.doubleval;
+      xmsg = missing.doubleval;
+    }
+    else {
+      missing.floatval = tmp_md->multidval.missing_value.value.floatval;
+      xmsg = (double)missing.floatval;
+    }
+  }
+  else {
+/*
+ * Get the missing value if there is one.  Otherwise, get the default 
+ * missing value.
+ */
+    if(tmp_md->multidval.data_type == NCL_double) {
+      missing.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
+      xmsg = missing.doubleval;
+    }
+    else {
+      missing.floatval = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+      xmsg = (double)missing.floatval;
+    }
+  }
+/*
+ * Allocate space for work array.
+ */
+  work = (double*)calloc(npts,sizeof(double));
+  if (work == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_rmvmed: Unable to allocate space for work array\n" );
+    return(NhlFATAL);
+  }
+
+/*
+ * Call the f77 double version of 'rmvmed' with the full argument list.
+ */
+  l1 = 0;
+  for(i = 1; i <= total_elements; i++) {
+    NGCALLF(drmvmed,DRMVMED)(&x[l1],work,&npts,&xmsg,&ier);
+    l1 += npts;
+  }
+  free(work);
+/*
+ * Return float if input isn't double, otherwise return double.
+ */
+  if(tmp_md->multidval.data_type != NCL_double) {
+    xrmvmedian = (float*)NclMalloc(total_elements*npts*sizeof(float));
+    if (xrmvmedian == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_rmvmed: Unable to allocate space for output array\n" );
+      return(NhlFATAL);
+    }
+/*
+ * Copy double values to float values.
+ */
+    for( i = 0; i < total_elements*npts; i++ ) {
+      xrmvmedian[i] = (float)x[i];
+    }
+
+    free(x);
+
+    if(tmp_md->multidval.missing_value.has_missing) {
+      return(NclReturnValue((void*)xrmvmedian,ndims,
+			    tmp_md->multidval.dim_sizes,&missing,
+			    NCL_float,0));
+    }
+    else {
+      return(NclReturnValue((void*)xrmvmedian,ndims,
+			    tmp_md->multidval.dim_sizes,NULL,NCL_float,0));
+    }
+  }
+  else {
+    if(tmp_md->multidval.missing_value.has_missing) {
+      return(NclReturnValue((void*)x,ndims,tmp_md->multidval.dim_sizes,
+			    &missing,NCL_double,0));
+    }
+    else {
+      return(NclReturnValue((void*)x,ndims,tmp_md->multidval.dim_sizes,NULL,
+			    NCL_double,0));
+    }
+  }
+}
+
+NhlErrorTypes dim_standardize_W( void )
+{
+/*
+ * Input array variables
+ */
+  NclStackEntry data;
+  NclMultiDValData tmp_md = NULL;
+  NclScalar missing;
+  double *x;
+  int *opt;
+/*
+ * Output array variables
+ */
+  float *xstandardize;
+  double xmsg;
+/*
+ * various
+ */
+  int i, l1, total_elements, ier = 0, npts, ndims;
+/*
+ * Retrieve parameter.
+ *
+ * Note any of the pointer parameters can be set to NULL, which
+ * implies you don't care about its value.
+ */
+  data = _NclGetArg(0,2,DONT_CARE);
+  switch(data.kind) {
+  case NclStk_VAR:
+	tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+	break;
+  case NclStk_VAL:
+	tmp_md = (NclMultiDValData)data.u.data_obj;
+	break;
+  }
+/*
+ * Get second argument.
+ */ 
+  opt = (int*)NclGetArgValue(
+           1,
+           2,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           2);
+
+/*
+ * Compute the total number of elements minus the last dimension.
+ */
+  ndims = tmp_md->multidval.n_dims;
+  total_elements = 1;
+  for(i = 0; i < ndims-1; i++) {
+    total_elements *= tmp_md->multidval.dim_sizes[i];
+  }    
+  npts = tmp_md->multidval.dim_sizes[ndims-1];
+/*
+ * Copy input to double. Since we need to make an extra copy of the input
+ * array to keep the input array from being changed, we do the coercion
+ * no matter what.
+ */
+  x = (double*)NclMalloc(total_elements*npts*sizeof(double));
+  if(x == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_standardize: Unable to convert input to double");
+    return(NhlFATAL);
+  }
+  if( tmp_md->multidval.data_type == NCL_double ) {
+    for(i = 0; i < total_elements*npts; i++) {
+      x[i] = ((double *)tmp_md->multidval.val)[i];
+    }
+  }
+  else if( tmp_md->multidval.data_type == NCL_float ) {
+    for(i = 0; i < total_elements*npts; i++) {
+      x[i] = (double)((float *)tmp_md->multidval.val)[i];
+    }
+  }
+  else {
+    for(i = 0; i < total_elements*npts; i++) {
+      x[i] = (double)((int *)tmp_md->multidval.val)[i];
+    }
+  }
+/*
+ * Get the missing value if there is one.  Otherwise, get the default 
+ * missing value.
+ */
+  if(tmp_md->multidval.missing_value.has_missing) {
+    if(tmp_md->multidval.data_type == NCL_double) {
+      missing.doubleval = tmp_md->multidval.missing_value.value.doubleval;
+      xmsg = missing.doubleval;
+    }
+    else {
+      missing.floatval = tmp_md->multidval.missing_value.value.floatval;
+      xmsg = (double)missing.floatval;
+    }
+  }
+  else {
+/*
+ * Get the missing value if there is one.  Otherwise, get the default 
+ * missing value.
+ */
+    if(tmp_md->multidval.data_type == NCL_double) {
+      missing.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
+      xmsg = missing.doubleval;
+    }
+    else {
+      missing.floatval = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+      xmsg = (double)missing.floatval;
+    }
+  }
+
+/*
+ * Call the f77 double version of 'xstnd' with the full argument list.
+ */
+  l1 = 0;
+  for(i = 1; i <= total_elements; i++) {
+    NGCALLF(dxstnd,DXSTND)(&x[l1],&npts,&xmsg,opt,&ier);
+    l1 += npts;
+  }
+/*
+ * Return float if input isn't double, otherwise return double.
+ */
+  if(tmp_md->multidval.data_type != NCL_double) {
+    xstandardize = (float*)NclMalloc(total_elements*npts*sizeof(float));
+    if (xstandardize == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_standardize: Unable to allocate space for output array\n" );
+      return(NhlFATAL);
+    }
+/*
+ * Copy double values to float values.
+ */
+    for( i = 0; i < total_elements*npts; i++ ) {
+      xstandardize[i] = (float)x[i];
+    }
+    free(x);
+    if(tmp_md->multidval.missing_value.has_missing) {
+      return(NclReturnValue((void*)xstandardize,ndims,
+			    tmp_md->multidval.dim_sizes,&missing,
+			    NCL_float,0));
+    }
+    else {
+      return(NclReturnValue((void*)xstandardize,ndims,
+			    tmp_md->multidval.dim_sizes,NULL,NCL_float,0));
+    }
+  }
+  else {
+    if(tmp_md->multidval.missing_value.has_missing) {
+      return(NclReturnValue((void*)x,ndims,tmp_md->multidval.dim_sizes,
+			    &missing,NCL_double,0));
+    }
+    else {
+      return(NclReturnValue((void*)x,ndims,tmp_md->multidval.dim_sizes,NULL,
+			    NCL_double,0));
+    }
+  }
 }
 
 
@@ -670,10 +1324,12 @@ NhlErrorTypes esacr_W( void )
 	}
   }
   if( has_missing_x ) {
-	return(NclReturnValue((void*)acr,ndims_x,dsizes_acr,&missing_x,NCL_float,0));
+	return(NclReturnValue((void*)acr,ndims_x,dsizes_acr,&missing_x,
+			      NCL_float,0));
   }
   else {
-	return(NclReturnValue((void*)acr,ndims_x,dsizes_acr,NULL,NCL_float,0));
+    return(NclReturnValue((void*)acr,ndims_x,dsizes_acr,NULL,
+			  NCL_float,0));
   }
 }
 
@@ -779,10 +1435,12 @@ NhlErrorTypes esacv_W( void )
 	}
   }
   if( has_missing_x ) {
-	return(NclReturnValue((void*)acv,ndims_x,dsizes_acv,&missing_x,NCL_float,0));
+	return(NclReturnValue((void*)acv,ndims_x,dsizes_acv,&missing_x,
+			      NCL_float,0));
   }
   else {
-	return(NclReturnValue((void*)acv,ndims_x,dsizes_acv,NULL,NCL_float,0));
+	return(NclReturnValue((void*)acv,ndims_x,dsizes_acv,NULL,
+			      NCL_float,0));
   }
 }
 
@@ -918,13 +1576,16 @@ NhlErrorTypes esccr_W( void )
 	  NhlPError(NhlWARNING,NhlEUNKNOWN,"esccr: Non-fatal conditions encountered: all missing or constant values");
   }
   if( has_missing_x ) {
-	return(NclReturnValue((void*)ccr,ndims_x,dsizes_ccr,&missing_x,NCL_float,0));
+	return(NclReturnValue((void*)ccr,ndims_x,dsizes_ccr,&missing_x,
+			      NCL_float,0));
   }
   else if( has_missing_y) {
-	return(NclReturnValue((void*)ccr,ndims_x,dsizes_ccr,&missing_y,NCL_float,0));
+	return(NclReturnValue((void*)ccr,ndims_x,dsizes_ccr,&missing_y,
+			      NCL_float,0));
   }
   else {
-	return(NclReturnValue((void*)ccr,ndims_x,dsizes_ccr,NULL,NCL_float,0));
+	return(NclReturnValue((void*)ccr,ndims_x,dsizes_ccr,NULL,
+			      NCL_float,0));
   }
 }
 
@@ -1059,13 +1720,16 @@ NhlErrorTypes esccv_W( void )
 	  NhlPError(NhlWARNING,NhlEUNKNOWN,"esccv: Non-fatal conditions encountered: all missing or constant values");
   }
   if( has_missing_x ) {
-	return(NclReturnValue((void*)ccv,ndims_x,dsizes_ccv,&missing_x,NCL_float,0));
+	return(NclReturnValue((void*)ccv,ndims_x,dsizes_ccv,&missing_x,
+			      NCL_float,0));
   }
   else if( has_missing_y) {
-	return(NclReturnValue((void*)ccv,ndims_x,dsizes_ccv,&missing_y,NCL_float,0));
+	return(NclReturnValue((void*)ccv,ndims_x,dsizes_ccv,&missing_y,
+			      NCL_float,0));
   }
   else {
-	return(NclReturnValue((void*)ccv,ndims_x,dsizes_ccv,NULL,NCL_float,0));
+	return(NclReturnValue((void*)ccv,ndims_x,dsizes_ccv,NULL,
+			      NCL_float,0));
   }
 }
 

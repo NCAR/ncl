@@ -1002,7 +1002,7 @@ NhlErrorTypes f2fosh_W( void )
   for( i = 0; i < ndims_greg-2; i++ ) dsizes_goff[i] = dsizes_greg[i];
   dsizes_goff[ndims_greg-2] = jlat;
   dsizes_goff[ndims_greg-1] = ilon;
-  goff = (float *)calloc(total_elements*jlat1*ilon,sizeof(float));
+  goff = (float *)calloc(total_elements*jlat*ilon,sizeof(float));
   if( goff == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"f2fosh: Unable to allocate memory for output array");
     return(NhlFATAL);
