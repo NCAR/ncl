@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.22 1995-06-16 23:49:05 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.23 1995-06-27 20:46:21 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -8973,7 +8973,7 @@ static NhlErrorTypes    ManageGenArray
 	if (copy_ga != NULL && copy_ga != *ga) {
 
 		*need_check = True;
-		ret = _NhlValidatedGenArrayCopy(ga,copy_ga,Nhl_cnMAX_LEVELS,
+		ret = _NhlValidatedGenArrayCopy(ga,copy_ga,Nhl_cnMAX_LEVELS+1,
 						True,False,resource_name, 
 						entry_name);
 		if (ret < NhlWARNING) {
