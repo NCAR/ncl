@@ -1,5 +1,5 @@
 /*
- *      $Id: Legend.c,v 1.63 1999-08-18 03:05:54 dbrown Exp $
+ *      $Id: Legend.c,v 1.64 1999-10-26 05:14:12 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -4059,6 +4059,7 @@ static NhlErrorTypes    SetLabels
 		}
 		olg_p->label_height = lg_p->label_height;
 		olg_p->label_just = lg_p->label_just;
+		olg_p->const_pos = lg_p->const_pos;
 	} 
 	else {
 		/* 

@@ -1,5 +1,5 @@
 /*
- *      $Id: LabelBar.c,v 1.62 1999-08-18 03:05:51 dbrown Exp $
+ *      $Id: LabelBar.c,v 1.63 1999-10-26 05:14:10 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3081,6 +3081,7 @@ static NhlErrorTypes    SetLabels
 		}
 		olb_p->label_height = lb_p->label_height;
 		olb_p->label_just = lb_p->label_just;
+		olb_p->const_pos = lb_p->const_pos;
 	}
 	else {
 		/* 
