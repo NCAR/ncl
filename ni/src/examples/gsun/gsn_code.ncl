@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.39 2000-06-20 16:21:56 haley Exp $
+;      $Id: gsn_code.ncl,v 1.40 2000-06-30 18:55:26 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -59,10 +59,13 @@ undef("gsn_open_wks")
 undef("gsn_define_colormap")
 undef("gsn_retrieve_colormap")
 undef("gsn_polygon")
+undef("gsn_add_polygon")
 undef("gsn_polygon_ndc")
 undef("gsn_polyline")
+undef("gsn_add_polyline")
 undef("gsn_polyline_ndc")
 undef("gsn_polymarker")
+undef("gsn_add_polymarker")
 undef("gsn_polymarker_ndc")
 undef("gsn_labelbar_ndc")
 undef("gsn_panel")
@@ -939,7 +942,7 @@ begin
 
     wks@name = res_file
     wks@app = appid 
-local i, gsid, attnames, plot_object, res, gs_res_index, res2, \
+    return(wks)
 end
 
 ;***********************************************************************;
@@ -970,6 +973,80 @@ begin
 
 
     getvalues wks 
+; Procedure : gsn_add_polygon                                           ;
+    end getvalues
+
+    gsres = get_res_eq(resources,"gs")
+    attsetvalues_check(gsid,gsres)
+; Draw a polygon.
+
+; This procedure adds a polygon to the plot "plotid", in the same data  ;
+    yf = tofloat(y)
+
+; and y locations of each point in the polygon, and should be in the    ;
+      NhlDataPolygon(plotid,gsid,xf,yf)
+; list of resources.                                                    ;
+      NhlDataPolygon(plotid,gsid,x2,y2)
+; This procedure is different from gsn_polygon because it actually      ;
+; attaches the polygon to the to the plot. This means that if you resize;
+; or move the plot, the polygon will stay with the plot.                ;
+    end if
+
+procedure gsn_add_polygon(wks:graphic,plotid:graphic,x[*]:numeric,\
+                          y[*]:numeric,resources:logical)
+local gsid, gsres, prim_object, before
+; Function : gsn_add_primitive                                          ;
+;                   wks: workstation object                             ;
+;                                                                       ;
+; the default one, because if we add two gons to a plot and assign each
+; one a different color, the two gons will have the same color as the
+; last color that was set.
+; and y locations of each point in the primitive, and should be in the  ;
+; same data space as the data from "plotid". "resources" is an optional ;
+; list of resources.  This function returns the primitive object        ;
+; created. polytype is the type of primitive to add (polymarker,        ;
+; polygon, or polyline)                                                 ;
+;                                                                       ;
+    if(gsres.and..not.any(ismissing(getvaratts(gsres))))
+      attsetvalues(gsid,gsres)
+
+  if(.not.any(polytype.eq.(/"polymarker","polygon","polyline"/)))
+    if(.not.any(ismissing(x)).and..not.any(ismissing(y)))
+              polytype2 = "polymarker"
+; No data is missing, so create a primitive polygon object.
+                attsetvalues_check(gsid,gmres)
+      prim_object = create "primitive" primitiveClass noparent
+              end if
+            else
+        "prPolyType"     : "polygon"
+            end if
+            prim_object(i) = create astring(i) primitiveClass noparent
+              "prXArray"       : x(ibeg:iend)
+; Add polygon to the plot object.  First retrieve the current list
+; of poly objects, and add the new one to the end of the list.
+              "prPolyType"     : polytype2
+      getvalues plotid 
+        "tfPolyDrawList" : polylist
+      end getvalues
+
+      if(ismissing(polylist(0)))
+        new_polylist = prim_object
+      else
+        new_polylist = new(dimsizes(polylist)+1,typeof(polylist))
+        new_polylist(0:dimsizes(polylist)-1) = polylist
+        new_polylist(dimsizes(polylist))     = prim_object
+      end if
+
+      setvalues plotid 
+        "tfPolyDrawList" : new_polylist
+      end setvalues
+    else
+      print("Warning: gsn_add_polygon: x and/or y contains missing values, cannot add polygon.")
+            NhlAddPrimitive(plotid,prim_object(i),dummy)
+;                plotid: plot object                                    ;
+;                     x: 1-dimensional array of x points                ;
+;                     y: 1-dimensional array of y points                ;
+;               resources: optional resources                           ;
 ;                                                                       ;
 ; This function adds a polygon to the plot "plotid", in the same data   ;
 ; space as the data in the plot ("plotid" is returned from a previous   ;
@@ -984,7 +1061,7 @@ begin
 
 ; move the plot, the polygon will stay with the plot.                   ;
 ;***********************************************************************;
-local i, gsid, attnames, plot_object, res, gs_res_index, xf, yf, x2, y2
+function gsn_add_polygon(wks:graphic,plotid:graphic,x[*]:numeric,\
                          y[*]:numeric,resources:logical)
 begin
   return(gsn_add_primitive(wks,plotid,x,y,"polygon",resources))
@@ -1041,7 +1118,7 @@ begin
 
       x2 = xf(ind(.not.ismissing(xf).and..not.ismissing(yf)))
       y2 = yf(ind(.not.ismissing(xf).and..not.ismissing(yf)))
-local i, gsid, attnames, plot_object, res, gs_res_index
+      NhlNDCPolygon(canvas,gsid,x2,y2)
     end if
 end
 
@@ -1101,6 +1178,83 @@ begin
     if(.not.any(ismissing(xf)).and..not.any(ismissing(yf)))
       NhlDataPolyline(plotid,gsid,xf,yf)
     else
+; Procedure : gsn_add_polyline                                          ;
+      indices = get_non_missing_pairs(xf,yf)
+      i = 0
+      do while(.not.ismissing(indices(i,0)).and.i.lt.dimsizes(xf))
+        ibeg = indices(i,0)
+        iend = indices(i,1)
+        if(iend.gt.ibeg)
+; This procedure adds a polyline to the plot "plotid", in the same data ;
+        else    ; iend = ibeg --> only one point
+           if(first_marker)
+             attsetvalues_check(gsid,gmres)
+             first_marker = False
+; of resources.                                                         ;
+           NhlDataPolymarker(plotid,gsid,xf(ibeg),yf(ibeg))
+; This procedure is different from gsn_polyline because it actually     ;
+; attaches the line to the to the plot. This means that if you resize   ;
+; or move the plot, the line will stay with the plot.                   ;
+    end if
+
+procedure gsn_add_polyline(wks:graphic,plotid:graphic,x[*]:numeric,\
+
+local i, gsid, prim_object, res, x2, y2
+;***********************************************************************;
+
+; Create a graphic style object.  We have to do this instead of using
+; the default one, because if we add two lines to a plot and assign each
+; one a different color, the two lines will have the same color as the
+; last color that was set.
+
+    gsid = create "graphic_style" graphicStyleClass wks end create
+;
+; Set graphic style resources, if any.
+;
+    gsres = get_res_eq(resources,"gs")
+    if(gsres.and..not.any(ismissing(getvaratts(gsres))))
+      attsetvalues(gsid,gsres)
+    end if
+
+    if(.not.any(ismissing(x)).and..not.any(ismissing(y)))
+;
+; No data is missing, so create a primitive polyline object.
+;
+      prim_object = create "primitive" primitiveClass noparent
+        "prXArray"       : x
+        "prYArray"       : y
+        "prPolyType"     : "polyline"
+        "prGraphicStyle" : gsid
+      end create
+;
+; Add polyline to the plot object.  First retrieve the current list
+; of poly objects, and add the new one to the end of the list.
+;
+      dummy = new(1,graphic)
+print(prim_object)
+      NhlAddPrimitive(plotid,prim_object,dummy)
+
+;      getvalues plotid 
+;        "tfPolyDrawList" : polylist
+;      end getvalues
+;      if(ismissing(polylist(0)))
+;        new_polylist = prim_object
+;      else
+;        new_polylist = new(dimsizes(polylist)+1,typeof(polylist))
+;        new_polylist(0:dimsizes(polylist)-1) = polylist
+;        new_polylist(dimsizes(polylist))     = prim_object
+;      end if
+;
+;      setvalues plotid 
+;        "tfPolyDrawList" : new_polylist
+;      end setvalues
+    else
+      print("Warning: gsn_add_polyline: x and/or y contains missing values, cannot add polyline.")
+    end if
+;                   wks: workstation object                             ;
+;                plotid: plot object                                    ;
+;                     x: 1-dimensional array of x points                ;
+;                     y: 1-dimensional array of y points                ;
 ;               resources: optional resources                           ;
 ;                                                                       ;
 ; This function adds a polyline to the plot "plotid", in the same data  ;
@@ -1115,7 +1269,7 @@ begin
 
 ; the plot, the line will stay with the plot.                           ;
 ;***********************************************************************;
-local i, gsid, attnames, plot_object, res, gs_res_index, xf, yf, x2, y2
+local i, gsid, plot_object, res, xf, yf, x2, y2
                            y[*]:numeric,resources:logical)
 begin
   return(gsn_add_primitive(wks,plotid,x,y,"polyline",resources))
@@ -1198,7 +1352,7 @@ procedure gsn_polyline_ndc(wks:graphic,x[*]:numeric,y[*]:numeric,\
 
         end if
         i = i + 1
-local i, gsid, attnames, plot_object, res, gs_res_index, xf, yf, x2, y2
+      end do
     end if
 end
 
@@ -1227,6 +1381,80 @@ begin
         "wkDefGraphicStyleId":  gsid
     end getvalues
 
+; Procedure : gsn_add_polymarker                                        ;
+    attsetvalues_check(gsid,gsres)
+;
+; Make sure data is float, since NhlDataPolymarker only takes floats.
+;
+    xf = tofloat(x)
+    yf = tofloat(y)
+; This procedure adds a polymarkers to the plot "plotid", in the same   ;
+; Since NhlDataPolymarker doesn't accept missing values, this routine
+; only draws the ones that aren't missing.
+;
+    if(.not.any(ismissing(xf)).and..not.any(ismissing(yf)))
+; resources.                                                            ;
+    else
+; This procedure is different from gsn_polymarker because it actually   ;
+; attaches the markers to the to the plot. This means that if you resize;
+; or move the plot, the markers will stay with the plot.                ;
+    end if
+
+procedure gsn_add_polymarker(wks:graphic,plotid:graphic,x[*]:numeric,\
+                             y[*]:numeric,resources:logical)
+local i, gsid, prim_object, res, x2, y2
+;***********************************************************************;
+
+; Create a graphic style object.  We have to do this instead of using
+; the default one, because if we add two sets of markers to a plot and
+; assign each set a different color, the two sets will have the same 
+; color as the last color that was set.
+
+    gsid = create "graphic_style" graphicStyleClass wks end create
+;
+; Set graphic style resources, if any.
+;
+    gsres = get_res_eq(resources,"gs")
+    if(gsres.and..not.any(ismissing(getvaratts(gsres))))
+      attsetvalues(gsid,gsres)
+    end if
+
+    if(.not.any(ismissing(x)).and..not.any(ismissing(y)))
+;
+; No data is missing, so create a primitive polymarker object.
+;
+      prim_object = create "primitive" primitiveClass noparent
+        "prXArray"       : x
+        "prYArray"       : y
+        "prPolyType"     : "polymarker"
+        "prGraphicStyle" : gsid
+      end create
+;
+; Add polymarkers to the plot object.  First retrieve the current list
+; of poly objects, and add the new one to the end of the list.
+;
+      getvalues plotid 
+        "tfPolyDrawList" : polylist
+      end getvalues
+
+      if(ismissing(polylist(0)))
+        new_polylist = prim_object
+      else
+        new_polylist = new(dimsizes(polylist)+1,typeof(polylist))
+        new_polylist(0:dimsizes(polylist)-1) = polylist
+        new_polylist(dimsizes(polylist))     = prim_object
+      end if
+
+      setvalues plotid 
+        "tfPolyDrawList" : new_polylist
+      end setvalues
+    else
+      print("Warning: gsn_add_polymarker: x and/or y contains missing values, cannot add polymarkers.")
+    end if
+;                   wks: workstation object                             ;
+;                plotid: plot object                                    ;
+;                     x: 1-dimensional array of x points                ;
+;                     y: 1-dimensional array of y points                ;
 ;               resources: optional resources                           ;
 ;                                                                       ;
 ; This function adds polymarkers to the plot "plotid", in the same      ;
@@ -1241,7 +1469,7 @@ procedure gsn_text_ndc(wks:graphic, text:string, x:numeric, \
 ;***********************************************************************;
 procedure gsn_polymarker_ndc(wks:graphic,x[*]:numeric,y[*]:numeric,\
                          resources:logical)
-local i, gsid, attnames, plot_object, res, gs_res_index, xf, yf, x2, y2
+local i, gsid, plot_object, res, xf, yf, x2, y2
 begin
 ; variable returned from a previous call to "gsn_open_wks").  "x" and   ;
 ; Retrieve graphic style object.
@@ -1296,7 +1524,7 @@ end
 
 procedure gsn_labelbar_ndc(wks:graphic, nbox:integer, labels:string, \
                            x,y,resources:logical )
-local i, lbid, attnames, res, lb_res_index, lbres
+local i, lbid, res, lb_res_index, lbres
 ;***********************************************************************;
 
     if(isatt(wks,"name"))
@@ -1882,7 +2110,7 @@ end
 ;***********************************************************************;
 
 ; Function : gsn_contour                                                ;
-local i, attnames, data_object, plot_object, res, sf_res_index, \
+;                   wks: workstation object                             ;
 ;                  data: 2-dimensional data                             ;
 ;             resources: optional resources                             ;
 ;                                                                       ;
@@ -2039,7 +2267,7 @@ end
 
 ;                   wks: workstation object                             ;
 ;                  data: 2-dimensional data                             ;
-local i, attnames, data_object, contour_object, res, sf_res_index, \
+;               resources: optional resources                           ;
 ;                                                                       ;
 ; This function creates and draws a contour plot over a map plot to the ;
 ; workstation "wks" (the variable returned from a previous call to      ;
@@ -2149,7 +2377,7 @@ function gsn_contour_map(wks:graphic,data[*][*]:numeric,\
     map_object@contour = contour_object
 
     return(map_object)
-local i, attnames, plot_object, res2
+end
 
 ;***********************************************************************;
 ; Function : gsn_map                                                    ;
@@ -2205,7 +2433,7 @@ end
 
 ;***********************************************************************;
 ; Function : gsn_streamline                                             ;
-local i,attnames,data_object,plot_object,res,vf_res_index,st_res_index, \
+;                   wks: workstation object                             ;
 ;                     u: 2-dimensional U array                          ;
 ;                     v: 2-dimensional V array                          ;
 ;               resources: optional resources                           ;
@@ -2349,7 +2577,7 @@ end
 
 ;***********************************************************************;
 ; Function : gsn_streamline_map                                         ;
-local i, attnames, data_object, contour_object, res, vf_res_index, \
+;                   wks: workstation object                             ;
 ;                     u: 2-dimensional U data                           ;
 ;                     v: 2-dimensional V data                           ;
 ;               resources: optional resources                           ;
@@ -2447,7 +2675,7 @@ begin
 
 procedure gsn_text(wks:graphic,plotid:graphic,text:string,x:numeric, \
                    y:numeric, resources:logical )
-local i, txid, attnames, plot_object, res, tx_res_index, x2, y2, xf, yf, \
+local i, txid, plot_object, res, tx_res_index, x2, y2, xf, yf, \
 funccode, res2, calldraw, callframe
 begin
     res2 = resources
@@ -2518,7 +2746,7 @@ end
 
 procedure gsn_text_ndc(wks:graphic, text:string, x:numeric, \
                        y:numeric, resources:logical )
-local i, txid, attnames, plot_object, res, tx_res_index, x2, y2, res2, \
+local i, txid, plot_object, res, tx_res_index, x2, y2, res2, \
 calldraw, callframe
 begin
 
@@ -2712,7 +2940,7 @@ end
 
 ;                     u: 2-dimensional U array                          ;
 ;                     v: 2-dimensional V array                          ;
-local i,attnames,data_object,plot_object,res,vf_res_index,vc_res_index, \
+;               resources: optional resources                           ;
 ;                                                                       ;
 ; This function creates and draws a vector plot to the workstation "wks";
 ; (the variable returned from a previous call to "gsn_open_wks").  "u"  ;
@@ -2870,7 +3098,7 @@ end
 ;                  data: 2-dimensional scalar field                     ;
 ;               resources: optional resources                           ;
 ;                                                                       ;
-local i, attnames, vfdata_object, sfdata_object, contour_object, res, \
+; This function creates and draws vectors and contours to the           ;
 ; workstation "wks" (the variable returned from a previous call to      ;
 ; "gsn_open_wks").  "u" and "v" are the 2-dimensional arrays to be      ;
 ; vectorized, and "data" is the scalar field to be contoured.           ;
@@ -3018,7 +3246,7 @@ end
 ;                  data: 2-dimensional scalar field                     ;
 ;               resources: optional resources                           ;
 ;                                                                       ;
-local i, attnames, vfdata_object, sfdata_object, contour_object, res, \
+; This function creates and draws vectors and contours over a map plot  ;
 ; to the workstation "wks" (the variable returned from a previous call  ;
 ; to "gsn_open_wks").  "u" and "v" are the 2-dimensional arrays to be   ;
 ; vectorized, and "data" is the scalar field to be contoured.           ;
@@ -3173,7 +3401,7 @@ end
 
 ;                     : 2-dimensional U data                            ;
 ;                     v: 2-dimensional V data                           ;
-local i, attnames, data_object, contour_object, res, vf_res_index, \
+;               resources: optional resources                           ;
 ;                                                                       ;
 ; This function creates and draws a vector plot over a map plot to the  ;
 ; workstation "wks" (the variable returned from a previous call to      ;
@@ -3290,7 +3518,7 @@ end
 
 ;                     v: 2-dimensional V array                          ;
 ;                  data: 2-dimensional scalar field                     ;
-local i, attnames, vfdata_object, sfdata_object, plot_object, res, \
+;               resources: optional resources                           ;
 ;                                                                       ;
 ; This function creates and draws a vector plot to the workstation "wks";
 ; (the variable returned from a previous call to "gsn_open_wks").  "u"  ;
@@ -3472,7 +3700,7 @@ end
 ;                  data: 2-dimensional scalar field                     ;
 ;               resources: optional resources                           ;
 ;                                                                       ;
-local i, attnames, vfdata_object, sfdata_object, contour_object, res, \
+; This function creates and draws a vector plot over a map plot to the  ;
 ; workstation "wks" (the variable returned from a previous call to      ;
 ; "gsn_open_wks").  "u" and "v" are the 2-dimensional arrays to be      ;
 ; vectorized, and "data" is the scalar field that the vectors are       ;
