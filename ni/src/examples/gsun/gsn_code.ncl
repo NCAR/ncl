@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.57 2001-01-31 22:43:32 haley Exp $
+;      $Id: gsn_code.ncl,v 1.58 2001-02-01 16:30:12 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -706,14 +706,14 @@ procedure check_for_irreg2loglin(res:logical,xlinear:logical, \
 begin
 
 ; Function : compute_ps_device_coords                                  ;
-;                bb[4] : float                                         ;
+;                bb(:,4) : float                                       ;
 ;                  res : logical                                       ;
 ;                                                                      ;
 ; This function computes the PostScript device coordinates needed to   ;
 ; make a plot fill up the full page.                                   ;
 ;                                                                      ;
 ; bb     : bounding box that contains all graphical objects. It should ;
-;          be a float array with four values between 0 and 1.          ;
+;          be a n x 4 float array with values between 0 and 1.         ;
 ;            (top,bottom,left,right)                                   ;
 ;                                                                      ;
 ; res : list of optional resources. Ones accepted include:             ;
@@ -740,7 +740,17 @@ begin
   paper_width  = get_res_value_keep(res,"gsnPaperWidth",8.5)
   paper_margin = get_res_value_keep(res,"gsnPaperMargin",0.5)
   paper_orient = get_res_value_keep(res,"gsnPaperOrientation","auto_orient")
-  dimbb        = dimsizes(bb)
+  is_debug     = get_res_value_keep(res,"gsnBBDebug",False)
+;
+; Check to see if any panel resources have been set.  No defaults
+; will be assumed for these. They are only used if they have been
+; explicitly set by the user.
+;
+  lft_pnl = isatt(res,"gsnPanelLeft")
+  rgt_pnl = isatt(res,"gsnPanelRight")
+  bot_pnl = isatt(res,"gsnPanelBottom")
+  top_pnl = isatt(res,"gsnPanelTop")
+
   if(typeof(paper_orient).eq."integer")
     if(paper_orient.eq.0)
       lc_orient = "portrait"
@@ -751,20 +761,46 @@ begin
     lc_orient = lower_case(paper_orient)
   end if
 ;
+; Get the bounding box that covers all the plots.  If gsnPanel 
+; resources have been added to add white space around plots, then
+; count this white space in as well.  Note that even though the bounding
+; box coordinates should be positive, it *is* possible for them to be
+; negative, and we need to keep these negative values in our calculations
+; later to preserve the aspect ratio.
 ;
-; Error checking.
-;
+  dimbb = dimsizes(bb)
   if(dimsizes(dimbb).eq.1) then
-    top = bb(0)
-    bot = bb(1)
-    lft = bb(2)
-    rgt = bb(3)
+;
+; Force newbb to be 2-dimensional so we don't have to have a
+; bunch of "if" tests later.
+;
+    newbb = new((/1,4/),float)
+    newbb(0,:) = bb
   else
-    top = max(bb(:,0))
-    bot = min(bb(:,1))
-    lft = min(bb(:,2))
-    rgt = max(bb(:,3))
+    newbb = bb
   end if
+
+  if(top_pnl)
+    top = max((/1.,max(newbb(:,0))/))
+  else
+    top = max(newbb(:,0))
+  end if
+  if(bot_pnl)
+    bot = min((/0.,min(newbb(:,1))/))
+  else
+    bot = min(newbb(:,1))
+  end if
+  if(lft_pnl)
+    lft = min((/0.,min(newbb(:,2))/))
+  else
+    lft = min(newbb(:,2))
+  end if
+  if(rgt_pnl)
+    rgt = max((/1.,max(newbb(:,3))/))
+  else
+    rgt = max(newbb(:,3))
+  end if
+
 
   if(bot.lt.0.or.bot.gt.1.or.top.lt.0.or.top.gt.1.or. \
      lft.lt.0.or.lft.gt.1.or.rgt.lt.0.or.rgt.gt.1)
@@ -774,6 +810,13 @@ begin
   if(bot.ge.top.or.lft.ge.rgt)
     print("compute_ps_device_coords: bottom must be < top and left < right")
     return((/0,0,0,0/))
+  end if
+;
+; Debug prints
+;
+  if(is_debug)
+    print(" top = " + top + " bot = " + bot + \
+          " lft = " + lft + " rgt = " + rgt)
   end if
 ;
 ; Initialization
@@ -850,6 +893,13 @@ begin
 ;
   coords = floattointeger((/lx,ly,ux,uy/))
   coords@gsnPaperOrientation = lc_orient
+;
+; Debug prints.
+;
+  if(is_debug)
+    print(coords)
+  end if
+
   return(coords)
 end
 
@@ -1231,12 +1281,6 @@ end
 ;               plot:graphic                                            ;
 ;           calldraw:logical                                            ;
 ;          callframe:logical                                            ;
-; If gsnBBPrint is set to True, then print "coords".
-;
-      if(get_res_value(maxbb,"gsnBBPrint",False))
-        print(coords)
-      end if
-;
 ;              maxbb:logical                                            ;
 ;                                                                       ;
 ; By default, all of the plotting routines will draw the plot and       ;
@@ -1266,7 +1310,6 @@ begin
         "wkDeviceUpperX" : coords(2)
         "wkDeviceUpperY" : coords(3)
       end setvalues
-  return
     else
 ;
 ; If the workstation is NCGM or X11, then maximize the bounding box.
@@ -1283,7 +1326,7 @@ begin
 
   if(calldraw)
   maxbb@gsnBBMargin    = get_res_value(res,"gsnBBMargin",0.02)
-  maxbb@gsnBBPrint     = get_res_value(res,"gsnBBPrint",False)
+  maxbb@gsnBBDebug     = get_res_value(res,"gsnBBDebug",False)
 
   if(callframe)
     frame(wks)           ; advance the frame
@@ -1291,6 +1334,21 @@ begin
 end
 
 ;***********************************************************************;
+; Function : get_bb_res                                                 ;
+;               res : list of resources                                 ;
+;                                                                       ;
+; Get list of resources for use with maximizing the plots within an     ;
+; X11, NCGM, or PS window.                                              ;
+;***********************************************************************;
+function get_bb_res(res:logical)
+begin
+  maxbb = get_res_value(res,"gsnMaximize", False)
+  maxbb@gsnPaperMargin = get_res_value(res,"gsnPaperMargin",0.5)
+  maxbb@gsnPaperHeight = get_res_value(res,"gsnPaperHeight",11.0)
+  maxbb@gsnPaperWidth  = get_res_value(res,"gsnPaperWidth",8.5)
+  maxbb@gsnBoxMargin   = get_res_value(res,"gsnBoxMargin",0.02)
+  maxbb@gsnDebug       = get_res_value(res,"gsnDebug",False)
+;
 ; Don't assume a default on this one, because the default will be
 ; determined by doing a getvalues on the PostScript workstation. 
 ;
@@ -2421,19 +2479,19 @@ begin
     end do
   else
     if(ddims.ne.2)
-  panel_save     = get_res_value(res,"gsnPanelSave",True)
-  panel_debug    = get_res_value(res,"gsnPanelDebug",False)
-  panel_center   = get_res_value(res,"gsnPanelCenter",True)
-  panel_labelbar = get_res_value(res,"gsnPanelLabelBar",False)
-  calldraw       = get_res_value(res,"gsnDraw",True)
-  callframe      = get_res_value(res,"gsnFrame",True)
-  xwsp_perc      = get_res_value(res,"gsnPanelXWhiteSpacePercent",1.)
-  ywsp_perc      = get_res_value(res,"gsnPanelYWhiteSpacePercent",1.)
-  draw_boxes     = get_res_value(res,"gsnPanelBoxes",False)
-  x_lft          = get_res_value(res,"gsnPanelLeft",0.)
-  x_rgt          = get_res_value(res,"gsnPanelRight",1.)
-  y_bot          = get_res_value(res,"gsnPanelBottom",0.)
-  y_top          = get_res_value(res,"gsnPanelTop",1.)
+      print("Error: gsn_panel: for the third argument of gsn_panel, you must either specify # rows by # columns or set gsnPanelRowSpec to True and set the number of plots per row.")
+  panel_debug    = get_res_value_keep(res,"gsnPanelDebug",False)
+    end if
+    nrows = dims(0)
+    ncols = dims(1)
+    npanels = nrows * ncols
+    row_spec = new(nrows,integer)
+    row_spec = ncols
+  end if
+ 
+  nplots  = dimsizes(plot)      ; Total number of plots.
+
+  if(nplots.gt.npanels)
     print("Only " + npanels + " plots will be drawn.")
     if(y_top.eq.1.) then
   if(maxbb) then
