@@ -1,5 +1,5 @@
 C
-C $Id: lblbar.f,v 1.6 1994-05-13 23:08:56 kennison Exp $
+C $Id: lblbar.f,v 1.7 1994-05-16 18:36:43 kennison Exp $
 C
       SUBROUTINE LBLBAR (IHOV,XLEB,XREB,YBEB,YTEB,NBOX,WSFB,HSFB,LFIN,
      +                   IFTP,LLBS,NLBS,LBAB)
@@ -310,7 +310,7 @@ C
      +          WCHR=MIN(WCHR,WCHO*((1.-XPB1)/(DSTR+WCHO)))
                 IF (XPB1-XPLL.LT.DRLL+DSTL+2.*WCHO)
      +          WCHR=MIN(WCHR,WCHO*((XPB1-XPLL)/(DRLL+DSTL+2.*WCHO)))
-                HMAX=MAX(HMAX,DSTB+DSTT+.02)*(WCHR/WCHO)
+                HMAX=MAX(HMAX,DSTB+DSTT+2.*WCHO)*(WCHR/WCHO)
               ELSE
                 IF ((1.-WSFB)*WSOB.LT.RMUL*(DSTL+DSTR+2.*WCHO))
      +          WCHR=WCHO*(((1.-WSFB)*WSOB)/(RMUL*(DSTL+DSTR+2.*WCHO)))
