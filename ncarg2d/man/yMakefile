@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.16 1995-04-04 15:03:18 haley Exp $
+#	$Id: yMakefile,v 1.17 1998-06-27 23:20:16 haley Exp $
 #
 
 #define IHaveSubdirs
@@ -8,4 +8,4 @@ SUBDIRS = areas autograph bivar colconv conpack conran_family conrec_family \
 	dashline dashpack error_handling ezmap gflash gks gksC gridall \
 	halftone histogram isosurface labelbar ngmisc other plotchar polypack \
 	pwrite_family scrolled_title softfill spps streamlines surface \
-	threed vectors wmap
+	tdpack threed vectors wmap
