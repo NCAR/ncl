@@ -29,6 +29,9 @@ controls whether clipping is to be done to the viewport of the
 current normalization transformation, not to NDC space itself
 (unless the viewport of the current normalization transformation
 is the entirety of NDC space).
+.IP "\'CM\'   -   Integer     -   1" 
+If CM equals 1, then the RGB color model is used for PostScript output;
+if CM equals 0, then the CMYK color model is used for PostScript output.	
 .IP "\'CO\'   -   Integer   -   25"
 A positive integer specifying a scale factor for the integer coordinate values
 in PostScript output from NCAR GKS.  This value will apply to the
