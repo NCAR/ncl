@@ -165,15 +165,9 @@ static void HLUObjDestroy
 * This line keeps HLUObjDestroy from calling DelHLUChild on subsequent 
 * this object
 */
-#ifdef NCLDEBUG
-					if(((NclHLUObj)tmp_obj)->hlu.parent_hluobj_id == hlu_obj->obj.id)
-						((NclHLUObj)tmp_obj)->hlu.parent_hluobj_id = -1;
-				if(tmp_obj != NULL){
-#else
 				if(tmp_obj != NULL){
 					if(((NclHLUObj)tmp_obj)->hlu.parent_hluobj_id == hlu_obj->obj.id)
 						((NclHLUObj)tmp_obj)->hlu.parent_hluobj_id = -1;
-#endif
 					_NclDestroyObj(tmp_obj);
 				}
 				NclFree(tmp2);
