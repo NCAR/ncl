@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.1.1.1 1992-04-17 22:29:45 ncargd Exp $
+#	$Id: yMakefile,v 1.2 1992-09-23 22:47:32 don Exp $
 #
 NCARG	= ../../..
 
@@ -27,7 +27,7 @@ all::
 install:: $(FONTCAPS)
 
 install::
-	@$(MV) $(FONTCAPS) $(FONTCAPDIR)
+	@$(MV) $(FONTCAPS) $(FONTCAPPATH)
 
 MakefileTarget
 CleanTarget
