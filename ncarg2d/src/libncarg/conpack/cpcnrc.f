@@ -1,12 +1,12 @@
 C
-C $Id: cpcnrc.f,v 1.5 1993-02-02 18:16:47 kennison Exp $
+C $Id: cpcnrc.f,v 1.6 1993-02-02 18:18:58 kennison Exp $
 C
 C
 C-----------------------------------------------------------------------
 C
       SUBROUTINE CPCNRC (ZDAT,KZDT,MZDT,NZDT,FLOW,FHGH,FINC,KSET,NHGH,
      +                   NDSH)
-C XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+C
       DIMENSION ZDAT(KZDT,*)
 C
 C This routine simulates the old routine CONREC.
