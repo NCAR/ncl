@@ -1,5 +1,5 @@
 /*
- *	$Id: nrif.c,v 1.14 1993-02-10 19:19:10 don Exp $
+ *	$Id: nrif.c,v 1.15 1993-03-17 22:15:54 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -62,7 +62,7 @@ static int	char_encode();
 static int	char_decode();
 static int	read_decode();
 
-static unsigned char	buf[32]; /* for unpacking NRIF headers. */
+static unsigned char	buf[NRIF_HEADER_SIZE]; /* for unpacking NRIF headers. */
 
 static unsigned char	*tmpbuf		= (unsigned char *) NULL;
 static int		tmpbuf_size	= 0;
