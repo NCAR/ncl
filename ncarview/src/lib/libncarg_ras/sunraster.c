@@ -1,5 +1,5 @@
 /*
- *	$Id: sunraster.c,v 1.3 1991-10-07 18:08:42 clyne Exp $
+ *	$Id: sunraster.c,v 1.4 1991-11-15 16:44:40 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -459,11 +459,11 @@ int
 SunClose(ras)
 	Raster	*ras;
 {
-	free( (char *) ras->data);
-	free( (char *) ras->red);
-	free( (char *) ras->green);
-	free( (char *) ras->blue);
-	free( (char *) ras->dep);
+	if (ras->data  != (unsigned char *) NULL) free( (char *) ras->data);
+	if (ras->red   != (unsigned char *) NULL) free( (char *) ras->red);
+	if (ras->green != (unsigned char *) NULL) free( (char *) ras->green);
+	if (ras->blue  != (unsigned char *) NULL) free( (char *) ras->blue);
+	if (ras->dep   !=  (char *) NULL)         free( (char *) ras->dep);
 	return(RAS_OK);
 }
 
