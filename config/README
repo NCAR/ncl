@@ -168,6 +168,7 @@ BuildSunViewctrans	NO
 HDFlib			-lmfhdf -ldf -ljpeg -lz
 HDFEOSlib		-lhdfeos -lGctp  
 NetCDFlib		-lnetcdf
+UdUnitslib		-ludunits
 XdrLibrary		null
 ProjectDefines		-DNeedFuncProto		extra c defines for every c file
 GksBufferSize		0

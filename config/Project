@@ -1,5 +1,5 @@
 /*
- *      $Id: Project,v 1.49 2002-11-27 15:26:23 haley Exp $
+ *      $Id: Project,v 1.50 2003-02-05 21:41:47 haley Exp $
  */
 /************************************************************************
 *									*
@@ -22,7 +22,7 @@
  *			etc are in the Template file.
  */
 
-#define NcargVersion 4.2.0.a027
+#define NcargVersion 4.2.0.a028
 
 #ifndef	BuildRasterHDF
 #define	BuildRasterHDF
@@ -121,6 +121,10 @@
 #ifndef	NetCDFlib
 #define	NetCDFlib	-lnetcdf
 #endif	/* NetCDFlib */
+
+#ifndef	UdUnitslib
+#define	UdUnitslib	-ludunits
+#endif	/* UdUnitslib */
 
 #ifndef	XdrLibrary
 #define	XdrLibrary	/**/
@@ -264,6 +268,8 @@ NGENV_DESCRIPT	= \
 		"sysappres",NULL,"ncarg",NULL,NULL,		\
 		NULL}
 
+NGENVDEF	=	-DENV_DEFS=$(NGENV_DESCRIPT)
+
 #ifdef	UseInstalled
 #define _UseLib(a,b) b
 #define	_DepLib(a,b,c) b/c
@@ -392,6 +398,7 @@ NETCDFLIB	=
 NCDFLIBS	= NetCDFlib
 HDFLIB		= HDFlib
 HDFEOSLIB	= HDFEOSlib
+UDUNITSLIB	= UdUnitslib
 XDRLIB		= XdrLibrary
 HDFDEFINES	= HdfDefines
 VDEFINE		= -DVERSION='"$(VERSION)"'
