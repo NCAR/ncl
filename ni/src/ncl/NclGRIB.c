@@ -1944,7 +1944,7 @@ GribParamList* step;
 {
 	GribRecordInqRecList *rstep,*strt,*fnsh,*free_rec;
 	GIT current_it;
-	int n_it = 0,i,j,k,l;
+	int n_it = 0,i,j,k,l,icount = 0;
 	ITLIST  header;
 	ITLIST  *the_end,*free_it;
 	FTLIST  *ftstep,*free_ft;
@@ -2325,6 +2325,7 @@ GribParamList* step;
 		}
 		the_end = header.next;
 		i = 0;
+		icount = 0;
 		while(the_end != NULL) {
 			ftstep = the_end->thelist;
 			j = 0;
@@ -2340,6 +2341,7 @@ GribParamList* step;
 						while(rstep != NULL) {
 							if((tmp_lv_vals == NULL) ||(rstep->rec_inq->level0 == tmp_lv_vals[k])) {
 								strt[i].rec_inq = rstep->rec_inq;	
+								icount +=1;
 								free_rec = rstep;
 								rstep = rstep->next;
 								NclFree(free_rec);
@@ -2362,6 +2364,7 @@ GribParamList* step;
 						while(rstep != NULL) {
 							if((rstep->rec_inq->level0 == tmp_lv_vals[k])&&(rstep->rec_inq->level1 == tmp_lv_vals1[k])) {
 								strt[i].rec_inq = rstep->rec_inq;	
+								icount +=1;
 								free_rec = rstep;
 								rstep = rstep->next;
 								NclFree(free_rec);
@@ -2405,6 +2408,21 @@ GribParamList* step;
 					}
 				}
 			}
+			while(j < n_tmp_ft_vals) {
+				if(!step->levels_has_two) {
+					for( k = 0 /* i already set */; k < n_tmp_lv_vals; i++,k++) {
+						strt[i].rec_inq = NULL;
+						fprintf(stdout,"%s is missing ft: %d lv: %d\n",name,tmp_ft_vals[j],tmp_lv_vals[k]);
+					}
+					j++;
+				} else {
+					for( k = 0 /* i already set */; k < n_tmp_lv_vals; i++,k++) {
+						strt[i].rec_inq = NULL;
+						fprintf(stdout,"%s is missing ft: %d lv: (%d,%d)\n",name,tmp_ft_vals[j],tmp_lv_vals[k],tmp_lv_vals1[k]);
+					}
+					j++;
+				}
+			}
 /*
 			if(i != total) {
 				fprintf(stdout,"HELLO (%d,%d)?\n",i,total);
@@ -2422,6 +2440,7 @@ GribParamList* step;
 			NclFree(free_it);
 		
 		}
+		while(i<total) strt[i++].rec_inq = NULL;
 		step->thelist = strt;
 		step->n_entries = total;
 	} else {
