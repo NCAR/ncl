@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.146 2003-12-03 21:14:13 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.147 2003-12-04 15:56:44 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -794,7 +794,7 @@ begin
     set_attr(tires,"tiYAxisString","")
   else
     if(.not.is_xyplot.and.is_valid_ycoord(data)) then
-      lname = get_valid_long_name_value(data)
+      lname = get_valid_long_name_value(data&$data!0$)
       if(.not.any(ismissing(lname))) then
         set_attr(tires,"tiYAxisString",lname(1))
       end if
