@@ -1,5 +1,5 @@
 /*
- *      $Id: Symbol.c,v 1.41 1996-10-07 15:22:10 ethan Exp $
+ *      $Id: Symbol.c,v 1.42 1996-10-10 16:05:31 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -324,7 +324,7 @@ void _NclRegisterFunc
 	NclSymbol *s;
 
 	s = _NclLookUp(fname);
-	if(s != NULL) {
+	if((s != NULL)&&(s->type != UNDEF)) {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclRegisterFunc: %s is already a defined symbol can't add it as built-in ",fname);
 		return;
 	} else {
@@ -371,7 +371,7 @@ void _NclRegisterProc
 	NclSymbol *s;
 
 	s = _NclLookUp(fname);
-	if(s != NULL) {
+	if((s != NULL)&&(s->type != UNDEF)) {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclRegisterProc: %s is already a defined symbol can't add it as built-in ",fname);
 		return;
 	} else {
@@ -1096,55 +1096,59 @@ NclApiDataList *_NclGetFileVarInfoList
 
 
 	s = _NclLookUp(NrmQuarkToString(file_var));
-	if(s != NULL) {
+	if((s != NULL)&&(s->type != UNDEF))  {
 		thevar = _NclRetrieveRec(s,DONT_CARE);
-		theid = _NclVarValueRead(thevar->u.data_var,NULL,NULL);
-		thefile = (NclFile)_NclGetObj(*(int*)theid->multidval.val);
-		if(thefile != NULL) {
-			for(i = 0; i < thefile->file.n_vars; i++) {
-				tmp = (NclApiDataList*)NclMalloc(sizeof(NclApiDataList));
-				tmp->kind = VARIABLE_LIST;
-				tmp->u.var = (NclApiVarInfoRec*)NclMalloc(sizeof(NclApiVarInfoRec));
-				tmp->u.var->name = thefile->file.var_info[i]->var_name_quark;
-				tmp->u.var->data_type = thefile->file.var_info[i]->data_type;
-				tmp->u.var->type = FILEVAR;
-				tmp->u.var->n_dims = thefile->file.var_info[i]->num_dimensions;
-				tmp->u.var->dim_info = (NclDimRec*)NclMalloc(sizeof(NclDimRec)*tmp->u.var->n_dims);
+		if(thevar->kind == NclStk_VAR) {
+			theid = _NclVarValueRead(thevar->u.data_var,NULL,NULL);
+			if(theid->obj.obj_type_mask & Ncl_MultiDValnclfileData) {
+				thefile = (NclFile)_NclGetObj(*(int*)theid->multidval.val);
+				if(thefile != NULL) {
+					for(i = 0; i < thefile->file.n_vars; i++) {
+						tmp = (NclApiDataList*)NclMalloc(sizeof(NclApiDataList));
+						tmp->kind = VARIABLE_LIST;
+						tmp->u.var = (NclApiVarInfoRec*)NclMalloc(sizeof(NclApiVarInfoRec));
+						tmp->u.var->name = thefile->file.var_info[i]->var_name_quark;
+						tmp->u.var->data_type = thefile->file.var_info[i]->data_type;
+						tmp->u.var->type = FILEVAR;
+						tmp->u.var->n_dims = thefile->file.var_info[i]->num_dimensions;
+						tmp->u.var->dim_info = (NclDimRec*)NclMalloc(sizeof(NclDimRec)*tmp->u.var->n_dims);
 
-				for(j = 0 ; j < tmp->u.var->n_dims ; j++) {
-					tmp->u.var->dim_info[j].dim_quark =thefile->file.file_dim_info[thefile->file.var_info[i]->file_dim_num[j]]->dim_name_quark;
-					tmp->u.var->dim_info[j].dim_num = thefile->file.var_info[i]->file_dim_num[j];
-					tmp->u.var->dim_info[j].dim_size = thefile->file.var_info[i]->dim_sizes[j];
-					if(thefile->file.coord_vars[thefile->file.var_info[i]->file_dim_num[j]] != NULL) {
-						tmp->u.var->coordnames[j] = thefile->file.file_dim_info[thefile->file.var_info[i]->file_dim_num[j]]->dim_name_quark;
+						for(j = 0 ; j < tmp->u.var->n_dims ; j++) {
+							tmp->u.var->dim_info[j].dim_quark =thefile->file.file_dim_info[thefile->file.var_info[i]->file_dim_num[j]]->dim_name_quark;
+							tmp->u.var->dim_info[j].dim_num = thefile->file.var_info[i]->file_dim_num[j];
+							tmp->u.var->dim_info[j].dim_size = thefile->file.var_info[i]->dim_sizes[j];
+							if(thefile->file.coord_vars[thefile->file.var_info[i]->file_dim_num[j]] != NULL) {
+								tmp->u.var->coordnames[j] = thefile->file.file_dim_info[thefile->file.var_info[i]->file_dim_num[j]]->dim_name_quark;
 
-					} else {
-						tmp->u.var->coordnames[j] = -1;
+							} else {
+								tmp->u.var->coordnames[j] = -1;
+							}
+						}
+						if(thefile->file.var_att_info[i] != NULL) {
+							j = 0;
+							step = thefile->file.var_att_info[i];
+							while(step != NULL) {
+								step = step->next;
+								j++;
+							}
+							tmp->u.var->n_atts = j;
+							tmp->u.var->attnames = (NclQuark*)NclMalloc(sizeof(NclQuark)*j);
+							step = thefile->file.var_att_info[i];
+							j = 0;
+							while(step != NULL) {
+								tmp->u.var->attnames[j]= step->the_att->att_name_quark;
+								j++;
+								step = step->next;
+							}
+						} else {
+							tmp->u.var->n_atts = 0;
+							tmp->u.var->attnames = NULL;
+						}
+						tmp->next = thelist;
+						thelist = tmp;
+						tmp = NULL;
 					}
 				}
-				if(thefile->file.var_att_info[i] != NULL) {
-					j = 0;
-					step = thefile->file.var_att_info[i];
-					while(step != NULL) {
-						step = step->next;
-						j++;
-					}
-					tmp->u.var->n_atts = j;
-					tmp->u.var->attnames = (NclQuark*)NclMalloc(sizeof(NclQuark)*j);
-					step = thefile->file.var_att_info[i];
-					j = 0;
-					while(step != NULL) {
-						tmp->u.var->attnames[j]= step->the_att->att_name_quark;
-						j++;
-						step = step->next;
-					}
-				} else {
-					tmp->u.var->n_atts = 0;
-					tmp->u.var->attnames = NULL;
-				}
-				tmp->next = thelist;
-				thelist = tmp;
-				tmp = NULL;
 			}
 		}
 	}
@@ -1170,7 +1174,7 @@ NclQuark file_var_name;
 
 
 	s = _NclLookUp(NrmQuarkToString(file_sym_name));
-	if(s != NULL) {
+	if((s != NULL)&&(s->type != UNDEF)) {
 		thevar = _NclRetrieveRec(s,DONT_CARE);
 		theid = _NclVarValueRead(thevar->u.data_var,NULL,NULL);
 		thefile = (NclFile)_NclGetObj(*(int*)theid->multidval.val);
@@ -1246,7 +1250,7 @@ NclQuark coordname;
 
 
 	s = _NclLookUp(NrmQuarkToString(file_sym_name));
-	if(s != NULL) {
+	if((s != NULL)&&(s->type != UNDEF)) {
 		thevar = _NclRetrieveRec(s,DONT_CARE);
 		theid = _NclVarValueRead(thevar->u.data_var,NULL,NULL);
 		thefile = (NclFile)_NclGetObj(*(int*)theid->multidval.val);
@@ -1320,7 +1324,7 @@ int *num_names;
 
 
 	s = _NclLookUp(NrmQuarkToString(file_sym_name));
-	if(s != NULL) {
+	if((s != NULL)&&(s->type != UNDEF)) {
 		thevar = _NclRetrieveRec(s,DONT_CARE);
 		theid = _NclVarValueRead(thevar->u.data_var,NULL,NULL);
 		thefile = (NclFile)_NclGetObj(*(int*)theid->multidval.val);
@@ -1475,7 +1479,7 @@ long    * stride;
 	int i,index = 0;
 	
 	s = _NclLookUp(NrmQuarkToString(file_sym_name));
-	if(s != NULL) {
+	if((s != NULL)&&(s->type != UNDEF)) {
 		if(s->type == VAR) {
 			thevar = _NclRetrieveRec(s,DONT_CARE);
 			if((thevar->kind == NclStk_VAR)&&(thevar->u.data_var->obj.obj_type_mask & Ncl_FileVar)) {
@@ -1541,7 +1545,7 @@ long* stride;
 	int i,index = 0;
 
 	s = _NclLookUp(NrmQuarkToString(file_sym_name));
-	if(s != NULL) {
+	if((s != NULL)&&(s->type != UNDEF)) {
 		if(s->type == VAR) {
 			thevar = _NclRetrieveRec(s,DONT_CARE);
 			if((thevar->kind == NclStk_VAR)&&(thevar->u.data_var->obj.obj_type_mask & Ncl_FileVar)) {
@@ -1611,7 +1615,7 @@ NclQuark attname;
 	int i;
 
 	s = _NclLookUp(NrmQuarkToString(file_sym_name));
-	if(s != NULL) {
+	if((s != NULL)&&(s->type != UNDEF)) {
 		if(s->type == VAR) {
 			thevar = _NclRetrieveRec(s,DONT_CARE);
 			if((thevar->kind == NclStk_VAR)&&(thevar->u.data_var->obj.obj_type_mask & Ncl_FileVar)) {
@@ -1666,7 +1670,7 @@ NclQuark attname;
 	int i;
 
 	s = _NclLookUp(NrmQuarkToString(file_sym_name));
-	if(s != NULL) {
+	if((s != NULL)&&(s->type != UNDEF)) {
 		if(s->type == VAR) {
 			thevar = _NclRetrieveRec(s,DONT_CARE);
 			if((thevar->kind == NclStk_VAR)&&(thevar->u.data_var->obj.obj_type_mask & Ncl_FileVar)) {
@@ -1719,7 +1723,7 @@ NclQuark file_sym_name;
 	NclMultiDValData theid;
 
 	s = _NclLookUp(NrmQuarkToString(file_sym_name));
-	if(s != NULL) {
+	if((s != NULL)&&(s->type!= UNDEF)) {
 		if(s->type == VAR) {
 			thevar = _NclRetrieveRec(s,DONT_CARE);
 			if((thevar->kind == NclStk_VAR)&&(thevar->u.data_var->obj.obj_type_mask & Ncl_FileVar)) {
@@ -1950,7 +1954,7 @@ NclExtValueRec *_NclGetHLUObjId
 	
 
 
-	if(thesym != NULL) {
+	if((thesym != NULL)&&(thesym->type!= UNDEF)) {
 		the_var = _NclRetrieveRec(thesym,DONT_CARE);	
 		tmp = (NclExtValueRec*)NclMalloc((unsigned)sizeof(NclExtValueRec));
 		tmp->constant = 0;
@@ -2201,7 +2205,7 @@ NclQuark coordname;
 	NclVar tmp_var;
 
 	s = _NclLookUp(NrmQuarkToString(var_sym_name));
-	if(s->type == VAR) {
+	if((s->type == VAR)&&(s->type!= UNDEF)) {
 		the_var = _NclRetrieveRec(s,DONT_CARE);	
 		if((the_var->kind == NclStk_VAR) &&(!(the_var->u.data_var->obj.obj_type_mask & (Ncl_FileVar|Ncl_HLUVar)))) {
 			
@@ -2269,7 +2273,7 @@ NclQuark var_sym_name;
 	NclStackEntry *the_var;
 
 	s = _NclLookUp(NrmQuarkToString(var_sym_name));
-	if(s->type == VAR) {
+	if((s->type == VAR)&&(s->type!= UNDEF)) {
 		the_var = _NclRetrieveRec(s,DONT_CARE);	
 		if((the_var->kind == NclStk_VAR) &&(!(the_var->u.data_var->obj.obj_type_mask & (Ncl_FileVar)))) {
 
@@ -2582,7 +2586,7 @@ NclQuark attname;
 	int i;
 
 	s = _NclLookUp(NrmQuarkToString(var_sym_name));
-	if(s != NULL) {
+	if((s != NULL)&&(s->type != UNDEF)) {
 		if(s->type == VAR) {
 			thevar = _NclRetrieveRec(s,DONT_CARE);
 			if(thevar->kind == NclStk_VAR) {
@@ -2666,7 +2670,7 @@ long* stride;
 	int dim_sizes[NCL_MAX_DIMENSIONS];
 
 	s = _NclLookUp(NrmQuarkToString(var_sym_name));
-	if(s != NULL) {
+	if((s != NULL)&&(s->type != UNDEF)) {
 		if(s->type == VAR) {
 			thevar = _NclRetrieveRec(s,DONT_CARE);
 			if(thevar->kind == NclStk_VAR) {
@@ -2726,7 +2730,7 @@ NclQuark attname;
 	int i;
 
 	s = _NclLookUp(NrmQuarkToString(var_sym_name));
-	if(s != NULL) {
+	if((s != NULL)&&(s->type!= UNDEF)) {
 		if(s->type == VAR) {
 			thevar = _NclRetrieveRec(s,DONT_CARE);
 			if(thevar->kind == NclStk_VAR) {
