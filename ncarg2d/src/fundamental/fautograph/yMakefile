@@ -1,0 +1,18 @@
+#
+#	$Id: yMakefile,v 1.1 1993-04-08 22:35:10 haley Exp $
+#
+NCARG	= ../../../..
+
+MYNAME	= fautograph
+
+GENERIC_SRCS = fagaxclr.f fagaxlbl.f fagaxmax.f fagcuclr.f fagcudsh.f \
+	fagezmxy.f fagezmy.f fagezxy.f fagezy.f fagilclr.f fagovrvw.f
+
+install::
+	@for file in $(GENERIC_SRCS); do\
+	($(INSTALL) -m $(INSTALL_LIB) $$file $(EXAMPLESPATH));\
+	done
+
+MakefileTarget
+CleanTarget
+UpdateTarget

@@ -1,0 +1,15 @@
+      PROGRAM FAGEZXY
+      PARAMETER (NPTS=200)
+      REAL YDRA(NPTS),XDRA(NPTS)
+
+      DO 10 I=1,NPTS
+	 XDRA(I)=I*0.1
+         YDRA(I)=SIN(XDRA(I)+0.2)*EXP(-0.01*XDRA(I)*4)
+  10  CONTINUE
+
+      CALL OPNGKS
+      CALL EZXY (XDRA,YDRA,NPTS,'EZXY$')
+      CALL CLSGKS
+
+      STOP
+      END
