@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.157 2004-09-27 22:45:50 fred Exp $
+#   $Id: ncargex.csh,v 1.158 2004-11-18 00:12:06 kennison Exp $
 #                                                                      
 #                Copyright (C)  2000
 #        University Corporation for Atmospheric Research
@@ -149,7 +149,7 @@ set c_list = ($c_list $areas_clist)
 #                          #
 #**************************#
 set autograph_fex   = (agex01 agex02 agex03 agex04 agex05 agex06 agex07 \
-                      agex08 agex09 agex10 agex11 agex12 agex13)
+		      agex08 agex09 agex10 agex11 agex12 agex13 agdp01)
 set autograph_ftst  = (tautog tagupw)
 set autograph_ffnd  = (fagaxclr fagaxlbl fagaxmax fagcuclr fagcudsh fagezmxy \
                       fagezmy fagezxy fagezy fagilclr fagovrvw)
