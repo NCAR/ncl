@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: ymkmf,v 1.9 1994-10-11 15:00:37 boote Exp $
+#      $Id: ymkmf,v 1.10 1996-05-16 21:59:22 haley Exp $
 #
 #########################################################################
 #									#
@@ -134,7 +134,7 @@ shortcut:
 
 set defines = ($defines -Curdir "$curdir" -Topdir "$topdir")
 
-if ( -f "$topdir"/config/ymake) then
+if ( -e "$topdir"/config/ymake) then
 	@ useinstalled = 0
 else
 	@ useinstalled = 1
