@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclVar.c,v 1.38 1997-01-16 19:44:11 ethan Exp $
+ *      $Id: NclVar.c,v 1.39 1997-01-24 01:34:30 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -571,16 +571,16 @@ FILE *fp;
 			if(ret < 0) {
 				return(NhlWARNING);
 			}
-			ret =_Nclprint(tmp_md->multidval.type,fp,tmp_md->multidval.val);
-			if(ret < 0) {
+			ret0 =_Nclprint(tmp_md->multidval.type,fp,tmp_md->multidval.val);
+			if(ret0 < NhlWARNING) {
 				return(NhlWARNING);
 			}
 			ret = nclfprintf(fp,"..");
 			if(ret < 0) {
 				return(NhlWARNING);
 			}
-			ret = _Nclprint(tmp_md->multidval.type,fp,&(((char*)tmp_md->multidval.val)[(tmp_md->multidval.totalelements -1)*tmp_md->multidval.type->type_class.size]));
-			if(ret < 0) {
+			ret0 = _Nclprint(tmp_md->multidval.type,fp,&(((char*)tmp_md->multidval.val)[(tmp_md->multidval.totalelements -1)*tmp_md->multidval.type->type_class.size]));
+			if(ret0 < NhlWARNING) {
 				return(NhlWARNING);
 			}
 			ret = nclfprintf(fp,"]\n");
