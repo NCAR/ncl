@@ -1666,6 +1666,7 @@ void *storage
 				
 			}
 		}
+		NclFree(buffer);
 		_NclDestroyObj((NclObj)tmp_md);
 		close(fd);
 	}

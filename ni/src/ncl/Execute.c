@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.90 1997-05-09 21:37:53 ethan Exp $
+ *      $Id: Execute.c,v 1.91 1997-05-20 15:52:11 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -2243,7 +2243,7 @@ NclExecuteReturnStatus _NclExecute
 									estatus = NhlFATAL;
 	
 								} else {
-									for(i = 0; i< pfinfo->theargs->n_dims; i++) {
+									for(i = 0; i< pfinfo->theargs[arg_num].n_dims; i++) {
 										if(pfinfo->theargs[arg_num].dim_sizes[i] != -1) {
 											if(pfinfo->theargs[arg_num].dim_sizes[i] != data.u.data_obj->multidval.dim_sizes[i]) {
 												NhlPError(NhlFATAL,NhlEUNKNOWN,"Number of elements of dimension (%d) of argument (%d) is (%d) in function (%s), expected (%d) elements",i,arg_num,data.u.data_obj->multidval.dim_sizes[i],thesym->name,pfinfo->theargs[arg_num].dim_sizes[i]);

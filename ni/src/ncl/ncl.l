@@ -279,7 +279,7 @@ digit	[0-9]
 		CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
 		return REAL;
 }
-{digit}\.?{digit}*[eE][+-]?{digit}+|{digit}?\.{digit}+[eE][+-]?{digit}+ {
+{digit}+\.?{digit}*[eE][+-]?{digit}+|{digit}?\.{digit}+[eE][+-]?{digit}+ {
 	sscanf(yytext,"%le",&(yylval.real));
 	printtoken(REAL,yytext);
 	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: AddBuiltIns.c,v 1.30 1997-05-09 21:37:47 ethan Exp $
+ *      $Id: AddBuiltIns.c,v 1.31 1997-05-20 15:52:05 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -30,7 +30,6 @@ extern "C" {
 #include "NclBuiltIns.h"
 #include "MathFuncs.h"
 #include "HLUFunctions.h"
-/*
 extern NhlErrorTypes _NclIdim_stddev(
 #if NhlNeedProto
 void
@@ -42,7 +41,6 @@ void
 #endif
 );
 
-*/
 
 extern NhlErrorTypes _NclIvinth2p(
 #if NhlNeedProto
@@ -1208,6 +1206,15 @@ void _NclAddBuiltIns
 	SetArgTemplate(args,0,"numeric",NclANY,NclANY);nargs++;
 	NclRegisterFunc(_NclIdim_variance,args,"dim_variance",nargs);
 
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,0,"numeric",NclANY,NclANY);nargs++;
+	NclRegisterFunc(_NclIstddev,args,"stddev",nargs);
+
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,0,"numeric",NclANY,NclANY);nargs++;
+	NclRegisterFunc(_NclIdim_stddev,args,"dim_stddev",nargs);
 	nargs = 0;
 	args = NewArgs(9);
 	SetArgTemplate(args,0,"float",3,NclANY);nargs++;
