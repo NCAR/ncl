@@ -1,12 +1,16 @@
 #!/bin/csh -f
 #
-#	$Id: ncargcc.csh,v 1.13 1993-01-13 16:50:20 haley Exp $
+#	$Id: ncargcc.csh,v 1.14 1993-01-20 04:36:50 haley Exp $
 #
 
 set system="SED_SYSTEM_INCLUDE"
 set cc="SED_CC"
 set loadopts = "SED_LD_CFLAGS"
 set l = `ncargpath SED_LIBDIR`
+if ($status != 0) then
+        exit 1
+endif
+set ro = $l/SED_NCARGDIR/SED_ROBJDIR
 if ($status != 0) then
         exit 1
 endif
@@ -23,7 +27,7 @@ set ctrans_libs = ""
 # set up default libraries
 
 if ("$system" == "Ardent" || "$system" == "AIX370") then
-  set libncarg    =       "$l/libncarbd.o $l/libncarg.a"
+  set libncarg    =       "$ro/libncarbd.o $l/libncarg.a"
 else
   set libncarg    =       "$l/libncarg.a"
 endif
@@ -53,9 +57,9 @@ else
   set f77libs     =       "-lF77 -lI77 -lU77 -lm"
 endif
 
-set smooth = "$l/libdashsmth.o"
-set quick = "$l/libdashline.o $l/libconrcqck.o $l/libconraq.o"
-set super = "$l/libdashsupr.o $l/libconrcspr.o $l/libconras.o"
+set smooth = "$ro/libdashsmth.o"
+set quick = "$ro/libdashline.o $ro/libconrcqck.o $ro/libconraq.o"
+set super = "$ro/libdashsupr.o $ro/libconrcspr.o $ro/libconras.o"
 
 set libs
 
@@ -85,7 +89,7 @@ foreach arg ($argv)
 
 	case "-agupwrtx":
 		echo "Autograph with PWRITX"
-		set libs = "$libs $l/libagupwrtx.o"
+		set libs = "$libs $ro/libagupwrtx.o"
 		breaksw
 
 	case "-conransmooth":
@@ -95,42 +99,42 @@ foreach arg ($argv)
 
 	case "-conranquick":
 		echo "Quick Conran"
-		set libs = "$libs $l/libconraq.o"
+		set libs = "$libs $ro/libconraq.o"
 		breaksw
 
 	case "-conransuper":
 		echo "Super Conran"
-		set libs = "$libs $l/libconras.o $l/libdashsupr.o"
+		set libs = "$libs $ro/libconras.o $ro/libdashsupr.o"
 		breaksw
 
 	case "-conrecsmooth":
 		echo "Smooth Conrec"
-		set libs = "$libs $l/libdashsmth.o"
+		set libs = "$libs $ro/libdashsmth.o"
 		breaksw
 
 	case "-conrecquick":
 		echo "Quick Conrec"
-		set libs = "$libs $l/libconrcqck.o"
+		set libs = "$libs $ro/libconrcqck.o"
 		breaksw
 
 	case "-conrecsuper":
 		echo "Super Conrec"
-		set libs = "$libs $l/libconrcspr.o $l/libdashsupr.o"
+		set libs = "$libs $ro/libconrcspr.o $ro/libdashsupr.o"
 		breaksw
 
 	case "-dashsmooth":
 		echo "Smooth Dash"
-		set libs = "$libs $l/libdashsmth.o"
+		set libs = "$libs $ro/libdashsmth.o"
 		breaksw
 
 	case "-dashquick":
 		echo "Quick Dash"
-		set libs = "$libs $l/libdashline.o"
+		set libs = "$libs $ro/libdashline.o"
 		breaksw
 
 	case "-dashsuper":
 		echo "Super Dash"
-		set libs = "$libs $l/libdashsupr.o"
+		set libs = "$libs $ro/libdashsupr.o"
 		breaksw
 
 	case "-ictrans"
