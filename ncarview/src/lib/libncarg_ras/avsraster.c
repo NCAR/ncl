@@ -1,4 +1,4 @@
-/* $Id: avsraster.c,v 1.11 1995-03-16 22:56:53 haley Exp $ */
+/* $Id: avsraster.c,v 1.12 1996-09-06 22:12:32 haley Exp $ */
 
 /***********************************************************************
 *                                                                      *
@@ -34,7 +34,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
-#include <stdlib.h>
 #include <fcntl.h>
 #include <string.h>
 #include "ncarg_ras.h"
