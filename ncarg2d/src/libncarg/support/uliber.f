@@ -1,4 +1,7 @@
       SUBROUTINE ULIBER (IERR,MESS,LMESS)
+C
+      CHARACTER*(*) MESS
+C
 C SUBROUTINE ULIBER (IERR,MESS,LMESS)
 C
 C PURPOSE                TO PRINT AN ERROR NUMBER AND AN ERROR MESSAGE
@@ -11,25 +14,24 @@ C ON INPUT               IERR
 C                          THE ERROR NUMBER (PRINTED ONLY IF NON-ZERO).
 C
 C                        MESS
-C                          MESSAGE TO BE PRINTED.
+C                          MESSAGE TO BE PRINTED ( < 130 CHARACTERS)
 C
 C                        LMESS
-C                          NUMBER OF CHARACTERS IN MESS (.LE. 130).
+C                          NO LONGER USED
 C
 C ARGUMENTS
 C ON OUTPUT              NONE
 C
-C I/O                    THE MESSAGE IS WRITEN TO UNIT 101.
+C I/O                    THE MESSAGE IS WRITEN TO UNIT I1MACH(4).
+C
 C ******************************************************************
 C
-      REAL MESS(1)
-C
-      IF (IERR.NE.0) WRITE (101,1001) IERR
-      NWORDS=(LMESS+7)/8
-      WRITE (101,1002) (MESS(I),I=1,NWORDS)
+      IERU=I1MACH(4)
+      IF (IERR.NE.0) WRITE (IERU,1001) IERR
+      WRITE (IERU,1002) MESS
       RETURN
 C
- 1001 FORMAT (6H0IERR=,I5)
- 1002 FORMAT (16A8,A2)
+ 1001 FORMAT ('0IERR=',I5)
+ 1002 FORMAT (A)
 C
       END
