@@ -1,5 +1,5 @@
 /*
- *      $Id: ViewP.h,v 1.4 1994-01-27 21:27:15 boote Exp $
+ *      $Id: ViewP.h,v 1.5 1994-03-02 01:44:43 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -43,9 +43,10 @@ typedef struct _NhlLayerList{
 typedef struct _NhlViewLayerPart {
 	/* User setable resource fields */
 
-	float x,y;
-	float width,height;
-	int	keep_aspect;
+	float		x,y;
+	float		width,height;
+	NhlBoolean	keep_aspect;
+	NhlBoolean	use_segments;
 
 	/* Internal private fields */
 	

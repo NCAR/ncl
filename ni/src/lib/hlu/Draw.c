@@ -1,5 +1,5 @@
 /*
- *      $Id: Draw.c,v 1.5 1994-01-27 21:22:54 boote Exp $
+ *      $Id: Draw.c,v 1.6 1994-03-02 01:43:53 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -260,6 +260,7 @@ NhlDraw
 	}
 
 	return ret;
+
 }
 
 /*
@@ -369,4 +370,90 @@ _NhlPostDraw
 	}
 
 	return CallPostDraw(layer,layer->base.layer_class);
+}
+
+
+/*
+ * Function:	CallSegDraw
+ *
+ * Description:	This function is used to call the draw_segonly method, it is
+ *		a super-to-sub classed chained method that actually
+ *		makes the ncarg graphics calls.  This function is
+ *		the one that actually traverses the class hierachy
+ *		of the object.
+ *
+ * In Args:	
+ *		NhlLayer	l,	object to draw
+ *		NhlLayerClass	class	class or super-class of object
+ *
+ * Out Args:	
+ *
+ * Scope:	static
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+static NhlErrorTypes
+CallSegDraw
+#if	__STDC__
+(
+	NhlLayer	l,	/* object to draw	*/
+	NhlLayerClass	class	/* class or super-class of object	*/
+)
+#else
+(l,class)
+	NhlLayer	l;	/* object to draw	*/
+	NhlLayerClass	class;	/* class or super-class of object	*/
+#endif
+{
+	NhlErrorTypes superclassret = NhlNOERROR, localret = NhlNOERROR;
+
+	if(class->base_class.superclass != NULL ) {
+		superclassret = CallSegDraw(l,class->base_class.superclass);
+		if(superclassret < NhlWARNING)
+			return superclassret;
+	}
+
+	if(class->base_class.layer_draw_segonly != NULL) {
+		localret = (*(class->base_class.layer_draw_segonly))(l);
+	}
+
+	return(MIN(superclassret,localret));
+}
+
+
+/*
+ * Function:	_NhlSegDraw
+ *
+ * Description:	This global private function calls the Segment Drawing
+ *		method of an object -- really the method draws into an
+ *		open segment started by a parent object.
+ *
+ * In Args:	
+ *		NhlLayer	layer 	layer pointer of the object to draw
+ *
+ * Out Args:	
+ *
+ * Scope:	Global Private
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+NhlErrorTypes
+_NhlSegDraw
+#if	__STDC__
+(
+	NhlLayer	layer	/* layer of object to draw	*/
+)
+#else
+(layer)
+	NhlLayer	layer;
+#endif
+{
+
+	if((layer == NULL) || !_NhlIsBase(layer)){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			  "Invalid layer passed to _NhlSegDraw");
+		return(NhlFATAL);
+	}
+
+	return CallSegDraw(layer,layer->base.layer_class);
 }

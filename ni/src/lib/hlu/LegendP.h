@@ -1,5 +1,5 @@
 /*
- *      $Id: LegendP.h,v 1.4 1994-01-27 21:24:11 boote Exp $
+ *      $Id: LegendP.h,v 1.5 1994-03-02 01:44:12 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -55,6 +55,8 @@ typedef struct _NhlLegendLayerPart {
 	NhlGenArray	item_text_heights;
 	NhlGenArray	label_strings;
 	NhlGenArray	item_positions;
+	NhlBoolean 	mono_item_string_color;
+	NhlGenArray	item_string_colors;
 
 	int	labels_on;
 	NhlPosition	label_pos;
@@ -120,15 +122,16 @@ typedef struct _NhlLegendLayerPart {
 					   excess label and title extent */
 
 	int 		*gks_colors;
+	int		*string_gks_colors;
 	int		label_draw_count;
 	int		max_label_draw_count;
 	int		max_label_stride_count;
 
 	NhlBoundingBox	bar;	         /* preliminary bar boundary */
-	NhlBoundingBox	adj_bar;        /* after external label, label angle */
+	NhlBoundingBox	adj_bar;       /* after external label, label angle */
 	NhlCoord	box_size;        /* size of box assuming uniform */
 	NhlCoord        adj_box_size;    /* size of box after adjustments */
-	float		*item_locs;       /* x or y depending on orientation */
+	float		*item_locs;      /* x or y depending on orientation */
 	NhlBoundingBox	labels;          /* overall boundary of label area */
 	int		labels_id;       /* multitext id */
 	float		const_pos;       /* constant position for labels */
@@ -138,6 +141,8 @@ typedef struct _NhlLegendLayerPart {
 	int		title_id;
 	float		title_x;
 	float		title_y;
+	NhlBoolean	new_draw_req;	
+        NhlTransDat	*trans_dat;	/* segment transform data */
 
 }NhlLegendLayerPart;
 

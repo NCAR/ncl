@@ -1,5 +1,5 @@
 /*
- *      $Id: TitleP.h,v 1.3 1994-01-27 21:26:39 boote Exp $
+ *      $Id: TitleP.h,v 1.4 1994-03-02 01:44:37 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -94,6 +94,9 @@ typedef struct _NhlTitleLayerPart {
 	float	x_axis_pos_y;
 	float	y_axis_pos_x;
 	float	y_axis_pos_y;
+	NhlBoolean	new_draw_req;	
+        NhlTransDat	*trans_dat;	/* segment transform data */
+
 }NhlTitleLayerPart;
 
 typedef struct _NhlTitleLayerRec {

@@ -1,5 +1,5 @@
 /*
- *      $Id: OverlayI.h,v 1.1 1994-01-27 21:25:27 boote Exp $
+ *      $Id: OverlayI.h,v 1.2 1994-03-02 01:44:19 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -24,6 +24,15 @@
 
 #include <ncarg/hlu/ViewI.h>
 #include <ncarg/hlu/Overlay.h>
+
+/* 
+ * Resource used by the base Overlay to tell its members that
+ * the overlay transform has changed.
+ */
+   
+#define NhlNovUpdateReq		".ovUpdateReq"
+#define NhlCovUpdateReq		".OvUpdateReq"
+
 /* 
  * Convenience function that performs the basic management of an
  * overlay for a plot object. Designed to be called from ...Initialize

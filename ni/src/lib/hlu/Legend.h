@@ -1,5 +1,5 @@
 /*
- *      $Id: Legend.h,v 1.5 1994-01-27 21:24:06 boote Exp $
+ *      $Id: Legend.h,v 1.6 1994-03-02 01:44:10 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -32,7 +32,7 @@
 #define NhlLG_DEF_ITEM_COUNT   	16
 #define NhlLG_DEF_COLOR   	NhlFOREGROUND
 #define NhlLG_DEF_LINE_INDEX	1
-#define NhlLG_MIN_LINE_INDEX	1
+#define NhlLG_MIN_LINE_INDEX	0
 #define NhlLG_DEF_MARKER_INDEX  1
 #define NhlLG_MIN_MARKER_INDEX  0
 #define NhlLG_DEF_STRING  	"Label_"
@@ -94,6 +94,8 @@
 #define NhlNlgItemTextHeights		"lgItemTextHeights"
 #define NhlNlgLabelStrings		"lgLabelStrings"
 #define NhlNlgItemPositions		"lgItemPositions"
+#define NhlNlgMonoItemStringColor	"lgMonoItemStringColor"
+#define NhlNlgItemStringColors		"lgItemStringColors"
 
 /*end of arrays */
 
@@ -179,6 +181,8 @@
 #define NhlClgItemTextHeights		"LgItemTextHeights"
 #define NhlClgLabelStrings		"LgLabelStrings"
 #define NhlClgItemPositions		"LgItemPositions"
+#define NhlClgMonoItemStringColor	"LgMonoItemStringColor"
+#define NhlClgItemStringColors		"LgItemStringColors"
 
 /*end of arrays */
 

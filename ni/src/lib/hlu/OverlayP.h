@@ -1,5 +1,5 @@
 /*
- *      $Id: OverlayP.h,v 1.5 1994-01-27 21:25:30 boote Exp $
+ *      $Id: OverlayP.h,v 1.6 1994-03-02 01:44:21 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -26,28 +26,35 @@
 #include <ncarg/hlu/TransformP.h>
 #include <ncarg/hlu/OverlayI.h>
 
-#define NhlOV_ALLOC_UNIT 8
-#define NhlOV_IRR_COUNT 16
+#define NhlOV_ALLOC_UNIT	8
+#define NhlOV_IRR_COUNT		16
+#define NhlOV_STD_VIEW_WIDTH	0.5
+#define NhlOV_STD_VIEW_HEIGHT	0.5
 
-/* flags for Bounding Box include */
+/* Zone/Display flags */
 
-#define NhlovTICKMARKS	1<<0
-#define NhlovTITLES	1<<1
-#define NhlovLABELBAR	1<<2
-#define NhlovLEGEND	1<<3
-#define NhlovALL   NhlovTICKMARKS | NhlovTITLES | NhlovLABELBAR | NhlovLEGEND
+#define NhlovINNERZONE		1<<0
+#define NhlovTICKMARKZONE	1<<1
+#define NhlovMIDDLEZONE		1<<2
+#define NhlovTITLEZONE		1<<3
+#define NhlovOUTERZONE		1<<4
+
+#define NhlovALLZONES   NhlovINNERZONE | NhlovTICKMARKZONE | \
+		NhlovMIDDLEZONE | NhlovTITLEZONE | NhlovOUTERZONE
+
+#define NhlovSETNEEDED		1<<7
+#define NhlovDISPLAYON		1<<8
 
 /* private resources */
 
 #define NhlNovOverlayRecs	".ovOverlayRecs"
-#define NhlNovUpdateReq		".ovUpdateReq"
 
 #define NhlCovOverlayRecs	".OvOverlayRecs"
-#define NhlCovUpdateReq		".OvUpdateReq"
 
 typedef struct _NhlovRec {
 	NhlTransformLayer	plot;	/* overlay plot */
 	NhlLayer		ov_obj;	/* overlay object associated w/ plot */
+	int			zflag;
 } NhlovRec;
 
 typedef struct _NhlOverlayLayerPart {

@@ -1,5 +1,5 @@
 /*
- *      $Id: LabelBar.h,v 1.4 1994-01-27 21:23:44 boote Exp $
+ *      $Id: LabelBar.h,v 1.5 1994-03-02 01:44:01 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -74,7 +74,7 @@
 #define NhlNlbMonoFillColor		"lbMonoFillColor"
 #define NhlNlbMonoFillPattern		"lbMonoFillPattern"
 #define NhlNlbMonoFillScale		"lbMonoFillScale"
-#define NhlNlbMaxLabelAngleAdditionF		"lbMaxLabelAngleAdditionF"
+#define NhlNlbMaxLabelAngleAdditionF	"lbMaxLabelAngleAdditionF"
 #define NhlNlbLabelOffsetF		"lbLabelOffsetF"
 #define NhlNlbTitleOffsetF		"lbTitleOffsetF"
 #define NhlNlbLeftMarginF		"lbLeftMarginF"

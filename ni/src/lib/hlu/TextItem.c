@@ -1,5 +1,5 @@
 /*
- *      $Id: TextItem.c,v 1.6 1994-02-08 20:15:47 boote Exp $
+ *      $Id: TextItem.c,v 1.7 1994-03-02 01:44:23 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -115,6 +115,12 @@ static NhlErrorTypes	TextItemDraw(
 #endif
 );
 
+static NhlErrorTypes	TextItemSegDraw(
+#ifdef NhlNeedProto
+        NhlLayer   /* layer */
+#endif
+);
+
 static NhlErrorTypes	TextItemDestroy(
 #ifdef NhlNeedProto
         NhlLayer           /* inst */
@@ -169,7 +175,7 @@ NhlTextItemLayerClassRec NhltextItemLayerClassRec = {
 /* layer_draw			*/	TextItemDraw,
 
 /* layer_pre_draw		*/	NULL,
-/* layer_draw_segonly		*/	NULL,
+/* layer_draw_segonly		*/	TextItemSegDraw,
 /* layer_post_draw		*/	NULL,
 /* layer_clear			*/	NULL
 	},
@@ -490,6 +496,7 @@ static NhlErrorTypes    TextItemDraw
 	c_pcseti("CC",_NhlGetGksCi(tlayer->base.wkptr,tlayer->text.font_color));
 	sprintf(buf,"%c",tlayer->text.func_code);
 	c_pcsetc("FC",buf);
+
 	_NhlActivateWorkstation(tlayer->base.wkptr);
 
 	c_set(0.0,1.0,0.0,1.0,0.0,1.0,0.0,1.0,1);
@@ -507,6 +514,67 @@ static NhlErrorTypes    TextItemDraw
 	c_set(fl,fr,fb,ft,ul,ur,ub,ut,ll);
 
 	_NhlDeactivateWorkstation(tlayer->base.wkptr);
+	return(ret);
+}
+
+
+/*
+ * Function:	TextItemSegDraw
+ *
+ * Description:  Activates parent workstation, calls plotchar parameter setting
+ *		functions and then GKS attributes for linewidth, fill styles,
+ *		fill colors and line colors.
+ *
+ * In Args: the instance to be drawn
+ *
+ * Out Args: NONE
+ *
+ * Return Values: Error conditions
+ *
+ * Side Effects: GKS and plotchar state affected. 
+ *		Does do a get_set before makeing internal set.
+ */
+static NhlErrorTypes    TextItemSegDraw
+#if  __STDC__
+(NhlLayer layer)
+#else
+(layer)
+	NhlLayer 	layer;
+#endif
+{
+	NhlTextItemLayer tlayer = (NhlTextItemLayer) layer;
+	float fl,fr,fb,ft,ul,ur,ub,ut;
+	int ll;
+	NhlErrorTypes ret = NhlNOERROR;
+	char buf[10];
+
+	c_getset(&fl,&fr,&fb,&ft,&ul,&ur,&ub,&ut,&ll);
+
+	c_pcseti("TE",0);
+	c_pcsetr("CS",tlayer->text.constant_spacing);
+	c_pcsetr("PH",tlayer->text.real_ph_height);
+	c_pcsetr("PW",tlayer->text.real_ph_width);
+	c_pcseti("QU",tlayer->text.qual);
+	c_pcseti("FN",tlayer->text.font);
+	c_pcseti("OC",_NhlGetGksCi(tlayer->base.wkptr,tlayer->text.font_color));
+	c_pcseti("CC",_NhlGetGksCi(tlayer->base.wkptr,tlayer->text.font_color));
+	sprintf(buf,"%c",tlayer->text.func_code);
+	c_pcsetc("FC",buf);
+
+	c_set(0.0,1.0,0.0,1.0,0.0,1.0,0.0,1.0,1);
+	gset_linewidth((Gdouble)tlayer->text.font_thickness);
+	gset_line_colr_ind((Gint)_NhlGetGksCi(tlayer->base.wkptr,tlayer->text.font_color));
+	gset_line_colr_ind((Gint)_NhlGetGksCi(tlayer->base.wkptr,tlayer->text.font_color));
+	gset_fill_style_ind(GSTYLE_SOLID);
+	gset_marker_colr_ind((Gint)_NhlGetGksCi(tlayer->base.wkptr,tlayer->text.font_color));
+	
+
+	c_plchhq(tlayer->text.real_x_pos,tlayer->text.real_y_pos,
+		tlayer->text.real_string,tlayer->text.real_size,
+		tlayer->text.angle,tlayer->text.cntr);
+
+	c_set(fl,fr,fb,ft,ul,ur,ub,ut,ll);
+
 	return(ret);
 }
 
@@ -681,8 +749,10 @@ static NhlErrorTypes FigureAndSetTextBBInfo
 *          |               |                                                    
 *         P0              P3                                                    
 */
-	
+
+#if 0	
 	_NhlActivateWorkstation(tnew->base.wkptr);
+#endif
 	c_set(0.0,1.0,0.0,1.0,0.0,1.0,0.0,1.0,1);
 	switch(tnew->text.just) {
 /*
@@ -929,7 +999,9 @@ static NhlErrorTypes FigureAndSetTextBBInfo
 			ret = NhlWARNING;
 			break;
 	}
+#if 0
 	_NhlDeactivateWorkstation(tnew->base.wkptr);
+#endif
 	xpoints[0] = tnew->text.real_x_pos - tmpdl;
 	ypoints[0] = tnew->text.real_y_pos - tmpdb;
 	xpoints[1] = tnew->text.real_x_pos - tmpdl;

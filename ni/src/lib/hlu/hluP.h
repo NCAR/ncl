@@ -1,5 +1,5 @@
 /*
- *      $Id: hluP.h,v 1.11 1994-02-18 17:19:40 boote Exp $
+ *      $Id: hluP.h,v 1.12 1994-03-02 01:44:54 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -324,8 +324,8 @@ extern NhlLayer _NhlGetWorkstationLayer(
 );
 
 /*
-* Globally callable functions from Draw.c
-*/
+ * Globally callable functions from Draw.c
+ */
 
 extern NhlErrorTypes _NhlPreDraw(
 #ifdef NhlNeedProto
@@ -345,9 +345,15 @@ extern NhlErrorTypes _NhlPostDraw(
 #endif
 );
 
+extern NhlErrorTypes _NhlSegDraw(
+#ifdef NhlNeedProto
+	NhlLayer	layer	/* layer of object to draw	*/
+#endif
+);
+
 /*
-* End of Draw.c functions
-*/
+ * End of Draw.c functions
+ */
 
 extern void _NhlConvertersInitialize(
 #if	NhlNeedProto

@@ -1,5 +1,5 @@
 /*
- *      $Id: MultiText.c,v 1.4 1994-01-29 00:29:36 boote Exp $
+ *      $Id: MultiText.c,v 1.5 1994-03-02 01:44:14 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -100,6 +100,12 @@ static NhlErrorTypes MultiTextDraw(
 #endif
 );
 
+static NhlErrorTypes MultiTextSegDraw(
+#if	NhlNeedProto
+	NhlLayer	l	/* layer to draw	*/
+#endif
+);
+
 static NhlErrorTypes MultiTextDestroy(
 #if	NhlNeedProto
 	NhlLayer	l	/* layer to destroy	*/
@@ -134,7 +140,7 @@ NhlMultiTextLayerClassRec NhlmultiTextLayerClassRec = {
 /* layer_draw			*/	MultiTextDraw,
 
 /* layer_pre_draw		*/	NULL,
-/* layer_draw_segonly		*/	NULL,
+/* layer_draw_segonly		*/	MultiTextSegDraw,
 /* layer_post_draw		*/	NULL,
 /* layer_clear			*/	NULL
 	},
@@ -769,6 +775,60 @@ MultiTextDraw
 
 
 		NhlDraw(mtl->multitext.text_object);
+	}
+
+	return NhlNOERROR;
+}
+
+
+/*
+ * Function:	MultiTextSegDraw
+ *
+ * Description:	This function is called when the MultiText object should
+ *		draw it's string's
+ *
+ * In Args:	
+ *		NhlLayer	l	layer to draw
+ *
+ * Out Args:	
+ *
+ * Scope:	static
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+static NhlErrorTypes
+MultiTextSegDraw
+#if	__STDC__
+(
+	NhlLayer	l	/* layer to draw	*/
+)
+#else
+(l)
+	NhlLayer	l;	/* layer to draw	*/
+#endif
+{
+	NhlMultiTextLayer	mtl = (NhlMultiTextLayer)l;
+	int		i;
+
+	for(i=0;i < mtl->multitext.num_strings;i++){
+
+		if(mtl->multitext.orientation == NhlMTEXT_X_CONST){
+			NhlVASetValues(mtl->multitext.text_object,
+				NhlNtxString,mtl->multitext.text_strings[i],
+				NhlNtxPosXF,mtl->multitext.const_pos,
+				NhlNtxPosYF,mtl->multitext.pos_array[i],
+				NULL);
+		}
+		else{
+			NhlVASetValues(mtl->multitext.text_object,
+				NhlNtxString,mtl->multitext.text_strings[i],
+				NhlNtxPosXF,mtl->multitext.pos_array[i],
+				NhlNtxPosYF,mtl->multitext.const_pos,
+				NULL);
+		}
+
+
+		_NhlSegDraw(_NhlGetLayer(mtl->multitext.text_object));
 	}
 
 	return NhlNOERROR;

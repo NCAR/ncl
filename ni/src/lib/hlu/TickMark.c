@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.c,v 1.12 1994-02-08 20:15:56 boote Exp $
+ *      $Id: TickMark.c,v 1.13 1994-03-02 01:44:28 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1005,7 +1005,21 @@ static NhlErrorTypes	TickMarkSetValues
 	int i;
 	NhlErrorTypes ret = NhlNOERROR;
 	NhlErrorTypes realret = NhlNOERROR;
+	int		view_args = 0;
 
+	if (tnew->view.use_segments != told->view.use_segments) {
+		tnew->view.use_segments = told->view.use_segments;
+		ret = MIN(ret,NhlWARNING);
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+	 "TickMarkSetValues: attempt to set create-only resource overridden");
+	}
+	if (_NhlArgIsSet(args,num_args,NhlNvpXF)) view_args++;
+	if (_NhlArgIsSet(args,num_args,NhlNvpYF)) view_args++;
+	if (_NhlArgIsSet(args,num_args,NhlNvpWidthF)) view_args++;
+	if (_NhlArgIsSet(args,num_args,NhlNvpHeightF)) view_args++;
+
+	if (num_args > view_args)
+	    tnew->tick.new_draw_req = True;
 /*
 * for resources that represent size THAT HAVE NOT been set in the current
 * setvalues call will be scalled proportionally to the move and resize. Values
@@ -1170,6 +1184,16 @@ static NhlErrorTypes	TickMarkSetValues
 	}
 	if(ret < realret)
 		realret = ret;
+
+#if 0
+	tnew->tick.bbox.set = 0;
+	ret = TickMarkGetBB(tnew,&tnew->tick.bbox);
+	if((realret = MIN(ret,realret) < NhlWARNING) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			  "TickMarkSetValues: Error getting bounding box");
+		return(realret);
+	}
+#endif
 	return(realret);
 }
 
@@ -1221,6 +1245,8 @@ static NhlErrorTypes	TickMarkInitialize
 	NhlErrorTypes ret = NhlNOERROR;
 	NhlErrorTypes realret = NhlNOERROR;
 
+	tnew->tick.new_draw_req = True;
+	tnew->tick.trans_dat = NULL;
 	ScaleValuesForMove(tnew,NULL,args,num_args,CREATE);
 
 
@@ -1438,6 +1464,15 @@ static NhlErrorTypes	TickMarkInitialize
 	if(ret < realret)
 		realret = ret;
 
+#if 0
+	tnew->tick.bbox.set = 0;
+	ret = TickMarkGetBB(tnew,&tnew->tick.bbox);
+	if((realret = MIN(ret,realret) < NhlWARNING) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			  "TickMarkSetValues: Error getting bounding box");
+		return(realret);
+	}
+#endif
 	return(realret);
 }
 
@@ -1666,6 +1701,34 @@ static NhlErrorTypes	TickMarkDraw
 	NhlErrorTypes ret = NhlNOERROR;
 	NhlErrorTypes realret = NhlNOERROR;
 
+	if (tlayer->view.use_segments && ! tlayer->tick.new_draw_req) {
+                ret = _NhlActivateWorkstation(tlayer->base.wkptr);
+		if ((realret = MIN(realret,ret)) < NhlWARNING) return realret;
+                ret = _NhlDrawSegment(tlayer->tick.trans_dat,
+				_NhlWorkstationId(tlayer->base.wkptr));
+		if ((realret = MIN(realret,ret)) < NhlWARNING) return realret;
+                ret = _NhlDeactivateWorkstation(tlayer->base.wkptr);
+		return MIN(ret,realret);
+	}
+	tlayer->tick.new_draw_req = False;
+
+	if (tlayer->view.use_segments) {
+		ret = _NhlActivateWorkstation(tlayer->base.wkptr);
+		if(ret < NhlWARNING) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"TickMarkDraw: An error has occured while activating the workstation, can not continue");
+			return(ret);
+		}
+		if (tlayer->tick.trans_dat != NULL)
+			_NhlDeleteViewSegment(layer, tlayer->tick.trans_dat);
+		if ((tlayer->tick.trans_dat = 
+		     _NhlNewViewSegment(layer)) == NULL) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+				  "%s: error opening segment", "TickMarkDraw");
+			return(ret);
+		}
+		_NhlStartSegment(tlayer->tick.trans_dat);
+	}
+
 	ret = DrawLabels(tlayer);
 	if(ret < NhlWARNING) {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"TickMarkDraw: NhlFATAL error has occurred while drawing TickMark labels, can not continue");
@@ -1674,6 +1737,13 @@ static NhlErrorTypes	TickMarkDraw
 	if(ret < realret)
 		realret = ret;
 
+	if (! tlayer->view.use_segments) {
+		ret = _NhlActivateWorkstation(tlayer->base.wkptr);
+		if(ret < NhlWARNING) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"TickMarkDraw: An error has occured while activating the workstation, can not continue");
+			return(ret);
+		}
+	}
 	ret = DrawTicks(tlayer);
 	if(ret < NhlWARNING) {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"TickMarkDraw: NhlFATAL error has occurred while drawing Tick Marks , can not continue");
@@ -1694,6 +1764,14 @@ static NhlErrorTypes	TickMarkDraw
 	if(ret < NhlWARNING) {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"TickMarkDraw: NhlFATAL error has occurred while drawing TickMark border, can not continue");
 		return(ret);
+	}
+
+	if (tlayer->view.use_segments) {
+		_NhlEndSegment();
+	}
+	ret = _NhlDeactivateWorkstation(tlayer->base.wkptr);
+	if(ret < NhlWARNING) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"TickMarkDraw: An error has occured while deactivating the workstation, can not continue");
 	}
 	if(ret < realret)
 		realret = ret;
@@ -1732,11 +1810,6 @@ NhlTickMarkLayer tlayer;
 	NhlErrorTypes ret = NhlNOERROR;
 	NhlErrorTypes ret1 = NhlNOERROR;
 
-	ret = _NhlActivateWorkstation(tlayer->base.wkptr);
-	if(ret < NhlWARNING) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"DrawGrid: An error has occured while activating the workstation, can not continue");
-		return(ret);
-	}
 	xr = tlayer->view.x + tlayer->view.width;
 	xl = tlayer->view.x;
 	yt = tlayer->view.y;
@@ -1868,10 +1941,7 @@ NhlTickMarkLayer tlayer;
 		}
 		c_sflush();
 	}
-	ret = _NhlDeactivateWorkstation(tlayer->base.wkptr);
-	if(ret < NhlWARNING) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"DrawGrid: An error has occured while deactivating the workstation, can not continue");
-	}
+
 	return(MIN(ret,ret1));
 }
 
@@ -1904,11 +1974,7 @@ NhlTickMarkLayer tlayer;
 	int i;
 	NhlErrorTypes ret = NhlNOERROR;
 
-	ret = _NhlActivateWorkstation(tlayer->base.wkptr);
-	if(ret < NhlWARNING) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"DrawTicks: An error occurred while activating the workstation, can not continue");
-		return(ret);
-	}
+
 /*
 * NEED SOME WAY TO KNOW WHEN A GKS ERROR HAS OCCURED
 */		
@@ -2028,10 +2094,6 @@ NhlTickMarkLayer tlayer;
 		}
 	}
 	
-	ret = _NhlDeactivateWorkstation(tlayer->base.wkptr);
-	if(ret < NhlWARNING) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"DrawTicks: An error occurred while deactivating the workstation, can not continue");
-	}
 	return(ret);
 }
 
@@ -2062,11 +2124,6 @@ static NhlErrorTypes DrawBorder
 	int n;
 	NhlErrorTypes ret = NhlNOERROR;
 
-	ret = _NhlActivateWorkstation(tlayer->base.wkptr);
-	if(ret < NhlWARNING) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"DrawBorder: An error occured while activating the workstation, can not continue");
-		return(ret);
-	}
 	gset_linewidth((Gdouble)tlayer->tick.border_thickness);
 	gset_line_colr_ind((Gint)_NhlGetGksCi(tlayer->base.wkptr,
                        tlayer->tick.border_line_color));
@@ -2119,10 +2176,7 @@ static NhlErrorTypes DrawBorder
 		n = 0;
 	}
 	c_sflush();
-	ret = _NhlDeactivateWorkstation(tlayer->base.wkptr);
-	if(ret < NhlWARNING) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"DrawBorder: An error occured while deactivating the workstation, can not continue");
-	}
+
 	return(ret);
 }
 
@@ -2155,34 +2209,54 @@ NhlTickMarkLayer tlayer;
 	NhlErrorTypes ret = NhlNOERROR;
 	NhlErrorTypes realret = NhlNOERROR;
 
-	if(tlayer->tick.x_b_labels_on) {
-		ret = NhlDraw(tlayer->tick.xb_multi->base.id);
-		if(ret < NhlWARNING) 
-			return(ret);
+	if (tlayer->view.use_segments) {
+		if(tlayer->tick.x_b_labels_on) {
+			ret = _NhlSegDraw(tlayer->tick.xb_multi);
+			if ((ret = MIN(ret,realret))  < NhlWARNING) 
+				return(ret);
+		}
+
+		if(tlayer->tick.x_t_labels_on) {
+			ret = _NhlSegDraw(tlayer->tick.xt_multi);
+			if ((ret = MIN(ret,realret))  < NhlWARNING)
+				return(ret);
+
+		}
+		if(tlayer->tick.y_l_labels_on) {
+			ret = _NhlSegDraw(tlayer->tick.yl_multi);
+			if ((ret = MIN(ret,realret))  < NhlWARNING)
+				return(ret);
+		}
+		if(tlayer->tick.y_r_labels_on) {
+			ret = _NhlSegDraw(tlayer->tick.yr_multi);
+			if ((ret = MIN(ret,realret))  < NhlWARNING)
+				return(ret);
+		}
 	}
-	if(ret < realret)
-		realret = ret;
-	if(tlayer->tick.x_t_labels_on) {
-		ret = NhlDraw(tlayer->tick.xt_multi->base.id);
-		if(ret < NhlWARNING)
-			return(ret);
+	else {
+		if(tlayer->tick.x_b_labels_on) {
+			ret = NhlDraw(tlayer->tick.xb_multi->base.id);
+			if ((ret = MIN(ret,realret))  < NhlWARNING) 
+				return(ret);
+		}
+
+		if(tlayer->tick.x_t_labels_on) {
+			ret = NhlDraw(tlayer->tick.xt_multi->base.id);
+			if ((ret = MIN(ret,realret))  < NhlWARNING)
+				return(ret);
+
+		}
+		if(tlayer->tick.y_l_labels_on) {
+			ret = NhlDraw(tlayer->tick.yl_multi->base.id);
+			if ((ret = MIN(ret,realret))  < NhlWARNING)
+				return(ret);
+		}
+		if(tlayer->tick.y_r_labels_on) {
+			ret = NhlDraw(tlayer->tick.yr_multi->base.id);
+			if ((ret = MIN(ret,realret))  < NhlWARNING)
+				return(ret);
+		}
 	}
-	if(ret < realret)
-		realret = ret;
-	if(tlayer->tick.y_l_labels_on) {
-		ret = NhlDraw(tlayer->tick.yl_multi->base.id);
-		if(ret < NhlWARNING)
-			return(ret);
-	}
-	if(ret < realret)
-		realret = ret;
-	if(tlayer->tick.y_r_labels_on) {
-		ret = NhlDraw(tlayer->tick.yr_multi->base.id);
-		if(ret < NhlWARNING)
-			return(ret);
-	}
-	if(ret < realret)
-		realret = ret;
 	return(realret);
 }
 

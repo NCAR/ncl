@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.h,v 1.4 1994-01-27 21:27:26 boote Exp $
+ *      $Id: Workstation.h,v 1.5 1994-03-02 01:44:49 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -40,19 +40,23 @@
 #define NhlCwkForegroundColor	"WkForegroundColor"
 #define NhlNwkDashPattern       "wkDashPattern"
 #define NhlNwkLineLabel         "wkLineLabel"
+#define NhlNwkLineLabelColor	"wLineLabelColor"
 #define NhlNwkLineThicknessF    "wkLineThicknessF"
 #define NhlNwkLineLabelFontHeightF      "wkLineLabelFontHeightF"
 #define NhlNwkLineDashSegLenF   "wkLineDashSegLenF"
 #define NhlNwkLineColor         "wkLineColor"
 #define NhlNwkDashTableLength	".wkDashTableLength" /* read-only */
+#define NhlNwkDashTable 	".wkDashTable" 		/* now read-only */
 
 #define NhlCwkDashPattern       "WkDashPattern"
 #define NhlCwkLineLabel         "WkLineLabel"
+#define NhlCwkLineLabelColor	"WkLineLabelColor"
 #define NhlCwkLineThicknessF    "WkLineThicknessF"
 #define NhlCwkLineLabelFontHeightF      "WkLineLabelFontHeightF"
 #define NhlCwkLineDashSegLenF   "WkLineDashSegLenF"
 #define NhlCwkLineColor         "WkLineColor"
 #define NhlCwkDashTableLength	".WkDashTableLength" /* read-only */
+#define NhlCwkDashTable 	".WkDashTable" 		/* now read-only */
 
 #define NhlNwkFillIndex		"wkFillIndex"
 #define NhlNwkFillColor         "wkFillColor"

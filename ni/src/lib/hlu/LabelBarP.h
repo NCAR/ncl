@@ -1,5 +1,5 @@
 /*
- *      $Id: LabelBarP.h,v 1.4 1994-01-27 21:23:47 boote Exp $
+ *      $Id: LabelBarP.h,v 1.5 1994-03-02 01:44:02 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -136,6 +136,8 @@ typedef struct _NhlLabelBarLayerPart {
 	int		title_id;
 	float		title_x;
 	float		title_y;
+	NhlBoolean	new_draw_req;	
+        NhlTransDat	*trans_dat;	/* segment transform data */
 
 }NhlLabelBarLayerPart;
 

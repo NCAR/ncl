@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMarkP.h,v 1.5 1994-01-27 21:26:30 boote Exp $
+ *      $Id: TickMarkP.h,v 1.6 1994-03-02 01:44:32 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -272,6 +272,8 @@ typedef struct _NhlTickMarkLayerPart {
 	float		*y_r_minor_data_locs;
 	int		y_r_nminor;
 	float		y_r_ndc_label_x;
+	NhlBoolean	new_draw_req;	
+        NhlTransDat	*trans_dat;	/* segment transform data */
 }NhlTickMarkLayerPart;
 
 typedef struct _NhlTickMarkLayerRec {

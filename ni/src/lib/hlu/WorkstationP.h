@@ -1,5 +1,5 @@
 /*
- *      $Id: WorkstationP.h,v 1.4 1994-01-27 21:27:31 boote Exp $
+ *      $Id: WorkstationP.h,v 1.5 1994-03-02 01:44:51 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -103,11 +103,13 @@ typedef struct _NhlWorkstationLayerPart {
 	NhlGenArray	foregnd_color;
         int dash_pattern;
         char *line_label;
+	int line_label_color;
         float line_thickness;
         int line_color;
         float line_label_font_height;
         float line_dash_seglen;
 	int	dash_table_len;
+	NhlGenArray	dash_table;
 
 	int	fill_table_len;
 	int	fill_index;

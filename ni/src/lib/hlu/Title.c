@@ -1,5 +1,5 @@
 /*
- *      $Id: Title.c,v 1.5 1994-02-08 20:16:08 boote Exp $
+ *      $Id: Title.c,v 1.6 1994-03-02 01:44:35 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -368,11 +368,24 @@ static NhlErrorTypes    TitleSetValues
 	float tmpxy,tmpwh,tmpxy1,tmpwh1,main_location;
 	float deltah;
 	float deltaw;
+	int		view_args = 0;
 
-        if((tnew->view.x != told->view.x)
-                ||(tnew->view.width != told->view.width)
-                ||(tnew->view.y != told->view.y)
-                ||(tnew->view.height != told->view.height)){
+	if (tnew->view.use_segments != told->view.use_segments) {
+		tnew->view.use_segments = told->view.use_segments;
+		ret = MIN(ret,NhlWARNING);
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+	    "TitleSetValues: attempt to set create-only resource overridden");
+	}
+
+	if (_NhlArgIsSet(args,num_args,NhlNvpXF)) view_args++;
+	if (_NhlArgIsSet(args,num_args,NhlNvpYF)) view_args++;
+	if (_NhlArgIsSet(args,num_args,NhlNvpWidthF)) view_args++;
+	if (_NhlArgIsSet(args,num_args,NhlNvpHeightF)) view_args++;
+
+	if (num_args > view_args)
+		tnew->title.new_draw_req = True;
+
+        if (view_args) {
 
 /*
 * Since theses values have changed then the view has a transfomration 
@@ -396,11 +409,8 @@ static NhlErrorTypes    TitleSetValues
 		deltaw = tnew->view.width/told->view.width;
 		deltah = tnew->view.height/told->view.height;
 		tnew->title.y_axis_font_height *= deltah;
-		tnew->title.y_axis_font_thickness *= deltah;
 		tnew->title.x_axis_font_height *= deltaw;
-		tnew->title.x_axis_font_thickness*= deltaw;
 		tnew->title.main_font_height *= deltaw;
-		tnew->title.main_font_thickness*= deltaw;
 
 	}
 /*
@@ -876,6 +886,8 @@ static NhlErrorTypes    TitleInitialize
 	NhlErrorTypes ret = NhlNOERROR, ret1 = NhlNOERROR;
 	float tmpxy,tmpwh,main_location,tmpxy1,tmpwh1;
 
+	tnew->title.new_draw_req = True;
+	tnew->title.trans_dat = NULL;
 	tnew->title.delta = (float)fabs((double)tnew->title.delta);
 
 	if(tnew->title.main_string != Main){
@@ -1389,14 +1401,54 @@ static NhlErrorTypes TitleDraw
 	NhlLayer	instance;
 #endif
 {
+	NhlErrorTypes ret = NhlNOERROR, subret = NhlNOERROR;
+	char *e_text;
+	char *entry_name = "TitleDraw";
 	NhlTitleLayer tinstance = (NhlTitleLayer) instance;
 
-	if(tinstance->title.main_on)
-		NhlDraw(tinstance->title.main_id);
-	if(tinstance->title.x_axis_on)
-		NhlDraw(tinstance->title.x_axis_id);
-	if(tinstance->title.y_axis_on)
-		NhlDraw(tinstance->title.y_axis_id);
+	if (tinstance->view.use_segments && ! tinstance->title.new_draw_req) {
+                subret = _NhlActivateWorkstation(tinstance->base.wkptr);
+		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
+                subret = _NhlDrawSegment(tinstance->title.trans_dat,
+				_NhlWorkstationId(tinstance->base.wkptr));
+		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
+                subret = _NhlDeactivateWorkstation(tinstance->base.wkptr);
+		return MIN(subret,ret);
+	}
+	tinstance->title.new_draw_req = False;
+
+	if (tinstance->view.use_segments) {
+		subret = _NhlActivateWorkstation(tinstance->base.wkptr);
+		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
+
+		if (tinstance->title.trans_dat != NULL)
+			_NhlDeleteViewSegment(tinstance, 
+					      tinstance->title.trans_dat);
+		if ((tinstance->title.trans_dat = 
+		     _NhlNewViewSegment(instance)) == NULL) {
+			e_text = "%s: error opening segment";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
+			return(ret);
+		}
+		_NhlStartSegment(tinstance->title.trans_dat);
+		if(tinstance->title.main_on)
+			_NhlSegDraw(_NhlGetLayer(tinstance->title.main_id));
+		if(tinstance->title.x_axis_on)
+			_NhlSegDraw(_NhlGetLayer(tinstance->title.x_axis_id));
+		if(tinstance->title.y_axis_on)
+			_NhlSegDraw(_NhlGetLayer(tinstance->title.y_axis_id));
+		_NhlEndSegment();
+		_NhlDeactivateWorkstation(tinstance->base.wkptr);
+	}
+	else {
+		if(tinstance->title.main_on)
+			NhlDraw(tinstance->title.main_id);
+		if(tinstance->title.x_axis_on)
+			NhlDraw(tinstance->title.x_axis_id);
+		if(tinstance->title.y_axis_on)
+			NhlDraw(tinstance->title.y_axis_id);
+	}
+
 	return(NhlNOERROR);
 }
 

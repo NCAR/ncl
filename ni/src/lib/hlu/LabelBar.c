@@ -1,5 +1,5 @@
 /*
- *      $Id: LabelBar.c,v 1.7 1994-02-18 02:54:18 boote Exp $
+ *      $Id: LabelBar.c,v 1.8 1994-03-02 01:43:57 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -41,236 +41,243 @@ static int def_colors[] = {
 
 static NhlResource resources[] = { 
 
-{NhlNlbLabelBar, NhlClbLabelBar, NhlTBoolean,
-	 sizeof(NhlBoolean),NhlOffset(NhlLabelBarLayerRec,labelbar.labelbar_on),
-	 NhlTImmediate,(NhlPointer) True}, 
-{NhlNlbOrientation, NhlClbOrientation, NhlTOrientation,
-	 sizeof(NhlOrientation), NhlOffset(NhlLabelBarLayerRec,labelbar.orient),
-	 NhlTImmediate,(NhlPointer) NhlVERTICAL},
+{NhlNlbLabelBar, NhlClbLabelBar, NhlTBoolean,sizeof(NhlBoolean),
+	 NhlOffset(NhlLabelBarLayerRec,labelbar.labelbar_on),
+	 NhlTImmediate,{(NhlPointer) True}}, 
+{NhlNlbOrientation, NhlClbOrientation, NhlTOrientation,sizeof(NhlOrientation),
+	 NhlOffset(NhlLabelBarLayerRec,labelbar.orient),
+	 NhlTImmediate,{(NhlPointer) NhlVERTICAL}},
 {NhlNlbJustification, NhlClbJustification, NhlTJustification, 
 	 sizeof(NhlJustification),
 	 NhlOffset(NhlLabelBarLayerRec,labelbar.just),
-	 NhlTImmediate,(NhlPointer)NhlBOTTOMLEFT},
+	 NhlTImmediate,{(NhlPointer)NhlBOTTOMLEFT}},
 {NhlNlbBoxMajorExtentF, NhlClbBoxMajorExtentF, NhlTFloat,
 	 sizeof(float), NhlOffset(NhlLabelBarLayerRec,labelbar.box_major_ext),
-	 NhlTString,"1.0"},
+	 NhlTString,{"1.0"}},
 {NhlNlbBoxMinorExtentF, NhlClbBoxMinorExtentF, NhlTFloat,
 	 sizeof(float), NhlOffset(NhlLabelBarLayerRec,labelbar.box_minor_ext),
-	 NhlTString,"0.33"},
+	 NhlTString,{"0.33"}},
 {NhlNlbBoxCount, NhlClbBoxCount, NhlTInteger,
 	 sizeof(int), NhlOffset(NhlLabelBarLayerRec,labelbar.box_count),
-	 NhlTImmediate,(NhlPointer) 16},
+	 NhlTImmediate,{(NhlPointer) 16}},
 {NhlNlbBoxSizing, NhlClbBoxSizing, NhlTInteger,
 	 sizeof(int), NhlOffset(NhlLabelBarLayerRec,labelbar.box_sizing),
-	 NhlTImmediate,(NhlPointer) NhlLB_UNIFORMSIZING},
+	 NhlTImmediate,{(NhlPointer) NhlLB_UNIFORMSIZING}},
 
-{NhlNlbAutoManage, NhlClbAutoManage, NhlTBoolean,
-	 sizeof(NhlBoolean),NhlOffset(NhlLabelBarLayerRec,labelbar.auto_manage),
-	 NhlTImmediate,(NhlPointer) True},
+{NhlNlbAutoManage, NhlClbAutoManage, NhlTBoolean,sizeof(NhlBoolean),
+	 NhlOffset(NhlLabelBarLayerRec,labelbar.auto_manage),
+	 NhlTImmediate,{(NhlPointer) True}},
 {NhlNlbMonoFillColor, NhlClbMonoFillColor, NhlTBoolean,
 	 sizeof(NhlBoolean), 
 	 NhlOffset(NhlLabelBarLayerRec,labelbar.mono_fill_color),
-	 NhlTImmediate,(NhlPointer) False},
+	 NhlTImmediate,{(NhlPointer) False}},
 {NhlNlbMonoFillPattern, NhlClbMonoFillPattern, NhlTBoolean,
 	 sizeof(NhlBoolean), 
 	 NhlOffset(NhlLabelBarLayerRec,labelbar.mono_fill_pattern),
-	 NhlTImmediate,(NhlPointer) False},
+	 NhlTImmediate,{(NhlPointer) False}},
 {NhlNlbMonoFillScale, NhlClbMonoFillScale, NhlTBoolean,
 	 sizeof(NhlBoolean), 
 	 NhlOffset(NhlLabelBarLayerRec,labelbar.mono_fill_scale),
-	 NhlTImmediate,(NhlPointer) True},
+	 NhlTImmediate,{(NhlPointer) True}},
 {NhlNlbMaxLabelAngleAdditionF, NhlClbMaxLabelAngleAdditionF, NhlTFloat,
-	 sizeof(float), NhlOffset(NhlLabelBarLayerRec,labelbar.label_angle_add),
-	 NhlTString,"0.15"},
+	 sizeof(float), 
+	 NhlOffset(NhlLabelBarLayerRec,labelbar.label_angle_add),
+	 NhlTString,{"0.15"}},
 {NhlNlbLabelOffsetF, NhlClbLabelOffsetF, NhlTFloat,
 	 sizeof(float), NhlOffset(NhlLabelBarLayerRec,labelbar.label_off),
-	 NhlTString,"0.0"},
+	 NhlTString,{"0.0"}},
 {NhlNlbTitleOffsetF, NhlClbTitleOffsetF, NhlTFloat,
 	 sizeof(float), NhlOffset(NhlLabelBarLayerRec,labelbar.title_off),
-	 NhlTString,"0.03"},
+	 NhlTString,{"0.03"}},
 {NhlNlbLeftMarginF, NhlClbLeftMarginF, NhlTFloat,
 	 sizeof(float), NhlOffset(NhlLabelBarLayerRec,labelbar.margin.l),
-	 NhlTString,"0.05"},
+	 NhlTString,{"0.05"}},
 {NhlNlbRightMarginF, NhlClbRightMarginF, NhlTFloat,
 	 sizeof(float), NhlOffset(NhlLabelBarLayerRec,labelbar.margin.r),
-	 NhlTString,"0.05"},
+	 NhlTString,{"0.05"}},
 {NhlNlbBottomMarginF, NhlClbBottomMarginF, NhlTFloat,
 	 sizeof(float), NhlOffset(NhlLabelBarLayerRec,labelbar.margin.b),
-	 NhlTString,"0.05"},
+	 NhlTString,{"0.05"}},
 {NhlNlbTopMarginF, NhlClbTopMarginF, NhlTFloat,
 	 sizeof(float), NhlOffset(NhlLabelBarLayerRec,labelbar.margin.t),
-	 NhlTString,"0.05"},
+	 NhlTString,{"0.05"}},
 {NhlNlbMarginMode, NhlClbMarginMode, NhlTInteger,
 	 sizeof(int), NhlOffset(NhlLabelBarLayerRec,labelbar.margin_mode),
-	 NhlTImmediate,(NhlPointer) 0},
+	 NhlTImmediate,{(NhlPointer) 0}},
 
 {NhlNlbFillPatterns, NhlClbFillPatterns, NhlTGenArray,
 	 sizeof(NhlPointer), 
 	 NhlOffset(NhlLabelBarLayerRec,labelbar.fill_patterns),
-	 NhlTImmediate,(NhlPointer) NULL},
+	 NhlTImmediate,{(NhlPointer) NULL}},
 {NhlNlbFillColors, NhlClbFillColors, NhlTGenArray,
-	 sizeof(NhlPointer),NhlOffset(NhlLabelBarLayerRec,labelbar.fill_colors),
-	 NhlTImmediate,(NhlPointer) NULL},
+	 sizeof(NhlPointer),
+	 NhlOffset(NhlLabelBarLayerRec,labelbar.fill_colors),
+	 NhlTImmediate,{(NhlPointer) NULL}},
 {NhlNlbFillScales, NhlClbFillScales, NhlTGenArray,
-	 sizeof(NhlPointer),NhlOffset(NhlLabelBarLayerRec,labelbar.fill_scales),
-	 NhlTImmediate,(NhlPointer) NULL },
+	 sizeof(NhlPointer),
+	 NhlOffset(NhlLabelBarLayerRec,labelbar.fill_scales),
+	 NhlTImmediate,{(NhlPointer) NULL }},
 {NhlNlbLabelStrings, NhlClbLabelStrings, NhlTGenArray,
 	 sizeof(NhlPointer), 
 	 NhlOffset(NhlLabelBarLayerRec,labelbar.label_strings),
-	 NhlTImmediate,(NhlPointer) NULL},
+	 NhlTImmediate,{(NhlPointer) NULL}},
 {NhlNlbBoxFractions, NhlClbBoxFractions, NhlTGenArray,sizeof(NhlPointer), 
 	 NhlOffset(NhlLabelBarLayerRec,labelbar.box_fractions),
-	 NhlTImmediate,(NhlPointer) NULL },
+	 NhlTImmediate,{(NhlPointer) NULL }},
 	
 {NhlNlbDrawLabels, NhlClbDrawLabels, NhlTInteger, 
 	 sizeof(int), NhlOffset(NhlLabelBarLayerRec,labelbar.labels_on),
-	 NhlTImmediate,(NhlPointer) 1},
+	 NhlTImmediate,{(NhlPointer) 1}},
 {NhlNlbLabelPosition, NhlClbLabelPosition, NhlTPosition, 
-	 sizeof(NhlPosition), NhlOffset(NhlLabelBarLayerRec,labelbar.label_pos),
-	 NhlTImmediate,(NhlPointer) NhlRIGHT},
+	 sizeof(NhlPosition), 
+	 NhlOffset(NhlLabelBarLayerRec,labelbar.label_pos),
+	 NhlTImmediate,{(NhlPointer) NhlRIGHT}},
 {NhlNlbLabelAngleF, NhlClbLabelAngleF, NhlTFloat, 
 	 sizeof(float), NhlOffset(NhlLabelBarLayerRec,labelbar.label_angle),
-	 NhlTString,"0.0"},
+	 NhlTString,{"0.0"}},
 {NhlNlbLabelAlignment, NhlClbLabelAlignment, NhlTInteger, 
 	 sizeof(int), NhlOffset(NhlLabelBarLayerRec,labelbar.label_alignment),
-	 NhlTImmediate,(NhlPointer) NhlLB_BOXCENTERS},
+	 NhlTImmediate,{(NhlPointer) NhlLB_BOXCENTERS}},
 {NhlNlbLabelDirection,NhlClbLabelDirection,NhlTTextDirection,
 	 sizeof(NhlTextDirection),
 	 NhlOffset(NhlLabelBarLayerRec,labelbar.label_direction),
-	 NhlTImmediate,(NhlPointer)NhlACROSS},
+	 NhlTImmediate,{(NhlPointer)NhlACROSS}},
 {NhlNlbLabelJust, NhlClbLabelJust, NhlTJustification, sizeof(NhlJustification),
 	 NhlOffset(NhlLabelBarLayerRec,labelbar.label_just),
-	 NhlTImmediate,(NhlPointer)NhlCENTERCENTER},
+	 NhlTImmediate,{(NhlPointer)NhlCENTERCENTER}},
 {NhlNlbLabelFont, NhlCFont, NhlTFont, 
 	 sizeof(NhlFont), NhlOffset(NhlLabelBarLayerRec,labelbar.label_font),
-	 NhlTImmediate,(NhlPointer) 1},
+	 NhlTImmediate,{(NhlPointer) 1}},
 {NhlNlbLabelFontColor, NhlClbLabelFontColor, NhlTInteger, 
 	 sizeof(int), NhlOffset(NhlLabelBarLayerRec,labelbar.label_color),
-	 NhlTImmediate,(NhlPointer) NhlLB_DEF_COLOR},
+	 NhlTImmediate,{(NhlPointer) NhlLB_DEF_COLOR}},
 {NhlNlbLabelFontHeightF, NhlClbLabelFontHeightF, NhlTFloat, 
 	 sizeof(float), NhlOffset(NhlLabelBarLayerRec,labelbar.label_height),
-	 NhlTString,"0.02"},
+	 NhlTString,{"0.02"}},
 {NhlNlbLabelFontAspectF, NhlClbLabelFontAspectF, NhlTFloat, 
 	 sizeof(float), NhlOffset(NhlLabelBarLayerRec,labelbar.label_aspect),
-	 NhlTString,"1.0"},
+	 NhlTString,{"1.0"}},
 {NhlNlbLabelFontThicknessF, NhlClbLabelFontThicknessF, NhlTFloat, 
-	 sizeof(float), NhlOffset(NhlLabelBarLayerRec,labelbar.label_thickness),
-	 NhlTString,"1.0"},
+	 sizeof(float), 
+	 NhlOffset(NhlLabelBarLayerRec,labelbar.label_thickness),
+	 NhlTString,{"1.0"}},
 {NhlNlbLabelFontQuality, NhlClbLabelFontQuality, NhlTFQuality, 
 	 sizeof(NhlFontQuality), 
 	 NhlOffset(NhlLabelBarLayerRec,labelbar.label_quality),
-	 NhlTImmediate,(NhlPointer) NhlHIGH},
+	 NhlTImmediate,{(NhlPointer) NhlHIGH}},
 {NhlNlbLabelConstantSpacingF, NhlClbLabelConstantSpacingF, NhlTFloat, 
 	 sizeof(float), 
 	 NhlOffset(NhlLabelBarLayerRec,labelbar.label_const_spacing),
-	 NhlTString,"0.0"},
+	 NhlTString,{"0.0"}},
 {NhlNlbLabelFuncCode, NhlClbLabelFuncCode, NhlTCharacter, 
 	 sizeof(char), NhlOffset(NhlLabelBarLayerRec,labelbar.label_func_code),
-	 NhlTString,":"},
+	 NhlTString,{":"}},
 {NhlNlbLabelStride, NhlClbLabelStride, NhlTInteger, 
 	 sizeof(int), NhlOffset(NhlLabelBarLayerRec,labelbar.label_stride),
-	 NhlTImmediate,(NhlPointer) 1},
+	 NhlTImmediate,{(NhlPointer) 1}},
 
 {NhlNlbTitleString, NhlClbTitleString, NhlTString, 
 	 sizeof(char *), NhlOffset(NhlLabelBarLayerRec,labelbar.title_string),
-	 NhlTImmediate,DEFSTRING},
+	 NhlTImmediate,{DEFSTRING}},
 {NhlNlbDrawTitle, NhlClbDrawTitle, NhlTInteger, 
 	 sizeof(int), NhlOffset(NhlLabelBarLayerRec,labelbar.title_on),
-	 NhlTImmediate,(NhlPointer) 1},
+	 NhlTImmediate,{(NhlPointer) 1}},
 {NhlNlbTitlePosition, NhlClbTitlePosition, NhlTInteger, 
-	 sizeof(NhlPosition), NhlOffset(NhlLabelBarLayerRec,labelbar.title_pos),
-	 NhlTImmediate,(NhlPointer) NhlTOP},
+	 sizeof(NhlPosition), 
+	 NhlOffset(NhlLabelBarLayerRec,labelbar.title_pos),
+	 NhlTImmediate,{(NhlPointer) NhlTOP}},
 {NhlNlbMaxTitleExtentF, NhlClbMaxTitleExtentF, NhlTFloat,
 	 sizeof(float), NhlOffset(NhlLabelBarLayerRec,labelbar.max_title_ext),
-	 NhlTString,"0.15"},
+	 NhlTString,{"0.15"}},
 {NhlNlbTitleAngleF, NhlClbTitleAngleF, NhlTFloat, 
 	 sizeof(float), NhlOffset(NhlLabelBarLayerRec,labelbar.title_angle),
-	 NhlTString,"0.0"},
+	 NhlTString,{"0.0"}},
 {NhlNlbTitleDirection,NhlClbTitleDirection,NhlTTextDirection,
 	 sizeof(NhlTextDirection),
 	 NhlOffset(NhlLabelBarLayerRec,labelbar.title_direction),
-	 NhlTImmediate,(NhlPointer)NhlACROSS},
+	 NhlTImmediate,{(NhlPointer)NhlACROSS}},
 {NhlNlbTitleFont, NhlCFont, NhlTFont, 
 	 sizeof(NhlFont), NhlOffset(NhlLabelBarLayerRec,labelbar.title_font),
-	 NhlTImmediate,(NhlPointer) 1},
+	 NhlTImmediate,{(NhlPointer) 1}},
 {NhlNlbTitleFontColor, NhlClbTitleFontColor, NhlTInteger, 
 	 sizeof(int), NhlOffset(NhlLabelBarLayerRec,labelbar.title_color),
-	 NhlTImmediate,(NhlPointer) NhlLB_DEF_COLOR},
+	 NhlTImmediate,{(NhlPointer) NhlLB_DEF_COLOR}},
 {NhlNlbTitleJust, NhlClbTitleJust, NhlTJustification, sizeof(NhlJustification),
 	 NhlOffset(NhlLabelBarLayerRec,labelbar.title_just),
-	 NhlTImmediate,(NhlPointer)NhlCENTERCENTER},
+	 NhlTImmediate,{(NhlPointer)NhlCENTERCENTER}},
 {NhlNlbTitleFontHeightF, NhlClbTitleFontHeightF, NhlTFloat, 
 	 sizeof(float), NhlOffset(NhlLabelBarLayerRec,labelbar.title_height),
-	 NhlTString,"0.025"},
+	 NhlTString,{"0.025"}},
 {NhlNlbTitleFontAspectF, NhlClbTitleFontAspectF, NhlTFloat, 
 	 sizeof(float), NhlOffset(NhlLabelBarLayerRec,labelbar.title_aspect),
-	 NhlTString,"1.0"},
+	 NhlTString,{"1.0"}},
 {NhlNlbTitleFontThicknessF, NhlClbTitleFontThicknessF, NhlTFloat, 
-	 sizeof(float), NhlOffset(NhlLabelBarLayerRec,labelbar.title_thickness),
-	 NhlTString,"1.0"},
+	 sizeof(float), 
+	 NhlOffset(NhlLabelBarLayerRec,labelbar.title_thickness),
+	 NhlTString,{"1.0"}},
 {NhlNlbTitleFontQuality, NhlClbTitleFontQuality, NhlTFQuality, 
 	 sizeof(NhlFontQuality), 
 	 NhlOffset(NhlLabelBarLayerRec,labelbar.title_quality),
-	 NhlTImmediate,(NhlPointer) NhlHIGH},
+	 NhlTImmediate,{(NhlPointer) NhlHIGH}},
 {NhlNlbTitleConstantSpacingF, NhlClbTitleConstantSpacingF, NhlTFloat, 
 	 sizeof(float), 
 	 NhlOffset(NhlLabelBarLayerRec,labelbar.title_const_spacing),
-	 NhlTString,"0.0"},
+	 NhlTString,{"0.0"}},
 {NhlNlbTitleFuncCode, NhlClbTitleFuncCode, NhlTCharacter, 
 	 sizeof(char), NhlOffset(NhlLabelBarLayerRec,labelbar.title_func_code),
-	 NhlTString,":"},
+	 NhlTString,{":"}},
 	
 {NhlNlbDrawBoxLines, NhlClbDrawBoxLines, NhlTInteger, 
 	 sizeof(int), NhlOffset(NhlLabelBarLayerRec,labelbar.box_line_on),
-	 NhlTImmediate,(NhlPointer) 1},
+	 NhlTImmediate,{(NhlPointer) 1}},
 {NhlNlbBoxLineColor, NhlClbBoxLineColor, NhlTInteger, 
 	 sizeof(int), NhlOffset(NhlLabelBarLayerRec,labelbar.box_line_color),
-	 NhlTImmediate,(NhlPointer) NhlLB_DEF_COLOR},
+	 NhlTImmediate,{(NhlPointer) NhlLB_DEF_COLOR}},
 {NhlNlbBoxLineThicknessF, NhlClbBoxLineThicknessF, NhlTFloat, 
 	 sizeof(float), 
 	 NhlOffset(NhlLabelBarLayerRec,labelbar.box_line_thickness),
-	 NhlTString,"1.0"},
+	 NhlTString,{"1.0"}},
 {NhlNlbBoxLineDashPattern, NhlClbBoxLineDashPattern, NhlTInteger, 
 	 sizeof(int), 
 	 NhlOffset(NhlLabelBarLayerRec,labelbar.box_line_dash_pattern),
-	 NhlTImmediate,(NhlPointer) 0},
+	 NhlTImmediate,{(NhlPointer) 0}},
 {NhlNlbBoxLineDashLengthF, NhlClbBoxLineDashLengthF, NhlTFloat, 
 	 sizeof(float), 
 	 NhlOffset(NhlLabelBarLayerRec,labelbar.box_line_dash_length),
-	 NhlTString,"0.15"},
+	 NhlTString,{"0.15"}},
 
 {NhlNlbDrawPerim, NhlClbDrawPerim, NhlTInteger, 
 	 sizeof(int), NhlOffset(NhlLabelBarLayerRec,labelbar.perim_on),
-	 NhlTImmediate,(NhlPointer) 1},
+	 NhlTImmediate,{(NhlPointer) 1}},
 {NhlNlbPerimColor, NhlClbPerimColor, NhlTInteger, 
 	 sizeof(int), NhlOffset(NhlLabelBarLayerRec,labelbar.perim_color),
-	 NhlTImmediate,(NhlPointer) NhlLB_DEF_COLOR},
+	 NhlTImmediate,{(NhlPointer) NhlLB_DEF_COLOR}},
 {NhlNlbPerimFill, NhlClbPerimFill, NhlTInteger, 
 	 sizeof(int), NhlOffset(NhlLabelBarLayerRec,labelbar.perim_fill),
-	 NhlTImmediate,(NhlPointer) -1},
+	 NhlTImmediate,{(NhlPointer) -1}},
 {NhlNlbPerimFillColor, NhlClbPerimFillColor, NhlTInteger, 
 	 sizeof(int), NhlOffset(NhlLabelBarLayerRec,labelbar.perim_fill_color),
-	 NhlTImmediate,(NhlPointer) NhlLB_DEF_COLOR},
+	 NhlTImmediate,{(NhlPointer) NhlLB_DEF_COLOR}},
 {NhlNlbPerimThicknessF, NhlClbPerimThicknessF, NhlTFloat, 
 	 sizeof(float), 
 	 NhlOffset(NhlLabelBarLayerRec,labelbar.perim_thickness),
-	 NhlTString,"1.0"},
+	 NhlTString,{"1.0"}},
 {NhlNlbPerimDashPattern, NhlClbPerimDashPattern, NhlTInteger, 
 	 sizeof(int), 
 	 NhlOffset(NhlLabelBarLayerRec,labelbar.perim_dash_pattern),
-	 NhlTImmediate,(NhlPointer) 0},
+	 NhlTImmediate,{(NhlPointer) 0}},
 {NhlNlbPerimDashLengthF, NhlClbPerimDashLengthF, NhlTFloat, 
 	 sizeof(float), 
 	 NhlOffset(NhlLabelBarLayerRec,labelbar.perim_dash_length),
-	 NhlTString,"0.15"},
+	 NhlTString,{"0.15"}},
 
 {NhlNlbFillBackground, NhlClbFillBackground, NhlTInteger,
 	 sizeof(int), NhlOffset(NhlLabelBarLayerRec,labelbar.fill_background),
-	 NhlTImmediate,(NhlPointer) -1},
+	 NhlTImmediate,{(NhlPointer) -1}},
 {NhlNlbFillLineThicknessF, NhlClbFillLineThicknessF, NhlTFloat, 
 	 sizeof(float), 
 	 NhlOffset(NhlLabelBarLayerRec,labelbar.fill_line_thickness),
-	 NhlTString,"1.0"},
+	 NhlTString,{"1.0"}}
 };
 
 /*
@@ -526,6 +533,7 @@ static NhlErrorTypes    LabelBarInitialize
 	NhlLabelBarLayerPart *lb_p = &(tnew->labelbar);
 	NhlErrorTypes	ret=NhlNOERROR,ret1 = NhlNOERROR;
 
+	lb_p->new_draw_req = True;
 	lb_p->labels_id = -1;
 	lb_p->title_id = -1;
 	lb_p->stride_labels = NULL;
@@ -673,11 +681,28 @@ static NhlErrorTypes LabelBarSetValues
 	int	num_args;
 #endif
 {
-	NhlLabelBarLayer told = (NhlLabelBarLayer) old;
-	NhlLabelBarLayer tnew = (NhlLabelBarLayer) new;
-	NhlLabelBarLayerPart *olb_p = &(told->labelbar);
-	NhlLabelBarLayerPart *lb_p = &(tnew->labelbar);
-	NhlErrorTypes ret = NhlNOERROR,ret1 = NhlNOERROR;
+	NhlLabelBarLayer	told = (NhlLabelBarLayer) old;
+	NhlLabelBarLayer	tnew = (NhlLabelBarLayer) new;
+	NhlLabelBarLayerPart	*olb_p = &(told->labelbar);
+	NhlLabelBarLayerPart	*lb_p = &(tnew->labelbar);
+	NhlErrorTypes		ret = NhlNOERROR,ret1 = NhlNOERROR;
+	char 			*e_text;
+	char			*entry_name = "LabelBarSetValues";
+	int			view_args = 0;
+
+	if (tnew->view.use_segments != told->view.use_segments) {
+		tnew->view.use_segments = told->view.use_segments;
+		ret = MIN(ret,NhlWARNING);
+		e_text = "%s: attempt to set create-only resource overridden";
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+	}
+	if (_NhlArgIsSet(args,num_args,NhlNvpXF)) view_args++;
+	if (_NhlArgIsSet(args,num_args,NhlNvpYF)) view_args++;
+	if (_NhlArgIsSet(args,num_args,NhlNvpWidthF)) view_args++;
+	if (_NhlArgIsSet(args,num_args,NhlNvpHeightF)) view_args++;
+
+	if (num_args > view_args)
+		lb_p->new_draw_req = True;
 
 	if (lb_p->box_count < 1) {
 		NhlPError(NhlWARNING,NhlEUNKNOWN,"Minimum box count is 1");
@@ -751,9 +776,9 @@ static NhlErrorTypes LabelBarSetValues
 		if (! _NhlArgIsSet(args,num_args,NhlNlbTitleFontHeightF)) {
 
 			if (lb_p->title_direction == NhlACROSS)
-				lb_p->label_height *= tx;
+				lb_p->title_height *= tx;
 			else
-				lb_p->label_height *= ty;
+				lb_p->title_height *= ty;
 		}
 	}
 #if 0		
@@ -1427,8 +1452,8 @@ static NhlErrorTypes    ManageDynamicArrays
 			     NhlMalloc(strlen(NhlLB_DEF_STRING) + 
 				       strlen(number) + 1)) == NULL) {
 				e_text = "%s: error creating %s string";
-				NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
-					  NhlNlbLabelStrings);
+				NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,
+					  entry_name,NhlNlbLabelStrings);
 				return NhlFATAL;
 			}
 			strcpy(s_p[i],(Const char *)NhlLB_DEF_STRING);
@@ -1542,6 +1567,9 @@ static NhlErrorTypes    SetLabelBarGeometry
 	int		num_args;
 #endif
 {
+ 	NhlErrorTypes		ret = NhlNOERROR;
+	char			*e_text;
+	char			*entry_name = "lbSetLabelBarGeometry";
 	NhlLabelBarLayer	tnew = (NhlLabelBarLayer) new;
 	NhlLabelBarLayerPart *lb_p = &(tnew->labelbar);
 	enum {NO_TITLE, MINOR_AXIS, MAJOR_AXIS} title_loc;
@@ -1749,8 +1777,11 @@ static NhlErrorTypes    SetLabelBarGeometry
 					angle_adj);
 			if (max_title_ext + title_off + bar_ext > 
 			    adj_perim_height) {
-				/* need a NhlWARNING */
-				printf("adjusting bar size smaller\n");
+				e_text = 
+				  "%s: Maximum bar size exceeded, defaulting";
+				NhlPError(NhlWARNING,NhlEUNKNOWN,
+					  e_text,entry_name);
+				ret = MIN(ret, NhlWARNING);
 				bar_ext = adj_perim_height - 
 					max_title_ext - title_off;
 				lb_p->box_minor_ext = 
@@ -1798,7 +1829,8 @@ static NhlErrorTypes    SetLabelBarGeometry
 			}
 			break;
 		default:
-			/* need error message */
+			e_text = "%s: Invalid title location value";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 			return NhlFATAL;
 		}
 		/* get the box size */
@@ -1899,8 +1931,11 @@ static NhlErrorTypes    SetLabelBarGeometry
 					angle_adj);
 			if (max_title_ext + title_off + bar_ext > 
 			    adj_perim_width) {
-				/* need a NhlWARNING */
-				printf("adjusting bar size smaller\n");
+				e_text = 
+				  "%s: Maximum bar size exceeded, defaulting";
+				NhlPError(NhlWARNING,NhlEUNKNOWN,
+					  e_text,entry_name);
+				ret = MIN(ret, NhlWARNING);
 				bar_ext = adj_perim_width - 
 					max_title_ext - title_off;
 				lb_p->box_minor_ext = 
@@ -1949,14 +1984,15 @@ static NhlErrorTypes    SetLabelBarGeometry
 			}
 			break;
 		default:
-			/* need error message */
+			e_text = "%s: Invalid title location value";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 			return NhlFATAL;
 		}
 		lb_p->box_size.x = lb_p->bar.r - lb_p->bar.l;
 		lb_p->box_size.y = 
 			(lb_p->bar.t - lb_p->bar.b) / lb_p->box_count;
 	}
-	return (NhlNOERROR);
+	return ret;
 				
 }
 
@@ -2493,9 +2529,11 @@ static NhlErrorTypes    SetLabels
 	int		num_args;
 #endif
 {
+ 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
+	char			*e_text;
+	char			*entry_name = "lbSetLabels";
 	NhlLabelBarLayer	tnew = (NhlLabelBarLayer) new;
 	NhlLabelBarLayerPart *lb_p = &(tnew->labelbar);
-	NhlErrorTypes ret = NhlNOERROR, ret1 = NhlNOERROR;
 	char buffer[_NhlMAXRESNAMLEN];
 	char **labels_p;
 	int count; 
@@ -2651,21 +2689,26 @@ static NhlErrorTypes    SetLabels
 			label_height = avail_char_space;
 
 		/* Set the constant Y axis value and the justification */
-		if (lb_p->label_pos == NhlBOTTOM) {
-				
+		switch (lb_p->label_pos) {
+		case NhlBOTH:
+		case NhlLEFT:
+		case NhlRIGHT:
+		default:
+			e_text = "%s: Invalid label position, defaulting";
+			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+			ret = MIN(ret,NhlWARNING);
+		case NhlBOTTOM:
 			lb_p->const_pos = lb_p->labels.t -
 				label_height - label_offset;
-		}
-		else if (lb_p->label_pos == NhlCENTER) {
+			break;
+		case NhlCENTER:
 			lb_p->const_pos = lb_p->adj_bar.b + 
 				lb_p->adj_box_size.y / 2.0;
-		}
-		else if (lb_p->label_pos == NhlTOP) {
+			break;
+		case NhlTOP:
 			lb_p->const_pos = lb_p->labels.b + 
 				label_height + label_offset;
-		}
-		else if (lb_p->label_pos == NhlBOTH) {
-			printf("NhlBOTH not implemented\n");
+			break;
 		}
 	}
 	else if (lb_p->orient == NhlHORIZONTAL){ /* NhlDOWN or UP */
@@ -2682,20 +2725,26 @@ static NhlErrorTypes    SetLabels
 			label_height = avail_char_space;
 
 		/* Set the constant Y axis value and the justification */
-		if (lb_p->label_pos == NhlBOTTOM) {
+		switch (lb_p->label_pos) {
+		case NhlBOTH:
+		case NhlLEFT:
+		case NhlRIGHT:
+		default:
+			e_text = "%s: Invalid label position, defaulting";
+			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+			ret = MIN(ret,NhlWARNING);
+		case NhlBOTTOM:
 			lb_p->const_pos = lb_p->labels.t - 
 				label_height - label_offset;
-		}
-		else if (lb_p->label_pos == NhlCENTER) {
+			break;
+		case NhlCENTER:
 			lb_p->const_pos = lb_p->adj_bar.b + 
 				lb_p->adj_box_size.y / 2.0;
-		}
-		else if (lb_p->label_pos == NhlTOP) {
+			break;
+		case NhlTOP:
 			lb_p->const_pos = lb_p->labels.b + 
 				label_height + label_offset;
-		}
-		else if (lb_p->label_pos == NhlBOTH) {
-			printf("NhlBOTH not implemented\n");
+			break;
 		}
 	}
 	else if (lb_p->orient == NhlVERTICAL && 
@@ -2711,20 +2760,26 @@ static NhlErrorTypes    SetLabels
 			label_height = avail_char_space;
 
 		/* Set the constant X axis position and the justification */
-		if (lb_p->label_pos == NhlLEFT) {
+		switch (lb_p->label_pos) {
+		case NhlBOTH:
+		case NhlTOP:
+		case NhlBOTTOM:
+		default:
+			e_text = "%s: Invalid label position, defaulting";
+			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+			ret = MIN(ret,NhlWARNING);
+		case NhlLEFT:
 			lb_p->const_pos = lb_p->labels.r - 
 				label_height - label_offset;
-		}
-		else if (lb_p->label_pos == NhlCENTER) {
+			break;
+		case NhlCENTER:
 			lb_p->const_pos = lb_p->adj_bar.l + 
 				lb_p->adj_box_size.x / 2.0;
-		}
-		else if (lb_p->label_pos == NhlRIGHT) {
+			break;
+		case NhlRIGHT:
 			lb_p->const_pos = lb_p->labels.l + 
 				label_height + label_offset;
-		}
-		else if (lb_p->label_pos == NhlBOTH) {
-			printf("NhlBOTH not implemented\n");
+			break;
 		}
 	}
 	else { /* NhlVERTICAL NhlDOWN or UP */
@@ -2739,20 +2794,26 @@ static NhlErrorTypes    SetLabels
 			label_height = avail_char_space;
 
 		/* Set the constant X axis position and the justification */
-		if (lb_p->label_pos == NhlLEFT) {
+		switch (lb_p->label_pos) {
+		case NhlBOTH:
+		case NhlTOP:
+		case NhlBOTTOM:
+		default:
+			e_text = "%s: Invalid label position, defaulting";
+			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+			ret = MIN(ret,NhlWARNING);
+		case NhlLEFT:
 			lb_p->const_pos = lb_p->labels.r - 
 				label_height - label_offset;
-		}
-		else if (lb_p->label_pos == NhlCENTER) {
+			break;
+		case NhlCENTER:
 			lb_p->const_pos = lb_p->adj_bar.l + 
 				lb_p->adj_box_size.x / 2.0;
-		}
-		else if (lb_p->label_pos == NhlRIGHT) {
+			break;
+		case NhlRIGHT:
 			lb_p->const_pos = lb_p->labels.l + 
 				label_height + label_offset;
-		}
-		else if (lb_p->label_pos == NhlBOTH) {
-			printf("NhlBOTH not implemented\n");
+			break;
 		}
 	}
 
@@ -2820,7 +2881,7 @@ static NhlErrorTypes    SetLabels
 	if (init) {
 		strcpy(buffer,tnew->base.name);
 		strcat(buffer,".Labels");
-		ret1 = NhlVACreate(&(lb_p->labels_id),buffer,
+		subret = NhlVACreate(&(lb_p->labels_id),buffer,
 				 NhlmultiTextLayerClass,tnew->base.id,
 				 NhlNMtextNumStrings,lb_p->label_draw_count,
 				 NhlNMtextStrings,labels_p,
@@ -2838,15 +2899,14 @@ static NhlErrorTypes    SetLabels
 				 NhlNtxFontColor,lb_p->label_color,
 				 NhlNtxFontThicknessF,lb_p->label_thickness,
 				 NULL);
-		if(ret1 < NhlWARNING) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"MultiText create error");
-			return(NhlFATAL);
+		if ((ret = MIN(ret,subret)) < NhlWARNING) {
+			e_text = "%s: Error creating MultiText object";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			return NhlFATAL;
 		}
-		ret = MIN(ret,ret1);
-
 	} 
 	else {
-		ret1 = NhlVASetValues(lb_p->labels_id,
+		subret = NhlVASetValues(lb_p->labels_id,
 				    NhlNMtextNumStrings,lb_p->label_draw_count,
 				    NhlNMtextStrings,labels_p,
 				    NhlNMtextOrientation,mtext_orient,
@@ -2861,21 +2921,19 @@ static NhlErrorTypes    SetLabels
 				    NhlNtxFontColor,lb_p->label_color,
 				    NhlNtxFontThicknessF,lb_p->label_thickness,
 				    NULL);
-		if(ret1 < NhlWARNING) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,
-				  "Multitext SetValues error");
-			return(NhlFATAL);
+		if ((ret = MIN(ret,subret)) < NhlWARNING) {
+			e_text = "%s: Error setting MultiText object values";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			return NhlFATAL;
 		}
-		ret = MIN(ret,ret1);
-
 	}
 
 
 	if (lb_p->auto_manage || lb_p->label_height <= 0.0) {
 
-		ret1 = AdjustLabels(lb_p, label_height, avail_char_space, 
+		subret = AdjustLabels(lb_p, label_height, avail_char_space, 
 				   max_strlen, larea.x, larea.y);
-		ret = MIN(ret, ret1);
+		ret = MIN(ret, subret);
 	}
 
 	return (ret);
@@ -2921,8 +2979,10 @@ static NhlErrorTypes   	AdjustLabels
 	float		area_y;
 #endif
 {
+ 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
+	char			*e_text;
+	char			*entry_name = "lbAdjustLabels";
 	float tmp, theta1, theta2, theta3, theta4;
-	NhlErrorTypes ret = NhlNOERROR;
 	NhlBoundingBox stringBB;
 	float w, h;
 	float wb, wt, hb, ht;
@@ -2935,11 +2995,13 @@ static NhlErrorTypes   	AdjustLabels
  * individual (maximum size) string in the multitext. Also figure out
  * the amount of space the string has available
  */
-	ret = NhlGetBB(lb_p->labels_id, &stringBB);
+	subret = NhlGetBB(lb_p->labels_id, &stringBB);
 	w=stringBB.r-stringBB.l; 	    
 	h=stringBB.t-stringBB.b;
-	if (w <= 0.0 || h <= 0.0) {
-		printf("error getting BB\n");
+	if ((ret = MIN(ret,subret)) < NhlWARNING || w <= 0.0 || h <= 0.0) {
+		e_text = "%s: Error getting bounding box";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
 	}
 	if (lb_p->orient == NhlHORIZONTAL) {
 		wb = area_x / lb_p->label_draw_count;
@@ -3783,10 +3845,11 @@ static NhlErrorTypes    LabelBarDraw
 	NhlLayer 	layer;
 #endif
 {
-	NhlLabelBarLayer tlayer = (NhlLabelBarLayer) layer;
-	NhlLabelBarLayerPart *lb_p = &(tlayer->labelbar);
-	NhlErrorTypes ret = NhlNOERROR;
-
+	NhlLabelBarLayer lbl = (NhlLabelBarLayer) layer;
+	NhlLabelBarLayerPart *lb_p = &(lbl->labelbar);
+	NhlErrorTypes ret = NhlNOERROR, subret = NhlNOERROR;
+	char *e_text;
+	char *entry_name = "LabelBarDraw";
 	float xpoints[5];
 	float ypoints[5];
 	int i;
@@ -3798,7 +3861,30 @@ static NhlErrorTypes    LabelBarDraw
 	if (! lb_p->labelbar_on)
 		return(ret);
 
-	_NhlActivateWorkstation(tlayer->base.wkptr);
+	if (lbl->view.use_segments && ! lb_p->new_draw_req) {
+                subret = _NhlActivateWorkstation(lbl->base.wkptr);
+		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
+                subret = _NhlDrawSegment(lb_p->trans_dat,
+				_NhlWorkstationId(lbl->base.wkptr));
+		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
+                subret = _NhlDeactivateWorkstation(lbl->base.wkptr);
+		return MIN(subret,ret);
+	}
+	lb_p->new_draw_req = False;
+
+	subret = _NhlActivateWorkstation(lbl->base.wkptr);
+	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
+
+	if (lbl->view.use_segments) {
+		if (lb_p->trans_dat != NULL)
+			_NhlDeleteViewSegment(layer, lb_p->trans_dat);
+		if ((lb_p->trans_dat = _NhlNewViewSegment(layer)) == NULL) {
+			e_text = "%s: error opening segment";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
+			return(ret);
+		}
+		_NhlStartSegment(lb_p->trans_dat);
+	}
 
 /* first draw the perimeter: it may have a solid background */
 
@@ -3815,7 +3901,7 @@ static NhlErrorTypes    LabelBarDraw
 		xpoints[4] = lb_p->real_perim.l;
 		ypoints[4] = lb_p->real_perim.b;
 
-		NhlVASetValues(tlayer->base.wkptr->base.id,
+		NhlVASetValues(lbl->base.wkptr->base.id,
 			     NhlNwkDrawEdges, 1,
 			     NhlNwkEdgeDashPattern, lb_p->perim_dash_pattern,
 			     NhlNwkEdgeThicknessF, lb_p->perim_thickness,
@@ -3825,8 +3911,8 @@ static NhlErrorTypes    LabelBarDraw
 			     NhlNwkFillIndex, lb_p->perim_fill,
 			     NULL);
 			
-		_NhlSetFillInfo(tlayer->base.wkptr, layer);
-		_NhlWorkstationFill(tlayer->base.wkptr,
+		_NhlSetFillInfo(lbl->base.wkptr, layer);
+		_NhlWorkstationFill(lbl->base.wkptr,
 				    xpoints,ypoints,5);
 			
 	}
@@ -3835,7 +3921,7 @@ static NhlErrorTypes    LabelBarDraw
  * Set the values that remain constant for all boxes
  */
 
-	NhlVASetValues(tlayer->base.wkptr->base.id,
+	NhlVASetValues(lbl->base.wkptr->base.id,
 		     NhlNwkDrawEdges, lb_p->box_line_on,
 		     NhlNwkEdgeDashPattern, lb_p->box_line_dash_pattern,
 		     NhlNwkEdgeThicknessF, lb_p->box_line_thickness,
@@ -3883,14 +3969,14 @@ static NhlErrorTypes    LabelBarDraw
 			else
 				fill_scale = fill_scales[i];
 
-			NhlVASetValues(tlayer->base.wkptr->base.id,
+			NhlVASetValues(lbl->base.wkptr->base.id,
 				     NhlNwkFillIndex, fill_pattern,
 				     NhlNwkFillColor, fill_color,
 				     NhlNwkFillScaleFactorF, fill_scale,
 				     NULL);
 			
-			_NhlSetFillInfo(tlayer->base.wkptr, layer);
-			_NhlWorkstationFill(tlayer->base.wkptr,
+			_NhlSetFillInfo(lbl->base.wkptr, layer);
+			_NhlWorkstationFill(lbl->base.wkptr,
 					    xpoints,ypoints,5);
 			
 		}
@@ -3925,30 +4011,39 @@ static NhlErrorTypes    LabelBarDraw
 			else
 				fill_scale = fill_scales[i];
 
-			NhlVASetValues(tlayer->base.wkptr->base.id,
+			NhlVASetValues(lbl->base.wkptr->base.id,
 				     NhlNwkFillIndex, fill_pattern,
 				     NhlNwkFillColor, fill_color,
 				     NhlNwkFillScaleFactorF, fill_scale,
 				     NULL);
 			
-			_NhlSetFillInfo(tlayer->base.wkptr, layer);
-			_NhlWorkstationFill(tlayer->base.wkptr,
+			_NhlSetFillInfo(lbl->base.wkptr, layer);
+			_NhlWorkstationFill(lbl->base.wkptr,
 					    xpoints,ypoints,5);
 			
 		}
 	}
 
+	if (lbl->view.use_segments) {
 
-	_NhlDeactivateWorkstation(tlayer->base.wkptr);
+		if (lb_p->title_on && lb_p->max_title_ext > 0.0)
+			_NhlSegDraw(_NhlGetLayer(lb_p->title_id));
+		
+		if (lb_p->labels_on )
+			_NhlSegDraw(_NhlGetLayer(lb_p->labels_id));
 
-/*
- * Draw the child objects
- */
-	if (lb_p->title_on && lb_p->max_title_ext > 0.0)
-		NhlDraw(lb_p->title_id);
+		_NhlEndSegment();
+		_NhlDeactivateWorkstation(lbl->base.wkptr);
+	}
+	else {
+		_NhlDeactivateWorkstation(lbl->base.wkptr);
 
-	if (lb_p->labels_on )
-		NhlDraw(lb_p->labels_id);
+		if (lb_p->title_on && lb_p->max_title_ext > 0.0)
+			NhlDraw(lb_p->title_id);
+		
+		if (lb_p->labels_on )
+			NhlDraw(lb_p->labels_id);
+	}
 
 	return(ret);
 }
