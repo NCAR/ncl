@@ -8,7 +8,7 @@ extern void NGCALLF(ddrveof,DDRVEOF)(double *,int *,int *,int *,int *,
                                      long *, double *,int *,double *,int *,
                                      int *,int *,int *,int *);
 
-extern void NGCALLF(dncldrv,dncldrv)(double *,double *,int *,int *,int *,
+extern void NGCALLF(dncldrv,DNCLDRV)(double *,double *,int *,int *,int *,
                                      int *,double *,int *,double *,double *,
                                      float *,double *,int *,int *,double *,
                                      double *,double *,long *,double *, int *,
@@ -18,10 +18,13 @@ extern void NGCALLF(deofts7,DEOFTS7)(double *,int *,int *,int *,int *,
                                      double *,int *, double *,int *, int *,
                                      double *,double *,double *,int *);
 
-extern void NGCALLF(DEOFTSCA,deoftsca)(double *,int *,int *,int *,int *,
+extern void NGCALLF(deoftsca,DEOFTSCA)(double *,int *,int *,int *,int *,
                                        double *,int *,double *,int *, int*,
                                        double *,double *,int *,double *,
                                        double *);
+
+extern void NGCALLF(deof2data,DEOF2DATA)(int *,int *,int *,double *,
+                                         double *, double *, double *);
 
 NhlErrorTypes eofcov_W( void )
 {
@@ -2805,6 +2808,155 @@ NhlErrorTypes eofcor_ts_pcmsg_W( void )
  */
     return(NclReturnValue((void*)evec_ts,2,dsizes_evec_ts,&missing_dx,
                           NCL_double,0));
+  }
+}
+
+
+NhlErrorTypes eof2data_W( void )
+{
+/*
+ * Input array variables
+ */
+  void *evec, *evects;
+  double *devec, *devects;
+  int ndims_evec, dsizes_evec[NCL_MAX_DIMENSIONS], has_missing_evec;
+  int dsizes_evects[2], has_missing_evects;
+  NclScalar missing_evec, missing_devec, missing_revec;
+  NclBasicDataTypes type_evec, type_evects;
+  int nrow, ncol, nobs, msta, total_size_evec, total_size_evects;
+  int neval, npts, ntim, i;
+/*
+ * Output array variables
+ */
+  void *x;
+  double *dx;
+  float *rx;      
+  int *dsizes_x, total_size_x;
+  NclBasicDataTypes type_x;
+
+/*
+ * Retrieve parameters
+ */
+  evec = (void*)NclGetArgValue(
+           0,
+           2,
+           &ndims_evec, 
+           dsizes_evec,
+           &missing_evec,
+           &has_missing_evec,
+           &type_evec,
+           2);
+  evects = (void*)NclGetArgValue(
+           1,
+           2,
+           NULL,
+           dsizes_evects,
+           NULL,
+           NULL,
+           &type_evects,
+           2);
+/*
+ * Check the input grids. The first one can be any dimension, but it must
+ * be at least 2 dimensions.  The first dimension of both input arrays
+ * must be the same (neval).
+ */
+  if(ndims_evec < 2) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eof2data: The first input array must be at least 2-dimensional");
+    return(NhlFATAL);
+  }
+
+  if( dsizes_evec[0] != dsizes_evects[0] ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eof2data: The leftmost dimension of both input arrays must be the same");
+    return(NhlFATAL);
+  }
+
+  neval = dsizes_evec[0];
+  ntim  = dsizes_evects[1];
+
+  npts  = 1;
+  for( i = 1; i < ndims_evec; i++ ) npts *= dsizes_evec[i];
+
+  total_size_evec   = neval * npts;
+  total_size_evects = neval * ntim;
+  total_size_x      = npts  * ntim;
+
+/*
+ * Coerce missing values, if any.
+ */
+  coerce_missing(type_evec,has_missing_evec,&missing_evec,&missing_devec,
+		 &missing_revec);
+/*
+ * Coerce evec/evects to double if necessary.
+ */
+  devec = coerce_input_double(evec,type_evec,total_size_evec,
+			      has_missing_evec,&missing_evec,
+			      &missing_devec);
+  devects = coerce_input_double(evects,type_evects,total_size_evects,
+				0,NULL,NULL);
+  if(devec == NULL || devects == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eof2data: Unable to allocate memory for coercing input arrays to double precision");
+    return(NhlFATAL);
+  }
+/*
+ * Allocate memory for return variable.
+ */
+  dsizes_x = (int*)calloc(ndims_evec, sizeof(int));
+  
+  if(type_evec == NCL_double || type_evects == NCL_double) {
+    type_x = NCL_double;
+    x      = (double *)calloc(total_size_x,sizeof(double));
+    dx     = (double*)x;
+  }
+  else {
+    type_x = NCL_float;
+    x      = (float *)calloc(total_size_x,sizeof(float));
+    dx     = (double *)calloc(total_size_x,sizeof(double));
+  }
+  if(x == NULL || dx == NULL || dsizes_x == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eof2data: Unable to allocate memory for output array");
+    return(NhlFATAL);
+  }
+
+  dsizes_x[ndims_evec-1] = ntim;
+  for(i=0; i <= ndims_evec-2; i++) dsizes_x[i] = dsizes_evec[i+1];
+
+/*
+ * Call the Fortran 77 version of 'deof2data' with the full argument list.
+ */
+  NGCALLF(deof2data,DEOF2DATA)(&neval,&npts,&ntim,devec,devects,dx,
+			       &missing_devec.doubleval);
+/*
+ * Free unneeded memory.
+ */
+  if((void*)devec   != evec)   NclFree(devec);
+  if((void*)devects != evects) NclFree(devects);
+/*
+ * Return values. 
+ */
+  if(type_x == NCL_float) {
+/*
+ * Coerce double values to float and free up double precision array.
+ */
+    coerce_output_float_only(x,dx,total_size_x,0);
+    NclFree(dx);
+
+    if(has_missing_evec) {
+      return(NclReturnValue(x,ndims_evec,dsizes_x,&missing_revec,type_x,0));
+    }
+    else {
+      return(NclReturnValue(x,ndims_evec,dsizes_x,NULL,type_x,0));
+    }
+  }
+  else {
+/*
+ * Return double values. 
+ */
+    if(has_missing_evec) {
+      return(NclReturnValue(x,ndims_evec,dsizes_x,&missing_devec,type_x,0));
+    }
+    else {
+      return(NclReturnValue(x,ndims_evec,dsizes_x,NULL,type_x,0));
+    }
   }
 }
 

@@ -31,6 +31,7 @@ extern NhlErrorTypes eofcov_ts_W(void);
 extern NhlErrorTypes eofcor_ts_W(void);
 extern NhlErrorTypes eofcov_ts_pcmsg_W(void);
 extern NhlErrorTypes eofcor_ts_pcmsg_W(void);
+extern NhlErrorTypes eof2data_W(void);
 extern NhlErrorTypes eof_varimax_W(void);
 extern NhlErrorTypes center_finite_diff_W(void);
 extern NhlErrorTypes uv2vr_cfd_W(void);
@@ -723,6 +724,17 @@ void NclAddUserFuncs(void)
     args = NewArgs(1);
     SetArgTemplate(args,nargs,"numeric",(int) NclANY,NclANY);nargs++;
     NclRegisterFunc(eof_varimax_W,args,"eof_varimax",nargs);
+
+/*
+ * Register "eof2data".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(2);
+    SetArgTemplate(args,nargs,"numeric",(int) NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",2,NclANY);nargs++;
+    NclRegisterFunc(eof2data_W,args,"eof2data",nargs);
 /*
  * Register "center_finite_diff".
  *

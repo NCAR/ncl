@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.73 2003-05-28 15:01:24 haley Exp $
+#      $Id: yMakefile,v 1.74 2003-08-28 16:51:18 haley Exp $
 #
 #########################################################################
 #									#
@@ -66,9 +66,9 @@ COBJS = areavolW.o betaincW.o bytesW.o calcorcW.o cdf_dpW.o chiinvW.o \
 	vinth2peW.o zonmpsiW.o 
 
 FSRCS = aam.f areaAve.f areaAve2.f areaRmse.f areaRmse2.f areaSum2.f \
-	calcorc_dp.f cdf_dp.f cfftb.f \
-	cfftb1.f cfftf.f cfftf1.f cffti.f cffti1.f chiin_dp.f cntrFiniteDiff.f \
-	cz2ccm_dp.f dbetai.f dewpt_trh.f dmapgci.f dpsort.f dtrend_dp.f \
+	calcorc_dp.f cdf_dp.f cfftb.f cfftb1.f cfftf.f cfftf1.f cffti.f \
+	cffti1.f chiin_dp.f cntrFiniteDiff.f cz2ccm_dp.f dbetai.f \
+	dewpt_trh.f dmapgci.f dpsort.f dtrend_dp.f eof2data.f \
 	exptapersh.f ezfft_dp.f f2foshv.f filtrx.f finfo.f fluxEddyTav_dp.f \
 	fo2fs_dp.f gausLobat.f grid2triple.f hydro_dp.f index77_dp.f \
 	int2p_dp.f julGreg.f lclvl.f linint2.f linmsg_dp.f localMinMax.f \
@@ -85,9 +85,9 @@ FSRCS = aam.f areaAve.f areaAve2.f areaRmse.f areaRmse2.f areaSum2.f \
 	wrunave_dp.f zon_mpsi.f
 
 FOBJS = aam.o areaAve.o areaAve2.o areaRmse.o areaRmse2.o areaSum2.o \
-	calcorc_dp.o cdf_dp.o cfftb.o \
-	cfftb1.o cfftf.o cfftf1.o cffti.o cffti1.o chiin_dp.o cntrFiniteDiff.o \
-	cz2ccm_dp.o dbetai.o dewpt_trh.o dmapgci.o dpsort.o dtrend_dp.o \
+	calcorc_dp.o cdf_dp.o cfftb.o cfftb1.o cfftf.o cfftf1.o cffti.o \
+	cffti1.o chiin_dp.o cntrFiniteDiff.o cz2ccm_dp.o dbetai.o \
+	dewpt_trh.o dmapgci.o dpsort.o dtrend_dp.o eof2data.o \
 	exptapersh.o ezfft_dp.o f2foshv.o filtrx.o finfo.o fluxEddyTav_dp.o \
 	fo2fs_dp.o gausLobat.o grid2triple.o hydro_dp.o index77_dp.o \
 	int2p_dp.o julGreg.o lclvl.o linint2.o linmsg_dp.o localMinMax.o  \
