@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.55 1994-01-19 16:38:26 haley Exp $
+#   $Id: ncargex.csh,v 1.56 1994-02-04 17:22:12 haley Exp $
 #
 
 #********************#
@@ -1000,13 +1000,13 @@ if (! $?NoRunOption) then
             ncargrun -o $name.ncgm $name < class1.dat
         breaksw
         case fgke03:
-            $name
+            ./$name
             echo "Metafiles META01 and META02 produced"
         breaksw
         case ccpcff:
         case tcolcv:
         case fcce02:
-            $name
+            ./$name
             echo "No metafile produced"
         breaksw
         default:
