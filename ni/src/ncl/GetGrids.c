@@ -2681,7 +2681,7 @@ GribParamList* thevarrec;
 			}
 			*outdat = data;
 		}
-		if((therec->gds[6] == (char)0377)&&(therec->gds[7] == (char)0377)){
+		if((therec->has_gds)&&(therec->gds[6] == (char)0377)&&(therec->gds[7] == (char)0377)){
 			nv = (int)therec->gds[3];
 			pl = (int)therec->gds[4];
 			if((nv == 0)&&(therec->gds[4]==(char)0377)) {
