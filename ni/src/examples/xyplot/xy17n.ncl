@@ -49,8 +49,7 @@ end create
 ;
 ; Read ASCII file xy.asc
 ;
-filedir = ncargpath("data")
-x1_y3 = asciiread(filedir + "/asc/xy.asc",4*129,"float")
+x1_y3 = asciiread("xy.asc",4*129,"float")
 ;
 ;  xy.asc has 4 vars of length 129 longitudes, lon, u, v, t
 ;

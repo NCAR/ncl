@@ -1,5 +1,5 @@
 C
-C      $Id: xy17f.f,v 1.2 1997-04-10 19:34:59 haley Exp $
+C      $Id: xy17f.f,v 1.3 1997-04-11 15:56:53 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                     C
@@ -62,16 +62,7 @@ C
 C
 C  Read ASCII file xy.asc
 C
-
-      call gngpat(filename,'data',ierr)
-      flen = 11
-      do 10 i=1,256
-         if( filename(i:i).eq.char(0) ) then
-            filename(i:i+flen)='/asc/xy.asc'
-            goto 15
-         endif
- 10   continue
- 15   open(unit=10,file=filename,status='old',form='formatted',err=105)
+ 15   open(unit=10,file='xy.asc',status='old',form='formatted',err=105)
 
 C
 C   xy.asc has 4 vars of length 129 longitudes, lon, u, v, t
@@ -349,5 +340,5 @@ C
       call NhlFClose
 
       stop
- 105  write  (6,*) 'error in opening file: ',filenm
+ 105  write  (6,*) 'error in opening file: ',filename
       end

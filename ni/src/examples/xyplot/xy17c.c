@@ -1,5 +1,5 @@
 /*
- *      $Id: xy17c.c,v 1.4 1997-04-10 19:34:58 haley Exp $
+ *      $Id: xy17c.c,v 1.5 1997-04-11 15:56:52 haley Exp $
  */
 /***********************************************************************
  *                                                                     *
@@ -63,17 +63,12 @@ void main ()
    char *y1lab [5] = {"-90.", "-80.", "-70.", "-60.", "-50."};
    char *y2lab [6] = {"10.", "20.", "30.", "40.", "50.", "60."};
    char *y3lab [5] = {"-20.", "-10.", "0.", "10.", "20."};
-   char *filedir = (char *)malloc (strlen(GetNCARGPath("data")));
-   char *file = (char *) malloc (strlen(filedir)+strlen("/asc/xy.asc"));
+   char *file = "xy.asc";
 
 /*
  *  Read ASCII file xy.asc
  */
-
-   filedir=(char *)GetNCARGPath("data");
-   file = strcat (filedir,"/asc/xy.asc");
    x1_y3 = fopen (file,"r");
-
 /*
  *   xy.asc has 4 vars of length 129 longitudes, lon, u, v, t
  *
