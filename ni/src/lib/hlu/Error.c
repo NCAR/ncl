@@ -1,5 +1,5 @@
 /*
- *      $Id: Error.c,v 1.19 1995-04-07 10:41:44 boote Exp $
+ *      $Id: Error.c,v 1.20 1995-05-05 22:32:59 boote Exp $
  */
 /************************************************************************
 *									*
@@ -878,6 +878,42 @@ ErrorSetValues
 	}
 
 	return ret;
+}
+
+static NhlErrorTypes
+ErrorGetValues
+#if	NhlNeedProto
+(
+	NhlLayer	l,
+	_NhlArgList	args,
+	int		nargs
+)
+#else
+(l,args,nargs)
+	NhlLayer	l;
+	_NhlArgList	args;
+	int		nargs;
+#endif
+{
+	NhlErrorLayerPart *erp = &(((NhlErrorLayer)l)->error);
+	NrmQuark Qerrfile = NrmStringToQuark(NhlNerrFileName);
+	int i;
+
+	for(i = 0; i < nargs; i++){
+		if(args[i].quark == Qerrfile){
+			if(erp->error_file != NULL){
+				*((NhlString*)args[i].value.ptrval) =
+					NhlMalloc(strlen(erp->error_file) +1);
+				strcpy(*((NhlString*)args[i].value.ptrval),
+							erp->error_file);
+			}
+			else{
+				*((NhlString*)args[i].value.ptrval) = NULL;
+			}
+		}
+	}
+
+	return NhlNOERROR;
 }
 
 /*
@@ -1937,13 +1973,17 @@ NhlErrFPrintMsg
 void _NHLCALLF(nhl_fgerhnd,NHL_FGERHND)
 #if	NhlNeedProto
 (
+	int		*gks_enum,
+	int		*gks_fctid,
 	_NhlFString	ffname,
 	int		*ffname_len,
 	_NhlFString	fmesg,
 	int		*fmesg_len
 )
 #else
-(ffname,ffname_len,fmesg,fmesg_len)
+(gks_enum,gks_fctid,ffname,ffname_len,fmesg,fmesg_len)
+	int		*gks_enum;
+	int		*gks_fctid;
 	_NhlFString	ffname;
 	int		*ffname_len;
 	_NhlFString	fmesg;
@@ -1954,6 +1994,14 @@ void _NHLCALLF(nhl_fgerhnd,NHL_FGERHND)
 	char		stack_gks_func[_NhlGKSMAXMSGLEN];
 	char		stack_gks_msg[_NhlGKSMAXMSGLEN];
 	char		*gks_func,*gks_msg;
+	/*
+	 * This array should contain all GKS error numbers that should
+	 * be considered INFO errors, and should not be reported as
+	 * warnings.
+	 */
+	int		infomsgs[] = {-220};
+	int		i;
+	NhlErrorTypes	ret=NhlWARNING;
 
 	/* reset libncarg error mode if it is currently set */
 	if(c_nerro(&err_num)){
@@ -1982,35 +2030,15 @@ void _NHLCALLF(nhl_fgerhnd,NHL_FGERHND)
 	if(!gks_msg)
 		gks_msg = "Unknown GKS Message";
 
-	NhlPError(NhlWARNING,NhlEUNKNOWN,"GKS:%s:%s",gks_func,gks_msg);
+	for(i=0;i < NhlNumber(infomsgs);i++)
+		if(*gks_enum == infomsgs[i]){
+			ret = NhlINFO;
+			break;
+		}
+	NhlPError(ret,NhlEUNKNOWN,"GKS:%s:%s",gks_func,gks_msg);
 
-	c_seter(_NhlGKSERRMSG,_NhlGKSERRNUM,1);
+	if(ret < NhlINFO)
+		c_seter(_NhlGKSERRMSG,_NhlGKSERRNUM,1);
 
 	return;
-}
-static NhlErrorTypes ErrorGetValues
-#if	NhlNeedProto
-(NhlLayer l, _NhlArgList args, int nargs)
-#else
-(l, args, nargs)
-NhlLayer l;
-_NhlArgList args;
-int nargs;
-#endif
-{
-	NhlErrorLayerPart *erp = &(((NhlErrorLayer)l)->error);
-	NrmQuark Qerrfile = NrmStringToQuark(NhlNerrFileName);
-	int i;
-
-	for(i = 0; i < nargs; i++) {
-		if(args[i].quark == Qerrfile) {	
-			if(erp->error_file != NULL) {
-			*((NhlString*)args[i].value.ptrval) = (NhlString)NhlMalloc(strlen(erp->error_file) +1);
-				strcpy(*((NhlString*)args[i].value.ptrval),erp->error_file);
-			} else {
-				*((NhlString*)args[i].value.ptrval) = NULL;
-			}
-		}
-	}
-	return(NhlNOERROR);
 }
