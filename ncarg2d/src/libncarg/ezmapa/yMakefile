@@ -1,13 +1,15 @@
 #
-#	$Id: yMakefile,v 1.5 1994-04-07 21:02:31 kennison Exp $
+#	$Id: yMakefile,v 1.6 1994-04-08 23:47:28 kennison Exp $
 #
 MYNAME	= ezmapa
 
 GENERIC_SRCS = \
-	mapaci.f mapbla.f mapblm.f mapgrm.f mapiqa.f mapiqm.f mapita.f mapitm.f
+	mapaci.f mapbla.f mapblm.f mapchm.f mapgrm.f mapiqa.f mapiqm.f \
+	mapita.f mapitm.f
 
 GENERIC_OBJS = \
-	mapaci.o mapbla.o mapblm.o mapgrm.o mapiqa.o mapiqm.o mapita.o mapitm.o
+	mapaci.o mapbla.o mapblm.o mapchm.o mapgrm.o mapiqa.o mapiqm.o \
+	mapita.o mapitm.o
 
 SOURCES = $(GENERIC_SRCS)
 
