@@ -1,5 +1,5 @@
 C
-C      $Id: cn13f.f,v 1.5 2003-02-28 22:19:25 grubin Exp $
+C      $Id: cn13f.f,v 1.6 2003-03-04 16:46:36 grubin Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -47,9 +47,9 @@ C
 C Default is to display to an X11 window.
 C
       NCGM=0
-      X11=1
+      X11=0
       PS=0
-      PDF=0
+      PDF=1
 C     
 C Initialize the HLU library and set up resource template.
 C
@@ -110,7 +110,7 @@ C
      +        ierr)
          call NhlFCreate(workid,'cn13Work',NhlFPSWorkstationClass,
      +        0,srlist,ierr)
-      else if (PDf.eq.1) then
+      else if (PDF.eq.1) then
 C
 C Create a PDF object.
 C

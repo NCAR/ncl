@@ -60,9 +60,9 @@ end create
 ; Default is to display output to an X workstation
 ;
 NCGM=0
-X11=1
+X11=0
 PS=0
-PDF=0
+PDF=1
 
 if (NCGM.eq.1) then
 ;
@@ -93,7 +93,7 @@ else
 ; Create a PDF workstation.
 ;
         wid = create "cn01Work" pdfWorkstationClass defaultapp
-          "wkPDfFileName" : "./cn01n.pdf"
+          "wkPDFFileName" : "./cn01n.pdf"
         end create
       end if
     end if

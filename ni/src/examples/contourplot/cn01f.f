@@ -1,5 +1,5 @@
 C
-C     $Id: cn01f.f,v 1.8 2003-02-28 22:19:25 grubin Exp $
+C     $Id: cn01f.f,v 1.9 2003-03-04 16:46:36 grubin Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -42,14 +42,14 @@ C
       integer srlist
       real  x,y
       integer i,j
-      integer NCGM, X11, PS
+      integer NCGM, X11, PS, PDF
 C
 C Default is to display output to an X workstation
 C
       NCGM=0
-      X11=1
+      X11=0
       PS=0
-      PDF=0
+      PDF=1
 C
 C Create a simple bull's eye pattern test data set
 C     
