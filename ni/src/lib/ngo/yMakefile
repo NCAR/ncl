@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.21 1998-09-18 23:47:41 boote Exp $
+#      $Id: yMakefile,v 1.22 1998-10-19 20:25:55 boote Exp $
 #
 #########################################################################
 #									#
@@ -24,7 +24,7 @@ MYNAME		= libngo
 DEBUG_LIB	=	$(XMULIB)
 #endif
 
-#ifdef	Solaris
+#if	defined(Solaris) || defined(IRIX64)
 #define	DoDceHacks
 #endif
 
@@ -56,21 +56,22 @@ XHDRS		= xappP.h xapp.h goP.h go.h ncleditP.h ncledit.h xutil.h \
 		restree.h restreeP.h MegaB.h MegaBP.h graphic.h \
 		plotspecmenu.h plotspecmenuP.h Folder.h FolderP.h \
 		Grid.h GridP.h Tree.h TreeP.h XmL.h htmlview.h htmlviewI.h \
-		htmlviewP.h print.h printP.h CascadeBG.h ToggleBG.h
+		htmlviewP.h print.h printP.h CascadeBG.h ToggleBG.h \
+		colormap.h colormapP.h
 XSRCS		= xapp.c go.c ncledit.c xutil.c load.c addfile.c mwin.c \
 		xwk.c diminfogrid.c attrinfogrid.c vcrcontrol.c browse.c \
 		varmenus.c filetree.c sort.c vartree.c datagrid.c MegaB.c \
 		stringutil.c filepage.c varpage.c shaper.c shapeinfogrid.c \
 		createmenu.c hlupage.c datasinkgrid.c restree.c graphic.c \
 		plotspecmenu.c Folder.c Grid.c Tree.c XmL.c htmlview.c \
-		print.c
+		print.c colormap.c
 XOBJS		= xapp.o go.o ncledit.o xutil.o load.o addfile.o mwin.o \
 		xwk.o diminfogrid.o attrinfogrid.o vcrcontrol.o browse.o \
 		varmenus.o filetree.o sort.o vartree.o datagrid.o MegaB.o \
 		stringutil.o filepage.o varpage.o shaper.o shapeinfogrid.o \
 		createmenu.o hlupage.o datasinkgrid.o restree.o graphic.o \
 		plotspecmenu.o Folder.o Grid.o Tree.o XmL.o htmlview.o \
-		print.o
+		print.o colormap.o
 
 BuildSharedLibTarget(libNGgo,$(OBJS),1,0,NullArgument)
 BuildLibTarget($(MYNAME),$(OBJS))

@@ -1,5 +1,5 @@
 /*
- *      $Id: goP.h,v 1.10 1998-08-21 01:14:19 dbrown Exp $
+ *      $Id: goP.h,v 1.11 1998-10-19 20:25:54 boote Exp $
  */
 /************************************************************************
 *									*
@@ -74,6 +74,12 @@ typedef struct _NgGOPart {
 	Widget		omenu;
 	Widget		wmenu,wsep1,wsep2;
 	Widget		hmenu;
+	Widget		file;
+	Widget		edit;
+	Widget		view;
+	Widget		options;
+	Widget		window;
+	Widget		help;
         NgCreateMenu	*create_menu;
         NgVarMenus	delete_menu;
         _NhlCB		gochange_cb;

@@ -1,5 +1,5 @@
 /*
- *      $Id: addfile.c,v 1.21 1998-09-18 23:47:37 boote Exp $
+ *      $Id: addfile.c,v 1.22 1998-10-19 20:25:52 boote Exp $
  */
 /************************************************************************
 *									*
@@ -329,7 +329,7 @@ AddFileScript
 		XtFree(vname);
 		return;
 	}
-        vname1 = NgNclGetSymName(np->nsid,vname,False);
+        vname1 = NgNclGetSymName(go->go.nclstate,vname,False);
 
 	/*
 	 * Make sure dirstr and vname aren't so long they blow out the
@@ -352,7 +352,7 @@ AddFileScript
 	rw = "r";
 	sprintf(Buffer,"%s = addfile(\"%s\",\"%s\")\n",vname1,np->dirspec,rw);
 
-	(void)NgNclSubmitBlock(np->nsid,Buffer);
+	(void)NgNclSubmitBlock(go->go.nclstate,Buffer);
 
         XtFree(vname);
 	return;
@@ -597,11 +597,10 @@ static void SetApplyForm
 	else
 		bname[0] = '\0';
 
-        vname = NgNclGetSymName(np->nsid,bname,False);
+        vname = NgNclGetSymName(go->go.nclstate,bname,False);
 	XmTextFieldSetString(np->vname,vname);
                 
 	return;
-        
 }
 
 static void
@@ -917,12 +916,12 @@ static void OpenForPreview
 	}
 	else {
 		sprintf(Buffer,"delete(_NgPreviewFile)\n");
-                (void)NgNclSubmitBlock(np->nsid,Buffer);
+                (void)NgNclSubmitBlock(go->go.nclstate,Buffer);
 	}
 	
 	sprintf(Buffer,"_NgPreviewFile = addfile(\"%s\",\"r\")\n",np->dirspec);
 
-        (void)NgNclSubmitBlock(np->nsid,Buffer);
+        (void)NgNclSubmitBlock(go->go.nclstate,Buffer);
 
 	dl = NclGetFileInfo(QPreviewFile);
 	if (!dl) {
@@ -2056,16 +2055,6 @@ AddFileCreateWin
 	}
 	XtAppAddActions(go->go.x->app,
                         addfileactions,NhlNumber(addfileactions));
-	NhlVAGetValues(go->go.appmgr,
-		NgNappNclState,	&np->nsid,
-		NULL);
-
-	if(!NhlIsClass(np->nsid,NgnclStateClass)){
-		NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                  "%s:invalid nclstate id, can't initialize addfile dialog",
-                           func));
-		return NhlFATAL;
-	}
 
 /*
  * Set up template dialog manager
@@ -2611,7 +2600,7 @@ AddFileCreateWin
 	NhlINITVAR(user_data);
 	user_data.ptrval = go;
         sel.lngval = NgNclCBDELETE_FILEVAR;
-	_NhlAddObjCallback(_NhlGetLayer(np->nsid),
+	_NhlAddObjCallback(_NhlGetLayer(go->go.nclstate),
                            NgCBnsObject,sel,FileRefDeleteCB,user_data);
         Filter(go);
         ClearVarList(go);

@@ -1,5 +1,5 @@
 /*
- *      $Id: mwin.c,v 1.16 1998-09-18 23:47:38 boote Exp $
+ *      $Id: mwin.c,v 1.17 1998-10-19 20:25:54 boote Exp $
  */
 /************************************************************************
 *									*
@@ -763,6 +763,7 @@ ManageObjTree
 	NhlLayer	ncl = _NhlGetLayer(nsid);
 	NgObjTree	otree;
 	NhlArgVal	sel,udata;
+	NhlPointer	guiData;
 
 	if(!ncl || !_NhlIsClass(ncl,NgnclStateClass)){
 		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s:Invalid nclstate id",func));
@@ -777,8 +778,10 @@ ManageObjTree
 
 	otree->nsid = nsid;
 	NhlVAGetValues(nsid,
-		_NhlNguiData,	&otree->appmgr,
+		_NhlNguiData,	&guiData,
 		NULL);
+	otree->appmgr = (int)guiData;
+
 	if(!NhlIsClass(otree->appmgr,NgappMgrClass)){
 		NhlFree(otree);
 		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s:Invalid appmgr",func));
@@ -825,12 +828,13 @@ CreateXWorkCB
 	XtPointer	cbdata
 )
 {
-	char	func[]="CreateXWorkCB";
-	int	goid;
-	int	appmgr;
-	int	nclstate = NhlDEFAULT_APP;
-	char	*name;
-	char	line[512];
+	char		func[]="CreateXWorkCB";
+	int		goid;
+	int		appmgr;
+	int		nclstate = NhlDEFAULT_APP;
+	char		*name;
+	char		line[512];
+	NhlPointer	guiData;
 
 	goid = NgGOWidgetToGoId(w);
 	if(goid == NhlDEFAULT_APP){
@@ -838,8 +842,9 @@ CreateXWorkCB
 		return;
 	}
 	NhlVAGetValues(goid,
-		_NhlNguiData,	&appmgr,
+		_NhlNguiData,	&guiData,
 		NULL);
+	appmgr = (int)guiData;
 	NhlVAGetValues(appmgr,
 		NgNappNclState,	&nclstate,
 		NULL);

@@ -1,5 +1,5 @@
 /*
- *      $Id: app.c,v 1.15 1998-09-18 23:47:37 boote Exp $
+ *      $Id: app.c,v 1.16 1998-10-19 20:25:52 boote Exp $
  */
 /************************************************************************
 *									*
@@ -221,7 +221,7 @@ AppMgrInitialize
 
 	_NhlAppSetDefGuiData((NhlPointer)new->base.id);
 	NhlVASetValues(new->base.appobj->base.id,
-		_NhlNguiData,	new->base.id,
+		_NhlNguiData,	(NhlPointer)new->base.id,
 		NULL);
 
         

@@ -1,5 +1,5 @@
 /*
- *      $Id: go.c,v 1.16 1998-09-18 23:47:38 boote Exp $
+ *      $Id: go.c,v 1.17 1998-10-19 20:25:54 boote Exp $
  */
 /************************************************************************
 *									*
@@ -238,6 +238,7 @@ addFile
 	int		goid = NhlDEFAULT_APP;
 	int		appmgr = NhlDEFAULT_APP;
 	int		addfile = NhlDEFAULT_APP;
+	NhlPointer	guiData;
 
 	goid = NgGOWidgetToGoId(w);
 	if(goid == NhlDEFAULT_APP){
@@ -245,8 +246,9 @@ addFile
 		return;
 	}
 	NhlVAGetValues(goid,
-		_NhlNguiData,	&appmgr,
+		_NhlNguiData,	&guiData,
 		NULL);
+	appmgr = (int)guiData;
 
 	if((*num_params == 1) || (*num_params > 2)){
 		NHLPERROR((NhlFATAL,NhlEUNKNOWN,
@@ -333,6 +335,7 @@ loadScript
 	int		goid = NhlDEFAULT_APP;
 	int		appmgr = NhlDEFAULT_APP;
 	int		load = NhlDEFAULT_APP;
+	NhlPointer	guiData;
 
 	goid = NgGOWidgetToGoId(w);
 	if(goid == NhlDEFAULT_APP){
@@ -341,8 +344,9 @@ loadScript
 	}
 
 	NhlVAGetValues(goid,
-		_NhlNguiData,	&appmgr,
+		_NhlNguiData,	&guiData,
 		NULL);
+	appmgr = (int)guiData;
 
 	if(*num_params > 1){
 		NHLPERROR((NhlFATAL,NhlEUNKNOWN,
@@ -494,6 +498,7 @@ nclWindow
 	int		ne = NhlDEFAULT_APP;
 	NhlBoolean	new = False;
 	NhlLayer	app;
+	NhlPointer	guiData;
 
 	goid = NgGOWidgetToGoId(w);
 	if(goid == NhlDEFAULT_APP){
@@ -502,8 +507,9 @@ nclWindow
 	}
 
 	NhlVAGetValues(goid,
-		_NhlNguiData,	&appmgr,
+		_NhlNguiData,	&guiData,
 		NULL);
+	appmgr = (int)guiData;
 
 
 	if(*num_params > 1){
@@ -576,6 +582,7 @@ browseWindow
 	int		browse = NhlDEFAULT_APP;
 	NhlBoolean	new = False;
 	NhlLayer	app;
+	NhlPointer	guiData;
 
 	goid = NgGOWidgetToGoId(w);
 	if(goid == NhlDEFAULT_APP){
@@ -584,8 +591,9 @@ browseWindow
 	}
 
 	NhlVAGetValues(goid,
-		_NhlNguiData,	&appmgr,
+		_NhlNguiData,	&guiData,
 		NULL);
+	appmgr = (int)guiData;
 
 
 	if(*num_params > 1){
@@ -956,7 +964,7 @@ GOCreateWin
 			XmNmappedWhenManaged,	False,
 			XmNautoUnmanage,	False,
 			XmNallowShellResize,	True,
-			XmNuserData,		go->base.id,
+			XmNuserData,		(XtPointer)go->base.id,
 			XcbNparentBroker,	x->xcb,
 			NULL);
 		XtVaGetValues(gp->shell,
@@ -993,7 +1001,7 @@ GOCreateWin
 	sprintf(mgrname,"%sMGR",go->base.name);
 	gp->manager = XtVaCreateManagedWidget(mgrname,gc->go_class.manager,
 								gp->shell,
-		XmNuserData,		go->base.id,
+		XmNuserData,		(XtPointer)go->base.id,
 		/* bulletinBoard Resources	*/
 		XmNautoUnmanage,	False,
 		XmNresizePolicy,	XmRESIZE_ANY,
@@ -1231,13 +1239,15 @@ WinLabelCB
 	XtPointer	cbdata
 )
 {
-	Widget	tog = (Widget)udata;
-	int	goid;
-	NgGO	go;
+	Widget		tog = (Widget)udata;
+	XtPointer	userData;
+	int		goid;
+	NgGO		go;
 
 	XtVaGetValues(tog,
-		XmNuserData,	&goid,
+		XmNuserData,	&userData,
 		NULL);
+	goid = (int)userData;
 	go = (NgGO)_NhlGetLayer(goid);
 
 	if(!go || !_NhlIsClass((NhlLayer)go,NggOClass))
@@ -1288,7 +1298,7 @@ AddGOWin
 	w = XtVaCreateManagedWidget("enumWin",xmToggleButtonGadgetClass,
 								go->go.wmenu,
 		XmNset,			(goid == go->base.id),
-		XmNuserData,		goid,
+		XmNuserData,		(XtPointer)goid,
 		XmNpositionIndex,	pos,
 		NULL);
 	if(which && pos == start){
@@ -1327,6 +1337,7 @@ RemoveGOWin
 	short		start,end;
 	WidgetList	children;
 	Cardinal	nchildren;
+	XtPointer	userData;
 	int		i,w_goid;
 	int		which=0;	/* 0 none, 1 ncledit, 2 browse */
         
@@ -1366,8 +1377,9 @@ RemoveGOWin
 
 	for(i=start;i<end;i++){
 		XtVaGetValues(children[i],
-			XmNuserData,	&w_goid,
+			XmNuserData,	&userData,
 			NULL);
+		w_goid = (int)userData;
 		if(goid == w_goid){
 			if(which && (i == start) && ((i+1) < end)){
 				switch(which){
@@ -1435,17 +1447,6 @@ GOChangeCB
 }
 
 static void
-DelGoChangeCB
-(
-	Widget		w,
-	XtPointer	udata,
-	XtPointer	cbdata
-)
-{
-	_NhlCBDelete((_NhlCB)udata);
-}
-
-static void
 DeleteVarCB
 (
 	Widget		w,
@@ -1456,11 +1457,13 @@ DeleteVarCB
         NgGO		go = (NgGO) udata;
 	NrmQuark	qvar;
         char		buf[512];
+	XtPointer	userData;
         
         
 	XtVaGetValues(w,
-		      XmNuserData,&qvar,
+		      XmNuserData,&userData,
 		      NULL);
+	qvar = (NrmQuark)userData;
 #if 0
         printf("deleting %s\n", NrmQuarkToString(qvar));
 #endif
@@ -1479,10 +1482,12 @@ DeleteHLUCB
 {
         NgGO		go = (NgGO) udata;
 	NrmQuark	qvar;
+	XtPointer	userData;
         
 	XtVaGetValues(w,
-		      XmNuserData,&qvar,
+		      XmNuserData,&userData,
 		      NULL);
+	qvar = (NrmQuark)userData;
 #if 0
         printf("deleting %s\n", NrmQuarkToString(qvar));
 #endif
@@ -1497,11 +1502,9 @@ _NgGOCreateMenubar
 {
 	char		func[]="_NgGOCreateMenubar";
 	NgGOPart	*gp = &go->go;
-	Widget		file,edit,view,options,window,help;
 	Widget		addfile,load,close,quit,delete,create,pulldown,menush;
 	Widget		ncledit,browse,print;
 	static char	*new[]= {"new",NULL};
-	_NhlCB		cb;
 	NhlArgVal	sel,udata;
 
 	if(gp->menubar){
@@ -1548,38 +1551,38 @@ _NgGOCreateMenubar
 		XmNrowColumnType,	XmMENU_PULLDOWN,
 		NULL);
 
-	file = XtVaCreateManagedWidget("file",xmCascadeButtonGadgetClass,
+	gp->file = XtVaCreateManagedWidget("file",xmCascadeButtonGadgetClass,
 								gp->menubar,
 		XmNsubMenuId,	gp->fmenu,
 		NULL);
 
-	edit = XtVaCreateManagedWidget("edit",xmCascadeButtonGadgetClass,
+	gp->edit = XtVaCreateManagedWidget("edit",xmCascadeButtonGadgetClass,
 								gp->menubar,
 		XmNsubMenuId,	gp->emenu,
 		NULL);
 
-	view = XtVaCreateManagedWidget("view",xmCascadeButtonGadgetClass,
+	gp->view = XtVaCreateManagedWidget("view",xmCascadeButtonGadgetClass,
 								gp->menubar,
 		XmNsubMenuId,	gp->vmenu,
 		NULL);
 
-	options = XtVaCreateManagedWidget("options",
+	gp->options = XtVaCreateManagedWidget("options",
 					xmCascadeButtonGadgetClass,gp->menubar,
 		XmNsubMenuId,	gp->omenu,
 		NULL);
 
-	window = XtVaCreateManagedWidget("window",
+	gp->window = XtVaCreateManagedWidget("window",
 					xmCascadeButtonGadgetClass,gp->menubar,
 		XmNsubMenuId,	gp->wmenu,
 		NULL);
 
-	help = XtVaCreateManagedWidget("help",xmCascadeButtonGadgetClass,
+	gp->help = XtVaCreateManagedWidget("help",xmCascadeButtonGadgetClass,
 								gp->menubar,
 		XmNsubMenuId,	gp->hmenu,
 		NULL);
 
 	XtVaSetValues(gp->menubar,
-		XmNmenuHelpWidget,	help,
+		XmNmenuHelpWidget,	gp->help,
 		NULL);
 
 	addfile = XtVaCreateManagedWidget("addFile",
@@ -1709,9 +1712,6 @@ _NgGOCreateMenubar
 	gp->gochange_cb = _NhlAddObjCallback
                 (_NhlGetLayer(gp->appmgr),
                  NgCBAppGoChange,sel,GOChangeCB,udata);
-#if 0
-	XtAddCallback(gp->menubar,XmNdestroyCallback,DelGoChangeCB,cb);
-#endif
 	XtManageChild(gp->fmenu);
 	XtManageChild(gp->emenu);
 	XtManageChild(gp->vmenu);
@@ -2004,6 +2004,7 @@ NgGOWidgetToGoId
 	Widget		manager;
 	int		i;
 	int		goid=NhlDEFAULT_APP;
+	XtPointer	userData;
 
 	/*
 	 * Find toplevel shell that is not a menushell
@@ -2024,8 +2025,9 @@ NgGOWidgetToGoId
 	for(i=0;i<nlist;i++){
 		if(XmIsManager(list[i])){
 			XtVaGetValues(list[i],
-				XmNuserData,	&goid,
+				XmNuserData,	&userData,
 				NULL);
+			goid = (int)userData;
 			if(NhlIsClass(goid,NggOClass))
 				break;
 			goid = NhlDEFAULT_APP;

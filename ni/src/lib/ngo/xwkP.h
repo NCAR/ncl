@@ -1,5 +1,5 @@
 /*
- *      $Id: xwkP.h,v 1.4 1998-09-18 23:47:41 boote Exp $
+ *      $Id: xwkP.h,v 1.5 1998-10-19 20:25:55 boote Exp $
  */
 /************************************************************************
 *									*
@@ -55,6 +55,8 @@ typedef struct _NgXWkPart {
 	Dimension		grh;
 
 	Widget			size;
+
+	int			cmap_editor;
 } NgXWkPart;
 
 typedef struct _NgXWkRec {

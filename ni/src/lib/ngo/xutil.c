@@ -1,5 +1,5 @@
 /*
- *      $Id: xutil.c,v 1.5 1997-10-23 00:27:11 dbrown Exp $
+ *      $Id: xutil.c,v 1.6 1998-10-19 20:25:55 boote Exp $
  */
 /************************************************************************
 *									*
@@ -333,6 +333,7 @@ NgXListManage
 	NgNclCBType	ccb,dcb;
 	NhlLayer	ncl = _NhlGetLayer(nsid);
 	NhlArgVal	sel,udata;
+	NhlPointer	guidata;
 
 	if(!ncl || !_NhlIsClass(ncl,NgnclStateClass)){
 		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s:Invalid nclstate id",func));
@@ -374,8 +375,9 @@ NgXListManage
 
 	list->nsid = nsid;
 	NhlVAGetValues(nsid,
-		_NhlNguiData,	&list->appmgr,
+		_NhlNguiData,	&guidata,
 		NULL);
+	list->appmgr = (int)guidata;
 
 	if(!NhlIsClass(list->appmgr,NgappMgrClass)){
 		NhlFree(list);

@@ -1,5 +1,5 @@
 /*
- *      $Id: xwk.c,v 1.8 1998-09-18 23:47:41 boote Exp $
+ *      $Id: xwk.c,v 1.9 1998-10-19 20:25:55 boote Exp $
  */
 /************************************************************************
 *									*
@@ -22,6 +22,7 @@
 #include <ncarg/gksP.h>
 #include <ncarg/ngo/xwkP.h>
 #include <ncarg/ngo/nclstate.h>
+#include <ncarg/ngo/colormap.h>
 
 #include <X11/Intrinsic.h>
 #include <Xm/Xm.h>
@@ -303,6 +304,60 @@ WorkDestroyCB
 }
 
 /*
+ * Function:	colorMapEditor
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+static void
+colorMapEditor
+(
+	Widget		w,
+	XEvent		*xev,
+	String		*params,
+	Cardinal	*num_params
+)
+{
+	char		func[] = "colorMapEditor";
+	NgXWk		xwk;
+	int		xwkid = NhlDEFAULT_APP;
+
+	xwkid = NgGOWidgetToGoId(w);
+	if(xwkid == NhlDEFAULT_APP){
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s:invalid Widget",func));
+		return;
+	}
+
+	if(!NhlIsClass(xwkid,NgxWkClass)){
+		return;
+	}
+
+	xwk = (NgXWk)_NhlGetLayer(xwkid);
+
+	if(!xwk->xwk.cmap_editor){
+		NhlVACreate(&xwk->xwk.cmap_editor,"colorMapEditor",
+							NgcolorMapClass,xwkid,
+			NgNcmWork,	xwk->xwk.xwork->base.id,
+			NULL);
+	}
+
+	NgGOPopup(xwk->xwk.cmap_editor);
+
+	return;
+}
+
+static XtActionsRec actions[] = {
+	{"colorMapEditor",	colorMapEditor,},
+};
+
+/*
  * Function:	XWkInitialize
  *
  * Description:	
@@ -325,6 +380,7 @@ XWkInitialize
 	int		nargs
 )
 {
+	static int		init = True;
 	char			func[] = "XWkInitialize";
 	NgXWk			xwk = (NgXWk)new;
 	NgXWkPart		*np = &((NgXWk)new)->xwk;
@@ -337,6 +393,12 @@ XWkInitialize
 									func));
 		return NhlFATAL;
 	}
+
+	if(init){
+		init = False;
+		XtAppAddActions(xwk->go.x->app,actions,NhlNumber(actions));
+	}
+
 	/*
 	 * initialize state vars...
 	 */
@@ -383,6 +445,8 @@ XWkInitialize
 		xwk->go.xm_title = NgXAppCreateXmString(xwk->go.appmgr,
 					xwk->xwk.xwork->xwork.xwinconfig.title);
 	}
+
+	xwk->xwk.cmap_editor = NhlNULLOBJID;
 
 	return NhlNOERROR;
 }
@@ -558,11 +622,20 @@ XWkCreateWin
 	XcbAttrRec		xcbattr;
 	unsigned long		mask = 0;
 	XcbMode			cmode;
+	Widget			w;
 
 	_NgGOSetTitle(go,xwk->xwk.xwork->xwork.xwinconfig.title,
 				xwk->xwk.xwork->xwork.xwinconfig.icon_title);
 
 	_NgGOCreateMenubar(go);
+
+	XtVaSetValues(xwk->go.edit,
+		XmNsensitive,	True,
+		NULL);
+	
+	w = XtVaCreateManagedWidget("colorMapEditor",xmPushButtonGadgetClass,
+		xwk->go.emenu,NULL);
+	XtAddCallback(w,XmNactivateCallback,_NgGODefActionCB,NULL);
 
 	xp->graphicsSW = XtVaCreateManagedWidget("xworkSW",
 				xmScrolledWindowWidgetClass,go->go.manager,
@@ -572,9 +645,9 @@ XWkCreateWin
 		XmNtopWidget,			go->go.menubar,
 		NULL);
 
+	xp->pxcb = xwk->go.xcb;
 	XtVaGetValues(go->go.shell,
 		XcbNcolorMode,		&cmode,
-		XcbNcolorBroker,	&xp->pxcb,
 		NULL);
 
 	/*
