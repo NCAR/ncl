@@ -1,10 +1,10 @@
 #
-#	$Id: yMakefile,v 1.2 1994-08-02 16:53:23 haley Exp $
+#	$Id: yMakefile,v 1.3 1994-08-16 16:43:43 haley Exp $
 #
 
-CSRCS = c_fsrezsrf.c c_fsrpwrzs.c c_fsrsrfac.c c_tsrfac.c
+CSRCS = c_fsrezsrf.c c_fsrsrfac.c c_tsrfac.c
 
-SED_SRCS = c_srex01.c c_tpwrzs.c
+SED_SRCS = c_srex01.c c_tpwrzs.c c_fsrpwrzs.c
 
 GENERIC_SRCS = $(CSRCS) $(SED_SRCS)
 
@@ -17,6 +17,10 @@ CleanFilesTarget($(SED_SRCS))
 #
 
 c_tpwrzs.c: c_tpwrzs.c.sed Makefile
+	@-$(RM) $@
+	@$(CALLCONV) $(SYSTEM_INCLUDE) $@ srfip1
+
+c_fsrpwrzs.c: c_fsrpwrzs.c.sed Makefile
 	@-$(RM) $@
 	@$(CALLCONV) $(SYSTEM_INCLUDE) $@ srfip1
 
