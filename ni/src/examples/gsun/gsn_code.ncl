@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.86 2002-06-14 22:52:26 haley Exp $
+;      $Id: gsn_code.ncl,v 1.87 2002-06-19 14:43:41 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -97,6 +97,7 @@ undef("gsn_attach_plots")
 undef("get_rgb_values")
 undef("gsn_define_colormap")
 undef("gsn_retrieve_colormap")
+undef("gsn_reverse_colormap")
 undef("gsn_merge_colormaps")
 undef("hist_columns")
 undef("compute_hist_vals")
@@ -4288,6 +4289,23 @@ begin
     end getvalues
 
     return(cmap)
+end
+
+;***********************************************************************;
+; Procedure : gsn_reverse_colormap                                      ;
+;                   wks: workstation object                             ;
+;                                                                       ;
+; This function reverses the current color map in use for workstation   ;
+; "wks". The foregound/background colors will stay the same.            ;
+;***********************************************************************;
+procedure gsn_reverse_colormap(wks:graphic)
+begin
+  getvalues wks
+    "wkColorMap" : cmap
+  end getvalues
+  cmap(2:,:) = cmap(2::-1,:)               ; reverse (exclude fore/back)
+  gsn_define_colormap (wks, cmap)
+  return
 end
 
 ;***********************************************************************;
