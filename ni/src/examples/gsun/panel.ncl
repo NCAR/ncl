@@ -1,7 +1,7 @@
 load "gsn_code.ncl"
 
 begin
-  wks = gsn_open_wks("x11","gsn_cgd")
+  wks = gsn_open_wks("ncgm","test")
 
   mpres = True
   mpres@gsnDraw   = False
@@ -15,5 +15,5 @@ begin
   res = True
 ;  gsn_panel_save(wks,(/mp0,mp1/),(/2,1/),res)
   gsn_panel(wks,(/mp0,mp1/),(/2,1/),res)
-  output_gif((/mp0,mp1/),"output.gif",700,1)
+;  output_gif((/mp0,mp1/),"output.gif",700,1)
 end

@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.100 2003-01-27 18:12:07 haley Exp $
+;      $Id: gsn_code.ncl,v 1.101 2003-02-27 18:05:09 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -109,6 +109,7 @@ undef("gsn_map")
 undef("gsn_streamline")
 undef("gsn_streamline_map")
 undef("gsn_draw_colormap")
+undef("gsn_draw_named_colors")
 undef("gsn_vector")
 undef("gsn_vector_contour")
 undef("gsn_streamline_contour")
@@ -149,12 +150,12 @@ begin
 
   output = output + (coef * var) 
         
-  if(iscoord(var,var!0))  then
+  if(isnameddim(var,0).and.iscoord(var,var!0))  then
     output!0 = var!0
     output&$var!0$ = var&$var!0$
   end if
 
-  if(iscoord(var,var!1))  then
+  if(isnameddim(var,1).and.iscoord(var,var!1))  then
     output!1 = var!1
     output&$var!1$ = var&$var!1$
   end if
@@ -193,16 +194,16 @@ begin
 
   output = output + (coef * var) 
         
-  if(iscoord(var,var!0))  then
+  if(isnameddim(var,0).and.iscoord(var,var!0))  then
     output!0 = var!0
     output&$var!0$ = var&$var!0$
   end if
 
-  if(iscoord(var,var!1))  then
+  if(isnameddim(var,1).and.iscoord(var,var!1))  then
     output!1 = var!1
     output&$var!1$ = var&$var!1$
   end if
-  if(iscoord(var,var!2))  then
+  if(isnameddim(var,2).and.iscoord(var,var!2))  then
     output!2 = var!2
     output&$var!2$ = var&$var!2$
   end if
@@ -3720,12 +3721,15 @@ begin
     end if
   end if
 ; 
-;
 ; Draw plots plus labelbar and main title (if they exists). This is
 ; also where the plots will be maximized for PostScript output,
 ; if so indicated.
 ;
-  draw_and_frame(wks,newplots,calldraw,callframe,maxbb)
+  if(draw_boxes)
+    draw_and_frame(wks,newplots,calldraw,False,maxbb)
+  else
+    draw_and_frame(wks,newplots,calldraw,callframe,maxbb)
+  end if  
 ;
 ; Draw bounding boxes around each plot object for debugging purposes.
 ;
@@ -3735,6 +3739,9 @@ begin
         draw_bb(newplots(i),False)
       end if
     end do
+    if(callframe) then
+      frame(wks)
+    end if
   end if
 ;
 ; Restore plots to original size.
