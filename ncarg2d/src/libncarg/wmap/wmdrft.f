@@ -1,5 +1,5 @@
 C
-C	$Id: wmdrft.f,v 1.8 2000-04-12 17:27:28 fred Exp $
+C	$Id: wmdrft.f,v 1.9 2000-04-12 23:41:02 fred Exp $
 C
       SUBROUTINE WMDRFT(N,X,Y)
 C
@@ -190,6 +190,25 @@ C
               PRINT *,    'WMDRFT - Warning: not enough space along the 
      +input curve to draw two symbols for an occluded front'
               NUMSYM = 0
+C
+C  For an occluded front, draw the line and return.  First find
+C  the index that marks the midpoint of the line.
+C
+              HLFLEN = 0.5*ALEN(NPTS)
+              IHLF = 2
+              DO 92 I=1,NPTS
+                IF (ALEN(I) .GE. HLFLEN) THEN
+                  IHLF = I
+                  GO TO 93
+                ENDIF 
+   92         CONTINUE
+   93         CONTINUE
+              ICOLOR = ICOLDC
+              CALL WMLGPL(IHLF,XOUT,YOUT)
+              ICOLOR = IWARMC
+              IR = NPTS-IHLF+1
+              CALL WMLGPL(IR,XOUT(IHLF),YOUT(IHLF))
+              RETURN
             ENDIF
           ENDIF
         ENDIF

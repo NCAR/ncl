@@ -1,5 +1,5 @@
 C
-C	$Id: wmcomn.h,v 1.7 2000-02-29 00:48:49 fred Exp $
+C	$Id: wmcomn.h,v 1.8 2000-04-12 23:41:01 fred Exp $
 C
 C
 C  Size of the symbol type array.  This is a hardwired maximum.
@@ -129,7 +129,7 @@ C
      +                IHIGC2, IHIGC3, ILOWC1, ILOWC2, ILOWC3, IRGLC1,
      +                IRGLC2, IRGLC3, IRGLC4, IDOTBG, IAROWC, IARSHC,
      +                IRLLSC, IRLOUC, IRLBKC, IHIGC4, IAROUC, IRGLC5,
-     +                ITRO1C, ITRO2C, ILOWC4,
+     +                ITRO1C, ITRO2C, ILOWC4, IEZFLG,
      +                ISTYPE(ISDIM)
 C
 C  WMARRS contains arrray space.
