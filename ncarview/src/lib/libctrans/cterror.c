@@ -1,5 +1,5 @@
 /*
- *	$Id: cterror.c,v 1.8 1991-08-16 10:47:50 clyne Exp $
+ *	$Id: cterror.c,v 1.9 1992-01-24 16:31:47 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -460,10 +460,11 @@ close_ct_error()
 	/*
 	 *	read the errors and print them out to stderr
 	 */
-	fd = open(tempFile,O_RDONLY);
-	while ((i=read(fd,buffer,BUFSIZE)) != 0)
-		(void)write(2,buffer,i);
-	(void)close(fd);
+	if ((fd = open(tempFile,O_RDONLY)) > -1) {
+		while ((i=read(fd,buffer,BUFSIZE)) != 0)
+			(void)write(2,buffer,i);
+		(void)close(fd);
+	}
 
 	/*
 	 *	clean up 

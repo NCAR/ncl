@@ -1,5 +1,5 @@
 /*
- *	$Id: ctrans.c,v 1.11 1991-12-19 10:56:31 clyne Exp $
+ *	$Id: ctrans.c,v 1.12 1992-01-24 16:31:51 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -36,7 +36,7 @@
  * rev 1.01 clyne 4/18/90	: expanded application programmer interace
  */
 #ifndef lint
-static char *RCSid = "$Header: /home/brownrig/SVN/CVS/ncarg/ncarview/src/lib/libctrans/ctrans.c,v 1.11 1991-12-19 10:56:31 clyne Exp $";
+static char *RCSid = "$Header: /home/brownrig/SVN/CVS/ncarg/ncarview/src/lib/libctrans/ctrans.c,v 1.12 1992-01-24 16:31:51 clyne Exp $";
 #endif
 
 
@@ -193,6 +193,7 @@ Ct_err	init_ctrans(argc, argv, prog_name, gcap, fcap, stand_alone,				batch)
 
 	Argv = argv;
 	Argc = *argc;
+
 
 	init_cgmc(&command);
 
@@ -576,6 +577,14 @@ SetDevice(gcap)
 	int	i;
 
 	/*
+	 * if we've already initialized a device close it
+	 */
+	if (deviceIsInit) {
+		int	devnum = devices[currdev].number;	
+		(void)(*cmdtab[devnum][DEL_ELEMENT][END_MF])(&command);
+	}
+
+	/*
 	 *	find out the name of the device (remove the path)
 	 */
 	device = (device = strrchr(gcap, '/')) ? ++device : gcap;
@@ -598,11 +607,10 @@ SetDevice(gcap)
 	 *	close the error module and then open it again using
 	 *	stderr for direct error messages instead of a file
 	 */
-		if ( devices[currdev].number == X11_I) {
-
-			close_ct_error();
-			init_ct_error("ctrans", FALSE);
-		}
+	if ( devices[currdev].number == X11_I) {
+		close_ct_error();
+		init_ct_error("ctrans", FALSE);
+	}
 
 
 
