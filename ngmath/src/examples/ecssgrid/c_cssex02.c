@@ -1,3 +1,7 @@
+#
+#       $Id: c_cssex02.c,v 1.2 1999-05-24 23:57:16 fred Exp $
+#
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>

@@ -1,4 +1,7 @@
-      PROGRAM CSSEX02
+C
+C       $Id: cssex02.f,v 1.2 1999-05-24 23:57:16 fred Exp $
+C
+       PROGRAM CSSEX02
 C 
 C  Define random points and functional values on the globe, 
 C  triangulate, interpolate to a uniform grid, then use Ezmap

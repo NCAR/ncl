@@ -1,3 +1,7 @@
+C
+C       $Id: cssex01.f,v 1.2 1999-05-24 23:57:16 fred Exp $
+C
+
       PROGRAM CSEX01
 C
 C  Example of Delaunay triangulation and Voronoi diagram
