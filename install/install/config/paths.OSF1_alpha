@@ -1,0 +1,43 @@
+#!/bin/csh -f
+#
+#      $Id: paths.OSF1_alpha,v 1.1 1993-12-30 17:50:19 haley Exp $
+#
+#########################################################################
+#								   	#
+#			   Copyright (C)  1992				#
+#	     University Corporation for Atmospheric Research		#
+#			   All Rights Reserved				#
+#									#
+#########################################################################
+#
+#	File:		paths.OSF1_alpha
+#
+#	Author:		Mary Haley
+#			National Center for Atmospheric Research
+#			PO 3000, Boulder, Colorado
+#
+#	Date:		
+#
+#	Description:	Set default installation paths for a Alpha OSF1. This
+#			script is sourced by the get_paths script to set
+#			the variables bin_path, inc_path, lib_path, and 
+#			man_path
+#
+#	Usage:		paths.OSF1_alpha
+#
+#	Environment:
+#
+#	Files:		get_paths : sources this script
+#
+#
+#	Options:
+#
+set bin_path = /usr/local/bin
+set inc_path = /usr/local/include
+set lib_path = /usr/local/lib
+set man_path = /usr/local/man
+set man1 = man1
+set man3 = man3
+set man5 = man5
+set man8 = man8
+exit 0
