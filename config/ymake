@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ymake,v 1.30 1997-08-22 16:01:46 haley Exp $
+#	$Id: ymake,v 1.31 1998-01-09 16:29:30 haley Exp $
 #
 ######################################################################
 #
@@ -381,22 +381,6 @@ case    Linux:
     breaksw
 
 case    IRIX:
-        set os = $opsys
-
-        switch ("$mach")
-        case    IP*:
-                set arch = $mach
-                breaksw
-        default:
-                echo "$0 : Unknown machine type" > /dev/tty
-                exit 1
-        endsw
-
-        set sysincs = SGI4D
-        set vendor = SGI
-
-        breaksw
-
 case    IRIX64:
         set os = $opsys
 
@@ -409,7 +393,7 @@ case    IRIX64:
                 exit 1
         endsw
 
-        set sysincs = SGIR8
+        set sysincs = SGI_IRIX
         set vendor = SGI
 
         breaksw
