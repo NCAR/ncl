@@ -1,79 +1,79 @@
 
-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-C                                                                      C
-C                COPYRIGHT (C,IERR)  1995                              C
-C        UNIVERSITY CORPORATION FOR ATMOSPHERIC RESEARCH               C
-C                ALL RIGHTS RESERVED                                   C
-C                                                                      C
-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-C
-C      FILE:           TI01C.C
-C
-C      AUTHOR:         BOB LACKMAN
-C          NATIONAL CENTER FOR ATMOSPHERIC RESEARCH
-C          PO 3000, BOULDER, COLORADO
-C
-C      DATE:           FRI JAN 06 18:31:18 MDT 1995
-C
-C      DESCRIPTION:    DEMONSTRATES TITLE OBJECT RESOURCE CHANGES.
-C
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+c                                                                      c
+c                Copyright (C) 1995                                    c
+c        University Corporation for Atmospheric Research               c
+c                all rights reserved                                   c
+c                                                                      c
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+c
+c      File:           ti03c.c
+c
+c      Author:         Bob Lackman
+c          National Center for Atmospheric Research
+c          PO 3000, Boulder, Colorado
+c
+c      Date:           Fri Jan 06 18:31:18 mdt 1995
+c
+c      Description:    Demonstrates Title Object resource changes.
+c
 
-	PROGRAM TI03
-	IMPLICIT NONE
+	program ti03
+	implicit none
 
-	EXTERNAL NHLFAPPLAYERCLASS
-        EXTERNAL NHLFRESLISTLAYERCLASS
-        EXTERNAL NHLFAPPLAYERCLASS
-        EXTERNAL NHLFTITLELAYERCLASS
-        EXTERNAL NHLFXWORKSTATIONLAYERCLASS
+	external nhlfapplayerclass
+        external nhlfreslistlayerclass
+        external nhlfapplayerclass
+        external nhlftitlelayerclass
+        external nhlfxworkstationlayerclass
 
-	INTEGER APPID, WID, PID
-	INTEGER RLIST, IERR
+	integer appid, wid, pid
+	integer rlist, ierr
 
-C
-C INITIALIZE THE HIGH LEVEL UTILITY LIBRARY
-C
+c
+c Initialize the high level utility library
+c
 
-	CALL NHLFINITIALIZE
+	call nhlfinitialize
 
-C
-C CREATE AN APPLICATION CONTEXT. SET THE APP DIR TO THE CURRENT DIRECTORY
-C SO THE APPLICATION LOOKS FOR A RESOURCE FILE IN THE WORKING DIRECTORY.
-C IN THIS EXAMPLE THE RESOURCE FILE SUPPLIES THE PLOT TITLE ONLY.
-C
-        CALL NHLFRLCREATE(RLIST,'SETRL')
-        CALL NHLFRLCLEAR(RLIST)
-	CALL NHLFRLSETSTRING(RLIST,'appUsrDir','./',IERR)
-	CALL NHLFCREATE(APPID,'ti03',NHLFAPPLAYERCLASS,
-     $       0,RLIST,IERR)
+c
+c Create an application context. Set the app dir to the current directory
+c so the application looks for a resource file in the working directory.
+c In this example the resource file supplies the plot title only.
+c
+        call nhlfrlcreate(rlist,'setrl')
+        call nhlfrlclear(rlist)
+	call nhlfrlsetstring(rlist,'appUsrDir','./',ierr)
+	call nhlfcreate(appid,'ti03',nhlfapplayerclass,
+     $       0,rlist,ierr)
 
 
-C
-C CREATE AN XWORKSTATION OBJECT.
-C
-	CALL NHLFRLCLEAR(RLIST)
-	CALL NHLFRLSETINTEGER(RLIST,'wkPause','TRUE',IERR)
-	CALL NHLFCREATE(WID,'ti03Work',NHLFXWORKSTATIONLAYERCLASS,
-     $       0,RLIST,IERR)
-C
-C SPECIFY THE VIEWPORT EXTENT OF THE OBJECT.
-C
+c
+c Create an xworkstation object.
+c
+	call nhlfrlclear(rlist)
+	call nhlfrlsetinteger(rlist,'wkPause','true',ierr)
+	call nhlfcreate(wid,'ti03Work',nhlfxworkstationlayerclass,
+     $       0,rlist,ierr)
+c
+c Specify the viewport extent of the object.
+c
 
-        CALL NHLFRLCLEAR(RLIST)
-	CALL NHLFRLSETFLOAT(RLIST,'vpXF',.2,IERR)
-	CALL NHLFRLSETFLOAT(RLIST,'vpYF',.8,IERR)
-	CALL NHLFRLSETFLOAT(RLIST,'vpWidthF',.6,IERR)
-	CALL NHLFRLSETFLOAT(RLIST,'vpHeightF',.6,IERR)
+        call nhlfrlclear(rlist)
+	call nhlfrlsetfloat(rlist,'vpXF',.2,ierr)
+	call nhlfrlsetfloat(rlist,'vpYF',.8,ierr)
+	call nhlfrlsetfloat(rlist,'vpWidthF',.6,ierr)
+	call nhlfrlsetfloat(rlist,'vpHeightF',.6,ierr)
 
-	CALL NHLFCREATE(PID,'Titles',
-     $	     NHLFTITLELAYERCLASS,WID,RLIST,IERR)
+	call nhlfcreate(pid,'Titles',
+     $	     nhlftitlelayerclass,wid,rlist,ierr)
 
-	CALL NHLFDRAW(PID,IERR)
-	CALL NHLFFRAME(WID,IERR)
-	CALL NHLFDESTROY(PID,IERR)
-	CALL NHLFDESTROY(WID,IERR)
-	CALL NHLFDESTROY(APPID,IERR)
-	CALL NHLFCLOSE
+	call nhlfdraw(pid,ierr)
+	call nhlfframe(wid,ierr)
+	call nhlfdestroy(pid,ierr)
+	call nhlfdestroy(wid,ierr)
+	call nhlfdestroy(appid,ierr)
+	call nhlfclose
 
-	STOP
-	END
+	stop
+	end
