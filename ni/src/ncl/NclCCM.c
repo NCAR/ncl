@@ -196,7 +196,7 @@ char *buffer;
 {
 	char tmpc[WORD_SIZE+1];
 	char *tc;
-	int i,k;
+	int i;
 	for(i = 0; i < WORD_SIZE;i++) {
 		tmpc[i] = buffer[i];
 	}
@@ -354,7 +354,6 @@ FILE* fd;
 {
 	char thebuff[8];
 	char bytes[8][511];
-	int tmp;
 	int type;
 	int junk;
 	int bnhi;
@@ -405,42 +404,42 @@ FILE* fd;
 
 	return(1);
 }
-double *DoubleEm(char* buffer,int nwords) {
+double *DoubleEm(unsigned char* buffer,int nwords) {
 	int zero = 0;
 	int total = nwords;
 	double *tmp_out = NclMalloc(sizeof(double)*nwords);
 	ctodpf(buffer,tmp_out,&total,&zero);
 	return(tmp_out);
 }
-double DoubleIt(char* buffer) {
+double DoubleIt(unsigned char* buffer) {
 	int zero = 0;
 	int total = 1;
 	double tmp_out;
 	ctodpf(buffer,&tmp_out,&total,&zero);
 	return(tmp_out);
 }
-int *IntEm(char* buffer,int nwords) {
+int *IntEm(unsigned char* buffer,int nwords) {
 	int zero = 0;
 	int total = nwords;
 	int *tmp_out = NclMalloc(sizeof(int)*nwords);
 	ctospi(buffer,tmp_out,&total,&zero);
 	return(tmp_out);
 }
-int IntIt(char* buffer) {
+int IntIt(unsigned char* buffer) {
 	int zero = 0;
 	int total = 1;
 	int tmp_out;
 	ctospi(buffer,&tmp_out,&total,&zero);
 	return(tmp_out);
 }
-float *FloatEm(char* buffer,int nwords) {
+float *FloatEm(unsigned char* buffer,int nwords) {
 	int zero = 0;
 	int total = nwords;
 	float *tmp_out = NclMalloc(sizeof(float)*nwords);
 	ctospf(buffer,tmp_out,&total,&zero);
 	return(tmp_out);
 }
-float FloatIt(char* buffer) {
+float FloatIt(unsigned char* buffer) {
 	int zero = 0;
 	int total = 1;
 	float tmp_out;
@@ -554,7 +553,7 @@ int forward_index(unsigned char cw[]) {
 	return(IntIt(buffer));
 }
 
-long COSGetNWords(FILE* fd,int num_words,long current_offset,char *buffer)
+long COSGetNWords(FILE* fd,int num_words,long current_offset,unsigned char *buffer)
 {
 	long totsz = sz(num_words);
 	int cb = current_offset / BLOCK_SIZE;
@@ -594,12 +593,12 @@ long COSGetNWords(FILE* fd,int num_words,long current_offset,char *buffer)
 
 long MyRead
 #if NhlNeedProto
-(CCMFileRec *therec,FILE* fd,char *buffer,int nwords, long start_off)
+(CCMFileRec *therec,FILE* fd,unsigned char *buffer,int nwords, long start_off)
 #else
 (therec,fd,buffer,nwords, start_off)
 CCMFileRec *therec;
 FILE* fd;
-char *buffer;
+unsigned char *buffer;
 int nwords;
 long start_off;
 #endif
@@ -620,7 +619,7 @@ long start_off;
 		return(start_off + n);
 	}
 }
-int COSGetRecord(FILE* fd, int block_number,int offset,char **buffer,int* finish_block,int* finish_offset)
+int COSGetRecord(FILE* fd, int block_number,int offset,unsigned char **buffer,int* finish_block,int* finish_offset)
 {
 	long real_offset = (block_number * BLOCK_SIZE) + sz(offset);
 	long end_offset;
@@ -629,7 +628,6 @@ int COSGetRecord(FILE* fd, int block_number,int offset,char **buffer,int* finish
 	int len;
 	int n;
 	int index = 0;
-	char tmpc;
 
   	fseek(fd,real_offset,SEEK_SET);
 	end_offset = real_offset;
@@ -654,7 +652,7 @@ int COSGetRecord(FILE* fd, int block_number,int offset,char **buffer,int* finish
 		if( n != WORD_SIZE) 
 			return(-1);
 	};
-	*buffer = (char*)NclMalloc(sz(total));
+	*buffer = (unsigned char*)NclMalloc(sz(total));
 	fseek(fd,real_offset,SEEK_SET);
 	n = fread(control_word,1,WORD_SIZE,fd);
 	if( n != WORD_SIZE) 
@@ -677,14 +675,14 @@ int COSGetRecord(FILE* fd, int block_number,int offset,char **buffer,int* finish
 }
 int MyGetRecord
 #if NhlNeedProto
-(CCMFileRec *therec,FILE* fd, int start_block ,int start_offset,char **buffer,int *finish_block,int *finish_offset,int* rec_size)
+(CCMFileRec *therec,FILE* fd, int start_block ,int start_offset,unsigned char **buffer,int *finish_block,int *finish_offset,int* rec_size)
 #else
 (therec,fd,start_block ,start_offset,buffer,finish_block,finish_offset,rec_size)
 CCMFileRec *therec;
 FILE* fd;
 int start_block;
 int start_offset;
-char **buffer;
+unsigned char **buffer;
 int *finish_block;
 int *finish_offset;
 int *rec_size;
@@ -728,13 +726,9 @@ int *rec_size;
 
 long UnPackRealHeader(CCMFileRec *therec,FILE* fd,CCMI *iheader, CCMR *header,int start_block, int start_offset)
 {
-	int i;
-	int zero = 0;
-	int total;
 	int index;
 	int n;
-	long curr_offset = start_offset;
-	char *buffer;
+	unsigned char *buffer;
 	int finish_block;
 	int finish_offset;
 	
@@ -785,13 +779,9 @@ long UnPackRealHeader(CCMFileRec *therec,FILE* fd,CCMI *iheader, CCMR *header,in
 }
 long UnPackCharHeader(CCMFileRec *therec,FILE* fd,CCMI *iheader, CCMC *header,int start_block, int start_offset)
 {
-	int i;
-	int zero = 0;
-	int total;
 	int index;
 	int n;
-	long curr_offset = start_offset;
-	char *buffer;
+	unsigned char *buffer;
 	int finish_block;
 	int finish_offset;
 
@@ -822,17 +812,15 @@ long UnPackCharHeader(CCMFileRec *therec,FILE* fd,CCMI *iheader, CCMC *header,in
 }
 long UnPackIntHeader(CCMFileRec *therec,FILE* fd, CCMI *header,int start_block, int start_offset)
 {
-	int i;
 	int zero = 0;
 	int total;
 	int index;
 	int n;
-	long curr_offset = start_offset;
-	char *buffer;
+	unsigned char *buffer;
 	int finish_block;
 	int finish_offset;
 	int len;
-	char cw[WORD_SIZE];
+	unsigned char cw[WORD_SIZE];
 	static int first = 1;
 
 	if(therec->cos_blocking==0 ) {
@@ -883,7 +871,6 @@ void* s1;
 void* s2;
 #endif
 {
-        logical res;
         NclQList *ind1 = (NclQList*)s1;
         NclQList *ind2 = (NclQList*)s2;
 
@@ -1024,23 +1011,21 @@ int	wr_status;
 	CCMC tmp_cheader;
 	CCMR tmp_rheader;
 	CcmIntVarInqRecList *tmp_var = NULL;
-	int i,j,k,l;
+	int i,j;
 	int dim_num;
 	long coff = 0;  /* keeps track of current offset in bytes into the file */
 	int cb = 0; 	/* keeps track of current block in numbers of blocks */
 	int cb_off = 0; /* keeps track of word offset into block number cb  cb * BLOCK_SIZE + cb_off * WORD_SIZE == coff */
 	int tmp_off;
-	char buffer[BLOCK_SIZE];
+	unsigned char buffer[BLOCK_SIZE];
 	int index;
 	static int first = 1;
 	static NclQList *qlist = NULL;
-	static int start_quark = 0;
 	static int n_quarks = 0;
 	FILE* fd;
 	char units[31];
 	float spacing;
 	float *tmp_lon,*tmp_siga,*tmp_sigb;
-	int dimsize = 0;
 	int done = 0;
 	double *time_var;
 	int time_var_size = 0;
@@ -1523,7 +1508,17 @@ int	wr_status;
 					therec->header.iheader.MFILTH = i+1;       
 					therec->n_headers = i+1;	
 					for(j = 0; j < therec->n_vars; j++) {
-						therec->vars[j].var_info.dim_sizes[0] = i+1;
+						struct _NclCcmFVarRec *vinfo = &therec->vars[j].var_info;
+						if (vinfo->file_dim_num[0] != TIME_DIM_NUMBER) {
+							int k;
+							for (k = vinfo->num_dimensions; k > 0; k--) {
+								vinfo->dim_sizes[k] = vinfo->dim_sizes[k-1];
+								vinfo->file_dim_num[k] = vinfo->file_dim_num[k-1];
+							}
+							vinfo->file_dim_num[0] = TIME_DIM_NUMBER;
+							vinfo->num_dimensions++;
+						}
+						vinfo->dim_sizes[0] = i+1;
 					}
 					done = 1;
 					break;
@@ -1576,7 +1571,17 @@ int	wr_status;
 					therec->header.iheader.MFILTH = i+1;       
 					therec->n_headers = i+1;	
 					for(j = 0; j < therec->n_vars; j++) {
-						therec->vars[j].var_info.dim_sizes[0] = i+1;
+						struct _NclCcmFVarRec *vinfo = &therec->vars[j].var_info;
+						if (vinfo->file_dim_num[0] != TIME_DIM_NUMBER) {
+							int k;
+							for (k = vinfo->num_dimensions; k > 0; k--) {
+								vinfo->dim_sizes[k] = vinfo->dim_sizes[k-1];
+								vinfo->file_dim_num[k] = vinfo->file_dim_num[k-1];
+							}
+							vinfo->file_dim_num[0] = TIME_DIM_NUMBER;
+							vinfo->num_dimensions++;
+						}
+						vinfo->dim_sizes[0] = i+1;
 					}
 					break;
 				}
@@ -1735,7 +1740,7 @@ NclQuark var_name;
         		return(tmp);
 		}
 	}
-	
+	return NULL;
 }
 
 static NclQuark* CcmGetDimNames
@@ -2078,7 +2083,7 @@ void *storage
 	int buf_size,ns;
 	char *buffer = NULL;
 	char *rbuffer = NULL;
-	long coff,tmp_off;
+	long coff;
 	int lstart,tstart;
 	int lfinish,tfinish;
 	int lstride,tstride;
