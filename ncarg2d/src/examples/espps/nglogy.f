@@ -46,7 +46,7 @@ C
 C
 C         Output the polyline (X,Y) using EZXY.
 C
-      CALL EZXY(X,Y,100,'')
+      CALL EZXY(X,Y,100,' ')
 C
 C       Add a yellow title.
 C

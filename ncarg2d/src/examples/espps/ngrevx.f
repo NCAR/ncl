@@ -47,11 +47,11 @@ C
 C         Tell EZXY that the SET ordering of the window
 C         is to be used (LSET 3 or 4).
 C
-      CALL ANOTAT('','',1,4,0,'')
+      CALL ANOTAT(' ',' ',1,4,0,' ')
 C
 C         Output the polyline (X,Y) using EZXY.
 C
-      CALL EZXY(X,Y,100,'')
+      CALL EZXY(X,Y,100,' ')
 C
 C       Add a yellow title.
 C
