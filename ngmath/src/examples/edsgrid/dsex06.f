@@ -15,9 +15,9 @@ C
 C  3D example.
 C
       DO 10 I=1,NUM
-        XI(I) = XMIN+(XMAX-XMIN)*DSRAND()
-        YI(I) = YMIN+(YMAX-YMIN)*DSRAND()
-        ZI(I) = ZMIN+(ZMAX-ZMIN)*DSRAND()
+        XI(I) = XMIN+(XMAX-XMIN)*DSRND6()
+        YI(I) = YMIN+(YMAX-YMIN)*DSRND6()
+        ZI(I) = ZMIN+(ZMAX-ZMIN)*DSRND6()
          U(I) = XI(I)**2 + YI(I)**2 + ZI(I)**2
    10 CONTINUE
 C
@@ -59,7 +59,9 @@ C
       CALL GOPWK (IWKID, LUNIT, IWTYPE)
       CALL GACWK (IWKID)
 C
-      CALL DRWTD3(NX, NY, NZ, XO, YO, ZO, OUTPUT, 3.0, 0., 0., 0., -6)       
+      CALL TDEZ3D(NX, NY, NZ, XO, YO, ZO, OUTPUT, 3.0, 
+     +            2., -35., 65., 0., 6)       
+      CALL FRAME()
 C
 C  2D Example.
 C
@@ -68,4 +70,16 @@ C
       CALL GCLKS
 C
       STOP
+      END
+      REAL FUNCTION DSRND6()
+C
+      DATA ISEED/1/
+      SAVE ISEED
+C
+      ISEED = ISEED*1103515245 + 12345
+      IT = IAND(ISHIFT(ISEED,-16),32767)
+C
+      DSRND6 = REAL(IT)/32767.
+C
+      RETURN
       END

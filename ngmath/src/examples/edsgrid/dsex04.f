@@ -19,7 +19,7 @@ C
      +        0.69, 0.71, 0.71, 0.70, 0.69, 0.71, 0.70, 0.70/
       DATA ZI/0.00, 0.00, 0.00, 0.50, 0.50, 0.50, 0.50, 1.00, 
      +        1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00/
-      DATA XEYE, YEYE, ZEYE/3.3, -3.3, 3.3/
+      DATA RHO, THETA, PHI/3.0, -45., 55./
 C
 C  Specify the output grid.
 C
@@ -34,7 +34,7 @@ C
 C
 C  Set shadowing flag.
 C
-C     CALL DSSETI('SHD',1)
+      CALL DSSETI('SHD',1)
       CALL DSGRID2S(NUM, XI, YI, ZI, NX, NY, XO, YO, OUTPUT, IER)
       IF (IER .NE. 0) THEN
         WRITE(6,520) IER
@@ -44,7 +44,8 @@ C     CALL DSSETI('SHD',1)
       CALL GOPKS (IERRF, ISZDM)
       CALL GOPWK (IWKID, LUNIT, IWTYPE)
       CALL GACWK (IWKID)
-      CALL DRWTD2(NX, NY, XO, YO, OUTPUT, XEYE, YEYE, ZEYE, -6)
+      CALL TDEZ2D(NX, NY, XO, YO, OUTPUT, RHO, THETA, PHI, 6)
+      CALL FRAME()
       CALL GDAWK (IWKID)
       CALL GCLWK (IWKID)
       CALL GCLKS

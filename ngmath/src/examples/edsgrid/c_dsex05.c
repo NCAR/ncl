@@ -11,17 +11,14 @@
 #define IWTYPE 1
 #define WKID   1
 
-extern void    c_drwtd2(int, int, float *, float *, float *,
-                     float, float, float, int);
-
 main()
 {
   int  i, j, k, ier;
   float xi[NUM], yi[NUM], zi[NUM];
-  float xo[NX], yo[NY], *output;
+  float xo[NX], yo[NY], *output, outr[NY][NX];
   float xminin =  0.00, yminin =  0.00, xmaxin = 1.00, ymaxin = 1.00;
   float xminot = -0.21, yminot = -0.21, xmaxot = 1.21, ymaxot = 1.21;
-  float xeye = 1.6, yeye = -2.4, zeye = 4.7;
+  float rho = 3., theta = -70., phi = 40.;
  
 /*
  *  Create random data in three space and define a function.
@@ -53,7 +50,19 @@ main()
   gopen_gks ("stdout",0);
   gopen_ws (WKID, NULL, IWTYPE);
   gactivate_ws(WKID);
-  c_drwtd2(NX, NY, xo, yo, output, xeye, yeye, zeye, -6);
+
+/*
+ *  Reverse the array indices for plotting with tdez2d, since
+ *  c_dsgrid returns its array in column dominate order.
+ */
+  for (i = 0; i < NX; i++) {
+    for (j = 0; j < NY; j++) {
+      outr[j][i] = output[i*NY+j];
+    }
+  }
+  c_tdez2d(NX, NY, xo, yo, &outr[0][0], rho, theta, phi, 6);
+  c_frame();
+
   gdeactivate_ws(WKID);
   gclose_ws(WKID);
   gclose_gks();

@@ -22,9 +22,9 @@ C  To get this to work on your system, you may have to insert
 C  the correct random number generator for your compiler.
 C
       DO 10 I=1,NUM
-        XI(I) = XMIN+(XMAX-XMIN)*DBLE(DSRAND())
-        YI(I) = YMIN+(YMAX-YMIN)*DBLE(DSRAND())
-        ZI(I) = ZMIN+(ZMAX-ZMIN)*DBLE(DSRAND())
+        XI(I) = XMIN+(XMAX-XMIN)*DBLE(DSRND1D())
+        YI(I) = YMIN+(YMAX-YMIN)*DBLE(DSRND1D())
+        ZI(I) = ZMIN+(ZMAX-ZMIN)*DBLE(DSRND1D())
          U(I) = XI(I)**2 + YI(I)**2 + ZI(I)**2
    10 CONTINUE
 C
@@ -69,10 +69,22 @@ C
       CALL GOPKS (IERRF, ISZDM)
       CALL GOPWK (IWKID, LUNIT, IWTYPE)
       CALL GACWK (IWKID)
-      CALL DRWTD3(NX, NY, NZ, XP, YP, ZP, OUTP, 3.0, 0., 0., 0., -6)       
+      CALL TDEZ3D(NX, NY, NZ, XP, YP, ZP, OUTP, 3.0, 0., 0., 0., 6)
       CALL GDAWK (IWKID)
       CALL GCLWK (IWKID)
       CALL GCLKS
 C
       STOP
+      END
+      REAL FUNCTION DSRND1D()
+C
+      DATA ISEED/1/
+      SAVE ISEED
+C
+      ISEED = ISEED*1103515245 + 12345
+      IT = IAND(ISHIFT(ISEED,-16),32767)
+C
+      DSRND1D = REAL(IT)/32767.
+C
+      RETURN
       END

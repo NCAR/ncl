@@ -12,14 +12,11 @@
 #define IWTYPE 1
 #define WKID   1
 
-extern void   c_drwtd3(int, int, int, float *, float *, float *, float *,
-                      float, float, float, float, int);
-
 main()
 {
   int  i, j, k, ier;
   float xi[NUM], yi[NUM], zi[NUM], u[NUM];
-  float xo[NX], yo[NY], zo[NZ], *output;
+  float xo[NX], yo[NY], zo[NZ], *output, outr[NZ][NY][NX];
   float xmin = -2.0, ymin = -2.0, zmin = -2.0;
   float xmax =  2.0, ymax =  2.0, zmax =  2.0;
 
@@ -62,7 +59,19 @@ main()
   gopen_ws (WKID, NULL, IWTYPE);
   gactivate_ws(WKID);
 
-  c_drwtd3(NX, NY, NZ, xo, yo, zo, output, 3.0, 0., 0., 0., -6);
+/*
+ *  Reorder the array elements for c_tdez3d, since c_dsgrid3s
+ *  returns an array in column dominate order.
+ */
+  for (i = 0; i < NX; i++) {
+    for (j = 0; j < NY; j++) {
+      for (k = 0; k < NZ; k++) {
+        outr[k][j][i] = output[i*NY*NZ + j*NY + k];
+      }
+    }
+  }
+  c_tdez3d(NX, NY, NZ, xo, yo, zo, &outr[0][0][0], 3.0, 2., -35., 65., 6);
+  c_frame();
 
   gdeactivate_ws(WKID);
   gclose_ws(WKID);

@@ -11,15 +11,15 @@ C
       REAL XO(NX),  YO(NY),  OUTPUT(NX,NY)
       DATA XMININ,YMININ,XMAXIN,YMAXIN/ -0.2, -0.2, 1.2, 1.2/
       DATA XMINOT,YMINOT,XMAXOT,YMAXOT/  0.0,  0.0, 1.0, 1.0/
-      DATA XEYE, YEYE, ZEYE/1.3, -1.8, 3.6/
+      DATA THETA, PHI, RHO/-54., 32., 3./
 C
 C  Create random data in two-space and define a function.
 C  To get this to work on your system, you may have to insert
 C  the correct random number generator for your compiler.
 C
       DO 10 I=1,NUM
-        XI(I) = XMININ+(XMAXIN-XMININ)*DSRAND()
-        YI(I) = YMININ+(YMAXIN-YMININ)*DSRAND()
+        XI(I) = XMININ+(XMAXIN-XMININ)*DSRND3()
+        YI(I) = YMININ+(YMAXIN-YMININ)*DSRND3()
         ZI(I) = (XI(I)-0.25)**2 + (YI(I)-0.50)**2
    10 CONTINUE
 C
@@ -46,10 +46,23 @@ C
       CALL GOPKS (IERRF, ISZDM)
       CALL GOPWK (IWKID, LUNIT, IWTYPE)
       CALL GACWK (IWKID)
-      CALL DRWTD2(NX, NY, XO, YO, OUTPUT, XEYE, YEYE, ZEYE, -6)
+      CALL TDEZ2D(NX, NY, XO, YO, OUTPUT, RHO, THETA, PHI, 6)
+      CALL FRAME()
       CALL GDAWK (IWKID)
       CALL GCLWK (IWKID)
       CALL GCLKS
 C
       STOP
+      END
+      REAL FUNCTION DSRND3()
+C
+      DATA ISEED/1/
+      SAVE ISEED
+C
+      ISEED = ISEED*1103515245 + 12345
+      IT = IAND(ISHIFT(ISEED,-16),32767)
+C
+      DSRND3 = REAL(IT)/32767.
+C
+      RETURN
       END

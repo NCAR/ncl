@@ -16,7 +16,7 @@ C
       DATA XI/0.00, 1.00, 0.00, 1.00, 0.40, 0.75/
       DATA YI/0.00, 0.00, 1.00, 1.00, 0.20, 0.65/
       DATA ZI/0.00, 0.00, 0.00, 0.00, 1.25, 0.80/
-      DATA XEYE, YEYE, ZEYE/3.3, -3.3, 3.3/
+      DATA RHO, THETA, PHI/3.0, -45., 55./
 C
 C  Specify the output grid.
 C
@@ -42,7 +42,8 @@ C
       CALL GOPKS (IERRF, ISZDM)
       CALL GOPWK (IWKID, LUNIT, IWTYPE)
       CALL GACWK (IWKID)
-      CALL DRWTD2(NX, NY, XO, YO, OUTPUT, XEYE, YEYE, ZEYE, -6)
+      CALL TDEZ2D(NX, NY, XO, YO, OUTPUT, RHO, THETA, PHI, 6)
+      CALL FRAME()
 C
 C  Exponent equals 1.0
 C
@@ -52,7 +53,8 @@ C
         WRITE(6,520) IER
         STOP
       ENDIF
-      CALL DRWTD2(NX, NY, XO, YO, OUTPUT, XEYE, YEYE, ZEYE, -6)
+      CALL TDEZ2D(NX, NY, XO, YO, OUTPUT, RHO, THETA, PHI, 6)
+      CALL FRAME()
 C
 C  Exponent equals 10.0
 C
@@ -63,7 +65,9 @@ C
         STOP
       ENDIF
 C
-      CALL DRWTD2(NX, NY, XO, YO, OUTPUT, XEYE, YEYE, ZEYE, -6)
+      CALL TDEZ2D(NX, NY, XO, YO, OUTPUT, RHO, THETA, PHI, 6)
+      CALL FRAME()
+C
       CALL GDAWK (IWKID)
       CALL GCLWK (IWKID)
       CALL GCLKS

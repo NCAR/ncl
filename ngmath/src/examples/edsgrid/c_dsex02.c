@@ -11,17 +11,14 @@
 #define IWTYPE 1
 #define WKID   1
 
-extern void    c_drwtd2(int, int, float *, float *, float *,
-                     float, float, float, int);
-
 main()
 {
   int  i, j, k, ier;
   float xi[] = {0.00, 1.00, 0.00, 1.00, 0.40, 0.75};
   float yi[] = {0.00, 0.00, 1.00, 1.00, 0.20, 0.65};
   float zi[] = {0.00, 0.00, 0.00, 0.00, 1.25, 0.80};
-  float xo[NX], yo[NY], xinc, yinc, *output;
-  float xeye =  3.3, yeye = -3.3, zeye =  3.3;
+  float xo[NX], yo[NY], xinc, yinc, *output, outr[NY][NX];
+  float rho =  3., theta = -45., phi =  55.;
 
 /*
  *  Create the output grid.
@@ -47,7 +44,17 @@ main()
   gopen_gks ("stdout",0);
   gopen_ws (WKID, NULL, IWTYPE);
   gactivate_ws(WKID);
-  c_drwtd2(NX, NY, xo, yo, output, xeye, yeye, zeye, -6);
+/*
+ *  Reverse the array indices for plotting with tdez2d, since
+ *  c_dsgrid returns its array in column dominate order.
+ */
+  for (i = 0; i < NX; i++) {
+    for (j = 0; j < NY; j++) {
+      outr[j][i] = output[i*NY+j];
+    }
+  }
+  c_tdez2d(NX, NY, xo, yo, &outr[0][0], rho, theta, phi, 6);
+  c_frame();
 
 /*
  *  Exponent equals 1.0
@@ -58,7 +65,17 @@ main()
     printf(" Error %d returned from c_dsgrid2s\n",ier);
     exit(1);
   }
-  c_drwtd2(NX, NY, xo, yo, output, xeye, yeye, zeye, -6);
+/*
+ *  Reverse the array indices for plotting with tdez2d, since
+ *  c_dsgrid returns its array in column dominate order.
+ */
+  for (i = 0; i < NX; i++) {
+    for (j = 0; j < NY; j++) {
+      outr[j][i] = output[i*NY+j];
+    }
+  }
+  c_tdez2d(NX, NY, xo, yo, &outr[0][0], rho, theta, phi, 6);
+  c_frame();
 
 /*
  *  Exponent equals 5.0
@@ -69,7 +86,18 @@ main()
     printf(" Error %d returned from c_dsgrid2s\n",ier);
     exit(1);
   }
-  c_drwtd2(NX, NY, xo, yo, output, xeye, yeye, zeye, -6);
+/*
+ *  Reverse the array indices for plotting with tdez2d, since
+ *  c_dsgrid returns its array in column dominate order.
+ */
+  for (i = 0; i < NX; i++) {
+    for (j = 0; j < NY; j++) {
+      outr[j][i] = output[i*NY+j];
+    }
+  }
+  c_tdez2d(NX, NY, xo, yo, &outr[0][0], rho, theta, phi, 6);
+  c_frame();
+
   gdeactivate_ws(WKID);
   gclose_ws(WKID);
   gclose_gks();
