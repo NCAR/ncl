@@ -1,11 +1,13 @@
 #
-#       $Id:
+#       $Id: yMakefile,v 1.6 1997-03-12 18:14:50 fred Exp $
 #
 
 MYNAME  = nnalg
 
-SRCS = nadisp.f  nadraw.f  naskln.f  nasort.f
+SRCS = nadisp.F  nadraw.f  naskln.f  nasort.f
 OBJS = nadisp.o  nadraw.o  naskln.o  nasort.o
+
+FCPP_OBJS       = nadisp.f
 
 PROG_LIBS = $(NCARGLIBS)
 DEP_LIBS = $(DEPNCARGLIBS)
