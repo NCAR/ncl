@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.106 1999-04-01 20:35:46 ethan Exp $
+ *      $Id: Execute.c,v 1.107 1999-04-02 00:08:21 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1542,6 +1542,20 @@ void CallNEW_OP(void) {
 				ptr++; lptr++; fptr++;
 				data_type = (NclSymbol*)*ptr;
 				estatus = _NclNewOp(data_type,size_expr,missing_expr);
+				switch(missing_expr.kind) {
+				case NclStk_VAL:
+					if(missing_expr.u.data_obj->obj.status != PERMANENT) {	
+						_NclDestroyObj((NclObj)missing_expr.u.data_obj);
+					}
+					break;
+				case NclStk_VAR:
+					if(missing_expr.u.data_var->obj.status != PERMANENT) {	
+						_NclDestroyObj((NclObj)missing_expr.u.data_var);
+					}
+					break;
+				default:
+					break;
+				}
 				switch(size_expr.kind) {
 				case NclStk_VAL:
 					if(size_expr.u.data_obj->obj.status != PERMANENT) {	
@@ -2906,7 +2920,7 @@ void CallASSIGN_VAR_COORD_OP(void) {
 				NhlErrorTypes ret = NhlNOERROR;
 				NclSelectionRecord *sel_ptr = NULL;
 				NclMultiDValData thevalue = NULL;
-				int i;
+				int i,id;
 				
 				cvar = _NclPop();
 				switch(cvar.kind) {
@@ -3006,6 +3020,10 @@ void CallASSIGN_VAR_COORD_OP(void) {
 						}
 					
 						if(thevalue != NULL) {
+/*
+* DAMN write coord is al F'ed up The followin is  a kludge so I can know if WRiteCoordVar actually destroyed tehvaleu
+*/
+							id = thevalue->obj.id;
 							ret = _NclWriteCoordVar(var->u.data_var,thevalue,coord_name,sel_ptr);
 							if(ret<estatus){
 								estatus = ret;
@@ -3019,10 +3037,8 @@ void CallASSIGN_VAR_COORD_OP(void) {
 */
 						switch(data.kind) {
 						case NclStk_VAL: 
-/*
-							if(data.u.data_obj->obj.status != PERMANENT) 
+							if( (_NclGetObj(id)!= NULL)&&(data.u.data_obj->obj.status != PERMANENT))
 								_NclDestroyObj((NclObj)data.u.data_obj);
-*/
 							break;
 						case NclStk_VAR:
 							if(data.u.data_obj->obj.status != PERMANENT) 

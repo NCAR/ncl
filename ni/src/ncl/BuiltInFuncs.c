@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.105 1999-04-01 20:27:22 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.106 1999-04-02 00:08:18 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -7579,6 +7579,7 @@ NhlErrorTypes _Ncldim_avg
 	NclBasicDataTypes out_data_type;
 	NclTypeClass the_type;
 	NclScalar missing;
+	int did_coerce = 0;
 
 	
 
@@ -7629,8 +7630,10 @@ NhlErrorTypes _Ncldim_avg
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_avg: Could not coerce input data to double, can't continue");
 			return(NhlFATAL);
 		} else if(tmp_md->multidval.missing_value.has_missing) {
+
 			missing = tmp_md->multidval.missing_value.value;
 		}
+		did_coerce = 1;
 		sz = ((NclTypeClass)nclTypefloatClass)->type_class.size;
 	}
 	val = (double*)tmp_md->multidval.val;
@@ -7677,6 +7680,7 @@ NhlErrorTypes _Ncldim_avg
 			out_data_type,
 			0);
 		NclFree(dimsizes);
+		if(did_coerce) _NclDestroyObj((NclObj)tmp_md);
 		return(ret);
 	} else {
 		for(i = 0; i < n ; i++) {
@@ -7701,6 +7705,7 @@ NhlErrorTypes _Ncldim_avg
 			out_data_type,
 			0);
 		NclFree(dimsizes);
+		if(did_coerce) _NclDestroyObj((NclObj)tmp_md);
 		return(ret);
 	}
 
@@ -7732,6 +7737,7 @@ NhlErrorTypes _NclIdim_variance
 	NclTypeClass the_type;
 	NclScalar missing;
 	int start;
+	int did_coerce = 0;
 
 	
 
@@ -7784,6 +7790,7 @@ NhlErrorTypes _NclIdim_variance
 		} else if(tmp_md->multidval.missing_value.has_missing) {
 			missing = tmp_md->multidval.missing_value.value;
 		}
+		did_coerce = 1;
 		sz = ((NclTypeClass)nclTypefloatClass)->type_class.size;
 	}
 	val = (double*)tmp_md->multidval.val;
@@ -7838,6 +7845,7 @@ NhlErrorTypes _NclIdim_variance
 			out_data_type,
 			0);
 		NclFree(dimsizes);
+		if(did_coerce) _NclDestroyObj((NclObj)tmp_md);
 		return(ret);
 	} else {
 		for(i = 0; i < n ; i++) {
@@ -7867,6 +7875,7 @@ NhlErrorTypes _NclIdim_variance
 			out_data_type,
 			0);
 		NclFree(dimsizes);
+		if(did_coerce) _NclDestroyObj((NclObj)tmp_md);
 		return(ret);
 	}
 
@@ -7898,6 +7907,7 @@ NhlErrorTypes _NclIvariance
 	NhlErrorTypes r0 = NhlNOERROR;
 	NhlErrorTypes r1 = NhlNOERROR;
 	NclScalar missing;
+	int did_coerce = 0;
 
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
@@ -7952,6 +7962,7 @@ NhlErrorTypes _NclIvariance
                 } else if(tmp_md->multidval.missing_value.has_missing){
                 	missing = tmp_md->multidval.missing_value.value;
                 }
+		did_coerce = 1;
 	}
 	val = (double*)tmp_md->multidval.val;
 	if(tmp_md->multidval.missing_value.has_missing) {
@@ -7969,6 +7980,7 @@ NhlErrorTypes _NclIvariance
 				} else {
 					*(float*)out1_val = (float)missing.doubleval;
 				}
+				if(did_coerce)_NclDestroyObj(tmp_md);
 				return(NclReturnValue(
 					out1_val,
 					1,
@@ -8030,6 +8042,7 @@ NhlErrorTypes _NclIvariance
 		*((float*)out1_val) = (float)sum_sqrd_val;
 	}
 
+	if(did_coerce)_NclDestroyObj(tmp_md);
 	return(NclReturnValue(
 		out1_val,
 		1,
@@ -8064,6 +8077,7 @@ NhlErrorTypes _NclIdim_stddev
 	NclTypeClass the_type;
 	NclScalar missing;
 	int start;
+	int did_coerce = 0;
 
 	
 
@@ -8110,6 +8124,7 @@ NhlErrorTypes _NclIdim_stddev
 		sf = sizeof(float);
 		out_data_type = NCL_float;
 		tmp_md = _NclCoerceData(tmp_md,Ncl_Typedouble,NULL);
+	
 		if(tmp_md == NULL) {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_stddev: Could not coerce input data to double, can't continue");
 			return(NhlFATAL);
@@ -8117,6 +8132,7 @@ NhlErrorTypes _NclIdim_stddev
 			missing = tmp_md->multidval.missing_value.value;
 		}
 		sz = ((NclTypeClass)nclTypefloatClass)->type_class.size;
+		did_coerce = 1;
 	}
 	val = (double*)tmp_md->multidval.val;
 	if(tmp_md->multidval.missing_value.has_missing) {
@@ -8171,6 +8187,7 @@ NhlErrorTypes _NclIdim_stddev
 			out_data_type,
 			0);
 		NclFree(dimsizes);
+		if(did_coerce) _NclDestroyObj((NclObj)tmp_md);
 		return(ret);
 	} else {
 		for(i = 0; i < n ; i++) {
@@ -8201,6 +8218,7 @@ NhlErrorTypes _NclIdim_stddev
 			out_data_type,
 			0);
 		NclFree(dimsizes);
+		if(did_coerce) _NclDestroyObj((NclObj)tmp_md);
 		return(ret);
 	}
 
@@ -8233,6 +8251,7 @@ NhlErrorTypes _NclIstddev
 	NhlErrorTypes r0 = NhlNOERROR;
 	NhlErrorTypes r1 = NhlNOERROR;
 	NclScalar missing;
+	int did_coerce = 0;
 
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
@@ -8287,6 +8306,7 @@ NhlErrorTypes _NclIstddev
                 } else if(tmp_md->multidval.missing_value.has_missing){
                 	missing = tmp_md->multidval.missing_value.value;
                 }
+		did_coerce = 1;
 	}
 	val = (double*)tmp_md->multidval.val;
 	if(tmp_md->multidval.missing_value.has_missing) {
@@ -8304,6 +8324,7 @@ NhlErrorTypes _NclIstddev
 				} else {
 					*(float*)out1_val = (float)missing.doubleval;
 				}
+				if(did_coerce)_NclDestroyObj((NclObj)tmp_md);
 				return(NclReturnValue(
 					out1_val,
 					1,
@@ -8367,6 +8388,7 @@ NhlErrorTypes _NclIstddev
 		*((float*)out1_val) = (float)sum_sqrd_val;
 	}
 
+	if(did_coerce)_NclDestroyObj((NclObj)tmp_md);
 	return(NclReturnValue(
 		out1_val,
 		1,
@@ -8397,6 +8419,7 @@ NhlErrorTypes _Nclavg
 	NclBasicDataTypes out_data_type;
 	NclTypeClass the_type;
 	NclScalar missing;
+	int did_coerce = 0;
 
 
 	data = _NclGetArg(0,1,DONT_CARE);
@@ -8430,6 +8453,7 @@ NhlErrorTypes _Nclavg
                	} else if(tmp_md->multidval.missing_value.has_missing){
               		missing = tmp_md->multidval.missing_value.value;
                 }
+		did_coerce = 1;
 		val = (double*)tmp_md->multidval.val;
 	}
 
@@ -8447,6 +8471,7 @@ NhlErrorTypes _Nclavg
 				if(out_data_type == NCL_double) {
 					NclFree(tmp);
 					memcpy(out_val,&missing,the_type->type_class.size);
+					if(did_coerce) _NclDestroyObj((NclObj)tmp_md);
 					return(NclReturnValue(
 						out_val,
 						1,
@@ -8458,6 +8483,7 @@ NhlErrorTypes _Nclavg
 				} else {
 					NclFree(tmp);
 					*((float*)out_val) = (float)tmp_md->multidval.missing_value.value.doubleval;
+					if(did_coerce) _NclDestroyObj((NclObj)tmp_md);
 					return(NclReturnValue(
 						out_val,
 						1,
@@ -8485,6 +8511,7 @@ NhlErrorTypes _Nclavg
 			*(float*)out_val = (float)sum_val;
 			missing.floatval = (float)missing.doubleval;
 		}
+		if(did_coerce) _NclDestroyObj((NclObj)tmp_md);
                 return(NclReturnValue(
                    out_val,
                    1,
@@ -8505,6 +8532,7 @@ NhlErrorTypes _Nclavg
 		} else {
 			*(float*)out_val = (float)sum_val;
 		}
+		if(did_coerce) _NclDestroyObj((NclObj)tmp_md);
                 return(NclReturnValue(
                    out_val,
                    1,
