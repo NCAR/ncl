@@ -1,5 +1,5 @@
 !
-!      $Id: ngi.res,v 1.25 1999-05-22 00:21:38 dbrown Exp $
+!      $Id: ngi.res,v 1.26 1999-05-27 02:12:01 dbrown Exp $
 !
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !									!
@@ -231,6 +231,16 @@ NgNGO*XmForm.menubar.rightOffset:	0
 *bottomAttachment:			ATTACH_FORM
 *leftAttachment:			ATTACH_FORM
 *rightAttachment:			ATTACH_FORM
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!									!
+! Default appearance for entire app					!
+!									!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+*XmCascadeButtonGadget*shadowThickness: 2
+*XmPushButtonGadget*shadowThickness: 2
+*XmPushButton*shadowThickness: 2
 
 !*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!
 
@@ -814,6 +824,13 @@ browse.title:				Data Browser
 *browseMGR*spacing: 0
 *browseMGR*vbutton*marginHeight: 0
 
+*browseMGR*PaneInc*marginHeight: 0
+*browseMGR*PaneInc*bottomMargin: 0
+*browseMGR*PaneInc*topMargin: 0
+*browseMGR*PaneInc*topOffset: 0
+*browseMGR*PaneInc*bottomOffset: 0
+
+
 *browseMGR*pane.topOffset:		0
 *browseMGR*pane.leftOffset:		0
 *browseMGR*pane.rightOffset:		0
@@ -877,44 +894,11 @@ browse.title:				Data Browser
 *printPlot*selectAllTgl.labelString:		All
 *printPlot*selectedViewsTgl.labelString: 	Selected
 
-
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !									!
-! DEVELOPMENT STUFF
+! TEXT EDITING								!
 !									!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-! for development
-!addfile*directory: /fs/scd/home1/ncargd/dev/sun4_SunOS_5_5_1/lib/ncarg/data/cdf
-!addfile*directory: /fs/scd/home1/ncargd/dev/IRIS_IRIX_6_2_/lib/ncarg/data/cdf/
-!addfile*directory: /usr/local/ncarg/lib/ncarg/data/cdf/
-
-
-!htmlview: display is sgi,linux
-!*html*fontSizeList: 12,8,22,18,14,12,10,8
-!htmlview: display is sun
-!*html*fontSizeList: 10,8,20,16,12,10,8,6
-*enableBadHTMLWarnings : HTML_NONE
-!*highlightColor: white
-*html*highlightOnEnter: False
-!*xResolution: 50
-!*yResolution: 50
-
-!*anchorButtons: False
-*XmCascadeButtonGadget*shadowThickness: 2
-*XmPushButtonGadget*shadowThickness: 2
-*XmPushButton*shadowThickness: 2
-*PaneInc*marginHeight: 0
-*PaneInc*bottomMargin: 0
-*PaneInc*topMargin: 0
-*PaneInc*topOffset: 0
-*PaneInc*bottomOffset: 0
-
- 
-*vpUseSegments: True
-*logLinPlotClass*pmTickMarkDisplayMode: always
-*irregularPlotClass*pmTickMarkDisplayMode: always
-*wkColorMap: temp1
 
 !
 ! so since we're not using clipboard for text, it's not too useful for
@@ -1140,6 +1124,34 @@ browse.title:				Data Browser
 					end-of-line(extend)
 
 
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!									!
+! DEVELOPMENT STUFF
+!									!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+! for development
+!addfile*directory: /fs/scd/home1/ncargd/dev/sun4_SunOS_5_5_1/lib/ncarg/data/cdf
+!addfile*directory: /fs/scd/home1/ncargd/dev/IRIS_IRIX_6_2_/lib/ncarg/data/cdf/
+!addfile*directory: /usr/local/ncarg/lib/ncarg/data/cdf/
+
+
+!htmlview: display is sgi,linux
+!*html*fontSizeList: 12,8,22,18,14,12,10,8
+!htmlview: display is sun
+!*html*fontSizeList: 10,8,20,16,12,10,8,6
+*enableBadHTMLWarnings : HTML_NONE
+!*highlightColor: white
+*html*highlightOnEnter: False
+!*xResolution: 50
+!*yResolution: 50
+
+!*anchorButtons: False
+ 
+*vpUseSegments: True
+*logLinPlotClass*pmTickMarkDisplayMode: always
+*irregularPlotClass*pmTickMarkDisplayMode: always
+*wkColorMap: default
 
 
 

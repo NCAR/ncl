@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.19 1999-03-05 01:15:20 dbrown Exp $
+#      $Id: yMakefile,v 1.20 1999-05-27 02:12:02 dbrown Exp $
 #
 #########################################################################
 #									#
@@ -21,7 +21,7 @@
 
 #define IHaveSubdirs
 
-SUBDIRS = plot_styles ndv_help
+SUBDIRS = plot_styles ndv_help colormaps
 
 MYNAME	= ngi
 
