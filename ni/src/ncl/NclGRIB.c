@@ -3627,6 +3627,10 @@ void* storage;
 						if(grid[current_rec->grid_tbl_index].un_pack != NULL) {
 							int_or_float = (*grid[current_rec->grid_tbl_index].un_pack)(fd,&tmp,&missing,current_rec,step);
 						}
+					} else if((current_rec->has_gds)&&(current_rec->grid_gds_tbl_index > -1)) {
+						if(grid_gds[current_rec->grid_gds_tbl_index].un_pack != NULL) {
+							int_or_float = (*grid_gds[current_rec->grid_gds_tbl_index].un_pack)(fd,&tmp,&missing,current_rec,step);
+						}
 					}
 					if(tmp != NULL) {
 						if(int_or_float) {
