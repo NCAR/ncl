@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.8 1993-11-01 17:40:34 boote Exp $
+#	$Id: yMakefile,v 1.9 1994-02-22 20:44:05 haley Exp $
 #
 
 MYNAME	= awi
@@ -75,11 +75,6 @@ InstallTarget(ggkwdr_stub.o,$(INSTALL_LIB),$(ROBJPATH))
 CleanFilesTarget($(FCPP_OBJS) $(ROBJ_SRC) $(ROBJ_OBJ))
 
 all::	ggkwdr_stub.o
-
-#if defined(CRAY)
-gztowk.o: gztowk.f
-	$(CFT) $(FFLAGS) -o off gztowk.f
-#endif
 
 # A file containing C functions called from Fortran
 
