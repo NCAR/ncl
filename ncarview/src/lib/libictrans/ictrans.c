@@ -1,5 +1,5 @@
 /*
- *	$Id: ictrans.c,v 1.16 1992-09-09 15:10:05 clyne Exp $
+ *	$Id: ictrans.c,v 1.17 1992-10-08 21:35:30 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -167,7 +167,7 @@ ICTrans(argc, argv, mem_cgm)
 						++progName : *argv;
 	if (! meta_files) {
 		(void) fprintf(
-			stderr,"%s : malloc(%d)", progName,
+			stderr,"%s : malloc(%d)\n", progName,
 			argc * sizeof(char *)
 		);
 		return(-1);
@@ -242,7 +242,7 @@ ICTrans(argc, argv, mem_cgm)
 		*/
 		if ((fcap = getFcapname( DEFAULTFONT )) == NULL) {
                         fprintf(
-                                stderr,"%s: Warning - no known font [ %s ]",
+                                stderr,"%s: Warning - no known font [ %s ]\n",
                                 progName, ErrGetMsg()
                         );
 

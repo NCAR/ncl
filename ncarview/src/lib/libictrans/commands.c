@@ -1,5 +1,5 @@
 /*
- *	$Id: commands.c,v 1.19 1992-09-16 14:24:54 clyne Exp $
+ *	$Id: commands.c,v 1.20 1992-10-08 21:35:23 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -130,7 +130,7 @@ int	iCHelp(ic)
 	 * and print a usage message
 	 */
 	if ((c = getcmdOp(ic->cmd.data)) == (CmdOp *) -1) {
-		(void) fprintf(stderr,"Ambiguous command < %s >", ic->cmd.data);
+		(void) fprintf(stderr,"Ambiguous command < %s >\n", ic->cmd.data);
 		return(-1);
 	}
 	if (c == (CmdOp *) NULL) {
@@ -754,7 +754,7 @@ int	iCPrint(ic)
 	if (! translator) {
 		if ( !(binpath = GetNCARGPath(BINDIR))) {
 			fprintf(
-				stderr, "NCARG bin path not found [ %s ]", 
+				stderr, "NCARG bin path not found [ %s ]\n", 
 				ErrGetMsg()
 			);
 			return(-1);

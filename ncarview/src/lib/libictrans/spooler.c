@@ -1,5 +1,5 @@
 /*
- *	$Id: spooler.c,v 1.10 1992-09-09 15:10:17 clyne Exp $
+ *	$Id: spooler.c,v 1.11 1992-10-08 21:35:33 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -619,39 +619,40 @@ int	InitSpool()
 	}
 
 	if ( !(libpath = GetNCARGPath(LIBDIR))) {
-		fprintf(stderr, "NCARG lib path not found [ %s ]", ErrGetMsg());
-		return(-1);
+		fprintf(stderr, "Warning: Cannot find system spooler config file [ %s ]\n", ErrGetMsg());
 	}
+	else {
 
-	/*
-	 * build path to system level spooler file
-	 */
-	sys_spool_file = malloc (
+		/*
+		 * build path to system level spooler file
+		 */
+		sys_spool_file = malloc (
 			(unsigned) ( strlen (libpath)
 			+ strlen ("/")
 			+ strlen (NCARGDIR)
 			+ strlen ("/")
 			+ strlen ((char *) SPOOL_FILE)
 			+ 1)
-	);
-	if (! sys_spool_file) {
-		perror("malloc()");
-		return(-1);
-	}
+		);
+		if (! sys_spool_file) {
+			perror("malloc()");
+			return(-1);
+		}
 
-	(void) strcpy (sys_spool_file, libpath);
-	(void) strcat (sys_spool_file, "/");
-	(void) strcat (sys_spool_file, NCARGDIR);
-	(void) strcat (sys_spool_file, "/");
-	(void) strcat (sys_spool_file, (char *) SPOOL_FILE);
+		(void) strcpy (sys_spool_file, libpath);
+		(void) strcat (sys_spool_file, "/");
+		(void) strcat (sys_spool_file, NCARGDIR);
+		(void) strcat (sys_spool_file, "/");
+		(void) strcat (sys_spool_file, (char *) SPOOL_FILE);
 
-	/*
-	 * read in spooler specifications from system file
-	 */
-	if ((fp = fopen(sys_spool_file, "r")) != NULL) {
+		/*
+		 * read in spooler specifications from system file
+		 */
+		if ((fp = fopen(sys_spool_file, "r")) != NULL) {
 
-		file_get_spooler(fp, &spoolers);
-		(void) fclose(fp);
+			file_get_spooler(fp, &spoolers);
+			(void) fclose(fp);
+		}
 	}
 
 	/*
