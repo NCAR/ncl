@@ -1,5 +1,5 @@
 C
-C      $Id: xy02f.f,v 1.3 1995-02-16 14:53:24 haley Exp $
+C      $Id: xy02f.f,v 1.4 1995-02-18 00:53:44 boote Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -60,8 +60,8 @@ C
 C
 C Define the data object.  Since only the Y values are specified here,
 C each Y value will be paired with its integer array index.  The id
-C for this object will later be used as the value for the XyPlot object
-C resource, "xyCurveData".
+C for this object will later be used as the value for the XYPlot object
+C resource, 'xyCoordData'.
 C
       call nhlfrlclear(rlist)
       call nhlfrlsetfloatarray(rlist,'caYArray',ydra,NPTS,ierr)
@@ -73,7 +73,7 @@ C XWorkstation object.  The resources that are being changed are done
 C in the "xy02.res" file, and they will affect this XyPlot object.
 C
       call nhlfrlclear(rlist)
-      call nhlfrlsetinteger(rlist,'xyCurveData',dataid,ierr)
+      call nhlfrlsetinteger(rlist,'xyCoordData',dataid,ierr)
       call nhlfcreate(plotid,'xyPlot',nhlfxyplotlayerclass,xworkid,
      +                rlist,ierr)
 C

@@ -1,5 +1,5 @@
 /*
-**      $Id: xy01c.c,v 1.7 1995-02-16 14:53:19 haley Exp $
+**      $Id: xy01c.c,v 1.8 1995-02-18 00:53:41 boote Exp $
 */
 /***********************************************************************
 *                                                                      *
@@ -67,10 +67,10 @@ main()
     NhlCreate(&appid,"xy01",NhlappLayerClass,NhlDEFAULT_APP,0);
     NhlCreate(&xworkid,"xy01Work",NhlxWorkstationLayerClass,NhlDEFAULT_APP,0);
 /*
- * Define the data object.  Since only the Y values are specified here,
- * each Y value will be paired with its integer array index.  The id
- * for this object will later be used as the value for the XyPlot
- * object resource, "xyCurveData".
+ * Define the data object.  Since only the Y values are specified here, each
+ * Y value will be paired with its integer array index.  The id for this
+ * object will later be used as the value for the XYPlot data resource,
+ * "xyCoordData".
  */
     NhlRLClear(rlist);
     NhlRLSetFloatArray(rlist,NhlNcaYArray,ydra,NhlNumber(ydra));
@@ -80,7 +80,7 @@ main()
  * XWorkstation object.
  */
     NhlRLClear(rlist);
-    NhlRLSetInteger(rlist,NhlNxyCurveData,dataid);
+    NhlRLSetInteger(rlist,NhlNxyCoordData,dataid);
     NhlCreate(&plotid,"xyPlot",NhlxyPlotLayerClass,xworkid,rlist);
 /*
  * Draw the plot (to its parent XWorkstation).

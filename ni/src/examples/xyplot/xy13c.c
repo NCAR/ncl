@@ -1,5 +1,5 @@
 /*
- *      $Id: xy13c.c,v 1.3 1995-02-02 22:58:27 haley Exp $
+ *      $Id: xy13c.c,v 1.4 1995-02-18 00:53:54 boote Exp $
  */
 /************************************************************************
 *									*
@@ -752,19 +752,12 @@ main
 	NhlRLSetString(srlist,NhlNctYTableType,NhlTFloat);
 	NhlRLSetArray(srlist,NhlNctYTable,ydata,NhlTPointer,sizeof(float*),31);
 	NhlRLSetIntegerArray(srlist,NhlNctYTableLengths,lengths,31);
+
 	NhlCreate(&dataid,"dataid",NhlcoordArrTableLayerClass,NhlDEFAULT_APP,
 								srlist);
 
 	NhlRLClear(srlist);
-	NhlRLSetInteger(srlist,NhlNdsDataItem,dataid);
-	NhlRLSetIntegerArray(srlist,NhlNxyColors,colors,31);
-	NhlRLSetIntegerArray(srlist,NhlNxyDashPatterns,dash_patterns,31);
-	NhlRLSetInteger(srlist,NhlNxyLabelMode,NhlCUSTOM);
-	NhlRLSetStringArray(srlist,NhlNxyExplicitLabels,line_labels,31);
-	NhlCreate(&xydata,"xydata",NhlxyDataDepLayerClass,NhlDEFAULT_APP,srlist);
-
-	NhlRLClear(srlist);
-	NhlRLSetInteger(srlist,NhlNxyCurveData,xydata);
+	NhlRLSetInteger(srlist,NhlNxyCoordData,dataid);
 	NhlRLSetFloat(srlist,NhlNvpXF,.25);
 	NhlRLSetFloat(srlist,NhlNvpYF,.75);
 	NhlRLSetFloat(srlist,NhlNvpWidthF,.5);
@@ -774,17 +767,35 @@ main
 					(sizeof(dry_zeroP)/sizeof(float)));
 
 	NhlRLSetFloat(srlist,NhlNxyLineLabelFontHeightF,.015);
-	NhlRLSetFloat(srlist,NhlNxyDashSegmentLengthF,.3);
-	NhlRLSetFloat(srlist,NhlNxyYMinF,300.0);
-	NhlRLSetFloat(srlist,NhlNxyYMaxF,1000.0);
-	NhlRLSetFloat(srlist,NhlNxyXMinF,-45.0);
-	NhlRLSetFloat(srlist,NhlNxyXMaxF,30.0);
-	NhlRLSetInteger(srlist,NhlNxyYReverse,True);
+	NhlRLSetFloat(srlist,NhlNxyLineDashSegLenF,.3);
+	NhlRLSetFloat(srlist,NhlNtrYMinF,300.0);
+	NhlRLSetFloat(srlist,NhlNtrYMaxF,1000.0);
+	NhlRLSetFloat(srlist,NhlNtrXMinF,-45.0);
+	NhlRLSetFloat(srlist,NhlNtrXMaxF,30.0);
+	NhlRLSetInteger(srlist,NhlNtrYReverse,True);
 
 	NhlRLSetString(srlist,NhlNtiMainString,"Stuve Chart");
 	NhlRLSetString(srlist,NhlNtiYAxisString,"Pressure (mb)");
 	NhlRLSetString(srlist,NhlNtiXAxisString,"Temperature (:S:o:N:C)");
 	NhlCreate(&xyplotid,"xy_plot",NhlxyPlotLayerClass,xworkid,srlist);
+
+	/*
+	 * Retrieve the XyDataSpec object so we can configure Data Specific
+	 * things.
+	 */
+	NhlRLClear(grlist);
+	NhlRLGetInteger(grlist,NhlNxyCoordDataSpec,&xydata);
+	NhlGetValues(xyplotid,grlist);
+
+	/*
+	 * Configure the Data Specific things.
+	 */
+	NhlRLClear(srlist);
+	NhlRLSetIntegerArray(srlist,NhlNxyLineColors,colors,31);
+	NhlRLSetIntegerArray(srlist,NhlNxyDashPatterns,dash_patterns,31);
+	NhlRLSetInteger(srlist,NhlNxyLabelMode,NhlCUSTOM);
+	NhlRLSetStringArray(srlist,NhlNxyExplicitLabels,line_labels,31);
+	NhlSetValues(xydata,srlist);
 
 	XtAddEventHandler(graphics,ButtonPressMask,False,
 				(XtEventHandler)SelectionEH,(XtPointer)NULL);

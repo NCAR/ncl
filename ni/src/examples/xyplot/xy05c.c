@@ -1,5 +1,5 @@
 /*
-**      $Id: xy05c.c,v 1.4 1995-02-16 14:53:34 haley Exp $
+**      $Id: xy05c.c,v 1.5 1995-02-18 00:53:50 boote Exp $
 */
 /***********************************************************************
 *                                                                      *
@@ -53,7 +53,9 @@ int len[NCURVE] = {500,200,400,300};
 main()
 {
     int     appid,xworkid,plotid,dataid[NCURVE],datadepid[NCURVE];
-    int     rlist;
+    int     *dspec = datadepid;
+    int     num_dspec;
+    int     rlist,grlist;
     int     i, j;
     float   theta;
     float   explicit_values[10];
@@ -92,9 +94,9 @@ main()
     NhlCreate(&xworkid,"xy05Work",NhlxWorkstationLayerClass,appid,0);
 /*
  * Define the Data objects.  Since only the Y values are specified here,
- * each Y value will be paired with its integer array index.  The id for
- * each object will then later be used as a value for a DataDep
- * resource, "dsDataItem".
+ * each Y value will be paired with its integer array index.  The array of
+ * data ids from these objects will become the value for the XyPlot
+ * resource "xyCurveData".
  */
     for( i = 0; i < NCURVE; i++ ) {
         NhlRLClear(rlist);
@@ -103,42 +105,58 @@ main()
         NhlCreate(&dataid[i],datastr,NhlcoordArraysLayerClass,
                   NhlDEFAULT_APP,rlist);
     }
-/*
- * Create DataDep objects each as a child of the XWorkstation object.
- * DataDep resources are used for defining things like the marker
- * colors, styles, and sizes for each line.  The array of ids from
- * these objects will become the value for the XyPlot resource
- * "xyCurveData".
- */
-    for( i = 0; i < NCURVE; i++ ) {
-        NhlRLClear(rlist);
-        NhlRLSetInteger(rlist,NhlNdsDataItem,dataid[i]);
-        sprintf(datastr,"xyDataDep%1d",i+1);
-        NhlCreate(&datadepid[i],datastr,NhlxyDataDepLayerClass,
-                  xworkid,rlist);
-    }
+
 /*
  * Create the XyPlot object which is created as a child of the
  * XWorkstation object.  The resources that are being changed are done
  * in the "xy05.res" file, and they will affect this XyPlot object.
  */
     NhlRLClear(rlist);
-    NhlRLSetIntegerArray(rlist,NhlNxyCurveData,datadepid,
-                         NhlNumber(datadepid));
+    NhlRLSetIntegerArray(rlist,NhlNxyCoordData,dataid,NhlNumber(dataid));
     NhlRLSetFloatArray(rlist,NhlNxyYIrregularPoints,explicit_values,
-                       NhlNumber(explicit_values));
-    NhlCreate(&plotid,"xyPlot",NhlxyPlotLayerClass,xworkid,rlist);
+                    NhlNumber(explicit_values));
+    NhlCreate(&plotid,"XYPlot",NhlxyPlotLayerClass,xworkid,rlist);
+
 /*
- * Draw the plot (to its parent XWorkstation).
+ * Tweak XyDataSpec resources...
+ */
+    grlist = NhlRLCreate(NhlGETRL);
+    NhlRLGetIntegerArray(grlist,NhlNxyCoordDataSpec,&dspec,&num_dspec);
+    NhlGetValues(plotid,grlist);
+    NhlRLDestroy(grlist);
+
+    if(NCURVE != num_dspec){
+	NhlPError(NhlFATAL,NhlEUNKNOWN,"Dspecs don't match Data???");
+	exit(0);
+    }
+
+    NhlRLClear(rlist);
+    NhlRLSetInteger(rlist,NhlNxyLineColor,NhlBACKGROUND);
+    NhlSetValues(dspec[0],rlist);
+
+    NhlRLClear(rlist);
+    NhlRLSetInteger(rlist,NhlNxyLineColor,NhlFOREGROUND);
+    NhlSetValues(dspec[1],rlist);
+
+    NhlRLClear(rlist);
+    NhlRLSetInteger(rlist,NhlNxyLineColor,100);
+    NhlSetValues(dspec[2],rlist);
+
+    NhlRLClear(rlist);
+    NhlRLSetInteger(rlist,NhlNxyLineColor,120);
+    NhlSetValues(dspec[3],rlist);
+
+/*
+ * Draw the plot (to its parent X Workstation)
  */
     NhlDraw(plotid);
     NhlFrame(xworkid);
+
 /*
  * NhlDestroy destroys the given id and all of its children
- * so destroying "xworkid" will also destroy "plotid".
+ * so destroying "appid will destroy "xworkid" which will also destroy "plotid".
  */
     NhlRLDestroy(rlist);
-    NhlDestroy(xworkid);
     NhlDestroy(appid);
 /*
  * Restores state.

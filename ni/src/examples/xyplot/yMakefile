@@ -1,5 +1,5 @@
 #
-#   $Id: yMakefile,v 1.10 1995-02-15 22:42:31 haley Exp $
+#   $Id: yMakefile,v 1.11 1995-02-18 00:53:55 boote Exp $
 #
 #   Makefile for HLU XYPlot examples
 #
@@ -22,6 +22,7 @@ OBJS       = $(COBJS) $(FOBJS)
 INCLUDES   = xy13c.h 
 ASCDATA    = xy12c.asc
 RESFILES   = xy01.res xy02.res xy03.res xy04.res xy05.res
+NCGMS	   = xy11c.ncgm xy11f.ncgm xy12c.ncgm
 EXFILES    = $(SRCS) $(INCLUDES)
 
 InstallTarget($(EXFILES),$(INSTALL_LIB),$(HLUEXROOT)/$(MYNAME))
@@ -46,5 +47,5 @@ HLUFExampleTarget(xy05f,xy05f.o)
 HLUFExampleTarget(xy11f,xy11f.o)
 
 CleanFilesTarget($(OBJS))
+CleanFilesTarget($(NCGMS))
 DependTarget($(CSRCS))
-

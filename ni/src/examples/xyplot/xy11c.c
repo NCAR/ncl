@@ -1,5 +1,5 @@
 /*
- *      $Id: xy11c.c,v 1.5 1995-02-08 18:02:30 haley Exp $
+ *      $Id: xy11c.c,v 1.6 1995-02-18 00:53:52 boote Exp $
  */
 /************************************************************************
 *									*
@@ -138,7 +138,7 @@ main()
 	NhlRLSetFloat(rlist,NhlNvpWidthF,.5);
 	NhlRLSetFloat(rlist,NhlNvpHeightF,.5);
 
-	NhlRLSetInteger(rlist,NhlNxyCurveData,dataid);
+	NhlRLSetInteger(rlist,NhlNxyCoordData,dataid);
 
 	NhlRLSetInteger(rlist,NhlNtiMainOn,True);
 	NhlRLSetInteger(rlist,NhlNtiXAxisOn,True);

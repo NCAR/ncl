@@ -1,5 +1,5 @@
 C     
-C      $Id: xy05f.f,v 1.2 1995-02-16 14:53:35 haley Exp $
+C      $Id: xy05f.f,v 1.3 1995-02-18 00:53:51 boote Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -37,7 +37,6 @@ C
       external nhlfapplayerclass
       external nhlfxworkstationlayerclass
       external nhlfcoordarrayslayerclass
-      external nhlfxydatadeplayerclass
       external nhlfxyplotlayerclass
 
       parameter(NPTS=500,NCURVE=4)
@@ -81,8 +80,8 @@ C
 C
 C Define the Data objects.  Since only the Y values are specified here,
 C each Y value will be paired with its integer array index.  The id for
-C each object will then later be used as a value for a DataDep
-C resource, "dsDataItem".
+C each object will then later be used in the xyCoordData resource of
+C the plot.
 C
       do 40 i=1,NCURVE
          call nhlfrlclear(rlist)
@@ -94,29 +93,17 @@ C
  40   continue
  50   format('xyData',i1)
 C
-C Create DataDep objects each as a child of the XWorkstation object.
-C DataDep resources are used for defining things like the marker
-C colors, styles, and sizes for each line.  The array of ids from
-C these objects will become the value for the XyPlot resource
-C "xyCurveData".
-C
-      do 60 i=1,NCURVE
-         call nhlfrlclear(rlist)
-         call nhlfrlsetinteger(rlist,'dsDataItem',dataid(i),ierr)
-         write(datastr,70)i
-         call nhlfcreate(datadepid(i),datastr,nhlfxydatadeplayerclass,
-     +        xworkid,rlist,ierr)
- 60   continue
- 70   format('xyDataDep',i1)
-C
-C Create the XyPlot object which is created as a child of the
-C XWorkstation object.  The resources that are being changed are done
-C in the "xy05.res" file, and they will affect this XyPlot object.
+C This array of Data objects is now the resource value for
+C xyCoordData.  Tweak some more XYPlot resources in the resource file
+C An XyDataSpec object gets created by XyPlot internally to deal
+C with each DataItem that is in the xyCoordData resource.  So,
+C you can set Data Specific resources using the name of each data
+C item that you add.  See the resource file ("xy05.res") to see what I mean.
 C
       call nhlfrlclear(rlist)
       call nhlfrlsetfloatarray(rlist,'xyYIrregularPoints',
      +     explicit_values,10,ierr)
-      call nhlfrlsetintegerarray(rlist,'xyCurveData',datadepid,NCURVE,
+      call nhlfrlsetintegerarray(rlist,'xyCoordData',dataid,NCURVE,
      +     ierr)
       call nhlfcreate(plotid,'xyPlot',nhlfxyplotlayerclass,xworkid,
      +                rlist,ierr)

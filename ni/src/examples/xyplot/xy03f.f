@@ -1,5 +1,5 @@
 C     
-C      $Id: xy03f.f,v 1.4 1995-02-16 14:53:28 haley Exp $
+C      $Id: xy03f.f,v 1.5 1995-02-18 00:53:46 boote Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -62,7 +62,7 @@ C
      +                0,0,ierr)
 C
 C Define the data object.  The id for this object will later be used
-C as the value for the XyPlot data resource, "xyCurveData".
+C as the value for the XyPlot data resource, 'xyCoordData'.
 C
       call nhlfrlclear(rlist)
       call nhlfrlsetfloatarray(rlist,'caXArray',xdra,NPTS,ierr)
@@ -75,7 +75,7 @@ C Xworkstation object.  The resources that are being changed are done
 C in the "xy03.res" file, and they will affect this XyPlot object.
 C
       call nhlfrlclear(rlist)
-      call nhlfrlsetinteger(rlist,'xyCurveData',dataid,ierr)
+      call nhlfrlsetinteger(rlist,'xyCoordData',dataid,ierr)
       call nhlfcreate(plotid,'xyPlot',nhlfxyplotlayerclass,xworkid,
      +                rlist,ierr)
 C

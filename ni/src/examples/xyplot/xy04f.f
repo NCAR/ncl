@@ -1,5 +1,5 @@
 C     
-C      $Id: xy04f.f,v 1.2 1995-02-16 14:53:31 haley Exp $
+C      $Id: xy04f.f,v 1.3 1995-02-18 00:53:49 boote Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -32,14 +32,13 @@ C
       external nhlfapplayerclass
       external nhlfxworkstationlayerclass
       external nhlfcoordarrayslayerclass
-      external nhlfxydatadeplayerclass
       external nhlfxyplotlayerclass
 
       parameter(NPTS=500,NCURVE=4)
       parameter(PI100=.031415926535898)
 
       integer appid,xworkid,plotid,dataid,datadepid
-      integer rlist, i, j, len(2)
+      integer rlist, i, j, len(2), grlist
       real ydra(NPTS,NCURVE), theta
       data len/NPTS,NCURVE/
 C
@@ -73,50 +72,59 @@ C
       call nhlfcreate(xworkid,'xy04Work',nhlfxworkstationlayerclass,
      +                0,0,ierr)
 C
-C Define the "CoordArrays" object.  Since only the Y values are
+C Define the data object.  The id for this object will later be used
+C as the value for the XYPlot data resource, 'xyCoordData'.
+C Since only the Y values are
 C specified here, each Y value will be paired with its integer
-C array index.  The id for this object will then later be used as
-C the value for the Data Dep resource, "dsDataItem".
+C array index.
 C
       call nhlfrlclear(rlist)
       call nhlfrlsetmdfloatarray(rlist,'caYArray',ydra,2,len,ierr)
       call nhlfcreate(dataid,'xyData',nhlfcoordarrayslayerclass,
      +                0,rlist,ierr)
 C
-C Create a DataDep object as a child of the XWorkstation object.
-C DataDep resources are used for defining things like the color, label,
-C and dash pattern of each line.  The id from this object will become
-C the value for the XyPlot resource "xyCurveData".
-C
-      call nhlfrlclear(rlist)
-      call nhlfrlsetinteger(rlist,'dsDataItem',dataid,ierr)
-      call nhlfrlsetintegerarray(rlist,'xyColors',colors,NCURVE,ierr)
-      call nhlfrlsetintegerarray(rlist,'xyDashPatterns',xydash,NCURVE,
-     +                          ierr)
-      call nhlfrlsetstringarray(rlist,'xyExplicitLabels',explabs,NCURVE,
-     +                          ierr)
-      call nhlfcreate(datadepid,'xyDataDep',nhlfxydatadeplayerclass,
-     +     xworkid,rlist,ierr)
-C
 C Create the XyPlot object which is created as a child of the
 C XWorkstation object.  The resources that are being changed are done
 C in the "xy04.res" file, and they will affect this XyPlot object.
 C
       call nhlfrlclear(rlist)
-      call nhlfrlsetinteger(rlist,'xyCurveData',datadepid,ierr)
+      call nhlfrlsetinteger(rlist,'xyCoordData',dataid,ierr)
       call nhlfcreate(plotid,'xyPlot',nhlfxyplotlayerclass,xworkid,
      +                rlist,ierr)
 C
-C Draw the plot (to its parent XWorkstation).
+C Retrieve the XyData dependent object id that was created by XyPlot
+C to determine how to display "dataid".
+C
+      call nhlfrlcreate(grlist,'GETRL')
+      call nhlfrlgetinteger(grlist,'xyCoordDataSpec',datadepid,ierr)
+      call nhlfgetvalues(plotid,grlist,ierr)
+C
+C Destroy grlist since we don't need it anymore.
+C
+      call nhlfrldestroy(grlist)
+C
+C Define Data Dependent resources.  Here's where you specify the arrays
+C for defining the color, label, and dash pattern of each line, 
+C
+      call nhlfrlclear(rlist)
+      call nhlfrlsetintegerarray(rlist,'xyLineColors',colors,NCURVE,
+     +	ierr)
+      call nhlfrlsetintegerarray(rlist,'xyDashPatterns',xydash,NCURVE,
+     +                          ierr)
+      call nhlfrlsetstringarray(rlist,'xyExplicitLabels',explabs,NCURVE,
+     +                          ierr)
+      call nhlfsetvalues(datadepid,rlist,ierr)
+C
+C Draw the plot (to its parent X Workstation)
 C
       call nhlfdraw(plotid,ierr)
       call nhlfframe(xworkid,ierr)
 C
 C NhlDestroy destroys the given id and all of its children
-C so destroying "xworkid" will also destroy "plotid".
+C so destroying 'appid' will destroy 'xworkid' which will also destroy
+C plotid.
 C
       call nhlfrldestroy(rlist)
-      call nhlfdestroy(xworkid,ierr)
       call nhlfdestroy(appid,ierr)
 C
 C Restores state.

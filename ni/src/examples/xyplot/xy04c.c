@@ -1,5 +1,5 @@
 /*
-**      $Id: xy04c.c,v 1.3 1995-02-16 14:53:30 haley Exp $
+**      $Id: xy04c.c,v 1.4 1995-02-18 00:53:48 boote Exp $
 */
 /***********************************************************************
 *                                                                      *
@@ -50,10 +50,6 @@ int len[2] = {NCURVE,NPTS};
 /*
  * Set up arrays of labels, colors, and dash patterns for each curve.
  */
-int colors[NCURVE] = {50, 75, 100, 40};
-int xydash[NCURVE] = {0, 5, 10, 15};
-char *explabs[NCURVE] ={"Curve 1","Curve 2","Curve 3", "Curve 4"};
-
 main()
 {
     int     appid,xworkid,plotid,dataid,datadepid;
@@ -90,31 +86,24 @@ main()
  */
     NhlRLClear(rlist);
     NhlRLSetMDFloatArray(rlist,NhlNcaYArray,&ydra[0][0],2,len);
-    NhlCreate(&dataid,"xyData",NhlcoordArraysLayerClass,NhlDEFAULT_APP,
+    NhlCreate(&dataid,"XYCoord",NhlcoordArraysLayerClass,NhlDEFAULT_APP,
               rlist);
 /*
- * Create a DataDep object as a child of the XWorkstation object.
- * DataDep resources are used for defining things like the color, label,
- * and dash pattern of each line.  The id from this object will become
- * the value for the XyPlot resource "xyCurveData".
- */
-    NhlRLClear(rlist);
-    NhlRLSetInteger(rlist,NhlNdsDataItem,dataid);
-    NhlRLSetIntegerArray(rlist,NhlNxyColors,colors,NhlNumber(colors));
-    NhlRLSetIntegerArray(rlist,NhlNxyDashPatterns,xydash,
-                         NhlNumber(xydash));
-    NhlRLSetStringArray(rlist,NhlNxyExplicitLabels,explabs,
-                        NhlNumber(explabs));
-    NhlCreate(&datadepid,"xyDataDep",NhlxyDataDepLayerClass,xworkid,
-              rlist);
-/*
+ * This new DataItem object is now the resource value for xyCoordData.
+ * Tweak some XYPlot resources as well (in the resource file).
+ * Also tweak some XyDataSpecific resource in the resource file as well.
+ * When Data is added to an XyPlot object, an XyDataSpec object is
+ * created internally to the XyPlot.  It has the same name as the Data
+ * object that is added, and so you can set XyDataSpec (XyPlot Data Specific)
+ * resources for each piece of data added to the xyCoordData resource.
+ *
  * Create the XyPlot object which is created as a child of the
  * XWorkstation object.  The resources that are being changed are done
  * in the "xy04.res" file, and they will affect this XyPlot object.
  */
     NhlRLClear(rlist);
-    NhlRLSetInteger(rlist,NhlNxyCurveData,datadepid);
-    NhlCreate(&plotid,"xyPlot",NhlxyPlotLayerClass,xworkid,rlist);
+    NhlRLSetInteger(rlist,NhlNxyCoordData,dataid);
+    NhlCreate(&plotid,"XYPlot",NhlxyPlotLayerClass,xworkid,rlist);
 /*
  * Draw the plot (to its parent XWorkstation).
  */

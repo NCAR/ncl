@@ -1,5 +1,5 @@
 C
-C      $Id: xy01f.f,v 1.4 1995-02-16 14:53:20 haley Exp $
+C      $Id: xy01f.f,v 1.5 1995-02-18 00:53:42 boote Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -60,9 +60,9 @@ C
      +                0,0,ierr)
 C
 C Define the data object.  Since only the Y values are specified here,
-C each Y value will be paired with its integer array index.  The id
-C for this object will later be used as the value for the XyPlot
-C object resource, "xyCurveData".
+C each Y value will be paired with its integer array index.  The id for
+C this object will later be used as the value for the XYPlot data
+C resource, 'xyCoordData'.
 C
       call nhlfrlclear(rlist)
       call nhlfrlsetfloatarray(rlist,'caYArray',ydra,NPTS,ierr)
@@ -73,7 +73,7 @@ C Create the XyPlot object which is created as a child of the
 C XWorkstation object.
 C
       call nhlfrlclear(rlist)
-      call nhlfrlsetinteger(rlist,'xyCurveData',dataid,ierr)
+      call nhlfrlsetinteger(rlist,'xyCoordData',dataid,ierr)
       call nhlfcreate(plotid,'xyPlot',nhlfxyplotlayerclass,xworkid,
      +                rlist,ierr)
 C
