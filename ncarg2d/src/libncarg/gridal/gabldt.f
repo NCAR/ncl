@@ -1,20 +1,15 @@
-C
-C	$Id: gabldt.f,v 1.1.1.1 1992-04-17 22:31:20 ncargd Exp $
-C
-C
-C-----------------------------------------------------------------------
-C C O D E   -   B L O C K   D A T A   G A B L D T
-C-----------------------------------------------------------------------
-C
+
+
       BLOCK DATA GABLDT
 C
 C This "routine" declares default values for all of the GRIDAL
 C parameters.
 C
-C Declare the common block containing real or integer parameters.
+C Declare the common block containing real and integer parameters.
 C
-        COMMON /GAREIN/ ICAX,ICLB,ICMJ,ICMN,ICWX,ICWY,IDCX,IDCY,IORX,
-     +                  IMJX,IMJY,IMNX,IMNY,NCFX,NCFY
+        COMMON /GAREIN/ ICAX,ICLB,ICMJ,ICMN,ILTY,IORX,NCFX,NCFY,RCWX,
+     +                  RCWY,RDCX,RDCY,RMJX,RMJY,RMNX,RMNY,RWAX,RWLB,
+     +                  RWMJ,RWMN
         SAVE   /GAREIN/
 C
 C Declare the common block containing character parameters.
@@ -25,53 +20,32 @@ C
 C
 C Declare default values:
 C
+C FNLX is the format to be used to generate numeric labels for the X
+C axis.
+C
+        DATA FNLX / '(E10.3)' /
+C
+C FNLY is the format to be used to generate numeric labels for the Y
+C axis.
+C
+        DATA FNLY / '(E10.3)' /
+C
 C ICAX, ICLB, ICMJ, and ICMN are color indices for axes, labels, major
 C grid line/ticks, and minor grid lines/ticks, respectively.  Values
-C which are less than or equal to zero imply that no color is to be
-C forced for the associated item.
+C which are less than zero imply that no color is to be forced for the
+C associated item.
 C
         DATA ICAX,ICLB,ICMJ,ICMN / -1,-1,-1,-1 /
 C
-C ICWX is the character width for characters in labels on the X axis.
+C ILTY says what type of labels are to be written.  The value 0 says
+C that WTSTR is to be called, the value 1 that PLCHHQ is to be called.
 C
-        DATA ICWX / 10 /
-C
-C ICWY is the character width for characters in labels on the Y axis.
-C
-        DATA ICWY / 10 /
-C
-C IDCX is the decrement, in the X direction, from the left edge of
-C the grid (or from the vertical axis) to the nearest edge of the
-C Y-axis labels.
-C
-        DATA IDCX / 20 /
-C
-C IDCY is the decrement, in the Y direction, from the bottom edge of
-C the grid (or from the horizontal axis) to the nearest edge of the
-C X-axis labels.
-C
-        DATA IDCY / 20 /
+        DATA ILTY / 0 /
 C
 C IORX is the orientation of the labels on the X axis.  The value 0
 C means "horizontal", any other value "vertical".
 C
         DATA IORX / 0 /
-C
-C IMJX is the length of major ticks on the X axis.
-C
-        DATA IMJX / 12 /
-C
-C IMJY is the length of major ticks on the Y axis.
-C
-        DATA IMJY / 12 /
-C
-C IMNX is the length of minor ticks on the X axis.
-C
-        DATA IMNX / 8 /
-C
-C IMNY is the length of minor ticks on the Y axis.
-C
-        DATA IMNY / 8 /
 C
 C NCFX is the length (number of characters) to be assumed in positioning
 C X-axis labels.  The value 0 indicates that the non-blank portion of
@@ -87,26 +61,47 @@ C of the labels.
 C
         DATA NCFY / 0 /
 C
-C FNLX is the format to be used to generate numeric labels for the X
-C axis.
+C RCWX is the character width for characters in labels on the X axis.
 C
-        DATA FNLX / '(E10.3)' /
+        DATA RCWX / 10. /
 C
-C FNLY is the format to be used to generate numeric labels for the Y
-C axis.
+C RCWY is the character width for characters in labels on the Y axis.
 C
-        DATA FNLY / '(E10.3)' /
+        DATA RCWY / 10. /
 C
-C REVISION HISTORY -----------------------------------------------------
+C RDCX is the decrement, in the X direction, from the left edge of
+C the grid (or from the vertical axis) to the nearest edge of the
+C Y-axis labels.
 C
-C October, 1986    All new code (DJK).
+        DATA RDCX / 20. /
 C
-C November, 1988   Changed color-setting calls to use GKS routines,
-C                  rather than SPPS routines.  Inserted calls to
-C                  ensure dumping of the pen-move buffers in SPPS.
+C RDCY is the decrement, in the Y direction, from the bottom edge of
+C the grid (or from the horizontal axis) to the nearest edge of the
+C X-axis labels.
 C
-C October, 1990    Changed the test for an "I" format to look for "i"
-C                  as well as "I".
+        DATA RDCY / 20. /
 C
-C-----------------------------------------------------------------------
+C RMJX is the length of major ticks on the X axis.
+C
+        DATA RMJX / 12. /
+C
+C RMJY is the length of major ticks on the Y axis.
+C
+        DATA RMJY / 12. /
+C
+C RMNX is the length of minor ticks on the X axis.
+C
+        DATA RMNX / 8. /
+C
+C RMNY is the length of minor ticks on the Y axis.
+C
+        DATA RMNY / 8. /
+C
+C RWAX, RWLB, RWMJ, and RWMN are line widths for axes, labels, major
+C grid line/ticks, and minor grid lines/ticks, respectively.  Values
+C which are less than or equal to zero imply that no line width is to
+C be forced for the associated item.
+C
+        DATA RWAX,RWLB,RWMJ,RWMN / 0.,0.,0.,0. /
+C
       END

@@ -1,11 +1,4 @@
-C
-C	$Id: galbex.f,v 1.1.1.1 1992-04-17 22:31:18 ncargd Exp $
-C
-C
-C-----------------------------------------------------------------------
-C C O D E   -   S U B R O U T I N E   G A L B E X
-C-----------------------------------------------------------------------
-C
+
       SUBROUTINE GALBEX (LABL,MLBL,NLBL)
 C
         CHARACTER*(*) LABL
