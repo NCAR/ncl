@@ -1,5 +1,5 @@
 /*
- *      $Id: LabelBar.h,v 1.9 1995-04-07 10:42:23 boote Exp $
+ *      $Id: LabelBar.h,v 1.10 1995-06-06 01:27:32 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -25,21 +25,6 @@
 #include <ncarg/hlu/View.h>
 #include <ncarg/hlu/MultiText.h>
 
-/* public defines */
-
-#define NhlLB_MAX_BOXES   	256
-#define NhlLB_MAX_LBL_STRINGS  	(NhlLB_MAX_BOXES + 1)
-#define NhlLB_DEF_BOX_COUNT   	16
-#define NhlLB_DEF_COLOR   	NhlFOREGROUND
-#define NhlLB_DEF_PATTERN 	1
-#define NhlLB_DEF_VALUE   	0.0
-#define NhlLB_DEF_STRING  	"Label_"
-#define NhlLB_DEF_BAR_MAJOR	1.0
-#define NhlLB_DEF_BAR_MINOR	0.33
-#define NhlLb_DEF_LABEL_MINOR	0.33
-#define NhlLB_DEF_CHAR_HEIGHT	0.04
-#define NhlLB_DEF_MAX_TITLE_EXT	0.15
-#define NhlLB_DEF_TITLE_OFF	0.03
 
 /* label alignment */
 
@@ -108,7 +93,7 @@ typedef enum _NhllbBoxSizingMode {
 #define NhlNlbTitleOn			"lbTitleOn"
 #define NhlNlbTitleString		"lbTitleString"
 #define NhlNlbTitlePosition		"lbTitlePosition"
-#define NhlNlbMaxTitleExtentF		"lbMaxTitleExtentF"
+#define NhlNlbTitleExtentF		"lbTitleExtentF"
 #define NhlNlbTitleAngleF		"lbTitleAngleF"
 #define NhlNlbTitleDirection		"lbTitleDirection"
 #define NhlNlbTitleFont			"lbTitleFont"
@@ -190,7 +175,7 @@ typedef enum _NhllbBoxSizingMode {
 #define NhlClbTitleOn			"LbTitleOn"
 #define NhlClbTitleString		"LbTitleString"
 #define NhlClbTitlePosition		"LbTitlePosition"
-#define NhlClbMaxTitleExtentF		"LbMaxTitleExtentF"
+#define NhlClbTitleExtentF		"LbTitleExtentF"
 #define NhlClbTitleAngleF		"LbTitleAngleF"
 #define NhlClbTitleDirection		"LbTitleDirection"
 #define NhlClbTitleJust			"LbTitleJust"
