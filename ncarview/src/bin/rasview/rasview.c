@@ -1,5 +1,5 @@
 /*
- *	$Id: rasview.c,v 1.5 1992-02-13 18:42:04 clyne Exp $
+ *	$Id: rasview.c,v 1.6 1992-03-20 22:36:30 clyne Exp $
  */
 /*
  *	rasview.c
@@ -19,6 +19,7 @@
 #include "rasdraw.h"
 
 
+
 /*
  *      a global structure that contains values of command line options
  */
@@ -26,7 +27,7 @@ static	struct	{
 	StringType_	palette;	/* color palette		*/
 	BoolType_	quiet;		/* quiet or verbose mode	*/
 	BoolType_	version;	/* print version		*/
-	} commLineOpt;
+	} opt;
 
 /*
  *	the options that we want to have parsed
@@ -42,21 +43,17 @@ static	OptDescRec	set_options[] = {
  *	return structure for loading options
  */
 static	Option	get_options[] = {
-	{"palette", StringType, (unsigned long) &(commLineOpt.palette),
+	{"palette", StringType, (unsigned long) &(opt.palette),
 						sizeof (StringType_)
 	},
-	{"quiet", BoolType, (unsigned long) &(commLineOpt.quiet),
-						sizeof (BoolType_)
+	{"quiet", BoolType, (unsigned long) &(opt.quiet), sizeof (BoolType_)
 	},
-	{"Version", BoolType, (unsigned long) &(commLineOpt.version),
-						sizeof (BoolType_)
+	{"Version", BoolType, (unsigned long) &(opt.version), sizeof (BoolType_)
 	},
 	{
 	NULL
 	}
 };
-
-
 
 main(argc, argv)
 	int	argc;
@@ -69,14 +66,14 @@ main(argc, argv)
 	char	*pal_name;	/* name of a default color palette	*/
 	int	verbose;	/* verbose or quite mode		*/
 	int	count;		/* number of image displayed		*/
-	char	*program_name;
+	char	*prog_name;
 	int	i;
 
 	int	exit_status = 0;
 
 	void	usage();
 
-	program_name = argv[0];
+	prog_name = argv[0];
 
 	/*
 	 * register the options we're interested in and have them parsed
@@ -84,14 +81,15 @@ main(argc, argv)
 	parseOptionTable(&argc, argv, set_options);
 
 	/*
-	 * load the options into commLineOpt
+	 * load the options into opt
 	 */
 	getOptions((caddr_t) 0, get_options);
-	pal_name = commLineOpt.palette;
-	verbose = ! commLineOpt.quiet;
 
-	if (commLineOpt.version) {
-		PrintVersion(program_name);
+	pal_name = opt.palette;
+	verbose = ! opt.quiet;
+
+	if (opt.version) {
+		PrintVersion(prog_name);
 		exit(0);
 	}
 
@@ -102,7 +100,7 @@ main(argc, argv)
 	(void) RasterInit(&argc, argv);
 
 	if ((context = RasDrawOpen(&argc, argv, FALSE)) == (Context *) NULL) {
-		perror(program_name);
+		fprintf(stderr, "%s : Error initializing display\n",prog_name);
 		exit(1);
 	}
 
@@ -110,7 +108,7 @@ main(argc, argv)
 	 * make sure nothing left on command line execpt file names
 	 */
 	for (i=0; i<argc; i++) {
-		if (*argv[i] == '-') usage(program_name, (char *) NULL);
+		if (*argv[i] == '-') usage(prog_name, (char *) NULL);
 	}
 
 	/*
@@ -195,14 +193,16 @@ static	display_image(ras, context, verbose)
 
 	Raster	*RasterCreate();
 
-	if (ras->type == RAS_INDEXED) {
+	if (ras->type == RAS_INDEXED && (context->encoding & RASDRAW_8BIT)) {
 		(void) RasDraw(ras, context);
 	}
-
+	else if(ras->type == RAS_DIRECT && (context->encoding & RASDRAW_24BIT)){
+		(void) RasDraw(ras, context);
+	}
 	/*
 	 * if true color dither to indexed 8-bit image
 	 */
-	else if (ras->type == RAS_DIRECT) {
+	else if (ras->type == RAS_DIRECT && context->encoding & RASDRAW_8BIT) {
 		if (! indexed_ras) {	/* alloc memory for indexed image */
 			indexed_ras = RasterCreate(ras->nx,ras->ny,RAS_INDEXED);
 			if (indexed_ras == (Raster *) NULL) {

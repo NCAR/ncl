@@ -1,5 +1,5 @@
 /*
- *	$Id: rasdraw.h,v 1.2 1991-06-18 14:54:43 clyne Exp $
+ *	$Id: rasdraw.h,v 1.3 1992-03-20 22:36:27 clyne Exp $
  */
 #ifndef	_rasdraw_
 #define	_rasdraw_
@@ -13,7 +13,6 @@ typedef	struct	{
 	} ImageInfo;
 
 typedef	struct	{
-	int	dsp_depth;	/* number of bit-planes in visual	*/
 	long	max_colors;	/* maximum number of colors possible	*/
 	Boolean	writeable;	/* is cmap writeable			*/
 	long 	*static_pal;	/* lookup table for immutable color map	*/
@@ -37,13 +36,16 @@ typedef	struct	{
 	int	xcolor_size;	/* memory allocated to colors		*/
 	Visual	*visual;	/* The visual for the graphics canvas	*/
 	int	vis_class;	/* class of visual			*/
-	unsigned encoding;	/* available encodings (8 or 24 bit	*/
+	unsigned encoding;	/* available encodings mask (8, 24 bit)	*/
 	XImage	*ximage;	/* The image				*/
 	ImageInfo	image_info;
 	Colormap	cmap;	/* The colormap				*/
 	CMapInfo	cmap_info;
 	Display	*dpy;
 	GC	gc;		/* gc for graphics primitives		*/
+	int	dsp_depth;	/* number of bit-planes in visual	*/
+	String	app_name, 
+		app_class;
 	} Context;
 
 #define	RASDRAW_0BIT	0
