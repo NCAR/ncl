@@ -1,23 +1,27 @@
 #
-#	$Id: yMakefile,v 1.9 1996-05-07 20:19:44 haley Exp $
+#       $Id: yMakefile,v 1.10 1998-04-16 22:20:41 kennison Exp $
 #
 
 DBFILES = EzmapAreaInfo.CO EzmapAreaInfo.PO EzmapAreaInfo.PS EzmapAreaInfo.US \
 	  EzmapOutlines.CO EzmapOutlines.PO EzmapOutlines.PS EzmapOutlines.US \
-	  ezmapdata ezmap_area_ids
+	  ezmapdata ezmap_area_ids Earth..1.areas Earth..1.lines Earth..1.names
 
 PROG_LIBS	=	$(NCARGCLIB)
 DEPLIBS		=	$(DEPNCARGCLIB)
 
 InstallTarget($(DBFILES),$(INSTALL_DB),$(DBPATH))
 
-OBJECTS = ConvertMapData.o
-
 CleanFilesTarget(ConvertMapData EzmapOutlines.CO EzmapOutlines.PO \
-		 EzmapOutlines.PS EzmapOutlines.US ezmapdata)
+		 EzmapOutlines.PS EzmapOutlines.US ezmapdata \
+		 WriteLineFile Earth..1.lines \
+		 WriteNameFile Earth..1.names)
 
 FNotInstalledTarget(mapconvrt,mapconvrt.o)
-FortranProgram(ConvertMapData,$(OBJECTS),$(DEPLIBS))
+
+FortranProgram(ConvertMapData,ConvertMapData.o,$(DEPLIBS))
+
+FortranProgram(WriteLineFile,WriteLineFile.o,$(DEPLIBS))
+FortranProgram(WriteNameFile,WriteNameFile.o,$(DEPLIBS))
 
 ezmapdata: ezmapdat mapconvrt
 	-@$(RM) ezmapdata
@@ -43,3 +47,13 @@ EzmapOutlines.US: ezmapdat ConvertMapData
 	-@$(RM) EzmapOutlines.US
 	@echo "Building the EZMAP database"
 	@./ConvertMapData
+
+Earth..1.lines: Earth..1 WriteLineFile
+	-@$(RM) Earth..1.lines
+	@echo "Building the new Ezmap line file"
+	@(echo Earth..1)|./WriteLineFile
+
+Earth..1.names: Earth..1 WriteNameFile
+	-@$(RM) Earth..1.names
+	@echo "Building the new Ezmap name file"
+	@(echo Earth..1)|./WriteNameFile
