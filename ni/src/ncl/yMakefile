@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.35 1995-06-03 00:46:02 ethan Exp $
+#      $Id: yMakefile,v 1.36 1995-06-03 13:33:45 boote Exp $
 #
 #########################################################################
 #									#
@@ -76,7 +76,7 @@ STATIC_HDRS	=	AttSupport.h DataSupport.h FileSupport.h Keywords.h \
 			NclCallBacksI.h
 
 INSTALL_HDRS	=	defs.h NclApi.h ApiRecords.h NclVar.h NclBuiltIns.h \
-			NclBuiltInSupport.h
+			NclBuiltInSupport.h NclCallBacksI.h
 			
 
 API_SRCS	=	NclApi.c scanapi.c parseapi.c 
