@@ -1,5 +1,5 @@
 /*
- *      $Id: plotspecmenu.h,v 1.5 1999-07-30 03:20:58 dbrown Exp $
+ *      $Id: plotstylemenu.h,v 1.1 1999-09-20 23:59:32 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -9,7 +9,7 @@
 *									*
 ************************************************************************/
 /*
- *	File:		plotspecmenu.h
+ *	File:		plotstylemenu.h
  *
  *	Author:		David I. Brown
  *			National Center for Atmospheric Research
@@ -19,8 +19,8 @@
  *
  *	Description:	
  */
-#ifndef	_NG_PLOTSPECMENU_H
-#define	_NG_PLOTSPECMENU_H
+#ifndef	_NG_PLOTSTYLEMENU_H
+#define	_NG_PLOTSTYLEMENU_H
 
 #include <ncarg/ngo/go.h>
 #include <ncarg/ngo/browse.h>
@@ -38,7 +38,7 @@
  * Public api
  */
         
-typedef struct _NgPlotSpecMenu
+typedef struct _NgPlotStyleMenu
 {
         Widget		menubar;
         Widget		plot_mbutton;
@@ -46,25 +46,25 @@ typedef struct _NgPlotSpecMenu
         Widget		data_mbutton;
 	int		page_id;
 	NgVarData	vdata;
-} NgPlotSpecMenu;
+} NgPlotStyleMenu;
 
-NgPlotSpecMenu *
-NgCreatePlotSpecMenu(
+NgPlotStyleMenu *
+NgCreatePlotStyleMenu(
         NgGO		go,
         Widget		parent
         );
 
 NhlErrorTypes
-NgUpdatePlotSpecMenu
+NgUpdatePlotStyleMenu
 (
-        NgPlotSpecMenu		*plot_spec_menu
+        NgPlotStyleMenu		*plot_spec_menu
         );
         
 void
-NgDestroyPlotSpecMenu
+NgDestroyPlotStyleMenu
 (
-        NgPlotSpecMenu		*plot_spec_menu
+        NgPlotStyleMenu		*plot_spec_menu
         );
         
 
-#endif	/* _NG_PLOTSPECMENU_H */
+#endif	/* _NG_PLOTSTYLEMENU_H */

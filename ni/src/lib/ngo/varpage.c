@@ -1,5 +1,5 @@
 /*
- *      $Id: varpage.c,v 1.16 1999-09-11 01:07:04 dbrown Exp $
+ *      $Id: varpage.c,v 1.17 1999-09-20 23:59:40 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -502,7 +502,7 @@ static void ShaperToggleCB
                 rect.y = y;
                 rect.width = width;
                 rect.height = height;
-                XtVaGetValues(rec->plotspecmenu->menubar,
+                XtVaGetValues(rec->plotstylemenu->menubar,
                               XmNwidth,&width,
                               XmNheight,&height,
                               XmNx,&x,
@@ -526,7 +526,7 @@ static void DestroyVarPage
 
         NgDestroyVarTree(rec->vartree);
         NgDestroyDimInfoGrid(rec->diminfogrid);
-        NgDestroyPlotSpecMenu(rec->plotspecmenu);
+        NgDestroyPlotStyleMenu(rec->plotstylemenu);
         
         if (rec->datagrid) {
                 NgDestroyDataGrid(rec->datagrid);
@@ -751,7 +751,7 @@ NewVarPage
         rec->new_data = True;
         rec->data_ctrl_form = NULL;
         rec->datagrid_toggle = NULL;
-        rec->plotspecmenu = NULL;
+        rec->plotstylemenu = NULL;
         rec->start = NULL;
         rec->finish = NULL;
         rec->stride = NULL;
@@ -993,9 +993,9 @@ _NgGetVarPage
                          XmNleftAttachment,XmATTACH_WIDGET,
                          XmNleftWidget,rec->datagrid_toggle,
                          NULL);
-                rec->plotspecmenu =
-                        NgCreatePlotSpecMenu(page->go,rec->data_ctrl_form);
-                XtVaSetValues(rec->plotspecmenu->menubar,
+                rec->plotstylemenu =
+                        NgCreatePlotStyleMenu(page->go,rec->data_ctrl_form);
+                XtVaSetValues(rec->plotstylemenu->menubar,
                               XmNrightAttachment,XmATTACH_NONE,
                               XmNtopOffset,4,
                               XmNtopAttachment,XmATTACH_WIDGET,
@@ -1006,8 +1006,8 @@ _NgGetVarPage
                               XmNleftWidget,label,
                               NULL);
         }
-	rec->plotspecmenu->page_id = page->id;
-	rec->plotspecmenu->vdata = rec->vdata;
+	rec->plotstylemenu->page_id = page->id;
+	rec->plotstylemenu->vdata = rec->vdata;
 
 /* Data Grid */
         

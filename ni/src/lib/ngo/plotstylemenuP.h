@@ -1,5 +1,5 @@
 /*
- *      $Id: plotspecmenuP.h,v 1.5 1999-02-27 03:18:34 dbrown Exp $
+ *      $Id: plotstylemenuP.h,v 1.1 1999-09-20 23:59:32 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -9,7 +9,7 @@
 *									*
 ************************************************************************/
 /*
- *	File:		plotspecmenuP.h
+ *	File:		plotstylemenuP.h
  *
  *	Author:		David I. Brown
  *			National Center for Atmospheric Research
@@ -19,32 +19,28 @@
  *
  *	Description:	
  */
-#ifndef	_NG_PLOTSPECMENUP_H_
-#define	_NG_PLOTSPECMENUP_H_
+#ifndef	_NG_PLOTSTYLEMENUP_H_
+#define	_NG_PLOTSTYLEMENUP_H_
 
 #include <ncarg/ngo/goP.h>
 
 #include <ncarg/ngo/browse.h>
-#include <ncarg/ngo/plotspecmenu.h>
+#include <ncarg/ngo/plotstylemenu.h>
 #include <ncarg/ngo/datasourcegrid.h>
 
 #define DEBUG_ENTRY 1
 #define DEBUG_MENUS 1 << 1
-#define DEBUG_PLOTSPECMENU 0
+#define DEBUG_PLOTSTYLEMENU 0
 
 typedef struct _NgMenuRec 
 {
         Widget		menu;
-        int		count;
         Widget		*buttons;
-        int		alloced;
-        int		in_use;
-	NhlBoolean	modified;
 } NgMenuRec;
 
-typedef struct _PlotSpecMenuRec
+typedef struct _PlotStyleMenuRec
 {
-	NgPlotSpecMenu  public;
+	NgPlotStyleMenu  public;
         NgGO		go;
         int		nsid;
         Widget		create_dialog;
@@ -53,7 +49,7 @@ typedef struct _PlotSpecMenuRec
         NgMenuRec	plot;
         NgMenuRec	var;
         NgMenuRec	data;
-} PlotSpecMenuRec;
+} PlotStyleMenuRec;
 
-#endif	/* _NG_PLOTSPECMENUP_H_ */
+#endif	/* _NG_PLOTSTYLEMENUP_H_ */
 

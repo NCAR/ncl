@@ -1,5 +1,5 @@
 /*
- *      $Id: varpageP.h,v 1.10 1999-07-30 03:21:00 dbrown Exp $
+ *      $Id: varpageP.h,v 1.11 1999-09-20 23:59:41 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -28,7 +28,7 @@
 #include <ncarg/ngo/vartree.h>
 #include <ncarg/ngo/shaper.h>
 #include <ncarg/ngo/datagrid.h>
-#include <ncarg/ngo/plotspecmenu.h>
+#include <ncarg/ngo/plotstylemenu.h>
 
 #define DEBUG_VARPAGE 0
 
@@ -55,7 +55,7 @@ typedef struct _brVarPageRec
         NhlBoolean	new_data;
         Widget		data_ctrl_form;
         Widget		datagrid_toggle;
-        NgPlotSpecMenu  *plotspecmenu;
+        NgPlotStyleMenu  *plotstylemenu;
         NhlBoolean	datagrid_managed;
 	NgVarData	vdata;
         long		*start;
