@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.67 1997-11-13 20:06:20 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.68 1998-01-02 21:23:01 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3277,7 +3277,8 @@ static NhlErrorTypes GetDataBound
 (
 	NhlContourPlotLayer	cl,
 	NhlBoundingBox		*bbox,
-        NhlBoolean		*linear,
+        NhlBoolean		*xlinear,
+        NhlBoolean		*ylinear,
 	NhlString		entry_name
 )
 #else
@@ -3293,19 +3294,62 @@ static NhlErrorTypes GetDataBound
 	NhlContourPlotLayerPart	*cnp = 
 		(NhlContourPlotLayerPart *) &cl->contourplot;
 	int			status;
-	NhlBoolean		ezmap = False;
+	NhlBoolean		ezmap = False,x_irr = False,y_irr = False;
 	NhlTransformLayerPart	*tfp = &(cl->trans);
 
-
-        *linear = False;
+#define EPSILON 1e-2
+        
+        *xlinear = False;
+        *ylinear = False;
+        if (cnp->use_irr_trans) {
+                int i;
+                float *coords,start_diff,diff,eps,sum;
+                if (cnp->sfp->x_arr) {
+                        sum = 0;
+                        coords = (float *)cnp->sfp->x_arr->data;
+                        for (i = 1; i< cnp->sfp->x_arr->num_elements; i++)
+                                sum += fabs(coords[i] - coords[i-1]);
+                        start_diff = sum / (cnp->sfp->x_arr->num_elements-1);
+                        eps = start_diff * EPSILON;
+                        for (i = 1; i < cnp->sfp->x_arr->num_elements; i++) {
+                                diff = fabs(coords[i] - coords[i-1]);
+                                if (diff < start_diff - eps ||
+                                    diff > start_diff + eps) {
+                                        x_irr = True;
+                                        break;
+                                }
+                        }
+                }
+                if (cnp->sfp->y_arr) {
+                        sum = 0;
+                        coords = (float *)cnp->sfp->y_arr->data;
+                        for (i = 1; i< cnp->sfp->y_arr->num_elements; i++)
+                                sum += fabs(coords[i] - coords[i-1]);
+                        start_diff = sum / (cnp->sfp->y_arr->num_elements-1);
+                        eps = start_diff * EPSILON;
+                        for (i = 1; i < cnp->sfp->y_arr->num_elements; i++) {
+                                diff = fabs(coords[i] - coords[i-1]);
+                                if (diff < start_diff - eps ||
+                                    diff > start_diff + eps) {
+                                        y_irr = True;
+                                        break;
+                                }
+                        }
+                }
+        }
+#undef EPSILON
+                
 	if (cnp->trans_obj->base.layer_class->base_class.class_name ==
 	    NhlmapTransObjClass->base_class.class_name) {
 		ezmap = True;
 	}
 	else if (cnp->trans_obj->base.layer_class->base_class.class_name ==
-	    NhllogLinTransObjClass->base_class.class_name) {
-                if (! cnp->x_log && !cnp->y_log && !cnp->use_irr_trans)
-                        *linear = True;
+                 NhllogLinTransObjClass->base_class.class_name ||
+                 ! _NhlIsOverlay(cl->base.id)) {
+                if (! cnp->x_log && ! x_irr)
+                        *xlinear = True;
+                if (! cnp->y_log && ! y_irr)
+                        *ylinear = True;
 	}
 
 	if (! ezmap) {
@@ -3362,18 +3406,23 @@ static NhlErrorTypes GetDataBound
 			       NhlNmpCenterLatF,&center_lat,
 			       NhlNmpCenterRotF,&rotation,
 			       NULL);
-		if (projection == NhlCYLINDRICALEQUIDISTANT && 
-		    ! cnp->use_irr_trans) {
-			  if (limit_mode != NhlLATLON || ! rel_center_lat) {
-		    		if (center_lat == 0.0 && rotation == 0.0) 
-					*linear = True;
-			  }
-			  else if (rotation == 0.0 &&
-				   _NhlCmpFAny
-				   (max_lat-min_lat-center_lat,0.0,6) == 0.0) {
-		  			*linear = True;
-			  }
-		}
+		if (projection == NhlCYLINDRICALEQUIDISTANT) {
+                        if (limit_mode != NhlLATLON || ! rel_center_lat) {
+		    		if (center_lat == 0.0 && rotation == 0.0) {
+					*xlinear = (cnp->x_log || x_irr) ?
+                                                False : True;
+					*ylinear = (cnp->y_log || y_irr) ?
+                                                False : True;
+                                }
+                        }
+                        else if (rotation == 0.0 && _NhlCmpFAny
+                                 (max_lat-min_lat-center_lat,0.0,6) == 0.0) {
+                                *xlinear = (cnp->x_log || x_irr) ?
+                                        False : True;
+                                *ylinear = (cnp->y_log || y_irr) ?
+                                        False : True;
+                        }
+                }
 	}
 
 	return NhlNOERROR;
@@ -3413,10 +3462,10 @@ static NhlErrorTypes cnInitCellArray
 	NhlContourPlotLayerPart	*cnp = &(cnl->contourplot);
         int dunits,dwidth,dheight;
         int max_msize, max_nsize;
-        NhlBoolean linear;
+        NhlBoolean xlinear,ylinear;
 
 	c_cpseti("CAF", -1);
-	subret = GetDataBound(cnl,bbox,&linear,entry_name);
+	subret = GetDataBound(cnl,bbox,&xlinear,&ylinear,entry_name);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
         
         max_msize = (int) ((bbox->r - bbox->l) / cnp->min_cell_size);
@@ -3451,15 +3500,21 @@ static NhlErrorTypes cnInitCellArray
                 *msize = cnp->sfp->fast_len;
                 *nsize = cnp->sfp->slow_len;
         }
-        else if (cnp->raster_smoothing_on || !linear) {
+        else if (cnp->raster_smoothing_on) {
                 *msize = dwidth * cnp->raster_sample_factor;
                 *nsize = dheight * cnp->raster_sample_factor;
         }
         else {
-                *msize = MIN(dwidth,cnp->sfp->fast_len) 
-                        * cnp->raster_sample_factor;
-                *nsize = MIN(dheight,cnp->sfp->slow_len)
-                        * cnp->raster_sample_factor;
+                if (! xlinear)
+                        *msize = dwidth * cnp->raster_sample_factor;
+                else
+                        *msize = MIN(dwidth,cnp->sfp->fast_len) 
+                                * cnp->raster_sample_factor;
+                if (! ylinear)
+                        *nsize = dheight * cnp->raster_sample_factor;
+                else
+                        *nsize = MIN(dheight,cnp->sfp->slow_len)
+                                * cnp->raster_sample_factor;
         }
         
         if (!cnp->sticky_cell_size_set) {
@@ -4402,7 +4457,6 @@ static NhlErrorTypes AddDataBoundToAreamap
 				_NhlAredam(cnp->aws,xa,ya,
 					   5,17,0,9999,entry_name);
 		}
-
 	}
 	else {
 		NhlBoolean	started = False;
