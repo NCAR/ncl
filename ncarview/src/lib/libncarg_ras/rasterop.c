@@ -3,7 +3,7 @@
 
 static int	OptionCenter = True;
 
-RasterCopy(src, dst, src_x, src_y, src_nx, src_ny)
+void	RasterCopy(src, dst, src_x, src_y, src_nx, src_ny)
 	Raster	*src;
 	Raster	*dst;
 	int	src_x, src_y, src_nx, src_ny;
@@ -38,7 +38,7 @@ RasterCopy(src, dst, src_x, src_y, src_nx, src_ny)
 }
 
 /* ARGSUSED */
-RasterOp(src, dst, src_x, src_y, src_nx, src_ny, dst_x, dst_y, op)
+void	RasterOp(src, dst, src_x, src_y, src_nx, src_ny, dst_x, dst_y, op)
 	Raster	*src;
 	Raster	*dst;
 	int	src_x, src_y, src_nx, src_ny, dst_x, dst_y;

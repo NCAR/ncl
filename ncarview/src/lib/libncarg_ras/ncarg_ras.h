@@ -1,5 +1,5 @@
 /*
- *	$Id: ncarg_ras.h,v 1.9 1992-09-10 21:42:34 don Exp $
+ *	$Id: ncarg_ras.h,v 1.10 1992-09-14 18:57:09 clyne Exp $
  */
 #ifndef _RASTER_
 #define _RASTER_
@@ -333,6 +333,39 @@ extern	Raster	*RasterScale(
 	int	scale
 #endif
 	);
+
+
+extern	void	RasterCopy(
+#ifdef	NeedFuncProto
+	Raster	*src,
+	Raster	*dst,
+	int	src_x, 
+	int	src_y, 
+	int	src_nx, 
+	int	src_ny
+#endif
+);
+
+extern	void	RasterOp(
+#ifdef	NeedFuncProto
+	Raster	*src,
+	Raster	*dst,
+	int	src_x,
+	int	src_y,
+	int	src_nx,
+	int	src_ny,
+	int	dst_x,
+	int	dst_y,
+	int	op
+#endif
+);
+
+extern	int RasterCenterCrop(
+#ifdef	NeedFuncProto
+	Raster		*src,
+	Raster		*dst
+#endif
+);
 
 /********* Function deinitions for SGI semi-public interface ***********/
 
