@@ -5,7 +5,7 @@
 float *c_natgrids(int n, float x[], float y[], float z[],
                   int nxi, int nyi, float xi[], float yi[], int *ier)
 {  
-   float **data_out, *rtrn_val;
+   float **data_out=NULL, *rtrn_val=NULL;
 
    *ier = 0;
 
@@ -43,6 +43,10 @@ float *c_natgrids(int n, float x[], float y[], float z[],
    data_out = MakeGrid(nxi, nyi, xi, yi);
    if (error_status)
    {
+      if((data_out != NULL)&&(data_out[0] !=NULL)) {
+	free(data_out[0]);
+	free(data_out);
+      }
       *ier = error_status;
       return ( (float *) NULL);
    }
@@ -53,6 +57,7 @@ float *c_natgrids(int n, float x[], float y[], float z[],
    }
 
    rtrn_val = data_out[0];
+   free(data_out);
    return (rtrn_val);
 }
 void Initialize(int n, float x[], float y[], int nxi, int nyi, 

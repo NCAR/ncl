@@ -4,7 +4,7 @@
 double *c_natgridd(int n, double x[], double y[], double z[],
                    int nxi, int nyi, double xi[], double yi[], int *ier)
 {  
-   double **data_out, *rtrn_val;
+   double **data_out=NULL, *rtrn_val=NULL;
 
    *ier = 0;
 
@@ -42,6 +42,10 @@ double *c_natgridd(int n, double x[], double y[], double z[],
    data_out = MakeGridd(nxi, nyi, xi, yi);
    if (error_status)
    {
+      if((data_out !=NULL)&&(data_out[0]!=NULL)) {
+	free(data_out[0]);
+	free(data_out);
+      }
       *ier = error_status;
       return ( (double *) NULL);
    }
@@ -52,6 +56,7 @@ double *c_natgridd(int n, double x[], double y[], double z[],
    }
 
    rtrn_val = data_out[0];
+   free(data_out);
    return (rtrn_val);
 }
 void Initialized(int n, double x[], double y[], int nxi, int nyi,
