@@ -1,5 +1,5 @@
 /*
- *      $Id: dataprofile.c,v 1.2 1999-02-23 03:56:45 dbrown Exp $
+ *      $Id: dataprofile.c,v 1.3 1999-03-12 19:13:47 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -603,7 +603,7 @@ NgVarData NgNewVarData
 	vdata->rank = vdata->ndims = vdata->dims_alloced = 0;
 	vdata->start = vdata->finish = vdata->stride = NULL;
 	vdata->dl = NULL;
-	vdata->qfile = vdata->qvar = NrmNULLQUARK;
+	vdata->qfile = vdata->qvar = vdata->qcoord = NrmNULLQUARK;
 	vdata->size_only = False;
 	vdata->type = NORMAL;
 	vdata->data_ix = -1;
@@ -662,6 +662,7 @@ NhlBoolean NgCopyVarData
 	to_var_data->cflags = from_var_data->cflags;  
 	to_var_data->qvar = from_var_data->qvar;
 	to_var_data->qfile = from_var_data->qfile;
+	to_var_data->qcoord = from_var_data->qcoord;
 	to_var_data->type = from_var_data->type;
 	to_var_data->ndims = from_var_data->ndims;
 	to_var_data->size_only = from_var_data->size_only;
@@ -810,7 +811,8 @@ extern NhlBoolean NgSetUnknownDataItem
 	vdata->rank = vdata->ndims = gen->num_dimensions;
 	vdata->cflags = 0; /* don't want vars specified like this used
 			      in a setvalues call */
-	vdata->qfile = vdata->qvar = NrmNULLQUARK;
+	vdata->qfile = vdata->qvar = vdata->qcoord = NrmNULLQUARK;
+	vdata->type = NORMAL;
 
 	NhlFreeGenArray(gen);
 	return True;
@@ -957,7 +959,7 @@ NhlBoolean NgSetExpressionVarData
 
 		vdata->cflags = _NgSYMBOL_CHANGE | _NgSHAPE_CHANGE;
 
-		vdata->qfile = vdata->qvar = NrmNULLQUARK;
+		vdata->qfile = vdata->qvar = vdata->qcoord = NrmNULLQUARK;
 
 		if (dl->u.var->n_dims > vdata->ndims) {
 			size = dl->u.var->n_dims * sizeof(long);
@@ -1000,6 +1002,7 @@ NhlBoolean NgSetVarData
 	NgVarData		var_data,
 	NrmQuark		qfile,
 	NrmQuark		qvar,
+	NrmQuark		qcoord,
 	int			set_dim_count,
 	long			*start,
 	long			*finish,
@@ -1046,14 +1049,19 @@ NhlBoolean NgSetVarData
 	if (qvar == NrmNULLQUARK) {
 		if (var_data->qvar)
 			var_data->cflags = _NgALL_CHANGE;
-		var_data->qvar = var_data->qfile = NrmNULLQUARK;
+		var_data->qvar = var_data->qfile = 
+			var_data->qcoord = NrmNULLQUARK;
 		var_data->rank = var_data->ndims = 0;
 		return True;
 	}
 	if (! dl) {
-		if (qfile)
+		if (qfile && qcoord)
+			dl = NclGetFileVarCoordInfo(qfile,qvar,qcoord);
+		else if (qfile)
 			dl = NclGetFileVarInfo(qfile,qvar);
-		else 
+		else if (qcoord) 
+			dl = NclGetVarCoordInfo(qvar,qcoord);
+		else
 			dl = NclGetVarInfo(qvar);
 		if (! (dl)) {
 			NHLPERROR((NhlFATAL,ENOMEM,NULL));
@@ -1064,7 +1072,8 @@ NhlBoolean NgSetVarData
 
 	vinfo = dl->u.var;
 	size = vinfo->n_dims * sizeof(long);
-	if (qfile != var_data->qfile || qvar != var_data->qvar)
+	if (qfile != var_data->qfile || qvar != var_data->qvar ||
+		qcoord != var_data->qcoord)
 		var_data->cflags |= _NgSYMBOL_CHANGE;
 
         if (vinfo->n_dims > var_data->dims_alloced) {
@@ -1143,8 +1152,18 @@ NhlBoolean NgSetVarData
 	var_data->size_only = False;
 	var_data->qvar = qvar;
 	var_data->qfile = qfile;
+	var_data->qcoord = qcoord;
 	var_data->ndims = vinfo->n_dims;
-	var_data->type = qfile ? FILEVAR : NORMAL; 
+
+	if (qfile && qcoord)
+		var_data->type = COORD;
+	else if (qfile)
+		var_data->type = FILEVAR;
+	else if (qcoord)
+		var_data->type = COORD;
+	else
+		var_data->type = NORMAL; 
+
 	rank = NgVarDataRank(var_data);
 	if (var_data->rank != rank) {
 		var_data->rank = rank;
@@ -1575,7 +1594,8 @@ static NhlBoolean UpdateDependentDataShape
 
 	cflags = vdata->cflags;
 
-	NgSetVarData(NULL,vdata,vdata->qfile,vdata->qvar,rvdata->ndims,
+	NgSetVarData(NULL,vdata,vdata->qfile,vdata->qvar,NrmNULLQUARK,
+		     rvdata->ndims,
 		     rvdata->start,rvdata->finish,rvdata->stride,
 		     _NgDEFAULT_SHAPE);
 	vdata->cflags |= cflags;
@@ -1769,7 +1789,7 @@ static NhlBoolean GetImpliedVectorDataItem
 	 * we can use the shape variables from the reference variable as
 	 * a template for this dependent variable.
 	 */
-	NgSetVarData(NULL,vdata,qfile,qvar,rvdata->ndims,
+	NgSetVarData(NULL,vdata,qfile,qvar,NrmNULLQUARK,rvdata->ndims,
 		     rvdata->start,rvdata->finish,rvdata->stride,
 		     _NgDEFAULT_VAR);
 
@@ -1882,7 +1902,8 @@ NhlBoolean NgSetDependentVarData
 				continue;
 			if (vdata->set_state == _NgDEFAULT_SHAPE) {
 				NgSetVarData(NULL,vdata,vdata->qfile,
-					     vdata->qvar,1,&rvdata->start[dim],
+					     vdata->qvar,vdata->qcoord,1,
+					     &rvdata->start[dim],
 					     &rvdata->finish[dim],
 					     &rvdata->stride[dim],
 					     _NgDEFAULT_SHAPE);
@@ -1890,12 +1911,22 @@ NhlBoolean NgSetDependentVarData
 			else {
 				if (rvinfo->coordnames[dim] <= NrmNULLQUARK)
 					continue;
-				NgSetVarData(NULL,vdata,rvdata->qfile,
-					     rvinfo->coordnames[dim],1,
-					     &rvdata->start[dim],
-					     &rvdata->finish[dim],
-					     &rvdata->stride[dim],
-					     _NgDEFAULT_VAR);
+				if (rvdata->qfile) 
+					NgSetVarData(NULL,vdata,rvdata->qfile,
+						     rvinfo->coordnames[dim],
+						     NrmNULLQUARK,1,
+						     &rvdata->start[dim],
+						     &rvdata->finish[dim],
+						     &rvdata->stride[dim],
+						     _NgDEFAULT_VAR);
+				else 
+					NgSetVarData(NULL,vdata,NrmNULLQUARK,
+						     rvdata->qvar,
+						     rvinfo->coordnames[dim],1,
+						     &rvdata->start[dim],
+						     &rvdata->finish[dim],
+						     &rvdata->stride[dim],
+						     _NgDEFAULT_VAR);
 			}
 			continue;
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: varpageP.h,v 1.8 1999-02-23 03:56:55 dbrown Exp $
+ *      $Id: varpageP.h,v 1.9 1999-03-12 19:13:49 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -32,6 +32,14 @@
 
 #define DEBUG_VARPAGE 0
 
+typedef struct _brVarSaveStateRec {
+	NgVarData	vdata;
+        long		*start;
+        long		*finish;
+        long		*stride;
+	XmLArray	datalinks;
+	NhlBoolean	shaper_managed;
+} brVarSaveStateRec, *brVarSaveState;
 
 typedef struct _brVarPageRec 
 {

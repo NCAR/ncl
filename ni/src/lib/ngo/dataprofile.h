@@ -1,5 +1,5 @@
 /*
- *      $Id: dataprofile.h,v 1.2 1999-02-23 03:56:45 dbrown Exp $
+ *      $Id: dataprofile.h,v 1.3 1999-03-12 19:13:47 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -66,6 +66,7 @@ typedef struct _NgVarDataRec
 {
         NrmQuark 		qfile;
         NrmQuark 		qvar;
+	NrmQuark		qcoord;
 	NclApiDataList          *dl;
 	NclVarTypes		type;
         int			ndims;       /* current shape info follows */
@@ -225,6 +226,7 @@ NhlBoolean NgSetVarData
 	NgVarData		var_data,
 	NrmQuark		qfile,
 	NrmQuark		qvar,
+	NrmQuark		qcoord,
 	int			set_dim_count,
 	long			*start,
 	long			*finish,

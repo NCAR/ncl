@@ -1,5 +1,5 @@
 /*
- *      $Id: Folder.c,v 1.2 1997-10-03 20:07:32 dbrown Exp $
+ *      $Id: Folder.c,v 1.3 1999-03-12 19:13:46 dbrown Exp $
  */
 /*
 (c) Copyright 1994, 1995, 1996 Microline Software, Inc.  ALL RIGHTS RESERVED
@@ -3571,9 +3571,18 @@ int bitmapWidth, bitmapHeight;
 	Pixmap pix, inactPix;
 	Window root;
 	Display *dpy;
+#if 0
 	int depth;
+#endif
 	char name[20];
-
+/* 
+ * added vars 
+ */
+	int x,y;
+	unsigned int wd,h,b,depth;
+/*
+ * end addition
+ */
 	if (!XmLIsFolder(w))
 		{
 		XmLWarning(w, "AddBitmapTab() - widget not a XmLFolder");
@@ -3581,8 +3590,18 @@ int bitmapWidth, bitmapHeight;
 		}
 	f = (XmLFolderWidget)w;
 	dpy = XtDisplay(w);
+/* 
+ * modified to use the actual depth (which might not be the default depth)
+ */
+#if 0
 	root = DefaultRootWindow(dpy);
 	depth = DefaultDepthOfScreen(XtScreen(w));
+#endif
+	XGetGeometry(dpy,XtWindow(w),
+		     &root,&x,&y,&wd,&h,&b,&depth);
+/* 
+ * end modification
+ */
 	pix = XCreatePixmapFromBitmapData(dpy, root, bitmapBits,
 		bitmapWidth, bitmapHeight, f->manager.foreground,
 		f->core.background_pixel, depth);

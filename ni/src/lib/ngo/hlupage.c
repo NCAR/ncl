@@ -1,5 +1,5 @@
 /*
- *      $Id: hlupage.c,v 1.21 1999-02-23 03:56:48 dbrown Exp $
+ *      $Id: hlupage.c,v 1.22 1999-03-12 19:13:48 dbrown Exp $
  */
 /*******************************************x*****************************
 *									*
@@ -645,9 +645,17 @@ static void GetDataVal
 					NrmQuarkToString(vdata->qvar));
 				break;
 			case COORD:
-				sprintf(buf,"%s&%s(",
-					NrmQuarkToString(vdata->qfile),
-					NrmQuarkToString(vdata->qvar));
+				if (vdata->qfile)
+					sprintf(buf,"%s->%s&%s(",
+						NrmQuarkToString(vdata->qfile),
+						NrmQuarkToString(vdata->qvar),
+						NrmQuarkToString
+						(vdata->qcoord));
+				else 
+					sprintf(buf,"%s&%s(",
+						NrmQuarkToString(vdata->qvar),
+						NrmQuarkToString
+						(vdata->qcoord));
 				break;
 			case NORMAL:
 				sprintf(buf,"%s(",
@@ -687,9 +695,14 @@ static void GetDataVal
 			 vdata->start,vdata->finish,vdata->stride);
 		break;
 	case COORD:
-		val = NclReadVarCoord
-			(vdata->qfile,vdata->qvar,
-			 vdata->start,vdata->finish,vdata->stride);
+		if (vdata->qfile) 
+			val = NclReadFileVarCoord
+				(vdata->qfile,vdata->qfile,vdata->qvar,
+				 vdata->start,vdata->finish,vdata->stride);
+		else
+			val = NclReadVarCoord
+				(vdata->qvar,vdata->qcoord,
+				 vdata->start,vdata->finish,vdata->stride);
 		break;
 	case NORMAL:
 		val = NclReadVar
@@ -2279,6 +2292,7 @@ FreeHluSaveState
 	FreeDataLinks(hs_state->datalinks);
 	NgFreeDataProfile(hs_state->data_profile);
 	NhlFree(hs_state);
+	return;
 }
 
 static void
@@ -2711,7 +2725,31 @@ NewHluPage
         
         return pdp;
 }
-        
+
+static void RestoreHluState(
+	brHluPageRec	*rec,
+	NgPageSaveState save_state
+)
+{
+	brHluSaveState hs_state = (brHluSaveState) save_state->page_state;
+
+	rec->public.class_name = hs_state->class_name;
+	rec->public.plot_style = hs_state->plot_style;
+	rec->public.plot_style_dir = hs_state->plot_style_dir;
+	rec->hlu_id = hs_state->hlu_id;
+	rec->state = hs_state->state;
+	rec->do_auto_update = hs_state->do_auto_update;
+	rec->public.data_profile = hs_state->data_profile;
+	rec->data_object_count = hs_state->data_object_count;
+	rec->data_objects = hs_state->data_objects;
+	rec->datalinks = hs_state->datalinks;
+	rec->has_input_data = hs_state->has_input_data;
+	NhlFree(hs_state);
+	NhlFree(save_state);
+
+	return;
+}        
+
 extern brPageData *
 NgGetHluPage
 (
@@ -2795,21 +2833,7 @@ NgGetHluPage
                          sel,SetValCB,user_data);
 	}
 	if (save_state) {
-		brHluSaveState hs_state = 
-			(brHluSaveState) save_state->page_state;
-		rec->public.class_name = hs_state->class_name;
-		rec->public.plot_style = hs_state->plot_style;
-		rec->public.plot_style_dir = hs_state->plot_style_dir;
-		rec->hlu_id = hs_state->hlu_id;
-		rec->state = hs_state->state;
-		rec->do_auto_update = hs_state->do_auto_update;
-		rec->public.data_profile = hs_state->data_profile;
-		rec->data_object_count = hs_state->data_object_count;
-		rec->data_objects = hs_state->data_objects;
-		rec->datalinks = hs_state->datalinks;
-		rec->has_input_data = hs_state->has_input_data;
-		NhlFree(hs_state);
-		NhlFree(save_state);
+		RestoreHluState(rec,save_state);
 	}
 
         if (rec->state == _hluCREATED)

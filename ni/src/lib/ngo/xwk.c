@@ -1,5 +1,5 @@
 /*
- *      $Id: xwk.c,v 1.12 1999-02-23 03:56:56 dbrown Exp $
+ *      $Id: xwk.c,v 1.13 1999-03-12 19:13:49 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -146,7 +146,7 @@ ColorCB
 		gcv.function = GXxor;
 		gcv.line_width = 0;
 		xp->xor_gc = XCreateGC
-			(x->dpy,DefaultRootWindow(x->dpy),
+			(x->dpy,XtWindow(xp->graphics),
 			 (GCLineWidth|GCBackground|GCForeground|GCFunction),
 			 &gcv);
 		XtAddEventHandler(xp->graphics,ButtonPressMask,False,
@@ -437,6 +437,7 @@ colorMapEditor
 							NgcolorMapClass,xwkid,
 			NgNcmWork,	xwk->xwk.xwork->base.id,
 			NULL);
+		
 	}
 
 	NgGOPopup(xwk->xwk.cmap_editor);
@@ -564,10 +565,18 @@ MapGraphicsEH
 {
 	NgXWk	xwk = (NgXWk)udata;
 
-	if((event->type != MapNotify) && (event->type != UnmapNotify))
+	if ((event->type != MapNotify) && (event->type != UnmapNotify))
+		return;
+
+	if (event->type == MapNotify && event->xmap.window != XtWindow(widget))
+		return;
+	else if (event->xunmap.window != XtWindow(widget))
 		return;
 
 	xwk->xwk.mapped = (event->type == MapNotify);
+#if DEBUG_XWK
+	printf("EH mapped = %d\n",xwk->xwk.mapped);
+#endif
 
 	return;
 }
@@ -628,7 +637,7 @@ XWkDestroy
 	if (xp->xor_gc) {
 		XFreeGC(xwk->go.x->dpy,xp->xor_gc);
 		if (xp->graphics) 
-			XtRemoveEventHandler(xp->graphics,ButtonPressMask,
+			XtRemoveEventHandler(xp->graphics,StructureNotifyMask,
 					     False,MapGraphicsEH,xwk);
 	}
 	if (xp->views)
