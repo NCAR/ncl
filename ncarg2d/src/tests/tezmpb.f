@@ -1,5 +1,5 @@
 C
-C $Id: tezmpa.f,v 1.5 1998-05-05 23:37:08 kennison Exp $
+C $Id: tezmpb.f,v 1.1 1998-05-05 23:37:09 kennison Exp $
 C
 C
 C Define error file, Fortran unit number, workstation type, and
@@ -15,7 +15,7 @@ C
 C
 C Invoke demo driver.
 C
-      CALL TEZMPA (IERR,IWKID)
+      CALL TEZMPB (IERR,IWKID)
 C
 C Deactivate and close workstation, close GKS.
 C
@@ -29,12 +29,12 @@ C
 
 
 
-      SUBROUTINE TEZMPA (IERR,IWKID)
+      SUBROUTINE TEZMPB (IERR,IWKID)
 C
 C PURPOSE                To provide a simple demonstration of the use
-C                        of EZMAPA.
+C                        of EZMAPB.
 C
-C USAGE                  CALL TEZMPA (IERR,IWKID)
+C USAGE                  CALL TEZMPB (IERR,IWKID)
 C
 C ARGUMENTS
 C
@@ -46,22 +46,22 @@ C                          = 1, otherwise
 C
 C I/O                    If the test is successful, the message
 C
-C                          EZMAPA TEST EXECUTED--SEE PLOTS TO CERTIFY
+C                          EZMAPB TEST EXECUTED--SEE PLOTS TO CERTIFY
 C
 C                        is written on unit 6.
 C
 C PRECISION              Single.
 C
-C REQUIRED LIBRARY       EZMAP, EZMAPA, AREAS, SPPS
+C REQUIRED LIBRARY       EZMAP, EZMAPA, EZMAPB, AREAS, SPPS
 C FILES
 C
 C REQUIRED GKS LEVEL     0A
 C
 C LANGUAGE               FORTRAN
 C
-C HISTORY                Written in June, 1987.
+C HISTORY                Written in May, 1998.
 C
-C ALGORITHM              TEZMPA draws a solid-color map of a portion
+C ALGORITHM              TEZMPB draws a solid-color map of a portion
 C                        of Europe.
 C
 C PORTABILITY            FORTRAN 77
@@ -69,11 +69,11 @@ C
 C
 C Define an array in which to construct the area map.
 C
-        DIMENSION IAMA(25000)
+        DIMENSION IAMA(100000)
 C
 C Dimension the arrays needed by ARSCAM and ARDRLN for x/y coordinates.
 C
-        DIMENSION XCRA(200),YCRA(200)
+        DIMENSION XCRA(2000),YCRA(2000)
 C
 C Dimension the arrays needed by ARSCAM and ARDRLN for area and group
 C identifiers.
@@ -137,7 +137,7 @@ C
         CALL MAPROJ ('ME',0.,0.,0.)
         CALL MAPSET ('CO',30.,-15.,60.,30.)
 C
-C Make MAPBLA use 1 and 2 as the group identifiers.
+C Make MPLNAM use 1 and 2 as the group identifiers.
 C
         CALL MAPSTI ('G1',1)
         CALL MAPSTI ('G2',2)
@@ -153,11 +153,11 @@ C
 C
 C Initialize the area map.
 C
-        CALL ARINAM (IAMA,25000)
+        CALL ARINAM (IAMA,100000)
 C
 C Add edges to the area map.
 C
-        CALL MAPBLA (IAMA)
+        CALL MPLNAM ('Earth..1',3,IAMA)
 C
 C Pre-process the area map.
 C
@@ -170,7 +170,7 @@ C
 C
 C Color the map.
 C
-        CALL ARSCAM (IAMA,XCRA,YCRA,200,IAAI,IAGI,2,COLRAM)
+        CALL ARSCAM (IAMA,XCRA,YCRA,2000,IAAI,IAGI,2,COLRAM)
 C
 C Flush PLOTIT's buffers and set polyline color index to black.
 C
@@ -182,11 +182,11 @@ C
         CALL MAPSTI ('LA',0)
         CALL MAPSTI ('MV',1)
         CALL MAPLBL
-        CALL MAPLOT
+        CALL MPLNDR ('Earth..1',3)
 C
 C Draw lines of latitude and longitude over water.
 C
-        CALL MAPGRM (IAMA,XCRA,YCRA,200,IAAI,IAGI,2,COLRLN)
+        CALL MAPGRM (IAMA,XCRA,YCRA,2000,IAAI,IAGI,2,COLRLN)
 C
 C Advance the frame.
 C
@@ -199,7 +199,7 @@ C
 C
         RETURN
 C
- 1001   FORMAT ('  EZMAPA TEST EXECUTED--SEE PLOTS TO CERTIFY')
+ 1001   FORMAT ('  EZMAPB TEST EXECUTED--SEE PLOTS TO CERTIFY')
 C
       END
 
@@ -240,7 +240,7 @@ C
 C find the index of the suggested color for the area, set the fill area
 C color index, and fill the area.
 C
-            CALL GSFACI (MAPACI(ITMP))
+            CALL GSFACI (MPISCI(ITMP))
 C
             CALL GFA (NCRA-1,XCRA,YCRA)
 C
@@ -285,7 +285,7 @@ C
 C if the suggested color for the area implies that it is over water
 C (the color index 1 is used only for water) ...
 C
-          IF (MAPACI(ITMP).EQ.1) THEN
+          IF (MPISCI(ITMP).EQ.1) THEN
 C
 C flush PLOTIT's buffers, set the polyline color index to black, and
 C draw the line.
