@@ -1,19 +1,27 @@
 #
-#   $Id: yMakefile,v 1.5 1995-02-08 18:10:49 haley Exp $
+#   $Id: yMakefile,v 1.6 1995-02-15 22:37:42 haley Exp $
 #
 #   Makefile for HLU LabeBar examples
 #
+
+MYNAME      = labelbar
 
 PROG_LIBS   =   $(HLULIBS) $(CNCARGLIBS) $(NCARGLIBS)
 EXTRA_LIBS  =   $(XMOTIFCLIENTLIBS)
 SYS_LIBS    =   $(CTOFLIBS) -lm
 
-SRCS        = lb01c.c lb02c.c lb01f.f lb02f.f lb01n.ncl lb02n.ncl
-OBJS        = lb01c.o lb02c.o lb01f.o lb02f.o
-RES         = lb01.res lb02.res
-EXFILES     = $(SRCS) $(RES)
+CSRCS     = lb01c.c lb02c.c
+FSRCS     = lb01f.f lb02f.f
+NSRCS     = lb01n.ncl lb02n.ncl
+COBJS     = lb01c.o lb02c.o
+FOBJS     = lb01f.o lb02f.o
+SRCS      = $(CSRCS) $(FSRCS)
+OBJS      = $(COBJS) $(FOBJS)
+RESFILES  = lb01.res lb02.res
 
-InstallTarget($(EXFILES),$(INSTALL_LIB),$(HLUEXROOT))
+InstallTarget($(SRCS),$(INSTALL_LIB),$(HLUEXROOT)/$(MYNAME))
+InstallTarget($(NSRCS),$(INSTALL_LIB),$(NCLEXROOT)/$(MYNAME))
+InstallTarget($(RESFILES),$(INSTALL_LIB),$(RESFILEROOT)/$(MYNAME))
 
 HLUCExampleTarget(lb01c,lb01c.o)
 HLUCExampleTarget(lb02c,lb02c.o)
@@ -22,5 +30,5 @@ HLUFExampleTarget(lb01f,lb01f.o)
 HLUFExampleTarget(lb02f,lb02f.o)
 
 CleanFilesTarget($(OBJS))
-DependTarget($(SRCS))
+DependTarget($(CSRCS))
 

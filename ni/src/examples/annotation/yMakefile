@@ -1,21 +1,27 @@
 #
-#   $Id: yMakefile,v 1.2 1995-02-08 17:53:44 haley Exp $
+#   $Id: yMakefile,v 1.3 1995-02-15 22:35:18 haley Exp $
 #
 #   Makefile for HLU Annotation examples
 #
+
+MYNAME      = annotation
 
 PROG_LIBS   = $(HLULIBS) $(CNCARGLIBS) $(NCARGLIBS)
 EXTRA_LIBS  = $(XLIB)
 SYS_LIBS    = $(CTOFLIBS) -lm
 
-SRCS    = an01c.c an01f.f
-OBJS    = an01c.o an01f.o
-RES     = an01.res
-EXFILES = $(SRCS) $(RES)
+CSRCS       = an01c.c
+FSRCS       = an01f.f
+COBJS       = an01c.o
+FOBJS       = an01f.o
+SRCS        = $(CSRCS) $(FSRCS)
+OBJS        = $(COBJS) $(FOBJS)
+RESFILES    = an01.res
 
-InstallTarget($(EXFILES),$(INSTALL_LIB),$(HLUEXROOT))
+InstallTarget($(SRCS),$(INSTALL_LIB),$(HLUEXROOT)/$(MYNAME))
+InstallTarget($(RESFILES),$(INSTALL_LIB),$(RESFILEROOT)/$(MYNAME))
 
 HLUCExampleTarget(an01c,an01c.o)
 HLUFExampleTarget(an01f,an01f.o)
 CleanFilesTarget($(OBJS))
-DependTarget($(SRCS))
+DependTarget($(CSRCS))

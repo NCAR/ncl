@@ -1,19 +1,25 @@
 #
-#   $Id: yMakefile,v 1.2 1995-02-08 17:59:40 haley Exp $
+#   $Id: yMakefile,v 1.3 1995-02-15 22:39:17 haley Exp $
 #
 #   Makefile for HLU MapPlot examples
 #
+
+MYNAME      = mapplot
 
 PROG_LIBS   =   $(HLULIBS) $(CNCARGLIBS) $(NCARGLIBS)
 EXTRA_LIBS  =   $(XMOTIFCLIENTLIBS)
 SYS_LIBS    =   $(CTOFLIBS) -lm
 
-SRCS        = mp01c.c mp02c.c mp03c.c mp01f.f mp02f.f mp03f.f
-OBJS        = mp01c.o mp02c.o mp03c.o mp01f.o mp02f.o mp03f.o
-RES         = mp01.res mp02.res mp03.res
-EXFILES     = $(SRCS) $(RES)
+CSRCS    = mp01c.c mp02c.c mp03c.c
+FSRCS    = mp01f.f mp02f.f mp03f.f
+COBJS    = mp01c.o mp02c.o mp03c.o
+FOBJS    = mp01f.o mp02f.o mp03f.o
+SRCS     = $(CSRCS) $(FSRCS)
+OBJS     = $(COBJS) $(FOBJS)
+RESFILES = mp01.res mp02.res mp03.res
 
-InstallTarget($(EXFILES),$(INSTALL_LIB),$(HLUEXROOT))
+InstallTarget($(SRCS),$(INSTALL_LIB),$(HLUEXROOT)/$(MYNAME))
+InstallTarget($(RESFILES),$(INSTALL_LIB),$(RESFILEROOT)/$(MYNAME))
 
 HLUCExampleTarget(mp01c,mp01c.o)
 HLUCExampleTarget(mp02c,mp02c.o)
@@ -23,5 +29,5 @@ HLUFExampleTarget(mp02f,mp02f.o)
 HLUFExampleTarget(mp03f,mp03f.o)
 
 CleanFilesTarget($(OBJS))
-DependTarget($(SRCS))
+DependTarget($(CSRCS))
 

@@ -1,15 +1,13 @@
 #
-#   $Id: yMakefile,v 1.3 1995-02-13 23:46:56 scheitln Exp $
+#   $Id: yMakefile,v 1.4 1995-02-15 22:36:16 haley Exp $
 #
 #   Makefile for HLU Basic examples
 #
 
-SRCS        = basic01n.ncl basic02n.ncl basic03n.ncl basic04n.ncl basic05n.ncl
-RES         = basic03.res
-EXFILES     = $(SRCS) $(RES)
+MYNAME      = basic
 
-InstallTarget($(EXFILES),$(INSTALL_LIB),$(HLUEXROOT))
+NSRCS       = basic01n.ncl basic02n.ncl basic03n.ncl basic04n.ncl basic05n.ncl
+RESFILES    = basic03.res
 
-CleanFilesTarget($(OBJS))
-DependTarget($(SRCS))
-
+InstallTarget($(NSRCS),$(INSTALL_LIB),$(NCLEXROOT)/$(MYNAME))
+InstallTarget($(RESFILES),$(INSTALL_LIB),$(RESFILEROOT)/$(MYNAME))

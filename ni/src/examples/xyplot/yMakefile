@@ -1,24 +1,33 @@
 #
-#   $Id: yMakefile,v 1.9 1995-02-10 15:18:50 haley Exp $
+#   $Id: yMakefile,v 1.10 1995-02-15 22:42:31 haley Exp $
 #
 #   Makefile for HLU XYPlot examples
 #
+
+MYNAME = xyplot
 
 PROG_LIBS   =   $(HLULIBS) $(CNCARGLIBS) $(NCARGLIBS)
 EXTRA_LIBS  =   $(XMOTIFCLIENTLIBS)
 SYS_LIBS    =   $(CTOFLIBS) -lm
 
-SRCS        = xy01c.c xy02c.c xy03c.c xy04c.c xy05c.c xy11c.c xy12c.c \
-		xy13c.c xy01f.f xy02f.f xy03f.f xy04f.f xy05f.f xy11f.f \
-		xy01n.ncl xy02n.ncl xy03n.ncl xy04n.ncl xy05n.ncl
-OBJS        = xy01c.o xy02c.o xy03c.o xy04c.o xy05c.o xy11c.o xy12c.o \
-		xy13c.o xy01f.o xy02f.o xy03f.o xy04f.o xy05f.o xy11f.o
-INCLUDES    = xy13c.h 
-DATA        = xy12c.asc
-RES         = xy01.res xy02.res xy03.res xy04.res xy05.res
-EXFILES     = $(SRCS) $(INCLUDES) $(DATA) $(RES)
+CSRCS      = xy01c.c xy02c.c xy03c.c xy04c.c xy05c.c xy11c.c xy12c.c \
+             xy13c.c 
+FSRCS      = xy01f.f xy02f.f xy03f.f xy04f.f xy05f.f xy11f.f
+NSRCS      = xy01n.ncl xy02n.ncl xy03n.ncl xy04n.ncl xy05n.ncl
+COBJS      = xy01c.o xy02c.o xy03c.o xy04c.o xy05c.o xy11c.o xy12c.o \
+             xy13c.o 
+FOBJS      = xy01f.o xy02f.o xy03f.o xy04f.o xy05f.o xy11f.o
+SRCS       = $(CSRCS) $(FSRCS)
+OBJS       = $(COBJS) $(FOBJS)
+INCLUDES   = xy13c.h 
+ASCDATA    = xy12c.asc
+RESFILES   = xy01.res xy02.res xy03.res xy04.res xy05.res
+EXFILES    = $(SRCS) $(INCLUDES)
 
-InstallTarget($(EXFILES),$(INSTALL_LIB),$(HLUEXROOT))
+InstallTarget($(EXFILES),$(INSTALL_LIB),$(HLUEXROOT)/$(MYNAME))
+InstallTarget($(NSRCS),$(INSTALL_LIB),$(NCLEXROOT)/$(MYNAME))
+InstallTarget($(RESFILES),$(INSTALL_LIB),$(RESFILEROOT)/$(MYNAME))
+InstallTarget($(ASCDATA),$(INSTALL_LIB),$(DATAROOT)/asc)
 
 HLUCExampleTarget(xy01c,xy01c.o)
 HLUCExampleTarget(xy02c,xy02c.o)
@@ -37,5 +46,5 @@ HLUFExampleTarget(xy05f,xy05f.o)
 HLUFExampleTarget(xy11f,xy11f.o)
 
 CleanFilesTarget($(OBJS))
-DependTarget($(SRCS))
+DependTarget($(CSRCS))
 

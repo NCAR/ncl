@@ -1,20 +1,27 @@
 #
-#   $Id: yMakefile,v 1.4 1995-02-08 20:19:50 haley Exp $
+#   $Id: yMakefile,v 1.5 1995-02-15 22:38:47 haley Exp $
 #
 #   Makefile for HLU Legend examples
 #
+
+MYNAME      = legend
 
 PROG_LIBS   =   $(HLULIBS) $(CNCARGLIBS) $(NCARGLIBS)
 EXTRA_LIBS  =   $(XMOTIFCLIENTLIBS)
 SYS_LIBS    =   $(CTOFLIBS) -lm
 
-SRCS        = lg01c.c lg02c.c lg03c.c lg01f.f lg02f.f lg03f.f \
-			lg01n.ncl lg02n.ncl lg03n.ncl
-OBJS        = lg01c.o lg02c.o lg03c.o lg01f.o lg02f.o lg03f.o 
-RES         = lg01.res lg02.res lg03.res
-EXFILES     = $(SRCS) $(RES)
+CSRCS    = lg01c.c lg02c.c lg03c.c
+FSRCS    = lg01f.f lg02f.f lg03f.f
+NSRCS    = lg01n.ncl lg02n.ncl lg03n.ncl
+COBJS    = lg01c.o lg02c.o lg03c.o
+FOBJS    = lg01f.o lg02f.o lg03f.o
+SRCS     = $(CSRCS) $(FSRCS)
+OBJS     = $(COBJS) $(FOBJS)
+RESFILES = lg01.res lg02.res lg03.res
 
-InstallTarget($(EXFILES),$(INSTALL_LIB),$(HLUEXROOT))
+InstallTarget($(SRCS),$(INSTALL_LIB),$(HLUEXROOT)/$(MYNAME))
+InstallTarget($(NSRCS),$(INSTALL_LIB),$(NCLEXROOT)/$(MYNAME))
+InstallTarget($(RESFILES),$(INSTALL_LIB),$(RESFILEROOT)/$(MYNAME))
 
 HLUCExampleTarget(lg01c,lg01c.o)
 HLUCExampleTarget(lg02c,lg02c.o)
@@ -25,5 +32,5 @@ HLUFExampleTarget(lg02f,lg02f.o)
 HLUFExampleTarget(lg03f,lg03f.o)
 
 CleanFilesTarget($(OBJS))
-DependTarget($(SRCS))
+DependTarget($(CSRCS))
 
