@@ -1,5 +1,5 @@
 /*
- *	$Id: gcap.c,v 1.33 1993-02-09 03:15:29 clyne Exp $
+ *	$Id: gcap.c,v 1.34 1993-03-26 01:55:14 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -281,6 +281,20 @@ CGMC *c;
 			ESprintf(errno,"fopen(%s, r)", tty_in);
 			return(-1);
 		}
+	}
+
+	/*
+	 * this is a nasty hack to make sure that if the graphcap for 
+	 * this device defines a default colormap that it is not
+	 * overwritten later by the common default color map that
+	 * ctrans supplies
+	 */
+	if (MAP_INDEX_DEFINED > 0) {
+		/*
+		 * load the common default color NOW. Later, the 
+		 * graphcap-defined default colormap will override this one
+		 */
+		gcap_update_color_table();
 	}
 
 
