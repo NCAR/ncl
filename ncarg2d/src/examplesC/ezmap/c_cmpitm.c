@@ -1,5 +1,5 @@
 /*
- * $Id: c_cmpitm.c,v 1.1 1994-05-13 14:26:24 haley Exp $
+ * $Id: c_cmpitm.c,v 1.2 1994-05-31 16:27:02 haley Exp $
  */
 
 #include <stdio.h>
@@ -27,6 +27,7 @@ main()
 {
     extern int mask1();
     extern void circle();
+	extern void cmpmsk();
     float clat[NPTS], clon[NPTS], xwrk[NWRK], ywrk[NWRK];
     float plim1[2], plim2[2], plim3[2], plim4[2];
     int map[LMAP], iarea[NGRPS], igrp[NGRPS], icir;
@@ -69,6 +70,7 @@ void circle (rlat,rlon,radius,clat,clon,npts)
 float rlat, rlon, radius, *clat, *clon;
 int npts;
 {
+	extern void rotate();
 /*
  * Points on a circle around the North Pole are rotated to lie around
  * the point at latitude RLAT and longitude RLON.
@@ -103,7 +105,7 @@ int npts;
     return;
 }
 
-rotate (iaxs,angl,ucrd,vcrd,wcrd)
+void rotate (iaxs,angl,ucrd,vcrd,wcrd)
 int iaxs;
 float angl,*ucrd,*vcrd,*wcrd;
 {
@@ -137,7 +139,7 @@ float angl,*ucrd,*vcrd,*wcrd;
     return;
 }
 
-cmpmsk(proj, plat, plon, rota, outln, jlim, plim1, plim2, plim3, plim4, 
+void cmpmsk(proj, plat, plon, rota, outln, jlim, plim1, plim2, plim3, plim4, 
        grd, map, lmap)
 char proj[3], outln[3], jlim[3];
 float plat, plon, rota, grd;

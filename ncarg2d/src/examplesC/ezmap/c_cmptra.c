@@ -1,5 +1,5 @@
 /*
- * $Id: c_cmptra.c,v 1.1 1994-05-13 14:26:25 haley Exp $
+ * $Id: c_cmptra.c,v 1.2 1994-05-31 16:27:03 haley Exp $
  */
 
 #include <stdio.h>
@@ -10,6 +10,7 @@
 main()
 {
     float plim1[2], plim2[2], plim3[2], plim4[2];
+	extern void cmptra();
 /*
  * Open GKS, Turn Clipping off
  */
@@ -28,7 +29,7 @@ main()
 	c_clsgks();
 }
 
-cmptra(proj, plat, plon, rota, outln, jlim, plim1, plim2, plim3, plim4)
+void cmptra(proj, plat, plon, rota, outln, jlim, plim1, plim2, plim3, plim4)
 char proj[3], outln[3], jlim[3];
 float plim1[2], plim2[2], plim3[2], plim4[2];
 float plat, plon, rota;
