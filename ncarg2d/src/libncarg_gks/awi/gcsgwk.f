@@ -1,5 +1,5 @@
 C
-C	$Id: gcsgwk.f,v 1.5 1996-10-07 19:14:11 fred Exp $
+C	$Id: gcsgwk.f,v 1.6 1996-10-08 00:09:17 fred Exp $
 C
       SUBROUTINE GCSGWK(WKID,SGNA)
 C
@@ -116,7 +116,8 @@ C
    30 CONTINUE
 C
 C  If the copy is to a non-CGM, or if the segment transformation
-C  is not the identity, do the copy by parsing the segments.
+C  is not the identity, or if the clipping rectangle transform 
+C  flag is set, do the copy by parsing the segments.
 C
       DO 60 I=1,NUMSEG
         IF (SEGS(I) .EQ. SGNA) THEN

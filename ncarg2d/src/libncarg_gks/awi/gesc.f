@@ -1,5 +1,5 @@
 C
-C	$Id: gesc.f,v 1.23 1996-10-07 19:24:08 fred Exp $
+C	$Id: gesc.f,v 1.24 1996-10-08 00:09:18 fred Exp $
 C
       SUBROUTINE GESC(FCTID,LIDR,IDR,MLODR,LODR,ODR)
 C
@@ -617,7 +617,14 @@ C
           OPS = GGKOP
         ENDIF
       ELSE IF (FCTID .EQ. -1386) THEN
-        READ (IDR,501,ERR=130) IGSGCP
+        READ (IDR,501,ERR=137) IGSGCP
+        GO TO 136
+  137   CONTINUE
+        ERS = 1
+        CALL GERHND(182,EESC,ERF)
+        ERS = 0
+        RETURN
+  136   CONTINUE
 C
 C
 C  PostScript escapes.

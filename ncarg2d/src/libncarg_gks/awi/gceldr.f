@@ -1,5 +1,5 @@
 C
-C	$Id: gceldr.f,v 1.2 1994-05-11 23:27:19 fred Exp $
+C	$Id: gceldr.f,v 1.3 1996-10-08 00:09:15 fred Exp $
 C
       SUBROUTINE GCELDR(IOS,STATUS)
 C
@@ -72,6 +72,16 @@ C
       RY(2) = REAL(Q(2))/32767.
       RX(3) = REAL(R(1))/32767.
       RY(3) = REAL(R(2))/32767.
+C
+C  Transform the corner points using the current transform matrix.
+C
+      RX(1) = CURTM(1,1)*RX(1) + CURTM(1,2)*RY(1) + CURTM(1,3)
+      RY(1) = CURTM(2,1)*RX(1) + CURTM(2,2)*RY(1) + CURTM(2,3)
+      RX(2) = CURTM(1,1)*RX(2) + CURTM(1,2)*RY(2) + CURTM(1,3)
+      RY(2) = CURTM(2,1)*RX(2) + CURTM(2,2)*RY(2) + CURTM(2,3)
+      RX(3) = CURTM(1,1)*RX(3) + CURTM(1,2)*RY(3) + CURTM(1,3)
+      RY(3) = CURTM(2,1)*RX(3) + CURTM(2,2)*RY(3) + CURTM(2,3)
+C
       STRL1 = 0
       STRL2 = 0
 C
