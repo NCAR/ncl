@@ -1,5 +1,5 @@
 .\"
-.\"     $Id: ngpict.m,v 1.1 1993-03-11 16:28:46 haley Exp $
+.\"     $Id: ngpict.m,v 1.2 1993-03-21 02:43:27 haley Exp $
 .\"
 .TH NGPICT 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .na
@@ -13,7 +13,9 @@ ready and waiting after a pause.
 .SH SYNOPSIS
 CALL NGPICT(WKID,ACTION)
 .SH C-BINDING SYNOPSIS
- --------------
+#include <ncarg/ncargC.h>
+.sp
+void c_ngpict(int wkid, int action);
 .SH DESCRIPTION 
 .IP WKID 12
 (an input parameter of type INTEGER) which designates the workstation
@@ -74,7 +76,9 @@ in the X11 window, that window will be cleared before program execution
 continues.
 .SH ACCESS
 To use NGPICT, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+and ncarg_loc, preferably in that order.  To use c_ngpict, load the
+NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks, and 
+ncarg_loc, preferably in that order.
 .SH MESSAGES
 Non-fatal errors are reported for values of ACTION out of range and
 for values of ACTION inappropriately applied to a metafile.  Also,

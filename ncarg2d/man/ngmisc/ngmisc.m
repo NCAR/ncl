@@ -1,5 +1,5 @@
 .\"
-.\"     $Id: ngmisc.m,v 1.1 1993-03-11 16:28:44 haley Exp $
+.\"     $Id: ngmisc.m,v 1.2 1993-03-21 02:43:23 haley Exp $
 .\"
 .TH NGMISC 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -12,10 +12,16 @@ NGDOTS - Draws filled circular dots at specified positions.
 NGPICT - Facilitates GKS workstation control functions.
 NGWSYM - Draws symbols from the official WMO/NOAA weather symbol charts.
 .SH C-BINDING SYNOPSIS
- ------------------
+#include <ncarg/ncargC.h>
+.sp
+void c_ngdots(float *x, float *y, int num, float size, int icolor);
+void c_ngpict(int wkid, int action);
+void c_ngwsym(char *ftype, int num, float x, float y, float size, int icolor, int ialt);
 .SH ACCESS
 To use any of the functions in the NGMISC collection, load the NCAR 
 Graphics libraries ncarg, ncarg_gks, and ncarg_loc, preferably in that order.
+To use any of the NGMISC C-bindings, load the libraries ncargC, ncarg_gksC, 
+ncarg, ncarg_gks, and ncarg_loc, preferably in that order.
 .SH MESSAGES
 See the man pages for the individual functions for details on all
 appropriate messages.

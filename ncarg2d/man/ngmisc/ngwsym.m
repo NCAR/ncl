@@ -1,5 +1,5 @@
 .\"
-.\"     $Id: ngwsym.m,v 1.1 1993-03-11 16:28:49 haley Exp $
+.\"     $Id: ngwsym.m,v 1.2 1993-03-21 02:43:29 haley Exp $
 .\"
 .TH NGWSYM 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .na
@@ -11,7 +11,9 @@ font.
 .SH SYNOPSIS
 CALL NGWSYM(FTYPE,NUM,X,Y,SIZE,ICOLOR,IALT)
 .SH C-BINDING SYNOPSIS
- ----------------
+#include <ncarg/ncargC.h>
+.sp
+void c_ngwsym(char *ftype, int num, float x, float y, float size, int icolor, int ialt);
 .SH DESCRIPTION 
 .IP FTYPE 12
 (an input parameter of type CHARACTER) specifying the desired font.  Legal
@@ -78,7 +80,9 @@ would plot the alternate symbol for slight or moderate
 thunderstorm without hail.
 .SH ACCESS
 To use NGWSYM, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+and ncarg_loc, preferably in that order.  To use c_ngwsym, load the
+NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks, and 
+ncarg_loc, preferably in that order.
 .SH MESSAGES
 If an illegal font, or symbol number within a font, is requested,
 then a warning is issued.
