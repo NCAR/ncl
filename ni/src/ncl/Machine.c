@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.71 1998-10-09 18:36:37 ethan Exp $
+ *      $Id: Machine.c,v 1.72 1998-11-25 01:04:05 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1724,7 +1724,7 @@ if(the_list != NULL) {
 								tmp_att = _NclCopyAtt((NclAtt)_NclGetObj(tmp_var1->var.att_id),NULL);
 							for(j = 0; j< tmp_var1->var.n_dims; j++) {
 								if(tmp_var1->var.coord_vars[j] != -1) {
-									tmp_coord_var = _NclCopyVar((NclVar)_NclGetObj(tmp_var1->var.coord_vars[i]),NULL,NULL);
+									tmp_coord_var = _NclCopyVar((NclVar)_NclGetObj(tmp_var1->var.coord_vars[j]),NULL,NULL);
 									coord_ids[j] = tmp_coord_var->obj.id;
 								} else {
 									coord_ids[j] = -1;
@@ -1857,7 +1857,7 @@ if(the_list != NULL) {
 							tmp_att = _NclCopyAtt((NclAtt)_NclGetObj(tmp_var1->var.att_id),NULL);
 						for(j = 0; i< tmp_var1->var.n_dims; i++) {
 							if(tmp_var1->var.coord_vars[j] != -1) {
-								tmp_coord_var = _NclCopyVar((NclVar)_NclGetObj(tmp_var1->var.coord_vars[i]),NULL,NULL);
+								tmp_coord_var = _NclCopyVar((NclVar)_NclGetObj(tmp_var1->var.coord_vars[j]),NULL,NULL);
 								coord_ids[j] = tmp_coord_var->obj.id;
 							} else {
 								coord_ids[j] = -1;
@@ -2184,7 +2184,7 @@ if(the_list != NULL) {
 							tmp_att = _NclCopyAtt((NclAtt)_NclGetObj(tmp_var1->var.att_id),NULL);
 						for(j = 0; j< tmp_var1->var.n_dims; j++) {
 							if(tmp_var1->var.coord_vars[j] != -1) {
-								tmp_coord_var = _NclCopyVar((NclVar)_NclGetObj(tmp_var1->var.coord_vars[i]),NULL,NULL);
+								tmp_coord_var = _NclCopyVar((NclVar)_NclGetObj(tmp_var1->var.coord_vars[j]),NULL,NULL);
 								coord_ids[j] = tmp_coord_var->obj.id;
 							} else {
 								coord_ids[j] = -1;
@@ -2319,7 +2319,7 @@ if(the_list != NULL) {
 							tmp_att = _NclCopyAtt((NclAtt)_NclGetObj(tmp_var1->var.att_id),NULL);
 						for(j = 0; i< tmp_var1->var.n_dims; i++) {
 							if(tmp_var1->var.coord_vars[j] != -1) {
-								tmp_coord_var = _NclCopyVar((NclVar)_NclGetObj(tmp_var1->var.coord_vars[i]),NULL,NULL);
+								tmp_coord_var = _NclCopyVar((NclVar)_NclGetObj(tmp_var1->var.coord_vars[j]),NULL,NULL);
 								coord_ids[j] = tmp_coord_var->obj.id;
 							} else {
 								coord_ids[j] = -1;
