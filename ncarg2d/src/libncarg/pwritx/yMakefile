@@ -1,20 +1,18 @@
 #
-#	$Id: yMakefile,v 1.4 1996-10-25 21:44:59 boote Exp $
+#	$Id: yMakefile,v 1.5 1998-04-17 22:53:44 haley Exp $
 #
 MYNAME	= pwritx
 
 GENERIC_SRCS = \
 	 ccheck.f dcheck.f gethol.f gtdgts.f gtnum.f gtnumb.f gtsign.f\
-	 htable.f mkmsk.f pwritx.f pwrx.f pwrxbd.f xtch.f
+	 htable.f mkmsk.f pwritx.f pwrx.f pwrxbd.f xtch.f openpw.F
 
 GENERIC_OBJS = \
 	 ccheck.o dcheck.o gethol.o gtdgts.o gtnum.o gtnumb.o gtsign.o\
-	 htable.o mkmsk.o pwritx.o pwrx.o pwrxbd.o xtch.o
+	 htable.o mkmsk.o pwritx.o pwrx.o pwrxbd.o xtch.o openpw.o
 
-NEW_SRCS = openpw.f
-NEW_OBJS = openpw.o
-SOURCES = $(GENERIC_SRCS) $(NEW_SRCS)
-OBJECTS = $(GENERIC_OBJS) $(NEW_OBJS)
+SOURCES = $(GENERIC_SRCS)
+OBJECTS = $(GENERIC_OBJS)
 
 FCPP_OPJS	= openpw.f
 
