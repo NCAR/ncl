@@ -1,5 +1,5 @@
 /*
- *	$Id: ncarg_ras.h,v 1.12 1992-09-17 18:21:08 don Exp $
+ *	$Id: ncarg_ras.h,v 1.13 1992-09-28 16:19:17 don Exp $
  */
 #ifndef _RASTER_
 #define _RASTER_
@@ -209,8 +209,10 @@ typedef enum {
 #define False		0
 #endif
 
-/************************* FUNCTION DEFINITIONS **************************/
+/************************* Function Prototypes **************************/
 
+/* This macro protects C function names from C++ name-mangling. */
+NCARG_PROTO_BEGIN
 
 extern	int	RasterInit(
 #ifdef	NeedFuncProto
@@ -805,5 +807,7 @@ extern int AbekasSetFunctions(
 	Raster	*ras
 #endif
 	);
+
+NCARG_PROTO_END
 
 #endif /* _RASTER_ */
