@@ -1,6 +1,6 @@
 #
 #
-#	$Id: yMakefile,v 1.19 1997-04-11 16:02:35 boote Exp $
+#	$Id: yMakefile,v 1.20 2002-02-23 01:14:18 haley Exp $
 #
 #
 #	Makefile for idt -- Interactive Image Display Tool
@@ -41,6 +41,12 @@ SRCS	= \
 
 CProgram($(MYNAME),$(OBJS),$(DEPLIBS))
 DependTarget($(SRCS))
+
+#if defined(i386) || defined(Darwin)
+talkto.o: talkto.c
+        $(CC) $(ALLINCLUDES) $(CCOPTIONS) $(COPT) -c talkto.c
+#endif
+
 
 #
 #	w_idt.c needs to know the name of the translator
