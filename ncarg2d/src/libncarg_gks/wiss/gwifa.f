@@ -1,5 +1,5 @@
 C
-C	$Id: gwifa.f,v 1.2 1994-04-28 23:40:34 fred Exp $
+C	$Id: gwifa.f,v 1.3 1994-05-17 00:39:53 fred Exp $
 C
       SUBROUTINE GWIFA
 C
@@ -13,7 +13,7 @@ C
       include 'gwiast.h'
       include 'gwiadc.h'
       include 'gwiopc.h'
-      include 'gksenu.h'
+      include 'gwienu.h'
 C
       INTEGER  KALL, IPRIM, NBYTES, INDX1, INDX2, IX
       SAVE

@@ -1,5 +1,5 @@
 C
-C	$Id: gwibkd.f,v 1.5 1994-05-12 21:48:49 fred Exp $
+C	$Id: gwibkd.f,v 1.6 1994-05-17 00:39:42 fred Exp $
 C
       BLOCKDATA GWIBKD
 C
@@ -11,7 +11,7 @@ C
       include 'gwiadf.h'
       include 'gwiadc.h'
       include 'gwiopc.h'
-      include 'gksenu.h'
+      include 'gwienu.h'
 C
 C  Workstation state list.
 C

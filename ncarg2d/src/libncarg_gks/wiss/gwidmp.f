@@ -1,5 +1,5 @@
 C
-C	$Id: gwidmp.f,v 1.2 1993-03-19 01:29:29 fred Exp $
+C	$Id: gwidmp.f,v 1.3 1994-05-17 00:39:50 fred Exp $
 C
       SUBROUTINE GWIDMP(ICNTX,RCNTX)
 C
@@ -17,7 +17,7 @@ C
       include 'gwiio.h'
       include 'gwiins.h'
       include 'gwiopc.h'
-      include 'gksenu.h'
+      include 'gwienu.h'
 C
       INTEGER NUMO(2),RERR,ICNTX(31)
       REAL    RCNTX(19)

@@ -1,5 +1,5 @@
 C
-C	$Id: gwitx.f,v 1.2 1994-04-28 23:40:41 fred Exp $
+C	$Id: gwitx.f,v 1.3 1994-05-17 00:40:00 fred Exp $
 C
       SUBROUTINE GWITX
 C
@@ -21,7 +21,7 @@ C
       include 'gwiast.h'
       include 'gwiadc.h'
       include 'gwiopc.h'
-      include 'gksenu.h'
+      include 'gwienu.h'
 C
       INTEGER  NUMO(2), KALL, IPRIM, NBYTES
       INTEGER  GFINAL, G01PBL

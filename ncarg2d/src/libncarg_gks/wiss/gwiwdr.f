@@ -1,5 +1,5 @@
 C
-C	$Id: gwiwdr.f,v 1.4 1994-05-07 00:46:39 fred Exp $
+C	$Id: gwiwdr.f,v 1.5 1994-05-17 00:40:01 fred Exp $
 C
       SUBROUTINE GWIWDR(ICNTX,RCNTX)
 C
@@ -34,7 +34,7 @@ C
       include 'gwiio.h'
       include 'gwiins.h'
       include 'gwiopc.h'
-      include 'gksenu.h'
+      include 'gwienu.h'
 C
       SAVE
 C

@@ -1,5 +1,5 @@
 C
-C	$Id: gwiclw.f,v 1.1 1993-01-09 02:09:09 fred Exp $
+C	$Id: gwiclw.f,v 1.2 1994-05-17 00:39:48 fred Exp $
 C
       SUBROUTINE GWICLW
 C
@@ -13,7 +13,7 @@ C
       include 'gwiast.h'
       include 'gwiadf.h'
       include 'gwiopc.h'
-      include 'gksenu.h'
+      include 'gwienu.h'
 C
       SAVE
 C

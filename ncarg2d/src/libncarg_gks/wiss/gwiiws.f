@@ -1,5 +1,5 @@
 C
-C	$Id: gwiiws.f,v 1.2 1994-04-28 23:40:36 fred Exp $
+C	$Id: gwiiws.f,v 1.3 1994-05-17 00:39:55 fred Exp $
 C
       SUBROUTINE GWIIWS
 C
@@ -10,7 +10,7 @@ C  Initialize workstation state list and other internal constants.
 C
       include 'gwiwsl.h'
       include 'gwiins.h'
-      include 'gksenu.h'
+      include 'gwienu.h'
 C
 C  Internal constants.
 C

@@ -1,5 +1,5 @@
 C
-C	$Id: gwiclp.f,v 1.2 1994-04-28 23:40:31 fred Exp $
+C	$Id: gwiclp.f,v 1.3 1994-05-17 00:39:46 fred Exp $
 C
       SUBROUTINE GWICLP(IFORCE)
 C
@@ -12,7 +12,7 @@ C  rectangle is put into the metafile depending upon whether a
 C  change has been detected from the previous setting.
 C
       include 'gksin.h'
-      include 'gksenu.h'
+      include 'gwienu.h'
       include 'gwiwsl.h'
       include 'gwiins.h'
       include 'gwiopc.h'

@@ -1,5 +1,5 @@
 C
-C	$Id: gwica.f,v 1.2 1994-04-28 23:40:29 fred Exp $
+C	$Id: gwica.f,v 1.3 1994-05-17 00:39:44 fred Exp $
 C
       SUBROUTINE GWICA
 C
@@ -9,7 +9,7 @@ C
       include 'gwiio.h'
       include 'gwiins.h'
       include 'gwiwsl.h'
-      include 'gksenu.h'
+      include 'gwienu.h'
       include 'gwiopc.h'
 C
       INTEGER  DX, DY, KALL, NBYPCW, ROWLEN, ROWPAD, NBYTES

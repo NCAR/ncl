@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.3 1993-11-01 17:41:08 boote Exp $
+#	$Id: yMakefile,v 1.4 1994-05-17 00:40:03 fred Exp $
 #
 
 MYNAME	= wiss
@@ -48,7 +48,7 @@ gwica.o : gwica.f \
    gwiio.h \
    gwiins.h \
    gwiwsl.h \
-   gksenu.h \
+   gwienu.h \
    gwiopc.h 
  
 gwiclp.o : gwiclp.f \
@@ -66,7 +66,7 @@ gwiclw.o : gwiclw.f \
    gwiast.h \
    gwiadf.h \
    gwiopc.h \
-   gksenu.h 
+   gwienu.h 
  
 gwid2r.o : gwid2r.f \
    gwiarq.h \
@@ -86,7 +86,7 @@ gwidmp.o : gwidmp.f \
    gwiio.h \
    gwiins.h \
    gwiopc.h \
-   gksenu.h 
+   gwienu.h 
  
 gwiesc.o : gwiesc.f \
    gksin.h \
@@ -101,7 +101,7 @@ gwifa.o : gwifa.f \
    gwiast.h \
    gwiadc.h \
    gwiopc.h \
-   gksenu.h 
+   gwienu.h 
  
 gwiflb.o : gwiflb.f \
    gwiio.h 
@@ -115,7 +115,7 @@ gwiiac.o : gwiiac.f \
 gwiiws.o : gwiiws.f \
    gwiwsl.h \
    gwiins.h \
-   gksenu.h 
+   gwienu.h 
  
 gwilod.o : gwilod.f \
    gwiio.h 
@@ -134,7 +134,7 @@ gwipl.o : gwipl.f \
    gwiast.h \
    gwiadc.h \
    gwiopc.h \
-   gksenu.h 
+   gwienu.h 
  
 gwipm.o : gwipm.f \
    gksin.h \
@@ -145,7 +145,7 @@ gwipm.o : gwipm.f \
    gwiast.h \
    gwiadc.h \
    gwiopc.h \
-   gksenu.h 
+   gwienu.h 
  
 gwisas.o : gwisas.f \
    gwiins.h \
@@ -163,7 +163,7 @@ gwitx.o : gwitx.f \
    gwiast.h \
    gwiadc.h \
    gwiopc.h \
-   gksenu.h 
+   gwienu.h 
  
 gwiwdr.o : gwiwdr.f \
    gksin.h \
@@ -176,7 +176,7 @@ gwiwdr.o : gwiwdr.f \
    gwiio.h \
    gwiins.h \
    gwiopc.h \
-   gksenu.h 
+   gwienu.h 
  
 gwpart.o : gwpart.f \
    gwiins.h \
