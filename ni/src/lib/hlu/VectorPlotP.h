@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlotP.h,v 1.3 1996-01-19 18:06:40 dbrown Exp $
+ *      $Id: VectorPlotP.h,v 1.4 1996-03-30 00:29:03 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -61,6 +61,8 @@ typedef struct _NhlvcArrowAttrs {
 	NhlColorIndex		real_arrow_line_color;
 	NhlColorIndex		arrow_fill_color;
 	NhlColorIndex		real_arrow_fill_color;
+	NhlColorIndex		arrow_edge_color;
+        float			real_arrow_line_thickness;
 	NhlBoolean		use_vec_color;
 	float			arrow_angle;
 	float			arrow_space;
@@ -149,14 +151,15 @@ typedef struct _NhlVectorPlotLayerPart {
 	NhlGenArray		scalar_field_data;
 	NhlBoolean		map_direction;
 	NhlVectorPositionMode	position_mode;
+	NhlDrawOrder		vector_order;
 
-	float			min_vec_dist;
-	float			min_frac_len;
+	float			min_distance;
 	float			min_magnitude;
 	float			max_magnitude;
 	float			ref_magnitude;
 	NhlBoolean		ref_length_set;
 	float			ref_length;
+	float			min_frac_len;
 	
 	NhlGenArray		levels;
 	int			level_count;
@@ -168,27 +171,29 @@ typedef struct _NhlVectorPlotLayerPart {
 	float			min_level_val;
 	NhlBoolean		max_level_set;
 	float			max_level_val;
-
-	float			arrow_min_size;
-	float			arrow_max_size;
-	NhlBoolean		filled_arrows_on;
-	float			arrow_width;
-	float			arrow_min_width;
-	float			arrowhead_x;
-	float			arrowhead_min_x;
-	float			arrowhead_y;
-	float			arrowhead_min_y;
-	float			arrowhead_interior;
-	NhlBoolean		fill_over_line;
-	float			line_thickness;
+	NhlGenArray		level_colors;
 	NhlBoolean		use_scalar_array;
-	NhlBoolean		mono_vector_line_color;
-	NhlColorIndex		vector_line_color;
-	NhlBoolean		mono_vector_fill_color;
-	NhlColorIndex		vector_fill_color;
-	NhlGenArray		vector_colors;
 	NhlColorIndex		scalar_mval_color;
-	NhlDrawOrder		vector_order;
+
+	NhlBoolean		mono_l_arrow_color;
+	NhlColorIndex		l_arrow_color;
+	float			l_arrow_thickness;
+	float			l_arrowhead_min_size;
+	float			l_arrowhead_max_size;
+	NhlBoolean		fill_arrows_on;
+	NhlBoolean		mono_f_arrow_fill_color;
+	NhlColorIndex		f_arrow_fill_color;
+	NhlBoolean		fill_over_edge;
+	NhlBoolean		mono_f_arrow_edge_color;
+	NhlColorIndex		f_arrow_edge_color;
+	float			f_arrow_edge_thickness;
+	float			f_arrow_width;
+	float			f_arrow_min_width;
+	float			f_arrowhead_x;
+	float			f_arrowhead_min_x;
+	float			f_arrowhead_interior;
+	float			f_arrowhead_y;
+	float			f_arrowhead_min_y;
 
 	NhlBoolean		use_refvec_anno_attrs;
 	NhlvcLabelAttrs 	refvec_anno;
@@ -269,7 +274,7 @@ typedef struct _NhlVectorPlotLayerPart {
 	int		refvec_anno_id;
 	int		minvec_anno_id;
 	int		zerof_anno_id;
-	NhlColorIndex	*gks_vector_colors;
+	NhlColorIndex	*gks_level_colors;
 	float		real_ref_length;
 
 	NhlLayer	trans_obj;
