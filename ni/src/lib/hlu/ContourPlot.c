@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.84 1999-04-02 23:50:55 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.85 1999-04-05 23:30:02 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -6857,8 +6857,6 @@ static NhlErrorTypes ManageInfoLabel
 
 	entry_name = (init) ? "ContourPlotInitialize" : "ContourPlotSetValues";
 
-	if (! ilp->on && (init || ! oilp->on))
-		return NhlNOERROR;
 
 	if (init || ! cnp->info_string ||
 	    cnp->info_string != ocnp->info_string) {
@@ -6879,6 +6877,8 @@ static NhlErrorTypes ManageInfoLabel
 		if (!init && ocnp->info_string != NULL) 
 			NhlFree(ocnp->info_string);
 	}
+	if (! ilp->on && (init || ! oilp->on))
+		return NhlNOERROR;
 
 	subret = ReplaceSubstitutionChars(cnp,ocnp,init,_cnINFO,
 					  &text_changed,entry_name);
