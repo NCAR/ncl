@@ -28,6 +28,7 @@ NhlErrorTypes linmsg_W( void )
  * Other variables
  */
   int i, j, k, total, npts;
+  float xmsg;
 /*
  * Retrieve parameters
  *
@@ -58,8 +59,11 @@ NhlErrorTypes linmsg_W( void )
  * A missing value must be set for this routine to work.
  */
   if(!has_missing_x) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"linmsg: The input array must have the _FillValue attribute set");
-    return(NhlFATAL);
+    xmsg = -999;
+    missing_x.floatval = xmsg;
+  }
+  else {
+    xmsg = missing_x.floatval;
   }
 /*
  * Calculate total size of input array.
@@ -81,7 +85,7 @@ NhlErrorTypes linmsg_W( void )
   j = 0;
   for( i = 0; i < total; i++ ) {
 	for( k = 0; k < npts; k++ ) xnew[j+k] = x[j+k];
-    NGCALLF(linmsg,LINMSG)(&xnew[j],&npts,&missing_x.floatval,mflag);
+    NGCALLF(linmsg,LINMSG)(&xnew[j],&npts,&xmsg,mflag);
     j += npts;
   }
   return(NclReturnValue((void*)xnew,ndims_x,dsizes_x,&missing_x,NCL_float,0));
