@@ -1,5 +1,5 @@
 /*
- *      $Id: rascat.c,v 1.18 1994-03-09 19:25:44 clyne Exp $
+ *      $Id: rascat.c,v 1.19 1994-04-14 19:46:33 haley Exp $
  */
 /*
  *	File:		rascat.c
@@ -304,7 +304,9 @@ main(argc, argv)
 		if (src == (Raster *) NULL) {
 			(void) fprintf(stderr,
 				"%s: RasterOpen(%s, %s) [ %s ]\n",
-				progName, rfiles[i],opt.srcformat, ErrGetMsg()
+				progName, rfiles[i],
+				opt.srcformat ? opt.srcformat : "NULL",
+				ErrGetMsg()
 			);
 			err++;
 			continue;
