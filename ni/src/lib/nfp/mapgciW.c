@@ -27,7 +27,7 @@ NhlErrorTypes gc_latlon_W( void )
  * Input variables
  */
   void *lat1, *lon1, *lat2, *lon2;
-  int npts, *nlatlon, *code;
+  int npts, *nlatlon, nlatlon_new, *code;
   NclBasicDataTypes type_lat1, type_lon1, type_lat2, type_lon2;
   double *tmp_lat1, *tmp_lon1, *tmp_lat2, *tmp_lon2, *tmp_lat, *tmp_lon;
 /*
@@ -116,11 +116,14 @@ NhlErrorTypes gc_latlon_W( void )
           NULL,
           2);
 
-  if(*nlatlon < 2) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"gc_latlon: The number of requested interpolated points must be at least 2");
-    return(NhlFATAL);
+  if(*nlatlon <= 2) {
+    npts        = 0;
+    nlatlon_new = 2;
   }
-  npts = *nlatlon - 2;
+  else {
+    npts        = *nlatlon - 2;
+    nlatlon_new = *nlatlon;
+  }
 /*
  * Coerce input to double if necessary.
  */
@@ -183,17 +186,17 @@ NhlErrorTypes gc_latlon_W( void )
   type_dist = NCL_float;
   if(type_lat == NCL_double) {
     type_dist = NCL_double;
-    lat  = (void*)calloc(*nlatlon,sizeof(double));
+    lat  = (void*)calloc(nlatlon_new,sizeof(double));
   }
   else {
-    lat  = (void*)calloc(*nlatlon,sizeof(float));
+    lat  = (void*)calloc(nlatlon_new,sizeof(float));
   }
   if(type_lon == NCL_double) {
     type_dist = NCL_double;
-    lon  = (void*)calloc(*nlatlon,sizeof(double));
+    lon  = (void*)calloc(nlatlon_new,sizeof(double));
   }
   else {
-    lon  = (void*)calloc(*nlatlon,sizeof(float));
+    lon  = (void*)calloc(nlatlon_new,sizeof(float));
   }
   if(lat == NULL || lon == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"gc_latlon: Unable to allocate memory for output arrays");
@@ -239,12 +242,12 @@ NhlErrorTypes gc_latlon_W( void )
  * Include the beginning and ending lat points.
  */
   if(type_lat == NCL_double) {
-    ((double*)lat)[0]          = *tmp_lat1;
-    ((double*)lat)[*nlatlon-1] = *tmp_lat2;
+    ((double*)lat)[0]             = *tmp_lat1;
+    ((double*)lat)[nlatlon_new-1] = *tmp_lat2;
   }
   else {
-    ((float*)lat)[0]          = (float)*tmp_lat1;
-    ((float*)lat)[*nlatlon-1] = (float)*tmp_lat2;
+    ((float*)lat)[0]             = (float)*tmp_lat1;
+    ((float*)lat)[nlatlon_new-1] = (float)*tmp_lat2;
   }
 /*
  * Copy longitudes to output array.
@@ -297,10 +300,10 @@ NhlErrorTypes gc_latlon_W( void )
     *tmp_lon2 -= 360.;
   }
   if(type_lon == NCL_double) {
-    ((double*)lon)[*nlatlon-1] = *tmp_lon2;
+    ((double*)lon)[nlatlon_new-1] = *tmp_lon2;
   }
   else {
-    ((float*)lon)[*nlatlon-1] = (float)*tmp_lon2;
+    ((float*)lon)[nlatlon_new-1] = (float)*tmp_lon2;
   }
 
   *code = abs(*code);
@@ -407,7 +410,7 @@ NhlErrorTypes gc_latlon_W( void )
              NULL
              );
 
-  dsizes[0] = *nlatlon;
+  dsizes[0] = nlatlon_new;
   if(type_lat == NCL_double) {
     att_md = _NclCreateVal(
                            NULL,

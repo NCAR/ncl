@@ -276,3 +276,151 @@ c                          local
 
       RETURN
       END
+
+c -----------------------------------------------------------
+C NCLFORTSTART
+      SUBROUTINE DLININT2PTS(NXI,XI,NYI,YI,FI,ICYCX,NXYO,XO,YO,FO,
+     +                       XMSG,IER)
+      IMPLICIT NONE
+      INTEGER NXI,NYI,NXYO,ICYCX,IER
+      DOUBLE PRECISION XI(NXI),YI(NYI),FI(NXI,NYI)
+      DOUBLE PRECISION XO(NXYO),YO(NXYO),FO(NXYO),XMSG
+C NCLEND
+
+C This is written  with GNU f77 acceptable extensions
+C .   to allow for compilation on linux platforms.
+c .   This could be improved considerably with f90
+
+c NCL:  fo = linint2_points (xi,yi,fi, wrapX, xo,yo, foOpt)
+c
+c            {nxi,nyi} = dimsizes( {xi,yi} )
+c            {nxyo} = dimsizes( {xo} )  = dimsizes( {yo} )
+c            fo is the same size xo, yo and same type as "fi"
+c            xmsg = fi@_FillValue
+c            wrapX is an NCL logical; a False ==> 0
+c                                     a True  ==> 1
+c            foOpt unused option
+c
+c            The NCL wrapper should allow for multiple datasets
+c            so the user need only make one call to the function.
+
+c perform 2D piecewise linear interpolation allowing for missing data
+c .  nothing fancy
+
+c nomenclature:
+c .   nxi,nyi - lengths of xi,yi and dimensions of fi (must be >= 2)
+c .   xi      - coordinates of fi (eg, lon)
+c .             must be monotonically increasing
+c .   yi      - coordinates of fi (eg, lat)
+c .             must be monotonically increasing
+c .   fi      - functional input values [2D]
+c .   icycx   - 0 if fi is cyclic in x (cyclic pt should NOT included)
+c .             .ne.0 if cyclic
+c .   nxyo    - number of xo,yo coordinate pairs
+c .   xo,yo   - coordinate pairs
+c .   fo      - functional output values [interpolated]
+c .   xmsg    - missing code
+c .   ier     - error code
+c .             =0;   no error
+c .             =1;   not enough points in input/output array
+c .             =2/3; xi or yi are not monotonically increasing
+c
+c                              automatic temporary/work arrays
+      DOUBLE PRECISION XIW(0:NXI+1),FIXW(0:NXI+1,NYI)
+      DOUBLE PRECISION DX
+
+c                              local
+      INTEGER NX,NY
+c                              error checking
+      IER = 0
+      IF (NXI.LT.2 .OR. NYI.LT.2) THEN
+          IER = 1
+          RETURN
+      END IF
+c                              error mono increasing ?
+      CALL DMONOINC(XI,NXI,2,IER)
+      IF (IER.NE.0) RETURN
+      CALL DMONOINC(YI,NYI,3,IER)
+      IF (IER.NE.0) RETURN
+c                               is the input array cyclic in x
+      IF (ICYCX.EQ.0) THEN
+          CALL DLINT2XY(NXI,XI,NYI,YI,FI,NXYO,XO,YO,FO,XMSG,IER)
+      ELSE
+c                               must be cyclic in x
+c                               create cyclic "x" coordinates
+          DO NX = 1,NXI
+              XIW(NX) = XI(NX)
+          END DO
+          DX = XI(2) - XI(1)
+          XIW(0) = XI(1) - DX
+          XIW(NXI+1) = XI(NXI) + DX
+
+          DO NY = 1,NYI
+              DO NX = 1,NXI
+                  FIXW(NX,NY) = FI(NX,NY)
+              END DO
+              FIXW(0,NY) = FI(NXI,NY)
+              FIXW(NXI+1,NY) = FI(1,NY)
+          END DO
+          CALL DLINT2XY(NXI+2,XIW,NYI,YI,FIXW,NXYO,XO,YO,FO,XMSG,IER)
+      END IF
+
+
+      RETURN
+      END
+c -----------------------------------------------------------
+c                           could be improved with f90 cycle/continue
+      SUBROUTINE DLINT2XY(NXI,XI,NYI,YI,FI,NXYO,XO,YO,FO,XMSG,IER)
+      IMPLICIT NONE
+      INTEGER NXI,NYI,NXYO,IER
+      DOUBLE PRECISION XI(NXI),YI(NYI),FI(NXI,NYI),XMSG
+      DOUBLE PRECISION XO(NXYO),YO(NXYO),FO(NXYO)
+c                               local
+      INTEGER N,M,NXY,NN,MM
+      DOUBLE PRECISION TMP1,TMP2,SLPX,SLPY
+
+      DO NXY = 1,NXYO
+          FO(NXY) = XMSG
+
+          NN = 0
+          DO N = 1,NXI - 1
+              IF (XO(NXY).GE.XI(N) .AND. XO(NXY).LT.XI(N+1)) THEN
+                  NN = N
+                  GO TO 20
+              END IF
+          END DO
+
+   20     MM = 0
+          DO M = 1,NYI - 1
+              IF (YO(NXY).GE.YI(M) .AND. YO(NXY).LT.YI(M+1)) THEN
+                  MM = M
+                  GO TO 40
+              END IF
+          END DO
+
+   40     IF (NN.NE.0 .AND. MM.NE.0) THEN
+              IF (XO(NXY).EQ.XI(NN) .AND. YO(NXY).EQ.YI(MM)) THEN
+c                               exact location [no interpolation]
+                  FO(NXY) = FI(NN,MM)
+              ELSE
+c                               must interpolate
+                  IF (FI(NN,MM).NE.XMSG .AND. FI(NN+1,MM).NE.XMSG .AND.
+     +                FI(NN,MM+1).NE.XMSG .AND.
+     +                FI(NN+1,MM+1).NE.XMSG) THEN
+c                               slopes
+                      SLPX = (XO(NXY)-XI(NN))/ (XI(NN+1)-XI(NN))
+                      SLPY = (YO(NXY)-YI(MM))/ (YI(MM+1)-YI(MM))
+c                               interpolate in "x" first
+                      TMP1 = FI(NN,MM) + SLPX* (FI(NN+1,MM)-FI(NN,MM))
+                      TMP2 = FI(NN,MM+1) + SLPX*
+     +                       (FI(NN+1,MM+1)-FI(NN,MM+1))
+c                               interpolate in "y"
+                      FO(NXY) = TMP1 + SLPY* (TMP2-TMP1)
+                  END IF
+              END IF
+          END IF
+
+      END DO
+
+      RETURN
+      END

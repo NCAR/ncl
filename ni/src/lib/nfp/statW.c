@@ -16,6 +16,9 @@ extern void NGCALLF(stat2,STAT2)(float*, int*, float*, float*, float*,
 extern void NGCALLF(stat4,STAT4)(float*, int*, float*, float*, float*, 
                                  float*, float*, float*, int*, int*); 
 
+extern void NGCALLF(dstat4,DSTAT4)(double*, int*, double*, double*, double*, 
+				   double*, double*, double*, int*, int*); 
+
 extern void NGCALLF(stat2t,STAT2T)(float*, int*, float*, float*, float*, 
                                    float*, int*, float*, float*, int*); 
 
@@ -317,7 +320,7 @@ NhlErrorTypes stat4_W( void )
 /*
  * Input array variables
  */
-  float *x, *ptrim;
+  float *x;
   int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
   NclScalar missing_x;
 /*
@@ -2105,6 +2108,132 @@ NhlErrorTypes esccv_W( void )
  */
     return(NclReturnValue(ccv,ndims_ccv,dsizes_ccv,&missing_dx,
                           NCL_double,0));
+  }
+}
+
+NhlErrorTypes dim_stat4_W( void )
+{
+/*
+ * Input array variables
+ */
+  void *x;
+  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
+  NclScalar missing_x, missing_dx, missing_rx;
+  NclBasicDataTypes type_x;
+/*
+ * Output array variables
+ */
+  void *stat;
+  double dxmean, dxvar, dxskew, dxkurt;
+  int nptused, *dsizes_out;
+/*
+ * various
+ */
+  int i, total_leftmost, ier = 0, index_x, index_stat, npts;
+  double xsd, *tmp_x;
+/*
+ * Retrieve parameters
+ *
+ * Note any of the pointer parameters can be set to NULL, which
+ * implies you don't care about its value.
+ */
+  x = (float*)NclGetArgValue(
+           0,
+           1,
+           &ndims_x, 
+           dsizes_x,
+           &missing_x,
+           &has_missing_x,
+           &type_x,
+           2);
+/*
+ * Coerce missing values, if any.
+ */
+  coerce_missing(type_x,has_missing_x,&missing_x,&missing_dx,&missing_rx);
+/*
+ * Compute the total number of lefmost and rightmost elements in our x array.
+ */
+  npts = dsizes_x[ndims_x-1];
+  total_leftmost = 1;
+  for(i = 0; i < ndims_x-1; i++) total_leftmost *= dsizes_x[i];
+/*
+ * Calculate size of output arrays.
+ */
+  dsizes_out = (int*)calloc(ndims_x,sizeof(int));
+  if(type_x == NCL_double) {
+    stat = (void*)calloc(4*total_leftmost,sizeof(double));
+    if(dsizes_out == NULL || stat == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_stat4: Unable to allocate memory for output arrays");
+      return(NhlFATAL);
+    }
+  }
+  else {
+    tmp_x = (double*)calloc(npts,sizeof(double));
+    stat  = (void*)calloc(4*total_leftmost,sizeof(float));
+    if(dsizes_out == NULL || stat == NULL || tmp_x == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_stat4: Unable to allocate memory for output arrays");
+      return(NhlFATAL);
+    }
+  }
+/*
+ * The output array will be 4 x (leftmost-1 dimensions of x)
+ */
+  dsizes_out[0] = 4;
+  for(i = 1; i <= ndims_x-1; i++ ) dsizes_out[i] = dsizes_x[i-1];
+/*
+ * Call the f77 version of 'dim_stat4' with the full argument list.
+ */
+  index_x = index_stat = 0;
+  for(i = 0; i < total_leftmost; i++) {
+    if(type_x != NCL_double) {
+/*
+ * Coerce subsection of x (tmp_x) to double.
+ */
+      coerce_subset_input_double(x,tmp_x,index_x,type_x,npts,0,NULL,NULL);
+    }
+    else {
+      tmp_x   = &((double*)x)[index_x];
+    }
+    NGCALLF(dstat4,DSTAT4)(tmp_x,&npts,&missing_dx.doubleval,&dxmean,&dxvar,
+			   &xsd,&dxskew,&dxkurt,&nptused,&ier);
+    if (ier == 2) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_stat4: The first input array contains all missing values");
+      return(NhlFATAL);
+    }
+    if(type_x != NCL_double) {
+      ((float*)stat)[index_stat]   = (float)dxmean;
+      ((float*)stat)[index_stat+1] = (float)dxvar;
+      ((float*)stat)[index_stat+2] = (float)dxskew;
+      ((float*)stat)[index_stat+3] = (float)dxkurt;
+    }
+    else {
+      ((double*)stat)[index_stat]   = dxmean;
+      ((double*)stat)[index_stat+1] = dxvar;
+      ((double*)stat)[index_stat+2] = dxskew;
+      ((double*)stat)[index_stat+3] = dxkurt;
+    }
+    index_x    += npts;
+    index_stat += 4;
+  }
+/*
+ * free memory.
+ */
+  if(type_x != NCL_double) NclFree(tmp_x);
+
+/*
+ * Return values. 
+ */
+  if(type_x != NCL_double) {
+/*
+ * Return float values with missing value set.
+ */
+    return(NclReturnValue(stat,ndims_x,dsizes_out,&missing_rx,type_x,0));
+  }
+  else {
+/*
+ * Return double values with missing value set.
+ */
+    return(NclReturnValue(stat,ndims_x,dsizes_out,&missing_dx,type_x,0));
   }
 }
 

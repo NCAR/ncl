@@ -217,6 +217,7 @@ extern NhlErrorTypes stat2_W(void);
 extern NhlErrorTypes stat_trim_W(void);
 extern NhlErrorTypes stat_medrng_W(void);
 extern NhlErrorTypes stat4_W(void);
+extern NhlErrorTypes dim_stat4_W(void);
 extern NhlErrorTypes dim_median_W(void);
 extern NhlErrorTypes dim_rmvmean_W(void);
 extern NhlErrorTypes dim_rmvmed_W(void);
@@ -236,6 +237,7 @@ extern NhlErrorTypes hydro_W(void);
 extern NhlErrorTypes linmsg_W(void);
 extern NhlErrorTypes linint1_W(void);
 extern NhlErrorTypes linint2_W(void);
+extern NhlErrorTypes linint2_points_W(void);
 extern NhlErrorTypes pres_hybrid_W(void);
 extern NhlErrorTypes pslhyp_W(void);
 extern NhlErrorTypes pslec_W(void);
@@ -2661,6 +2663,16 @@ void NclAddUserFuncs(void)
 
     NclRegisterProc(stat4_W,args,"stat4",nargs);
 /*
+ * Register "dim_stat4".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(1);
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+
+    NclRegisterFunc(dim_stat4_W,args,"dim_stat4",nargs);
+/*
  * Register "stat_medrng".
  *
  * Create private argument array.
@@ -2889,6 +2901,24 @@ void NclAddUserFuncs(void)
 
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
     NclRegisterFunc(linint2_W,args,"linint2",nargs);
+
+/*
+ * Register "linint2_points".
+ */
+    nargs = 0;
+    args = NewArgs(7);
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
+
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    NclRegisterFunc(linint2_points_W,args,"linint2_points",nargs);
 
 /*
  * Register "pres_hybrid".
