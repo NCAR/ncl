@@ -79,6 +79,8 @@ extern NhlErrorTypes pw_skewt_W(void);
 extern NhlErrorTypes cape_thermo_W(void);
 extern NhlErrorTypes gaus_lobat_W(void);
 extern NhlErrorTypes gaus_lobat_wgt_W(void);
+extern NhlErrorTypes linrood_latwgt_W(void);
+extern NhlErrorTypes linrood_wgt_W(void);
 
 extern NhlErrorTypes dv2uvf_W(void);
 extern NhlErrorTypes dv2uvg_W(void);
@@ -884,6 +886,28 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
 
     NclRegisterFunc(gaus_lobat_wgt_W,args,"gaus_lobat_wgt",nargs);
+/*
+ * Register "linrood_latwgt".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(1);
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+
+    NclRegisterFunc(linrood_latwgt_W,args,"linrood_latwgt",nargs);
+/*
+ * Register "linrood_wgt".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(1);
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+
+    NclRegisterFunc(linrood_wgt_W,args,"linrood_wgt",nargs);
 /*
  * Register "dv2uvf".
  *
