@@ -323,6 +323,7 @@ static int is_gpoint
 	unsigned char test;
 	unsigned char test1;
 
+	num_calls++;
 	if(bms == NULL) {
 		return(1);
 	} else {
@@ -2680,6 +2681,15 @@ GribParamList* thevarrec;
                                         }
 				}
 			}
+			if(index < grid_size) {
+				if(integer) {
+					for(;index<grid_size;index++) 
+                                              ((int*)data)[index] = DEFAULT_MISSING_INT;
+                                } else {
+					for(;index<grid_size;index++) 
+                                	        ((float*)data)[index] = DEFAULT_MISSING_FLOAT;
+                                }
+			}
 			*outdat = data;
 		} else {
 			total = thevarrec->var_info.dim_sizes[thevarrec->var_info.num_dimensions-1] * thevarrec->var_info.dim_sizes[thevarrec->var_info.num_dimensions-2];
@@ -3352,6 +3362,15 @@ GribParamList* thevarrec;
 						gpoint++;
 					}
 				}
+			}
+			if(index < grid_size) {
+				if(integer) {
+					for(;index<grid_size;index++) 
+                                              ((int*)data)[index] = DEFAULT_MISSING_INT;
+                                } else {
+					for(;index<grid_size;index++) 
+                                	        ((float*)data)[index] = DEFAULT_MISSING_FLOAT;
+                                }
 			}
 			if(!(polefirst)&&(npole > 0)) {
 				for( ; index < grid_size;index++) {
