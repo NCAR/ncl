@@ -135,14 +135,16 @@ static void HLUObjDestroy
 					}
 				}
 				pobj = _NclGetObj(parents->pid);
-				if(pobj->obj.obj_type_mask & Ncl_MultiDValHLUObjData) {
-					cbdata.lngval = hlu_obj->obj.id;
-					selector.lngval = HLUDESTROYED;
-					_NhlCBCallCallbacks(((NclMultiDValHLUObjData)pobj)->obj.cblist,selector,cbdata);
-				} else if(pobj->obj.obj_type_mask & Ncl_HLUObj) {
-					cbdata.lngval = hlu_obj->obj.id;
-					selector.lngval = 0;
-					_NhlCBCallCallbacks(((NclHLUObj)pobj)->hlu.cblist,selector,cbdata);
+				if(pobj != NULL) {
+					if(pobj->obj.obj_type_mask & Ncl_MultiDValHLUObjData) {
+						cbdata.lngval = hlu_obj->obj.id;
+						selector.lngval = HLUDESTROYED;
+						_NhlCBCallCallbacks(((NclMultiDValHLUObjData)pobj)->obj.cblist,selector,cbdata);
+					} else if(pobj->obj.obj_type_mask & Ncl_HLUObj) {
+						cbdata.lngval = hlu_obj->obj.id;
+						selector.lngval = 0;
+						_NhlCBCallCallbacks(((NclHLUObj)pobj)->hlu.cblist,selector,cbdata);
+					}
 				}
 				tmpptr = parents;
 				parents = parents->next;
@@ -329,27 +331,26 @@ int child_id;
 	selector.lngval = 0;
 
 	
-	if(self->obj.id == child_id) {
-		fprintf(stdout,"HEY!!!!!!!!!!!!!!!!\n");
+	if(self->obj.id != child_id) {
+		tmp = self->hlu.exp_list;
+		while(tmp != NULL) {
+			if(tmp->child_id == child_id) {
+				return(NhlNOERROR);
+			}
+			tmp = tmp->next;
+		}
+		tmp = self->hlu.exp_list;
+		self->hlu.exp_list = (NclHLUExpChildList*)NclMalloc((unsigned)sizeof(NclHLUExpChildList));
+		self->hlu.exp_list->next = tmp;
+		self->hlu.exp_list->child_id = child_id;
+		self->hlu.exp_list->crec =  (HLUObjCalRec*)NclMalloc(sizeof(HLUObjCalRec));
+		self->hlu.exp_list->crec->child_id = child_id;
+		self->hlu.exp_list->crec->parent_id = self->obj.id;
+		udata.ptrval = (NhlPointer)self->hlu.exp_list->crec;
+		self->hlu.exp_list->cb = _NhlCBAdd(self->hlu.cblist,selector,ExpDestroyNotify,udata);
+		_NclAddParent((NclObj)chi,(NclObj)self);
 	}	
 
-	tmp = self->hlu.exp_list;
-	while(tmp != NULL) {
-		if(tmp->child_id == child_id) {
-			return(NhlNOERROR);
-		}
-		tmp = tmp->next;
-	}
-	tmp = self->hlu.exp_list;
-	self->hlu.exp_list = (NclHLUExpChildList*)NclMalloc((unsigned)sizeof(NclHLUExpChildList));
-	self->hlu.exp_list->next = tmp;
-	self->hlu.exp_list->child_id = child_id;
-	self->hlu.exp_list->crec =  (HLUObjCalRec*)NclMalloc(sizeof(HLUObjCalRec));
-	self->hlu.exp_list->crec->child_id = child_id;
-	self->hlu.exp_list->crec->parent_id = self->obj.id;
-	udata.ptrval = (NhlPointer)self->hlu.exp_list->crec;
-	self->hlu.exp_list->cb = _NhlCBAdd(self->hlu.cblist,selector,ExpDestroyNotify,udata);
-	_NclAddParent((NclObj)chi,(NclObj)self);
 	return(NhlNOERROR);
 }
 static NhlErrorTypes AddHLUChild
@@ -364,12 +365,14 @@ int child_id;
 	NclHLUChildList *tmp;
 	NclHLUObj chi = (NclHLUObj)_NclGetObj(child_id);
 
-	tmp = self->hlu.c_list;
-	self->hlu.c_list = (NclHLUChildList*)NclMalloc((unsigned)sizeof(NclHLUChildList));
-	self->hlu.c_list->next = tmp;
-	self->hlu.c_list->child_id = child_id;
-	if(chi->hlu.parent_hluobj_id != self->obj.id) {
-		chi->hlu.parent_hluobj_id  = self->obj.id;
+	if(chi->obj.id != child_id) {
+		tmp = self->hlu.c_list;
+		self->hlu.c_list = (NclHLUChildList*)NclMalloc((unsigned)sizeof(NclHLUChildList));
+		self->hlu.c_list->next = tmp;
+		self->hlu.c_list->child_id = child_id;
+		if(chi->hlu.parent_hluobj_id != self->obj.id) {
+			chi->hlu.parent_hluobj_id  = self->obj.id;
+		}
 	}
 	return(NhlNOERROR);
 }
