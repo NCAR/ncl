@@ -1,5 +1,5 @@
 #
-#   $Id: yMakefile,v 1.9 1999-03-25 03:47:59 haley Exp $
+#   $Id: yMakefile,v 1.10 1999-06-11 21:53:58 fred Exp $
 #
 #   Makefile for HLU Ngmath examples
 #
@@ -15,7 +15,7 @@ FSRCS = nm01f.f nm02f.f nm03f.f nm04f.f nm05f.f nm06f.f
 NSRCS = nm01n.ncl nm02n.ncl nm03n.ncl nm04n.ncl nm05n.ncl nm06n.ncl \
 	nm07n.ncl nm08n.ncl nm09n.ncl nm10n.ncl nm11n.ncl nm12n.ncl \
 	nm13n.ncl nm14n.ncl nm15n.ncl nm16n.ncl nm17n.ncl nm18n.ncl \
-	nm19n.ncl 
+	nm19n.ncl nm20n.ncl nm21n.ncl
 SRCS  = $(CSRCS) $(FSRCS)
 RESFILES    = nm03.res
 
