@@ -30,160 +30,12 @@
 ; 2. Line labels do not appear in the same positions.
 ;
 
-rseq =(/ .749, .973, .666, .804, .081, .483, .919, .903, .951, .960,       \
-   .039, .269, .270, .756, .222, .478, .621, .063, .550, .798, .027, .569, \
-   .149, .697, .451, .738, .508, .041, .266, .249, .019, .191, .266, .625, \
-   .492, .940, .508, .406, .972, .311, .757, .378, .299, .536, .619, .844, \
-   .342, .295, .447, .499, .688, .193, .225, .520, .954, .749, .997, .693, \
-   .217, .273, .961, .948, .902, .104, .495, .257, .524, .100, .492, .347, \
-   .981, .019, .225, .806, .678, .710, .235, .600, .994, .758, .682, .373, \
-   .009, .469, .203, .730, .588, .603, .213, .495, .884, .032, .185, .127, \
-   .010, .180, .689, .354, .372, .429 /)
-
-iseq = 0
-
-;
-; Random number generating function
-;
-function fran()
-begin
-    iseq = (iseq % 100) + 1
-    return(rseq(iseq-1))
-end
-
-;
-; Maximum function
-;
-function max(
-        x: float,
-        y: float
-)
-begin
-        if (x .gt. y) then
-                return(x)
-        else
-                return(y)
-        end if
-end
-
-
-;
-; Minimum function
-;
-function min(
-        x: float,
-        y: float
-)
-begin
-        if (x .lt. y) then
-                return(x)
-        else
-                return(y)
-        end if
-end
-
-
-;
-; Power of 2 
-;
-function pow2(
-        x : float
-)    
-begin
-    return (x*x)
-end
-
-;
-; Exponentiation
-;
-function exp(
-        x : float
-)    
-begin
-    return (2.7182818^x)
-end
-
-
-procedure gendat (
-    data: float,
-    idim: integer,
-        m : integer,
-        n : integer,
-        mlow: integer,
-        mhgh: integer,
-        dlow: float,
-        dhgh: float
-)
-begin
-;
-; This is a routine to generate test data for two-dimensional graphics
-; routines.  Given an array "DATA", dimensioned "IDIM x 1", it fills
-; the sub-array ((DATA(I,J),I=1,M),J=1,N) with a two-dimensional field
-; of data having approximately "MLOW" lows and "MHGH" highs, a minimum
-; value of exactly "DLOW" and a maximum value of exactly "DHGH".
-;
-; "MLOW" and "MHGH" are each forced to be greater than or equal to 1
-; and less than or equal to 25.
-;
-; The function used is a sum of exponentials.
-;
-    ccnt = new((/3,50/),float)
-
-    fovm=9./m
-    fovn=9./n
-
-    nlow=min(25.0,mlow*1.0)
-    nlow=max(1.0,nlow)
-    nhgh=min(25.0,mhgh*1.0)
-    nhgh=max(1.0,nhgh)
-    ncnt=nlow+nhgh
-
-    do k=1,ncnt
-        ccnt(0,k-1)=1.+(m-1.)*fran()
-        ccnt(1,k-1)=1.+(n-1.)*fran()
-        if (k .le. nlow)
-            ccnt(2,k-1)= -1.
-        else
-            ccnt(2,k-1) = 1.
-    end if
-    end do
-
-    dmin =  1.e36
-    dmax = -1.e36
-    do j=1,n
-        do i=1,m
-            data(j-1,i-1)=.5*(dlow+dhgh)
-            do k=1,ncnt
-                temp = -(pow2((fovm*((i)-ccnt(0,k-1))))+ \
-                         pow2(fovn*((j)-ccnt(1,k-1))))
-                if (temp .ge. -20.) 
-            data(j-1,i-1)=data(j-1,i-1)+     \
-                         .5*(dhgh-dlow)*ccnt(2,k-1)*exp(temp)
-        end if
-        end do
-            dmin=min(dmin,data(j-1,i-1))
-            dmax=max(dmax,data(j-1,i-1))
-    end do
-    end do
-
-    do j=0,n-1
-        do i=0,m-1
-           data(j,i)=(data(j,i)-dmin)/(dmax-dmin)*(dhgh-dlow)+dlow;
-        end do
-    end do
-end
-
-
 begin
 
 M = 33
 N = 33
 
 z = new((/N,M/),float)
-mlow = 20
-mhigh = 20
-dlow = .000025
-dhigh = .000075
 len_dims = new((/2/),integer)
 
 ;
@@ -219,13 +71,11 @@ else
 end if
 
 ;
-; Call the Fortran routine 'GENDAT' to create the first array of contour
-; data. Create a ScalarField data object and hand it the data created by
-; 'GENDAT'.
-; 
+; Read the input data
+;
 len_dims(0) = N
 len_dims(1) = M
-gendat(z,M,M,N,mlow,mhigh,dlow,dhigh)
+z = cbinread("cn04n1.bin",len_dims,"float")
 
 dataid = create "Gendat" scalarFieldClass appid
         "sfDataArray" : z
@@ -301,7 +151,12 @@ draw(cnid)
 ; Set the ContourPlot object with a new title, position, and a new label
 ; scaling mode.
 ;
-gendat(z,M,M,N,mlow,mhigh,dlow,dhigh)
+
+;
+; Read the input data
+;
+z = cbinread("cn04n2.bin",len_dims,"float")
+
 setvalues dataid
         "sfDataArray" : z
 end setvalues
@@ -320,7 +175,12 @@ draw(cnid)
 ; Set the ContourPlot object with a new title, position, and a new label
 ; scaling mode.
 ;
-gendat(z,M,M,N,mlow,mhigh,dlow,dhigh)
+
+;
+; Read the input data
+;
+z = cbinread("cn04n3.bin",len_dims,"float")
+
 setvalues dataid
         "sfDataArray" : z
 end setvalues
@@ -340,7 +200,12 @@ draw(cnid)
 ; Set the ContourPlot object with a new title, position, and a new label
 ; scaling mode.
 ;
-gendat(z,M,M,N,mlow,mhigh,dlow,dhigh)
+
+;
+; Read the input data
+;
+z = cbinread("cn04n4.bin",len_dims,"float")
+
 setvalues dataid
         "sfDataArray" : z
 end setvalues

@@ -1,5 +1,5 @@
 #
-#   $Id: yMakefile,v 1.3 1995-04-07 10:54:02 boote Exp $
+#   $Id: yMakefile,v 1.4 1995-04-07 17:49:38 stautler Exp $
 #
 #   Makefile for HLU ContourPlot examples
 #
@@ -20,12 +20,14 @@ OBJS        = $(COBJS) $(FOBJS)
 INCLUDES    = cn01c.h cn03c.h
 RESFILES    = cn01.res cn02.res cn03.res cn04.res
 ASCDATA     = cn01f.asc cn03f.asc
+BINDATA     = cn04n1.bin cn04n2.bin cn04n3.bin cn04n4.bin	
 EXFILES     = $(SRCS) $(INCLUDES)
 
 InstallTarget($(EXFILES),$(INSTALL_LIB),$(HLUEXROOT)/$(MYNAME))
 InstallTarget($(RESFILES),$(INSTALL_LIB),$(RESFILEROOT)/$(MYNAME))
 InstallTarget($(NSRCS),$(INSTALL_LIB),$(NCLEXROOT)/$(MYNAME))
 InstallTarget($(ASCDATA),$(INSTALL_LIB),$(DATAROOT)/asc)
+InstallTarget($(BINDATA),$(INSTALL_LIB),$(DATAROOT)/bin)
 
 HLUCExampleTarget(cn01c,cn01c.o)
 HLUCExampleTarget(cn02c,cn02c.o)
