@@ -1,5 +1,5 @@
 /*
- *      $Id: NcgmWorkstation.c,v 1.21 1996-09-14 17:07:00 boote Exp $
+ *      $Id: NcgmWorkstation.c,v 1.22 1996-11-12 19:12:54 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -94,12 +94,24 @@ static NhlErrorTypes NcgmWorkstationOpen(
 #endif
 );
 
-/*
-* A pointer to this is assigned to the cgm_inited field of this
-* class. this pointer is then propagated down the subclass heirarchy
-* with the class part initialize function.
-*/
-static _NhlNcgmStatus ncgm_is_initialized = _NhlUNINITED;
+static NhlErrorTypes NcgmWorkstationClose(
+#if	NhlNeedProto
+	NhlLayer
+#endif
+);
+
+
+static NhlErrorTypes NcgmWorkstationActivate(
+#if	NhlNeedProto
+	NhlLayer	/* instance */
+#endif
+);
+
+static NhlErrorTypes NcgmWorkstationDeactivate(
+#if	NhlNeedProto
+	NhlLayer	/* instance */
+#endif
+);
 
 NhlNcgmWorkstationClassRec NhlncgmWorkstationClassRec = {
         {
@@ -138,9 +150,9 @@ NhlNcgmWorkstationClassRec NhlncgmWorkstationClassRec = {
 /* def_background	*/	{0.0,0.0,0.0},
 /* pal			*/	NhlInheritPalette,
 /* open_work		*/	NcgmWorkstationOpen,
-/* close_work		*/	NhlInheritClose,
-/* activate_work	*/	NhlInheritActivate,
-/* deactivate_work	*/	NhlInheritDeactivate,
+/* close_work		*/	NcgmWorkstationClose,
+/* activate_work	*/	NcgmWorkstationActivate,
+/* deactivate_work	*/	NcgmWorkstationDeactivate,
 /* alloc_colors		*/	NhlInheritAllocateColors,
 /* update_work		*/	NhlInheritUpdate,
 /* clear_work		*/	NhlInheritClear,
@@ -149,7 +161,7 @@ NhlNcgmWorkstationClassRec NhlncgmWorkstationClassRec = {
 /* marker_work		*/	NhlInheritMarker
 	},
 	{
-/* cgm_inited	*/	&ncgm_is_initialized
+/* current_ncgm_wkid	*/	NhlNULLOBJID
 	}
 };
 
@@ -180,7 +192,6 @@ _NHLCALLF(nhlfncgmworkstationclass,NHLFNCGMWORKSTATIONCLASS)
 {
 	return NhlncgmWorkstationClass;
 }
-
 
 
 /*
@@ -237,23 +248,20 @@ static NhlErrorTypes NcgmWorkstationInitialize
 
 	while(1){
 		int	opn, ierr;
-		_NHLCALLF(nhl_finqunit,NHL_FINQUNIT)(&default_conid,&opn,&ierr);
+		_NHLCALLF(nhl_finqunit,NHL_FINQUNIT)
+			(&default_conid,&opn,&ierr);
 		if(!opn)
 			break;
 		default_conid++;
 	}
 
-	if(*(wclass->ncgm_class.cgm_inited) == _NhlUNINITED){
-		wnew->work.gkswkstype = NCGM_WORKSTATION_TYPE;
-		wnew->work.gkswksconid = default_conid;
-		*(wclass->ncgm_class.cgm_inited) = _NhlINITED;
-		return ret;
-	}
-	else{
-		NhlPError(NhlFATAL,NhlEUNKNOWN,
-			"%s:Only one NCGMWorkstation is allowed",func);
-		return NhlFATAL;
-	} 
+	wnew->work.gkswkstype = NCGM_WORKSTATION_TYPE;
+	wnew->work.gkswksconid = default_conid;
+
+	np->opened = False;
+	np->started = False;
+
+	return ret;
 }
 
 
@@ -282,10 +290,8 @@ static NhlErrorTypes NcgmWorkstationClassPartInitialize
 	NhlNcgmWorkstationClass wlc = (NhlNcgmWorkstationClass)lc;
 	NhlClass	sc = wlc->base_class.superclass;
 
-	if(sc != (NhlClass)&NhlworkstationClassRec) {
-		wlc->ncgm_class.cgm_inited = 
-			((NhlNcgmWorkstationClass)sc)->ncgm_class.cgm_inited;
-	}
+	wlc->ncgm_class.current_ncgm_wkid = NhlNULLOBJID;
+
 	return(NhlNOERROR);
 }
 
@@ -314,7 +320,7 @@ static NhlErrorTypes NcgmWorkstationDestroy
 	NhlNcgmWorkstationClass wclass = (NhlNcgmWorkstationClass)inst->base.layer_class;
 
 	NhlFree(winst->ncgm.meta_name);
-	*(wclass->ncgm_class.cgm_inited) = _NhlUNINITED;
+
 	return(NhlNOERROR);
 }
 
@@ -356,6 +362,29 @@ static NhlErrorTypes NcgmWorkstationSetValues
 	return(NhlNOERROR);
 }
 
+
+static NhlErrorTypes
+TempClose
+#if NhlNeedProto
+(
+	NhlLayer	l,
+	NhlString	func
+)
+#else
+(l,func)
+	NhlLayer	l;
+	NhlString	func;
+#endif
+{
+	NhlNcgmWorkstationLayer		wl = (NhlNcgmWorkstationLayer)l;
+
+	c_ngmftc(wl->work.gkswksid);
+	if(_NhlLLErrCheckPrnt(NhlFATAL,func))
+		return NhlFATAL;
+
+	return NhlNOERROR;
+}
+
 /*
  * Function:	NcgmWorkstationOpen
  *
@@ -382,14 +411,31 @@ NcgmWorkstationOpen
 {
 	Gescape_in_data indat;
 	Gescape_out_data *outdat;
+	char			func[] = "NcgmWorkstationOpen";
 	NhlNcgmWorkstationLayer winstance = (NhlNcgmWorkstationLayer) instance;
+	NhlNcgmWorkstationClass wlc = 
+		(NhlNcgmWorkstationClass)instance->base.layer_class;
+	NhlErrorTypes subret = NhlNOERROR,retcode= NhlNOERROR;
 
 	indat.escape_r1.size = strlen(winstance->ncgm.meta_name) + 1;
 	indat.escape_r1.data = (void*)winstance->ncgm.meta_name;
 	
 	gescape(-1391,&indat,NULL,&outdat);
 
-	return (*NhlworkstationClassRec.work_class.open_work)(instance);
+	if (wlc->ncgm_class.current_ncgm_wkid != instance->base.id &&
+	    wlc->ncgm_class.current_ncgm_wkid != NhlNULLOBJID) {
+	        subret = TempClose(
+			      _NhlGetLayer(wlc->ncgm_class.current_ncgm_wkid),
+				   func);
+		if ((retcode = MIN(retcode,subret)) < NhlWARNING)
+			return retcode;
+	}
+	wlc->ncgm_class.current_ncgm_wkid = instance->base.id;
+	winstance->ncgm.opened = True;
+
+	subret = (*NhlworkstationClassRec.work_class.open_work)(instance);
+	return MIN(subret,retcode);
+	
 }
 static NhlErrorTypes NcgmWorkstationGetValues
 #if	NhlNeedProto
@@ -425,3 +471,255 @@ int nargs;
 	}
 	return(NhlNOERROR); 
 }
+/*
+ * Function:	NcgmWorkstationActivate
+ *
+ * Description:	WorkstationActivate activates the workdstation associated with
+ *		this instance. If the workstation hasn't been initialize, which
+ *		is next to impossible since NhlOpenWork is called from create,
+ *		an error status is returned. Other wise the workstation is
+ *		activated.
+ *
+ * In Args:	Takes just the instance
+ *
+ * Out Args:	Changes fields of the instance
+ *
+ * Return Values:
+ *
+ * Side Effects:
+ */
+static NhlErrorTypes
+NcgmWorkstationActivate
+#if NhlNeedProto
+(
+	NhlLayer	l
+)
+#else
+(l)
+	NhlLayer	l;
+#endif
+{
+	NhlNcgmWorkstationLayer	wl = (NhlNcgmWorkstationLayer)l;
+	char			func[] = "NcgmWorkstationActivate";
+	NhlNcgmWorkstationClass wlc = 
+		(NhlNcgmWorkstationClass)l->base.layer_class;
+	NhlNcgmWorkstationLayerPart	*np = &wl->ncgm;
+	NhlErrorTypes subret = NhlNOERROR,retcode= NhlNOERROR;
+	NhlBoolean new = False;
+	int i = 3;
+
+	if (! np->opened) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			  "%s: attempt to activate unopened workstation",func);
+		return NhlFATAL;
+	}
+
+	if (wlc->ncgm_class.current_ncgm_wkid == NhlNULLOBJID) {
+		new = True;
+	}
+	else if (wlc->ncgm_class.current_ncgm_wkid != l->base.id) {
+	        subret = TempClose(
+			      _NhlGetLayer(wlc->ncgm_class.current_ncgm_wkid),
+				   func);
+		if ((retcode = MIN(retcode,subret)) < NhlWARNING)
+			return retcode;
+		new = True;
+	}
+	if (new) {
+		int action = np->started ? 1 : 0;
+		while(wksisopn(i)) {
+			i++;
+		}
+		wl->work.gkswksid = i;
+
+		c_ngreop(wl->work.gkswksid,wl->work.gkswksconid,1,
+			 np->meta_name,action,np->gks_iat,np->gks_rat,
+			 0,0,NULL);
+		if(_NhlLLErrCheckPrnt(NhlFATAL,func))
+			return NhlFATAL;
+		subret = _NhlAllocateColors(l);
+		if ((retcode = MIN(retcode,subret)) < NhlWARNING)
+			return retcode;
+	}
+		
+	subret = (*NhlworkstationClassRec.work_class.activate_work)(l);
+	if ((retcode = MIN(retcode,subret)) < NhlWARNING)
+		return retcode;
+
+	if (new) {
+		wlc->ncgm_class.current_ncgm_wkid = l->base.id;
+		np->started = True;
+	}
+
+	return retcode;
+}
+
+/*
+ * Function:	NcgmWorkstationDeactivate
+ *
+ * Description:	Deactivates workstation. if not open NhlFATAL error if not
+ *		active informational message.
+ *
+ * In Args:
+ *
+ * Out Args:
+ *
+ * Return Values:
+ *
+ * Side Effects:
+ */
+static NhlErrorTypes
+NcgmWorkstationDeactivate
+#if NhlNeedProto
+(
+	NhlLayer	l
+)
+#else
+(l)
+	NhlLayer	l;
+#endif
+{
+	char			func[] = "NcgmWorkstationDeactivate";
+	NhlNcgmWorkstationLayer	nl = (NhlNcgmWorkstationLayer)l;
+	NhlNcgmWorkstationLayerPart	*np = &nl->ncgm;
+	NhlErrorTypes subret = NhlNOERROR,retcode= NhlNOERROR;
+
+ 	if (! np->opened) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+		       "%s: attempt to deactivate unopened workstation",func);
+		return NhlFATAL;
+	}
+
+	c_ngsrat(2,np->gks_iat,np->gks_rat);
+	if(_NhlLLErrCheckPrnt(NhlWARNING,func))
+		retcode = NhlWARNING;
+
+	subret = (*NhlworkstationClassRec.work_class.deactivate_work)(l);
+	return MIN(subret,retcode);
+}
+
+/*
+ * Function:	ReOpen
+ *
+ * Description:
+ * Reopens the workstation belonging to another ncgm instance. Since this
+ * is only used by the close routine there should be no need to flush the
+ * gks state to the metafile, since nothing would have been drawn since
+ * this workstation was last open
+ */
+static NhlErrorTypes
+ReOpen
+#if NhlNeedProto
+(
+	NhlLayer	l,
+	NhlString	func
+)
+#else
+(l,func)
+	NhlLayer	l;
+	NhlString	func;
+#endif
+{
+	NhlNcgmWorkstationLayer	wl = (NhlNcgmWorkstationLayer)l;
+	NhlNcgmWorkstationClass wlc = 
+		(NhlNcgmWorkstationClass)l->base.layer_class;
+	NhlNcgmWorkstationLayerPart	*np = &wl->ncgm;
+	int i = 3;
+
+	while(wksisopn(i)) {
+		i++;
+	}
+	wl->work.gkswksid = i;
+
+	c_ngreop(wl->work.gkswksid,wl->work.gkswksconid,1,
+		 np->meta_name,1,np->gks_iat,np->gks_rat,0,0,NULL);
+	if(_NhlLLErrCheckPrnt(NhlFATAL,func))
+		return NhlFATAL;
+	return NhlNOERROR;
+}
+/*
+ * Function:	NcgmWorkstationClose
+ *
+ * Description:	Called before workstation destroy. This like Open is an "up-
+ *		chained" method it is intended to allow subclasses to do things
+ *		before the actual close. If workstation is not open or is 
+ *		currently active an error message is provided.
+ *
+ * In Args:
+ *
+ * Out Args:
+ *
+ * Return Values:
+ *
+ * Side Effects:
+ */
+static NhlErrorTypes
+NcgmWorkstationClose
+#if NhlNeedProto
+(
+	NhlLayer	l
+)
+#else
+(l)
+	NhlLayer	l;
+#endif
+{
+	NhlNcgmWorkstationLayer	wl = (NhlNcgmWorkstationLayer)l;
+	char			func[] = "NcgmWorkstationClose";
+	NhlNcgmWorkstationClass wlc = 
+		(NhlNcgmWorkstationClass)l->base.layer_class;
+	NhlNcgmWorkstationLayerPart	*np = &wl->ncgm;
+	NhlErrorTypes subret = NhlNOERROR,retcode = NhlNOERROR;
+	NhlBoolean new = False;
+	int i = 3;
+
+ 	if (! np->opened) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+		       "%s: attempt to close unopened workstation",func);
+		return NhlFATAL;
+	}
+		
+	if (wlc->ncgm_class.current_ncgm_wkid == NhlNULLOBJID) {
+		new = True;
+	}
+	else if (wlc->ncgm_class.current_ncgm_wkid != l->base.id) {
+	        subret = TempClose(
+			     _NhlGetLayer(wlc->ncgm_class.current_ncgm_wkid),
+				   func);
+		if ((retcode = MIN(retcode,subret)) < NhlWARNING)
+			return retcode;
+		new = True;
+	}
+	if (new) {
+		int action = np->started ? 1 : 0;
+		while(wksisopn(i)) {
+			i++;
+		}
+		wl->work.gkswksid = i;
+		c_ngreop(wl->work.gkswksid,wl->work.gkswksconid,1,
+			 np->meta_name,action,
+			 np->gks_iat,np->gks_rat,0,0,NULL);
+		if(_NhlLLErrCheckPrnt(NhlFATAL,func))
+			return NhlFATAL;
+	}
+		
+	subret = (*NhlworkstationClassRec.work_class.close_work)(l);
+	if ((retcode = MIN(retcode,subret)) < NhlWARNING)
+		return retcode;
+	np->opened = False;
+
+	if (new && wlc->ncgm_class.current_ncgm_wkid != NhlNULLOBJID) {
+	        subret = ReOpen(
+			     _NhlGetLayer(wlc->ncgm_class.current_ncgm_wkid),
+				func);
+		if ((retcode = MIN(retcode,subret)) < NhlWARNING)
+			return retcode;
+	}
+	else {
+		wlc->ncgm_class.current_ncgm_wkid = NhlNULLOBJID;
+	}
+	return retcode;
+}
+
+
+

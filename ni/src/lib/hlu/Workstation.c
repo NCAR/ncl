@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.55 1996-09-14 17:07:46 boote Exp $
+ *      $Id: Workstation.c,v 1.56 1996-11-12 19:12:57 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1976,7 +1976,7 @@ WorkstationOpen
 {	
 	NhlWorkstationLayer	wl = (NhlWorkstationLayer)l;
 	char			func[] = "OpenWorkstation";
-	int			i = 2;
+	int			i = 3; /* default segment wks is 2 */
 
 	if(wl->work.gkswkstype == NhlFATAL) {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"Unknown workstation type");
@@ -2103,6 +2103,7 @@ WorkstationActivate
 		return NhlINFO; 
 	}
 
+	c_ngseti("cl",1);
 	gactivate_ws(wl->work.gkswksid);
 	if(_NhlLLErrCheckPrnt(NhlWARNING,func))
 		return NhlWARNING;

@@ -1,5 +1,5 @@
 /*
- *      $Id: NcgmWorkstationP.h,v 1.5 1995-04-07 10:43:14 boote Exp $
+ *      $Id: NcgmWorkstationP.h,v 1.6 1996-11-12 19:12:55 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -25,8 +25,6 @@
 #include <ncarg/hlu/NcgmWorkstation.h>
 
 
-typedef enum { _NhlINITED, _NhlUNINITED } _NhlNcgmStatus;
-
 #define NCGM_DEFAULT_CONID 7
 #define NCGM_WORKSTATION_TYPE 1
 
@@ -36,8 +34,14 @@ typedef struct _NhlNcgmWorkstationLayerPart {
 	char 	*meta_name;
 
 	/* Private internal fields */
+
+	NhlBoolean opened;
+	NhlBoolean started;
+	int	gks_iat[14];
+	float	gks_rat[7];
 	
 	/* Export Values */
+
 	/* Import Values */
 } NhlNcgmWorkstationLayerPart;
 
@@ -48,7 +52,7 @@ typedef struct _NhlNcgmWorkstationLayerRec {
 } NhlNcgmWorkstationLayerRec;
 
 typedef struct _NhlNcgmWorkstationClassPart {
-	_NhlNcgmStatus *cgm_inited;
+	int	current_ncgm_wkid;
 } NhlNcgmWorkstationClassPart;
 
 typedef struct _NhlNcgmWorkstationClassRec {
