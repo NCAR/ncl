@@ -1,5 +1,5 @@
 /*
- *	$Id: commands.c,v 1.20 1992-10-08 21:35:23 clyne Exp $
+ *	$Id: commands.c,v 1.21 1993-01-12 20:11:47 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -728,11 +728,7 @@ static	print_file(ic, translator, dev_win_string)
 	 */
 	(void) PipeLine(argc, argv, fp);
 
-	/*
-	 * free all memory except for translator, record_opt and file
-	 */
-	for (i = 2; i < (argc - 1); i++)
-		free((Voidptr) argv[i]);
+	free((Voidptr) record);
 	free((Voidptr) argv);
 	return(1);
 }

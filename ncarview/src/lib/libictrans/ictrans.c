@@ -1,5 +1,5 @@
 /*
- *	$Id: ictrans.c,v 1.17 1992-10-08 21:35:30 clyne Exp $
+ *	$Id: ictrans.c,v 1.18 1993-01-12 20:11:50 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -264,7 +264,7 @@ ICTrans(argc, argv, mem_cgm)
 	/*
 	 *	init ctrans
 	 */
-	if (init_ctrans(&argc,argv,gcap,fcap,FALSE,TRUE) != OK) {
+	if (init_ctrans(&argc,argv,gcap,fcap,TRUE) != OK) {
 		log_ct(FATAL);
 		return(-1);
 	}
