@@ -22,7 +22,7 @@ FILE *theoptr;
 int cmd_line;
 extern int cur_line_number;
 
-#if     defined(SUN) && (MAJOR == 4)
+#if     defined(SunOS) && (MAJOR == 4)
 extern FILE *nclin;
 extern int nclparse(int);
 #else
@@ -75,7 +75,7 @@ main() {
 
 	if(cmd_line)	
 		fprintf(stdout_fp,"ncl %d> ",0);
-#if     defined(SUN) && (MAJOR == 4)
+#if     defined(SunOS) && (MAJOR == 4)
 	nclparse(1);
 #else
 	yyparse(1);

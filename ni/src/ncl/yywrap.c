@@ -11,7 +11,7 @@ extern int cur_line_number;
 extern int top_level_line;
 extern int cmd_line;
 
-#if     defined(SUN) && (MAJOR == 4)
+#if     defined(SunOS) && (MAJOR == 4)
 extern FILE *nclin;
 extern int ncllineno;
 int nclwrap() 
@@ -23,7 +23,7 @@ int yywrap()
 
 {
 	if(loading) {
-#if     defined(SUN) && (MAJOR == 4)
+#if     defined(SunOS) && (MAJOR == 4)
 		nclin = _NclPopInputFile();
 #else
 		yyin = _NclPopInputFile();
@@ -39,7 +39,7 @@ int yywrap()
 		cur_line_number = top_level_line;
 		cur_load_file = NULL;
 */
-#if     defined(SUN) && (MAJOR == 4)
+#if     defined(SunOS) && (MAJOR == 4)
 		cmd_line = isatty(fileno(nclin));
 #else
 		cmd_line = isatty(fileno(yyin));

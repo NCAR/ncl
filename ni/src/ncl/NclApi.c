@@ -1,5 +1,5 @@
 /*
- *      $Id: NclApi.c,v 1.14 1995-03-28 15:10:02 haley Exp $
+ *      $Id: NclApi.c,v 1.15 1995-03-28 21:49:02 haley Exp $
  */
 /************************************************************************
 *									*
@@ -38,7 +38,7 @@ extern "C" {
 #include <netcdf.h>
 
 FILE *the_err_file;
-#if     defined(SUN) && (MAJOR == 4)
+#if     defined(SunOS) && (MAJOR == 4)
 extern FILE *nclin;
 extern int nclparse(int);
 #else
@@ -69,7 +69,7 @@ int NclInitServer
 {
 	int appid;
 #ifdef YYDEBUG
-#if     defined(SUN) && (MAJOR == 4)
+#if     defined(SunOS) && (MAJOR == 4)
         extern int ncldebug;
         ncldebug = 1;
 #else
@@ -139,7 +139,7 @@ int NclSubmitBlock1
 	*the_input_buffer_ptr = '\n';
 	the_input_buffer_ptr = the_input_buffer;
         the_input_buffer_size = script_size+1;
-#if     defined(SUN) && (MAJOR == 4)
+#if     defined(SunOS) && (MAJOR == 4)
         if(nclparse((first? 1: 0))==1) {
 #else
         if(yyparse((first? 1: 0))==1) {
@@ -185,7 +185,7 @@ int NclSubmitBlock2
 	*the_input_buffer_ptr = '\n';
 	the_input_buffer_size = size +1;
 	the_input_buffer_ptr = the_input_buffer;
-#if     defined(SUN) && (MAJOR == 4)
+#if     defined(SunOS) && (MAJOR == 4)
         if(nclparse((first?1:0))==1) {
 #else
         if(yyparse((first?1:0))==1) {
@@ -209,7 +209,7 @@ int NclSubmitCommand
 	static int first = 1;
 	the_input_buffer_ptr = the_input_buffer = command;
 	the_input_buffer_size = strlen(command);
-#if     defined(SUN) && (MAJOR == 4)
+#if     defined(SunOS) && (MAJOR == 4)
 	if(nclparse((first?1:0))==1) {
 #else
 	if(yyparse((first?1:0))==1) {

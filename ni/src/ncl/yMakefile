@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.30 1995-02-27 21:19:02 haley Exp $
+#      $Id: yMakefile,v 1.31 1995-03-28 21:49:05 haley Exp $
 #
 #########################################################################
 #									#
@@ -43,7 +43,7 @@ YACCDIR		=	./yacc
 ARCH_LIBS	=	-lPW
 #endif
 
-EXTRA_DEFINES = $(OS1_DEF)
+EXTRA_DEFINES = $(OS1_DEF) $(MAJOR_DEF)
 
 API_DEFS	=	-DMAKEAPI
 
