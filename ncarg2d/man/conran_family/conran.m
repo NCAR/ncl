@@ -40,20 +40,20 @@ When using linear interpolation the array
 must be at least IWK((27+4)*NDP).
 .sp
 The interpolation option is set using parameter ITP.  See the
-conran_params man page for a description of all internal parameters.
+conran_family_params man page for a description of all internal parameters.
 .IP SCRARR 12
 Real work array of dimension at least
 (RESOLUTION**2) where RESOLUTION is
 40 by default.
 .sp
 Alternate resolutions are set using parameter SSZ.  See the
-conran_params man page.
+conran_family_params man page.
 .SH USAGE
 The contours will be drawn as smoothed
 dashed or solid lines using splines under tension.  There may be
 characters along the lines.  Many other
 options are available through the use of internal parameters.
-See the conran_params man page.
+See the conran_family_params man page.
 .sp
 Quick and super versions of the Conran_family are also available
 through entries CONRAQ and CONRAS, respectively.
@@ -90,7 +90,7 @@ See the conran_family man page for a description of all Conran_family
 error messages and/or informational messages.
 .SH SEE ALSO
 Online:
-conraq, conras, conran_params, conran_family, conop1, conop2, conop3, conop4,
+conraq, conras, conran_family_params, conran_family, conop1, conop2, conop3, conop4,
 conpack, conpack_params, bivar,
 dashline_family, ncargf77
 .sp

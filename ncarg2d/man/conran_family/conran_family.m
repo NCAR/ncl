@@ -102,7 +102,7 @@ ILLEGAL USE OF CON OPTION
 WITH CIL OR CHL OPTIONS
 .br
 Review the definitions of these three parameters using man page
-conran_params.
+conran_family_params.
 .IP CONOP3 10
 NUMBER OF CONTOUR LEVELS
 EXCEEDS 30
@@ -148,7 +148,7 @@ fashion.  The documentation on the ERPRT77 package
 explains how to recover from an error.
 .SH SEE ALSO
 Online:
-conran, conraq, conras, conran_params, conop1, conop2, conop3, conop4,
+conran, conraq, conras, conran_family_params, conop1, conop2, conop3, conop4,
 conpack, conpack_params, cpcnrc, bivar,
 dashline_family, ncargf77
 .sp

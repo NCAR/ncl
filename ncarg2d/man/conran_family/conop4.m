@@ -122,7 +122,7 @@ See the conran_family man page for a description of all Conran_family
 error messages and/or informational messages.
 .SH SEE ALSO
 Online:
-conran_family, conran_params, conran, conraq, conras, conop1, conop2, conop3,
+conran_family, conran_family_params, conran, conraq, conras, conop1, conop2, conop3,
 conpack, conpack_params
 Hardcopy:
 NCAR Graphics Contouring and Mapping Tutorial;

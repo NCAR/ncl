@@ -11,7 +11,7 @@ interpolation package which can do a random to gridded interpolation
 equal to that built into the Conran_family, then we recommend that
 you grid your dataset and use the Conpack utility instead.
 Refer to the conpack and
-conpack_params man pages as well as the NCAR Graphics
+conpack_family_params man pages as well as the NCAR Graphics
 Contouring and Mapping Tutorial.
 .SH SYNOPSIS
 CONRAQ (XD,YD,ZD,NDP,WK,IWK)
@@ -38,11 +38,11 @@ When using linear interpolation the array
 must be at least IWK((27+4)*NDP).
 .sp
 The interpolation option is set using parameter ITP.  See the
-conran_params man page for a description of all internal parameters.
+conran_family_params man page for a description of all internal parameters.
 .SH USAGE
 Contour lines are not smoothed or thinned, but a number of
 options are available through the use of internal parameters.
-See the conran_params man page.
+See the conran_family_params man page.
 .sp
 Super and standard-and-smooth versions of the Conran_family are also available
 through entries CONRAS and CONRAN, respectively.
@@ -64,7 +64,7 @@ See the conran_family man page for a description of all Conran_family
 error messages and/or informational messages.
 .SH SEE ALSO
 Online:
-conran, conras, conran_params, conran_family, conop1, conop2, conop3, conop4,
+conran, conras, conran_family_params, conran_family, conop1, conop2, conop3, conop4,
 conpack, conpack_params, bivar,
 dashline_family, ncargf77
 .sp
