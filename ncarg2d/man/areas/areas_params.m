@@ -111,10 +111,25 @@ that machine.
 A call to set the value of LC should precede any other call to an Areas
 routine and should only be done once.
 .IP "\&'RC' - Integer"
-Reconciling Conflicts in area-identifier information.  When the set of
-possible area identifiers for a given area is contradictory, some algorithm
-must be used to choose an identifier for the area.  The value of RC determines
-what algorithm will be used, as follows:
+Reconciling Conflicts in area-identifier information.
+.sp
+This is an array of
+16 values, indexed by group identifier.  To set all values in the array to
+the same value "n", use "CALL ARSETI('RC',n)"; to set just the first value
+in the array, use "CALL ARSETI('RC(1)',n)"; to set just the second value,
+use "CALL ARSETI('RC(2)',n)"; and so on.  You can call ARGETI to get the value
+of RC(1) or RC(2) or RC(3), etc.; if you ask for the value of just RC, you
+will get the value of RC(1).
+.sp
+RC(1) is associated with edge group 1, RC(2) with edge group 2, and so on.
+An edge group with a group identifier greater than 16 is associated with
+RC(16).
+.sp
+When the set of possible area
+identifiers for a given area in a given group is contradictory, some algorithm
+must be used to choose an identifier for the area.  The value of that element
+of RC that is associated with the group determines what algorithm will be used,
+as follows:
 .RS
 .IP 0 5
 The default scheme: If any of the possible area identifiers is negative,
@@ -124,13 +139,17 @@ non-zero possibilities, use the one most recently seen by AREAS.
 .IP 1 5
 The set of possible identifiers is examined:  Zeroes are ignored, negatives
 are treated as -1's, and the value that occurs most frequently in the
-resulting set is used as the identifier for the area.  This algorithm is
-recommended for most purposes (in particular, for use with CONPACK), but,
-for historical reasons, it is not the default.
+resulting set is used as the identifier for the area.
 .IP 2 5
 Using RC = 2 is just like using RC = 1 except that zeroes are not ignored:
 the area identifier used is simply the one that occurs most frequently in
 the set of possibilities (all negatives being treated as -1's).
+.IP -1 5
+Using RC = -1 is just like using RC = 1 except that, if there are any negatives
+in the set of possible identifiers, a -1 is used.
+.IP -2 5
+Using RC = -2 is just like using RC = 2 except that, if there are any negatives
+in the set of possible identifiers, a -1 is used.
 .RE
 .SH SEE ALSO
 Online:
