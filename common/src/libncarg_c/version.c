@@ -1,6 +1,6 @@
 
 /*
- *      $Id: version.c,v 1.5 1992-09-01 23:47:32 clyne Exp $
+ *      $Id: version.c,v 1.6 1997-10-23 02:11:02 dbrown Exp $
  */
 /*
  *	File:		version.c
@@ -33,4 +33,15 @@ void	PrintVersion(header)
 	(void) fprintf(fp, "Version %s\n", VERSION);
 
 	if (fp != stderr) fclose(fp);
+}
+
+const char *GetNCARGVersion(
+#ifdef	NeedFuncProto
+	void				 
+#endif
+)
+{
+	static char version[] = VERSION; 
+
+	return version;
 }

@@ -1,5 +1,5 @@
 /*
- *	$Id: c.h,v 1.23 1995-03-16 20:32:53 haley Exp $
+ *	$Id: c.h,v 1.24 1997-10-23 02:11:01 dbrown Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -354,7 +354,11 @@ extern	void	PrintVersion(
 #endif
 );
 
-
+extern	const char *GetNCARGVersion(
+#ifdef	NeedFuncProto
+	void				 
+#endif
+);
 /*
 **
 **	B I T   M A N I P U L A T I O N
