@@ -1,5 +1,5 @@
 #
-#       $Id: c_cssex01.c,v 1.3 1999-05-25 18:14:32 fred Exp $
+#       $Id: c_cssex01.c,v 1.4 1999-05-25 18:22:57 fred Exp $
 #
 
 #include <stdio.h>
@@ -21,7 +21,7 @@ void c_draw_box(float, float, float, float, int);
 #include <ncarg/ncargC.h>
 #include <ncarg/gks.h>
 
-#define IWTYPE 8
+#define IWTYPE 1
 #define WKID   1
 
 /*

@@ -1,5 +1,5 @@
 #
-#       $Id: c_cssex02.c,v 1.3 1999-05-25 18:14:32 fred Exp $
+#       $Id: c_cssex02.c,v 1.4 1999-05-25 18:22:57 fred Exp $
 #
 
 #include <stdlib.h>
@@ -31,7 +31,7 @@ float c_csrand();
 /*
  *  Gks workstation type and ID.
  */
-#define IWTYPE 8
+#define IWTYPE 1
 #define WKID   1
 
 /*

@@ -1,5 +1,5 @@
 C
-C       $Id: cssex02.f,v 1.2 1999-05-24 23:57:16 fred Exp $
+C       $Id: cssex02.f,v 1.3 1999-05-25 18:22:58 fred Exp $
 C
        PROGRAM CSSEX02
 C 
@@ -14,7 +14,7 @@ C
 C
 C  Specify GKS output data.
 C
-      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=8, IWKID=1)
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1, IWKID=1)
 C  
 C  Scale factors for converting between degrees and radians.
 C

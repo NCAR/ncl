@@ -1,5 +1,5 @@
 C
-C       $Id: cssex01.f,v 1.2 1999-05-24 23:57:16 fred Exp $
+C       $Id: cssex01.f,v 1.3 1999-05-25 18:22:57 fred Exp $
 C
 
       PROGRAM CSEX01
@@ -10,7 +10,7 @@ C
 C  Define error file, Fortran unit number, and workstation type,
 C  and workstation ID.
 C
-      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=8, IWKID=1)
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1, IWKID=1)
 C
 C  Input dataset on the globe (latitudes and longitudes in degrees).
 C  These data points do not cover the globe, but rather are confined
