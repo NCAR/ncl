@@ -1,5 +1,5 @@
 /*
- *	$Id: xattribute.c,v 1.8 1996-04-01 05:15:05 boote Exp $
+ *	$Id: xattribute.c,v 1.9 1997-01-17 18:55:47 boote Exp $
  */
 /*
  *      File:		xattribute.c
@@ -844,10 +844,10 @@ X11_SetClipIndicator
         Xddp    *xi = (Xddp *) gksc->ddp;
         Display *dpy = xi->dpy;
 
-	int		*iptr = (int *) gksc->i.list;
+	int	*iptr = (int *) gksc->i.list;
 	XPoint	*pptr = (XPoint *) gksc->p.list;
 
-	int		clip_flag = iptr[0];
+	int	clip_flag = iptr[0];
 	XPoint	*llptr = &pptr[0];
 	XPoint	*urptr = &pptr[1];
 
