@@ -2,7 +2,7 @@
 .EL I
 
 I
-I $Id: CodeIftran,v 1.3 2005-01-10 21:21:02 kennison Exp $
+I $Id: CodeIftran,v 1.4 2005-02-08 19:27:32 kennison Exp $
 I
 
       FUNCTION MAPACI (IAI)
@@ -156,8 +156,8 @@ C
         LOGICAL          ELPF,INTF,LBLF,PRMF
         SAVE   /MAPCM4/
 C
-        COMMON /MAPCM5/  DDCT(5),DDCL(5),LDCT(6),LDCL(6),PDCT(12),
-     +                   PDCL(12)
+        COMMON /MAPCM5/  DDCT(5),DDCL(5),LDCT(6),LDCL(6),PDCT(13),
+     +                   PDCL(13)
         CHARACTER*2      DDCT,DDCL,LDCT,LDCL,PDCT,PDCL
         SAVE   /MAPCM5/
 C
