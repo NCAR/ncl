@@ -1,0 +1,14 @@
+#
+#       $Id: yMakefile,v 1.1 2000-01-31 21:31:14 haley Exp $
+#
+ 
+#define IHaveSubdirs
+ 
+SUBDIRS         = time cyl_eq height polar vector
+
+FILES	= csm_utils.ncl
+
+PSPATH	= $(LIBNCARGPATH)/plot_styles/test/CSM_plots
+INSTALL_PS = $(INSTALL_DB)
+
+InstallTarget($(FILES),$(INSTALL_PS),$(PSPATH))
