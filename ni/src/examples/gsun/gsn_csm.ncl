@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.175 2004-10-20 18:37:14 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.176 2004-10-21 22:11:18 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -9350,11 +9350,11 @@ begin
       locRes2@tmYROn                  = True   ; Turn on right tick marks
       locRes2@tmYUseLeft              = False  
       locRes2@tiYAxisSide             = "Right"; put title on right scale
-      locRes2@tiYAxisFontHeightF      = get_res_value(locRes2,"tiYAxisFontHeightF",yfonth)
-      locRes2@tmYRLabelFontHeightF    = get_res_value(locRes2,"tmYRLabelFontHeightF",ylfonth)
-      locRes2@tmYRMajorLengthF        = get_res_value(locRes2,"tmYRMajorLengthF",ymjlength)
-      locRes2@tmYRMinorLengthF        = get_res_value(locRes2,"tmYRMinorLengthF",ymnlength)
-      locRes2@tmYRMajorOutwardLengthF = get_res_value(locRes2,"tmYRMajorOutwardLengthF",ymjolength)
+      locRes2@tiYAxisFontHeightF      = yfonth
+      locRes2@tmYRLabelFontHeightF    = ylfonth
+      locRes2@tmYRMajorLengthF        = ymjlength
+      locRes2@tmYRMinorLengthF        = ymnlength
+      locRes2@tmYRMajorOutwardLengthF = ymjolength
       locRes2@tmYRMinorOutwardLengthF = ymnolength
     end if
 
@@ -9384,12 +9384,12 @@ begin
       locRes2@tmXTOn                  = True   ; Turn on top tick marks
       locRes2@tmXUseBottom            = False  
       locRes2@tiXAxisSide             = "Top"; put title on Top scale
-      locRes2@tiXAxisFontHeightF      = get_res_value(locRes2,"tiXAxisFontHeightF",xfonth)
-      locRes2@tmXTLabelFontHeightF    = get_res_value(locRes2,"tmXTLabelFontHeightF",xbfonth)
-      locRes2@tmXTMajorLengthF        = get_res_value(locRes2,"tmXTMajorLengthF",xmjlength)
-      locRes2@tmXTMinorLengthF        = get_res_value(locRes2,"tmXTMinorLengthF",xmnlength)
-      locRes2@tmXTMajorOutwardLengthF = get_res_value(locRes2,"tmXTMajorOutwardLengthF",xmjolength)
-      locRes2@tmXTMinorOutwardLengthF = get_res_value(locRes2,"tmXTMinorOutwardLengthF",xmnolength)
+      locRes2@tiXAxisFontHeightF      = xfonth
+      locRes2@tmXTLabelFontHeightF    = xbfonth
+      locRes2@tmXTMajorLengthF        = xmjlength
+      locRes2@tmXTMinorLengthF        = xmnlength
+      locRes2@tmXTMajorOutwardLengthF = xmjolength
+      locRes2@tmXTMinorOutwardLengthF = xmnolength
     end if
 
 ;
