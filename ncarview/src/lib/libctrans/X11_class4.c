@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class4.c,v 1.25 1993-01-22 01:36:13 clyne Exp $
+ *	$Id: X11_class4.c,v 1.26 1993-03-30 23:25:22 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -88,7 +88,7 @@ static	int	GCsetcolor(color, gc)
 			/* set to default color if invalid index	*/
 			XSetForeground(dpy, gc, Colortab[1]);
 
-			ESprintf(EINVAL, "Invalid color index(%d)",color.index);
+			ESprintf(EINVAL,"Undefined color index(%d)",color.index);
 			return(-1);
 		}
 	}
@@ -594,7 +594,7 @@ CGMC *c;
 	}
 
 	if (Color_ava && LINE_COLOUR_DAMAGE) {
-		(void) GCsetcolor(LINE_COLOUR, lineGC);
+		if (GCsetcolor(LINE_COLOUR, lineGC) < 0) status = -1;
 		LINE_COLOUR_DAMAGE = FALSE;
 	}
 		
@@ -706,7 +706,7 @@ int	X11_DisjtLine(c)
 	}
 
 	if (Color_ava && LINE_COLOUR_DAMAGE) {
-		(void) GCsetcolor(LINE_COLOUR, lineGC);
+		if (GCsetcolor(LINE_COLOUR, lineGC) < 0) status = -1;
 		LINE_COLOUR_DAMAGE = FALSE;
 	}
 		
@@ -777,7 +777,7 @@ int	X11_PolyMarker(c)
 	}
 
 	if (Color_ava && MARKER_COLOUR_DAMAGE) {
-		(void) GCsetcolor(MARKER_COLOUR, markerGC);
+		if (GCsetcolor(MARKER_COLOUR, markerGC) < 0) status = -1;
 		MARKER_COLOUR_DAMAGE = FALSE;
 	}
 
@@ -935,7 +935,7 @@ int	X11_Polygon(c)
 	}
 
 	if (Color_ava && FILL_COLOUR_DAMAGE) { 
-		(void) GCsetcolor(FILL_COLOUR, polygonGC);
+		if (GCsetcolor(FILL_COLOUR, polygonGC) < 0) status = -1;
 		FILL_COLOUR_DAMAGE = FALSE;
 	}
 
