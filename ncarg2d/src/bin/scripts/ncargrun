@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ncargrun,v 1.1.1.1 1992-04-17 22:34:45 ncargd Exp $
+#	$Id: ncargrun,v 1.2 1993-05-04 16:41:05 haley Exp $
 #
 
 foreach arg ($argv)
@@ -12,7 +12,7 @@ foreach arg ($argv)
 		breaksw
 
 	case "-t":
-		setenv NCARG_GKS_OUTPUT "| ftrans"
+		setenv NCARG_GKS_OUTPUT "| ctrans"
 		breaksw
 
 	default:
