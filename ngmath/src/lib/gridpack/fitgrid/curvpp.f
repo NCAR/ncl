@@ -1,5 +1,5 @@
 C
-C $Id: curvpp.f,v 1.4 2002-05-09 05:18:05 fred Exp $
+C $Id: curvpp.f,v 1.5 2002-05-22 05:52:18 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -344,10 +344,11 @@ c
       rdn = q*td(n)+hd(n)-sumn
       rd(n) = 0.
 c
-c account for potential roundoff errors in rdn in the
-c following test.
+c modified test based on communication with Alan Cline, 21-May-02.
+c problems with the original test (rdn .gt. 0.) surfaced in a demo
+c example run on a Linux system.
 c
-      if (rdn .gt. 10.*r1mach(3)) rd(n) = 1./rdn
+      if (rdn .gt. 0. .and. q .ne. 0.) rd(n) = 1./rdn
       ysp(n) = yspn
 c
 c back solve of r(transpose)* r * ysp = ys
