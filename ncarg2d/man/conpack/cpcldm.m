@@ -176,7 +176,7 @@ If, during the last call to CPRECT, CPSPS1, or CPSPS2, the data
 being contoured were found to be essentially constant, then no
 contour lines are generated; instead, the constant-field label
 is written.  Other lines are still generated.
-.SH E,XAMPLES
+.SH EXAMPLES
 Use the ncargex command to see the following relevant
 examples: 
 ccpcldm,
