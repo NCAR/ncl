@@ -134,7 +134,7 @@ To use TDEZ3D or c_tdez3d, load the NCAR Graphics libraries ncarg, ncarg_gks,
 and ncarg_c, preferably in that order. 
 .SH SEE ALSO
 Online:
-tdclrs, tddtri, tdgeti, tdgetr, tdgrds, tdgrid, tdgtrs, tdinit, tditri,
+tdclrs, tdctri, tddtri, tdgeti, tdgetr, tdgrds, tdgrid, tdgtrs, tdinit, tditri,
 tdlbla, tdlbls, tdline, tdlnpa, tdmtri, tdotri, tdpack, tdpack_params,
 tdpara, tdplch, tdprpa, tdprpi, tdprpt, tdsetr, tdsort, tdstri, tdstrs,
 tdez2d

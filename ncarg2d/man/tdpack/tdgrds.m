@@ -47,7 +47,7 @@ To use TDGRDS or c_tdgrds, load the NCAR Graphics libraries ncarg, ncarg_gks,
 and ncarg_c, preferably in that order. 
 .SH SEE ALSO
 Online:
-tdclrs, tddtri, tdgeti, tdgetr, tdgrid, tdgtrs, tdinit, tditri, tdlbla,
+tdclrs, tdctri, tddtri, tdgeti, tdgetr, tdgrid, tdgtrs, tdinit, tditri, tdlbla,
 tdlbls, tdline, tdlnpa, tdmtri, tdotri, tdpack, tdpack_params, tdpara,
 tdplch, tdprpa, tdprpi, tdprpt, tdseti, tdsetr, tdsort, tdstri, tdstrs
 .SH COPYRIGHT

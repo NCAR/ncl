@@ -37,7 +37,7 @@ See the "tdpack" man page for a description of all Tdpack error
 messages and/or informational messages.
 .SH SEE ALSO
 Online:
-tdclrs, tddtri, tdgeti, tdgrds, tdgrid, tdgtrs, tdinit, tditri, tdlbla,
+tdclrs, tdctri, tddtri, tdgeti, tdgrds, tdgrid, tdgtrs, tdinit, tditri, tdlbla,
 tdlbls, tdline, tdlnpa, tdmtri, tdotri, tdpack, tdpack_params, tdpara,
 tdplch, tdprpa, tdprpi, tdprpt, tdseti, tdsetr, tdsort, tdstri, tdstrs
 .SH COPYRIGHT
