@@ -1,5 +1,5 @@
 /*
- *      $Id: pixwrite_xwd.c,v 1.2 2004-03-22 21:22:40 dbrown Exp $
+ *      $Id: pixwrite_xwd.c,v 1.3 2004-03-30 01:05:01 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -286,6 +286,7 @@ int PIX_Write_XWD
 		xwdcolor.green = colors[i].green;
 		xwdcolor.blue = colors[i].blue;
 		xwdcolor.flags = colors[i].flags;
+		xwdcolor.pad = colors[i].pad;
 		if (fwrite((char *) &xwdcolor, SIZEOF(XWDColor), 1, fp) != 1) {
 			perror("xwd");
 			exit(1);
