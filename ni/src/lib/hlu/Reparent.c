@@ -1,5 +1,5 @@
 /*
- *      $Id: Reparent.c,v 1.2 1993-10-19 17:52:07 boote Exp $
+ *      $Id: Reparent.c,v 1.3 1993-12-14 21:44:22 boote Exp $
  */
 /************************************************************************
 *									*
@@ -184,10 +184,10 @@ ChangeWorkstation
 	NhlErrorTypes		ret = NOERROR, lret = NOERROR;
 
 	if(l == (Layer)NULL){
-		NhlPError(WARNING,E_UNKNOWN,
+		NhlPError(FATAL,E_UNKNOWN,
 			"Trying to change workstation of non-existant PID#%d",
 									pid);
-		return WARNING;
+		return FATAL;
 	}
 
 	tnode = l->base.all_children;

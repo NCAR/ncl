@@ -1,5 +1,5 @@
 /*
- *      $Id: hlu.c,v 1.5 1993-11-02 15:57:56 boote Exp $
+ *      $Id: hlu.c,v 1.6 1993-12-14 21:44:28 boote Exp $
  */
 /************************************************************************
 *									*
@@ -734,6 +734,7 @@ Const char
  * Returns:	void
  * Side Effect:	
  */
+NhlDOCTAG(NhlSetSArg)
 /*VARARGS2*/
 void
 NhlSetSArg

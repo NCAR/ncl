@@ -1,5 +1,5 @@
 /*
- *      $Id: hlu.h,v 1.5 1993-12-13 23:35:29 ethan Exp $
+ *      $Id: hlu.h,v 1.6 1993-12-14 21:44:31 boote Exp $
  */
 /************************************************************************
 *									*
@@ -154,16 +154,19 @@ typedef enum _NhlJustification {
 
 typedef	long	NhlArgVal;
 
+NhlDOCTAG(NhlSArg)
 typedef struct NhlSArgRec{
 	NhlString	name;
 	NhlArgVal	value;
 } NhlSArg, *NhlSArgList;
 
+NhlDOCTAG(NhlGArg)
 typedef struct NhlGArgRec{
 	NhlString	resname;
 	NhlArgVal	value;
 } NhlGArg, *NhlGArgList;
 
+NhlDOCTAG(NhlResource)
 typedef struct _NhlResource {
 	NhlString	resource_name;
 	NhlString	resource_class;
@@ -175,6 +178,7 @@ typedef struct _NhlResource {
 	NhlPointer	default_addr;
 } NhlResource, *NhlResourceList;
 
+NhlDOCTAG(NhlBoundingBox)
 typedef struct _NhlBoundingBox {
         int     set;
         float   t;
@@ -183,6 +187,7 @@ typedef struct _NhlBoundingBox {
         float   r;
 } NhlBoundingBox;
 
+NhlDOCTAG(NhlCoord)
 typedef struct _NhlCoord {
 	float x;
 	float y;
@@ -205,6 +210,8 @@ typedef struct _LayerList {
  * These functions are used to create and destroy NhlGenArray description
  * records.
  */
+NhlDOCTAG(NhlCreateGenArray)
+NhlSRCREF(hlu/hlu.c#NhlCreateGenArray)
 extern NhlGenArray NhlCreateGenArray(
 #ifdef	NhlNeedProto
 	NhlPointer	data,		/* data array		*/
@@ -215,6 +222,8 @@ extern NhlGenArray NhlCreateGenArray(
 #endif
 );
 
+NhlDOCTAG(NhlFreeGenArray)
+NhlSRCREF(hlu/hlu.c#NhlFreeGenArray)
 extern void NhlFreeGenArray(
 #ifdef	NhlNeedProto
 	NhlGenArray	gen	/* GenArray description record to free	*/
@@ -263,6 +272,8 @@ extern Const char *NhlClassName(
 #endif
 );
 
+NhlDOCTAG(NhlSetSArg)
+NhlSRCREF(hlu/hlu.c#NhlSetSArg)
 /*VARARGS2*/
 extern void NhlSetSArg(
 #if	NeedVarArgProto
@@ -272,6 +283,8 @@ extern void NhlSetSArg(
 #endif
 );
 
+NhlDOCTAG(NhlSetGArg)
+NhlSRCREF(hlu/hlu.c#NhlSetGArg)
 /*VARARGS2*/
 extern void NhlSetGArg(
 #if	NeedVarArgProto
@@ -281,6 +294,8 @@ extern void NhlSetGArg(
 #endif
 );
 
+NhlDOCTAG(NhlCreate)
+NhlSRCREF(hlu/hlu.c#NhlSetGArg)
 /*VARARGS4*/
 extern NhlErrorTypes NhlCreate(
 #if	NeedVarArgProto
@@ -292,6 +307,7 @@ extern NhlErrorTypes NhlCreate(
 #endif
 );
 
+NhlDOCTAG(NhlALCreate)
 extern NhlErrorTypes NhlALCreate(
 #if	NhlNeedProto
 	int*,			/* return plot id	*/
@@ -303,30 +319,35 @@ extern NhlErrorTypes NhlALCreate(
 #endif
 );
 
+NhlDOCTAG(NhlDestroy)
 extern NhlErrorTypes NhlDestroy(
 #if	NhlNeedProto
 	int		/* plot id	*/
 #endif
 );
 
+NhlDOCTAG(NhlDraw)
 extern NhlErrorTypes NhlDraw(
 #ifdef	NhlNeedProto
 	int	/* id */
 #endif
 );
 
+NhlDOCTAG(NhlOpen)
 extern void NhlOpen(
 #ifdef	NhlNeedProto
 	void
 #endif
 );
 
+NhlDOCTAG(NhlClose)
 extern void NhlClose(
 #ifdef	NhlNeedProto 
 	void 
 #endif 
 ); 
 
+NhlDOCTAG(NhlSetValues)
 /*VARARGS1*/
 extern NhlErrorTypes NhlSetValues( 
 #if	NeedVarArgProto 
@@ -335,6 +356,7 @@ extern NhlErrorTypes NhlSetValues(
 #endif 
 );
 
+NhlDOCTAG(NhlALSetValues)
 extern NhlErrorTypes NhlALSetValues(
 #if	NhlNeedProto
 	int		pid,	/* id		*/
@@ -343,6 +365,7 @@ extern NhlErrorTypes NhlALSetValues(
 #endif
 );
 
+NhlDOCTAG(NhlGetValues)
 /*VARARGS1*/
 extern NhlErrorTypes NhlGetValues(
 #if	NeedVarArgProto

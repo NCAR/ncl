@@ -1,5 +1,5 @@
 /*
- *      $Id: defs.h,v 1.2 1993-10-19 17:53:38 boote Exp $
+ *      $Id: defs.h,v 1.3 1993-12-14 21:44:25 boote Exp $
  */
 /************************************************************************
 *									*
@@ -31,6 +31,7 @@
  */
 #define NhlDOCTAG(tagname)
 #define NhlDOCREF(url,anchortext)
+#define NhlSRCREF(srcfileurl)
 
 /* environment variable names for resource file locations */
 /* The sysresfile is kept in $NCARG_LIB/ncarg/hluresfile for now */
