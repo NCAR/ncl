@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.35 2004-02-22 22:46:01 shea Exp $
+;      $Id: contributed.ncl,v 1.36 2004-02-23 21:40:58 shea Exp $
 ;
 ; -------------- added Feb 14 2002
 ; copy_VarMeta
@@ -87,7 +87,7 @@
 ; D. Shea
 ; return True if "x" has one of several synonyms for "long_name"
 
-undef ("isatt_LongName"
+undef ("isatt_LongName")
 function isatt_LongName(x)
 local LongName, xAtts, nAtts, n
 begin
