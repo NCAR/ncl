@@ -245,6 +245,8 @@ main(int argc,char* argv[])
 	int i,j;
 	NclSymbol* s;
 	char *buffer[1024];
+	char upper[1024];
+	char lower[1024];
 	char *type = "NclANY";
 	
 
@@ -310,10 +312,30 @@ main(int argc,char* argv[])
 				i++;	
 				arg_list = arg_list->next;
 			}
+			for(j = 0; j < strlen(tmp->therec->c_defstring); j++) {
+				if((!isdigit(tmp->therec->c_defstring[j]))&&(isalpha(tmp->therec->c_defstring[j]))) {
+					if(isupper(tmp->therec->c_defstring[j])) {
+						upper[j] = tmp->therec->c_defstring[j];
+						lower[j] = (char)((int)tmp->therec->c_defstring[j] + 32) ;
+					} else {
+						lower[j] = tmp->therec->c_defstring[j];
+						upper[j] = (char)((int)tmp->therec->c_defstring[j] - 32) ;
+					}
+				} else {
+					upper[j] = lower[j] = tmp->therec->c_defstring[j];
+				}
+			}
+
 			if(tmp->therec->f_or_p) {
-				fprintf(stdout,"\tNclRegisterFunc(%s_W,args,\"%s\",nargs);\n\n",tmp->therec->c_defstring,tmp->therec->c_defstring);
+				fprintf(stdout,"\tNclRegisterFunc(%s_W,args,\"%s\",nargs);\n\n",tmp->therec->c_defstring,upper);
 			} else {
-				fprintf(stdout,"\tNclRegisterProc(%s_W,args,\"%s\",nargs);\n\n",tmp->therec->c_defstring,tmp->therec->c_defstring);
+				fprintf(stdout,"\tNclRegisterProc(%s_W,args,\"%s\",nargs);\n\n",tmp->therec->c_defstring,upper);
+			}
+			if(tmp->therec->f_or_p) {
+				fprintf(stdout,"\tNclRegisterFunc(%s_W,args,\"%s\",nargs);\n\n",tmp->therec->c_defstring,lower);
+			} else {
+				
+				fprintf(stdout,"\tNclRegisterProc(%s_W,args,\"%s\",nargs);\n\n",tmp->therec->c_defstring,lower);
 			}
 			tmp = tmp->next;
 		}
