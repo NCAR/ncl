@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.52 1996-07-03 22:45:33 ethan Exp $
+ *      $Id: Machine.c,v 1.53 1996-09-27 21:27:02 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -177,6 +177,7 @@ static void SetUpOpsStrings() {
 	ops_strings[FILEVAR_COORD_ATT_OP] = "FILEVAR_COORD_ATT_OP";
 	ops_strings[ASSIGN_FILEVAR_COORD_ATT_OP] = "ASSIGN_FILEVAR_COORD_ATT_OP";
 	ops_strings[PARAM_FILEVAR_COORD_ATT_OP] = "PARAM_FILEVAR_COORD_ATT_OP";
+	ops_strings[CRETURN_OP] = "CRETURN_OP";
 
 }
 
@@ -1102,6 +1103,7 @@ void _NclPrintMachine
 			case NOOP :
 			case STOPSEQ:
 			case RETURN_OP :
+			case CRETURN_OP :
 			case NAMED_COORD_SUBSCRIPT_OP :
 			case INT_SUBSCRIPT_OP :
 			case NAMED_INT_SUBSCRIPT_OP :

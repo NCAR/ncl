@@ -76,6 +76,7 @@
 #define ASSIGN_VAR_COORD_OP			76
 #define PARAM_VAR_COORD_OP			77
 #define VAR_READ_OP				78
+#define CRETURN_OP				79
 /*
 #define VAR_READ_COORD_OP			79
 */

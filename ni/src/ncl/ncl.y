@@ -560,6 +560,9 @@ statement :     					{ $$ = NULL; }
 	|	RETURN expr 				{
 								$$ = _NclMakeReturn($2); 
 							}
+	|	RETURN 					{
+								$$ = _NclMakeReturn(NULL); 
+							}
 	| 	QUIT 					{ 
 #ifndef MAKEAPI
 								return(-1);

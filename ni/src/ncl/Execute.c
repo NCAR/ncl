@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.69 1996-09-20 19:32:24 ethan Exp $
+ *      $Id: Execute.c,v 1.70 1996-09-27 21:26:58 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -342,6 +342,10 @@ NclExecuteReturnStatus _NclExecute
 					}
 				}
 				break;
+			}
+			case CRETURN_OP : {
+				level--;
+				return(Ncl_STOPS);
 			}
 			case RETURN_OP : {
 				NclStackEntry data;

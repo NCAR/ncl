@@ -212,13 +212,16 @@ if(groot != NULL) {
 		case Ncl_RETURN:
 		{
 			NclReturn *ret = (NclReturn*)root;
-			
-			off1 = _NclTranslate(ret->expr,fp);
+			if(ret->expr != NULL) {	
+				off1 = _NclTranslate(ret->expr,fp);
+				_NclPutInstr(RETURN_OP,ret->line,ret->file);
+			} else {
+				_NclPutInstr(CRETURN_OP,ret->line,ret->file);
+			}
 /*
 * All that is needed is the return op to tell machine that top of
 * stack should be placed in frames return_value field
 */
-			_NclPutInstr(RETURN_OP,ret->line,ret->file);
 		break;
 		}
 		case Ncl_IFTHEN:
