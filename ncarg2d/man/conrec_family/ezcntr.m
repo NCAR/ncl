@@ -80,7 +80,7 @@ than the address space on this computer (2**IARTH) where IARTH is
 the size of an address integer.  Check your dimension sizes.
 .SH SEE ALSO
 Online:
-conrec, conrec_params, conrec_family,
+conrec, conrec_family_params, conrec_family,
 conpack, conpack_params, cpcnrc,
 ncargf77
 .sp

@@ -75,7 +75,7 @@ than the address space on this computer (2**IARTH) where IARTH is
 the size of an address integer.  Check your dimension sizes.
 .SH SEE ALSO
 Online:
-conrec, ezcntr, conrec_params,
+conrec, ezcntr, conrec_family_params,
 conpack, conpack_params, cpcnrc,
 dashline_family, ncargf77
 .sp
