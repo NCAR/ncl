@@ -145,7 +145,6 @@ void dsfreemem_s()
   free(ds_distances_s);
   free(ds_weights_s);
   free(ds_permutation_vector);
-  free(ds_output_s);
 }
 
 /*

@@ -52,7 +52,6 @@ double *c_natgridd(int n, double x[], double y[], double z[],
    }
 
    rtrn_val = data_out[0];
-   free (data_out);
    return (rtrn_val);
 }
 void Initialized(int n, double x[], double y[], int nxi, int nyi,
