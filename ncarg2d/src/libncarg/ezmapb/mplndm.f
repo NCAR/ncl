@@ -1,5 +1,5 @@
 C
-C $Id: mplndm.f,v 1.5 1998-05-01 22:36:02 kennison Exp $
+C $Id: mplndm.f,v 1.6 1998-05-24 00:40:54 kennison Exp $
 C
       SUBROUTINE MPLNDM (FLNM,ILVL,IAMA,XCRA,YCRA,MCRA,IAAI,IAGI,MNOG,
      +                                                           ULPR)
@@ -163,8 +163,8 @@ C
 C
         IF (NNMS.LE.1) GO TO 108
 C
-        IOAL=MPIOAR(IAIL,ILVL)
-        IOAR=MPIOAR(IAIR,ILVL)
+        IOAL=MPIOSA(IAIL,ILVL)
+        IOAR=MPIOSA(IAIR,ILVL)
 C
         CALL NGRDFL (IFDE,BLAG,4+NNMS,ISTA)
         IF (ISTA.NE.4+NNMS) GO TO 906

@@ -1,5 +1,5 @@
 C
-C $Id: mpglty.f,v 1.2 1998-04-30 22:43:52 kennison Exp $
+C $Id: mpglty.f,v 1.3 1998-05-24 00:40:45 kennison Exp $
 C
       SUBROUTINE MPGLTY (IARG)
 C

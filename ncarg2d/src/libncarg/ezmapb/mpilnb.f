@@ -1,5 +1,5 @@
 C
-C $Id: mpilnb.f,v 1.2 1998-04-30 22:43:53 kennison Exp $
+C $Id: mpilnb.f,v 1.3 1998-05-24 00:40:48 kennison Exp $
 C
       INTEGER FUNCTION MPILNB (CHRS)
 C

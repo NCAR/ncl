@@ -1,13 +1,12 @@
 C
-C $Id: mpioar.f,v 1.2 1998-04-30 22:43:54 kennison Exp $
+C $Id: mpiosa.f,v 1.1 1998-05-24 00:40:50 kennison Exp $
 C
-      INTEGER FUNCTION MPIOAR (IAID,ILVL)
+      INTEGER FUNCTION MPIOSA (IAID,ILVL)
 C
         PARAMETER (MNAI=2000)
 C
-C The value of "MPIOAR(IAID,ILVL)" is the area identifier, at level
-C ILVL, of the smallest area containing the area with area identifier
-C IAID.
+C The value of MPIOSA(IAID,ILVL) is the area identifier of the smallest
+C area, at level ILVL, that contains the area with area identifier IAID.
 C
         COMMON /MAPCMX/ IATY(MNAI),ISCI(MNAI),IPAR(MNAI)
         SAVE   /MAPCMX/
@@ -25,7 +24,7 @@ C
           END IF
         END IF
 C
-        MPIOAR=ITMP
+        MPIOSA=ITMP
 C
         RETURN
 C

@@ -1,5 +1,5 @@
 C
-C $Id: mpchln.f,v 1.5 1998-05-01 19:34:31 kennison Exp $
+C $Id: mpchln.f,v 1.6 1998-05-24 00:40:44 kennison Exp $
 C
       SUBROUTINE MPCHLN (IFLG,ILTY,IOAL,IOAR,NPTS,PNTS)
 C

@@ -1,5 +1,5 @@
 C
-C $Id: mpipan.f,v 1.2 1998-04-30 22:43:54 kennison Exp $
+C $Id: mpipan.f,v 1.3 1998-05-24 00:40:51 kennison Exp $
 C
       INTEGER FUNCTION MPIPAN (IAIN,ANME)
 C
@@ -7,7 +7,7 @@ C
 C
         CHARACTER*(*) ANME
 C
-C The value of "MPIPAI (IAIN,ANME)" is non-zero if and only if the area
+C The value of MPIPAI (IAIN,ANME) is non-zero if and only if the area
 C with area identifier IAIN is a part of some area having the name ANME.
 C
         COMMON /MAPCMX/ IATY(MNAI),ISCI(MNAI),IPAR(MNAI)

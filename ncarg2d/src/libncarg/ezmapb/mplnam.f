@@ -1,5 +1,5 @@
 C
-C $Id: mplnam.f,v 1.5 1998-05-12 23:02:05 kennison Exp $
+C $Id: mplnam.f,v 1.6 1998-05-24 00:40:53 kennison Exp $
 C
       SUBROUTINE MPLNAM (FLNM,ILVL,IAMA)
 C
@@ -175,8 +175,8 @@ C
 C
         IF (NNMS.LE.1) GO TO 108
 C
-        IOAL=MPIOAR(IAIL,ILVL)
-        IOAR=MPIOAR(IAIR,ILVL)
+        IOAL=MPIOSA(IAIL,ILVL)
+        IOAR=MPIOSA(IAIR,ILVL)
 C
         CALL NGRDFL (IFDE,BLAG,4+NNMS,ISTA)
         IF (ISTA.NE.4+NNMS) GO TO 906
@@ -244,7 +244,7 @@ C
                   XCRA(2)=UMAX
                   YCRA(1)=VMIN
                   YCRA(2)=VMAX
-                  IAID=MPIOAR (IAID,ILVL)
+                  IAID=MPIOSA (IAID,ILVL)
                   CALL AREDAM (IAMA,XCRA,YCRA,2,IGI1,IAID,IAID)
                   IF (ICFELL('MPLNAM',7).NE.0) GO TO 907
                   GO TO 112

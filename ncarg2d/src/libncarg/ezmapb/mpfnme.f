@@ -1,12 +1,12 @@
 C
-C $Id: mpfnme.f,v 1.2 1998-04-30 22:43:52 kennison Exp $
+C $Id: mpfnme.f,v 1.3 1998-05-24 00:40:44 kennison Exp $
 C
       CHARACTER*128 FUNCTION MPFNME (IAIN,ILVL)
 C
         PARAMETER (MNAI=2000)
 C
-C The value of "MPFNME(IAIN)" is the full name of the area with the
-C area identifier IAIN, including the names of all its parents up to
+C The value of MPFNME(IAIN) is the full name of the area with the area
+C identifier IAIN, including the names of all its parents up to the
 C the level specified by ILVL.
 C
 C Assume that IHON is the area identifier for the area named "Honshu",

@@ -1,11 +1,11 @@
 C
-C $Id: mpname.f,v 1.2 1998-04-30 22:43:58 kennison Exp $
+C $Id: mpname.f,v 1.3 1998-05-24 00:40:57 kennison Exp $
 C
       CHARACTER*64 FUNCTION MPNAME (IAIN)
 C
         PARAMETER (MNAI=2000)
 C
-C The value of "MPNAME(IAIN)" is the name of the area with the area
+C The value of MPNAME(IAIN) is the name of the area with the area
 C identifier IAIN.
 C
         COMMON /MAPCMX/ IATY(MNAI),ISCI(MNAI),IPAR(MNAI)

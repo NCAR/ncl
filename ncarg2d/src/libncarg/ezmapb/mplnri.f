@@ -1,5 +1,5 @@
 C
-C $Id: mplnri.f,v 1.2 1998-04-30 22:43:57 kennison Exp $
+C $Id: mplnri.f,v 1.3 1998-05-24 00:40:56 kennison Exp $
 C
       SUBROUTINE MPLNRI (FLNM)
 C

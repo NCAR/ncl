@@ -1,5 +1,5 @@
 C
-C $Id: mprdcs.f,v 1.2 1998-04-30 22:43:58 kennison Exp $
+C $Id: mprdcs.f,v 1.3 1998-05-24 00:40:57 kennison Exp $
 C
       SUBROUTINE MPRDCS (IFDE,CHRS,LCHR,MCHR,NCHR,CVAR)
 C
