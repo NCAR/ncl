@@ -1,5 +1,5 @@
 C
-C       $Id: vvectr.f,v 1.10 1993-12-03 21:27:30 kennison Exp $
+C       $Id: vvectr.f,v 1.11 1995-01-23 22:48:54 dbrown Exp $
 C
       SUBROUTINE VVECTR (U,V,P,IAM,VVUDMV,WRK)
 C
@@ -414,6 +414,7 @@ C
             END IF
 C
             VLN = SQRT((XE-XB)*(XE-XB)+(YE-YB)*(YE-YB))
+            IF (VLN .EQ. 0.0) GO TO 198
 C
 C Adjust the vector length in proportion to the difference between
 C the minimum and maximum display vector magnitudes
