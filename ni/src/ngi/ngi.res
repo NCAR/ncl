@@ -1,5 +1,5 @@
 !
-!      $Id: ngi.res,v 1.22 1999-02-23 04:02:00 dbrown Exp $
+!      $Id: ngi.res,v 1.23 1999-03-05 01:15:20 dbrown Exp $
 !
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !									!
@@ -342,6 +342,9 @@ ncledit*fulabel.labelString:		Functions
 ncledit*ilabel.labelString:
 ncledit*reset.labelString:		Reset
 ncledit*reset.sensitive:		False
+
+ncledit*errorPopupOption.labelString:	Editor popups on error
+ncledit*errorBellOption.labelString:	Error bell on
 
 !*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!
 
@@ -818,6 +821,7 @@ browse.title:				Data Browser
 *browseMGR*Folder.height: 500
 *browseMGR*topform.width: 500
 *browseMGR*topform.height: 500
+*browse*helpBtn.labelString: Getting Started
 
 !*browseMGR*EnumMenu*translations: #override \
 !        <Btn1Up>:               EnumButtonUpAction()
@@ -833,6 +837,7 @@ browse.title:				Data Browser
 *RegVarsBtn.labelString: Regular Vars
 *FilesBtn.labelString: Files
 *FileVarsBtn.labelString: File Vars
+*FunctionsBtn.labelString: Functions
 
 !*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!
 
@@ -874,20 +879,21 @@ browse.title:				Data Browser
 
 ! for development
 addfile*directory: /fs/scd/home1/ncargd/dev/sun4_SunOS_5_5_1/lib/ncarg/data/cdf
-addfile*directory:     /traver/home/dbrown/src/data
-addfile*directory:     /fs/scd/home1/dbrown/src/data
-addfile*directory:     /traver/dev/IRIS_IRIX_6_2_/lib/ncarg/data/cdf/
+addfile*directory: /usr/local/ncarg/lib/ncarg/data/cdf/
+addfile*directory: /fs/scd/home1/ncargd/dev/IRIS_IRIX_6_2_/lib/ncarg/data/cdf/
 
-addfile*directory:     /fs/scd/home1/dbrown/src/data
-addfile*directory:     /home/dbrown/src/dev/test
-addfile*directory:     /usr/local/ncarg/lib/ncarg/data/cdf/
-addfile*directory:     /fs/scd/home1/ncargd/dev/IRIS_IRIX_6_2_/lib/ncarg/data/cdf/
 
 !htmlview: display is sgi,linux
 !*html*fontSizeList: 12,8,22,18,14,12,10,8
 !htmlview: display is sun
 !*html*fontSizeList: 10,8,20,16,12,10,8,6
 *enableBadHTMLWarnings : HTML_NONE
+!*highlightColor: white
+*html*highlightOnEnter: False
+!*xResolution: 50
+!*yResolution: 50
+
+!*anchorButtons: False
 *XmCascadeButtonGadget*shadowThickness: 2
 *XmPushButtonGadget*shadowThickness: 2
 *XmPushButton*shadowThickness: 2
