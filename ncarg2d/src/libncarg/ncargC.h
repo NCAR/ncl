@@ -1,5 +1,5 @@
 /*
- *  $Id: ncargC.h,v 1.13 2002-04-04 22:07:43 fred Exp $
+ *  $Id: ncargC.h,v 1.14 2003-09-29 23:23:44 kennison Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -724,6 +724,272 @@ extern void c_cpmvrw(
     float *rwko,
     float *rwrk,
     int lwkn
+#endif
+);
+
+extern void c_ctback(
+#ifdef  NeedFuncProto
+    float *rpnt,
+    int *iedg,
+    int *itri,
+    float *rwrk,
+    int *iwrk
+#endif
+);
+
+extern void c_ctcica(
+#ifdef  NeedFuncProto
+    float *rpnt,
+    int *iedg,
+    int *itri,
+    float *rwrk,
+    int *iwrk,
+    int *icra,
+    int ica1,
+    int icam,
+    int ican,
+    float xcpf,
+    float ycpf,
+    float xcqf,
+    float ycqf
+#endif
+);
+
+extern void c_ctclam(
+#ifdef  NeedFuncProto
+    float *rpnt,
+    int *iedg,
+    int *itri,
+    float *rwrk,
+    int *iwrk,
+    int *iama
+#endif
+);
+
+extern void c_ctcldm(
+#ifdef  NeedFuncProto
+    float *rpnt,
+    int *iedg,
+    int *itri,
+    float *rwrk,
+    int *iwrk,
+    int *iama,
+    int (*rtpl_)(
+        float *xcra,
+        float *ycra,
+        int *ncra,
+        int *iaia,
+        int *igia,
+        int *nagi
+              )
+#endif
+);
+
+extern void c_ctcldr(
+#ifdef  NeedFuncProto
+    float *rpnt,
+    int *iedg,
+    int *itri,
+    float *rwrk,
+    int *iwrk
+#endif
+);
+
+extern void c_ctcltr(
+#ifdef  NeedFuncProto
+    float *rpnt,
+    int *iedg,
+    int *itri,
+    float *rwrk,
+    int *iwrk,
+    float clvl,
+    int *ijmp,
+    int *irw1,
+    int *irw2,
+    int *nrwk
+#endif
+);
+
+extern void c_ctgetc(
+#ifdef  NeedFuncProto
+    char *whch,
+    char *cval,
+    int len
+#endif
+);
+
+extern void c_ctgeti(
+#ifdef  NeedFuncProto
+    char *whch,
+    int *ival
+#endif
+);
+
+extern void c_ctgetr(
+#ifdef  NeedFuncProto
+    char *whch,
+    float *rval
+#endif
+);
+
+extern void c_ctlbam(
+#ifdef  NeedFuncProto
+    float *rpnt,
+    int *iedg,
+    int *itri,
+    float *rwrk,
+    int *iwrk,
+    int *iama
+#endif
+);
+
+extern void c_ctlbdr(
+#ifdef  NeedFuncProto
+    float *rpnt,
+    int *iedg,
+    int *itri,
+    float *rwrk,
+    int *iwrk
+#endif
+);
+
+extern void c_ctmesh(
+#ifdef  NeedFuncProto
+    float *rpnt,
+    int npnt,
+    int lopn,
+    int *iedg,
+    int nedg,
+    int loen,
+    int *itri,
+    int ntri,
+    int lotn,
+    float *rwrk,
+    int lrwk,
+    int *iwrk,
+    int liwk
+#endif
+);
+
+extern void c_ctmviw(
+#ifdef  NeedFuncProto
+    int *iwko,
+    int *iwrk,
+    int lwkn
+#endif
+);
+
+extern void c_ctmvrw(
+#ifdef  NeedFuncProto
+    float *rwko,
+    float *rwrk,
+    int lwkn
+#endif
+);
+
+extern void c_ctpkcl(
+#ifdef  NeedFuncProto
+    float *rpnt,
+    int *iedg,
+    int *itri,
+    float *rwrk,
+    int *iwrk
+#endif
+);
+
+extern void c_ctpklb(
+#ifdef  NeedFuncProto
+    float *rpnt,
+    int *iedg,
+    int *itri,
+    float *rwrk,
+    int *iwrk
+#endif
+);
+
+extern void c_ctrset(
+#ifdef  NeedFuncProto
+    void
+#endif
+);
+
+extern void c_ctsetc(
+#ifdef  NeedFuncProto
+    char *whch,
+    char *cval
+#endif
+);
+
+extern void c_ctseti(
+#ifdef  NeedFuncProto
+    char *whch,
+    int ival
+#endif
+);
+
+extern void c_ctsetr(
+#ifdef  NeedFuncProto
+    char *whch,
+    float rval
+#endif
+);
+
+extern void c_cttmrg(
+#ifdef  NeedFuncProto
+    int idim,
+    int jdim,
+    float *rlat,
+    float *rlon,
+    float *rdat,
+    int *iscr,
+    float sval,
+    void (*rtmi_) (
+            int *idim,
+            int *jdim,
+            int *iini,
+            int *jini,
+            int *iino,
+            int *jino
+            ),
+    float *rpnt,
+    int mpnt,
+    int *npnt,
+    int lopn,
+    int *iedg,
+    int medg,
+    int *nedg,
+    int loen,
+    int *itri,
+    int mtri,
+    int *ntri,
+    int lotn
+#endif
+);
+
+extern void c_cttmtl(
+#ifdef  NeedFuncProto
+    int ntto,
+    float *tbuf,
+    int mbuf,
+    int *nbuf,
+    int *ippp,
+    int mppp,
+    int *nppp,
+    int *ippe,
+    int mppe,
+    int *nppe,
+    float *rpnt,
+    int mpnt,
+    int *npnt,
+    int lopn,
+    int *iedg,
+    int medg,
+    int *nedg,
+    int loen,
+    int *itri,
+    int mtri,
+    int *ntri,
+    int lotn
 #endif
 );
 
