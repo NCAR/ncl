@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.37 1993-04-12 21:22:15 haley Exp $
+#   $Id: ncargex.csh,v 1.38 1993-04-12 22:13:45 haley Exp $
 #
 
 #********************#
@@ -321,7 +321,7 @@ set vectors_list = ($ex_vectors $tst_vectors $fnd_vectors)
 #****************************************#
 set ex_field   = (stex01 stex02 stex03 vvex01 vvex02)
 set tst_field  = (tstrml tvelvc)
-set fnd_field  = (ffex00 ffex01 ffex02 ffex03 ffex04 ffex05)
+set fnd_field  = (fstream ffex00 ffex01 ffex02 ffex03 ffex04 ffex05)
 set field_list = ($ex_field $tst_field $fnd_field)
 
 #******************#
