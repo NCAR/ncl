@@ -121,6 +121,7 @@ NhlCompareDat *_NhlCmpFSetup
 	int sign;
 	if(val == 0.0) {
 		tmp->is_zero = 1;
+		tmp->orig_val = 0.0;
 		return(tmp);
 	}
 
