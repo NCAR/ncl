@@ -1,0 +1,20 @@
+#
+#	$Id: yMakefile,v 1.1 1995-02-28 18:07:02 haley Exp $
+#
+
+MAN = wmap wmap_params wmbarb wmdflt wmdrft wmdrrg wmgetc wmgeti wmgetr \
+	wmlabc wmlabs wmlabt wmlabw wmlgnd wmsetc wmseti wmsetr wmstnm
+
+# Install preformatted troff documents on systems without troff
+#if UseCatDirs
+FORMAT_EXT	= .p
+#else
+FORMAT_EXT	= .m
+#endif
+
+MPATH	= $(MAN3PATH)
+MSECT	= $(MAN3_SECTION)
+
+InstallManPages($(MAN),$(FORMAT_EXT),$(MPATH),$(MSECT))
+FormatManPages($(MAN),.m,.p)
+
