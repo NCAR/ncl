@@ -3162,12 +3162,103 @@ int* n_dims_lon;
 int** dimsizes_lon;
 #endif
 {
-			*lat = NULL;
-			*n_dims_lat = 0;
-			*dimsizes_lat = NULL;
-			*lon = NULL;
-			*n_dims_lon= 0;
-			*dimsizes_lon= NULL;
+	static int mapid = -1;
+	static int vpid = -1;
+	static int rlist = -1;
+	int nx;
+	int ny;
+	float la1;
+	float lo1;
+	float lov;
+	float dx;
+	float dy;
+	float deltax;
+	float deltay;
+	float latin1;
+	float latin2;
+	int north;
+	float tmp_x[3];
+	float tmp_y[3];
+	float ndc_y_start;
+	float ndc_x_start;
+	float deg_per_gp_y;
+	int status,idir,jdir,i,j;
+	float orv;
+	char *gds = thevarrec->thelist->rec_inq->gds;
+	
+
+
+	nx = UnsignedCnvtToDecimal(2,&(gds[6]));
+	ny = UnsignedCnvtToDecimal(2,&(gds[8]));
+	la1 = ((float)UnsignedCnvtToDecimal(3,&(gds[10])))/1000.0;
+	lo1 = ((float)UnsignedCnvtToDecimal(3,&(gds[13])))/1000.0;
+	lov = ((float)UnsignedCnvtToDecimal(3,&(gds[17])))/1000.0;
+	dx = (float)UnsignedCnvtToDecimal(3,&(gds[20]));
+	dy = (float)UnsignedCnvtToDecimal(3,&(gds[23]));
+	latin1 = (float)UnsignedCnvtToDecimal(3,&(gds[28]))/1000.0;
+	latin2 = (float)UnsignedCnvtToDecimal(3,&(gds[31]))/1000.0;
+        *dimsizes_lat = (int*)NclMalloc(sizeof(int) * 2);
+        *dimsizes_lon = (int*)NclMalloc(sizeof(int) * 2);
+        *n_dims_lat = 2;
+        *n_dims_lon = 2;
+        (*dimsizes_lat)[0] = ny;
+        (*dimsizes_lat)[1] = nx;
+        (*dimsizes_lon)[0] = ny;
+        (*dimsizes_lon)[1] = nx;
+	*lat = (float*)NclMalloc(sizeof(float)*nx*ny);
+	*lon = (float*)NclMalloc(sizeof(float)*nx*ny);
+	north= ((unsigned char)0200 & (unsigned char)gds[26])?1:0;
+	idir = ((unsigned char)0200 & (unsigned char)gds[27])?-1:1;
+	jdir = ((unsigned char)0100 & (unsigned char)gds[27])?1:-1;
+	if(mapid == -1) {
+		rlist = NhlRLCreate(NhlSETRL);
+		NhlRLClear(rlist);
+		NhlCreate(&vpid,"Map0",NhldummyWorkstationClass,NULL,rlist);
+		NhlRLClear(rlist);
+		NhlRLSetFloat(rlist,NhlNvpXF,0.01);
+		NhlRLSetFloat(rlist,NhlNvpYF,0.99);
+		NhlRLSetFloat(rlist,NhlNvpWidthF,0.98);
+		NhlRLSetFloat(rlist,NhlNvpHeightF,0.98);
+		NhlRLSetString(rlist,NhlNmpProjection,"LAMBERTCONFORMAL");
+		NhlRLSetFloat(rlist,NhlNmpLambertParallel1F,latin1);
+		NhlRLSetFloat(rlist,NhlNmpLambertParallel2F,latin2);
+		NhlRLSetFloat(rlist,NhlNmpLambertMeridianF,lov);
+		NhlCreate(&mapid,"Map0",NhlmapPlotClass,vpid,rlist);
+	} else {
+		NhlRLClear(rlist);
+		NhlRLSetFloat(rlist,NhlNmpLambertParallel1F,latin1);
+		NhlRLSetFloat(rlist,NhlNmpLambertParallel2F,latin2);
+		NhlRLSetFloat(rlist,NhlNmpLambertMeridianF,lov);
+		NhlSetValues(mapid,rlist);
+	}
+
+	deg_per_gp_y = 360.0 * (dy / (2 * pi * (ear*1000.0)));
+	tmp_x[0] = lov;
+	tmp_x[1] = lov;
+	tmp_x[2] = lo1;
+	tmp_y[0] = latin1 - deg_per_gp_y/2.0;
+	tmp_y[1] = latin1 + deg_per_gp_y/2.0;
+	tmp_y[2] = la1;
+	NhlDataToNDC(mapid,tmp_x,tmp_y,3,tmp_x,tmp_y,NULL,NULL,&status,&orv);
+	deltay = (float)fabs((double)(tmp_y[0] - tmp_y[1]));
+	deltax = (dx/dy) * deltay;
+	ndc_x_start = tmp_x[2];
+	ndc_y_start = tmp_y[2];
+	for(j = 0; j < ny; j++) {
+		for(i = 0; i < nx; i++) {
+			(*lon)[j * nx + i] = ndc_x_start + idir * i * deltax;
+			(*lat)[j * nx + i] = ndc_y_start + jdir * j * deltay;
+		}
+	}
+	NhlNDCToData(mapid,*lon,*lat,nx*ny,*lon,*lat,NULL,NULL,&status,&orv);
+
+	
+	
+	
+	
+
+
+
 }
 
 void GdsGAGrid
@@ -3465,7 +3556,7 @@ GridInfoRecord grid_gds[] = {
 /**/		GenericUnPack,GdsMEGrid,NULL,"Mercator Projection Grid", /*1*/
 /**/		GenericUnPack,GdsGNGrid,NULL,"Gnomonic Projection Grid", /*2*/
 /**/		GenericUnPack,GdsLEGrid,NULL,"Lambert Conformal Secant or Tangent, Conical or bipolar", /*3*/
-/**/		GenericUnPack,GdsGAGrid,NULL,"Gaussian Latitude/Longitude Grid", /*4*/
+		GenericUnPack,GdsGAGrid,NULL,"Gaussian Latitude/Longitude Grid", /*4*/
 /**/		GenericUnPack,GdsSTGrid,NULL,"Polar Stereographic Projection Grid", /*5*/
 /**/		GenericUnPack,GdsOLGrid,NULL,"Oblique Lambert conformal, secant or tangent, conical or bipolar, projection", /*13*/
 		NULL,NULL,NULL,"Spherical Harmonic Coefficients", /*50*/

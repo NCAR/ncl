@@ -222,19 +222,43 @@ int** lv_vals1;
 
 	while(strt->next != NULL) {
 		if((strt->rec_inq->level0 == strt->next->rec_inq->level0)&&(strt->rec_inq->level1 == strt->next->rec_inq->level1)) {
+/*
+			if((strt->rec_inq->bds_flags & (char)0360) != (strt->next->rec_inq->bds_flags&(char)0360)) {
+				fprintf(stdout,"Dup BDSC: Flag error\n");
+			}
+			if(strt->rec_inq->has_bms != strt->next->rec_inq->has_bms) {
+				fprintf(stdout,"Dup BMSC: BMS error\n");
+			}
+			if(strt->rec_inq->pds_size != strt->next->rec_inq->pds_size) {
+				fprintf(stdout,"Dup PDSC: Size Error\n");
+			} else {
+				fprintf(stdout,"Dup PDSC: %s\t%d\n",(GdsCompare(strt->rec_inq->pds,strt->next->rec_inq->pds,strt->rec_inq->pds_size)?"Equal":"Not Equal"),(int)strt->rec_inq->pds[9]);
+			}
+			fprintf(stdout,"GDS SIZE (%d)\n",strt->rec_inq->gds_size);
+			if(strt->rec_inq->gds_size != strt->next->rec_inq->gds_size) {
+				fprintf(stdout,"Dup GDSC: Size Error\n");
+			} else {
+				fprintf(stdout,"Dup GDSC: %s\n",(GdsCompare(strt->rec_inq->gds,strt->next->rec_inq->gds,strt->rec_inq->gds_size)?"Equal":"Not Equal"));
+			}
+			fprintf(stdout,"Dup: (%s,%s)\t(%d,%d)\n",strt->rec_inq->var_name,strt->next->rec_inq->var_name,strt->rec_inq->start,strt->next->rec_inq->start);
+*/
+/*
 			NhlPError(NhlWARNING,NhlEUNKNOWN,"NclGRIB: Duplicate GRIB record found!! NCL has no way of knowing which is valid, so skipping one arbitrarily!");
 			tmp = strt->next;
 			strt->next = strt->next->next;
 			if(tmp->rec_inq->var_name != NULL) {
 				NclFree(tmp->rec_inq->var_name);
 			}
-/*
+*
 * Very important to update n_entries.
 * Needed later on in _MakeArray
-*/
+*
 			thevar->n_entries--;
 			NclFree(tmp->rec_inq);
 			NclFree(tmp);
+*/
+			n_lvs++;
+			strt = strt->next;
 		} else {
 /*
 			fprintf(stdout,"%d/%d/%d\t(%d:%d)-%d,%d\t%d,%d\ttoff=%d\t%d,%d,%d\n",
@@ -596,6 +620,9 @@ GribFileRecord *therec;
 				case 98:
 					the_param = &(params_ecmwf[grib_rec->param_tbl_index]);
 					break;
+				case 59:
+					the_param = &(params_fsl[grib_rec->param_tbl_index]);
+					break;
 				case 7:
 				case 8:
 				case 9:
@@ -779,7 +806,6 @@ GribFileRecord *therec;
 		step = step->next;
 	}
 }
-
 int GdsCompare(char *a,char *b,int n) {
 	int i;
 	for( i = 0; i < n ; i++) {
@@ -2310,7 +2336,7 @@ void *s2;
 	if((s_1->rec_inq->level0 != -1)&&(s_1->rec_inq->level1 != -1)) {
 		if(s_1->rec_inq->level0 == s_2->rec_inq->level0) {
 			if(s_1->rec_inq->level1 == s_2->rec_inq->level1) {
-				return(s_1->rec_inq->bds_size - s_2->rec_inq->bds_size);
+				return(s_1->rec_inq->start - s_2->rec_inq->start);
 			} else {
 				return(s_1->rec_inq->level1 - s_2->rec_inq->level1);
 			}
@@ -2319,7 +2345,7 @@ void *s2;
 		}
 	} else {
 		if(s_1->rec_inq->level0 == s_2->rec_inq->level0) {
-			return(s_1->rec_inq->bds_size - s_2->rec_inq->bds_size);
+			return(s_1->rec_inq->start- s_2->rec_inq->start);
 		} else {
 			return(s_1->rec_inq->level0 - s_2->rec_inq->level0);
 		}
@@ -2655,7 +2681,8 @@ int wr_status;
 				}
 				grib_rec->bds_off = 8 + grib_rec->pds_size + grib_rec->bms_size + grib_rec->gds_size;
 				lseek(fd,(unsigned)(grib_rec->start + grib_rec->bds_off),SEEK_SET);
-				read(fd,(void*)tmpc,3);
+				read(fd,(void*)tmpc,4);
+				grib_rec->bds_flags = tmpc[3];
 				grib_rec->bds_size = CnvtToDecimal(3,tmpc);
 				read(fd,(void*)tmpc,1);
 				grib_rec->int_or_float = (int)(tmpc[0]  & (char)0040) ? 1 : 0;
@@ -2689,6 +2716,20 @@ int wr_status;
 							NhlFree(grib_rec);
 							grib_rec= NULL;
 						} 
+						break;
+					 case 59:
+						for(i = 0; i < sizeof(params_fsl_index)/sizeof(int); i++) {
+							if(params_fsl_index[i] == grib_rec->param_number) {
+								name_rec = &(params_fsl[i]);
+								break;
+							}
+						}
+						if( i ==  sizeof(params_fsl_index)/sizeof(int) ) {
+							NhlPError(NhlWARNING,NhlEUNKNOWN,"NclGRIB: Unknown grib parameter number detected (%d), skipping",grib_rec->param_number);
+							NhlFree(grib_rec);
+							grib_rec= NULL;
+						} 
+						
 						break;
 					case 7:
 					case 8:

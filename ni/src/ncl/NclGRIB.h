@@ -141,6 +141,7 @@ struct _GribRecordInqRec {
 	NclQuark units_q;
 	unsigned int start;
 	unsigned int bds_off;
+	unsigned int bds_flags;
 	unsigned int bds_size;
 	int int_or_float;
 	int has_gds;
