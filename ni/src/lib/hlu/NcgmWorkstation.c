@@ -1,5 +1,5 @@
 /*
- *      $Id: NcgmWorkstation.c,v 1.13 1995-02-19 08:18:20 boote Exp $
+ *      $Id: NcgmWorkstation.c,v 1.14 1995-02-23 16:47:19 haley Exp $
  */
 /************************************************************************
 *									*
@@ -21,7 +21,7 @@
  */
 
 #include <stdio.h>
-#include <strings.h>
+#include <string.h>
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/NcgmWorkstationP.h>
 

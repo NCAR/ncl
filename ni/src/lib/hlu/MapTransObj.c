@@ -1,5 +1,5 @@
 /*
-*      $Id: MapTransObj.c,v 1.16 1995-02-11 07:28:15 dbrown Exp $
+*      $Id: MapTransObj.c,v 1.17 1995-02-23 16:47:16 haley Exp $
 */
 /************************************************************************
 *									*
@@ -20,7 +20,7 @@
 *	Description:	
 */
 #include <stdio.h>
-#include <strings.h>
+#include <string.h>
 #include <math.h>
 #include <ncarg/hlu/hluutil.h>
 #include <ncarg/hlu/hluP.h>
