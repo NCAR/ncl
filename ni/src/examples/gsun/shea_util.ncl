@@ -1,5 +1,5 @@
 ;
-;      $Id: shea_util.ncl,v 1.16 2004-08-30 15:00:14 asphilli Exp $
+;      $Id: shea_util.ncl,v 1.17 2004-11-04 16:47:46 shea Exp $
 ;
 ; ******************** NOTE *******************************
 ; These are my personal functions/procedures. They do things
@@ -1678,6 +1678,71 @@ begin
      end setvalues
    end if                                ; any
    return (plot)
+end
+;*********************************************************************
+; Dennis Shea
+; Shades all regions which have a value less then or equal to CnLt
+; and all regions which have a value greater than or equal to CnGe
+; The pattern and density for each may be different.
+
+undef ("ShadeLeGeContourDensity")
+function ShadeLeGeContourDensity (plot:graphic
+                          ,CnLt:float, FillPatLt:integer, FillDenLt:float\
+                          ,CnGt:float, FillPatGt:integer, FillDenGt:float ) 
+; operates on a contour object created by "gsn_csm.ncl" code
+; pattern corresponding to "FillPat*" 
+; http://ngwww.ucar.edu/ngdoc/ng/ref/fillpatterns.html
+;  res@cnMonoFillPattern = False      ; want multiple patterns 
+;  res@cnMonoFillScale   = False      ; want patterns w/ diff densities 
+;  res@cnFillOn          = True       ; fill contour intervals
+
+local cnlvls, patterns, density, i, N
+begin
+ 
+   cnlvls = get_cnLevels (plot)
+
+   N = dimsizes(cnlvls)
+   if (ismissing(N) .or. N.le.0) then
+       print ("ShadeLeGeContourDensity: dimsizes(cnlvls)=" \
+              +N+" return (non-fatal)")
+       return (plot)
+   else 
+       cnlvls = FixZeroContour (cnlvls, "ShadeLeGeContourDensity")
+   end if
+
+   if (any(cnlvls.le.CnLt) .or. any(cnlvls.ge.CnGt)) then
+       patterns     = new(dimsizes(cnlvls)+1,integer) ; Create array for fill 
+       density      = new(dimsizes(cnlvls)+1,float  )
+
+       density      =  1                           ; default density
+       patterns     = -1                           ; patterns and initialize
+                                                   ; it to transparent.
+       
+       do i=0,N-1                        ; Fill contour levels depending on 
+         if(cnlvls(i).le.CnLt) then      ; different criteria.
+           patterns(i) = FillPatLt       ; see above URL
+           density(i)  = FillDenLt       ; see above URL
+         end if
+          if(cnlvls(i).gt.CnGt) then
+             patterns(i) = FillPatGt     ; See above URL
+             density(i)  = FillDenGt       ; see above URL
+          end if
+       end do
+       patterns(i)  = FillPatGt          ; last pattern
+       density(i)   = FillDenGt          ; last density
+     
+       ovrly_plot = GetOverlayPlot (plot, "contourPlotClass", 0)
+       setvalues ovrly_plot
+           "cnFillOn"          : True
+           "cnMonoFillColor"   : True
+           "cnMonoFillPattern" : False
+           "cnFillPatterns"    : patterns
+           "cnFillScales"      : density
+       end setvalues
+   end if
+ 
+   return (plot)
+
 end
 ;*********************************************************************
 ; Adam Phillips
