@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.17 2000-03-10 20:36:33 ethan Exp $
+#      $Id: yMakefile,v 1.18 2000-03-10 23:42:58 haley Exp $
 #
 #########################################################################
 #									#
@@ -54,7 +54,6 @@ FOBJS = areaAve.o calcorc_dp.o chiin_dp.o cz2ccm_dp.o dtrend_dp.o ezfft_dp.o \
 	regcoef_dp.o relhum_dp.o remap.o rhombtri_dp.o rmStndx_dp.o runave_dp.o \
 	smth9_dp.o sp2_util.o sp2_util_dp.o specx_dp.o statx.o statx_dp.o \
 	svd_lap_dp.o svd_util_dp.o trcwav_dp.o trvsph77_dp.o \
-	varimax_dp.o vibeta_dp.o wrunave_dp.o vinth2p_dp.o
 	varimax_dp.o vibeta_dp.o volAve.o wrunave_dp.o vinth2p_dp.o
 
 OBJS = $(COBJS) $(FOBJS)
