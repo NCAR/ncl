@@ -1,5 +1,5 @@
 #
-#   $Id: yMakefile,v 1.7 1995-06-13 21:12:27 haley Exp $
+#   $Id: yMakefile,v 1.8 1995-06-29 21:59:56 dbrown Exp $
 #
 #   Makefile for HLU TickMark examples
 #
@@ -12,12 +12,12 @@ SYS_LIBS    =   $(CTOFLIBS) -lm
 
 CSRCS    = tm01c.c tm02c.c tm03c.c
 FSRCS    = tm01f.f tm02f.f tm03f.f
-NSRCS    = tm01n.ncl tm02n.ncl tm03n.ncl
+NSRCS    = tm01n.ncl tm02n.ncl tm03n.ncl tm04n.ncl
 COBJS    = tm01c.o tm02c.o tm03c.o
 FOBJS    = tm01f.o tm02f.o tm03f.o
 SRCS     = $(CSRCS) $(FSRCS)
 OBJS     = $(COBJS) $(FOBJS)
-RESFILES = tm01.res tm02.res tm03.res
+RESFILES = tm01.res tm02.res tm03.res tm04.res
 INCLUDES = tm03c.h
 EXFILES  = $(SRCS) $(INCLUDES)
 

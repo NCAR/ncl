@@ -14,15 +14,15 @@ C          PO 3000, Boulder, Colorado
 C
 C      Date:           Fri Jan 06 18:31:18 MDT 1995
 C
-C      Description:    Demonstrates the TickMark Object
-C                      defaults.
+C      Description:     Demonstrates the TickMark Object with a
+C                       number of resources set from the resource file
 C
       external NhlFAppClass
       external NhlFTickMarkClass
       external NhlFXWorkstationClass
       external NhlFNcgmWorkstationClass
       external NhlFPSWorkstationClass
-        
+C       
       integer appid, wid, pid
       integer rlist, ierr
       integer NCGM, X11, PS
@@ -47,7 +47,7 @@ C
       call NhlFRLSetstring(rlist,'appUsrDir','./',ierr)
       call NhlFRLSetstring(rlist,'appDefaultParent','True',ierr)
       call NhlFCreate(appid,'tm02',NhlFAppClass,0,rlist,ierr)
-
+C
       if (NCGM.eq.1) then
 C
 C Create an NCGM workstation object.
@@ -81,7 +81,7 @@ C
       call NhlFRLSetfloat(rlist,'vpYF',.8,ierr)
       call NhlFRLSetfloat(rlist,'vpWidthF',.6,ierr)
       call NhlFRLSetfloat(rlist,'vpHeightF',.6,ierr)
-
+C
       call NhlFCreate(pid,'TickMarks',NhlFTickMarkClass,wid,
      1      rlist,ierr)
 
@@ -91,6 +91,6 @@ C
       call NhlFDestroy(wid,ierr)
       call NhlFDestroy(appid,ierr)
       call NhlFClose
-
+C
       stop
       end

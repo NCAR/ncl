@@ -14,8 +14,8 @@
  *
  *      Date:           Fri Jan 06 18:31:18 MDT 1995
  *
- *      Description:    Demonstrates the TickMark Object
- *                      with bottom and left ticks turned on.
+ *      Description:    Demonstrates the TickMark Object with a
+ *                      number of resources set from the resource file
  */
 #include <stdio.h>
 #include <ncarg/hlu/hlu.h>
