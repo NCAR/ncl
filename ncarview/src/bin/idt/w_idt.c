@@ -116,6 +116,11 @@ main(argc, argv)
 	XtGetApplicationResources(toplevel, &App_Data, resources, 
 		XtNumber(resources), NULL, 0);
 
+	if (argc == 2) {
+		SetFileSelection(argv[1]);
+		argc--;
+	}
+
 	if (argc != 1) 
 		Syntax(argv[0]);
 
@@ -250,7 +255,8 @@ static void
 Syntax(call)
 	char *call;
 {
-	(void) fprintf(stderr, "%s: Usage: idt [-d device] [-f font] [-h]\n",
+	(void) fprintf(stderr, 
+		"%s: Usage: idt [-d device] [-f font] [-h] [filename]\n",
 		call);
 	exit(1);
 }
