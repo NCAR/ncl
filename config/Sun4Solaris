@@ -1,5 +1,5 @@
 /*
- *      $Id: Sun4Solaris,v 1.7 1993-10-19 17:13:49 boote Exp $
+ *      $Id: Sun4Solaris,v 1.8 1994-03-23 21:40:52 haley Exp $
  */
 /************************************************************************
 *									*
@@ -29,4 +29,3 @@
 #define	FCppCommand	/usr/ccs/lib/cpp
 #define	DoesRanlib	NO
 #define	LintCommand	alint
-#define	InstallCommand	install -c

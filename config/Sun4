@@ -1,5 +1,5 @@
 /*
- *      $Id: Sun4,v 1.22 1993-10-19 17:13:46 boote Exp $
+ *      $Id: Sun4,v 1.23 1994-03-23 21:40:50 haley Exp $
  */
 /************************************************************************
 *									*
@@ -38,4 +38,3 @@
 #define	HdfDefines	-DSUN
 #define CtoFLibraries	Cstatic -lF77 Cdynamic
 #define	LintCommand	alint
-#define InstallCommand	install -c

@@ -1,5 +1,5 @@
 /*
- *      $Id: DECRISC,v 1.18 1993-10-21 17:21:31 haley Exp $
+ *      $Id: DECRISC,v 1.19 1994-03-23 21:40:49 haley Exp $
  */
 /************************************************************************
 *									*
@@ -24,6 +24,5 @@
 #define	HdfDefines	-DMIPSEL
 #define	StdDefines	-DByteSwapped
 #define	FCppCommand	/lib/cpp
-#define	InstallCommand	install -c
 #define ProjectDefines 
 
