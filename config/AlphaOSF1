@@ -1,5 +1,5 @@
 /*
- *      $Id: AlphaOSF1,v 1.3 1994-03-29 00:00:31 haley Exp $
+ *      $Id: AlphaOSF1,v 1.4 1994-06-07 19:15:30 haley Exp $
  */
 /************************************************************************
 *									*
@@ -24,3 +24,4 @@
 #define	HdfDefines	-DMIPSEL
 #define	StdDefines	-DByteSwapped -DSYSV -std1
 #define	FCppCommand	/lib/cpp
+#define CtoFLibraries   -lots -lfor
