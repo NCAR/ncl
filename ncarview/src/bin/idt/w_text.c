@@ -1,5 +1,5 @@
 /*
- *	$Id: w_text.c,v 1.9 1996-01-18 14:44:31 boote Exp $
+ *	$Id: w_text.c,v 1.10 1997-03-14 00:34:23 boote Exp $
  */
 /*
  *	w_text.c
@@ -43,10 +43,10 @@ static	char	*strccpy(s, t, c)
 	char	*cptr = s;
 
 	/*SUPPRESS 570*/
-	while ((*t != c) && (*s++ = *t++));
+	while (*t && (*t != c))
+		*s++ = *t++;
 
-	if (*(--s))
-		*s = '\0';
+	*s = '\0';
 
 	return(cptr);
 }
