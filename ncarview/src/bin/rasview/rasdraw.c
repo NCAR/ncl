@@ -1,5 +1,5 @@
 /*
- *	$Id: rasdraw.c,v 1.5 1992-03-20 22:36:24 clyne Exp $
+ *	$Id: rasdraw.c,v 1.6 1992-03-26 22:13:03 clyne Exp $
  */
 /*
  *	rasdraw.c
@@ -15,10 +15,12 @@
  */
 #include <stdio.h>
 #include <ctype.h>
+#include <errno.h>
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>     /* Get standard string definations. */
 #include <X11/Shell.h>
 #include <ncarg_ras.h>
+#include <ncarv.h>
 
 #ifdef	SYSV
 #include <string.h>
@@ -100,7 +102,7 @@ Context	*RasDrawOpen(argc, argv, batch)
 	 * to uppercase.
 	 */
 	if (! (app_class = (String) malloc((unsigned) strlen(argv[0] + 1)))) {
-		fprintf(stderr,"malloc(%d)\n", strlen(argv[0]) + 1);
+		ESprintf(errno,"malloc(%d)", strlen(argv[0]) + 1);
 		return ((Context *) NULL);
 	}
 
@@ -111,7 +113,7 @@ Context	*RasDrawOpen(argc, argv, batch)
 	 * create context for this instance
 	 */
 	if ((context = (Context *) malloc(sizeof(Context))) == NULL) {
-		fprintf(stderr,"malloc(%d)\n", sizeof(Context));
+		ESprintf(errno,"malloc(%d)", sizeof(Context));
 		return ((Context *) NULL);
 	}
 
@@ -128,7 +130,7 @@ Context	*RasDrawOpen(argc, argv, batch)
 		(XrmOptionDescList *) NULL, (Cardinal) 0, argc, argv
 	);
 	if (! dpy) {
-		fprintf(stderr,"XtOpenDisplay(,,,,,,,)\n");
+		ESprintf(E_UNKNOWN,"XtOpenDisplay(,,,,,,,)");
 		return(NULL);
 	}
 
@@ -147,7 +149,6 @@ Context	*RasDrawOpen(argc, argv, batch)
 		context->encoding |= RASDRAW_8BIT;
 	}
 	
-
 	context->dpy = dpy;
 	context->batch = batch;
 	context->load_pal = True;
@@ -296,12 +297,12 @@ RasDraw(ras, context)
 
 	if (class == DirectColor || class == TrueColor) {
 		if (ras->type != RAS_DIRECT) {
-			fprintf(stderr, "Expected RAS_DIRECT raster type\n");
+			ESprintf(E_UNKNOWN, "Expected RAS_DIRECT raster type");
 			return(-1);	/* bad encoding	*/
 		}
 
 		if (context->dsp_depth != 24) {
-			fprintf(stderr, "Expected 24-bit display depth\n");
+			ESprintf(E_UNKNOWN, "Expected 24-bit display depth");
 			return(-1);	/* bad encoding	*/
 		}
 
@@ -309,7 +310,7 @@ RasDraw(ras, context)
 	}
 	else {
 		if (ras->type != RAS_INDEXED) {
-			fprintf(stderr, "Expected RAS_INDEXED raster type\n");
+			ESprintf(E_UNKNOWN, "Expected RAS_INDEXED raster type");
 			return(-1);	/* bad encoding	*/
 		}
 		/*
@@ -394,21 +395,21 @@ RasDrawSetPalette(context, red, green, blue, ncolor)
 	 * later use
 	 */
 	if ( ! (ucptr = (unsigned char *) malloc(ncolor))) {
-		fprintf(stderr,"malloc(%d)\n", ncolor);
+		ESprintf(errno,"malloc(%d)", ncolor);
 		return(-1);
 	}
 	bcopy((char *) red, (char *) ucptr, (int) ncolor);
 	context->default_pal.red = ucptr;
 
 	if ( ! (ucptr = (unsigned char *) malloc(ncolor))) {
-		fprintf(stderr,"malloc(%d)\n", ncolor);
+		ESprintf(errno,"malloc(%d)", ncolor);
 		return(-1);
 	}
 	bcopy((char *) green, (char *) ucptr, (int) ncolor);
 	context->default_pal.green = ucptr;
 
 	if ( ! (ucptr = (unsigned char *) malloc(ncolor))) {
-		fprintf(stderr,"malloc(%d)\n", ncolor);
+		ESprintf(errno,"malloc(%d)", ncolor);
 		return(-1);
 	}
 	bcopy((char *) blue, (char *) ucptr, (int) ncolor);
@@ -660,7 +661,7 @@ static	load_static_pal_(red, green, blue, ncolor, context)
 		static_pal = (long *) malloc(256 * sizeof(long));
 
 		if (! static_pal) {
-			fprintf(stderr,"malloc(%d)\n", 256 * sizeof(long));
+			ESprintf(errno,"malloc(%d)", 256 * sizeof(long));
 			return(-1);
 		}
 	}
@@ -678,7 +679,7 @@ static	load_static_pal_(red, green, blue, ncolor, context)
 		xcolor.pad = '\0';
 
 		if (! XAllocColor(dpy, cmap, &xcolor)) {
-			fprintf(stderr,"XAllocColor(,,)\n");
+			ESprintf(E_UNKNOWN,"XAllocColor(,,)");
 			return(-1);
 		}
 		static_pal[i] = xcolor.pixel;
@@ -716,7 +717,7 @@ static	load_palette_(red, green, blue, ncolor, context)
 				malloc((unsigned) num_cols * sizeof(XColor));
 
 		if (! context->xcolors) {
-			fprintf(stderr,"malloc(%d)\n", num_cols * sizeof(XColor));
+			ESprintf(errno,"malloc(%d)", num_cols * sizeof(XColor));
 			return(-1);
 		}
 		context->xcolor_size = num_cols;
@@ -819,7 +820,7 @@ static	XImage	*create_ximage(dpy, depth, visual, nx, ny, context)
 	if ((ximage = XCreateImage(dpy, visual,
 		depth, ZPixmap, 0, NULL, nx, ny, 8, bytes_per_line)) == NULL) {
 
-		fprintf(stderr,"XCreateImage(,,,,,,,,,)\n");
+		ESprintf(E_UNKNOWN,"XCreateImage(,,,,,,,,,)");
 		return(NULL);
 	}
 
@@ -876,7 +877,7 @@ static	XImage	*create_ximage(dpy, depth, visual, nx, ny, context)
 	if (bytes_per_pixel != 1) {
 		image_buf = (char *) malloc ((unsigned) image_size);
 		if (! image_buf) {
-			fprintf(stderr,"malloc(%d)\n", image_size);
+			ESprintf(errno,"malloc(%d)", image_size);
 			return(NULL);
 		}
 	}

@@ -1,5 +1,5 @@
 /*
- *	$Id: rasview.c,v 1.6 1992-03-20 22:36:30 clyne Exp $
+ *	$Id: rasview.c,v 1.7 1992-03-26 22:13:07 clyne Exp $
  */
 /*
  *	rasview.c
@@ -24,18 +24,18 @@
  *      a global structure that contains values of command line options
  */
 static	struct	{
-	StringType_	palette;	/* color palette		*/
-	BoolType_	quiet;		/* quiet or verbose mode	*/
-	BoolType_	version;	/* print version		*/
+	char	*palette;	/* color palette		*/
+	boolean	quiet;		/* quiet or verbose mode	*/
+	boolean	version;	/* print version		*/
 	} opt;
 
 /*
  *	the options that we want to have parsed
  */
 static	OptDescRec	set_options[] = {
-	{"palette", OptSepArg, NULL},
-	{"quiet", OptIsArg, "false"},
-	{"Version", OptIsArg, "false"},
+	{"palette", 1, NULL, "Specify a color palette file"},
+	{"quiet", 0, NULL, "Operate in quite mode"},
+	{"Version", 0, NULL, "Print version number end exit"},
 	{NULL}
 };
 	
@@ -43,12 +43,11 @@ static	OptDescRec	set_options[] = {
  *	return structure for loading options
  */
 static	Option	get_options[] = {
-	{"palette", StringType, (unsigned long) &(opt.palette),
-						sizeof (StringType_)
+	{"palette", NCARGCvtToString, (Voidptr)&opt.palette, sizeof(opt.palette)
 	},
-	{"quiet", BoolType, (unsigned long) &(opt.quiet), sizeof (BoolType_)
+	{"quiet", NCARGCvtToBoolean, (Voidptr) &opt.quiet, sizeof(opt.quiet)
 	},
-	{"Version", BoolType, (unsigned long) &(opt.version), sizeof (BoolType_)
+	{"Version", NCARGCvtToBoolean, (Voidptr)&opt.version,sizeof(opt.version)
 	},
 	{
 	NULL
@@ -78,13 +77,24 @@ main(argc, argv)
 	/*
 	 * register the options we're interested in and have them parsed
 	 */
-	parseOptionTable(&argc, argv, set_options);
+	if (ParseOptionTable(&argc, argv, set_options) < 0) {
+		fprintf(
+			stderr,"%s : Error parsing command line options : %s\n",
+			prog_name, ErrGetMsg()
+		);
+		exit(1);
+	}
 
 	/*
 	 * load the options into opt
 	 */
-	getOptions((caddr_t) 0, get_options);
-
+	if (GetOptions(get_options) < 0) {
+		fprintf(
+			stderr,"%s : GetOptions() : %s\n",
+			prog_name,ErrGetMsg()
+		);
+		exit(1);
+	}
 	pal_name = opt.palette;
 	verbose = ! opt.quiet;
 
@@ -100,7 +110,10 @@ main(argc, argv)
 	(void) RasterInit(&argc, argv);
 
 	if ((context = RasDrawOpen(&argc, argv, FALSE)) == (Context *) NULL) {
-		fprintf(stderr, "%s : Error initializing display\n",prog_name);
+		fprintf(
+			stderr, "%s : Error initializing display : %s\n",
+			prog_name, ErrGetMsg()
+		);
 		exit(1);
 	}
 
@@ -241,6 +254,7 @@ void	usage(prog_name, message)
 	(void) fprintf(stderr, 
 		"%s: Usage: %s [-Version] [-pal palette_file] [-quiet] [raster_file...]\n",
 		prog_name, prog_name);
+	PrintOptionHelp(stderr);
 
 	exit(1);
 }
