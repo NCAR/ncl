@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class4.c,v 1.27 1993-04-04 20:53:21 clyne Exp $
+ *	$Id: X11_class4.c,v 1.28 1993-04-20 21:19:36 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -471,7 +471,9 @@ static	int	x11_cell_array(c, color_pal, P, Q, R, nx, ny)
 	pad = ximage->bytes_per_line - image_width;
 
 	if (ximage->bits_per_pixel % 8) {
-		ESprintf(E_UNKNOWN, "Unsupported cell array encoding");
+		ESprintf(
+			E_UNKNOWN,"Cell arrays supported on monochrome devices"
+		);
 		return(-1);	/* pixel size must be byte multible	*/
 	}
 
