@@ -1,5 +1,5 @@
 /*
- *      $Id: TransformP.h,v 1.15 1995-06-16 20:57:13 dbrown Exp $
+ *      $Id: TransformP.h,v 1.16 1995-11-21 20:19:01 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -73,7 +73,7 @@ typedef struct _NhlTransformLayerRec {
 } NhlTransformLayerRec;
 
 typedef NhlErrorTypes (*NhlTransFunction)(
-#ifdef	NhlNeedFuncProto
+#ifdef	NhlNeedProto
         NhlLayer           /* plot */,
         float*          /* x */,
         float*          /* y */,
@@ -95,7 +95,7 @@ typedef enum _NhltfOverlayCapability {
 } NhltfOverlayCapability;
 
 typedef NhlErrorTypes (*NhlTransPolyFunc)(
-#ifdef	NhlNeedFuncProto
+#ifdef	NhlNeedProto
         NhlLayer           /* plot */,
         float*          /* x */,
         float*          /* y */,

@@ -1,5 +1,5 @@
 /*
- *      $Id: TextItem.c,v 1.32 1995-05-10 01:17:57 dbrown Exp $
+ *      $Id: TextItem.c,v 1.33 1995-11-21 20:19:00 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -323,7 +323,7 @@ static NhlErrorTypes    TextItemClassInitialize
 
 static NhlErrorTypes
 DoPcCalc
-#if	NhlNeedFuncProto
+#if	NhlNeedProto
 (
 	NhlTextItemLayer	tnew
 )

@@ -1,5 +1,5 @@
 /*
- *      $Id: View.c,v 1.18 1995-04-07 10:44:14 boote Exp $
+ *      $Id: View.c,v 1.19 1995-11-21 20:19:09 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -194,7 +194,7 @@ static NhlResource resources[] = {
 */
 
 static NhlErrorTypes ViewSetValues(
-#ifdef NhlNeedFuncProto
+#ifdef NhlNeedProto
         NhlLayer           /*old*/,
         NhlLayer           /*reference,*/,
         NhlLayer           /*new,*/,

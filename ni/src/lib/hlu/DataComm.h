@@ -1,5 +1,5 @@
 /*
- *      $Id: DataComm.h,v 1.11 1995-04-07 10:41:29 boote Exp $
+ *      $Id: DataComm.h,v 1.12 1995-11-21 20:18:57 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -25,6 +25,25 @@
 
 #define	NhlNdcDelayCompute	"dcDelayCompute"
 #define	NhlCdcDelayCompute	"DcDelayCompute"
+
+/* Level selection modes */
+
+typedef enum _NhlLevelSelectionMode { 
+	NhlAUTOMATICLEVELS, NhlMANUALLEVELS, 
+	NhlEXPLICITLEVELS, NhlEQUALSPACEDLEVELS } 
+NhlLevelSelectionMode;
+
+#define NhlTLevelSelectionMode "levelselectionmode"
+
+/* Scaling mode */
+
+typedef enum _NhlScalingMode {
+	NhlSCALEFACTOR, NhlCONFINETORANGE,
+	NhlTRIMZEROS,NhlMAXSIGDIGITSLEFT,
+        NhlINTEGERLINELABELS
+} NhlScalingMode;
+
+#define NhlTScalingMode "scalingmode"
 
 /*
  * Class declarations

@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.h,v 1.6 1995-06-16 23:49:07 dbrown Exp $
+ *      $Id: ContourPlot.h,v 1.7 1995-11-21 20:18:56 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -32,11 +32,10 @@
 
 /* Level selection modes */
 
-typedef enum _NhlcnLevelSelectionMode { 
-	NhlAUTOMATICLEVELS, NhlMANUALLEVELS, 
-	NhlEXPLICITLEVELS, NhlEQUALSPACEDLEVELS } NhlcnLevelSelectionMode;
+typedef NhlLevelSelectionMode NhlcnLevelSelectionMode;
 
-#define NhlTcnLevelSelectionMode "cnlevelselectionmode"
+#define NhlTcnLevelSelectionMode NhlTLevelSelectionMode
+
 
 /* Level usage modes */
 
@@ -60,13 +59,10 @@ typedef enum _NhlcnLineLabelPlacementMode {
 
 /* Label scaling mode */
 
-typedef enum _NhlcnLabelScalingMode {
-	NhlSCALEFACTOR, NhlCONFINETORANGE,
-	NhlTRIMZEROS,NhlMAXSIGDIGITSLEFT,
-        NhlINTEGERLINELABELS
-} NhlcnLabelScalingMode;
+typedef NhlScalingMode NhlcnLabelScalingMode;
 
-#define NhlTcnLabelScalingMode	"cnlabelscalinggmode"
+
+#define NhlTcnLabelScalingMode	NhlTScalingMode
 
 /* label overlap flag */
 

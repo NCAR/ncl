@@ -1,5 +1,5 @@
 /*
- *      $Id: DataComm.c,v 1.31 1995-04-22 01:01:37 boote Exp $
+ *      $Id: DataComm.c,v 1.32 1995-11-21 20:18:57 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -26,6 +26,7 @@
 #include <ncarg/hlu/FortranP.h>
 #include <ncarg/hlu/ResourcesP.h>
 #include <ncarg/hlu/VarArg.h>
+#include <ncarg/hlu/ConvertersP.h>
 
 /************************************************************************
 *									*
@@ -641,6 +642,26 @@ DataCommClassInitialize
 #endif
 {
 	NhlErrorTypes	ret = NhlNOERROR, lret = NhlNOERROR;
+
+        _NhlEnumVals   levelselectionlist[] = {
+        {NhlAUTOMATICLEVELS,	"automaticlevels"},
+        {NhlMANUALLEVELS, 	"manuallevels"},
+        {NhlEXPLICITLEVELS, 	"explicitlevels"},
+        {NhlEQUALSPACEDLEVELS,  "equalspacedlevels"}
+        };
+
+        _NhlEnumVals   scalingmodelist[] = {
+        {NhlSCALEFACTOR,	"scalefactor"},
+        {NhlCONFINETORANGE, 	"confinetorange"},
+        {NhlTRIMZEROS, 		"trimzeros"},
+        {NhlMAXSIGDIGITSLEFT,	"maxsigdigitsleft"},
+	{NhlINTEGERLINELABELS,	"integerlinelabels"}
+        };
+
+	_NhlRegisterEnumType(NhlTLevelSelectionMode,levelselectionlist,
+			     NhlNumber(levelselectionlist));
+	_NhlRegisterEnumType(NhlTScalingMode,scalingmodelist,
+			     NhlNumber(scalingmodelist));
 
 	QListCompiled = NrmStringToQuark(_NhlTDListCompiled);
 	QGenArray = NrmStringToQuark(NhlTGenArray);

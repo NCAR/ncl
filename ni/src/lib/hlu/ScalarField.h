@@ -1,5 +1,5 @@
 /*
- *      $Id: ScalarField.h,v 1.3 1995-04-07 10:43:40 boote Exp $
+ *      $Id: ScalarField.h,v 1.4 1995-11-21 20:18:59 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -51,6 +51,10 @@
 #define	NhlNsfYCEndIndex	"sfYCEndIndex"
 #define	NhlNsfXCStride		"sfXCStride"
 #define	NhlNsfYCStride		"sfYCStride"
+#define	NhlNsfXCActualStartF	"sfXCActualStartF"	/* read-only */
+#define	NhlNsfXCActualEndF	"sfXCActualEndF"	/* read-only */
+#define	NhlNsfYCActualStartF	"sfYCActualStartF"	/* read-only */
+#define	NhlNsfYCActualEndF	"sfYCActualEndF"	/* read-only */
 
 /*
  * Class Resources
@@ -80,6 +84,10 @@
 #define	NhlCsfYCEndIndex	"SfYCEndIndex"
 #define	NhlCsfXCStride		"SfXCStride"
 #define	NhlCsfYCStride		"SfYCStride"
+#define	NhlCsfXCActualStartF	"SfXCActualStartF"
+#define	NhlCsfXCActualEndF	"SfXCActualEndF"
+#define	NhlCsfYCActualStartF	"SfYCActualStartF"
+#define	NhlCsfYCActualEndF	"SfYCActualEndF"
 
 extern NhlClass NhlscalarFieldClass;
 

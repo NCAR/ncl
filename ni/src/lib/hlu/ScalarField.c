@@ -1,5 +1,5 @@
 /*
- *      $Id: ScalarField.c,v 1.16 1995-06-23 16:19:09 dbrown Exp $
+ *      $Id: ScalarField.c,v 1.17 1995-11-21 20:18:58 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -101,7 +101,20 @@ static NhlResource resources[] = {
 	{NhlNsfXCStride,NhlCsfXCStride,NhlTInteger,sizeof(int),
 		Oset(x_stride),NhlTImmediate,_NhlUSET((NhlPointer)1),0,NULL},
 	{NhlNsfYCStride,NhlCsfYCStride,NhlTInteger,sizeof(int),
-		Oset(y_stride),NhlTImmediate,_NhlUSET((NhlPointer)1),0,NULL}
+		Oset(y_stride),NhlTImmediate,_NhlUSET((NhlPointer)1),0,NULL},
+
+   	{NhlNsfXCActualStartF,NhlCsfXCActualStartF,NhlTFloat,sizeof(float),
+		 Oset(x_actual_start),NhlTString,
+		 _NhlUSET("0.0"),_NhlRES_GONLY,NULL},
+	{NhlNsfXCActualEndF,NhlCsfXCActualEndF,NhlTFloat,sizeof(float),
+		 Oset(x_actual_end),NhlTString,
+		 _NhlUSET("1.0"),_NhlRES_GONLY,NULL},
+	{NhlNsfYCActualStartF,NhlCsfYCActualStartF,NhlTFloat,sizeof(float),
+		 Oset(y_actual_start),NhlTString,
+		 _NhlUSET("0.0"),_NhlRES_GONLY,NULL},
+	{NhlNsfYCActualEndF,NhlCsfYCActualEndF,NhlTFloat,sizeof(float),
+		 Oset(y_actual_end),NhlTString,
+		 _NhlUSET("1.0"),_NhlRES_GONLY,NULL}
 
 /* End-documented-resources */
 
@@ -260,6 +273,10 @@ static	NrmQuark	Qx_index_start  = NrmNULLQUARK;
 static	NrmQuark	Qx_index_end  = NrmNULLQUARK;
 static	NrmQuark	Qy_index_start  = NrmNULLQUARK;
 static	NrmQuark	Qy_index_end  = NrmNULLQUARK;
+static	NrmQuark	Qx_actual_start  = NrmNULLQUARK;
+static	NrmQuark	Qx_actual_end  = NrmNULLQUARK;
+static	NrmQuark	Qy_actual_start  = NrmNULLQUARK;
+static	NrmQuark	Qy_actual_end  = NrmNULLQUARK;
 
 
 typedef enum _sfCoord { sfXCOORD, sfYCOORD} sfCoord;
@@ -531,9 +548,9 @@ DataToFloatArray
 					  e_text,entry_name);
 				return NULL;
 			}
-			out_ga->len_dimensions[0] = ga->len_dimensions[0];
-			out_ga->len_dimensions[1] = ga->len_dimensions[1];
-			out_ga->num_elements = ga->num_elements;
+			out_ga->len_dimensions[0] = out_len[0];
+			out_ga->len_dimensions[1] = out_len[1];
+			out_ga->num_elements = out_len[0] * out_len[1];
 			out_ga->typeQ = Qfloat;
 			out_ga->size = sizeof(float);
 			out_ga->data = (NhlPointer)fp;
@@ -627,6 +644,8 @@ DataToFloatArrayExchDim
 	int		ixend = sfp->ix_end;
 	int		iystart = sfp->iy_start;
 	int		iyend = sfp->iy_end;
+	int		x_stride = sfp->x_stride;
+	int		y_stride = sfp->y_stride;
 
 /*
  * Convert the data array
@@ -651,10 +670,10 @@ DataToFloatArrayExchDim
  * the new output array (0-slow,1-fast). This is , of course, the reverse
  * of the input array.
  */
-	out_len[1] = (ixend - ixstart + 1) / sfp->x_stride +
-		((ixend - ixstart + 1) % sfp->x_stride > 0);
-	out_len[0] = (iyend - iystart + 1) / sfp->y_stride +
-		((iyend - iystart + 1) % sfp->y_stride > 0);
+	out_len[1] = (iyend - iystart + 1) / y_stride +
+		((iyend - iystart + 1) % y_stride > 0);
+	out_len[0] = (ixend - ixstart + 1) / x_stride +
+		((ixend - ixstart + 1) % x_stride > 0);
 
 	ifp = ((float *) ga->data);
 
@@ -686,8 +705,8 @@ DataToFloatArrayExchDim
 		for (i = 0; i < out_len[1]; i++) {
 			for (j = 0; j < out_len[0]; j++) {
 				tmp = *(ifp + 
-					inlen_1*(ixstart+i*sfp->x_stride) +
-					iystart+j*sfp->y_stride);
+					inlen_1*(iystart+i*y_stride) +
+					ixstart+j*x_stride);
 				if (tmp != missing_value) {
 					if (tmp < *dmin) *dmin = tmp;
 					if (tmp > *dmax) *dmax = tmp;
@@ -700,29 +719,36 @@ DataToFloatArrayExchDim
 		for (i = 0; i < out_len[1]; i++) {
 			for (j = 0; j < out_len[0]; j++) {
 				tmp = *(ifp + 
-					inlen_1*(ixstart+i*sfp->x_stride) +
-					iystart+j*sfp->y_stride);
+					inlen_1*(iystart+i*y_stride) +
+					ixstart+j*x_stride);
 				if (tmp < *dmin) *dmin = tmp;
 				if (tmp > *dmax) *dmax = tmp;
 				*(fp+(j * out_len[1] + i)) = tmp;
 			}
 		}
 	}
-	else {
+	else { 
+		/* nothing to check so it doesn't matter 
+		 * if there are missing values 
+		 */
 		for (i = 0; i < out_len[1]; i++) {
 			for (j = 0; j < out_len[0]; j++) {
 				*(fp+(j * out_len[1] + i)) = 
 					*(ifp + 
-					  inlen_1*(ixstart+i*sfp->x_stride) +
-					  iystart+j*sfp->y_stride);
+					  inlen_1*(iystart+i*sfp->y_stride) +
+					  ixstart+j*x_stride);
 			}
 		}
 	}
 
 	if (overwrite_ok) {
-		memcpy(ifp,fp,out_len[1] * out_len[0] * sizeof(float));
+		int num_el = out_len[1] * out_len[0];
+		memcpy(ifp,fp, num_el * sizeof(float));
 		NhlFree(fp);
 		out_ga = ga;
+		out_ga->len_dimensions[0] = out_len[0];
+		out_ga->len_dimensions[1] = out_len[1];
+		out_ga->num_elements = num_el;
 	}
 	else {
 		if ((out_ga = (NhlGenArray) 
@@ -844,15 +870,11 @@ ValidCoordArray
 	char *name;
 
 	if (ctype == sfXCOORD) {
-		len_dim =  sfp->exchange_dimensions ? 
-			sfp->d_arr->len_dimensions[0] :
-				sfp->d_arr->len_dimensions[1];
+		len_dim = sfp->d_arr->len_dimensions[1];
 		name = NhlNsfXArray;
 	}
 	else {
-		len_dim =  sfp->exchange_dimensions ? 
-			sfp->d_arr->len_dimensions[1] :
-				sfp->d_arr->len_dimensions[0];
+		len_dim = sfp->d_arr->len_dimensions[0];
 		name = NhlNsfYArray;
 	}
 
@@ -958,9 +980,7 @@ GetDataBounds
 			}
 		}
 		else 
-			*cend = sfp->exchange_dimensions ?
-				sfp->d_arr->len_dimensions[0] - 1 :
-					sfp->d_arr->len_dimensions[1] - 1;
+			*cend = sfp->d_arr->len_dimensions[1] - 1;
 	}
 	else {
 		if (sfp->y_start != NULL) {
@@ -1007,9 +1027,7 @@ GetDataBounds
 			}
 		}
 		else 
-			*cend = sfp->exchange_dimensions ?
-				sfp->d_arr->len_dimensions[1] - 1 :
-					sfp->d_arr->len_dimensions[0] - 1;
+			*cend = sfp->d_arr->len_dimensions[0] - 1;
 	}
 	
 	return ret;
@@ -1056,9 +1074,7 @@ GetIndexBounds
 			
 	if (ctype == sfXCOORD) {
 
-		max_index = sfp->exchange_dimensions ?
-			sfp->d_arr->len_dimensions[0] - 1:
-			sfp->d_arr->len_dimensions[1] - 1;
+		max_index = sfp->d_arr->len_dimensions[1] - 1;
 
 		*icstart = (sfp->x_index_start < 0) ? 
 			0 : MIN(sfp->x_index_start,max_index);
@@ -1084,9 +1100,7 @@ GetIndexBounds
 	}
 	else {
 
-		max_index = sfp->exchange_dimensions ?
-			sfp->d_arr->len_dimensions[1] - 1:
-			sfp->d_arr->len_dimensions[0] - 1;
+		max_index = sfp->d_arr->len_dimensions[0] - 1;
 
 		*icstart = (sfp->y_index_start < 0) ? 
 			0 : MIN(sfp->y_index_start,max_index); 
@@ -1176,22 +1190,20 @@ GetSubsetBounds
 	NhlGenArray	subset_start, subset_end;
 	NhlBoolean	nullstart = False, nullend = False;
 	char		*c_name;
-	
+	int		stride,rem;
 
 	if (ctype == sfXCOORD) {
-		range = sfp->exchange_dimensions ? 
-			sfp->d_arr->len_dimensions[0] - 1 :
-			sfp->d_arr->len_dimensions[1] - 1;
+		range = sfp->d_arr->len_dimensions[1] - 1;
 		subset_start = sfp->x_subset_start;
 		subset_end = sfp->x_subset_end;
+		stride = sfp->x_stride;
 		c_name = "X coordinate";
 	}
 	else {
-		range = sfp->exchange_dimensions ? 
-			sfp->d_arr->len_dimensions[1] - 1 :
-			sfp->d_arr->len_dimensions[0] - 1;
+		range = sfp->d_arr->len_dimensions[0] - 1;
 		subset_start = sfp->y_subset_start;
 		subset_end = sfp->y_subset_end;
+		stride = sfp->y_stride;
 		c_name = "Y coordinate";
 	}
 
@@ -1258,6 +1270,22 @@ GetSubsetBounds
 			*icstart = 0;
 			*icend = range;
 		}
+	}
+
+
+/* 
+ * if a stride is specified, the index must be a multiple of the stride 
+ * value in order to assure that the complete data coordinate range is
+ * included. Add to the specified end index if necessary, unless it 
+ * would exceed the max index. In this case subtract -- it is not possible
+ * to include the complete data range.
+ */
+	rem = *icend % stride;
+	if (rem  > 0) {
+		if (*icend + stride - rem <= range)
+			*icend += stride - rem;
+		else
+			*icend -= rem;
 	}
 
 	flt_inc = (cend - cstart) / range;
@@ -1334,15 +1362,18 @@ GetSubsetBoundsIrregular
 	NhlBoolean	nullstart = False,nullend = False;
 	char		*c_name;
 	float		*fp, *nfp;
+	int		rem,stride;
 
 	if (ctype == sfXCOORD) {
 		subset_start = sfp->x_subset_start;
 		subset_end = sfp->x_subset_end;
+		stride = sfp->x_stride;
 		c_name = "X coordinate";
 	}
 	else {
 		subset_start = sfp->y_subset_start;
 		subset_end = sfp->y_subset_end;
+		stride = sfp->y_stride;
 		c_name = "Y coordinate";
 	}
 
@@ -1439,6 +1470,19 @@ GetSubsetBoundsIrregular
 		}
 	}
 
+/* 
+ * if a stride is specified, the end index must be a multiple of the stride 
+ * value. Increas the specified end index if necessary, unless it 
+ * would exceed the max index. In this case subtract -- it is not possible
+ * to include the complete data range.
+ */
+	rem = *icend % stride;
+	if (rem  > 0) {
+		if (*icend + stride - rem <= len -1)
+			*icend += stride - rem;
+		else
+			*icend -= rem;
+	}
 	*scstart = fp[*icstart];
 	*scend = fp[*icend];
 /*
@@ -1753,8 +1797,8 @@ CvtGenSFObjToFloatSFObj
 	}
 	sfp->ix_start = ixstart;
 	sfp->ix_end = ixend;
-	sffp->x_start = sxstart;
-	sffp->x_end = sxend;
+	sfp->x_actual_start = sxstart;
+	sfp->x_actual_end = sxend;
 
 	sffp->y_arr = NULL;
 	if (sfp->y_arr != NULL && sfp->y_arr->num_elements > 0) {
@@ -1790,8 +1834,8 @@ CvtGenSFObjToFloatSFObj
 	}
 	sfp->iy_start = iystart;
 	sfp->iy_end = iyend;
-	sffp->y_start = systart;
-	sffp->y_end = syend;
+	sfp->y_actual_start = systart;
+	sfp->y_actual_end = syend;
 /*
  * Set flags to tell the array conversion routines whether to find
  * data max and mins (and if so whether to check for missing values) 
@@ -1825,6 +1869,10 @@ CvtGenSFObjToFloatSFObj
 					      entry_name)) == NULL) {
 			return NhlFATAL;
 		}
+		sffp->x_start = sfp->x_actual_start;
+		sffp->x_end = sfp->x_actual_end;
+		sffp->y_start = sfp->y_actual_start;
+		sffp->y_end = sfp->y_actual_end;
 	}
 	else {
 		if ((d_arr = 
@@ -1835,6 +1883,10 @@ CvtGenSFObjToFloatSFObj
 			return NhlFATAL;
 		}
 		new_data = True;
+		sffp->x_start = sfp->y_actual_start;
+		sffp->x_end = sfp->y_actual_end;
+		sffp->y_start = sfp->x_actual_start;
+		sffp->y_end = sfp->x_actual_end;
 	}
 	sffp->d_arr = d_arr;
 
@@ -1858,71 +1910,41 @@ CvtGenSFObjToFloatSFObj
 	}
 /*
  * If the user explicitly sets the data min/max values, make sure the max
- * is greater than the min. If not, WARN and use the actual max and min
- * values. Otherwise pass on without interpretation to the plot object.
+ * is greater than the min. If not, WARN and exchange. 
+ * Otherwise pass on without interpretation to the plot object.
+ * Note that if either value has not been set, the actual values will
+ * be contained in dmin and dmax.
  */
-	if (sfp->data_min != NULL && sfp->data_max != NULL) {
+	tmin = dmin;
+	if (sfp->data_min != NULL) {
 		subret = GetVTypeValue(sfp->data_min,&tmin);
 		if ((ret = MIN(ret,subret)) < NhlWARNING) {
 			e_text = "%s: error getting variable type value";
 			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 			return ret;
 		}
+	}
+	tmax = dmax;
+	if (sfp->data_max != NULL) {
 		subret = GetVTypeValue(sfp->data_max,&tmax);
 		if ((ret = MIN(ret,subret)) < NhlWARNING) {
 			e_text = "%s: error getting variable type value";
 			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 			return ret;
 		}
-		if (tmax <= tmin || tmax <= dmin) {
-			e_text = "%s: not using %s value: out of range";
-			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
-				  NrmQuarkToString(sfp->data_max->typeQ));
-		}
-		else {
-			dmax = tmax;
-		}
-		if (tmin >= dmax) {
-			e_text = "%s: not using %s value: out of range";
-			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
-				  NrmQuarkToString(sfp->data_min->typeQ));
-		}
-		else {
-			dmin = tmin;
-		}
 	}
-	else if (sfp->data_max != NULL) {
-		subret =GetVTypeValue(sfp->data_max,&tmax);
-		if ((ret = MIN(ret,subret)) < NhlWARNING) {
-			e_text = "%s: error getting variable type value";
-			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-			return ret;
-		}
-		if (tmax <= dmin) {
-			e_text = "%s: not using %s value: out of range";
-			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
-				  NrmQuarkToString(sfp->data_max->typeQ));
-		}
-		else {
-			dmax = tmax;
-		}
+	if (tmax <= tmin) {
+		e_text = "%s: %s greater than %s: exchanging";
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
+			  NhlNsfDataMinV,NhlNsfDataMaxV);
+		dmin = tmax;
+		dmax = tmin;
 	}
-	else if (sfp->data_min != NULL) {
-		subret = GetVTypeValue(sfp->data_min,&tmin);
-		if ((ret = MIN(ret,subret)) < NhlWARNING) {
-			e_text = "%s: error getting variable type value";
-			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-			return ret;
-		}
-		if (tmin >= dmax) {
-			e_text = "%s: not using %s value: out of range";
-			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
-				  NrmQuarkToString(sfp->data_min->typeQ));
-		}
-		else {
-			dmin = tmin;
-		}
+	else {
+		dmax = tmax;
+		dmin = tmin;
 	}
+
 	sffp->data_min = dmin;
 	sffp->data_max = dmax;
 
@@ -1983,6 +2005,10 @@ ScalarFieldClassInitialize
 	Qx_index_end  = NrmStringToQuark(NhlNsfXCEndIndex);
 	Qy_index_start  = NrmStringToQuark(NhlNsfYCStartIndex);
 	Qy_index_end  = NrmStringToQuark(NhlNsfYCEndIndex);
+	Qx_actual_start  = NrmStringToQuark(NhlNsfXCActualStartF);
+	Qx_actual_end  = NrmStringToQuark(NhlNsfXCActualEndF);
+	Qy_actual_start  = NrmStringToQuark(NhlNsfYCActualStartF);
+	Qy_actual_end  = NrmStringToQuark(NhlNsfYCActualEndF);
 
 	ret = NhlRegisterConverter(
 			NhlscalarFieldClass->base_class.class_name,
@@ -2407,6 +2433,10 @@ ScalarFieldSetValues
 		status = True;
 	if (sfp->y_stride != osfp->y_stride)
 		status = True;
+	if (sfp->subset_by_index != osfp->subset_by_index)
+		status = True;
+	if (sfp->exchange_dimensions != osfp->exchange_dimensions)
+		status = True;
 
         _NhlDataChanged((NhlDataItemLayer)new,status);
 
@@ -2599,6 +2629,7 @@ static NhlErrorTypes    ScalarFieldGetValues
 	float		tmp;
 	NhlBoolean	converted;
 	int		ival;
+	float		fval;
 		
 	if (sfp->d_arr == NULL) {
 		e_text = "%s: internal inconsistency";
@@ -2797,9 +2828,7 @@ static NhlErrorTypes    ScalarFieldGetValues
 				size = sfp->x_subset_start->size;
 			}
 			else {
-				tmp = sfp->exchange_dimensions ?
-					sfp->d_arr->len_dimensions[0] - 1 :
-					    sfp->d_arr->len_dimensions[1] - 1;
+				tmp = sfp->d_arr->len_dimensions[1] - 1;
 				if ((data = CreateData(tmp,resQ)) == NULL)
 					return NhlFATAL;
 				typeQ = Qfloat;
@@ -2851,9 +2880,7 @@ static NhlErrorTypes    ScalarFieldGetValues
 				size = sfp->y_subset_start->size;
 			}
 			else {
-				tmp = sfp->exchange_dimensions ?
-					sfp->d_arr->len_dimensions[1] - 1 :
-					    sfp->d_arr->len_dimensions[0] - 1;
+				tmp = sfp->d_arr->len_dimensions[0] - 1;
 				if ((data = CreateData(tmp,resQ)) == NULL)
 					return NhlFATAL;
 				typeQ = Qfloat;
@@ -3036,6 +3063,63 @@ static NhlErrorTypes    ScalarFieldGetValues
 			*args[i].size_ret = sizeof(int);
 			*args[i].free_func = NULL;
                 }
+                else if (resQ == Qx_actual_start) {
+			if (! converted) {
+				sfp->sffloat = ForceConvert(sfl);
+				if (sfp->sffloat == NULL)
+					return NhlFATAL;
+				sffp = &sfp->sffloat->sfieldfloat;
+				converted = True;
+			}
+			fval = sfp->x_actual_start;
+			*(float*)args[i].value.ptrval = fval;
+			*args[i].type_ret = Qfloat;
+			*args[i].size_ret = sizeof(float);
+			*args[i].free_func = NULL;
+                }
+                else if (resQ == Qx_actual_end) {
+			if (! converted) {
+				sfp->sffloat = ForceConvert(sfl);
+				if (sfp->sffloat == NULL)
+					return NhlFATAL;
+				sffp = &sfp->sffloat->sfieldfloat;
+				converted = True;
+			}
+			fval = sfp->x_actual_end;
+			*(float*)args[i].value.ptrval = fval;
+			*args[i].type_ret = Qfloat;
+			*args[i].size_ret = sizeof(float);
+			*args[i].free_func = NULL;
+                }
+                else if (resQ == Qy_actual_start) {
+			if (! converted) {
+				sfp->sffloat = ForceConvert(sfl);
+				if (sfp->sffloat == NULL)
+					return NhlFATAL;
+				sffp = &sfp->sffloat->sfieldfloat;
+				converted = True;
+			}
+			fval = sfp->y_actual_start;
+			*(float*)args[i].value.ptrval = fval;
+			*args[i].type_ret = Qfloat;
+			*args[i].size_ret = sizeof(float);
+			*args[i].free_func = NULL;
+                }
+                else if (resQ == Qy_actual_end) {
+			if (! converted) {
+				sfp->sffloat = ForceConvert(sfl);
+				if (sfp->sffloat == NULL)
+					return NhlFATAL;
+				sffp = &sfp->sffloat->sfieldfloat;
+				converted = True;
+			}
+			fval = sfp->y_actual_end;
+			*(float*)args[i].value.ptrval = fval;
+			*args[i].type_ret = Qfloat;
+			*args[i].size_ret = sizeof(float);
+			*args[i].free_func = NULL;
+                }
+
 		if (do_genarray) {
 			ga = _NhlCreateGenArray(data,NrmQuarkToString(typeQ),
 						size,ndim,dlen,False);

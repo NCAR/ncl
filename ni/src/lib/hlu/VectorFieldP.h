@@ -1,5 +1,5 @@
 /*
- *      $Id: ScalarFieldP.h,v 1.6 1995-11-21 20:18:59 dbrown Exp $
+ *      $Id: VectorFieldP.h,v 1.1 1995-11-21 20:19:06 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -9,44 +9,54 @@
 *									*
 ************************************************************************/
 /*
- *	File:		ScalarFieldP.h
+ *	File:		VectorFieldP.h
  *
  *	Author:		David I. Brown
  *			National Center for Atmospheric Research
  *			PO 3000, Boulder, Colorado
  *
- *	Date:		Wed Apr  6 17:53:29 MDT 1994
+ *	Date:		Thu Sep 28 11:47:36 MDT 1995
  *
- *	Description:	Private declarations for ScalarField object.
+ *	Description:	Private declarations for VectorField object.
  */
-#ifndef _NScalarFieldP_h
-#define _NScalarFieldP_h
+#ifndef _NVectorFieldP_h
+#define _NVectorFieldP_h
 
 #include <ncarg/hlu/DataItemP.h>
-#include <ncarg/hlu/ScalarField.h>
-#include <ncarg/hlu/ScalarFieldFloatP.h>
+#include <ncarg/hlu/VectorField.h>
+#include <ncarg/hlu/VectorFieldFloatP.h>
 
 #ifndef FLT_MAX
 #define FLT_MAX			10.0e37
 #endif
 
-typedef struct _NhlScalarFieldLayerPart{
+typedef struct _NhlVectorFieldLayerPart{
 
 	NhlString		type_string;
 
 	/* Public resources */
 
 	NhlGenArray	d_arr;
+	NhlGenArray	u_arr;
+	NhlGenArray	v_arr;
 	NhlGenArray	x_arr;
 	NhlGenArray	y_arr;
 
+	NhlBoolean	polar_data;
 	NhlBoolean	subset_by_index;
 	NhlBoolean	copy_arrays;
 	NhlBoolean	exchange_dimensions;
+	NhlBoolean	exchange_uv_data;
 
-	NhlGenArray	missing_value;
-	NhlGenArray	data_min;
-	NhlGenArray	data_max;
+	NhlBoolean	single_missing;
+	NhlGenArray	missing_u_value;
+	NhlGenArray	missing_v_value;
+	NhlGenArray	mag_min;
+	NhlGenArray	mag_max;
+	NhlGenArray	u_min;
+	NhlGenArray	u_max;
+	NhlGenArray	v_min;
+	NhlGenArray	v_max;
 	NhlGenArray	x_start;
 	NhlGenArray	x_end;
 	NhlGenArray	y_start;
@@ -72,35 +82,37 @@ typedef struct _NhlScalarFieldLayerPart{
 
 	/* private fields */
 
+	int		len_dims[2];
+	NhlBoolean	use_d_arr;
 	int		ix_start;
 	int		ix_end;
 	int		iy_start;
 	int		iy_end;
 
-	NhlScalarFieldFloatLayer	sffloat;
+	NhlVectorFieldFloatLayer	vffloat;
 
-} NhlScalarFieldLayerPart;
+} NhlVectorFieldLayerPart;
 
-typedef struct _NhlScalarFieldLayerRec{
+typedef struct _NhlVectorFieldLayerRec{
 	NhlBaseLayerPart		base;
 	NhlDataItemLayerPart		dataitem;
-	NhlScalarFieldLayerPart		sfield;
-} NhlScalarFieldLayerRec;
+	NhlVectorFieldLayerPart		vfield;
+} NhlVectorFieldLayerRec;
 
-typedef struct _NhlScalarFieldClassPart{
+typedef struct _NhlVectorFieldClassPart{
 	int	foo;
-} NhlScalarFieldClassPart;
+} NhlVectorFieldClassPart;
 
-typedef struct _NhlScalarFieldClassRec{
+typedef struct _NhlVectorFieldClassRec{
 	NhlBaseClassPart		base_class;
 	NhlDataItemClassPart	dataitem_class;
-	NhlScalarFieldClassPart	sfield_class;
-} NhlScalarFieldClassRec;
+	NhlVectorFieldClassPart	vfield_class;
+} NhlVectorFieldClassRec;
 
-typedef struct _NhlScalarFieldClassRec *NhlScalarFieldClass;
-typedef struct _NhlScalarFieldLayerRec *NhlScalarFieldLayer;
+typedef struct _NhlVectorFieldClassRec *NhlVectorFieldClass;
+typedef struct _NhlVectorFieldLayerRec *NhlVectorFieldLayer;
 
-extern NhlScalarFieldClassRec NhlscalarFieldClassRec;
+extern NhlVectorFieldClassRec NhlvectorFieldClassRec;
 
-#endif  /* _NScalarFieldP_h */
+#endif  /* _NVectorFieldP_h */
 

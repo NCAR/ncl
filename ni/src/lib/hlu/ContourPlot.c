@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.25 1995-07-28 22:51:38 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.26 1995-11-21 20:18:54 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1821,13 +1821,6 @@ ContourPlotClassInitialize
 #endif
 {
 
-        _NhlEnumVals   levelselectionlist[] = {
-        {NhlAUTOMATICLEVELS,	"automaticlevels"},
-        {NhlMANUALLEVELS, 	"manuallevels"},
-        {NhlEXPLICITLEVELS, 	"explicitlevels"},
-        {NhlEQUALSPACEDLEVELS,  "equalspacedlevels"}
-        };
-
         _NhlEnumVals   leveluselist[] = {
         {NhlNOLINE,		"noline"},
         {NhlLINEONLY, 		"lineonly"},
@@ -1839,14 +1832,6 @@ ContourPlotClassInitialize
         {NhlCONSTANT, 		"constant"},
         {NhlRANDOMIZED, 	"randomized"},
         {NhlCOMPUTED,      	"computed"}
-        };
-
-        _NhlEnumVals   labelscalingmodelist[] = {
-        {NhlSCALEFACTOR,	"scalefactor"},
-        {NhlCONFINETORANGE, 	"confinetorange"},
-        {NhlTRIMZEROS, 		"trimzeros"},
-        {NhlMAXSIGDIGITSLEFT,	"maxsigdigitsleft"},
-	{NhlINTEGERLINELABELS,	"integerlinelabels"}
         };
 
         _NhlEnumVals   highlowlabeloverlaplist[] = {
@@ -1866,15 +1851,11 @@ ContourPlotClassInitialize
 
 	load_hlucp_routines(False);
 
-	_NhlRegisterEnumType(NhlTcnLevelSelectionMode,levelselectionlist,
-			     NhlNumber(levelselectionlist));
 	_NhlRegisterEnumType(NhlTcnLevelUseMode,leveluselist,
 			     NhlNumber(leveluselist));
 	_NhlRegisterEnumType(NhlTcnLineLabelPlacementMode,
 			     linelabelplacementlist,
 			     NhlNumber(linelabelplacementlist));
-	_NhlRegisterEnumType(NhlTcnLabelScalingMode,labelscalingmodelist,
-			     NhlNumber(labelscalingmodelist));
 	_NhlRegisterEnumType(NhlTcnHighLowLabelOverlapMode,
 			     highlowlabeloverlaplist,
 			     NhlNumber(highlowlabeloverlaplist));
@@ -5640,7 +5621,8 @@ static NhlErrorTypes SetLabelScale
 			     t >=cnp->label_scale_value; t /= 10.0) {
 				power++;
 			}
-			cnp->label_scale_factor = pow(10.0,(double)power);
+			cnp->label_scale_factor = 
+				1.0 / pow(10.0,(double)power);
 		}
 		else {
 			for (t = sigval * 10;
@@ -5648,7 +5630,8 @@ static NhlErrorTypes SetLabelScale
 				power++;
 			}
 			power--;
-			cnp->label_scale_factor = pow(10.0,-(double)power);
+			cnp->label_scale_factor = 
+				1.0 / pow(10.0,-(double)power);
 		}
 		break;
 	case NhlTRIMZEROS:
@@ -5661,7 +5644,7 @@ static NhlErrorTypes SetLabelScale
 			power = divpwr;
 		else
 			power = MAX(0,divpwr - sig_digits);
-		cnp->label_scale_factor = pow(10.0,(double)power);
+		cnp->label_scale_factor = 1.0 / pow(10.0,(double)power);
 		break;
 	case NhlMAXSIGDIGITSLEFT:
 		sigval = MAX(fabs(cnp->zmin),fabs(cnp->zmax));
@@ -5670,7 +5653,7 @@ static NhlErrorTypes SetLabelScale
 		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
 		sig_digits = cnp->max_data_format.sig_digits;
 		power = divpwr - sig_digits;
-		cnp->label_scale_factor = pow(10.0,(double)power);
+		cnp->label_scale_factor = 1.0 / pow(10.0,(double)power);
 		break;
 	case NhlINTEGERLINELABELS:
 		if (cnp->const_field) {
@@ -5692,9 +5675,9 @@ static NhlErrorTypes SetLabelScale
 			float	test_fac = 1.0, test_val;
 			char	buf[32];
 
-			if (lusep[i] < NhlLABELONLY)
-				continue;
 			test_val = fabs(fp[i]);
+			if (lusep[i] < NhlLABELONLY || test_val == 0.0)
+				continue;
 			if (fabs(fp[i]) < test_low) {
 				while (test_val < test_low) {
 					test_val *= 10.0;
@@ -5721,7 +5704,7 @@ static NhlErrorTypes SetLabelScale
 			sig_digits--;
 		}
 	
-		cnp->label_scale_factor = 1.0 / max_fac;
+		cnp->label_scale_factor = max_fac;
 		break;
 	default:
 		e_text = "%s: internal enumeration error";
@@ -7613,22 +7596,22 @@ static char *ContourPlotFormat
 	switch (vtype) {
 
 	case cnCONSTFVAL:
-		value = cnp->zmax / cnp->label_scale_factor;
+		value = cnp->zmax * cnp->label_scale_factor;
 		break;
 	case cnCONINTERVAL:
-		value = cnp->level_spacing / cnp->label_scale_factor;
+		value = cnp->level_spacing * cnp->label_scale_factor;
 		break;
 	case cnCONMINVAL:
-		value = cnp->min_level_val / cnp->label_scale_factor;
+		value = cnp->min_level_val * cnp->label_scale_factor;
 		break;
 	case cnCONMAXVAL:
-		value = cnp->max_level_val / cnp->label_scale_factor;
+		value = cnp->max_level_val * cnp->label_scale_factor;
 		break;
 	case cnDATAMINVAL:
-		value = cnp->zmin / cnp->label_scale_factor;
+		value = cnp->zmin * cnp->label_scale_factor;
 		break;
 	case cnDATAMAXVAL:
-		value = cnp->zmax / cnp->label_scale_factor;
+		value = cnp->zmax * cnp->label_scale_factor;
 		break;
 	case cnSCALEFACTOR:
 		value = cnp->label_scale_factor;
@@ -8670,7 +8653,7 @@ static NhlErrorTypes    ManageDynamicArrays
 			init_count = 0;
 		}
 		for (i=init_count; i<count; i++) {
-			float fval = fp[i] / cnp->label_scale_factor;
+			float fval = fp[i] * cnp->label_scale_factor;
 			NhlFormatRec *frec = &cnp->max_data_format;
 
 			if (sp[i] != NULL) NhlFree(sp[i]);
@@ -10268,7 +10251,7 @@ void   (_NHLCALLF(hlucpchhl,HLUCPCHHL))
 			return;
 		}
 		c_cpgetr("zdv",&zdv);
-		zdv /= Cnp->label_scale_factor;
+		zdv *= Cnp->label_scale_factor;
 		fstr = _NhlFormatFloat(&Cnp->high_lbls.format,zdv,NULL,
 				       &Cnp->max_data_format.sig_digits,
 				       &Cnp->max_data_format.left_sig_digit,
@@ -10302,7 +10285,7 @@ void   (_NHLCALLF(hlucpchhl,HLUCPCHHL))
 			return;
 		}
 		c_cpgetr("zdv",&zdv);
-		zdv /= Cnp->label_scale_factor;
+		zdv *= Cnp->label_scale_factor;
 		fstr = _NhlFormatFloat(&Cnp->high_lbls.format,zdv,NULL,
 				       &Cnp->max_data_format.sig_digits,
 				       &Cnp->max_data_format.left_sig_digit,
@@ -10340,7 +10323,7 @@ void   (_NHLCALLF(hlucpchhl,HLUCPCHHL))
 			return;
 		}
 		c_cpgetr("zdv",&zdv);
-		zdv /= Cnp->label_scale_factor;
+		zdv *= Cnp->label_scale_factor;
 		fstr = _NhlFormatFloat(&Cnp->low_lbls.format,zdv,NULL,
 				       &Cnp->max_data_format.sig_digits,
 				       &Cnp->max_data_format.left_sig_digit,
@@ -10373,7 +10356,7 @@ void   (_NHLCALLF(hlucpchhl,HLUCPCHHL))
 			return;
 		}
 		c_cpgetr("zdv",&zdv);
-		zdv /= Cnp->label_scale_factor;
+		zdv *= Cnp->label_scale_factor;
 		fstr = _NhlFormatFloat(&Cnp->low_lbls.format,zdv,NULL,
 				       &Cnp->max_data_format.sig_digits,
 				       &Cnp->max_data_format.left_sig_digit,
