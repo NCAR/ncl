@@ -1,6 +1,6 @@
 
 /*
- *      $Id: XyPlotP.h,v 1.1 1993-04-30 17:26:34 boote Exp $
+ *      $Id: XyPlotP.h,v 1.2 1993-06-03 15:12:25 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -29,6 +29,7 @@
 
 typedef struct _XyPlotLayerPart {
 	/* Publically setable resources */
+	LineLabelModes curve_line_label_mode;
 	int	num_curves;
 	float	**x_values;
 	float	**y_values;
@@ -36,7 +37,6 @@ typedef struct _XyPlotLayerPart {
 	int	*curve_lengths;
 	int	*curve_dash_patterns;
 	char	**curve_line_labels;
-	LineLabelModes curve_line_label_mode;
 	float	curve_thickness;
 	float	x_missing;
 	float	y_missing;

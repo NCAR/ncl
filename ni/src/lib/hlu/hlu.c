@@ -1,5 +1,5 @@
 /*
- *      $Id: hlu.c,v 1.1 1993-04-30 17:26:40 boote Exp $
+ *      $Id: hlu.c,v 1.2 1993-06-03 15:12:27 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -916,4 +916,29 @@ _NhlInherit
 	NhlPError(FATAL,E_UNKNOWN,
 				"_NhlInherit- Inheritance resolved improperly");
 	return;
+}
+
+
+int _NhlArgIsSet
+#if     __STDC__
+(
+        _NhlArgList args,
+        int     num_args,
+        char    *resource_name
+)
+#else
+(args,num_arg,resource_name)
+        _NhlArgList args;
+        int     num_args;
+        char    *resource_name;
+#endif
+{
+	int quark = NrmStringToQuark(resource_name),i;
+	_NhlArgList step = args;
+
+	for(i = 0; i<num_args; i++) {
+		if(step[i].quark == quark) 
+			return(1);
+	}
+	return(0);
 }

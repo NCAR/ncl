@@ -1,5 +1,5 @@
 /*
- *      $Id: Title.c,v 1.1 1993-04-30 17:24:57 boote Exp $
+ *      $Id: Title.c,v 1.2 1993-06-03 15:12:10 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -340,10 +340,11 @@ static NhlErrorTypes    TitleSetValues
 	float deltah;
 	float deltaw;
 
-	if((tnew->view.x != told->view.x)||
-		(tnew->view.y != told->view.y )||
-		(tnew->view.width != told->view.width)||
-		(tnew->view.height != told->view.height)) {
+        if((tnew->view.x != told->view.x)
+                ||(tnew->view.width != told->view.width)
+                ||(tnew->view.y != told->view.y)
+                ||(tnew->view.height != told->view.height)){
+
 /*
 * Since theses values have changed then the view has a transfomration 
 * already set that can be used to compute the new location of the text items
@@ -381,19 +382,19 @@ static NhlErrorTypes    TitleSetValues
 * if the main and xaxis title share the same side then any changes to xaxis
 * may affect the main.
 */
-	if(tnew->title.main_string != told->title.main_string) {
+	if(told->title.main_string != tnew->title.main_string) {
 		NhlFree(told->title.main_string);
 		tnew->title.main_string = NhlMalloc((unsigned)
 				strlen(tref->title.main_string)+1);
 		strcpy(tnew->title.main_string,tref->title.main_string);
 	}
-	if(tnew->title.x_axis_string != told->title.x_axis_string) {
+	if(told->title.x_axis_string != tnew->title.x_axis_string) {
 		NhlFree(told->title.x_axis_string);
 		tnew->title.x_axis_string = NhlMalloc((unsigned)
 				strlen(tref->title.x_axis_string)+1);
 		strcpy(tnew->title.x_axis_string,tref->title.x_axis_string);
 	}
-	if(tnew->title.y_axis_string != told->title.y_axis_string) {
+	if(told->title.y_axis_string != tnew->title.y_axis_string) {
 		NhlFree(told->title.y_axis_string);
 		tnew->title.y_axis_string = NhlMalloc((unsigned)
 				strlen(tref->title.y_axis_string)+1);
@@ -402,26 +403,26 @@ static NhlErrorTypes    TitleSetValues
 /*
 * now determine is height or thickness has changed for each title. If it
 * has copy value from the tref instance otherwise proceed
+* Use of _NhlArgIsSet is required because height could have been set to same
+* value but whole object shrunk anyways.
 */
-	if(tref->title.main_font_height != told->title.main_font_height) {
+	if(_NhlArgIsSet(args,num_args,NhlNtiMainFontHeightF)) {
 		tnew->title.main_font_height = tref->title.main_font_height;
 	}
-	if(tref->title.main_font_thickness != told->title.main_font_thickness) {
+	if(_NhlArgIsSet(args,num_args,NhlNtiMainFontThicknessF)) {
 		tnew->title.main_font_thickness = tref->title.main_font_thickness;
 	}
-	if(tref->title.x_axis_font_height != told->title.x_axis_font_height) {
+	if(_NhlArgIsSet(args,num_args,NhlNtiXAxisFontHeightF)) {
 		tnew->title.x_axis_font_height = tref->title.x_axis_font_height;
 	}
-	if(tref->title.x_axis_font_thickness
-				!=told->title.x_axis_font_thickness) {
+	if(_NhlArgIsSet(args,num_args,NhlNtiXAxisFontThicknessF)) {
 		tnew->title.x_axis_font_thickness 
 			= tref->title.x_axis_font_thickness;
 	}
-	if(tref->title.y_axis_font_height != told->title.y_axis_font_height) {
+	if(_NhlArgIsSet(args,num_args,NhlNtiYAxisFontHeightF)) {
 		tnew->title.y_axis_font_height = tref->title.y_axis_font_height;
 	}
-	if(tref->title.y_axis_font_thickness 
-				!= told->title.y_axis_font_thickness) {
+	if(_NhlArgIsSet(args,num_args,NhlNtiYAxisFontThicknessF)){
 		tnew->title.y_axis_font_thickness 
 			= tref->title.y_axis_font_thickness;
 	}

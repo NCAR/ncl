@@ -1,6 +1,6 @@
 
 /*
- *      $Id: ViewP.h,v 1.1 1993-04-30 17:25:54 boote Exp $
+ *      $Id: ViewP.h,v 1.2 1993-06-03 15:12:16 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -154,6 +154,13 @@ int		/* keep_asp */
 
 
 
-
+#define NHL_DEFAULT_VIEW_WIDTH  .8
+#define NHL_DEFAULT_VIEW_HEIGHT .8
+#define NHL_DEFAULT_VIEW_X	.1
+#define NHL_DEFAULT_VIEW_Y	.9
+#define NHL_DEFAULT_VIEW_WIDTH_STR  ".8"
+#define NHL_DEFAULT_VIEW_HEIGHT_STR ".8"
+#define NHL_DEFAULT_VIEW_X_STR	".1"
+#define NHL_DEFAULT_VIEW_Y_STR	".9"
 
 #endif	/*_NViewP_h*/

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: TickMark.c,v 1.1 1993-04-30 17:24:36 boote Exp $
+ *      $Id: TickMark.c,v 1.2 1993-06-03 15:12:02 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -789,6 +789,8 @@ static NhlErrorTypes CheckExplicit(
 #ifdef NhlNeedProto
 TickMarkLayer 	/* tnew */,
 TickMarkLayer	/* told */,
+_NhlArgList	/* args */,
+int		/* num_args*/,
 int		/* c_or_s */
 #endif
 );
@@ -810,6 +812,8 @@ static NhlErrorTypes CheckIrregular(
 #ifdef NhlNeedProto
 TickMarkLayer 	/* tnew */,
 TickMarkLayer	/* told */,
+_NhlArgList	/* args */,
+int		/* num_args */,
 int		/* c_or_s */
 #endif
 );
@@ -858,6 +862,8 @@ static NhlErrorTypes SetUpTransformInfo(
 #ifdef NhlNeedProto
 TickMarkLayer 	/* tnew */,
 TickMarkLayer 	/* treq*/,
+_NhlArgList	/* args*/,
+int		/* num_args */,
 int		/* cors */
 #endif
 );
@@ -866,6 +872,8 @@ static NhlErrorTypes ScaleValuesForMove(
 #ifdef NhlNeedProto
 TickMarkLayer 	/* tnew */,
 TickMarkLayer 	/* treq*/,
+_NhlArgList	/* args */,
+int		/* num_args */,
 int		/* c_or_s */
 #endif
 );
@@ -985,7 +993,7 @@ static NhlErrorTypes	TickMarkSetValues
 * setvalues call will be scalled proportionally to the move and resize. Values
 * that have been set in this setvalues call are left alone.
 */
-	ScaleValuesForMove(tnew,told,SET);
+	ScaleValuesForMove(tnew,told,args,num_args,SET);
 
 	if(tnew->tick.x_use_bottom) {
 		SetTop(tnew);
@@ -1014,7 +1022,7 @@ static NhlErrorTypes	TickMarkSetValues
 	if(ret < realret)
 		realret = ret;
 
-	ret = CheckExplicit(tnew,told,SET);
+	ret = CheckExplicit(tnew,told,args,num_args,SET);
 	if(ret < WARNING) {
 		NhlPError(FATAL,E_UNKNOWN,"TickMarkSetValues: A fatal error was detected while examining EXPLICIT mode values,cannot continue");
 		return(ret);
@@ -1040,7 +1048,7 @@ static NhlErrorTypes	TickMarkSetValues
 	if(ret < realret)
 		realret = ret;
 
-	ret = CheckIrregular(tnew,told,SET);
+	ret = CheckIrregular(tnew,told,args,num_args,SET);
 	if(ret < WARNING) {
 		NhlPError(FATAL,E_UNKNOWN,"TickMarkSetValues: A fatal error was detected while examining IRREGULAR style values,cannot continue");
 		return(ret);
@@ -1094,7 +1102,7 @@ static NhlErrorTypes	TickMarkSetValues
 * WHETHER OR NOT THESE ROUTINES NEED TO BE CALLED EVERY TIME ARE NEEDED
 */
 
-	ret = SetUpTransformInfo(tnew,told,SET);
+	ret = SetUpTransformInfo(tnew,told,args,num_args,SET);
 	if(ret < WARNING) {
 		NhlPError(FATAL,E_UNKNOWN,"TickMarkSetValues: A fatal error was detected while setting up tranformation information,cannot continue");
 		return(ret);
@@ -1194,6 +1202,7 @@ static NhlErrorTypes	TickMarkInitialize
 	NhlErrorTypes ret = NOERROR;
 	NhlErrorTypes realret = NOERROR;
 
+	ScaleValuesForMove(tnew,NULL,args,num_args,CREATE);
 
 
 	if(tnew->tick.x_use_bottom) {
@@ -1223,7 +1232,7 @@ static NhlErrorTypes	TickMarkInitialize
 	if(ret < realret) 
 		realret = ret;
 
-	ret = CheckExplicit(tnew,NULL,CREATE);
+	ret = CheckExplicit(tnew,NULL,args,num_args,CREATE);
 	if(ret < WARNING) {
 		NhlPError(FATAL,E_UNKNOWN,"TickMarkInitialize: A fatal error was detected while examining EXPLICIT mode values,cannot continue");
 		return(ret);
@@ -1250,7 +1259,7 @@ static NhlErrorTypes	TickMarkInitialize
 	if(ret < realret)
 		realret = ret;
 
-	ret = CheckIrregular(tnew,NULL,CREATE);
+	ret = CheckIrregular(tnew,NULL,args,num_args,CREATE);
 	if(ret < WARNING) {
 		NhlPError(FATAL,E_UNKNOWN,"TickMarkInitialize: A fatal error was detected while examining IRREGULAR style values, cannot continue");
 		return(ret);
@@ -1294,7 +1303,7 @@ static NhlErrorTypes	TickMarkInitialize
 * At this point all resource values should be confirmed and can then procede
 * with internal field generation
 */
-	ret = SetUpTransformInfo(tnew,treq,CREATE);
+	ret = SetUpTransformInfo(tnew,treq,args,num_args,CREATE);
 	if(ret < WARNING) {
 		NhlPError(FATAL,E_UNKNOWN,"TickMarkInitialize: A fatal error was detected while setting up tranformation information,cannot continue");
 		return(ret);
@@ -4061,11 +4070,13 @@ static NhlErrorTypes CheckNotAuto
 /*ARGSUSED*/
 static NhlErrorTypes CheckExplicit
 #if  __STDC__
-(TickMarkLayer tnew,TickMarkLayer told, int c_or_s)
+(TickMarkLayer tnew,TickMarkLayer told,_NhlArgList args, int num_args, int c_or_s)
 #else
-(tnew,told,c_or_s)
+(tnew,told,args,num_args,c_or_s)
 	TickMarkLayer tnew;
-	TickMarkLayer	told;
+	TickMarkLayer	told;	
+	_NhlArgList args;
+	int	num_args;
 	int		c_or_s;
 #endif
 {
@@ -4082,8 +4093,7 @@ static NhlErrorTypes CheckExplicit
 		error_lead = "TickMarkInitialize";
 	}
         if((tnew->tick.x_b_values != NULL)&&(tnew->tick.x_b_num_values >0)) {
-		if((c_or_s == CREATE)||(tnew->tick.x_b_values 
-			!= told->tick.x_b_values)) {
+		if((c_or_s == CREATE)||(tnew->tick.x_b_values != told->tick.x_b_values)) {
 			if((c_or_s == SET)&&(told->tick.x_b_values !=NULL)) {
 				NhlFree((void*)told->tick.x_b_values);
 			}
@@ -4095,8 +4105,7 @@ static NhlErrorTypes CheckExplicit
                                	(sizeof(float)
 				*tnew->tick.x_b_num_values));
 		}
-		if((c_or_s == CREATE)||(tnew->tick.x_b_labels 
-			!= told->tick.x_b_labels)) {
+		if((c_or_s == CREATE)|| (tnew->tick.x_b_labels != told->tick.x_b_labels)) {
 			if(tnew->tick.x_b_labels != NULL) {
 				if((c_or_s == SET)&&(told->tick.x_b_labels!=NULL)) {
 					for(i=0;i<told->tick.x_b_num_values;i++){
@@ -4162,8 +4171,7 @@ static NhlErrorTypes CheckExplicit
 	}
 
         if((tnew->tick.x_t_values != NULL)&&(tnew->tick.x_t_num_values >0)) {
-		if((c_or_s == CREATE)||(tnew->tick.x_t_values 
-			!= told->tick.x_t_values)) {
+		if((c_or_s == CREATE)||(tnew->tick.x_t_values != told->tick.x_t_values)) {
 			if((c_or_s == SET)&&(told->tick.x_t_values !=NULL)) {
 				NhlFree((void*)told->tick.x_t_values);
 			}
@@ -4175,8 +4183,7 @@ static NhlErrorTypes CheckExplicit
                                	(sizeof(float)
 				*tnew->tick.x_t_num_values));
 		}
-		if((c_or_s == CREATE)||(tnew->tick.x_t_labels 
-			!= told->tick.x_t_labels)) {
+		if((c_or_s == CREATE)||(tnew->tick.x_t_labels != told->tick.x_t_labels)) {
 			if(tnew->tick.x_t_labels != NULL) {
 				if((c_or_s == SET)&&(told->tick.x_t_labels!=NULL)) {
 					for(i=0;i<told->tick.x_t_num_values;i++){
@@ -4242,8 +4249,7 @@ static NhlErrorTypes CheckExplicit
 	}
 
         if((tnew->tick.y_l_values != NULL)&&(tnew->tick.y_l_num_values >0)) {
-		if((c_or_s == CREATE)||(tnew->tick.y_l_values 
-			!= told->tick.y_l_values)) {
+		if((c_or_s == CREATE)||(tnew->tick.y_l_values != told->tick.y_l_values)) {
 			if((c_or_s == SET)&&(told->tick.y_l_values !=NULL)) {
 				NhlFree((void*)told->tick.y_l_values);
 			}
@@ -4255,8 +4261,7 @@ static NhlErrorTypes CheckExplicit
                                	(sizeof(float)
 				*tnew->tick.y_l_num_values));
 		}
-		if((c_or_s == CREATE)||(tnew->tick.y_l_labels 
-			!= told->tick.y_l_labels)) {
+		if((c_or_s == CREATE)||(tnew->tick.y_l_labels != told->tick.y_l_labels)){
 			if(tnew->tick.y_l_labels != NULL) {
 				if((c_or_s == SET)&&(told->tick.y_l_labels!=NULL)) {
 					for(i=0;i<told->tick.y_l_num_values;i++){
@@ -4323,8 +4328,7 @@ static NhlErrorTypes CheckExplicit
 
 
         if((tnew->tick.y_r_values != NULL)&&(tnew->tick.y_r_num_values >0)) {
-		if((c_or_s == CREATE)||(tnew->tick.y_r_values 
-			!= told->tick.y_r_values)) {
+		if((c_or_s == CREATE)||(tnew->tick.y_r_values != told->tick.y_r_values)) {
 			if((c_or_s == SET)&&(told->tick.y_r_values !=NULL)) {
 				NhlFree((void*)told->tick.y_r_values);
 			}
@@ -4336,8 +4340,7 @@ static NhlErrorTypes CheckExplicit
                                	(sizeof(float)
 				*tnew->tick.y_r_num_values));
 		}
-		if((c_or_s == CREATE)||(tnew->tick.y_r_labels 
-			!= told->tick.y_r_labels)) {
+		if((c_or_s == CREATE)||(tnew->tick.y_r_labels != told->tick.y_r_labels)) {
 			if(tnew->tick.y_r_labels != NULL) {
 				if((c_or_s == SET)&&(told->tick.y_r_labels!=NULL)) {
 					for(i=0;i<told->tick.y_r_num_values;i++){
@@ -4664,11 +4667,13 @@ static NhlErrorTypes CheckLog
 /*ARGSUSED*/
 static NhlErrorTypes CheckIrregular
 #if  __STDC__
-(TickMarkLayer tnew, TickMarkLayer told, int c_or_s)
+(TickMarkLayer tnew, TickMarkLayer told, _NhlArgList args, int num_args, int c_or_s)
 #else
-(tnew,told,c_or_s)
+(tnew,told,args,num_args,c_or_s)
 	TickMarkLayer tnew;
 	TickMarkLayer told;
+	_NhlArgList	args;
+	int 	num_args;
 	int		c_or_s;
 #endif
 {
@@ -4684,7 +4689,8 @@ static NhlErrorTypes CheckIrregular
 	}
 
 	if((tnew->tick.x_b_irregular_points != NULL)&&(tnew->tick.x_b_num_irregular_points >0)) {
-		if((c_or_s == CREATE)||(tnew->tick.x_b_irregular_points != told->tick.x_b_irregular_points)) {
+		if((c_or_s == CREATE)||(tnew->tick.x_b_irregular_points != 
+				told->tick.x_b_irregular_points)){
 			if((c_or_s == SET)&&
 				(told->tick.x_b_irregular_points!=NULL)){
 				NhlFree((void*)told->tick.x_b_irregular_points);
@@ -4719,7 +4725,8 @@ static NhlErrorTypes CheckIrregular
 	}
 
 	if((tnew->tick.x_t_irregular_points != NULL)&&(tnew->tick.x_t_num_irregular_points >0)) {
-		if((c_or_s == CREATE)||(tnew->tick.x_t_irregular_points != told->tick.x_t_irregular_points)) {
+		if((c_or_s == CREATE)||(tnew->tick.x_t_irregular_points != 
+			told->tick.x_t_irregular_points)){
 			if((c_or_s == SET)&&
 				(told->tick.x_t_irregular_points!=NULL)){
 				NhlFree((void*)told->tick.x_t_irregular_points);
@@ -4754,7 +4761,8 @@ static NhlErrorTypes CheckIrregular
 	}
 
 	if((tnew->tick.y_l_irregular_points != NULL)&&(tnew->tick.y_l_num_irregular_points >0)) {
-		if((c_or_s == CREATE)||(tnew->tick.y_l_irregular_points != told->tick.y_l_irregular_points)) {
+		if((c_or_s == CREATE)||(tnew->tick.y_l_irregular_points != 
+			told->tick.y_l_irregular_points)) {
 			if((c_or_s == SET)&&
 				(told->tick.y_l_irregular_points!=NULL)){
 				NhlFree((void*)told->tick.y_l_irregular_points);
@@ -4789,7 +4797,8 @@ static NhlErrorTypes CheckIrregular
 	}
 
 	if((tnew->tick.y_r_irregular_points != NULL)&&(tnew->tick.y_r_num_irregular_points >0)) {
-		if((c_or_s == CREATE)||(tnew->tick.y_r_irregular_points != told->tick.y_r_irregular_points)) {
+		if((c_or_s == CREATE)||(tnew->tick.y_r_irregular_points !=
+			told->tick.y_r_irregular_points)){
 			if((c_or_s == SET)&&
 				(told->tick.y_r_irregular_points!=NULL)){
 				NhlFree((void*)told->tick.y_r_irregular_points);
@@ -6148,11 +6157,13 @@ int		c_or_s;
 /*ARGSUSED*/
 static NhlErrorTypes SetUpTransformInfo
 #if  __STDC__
-(TickMarkLayer tnew, TickMarkLayer told,int c_or_s)
+(TickMarkLayer tnew, TickMarkLayer told,_NhlArgList args, int num_args,int c_or_s)
 #else
 (tnew, told,c_or_s)
 	TickMarkLayer 	tnew;
 	TickMarkLayer	told;
+	_NhlArgList	args;
+	int		num_args;
 	int		c_or_s;
 #endif
 {
@@ -6702,72 +6713,67 @@ static NhlErrorTypes SetUpTransformInfo
 /*ARGSUSED*/
 static NhlErrorTypes ScaleValuesForMove
 #if __STDC__
-(TickMarkLayer tnew, TickMarkLayer told,int c_or_s)
+(TickMarkLayer tnew, TickMarkLayer told,_NhlArgList args, int num_args, int c_or_s)
 #else
-(tnew,told,c_or_s)
+(tnew,told,args,num_args,c_or_s)
 	TickMarkLayer	tnew;
 	TickMarkLayer	told;
+	_NhlArgList args;
+	int num_args;
 	int c_or_s;
 #endif
 {
 
 	float deltax,deltay;
 
-	deltax = tnew->view.width/told->view.width;
-	deltay = tnew->view.height/told->view.height;
+	if(c_or_s == CREATE) {
+		deltax = tnew->view.width/NHL_DEFAULT_VIEW_WIDTH;
+		deltay = tnew->view.height/NHL_DEFAULT_VIEW_HEIGHT;
+	} else {
+		deltax = tnew->view.width/told->view.width;
+		deltay = tnew->view.height/told->view.height;
+	}
 
 
-	if(((tnew->view.x != told->view.x)||
-		(tnew->view.y != told->view.y)||
-		(tnew->view.width != told->view.width)||
-		(tnew->view.height != told->view.height)) &&
-		(compare(deltax,1.0,4) != 0.0)||
+	if(((!_NhlArgIsSet(args,num_args,NhlNvpXF))||
+		(!_NhlArgIsSet(args,num_args,NhlNvpYF))||
+		(!_NhlArgIsSet(args,num_args,NhlNvpWidthF))||
+		(!_NhlArgIsSet(args,num_args,NhlNvpHeightF)))
+		&& (compare(deltax,1.0,4) != 0.0)||
 		(compare(deltay,1.0,4) != 0.0)) {
 /*
 * Deal with TickMarkLabels first
 */
-		if((tnew->tick.x_b_label_font_height 
-				== told->tick.x_b_label_font_height) &&
-		   (tnew->tick.x_b_label_font_aspect 
-				== told->tick.x_b_label_font_aspect) &&
-		   (tnew->tick.x_b_label_angle 
-				== told->tick.x_b_label_angle))  {
+		if((!_NhlArgIsSet(args,num_args,NhlNtmXBLabelFontHeightF))&&
+			(!_NhlArgIsSet(args,num_args,NhlNtmXBLabelFontAspectF))&&
+			(!_NhlArgIsSet(args,num_args,NhlNtmXBLabelAngleF)))  {
 /*
 * All X axis ticks scale proportional to changes in X Axis to reduce possiblity
 * of text overruns
 */
 			tnew->tick.x_b_label_font_height *= deltax;
 		}
-		if((tnew->tick.x_t_label_font_height 
-				== told->tick.x_t_label_font_height) &&
-		   (tnew->tick.x_t_label_font_aspect 
-				== told->tick.x_t_label_font_aspect) &&
-		   (tnew->tick.x_t_label_angle 
-				== told->tick.x_t_label_angle))  {
+		if((!_NhlArgIsSet(args,num_args,NhlNtmXTLabelFontHeightF))&&
+			(!_NhlArgIsSet(args,num_args,NhlNtmXTLabelFontAspectF))&&
+			(!_NhlArgIsSet(args,num_args,NhlNtmXTLabelAngleF)))  {
 /*
 * All X axis ticks scale proportional to changes in X Axis to reduce possiblity
 * of text overruns
 */
 			tnew->tick.x_t_label_font_height *= deltax;
 		}
-		if((tnew->tick.y_l_label_font_height 
-				== told->tick.y_l_label_font_height) &&
-		   (tnew->tick.y_l_label_font_aspect 
-				== told->tick.y_l_label_font_aspect) &&
-		   (tnew->tick.y_l_label_angle 
-				== told->tick.y_l_label_angle))  {
+		if((!_NhlArgIsSet(args,num_args,NhlNtmYLLabelFontHeightF))&&
+			(!_NhlArgIsSet(args,num_args,NhlNtmYLLabelFontAspectF))&&
+			(!_NhlArgIsSet(args,num_args,NhlNtmYLLabelAngleF)))  {
 /*
 * All Y axis ticks scale proportional to changes in Y Axis to reduce possiblity
 * of text overruns
 */
 			tnew->tick.y_l_label_font_height *= deltay;
 		}
-		if((tnew->tick.y_r_label_font_height 
-				== told->tick.y_r_label_font_height) &&
-		   (tnew->tick.y_r_label_font_aspect 
-				== told->tick.y_r_label_font_aspect) &&
-		   (tnew->tick.y_r_label_angle 
-				== told->tick.y_r_label_angle))  {
+		if((!_NhlArgIsSet(args,num_args,NhlNtmYRLabelFontHeightF))&&
+			(!_NhlArgIsSet(args,num_args,NhlNtmYRLabelFontAspectF))&&
+			(!_NhlArgIsSet(args,num_args,NhlNtmYRLabelAngleF)))  {
 /*
 * All Y axis ticks scale proportional to changes in Y Axis to reduce possiblity
 * of text overruns
@@ -6777,73 +6783,68 @@ static NhlErrorTypes ScaleValuesForMove
 /*
 * Now deal with scalling tick mark lengths
 */
-		if(tnew->tick.x_b_major_length == told->tick.x_b_major_length){	
+		if(!_NhlArgIsSet(args,num_args,NhlNtmXBMajorLengthF)) {
 /*
 * X ticks are affected by changes is height
 */
 			tnew->tick.x_b_major_length *= deltay;
 		}
-		if(tnew->tick.x_b_minor_length == told->tick.x_b_minor_length){
+		if(!_NhlArgIsSet(args,num_args,NhlNtmXBMinorLengthF)){
 			tnew->tick.x_b_minor_length *= deltay;
 		}
-		if(tnew->tick.x_b_major_outward_length ==
-					told->tick.x_b_major_outward_length) {
+		if(!_NhlArgIsSet(args,num_args,NhlNtmXBMajorOutwardLengthF)){
 			tnew->tick.x_b_major_outward_length *= deltay;
 		}
-		if(tnew->tick.x_b_minor_outward_length==
-					told->tick.x_b_minor_outward_length) {
+		if(!_NhlArgIsSet(args,num_args,NhlNtmXBMinorOutwardLengthF)){
 			tnew->tick.x_b_minor_outward_length *= deltay;
 		}
-		if(tnew->tick.x_t_major_length == told->tick.x_t_major_length){	
+
+		if(!_NhlArgIsSet(args,num_args,NhlNtmXTMajorLengthF)) {
 /*
 * X ticks are affected by changes is height
 */
 			tnew->tick.x_t_major_length *= deltay;
 		}
-		if(tnew->tick.x_t_minor_length == told->tick.x_t_minor_length){
+		if(!_NhlArgIsSet(args,num_args,NhlNtmXTMinorLengthF)){
 			tnew->tick.x_t_minor_length *= deltay;
 		}
-		if(tnew->tick.x_t_major_outward_length ==
-					told->tick.x_t_major_outward_length) {
+		if(!_NhlArgIsSet(args,num_args,NhlNtmXTMajorOutwardLengthF)){
 			tnew->tick.x_t_major_outward_length *= deltay;
 		}
-		if(tnew->tick.x_t_minor_outward_length==
-					told->tick.x_t_minor_outward_length) {
+		if(!_NhlArgIsSet(args,num_args,NhlNtmXTMinorOutwardLengthF)){
 			tnew->tick.x_t_minor_outward_length *= deltay;
 		}
-		if(tnew->tick.y_r_major_length == told->tick.y_r_major_length){	
+
+		if(!_NhlArgIsSet(args,num_args,NhlNtmYRMajorLengthF)) {
 /*
-* Y ticks are affected by changes is width 
+* X ticks are affected by changes is height
 */
-			tnew->tick.y_r_major_length *= deltax;
+			tnew->tick.y_r_major_length *= deltay;
 		}
-		if(tnew->tick.y_r_minor_length == told->tick.y_r_minor_length){
-			tnew->tick.y_r_minor_length *= deltax;
+		if(!_NhlArgIsSet(args,num_args,NhlNtmYRMinorLengthF)){
+			tnew->tick.y_r_minor_length *= deltay;
 		}
-		if(tnew->tick.y_r_major_outward_length ==
-					told->tick.y_r_major_outward_length) {
-			tnew->tick.y_r_major_outward_length *= deltax;
+		if(!_NhlArgIsSet(args,num_args,NhlNtmYRMajorOutwardLengthF)){
+			tnew->tick.y_r_major_outward_length *= deltay;
 		}
-		if(tnew->tick.y_r_minor_outward_length==
-					told->tick.y_r_minor_outward_length) {
-			tnew->tick.y_r_minor_outward_length *= deltax;
+		if(!_NhlArgIsSet(args,num_args,NhlNtmYRMinorOutwardLengthF)){
+			tnew->tick.y_r_minor_outward_length *= deltay;
 		}
-		if(tnew->tick.y_l_major_length == told->tick.y_l_major_length){	
+
+		if(!_NhlArgIsSet(args,num_args,NhlNtmYLMajorLengthF)) {
 /*
-* Y ticks are affected by changes is width 
+* X ticks are affected by changes is height
 */
-			tnew->tick.y_l_major_length *= deltax;
+			tnew->tick.y_l_major_length *= deltay;
 		}
-		if(tnew->tick.y_l_minor_length == told->tick.y_l_minor_length){
-			tnew->tick.y_l_minor_length *= deltax;
+		if(!_NhlArgIsSet(args,num_args,NhlNtmYLMinorLengthF)){
+			tnew->tick.y_l_minor_length *= deltay;
 		}
-		if(tnew->tick.y_l_major_outward_length ==
-					told->tick.y_l_major_outward_length) {
-			tnew->tick.y_l_major_outward_length *= deltax;
+		if(!_NhlArgIsSet(args,num_args,NhlNtmYLMajorOutwardLengthF)){
+			tnew->tick.y_l_major_outward_length *= deltay;
 		}
-		if(tnew->tick.y_l_minor_outward_length==
-					told->tick.y_l_minor_outward_length) {
-			tnew->tick.y_l_minor_outward_length *= deltax;
+		if(!_NhlArgIsSet(args,num_args,NhlNtmYLMinorOutwardLengthF)){
+			tnew->tick.y_l_minor_outward_length *= deltay;
 		}
 	}
 	return(NOERROR);

@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.3 1993-05-27 19:11:35 ethan Exp $
+ *      $Id: XyPlot.c,v 1.4 1993-06-03 15:12:20 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -3278,14 +3278,14 @@ static NhlErrorTypes ScaleForMove
 #endif
 {
 	if((c_or_s == SET)&&(xnew->view.height != xold->view.height)) {
-		if(xnew->xyplot.line_label_font_height == xold->xyplot.line_label_font_height) {
+		if(!_NhlArgIsSet(args,num_args,NhlNxyLineLableFontHeightF)) {
 			xnew->xyplot.line_label_font_height= 
 				(xnew->view.height/xold->view.height) *
 				xold->xyplot.line_label_font_height;
 		}
 	}
 	if((c_or_s == SET)&&(xnew->view.width != xold->view.width)) {
-		if(xnew->xyplot.dash_segment_length == xold->xyplot.dash_segment_length) {
+		if(!_NhlArgIsSet(args,num_args,NhlNxyDashSegmentLengthF)) {
 			xnew->xyplot.dash_segment_length = 
 				(xnew->view.width/xold->view.width) *
 				xold->xyplot.dash_segment_length;

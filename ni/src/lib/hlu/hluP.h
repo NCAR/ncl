@@ -1,5 +1,5 @@
 /*
- *      $Id: hluP.h,v 1.2 1993-05-27 19:11:42 ethan Exp $
+ *      $Id: hluP.h,v 1.3 1993-06-03 15:12:29 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -556,7 +556,13 @@ extern void _NhlSetLineInfo(
 #endif
 );
 
-
+extern int _NhlArgIsSet(
+#ifdef NhlNeedProto
+        _NhlArgList 	/* args */,
+        int    		/* num_args */,
+        char* 	 	/*resource_name*/
+#endif
+);
 
 
 #endif /* HLUP_H */

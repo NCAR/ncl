@@ -1,6 +1,6 @@
 
 /*
- *      $Id: View.c,v 1.1 1993-04-30 17:25:45 boote Exp $
+ *      $Id: View.c,v 1.2 1993-06-03 15:12:14 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -41,13 +41,17 @@
 
 static NhlResource resources[] = {
 	{ NhlNvpXF, NhlCvpXF, NhlTFloat, sizeof(float),
-		NhlOffset(ViewLayerRec,view.x),NhlTString,"0.1"},
+		NhlOffset(ViewLayerRec,view.x),
+		NhlTString,NHL_DEFAULT_VIEW_X_STR},
 	{ NhlNvpYF, NhlCvpYF, NhlTFloat, sizeof(float),
-		NhlOffset(ViewLayerRec,view.y),NhlTString,"0.90"},
+		NhlOffset(ViewLayerRec,view.y),
+		NhlTString,NHL_DEFAULT_VIEW_Y_STR},
 	{ NhlNvpWidthF, NhlCvpWidthF, NhlTFloat, sizeof(float),
-		NhlOffset(ViewLayerRec,view.width),NhlTString,"0.8"},
+		NhlOffset(ViewLayerRec,view.width),
+		NhlTString,NHL_DEFAULT_VIEW_WIDTH_STR},
 	{ NhlNvpHeightF, NhlCvpHeightF, NhlTFloat, sizeof(float),
-		NhlOffset(ViewLayerRec,view.height),NhlTString,"0.8"},
+		NhlOffset(ViewLayerRec,view.height),
+		NhlTString,NHL_DEFAULT_VIEW_HEIGHT_STR},
 	{ NhlNvpKeepAspect, NhlCvpKeepAspect, NhlTInteger, sizeof(int),
 		NhlOffset(ViewLayerRec,view.keep_aspect),NhlTString,"0"}
 };
@@ -55,15 +59,18 @@ static NhlResource resources[] = {
 /*
 * Base Methods used
 */
-static NhlErrorTypes	ViewSetValues(
-#ifdef NhlNeedProto 
-	Layer,		/* old */
-	Layer,		/* reference */
-	Layer,		/* new */
-	_NhlArgList,	/* args */
-	int		/* num_args*/
+
+static NhlErrorTypes ViewSetValues(
+#ifdef NhlNeedFuncProto
+        Layer           /*old*/,
+        Layer           /*reference,*/,
+        Layer           /*new,*/,
+        _NhlArgList     /*args,*/,
+        int             /*num_args*/
 #endif
 );
+
+
 
 static NhlErrorTypes	ViewInitialize(
 #ifdef NhlNeedProto
@@ -192,6 +199,8 @@ static NhlErrorTypes	ViewSetValues
 	LayerList	step;
 	NhlSegTransList	steptrans;
 	NhlErrorTypes ret = NOERROR;
+	int i;
+
 
 	if((newl->view.x != oldl->view.x) ||
 	   (newl->view.y != oldl->view.y) ||

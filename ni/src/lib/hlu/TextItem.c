@@ -1,6 +1,6 @@
 
 /*
- *      $Id: TextItem.c,v 1.1 1993-04-30 17:24:22 boote Exp $
+ *      $Id: TextItem.c,v 1.2 1993-06-03 15:11:55 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -233,7 +233,7 @@ static NhlErrorTypes TextItemSetValues
 		  &&(tnew->text.just == told->text.just)
 		  &&(tnew->text.direction == told->text.direction)
 		  &&(tnew->text.font == told->text.font)
-		  &&(tnew->text.font_height == told->text.font_height)
+		  &&(!_NhlArgIsSet(args,num_args,NhlNtxFontHeightF))
 		  &&(tnew->text.font_aspect == told->text.font_aspect)){
 /*
 * Only case where x,y,width and height can be set. Need to compute new values

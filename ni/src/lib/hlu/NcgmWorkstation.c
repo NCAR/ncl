@@ -1,5 +1,5 @@
 /*
- *      $Id: NcgmWorkstation.c,v 1.1 1993-04-30 17:23:16 boote Exp $
+ *      $Id: NcgmWorkstation.c,v 1.2 1993-06-03 15:11:52 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -234,9 +234,11 @@ static NhlErrorTypes NcgmWorkstationDestroy
 #endif
 {
 	NcgmWorkstationLayer winst = (NcgmWorkstationLayer)inst;
+	NcgmWorkstationLayerClass wclass = (NcgmWorkstationLayerClass)inst->base.layer_class;
 
 	if(strcmp(winst->ncgm.meta_name,DEFAULT_META_NAME) != 0)
 		NhlFree(winst->ncgm.meta_name);
+	*(wclass->ncgm_class.cgm_inited) = UNINITED;
 	return(NOERROR);
 }
 
