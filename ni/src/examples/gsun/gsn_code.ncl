@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.152 2004-08-28 13:12:16 haley Exp $
+;      $Id: gsn_code.ncl,v 1.153 2004-08-28 18:19:08 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -5569,11 +5569,27 @@ begin
 ;
 ; Create the data object.
 ;
-      data_object = create sfname meshScalarFieldClass noparent
-        "sfDataArray" : data
-        "sfXArray"    : get_res_value(res2,"sfXArray",1)
-        "sfYArray"    : get_res_value(res2,"sfYArray",1)
-      end create
+;
+; Temporarily (I hope), I need to check if sf*CellBounds are being set.
+; If so, they need to be set during the create call, or otherwise it
+; will cause a core dump.
+;
+      if(res2.and.isatt(res2,"sfXCellBounds").and.isatt(res2,"sfYCellBounds"))
+
+        data_object = create sfname meshScalarFieldClass noparent
+          "sfDataArray"   : data
+          "sfXArray"      : get_res_value(res2,"sfXArray",1)
+          "sfYArray"      : get_res_value(res2,"sfYArray",1)
+          "sfXCellBounds" : get_res_value(res2,"sfXCellBounds",1)
+          "sfYCellBounds" : get_res_value(res2,"sfYCellBounds",1)
+        end create
+      else
+        data_object = create sfname meshScalarFieldClass noparent
+          "sfDataArray" : data
+          "sfXArray"    : get_res_value(res2,"sfXArray",1)
+          "sfYArray"    : get_res_value(res2,"sfYArray",1)
+        end create
+      end if
     else
       print("Error: scalar_field: If the input data is 1-dimensional, you must set sfXArray and sfYArray to 1-dimensional arrays of the same length.")
       dum = new(1,graphic)

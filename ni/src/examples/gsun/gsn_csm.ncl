@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.172 2004-08-26 13:38:13 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.173 2004-08-28 18:19:08 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -1022,11 +1022,18 @@ end
 ; overlay the vectors/contours on a map, however.                       ;
 ;                                                                       ;
 ;***********************************************************************;
-procedure check_for_coord_arrays(data[*][*]:numeric,res:logical,type:string)
+procedure check_for_coord_arrays(data:numeric,res:logical,type:string)
 local prefix, xstart_name, xend_name, ystart_name, yend_name, \
 xarray_name, yarray_name, valid_2dcoord_types
 
 begin 
+;
+; If the data is 1D, no coord arrays should exist.
+;
+  if(dimsizes(dimsizes(data)).eq.1) then
+     return
+  end if
+
   if(type.eq."vector".or.type.eq."vector_map")
     prefix = "vf"
   else
@@ -1390,10 +1397,18 @@ end
 ; "contour*" or "vector*" to this coordinate array.                     ;
 ;                                                                       ;
 ;***********************************************************************;
-procedure check_for_y_lat_coord(data[*][*]:numeric,res:logical,type:string)
+procedure check_for_y_lat_coord(data:numeric,res:logical,type:string)
 local latname, char_latname, array_name, start_name, end_name, \
 valid_2dcoord_types
 begin 
+;
+; If the data is 1D, no coord arrays should exist.
+;
+  if(dimsizes(dimsizes(data)).eq.1) then
+     return
+  end if
+
+;
 ;
 ; If tfDoNDCOverlay is set to True, then coordinate arrays shouldn't be
 ; used in the first place.  It is up to the user to do the right thing
@@ -1462,10 +1477,17 @@ end
 ; "contour*" or "vector*" to this coordinate array.                     ;
 ;                                                                       ;
 ;***********************************************************************;
-procedure check_for_x_lat_coord(data[*][*]:numeric,res:logical,type:string)
+procedure check_for_x_lat_coord(data:numeric,res:logical,type:string)
 local latname, char_latname, array_name, start_name, end_name, \
 valid_2dcoord_types
 begin 
+;
+; If the data is 1D, no coord arrays should exist.
+;
+  if(dimsizes(dimsizes(data)).eq.1) then
+     return
+  end if
+
 ;
 ; If tfDoNDCOverlay is set to True, then coordinate arrays shouldn't be
 ; used in the first place.  It is up to the user to do the right thing
@@ -1534,10 +1556,17 @@ end
 ; "contour*" or "vector*" to this coordinate array.                     ;
 ;                                                                       ;
 ;***********************************************************************;
-procedure check_for_lon_coord(data[*][*]:numeric,res:logical,type:string)
+procedure check_for_lon_coord(data:numeric,res:logical,type:string)
 local lonname, char_lonname, array_name, start_name, end_name, \
 valid_2dcoord_types
 begin 
+;
+; If the data is 1D, no coord arrays should exist.
+;
+  if(dimsizes(dimsizes(data)).eq.1) then
+     return
+  end if
+
 ;
 ; If tfDoNDCOverlay is set to True, then coordinate arrays shouldn't be
 ; used in the first place.  It is up to the user to do the right thing
@@ -3077,8 +3106,8 @@ begin
 end
 
 ;***********************************************************************;
-; Procedure : gsn_add_cyclic_point                                      ;
-;             data[*][*]: numeric                                       ;
+; Function : gsn_add_cyclic_point                                       ;
+;                  data : numeric                                       ;
 ;                                                                       ;
 ; Add a cyclic point in "x" to the 2D array "data".                     ;
 ; For a lat/lon plot "x"  corresponds to "lon"                          ;
@@ -3088,12 +3117,18 @@ end
 ; If a lat/lon coordinate doesn't exist, then the data is tested to see ;
 ; if it contains a lat2d/lon2d attribute, and uses this instead.        ;
 ;***********************************************************************;
-
-function gsn_add_cyclic_point(data[*][*]:numeric)
+function gsn_add_cyclic_point(data:numeric)
 local dims, newdata, ny, mx, mx1, range, delta, first_val, second_val, \
 last_val
 begin
-    dims    = dimsizes(data)
+;
+; If the data is 1D, no cyclic point should be added.
+;
+    dims  = dimsizes(data)
+    if(dimsizes(dims).eq.1) then
+       return(data)
+    end if
+
     ny      = dims(0)
     mx      = dims(1)
     mx1     = mx+1
@@ -3693,6 +3728,15 @@ begin
     if(left_string.or.center_string.or.right_string)
       main_zone   = 4
     end if
+;
+; Increase title zone if map tickmarks are on.
+;
+    if(check_attr(res2,"pmTickMarkDisplayMode","Always",True).or.\
+       check_attr(res2,"pmTickMarkDisplayMode",2,False).or.\
+       check_attr(res2,"pmTickMarkDisplayMode",3,False)) then
+      main_zone = main_zone + 1
+    end if
+
 
 ;
 ; If automatic tick marks are turned on, then turn off gsn_csm generated
@@ -4568,8 +4612,7 @@ end
 ;       displayed.                                                      ;
 ;***********************************************************************;
 
-function gsn_csm_contour_map_polar(wks:graphic,data[*][*]:numeric, \
-                                   resources:logical)
+function gsn_csm_contour_map_polar(wks:graphic,data:numeric,resources:logical)
 local i, contour_object, map_object, res, lbar_pos, lbar_zone, \
 lbar_on, calldraw, callframe, main_offset, datanew, res2, cnres, mpres, \
 vpwf, vphf, font_height, levels, colors, zonal_zone, lbres, \
@@ -4751,8 +4794,7 @@ end
 ;       is used for the right string title.                             ;
 ;***********************************************************************;
 
-function gsn_csm_contour_map_ce(wks:graphic,data[*][*]:numeric,\
-                                resources:logical)
+function gsn_csm_contour_map_ce(wks:graphic,data:numeric,resources:logical)
 local i, contour_object, labelbar_object, xy_object, map_object, \
 calldraw, callframe, lbar_on, zonal_mean_plot, min_lat, max_lat, datanew, \
 res, res2, lbres, xy_res, mpres, cnres, levels, colors, \
@@ -4787,7 +4829,7 @@ begin
     end if
 
 ; Check for cyclic point (default is True if we are not setting both
-; lon2d/lat2d attributes).
+; lon2d/lat2d attributes and data is not 1D).
 
     set_cyclic = .not.(isatt(data,"lat2d").and.isatt(data,"lon2d"))
     if(get_res_value(res2,"gsnAddCyclic",set_cyclic)) then
@@ -5133,7 +5175,7 @@ end
 ;       is used for the right string title.                             ;
 ;***********************************************************************;
 
-function gsn_csm_contour_map_other(wks:graphic,data[*][*]:numeric,\
+function gsn_csm_contour_map_other(wks:graphic,data:numeric,\
                                    resources:logical)
 local i, contour_object, labelbar_object, xy_object, map_object, \
 calldraw, callframe, lbar_on, min_lat, max_lat, datanew, \
@@ -6301,7 +6343,7 @@ end
 ;***********************************************************************;
 
 function gsn_csm_streamline_contour_map_ce(wks:graphic,u[*][*]:numeric,\
-                   v[*][*]:numeric,data[*][*]:numeric,resources:logical)
+                   v[*][*]:numeric,data:numeric,resources:logical)
 local i, stream_object, map_object, res, res2, \
 calldraw, callframe, min_lat, max_lat, unew, vnew, datanew, \
 map_vpwf, map_vphf, vpwf, vphf, lbar_on
@@ -6533,7 +6575,7 @@ end
 ;***********************************************************************;
 
 function gsn_csm_streamline_contour_map_polar(wks:graphic,u[*][*]:numeric, \
-                                         v[*][*]:numeric,data[*][*]:numeric,
+                                         v[*][*]:numeric,data:numeric,
                                          resources:logical)
 local i, stream_object, map_object, res, res2, calldraw, vcres, \
 lbres, vpwf, vphf, callframe, lbar_on, lbar_zone, unew, vnew
@@ -6718,7 +6760,7 @@ end
 ;***********************************************************************;
 
 function gsn_csm_streamline_contour_map_other(wks:graphic,u[*][*]:numeric,\
-                                        v[*][*]:numeric,data[*][*]:numeric, \
+                                        v[*][*]:numeric,data:numeric, \
                                         resources:logical)
 local i, stream_object, labelbar_object, map_object, \
 calldraw, callframe, lbar_on, min_lat, max_lat, datanew, \
@@ -6899,7 +6941,7 @@ end
 ;***********************************************************************;
 
 function gsn_csm_vector_scalar(wks:graphic,u[*][*]:numeric,v[*][*]:numeric, \
-                               data[*][*]:numeric,resources:logical)
+                               data:numeric,resources:logical)
 local i, vector_object, res, res2, \
 calldraw, callframe, unew, vnew, datanew, vpwf, vphf, lbar_on
 begin
@@ -7166,7 +7208,7 @@ end
 ;***********************************************************************;
 
 function gsn_csm_vector_scalar_map_ce(wks:graphic,u[*][*]:numeric,\
-                   v[*][*]:numeric,data[*][*]:numeric,resources:logical)
+                   v[*][*]:numeric,data:numeric,resources:logical)
 local i, vector_object, map_object, res, res2, \
 calldraw, callframe, min_lat, max_lat, unew, vnew, datanew, \
 map_vpwf, map_vphf, vpwf, vphf, lbar_on
@@ -7468,7 +7510,7 @@ end
 ;***********************************************************************;
 
 function gsn_csm_vector_scalar_map_polar(wks:graphic,u[*][*]:numeric, \
-                                         v[*][*]:numeric,data[*][*]:numeric,
+                                         v[*][*]:numeric,data:numeric,
                                          resources:logical)
 local i, vector_object, map_object, res, res2, calldraw, vcres, \
 lbres, vpwf, vphf, callframe, lbar_on, lbar_zone, unew, vnew
@@ -7692,7 +7734,7 @@ end
 ;***********************************************************************;
 
 function gsn_csm_vector_scalar_map_other(wks:graphic,u[*][*]:numeric,\
-                                        v[*][*]:numeric,data[*][*]:numeric, \
+                                        v[*][*]:numeric,data:numeric, \
                                         resources:logical)
 local i, vector_object, labelbar_object, map_object, \
 calldraw, callframe, lbar_on, min_lat, max_lat, datanew, \
@@ -7911,8 +7953,7 @@ end
 ; the map projection selected.                                          ;
 ;***********************************************************************;
 
-function gsn_csm_contour_map(wks:graphic,data[*][*]:numeric,\
-                             resources:logical)
+function gsn_csm_contour_map(wks:graphic,data:numeric,resources:logical)
 local res
 begin
   res = get_resources(resources)
@@ -8011,7 +8052,7 @@ end
 ;***********************************************************************;
 
 function gsn_csm_vector_scalar_map(wks:graphic,u[*][*]:numeric, \
-                                   v[*][*]:numeric,data[*][*]:numeric, \
+                                   v[*][*]:numeric,data:numeric, \
                                    resources:logical)
 local res
 begin
@@ -8047,7 +8088,7 @@ end
 ;***********************************************************************;
 
 function gsn_csm_streamline_contour_map(wks:graphic,u[*][*]:numeric, \
-                                   v[*][*]:numeric,data[*][*]:numeric, \
+                                   v[*][*]:numeric,data:numeric, \
                                    resources:logical)
 local res
 begin
@@ -8082,7 +8123,8 @@ end
 ;***********************************************************************;
 
 function gsn_csm_contour_map_overlay(wks:graphic,data1[*][*]:numeric,\
-                                data2[*][*]:numeric,res1:logical,res2:logical)
+                                     data2[*][*]:numeric,res1:logical, \
+                                     res2:logical)
 local calldraw, callframe, res1_tmp, res2_tmp
 begin
   res1_tmp  = get_resources(res1)   ; Transfer attributes
@@ -9487,7 +9529,7 @@ end
 ;                                                                       ;
 ;***********************************************************************;
 
-function gsn_csm_contour(wks:graphic,data[*][*]:numeric,resources:logical)
+function gsn_csm_contour(wks:graphic,data:numeric,resources:logical)
 local res, contour_object, res2, xfontf, yfontf, font_height, lbar_on, \
 calldraw, callframe, left_string, center_string, right_string, \
 main_zone, datanew, popgrid, contour_plot
