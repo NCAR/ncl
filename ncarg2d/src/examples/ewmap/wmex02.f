@@ -1,5 +1,5 @@
 C
-C	$Id: wmex02.f,v 1.5 1994-10-27 00:30:26 fred Exp $
+C	$Id: wmex02.f,v 1.6 1994-10-27 15:36:03 haley Exp $
 C
       PROGRAM WMEX02
 C
@@ -624,13 +624,13 @@ C   TEMPUY  - Y user coordinates for daily hi/low locations.
 
       CALL WMSETI('DTC',13)
       IF (IBTYPE .EQ. IWBACK) THEN
-        CALL WMSETI('DBC'- dot background color,0)
-        CALL WMSETI('RFC'- foreground color for labels,1)
-        CALL WMSETI('CBC'- background color for city labels,0)
+        CALL WMSETI('DBC- dot background color',0)
+        CALL WMSETI('RFC- foreground color for labels',1)
+        CALL WMSETI('CBC- background color for city labels',0)
       ELSE
-        CALL WMSETI('DBC'- dot background color,1)
-        CALL WMSETI('RFC'- foreground color for labels,0)
-        CALL WMSETI('CBC'- background color for city labels,1)
+        CALL WMSETI('DBC- dot background color',1)
+        CALL WMSETI('RFC- foreground color for labels',0)
+        CALL WMSETI('CBC- background color for city labels',1)
       ENDIF
       DO 110 I=1,NUMC
         CALL MAPTRN(CITYUX(I),CITYUY(I),XO,YO)
