@@ -6,7 +6,7 @@
 int *c_csstri(int n, float xi[], float yi[], float zi[], 
               int *nt, int *ier)
 {
-  int nit,nwrk,num_tri,*trlist,*iwork;
+  int nit,nwrk,num_tri,*trlist,*iwork,i;
   float *rwork;
 
   nit = n;
@@ -53,6 +53,13 @@ int *c_csstri(int n, float xi[], float yi[], float zi[],
     printf("Unable to reallocate space for triangle list in c_cssgrid\n");
     *ier = 300;
     return((int *)NULL);
+  }
+
+/*
+ *  Reduce the tiangle indices by 1 for compatibility with C.
+ */
+  for (i = 0; i < 3*num_tri; i++) {
+    (*(trlist+i))--;
   }
 
   free(iwork);
