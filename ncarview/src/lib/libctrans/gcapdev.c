@@ -1,5 +1,5 @@
 /*
- *	$Id: gcapdev.c,v 1.9 1992-02-10 17:31:54 clyne Exp $
+ *	$Id: gcapdev.c,v 1.10 1992-02-20 18:49:55 clyne Exp $
  */
 #include <stdio.h>
 #include <cterror.h>
@@ -88,20 +88,20 @@ boolean polysim;	/* True if to simulate polygons with lines */
 		mass = TRUE;
 		for(i=0;i<POLYGON_START_SIZE;i++) 
 			switch (POLYGON_START[i]) {
-			case (char)VC:
+			case VC:
 				(void)formatveccnt(*coord_buf_num + 1);
 				break;
-			case (char)XC:
+			case XC:
 				(void)formatcoord(XConvert(coord_buf[0].x),
 					    (long)0,
 					    1);
 				break;
-			case (char)YC:
+			case YC:
 				(void)formatcoord(YConvert(coord_buf[0].y),
 					    (long)0,
 					    1);
 				break;
-			case (char)XYC:
+			case XYC:
 				(void)formatcoord(XConvert(coord_buf[0].x),
 					    YConvert(coord_buf[0].y),
 					    2);
@@ -122,25 +122,25 @@ boolean polysim;	/* True if to simulate polygons with lines */
 
 		for(i=0;i<LINE_DRAW_START_SIZE;i++) 
 			switch (LINE_DRAW_START[i]) {
-			case (char)VC:
+			case VC:
 				if (polyflag)
 					(void)formatveccnt(*coord_buf_num + 1);
 				else
 					(void)formatveccnt(*coord_buf_num);
 				break;
-			case (char)XC:
+			case XC:
 				(void)formatcoord(XConvert(coord_buf[0].x),
 					    (long)0,
 					    1);
 				currentpoint = 1;
 				break;
-			case (char)YC:
+			case YC:
 				(void)formatcoord(YConvert(coord_buf[0].y),
 					    (long)0,
 					    1);
 				currentpoint = 1;
 				break;
-			case (char)XYC:
+			case XYC:
 				(void)formatcoord(XConvert(coord_buf[0].x),
 					    YConvert(coord_buf[0].y),
 					    2);
@@ -299,20 +299,20 @@ long	x1_,y1_,x2_,y2_;
 	if (POLY_FLAG) {
 		for(i=0;i<LINE_DRAW_START_SIZE;i++) 
 			switch (LINE_DRAW_START[i]) {
-			case (char)VC:
+			case VC:
 				(void)formatveccnt((long)2);
 				break;
-			case (char)XC:
+			case XC:
 				(void)formatcoord(XConvert(x1),
 					    (long)0,
 					    1);
 				break;
-			case (char)YC:
+			case YC:
 				(void)formatcoord(YConvert(y1),
 					    (long)0,
 					    1);
 				break;
-			case (char)XYC:
+			case XYC:
 				(void)formatcoord(XConvert(x1), YConvert(y1), 2);
 				break;
 			default:
@@ -373,16 +373,16 @@ void	gcap_devline(x1, y1, x2, y2)
 	if (POLY_FLAG) {
 		for(i=0;i<LINE_DRAW_START_SIZE;i++) 
 			switch (LINE_DRAW_START[i]) {
-			case (char)VC:
+			case VC:
 				(void)formatveccnt((long)2);
 				break;
-			case (char)XC:
+			case XC:
 				(void)formatcoord((long) x1, (long)0, 1);
 				break;
-			case (char)YC:
+			case YC:
 				(void)formatcoord((long) y1, (long)0, 1);
 				break;
-			case (char)XYC:
+			case XYC:
 				(void)formatcoord((long) x1, (long) y1, 2);
 				break;
 			default:
@@ -580,7 +580,7 @@ void	gcap_update_color_table()
 
 		for (k=0;k<MAP_START_SIZE;k++) {
 			switch (MAP_START[k]) {
-			case (char)MAD:
+			case MAD:
 				(void)formatindex(i,FALSE);
 				break;
 			default: 
@@ -656,7 +656,7 @@ void	gcap_update_color_table()
 
 				for (k=0;k<MAP_START_SIZE;k++) {
 					switch (MAP_START[k]) {
-					case (char)MAD:
+					case MAD:
 						(void)formatindex(i,FALSE);
 						break;
 					default: 

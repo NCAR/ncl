@@ -1,5 +1,5 @@
 /*
- *	$Id: gcaprast.c,v 1.6 1992-02-07 17:39:17 clyne Exp $
+ *	$Id: gcaprast.c,v 1.7 1992-02-20 18:50:00 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -406,19 +406,19 @@ CGMC	*c;
 			 */
 			for(k=0;k<RASTER_HOR_START_SIZE;k++)
 				switch(RASTER_HOR_START[k]) {
-				case (char)XYC:
+				case XYC:
 					(void)formatcoord(px,py,2);
 					break;
-				case (char)XC:
+				case XC:
 					(void)formatcoord(px,(long)0,1);
 					break;
-				case (char)YC:
+				case YC:
 					(void)formatcoord(py,(long)0,1);
 					break;
-				case (char)VC:
+				case VC:
 					(void)formatrasterveccnt(nx);
 					break;
-				case (char)RL:
+				case RL:
 					Runlength = TRUE;
 					break;
 				default:
@@ -571,19 +571,19 @@ Ct_err	CellArray_(c, P, Q, R, nx, ny)
 			 */
 			for(k=0;k<RASTER_HOR_START_SIZE;k++) {
 				switch(RASTER_HOR_START[k]) {
-				case (char)XYC:
+				case XYC:
 					(void)formatcoord(start_x,start_y,2);
 					break;
-				case (char)XC:
+				case XC:
 					(void)formatcoord(start_x,(long)0,1);
 					break;
-				case (char)YC:
+				case YC:
 					(void)formatcoord(start_y,(long)0,1);
 					break;
-				case (char)VC:
+				case VC:
 					(void)formatrasterveccnt((long) nx);
 					break;
-				case (char)RL:
+				case RL:
 					Runlength = TRUE;
 					break;
 				default:

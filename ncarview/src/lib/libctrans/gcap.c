@@ -1,5 +1,5 @@
 /*
- *	$Id: gcap.c,v 1.15 1992-02-20 14:47:17 clyne Exp $
+ *	$Id: gcap.c,v 1.16 1992-02-20 18:49:52 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -234,7 +234,7 @@ CGMC *c;
 		if (!MAP_INDIVIDUAL)
 			for (i=0;i<MAP_START_SIZE;i++) 
 				switch (MAP_START[i]) {
-				case (char)MAD:
+				case MAD:
 					(void)formatindex((CItype)MAP_INIT_INDEXS[0],
 							  FALSE);
 					break;
@@ -248,7 +248,7 @@ CGMC *c;
 			if (MAP_INDIVIDUAL)
 				for (k=0;k<MAP_START_SIZE;k++) 
 					switch (MAP_START[k]) {
-					case (char)MAD:
+					case MAD:
 						(void)formatindex(
 							(CItype)MAP_INIT_INDEXS[j],
 							FALSE);

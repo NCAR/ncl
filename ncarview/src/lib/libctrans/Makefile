@@ -7,21 +7,21 @@
 #
 #######################################################################
 
-SYSTEM_INCLUDE		= DECRISC
+SYSTEM_INCLUDE		= HPUX
 
 VERSION         = 3.1.3
-PARFIL_INIT     = /tmp/clyne/lib/param
-PARFIL_PERM     = /tmp/clyne/lib/param
+PARFIL_INIT     = /red/tmp/clyne/lib/pararms
+PARFIL_PERM     = /red/tmp/clyne/lib/pararms
 
-BINDIR          = /tmp/clyne/bin
-LIBDIR          = /tmp/clyne/lib
-MANDIR          = /tmp/clyne/man
+BINDIR          = /red/tmp/clyne/bin
+LIBDIR          = /red/tmp/clyne/lib
+MANDIR          = /red/tmp/clyne/man
 MAN_SECTION     = l
 TMPDIR          = /tmp
 
-XLIBDIR         = /usr/lib
-XINCDIR         = /usr/include
-XAPPDIR         = /tmp/lib
+XLIBDIR         = /usr/lib/X11R4
+XINCDIR         = /usr/include/X11R4
+XAPPDIR         = /red/tmp/clyne/lib
 
 INCLUDEDIR      = $(NCARG)/include
 DBDIR           = $(LIBDIR)
@@ -37,33 +37,35 @@ YMAKE           = $(CONFIGDIR)/ymake -I$(CONFIGDIR)
 
 MAKE            = make
 FLOAT_OPT       =
-OS              =
-ARCH            = -DByteSwapped
+OS              = -DSYSV
+ARCH            =
 XPATH           = -I$(XINCDIR) -L$(XLIBDIR)
 VDEFINE         = -DVERSION='"$(VERSION)"'
 CC              = cc
 CC_LD           = $(CC)
 CDEBUG          =
-COPT            = -O
+COPT            = -g
 CMISC           =
 CFLAGS          = $(OS) $(ARCH) $(CDEFINES) $(CDEBUG) $(COPT) $(CMISC)\
 	$(FLOAT_OPT) $(XPATH) $(VDEFINE)
 LD_CFLAGS       = $(CFLAGS)
 CPP             = /lib/cpp
-FCPP            = /lib/cpp
+FCPP            = $(NCARG)/utils/fcpp $(CPP)
+FC              = f77
 F77             = f77
 F77_LD          = $(F77)
 FDEBUG          =
-FOPT            =
+FOPT            = -O
 FMISC           =
-FFLAGS          = $(OS) $(ARCH) $(FDEFINES) $(FDEBUG) $(FOPT) $(FMISC)\
+FFLAGS          = $(ARCH) $(FDEFINES) $(FDEBUG) $(FOPT) $(FMISC)\
 	$(FLOAT_OPT)
+F77FLAGS        = $(FFLAGS)
 LD_FFLAGS       = $(FFLAGS)
 LD              = ld
 LD_REL          = $(LD)
 AR              = ar
-AR_QUICK        = $(AR) q
-AR_CHECK        = $(AR) vru
+AR_QUICK        = $(AR) ql
+AR_CHECK        = $(AR) vrul
 AR_SRC          = ar
 AR_SRC_QUICK    = $(AR_SRC) q
 AR_SRC_CHECK    = $(AR_SRC) vru
@@ -71,9 +73,9 @@ RM              = rm -f
 CAT             = cat
 CP              = cp
 MV              = mv -f
-RANLIB          = ranlib
+RANLIB          = $(NO_OP)
 NO_OP           = touch -c
-INSTALL         = install -c
+INSTALL         = $(NCARG)/utils/install -c
 INSTALL_RM      = $(RM)
 INSTALL_BIN     = 0755
 INSTALL_MAN     = 0644
@@ -90,7 +92,7 @@ GKS_BUFFER_SIZE = 0
 
 NCARG	= ../../../..
 #
-#	$Id: Makefile,v 1.12 1992-02-20 14:47:14 clyne Exp $
+#	$Id: Makefile,v 1.13 1992-02-20 18:49:49 clyne Exp $
 #
 
 LOCINCDIR	= ../../include
@@ -196,7 +198,7 @@ local-Makefile:
 clean::
 	@-$(RM) *.o core
 
-cleanbin::	clean
+cleanbin:: clean
 
 saber_src: $(SRCS)
 	#setopt load_flags $(CFLAGS) $(CINCS)
