@@ -1,7 +1,7 @@
 .\" The first line of this file must contain the '\"[e][r][t][v] line
 .\" to tell man to run the appropriate filter "t" for table.
 .\"
-.\"	$Id: ymake.man,v 1.13 1994-08-11 23:44:45 boote Exp $
+.\"	$Id: ymake.man,v 1.14 1995-03-21 07:24:29 boote Exp $
 .\"
 .\"######################################################################
 .\"#									#
@@ -230,6 +230,10 @@ over the other "-I" flags.
 This symbol is used to add additional "-L" flags to the link line.  These
 flags get added to the front of the link line so they will take precedence
 over the other "-L" flags.
+.IP \fIDEV_SYS_LIBS\fP 1.5i
+This symbol is used to add additional libraries to the link line, with
+"-l" flags.  This symbol is often used in combination with the
+\fIDEV_LIB_SEARCH\fP symbol.
 .RE
 .PP
 The \fIDEV_LIB_SEARCH\fP flag can be used to change the libncarg_gks.a file

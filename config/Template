@@ -1,5 +1,5 @@
 /*
- *      $Id: Template,v 1.26 1994-09-28 21:45:11 boote Exp $
+ *      $Id: Template,v 1.27 1995-03-21 07:24:29 boote Exp $
  */
 /************************************************************************
 *									*
@@ -625,7 +625,7 @@ LDLIBS		= $(LIB_SEARCH) $(EXTRA_LIBS)
 CC_LDOPTIONS	= $(CCOPTIONS) $(COPT) $(XTRA_CLDFLAGS) $(DEV_LIB_SEARCH) $(_LIBROOTSEARCH)
 FC_LDOPTIONS	= $(FCOPTIONS) $(FOPT) $(XTRA_FLDFLAGS) $(DEV_LIB_SEARCH) $(_LIBROOTSEARCH)
 #endif
-EXTRA_LDLIBS	= $(SYS_LIBS) $(EXTRA_SYS_LIBS)
+EXTRA_LDLIBS	= $(SYS_LIBS) $(EXTRA_SYS_LIBS) $(DEV_SYS_LIBS)
 
 
 ALLINCLUDES	= $(EXTRA_INCLUDES) $(TOP_INCLUDES) $(INC_SEARCH)
