@@ -1,5 +1,5 @@
 /*
- *	$Id: text.c,v 1.15 1992-10-15 17:46:15 clyne Exp $
+ *	$Id: text.c,v 1.16 1992-11-06 20:00:38 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -462,7 +462,7 @@ static int	str_width(strlen, s)
 			case PATH_RIGHT : return(0);
 			case PATH_LEFT  : 
 				if (var_space)
-					return (-(var_width( (char *) s[1],
+					return (-(var_width( (char *) s+1,
 						strlen-1)));
 
 				return(-((strlen-1) * Width));
