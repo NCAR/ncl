@@ -1,6 +1,6 @@
 C NCLFORTSTART
       SUBROUTINE DTTEST(AVE1,VAR1,S1,AVE2,VAR2,S2,IFLAG,ALPHA,TVAL,IER)
-c c c implicit none
+c      implicit none
 
 C NCL: prob = ttest (ave1,var1,s1,ave2,var2,s2,iflag,tval_opt)
 

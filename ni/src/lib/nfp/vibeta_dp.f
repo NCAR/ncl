@@ -2,11 +2,11 @@ c ----------------------------------------------------------------------
       SUBROUTINE DVIBETA(P,X,NLEV,XMSG,LINLOG,PSFC,XSFC,PBOT,PTOP,
      +                   PLVCRT,VINT,IER)
       IMPLICIT NONE
-
+c
 c NCL: vint = vibeta (p,x,linlog,psfc,pbot,ptop)
 c NCL:        plvcrt = p(nlev)  do internally
 c NCL:        xsfc   = x(1)     do internally
-
+c
 c vertical integral using ket/as:
 c .   "diagnostic studies using global analyses"
 
