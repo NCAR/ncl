@@ -1,6 +1,6 @@
 
 /*
- *      $Id: AddBuiltIns.c,v 1.49 2000-03-10 20:33:55 ethan Exp $
+ *      $Id: AddBuiltIns.c,v 1.50 2000-04-13 20:57:16 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1520,6 +1520,13 @@ void _NclAddBuiltIns
     SetArgTemplate(args,nargs,"string",NclANY,NclANY); nargs++;
     SetArgTemplate(args,nargs,"string",1,dimsizes); nargs++;
     NclRegisterFunc(_NclIAddFiles,args,"addfiles",nargs);
+
+    nargs = 0;
+    args = NewArgs(2);
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"string",NclANY,NclANY); nargs++;
+    SetArgTemplate(args,nargs,"string",1,dimsizes); nargs++;
+    NclRegisterFunc(_NclIAddFiles,args,"addfilelist",nargs);
     
 /*
 	nargs = 0;
