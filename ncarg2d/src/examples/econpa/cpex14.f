@@ -1,5 +1,5 @@
 C
-C $Id: cpex14.f,v 1.3 1996-02-29 17:59:49 kennison Exp $
+C $Id: cpex14.f,v 1.4 2001-12-28 00:18:35 kennison Exp $
 C
       PROGRAM CPEX14
 C
@@ -633,7 +633,6 @@ C
       END
 
 
-
       SUBROUTINE CPMPXY (IMAP,XINP,YINP,XOUT,YOUT)
 C
 C This version of CPMPXY implements what has sometimes, in the past,
@@ -1000,10 +999,18 @@ C
       END
 
 
-
       FUNCTION ISINPO(XPNT,YPNT,XCRA,YCRA,IDIM,IBEG,IEND,JBEG,JEND,ISOD)
 C
         DIMENSION XCRA(IDIM,*),YCRA(IDIM,*)
+C
+        PARAMETER (SPPI=3.14159265358979  ,SPTP=2.  *SPPI)
+C
+        PARAMETER (DPPI=3.14159265358979D0,DPTP=2.D0*DPPI)
+C
+C Declare variables which are needed when double-precision arithmetic
+C is executed.
+C
+        DOUBLE PRECISION DACH,DDIF,DLST,DNXT
 C
 C The value of this function is intended to be greater than zero if and
 C only if the point (XPNT,YPNT) is inside the polygon defined by the
@@ -1016,47 +1023,30 @@ C
 C IDIM is the first dimension of each of the arrays XCRA and YCRA in
 C the calling routine.
 C
-C It is assumed that, if we trace the polygon in a counterclockwise
-C direction in grid space, we also trace the transformed polygon in a
-C counterclockwise direction.
+C IBEG, IEND, JBEG, and JEND are as described above.
 C
-C We find the point of the polygon that (XPNT,YPNT) is closest to and
-C then analyze the situation relative to the two segments of the polygon
-C that join at that point.
+C ISOD is set to zero if single-precision arithmetic is to be used;
+C otherwise, double-precision arithmetic will be.
 C
-C Declare some required double precision variables.
-C
-        DOUBLE PRECISION DDIR,DDST,DDMN,DBND,DLST,DNXT
-C
-C The following arithmetic statement functions have a negative value
-C if and only if the point (X3,Y3) is to the left of the line from
-C (X1,Y1) to (X2,Y2).
-C
-        SDIR(X1,Y1,X2,Y2,X3,Y3)=(X1-X3)*(Y3-Y2)-(X2-X3)*(Y3-Y1)
-C
-        DDIR(X1,Y1,X2,Y2,X3,Y3)=DBLE(X1-X3)*DBLE(Y3-Y2)-
-     +                          DBLE(X2-X3)*DBLE(Y3-Y1)
-C
-C Initialize the scan of the points comprising the polygon.
-C
-        IPMN=1
-        IMIN=IBEG
-        JMIN=JBEG
+C We compute the total angular change described by a ray emanating from
+C the point (XPNT,YPNT) and passing through a point that traces out the
+C polygon.
 C
         IF (ISOD.EQ.0) THEN
-          SDMN=(XPNT-XCRA(IBEG,JBEG))**2+(YPNT-YCRA(IBEG,JBEG))**2
-        ELSE
-          DDMN=DBLE(XPNT-XCRA(IBEG,JBEG))**2+
-     +         DBLE(YPNT-YCRA(IBEG,JBEG))**2
-        END IF
 C
-        INXT=IBEG
-        JNXT=JBEG
+          ANCH=0.
 C
-C Scan the points of the polygon.
+          INXT=IBEG
+          JNXT=JBEG
 C
-        IF (ISOD.EQ.0) THEN
-          DO 101 IPNT=2,IEND-IBEG+JEND-JBEG+IEND-IBEG+JEND-JBEG
+          IF (XCRA(IBEG,JBEG).EQ.XPNT.AND.YCRA(IBEG,JBEG).EQ.YPNT) THEN
+            ISINPO=1
+            RETURN
+          ELSE
+            ANXT=ATAN2(YCRA(IBEG,JBEG)-YPNT,XCRA(IBEG,JBEG)-XPNT)
+          END IF
+C
+          DO 101 IPNT=2,1+IEND-IBEG+JEND-JBEG+IEND-IBEG+JEND-JBEG
             IF      (IPNT.LE.1+IEND-IBEG) THEN
               INXT=INXT+1
             ELSE IF (IPNT.LE.1+IEND-IBEG+JEND-JBEG) THEN
@@ -1066,16 +1056,45 @@ C
             ELSE
               JNXT=JNXT-1
             END IF
-            SDST=(XPNT-XCRA(INXT,JNXT))**2+(YPNT-YCRA(INXT,JNXT))**2
-            IF (SDST.LT.SDMN) THEN
-              IPMN=IPNT
-              IMIN=INXT
-              JMIN=JNXT
-              SDMN=SDST
+            ALST=ANXT
+            IF (XCRA(INXT,JNXT).EQ.XPNT.AND.YCRA(INXT,JNXT).EQ.YPNT)THEN
+              ISINPO=1
+              RETURN
+            ELSE
+              ANXT=ATAN2(YCRA(INXT,JNXT)-YPNT,XCRA(INXT,JNXT)-XPNT)
             END IF
+            ADIF=ANXT-ALST
+            IF (ABS(ADIF).GT.SPPI) ADIF=ADIF-SIGN(SPTP,ADIF)
+            ANCH=ANCH+ADIF
   101     CONTINUE
+C
+C If the point is outside the polygon, the total angular change should
+C be exactly zero, while if the point is inside the polygon, the total
+C angular change should be exactly plus or minus two pi.  We just test
+C for the absolute value of the change being less than pi.
+C
+          IF (ABS(ANCH).LT.SPPI) THEN
+            ISINPO=0
+          ELSE
+            ISINPO=1
+          END IF
+C
         ELSE
-          DO 201 IPNT=2,IEND-IBEG+JEND-JBEG+IEND-IBEG+JEND-JBEG
+C
+          DACH=0.D0
+C
+          INXT=IBEG
+          JNXT=JBEG
+C
+          IF (XCRA(IBEG,JBEG).EQ.XPNT.AND.YCRA(IBEG,JBEG).EQ.YPNT) THEN
+            ISINPO=1
+            RETURN
+          ELSE
+            DNXT=ATAN2(DBLE(YCRA(IBEG,JBEG)-YPNT),
+     +                 DBLE(XCRA(IBEG,JBEG)-XPNT))
+          END IF
+C
+          DO 102 IPNT=2,1+IEND-IBEG+JEND-JBEG+IEND-IBEG+JEND-JBEG
             IF      (IPNT.LE.1+IEND-IBEG) THEN
               INXT=INXT+1
             ELSE IF (IPNT.LE.1+IEND-IBEG+JEND-JBEG) THEN
@@ -1085,114 +1104,30 @@ C
             ELSE
               JNXT=JNXT-1
             END IF
-            DDST=DBLE(XPNT-XCRA(INXT,JNXT))**2+
-     +           DBLE(YPNT-YCRA(INXT,JNXT))**2
-            IF (DDST.LT.DDMN) THEN
-              IPMN=IPNT
-              IMIN=INXT
-              JMIN=JNXT
-              DDMN=DDST
+            DLST=DNXT
+            IF (XCRA(INXT,JNXT).EQ.XPNT.AND.YCRA(INXT,JNXT).EQ.YPNT)THEN
+              ISINPO=1
+              RETURN
+            ELSE
+              DNXT=ATAN2(DBLE(YCRA(INXT,JNXT)-YPNT),
+     +                   DBLE(XCRA(INXT,JNXT)-XPNT))
             END IF
-  201     CONTINUE
-        END IF
+            DDIF=DNXT-DLST
+            IF (ABS(DDIF).GT.DPPI) DDIF=DDIF-SIGN(DPTP,DDIF)
+            DACH=DACH+DDIF
+  102     CONTINUE
 C
-C Get the indices of the previous point and of the next point.
+C If the point is outside the polygon, the total angular change should
+C be exactly zero, while if the point is inside the polygon, the total
+C angular change should be exactly plus or minus two pi.  We just test
+C for the absolute value of the change being less than or equal to pi.
 C
-        IF      (IPMN.EQ.1) THEN
-          ILST=IMIN
-          JLST=JMIN+1
-          INXT=IMIN+1
-          JNXT=JMIN
-        ELSE IF (IPMN.LT.1+IEND-IBEG) THEN
-          ILST=IMIN-1
-          JLST=JMIN
-          INXT=IMIN+1
-          JNXT=JMIN
-        ELSE IF (IPMN.EQ.1+IEND-IBEG) THEN
-          ILST=IMIN-1
-          JLST=JMIN
-          INXT=IMIN
-          JNXT=JMIN+1
-        ELSE IF (IPMN.LT.1+IEND-IBEG+JEND-JBEG) THEN
-          ILST=IMIN
-          JLST=JMIN-1
-          INXT=IMIN
-          JNXT=JMIN+1
-        ELSE IF (IPMN.EQ.1+IEND-IBEG+JEND-JBEG) THEN
-          ILST=IMIN
-          JLST=JMIN-1
-          INXT=IMIN-1
-          JNXT=JMIN
-        ELSE IF (IPMN.LT.1+IEND-IBEG+JEND-JBEG+IEND-IBEG) THEN
-          ILST=IMIN+1
-          JLST=JMIN
-          INXT=IMIN-1
-          JNXT=JMIN
-        ELSE IF (IPMN.EQ.1+IEND-IBEG+JEND-JBEG+IEND-IBEG) THEN
-          ILST=IMIN+1
-          JLST=JMIN
-          INXT=IMIN
-          JNXT=JMIN-1
-        ELSE
-          ILST=IMIN
-          JLST=JMIN+1
-          INXT=IMIN
-          JNXT=JMIN-1
-        END IF
-C
-C If (XPNT,YPNT) is to the left of both segments, it's inside the
-C polygon.  If it's to the right of both segments, it's outside the
-C polygon.  If it's to the left of one and to the right of the other,
-C it's outside the polygon if the polygon edge bends to the left
-C where the segments join and inside the polygon if the polygon's
-C edge bends to the right there.
-C
-        IF (ISOD.EQ.0) THEN
-          SLST=SDIR(XCRA(ILST,JLST),YCRA(ILST,JLST),
-     +              XCRA(IMIN,JMIN),YCRA(IMIN,JMIN),
-     +              XPNT           ,YPNT           )
-C
-          SNXT=SDIR(XCRA(IMIN,JMIN),YCRA(IMIN,JMIN),
-     +              XCRA(INXT,JNXT),YCRA(INXT,JNXT),
-     +              XPNT           ,YPNT           )
-C
-          IF      (SLST.LE.0..AND.SNXT.LE.0.) THEN
-            ISINPO=1
-          ELSE IF (SLST.GE.0..AND.SNXT.GE.0.) THEN
+          IF (ABS(DACH).LT.DPPI) THEN
             ISINPO=0
           ELSE
-            SBND=SDIR(XCRA(ILST,JLST),YCRA(ILST,JLST),
-     +                XCRA(IMIN,JMIN),YCRA(IMIN,JMIN),
-     +                XCRA(INXT,JNXT),YCRA(INXT,JNXT))
-            IF (SBND.LE.0.) THEN
-              ISINPO=0
-            ELSE
-              ISINPO=1
-            END IF
-          END IF
-        ELSE
-          DLST=DDIR(XCRA(ILST,JLST),YCRA(ILST,JLST),
-     +              XCRA(IMIN,JMIN),YCRA(IMIN,JMIN),
-     +              XPNT           ,YPNT           )
-C
-          DNXT=DDIR(XCRA(IMIN,JMIN),YCRA(IMIN,JMIN),
-     +              XCRA(INXT,JNXT),YCRA(INXT,JNXT),
-     +              XPNT           ,YPNT           )
-C
-          IF      (DLST.LE.0.D0.AND.DNXT.LE.0.D0) THEN
             ISINPO=1
-          ELSE IF (DLST.GE.0.D0.AND.DNXT.GE.0.D0) THEN
-            ISINPO=0
-          ELSE
-            DBND=DDIR(XCRA(ILST,JLST),YCRA(ILST,JLST),
-     +                XCRA(IMIN,JMIN),YCRA(IMIN,JMIN),
-     +                XCRA(INXT,JNXT),YCRA(INXT,JNXT))
-            IF (DBND.LE.0.D0) THEN
-              ISINPO=0
-            ELSE
-              ISINPO=1
-            END IF
           END IF
+C
         END IF
 C
 C Done.
@@ -1200,7 +1135,6 @@ C
         RETURN
 C
       END
-
 
 
       SUBROUTINE GETTRN (TST1,TST2,TST3)
