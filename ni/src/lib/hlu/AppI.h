@@ -1,5 +1,5 @@
 /*
- *      $Id: AppI.h,v 1.6 1996-05-10 09:31:52 boote Exp $
+ *      $Id: AppI.h,v 1.7 1996-10-16 16:18:30 boote Exp $
  */
 /************************************************************************
 *									*
@@ -36,6 +36,15 @@
 #define	_NhlNdefApp	"def.App"
 #define	_NhlCdefApp	"Def.App"
 
+#define	_NhlNappResourceStrings	"app.res.strings"
+#define	_NhlCappResourceStrings	"App.res.strings"
+#define	_NhlNappCommandLineOpts	"app.cmdline.opts"
+#define	_NhlCappCommandLineOpts	"App.cmdline.opts"
+#define _NhlNappArgcInOut	"app.argc"
+#define _NhlCappArgcInOut	"App.argc"
+#define _NhlNappArgvInOut	"app.argv"
+#define _NhlCappArgvInOut	"App.argv"
+
 extern	NhlLayer _NhlGetCurrentApp(
 #if	NhlNeedProto
 	void
@@ -67,6 +76,12 @@ extern NhlErrorTypes _NhlSortAppArgs(
 	int		nargs_in,
 	_NhlArgList	*args_out,
 	int		*nargs_out
+#endif
+);
+
+extern void _NhlAppSetDefGuiData(
+#if	NhlNeedProto
+	NhlPointer	ptr
 #endif
 );
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: App.c,v 1.26 1996-10-10 17:57:52 boote Exp $
+ *      $Id: App.c,v 1.27 1996-10-16 16:18:28 boote Exp $
  */
 /************************************************************************
 *									*
@@ -154,7 +154,19 @@ static NhlResource resources[] = {
 		_NhlRES_CONLY,NULL},
 	{_NhlNnoAppDB,_NhlCnoAppDB,NhlTBoolean,sizeof(NhlBoolean),
 		Oset(no_appDB),NhlTImmediate,(NhlPointer)False,_NhlRES_CONLY,
-		NULL}
+		NULL},
+	{_NhlNappResourceStrings,_NhlCappResourceStrings,NhlTPointer,
+		sizeof(NhlPointer),Oset(res_strings),NhlTImmediate,
+		(NhlPointer)NULL,_NhlRES_CONLY,NULL},
+	{_NhlNappCommandLineOpts,_NhlCappCommandLineOpts,NhlTPointer,
+		sizeof(NhlPointer),Oset(clineopts),NhlTImmediate,
+		(NhlPointer)NULL,_NhlRES_CONLY,NULL},
+	{_NhlNappArgcInOut,_NhlCappArgcInOut,NhlTPointer,
+		sizeof(NhlPointer),Oset(argc_in_out),NhlTImmediate,
+		(NhlPointer)NULL,_NhlRES_CONLY,NULL},
+	{_NhlNappArgvInOut,_NhlCappArgvInOut,NhlTPointer,
+		sizeof(NhlPointer),Oset(argv_in_out),NhlTImmediate,
+		(NhlPointer)NULL,_NhlRES_CONLY,NULL},
 };
 
 #undef	appDefResDef
@@ -389,6 +401,7 @@ AppClassPartInitialize
 	alcp->current_app = NULL;
 	alcp->cblist = _NhlCBCreate(0,NULL,NULL);
 	InitBaseDB(alc);
+	alcp->default_guidata = NULL;
 
 	return NhlNOERROR;
 }
@@ -560,7 +573,26 @@ AppInitialize
 			strcat(tname,anew->app.file_suffix);
 			NrmCombineFileDB(tname,&anew->app.appDB,True);
 		}
+
+		if(anew->app.res_strings){
+			NhlString	*rstrings = anew->app.res_strings;
+
+			while(*rstrings)
+				NrmPutLineResource(&anew->app.appDB,
+								*rstrings++);
+		}
+
+		if(anew->app.clineopts && anew->app.argc_in_out &&
+			anew->app.argv_in_out && (*anew->app.argc_in_out > 0)){
+			NrmParseCommand(&anew->app.appDB,anew->app.clineopts,
+				anew->base.name,anew->app.argc_in_out,
+				anew->app.argv_in_out);
+		}
 	}
+	anew->app.res_strings = NULL;
+	anew->app.clineopts = NULL;
+	anew->app.argc_in_out = NULL;
+	anew->app.argv_in_out = NULL;
 
 	/*
 	 * insure error reporting is available.
@@ -725,6 +757,9 @@ AppInitialize
 	NhlFree(anew->app.args);
 	anew->app.args = NULL;
 	anew->app.nargs = 0;
+
+	if(!_NhlArgIsSet(args,nargs,_NhlNguiData))
+		new->base.gui_data = ac->app_class.default_guidata;
 
 	/*
 	 * May need to create an initialize_hook for this...
@@ -1448,4 +1483,20 @@ _NhlCB  _NhlAppAddDefaultChangeCB
 	selector.lngval = 0;
 	return _NhlCBAdd(((NhlAppClass)NhlappClass)->app_class.cblist,selector,
 								cbfunc,udata);
+}
+
+void
+_NhlAppSetDefGuiData
+#if	NhlNeedProto
+(
+	NhlPointer	ptr
+)
+#else
+(ptr)
+	NhlPointer	ptr;
+#endif
+{
+	((NhlAppClass)NhlappClass)->app_class.default_guidata = ptr;
+
+	return;
 }

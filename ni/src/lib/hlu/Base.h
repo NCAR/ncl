@@ -1,5 +1,5 @@
 /*
- *      $Id: Base.h,v 1.11 1996-10-10 17:57:55 boote Exp $
+ *      $Id: Base.h,v 1.12 1996-10-16 16:18:33 boote Exp $
  */
 /************************************************************************
 *									*
@@ -64,5 +64,7 @@ typedef enum _NhlJustification {
 #define	_NhlCnclData	"NclData"
 #define	_NhlNguiData	"guiData"
 #define	_NhlCguiData	"GuiData"
+#define	_NhlNguiData2	"guiData2"
+#define	_NhlCguiData2	"GuiData2"
 
 #endif  /* _NBase_h */

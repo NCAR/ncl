@@ -1,5 +1,5 @@
 /*
- *      $Id: AppP.h,v 1.6 1996-05-09 23:16:13 ethan Exp $
+ *      $Id: AppP.h,v 1.7 1996-10-16 16:18:31 boote Exp $
  */
 /************************************************************************
 *									*
@@ -40,6 +40,10 @@ typedef struct _NhlAppLayerPart {
 	NhlGenArray	resources;
 
 	/* private fields */
+	NhlPointer	res_strings;
+	NhlPointer	clineopts;
+	int		*argc_in_out;
+	NhlString	*argv_in_out;
 	_NhlC_OR_F	init_mode;
 	NhlBoolean	default_app;
 	NhlBoolean	no_appDB;
@@ -74,6 +78,7 @@ typedef struct _NhlAppClassPart {
 	int			workspace_id;
 	NhlAppTable		app_objs;	/* except default_app */
 	_NhlCBList		cblist;
+	NhlPointer		default_guidata;
 } NhlAppClassPart;
 
 typedef struct _NhlAppClassRec {

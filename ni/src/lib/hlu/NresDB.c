@@ -1,5 +1,5 @@
 /*
- *      $Id: NresDB.c,v 1.7 1995-04-29 18:53:19 boote Exp $
+ *      $Id: NresDB.c,v 1.8 1996-10-16 16:18:35 boote Exp $
  */
 /************************************************************************
 *									*
@@ -2649,4 +2649,174 @@ NrmQinQList
 	}
 
 	return False;
+}
+
+void NrmParseCommand
+#if	NhlNeedProto
+(
+    NrmDatabase		*pdb,		/* data base */
+    register NrmOptionDescList options, /* pointer to table of valid options */
+    Const char		*prefix,	/* name to prefix resources with     */
+    int			*argc,		/* address of argument count 	     */
+    char		**argv		/* argument list (command line)	     */
+)
+#else
+(pdb, options, num_options, prefix, argc, argv)
+    NrmDatabase		*pdb;		/* data base */
+    register NrmOptionDescList options; /* pointer to table of valid options */
+    char		*prefix;	/* name to prefix resources with     */
+    int			*argc;		/* address of argument count 	     */
+    char		**argv;		/* argument list (command line)	     */
+#endif
+{
+    int 		foundOption;
+    char		**argsave;
+    register int	i, myargc;
+    NrmBinding		bindings[100];
+    NrmQuark		quarks[100];
+    NrmBinding		*start_bindings;
+    NrmQuark		*start_quarks;
+    char		*optP, *argP, optchar, argchar;
+    int			matches;
+    enum {DontCare, Check, NotSorted, Sorted} table_is_sorted;
+    char		**argend;
+    int			num_options=0;
+    NrmOptionDescList	opt = options;
+
+#define PutCommandResource(value_str)				\
+    {								\
+    NrmStringToBindingQuarkList(				\
+	options[i].specifier, start_bindings, start_quarks);    \
+    NrmQPutStringResource(pdb, bindings, quarks, value_str);    \
+    } /* PutCommandResource */
+
+    while(opt->option){
+	num_options++;
+	opt++;
+    }
+    myargc = (*argc); 
+    argend = argv + myargc;
+    argsave = ++argv;
+
+    /* Initialize bindings/quark list with prefix (typically app name). */
+    quarks[0] = NrmStringToName(prefix);
+    bindings[0] = NrmBindTightly;
+    start_quarks = quarks+1;
+    start_bindings = bindings+1;
+
+    table_is_sorted = (myargc > 2) ? Check : DontCare;
+    for (--myargc; myargc > 0; --myargc, ++argv) {
+	foundOption = False;
+	matches = 0;
+	for (i=0; i < num_options; ++i) {
+	    /* checking the sort order first insures we don't have to
+	       re-do the check if the arg hits on the last entry in
+	       the table.  Useful because usually '=' is the last entry
+	       and users frequently specify geometry early in the command */
+	    if (table_is_sorted == Check && i > 0 &&
+		strcmp(options[i].option, options[i-1].option) < 0) {
+		table_is_sorted = NotSorted;
+	    }
+	    for (argP = *argv, optP = options[i].option;
+		 (optchar = *optP++) &&
+		 (argchar = *argP++) &&
+		 argchar == optchar;);
+	    if (!optchar) {
+		if (!*argP ||
+		    options[i].argKind == NrmoptionStickyArg ||
+		    options[i].argKind == NrmoptionIsArg) {
+		    /* give preference to exact matches, StickyArg and IsArg */
+		    matches = 1;
+		    foundOption = i;
+		    break;
+		}
+	    }
+	    else if (!argchar) {
+		/* may be an abbreviation for this option */
+		matches++;
+		foundOption = i;
+	    }
+	    else if (table_is_sorted == Sorted && optchar > argchar) {
+		break;
+	    }
+	    if (table_is_sorted == Check && i > 0 &&
+		strcmp(options[i].option, options[i-1].option) < 0) {
+		table_is_sorted = NotSorted;
+	    }
+	}
+	if (table_is_sorted == Check && i >= (num_options-1))
+	    table_is_sorted = Sorted;
+	if (matches == 1) {
+		i = foundOption;
+		switch (options[i].argKind){
+		case NrmoptionNoArg:
+		    --(*argc);
+		    PutCommandResource(options[i].value);
+		    break;
+			    
+		case NrmoptionIsArg:
+		    --(*argc);
+		    PutCommandResource(*argv);
+		    break;
+
+		case NrmoptionStickyArg:
+		    --(*argc);
+		    PutCommandResource(argP);
+		    break;
+
+		case NrmoptionSepArg:
+		    if (myargc > 1) {
+			++argv; --myargc; --(*argc); --(*argc);
+			PutCommandResource(*argv);
+		    } else
+			(*argsave++) = (*argv);
+		    break;
+		
+		case NrmoptionResArg:
+		    if (myargc > 1) {
+			++argv; --myargc; --(*argc); --(*argc);
+			NrmPutLineResource(pdb, *argv);
+		    } else
+			(*argsave++) = (*argv);
+		    break;
+		
+		default:
+		    NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+				"NrmParseCommand:Unable to parse \"%s\" (%s)",
+				options[i].option,options[i].specifier));
+		case NrmoptionSkipArg:
+		    if (myargc > 1) {
+			--myargc;
+			(*argsave++) = (*argv++);
+		    }
+		    (*argsave++) = (*argv); 
+		    break;
+
+		case NrmoptionSkipLine:
+		    for (; myargc > 0; myargc--)
+			(*argsave++) = (*argv++);
+		    break;
+
+		case NrmoptionSkipNArgs:
+		    {
+			register int j = 1 + (int) options[i].value;
+
+			if (j > myargc) j = myargc;
+			for (; j > 0; j--) {
+			    (*argsave++) = (*argv++);
+			    myargc--;
+			}
+			argv--;		/* went one too far before */
+			myargc++;
+		    }
+		    break;
+
+		}
+	}
+	else
+	    (*argsave++) = (*argv);  /*compress arglist*/ 
+    }
+
+    if (argsave < argend)
+	(*argsave)=NULL; /* put NULL terminator on compressed argv */
 }

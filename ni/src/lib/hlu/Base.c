@@ -1,5 +1,5 @@
 /*
- *      $Id: Base.c,v 1.17 1996-10-10 17:57:54 boote Exp $
+ *      $Id: Base.c,v 1.18 1996-10-16 16:18:32 boote Exp $
  */
 /************************************************************************
 *									*
@@ -43,6 +43,9 @@ static NhlResource bresources[] = {
 	{_NhlNguiData,_NhlCguiData,NhlTPointer,sizeof(NhlPointer),
 		NhlOffset(NhlBaseLayerRec,base.gui_data),
 		NhlTImmediate,_NhlUSET(NULL),_NhlRES_NORACCESS,NULL},
+	{_NhlNguiData2,_NhlCguiData2,NhlTPointer,sizeof(NhlPointer),
+		NhlOffset(NhlBaseLayerRec,base.gui_data2),
+		NhlTImmediate,_NhlUSET(NULL),_NhlRES_NORACCESS,NULL},
 };
 
 static NhlResource oresources[] = {
@@ -50,7 +53,10 @@ static NhlResource oresources[] = {
 		NhlOffset(NhlObjLayerRec,base.ncl_data),
 		NhlTImmediate,_NhlUSET(NULL),_NhlRES_NORACCESS,NULL},
 	{_NhlNguiData,_NhlCguiData,NhlTPointer,sizeof(NhlPointer),
-		NhlOffset(NhlObjLayerRec,base.gui_data),
+		NhlOffset(NhlBaseLayerRec,base.gui_data),
+		NhlTImmediate,_NhlUSET(NULL),_NhlRES_NORACCESS,NULL},
+	{_NhlNguiData2,_NhlCguiData2,NhlTPointer,sizeof(NhlPointer),
+		NhlOffset(NhlObjLayerRec,base.gui_data2),
 		NhlTImmediate,_NhlUSET(NULL),_NhlRES_NORACCESS,NULL},
 };
 
@@ -102,8 +108,8 @@ NhlObjClassRec NhlobjClassRec = {
 /* superclass			*/	(NhlClass)NULL,
 /* cvt_table			*/	_NhlDefHashTable,
 
-/* resources			*/	NULL,
-/* num_resources		*/	0,
+/* resources			*/	oresources,
+/* num_resources		*/	NhlNumber(oresources),
 /* all_resources		*/	NULL,
 /* callbacks			*/	ocallbacks,
 /* num_callbacks		*/	NhlNumber(ocallbacks),
@@ -128,8 +134,8 @@ NhlClassRec NhllayerClassRec = {
 /* superclass			*/	(NhlClass)NULL,
 /* cvt_table			*/	_NhlDefHashTable,
 
-/* resources			*/	NULL,
-/* num_resources		*/	0,
+/* resources			*/	bresources,
+/* num_resources		*/	NhlNumber(bresources),
 /* all_resources		*/	NULL,
 /* callbacks			*/	bcallbacks,
 /* num_callbacks		*/	NhlNumber(bcallbacks),
@@ -391,6 +397,12 @@ BaseInitialize
 	 */
 	for(i=0;i<ncbs;i++)
 		*(_NhlCBList*)((char*)new + cbs[i].offset) = NULL;
+
+	/*
+	 * _NhlNguiData should be inherited...
+	 */
+	if(new->base.parent && !_NhlArgIsSet(args,nargs,_NhlNguiData))
+		new->base.gui_data = new->base.parent->base.gui_data;
 
 	return NhlNOERROR;
 }

@@ -1,5 +1,5 @@
 /*
- *      $Id: NresDB.h,v 1.4 1994-07-12 20:52:39 boote Exp $
+ *      $Id: NresDB.h,v 1.5 1996-10-16 16:18:36 boote Exp $
  */
 /************************************************************************
 *									*
@@ -408,8 +408,7 @@ extern void NrmParseCommand(
 #if NhlNeedProto
     NrmDatabase*	/* database */,
     NrmOptionDescList	/* table */,
-    int			/* table_count */,
-    Const char*	/* name */,
+    Const char*		/* name */,
     int*		/* argc_in_out */,
     char**		/* argv_in_out */		     
 #endif
