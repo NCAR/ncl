@@ -1,5 +1,5 @@
 /*
- *      $Id: DataComm.c,v 1.22 1995-02-17 10:23:05 boote Exp $
+ *      $Id: DataComm.c,v 1.23 1995-02-17 18:26:22 boote Exp $
  */
 /************************************************************************
 *									*
@@ -656,6 +656,9 @@ DataCommClassInitialize
 	lret = NhlRegisterConverter(NhlTScalar,_NhlTDataList,CvtScalarToData,
 							NULL,0,False,NULL);
 
+	(void)_NhlRegisterTypes(NhlTInteger,NhlTObjId,NULL);
+	(void)_NhlRegisterTypes(NhlTIntegerGenArray,NhlTObjIdGenArray,NULL);
+
 	return MIN(ret,lret);
 }
 
@@ -1115,7 +1118,7 @@ DataCommGetValues
 					iarray[j] = ilist->list[j]->item;
 			}
 
-			gen = _NhlCreateGenArray(iarray,NhlTInteger,sizeof(int),
+			gen = _NhlCreateGenArray(iarray,NhlTObjId,sizeof(int),
 								1,&len,False);
 			if(gen == NULL){
 				NHLPERROR((NhlFATAL,ENOMEM,NULL));
