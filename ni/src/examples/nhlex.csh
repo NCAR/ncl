@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: nhlex.csh,v 1.5 1994-12-10 00:21:06 haley Exp $
+#   $Id: nhlex.csh,v 1.6 1995-01-11 17:52:16 haley Exp $
 #
 
 if (SED_VERBOSE) then
@@ -92,8 +92,8 @@ foreach name ($names)
 #                               #
 #*******************************#
 unset found
-foreach name2($example_list)
-  if ("$name" == "$name2") then
+foreach aname($example_list)
+  if ("$name" == "$aname") then
     set found
     break
   endif
