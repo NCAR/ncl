@@ -3851,10 +3851,17 @@ struct _NclSelectionRecord *rhs_sel_ptr;
 
 					} 
 					if(tmp_var->var.coord_vars[i] != -1) {
+						if (tmp_var->var.dim_info[i].dim_quark == NrmStringToQuark("ncl_scalar")) {
+							NhlPError(NhlWARNING,NhlEUNKNOWN,"FileWriteVarVar: Variable (%s) has coordinate variable named \"ncl_scalar\"; not writing coodinate variable to file (%s)",
+								  NrmQuarkToString(tmp_var->var.var_quark),NrmQuarkToString(thefile->file.fname));
+								  ret = NhlWARNING;
+								  continue;
+						}
 						tmp_coord_var = (NclVar)_NclGetObj(tmp_var->var.coord_vars[i]);
 						ret = FileWriteCoord(thefile,tmp_var->var.dim_info[i].dim_quark,_NclVarValueRead(tmp_coord_var,NULL,NULL),NULL);
 						if(ret < NhlWARNING) {
-							NhlPError(NhlWARNING,NhlEUNKNOWN,"FileWriteVarVar: Could not write coordinate variable (%s) to file (%s), continuing anyway",NrmQuarkToString(tmp_var->var.dim_info[i].dim_quark),NrmQuarkToString(thefile->file.fname));
+							NhlPError(NhlWARNING,NhlEUNKNOWN,"FileWriteVarVar: Could not write coordinate variable (%s) to file (%s), continuing anyway",
+								  NrmQuarkToString(tmp_var->var.dim_info[i].dim_quark),NrmQuarkToString(thefile->file.fname));
 							ret = NhlWARNING;
 						} else {
 							if(tmp_coord_var->var.att_id != -1) {
