@@ -1,5 +1,5 @@
 /*
- *      $Id: wks.c.sed,v 1.8 1993-03-21 17:16:30 haley Exp $
+ *      $Id: wks.c.sed,v 1.9 1993-04-01 23:34:17 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -64,6 +64,10 @@
 *	3. Otherwise, (when DEFAULT_GKS_BUFSIZE is 0)
 *
 *			Buffer Size = BUFSIZ (from stdio.h)
+*
+*	Segments, or "flash buffers", are allocated a buffer that is
+*	the default size. This is because they are generally smaller
+*	than the main CGM output streams.
 *
 *
 *	Author:		Don Middleton
@@ -351,6 +355,8 @@ int	opnwks_(unit, fname, status)
 		The environment variable NCARG_GKS_BUFSIZE, a macro
 		definition, or a constant from stdio.h can determine
 		buffer size used. See notes at the top of this file.
+		Segments, or "flash buffers", are assigned a
+		buffer size that is the system default.
 		*/
 
 		if (gks_bufsize_env == (char *) NULL) {
@@ -359,16 +365,27 @@ int	opnwks_(unit, fname, status)
 				bufsize = BUFSIZ; /* from stdio.h */
 			}
 			else {
-				bufsize = 1024 * default_bufsize;
+				if (mftab[*unit].segment == TRUE) {
+					bufsize = BUFSIZ;
+				}
+				else {
+					bufsize = 1024 * default_bufsize;
+				}
 			}
 		}
 		else {
-			bufsize = 1024 * atoi(gks_bufsize_env);
+			if (mftab[*unit].segment == TRUE) {
+				bufsize = BUFSIZ;
+			}
+			else {
+				bufsize = 1024 * atoi(gks_bufsize_env);
+			}
 			if (bufsize <= 0) {
-			(void) fprintf(stderr,
-			"opnwks(): User-supplied buffer size too small\n");
-			(void) fprintf(stderr,
-			"opnwks(): Using system default (%d)\n", BUFSIZ);
+			  (void) fprintf(stderr,
+			  "opnwks(): User-supplied buffer size too small\n");
+			  (void) fprintf(stderr,
+			  "opnwks(): Using system default (%d)\n", BUFSIZ);
+			  bufsize = BUFSIZ;
 			}
 		}
 
@@ -380,16 +397,24 @@ int	opnwks_(unit, fname, status)
 		}
 
 		/*
-		If a stream buffer has never been allocated for this
-		LU, then allocate one. Otherwise, just reuse what's
-		already there. This is done instead of just free'ing
-		the buffer when the LU is closed because this approach
-		doesn't work on the Cray (reasons unknown).
+		Dynamically allocate a buffer for the stream. Segments
+		are generally allocated default size buffers, whereas
+		the major output streams are allocated what has been
+		configured, either in the config file, or using
+		the environment variable.
+
+		Freeing the buffers didn't used to work on the Cray
+		and this should be kept in mind if problems arise
+		in this part of the code.
 		*/
 
-		if (mftab[*unit].buf == (char *) NULL) {
-			mftab[*unit].buf = (char *)malloc( (unsigned) bufsize );
+		if (gks_debug_env) {
+			(void) fprintf(stderr,
+				"wks.c: Allocating %d bytes for LU %d\n",
+				bufsize, *unit);
 		}
+
+		mftab[*unit].buf = (char *)malloc( (unsigned) BUFSIZ);
 
 		if ( mftab[*unit].buf == (char *) NULL) {
 			(void) fclose(mftab[*unit].fp);
@@ -448,19 +473,20 @@ clswks_(unit, status)
 	int	child_status;
 
 	if (gks_debug_env) {
-		(void) fprintf(stderr, "clswks_(%d)\n", *unit);
+		(void) fprintf(stderr, "wks.c: clswks_(%d)\n", *unit);
 	}
 
 	if (!wks_init) {
 		(void) fprintf(stderr,
-			"wks.c: Programming Error - not initialized\n");
+		"wks.c: clswks() - Programming Error, not initialized\n");
 		*status = 304;
 		return(0);
 	}
 
 	if (*unit >= MAX_UNITS || mftab[*unit].fp == MF_CLOSED)
 	{
-		(void) fprintf(stderr, "Invalid close on unit %d\n", *unit);
+		(void) fprintf(stderr,
+			"wks.c: Invalid close on unit %d\n", *unit);
 		*status = 304;
 		return(0);
 	}
@@ -497,6 +523,13 @@ clswks_(unit, status)
 		mftab[*unit].name    = (char *) NULL;
 		mftab[*unit].fp      = MF_CLOSED;
 		mftab[*unit].type    = NO_OUTPUT;
+
+		if (gks_debug_env) {
+			(void) fprintf(stderr,
+			"wks.c: clswks() - Freeing memory for LU %d\n",
+			*unit);
+		}
+		(void) free(mftab[*unit].buf);
 		mftab[*unit].buf     = (char *) NULL;
 		mftab[*unit].segment = FALSE;
 	}
@@ -538,14 +571,14 @@ wrtwks_(unit, buffer, length, status)
 
 	if (!wks_init) {
 		(void) fprintf(stderr,
-			"wks.c: Programming Error - not initialized\n");
+		"wks.c: wrtwks() - Programming Error, not initialized\n");
 		*status = 304;
 		return(0);
 	}
 
 	if (*unit >= MAX_UNITS || mftab[*unit].fp == MF_CLOSED)
 	{
-		(void) fprintf(stderr, "Invalid unit (%d)\n", *unit);
+		(void) fprintf(stderr, "wks.c: Invalid unit (%d)\n", *unit);
 		*status = 304;
 		return(0);
 	}
@@ -553,7 +586,7 @@ wrtwks_(unit, buffer, length, status)
 	if ( (*length * sizeof(long)) != RECORDSIZE)
 	{
 		(void) fprintf(stderr, 
-			"Error in wrtwks_() : Invalid length (%d)\n",
+			"wks.c: Error in wrtwks_() - Invalid length (%d)\n",
 			(*length * 4));
 		*status = 304;
 		return(0);
@@ -567,7 +600,7 @@ wrtwks_(unit, buffer, length, status)
 
 		if (gks_debug_env) {
 			(void) fprintf(stderr,
-				"Writing %d bytes of NCAR CGM\n", RECORDSIZE);
+			"wks.c: Writing %d bytes of NCAR CGM\n", RECORDSIZE);
 		}
 			
 #if defined(ByteSwapped)
@@ -580,7 +613,7 @@ wrtwks_(unit, buffer, length, status)
 		if (nb != RECORDSIZE)
 		{
 			(void) fprintf(stderr, 
-				"Error in wrtwks_() : Writing metafile\n");
+			"wks.c: Error in wrtwks_() - Writing metafile\n");
 			*status = 304;
 			return(0);
 		}
@@ -606,7 +639,7 @@ wrtwks_(unit, buffer, length, status)
 		if (nb != len)
 		{
 			(void) fprintf(stderr, 
-				"Error in wrtwks_() : Writing metafile\n");
+			"wks.c: Error in wrtwks_() - Writing metafile\n");
 			*status = 304;
 			return(0);
 		}
@@ -649,7 +682,7 @@ rdwks_(unit, buffer, length, status)
 
 	if (!wks_init) {
 		(void) fprintf(stderr,
-			"wks.c: Programming Error - not initialized\n");
+		"wks.c: rdwks() - Programming Error, not initialized\n");
 		*status = 304;
 		return(0);
 	}
@@ -657,7 +690,7 @@ rdwks_(unit, buffer, length, status)
 	if (mftab[*unit].type != FILE_OUTPUT)
 	{
 		(void) fprintf(stderr, 
-		"Error in rdwks_() : Cannot read from non-file output type\n");
+	"wks.c: Error in rdwks_() - Cannot read from non-file output type\n");
 		*status = 302;
 		return(0);
 	}
@@ -665,7 +698,7 @@ rdwks_(unit, buffer, length, status)
 	if ( (*length * sizeof(long)) != RECORDSIZE)
 	{
 		(void) fprintf(stderr, 
-			"Error in rdwks_() : Invalid length (%d)\n",
+			"wks.c: Error in rdwks_() - Invalid length (%d)\n",
 			(*length * 4));
 		*status = 302;
 		return(0);
@@ -674,7 +707,7 @@ rdwks_(unit, buffer, length, status)
 	if (*unit >= MAX_UNITS || mftab[*unit].fp == MF_CLOSED)
 	{
 		(void) fprintf(stderr, 
-		"Error in rdwks_() : Invalid unit (%d)\n", *unit);
+		"wks.c: Error in rdwks_() - Invalid unit (%d)\n", *unit);
 		*status = 302;
 		return(0);
 	}
@@ -708,7 +741,7 @@ begwks_(unit, status)
 
 	if (!wks_init) {
 		(void) fprintf(stderr,
-			"wks.c: Programming Error - not initialized\n");
+		"wks.c: begwks() - Programming Error, not initialized\n");
 		*status = 304;
 		return(0);
 	}
@@ -747,7 +780,7 @@ lstwks_(unit, status)
 
 	if (!wks_init) {
 		(void) fprintf(stderr,
-			"wks.c: Programming Error - not initialized\n");
+		"wks.c: lstwks() - Programming Error, - not initialized\n");
 		*status = 304;
 		return(0);
 	}
@@ -784,12 +817,12 @@ flswks_(unit, status)
 	int	rc;
 
 	if (gks_debug_env) {
-		(void) fprintf(stderr, "flswks_(%d)\n",*unit);
+		(void) fprintf(stderr, "wks.c: flswks_(%d)\n",*unit);
 	}
 
 	if (!wks_init) {
 		(void) fprintf(stderr,
-			"wks.c: Programming Error - not initialized\n");
+		"wks.c: flswks() - Programming Error, not initialized\n");
 		*status = 304;
 		return(0);
 	}
