@@ -1,5 +1,5 @@
 C
-C       $Id: vvex01.f,v 1.4 1993-04-08 23:37:56 dbrown Exp $
+C       $Id: vvex01.f,v 1.5 1994-03-24 18:37:31 dbrown Exp $
 C
       PROGRAM VVEX01
 C
@@ -14,7 +14,7 @@ C The contour, vector field component, and area map array declarations:
 C
       PARAMETER (MSIZE=33, NSIZE=33)
       DIMENSION ZDAT(MSIZE,NSIZE)
-      DIMENSION A(60,60), B(60,60)
+      DIMENSION U(60,60), V(60,60)
       DIMENSION IAMA(20000)
 C
 C Workspace arrays for Conpack:
@@ -33,6 +33,8 @@ C
       EXTERNAL SHADER
       EXTERNAL VVUDMV
 C
+      DATA U / 3600 * 0.0 /
+C
 C Initialization
 C ==================================================================
 C Open GKS.
@@ -50,12 +52,13 @@ C
  101     CONTINUE
  102  CONTINUE
 C
-C Generate the vector field component array data. 
-C Call GENARA twice because the second set of data looks better.
-C Also set up the color table.
+C Subroutine GENARA generates smoothly varying random data in its 
+C second array argument based upon the contents of the first. Call it
+C twice to randomize both the U and V vector component data arrays.
+C Then set up the color table.
 C
-      CALL GENARA(B,A,60,60)
-      CALL GENARA(B,A,60,60)
+      CALL GENARA(U,V,60,60)
+      CALL GENARA(V,U,60,60)
       CALL DFCLRS 
 C
 C Conpack setup:
@@ -204,7 +207,7 @@ C
 C
 C Initialize Vectors
 C
-         CALL VVINIT (A,60,B,60,ZDAT,MSIZE,MSIZE,NSIZE,0,0)
+         CALL VVINIT (U,60,V,60,ZDAT,MSIZE,MSIZE,NSIZE,0,0)
 C
 C Remove the bottom 05% of the vectors
 C
@@ -226,7 +229,7 @@ C Call VVECTR to draw the vectors, using the same area map that
 C the Conpack routines used. The 'Draw Masked Vector' routine 
 C used is the one supplied with the Velocity Vector Utility.
 C
-         CALL VVECTR (A,B,ZDAT,IAMA,VVUDMV,0)
+         CALL VVECTR (U,V,ZDAT,IAMA,VVUDMV,0)
 C
 C Put a boundary line at the edge of the plotter frame.
 C
