@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.108 1997-10-16 14:32:34 haley Exp $
+#   $Id: ncargex.csh,v 1.109 1998-02-09 17:28:47 haley Exp $
 #
 
 if ($#argv < 1) goto usage
@@ -383,11 +383,12 @@ set c_list = ($c_list $labelbar_clist)
 #*********************#
 set ngmath_fex  = (dsex01 dsex02 dsex03 dsex04 dsex05 dsex06 dsex01d nnex01 \
                    nnex02 nnex03 nnex04 nnex05 nnex06 nnex07 nnex08 nnex09 \
-                   nnex01d)
+                   nnex01d ftex01 ftex02 ftex03 ftex04 ftex05 ftex06)
 set ngmath_flist = ($ngmath_fex)
 
 set ngmath_cex  = (c_dsex01 c_dsex02 c_dsex03 c_dsex04 c_dsex05 c_dsex06 \
-                   c_dsex01d c_nnex01 c_nnex02 c_nnex03 c_nnex06 c_nnex01d)
+                   c_dsex01d c_nnex01 c_nnex02 c_nnex03 c_nnex06 c_nnex01d \
+                   c_ftex01 c_ftex02 c_ftex03 c_ftex04 c_ftex05 c_ftex06)
 set ngmath_clist = ($ngmath_cex)
 
 set f_list = ($f_list $ngmath_flist)
@@ -1552,6 +1553,21 @@ switch ($name)
     case c_nnex06:
     case c_nnex01d:
         set extra_src_files = (nnplotc.c)
+        set comp_flags = ($comp_flags "-ngmath")
+    breaksw
+
+    case c_ftex01:
+    case c_ftex02:
+    case c_ftex03:
+    case c_ftex04:
+    case c_ftex05:
+    case c_ftex06:
+    case ftex01:
+    case ftex02:
+    case ftex03:
+    case ftex04:
+    case ftex05:
+    case ftex06:
         set comp_flags = ($comp_flags "-ngmath")
     breaksw
 
