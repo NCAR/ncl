@@ -1,10 +1,10 @@
 #
-#	$Id: yMakefile,v 1.7 1993-03-11 15:58:40 haley Exp $
+#	$Id: yMakefile,v 1.8 1993-03-12 04:07:47 haley Exp $
 #
 NCARG = ../..
 
 SUBDIRS = areas autograph bivar colconv conpack conran_family conrec_family \
-	dashline ezmap gflash gks gksC gridal halftone histogram isosrfhr \
+	dashline ezmap gflash gks gksC gridall halftone histogram isosrfhr \
 	isosurface labelbar ngmisc other plotchar pwritx pwrity scrolled_title \
 	softfill spps streamlines surface threed vectors	
 
