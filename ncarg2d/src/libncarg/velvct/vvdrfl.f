@@ -1,5 +1,5 @@
 C
-C       $Id: vvdrfl.f,v 1.3 1996-03-29 19:20:58 dbrown Exp $
+C       $Id: vvdrfl.f,v 1.4 1996-04-04 19:22:58 dbrown Exp $
 C
       SUBROUTINE VVDRFL (XB,YB,XE,YE,VLN,LBL,NC,IAM,VVUDMV,IDA)
 C
@@ -313,9 +313,15 @@ C
             CALL ARDRLN(IAM,ARROWX,ARROWY,IPAPCT, 
      +           XO,YO,IPAPCT,IAI,IAG,IPAGMX,VVUDMV)
          ELSE
-            CALL GSPLCI(0)
-            CALL CURVE(ARROWX,ARROWY,IPAPCT)
-            CALL GFA(IPAPCT,ARROWX,ARROWY)
+            IF (IAFO.GT.0 .AND. IACM.GT.-2) THEN
+               CALL CURVE(ARROWX,ARROWY,IPAPCT)
+            END IF
+            IF (IACM.NE.-1) THEN
+               CALL GFA(IPAPCT,ARROWX,ARROWY)
+            END IF
+            IF (IAFO.LE.0 .AND. IACM.GT.-2) THEN
+               CALL CURVE(ARROWX,ARROWY,IPAPCT)
+            END IF
          END IF
 C
          IF (INVX .NE. 0 .AND. INVY .NE. 0) THEN

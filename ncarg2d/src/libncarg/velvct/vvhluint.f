@@ -1,5 +1,5 @@
 C
-C       $Id: vvhluint.f,v 1.5 1996-03-29 19:20:59 dbrown Exp $
+C       $Id: vvhluint.f,v 1.6 1996-04-04 19:22:59 dbrown Exp $
 C
 C This module contains interface routines for VectorPlot and VecAnno
 C
@@ -7,7 +7,7 @@ C
 C
 C Given the beginning and end points of a vector arrow and the vector
 C length, returns the bounding box as the minimum and maximum x and y 
-C values. ARS is an arrow of values necessary to put vectors into the
+C values. ARS is an array of values necessary to put Vectors into the
 C proper state to perform the calculations correctly.
 C 
       REAL ARS(21)
@@ -131,7 +131,7 @@ C
       FAIR = MIN(1.0,MAX(0.0,ARS(14)))
       FAWR = MIN(1.0,MAX(0.0,ARS(15)))
       FAWF = MIN(1.0,MAX(0.0,ARS(16)))
-      FAXR = MIN(1.0,MAX(0.0,ARS(17)))
+      FAXR = MIN(2.0,MAX(0.0,ARS(17)))
       FAXF = MIN(1.0,MAX(0.0,ARS(18)))
       FAYR = MIN(1.0,MAX(0.0,ARS(19)))
       FAYF = MIN(1.0,MAX(0.0,ARS(20)))
@@ -287,7 +287,7 @@ C
       FAIR = MIN(1.0,MAX(0.0,ARS(14)))
       FAWR = MIN(1.0,MAX(0.0,ARS(15)))
       FAWF = MIN(1.0,MAX(0.0,ARS(16)))
-      FAXR = MIN(1.0,MAX(0.0,ARS(17)))
+      FAXR = MIN(2.0,MAX(0.0,ARS(17)))
       FAXF = MIN(1.0,MAX(0.0,ARS(18)))
       FAYR = MIN(1.0,MAX(0.0,ARS(19)))
       FAYF = MIN(1.0,MAX(0.0,ARS(20)))
