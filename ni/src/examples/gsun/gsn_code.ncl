@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.136 2004-03-23 22:58:32 haley Exp $
+;      $Id: gsn_code.ncl,v 1.137 2004-03-30 06:20:48 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -1839,6 +1839,7 @@ procedure draw_and_frame(wks:graphic,plot:graphic,calldraw:logical, \
                          callframe:logical,ispanel:logical,maxbb:logical)
 local nplots, class, coords 
 begin
+  max_device = False
   if(maxbb) then
 ;
 ; If dealing with panel plots, then this means that the viewport 
@@ -1862,7 +1863,12 @@ begin
     end if
 
     class = NhlClassName(wks)
-    if((class(0).eq."psWorkstationClass").or.(class(0).eq."pdfWorkstationClass")) then
+    if((class(0).eq."psWorkstationClass").or. \
+       (class(0).eq."pdfWorkstationClass")) then
+;
+; Keep track of whether device coordinates were recalculated.
+;
+      max_device = True
 ;
 ; Compute device coordinates that will make plot fill the whole page.
 ;
@@ -1870,7 +1876,18 @@ begin
 ;
       coords = compute_ps_device_coords(NhlGetBB(plot),maxbb)
 ;
-; Set these device coordinates.
+; Before we set device coordinates, retrieve the old ones so we can
+; set them back later.
+;
+      getvalues wks
+        "wkOrientation"  : old_orientation
+        "wkDeviceLowerX" : old_dlx
+        "wkDeviceLowerY" : old_dly
+        "wkDeviceUpperX" : old_dux
+        "wkDeviceUpperY" : old_duy
+      end getvalues
+;
+; Set device coordinates to new ones.
 ;
       setvalues wks
         "wkOrientation"  : coords@gsnPaperOrientation
@@ -1888,7 +1905,27 @@ begin
 
   if(callframe)
     frame(wks)           ; advance the frame
+;
+; Only set the device coordinates back if the frame is advanced, because 
+; if we do it when the frame hasn't been advanced, then that basically 
+; undoes the original setting of the device coordinates.l
+;
+; This means that the user will have to be aware that if he/she decides to
+; advance the frame him/herself, then any subsequent plots draw (in which
+; the device coordinates are not recalculated), may be drawn incorrectly.
+;
+    if(max_device) then
+      setvalues wks
+        "wkOrientation"  : old_orientation
+        "wkDeviceLowerX" : old_dlx
+        "wkDeviceLowerY" : old_dly
+        "wkDeviceUpperX" : old_dux
+        "wkDeviceUpperY" : old_duy
+      end setvalues
+    end if
+
   end if
+
 end
 
 ;***********************************************************************;
