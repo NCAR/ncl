@@ -1,5 +1,5 @@
 /*
- *      $Id: wks.c.sed,v 1.9 1993-04-01 23:34:17 haley Exp $
+ *      $Id: wks.c.sed,v 1.10 1993-04-21 16:26:51 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -414,7 +414,7 @@ int	opnwks_(unit, fname, status)
 				bufsize, *unit);
 		}
 
-		mftab[*unit].buf = (char *)malloc( (unsigned) BUFSIZ);
+		mftab[*unit].buf = (char *) malloc((unsigned) bufsize);
 
 		if ( mftab[*unit].buf == (char *) NULL) {
 			(void) fclose(mftab[*unit].fp);
