@@ -13,7 +13,7 @@
 #include "tables.h"
 #include <math.h>
 
-#define NCL_GRIB_CACHE_SIZE  30
+#define NCL_GRIB_CACHE_SIZE  2000
 
 extern int grid_index[];
 extern int grid_gds_index[];
@@ -3456,6 +3456,8 @@ void *therec;
 	GribInternalVarList *ivars,*itmp;
 	GribAttInqRecList *theatts,*tmp;
 	int i;
+	NclGribCacheList *thelist,*thelist0;
+	NclGribCacheRec *ctmp,*ctmp0;
 
 	vstep = thefile->var_list;
 	while(vstep != NULL){
@@ -3463,6 +3465,19 @@ void *therec;
 		_GribFreeParamRec(vstep);
 		vstep  = vstep1;
 	}
+	thelist = thefile->grib_grid_cache;
+        while(thelist != NULL) {
+		ctmp = thelist->thelist;
+		while(ctmp!=NULL) {	
+			ctmp0 = ctmp;
+			ctmp = ctmp->next;
+			NclFree(ctmp0);
+		}
+		thelist0 = thelist;
+		thelist = thelist->next;
+		NclFree(thelist0);
+	}
+
 	ivars = thefile->internal_var_list;
 	while(ivars != NULL) {
 		_NclDestroyObj((NclObj)ivars->int_var->value);
