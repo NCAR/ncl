@@ -1,5 +1,5 @@
 #
-#   $Id: yMakefile,v 1.9 1995-02-22 14:48:46 haley Exp $
+#   $Id: yMakefile,v 1.10 1995-03-03 22:06:06 haley Exp $
 #
 #   Makefile for HLU TextItem examples
 #
@@ -10,10 +10,10 @@ PROG_LIBS   =   $(HLULIBS) $(CNCARGLIBS) $(NCARGLIBS)
 EXTRA_LIBS  =   $(XMOTIFCLIENTLIBS)
 SYS_LIBS    =   $(CTOFLIBS) -lm
 
-CSRCS     = tx01c.c tx02c.c tx03c.c tx04c.c
+CSRCS     = tx01c.c tx02c.c tx03c.c tx04c.c tx05c.c tx06c.c tx07c.c
 FSRCS     = tx01f.f tx02f.f tx03f.f tx04f.f
 NSRCS     = tx01n.ncl tx02n.ncl tx03n.ncl tx04n.ncl
-COBJS     = tx01c.o tx02c.o tx03c.o tx04c.o
+COBJS     = tx01c.o tx02c.o tx03c.o tx04c.o tx05c.o tx06c.o tx07c.o
 FOBJS     = tx01f.o tx02f.o tx03f.o tx04f.o
 SRCS      = $(CSRCS) $(FSRCS)
 OBJS      = $(COBJS) $(FOBJS)
@@ -28,6 +28,9 @@ HLUCExampleTarget(tx01c,tx01c.o)
 HLUCExampleTarget(tx02c,tx02c.o)
 HLUCExampleTarget(tx03c,tx03c.o)
 HLUCExampleTarget(tx04c,tx04c.o)
+HLUCExampleTarget(tx05c,tx05c.o)
+HLUCExampleTarget(tx06c,tx06c.o)
+HLUCExampleTarget(tx07c,tx07c.o)
 
 HLUFExampleTarget(tx01f,tx01f.o)
 HLUFExampleTarget(tx02f,tx02f.o)
