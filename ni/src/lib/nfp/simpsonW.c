@@ -88,18 +88,18 @@ NhlErrorTypes simpeq_W( void )
   if(type_f != NCL_double) {
     type_simpeq = NCL_float;
     simpeq      = (void*)calloc(size_leftmost,sizeof(float));
-    tmp_f        = (double*)calloc(npts,sizeof(double));
+    tmp_f       = (double*)calloc(npts,sizeof(double));
     tmp_simpeq  = (double*)calloc(1,sizeof(double));
     missing_simpeq.floatval = missing_rf.floatval;
+    if(tmp_f == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"simpeq: Unable to allocate memory for temporary array");
+      return(NhlFATAL);
+    }
   }
   else {
     type_simpeq = NCL_double;
     simpeq      = (void*)calloc(size_leftmost,sizeof(double));
     missing_simpeq.doubleval = missing_df.doubleval;
-    if(tmp_f == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"simpeq: Unable to allocate memory for temporary array");
-      return(NhlFATAL);
-    }
   }
 
   if( simpeq == NULL ) {
