@@ -67,7 +67,7 @@ C
       DO 30, I=1,M
          DO 40, J=1,N
             Z(I,J)= 10.E-5*(-16.*REAL(X(I)**2*Y(J)) +
-    1            34*REAL(X(I)*Y(J)**2) - REAL(6*X(I)) + 93.)
+     +            34*REAL(X(I)*Y(J)**2) - REAL(6*X(I)) + 93.)
  40      CONTINUE
  30   CONTINUE
 

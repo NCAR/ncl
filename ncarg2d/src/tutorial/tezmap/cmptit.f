@@ -1,5 +1,5 @@
 C
-C	$Id: cmptit.f,v 1.5 1994-07-11 14:10:52 haley Exp $
+C	$Id: cmptit.f,v 1.6 1994-08-08 23:32:36 haley Exp $
 C
       PROGRAM MAPTIT
 C
@@ -208,25 +208,25 @@ C
       CALL GSLWSC(2.)
       CALL SET (0.,1.,0.,1.,0.,1.,0.,1.,1)
       CALL PLCHHQ (.134375,.61875,'LAMBERT CONFORMAL CONIC',
-    1      .0085,0.,0.)
+     +      .0085,0.,0.)
       CALL PLCHHQ (.378125,.61875,'STEREOGRAPHIC',
-    1      .0085,0.,0.)
+     +      .0085,0.,0.)
       CALL PLCHHQ (.621875,.61875,'ORTHOGRAPHIC',
-    1      .0085,0.,0.)
+     +      .0085,0.,0.)
       CALL PLCHHQ (.865625,.61875,'LAMBERT EQUAL-AREA',
-    1      .0085,0.,0.)
+     +      .0085,0.,0.)
       CALL PLCHHQ (.134375,.375,'GNOMONIC',
-    1      .0085,0.,0.)
+     +      .0085,0.,0.)
       CALL PLCHHQ (.378125,.375,'AZIMUTHAL EQUIDISTANT',
-    1      .0085,0.,0.)
+     +      .0085,0.,0.)
       CALL PLCHHQ (.621875,.375,'SATELLITE-VIEW',
-    1      .0085,0.,0.)
+     +      .0085,0.,0.)
       CALL PLCHHQ (.865625,.375,'MERCATOR',
-    1      .0085,0.,0.)
+     +      .0085,0.,0.)
       CALL PLCHHQ (.25625,.11875,'CYLINDRICAL EQUIDISTANT',
-    1      .0085,0.,0.)
+     +      .0085,0.,0.)
       CALL PLCHHQ (.74375,.11875,'MOLLWEIDE TYPE',
-    1      .0085,0.,0.)
+     +      .0085,0.,0.)
 C
 C Draw a boundary around the edge of the plotter frame.
 C
