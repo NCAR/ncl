@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.17 1994-07-13 17:27:45 dbrown Exp $
+#      $Id: yMakefile,v 1.18 1994-07-13 23:14:32 boote Exp $
 #
 #########################################################################
 #									#
@@ -84,26 +84,30 @@ InstallTarget($(HDRS),$(INSTALL_INC),$(HLUINCPATH))
 InstallTarget(hluresfile,$(INSTALL_INC),$(LIBNCARGPATH))
 DependTarget($(CSRCS))
 
+/*
+ * This isn't used anymore, but I don't want to get ride of it yet.
+ * jeff
+ */
 #if	defined(DEBUG) && defined(SunOS)  && defined(ExpandMacros)
 
 /* This is used to expand the huge macros in this file	*/
 
-CleanFilesTarget(CoordArrTable.tmp.o CoordArrTable.tmp.c CoordArrTable.sed.c)
+CleanFilesTarget(Converters.tmp.o Converters.tmp.c Converters.sed.c)
 
-CoordArrTable.o:	CoordArrTable.tmp.o
-	$(CP) CoordArrTable.tmp.o CoordArrTable.o
+Converters.o:	Converters.tmp.o
+	$(CP) Converters.tmp.o Converters.o
 
-CoordArrTable.tmp.c:	CoordArrTable.sed.c
-	acc -Xc -P CoordArrTable.sed.c
+Converters.tmp.c:	Converters.sed.c
+	acc -Xc -P Converters.sed.c
 	perl -n \
 	-e "s%^SED_INC%#include%;" \
 	-e "print;" \
-	< CoordArrTable.sed.i > CoordArrTable.tmp.c
-	indent CoordArrTable.tmp.c
+	< Converters.sed.i > Converters.tmp.c
+	indent Converters.tmp.c
 
-CoordArrTable.sed.c:	Makefile CoordArrTable.c
+Converters.sed.c:	Converters.c
 	perl -n \
 	-e "s%^#include%SED_INC%;" \
 	-e "print;" \
-	< CoordArrTable.c > CoordArrTable.sed.c
+	< Converters.c > Converters.sed.c
 #endif

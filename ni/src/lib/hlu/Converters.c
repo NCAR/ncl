@@ -1,5 +1,5 @@
 /*
- *      $Id: Converters.c,v 1.16 1994-07-12 20:51:19 boote Exp $
+ *      $Id: Converters.c,v 1.17 1994-07-13 23:14:37 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1023,7 +1023,7 @@ CvtArgs
 		NhlPError(NhlFATAL,ENOMEM,"%s",func);
 		return NhlFATAL;
 	}
-	memcpy(data,&from->data,from->size);
+	*data = from->data;
 	gen = _NhlConvertCreateGenArray(data,NrmQuarkToString(from->typeQ),
 							from->size,1,NULL);
 
@@ -1115,6 +1115,7 @@ CvtArgs									\
 									\
 	if(from->typeQ == to->typeQ){					\
 		togen = from->data.ptrval;				\
+		togen->size = sizeof(totype);				\
 	}								\
 	else{								\
 		fromgen = from->data.ptrval;				\

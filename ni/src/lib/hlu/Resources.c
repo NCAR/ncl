@@ -1,5 +1,5 @@
 /*
- *      $Id: Resources.c,v 1.9 1994-07-12 20:52:53 boote Exp $
+ *      $Id: Resources.c,v 1.10 1994-07-13 23:14:34 boote Exp $
  */
 /************************************************************************
 *									*
@@ -356,7 +356,7 @@ GetResources
 					 */
 					NrmValue	from, to;
 
-					from.size = sizeof(NhlPointer);
+					from.size = sizeof(_NhlArgVal);
 					from.data = args[i].value;
 					to.size = resources[j].nrm_size;
 					to.data.ptrval =(NhlPointer)(base +
