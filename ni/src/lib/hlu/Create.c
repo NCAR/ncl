@@ -1,5 +1,5 @@
 /*
- *      $Id: Create.c,v 1.25 1996-12-03 01:15:41 ethan Exp $
+ *      $Id: Create.c,v 1.26 1996-12-03 02:16:52 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -943,25 +943,30 @@ InitAllResources
 	 * but only add each resource to the list once even if it occurs
 	 * in more then one child.
 	 */
-	while(tnode != NULL){
-
-		memcpy((char*)tlist,list,sizeof(NrmQuark)*(k));
-		i=0;j=0;k=0;
-		while((tlist[i] != NrmNULLQUARK) &&
-					(tnode->resources[j] != NrmNULLQUARK)){
-			if(tnode->resources[j] < tlist[i])
-				list[k++] = tnode->resources[j++];
-			else if(tnode->resources[j] > tlist[i])
-				list[k++] = tlist[i++];
-			else
-				j++;
-		}
-		while(tlist[i] != NrmNULLQUARK)
-			list[k++] = tlist[i++];
-		while(tlist[j] != NrmNULLQUARK)
-			list[k++] = tnode->resources[j++];
-
+	if(tnode != NULL) {
+		while(tnode->resources[j] != NrmNULLQUARK)
+			list[k++] = tnode->resources[j++];	
 		tnode = tnode->next;
+		while(tnode != NULL){
+
+			memcpy((char*)tlist,list,sizeof(NrmQuark)*(k));
+			i=0;j=0;k=0;
+			while((tlist[i] != NrmNULLQUARK) &&
+						(tnode->resources[j] != NrmNULLQUARK)){
+				if(tnode->resources[j] < tlist[i])
+					list[k++] = tnode->resources[j++];
+				else if(tnode->resources[j] > tlist[i])
+					list[k++] = tlist[i++];
+				else
+					j++;
+			}
+			while(tlist[i] != NrmNULLQUARK)
+				list[k++] = tlist[i++];
+			while(tlist[j] != NrmNULLQUARK)
+				list[k++] = tnode->resources[j++];
+	
+			tnode = tnode->next;
+		}
 	}
 
 	/*
@@ -969,7 +974,6 @@ InitAllResources
 	 * for duplicates because the children lists are not allowed to
 	 * have any of the resources that the parent has.
 	 */
-
 	memcpy((char*)tlist,list,sizeof(NrmQuark)*(k));
 	i=0;j=0;k=0;
 	while((i < lc->base_class.num_resources) && (tlist[j] != NrmNULLQUARK)){
@@ -982,8 +986,8 @@ InitAllResources
 		list[k++] = tlist[j++];
 	while(i < lc->base_class.num_resources)
 		list[k++] = parentlist[i++].nrm_name;
-
 	num_all_res = k;
+
 
 	lc->base_class.all_resources = (NrmQuarkList)NhlMalloc((unsigned)
 					((num_all_res + 1) * sizeof(NrmQuark)));
