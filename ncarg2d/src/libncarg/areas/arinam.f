@@ -1,5 +1,5 @@
 C
-C $Id: arinam.f,v 1.5 1993-12-12 20:47:22 kennison Exp $
+C $Id: arinam.f,v 1.6 1994-03-16 23:11:25 kennison Exp $
 C
       SUBROUTINE ARINAM (IAM,LAM)
 C
@@ -29,13 +29,17 @@ C load from a binary library.
 C
       EXTERNAL ARBLDA
 C
+C Check for an uncleared prior error.
+C
+      IF (ICFELL('ARINAM - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+C
 C If AREAS itself has not been initialized, do it now.
 C
       IF (.NOT.(IAU.EQ.0)) GO TO 10001
         CALL ARINIT (IER)
         IF (.NOT.(IER.NE.0)) GO TO 10002
           CALL SETER
-     +    ('ARINAM/ARINIT - VALUE OF ''LC'' IS TOO LARGE',1,1)
+     +    ('ARINAM/ARINIT - VALUE OF ''LC'' IS TOO LARGE',2,1)
           RETURN
 10002   CONTINUE
 10001 CONTINUE
@@ -43,7 +47,7 @@ C
 C Log an error if the user's array is too small.
 C
       IF (.NOT.(LAM.LE.27)) GO TO 10003
-        CALL SETER ('ARINAM - AREA-MAP ARRAY IS TOO SMALL',2,1)
+        CALL SETER ('ARINAM - AREA-MAP ARRAY IS TOO SMALL',3,1)
         RETURN
 10003 CONTINUE
 C

@@ -1,5 +1,5 @@
 C
-C $Id: argtai.f,v 1.5 1993-12-12 20:47:19 kennison Exp $
+C $Id: argtai.f,v 1.6 1994-03-16 23:11:23 kennison Exp $
 C
       SUBROUTINE ARGTAI (IAM,XCD,YCD,IAI,IAG,MAI,NAI,ICF)
 C
@@ -54,12 +54,16 @@ C first call ever, no matter what the user says.
 C
       DATA ILL / 0 /
 C
+C Check for an uncleared prior error.
+C
+      IF (ICFELL('ARGTAI - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+C
 C Pull out the length of the area map and check for initialization.
 C
       LAM=IAM(1)
 C
       IF (.NOT.(IAU.EQ.0.OR.IAM(LAM).NE.LAM)) GO TO 10001
-        CALL SETER ('ARGTAI - INITIALIZATION DONE IMPROPERLY',1,1)
+        CALL SETER ('ARGTAI - INITIALIZATION DONE IMPROPERLY',2,1)
         RETURN
 10001 CONTINUE
 C
@@ -68,7 +72,7 @@ C incorporate them into the map and then adjust area identifiers.
 C
       IF (.NOT.(IAM(4).EQ.0)) GO TO 10002
         CALL ARPRAM (IAM,0,0,0)
-        IF (ICFELL('ARGTAI',2).NE.0) RETURN
+        IF (ICFELL('ARGTAI',3).NE.0) RETURN
 10002 CONTINUE
 C
 C Pull out the current value of the pointer IPX.
@@ -80,7 +84,7 @@ C from the user system to the local integer system.
 C
       IF (.NOT.(ICF.NE.0.OR.ILL.EQ.0)) GO TO 10003
         CALL GETSET (FFL,FFR,FFB,FFT,FUL,FUR,FUB,FUT,ILL)
-        IF (ICFELL('ARGTAI',3).NE.0) RETURN
+        IF (ICFELL('ARGTAI',4).NE.0) RETURN
         ILX=(ILL-1)/2
         ILY=MOD(ILL-1,2)
 10003 CONTINUE
@@ -198,7 +202,7 @@ C
             IAG(NAI)=IAM(IGI)/2
           GO TO 10029
 10028     CONTINUE
-            CALL SETER ('ARGTAI - MAI TOO SMALL',4,1)
+            CALL SETER ('ARGTAI - MAI TOO SMALL',5,1)
             RETURN
 10029     CONTINUE
 C
@@ -214,7 +218,7 @@ C
 C Check for a bad value of NAI.
 C
       IF (.NOT.(NAI.NE.IAM(7))) GO TO 10030
-        CALL SETER ('ARGTAI - ALGORITHM FAILURE',5,1)
+        CALL SETER ('ARGTAI - ALGORITHM FAILURE',6,1)
         RETURN
 10030 CONTINUE
 C

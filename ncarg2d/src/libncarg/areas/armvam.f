@@ -1,5 +1,5 @@
 C
-C $Id: armvam.f,v 1.3 1993-12-12 20:47:30 kennison Exp $
+C $Id: armvam.f,v 1.4 1994-03-16 23:11:32 kennison Exp $
 C
       SUBROUTINE ARMVAM (IAM,IAN,LAN)
 C
@@ -23,19 +23,23 @@ C load from a binary library.
 C
       EXTERNAL ARBLDA
 C
+C Check for an uncleared prior error.
+C
+      IF (ICFELL('ARMVAM - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+C
 C Pull out the length of the area map and check for initialization.
 C
       LAM=IAM(1)
 C
       IF (.NOT.(IAU.EQ.0.OR.IAM(LAM).NE.LAM)) GO TO 10001
-        CALL SETER ('ARMVAM - INITIALIZATION DONE IMPROPERLY',1,1)
+        CALL SETER ('ARMVAM - INITIALIZATION DONE IMPROPERLY',2,1)
         RETURN
 10001 CONTINUE
 C
 C See if the new array is too small.
 C
       IF (.NOT.(LAN.LT.LAM-(IAM(6)-IAM(5)-1))) GO TO 10002
-        CALL SETER ('ARMVAM - NEW AREA-MAP ARRAY IS TOO SMALL',2,1)
+        CALL SETER ('ARMVAM - NEW AREA-MAP ARRAY IS TOO SMALL',3,1)
         RETURN
 10002 CONTINUE
 C

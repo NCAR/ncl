@@ -1,5 +1,5 @@
 C
-C $Id: ardrln.f,v 1.5 1993-12-12 20:47:10 kennison Exp $
+C $Id: ardrln.f,v 1.6 1994-03-16 23:11:15 kennison Exp $
 C
       SUBROUTINE ARDRLN (IAM,XCD,YCD,NCD,XCS,YCS,MCS,IAI,IAG,MAI,LPR)
 C
@@ -101,12 +101,16 @@ C
      +           3 ,  9 ,  7 ,  8 ,
      +           5 ,  9 ,  0 ,  0 /
 C
+C Check for an uncleared prior error.
+C
+      IF (ICFELL('ARDRLN - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+C
 C Pull out the length of the area map and check for initialization.
 C
       LAM=IAM(1)
 C
       IF (.NOT.(IAU.EQ.0.OR.IAM(LAM).NE.LAM)) GO TO 10001
-        CALL SETER ('ARDRLN - INITIALIZATION DONE IMPROPERLY',1,1)
+        CALL SETER ('ARDRLN - INITIALIZATION DONE IMPROPERLY',2,1)
         RETURN
 10001 CONTINUE
 C
@@ -119,7 +123,7 @@ C incorporate them into the map and then adjust area identifiers.
 C
       IF (.NOT.(IAM(4).EQ.0)) GO TO 10002
         CALL ARPRAM (IAM,0,0,0)
-        IF (ICFELL('ARDRLN',2).NE.0) RETURN
+        IF (ICFELL('ARDRLN',3).NE.0) RETURN
 10002 CONTINUE
 C
 C Pull out the current value of the pointer IPX.
@@ -130,14 +134,14 @@ C Use GETSET to set up parameters allowing us to map X and Y coordinates
 C from the user system to the local integer system.
 C
       CALL GETSET (FFL,FFR,FFB,FFT,FUL,FUR,FUB,FUT,ILL)
-      IF (ICFELL('ARDRLN',3).NE.0) RETURN
+      IF (ICFELL('ARDRLN',4).NE.0) RETURN
       ILX=(ILL-1)/2
       ILY=MOD(ILL-1,2)
 C
 C Re-call SET as needed for LPR.
 C
       CALL SET (FFL,FFR,FFB,FFT,FFL,FFR,FFB,FFT,1)
-      IF (ICFELL('ARDRLN',4).NE.0) RETURN
+      IF (ICFELL('ARDRLN',5).NE.0) RETURN
 C
 C If the printing of timing information is turned on, initialize the
 C two elapsed-time cells.
@@ -306,7 +310,7 @@ C
 C Restore the original SET call.
 C
       CALL SET (FFL,FFR,FFB,FFT,FUL,FUR,FUB,FUT,ILL)
-      IF (ICFELL('ARDRLN',5).NE.0) RETURN
+      IF (ICFELL('ARDRLN',6).NE.0) RETURN
 C
 C Return.
 C
@@ -495,10 +499,10 @@ C
 C
           IF (.NOT.(NAI.EQ.IAM(7))) GO TO 10067
             CALL LPR (XCS,YCS,NCS,IAI,IAG,NAI)
-            IF (ICFELL('ARDRLN',6).NE.0) RETURN
+            IF (ICFELL('ARDRLN',7).NE.0) RETURN
           GO TO 10068
 10067     CONTINUE
-            CALL SETER ('ARDRLN - ALGORITHM FAILURE',7,1)
+            CALL SETER ('ARDRLN - ALGORITHM FAILURE',8,1)
             RETURN
 10068     CONTINUE
 C
@@ -602,7 +606,7 @@ C
               IAG(NAI)=IAM(IGI)/2
             GO TO 10090
 10089       CONTINUE
-              CALL SETER ('ARDRLN - MAI TOO SMALL',8,1)
+              CALL SETER ('ARDRLN - MAI TOO SMALL',9,1)
               RETURN
 10090       CONTINUE
 C
@@ -618,7 +622,7 @@ C This internal procedure is called when an error occurs in ARMPIA.
 C
 10042 CONTINUE
         CALL SETER
-     +  ('ARDRLN/ARMPIA - MULTIPLE-PRECISION QUANTITY IS TOO BIG',9,1)
+     + ('ARDRLN/ARMPIA - MULTIPLE-PRECISION QUANTITY IS TOO BIG',10,1)
         RETURN
 C
       END

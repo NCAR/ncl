@@ -1,5 +1,5 @@
 C
-C $Id: arscam.f,v 1.5 1993-12-12 20:47:39 kennison Exp $
+C $Id: arscam.f,v 1.6 1994-03-16 23:11:40 kennison Exp $
 C
       SUBROUTINE ARSCAM (IAM,XCS,YCS,MCS,IAI,IAG,MAI,APR)
 C
@@ -74,12 +74,16 @@ C
      +           2 ,  7 ,  5 ,  6 ,
      +           5 ,  7 ,  0 ,  0 /
 C
+C Check for an uncleared prior error.
+C
+      IF (ICFELL('ARSCAM - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+C
 C Pull out the length of the area map and check for initialization.
 C
       LAM=IAM(1)
 C
       IF (.NOT.(IAU.EQ.0.OR.IAM(LAM).NE.LAM)) GO TO 10001
-        CALL SETER ('ARSCAM - INITIALIZATION DONE IMPROPERLY',1,1)
+        CALL SETER ('ARSCAM - INITIALIZATION DONE IMPROPERLY',2,1)
         RETURN
 10001 CONTINUE
 C
@@ -87,9 +91,9 @@ C Save the current user-system mapping and reset it as required for
 C calls to APR.
 C
       CALL GETSET (FFL,FFR,FFB,FFT,FUL,FUR,FUB,FUT,ILL)
-      IF (ICFELL('ARSCAM',2).NE.0) RETURN
-      CALL SET    (FFL,FFR,FFB,FFT,FFL,FFR,FFB,FFT,  1)
       IF (ICFELL('ARSCAM',3).NE.0) RETURN
+      CALL SET    (FFL,FFR,FFB,FFT,FFL,FFR,FFB,FFT,  1)
+      IF (ICFELL('ARSCAM',4).NE.0) RETURN
 C
 C Initialize IPX, which is used to position nodes in coordinate order.
 C
@@ -100,7 +104,7 @@ C incorporate them into the map and then adjust area identifiers.
 C
       IF (.NOT.(IAM(4).EQ.0)) GO TO 10002
         CALL ARPRAM (IAM,0,0,0)
-        IF (ICFELL('ARSCAM',4).NE.0) RETURN
+        IF (ICFELL('ARSCAM',5).NE.0) RETURN
 10002 CONTINUE
 C
 C We first make a pass over the entire area map, looking for holes and
@@ -341,7 +345,7 @@ C
               IAM(IPM)=IAM(IPM)+1
             GO TO 10046
 10045       CONTINUE
-              CALL SETER ('ARSCAM - ALGORITHM FAILURE',5,1)
+              CALL SETER ('ARSCAM - ALGORITHM FAILURE',6,1)
               RETURN
 10046       CONTINUE
           GO TO 10047
@@ -350,7 +354,7 @@ C
               IAM(IPM)=IAM(IPM)+2
             GO TO 10049
 10048       CONTINUE
-              CALL SETER ('ARSCAM - ALGORITHM FAILURE',6,1)
+              CALL SETER ('ARSCAM - ALGORITHM FAILURE',7,1)
               RETURN
 10049       CONTINUE
 10047     CONTINUE
@@ -534,7 +538,7 @@ C
             YCS(NCS)=REAL(IAM(IPR+2))/RLC
           GO TO 10080
 10079     CONTINUE
-            CALL SETER ('ARSCAM - MCS TOO SMALL',7,1)
+            CALL SETER ('ARSCAM - MCS TOO SMALL',8,1)
             RETURN
 10080     CONTINUE
 C
@@ -665,7 +669,7 @@ C
                     IAG(NAI)=IAM(IGI)/2
                   GO TO 10108
 10105             CONTINUE
-                    CALL SETER ('ARSCAM - MAI TOO SMALL',8,1)
+                    CALL SETER ('ARSCAM - MAI TOO SMALL',9,1)
                     RETURN
 10108             CONTINUE
 10104           CONTINUE
@@ -871,7 +875,7 @@ C
               IAM(IPM)=IAM(IPM)+1
             GO TO 10150
 10149       CONTINUE
-              CALL SETER ('ARSCAM - ALGORITHM FAILURE',9,1)
+              CALL SETER ('ARSCAM - ALGORITHM FAILURE',10,1)
               RETURN
 10150       CONTINUE
           GO TO 10151
@@ -880,7 +884,7 @@ C
               IAM(IPM)=IAM(IPM)+2
             GO TO 10153
 10152       CONTINUE
-              CALL SETER ('ARSCAM - ALGORITHM FAILURE',10,1)
+              CALL SETER ('ARSCAM - ALGORITHM FAILURE',11,1)
               RETURN
 10153       CONTINUE
 10151     CONTINUE
@@ -899,11 +903,11 @@ C
         IF (.NOT.(NAI.EQ.IAM(7))) GO TO 10155
           IDI=IPU
           CALL APR (XCS,YCS,NCS,IAI,IAG,NAI)
-          IF (ICFELL('ARSCAM',11).NE.0) RETURN
+          IF (ICFELL('ARSCAM',12).NE.0) RETURN
         GO TO 10156
 10155   CONTINUE
           IF (.NOT.(IAF.NE.0)) GO TO 10157
-            CALL SETER ('ARSCAM - ALGORITHM FAILURE',12,1)
+            CALL SETER ('ARSCAM - ALGORITHM FAILURE',13,1)
             RETURN
 10157     CONTINUE
 10156   CONTINUE
@@ -935,7 +939,7 @@ C
 C Done.  Restore the SET parameters and return to the caller.
 C
       CALL SET (FFL,FFR,FFB,FFT,FUL,FUR,FUB,FUT,ILL)
-      IF (ICFELL('ARSCAM',13).NE.0) RETURN
+      IF (ICFELL('ARSCAM',14).NE.0) RETURN
 C
       RETURN
 C
@@ -945,7 +949,7 @@ C
 10067 CONTINUE
         IPN=IAM(5)+1
         IF (.NOT.(IAM(5)+10.GE.IAM(6))) GO TO 10161
-          CALL SETER ('ARSCAM - AREA-MAP ARRAY OVERFLOW',14,1)
+          CALL SETER ('ARSCAM - AREA-MAP ARRAY OVERFLOW',15,1)
           RETURN
 10161   CONTINUE
         IAM(5)=IAM(5)+10
@@ -998,7 +1002,7 @@ C
 10022 CONTINUE
         CALL SETER
      +  ('ARSCAM/ARMPIA - MULTIPLE-PRECISION QUANTITY IS TOO BIG',
-     +                                                       15,1)
+     +                                                       16,1)
         RETURN
 C
       END

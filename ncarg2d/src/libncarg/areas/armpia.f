@@ -1,5 +1,5 @@
 C
-C $Id: armpia.f,v 1.5 1993-12-12 20:47:27 kennison Exp $
+C $Id: armpia.f,v 1.6 1994-03-16 23:11:30 kennison Exp $
 C
       SUBROUTINE ARMPIA (IOP,DPV,IER)
 C

@@ -1,5 +1,5 @@
 C
-C $Id: arblda.f,v 1.8 1993-12-12 20:47:01 kennison Exp $
+C $Id: arblda.f,v 1.9 1994-03-16 23:11:07 kennison Exp $
 C
       BLOCK DATA ARBLDA
 C

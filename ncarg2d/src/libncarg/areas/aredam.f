@@ -1,5 +1,5 @@
 C
-C $Id: aredam.f,v 1.5 1993-12-12 20:47:13 kennison Exp $
+C $Id: aredam.f,v 1.6 1994-03-16 23:11:17 kennison Exp $
 C
       SUBROUTINE AREDAM (IAM,XCA,YCA,LCA,IGI,IDL,IDR)
 C
@@ -45,12 +45,16 @@ C load from a binary library.
 C
       EXTERNAL ARBLDA
 C
+C Check for an uncleared prior error.
+C
+      IF (ICFELL('AREDAM - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+C
 C Pull out the length of the area map and check for initialization.
 C
       LAM=IAM(1)
 C
       IF (.NOT.(IAU.EQ.0.OR.IAM(LAM).NE.LAM)) GO TO 10001
-        CALL SETER ('AREDAM - INITIALIZATION DONE IMPROPERLY',1,1)
+        CALL SETER ('AREDAM - INITIALIZATION DONE IMPROPERLY',2,1)
         RETURN
 10001 CONTINUE
 C
@@ -62,7 +66,7 @@ C Use GETSET to set up parameters allowing us to map x and y coordinates
 C from the user system to the local integer system.
 C
       CALL GETSET (FFL,FFR,FFB,FFT,FUL,FUR,FUB,FUT,ILL)
-      IF (ICFELL('AREDAM',2).NE.0) RETURN
+      IF (ICFELL('AREDAM',3).NE.0) RETURN
       ILX=(ILL-1)/2
       ILY=MOD(ILL-1,2)
 C
@@ -91,7 +95,7 @@ C
         GO TO 10007
 10005   CONTINUE
           IF (.NOT.(IGN.LE.IAM(5)+50)) GO TO 10008
-            CALL SETER ('AREDAM - AREA-MAP ARRAY OVERFLOW',3,1)
+            CALL SETER ('AREDAM - AREA-MAP ARRAY OVERFLOW',4,1)
             RETURN
 10008     CONTINUE
           IAM(6)=IGN
@@ -142,7 +146,7 @@ C
           GO TO 10020
 10018     CONTINUE
             IF (.NOT.(ILN.LE.IAM(5))) GO TO 10021
-              CALL SETER ('AREDAM - AREA-MAP ARRAY OVERFLOW',4,1)
+              CALL SETER ('AREDAM - AREA-MAP ARRAY OVERFLOW',5,1)
               RETURN
 10021       CONTINUE
             IAM(6)=ILN
@@ -165,7 +169,7 @@ C
           GO TO 10027
 10025     CONTINUE
             IF (.NOT.(IRN.LE.IAM(5))) GO TO 10028
-              CALL SETER ('AREDAM - AREA-MAP ARRAY OVERFLOW',5,1)
+              CALL SETER ('AREDAM - AREA-MAP ARRAY OVERFLOW',6,1)
               RETURN
 10028       CONTINUE
             IAM(6)=IRN
@@ -179,7 +183,7 @@ C
 C Make sure there's room for LCA points in the area map.
 C
       IF (.NOT.(IAM(5)+LCA*10.GE.IAM(6))) GO TO 10029
-        CALL SETER ('AREDAM - AREA-MAP ARRAY OVERFLOW',6,1)
+        CALL SETER ('AREDAM - AREA-MAP ARRAY OVERFLOW',7,1)
         RETURN
 10029 CONTINUE
 C

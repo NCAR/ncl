@@ -1,5 +1,5 @@
 C
-C $Id: arsetr.f,v 1.4 1993-12-12 20:47:44 kennison Exp $
+C $Id: arsetr.f,v 1.5 1994-03-16 23:11:44 kennison Exp $
 C
       SUBROUTINE ARSETR (IPN,RVL)
 C
@@ -30,12 +30,16 @@ C Define a character temporary to hold an error message.
 C
       CHARACTER*38 CTM
 C
+C Check for an uncleared prior error.
+C
+      IF (ICFELL('ARSETR - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+C
 C Check for a parameter name that is too short.
 C
       IF (.NOT.(LEN(IPN).LT.2)) GO TO 10001
         CTM(1:36)='ARSETR - PARAMETER NAME TOO SHORT - '
         CTM(37:36+LEN(IPN))=IPN
-        CALL SETER (CTM(1:36+LEN(IPN)),1,1)
+        CALL SETER (CTM(1:36+LEN(IPN)),2,1)
         RETURN
 10001 CONTINUE
 C
@@ -77,7 +81,7 @@ C
 10010 CONTINUE
         CTM(1:36)='ARSETR - PARAMETER NAME NOT KNOWN - '
         CTM(37:38)=IPN(1:2)
-        CALL SETER (CTM(1:38),2,1)
+        CALL SETER (CTM(1:38),3,1)
         RETURN
 10003 CONTINUE
 C

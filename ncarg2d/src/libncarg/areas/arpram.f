@@ -1,5 +1,5 @@
 C
-C $Id: arpram.f,v 1.7 1993-12-12 20:47:33 kennison Exp $
+C $Id: arpram.f,v 1.8 1994-03-16 23:11:35 kennison Exp $
 C
       SUBROUTINE ARPRAM (IAM,IF1,IF2,IF3)
 C
@@ -116,12 +116,16 @@ C
      +           2 ,  7 ,  5 ,  6 ,
      +           5 ,  7 ,  0 ,  0 /
 C
+C Check for an uncleared prior error.
+C
+      IF (ICFELL('ARPRAM - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+C
 C Pull out the length of the area map and check for initialization.
 C
       LAM=IAM(1)
 C
       IF (.NOT.(IAU.EQ.0.OR.IAM(LAM).NE.LAM)) GO TO 10001
-        CALL SETER ('ARPRAM - INITIALIZATION DONE IMPROPERLY',1,1)
+        CALL SETER ('ARPRAM - INITIALIZATION DONE IMPROPERLY',2,1)
         RETURN
 10001 CONTINUE
 C
@@ -153,7 +157,7 @@ C If debugging is turned on, produce an initial plot.
 C
       IF (.NOT.(IDB.NE.0)) GO TO 10002
         CALL ARDBPA (IAM,IDB,'AT START OF ARPRAM')
-        IF (ICFELL('ARPRAM',2).NE.0) RETURN
+        IF (ICFELL('ARPRAM',3).NE.0) RETURN
 10002 CONTINUE
 C
 C First, find the average length of the projection on the x axis of the
@@ -173,7 +177,7 @@ C
       GO TO 10003
 10004 CONTINUE
       IF (.NOT.(NXL.EQ.0)) GO TO 10006
-        CALL SETER ('ARPRAM - NO EDGES IN AREA MAP',3,1)
+        CALL SETER ('ARPRAM - NO EDGES IN AREA MAP',4,1)
         GO TO 10008
 10006 CONTINUE
       IXL=INT(FXL/REAL(NXL))
@@ -226,7 +230,7 @@ C If debugging is turned on, produce a plot.
 C
       IF (.NOT.(IDB.NE.0)) GO TO 10018
         CALL ARDBPA (IAM,IDB,'AFTER BREAKING UP LONG EDGE SEGMENTS')
-        IF (ICFELL('ARPRAM',4).NE.0) RETURN
+        IF (ICFELL('ARPRAM',5).NE.0) RETURN
 10018 CONTINUE
 C
 C
@@ -473,7 +477,7 @@ C
         GO TO 10056
 10055   CONTINUE
           IF (.NOT.(IAM(6)-5.LE.IAM(5))) GO TO 10057
-            CALL SETER ('ARPRAM - AREA-MAP ARRAY OVERFLOW',5,1)
+            CALL SETER ('ARPRAM - AREA-MAP ARRAY OVERFLOW',6,1)
             GO TO 10008
 10057     CONTINUE
           IQI=IAM(6)-5
@@ -728,7 +732,7 @@ C If debugging is turned on, produce a plot.
 C
       IF (.NOT.(IDB.NE.0)) GO TO 10098
         CALL ARDBPA (IAM,IDB,'AFTER FINDING POINTS OF INTERSECTION')
-        IF (ICFELL('ARPRAM',6).NE.0) RETURN
+        IF (ICFELL('ARPRAM',7).NE.0) RETURN
 10098 CONTINUE
 C
 C
@@ -880,7 +884,7 @@ C If debugging is turned on, produce a plot.
 C
       IF (.NOT.(IDB.NE.0)) GO TO 10135
         CALL ARDBPA (IAM,IDB,'AFTER REMOVING COINCIDENT SEGMENTS')
-        IF (ICFELL('ARPRAM',7).NE.0) RETURN
+        IF (ICFELL('ARPRAM',8).NE.0) RETURN
 10135 CONTINUE
 C
 C
@@ -963,7 +967,7 @@ C If debugging is turned on, produce a plot.
 C
         IF (.NOT.(IDB.NE.0)) GO TO 10156
           CALL ARDBPA (IAM,IDB,'AFTER REMOVING UNCLOSED EDGES')
-          IF (ICFELL('ARPRAM',8).NE.0) RETURN
+          IF (ICFELL('ARPRAM',9).NE.0) RETURN
 10156   CONTINUE
 C
 C
@@ -1244,7 +1248,7 @@ C
                 KF1=0
                 GO TO 101
 10204         CONTINUE
-                CALL SETER ('ARPRAM - ALGORITHM FAILURE',9,1)
+                CALL SETER ('ARPRAM - ALGORITHM FAILURE',10,1)
                 GO TO 10008
 10199       CONTINUE
 C
@@ -1359,7 +1363,7 @@ C If debugging is turned on, produce a plot.
 C
         IF (.NOT.(IDB.NE.0)) GO TO 10227
           CALL ARDBPA (IAM,IDB,'AFTER LOOKING FOR HOLES')
-          IF (ICFELL('ARPRAM',10).NE.0) RETURN
+          IF (ICFELL('ARPRAM',11).NE.0) RETURN
 10227   CONTINUE
 C
 C
@@ -1629,7 +1633,7 @@ C
             IAQ=IPM+9
           GO TO 10275
 10276     CONTINUE
-            CALL SETER ('ARPRAM - ALGORITHM FAILURE',11,1)
+            CALL SETER ('ARPRAM - ALGORITHM FAILURE',12,1)
             GO TO 10008
 10275     CONTINUE
 C
@@ -1711,7 +1715,7 @@ C If debugging is turned on, produce a plot.
 C
       IF (.NOT.(IDB.NE.0)) GO TO 10290
         CALL ARDBPA (IAM,IDB,'AFTER UPDATING AREA IDENTIFIERS')
-        IF (ICFELL('ARPRAM',12).NE.0) RETURN
+        IF (ICFELL('ARPRAM',13).NE.0) RETURN
 10290 CONTINUE
 C
 C
@@ -1727,7 +1731,7 @@ C
 10017 CONTINUE
         IPN=IAM(5)+1
         IF (.NOT.(IAM(5)+10.GE.IAM(6))) GO TO 10291
-          CALL SETER ('ARPRAM - AREA-MAP ARRAY OVERFLOW',13,1)
+          CALL SETER ('ARPRAM - AREA-MAP ARRAY OVERFLOW',14,1)
           GO TO 10008
 10291   CONTINUE
         IAM(5)=IAM(5)+10
@@ -1786,7 +1790,7 @@ C
 10028 CONTINUE
         CALL SETER
      +  ('ARPRAM/ARMPIA - MULTIPLE-PRECISION QUANTITY IS TOO BIG',
-     +                                                       14,1)
+     +                                                       15,1)
         GO TO 10008
 C
 C This internal procedure cleans up after an error condition occurs.

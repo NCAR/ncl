@@ -1,5 +1,5 @@
 C
-C $Id: ardat2.f,v 1.5 1993-12-12 20:47:04 kennison Exp $
+C $Id: ardat2.f,v 1.6 1994-03-16 23:11:09 kennison Exp $
 C
       FUNCTION ARDAT2 (YVL,XVL)
 C
