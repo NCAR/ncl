@@ -27,14 +27,9 @@ C
       integer appid, widx,widn,widp, pidx,pidn,pidp
       integer srlist, ierr
       integer i
-      integer NCGM, PS, X11
 C------------------------------------------------------
 C
 C  Call a subroutine that generates an LLU
-C
-C Default is to create a metafile.
-C
-      DATA NCGM, PS, X11 /1,1,1/
 C
 C Initialize the high level utility library
 C
@@ -50,60 +45,52 @@ C
       call NhlFRLSetString(srlist,'appUsrDir','./',ierr)
       call NhlFRLSetString(srlist,'appDefaultParent','True',ierr)
       call NhlFCreate(appid,'basic07',NhlFAppClass,0,srlist,ierr)
-
-      if (NCGM.eq.1) then
 C
 C Create an NCGM workstation.
 C
-         call NhlFRLClear(srlist)
-	 call NhlFRLSetString(srlist,'wkMetaName','basic07f.ncgm',ierr)
-	 call NhlFCreate(widn,'basic07ncgm',NhlFNcgmWorkstationClass,0,
+      call NhlFRLClear(srlist)
+      call NhlFRLSetString(srlist,'wkMetaName','basic07f.ncgm',ierr)
+      call NhlFCreate(widn,'basic07ncgm',NhlFNcgmWorkstationClass,0,
      1        srlist,ierr)
-C
-      end if
-      if (PS.eq.1) then
 C
 C Create a PostScript workstation.
 C
-         call NhlFRLClear(srlist)
-	 call NhlFRLSetString(srlist,'wkPSFileName','basic07f.ps',ierr)
-	 call NhlFRLSetString(srlist,'wkOrientation','portrait',ierr)
-	 call NhlFRLSetString(srlist,'wkPSFormat','ps',ierr)
-	 call NhlFCreate(widp,'basic07ps',NhlFPSWorkstationClass,0,
+      call NhlFRLClear(srlist)
+      call NhlFRLSetString(srlist,'wkPSFileName','basic07f.ps',ierr)
+      call NhlFRLSetString(srlist,'wkOrientation','portrait',ierr)
+      call NhlFRLSetString(srlist,'wkPSFormat','ps',ierr)
+      call NhlFCreate(widp,'basic07ps',NhlFPSWorkstationClass,0,
      1        srlist,ierr)
-      end if
-      if (X11.eq.1) then
 C
 C Create an X Workstation.
 C
-         call NhlFRLClear(srlist)
-         call NhlFRLSetString(srlist,'wkPause','True',ierr)
-	 call NhlFCreate(widx,'basic07x11',NhlFXWorkstationClass,
-     $        0,srlist,ierr)
-      endif
+      call NhlFRLClear(srlist)
+      call NhlFRLSetString(srlist,'wkPause','True',ierr)
+      call NhlFCreate(widx,'basic07x11',NhlFXWorkstationClass,
+     $     0,srlist,ierr)
 C
 C Create three plots, one for each workstation type.
 C
 C  Use color index 2
-	 i = 2
-         call NhlFRLClear(srlist)
-         call NhlFRLSetinteger(srlist,'txBackgroundFillColor',
-     $        i,ierr)
-	 call NhlFCreate(pidx,'TextItems',NhlFTextItemClass,
-     $        widx,srlist,ierr)
+      i = 2
+      call NhlFRLClear(srlist)
+      call NhlFRLSetinteger(srlist,'txBackgroundFillColor',
+     $     i,ierr)
+      call NhlFCreate(pidx,'TextItems',NhlFTextItemClass,
+     $     widx,srlist,ierr)
 
-	 call NhlFCreate(pidn,'TextItems',NhlFTextItemClass,
-     $        widn,srlist,ierr)
+      call NhlFCreate(pidn,'TextItems',NhlFTextItemClass,
+     $     widn,srlist,ierr)
 
-	 call NhlFCreate(pidp,'TextItems',NhlFTextItemClass,
-     $        widp,srlist,ierr)
+      call NhlFCreate(pidp,'TextItems',NhlFTextItemClass,
+     $     widp,srlist,ierr)
 
-	 call NhlFDraw(pidx,ierr)
-	 call NhlFDraw(pidn,ierr)
-	 call NhlFDraw(pidp,ierr)
-	 call NhlFFrame(widx,ierr)
-	 call NhlFFrame(widp,ierr)
-	 call NhlFFrame(widn,ierr)
+      call NhlFDraw(pidx,ierr)
+      call NhlFDraw(pidn,ierr)
+      call NhlFDraw(pidp,ierr)
+      call NhlFFrame(widx,ierr)
+      call NhlFFrame(widp,ierr)
+      call NhlFFrame(widn,ierr)
 C
       call NhlFDestroy(pidx,ierr)
       call NhlFDestroy(pidn,ierr)

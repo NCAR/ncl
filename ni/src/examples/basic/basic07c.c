@@ -30,10 +30,6 @@ main()
       int appid, widx,widn,widp, pidx,pidn,pidp;
       int srlist;
       int i;
-      int NCGM=1;
-      int PS=1;
-      int X11=1;
-
 /*
  * Initialize the high level utility library
  */
@@ -50,40 +46,29 @@ main()
       NhlRLSetString(srlist,NhlNappDefaultParent,"True");
       NhlCreate(&appid,"basic07",NhlappClass,NhlDEFAULT_APP,srlist);
 
-      if (NCGM == 1)
-      {	
 /*
  * Create an NCGM workstation.
  */
-         NhlRLClear(srlist);
-	 NhlRLSetString(srlist,NhlNwkMetaName,"basic07c.ncgm");
-	 NhlCreate(&widn,"basic07ncgm",NhlncgmWorkstationClass,NhlDEFAULT_APP,
-                   srlist);
-      }
-
-      if (PS == 1)
-      {
+      NhlRLClear(srlist);
+      NhlRLSetString(srlist,NhlNwkMetaName,"basic07c.ncgm");
+      NhlCreate(&widn,"basic07ncgm",NhlncgmWorkstationClass,NhlDEFAULT_APP,
+                srlist);
 /*
  * Create a PostScript workstation.
  */
-         NhlRLClear(srlist);
-	 NhlRLSetString(srlist,NhlNwkPSFileName,"basic07c.ps");
-	 NhlRLSetString(srlist,NhlNwkOrientation,"portrait");
-	 NhlRLSetString(srlist,NhlNwkPSFormat,"ps");
-	 NhlCreate(&widp,"basic07ps",NhlpsWorkstationClass,NhlDEFAULT_APP,
-                   srlist);
-      }
-      if (X11 == 1)
-      {
+      NhlRLClear(srlist);
+      NhlRLSetString(srlist,NhlNwkPSFileName,"basic07c.ps");
+      NhlRLSetString(srlist,NhlNwkOrientation,"portrait");
+      NhlRLSetString(srlist,NhlNwkPSFormat,"ps");
+      NhlCreate(&widp,"basic07ps",NhlpsWorkstationClass,NhlDEFAULT_APP,
+                srlist);
 /*
  * Create an X Workstation.
  */
-         NhlRLClear(srlist);
-         NhlRLSetString(srlist,NhlNwkPause,"True");
-	 NhlCreate(&widx,"basic07x11",NhlxWorkstationClass,NhlDEFAULT_APP,
-                   srlist);
-      }
-
+      NhlRLClear(srlist);
+      NhlRLSetString(srlist,NhlNwkPause,"True");
+      NhlCreate(&widx,"basic07x11",NhlxWorkstationClass,NhlDEFAULT_APP,
+                srlist);
 /*
  * Create three plots, one for each workstation type.
  *
