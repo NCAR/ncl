@@ -253,7 +253,7 @@ statement_list :  statement eoln			{
 #endif
 								if($3->u.package->so_handle == NULL) {
 #if defined(HPUX)
-									NhlPError(NhlWARNING,NhlEUNKNOWN,"An error occurred loading the external file %s, file not loaded\n",$4);
+									NhlPError(NhlWARNING,NhlEUNKNOWN,"An error occurred loading the external file %s, file not loaded\n%s",$4,strerror(errno));
 #else
 									NhlPError(NhlWARNING,NhlEUNKNOWN,"An error occurred loading the external file %s, file not loaded\n%s",$4,dlerror());
 #endif
@@ -367,7 +367,7 @@ block_statement_list : statement eoln {
 #endif
 								if($2->u.package->so_handle == NULL) {
 #if defined(HPUX)
-									NhlPError(NhlWARNING,NhlEUNKNOWN,"An error occurred loading the external file %s, file not loaded\n",$3);
+									NhlPError(NhlWARNING,NhlEUNKNOWN,"An error occurred loading the external file %s, file not loaded\n%s",$3,strerror(errno));
 #else
 									NhlPError(NhlWARNING,NhlEUNKNOWN,"An error occurred loading the external file %s, file not loaded\n%s",$3,dlerror());
 #endif
@@ -403,7 +403,7 @@ block_statement_list : statement eoln {
 #endif
 								if($3->u.package->so_handle == NULL) {
 #if defined(HPUX)
-									NhlPError(NhlWARNING,NhlEUNKNOWN,"An error occurred loading the external file %s, file not loaded\n",$4);
+									NhlPError(NhlWARNING,NhlEUNKNOWN,"An error occurred loading the external file %s, file not loaded\n%s",$4,strerror(errno));
 #else
 									NhlPError(NhlWARNING,NhlEUNKNOWN,"An error occurred loading the external file %s, file not loaded\n%s",$4,dlerror());
 #endif

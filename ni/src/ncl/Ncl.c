@@ -175,7 +175,7 @@ main() {
 							NhlPError(NhlWARNING,NhlEUNKNOWN,"Could not find Init() in external file %s, file not loaded",buffer);
 						}
 					} else {
-						NhlPError(NhlFATAL,NhlEUNKNOWN," Could not open (%s), possibly not a shared object",buffer);
+						NhlPError(NhlFATAL,NhlEUNKNOWN," Could not open (%s), possibly not a shared object\n%s",buffer,strerror(errno));
 					}
 				}
 			}

@@ -1,5 +1,5 @@
 /*
- *      $Id: NclApi.c,v 1.50 1998-03-13 22:47:27 ethan Exp $
+ *      $Id: NclApi.c,v 1.51 1998-03-13 23:03:14 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -228,7 +228,7 @@ int NclInitServer
 							NhlPError(NhlWARNING,NhlEUNKNOWN,"Could not find Init() in external file %s, file not loaded",buffer);
 						}
 					} else {
-						NhlPError(NhlFATAL,NhlEUNKNOWN," Could not open (%s), possibly not a shared object",buffer);
+						NhlPError(NhlFATAL,NhlEUNKNOWN," Could not open (%s), possibly not a shared object\n%s",buffer,strerror(errno));
 					}
 				}
 			}
