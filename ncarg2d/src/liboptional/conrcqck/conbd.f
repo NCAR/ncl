@@ -1,15 +1,18 @@
 C
-C	$Id: conbd.f,v 1.1.1.1 1992-04-17 22:35:05 ncargd Exp $
+C	$Id: conbd.f,v 1.2 1999-03-24 20:46:05 haley Exp $
 C
       BLOCKDATA CONBD
       COMMON /CONRE1/ IOFFP      ,SPVAL
-      COMMON /CONRE4/ ISIZEM     ,ISIZEP     ,NLA        ,NLM        ,
-     1                XLT        ,YBT        ,SIDE       ,ISOLID     ,
-     2                EXT        ,IOFFD      ,IOFFM
+      COMMON /CONRE4/ ISIZEL     ,ISIZEM     ,ISIZEP     ,NREP       ,
+     1                NCRT       ,ILAB       ,NULBLL     ,IOFFD      ,
+     2                EXT        ,IOFFM      ,ISOLID     ,NLA        ,
+     3                NLM        ,XLT        ,YBT        ,SIDE
       DATA IOFFP,SPVAL/0,0.0/
       DATA ISIZEM,ISIZEP,NLA,NLM,XLT,YBT,SIDE,ISOLID/
      1        2,     1,   16, 40,.05,.05,   .9, 1023/
-      DATA EXT,IOFFD,IOFFM/.25,0,0/
+      DATA ISIZEL,NREP,NCRT/
+     1       1,    6,   4 /
+      DATA EXT,IOFFD,NULBLL,IOFFM,ILAB/.25,0,3,0,1/
 C
 C REVISION HISTORY---
 C
