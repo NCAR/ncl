@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ncargcc.csh,v 1.21 1993-02-18 18:08:11 haley Exp $
+#	$Id: ncargcc.csh,v 1.22 1993-02-26 21:32:26 haley Exp $
 #
 
 set system = "SED_SYSTEM_INCLUDE"
@@ -29,9 +29,9 @@ else if ("$system" == "Sun4Solaris") then
   set libextra = "/usr/ucblib/libucb.a"
 else if ("$system" == "SGI4D") then
   set loadopts = "-ansiposix -DNeedFuncProto"
-else if ("$system" == "HPUX") then
+else if ("$system" == "HPUX_snake") then
   set loadopts = "-DNeedFuncProto -D_HPUX_SOURCE"
-else if ("$system" == "RS6000") then
+else if ("$system" == "AIX_RS6000") then
   set loadopts = "-DNeedFuncProto -D_POSIX_SOURCE"
 endif    
 
@@ -62,11 +62,11 @@ else if ($system == "Sun4Solaris") then
   set f77libs     =       "-L/opt/SUNWspro/SC2.0.1 -lF77 -lV77 -lM77 -lm"
 else if ($system == "Sun3") then
   set f77libs     =       "-L/usr/lang/SC1.0 -lF77 -lV77 /usr/lib/fswitch/libm.a"
-else if ($system == "RS6000") then
+else if ($system == "AIX_RS6000") then
   set f77libs     =       "-lm -lxlf"
 else if ($system == "DECRISC") then
   set f77libs     =       "-lots -lfor -lF77 -lI77 -lU77 -lutil -li -lm -lUfor"
-else if ($system == "HPUX") then
+else if ($system == "HPUX_snake") then
   set f77libs     =       "-lf -lm"
 else if ($system == "SGI4D") then
   set f77libs     =       "-lF77 -lI77 -lU77 -lisam -lm -lc"
