@@ -1,5 +1,5 @@
 /*
- *	$Id: c_clbbar.c,v 1.2 1994-06-21 15:01:09 haley Exp $
+ *	$Id: c_clbbar.c,v 1.3 1994-11-10 21:19:12 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -28,6 +28,10 @@ main()
 	color();
 	gset_fill_int_style(GSTYLE_SOLID);
 	c_lblbar(1,0.,1.,0.,1.,18,.5,1.,index,1,labels,18,1);
+/*
+** Advance frame
+*/
+	c_frame();
 	gdeactivate_ws(WKID);
 	gclose_ws(WKID);
 	gclose_gks();

@@ -1,5 +1,5 @@
 /*
- *	$Id: c_clblbr.c,v 1.1 1994-08-03 13:29:05 haley Exp $
+ *	$Id: c_clblbr.c,v 1.2 1994-11-10 21:19:14 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -44,6 +44,10 @@ main()
 	c_lblbar(1,.05,.45,.05,.95,11,.3,1.,ifill1,0,lab1,11,1);
 	c_sfseti("ty",0);
 	c_lblbar(1,.55,.95,.05,.95,14,.3,1.,ifill2,1,lab2,13,2);
+/*
+** Advance frame
+*/
+	c_frame();
 /*
  * Deactivate and close workstation, close GKS.
  */
