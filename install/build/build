@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl
 #
-#      $Id: build,v 1.29 2002-03-18 03:49:18 haley Exp $
+#      $Id: build,v 1.30 2002-03-18 04:05:13 haley Exp $
 #
 #########################################################################
 #									#
@@ -248,6 +248,7 @@ $install_dir = "INSTALL";       # where the INSTALL script lives
     'LINUX_PC',         'LINUX',
     'CYGWIN_PC',        'CygwinPC',
     'Solaris_PC',       'Sun4Solaris',
+    'DARWIN_MAC',       'Darwin',
     'UNICOS_YMP',       'Cray',
     'UNICOS_J90',       'Cray',
     'UNICOS_C90',       'Cray'

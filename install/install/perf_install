@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: perf_install,v 1.15 2002-03-18 03:47:40 haley Exp $
+#      $Id: perf_install,v 1.16 2002-03-18 04:04:57 haley Exp $
 #
 #########################################################################
 #									#
@@ -192,6 +192,10 @@ case	"cdrom":
 		set cd_system = "LINUX"
 		breaksw
 
+	  case	"DARWIN_MAC"
+		set cd_system = "DARWIN"
+		breaksw
+
 	  case	"SunOS_sun4"
 		set cd_system = "SUNOS_S4"
 		breaksw
@@ -239,6 +243,7 @@ case	"cdrom":
 
 	case	"AIX_RS6000"
 	case	"LINUX_PC"
+	case	"DARWIN_MAC"
 	case	"CYGWIN_PC"
 	case	"SunOS_sun4"
 	case	"Solaris_sun4"
@@ -261,6 +266,10 @@ case	"cdrom":
 
 	  case	"LINUX_PC"
 		set cd_system = "linux"
+		breaksw
+
+	  case	"DARWIN_MAC"
+		set cd_system = "darwin"
 		breaksw
 
 	  case	"CYGWIN_PC"

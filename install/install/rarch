@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: rarch,v 1.12 2002-03-18 03:47:41 haley Exp $
+#      $Id: rarch,v 1.13 2002-03-18 04:04:57 haley Exp $
 #
 #########################################################################
 #									#
@@ -97,6 +97,11 @@ case HP-UX:
 case Linux:
 case LINUX:
 	echo LINUX_PC
+	exit 0
+
+case Darwin:
+case DARWIN:
+	echo DARWIN_MAC
 	exit 0
 
 case Cygwin:
