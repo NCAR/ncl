@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncargcex.m,v 1.8 1994-11-03 17:39:16 haley Exp $
+.\"	$Id: ncargcex.m,v 1.9 1994-11-03 23:09:26 haley Exp $
 .\"
 .\" @(#)f77.1 1.4 86/07/31 SMI; 
 .TH NCARGCEX 1NCARG "October 1994" NCAR "NCAR GRAPHICS"
@@ -8,16 +8,34 @@ ncargcex \- NCAR Graphics C Examples
 .SH SYNOPSIS
 \fBncargcex\fP 
 [\fB\-A\fR]
+[\fB\-x11\fR]
 [\fB\-W workstation_type\fR]
+[\f\B\-areas]
 [\f\B\-autograph\fR]
 [\f\B\-bivar\fR]
+[\f\B\-colconv\fR]
 [\f\B\-conpack\fR]
+[\f\B\-dashline\fR]
+[\f\B\-dashpack\fR]
 [\f\B\-ezmap\fR]
+[\f\B\-field_flow\fR]
+[\f\B\-gflash\fR]
 [\f\B\-gks\fR]
+[\f\B\-gridall\fR]
+[\f\B\-histogram\fR]
+[\f\B\-isosurface\fR]
 [\f\B\-labelbar\fR]
+[\f\B\-ngmisc\fR]
 [\f\B\-plotchar\fR]
+[\f\B\-polypack\fR]
 [\f\B\-scrolled_title\fR]
 [\f\B\-softfill\fR]
+[\f\B\-spps\fR]
+[\f\B\-streamlines\fR]
+[\f\B\-surface\fR]
+[\f\B\-threed\fR]
+[\f\B\-vectors\fR]
+[\f\B\-wmap\fR]
 [\fB\-clean\fR]
 [\fB\-n\fR]
 [\fB\-noX11\fR]
@@ -25,9 +43,9 @@ ncargcex \- NCAR Graphics C Examples
 \fBexample_name ...\fR
 .SH DESCRIPTION
 .I ncargcex
-provides the user with access to a few complete example NCAR
-Graphics C source codes.
-\fIncargcex\fP copies the source code for the specified
+provides the user with access to almost 300 complete example NCAR
+Graphics C source codes, including the examples in the NCAR Graphics
+Tutorial. \fIncargcex\fP copies the source code for the specified
 example(s) into the current directory and then compiles, links, and
 executes the example.  Depending on the type of workstation specified
 on the command line, the output may either be an NCGM (NCAR Graphics
@@ -127,7 +145,7 @@ landscape mode.
 - color Encapsulated PostScript Interchange format (EPSI) in portrait mode.
 .IP "port.mono.ps" 18
 -  monochrome PostScript in portrait mode.
-.sp
+
 Any combination of these three types of attributes can be used, as long
 as one of them is the PostScript file type.
 .sp
@@ -135,32 +153,86 @@ as one of them is the PostScript file type.
 Generate all available examples, tests, programmer doc, fundamental and
 tutorial examples.
 .sp
+.IP \-x11 " " ""
+Generate all examples that use the X11 driver.
+.sp
+.IP \-areas " " ""
+Generate all areas examples.
+.sp
 .IP \-autograph " " ""
 Generate all autograph examples.
 .sp
 .IP \-bivar " " ""
 Generate all bivar examples.
 .sp
+.IP \-colconv " " ""
+Generate all colconv examples.
+.sp
 .IP \-conpack " " ""
 Generate all conpack examples.
+.sp
+.IP \-dashline " " ""
+Generate all dashline examples.
+.sp
+.IP \-dashpack " " ""
+Generate all dashpack examples.
 .sp
 .IP \-ezmap " " ""
 Generate all ezmap examples.
 .sp
+.IP \-field_flow " " ""
+Generate all field_flow examples.  Includes streamlines and vectors examples.
+.sp
+.IP \-gflash " " ""
+Generate all gflash examples.
+.sp
 .IP \-gks " " ""
 Generate all gks examples.
+.sp
+.IP \-gridall " " ""
+Generate all gridall examples.
+.sp
+.IP \-histogram " " ""
+Generate all histogram examples.
+.sp
+.IP \-isosurface " " ""
+Generate all isosurface examples.
 .sp
 .IP \-labelbar " " ""
 Generate all labelbar examples.
 .sp
+.IP \-ngmisc " " ""
+Generate all ngmisc examples.
+.sp
 .IP \-plotchar " " ""
 Generate all plotchar examples.
+.sp
+.IP \-polypack " " ""
+Generate all polypack examples.
 .sp
 .IP \-scrolled_title " " ""
 Generate all scrolled examples.
 .sp
 .IP \-softfill " " ""
 Generate all softfill examples.
+.sp
+.IP \-spps " " ""
+Generate all spps examples.
+.sp
+.IP \-streamlines " " ""
+Generate all streamlines examples.
+.sp
+.IP \-surface " " ""
+Generate all surface examples.
+.sp
+.IP \-threed " " ""
+Generate all threed examples.
+.sp
+.IP \-vectors " " ""
+Generate all vectors examples.
+.sp
+.IP \-wmap " " ""
+Generate all weather map examples.
 .sp
 .IP \-clean " " ""
 Remove everything but the ".ncgm" file.
@@ -183,6 +255,10 @@ listed according to which utility they belong with.
 .sp
 .SH EXAMPLES AVAILABLE
 .sp
+.I "AREAS Examples:"
+.sp
+c_tareas
+.sp
 .I "AUTOGRAPH Examples:"
 .sp
 c_agex07
@@ -191,25 +267,65 @@ c_agex07
 .sp
 c_cbex01
 .sp
+.I "COLCONV Examples:"
+.sp
+c_coex02
+.sp
 .I "CONPACK Examples:"
 .sp
-c_colcon
+c_cbex01 c_colcon
+.sp
+.I "DASHLINE Examples:"
+.sp
+c_fdldashc
+.sp
+.I "DASHPACK Examples:"
+.sp
+c_tdshpk
 .sp
 .I "EZMAP Examples:"
 .sp
 c_mpex05 c_eezmpa
 .sp
+.I "FIELD FLOW Examples:"
+.sp
+c_ffex03 c_vvex03
+.sp
+.I "GFLASH Example:"
+.sp
+c_tgflas
+.sp
 .I "GKS Examples:"
 .sp
 c_gtxpac
+.sp
+.I "GRIDALL Example:"
+.sp
+c_tgrida
+.sp
+.I "HISTOGRAM Examples:"
+.sp
+c_thstmv
+.sp
+.I "ISOSURFACE Examples:"
+.sp
+c_tisosr
 .sp
 .I "LABELBAR Examples:"
 .sp
 c_elblba
 .sp
+.I "NGMISC Examples:"
+.sp
+c_fngwsym
+.sp
 .I "PLOTCHAR Examples:"
 .sp
 c_epltch
+.sp
+.I "POLYPACK Examples:"
+.sp
+c_ppex01
 .sp
 .I "SCROLLED TITLE Examples:"
 .sp
@@ -219,7 +335,31 @@ c_slex01
 .sp
 c_sfex02
 .sp
-.I "Miscellaneous Examples:"
+.I "SPPS Examples:"
+.sp
+c_fcoord2
+.sp
+.I "STREAMLINES Examples:"
+.sp
+c_ffex03
+.sp
+.I "SURFACE Examples:"
+.sp
+c_srex01
+.sp
+.I "THREED Examples:"
+.sp
+c_fthex01
+.sp
+.I "VECTORS Examples:"
+.sp
+c_vvex03
+.sp
+.I "WEATHER MAP Examples:"
+.sp
+c_wmex03
+.sp
+.I "X11 Examples:"
 .sp
 c_xwndws
 .sp
