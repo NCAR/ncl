@@ -1,5 +1,5 @@
 /*
- *	$Id: talkto.c,v 1.21 1993-02-11 21:43:32 clyne Exp $
+ *	$Id: talkto.c,v 1.22 1993-04-04 20:12:38 clyne Exp $
  */
 /*
  *	talkto.c
@@ -178,9 +178,10 @@ static	int	get_trans_err(fp, buf, size)
 	int		n, rc;
 	struct timeval	tv;
 
+
 	FD_ZERO(&readfs);
 	FD_SET(fd, &readfs);
-	tv.tv_sec = tv.tv_usec = 1;	/* poll descriptor	*/
+	tv.tv_sec = tv.tv_usec = 0;	/* poll descriptor	*/
 
 	rc = select( width, &readfs, (fd_set *) NULL, (fd_set *) NULL, &tv);
 	if (rc < 0) {
