@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.176 2005-02-18 22:18:34 dbrown Exp $
+ *      $Id: BuiltInFuncs.c,v 1.177 2005-02-23 01:38:14 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -3516,7 +3516,7 @@ int asciinumeric
  */
 int asciifloat(char *buf, char **end, int type, void *retvalue) {
 	double tmpd;
-	const char *initchars = "0123456789+-.nN";
+	const char *initchars = "0123456789+-.nNiI";
 	int i;
 	
 	i = strcspn(buf,initchars);
@@ -3797,7 +3797,7 @@ NhlErrorTypes _NclIasciiread
 						tmp_ptr = (void*)((char*)tmp_ptr + thetype->type_class.size);
 					} else {
 						i--;
-						break;
+						continue;
 					}
 				}
 			}
@@ -3815,7 +3815,7 @@ NhlErrorTypes _NclIasciiread
 						tmp_ptr = (void*)((char*)tmp_ptr + thetype->type_class.size);
 					} else {
 						i--;
-						break;
+						continue;
 					}
 				}
 			} else if(thetype->type_class.type==Ncl_Typechar) {
@@ -3895,7 +3895,7 @@ NhlErrorTypes _NclIasciiread
 					if (asciifloat(end,&end,thetype->type_class.type,tmp_ptr)) {
 						totalsize++;
 					} else {
-						break;
+						continue;
 					}
 				}
 			}
@@ -3912,7 +3912,7 @@ NhlErrorTypes _NclIasciiread
 					if (asciiinteger(end,&end,thetype->type_class.type,tmp_ptr)) {
 						totalsize++;
 					} else {
-						break;
+						continue;
 					}
 				}
 			} else if(thetype->type_class.type==Ncl_Typechar) {
@@ -3991,7 +3991,7 @@ NhlErrorTypes _NclIasciiread
 						tmp_ptr = (void*)((char*)tmp_ptr + thetype->type_class.size);
 					} else {
 						i--;
-						break;
+						continue;
 					}
 				}
 			}
@@ -4009,7 +4009,7 @@ NhlErrorTypes _NclIasciiread
 						tmp_ptr = (void*)((char*)tmp_ptr + thetype->type_class.size);
 					} else {
 						i--;
-						break;
+						continue;
 					}
 				}
 			} 
