@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.55 2002-03-18 21:20:07 dbrown Exp $
+#      $Id: yMakefile,v 1.56 2002-05-13 22:40:14 haley Exp $
 #
 #########################################################################
 #									#
@@ -116,6 +116,10 @@ InstallTarget($(HDRS),$(INSTALL_INC),$(HLUINCPATH))
 InstallTarget(sysresfile,$(INSTALL_INC),$(LIBNCARGPATH))
 DependTarget($(CSRCS))
 
+#if defined(IRIX64)
+cmpf.o: cmpf.c
+	$(CC) $(CCOPTIONS) $(ALLDEFINES) -g -c cmpf.c
+#endif
 
 /* This is used to expand the huge macros in this file	*/
 #if	defined(DEBUG) && defined(SunOS)  && defined(ExpandMacros)
