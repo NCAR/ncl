@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.94 2004-03-10 02:05:07 dbrown Exp $
+#      $Id: yMakefile,v 1.95 2004-05-12 17:43:57 haley Exp $
 #
 #########################################################################
 #																		#
@@ -15,7 +15,7 @@
 #				National Center for Atmospheric Research
 #				POB 3000, Boulder, Colorado
 #
-#	$Date: 2004-03-10 02:05:07 $
+#	$Date: 2004-05-12 17:43:57 $
 #
 #	Description:	
 #
@@ -119,8 +119,8 @@ STATIC_HDRS	=	AttSupport.h DataSupport.h FileSupport.h Keywords.h \
 			ecmwf_162_gtb.h ecmwf_200_gtb.h
 
 
-INSTALL_HDRS	=	defs.h NclApi.h ApiRecords.h NclVar.h NclBuiltIns.h \
-			NclDataDefs.h NclBuiltInSupport.h NclCallBacksI.h \
+INSTALL_HDRS	= defs.h HluClasses.h NclApi.h ApiRecords.h NclVar.h \
+			NclBuiltIns.h NclDataDefs.h NclBuiltInSupport.h NclCallBacksI.h \
 			NclFileInterfaces.h 
 
 API_SRCS	=	NclApi.c scanapi.c parseapi.c 

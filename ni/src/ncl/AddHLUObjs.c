@@ -1,5 +1,5 @@
 /*
- *      $Id: AddHLUObjs.c,v 1.19 2004-03-20 00:17:14 dbrown Exp $
+ *      $Id: AddHLUObjs.c,v 1.20 2004-05-12 17:43:57 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -26,6 +26,7 @@ extern "C" {
 #include <stdio.h>
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/BaseP.h>
+#include "HluClasses.h"
 
 extern void _NclAddSingleObj(
 #if	NhlNeedProto
@@ -35,31 +36,6 @@ struct _NhlClassRec * /* the_ptr */
 );
 
 
-extern NhlClass NhltickMarkClass;
-extern NhlClass NhltitleClass;
-extern NhlClass NhlxWorkstationClass;
-extern NhlClass NhlimageWorkstationClass;
-extern NhlClass NhlncgmWorkstationClass;
-extern NhlClass NhlcontourPlotClass;
-extern NhlClass NhltextItemClass;
-extern NhlClass NhlxyPlotClass;
-extern NhlClass NhllabelBarClass;
-extern NhlClass NhllegendClass;
-extern NhlClass NhlcoordArraysClass;
-extern NhlClass NhlscalarFieldClass;
-extern NhlClass NhlmapPlotClass;
-extern NhlClass NhllogLinPlotClass;
-extern NhlClass NhlirregularPlotClass;
-extern NhlClass NhlmapPlotClass;
-extern NhlClass NhlappClass;
-extern NhlClass NhlannoManagerClass;
-extern NhlClass NhlpsWorkstationClass;
-extern NhlClass NhlpdfWorkstationClass;
-extern NhlClass NhlvectorPlotClass;
-extern NhlClass NhlvectorFieldClass;
-extern NhlClass NhlstreamlinePlotClass;
-extern NhlClass NhlgraphicStyleClass;
-extern NhlClass NhlprimitiveClass;
 
 void _NclAddHLUObjs
 #if	NhlNeedProto
