@@ -1,5 +1,5 @@
 C
-C	$Id: mpexcc.f,v 1.1.1.1 1992-04-17 22:33:13 ncargd Exp $
+C $Id: mpexcc.f,v 1.2 2001-05-24 17:35:30 kennison Exp $
 C
       SUBROUTINE BNDARY
 C

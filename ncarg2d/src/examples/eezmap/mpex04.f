@@ -1,7 +1,7 @@
 C
-C       $Id: mpex04.f,v 1.4 1999-04-07 21:04:48 kennison Exp $
+C $Id: mpex04.f,v 1.5 2001-05-24 17:35:28 kennison Exp $
 C
-      PROGRAM EXMPL4
+      PROGRAM MPEX04
 C
 C This program produces a single frame, with polar stereographic
 C views of the poles and a Mercator projection of the rest.

@@ -1,5 +1,5 @@
 C
-C       $Id: mpexfi.f,v 1.4 1999-04-07 21:04:49 kennison Exp $
+C $Id: mpexfi.f,v 1.5 2001-05-24 17:35:30 kennison Exp $
 C
       PROGRAM EXMPLF
 C

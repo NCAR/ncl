@@ -1,6 +1,6 @@
-
-
-
+C
+C $Id: mpex12.f,v 1.3 2001-05-24 17:35:30 kennison Exp $
+C
       PROGRAM MPEX12
 C
 C This example produces no graphical output.  Instead, it produces

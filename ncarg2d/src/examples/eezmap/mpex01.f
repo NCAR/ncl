@@ -1,9 +1,9 @@
 C
-C	$Id: mpex01.f,v 1.3 1995-06-14 13:56:34 haley Exp $
+C $Id: mpex01.f,v 1.4 2001-05-24 17:35:27 kennison Exp $
 C
-      PROGRAM EXMPL1
+      PROGRAM MPEX01
 C
-C The program EXMPL1 produces a map of the U.S., using a Lambert
+C The program MPEX01 produces a map of the U.S., using a Lambert
 C conformal conic.
 C
 C Define error file, Fortran unit number, and workstation type,

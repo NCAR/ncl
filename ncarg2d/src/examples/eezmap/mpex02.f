@@ -1,7 +1,7 @@
 C
-C       $Id: mpex02.f,v 1.4 1999-04-07 21:04:47 kennison Exp $
+C $Id: mpex02.f,v 1.5 2001-05-24 17:35:27 kennison Exp $
 C
-      PROGRAM EXMPL2
+      PROGRAM MPEX02
 C
 C This program produces a nice view of Africa, with an elliptical
 C perimeter.

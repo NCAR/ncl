@@ -1,7 +1,7 @@
 C
-C	$Id: mpex07.f,v 1.3 1995-06-14 13:56:38 haley Exp $
+C $Id: mpex07.f,v 1.4 2001-05-24 17:35:28 kennison Exp $
 C
-      PROGRAM EXMPL7
+      PROGRAM MPEX07
 C
 C This program produces a stereographic view of the North Pole,
 C with labelled meridians.

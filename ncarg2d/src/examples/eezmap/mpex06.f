@@ -1,7 +1,7 @@
 C
-C	$Id: mpex06.f,v 1.3 1995-06-14 13:56:37 haley Exp $
+C $Id: mpex06.f,v 1.4 2001-05-24 17:35:28 kennison Exp $
 C
-      PROGRAM EXMPL6
+      PROGRAM MPEX06
 C
 C This program produces a single frame showing satellite views
 C of the globe, each rotated by a different angle.

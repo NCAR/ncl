@@ -1,9 +1,9 @@
 C
-C	$Id: mpex09.f,v 1.3 1995-06-14 13:56:40 haley Exp $
+C $Id: mpex09.f,v 1.4 2001-05-24 17:35:29 kennison Exp $
 C
-      PROGRAM EXMPL9
+      PROGRAM MPEX09
 C
-C The program EXMPL9 produces a set of plots showing the numbers
+C The program MPEX09 produces a set of plots showing the numbers
 C of all the segments in a chosen EZMAP outline dataset.  Certain
 C variables must be set in data statements at the beginning of
 C the program.  In each of the seven places marked off by rows of

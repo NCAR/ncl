@@ -1,7 +1,7 @@
-
-
-
-      PROGRAM MPEX13
+C
+C $Id: mpex11.f,v 1.4 2001-05-24 17:35:30 kennison Exp $
+C
+      PROGRAM MPEX11
 C
 C The object of this EZMAP example is to show off some capabilities of
 C new code in EZMAPB (created in April, 1998).  Three different parts of

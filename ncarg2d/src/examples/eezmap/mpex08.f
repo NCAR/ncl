@@ -1,7 +1,7 @@
 C
-C       $Id: mpex08.f,v 1.4 1999-04-07 21:04:49 kennison Exp $
+C $Id: mpex08.f,v 1.5 2001-05-24 17:35:29 kennison Exp $
 C
-      PROGRAM EXMPL8
+      PROGRAM MPEX08
 C
 C Produce a Mercator projection of the whole globe, using a
 C version of MAPUSR which dots the grid lines and dashes the

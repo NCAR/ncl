@@ -1,7 +1,7 @@
 C
-C	$Id: mpex03.f,v 1.3 1995-06-14 13:56:35 haley Exp $
+C $Id: mpex03.f,v 1.4 2001-05-24 17:35:27 kennison Exp $
 C
-      PROGRAM EXMPL3
+      PROGRAM MPEX03
 C
 C Produce a Mercator projection of the whole globe, using
 C simplified continental outlines.  See the routine MAPEOD,

@@ -1,7 +1,7 @@
 C
-C	$Id: mpex10.f,v 1.3 1995-06-14 13:56:40 haley Exp $
+C $Id: mpex10.f,v 1.4 2001-05-24 17:35:29 kennison Exp $
 C
-      PROGRAM XMPL10
+      PROGRAM MPEX10
 C
 C Assume you have a FORTRAN function that, given the position of a
 C point on the surface of the earth, returns the real value of some

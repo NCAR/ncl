@@ -1,9 +1,9 @@
 C
-C	$Id: mpex05.f,v 1.3 1995-06-14 13:56:37 haley Exp $
+C $Id: mpex05.f,v 1.4 2001-05-24 17:35:28 kennison Exp $
 C
-      PROGRAM EXMPL5
+      PROGRAM MPEX05
 C
-C The program EXMPL5 produces a single frame with maximal-area
+C The program MPEX05 produces a single frame with maximal-area
 C views of all the EZMAP projections of the globe.
 C
 C  Define error file, Fortran unit number, and workstation type,
