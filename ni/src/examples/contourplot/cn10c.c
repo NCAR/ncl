@@ -1,5 +1,5 @@
 /*
-**      $Id: cn10c.c,v 1.2 1995-09-26 15:26:46 haley Exp $
+**      $Id: cn10c.c,v 1.3 1995-09-26 21:00:31 haley Exp $
 */
 /***********************************************************************
 *                                                                      *
@@ -167,7 +167,7 @@ main()
     xdim_id = ncvarid(ncid,"xdim");
     ydim_id = ncvarid(ncid,"ydim");
 /*
- * Get data and dimentions values for the mound.
+ * Get data and dimensions values for the mound.
  */
     start[0] = start[1] = 0;
     count[0] = xlen; count[1] = ylen;
