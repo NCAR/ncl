@@ -6,8 +6,10 @@
  */
 #include "wrapper.h"
 
-extern void NGCALLF(dfourinfo,DFOURINFO)(double*,int*,int*,double*,double*,
-                                         double*,double*);
+extern void NGCALLF(dfourinfo,DFOURINFO)(double*, int*, int*, int*, double*,
+										 double*, double*, double*,
+										 double*, double*, double*,
+										 double*, double*, double*, int*);
 
 NhlErrorTypes fourier_info_W( void )
 {
@@ -20,19 +22,23 @@ NhlErrorTypes fourier_info_W( void )
   int found_missing, found_any_missing;
   NclScalar missing_x, missing_dx, missing_rx;
   NclBasicDataTypes type_x, type_sclphase;
-  int *nhret, nht;
+  int *nhret, nht, nhar;
 /*
  * Output array variables
  */
   void *finfo;
   double *tmp_amp, *tmp_pha, *tmp_pcv;
+  double *tmp_ampx, *tmp_phax, *tmp_pcvx;
+  double *a, *b, *wrk;
   NclBasicDataTypes type_finfo;
-  int ndims_finfo, *dsizes_finfo;
+  int lwrk, ndims_finfo, *dsizes_finfo;
 /*
  * Declare various variables for random purposes.
  */
   int i, j, index_x, index_amp, index_pha, index_pcv;
   int npts, size_leftmost, size_output;
+  double anot;
+
 /*
  * Retrieve arguments.
  */
@@ -70,16 +76,18 @@ NhlErrorTypes fourier_info_W( void )
  * Check input sizes.
  */
   npts = dsizes_x[ndims_x-1];
-  if( npts < 1) {
+  nhar = npts/2;
+
+  if(npts < 1) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"fourier_info: The last dimension of x must be greater than 1");
     return(NhlFATAL);
   }
   
   if(*nhret == 0) {
-    nht = npts/2;
+    nht = nhar;
   }
   else {
-    if(*nhret < 0 || *nhret > npts/2) {
+    if(*nhret < 0 || *nhret > nhar) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"fourier_info: nhx must be 0 <= nhx <= npts/2, where npts is the last dimension size of x");
       return(NhlFATAL);
     }
@@ -111,12 +119,38 @@ NhlErrorTypes fourier_info_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"fourier_info: Unable to coerce input to double precision");
     return(NhlFATAL);
   }
+  if( *tmp_sclphase == 0.0) *tmp_sclphase = 1.0;
 
+/*
+ * Allocate space for work and output arrays.
+ */
+  tmp_amp = (double *)calloc(nht,sizeof(double));
+  tmp_pha = (double *)calloc(nht,sizeof(double));
+  tmp_pcv = (double *)calloc(nht,sizeof(double));
+  tmp_ampx= (double *)calloc(nhar,sizeof(double));
+  tmp_phax= (double *)calloc(nhar,sizeof(double));
+  tmp_pcvx= (double *)calloc(nhar,sizeof(double));
+/*
+ * One would think that you only need to allocate an array of 
+ * length "nhar" for "a" and "b", but for some reason, on Sun systems,
+ * a core dump occurs if you use just "nhar" and "npts" is odd.
+ */
+  lwrk    = 4*npts+15; 
+  a       = (double *)calloc(nhar+1,sizeof(double));
+  b       = (double *)calloc(nhar+1,sizeof(double));
+  wrk     = (double *)calloc(lwrk,sizeof(double));
+  
+  if(tmp_amp == NULL || tmp_pha == NULL || tmp_pcv == NULL ||
+	 tmp_ampx== NULL || tmp_phax== NULL || tmp_pcvx== NULL ||
+	 a == NULL || b == NULL || wrk == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"fourier_info: Cannot allocate space for work arrays");
+    return(NhlFATAL);
+  }
 /*
  * Allocate space for output array and other output variables. 
  */
-  size_output = nht*3*size_leftmost;
-  ndims_finfo = ndims_x + 1;
+  size_output  = 3 * nht * size_leftmost;
+  ndims_finfo  = ndims_x + 1;
   dsizes_finfo = (int *)calloc(ndims_finfo,sizeof(int));
   dsizes_finfo[0] = 3;
   for( i = 1; i <= ndims_x-1; i++ ) {
@@ -133,22 +167,13 @@ NhlErrorTypes fourier_info_W( void )
     finfo = (void *)calloc(size_output,sizeof(double));
   }
   if(finfo == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"fourier_info: Cannot allocate space for ouput array");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"fourier_info: Cannot allocate space for output array");
     return(NhlFATAL);
-  }
-  if(type_finfo != NCL_double) {
-    tmp_amp = (double *)calloc(nht,sizeof(double));
-    tmp_pha = (double *)calloc(nht,sizeof(double));
-    tmp_pcv = (double *)calloc(nht,sizeof(double));
-    if(tmp_amp == NULL || tmp_pha == NULL || tmp_pcv == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"fourier_info: Cannot allocate space for temporary ouput arrays");
-      return(NhlFATAL);
-    }
   }
 /*
  * Call the Fortran version of this routine.
  */
-  found_any_missing = 0;
+  found_any_missing     = 0;
   index_x   = index_amp = 0;
   index_pha = nht * size_leftmost;
   index_pcv = nht * size_leftmost * 2;
@@ -164,9 +189,6 @@ NhlErrorTypes fourier_info_W( void )
  * Point temporary arrays to appropriate locations.
  */
       tmp_x   = &((double*)x)[index_x];
-      tmp_amp = &((double*)finfo)[index_amp];
-      tmp_pha = &((double*)finfo)[index_pha];
-      tmp_pcv = &((double*)finfo)[index_pcv];
     }
 /*
  * Check for missing values.
@@ -184,15 +206,13 @@ NhlErrorTypes fourier_info_W( void )
       NhlPError(NhlWARNING,NhlEUNKNOWN,"fourier_info: An input array contains missing values. No analysis performed on this array.");
     }
     else {
+      NGCALLF(dfourinfo,DFOURINFO)(tmp_x,&npts,&nht,&nhar,tmp_sclphase,
+								   tmp_amp,tmp_pha,tmp_pcv,a,b,tmp_ampx,
+								   tmp_phax,tmp_pcvx,wrk,&lwrk);
 
-      NGCALLF(dfourinfo,DFOURINFO)(tmp_x,&npts,&nht,tmp_sclphase,tmp_amp,
-                                   tmp_pha,tmp_pcv);
-
-      if(type_finfo != NCL_double) {
-        coerce_output_float_only(finfo,tmp_amp,nht,index_amp);
-        coerce_output_float_only(finfo,tmp_pha,nht,index_pha);
-        coerce_output_float_only(finfo,tmp_pcv,nht,index_pcv);
-      }
+	  coerce_output_float_or_double(finfo,tmp_amp,type_finfo,nht,index_amp);
+	  coerce_output_float_or_double(finfo,tmp_pha,type_finfo,nht,index_pha);
+	  coerce_output_float_or_double(finfo,tmp_pcv,type_finfo,nht,index_pcv);
     }
     index_x   += npts;
     index_amp += nht;
@@ -200,14 +220,19 @@ NhlErrorTypes fourier_info_W( void )
     index_pcv += nht;
   }
 /*
- * Free memory.
+ * free memory.
  */
-  if(type_x != NCL_double) {
-    NclFree(tmp_x);
-    NclFree(tmp_amp);
-    NclFree(tmp_pha);
-    NclFree(tmp_pcv);
-  }
+  NclFree(a);
+  NclFree(b);
+  NclFree(wrk);
+  NclFree(tmp_sclphase);
+  NclFree(tmp_amp);
+  NclFree(tmp_pha);
+  NclFree(tmp_pcv);
+  NclFree(tmp_ampx);
+  NclFree(tmp_phax);
+  NclFree(tmp_pcvx);
+  if(type_x != NCL_double) NclFree(tmp_x);
 
 /*
  * Get ready to return all this stuff to NCL.

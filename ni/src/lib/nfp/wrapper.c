@@ -367,6 +367,8 @@ extern NhlErrorTypes day_of_week_W(void);
 extern NhlErrorTypes isleapyear_W(void);
 extern NhlErrorTypes greg2jul_W(void);
 extern NhlErrorTypes jul2greg_W(void);
+extern NhlErrorTypes ut_calendar_W(void);
+extern NhlErrorTypes ut_inv_calendar_W(void);
 
 extern NhlErrorTypes angmom_atm_W(void);
 extern NhlErrorTypes relhum_W(void);
@@ -4715,11 +4717,37 @@ void NclAddUserFuncs(void)
     NclRegisterFunc(jul2greg_W,args,"jul2greg",nargs);
 
 /*
+ * Register "ut_calendar".
+ */
+    nargs = 0;
+    args = NewArgs(3);
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"string",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    NclRegisterFunc(ut_calendar_W,args,"ut_calendar",nargs);
+
+/*
+ * Register "ut_inv_calendar".
+ */
+    nargs = 0;
+    args = NewArgs(8);
+    SetArgTemplate(args,nargs,"integer",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"double",NclANY,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"string",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    NclRegisterFunc(ut_inv_calendar_W,args,"ut_inv_calendar",nargs);
+
+/*
  * Register "angmom_atm".
  */
     nargs = 0;
     args = NewArgs(4);
-    dimsizes[0] = 1;
     SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
     SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
     SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
