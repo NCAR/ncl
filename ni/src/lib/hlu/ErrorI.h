@@ -1,5 +1,5 @@
 /*
- *      $Id: ErrorI.h,v 1.2 1994-09-06 21:51:28 boote Exp $
+ *      $Id: ErrorI.h,v 1.3 1995-01-24 01:25:11 boote Exp $
  */
 /************************************************************************
 *									*
@@ -34,16 +34,4 @@
 #define	_NhlGKSERRMSG	"GKS ERROR REPORTED FROM libhlu.a(Error.o)"
 #define	_NhlGKSMAXMSGLEN	(128)
 
-/*
- * useful macro for reporting and clearing the error state of llncarg.
- */
-#define	_NhlErrRepClear(func,lib)\
-{									\
-	int	_dum;							\
-	if(c_nerro(&dum)){						\
-		NHLPERROR((NhlWARNING,NhlEUNKNOWN,"%s:%s Error:%s",	\
-					#func,#lib,c_semess(0)));	\
-		c_errof();						\
-	}								\
-}
 #endif	/* _NErrorI_h */

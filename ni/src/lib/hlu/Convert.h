@@ -1,5 +1,5 @@
 /*
- *      $Id: Convert.h,v 1.8 1994-12-16 20:03:58 boote Exp $
+ *      $Id: Convert.h,v 1.9 1995-01-24 01:25:07 boote Exp $
  */
 /************************************************************************
 *									*
@@ -65,7 +65,7 @@ typedef void (*NhlCacheClosure)(
  * Conversion functions
  */
 
-NhlErrorTypes NhlRegisterConverter(
+extern NhlErrorTypes NhlRegisterConverter(
 #if	NhlNeedProto
 	NhlString		from,
 	NhlString		to,
@@ -77,14 +77,14 @@ NhlErrorTypes NhlRegisterConverter(
 #endif
 );
 
-NhlErrorTypes NhlDeleteConverter(
+extern NhlErrorTypes NhlDeleteConverter(
 #if	NhlNeedProto
 	NhlString,		/* from type - usually a NHLT*** constant*/
 	NhlString		/* to type - usually a NHLT*** constant	*/
 #endif
 );
 
-NhlErrorTypes NhlUnRegisterConverter(
+extern NhlErrorTypes NhlUnRegisterConverter(
 #if	NhlNeedProto
 	NhlString,	/* from type - usually a NHLT*** constant*/
 	NhlString,	/* to type - usually a NHLT*** constant	*/
@@ -92,13 +92,13 @@ NhlErrorTypes NhlUnRegisterConverter(
 #endif
 );
 
-NhlErrorTypes NhlReRegisterConverter(
+extern NhlErrorTypes NhlReRegisterConverter(
 #if	NhlNeedProto
 	NhlConvertPtr	/* identifies converter to re-install	*/
 #endif
 );
 
-NhlErrorTypes NhlConvertData(
+extern NhlErrorTypes NhlConvertData(
 #if	NhlNeedProto
 	NhlString,	/* from type - usually a NHLT*** constant	*/
 	NhlString,	/* to type - usually a NHLT*** constant		*/
@@ -111,7 +111,7 @@ NhlErrorTypes NhlConvertData(
  * These functions are for use inside Converter functions.
  */
 
-NhlPointer NhlConvertMalloc(
+extern NhlPointer NhlConvertMalloc(
 #if	NhlNeedProto
 	unsigned int	size	/* size of memory requested	*/
 #endif
@@ -132,7 +132,7 @@ extern NhlGenArray NhlAllocCreateGenArray(
  * types are equivalent (but have different names), this is one way to call
  * a previously installed converter to convert the data.
  */
-NhlErrorTypes NhlReConvertData(
+extern NhlErrorTypes NhlReConvertData(
 #if	NhlNeedProto
 	NhlString		fname,	/* from type			*/
 	NhlString		tname,	/* to type			*/

@@ -1,5 +1,5 @@
 /*
- *      $Id: hlu.h,v 1.25 1995-01-19 22:05:01 boote Exp $
+ *      $Id: hlu.h,v 1.26 1995-01-24 01:25:18 boote Exp $
  */
 /************************************************************************
 *									*
@@ -227,13 +227,6 @@ extern void *NhlMalloc(
 #endif
 );
 
-extern void *NhlCalloc( 
-#if	NhlNeedProto
-	unsigned int    num, 
-	unsigned int    size 
-#endif 
-);
-
 extern void *NhlRealloc(
 #if	NhlNeedProto
 	void*,		/* pointer to copy		*/
@@ -352,7 +345,7 @@ extern void NhlClose(
 
 NhlDOCTAG(NhlVASetValues)
 /*VARARGS1*/
-extern NhlErrorTypes NhlVASetValues( 
+extern NhlErrorTypes NhlVASetValues(
 #if	NhlNeedVarArgProto 
 	int,		/* id		*/
 	...		/* resource names and values - NULL terminated	*/
@@ -415,7 +408,7 @@ extern int NhlGetParentWorkstation(
 #endif
 );
 
-extern int NhlIsWorkstation(
+extern NhlBoolean NhlIsWorkstation(
 #if	NhlNeedProto
 	int /* plotid */
 #endif

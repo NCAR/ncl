@@ -1,5 +1,5 @@
 /*
- *      $Id: FormatI.h,v 1.1 1994-07-13 17:27:39 dbrown Exp $
+ *      $Id: FormatI.h,v 1.2 1995-01-24 01:25:12 boote Exp $
  */
 /************************************************************************
 *									*
@@ -86,14 +86,14 @@ typedef struct _NhlFormatRec {
         char	   *next_char;
 } NhlFormatRec;
 
-NhlFormatRec *_NhlScanFString(
+extern NhlFormatRec *_NhlScanFString(
 #if  NhlNeedProto
 	NhlString	fstring,
 	NhlString	entry_name
 #endif
 );
 
-NhlString _NhlFormatFloat(
+extern NhlString _NhlFormatFloat(
 #if  NhlNeedProto
 	NhlFormatRec	*format,
 	float		value,
@@ -108,7 +108,7 @@ NhlString _NhlFormatFloat(
 );
 
 
-NhlErrorTypes _NhlGetScaleInfo(
+extern NhlErrorTypes _NhlGetScaleInfo(
 #if  NhlNeedProto
 	float		value,
 	int		*div_pwr,

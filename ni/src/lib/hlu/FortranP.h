@@ -1,5 +1,5 @@
 /*
- *      $Id: FortranP.h,v 1.3 1994-08-11 21:37:02 boote Exp $
+ *      $Id: FortranP.h,v 1.4 1995-01-24 01:25:13 boote Exp $
  */
 /************************************************************************
 *									*
@@ -70,8 +70,7 @@ struct _NhlFExportArrayRec_ {
 };
 
 
-extern NhlString
-_NhlFstrToCstr(
+extern NhlString _NhlFstrToCstr(
 #if	NhlNeedProto
 	NhlString		cstr,
 	unsigned int		cstr_len,
@@ -80,8 +79,7 @@ _NhlFstrToCstr(
 #endif
 );
 
-extern NhlString*
-_NhlMDFstrToCstrtbl(
+extern NhlString* _NhlMDFstrToCstrtbl(
 #if	NhlNeedProto
 	Const _NhlFString	fstr,
 	unsigned int		num_strings,
@@ -89,8 +87,7 @@ _NhlMDFstrToCstrtbl(
 #endif
 );
 
-extern NrmQuark
-_NhlFstrToQuark(
+extern NrmQuark _NhlFstrToQuark(
 #if	NhlNeedProto
 	Const _NhlFString	fstr,
 	unsigned int		fstr_len
@@ -101,8 +98,7 @@ _NhlFstrToQuark(
  * the Fptr func is different from the Fstr function in that we already
  * have a valid "C" pointer to the Fortran memory.  UNICOS annoyance
  */
-extern NhlErrorTypes
-_NhlCstrToFptr(
+extern NhlErrorTypes _NhlCstrToFptr(
 #if	NhlNeedProto
 	NhlString	fptr,
 	unsigned int	fstr_len,
@@ -110,8 +106,7 @@ _NhlCstrToFptr(
 #endif
 );
 
-extern NhlErrorTypes
-_NhlCstrToFstr(
+extern NhlErrorTypes _NhlCstrToFstr(
 #if	NhlNeedProto
 	_NhlFString	fstr,
 	unsigned int	fstr_len,
@@ -119,8 +114,7 @@ _NhlCstrToFstr(
 #endif
 );
 
-extern NhlGenArray
-_NhlCreateFGenArray(
+extern NhlGenArray _NhlCreateFGenArray(
 #if	NhlNeedProto
 	NhlPointer	data,
 	NhlString	type,

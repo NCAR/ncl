@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.21 1995-01-11 00:46:55 boote Exp $
+ *      $Id: Workstation.c,v 1.22 1995-01-24 01:25:15 boote Exp $
  */
 /************************************************************************
 *									*
@@ -438,6 +438,12 @@ static NhlErrorTypes WorkstationDestroy(
 #endif
 );
 
+static NhlErrorTypes WorkstationDraw(
+#if	NhlNeedProto
+	NhlLayer
+#endif
+);
+
 static NhlErrorTypes    WorkstationSetValues(
 #if	NhlNeedProto
         NhlLayer,	/* old */
@@ -569,7 +575,7 @@ NhlWorkstationLayerClassRec NhlworkstationLayerClassRec = {
 
 /* child_resources		*/	NULL,
 
-/* layer_draw			*/	NULL,
+/* layer_draw			*/	WorkstationDraw,
 
 /* layer_pre_draw		*/	NULL,
 /* layer_draw_segonly		*/	NULL,
@@ -789,7 +795,8 @@ WorkstationClassInitialize
 	};
 	NhlConvertArg	colorargs[] = {
 		{NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)-1)},
-		{NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)255)}
+		{NhlIMMEDIATE,sizeof(int),
+					_NhlUSET((NhlPointer)(MAX_COLOR_MAP-1))}
 	};
 	_NhlEnumVals	fillvals[] = {
 		{NhlSOLIDFILL,	"solidfill"},
@@ -1398,6 +1405,72 @@ static NhlErrorTypes WorkstationDestroy
 	NhlFreeGenArray(winst->work.marker_table_params);
 
 	return(retcode);
+}
+
+/*
+ * Function:	DrawChildren
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+static NhlErrorTypes
+DrawChildren
+#if	NhlErrorTypes
+(
+	_NhlAllChildList	children
+)
+#else
+(children)
+	_NhlAllChildList	children;
+#endif
+{
+	NhlErrorTypes	ret,ret1;
+
+	if(!children)
+		return NhlNOERROR;
+
+	ret = NhlDraw(children->pid);
+
+	ret1 = DrawChildren(children->next);
+
+	return MIN(ret,ret1);
+}
+
+/*
+ * Function:	WorkstationDraw
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+NhlErrorTypes
+WorkstationDraw
+#if	NhlNeedProto
+(
+	NhlLayer	layer
+)
+#else
+(layer)
+	NhlLayer	layer;
+#endif
+{
+	/*
+	 * Call draw on all children...
+	 */
+	return DrawChildren(layer->base.all_children);
 }
 
 /*
@@ -2387,7 +2460,7 @@ static NhlErrorTypes	WorkstationGetValues
 			tmp = (NhlColor*)
 				NhlMalloc(wl->work.color_map_len
 					  *sizeof(NhlColor));
-			for(j = 0; j< wl->work.color_map_len - 1; j++) {
+			for(j = 0; j< wl->work.color_map_len; j++) {
 				tmp[j][0] = private[j + 1].red;
 				tmp[j][1] = private[j + 1].green;
 				tmp[j][2] = private[j + 1].blue;
@@ -2921,15 +2994,17 @@ int _NhlGetGksCi
 	
 	NhlWorkstationLayer  wk = (NhlWorkstationLayer) workstation;
 	if(_NhlIsWorkstation(workstation)){
+		if((ci < 0) || (ci >= MAX_COLOR_MAP)){
+			return 1;
+		}
 		if(wk->work.private_color_map[ci].ci >= 0) {
 			return(wk->work.private_color_map[ci].ci);
 		} else {
-			NhlPError(NhlWARNING,NhlEUNKNOWN,"_NhlGetGksCi: Color index requested is not allocated");
-			return((int)NhlWARNING);
+			return(1);
 		}
 	} else {
-		NhlPError(NhlWARNING,NhlEUNKNOWN,"_NhlGetGksCi: attempt to return color from none workstation");
-		return((int)NhlWARNING);
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"_NhlGetGksCi: attempt to return color from non-workstation");
+		return((int)1);
 	}
 }
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.h,v 1.10 1995-01-11 00:46:56 boote Exp $
+ *      $Id: Workstation.h,v 1.11 1995-01-24 01:25:16 boote Exp $
  */
 /************************************************************************
 *									*
@@ -238,13 +238,13 @@ extern int NhlIsAllocatedColor(
 #endif
 );
 
-int NhlGetGksWorkId(
+extern int NhlGetGksWorkId(
 #if	NhlNeedProto
 int /* workid */
 #endif
 );
 
-int NhlNewMarker(
+extern int NhlNewMarker(
 #if	NhlNeedProto
 	int instance, 
 	char *marker_string, 
@@ -255,7 +255,7 @@ int NhlNewMarker(
 #endif
 );
 
-NhlErrorTypes NhlSetMarker(
+extern NhlErrorTypes NhlSetMarker(
 #if	NhlNeedProto
 	int instance, 
 	int	index,

@@ -1,5 +1,5 @@
 /*
- *      $Id: Overlay.h,v 1.11 1994-12-16 20:04:35 boote Exp $
+ *      $Id: Overlay.h,v 1.12 1995-01-24 01:25:14 boote Exp $
  */
 /************************************************************************
 *									*
@@ -109,7 +109,7 @@ typedef enum _NhlAnnotationDisplayMode {
 extern NhlLayerClass NhloverlayLayerClass;
 
 /* Public functions defined by the Overlay Class	*/
-NhlErrorTypes NhlAddToOverlay(
+extern NhlErrorTypes NhlAddToOverlay(
 #if	NhlNeedProto
         int		base_id,
 	int		plot_id,
@@ -117,7 +117,7 @@ NhlErrorTypes NhlAddToOverlay(
 #endif
 );
 
-NhlErrorTypes NhlRemoveFromOverlay(
+extern NhlErrorTypes NhlRemoveFromOverlay(
 #if	NhlNeedProto
         int		base_id,
 	int		plot_id,
@@ -125,14 +125,14 @@ NhlErrorTypes NhlRemoveFromOverlay(
 #endif
 );
 
-NhlErrorTypes NhlRegisterAnnotation(
+extern NhlErrorTypes NhlRegisterAnnotation(
 #if	NhlNeedProto
         int	overlay_base_id,
 	int	annotation_id
 #endif
 );
 
-NhlErrorTypes NhlUnregisterAnnotation(
+extern NhlErrorTypes NhlUnregisterAnnotation(
 #if	NhlNeedProto
         int	overlay_base_id,
 	int	annotation_id

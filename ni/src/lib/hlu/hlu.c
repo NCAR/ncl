@@ -1,5 +1,5 @@
 /*
- *      $Id: hlu.c,v 1.24 1995-01-11 00:47:00 boote Exp $
+ *      $Id: hlu.c,v 1.25 1995-01-24 01:25:17 boote Exp $
  */
 /************************************************************************
 *									*
@@ -74,49 +74,6 @@ void
 
 	if(ptr == NULL)
 		NhlPError(NhlFATAL,errno,"NhlMalloc Failed");
-
-	return(ptr);
-}
-
-/*
- * Function:	NhlCalloc
- *
- * Description:	This function is our interface to the regular calloc
- *		system call.  We are using it so we can do error handleing
- *		for memory allocation in one place and so we can impliment
- *		our own memory management code if we need to.
- *
- * In Args:	unsigned int	num	number of elements
- *		unsigned int	size	size of each element
- *
- * Out Args:	
- *
- * Scope:	Global Public
- * Returns:	pointer to memory of the size requested
- * Side Effect:	
- */
-void
-*NhlCalloc
-#if	NhlNeedProto
-(
-	unsigned int	num,	/* number of elements		*/
-	unsigned int	size	/* size of each element		*/
-)
-#else
-(num,size)
-	 unsigned int	num;	/* number of elements		*/
-	unsigned int	size;	/* size of each element		*/
-#endif
-{
-	void *ptr;
-
-	if((num * size) == 0)
-		return NULL;
-
-	ptr = (void *)calloc(num, size);
-
-	if(ptr == NULL)
-		NhlPError(NhlFATAL,errno,"NhlCalloc Failed");
 
 	return(ptr);
 }
@@ -1567,7 +1524,7 @@ _NhlLLErrCheckPrnt
  * Returns:	
  * Side Effect:	
  */
-int NhlIsWorkstation
+NhlBoolean NhlIsWorkstation
 #if	NhlNeedProto
 (int plotid)
 #else
@@ -1579,6 +1536,6 @@ int NhlIsWorkstation
 	if(l != NULL) {
 		return(_NhlIsWorkstation(l));
 	} else {
-		return(0);
+		return(False);
 	}
 }

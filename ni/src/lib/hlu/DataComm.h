@@ -1,5 +1,5 @@
 /*
- *      $Id: DataComm.h,v 1.5 1994-12-16 20:04:05 boote Exp $
+ *      $Id: DataComm.h,v 1.6 1995-01-24 01:25:10 boote Exp $
  */
 /************************************************************************
 *									*
@@ -39,13 +39,13 @@ extern NhlLayerClass NhldataSpecLayerClass;
  * Public API
  */
 
-NhlErrorTypes NhlUpdateData(
+extern NhlErrorTypes NhlUpdateData(
 #if	NhlNeedProto
 	int	dcommid		/* id of dcomm object	*/
 #endif
 );
 
-NhlErrorTypes NhlAddData(
+extern NhlErrorTypes NhlAddData(
 #if	NhlNeedProto
 	int		dcommid,	/* id of layer w/ data resource	*/
 	NhlString	res_name,	/* name of data resource	*/
@@ -53,7 +53,7 @@ NhlErrorTypes NhlAddData(
 #endif
 );
 
-NhlErrorTypes NhlRemoveData(
+extern NhlErrorTypes NhlRemoveData(
 #if	NhlNeedProto
 	int		dcommid,	/* id of layer w/ data resource	*/
 	NhlString	res_name,	/* name of data resource	*/

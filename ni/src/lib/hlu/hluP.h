@@ -1,5 +1,5 @@
 /*
- *      $Id: hluP.h,v 1.21 1995-01-11 00:47:02 boote Exp $
+ *      $Id: hluP.h,v 1.22 1995-01-24 01:25:19 boote Exp $
  */
 /************************************************************************
 *									*
@@ -309,7 +309,7 @@ extern Const char * _NhlClassName(
 #endif
 );
 
-NhlBoolean _NhlIsFloatRes ( 
+extern NhlBoolean _NhlIsFloatRes( 
 #if	NhlNeedProto 
 	NhlString	res_name	/* resource name        */ 
 #endif

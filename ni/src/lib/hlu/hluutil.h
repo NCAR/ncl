@@ -1,5 +1,5 @@
 /*
- *      $Id: hluutil.h,v 1.2 1994-12-16 20:05:15 boote Exp $
+ *      $Id: hluutil.h,v 1.3 1995-01-24 01:25:21 boote Exp $
  */
 /************************************************************************
 *									*
@@ -52,7 +52,7 @@ extern int wksisact(
 int	/*n*/
 #endif
 );
-extern int wksisopn( 
+extern int wksisopn(
 #if NhlNeedProto 
 int     /*n*/ 
 #endif 
@@ -103,21 +103,21 @@ extern void strans(
 #endif
 );
 
-NhlCompareDat *_NhlCmpFSetup(
+extern NhlCompareDat *_NhlCmpFSetup(
 #if	NhlNeedProto
 float /*val*/,
 int /*sig_dig*/
 #endif
 );
 
-float _NhlCmpF(
+extern float _NhlCmpF(
 #if	NhlNeedProto
 float /* a */,
 NhlCompareDat * /*b*/
 #endif
 );
 
-float _NhlCmpFAny(
+extern float _NhlCmpFAny(
 #if	NhlNeedProto
 float /* a */,
 float /*b*/,
@@ -125,7 +125,7 @@ int   sig_dig
 #endif
 );
 
-float _NhlRndIt(
+extern float _NhlRndIt(
 #if  NhlNeedProto
 float /* a */,
 int /*sig_digit*/

@@ -1,5 +1,5 @@
 /*
- *      $Id: DataComm.c,v 1.20 1995-01-11 00:46:29 boote Exp $
+ *      $Id: DataComm.c,v 1.21 1995-01-24 01:25:09 boote Exp $
  */
 /************************************************************************
 *									*
@@ -827,6 +827,8 @@ CompileDataList
 	_NhlDataOffset		oset;	/* offset record	*/
 #endif
 {
+	char			func[]="CompileDataList";
+	NhlErrorTypes		ret = NhlNOERROR;
 	NhlGenArray		gen=NULL;
 	_NhlInternDataList	ilist;
 	_NhlDataNodePtr		*dnodes;
@@ -848,7 +850,8 @@ CompileDataList
 		NhlPError(NhlWARNING,NhlEUNKNOWN,
 			"Unable to set Data resource \"%s\":Invalid Array",
 					NrmQuarkToString(oset->res_name));
-		return NhlWARNING;
+		ret = NhlWARNING;
+		goto BADARRAY;
 	}
 
 	/*
@@ -865,7 +868,7 @@ CompileDataList
 			"Ignoring duplicate data \"%s\" in resource \"%s\"",
 							NhlName(llist[j]),
 					NrmQuarkToString(oset->res_name));
-
+				ret = NhlWARNING;
 				llist[j] = llist[--len];
 			}
 			else
@@ -882,7 +885,9 @@ CompileDataList
 		NhlPError(NhlFATAL,ENOMEM,NULL);
 		(void)NhlFree(ilist);
 		(void)NhlFree(dnodes);
-		return NhlFATAL;
+		(void)NhlFree(gen);
+		ret = NhlWARNING;
+		goto BADARRAY;
 	}
 
 	gen->data = ilist;
@@ -912,6 +917,16 @@ CompileDataList
 	}
 
 	ilist->num_items = len + j;
+
+	if(ilist->num_items < 1){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			"%s:DataList has no valid members",func);
+		(void)NhlFree(ilist);
+		(void)NhlFree(dnodes);
+		(void)NhlFree(gen);
+		ret = NhlWARNING;
+		goto BADARRAY;
+	}
 	ilist->extra = NULL;
 	ilist->shared_list = False;
 	ilist->dcl = dcl;
@@ -920,6 +935,11 @@ CompileDataList
 	*(NhlGenArray*)((char*)dcl + oset->offset) = gen;
 
 	return NhlNOERROR;
+
+BADARRAY:
+	*(NhlGenArray*)((char*)dcl + oset->offset) = NULL;
+
+	return ret;
 }
 
 /*

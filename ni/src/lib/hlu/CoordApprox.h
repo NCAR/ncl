@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordApprox.h,v 1.3 1994-12-16 20:03:59 boote Exp $
+ *      $Id: CoordApprox.h,v 1.4 1995-01-24 01:25:08 boote Exp $
  */
 /************************************************************************
 *									*
@@ -68,7 +68,7 @@ typedef struct _NhlCoordDat {
 	float	y_int_max;
 } NhlCoordDat;
 
-NhlErrorTypes _NhlCreateSplineCoordApprox(
+extern NhlErrorTypes _NhlCreateSplineCoordApprox(
 #if	NhlNeedProto
 NhlCoordDat * /*thedat */,
 int	/* x_use_log */,
@@ -88,13 +88,13 @@ NhlStatus	*/* ystatus */
 #endif
 );
 
-NhlErrorTypes _NhlDestroySplineCoordApprox(
+extern NhlErrorTypes _NhlDestroySplineCoordApprox(
 #if	NhlNeedProto
 NhlCoordDat */* thedat */
 #endif
 );
 
-NhlErrorTypes _NhlEvalSplineCoordForward(
+extern NhlErrorTypes _NhlEvalSplineCoordForward(
 #if	NhlNeedProto
 NhlCoordDat * 	/*thedat */,
 float		/* x */,
@@ -106,7 +106,7 @@ float*		/* ymissing */
 #endif
 );
 
-NhlErrorTypes _NhlEvalSplineCoordInverse(
+extern NhlErrorTypes _NhlEvalSplineCoordInverse(
 #if	NhlNeedProto
 NhlCoordDat * 	/*thedat */,
 float		/* x */,
@@ -118,7 +118,7 @@ float*		/* ymissing */
 #endif
 );
 
-NhlErrorTypes _NhlMultiEvalSplineCoordForward(
+extern NhlErrorTypes _NhlMultiEvalSplineCoordForward(
 #if	NhlNeedProto
         NhlCoordDat     * /*thedat*/, 
         float           * /*x*/, 
@@ -132,7 +132,7 @@ float*		/* ymissing */
 #endif
 );
 
-NhlErrorTypes _NhlMultiEvalSplineCoordInverse(
+extern NhlErrorTypes _NhlMultiEvalSplineCoordInverse(
 #if	NhlNeedProto
         NhlCoordDat     * /*thedat*/, 
         float           * /*x*/, 
