@@ -1,38 +1,9 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.81 1995-02-22 22:16:45 haley Exp $
+#   $Id: ncargex.csh,v 1.82 1995-03-27 17:33:28 haley Exp $
 #
 
-#*************************#
-#                         #
-# ncargex usage statement #
-#                         #
-#*************************#
-if ($#argv < 1) then
-  echo "usage: ncargex [options] [example names]"
-  echo ""
-  echo " Options:"
-  echo ""
-  echo " To invoke various classes of examples:"
-  echo "   [-A] [-E] [-F] [-P] [-T] [-U] [-class] [-ps] [-x11]"
-  echo ""
-  echo " To invoke various utilities:"
-  echo "   [-areas] [-autograph] [-bivar] [-colconv] [-conpack]"
-  echo "   [-conran_family] [-conrec_family] [-dashline]       "
-  echo "   [-dashpack] [-ezmap] [-field_flow] [-gflash] [-gks] "
-  echo "   [-gridall] [-halftone] [-histogram] [-isosrfhr]     "
-  echo "   [-isosurface] [-labelbar] [-ngmisc] [-plotchar]     "
-  echo "   [-polypack] [-pwrite_family] [-scrolled_title]      "
-  echo "   [-seter] [-softfill] [-spps] [-streamlines]         "
-  echo "   [-surface] [-threed] [-vectors] [-wmap] [-misc]     "
-  echo ""
-  echo " Other options:"
-  echo "   [-W workstation_type] [-n] [-clean] [-onebyone] names"
-  echo ""
-  echo "See <man ncargex> for explanation of options." 
-  echo ""
-  exit
-endif
+if ($#argv < 1) goto usage
 
 #*********************************************#
 #                                             #
@@ -132,56 +103,78 @@ set default_msgs = (\
 	"Monochrome landscape encapsulated PostScript file is named" \
 	"Monochrome landscape interchange encapsulated PostScript file is named")
 
+set f_list
+set c_list
 #**********************#
 #                      #
 #  Set areas examples  #
 #                      #
 #**********************#
-set ex_areas   = (arex01 arex02)
-set tst_areas  = (tareas)
-set ttr_areas  = (cardb1 caredg carline cardb2 carfill carmap)
-set areas_list = ($ex_areas $tst_areas $ttr_areas)
+set areas_fex   = (arex01 arex02)
+set areas_ftst  = (tareas)
+set areas_fttr  = (cardb1 caredg carline cardb2 carfill carmap)
+set areas_flist = ($areas_fex $areas_ftst $areas_fttr)
+
+set areas_ctst  = (c_tareas)
+set areas_clist = ($areas_ctst)
+set f_list = ($f_list $areas_flist)
+set c_list = ($c_list $areas_clist)
 
 #**************************#
 #                          #
 #  Set autograph examples  #
 #                          #
 #**************************#
-set ex_autograph   = (agex01 agex02 agex03 agex04 agex05 agex06 agex07 \
+set autograph_fex   = (agex01 agex02 agex03 agex04 agex05 agex06 agex07 \
                       agex08 agex09 agex10 agex11 agex12 agex13)
-set tst_autograph  = (tautog tagupw)
-set fnd_autograph  = (fagaxclr fagaxlbl fagaxmax fagcuclr fagcudsh fagezmxy \
+set autograph_ftst  = (tautog tagupw)
+set autograph_ffnd  = (fagaxclr fagaxlbl fagaxmax fagcuclr fagcudsh fagezmxy \
                       fagezmy fagezxy fagezy fagilclr fagovrvw)
-set autograph_list = ($ex_autograph $tst_autograph $fnd_autograph)
+set autograph_flist = ($autograph_fex $autograph_ftst $autograph_ffnd)
+
+set autograph_cex   = (c_agex07)
+set autograph_clist = ($autograph_cex)
 
 #**********************#
 #                      #
 #  Set bivar examples  #
 #                      #
 #**********************#
-set ex_cbivar   = (cbex01)
-set ttr_cbivar  = (cidsfft)
-set cbivar_list = ($ex_cbivar $ttr_cbivar)
+set cbivar_fex   = (cbex01)
+set cbivar_fttr  = (cidsfft)
+set cbivar_flist = ($cbivar_fex $cbivar_fttr)
+
+set cbivar_cex   = (c_cbex01)
+set cbivar_clist = ($cbivar_cex)
+
+set f_list = ($f_list $cbivar_flist)
+set c_list = ($c_list $cbivar_clist)
 
 #************************#
 #                        #
 #  Set colconv examples  #
 #                        #
 #************************#
-set ex_colconv   = (coex01 coex02 coex03)
-set tst_colconv  = (tcolcv)
-set fnd_colconv  = (fcce01 fcce02)
-set colconv_list = ($ex_colconv $tst_colconv $fnd_colconv)
+set colconv_fex   = (coex01 coex02 coex03)
+set colconv_ftst  = (tcolcv)
+set colconv_ffnd  = (fcce01 fcce02)
+set colconv_flist = ($colconv_fex $colconv_ftst $colconv_ffnd)
+
+set colconv_cex   = (c_coex02)
+set colconv_clist = ($colconv_cex)
+
+set f_list = ($f_list $colconv_flist)
+set c_list = ($c_list $colconv_clist)
 
 #************************#
 #                        #
 #  Set conpack examples  #
 #                        #
 #************************#
-set ex_conpack   = (cpex01 cpex02 cpex03 cpex04 cpex05 cpex06 cpex07 \
-                    cpex08 cpex09 cpex10 cpex11 cpex12 ${ex_cbivar})
-set tst_conpack  = (tconpa)
-set ttr_conpack  = (ccpback ccpcff ccpcfx ccpcica ccpcir ccpcis ccpcit ccpclc \
+set conpack_fex  = (cpex01 cpex02 cpex03 cpex04 cpex05 cpex06 cpex07 \
+                    cpex08 cpex09 cpex10 cpex11 cpex12 ${cbivar_fex})
+set conpack_ftst = (tconpa)
+set conpack_fttr = (ccpback ccpcff ccpcfx ccpcica ccpcir ccpcis ccpcit ccpclc \
                     ccpcld ccpcldm ccpcldr ccpcll ccpclu ccpcnrc ccpdflt \
                     ccpezct ccpfil ccpga ccphand ccphcf ccphl ccphlt ccpila \
                     ccpils ccpilt ccpklb ccplbam ccplbdr ccpline ccpllb \
@@ -189,248 +182,388 @@ set ttr_conpack  = (ccpback ccpcff ccpcfx ccpcica ccpcir ccpcis ccpcit ccpclc \
                     ccpmovi ccpmpxy ccpncls ccpnet ccpnof ccpnsd ccppc ccppc1 \
                     ccppc2 ccppc3 ccppc4 ccppkcl ccppole ccpt2d ccprc ccprect \
                     ccprwc ccprwu ccpscam ccpset ccpsps1 ccpsps2 ccpspv \
-                    ccptitle ccpvp ccpvs colcon ${ttr_cbivar})
-set conpack_list = ($ex_conpack $tst_conpack $ttr_conpack)
+                    ccptitle ccpvp ccpvs colcon ${cbivar_fttr})
+set conpack_flist = ($conpack_fex $conpack_ftst $conpack_fttr)
+
+set conpack_cttr  = (c_colcon)
+set conpack_cex   = (${cbivar_cex})
+set conpack_clist = ($conpack_cex $conpack_cttr)
+
+set f_list = ($f_list $conpack_flist)
+set c_list = ($c_list $conpack_clist)
 
 #******************************#
 #                              #
 #  Set conran_family examples  #
 #                              #
 #******************************#
-set tst_cnrn_family  = (tconan tconaq tconas)
-set cnrn_family_list = (${tst_cnrn_family})
+set cnrn_family_ftst  = (tconan tconaq tconas)
+set cnrn_family_flist = (${cnrn_family_ftst})
+
+set f_list = ($f_list ${cnrn_family_flist})
 
 #******************************#
 #                              #
 #  Set conrec_family examples  #
 #                              #
 #******************************#
-set tst_cnrc_family  = (tconre tcnqck tcnsmt tcnsup)
-set cnrc_family_list = (${tst_cnrc_family})
+set cnrc_family_ftst  = (tconre tcnqck tcnsmt tcnsup)
+set cnrc_family_flist = (${cnrc_family_ftst})
+
+set f_list = ($f_list ${cnrc_family_flist})
 
 #*************************#
 #                         #
 #  Set dashline examples  #
 #                         #
 #*************************#
-set tst_dashline  = (tdashc tdashl tdashp tdashs)
-set fnd_dashline  = (fdlcurvd fdldashc fdldashd fdlsmth)
-set dashline_list = ($tst_dashline $fnd_dashline)
+set dashline_ftst  = (tdashc tdashl tdashp tdashs)
+set dashline_ffnd  = (fdlcurvd fdldashc fdldashd fdlsmth)
+set dashline_flist = ($dashline_ftst $dashline_ffnd)
+
+set dashline_cfnd  = (c_fdldashc)
+set dashline_clist = ($dashline_cfnd)
+
+set f_list = ($f_list $dashline_flist)
+set c_list = ($c_list $dashline_clist)
 
 #***********************#
 #                       #
 # set dashpack examples #
 #                       #
 #***********************#
-set tst_dashpack  = (tdshpk)
-set dashpack_list = ($tst_dashpack)
+set dashpack_ftst  = (tdshpk)
+set dashpack_flist = ($dashpack_ftst)
+
+set dashpack_ctst  = (c_tdshpk)
+set dashpack_clist = ($dashpack_ctst)
+
+set f_list = ($f_list $dashpack_flist)
+set c_list = ($c_list $dashpack_clist)
 
 #**********************#
 #                      #
 #  Set ezmap examples  #
 #                      #
 #**********************#
-set ex_ezmap   = (mpex01 mpex02 mpex03 mpex04 mpex05 mpex06 mpex07 mpex08 \
+set ezmap_fex   = (mpex01 mpex02 mpex03 mpex04 mpex05 mpex06 mpex07 mpex08 \
                   mpex09 mpex10 mpexfi eezmpa)
-set tst_ezmap  = (tezmap tezmpa)
-set ttr_ezmap  = (cezmap1 cezmap2 cezmap3 cmpclr cmpdd cmpdrw cmpel \
+set ezmap_ftst  = (tezmap tezmpa)
+set ezmap_fttr  = (cezmap1 cezmap2 cezmap3 cmpclr cmpdd cmpdrw cmpel \
                   cmpfil cmpgci cmpgrd cmpgrp cmpita cmpitm cmplab cmplbl \
                   cmplot cmpmsk cmpou cmppos cmpsat cmpsup cmptit cmptra \
                   cmpusr)
-set ezmap_list = ($ex_ezmap $tst_ezmap $ttr_ezmap)
+set ezmap_flist = ($ezmap_fex $ezmap_ftst $ezmap_fttr)
+
+set ezmap_cex   = (c_mpex05 c_eezmpa)
+set ezmap_clist = ($ezmap_cex)
+
+set f_list = ($f_list $ezmap_flist)
+set c_list = ($c_list $ezmap_clist)
 
 #***********************#
 #                       #
 #  Set gflash examples  #
 #                       #
 #***********************#
-set tst_gflash  = (tgflas)
-set gflash_list = ($tst_gflash)
+set gflash_ftst  = (tgflas)
+set gflash_flist = ($gflash_ftst)
+
+set gflash_ctst  = (c_tgflas)
+set gflash_clist = ($gflash_ctst)
+
+set f_list = ($f_list $gflash_flist)
+set c_list = ($c_list $gflash_clist)
 
 #******************#
 #                  #
 # set gks examples #
 #                  #
 #******************#
-set fnd_gks    = (fgke02 fgke03 fcell fcell0 fgpm01 fgkgpl fgkgpm fgkgtx \
+set gks_ffnd    = (fgke02 fgke03 fcell fcell0 fgpm01 fgkgpl fgkgpm fgkgtx \
                   fgklnclr fgklnwth fcirc)
-set pdc_gks    = (pgkex01 pgkex02 pgkex03 pgkex04 pgkex05 pgkex06 pgkex07 \
+set gks_fpdc    = (pgkex01 pgkex02 pgkex03 pgkex04 pgkex05 pgkex06 pgkex07 \
                   pgkex08 pgkex09 pgkex10 pgkex11 pgkex12 pgkex13 pgkex14 \
                   pgkex15 pgkex16 pgkex17 pgkex18 pgkex19 pgkex20 pgkex21 \
                   pgkex22 pgkex23 pgkex24 pgkex25 pgkex26)
-set gks_list   = ($fnd_gks $pdc_gks)
+set gks_flist   = ($gks_ffnd $gks_fpdc)
+
+set gks_cex     = (c_gtxpac)
+set gks_cpdc    = (c_pgkex21)
+set gks_clist   = ($gks_cex $gks_cpdc)
+
+set f_list = ($f_list $gks_flist)
+set c_list = ($c_list $gks_clist)
 
 #************************#
 #                        #
 #  Set gridall examples  #
 #                        #
 #************************#
-set tst_gridall  = (tgrida)
-set gridall_list = ($tst_gridall)
+set gridall_ftst  = (tgrida)
+set gridall_flist = ($gridall_ftst)
+
+set gridall_ctst  = (c_tgrida)
+set gridall_clist = ($gridall_ctst)
+
+set f_list = ($f_list $gridall_flist)
+set c_list = ($c_list $gridall_clist)
 
 #*************************#
 #                         #
 #  Set halftone examples  #
 #                         #
 #*************************#
-set tst_halftone  = (thafto)
-set halftone_list = ($tst_halftone)
+set halftone_ftst  = (thafto)
+set halftone_flist = ($halftone_ftst)
+
+set f_list = ($f_list $halftone_flist)
 
 #**************************#
 #                          #
 #  Set histogram examples  #
 #                          #
 #**************************#
-set tst_histogram  = (thstgr thstmv)
-set histogram_list = ($tst_histogram)
+set histogram_ftst  = (thstgr thstmv)
+set histogram_flist = ($histogram_ftst)
+
+set histogram_ctst  = (c_thstmv)
+set histogram_clist = ($histogram_ctst)
+
+set f_list = ($f_list $histogram_flist)
+set c_list = ($c_list $histogram_clist)
 
 #***********************#
 #                       #
 # set isosrfhr examples #
 #                       #
 #***********************#
-set tst_isosrfhr  = (tisohr)
-set isosrfhr_list = ($tst_isosrfhr)
+set isosrfhr_ftst  = (tisohr)
+set isosrfhr_flist = ($isosrfhr_ftst)
+
+set f_list = ($f_list $isosrfhr_flist)
 
 #*************************#
 #                         #
 # set isosurface examples #
 #                         #
 #*************************#
-set tst_isosurface  = (tisosr tpwrzi)
-set fnd_isosurface  = (fisissrf fispwrzi)
-set isosurface_list = ($tst_isosurface $fnd_isosurface)
+set isosurface_ftst  = (tisosr tpwrzi)
+set isosurface_ffnd  = (fisissrf fispwrzi)
+set isosurface_flist = ($isosurface_ftst $isosurface_ffnd)
+
+set isosurface_ctst  = (c_tisosr)
+set isosurface_clist = ($isosurface_ctst)
+
+set f_list = ($f_list $isosurface_flist)
+set c_list = ($c_list $isosurface_clist)
 
 #***********************#
 #                       #
 # set labelbar examples #
 #                       #
 #***********************#
-set ex_labelbar   = (elblba)
-set tst_labelbar  = (tlblba)
-set fnd_labelbar  = (clbfil clbbar clblbr)
-set labelbar_list = ($ex_labelbar $tst_labelbar $fnd_labelbar)
+set labelbar_fex   = (elblba)
+set labelbar_ftst  = (tlblba)
+set labelbar_ffnd  = (clbfil clbbar clblbr)
+set labelbar_flist = ($labelbar_fex $labelbar_ftst $labelbar_ffnd)
+
+set labelbar_cex   = (c_elblba)
+set labelbar_clist = ($labelbar_cex)
+
+set f_list = ($f_list $labelbar_flist)
+set c_list = ($c_list $labelbar_clist)
 
 #*********************#
 #                     #
 # set ngmisc examples #
 #                     #
 #*********************#
-set fnd_ngmisc  = (fngngdts fngwsym)
-set ngmisc_list = ($fnd_ngmisc)
+set ngmisc_ffnd  = (fngngdts fngwsym)
+set ngmisc_flist = ($ngmisc_ffnd)
+
+set ngmisc_cfnd  = (c_fngwsym)
+set ngmisc_clist = ($ngmisc_cfnd)
+
+set f_list = ($f_list $ngmisc_flist)
+set c_list = ($c_list $ngmisc_clist)
 
 #***********************#
 #                       #
 # set plotchar examples #
 #                       #
 #***********************#
-set ex_plotchar   = (epltch)
-set tst_plotchar  = (tpltch)
-set fnd_plotchar  = (fpchiqu fpcloqu fpcfonts)
-set plotchar_list = ($ex_plotchar $tst_plotchar $fnd_plotchar)
+set plotchar_fex   = (epltch)
+set plotchar_ftst  = (tpltch)
+set plotchar_ffnd  = (fpchiqu fpcloqu fpcfonts)
+set plotchar_flist = ($plotchar_fex $plotchar_ftst $plotchar_ffnd)
+
+set plotchar_cex   = (c_epltch)
+set plotchar_clist = ($plotchar_cex)
+
+set f_list = ($f_list $plotchar_flist)
+set c_list = ($c_list $plotchar_clist)
 
 #***********************#
 #                       #
 # set polypack examples #
 #                       #
 #***********************#
-set ex_polypack   = (ppex01)
-set tst_polypack  = (tppack)
-set polypack_list = ($ex_polypack $tst_polypack)
+set polypack_fex   = (ppex01)
+set polypack_ftst  = (tppack)
+set polypack_flist = ($polypack_fex $polypack_ftst)
+
+set polypack_cex   = (c_ppex01)
+set polypack_clist = ($polypack_cex)
+
+set f_list = ($f_list $polypack_flist)
+set c_list = ($c_list $polypack_clist)
 
 #****************************#
 #                            #
 # set pwrite_family examples #
 #                            #
 #****************************#
-set tst_pwrite  = (tpwrtx tpwry)
-set pwrite_list = ($tst_pwrite)
+set pwrite_ftst  = (tpwrtx tpwry)
+set pwrite_flist = ($pwrite_ftst)
+
+set f_list = ($f_list $pwrite_flist)
 
 #*****************************#
 #                             #
 # set scrolled title examples #
 #                             #
 #*****************************#
-set ex_scrlld_title   = (slex01)
-set tst_scrlld_title  = (tstitl)
-set fnd_scrlld_title  = (fslfont)
-set scrlld_title_list = (${ex_scrlld_title} ${tst_scrlld_title} \
-                         ${fnd_scrlld_title})
+set scrlld_title_fex   = (slex01)
+set scrlld_title_ftst  = (tstitl)
+set scrlld_title_ffnd  = (fslfont)
+set scrlld_title_flist = (${scrlld_title_fex} ${scrlld_title_ftst} \
+                         ${scrlld_title_ffnd})
+
+set scrlld_title_cex   = (c_slex01)
+set scrlld_title_clist = (${scrlld_title_cex})
+
+set f_list = ($f_list ${scrlld_title_flist})
+set _clist = ($c_list ${scrlld_title_clist})
 
 #********************#
 #                    #
 # set seter examples #
 #                    #
 #********************#
-set tst_seter  = (tseter)
-set seter_list = ($tst_seter)
+set seter_ftst  = (tseter)
+set seter_flist = ($seter_ftst)
+
+set f_list = ($f_list $seter_flist)
 
 #***********************#
 #                       #
 # set softfill examples #
 #                       #
 #***********************#
-set ex_softfill   = (sfex01 sfex02)
-set tst_softfill  = (tsoftf)
-set fnd_softfill  = (fsfwrld fsfsgfa)
-set softfill_list = ($ex_softfill $tst_softfill $fnd_softfill)
+set softfill_fex   = (sfex01 sfex02)
+set softfill_ftst  = (tsoftf)
+set softfill_ffnd  = (fsfwrld fsfsgfa)
+set softfill_flist = ($softfill_fex $softfill_ftst $softfill_ffnd)
+
+set softfill_cex   = (c_sfex02)
+set softfill_clist = ($softfill_cex)
+
+set f_list = ($f_list $softfill_flist)
+set c_list = ($c_list $softfill_clist)
 
 #*******************#
 #                   #
 # set spps examples #
 #                   #
 #*******************#
-set ex_spps   = (splogy sprevx)
-set fnd_spps  = (fspcurve fspline fsppoint fspponts fcoord fcoord1 fcoord2)
-set spps_list = ($ex_spps $fnd_spps)
+set spps_fex   = (splogy sprevx)
+set spps_ffnd  = (fspcurve fspline fsppoint fspponts fcoord fcoord1 fcoord2)
+set spps_flist = ($spps_fex $spps_ffnd)
+
+set spps_cfnd  = (c_fcoord2)
+set spps_clist = ($spps_cfnd)
+
+set f_list = ($f_list $spps_flist)
+set c_list = ($c_list $spps_clist)
 
 #**************************#
 #                          #
 # set streamlines examples #
 #                          #
 #**************************#
-set ex_streamlines   = (stex01 stex02 stex03)
-set tst_streamlines  = (tstrml)
-set fnd_streamlines  = (fstream ffex00 ffex01 ffex03 ffex04)
-set streamlines_list = ($ex_streamlines $tst_streamlines $fnd_streamlines)
+set streamlines_fex   = (stex01 stex02 stex03)
+set streamlines_ftst  = (tstrml)
+set streamlines_ffnd  = (fstream ffex00 ffex01 ffex03 ffex04)
+set streamlines_flist = ($streamlines_fex $streamlines_ftst $streamlines_ffnd)
+
+set streamlines_cfnd  = (c_ffex03)
+set streamlines_clist = ($streamlines_cfnd)
+
+set f_list = ($f_list $streamlines_flist)
+set c_list = ($c_list $streamlines_clist)
 
 #**********************#
 #                      #
 # set surface examples #
 #                      #
 #**********************#
-set ex_surface   = (srex01)
-set tst_surface  = (tsrfac tpwrzs)
-set fnd_surface  = (fsrezsrf fsrpwrzs fsrsrfac)
-set surface_list = ($ex_surface $tst_surface $fnd_surface)
+set surface_fex   = (srex01)
+set surface_ftst  = (tsrfac tpwrzs)
+set surface_ffnd  = (fsrezsrf fsrpwrzs fsrsrfac)
+set surface_flist = ($surface_fex $surface_ftst $surface_ffnd)
+
+set surface_cex   = (c_srex01)
+set surface_clist = ($surface_cex)
+
+set f_list = ($f_list $surface_flist)
+set c_list = ($c_list $surface_clist)
 
 #*********************#
 #                     #
 # set threed examples #
 #                     #
 #*********************#
-set tst_threed  = (tthree tpwrzt)
-set fnd_threed  = (fthex01 fthex02 fthex03 fthex04 fthex05)
-set threed_list = ($tst_threed $fnd_threed)
+set threed_ftst  = (tthree tpwrzt)
+set threed_ffnd  = (fthex01 fthex02 fthex03 fthex04 fthex05)
+set threed_flist = ($threed_ftst $threed_ffnd)
+
+set threed_cfnd  = (c_fthex01)
+set threed_clist = ($threed_cfnd)
+
+set f_list = ($f_list $threed_flist)
+set c_list = ($c_list $threed_clist)
 
 #**********************#
 #                      #
 # set vectors examples #
 #                      #
 #**********************#
-set ex_vectors   = (vvex01 vvex02 vvex03)
-set tst_vectors  = (tvelvc)
-set fnd_vectors  = (ffex00 ffex01 ffex02 ffex05 fcover)
-set vectors_list = ($ex_vectors $tst_vectors $fnd_vectors)
+set vectors_fex   = (vvex01 vvex02 vvex03)
+set vectors_ftst  = (tvelvc)
+set vectors_ffnd  = (ffex00 ffex01 ffex02 ffex05 fcover)
+set vectors_flist = ($vectors_fex $vectors_ftst $vectors_ffnd)
+
+set vectors_cex   = (c_vvex03)
+set vectors_clist = ($vectors_cex)
+
+set f_list = ($f_list $vectors_flist)
+set c_list = ($c_list $vectors_clist)
 
 #*******************#
 #                   #
 # set wmap examples #
 #                   #
 #*******************#
-set ex_wmap   = (wmex01 wmex02 wmex03 wmex04 wmex05 wmex06 wmex07 wmex08\
+set wmap_fex   = (wmex01 wmex02 wmex03 wmex04 wmex05 wmex06 wmex07 wmex08\
                  wmex09 wmex10 wmex11 wmex12 wmex13 wmex14)
-set wmap_list = ($ex_wmap)
+set wmap_flist = ($wmap_fex)
+
+set wmap_cex   = (c_wmex09)
+set wmap_clist = ($wmap_cex)
+
+set f_list = ($f_list $wmap_flist)
+set c_list = ($c_list $wmap_clist)
 
 #****************************************#
 #                                        #
@@ -438,62 +571,87 @@ set wmap_list = ($ex_wmap)
 #  all streamlines and vectors examples  #
 #                                        #
 #****************************************#
-set ex_field   = (stex01 stex02 stex03 vvex01 vvex02 vvex03)
-set tst_field  = (tstrml tvelvc)
-set fnd_field  = (fstream ffex00 ffex01 ffex02 ffex03 ffex04 ffex05 fcover)
-set field_list = ($ex_field $tst_field $fnd_field)
+set field_fex   = (stex01 stex02 stex03 vvex01 vvex02 vvex03)
+set field_ftst  = (tstrml tvelvc)
+set field_ffnd  = (fstream ffex00 ffex01 ffex02 ffex03 ffex04 ffex05 fcover)
+set field_flist = ($field_fex $field_ftst $field_ffnd)
+
+set field_cex   = (c_vvex03)
+set field_cfnd  = (c_ffex03)
+set field_clist = ($field_cex $field_cfnd)
 
 #****************************#
 #                            #
 # set miscellaneous examples #
 #                            #
 #****************************#
-set ex_misc   = (example bnchmk ncargworld)
-set misc_list = ($ex_misc)
+set misc_fex   = (example bnchmk ncargworld)
+set misc_flist = ($misc_fex)
+
+set f_list = ($f_list $misc_flist)
 
 #********************#
 #                    #
 # set class examples #
 #                    #
 #*******************#
-set ttr_class   = (class1 class2 class3)
-set class_list  = ($ttr_class)
+set class_fttr   = (class1 class2 class3)
+set class_flist  = ($class_fttr)
+
+set f_list = ($f_list $class_flist)
 
 #*************************************************************#
 #                                                             #
 # Some of the other examples are considered tutorial examples #
 #                                                             #
 #*************************************************************#
-set ttr_overlap = (mpex03 mpex05 arex01 sfex01 tsoftf)
+set overlap_fttr = (mpex03 mpex05 arex01 sfex01 tsoftf)
 
 #****************************************#
 #                                        #
 # Set lists of various types of examples #
 #                                        #
 #****************************************#
-set x11_list = (fgke01 fgke04)
-set ex_list  = ($ex_areas $ex_autograph $ex_colconv $ex_conpack $ex_ezmap \
-                $ex_field $ex_labelbar $ex_plotchar $ex_polypack \
-                ${ex_scrlld_title} $ex_softfill $ex_spps $ex_surface \
-                $ex_wmap $ex_misc)
+set list_fx11 = (fgke01 fgke04)
+set list_cx11 = (c_xwndws)
+set list_fex = ($areas_fex $autograph_fex $colconv_fex $conpack_fex \
+                $ezmap_fex $field_fex $labelbar_fex $plotchar_fex \
+                $polypack_fex ${scrlld_title_fex} $softfill_fex $spps_fex \
+                $surface_fex $wmap_fex $misc_fex)
 
-set tst_list = ($tst_areas $tst_autograph $tst_colconv $tst_conpack \
-                ${tst_cnrn_family} ${tst_cnrc_family} $tst_dashline \
-                $tst_dashpack \
-                $tst_ezmap $tst_field $tst_gflash $tst_gridall $tst_halftone \
-                $tst_histogram $tst_isosrfhr $tst_isosurface $tst_labelbar \
-                $tst_plotchar $tst_polypack $tst_pwrite ${tst_scrlld_title} \
-                $tst_seter $tst_softfill $tst_surface $tst_threed)
+set list_cex  = ($autograph_cex $colconv_cex $conpack_cex $ezmap_cex \
+                $field_cex $gks_cex $labelbar_cex $plotchar_cex $polypack_cex \
+                ${scrlld_title_cex} $softfill_cex $surface_cex \
+                $wmap_cex)
 
-set ttr_list = ($ttr_areas $ttr_conpack $ttr_ezmap $ttr_class)
+set list_ftst = ($areas_ftst $autograph_ftst $colconv_ftst $conpack_ftst \
+                ${cnrn_family_ftst} ${cnrc_family_ftst} $dashline_ftst \
+                $dashpack_ftst $ezmap_ftst $field_ftst $gflash_ftst \
+                $gridall_ftst $halftone_ftst $histogram_ftst $isosrfhr_ftst \
+                $isosurface_ftst $labelbar_ftst $plotchar_ftst $polypack_ftst \
+                $pwrite_ftst ${scrlld_title_ftst} $seter_ftst $softfill_ftst \
+                $surface_ftst $threed_ftst)
 
-set fnd_list = ($fnd_autograph $fnd_colconv $fnd_dashline $fnd_field $fnd_gks \
-                $fnd_isosurface $fnd_labelbar $fnd_ngmisc $fnd_plotchar \
-                ${fnd_scrlld_title} $fnd_softfill $fnd_spps $fnd_surface \
-                $fnd_threed)
+set list_ctst = ($areas_ctst $dashpack_ctst $gflash_ctst $gridall_ctst \
+                $histogram_ctst $isosurface_ctst)
 
-set pdc_list = ($pdc_gks)
-set ps_list = (pgkex19 pgkex20 pgkex21 pgkex22 pgkex23)
+set list_fttr = ($areas_fttr $conpack_fttr $ezmap_fttr $class_fttr)
+
+set list_cttr = ($conpack_cttr)
+
+set list_ffnd = ($autograph_ffnd $colconv_ffnd $dashline_ffnd $field_ffnd \
+                $gks_ffnd $isosurface_ffnd $labelbar_ffnd $ngmisc_ffnd \
+                $plotchar_ffnd ${scrlld_title_ffnd} $softfill_ffnd $spps_ffnd \
+                $surface_ffnd $threed_ffnd)
+
+set list_cfnd = ($dashline_cfnd $field_cfnd $ngmisc_cfnd $spps_cfnd \
+                 $threed_cfnd)
+
+set list_fpdc = ($gks_fpdc)
+set list_cpdc = ($gks_cpdc)
+
+set list_fps = (pgkex19 pgkex20 pgkex21 pgkex22 pgkex23)
+set list_cps = (c_pgkex21)
 
 #****************************************#
 #                                        #
@@ -525,217 +683,230 @@ while ($#argv > 0)
     case "-all":
     case "-A":
       shift
-      set names=($names $ex_list $tst_list $ttr_list $fnd_list $pdc_list)
+      set names=($names $list_fex $list_ftst $list_fttr $list_ffnd $list_fpdc \
+                 $list_cex $list_ctst $list_cttr $list_cfnd $list_cpdc)
+      breaksw
+
+    case "-c":
+    case "-C":
+      shift
+      set names=($names $c_list)
+      breaksw
+
+    case "-fortran":
+    case "-Fortran":
+      shift
+      set names=($names $f_list)
       breaksw
 
     case "-allexamples":
     case "-E":
       shift
-      set names=($names $ex_list)
+      set names=($names $list_fex $list_cex)
       breaksw
 
     case "-alltests":
     case "-T":
       shift
-      set names=($names $tst_list)
+      set names=($names $list_ftst $list_ctst)
       breaksw
         
     case "-alltutorial":
     case "-U":
       shift
-      set names=($names $ttr_list $ttr_overlap)
+      set names=($names $list_fttr $overlap_fttr $list_cttr)
       breaksw
         
     case "-allfundamental":
     case "-F":
       shift
-      set names=($names $fnd_list)
+      set names=($names $list_ffnd $list_cfnd)
       breaksw
         
     case "-allpdocs":
     case "-P":
       shift
-      set names=($names $pdc_list)
+      set names=($names $list_fpdc $list_cpdc)
       breaksw
         
     case "-areas":
       shift
-      set names=($names $areas_list)
+      set names=($names $areas_flist $areas_clist)
       breaksw
         
     case "-autograph":
       shift
-      set names=($names $autograph_list)
+      set names=($names $autograph_flist $autograph_clist)
       breaksw
 
     case "-bivar":
       shift
-      set names=($names $cbivar_list)
+      set names=($names $cbivar_flist $cbivar_clist)
       breaksw
 
     case "-colconv":
       shift
-      set names=($names $colconv_list)
+      set names=($names $colconv_flist $colconv_clist)
       breaksw
 
     case "-conpack":
       shift
-      set names=($names $conpack_list)
+      set names=($names $conpack_flist $conpack_clist)
       breaksw
 
     case "-conran_family":
       shift
-      set names=($names ${cnrn_family_list})
+      set names=($names ${cnrn_family_flist})
       breaksw
 
     case "-conrec_family":
       shift
-      set names=($names ${cnrc_family_list})
+      set names=($names ${cnrc_family_flist})
       breaksw
 
     case "-dashline":
       shift
-      set names=($names $dashline_list)
+      set names=($names $dashline_flist $dashline_clist)
       breaksw
 
     case "-dashpack":
       shift
-      set names=($names $dashpack_list)
+      set names=($names $dashpack_flist $dashpack_clist)
       breaksw
 
     case "-ezmap":
       shift
-      set names=($names $ezmap_list)
+      set names=($names $ezmap_flist $ezmap_clist)
       breaksw
 
     case "-field_flow":
       shift
-      set names=($names $field_list)
+      set names=($names $field_flist $field_clist)
       breaksw
 
     case "-gflash":
       shift
-      set names=($names $gflash_list)
+      set names=($names $gflash_flist $gflash_clist)
       breaksw
 
     case "-gks":
       shift
-      set names=($names $gks_list)
+      set names=($names $gks_flist $gks_clist)
       breaksw
 
     case "-gridall":
       shift
-      set names=($names $gridall_list)
+      set names=($names $gridall_flist $gridall_clist)
       breaksw
 
     case "-halftone":
       shift
-      set names=($names $halftone_list)
+      set names=($names $halftone_flist)
       breaksw
 
     case "-histogram":
       shift
-      set names=($names $histogram_list)
+      set names=($names $histogram_flist $histogram_clist)
       breaksw
 
     case "-isosrfhr":
       shift
-      set names=($names $isosrfhr_list)
+      set names=($names $isosrfhr_flist)
       breaksw
 
     case "-isosurface":
       shift
-      set names=($names $isosurface_list)
+      set names=($names $isosurface_flist $isosurface_clist)
       breaksw
 
     case "-labelbar":
       shift
-      set names=($names $labelbar_list)
+      set names=($names $labelbar_flist $labelbar_clist)
       breaksw
 
     case "-ngmisc":
       shift
-      set names=($names $ngmisc_list)
+      set names=($names $ngmisc_flist $ngmisc_clist)
       breaksw
 
     case "-plotchar":
       shift
-      set names=($names $plotchar_list)
+      set names=($names $plotchar_flist $plotchar_clist)
       breaksw
 
     case "-polypack":
       shift
-      set names=($names $polypack_list)
+      set names=($names $polypack_flist $polypack_clist)
       breaksw
 
     case "-pwrite_family":
       shift
-      set names=($names $pwrite_list)
+      set names=($names $pwrite_flist)
       breaksw
 
     case "-scrolled_title":
       shift
-      set names=($names ${scrlld_title_list})
+      set names=($names ${scrlld_title_flist} ${scrlld_title_clist})
       breaksw
 
     case "-seter":
       shift
-      set names=($names $seter_list)
+      set names=($names $seter_flist)
       breaksw
 
     case "-softfill":
       shift
-      set names=($names $softfill_list)
+      set names=($names $softfill_flist $softfill_clist)
       breaksw
 
     case "-spps":
       shift
-      set names=($names $spps_list)
+      set names=($names $spps_flist $spps_clist)
       breaksw
 
     case "-streamlines":
       shift
-      set names=($names $streamlines_list)
+      set names=($names $streamlines_flist $streamlines_clist)
       breaksw
 
     case "-surface":
       shift
-      set names=($names $surface_list)
+      set names=($names $surface_flist $surface_clist)
       breaksw
 
     case "-threed":
       shift
-      set names=($names $threed_list)
+      set names=($names $threed_flist $threed_clist)
       breaksw
 
     case "-vectors":
       shift
-      set names=($names $vectors_list)
+      set names=($names $vectors_flist $vectors_clist)
       breaksw
 
     case "-wmap":
       shift
-      set names=($names $wmap_list)
+      set names=($names $wmap_flist $wmap_clist)
       breaksw
 
     case "-misc":
       shift
-      set names=($names $misc_list)
+      set names=($names $misc_flist)
       breaksw
 
     case "-class":
       shift
-      set names=($names $class_list)
+      set names=($names $class_flist)
       breaksw
 
     case "-ps":
       shift
-      set names=($names $ps_list)
+      set names=($names $list_fps $list_cps)
       breaksw
 
     case "-x11":
       shift
-      set names=($names $x11_list)
+      set names=($names $list_fx11 $list_cx11)
       breaksw
 
     case "-clean":
@@ -777,9 +948,7 @@ while ($#argv > 0)
         set file_type
         set orient_type
         set color_type
-        set str1 = "$ws_type"
-        set str2
-        set str3
+        set str = ("$ws_type" "" "")
         set num = 1
 #************************#
 #                        #
@@ -796,9 +965,9 @@ while ($#argv > 0)
 # String is xxx.yyy.zzz #
 #                       #
 #***********************#
-          set str1 = `expr "$ws_type" : '\(.*\)\..*\..*'`
-          set str2 = `expr "$ws_type" : '.*\.\(.*\)\..*'`
-          set str3 = `expr "$ws_type" : '.*\..*\.\(.*\)'`
+          set str[1] = `expr "$ws_type" : '\(.*\)\..*\..*'`
+          set str[2] = `expr "$ws_type" : '.*\.\(.*\)\..*'`
+          set str[3] = `expr "$ws_type" : '.*\..*\.\(.*\)'`
           set num = 3
         else
           if ( `expr "$ws_type" : '.*\..*'` ) then
@@ -812,32 +981,23 @@ while ($#argv > 0)
             set num = 2
           endif
         endif
-        set found_strings = (1 1 1)  
-        if ($str1 != "") set found_strings[1] = 0
-        if ($str2 != "") set found_strings[2] = 0
-        if ($str3 != "") set found_strings[3] = 0
-        set strings = ($str1 $str2 $str3)
         set i = 1
         while ($i <= $num)
-          set str = $strings[$i]
           foreach ftype($file_types)
-            if ("$str" == "$ftype") then
-              set found_strings[$i] = 1
-              set file_type = "$str"
+            if ("$str[$i]" == "$ftype") then
+              set file_type = "$str[$i]"
               break
             endif
           end
           foreach otype($orient_types)
-            if ("$str" == "$otype") then
-              set found_strings[$i] = 1
-              set orient_type = "$str"
+            if ("$str[$i]" == "$otype") then
+              set orient_type = "$str[$i]"
               break
             endif
           end
           foreach ctype($color_types)
-            if ("$str" == "$ctype") then
-              set found_strings[$i] = 1
-              set color_type = "$str"
+            if ("$str[$i]" == "$ctype") then
+              set color_type = "$str[$i]"
               break
             endif
           end
@@ -850,18 +1010,12 @@ while ($#argv > 0)
 # then this is an error.                      #
 #                                             #
 #*********************************************#
-        if ("$file_type" == "")  then
+        if ("$file_type" == "" || \
+           ($num == 2 && ($orient_type == "" && $color_type == "")) || \
+           ($num == 3 && ($orient_type == "" || $color_type == ""))) then
           set not_valid
           goto invalid
         endif
-        set i = 1
-        while ($i <= $num)
-          if ("$found_strings[$i]" == 0 ) then
-            set not_valid
-            goto invalid
-          endif
-          @ i++
-        end  
         if ("$orient_type" == "") set orient_type = "port"
         if ("$color_type" == "") set color_type = "color"
         set str = "$file_type.$orient_type.$color_type"
@@ -900,7 +1054,7 @@ while ($#argv > 0)
 invalid:
       if ($?not_valid) then
           echo ""
-          echo "    '$1' is not a valid workstation type"
+          echo "    '$1' is not a valid workstation type."
           echo ""
           exit 1
       endif
@@ -928,6 +1082,8 @@ invalid:
       breaksw
     endsw
 end
+
+if ($names == "") goto usage
 
 #***********************************************#
 #                                               #
@@ -968,6 +1124,23 @@ unset tmp_msg
 set input
 set output
 
+#******************************************#
+#                                          #
+# Determine if it's a C or Fortran example #
+#                                          #
+#******************************************#
+unset fprog
+unset cprog
+if ( `expr "$name" : "c_.*"`) then 
+  set cprog
+  set prog_type = "C"
+  set comp_script = "ncargcc"
+else
+  set fprog
+  set prog_type = "Fortran"
+  set comp_script = "ncargf77"
+endif
+
 #*************************************#
 #                                     #
 # Find out what type of example it is #
@@ -975,7 +1148,7 @@ set output
 #*************************************#
 set ex_type="Unknown"
 
-foreach known ($ex_list)
+foreach known ($list_fex $list_cex $list_cx11)
   if ("$name" == "$known") then
     set ex_type
     set temp_dir = "$example_dir"
@@ -984,9 +1157,9 @@ foreach known ($ex_list)
 end
 
 if ( $ex_type == "Unknown" ) then
-  foreach known ($tst_list)
+  foreach known ($list_ftst $list_ctst)
     if ("$name" == "$known") then
-      set ex_type=" Test"
+      set ex_type= "Test"
       set temp_dir = "$test_dir"
       break
     endif
@@ -994,9 +1167,9 @@ if ( $ex_type == "Unknown" ) then
 endif
 
 if ( $ex_type == "Unknown" ) then
-  foreach known ($ttr_list)
+  foreach known ($list_fttr $list_cttr)
     if ("$name" == "$known") then
-      set ex_type=" Tutorial"
+      set ex_type="Tutorial"
       set temp_dir = "$tutor_dir"
       break
     endif
@@ -1004,9 +1177,9 @@ if ( $ex_type == "Unknown" ) then
 endif
 
 if ( $ex_type == "Unknown" ) then
-  foreach known ($fnd_list $x11_list)
+  foreach known ($list_ffnd $list_cfnd $list_fx11)
     if ("$name" == "$known") then
-      set ex_type=" Fundamentals"
+      set ex_type="Fundamentals"
       set temp_dir = "$fund_dir"
       break
     endif
@@ -1014,9 +1187,19 @@ if ( $ex_type == "Unknown" ) then
 endif
 
 if ( $ex_type == "Unknown" ) then
-  foreach known ($pdc_list)
+  foreach known ($list_ffnd $list_cfnd)
     if ("$name" == "$known") then
-      set ex_type=" Programmer"
+      set ex_type="Fundamentals"
+      set temp_dir = "$fund_dir"
+      break
+    endif
+  end
+endif
+
+if ( $ex_type == "Unknown" ) then
+  foreach known ($list_fpdc $list_cpdc)
+    if ("$name" == "$known") then
+      set ex_type= "Programmer"
       set temp_dir = "$pdoc_dir"
       break
     endif
@@ -1036,7 +1219,7 @@ if ( "$ex_type" == "Unknown" ) then
   goto theend
 else
   echo ""
-  echo "NCAR Graphics Fortran$ex_type Example <$name>"
+  echo "NCAR Graphics $prog_type $ex_type Example <$name>"
   echo ""
 endif
 
@@ -1052,6 +1235,7 @@ switch($name)
     case pgkex21:
     case pgkex22:
     case pgkex23:
+    case c_pgkex21:
       set tmp_ws_type = "20"
       echo ""
       echo "  This example was set up to demonstrate the Postscript"
@@ -1129,7 +1313,11 @@ set suffix = "$suffix_names[$the_ws_type]"
 set graphic_file = "$name.$suffix"
 set default_file = $default_files[$the_ws_type]
 set msg = "$default_msgs[$the_ws_type] $graphic_file."
-set main = "$name.f"
+if ($?fprog) then
+  set main = "$name.f"
+else
+  set main = "$name.c"
+endif
 
 if ($?tmp_msg) then
   set msg = "$tmp_msg"
@@ -1155,7 +1343,6 @@ if ("$the_ws_type" == "10") then
   set output = "$graphic_file"
 endif
 
-
 #***********************************************#
 #                                               #
 # If the "-unique" option was selected and the  #
@@ -1171,9 +1358,9 @@ if ($?Unique && -f $graphic_file) goto theend
 #                                                #
 #************************************************#
 if ("$ws_type" == "8") then
-  set ncargf77flags = ($X11_option)
+  set comp_flags = ($X11_option)
 else
-  set ncargf77flags = ("")
+  set comp_flags = ("")
 endif
 
 #**********************************#
@@ -1183,7 +1370,7 @@ endif
 # compiler options                 #
 #                                  #
 #**********************************#
-set extra_fort_files
+set extra_src_files
 set data_files
 
 switch ($name)
@@ -1199,7 +1386,7 @@ switch ($name)
     case ccpmap:
     case ccpmovi:
     case ccpvp:
-        set extra_fort_files = (ggdini.f)
+        set extra_src_files = (ggdini.f)
     breaksw
 
     case ccpila:
@@ -1231,7 +1418,7 @@ switch ($name)
     case cpex07:
     case cpex08:
     case cpex09:
-        set extra_fort_files = (cpexcc.f)
+        set extra_src_files = (cpexcc.f)
     breaksw
 
     case fcover:
@@ -1240,6 +1427,7 @@ switch ($name)
 
     case ffex02:
     case ffex03:
+    case c_ffex03:
         set data_files = (ffex02.dat)
     breaksw
 
@@ -1257,15 +1445,16 @@ switch ($name)
     case mpex08:
     case mpex09:
     case mpex10:
-        set extra_fort_files = (mpexcc.f)
+        set extra_src_files = (mpexcc.f)
     breaksw
 
     case mpexfi:
         set data_files = (mpexfi.dat)
-        set extra_fort_files = (mpexcc.f)
+        set extra_src_files = (mpexcc.f)
     breaksw
 
     case srex01:
+    case c_srex01:
         set data_files = (srex01.dat)
     breaksw
 #************************************************#           
@@ -1274,7 +1463,7 @@ switch ($name)
 #                                                #
 #************************************************#           
     case tagupw:
-        set ncargf77flags = ($ncargf77flags "-agupwrtx")
+        set comp_flags = ($comp_flags "-agupwrtx")
     breaksw
 
 #***************************#           
@@ -1285,7 +1474,7 @@ switch ($name)
     case tdashs:
     case tcnsmt:
     case tconan:
-        set ncargf77flags = ($ncargf77flags "-smooth")
+        set comp_flags = ($comp_flags "-smooth")
     breaksw
 #****************#           
 #                #
@@ -1295,7 +1484,7 @@ switch ($name)
     case tdashl:
     case tcnqck:
     case tconaq:
-        set ncargf77flags = ($ncargf77flags "-quick")
+        set comp_flags = ($comp_flags "-quick")
     breaksw
 #****************#
 #                #
@@ -1306,12 +1495,12 @@ switch ($name)
     case tcnsup:
     case tconas:
     case fdlsmth:
-        set ncargf77flags = ($ncargf77flags "-super")
+        set comp_flags = ($comp_flags "-super")
     breaksw
 
     case vvex01:
     case vvex02:
-        set extra_fort_files = (vvexcc.f)
+        set extra_src_files = (vvexcc.f)
     breaksw
 endsw
 
@@ -1341,7 +1530,7 @@ w
 q
 EOF
 
-set fort_files = ($extra_fort_files $main)
+set src_files = ($extra_src_files $main)
 
 #***********************#
 #                       #
@@ -1349,7 +1538,7 @@ set fort_files = ($extra_fort_files $main)
 #                       #
 #***********************#
    
-set copy_files = ($extra_fort_files $data_files)
+set copy_files = ($extra_src_files $data_files)
 
 foreach file($copy_files)
     echo "  Copying $file"
@@ -1365,7 +1554,7 @@ end
    
 if (! $?NoRunOption) then
     echo "Compiling and linking..."
-    ncargf77 $ncargf77flags -o $name $fort_files
+    $comp_script $comp_flags -o $name $src_files
     if ($status != 0) then
         echo ""
         echo "The compile and link failed."
@@ -1410,8 +1599,8 @@ endif
 # Remove unwanted files #
 #                       #
 #***********************#
-set rmfiles = ($data_files $fort_files $name)
-foreach file($fort_files)
+set rmfiles = ($data_files $src_files $name)
+foreach file($src_files)
   set obj_file = {$file:r}.o
   set rmfiles = ($rmfiles $obj_file)
 end
@@ -1439,3 +1628,36 @@ endif
 theend:
 
 end
+
+exit
+
+usage:
+#*************************#
+#                         #
+# ncargex usage statement #
+#                         #
+#*************************#
+echo "usage: ncargex [options] [example names]"
+echo ""
+echo " Options:"
+echo ""
+echo " To invoke various classes of examples:"
+echo "   [-A] [-E] [-F] [-P] [-T] [-U] [-class] [-ps] [-x11]"
+echo ""
+echo " To invoke various utilities:"
+echo "   [-areas] [-autograph] [-bivar] [-colconv] [-conpack]"
+echo "   [-conran_family] [-conrec_family] [-dashline]       "
+echo "   [-dashpack] [-ezmap] [-field_flow] [-gflash] [-gks] "
+echo "   [-gridall] [-halftone] [-histogram] [-isosrfhr]     "
+echo "   [-isosurface] [-labelbar] [-ngmisc] [-plotchar]     "
+echo "   [-polypack] [-pwrite_family] [-scrolled_title]      "
+echo "   [-seter] [-softfill] [-spps] [-streamlines]         "
+echo "   [-surface] [-threed] [-vectors] [-wmap] [-misc]     "
+echo ""
+echo " Other options:"
+echo "   [-W workstation_type] [-n] [-clean] [-onebyone] names"
+echo ""
+echo "See <man ncargex> for explanation of options." 
+echo ""
+exit
+
