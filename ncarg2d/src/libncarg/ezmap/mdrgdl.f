@@ -1,5 +1,5 @@
 C
-C $Id: mdrgdl.f,v 1.1 2001-09-19 17:10:36 kennison Exp $
+C $Id: mdrgdl.f,v 1.2 2001-09-20 23:37:20 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -39,7 +39,9 @@ C
 C
 C If EZMAP needs initialization, do it.
 C
-        IF (INTF) THEN
+        CALL MDGETI ('IN',INTF)
+C
+        IF (INTF.NE.0) THEN
           CALL MDPINT
           IF (ICFELL('MDRGDL',2).NE.0) RETURN
         END IF
