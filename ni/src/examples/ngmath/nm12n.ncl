@@ -47,6 +47,7 @@ yo = fspan(0.,1.,nyo)
 ;
 zo = ftsurf(xi,yi,zi,xo,yo)
 
+
 ;
 ; Create workstation object.
 ;
@@ -87,12 +88,10 @@ zo = ftsurf(xi,yi,zi,xo,yo)
 ;
 ;  Draw plot.
 ;
-rho = 5.
-theta = -36.
+rho = 3.
+theta = 36.
 phi = 67.
-zo!0 = "i"
-zo!1 = "j"
-tdez2d(gkswid, yo, xo, zo(j|:,i|:), rho, theta, phi, 6)
+tdez2d(gkswid, xo, yo, zo, rho, theta, phi, -6)
 frame(wid)
 
 end

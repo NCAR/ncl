@@ -86,9 +86,7 @@ getvalues wid
   "wkGksWorkId" : gkswid
 end getvalues
 
-output!0 = "i"
-output!1 = "j"
-tdez2d(gkswid, xo, yo, output(j|:,i|:), rho, theta, phi, 6)
+tdez2d(gkswid, xo, yo, output, rho, theta, phi, 6)
 frame(wid)
 
 ;
@@ -97,9 +95,7 @@ frame(wid)
 dssetp("exp", 1.0)
 output = dsgrid2s(xi, yi, zi, xo, yo )
 
-output!0 = "i"
-output!1 = "j"
-tdez2d(gkswid, xo, yo, output(j|:,i|:), rho, theta, phi, 6)
+tdez2d(gkswid, xo, yo, output, rho, theta, phi, 6)
 frame(wid)
 
 ;
@@ -110,7 +106,7 @@ output = dsgrid2s(xi, yi, zi, xo, yo)
 
 output!0 = "i"
 output!1 = "j"
-tdez2d(gkswid, xo, yo, output(j|:,i|:), rho, theta, phi, 6)
+tdez2d(gkswid, xo, yo, output, rho, theta, phi, 6)
 frame(wid)
 
 end

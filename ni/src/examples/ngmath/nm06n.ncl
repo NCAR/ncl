@@ -114,14 +114,10 @@ getvalues wid
   "wkGksWorkId" : gkswid
 end getvalues
 
-output1!0 = "i"
-output1!1 = "j"
-tdez2d(gkswid, xo, yo, output1(j|:,i|:), rho, theta, phi, 6)
+tdez2d(gkswid, xo, yo, output1, rho, theta, phi, 6)
 frame(wid)
 
-output2!0 = "i"
-output2!1 = "j"
-tdez2d(gkswid, xo, yo, output2(j|:,i|:), rho, theta, phi, 6)
+tdez2d(gkswid, xo, yo, output2, rho, theta, phi, 6)
 frame(wid)
 
 end
