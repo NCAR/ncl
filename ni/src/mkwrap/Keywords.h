@@ -20,6 +20,7 @@ static KEY fkeytab [] = {
 	"DIMSIZES","dimsizes",DIMSIZES,
 	"DATA","data",DATA,
 	"SAVE","save",SAVE,
+	"COMMON","common",COMMON,
 	"FUNCTION","function",FUNCTION,
 	"REAL","real",REAL,
 	NULL,NULL,0

@@ -1,5 +1,4 @@
 %{
-#include <stdio.h>
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/NresDB.h>
 #include <ncarg/ncl/defs.h>
@@ -20,7 +19,7 @@ digit [0-9]
 #endif
 	return(EOLN);
 }
-<fortsec,wrapsec,fortsec2>[\n]+"     "({alnum}|"+"|"*")[ \t]* {
+<fortsec,wrapsec,fortsec2>[\n]+"     "({alnum}|"+"|"*"|"&"|"$"|"#"|"-"|"@"|"^"|"!")[ \t]* {
 #ifdef LEXDEBUG
 	fprintf(stdout,"Line Continuation\n");
 #endif
