@@ -14,7 +14,7 @@
 #include <ncarg/ncl/NclCallBacksI.h>
 #include <math.h>
 
-extern void NGCALLF(dfiltrq,DFILTRQ)(int*,double*,double*,int*,int*,
+extern void NGCALLF(dfiltrq,DFILTRQ)(int*,double*,double*,double*,int*,
                                      double*,double*,double*,int*);
 
 NhlErrorTypes filwgts_lancos_W( void )

@@ -324,6 +324,8 @@ extern NhlErrorTypes linmsg_W(void);
 extern NhlErrorTypes linint1_W(void);
 extern NhlErrorTypes linint2_W(void);
 extern NhlErrorTypes linint2_points_W(void);
+extern NhlErrorTypes rcm2rgrid_W(void);
+extern NhlErrorTypes rgrid2rcm_W(void);
 extern NhlErrorTypes pres_hybrid_W(void);
 extern NhlErrorTypes pres_hybrid_ccm_W(void);
 extern NhlErrorTypes dpres_hybrid_W(void);
@@ -4168,6 +4170,32 @@ void NclAddUserFuncs(void)
 
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
     NclRegisterFunc(linint2_points_W,args,"linint2_points",nargs);
+
+/*
+ * Register "rcm2rgrid".
+ */
+    nargs = 0;
+    args = NewArgs(6);
+    SetArgTemplate(args,nargs,"numeric",2,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",2,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+    NclRegisterFunc(rcm2rgrid_W,args,"rcm2rgrid",nargs);
+
+/*
+ * Register "rgrid2rcm".
+ */
+    nargs = 0;
+    args = NewArgs(6);
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",2,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",2,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+    NclRegisterFunc(rgrid2rcm_W,args,"rgrid2rcm",nargs);
 
 /*
  * Register "pres_hybrid".

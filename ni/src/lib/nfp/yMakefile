@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.55 2001-09-28 20:32:25 haley Exp $
+#      $Id: yMakefile,v 1.56 2001-10-19 16:44:59 haley Exp $
 #
 #########################################################################
 #									#
@@ -35,7 +35,7 @@ CSRCS = areavolW.c betaincW.c bytesW.c calcorcW.c chiinvW.c conformW.c \
 	int2pW.c invmatrixW.c julGregW.c linint2W.c linmsgW.c linroodW.c \
 	locminmaxW.c mapgciW.c natgridW.c ncolorW.c ngmiscW.c nicevalsW.c \
 	outputgif.c paleoW.c prcwatW.c preshybW.c pressigW.c probtestW.c \
-	randomW.c regcoefW.c relhumW.c remapW.c rhombtriW.c shgridW.c \
+	randomW.c rcmW.c regcoefW.c relhumW.c remapW.c rhombtriW.c shgridW.c \
 	sindexW.c slpW.c skewtW.c smth9W.c sortW.c specxW.c sph2W.c \
 	sphintW.c sstoiW.c statW.c svdW.c taperW.c tdpackW.c trvsphW.c \
 	varimaxW.c vibetaW.c waveletW.c wgneW.c wmapW.c wrunaveW.c wrapper.c \
@@ -48,7 +48,7 @@ COBJS = areavolW.o betaincW.o bytesW.o calcorcW.o chiinvW.o conformW.o \
 	int2pW.o invmatrixW.o julGregW.o linint2W.o linmsgW.o linroodW.o \
 	locminmaxW.o mapgciW.o natgridW.o ncolorW.o ngmiscW.o nicevalsW.o \
 	outputgif.o paleoW.o prcwatW.o preshybW.o pressigW.o probtestW.o \
-	randomW.o regcoefW.o relhumW.o remapW.o rhombtriW.o shgridW.o \
+	randomW.o rcmW.o regcoefW.o relhumW.o remapW.o rhombtriW.o shgridW.o \
 	sindexW.o slpW.o skewtW.o smth9W.o sortW.o specxW.o sph2W.o \
 	sphintW.o sstoiW.o statW.o svdW.o taperW.o tdpackW.o trvsphW.o \
 	varimaxW.o vibetaW.o waveletW.o wgneW.o wmapW.o wrunaveW.o wrapper.o \
@@ -62,8 +62,8 @@ FSRCS = aam.f areaAve.f areaRmse.f dbetai.f calcorc_dp.f chiin_dp.f \
 	fo2fs_dp.f gausLobat.f grid2triple.f hydro_dp.f index77_dp.f \
 	int2p_dp.f julGreg.f linint2.f linmsg_dp.f localMinMax.f \
 	paleo_coasts.f phybrid_ccm.f prcwat.f preshybrid.f prneof_dp.f \
-	prneofts_dp.f psigma.f random_dp.f rdsstoi.f regcoef_dp.f \
-	relhum_dp.f remap.f rhombtri_dp.f rmsd.f rmStndx_dp.f \
+	prneofts_dp.f psigma.f random_dp.f rcm2rgrid.f rdsstoi.f \
+	regcoef_dp.f relhum_dp.f remap.f rhombtri_dp.f rmsd.f rmStndx_dp.f \
 	runave_dp.f rvdv.f setrig.f skewT.f smth9_dp.f sp2_util.f \
 	sp2_util_dp.f specx_dp.f statx.f statx_dp.f svd_lap_dp.f \
 	svd_util_dp.f taper.f tdez1d.f ttest.f trssphx.f trvsphx.f \
@@ -78,8 +78,8 @@ FOBJS = aam.o areaAve.o areaRmse.o dbetai.o calcorc_dp.o chiin_dp.o \
 	fo2fs_dp.o gausLobat.o grid2triple.o hydro_dp.o index77_dp.o \
 	int2p_dp.o julGreg.o linint2.o linmsg_dp.o localMinMax.o \
 	paleo_coasts.o phybrid_ccm.o prcwat.o preshybrid.o prneof_dp.o \
-	prneofts_dp.o psigma.o random_dp.o rdsstoi.o regcoef_dp.o \
-	relhum_dp.o remap.o rhombtri_dp.o rmsd.o rmStndx_dp.o \
+	prneofts_dp.o psigma.o random_dp.o rcm2rgrid.o rdsstoi.o \
+	regcoef_dp.o relhum_dp.o remap.o rhombtri_dp.o rmsd.o rmStndx_dp.o \
 	runave_dp.o rvdv.o setrig.o skewT.o smth9_dp.o sp2_util.o \
 	sp2_util_dp.o specx_dp.o statx.o statx_dp.o svd_lap_dp.o \
 	svd_util_dp.o taper.o tdez1d.o ttest.o trssphx.o trvsphx.o \
