@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ctrans.m,v 1.21 1994-05-04 15:15:40 haley Exp $
+.\"	$Id: ctrans.m,v 1.22 1995-06-05 18:57:53 haley Exp $
 .\"
 .\" ctrans 3.2 
 .TH CTRANS 1NCARG "January 1993" NCARG "NCAR GRAPHICS"
@@ -84,11 +84,7 @@ of plotting routines is available.
 Currently, the following
 .I Graphcap
 independent devices are supported:
-.B sunview,
-under Sun's
-.I Sunview; 
-and
-.B X11, 
+.B X11 
 under release 4 and 5, version 11 of 
 .I X.
 .LP
@@ -138,14 +134,9 @@ searches the directory $NCARG_ROOT/lib/ncarg/graphcaps for the graphcap.
 For all device specifications
 except
 .B X11
-and
-.BR sunview ,
 output is directed to standard out. In the case of
 .B X11
-and
-.B sunview
-translation results in appropriate calls to the X11 and Sunview
-libraries respectively.
+translation results in appropriate calls to the X11 libraries.
 See 
 .BR graphcap(5NCARG)
 for a description of supported devices. 
@@ -250,9 +241,7 @@ By default translator output is written to the standard output. This option
 has no effect for devices of which 
 .B ctrans
 has a function-callable interface. e.g. 
-.B X11
-and
-.BR sunview .
+.B X11 .
 .TP
 .BI \-pal " pal_fname"
 Use the color palette defined in the file
@@ -465,29 +454,6 @@ from processing the entire metafile without pausing between frames.
 .IP
 .I window_id 
 may be specified as a decimal or hexidecimal integer.
-.PP
-The following options are available when 
-.I device 
-is 
-.BR sunview : 
-.TP
-.BI \-Ws " width height"
-.br
-.I width
-and
-.I height
-are the dimension in pixels of a window created with
-the
-.B sunview
-device.
-.TP
-.BI \-Wp " x y"
-.B x
-and
-.B y
-specify the x and y coordinates of the window created with the
-.B sunview
-device. 
 .PP
 The following options are available when 
 .I device 

@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ictrans.m,v 1.18 1994-05-04 15:15:47 haley Exp $
+.\"	$Id: ictrans.m,v 1.19 1995-06-05 18:57:54 haley Exp $
 .\"
 .\" ictrans 3.01 90/06/22 
 .TH ICTRANS 1NCARG "January 1993" NCARG "NCAR GRAPHICS"
@@ -92,14 +92,9 @@ searches the directory $NCARG_ROOT/lib/ncarg/graphcaps for the graphcap.
 For all device specifications
 except
 .B X11
-and
-.BR sunview ,
 output is directed to standard out. In the case of
 .B X11
-and
-.B sunview
-translation results in appropriate calls to the X11 and Sunview
-libraries respectively.
+translation results in appropriate calls to the X11 libraries.
 See 
 .BR graphcap(5NCARG)
 for a description of supported devices. 
