@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.3 1993-01-09 02:07:53 fred Exp $
+#	$Id: yMakefile,v 1.4 1993-01-11 20:53:57 don Exp $
 #
 NCARG	= ../../../..
 
@@ -54,7 +54,7 @@ wks.o:	wks.h
 
 wks.c: wks.c.sed Makefile
 	@$(CALLCONV) $(SYSTEM_INCLUDE) wks.c \
-		opnwks clswks wrtwks rdwks begwks lstwks
+		opnwks clswks wrtwks rdwks begwks lstwks flswks
 
 wks.h: wks.h.sed Makefile
 	@sed \

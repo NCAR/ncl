@@ -1,11 +1,10 @@
 C
-C	$Id: g01mio.f,v 1.1.1.1 1992-04-17 22:33:58 ncargd Exp $
+C	$Id: g01mio.f,v 1.2 1993-01-11 20:53:53 don Exp $
 C
       SUBROUTINE G01MIO (OP, UNIT, FNAME, BUFFER, LENGTH, ERROR)
-C Modification for UNIX Version
 C------------------------------------------------------------------------------
 C
-C	g01mio.f - UNIX Version of G01MIO().
+C	g01mio.f
 C
 C	The UNIX version of this routine allows the metafile
 C	output to be specified using environment variables.
@@ -30,7 +29,6 @@ C	(NOTE: stdout to a translator is not used because of
 C	potential conflicts with user code writing to LU 6.
 C
 C------------------------------------------------------------------------------
-C End of modification for UNIX Version
 C
 C  CENTRAL I/O ROUTINE FOR METAFILE GENERATOR.
 C
@@ -43,6 +41,7 @@ C               =4, READ IABS(UNIT) TO BUFFER
 C               =5, POSITION THE RECORD POINTER TO THE BEGINNING
 C                   OF THE FILE.
 C               =6, POSITION THE RECORD POINTER TO THE PREVIOUS RECORD.
+C               =7, FLUSH THE I/O BUFFERS FOR UNIT
 C      UNIT   - IABS(UNIT) IS THE FORTRAN LUN ON WHICH OP IS
 C               TO OCCUR.
 C      FNAME  - FILENAME USED FOR OPEN.
@@ -76,7 +75,6 @@ C
 C
 C  LOCAL VARIABLES.
 C
-C Modification for UNIX Version
       INTEGER IAUNT
 C
 C
@@ -113,6 +111,11 @@ C Move file pointer back one record
 
       ELSE IF (OP.EQ.6) THEN
 	CALL LSTWKS(IAUNT, ERROR)
+
+C Flush the I/O buffers for a given unit
+
+      ELSE IF (OP.EQ.7) THEN
+	CALL FLSWKS(IAUNT, ERROR)
 
       ENDIF
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: wks.c.sed,v 1.4 1992-10-02 21:57:15 clyne Exp $
+ *      $Id: wks.c.sed,v 1.5 1993-01-11 20:53:55 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -74,6 +74,7 @@
 ***********************************************************************/
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/types.h>
@@ -87,17 +88,29 @@
 #define FORK    fork
 #endif
 
+static int		wks_init   = FALSE;
+
+/* Environment variables. */
+
+static char		*gks_gencgm_env  = (char *) NULL;
+static char		*gks_output_env  = (char *) NULL;
+static char		*gks_debug_env   = (char *) NULL;
+static char		*gks_bufsize_env = (char *) NULL;
+
 /*
 The table "mftab" is used to maintain the list of fake Fortran
-logical units. The file pointer, type of file, and any associated
-I/O buffers are maintained here.
+logical units. The file pointer, type of file, any associated
+I/O buffers, and a flag indicating if the stream is the "main"
+stream are maintained here.
 */
 
 static struct
 {
+	char	*name;
 	FILE	*fp;
 	int	type;
 	char	*buf;
+	int	segment;
 } mftab[MAX_UNITS];
 
 #ifdef STANDALONE
@@ -142,12 +155,8 @@ opnwks_(unit, fname, status)
 #endif
 	int	*status;
 {
-	static int	init = 0;
 	int		i, pipes[2], type, stat;
-	char		*gks_output, *gks_translator;
-	char		*getenv(), *p;
-	char		*malloc();
-	char		*bufsize_env = (char *) NULL;
+	char		*p;
 	int		bufsize = 0;
 	char		*otype;
 #ifdef ardent
@@ -156,20 +165,30 @@ opnwks_(unit, fname, status)
 	fname = string->text;
 #endif
 
-#ifdef DEBUG
-	(void) fprintf(stderr, "opnwks_(%d,%10s)\n",*unit,fname);
-#endif
-	/* Initialize the table that is used to track lu's */
+	/* Initialize the table that is used to track LU's. */
 
-	if (!init)
+	if (!wks_init)
 	{
+		/* Pick up the environment variables. */
+		gks_debug_env   = getenv("NCARG_GKS_DEBUG");
+		gks_output_env  = getenv("NCARG_GKS_OUTPUT");
+		gks_gencgm_env  = getenv("NCARG_GKS_GENCGM");
+		gks_bufsize_env = getenv("NCARG_GKS_BUFSIZE");
+
+		/* Initialize device table. */
 		for(i=0; i<MAX_UNITS; i++)
 		{
-			mftab[i].fp   = MF_CLOSED;
-			mftab[i].type = NO_OUTPUT;
-			mftab[i].buf  = (char *) NULL;
+			mftab[i].name    = (char *) NULL;
+			mftab[i].fp      = MF_CLOSED;
+			mftab[i].type    = NO_OUTPUT;
+			mftab[i].buf     = (char *) NULL;
+			mftab[i].segment = FALSE;
 		}
-		init++;
+		wks_init = TRUE;
+	}
+
+	if (gks_debug_env) {
+		(void) fprintf(stderr, "wks.c: opnwks_(%d,%10s)\n",*unit,fname);
 	}
 
 	if (*unit >= MAX_UNITS)
@@ -189,42 +208,75 @@ opnwks_(unit, fname, status)
 		return(0);
 	}
 
-	/* Determine whether to use file or pipe I/O and related names. */
 
-	if (!strcmp(fname, "GMETA"))
-	{
-		/* Catch the GMETA instance, its special */
+	/*
+	Segments, or "flash buffers", are different from
+	all other files. They must be files rather than
+	processes, and they must be NCAR-blocked CGM, so they
+	can be read back in.
+	*/
 
-		gks_output = getenv("NCARG_GKS_OUTPUT");
-		if (gks_output  == (char *)NULL)
+	if (!strncmp(fname, "GNFB", 4)) { /* It's a segment */
+
+		/* Output is a segment. */
+
+		mftab[*unit].type    = FILE_OUTPUT;
+		mftab[*unit].name    = malloc(strlen(fname)+1);
+		strcpy(mftab[*unit].name, fname);
+		mftab[*unit].segment = TRUE;
+	}
+	else {
+
+		/* Output is not a segment */
+
+		if (gks_output_env  == (char *) NULL)
 		{
-			type = FILE_OUTPUT;
-			gks_output = "gmeta";
+			/*
+			NCARG_GKS_OUTPUT is not set so output
+			filename is whatever comes down from
+			above.
+			*/
+			mftab[*unit].type = FILE_OUTPUT;
+
+			/* If file name is GMETA convert to lower case. */
+
+			if (!strcmp(fname, "GMETA")) {
+				mftab[*unit].name = "gmeta";
+			}
+			else {
+				mftab[*unit].name = malloc(strlen(fname)+1);
+				(void) strcpy(mftab[*unit].name, fname);
+			}
 		}
 		else
 		{
-			for(p=gks_output; *p==' ' && *p != '\0'; p++);
+			/*
+			NCARG_GKS_OUTPUT is set so find out
+			if it's to be a file or a translator
+			process.
+			*/
+
+			/* Skip blanks. */
+			for(p=gks_output_env; *p==' ' && *p != '\0'; p++);
 	
 			if (*p == '|')
 			{
+				/* Skip blanks. */
 				for(p++; *p==' ' && *p != '\0'; p++);
-	
-				type = PIPE_OUTPUT;
-				gks_translator = p;
+				mftab[*unit].type = PIPE_OUTPUT;
+				mftab[*unit].name =
+					malloc(strlen(p)+1);
+				(void) strcpy(mftab[*unit].name,p);
 			}
 			else
 			{
-				type = FILE_OUTPUT;
-				gks_output = p;
+				mftab[*unit].type = FILE_OUTPUT;
+				mftab[*unit].name =
+					malloc(strlen(gks_output_env)+1);
+				(void) strcpy(mftab[*unit].name,gks_output_env);
 			}
 		}
 	}
-	else
-	{
-		type = FILE_OUTPUT;
-		gks_output = fname;
-	}
-
 
 	/*
 	If GKS output is a file, open it for reading and writing.
@@ -245,11 +297,10 @@ opnwks_(unit, fname, status)
 	I/O is unbuffered.
 	*/
 
-	if ( type == PIPE_OUTPUT )
-	{
-		if ( strlen(gks_translator) == 0 )
+	if (mftab[*unit].type == PIPE_OUTPUT) {
+		if (strlen(mftab[*unit].name) == 0)
 		{
-			gks_translator = DEFAULT_TRANSLATOR;
+			mftab[*unit].name = DEFAULT_TRANSLATOR;
 		}
 
 		(void) pipe(pipes);
@@ -259,10 +310,11 @@ opnwks_(unit, fname, status)
 			(void) close(pipes[1]);
 			(void) close(0); 
 			(void) dup(pipes[0]);
-			(void) execlp(gks_translator, 
-				      gks_translator, "-", (char *) 0);
+			(void) execlp(mftab[*unit].name, 
+				      mftab[*unit].name, "-", (char *) 0);
 			(void) fprintf(stderr, 
-			"Error in opngks_(): Could not fork translator\n");
+			"wks.c: opngks_() - Could not fork translator \"%s\"\n",
+			mftab[*unit].name);
 			*status = 304;
 			return(0);
 		}
@@ -275,11 +327,7 @@ opnwks_(unit, fname, status)
 		}
 
 	}
-	else if (type == FILE_OUTPUT)
-	{
-#ifdef DEBUG
-		(void) fprintf(stderr,"Open file output for <%s>\n",gks_output);
-#endif
+	else {
 		/*
 		 * If file already exists  open it for reading/writing
 		 * If it does not exist create it and open it for
@@ -288,19 +336,22 @@ opnwks_(unit, fname, status)
 		 * "r+" fails if the file does not exist
 		 * clyne@ncar Mon Apr 20 15:01:23 MDT 1992
 		 */
-		if (access(gks_output, F_OK) == 0 )  {
+		if (access(mftab[*unit].name, F_OK) == 0 )  {
 			otype = "r+";	/* file exists	*/
 		}
-		else otype = "w+";
-		if (!strcmp(gks_output, "gmeta")) {
+		else {
+			otype = "w+";
+		}
+
+		if (!strcmp(mftab[*unit].name, "gmeta")) {
 			otype = "w+";	/* create the file	*/
 		}
 
-		mftab[*unit].fp = fopen(gks_output, otype);
+		mftab[*unit].fp = fopen(mftab[*unit].name, otype);
 		if (mftab[*unit].fp == (FILE *) NULL) {
 			(void) fprintf(stderr, 
-			"Error in opngks_(): Could not open <%s>\n", 
-			gks_output);
+			"wks.c: Error in opngks_(): Could not open \"%s\"\n", 
+			mftab[*unit].name);
 			*status = 304;
 			return(0);
 		}
@@ -311,28 +362,31 @@ opnwks_(unit, fname, status)
 		buffer size used. See notes at the top of this file.
 		*/
 
-		bufsize_env = getenv("NCARG_GKS_BUFSIZE");
-		if (bufsize_env == (char *) NULL) {
+		if (gks_bufsize_env == (char *) NULL) {
 			if (DEFAULT_GKS_BUFSIZE == 0) {
-				bufsize = BUFSIZ;
+				bufsize = BUFSIZ; /* from stdio.h */
 			}
 			else {
 				bufsize = 1024 * DEFAULT_GKS_BUFSIZE;
 			}
 		}
 		else {
-			bufsize = 1024 * atoi(bufsize_env);
+			bufsize = 1024 * atoi(gks_bufsize_env);
 			if (bufsize <= 0) {
-			fprintf(stderr,
+			(void) fprintf(stderr,
 			"opnwks(): User-supplied buffer size too small\n");
-			fprintf(stderr,
+			(void) fprintf(stderr,
 			"opnwks(): Using system default (%d)\n", BUFSIZ);
 			}
 		}
-#ifdef DEBUG
-		(void)fprintf(stderr,"Using stream bufsize    = %d\n", bufsize);
-		(void)fprintf(stderr,"Streams default bufsize = %d\n", BUFSIZ);
-#endif DEBUG
+
+		if (gks_debug_env) {
+			(void)fprintf(stderr,
+			"wks.c: Using stream bufsize    = %d\n", bufsize);
+			(void)fprintf(stderr,
+			"wks.c: Streams default bufsize = %d\n", BUFSIZ);
+		}
+
 		/*
 		If a stream buffer has never been allocated for this
 		LU, then allocate one. Otherwise, just reuse what's
@@ -348,7 +402,7 @@ opnwks_(unit, fname, status)
 		if ( mftab[*unit].buf == (char *) NULL) {
 			(void) fclose(mftab[*unit].fp);
 			(void) fprintf(stderr,
-			"Error in opngks_(): Memory allocation\n");
+			"wks.c: Error in opngks_(): Memory allocation\n");
 			*status = 304;
 			return(0);
 		}
@@ -367,17 +421,15 @@ opnwks_(unit, fname, status)
 			
 	}
 
-#ifdef DEBUG
+	if (gks_debug_env) {
 	(void) fprintf(stderr, 
-		"Opened %s as LU %d of type %d on fp %x and fd %d\n", 
-		gks_output, *unit, type, mftab[*unit].fp, 
+		"wks.c: Opened %s as LU %d of type %d on fp %x and fd %d\n", 
+		mftab[*unit].name, *unit, type, mftab[*unit].fp, 
 		fileno(mftab[*unit].fp));
-#endif
+	}
 
-	mftab[*unit].type = type;
 	return(0);
 }
-
 
 /*************************************************************************
 *
@@ -402,9 +454,17 @@ clswks_(unit, status)
 	int	*status;
 {
 	int	child_status;
-#ifdef DEBUG
-	(void) fprintf(stderr, "clswks_(%d)\n", *unit);
-#endif
+
+	if (gks_debug_env) {
+		(void) fprintf(stderr, "clswks_(%d)\n", *unit);
+	}
+
+	if (!wks_init) {
+		(void) fprintf(stderr,
+			"wks.c: Programming Error - not initialized\n");
+		*status = 304;
+		return(0);
+	}
 
 	if (*unit >= MAX_UNITS || mftab[*unit].fp == MF_CLOSED)
 	{
@@ -442,8 +502,11 @@ clswks_(unit, status)
 		pointer is left for the next use of the LU.
 		*/
 
-		mftab[*unit].fp   = MF_CLOSED;
-		mftab[*unit].type = NO_OUTPUT;
+		mftab[*unit].name    = (char *) NULL;
+		mftab[*unit].fp      = MF_CLOSED;
+		mftab[*unit].type    = NO_OUTPUT;
+		mftab[*unit].buf     = (char *) NULL;
+		mftab[*unit].segment = FALSE;
 	}
 	return(0);
 }
@@ -471,12 +534,22 @@ wrtwks_(unit, buffer, length, status)
 	int	*status;
 {
 	int		nb;
+	unsigned char	*p;
+	unsigned int	len;
 #if defined(ByteSwapped)
-	static char	locbuf[RECORDSIZE];
+	static unsigned char	locbuf[RECORDSIZE];
 #endif
-#ifdef DEBUG
-	(void) fprintf(stderr, "wrtwks_(%d,%d)\n",*unit,*length);
-#endif
+
+	if (gks_debug_env) {
+		(void) fprintf(stderr, "wks.c: wrtwks_(%d,%d)\n",*unit,*length);
+	}
+
+	if (!wks_init) {
+		(void) fprintf(stderr,
+			"wks.c: Programming Error - not initialized\n");
+		*status = 304;
+		return(0);
+	}
 
 	if (*unit >= MAX_UNITS || mftab[*unit].fp == MF_CLOSED)
 	{
@@ -494,20 +567,59 @@ wrtwks_(unit, buffer, length, status)
 		return(0);
 	}
 
+	/*
+	If the NCARG_GKS_GENCGM env variable is not set or
+	the output stream IS a segment, put out NCGM (NCAR CGM).
+	*/
+	if (!gks_gencgm_env || mftab[*unit].segment) {
+
+		if (gks_debug_env) {
+			(void) fprintf(stderr,
+				"Writing %d bytes of NCAR CGM\n", RECORDSIZE);
+		}
+			
 #if defined(ByteSwapped)
-	bcopyswap(buffer, locbuf, RECORDSIZE);
-	nb = fwrite(locbuf, 1, RECORDSIZE, mftab[*unit].fp);
+		bcopyswap(buffer, locbuf, RECORDSIZE);
+		nb = fwrite((char *) locbuf, 1, RECORDSIZE, mftab[*unit].fp);
 #else
-	nb = fwrite((char *) buffer, 1, RECORDSIZE, mftab[*unit].fp);
+		nb = fwrite((char *) buffer, 1, RECORDSIZE, mftab[*unit].fp);
 #endif
 	
-	if (nb != RECORDSIZE)
-	{
-		(void) fprintf(stderr, 
-			"Error in wrtwks_() : Writing metafile\n");
-		*status = 304;
-		return(0);
+		if (nb != RECORDSIZE)
+		{
+			(void) fprintf(stderr, 
+				"Error in wrtwks_() : Writing metafile\n");
+			*status = 304;
+			return(0);
+		}
 	}
+	else {
+		p = (unsigned char *) buffer;
+		len = ( (*p) << 8 ) + *(p + 1);
+
+		if (len % 2) len++;
+
+		if (gks_debug_env) {
+			(void) fprintf(stderr,
+			  "wks.c: Writing %d bytes of standard CGM\n", len);
+		}
+
+#if defined(ByteSwapped)
+		bcopyswap(buffer, locbuf, RECORDSIZE);
+		nb = fwrite((char *) &locbuf[4], 1, len, mftab[*unit].fp);
+#else
+		nb = fwrite(&p[4], 1, len, mftab[*unit].fp);
+#endif
+	
+		if (nb != len)
+		{
+			(void) fprintf(stderr, 
+				"Error in wrtwks_() : Writing metafile\n");
+			*status = 304;
+			return(0);
+		}
+	}
+
 	return(0);
 }
 
@@ -538,9 +650,17 @@ rdwks_(unit, buffer, length, status)
 #if defined(ByteSwapped)
 	static char	locbuf[RECORDSIZE];
 #endif
-#ifdef DEBUG
-	(void) fprintf(stderr, "rdwks_(%d,%d)\n",*unit,*length);
-#endif
+
+	if (gks_debug_env) {
+		(void) fprintf(stderr, "wks.c: rdwks_(%d,%d)\n",*unit,*length);
+	}
+
+	if (!wks_init) {
+		(void) fprintf(stderr,
+			"wks.c: Programming Error - not initialized\n");
+		*status = 304;
+		return(0);
+	}
 
 	if (mftab[*unit].type != FILE_OUTPUT)
 	{
@@ -590,9 +710,16 @@ begwks_(unit, status)
 	int	*unit;
 	int	*status;
 {
-#ifdef DEBUG
-	(void) fprintf(stderr, "begwks_(%d)\n",*unit);
-#endif
+	if (gks_debug_env) {
+		(void) fprintf(stderr, "wks.c: begwks_(%d)\n",*unit);
+	}
+
+	if (!wks_init) {
+		(void) fprintf(stderr,
+			"wks.c: Programming Error - not initialized\n");
+		*status = 304;
+		return(0);
+	}
 	if (mftab[*unit].type != FILE_OUTPUT)
 	{
 		(void) fprintf(stderr, 
@@ -622,9 +749,17 @@ lstwks_(unit, status)
 	int	*unit;
 	int	*status;
 {
-#ifdef DEBUG
-	(void) fprintf(stderr, "lstwks_(%d)\n",*unit);
-#endif
+	if (gks_debug_env) {
+		(void) fprintf(stderr, "lstwks_(%d)\n",*unit);
+	}
+
+	if (!wks_init) {
+		(void) fprintf(stderr,
+			"wks.c: Programming Error - not initialized\n");
+		*status = 304;
+		return(0);
+	}
+
 	if (mftab[*unit].type != FILE_OUTPUT)
 	{
 		(void) fprintf(stderr, 
@@ -647,5 +782,40 @@ lstwks_(unit, status)
 		*status = 304;
 		return(0);
 	}
+	return(0);
+}
+
+flswks_(unit, status)
+	int	*unit;
+	int	*status;
+{
+	int	rc;
+
+	if (gks_debug_env) {
+		(void) fprintf(stderr, "flswks_(%d)\n",*unit);
+	}
+
+	if (!wks_init) {
+		(void) fprintf(stderr,
+			"wks.c: Programming Error - not initialized\n");
+		*status = 304;
+		return(0);
+	}
+
+	/* Make sure the requested unit is valid. */
+
+	if (*unit >= MAX_UNITS || mftab[*unit].fp == MF_CLOSED)
+	{
+		(void) fprintf(stderr, "Invalid unit (%d)\n", *unit);
+		*status = 304;
+		return(0);
+	}
+
+	rc = fflush(mftab[*unit].fp);
+	if (rc != 0) {
+		(void) fprintf(stderr, "Flush failure (%d)\n", *unit);
+		*status = 304;
+	}
+
 	return(0);
 }

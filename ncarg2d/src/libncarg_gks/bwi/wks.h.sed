@@ -1,5 +1,5 @@
 /*
- *	$Id: wks.h.sed,v 1.1.1.1 1992-04-17 22:34:02 ncargd Exp $
+ *	$Id: wks.h.sed,v 1.2 1993-01-11 20:53:56 don Exp $
  */
 /***********************************************************************
 * 
@@ -21,9 +21,17 @@
 #define DEFAULT_GKS_OUTPUT	"gmeta"
 #define DEFAULT_TRANSLATOR	"cgmtrans"
 
-#define MAX_UNITS		200
+#define MAX_UNITS		256
 
 /* Information below should, in general, not be altered */
+
+#ifndef TRUE
+#define TRUE			1
+#endif
+
+#ifndef FALSE
+#define FALSE			0
+#endif
 
 #define RECORDSIZE		1440
 
