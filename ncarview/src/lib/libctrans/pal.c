@@ -41,8 +41,6 @@ LoadPalette(cgmc, palette)
 	int	i;
 	long	max_color;
 
-	char	*RasterGetError();
-
 	/*
 	 * The cgmc will contain the CGM color table command
 	 */
