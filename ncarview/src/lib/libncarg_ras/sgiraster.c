@@ -1,5 +1,5 @@
 /*
- *	$Id: sgiraster.c,v 1.6 1993-05-11 18:49:26 haley Exp $
+ *	$Id: sgiraster.c,v 1.7 1995-05-03 22:42:31 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -501,10 +501,16 @@ SGIOpenWrite(name, nx, ny, comment, encoding)
 
 	if (!strcmp(name, "stdout")) {
 		ras->fd = fileno(stdout);
+		ras->fp = stdout;
 	}
 	else {
 		ras->fd = open(name, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 		if (ras->fd == -1) {
+			(void) ESprintf(errno, "SGIOpenWrite(\"%s\")", name);
+			return( (Raster *) NULL );
+		}
+		ras->fp = fdopen(ras->fd, "w");
+		if (ras->fp == (FILE *) NULL) {
 			(void) ESprintf(errno, "SGIOpenWrite(\"%s\")", name);
 			return( (Raster *) NULL );
 		}
@@ -540,7 +546,6 @@ int
 SGIWrite(ras)
 	Raster	*ras;
 {
-	char			*errmsg = "SGIWrite(\"%s\")";
 	SGIInfo			*dep;
 	int			x, y, i, nb;
 	unsigned long		swaptest = 1;
@@ -559,7 +564,7 @@ SGIWrite(ras)
 		}
 		tmpbuf = (unsigned char *) calloc(tmpbuf_size, 1);
 		if (tmpbuf == (unsigned char *) NULL) {
-			(void) ESprintf(errno, errmsg, ras->name);
+			(void) ESprintf(errno, "calloc(%d, 1)", tmpbuf_size);
 			return(RAS_ERROR);
 		}
 	}
@@ -580,15 +585,24 @@ SGIWrite(ras)
 	if (*(char *) &swaptest)
 		_swaplong((char *) dep, sizeof(SGIInfo));
 
-	nb = write(ras->fd, (char *) ras->dep, sizeof(SGIInfo));
-	if (nb != sizeof(SGIInfo)) return(RAS_EOF);
+	nb = fwrite(ras->dep, sizeof(SGIInfo),1, ras->fp);
+	if (nb != 1) {
+		(void) ESprintf(errno, "fwrite(%d,1)", sizeof(SGIInfo));
+		return(RAS_EOF);
+	}
 
 	ras->written = True;
 
 	/* Write bytes remaining before actual image data. */
 
-	nb = write(ras->fd, (char *)tmpbuf, (RAS_SGI_RESERVED-sizeof(SGIInfo)));
-	if (nb != (RAS_SGI_RESERVED-sizeof(SGIInfo))) return(RAS_EOF);
+	nb = fwrite(tmpbuf, 1, (RAS_SGI_RESERVED-sizeof(SGIInfo)), ras->fp);
+	if (nb != (RAS_SGI_RESERVED-sizeof(SGIInfo))) { 
+		(void) ESprintf(
+			errno, "fwrite(1, %d)",
+			(RAS_SGI_RESERVED-sizeof(SGIInfo))
+		);
+		return(RAS_EOF);
+	}
 
 	/*
 	** SGI_VERBATIM rasterfiles are scan-plane interleaved,
@@ -605,8 +619,13 @@ SGIWrite(ras)
 				optr += 1;
 				iptr += 3;
 			}
-			nb = write(ras->fd, (char *) tmpbuf, ras->nx);
-			if (nb != ras->nx) return(RAS_EOF);
+			nb = fwrite(tmpbuf, 1, ras->nx, ras->fp);
+			if (nb != ras->nx) {
+				(void) ESprintf(
+					errno, "fwrite(1, %d)", ras->nx
+				);
+				return(RAS_EOF);
+			}
 		}
 	}
 

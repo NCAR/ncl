@@ -1,4 +1,4 @@
-#	$Id: yMakefile,v 1.44 1994-10-12 19:17:15 haley Exp $
+#	$Id: yMakefile,v 1.45 1995-05-03 22:42:33 clyne Exp $
 #
 #	Makefile for libraster - libraries for dealing with
 #	a variety of raster image formats.
@@ -94,18 +94,24 @@ BINARY_SRCS =	binary.c
 BINARY_DEFS =	-DBuildRasterBinary
 #endif
 
+#ifdef BuildRasterYUV
+YUV_OBJS =	yuv.o
+YUV_SRCS =	yuv.c
+YUV_DEFS =	-DBuildRasterYUV
+#endif
+
 EXTRA_DEFINES =	$(HDF_DEFS) $(HPPCL_DEFS) $(NRIF_DEFS) $(SUN_DEFS) \
 		$(XWD_DEFS) $(PARALLAX_DEFS) $(AVS_DEFS) $(SGI_DEFS) \
-		$(ABEKAS_DEFS) $(NETCDF_DEFS) $(BINARY_DEFS) \
+		$(ABEKAS_DEFS) $(NETCDF_DEFS) $(BINARY_DEFS) $(YUV_DEFS) \
 		-DNGTMPDIR='"$(NGTMPDIR)"'
 
 DEVICE_OBJS =	$(HDF_OBJS) $(HPPCL_OBJS) $(NRIF_OBJS) $(SUN_OBJS) \
 		$(XWD_OBJS) $(PARALLAX_OBJS) $(AVS_OBJS) $(SGI_OBJS) \
-		$(ABEKAS_OBJS) $(NETCDF_OBJS) $(BINARY_OBJS)
+		$(ABEKAS_OBJS) $(NETCDF_OBJS) $(BINARY_OBJS) $(YUV_OBJS)
 
 DEVICE_SRCS =	$(HDF_SRCS) $(HPPCL_SRCS) $(NRIF_SRCS) $(SUN_SRCS) \
 		$(XWD_SRCS) $(PARALLAX_SRCS) $(AVS_SRCS) $(SGI_SRCS) \
-		$(ABEKAS_SRCS) $(NETCDF_SRCS) $(BINARY_SRCS)
+		$(ABEKAS_SRCS) $(NETCDF_SRCS) $(BINARY_SRCS) $(YUV_SRCS)
 
 GENERIC_OBJS =	raster.o cleartext.o error.o misc.o palette.o \
 		dither.o resample.o composite.o ntsc.o color.o \
