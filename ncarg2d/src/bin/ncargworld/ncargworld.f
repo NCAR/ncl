@@ -1,5 +1,10 @@
       PROGRAM EXAMPL
 C
+C Define error file, Fortran unit number, and workstation type,
+C and workstation ID.
+C
+        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+C
 C This program creates a colorful picture to serve as a test for the
 C translator.  It is based on EZMAP example 10 and parts of the new
 C PLOTCHAR test program.
@@ -85,7 +90,9 @@ C
 C
 C Open GKS.
 C
-        CALL OPNGKS
+        CALL GOPKS (IERRF, ISZDM)
+        CALL GOPWK (IWKID, LUNIT, IWTYPE)
+        CALL GACWK (IWKID)
 C
 C Define the color indices required.  0 and 1 are used for black and
 C white (as is customary); the next NCLR values are distributed between
@@ -201,7 +208,9 @@ C
 C
 C Close GKS.
 C
-        CALL CLSGKS
+        CALL GDAWK (IWKID)
+        CALL GCLWK (IWKID)
+        CALL GCLKS
 C
 C Done.
 C

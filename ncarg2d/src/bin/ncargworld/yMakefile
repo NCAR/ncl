@@ -1,11 +1,12 @@
 #
-#	$Id: yMakefile,v 1.8 1995-02-22 21:34:59 haley Exp $
+#	$Id: yMakefile,v 1.9 1995-02-22 22:15:02 haley Exp $
 #
 
 MYNAME	= ncargworld
 
-SRCS    = ncargworld.f
-OBJS    = ncargworld.o
+SRC    = ncargworld.f
+MSRC   = ncargworldm.f
+MOBJ    = ncargworldm.o
 
 #ifdef	UseInstalled
 ROBJS = $(ROBJROOT)/ggkwdr_stub.o
@@ -13,7 +14,7 @@ ROBJS = $(ROBJROOT)/ggkwdr_stub.o
 ROBJS = $(NCARGGKSLIBSRC)/awi/ggkwdr_stub.o
 #endif
 
-OBJECTS	= $(OBJS) $(ROBJS) $(OTHER_ROBJS)
+OBJECTS	= $(MOBJ) $(ROBJS) $(OTHER_ROBJS)
 
 #if defined(Ardent) || defined(AIX370)
 #ifdef	UseInstalled
@@ -28,4 +29,12 @@ DEP_LIBS =	$(DEPNCARGLIBS)
 SYS_LIBS	=	-lm
 
 FortranProgram($(MYNAME),$(OBJECTS),$(DEP_LIBS))
-InstallTarget($(SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
+InstallTarget($(SRC),$(INSTALL_LIB),$(EXAMPLESPATH))
+
+ncargworldm.f: ncargworld.f Makefile
+	@sed \
+	-e 's+SED_WSTYPE+1+' \
+	< ncargworld.f > ncargworldm.f
+
+CleanFilesTarget($(MSRC) $(MOBJ))
+
