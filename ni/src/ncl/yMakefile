@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.31 1995-03-28 21:49:05 haley Exp $
+#      $Id: yMakefile,v 1.32 1995-03-28 23:39:33 boote Exp $
 #
 #########################################################################
 #									#
@@ -218,13 +218,13 @@ MathFuncs.h: MathFuncs.c.sed MathFuncs.h.sed MathTemplate.c.sed MathTemplate.h.s
 
 #define	NclTypeRule_h(type)\
 ]\
-NclType/**/type.h:	data_h.sh NclType.h.sed]\
+NclType##type.h:	data_h.sh NclType.h.sed]\
 	@$(SHELL) data_h.sh type]
 
 #define NclTypeRule_c(type,xtra_dep)\
 ]\
-NclType/**/type.c:	type/**/_data_c.sh op_funcs.sh NclType/**/type.c.specific xtra_dep]\
-	@$(SHELL) type/**/_data_c.sh]
+NclType##type.c:	type##_data_c.sh op_funcs.sh NclType##type.c.specific xtra_dep]\
+	@$(SHELL) type##_data_c.sh]
 
 #define NclTypeRule(type,xtra_dep)\
 NclTypeRule_h(type)\
