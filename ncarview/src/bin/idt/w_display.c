@@ -1,5 +1,5 @@
 /*
- *	$Id: w_display.c,v 1.17 1993-01-06 21:07:32 clyne Exp $
+ *	$Id: w_display.c,v 1.18 1993-01-16 01:10:41 clyne Exp $
  */
 /*
  *	w_display.c
@@ -895,6 +895,43 @@ void	create_print_menu(print, wd)
 		XtSetValues(print, args, 1);
 	}
 }
+
+static	Visual	*get_best_8bit_visual(depth, dpy)
+	int	*depth;
+	Display	*dpy;
+{
+	XVisualInfo	vinfo;
+	int	screen = DefaultScreen(dpy);
+
+
+	/*
+	 * find best 8-bit depth visual
+	 */
+	if (XMatchVisualInfo(dpy, screen, 8, PseudoColor, &vinfo)) {
+		*depth = vinfo.depth;
+		return(vinfo.visual);
+	}
+	else if (XMatchVisualInfo(dpy, screen, 8, StaticColor, &vinfo)) {
+		*depth = vinfo.depth;
+		return(vinfo.visual);
+	}
+	else if (XMatchVisualInfo(dpy, screen, 8, GrayScale, &vinfo)) {
+		*depth = vinfo.depth;
+		return(vinfo.visual);
+	}
+	else if (XMatchVisualInfo(dpy, screen, 8, StaticGray, &vinfo)) {
+		*depth = vinfo.depth;
+		return(vinfo.visual);
+	}
+
+	/*
+	 * yuck, can't find anything. return the default
+	 */
+	*depth = DefaultDepth(dpy, screen);
+	return (DefaultVisual(dpy, screen));
+}
+
+
 /*
  *	CreateDisplayPopup
  *	[exported]
@@ -920,15 +957,40 @@ void	CreateDisplayPopup(button, metafile)
 	Window	win;		/* drawing canvas window id	*/
 	WidgetData	*wd;
 	char		*s;
+	Visual		*visual;
+	int		dsp_depth;
+	Colormap	cmap;
 
 	if (!(wd = (WidgetData *) malloc(sizeof(WidgetData)))) {
 		(void) fprintf(stderr, "Malloc failed\n");
 		return;
 	}
 
+	wd->dpy = XtDisplay(button);	
+
+#ifdef	DEAD
+	visual = get_best_8bit_visual(&dsp_depth, wd->dpy);
+	if (visual == DefaultVisual(wd->dpy, DefaultScreen(wd->dpy))) {
+		cmap = DefaultColormap(wd->dpy, DefaultScreen(wd->dpy));
+		dsp_depth = DefaultDepth(wd->dpy, DefaultScreen(wd->dpy));
+	}
+	else {
+		cmap = XCreateColormap(
+			wd->dpy, RootWindow(wd->dpy, DefaultScreen(wd->dpy)),
+			visual, AllocAll
+		);
+	}
+
+
+        n = 0;
+	XtSetArg(args[n], XtNcolormap, cmap);		n++;
+        XtSetArg(args[n], XtNvisual, visual);		n++;
+        XtSetArg(args[n], XtNdepth, dsp_depth);		n++;
+	popup = XtCreatePopupShell(metafile, topLevelShellWidgetClass, 
+				button, args, n);
+#endif
 	popup = XtCreatePopupShell(metafile, topLevelShellWidgetClass, 
 				button, (ArgList) NULL, 0);
-	wd->dpy = XtDisplay(popup);	
 
 	paned = XtCreateManagedWidget("paned",
 				panedWidgetClass,popup, (ArgList) NULL,0);

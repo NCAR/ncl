@@ -1,5 +1,5 @@
 /*
- *	$Id: rasdraw.c,v 1.8 1992-09-01 23:40:06 clyne Exp $
+ *	$Id: rasdraw.c,v 1.9 1993-01-16 01:12:16 clyne Exp $
  */
 /*
  *	rasdraw.c
@@ -545,6 +545,7 @@ static	Visual	*get_best_visual(depth, encoding_hint, dpy)
 	/*
 	 * yuck, can't find anything. return the default
 	 */
+	*depth = DefaultDepth(dpy, screen);
 	return (DefaultVisual(dpy, screen));
 }
 

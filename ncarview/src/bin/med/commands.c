@@ -1,5 +1,5 @@
 /*
- *	$Id: commands.c,v 1.8 1993-01-06 22:20:28 clyne Exp $
+ *	$Id: commands.c,v 1.9 1993-01-16 01:11:37 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -691,11 +691,7 @@ medRead(med_data)
 	 */
 	DEFAULT_FRAME(med_data->current_frame, c_data);
 
-	if (c_data->add1 > c_data->add2) {
-		fprintf(stderr, "Invalid address\n");
-		return;
-	}
-	if (c_data->add1 > med_data->last_frame) {
+	if (med_data->last_frame != 0 && c_data->add1 > med_data->last_frame) {
 		fprintf(stderr, "Address out of range\n");
 		return;
 	}	
