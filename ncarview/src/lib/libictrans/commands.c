@@ -1,5 +1,5 @@
 /*
- *	$Id: commands.c,v 1.33 1994-03-31 18:33:37 clyne Exp $
+ *	$Id: commands.c,v 1.34 1995-01-10 01:04:23 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -1422,6 +1422,7 @@ int	iCCurrent(ic)
 int	iCQuit(ic)
 	ICommand	*ic;
 {
+	CtransClear();
 	(void) close_metafile();
 	(void) CGM_termMetaEdit();
 	return(0);	/* exit	*/
