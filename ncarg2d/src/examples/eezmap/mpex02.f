@@ -1,5 +1,5 @@
 C
-C	$Id: mpex02.f,v 1.3 1995-06-14 13:56:34 haley Exp $
+C       $Id: mpex02.f,v 1.4 1999-04-07 21:04:47 kennison Exp $
 C
       PROGRAM EXMPL2
 C
@@ -30,7 +30,7 @@ C
 C Dot the outlines, using dots a quarter as far apart as the default.
 C
       CALL MAPSTI ('DO',1)
-      CALL MAPSTI ('DD',3)
+      CALL MAPSTI ('DD',24)
 C
 C Show continents and international boundaries.
 C

@@ -1,5 +1,5 @@
 C
-C	$Id: mpex04.f,v 1.3 1995-06-14 13:56:36 haley Exp $
+C       $Id: mpex04.f,v 1.4 1999-04-07 21:04:48 kennison Exp $
 C
       PROGRAM EXMPL4
 C
@@ -35,7 +35,7 @@ C Use dotted outlines and move the dots a little closer together
 C than normal.
 C
       CALL MAPSTI ('DO',1)
-      CALL MAPSTI ('DD',3)
+      CALL MAPSTI ('DD',24)
 C
 C Do the Mercator projection of the equatorial belt first.
 C

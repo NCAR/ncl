@@ -1,5 +1,5 @@
 C
-C	$Id: mpex08.f,v 1.3 1995-06-14 13:56:39 haley Exp $
+C       $Id: mpex08.f,v 1.4 1999-04-07 21:04:49 kennison Exp $
 C
       PROGRAM EXMPL8
 C
@@ -70,7 +70,7 @@ C
           CALL MAPGTI ('DL',IDTF)
           CALL MAPGTI ('DD',IDBD)
           CALL MAPSTI ('DL',1)
-          CALL MAPSTI ('DD',3)
+          CALL MAPSTI ('DD',24)
         ELSE IF (IPRT.EQ.5) THEN
           CALL MAPGTI ('DL',IDTF)
           CALL MAPSTI ('DL',0)

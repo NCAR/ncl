@@ -1,5 +1,5 @@
 C
-C	$Id: mpexfi.f,v 1.3 1995-06-14 13:56:41 haley Exp $
+C       $Id: mpexfi.f,v 1.4 1999-04-07 21:04:49 kennison Exp $
 C
       PROGRAM EXMPLF
 C
@@ -43,7 +43,7 @@ C
 C Force MAPIT to draw dotted lines.
 C
       CALL MAPSTI ('DL',1)
-      CALL MAPSTI ('DD',3)
+      CALL MAPSTI ('DD',24)
 C
 C Draw some curves.
 C
