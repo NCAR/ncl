@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.146 2004-06-05 02:57:38 haley Exp $
+;      $Id: gsn_code.ncl,v 1.147 2004-06-05 18:52:00 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -3086,36 +3086,56 @@ end
 ; specified in NDC space. "resources" is an optional list of resources. ;
 ; This function returns the text string created.                        ;
 ;***********************************************************************;
-function gsn_text_ndc_return(wks:graphic, textt:string, xx:numeric, \
-                             yy:numeric, resources:logical )
+function gsn_text_ndc_return(wks:graphic, texto:string, xo:numeric, \
+                             yo:numeric, resources:logical )
 local i, txid, plot_object, res, tx_res_index, x2, y2, res2, \
 calldraw, callframe
 begin
-  if(.not.all(dimsizes(xx).eq.dimsizes(yy))) then
-    print("Error: gsn_text_ndc: x and y must have the same dimension sizes.")
+;
+; Any one of xo, yo, and texto can just be one element, but if two or more
+; are more than one element, then they must be exactly the same size.
+;
+  xsizes = dimsizes(xo)
+  ysizes = dimsizes(yo)
+  tsizes = dimsizes(texto)
+  xrank  = dimsizes(xsizes)
+  yrank  = dimsizes(ysizes)
+  trank  = dimsizes(tsizes)
+  if(xrank.gt.1.and.yrank.gt.1.and..not.all(xsizes.eq.ysizes)) then
+    print("Error: gsn_text_ndc: x and y must have the same dimension sizes, or either be a single value.")
     dummy = new(1,graphic)
     return(dummy)
   end if
-  if(dimsizes(dimsizes(textt)).ne.1.and..not.all(dimsizes(xx).eq.dimsizes(textt))) then
-    print("Error: gsn_text_ndc: text must be a single string or the same dimension sizes as x and y.")
+  if(trank.gt.1.and. \
+     (xrank.gt.1.and..not.all(xsizes.eq.tsizes)) .or. \
+     (yrank.gt.1.and..not.all(ysizes.eq.tsizes))) then
+    print("Error: gsn_text_ndc: text must be a single string or the same dimension size as x and/or y.")
     dummy = new(1,graphic)
     return(dummy)
   end if
 ;
-; Convert to 1-dimensional arrays.
+; Convert to 1-dimensional arrays of all the same length.
 ;
-  x    = ndtooned(xx)
-  y    = ndtooned(yy)
-  text = ndtooned(textt)
+  if(xrank.gt.1) then
+    x    = ndtooned(new(xsizes, typeof(xo)))
+    y    = ndtooned(new(xsizes, typeof(yo)))
+    text = ndtooned(new(xsizes, typeof(texto)))
+  else
+    if(yrank.gt.1) then
+      x    = ndtooned(new(ysizes, typeof(xo)))
+      y    = ndtooned(new(ysizes, typeof(yo)))
+      text = ndtooned(new(ysizes, typeof(texto)))
+    else
+      x    = new(xsizes > ysizes, typeof(xo))
+      y    = new(xsizes > ysizes, typeof(yo))
+      text = new(xsizes > ysizes, typeof(texto))
+    end if
+  end if
 
-  xlen = dimsizes(x)
-  tlen = dimsizes(text)
-
-  if(tlen.eq.1.and.xlen.ne.1) then
-    newtext = new (xlen, string)
-    tlen    = xlen
-  end if  
-  newtext = text
+  x    = ndtooned(xo)
+  y    = ndtooned(yo)
+  text = ndtooned(texto)
+  len  = dimsizes(x)
 
   res2 = get_resources(resources)
 
@@ -3126,12 +3146,12 @@ begin
   maxbb     = get_bb_res(res2)
 
   txres = get_res_eq(res2,"tx")  ; Get text resources.
-  txid  = new(tlen,graphic)
+  txid  = new(len,graphic)
 
   if((res2).and.isatt(res2,"txFuncCode")) then
-    do i=0,tlen-1
+    do i=0,len-1
       txid(i) = create wksname + "_text_ndc"+i textItemClass wks
-        "txString" : newtext(i)
+        "txString" : text(i)
         "txPosXF"  : x(i)
         "txPosYF"  : y(i)
         "txFuncCode" : res2@txFuncCode
@@ -3140,9 +3160,9 @@ begin
       draw_and_frame(wks,txid(i),calldraw,callframe,0,maxbb)
     end do
   else
-    do i=0,tlen-1
+    do i=0,len-1
       txid(i) = create wksname + "_text_ndc"+i textItemClass wks
-        "txString" : newtext(i)
+        "txString" : text(i)
         "txPosXF"  : x(i)
         "txPosYF"  : y(i)
       end create
@@ -3151,6 +3171,12 @@ begin
     end do
   end if
 
+  if(xrank.gt.1) then
+    return(onedtond(txid,xsizes))
+  end if
+  if(yrank.gt.1) then
+    return(onedtond(txid,ysizes))
+  end if
   return(txid)
 end
 
@@ -3183,35 +3209,54 @@ end
 ; specified in the same data space as the data space of "plotid".       ;
 ; "resources" is an optional list of resources.                         ;
 ;***********************************************************************;
-procedure gsn_text(wks:graphic,plotid:graphic,textt:string,xx:numeric, \
-                   yy:numeric, resources:logical )
+procedure gsn_text(wks:graphic,plotid:graphic,texto:string,xo:numeric, \
+                   yo:numeric, resources:logical )
 local i, txid, plot_object, res, tx_res_index, x2, y2, xf, yf, \
 funccode, res2, calldraw, callframe
 begin
-  if(.not.all(dimsizes(xx).eq.dimsizes(yy))) then
-    print("Error: gsn_text: x and y must have the same dimension sizes.")
-    dummy = new(1,graphic)
-    return(dummy)
+;
+; Any one of xo, yo, and texto can just be one element, but if two or more
+; are more than one element, then they must be exactly the same size.
+;
+  xsizes = dimsizes(xo)
+  ysizes = dimsizes(yo)
+  tsizes = dimsizes(texto)
+  xrank  = dimsizes(xsizes)
+  yrank  = dimsizes(ysizes)
+  trank  = dimsizes(tsizes)
+  if(xrank.gt.1.and.yrank.gt.1.and..not.all(xsizes.eq.ysizes)) then
+    print("Error: gsn_text: x and y must have the same dimension sizes, or either be a single value.")
+    return
   end if
-  if(dimsizes(dimsizes(textt)).ne.1.and..not.all(dimsizes(xx).eq.dimsizes(textt))) then
-    print("Error: gsn_text: text must be a single string or the same dimension sizes as x and y.")
-    dummy = new(1,graphic)
-    return(dummy)
+  if(trank.gt.1.and. \
+     (xrank.gt.1.and..not.all(xsizes.eq.tsizes)) .or. \
+     (yrank.gt.1.and..not.all(ysizes.eq.tsizes))) then
+    print("Error: gsn_text: text must be a single string or the same dimension size as x and/or y.")
+    return
   end if
 ;
-; Convert to 1-dimensional arrays.
+; Convert to 1-dimensional arrays of all the same length.
 ;
-  x    = ndtooned(xx)
-  y    = ndtooned(yy)
-  text = ndtooned(textt)
-  xlen = dimsizes(x)
-  tlen = dimsizes(text)
+  if(xrank.gt.1) then
+    x    = ndtooned(new(xsizes, typeof(xo)))
+    y    = ndtooned(new(xsizes, typeof(yo)))
+    text = ndtooned(new(xsizes, typeof(texto)))
+  else
+    if(yrank.gt.1) then
+      x    = ndtooned(new(ysizes, typeof(xo)))
+      y    = ndtooned(new(ysizes, typeof(yo)))
+      text = ndtooned(new(ysizes, typeof(texto)))
+    else
+      x    = new(xsizes > ysizes, typeof(xo))
+      y    = new(xsizes > ysizes, typeof(yo))
+      text = new(xsizes > ysizes, typeof(texto))
+    end if
+  end if
 
-  if(tlen.eq.1.and.xlen.ne.1) then
-    newtext = new (xlen, string)
-    tlen    = xlen
-  end if  
-  newtext = text
+  x    = ndtooned(xo)
+  y    = ndtooned(yo)
+  text = ndtooned(texto)
+  len  = dimsizes(x)
 
   res2 = get_resources(resources)
 
@@ -3238,13 +3283,13 @@ begin
 ;
   wksname = get_res_value_keep(wks,"name","gsnapp")
 
-  txid  = new(tlen,graphic)
+  txid  = new(len,graphic)
   txres = get_res_eq(res2,"tx")  ; Get text resources.
 
   if(res2.and.isatt(res2,"txFuncCode")) then
-    do i=0,tlen-1
+    do i=0,len-1
       txid = create wksname + "_text"+i textItemClass wks
-        "txString"   : newtext(i)
+        "txString"   : text(i)
         "txPosXF"    : x2(i)
         "txPosYF"    : y2(i)
         "txFuncCode" : res2@txFuncCode
@@ -3253,9 +3298,9 @@ begin
       draw_and_frame(wks,txid(i),calldraw,callframe,0,maxbb)
     end do
   else 
-    do i=0,tlen-1
+    do i=0,len-1
       txid(i) = create wksname + "_text"+i textItemClass wks
-        "txString"   : newtext(i)
+        "txString"   : text(i)
         "txPosXF"    : x2(i)
         "txPosYF"    : y2(i)
       end create
@@ -3283,34 +3328,55 @@ end
 ; the text to the plot. This means that if you resize or move the plot, ;
 ; the text will stay with the plot.                                     ;
 ;***********************************************************************;
-function gsn_add_text(wks:graphic,plotid:graphic,textt:string, \
-                      xx:numeric,yy:numeric, resources:logical )
+function gsn_add_text(wks:graphic,plotid:graphic,texto:string, \
+                      xo:numeric,yo:numeric, resources:logical )
 local txid, txres, amres, just, res2, wksname, am_ids
 begin
-  if(.not.all(dimsizes(xx).eq.dimsizes(yy))) then
-    print("Error: gsn_add_text: x and y must have the same dimension sizes.")
+;
+; Any one of xo, yo, and texto can just be one element, but if two or more
+; are more than one element, then they must be exactly the same size.
+;
+  xsizes = dimsizes(xo)
+  ysizes = dimsizes(yo)
+  tsizes = dimsizes(texto)
+  xrank  = dimsizes(xsizes)
+  yrank  = dimsizes(ysizes)
+  trank  = dimsizes(tsizes)
+  if(xrank.gt.1.and.yrank.gt.1.and..not.all(xsizes.eq.ysizes)) then
+    print("Error: gsn_add_text: x and y must have the same dimension sizes, or either be a single value.")
     dummy = new(1,graphic)
     return(dummy)
   end if
-  if(dimsizes(dimsizes(textt)).ne.1.and..not.all(dimsizes(xx).eq.dimsizes(textt))) then
-    print("Error: gsn_add_text: text must be a single string or the same dimension sizes as x and y.")
+  if(trank.gt.1.and. \
+     (xrank.gt.1.and..not.all(xsizes.eq.tsizes)) .or. \
+     (yrank.gt.1.and..not.all(ysizes.eq.tsizes))) then
+    print("Error: gsn_add_text: text must be a single string or the same dimension size as x and/or y.")
     dummy = new(1,graphic)
     return(dummy)
   end if
 ;
-; Convert to 1-dimensional arrays.
+; Convert to 1-dimensional arrays of all the same length.
 ;
-  x    = ndtooned(xx)
-  y    = ndtooned(yy)
-  text = ndtooned(textt)
-  xlen = dimsizes(x)
-  tlen = dimsizes(text)
+  if(xrank.gt.1) then
+    x    = ndtooned(new(xsizes, typeof(xo)))
+    y    = ndtooned(new(xsizes, typeof(yo)))
+    text = ndtooned(new(xsizes, typeof(texto)))
+  else
+    if(yrank.gt.1) then
+      x    = ndtooned(new(ysizes, typeof(xo)))
+      y    = ndtooned(new(ysizes, typeof(yo)))
+      text = ndtooned(new(ysizes, typeof(texto)))
+    else
+      x    = new(xsizes > ysizes, typeof(xo))
+      y    = new(xsizes > ysizes, typeof(yo))
+      text = new(xsizes > ysizes, typeof(texto))
+    end if
+  end if
 
-  if(tlen.eq.1.and.xlen.ne.1) then
-    newtext = new (xlen, string)
-    tlen    = xlen
-  end if  
-  newtext = text
+  x    = ndtooned(xo)
+  y    = ndtooned(yo)
+  text = ndtooned(texto)
+  len  = dimsizes(x)
 
   res2 = get_resources(resources)
 ;
@@ -3320,20 +3386,20 @@ begin
   wksname = get_res_value_keep(wks,"name","gsnapp")
 
   txres = get_res_eq(res2,"tx")  ; Get text resources.
-  txid  = new(tlen,graphic)
+  txid  = new(len,graphic)
 
   if(res2.and.isatt(res2,"txFuncCode")) then
-    do i=0,tlen-1
+    do i=0,len-1
       txid(i) = create wksname + "_text"+i textItemClass wks
-        "txString"   : newtext(i)
+        "txString"   : text(i)
         "txFuncCode" : res2@txFuncCode
       end create
       attsetvalues_check(txid(i),txres)          ; Set text resources.
     end do
   else
-    do i=0,tlen-1
+    do i=0,len-1
       txid(i) = create wksname + "_text"+i textItemClass wks
-        "txString" : newtext(i)
+        "txString" : text(i)
       end create
       attsetvalues_check(txid(i),txres)          ; Set text resources.
     end do
@@ -3349,9 +3415,9 @@ begin
 ; Make sure the next text strings are first in the list.
 ;
   if(.not.any(ismissing(text_ids)))
-    new_text_ids            = new(dimsizes(text_ids)+tlen,graphic)
-    new_text_ids(0:tlen-1)  = txid
-    new_text_ids(tlen:)     = text_ids
+    new_text_ids            = new(dimsizes(text_ids)+len,graphic)
+    new_text_ids(0:len-1)  = txid
+    new_text_ids(len:)     = text_ids
   else
     new_text_ids = txid
   end if
@@ -3372,7 +3438,7 @@ begin
   tmp_just  = get_res_value(txres,"txJust","CenterCenter")
   just      = get_res_value(res2,"amJust",tmp_just)
 
-  do i=0,tlen-1
+  do i=0,len-1
     setvalues am_ids(i)
       "amDataXF"       : x(i)
       "amDataYF"       : y(i)
@@ -3385,7 +3451,11 @@ begin
   amres = get_res_eq(res2,"am")           ; Get annomanager resources.
   attsetvalues_check(am_ids(0),amres)     ; Set annomanager resources.
 
-  return(onedtond(am_ids(0:tlen-1),dimsizes(xx)))
+  if(xrank.gt.1) then
+    return(onedtond(am_ids(0:len-1),xsizes))
+  else
+    return(onedtond(am_ids(0:len-1),ysizes))
+  end if
 end
 
 ;***********************************************************************;
