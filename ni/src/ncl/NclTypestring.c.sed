@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclTypestring.c.sed,v 1.12 1998-04-28 21:16:37 ethan Exp $
+ *      $Id: NclTypestring.c.sed,v 1.13 1998-05-29 19:45:31 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -63,7 +63,7 @@ int nargs;
         }
         gen = (NhlGenArray)from->data.ptrval;
         if(gen != NULL) {
-                if(!_NhlIsSubtypeQ(NrmStringToQuark(((NclTypestringClass)nclTypestringClass)->type_class.hlu_type_rep[1]),from->typeQ)) {
+                if(!_NhlIsSubtypeQ(NrmStringToQuark(NhlTStringGenArray),from->typeQ)) {
                         NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: called with wrong input type",func);
                         to->size =0;
                         return(NhlFATAL);
