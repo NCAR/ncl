@@ -1,12 +1,12 @@
 #
-#       $Id: yMakefile,v 1.1 2003-06-25 23:29:27 kennison Exp $
+#       $Id: yMakefile,v 1.2 2003-08-18 20:42:44 kennison Exp $
 #
 
 MYNAME  = econpt
 
-SRCS = ctex01.f
+SRCS = ctex01.f ctex02.f
 
-OBJS = ctex01.o
+OBJS = ctex01.o ctex02.o
 
 PROG_LIBS		= $(NCARGLIBS)
 SYS_LIBS		= -lm
@@ -15,3 +15,4 @@ EXTRA_LIBS		= $(XLIB)
 InstallTarget($(SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
 
 FExampleTarget(ctex01,ctex01.o)
+FExampleTarget(ctex02,ctex02.o)

@@ -474,8 +474,8 @@ C
         CALL GSCR   (IWID, 5,0.,1.,1.)  !  cyan
         CALL GSCR   (IWID, 6,0.,1.,0.)  !  green
         CALL GSCR   (IWID, 7,0.,0.,1.)  !  blue
-        CALL GSCR   (IWID, 8,.5,.5,0.)  !  yellow for mesh (blocked)
-        CALL GSCR   (IWID, 9,.8,.8,0.)  !  yellow for mesh (unblocked)
+        CALL GSCR   (IWID, 8,.8,.8,0.)  !  yellow for mesh (unblocked)
+        CALL GSCR   (IWID, 9,1.,1.,0.)  !  yellow for mesh (blocked)
 C
 C Define 100 colors, associated with color indices 151 through 250, to
 C be used for color-filled contour bands and in cell arrays, ranging
