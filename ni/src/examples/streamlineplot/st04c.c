@@ -1,5 +1,5 @@
 /*
- *      $Id: st04c.c,v 1.5 1997-04-09 21:05:09 haley Exp $
+ *      $Id: st04c.c,v 1.6 2003-03-03 16:33:53 grubin Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -46,6 +46,7 @@
 #include <ncarg/hlu/App.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
+#include <ncarg/hlu/PDFWorkstation.h>
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/StreamlinePlot.h>
 #include <ncarg/hlu/VectorPlot.h>
@@ -75,7 +76,7 @@ char *cdffiles[6] = {"Ustorm.cdf","Vstorm.cdf","Pstorm.cdf","Tstorm.cdf","U500st
 
 main(int argc, char *argv[])
 {
-    int NCGM=1, X11=0, PS=0;
+    int NCGM=1, X11=0, PS=0, PDF=0;
     int i, j, time, d, h;
     int appid, wid, cnid, vcid, stid, txid, amid, mpid, tmid, stdmid;
     long stid_len;
@@ -135,6 +136,15 @@ main(int argc, char *argv[])
         NhlRLSetString(rlist,NhlNwkPSFileName,"st04c.ps");
         NhlRLSetString(rlist,NhlNwkColorMap,"temp1");
         NhlCreate(&wid,"st04Work",NhlpsWorkstationClass,appid,rlist);
+    }
+    else if (PDF) {
+/*
+ * Create a PDF workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkPDFFileName,"st04c.pdf");
+        NhlRLSetString(rlist,NhlNwkColorMap,"temp1");
+        NhlCreate(&wid,"st04Work",NhlpdfWorkstationClass,appid,rlist);
     }
 /*
  * Open the netCDF files.

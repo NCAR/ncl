@@ -1,5 +1,5 @@
 C
-C      $Id: st04f.f,v 1.6 1998-06-14 22:17:14 haley Exp $
+C      $Id: st04f.f,v 1.7 2003-03-03 16:33:53 grubin Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -41,6 +41,7 @@ C
       external NhlFAppClass
       external NhlFNcgmWorkstationClass
       external NhlFPSWorkstationClass
+      external NhlFPDFWorkstationClass
       external NhlFXWorkstationClass
       external NhlFVectorFieldClass
       external NhlFVectorPlotClass
@@ -62,7 +63,7 @@ C
       parameter(TIMESTEPS=20)
       parameter(NLAT=33,NLON=36)
 
-      integer NCGM, X11, PS
+      integer NCGM, X11, PS, PDF
       integer i, j, k, d, h
       integer appid, wid, cnid, vcid, stid, txid, amid, mpid, tmid
       integer vfield, vfield2, sfield, sfield2
@@ -90,6 +91,7 @@ C
       NCGM=1
       X11=0
       PS=0
+      PDF=0
 C
 C Initialize the high level utility library
 C
@@ -133,6 +135,15 @@ C
          call NhlFRLSetString(rlist,'wkPSFileName','./st04f.ps',ierr)
          call NhlFCreate(wid,'st04Work',
      +        NhlFPSWorkstationClass,0,rlist,ierr)
+      else if (PDF.eq.1) then
+C
+C Create a PDF workstation.
+C
+         call NhlFRLClear(rlist)
+         call NhlFRLSetString(rlist,'wkColorMap','temp1',ierr)
+         call NhlFRLSetString(rlist,'wkPDFFileName','./st04f.pdf',ierr)
+         call NhlFCreate(wid,'st04Work',
+     +        NhlFPDFWorkstationClass,0,rlist,ierr)
       endif
 C
 C Open the netCDF files.

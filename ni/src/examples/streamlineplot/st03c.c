@@ -1,5 +1,5 @@
 /*
- *      $Id: st03c.c,v 1.4 1997-02-05 15:28:09 haley Exp $
+ *      $Id: st03c.c,v 1.5 2003-03-03 16:33:53 grubin Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -38,6 +38,7 @@
 #include <ncarg/hlu/App.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
+#include <ncarg/hlu/PDFWorkstation.h>
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/StreamlinePlot.h>
 #include <ncarg/hlu/MapPlot.h>
@@ -45,7 +46,7 @@
 
 main(int argc, char *argv[])
 {
-    int NCGM=0, X11=1, PS=0;
+    int NCGM=0, X11=1, PS=0, PDF=0;
     int appid, wid, dataid, stid, mpid;
     int rlist, grlist;
     int len_dims[2];
@@ -94,6 +95,14 @@ main(int argc, char *argv[])
         NhlRLClear(rlist);
         NhlRLSetString(rlist,NhlNwkPSFileName,"st03c.ps");
         NhlCreate(&wid,"st03Work",NhlpsWorkstationClass,appid,rlist);
+    }
+    else if (PDF) {
+/*
+ * Create a PDF workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkPDFFileName,"st03c.pdf");
+        NhlCreate(&wid,"st03Work",NhlpdfWorkstationClass,appid,rlist);
     }
 /*
  * Open the netCDF file.

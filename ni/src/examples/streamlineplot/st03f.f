@@ -1,5 +1,5 @@
 C
-C      $Id: st03f.f,v 1.4 1997-05-22 16:46:59 haley Exp $
+C      $Id: st03f.f,v 1.5 2003-03-03 16:33:53 grubin Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -33,6 +33,7 @@ C
       external NhlFAppClass
       external NhlFNcgmWorkstationClass
       external NhlFPSWorkstationClass
+      external NhlFPDFWorkstationClass
       external NhlFXWorkstationClass
       external NhlFVectorFieldClass
       external NhlFStreamlinePlotClass
@@ -40,7 +41,7 @@ C
 
       parameter(M=73,N=73)
 
-      integer NCGM, X11, PS
+      integer NCGM, X11, PS, PDF
       integer appid, wid, dataid, stid, mpid
       integer ncid, uid, vid, latid, lonid
       integer rlist, grlist
@@ -55,6 +56,7 @@ C
       NCGM=0
       X11=1
       PS=0
+      PDF=0
 C
 C Initialize the high level utility library
 C
@@ -95,6 +97,14 @@ C
          call NhlFRLSetString(rlist,'wkPSFileName','./st03f.ps',ierr)
          call NhlFCreate(wid,'st03Work',
      +        NhlFPSWorkstationClass,0,rlist,ierr)
+      else if (PDF.eq.1) then
+C
+C Create a PDF workstation.
+C
+         call NhlFRLClear(rlist)
+         call NhlFRLSetString(rlist,'wkPDFFileName','./st03f.pdf',ierr)
+         call NhlFCreate(wid,'st03Work',
+     +        NhlFPDFWorkstationClass,0,rlist,ierr)
       endif
 C
 C Open the netCDF file.
