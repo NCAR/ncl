@@ -1,5 +1,5 @@
 C
-C	$Id: velvct.f,v 1.9 1993-04-30 23:36:32 dbrown Exp $
+C	$Id: velvct.f,v 1.10 1993-05-11 23:27:49 dbrown Exp $
 C
       SUBROUTINE VELVCT (U,LU,V,LV,M,N,FLO,HI,NSET,LENGTH,ISPV,SPV)
 C
@@ -226,7 +226,7 @@ C Saved values of internal parameters (Note that these do not follow
 C the usually observed rule of using 3 characters or less for local
 C variables):
 C SVLC,SVHC,ISSET,SVRL,ISSVF,SUSV,SVSV,SVPS,ISVPO,ISLBL,ISDPF,
-C SAMN,SAMX,SLBS,ISXIN,ISYIN,ISMXP,SMXX
+C SAMN,SAMX,SLBS,ISXIN,ISYIN,ISMXP,SMXX,SMXY
 C
 C The character variables must be declared:
 C
@@ -261,6 +261,7 @@ C
       CALL VVGETC('MXT - Maximum Vector Text', CSMXT)
       CALL VVGETI('MXP - Maximum Text Position Mode', ISMXP)
       CALL VVGETR('MXX - Maximum Text X Position', SMXX)
+      CALL VVGETR('MXY - Maximum Text Y Position', SMXY)
 C
 C Set up the scaling of the plot.
 C
@@ -445,6 +446,7 @@ C
       CALL VVSETC('MXT - Maximum Vector Text', CSMXT)
       CALL VVSETI('MXP - Maximum Text Position Mode', ISMXP)
       CALL VVSETR('MXX - Maximum Text X Position', SMXX)
+      CALL VVSETR('MXY - Maximum Text Y Position', SMXY)
 C
       RETURN
       END
