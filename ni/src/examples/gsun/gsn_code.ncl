@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.51 2000-11-01 16:02:18 haley Exp $
+;      $Id: gsn_code.ncl,v 1.52 2000-11-03 16:59:32 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -39,10 +39,13 @@
 ;***********************************************************************;
 
 undef("tofloat")
+undef("lower_case")
 undef("set_attr")
+undef("check_attr")
 undef("get_res_eq")
 undef("get_res_ne")
 undef("get_res_value")
+undef("get_res_value_keep")
 undef("spread_colors")
 undef("check_for_irreg2loglin")
 undef("gsnp_turn_off_tickmarks")
@@ -114,6 +117,33 @@ begin
 end
 
 ;***********************************************************************;
+; Function : lower_case                                                 ;
+;           name : string                                               ;
+;                                                                       ;
+; Converts "name" to lowercase.                                         ;
+;***********************************************************************;
+function lower_case(name:string)
+local lower, upper, lowc, upc, namec, i
+begin
+  lower = (/"a","b","c","d","e","f","g","h","i","j","k","l","m", \
+            "n","o","p","q","r","s","t","u","v","w","x","y","z" /)
+  upper = (/"A","B","C","D","E","F","G","H","I","J","K","L","M", \
+            "N","O","P","Q","R","S","T","U","V","W","X","Y","Z" /)
+  
+  lowc  = stringtochar(lower)
+  upc   = stringtochar(upper)
+  namec = stringtochar(name)
+
+  do i = 0, dimsizes(namec)-2
+    if (any(upc(:,0).eq.namec(i))) then
+      namec(i) = lowc(ind(upc(:,0).eq.namec(i)),0)
+    end if
+  end do
+  return(chartostring(namec))
+end
+
+
+;***********************************************************************;
 ; Procedure : set_attr                                                  ;
 ;                res:logical                                            ;
 ;           att_name: string                                            ;
@@ -129,6 +159,37 @@ begin
     res@$att_name$  = att_value
   end if
   return
+end
+
+;***********************************************************************;
+; Function : check_attr                                                 ;
+;                res    : logical                                       ;
+;           att_name    : string                                        ;
+;          att_value                                                    ;
+;          convert_lower: logical                                       ;
+;                                                                       ;
+; Checks if res@att_name exists and if it is equal to att_value.        ;
+;***********************************************************************;
+function check_attr(res:logical,att_name:string,att_value, \
+                    convert_lower:logical)
+local res2, new_att_value
+begin
+  res2 = res
+
+  if(res2.and.isatt(res2,att_name))
+    if(typeof(att_value).eq."string".and.convert_lower)
+      new_att_value = lower_case(att_value)
+      res2@$att_name$ = lower_case(res2@$att_name$)
+    else
+      new_att_value = att_value
+    end if
+
+    if(res2@$att_name$.eq.new_att_value)
+      return(True)
+    end if
+  end if
+
+  return(False)
 end
 
 ;***********************************************************************;
@@ -233,6 +294,35 @@ begin
     if(isatt(res,resname)) then
       return_val = res@$resname$
       delete(res@$resname$)
+    else
+      return_val = default_val
+    end if
+  else
+    return_val = default_val
+  end if
+
+  return(return_val)
+end
+
+;***********************************************************************;
+; Function : get_res_value_keep                                         ;
+;                res:logical                                            ;
+;            resname:string                                             ;
+;        default_val                                                    ;
+;                                                                       ;
+; This function checks to see if the given resource has been set, and if;
+; so, it returns its value and keeps it from the resource list.         ;
+; Otherwise, it returns the default value which is the last argument    ;
+; passed in.                                                            ;
+;                                                                       ;
+;***********************************************************************;
+function get_res_value_keep(res,resname:string,default_val)
+local return_val
+begin
+  if(((typeof(res).eq."logical".and.res).or.(typeof(res).ne."logical")).and.\
+     .not.any(ismissing(getvaratts(res)))) then
+    if(isatt(res,resname)) then
+      return_val = res@$resname$
     else
       return_val = default_val
     end if
@@ -709,11 +799,7 @@ end
   if(isatt(res,"gsnPanelRight"))
     maxbb@gsnPanelRight  = get_res_value(res,"gsnPanelRight",1.)
   end if
-    if(isatt(name,"res_file"))
-      res_file = name@res_file
-    else
-      res_file = "gsnapp"
-    end if
+  if(isatt(res,"gsnPanelBottom"))
     maxbb@gsnPanelBottom = get_res_value(res,"gsnPanelBottom",0.)
   end if
   if(isatt(res,"gsnPanelTop"))
@@ -820,47 +906,15 @@ begin
     "lbOrientation"     : orientation
     "lbPerimOn"         : perim_on
     "lbLabelAlignment"  : label_align
-    lower_x  =  36
-    lower_y  = 126
-    upper_x  = 576
-    upper_y  = 666
-    cmap     = "default"
-    orient   = "portrait"
-    resltn   = 1800
-    res_file = "gsnapp"
-    
-    if(isatt(name,"res_file"))
-      res_file = name@res_file
-    end if
+    "lbLabelFontHeightF": font_height
+    "lbMonoFillPattern" : mono_fill_pat
+    "lbAutoManage"      : False
+  end create
 
-    if(isatt(type,"wkPSResolution"))
-      resltn = type@wkPSResolution
-    end if
+  attsetvalues_check(labelbar_object,lbres)
 
-    if(isatt(type,"wkOrientation"))
-      orient = type@wkOrientation
-    end if
-
-    if(isatt(type,"wkDeviceLowerX"))
-      lower_x = type@wkDeviceLowerX
-    end if
-
-    if(isatt(type,"wkDeviceLowerY"))
-      lower_y = type@wkDeviceLowerY
-    end if
-
-    if(isatt(type,"wkDeviceUpperX"))
-      upper_x = type@wkDeviceUpperX
-    end if
-
-    if(isatt(type,"wkDeviceUpperY"))
-      upper_y = type@wkDeviceUpperY
-    end if
+  return(labelbar_object)
 end
-    if(isatt(type,"wkColorMap"))
-      delete(cmap)
-      cmap = type@wkColorMap
-    end if
 
 
 ;***********************************************************************;
@@ -919,19 +973,10 @@ begin
     res_file = "gsnapp"     ; Default resource file name.
 ;
 ; Parse "name" to get the directory and the file prefix.
-    if(isatt(type,"wkMetaName"))
-        ncgm_file = type@wkMetaName
-    else
-        ncgm_file = res_file + ".ncgm"
-    end if
+;
     if(name.ne."") then
       name_char = stringtochar(name)
-    if(isatt(type,"wkPSFileName"))
-        ps_file = type@wkPSFileName
-    else
-        ps_file = res_file + "." + type
-    end if
-
+      name_len  = dimsizes(name_char)-1
       i = name_len-1      ; Start checking if a directory pathname
       not_found = True    ; was specified for the resource file.
       do while(not_found.and.i.ge.0)
@@ -1122,7 +1167,9 @@ end
 ; points, and plot them individually.
 ;
         dummy = new(1,graphic)
-                attsetvalues(gsid,gmres)
+                if(gmres.and..not.any(ismissing(getvaratts(gmres))))
+                  attsetvalues(gsid,gmres)
+                end if
         i = 0
 ;
 ; Get the number of non-missing pairs of lines.
@@ -1307,7 +1354,9 @@ begin
 
 ;
 ; Convert data to float, since NhlDataPolyline only takes floats.
-             attsetvalues(gsid,gmres)
+             if(gmres.and..not.any(ismissing(getvaratts(gmres))))
+               attsetvalues(gsid,gmres)
+             end if
     xf = tofloat(x)
     yf = tofloat(y)
 ;
@@ -1562,12 +1611,7 @@ procedure gsn_labelbar_ndc(wks:graphic, nbox:integer, labels:string, \
                            x,y,resources:logical )
 local i, lbid, res, lb_res_index, lbres
 ;***********************************************************************;
-
-    if(isatt(wks,"name"))
-      wksname = wks@name
-    else
-      wksname = "gsnapp"
-    end if
+    wksname = get_res_value_keep(wks,"name","gsnapp")
 ;               resources: optional resources                           ;
     lbid = create wksname + "_labelbar" labelBarClass wks
       "vpXF"           : x
@@ -1636,7 +1680,7 @@ end
 ;                                                                       ;
 ; However, if you set gsnPanelRowSpec to True, and dims to an array of  ;
 procedure gsn_panel(wks:graphic,plot[*]:graphic,dims[*]:integer,\
-                  resources:logical)
+                    resources:logical)
 ; there to be two plots in the first row, three in the second row, and  ;
 ; one in the third row.                                                 ;
 ;                                                                       ;
@@ -1857,10 +1901,7 @@ begin
   bottom = bb(1)
   left   = bb(2)
   right  = bb(3)
-    if(isatt(lbres,"lbOrientation").and. \
-      (lbres@lbOrientation.eq."VERTICAL".or. \
-       lbres@lbOrientation.eq."Vertical".or. \
-       lbres@lbOrientation.eq."vertical"))
+;
 ; plot_width  : total width of plot with all of its annotations
 ; plot_height : total height of plot with all of its annotations
 ; total_width : plot_width plus white space on both sides
@@ -2160,7 +2201,6 @@ begin
   if(callframe)
     frame(wks)   ; Advance the frame.
                              (/bot,bot,top,top,bot/),gsres)
-  return(plot)
           "vpHeightF" : old_vp(i,3)
         end setvalues
 
@@ -2658,11 +2698,7 @@ end
 ;   gsnShape                                                            ;
 ;   gsnScale                                                            ;
 ;   gsnSpreadColors                                                     ;
-    if(isatt(wks,"name"))
-      wksname = wks@name
-    else
-      wksname = "gsnapp"
-    end if
+;   gsnSpreadColorStart                                                 ;
 ;   gsnSpreadColorEnd                                                   ;
 ;***********************************************************************;
 function gsn_contour(wks:graphic, data[*][*]:numeric, resources:logical )
@@ -2806,11 +2842,7 @@ end
 ; "gsn_open_wks").  "data" is the 2-dimensional data to be contoured,   ;
 ; and "resources" is an optional list of resources. The id of the map   ;
 ; plot is returned.                                                     ;
-    if(isatt(wks,"name"))
-      wksname = wks@name
-    else
-      wksname = "gsnapp"
-    end if
+;                                                                       ;
 ; Special resources ("gsn" prefix) allowed:                             ;
 ;                                                                       ;
 ;   gsnDraw                                                             ;
@@ -2915,11 +2947,7 @@ end
 ; Function : gsn_map                                                    ;
 ;                      wks: workstation object                          ;
 ;               projection: Map projection                              ;
-    if(isatt(wks,"name"))
-      wksname = wks@name
-    else
-      wksname = "gsnapp"
-    end if
+;                  resources: optional resources                        ;
 ;                                                                       ;
 ; This function creates and draws a map plot to the workstation "wks"   ;
 ; (the variable returned from a previous call to "gsn_open_wks").       ;
@@ -2979,11 +3007,7 @@ end
 ; Special resources ("gsn" prefix) allowed:                             ;
 ;                                                                       ;
 ;   gsnDraw                                                             ;
-    if(isatt(wks,"name"))
-      wksname = wks@name
-    else
-      wksname = "gsnapp"
-    end if
+;   gsnFrame                                                            ;
 ;   gsnShape                                                            ;
 ;   gsnScale                                                            ;
 ;                                                                       ;
@@ -3116,11 +3140,7 @@ end
 ;                                                                       ;
 ; This function creates and draws a streamline plot over a map plot to  ;
 ; the workstation "wks" (the variable returned from a previous call to  ;
-    if(isatt(wks,"name"))
-      wksname = wks@name
-    else
-      wksname = "gsnapp"
-    end if
+; "gsn_open_wks").  "u" and "v" are the 2-dimensional arrays to be      ;
 ; streamlined, and "resources" is an optional list of resources. The id ;
 ; of the map plot is returned.                                          ;
 ;                                                                       ;
@@ -3217,11 +3237,7 @@ begin
 ; The "txFuncCode" can't be set during a setvalues  call. It must be
 ; set during the creation of the object.  
 ;
-  if(isatt(wks,"name"))
-    wksname = wks@name
-  else
-    wksname = "gsnapp"
-  end if
+  wksname = get_res_value_keep(wks,"name","gsnapp")
 
   if(res2.and.isatt(res2,"txFuncCode")) then
     txid = create wksname + "_text" textItemClass wks
@@ -3323,11 +3339,7 @@ begin
 ; The "txFuncCode" can't be set during a setvalues  call. It must be
 ; set during the creation of the object.  
 ;
-    if(isatt(wks,"name"))
-      wksname = wks@name
-    else
-      wksname = "gsnapp"
-    end if
+    wksname = get_res_value_keep(wks,"name","gsnapp")
 
     if(res2.and.isatt(res2,"txFuncCode")) then
       txid = create wksname + "_text" textItemClass wks
@@ -3374,11 +3386,7 @@ begin
 
     res2 = resources
 
-    if(isatt(wks,"name"))
-      wksname = wks@name
-    else
-      wksname = "gsnapp"
-    end if
+    wksname = get_res_value_keep(wks,"name","gsnapp")
 
     calldraw  = get_res_value(res2,"gsnDraw", True)
     callframe = get_res_value(res2,"gsnFrame",False)
@@ -3576,11 +3584,7 @@ end
 ;   gsnFrame                                                            ;
 ;   gsnShape                                                            ;
 ;   gsnScale                                                            ;
-    if(isatt(wks,"name"))
-      wksname = wks@name
-    else
-      wksname = "gsnapp"
-    end if
+;   gsnSpreadColors                                                     ;
 ;   gsnSpreadColorStart                                                 ;
 ;   gsnSpreadColorEnd                                                   ;
 ;                                                                       ;
@@ -3728,11 +3732,7 @@ end
 ; plot is returned.                                                     ;
 ;                                                                       ;
 ; Special resources ("gsn" prefix) allowed:                             ;
-    if(isatt(wks,"name"))
-      wksname = wks@name
-    else
-      wksname = "gsnapp"
-    end if
+;                                                                       ;
 ;   gsnDraw                                                             ;
 ;   gsnFrame                                                            ;
 ;   gsnShape                                                            ;
@@ -3876,11 +3876,7 @@ end
 ; is returned.                                                          ;
 ;                                                                       ;
 ; Special resources ("gsn" prefix) allowed:                             ;
-    if(isatt(wks,"name"))
-      wksname = wks@name
-    else
-      wksname = "gsnapp"
-    end if
+;                                                                       ;
 ;   gsnDraw                                                             ;
 ;   gsnFrame                                                            ;
 ;   gsnShape                                                            ;
@@ -4030,11 +4026,7 @@ end
 ; "gsn_open_wks").  "u" and "v" are the 2-dimensional arrays to be      ;
 ; vectorized, and "resources" is an optional list of resources. The id  ;
 ; of the map plot is returned.                                          ;
-    if(isatt(wks,"name"))
-      wksname = wks@name
-    else
-      wksname = "gsnapp"
-    end if
+;                                                                       ;
 ; Special resources ("gsn" prefix) allowed:                             ;
 ;                                                                       ;
 ;   gsnDraw                                                             ;
@@ -4155,11 +4147,7 @@ end
 ;   gsnShape                                                            ;
 ;   gsnScale                                                            ;
 ;   gsnSpreadColors                                                     ;
-    if(isatt(wks,"name"))
-      wksname = wks@name
-    else
-      wksname = "gsnapp"
-    end if
+;   gsnSpreadColorStart                                                 ;
 ;   gsnSpreadColorEnd                                                   ;
 ;                                                                       ;
 ;***********************************************************************;
@@ -4330,11 +4318,7 @@ end
 ; the map plot is returned.                                             ;
 ;                                                                       ;
 ; Special resources ("gsn" prefix) allowed:                             ;
-    if(isatt(wks,"name"))
-      wksname = wks@name
-    else
-      wksname = "gsnapp"
-    end if
+;                                                                       ;
 ;   gsnDraw                                                             ;
 ;   gsnFrame                                                            ;
 ;   gsnShape                                                            ;
@@ -4468,11 +4452,7 @@ end
 ; (the variable returned from a previous call to "gsn_open_wks").  "x"  ;
 ; and "y" are either 1 or 2-dimensional arrays containing the X and Y   ;
 ; data points and "resources" is an optional list of resources. The id  ;
-    if(isatt(wks,"name"))
-      wksname = wks@name
-    else
-      wksname = "gsnapp"
-    end if
+; of the xy plot is returned.                                           ;
 ;                                                                       ;
 ; Special resources ("gsn" prefix) allowed:                             ;
 ;                                                                       ;
@@ -4505,33 +4485,11 @@ begin
     if(isatt(x,"_FillValue")) then
         setvalues data_object
             "caXMissingV" :x@_FillValue
-    if(res2.and..not.any(ismissing(getvaratts(res2))))
-      if(isatt(res2,"trXMinF")) then
-        trxmin = res2@trXMinF
-      else
-        trxmin = trxmin2
-      end if 
-      if(isatt(res2,"trXMaxF")) then
-        trxmax = res2@trXMaxF
-      else
-        trxmax = trxmax2
-      end if 
-      if(isatt(res2,"trYMinF")) then
-        trymin = res2@trYMinF
-      else
-        trymin = trymin2
-      end if 
-      if(isatt(res2,"trYMayF")) then
-        trymax = res2@trYMaxF
-      else
-        trymax = trymax2
-      end if 
-    else 
-      trxmin = trxmin2
-      trxmax = trxmax2
-      trymin = trymin2
-      trymax = trymax2
+        end setvalues
     end if
+    if(isatt(y,"_FillValue")) then
+        setvalues data_object
+            "caYMissingV" :y@_FillValue
         end setvalues
     end if
 
@@ -4632,11 +4590,13 @@ begin
                 setvalues plot_object
                     attnames : res2@$attnames$
                 end setvalues
-                xyres = True
-                do i = 0,dimsizes(xy_res_index)-1
-                    xyres@$attnames(xy_res_index(i))$ = res2@$attnames(xy_res_index(i))$
-                end do
+            end if
+            if(chartostring(res(0:1)).eq."xy".and.\
+              (chartostring(res(0:3)).ne."xyCo".and.\
+               chartostring(res(0:2)).ne."xyX".and.\
+              if(xyres.and..not.any(ismissing(getvaratts(xyres))))
                 attsetvalues(plot_object,xyres)
+              end if
                 setvalues dspec
                     attnames : res2@$attnames$
                 end setvalues
@@ -4646,7 +4606,9 @@ begin
                                 chartostring(res(:,0:1)).ne."xy").or.\
                                (chartostring(res(:,0:1)).eq."xy".and.\
                                (chartostring(res(:,0:3)).eq."xyCo".or.\
-                attsetvalues(dspec,xydpres)
+                if(xydpres.and..not.any(ismissing(getvaratts(xydpres))))
+                  attsetvalues(dspec,xydpres)
+                end if
                                 chartostring(res(:,0:2)).eq."xyY")))
             xydp_res_index = ind(chartostring(res(:,0:1)).eq."xy".and.\
                                 (chartostring(res(:,0:3)).ne."xyCo".and.\
