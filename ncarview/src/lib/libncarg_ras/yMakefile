@@ -1,4 +1,4 @@
-#	$Id: yMakefile,v 1.38 1993-11-01 17:43:49 boote Exp $
+#	$Id: yMakefile,v 1.39 1993-11-09 00:14:30 clyne Exp $
 #
 #	Makefile for libraster - libraries for dealing with
 #	a variety of raster image formats.
@@ -132,9 +132,6 @@ palette.o:	ncarg_ras.h
 raster.o:	ncarg_ras.h raster.h options.h devices.h Makefile
 sunraster.o:	ncarg_ras.h sunraster.h
 xwd.o:		ncarg_ras.h
-
-parallax.o:	ncarg_ras.h parallax.h
-	cc $(CFLAGS) -c parallax.c
 
 hppcl.o:	ncarg_ras.h hppcl.h
 cleartext.o:	ncarg_ras.h

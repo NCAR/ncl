@@ -1,5 +1,5 @@
 /*
- *	$Id: parallax.h,v 1.4 1992-09-10 20:58:43 don Exp $
+ *	$Id: parallax.h,v 1.5 1993-11-09 00:14:27 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -84,7 +84,7 @@ typedef struct InputRegisterStruct {
 			filter:2,
 			format:2,
 			sync:3,
-			compress:3
+			compress:3;
 } InputRegister;
 
 /*reversed bit order from what it was J.K. */
