@@ -1,4 +1,7 @@
 /*
+ *	$Id: w_display.c,v 1.2 1991-01-08 12:20:53 clyne Exp $
+ */
+/*
  *	w_display.c
  *
  *	Author		John Clyne
@@ -93,7 +96,7 @@ void	CreateDisplayPopup(button, metafile)
 	 * open a connection to a translator
 	 */
 	if ((id = OpenDisplay(App_Data.device, App_Data.font, metafile)) < 0) {
-		fprintf(stderr, "Transator aborted\n");
+		(void) fprintf(stderr, "Translator aborted\n");
 		return;
 	}
 
@@ -101,7 +104,8 @@ void	CreateDisplayPopup(button, metafile)
 	popUp[id] = XtCreatePopupShell(metafile, topLevelShellWidgetClass, 
 		button, args, n);
 
-	paned = XtCreateManagedWidget("paned",panedWidgetClass,popUp[id],NULL,0);
+	paned = XtCreateManagedWidget("paned",
+				panedWidgetClass,popUp[id], (ArgList) NULL,0);
 
 	/*
 	 * The main display is made up of three sub-panels
@@ -129,11 +133,12 @@ void	create_tip_top_panel(paned, id)
 	Cardinal	n;
 	Arg		args[10];
 
-	form = XtCreateManagedWidget("form",formWidgetClass,paned,NULL,0);
+	form = XtCreateManagedWidget("form",
+				formWidgetClass,paned, (ArgList) NULL,0);
 
         n = 0;
         scrollbar = XtCreateManagedWidget("scrollbar",
-			scrollbarWidgetClass,form,args,n);
+			scrollbarWidgetClass,form, (ArgList) args,n);
 
 	XtAddCallback(scrollbar, XtNjumpProc, Scroll, (XtPointer) id);
 
@@ -160,7 +165,8 @@ void	create_top_panel(paned, id)
 	Cardinal	n;
 	Arg		args[10];
 
-	form = XtCreateManagedWidget("form",formWidgetClass,paned,NULL,0);
+	form = XtCreateManagedWidget("form",
+				formWidgetClass,paned, (ArgList) NULL,0);
 
 	/*
 	 * create a pixmap for the playback button
@@ -174,7 +180,7 @@ void	create_top_panel(paned, id)
         playback = XtCreateManagedWidget("playback",
 			commandWidgetClass,form,args,n);
 
-	XtAddCallback(playback, XtNcallback, Playback, (XtPointer *) id);
+	XtAddCallback(playback, XtNcallback, Playback, (XtPointer) id);
 
 	/*
 	 * the jogback button
@@ -189,7 +195,7 @@ void	create_top_panel(paned, id)
         jogback = XtCreateManagedWidget("jogback",
 			commandWidgetClass,form,args,n);
 
-	XtAddCallback(jogback, XtNcallback, Jogback, (XtPointer *) id);
+	XtAddCallback(jogback, XtNcallback, Jogback, (XtPointer) id);
 
 	/*
 	 * the stop button
@@ -202,7 +208,7 @@ void	create_top_panel(paned, id)
 	XtSetArg(args[n], XtNbitmap, pixmap);	n++;
 	XtSetArg(args[n], XtNfromHoriz, jogback);	n++;
         stop = XtCreateManagedWidget("stop",commandWidgetClass,form,args,n);
-	XtAddCallback(stop, XtNcallback, Stop, (XtPointer *) id);
+	XtAddCallback(stop, XtNcallback, Stop, (XtPointer) id);
 
 	/*
 	 * the jog button
@@ -215,7 +221,7 @@ void	create_top_panel(paned, id)
 	XtSetArg(args[n], XtNbitmap, pixmap);	n++;
 	XtSetArg(args[n], XtNfromHoriz, stop);	n++;
         jog = XtCreateManagedWidget("jog",commandWidgetClass,form,args,n);
-	XtAddCallback(jog, XtNcallback, Jog, (XtPointer *) id);
+	XtAddCallback(jog, XtNcallback, Jog, (XtPointer) id);
 
 	/*
 	 * the play button
@@ -228,7 +234,7 @@ void	create_top_panel(paned, id)
 	XtSetArg(args[n], XtNbitmap, pixmap);	n++;
 	XtSetArg(args[n], XtNfromHoriz, jog);	n++;
         play = XtCreateManagedWidget("play", commandWidgetClass,form,args,n);
-	XtAddCallback(play, XtNcallback, Play, (XtPointer *) id);
+	XtAddCallback(play, XtNcallback, Play, (XtPointer) id);
 
 }
 
@@ -246,38 +252,39 @@ static	void	create_middle_panel(paned, id)
 	Cardinal	n;
 	Arg		args[10];
 
-	form = XtCreateManagedWidget("form",formWidgetClass,paned,NULL,0);
+	form = XtCreateManagedWidget("form",
+				formWidgetClass,paned, (ArgList) NULL,0);
 
         n = 0;
         loop = XtCreateManagedWidget("loop", toggleWidgetClass,form,args,n);
-	XtAddCallback(loop, XtNcallback, Loop, (XtPointer *) id);
+	XtAddCallback(loop, XtNcallback, Loop, (XtPointer) id);
 
         n = 0;
 	XtSetArg(args[n], XtNfromHoriz, loop);	n++;
         dup = XtCreateManagedWidget("dup",commandWidgetClass,form,args,n);
-	XtAddCallback(dup, XtNcallback, Dup, (XtPointer *) id);
+	XtAddCallback(dup, XtNcallback, Dup, (XtPointer) id);
 
         n = 0;
 	XtSetArg(args[n], XtNfromHoriz, dup);	n++;
         goto_ = XtCreateManagedWidget("goto",commandWidgetClass,form,args,n);
-	XtAddCallback(goto_, XtNcallback, Goto_, (XtPointer *) id);
+	XtAddCallback(goto_, XtNcallback, Goto_, (XtPointer) id);
 
         n = 0;
 	XtSetArg(args[n], XtNfromHoriz, goto_);	n++;
         skip = XtCreateManagedWidget("skip",commandWidgetClass,form,args,n);
-	XtAddCallback(skip, XtNcallback, Skip, (XtPointer *) id);
+	XtAddCallback(skip, XtNcallback, Skip, (XtPointer) id);
 
         n = 0;
 	XtSetArg(args[n], XtNfromHoriz, skip);	n++;
         start_segment = XtCreateManagedWidget("start segment",
 		commandWidgetClass,form,args,n);
-	XtAddCallback(start_segment,XtNcallback,Start_Segment,(XtPointer *) id);
+	XtAddCallback(start_segment,XtNcallback,Start_Segment,(XtPointer) id);
 
         n = 0;
 	XtSetArg(args[n], XtNfromHoriz, start_segment);	n++;
         stop_segment = XtCreateManagedWidget("stop segment",
 		commandWidgetClass,form,args,n);
-	XtAddCallback(stop_segment,XtNcallback,Stop_Segment,(XtPointer *) id);
+	XtAddCallback(stop_segment,XtNcallback,Stop_Segment,(XtPointer) id);
 }
 
 static	void	create_bottom_panel(paned, id) 
@@ -296,17 +303,18 @@ static	void	create_bottom_panel(paned, id)
 	extern	char	*TalkTo();
 	extern	char	**SpoolerList();
 
-	form = XtCreateManagedWidget("form",formWidgetClass,paned,NULL,0);
+	form = XtCreateManagedWidget("form",
+				formWidgetClass,paned, (ArgList) NULL,0);
 
         n = 0;
         done = XtCreateManagedWidget("done",commandWidgetClass,form,args,n);
-	XtAddCallback(done, XtNcallback, Done, (XtPointer *) id);
+	XtAddCallback(done, XtNcallback, Done, (XtPointer) id);
 
         n = 0;
 	XtSetArg(args[n], XtNfromHoriz, done);	n++;
         current_frame = XtCreateManagedWidget("current frame",
 				commandWidgetClass,form,args,n);
-	XtAddCallback(current_frame,XtNcallback,CurrentFrame,(XtPointer *) id);
+	XtAddCallback(current_frame,XtNcallback,CurrentFrame,(XtPointer) id);
 
 
 	alias_list = TalkTo(id, "alias\n", SYNC);
@@ -317,15 +325,15 @@ static	void	create_bottom_panel(paned, id)
 		print = XtCreateManagedWidget("print",menuButtonWidgetClass,
 								form,args,n);
 
-		menu = XtCreatePopupShell("menu", simpleMenuWidgetClass, 
-								print, NULL,0);
+		menu = XtCreatePopupShell("menu", 
+				simpleMenuWidgetClass, print, (ArgList) NULL,0);
 
 		for (ptr = spooler_list; *ptr; ptr++) {
 			entry = XtCreateManagedWidget(*ptr, smeBSBObjectClass,
-					menu, NULL, 0);
+					menu, (ArgList) NULL, 0);
 
 			XtAddCallback(entry, XtNcallback, 
-					PrintSelect, (XtPointer *) id);
+					PrintSelect, (XtPointer) id);
 		}
 	}
 	else {
@@ -335,18 +343,18 @@ static	void	create_bottom_panel(paned, id)
 		print = XtCreateManagedWidget("print",commandWidgetClass,
 								form,args,n);
 
-		XtAddCallback(print, XtNcallback, NoPrint, (XtPointer *) id);
+		XtAddCallback(print, XtNcallback, NoPrint, (XtPointer) id);
 	}
 
         n = 0;
 	XtSetArg(args[n], XtNfromHoriz, print);	n++;
         save = XtCreateManagedWidget("save",commandWidgetClass,form,args,n);
-	XtAddCallback(save, XtNcallback, Save, (XtPointer *) id);
+	XtAddCallback(save, XtNcallback, Save, (XtPointer) id);
 
         n = 0;
 	XtSetArg(args[n], XtNfromHoriz, save);	n++;
         zoom = XtCreateManagedWidget("zoom",commandWidgetClass,form,args,n);
-	XtAddCallback(zoom, XtNcallback, Zoom, (XtPointer *) id);
+	XtAddCallback(zoom, XtNcallback, Zoom, (XtPointer) id);
 }
 
 /*
@@ -530,6 +538,7 @@ static  void    Done(widget, client_data, call_data)
 	int	id = (int) client_data;
 
 	void	simple_command();
+	void	CloseDisplay();
 
 	simple_command(id, DONE);
 
@@ -601,6 +610,8 @@ static  void    Save(widget, client_data, call_data)
 {
 	int	id = (int) client_data;
 
+	void	CreateSimpleDialogPopup();
+
 	command_Id.id = id;
 	command_Id.command = SAVE;
 
@@ -628,7 +639,7 @@ static  void    Zoom(widget, client_data, call_data)
         s = ZoomCoords(XtDisplay(widget), root);
 
         if (s == NULL) {
-                fprintf(stderr, "error in zoom\n");
+                (void) fprintf(stderr, "error in zoom\n");
         }
         else {
 		command_Id.id = id;
@@ -659,8 +670,10 @@ static	void	create_simple_dialog_popup(widget, id, command_name, command)
 	int		value;
 	char	buf[80];
 
+	void	CreateSimpleDialogPopup();
+
 	value = GetValue(id, command);
-	sprintf(buf, "%d", value);
+	(void) sprintf(buf, "%d", value);
 
 	command_Id.id = id;
 	command_Id.command = command;
@@ -695,7 +708,8 @@ UpdateFrameLabel(frame_string)
 	Arg		args[10];
 	char		*s;
 	
-	s = icMalloc(strlen(FRAME_LABEL_DISPLAY) + strlen(frame_string) + 1);
+	s = icMalloc((unsigned) 
+		(strlen(FRAME_LABEL_DISPLAY) + strlen(frame_string) + 1));
 
 	(void) strcpy(s, FRAME_LABEL_DISPLAY);
 	(void) strcat(s, frame_string);
