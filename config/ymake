@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ymake,v 1.36 2001-11-07 15:34:11 haley Exp $
+#	$Id: ymake,v 1.37 2001-11-07 15:49:27 haley Exp $
 #
 ######################################################################
 #
@@ -373,27 +373,27 @@ case    AIX:
         breaksw
 
 case    Linux:
-    set os = $opsys
+        set os = $opsys
 
-    switch ("$mach")
-    case    i*86:
-    case    alpha:
-        set model = $mach
-        set arch = $mach
-        breaksw
-    default:
-        echo "$0 : Unknown machine type" > /dev/tty
-        exit 1
-    endsw
+        switch ("$mach")
+        case    i*86:
+        case    alpha:
+            set model   = $mach
+            set arch    = $mach
+            set sysincs = LINUX
+            set vendor  = IBM
+            breaksw
+        case    ppc:
+            set model   = $mach
+            set arch    = $mach
+            set sysincs = YDLINUX
+            set vendor  = APPLE
+            breaksw
+        default:
+            echo "$0 : Unknown machine type" > /dev/tty
+            exit 1
+        endsw
 
-        set sysincs = LINUX
-        set vendor = IBM
-    breaksw
-    case    ppc:
-        set model = $mach
-        set arch = $mach
-        set sysincs = YDLINUX
-        set vendor = APPLE
         breaksw
 
 case    IRIX:
