@@ -1,0 +1,18 @@
+#
+#	$Id: yMakefile,v 1.1 1999-08-19 23:47:55 fred Exp $
+#
+
+MYNAME	= edsgrid
+
+SRCS = \
+	shex01.f
+
+OBJS = \
+	shex01.o
+
+PROG_LIBS               = $(NCARGLIBS) $(NGMATHLIBS)
+SYS_LIBS		= $(XLIB) $(CTOFLIBS)
+
+InstallTarget($(SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
+
+FExampleTarget(shex01,shex01.o)
