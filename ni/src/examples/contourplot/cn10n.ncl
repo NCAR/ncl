@@ -81,7 +81,7 @@ if (NCGM .eq. 1) then
 ; Create an ncgmWorkstation object.
 ;
   workstation_id = create "moundn" ncgmWorkstationClass defaultapp
-      "wkMetaName"         : "mound.ncgm"
+      "wkMetaName"         : "cn10n.ncgm"
       "wkColorMap"         : cmap
       "wkBackgroundColor"  : (/ 1., 1., 1. /)
   end create
