@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl 
 #
-#      $Id: make-tape,v 1.13 1996-07-09 19:49:23 haley Exp $
+#      $Id: make-tape,v 1.14 1996-08-21 15:00:30 haley Exp $
 #
 #########################################################################
 #									#
@@ -31,7 +31,7 @@
 #
 #	Files:		
 #		$build_root		: root of ncarg build directory 
-#					(currently /cyclone/X/ncarg/binaries
+#					(currently /fs/scd/home1/X/ncarg/binaries
 #		$build_root/TOC		: table of contents describing what
 #				  	should be put on the tape.
 #		$build_root/INSTALL/INSTALL.TAR	: install script
@@ -42,7 +42,7 @@
 #	Options:	-debug			: print tape writing commands 
 #						  and exit.
 #			-root <directory>	: root of ncarg build directory
-#						  default is /cyclone/X/ncarg/binaries
+#						  default is /fs/scd/home1/X/ncarg/binaries
 #			-inter			: interactive mode - prompt 
 #						  for platforms
 #			-nrdevice <device>	: no rewind tape device
@@ -206,7 +206,7 @@ $rhost = "windom";		# remote tapedrive host
 $do_inter = 0;			# do interactive mode?
 $do_src = 0;			# do we record the distribution src to tape
 $do_doc = 0;			# do we record the documentation to tape
-$build_root = "/cyclone/X/ncarg/binaries";	
+$build_root = "/fs/scd/home1/X/ncarg/binaries";	
 $install_dir = "INSTALL";
 $rsh;				# remote shell command (undefine if local)
 @archs;				# architectures to write binaries for

@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl 
 #
-#      $Id: make-tarfile,v 1.9 1995-10-06 14:30:02 haley Exp $
+#      $Id: make-tarfile,v 1.10 1996-08-21 15:00:31 haley Exp $
 #
 #########################################################################
 #                                                                       #
@@ -26,7 +26,7 @@
 #
 #   Files:      
 #       $build_root     : root of ncarg build directory 
-#                   (currently /cyclone/ncargd/dist/binaries)
+#                   (currently /fs/scd/home1/ncargd/dist/binaries)
 #
 #       $build_root/INSTALL/INSTALL.TAR : install script
 #
@@ -63,7 +63,7 @@ sub my_system {
 ##
 
 $do_inter = 0;          # do interactive mode?
-$build_root = "/cyclone/ncargd/dist/binaries";  
+$build_root = "/fs/scd/home1/ncargd/dist/binaries";  
 $install_dir = "INSTALL";
 $toc_file = "$build_root/INSTALL/var/TOC";
 @platforms;             # platforms to write binaries for

@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl 
 #
-#      $Id: make-cdrom,v 1.11 1996-07-09 19:37:52 haley Exp $
+#      $Id: make-cdrom,v 1.12 1996-08-21 14:57:13 haley Exp $
 #
 #########################################################################
 #									#
@@ -33,7 +33,7 @@
 #
 #	Files:		
 #		$build_root		: root of ncarg build directory 
-#					(currently /cyclone/ncargd/dist/binaries)
+#					(currently /fs/scd/home1/ncargd/dist/binaries)
 #		$build_root/TOC		: table of contents describing what
 #				  	should be put on the tape.
 #		$build_root/INSTALL/INSTALL.TAR	: install script
@@ -44,7 +44,7 @@
 #	Options:	-debug			: print tape writing commands 
 #						  and exit.
 #			-root <directory>	: root of ncarg build directory
-#						  default is /cyclone/ncargd/dist/binaries
+#						  default is /fs/scd/home1/ncargd/dist/binaries
 #			-inter			: interactive mode - prompt 
 #						  for platforms
 #			-device <device>	: tape device
@@ -222,7 +222,7 @@ $nrdevice = "/dev/nrst0";		# no-rewind tape device
 $rhost = "dillon";		# remote tapedrive host
 
 $do_inter = 0;			# do interactive mode?
-$build_root = "/cyclone/ncargd/dist/binaries";	
+$build_root = "/fs/scd/home1/ncargd/dist/binaries";	
 $install_dir = "INSTALL";
 $rsh;				# remote shell command (undefine if local)
 @archs;				# architectures to write binaries for

@@ -1,7 +1,7 @@
-ROOT_DIR	= /cyclone/X/ncarg/binaries
+ROOT_DIR	= /fs/scd/home1/X/ncarg/binaries
 INS_DIR	= $(ROOT_DIR)/INSTALL
 SRC_TAR	= $(ROOT_DIR)/SRC.TAR
-DOC_DIR = /cyclone/ncargd/nidt/http/droot/ngdoc/ng4.0.1
+DOC_DIR = /fs/scd/home1/ncargd/nidt/http/droot/ngdoc/ng4.0.1
 DOC_TAR = $(ROOT_DIR)/DOC.TAR
 
 TARGETS		=	HPUX_HP9000_7xx AIX_RS6000 SunOS_sun4 \
