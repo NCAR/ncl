@@ -1,5 +1,5 @@
 C
-C	$Id: vvectr.f,v 1.7 1993-04-30 23:36:35 dbrown Exp $
+C	$Id: vvectr.f,v 1.8 1993-06-23 19:29:21 dbrown Exp $
 C
       SUBROUTINE VVECTR (U,V,P,IAM,VVUDMV,WRK)
 C
@@ -216,6 +216,7 @@ C
       VMN = RBIG
       VMX = 0.0
       IZF = 1
+      IAV = 0
       SMN=DVMN
       SMX=DVMX
 C 
@@ -293,9 +294,9 @@ C
      +     10.**(3-IFIX(ALOG10(AMAX1(ABS(UVMN),ABS(UVMX)))-500.)-500)
 C
 C Set the vector adjustment flag and calculate the minimum vector 
-C adjustment value if required
+C adjustment value if required. Note the vector adjustment flag can
+C only be enabled if there is a non-uniform field.
 C
-      IAV=0
       IF (UVMX - UVMN .LE. 0.0) THEN
          DVMN = DVMX
       ELSE IF (VFRC .GT. 0.0) THEN
