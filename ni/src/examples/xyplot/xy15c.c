@@ -1,7 +1,7 @@
 /*
- *      $Id: xy15c.c,v 1.2 1995-10-17 17:50:54 haley Exp $
+ *      $Id: xy15c.c,v 1.3 1995-10-19 14:48:59 haley Exp $
  */
-/***********************************************************************
+/************************************************************************
  *                                                                      *
  *                Copyright (C)  1995                                   *
  *        University Corporation for Atmospheric Research               *
@@ -12,22 +12,22 @@
  *  File:       xy15c.c
  *
  *  Author:     David Brown
- *          	National Center for Atmospheric Research
- *         	PO 3000, Boulder, Colorado
+ *              National Center for Atmospheric Research
+ *              PO 3000, Boulder, Colorado
  *
  *  Date:       Fri Jun 30 14:11:32 MDT 1995
  *
  * Description:  
- *		This example illustrates the creation of a set of 4
- *		of 'stacked' XyPlots. Each plot has the same X axis.
- *		By making the top 3 plots into annotations of the 
- *		bottom plot, all four plots can be manipulated as
- *		a unit. To demonstrate this concept the second frame sets
- *		the viewport of the base plot. Because all the annotations
- *		have their "amResizeNotify" resource set to true (in the
- *		resource file), all the annotation plots resize themselves
- *		proportionally to the change in the size of the base plot.
- *		Each plot draws a variation of sinusoidal curve.
+ *              This example illustrates the creation of a set of 4
+ *              of 'stacked' XyPlots. Each plot has the same X axis.
+ *              By making the top 3 plots into annotations of the 
+ *              bottom plot, all four plots can be manipulated as
+ *              a unit. To demonstrate this concept the second frame sets
+ *              the viewport of the base plot. Because all the annotations
+ *              have their "amResizeNotify" resource set to true (in the
+ *              resource file), all the annotation plots resize themselves
+ *              proportionally to the change in the size of the base plot.
+ *              Each plot draws a variation of sinusoidal curve.
  */
 
 #include <stdio.h>
@@ -42,11 +42,9 @@
 #include <ncarg/hlu/CoordArrays.h>
 
 /*
- * Define the number of curves and points in each curve.
+ * Define the number of points in each curve.
  */
 #define NPTS  500
-#define NCURVE  4
-#define NCOLORS 6
 #define PI100 0.031415926535898
 
 float ydra1[NPTS];
@@ -58,21 +56,21 @@ main()
 {
     int     appid,xworkid;
     int     dataid1,dataid2,dataid3,dataid4;
-    int	    xy1, xy2, xy3, xy4;
-    int	    am2, am3, am4;
+    int     xy1, xy2, xy3, xy4;
+    int     am2, am3, am4;
     int     rlist, i;
     float   theta;
-    int	    NCGM=0, X11=1, PS=0;
+    int     NCGM=0, X11=1, PS=0;
 /*
  * Initialize data for the XyPlot object.
  */
-        for( i = 0; i < NPTS; i++ ) {
-            theta = PI100*(float)(i);
-            ydra1[i] = sin(theta);
-            ydra2[i] = sin(theta * theta);
-            ydra3[i] = sin(exp(theta));
-            ydra4[i] = sin(3*sqrt(fabs(theta)));
-        }
+    for( i = 0; i < NPTS; i++ ) {
+        theta = PI100*(float)(i);
+        ydra1[i] = sin(theta);
+        ydra2[i] = sin(theta * theta);
+        ydra3[i] = sin(exp(theta));
+        ydra4[i] = sin(3*sqrt(fabs(theta)));
+    }
 /*
  * Initialize the HLU library and set up resource template.
  */
@@ -165,7 +163,6 @@ main()
  */
     NhlDraw(xy1);
     NhlFrame(xworkid);
-
 /*
  * Now set the viewport of the base plot only; redrawing the base plot
  * causes all the other plots to be redrawn as well. Notice that they
@@ -173,7 +170,6 @@ main()
  * of the base plot. The whole assemblage functions as a single 
  * composite plot object.
  */
-
     NhlRLClear(rlist);
     NhlRLSetFloat(rlist,NhlNvpWidthF,0.65);
     NhlRLSetFloat(rlist,NhlNvpXF,0.25);
@@ -183,7 +179,6 @@ main()
     
     NhlDraw(xy1);
     NhlFrame(xworkid);
-
 /*
  * Destroy the resource list.
  * The workstation, all the plots, and the data objects are all
