@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.140 2004-05-12 15:55:24 haley Exp $
+;      $Id: gsn_code.ncl,v 1.141 2004-05-19 15:24:00 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -2271,18 +2271,24 @@ end
 function gsn_open_image(type:string,name[1]:string)
 local image, res_file
 begin
-    res_file=get_res_value_keep(name,"res_file","gsnapp")
+    res_file = get_res_value_keep(name,"res_file","gsnapp")
+    wkwidth  = get_res_value_keep(type,"wkWidth",512)
+    wkheight = get_res_value_keep(type,"wkHeight",512)
 
     if(isatt(name,"wkColorMap"))
       image = create res_file imageWorkstationClass defaultapp 
         "wkImageFileName" : name
         "wkImageFormat"   : type
         "wkColorMap"      : name@wkColorMap
+        "wkWidth"         : wkwidth
+        "wkHeight"        : wkheight
       end create
     else
       image = create res_file imageWorkstationClass defaultapp 
         "wkImageFileName" : name
         "wkImageFormat"   : type
+        "wkWidth"         : wkwidth
+        "wkHeight"        : wkheight
       end create
     end if
 
