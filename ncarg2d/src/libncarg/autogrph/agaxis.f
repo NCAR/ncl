@@ -1,5 +1,5 @@
 C
-C $Id: agaxis.f,v 1.4 1996-04-18 17:45:58 kennison Exp $
+C $Id: agaxis.f,v 1.5 1996-08-14 19:41:36 kennison Exp $
 C
       SUBROUTINE AGAXIS (IAXS,QTST,QSPA,WCWP,HCWP,XBGA,YBGA,XNDA,YNDA,
      +                   QLUA,UBGA,UNDA,FUNS,QBTP,BASE,QJDP,WMJL,WMJR,
@@ -202,18 +202,18 @@ C This is the initialization section of AGAXIS.
 C
 C Unpack integer values from floating-point arguments.
 C
-      ITST=IFIX(QTST)
-      ISPA=IFIX(QSPA)
-      LLUA=IFIX(QLUA)
-      NBTP=IFIX(QBTP)
-      NMNT=IFIX(QMNT)
-      NLTP=IFIX(QLTP)
-      NLEX=IFIX(QLEX)
-      NLFL=IFIX(QLFL)
-      NLOF=IFIX(QLOF)
-      NLOS=IFIX(QLOS)
-      MCIM=IFIX(QCIM)
-      MCIE=IFIX(QCIE)
+      ITST=IFIXMM(QTST)
+      ISPA=IFIXMM(QSPA)
+      LLUA=IFIXMM(QLUA)
+      NBTP=IFIXMM(QBTP)
+      NMNT=IFIXMM(QMNT)
+      NLTP=IFIXMM(QLTP)
+      NLEX=IFIXMM(QLEX)
+      NLFL=IFIXMM(QLFL)
+      NLOF=IFIXMM(QLOF)
+      NLOS=IFIXMM(QLOS)
+      MCIM=IFIXMM(QCIM)
+      MCIE=IFIXMM(QCIE)
 C
 C Initialize the local flags which specify what entities to draw, using
 C values appropriate for the following quick exit.

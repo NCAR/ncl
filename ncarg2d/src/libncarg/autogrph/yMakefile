@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.8 1994-04-18 20:23:55 haley Exp $
+#	$Id: yMakefile,v 1.9 1996-08-14 19:41:37 kennison Exp $
 #
 
 MYNAME	= autogrph
@@ -12,7 +12,7 @@ GENERIC_SRCS = \
 	 agmaxi.f agmini.f agnumb.f agppid.f agpwrt.f agqurv.f agrpch.f\
 	 agrstr.f agsave.f agscan.f agsetc.f agsetf.f agseti.f agsetp.f\
 	 agsetr.f agsrch.f agstch.f agstup.f agutol.f anotat.f displa.f\
-	 ezmxy.f ezmy.f ezxy.f ezy.f idiot.f
+	 ezmxy.f ezmy.f ezxy.f ezy.f idiot.f ifixmm.f
 
 GENERIC_OBJS = \
 	 agaxis.o agback.o agbnch.o agchax.o agchcu.o agchil.o agchnl.o\
@@ -22,7 +22,7 @@ GENERIC_OBJS = \
 	 agmaxi.o agmini.o agnumb.o agppid.o agpwrt.o agqurv.o agrpch.o\
 	 agrstr.o agsave.o agscan.o agsetc.o agsetf.o agseti.o agsetp.o\
 	 agsetr.o agsrch.o agstch.o agstup.o agutol.o anotat.o displa.o\
-	 ezmxy.o ezmy.o ezxy.o ezy.o idiot.o
+	 ezmxy.o ezmy.o ezxy.o ezy.o idiot.o ifixmm.o
 
 SOURCES = $(GENERIC_SRCS)
 

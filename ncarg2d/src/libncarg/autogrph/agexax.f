@@ -1,5 +1,5 @@
 C
-C $Id: agexax.f,v 1.3 1996-05-10 20:45:03 kennison Exp $
+C $Id: agexax.f,v 1.4 1996-08-14 19:41:36 kennison Exp $
 C
       SUBROUTINE AGEXAX (IAXS,SVAL,UMIN,UMAX,NICE,QLUA,FUNS,QBTP,BASD,
      +                   BASE,QMJD,QMND,QMNT,QLTD,QLTP,QLED,QLEX,QLFD,
@@ -75,24 +75,20 @@ C
 C
 C If the parameter NBTP is zero, tick marks and labels are suppressed.
 C
-      NBTP=IFIX(QBTP)
+      NBTP=IFIXMM(QBTP)
       IF (NBTP.EQ.0) RETURN
 C
 C Unpack integer values from floating-point arguments.
 C
-      LLUA=IFIX(QLUA)
-      NMJD=IFIX(QMJD)
-      NMND=0
-      IF (QMND.NE.SVAL(1).AND.QMND.NE.SVAL(2)) NMND=IFIX(QMND)
+      LLUA=IFIXMM(QLUA)
+      NMJD=IFIXMM(QMJD)
+      NMND=IFIXMM(QMND)
       NMNT=0
-      NLTD=0
-      IF (QLTD.NE.SVAL(1).AND.QLTD.NE.SVAL(2)) NLTD=IFIX(QLTD)
+      NLTD=IFIXMM(QLTD)
       NLTP=0
-      NLED=0
-      IF (QLED.NE.SVAL(1).AND.QLED.NE.SVAL(2)) NLED=IFIX(QLED)
+      NLED=IFIXMM(QLED)
       NLEX=0
-      NLFD=0
-      IF (QLFD.NE.SVAL(1).AND.QLFD.NE.SVAL(2)) NLFD=IFIX(QLFD)
+      NLFD=IFIXMM(QLFD)
       NLFL=0
 C
 C Compute label-coordinate-system values at the ends of the axis.
