@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.4 1994-07-29 14:24:31 haley Exp $
+#	$Id: yMakefile,v 1.5 1994-08-04 16:36:05 haley Exp $
 #
 
 CSRCS =  c_fthex01.c c_fthex02.c c_fthex03.c c_fthex04.c c_tpwrzt.c \
@@ -10,6 +10,7 @@ SED_SRCS = c_fthex05.c
 GENERIC_SRCS = $(CSRCS) $(SED_SRCS)
 
 InstallTarget($(GENERIC_SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
+CleanFilesTarget($(SED_SRCS))
 
 
 #
