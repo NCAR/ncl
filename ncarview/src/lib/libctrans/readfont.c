@@ -1,5 +1,5 @@
 /*
- *	$Id: readfont.c,v 1.8 1992-10-15 17:46:12 clyne Exp $
+ *	$Id: readfont.c,v 1.9 1993-01-08 21:17:59 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -150,10 +150,11 @@ int decodefont()
 		 * Installers Guide
 		 */
 		if (var_space) {
-			Widtharray1[i] = 
+			rightExtent1[i] = 
 				GETBITS(fontcap_raw->strokes[index],
-				fontcap_raw->c_y_start,fontcap_raw->c_y_len) -
+				fontcap_raw->c_y_start,fontcap_raw->c_y_len);
 
+			leftExtent1[i] = 
 				GETBITS(fontcap_raw->strokes[index], 
 				fontcap_raw->c_x_start,fontcap_raw->c_x_len);
 

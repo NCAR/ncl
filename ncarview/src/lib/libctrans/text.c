@@ -1,5 +1,5 @@
 /*
- *	$Id: text.c,v 1.18 1993-01-06 21:12:26 clyne Exp $
+ *	$Id: text.c,v 1.19 1993-01-08 21:18:04 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -18,6 +18,7 @@
 #include <ncarg/c.h>
 #include "ctrans.h"
 #include "cgmc.h"
+#include "ctrandef.h"
 #include "text.h"
 #include "readfont.h"
 #include "default.h"
@@ -70,25 +71,13 @@ static	int	Spacing;		/* spacing added to the character body
 
 static	int	Widtharray2[WDTH_SPACE];/* array containing widths of each
 					 * character for variable space fonts
-					 */
-
-
-/* the following vars retain default values that are stored in "default.c".
- * the values are compared against the default.c values to determine if any
- * changes have been made. This will prevent the need to recalculate the 
- * transformation matrix between text commands if the font attributes have not
- * changed.
+					 */	
+/*
+ * arrays containing left and right extent of each character 
+ * for variable space fonts
  */
-static	Rtype	Char_space = 0.0;	/* character spacing	*/
-static	Rtype 	Char_expan = 1.0;	/* char expansion factor	*/
-static	VDCtype	Char_height = 0;	/* char height		*/
-static	Etype	Text_path = 0;
-static	struct	{
-	VDCtype	x_up,
-		y_up,
-		x_base,
-		y_base;
-	} Char_orien;		/* character orientation*/
+static	int	leftExtent2[WDTH_SPACE];
+static	int	rightExtent2[WDTH_SPACE];
 
 
 static	CGMC	tempcgmc;		/* since text is stroked with lines
@@ -190,8 +179,11 @@ static trans_coord(f1,f2)
 	/* if variable spacing is desired	*/
 	if (var_space) {
 		/* scale widths of individual characters	*/
-		for (i=0;i<F_NUMCHAR(*f1) ;i++) 
-			Widtharray2[i] = xscale * Widtharray1[i];
+		for (i=0;i<F_NUMCHAR(*f1) ;i++)  {
+			leftExtent2[i] = xscale * leftExtent1[i];
+			rightExtent2[i] = xscale * rightExtent1[i];
+			Widtharray2[i] = rightExtent2[i] - leftExtent2[i];
+		}
 	}
 
 
@@ -261,13 +253,6 @@ int	Init_Font(fontcap)
 		ESprintf(errno, "malloc(%d)", sizeof(CItype));
 		return(-1);
 	}
-
-	/*
-	 * this is a hack to make sure translation tables get updated
-	 * by modified() when a different font is selected other then
-	 * the default. See the modified() function
-	 */
-	Char_expan = -1;
 
 	FontIsInit = TRUE;
 
@@ -367,56 +352,98 @@ static path_spacing ()
 static modified ()
 {
 
-	/* these booleans are used to prevent redundant calculations. This can
-	 * be a significant time saver if text attributes a changed frequently. 
-	 */
-	boolean	m_t = FALSE;
-	boolean	p = FALSE;
-
-	if (Char_expan != CHAR_EXPAN) {	/* if CHAR_EXPAN has changed	*/
-		Char_expan = CHAR_EXPAN;	/* record the change	*/
-		m_t = TRUE;			/* set boolean		*/
-		p = TRUE;
-	}
-
-	if (Char_height != CHAR_HEIGHT) {
-		Char_height = CHAR_HEIGHT;
-		m_t =  p = TRUE;
-	}
-
-	if (Char_space != CHAR_SPACE) {
-		Char_space = CHAR_SPACE;
-		p = TRUE;
-	}
-
-	if (Text_path != TEXT_PATH) {
-		Text_path = TEXT_PATH;
-		p = TRUE;
-	}
-
-	if ((Char_orien.x_up != CHAR_X_UP) ||
-		(Char_orien.y_up != CHAR_Y_UP) ||
-		(Char_orien.x_base != CHAR_X_BASE) ||
-		(Char_orien.y_base != CHAR_Y_BASE)){
-
-		Char_orien.x_up = CHAR_X_UP;
-		Char_orien.y_up = CHAR_Y_UP;
-		Char_orien.x_base = CHAR_X_BASE;
-		Char_orien.y_base = CHAR_Y_BASE;
-		m_t = p = TRUE;
-	}
-
-	/* if any changes effecting matrix or  Fontable */
-	if (m_t) {				
+	if (TEXT_ATT_DAMAGE || TEXT_F_IND_DAMAGE) {
 		make_matrix();
 		trans_coord(&fcap_template,&fcap_current);
+		path_spacing();
+		TEXT_ATT_DAMAGE = TEXT_F_IND_DAMAGE = FALSE;
+	}
+}
+
+/*	left_most:
+ *		This function finds the right-most extented character
+ *		in a string and returns its right extent.
+ *		It assumes that the coordinate origin is on the left side.
+ *
+ * on entry
+ *	*s		: the string
+ *	strlen		: length of s
+ * on exit
+ *	return 		= left-most extent
+ */
+static	int	left_most(s, strlen)
+	const char	*s;
+	int		strlen;
+{
+	int	i;
+	int	index;
+	unsigned	min;
+
+	if (! var_space) return (0);
+
+
+	for (i=0, min=~0; i<strlen; i++) {
+		index = s[i] - F_CHAR_START(fcap_template);
+		min = MIN(leftExtent2[index], min);
 	}
 
-	if (p) {
-		path_spacing();
-	}
-	
+	return((int) min);
 }
+
+/*	right_most:
+ *		This function finds the right-most extented character
+ *		in a string and returns its right extent.
+ *		It assumes that the coordinate origin is on the right side.
+ *
+ * on entry
+ *	*s		: the string
+ *	strlen		: length of s
+ * on exit
+ *	return 		= right-most extent
+ */
+static	int	right_most(s, strlen)
+	const char	*s;
+	int		strlen;
+{
+	int	i;
+	int	max, index;
+
+	if (! var_space) return (F_FONT_RIGHT(fcap_current));
+
+	for (i=0, max=0; i<strlen; i++) {
+		index = s[i] - F_CHAR_START(fcap_template);
+		max = MAX(rightExtent2[index], max);
+	}
+
+	return(max);
+}
+
+/*	middle_most:
+ *		This function finds the right-most extented character
+ *		and the left-most extended charcter in a string and returns 
+ *		the middle of these two characters.
+ *		It assumes that the coordinate origin is on the right side.
+ *
+ * on entry
+ *	*s		: the string
+ *	strlen		: length of s
+ * on exit
+ *	return 		= middle 
+ */
+static	int	middle_most(s, strlen)
+	const char	*s;
+	int		strlen;
+{
+	int	i;
+	int	left, right;
+
+	if (! var_space) return (F_FONT_RIGHT(fcap_current) / 2);
+
+	left = left_most(s, strlen);
+	right = right_most(s, strlen);
+	return (left + ((right - left) / 2));
+}
+
 
 /*	str_width:
  *		This function calculates the translation along baseline that
@@ -446,59 +473,57 @@ static int	str_width(strlen, s)
 	/*normal alignment see ISO/DIS 8632/1 description on Text Alignment*/
 	case A_NORM_H :	
 		switch (TEXT_PATH) {
-			case PATH_RIGHT :	/*left align*/
-					return(0);		
+		case PATH_RIGHT :	/*left align*/
+			return(left_most(s, strlen));		
 
-			case PATH_LEFT 	: 	/*right align*/
-					return(F_FONT_RIGHT(fcap_current));
+		case PATH_LEFT 	: 	/*right align*/
+			return(right_most(s, strlen));
 
-			case PATH_UP 	:   	/*centre align*/ 
-			case PATH_DOWN 	: 
-					return(F_FONT_RIGHT(fcap_current) / 2);
-			}
+		case PATH_UP 	:   	/*centre align*/ 
+		case PATH_DOWN 	: 
+			return(middle_most(s, strlen));
+		}
 
 	case A_LEFT :	/* align left	*/
 		switch (TEXT_PATH) {
-			case PATH_RIGHT : return(0);
-			case PATH_LEFT  : 
-				if (var_space)
-					return (-(var_width( (char *) s+1,
-						strlen-1)));
-
-				return(-((strlen-1) * Width));
-			case PATH_UP    : 
-			case PATH_DOWN  : return(0);
+		case PATH_LEFT  : 
+			if (var_space) {
+				return (-(var_width( (char *) s+1, strlen-1)));
 			}
+
+			return(-((strlen-1) * Width));
+		case PATH_RIGHT : 
+		case PATH_UP    : 
+		case PATH_DOWN  : return(left_most(s, strlen));
+		}
 
 	case A_CENTER :	/*align center	*/
 		switch (TEXT_PATH) {
-			case PATH_RIGHT : 
-				if (var_space)
-					return((var_width(s,strlen) - Spacing)/2);
-				return(((strlen * Width) - Spacing) / 2);
-			case PATH_LEFT 	: 
-				if (var_space)
-					return(-(((var_width(s,strlen) 
-						- Spacing) / 2) 
-						- F_FONT_RIGHT(fcap_current)));
+		case PATH_RIGHT : 
+			if (var_space) return((var_width(s,strlen) -Spacing)/2);
 
-				return(-((((strlen * Width) - Spacing) / 2) 
+			return(((strlen * Width) - Spacing) / 2);
+		case PATH_LEFT 	: 
+			if (var_space) {
+				return(-(((var_width(s,strlen) - Spacing) / 2) 
+						- F_FONT_RIGHT(fcap_current)));
+			}
+
+			return(-((((strlen * Width) - Spacing) / 2) 
 					- F_FONT_RIGHT(fcap_current)));
-			case PATH_UP 	: 
-			case PATH_DOWN 	: return((F_FONT_RIGHT(fcap_current))/ 2); 
+		case PATH_UP 	: 
+		case PATH_DOWN  : return(middle_most(s, strlen));
 		}
 
 	case A_RIGHT  : 	/*align right	*/
 		switch (TEXT_PATH) {
-			case PATH_RIGHT : 
-				if (var_space) 
-					return(var_width(s,strlen) - Width);
+		case PATH_RIGHT : 
+			if (var_space) return(var_width(s,strlen) - Width);
 
-				return(((strlen-1) * Width) 
-						+ F_FONT_RIGHT(fcap_current));
-			case PATH_LEFT 	:  
-			case PATH_UP	: 
-			case PATH_DOWN 	:  return(F_FONT_RIGHT(fcap_current)); 
+			return(((strlen-1) * Width)+F_FONT_RIGHT(fcap_current));
+		case PATH_LEFT 	:  
+		case PATH_UP	: 
+		case PATH_DOWN 	:  return(right_most(s,strlen));
 		}
 	default    :
 		return(0);
@@ -527,67 +552,66 @@ static int	str_height(strlen)
 	switch (TEXT_ALI_V) {
 	case A_NORM_V :
 		switch (TEXT_PATH) {
-			case PATH_RIGHT : 
-			case PATH_LEFT : 
-			case PATH_UP :  return(F_FONT_BASE(fcap_current));
-			case PATH_DOWN : return(F_FONT_TOP(fcap_current)); 
+		case PATH_RIGHT : 
+		case PATH_LEFT : 
+		case PATH_UP :  return(F_FONT_BASE(fcap_current));
+		case PATH_DOWN : return(F_FONT_TOP(fcap_current)); 
 		}
 	case A_TOP : 
 		switch(TEXT_PATH) {
-			case PATH_RIGHT :
-			case PATH_LEFT :
-			case PATH_DOWN :
-				return (F_FONT_TOP(fcap_current));
-			case PATH_UP :  
-				return((Width * (strlen-1)) 
-					+ F_FONT_TOP(fcap_current));
+		case PATH_RIGHT :
+		case PATH_LEFT :
+		case PATH_DOWN :
+			return (F_FONT_TOP(fcap_current));
+		case PATH_UP :  
+			return((Width * (strlen-1)) + F_FONT_TOP(fcap_current));
 		}
 
 	case A_CAP :
 		switch(TEXT_PATH) {
-			case PATH_RIGHT :
-			case PATH_LEFT :
-			case PATH_DOWN : 
-				return (F_FONT_CAP(fcap_current));
-			case PATH_UP :  
-				return((Width * (strlen-1)) 
-					+ F_FONT_CAP(fcap_current)); 
+		case PATH_RIGHT :
+		case PATH_LEFT :
+		case PATH_DOWN : 
+			return (F_FONT_CAP(fcap_current));
+		case PATH_UP :  
+			return((Width * (strlen-1)) + F_FONT_CAP(fcap_current)); 
 		}
 	case A_HALF : 
 		switch(TEXT_PATH) {
-			case PATH_RIGHT :
-			case PATH_LEFT :
-				return (F_FONT_HALF(fcap_current));
-			case PATH_DOWN : 
-				return (-((((strlen * Width) - Spacing) / 2)
-					- F_FONT_TOP(fcap_current)));
-			case PATH_UP :  
-				return(((Width * strlen) - Spacing) / 2); 
+		case PATH_RIGHT :
+		case PATH_LEFT :
+			return (F_FONT_HALF(fcap_current));
+		case PATH_DOWN : 
+			return (-((((strlen * Width) - Spacing) / 2)
+				- F_FONT_TOP(fcap_current)));
+		case PATH_UP :  
+			return(((Width * strlen) - Spacing) / 2); 
 		}
 	case A_BASE : 
 		switch(TEXT_PATH) {
-			case PATH_RIGHT :
-			case PATH_LEFT :
-			case PATH_UP :  
-				return (F_FONT_BASE(fcap_current));
-			case PATH_DOWN : 
-				return(-1 * ((Width * (strlen-1)) 
-					- F_FONT_BASE(fcap_current))); 
+		case PATH_RIGHT :
+		case PATH_LEFT :
+		case PATH_UP :  
+			return (F_FONT_BASE(fcap_current));
+		case PATH_DOWN : 
+			return(-1 * ((Width * (strlen-1)) 
+				- F_FONT_BASE(fcap_current))); 
 		}
 	case A_BOTTOM : 
 		switch(TEXT_PATH) {
-			case PATH_RIGHT :
-			case PATH_LEFT :
-			case PATH_UP :  
-				return (F_FONT_BOTTOM(fcap_current));
-			case PATH_DOWN : 
-				return(-1 * (Width * (strlen-1))); 
+		case PATH_RIGHT :
+		case PATH_LEFT :
+		case PATH_UP :  
+		case PATH_DOWN : 
+			return (F_FONT_BOTTOM(fcap_current));
+			return (F_FONT_BOTTOM(fcap_current));
+#ifdef	DEAD
+			return(-1 * (Width * (strlen-1))); 
+#endif
 		}
 	default :
 		return(0);
 	}
-		
-  
 }
  
 /*	text_align:
@@ -646,6 +670,7 @@ int	var_width(s,strlen)
 
 	return(total);
 }
+
 
 	
 

@@ -1,5 +1,5 @@
 /*
- *	$Id: default.h,v 1.11 1992-09-01 23:42:08 clyne Exp $
+ *	$Id: default.h,v 1.12 1993-01-08 21:17:56 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -127,6 +127,7 @@ typedef struct {
 	Rtype	text_ali_c_v;	/*continous vertical alignment	*/
 
 	Etype	text_path;
+	boolean	text_att_damage;
 
 	IXtype	char_ind;	/*CHARACTER SET INDEX		*/
 	IXtype	alt_char_ind;	/*ALTERNATE CHARACTER SET INDEX	*/
@@ -242,6 +243,7 @@ static DEFAULTTABLE	defaulttable = {
 	0.0,				/*continous vertical alignment	*/
 
 	0,				/* text path */
+	TRUE,
 
 	1,				/*CHARACTER SET INDEX		*/
 	1,				/*ALTERNATE CHARACTER SET INDEX	*/
@@ -393,6 +395,8 @@ extern	ColorLUTable		*clut;
 #define	CHAR_Y_BASE	dt->char_y_base	
 
 #define TEXT_PATH	dt->text_path	
+
+#define	TEXT_ATT_DAMAGE	dt->text_att_damage
  
 /*text alignment*/
 #define TEXT_ALI_H	dt->text_ali_h
@@ -449,6 +453,7 @@ typedef	struct	{
 	boolean		backcolr_access;
 	boolean		text_f_ind_access;
 	boolean		colour_table_access;
+	boolean		text_att_access;
 } ACCESS_TABLE;
 
 ACCESS_TABLE	access_table = {
@@ -463,6 +468,7 @@ ACCESS_TABLE	access_table = {
 	TRUE,
 	TRUE,
 	FALSE,
+	TRUE,
 	TRUE
 	};
 	
@@ -480,6 +486,7 @@ ACCESS_TABLE	*at = &access_table;
 #define	BACKCOLR_ACCESS		at->backcolr_access
 #define	TEXT_F_IND_ACCESS	at->text_f_ind_access
 #define	COLOUR_TABLE_ACCESS	at->colour_table_access
+#define	TEXT_ATT_ACCESS		at->text_att_access
 	
 
 #endif

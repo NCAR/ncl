@@ -1,5 +1,5 @@
 /*
- *	$Id: Xcrm.c,v 1.13 1992-09-01 23:41:30 clyne Exp $
+ *	$Id: Xcrm.c,v 1.14 1993-01-08 21:17:50 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -120,8 +120,8 @@ static	int	back_color(color)
 	pixel = Colortab[0];
 	if (strcmp("X11", devices[currdev].name) == 0) {
 		XSetWindowBackground(dpy, win, pixel);
-#ifdef	DEAD
 		XClearWindow(dpy, win);
+#ifdef	DEAD
 #endif
 	}
 

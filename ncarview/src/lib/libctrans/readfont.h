@@ -165,12 +165,14 @@ typedef struct	{
 	Fcap		fcap_template,	/* processed original fontcap	*/
 			fcap_current;	/* translated fontcap		*/
 
-	int		Widtharray1[WDTH_SPACE];
+	int		leftExtent1[WDTH_SPACE];
+	int		rightExtent1[WDTH_SPACE];
 	boolean	var_space;		/* true if variable spacing	*/
 #else
 	extern Fcap	fcap_template,
 			fcap_current;
-	extern	int	Widtharray1[];
+	extern	int	leftExtent1[];
+	extern	int	rightExtent1[];
 	extern	boolean	var_space;
 
 #endif

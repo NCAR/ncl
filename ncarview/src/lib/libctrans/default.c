@@ -1,5 +1,5 @@
 /*
- *	$Id: default.c,v 1.15 1993-01-06 21:12:13 clyne Exp $
+ *	$Id: default.c,v 1.16 1993-01-08 21:17:53 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -190,6 +190,7 @@ boolean		value;
 		BACKCOLR_DAMAGE = BACKCOLR_ACCESS;
 		TEXT_F_IND_DAMAGE = TEXT_F_IND_ACCESS;
 		COLOUR_TABLE_DAMAGE = COLOUR_TABLE_ACCESS;
+		TEXT_ATT_DAMAGE = TEXT_ATT_ACCESS;
 
 		/*	clear access list for new frame	*/
 		LINE_TYPE_ACCESS	= 
@@ -203,7 +204,8 @@ boolean		value;
 		MARKER_SIZE_ACCESS	= 
 		BACKCOLR_ACCESS		= 
 		TEXT_F_IND_ACCESS	=
-		COLOUR_TABLE_ACCESS	= FALSE;
+		COLOUR_TABLE_ACCESS	= 
+		TEXT_ATT_ACCESS		= FALSE;
 
 	} else {
 		dt = &defaulttable;
@@ -861,6 +863,7 @@ int CharExpan(c)
 CGMC *c;
 {
 
+	dt->text_att_damage = at->text_att_access = TRUE;
 	dt->char_expan = c->r[0];
 	return (0);
 }
@@ -869,6 +872,7 @@ int CharSpace(c)
 CGMC *c;
 {
 
+	dt->text_att_damage = at->text_att_access = TRUE;
 	dt->char_space = c->r[0];
 	return (0);
 }
@@ -890,6 +894,7 @@ int CharHeight(c)
 CGMC *c;
 {
 
+	dt->text_att_damage = at->text_att_access = TRUE;
 	dt->char_height = c->vdc[0];
 	return (0);
 }
@@ -897,6 +902,7 @@ int CharOri(c)
 CGMC *c;
 {
 
+	dt->text_att_damage = at->text_att_access = TRUE;
 	dt->char_x_up = c->vdc[0];
 	dt->char_y_up = c->vdc[1];
 	dt->char_x_base = c->vdc[2];
@@ -908,6 +914,7 @@ CGMC *c;
 {
 	int	status = 0;
 
+	dt->text_att_damage = at->text_att_access = TRUE;
 	dt->text_path = c->e[0];
 
 	switch (dt->text_path) {
@@ -932,6 +939,7 @@ CGMC *c;
 {
 	int	status = 0;
 
+	dt->text_att_damage = at->text_att_access = TRUE;
 	dt->text_ali_h = c->e[0];
 	dt->text_ali_v = c->e[1];
 	dt->text_ali_c_h = c->r[0];
