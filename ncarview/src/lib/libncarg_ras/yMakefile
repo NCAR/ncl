@@ -1,3 +1,4 @@
+#	$Id: yMakefile,v 1.9 1991-11-15 17:07:42 don Exp $
 #
 #	Makefile for libraster - libraries for dealing with
 #	a variety of raster image formats.
@@ -8,11 +9,7 @@
 #define	BuildRasterHPLaser
 #define	BuildRasterNrif
 #define	BuildRasterSun
-
-#ifdef	BuildSunViewCtrans
 #define BuildRasterAVS
-#define BuildRasterParallax
-#endif
 
 #ifdef	BuildXlibDependentCode
 #define	BuildRasterXWD
@@ -109,6 +106,12 @@ parallax.o:	ncarg_ras.h parallax.h
 hplj.o:		ncarg_ras.h hplj.h
 cleartext.o:	ncarg_ras.h
 avsraster.o:	ncarg_ras.h avsraster.h
+
+saber_src: $(SRCS)
+	#load $(SRCS) -ldf
+
+saber_obj: $(OBJS)
+	#load $(OBJS) -ldf
 
 rasinfo: rasinfo.o
 	$(CC) $(CFLAGS) -o rasinfo rasinfo.o -lncarg_ras -ldf
