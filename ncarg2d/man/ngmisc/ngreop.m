@@ -9,12 +9,14 @@ CALL NGREOP(WKID, CONID, ITYPE, FNAME, IOPT, IAT, RAT,
             NCOLRS, NSTART, CTAB)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
+.br
+#include <ncarg/gks.h>
 .sp
 void c_ngsrat(int wkid, int conid, int itype, char *fname, 
 .br
               int iopt, int *iat, float *rat, int ncolrs, 
 .br
-              int nstart, float **ctab)
+              int nstart, Gcolr_rep *ctab)
 .SH DESCRIPTION 
 .IP WKID 12
 (an input variable of type INTEGER) specifying the workstation identifier 
@@ -108,7 +110,7 @@ associated with the first color in the color table CTAB
 NCOLRS = 3 and NSTART = 4, then the color values defined in CTAB would 
 be used to define color indices 4, 5, and 6.
 .IP CTAB 12
-(a two-dimensional input array of type REAL dimensioned CTAB(3,NCOLRS) )
+(in the FORTRAN version of this routine, a two-dimensional input array of type REAL dimensioned CTAB(3,NCOLRS); in the C version of this routine, a one-dimensional input array of type Gcolr_rep dimensioned ctab[ncolrs])
 that specifies a color table used to initialize the reopened metafile.
 This color table does not
 necessarily have to agree with the color table in effect when the 
