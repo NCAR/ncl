@@ -1,5 +1,5 @@
 /*
- *	$Id: default.h,v 1.13 1993-06-25 21:12:59 clyne Exp $
+ *	$Id: default.h,v 1.14 1994-03-07 22:08:43 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -36,7 +36,7 @@ typedef	struct	RGBTuple_	{
  */
 typedef	struct	ColorElement_ {
 	RGBTuple	rgb;
-	boolean		damage;		/* element has been touched?	*/
+	boolean		damage;		/* element should be updated?	*/
 	boolean		defined;	/* element is defined?		*/
 	} ColorElement;
 
@@ -49,6 +49,8 @@ typedef	struct	ColorLUTable_ {
 	int		total_damage;	/* total ce's touched/modified	*/
 	boolean		damage;		/* has any ce been modified	*/
 	} ColorLUTable;
+
+typedef	boolean	ColorElementAccess;	/* element has been changed	*/
 			
 
 typedef struct {

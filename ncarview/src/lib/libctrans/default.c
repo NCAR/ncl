@@ -1,5 +1,5 @@
 /*
- *	$Id: default.c,v 1.23 1994-03-04 21:44:59 clyne Exp $
+ *	$Id: default.c,v 1.24 1994-03-07 22:08:42 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -51,26 +51,32 @@ static	ColorElement defaultCmap[] = {
 static	int	defaultCmapSize = sizeof (defaultCmap) / sizeof (ColorElement);
 
 
-/*
- *	DefaultColorTable contains the color lookup table which is defined
- *	for the duration of the metafile
- */
-static	ColorElement		*colorDefaultTable;
-
-/*
- *	picColorDefaultTable only lives for the duration of a single 
- *	metafile frame.	it is analogous to picdefaulttable.
- */
-static	ColorElement		*picColorDefaultTable;
 
 static DEFAULTTABLE	picdefaulttable;
 DEFAULTTABLE		*dt = &defaulttable;
 
 /*
- * the color lookup table
+ *	colorLUTable contains the color lookup table which is defined
+ *	for the duration of the metafile
  */
-static	ColorLUTable	colorLUTable;
-ColorLUTable		*clut = &colorLUTable;
+static	ColorLUTable		colorLUTable;
+
+/*
+ *	piccolorLUTable only lives for the duration of a single 
+ *	metafile frame.	it is analogous to picdefaulttable.
+ */
+static	ColorLUTable		picColorLUTable;
+
+/*
+ * An array indicating wheather a particular color index was changed
+ * via ColrTable()
+ */
+static	ColorElementAccess		*CEA;
+
+/*
+ * hook to the outside world
+ */
+ColorLUTable			*clut = &colorLUTable;
 
 
 
@@ -86,22 +92,20 @@ InitDefault()
 	 */
 	if (! isInit) {;
 
-		colorDefaultTable = (ColorElement *) malloc (
+		colorLUTable.ce = (ColorElement *) malloc (
 			(unsigned) (sizeof(ColorElement) * (MAX_C_I + 1))
 		);
-		picColorDefaultTable = (ColorElement *) malloc (
+		picColorLUTable.ce = (ColorElement *) malloc (
 			(unsigned) (sizeof(ColorElement) * (MAX_C_I + 1))
+		);
+		CEA = (ColorElementAccess *) malloc (
+			(unsigned) (sizeof(ColorElementAccess) * (MAX_C_I + 1))
 		);
 
 		colorLUTable.size = MAX_C_I + 1;
+		picColorLUTable.size = MAX_C_I + 1;
 	}
 	
-
-	/*
-	 * make 'colorDefaultTable' the defalt global table
-	 */
-	colorLUTable.ce = colorDefaultTable;
-
 	/*
 	 * copy in the initial color map which has a few entries defined
 	 */
@@ -120,18 +124,17 @@ InitDefault()
 		tmp = defaultCmap[i].rgb.blue * oPtion.rgb_scale;
 		tmp = tmp > max_intensity ? max_intensity : tmp;
 		colorLUTable.ce[i].rgb.blue = (unsigned char) tmp;
+
+		CEA[i] = TRUE;
 	}
 	for (; i<=MAX_C_I; i++) {
 		colorLUTable.ce[i].damage = FALSE;
 		colorLUTable.ce[i].defined = FALSE;
+		CEA[i] = FALSE;
 	}
 	colorLUTable.total_damage = defaultCmapSize;
 	colorLUTable.damage = TRUE;
 
-	/*
-	 * hook to the outside world
-	 */
-	clut = &colorLUTable;
 	isInit = TRUE;
 }
 
@@ -146,7 +149,9 @@ void	_CtDefNoColorDefault()
 	for (i=0; i<defaultCmapSize; i++) {
 		colorLUTable.ce[i].damage = FALSE;
 		colorLUTable.ce[i].defined = FALSE;
+		CEA[i] = FALSE;
 	}
+	colorLUTable.damage = FALSE;
 }
 
 SetInPic(value)
@@ -172,23 +177,28 @@ boolean		value;
 		 * load globally set color table into current color
 		 * table.
 		 */
-		clut->total_damage = 0;
-		for(i=0; i < clut->size; i++) {
-			picColorDefaultTable[i] = colorDefaultTable[i];
+		picColorLUTable.total_damage = 0;
+		for(i=0; i < colorLUTable.size; i++) {
+			picColorLUTable.ce[i].rgb = colorLUTable.ce[i].rgb;
 
-#ifdef	DEAD
+			picColorLUTable.ce[i].defined = 
+						colorLUTable.ce[i].defined;
+
 			/*
-			 * this probably isn't necessary since there won't
-			 * be any "undamaging" until drawing begins
-			 */ 
-			if (colorDefaultTable[i].defined) {
-				picColorDefaultTable[i].damage = TRUE;
-				clut->total_damage++;
+			 * set damage based on access
+			 */
+			picColorLUTable.ce[i].damage = CEA[i];
+			CEA[i] = FALSE;
+
+			if (picColorLUTable.ce[i].damage) {
+				picColorLUTable.total_damage++;
 			}
-#endif
+
 		}
-		COLOUR_TABLE_ACCESS = TRUE;
-		clut->ce = picColorDefaultTable;
+		clut = &picColorLUTable;
+
+		COLOUR_TABLE_DAMAGE = COLOUR_TABLE_ACCESS;
+		COLOUR_TABLE_ACCESS =  FALSE;
 
 		/*	
 		 *	mark accessed attributes as damaged by last frame
@@ -205,7 +215,6 @@ boolean		value;
 		MARKER_SIZE_DAMAGE = MARKER_SIZE_ACCESS;
 		BACKCOLR_DAMAGE = BACKCOLR_ACCESS;
 		TEXT_F_IND_DAMAGE = TEXT_F_IND_ACCESS;
-		COLOUR_TABLE_DAMAGE = COLOUR_TABLE_ACCESS;
 		TEXT_ATT_DAMAGE = TEXT_ATT_ACCESS;
 		VDC_EXTENT_DAMAGE = VDC_EXTENT_ACCESS;
 
@@ -221,13 +230,12 @@ boolean		value;
 		MARKER_SIZE_ACCESS	= 
 		BACKCOLR_ACCESS		= 
 		TEXT_F_IND_ACCESS	=
-		COLOUR_TABLE_ACCESS	= 
 		TEXT_ATT_ACCESS		= 
 		VDC_EXTENT_ACCESS	= FALSE;
 
 	} else {
 		dt = &defaulttable;
-		clut->ce = colorDefaultTable;
+		clut = &colorLUTable;
 	}
 }
 
@@ -1261,6 +1269,11 @@ CGMC *c;
 			clut->total_damage++;
 			clut->ce[color_index].damage = TRUE;
 		}
+
+		/*
+		 * this element has been changed
+		 */
+		CEA[color_index] = TRUE;
 	}
 
 	clut->damage = at->colour_table_access = TRUE;

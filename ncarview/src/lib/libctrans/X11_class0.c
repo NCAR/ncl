@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class0.c,v 1.31 1993-06-25 21:12:53 clyne Exp $
+ *	$Id: X11_class0.c,v 1.32 1994-03-07 22:08:40 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -773,7 +773,6 @@ CGMC *c;
 
 	if (Batch || x11_opts.wid != -1) {
 		XFlush(dpy);
-		free_colors();
 		return(0);
 	}
 
@@ -842,7 +841,6 @@ CGMC *c;
 
 	} /* end while */
 
-	free_colors();
 	return(0);
 }
 
