@@ -19,6 +19,7 @@ extern GridInfoRecord grid_gds[];
 extern int grid_tbl_len;
 extern int grid_gds_tbl_len;
 
+
 static NclMultiDValData  _GribGetInternalVar
 #if	NhlNeedProto
 (GribFileRecord * therec,NclQuark name_q, NclFVarRec **vrec)
@@ -69,6 +70,8 @@ NclMultiDValData *tmp_md;
 	vstep = (GribInternalVarList*)NclMalloc(sizeof(GribInternalVarList));
 	vstep->next = therec->internal_var_list;
 	vstep->int_var = tmp;
+	vstep->int_var->n_atts = 0;
+	vstep->int_var->theatts = NULL;
 	therec->internal_var_list = vstep;
 	therec->n_internal_vars++;
 	return;
@@ -102,12 +105,6 @@ GribParamList * vstep;
 			}
 		}
 /*TEMPORARY*/
-		if(vstep->grid_lat != NULL) {
-			_NclDestroyObj((NclObj)vstep->grid_lat);
-		}
-		if(vstep->grid_lon != NULL) {
-			_NclDestroyObj((NclObj)vstep->grid_lon);
-		}
 		if((vstep->yymmddhh_isatt)&&(vstep->yymmddhh != NULL)) {
 			_NclDestroyObj((NclObj)vstep->yymmddhh);
 		}
@@ -423,6 +420,190 @@ GIT *the_it;
 	}
 	return(NrmStringToQuark(buffer));
 }
+
+
+static void _SetAttributeLists
+#if 	NhlNeedProto
+(GribFileRecord *therec)
+#else
+(therec)
+GribFileRecord *therec;
+#endif
+{
+	GribParamList *step = NULL;
+	NclQuark *tmp_string = NULL;
+	TBLE2 *the_param = NULL;
+	int tmp_dimsizes = 1;
+	GribRecordInqRec *grib_rec = NULL;
+	GribAttInqRecList *att_list_ptr= NULL;
+	GribAttInqRec 	*att_ptr= NULL;
+	int i;
+
+
+	step = therec->var_list;
+	
+	while(step != NULL) {
+/*
+* Handle long_name, units, center, sub_center, model and _FillValue
+*/	
+		for(i = 0; i < step->n_entries; i++) {
+			if(step->thelist[i].rec_inq != NULL) {
+				grib_rec = step->thelist[i].rec_inq;
+				break;
+			}
+		}
+		if(grib_rec->param_number < 128) {
+			the_param = &(params[grib_rec->param_tbl_index]);
+		} else {
+			switch((int)grib_rec->pds[4]) {
+				case 98:
+					the_param = &(params_ecmwf[grib_rec->param_tbl_index]);
+					break;
+				case 7:
+				case 8:
+				case 9:
+					the_param = &(params_nwsnmc[grib_rec->param_tbl_index]);
+					break;
+				defalut:
+					NhlPError(NhlWARNING,NhlEUNKNOWN,"NclGRIB: Unlocatable parameter number (%d) from center (%d), extension of NclGRIB required",grib_rec->param_number,(int)grib_rec->pds[4]);
+					break;
+
+			}
+		}
+		
+		if(the_param!=NULL) {
+/*
+* long_name
+*/
+			att_list_ptr = (GribAttInqRecList*)NclMalloc((unsigned)sizeof(GribAttInqRecList));
+			att_list_ptr->next = step->theatts;
+			att_list_ptr->att_inq = (GribAttInqRec*)NclMalloc((unsigned)sizeof(GribAttInqRec));
+			att_list_ptr->att_inq->name = NrmStringToQuark("long_name");
+			tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+			*tmp_string = NrmStringToQuark(the_param->long_name);		
+			att_list_ptr->att_inq->thevalue = (NclMultiDValData)_NclCreateVal( NULL, NULL, Ncl_MultiDValData, 0, (void*)tmp_string, NULL, 1 , &tmp_dimsizes, PERMANENT, NULL, nclTypestringClass);
+			step->theatts = att_list_ptr;
+			step->n_atts++;
+/*
+* units
+*/
+			att_list_ptr = (GribAttInqRecList*)NclMalloc((unsigned)sizeof(GribAttInqRecList));
+			att_list_ptr->next = step->theatts;
+			att_list_ptr->att_inq = (GribAttInqRec*)NclMalloc((unsigned)sizeof(GribAttInqRec));
+			att_list_ptr->att_inq->name = NrmStringToQuark("units");
+			tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+			*tmp_string = NrmStringToQuark(the_param->units);		
+			att_list_ptr->att_inq->thevalue = (NclMultiDValData)_NclCreateVal( NULL, NULL, Ncl_MultiDValData, 0, (void*)tmp_string, NULL, 1 , &tmp_dimsizes, PERMANENT, NULL, nclTypestringClass);
+			step->theatts = att_list_ptr;
+			step->n_atts++;
+		}
+
+/*
+* center
+*/
+		for( i = 0; i < sizeof(centers_index)/sizeof(int);i++) {
+			if(centers_index[i] == (int)grib_rec->pds[4]) {
+				att_list_ptr = (GribAttInqRecList*)NclMalloc((unsigned)sizeof(GribAttInqRecList));
+				att_list_ptr->next = step->theatts;
+				att_list_ptr->att_inq = (GribAttInqRec*)NclMalloc((unsigned)sizeof(GribAttInqRec));
+				att_list_ptr->att_inq->name = NrmStringToQuark("center");
+				tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+				*tmp_string = NrmStringToQuark(centers[i]);		
+				att_list_ptr->att_inq->thevalue = (NclMultiDValData)_NclCreateVal( NULL, NULL, Ncl_MultiDValData, 0, (void*)tmp_string, NULL, 1 , &tmp_dimsizes, PERMANENT, NULL, nclTypestringClass);
+				step->theatts = att_list_ptr;
+				step->n_atts++;
+			}
+		}
+/*
+*  sub_center
+*/
+		for( i = 0; i < sizeof(sub_centers_index)/sizeof(int);i++) {
+			if(sub_centers_index[i] == (int)grib_rec->pds[25]) {
+				att_list_ptr = (GribAttInqRecList*)NclMalloc((unsigned)sizeof(GribAttInqRecList));
+				att_list_ptr->next = step->theatts;
+				att_list_ptr->att_inq = (GribAttInqRec*)NclMalloc((unsigned)sizeof(GribAttInqRec));
+				att_list_ptr->att_inq->name = NrmStringToQuark("sub_center");
+				tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+				*tmp_string = NrmStringToQuark(sub_centers[i]);		
+				att_list_ptr->att_inq->thevalue = (NclMultiDValData)_NclCreateVal( NULL, NULL, Ncl_MultiDValData, 0, (void*)tmp_string, NULL, 1 , &tmp_dimsizes, PERMANENT, NULL, nclTypestringClass);
+				step->theatts = att_list_ptr;
+				step->n_atts++;
+			}
+		}
+
+/*
+* model
+*/
+		switch((int)grib_rec->pds[4]) {
+			case 7:
+				for( i = 0; i < sizeof(model_index)/sizeof(int);i++) {
+					if(model_index[i] == (int)grib_rec->pds[5]) {
+						att_list_ptr = (GribAttInqRecList*)NclMalloc((unsigned)sizeof(GribAttInqRecList));
+						att_list_ptr->next = step->theatts;
+						att_list_ptr->att_inq = (GribAttInqRec*)NclMalloc((unsigned)sizeof(GribAttInqRec));
+						att_list_ptr->att_inq->name = NrmStringToQuark("model");
+						tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+						*tmp_string = NrmStringToQuark(model[i]);		
+						att_list_ptr->att_inq->thevalue = (NclMultiDValData)_NclCreateVal( NULL, NULL, Ncl_MultiDValData, 0, (void*)tmp_string, NULL, 1 , &tmp_dimsizes, PERMANENT, NULL, nclTypestringClass);
+						step->theatts = att_list_ptr;
+						step->n_atts++;
+					}
+				}
+				break;
+			default:
+				break;
+		}
+
+/*
+* Handle coordinate attributes,  level, initial_time, forecast_time
+*/
+		if(step->yymmddhh_isatt) {
+			att_list_ptr = (GribAttInqRecList*)NclMalloc((unsigned)sizeof(GribAttInqRecList));
+			att_list_ptr->next = step->theatts;
+			att_list_ptr->att_inq = (GribAttInqRec*)NclMalloc((unsigned)sizeof(GribAttInqRec));
+			att_list_ptr->att_inq->name = NrmStringToQuark("initial_time");
+			att_list_ptr->att_inq->thevalue = (NclMultiDValData)step->yymmddhh;
+/*
+* Don't want two references
+*/
+			step->yymmddhh = NULL;
+			step->theatts = att_list_ptr;
+			step->n_atts++;
+		}
+		if(step->forecast_time_isatt) {
+			att_list_ptr = (GribAttInqRecList*)NclMalloc((unsigned)sizeof(GribAttInqRecList));
+			att_list_ptr->next = step->theatts;
+			att_list_ptr->att_inq = (GribAttInqRec*)NclMalloc((unsigned)sizeof(GribAttInqRec));
+			att_list_ptr->att_inq->name = NrmStringToQuark("forecast_time");
+			att_list_ptr->att_inq->thevalue = (NclMultiDValData)step->forecast_time;
+/*
+* Don't want two references
+*/
+			step->forecast_time= NULL;
+			step->theatts = att_list_ptr;
+			step->n_atts++;
+		}
+/*
+*TEMP CODE!!! Need to integrate double valued coordinatesd
+*/
+		if(step->levels_isatt) {
+			att_list_ptr = (GribAttInqRecList*)NclMalloc((unsigned)sizeof(GribAttInqRecList));
+			att_list_ptr->next = step->theatts;
+			att_list_ptr->att_inq = (GribAttInqRec*)NclMalloc((unsigned)sizeof(GribAttInqRec));
+			att_list_ptr->att_inq->name = NrmStringToQuark("level");
+			att_list_ptr->att_inq->thevalue = (NclMultiDValData)step->levels;
+/*
+* Don't want two references
+*/
+			step->levels= NULL;
+			step->theatts = att_list_ptr;
+			step->n_atts++;
+		}
+
+		step = step->next;
+	}
+}
+
 
 static void _SetFileDimsAndCoordVars
 #if 	NhlNeedProto
@@ -1712,11 +1893,12 @@ static GribParamList *_NewListNode
 	tmp->minimum_it = grib_rec->initial_time;
 	tmp->time_range_indicator = (int)grib_rec->pds[20];
 	tmp->time_unit_indicator = (int)grib_rec->pds[17];
-	tmp->grid_lat = NULL;
-	tmp->grid_lon = NULL;
 	tmp->levels = NULL;
+	tmp->levels_has_two = 0;
 	tmp->yymmddhh = NULL;
 	tmp->forecast_time = NULL;
+	tmp->n_atts = 0;
+	tmp->theatts = NULL;
 	return(tmp);
 }
 
@@ -2013,7 +2195,6 @@ int wr_status;
 						NhlPError(NhlWARNING,NhlEUNKNOWN,"NclGRIB: Unlocatable parameter number (%d) from center (%d), extension of NclGRIB required",grib_rec->param_number,(int)grib_rec->pds[4]);
 						NhlFree(grib_rec);
 						grib_rec= NULL;
-					 
 					}
 				}
 
@@ -2325,6 +2506,7 @@ int wr_status;
 * each dimension could be 1 in which case it isn't a real dimension but an attribute
 */
 			_SetFileDimsAndCoordVars(therec);
+			_SetAttributeLists(therec);
 
 	
 			close(fd);	
@@ -2825,6 +3007,33 @@ void* storage;
 	return(NULL);
 }
 
+static NclFVarRec *GribGetCoordInfo
+#if	NhlNeedProto
+(void* therec, NclQuark thevar)
+#else
+(therec, thevar)
+void* therec;
+NclQuark thevar;
+#endif
+{
+	return(GribGetVarInfo(therec, thevar));
+}
+
+static void *GribReadCoord
+#if	NhlNeedProto
+(void* therec, NclQuark thevar, long* start, long* finish,long* stride,void* storage)
+#else
+(therec, thevar, start, finish,stride,storage)
+void* therec;
+NclQuark thevar;
+long* start;
+long* finish;
+long* stride;
+void* storage;
+#endif
+{
+	return(GribReadVar(therec, thevar, start, finish,stride,storage));
+}
 
 static NclQuark *GribGetAttNames
 #if	NhlNeedProto
@@ -2861,10 +3070,50 @@ NclQuark thevar;
 int* num_atts;
 #endif
 {
-	*num_atts = 0;
-	return(NULL);
-}
+	GribFileRecord *thefile = (GribFileRecord*)therec;
+	GribParamList *step;
+	GribInternalVarList *vstep;
+	NclQuark *arout;
+	GribAttInqRecList *theatts;
+	int i;
 
+
+	vstep = thefile->internal_var_list;
+	while(vstep != NULL) {
+		if(vstep->int_var->var_info.var_name_quark == thevar) {
+			*num_atts = vstep->int_var->n_atts;
+			arout = (NclQuark*)NclMalloc(sizeof(NclQuark)*vstep->int_var->n_atts);
+			theatts = vstep->int_var->theatts;
+			break;
+		} else {
+			vstep = vstep->next;
+		}
+	}	
+
+	if(vstep == NULL ) {
+		step = thefile->var_list;	
+		while(step != NULL) {
+			if(step->var_info.var_name_quark == thevar) {
+				*num_atts = step->n_atts;
+				arout = (NclQuark*)NclMalloc(sizeof(NclQuark)*step->n_atts);
+				theatts = step->theatts;
+				break;
+			} else {
+				step = step->next;
+			}
+		}
+	}
+	if((arout != NULL)&&(theatts!= NULL))  {
+		for(i = 0; i < *num_atts; i++) {
+			arout[i] = theatts->att_inq->name;
+			theatts = theatts->next;
+		}
+		return(arout);
+	} else {
+		*num_atts = 0;	
+		return(NULL);
+	}
+}
 static NclFAttRec *GribGetVarAttInfo
 #if	NhlNeedProto
 (void *therec, NclQuark thevar, NclQuark theatt)
@@ -2875,49 +3124,51 @@ NclQuark thevar;
 NclQuark theatt;
 #endif
 {
-	return(NULL);
-}
-
-static NclFVarRec *GribGetCoordInfo
-#if	NhlNeedProto
-(void* therec, NclQuark thevar)
-#else
-(therec, thevar)
-void* therec;
-NclQuark thevar;
-#endif
-{
-	return(GribGetVarInfo(therec, thevar));
-}
-static void *GribReadCoord
-#if	NhlNeedProto
-(void* therec, NclQuark thevar, long* start, long* finish,long* stride,void* storage)
-#else
-(therec, thevar, start, finish,stride,storage)
-void* therec;
-NclQuark thevar;
-long* start;
-long* finish;
-long* stride;
-void* storage;
-#endif
-{
-	return(GribReadVar(therec, thevar, start, finish,stride,storage));
-}
+	GribFileRecord *thefile = (GribFileRecord*)therec;
+	GribParamList *step;
+	GribInternalVarList *vstep;
+	GribAttInqRecList *theatts;
+	int i;
+	NclFAttRec *tmp;
 
 
-static void *GribReadAtt
-#if	NhlNeedProto
-(void *therec,NclQuark theatt,void* storage)
-#else
-(therec,theatt,storage)
-void *therec;
-NclQuark theatt;
-void* storage;
-#endif
-{
-	return(NULL);
+	vstep = thefile->internal_var_list;
+	while(vstep != NULL) {
+		if(vstep->int_var->var_info.var_name_quark == thevar) {
+			theatts = vstep->int_var->theatts;
+			break;
+		} else {
+			vstep = vstep->next;
+		}
+	}	
+
+	if(vstep == NULL ) {
+		step = thefile->var_list;	
+		while(step != NULL) {
+			if(step->var_info.var_name_quark == thevar) {
+				theatts = step->theatts;
+				break;
+			} else {
+				step = step->next;
+			}
+		}
+	}
+	if(theatts!= NULL)  {
+		while(theatts != NULL) {
+			if(theatts->att_inq->name == theatt) {
+				tmp = (NclFAttRec*)NclMalloc(sizeof(NclFAttRec));
+				tmp->att_name_quark = theatt;
+				tmp->data_type = theatts->att_inq->thevalue->multidval.data_type;
+				tmp->num_elements = theatts->att_inq->thevalue->multidval.totalelements;
+				return(tmp);
+			}
+			theatts = theatts->next;
+		}
+	} else {
+		return(NULL);
+	}
 }
+
 
 static void *GribReadVarAtt
 #if	NhlNeedProto
@@ -2930,14 +3181,66 @@ NclQuark theatt;
 void* storage;
 #endif
 {
-	return(NULL);
+	GribFileRecord *thefile = (GribFileRecord*)therec;
+	GribParamList *step;
+	GribInternalVarList *vstep;
+	GribAttInqRecList *theatts;
+	int i;
+	void *out_dat;
+
+
+	vstep = thefile->internal_var_list;
+	while(vstep != NULL) {
+		if(vstep->int_var->var_info.var_name_quark == thevar) {
+			theatts = vstep->int_var->theatts;
+			break;
+		} else {
+			vstep = vstep->next;
+		}
+	}	
+
+	if(vstep == NULL ) {
+		step = thefile->var_list;	
+		while(step != NULL) {
+			if(step->var_info.var_name_quark == thevar) {
+				theatts = step->theatts;	
+				break;
+			} else {
+				step = step->next;
+			}
+		}
+	}
+	if(theatts!= NULL)  {
+		while(theatts != NULL) {
+			if(theatts->att_inq->name == theatt) {
+				if(storage != NULL) {
+					memcpy(storage,theatts->att_inq->thevalue->multidval.val,theatts->att_inq->thevalue->multidval.totalsize);
+					return(storage);
+				} else {
+					out_dat = (void*)NclMalloc(theatts->att_inq->thevalue->multidval.totalsize);
+					memcpy(out_dat,theatts->att_inq->thevalue->multidval.val,theatts->att_inq->thevalue->multidval.totalsize);
+					return(out_dat);
+				}
+			}
+			theatts = theatts->next;
+		}
+	} else {
+		return(NULL);
+	}
 }
 
-
-
-
-
-
+static void *GribReadAtt
+#if	NhlNeedProto
+(void *therec,NclQuark theatt,void* storage)
+#else
+(therec,theatt,storage)
+void * therec;
+NclQuark theatt;
+void* storage;
+#endif
+{
+	return(NULL);
+}
 
 
 NclFormatFunctionRec GribRec = {

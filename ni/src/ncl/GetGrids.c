@@ -20,7 +20,6 @@ int grid_gds_index[] = { 0, 1, 2, 3, 4, 5, 13, 50, 90, 201, 202 };
 
 int grid_gds_tbl_len = sizeof(grid_gds_index)/sizeof(int);
 
-
 #define EAR 6371.2213
 #define PI 3.14159265
 #define PI4  (PI/4)
@@ -576,7 +575,7 @@ int** dimsizes_lon;
         grdsetup(polex,poley,dist,deg, ore + 90.0 );
         for (y = 0; y < ysize; y++) {
                 for(x = 0; x < xsize; x++) {
-                        grdloc(x,y,&((*lon)[y * ysize + x]),&((*lat)[y * ysize + x]));
+                        grdloc(x+1,y+1,&((*lon)[y * ysize + x]),&((*lat)[y * ysize + x]));
                 }
         }
 
@@ -623,7 +622,7 @@ int** dimsizes_lon;
         grdsetup(polex,poley,dist,deg, ore + 90.0 );
         for (y = 0; y < ysize; y++) {
                 for(x = 0; x < xsize; x++) {
-                        grdloc(x,y,&((*lon)[y * ysize + x]),&((*lat)[y * ysize + x]));
+                        grdloc(x+1,y+1,&((*lon)[y * ysize + x]),&((*lat)[y * ysize + x]));
                 }
         }
 
@@ -670,7 +669,7 @@ int** dimsizes_lon;
         grdsetup(polex,poley,dist,deg, ore + 90.0 );
         for (y = 0; y < ysize; y++) {
                 for(x = 0; x < xsize; x++) {
-                        grdloc(x,y,&((*lon)[y * ysize + x]),&((*lat)[y * ysize + x]));
+                        grdloc(x+1,y+1,&((*lon)[y * ysize + x]),&((*lat)[y * ysize + x]));
                 }
         }
 
@@ -717,7 +716,7 @@ int** dimsizes_lon;
         grdsetup(polex,poley,dist,deg, ore + 90.0 );
         for (y = 0; y < ysize; y++) {
                 for(x = 0; x < xsize; x++) {
-                        grdloc(x,y,&((*lon)[y * ysize + x]),&((*lat)[y * ysize + x]));
+                        grdloc(x+1,y+1,&((*lon)[y * ysize + x]),&((*lat)[y * ysize + x]));
                 }
         }
 
@@ -764,7 +763,7 @@ int** dimsizes_lon;
         grdsetup(polex,poley,dist,deg, ore + 90.0 );
         for (y = 0; y < ysize; y++) {
                 for(x = 0; x < xsize; x++) {
-                        grdloc(x,y,&((*lon)[y * ysize + x]),&((*lat)[y * ysize + x]));
+                        grdloc(x+1,y+1,&((*lon)[y * ysize + x]),&((*lat)[y * ysize + x]));
                 }
         }
 
@@ -811,7 +810,7 @@ int** dimsizes_lon;
         grdsetup(polex,poley,dist,deg, ore + 90.0 );
         for (y = 0; y < ysize; y++) {
                 for(x = 0; x < xsize; x++) {
-                        grdloc(x,y,&((*lon)[y * ysize + x]),&((*lat)[y * ysize + x]));
+                        grdloc(x+1,y+1,&((*lon)[y * ysize + x]),&((*lat)[y * ysize + x]));
                 }
         }
 
@@ -858,7 +857,7 @@ int** dimsizes_lon;
         grdsetup(polex,poley,dist,deg, ore + 90.0 );
         for (y = 0; y < ysize; y++) {
                 for(x = 0; x < xsize; x++) {
-                        grdloc(x,y,&((*lon)[y * ysize + x]),&((*lat)[y * ysize + x]));
+                        grdloc(x+1,y+1,&((*lon)[y * ysize + x]),&((*lat)[y * ysize + x]));
                 }
         }
 
@@ -905,7 +904,7 @@ int** dimsizes_lon;
         grdsetup(polex,poley,dist,deg, ore + 90.0 );
         for (y = 0; y < ysize; y++) {
                 for(x = 0; x < xsize; x++) {
-                        grdloc(x,y,&((*lon)[y * ysize + x]),&((*lat)[y * ysize + x]));
+                        grdloc(x+1,y+1,&((*lon)[y * ysize + x]),&((*lat)[y * ysize + x]));
                 }
         }
 
@@ -952,7 +951,7 @@ int** dimsizes_lon;
         grdsetup(polex,poley,dist,deg, ore + 90.0 );
         for (y = 0; y < ysize; y++) {
                 for(x = 0; x < xsize; x++) {
-                        grdloc(x,y,&((*lon)[y * ysize + x]),&((*lat)[y * ysize + x]));
+                        grdloc(x+1,y+1,&((*lon)[y * ysize + x]),&((*lat)[y * ysize + x]));
                 }
         }
 
@@ -999,7 +998,7 @@ int** dimsizes_lon;
         grdsetup(polex,poley,dist,deg, ore + 90.0 );
         for (y = 0; y < ysize; y++) {
                 for(x = 0; x < xsize; x++) {
-                        grdloc(x,y,&((*lon)[y * ysize + x]),&((*lat)[y * ysize + x]));
+                        grdloc(x+1,y+1,&((*lon)[y * ysize + x]),&((*lat)[y * ysize + x]));
                 }
         }
 
@@ -1046,7 +1045,7 @@ int** dimsizes_lon;
         grdsetup(polex,poley,dist,deg, ore + 90.0 );
         for (y = 0; y < ysize; y++) {
                 for(x = 0; x < xsize; x++) {
-                        grdloc(x,y,&((*lon)[y * ysize + x]),&((*lat)[y * ysize + x]));
+                        grdloc(x+1,y+1,&((*lon)[y * ysize + x]),&((*lat)[y * ysize + x]));
                 }
         }
 
@@ -1093,7 +1092,7 @@ int** dimsizes_lon;
         grdsetup(polex,poley,dist,deg, ore + 90.0 );
         for (y = 0; y < ysize; y++) {
                 for(x = 0; x < xsize; x++) {
-                        grdloc(x,y,&((*lon)[y * ysize + x]),&((*lat)[y * ysize + x]));
+                        grdloc(x+1,y+1,&((*lon)[y * ysize + x]),&((*lat)[y * ysize + x]));
                 }
         }
 
@@ -1140,7 +1139,7 @@ int** dimsizes_lon;
         grdsetup(polex,poley,dist,deg, ore + 90.0 );
         for (y = 0; y < ysize; y++) {
                 for(x = 0; x < xsize; x++) {
-                        grdloc(x,y,&((*lon)[y * ysize + x]),&((*lat)[y * ysize + x]));
+                        grdloc(x+1,y+1,&((*lon)[y * ysize + x]),&((*lat)[y * ysize + x]));
                 }
         }
 
@@ -1187,7 +1186,7 @@ int** dimsizes_lon;
         grdsetup(polex,poley,dist,deg, ore + 90.0 );
         for (y = 0; y < ysize; y++) {
                 for(x = 0; x < xsize; x++) {
-                        grdloc(x,y,&((*lon)[y * ysize + x]),&((*lat)[y * ysize + x]));
+                        grdloc(x+1,y+1,&((*lon)[y * ysize + x]),&((*lat)[y * ysize + x]));
                 }
         }
 
@@ -1234,7 +1233,7 @@ int** dimsizes_lon;
         grdsetup(polex,poley,dist,deg, ore + 90.0 );
         for (y = 0; y < ysize; y++) {
                 for(x = 0; x < xsize; x++) {
-                        grdloc(x,y,&((*lon)[y * ysize + x]),&((*lat)[y * ysize + x]));
+                        grdloc(x+1,y+1,&((*lon)[y * ysize + x]),&((*lat)[y * ysize + x]));
                 }
         }
 
@@ -1280,7 +1279,7 @@ int** dimsizes_lon;
         grdsetup(polex,poley,dist,deg, ore + 90.0 );
         for (y = 0; y < ysize; y++) {
                 for(x = 0; x < xsize; x++) {
-                        grdloc(x,y,&((*lon)[y * ysize + x]),&((*lat)[y * ysize + x]));
+                        grdloc(x+1,y+1,&((*lon)[y * ysize + x]),&((*lat)[y * ysize + x]));
                 }
         }
 
@@ -1327,7 +1326,7 @@ int** dimsizes_lon;
         grdsetup(polex,poley,dist,deg, ore + 90.0 );
         for (y = 0; y < ysize; y++) {
                 for(x = 0; x < xsize; x++) {
-                        grdloc(x,y,&((*lon)[y * ysize + x]),&((*lat)[y * ysize + x]));
+                        grdloc(x+1,y+1,&((*lon)[y * ysize + x]),&((*lat)[y * ysize + x]));
                 }
         }
 
@@ -1374,7 +1373,7 @@ int** dimsizes_lon;
         grdsetup(polex,poley,dist,deg, ore + 90.0 );
         for (y = 0; y < ysize; y++) {
                 for(x = 0; x < xsize; x++) {
-                        grdloc(x,y,&((*lon)[y * ysize + x]),&((*lat)[y * ysize + x]));
+                        grdloc(x+1,y+1,&((*lon)[y * ysize + x]),&((*lat)[y * ysize + x]));
                 }
         }
 
@@ -1421,7 +1420,7 @@ int** dimsizes_lon;
         grdsetup(polex,poley,dist,deg, ore + 90.0 );
         for (y = 0; y < ysize; y++) {
                 for(x = 0; x < xsize; x++) {
-                        grdloc(x,y,&((*lon)[y * ysize + x]),&((*lat)[y * ysize + x]));
+                        grdloc(x+1,y+1,&((*lon)[y * ysize + x]),&((*lat)[y * ysize + x]));
                 }
         }
 
@@ -1468,7 +1467,7 @@ int** dimsizes_lon;
 	grdsetup(polex,poley,dist,deg, ore + 90.0 );
 	for (y = 0; y < ysize; y++) {
 		for(x = 0; x < xsize; x++) {
-			grdloc(x,y,&((*lon)[y * ysize + x]),&((*lat)[y * ysize + x]));
+			grdloc(x+1,y+1,&((*lon)[y * ysize + x]),&((*lat)[y * ysize + x]));
 		}
 	}
 	
@@ -1515,7 +1514,7 @@ int** dimsizes_lon;
 	grdsetup(polex,poley,dist,deg, ore + 90.0 );
 	for (y = 0; y < ysize; y++) {
 		for(x = 0; x < xsize; x++) {
-			grdloc(x,y,&((*lon)[y * ysize + x]),&((*lat)[y * ysize + x]));
+			grdloc(x+1,y+1,&((*lon)[y * ysize + x]),&((*lat)[y * ysize + x]));
 		}
 	}
 	
@@ -1740,10 +1739,10 @@ GribParamList* thevarrec;
 		if(number_of_bits != 0) {
 			if(integer) {
 				*missing_value= (void*)NclMalloc((unsigned)sizeof(int));
-				*(int*)(*missing_value) = -999;
+				*(int*)(*missing_value) = DEFAULT_MISSING_INT;
 			} else {
 				*missing_value= (void*)NclMalloc((unsigned)sizeof(float));
-				*(float*)(*missing_value) = -9999.0;
+				*(float*)(*missing_value) = DEFAULT_MISSING_FLOAT;
 			}
 			i = 11;
 			bboff = 0;
@@ -1806,10 +1805,10 @@ GribParamList* thevarrec;
 				}
 				for( j = 0; j< fill; j++) {
 					if(integer) {
-                                        	((int*)data)[rindex] = -999;
+                                        	((int*)data)[rindex] = DEFAULT_MISSING_INT;
 
 	                                } else {
-                                        	((float*)data)[rindex] = -9999.0;
+                                        	((float*)data)[rindex] = DEFAULT_MISSING_FLOAT;
 					}
 					rindex++;
 				}
@@ -1831,10 +1830,10 @@ GribParamList* thevarrec;
 				}
 				for( j = 0; j< fill; j++) {
 					if(integer) {
-                                        	((int*)data)[rindex] = -999;
+                                        	((int*)data)[rindex] = DEFAULT_MISSING_INT;
 
 	                                } else {
-                                        	((float*)data)[rindex] = -9999.0;
+                                        	((float*)data)[rindex] = DEFAULT_MISSING_FLOAT;
 					}
 					rindex++;
 				}

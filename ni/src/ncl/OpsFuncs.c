@@ -923,7 +923,11 @@ NclStackEntry _NclCreateHLUObjOp
 			ids = (int*)NclMalloc((unsigned)sizeof(int)*tmp_md->multidval.totalelements);
 			for(j = 0; j < tmp_md->multidval.totalelements;j++) {
 				tmp_ho = (NclHLUObj)_NclGetObj(((int*)tmp_md->multidval.val)[j]);
-				ids[j] = tmp_ho->hlu.hlu_id;
+				if(tmp_ho != NULL) {
+					ids[j] = tmp_ho->hlu.hlu_id;
+				} else {
+					ids[j] = -1;
+				}
 			}
 			if(tmp_md->obj.obj_type_mask & NCL_HLU_MASK){
 				gen_array[i] = _NhlCreateGenArray(
