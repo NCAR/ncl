@@ -1,0 +1,40 @@
+#!/bin/csh -f
+#
+#      $Id: paths.UNICOS_YMP,v 1.1 1993-02-20 00:13:19 clyne Exp $
+#
+#########################################################################
+#									#
+#			   Copyright (C)  1992				#
+#	     University Corporation for Atmospheric Research		#
+#			   All Rights Reserved				#
+#									#
+#########################################################################
+#
+#	File:		paths.Cray-YMP
+#
+#	Author:		John Clyne
+#			National Center for Atmospheric Research
+#			PO 3000, Boulder, Colorado
+#
+#	Date:		Tue Sep 29 17:05:36 MDT 1992
+#
+#	Description:	Set default installation paths for a Cray-YMP. This
+#			script is sourced by the get_paths script to set
+#			the variables bin_path, inc_path, lib_path, and 
+#			man_path
+#
+#	Usage:		paths.Cray-YMP
+#
+#	Environment:
+#
+#	Files:		get_paths : sources this script
+#
+#
+#	Options:
+#
+set bin_path = /usr/local/bin
+set inc_path = /usr/local/include
+set lib_path = /usr/local/lib
+set man_path = /usr/man
+set manl = manl
+exit 0
