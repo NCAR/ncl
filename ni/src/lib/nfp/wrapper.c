@@ -262,6 +262,7 @@ extern NhlErrorTypes vibeta_W(void);
 extern NhlErrorTypes prcwater_dp_W(void);
 extern NhlErrorTypes int2p_W(void);
 extern NhlErrorTypes zonal_mpsi_W(void);
+extern NhlErrorTypes taper_W(void);
 extern NhlErrorTypes hydro_W(void);
 extern NhlErrorTypes linmsg_W(void);
 extern NhlErrorTypes linint1_W(void);
@@ -3190,6 +3191,16 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
     SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
     NclRegisterFunc(zonal_mpsi_W,args,"zonal_mpsi",nargs);
+/*
+ * Register "taper".
+ */
+    nargs = 0;
+    args = NewArgs(3);
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    NclRegisterFunc(taper_W,args,"taper",nargs);
 /*
  * Register "hydro".
  */

@@ -118,7 +118,6 @@ NhlErrorTypes zonal_mpsi_W( void )
       return(NhlFATAL);
     }
   }
-
 /*
  * Coerce missing value to double.
  */
@@ -180,6 +179,24 @@ NhlErrorTypes zonal_mpsi_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"zonal_mpsi: Unable to coerce 'p' to double");
     return(NhlFATAL);
   }
+/*
+ * Check p values. They must be increasing, and the first value
+ * must be greater than 500 Pa (5mb), and the last value must be less
+ * than 100500 Pa (1005mb), i.e. 500 < p(0) < p(1) < ... < 100500.
+ */
+  for(i = 0; i < nlev; i++ ) {
+    if( tmp_p[i] <= 500 || tmp_p[i] >= 100500) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"zonal_mpsi: The pressure array must be monotonically increasing, and 500 < p(0) < p(1) < ... < p(nlev-1) < 100500");
+      return(NhlFATAL);
+    }
+    if(i < nlev-1) {
+      if( tmp_p[i] >= tmp_p[i+1]) { 
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"zonal_mpsi: The pressure array must be monotonically increasing");
+      return(NhlFATAL);
+      }
+    }
+  }
+      
 /*
  * Coerce ps.
  */
@@ -279,6 +296,3 @@ NhlErrorTypes zonal_mpsi_W( void )
                           NCL_double,0));
   }
 }
-
-
-
