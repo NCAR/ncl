@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.84 2001-12-13 01:57:45 dbrown Exp $
+ *      $Id: MapPlot.c,v 1.85 2002-01-08 23:48:55 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -4447,7 +4447,7 @@ static NhlErrorTypes ManageTickMarks
 	     || mpp->xt_font_height_set
 	     || mpp->yl_font_height_set
 	     || mpp->yr_font_height_set
-	     || (mpp->display_tickmarks > NhlNEVER && mpp->update_req))
+	     || mpp->update_req)
 		update = True;
 
 	if (init) {
