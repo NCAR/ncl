@@ -1,8 +1,5 @@
 C
-C $Id: pcseti.f,v 1.3 1992-11-18 02:14:10 kennison Exp $
-C
-C
-C ---------------------------------------------------------------------
+C $Id: pcseti.f,v 1.4 1993-01-12 02:41:31 kennison Exp $
 C
       SUBROUTINE PCSETI (WHCH,IVAL)
 C

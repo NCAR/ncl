@@ -1,8 +1,5 @@
 C
-C $Id: pcexcd.f,v 1.3 1992-11-18 02:13:48 kennison Exp $
-C
-C
-C ---------------------------------------------------------------------
+C $Id: pcexcd.f,v 1.4 1993-01-12 02:41:00 kennison Exp $
 C
       SUBROUTINE PCEXCD (IPNT,IPSS,NDGU)
 C
@@ -43,7 +40,7 @@ C is replaced by the value -2048.
 C
 C COMMON block declarations.
 C
-      COMMON /PCSVEM/ IBNU,ICOD,IDDA(8625),IDDL,RDGU(8800),IDPC(256),
+      COMMON /PCSVEM/ IBNU,ICOD,IDDA(8625),IDDL,RDGU(7000),IDPC(256),
      +                IERU,INDA(789),INDL,INIT,IVCO,IVDU,NBPW,NPPW
       SAVE   /PCSVEM/
 C
@@ -52,7 +49,7 @@ C given value of IPSS.
 C
       DIMENSION MXUN(2)
 C
-      DATA MXUN / 2,8800 /
+      DATA MXUN / 2,7000 /
 C
 C Zero the count of digitization units returned.
 C

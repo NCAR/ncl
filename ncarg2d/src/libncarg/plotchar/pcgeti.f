@@ -1,8 +1,5 @@
 C
-C $Id: pcgeti.f,v 1.3 1992-11-18 02:13:53 kennison Exp $
-C
-C
-C ---------------------------------------------------------------------
+C $Id: pcgeti.f,v 1.4 1993-01-12 02:41:05 kennison Exp $
 C
       SUBROUTINE PCGETI (WHCH,IVAL)
 C

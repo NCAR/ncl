@@ -1,10 +1,5 @@
 C
-C $Id: pcblda.f,v 1.3 1992-11-18 02:13:39 kennison Exp $
-C
-C
-C***********************************************************************
-C B L O C K   D A T A   R O U T I N E S   -   D E F A U L T S
-C***********************************************************************
+C $Id: pcblda.f,v 1.4 1993-01-12 02:40:49 kennison Exp $
 C
       BLOCK DATA PCBLDA
 C
@@ -14,19 +9,30 @@ C fontcap.
 C
 C COMMON block declarations.
 C
-      COMMON /PCPRMS/ ADDS,CONS,DSTB,DSTL,DSTR,DSTT,HPIC(3),ICEN,IOUC,
-     +                IOUF,IPCC,
-     +                IQUF,ISHC,ISHF,ITEF,JCOD,NFCC,NODF,SHDX,SHDY,
-     +                SIZA,SSIC,SSPR,SUBS,VPIC(3),WPIC(3),XBEG,XCEN,
-     +                XEND,XMUL(3),YBEG,YCEN,YEND,YMUL(3)
+      COMMON /PCPRMS/ ADDS,CONS,DSTB,DSTL,DSTR,DSTT,HPIC(3),IBXC(3),
+     +                IBXF,ICEN,IORD,IOUC,IOUF,IPCC,IQUF,ISHC,ISHF,ITEF,
+     +                JCOD,LSCI(16),NFCC,NODF,RBXL,RBXM,RBXX,RBXY,ROLW,
+     +                RPLW,RSLW,SHDX,SHDY,SIZA,SSIC,SSPR,SUBS,VPIC(3),
+     +                WPIC(3),XBEG,XCEN,XEND,XMUL(3),YBEG,YCEN,YEND,
+     +                YMUL(3)
       SAVE   /PCPRMS/
 C
-      COMMON /PCSVEM/ IBNU,ICOD,IDDA(8625),IDDL,RDGU(8800),IDPC(256),
+      COMMON /PCSVEM/ IBNU,ICOD,IDDA(8625),IDDL,RDGU(7000),IDPC(256),
      +                IERU,INDA(789),INDL,INIT,IVCO,IVDU,NBPW,NPPW
       SAVE   /PCSVEM/
 C
-      COMMON /PCPFMQ/ IMAP,RHTW
-      SAVE   /PCPFMQ/
+      COMMON /PCPFLQ/ IMAP,OORV,RHTW
+      SAVE   /PCPFLQ/
+C
+      COMMON /PCFNNO/ LFNO(43),LFNL
+      SAVE   /PCFNNO/
+C
+      COMMON /PCFNNM/ LFNM(43,2)
+      CHARACTER*18 LFNM
+      SAVE   /PCFNNM/
+C
+      COMMON /PCSTCM/ XVPL,XVPR,YVPB,YVPT
+      SAVE   /PCSTCM/
 C
 C Define the add-space flag, which allows the user to specify
 C additional spacing between characters along the line.
@@ -42,6 +48,20 @@ C Define the number of the unit from which the binary file of data may
 C be read.
 C
       DATA IBNU / 3 /
+C
+C IBXC is an array of colors indices to be used for various parts of a
+C box drawn around a character string.  Element 1 is for the outline of
+C the box, element 2 for fill of the box, and element 3 for fill of the
+C box shadow.
+C
+      DATA IBXC / 3*-1 /
+C
+C IBXF is a box flag, set non-zero to cause to be drawn various parts
+C of a box around a character string.  It contains three bits, one of
+C which controls filling of the shadow, one of which controls filling
+C of the box itself, and one of which controls drawing of the outline.
+C
+      DATA IBXF / 0 /
 C
 C ICEN is the internal parameter 'CE'; it determines the type of
 C centering to be done by PLCHHQ.  When ICEN is zero, centering is
@@ -61,6 +81,22 @@ C
 C INIT is an initialization flag for PLCHHQ.
 C
       DATA INIT / 0 /
+C
+C IORD is a flag which says in what order characters are to be drawn by
+C PLCHHQ.  If its value is positive, characters are to be drawn in which
+C they occur in an input string (from left to right); otherwise, they
+C are to be drawn from in the reverse order (from right to left).  The
+C absolute value of IORD should be either a 1 or a 2; the value 1 says
+C that PLCHHQ should draw all shadows for all the characters, then all
+C principal bodies for all the characters and then all outlines for all
+C the characters.  The value 2 says that it should draw the shadow, the
+C principal body, and the outline for character 1, then the shadow, the
+C principal body, and the outline for character 2, and so on.  Note
+C that, if the input string defines more than NCSO characters, they are
+C dealt with in batches of NCSO at a time; for some values of IORD, this
+c is a problem.
+C
+      DATA IORD / 1 /
 C
 C IOUC is the outline color index, to be used only when IOUF is non-
 C zero.
@@ -117,6 +153,112 @@ C the dataset is reloaded.
 C
       DATA JCOD / 0 /
 C
+C The list of font numbers, LFNO, and the list of font names, LFNM, each
+C of which is of length LFNL, are used by PCGETC and PCSETC.
+C
+      DATA LFNL / 43 /
+C
+      DATA LFNO( 1),LFNM( 1,1),LFNM( 1,2) /   0 , 'PWRITX DATABASE   ' ,
+     +                                            'pwritx database   ' /
+      DATA LFNO( 2),LFNM( 2,1),LFNM( 2,2) /   1 , 'DEFAULT           ' ,
+     +                                            'default           ' /
+      DATA LFNO( 3),LFNM( 3,1),LFNM( 3,2) /   2 , 'CARTOGRAPHIC_ROMAN' ,
+     +                                            'cartographic_roman' /
+      DATA LFNO( 4),LFNM( 4,1),LFNM( 4,2) /   3 , 'CARTOGRAPHIC_GREEK' ,
+     +                                            'cartographic_greek' /
+      DATA LFNO( 5),LFNM( 5,1),LFNM( 5,2) /   4 , 'SIMPLEX_ROMAN     ' ,
+     +                                            'simplex_roman     ' /
+      DATA LFNO( 6),LFNM( 6,1),LFNM( 6,2) /   5 , 'SIMPLEX_GREEK     ' ,
+     +                                            'simplex_greek     ' /
+      DATA LFNO( 7),LFNM( 7,1),LFNM( 7,2) /   6 , 'SIMPLEX_SCRIPT    ' ,
+     +                                            'simplex_script    ' /
+      DATA LFNO( 8),LFNM( 8,1),LFNM( 8,2) /   7 , 'COMPLEX_ROMAN     ' ,
+     +                                            'complex_roman     ' /
+      DATA LFNO( 9),LFNM( 9,1),LFNM( 9,2) /   8 , 'COMPLEX_GREEK     ' ,
+     +                                            'complex_greek     ' /
+      DATA LFNO(10),LFNM(10,1),LFNM(10,2) /   9 , 'COMPLEX_SCRIPT    ' ,
+     +                                            'complex_script    ' /
+      DATA LFNO(11),LFNM(11,1),LFNM(11,2) /  10 , 'COMPLEX_ITALIC    ' ,
+     +                                            'complex_italic    ' /
+      DATA LFNO(12),LFNM(12,1),LFNM(12,2) /  11 , 'COMPLEX_CYRILLIC  ' ,
+     +                                            'complex_cyrillic  ' /
+      DATA LFNO(13),LFNM(13,1),LFNM(13,2) /  12 , 'DUPLEX_ROMAN      ' ,
+     +                                            'duplex_roman      ' /
+      DATA LFNO(14),LFNM(14,1),LFNM(14,2) /  13 , 'TRIPLEX_ROMAN     ' ,
+     +                                            'triplex_roman     ' /
+      DATA LFNO(15),LFNM(15,1),LFNM(15,2) /  14 , 'TRIPLEX_ITALIC    ' ,
+     +                                            'triplex_italic    ' /
+      DATA LFNO(16),LFNM(16,1),LFNM(16,2) /  15 , 'GOTHIC_GERMAN     ' ,
+     +                                            'gothic_german     ' /
+      DATA LFNO(17),LFNM(17,1),LFNM(17,2) /  16 , 'GOTHIC_ENGLISH    ' ,
+     +                                            'gothic_english    ' /
+      DATA LFNO(18),LFNM(18,1),LFNM(18,2) /  17 , 'GOTHIC_ITALIAN    ' ,
+     +                                            'gothic_italian    ' /
+      DATA LFNO(19),LFNM(19,1),LFNM(19,2) /  18 , 'MATH_SYMBOLS      ' ,
+     +                                            'math_symbols      ' /
+      DATA LFNO(20),LFNM(20,1),LFNM(20,2) /  19 , 'SYMBOL_SET1       ' ,
+     +                                            'symbol_set1       ' /
+      DATA LFNO(21),LFNM(21,1),LFNM(21,2) /  20 , 'SYMBOL_SET2       ' ,
+     +                                            'symbol_set2       ' /
+      DATA LFNO(22),LFNM(22,1),LFNM(22,2) /  21 , 'HELVETICA         ' ,
+     +                                            'helvetica         ' /
+      DATA LFNO(23),LFNM(23,1),LFNM(23,2) /  22 , 'HELVETICA-BOLD    ' ,
+     +                                            'helvetica-bold    ' /
+      DATA LFNO(24),LFNM(24,1),LFNM(24,2) /  25 , 'TIMES-ROMAN       ' ,
+     +                                            'times-roman       ' /
+      DATA LFNO(25),LFNM(25,1),LFNM(25,2) /  26 , 'TIMES-BOLD        ' ,
+     +                                            'times-bold        ' /
+      DATA LFNO(26),LFNM(26,1),LFNM(26,2) /  29 , 'COURIER           ' ,
+     +                                            'courier           ' /
+      DATA LFNO(27),LFNM(27,1),LFNM(27,2) /  30 , 'COURIER-BOLD      ' ,
+     +                                            'courier-bold      ' /
+      DATA LFNO(28),LFNM(28,1),LFNM(28,2) /  33 , 'GREEK             ' ,
+     +                                            'greek             ' /
+      DATA LFNO(29),LFNM(29,1),LFNM(29,2) /  34 , 'MATH-SYMBOLS      ' ,
+     +                                            'math-symbols      ' /
+      DATA LFNO(30),LFNM(30,1),LFNM(30,2) /  35 , 'TEXT-SYMBOLS      ' ,
+     +                                            'text-symbols      ' /
+      DATA LFNO(31),LFNM(31,1),LFNM(31,2) /  36 , 'WEATHER1          ' ,
+     +                                            'weather1          ' /
+      DATA LFNO(32),LFNM(32,1),LFNM(32,2) /  37 , 'WEATHER2          ' ,
+     +                                            'weather2          ' /
+      DATA LFNO(33),LFNM(33,1),LFNM(33,2) / 121 , 'O_HELVETICA       ' ,
+     +                                            'o_helvetica       ' /
+      DATA LFNO(34),LFNM(34,1),LFNM(34,2) / 122 , 'O_HELVETICA-BOLD  ' ,
+     +                                            'o_helvetica-bold  ' /
+      DATA LFNO(35),LFNM(35,1),LFNM(35,2) / 125 , 'O_TIMES-ROMAN     ' ,
+     +                                            'o_times-roman     ' /
+      DATA LFNO(36),LFNM(36,1),LFNM(36,2) / 126 , 'O_TIMES-BOLD      ' ,
+     +                                            'o_times-bold      ' /
+      DATA LFNO(37),LFNM(37,1),LFNM(37,2) / 129 , 'O_COURIER         ' ,
+     +                                            'o_courier         ' /
+      DATA LFNO(38),LFNM(38,1),LFNM(38,2) / 130 , 'O_COURIER-BOLD    ' ,
+     +                                            'o_courier-bold    ' /
+      DATA LFNO(39),LFNM(39,1),LFNM(39,2) / 133 , 'O_GREEK           ' ,
+     +                                            'o_greek           ' /
+      DATA LFNO(40),LFNM(40,1),LFNM(40,2) / 134 , 'O_MATH-SYMBOLS    ' ,
+     +                                            'o_math-symbols    ' /
+      DATA LFNO(41),LFNM(41,1),LFNM(41,2) / 135 , 'O_TEXT-SYMBOLS    ' ,
+     +                                            'o_text-symbols    ' /
+      DATA LFNO(42),LFNM(42,1),LFNM(42,2) / 136 , 'O_WEATHER1        ' ,
+     +                                            'o_weather1        ' /
+      DATA LFNO(43),LFNM(43,1),LFNM(43,2) / 137 , 'O_WEATHER2        ' ,
+     +                                            'o_weather2        ' /
+C
+C LSCI is a list of special color indices.  The definitions of some
+C of the characters in the filled fonts include the specification of
+C particular colors to be used.  If one of these definitions says to
+C use color number I, what will actually be used is the color whose
+C color index is specified by LSCI(I).  By default, all elements of
+C LSCI have the value "-1", which is equivalent to "undefined".  A
+C user call to the routine PCDLSC ("PlotChar, Define List of Special
+C Colors") will define a user-specified set of color indices to have
+C the proper colors and then set the contents of LSCI appropriately.
+C Alternatively, the user may define his/her own set of color indices
+C and set the values of LSCI elements as he/she wishes.
+C
+      DATA LSCI / 16*-1 /
+C
 C NFCC is the position of the function code character in the collating
 C sequence - the default, an apostrophe, is set during initialization.
 C
@@ -130,6 +272,12 @@ C font.
 C
       DATA NODF / 0 /
 C
+C OORV, if non-zero, is the out-of-range value that is returned by
+C PCMPXY to indicate that the input X and Y coordinates are not
+C mappable.
+C
+      DATA OORV / 0. /
+C
 C Define the height and width of characters of the various sizes and
 C the vertical spacing between lines (on a 1024x1024 grid).
 C
@@ -137,9 +285,38 @@ C
       DATA HPIC / 21.,13., 9. /
       DATA VPIC / 32.,20.,14. /
 C
+C RBXL, if greater than zero, is the line width to be used while drawing
+C the various parts of a box around a character string.  A value less
+C than or equal to zero indicates that line width is to be unchanged
+C while drawing the box.
+C
+      DATA RBXL / 0. /
+C
+C RBXM gives the width of the margin of a box around a character string,
+C as a fraction of the character height.
+C
+      DATA RBXM / .15 /
+C
+C RBXX and RBXY give the X and Y offsets for the box shadow; both are
+C given as fractions of the principal character height.
+C
+      DATA RBXX,RBXY / -.05,-.05 /
+C
 C Define the default value of the ratio of character height to width.
 C
       DATA RHTW / 1.75 /
+C
+C ROLW, if non-zero, is the desired outline line width.
+C
+      DATA ROLW / 0. /
+C
+C RPLW, if non-zero, is the desired principal line width.
+C
+      DATA RPLW / 0. /
+C
+C RSLW, if non-zero, is the desired shadow line width.
+C
+      DATA RSLW / 0. /
 C
 C SIZA is the internal parameter 'SA', which serves as a multiplier
 C for the sizes of the characters written by PLCHHQ.  Its default
@@ -167,7 +344,7 @@ C
 C SHDX and SHDY specify the X and Y offsets to be used in drawing
 C character shadows.  These are stated as fractions of the font height.
 C
-      DATA SHDX,SHDY / .05,.05 /
+      DATA SHDX,SHDY / -.05,-.05 /
 C
 C Define default values for x/y positioning information retrievable by
 C the user, just in case.
@@ -180,5 +357,11 @@ C characters to make them come out the right size.
 C
       DATA XMUL / 1.,1.,1. /
       DATA YMUL / 1.,1.,1. /
+C
+C Define dummy values for the viewport-edge parameters that will be
+C passed by STITLE to PCMPXY.  This just keeps the code from blowing
+C up in certain error situations.
+C
+      DATA XVPL,XVPR,YVPB,YVPT / 4*0. /
 C
       END

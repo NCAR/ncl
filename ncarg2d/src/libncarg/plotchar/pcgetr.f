@@ -1,8 +1,5 @@
 C
-C $Id: pcgetr.f,v 1.5 1992-11-18 02:13:55 kennison Exp $
-C
-C
-C ---------------------------------------------------------------------
+C $Id: pcgetr.f,v 1.6 1993-01-12 02:41:07 kennison Exp $
 C
       SUBROUTINE PCGETR (WHCH,RVAL)
 C
@@ -13,15 +10,16 @@ C values of type REAL.
 C
 C COMMON block declarations.
 C
-      COMMON /PCPRMS/ ADDS,CONS,DSTB,DSTL,DSTR,DSTT,HPIC(3),ICEN,IOUC,
-     +                IOUF,IPCC,
-     +                IQUF,ISHC,ISHF,ITEF,JCOD,NFCC,NODF,SHDX,SHDY,
-     +                SIZA,SSIC,SSPR,SUBS,VPIC(3),WPIC(3),XBEG,XCEN,
-     +                XEND,XMUL(3),YBEG,YCEN,YEND,YMUL(3)
+      COMMON /PCPRMS/ ADDS,CONS,DSTB,DSTL,DSTR,DSTT,HPIC(3),IBXC(3),
+     +                IBXF,ICEN,IORD,IOUC,IOUF,IPCC,IQUF,ISHC,ISHF,ITEF,
+     +                JCOD,LSCI(16),NFCC,NODF,RBXL,RBXM,RBXX,RBXY,ROLW,
+     +                RPLW,RSLW,SHDX,SHDY,SIZA,SSIC,SSPR,SUBS,VPIC(3),
+     +                WPIC(3),XBEG,XCEN,XEND,XMUL(3),YBEG,YCEN,YEND,
+     +                YMUL(3)
       SAVE   /PCPRMS/
 C
-      COMMON /PCPFMQ/ IMAP,RHTW
-      SAVE   /PCPFMQ/
+      COMMON /PCPFLQ/ IMAP,OORV,RHTW
+      SAVE   /PCPFLQ/
 C
 C Declare the BLOCK DATA routine external to force it to load.
 C
@@ -31,14 +29,45 @@ C Get the selected parameter.
 C
       IF      (WHCH(1:2).EQ.'AS'.OR.WHCH(1:2).EQ.'as') THEN
         RVAL=ADDS
+      ELSE IF (WHCH(1:2).EQ.'BC'.OR.WHCH(1:2).EQ.'bc') THEN
+        CALL PCGPAI (WHCH,3,IPAI)
+        IF (IPAI.EQ.0) THEN
+          RVAL=REAL(IBXC(1))
+        ELSE IF (IPAI.GE.1.AND.IPAI.LE.3) THEN
+          RVAL=REAL(IBXC(IPAI))
+        ELSE
+          CALL SETER ('PCGETR - BOX COLOR ARRAY INDEX IS OUT OF RANGE',
+     +                                                             1,2)
+          STOP
+        END IF
       ELSE IF (WHCH(1:2).EQ.'BF'.OR.WHCH(1:2).EQ.'bf') THEN
-        CALL BZGETR ('FTL',RVAL)
+        RVAL=REAL(IBXF)
+      ELSE IF (WHCH(1:2).EQ.'BL'.OR.WHCH(1:2).EQ.'bl') THEN
+        RVAL=RBXL
+      ELSE IF (WHCH(1:2).EQ.'BM'.OR.WHCH(1:2).EQ.'bm') THEN
+        RVAL=RBXM
+      ELSE IF (WHCH(1:2).EQ.'BX'.OR.WHCH(1:2).EQ.'bx') THEN
+        RVAL=RBXX
+      ELSE IF (WHCH(1:2).EQ.'BY'.OR.WHCH(1:2).EQ.'by') THEN
+        RVAL=RBXY
+      ELSE IF (WHCH(1:2).EQ.'CC'.OR.WHCH(1:2).EQ.'cc') THEN
+        CALL PCGPAI (WHCH,3,IPAI)
+        IF (IPAI.EQ.0) THEN
+          RVAL=REAL(IPCC)
+        ELSE IF (IPAI.GE.1.AND.IPAI.LE.16) THEN
+          RVAL=REAL(LSCI(IPAI))
+        ELSE
+          CALL SETER ('PCGETR - COLOR ARRAY INDEX IS OUT OF RANGE',1,2)
+          STOP
+        END IF
       ELSE IF (WHCH(1:2).EQ.'CD'.OR.WHCH(1:2).EQ.'cd') THEN
         RVAL=REAL(JCOD)
       ELSE IF (WHCH(1:2).EQ.'CE'.OR.WHCH(1:2).EQ.'ce') THEN
         RVAL=REAL(ICEN)
       ELSE IF (WHCH(1:2).EQ.'CH'.OR.WHCH(1:2).EQ.'ch') THEN
         RVAL=HPIC(3)
+      ELSE IF (WHCH(1:2).EQ.'CL'.OR.WHCH(1:2).EQ.'cl') THEN
+        RVAL=RPLW
       ELSE IF (WHCH(1:2).EQ.'CS'.OR.WHCH(1:2).EQ.'cs') THEN
         RVAL=2.*CONS
       ELSE IF (WHCH(1:2).EQ.'CV'.OR.WHCH(1:2).EQ.'cv') THEN
@@ -49,10 +78,14 @@ C
         RVAL=DSTB
       ELSE IF (WHCH(1:2).EQ.'DL'.OR.WHCH(1:2).EQ.'dl') THEN
         RVAL=DSTL
+      ELSE IF (WHCH(1:2).EQ.'DO'.OR.WHCH(1:2).EQ.'do') THEN
+        RVAL=REAL(IORD)
       ELSE IF (WHCH(1:2).EQ.'DR'.OR.WHCH(1:2).EQ.'dr') THEN
         RVAL=DSTR
       ELSE IF (WHCH(1:2).EQ.'DT'.OR.WHCH(1:2).EQ.'dt') THEN
         RVAL=DSTT
+      ELSE IF (WHCH(1:2).EQ.'FB'.OR.WHCH(1:2).EQ.'fb') THEN
+        CALL BZGETR ('FTL',RVAL)
       ELSE IF (WHCH(1:2).EQ.'FN'.OR.WHCH(1:2).EQ.'fn') THEN
         RVAL=REAL(NODF)
       ELSE IF (WHCH(1:2).EQ.'HW'.OR.WHCH(1:2).EQ.'hw') THEN
@@ -71,8 +104,10 @@ C
         RVAL=REAL(IOUC)
       ELSE IF (WHCH(1:2).EQ.'OF'.OR.WHCH(1:2).EQ.'of') THEN
         RVAL=REAL(IOUF)
-      ELSE IF (WHCH(1:2).EQ.'PC'.OR.WHCH(1:2).EQ.'pc') THEN
-        RVAL=REAL(IPCC)
+      ELSE IF (WHCH(1:2).EQ.'OL'.OR.WHCH(1:2).EQ.'ol') THEN
+        RVAL=ROLW
+      ELSE IF (WHCH(1:2).EQ.'OR'.OR.WHCH(1:2).EQ.'or') THEN
+        RVAL=OORV
       ELSE IF (WHCH(1:2).EQ.'PH'.OR.WHCH(1:2).EQ.'ph') THEN
         RVAL=HPIC(1)
       ELSE IF (WHCH(1:2).EQ.'PS'.OR.WHCH(1:2).EQ.'ps') THEN
@@ -89,6 +124,8 @@ C
         RVAL=REAL(ISHC)
       ELSE IF (WHCH(1:2).EQ.'SF'.OR.WHCH(1:2).EQ.'sf') THEN
         RVAL=REAL(ISHF)
+      ELSE IF (WHCH(1:2).EQ.'SL'.OR.WHCH(1:2).EQ.'sl') THEN
+        RVAL=RSLW
       ELSE IF (WHCH(1:2).EQ.'SS'.OR.WHCH(1:2).EQ.'ss') THEN
         RVAL=SUBS
       ELSE IF (WHCH(1:2).EQ.'SX'.OR.WHCH(1:2).EQ.'sx') THEN
@@ -110,7 +147,8 @@ C
       ELSE IF (WHCH(1:2).EQ.'YE'.OR.WHCH(1:2).EQ.'ye') THEN
         RVAL=YEND
       ELSE
-        CALL SETER ('PCGETR - UNRECOGNIZED PARAMETER NAME',1,2)
+        CALL SETER ('PCGETR - UNRECOGNIZED PARAMETER NAME',2,2)
+        STOP
       END IF
 C
 C Done.

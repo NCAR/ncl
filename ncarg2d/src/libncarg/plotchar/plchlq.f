@@ -1,8 +1,5 @@
 C
-C $Id: plchlq.f,v 1.4 1992-11-18 02:14:20 kennison Exp $
-C
-C
-C-----------------------------------------------------------------------
+C $Id: plchlq.f,v 1.5 1993-01-12 02:41:42 kennison Exp $
 C
       SUBROUTINE PLCHLQ (XPOS,YPOS,CHRS,SIZE,ANGD,CNTR)
 C
@@ -14,36 +11,32 @@ C
 C
       CHARACTER*(*) CHRS
 C
+C The COMMON block PCPFLQ contains internal parameters that affect the
+C behavior of routines besides PLCHHQ.
+C
+      COMMON /PCPFLQ/ IMAP,OORV,RHTW
+      SAVE   /PCPFLQ/
+C
+C Declare the BLOCK DATA routine external to force it to load.
+C
+      EXTERNAL PCBLDA
+C
 C Define arrays in which to save the current viewport and window.
 C
       DIMENSION VPRT(4),WNDW(4)
 C
-C Flush the pen-move buffer.
-C
-      CALL PLOTIF (0.,0.,2)
-C
 C Compute the coordinates of (XPOS,YPOS) in the fractional coordinate
-C system (normalized device coordinates).
+C system (normalized device coordinates XFRA and YFRA).
 C
-      XFRA=CUFX(XPOS)
-      YFRA=CUFY(YPOS)
-C
-C Save the current window and, if necessary, redefine it so that we can
-C use normalized device coordinates.
-C
-      CALL GQCNTN (IERR,NRMT)
-      IF (NRMT.NE.0) THEN
-        CALL GQNT (NRMT,IERR,WNDW,VPRT)
-        CALL GSWN (NRMT,VPRT(1),VPRT(2),VPRT(3),VPRT(4))
+      IF (IMAP.LE.0) THEN
+        XFRA=CUFX(XPOS)
+        YFRA=CUFY(YPOS)
+      ELSE
+        CALL PCMPXY (IMAP,XPOS,YPOS,XTMP,YTMP)
+        IF (OORV.NE.0..AND.XTMP.EQ.OORV) RETURN
+        XFRA=CUFX(XTMP)
+        YFRA=CUFY(YTMP)
       END IF
-C
-C Save current character height, text path, character up vector, and
-C text alignment.
-C
-      CALL GQCHH (IERR,HGTO)
-      CALL GQTXP (IERR,ITPO)
-      CALL GQCHUP (IERR,CUXO,CUYO)
-      CALL GQTXAL (IERR,ITAX,ITAY)
 C
 C Determine the resolution of the plotter, as declared by default or
 C by the user.
@@ -52,33 +45,58 @@ C
       RSLN=2.**IRSX-1.
 C
 C Determine a character height which will make the characters have the
-C width requested by the user.  First, compute the same multiplier we
-C would use for PLCHHQ (except for the adjustment factor SIZA) ...
+C width requested by the user (and decide at what angle to write them).
+C First, compute the same multiplier we would use for PLCHHQ (except
+C for the adjustment factor SIZA) ...
 C
-      IF (SIZE.LE.0.) THEN
-        SIZM=ABS(SIZE)/1023.
-      ELSE IF (SIZE.LT.1.) THEN
-        SIZM=SIZE/16.
+      IF (IMAP.LE.0) THEN
+        IF (SIZE.LE.0.) THEN
+          SIZM=ABS(SIZE)/1023.
+        ELSE IF (SIZE.LT.1.) THEN
+          SIZM=SIZE/16.
+        ELSE
+          SIZM=(SIZE/RSLN)/16.
+        END IF
+        ANGV=ANGD
       ELSE
-        SIZM=(SIZE/RSLN)/16.
+        SINA=SIN(.017453292519943*ANGD)
+        COSA=COS(.017453292519943*ANGD)
+        CALL PCMPXY (IMAP,XPOS-.5*SIZE*COSA,YPOS-.5*SIZE*SINA,XTM1,YTM1)
+        CALL PCMPXY (IMAP,XPOS+.5*SIZE*COSA,YPOS+.5*SIZE*SINA,XTM2,YTM2)
+        IF (OORV.NE.0..AND.(XTM1.EQ.OORV.OR.XTM2.EQ.OORV)) RETURN
+        XTM1=CUFX(XTM1)
+        YTM1=CUFY(YTM1)
+        XTM2=CUFX(XTM2)
+        YTM2=CUFY(YTM2)
+        IF (XTM1.EQ.XTM2.AND.YTM1.EQ.YTM2) RETURN
+        SIZM=SQRT((XTM2-XTM1)*(XTM2-XTM1)+(YTM2-YTM1)*(YTM2-YTM1))/16.
+        ANGV=57.2957795130823*ATAN2(YTM2-YTM1,XTM2-XTM1)
       END IF
 C
 C ... and then compute from that the desired character height.
 C
       CHRH=16.*SIZM
 C
-C Set the character height.
+C Save the current character height, text path, character up vector,
+C and text alignment.
+C
+      CALL GQCHH (IERR,HGTO)
+      CALL GQTXP (IERR,ITPO)
+      CALL GQCHUP (IERR,CUXO,CUYO)
+      CALL GQTXAL (IERR,ITAX,ITAY)
+C
+C Set the desired character height.
 C
       CALL GSCHH (CHRH)
 C
-C Set the text path.
+C Set the desired text path.
 C
       CALL GSTXP (0)
 C
 C Define the character up vector, being careful to generate exact values
 C for exact multiples of 90 degrees.
 C
-      ANGM=MOD(ANGD,360.)
+      ANGM=MOD(ANGV,360.)
 C
       IF (ANGM.EQ.0.) THEN
         CALL GSCHUP (0.,1.)
@@ -106,26 +124,39 @@ C
 C
       CALL GSTXAL (ICNT,3)
 C
+C Flush the pen-move buffer.
+C
+      CALL PLOTIF (0.,0.,2)
+C
+C Save the current window and, if necessary, redefine it so that we can
+C use normalized device coordinates.
+C
+      CALL GQCNTN (IERR,NRMT)
+      IF (NRMT.NE.0) THEN
+        CALL GQNT (NRMT,IERR,WNDW,VPRT)
+        CALL GSWN (NRMT,VPRT(1),VPRT(2),VPRT(3),VPRT(4))
+      END IF
+C
 C Plot the characters.
 C
       CALL GTX (XFRA,YFRA,CHRS)
-C
-C Update the pen position.
-C
-      CALL PLOTIF (XFRA,YFRA,0)
-C
-C Restore all original text attributes.
-C
-      CALL GSCHH  (HGTO)
-      CALL GSTXP  (ITPO)
-      CALL GSCHUP (CUXO,CUYO)
-      CALL GSTXAL (ITAX,ITAY)
 C
 C Restore the window definition.
 C
       IF (NRMT.NE.0) THEN
         CALL GSWN (NRMT,WNDW(1),WNDW(2),WNDW(3),WNDW(4))
       END IF
+C
+C Restore all the original text attributes.
+C
+      CALL GSCHH  (HGTO)
+      CALL GSTXP  (ITPO)
+      CALL GSCHUP (CUXO,CUYO)
+      CALL GSTXAL (ITAX,ITAY)
+C
+C Update the pen position.
+C
+      CALL PLOTIF (XFRA,YFRA,0)
 C
 C Done.
 C

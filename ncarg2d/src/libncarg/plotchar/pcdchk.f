@@ -1,8 +1,5 @@
 C
-C $Id: pcdchk.f,v 1.3 1992-11-18 02:13:46 kennison Exp $
-C
-C
-C ---------------------------------------------------------------------
+C $Id: pcdchk.f,v 1.4 1993-01-12 02:40:56 kennison Exp $
 C
       SUBROUTINE PCDCHK (IERR)
 C
@@ -21,7 +18,7 @@ C   3 if neither of the two tests was successful.
 C
 C COMMON block declarations.
 C
-      COMMON /PCSVEM/ IBNU,ICOD,IDDA(8625),IDDL,RDGU(8800),IDPC(256),
+      COMMON /PCSVEM/ IBNU,ICOD,IDDA(8625),IDDL,RDGU(7000),IDPC(256),
      +                IERU,INDA(789),INDL,INIT,IVCO,IVDU,NBPW,NPPW
       SAVE   /PCSVEM/
 C

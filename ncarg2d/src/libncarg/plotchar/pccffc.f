@@ -1,8 +1,5 @@
 C
-C $Id: pccffc.f,v 1.5 1992-11-18 02:13:44 kennison Exp $
-C
-C
-C ---------------------------------------------------------------------
+C $Id: pccffc.f,v 1.6 1993-01-12 02:40:54 kennison Exp $
 C
       SUBROUTINE PCCFFC (IPSS,IBNU,NFNT,IASC,IPIC,RDGU,LDGU,NDGU)
 C

@@ -1,8 +1,5 @@
 C
-C $Id: pcsetc.f,v 1.5 1992-11-18 02:14:07 kennison Exp $
-C
-C
-C ---------------------------------------------------------------------
+C $Id: pcsetc.f,v 1.6 1993-01-12 02:41:29 kennison Exp $
 C
       SUBROUTINE PCSETC (WHCH,CVAL)
 C
@@ -13,28 +10,48 @@ C values of type CHARACTER.
 C
 C COMMON block declarations.
 C
-      COMMON /PCPRMS/ ADDS,CONS,DSTB,DSTL,DSTR,DSTT,HPIC(3),ICEN,IOUC,
-     +                IOUF,IPCC,
-     +                IQUF,ISHC,ISHF,ITEF,JCOD,NFCC,NODF,SHDX,SHDY,
-     +                SIZA,SSIC,SSPR,SUBS,VPIC(3),WPIC(3),XBEG,XCEN,
-     +                XEND,XMUL(3),YBEG,YCEN,YEND,YMUL(3)
+      COMMON /PCPRMS/ ADDS,CONS,DSTB,DSTL,DSTR,DSTT,HPIC(3),IBXC(3),
+     +                IBXF,ICEN,IORD,IOUC,IOUF,IPCC,IQUF,ISHC,ISHF,ITEF,
+     +                JCOD,LSCI(16),NFCC,NODF,RBXL,RBXM,RBXX,RBXY,ROLW,
+     +                RPLW,RSLW,SHDX,SHDY,SIZA,SSIC,SSPR,SUBS,VPIC(3),
+     +                WPIC(3),XBEG,XCEN,XEND,XMUL(3),YBEG,YCEN,YEND,
+     +                YMUL(3)
       SAVE   /PCPRMS/
+C
+      COMMON /PCFNNO/ LFNO(43),LFNL
+      SAVE   /PCFNNO/
+C
+      COMMON /PCFNNM/ LFNM(43,2)
+      CHARACTER*18 LFNM
+      SAVE   /PCFNNM/
 C
 C Declare the BLOCK DATA routine external to force it to load.
 C
       EXTERNAL PCBLDA
 C
-C The only possibility is the function-code character.  What is really
-C stored is the index of the character in the local collating sequence.
+C There are two possibilities:  In the case of the function-code
+C character, what is really stored is the index of the character
+C in the local collating sequence.  If the default font name is
+C being specified, what is really set is the font number.
 C
       IF (WHCH(1:2).EQ.'FC'.OR.WHCH(1:2).EQ.'fc') THEN
         NFCC=ICHAR(CVAL(1:1))
+      ELSE IF (WHCH(1:2).EQ.'FN'.OR.WHCH(1:2).EQ.'fn') THEN
+        DO 101 I=1,LFNL
+          IF (CVAL.EQ.LFNM(I,1).OR.CVAL.EQ.LFNM(I,2)) THEN
+            NODF=LFNO(I)
+            GO TO 102
+          END IF
+  101   CONTINUE
+        CALL SETER ('PCSETC - UNRECOGNIZED FONT NAME',1,2)
+        STOP
       ELSE
-        CALL SETER ('PCSETC - UNRECOGNIZED PARAMETER NAME',1,2)
+        CALL SETER ('PCSETC - UNRECOGNIZED PARAMETER NAME',2,2)
+        STOP
       END IF
 C
 C Done.
 C
-      RETURN
+  102 RETURN
 C
       END

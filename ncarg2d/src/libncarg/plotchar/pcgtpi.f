@@ -1,8 +1,5 @@
 C
-C $Id: pcgtpi.f,v 1.4 1992-11-18 02:14:01 kennison Exp $
-C
-C
-C ---------------------------------------------------------------------
+C $Id: pcgtpi.f,v 1.5 1993-01-12 02:41:15 kennison Exp $
 C
       SUBROUTINE PCGTPI (CHRS,NCHR,ICHR,IBSE,NUMV)
 C
@@ -29,7 +26,7 @@ C   found.
 C
 C COMMON block declarations.
 C
-      COMMON /PCSVEM/ IBNU,ICOD,IDDA(8625),IDDL,RDGU(8800),IDPC(256),
+      COMMON /PCSVEM/ IBNU,ICOD,IDDA(8625),IDDL,RDGU(7000),IDPC(256),
      +                IERU,INDA(789),INDL,INIT,IVCO,IVDU,NBPW,NPPW
       SAVE   /PCSVEM/
 C

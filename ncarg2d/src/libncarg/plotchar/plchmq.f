@@ -1,8 +1,5 @@
 C
-C $Id: plchmq.f,v 1.6 1992-11-19 02:18:33 fred Exp $
-C
-C
-C-----------------------------------------------------------------------
+C $Id: plchmq.f,v 1.7 1993-01-12 02:41:44 kennison Exp $
 C
       SUBROUTINE PLCHMQ (XPOS,YPOS,CHRS,SIZE,ANGD,CNTR)
 C
@@ -14,13 +11,13 @@ C
 C
       CHARACTER*(*) CHRS
 C
-C The COMMON block PCPFMQ contains internal parameters that affect the
-C behavior of both PLCHHQ and PLCHMQ.
+C The COMMON block PCPFLQ contains internal parameters that affect the
+C behavior of routines besides PLCHHQ.
 C
-      COMMON /PCPFMQ/ IMAP,RHTW
-      SAVE   /PCPFMQ/
+      COMMON /PCPFLQ/ IMAP,OORV,RHTW
+      SAVE   /PCPFLQ/
 C
-C Declare the BLOCK DATA routines external to force them to load.
+C Declare the BLOCK DATA routine external to force it to load.
 C
       EXTERNAL PCBLDA
 C
@@ -72,9 +69,9 @@ C Each character is digitized in a box which is basically 60 units
 C wide by 70 units tall.  The width includes 20 units of white space
 C along the right edge of the character.  A few characters dip below
 C the bottom of the box.  Vertical spacing is intended to be 120 units.
-C If KXCO(I) = 77, KYCO(I) is a flag - KYCO(I) = 0 means that the next
-C delared move is a pen-up move (all others are pen-down); 77 signals
-C the end of the digitization for a given character.
+C If KXCO(I) = 77, KYCO(I) is a flag:  KYCO(I) = 0 means that the next
+C delared move is pen-up (all others are pen-down), and KYCO(I)=77
+C signals the end of the digitization for a given character.
 C
 C Note:  KYCO(151) changed from 0 to 77 to remove slash from zero.  DJK
 C (3/11/88).
@@ -347,7 +344,7 @@ C
       XCOV=SIZM*COS(ANGR)
       YCOV=SIZM*SIN(ANGR)
 C
-C Compute a multiplier for the digitized y coordinates which will make
+C Compute a multiplier for the digitized y coordinates that will make
 C the height come out right.
 C
       YMLT=ABS(RHTW)/1.75
@@ -368,7 +365,7 @@ C
 C
 C Loop through all the characters in the input string.
 C
-      DO 102 ICHR=1,NCHR
+      DO 107 ICHR=1,NCHR
 C
 C If the character is not a blank, get a pointer to the beginning of
 C its digitization.
@@ -378,41 +375,217 @@ C
      +                 CALL PCGPTR (CHRS(ICHR:ICHR),LCHR,INDX,NLCH,IPNT)
 C
 C Once we've got a valid pointer, stroke out the character it points to.
-C The pen starts out "up".
+C The pen starts out "up".  If mapping is turned on and an out-of-range
+C value is defined, initialize a visibility flag and X and Y coordinates
+C of a "new" point.
 C
         IF (IPNT.GT.0) THEN
+C
           IPNT=IPNT-1
           IPEN=0
 C
-C Advance to the next digitization pair, ...
+          IF (IMAP.GT.0.AND.OORV.NE.0.) THEN
+            IVSN=0
+            XNEW=0.
+            YNEW=0.
+          END IF
+C
+C Advance to the next digitization pair.
 C
   101     IPNT=IPNT+1
 C
-C ... and test for dx and dy ...
+C Check for an X/Y coordinate pair (as opposed to an op code).
 C
           IF (KXCO(IPNT).NE.77) THEN
-            XTMP=XLLC+REAL(KXCO(IPNT))*XCOV-
-     +           YMLT*REAL(KYCO(IPNT))*YCOV
-            YTMP=YLLC+REAL(KXCO(IPNT))*YCOV+
-     +           YMLT*REAL(KYCO(IPNT))*XCOV
-            IF (IMAP.GT.0) THEN
-              XSAV=XTMP
-              YSAV=YTMP
-              CALL PCMPXY (IMAP,XSAV,YSAV,XTMP,YTMP)
-              XTMP=CUFX(XTMP)
-              YTMP=CUFY(YTMP)
+C
+C Process an X/Y coordinate pair.  See if mapping is off or on.
+C
+            IF (IMAP.LE.0) THEN
+C
+C Mapping is turned off; just compute the appropriate fractional
+C coordinates and use the SPPS routine PLOTIF.
+C
+              CALL PLOTIF (XLLC+REAL(KXCO(IPNT))*XCOV-
+     +                     YMLT*REAL(KYCO(IPNT))*YCOV,
+     +                     YLLC+REAL(KXCO(IPNT))*YCOV+
+     +                     YMLT*REAL(KYCO(IPNT))*XCOV,IPEN)
+C
+            ELSE
+C
+C Mapping is turned on.  If the pen is up, just move to the current
+C point.  If the pen is down and the current point is too far from the
+C last one, arrange to generate some points in between.
+C
+              IF (IPEN.EQ.0) THEN
+                XTMB=0.
+                YTMB=0.
+                NINT=1
+              ELSE
+                XTMB=REAL(KXCO(IPNT-1))
+                YTMB=REAL(KYCO(IPNT-1))
+                NINT=MAX(1,ABS(KXCO(IPNT)-KXCO(IPNT-1))/7,
+     +                     ABS(KYCO(IPNT)-KYCO(IPNT-1))/7)
+              END IF
+C
+              XTME=REAL(KXCO(IPNT))
+              YTME=REAL(KYCO(IPNT))
+C
+C Begin interpolation loop.
+C
+              DO 106 IINT=1,NINT
+C
+C Interpolate to get an X/Y position.
+C
+                P=REAL(NINT-IINT)/REAL(NINT)
+C
+                XTMI=P*XTMB+(1.-P)*XTME
+                YTMI=P*YTMB+(1.-P)*YTME
+C
+C Check whether an out-of-range value is defined or not.
+C
+                IF (OORV.EQ.0.) THEN
+C
+C No out-of-range value is defined; do the mapping, transform to the
+C fractional system, and use PLOTIF.
+C
+                  CALL PCMPXY (IMAP,XLLC+XTMI*XCOV-YMLT*YTMI*YCOV,
+     +                              YLLC+XTMI*YCOV+YMLT*YTMI*XCOV,
+     +                                                  XTMP,YTMP)
+                  CALL PLOTIF (CUFX(XTMP),CUFY(YTMP),IPEN)
+C
+                ELSE
+C
+C An out-of-range value is defined; we have to cope with the fact that
+C some points may disappear under the given mapping.
+C
+C The new point becomes the old point.
+C
+                  IVSO=IVSN
+                  XOLD=XNEW
+                  YOLD=YNEW
+C
+C Compute the coordinates and the visibility flag for the new point.
+C
+                  XNEW=XLLC+XTMI*XCOV-YMLT*YTMI*YCOV
+                  YNEW=YLLC+XTMI*YCOV+YMLT*YTMI*XCOV
+C
+                  CALL PCMPXY (IMAP,XNEW,YNEW,XTMP,YTMP)
+C
+                  IF (XTMP.EQ.OORV) THEN
+                    IVSN=0
+                  ELSE
+                    IVSN=1
+                  END IF
+C
+C Process the various combinations of old-point/new-point visibility.
+C
+                  IF (IVSO.EQ.0.AND.IVSN.NE.0) THEN
+C
+C The old point was invisible and the new one is visible.  If the line
+C segment between them is supposed to be drawn, use a binary-halving
+C process to find a point at the edge of the visible area and start
+C drawing there.  In any case, leave the pen down at the position of
+C the new point.
+C
+                    IF (IPEN.NE.0) THEN
+                      XINV=XOLD
+                      YINV=YOLD
+                      XVIS=XNEW
+                      YVIS=YNEW
+                      DO 102 IHLF=1,64
+                        XHLF=.5*(XINV+XVIS)
+                        YHLF=.5*(YINV+YVIS)
+                        CALL PCMPXY (IMAP,XHLF,YHLF,XTMP,YTMP)
+                        IF (XTMP.EQ.OORV) THEN
+                          IF (XHLF.EQ.XINV.AND.YHLF.EQ.YINV) GO TO 103
+                          XINV=XHLF
+                          YINV=YHLF
+                        ELSE
+                          IF (XHLF.EQ.XVIS.AND.YHLF.EQ.YVIS) GO TO 103
+                          XVIS=XHLF
+                          YVIS=YHLF
+                        END IF
+  102                 CONTINUE
+  103                 CALL PCMPXY (IMAP,XVIS,YVIS,XTMP,YTMP)
+                      CALL PLOTIF (CUFX(XTMP),CUFY(YTMP),0)
+                    END IF
+C
+                    CALL PCMPXY (IMAP,XNEW,YNEW,XTMP,YTMP)
+                    CALL PLOTIF (CUFX(XTMP),CUFY(YTMP),IPEN)
+C
+C Check for the next combination.
+C
+                  ELSE IF (IVSO.NE.0.AND.IVSN.EQ.0) THEN
+C
+C The old point was visible and the new one is not.  If the line segment
+C between them is supposed to be drawn, use a binary-halving process to
+C find out where the line segment disappears and extend it to there.
+C
+                    IF (IPEN.NE.0) THEN
+                      XVIS=XOLD
+                      YVIS=YOLD
+                      XINV=XNEW
+                      YINV=YNEW
+                      DO 104 IHLF=1,64
+                        XHLF=.5*(XINV+XVIS)
+                        YHLF=.5*(YINV+YVIS)
+                        CALL PCMPXY (IMAP,XHLF,YHLF,XTMP,YTMP)
+                        IF (XTMP.EQ.OORV) THEN
+                          IF (XHLF.EQ.XINV.AND.YHLF.EQ.YINV) GO TO 105
+                          XINV=XHLF
+                          YINV=YHLF
+                        ELSE
+                          IF (XHLF.EQ.XVIS.AND.YHLF.EQ.YVIS) GO TO 105
+                          XVIS=XHLF
+                          YVIS=YHLF
+                        END IF
+  104                 CONTINUE
+  105                 CALL PCMPXY (IMAP,XVIS,YVIS,XTMP,YTMP)
+                      CALL PLOTIF (CUFX(XTMP),CUFY(YTMP),1)
+                    END IF
+C
+C Check for the next combination.
+C
+                  ELSE IF (IVSO.NE.0.AND.IVSN.NE.0) THEN
+C
+C The old and new points are both visible.  An easy case.
+C
+                    CALL PCMPXY (IMAP,XNEW,YNEW,XTMP,YTMP)
+                    CALL PLOTIF (CUFX(XTMP),CUFY(YTMP),IPEN)
+C
+C End of checks for different combinations.
+C
+                  END IF
+C
+C End of check for out-of-range value defined.
+C
+                END IF
+C
+C End of interpolation loop.
+C
+  106         CONTINUE
+C
+C End of processing of X/Y coordinate pair.
+C
             END IF
-            CALL PLOTIF (XTMP,YTMP,IPEN)
+C
+C The pen goes down for the next point.
+C
             IPEN=1
+C
+C Go back for the next digitization pair.
+C
             GO TO 101
 C
-C ... or an "op-code", which may either force the pen up or stop us.
-C
           ELSE
+C
+C Process an "op-code", which may either force the pen up or stop us.
+C
             IF (KYCO(IPNT).NE.77) THEN
               IPEN=0
               GO TO 101
             END IF
+C
           END IF
 C
         END IF
@@ -422,7 +595,7 @@ C
           XLLC=XLLC+60.*XCOV
           YLLC=YLLC+60.*YCOV
 C
-  102 CONTINUE
+  107 CONTINUE
 C
 C Flush the buffer in PLOTIF.
 C

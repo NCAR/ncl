@@ -1,8 +1,5 @@
 C
-C $Id: pcmqlq.f,v 1.3 1992-11-18 02:14:05 kennison Exp $
-C
-C
-C ---------------------------------------------------------------------
+C $Id: pcmqlq.f,v 1.4 1993-01-12 02:41:25 kennison Exp $
 C
       SUBROUTINE PCMQLQ (XSUB,YSUB,CHRS,SIZE,ANGD,CNTR)
 C
@@ -17,11 +14,12 @@ C
 C
 C COMMON block declarations.
 C
-      COMMON /PCPRMS/ ADDS,CONS,DSTB,DSTL,DSTR,DSTT,HPIC(3),ICEN,IOUC,
-     +                IOUF,IPCC,
-     +                IQUF,ISHC,ISHF,ITEF,JCOD,NFCC,NODF,SHDX,SHDY,
-     +                SIZA,SSIC,SSPR,SUBS,VPIC(3),WPIC(3),XBEG,XCEN,
-     +                XEND,XMUL(3),YBEG,YCEN,YEND,YMUL(3)
+      COMMON /PCPRMS/ ADDS,CONS,DSTB,DSTL,DSTR,DSTT,HPIC(3),IBXC(3),
+     +                IBXF,ICEN,IORD,IOUC,IOUF,IPCC,IQUF,ISHC,ISHF,ITEF,
+     +                JCOD,LSCI(16),NFCC,NODF,RBXL,RBXM,RBXX,RBXY,ROLW,
+     +                RPLW,RSLW,SHDX,SHDY,SIZA,SSIC,SSPR,SUBS,VPIC(3),
+     +                WPIC(3),XBEG,XCEN,XEND,XMUL(3),YBEG,YCEN,YEND,
+     +                YMUL(3)
       SAVE   /PCPRMS/
 C
 C Call the appropriate routine.

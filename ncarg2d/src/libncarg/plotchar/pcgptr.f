@@ -1,8 +1,5 @@
 C
-C $Id: pcgptr.f,v 1.3 1992-11-18 02:13:57 kennison Exp $
-C
-C
-C ---------------------------------------------------------------------
+C $Id: pcgptr.f,v 1.4 1993-01-12 02:41:11 kennison Exp $
 C
       SUBROUTINE PCGPTR (KCHR,LCHR,INDX,NLCH,IPNT)
 C

@@ -1,8 +1,5 @@
 C
-C $Id: pcmpxy.f,v 1.2 1992-11-18 02:14:03 kennison Exp $
-C
-C
-C ---------------------------------------------------------------------
+C $Id: pcmpxy.f,v 1.3 1993-01-12 02:41:23 kennison Exp $
 C
       SUBROUTINE PCMPXY (IMAP,XINP,YINP,XOTP,YOTP)
 C
@@ -20,6 +17,15 @@ C selects the polar coordinate transformations, and 'MAP' = 3 selects
 C a perspective transformation.  The user of PLOTCHAR may replace this
 C routine as desired to transform the characters being drawn.
 C
+C In this version of PCMPXY, 'MAP' = 99 selects the identity mapping,
+C but a check is made to see whether the point (XINP,YINP) is outside
+C the rectangle specified by the values of the variables XVPL, XVPR,
+C YVPB, and YVPT, in the common block PCSTCM; if so, the value 1.E12
+C is returned for both XOTP and YOTP.  This mapping is used by the
+C package STITLE to clip scrolled titles at the edges of the viewport.
+C In future versions of PCMPXY, this situation may change; users who
+C grab a copy of the routine and modify it should beware of this.
+C
 C When IMAP is positive, XINP and YINP are the coordinates of a point
 C to be mapped to the user coordinate system; the coordinates in the
 C user system are to be returned in the variables XOTP and YOTP.  When
@@ -28,9 +34,7 @@ C point in the current user coordinate system; (XOTP,YOTP) is returned
 C and is the point which would be carried into (XINP,YINP) by the
 C mapping numbered ABS(IMAP).
 C
-C An additional convention has been adopted which allows a caller to
-C find out whether a given transformation and or its inverse is
-C available.  A call of the form
+C A call of the form
 C
 C       CALL PCMPXY (0,REAL(IMAP),RFLG,DUM1,DUM2)
 C
@@ -44,7 +48,15 @@ C    1.                yes                            no
 C    2.                 no                           yes
 C    3.                yes                           yes
 C
-C Sort out the different cases.  When IMAP = 0, CPMPXY is being asked
+C
+C Declare the common block in which STITLE communicates to PLOTCHAR the
+C coordinates of the viewport outside which scrolled titles are to be
+C clipped.
+C
+        COMMON /PCSTCM/ XVPL,XVPR,YVPB,YVPT
+        SAVE   /PCSTCM/
+C
+C Sort out the different cases.  When IMAP = 0, PCMPXY is being asked
 C what capabilities it has.  The IF tests distinguishing various values
 C of XINP from one another make no difference here, since inverses are
 C available for all mappings done by this version; it is included as a
@@ -93,6 +105,19 @@ C
             CALL TDPRPA (XINP,YINP,XOTP,YOTP)
           ELSE
             CALL TDPRPI (XINP,YINP,XOTP,YOTP)
+          END IF
+C
+C ... the special STITLE case ...
+C
+        ELSE IF (ABS(IMAP).EQ.99) THEN
+C
+          IF (XINP.LT.XVPL.OR.XINP.GT.XVPR.OR.
+     +        YINP.LT.YVPB.OR.YINP.GT.YVPT) THEN
+            XOTP=1.E12
+            YOTP=1.E12
+          ELSE
+            XOTP=XINP
+            YOTP=YINP
           END IF
 C
 C ... and the identity case.

@@ -1,142 +1,5 @@
 C
-C $Id: plchhq.f,v 1.5 1992-11-18 02:14:17 kennison Exp $
-C
-C***********************************************************************
-C P A C K A G E   P L O T C H A R   -   I N T R O D U C T I O N
-C***********************************************************************
-C
-C This file contains implementation instructions and the code for the
-C package PLOTCHAR.  Banners like the one above delimit major sections
-C of the file.  The code itself is separated into four sections: the
-C character-writing routines, the parameter-access routines, the
-C internal routines, and the block data routines which determine the
-C default values of internal parameters.
-C
-C***********************************************************************
-C P A C K A G E   P L O T C H A R   -   I M P L E M E N T A T I O N
-C***********************************************************************
-C
-C The PLOTCHAR package is written in FORTRAN-77 and should be quite
-C easy to implement.  To implement the full package requires four
-C steps:
-C
-C 1.  Supply 3 machine-dependent functions for bit manipulations -
-C     ISHIFT(I1,I2), IOR(I1,I2), and IAND(I1,I2) - and one function
-C     to provide machine-dependent quantities - I1MACH(I).  These
-C     functions are the same ones used to implement the NCAR GKS plot
-C     package.
-C
-C 2.  Create the PWRITX binary database from the card-image files
-C     PWRITXC1, PWRITXC2, PWRITXD1, and PWRITXD2.  To do this, read
-C     the instructions in the file PWRITXNT and execute the program
-C     given there.
-C
-C 3.  Create the binary fontcaps that are used by the translators,
-C     in a manner described in "NCAR Graphics Generic Package
-C     Installer's Guide".  This will require running the program
-C     FONTC once per fontcap.
-C
-C 4.  Supply system-dependent versions of three routines which are
-C     used to access both the PWRITX binary database and the binary
-C     fontcaps.  These routines are as follows:
-C
-C     SUBROUTINE PCFOPN (IBNU,NFNT)
-C     SUBROUTINE PCFRED (IBNU,NFNT,IBUF,LBUF)
-C     SUBROUTINE PCFCLS (IBNU,NFNT)
-C
-C     PCFOPN is called to open a particular binary file, PCFRED is
-C     called to read the next binary record from a file, and PCFCLS
-C     is called to close the file.  IBNU is the number of a unit to
-C     be used (if necessary) in manipulating the files.  The default
-C     value of IBNU is 3, which is defined in the BLOCK DATA routine
-C     PCBLDA; it may be necessary to change this value.  NFNT is the
-C     number of the desired font: 0 selects the PWRITX database and
-C     a non-zero value selects one of the other fonts.  IBUF is an
-C     integer array, of length LBUF, into which the next record of
-C     data is to be read.  On a Unix system, the following versions
-C     may be used (BOFRED and BCLRED are support routines for the
-C     FORTRAN version of the metafile translator "cgmtrans" and
-C     BINRD is a modified version of the routine BINRED, which is
-C     another of those support routines):
-C
-C     SUBROUTINE PCFOPN (IBNU,NFNT)
-C       CHARACTER*128 FILENM
-C       DATA FILENM / ' ' /
-C       IF (NFNT.EQ.0) THEN
-C         CALL GNGPAT (FILENM,'database',ISTAT)
-C         IF (ISTAT .NE. -1) THEN
-C           DO 101 I=1,119
-C              IF (FILENM(I:I).EQ.CHAR(0)) THEN
-C                FILENM(I:I+9)='/pwritdata'
-C                GO TO 104
-C              END IF
-C 101       CONTINUE
-C           GO TO 105
-C         ELSE
-C           DO 102 I=2,128
-C             LENEM=I
-C             IF (FILENM(I:I).EQ.CHAR(0)) GO TO 103
-C 102       CONTINUE
-C 103       PRINT * , 'PCFOPN - ',FILENM(1:LENEM-1)
-C           STOP
-C         END IF
-C 104     OPEN (UNIT=IBNU,FILE=FILENM,STATUS='OLD',FORM='UNFORMATTED',
-C    +                                            IOSTAT=IOST,ERR=105)
-C         REWIND IBNU
-C       ELSE
-C         CALL BOFRED (IBNU,NFNT,IOST,ISTA)
-C         IF (ISTA.NE.0) THEN
-C            PRINT * , 'PCFOPN - ERROR OPENING FONT ',NFNT
-C            STOP
-C         END IF
-C       END IF
-C       RETURN
-C 105   PRINT * , 'PCFOPN - ERROR OPENING PWRITX DATA FILE ',FILENM
-C       PRINT * , 'PCFOPN - IOSTAT FROM OPEN STATEMENT IS ',IOST
-C       STOP
-C     END
-C
-C     SUBROUTINE PCFRED (IBNU,NFNT,IBUF,LBUF)
-C       DIMENSION IBUF(LBUF)
-C       IF (NFNT.EQ.0) THEN
-C         READ (IBNU,ERR=101) (IBUF(I),I=1,LBUF)
-C       ELSE
-C         CALL BINRD (IBNU,LBUF,IBUF,IOST,ISTA)
-C         IF (ISTA.NE.0) THEN
-C           PRINT * , 'PCFRED - ERROR READING FONT ',NFNT
-C           STOP
-C         END IF
-C       END IF
-C       RETURN
-C 101   PRINT * , 'PCFRED - ERROR READING PWRITX DATABASE'
-C       STOP
-C     END
-C
-C     SUBROUTINE PCFCLS (IBNU,NFNT)
-C       IF (NFNT.EQ.0) THEN
-C         CLOSE (UNIT=IBNU,STATUS='KEEP',ERR=101)
-C       ELSE
-C         CALL BCLRED (IBNU,IOST,ISTA)
-C         IF (ISTA.NE.0) THEN
-C           PRINT * , 'PCFCLS - ERROR CLOSING FONT ',NFNT
-C           STOP
-C         END IF
-C       END IF
-C       RETURN
-C 101   PRINT * , 'PCFCLS - ERROR CLOSING PWRITX DATABASE'
-C       STOP
-C     END
-C
-C It is not necessary to implement the full package in order to get a
-C great deal of use out of it.  You can leave out steps 2, 3, and 4
-C and change the default value of the internal parameter IQUF, in the
-C BLOCK DATA routine PCBLDA, below, from a 0 to a 1.  This will leave
-C the package still usable in "medium-quality" mode, as described in
-C the write-up.
-C
-C***********************************************************************
-C C O D E   -   C H A R A C T E R - W R I T I N G   R O U T I N E S
-C***********************************************************************
+C $Id: plchhq.f,v 1.6 1993-01-12 02:41:38 kennison Exp $
 C
       SUBROUTINE PLCHHQ (XPOS,YPOS,CHRS,SIZE,ANGD,CNTR)
 C
@@ -148,32 +11,45 @@ C
 C
       CHARACTER CHRS*(*)
 C
+C PARAMETER statements.  The value of MDGU declared here depends on the
+C maximum number of elements that can ever be returned in the array RDGU
+C by the routine PCCFFF.  One should use here whatever that value is,
+C plus a fudge factor to compensate for the fact that, when mapping is
+C turned on, PLCHHQ interpolates X/Y coordinates along long straight
+C portions of character boundaries that were originally defined by just
+C two points at the ends.  If the value of MDGU is changed, the common
+C block PCSVEM must be modified in all routines in which it is declared;
+C the PARAMETER statement only occurs in this one.
+C
+      PARAMETER (MDGU=7000,MCRA=MDGU/2,MPCS=32,NCSO=256)
+C
 C COMMON block declarations.  PCPRMS holds user-accessible internal
 C parameters that do not affect the routine PLCHMQ.  PCSVEM holds other
 C variables that are either used in more than one routine or that need
-C to be saved from one call to the next.  PCPFMQ holds parameters that
-C affect the routine PLCHMQ; some of these also affect PLCHHQ.
+C to be saved from one call to the next.  PCPFLQ holds the values of
+C internal parameters that affect routines besides PLCHHQ.
 C
 C Note that the sizes of IDDA and INDA may be reduced to match the
 C values of IDDL and INDL computed below.
 C
-      COMMON /PCPRMS/ ADDS,CONS,DSTB,DSTL,DSTR,DSTT,HPIC(3),ICEN,IOUC,
-     +                IOUF,IPCC,
-     +                IQUF,ISHC,ISHF,ITEF,JCOD,NFCC,NODF,SHDX,SHDY,
-     +                SIZA,SSIC,SSPR,SUBS,VPIC(3),WPIC(3),XBEG,XCEN,
-     +                XEND,XMUL(3),YBEG,YCEN,YEND,YMUL(3)
+      COMMON /PCPRMS/ ADDS,CONS,DSTB,DSTL,DSTR,DSTT,HPIC(3),IBXC(3),
+     +                IBXF,ICEN,IORD,IOUC,IOUF,IPCC,IQUF,ISHC,ISHF,ITEF,
+     +                JCOD,LSCI(16),NFCC,NODF,RBXL,RBXM,RBXX,RBXY,ROLW,
+     +                RPLW,RSLW,SHDX,SHDY,SIZA,SSIC,SSPR,SUBS,VPIC(3),
+     +                WPIC(3),XBEG,XCEN,XEND,XMUL(3),YBEG,YCEN,YEND,
+     +                YMUL(3)
       SAVE   /PCPRMS/
 C
-      COMMON /PCSVEM/ IBNU,ICOD,IDDA(8625),IDDL,RDGU(8800),IDPC(256),
+      COMMON /PCSVEM/ IBNU,ICOD,IDDA(8625),IDDL,RDGU(MDGU),IDPC(256),
      +                IERU,INDA(789),INDL,INIT,IVCO,IVDU,NBPW,NPPW
       SAVE   /PCSVEM/
 C
-      COMMON /PCPFMQ/ IMAP,RHTW
-      SAVE   /PCPFMQ/
+      COMMON /PCPFLQ/ IMAP,OORV,RHTW
+      SAVE   /PCPFLQ/
 C
-C Declare some BLOCK DATA routines external to force them to load. ???
+C Declare some BLOCK DATA routines external to force them to load.
 C
-      EXTERNAL PCBLDA,PCBDFF,BZBKD
+      EXTERNAL PCBLDA,PCBDFF
 C
 C Define a dummy array for use in skipping records on IBNU.
 C
@@ -181,7 +57,18 @@ C
 C
 C Define X and Y coordinate arrays to be used in calls to GPL and GFA.
 C
-      DIMENSION XCRA(3300),YCRA(3300)
+      DIMENSION XCRA(MCRA),YCRA(MCRA)
+C
+C Declare some arrays in which to put pointers to pieces of a character
+C that lies partly inside and partly outside the area visible under a
+C given mapping.  We also have to save the X and Y coordinates at the
+C beginning and end of each visible chunk of the character, so as to
+C be able to interpolate points along the visible/invisible boundary
+C between the visible chunks.
+C
+      DIMENSION IPCB(MPCS),IPCE(MPCS)
+      DIMENSION XPCB(MPCS),YPCB(MPCS)
+      DIMENSION XPCE(MPCS),YPCE(MPCS)
 C
 C Define arrays in which to put multipliers representing the combined
 C effects of changing 'PH', 'PW', 'IH', 'IW', 'CH', 'CW', and the
@@ -210,16 +97,21 @@ C the characters in CDPC.
 C
       DIMENSION IASC(95)
 C
+C Declare an array in which to put some standard character heights,
+C for use in calls to PCCFFF.
+C
+      DIMENSION SPIC(3)
+C
 C Define arrays in which to save the information required to draw the
 C characters resulting from a single string.  These arrays allow us to
 C easily do the separate passes needed for shadows and outlines and to
 C do each of the passes either from left to right or from right to left
 C in the character string.
 C
-      DIMENSION XCSV(128),YCSV(128),XMSV(128),YMSV(128),NFSV(128),
-     +          NDSV(128),INSV(128),NASV(128),IPSV(128)
+      DIMENSION XCSV(NCSO),YCSV(NCSO),XMSV(NCSO),YMSV(NCSO),NFSV(NCSO),
+     +          NDSV(NCSO),INSV(NCSO),NASV(NCSO),IPSV(NCSO)
 C
-      CHARACTER*128 CHSV
+      CHARACTER*(NCSO) CHSV
 C
 C Define the characters to be associated with values of NDPC from 1
 C to 95.
@@ -270,6 +162,11 @@ C might possibly appear in CHRS.
 C
       DATA ISPC / 93,484,485,111,421,91,92,99,100,94,321,105,337,106,
      +            745,336,746,431,483 /
+C
+C Define the standard character heights for principal, indexical, and
+C cartographic sizes, for use in calls to PCCFFF.
+C
+      DATA SPIC / 21. , 13. , 9. /
 C
 C
 C I N I T I A L I Z A T I O N
@@ -350,15 +247,23 @@ C characters have the size requested by the user.
 C
       IF (IMAP.LE.0) THEN
         IF (SIZE.LE.0.) THEN
-          SIZM=ABS(SIZA*SIZE)/1023.
+          SIZM=ABS(SIZE)/1023.
         ELSE IF (SIZE.LT.1.) THEN
-          SIZM=(SIZA*SIZE)/WPIC(1)
+          SIZM=SIZE/WPIC(1)
         ELSE
-          SIZM=((SIZA*SIZE)/RSLN)/WPIC(1)
+          SIZM=(SIZE/RSLN)/WPIC(1)
         END IF
       ELSE
-        SIZM=(SIZA*SIZE)/WPIC(1)
+        SIZM=SIZE/WPIC(1)
       END IF
+C
+C If high-quality characters are being used, multiply by a fudge factor
+C whose default value of 8/9 makes characters produced by PLCHHQ have
+C the same height as those produced by PLCHMQ.  (By setting the value
+C of this fudge factor to 1, a user can make things work more or less
+C the way they used to.)
+C
+      IF (IQUF.EQ.0) SIZM=SIZA*SIZM
 C
 C If high-quality characters are to be used, load the high-quality
 C character dataset.
@@ -396,8 +301,10 @@ C
             CALL PCDCHK (IERR)
             IVDU=1
           END IF
-          IF (IERR.NE.0) CALL SETER
-     +                  ('PLCHHQ - DATASET NOT LOADED CORRECTLY',IERR,2)
+          IF (IERR.NE.0) THEN
+            CALL SETER ('PLCHHQ - DATASET NOT LOADED CORRECTLY',IERR,2)
+            STOP
+          END IF
         END IF
 C
 C If lower-quality characters are to be used, save the PLCHMQ parameter
@@ -424,8 +331,32 @@ C
       SINP=SIN(ANGR+1.57079632679489)
       COSP=COS(ANGR+1.57079632679489)
 C
-C Using an arbitrary starting position, we run through the character
-C string without drawing anything and see what the final position is.
+C Find the number of characters in the user's input string.
+C
+      NCHR=LEN(CHRS)
+C
+C Initialize the number of the last generated character saved for the
+C drawing passes.  (If there are fewer than NCSO characters, they can
+C all be saved at once; otherwise, we have to make more than one pass
+C through the input string.)
+C
+      ILCS=0
+C
+C Initialize the number of the last character generated during the
+C first pass.  (When more than NCSO characters are defined by the
+C input string, it is necessary to return to this point and repeat
+C this pass, saving another batch of characters.)
+C
+  100 ILCG=0
+C
+C Zero the count of characters for which information has been saved.
+C
+      NCSV=0
+C
+C During this pass, we use an arbitrary starting position, run through
+C the character string without drawing anything, and see what the final
+C position is.  Then, during the drawing passes, we use this information
+C to properly position the characters drawn.
 C
       XBEG=XFRA
       YBEG=YFRA
@@ -446,11 +377,9 @@ C
       XRGT=XBEG
       YRGT=YBEG
 C
-C Initialize the character index and the count of characters in the
-C string.
+C Set the index of the last character examined in the input.
 C
       ICHR=0
-      NCHR=LEN(CHRS)
 C
 C Initialize the index offsets for font, size and case to Roman,
 C principal, and upper, respectively.
@@ -500,7 +429,7 @@ C
 C If text extent quantities are to be computed, initialize the needed
 C quantities.
 C
-      IF (ITEF.EQ.0.AND.ICEN.EQ.0) THEN
+      IF (ITEF.EQ.0.AND.ICEN.EQ.0.AND.IBXF.EQ.0) THEN
         IPSS=1
       ELSE
         IPSS=2
@@ -509,10 +438,6 @@ C
         DSTB=-1.E6
         DSTT=-1.E6
       END IF
-C
-C Zero the count of characters for which information has been saved.
-C
-      NCSV=0
 C
 C
 C P R O C E S S   T H E   N E X T   C H A R A C T E R
@@ -587,25 +512,28 @@ C
             NASC=IASC(NDPC+47)
           END IF
           IF (NFNT.GE.1.AND.NFNT.LE.20) THEN
-            CALL PCCFFC (IPSS,IBNU,NFNT,NASC,IPIC,RDGU,8800,NDGU)
+            CALL PCCFFC (IPSS,IBNU,NFNT,NASC,IPIC,RDGU,MDGU,NDGU)
           ELSE
             IF (IMAP.LE.0) THEN
               CHFS=SIZM*HPIC(IPIC)
             ELSE
-              CHFS=SIZM*.1  !  ???
+              CHFS=.1  !  ???
             END IF
-            CALL PCCFFF (IPSS,IBNU,NFNT,NASC,HPIC(IPIC),CHFS,
-     +                                          RDGU,8800,NDGU)
+            CALL PCCFFF (IPSS,IBNU,NFNT,NASC,SPIC(IPIC),CHFS,
+     +                                        RDGU,MDGU,NDGU)
           END IF
           IF (NDGU.EQ.0) THEN
-            CALL PCCFFC (IPSS,IBNU,1,NASC,IPIC,RDGU,8800,NDGU)
+            CALL PCCFFC (IPSS,IBNU,1,NASC,IPIC,RDGU,MDGU,NDGU)
             IF (NDGU.EQ.0) CALL PCEXCD (INDP,IPSS,NDGU)
           END IF
         END IF
         IF (NDGU.EQ.0) THEN
           CALL PCEXCD (358,IPSS,NDGU)
-          IF (NDGU.EQ.0) CALL SETER
-     +            ('PLCHHQ - INTERNAL LOGIC ERROR - SEE CONSULTANT',1,2)
+          IF (NDGU.EQ.0) THEN
+            CALL SETER ('PLCHHQ - INTERNAL LOGIC ERROR (NDGU = 0) - SEE
+     +CONSULTANT',1,2)
+            STOP
+          END IF
         END IF
         IF (CONS.EQ.0.) THEN
           DTLE=-XMZM(IPIC)*RDGU(1)
@@ -683,15 +611,15 @@ C
       XRGT=XCEN+DTRE*STCO
       YRGT=YCEN+DTRE*STSO
 C
-C Save all the information necessary to retrieve the digitization of
-C the current character and draw it later.
+C If information about the current character is to be saved for the
+C drawing passes, do it.
 C
-      NCSV=NCSV+1
-C
-      IF (NCSV.LE.128) THEN
-        IPSV(NCSV)=IPIC
+      ILCG=ILCG+1
+      IF (ILCG.GE.ILCS+1.AND.ILCG.LE.ILCS+NCSO) THEN
+        NCSV=NCSV+1
         XCSV(NCSV)=XCEN
         YCSV(NCSV)=YCEN
+        IPSV(NCSV)=IPIC
         XMSV(NCSV)=XMZM(IPIC)
         YMSV(NCSV)=YMZM(IPIC)
         NFSV(NCSV)=NFNT
@@ -712,14 +640,14 @@ C
 C If appropriate, update the quantities from which the magnitudes of
 C the text-extent vectors will be computed.
 C
-      IF (ITEF.NE.0.OR.ICEN.NE.0) THEN
+      IF (ITEF.NE.0.OR.ICEN.NE.0.OR.IBXF.NE.0) THEN
 C
         UCEN=+(XCEN-XFRA)*COSO+(YCEN-YFRA)*SINO
         VCEN=-(XCEN-XFRA)*SINO+(YCEN-YFRA)*COSO
 C
         IF (IQUF.EQ.0) THEN
 C
-          DO 105 I=3,NDGU,2
+          DO 105 I=3,NDGU-1,2
             IF (RDGU(I).GT.-2047.) THEN
               DSTL=MAX(DSTL,-UCEN-SIZM*XMZM(IPIC)*RDGU(I  ))
               DSTR=MAX(DSTR,+UCEN+SIZM*XMZM(IPIC)*RDGU(I  ))
@@ -729,6 +657,8 @@ C
   105     CONTINUE
 C
         ELSE
+C
+          IF (RHTW.GE.0.) RHTW=1.75*YMZM(IPIC)/XMZM(IPIC)
 C
           DSTL=MAX(DSTL,-UCEN-SIZM*WPIC(IPIC)/3.,
      +                  -UCEN+SIZM*WPIC(IPIC)/3.)
@@ -790,7 +720,7 @@ C
         END IF
       END IF
 C
-C Go get the next character.
+C Go get the next character from the input string.
 C
       GO TO 103
 C
@@ -821,10 +751,19 @@ C
         YADJ=-.5*(DSTR-DSTL)*SINO-.5*(DSTT-DSTB)*COSO
       END IF
 C
+C Adjust the values of XBEG, YBEG, XEND, and YEND as required by a
+C user call to retrieve them.
+C
+      XBEG=XBEG+XADJ
+      YBEG=YBEG+YADJ
+C
+      XEND=XEND+XADJ
+      YEND=YEND+YADJ
+C
 C If text extents were computed, adjust them to be measured from
 C the point relative to which the string is being centered.
 C
-      IF (ITEF.NE.0.OR.ICEN.NE.0) THEN
+      IF (ITEF.NE.0.OR.ICEN.NE.0.OR.IBXF.NE.0) THEN
         DSTL=DSTL-XADJ*COSO-YADJ*SINO
         DSTR=DSTR+XADJ*COSO+YADJ*SINO
         DSTB=DSTB+XADJ*SINO-YADJ*COSO
@@ -833,14 +772,15 @@ C
 C
 C If the object of the call was just to compute text extents, quit.
 C
-      IF (ITEF.NE.0.AND.ANGD.EQ.360.) GO TO 133
+      IF (ITEF.NE.0.AND.ANGD.EQ.360.) GO TO 134
 C
 C
 C D R A W   T H E   C H A R A C T E R S
 C
 C
-C First, save the values of the current polyline, fill area, and text
-C color indices.
+C First, save the values of the initial polyline, fill area, and text
+C color indices, the initial line width, and the initial fill area
+C interior style.
 C
       CALL GQPLCI (IERR,IPLC)
       IF (IERR.NE.0) THEN
@@ -850,57 +790,130 @@ C
 C
       CALL GQFACI (IERR,IFAC)
       IF (IERR.NE.0) THEN
-        CALL SETER ('PLCHHQ - ERROR EXIT FROM GQFACI',2,2)
+        CALL SETER ('PLCHHQ - ERROR EXIT FROM GQFACI',3,2)
         STOP
       END IF
 C
       CALL GQTXCI (IERR,ITXC)
       IF (IERR.NE.0) THEN
-        CALL SETER ('PLCHHQ - ERROR EXIT FROM GQTXCI',2,2)
+        CALL SETER ('PLCHHQ - ERROR EXIT FROM GQTXCI',4,2)
         STOP
       END IF
 C
-C Drawing is done in three passes.  During the first pass, we draw the
-C character shadow, if any.  During the second pass, we draw the lines
-C and fill the areas constituting the principal body of the character.
-C During the third pass, we draw the outline of the character, if any.
+      CALL GQLWSC (IERR,RILW)
+      IF (IERR.NE.0) THEN
+        CALL SETER ('PLCHHQ - ERROR EXIT FROM GQLWSC',5,2)
+        STOP
+      END IF
+C
+      CALL GQFAIS (IERR,IIIS)
+      IF (IERR.NE.0) THEN
+        CALL SETER ('PLCHHQ - ERROR EXIT FROM GQFAIS',6,2)
+        STOP
+      END IF
+C
+C Set up variables in which to keep track of the current color index,
+C the current line width, and the current fill area interior style.
 C
       ICCI=-1
+      RCLW=RILW
+      ICIS=IIIS
 C
-      DO 132 IDRW=1,3
+C What we want to do now is to draw a box (if there is to be one) around
+C the characters and then the characters themselves.  For I = 1, we fill
+C the box shadow; for I = 2, we fill the box; for I = 3, we draw the box
+C outline.  For I = 4 through 3+3*NCSV, we draw either a character
+C shadow, the principal part of the character, or a character outline.
+C The internal parameter IORD determines the order in which all the
+C pieces of the characters are done.
 C
-        IF (IDRW.EQ.1) THEN
-          IDRF=ISHF
-          IDRC=ISHC
-        ELSE IF (IDRW.EQ.2) THEN
-          IDRF=1
-          IDRC=IPCC
-        ELSE IF (IDRW.EQ.3) THEN
-          IDRF=IOUF
-          IDRC=IOUC
-        END IF
-        IF (IDRF.EQ.0) GO TO 132
-        IF (IDRC.GE.0) THEN
-          IF (IDRC.NE.ICCI) THEN
-            ICCI=IDRC
-            CALL SFLUSH
-            CALL GSPLCI (IDRC)
-            CALL GSFACI (IDRC)
-            CALL GSTXCI (IDRC)
+      DO 108 I=1,3+3*NCSV
+C
+C Set things up to draw a part of the box ...
+C
+        IF (I.LE.3) THEN
+C
+          IF (ILCS.NE.0) GO TO 108
+C
+          IF      (I.EQ.1) THEN
+            IDRF=MOD(IBXF/4,2)
+            IDRC=IBXC(3)
+            RDLW=RBXL
+          ELSE IF (I.EQ.2) THEN
+            IDRF=MOD(IBXF/2,2)
+            IDRC=IBXC(2)
+            RDLW=RBXL
+          ELSE
+            IDRF=MOD(IBXF  ,2)
+            IDRC=IBXC(1)
+            RDLW=RBXL
           END IF
-        ELSE IF (ICCI.GE.0) THEN
-          ICCI=-1
-          CALL SFLUSH
-          CALL GSPLCI (IPLC)
-          CALL GSFACI (IFAC)
-          CALL GSTXCI (ITXC)
-        END IF
 C
-        DO 108 ICSV=1,MIN(128,NCSV)
+          IF (IDRF.EQ.0) GO TO 108
 C
-          IPIC=IPSV(ICSV)
+          XCEN=XFRA
+          YCEN=YFRA
+          IPIC=1
+          XMZM(IPIC)=1.
+          YMZM(IPIC)=1.
+          NDGU=14
+          WBXM=RBXM*SIZM*HPIC(1)
+          RDGU( 1)=-(DSTL+WBXM)/SIZM
+          RDGU( 2)=+(DSTR+WBXM)/SIZM
+          RDGU( 3)=-(DSTL+WBXM)/SIZM
+          RDGU( 4)=-(DSTB+WBXM)/SIZM
+          RDGU( 5)=+(DSTR+WBXM)/SIZM
+          RDGU( 6)=-(DSTB+WBXM)/SIZM
+          RDGU( 7)=+(DSTR+WBXM)/SIZM
+          RDGU( 8)=+(DSTT+WBXM)/SIZM
+          RDGU( 9)=-(DSTL+WBXM)/SIZM
+          RDGU(10)=+(DSTT+WBXM)/SIZM
+          RDGU(11)=-(DSTL+WBXM)/SIZM
+          RDGU(12)=-(DSTB+WBXM)/SIZM
+          RDGU(13)=-2048.
+          RDGU(14)=0.
+C
+          IF      (I.EQ.1) THEN
+            RDGU(13)=-2047.
+            XCEN=XCEN+RBXX*HPIC(1)*STCO-RBXY*HPIC(1)*STSO
+            YCEN=YCEN+RBXX*HPIC(1)*STSO+RBXY*HPIC(1)*STCO
+          ELSE IF (I.EQ.2) THEN
+            RDGU(13)=-2047.
+          END IF
+C
+C ... or a part of a character.
+C
+        ELSE
+C
+          IF (ABS(IORD).LE.1) THEN
+            IDRW=1+(I-4)/NCSV
+            ICSV=1+MOD(I-4,NCSV)
+          ELSE
+            ICSV=1+(I-4)/3
+            IDRW=1+MOD(I-4,3)
+          END IF
+C
+          IF (IORD.LT.0) ICSV=NCSV+1-ICSV
+C
+          IF (IDRW.EQ.1) THEN
+            IDRF=ISHF
+            IDRC=ISHC
+            RDLW=RSLW
+          ELSE IF (IDRW.EQ.2) THEN
+            IDRF=1
+            IDRC=IPCC
+            RDLW=RPLW
+          ELSE IF (IDRW.EQ.3) THEN
+            IDRF=IOUF
+            IDRC=IOUC
+            RDLW=ROLW
+          END IF
+C
+          IF (IDRF.EQ.0) GO TO 108
+C
           XCEN=XCSV(ICSV)+XADJ
           YCEN=YCSV(ICSV)+YADJ
+          IPIC=IPSV(ICSV)
           XMZM(IPIC)=XMSV(ICSV)
           YMZM(IPIC)=YMSV(ICSV)
           NFNT=NFSV(ICSV)
@@ -909,95 +922,729 @@ C
           NASC=NASV(ICSV)
 C
           IF      (IDRW.EQ.1) THEN
-            XCEN=XCEN+XMZM(IPIC)*SHDX*HPIC(IPIC)*STCO
-     +               -YMZM(IPIC)*SHDY*HPIC(IPIC)*STSO
-            YCEN=YCEN+XMZM(IPIC)*SHDX*HPIC(IPIC)*STSO
-     +               +YMZM(IPIC)*SHDY*HPIC(IPIC)*STCO
-C         ELSE IF (IDRW.EQ.2) THEN
-C           ???
+            XCEN=XCEN+SHDX*HPIC(1)*STCO-SHDY*HPIC(1)*STSO
+            YCEN=YCEN+SHDX*HPIC(1)*STSO+SHDY*HPIC(1)*STCO
           ELSE IF (IDRW.EQ.3) THEN
             IF (NFNT.GE.21.AND.NFNT.LE.99) NFNT=NFNT+100
           END IF
 C
-          IF (IQUF.EQ.0) THEN
+C Get the digitization of the desired character.
 C
+          IF (IQUF.EQ.0) THEN
             IF (NFNT.EQ.0.OR.NDPC.LT. 1.OR.
      +                       NDPC.GT.95.OR.INDP.EQ.95) THEN
               CALL PCEXCD (INDP,2,NDGU)
             ELSE
               IF (NFNT.GE.1.AND.NFNT.LE.20) THEN
-                CALL PCCFFC (2,IBNU,NFNT,NASC,IPIC,RDGU,8800,NDGU)
+                CALL PCCFFC (2,IBNU,NFNT,NASC,IPIC,RDGU,MDGU,NDGU)
               ELSE
                 IF (IMAP.LE.0) THEN
                   CHFS=SIZM*HPIC(IPIC)
                 ELSE
-                  CHFS=SIZM*.1  !  ???
+                  CHFS=.1  !  ???
                 END IF
-                CALL PCCFFF (2,IBNU,NFNT,NASC,HPIC(IPIC),
-     +                               CHFS,RDGU,8800,NDGU)
+                CALL PCCFFF (2,IBNU,NFNT,NASC,SPIC(IPIC),CHFS,
+     +                                         RDGU,MDGU,NDGU)
               END IF
               IF (NDGU.EQ.0) THEN
-                CALL PCCFFC (2,IBNU,1,NASC,IPIC,RDGU,8800,NDGU)
+                CALL PCCFFC (2,IBNU,1,NASC,IPIC,RDGU,MDGU,NDGU)
                 IF (NDGU.EQ.0) CALL PCEXCD (INDP,2,NDGU)
               END IF
             END IF
+C
             IF (NDGU.EQ.0) THEN
               CALL PCEXCD (358,2,NDGU)
-              IF (NDGU.EQ.0) CALL SETER
-     +           ('PLCHHQ - INTERNAL LOGIC ERROR - SEE CONSULTANT',2,2)
-            END IF
-            NCRA=0
-            DO 107 I=3,NDGU,2
-              IF (RDGU(I).GT.-2047.) THEN
-                NCRA=NCRA+1
-                IF (IMAP.LE.0) THEN
-                  XCRA(NCRA)=XCEN+XMZM(IPIC)*RDGU(I  )*STCO
-     +                           -YMZM(IPIC)*RDGU(I+1)*STSO
-                  YCRA(NCRA)=YCEN+XMZM(IPIC)*RDGU(I  )*STSO
-     +                           +YMZM(IPIC)*RDGU(I+1)*STCO
-                ELSE
-                  CALL PCMPXY (IMAP,XCEN+XMZM(IPIC)*RDGU(I  )*STCO
-     +                                  -YMZM(IPIC)*RDGU(I+1)*STSO,
-     +                              YCEN+XMZM(IPIC)*RDGU(I  )*STSO
-     +                                  +YMZM(IPIC)*RDGU(I+1)*STCO,
-     +                                                   XTMP,YTMP)
-                  XCRA(NCRA)=CUFX(XTMP)
-                  YCRA(NCRA)=CUFY(YTMP)
-                END IF
-              ELSE IF (NCRA.GT.0) THEN
-                CALL GETSET (XVPL,XVPR,YVPB,YVPT,XWDL,XWDR,YWDB,YWDT,
-     +                                                          LNLG)
-                CALL    SET (XVPL,XVPR,YVPB,YVPT,XVPL,XVPR,YVPB,YVPT,
-     +                                                          LNLG)
-                IF (RDGU(I).EQ.-2048.) THEN
-                  IF (NCRA.GT.1) CALL GPL (NCRA,XCRA,YCRA)
-                ELSE
-                  IF (NCRA.GT.2) CALL GFA (NCRA,XCRA,YCRA)
-                END IF
-                CALL    SET (XVPL,XVPR,YVPB,YVPT,XWDL,XWDR,YWDB,YWDT,
-     +                                                          LNLG)
-                NCRA=0
+              IF (NDGU.EQ.0) THEN
+                CALL SETER ('PLCHHQ - INTERNAL LOGIC ERROR (NDGU = 0) -
+     +SEE CONSULTANT',7,2)
+                STOP
               END IF
-  107       CONTINUE
-C
-          ELSE
-C
-            CALL PCMQLQ (XCEN,YCEN,CHSV(ICSV:ICSV),
-     +             SIZE*WPIC(IPIC)/WPIC(1),ANGD,0.)
+            END IF
 C
           END IF
 C
-  108   CONTINUE
+        END IF
 C
-  132 CONTINUE
+C Digitization defined.  Set up the requested drawing color ...
 C
-C If necessary, restore all the current color indices.
+        IF (IDRC.GE.0) THEN
+          IF (IDRC.NE.ICCI) THEN
+            ICCI=IDRC
+            CALL PLOTIF (0.,0.,2)
+            CALL GSPLCI (IDRC)
+            CALL GSFACI (IDRC)
+            CALL GSTXCI (IDRC)
+          END IF
+        ELSE IF (ICCI.GE.0) THEN
+          ICCI=-1
+          CALL PLOTIF (0.,0.,2)
+          CALL GSPLCI (IPLC)
+          CALL GSFACI (IFAC)
+          CALL GSTXCI (ITXC)
+        END IF
+C
+C ... and line width.
+C
+        IF (RDLW.LE.0.) RDLW=RILW
+C
+        IF (RDLW.NE.RCLW) THEN
+          RCLW=RDLW
+          CALL PLOTIF (0.,0.,2)
+          CALL GSLWSC (RDLW)
+        END IF
+C
+C If the box or a high-quality character is being drawn, ...
+C
+        IF (I.LE.3.OR.IQUF.EQ.0) THEN
+C
+C ... if mapping is turned on, pre-process the digitized character to
+C interpolate points along long straight portions of it.  This avoids
+C problems that otherwise occur.
+C
+          IF (IMAP.GT.0) THEN
+C
+            NCRA=0
+C
+            DO 149 K=3,NDGU-1,2
+              IF (K.EQ.3.OR.RDGU(K-2).LE.-2047.
+     +                  .OR.RDGU(K  ).LE.-2047.) THEN
+                IF (NCRA+1.LE.MCRA) THEN
+                  NCRA=NCRA+1
+                  XCRA(NCRA)=RDGU(K  )
+                  YCRA(NCRA)=RDGU(K+1)
+                ELSE
+                  CALL SETER ('PLCHHQ - INTERNAL LOGIC ERROR (XCRA/YCRA
+     +TOO SMALL) - SEE CONSULTANT',8,2)
+                  STOP
+                END IF
+              ELSE
+                NINT=MAX(1,INT(ABS(RDGU(K  )-RDGU(K-2))/2.1),
+     +                     INT(ABS(RDGU(K+1)-RDGU(K-1))/2.1))
+                IF (NCRA+NINT.LE.MCRA) THEN
+                  DO 148 IINT=1,NINT
+                    P=REAL(NINT-IINT)/REAL(NINT)
+                    NCRA=NCRA+1
+                    XCRA(NCRA)=P*RDGU(K-2)+(1.-P)*RDGU(K  )
+                    YCRA(NCRA)=P*RDGU(K-1)+(1.-P)*RDGU(K+1)
+  148             CONTINUE
+                ELSE
+                  CALL SETER ('PLCHHQ - INTERNAL LOGIC ERROR (XCRA/YCRA
+     +TOO SMALL) - SEE CONSULTANT',9,2)
+                  STOP
+                END IF
+              END IF
+  149       CONTINUE
+C
+            NDGU=2+2*NCRA
+C
+            DO 150 K=3,NDGU-1,2
+              RDGU(K  )=XCRA(K/2)
+              RDGU(K+1)=YCRA(K/2)
+  150       CONTINUE
+C
+          END IF
+C
+C Initialize NCRA, which is a count of the number of X/Y coordinate
+C pairs in the arrays XCRA and YCRA, and IORF, which is a count of
+C the number of those that were found to be "out of range" (invisible
+C under the current mapping).
+C
+          NCRA=0
+          IORF=0
+C
+C Examine the X/Y coordinate pairs of the digitization [an X from
+C RDGU(K) and a Y from RDGU(K+1)], one by one.  If the X coordinate
+C is greater than -2047, the X/Y pair is just added to what's in
+C XCRA and YCRA.  If the X coordinate equals -2048, it says that
+C what has been saved up in XCRA and YCRA is a polyline to be drawn.
+C If the X coordinate equals -2047, it says that what has been saved
+C up is a polygon to be filled.
+C
+          DO 107 K=3,NDGU-1,2
+C
+C If the X/Y pair is to be saved in XCRA and YCRA, increment NCRA ...
+C
+            IF (RDGU(K).GT.-2047.) THEN
+C
+              NCRA=NCRA+1
+C
+C ... and then check the mapping flag.  If it's turned off, ...
+C
+              IF (IMAP.LE.0) THEN
+C
+C ... just save the X and Y coordinates, transformed to the fractional
+C coordinate system; ...
+C
+                XCRA(NCRA)=XCEN+XMZM(IPIC)*RDGU(K  )*STCO
+     +                         -YMZM(IPIC)*RDGU(K+1)*STSO
+                YCRA(NCRA)=YCEN+XMZM(IPIC)*RDGU(K  )*STSO
+     +                         +YMZM(IPIC)*RDGU(K+1)*STCO
+C
+C ... otherwise, ...
+C
+              ELSE
+C
+C ... map the X/Y coordinates by calling PCMPXY ...
+C
+                CALL PCMPXY (IMAP,XCEN+XMZM(IPIC)*RDGU(K  )*STCO
+     +                                -YMZM(IPIC)*RDGU(K+1)*STSO,
+     +                            YCEN+XMZM(IPIC)*RDGU(K  )*STSO
+     +                                +YMZM(IPIC)*RDGU(K+1)*STCO,
+     +                                                 XTMP,YTMP)
+C
+C ... and check for an out-of-range point (one that's invisible under
+C the current mapping).  If the out-of-range flag is turned off or
+C if the X coordinate coming back is not equal to it ...
+C
+                IF (OORV.EQ.0..OR.XTMP.NE.OORV) THEN
+C
+C ... transform the point into the fractional system and save it; ...
+C
+                  XCRA(NCRA)=CUFX(XTMP)
+                  YCRA(NCRA)=CUFY(YTMP)
+C
+C ... otherwise, set the X coordinate to the out-of-range flag and
+C save a pointer into the digitization array as the value of the Y
+C coordinate.
+C
+                ELSE
+C
+                  IORF=IORF+1
+                  XCRA(NCRA)=OORV
+                  YCRA(NCRA)=REAL(K)
+C
+                END IF
+C
+              END IF
+C
+C If RDGU(K) is either -2048 or -2047, and there are saved coordinates
+C in XCRA and YCRA, ...
+C
+            ELSE IF (NCRA.GT.0) THEN
+C
+C ... if none of them are out-of-range, the entire collection of points
+C can be treated as a one-piece polyline or polygon to be filled, ...
+C
+              IF (IORF.EQ.0) THEN
+C
+                NPCS=1
+                IPCB(1)=1
+                IPCE(1)=NCRA
+C
+C ... and if all of them are out-of-range, ...
+C
+              ELSE IF (IORF.EQ.NCRA) THEN
+C
+C ... there are no pieces of polyline or polygon to be dealt with; ...
+C
+                NPCS=0
+C
+C ... otherwise, ...
+C
+              ELSE
+C
+C ... we have to do something about the fact that the edge of the
+C character lies partly in areas invisible under the mapping ...
+C
+C First, we have to find out exactly where each line segment with
+C an invisible end-point appears or disappears and add those points
+C to the ends of the visible pieces.  When we are done, NPCS says
+C how many pieces there are; for each value of "i" between 1 and
+C NPCS, IPCB(i) is the index, in the arrays XCRA and YCRA, of the
+C first point of the piece and IPCE(i) is the index of the last point
+C of the piece.  XPCB(i) and YPCB(i) are the X and Y coordinates that
+C mapped into the first point of the piece and XPCE(i) and YPCE(i) are
+C the X and Y coordinates that mapped into the last point of the piece.
+C XPCB(1), YPCB(1), XPCE(NPCS), and YPCE(NPCS) are sometimes given
+C dummy values; this is only done in cases where we know that those
+C values will not be needed for anything.
+C
+C Initialization of the loop through the X and Y coordinates in XCRA
+C and YCRA differs depending on whether the first point is out-of-range
+C or not.  ISTA is a "state" flag that says whether the last point we
+C looked at was out-of-range (ISTA=0) or not (ISTA=1).
+C
+                IF (XCRA(1).EQ.OORV) THEN
+                  NPCS=0
+                  ISTA=0
+                ELSE
+                  NPCS=1
+                  IPCB(1)=1
+                  XPCB(1)=OORV
+                  YPCB(1)=OORV
+                  ISTA=1
+                END IF
+C
+C Start the loop through the X and Y coordinates with element 2.
+C
+                ICRA=2
+C
+C The loop through the X and Y coordinates is implemented using IF's,
+C rather than a DO, because we may very occasionally need to add an
+C element in the middle of the arrays that we are looking at, which
+C changes the value of NCRA.  Control returns here to examine element
+C number ICRA of XCRA and YCRA.
+C
+  136           IF (ICRA.GT.NCRA) GO TO 142
+C
+C If the last point looked at was out-of-range and this one is not,
+C interpolate, using a binary halving process, to find a point at the
+C very edge of visibility, and fill the out-of-range slot with the
+C X and Y coordinates of that point.
+C
+                  IF (ISTA.EQ.0.AND.XCRA(ICRA).NE.OORV) THEN
+C
+                    KTMP=INT(YCRA(ICRA-1))
+C
+                    XINV=XCEN+XMZM(IPIC)*RDGU(KTMP  )*STCO
+     +                       -YMZM(IPIC)*RDGU(KTMP+1)*STSO
+                    YINV=YCEN+XMZM(IPIC)*RDGU(KTMP  )*STSO
+     +                       +YMZM(IPIC)*RDGU(KTMP+1)*STCO
+                    XVIS=XCEN+XMZM(IPIC)*RDGU(KTMP+2)*STCO
+     +                       -YMZM(IPIC)*RDGU(KTMP+3)*STSO
+                    YVIS=YCEN+XMZM(IPIC)*RDGU(KTMP+2)*STSO
+     +                       +YMZM(IPIC)*RDGU(KTMP+3)*STCO
+C
+                    DO 137 IHLF=1,64
+C
+                      XHLF=.5*(XINV+XVIS)
+                      YHLF=.5*(YINV+YVIS)
+C
+                      CALL PCMPXY (IMAP,XHLF,YHLF,XTMP,YTMP)
+C
+                      IF (XTMP.EQ.OORV) THEN
+                        IF (XHLF.EQ.XINV.AND.YHLF.EQ.YINV) GO TO 138
+                        XINV=XHLF
+                        YINV=YHLF
+                      ELSE
+                        IF (XHLF.EQ.XVIS.AND.YHLF.EQ.YVIS) GO TO 138
+                        XVIS=XHLF
+                        YVIS=YHLF
+                      END IF
+C
+  137               CONTINUE
+C
+  138               IF (NPCS.GE.MPCS) THEN
+                      CALL SETER ('PLCHHQ - INTERNAL LOGIC ERROR (NPCS T
+     +OO BIG) - SEE CONSULTANT',10,2)
+                      STOP
+                    END IF
+C
+                    NPCS=NPCS+1
+                    IPCB(NPCS)=ICRA-1
+                    XPCB(NPCS)=XVIS
+                    YPCB(NPCS)=YVIS
+                    CALL PCMPXY (IMAP,XVIS,YVIS,XTMP,YTMP)
+                    XCRA(ICRA-1)=CUFX(XTMP)
+                    YCRA(ICRA-1)=CUFY(YTMP)
+                    ISTA=1
+C
+C Similarly, if the last point looked at was not out-of-range and this
+C one is, interpolate, using a binary halving process, to find a point
+C at the very edge of visibility, and fill the out-of-range slot with
+C the X and Y coordinates of that point.  In this case, though, if
+C there is a next point, and it is not out-of-range, we have to insert
+C a copy of the current point to serve as the starting point of the
+C next piece of the polyline.
+C
+                  ELSE IF (ISTA.NE.0.AND.XCRA(ICRA).EQ.OORV) THEN
+C
+                    IF (ICRA.NE.NCRA) THEN
+C
+                      IF (XCRA(ICRA+1).NE.OORV) THEN
+C
+                        IF (NCRA.GE.MCRA) THEN
+                          CALL SETER ('PLCHHQ - INTERNAL LOGIC ERROR (NC
+     +RA TOO BIG) - SEE CONSULTANT',11,2)
+                          STOP
+                        END IF
+C
+                        DO 139 L=NCRA,ICRA,-1
+                          XCRA(L+1)=XCRA(L)
+                          YCRA(L+1)=YCRA(L)
+  139                   CONTINUE
+C
+                        NCRA=NCRA+1
+C
+                      END IF
+C
+                    END IF
+C
+                    KTMP=INT(YCRA(ICRA))
+C
+                    XINV=XCEN+XMZM(IPIC)*RDGU(KTMP  )*STCO
+     +                       -YMZM(IPIC)*RDGU(KTMP+1)*STSO
+                    YINV=YCEN+XMZM(IPIC)*RDGU(KTMP  )*STSO
+     +                       +YMZM(IPIC)*RDGU(KTMP+1)*STCO
+                    XVIS=XCEN+XMZM(IPIC)*RDGU(KTMP-2)*STCO
+     +                       -YMZM(IPIC)*RDGU(KTMP-1)*STSO
+                    YVIS=YCEN+XMZM(IPIC)*RDGU(KTMP-2)*STSO
+     +                       +YMZM(IPIC)*RDGU(KTMP-1)*STCO
+C
+                    DO 140 IHLF=1,64
+C
+                      XHLF=.5*(XINV+XVIS)
+                      YHLF=.5*(YINV+YVIS)
+C
+                      CALL PCMPXY (IMAP,XHLF,YHLF,XTMP,YTMP)
+C
+                      IF (XTMP.EQ.OORV) THEN
+                        IF (XHLF.EQ.XINV.AND.YHLF.EQ.YINV) GO TO 141
+                        XINV=XHLF
+                        YINV=YHLF
+                      ELSE
+                        IF (XHLF.EQ.XVIS.AND.YHLF.EQ.YVIS) GO TO 141
+                        XVIS=XHLF
+                        YVIS=YHLF
+                      END IF
+C
+  140               CONTINUE
+  141               IPCE(NPCS)=ICRA
+                    XPCE(NPCS)=XVIS
+                    YPCE(NPCS)=YVIS
+                    CALL PCMPXY (IMAP,XVIS,YVIS,XTMP,YTMP)
+                    XCRA(ICRA)=CUFX(XTMP)
+                    YCRA(ICRA)=CUFY(YTMP)
+                    ISTA=0
+C
+                  END IF
+C
+C Increment to the next elements of XCRA and YCRA ...
+C
+                  ICRA=ICRA+1
+C
+C ... and return to the beginning of the loop.
+C
+                  GO TO 136
+C
+C Finish storing information about the last piece, if any.
+C
+  142           IF (ISTA.NE.0) THEN
+                  IPCE(NPCS)=NCRA
+                  XPCE(NPCS)=OORV
+                  YPCE(NPCS)=OORV
+                END IF
+C
+C If the polyline defined is a polygon to be filled ...
+C
+                IF (RDGU(K).EQ.-2047.) THEN
+C
+C ... interpolate points from the end of each visible piece to the
+C beginning of the next.  A heuristic algorithm is used to ensure
+C that these points will lie along the line separating areas which
+C are visible under the current mapping from those which are not.
+C
+C Loop through the visible pieces of the polygon.
+C
+                  DO 147 L=1,NPCS
+C
+C Compute MBEG and MEND, which point to the beginning and end of a
+C portion of the arrays XCRA and YCRA which mapped to an out-of-range
+C (invisible) area.
+C
+                    LPL1=MOD(L,NPCS)+1
+C
+                    MBEG=IPCE(L)+1
+                    IF (MBEG.GT.NCRA) MBEG=MBEG-NCRA
+C
+                    MEND=IPCB(LPL1)-1
+                    IF (MEND.LT.MBEG-1) MEND=MEND+NCRA
+C
+C If there are one or more invisible points, replace them.
+C
+                    IF (MBEG.LE.MEND) THEN
+C
+C (XCP1,YCP1) and (XCP2,YCP2) are endpoints X1 and X2 of a line segment
+C on the visible/invisible boundary between which we wish to interpolate
+C other points.
+C
+                      XCP1=XPCE(L)
+                      YCP1=YPCE(L)
+                      XCP2=XPCB(LPL1)
+                      YCP2=YPCB(LPL1)
+C
+C If either X1 or X2 is an out-of-range value, something has happened
+C that should not have been possible, so take an error exit.
+C
+                      IF (XCP1.EQ.OORV.OR.XCP2.EQ.OORV) THEN
+                        CALL SETER ('PLCHHQ - INTERNAL LOGIC ERROR (XCP1
+     + OR XCP2 = OORV) - SEE CONSULTANT',12,2)
+                        STOP
+                      END IF
+C
+C XDIF and YDIF are components of the vector from X1 to X2.
+C
+                      XDIF=XCP2-XCP1
+                      YDIF=YCP2-YCP1
+C
+C Loop through the elements of XCRA and YCRA to be replaced.
+C
+                      DO 146 M=MBEG,MEND
+C
+C When the points being replaced include a section at the end of the
+C arrays, followed by a section at the beginning, M may range past
+C NCRA; MSTR is the appropriate index between 1 and NCRA.
+C
+                        MSTR=MOD(M-1,NCRA)+1
+C
+C (XTM0,YTM0) is a point X0 along the straight line from X1 to X2.
+C
+                        P=REAL(M-MBEG+1)/REAL(MEND-MBEG+2)
+C
+                        XTM0=(1.-P)*XCP1+P*XCP2
+                        YTM0=(1.-P)*YCP1+P*YCP2
+C
+C XSTP and YSTP are the components of a "step vector" that is at right
+C angles to the line from X1 to X2 and 1/32 of its length.
+C
+                        XSTP=+YDIF/32.
+                        YSTP=-XDIF/32.
+C
+C Loop on step size, looking at the ends of the two step vectors
+C emanating from X0, one pointing in one direction and the other
+C pointing in the opposite direction.  What we are hoping for is
+C that one such endpoint will be visible and the other invisible.
+C
+                        DO 145 ISTP=1,6
+C
+                          XTM1=XTM0+XSTP
+                          YTM1=YTM0+YSTP
+                          XTM2=XTM0-XSTP
+                          YTM2=YTM0-YSTP
+C
+                          CALL PCMPXY (IMAP,XTM1,YTM1,XMP1,YMP1)
+                          CALL PCMPXY (IMAP,XTM2,YTM2,XMP2,YMP2)
+C
+                          IF      (XMP1.EQ.OORV.AND.XMP2.NE.OORV) THEN
+                            XINV=XTM1
+                            YINV=YTM1
+                            XVIS=XTM2
+                            YVIS=YTM2
+                          ELSE IF (XMP1.NE.OORV.AND.XMP2.EQ.OORV) THEN
+                            XVIS=XTM1
+                            YVIS=YTM1
+                            XINV=XTM2
+                            YINV=YTM2
+                          ELSE
+                            XSTP=XSTP+XSTP
+                            YSTP=YSTP+YSTP
+                            GO TO 145
+                          END IF
+C
+C At this point, we have found two such points.  Use a binary halving
+C process to find the point where the line between them intersects the
+C visible/invisible boundary and use that point to generate the values
+C to be put in the arrays XCRA and YCRA.
+C
+                          DO 143 IHLF=1,64
+                            XHLF=.5*(XINV+XVIS)
+                            YHLF=.5*(YINV+YVIS)
+                            CALL PCMPXY (IMAP,XHLF,YHLF,XTMP,YTMP)
+                            IF (XTMP.EQ.OORV) THEN
+                              IF (XHLF.EQ.XINV.AND.
+     +                            YHLF.EQ.YINV) GO TO 144
+                              XINV=XHLF
+                              YINV=YHLF
+                            ELSE
+                              IF (XHLF.EQ.XVIS.AND.
+     +                            YHLF.EQ.YVIS) GO TO 144
+                              XVIS=XHLF
+                              YVIS=YHLF
+                            END IF
+  143                     CONTINUE
+C
+C Replace the original point with one on the visible/invisible edge.
+C
+  144                     CALL PCMPXY (IMAP,XVIS,YVIS,XTMP,YTMP)
+C
+                          XCRA(MSTR)=CUFX(XTMP)
+                          YCRA(MSTR)=CUFY(YTMP)
+C
+                          GO TO 146
+C
+C End of loop on step size.
+C
+  145                   CONTINUE
+C
+C If control drops through the end of the loop, supply a point that
+C we at least know is visible.
+C
+                        XCRA(MSTR)=XCRA(MBEG)
+                        YCRA(MSTR)=YCRA(MBEG)
+C
+C End of loop replacing elements of XCRA and YCRA.
+C
+  146                 CONTINUE
+C
+C End of invisible-point replacement.
+C
+                    END IF
+C
+C End of loop through visible pieces of the polygon.
+C
+  147             CONTINUE
+C
+                END IF
+C
+C End of partly-invisible case.
+C
+              END IF
+C
+C Now, if there are visible pieces of the polyline/polygon, ...
+C
+              IF (NPCS.NE.0) THEN
+C
+C ... save the current SET call, ...
+C
+                CALL GETSET (XVPL,XVPR,YVPB,YVPT,
+     +                       XWDL,XWDR,YWDB,YWDT,LNLG)
+C
+C ... redo the SET call so we can use fractional coordinates, ...
+C
+
+                CALL    SET (XVPL,XVPR,YVPB,YVPT,
+     +                       XVPL,XVPR,YVPB,YVPT,LNLG)
+C
+C ... change color (during pass 2) if so directed by information from
+C the fontcap, ...
+C
+                ICCS=-2
+C
+                IF (IDRW.EQ.2.AND.RDGU(K+1).GT.0.) THEN
+C
+                  ITMP=INT(RDGU(K+1))
+C
+                  IF (ITMP.GE.1.AND.ITMP.LE.16) THEN
+C
+                    IDRC=LSCI(ITMP)
+C
+                    IF (IDRC.GE.0) THEN
+C
+                      IF (IDRC.NE.ICCI) THEN
+                        ICCS=ICCI
+                        ICCI=IDRC
+                        CALL PLOTIF (0.,0.,2)
+                        CALL GSPLCI (ICCI)
+                        CALL GSFACI (ICCI)
+                        CALL GSTXCI (ICCI)
+                      END IF
+C
+                    END IF
+C
+                  END IF
+C
+                END IF
+C
+C ... draw the pieces of the polyline, ...
+C
+                IF (RDGU(K).EQ.-2048.) THEN
+C
+                  DO 135 L=1,NPCS
+                    IF (IPCE(L)-IPCB(L)+1.GT.1)
+     +              CALL GPL (IPCE(L)-IPCB(L)+1,XCRA(IPCB(L)),
+     +                                          YCRA(IPCB(L)))
+  135             CONTINUE
+C
+C ... or fill the polygon, ...
+C
+                ELSE
+C
+                  IF (NCRA.GT.2) THEN
+                    IF (ICIS.EQ.0) THEN
+                      CALL GSFAIS (1)
+                      ICIS=1
+                    END IF
+                    CALL GFA (NCRA,XCRA,YCRA)
+                  END IF
+C
+                END IF
+C
+C ... restore the original SET call, ...
+C
+                CALL    SET (XVPL,XVPR,YVPB,YVPT,
+     +                       XWDL,XWDR,YWDB,YWDT,LNLG)
+C
+C ... and, if the color was just overridden above, set it back to what
+C it was.
+C
+                IF (ICCS.GE.-1) THEN
+C
+                  ICCI=ICCS
+C
+                  CALL PLOTIF (0.,0.,2)
+C
+                  IF (ICCI.GE.0) THEN
+                    CALL GSPLCI (ICCI)
+                    CALL GSFACI (ICCI)
+                    CALL GSTXCI (ICCI)
+                  ELSE
+                    CALL GSPLCI (IPLC)
+                    CALL GSFACI (IFAC)
+                    CALL GSTXCI (ITXC)
+                  END IF
+C
+                END IF
+C
+              END IF
+C
+C Then, zero NCRA and IORF to say that we are done with that part of
+C the digitization ...
+C
+              NCRA=0
+              IORF=0
+C
+C End of processing of visible pieces.
+C
+            END IF
+C
+C End of loop loop through the digitization array.
+C
+  107     CONTINUE
+C
+C Otherwise, the quality flag indicates that PLCHMQ or PLCHLQ should be
+C called to draw the character, so arrange for that.
+C
+        ELSE
+C
+          IF (IQUF.EQ.1.AND.RHTW.GE.0.) RHTW=1.75*YMZM(IPIC)/XMZM(IPIC)
+C
+          IF (IMAP.LE.0) THEN
+            XTMP=CFUX(XCEN)
+            YTMP=CFUY(YCEN)
+          ELSE
+            XTMP=XCEN
+            YTMP=YCEN
+          END IF
+C
+          CALL PCMQLQ (XTMP,YTMP,CHSV(ICSV:ICSV),
+     +                   SIZM*WPIC(IPIC),ANGD,0.)
+C
+        END IF
+C
+  108 CONTINUE
+C
+C Restore, as necessary, all the current color indices, the current line
+C width scale factor, and the fill area interior style.
 C
       IF (ICCI.GE.0) THEN
-        CALL SFLUSH
+        CALL PLOTIF (0.,0.,2)
         CALL GSPLCI (IPLC)
         CALL GSFACI (IFAC)
         CALL GSTXCI (ITXC)
+      END IF
+C
+      IF (RCLW.NE.RILW) THEN
+        CALL PLOTIF (0.,0.,2)
+        CALL GSLWSC (RILW)
+      END IF
+C
+      IF (ICIS.NE.IIIS) CALL GSFAIS (IIIS)
+C
+C If not all the characters have been drawn yet, go back for more.
+C
+      IF (ILCG-ILCS.GT.NCSO) THEN
+        ILCS=ILCS+NCSO
+        GO TO 100
       END IF
 C
 C
@@ -1007,7 +1654,7 @@ C
 C Restore the PLCHMQ parameter specifying the ratio of character height
 C to width.
 C
-  133 IF (IQUF.NE.0) RHTW=RHWO
+  134 IF (IQUF.NE.0) RHTW=RHWO
 C
 C Done.
 C
@@ -1174,10 +1821,10 @@ C
 C
         GO TO 103
 C
-C E is for End of subscripting or superscripting, which is illegal if
+C E is for End of subscripting or superscripting, which is ignored if
 C we're not in that mode.
 C
-  121 IF (NSSL.EQ.0) GO TO 110
+  121 IF (NSSL.EQ.0) GO TO 103
 C
 C Return everything to what it was after drawing the base character.
 C
@@ -1192,10 +1839,10 @@ C
 C
       GO TO 103
 C
-C N is for Normal, which is illegal if we're not subscripting or
+C N is for Normal, which is ignored if we're not subscripting or
 C superscripting.
 C
-  122 IF (NSSL.EQ.0) GO TO 110
+  122 IF (NSSL.EQ.0) GO TO 103
 C
 C Return everything to what it was after drawing the base character
 C except the position of the right edge, in which we just reverse the
