@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.32 2000-02-03 17:57:34 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.33 2000-02-07 23:26:19 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -1894,8 +1894,8 @@ min_lon, max_lon, res2, tickmark_res
 
 ; Point tick marks outward and make labels the same size.
 
-    gsnp_point_tickmarks_outward(tickmark_object,-1.,-1.,-1.,-1.,-1.,-1.)
-    gsnp_uniform_tickmark_labels(tickmark_object,0.)
+    gsnp_point_tickmarks_outward(tickmark_object,tmres,-1.,-1.,-1.,-1.,-1.,-1.)
+    gsnp_uniform_tickmark_labels(tickmark_object,tmres,0.)
     ratio2 = lon_range/lat_range
     ratio = min((/ratio1,ratio2/))
 
@@ -3901,8 +3901,10 @@ begin
 ; Draw X reference line.
 
     if(xref_line_on)
-    gsnp_point_tickmarks_outward(xy_object,xlength,ylength,xmlength,ymlength,\
-                                 major_length,major_length)
+      getvalues xy_object
+    gsnp_point_tickmarks_outward(xy_object,tmres,xlength,ylength, \
+                                 xmlength,ymlength,\
+                                 major_length,minor_length)
       end getvalues
 
 
@@ -4087,7 +4089,8 @@ begin
     right_string  = new(1,logical)
 
     check_for_subtitles(res2,left_string,center_string,right_string)
-      gsnp_point_tickmarks_outward(contour_object,xlength,ylength,\
+
+      gsnp_point_tickmarks_outward(contour_object,tmres,xlength,ylength,\
                                                   xmlength,ymlength,\
                                                   major_length,minor_length)
 
@@ -4715,7 +4718,8 @@ begin
 
     left_string   = new(1,logical)
     center_string = new(1,logical)
-    gsnp_point_tickmarks_outward(vector_object,xlength,ylength,\
+    right_string  = new(1,logical)
+    gsnp_point_tickmarks_outward(vector_object,tmres,xlength,ylength,\
                                                xmlength,ymlength,\
                                                major_length,minor_length)
     if(left_string.or.center_string.or.right_string)
@@ -4873,7 +4877,8 @@ begin
       vnew    = v
     end if
 ;
-    gsnp_point_tickmarks_outward(stream_object,xlength,ylength,\
+; Check if frame and/or draw are not supposed to be called.
+;  
     calldraw  = get_res_value(res2,"gsnDraw", True)
     callframe = get_res_value(res2,"gsnFrame",True)
     maxbb     = get_bb_res(res2)

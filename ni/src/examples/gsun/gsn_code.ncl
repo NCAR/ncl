@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.28 2000-01-07 01:05:35 haley Exp $
+;      $Id: gsn_code.ncl,v 1.29 2000-02-07 23:26:18 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -51,23 +51,25 @@ undef("gsnp_shape_plot")
 undef("gsnp_scale_plot")
 undef("check_for_tickmarks_off")
 undef("draw_and_frame")
+undef("create_labelbar")
 undef("gsn_open_ps")
 undef("gsn_open_x11")
 undef("gsn_open_ncgm")
 undef("gsn_open_wks")
 undef("gsn_define_colormap")
 undef("gsn_retrieve_colormap")
-undef("gsn_panel")
-undef("gsn_contour")
-undef("gsn_contour_map")
-undef("gsn_labelbar_ndc")
-undef("gsn_map")
 undef("gsn_polygon")
 undef("gsn_polygon_ndc")
 undef("gsn_polyline")
 undef("gsn_polyline_ndc")
 undef("gsn_polymarker")
 undef("gsn_polymarker_ndc")
+undef("gsn_panel")
+undef("gsn_panel_labelbar")
+undef("gsn_contour")
+undef("gsn_contour_map")
+undef("gsn_labelbar_ndc")
+undef("gsn_map")
 undef("gsn_streamline")
 undef("gsn_streamline_map")
 undef("gsn_text")
@@ -352,6 +354,7 @@ end
 ;***********************************************************************;
 ; Procedure : gsnp_turn_off_tickmarks                                   ;
 ;                res:logical                                            ;
+;                                                                       ;
 ;              x_major_length:float                                     ;
 ;              y_major_length:float                                     ;
 ;              x_minor_length:float                                     ;
@@ -365,10 +368,11 @@ begin
   set_attr(res,"tmXTOn",      False)
   set_attr(res,"tmYLBorderOn",False)
 
-procedure gsnp_point_tickmarks_outward(plot:graphic, \
+  set_attr(res,"tmYLOn",      False)
                               x_major_length:float, y_major_length:float, \
                               x_minor_length:float, y_minor_length:float, \
 end
+
 ;***********************************************************************;
 ; Procedure : gsnp_point_tickmarks_outward                              ;
 ;              plot:object                                              ;
@@ -407,24 +411,28 @@ begin
     end if
     if(y_major_length.gt.0.)
       y_major_length = major_length
-  setvalues plot
-    "tmXBMajorLengthF"        : x_major_length
-    "tmXBMajorOutwardLengthF" : x_major_length
-    "tmXBMinorLengthF"        : x_minor_length
-    "tmXBMinorOutwardLengthF" : x_minor_length
-    "tmXTMajorLengthF"        : x_major_length
-    "tmXTMajorOutwardLengthF" : x_major_length
-    "tmXTMinorLengthF"        : x_minor_length
-    "tmXTMinorOutwardLengthF" : x_minor_length
-    "tmYLMajorLengthF"        : y_major_length
-    "tmYLMajorOutwardLengthF" : y_major_length
-    "tmYLMinorLengthF"        : y_minor_length
-    "tmYLMinorOutwardLengthF" : y_minor_length
-    "tmYRMajorLengthF"        : y_major_length
-    "tmYRMajorOutwardLengthF" : y_major_length
-    "tmYRMinorLengthF"        : y_minor_length
-    "tmYRMinorOutwardLengthF" : y_minor_length
-  end setvalues
+    end if
+  end if
+
+  if(minor_length.lt.0.)
+    getvalues plot
+      "tmXBMinorLengthF"        : x_minor_length
+      "tmYLMinorLengthF"        : y_minor_length
+    end getvalues
+    if(x_minor_length.gt.0..and.y_minor_length.gt.0.)
+      x_minor_length = min((/x_minor_length,y_minor_length/))
+      y_minor_length = x_minor_length
+    end if
+  else
+    if(x_minor_length.gt.0.)
+      x_minor_length = minor_length
+    end if
+    if(y_minor_length.gt.0.)
+      y_minor_length = minor_length
+    end if
+  if(tmres.and..not.any(ismissing(getvaratts(tmres))))
+    attsetvalues(plot,tmres)
+  end if
 
   tmres = res
   tmres = True
@@ -432,14 +440,16 @@ begin
   set_attr(tmres,"tmXBMajorOutwardLengthF" , x_major_length)
   set_attr(tmres,"tmXBMinorLengthF"        , x_minor_length)
   set_attr(tmres,"tmXBMinorOutwardLengthF" , x_minor_length)
+  set_attr(tmres,"tmXTMajorLengthF"        , x_major_length)
 ;              font_height:float                                        ;
   set_attr(tmres,"tmXTMinorLengthF"        , x_minor_length)
   set_attr(tmres,"tmXTMinorOutwardLengthF" , x_minor_length)
   set_attr(tmres,"tmYLMajorLengthF"        , y_major_length)
   set_attr(tmres,"tmYLMajorOutwardLengthF" , y_major_length)
 
-procedure gsnp_uniform_tickmark_labels(plot:graphic,font_height:float)
-local xbfont, ylfont
+  set_attr(tmres,"tmYLMinorLengthF"        , y_minor_length)
+                                       font_height:float)
+  set_attr(tmres,"tmYRMajorLengthF"        , y_major_length)
   set_attr(tmres,"tmYRMajorOutwardLengthF" , y_major_length)
   set_attr(tmres,"tmYRMinorLengthF"        , y_minor_length)
   set_attr(tmres,"tmYRMinorOutwardLengthF" , y_minor_length)
@@ -454,12 +464,17 @@ end
 ;              plot:object                                              ;
 ;               res:logical                                             ;
 ;              font_height                                              ;
-  setvalues plot
-    "tmXBLabelFontHeightF" : font_height
-    "tmYLLabelFontHeightF" : font_height
-    "tmXTLabelFontHeightF" : font_height
-    "tmYRLabelFontHeightF" : font_height
-  end setvalues
+;                                                                       ;
+; This procedure makes the tickmark labels the same font height on both ;
+; axes. If font_height <= 0., then a uniform font height is calculated. ;
+;***********************************************************************;
+procedure gsnp_uniform_tickmark_labels(plot:graphic,res:logical, \
+                                       font_height)
+local xbfont, ylfont, tmres
+begin
+  if(tmres.and..not.any(ismissing(getvaratts(tmres))))
+    attsetvalues(plot,tmres)
+  end if
 ; Get tickmark labels sizes
 
   if(font_height.le.0)
@@ -665,6 +680,63 @@ end
 ;***********************************************************************;
 ; Function : gsn_open_x11                                               ;
 ;                                                                       ;
+; This function opens an X11 output window and returns the workstation  ;
+; id.                                                                   ;
+;***********************************************************************;
+function gsn_open_x11(name[1]:string)
+local window
+begin
+    if(isatt(name,"wkColorMap"))
+      window = create name + "_x11" xWorkstationClass defaultapp
+        "wkPause" : True
+        "wkColorMap" : name@wkColorMap
+      end create
+    else
+ 
+      window = create name + "_x11" xWorkstationClass defaultapp
+        "wkPause" : True
+      end create
+    end if
+
+  if(lbres.and.isatt(lbres,"lbPerimOn"))
+    perim_on = lbres@lbPerimOn
+    delete(lbres@lbPerimOn)
+  else
+    perim_on = False
+  end if
+
+  if(lbres.and.isatt(lbres,"lbMonoFillPattern"))
+    mono_fill_pat = lbres@lbMonoFillPattern
+    delete(lbres@lbMonoFillPattern)
+  else
+    mono_fill_pat = True
+  end if
+
+  if(lbres.and.isatt(lbres,"lbLabelAlignment"))
+    label_align = lbres@lbLabelAlignment
+    delete(lbres@lbLabelAlignment)
+  else
+    label_align = "InteriorEdges"
+  end if
+; This function creates a labelbar given a workstation, the number of   ;
+; boxes, the colors and labels to use, and an optional list of          ;
+lbres:logical)
+local perim_on, mono_fill_pat, label_align, labelbar_object
+begin
+    "lbAutoManage"      : False
+; Set some defaults
+;
+  mono_fill_pat = get_res_value(lbres,"lbMonoFillPattern",True);
+  font_height   = get_res_value(lbres,"lbLabelFontHeightF",0.1)
+  orientation   = get_res_value(lbres,"lbOrientation","horizontal")
+  if(lbres.and..not.any(ismissing(getvaratts(lbres))))
+    attsetvalues(labelbar_object,lbres)
+  end if
+  vpyf          = get_res_value(lbres,"vpYF",0.1)
+  vpwidthf      = get_res_value(lbres,"vpWidthF",0.8)
+  vpheightf     = get_res_value(lbres,"vpHeightF",0.3)
+
+  labelbar_object = create "labelbar" labelBarClass wks
     "vpXF"              : vpxf
     "vpYF"              : vpyf
     "vpWidthF"          : vpwidthf
@@ -825,28 +897,366 @@ begin
         "appUsrDir"        : res_dir
     end create
 
-; Procedure : gsn_panel                                                 ;
-;                 wks: workstation object                               ;
-;               plot : array of plots to put on one page.               ;
-;               dims : a 2-D array indicating number of rows and columns;
-;             resources: optional resources                             ;
-;                                                                       ;
-; This procedure takes the array of plots and draws them all on one     ;
-; workstation in the configuration specified by dims.                   ;
-;                                                                       ;
-; For example, if you have six plots and dims is (/2,3/), then the six  ;
-; plots will be drawn in 2 rows and 3 columns.                          ;
+
+    if(type.eq."x11".or.type.eq."X11") then
+        wks = gsn_open_x11(x_file)
+    else
+        if(type.eq."ps".or.type.eq."eps".or.type.eq."epsi".or.\
+           type.eq."PS".or.type.eq."EPS".or.type.eq."EPSI") then
+            wks = gsn_open_ps(type,res_dir+ps_file)
         else
+            if(type.eq."ncgm".or.type.eq."NCGM") then
+                wks = gsn_open_ncgm(res_dir+ncgm_file)
+            else
+                 print("Error: gsn_open_wks: "+ type + " is an illegal workstation type.")
+                 exit
+            end if
+        end if
     end if
+
+    wks@name = res_file
+    wks@app = appid 
+local i, gsid, attnames, plot_object, res, gs_res_index, res2
+
+;***********************************************************************;
+; Procedure : gsn_polygon                                               ;
+;                   wks: workstation object                             ;
+;                plotid: plot object                                    ;
+;                     x: 1-dimensional array of x points                ;
+;                     y: 1-dimensional array of y points                ;
+;               resources: optional resources                           ;
+;                                                                       ;
+    if(gsres.and..not.any(ismissing(getvaratts(gsres))))
+      attsetvalues(gsid,gsres)
+    end if
+; variable returned from a previous call to "gsn_open_wks") in the same ;
+; data space as the data in "plotid" (returned from a previous call to  ;
+; one of the gsn_* plotting functions). "x" and "y" are the x and y     ;
+    if(.not.any(ismissing(x)).and..not.any(ismissing(y)))
+      NhlDataPolygon(plotid,gsid,x,y)
+                      y[*]:numeric,resources:logical)
+      x2 = x(ind(.not.ismissing(x).and..not.ismissing(y)))
+      y2 = y(ind(.not.ismissing(x).and..not.ismissing(y)))
+begin
+
+; Retrieve graphic style object.
+
+
+    getvalues wks 
+;                                                                       ;
+; This function adds a polygon to the plot "plotid", in the same data   ;
+; space as the data in the plot ("plotid" is returned from a previous   ;
+; call to one of the gsn_* plotting functions). "x" and "y" are the x   ;
+; and y locations of each point in the polygon, and should be in the    ;
+; same data space as the data from "plotid". "resources" is an optional ;
+; list of resources.  This function returns the primitive object        ;
+; created.                                                              ;
+;                                                                       ;
+; This function is different from gsn_polygon because it actually       ;
+; attaches the polygon to the plot. This means that if you resize or    ;
+
+; move the plot, the polygon will stay with the plot.                   ;
+;***********************************************************************;
+local i, gsid, attnames, plot_object, res, gs_res_index
+                         y[*]:numeric,resources:logical)
+begin
+  return(gsn_add_primitive(wks,plotid,x,y,"polygon",resources))
+end
+
+
+;***********************************************************************;
+; Procedure : gsn_polygon_ndc                                           ;
+;                   wks: workstation object                             ;
+;                     x: 1-dimensional array of x points                ;
+;                     y: 1-dimensional array of y points                ;
+;               resources: optional resources                           ;
+;                                                                       ;
+; This procedure draws a filled polygon on the workstation "wks" (the   ;
+; variable returned from a previous call to "gsn_open_wks") in NDC      ;
+; space. "x" and "y" are the x and y locations of each point in the     ;
+; polygon, and "resources" is an optional list of resources.            ;
+;***********************************************************************;
+procedure gsn_polygon_ndc(wks:graphic,x[*]:numeric,y[*]:numeric,\
+                          resources:logical)
+    if(gsres.and..not.any(ismissing(getvaratts(gsres))))
+      attsetvalues(gsid,gsres)
+    end if
+begin
+
+; Retrieve graphic style object.
+    if(.not.any(ismissing(x)).and..not.any(ismissing(y)))
+      NhlNDCPolygon(canvas,gsid,x,y)
+;
+      x2 = x(ind(.not.ismissing(x).and..not.ismissing(y)))
+      y2 = y(ind(.not.ismissing(x).and..not.ismissing(y)))
+;
+    canvas = create "canvas" logLinPlotClass wks
+      "vpXF"      : 0.0
+      "vpYF"      : 1.0
+      "vpWidthF"  : 1.0
+      "vpHeightF" : 1.0
+    end create
+
+    gsres = get_res_eq(resources,"gs")
+    attsetvalues_check(gsid,gsres)
+
+; Draw a polygon.
+
+    xf = tofloat(x)
+    yf = tofloat(y)
+
+    if(.not.any(ismissing(xf)).and..not.any(ismissing(yf)))
+      NhlNDCPolygon(canvas,gsid,xf,yf)
+    else
+
+      x2 = xf(ind(.not.ismissing(xf).and..not.ismissing(yf)))
+      y2 = yf(ind(.not.ismissing(xf).and..not.ismissing(yf)))
+local i, gsid, attnames, plot_object, res, gs_res_index
+    end if
+end
+
+;***********************************************************************;
+; Procedure : gsn_polyline                                              ;
+;                   wks: workstation object                             ;
+;                plotid: plot object                                    ;
+;                     x: 1-dimensional array of x points                ;
+;                     y: 1-dimensional array of y points                ;
+    if(gsres.and..not.any(ismissing(getvaratts(gsres))))
+      attsetvalues(gsid,gsres)
+local i, gsid, plot_object, res, gs_res_index
+begin
+; Draw a polyline.
+
+    if(.not.any(ismissing(x)).and..not.any(ismissing(y)))
+      NhlDataPolyline(plotid,gsid,x,y)
+; If we end up with a line with just one point, then we draw it with
+;
+; Since the data contains missing values, leave gaps where the missing
+; values are located.
+;
+      x2 = new(dimsizes(x),float)
+      y2 = new(dimsizes(x),float)
+      j = 0
+      do i = 0,dimsizes(x)-1
+        if(ismissing(x(i)).or.ismissing(y(i)))
+          if(j.eq.1)    ; only one value, so draw a marker
+            NhlDataPolymarker(plotid,gsid,x2(0),y2(0))
+          end if
+          if(j.gt.1)    ; multiple values, so draw a line
+            NhlDataPolyline(plotid,gsid,x2(0:j-1),y2(0:j-1))
+          end if
+          j = 0
+        else
+          x2(j) = x(i)   ; Neither point is missing, so store in
+          y2(j) = y(i)   ; separate arrays to draw later.
+          j = j + 1
+; Since NhlDataPolyline doesn't accept missing values, this routine steps
+; a single point is surrounded by missing values, then a marker is drawn.
+      if(j.eq.1)         
+        NhlDataPolymarker(plotid,gsid,x2(0),y2(0))
+        j = 0
+      end if
+      if(j.gt.1)         
+        NhlDataPolyline(plotid,gsid,x2(0:j-1),y2(0:j-1))
+        j = 0
+      end if
+;
+    if(.not.any(ismissing(xf)).and..not.any(ismissing(yf)))
+      NhlDataPolyline(plotid,gsid,xf,yf)
+    else
+;               resources: optional resources                           ;
+;                                                                       ;
+; This function adds a polyline to the plot "plotid", in the same data  ;
+; space as the data in the plot ("plotid" is returned from a previous   ;
+; call to one of the gsn_* plotting functions). "x" and "y" are the x   ;
+; and y locations of each point in the line, and should be in the same  ;
+; data space as the data from "plotid". "resources" is an optional list ;
+; of resources. This function returns the primitive object created.     ;
+;                                                                       ;
+; This function is different from gsn_polyline because it actually      ;
+; attaches the line to the plot. This means that if you resize or move  ;
+
+; the plot, the line will stay with the plot.                           ;
+;***********************************************************************;
+local i, gsid, attnames, plot_object, res, gs_res_index
+                           y[*]:numeric,resources:logical)
+begin
+  return(gsn_add_primitive(wks,plotid,x,y,"polyline",resources))
+end
+
+
+;***********************************************************************;
+; Procedure : gsn_polyline_ndc                                          ;
+;                   wks: workstation object                             ;
+;                     x: 1-dimensional array of x ndc points            ;
+;                     y: 1-dimensional array of y ndc points            ;
+;               resources: optional resources                           ;
+;                                                                       ;
+; This procedure draws a polyline on the workstation "wks" (the variable;
+; returned from a previous call to "gsn_open_wks") in NDC space.        ;
+; "x" and "y" are the x and y locations of each point in the line.      ;
+; "resources" is an optional list of resources.                         ;
+;***********************************************************************;
+procedure gsn_polyline_ndc(wks:graphic,x[*]:numeric,y[*]:numeric,\
+    if(gsres.and..not.any(ismissing(getvaratts(gsres))))
+      attsetvalues(gsid,gsres)
+    end if
+
+; Draw a polyline.
+
+    if(.not.any(ismissing(x)).and..not.any(ismissing(y)))
+      NhlNDCPolyline(canvas,gsid,x,y)
+    canvas = create "canvas" logLinPlotClass wks
+      "vpXF"      : 0.0
+; Since the data contains missing values, leave gaps where the missing
+; values are located.
+      "vpHeightF" : 1.0
+      x2 = new(dimsizes(x),float)
+      y2 = new(dimsizes(x),float)
+      j = 0
+      do i = 0,dimsizes(x)-1
+        if(ismissing(x(i)).or.ismissing(y(i)))
+          if(j.eq.1)    ; only one value, so draw a marker
+            NhlNDCPolymarker(canvas,gsid,x2(0),y2(0))
+          end if
+          if(j.gt.1)    ; multiple values, so draw a line
+            NhlNDCPolyline(canvas,gsid,x2(0:j-1),y2(0:j-1))
+          end if
+          j = 0
+        else
+          x2(j) = x(i)   ; Neither point is missing, so store in
+          y2(j) = y(i)   ; separate arrays to draw later.
+          j = j + 1
+;
+; through all the points, and only draws the ones that aren't missing. If
+      if(j.eq.1)         
+        NhlNDCPolymarker(canvas,gsid,x2(0),y2(0))
+        j = 0
+      end if
+      if(j.gt.1)         
+        NhlNDCPolyline(canvas,gsid,x2(0:j-1),y2(0:j-1))
+        j = 0
+      end if
+; a single point is surrounded by missing values, then a marker is drawn.
+;
+    if(.not.any(ismissing(xf)).and..not.any(ismissing(yf)))
+      NhlNDCPolyline(canvas,gsid,xf,yf)
+    else
+;
+; Since the data contains missing values, loop through each point and only
+; draw the non-missing points.
+;
+      indices = get_non_missing_pairs(xf,yf)
+      i = 0
+      do while(.not.ismissing(indices(i,0)).and.i.lt.dimsizes(xf))
+        ibeg = indices(i,0)
+        iend = indices(i,1)
+        if(iend.gt.ibeg)
+          NhlNDCPolyline(canvas,gsid,xf(ibeg:iend),yf(ibeg:iend))
+        else    ; iend = ibeg --> only one point
+          NhlNDCPolymarker(canvas,gsid,xf(ibeg),yf(ibeg))
+
+        end if
+        i = i + 1
+local i, gsid, attnames, plot_object, res, gs_res_index
+    end if
+end
+
+;***********************************************************************;
+; Procedure : gsn_polymarker                                            ;
+;                   wks: workstation object                             ;
+;                plotid: plot object                                    ;
+;                     x: 1-dimensional array of x points                ;
+;                     y: 1-dimensional array of y points                ;
+    if(gsres.and..not.any(ismissing(getvaratts(gsres))))
+      attsetvalues(gsid,gsres)
+    end if
+
+; Draw some polymarkers.
+
+    if(.not.any(ismissing(x)).and..not.any(ismissing(y)))
+      NhlDataPolymarker(plotid,gsid,x,y)
+begin
+      x2 = x(ind(.not.ismissing(x).and..not.ismissing(y)))
+      y2 = y(ind(.not.ismissing(x).and..not.ismissing(y)))
+
+    getvalues wks 
+        "wkDefGraphicStyleId":  gsid
+    end getvalues
+
+;               resources: optional resources                           ;
+;                                                                       ;
+; This function adds polymarkers to the plot "plotid", in the same      ;
+;                     y: 1-dimensional array of y points                ;
+;               resources: optional resources                           ;
+;                                                                       ;
+; This procedure draws polymarkers on the workstation "wks" (the        ;
+; variable returned from a previous call to "gsn_open_wks") in NDC      ;
+; space. "x" and "y" are the x and y locations of each marker in NDC    ;
+; coordinates. "resources" is an optional list of resources.            ;
+procedure gsn_text_ndc(wks:graphic, text:string, x:numeric, \
+;***********************************************************************;
+procedure gsn_polymarker_ndc(wks:graphic,x[*]:numeric,y[*]:numeric,\
+                         resources:logical)
+local i, gsid, attnames, plot_object, res, gs_res_index
+begin
+; variable returned from a previous call to "gsn_open_wks").  "x" and   ;
+; Retrieve graphic style object.
+; "resources" is an optional list of resources.                         ;
+    getvalues wks 
+        "wkDefGraphicStyleId":  gsid
+    end getvalues
+procedure gsn_text(wks:graphic,plotid:graphic,text:string,x:numeric, \
+funccode, res2, calldraw, callframe
+; Create a LogLinPlot that covers the entire NDC space
+; to use as a drawing canvas
+
+    canvas = create "canvas" logLinPlotClass wks
+      "vpXF"      : 0.0
+      "vpYF"      : 1.0
+      "vpWidthF"  : 1.0
+      "vpHeightF" : 1.0
+    end create
+    callframe = get_res_value(res2,"gsnFrame",False)
+    gsres = get_res_eq(resources,"gs")
+    if(gsres.and..not.any(ismissing(getvaratts(gsres))))
+      attsetvalues(gsid,gsres)
+    end if
+
+; Draw some polymarkers.
+
+    if(.not.any(ismissing(x)).and..not.any(ismissing(y)))
+      NhlNDCPolymarker(canvas,gsid,x,y)
+
+      x2 = x(ind(.not.ismissing(x).and..not.ismissing(y)))
+      y2 = y(ind(.not.ismissing(x).and..not.ismissing(y)))
+      NhlNDCPolymarker(canvas,gsid,x2,y2)
+    delete(xf)
+end
+    delete(yf)
+;***********************************************************************;
+    "pmAnnoManagers": am_ids
+  end getvalues
+
+  tmp_just  = get_res_value(txres,"txJust","CenterCenter")
+  just  = get_res_value(res2,"amJust",tmp_just)
+
+  setvalues am_ids(0)
+    "amDataXF"       : x
+    "amDataYF"       : y
+    "amResizeNotify" : True
+    "amTrackData"    : True
+    "amJust"         : just
+; However, if you set gsnPanelRowSpec to True, and dims to an array of  ;
 procedure gsn_panel(wks:graphic,plot[*]:graphic,dims[2]:float,\
                     resources:logical )
 local rows, cols, xrows, xcols, top, bottom, left, right, \
 vpx, vpy, vpwidth, vpheight, bb, plot_width, plot_height, \
 xwsp_perc, ywsp_perc, xwsp, ywsp, dx, dy, total_width, total_height, \
-col_scale, row_scale, scale, xpos, ypos, xsp, ysp, \
+col_scale, row_scale, scale, xpos, ypos, xsp, ysp, panel_center, \
 new_plot_height, new_plot_width, new_total_height, new_total_width, \
 i, j, old_vpx, old_vpy, old_vpwidth, old_vpheight, callframe
-
+begin
     rows = floattointeger(dims(0))
     cols = floattointeger(dims(1))
     xrows = dims(0)
@@ -858,11 +1268,22 @@ i, j, old_vpx, old_vpy, old_vpwidth, old_vpheight, callframe
     x_rgt = 1.0
     y_bot = 0.0
     callframe = True
-;***********************************************************************;
+    panel_labelbar = False
+    draw_boxes     = False
+    orths = (/     1.0,          -1.0,      -1.0,        1.0/)
+    panel_center = get_special_res_value(resources,"gsnPanelCenter",True)
+; title string which is also set with tx* resources. We have to figure
     if(resources)
       if(isatt(resources,"gsnFrame").and..not.resources@gsnFrame)
           callframe = False
       end if
+  else
+      if(isatt(resources,"gsnPanelLabelbar").and.resources@gsnPanelLabelbar)
+        set_attr(resources,"gsnPanelBottom",0.11) ; Leave room for labelbar
+                                                  ; at bottom.
+        panel_labelbar = True
+      end if
+    print("Defaulting to 1.")
       if(isatt(resources,"gsnPanelXWhiteSpacePercent"))
         xwsp_perc = resources@gsnPanelXWhiteSpacePercent
         if(xwsp_perc.lt.0.or.xwsp_perc.ge.100.)
@@ -879,7 +1300,11 @@ i, j, old_vpx, old_vpy, old_vpwidth, old_vpheight, callframe
           ywsp_perc = 1.
         end if
       end if
-;               resources: optional resources                           ;
+    print("Defaulting to 1.")
+      if(isatt(resources,"gsnPanelBoxes").and.resources@gsnPanelBoxes)
+        draw_boxes = True
+      end if
+    print("Defaulting to 0.")
       if(isatt(resources,"gsnPanelLeft"))
         x_lft = resources@gsnPanelLeft
         if(x_lft.lt.0..or.x_lft.ge.1.)
@@ -888,7 +1313,7 @@ i, j, old_vpx, old_vpy, old_vpwidth, old_vpheight, callframe
           x_lft = 0.0
         end if
       end if
-; variable returned from a previous call to "gsn_open_wks") in the same ;
+    print("Defaulting to 1.")
       if(isatt(resources,"gsnPanelRight"))
         x_rgt = resources@gsnPanelRight
         if(x_rgt.le.0..or.x_rgt.gt.1.)
@@ -897,7 +1322,7 @@ i, j, old_vpx, old_vpy, old_vpwidth, old_vpheight, callframe
           x_rgt = 1.0
         end if
       end if
-; one of the gsn_* plotting functions). "x" and "y" are the x and y     ;
+
       if(isatt(resources,"gsnPanelTop"))
         y_top = resources@gsnPanelTop
         if(y_top.le.0..or.y_top.gt.1.)
@@ -927,9 +1352,8 @@ i, j, old_vpx, old_vpy, old_vpwidth, old_vpheight, callframe
         print("than gsnPanelBottom ("+y_bot+").")
         exit
       end if
-begin
     end if
-end
+    y_bot = 0.0
 ;
 ; Make sure we have enough panels to fit all of the plots.
 ;
@@ -940,46 +1364,45 @@ end
       print("Only " + npanels + " plots will be drawn.")
     end if
 ;
-; We assume all plots are the same size, so if we get the size of
-; the first one, this should be the size of all of them.
-;
+      end getvalues
+    else
+      if(plot_type.eq."vector") then
     getvalues plot(0)
       "vpXF"      : vpx       ; Get original view port coordinates.
       "vpYF"      : vpy
       "vpWidthF"  : vpwidth
       "vpHeightF" : vpheight
-;***********************************************************************;
-; Procedure : gsn_polygon_ndc                                           ;
+    end getvalues
+
     bb = NhlGetBB(plot(0))   ; Get bounding box of plot with
     top    = bb(0)           ; all of its annotations.
     bottom = bb(1)
     left   = bb(2)
     right  = bb(3)
-
-;                   wks: workstation object                             ;
-; plot_width  : total width of plot with all of its annotations
-; total_width : plot_width plus white space on both sides
-;               resources: optional resources                           ;
+          getvalues xy_plot
+            "tiXAxisFontHeightF" : font_height
+          font_height = 0.6*font_height
+          font_height = 0.01
     plot_width  = right - left     ; Calculate total width of plot.
     plot_height = top - bottom     ; Calculate total height of plot.
-procedure gsn_polygon_ndc(wks:graphic,x[*]:numeric,y[*]:numeric,\
+        end if
     xwsp = xwsp_perc/100. * plot_width  ; White space is a percentage of total
     ywsp = ywsp_perc/100. * plot_height ; width and height.
-begin
+  end if
     total_width  = 2.*xwsp + plot_width   ; Calculate total width and height
     total_height = 2.*ywsp + plot_height  ; with white space added.
+; the first one, this should be the size of all of them.
+        labelbar_height  = plot_height
+      end if
+    else         
+      set_attr(lbres,"lbOrientation","Horizontal")
 ;
-; We want:
-;
-;   ncols * scale * total_width  <= x_rgt - x_lft (the viewport width)
-;   nrows * scale * total_height <= y_top - y_bot (the viewport height)
-;
-; By taking the minimum of these two, we get the scale
-; factor that we need to fit all plots on a page.
+; Adjust width depending on whether we have one column or multiple 
+; columns.
 ;
     xrange = x_rgt - x_lft
     yrange = y_top - y_bot
-; Retrieve graphic style object.
+    col_scale = min((/xrange/(ncols*total_width), xrange/))
     col_scale = min((/xrange/(xcols*total_width), xrange/))
     row_scale = min((/yrange/(xrows*total_height),yrange/))
     scale = min((/col_scale,row_scale/))
@@ -1004,6 +1427,7 @@ begin
     xpos = x_lft + xwsp + dx +(xsp/2.+new_total_width*ispan(0,cols-1,1))
     ypos = y_top - ywsp - dy -(ysp/2.+new_total_height*ispan(0,rows-1,1))
 
+    labelbar_width = scale*vpwidth
   ywsp = ywsp_perc/100. * new_plot_height
 ; Loop through each plot and draw it in the new scaled-down size.
     end if
@@ -1012,15 +1436,21 @@ begin
 ; Before we add plots to a row, check to see if we have enough plots
 ; left to fill that row.  If not, then center the remaining plots.
 ;
-      num_plots_left = dimsizes(plot) - i*cols
+      if(panel_center)
+        num_plots_left = dimsizes(plot) - i*cols
 
-      if(num_plots_left.lt.cols)
-        num_miss_plots = cols - num_plots_left
-        if(num_miss_plots.gt.0.and.num_miss_plots.lt.cols)
-          delete(xpos)
-          xsp = xrange - new_total_width*(cols-num_miss_plots)
-          xpos = x_lft + xwsp + dx +(xsp/2.+new_total_width*\
-                 ispan(0,cols-num_miss_plots-1,1))
+        if(num_plots_left.lt.cols)
+;
+; Not enough plots to fill row, so center remaining plots rather
+; than left-justifying them.
+; 
+          num_miss_plots = cols - num_plots_left
+          if(num_miss_plots.gt.0.and.num_miss_plots.lt.cols)
+            delete(xpos)
+            xsp = xrange - new_total_width*(cols-num_miss_plots)
+            xpos = x_lft + xwsp + dx +(xsp/2.+new_total_width*\
+                   ispan(0,cols-num_miss_plots-1,1))
+          end if
         end if
       end if
       do j = 0,cols-1
@@ -1042,20 +1472,157 @@ begin
     new_ncols = min((/num_plots_left,row_spec(nr)/))
             draw(plot(i*cols+j))  ; Draw the scaled down plot.
 
+            if(draw_boxes) then
+              bb = NhlGetBB(plot(i*cols+j)) ; Get bounding box of plot with
+              top = bb(0)                   ; all of its annotations.
+              bot = bb(1)
+              lft = bb(2)
+              rgt = bb(3)
+              gsn_polyline_ndc(wks,(/lft,rgt,rgt,lft,lft/), \
+                                   (/bot,bot,top,top,bot/),False)
+            end if
+
             setvalues plot(i*cols+j)
               "vpXF"      : old_vpx
               "vpYF"      : old_vpy
               "vpWidthF"  : old_vpwidth
               "vpHeightF" : old_vpheight
             end setvalues
-          end if
-        end if
+;
+; Save this plot.
       end do  ; end of columns
     end do    ; end of rows
 
+    if(panel_labelbar)
+      lbres = get_res_eq(resources,"lb")
+      class_name = NhlClassName(plot@contour)   ; Get the type of plot.
+
+      if(class_name.eq."contourPlotClass".or.class_name.eq."logLinPlotClass")
+        getvalues plot@contour
+          "cnLevels"          : levels
+          "cnFillColors"      : colors
+          "cnFillPatterns"    : fill_patterns
+          "cnFillScales"      : fill_scales
+          "cnMonoFillPattern" : mono_fill_pat
+          "cnMonoFillScale"   : mono_fill_scl
+          "cnMonoFillColor"   : mono_fill_col
+        end getvalues
+; Set position of labelbar depending on whether it's horizontal or
+; vertical.
+;
+      if(lbhor)
+        set_attr(lbres,"lbMonoFillColor",mono_fill_col)
+        if(.not.mono_fill_pat)
+          set_attr(lbres,"lbMonoFillPattern", False)
+          set_attr(lbres,"lbFillPatterns",    fill_patterns)
+        end if
+        if(.not.mono_fill_scl)
+          set_attr(lbres,"lbMonoFillScale", False)
+          set_attr(lbres,"lbFillScales",    fill_scales)
+        end if
+      else
+        getvalues plot@vector
+          "vcLevels"      : levels
+          "vcLevelColors" : colors
+        end getvalues
+      end if
+
+      lbres = True
+      lbres@vpYF          = max((/0.1,ypos(dimsizes(ypos)-1)-.2/))
+      lbres@vpWidthF      = labelbar_width
+      lbres@vpXF          = (1. - labelbar_width)/2.
+;      lbres@vpWidthF      = 0.75   ; Width of labelbar
+      lbres@vpHeightF     = 0.10   ; Height of labelbar
+      lbres@lbOrientation = "Horizontal"
+      labelbar = create_labelbar(wks,dimsizes(colors),colors,levels,lbres)
+
+      draw(labelbar)
+;
+       print("Warning: gsn_panel: unrecognized plot type for getting labelbar information. Ignoring labelbar request.")
     if(callframe)
       frame(wks)   ; Advance the frame.
     end if
+; objects.                                                              ; 
+;***********************************************************************;
+
+;***********************************************************************;
+; Procedure : gsn_panel_labelbar                                        ;
+;                 wks: workstation object                               ;
+;               plots : array of plots to put on one page.              ;
+;                plot : plot to retrieve labelbar information from      ;
+;               dims : a 2-D array indicating number of rows and columns;
+;             resources: optional resources                             ;
+;                                                                       ;
+; This procedure takes the array of plots and draws them all on one     ;
+; workstation in the configuration specified by dims. It also draws a   ;
+; labelbar at the bottom.                                               ;
+;                                                                       ;
+;***********************************************************************;
+procedure gsn_panel_labelbar(wks:graphic,plots[*]:graphic,plot:graphic,\
+                             dims[2]:float,resources:logical )
+local class_name, first_plot, levels, colors, fill_patterns, mono_fill_pat,\
+mono_fill_scl, mono_fill_col, dims_plot, res, callframe, lbres, labelbar
+begin
+
+  res   = resources
+  lbres = get_res_eq(res,"lb")
+
+  if(isatt(res,"gsnFrame").and..not.res@gsnFrame)
+    callframe = False
+  else
+    callframe = True
+  end if
+
+  set_attr(res,"gsnPanelBottom",0.11) ; Leave room for labelbar at bottom
+  set_attr(res,"gsnFrame",False)      ; Don't advance frame
+  gsn_panel(wks,plots,dims,res)
+  
+  class_name = NhlClassName(plot)   ; Get the type of plot.
+
+  if(class_name.eq."contourPlotClass".or.class_name.eq."logLinPlotClass")
+    getvalues plot
+      "cnLevels"          : levels
+      "cnFillColors"      : colors
+      "cnFillPatterns"    : fill_patterns
+      "cnFillScales"      : fill_scales
+      "cnMonoFillPattern" : mono_fill_pat
+      "cnMonoFillScale"   : mono_fill_scl
+      "cnMonoFillColor"   : mono_fill_col
+    end getvalues
+;
+; Check if we want different fill patterns or fill scales.  If so, we
+; have to pass these on to the labelbar.
+;
+    set_attr(lbres,"lbMonoFillColor",mono_fill_col)
+    if(.not.mono_fill_pat)
+      set_attr(lbres,"lbMonoFillPattern", False)
+      set_attr(lbres,"lbFillPatterns",    fill_patterns)
+    end if
+    if(.not.mono_fill_scl)
+      set_attr(lbres,"lbMonoFillScale", False)
+      set_attr(lbres,"lbFillScales",    fill_scales)
+    end if
+  else
+    getvalues plot
+      "vcLevels"      : levels
+      "vcLevelColors" : colors
+    end getvalues
+  end if
+
+  lbres = True
+  lbres@vpYF          = 0.1    ; Position of labelbar
+  lbres@vpXF          = 0.125
+  lbres@vpWidthF      = 0.75   ; Width of labelbar
+  lbres@vpHeightF     = 0.10   ; Height of labelbar
+  lbres@lbOrientation = "Horizontal"
+
+  labelbar = create_labelbar(wks,dimsizes(colors),colors,levels,lbres)
+
+  draw(labelbar)
+  if(callframe)
+    frame(wks)   ; Advance the frame.
+  end if
+  return
 end
 
 procedure draw_bb(wks:graphic,plot:graphic)
@@ -1328,23 +1895,23 @@ function gsn_contour_map(wks:graphic,data[*][*]:numeric,\
       attsetvalues(contour_object,cnres)
     end if
 
-    overlay(map_object,contour_object)
+    calldraw  = get_res_value(res2,"gsnDraw", True)
+    callframe = get_res_value(res2,"gsnFrame",True)
+    maxbb     = get_bb_res(res2)
+    scale     = get_res_value(res2,"gsnScale",False)
+    shape     = get_res_value(res2,"gsnShape",scale)
+    sprdcols  = get_res_value(res2,"gsnSpreadColors",False)
+    min_index = get_res_value(res2,"gsnSpreadColorStart",2)
+    max_index = get_res_value(res2,"gsnSpreadColorEnd",-1)
 
-;
-; If gsnScale was set to True, then make sure the X and Y axis labels
-; and tick marks are the same size.
-; 
-    if(scale)
-      gsnp_scale_plot(contour_object)
-    end if
-
+    mpres = get_res_eq(res2,(/"mp","vp"/))
     draw_and_frame(wks,map_object,calldraw,callframe)
 
-; Return plot object and data object (as attribute of plot object).
-
-    map_object@data = data_object
-    map_object@contour = contour_object
-    return(map_object)
+    attsetvalues_check(map_object,mpres)
+    attsetvalues_check(contour_object,cnres)
+    if(sprdcols)
+      cnres2 = True
+      set_attr(cnres2,"cnFillColors",\
 end
 
 ;***********************************************************************;
@@ -1402,389 +1969,52 @@ begin
 
     draw(lbid)
     delete(lbid)
-end
+               spread_colors(wks,contour_object,min_index,max_index))
+      attsetvalues(contour_object,cnres2)
+    end if
+
+    overlay(map_object,contour_object)
+
+;
+; If gsnScale was set to True, then make sure the X and Y axis labels
+; and tick marks are the same size.
+; 
+    if(scale)
+      gsnp_scale_plot(contour_object)
+    end if
+    map_object@contour = contour_object
+
+    return(map_object)
+local i, attnames, plot_object, res2
 
 ;***********************************************************************;
 ; Function : gsn_map                                                    ;
 ;                      wks: workstation object                          ;
 ;               projection: Map projection                              ;
-;                  resources: optional resources                        ;
+    if(isatt(wks,"name"))
+      wksname = wks@name
+    else
+      wksname = "gsnapp"
+    end if
 ;                                                                       ;
 ; This function creates and draws a map plot to the workstation "wks"   ;
 ; (the variable returned from a previous call to "gsn_open_wks").       ;
 ; "projection" is one of the ten supported map projections, and         ;
 ; "resources" is an optional list of resources. The id of the map plot  ;
 ; is returned.                                                          ;
-;***********************************************************************;
-
-function gsn_map(wks:graphic, projection:string, resources:logical )
-local i, attnames, plot_object, res2
-begin
-    res2      = resources
-
-; Create plot object.
-
-    if(isatt(wks,"name"))
-      wksname = wks@name
-    else
-      wksname = "gsnapp"
-    end if
-
-    plot_object = create wksname + "_map" mapPlotClass wks
-        "mpProjection" : projection
-    end create
-
-; Check to see if any resources were set.
-
+;                                                                       ;
     calldraw  = get_special_res_value(res2,"gsnDraw", True)
     callframe = get_special_res_value(res2,"gsnFrame",True)
-
+;   gsnFrame                                                            ;
     if(res2.and..not.any(ismissing(getvaratts(res2))))
       attsetvalues(plot_object,res2)
     end if
-
+;***********************************************************************;
     draw_and_frame(wks,plot_object,calldraw,callframe)
-
-; Return plot object.
-
-    return(plot_object)
-end
-
-;***********************************************************************;
-; Procedure : gsn_polygon                                               ;
-;                   wks: workstation object                             ;
-;                plotid: plot object                                    ;
-;                     x: 1-dimensional array of x points                ;
-;                     y: 1-dimensional array of y points                ;
-;               resources: optional resources                           ;
-;                                                                       ;
-; This procedure draws a filled polygon on the workstation "wks" (the   ;
-; variable returned from a previous call to "gsn_open_wks") in the same ;
-; data space as the data in "plotid" (returned from a previous call to  ;
-; one of the gsn_* plotting functions). "x" and "y" are the x and y     ;
-; locations of each point in the polygon, and should be in the same data;
-; space as the data from "plotid". "resources" is an optional list of   ;
-; resources.                                                            ;
-;***********************************************************************;
-
-procedure gsn_polygon(wks:graphic,plotid:graphic,x[*]:numeric,\
-                      y[*]:numeric,resources:logical)
-local i, gsid, attnames, plot_object, res, gs_res_index, res2
-begin
-
-; Retrieve graphic style object.
-
-    getvalues wks 
-        "wkDefGraphicStyleId":  gsid
-    end getvalues
-
-    gsres = get_res_eq(resources,"gs")
-    if(gsres.and..not.any(ismissing(getvaratts(gsres))))
-      attsetvalues(gsid,gsres)
-    end if
-
-; Draw a polygon.
-
-    if(.not.any(ismissing(x)).and..not.any(ismissing(y)))
-      NhlDataPolygon(plotid,gsid,x,y)
-    else
-      x2 = x(ind(.not.ismissing(x).and..not.ismissing(y)))
-      y2 = y(ind(.not.ismissing(x).and..not.ismissing(y)))
-      NhlDataPolygon(plotid,gsid,x2,y2)
-    end if
-end
-
-
-;***********************************************************************;
-; Procedure : gsn_polygon_ndc                                           ;
-;                   wks: workstation object                             ;
-;                     x: 1-dimensional array of x points                ;
-;                     y: 1-dimensional array of y points                ;
-;               resources: optional resources                           ;
-;                                                                       ;
-; This procedure draws a filled polygon on the workstation "wks" (the   ;
-; variable returned from a previous call to "gsn_open_wks") in NDC      ;
-; space. "x" and "y" are the x and y locations of each point in the     ;
-; polygon, and "resources" is an optional list of resources.            ;
-;***********************************************************************;
-
-procedure gsn_polygon_ndc(wks:graphic,x[*]:numeric,y[*]:numeric,\
-                          resources:logical)
-local i, gsid, attnames, plot_object, res, gs_res_index
-begin
-
-; Retrieve graphic style object.
-
-    getvalues wks 
-        "wkDefGraphicStyleId":  gsid
-    end getvalues
-
-;
-; Create a LogLinPlot that covers the entire NDC space
-; to use as a drawing canvas
-;
-    canvas = create "canvas" logLinPlotClass wks
-      "vpXF"      : 0.0
-      "vpYF"      : 1.0
-      "vpWidthF"  : 1.0
-      "vpHeightF" : 1.0
-    end create
-
-    gsres = get_res_eq(resources,"gs")
-    if(gsres.and..not.any(ismissing(getvaratts(gsres))))
-      attsetvalues(gsid,gsres)
-    end if
-
-; Draw a polygon.
-
-    if(.not.any(ismissing(x)).and..not.any(ismissing(y)))
-      NhlNDCPolygon(canvas,gsid,x,y)
-    else
-      x2 = x(ind(.not.ismissing(x).and..not.ismissing(y)))
-      y2 = y(ind(.not.ismissing(x).and..not.ismissing(y)))
-      NhlNDCPolygon(canvas,gsid,x2,y2)
-    end if
-end
-
-;***********************************************************************;
-; Procedure : gsn_polyline                                              ;
-;                   wks: workstation object                             ;
-;                plotid: plot object                                    ;
-;                     x: 1-dimensional array of x points                ;
-;                     y: 1-dimensional array of y points                ;
-;               resources: optional resources                           ;
-;                                                                       ;
-; This procedure draws a polyline on the workstation "wks" (the variable;
-; returned from a previous call to "gsn_open_wks") in the same data     ;
-; space as the data in "plotid" (returned from a previous call to one of;
-; the gsn_* plotting functions). "x" and "y" are the x and y locations  ;
-; of each point in the line, and should be in the same data space as the;
-; data from "plotid". "resources" is an optional list of resources.     ;
-;***********************************************************************;
-
-procedure gsn_polyline(wks:graphic,plotid:graphic,x[*]:numeric,\
-                       y[*]:numeric,resources:logical)
-local i, gsid, attnames, plot_object, res, gs_res_index
-begin
-
-; Retrieve graphic style object.
-    callframe = get_res_value(res2,"gsnFrame",True)
-    getvalues wks 
-        "wkDefGraphicStyleId":  gsid
-    end getvalues
-    mpres = get_res_eq(res2,(/"mp","vp"/))
-    gsres = get_res_eq(resources,"gs")
-    if(gsres.and..not.any(ismissing(getvaratts(gsres))))
-      attsetvalues(gsid,gsres)
-    end if
-
-; Draw a polyline.
-    attsetvalues_check(contour_object,cnres)
-    if(.not.any(ismissing(x)).and..not.any(ismissing(y)))
-      NhlDataPolyline(plotid,gsid,x,y)
-    else
-;
-; Since the data contains missing values, leave gaps where the missing
-; values are located.
-;
-      x2 = new(dimsizes(x),float)
-      y2 = new(dimsizes(x),float)
-      j = 0
-      do i = 0,dimsizes(x)-1
-        if(ismissing(x(i)).or.ismissing(y(i)))
-          if(j.eq.1)    ; only one value, so draw a marker
-            NhlDataPolymarker(plotid,gsid,x2(0),y2(0))
-          end if
-          if(j.gt.1)    ; multiple values, so draw a line
-            NhlDataPolyline(plotid,gsid,x2(0:j-1),y2(0:j-1))
-          end if
-          j = 0
-        else
-          x2(j) = x(i)   ; Neither point is missing, so store in
-          y2(j) = y(i)   ; separate arrays to draw later.
-          j = j + 1
-        end if
-      end do
-      if(j.eq.1)         
-        NhlDataPolymarker(plotid,gsid,x2(0),y2(0))
-        j = 0
-      end if
-      if(j.gt.1)         
-        NhlDataPolyline(plotid,gsid,x2(0:j-1),y2(0:j-1))
-        j = 0
-      end if
-    end if
-end
-
-;***********************************************************************;
-; Procedure : gsn_polyline_ndc                                          ;
-;                   wks: workstation object                             ;
-;                     x: 1-dimensional array of x ndc points            ;
-;                     y: 1-dimensional array of y ndc points            ;
-;               resources: optional resources                           ;
-;                                                                       ;
-; This procedure draws a polyline on the workstation "wks" (the variable;
-; returned from a previous call to "gsn_open_wks") in NDC space.        ;
-; "x" and "y" are the x and y locations of each point in the line.      ;
-; "resources" is an optional list of resources.                         ;
-;***********************************************************************;
-
-procedure gsn_polyline_ndc(wks:graphic,x[*]:numeric,y[*]:numeric,\
-                           resources:logical)
-local i, gsid, attnames, plot_object, res, gs_res_index
-begin
-
-; Retrieve graphic style object.
-
-    getvalues wks 
-        "wkDefGraphicStyleId":  gsid
-    end getvalues
-;
-; Create a LogLinPlot that covers the entire NDC space
-; to use as a drawing canvas
-;
-    canvas = create "canvas" logLinPlotClass wks
-      "vpXF"      : 0.0
-      "vpYF"      : 1.0
-      "vpWidthF"  : 1.0
-      "vpHeightF" : 1.0
-    end create
-
-    gsres = get_res_eq(resources,"gs")
-    if(gsres.and..not.any(ismissing(getvaratts(gsres))))
-      attsetvalues(gsid,gsres)
-    end if
-
-; Draw a polyline.
-
-    if(.not.any(ismissing(x)).and..not.any(ismissing(y)))
-      NhlNDCPolyline(canvas,gsid,x,y)
-    else
-;
-; Since the data contains missing values, leave gaps where the missing
-; values are located.
-;
-      x2 = new(dimsizes(x),float)
-      y2 = new(dimsizes(x),float)
-      j = 0
-      do i = 0,dimsizes(x)-1
-        if(ismissing(x(i)).or.ismissing(y(i)))
-          if(j.eq.1)    ; only one value, so draw a marker
-            NhlNDCPolymarker(canvas,gsid,x2(0),y2(0))
-          end if
-          if(j.gt.1)    ; multiple values, so draw a line
-            NhlNDCPolyline(canvas,gsid,x2(0:j-1),y2(0:j-1))
-          end if
-          j = 0
-        else
-          x2(j) = x(i)   ; Neither point is missing, so store in
-          y2(j) = y(i)   ; separate arrays to draw later.
-          j = j + 1
-        end if
-      end do
-      if(j.eq.1)         
-        NhlNDCPolymarker(canvas,gsid,x2(0),y2(0))
-        j = 0
-      end if
-      if(j.gt.1)         
-        NhlNDCPolyline(canvas,gsid,x2(0:j-1),y2(0:j-1))
-        j = 0
-      end if
-    end if
-               spread_colors(wks,contour_object,min_index,max_index))
-      attsetvalues(contour_object,cnres2)
-    end if
-; Procedure : gsn_polymarker                                            ;
-;                   wks: workstation object                             ;
-;                plotid: plot object                                    ;
-;                     x: 1-dimensional array of x points                ;
-;                     y: 1-dimensional array of y points                ;
-;               resources: optional resources                           ;
-; If gsnScale was set to True, then make sure the X and Y axis labels
-; This procedure draws polymarkers on the workstation "wks" (the        ;
-; variable returned from a previous call to "gsn_open_wks") in the same ;
-; data space as the data in "plotid" (returned from a previous call to  ;
-; one of the gsn_* plotting functions). "x" and "y" are the x and y     ;
-; locations of each marker, and should be in the same data space as the ;
-; data from "plotid". "resources" is an optional list of resources.     ;
-    map_object@contour = contour_object
-
-procedure gsn_polymarker(wks:graphic,plotid:graphic,x[*]:numeric,\
-                         y[*]:numeric,resources:logical)
-local i, gsid, attnames, plot_object, res, gs_res_index
-
-; Function : gsn_map                                                    ;
-; Retrieve graphic style object.
-;               projection: Map projection                              ;
-    getvalues wks 
-        "wkDefGraphicStyleId":  gsid
-    end getvalues
-
-    gsres = get_res_eq(resources,"gs")
-    if(gsres.and..not.any(ismissing(getvaratts(gsres))))
-      attsetvalues(gsid,gsres)
-    end if
-
-; Draw some polymarkers.
-
-    if(.not.any(ismissing(x)).and..not.any(ismissing(y)))
-      NhlDataPolymarker(plotid,gsid,x,y)
-    else
-      x2 = x(ind(.not.ismissing(x).and..not.ismissing(y)))
-      y2 = y(ind(.not.ismissing(x).and..not.ismissing(y)))
-      NhlDataPolymarker(plotid,gsid,x2,y2)
-    end if
-end
-;                                                                       ;
-;***********************************************************************;
-; Procedure : gsn_polymarker_ndc                                        ;
-;                   wks: workstation object                             ;
-;                     x: 1-dimensional array of x points                ;
-;                     y: 1-dimensional array of y points                ;
-;               resources: optional resources                           ;
-;                                                                       ;
-; This procedure draws polymarkers on the workstation "wks" (the        ;
-; variable returned from a previous call to "gsn_open_wks") in NDC      ;
-; space. "x" and "y" are the x and y locations of each marker in NDC    ;
-; coordinates. "resources" is an optional list of resources.            ;
-;***********************************************************************;
-; "resources" is an optional list of resources. The id of the map plot  ;
-procedure gsn_polymarker_ndc(wks:graphic,x[*]:numeric,y[*]:numeric,\
-                         resources:logical)
-local i, gsid, attnames, plot_object, res, gs_res_index
-begin
-;                                                                       ;
-; Retrieve graphic style object.
-;   gsnFrame                                                            ;
-    getvalues wks 
-        "wkDefGraphicStyleId":  gsid
-    end getvalues
-;***********************************************************************;
-;
-; Create a LogLinPlot that covers the entire NDC space
-; to use as a drawing canvas
-;
-    canvas = create "canvas" logLinPlotClass wks
-      "vpXF"      : 0.0
-      "vpYF"      : 1.0
-      "vpWidthF"  : 1.0
-      "vpHeightF" : 1.0
-    end create
 local i, plot_object, res2
-    gsres = get_res_eq(resources,"gs")
-    if(gsres.and..not.any(ismissing(getvaratts(gsres))))
-      attsetvalues(gsid,gsres)
-    end if
+begin
     res2      = resources
-; Draw some polymarkers.
 
-    if(.not.any(ismissing(x)).and..not.any(ismissing(y)))
-      NhlNDCPolymarker(canvas,gsid,x,y)
-    else
-      x2 = x(ind(.not.ismissing(x).and..not.ismissing(y)))
-      y2 = y(ind(.not.ismissing(x).and..not.ismissing(y)))
-      NhlNDCPolymarker(canvas,gsid,x2,y2)
-    end if
 ; Create plot object.
 
     wksname = get_res_value_keep(wks,"name","gsnapp")
