@@ -3,7 +3,7 @@ C
 C  Define error file, Fortran unit number, and workstation type,
 C  and workstation ID.
 C
-      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1, IWKID=1)
+      PARAMETER (IERRF=6, LUNIT=2, IWKID=1)
       PARAMETER (IWKID2=2)
 C
 C  Simple example illustrating opening GKS, opening and activating
@@ -18,7 +18,7 @@ C
 C
 C  Open a CGM workstation with workstation ID of IWKID.
 C
-      CALL GOPWK (IWKID, LUNIT, IWTYPE)
+      CALL GOPWK (IWKID, LUNIT, 1)
 C
 C  Open an X11 workstation with workstation ID of IWKID2.
 C
