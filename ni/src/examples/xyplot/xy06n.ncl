@@ -1,5 +1,5 @@
 
-;      $Id: xy06n.ncl,v 1.4 1995-06-09 21:01:16 haley Exp $
+;      $Id: xy06n.ncl,v 1.5 1995-06-09 21:40:22 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -132,6 +132,7 @@ end create
 plotid = create "xyPlot1" xyPlotClass xworkid
     "xyCoordData": dataid
 end create
+
 ;
 ; Get the DataSpec object id.
 ;
@@ -152,53 +153,53 @@ end getvalues
 
 numids = dimsizes(station_abrev)
 
-;
-; Set date.
-;
-date = "950318"
-
-;
-; Define procedure for getting the daily data values from a particular
-; station.
-;
-
-  temp@_FillValue = spv
-  pressure@_FillValue = spv
-  wind_speed@_FillValue = spv
-  filedir = ncargpath("data")
-  do j = 0,NHOURS-1
-    if((j.lt.10))
-      filename = filedir + "/cdf/" + date + "0" + j + "_sao.cdf"
-    else
-      filename = filedir + "/cdf/" + date + j + "_sao.cdf"
-    end if
+temp@_FillValue = spv
+pressure@_FillValue = spv
+wind_speed@_FillValue = spv
 ; 
 ; Open data file containing grid of global data values.
 ;
-    tmpfile = addfile(filename,"r")
-    rdstations = tmpfile->id
-    isize = dimsizes(tmpfile->id(:,0))
-    do l = 0, numids-1
-      do i = 0, (isize-1)
-        if(rdstations(i,:) .eq. station_abrev(l)) 
-          break
-        end if
-      end do
-      print("station " + station_abrev(l))
-      if(i .lt. isize) 
-        print("loaded hour " + j)
-        temp(l,j) = tmpfile->T(i)
-        pressure(l,j) = tmpfile->PSL(i)
-        wind_speed(l,j) = tmpfile->SPD(i)
-      else
-        print("missing hour " + j)
-        temp(l,j) = spv
-        pressure(l,j) = spv
-        wind_speed(l,j) = spv
+filedir = ncargpath("data")
+filename = filedir + "/cdf/950318_sao.cdf"
+tmpfile = addfile(filename,"r")
+
+;
+; Get station ids, temperatures, pressures, and wind speeds.
+;
+rdstations = tmpfile->id
+tdata = tmpfile->T
+pdata = tmpfile->PSL
+vdata = tmpfile->SPD
+
+; Loop through each hour of the day.
+;
+do j = 0,NHOURS-1
+; 
+; Get number of station ids.
+;
+  isize = dimsizes(tmpfile->id(:,j,0))
+;
+; Loop through each station we want to get values for.
+;
+  do l = 0, numids-1
+    do i = 0, (isize-1)
+      if(rdstations(i,j,:) .eq. station_abrev(l)) 
+        break
       end if
     end do
-    delete(rdstations)
+;
+; If found the station we wanted, then get the temperature, pressure,
+; and wind speed; otherwise, assign a missing value.
+;
+    if(i .lt. isize) then
+      print("station " + station_abrev(l))
+      print("loaded hour " + j)
+      temp(l,j) = tdata(i,j)
+      pressure(l,j) = pdata(i,j)
+      wind_speed(l,j) = vdata(i,j)
+    end if
   end do
+end do
 
 ;
 ; Define the Data object.  Since only the Y values are specified here,
