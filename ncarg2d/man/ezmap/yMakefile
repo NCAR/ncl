@@ -1,13 +1,13 @@
 #
-#	$Id: yMakefile,v 1.2 1993-03-21 02:08:38 haley Exp $
+#	$Id: yMakefile,v 1.3 1993-03-30 21:26:14 haley Exp $
 #
 NCARG	= ../../..
 
 MAN3 = ezmap ezmap_params ezmapa mapaci mapbla mapdrw mapeod mapfst mapgci \
 	mapgrd mapgrm mapgtc mapgti mapgtl mapgtr mapint mapiq mapiqa mapiqm \
-	mapit mapita mapitm maplbl maplot mappos maproj maprs maprst mapsav \
-	mapset mapstc mapsti mapstl mapstr maptra maptri maptrn mapusr mapvec \
-	mpgetc mpgeti mpgetl mpgetr mpsetc mpseti mpsetl mpsetr supmap
+	mapit mapita mapitm maplbl maplmb maplot mappos maproj maprs maprst \
+	mapsav mapset mapstc mapsti mapstl mapstr maptra maptri maptrn mapusr \
+	mapvec mpgetc mpgeti mpgetl mpgetr mpsetc mpseti mpsetl mpsetr supmap
 
 MAN = $(MAN3) 
 
