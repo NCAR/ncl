@@ -3,11 +3,11 @@
 /*
 **  Stuff that should be edited by Configure
 */
-VERSION     = 3.1.3
-BINROOT     = /tmp/clyne/bin
-LIBROOT     = /tmp/clyne/lib
-INCROOT     = /tmp/clyne/include
-MANROOT     = /tmp/clyne/man
+VERSION     = 3.1.3.x
+BINROOT     = /usr/local/bin
+LIBROOT     = /usr/local/lib
+INCROOT     = /usr/local/include
+MANROOT     = /usr/local/man
 TMPROOT     = /tmp
 LOCAL_LIB_SEARCH        = -L/X/X11/lib -L/usr/local/lib
 LOCAL_INC_SEARCH        = -I/X/X11/include -I/usr/local/include
@@ -44,8 +44,9 @@ MANPATH           = $(MANROOT)
 MANLPATH          = $(MANPATH)/manl
 MAN1PATH          = $(MANPATH)/man1
 MAN3PATH          = $(MANPATH)/man3
-MAN4PATH          = $(MANPATH)/man4
 MAN5PATH          = $(MANPATH)/man5
+MAN6PATH          = $(MANPATH)/man6
+MAN8PATH          = $(MANPATH)/man8
 
 LIBNCARGPATH      = $(LIBPATH)/$(NCARGDIR)
 DBPATH            = $(LIBNCARGPATH)/$(DBDIR)
@@ -59,8 +60,9 @@ XAPPPATH          = $(LIBNCARGPATH)/$(XAPPDIR)
 MANL_SECTION      = l
 MAN1_SECTION      = 1
 MAN3_SECTION      = 3
-MAN4_SECTION      = 4
 MAN5_SECTION      = 5
+MAN6_SECTION      = 6
+MAN8_SECTION      = 8
 
 XLIB              = -lX11
 EXTENSIONLIB      = -lXext
