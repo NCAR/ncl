@@ -1,15 +1,15 @@
 #
-#	$Id: yMakefile,v 1.18 1993-03-21 21:24:17 haley Exp $
+#	$Id: yMakefile,v 1.19 1993-05-08 16:42:15 haley Exp $
 #
 NCARG	= ../../../..
 
 MYNAME	= scripts
 
 #if ! defined BuildNCARGSourceLibrary
-SCRIPTS = cgmtrans ncargf77 ncargcc ncargversion \
+SCRIPTS = cgmtrans ncargf77 ncargfile ncargcc ncargversion \
 	ncargrun ftrans ncargex ncargcex pre2ncgm plt
 #else
-SCRIPTS = cgmtrans ncargf77 ncargcc ncargversion plt \
+SCRIPTS = cgmtrans ncargf77 ncargcc ncargfile ncargversion plt \
 	ncargrun ftrans ncargex ncargcex pre2ncgm ncargsrc ncargsrcy
 #endif
 
@@ -72,6 +72,11 @@ ncargex: ncargex.csh Makefile
 	-e 's+SED_TESTSDIR+$(TESTSDIR)+' \
 	-e 's+SED_TUTORIALDIR+$(TUTORIALDIR)+' \
 	<ncargex.csh >ncargex
+
+ncargfile: ncargfile.csh Makefile
+	@sed \
+	-e 's+SED_DBDIR+$(DBDIR)+' \
+	<ncargfile.csh >ncargfile
 
 ncargcex: ncargcex.csh Makefile
 	@sed \
