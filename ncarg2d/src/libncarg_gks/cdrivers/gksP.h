@@ -1,5 +1,5 @@
 /*
- *      $Id: gksP.h,v 1.2 1997-02-27 20:08:06 boote Exp $
+ *      $Id: gksP.h,v 1.3 1997-07-31 17:58:17 boote Exp $
  */
 /************************************************************************
 *									*
@@ -33,6 +33,7 @@
 #define	NGC_XGETXPIX	1
 #define	NGC_XFREECI	2
 #define NGC_XALLOCCOLOR	3
+#define NGC_XSIZECHG	4
 
 typedef struct {
 	int		type;
@@ -66,6 +67,18 @@ typedef struct {
 	void			*cref;
 } _NGCXAllocColor;
 
+typedef void (*_NGCXGetSizeProc)(
+	void		*closure,
+	unsigned long	size
+);
+
+typedef struct {
+	int			type;
+	int			work_id;
+	_NGCXGetSizeProc	xget_size;
+	void			*closure;
+} _NGCXGetSizeChg;
+
 typedef struct {
 	int		type;
 	int		work_id;
@@ -77,6 +90,7 @@ typedef union _NGCescapeRec_ {
 	_NGCXGetXPix	xgetxpix;
 	_NGCXFreeCi	xfreeci;
 	_NGCXAllocColor	xalloccolor;
+	_NGCXGetSizeChg	xgetsizechg;
 } _NGCesc;
 
 /*

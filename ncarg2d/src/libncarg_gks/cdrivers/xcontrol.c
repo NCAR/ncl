@@ -1,5 +1,5 @@
 /*
- *	$Id: xcontrol.c,v 1.16 1997-02-27 20:08:08 boote Exp $
+ *	$Id: xcontrol.c,v 1.17 1997-07-31 17:58:18 boote Exp $
  */
 /*
  *      File:		xcontrol.c
@@ -630,6 +630,9 @@ X11_OpenWorkstation
 	xi->free_colors = NULL;
 	xi->cref = NULL;
 
+	xi->size_change = NULL;
+	xi->sref = NULL;
+
 	while(cesc = _NGGetCEscInit()){
 		_NGCXAllocColor	*xac;
 		switch(cesc->type){
@@ -702,10 +705,9 @@ X11_OpenWorkstation
 	);
 
 	xi->transform = TransformGetTransform(&xi->tsystem);
-
-	xi->width = xwa.width;
-	xi->height = xwa.height;
-	xi->dim = xwa.width;
+	xi->dim = square_screen.urx - square_screen.llx + 1;
+	if(xi->size_change)
+		(*xi->size_change)(xi->sref,xi->dim);
 
 	/*
 	 * all output primitives will use Color_ava to see 
@@ -769,9 +771,9 @@ X11_ActivateWorkstation
 
 	xi->transform = TransformGetTransform(&xi->tsystem);
 
-	xi->width = xwa.width;
-	xi->height = xwa.height;
-	xi->dim = xwa.width;
+	xi->dim = square_screen.urx - square_screen.llx + 1;
+	if(xi->size_change)
+		(*xi->size_change)(xi->sref,xi->dim);
 
 	return(0);
 }
@@ -879,9 +881,9 @@ X11_ClearWorkstation
 
 	xi->transform = TransformGetTransform(&xi->tsystem);
 
-	xi->width = xwa.width;
-	xi->height = xwa.height;
-	xi->dim = xwa.width;
+	xi->dim = square_screen.urx - square_screen.llx + 1;
+	if(xi->size_change)
+		(*xi->size_change)(xi->sref,xi->dim);
 
 
 	return(0);
@@ -906,6 +908,7 @@ X11_Esc
 	_NGCesc			*cesc = (_NGCesc*)gksc->native;
 	_NGCXGetXPix		*gxpix;
 	_NGCXFreeCi		*fci;
+	_NGCXGetSizeChg		*getsizechg;
 
 	switch (iptr[0]) {
 	case	ESCAPE_PAUSE:
@@ -1005,6 +1008,13 @@ X11_Esc
 		case NGC_XFREECI:
 			fci = (_NGCXFreeCi*)cesc;
 			X11_free_ci(xi,fci->gksci);
+			break;
+		case NGC_XSIZECHG:
+			getsizechg = (_NGCXGetSizeChg*)cesc;
+			xi->size_change = getsizechg->xget_size;
+			xi->sref = getsizechg->closure;
+			if(xi->size_change)
+				(*xi->size_change)(xi->sref,xi->dim);
 			break;
 		default:
 			return ERR_INV_ESCAPE;

@@ -1,5 +1,5 @@
 /*
- *	$Id: xddi.h,v 1.8 1997-02-27 20:08:08 boote Exp $
+ *	$Id: xddi.h,v 1.9 1997-07-31 17:58:20 boote Exp $
  */
 /*
  *      File:		xddi.h
@@ -36,7 +36,6 @@ typedef	struct	Xddi_	{
 	Visual		*vis;
 	Window		win;
 	unsigned int	depth;
-	int		width, height;
 	unsigned 	dim;
 	Transform2D	transform;
 	GC		line_gc,
@@ -57,6 +56,8 @@ typedef	struct	Xddi_	{
 	_NGCXAllocColorProc	alloc_color;
 	_NGCXFreeColorsProc	free_colors;
 	void		*cref;
+	_NGCXGetSizeProc	size_change;
+	void			*sref;
 	Pixeltype	color_pal[MAX_COLORS];
 	int		color_info[MAX_COLORS];
 	XddpColorStatus	color_status[MAX_COLORS];
