@@ -1,5 +1,5 @@
 /*
- *	$Id: sunraster.c,v 1.8 1991-09-26 16:29:53 clyne Exp $
+ *	$Id: sunraster.c,v 1.9 1992-01-27 12:51:58 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -1002,10 +1002,10 @@ static	Ct_err	raster_(c, P, rows, cols, nx, ny, width, height)
 	for (i=0; i < ny; i++ ) {
 
 		/* load  array of color indecies for that row of cells	*/
-		for (k=0; k < nx; k++, index++) {
+		for (k=0; k < nx; k++) {
 
 			/* make sure data available in cgmc     */
-			if (index == c->Cnum && c->more) {
+			if (index >= c->Cnum && c->more) {
 				if (Instr_Dec(c) < 1) {
 					ct_error(T_FRE, "metafile");
 					return (DIE);
@@ -1015,6 +1015,7 @@ static	Ct_err	raster_(c, P, rows, cols, nx, ny, width, height)
 			}
 
 			index_array[k] = c->c[index];
+			index++;
 		}
 		
 		/*	the rows of pixels per cell	*/

@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class4.c,v 1.10 1991-11-07 11:51:31 clyne Exp $
+ *	$Id: X11_class4.c,v 1.11 1992-01-27 12:51:40 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -1352,18 +1352,18 @@ static	Ct_err	x11_cell_array(c, color_pal, P, Q, R, nx, ny)
 		/* 
 		 * load array of color indecies for row[i] of cells
 		 */
-                for (k=0; k<nx; k++, cgmc_index++) {
-                        index_array[k] = c->c[cgmc_index];
+                for (k=0; k<nx; k++) {
 
 			/* make sure data available in cgmc     */
-			if (cgmc_index == c->Cnum && c->more) {
+			if (cgmc_index >= c->Cnum && c->more) {
 				if (Instr_Dec(c) < 1) {
 					ct_error(T_FRE, "metafile");
 					return (DIE);
 				}
 				cgmc_index = 0;
 			}
-
+                        index_array[k] = c->c[cgmc_index];
+			cgmc_index++;
                 }
 
                 /*      

@@ -9,15 +9,15 @@
 
 SYSTEM_INCLUDE		= Sun4
 
-PARFIL_INIT     = /u1/clyne/testlib/params3.1.3
-PARFIL_PERM     = /u1/clyne/testlib/params3.1.3
+PARFIL_INIT     = /u2/clyne/tags/lib/params3.1.3.alpha
+PARFIL_PERM     = /u2/clyne/tags/lib/params3.1.3.alpha
 
-BINDIR		= /u1/clyne/testbin
-LIBDIR		= /u1/clyne/testlib
-MANDIR		= /u1/clyne/testman
+BINDIR		= /u2/clyne/tags/bin
+LIBDIR		= /u2/clyne/tags/lib
+MANDIR		= /u2/clyne/tags/man
 MAN_SECTION     = l
 TMPDIR          = /tmp
-XAPPDIR		= /u1/clyne/testlib
+XAPPDIR		= /u2/clyne/tags/lib
 BITSDIR         = /usr/include/X11/bitmaps
 
 INCLUDEDIR      = $(NCARG)/include

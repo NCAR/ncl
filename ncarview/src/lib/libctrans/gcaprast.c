@@ -1,5 +1,5 @@
 /*
- *	$Id: gcaprast.c,v 1.4 1991-09-26 16:29:38 clyne Exp $
+ *	$Id: gcaprast.c,v 1.5 1992-01-27 12:51:46 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -375,10 +375,10 @@ CGMC	*c;
 		/*
 		 * load an array of colour indecies for row i cells
 		 */
-		for (j = 0; j < nx; j++, index++) {
+		for (j = 0; j < nx; j++) {
 
 			/* make sure data available in cgmc     */
-			if (index == c->Cnum && c->more) {
+			if (index >= c->Cnum && c->more) {
 				if (Instr_Dec(c) < 1) {
 					ct_error(T_FRE, "metafile");
 					return (DIE);
@@ -388,7 +388,7 @@ CGMC	*c;
 			}
 
 			index_array[j] = c->c[index];
-
+			index++;
 		}
 
 
