@@ -1,5 +1,5 @@
 /*
- *      $Id: xcontrol.c,v 1.23 2004-04-29 19:16:51 dbrown Exp $
+ *      $Id: xcontrol.c,v 1.24 2004-08-03 21:53:14 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -1213,6 +1213,12 @@ X11_Esc
                         return ERR_INV_ESCAPE;
                 }
 
+                break;
+        case ESCAPE_COORDS_0:   /*  Ignore if this ever happens */
+                break;
+        case ESCAPE_COORDS_1:   /*  Ignore if this ever happens */
+                break;
+        case ESCAPE_ORIENT:     /*  Ignore if this ever happens */
                 break;
         default:
                 return ERR_INV_ESCAPE;

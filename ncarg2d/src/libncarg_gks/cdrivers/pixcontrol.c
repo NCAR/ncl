@@ -1,5 +1,5 @@
 /*
- *      $Id: pixcontrol.c,v 1.3 2004-03-22 21:22:40 dbrown Exp $
+ *      $Id: pixcontrol.c,v 1.4 2004-08-03 21:53:14 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -1155,6 +1155,12 @@ PIX_Esc
                         return ERR_INV_ESCAPE;
                 }
 
+                break;
+        case ESCAPE_COORDS_0:   /*  Ignore if this ever happens */
+                break;
+        case ESCAPE_COORDS_1:   /*  Ignore if this ever happens */
+                break;
+        case ESCAPE_ORIENT:     /*  Ignore if this ever happens */
                 break;
         default:
                 return ERR_INV_ESCAPE;

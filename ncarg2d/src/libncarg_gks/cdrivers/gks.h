@@ -1,5 +1,5 @@
 /*
- *	$Id: gks.h,v 1.7 2000-08-22 03:23:30 haley Exp $
+ *	$Id: gks.h,v 1.8 2004-08-03 21:53:14 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -171,5 +171,12 @@
 #define	ESCAPE_COLOR_ERROR	-1400
 #define	ESCAPE_PRIVATE_CMAP	-1401
 #define	ESCAPE_COLOR_MODEL	-1402
+
+/*
+ *  Escapes to be ignored if they come this way.
+ */
+#define	ESCAPE_COORDS_0   	-1521
+#define	ESCAPE_COORDS_1         -1526
+#define	ESCAPE_ORIENT           -1525
 
 #endif	/*	_gks_	*/
