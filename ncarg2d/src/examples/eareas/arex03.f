@@ -1,7 +1,5 @@
-C
-C $Id: arex03.f,v 1.2 1995-06-14 13:55:56 haley Exp $
-C
-      PROGRAM TESTIT
+
+      PROGRAM AREX03
 C
 C This example shows the effect of the new internal parameter 'RC' on
 C the process of reconciling conflicting area-identifier information.
@@ -13,9 +11,14 @@ C edge is shown and the area identifier selected for the whole decagon
 C is shown in its center.
 C
 C Define the error file, the Fortran unit number, the workstation type,
-C and the workstation ID.
+C and the workstation ID to be used in calls to GKS routines.
 C
-        PARAMETER (IERRF=6,LUNIT=2,IWTYPE=1,IWKID=1)
+C       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1,  IWKID=1)   ! NCGM
+C       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=8,  IWKID=1)   ! X Windows
+C       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=11, IWKID=1)   ! PDF
+C       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=20, IWKID=1)   ! PostScript
+C
+        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1,  IWKID=1)
 C
 C Define the length of the area map array.
 C

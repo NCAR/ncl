@@ -1,7 +1,5 @@
-C
-C $Id: arex01.f,v 1.5 1995-06-14 13:55:54 haley Exp $
-C
-      PROGRAM EXMPLE
+
+      PROGRAM AREX01
 C
 C This example code forces ARPRAM to produce, for a simple area map, a
 C set of plots showing all the edge segments in the area map at each of
@@ -19,10 +17,15 @@ C a maximal blue component to wash out the color into a pastel shade.
 C A rectangular area (in which, one might imagine, data were missing)
 C is masked out so as to be left uncolored.
 C
-C Define error file, Fortran unit number, and workstation type,
-C and workstation ID.
+C Define the error file, the Fortran unit number, the workstation type,
+C and the workstation ID to be used in calls to GKS routines.
 C
-        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1, IWKID=1)
+C       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1,  IWKID=1)   ! NCGM
+C       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=8,  IWKID=1)   ! X Windows
+C       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=11, IWKID=1)   ! PDF
+C       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=20, IWKID=1)   ! PostScript
+C
+        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1,  IWKID=1)
 C
 C Define the size of the area map to be used.
 C

@@ -1,6 +1,4 @@
-C
-C $Id: arex02.f,v 1.5 1995-06-14 13:55:55 haley Exp $
-C
+
       PROGRAM AREX02
 C
 C This program illustrates the use of the routine ARMVAM, particularly
@@ -12,10 +10,15 @@ C routines are only told about a part of that array.  Still, the idea
 C is much the same as one would use in C or, presumably, in FORTRAN
 C 90 (if and when compilers become generally available for FORTRAN 90).
 C
-C Define error file, Fortran unit number, and workstation type,
-C and workstation ID.
+C Define the error file, the Fortran unit number, the workstation type,
+C and the workstation ID to be used in calls to GKS routines.
 C
-        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1, IWKID=1)
+C       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1,  IWKID=1)   ! NCGM
+C       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=8,  IWKID=1)   ! X Windows
+C       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=11, IWKID=1)   ! PDF
+C       PARAMETER (IERRF=6, LUNIT=2, IWTYPE=20, IWKID=1)   ! PostScript
+C
+        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1,  IWKID=1)
 C
 C Define the size of the area map array to be used.  The part of this
 C used by the AREAS routines will fluctuate as needed.
