@@ -1,5 +1,5 @@
 /*
- *      $Id: DataSupport.c,v 1.26 1996-06-25 22:47:57 ethan Exp $
+ *      $Id: DataSupport.c,v 1.27 1996-07-10 19:26:56 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -159,22 +159,28 @@ unsigned int type;
 {
 	NclCallBackList *cl = NULL;
 	NclObjClass oc = NULL;
-	void *call_data;
+	void *call_data = NULL;
 	NhlErrorTypes ret = NhlNOERROR,ret1;
 	if(obj != NULL) {
 		oc = obj->obj.class_ptr;	
 		switch(type) {
 		case CREATED:
-			call_data  = _NclObtainCallData(obj,CREATED);
 			cl = oc->obj_class.create_callback;
+			if(cl != NULL) {
+				call_data  = _NclObtainCallData(obj,CREATED);
+			}
 			break;
 		case MODIFIED:
-			call_data  = _NclObtainCallData(obj,MODIFIED);
 			cl = oc->obj_class.modify_callback;
+			if(cl != NULL) {
+				call_data  = _NclObtainCallData(obj,MODIFIED);
+			}
 			break;
 		case DESTROYED:
-			call_data  = _NclObtainCallData(obj,DESTROYED);
 			cl = oc->obj_class.delete_callback;
+			if(cl != NULL) {
+				call_data  = _NclObtainCallData(obj,DESTROYED);
+			}
 			break;
 		}
 		while(cl != NULL) {
@@ -184,7 +190,9 @@ unsigned int type;
 			}
 			cl = cl->next;
 		}
-		NclFree(call_data);
+		if(call_data != NULL) {
+			NclFree(call_data);
+		}
 		return(ret);
 	} else {
 		return(NhlFATAL);

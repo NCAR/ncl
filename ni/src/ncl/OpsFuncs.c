@@ -222,6 +222,7 @@ int operation;
 				result->u.data_obj->obj.status = TEMPORARY;
 				result->u.data_obj->obj.ref_count = 0;
 				NclFree(result->u.data_obj->obj.parents);
+				result->u.data_obj->obj.parents = NULL;
 			}
 		}
         } 
@@ -251,6 +252,7 @@ int operation;
 				result->u.data_obj->obj.status = TEMPORARY;
 				result->u.data_obj->obj.ref_count = 0;
 				NclFree(result->u.data_obj->obj.parents);
+				result->u.data_obj->obj.parents = NULL;
 			}
 
 		}
