@@ -1,5 +1,5 @@
 /*
- *	$Id: ymake-filter.c,v 1.5 1994-03-14 13:52:05 boote Exp $
+ *	$Id: ymake-filter.c,v 1.6 1994-03-16 01:35:09 boote Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -39,6 +39,9 @@
 #define TRUE	1
 #define FALSE	0
 
+/* These chars indicate no tab at beginning of line, unless escaped */
+static char	tab_chars[] = ":=";
+
 main()
 {
 	char	*line, *getcppline(), *index(), *tchar, *tchar2;
@@ -49,53 +52,44 @@ main()
 
 	while ( (line = getcppline()) != NULL )
 	{
-		tchar = NULL;
-		tchar2 = NULL;
 
 		if ( isacppcomment(line) ) continue;
 
-		if ( (len = strlen(line)) > 0)
-		{
-			if ((tchar2 = index(line,':')) == NULL &&
-			    line[0] != '#' && line[0] != '\t' &&
-			    ((tchar = index(line,'=')) == NULL)) {
-				(void) printf("\t");
-			}
-			/*
-			 * Need to add the tab if the '=' is escaped
-			 * but be sure the = is not the first charactor in
-			 * the line before looking at the char before it.
-			 */
-			else if(tchar != (char*)NULL && (tchar != line) &&
-				(*(tchar-1) == '\\')) {
-				(void) printf("\t");
-				/* eat escape char */
-				while(*tchar != '\0'){
-					*(tchar-1) = *tchar;
-					tchar++;
+		if ( (len = strlen(line)) > 0){
+			int	do_tab = TRUE;
+			int	i;
+
+			/* look for escapable chars */
+
+			for(i=0; i < sizeof(tab_chars);i++){
+				char	*tchar;
+
+				tchar = index(line,tab_chars[i]);
+				if(tchar != NULL){
+					if((tchar != line) &&
+							(*(tchar-1) == '\\')){
+						/* eat escape char */
+						while(*tchar != '\0'){
+							*(tchar-1) = *tchar;
+							tchar++;
+						}
+						*(tchar-1) = *tchar;
+					}
+					else
+						do_tab = FALSE;
 				}
-				*(tchar-1) = *tchar;
 			}
-			/*
-			 * Need to add the tab if the ':' is escaped
-			 * but be sure the : is not the first charactor in
-			 * the line before looking at the char before it.
-			 */
-			else if(tchar2 != (char*)NULL && (tchar2 != line) &&
-				(*(tchar2-1) == '\\')) {
+
+			/* don't tab if Make comment or tab'd already */
+			if((line[0] == '#') || (line[0] == '\t'))
+				do_tab = FALSE;
+
+			if(do_tab)
 				(void) printf("\t");
-				/* eat escape char */
-				while(*tchar2 != '\0'){
-					*(tchar2-1) = *tchar;
-					tchar++;
-				}
-				*(tchar2-1) = *tchar2;
-			}
 
 			(void) printf("%s\n", line);
 		}
-		else
-		{
+		else{
 			if (lastlen > 0) {
 				(void) printf("\n");
 			}
