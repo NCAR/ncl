@@ -50,7 +50,7 @@ begin
   resources@tmXBLabelFont = "Times-Roman"
   resources@tmYLLabelFont = "Times-Roman"
 
-  resources@stLineColor = 3  ; Change streamlines to green.
+  resources@stLineColor = "green"  ; Change streamlines to green.
 
   plot = gsn_streamline(wks,uvar(::2,::2),vvar(::2,::2),resources) ; Draw streamline plot.
 
@@ -63,8 +63,8 @@ begin
     
   resources@stMinLineSpacingF = spacing * 2.0     ; Set some resources based
   resources@stArrowLengthF    = arrowlength * 2.0 ; on resources you retrieved.
-  resources@stLineColor       = 1
-  resources@stLineThicknessF  = 1.5
+  resources@stLineColor       = "white"           ; Change line colors back to 
+  resources@stLineThicknessF  = 1.5               ; white.
 
   uvar = grb_file->U_GRD_6_GPML(0,:,:) ; Get new GRIB variables.
   vvar = grb_file->V_GRD_6_GPML(0,:,:)

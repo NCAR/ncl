@@ -21,16 +21,16 @@ begin
     yint(i) = ftcurvpi(0., xo(i), period, xi, yi)
   end do
 
-  wks = gsn_open_wks("x11","gsun07n") ; Open an X11 workstation.
+  wks_type            = "x11"
+  wks_type@wkColorMap = (/"white","black","red","green","blue","yellow"/)
 
-  cmap = (/(/1.,1.,1./),(/0.,0.,0./),(/1.,0.,0./),(/0.,1.,0./),\
-           (/0.,0.,1./),(/1.,1.,0./)/)
+  wks = gsn_open_wks(wks_type,"gsun07n") ; Open an X11 workstation.
 
-  gsn_define_colormap(wks,cmap) ; Define your own color map.
+  txres = True   ; Set up variable for TextItem resources.
 
-  txres = True   ; Set up some variables for 
-  xyres = True   ; creating three different
-  gsres = True   ; resource lists.
+  xyres = True   ; Set up variable for XyPlot resources.
+
+  gsres = True   ; Set up variable for GraphicStyle resources.
 
   xyres@gsnFrame               = False     ; Don't advance the frame.
 
@@ -75,7 +75,7 @@ begin
   xy = gsn_xy(wks,xo,yo,xyres) ; Plot the interpolated values.
 
   xyres@xyMarkLineMode = "Markers"  ; Set line mode to "Markers".
-  xyres@xyMarkerColor  = 4          ; Set markers to blue.
+  xyres@xyMarkerColor  = "blue"     ; Set markers to blue.
   xyres@xyMarkerSizeF  = 0.025      ; Make markers larger.
 
   xy = gsn_xy(wks,xi,yi,xyres) ; Plot the original points with markers.
@@ -87,7 +87,7 @@ begin
   xx = (/xl,xr/)   ; Create data for a polyline for marking
   yy = (/0.0,0.0/) ; the Y = 0.0 line in each graph.
 
-  gsres@gsLineColor = 2                ; Set polyline color to red.
+  gsres@gsLineColor = "red"            ; Set polyline color to red.
   gsn_polyline(wks,xy,xx,yy,gsres)     ; Draw polyline at Y=0.
 
 ;----------- Begin second plot, same frame--------------------------------

@@ -40,10 +40,10 @@
 ! water transparent.  Make the outlines gray and double their thickness
 !
 *mpFillOn                    : True
-*mpGeophysicalLineColor      : 27
-*mpLandFillColor             : 27
-*mpInlandWaterFillColor      : -1
-*mpOceanFillColor            : -1
+*mpGeophysicalLineColor      : gray
+*mpLandFillColor             : gray
+*mpInlandWaterFillColor      : transparent
+*mpOceanFillColor            : transparent
 *mpGeophysicalLineThicknessF : 2.
 
 !
