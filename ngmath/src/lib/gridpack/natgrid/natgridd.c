@@ -1,5 +1,5 @@
 /*
- * $Id: natgridd.c,v 1.8 2000-08-22 15:19:40 haley Exp $
+ * $Id: natgridd.c,v 1.9 2001-03-06 23:05:13 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -93,6 +93,14 @@ void Initialized(int n, double x[], double y[], int nxi, int nyi,
 {
 
    double xil, xir, yib, yit;
+
+/*
+ *  Reserve memory for returning natural neighbor indices
+ *  and associated weights when requested in single point
+ *  mode for linear interpolation.
+ */
+   nbrs = (int *) calloc(n,sizeof(int));
+   wts  = (double *) calloc(n,sizeof(double));
 
    error_status = 0;
    datcnt       = 0;

@@ -1,5 +1,5 @@
 /*
- * $Id: nncrunchd.c,v 1.8 2000-08-22 15:19:41 haley Exp $
+ * $Id: nncrunchd.c,v 1.9 2001-03-06 23:05:14 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -401,6 +401,11 @@ double **MakeGridd(int nxi, int nyi, double *xi, double *yi)
       curasd.slope_outd = DoubleMatrix(nxi,nyi);
    }
 
+/*
+ * jwts flags saving the neighbor indices and associated
+ * weights when requested in single point mode using linear interpolation.
+ */
+   jwts = 0;
    for (j8 = 0 ; j8 < nyi ; j8++) {
       if (updir > 0) 
          wyd = yi[j8]*magy;
@@ -424,7 +429,11 @@ double **MakeGridd(int nxi, int nyi, double *xi, double *yi)
          if (!extrap AND !goodflag) 
             surf = nuldat;
          else {
+           if(single_point==1 && j7==1 && j8==1 && igrad==0) {
+              jwts = 1;
+            }
             surf = Surface();
+            jwts = 0;
             if (igrad>0) surf = Meld(surf,wxd,wyd);
             if (non_neg) if (surf < 0) surf = 0;
          }

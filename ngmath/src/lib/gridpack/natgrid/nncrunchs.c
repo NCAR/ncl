@@ -1,5 +1,5 @@
 /*
- * $Id: nncrunchs.c,v 1.9 2000-08-25 23:29:44 fred Exp $
+ * $Id: nncrunchs.c,v 1.10 2001-03-06 23:05:14 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -404,7 +404,7 @@ float **MakeGrid(int nxi, int nyi, float *xi, float *yi)
 
 /*
  * jwts flags saving the neighbor indices and associated
- * weights when request in single point mode using linear interpolation.
+ * weights when requested in single point mode using linear interpolation.
  */
    jwts = 0;
    for (j8 = 0 ; j8 < nyi ; j8++) {
