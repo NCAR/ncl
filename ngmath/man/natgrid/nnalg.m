@@ -1,7 +1,7 @@
 .\"
-.\"     $Id: nnalg.m,v 1.1 1997-03-08 18:13:31 fred Exp $
+.\"     $Id: nnalg.m,v 1.2 1998-02-04 15:32:03 haley Exp $
 .\"
-.TH nnalg 1NCARG "March 1997" UNIX "NCAR GRAPHICS"
+.TH nnalg 1NCARG "March 1997-1998" UNIX "NCAR GRAPHICS"
 .na
 .nh
 .SH NAME
@@ -55,7 +55,7 @@ Complete documentation for nnalg is available at URL
 .br
 http://ngwww.ucar.edu/ngdoc/ng/ngmath/natgrid/algorithm.html
 .SH COPYRIGHT
-Copyright (C) 1997
+Copyright (C) 1997-1998
 .br
 University Corporation for Atmospheric Research
 .br

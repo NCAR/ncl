@@ -1,7 +1,7 @@
 .\"
-.\"	$Id: dsgrid3d.m,v 1.1 1997-09-29 22:12:05 fred Exp $
+.\"	$Id: dsgrid3d.m,v 1.2 1998-02-04 15:31:43 haley Exp $
 .\"
-.TH DSGRID3D 3NCARG "September 1997" UNIX "NCAR GRAPHICS"
+.TH DSGRID3D 3NCARG "September 1997-1998" UNIX "NCAR GRAPHICS"
 .SH NAME
 DSGRID3D - double precision Fortran entry for 3D gridding
 .SH SYNOPSIS
@@ -73,7 +73,7 @@ Complete documentation for Dsgrid is available at URL
 .br
 http://ngwww.ucar.edu/ngdoc/ng/ngmath/dsgrid/dshome.html
 .SH COPYRIGHT
-Copyright (C) 1997
+Copyright (C) 1997-1998
 .br
 University Corporation for Atmospheric Research
 .br

@@ -1,7 +1,7 @@
 .\"
-.\"	$Id: natgrids.m,v 1.2 1997-05-06 23:37:48 fred Exp $
+.\"	$Id: natgrids.m,v 1.3 1998-02-04 15:32:03 haley Exp $
 .\"
-.TH NATGRIDS 3NCARG "March 1997" UNIX "NCAR GRAPHICS"
+.TH NATGRIDS 3NCARG "March 1997-1998" UNIX "NCAR GRAPHICS"
 .SH NAME
 NATGRIDS - primary single precision Fortran entry for natural neighbor gridding
 .SH SYNOPSIS
@@ -60,7 +60,7 @@ Complete documentation for Natgrid is available at URL
 .br
 http://ngwww.ucar.edu/ngdoc/ng/ngmath/natgrid/nnhome.html
 .SH COPYRIGHT
-Copyright (C) 1997
+Copyright (C) 1997-1998
 .br
 University Corporation for Atmospheric Research
 .br

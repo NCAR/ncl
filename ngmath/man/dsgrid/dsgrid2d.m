@@ -1,7 +1,7 @@
 .\"
-.\"     $Id: dsgrid2d.m,v 1.1 1997-09-29 22:12:04 fred Exp $
+.\"     $Id: dsgrid2d.m,v 1.2 1998-02-04 15:31:42 haley Exp $
 .\"
-.TH DSGRID2D 3NCARG "September 1997" UNIX "NCAR GRAPHICS"
+.TH DSGRID2D 3NCARG "September 1997-1998" UNIX "NCAR GRAPHICS"
 .SH NAME
 DSGRID2D - double precision Fortran entry for iterpolation from 
 2D random data to an output grid.
@@ -66,7 +66,7 @@ Complete documentation for Dsgrid is available at URL
 .br
 http://ngwww.ucar.edu/ngdoc/ng/ngmath/dsgrid/dshome.html
 .SH COPYRIGHT
-Copyright (C) 1997
+Copyright (C) 1997-1998
 .br
 University Corporation for Atmospheric Research
 .br

@@ -1,7 +1,7 @@
 .\"
-.\"     $Id: c_natgridd.m,v 1.4 1997-09-30 18:36:14 fred Exp $
+.\"     $Id: c_natgridd.m,v 1.5 1998-02-04 15:31:53 haley Exp $
 .\"
-.TH c_natgridd 3NCARG "March 1997" UNIX "NCAR GRAPHICS"
+.TH c_natgridd 3NCARG "March 1997-1998" UNIX "NCAR GRAPHICS"
 .SH NAME
 c_natgrids - primary double precision C entry for natural neighbor gridding
 .SH FUNCTION PROTOTYPE
@@ -66,7 +66,7 @@ Complete documentation for Natgrid is available at URL
 .br
 http://ngwww.ucar.edu/ngdoc/ng/ngmath/natgrid/nnhome.html
 .SH COPYRIGHT
-Copyright (C) 1997
+Copyright (C) 1997-1998
 .br
 University Corporation for Atmospheric Research
 .br

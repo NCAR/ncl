@@ -1,7 +1,7 @@
 .\"
-.\"     $Id: nnpntd.m,v 1.2 1997-05-06 23:37:58 fred Exp $
+.\"     $Id: nnpntd.m,v 1.3 1998-02-04 15:32:08 haley Exp $
 .\"
-.TH NNPNTD 3NCARG "March 1997" UNIX "NCAR GRAPHICS"
+.TH NNPNTD 3NCARG "March 1997-1998" UNIX "NCAR GRAPHICS"
 .SH NAME
 NNPNTD- Interpolate at a single point in double precision
 .SH SYNOPSIS
@@ -33,7 +33,7 @@ Complete documentation for Natgrid is available at URL
 .br
 http://ngwww.ucar.edu/ngdoc/ng/ngmath/natgrid/nnhome.html
 .SH COPYRIGHT
-Copyright (C) 1997
+Copyright (C) 1997-1998
 .br
 University Corporation for Atmospheric Research
 .br

@@ -1,7 +1,7 @@
 .\"
-.\"     $Id: dssetc.m,v 1.1 1997-09-29 22:12:13 fred Exp $
+.\"     $Id: dssetc.m,v 1.2 1998-02-04 15:31:46 haley Exp $
 .\"
-.TH DSSETC 3NCARG "September 1997" UNIX "NCAR GRAPHICS"
+.TH DSSETC 3NCARG "September 1997-1998" UNIX "NCAR GRAPHICS"
 .na
 .nh
 .SH NAME
@@ -40,7 +40,7 @@ Complete documentation for Dsgrid is available at URL
 .br
 http://ngwww.ucar.edu/ngdoc/ng/ngmath/dsgrid/dshome.html
 .SH COPYRIGHT
-Copyright (C) 1997
+Copyright (C) 1997-1998
 .br
 University Corporation for Atmospheric Research
 .br

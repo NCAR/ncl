@@ -1,7 +1,7 @@
 .\"
-.\"     $Id: natgrid_errors.m,v 1.1 1997-03-07 22:59:07 fred Exp $
+.\"     $Id: natgrid_errors.m,v 1.2 1998-02-04 15:32:02 haley Exp $
 .\"
-.TH natgrid_errors 3NCARG "March 1997" UNIX "NCAR GRAPHICS"
+.TH natgrid_errors 3NCARG "March 1997-1998" UNIX "NCAR GRAPHICS"
 .na
 .nh
 .SH NAME
@@ -101,7 +101,7 @@ Complete documentation for Natgrid is available at URL
 .br
 http://ngwww.ucar.edu/ngdoc/ng/ngmath/natgrid/nnhome.html
 .SH COPYRIGHT
-Copyright (C) 1997
+Copyright (C) 1997-1998
 .br
 University Corporation for Atmospheric Research
 .br

@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: rasgetpal.m,v 1.7 1997-08-11 13:35:47 haley Exp $
+.\"	$Id: rasgetpal.m,v 1.8 1998-02-04 15:28:21 haley Exp $
 .\"
 .TH RASGETPAL 1NCARG "January 1993" NCARG "NCAR VIEW"
 .SH NAME
@@ -81,7 +81,7 @@ from direct-color rasterfiles.
 Hardcopy:
 NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
-Copyright (C) 1987-1997
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

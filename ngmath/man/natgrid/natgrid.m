@@ -1,7 +1,7 @@
 .\"
-.\"     $Id: natgrid.m,v 1.3 1997-09-30 18:36:18 fred Exp $
+.\"     $Id: natgrid.m,v 1.4 1998-02-04 15:32:01 haley Exp $
 .\"
-.TH Natgrid 3NCARG "March 1997" UNIX "NCAR GRAPHICS"
+.TH Natgrid 3NCARG "March 1997-1998" UNIX "NCAR GRAPHICS"
 .na
 .nh
 .SH NAME
@@ -133,7 +133,7 @@ http://ngwww.ucar.edu/ngdoc/ng/ngmath/natgrid/nnhome.html
 .sp
 An NCL (NCAR Command Language) interface also exists for Natgrid procedures.
 .SH COPYRIGHT
-Copyright (C) 1997
+Copyright (C) 1997-1998
 .br
 University Corporation for Atmospheric Research
 .br

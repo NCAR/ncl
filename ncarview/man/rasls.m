@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: rasls.m,v 1.10 1997-08-11 13:35:47 haley Exp $
+.\"	$Id: rasls.m,v 1.11 1998-02-04 15:28:21 haley Exp $
 .\"
 .TH RASLS 1NCARG "January 1993" NCARG "NCAR VIEW"
 .SH NAME
@@ -66,7 +66,7 @@ All input files must have the same format.
 Hardcopy:
 NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
-Copyright (C) 1987-1997
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

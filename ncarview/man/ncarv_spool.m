@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncarv_spool.m,v 1.12 1997-08-11 13:35:45 haley Exp $
+.\"	$Id: ncarv_spool.m,v 1.13 1998-02-04 15:28:18 haley Exp $
 .\"
 .\" ncarv_spool 3.01 90/06/22 
 .TH NCARV_SPOOL 5NCARG "January 1993" NCARG "NCAR GRAPHICS"
@@ -128,7 +128,7 @@ $HOME/.ncarv_spool
 Hardcopy:
 NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
-Copyright (C) 1987-1997
+Copyright (C) 1987-1998
 .br
 University Corporation for Atmospheric Research
 .br

@@ -1,7 +1,7 @@
 .\"
-.\"     $Id: dspnt2d.m,v 1.2 1997-09-29 22:15:08 fred Exp $
+.\"     $Id: dspnt2d.m,v 1.3 1998-02-04 15:31:45 haley Exp $
 .\"
-.TH DSPNT2D 3NCARG "September 1997" UNIX "NCAR GRAPHICS"
+.TH DSPNT2D 3NCARG "September 1997-1998" UNIX "NCAR GRAPHICS"
 .SH NAME
 DSPNT2D- Interpolate at a single point (or points) in 2D in double precision
 .SH SYNOPSIS
@@ -48,7 +48,7 @@ Complete documentation for Dsgrid is available at URL
 .br
 http://ngwww.ucar.edu/ngdoc/ng/ngmath/dsgrid/dshome.html
 .SH COPYRIGHT
-Copyright (C) 1997
+Copyright (C) 1997-1998
 .br
 University Corporation for Atmospheric Research
 .br
