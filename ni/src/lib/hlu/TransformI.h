@@ -1,5 +1,5 @@
 /*
- *      $Id: TransformI.h,v 1.4 1996-06-13 02:05:58 dbrown Exp $
+ *      $Id: TransformI.h,v 1.5 1996-11-18 22:21:43 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -27,7 +27,37 @@
  * need these functions are not Transform class objects.
  */
 
-extern NhlBoolean _NhlIsOverlayMember(
+extern NhlBoolean _NhlIsPlotMember(
+#if	NhlNeedProto
+	int	pid
+#endif
+);
+
+extern NhlBoolean _NhlIsAnnotation(
+#if	NhlNeedProto
+	int	pid
+#endif
+);
+
+extern NhlBoolean _NhlIsOverlay(
+#if	NhlNeedProto
+	int	pid
+#endif
+);
+
+extern int _NhlAnnotationBase(
+#if	NhlNeedProto
+	int	pid
+#endif
+);
+
+extern int _NhlOverlayBase(
+#if	NhlNeedProto
+	int	pid
+#endif
+);
+
+extern int _NhlBasePlot(
 #if	NhlNeedProto
 	int	pid
 #endif

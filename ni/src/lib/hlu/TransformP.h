@@ -1,5 +1,5 @@
 /*
- *      $Id: TransformP.h,v 1.18 1996-07-12 18:54:14 dbrown Exp $
+ *      $Id: TransformP.h,v 1.19 1996-11-18 22:21:44 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -50,6 +50,7 @@ typedef struct NhlTransformLayerPart {
 	/* Public resource fields */
 
 	NhlBoolean		plot_manager_on;
+	NhlBoolean		do_ndc_overlay;
 
 	/* Private resource fields, set only by the overlay manager */
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManager.c,v 1.30 1996-11-14 23:14:40 dbrown Exp $
+ *      $Id: PlotManager.c,v 1.31 1996-11-18 22:21:37 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -487,6 +487,7 @@ static NhlErrorTypes ManageLegend(
 static NhlErrorTypes SetAnnoViews(
 #if	NhlNeedProto
 	NhlPlotManagerLayer	ovl,
+	NhlTransformLayer	plot,
 	NhlAnnoRec	*anno_list,
 	int		zone,
 	NhlBoolean	*flags,
@@ -521,6 +522,7 @@ static NhlErrorTypes SetExternalView(
 static NhlErrorTypes SetViewTracking(
 #if	NhlNeedProto
 	NhlPlotManagerLayer	ovl,
+	NhlTransformLayer	plot,
 	NhlAnnoRec	*anno_rec,
 	NhlString	entry_name
 #endif
@@ -1561,7 +1563,8 @@ static NhlErrorTypes PlotManagerPreDraw
 	for (i = 0; i <= max_zone; i++) {
 		for (j = 0; j < ovp->overlay_count; j++) {
 
-			subret = SetAnnoViews(ovl,ovp->pm_recs[j]->anno_list,
+			subret = SetAnnoViews(ovl,ovp->pm_recs[j]->plot,
+					      ovp->pm_recs[j]->anno_list,
 					      i,flags,entry_name);
 			if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
 		}
@@ -1591,6 +1594,8 @@ static NhlErrorTypes PlotManagerPreDraw
  */
 
 	for (i = 0; i < ovp->overlay_count; i++) {
+		NhlTransformLayerPart	*tfp;
+
 		Trans_Obj = ovp->pm_recs[i]->plot->trans.trans_obj;
 		Plot = (NhlLayer) ovp->pm_recs[i]->plot;
 
@@ -1599,6 +1604,17 @@ static NhlErrorTypes PlotManagerPreDraw
 			e_text = "%s: error in plot pre-draw";
 			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
 			return(ret);
+		}
+		tfp = &((NhlTransformLayer)Plot)->trans;
+		if (tfp->do_ndc_overlay) {
+			subret = _NhlSetTrans(PlotManager_Trans_Obj,
+					      PlotManager_Plot);
+			if ((ret = MIN(ret,subret)) < NhlWARNING) {
+				e_text = "%s: error setting transformation";
+				NhlPError(NhlFATAL,
+					  NhlEUNKNOWN,e_text, entry_name);
+				return(ret);
+			}
 		}
 	}
 	return ret;
@@ -1658,6 +1674,8 @@ static NhlErrorTypes PlotManagerDraw
  */
 
 	for (i = 0; i < ovp->overlay_count; i++) {
+		NhlTransformLayerPart	*tfp;
+
 		Trans_Obj = ovp->pm_recs[i]->plot->trans.trans_obj;
 		Plot = (NhlLayer) ovp->pm_recs[i]->plot;
 
@@ -1666,6 +1684,17 @@ static NhlErrorTypes PlotManagerDraw
 			e_text = "%s: error in plot draw";
 			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
 			return(ret);
+		}
+		tfp = &((NhlTransformLayer)Plot)->trans;
+		if (tfp->do_ndc_overlay) {
+			subret = _NhlSetTrans(PlotManager_Trans_Obj,
+					      PlotManager_Plot);
+			if ((ret = MIN(ret,subret)) < NhlWARNING) {
+				e_text = "%s: error setting transformation";
+				NhlPError(NhlFATAL,
+					  NhlEUNKNOWN,e_text, entry_name);
+				return(ret);
+			}
 		}
 	}
 
@@ -1731,7 +1760,7 @@ static NhlErrorTypes PlotManagerPostDraw
  */
 
 	for (i = 0; i < ovp->overlay_count; i++) {
-		NhlAnnoRec	*anlp = ovp->pm_recs[i]->anno_list;
+		NhlTransformLayerPart	*tfp;
 
 		Trans_Obj = ovp->pm_recs[i]->plot->trans.trans_obj;
 		Plot = (NhlLayer) ovp->pm_recs[i]->plot;
@@ -1741,6 +1770,17 @@ static NhlErrorTypes PlotManagerPostDraw
 			e_text = "%s: error in plot post-draw";
 			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
 			return(ret);
+		}
+		tfp = &((NhlTransformLayer)Plot)->trans;
+		if (tfp->do_ndc_overlay) {
+			subret = _NhlSetTrans(PlotManager_Trans_Obj,
+					      PlotManager_Plot);
+			if ((ret = MIN(ret,subret)) < NhlWARNING) {
+				e_text = "%s: error setting transformation";
+				NhlPError(NhlFATAL,
+					  NhlEUNKNOWN,e_text, entry_name);
+				return(ret);
+			}
 		}
 	}
 	for (i = 0; i < ovp->overlay_count; i++) {
@@ -1770,8 +1810,6 @@ static NhlErrorTypes PlotManagerPostDraw
 					break;
 				}
 			}
-			if (anlp->track_data && anlp->out_of_range)
-				continue;
 			if (anlp->plot_id == NhlNULLOBJID)
 				continue;
 			view = _NhlGetLayer(anlp->plot_id);
@@ -1863,7 +1901,8 @@ static NhlErrorTypes PlotManagerGetBB
 	for (i = 0; i <= max_zone; i++) {
 		for (j = 0; j < ovp->overlay_count; j++) {
 
-			subret = SetAnnoViews(ovl,ovp->pm_recs[j]->anno_list,
+			subret = SetAnnoViews(ovl,ovp->pm_recs[j]->plot,
+					      ovp->pm_recs[j]->anno_list,
 					      i,flags,entry_name);
 			if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
 		}
@@ -1983,14 +2022,16 @@ static NhlErrorTypes SetAnnoViews
 #if	NhlNeedProto
 (
 	NhlPlotManagerLayer	ovl,
+	NhlTransformLayer	plot,
 	NhlAnnoRec	*anno_list,
 	int		zone,
 	NhlBoolean	*flags,
 	NhlString	entry_name
 )
 #else
-(ovl,anno_list,zone,flags,entry_name)
+(ovl,plot,anno_list,zone,flags,entry_name)
 	NhlPlotManagerLayer	ovl;
+	NhlTransformLayer	plot;
 	NhlAnnoRec	*anno_list;
 	int		zone;
 	NhlBoolean	*flags;
@@ -2058,7 +2099,7 @@ static NhlErrorTypes SetAnnoViews
 			break;
 		case ovEXTERNAL:
 			if (anlp->track_data) {
-				SetViewTracking(ovl,anlp,entry_name);
+				SetViewTracking(ovl,plot,anlp,entry_name);
 				if ((ret = MIN(ret,subret)) < NhlWARNING)
 					return ret;
 				else if (ret > NhlWARNING) {
@@ -2331,12 +2372,14 @@ static NhlErrorTypes SetViewTracking
 #if	NhlNeedProto
 (
 	NhlPlotManagerLayer	ovl,
+	NhlTransformLayer	plot,
 	NhlAnnoRec	*anno_rec,
 	NhlString	entry_name
 )
 #else
-(ovl,anno_rec,entry_name)
+(ovl,plot,anno_rec,entry_name)
 	NhlPlotManagerLayer	ovl;
+	NhlTransformLayer	plot;
 	NhlAnnoRec	*anno_rec;
 	NhlString	entry_name;
 #endif
@@ -2347,11 +2390,20 @@ static NhlErrorTypes SetViewTracking
 	float			x_vp,y_vp,width_vp,height_vp;
 	int			status;
 	float			oo_range = 1E12;
+	NhlLayer		plot_for_trans;
 	
 	if (anno_rec->status == NhlNEVER)
 		return ret;
 
-	NhlDataToNDC(ovl->trans.overlay_object->base.parent->base.id,
+#if 0
+	if (plot->trans.do_ndc_overlay) {
+		plot_for_trans = (NhlLayer)plot;
+	}
+	else {
+		plot_for_trans = ovl->trans.overlay_object->base.parent;
+	}
+#endif
+	NhlDataToNDC(plot->base.id,
 		     &anno_rec->data_x,&anno_rec->data_y,1,
 		     &x_pos,&y_pos,NULL,NULL,&status,&oo_range);
 	if (status) {
@@ -2787,9 +2839,9 @@ SetAnnotations
 					  NhlEUNKNOWN,e_text,entry_name);
 				return NhlFATAL;
 			}
-			if (_NhlIsOverlayMember(idp[i])) {
+			if (_NhlIsPlotMember(idp[i])) {
 				e_text = 
-				 "%s: plot ID %d is already an overlay member";
+			    "%s: view is already an annotation or overlay: %d";
 				NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,
 					  entry_name,idp[i]);
 				return NhlFATAL;
@@ -4738,8 +4790,9 @@ NhlErrorTypes NhlAddOverlay
  * allocate and fill in a single overlay record for it.
  */
 
-	if (_NhlIsOverlayMember(transform_id)) {
-		e_text = "%s: tranform is already an overlay plot member: %d";
+	if (_NhlIsPlotMember(transform_id)) {
+		e_text = 
+		       "%s: tranform is already an annotation or overlay: %d";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,transform_id);
 		return NhlFATAL;
 	}
@@ -5279,22 +5332,8 @@ int NhlAddAnnotation
  * Ensure that the annotation view is not a current Overlay Member
  */
 
-	if (_NhlIsOverlayMember(anno_view_id)) {
-		e_text = "%s: view is already a plot member: %d";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,anno_view_id);
-		return NhlFATAL;
-	}
-
-/*
- * Ensure that the annotation view is not currently an annotation
- */
-
-	ret = NhlVAGetValues(anno_view_id,
-			     NhlNvpAnnoManagerId,&anno_manager_id,
-			     NULL);
-	if (ret < NhlWARNING) return NhlFATAL;
-	if (anno_manager_id != NhlNULLOBJID) {
-		e_text = "%s: view is already an annotation: %d";
+	if (_NhlIsPlotMember(anno_view_id)) {
+		e_text = "%s: view is already an annotation or overlay: %d";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,anno_view_id);
 		return NhlFATAL;
 	}
@@ -6419,10 +6458,12 @@ extern NhlErrorTypes _NhlManageOverlay
 		    vwp->width != ovvl->view.width ||
 		    vwp->height != ovvl->view.height) {
 
-			vwp->x = ovvl->view.x;
-			vwp->y = ovvl->view.y;
-			vwp->width = ovvl->view.width;
-			vwp->height = ovvl->view.height;
+			_NhlInternalSetView((NhlViewLayer)lnew,
+					    ovvl->view.x,
+					    ovvl->view.y,
+					    ovvl->view.width,
+					    ovvl->view.height,
+					    ovvl->view.keep_aspect);
 
 			e_text =
 			"%s: attempt to set overlay member plot view ignored";

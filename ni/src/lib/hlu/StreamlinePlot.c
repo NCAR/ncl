@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlot.c,v 1.19 1996-10-08 23:36:51 dbrown Exp $
+ *      $Id: StreamlinePlot.c,v 1.20 1996-11-18 22:21:40 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2454,6 +2454,7 @@ static NhlErrorTypes stUpdateTrans
         Overlay_Trans_Obj = NULL;
         Trans_Obj = tfp->trans_obj;
 	if (tfp->overlay_status == _tfCurrentOverlayMember && 
+	    ! tfp->do_ndc_overlay &&
 	    tfp->overlay_trans_obj != NULL) {
 		stp->trans_obj = tfp->overlay_trans_obj;
                 Overlay_Trans_Obj = tfp->overlay_trans_obj;
@@ -2498,7 +2499,8 @@ static NhlErrorTypes stUpdateTrans
 				return(ret);
 			}
 		}
-		if (tfp->overlay_status == _tfNotInOverlay) {
+		if (tfp->overlay_status == _tfNotInOverlay ||
+		    tfp->do_ndc_overlay) {
 			subret = _NhlSetTrans(tfp->trans_obj, (NhlLayer)stl);
 			if ((ret = MIN(ret,subret)) < NhlWARNING) {
 				e_text = "%s: error setting transformation";

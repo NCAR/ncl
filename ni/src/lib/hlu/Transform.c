@@ -1,5 +1,5 @@
 /*
- *      $Id: Transform.c,v 1.29 1996-10-08 23:36:57 dbrown Exp $
+ *      $Id: Transform.c,v 1.30 1996-11-18 22:21:42 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -41,6 +41,10 @@ static NhlResource resources[] = {
 		  NhlTBoolean,sizeof(NhlBoolean),
 		  NhlOffset(NhlTransformLayerRec,trans.plot_manager_on),
 		  NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
+	{ NhlNtfDoNDCOverlay,NhlCtfDoNDCOverlay,
+		  NhlTBoolean,sizeof(NhlBoolean),
+		  NhlOffset(NhlTransformLayerRec,trans.do_ndc_overlay),
+		  NhlTImmediate,_NhlUSET((NhlPointer)False),0,NULL},
 
 /* End-documented-resources */
 
@@ -312,6 +316,7 @@ static NhlErrorTypes TransformDataToNDC
 	int			mystatus = 0;
 
 	if (tfp->overlay_status == _tfCurrentOverlayMember && 
+	    ! tfp->do_ndc_overlay &&
 	    tfp->overlay_trans_obj != NULL) {
 		top = tfp->overlay_trans_obj;
 	}
@@ -428,6 +433,7 @@ static NhlErrorTypes TransformNDCToData
 	int			mystatus = 0;
 
 	if (tfp->overlay_status == _tfCurrentOverlayMember && 
+	    ! tfp->do_ndc_overlay &&
 	    tfp->overlay_trans_obj != NULL) {
 		top = tfp->overlay_trans_obj;
 	}
@@ -525,6 +531,7 @@ static NhlErrorTypes TransformDataPolyline
  * overlay.
  */
 	if (tfp->overlay_status == _tfCurrentOverlayMember && 
+	    ! tfp->do_ndc_overlay &&
 	    tfp->overlay_trans_obj != NULL) {
 		top = (NhlTransObjLayer) tfp->overlay_trans_obj;
 	}
@@ -653,6 +660,7 @@ static NhlErrorTypes TransformNDCPolyline
  * overlay.
  */
 	if (tfp->overlay_status == _tfCurrentOverlayMember && 
+	    ! tfp->do_ndc_overlay &&
 	    tfp->overlay_trans_obj != NULL) {
 		top = (NhlTransObjLayer) tfp->overlay_trans_obj;
 	}
@@ -777,6 +785,7 @@ static NhlErrorTypes TransformDataPolygon
  * overlay.
  */
 	if (tfp->overlay_status == _tfCurrentOverlayMember && 
+	    ! tfp->do_ndc_overlay &&
 	    tfp->overlay_trans_obj != NULL) {
 		top = (NhlTransObjLayer) tfp->overlay_trans_obj;
 	}
@@ -874,6 +883,7 @@ static NhlErrorTypes TransformNDCPolygon
  * overlay.
  */
 	if (tfp->overlay_status == _tfCurrentOverlayMember && 
+	    ! tfp->do_ndc_overlay &&
 	    tfp->overlay_trans_obj != NULL) {
 		top = (NhlTransObjLayer) tfp->overlay_trans_obj;
 	}
@@ -980,6 +990,7 @@ static NhlErrorTypes TransformDataPolymarker
  * overlay.
  */
 	if (tfp->overlay_status == _tfCurrentOverlayMember && 
+	    ! tfp->do_ndc_overlay &&
 	    tfp->overlay_trans_obj != NULL) {
 		top = (NhlTransObjLayer) tfp->overlay_trans_obj;
 	}
@@ -1125,6 +1136,7 @@ static NhlErrorTypes TransformNDCPolymarker
  * overlay.
  */
 	if (tfp->overlay_status == _tfCurrentOverlayMember && 
+	    ! tfp->do_ndc_overlay &&
 	    tfp->overlay_trans_obj != NULL) {
 		top = (NhlTransObjLayer) tfp->overlay_trans_obj;
 	}
@@ -1182,9 +1194,8 @@ static NhlErrorTypes TransformNDCPolymarker
 }
 
 
-
 /*
- * Function:	_NhlIsOverlayMember
+ * Function:	_NhlIsOverlay
  *
  * Description:	
  *
@@ -1197,7 +1208,7 @@ static NhlErrorTypes TransformNDCPolymarker
  * Side Effect:	
  */
 NhlBoolean
-_NhlIsOverlayMember
+_NhlIsOverlay
 #if	NhlNeedProto
 (
 	int	pid
@@ -1218,11 +1229,204 @@ _NhlIsOverlayMember
 
 	tl = (NhlTransformLayer)l;
 
-	if (tl->trans.overlay_status == _tfCurrentOverlayMember ||
-	    tl->view.annomanager_id)
+	if (tl->trans.overlay_status == _tfCurrentOverlayMember)
 		return True;
 
 	return False;
+}
+
+
+/*
+ * Function:	_NhlIsAnnotation
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+NhlBoolean
+_NhlIsAnnotation
+#if	NhlNeedProto
+(
+	int	pid
+)
+#else
+(pid)
+	int	pid;
+#endif
+{
+	NhlLayer		l = _NhlGetLayer(pid);
+	NhlViewLayer		vl = NULL;
+
+	if (! _NhlIsView(l))
+		return False;
+	vl = (NhlViewLayer)l;
+	if (vl->view.annomanager_id) {
+		return True;
+	}
+
+	return False;
+}
+
+
+/*
+ * Function:	_NhlIsPlotMember
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+NhlBoolean
+_NhlIsPlotMember
+#if	NhlNeedProto
+(
+	int	pid
+)
+#else
+(pid)
+	int	pid;
+#endif
+{
+	NhlLayer		l = _NhlGetLayer(pid);
+	NhlViewLayer		vl = NULL;
+	NhlTransformLayer	tl = NULL;
+
+	if (_NhlIsAnnotation(pid) || _NhlIsOverlay(pid))
+		return True;
+
+	return False;
+}
+
+
+/*
+ * Function:	_NhlAnnotationBase
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+int
+_NhlAnnotationBase
+#if	NhlNeedProto
+(
+	int	pid
+)
+#else
+(pid)
+	int	pid;
+#endif
+{
+	NhlLayer		l = _NhlGetLayer(pid);
+	NhlViewLayer		vl = NULL;
+	NhlTransformLayer	tl = NULL;
+
+	if(!l)
+		return NhlNULLOBJID;
+
+	if (! _NhlIsView(l))
+		return NhlNULLOBJID;
+	vl = (NhlViewLayer)l;
+	if (vl->view.annomanager_id && vl->view.overlay_id) {
+		NhlLayer ovl = _NhlGetLayer(vl->view.overlay_id);
+		return ovl->base.parent->base.id;
+	}
+
+	return NhlNULLOBJID;
+}
+
+/*
+ * Function:	_NhlOverlayBase
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+int
+_NhlOverlayBase
+#if	NhlNeedProto
+(
+	int	pid
+)
+#else
+(pid)
+	int	pid;
+#endif
+{
+	NhlLayer		l = _NhlGetLayer(pid);
+	NhlTransformLayer	tl = NULL;
+
+	if(!l)
+		return NhlNULLOBJID;
+
+	if(!_NhlIsTransform(l))
+		return NhlNULLOBJID;
+	tl = (NhlTransformLayer)l;
+		
+	if (tl->trans.overlay_status == _tfCurrentOverlayMember &&
+	    tl->trans.overlay_object != NhlNULLOBJID)
+		return tl->trans.overlay_object->base.parent->base.id;
+	else if (tl->trans.overlay_status == _tfCurrentOverlayBase)
+		return pid;
+
+	return NhlNULLOBJID;
+}
+
+/*
+ * Function:	_NhlBasePlot
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+int
+_NhlBasePlot
+#if	NhlNeedProto
+(
+	int	pid
+)
+#else
+(pid)
+	int	pid;
+#endif
+{
+
+	if (_NhlIsAnnotation(pid)) {
+		int base_plot_id = _NhlAnnotationBase(pid);
+		while (_NhlIsAnnotation(base_plot_id))
+			base_plot_id = _NhlAnnotationBase(base_plot_id);
+		return base_plot_id;
+	}
+
+	return (_NhlOverlayBase(pid));
 }
 
 /*

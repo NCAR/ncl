@@ -1,5 +1,5 @@
 /*
- *      $Id: Draw.c,v 1.13 1995-04-07 10:41:43 boote Exp $
+ *      $Id: Draw.c,v 1.14 1996-11-18 22:21:34 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -288,9 +288,9 @@ NhlDraw
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,id);
 		return(NhlFATAL);
 	}
-	else if (_NhlIsOverlayMember(id)) {
+	else if (_NhlIsPlotMember(id)) {
 		e_text =
-		       "%s: cannot draw Overlay Member, ID %d, independently";
+		       "%s: cannot draw Plot Member, ID %d, independently";
 		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,id);
 		return(NhlWARNING);
 	}

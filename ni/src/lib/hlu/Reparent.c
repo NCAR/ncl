@@ -1,5 +1,5 @@
 /*
- *      $Id: Reparent.c,v 1.9 1995-04-07 10:43:32 boote Exp $
+ *      $Id: Reparent.c,v 1.10 1996-11-18 22:21:38 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -241,9 +241,9 @@ NhlChangeWorkstation
 			"ChangeWorkstation-plot must be child of Workstation");
 		return NhlFATAL;
 	}
-	if(_NhlIsOverlayMember(plotid)){
+	if(_NhlIsPlotMember(plotid)){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
-		 "ChangeWorkstation-plot must not be an Overlay Member");
+	       "ChangeWorkstation-plot must not be an annotation or overlay");
 		return NhlFATAL;
 	}
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.46 1996-10-31 23:06:11 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.47 1996-11-18 22:21:30 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3458,6 +3458,7 @@ static NhlErrorTypes cnUpdateTrans
  * is an IrregularTransObj.
  */
 	if (tfp->overlay_status == _tfCurrentOverlayMember && 
+	    ! tfp->do_ndc_overlay &&
 	    tfp->overlay_trans_obj != NULL) {
 		cnp->trans_obj = tfp->overlay_trans_obj;
 		if ((cnp->trans_obj->base.layer_class)->base_class.class_name 
@@ -3500,7 +3501,8 @@ static NhlErrorTypes cnUpdateTrans
 				return(ret);
 			}
 		}
-		if (tfp->overlay_status == _tfNotInOverlay) {
+		if (tfp->overlay_status == _tfNotInOverlay ||
+		    tfp->do_ndc_overlay) {
 			subret = _NhlSetTrans(tfp->trans_obj, (NhlLayer)cnl);
 			if ((ret = MIN(ret,subret)) < NhlWARNING) {
 				e_text = "%s: error setting transformation";
@@ -3664,7 +3666,7 @@ static NhlErrorTypes ContourPlotPreDraw
 	}
 
 	subret = cnDraw(cnl,NhlPREDRAW,entry_name);
-
+	
 	Cnp = NULL;
 	return MIN(subret,ret);
 }
@@ -3740,6 +3742,7 @@ static NhlErrorTypes ContourPlotDraw
 	}
 
 	subret = cnDraw((NhlContourPlotLayer) layer,NhlDRAW,entry_name);
+
 	Cnp = NULL;
 	return MIN(subret,ret);
 }
@@ -10648,7 +10651,8 @@ void   (_NHLCALLF(hlucpmpxy,HLUCPMPXY))
                 *xotp = *xinp;
                 *yotp = *yinp;
         }
-	else if (Cnl->trans.overlay_status == _tfCurrentOverlayMember) { 
+	else if (Cnl->trans.overlay_status == _tfCurrentOverlayMember &&
+		 ! Cnl->trans.do_ndc_overlay) { 
 		if (*imap > 0)
 			_NhlovCpMapXY(xinp,yinp,xotp,yotp);
 		else

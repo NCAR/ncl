@@ -1,5 +1,5 @@
 /*
- *      $Id: NcgmWorkstation.c,v 1.22 1996-11-12 19:12:54 dbrown Exp $
+ *      $Id: NcgmWorkstation.c,v 1.23 1996-11-18 22:21:35 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -546,10 +546,8 @@ NcgmWorkstationActivate
 	if ((retcode = MIN(retcode,subret)) < NhlWARNING)
 		return retcode;
 
-	if (new) {
-		wlc->ncgm_class.current_ncgm_wkid = l->base.id;
-		np->started = True;
-	}
+	wlc->ncgm_class.current_ncgm_wkid = l->base.id;
+	np->started = True;
 
 	return retcode;
 }

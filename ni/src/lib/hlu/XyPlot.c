@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.63 1996-09-14 17:07:52 boote Exp $
+ *      $Id: XyPlot.c,v 1.64 1996-11-18 22:21:55 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1216,6 +1216,8 @@ XyPlotInitialize
 	NhlXyPlotLayer		xnew = (NhlXyPlotLayer)new;
 	NhlXyPlotLayerPart	*xp = &xnew->xyplot;
 	NhlTransformLayerPart	*tfp = &xnew->trans;
+	NhlViewLayerPart	*vwp = &xnew->view;
+	NhlBaseLayerPart	*blp = &xnew->base;
 
 	xp->new_draw_req = True;
 	if(!xp->comp_x_min_set) xp->compute_x_min = !xp->x_min_set;
@@ -2671,6 +2673,7 @@ static NhlErrorTypes xyUpdateTrans
  * If the plot is an overlay member, use the overlay manager's trans object.
  */
 	if (tfp->overlay_status == _tfCurrentOverlayMember && 
+	    ! tfp->do_ndc_overlay &&
 	    tfp->overlay_trans_obj != NULL) {
 		*thetrans = tfp->overlay_trans_obj;
                 if (((*thetrans)->base.layer_class)->base_class.class_name
@@ -2688,7 +2691,8 @@ static NhlErrorTypes xyUpdateTrans
 	}
 	else {
 		*thetrans = tfp->trans_obj;
-		if (tfp->overlay_status == _tfNotInOverlay) {
+		if (tfp->overlay_status == _tfNotInOverlay ||
+		    tfp->do_ndc_overlay) {
 			subret = _NhlSetTrans(*thetrans,(NhlLayer)xyl);
 			if ((ret = MIN(ret,subret)) < NhlWARNING) {
 				e_text = "%s: error setting transformation";

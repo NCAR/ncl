@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.c,v 1.27 1996-10-31 23:06:27 dbrown Exp $
+ *      $Id: VectorPlot.c,v 1.28 1996-11-18 22:21:46 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3086,6 +3086,7 @@ static NhlErrorTypes vcUpdateTrans
  * If the plot is an overlay member, use the overlay manager's trans object.
  */
 	if (tfp->overlay_status == _tfCurrentOverlayMember && 
+	    ! tfp->do_ndc_overlay &&
 	    tfp->overlay_trans_obj != NULL) {
 		vcp->trans_obj = tfp->overlay_trans_obj;
                 if ((vcp->trans_obj->base.layer_class)->base_class.class_name 
@@ -3128,7 +3129,8 @@ static NhlErrorTypes vcUpdateTrans
 				return(ret);
 			}
 		}
-		if (tfp->overlay_status == _tfNotInOverlay) {
+		if (tfp->overlay_status == _tfNotInOverlay ||
+		    tfp->do_ndc_overlay) {
 			subret = _NhlSetTrans(tfp->trans_obj, (NhlLayer)vcl);
 			if ((ret = MIN(ret,subret)) < NhlWARNING) {
 				e_text = "%s: error setting transformation";
@@ -8336,7 +8338,8 @@ void (_NHLCALLF(hluvvmpxy,HLUVVMPXY))
                          &dvmx,&sxdc,&sydc,&wxmn,&wxmx,&wymn,&wymx);
 		if (imap != NhlvcMAPVAL)
 			return;
-		if (Vcl->trans.overlay_status == _tfCurrentOverlayMember) {
+		if (Vcl->trans.overlay_status == _tfCurrentOverlayMember &&
+		    ! Vcl->trans.do_ndc_overlay) {
 			overlay_trans_obj = Vcl->trans.overlay_trans_obj;
 			trans_obj = Vcl->trans.trans_obj;
 			if (!_NhlIsTransObj(overlay_trans_obj)) {
