@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclVar.c,v 1.50 1998-01-23 22:34:08 ethan Exp $
+ *      $Id: NclVar.c,v 1.51 1998-02-06 01:02:52 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1252,7 +1252,7 @@ NclSelectionRecord *sel_ptr;
 */
 	if(thevalue->obj.id != value->obj.id) {
 		if(sel_ptr == NULL) {
-			if(value->multidval.n_dims == thevalue->multidval.n_dims){
+			if((value->multidval.n_dims == thevalue->multidval.n_dims)&&(value->multidval.kind != SCALAR)){
 				for(i = 0; i< thevalue->multidval.n_dims;i++) {
 					if(value->multidval.dim_sizes[i] != 
 						thevalue->multidval.dim_sizes[i]) {
