@@ -79,17 +79,8 @@ c local
           ELSE
               PHASE(N) = ATAN2(B(N),A(N))*W/DBLE(N)
               IF (PHASE(N).LT.0.0D0) THEN
-                  IF (ABS(PHASE(N)).LE.EPS) THEN
-                      PHASE(N) = 0.0D0
-                  ELSE
-                      PHASE(N) = PHASE(N) + DBLE(NPTS)/DBLE(N)
-                  END IF
+                  PHASE(N) = PHASE(N) + DBLE(NPTS)/DBLE(N)
               END IF
-          END IF
-
-          IF (AMP(N).LT.EPS) THEN
-              AMP(N) = 0.0D0
-              PHASE(N) = 0.0D0
           END IF
 
           VARTOT = VARTOT + 0.5D0*AMP(N)*AMP(N)
@@ -97,16 +88,9 @@ c local
       END DO
 
 
-      IF (VARTOT.GT.EPS) THEN
+      IF (VARTOT.GE.EPS) THEN
           DO N = 1,NHAR
               PCVAR(N) = ((0.5D0*AMP(N)*AMP(N))/VARTOT)*100.D0
-              IF (PCVAR(N).LT.EPS) PCVAR(N) = 0.0D0
-          END DO
-      ELSE
-          DO N = 1,NHAR
-              AMP(N) = 0.D0
-              PHASE(N) = 0.D0
-              PCVAR(N) = 0.D0
           END DO
       END IF
 
