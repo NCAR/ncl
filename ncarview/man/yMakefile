@@ -1,20 +1,20 @@
-
 NCARG	= ../..
 #
-#	$Id: yMakefile,v 1.10 1993-02-03 16:32:23 haley Exp $
+#	$Id: yMakefile,v 1.11 1993-02-20 00:39:38 don Exp $
 #
 
 MAN1	= ctrans ictrans ncgm2cgm cgm2ncgm med gcaps fcaps \
 	xwdtohdf nriftohdf rasview idt cgm_edit rascat rasgetpal \
 	rasls rassplit
 MAN3	= cgm 
-MAN5	= ncarv_spool ras_palette
+MAN5	= ncarv_spool ras_palette ras_formats
 MAN6	=
 MAN8	= 
 
 
 MAN	= $(MAN1) $(MAN3) $(MAN5) $(MAN6) $(MAN8)
 
+TBL	= ras_formats.m
 
 #
 #	we always format
@@ -23,11 +23,14 @@ FORMAT	= $(MAN)
 
 all:
 
-preformatted:
+preformatted:: $(TBL)
 	@for name in $(FORMAT); do \
+	echo "Formatting $$name.m"; \
 	nroff -man $$name.m >$$name.p; \
 	done
 
+ras_formats.m: ras_formats.tbl
+	tbl ras_formats.tbl >ras_formats.m
 
 #if defined(CRAY) || defined(sgi)
 # Install preformatted troff documents on systems without troff
@@ -82,7 +85,6 @@ install::
 #	done
 
 #endif	/* InstallManToLocal	*/
-
 
 MakefileTarget
 CleanTarget
