@@ -1,5 +1,5 @@
 /*
- *	$Id: sun_view.c,v 1.8 1991-09-26 16:29:47 clyne Exp $
+ *	$Id: sun_view.c,v 1.9 1991-11-07 11:51:43 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -1120,7 +1120,7 @@ static	Ct_err	raster_(c, P, rows, cols, nx, ny, width, height)
 			/* make sure data available in cgmc     */
 			if (index == c->Cnum && c->more) {
 				if (Instr_Dec(c) < 1) {
-					ct_error(T_FRE, "metafile";
+					ct_error(T_FRE, "metafile");
 					return (DIE);
 				}
 

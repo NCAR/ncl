@@ -1,5 +1,5 @@
 /*
- *	$Id: rastdev.c,v 1.4 1991-10-04 15:19:30 clyne Exp $
+ *	$Id: rastdev.c,v 1.5 1991-11-07 11:51:41 clyne Exp $
  */
 #include <stdio.h>
 #include <ncarg_ras.h>
@@ -14,7 +14,7 @@ extern	Raster	*rastGrid;
 
 static	int	rasColorIndex;
 
-static	int	rasLineWidth; 
+static	float	rasLineWidth; 
 
 void	rast_open(max_poly_points)
 	unsigned long	*max_poly_points;
@@ -48,7 +48,10 @@ void	rast_pointflush(coord_buf, coord_buf_num)
 	/*
 	 * use fat line algo for linewidths greater then 1.
 	 */
-	if (rasLineWidth == 1) {
+	if (rasLineWidth == 0.0) {
+		return;	/* don't draw 0 width lines	*/
+	} 
+	else if (rasLineWidth <= 1.5) {
 		for (i=1; i<*coord_buf_num; i++) {
 		line_((int) XConvert(coord_buf[i-1].x), 
 			(int) YConvert(coord_buf[i-1].y), 
@@ -59,7 +62,7 @@ void	rast_pointflush(coord_buf, coord_buf_num)
 	else {
 		for (i=1; i<*coord_buf_num; i++) {
 		ComFatLine(coord_buf[i-1].x, coord_buf[i-1].y, 
-			coord_buf[i].x, coord_buf[i].y, rasLineWidth);
+			coord_buf[i].x, coord_buf[i].y, ROUND(rasLineWidth));
 		}
 	}
 }
@@ -112,7 +115,7 @@ void	rast_fillcolour(index)
 void	rast_linewidth(line_width)
 	Rtype	line_width;
 {
-	rasLineWidth = (int) line_width;
+	rasLineWidth = line_width;
 }
 
 /*
@@ -381,8 +384,7 @@ static	void	line_(x1, y1, x2, y2)
 
 void	rast_update_color_table()
 {
-	int	i,
-		total_damage;
+	int	i;
 
 	extern	RasColrTab      colorTab;
 
@@ -394,8 +396,7 @@ void	rast_update_color_table()
 	MARKER_COLOUR_DAMAGE = TRUE;
 	LINE_COLOUR_DAMAGE = TRUE;
 
-	total_damage = COLOUR_TOTAL_DAMAGE;
-	for (i=0; i<total_damage && i<MAX_C_I && i<MAX_COLOR; i++) {
+	for (i=0; COLOUR_TOTAL_DAMAGE > 0 && i<MAX_C_I && i<MAX_COLOR; i++) {
 
 		if (COLOUR_INDEX_DAMAGE(i)) {
 			colorTab.rgb[i].red =  COLOUR_INDEX_RED(i);

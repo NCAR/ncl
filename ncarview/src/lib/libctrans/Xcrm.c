@@ -1,5 +1,5 @@
 /*
- *	$Id: Xcrm.c,v 1.6 1991-10-04 15:18:49 clyne Exp $
+ *	$Id: Xcrm.c,v 1.7 1991-11-07 11:51:36 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -98,7 +98,6 @@ X11_UpdateColorTable_()
 	Pixeltype	planedummy[1];		/* not used	*/
 	Pixeltype	pixel_return[1];	/* device index	*/
 	int		i;
-	int		total_damage;
 
 	static	XColor	color = {
 		0,0,0,0,(DoRed | DoGreen | DoBlue), '\0'
@@ -124,7 +123,7 @@ X11_UpdateColorTable_()
 	 * in the case that colr table index 0 is changed *and* no
 	 * coresponding CGM BACKGROUND COLOUR is received
 	 */
-	total_damage = COLOUR_TOTAL_DAMAGE;
+	COLOUR_TOTAL_DAMAGE;
 	if (COLOUR_INDEX_DAMAGE(0)) {
 		rgb_2_Xrgb(
 			COLOUR_INDEX_RED(0),
@@ -149,7 +148,7 @@ X11_UpdateColorTable_()
 		 * load the colours from the ctrans color map into the X
 		 * server's color map
 		 */
-		for(i=1; i<total_damage && i<MAX_C_I; i++) {
+		for(i=1; COLOUR_TOTAL_DAMAGE > 0 && i<MAX_C_I; i++) {
 
 		if (COLOUR_INDEX_DAMAGE(i)) {
 
@@ -187,7 +186,7 @@ X11_UpdateColorTable_()
 	/*	
 	 * load the colours from the cgmc into the colour map 
 	 */
-	for(i=1; i<total_damage && i<MAX_C_I; i++) {
+	for(i=1; COLOUR_TOTAL_DAMAGE > 0 && i<MAX_C_I; i++) {
 
 		if (COLOUR_INDEX_DAMAGE(i)) {
 			/*

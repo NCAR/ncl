@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class4.c,v 1.9 1991-10-04 15:18:41 clyne Exp $
+ *	$Id: X11_class4.c,v 1.10 1991-11-07 11:51:31 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -1032,7 +1032,7 @@ static	Ct_err	GCsetlinewidth(linewidth)
 		gcv.function = GXnoop;
 		mask = GCFunction;
 
-	} else if (linewidth == 1.0) {
+	} else if (linewidth <= 1.5) {
 		gcv.line_width = 0;
 		gcv.join_style = JoinMiter;
 		gcv.function = GXcopy;
