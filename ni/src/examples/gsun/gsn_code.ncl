@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.119 2003-12-03 21:14:13 haley Exp $
+;      $Id: gsn_code.ncl,v 1.120 2003-12-05 23:26:01 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -55,8 +55,6 @@ undef("get_res_value")
 undef("get_res_value_keep")
 undef("get_non_missing_pairs")
 undef("get_display_mode")
-undef("get_valid_long_name_value")
-undef("get_valid_long_names")
 undef("attsetvalues_check")
 undef("spread_colors")
 undef("check_for_irreg2loglin")
@@ -706,50 +704,6 @@ begin
   end if
 
   return(new_display_mode)
-end
-
-;***********************************************************************;
-; Function : get_valid_long_names()                                     ;
-;                                                                       ;
-; This function returns the list of valid names that can be used in     ;
-; place of "long_name". Note that these names are in the order that     ;
-; they should be used. I.e. if both "long_name" and "Description" are   ;
-; present, then long_name takes precedence over "Description".          ;
-;                                                                       ;
-;***********************************************************************;
-function get_valid_long_names()
-begin
-  return((/"long_name","standard_name","description","DESCRIPTION", \
-           "DataFieldName"/))
-end
-
-;***********************************************************************;
-; Function : get_valid_long_name_value()                                ;
-;                                                                       ;
-; This function returns the attribute and the attribute value of the    ;
-; valid long_name, if it exists, and missing otherwise.                 ;
-;***********************************************************************;
-function get_valid_long_name_value(data)
-local data_atts, n, found_valid_name, data_atts
-begin
-  data_atts        = getvaratts(data)
-  found_valid_name = False
-  
-  if(.not.any(ismissing(data_atts))) then
-    valid_long_names = get_valid_long_names()
-    n = 0
-    do while(n.lt.dimsizes(valid_long_names).and..not.found_valid_name)
-      if (any(valid_long_names(n).eq.data_atts)) then
-;
-; Return both the attribute name and its value.
-;
-        return((/valid_long_names(n),data@$valid_long_names(n)$/))
-      end if
-      n = n + 1
-    end do
-  end if
-  
-  return(new(1,string))
 end
 
 ;***********************************************************************;
@@ -5835,12 +5789,11 @@ begin
 ;
 ; 8. Set some post-resources for labeling the other axis, if desired.
 ;
-  lname = get_valid_long_name_value(xdata)
-  if(.not.any(ismissing(lname))) then
+  if(isatt(xdata,"long_name")) then
     if(horizontal) then
-      set_attr(res2,"tiYAxisString",lname(1))
+      set_attr(res2,"tiYAxisString",xdata@long_name)
     else
-      set_attr(res2,"tiXAxisString",lname(1))
+      set_attr(res2,"tiXAxisString",xdata@long_name)
     end if
   else
     if(setinterval) then
@@ -6080,12 +6033,11 @@ begin
         "cnScalarFieldData" : data_object
     end create
 
-; Check for existence of valid long_name type attribute and use it in a 
-; title if it exists.
+; Check for existence of data@long_name and use it in a title it
+; it exists.
 
-    lname = get_valid_long_name_value(data)
-    if(.not.any(ismissing(lname))) then
-      set_attr(res2,"tiMainString",lname(1))
+    if(isatt(data,"long_name")) then
+      set_attr(res2,"tiMainString",data@long_name)
     end if
 
     calldraw  = get_res_value(res2,"gsnDraw", True)
@@ -6212,12 +6164,11 @@ begin
         "trXTensionF"       : xtension
     end create
 
-; Check for existence of valid long_name type attribute and use it in a 
-; title if it exists.
+; Check for existence of data@long_name and use it in a title it
+; it exists.
 
-    lname = get_valid_long_name_value(data)
-    if(.not.any(ismissing(lname))) then
-      set_attr(res2,"tiMainString",lname(1))
+    if(isatt(data,"long_name")) then
+      set_attr(res2,"tiMainString",data@long_name)
     end if
 
 ; Create map object.
@@ -7829,16 +7780,14 @@ begin
         "trYMaxF"     : trymax
     end create
 
-; Check for existence of valid long_name type attributes and use them
+; Check for existence of x@long_name and y@long_name and use them
 ; to label X and Y axes.
 
-    xlname = get_valid_long_name_value(x)
-    ylname = get_valid_long_name_value(y)
-    if(.not.any(ismissing(xlname))) then
-      set_attr(res2,"tiXAxisString",xlname(1))
+    if(isatt(x,"long_name")) then
+      set_attr(res2,"tiXAxisString",x@long_name)
     end if
-    if(.not.any(ismissing(ylname))) then
-      set_attr(res2,"tiYAxisString",ylname(1))
+    if(isatt(y,"long_name")) then
+      set_attr(res2,"tiYAxisString",y@long_name)
     end if
 
 ; By default, only solid lines get drawn if there are multiple lines, so

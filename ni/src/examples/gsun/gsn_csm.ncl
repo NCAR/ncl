@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.148 2003-12-04 22:01:11 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.149 2003-12-05 23:26:02 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -39,6 +39,8 @@ undef("get_bar_widths")
 undef("outlined_bars")
 undef("filled_bars")
 undef("find_cross_xy")
+undef("get_valid_long_names")
+undef("get_valid_long_name_value")
 undef("check_for_subtitles")
 undef("set_right_subtitle")
 undef("set_left_subtitle")
@@ -61,9 +63,7 @@ undef("get_allowed_pres_units_hpa")
 undef("get_allowed_pres_units")
 undef("get_allowed_lat_units")
 undef("get_allowed_lon_units")
-undef("is_valid_lat_xcoord")
-undef("is_valid_lon_xcoord")
-undef("is_valid_lat_ycoord")
+undef("is_valid_latlon_coord")
 undef("gsn_geop_hgt")
 undef("check_for_y_lat_coord")
 undef("check_for_x_lat_coord")
@@ -507,6 +507,50 @@ begin
   return((/x0,y0/))
 end
 
+
+;***********************************************************************;
+; Function : get_valid_long_names()                                     ;
+;                                                                       ;
+; This function returns the list of valid names that can be used in     ;
+; place of "long_name". Note that these names are in the order that     ;
+; they should be used. I.e. if both "long_name" and "Description" are   ;
+; present, then long_name takes precedence over "Description".          ;
+;                                                                       ;
+;***********************************************************************;
+function get_valid_long_names()
+begin
+  return((/"long_name","standard_name","description","DESCRIPTION", \
+           "DataFieldName"/))
+end
+
+;***********************************************************************;
+; Function : get_valid_long_name_value()                                ;
+;                                                                       ;
+; This function returns the attribute and the attribute value of the    ;
+; valid long_name, if it exists, and missing otherwise.                 ;
+;***********************************************************************;
+function get_valid_long_name_value(data)
+local data_atts, n, found_valid_name, data_atts
+begin
+  data_atts        = getvaratts(data)
+  found_valid_name = False
+  
+  if(.not.any(ismissing(data_atts))) then
+    valid_long_names = get_valid_long_names()
+    n = 0
+    do while(n.lt.dimsizes(valid_long_names).and..not.found_valid_name)
+      if (any(valid_long_names(n).eq.data_atts)) then
+;
+; Return both the attribute name and its value.
+;
+        return((/valid_long_names(n),data@$valid_long_names(n)$/))
+      end if
+      n = n + 1
+    end do
+  end if
+  
+  return(new(1,string))
+end
 
 ;***********************************************************************;
 ; Procedure : check_for_subtitles                                       ;
@@ -1096,14 +1140,23 @@ begin
 end
 
 ;***********************************************************************;
-; Function : is_valid_lat_xcoord                                        ;
+; Function : is_valid_latlon_coord                                      ;
 ;                                                                       ;
-; Checks if the X coordinate variable contains real lat values, and not ;
-; just indices. This is determined by the "units" attribute, which must ;
-; be set by CSM convention.                                             ;
+; Checks if the X or Y coordinate variable contains real a valid lat or ;
+; lon coordinate array. It does this just by checking for a valid       ;
+; "units" attribute.                                                    ;
 ;                                                                       ;
+; It used to be that we checked the name of the coordinate array as well;
+; as the units.  But, according to D. Shea, it is enough check for just ;
+; the units. So, as of Dec 2003, we are now just checking units.        ;
+;                                                                       ;
+; We don't print out any warning messages in this function, b/c         ;
+; sometimes the calling routine is just calling it for informational    ;
+; purposes. It is up to the calling routine to print an error if a False;
+; value is returned.                                                    ;
 ;***********************************************************************;
-function is_valid_lat_xcoord(data:numeric,res:logical)
+function is_valid_latlon_coord(data:numeric,axis:string,latorlon:string,\
+                               res:logical)
 begin
 ;
 ; If tfDoNDCOverlay is set to True, then coordinate arrays shouldn't be
@@ -1116,161 +1169,48 @@ begin
     return(False)
   end if
 
-  if(is_valid_xcoord(data)) then
-;
-; There are several different cases that will work for a combination
-; of valid latitude names and units. The ones with an * generate a
-; warning:
-; 
-;   1. Have both a valid lat name and a valid units name.
-; * 2. Have a valid lat name, but not a valid units name.
-; * 3. Have a valid lat name, and no units name.
-;   4. Have a valid lat name that doesn't require a valid units name.
-;   5. Have a valid units name, but either no or an invalid lat name.
-;
-    if(any(data!1.eq.get_allowed_latnames()))
-      if(isatt(data&$data!1$,"units"))
-        if(any(data&$data!1$@units.eq.get_allowed_lat_units))
-          return(True)
-        else
-          print("is_valid_lat_xcoord: Warning: The units attribute of the X coordinate array is not set to one of the allowable units values (i.e. 'degrees_north'). Your latitude labels may not be correct.")
-          return(True)
-        end if
-      else
-        print("is_valid_lat_xcoord: Warning: The units attribute of the X coordinate array is not set. Assuming units to be degrees_north.")
-        return(True)
-      end if
-    else
-      if(any(data!1.eq.get_allowed_latnames_without_units()))
-        return(True)
-      else
+  if(axis.eq."x") then
+    if(is_valid_xcoord(data)) then
+      if(latorlon.eq."lat") then
         if(isatt(data&$data!1$,"units").and. \
-           any(data&$data!1$@units.eq.get_allowed_lat_units))
+           any(data&$data!1$@units.eq.get_allowed_lat_units)) then
           return(True)
         end if
-      end if
-    end if
-  end if
-  return(False)
-end
-
-;***********************************************************************;
-; Function : is_valid_lon_xcoord                                        ;
-;                                                                       ;
-; Checks if the X coordinate variable contains real lon values, and not ;
-; just indices. This is determined by the "units" attribute, which must ;
-; be set by CSM convention.                                             ;
-;                                                                       ;
-;***********************************************************************;
-function is_valid_lon_xcoord(data:numeric,res:logical)
-begin
 ;
-; If tfDoNDCOverlay is set to True, then coordinate arrays shouldn't be
-; used in the first place, and hence the units don't need to be correct.
-; It is up to the user to do the right thing and *not* set coordinate
-; arrays.  Here, we check for the setting of this resource to True,
-; and if so, then the units attribute isn't even checked.
+; Otherwise, we must be dealing with longitudes.
 ;
-  if(get_res_value_keep(res,"tfDoNDCOverlay",False)) then
-    return(False)
-  end if
-
-  if(is_valid_xcoord(data))
-;
-; There are several different cases that will work for a combination
-; of valid longitude names and units. The ones with an * generate a
-; warning:
-; 
-;   1. Have both a valid lon name and a valid units name.
-; * 2. Have a valid lon name, but not a valid units name.
-; * 3. Have a valid lon name, and no units name.
-;   4. Have a valid lon name that doesn't require a valid units name.
-;   5. Have a valid units name, but either no or an invalid lon name.
-;
-    if(any(data!1.eq.get_allowed_lonnames()))
-      if(isatt(data&$data!1$,"units"))
-        if(any(data&$data!1$@units.eq.get_allowed_lon_units))
-          return(True) 
-        else
-          print("is_valid_lon_xcoord: Warning: The units attribute of the X coordinate array is not set to one of the allowable units values (i.e. 'degrees_east'). Your longitude labels may not be correct.")
-          return(True)
-        end if
-      else
-        print("is_valid_lon_xcoord: Warning: The units attribute of the X coordinate array is not set. Assuming units to be degrees_east.")
-        return(True)
-      end if
-    else
-      if(any(data!1.eq.get_allowed_lonnames_without_units()))
-        return(True)
       else
         if(isatt(data&$data!1$,"units").and.\
-           any(data&$data!1$@units.eq.get_allowed_lon_units))
+          any(data&$data!1$@units.eq.get_allowed_lon_units)) then
           return(True)
         end if
       end if
     end if
-  end if
-  return(False)
-end
-
-;***********************************************************************;
-; Function : is_valid_lat_ycoord                                        ;
-;                                                                       ;
-; Checks if the Y coordinate variable contains real lat values, and not ;
-; just indices. This is determined by the "units" attribute, which must ;
-; be set by CSM convention.                                             ;
-;                                                                       ;
-;***********************************************************************;
-function is_valid_lat_ycoord(data:numeric,res:logical)
-begin
 ;
-; If tfDoNDCOverlay is set to True, then coordinate arrays shouldn't be
-; used in the first place, and hence the units don't need to be correct.
-; It is up to the user to do the right thing and *not* set coordinate
-; arrays.  Here, we check for the setting of this resource to True,
-; and if so, then the units attribute isn't even checked.
+; We are dealing with the Y axis.
 ;
-  if(get_res_value_keep(res,"tfDoNDCOverlay",False)) then
-    return(False)
-  end if
-
-  if(is_valid_ycoord(data))
-;
-; There are several different cases that will work for a combination
-; of valid latitude names and units. The ones with an * generate a
-; warning:
-; 
-;   1. Have both a valid lat name and a valid units name.
-; * 2. Have a valid lat name, but not a valid units name.
-; * 3. Have a valid lat name, and no units name.
-;   4. Have a valid lat name that doesn't require a valid units name.
-;   5. Have a valid units name, but either no or an invalid lat name.
-;
-    if(any(data!0.eq.get_allowed_latnames()))
-      if(isatt(data&$data!0$,"units"))
-        if(any(data&$data!0$@units.eq.get_allowed_lat_units))
-          return(True)
-        else
-          print("is_valid_lat_ycoord: Warning: The units attribute of the Y coordinate array is not set to one of the allowable units values (i.e. 'degrees_north'). Your latitude labels may not be correct.")
+  else
+    if(is_valid_ycoord(data)) then
+      if(latorlon.eq."lat") then
+        if(isatt(data&$data!0$,"units").and.\
+          any(data&$data!0$@units.eq.get_allowed_lat_units)) then
           return(True)
         end if
-      else
-        print("is_valid_lat_ycoord: Warning: The units attribute of the Y coordinate array is not set. Assuming units to be degrees_north.")
-        return(True)
-      end if
-    else
-      if(any(data!0.eq.get_allowed_latnames_without_units()))
-        return(True)
+;
+; Otherwise, we must be dealing with longitudes.
+;
       else
         if(isatt(data&$data!0$,"units").and.\
-          any(data&$data!0$@units.eq.get_allowed_lat_units))
+          any(data&$data!0$@units.eq.get_allowed_lon_units)) then
           return(True)
         end if
       end if
     end if
+
   end if
   return(False)
 end
+
 
 ;***********************************************************************;
 ; Procedure : gsn_geop_hgt                                              ;
@@ -1421,13 +1361,13 @@ begin
       res@$array_name$ = data@lat2d
       return
     else 
-      if(is_valid_lat_ycoord(data,res))
+      if(is_valid_latlon_coord(data,"y","lat",res))
         res@$array_name$ = data&$data!0$
         return
       else
         print("check_for_y_lat_coord: Warning: Data either does not contain a valid latitude coordinate array or doesn't contain one at all.")
-        print("Valid latitude names include: ")
-        print("    " + cat_strings(get_allowed_latnames))
+        print("A valid latitude coordinate array should have a 'units' attribute equal to one of the following values: ")
+        print("    " + cat_strings(get_allowed_lat_units))
       end if
     end if
   end if 
@@ -1492,11 +1432,13 @@ begin
       res@$array_name$ = data@lat2d
       return
     else 
-      if(is_valid_lat_xcoord(data,res))
+      if(is_valid_latlon_coord(data,"x","lat",res))
         res@$array_name$ = data&$data!1$
         return
       else
-        print("check_for_x_lat_coord: Warning: Data either does not contain an known latitude coordinate array or doesn't contain one at all")
+        print("check_for_x_lat_coord: Warning: Data either does not contain a valid latitude coordinate array or doesn't contain one at all.")
+        print("A valid latitude coordinate array should have a 'units' attribute equal to one of the following values: ")
+        print("    " + cat_strings(get_allowed_lat_units))
       end if
     end if
   end if
@@ -1562,13 +1504,13 @@ begin
       res@$array_name$ = data@lon2d
       return
     else 
-      if(is_valid_lon_xcoord(data,res))
+      if(is_valid_latlon_coord(data,"x","lon",res))
         res@$array_name$ = data&$data!1$
         return
       else
         print("check_for_lon_coord: Warning: Data either does not contain a valid longitude coordinate array or doesn't contain one at all.")
-        print("Valid longitude names include: ")
-        print("    " + cat_strings(get_allowed_lonnames))
+        print("A valid longitude coordinate array should have a 'units' attribute equal to one of the following values: ")
+        print("    " + cat_strings(get_allowed_lon_units))
       end if
     end if 
   end if
@@ -2870,7 +2812,7 @@ begin
 
   if((is_xyplot.and.is_xaxis.and.isatt(data,"units").and. \
       any(data@units.eq.get_allowed_lat_units)).or. \
-     (.not.is_xyplot.and.is_valid_lat_xcoord(data,res))) then
+     (.not.is_xyplot.and.is_valid_latlon_coord(data,"x","lat",res))) then
 
 ; Label X axis with nice latitude labels.
 
@@ -2880,12 +2822,37 @@ begin
     end getvalues
 
     add_lat_labels_xaxis(plot,min_lat,max_lat,0,0,res)
+  else
+    if((is_xyplot.and.is_xaxis.and.isatt(data,"units").and. \
+        any(data@units.eq.get_allowed_lon_units)).or. \
+       (.not.is_xyplot.and.is_valid_latlon_coord(data,"x","lon",res))) then
 
+; Label X axis with nice longitude labels.
+
+      getvalues plot
+        "trXMinF"   : min_lon
+        "trXMaxF"   : max_lon
+      end getvalues
+;
+; We want different defaults for longitude spacing, so set them up here.
+;
+      lon_range        = (/ 20,  40,  60, 180, 360/)
+      lon_spacing_arr  = (/ 10,  20,  30,  45,  60/)
+      mlon_spacing_arr = (/  5,   5,  10,  15,  30/)
+
+      add_lon_labels(plot,min_lon,max_lon,0,0,lon_range, \
+                   lon_spacing_arr,mlon_spacing_arr,res)
+    else
+;
+; Only set a X axis label if it is not a lon axis.
+;
+      set_xaxis_string(plot,res,data)
+    end if
   end if
 
   if((is_xyplot.and.is_yaxis.and.isatt(data,"units").and. \
       any(data@units.eq.get_allowed_lat_units)).or. \
-     (.not.is_xyplot.and.is_valid_lat_ycoord(data,res))) then
+     (.not.is_xyplot.and.is_valid_latlon_coord(data,"y","lat",res))) then
 
 ; Label Y axis with nice latitude labels.
 
@@ -2900,32 +2867,6 @@ begin
 ; Only set a Y axis label if it is not a lat axis.
 ;
     set_yaxis_string(plot,res,data)
-  end if
-
-  if((is_xyplot.and.is_xaxis.and.isatt(data,"units").and. \
-      any(data@units.eq.get_allowed_lon_units)).or. \
-     (.not.is_xyplot.and.is_valid_lon_xcoord(data,res))) then
-
-; Label X axis with nice longitude labels.
-
-    getvalues plot
-      "trXMinF"   : min_lon
-      "trXMaxF"   : max_lon
-    end getvalues
-;
-; We want different defaults for longitude spacing, so set them up here.
-;
-    lon_range        = (/ 20,  40,  60, 180, 360/)
-    lon_spacing_arr  = (/ 10,  20,  30,  45,  60/)
-    mlon_spacing_arr = (/  5,   5,  10,  15,  30/)
-
-    add_lon_labels(plot,min_lon,max_lon,0,0,lon_range, \
-                   lon_spacing_arr,mlon_spacing_arr,res)
-  else
-;
-; Only set a X axis label if it is not a lon axis.
-;
-    set_xaxis_string(plot,res,data)
   end if
 end
 
@@ -9124,7 +9065,8 @@ begin
     lon_spacing  = get_res_value(res2,"gsnMajorLonSpacing",0)
     mlon_spacing = get_res_value(res2,"gsnMinorLonSpacing",0)
 
-    if(is_valid_lat_xcoord(data,res2).or.is_valid_lon_xcoord(data,res2))
+    if(is_valid_latlon_coord(data,"x","lat",res2).or.\
+       is_valid_latlon_coord(data,"x","lon",res2))
       set_attr(res2,"tiXAxisString","")
     end if
 
@@ -9143,7 +9085,7 @@ begin
 
 ; Check if we should label X axis with nice longitude labels.
 
-    if(is_valid_lon_xcoord(data,res2)) then
+    if(is_valid_latlon_coord(data,"x","lon",res2)) then
 
 ; Get min and max X axis values (longitude units)
 
@@ -9338,7 +9280,7 @@ begin
     mlat_spacing = get_res_value(res2,"gsnMinorLatSpacing",0)
 
     if(is_valid_ycoord(data))
-      lname = get_valid_long_name_value(data)
+      lname = get_valid_long_name_value(data&$data!0$)
       if(.not.any(ismissing(lname))) then
         set_attr(res2,"tiYAxisString",lname(1))
       end if
@@ -9428,7 +9370,7 @@ begin
 
 ; Check if we should label X axis with nice latitude labels.
 
-    if(is_valid_lat_xcoord(data,res2)) then
+    if(is_valid_latlon_coord(data,"x","lat",res2)) then
       add_lat_labels_xaxis(contour_plot,xmin,xmax,lat_spacing,  \
                            mlat_spacing,res2)
     end if
