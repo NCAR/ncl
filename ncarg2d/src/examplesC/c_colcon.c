@@ -57,7 +57,7 @@ char *proj;
     int iwrk[LIWK], lfin[35];
     int map[LMAP],iarea[NOGRPS],igrp[NOGRPS];
     char *lbls[35];
-    extern void color(int n);
+    extern void color();
     extern int fill(), mask();
 
     rltmn[0] = rlatmn;
@@ -302,7 +302,8 @@ float fran()
     return(rseq[iseq-1]);
 }
 
-void color (int n)
+void color ()
+int n;
 {
 /*
  * background color
