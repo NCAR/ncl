@@ -1,5 +1,5 @@
 #
-#       $Id: yMakefile,v 1.9 2004-07-27 21:14:52 kennison Exp $
+#       $Id: yMakefile,v 1.10 2004-08-12 22:19:19 haley Exp $
 #
 
 MYNAME  = conpackt
@@ -54,4 +54,9 @@ cttroe.o: cttroe.f
 
 cttrcl.o: cttrcl.f
 	$(F77) -g -c cttrcl.f
+#endif
+
+#if defined(Darwin)
+ctplar.o: ctplar.f
+	$(F77) $(FCOPTIONS) -g -c ctplar.f
 #endif
