@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.74 1999-04-01 20:27:22 ethan Exp $
+ *      $Id: Machine.c,v 1.75 1999-04-12 22:00:38 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -2351,18 +2351,17 @@ if(the_list != NULL) {
 * This only showed up as a problem when using the GUI but it appears it my cause memory
 * problems I'm not sure.
 */
-					data.u.data_var->obj.status = TEMPORARY;
-					tmp_md = _NclStripVarData(data.u.data_var);
+					tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
 
 					if(tmp_md->obj.is_constant==(tmp_md->obj.id +1)) {
 /*
 * Value is a constant
 */
-				
+						data.u.data_var->obj.status = TEMPORARY;
+						tmp_md = _NclStripVarData(data.u.data_var);
 						_NclDestroyObj((NclObj)data.u.data_var);
 						tmp_md->obj.status = PERMANENT;
 					} else {
-						_NclDestroyObj((NclObj)tmp_md);
 						_NclDestroyObj((NclObj)data.u.data_var);
 					}
 				}
