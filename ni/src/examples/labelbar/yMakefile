@@ -1,0 +1,24 @@
+#
+#   $Id: yMakefile,v 1.1 1995-01-26 17:27:52 haley Exp $
+#
+#   Makefile for HLU LabeBar examples
+#
+
+NCGMS   =   lb01c.ncgm lb02c.ncgm
+
+PROG_LIBS   =   $(HLULIBS) $(CNCARGLIBS) $(NCARGLIBS)
+EXTRA_LIBS  =   $(XMOTIFCLIENTLIBS)
+SYS_LIBS    =   $(CTOFLIBS) -lm
+
+SRCS        = lb01c.c lb02c.c
+RES         = lb01.res lb02.res
+EXFILES     = $(SRCS) $(RES)
+
+InstallTarget($(EXFILES),$(INSTALL_LIB),$(HLUEXROOT))
+
+HLUCExampleTarget(lb01c,lb01c.o)
+HLUCExampleTarget(lb02c,lb02c.o)
+
+CleanFilesTarget($(NCGMS))
+DependTarget($(SRCS))
+
