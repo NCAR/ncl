@@ -1,5 +1,5 @@
 /*
- *      $Id: Legend.c,v 1.26 1995-02-19 08:18:13 boote Exp $
+ *      $Id: Legend.c,v 1.27 1995-03-03 20:14:50 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -52,6 +52,57 @@ SetTitleOn
 	NhlLegendLayer	lgl = (NhlLegendLayer)base;
 
 	lgl->legend.title_on = !(lgl->legend.title_string == lgDefTitle);
+
+	return NhlNOERROR;
+}
+
+/*
+ * Function:	ResourceUnset
+ *
+ * Description:	This function can be used to determine if a resource has
+ *		been set at initialize time either in the Create call or
+ *		from a resource data base. In order to use it the Boolean
+ *		'..resource_set' variable MUST directly proceed the name
+ *		of the resource variable it refers to in the LayerPart
+ *		struct. Also a .nores Resource for the resource_set variable
+ *		must directly preceed the Resource of interest in the 
+ *		Resource initialization list in this module.
+ *
+ * In Args:	
+ *		NrmName		name,
+ *		NrmClass	class,
+ *		NhlPointer	base,
+ *		unsigned int	offset
+ *
+ * Out Args:	
+ *
+ * Scope:	static
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+
+/*ARGSUSED*/
+static NhlErrorTypes
+ResourceUnset
+#if	NhlNeedProto
+(
+	NrmName		name,
+	NrmClass	class,
+	NhlPointer	base,
+	unsigned int	offset
+)
+#else
+(name,class,base,offset)
+	NrmName		name;
+	NrmClass	class;
+	NhlPointer	base;
+	unsigned int	offset;
+#endif
+{
+	char *cl = (char *) base;
+	NhlBoolean *set = (NhlBoolean *)(cl + offset - sizeof(NhlBoolean));
+
+	*set = False;
 
 	return NhlNOERROR;
 }
@@ -320,6 +371,13 @@ static NhlResource resources[] = {
 {NhlNlgTitleAngleF, NhlClgTitleAngleF, NhlTFloat, 
 	 sizeof(float), NhlOffset(NhlLegendLayerRec,legend.title_angle),
 	 NhlTString, _NhlUSET("0.0"),0,NULL},
+{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+	 NhlOffset(NhlLegendLayerRec,legend.title_direction_set),
+	 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
+{NhlNlgTitleDirection,NhlClgTitleDirection,NhlTTextDirection,
+	 sizeof(NhlTextDirection),
+	 NhlOffset(NhlLegendLayerRec,legend.title_direction),
+	 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
 {NhlNlgTitleDirection,NhlClgTitleDirection,NhlTTextDirection,
 	 sizeof(NhlTextDirection),
 	 NhlOffset(NhlLegendLayerRec,legend.title_direction),
@@ -735,8 +793,7 @@ static NhlErrorTypes    LegendInitialize
  * Adjust the title direction according to the position unless
  * it is explicitly set.
  */
-	if (_NhlArgIsSet(args,num_args,NhlNlgTitlePosition) &&
-	    !_NhlArgIsSet(args,num_args,NhlNlgTitleDirection)) {
+	if (! lg_p->title_direction_set) {
 		switch (lg_p->title_pos) {
 		case NhlTOP:
 		case NhlBOTTOM:

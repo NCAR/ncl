@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.h,v 1.13 1995-02-19 08:19:19 boote Exp $
+ *      $Id: Workstation.h,v 1.14 1995-03-03 20:15:00 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -104,6 +104,7 @@ typedef	int	NhlColorIndex;
 #define NhlBACKGROUND 0
 #define NhlFOREGROUND 1
 #define NhlTRANSPARENT -1
+#define NhlNULLCOLOR   -1
 
 typedef float NhlColor[3];
 
@@ -113,6 +114,7 @@ typedef	int	NhlFillIndex;
 #define	NhlTFillIndex	"FillIndex"
 #define	NhlTFillIndexGenArray	"FillIndexGenArray"
 #define NhlHOLLOWFILL	-1
+#define NhlNULLFILL	-1
 #define NhlSOLIDFILL	0
 #define NhlWK_INITIAL_FILL_BUFSIZE 128
 

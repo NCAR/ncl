@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlotP.h,v 1.9 1995-02-11 02:42:06 dbrown Exp $
+ *      $Id: MapPlotP.h,v 1.10 1995-03-03 20:14:55 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -32,8 +32,8 @@
 #define Nhl_mpSTD_VIEW_HEIGHT	0.5
 #define Nhl_mpDEF_DASH_SEGLEN	0.075
 #define Nhl_mpDEF_LABEL_HEIGHT  0.007
-#define Nhl_mpMAX_FILL_GROUPS	256
-#define Nhl_mpMIN_FILL_GROUPS	10
+#define Nhl_mpMAX_AREA_GROUPS	256
+#define Nhl_mpMIN_AREA_GROUPS	10
 #define Nhl_mpMAPDATAFILE	"NhlMapData"
 #define mpALLOC_UNIT		128
 #ifndef FLT_MAX
@@ -242,7 +242,7 @@ typedef struct NhlMapPlotLayerPart {
 	NhlGenArray	spec_fill_patterns;
 	NhlGenArray	spec_fill_scales;
 
-	int		fill_group_count;
+	int		area_group_count;
 	NhlBoolean	mono_fill_color;
 	NhlColorIndex	fill_color;
 	NhlGenArray	fill_colors;

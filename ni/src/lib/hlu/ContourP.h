@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourP.h,v 1.23 1995-02-17 10:23:00 boote Exp $
+ *      $Id: ContourP.h,v 1.24 1995-03-03 20:14:46 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -220,6 +220,7 @@ typedef struct _NhlContourLayerPart {
 	/* private resource */
 
 	NhlBoolean	dump_area_map;
+	int		amap_crange;
 	NhlBoolean	update_req;
 	NhlBoolean	data_changed;
 

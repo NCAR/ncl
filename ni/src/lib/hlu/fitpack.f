@@ -1,4 +1,6 @@
-
+C
+C	$Id: fitpack.f,v
+C
 CThis new version of FITPACK distributed by netlib is about 20% of 
 Cthe total package in terms of characters, lines of code, and num-
 Cber of subprograms. However, these 25 subprograms represent about

@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.24 1995-02-19 08:18:18 boote Exp $
+ *      $Id: MapPlot.c,v 1.25 1995-03-03 20:14:53 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -182,9 +182,9 @@ static NhlResource resources[] = {
 		 Oset(spec_fill_scales),NhlTImmediate,
 		 _NhlUSET((NhlPointer) NULL),0,(NhlFreeFunc)NhlFreeGenArray},
 
-	{NhlNmpFillGroupCount,NhlCmpFillGroupCount,NhlTInteger,
-		 sizeof(int),Oset(fill_group_count),NhlTImmediate,
-		 _NhlUSET((NhlPointer) Nhl_mpMIN_FILL_GROUPS),0,NULL},
+	{NhlNmpAreaGroupCount,NhlCmpAreaGroupCount,NhlTInteger,
+		 sizeof(int),Oset(area_group_count),NhlTImmediate,
+		 _NhlUSET((NhlPointer) Nhl_mpMIN_AREA_GROUPS),0,NULL},
 	{NhlNmpMonoFillColor, NhlCmpMonoFillColor, NhlTBoolean,
 		 sizeof(NhlBoolean),Oset(mono_fill_color),
 		 NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL},
@@ -1756,7 +1756,7 @@ static NhlErrorTypes    MapPlotGetValues
                 else if (args[i].quark == Qfill_colors) {
                         ga = mpp->fill_colors;
                         count = mpp->mono_fill_color ? 
-				1 : mpp->fill_group_count;
+				1 : mpp->area_group_count;
                         resname = NhlNmpFillColors;
 			size = sizeof(NhlPointer);
 			type = NhlTIntegerGenArray;
@@ -1764,7 +1764,7 @@ static NhlErrorTypes    MapPlotGetValues
                 else if (args[i].quark == Qfill_patterns) {
                         ga = mpp->fill_patterns;
                         count = mpp->mono_fill_pattern ? 
-				1 : mpp->fill_group_count;
+				1 : mpp->area_group_count;
                         resname = NhlNmpFillPatterns;
 			size = sizeof(NhlPointer);
 			type = NhlTIntegerGenArray;
@@ -1772,7 +1772,7 @@ static NhlErrorTypes    MapPlotGetValues
                 else if (args[i].quark == Qfill_scales) {
                         ga = mpp->fill_scales;
                         count = mpp->mono_fill_scale ? 
-				1 : mpp->fill_group_count;
+				1 : mpp->area_group_count;
                         resname = NhlNmpFillScales;
 			size = sizeof(NhlPointer);
 			type = NhlTFloatGenArray;
@@ -3539,26 +3539,26 @@ static NhlErrorTypes    mpManageDynamicArrays
  * The fill group count has minimum and maximum values
  */
 
-	if (mpp->fill_group_count > Nhl_mpMAX_FILL_GROUPS) {
+	if (mpp->area_group_count > Nhl_mpMAX_AREA_GROUPS) {
 		e_text = "%s: %s exceeds maximum value, %d: defaulting";
 		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
-			  NhlNmpFillGroupCount,Nhl_mpMAX_FILL_GROUPS);
+			  NhlNmpAreaGroupCount,Nhl_mpMAX_AREA_GROUPS);
 		ret = MIN(ret, NhlWARNING);
-		mpp->fill_group_count = Nhl_mpMAX_FILL_GROUPS;
+		mpp->area_group_count = Nhl_mpMAX_AREA_GROUPS;
 	}
-	else if (mpp->fill_group_count < Nhl_mpMIN_FILL_GROUPS) {
+	else if (mpp->area_group_count < Nhl_mpMIN_AREA_GROUPS) {
 		e_text = "%s: %s less than minimum value, %d: defaulting";
 		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
-			  NhlNmpFillGroupCount,Nhl_mpMIN_FILL_GROUPS);
+			  NhlNmpAreaGroupCount,Nhl_mpMIN_AREA_GROUPS);
 		ret = MIN(ret, NhlWARNING);
-		mpp->fill_group_count = Nhl_mpMIN_FILL_GROUPS;
+		mpp->area_group_count = Nhl_mpMIN_AREA_GROUPS;
 	}
 /*
  * Fill group colors
  */
 
 	ga = init ? NULL : ompp->fill_colors;
-	count = mpp->fill_group_count;
+	count = mpp->area_group_count;
   	subret = mpManageGenArray(&ga,count,mpp->fill_colors,Qint,NULL,
 				  &old_count,&init_count,&need_check,&changed,
 				  NhlNmpFillColors,entry_name);
@@ -3573,12 +3573,10 @@ static NhlErrorTypes    mpManageDynamicArrays
 		       NhlNwkColorMapLen,&cmap_len,NULL);
 	if (need_check) {
 		for (i=init_count; i < count; i++) {
-			if (i < NhlNumber(Init_Colors))
-				ip[i] = Init_Colors[i];
-			else if (ip[i] < cmap_len)
-				ip[i] = i;
-			else 
-				ip[i] = NhlFOREGROUND;
+			int ix;
+			ix =  i < NhlNumber(Init_Colors) ? Init_Colors[i] : i;
+			ip[i] = _NhlIsAllocatedColor(mpnew->base.wkptr, ix) ?
+				ix : NhlFOREGROUND; 
 		}
 	}
 	
@@ -3588,26 +3586,26 @@ static NhlErrorTypes    mpManageDynamicArrays
  */
 	if ((init && mpp->fill_default.color != NhlmpUNSETCOLOR) ||
 	    mpp->fill_default.color != ompp->fill_default.color) {
-		if (mpp->fill_default.color > NhlTRANSPARENT &&
-		    mpp->fill_default.color < cmap_len)
+		if (_NhlIsAllocatedColor(mpnew->base.wkptr,
+					 mpp->fill_default.color))
 			ip[NhlmpDEFAULTGROUPINDEX] = mpp->fill_default.color;
 	}
 	if ((init && mpp->ocean.color != NhlmpUNSETCOLOR) ||
 	    mpp->ocean.color != ompp->ocean.color) {
-		if (mpp->ocean.color > NhlTRANSPARENT &&
-		    mpp->ocean.color < cmap_len)
+		if (_NhlIsAllocatedColor(mpnew->base.wkptr,
+					 mpp->ocean.color))
 			ip[NhlmpOCEANGROUPINDEX] = mpp->ocean.color;
 	}
 	if ((init && mpp->land.color != NhlmpUNSETCOLOR) ||
 	    mpp->land.color != ompp->land.color) {
-		if (mpp->land.color > NhlTRANSPARENT &&
-		    mpp->land.color < cmap_len)
+		if (_NhlIsAllocatedColor(mpnew->base.wkptr,
+					 mpp->land.color))
 			ip[NhlmpLANDGROUPINDEX] = mpp->land.color;
 	}
 	if ((init && mpp->inland_water.color != NhlmpUNSETCOLOR) ||
 	    mpp->inland_water.color != ompp->inland_water.color) {
-		if (mpp->inland_water.color > NhlTRANSPARENT &&
-		    mpp->inland_water.color < cmap_len)
+		if (_NhlIsAllocatedColor(mpnew->base.wkptr,
+					 mpp->inland_water.color))
 			ip[NhlmpINLANDWATERGROUPINDEX] =
 				mpp->inland_water.color;
 	}
@@ -3616,7 +3614,7 @@ static NhlErrorTypes    mpManageDynamicArrays
  */
 
 	ga = init ? NULL : ompp->fill_patterns;
-	count = mpp->fill_group_count;
+	count = mpp->area_group_count;
 	subret = mpManageGenArray(&ga,count,mpp->fill_patterns,Qint,NULL,
 				  &old_count,&init_count,&need_check,&changed,
 				  NhlNmpFillPatterns,entry_name);
@@ -3678,7 +3676,7 @@ static NhlErrorTypes    mpManageDynamicArrays
  */
 
 	ga = init ? NULL : ompp->fill_scales;
-	count = mpp->fill_group_count;
+	count = mpp->area_group_count;
 	fval = 1.0;
 	subret = mpManageGenArray(&ga,count,mpp->fill_scales,
 				  Qfloat,&fval,&old_count,&init_count,
@@ -3845,13 +3843,13 @@ static NhlErrorTypes    mpManageDynamicArrays
 		mpp->dynamic_groups = ga;
 
 	}
-	if (need_check || mpp->fill_group_count < ompp->fill_group_count) {
+	if (need_check || mpp->area_group_count < ompp->area_group_count) {
 		ip = (int *) ga->data;
 		for (i=0; i < ga->num_elements; i++) {
 			use_default = False;
 			if (ip[i] < NhlmpOCEANGROUPINDEX)
 				use_default = True;
-			else if (ip[i] > mpp->fill_group_count - 1) {
+			else if (ip[i] > mpp->area_group_count - 1) {
 				e_text =
 	         "%s: %s index %d holds an invalid fill group id: defaulting";
 				NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
@@ -3923,22 +3921,34 @@ static NhlErrorTypes    mpManageDynamicArrays
 			mpp->spec_fill_color_count 
 				= mpp->spec_fill_colors->num_elements;
 		}
-		if (mpp->spec_fill_direct)
-			NhlVAGetValues(mpnew->base.wkptr->base.id,
-				       NhlNwkColorMapLen, &max_val, NULL);
-		else
-			max_val = mpp->fill_group_count - 1;
-
 		ip = (int *) mpp->spec_fill_colors->data; 
-		for (i = 0; i < mpp->spec_fill_color_count; i++) {
-			if (ip[i] > max_val) {
-				e_text = 
+		if (mpp->spec_fill_direct) {
+			for (i = 0; i < mpp->spec_fill_color_count; i++) {
+				if (! _NhlIsAllocatedColor(mpnew->base.wkptr,
+							   ip[i])) {
+
+					e_text = 
 	           "%s: %s index %d holds an invalid color index: defaulting";
-				NhlPError(NhlWARNING,NhlEUNKNOWN,
-					  e_text,entry_name,
-					  NhlNmpSpecifiedFillColors,i);
-				ret = MIN(ret, NhlWARNING);
-				ip[i] = NhlmpUNSETCOLOR;
+					NhlPError(NhlWARNING,NhlEUNKNOWN,
+						  e_text,entry_name,
+						  NhlNmpSpecifiedFillColors,i);
+					ret = MIN(ret, NhlWARNING);
+					ip[i] = NhlmpUNSETCOLOR;
+				}
+			}
+		}
+		else {
+			for (i = 0; i < mpp->spec_fill_color_count; i++) {
+				max_val = mpp->area_group_count - 1;
+				if (ip[i] > max_val) {
+					e_text = 
+			  "%s: %s index %d holds an invalid index: defaulting";
+					NhlPError(NhlWARNING,NhlEUNKNOWN,
+						  e_text,entry_name,
+						  NhlNmpSpecifiedFillColors,i);
+					ret = MIN(ret, NhlWARNING);
+					ip[i] = NhlmpUNSETCOLOR;
+				}
 			}
 		}
 	}
@@ -3976,7 +3986,7 @@ static NhlErrorTypes    mpManageDynamicArrays
 			NhlVAGetValues(mpnew->base.wkptr->base.id,
 				       NhlNwkFillTableLength, &max_val, NULL);
 		else
-			max_val = mpp->fill_group_count - 1;
+			max_val = mpp->area_group_count - 1;
 
 		ip = (int *) mpp->spec_fill_patterns->data; 
 		for (i = 0; i < mpp->spec_fill_pattern_count; i++) {
@@ -4025,7 +4035,7 @@ static NhlErrorTypes    mpManageDynamicArrays
 		}
 		fp = (float *) mpp->spec_fill_scales->data; 
 		if (! mpp->spec_fill_direct)
-			max_val = mpp->fill_group_count - 1;
+			max_val = mpp->area_group_count - 1;
 		else
 			max_val = FLT_MAX;
 
@@ -4154,7 +4164,7 @@ static NhlErrorTypes    mpUpdateDrawGroups
 		break;
 	case mpCONTINENTS:
 		list[0] = mpContinent;
-		count = 2;
+		count = 1;
 		*gmode = MAX(*gmode,mpGEO);
 		break;
 	case mpISLANDS:
@@ -4957,7 +4967,7 @@ static NhlErrorTypes    mpManageGenArray
 
 		*need_check = True;
 		ret = _NhlValidatedGenArrayCopy(ga,copy_ga,
-                                                Nhl_mpMAX_FILL_GROUPS,
+                                                Nhl_mpMAX_AREA_GROUPS,
 						True,False,resource_name, 
 						entry_name);
 		if (ret < NhlWARNING) {
@@ -5570,7 +5580,7 @@ int (_NHLCALLF(nhlezmapfill,NHLEZMAPFILL))
 	}
 	else {
 		int *sfcp = (int *) Mpp->spec_fill_colors->data;
-		if (sfcp[s_ix] < Mpp->fill_group_count)
+		if (sfcp[s_ix] < Mpp->area_group_count)
 			col_ix = fcp[sfcp[s_ix]];
 	} 
 
@@ -5586,7 +5596,7 @@ int (_NHLCALLF(nhlezmapfill,NHLEZMAPFILL))
 	}
 	else {
 		int *sfpp = (int *) Mpp->spec_fill_patterns->data;
-		if (sfpp[s_ix] < Mpp->fill_group_count)
+		if (sfpp[s_ix] < Mpp->area_group_count)
 			pat_ix = fpp[sfpp[s_ix]];
 	}
 
@@ -5602,7 +5612,7 @@ int (_NHLCALLF(nhlezmapfill,NHLEZMAPFILL))
 	}
 	else {
 		float *sfsp = (float *) Mpp->spec_fill_scales->data;
-		if ((int)sfsp[s_ix] < Mpp->fill_group_count)
+		if ((int)sfsp[s_ix] < Mpp->area_group_count)
 			fscale = fsp[(int)sfsp[s_ix]];
 	}
 

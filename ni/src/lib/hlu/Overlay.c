@@ -1,5 +1,5 @@
 /*
- *      $Id: Overlay.c,v 1.33 1995-02-19 08:18:23 boote Exp $
+ *      $Id: Overlay.c,v 1.34 1995-03-03 20:14:57 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -487,7 +487,7 @@ static NhlErrorTypes SetAnnoViews(
 	NhlOverlayLayer	ovl,
 	NhlAnnoRec	*anno_list,
 	int		zone,
-	NhlBoolean	first,
+	NhlBoolean	*flags,
 	NhlString	entry_name
 #endif
 );
@@ -1348,7 +1348,7 @@ static NhlErrorTypes OverlayPreDraw
 	NhlOverlayLayer		ovl = (NhlOverlayLayer) layer;
 	NhlOverlayLayerPart	*ovp = &(ovl->overlay);
 	int			i,j;
-	NhlBoolean		first;
+	NhlBoolean		flags[4];
 	int			max_zone;
 
 /*
@@ -1365,13 +1365,13 @@ static NhlErrorTypes OverlayPreDraw
 /*
  * Modify the annotation positions based on the current zonal information
  */
-	for (first = True, i = 0; i <= max_zone; i++) {
+	flags[0] = flags[1] = flags[2] = flags[3] = False;
+	for (i = 0; i <= max_zone; i++) {
 		for (j = 0; j < ovp->overlay_count; j++) {
 
 			subret = SetAnnoViews(ovl,ovp->ov_recs[j]->anno_list,
-					      i,first,entry_name);
+					      i,flags,entry_name);
 			if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
-			first = False;
 		}
 	}
 
@@ -1639,7 +1639,7 @@ static NhlErrorTypes OverlayGetBB
 	NhlOverlayLayerPart	*ovp = &(ovl->overlay);
 	int			max_zone;
 	int			i,j;
-	NhlBoolean		first;
+	NhlBoolean		flags[4];
 
 
 /*
@@ -1656,13 +1656,13 @@ static NhlErrorTypes OverlayGetBB
 /*
  * Modify the annotation positions based on the current zonal information
  */
-	for (first = True, i = 0; i <= max_zone; i++) {
+	flags[0] = flags[1] = flags[2] = flags[3] = False;
+	for (i = 0; i <= max_zone; i++) {
 		for (j = 0; j < ovp->overlay_count; j++) {
 
 			subret = SetAnnoViews(ovl,ovp->ov_recs[j]->anno_list,
-					      i,first,entry_name);
+					      i,flags,entry_name);
 			if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
-			first = False;
 		}
 	}
 
@@ -1782,26 +1782,26 @@ static NhlErrorTypes SetAnnoViews
 	NhlOverlayLayer	ovl,
 	NhlAnnoRec	*anno_list,
 	int		zone,
-	NhlBoolean	first,
+	NhlBoolean	*flags,
 	NhlString	entry_name
 )
 #else
-(ovl,anno_list,zone,first,entry_name)
+(ovl,anno_list,zone,flags,entry_name)
 	NhlOverlayLayer	ovl;
 	NhlAnnoRec	*anno_list;
 	int		zone;
-	NhlBoolean	first;
+	NhlBoolean	*flags;
 	NhlString	entry_name;
 #endif
 {
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	NhlAnnoRec		*anlp;
-	static NhlBoolean	tickmarks_done,titles_done;
-	static NhlBoolean	labelbar_done,legend_done;
 
-	if (first)
-		tickmarks_done = titles_done = 
-			labelbar_done = legend_done = False;
+/*
+ * Flags tells which each intrinsic annotations has been completed;
+ * indexes arranged as follows: 0, tickmarks; 1, titles; 2, labelbar;
+ * 3, legend.
+ */
 
 	for (anlp = anno_list; anlp != NULL; anlp = anlp->next) {
 		
@@ -1812,16 +1812,16 @@ static NhlErrorTypes SetAnnoViews
 		else if (anlp->status == NhlCONDITIONAL) {
 			switch (anlp->type) {
 			case ovTICKMARK:
-				if (tickmarks_done) continue;
+				if (flags[0]) continue;
 				break;
 			case ovTITLE:
-				if (titles_done) continue;
+				if (flags[1]) continue;
 				break;
 			case ovLEGEND:
-				if (legend_done) continue;
+				if (flags[2]) continue;
 				break;
 			case ovLABELBAR:
-				if (labelbar_done) continue;
+				if (flags[3]) continue;
 				break;
 			case ovEXTERNAL:
 			default:
@@ -1833,25 +1833,25 @@ static NhlErrorTypes SetAnnoViews
 			subret = SetTickMarkView(ovl,anlp,entry_name);
 			if ((ret = MIN(ret,subret)) < NhlWARNING)
 				return ret;
-			tickmarks_done = True;
+			flags[0] = True;
 			break;
 		case ovTITLE:
 			SetTitleView(ovl,anlp,entry_name);
 			if ((ret = MIN(ret,subret)) < NhlWARNING)
 				return ret;
-			titles_done = True;
+			flags[1] = True;
 			break;
 		case ovLEGEND:
 			SetExternalView(ovl,anlp,entry_name);
 			if ((ret = MIN(ret,subret)) < NhlWARNING)
 				return ret;
-			legend_done = True;
+			flags[2] = True;
 			break;
 		case ovLABELBAR:
 			SetExternalView(ovl,anlp,entry_name);
 			if ((ret = MIN(ret,subret)) < NhlWARNING)
 				return ret;
-			labelbar_done = True;
+			flags[3] = True;
 			break;
 		case ovEXTERNAL:
 			if (anlp->track_data) {

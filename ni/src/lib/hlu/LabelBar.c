@@ -1,5 +1,5 @@
 /*
- *      $Id: LabelBar.c,v 1.28 1995-02-19 08:17:59 boote Exp $
+ *      $Id: LabelBar.c,v 1.29 1995-03-03 20:14:48 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -51,6 +51,58 @@ SetTitleOn
 	NhlLabelBarLayer	lbl = (NhlLabelBarLayer)base;
 
 	lbl->labelbar.title_on = !(lbl->labelbar.title_string == lbDefTitle);
+
+	return NhlNOERROR;
+}
+
+
+/*
+ * Function:	ResourceUnset
+ *
+ * Description:	This function can be used to determine if a resource has
+ *		been set at initialize time either in the Create call or
+ *		from a resource data base. In order to use it the Boolean
+ *		'..resource_set' variable MUST directly proceed the name
+ *		of the resource variable it refers to in the LayerPart
+ *		struct. Also a .nores Resource for the resource_set variable
+ *		must directly preceed the Resource of interest in the 
+ *		Resource initialization list in this module.
+ *
+ * In Args:	
+ *		NrmName		name,
+ *		NrmClass	class,
+ *		NhlPointer	base,
+ *		unsigned int	offset
+ *
+ * Out Args:	
+ *
+ * Scope:	static
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+
+/*ARGSUSED*/
+static NhlErrorTypes
+ResourceUnset
+#if	NhlNeedProto
+(
+	NrmName		name,
+	NrmClass	class,
+	NhlPointer	base,
+	unsigned int	offset
+)
+#else
+(name,class,base,offset)
+	NrmName		name;
+	NrmClass	class;
+	NhlPointer	base;
+	unsigned int	offset;
+#endif
+{
+	char *cl = (char *) base;
+	NhlBoolean *set = (NhlBoolean *)(cl + offset - sizeof(NhlBoolean));
+
+	*set = False;
 
 	return NhlNOERROR;
 }
@@ -232,10 +284,13 @@ static NhlResource resources[] = {
 {NhlNlbTitleAngleF, NhlClbTitleAngleF, NhlTFloat, 
 	 sizeof(float), NhlOffset(NhlLabelBarLayerRec,labelbar.title_angle),
 	 NhlTString,_NhlUSET("0.0"),0,NULL},
+{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+	 NhlOffset(NhlLabelBarLayerRec,labelbar.title_direction_set),
+	 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 {NhlNlbTitleDirection,NhlClbTitleDirection,NhlTTextDirection,
 	 sizeof(NhlTextDirection),
 	 NhlOffset(NhlLabelBarLayerRec,labelbar.title_direction),
-	 NhlTImmediate,_NhlUSET((NhlPointer)NhlACROSS),0,NULL},
+	 NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
 {NhlNlbTitleFont, NhlCFont, NhlTFont, 
 	 sizeof(NhlFont), NhlOffset(NhlLabelBarLayerRec,labelbar.title_font),
 	 NhlTImmediate,_NhlUSET((NhlPointer) 0),0,NULL},
@@ -636,8 +691,7 @@ static NhlErrorTypes    LabelBarInitialize
  * Adjust the title direction according to the position unless
  * it is explicitly set.
  */
-	if (_NhlArgIsSet(args,num_args,NhlNlbTitlePosition) &&
-	    !_NhlArgIsSet(args,num_args,NhlNlbTitleDirection)) {
+	if (!lb_p->title_direction_set) {
 		switch (lb_p->title_pos) {
 		case NhlTOP:
 		case NhlBOTTOM:
@@ -661,13 +715,7 @@ static NhlErrorTypes    LabelBarInitialize
 	lb_p->perim.b = lb_p->lb_y - lb_p->lb_height;
 	lb_p->perim.t = lb_p->lb_y;
 
-/*
- * Set the orientation flag so it can be consulted on the first set call.
- */
-	if (!_NhlArgIsSet(args,num_args,NhlNlbOrientation))
-		lb_p->orient_set = False;
-	else
-		lb_p->orient_set = True;
+
 /*
  * Set up array resources
  */
@@ -855,38 +903,12 @@ static NhlErrorTypes LabelBarSetValues
 				lb_p->title_height *= ty;
 		}
 	}
-#if 0		
-
-		if (LabelBarChanged(tnew, told, 0, args, num_args)) {
-			NhlPError(NhlWARNING,NhlEUNKNOWN,"LabelBarSetValues: Can not change x,y,width,and height when other labelbar attribute changes have been requested also, proceding with other text attribute requests");
-                  ret1 = NhlWARNING;
-			
-		}
-	}
-	else {
-
-		ret1 = TransformPoints(tnew);
-#endif
-
 
 	lb_p->perim.l = lb_p->lb_x;
 	lb_p->perim.r = lb_p->lb_x + lb_p->lb_width;
 	lb_p->perim.b = lb_p->lb_y - lb_p->lb_height;
 	lb_p->perim.t = lb_p->lb_y;
 
-/*
- * Set the orientation according to the aspect ratio if it is not explicitly
- * set: one time only!
- */
-	if (!lb_p->orient_set && 
-	    !_NhlArgIsSet(args,num_args,NhlNlbOrientation)) {
-
-		if (lb_p->lb_height/lb_p->lb_width > 1.0)
-			lb_p->orient = NhlVERTICAL;
-		else
-			lb_p->orient = NhlHORIZONTAL;
-	}
-	lb_p->orient_set = True;
 /*
  * Return now if the labelbar is turned off
  */

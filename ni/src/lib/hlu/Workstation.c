@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.26 1995-03-03 02:56:34 boote Exp $
+ *      $Id: Workstation.c,v 1.27 1995-03-03 20:14:59 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -866,6 +866,7 @@ WorkstationClassInitialize
 	};
 	_NhlEnumVals	colorvals[] = {
 		{NhlTRANSPARENT,	"transparent"},
+		{NhlNULLCOLOR,		"nullcolor"},
 		{NhlBACKGROUND,		"background"},
 		{NhlFOREGROUND,		"foreground"}
 	};
@@ -876,7 +877,8 @@ WorkstationClassInitialize
 	};
 	_NhlEnumVals	fillvals[] = {
 		{NhlSOLIDFILL,	"solidfill"},
-		{NhlHOLLOWFILL,	"hollowfill"}
+		{NhlHOLLOWFILL,	"hollowfill"},
+		{NhlNULLFILL,	"nullfill"}
 	};
 	NhlConvertArg	fillargs[] = {
 		{NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)-1)},
@@ -1358,8 +1360,11 @@ static NhlErrorTypes WorkstationInitialize
 /*
  * SETALMOST is changed to a GKS color index when the workstation is opened
  * for now the ci will be the same as the array index but this may change
- * and hence the need for the ci field. Should values be checked? Start at
- * index 1 since the background color has already been set.
+ * and hence the need for the ci field. Should values be checked? Yes.
+ * Values less than 0.0 are considered "missing values" indicating that
+ * the color should be considered unset. Checking for values greater than
+ * 1.0 takes place in AllocateColors.
+ * Start at index 1 since the background color has already been set.
  */
 	tcolor = newl->work.color_map->data;
 	for (i=1; i<newl->work.num_private_colors; i++)  {
@@ -1367,6 +1372,10 @@ static NhlErrorTypes WorkstationInitialize
 		newl->work.private_color_map[i].red = tcolor[i-1][0];
 		newl->work.private_color_map[i].green = tcolor[i-1][1];
 		newl->work.private_color_map[i].blue =  tcolor[i-1][2];
+		if (tcolor[i-1][0] < 0.0 || tcolor[i-1][1] < 0.0 ||
+		    tcolor[i-1][2] < 0.0) {
+			newl->work.private_color_map[i].ci = UNSET;
+		}
 	}
 
 /*
@@ -1782,6 +1791,7 @@ static NhlErrorTypes    WorkstationSetValues
 		NhlPError(NhlWARNING,NhlEUNKNOWN,
 			  "Illegal Background color change");
 		retcode = MIN(NhlWARNING, retcode);
+		newl->work.bkgnd_color = oldl->work.bkgnd_color;
 	}
 
 /*
@@ -1819,6 +1829,21 @@ static NhlErrorTypes    WorkstationSetValues
 					tcolor[i-1][1];
 				newl->work.private_color_map[i].blue =  
 					tcolor[i-1][2];
+				if (tcolor[i-1][0] < 0.0 || 
+				    tcolor[i-1][1] < 0.0 ||
+				    tcolor[i-1][2] < 0.0) {
+					newl->work.private_color_map[i].ci 
+						= UNSET;
+				}
+			}
+
+			/* since passing in a colormap is a total reset of
+			 * of the colormap; it is necessary to 'UNSET' any
+			 * colors that were previously allocated */
+			   
+			for (i=newl->work.num_private_colors; 
+			     i < MAX_COLOR_MAP; i++)  {
+				newl->work.private_color_map[i].ci = UNSET;
 			}
 		}
 	}
@@ -2256,11 +2281,20 @@ NhlErrorTypes	_NhlSetColor
 {
 	NhlWorkstationLayer	thework = (NhlWorkstationLayer)inst;
 	
-	if(ci > MAX_COLOR_MAP || ci <= 0) {
-/*
-* COLOR INDEX EXCEEDS MAX_COLOR_MAP
-*/
-		NhlPError(NhlWARNING,NhlEUNKNOWN,"_NhlSetColor: color index exceeds MAX_COLOR_MAP");
+	if (ci == NhlBACKGROUND || ci == NhlTRANSPARENT) {
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+		     "NhlSetColor: color index cannot be set: no allocation");
+		return(NhlWARNING);
+	}
+	else if (ci >= MAX_COLOR_MAP || ci < NhlTRANSPARENT) {
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+			  "NhlSetColor: invalid color index: no allocation");
+		return(NhlWARNING);
+	}
+	else if (red < 0.0 || red > 1.0 || green < 0.0 || green > 1.0 ||
+		 blue < 0.0 || blue > 1.0) {
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+	         "NhlSetColor: a color component was invalid: no allocation");
 		return(NhlWARNING);
 	}
 
@@ -2307,12 +2341,18 @@ NhlErrorTypes	_NhlFreeColor
 {
 	NhlWorkstationLayer	thework = (NhlWorkstationLayer)inst;
 
-	if(ci > MAX_COLOR_MAP) {
-		NhlPError(NhlWARNING,NhlEUNKNOWN,"_NhlFreeColor: color index exceeds MAX_COLOR_MAP");
+	if (ci == NhlBACKGROUND || ci == NhlTRANSPARENT) {
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+			  "NhlSetColor: color index cannot be freed");
+		return(NhlWARNING);
+	}
+	else if (ci >= MAX_COLOR_MAP || ci < NhlTRANSPARENT) {
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+			  "NhlSetColor: invalid color index: cannot be freed");
 		return(NhlWARNING);
 	}
 
-	thework->work.private_color_map[ci].ci =REMOVE;
+	thework->work.private_color_map[ci].ci = REMOVE;
 
 	return(DeallocateColors((NhlLayer)thework));
 }
@@ -2374,7 +2414,7 @@ static NhlErrorTypes AllocateColors
 	char			func[] = "AllocateColors";
 	NhlWorkstationLayer	thework = (NhlWorkstationLayer) inst;
 	Gcolr_rep		tmpcolrrep;
-	int			i;
+	int			i, max_col = 0;
 	NhlPrivateColor		*pcmap;
 	NhlErrorTypes		ret = NhlNOERROR;
 /*
@@ -2382,28 +2422,34 @@ static NhlErrorTypes AllocateColors
 * place. In fact this may turn in to a method
 */
 	pcmap = thework->work.private_color_map;
-/*
- * If the Foreground is unset default to white or black depending on
- * whether the Background color is closer to white or black.
- */
 
-	for( i = 0; i < MAX_COLOR_MAP; i++) {
+	for ( i = 0; i < MAX_COLOR_MAP; i++) {
 		if(pcmap[i].ci == SETALMOST) {
 			tmpcolrrep.rgb.red = pcmap[i].red;
 			tmpcolrrep.rgb.green = pcmap[i].green;
 			tmpcolrrep.rgb.blue= pcmap[i].blue;
 			gset_colr_rep(thework->work.gkswksid,i,&tmpcolrrep);
-			if(_NhlLLErrCheckPrnt(NhlWARNING,func))
+			if(_NhlLLErrCheckPrnt(NhlWARNING,func)) {
 				ret = NhlWARNING;
-			pcmap[i].ci = i;
+				pcmap[i].ci = UNSET;
+			}
+			else {
+				pcmap[i].ci = i;
+				max_col = i;
+			}
 		}
-		else if (pcmap[i].ci == UNSET) {
-			tmpcolrrep.rgb.red = pcmap[NhlFOREGROUND].red;
-			tmpcolrrep.rgb.green = pcmap[NhlFOREGROUND].green;
-			tmpcolrrep.rgb.blue= pcmap[NhlFOREGROUND].blue;
-			pcmap[i].ci = NhlFOREGROUND;
+		else if (pcmap[i].ci > NhlTRANSPARENT) {
+			max_col = i;
+		}
+		else {
+			pcmap[i].red = -1.0;
+			pcmap[i].green = -1.0;
+			pcmap[i].blue = -1.0;
 		}
 	}
+	thework->work.color_map_len = max_col;
+	thework->work.num_private_colors = max_col + 1;
+	
 	return ret;
 }
 
@@ -2433,7 +2479,7 @@ static NhlErrorTypes DeallocateColors
 	NhlWorkstationLayer	thework = (NhlWorkstationLayer) inst;
 	NhlPrivateColor		*pcmap = thework->work.private_color_map;
 	Gcolr_rep		tmpcolrrep;
-	int			i;
+	int			i, max_col = 0;
 	NhlErrorTypes		ret = NhlNOERROR;
 
 /*
@@ -2467,12 +2513,15 @@ static NhlErrorTypes DeallocateColors
 		
 	for( i = 1; i < MAX_COLOR_MAP; i++) {
 		if (pcmap[i].ci == REMOVE) {
-			pcmap[i].ci = NhlFOREGROUND;
-			pcmap[i].red = pcmap[NhlFOREGROUND].red;
-			pcmap[i].green = pcmap[NhlFOREGROUND].green;
-			pcmap[i].blue = pcmap[NhlFOREGROUND].blue;
+			pcmap[i].ci = UNSET;
+			pcmap[i].red = -1.0;
+			pcmap[i].green = -1.0;
+			pcmap[i].blue = -1.0;
 		}
+		else if (pcmap[i].ci > NhlTRANSPARENT) max_col = i;
 	}
+	thework->work.color_map_len = max_col;
+	thework->work.num_private_colors = max_col + 1;
 	return ret;
 }
 
@@ -2502,6 +2551,8 @@ int NhlNewColor
 	float blue;
 #endif
 {
+
+
 	return(_NhlNewColor(_NhlGetLayer(pid),red,green,blue));
 }
 
@@ -2556,13 +2607,20 @@ int _NhlNewColor
 	int i = 2;
 	NhlErrorTypes retcode = NhlNOERROR;
 
-	while( thework->work.private_color_map[i].ci != NhlFOREGROUND ) {
+	if (red < 0.0 || red > 1.0 || green < 0.0 || green > 1.0 ||
+		 blue < 0.0 || blue > 1.0) {
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+		 "NhlNewColor: a color component was invalid; no allocation");
+		return(NhlWARNING);
+	}
+	while( thework->work.private_color_map[i].ci != UNSET ) {
 		i++;
 		if(i == MAX_COLOR_MAP) {
 /*
 * ERROR : no available colors
 */		
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"_NhlNewColor: no available colors");
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+				  "NhlNewColor: no available colors");
 			return(NhlFATAL);
 		}
 	}

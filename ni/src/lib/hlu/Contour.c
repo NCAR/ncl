@@ -1,5 +1,5 @@
 /*
- *      $Id: Contour.c,v 1.51 1995-02-19 08:17:46 boote Exp $
+ *      $Id: Contour.c,v 1.52 1995-03-03 20:14:44 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -741,6 +741,9 @@ static NhlResource resources[] = {
 	{NhlNcnDumpAreaMap, NhlCcnDumpAreaMap,NhlTBoolean,
 		 sizeof(NhlBoolean),Oset(dump_area_map),
 		 NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL},
+	{NhlNcnAreaMapCRange, NhlCcnAreaMapCRange,NhlTInteger,
+		 sizeof(int),Oset(amap_crange),
+		 NhlTImmediate,_NhlUSET((NhlPointer) 100000),0,NULL},
 	{NhlNcnDataChanged,NhlCcnDataChanged,NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(data_changed),
 		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
@@ -2983,6 +2986,8 @@ static NhlErrorTypes cnInitAreamap
 		return(ret);
 	}
 
+	c_arseti("lc",cnp->amap_crange * 
+		 MIN(cnl->view.width,cnl->view.height));
 	subret = _NhlArinam(cnp->aws,entry_name);
 	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
 
@@ -3762,7 +3767,8 @@ static NhlErrorTypes UpdateLineAndLabelParams
 
 	cnp->line_lbls.text = (NhlString *) cnp->llabel_strings->data;
 	if (cnp->line_lbls.mono_color)
-		cnp->line_lbls.colors = (int *) cnp->line_lbls.color;
+		cnp->line_lbls.colors = (int *) 
+			_NhlGetGksCi(cl->base.wkptr,cnp->line_lbls.color);
 	else
 		cnp->line_lbls.colors = (int *) cnp->gks_llabel_colors;
 	cnp->line_lbls.gks_bcolor = 
@@ -7180,15 +7186,18 @@ static NhlErrorTypes    ManageDynamicArrays
 	cnp->fill_colors = ga;
 
 	if (init || changed) {
-		int len, spacing;
+		int len, spacing, ix;
 
 		ip = (int *) ga->data;
 		NhlVAGetValues(cnew->base.wkptr->base.id,
 			       NhlNwkColorMapLen, &len, NULL);
 	
 		spacing = MAX(len / count, 1); 
-		for (i=init_count; i < count; i++) 
-			ip[i] = 1 + i * spacing;
+		for (i=init_count; i < count; i++) {
+			ix = 1 + i * spacing;
+			ip[i] =  _NhlIsAllocatedColor(cnew->base.wkptr,ix) ?
+				ix : NhlFOREGROUND;
+		}
 	}
 
 /*=======================================================================*/
@@ -7820,7 +7829,7 @@ static NhlErrorTypes	CheckColorArray
 	NhlErrorTypes ret = NhlNOERROR;
 	char *e_text;
 	int *ip;
-	int i, len, spacing;
+	int i, len, spacing, ix;
 	
 
 	ip = (int *) ga->data;
@@ -7828,8 +7837,11 @@ static NhlErrorTypes	CheckColorArray
 		     NhlNwkColorMapLen, &len, NULL);
 	
 	spacing = MAX(len / count, 1); 
-	for (i=init_count; i < count; i++) 
-		ip[i] = 1 + i * spacing;
+	for (i=init_count; i < count; i++) {
+		ix = 1 + i * spacing;
+		ip[i] =  _NhlIsAllocatedColor(cl->base.wkptr,ix) ?
+				ix : NhlFOREGROUND;
+	}
 
 	if (last_count == 0) {
 		if ((*gks_colors = 
@@ -8599,23 +8611,13 @@ int (_NHLCALLF(nhlfll,NHLFLL))
 				NhlcnRegionAttrs *reg_attrs;
 
 				switch (iai[i]) {
-#if 0
-				case 99:
-					reg_attrs = &Cnp->grid_bound;
-					break;
-#endif
 				case 98:
 					reg_attrs = &Cnp->missing_val;
 					break;
-#if 0
-				case 97:
-					reg_attrs = &Cnp->out_of_range;
-					break;
-#endif
 				default:
 					return 0;
 				}
-				col_ix = reg_attrs->gks_fcolor;
+				col_ix = reg_attrs->fill_color;
 				pat_ix = reg_attrs->fill_pat;
 				fscale = reg_attrs->fill_scale;
 			}

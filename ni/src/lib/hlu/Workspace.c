@@ -1,5 +1,5 @@
 /*
- *      $Id: Workspace.c,v 1.20 1994-12-16 20:05:02 boote Exp $
+ *      $Id: Workspace.c,v 1.21 1995-03-03 20:14:58 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2815,10 +2815,14 @@ NhlErrorTypes _NhlMapbla
 			e_msg = c_semess(0);
 			c_errof();
 			if (strstr(e_msg,cmp_msg)) {
+#if 0
 				printf("resizing ws old %d", wsrp->cur_size);
+#endif
 				ret = EnlargeWorkspace(wsrp,entry_name);
 				if (ret < NhlWARNING) return ret;
+#if 0
 				printf(" new %d\n", wsrp->cur_size);
+#endif
 			}
 			else {
 				e_text = "%s: %s";

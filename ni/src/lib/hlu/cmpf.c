@@ -1,3 +1,6 @@
+/*
+ *      $Id: cmpf.c,v
+ */
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
