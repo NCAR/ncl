@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl
 #
-#      $Id: build,v 1.9 1994-01-19 20:29:42 haley Exp $
+#      $Id: build,v 1.10 1994-02-22 22:47:55 haley Exp $
 #
 #########################################################################
 #									#
@@ -36,7 +36,7 @@
 #					its already been done.
 #			-root <root>	Use 'root' as the directory root
 #					for the build. The default is
-#					to use /ncargbin
+#					to use /cyclone/ncarg/dist/binaries
 #
 #
 #	Return the leaf of a directory path
@@ -230,7 +230,7 @@ require 'config.pl';
 #
 $progName = $& if ($0 =~ /\w+$/);
 $doDebug = 0;				# do operate in debug mode
-$buildDirRoot = "/ncargbin";		# default build repository
+$buildDirRoot = "/cyclone/ncarg/dist/binaries";	# default build repository
 $configFile;  				# NCAR G config file
 $Version; 				# NCAR G version number
 $sizesFile; 				# path to size requirements file

@@ -1,4 +1,4 @@
-ROOT_DIR	= /ncargbin
+ROOT_DIR	= /cyclone/ncargd/dist/binaries
 INS_DIR	= $(ROOT_DIR)/INSTALL
 SRC_TAR	= $(ROOT_DIR)/SRC.TAR
 
