@@ -88,11 +88,12 @@ begin
 	cmap(  4,:) = (/.610,.600,.700/)
 	cmap(  3,:) = (/.650,.650,.700/)
 	cmap(  2,:) = (/.700,.700,.700/)
-	cmap(  1,:) = (/.800,.800,.800/)
-	; Entry 0 is the foreground color.
+	; Entry 1 is the foreground color.
 	; The continental outlines in the map object use this color 
         ; as a default.
-	cmap(  0,:) = (/.0,.0,.0/)
+	cmap(  1,:) = (/.000,.000,.000/)
+	; Entry 0 is the background color.
+	cmap(  0,:) = (/.000,.000,.000/)
 end
 
 begin
@@ -170,7 +171,7 @@ con1 = create "con1" contourPlotClass wks
          "cnLevelSelectionMode" : "ManualLevels"
          "cnMinLevelValF" :  195.0
          "cnMaxLevelValF" :  328.0
-         "cnLevelSpacingF" : 2.18
+         "cnLevelSpacingF" : 2.25
          ; Turn on contour fills.
          "cnFillOn" : "True"
          ; Turn off the contour lines and labels.
