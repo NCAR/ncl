@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.27 2004-01-16 21:13:37 shea Exp $
+;      $Id: contributed.ncl,v 1.28 2004-01-25 23:00:01 shea Exp $
 ;
 ; -------------- added Feb 14 2002
 ; copy_VarMeta
@@ -3826,6 +3826,152 @@ begin
   eofTsMeta (data, eof, eofTs)    ; add meta information
   return  (eofTs)                 ; return
 end
+
+; **********************************************************************
+; D Shea
+; This does a varimax rotation on the time series returned
+; from eofcov_ts. This is called Q-mode varimax rotation.
+;
+;  eof   = eofcov (x,neval)
+;  eofts = eofcov_ts (x,eof)  ; where 'deof' is the data used
+;  eofts_varimax = varimax_eofts_Qmode(eofts, eof@eval, eof@pcvar )
+;
+;  This also returns the % variance explained by:
+;       (a) each rotated component (attribute: Q_pcvar)
+;       (b) each rotated component relative to the 
+;           original variance (attribute: Q_pcvar_original)
+;
+undef ("varimax_eofts")
+function varimax_eofts (eof_ts[*][*]:numeric \
+                       ,eval[*]:numeric, pcvar[*]:numeric )
+
+local neval, nev, Q_eof_ts, Q_eof_ts2, opt, tot_pcvar \
+    , x, Q_tot_var, Q_pcvar
+
+begin
+   neval = dimsizes(eval)
+   tot_pcvar = sum(pcvar)       ; total % variance of input modes
+
+   Q_eof_ts = eof_ts            ; normalize the variance for each mode
+   do nev=0,neval-1
+      Q_eof_ts(nev,:) = eof_ts(nev,:)/sqrt(eval(nev))
+   end do
+                                        ; invoke built-in function
+   Q_eof_ts = (/ eof_varimax(Q_eof_ts) /)
+   Q_eof_ts@long_name = "Q-mode Varimax Rotation"
+
+                                        ; get the % variance
+   Q_eof_ts2  = Q_eof_ts
+   Q_eof_ts2  = Q_eof_ts^2              ; square all values
+   Q_mode_var = dim_variance(Q_eof_ts2) ; variance of each Q mode
+   Q_tot_var  = sum(Q_mode_var)         ; sum ... should be neval
+   Q_pcvar    = (dim_variance(Q_eof_ts2)/Q_tot_var)*100.  ; % each Q mode
+   Q_pcvar_original = Q_pcvar*tot_pcvar*0.01  ; % of original variance explained
+   delete (Q_eof_ts2)
+                                ; reorder into ascending order
+   Q_ts  = Q_eof_ts             ; save
+   Q_pc  = Q_pcvar
+   qsort(Q_pc)                  ; this sorts in ascending order
+
+   indx = new ( neval, "integer")
+   do n=0,neval-1
+      indx(n) = ind(Q_pcvar.eq.Q_pc(n))
+   end do
+   indx = indx(::-1)            ; make descending order
+
+   Q_pcvar  = Q_pcvar(indx)
+   Q_pcvar_original = Q_pcvar_original(indx)
+   do n=0,neval-1
+      Q_eof_ts(n,:) = Q_ts(indx(n),:)
+   end do
+
+   Q_eof_ts@varimax_pcvar          = Q_pcvar     ; should sum to 100%
+   Q_eof_ts@varimax_pcvar_original = Q_pcvar_original
+
+   return  (Q_eof_ts)                ; return
+end
+
+; **********************************************************************
+; D Shea
+;
+; Project the eofts onto the Data and return an 'eof' pattern.
+; No normalization is performed.
+;
+; usage:   eof   = eofcov (x,neval)
+;          eofts = eofcov_ts (x,eof)  ; where 'deof' is the data used
+;          EOF   = eoftsData2eof(eof_ts, deof, False) 
+;          eofts_varimax = varimax_eofts_Qmode(eofts, eof@eval, eof@pcvar )
+;      and/or
+;          eof_opt = True    ; currently not used
+;          EOF_Q = eoftsData2eof(eofts_varimax, deof, False) 
+;
+; currently: the option argument is not used. 
+;
+function eoftsData2eof (eof_ts[*][*], data:numeric, option:logical )
+local dimd, rank, dimts, neval, ntim, npts, eof, nev \
+    , np, opt, n, mx, MX, ny, NY
+begin
+  dimd  = dimsizes(data)
+  rank  = dimsizes(dimd)
+  if (rank.lt.2 .or. rank.gt.3) then
+      print("-----")
+      print("contributed: eoftsData2eof: only works with arrays of2 or 3")
+      exit
+  end if
+
+  dimts = dimsizes(eof_ts)
+  neval = dimts(0)
+  ntim  = dimts(1)
+
+  if (rank.eq.2) then
+      npts = dimd(0)
+      
+      eof = new ( (/neval,npts/), typeof(data),getFillValue(data) ) 
+      do nev=0,neval-1
+        do np=0,npts-1
+           eof(nev,np) = sum(eof_ts(nev,:)*data(np,:))
+        end do
+      end do 
+
+      eof!0 = "evn"
+      if (isdimnamed(data,0)) then
+          eof!1 = data!0
+          if (iscoord(data,data!0) ) then
+              eof&$eof!0$ = data&$data!0$
+          end if
+      else
+          eof!1 = "npts"
+      end if
+  end if
+
+  if (rank.eq.3) then
+      NY = dimd(0)
+      MX = dimd(1)
+      
+      eof = new ( (/neval,NY,MX/), typeof(data),getFillValue(data) ) 
+      do nev=0,neval-1
+        do ny=0,NY-1
+        do mx=0,MX-1
+           eof(nev,ny,mx) = sum(eof_ts(nev,:)*data(ny,mx,:))
+        end do
+        end do
+      end do 
+
+      eof!0 = "evn"
+      do n=1,2
+         nm1 = n-1
+         if (isdimnamed(data,n)) then
+             eof!n = data!nm1
+           if (iscoord(data,data!nm1) ) then
+               eof&$eof!n$ = data&$data!nm1$
+           end if
+         end if
+      end do
+  end if
+
+  return(eof)
+end
+
 ; **************************************************************
 ; D. Shea
 ; reorder [flip] the longitude coordinate variable
