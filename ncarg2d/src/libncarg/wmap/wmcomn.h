@@ -1,5 +1,5 @@
 C
-C	$Id: wmcomn.h,v 1.6 2000-02-22 18:46:47 fred Exp $
+C	$Id: wmcomn.h,v 1.7 2000-02-29 00:48:49 fred Exp $
 C
 C
 C  Size of the symbol type array.  This is a hardwired maximum.
@@ -99,6 +99,7 @@ C    IHIGC4  HIC   Color for circle perimeter around high symbols.
 C    ILOWC1  LOS   Shadow color for low symbols.
 C    ILOWC2  LOB   Symbol color for low symbols.
 C    ILOWC3  LOF   Character background color for low symbols.
+C    ILOWC4  LOC   Color for circle perimeter around low symbols.
 C    IRGLC1  RC1   Color of box outline for regional weather labels.
 C    IRGLC2  RC2   Color of character background color for regional labels.
 C    IRGLC3  RC3   Color of shadow for regional labels.
@@ -128,7 +129,7 @@ C
      +                IHIGC2, IHIGC3, ILOWC1, ILOWC2, ILOWC3, IRGLC1,
      +                IRGLC2, IRGLC3, IRGLC4, IDOTBG, IAROWC, IARSHC,
      +                IRLLSC, IRLOUC, IRLBKC, IHIGC4, IAROUC, IRGLC5,
-     +                ITRO1C, ITRO2C,
+     +                ITRO1C, ITRO2C, ILOWC4,
      +                ISTYPE(ISDIM)
 C
 C  WMARRS contains arrray space.

@@ -1,5 +1,5 @@
 C
-C	$Id: wmseti.f,v 1.6 2000-02-22 18:46:47 fred Exp $
+C	$Id: wmseti.f,v 1.7 2000-02-29 00:48:50 fred Exp $
 C
       SUBROUTINE WMSETI (CNP,IVP)
 C
@@ -368,6 +368,13 @@ C
       ELSE IF (CNP(1:3).EQ.'LOB' .OR. CNP(1:3).EQ.'lob' .OR.
      +    CNP(1:3).EQ.'Lob') THEN
         ILOWC2 = IVP
+        GO TO 120
+C
+C  LOC - color of circumscribed circle.
+C
+      ELSE IF (CNP(1:3).EQ.'LOC' .OR. CNP(1:3).EQ.'loc' .OR.
+     +    CNP(1:3).EQ.'Loc') THEN
+        ILOWC4 = IVP
         GO TO 120
 C
 C  RC1 - box outline color for regional weather labels.

@@ -1,5 +1,5 @@
 
-C	$Id: wmlabs.f,v 1.6 1995-04-25 23:29:02 fred Exp $
+C	$Id: wmlabs.f,v 1.7 2000-02-29 00:48:49 fred Exp $
 C
       SUBROUTINE WMLABS(X,Y,SYMTYP)
 C
@@ -68,16 +68,36 @@ C
         OFFSET = 0.15*RADIUS
         CALL NGGETI('CT',ICTYPO)
         CALL NGSETI('CT',0)
-        CALL NGDOTS(XNDC-OFFSET,YNDC-OFFSET,1,2.*RADIUS,IHIGC1)
-        CALL NGDOTS(XNDC,YNDC,1,2.*RADIUS,IHIGC2)
+C
+C  Shadow.
+C
+        IF (IHIGC1 .GE. 0) THEN
+          CALL NGDOTS(XNDC-OFFSET,YNDC-OFFSET,1,2.*RADIUS,IHIGC1)
+        ENDIF
+C
+C  Character background.
+C
+        IF (IHIGC2 .GE. 0) THEN
+          CALL NGDOTS(XNDC,YNDC,1,2.*RADIUS,IHIGC2)
+        ENDIF
         CALL NGSETI('CT',1)
-        CALL NGDOTS(XNDC,YNDC,1,2.*RADIUS,IHIGC4)
+C
+C  Circumscribed circle.
+C
+        IF (IHIGC4 .GE. 0) THEN
+          CALL NGDOTS(XNDC,YNDC,1,2.*RADIUS,IHIGC4)
+        ENDIF
         CALL NGSETI('CT',ICTYPO)
         CALL PCGETI('CC - character color',ICLRO)
         CALL PCGETI('FN - font name',IFNTO)
         CALL PCSETI('CC - character color',IHIGC3)
         CALL PCSETI('FN - font name',22)
-        CALL PLCHHQ(XNDC,YNDC,'H',SIZEL,0.,0.)
+C
+C  "H" character.
+C
+        IF (IHIGC3 .GE. 0) THEN
+          CALL PLCHHQ(XNDC,YNDC,'H',SIZEL,0.,0.)
+        ENDIF
         CALL PCSETI('CC - character color',ICLRO)
         CALL PCSETI('FN - font name',IFNTO)
       ELSE IF (SYMTYP(1:1).EQ.'L' .OR. SYMTYP(1:1).EQ.'l') THEN
@@ -88,14 +108,36 @@ C
         OFFSET = 0.20*RADIUS
         CALL NGGETI('CT',ICTYPO)
         CALL NGSETI('CT',0)
-        CALL NGDOTS(XNDC,YNDC,1,2.*RADIUS+OFFSET,ILOWC1)
-        CALL NGDOTS(XNDC,YNDC,1,2.*RADIUS,ILOWC2)
+C
+C  Shadow.
+C
+        IF (ILOWC1 .GE. 0) THEN
+          CALL NGDOTS(XNDC,YNDC,1,2.*RADIUS+OFFSET,ILOWC1)
+        ENDIF
+C
+C  Character background.
+C
+        IF (ILOWC2 .GE. 0) THEN
+          CALL NGDOTS(XNDC,YNDC,1,2.*RADIUS,ILOWC2)
+        ENDIF
+        CALL NGSETI('CT',1)
+C
+C  Circumscribed circle.
+C
+        IF (ILOWC4 .GE. 0) THEN
+          CALL NGDOTS(XNDC,YNDC,1,2.*RADIUS,ILOWC4)
+        ENDIF
         CALL NGSETI('CT',ICTYPO)
         CALL PCGETI('CC - character color',ICLRO)
         CALL PCGETI('FN - font name',IFNTO)
         CALL PCSETI('CC - character color',ILOWC3)
         CALL PCSETI('FN - font name',22)
-        CALL PLCHHQ (XNDC,YNDC,':F22:L',SIZEL,0.,0.)
+C
+C  "L" character.
+C
+        IF (ILOWC3 .GE. 0) THEN
+          CALL PLCHHQ (XNDC,YNDC,':F22:L',SIZEL,0.,0.)
+        ENDIF
         CALL PCSETI('CC - CHARACTER COLOR',ICLRO)
         CALL PCSETI('FN - font name',IFNTO)
       ELSE IF (SYMTYP(1:1).EQ.'A' .OR. SYMTYP(1:1).EQ.'a') THEN

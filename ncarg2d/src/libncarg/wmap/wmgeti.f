@@ -1,5 +1,5 @@
 C
-C	$Id: wmgeti.f,v 1.7 2000-02-22 18:46:47 fred Exp $
+C	$Id: wmgeti.f,v 1.8 2000-02-29 00:48:49 fred Exp $
 C
       SUBROUTINE WMGETI (CNP,IVP)
 C
@@ -224,6 +224,10 @@ C
       ELSE IF (CNP(1:3).EQ.'LOB' .OR. CNP(1:3).EQ.'lob' .OR. 
      +    CNP(1:3).EQ.'Lob') THEN
         IVP = ILOWC2
+        GO TO 110
+      ELSE IF (CNP(1:3).EQ.'LOC' .OR. CNP(1:3).EQ.'loc' .OR. 
+     +    CNP(1:3).EQ.'Loc') THEN
+        IVP = ILOWC4
         GO TO 110
       ELSE
         CTM(1:36) = 'WMGETI - Parameter name not known - '

@@ -1,5 +1,5 @@
 C
-C	$Id: wmblda.f,v 1.7 2000-02-22 18:46:46 fred Exp $
+C	$Id: wmblda.f,v 1.8 2000-02-29 00:48:48 fred Exp $
 C
       BLOCKDATA WMBLDA
 C
@@ -171,7 +171,7 @@ C
 C  Color indices for high and low symbols.
 C
       DATA IHIGC1,IHIGC2,IHIGC3,IHIGC4/1,0,1,1/
-      DATA ILOWC1,ILOWC2,ILOWC3/0,1,0/
+      DATA ILOWC1,ILOWC2,ILOWC3,ILOWC4/0,1,0,1/
 C
 C  Color indices for regional weather label boxes.
 C
