@@ -1,5 +1,5 @@
 C
-C      $Id: cn06f.f,v 1.4 1996-05-09 15:37:33 haley Exp $
+C      $Id: cn06f.f,v 1.5 1996-05-15 21:28:14 haley Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -114,10 +114,10 @@ C
 C
 C Get title and history.
 C
-      call ncainq(ncid,NCGLOBAL,'title',t_type,tlen,ierr)
-      call ncagtc(ncid,NCGLOBAL,'title',title,128,ierr)
-      call ncainq(ncid,NCGLOBAL,'history',t_type,hlen,ierr)
-      call ncagtc(ncid,NCGLOBAL,'history',hist,128,ierr)
+      call ncainq(ncid,0,'title',t_type,tlen,ierr)
+      call ncagtc(ncid,0,'title',title,128,ierr)
+      call ncainq(ncid,0,'history',t_type,hlen,ierr)
+      call ncagtc(ncid,0,'history',hist,128,ierr)
       full_title = title(1:tlen-1)//'#C#'//hist(1:hlen-1)
 C
 C Get the lat/lon dimensions.
