@@ -1,6 +1,6 @@
 
 /*
- *      $Id: rascat.c,v 1.5 1992-03-30 20:31:37 clyne Exp $
+ *      $Id: rascat.c,v 1.6 1992-03-30 21:10:33 clyne Exp $
  */
 /*
  *	File:		rascat.c
@@ -100,6 +100,7 @@ static	struct	{
 	char		*dstformat;
 	float		scale;
 	Dimension	resolution;
+	boolean		do_help;
 	int		(*resample)();
 	} opt;
 
@@ -113,6 +114,7 @@ static  OptDescRec      set_options[] = {
 	{"ofmt", 1, NULL, "Specify format of output file"},
 	{"scale", 1, "0.0", "Specify image scaling factor"},
 	{"resolution", 1, "0x0", "Specify output image resolution"},
+	{"help", 0, "NULL", "Print this message and exit"},
 	{"ralgo", 1, "NN", "Specify resampling algo, NN or BL"},
 	{NULL},
 };
@@ -140,6 +142,9 @@ static	Option get_options[] = {
 	},
 	{"resolution", NCARGCvtToDimension, (Voidptr) &opt.resolution, 
 							sizeof(opt.resolution)
+	},
+	{"help", NCARGCvtToBoolean, (Voidptr) &opt.do_help, 
+							sizeof(opt.do_help)
 	},
 	{"ralgo", cvt_to_rsfunc, (Voidptr) &opt.resample, sizeof(opt.resample)
 	},
@@ -221,6 +226,9 @@ main(argc, argv)
 	if (opt.do_version) {
 		PrintVersion(progName);
 		exit(0);
+	}
+	if (opt.do_help) {
+		Usage(NULL);
 	}
 
 
