@@ -4754,9 +4754,8 @@ void NclAddUserFuncs(void)
     nargs = 0;
     args = NewArgs(3);
     SetArgTemplate(args, nargs, "numeric", NclANY, NclANY);  nargs++;
-    SetArgTemplate(args, nargs, "numeric", 1, NclANY);  nargs++;
-    dimsizes[0] = 1;
-    SetArgTemplate(args, nargs, "integer", 1, dimsizes);  nargs++;
+    SetArgTemplate(args, nargs, "numeric", NclANY, NclANY);  nargs++;
+    SetArgTemplate(args, nargs, "integer", 1, NclANY);  nargs++;
     NclRegisterFunc(conform_W, args, "conform", nargs);
 
 /*
