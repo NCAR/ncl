@@ -1,5 +1,5 @@
 /*
- *	$Id: commands.c,v 1.26 1993-03-16 02:51:07 clyne Exp $
+ *	$Id: commands.c,v 1.27 1993-04-03 17:54:46 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -890,7 +890,7 @@ int	iCMovie(ic)
 	 * if a time was specified or if no time was specified and movie
 	 * is not set than set movie, else turn off movie.
 	 */
-	if (time || !icState.movie) {
+	if (ic->cmd.data || !icState.movie) {
 		icState.movie = TRUE;
 		icState.movietime = time;
 		(void) fprintf(fp, "movie on %d seconds\n", time);
