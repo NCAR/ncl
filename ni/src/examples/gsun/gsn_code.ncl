@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.67 2001-05-16 14:54:20 haley Exp $
+;      $Id: gsn_code.ncl,v 1.68 2001-05-17 16:24:11 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -2961,10 +2961,10 @@ begin
 ;
 ; If plot type is unknown or xy, then we can't get labelbar information.
 ;
+    if(plot_type.ne."unknown".and.plot_type.ne."xy") then
       if(plot_type.eq."contour") then
 ;
 ; Get information on how contour plot is filled, so we can recreate 
-          "vcMonoFillArrowFillColor" : mono_fill_col
 ; labelbar.
 ;
         getvalues contour_plot

@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.68 2001-05-16 15:24:31 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.69 2001-05-17 16:24:12 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -3968,7 +3968,7 @@ end
                                 resources:logical)
 local i, vector_object, map_object, res, res2, calldraw, vcres, \
     mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am"/))
-    vcres = get_res_ne(res2,(/"mp","vp","tm","tx","am"/))
+    vcres = get_res_ne(res2,(/"mp","vp","tm","tx","am","lb"/))
 begin
 
 ; Initialize.
@@ -4142,7 +4142,7 @@ begin
     map_object@vector = vector_object
     return(map_object)
     mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am"/))
-    vcres = get_res_ne(res2,(/"mp","vp","tm","tx","am"/))
+    vcres = get_res_ne(res2,(/"mp","vp","tm","tx","am","lb"/))
 ;***********************************************************************;
 ; Function : gsn_csm_vector_map_polar                                   ;
 ;                   wks: workstation object                             ;
