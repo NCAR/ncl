@@ -1,5 +1,5 @@
 /*
- *      $Id: Project,v 1.26 1996-01-15 17:14:31 haley Exp $
+ *      $Id: Project,v 1.27 1996-04-04 23:42:11 haley Exp $
  */
 /************************************************************************
 *									*
@@ -195,6 +195,7 @@ HLUINCPATH		= $(NCARGINCPATH)/$(HLUDIR)
 NCLINCPATH		= $(NCARGINCPATH)/$(NCLDIR)
 USRRESFILE		= "~/.hluresfile"
 NCARGURL		= "ngurl"
+NCARGSITEFILE   = "ncargsite"
 
 ROOTPATHCHECK		= "/lib/ncarg/fontcaps/font1"
 
