@@ -32,7 +32,7 @@ MAKE            = make
 FLOAT_OPT       = 
 OS              = -DSYSV
 ARCH            = 
-XPATH           =
+XPATH           = -L$(XLIBDIR) -I$(XINCDIR)
 VDEFINE         = -DVERSION='"$(VERSION)"'
 CC              = cc
 CC_LD           = $(CC)
