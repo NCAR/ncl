@@ -971,7 +971,7 @@ NclStackEntry _NclCreateHLUObjOp
 */
 		data = _NclPeek(2*i);
 		resname = _NclPeek(2*i+1);
-		if(((data->kind != NclStk_VAL)&&(data->kind != NclStk_VAR))||((resname->kind != NclStk_VAL)&&(resname->kind != NclStk_VAR))) {
+		if(((data->kind != NclStk_VAL)&&(data->kind != NclStk_NOVAL)&&(data->kind != NclStk_VAR))||((resname->kind != NclStk_VAL)&&(resname->kind != NclStk_VAR))) {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"Error in resource list. type mismatch, resource names must be strings and \nresource values must be either file variables, variables or expression results.\n");
 
 			_NclCleanUpStack(2*nres);
@@ -985,6 +985,9 @@ NclStackEntry _NclCreateHLUObjOp
 		break;
 		case NclStk_VAR:
 			tmp_md = _NclVarValueRead(data->u.data_var,NULL,NULL);
+		case NclStk_NOVAL:
+			tmp_md = NULL;
+		break;
 		break;
 		}
 		switch(resname->kind) {
@@ -1003,7 +1006,13 @@ NclStackEntry _NclCreateHLUObjOp
 			data_out.u.data_obj = NULL;
 			return(data_out);
 		}
-		if(tmp_md->multidval.hlu_type_rep[0] != NULL) {
+		if(tmp_md == NULL) {
+			NhlRLSet(rl_list,NrmQuarkToString(
+				*(string*)(tmp2_md->multidval.val)),
+				NrmNULLQUARK,
+				NULL);
+			gen_array[i] = NULL;
+		} else if(tmp_md->multidval.hlu_type_rep[0] != NULL) {
 			gen_array[i] = _NhlCreateGenArray(
 					(NhlPointer)tmp_md->multidval.val,
 					tmp_md->multidval.hlu_type_rep[0],
@@ -1122,6 +1131,7 @@ NclStackEntry _NclCreateHLUObjOp
 		data_out.kind = NclStk_NOVAL;
 	}
 	for(i = 0; i < nres; i++) {
+		if(gen_array[i])
 		NhlFreeGenArray(gen_array[i]);
 	}
 	NclFree(gen_array);
@@ -1274,18 +1284,21 @@ int nres;
 */
 		data = _NclPeek(2*i);
 		resname = _NclPeek(2*i+1);
-		if(((data->kind != NclStk_VAL)&&(data->kind != NclStk_VAR))||((resname->kind != NclStk_VAL)&&(resname->kind != NclStk_VAR))) {
+		if(((data->kind != NclStk_VAL)&&(data->kind!= NclStk_NOVAL)&&(data->kind != NclStk_VAR))||((resname->kind != NclStk_VAL)&&(resname->kind != NclStk_VAR))) {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"Error in resource list. type mismatch, resource names must be strings and \nresource values must be either file variables, variables or expression results.\n");
 
 			_NclCleanUpStack(2*nres);
 			return(NhlFATAL);
-		}
+		} 
 		switch(data->kind) {
 		case NclStk_VAL:
 			tmp_md = (NclMultiDValData)data->u.data_obj;
 		break;
 		case NclStk_VAR:
 			tmp_md = _NclVarValueRead(data->u.data_var,NULL,NULL);
+			break;
+		case NclStk_NOVAL:
+			tmp_md = NULL;
 		break;
 		}
 		switch(resname->kind) {
@@ -1302,7 +1315,13 @@ int nres;
 			_NclCleanUpStack(2*nres);
 			return(NhlFATAL);
 		}
-		if(tmp_md->multidval.hlu_type_rep[0] != NULL) {
+		if(tmp_md == NULL) {
+			NhlRLSet(rl_list,NrmQuarkToString(
+				*(string*)(tmp2_md->multidval.val)),
+				NrmNULLQUARK,
+				NULL);
+			gen_array[i] = NULL;
+		} else if(tmp_md->multidval.hlu_type_rep[0] != NULL) {
 			gen_array[i] = _NhlCreateGenArray(
 					(NhlPointer)tmp_md->multidval.val,
 					tmp_md->multidval.hlu_type_rep[0],
@@ -1379,7 +1398,8 @@ int nres;
 		}
 	}
 	for(i = 0; i < nres; i++) {
-		NhlFreeGenArray(gen_array[i]);
+		if(gen_array[i])
+			NhlFreeGenArray(gen_array[i]);
 	}
 	NclFree(gen_array);
 	NhlRLClear(rl_list);

@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.95 1997-08-18 15:48:52 ethan Exp $
+ *      $Id: Execute.c,v 1.96 1997-08-20 22:56:13 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -5204,6 +5204,13 @@ NclExecuteReturnStatus _NclExecute
 					_NclCleanUpStack(lhs_nsubs);
 				}
 				break;
+			}
+			case PUSHNULL: {
+				NclStackEntry data;
+
+				data.kind = NclStk_NOVAL;
+				data.u.data_obj = NULL;
+				estatus = _NclPush(data);
 			}
 			default:
 				break;

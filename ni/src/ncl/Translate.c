@@ -2055,6 +2055,11 @@ Unneeded translations
 			_NclPushContinue(off2,groot->line,groot->file);
 			break;
 		}
+		case Ncl_NULLNODE:
+		{
+			off1 = _NclPutInstr(PUSHNULL,groot->line,groot->file);
+			break;
+		}
 		case Ncl_NEW:
 		{
 			NclNew *new_op = (NclNew*)groot;

@@ -1788,6 +1788,9 @@ primary : REAL				{
 						_NclValOnly($3);
 						$$ = _NclMakeNewOp($3,$5,NULL);
 					}
+	| NCLNULL			{
+						$$ = _NclMakeNULLNode();
+					}
 ;
 function:  IFUNC opt_arg_list		{
 						NclSrcListNode *step;

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: SrcTree.c,v 1.33 1997-06-11 20:03:48 ethan Exp $
+ *      $Id: SrcTree.c,v 1.34 1997-08-20 22:56:21 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -67,7 +67,7 @@ char *src_tree_names[] = {"Ncl_BLOCK", "Ncl_RETURN", "Ncl_IFTHEN",
 			"Ncl_RESOURCE","Ncl_GETRESOURCE", "Ncl_OBJ",
 			"Ncl_BREAK", "Ncl_CONTINUE","Ncl_FILEVARATT",
 			"Ncl_FILEVARDIM",
-			"Ncl_FILECOORD","Ncl_NEW","Ncl_LOGICAL","Ncl_VARCOORDATT","Ncl_FILECOORDATT","Ncl_WILDCARDINDEX"
+			"Ncl_FILECOORD","Ncl_NEW","Ncl_LOGICAL","Ncl_VARCOORDATT","Ncl_FILECOORDATT","Ncl_WILDCARDINDEX","Ncl_NULLNODE"
 			};
 /*
 * These are the string equivalents of the attribute tags assigned to 
@@ -187,6 +187,29 @@ void *_NclMakeBreakCont
 	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclGenericDestroy;
 	_NclRegisterNode((NclGenericNode*)tmp);
 	return(tmp);
+}
+
+
+void *_NclMakeNULLNode
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NclGenericNode *tmp = (NclGenericNode*)NclMalloc((unsigned)sizeof(NclGenericNode));
+	
+	if(tmp == NULL) {
+		NhlPError(NhlFATAL,errno,"Not enough memory for source tree construction");
+		return(NULL);
+	}
+	tmp->kind = Ncl_NULLNODE;
+	tmp->name = src_tree_names[Ncl_NULLNODE];
+	tmp->line = cur_line_number;
+	tmp->file = cur_load_file;
+	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclGenericDestroy;
+	_NclRegisterNode((NclGenericNode*)tmp);
+	return((void*)tmp);
 }
 /*
  * Function:	_NclMakeReturn
@@ -2282,6 +2305,14 @@ if(groot != NULL) {
 			i--;
 		}
 		break;
+		case Ncl_NULLNODE:
+		{
+			NclGenericNode *ret = (NclGenericNode*)root;
+
+			putspace(i,fp);	
+			fprintf(fp,"%s\n",ret->name);
+		}
+			break;
 		case Ncl_RETURN:
 		{
 			NclReturn *ret = (NclReturn*)root;

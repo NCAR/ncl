@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.63 1997-08-18 15:48:55 ethan Exp $
+ *      $Id: Machine.c,v 1.64 1997-08-20 22:56:15 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -181,6 +181,7 @@ static void SetUpOpsStrings() {
 	ops_strings[FILEVARVAL_COORD_OP] = "FILEVARVAL_COORD_OP";
 	ops_strings[VARVAL_COORD_OP] = "VARVAL_COORD_OP";
 	ops_strings[FILE_VARVAL_OP] = "FILE_VARVAL_OP";
+	ops_strings[PUSHNULL] = "PUSHNULL";
 }
 
 static NhlErrorTypes IncreaseStackSize
@@ -1167,6 +1168,7 @@ void _NclPrintMachine
 		}
 		switch(*ptr) {
 			case NOOP :
+			case PUSHNULL :
 			case STOPSEQ:
 			case RETURN_OP :
 			case CRETURN_OP :

@@ -4,7 +4,7 @@
 #define RETURN_OP			4
 #define FPDEF 			5
 #define NEW_FRAME_OP			6
-/*#define BPROC_CALL_OP			7 */
+#define PUSHNULL			7 
 #define FUNC_CALL_OP			8
 #define PROC_CALL_OP			9
 #define JMP			10
