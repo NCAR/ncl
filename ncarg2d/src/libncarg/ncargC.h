@@ -1,5 +1,5 @@
 /*
- *  $Id: ncargC.h,v 1.8 2000-08-22 03:23:32 haley Exp $
+ *  $Id: ncargC.h,v 1.9 2001-09-19 22:29:09 kennison Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -875,19 +875,19 @@ extern void c_dpvect(
 );
 
 extern int c_mapaci(
-#ifdef  NeedFuncProto
+#ifdef NeedFuncProto
     int iai
 #endif
 );
 
 extern void c_mapbla(
-#ifdef  NeedFuncProto
+#ifdef NeedFuncProto
     int *iamp
 #endif
 );
 
 extern void c_mapblm(
-#ifdef  NeedFuncProto
+#ifdef NeedFuncProto
     int *iam,
     float *xcs,
     float *ycs,
@@ -913,14 +913,14 @@ extern void c_mapdrw(
 );
 
 extern void c_mapfst(
-#ifdef  NeedFuncProto
+#ifdef NeedFuncProto
     float xlat,
     float xlon
 #endif
 );
 
 extern void c_mapgci(
-#ifdef  NeedFuncProto
+#ifdef NeedFuncProto
     float alat,
     float alon,
     float blat,
@@ -938,7 +938,7 @@ extern void c_mapgrd(
 );
 
 extern void c_mapgrm(
-#ifdef  NeedFuncProto
+#ifdef NeedFuncProto
     int *iam,
     float *xcs,
     float *ycs,
@@ -958,29 +958,36 @@ extern void c_mapgrm(
 );
 
 extern void c_mapgtc(
-#ifdef  NeedFuncProto
+#ifdef NeedFuncProto
     char *whch,
     char *cval,
     int len
 #endif
 );
 
+extern void c_mapgtd(
+#ifdef NeedFuncProto
+    char *whch,
+    double *dval
+#endif
+);
+
 extern void c_mapgti(
-#ifdef  NeedFuncProto
+#ifdef NeedFuncProto
     char *whch,
     int *ival
 #endif
 );
 
 extern void c_mapgtl(
-#ifdef  NeedFuncProto
+#ifdef NeedFuncProto
     char *whch,
     int *lval
 #endif
 );
 
 extern void c_mapgtr(
-#ifdef  NeedFuncProto
+#ifdef NeedFuncProto
     char *whch,
     float *rval
 #endif
@@ -999,7 +1006,7 @@ extern void c_mapiq(
 );
 
 extern void c_mapiqa(
-#ifdef  NeedFuncProto
+#ifdef NeedFuncProto
     int *iamp,
     int igrp,
     int idlt,
@@ -1014,7 +1021,7 @@ extern void c_mapiqd(
 );
 
 extern void c_mapiqm(
-#ifdef  NeedFuncProto
+#ifdef NeedFuncProto
     int *iam,
     float *xcs,
     float *ycs,
@@ -1034,15 +1041,15 @@ extern void c_mapiqm(
 );
 
 extern void c_mapit(
-#ifdef  NeedFuncProto
+#ifdef NeedFuncProto
     float xlat,
     float xlon,
     int ifst
-#endif      
+#endif
 );
 
 extern void c_mapita(
-#ifdef  NeedFuncProto
+#ifdef NeedFuncProto
     float xlat,
     float xlon,
     int ifst,
@@ -1054,15 +1061,15 @@ extern void c_mapita(
 );
 
 extern void c_mapitd(
-#ifdef  NeedFuncProto
+#ifdef NeedFuncProto
     float xlat,
     float xlon,
     int ifst
-#endif      
+#endif
 );
 
 extern void c_mapitm(
-#ifdef  NeedFuncProto
+#ifdef NeedFuncProto
     float xlat,
     float xlon,
     int ifst,
@@ -1103,7 +1110,7 @@ extern void c_maplot(
 );
 
 extern void c_mappos(
-#ifdef  NeedFuncProto
+#ifdef NeedFuncProto
     float arg1,
     float arg2,
     float arg3,
@@ -1112,8 +1119,8 @@ extern void c_mappos(
 );
 
 extern void c_maproj(
-#ifdef  NeedFuncProto
-    char *arg1,
+#ifdef NeedFuncProto
+    char *str,
     float arg2,
     float arg3,
     float arg4
@@ -1127,20 +1134,20 @@ extern void c_maprs(
 );
 
 extern void c_maprst(
-#ifdef  NeedFuncProto
+#ifdef NeedFuncProto
     int ifno
 #endif
 );
 
 extern void c_mapsav(
-#ifdef  NeedFuncProto
+#ifdef NeedFuncProto
     int ifno
 #endif
 );
 
 extern void c_mapset(
-#ifdef  NeedFuncProto
-    char *arg1,
+#ifdef NeedFuncProto
+    char *str,
     float *arg2,
     float *arg3,
     float *arg4,
@@ -1149,35 +1156,42 @@ extern void c_mapset(
 );
 
 extern void c_mapstc(
-#ifdef  NeedFuncProto
+#ifdef NeedFuncProto
     char *whch,
     char *cval
 #endif
 );
 
+extern void c_mapstd(
+#ifdef NeedFuncProto
+    char *whch,
+    double dval
+#endif
+);
+
 extern void c_mapsti(
-#ifdef  NeedFuncProto
+#ifdef NeedFuncProto
     char *whch,
     int ival
 #endif
 );
 
 extern void c_mapstl(
-#ifdef  NeedFuncProto
+#ifdef NeedFuncProto
     char *whch,
     int lval
 #endif
 );
 
 extern void c_mapstr(
-#ifdef  NeedFuncProto
+#ifdef NeedFuncProto
     char *whch,
     float rval
 #endif
 );
 
 extern void c_maptra(
-#ifdef  NeedFuncProto
+#ifdef NeedFuncProto
     float rlat,
     float rlon,
     float *uval,
@@ -1186,7 +1200,7 @@ extern void c_maptra(
 );
 
 extern void c_maptri(
-#ifdef  NeedFuncProto
+#ifdef NeedFuncProto
     float uval,
     float vval,
     float *rlat,
@@ -1195,7 +1209,7 @@ extern void c_maptri(
 );
 
 extern void c_maptrn(
-#ifdef  NeedFuncProto
+#ifdef NeedFuncProto
     float rlat,
     float rlon,
     float *u,
@@ -1204,9 +1218,642 @@ extern void c_maptrn(
 );
 
 extern void c_mapvec(
-#ifdef  NeedFuncProto
+#ifdef NeedFuncProto
     float xlat,
     float xlon
+#endif
+);
+
+extern char *c_mdfnme(
+#ifdef NeedFuncProto
+    int iain,
+    int ilvl
+#endif
+);
+
+extern void c_mdgcog(
+#ifdef NeedFuncProto
+    double clat,
+    double clon,
+    double crad,
+    double *alat,
+    double *alon,
+    int npts
+#endif
+);
+
+extern void c_mdgetc(
+#ifdef NeedFuncProto
+    char *whch,
+    char *cval,
+    int len
+#endif
+);
+
+extern void c_mdgetd(
+#ifdef NeedFuncProto
+    char *whch,
+    double *dval
+#endif
+);
+
+extern void c_mdgeti(
+#ifdef NeedFuncProto
+    char *whch,
+    int *ival
+#endif
+);
+
+extern void c_mdgetl(
+#ifdef NeedFuncProto
+    char *whch,
+    int *lval
+#endif
+);
+
+extern void c_mdgetr(
+#ifdef NeedFuncProto
+    char *whch,
+    float *rval
+#endif
+);
+
+extern void c_mdglty(
+#ifdef NeedFuncProto
+    int *ilty
+#endif
+);
+
+extern int c_mdiaty(
+#ifdef NeedFuncProto
+    int iain
+#endif
+);
+
+extern int c_mdifnb(
+#ifdef NeedFuncProto
+    char *chrs
+#endif
+);
+
+extern int c_mdilnb(
+#ifdef NeedFuncProto
+    char *chrs
+#endif
+);
+
+extern int c_mdiola(
+#ifdef NeedFuncProto
+    int iaid,
+    int ilvl
+#endif
+);
+
+extern int c_mdiosa(
+#ifdef NeedFuncProto
+    int iaid,
+    int ilvl
+#endif
+);
+
+extern int c_mdipai(
+#ifdef NeedFuncProto
+    int iain,
+    int iaip
+#endif
+);
+
+extern int c_mdipan(
+#ifdef NeedFuncProto
+    int  iain,
+    char *anme
+#endif
+);
+
+extern int c_mdipar(
+#ifdef NeedFuncProto
+    int iain
+#endif
+);
+
+extern int c_mdisci(
+#ifdef NeedFuncProto
+    int iain
+#endif
+);
+
+extern void c_mdlach(
+#ifdef NeedFuncProto
+    double rlat,
+    char *chrs,
+    int clen,
+    int *nchr
+#endif
+);
+
+extern void c_mdlbln(
+#ifdef NeedFuncProto
+    float xcop,
+    float ycop,
+    float xcoq,
+    float ycoq,
+    float offx,
+    float offy,
+    float size,
+    float angl,
+    float cent
+#endif
+);
+
+extern void c_mdlblt(
+#ifdef NeedFuncProto
+    float xcop,
+    float ycop,
+    float xcoq,
+    float ycoq,
+    float offx,
+    float offy,
+    float size,
+    float angl,
+    float cent
+#endif
+);
+
+extern void c_mdlnam(
+#ifdef NeedFuncProto
+    char *flnm,
+    int   ilvl,
+    int  *iama
+#endif
+);
+
+extern void c_mdlndm(
+#ifdef NeedFuncProto
+    char  *flnm,
+    int    ilvl,
+    int   *iama,
+    float *xcra,
+    float *ycra,
+    int    mcra,
+    int   *iaai,
+    int   *iagi,
+    int    mnog,
+    int (*ulpr_)(
+        float *xcra,
+        float *ycra,
+	int   *ncra,
+	int   *iaai,
+	int   *iagi,
+	int   *ngpsi
+                )
+#endif
+);
+
+extern void c_mdlndr(
+#ifdef NeedFuncProto
+    char *flnm,
+    int   ilvl
+#endif
+);
+
+extern void c_mdlnri(
+#ifdef NeedFuncProto
+    char *flnm
+#endif
+);
+
+extern void c_mdloch(
+#ifdef NeedFuncProto
+    double rlon,
+    char *chrs,
+    int clen,
+    int *nchr
+#endif
+);
+
+extern char *c_mdname(
+#ifdef NeedFuncProto
+    int iain
+#endif
+);
+
+extern int c_mdpaci(
+#ifdef NeedFuncProto
+    int iai
+#endif
+);
+
+extern void c_mdpbla(
+#ifdef NeedFuncProto
+    int *iamp
+#endif
+);
+
+extern void c_mdpblm(
+#ifdef NeedFuncProto
+    int *iam,
+    float *xcs,
+    float *ycs,
+    int mcs,
+    int *iai,
+    int *iag,
+    int mai,
+    int (*lpr_)(
+        float *xcra,
+        float *ycra,
+        int *ncra,
+        int *iaia,
+        int *igia,
+        int *nagi
+            )
+#endif
+);
+
+extern void c_mdpdrw(
+#ifdef  NeedFuncProto
+    void
+#endif
+);
+
+extern void c_mdpfst(
+#ifdef NeedFuncProto
+    double xlat,
+    double xlon
+#endif
+);
+
+extern void c_mdpgci(
+#ifdef NeedFuncProto
+    double alat,
+    double alon,
+    double blat,
+    double blon,
+    int nopi,
+    double *rlti,
+    double *rlni
+#endif
+);
+
+extern void c_mdpgrd(
+#ifdef  NeedFuncProto
+    void
+#endif
+);
+
+extern void c_mdpgrm(
+#ifdef NeedFuncProto
+    int *iam,
+    float *xcs,
+    float *ycs,
+    int mcs,
+    int *iai,
+    int *iag,
+    int mai,
+    int (*lpr_)(
+        float *xcra,
+        float *ycra,
+        int *ncra,
+        int *iaia,
+        int *igia,
+        int *nagi
+            )
+#endif
+);
+
+extern void c_mdpint(
+#ifdef  NeedFuncProto
+    void
+#endif
+);
+
+extern void c_mdpiq(
+#ifdef  NeedFuncProto
+    void
+#endif
+);
+
+extern void c_mdpiqa(
+#ifdef NeedFuncProto
+    int *iamp,
+    int igrp,
+    int idlt,
+    int idrt
+#endif
+);
+
+extern void c_mdpiqd(
+#ifdef  NeedFuncProto
+    void
+#endif
+);
+
+extern void c_mdpiqm(
+#ifdef NeedFuncProto
+    int *iam,
+    float *xcs,
+    float *ycs,
+    int mcs,
+    int *iai,
+    int *iag,
+    int mai,
+    int (*lpr_)(
+        float *xcs,
+        float *ycs,
+        int *ncs,
+        int *iai,
+        int *iag,
+        int *nai
+            )
+#endif
+);
+
+extern void c_mdpit(
+#ifdef NeedFuncProto
+    double xlat,
+    double xlon,
+    int ifst
+#endif
+);
+
+extern void c_mdpita(
+#ifdef NeedFuncProto
+    double xlat,
+    double xlon,
+    int ifst,
+    int *iamp,
+    int igrp,
+    int idlt,
+    int idrt
+#endif
+);
+
+extern void c_mdpitd(
+#ifdef NeedFuncProto
+    double xlat,
+    double xlon,
+    int ifst
+#endif
+);
+
+extern void c_mdpitm(
+#ifdef NeedFuncProto
+    double xlat,
+    double xlon,
+    int ifst,
+    int *iam,
+    float *xcs,
+    float *ycs,
+    int mcs,
+    int *iai,
+    int *iag,
+    int mai,
+    int (*lpr_)(
+        float *xcs,
+        float *ycs,
+        int *ncs,
+        int *iai,
+        int *iag,
+        int *nai
+            )
+#endif
+);
+
+extern void c_mdplbl(
+#ifdef  NeedFuncProto
+    void
+#endif
+);
+
+extern void c_mdplmb(
+#ifdef  NeedFuncProto
+    void
+#endif
+);
+
+extern void c_mdplot(
+#ifdef  NeedFuncProto
+    void
+#endif
+);
+
+extern void c_mdppos(
+#ifdef NeedFuncProto
+    double arg1,
+    double arg2,
+    double arg3,
+    double arg4
+#endif
+);
+
+extern void c_mdproj(
+#ifdef NeedFuncProto
+    char *str,
+    double arg2,
+    double arg3,
+    double arg4
+#endif
+);
+
+extern void c_mdprs(
+#ifdef  NeedFuncProto
+    void
+#endif
+);
+
+extern void c_mdprst(
+#ifdef NeedFuncProto
+    int ifno
+#endif
+);
+
+extern void c_mdpsav(
+#ifdef NeedFuncProto
+    int ifno
+#endif
+);
+
+extern void c_mdpset(
+#ifdef NeedFuncProto
+    char *str,
+    double *arg2,
+    double *arg3,
+    double *arg4,
+    double *arg5
+#endif
+);
+
+extern void c_mdptra(
+#ifdef NeedFuncProto
+    double rlat,
+    double rlon,
+    double *uval,
+    double *vval
+#endif
+);
+
+extern void c_mdptri(
+#ifdef NeedFuncProto
+    double uval,
+    double vval,
+    double *rlat,
+    double *rlon
+#endif
+);
+
+extern void c_mdptrn(
+#ifdef NeedFuncProto
+    double rlat,
+    double rlon,
+    double *u,
+    double *v
+#endif
+);
+
+extern void c_mdpvec(
+#ifdef NeedFuncProto
+    double xlat,
+    double xlon
+#endif
+);
+
+extern void c_mdrgdl(
+#ifdef NeedFuncProto
+    int *irgl
+#endif
+);
+
+extern void c_mdrggc(
+#ifdef NeedFuncProto
+    int lcol[5],
+    int lcsf[5]
+#endif
+);
+
+extern void c_mdrgol(
+#ifdef NeedFuncProto
+    int irgl
+#endif
+);
+
+extern void c_mdrgsc(
+#ifdef NeedFuncProto
+    int lcol[5],
+    int lcsf[5]
+#endif
+);
+
+extern void c_mdrgsf(
+#ifdef NeedFuncProto
+    int irgl
+#endif
+);
+
+extern void c_mdritd(
+#ifdef NeedFuncProto
+    int iaxs,
+    double angl,
+    double *ucrd,
+    double *vcrd,
+    double *wcrd
+#endif
+);
+
+extern void c_mdrset(
+#ifdef  NeedFuncProto
+    void
+#endif
+);
+
+extern void c_mdscal(
+#ifdef NeedFuncProto
+    real xcop,
+    real ycop,
+    real xcoq,
+    real ycoq
+#endif
+);
+
+extern void c_mdsetc(
+#ifdef NeedFuncProto
+    char *whch,
+    char *cval
+#endif
+);
+
+extern void c_mdsetd(
+#ifdef NeedFuncProto
+    char *whch,
+    double dval
+#endif
+);
+
+extern void c_mdseti(
+#ifdef NeedFuncProto
+    char *whch,
+    int ival
+#endif
+);
+
+extern void c_mdsetl(
+#ifdef NeedFuncProto
+    char *whch,
+    int lval
+#endif
+);
+
+extern void c_mdsetr(
+#ifdef NeedFuncProto
+    char *whch,
+    float rval
+#endif
+);
+
+extern void c_mdutfd(
+#ifdef NeedFuncProto
+    double rlat,
+    double rlon,
+    double *u,
+    double *v
+#endif
+);
+
+extern void c_mdutfs(
+#ifdef NeedFuncProto
+    float rlat,
+    float rlon,
+    float *u,
+    float *v
+#endif
+);
+
+extern void c_mdutid(
+#ifdef NeedFuncProto
+    double uval,
+    double vval,
+    double *rlat,
+    double *rlon
+#endif
+);
+
+extern void c_mdutin(
+#ifdef NeedFuncProto
+    int iprj,
+    int izon,
+    int isph,
+    double *para,
+    double umin,
+    double umax,
+    double vmin,
+    double vmax
+#endif
+);
+
+extern void c_mdutis(
+#ifdef NeedFuncProto
+    float uval,
+    float vval,
+    float *rlat,
+    float *rlon
 #endif
 );
 
@@ -1214,33 +1861,40 @@ extern char *c_mpfnme(
 #ifdef NeedFuncProto
     int iain,
     int ilvl
-#endif    
+#endif
 );
 
 extern void c_mpgetc(
-#ifdef  NeedFuncProto
+#ifdef NeedFuncProto
     char *whch,
     char *cval,
     int len
 #endif
 );
 
+extern void c_mpgetd(
+#ifdef NeedFuncProto
+    char *whch,
+    double *rval
+#endif
+);
+
 extern void c_mpgeti(
-#ifdef  NeedFuncProto
+#ifdef NeedFuncProto
     char *whch,
     int *ival
 #endif
 );
 
 extern void c_mpgetl(
-#ifdef  NeedFuncProto
+#ifdef NeedFuncProto
     char *whch,
     int *lval
 #endif
 );
 
 extern void c_mpgetr(
-#ifdef  NeedFuncProto
+#ifdef NeedFuncProto
     char *whch,
     float *rval
 #endif
@@ -1251,100 +1905,100 @@ extern void c_mpglty(
     int *ilty
 #endif
 );
-        
+
 extern int c_mpiaty(
 #ifdef NeedFuncProto
     int iain
-#endif    
+#endif
 );
-        
+
 extern int c_mpifnb(
 #ifdef NeedFuncProto
-    char* chrs
-#endif    
+    char *chrs
+#endif
 );
-        
+
 extern int c_mpilnb(
 #ifdef NeedFuncProto
-    char* chrs
-#endif    
+    char *chrs
+#endif
 );
 
 extern int c_mpiola(
 #ifdef NeedFuncProto
     int iaid,
     int ilvl
-#endif    
+#endif
 );
 
 extern int c_mpiosa(
 #ifdef NeedFuncProto
     int iaid,
     int ilvl
-#endif    
+#endif
 );
 
 extern int c_mpipai(
 #ifdef NeedFuncProto
     int iain,
     int iaip
-#endif    
+#endif
 );
 
 extern int c_mpipan(
 #ifdef NeedFuncProto
-    int iain,
+    int  iain,
     char *anme
-#endif    
+#endif
 );
-        
+
 extern int c_mpipar(
 #ifdef NeedFuncProto
     int iain
-#endif    
+#endif
 );
-        
+
 extern int c_mpisci(
 #ifdef NeedFuncProto
     int iain
-#endif    
+#endif
 );
 
 extern void c_mplnam(
 #ifdef NeedFuncProto
     char *flnm,
-    int  ilvl,
+    int   ilvl,
     int  *iama
-#endif    
+#endif
 );
 
 extern void c_mplndm(
 #ifdef NeedFuncProto
-    char *flnm,
-    int  ilvl,
-    int  *iama,
+    char  *flnm,
+    int    ilvl,
+    int   *iama,
     float *xcra,
     float *ycra,
-    int mcra,
-    int *iaai,
-    int *iagi,
-    int mnog,
+    int    mcra,
+    int   *iaai,
+    int   *iagi,
+    int    mnog,
     int (*ulpr_)(
         float *xcra,
         float *ycra,
-        int *ncra,
-        int *iaai,
-        int *iagi,
-        int *ngpsi
-		)
-#endif    
+	int   *ncra,
+	int   *iaai,
+	int   *iagi,
+	int   *ngpsi
+                )
+#endif
 );
 
 extern void c_mplndr(
 #ifdef NeedFuncProto
     char *flnm,
-    int  ilvl
-#endif    
+    int   ilvl
+#endif
 );
 
 extern void c_mplnri(
@@ -1356,7 +2010,7 @@ extern void c_mplnri(
 extern char *c_mpname(
 #ifdef NeedFuncProto
     int iain
-#endif    
+#endif
 );
 
 extern void c_mprset(
@@ -1366,35 +2020,91 @@ extern void c_mprset(
 );
 
 extern void c_mpsetc(
-#ifdef  NeedFuncProto
+#ifdef NeedFuncProto
     char *whch,
     char *cval
 #endif
 );
 
+extern void c_mpsetd(
+#ifdef NeedFuncProto
+    char *whch,
+    double dval
+#endif
+);
+
 extern void c_mpseti(
-#ifdef  NeedFuncProto
+#ifdef NeedFuncProto
     char *whch,
     int ival
 #endif
 );
 
 extern void c_mpsetl(
-#ifdef  NeedFuncProto
+#ifdef NeedFuncProto
     char *whch,
     int lval
 #endif
 );
 
 extern void c_mpsetr(
-#ifdef  NeedFuncProto
+#ifdef NeedFuncProto
     char *whch,
     float rval
 #endif
 );
 
+extern void c_mputfd(
+#ifdef NeedFuncProto
+    double rlat,
+    double rlon,
+    double *u,
+    double *v
+#endif
+);
+
+extern void c_mputfs(
+#ifdef NeedFuncProto
+    float rlat,
+    float rlon,
+    float *u,
+    float *v
+#endif
+);
+
+extern void c_mputid(
+#ifdef NeedFuncProto
+    double uval,
+    double vval,
+    double *rlat,
+    double *rlon
+#endif
+);
+
+extern void c_mputin(
+#ifdef NeedFuncProto
+    int iprj,
+    int izon,
+    int isph,
+    double *para,
+    double umin,
+    double umax,
+    double vmin,
+    double vmax
+#endif
+);
+
+extern void c_mputis(
+#ifdef NeedFuncProto
+    float uval,
+    float vval,
+    float *rlat,
+    float *rlon
+#endif
+);
+
 extern void c_supcon(
-#ifdef  NeedFuncProto
+#ifdef NeedFuncProto
     float rlat,
     float rlon,
     float *uval,
@@ -1403,7 +2113,7 @@ extern void c_supcon(
 );
 
 extern void c_supmap(
-#ifdef  NeedFuncProto
+#ifdef NeedFuncProto
     int jprj,
     float plat,
     float plon,
