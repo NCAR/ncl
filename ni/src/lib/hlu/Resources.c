@@ -1,5 +1,5 @@
 /*
- *      $Id: Resources.c,v 1.19 1995-03-03 02:56:29 boote Exp $
+ *      $Id: Resources.c,v 1.20 1995-03-20 09:51:33 boote Exp $
  */
 /************************************************************************
 *									*
@@ -131,7 +131,9 @@ _NhlCopyFromArg
 #endif
 {
 
-    if	(size == sizeof(char))	*(char *)dst = (char)src.lngval;
+    if (size == sizeof(float))	*(float *)dst = *(float*)&src.lngval;
+    else if (size == sizeof(double))	*(double *)dst = *(float*)&src.lngval;
+    else if (size == sizeof(char))	*(char *)dst = (char)src.lngval;
     else if (size == sizeof(short))	*(short *)dst = (short)src.lngval;
     else if (size == sizeof(int))	*(int *)dst = (int)src.lngval;
     else if(size == sizeof(long))	*(long *)dst = src.lngval;
@@ -179,6 +181,8 @@ _NhlCopyToArg
 {
 
     if      (size == sizeof(long)) *(long *)dst->ptrval = *(long*)src;
+    else if (size == sizeof(float)) *(float *)dst->ptrval = *(float*)src;
+    else if (size == sizeof(double)) *(double *)dst->ptrval = *(double*)src;
     else if (size == sizeof(int)) *(int *)dst->ptrval = *(int*)src;
     else if (size == sizeof(short)) *(short *)dst->ptrval = *(short*)src;
     else if (size == sizeof(NhlPointer)) *(NhlPointer*)dst->ptrval =
@@ -338,9 +342,14 @@ GetResources
 					func,NrmQuarkToString(args[i].quark));
 					args[i].quark = NrmNULLQUARK;
 				}
-				else if((args[i].type == NrmNULLQUARK) ||
-					(args[i].type==resources[j].nrm_type)){
+				else if(args[i].type == NrmNULLQUARK){
 					_NhlCopyFromArg(args[i].value,
+					(char*)(base + resources[j].nrm_offset),
+					resources[j].nrm_size);
+					resfound[j] = True;
+				}
+				else if(args[i].type==resources[j].nrm_type){
+					_NhlCopyFromArgVal(args[i].value,
 					(char*)(base + resources[j].nrm_offset),
 					resources[j].nrm_size);
 					resfound[j] = True;

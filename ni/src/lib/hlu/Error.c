@@ -1,5 +1,5 @@
 /*
- *      $Id: Error.c,v 1.17 1995-03-07 15:28:25 haley Exp $
+ *      $Id: Error.c,v 1.18 1995-03-20 09:51:32 boote Exp $
  */
 /************************************************************************
 *									*
@@ -489,7 +489,7 @@ ErrorInitialize
 
 						ffname_len = strlen(tfname);
 						ffname = (_NhlFString)
-							_NhlCptrToFptr(tfname);
+						_NhlCptrToFptr((char*)tfname);
 						_NHLCALLF(nhl_fopnunit,
 								NHL_FOPNUNIT)
 							(&fchild->ferror.eunit,
@@ -543,7 +543,7 @@ ErrorInitialize
 					if(tfname){
 						ffname_len = strlen(tfname);
 						ffname = (_NhlFString)
-							_NhlCptrToFptr(tfname);
+						_NhlCptrToFptr((char*)tfname);
 						_NHLCALLF(nhl_fopnunit,
 								NHL_FOPNUNIT)
 							(&fchild->ferror.eunit,
@@ -766,7 +766,7 @@ ErrorSetValues
 
 					ffname_len = strlen(tfname);
 					ffname = (_NhlFString)
-							_NhlCptrToFptr(tfname);
+						_NhlCptrToFptr((char*)tfname);
 					_NHLCALLF(nhl_fopnunit,NHL_FOPNUNIT)
 						(&fchild->ferror.eunit,ffname,
 							&ffname_len,&ierr);
@@ -846,7 +846,7 @@ ErrorSetValues
 
 						ffname_len = strlen(tfname);
 						ffname = (_NhlFString)
-							_NhlCptrToFptr(tfname);
+						_NhlCptrToFptr((char*)tfname);
 						_NHLCALLF(nhl_fopnunit,
 								NHL_FOPNUNIT)
 						(&fchild->ferror.eunit,ffname,
@@ -1086,7 +1086,7 @@ PrintMessage
 
 		message = NhlErrSPrintMsg(tbuf,msg);
 		fmessage_len = strlen(message);
-		fmessage = (_NhlFString)_NhlCptrToFptr(message);
+		fmessage = (_NhlFString)_NhlCptrToFptr((char*)message);
 		_NHLCALLF(nhl_fprnmes,NHL_FPRNMES)
 				(&errorLayer->error.private_eunit,fmessage,
 								&fmessage_len);

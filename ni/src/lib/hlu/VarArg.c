@@ -1,5 +1,5 @@
 /*
- *      $Id: VarArg.c,v 1.5 1994-12-16 20:04:56 boote Exp $
+ *      $Id: VarArg.c,v 1.6 1995-03-20 09:51:35 boote Exp $
  */
 /************************************************************************
 *									*
@@ -66,7 +66,8 @@ _NhlVarToSetArgList
 		}
 
 		if(_NhlIsFloatRes(name))
-			args[i].value.fltval = (float)va_arg(list,double);
+			*(float*)&args[i].value.lngval =
+						(float)va_arg(list,double);
 		else
 			args[i].value.lngval = va_arg(list,long);
 

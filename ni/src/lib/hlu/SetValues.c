@@ -1,5 +1,5 @@
 /*
- *      $Id: SetValues.c,v 1.15 1995-03-14 21:06:03 haley Exp $
+ *      $Id: SetValues.c,v 1.16 1995-03-20 09:51:34 boote Exp $
  */
 /************************************************************************
 *									*
@@ -202,9 +202,13 @@ SetValues
 					func,NrmQuarkToString(args[i].quark));
 					args[i].quark = NrmNULLQUARK;
 				}
-				else if((args[i].type == NrmNULLQUARK) ||
-					(args[i].type==resources[j].nrm_type)){
+				else if(args[i].type == NrmNULLQUARK){
 					_NhlCopyFromArg(args[i].value,
+					(char*)(base + resources[j].nrm_offset),
+					resources[j].nrm_size);
+				}
+				else if(args[i].type==resources[j].nrm_type){
+					_NhlCopyFromArgVal(args[i].value,
 					(char*)(base + resources[j].nrm_offset),
 					resources[j].nrm_size);
 				}
