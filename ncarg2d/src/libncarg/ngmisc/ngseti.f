@@ -1,5 +1,5 @@
 C
-C	$Id: ngseti.f,v 1.18 2002-04-04 22:04:17 fred Exp $
+C	$Id: ngseti.f,v 1.19 2003-11-24 19:20:33 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -382,7 +382,7 @@ C
         ENDIF
         GO TO 120
 C
-C  LX - Lower left X coordinate on PostScript output page.
+C  LX - Lower left X coordinate on PostScript/PDF output page.
 C
       ELSE IF (CNP(1:2).EQ.'LX' .OR. CNP(1:2).EQ.'lx' .OR.
      +         CNP(1:2).EQ.'Lx') THEN
@@ -400,7 +400,7 @@ C
         CALL GESC(-1521,1,IDR,1,IDUM,CDUM)
         GO TO 120
 C
-C  LY - Lower left Y coordinate on PostScript output page.
+C  LY - Lower left Y coordinate on PostScript/PDF output page.
 C
       ELSE IF (CNP(1:2).EQ.'LY' .OR. CNP(1:2).EQ.'ly' .OR.
      +         CNP(1:2).EQ.'Ly') THEN
@@ -417,7 +417,7 @@ C
         CALL GESC(-1521,1,IDR,1,IDUM,CDUM)
         GO TO 120
 C
-C  UX - Upper right X coordinate on PostScript output page.
+C  UX - Upper right X coordinate on PostScript/PDF output page.
 C
       ELSE IF (CNP(1:2).EQ.'UX' .OR. CNP(1:2).EQ.'ux' .OR.
      +         CNP(1:2).EQ.'Ux') THEN
@@ -437,7 +437,7 @@ C
         CALL GESC(-1521,1,IDR,1,IDUM,CDUM)
         GO TO 120
 C
-C  UY - Upper right Y coordinate on PostScript output page.
+C  UY - Upper right Y coordinate on PostScript/PDF output page.
 C
       ELSE IF (CNP(1:2).EQ.'UY' .OR. CNP(1:2).EQ.'uy' .OR.
      +         CNP(1:2).EQ.'Uy') THEN
@@ -457,7 +457,7 @@ C
         CALL GESC(-1521,1,IDR,1,IDUM,CDUM)
         GO TO 120
 C
-C  PX - Lower left X coordinate on PostScript output page, used to
+C  PX - Lower left X coordinate on PostScript/PDF output page, used to
 C       change coordinates between pictures, or mid picture.
 C
       ELSE IF (CNP(1:2).EQ.'PX' .OR. CNP(1:2).EQ.'px' .OR.
@@ -482,7 +482,7 @@ C
         CALL GESC(-1526,1,IDR,1,IDUM,CDUM)
         GO TO 120
 C
-C  PY - Lower left Y coordinate on PostScript output page, used to
+C  PY - Lower left Y coordinate on PostScript/PDF output page, used to
 C       change coordinates between pictures, or mid picture.
 C
       ELSE IF (CNP(1:2).EQ.'PY' .OR. CNP(1:2).EQ.'py' .OR.
@@ -507,7 +507,7 @@ C
         CALL GESC(-1526,1,IDR,1,IDUM,CDUM)
         GO TO 120
 C
-C  QX - Upper right X coordinate on PostScript output page, used to
+C  QX - Upper right X coordinate on PostScript/PDF output page, used to
 C       change coordinates between pictures, or mid picture.
 C
       ELSE IF (CNP(1:2).EQ.'QX' .OR. CNP(1:2).EQ.'qx' .OR.
@@ -532,7 +532,7 @@ C
         CALL GESC(-1526,1,IDR,1,IDUM,CDUM)
         GO TO 120
 C
-C  QY - Upper right Y coordinate on PostScript output page, used to
+C  QY - Upper right Y coordinate on PostScript/PDF output page, used to
 C       change coordinates between pictures, or mid picture.
 C
       ELSE IF (CNP(1:2).EQ.'QY' .OR. CNP(1:2).EQ.'qy' .OR.
@@ -555,6 +555,106 @@ C
         WRITE(IDR(24:32), 530) NURX
         WRITE(IDR(33:41), 530) NURY
         CALL GESC(-1526,1,IDR,1,IDUM,CDUM)
+        GO TO 120
+C
+C  AX - Lower left X coordinate on PostScript output page, used to
+C       specify the bounding box for EPS/EPSI.
+C
+      ELSE IF (CNP(1:2).EQ.'AX' .OR. CNP(1:2).EQ.'ax' .OR.
+     +         CNP(1:2).EQ.'Ax') THEN
+        IF (IVP.LT.-72000 .OR. IVP.GT.72000) THEN
+          CALL SETER('NGSETI - AX value out of range, no action taken',       
+     +                17, 1)
+          GO TO 120
+        ENDIF
+        IF (IWKID .LT. 0) THEN
+          CTM =
+     +      'NGSETI - you must set a value for WO before setting AX'
+          CALL SETER (CTM(1:60), 15, 1)
+          GO TO 120
+        ENDIF
+        WRITE(IDR(1: 5), 500) IWKID
+        MLLX = IVP
+        WRITE(IDR( 6:14), 530) MLLX
+        WRITE(IDR(15:23), 530) MLLY
+        WRITE(IDR(24:32), 530) MURX
+        WRITE(IDR(33:41), 530) MURY
+        CALL GESC(-1528,1,IDR,1,IDUM,CDUM)
+        GO TO 120
+C
+C  AY - Lower left Y coordinate on PostScript output page, used to
+C       specify the bounding box for EPS/EPSI.
+C
+      ELSE IF (CNP(1:2).EQ.'AY' .OR. CNP(1:2).EQ.'ay' .OR.
+     +         CNP(1:2).EQ.'Ay') THEN
+        IF (IVP.LT.-72000 .OR. IVP.GT.72000) THEN
+          CALL SETER('NGSETI - AY value out of range, no action taken',       
+     +                17, 1)
+          GO TO 120
+        ENDIF
+        IF (IWKID .LT. 0) THEN
+          CTM =
+     +      'NGSETI - you must set a value for WO before setting AY'
+          CALL SETER (CTM(1:60), 15, 1)
+          GO TO 120
+        ENDIF
+        WRITE(IDR(1: 5), 500) IWKID
+        MLLY = IVP
+        WRITE(IDR( 6:14), 530) MLLX
+        WRITE(IDR(15:23), 530) MLLY
+        WRITE(IDR(24:32), 530) MURX
+        WRITE(IDR(33:41), 530) MURY
+        CALL GESC(-1528,1,IDR,1,IDUM,CDUM)
+        GO TO 120
+C
+C  BX - Upper right X coordinate on PostScript output page, used to
+C       specify the bounding box for EPS/EPSI.
+C
+      ELSE IF (CNP(1:2).EQ.'BX' .OR. CNP(1:2).EQ.'bx' .OR.
+     +         CNP(1:2).EQ.'Bx') THEN
+        IF (IVP.LT.-72000 .OR. IVP.GT.72000) THEN
+          CALL SETER('NGSETI - BX value out of range, no action taken',       
+     +                17, 1)
+          GO TO 120
+        ENDIF
+        IF (IWKID .LT. 0) THEN
+          CTM =
+     +      'NGSETI - you must set a value for WO before setting BX'
+          CALL SETER (CTM(1:60), 15, 1)
+          GO TO 120
+        ENDIF
+        WRITE(IDR(1: 5), 500) IWKID
+        MURX = IVP
+        WRITE(IDR( 6:14), 530) MLLX
+        WRITE(IDR(15:23), 530) MLLY
+        WRITE(IDR(24:32), 530) MURX
+        WRITE(IDR(33:41), 530) MURY
+        CALL GESC(-1528,1,IDR,1,IDUM,CDUM)
+        GO TO 120
+C
+C  BY - Upper right Y coordinate on PostScript output page, used to
+C       specify the bounding box for EPS/EPSI.
+C
+      ELSE IF (CNP(1:2).EQ.'BY' .OR. CNP(1:2).EQ.'by' .OR.
+     +         CNP(1:2).EQ.'By') THEN
+        IF (IVP.LT.-72000 .OR. IVP.GT.72000) THEN
+          CALL SETER('NGSETI - BY value out of range, no action taken',       
+     +                17, 1)
+          GO TO 120
+        ENDIF
+        IF (IWKID .LT. 0) THEN
+          CTM =
+     +      'NGSETI - you must set a value for WO before setting BY'
+          CALL SETER (CTM(1:60), 15, 1)
+          GO TO 120
+        ENDIF
+        WRITE(IDR(1: 5), 500) IWKID
+        MURY = IVP
+        WRITE(IDR( 6:14), 530) MLLX
+        WRITE(IDR(15:23), 530) MLLY
+        WRITE(IDR(24:32), 530) MURX
+        WRITE(IDR(33:41), 530) MURY
+        CALL GESC(-1528,1,IDR,1,IDUM,CDUM)
         GO TO 120
 C
 C  CO - Scale factor for PostScript coordinates.

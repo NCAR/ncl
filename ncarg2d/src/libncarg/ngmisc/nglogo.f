@@ -1,5 +1,5 @@
 C
-C $Id: nglogo.f,v 1.2 2002-04-16 15:05:58 haley Exp $
+C $Id: nglogo.f,v 1.3 2003-11-24 19:20:32 fred Exp $
 C                                                                      
 C                Copyright (C)  2002
 C        University Corporation for Atmospheric Research
@@ -135,7 +135,7 @@ C  Handle the case for PostScript workstations where the
 C  full color logo is put out.
 C
         CALL GQWKC(IWK,IER,ICONID,IWTYP)
-        IF (IWTYP.GE.20 .AND. IWTYP.LE.31) THEN
+        IF (IWTYP.GE.20.AND.IWTYP.LE.31) THEN
 C
           WRITE(IDR( 1: 5),501) IWK
           WRITE(IDR( 6:13),500) XN
