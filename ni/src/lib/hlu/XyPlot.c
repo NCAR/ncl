@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.40 1995-04-01 00:04:24 dbrown Exp $
+ *      $Id: XyPlot.c,v 1.41 1995-04-03 07:18:00 boote Exp $
  */
 /************************************************************************
 *									*
@@ -316,7 +316,7 @@ static NhlResource resources[] = {
 	{NhlNpmLegendDisplayMode,NhlCpmLegendDisplayMode,
 		NhlTAnnotationDisplayMode,sizeof(NhlAnnotationDisplayMode),
 		Oset(display_legend),NhlTImmediate,
-		_NhlUSET((NhlPointer)NhlCONDITIONAL),_NhlRES_DEFAULT,NULL},
+		_NhlUSET((NhlPointer)NhlNEVER),_NhlRES_DEFAULT,NULL},
 	{_NhlNxyDSpecChanged,_NhlCxyDSpecChanged,NhlTBoolean,sizeof(NhlBoolean),
 		Oset(dspec_changed),NhlTImmediate,NULL,_NhlRES_SONLY,NULL},
 };

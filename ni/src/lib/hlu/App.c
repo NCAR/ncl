@@ -1,5 +1,5 @@
 /*
- *      $Id: App.c,v 1.13 1995-03-31 23:06:44 ethan Exp $
+ *      $Id: App.c,v 1.14 1995-04-03 07:17:49 boote Exp $
  */
 /************************************************************************
 *									*
@@ -876,7 +876,7 @@ _NhlSetLang
  */
 
 /*
- * Function:	NhlAppGetDefaultParentID
+ * Function:	NhlAppGetDefaultParentId
  *
  * Description:	
  *
@@ -889,7 +889,7 @@ _NhlSetLang
  * Side Effect:	
  */
 int
-NhlAppGetDefaultParentID
+NhlAppGetDefaultParentId
 #if	NhlNeedProto
 (
 	void
@@ -930,7 +930,7 @@ _NHLCALLF(nhl_fappgetdefaultparentid,NHL_FAPPGETDEFAULTPARENTID)
 	int	*id;
 #endif
 {
-	*id = NhlAppGetDefaultParentID();
+	*id = NhlAppGetDefaultParentId();
 }
 
 /*
