@@ -1,5 +1,5 @@
 C
-C $Id: mplndr.f,v 1.1 1998-04-16 20:45:50 kennison Exp $
+C $Id: mplndr.f,v 1.2 1998-04-24 22:26:14 kennison Exp $
 C
       SUBROUTINE MPLNDR (FLNM,ILVL)
 C
@@ -140,7 +140,7 @@ C
         END IF
 C
         IF (ILTY.LE.ILVL) THEN
-          CALL MPCHLN (+ILTY,IOAL,IOAR)
+          CALL MPCHLN (+1,ILTY,IOAL,IOAR)
           CALL MAPIT (PNTS(1),PNTS(2),0)
           IF (ICFELL('MPLNDR',2).NE.0) GO TO 907
           DO 107 I=3,NNMS-3,2
@@ -151,7 +151,7 @@ C
           IF (ICFELL('MPLNDR',4).NE.0) GO TO 907
           CALL MAPIQ
           IF (ICFELL('MPLNDR',5).NE.0) GO TO 907
-          CALL MPCHLN (-ILTY,IOAL,IOAR)
+          CALL MPCHLN (-1,ILTY,IOAL,IOAR)
         END IF
 C
         GO TO 106
