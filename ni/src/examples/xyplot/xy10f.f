@@ -1,5 +1,5 @@
 C
-C      $Id: xy10f.f,v 1.5 1996-05-09 15:38:14 haley Exp $
+C      $Id: xy10f.f,v 1.6 1996-12-12 14:49:53 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -222,7 +222,6 @@ C destroying "appid will destroy "xworkid" which will also destroy
 C "plotid".
 C
       call NhlFRLDestroy(rlist)
-      call NhlFRLDestroy(grlist)
       call NhlFDestroy(xworkid,ierr)
 C
 C Restores state.
