@@ -1,5 +1,5 @@
 /*
- *	$Id: w_idt.c,v 1.28 1992-12-14 22:05:38 clyne Exp $
+ *	$Id: w_idt.c,v 1.29 1992-12-14 22:31:14 clyne Exp $
  */
 /*
  *	w_idt.c
@@ -485,7 +485,11 @@ create_main_panel(parent, select_action)
 
 	char *line1 = " Copyright (C) 1991 - All Rights Reserved    \n";
 	char *line2 = " University Corporation for Atmospheric Research   \n";
+#ifdef	__STDC__
 	char *line3 = " NCAR View - UNIX Version " VERSION "   \n";
+#else
+	char *line3 = " NCAR View - UNIX Version 3.xx    \n";
+#endif
 
 	int	message_height	= App_Data.message_height;
 
