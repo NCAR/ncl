@@ -1,5 +1,5 @@
 /*
- *      $Id: nm03c.c,v 1.3 1997-12-17 16:14:05 haley Exp $
+ *      $Id: nm03c.c,v 1.4 1997-12-17 17:54:56 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -42,6 +42,9 @@
 #define NumXOut  21
 #define NumYOut  21
 #define RAD2DEG 57.29578
+
+extern void drwsrfc (int WKID, int nx, int ny, float *x, float *y, float *z,
+              float s1, float s2, float s3);
 
 main(int argc, char *argv[])
 {
@@ -173,6 +176,19 @@ main(int argc, char *argv[])
   }
 
 /*
+ * Get Workstation ID.
+ */
+	NhlRLClear(grlist);
+	NhlRLGetInteger(grlist,NhlNwkGksWorkId,&gkswid);
+	NhlGetValues(wid,grlist);
+/*
+ * There's no HLU object for surface plots yet, so we need to call the
+ * LLUs to get a surface plot.
+ */
+	gactivate_ws (gkswid);
+	drwsrfc(gkswid,NumXOut,NumYOut,xo,yo,out,10.,-25.,50.);
+	gdeactivate_ws (gkswid);
+/*
  *  Get the aspects.
  */
   for (i = 0 ; i < NumXOut ; i++) {
@@ -182,21 +198,6 @@ main(int argc, char *argv[])
       v[j][i] = cos(uvtmp);
     }
   }
-/*
- * Use the LLUs to draw a vector plot.
- */
-  NhlRLClear(grlist);
-  NhlRLGetInteger(grlist,NhlNwkGksWorkId,&gkswid);
-  NhlGetValues(wid,grlist);
-
-  gactivate_ws (gkswid);
-  c_vvinit(&u[0][0], NumXOut, &v[0][0], NumYOut, &p, 1, NumXOut, NumYOut, &wrk, 1);
-  c_vvsetc("mnt"," ");
-  c_vvsetc("mxt"," ");
-  c_vvectr(&u[0][0], &v[0][0], &p, &iam, 0, &wrk);
-  gdeactivate_ws (gkswid);
-  NhlFrame(wid);
-
 /*
  * Create a VectorField object; then use its id as the value of
  * the 'vcVectorFieldData' resource when creating the VectorPlot object.
@@ -211,6 +212,8 @@ main(int argc, char *argv[])
 
   NhlRLClear(srlist);
   NhlRLSetInteger(srlist,NhlNvcVectorFieldData,vfid);
+  NhlRLSetString(srlist,NhlNpmTickMarkDisplayMode,"never");
+  NhlRLSetString(srlist,NhlNvcRefAnnoOn,"false");
   NhlCreate(&vcid,"vector",NhlvectorPlotClass,wid,srlist);
 
   NhlDraw(vcid);
@@ -245,6 +248,7 @@ main(int argc, char *argv[])
     NhlRLSetString(srlist,NhlNcnLevelSelectionMode,"ExplicitLevels");
     NhlRLSetFloat(srlist,NhlNcnSmoothingTensionF,4.);
     NhlRLSetFloatArray(srlist,NhlNcnLevels,cnlevels,7);
+    NhlRLSetString(srlist,NhlNpmTickMarkDisplayMode,"never");
     NhlCreate(&cnid,"ContourPlot",NhlcontourPlotClass,wid,srlist);
 
     NhlDraw(cnid);
@@ -260,4 +264,91 @@ main(int argc, char *argv[])
 
     NhlClose();
     exit(0);
+}
+
+float armn(int, float *);
+float armx(int, float *);
+
+/*
+ * Procedure drwsrfc uses the NCAR Graphics function c_srface to
+ * draw a surface plot of the data values in z.
+ *
+ * The point of observation is calculated from the 3D coordinate 
+ * (s1, s2, s3); the point looked at is the center of the surface.
+ *
+ *  nx     -  Dimension of the X-axis variable x.
+ *  ny     -  Dimension of the Y-axis variable y.
+ *  x      -  An array of X-axis values.
+ *  y      -  An array of Y-axis values.
+ *  z      -  An array dimensioned for nx x ny containing data
+ *            values for each (X,Y) coordinate.
+ *  s1     -  X value for the eye position.
+ *  s2     -  Y value for the eye position.
+ *  s3     -  Z value for the eye position.
+ *  iwk    -  Work space dimensioned for at least 2*nx*ny.
+ *
+ */
+
+void drwsrfc (int WKID, int nx, int ny, float *x, float *y, float *z,
+              float s1, float s2, float s3)
+{
+    Gcolr_rep colval;
+    float xmn, xmx, ymn, ymx, zmn, zmx, eye[6];
+    int i, j, *iwk;
+
+	iwk = (int *)malloc(2*nx*ny*sizeof(int));
+
+	colval.rgb.red = 1.;
+	colval.rgb.green = 1.;
+	colval.rgb.blue = 1.;
+	gset_colr_rep(WKID,0,&colval);
+	colval.rgb.red = 0.;
+	colval.rgb.green = 0.;
+	colval.rgb.blue = 0.;
+	gset_colr_rep(WKID,1,&colval);
+/*
+ *  Find the extreme data values.
+ */
+    xmn = armn(nx, x);
+    xmx = armx(nx, x);
+    ymn = armn(ny, y);
+    ymx = armx(ny, y);
+    zmn = armn(nx * ny, z);
+    zmx = armx(nx * ny, z);
+
+    if ( (s1 == 0.) &&  (s2 == 0.) &&  (s3 == 0.) ) {
+       s1 = -3.;
+       s2 = -1.5;
+       s3 = 0.75;
+    }
+    eye[0] = 5. * s1 * (xmx-xmn);
+    eye[1] = 5. * s2 * (ymx-ymn);
+    eye[2] = 5. * s3 * (zmx-zmn);
+    eye[3] = 0.5 * (xmx-xmn);
+    eye[4] = 0.5 * (ymx-ymn);
+    eye[5] = 0.5 * (zmx-zmn);
+/*
+ *  Plot the surface.
+ */
+    c_srface (x,y,z,iwk,nx,nx,ny,eye,0.);
+    free(iwk);
+}
+
+float armn(int num, float *x)
+{
+   int i;
+   float amin;
+   amin = x[0];
+   for (i = 1 ; i < num ; i++)
+      if (x[i] < amin) amin = x[i];
+   return(amin);
+}
+float armx(int num, float *x)
+{
+   int i;
+   float amax;
+   amax = x[0];
+   for (i = 1 ; i < num ; i++)
+      if (x[i] > amax) amax = x[i];
+   return(amax);
 }
