@@ -1,5 +1,5 @@
 /*
- *      $Id: Title.h,v 1.3 1995-04-07 10:44:03 boote Exp $
+ *      $Id: Title.h,v 1.4 1999-03-27 00:44:57 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -41,7 +41,6 @@
 #define NhlNtiMainFontThicknessF "tiMainFontThicknessF"
 #define NhlNtiMainAngleF	"tiMainAngleF"
 #define NhlNtiMainDirection "tiMainDirection"
-#define NhlCtiMainDirection "TiMainDirection"
 #define NhlNtiMainPosition  "tiMainPosition"
 #define NhlCtiMainPosition  "TiMainPosition"
 #define NhlNtiMainOn		"tiMainOn"
@@ -69,7 +68,6 @@
 #define NhlNtiXAxisFontThicknessF "tiXAxisFontThicknessF"
 #define NhlNtiXAxisAngleF	"tiXAxisAngleF"
 #define NhlNtiXAxisDirection "tiXAxisDirection"
-#define NhlCtiXAxisDirection "TiXAxisDirection"
 #define NhlNtiXAxisPosition  "tiXAxisPosition"
 #define NhlCtiXAxisPosition  "TiXAxisPosition"
 #define NhlNtiXAxisOn		"tiXAxisOn"
@@ -94,7 +92,6 @@
 #define NhlNtiYAxisFontThicknessF "tiYAxisFontThicknessF"
 #define NhlNtiYAxisAngleF	"tiYAxisAngleF"
 #define NhlNtiYAxisDirection "tiYAxisDirection"
-#define NhlCtiYAxisDirection "TiYAxisDirection"
 #define NhlNtiYAxisPosition  "tiYAxisPosition"
 #define NhlCtiYAxisPosition  "TiYAxisPosition"
 #define NhlNtiYAxisOn		"tiYAxisOn"
@@ -103,10 +100,12 @@
 #define NhlCtiYAxisSide		"TiYAxisSide"
 #define NhlNtiYAxisConstantSpacingF	"tiYAxisConstantSpacingF"
 #define NhlNtiYAxisFontQuality		"tiYAxisFontQuality"
+
+
 /*
-* only defining one class for each font resource so users can default
-* all titles instead of each
-*/
+ * These class resources have been eliminated
+ */
+#if 0
 #define NhlCtiTitleJust	"TiTitleJust"
 #define NhlCtiTitleFontHeightsF "TiTitleFontHeightsF"
 #define NhlCtiTitleFontAspectsF "TiTitleFontAspectsF"
@@ -116,11 +115,14 @@
 #define NhlCtiTitleFuncCodes		"TiTitleFuncCodes"
 #define NhlCtiTitleFontQualities	"TiTitleFontQuailties"
 #define NhlCtiTitleFontColors		"TiTitleFontColors"
-
-
+#define NhlCtiMainDirection "TiMainDirection"
+#define NhlCtiXAxisDirection "TiXAxisDirection"
+#define NhlCtiYAxisDirection "TiYAxisDirection"
+#endif
 
 typedef NhlPosition	NhlTitlePositions;
 #define NhlTTitlePositions	"TitlePositions"
+
 
 extern NhlClass NhltitleClass;
 

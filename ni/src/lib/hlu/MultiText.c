@@ -1,5 +1,5 @@
 /*
- *      $Id: MultiText.c,v 1.21 1997-07-25 21:12:24 dbrown Exp $
+ *      $Id: MultiText.c,v 1.22 1999-03-27 00:44:52 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -54,27 +54,27 @@ static NhlResource resources[] = {
 	 * that is used by this object.  If there are changes in the
 	 * resources of TextItem they may need to be updated as well.
 	 */
-	{NhlNtxAngleF, NhlCtxAngleF, NhlTFloat,
+	{NhlNtxAngleF, NhlCTextAngleF, NhlTFloat,
 		sizeof(float),Oset(angle),NhlTString,"0.0",0,NULL},
 	{NhlNtxFont, NhlCFont, NhlTInteger,
 		sizeof(int),Oset(font),NhlTImmediate,(NhlPointer)0,0,NULL},
-	{NhlNtxJust, NhlCtxJust, NhlTInteger,
+	{NhlNtxJust, NhlCTextJustification, NhlTInteger,
 		sizeof(int),Oset(just),NhlTImmediate,(NhlPointer)4,0,NULL},
-	{NhlNtxFontQuality, NhlCtxFontQuality, NhlTFontQuality,
+	{NhlNtxFontQuality, NhlCFontQuality, NhlTFontQuality,
 		sizeof(NhlFontQuality),Oset(font_quality),NhlTImmediate,
 						(NhlPointer)NhlHIGH,0,NULL},
-	{NhlNtxFontHeightF, NhlCtxFontHeightF, NhlTFloat,
+	{NhlNtxFontHeightF, NhlCFontHeightF, NhlTFloat,
 		sizeof(float),Oset(font_height),NhlTString,"0.5",0,NULL},
-	{NhlNtxFontAspectF, NhlCtxFontAspectF, NhlTFloat,
+	{NhlNtxFontAspectF, NhlCFontAspectF, NhlTFloat,
 		sizeof(float),Oset(font_aspect),NhlTString,"1.3125",0,NULL},
-	{NhlNtxFontThicknessF, NhlCtxFontThicknessF, NhlTFloat,
+	{NhlNtxFontThicknessF, NhlCFontThicknessF, NhlTFloat,
 		sizeof(float),Oset(font_thickness),NhlTString,"1.0",0,NULL},
-	{NhlNtxConstantSpacingF, NhlCtxConstantSpacingF, NhlTFloat,
+	{NhlNtxConstantSpacingF, NhlCTextConstantSpacingF, NhlTFloat,
 		sizeof(float),Oset(constant_spacing),NhlTString,"0.0",0,NULL},
-	{NhlNtxDirection, NhlCtxDirection, NhlTTextDirection,
+	{NhlNtxDirection, NhlCTextDirection, NhlTTextDirection,
 		sizeof(NhlTextDirection),Oset(direction),NhlTImmediate,
 						(NhlPointer)NhlACROSS,0,NULL},
-	{NhlNtxFuncCode, NhlCtxFuncCode, NhlTCharacter,
+	{NhlNtxFuncCode, NhlCTextFuncCode, NhlTCharacter,
 		 sizeof(char),Oset(func_code),NhlTString,":",0,NULL}
 };
 #undef Oset

@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.h,v 1.29 1998-12-08 19:48:06 haley Exp $
+ *      $Id: Workstation.h,v 1.30 1999-03-27 00:45:00 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -41,9 +41,9 @@
 #define NhlNwkColorMapLen	"wkColorMapLen"
 #define NhlCwkColorMapLen	"WkColorMapLen"
 #define NhlNwkBackgroundColor	"wkBackgroundColor"
-#define NhlCwkBackgroundColor	"WkBackgroundColor"
+#define NhlCBackgroundColor	"BackgroundColor"
 #define NhlNwkForegroundColor	"wkForegroundColor"
-#define NhlCwkForegroundColor	"WkForegroundColor"
+#define NhlCForegroundColor	"ForegroundColor"
 #define NhlNwkVSWidthDevUnits	"wkVSWidthDevUnits"
 #define NhlCwkVSWidthDevUnits	"WkVSWidthDevUnits"
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: VecAnno.h,v 1.3 1998-01-16 21:08:28 dbrown Exp $
+ *      $Id: VecAnno.h,v 1.4 1999-03-27 00:44:58 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -97,9 +97,6 @@ typedef struct __NhlvaDrawParams {
 #define NhlCvaString2		"VaString2"
 #define NhlCvaString2On		"VaString2On"
 #define NhlCvaVectorLenF	"VaVectorLenF"
-#define NhlCvaVectorLineColor	"VaVectorLineColor"
-#define NhlCvaVectorFillColor	"VaVectorFillColor"
-#define NhlCvaArrowLineThicknessF	"VaArrowLineThicknessF"
 #define NhlCvaArrowAngleF		"VaArrowAngleF"
 #define NhlCvaArrowSpaceF		"VaArrowSpaceF"
 #define NhlCvaArrowMinOffsetF		"VaArrowMinOffsetF"
@@ -107,11 +104,21 @@ typedef struct __NhlvaDrawParams {
 #define NhlCvaDrawParams		"VaDrawParams"
 
 #define NhlCvaPerimOn		"VaPerimOn"
+#define NhlCvaPerimSpaceF	"VaPerimSpaceF"
+
+
+/*
+ * These class resources have been eliminated
+ */
+
+#if 0
 #define NhlCvaPerimColor	"VaPerimColor"
 #define NhlCvaPerimThicknessF	"VaPerimThicknessF"
-#define NhlCvaPerimSpaceF	"VaPerimSpaceF"
 #define NhlCvaBackgroundFillColor	"VaBackgroundFillColor"
-
+#define NhlCvaVectorLineColor	"VaVectorLineColor"
+#define NhlCvaVectorFillColor	"VaVectorFillColor"
+#define NhlCvaArrowLineThicknessF	"VaArrowLineThicknessF"
+#endif
 
 /*
  * Definition and declaration of new class for global use

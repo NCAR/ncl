@@ -1,5 +1,5 @@
 /*
- *      $Id: LabelBar.h,v 1.11 1997-08-14 16:30:03 dbrown Exp $
+ *      $Id: LabelBar.h,v 1.12 1999-03-27 00:44:50 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -145,13 +145,10 @@ typedef enum _NhllbBoxSizingMode {
 
 /* arrays */
 #define NhlClbMonoFillColor		"LbMonoFillColor"
-#define NhlClbFillColor			"LbFillColor"
 #define NhlClbFillColors		"LbFillColors"
 #define NhlClbMonoFillPattern		"LbMonoFillPattern"
-#define NhlClbFillPattern		"LbFillPattern"
 #define NhlClbFillPatterns		"LbFillPatterns"
 #define NhlClbMonoFillScale		"LbMonoFillScale"
-#define NhlClbFillScaleF		"LbFillScaleF"
 #define NhlClbFillScales		"LbFillScales"
 #define NhlClbLabelStrings		"LbLabelStrings"
 #define NhlClbBoxFractions		"LbBoxFractions"
@@ -159,9 +156,30 @@ typedef enum _NhllbBoxSizingMode {
 
 #define NhlClbLabelsOn			"LbLabelsOn"
 #define NhlClbLabelPosition		"LbLabelPosition"
+#define NhlClbLabelAlignment		"LbLabelAlignment"
+#define NhlClbLabelStride		"LbLabelStride"
+
+#define NhlClbTitleOn			"LbTitleOn"
+#define NhlClbTitleString		"LbTitleString"
+#define NhlClbTitlePosition		"LbTitlePosition"
+#define NhlClbTitleExtentF		"LbTitleExtentF"
+#define NhlClbTitleFuncCode		"LbTitleFuncCode"
+
+#define NhlClbBoxLinesOn		"LbBoxLinesOn"
+
+
+
+/* end of resources */
+
+/*
+ * These class resources have been eliminated
+ */
+#if 0
+#define NhlClbFillColor			"LbFillColor"
+#define NhlClbFillPattern		"LbFillPattern"
+#define NhlClbFillScaleF		"LbFillScaleF"
 #define NhlClbLabelAngleF		"LbLabelAngleF"
 #define NhlClbLabelJust			"LbLabelJust"
-#define NhlClbLabelAlignment		"LbLabelAlignment"
 #define NhlClbLabelDirection		"LbLabelDirection"
 #define NhlClbLabelFontColor		"LbLabelFontColor"
 #define NhlClbLabelFontHeightF		"LbLabelFontHeightF"
@@ -170,12 +188,6 @@ typedef enum _NhllbBoxSizingMode {
 #define NhlClbLabelFontQuality		"LbLabelFontQuality"
 #define NhlClbLabelConstantSpacingF	"LbLabelConstantSpacingF"
 #define NhlClbLabelFuncCode		"LbLabelFuncCode"
-#define NhlClbLabelStride		"LbLabelStride"
-
-#define NhlClbTitleOn			"LbTitleOn"
-#define NhlClbTitleString		"LbTitleString"
-#define NhlClbTitlePosition		"LbTitlePosition"
-#define NhlClbTitleExtentF		"LbTitleExtentF"
 #define NhlClbTitleAngleF		"LbTitleAngleF"
 #define NhlClbTitleDirection		"LbTitleDirection"
 #define NhlClbTitleJust			"LbTitleJust"
@@ -185,14 +197,10 @@ typedef enum _NhllbBoxSizingMode {
 #define NhlClbTitleFontThicknessF	"LbTitleFontThicknessF"
 #define NhlClbTitleFontQuality		"LbTitleFontQuality"
 #define NhlClbTitleConstantSpacingF	"LbTitleConstantSpacingF"
-#define NhlClbTitleFuncCode		"LbTitleFuncCode"
-
-#define NhlClbBoxLinesOn		"LbBoxLinesOn"
 #define NhlClbBoxLineColor		"LbBoxLineColor"
 #define NhlClbBoxLineThicknessF		"LbBoxLineThicknessF"
 #define NhlClbBoxLineDashPattern	"LbBoxLineDashPattern"
 #define NhlClbBoxLineDashSegLenF	"LbBoxLineDashSegLenF"
-
 #define NhlClbPerimOn			"LbPerimOn"
 #define NhlClbPerimColor		"LbPerimColor"
 #define NhlClbPerimFill			"LbPerimFill"
@@ -200,11 +208,9 @@ typedef enum _NhllbBoxSizingMode {
 #define NhlClbPerimThicknessF		"LbPerimThicknessF"
 #define NhlClbPerimDashPattern		"LbPerimDashPattern"
 #define NhlClbPerimDashSegLenF		"LbPerimDashSegLenF"
-
 #define NhlClbFillBackground		"LbFillBackground"
 #define NhlClbFillLineThicknessF	"LbFillLineThicknessF"
-
-/* end of resources */
+#endif
 
 extern NhlClass NhllabelBarClass;
 

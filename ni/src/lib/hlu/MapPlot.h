@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.h,v 1.17 1998-11-12 21:40:03 dbrown Exp $
+ *      $Id: MapPlot.h,v 1.18 1999-03-27 00:44:52 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -222,25 +222,12 @@ typedef enum _NhlMapDataBaseVersion {
 #define NhlCmpOutlineDrawOrder		"MpOutlineDrawOrder"
 #define NhlCmpOutlineBoundarySets	"MpOutlineBoundarySets"
 #define NhlCmpOutlineSpecifiers		"MpOutlineSpecifiers"
-#define NhlCmpGeophysicalLineColor	"MpGeophysicalLineColor"
-#define NhlCmpGeophysicalLineDashPattern	"MpGeophysicalLineDashPattern"
-#define NhlCmpGeophysicalLineDashSegLenF	"MpGeophysicalLineDashSegLenF"
-#define NhlCmpGeophysicalLineThicknessF	"MpGeophysicalLineThicknessF"
-#define NhlCmpUSStateLineColor		"MpUSStateLineColor"
-#define NhlCmpUSStateLineDashPattern	"MpUSStateLineDashPattern"
-#define NhlCmpUSStateLineDashSegLenF	"MpUSStateLineDashSegLenF"
-#define NhlCmpUSStateLineThicknessF	"MpUSStateLineThicknessF"
-#define NhlCmpNationalLineColor		"MpNationalLineColor"
-#define NhlCmpNationalLineDashPattern	"MpNationalLineDashPattern"
-#define NhlCmpNationalLineDashSegLenF	"MpNationalLineDashSegLenF"
-#define NhlCmpNationalLineThicknessF	"MpNationalLineThicknessF"
 
 #define NhlCmpAreaMaskingOn		"MpAreaMaskingOn"
 #define NhlCmpMaskAreaSpecifiers	"MpMaskAreaSpecifiers"
 
 #define NhlCmpFillOn			"MpFillOn"
 #define NhlCmpFillDrawOrder		"MpFillDrawOrder"
-#define NhlCmpFillPatternBackground	"MpFillPatternBackground"
 #define NhlCmpSpecifiedFillPriority	"MpSpecifiedFillPriority"
 #define NhlCmpFillBoundarySets		"MpFillBoundarySets"
 
@@ -252,27 +239,12 @@ typedef enum _NhlMapDataBaseVersion {
 
 #define NhlCmpAreaGroupCount		"MpAreaGroupCount"
 #define NhlCmpMonoFillColor		"MpMonoFillColor"
-#define NhlCmpFillColor			"MpFillColor"
 #define NhlCmpFillColors		"MpFillColors"
 #define NhlCmpMonoFillPattern		"MpMonoFillPattern"
-#define NhlCmpFillPattern		"MpFillPattern"
 #define NhlCmpFillPatterns		"MpFillPatterns"
 #define NhlCmpMonoFillScale		"MpMonoFillScale"
-#define NhlCmpFillScaleF		"MpFillScaleF"
 #define NhlCmpFillScales		"MpFillScales"
 
-#define NhlCmpDefaultFillColor		"MpDefaultFillColor"
-#define NhlCmpDefaultFillPattern	"MpDefaultFillPattern"
-#define NhlCmpDefaultFillScaleF		"MpDefaultFillScaleF"
-#define NhlCmpOceanFillColor		"MpOceanFillColor"
-#define NhlCmpOceanFillPattern		"MpOceanFillPattern"
-#define NhlCmpOceanFillScaleF		"MpOceanFillScaleF"
-#define NhlCmpLandFillColor		"MpLandFillColor"
-#define NhlCmpLandFillPattern		"MpLandFillPattern"
-#define NhlCmpLandFillScaleF		"MpLandFillScaleF"
-#define NhlCmpInlandWaterFillColor	"MpInlandWaterFillColor"
-#define NhlCmpInlandWaterFillPattern	"MpInlandWaterFillPattern"
-#define NhlCmpInlandWaterFillScaleF	"MpInlandWaterFillScaleF"
 
 #define NhlCmpGridSpacingF		"MpGridSpacingF"
 #define NhlCmpGridLatSpacingF           "MpGridLatSpacingF"
@@ -283,26 +255,11 @@ typedef enum _NhlMapDataBaseVersion {
 #define NhlCmpGridAndLimbOn		"MpGridAndLimbOn"
 #define NhlCmpGridAndLimbDrawOrder	"MpGridAndLimbDrawOrder"
 #define NhlCmpGridLineColor		"MpGridLineColor"
-#define NhlCmpGridLineDashPattern	"MpGridLineDashPattern"
-#define NhlCmpGridLineDashSegLenF	"MpGridLineDashSegLenF"
-#define NhlCmpGridLineThicknessF	"MpGridLineThicknessF"
 
-#define NhlCmpLimbLineColor		"MpLimbLineColor"
-#define NhlCmpLimbLineDashPattern	"MpLimbLineDashPattern"
-#define NhlCmpLimbLineDashSegLenF	"MpLimbLineDashSegLenF"
-#define NhlCmpLimbLineThicknessF	"MpLimbLineThicknessF"
-
-#define NhlCmpPerimOn			"MpPerimOn"
 #define NhlCmpPerimDrawOrder		"MpPerimDrawOrder"
-#define NhlCmpPerimLineColor		"MpPerimLineColor"
-#define NhlCmpPerimLineDashPattern	"MpPerimLineDashPattern"
-#define NhlCmpPerimLineDashSegLenF	"MpPerimLineDashSegLenF"
-#define NhlCmpPerimLineThicknessF	"MpPerimLineThicknessF"
 
 #define NhlCmpLabelsOn			"MpLabelsOn"
 #define NhlCmpLabelDrawOrder		"MpLabelDrawOrder"
-#define NhlCmpLabelFontHeightF		"MpLabelFontHeightF"
-#define NhlCmpLabelFontColor		"MpLabelFontColor"
 
 /**************** NOT-IMPLEMENTED**********/
 
@@ -320,6 +277,55 @@ typedef enum _NhlMapDataBaseVersion {
 #define NhlCmpLabelPerimSpaceF		"MpLabelPerimSpaceF"
 #define NhlCmpLabelPerimThicknessF	"MpLabelPerimThicknessF"
 #define NhlCmpLabelPerimColor		"MpLabelPerimColor"
+
+/*
+ * These class resources have been eliminated
+ */
+#if 0
+#define NhlCmpGeophysicalLineColor	"MpGeophysicalLineColor"
+#define NhlCmpGeophysicalLineDashPattern	"MpGeophysicalLineDashPattern"
+#define NhlCmpGeophysicalLineDashSegLenF	"MpGeophysicalLineDashSegLenF"
+#define NhlCmpGeophysicalLineThicknessF	"MpGeophysicalLineThicknessF"
+#define NhlCmpUSStateLineColor		"MpUSStateLineColor"
+#define NhlCmpUSStateLineDashPattern	"MpUSStateLineDashPattern"
+#define NhlCmpUSStateLineDashSegLenF	"MpUSStateLineDashSegLenF"
+#define NhlCmpUSStateLineThicknessF	"MpUSStateLineThicknessF"
+#define NhlCmpNationalLineColor		"MpNationalLineColor"
+#define NhlCmpNationalLineDashPattern	"MpNationalLineDashPattern"
+#define NhlCmpNationalLineDashSegLenF	"MpNationalLineDashSegLenF"
+#define NhlCmpNationalLineThicknessF	"MpNationalLineThicknessF"
+#define NhlCmpFillPatternBackground	"MpFillPatternBackground"
+#define NhlCmpFillColor			"MpFillColor"
+#define NhlCmpFillPattern		"MpFillPattern"
+#define NhlCmpFillScaleF		"MpFillScaleF"
+#define NhlCmpDefaultFillColor		"MpDefaultFillColor"
+#define NhlCmpDefaultFillPattern	"MpDefaultFillPattern"
+#define NhlCmpDefaultFillScaleF		"MpDefaultFillScaleF"
+#define NhlCmpOceanFillColor		"MpOceanFillColor"
+#define NhlCmpOceanFillPattern		"MpOceanFillPattern"
+#define NhlCmpOceanFillScaleF		"MpOceanFillScaleF"
+#define NhlCmpLandFillColor		"MpLandFillColor"
+#define NhlCmpLandFillPattern		"MpLandFillPattern"
+#define NhlCmpLandFillScaleF		"MpLandFillScaleF"
+#define NhlCmpInlandWaterFillColor	"MpInlandWaterFillColor"
+#define NhlCmpInlandWaterFillPattern	"MpInlandWaterFillPattern"
+#define NhlCmpInlandWaterFillScaleF	"MpInlandWaterFillScaleF"
+#define NhlCmpGridLineDashPattern	"MpGridLineDashPattern"
+#define NhlCmpGridLineDashSegLenF	"MpGridLineDashSegLenF"
+#define NhlCmpGridLineThicknessF	"MpGridLineThicknessF"
+#define NhlCmpLimbLineColor		"MpLimbLineColor"
+#define NhlCmpLimbLineDashPattern	"MpLimbLineDashPattern"
+#define NhlCmpLimbLineDashSegLenF	"MpLimbLineDashSegLenF"
+#define NhlCmpLimbLineThicknessF	"MpLimbLineThicknessF"
+#define NhlCmpPerimOn			"MpPerimOn"
+#define NhlCmpPerimLineColor		"MpPerimLineColor"
+#define NhlCmpPerimLineDashPattern	"MpPerimLineDashPattern"
+#define NhlCmpPerimLineDashSegLenF	"MpPerimLineDashSegLenF"
+#define NhlCmpPerimLineThicknessF	"MpPerimLineThicknessF"
+#define NhlCmpLabelFontHeightF		"MpLabelFontHeightF"
+#define NhlCmpLabelFontColor		"MpLabelFontColor"
+
+#endif
 
 extern NhlClass NhlmapPlotClass;
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: AnnoManager.c,v 1.6 1997-07-25 21:11:38 dbrown Exp $
+ *      $Id: AnnoManager.c,v 1.7 1999-03-27 00:44:44 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -49,14 +49,14 @@ static NhlResource resources[] = {
 		 NhlTImmediate,_NhlUSET((NhlPointer) NhlCENTERCENTER),0,NULL},
 	{NhlNamOrthogonalPosF,NhlCamOrthogonalPosF,NhlTFloat,sizeof(float),
 		 Oset(ortho_pos),NhlTString,_NhlUSET("0.0"),0,NULL},
-	{NhlNamParallelPosF,NhlCamParallelPosF,NhlTFloat,sizeof(NhlFont),
+	{NhlNamParallelPosF,NhlCamParallelPosF,NhlTFloat,sizeof(float),
 		 Oset(para_pos),NhlTString,_NhlUSET("0.0"),0,NULL },
 	{NhlNamTrackData,NhlCamTrackData,NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(track_data),NhlTImmediate,
 		 _NhlUSET((NhlPointer)False),0,NULL},
-	{NhlNamDataXF,NhlCamDataXF,NhlTFloat,sizeof(NhlFont),
+	{NhlNamDataXF,NhlCamDataXF,NhlTFloat,sizeof(float),
 		 Oset(data_x),NhlTString,_NhlUSET("0.0"),0,NULL },
-	{NhlNamDataYF,NhlCamDataYF,NhlTFloat,sizeof(NhlFont),
+	{NhlNamDataYF,NhlCamDataYF,NhlTFloat,sizeof(float),
 		 Oset(data_y),NhlTString,_NhlUSET("0.0"),0,NULL },
 
 /* End-documented-resources */

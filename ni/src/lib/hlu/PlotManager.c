@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManager.c,v 1.54 1998-11-18 19:21:08 dbrown Exp $
+ *      $Id: PlotManager.c,v 1.55 1999-03-27 00:44:53 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -216,21 +216,21 @@ static NhlResource resources[] = {
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(ti_main_font_height_set),NhlTImmediate,
 		 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
-	{NhlNtiMainFontHeightF,NhlCtiTitleFontHeightsF,NhlTFloat,
+	{NhlNtiMainFontHeightF,NhlCFontHeightF,NhlTFloat,
 		 sizeof(float),Oset(ti_main_font_height),
 		 NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),
          	 _NhlRES_INTERCEPTED,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(ti_x_axis_font_height_set),NhlTImmediate,
 		 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
-	{NhlNtiXAxisFontHeightF,NhlCtiTitleFontHeightsF,NhlTFloat,
+	{NhlNtiXAxisFontHeightF,NhlCFontHeightF,NhlTFloat,
 		 sizeof(float),Oset(ti_x_axis_font_height),
 		 NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),
          	 _NhlRES_INTERCEPTED,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(ti_y_axis_font_height_set),NhlTImmediate,
 		 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
-	{NhlNtiYAxisFontHeightF,NhlCtiTitleFontHeightsF,
+	{NhlNtiYAxisFontHeightF,NhlCFontHeightF,
 		 NhlTFloat,sizeof(float),Oset(ti_y_axis_font_height),
 		 NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),
          	 _NhlRES_INTERCEPTED,NULL},

@@ -1,5 +1,5 @@
 /*
- *      $Id: SubStyles.c,v 1.5 1997-07-25 21:12:37 dbrown Exp $
+ *      $Id: SubStyles.c,v 1.6 1999-03-27 00:44:55 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -46,30 +46,30 @@ static NhlResource lineresources[] = {
 		sizeof(NhlString),Oset(line_label_string),NhlTImmediate,
 		 _NhlUSET((NhlPointer)NULL),
 		 _NhlRES_DEFAULT,(NhlFreeFunc)NhlFree},
-	{NhlNgsLineLabelFont,NhlCLineLabelFont,NhlTFont,sizeof(NhlFont),
+	{NhlNgsLineLabelFont,NhlCFont,NhlTFont,sizeof(NhlFont),
 		Oset(line_label_font),NhlTImmediate,
 		 _NhlUSET((NhlPointer)0),_NhlRES_DEFAULT,NULL},
-	{NhlNgsLineLabelFontColor,NhlCLineLabelFontColor,NhlTColorIndex,
+	{NhlNgsLineLabelFontColor,NhlCFontColor,NhlTColorIndex,
 		sizeof(NhlColorIndex),Oset(line_label_font_color),
 		NhlTImmediate,_NhlUSET((NhlPointer)NhlFOREGROUND),
 		_NhlRES_DEFAULT,NULL},
-	{NhlNgsLineLabelFontHeightF,NhlCLineLabelFontHeightF,NhlTFloat,
+	{NhlNgsLineLabelFontHeightF,NhlCFontHeightF,NhlTFloat,
 		sizeof(float),Oset(line_label_font_height),NhlTString,
 		_NhlUSET("0.0125"),_NhlRES_DEFAULT,NULL},
-	{NhlNgsLineLabelFontAspectF,NhlCLineLabelFontAspectF,NhlTFloat,
+	{NhlNgsLineLabelFontAspectF,NhlCFontAspectF,NhlTFloat,
 		sizeof(float),Oset(line_label_font_aspect),NhlTString,
 		_NhlUSET("1.3125"),_NhlRES_DEFAULT,NULL},
-	{NhlNgsLineLabelFontThicknessF,NhlCLineLabelFontThicknessF,NhlTFloat,
+	{NhlNgsLineLabelFontThicknessF,NhlCFontThicknessF,NhlTFloat,
 		sizeof(float),Oset(line_label_font_thickness),NhlTString,
 		_NhlUSET("1.0"),_NhlRES_DEFAULT,NULL},
-	{NhlNgsLineLabelFontQuality,NhlCLineLabelFontQuality,NhlTFontQuality,
+	{NhlNgsLineLabelFontQuality,NhlCFontQuality,NhlTFontQuality,
 		sizeof(NhlFontQuality),Oset(line_label_font_quality),
 		NhlTImmediate,_NhlUSET((NhlPointer)NhlHIGH),_NhlRES_DEFAULT,
 		NULL},
-	{NhlNgsLineLabelConstantSpacingF,NhlCLineLabelConstantSpacingF,
+	{NhlNgsLineLabelConstantSpacingF,NhlCTextConstantSpacingF,
 		NhlTFloat,sizeof(float),Oset(line_label_const_spacing),
 		NhlTString,_NhlUSET("0.0"),_NhlRES_DEFAULT,NULL},
-	{NhlNgsLineLabelFuncCode,NhlCLineLabelFuncCode,NhlTCharacter,
+	{NhlNgsLineLabelFuncCode,NhlCTextFuncCode,NhlTCharacter,
 		sizeof(char),Oset(line_label_func_code),NhlTString,
 		_NhlUSET(":"),_NhlRES_DEFAULT,NULL},
 
@@ -412,7 +412,7 @@ static NhlResource fillresources[] = {
 
 /* Begin-documented-resources */
 
-	{NhlNgsFillIndex,NhlCFillIndex,NhlTFillIndex,sizeof(NhlFillIndex),
+	{NhlNgsFillIndex,NhlCFillPattern,NhlTFillIndex,sizeof(NhlFillIndex),
 		Oset(fill_index),NhlTImmediate,_NhlUSET((NhlPointer)0),
 		_NhlRES_DEFAULT,NULL},
 	{NhlNgsFillColor,NhlCFillColor,NhlTColorIndex,

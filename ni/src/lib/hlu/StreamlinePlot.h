@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlot.h,v 1.4 1996-04-26 01:11:36 dbrown Exp $
+ *      $Id: StreamlinePlot.h,v 1.5 1999-03-27 00:44:54 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -36,8 +36,8 @@
  */
 
 #define NhlNstVectorFieldData		"stVectorFieldData"
-#define NhlNstScalarFieldData		"stScalarFieldData"
 #define NhlNstMapDirection		"stMapDirection"	/* TRT */
+#define NhlNstStreamlineDrawOrder	"stStreamlineDrawOrder"
 
 #define NhlNstLineThicknessF		"stLineThicknessF"	/* LWD */
 #define NhlNstLineColor			"stLineColor"
@@ -53,7 +53,6 @@
 #define NhlNstLineStartStride		"stLineStartStride"     /* SGD */
 #define NhlNstArrowStride		"stArrowStride"    	/* AGD */
 
-
 #define NhlNstLevels			"stLevels"
 #define NhlNstLevelCount		"stLevelCount"		/* read-only */
 #define NhlNstLevelSelectionMode	"stLevelSelectionMode"
@@ -61,17 +60,6 @@
 #define NhlNstLevelSpacingF		"stLevelSpacingF"
 #define NhlNstMinLevelValF		"stMinLevelValF"
 #define NhlNstMaxLevelValF		"stMaxLevelValF"
-
-#define NhlNstUseScalarArray		"stUseScalarArray"
-#define NhlNstMonoStreamlineLineColor	"stMonoStreamlineLineColor"
-#define NhlNstStreamlineLineColor	"stStreamlineLineColor"
-#define NhlNstMonoStreamlineFillColor	"stMonoStreamlineFillColor"
-#define NhlNstStreamlineFillColor		"stStreamlineFillColor"
-#define NhlNstStreamlineColors		"stStreamlineColors"
-#define NhlNstScalarMissingValColor	"stScalarMissingValColor"
-#define NhlNstStreamlineDrawOrder		"stStreamlineDrawOrder"
-
-
 
 #define NhlNstNoDataLabelOn		"stNoDataLabelOn"
 #define NhlNstNoDataLabelString		"stNoDataLabelString"
@@ -100,32 +88,12 @@
 #define NhlNstZeroFLabelParallelPosF	"stZeroFLabelParallelPosF"
 #define NhlNstZeroFLabelOrthogonalPosF	"stZeroFLabelOrthogonalPosF"
 
-#define NhlNstMagnitudeScalingMode	"stMagnitudeScalingMode"
-#define NhlNstMagnitudeScaleValueF	"stMagnitudeScaleValueF"
-#define NhlNstMagnitudeScaleFactorF	"stMagnitudeScaleFactorF" /*ro*/
-#define NhlNstMagnitudeFormat		"stMagnitudeFormat"
-
-#define NhlNstScalarValueScalingMode	"stScalarValueScalingMode"
-#define NhlNstScalarValueScaleValueF	"stScalarValueScaleValueF"
-#define NhlNstScalarValueScaleFactorF 	"stScalarValueScaleFactorF" /*ro*/
-#define NhlNstScalarValueFormat		"stScalarValueFormat"
-
-#define NhlNstExplicitLabelBarLabelsOn	"stExplicitLabelBarLabelsOn"
-#define NhlNstLabelBarEndLabelsOn	"stLabelBarEndLabelsOn"
-
-#define NhlNstLabelsOn			"stLabelsOn"
-#define NhlNstLabelsUseStreamlineColor	"stLabelsUseStreamlineColor"
-#define NhlNstLabelFontColor		"stLabelFontColor"
-#define NhlNstLabelFontHeightF		"stLabelFontHeightF"
-
 /*class resources */
 
 #define NhlCstVectorFieldData		"StVectorFieldData"
-#define NhlCstScalarFieldData		"StScalarFieldData"
 #define NhlCstMapDirection		"StMapDirection"
+#define NhlCstStreamlineDrawOrder		"StStreamlineDrawOrder"
 
-#define NhlCstLineThicknessF		"StLineThicknessF"	/* LWD */
-#define NhlCstLineColor			"StLineColor"
 #define NhlCstArrowLengthF		"StArrowLengthF"	/* ARL */
 #define NhlCstStepSizeF			"StStepSizeF"		/* DFM */
 #define NhlCstMinStepFactorF		"StMinStepFactorF"    	/* CDS */
@@ -146,21 +114,26 @@
 #define NhlCstMinLevelValF		"StMinLevelValF"
 #define NhlCstMaxLevelValF		"StMaxLevelValF"
 
-#define NhlCstStreamlineLineThicknessF	"StStreamlineLineThicknessF"
-#define NhlCstUseScalarArray		"StUseScalarArray"
-#define NhlCstMonoStreamlineLineColor	"StMonoStreamlineLineColor"
-#define NhlCstStreamlineLineColor		"StStreamlineLineColor"
-#define NhlCstMonoStreamlineFillColor	"StMonoStreamlineFillColor"
-#define NhlCstStreamlineFillColor		"StStreamlineFillColor"
-#define NhlCstStreamlineColors		"StStreamlineColors"
-#define NhlCstScalarMissingValColor	"StScalarMissingValColor"
-#define NhlCstStreamlineDrawOrder		"StStreamlineDrawOrder"
 
 #define NhlCstNoDataLabelOn		"StNoDataLabelOn"
 #define NhlCstNoDataLabelString		"StNoDataLabelString"
 #define NhlCstZeroFLabelOn		"StZeroFLabelOn"
 #define NhlCstZeroFLabelString		"StZeroFLabelString"
 #define NhlCstZeroFLabelFormat		"StZeroFLabelFormat"
+#define NhlCstZeroFLabelPerimSpaceF	"StZeroFLabelPerimSpaceF"
+
+#define NhlCstZeroFLabelZone		"StZeroFLabelZone"
+#define NhlCstZeroFLabelSide		"StZeroFLabelSide"
+#define NhlCstZeroFLabelJust		"StZeroFLabelJust"
+#define NhlCstZeroFLabelParallelPosF	"StZeroFLabelParallelPosF"
+#define NhlCstZeroFLabelOrthogonalPosF	"StZeroFLabelOrthogonalPosF"
+
+/*
+ * These class resources have been eliminated
+ */
+#if 0
+#define NhlCstLineThicknessF		"StLineThicknessF"	/* LWD */
+#define NhlCstLineColor			"StLineColor"
 #define NhlCstZeroFLabelFontHeightF	"StZeroFLabelFontHeightF"
 #define NhlCstZeroFLabelTextDirection	"StZeroFLabelTextDirection"
 #define NhlCstZeroFLabelFont		"StZeroFLabelFont"
@@ -171,17 +144,50 @@
 #define NhlCstZeroFLabelConstantSpacingF "StZeroFLabelConstantSpacingF"
 #define NhlCstZeroFLabelAngleF		"StZeroFLabelAngleF"
 #define NhlCstZeroFLabelFuncCode	"StZeroFLabelFuncCode"
-#define NhlCstZeroFLabelBackgroundColor "StZeroFLabelBackgroundColor"
 #define NhlCstZeroFLabelPerimOn		"StZeroFLabelPerimOn"
-#define NhlCstZeroFLabelPerimSpaceF	"StZeroFLabelPerimSpaceF"
+#define NhlCstZeroFLabelBackgroundColor "StZeroFLabelBackgroundColor"
 #define NhlCstZeroFLabelPerimThicknessF "StZeroFLabelPerimThicknessF"
 #define NhlCstZeroFLabelPerimColor	"StZeroFLabelPerimColor"
 
-#define NhlCstZeroFLabelZone		"StZeroFLabelZone"
-#define NhlCstZeroFLabelSide		"StZeroFLabelSide"
-#define NhlCstZeroFLabelJust		"StZeroFLabelJust"
-#define NhlCstZeroFLabelParallelPosF	"StZeroFLabelParallelPosF"
-#define NhlCstZeroFLabelOrthogonalPosF	"StZeroFLabelOrthogonalPosF"
+#endif
+
+/*
+ * Not yet implemented
+ */
+#if 0
+
+#define NhlNstScalarFieldData		"stScalarFieldData"
+#define NhlNstUseScalarArray		"stUseScalarArray"
+#define NhlNstMonoStreamlineLineColor	"stMonoStreamlineLineColor"
+#define NhlNstStreamlineLineColor	"stStreamlineLineColor"
+#define NhlNstMonoStreamlineFillColor	"stMonoStreamlineFillColor"
+#define NhlNstStreamlineFillColor		"stStreamlineFillColor"
+#define NhlNstStreamlineColors		"stStreamlineColors"
+#define NhlNstScalarMissingValColor	"stScalarMissingValColor"
+
+
+#define NhlNstMagnitudeScalingMode	"stMagnitudeScalingMode"
+#define NhlNstMagnitudeScaleValueF	"stMagnitudeScaleValueF"
+#define NhlNstMagnitudeScaleFactorF	"stMagnitudeScaleFactorF" /*ro*/
+#define NhlNstMagnitudeFormat		"stMagnitudeFormat"
+
+#define NhlNstScalarValueScalingMode	"stScalarValueScalingMode"
+#define NhlNstScalarValueScaleValueF	"stScalarValueScaleValueF"
+#define NhlNstScalarValueScaleFactorF 	"stScalarValueScaleFactorF" /*ro*/
+#define NhlNstScalarValueFormat		"stScalarValueFormat"
+
+#define NhlNstExplicitLabelBarLabelsOn	"stExplicitLabelBarLabelsOn"
+#define NhlNstLabelBarEndLabelsOn	"stLabelBarEndLabelsOn"
+
+#define NhlNstLabelsOn			"stLabelsOn"
+#define NhlNstLabelsUseStreamlineColor	"stLabelsUseStreamlineColor"
+#define NhlNstLabelFontColor		"stLabelFontColor"
+#define NhlNstLabelFontHeightF		"stLabelFontHeightF"
+
+#define NhlCstScalarFieldData		"StScalarFieldData"
+#define NhlCstUseScalarArray		"StUseScalarArray"
+#define NhlCstStreamlineColors		"StStreamlineColors"
+#define NhlCstScalarMissingValColor	"StScalarMissingValColor"
 
 #define NhlCstMagnitudeScalingMode	"StMagnitudeScalingMode"
 #define NhlCstMagnitudeScaleValueF	"StMagnitudeScaleValueF"
@@ -200,6 +206,13 @@
 #define NhlCstLabelsUseStreamlineColor	"StLabelsUseStreamlineColor"
 #define NhlCstLabelFontColor		"StLabelFontColor"
 #define NhlCstLabelFontHeightF		"StLabelFontHeightF"
+
+#define NhlCstStreamlineLineThicknessF	"StStreamlineLineThicknessF"
+#define NhlCstMonoStreamlineLineColor	"StMonoStreamlineLineColor"
+#define NhlCstStreamlineLineColor		"StStreamlineLineColor"
+#define NhlCstMonoStreamlineFillColor	"StMonoStreamlineFillColor"
+#define NhlCstStreamlineFillColor		"StStreamlineFillColor"
+#endif
 
 extern NhlClass			NhlstreamlinePlotClass;
 

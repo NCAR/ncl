@@ -1,5 +1,5 @@
 /*
- *      $Id: GraphicStyle.h,v 1.3 1997-07-25 21:12:01 dbrown Exp $
+ *      $Id: GraphicStyle.h,v 1.4 1999-03-27 00:44:49 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -85,15 +85,7 @@
 #define NhlCLineColor			"LineColor"
 #define NhlCLineThicknessF		"LineThicknessF"
 #define NhlCLineLabelString		"LineLabelString"
-#define NhlCLineLabelFont		"LineLabelFont"
-#define NhlCLineLabelFontColor		"LineLabelFontColor"
-#define NhlCLineLabelFontHeightF	"LineLabelFontHeightF"
-#define NhlCLineLabelFontAspectF	"LineLabelFontAspectF"
-#define NhlCLineLabelFontThicknessF	"LineLabelFontThicknessF"
-#define NhlCLineLabelFontQuality	"LineLabelFontQuality"
-#define NhlCLineLabelConstantSpacingF	"LineLabelConstantSpacingF"
-#define NhlCLineLabelFuncCode		"LineLabelFuncCode"
-#define NhlCFillIndex			"FillIndex"
+#define NhlCFillPattern			"FillPattern"
 #define NhlCFillColor			"FillColor"
 #define NhlCFillBackgroundColor		"FillBackgroundColor"
 #define NhlCFillScaleF			"FillScaleF"
@@ -120,6 +112,19 @@
 #define NhlCTextConstantSpacingF	"TextConstantSpacingF"
 #define NhlCTextFuncCode		"TextFuncCode"
 
+#if 0
+/* 
+ * Replaced by generic class font resources
+ */
+#define NhlCLineLabelFont		"LineLabelFont"
+#define NhlCLineLabelFontColor		"LineLabelFontColor"
+#define NhlCLineLabelFontHeightF	"LineLabelFontHeightF"
+#define NhlCLineLabelFontAspectF	"LineLabelFontAspectF"
+#define NhlCLineLabelFontThicknessF	"LineLabelFontThicknessF"
+#define NhlCLineLabelFontQuality	"LineLabelFontQuality"
+#define NhlCLineLabelConstantSpacingF	"LineLabelConstantSpacingF"
+#define NhlCLineLabelFuncCode		"LineLabelFuncCode"
+#endif
 extern NhlClass NhlgraphicStyleClass;
 
 

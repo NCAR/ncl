@@ -1,5 +1,5 @@
 /*
- *      $Id: Legend.h,v 1.18 1997-08-14 16:30:11 dbrown Exp $
+ *      $Id: Legend.h,v 1.19 1999-03-27 00:44:51 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -189,59 +189,73 @@ typedef enum _NhllgItemPlacementMode {
 #define NhlClgItemType			"LgItemType"
 #define NhlClgItemTypes			"LgItemTypes"
 #define NhlClgMonoDashIndex		"LgMonoDashIndex"
-#define NhlClgDashIndex			"LgDashIndex"
 #define NhlClgDashIndexes		"LgDashIndexes"
 #define NhlClgMonoMarkerIndex		"LgMonoMarkerIndex"
-#define NhlClgMarkerIndex		"LgMarkerIndex"
 #define NhlClgMarkerIndexes		"LgMarkerIndexes"
 #define NhlClgLineLabelStrings		"LgLineLabelStrings"
 #define NhlClgMonoLineColor		"LgMonoLineColor"
-#define NhlClgLineColor			"LgLineColor"
 #define NhlClgLineColors		"LgLineColors"
 #define NhlClgMonoMarkerColor		"LgMonoMarkerColor"
-#define NhlClgMarkerColor		"LgMarkerColor"
 #define NhlClgMarkerColors		"LgMarkerColors"
 
 #define NhlClgMonoLineThickness		"LgMonoLineThickness"
-#define NhlClgLineThicknessF		"LgLineThicknessF"
 #define NhlClgLineThicknesses		"LgLineThicknesses"
 #define NhlClgMonoMarkerThickness	"LgMonoMarkerThickness"
-#define NhlClgMarkerThicknessF		"LgMarkerThicknessF"
 #define NhlClgMarkerThicknesses		"LgMarkerThicknesses"
 
 #define NhlClgMonoLineLabelFontHeight	"LgMonoLineLabelFontHeight"
-#define NhlClgLineLabelFontHeightF	"LgLineLabelFontHeightF"
 #define NhlClgLineLabelFontHeights	"LgLineLabelFontHeights"
 #define NhlClgMonoMarkerSize		"LgMonoMarkerSize"
-#define NhlClgMarkerSizeF		"LgMarkerSizeF"
 #define NhlClgMarkerSizes		"LgMarkerSizes"
 
 #define NhlClgLabelStrings		"LgLabelStrings"
 #define NhlClgItemPositions		"LgItemPositions"
 #define NhlClgMonoLineLabelFontColor	"LgMonoLineLabelFontColor"
-#define NhlClgLineLabelFontColor	"LgLineLabelFontColor"
 #define NhlClgLineLabelFontColors	"LgLineLabelFontColors"
 
 #define NhlClgMonoLineDashSegLen	"LgMonoLineDashSegLen"
-#define NhlClgLineDashSegLenF		"LgLineDashSegLenF"
 #define NhlClgLineDashSegLens		"LgLineDashSegLens"
 
 /*end of arrays */
 
 #define NhlClgLineLabelsOn		"LgLineLabelsOn"
 
+
+#define NhlClgLabelsOn			"LgLabelsOn"
+#define NhlClgLabelPosition		"LgLabelPosition"
+#define NhlClgLabelAlignment		"LgLabelAlignment"
+#define NhlClgLabelStride		"LgLabelStride"
+
+#define NhlClgTitleOn			"LgTitleOn"
+#define NhlClgTitleString		"LgTitleString"
+#define NhlClgTitlePosition		"LgTitlePosition"
+#define NhlClgTitleExtentF		"LgTitleExtentF"
+
+#define NhlClgBoxLinesOn		"LgBoxLinesOn"
+
+
+/*
+ * These class resources have been eliminated
+ */
+#if 0
+#define NhlClgDashIndex			"LgDashIndex"
+#define NhlClgMarkerIndex		"LgMarkerIndex"
+#define NhlClgLineColor			"LgLineColor"
+#define NhlClgMarkerColor		"LgMarkerColor"
+#define NhlClgLineThicknessF		"LgLineThicknessF"
+#define NhlClgMarkerThicknessF		"LgMarkerThicknessF"
+#define NhlClgLineLabelFontHeightF	"LgLineLabelFontHeightF"
+#define NhlClgMarkerSizeF		"LgMarkerSizeF"
+#define NhlClgLineLabelFontColor	"LgLineLabelFontColor"
+#define NhlClgLineDashSegLenF		"LgLineDashSegLenF"
 #define NhlClgLineLabelFont		"LgLineLabelFont"
 #define NhlClgLineLabelFontAspectF	"LgLineLabelFontAspectF"
 #define NhlClgLineLabelFontThicknessF	"LgLineLabelFontThicknessF"
 #define NhlClgLineLabelFontQuality	"LgLineLabelFontQuality"
 #define NhlClgLineLabelConstantSpacingF	"LgLineLabelConstantSpacingF"
 #define NhlClgLineLabelFuncCode	"LgLineLabelFuncCode"
-
-#define NhlClgLabelsOn			"LgLabelsOn"
-#define NhlClgLabelPosition		"LgLabelPosition"
 #define NhlClgLabelAngleF		"LgLabelAngleF"
 #define NhlClgLabelJust			"LgLabelJust"
-#define NhlClgLabelAlignment		"LgLabelAlignment"
 #define NhlClgLabelDirection		"LgLabelDirection"
 #define NhlClgLabelFontColor		"LgLabelFontColor"
 #define NhlClgLabelFontHeightF		"LgLabelFontHeightF"
@@ -250,12 +264,6 @@ typedef enum _NhllgItemPlacementMode {
 #define NhlClgLabelFontQuality		"LgLabelFontQuality"
 #define NhlClgLabelConstantSpacingF	"LgLabelConstantSpacingF"
 #define NhlClgLabelFuncCode		"LgLabelFuncCode"
-#define NhlClgLabelStride		"LgLabelStride"
-
-#define NhlClgTitleOn			"LgTitleOn"
-#define NhlClgTitleString		"LgTitleString"
-#define NhlClgTitlePosition		"LgTitlePosition"
-#define NhlClgTitleExtentF		"LgTitleExtentF"
 #define NhlClgTitleAngleF		"LgTitleAngleF"
 #define NhlClgTitleDirection		"LgTitleDirection"
 #define NhlClgTitleJust			"LgTitleJust"
@@ -266,14 +274,11 @@ typedef enum _NhllgItemPlacementMode {
 #define NhlClgTitleFontQuality		"LgTitleFontQuality"
 #define NhlClgTitleConstantSpacingF	"LgTitleConstantSpacingF"
 #define NhlClgTitleFuncCode		"LgTitleFuncCode"
-
 #define NhlClgBoxBackground		"LgBoxBackground"
-#define NhlClgBoxLinesOn		"LgBoxLinesOn"
 #define NhlClgBoxLineColor		"LgBoxLineColor"
 #define NhlClgBoxLineThicknessF		"LgBoxLineThicknessF"
 #define NhlClgBoxLineDashPattern	"LgBoxLineDashPattern"
 #define NhlClgBoxLineDashSegLenF	"LgBoxLineDashSegLenF"
-
 #define NhlClgPerimOn			"LgPerimOn"
 #define NhlClgPerimColor		"LgPerimColor"
 #define NhlClgPerimFill			"LgPerimFill"
@@ -282,6 +287,7 @@ typedef enum _NhllgItemPlacementMode {
 #define NhlClgPerimDashPattern		"LgPerimDashPattern"
 #define NhlClgPerimDashSegLenF		"LgPerimDashSegLenF"
 
+#endif
 
 /* end of resources */
 

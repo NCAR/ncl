@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.91 1998-12-08 19:48:02 haley Exp $
+ *      $Id: Workstation.c,v 1.92 1999-03-27 00:44:59 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -188,11 +188,11 @@ static NhlResource resources[] = {
 	{NhlNwkColorMapLen,NhlCwkColorMapLen,NhlTInteger,sizeof(int),
 		Oset(color_map_len),NhlTImmediate,
 		_NhlUSET(0),_NhlRES_GONLY,NULL},
-	{NhlNwkBackgroundColor,NhlCwkBackgroundColor,
+	{NhlNwkBackgroundColor,NhlCBackgroundColor,
 		NhlTColorDefinitionGenArray,
 		sizeof(NhlPointer),Oset(bkgnd_color),NhlTImmediate,
 		_NhlUSET(NULL),_NhlRES_DEFAULT,(NhlFreeFunc)NhlFreeGenArray},
-	{NhlNwkForegroundColor,NhlCwkForegroundColor,
+	{NhlNwkForegroundColor,NhlCForegroundColor,
 		NhlTColorDefinitionGenArray,
 		sizeof(NhlPointer),Oset(foregnd_color),NhlTImmediate,
 		_NhlUSET(NULL),_NhlRES_DEFAULT,(NhlFreeFunc)NhlFreeGenArray},
@@ -4423,6 +4423,33 @@ WorkstationFill
 
 }
 
+NhlBoolean LLUGksWorkIsOpen
+#if     NhlNeedProto
+(
+        int     gks_id
+)
+#else
+(gks_id)
+        int     gks_id;
+#endif
+{
+        int i,wkid,numopen,errind,tmp = 1;
+
+/* FORTRAN */ _NHLCALLF(gqopwk,GQOPWK)(&tmp,&errind,&numopen,&wkid);
+        if(wkid == gks_id)
+                return(1);
+
+
+
+        for(i  = 2; i <= numopen; i++ ) {
+/* FORTRAN */ _NHLCALLF(gqopwk,GQOPWK)(&i,&errind,&tmp,&wkid);
+                if(wkid == gks_id)
+                        return(1);
+        }
+        return(0);
+}
+
+
 /********************************
 * Workstation Defined Functions	*
 ********************************/
@@ -5267,6 +5294,12 @@ _NhlAllocateColors
 	if(!wl->work.cmap_changed)
 		return ret;
 
+	if (!LLUGksWorkIsOpen(wl->work.gkswksid)) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			"Workstation with PID#%d is not open",wl->base.id);
+		return NhlFATAL;
+	}
+
 	memcpy(old,new,sizeof(NhlPrivateColor)*_NhlMAX_COLOR_MAP);
 
 	ret = (*(wc->alloc_colors))(wl,old,new);
@@ -5331,6 +5364,7 @@ NhlUpdateWorkstation
 #endif
 {
 	NhlLayer		l = _NhlGetLayer(workid);
+	NhlWorkstationLayer	wl = (NhlWorkstationLayer) l;
 	NhlWorkstationClass	lc;
 
 	if(l == (NhlLayer)NULL){
@@ -5342,6 +5376,11 @@ NhlUpdateWorkstation
 	if(!_NhlIsWorkstation(l)){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
 			"PID#%d is not a Workstation Class object",workid);
+		return NhlFATAL;
+	}
+	if (!LLUGksWorkIsOpen(wl->work.gkswksid)) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			"Workstation with PID#%d is not open",workid);
 		return NhlFATAL;
 	}
 

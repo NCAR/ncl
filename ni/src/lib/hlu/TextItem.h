@@ -1,5 +1,5 @@
 /*
- *      $Id: TextItem.h,v 1.8 1998-10-28 00:46:58 dbrown Exp $
+ *      $Id: TextItem.h,v 1.9 1999-03-27 00:44:56 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -31,30 +31,19 @@
 #define NhlNtxPosYF	"txPosYF"
 #define NhlCtxPosYF	"TxPosYF"
 #define NhlNtxAngleF	"txAngleF"
-#define NhlCtxAngleF 	"TxAngleF"
 #define NhlNtxJust	"txJust"
-#define NhlCtxJust	"TxJust"
 #define NhlNtxDirection	"txDirection"
-#define NhlCtxDirection	"TxDirection"
 #define NhlNtxFont	"txFont"
-#define NhlCFont	"Font"
 #define NhlNtxFontColor	"txFontColor"
-#define NhlCtxFontColor	"TxFontColor"
 #define NhlNtxFontHeightF	"txFontHeightF"
-#define NhlCtxFontHeightF	"TxFontHeightF"
 #define NhlNtxFontAspectF	"txFontAspectF"
-#define NhlCtxFontAspectF	"TxFontAspectF"
 /*
 * Aspect is height/width
 */
 #define NhlNtxFontThicknessF	"txFontThicknessF"
-#define NhlCtxFontThicknessF	"TxFontThicknessF"
 #define NhlNtxFontQuality	"txFontQuality"
-#define NhlCtxFontQuality	"TxFontQuality"
 #define NhlNtxConstantSpacingF	"txConstantSpacingF"
-#define NhlCtxConstantSpacingF	"TxConstantSpacingF"
 #define NhlNtxFuncCode		"txFuncCode"
-#define NhlCtxFuncCode		"TxFuncCode"
 
 #define NhlNtxPerimOn			"txPerimOn"
 #define NhlNtxPerimColor		"txPerimColor"
@@ -64,14 +53,31 @@
 #define NhlNtxPerimSpaceF		"txPerimSpaceF"
 #define NhlNtxBackgroundFillColor	"txBackgroundFillColor"
 
+#define NhlCtxPerimSpaceF		"TxPerimSpaceF"
+
+/*
+ * These class resources have been eliminated
+ */
+#if 0
+
+#define NhlCtxAngleF 	"TxAngleF"
+#define NhlCtxJust	"TxJust"
+#define NhlCtxDirection	"TxDirection"
+#define NhlCtxFontColor	"TxFontColor"
+#define NhlCtxFontHeightF	"TxFontHeightF"
+#define NhlCtxFontAspectF	"TxFontAspectF"
+#define NhlCtxFontThicknessF	"TxFontThicknessF"
+#define NhlCtxFontQuality	"TxFontQuality"
+#define NhlCtxConstantSpacingF	"TxConstantSpacingF"
+#define NhlCtxFuncCode		"TxFuncCode"
 #define NhlCtxPerimOn			"TxPerimOn"
 #define NhlCtxPerimColor		"TxPerimColor"
 #define NhlCtxPerimThicknessF		"TxPerimThicknessF"
 #define NhlCtxPerimDashPattern		"TxPerimDashPattern"
 #define NhlCtxPerimDashLengthF		"TxPerimDashLengthF"
-#define NhlCtxPerimSpaceF		"TxPerimSpaceF"
 #define NhlCtxBackgroundFillColor	"TxBackgroundFillColor"
 
+#endif
 
 extern NhlClass NhltextItemClass;
 #endif  /* _NTextItem_h */

@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.h,v 1.16 1998-06-24 19:47:56 ethan Exp $
+ *      $Id: TickMark.h,v 1.17 1999-03-27 00:44:57 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -373,19 +373,10 @@ typedef enum { NhlLOG, NhlLINEAR, NhlIRREGULAR, NhlGEOGRAPHIC, NhlTIME }
 *
 * All line/text attributes share one class.
 */
-
-#define NhlCtmLabelFontHeightsF		"TmLabelFontHeightsF"
-#define NhlCtmLabelFontColors		"TmLabelFontColors"
-#define NhlCtmLabelFontAspectsF		"TmLabelFontAspectsF"
-#define NhlCtmLabelFontThicknessesF	"TmLabelFontThicknessesF"
-#define NhlCtmLabelFontQualities        "TmLabelFontQualities"
-#define NhlCtmLabelConstantSpacingsF	"TmLabelConstantSpacingsF"
 #define NhlCtmMajorThicknessesF		"TmMajorThicknessesF"
 #define NhlCtmMajorLineColors		"TmMajorLineColors"
 #define NhlCtmMajorLengthsF		"TmMajorLengthsF"
 #define NhlCtmMajorOutwardLengthsF	"TmMajorOutwardLengthsF"
-#define NhlCtmBorderThicknessF		"TmBorderTicknessF"
-#define NhlCtmBorderLineColor 		"TmBorderLineColor"
 
 #define NhlCtmMinorThicknessesF		"TmMinorThicknessesF"
 #define NhlCtmMinorLineColors		"TmMinorLineColors"
@@ -406,17 +397,11 @@ typedef enum { NhlLOG, NhlLINEAR, NhlIRREGULAR, NhlGEOGRAPHIC, NhlTIME }
 */
 
 #define NhlCtmXLabelDirections		"TmXLabelDirections"
-#define NhlCtmXLabelFuncCodes		"TmXLabelFuncCodes"
-#define NhlCtmXLabelAnglesF		"TmXLabelAnglesF"
-#define NhlCtmXLabelJusts		"TmXLabelJusts"
-
 #define NhlCtmYLabelDirections		"TmYLabelDirections"
-#define NhlCtmYLabelFuncCodes		"TmYLabelFuncCodes"
-#define NhlCtmYLabelAnglesF		"TmYLabelAnglesF"
-#define NhlCtmYLabelJusts		"TmYLabelJusts"
 
 #define NhlCtmXMinorPerMajor	"TmXMinorPerMajor"
 #define NhlCtmYMinorPerMajor	"TmYMinorPerMajor"
+
 /*
 * Normal Class names
 */
@@ -427,8 +412,6 @@ typedef enum { NhlLOG, NhlLINEAR, NhlIRREGULAR, NhlGEOGRAPHIC, NhlTIME }
 #define NhlCtmXTOn		"TmXTOn"
 #define NhlCtmXBLabelsOn	"TmXBLabelsOn"
 #define NhlCtmXTLabelsOn	"TmXTLabelsOn"
-#define NhlCtmXBBorderOn	"TmXBBorderOn"
-#define NhlCtmXTBorderOn	"TmXTBorderOn"
 #define NhlCtmXBMode		"TmXBMode"
 #define NhlCtmXTMode		"TmXTMode"
 #define NhlCtmXBStyle 		"TmXBStyle"
@@ -468,8 +451,6 @@ typedef enum { NhlLOG, NhlLINEAR, NhlIRREGULAR, NhlGEOGRAPHIC, NhlTIME }
 #define NhlCtmYROn		"TmYROn"
 #define NhlCtmYLLabelsOn	"TmYLLabelsOn"
 #define NhlCtmYRLabelsOn	"TmYRLabelsOn"
-#define NhlCtmYLBorderOn	"TmYLBorderOn"
-#define NhlCtmYRBorderOn	"TmYRBorderOn"
 #define NhlCtmYLMode		"TmYLMode"
 #define NhlCtmYRMode		"TmYRMode"
 #define NhlCtmYLStyle 		"TmYLStyle"
@@ -504,6 +485,32 @@ typedef enum { NhlLOG, NhlLINEAR, NhlIRREGULAR, NhlGEOGRAPHIC, NhlTIME }
 #define NhlCtmYRMinorValues		"TmYRMinorValues"
 #define NhlCtmYRLabels		"TmYRLabels"
 #define NhlCtmYRLabelDeltaF	"TmYRLabelDeltaF"
+
+/*
+ * These class resources have been eliminated
+ */
+#if 0
+#define NhlCtmXBBorderOn	"TmXBBorderOn"
+#define NhlCtmXTBorderOn	"TmXTBorderOn"
+#define NhlCtmYLBorderOn	"TmYLBorderOn"
+#define NhlCtmYRBorderOn	"TmYRBorderOn"
+
+#define NhlCtmLabelFontHeightsF		"TmLabelFontHeightsF"
+#define NhlCtmLabelFontColors		"TmLabelFontColors"
+#define NhlCtmLabelFontAspectsF		"TmLabelFontAspectsF"
+#define NhlCtmLabelFontThicknessesF	"TmLabelFontThicknessesF"
+#define NhlCtmLabelFontQualities        "TmLabelFontQualities"
+#define NhlCtmLabelConstantSpacingsF	"TmLabelConstantSpacingsF"
+#define NhlCtmBorderThicknessF		"TmBorderTicknessF"
+#define NhlCtmBorderLineColor 		"TmBorderLineColor"
+#define NhlCtmXLabelFuncCodes		"TmXLabelFuncCodes"
+#define NhlCtmXLabelAnglesF		"TmXLabelAnglesF"
+#define NhlCtmXLabelJusts		"TmXLabelJusts"
+#define NhlCtmYLabelFuncCodes		"TmYLabelFuncCodes"
+#define NhlCtmYLabelAnglesF		"TmYLabelAnglesF"
+#define NhlCtmYLabelJusts		"TmYLabelJusts"
+
+#endif
 
 extern NhlClass NhltickMarkClass;
 
