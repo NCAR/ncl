@@ -24,9 +24,9 @@ C
       ELSE
         IUNIT = 2
 #ifdef  hpux
-        CALL IGETARG(3, INFILE, 80)
+        CALL IGETARG(1, INFILE, 80)
 #else
-        CALL GETARG(3, INFILE)
+        CALL GETARG(1, INFILE)
 #endif
         OPEN(IUNIT,FILE=INFILE)
       ENDIF
