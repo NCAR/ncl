@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.62 1997-03-26 19:57:15 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.63 1997-04-03 21:49:35 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -2208,6 +2208,286 @@ NhlErrorTypes _NclIcbinread
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"cbinread: could not open file check permissions");
 	}
 	return(NhlFATAL);
+}
+NhlErrorTypes _NclIfbinnumrec
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NclStackEntry data;
+	NclMultiDValData tmp_md;
+	string *fpath;
+	NclScalar missing;
+	int 	has_missing = 0;
+	char 	control_word[4];
+	int fd = -1;
+	int ind;
+	int cur_off;
+	int i,n;
+	int dimsize = 1;
+
+	fpath = (string*)NclGetArgValue(
+		0,
+		1,
+		NULL,
+		NULL,
+		&missing,
+		&has_missing,
+		NULL,
+		0);
+	if(has_missing &&(missing.stringval == *fpath)) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinnumrec: path is a missing value, can't continue");
+		return(NhlFATAL);
+	}
+	fd = open(_NGResolvePath(NrmQuarkToString(*fpath)),O_RDONLY);
+
+	if(fd == -1) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinnumrec: could not open (%s) check path and permissions, can't continue",NrmQuarkToString(*fpath));
+		return(NhlFATAL);
+	}
+	cur_off = 0;
+	i = 0;
+	while(1) {	
+		lseek(fd,cur_off,SEEK_SET);
+		n = read(fd,(control_word),4);
+		if(n != 4) {
+			break;
+		}
+		ind = *(int*)control_word;
+		lseek(fd,cur_off + ind + 4,SEEK_SET);
+		n = read(fd,(control_word),4);
+		if(n != 4) {
+			break;
+		}
+		if(ind ==  *(int*)control_word ) {
+				i++;
+				cur_off += ind + 8;
+		} else {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinnumrec: an error occurred reading the record control words. Something is wrong with the FORTRAN binary file.");
+			close(fd);
+			return(NhlFATAL);
+		}
+	}
+	return(NclReturnValue(
+		&i,
+		1,
+		&dimsize,
+		NULL,
+		NCL_int,
+		1
+	));
+	
+}
+
+NhlErrorTypes _NclIfbinrecread
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	string *fpath;
+	int	*recnum;
+	int	*dimensions;
+	int	dimsize;
+	string *type;
+	NclScalar missing;
+	NclMultiDValData tmp_md;
+	NclStackEntry data;
+	int 	has_missing = 0;
+	NclTypeClass thetype;
+	char 	control_word[4];
+	void *value;
+	int i;
+	int ind;
+	int fd = -1;
+	int size = 1;
+	int n;
+	int cur_off = 0;
+	NhlErrorTypes ret = NhlNOERROR;
+
+	control_word[0] = (char)0;
+	control_word[1] = (char)0;
+	
+	fpath = (string*)NclGetArgValue(
+		0,
+		4,
+		NULL,
+		NULL,
+		&missing,
+		&has_missing,
+		NULL,
+		0);
+	if(has_missing &&(missing.stringval == *fpath)) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinrecread: path is a missing value, can't continue");
+		return(NhlFATAL);
+	}
+
+	recnum = (int*) NclGetArgValue(
+		1,
+		4,
+		NULL,
+		NULL,
+		&missing,
+		&has_missing,
+		NULL,
+		0);
+	if(has_missing &&(missing.intval == *recnum)) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinrecread: record number  is a missing value, can't continue");
+		return(NhlFATAL);
+	}
+	
+	dimensions = (int*)NclGetArgValue(
+		2,
+		4,
+		NULL,
+		&dimsize,
+		&missing,
+		&has_missing,
+		NULL,
+		0);
+
+	if(*dimensions!= -1) {
+		for(i = 0; i < 	dimsize; i++) {
+			if(missing.intval == *(dimensions + i)) {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinrecread: dimension size contains a missing value, can't continue");
+				return(NhlFATAL);
+			}
+			size *= dimensions[i];
+		}
+	} else {
+		size = -1;
+	}
+	type = (string*)NclGetArgValue(
+		3,
+		4,
+		NULL,
+		NULL,
+		&missing,
+		&has_missing,
+		NULL,
+		0);
+	if(has_missing &&(missing.stringval == *type)) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinrecread: path is a missing value, can't continue");
+		return(NhlFATAL);
+	}
+	thetype = _NclNameToTypeClass(*type);
+	fd = open(_NGResolvePath(NrmQuarkToString(*fpath)),O_RDONLY);
+
+	if(fd == -1) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinrecread: could not open (%s) check path and permissions, can't continue",NrmQuarkToString(*fpath));
+		return(NhlFATAL);
+	}
+
+	cur_off = 0;
+	i = 0;
+	while(i != *recnum) {	
+		lseek(fd,cur_off,SEEK_SET);
+		n = read(fd,(control_word),4);
+		if(n != 4) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinrecread: a read error occurred while reading (%s) , can't continue",NrmQuarkToString(*fpath));
+			close(fd);
+			return(NhlFATAL);
+		}
+		ind = *(int*)control_word;
+		lseek(fd,cur_off + ind + 4,SEEK_SET);
+		n = read(fd,(control_word),4);
+		if(n != 4) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinrecread: a read error occurred while reading (%s) , can't continue",NrmQuarkToString(*fpath));
+			close(fd);
+			return(NhlFATAL);
+		}
+		if(ind ==  *(int*)control_word ) {
+				i++;
+				cur_off += ind + 8;
+		} else {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinrecread: an error occurred reading the record control words. Something is wrong with the FORTRAN binary file.");
+			close(fd);
+			return(NhlFATAL);
+		}
+	}
+	if(i == *recnum) {
+		lseek(fd,cur_off,SEEK_SET);
+		n = read(fd,(control_word),4);
+		if(n != 4) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinrecread: a read error occurred while reading (%s) , can't continue",NrmQuarkToString(*fpath));
+			close(fd);
+			return(NhlFATAL);
+		}
+		ind = *(int*)control_word;
+		if(size != -1) {
+			value = (void*)NclMalloc(thetype->type_class.size*size);
+			if(ind < size*thetype->type_class.size) {
+				NhlPError(NhlWARNING,NhlEUNKNOWN,"fbinrecread: size specified is greater than record size, filling with missing values");
+				ret = NhlWARNING;
+			} else if(ind > size*thetype->type_class.size) {
+				NhlPError(NhlWARNING,NhlEUNKNOWN,"fbinrecread: size specified is less than record size, some data will not be read");
+				ret = NhlWARNING;
+			}
+			n = read(fd,value,(ind>=size*thetype->type_class.size)?size*thetype->type_class.size:ind);
+			if(n != ((ind>=size*thetype->type_class.size)?size*thetype->type_class.size:ind))  {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinrecread: an error occurred reading the requested record. Something is wrong with the FORTRAN binary file.");
+				NclFree(value);
+				close(fd);
+				return(NhlFATAL);
+			}
+			if(ind < size*thetype->type_class.size) {
+				for(;ind<size*thetype->type_class.size-1;ind+=thetype->type_class.size) {
+					memcpy((void*)((char*)value + ind * thetype->type_class.size),&thetype->type_class.default_mis,thetype->type_class.size);
+				}
+			}
+			tmp_md = _NclCreateMultiDVal(
+				NULL,
+				NULL,
+				Ncl_MultiDValData,
+				0,
+				value,
+				&(thetype->type_class.default_mis),
+				dimsize,
+				dimensions,
+				TEMPORARY,
+				NULL,
+				thetype);
+		} else {
+			value = (void*)NclMalloc(ind);
+			n = read(fd,value,ind);
+			if(n != ind) {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinrecread: an error occurred reading the requested record. Something is wrong with the FORTRAN binary file.");
+				NclFree(value);
+				close(fd);
+				return(NhlFATAL);
+			}
+			dimsize = ind/thetype->type_class.size;
+			tmp_md = _NclCreateMultiDVal(
+				NULL,
+				NULL,
+				Ncl_MultiDValData,
+				0,
+				value,
+				&(thetype->type_class.default_mis),
+				1,
+				&dimsize,
+				TEMPORARY,
+				NULL,
+				thetype);
+		}
+		if(tmp_md == NULL) {
+			NclFree(value);
+			close(fd);
+			return(NhlFATAL);
+		}
+		data.kind = NclStk_VAL;
+		data.u.data_obj = tmp_md;
+		_NclPlaceReturn(data);
+		close(fd);
+		return(ret);
+	} else {
+		return(NhlFATAL);
+	}
+	
+
 }
 NhlErrorTypes _NclIfbinread
 #if	NhlNeedProto

@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: AddIntrinsics.c,v 1.23 1997-02-27 20:18:41 boote Exp $
+ *      $Id: AddIntrinsics.c,v 1.24 1997-04-03 21:49:33 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -190,6 +190,16 @@ void
 #endif
 );
 NhlErrorTypes _NclIfbinread(
+#if     NhlNeedProto
+void
+#endif
+);
+NhlErrorTypes _NclIfbinrecread(
+#if     NhlNeedProto
+void
+#endif
+);
+NhlErrorTypes _NclIfbinnumrec(
 #if     NhlNeedProto
 void
 #endif
@@ -532,6 +542,31 @@ void _NclAddIntrinsics
 	args[2].dim_sizes[0] = 1;
 	args[2].n_dims = 1;
 	_NclRegisterFunc(_NclIcbinread,args,"cbinread",3,IFUNC);
+
+	args = NclCalloc(4,sizeof(NclArgTemplate));
+	args[0].arg_data_type = _NclLookUp("string");
+	args[0].dim_sizes[0] = 1;
+	args[0].is_dimsizes = 1;
+	args[0].n_dims = 1;
+	args[1].arg_data_type = _NclLookUp("integer");
+	args[1].dim_sizes[0] = 1;
+	args[1].is_dimsizes = 1;
+	args[1].n_dims = 1;
+	args[2].arg_data_type = _NclLookUp("integer");
+	args[2].is_dimsizes = 0;
+	args[2].n_dims = 1;
+	args[3].arg_data_type = _NclLookUp("string");
+	args[3].is_dimsizes = 0;
+	args[3].dim_sizes[0] = 1;
+	args[3].n_dims = 1;
+	_NclRegisterFunc(_NclIfbinrecread,args,"fbinrecread",4,IFUNC);
+
+	args = NclCalloc(1,sizeof(NclArgTemplate));
+	args[0].arg_data_type = _NclLookUp("string");
+	args[0].dim_sizes[0] = 1;
+	args[0].is_dimsizes = 1;
+	args[0].n_dims = 1;
+	_NclRegisterFunc(_NclIfbinnumrec,args,"fbinnumrec",1,IFUNC);
 
 	args = NclCalloc(3,sizeof(NclArgTemplate));
 	args[0].arg_data_type = _NclLookUp("string");
