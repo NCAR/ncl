@@ -1,5 +1,5 @@
 /*
- *      $Id: cn14c.c,v 1.1 1997-02-27 21:47:23 haley Exp $
+ *      $Id: cn14c.c,v 1.2 1997-03-14 17:17:05 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -34,7 +34,7 @@
 #include <ncarg/hlu/MapPlot.h>
 #include <ncarg/hlu/ScalarField.h>
 #include <netcdf.h>
-#include <math.h>
+
 
 #define NPTS  73
 #define NCOLORS 16
