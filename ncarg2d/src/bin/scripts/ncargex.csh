@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.129 2002-04-04 22:11:24 fred Exp $
+#   $Id: ncargex.csh,v 1.130 2002-05-23 22:15:48 kennison Exp $
 #                                                                      
 #                Copyright (C)  2000
 #        University Corporation for Atmospheric Research
@@ -192,7 +192,7 @@ set c_list = ($c_list $colconv_clist)
 #************************#
 set conpack_fex  = (cpex01 cpex02 cpex03 cpex04 cpex05 cpex06 cpex07 \
 		    cpex08 cpex09 cpex10 cpex11 cpex12 cpex13 cpex14 \
-		    cpex15 ${cbivar_fex})
+		    cpex15 cpex16 ${cbivar_fex})
 set conpack_ftst = (tconpa)
 set conpack_fttr = (ccpback ccpcff ccpcfx ccpcica ccpcir ccpcis ccpcit ccpclc \
                     ccpcld ccpcldm ccpcldr ccpcll ccpclu ccpcnrc ccpdflt \
@@ -1538,6 +1538,10 @@ switch ($name)
 
     case cpex14:
 	set data_files = (cpex14.dat)
+    breaksw
+
+    case cpex16:
+	set data_files = (cpex16.dat.nc)
     breaksw
 
     case fcover:
