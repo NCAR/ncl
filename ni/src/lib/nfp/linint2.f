@@ -474,6 +474,14 @@ c                              local
 
       IER = 0
       IFLAG = 0
+c
+c if only one element, then treat it as monotonically increasing
+c
+      IF (NIN.LT.2) THEN
+         IFLAG = +1
+         RETURN
+      END IF
+
       IF (XI(2).GT.XI(1)) THEN
 c                              ? mono INcreasing
           DO NI = 1,NIN - 1
@@ -511,17 +519,18 @@ c                              local
 
       IER = 0
       IFLAG = 0
+      NFLAG = 0
 
       CALL DMONOID1(NIN,XI,IFLAG,IER)
       IF (IFLAG.EQ.0) THEN
-          IER = 2
+         IER = 2
       ELSE
-          CALL DMONOID1(NOUT,XO,NFLAG,NER)
-          IF (NFLAG.EQ.0) THEN
-              IER = 3
-          ELSE IF (IFLAG.NE.NFLAG) THEN
-              IER = 4
-          END IF
+         CALL DMONOID1(NOUT,XO,NFLAG,NER)
+         IF (NFLAG.EQ.0) THEN
+            IER = 3
+         ELSE IF (IFLAG.NE.NFLAG) THEN
+            IER = 4
+         END IF
       END IF
 
       RETURN

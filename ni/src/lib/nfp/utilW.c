@@ -6,7 +6,7 @@
  */
 #include "wrapper.h"
 
-extern void NGCALLF(rndncl,RNDNCL)(int*,double*,int*,double*,double*);
+extern void NGCALLF(rndncl,RNDNCL)(int*,double*,int*,double*,double*,int*);
 
 NhlErrorTypes round_W( void )
 {
@@ -17,7 +17,7 @@ NhlErrorTypes round_W( void )
   double *tmp_x;
   int has_missing_x, ndims_x, dsizes_x[NCL_MAX_DIMENSIONS];
   int *iopt;
-  NclScalar missing_x, missing_dx;
+  NclScalar missing_x, missing_dx, missing_xout;
   NclBasicDataTypes type_x;
 /*
  * Output array variables
@@ -100,7 +100,9 @@ NhlErrorTypes round_W( void )
       type_xout = NCL_int;
       break;
     }
-    
+/*
+ * Allocate memory for output.
+ */
     switch(type_xout) {
     case  NCL_double:
       xout = (void*)calloc(size_x,sizeof(double));
@@ -112,7 +114,6 @@ NhlErrorTypes round_W( void )
       xout = (void*)calloc(size_x,sizeof(int));
       break;
     }
-
 /*
  * Allocate space for temporary output which must be double. If the output
  * is already double, then just point tmp_xout to xout.
@@ -127,12 +128,11 @@ NhlErrorTypes round_W( void )
       NhlPError(NhlFATAL,NhlEUNKNOWN,"round: Unable to allocate memory for output arrays");
       return(NhlFATAL);
     }
-
 /*
  * Call the Fortran version of this routine.
  */
     NGCALLF(rndncl,RNDNCL)(&size_x,tmp_x,&has_missing_x,
-                           &missing_dx.doubleval,tmp_xout);
+                           &missing_dx.doubleval,tmp_xout,iopt);
 /*
  * Figure out if we need to coerce output back to float or int.
  */
@@ -143,6 +143,21 @@ NhlErrorTypes round_W( void )
       coerce_output_int_only(xout,tmp_xout,size_x,0);
     }
 /*
+ * Return correct missing value type for output.
+ */
+    switch(type_xout) {
+    case  NCL_double:
+      missing_xout.doubleval = missing_dx.doubleval;
+      break;
+    case  NCL_float:
+      missing_xout.floatval = (float)missing_dx.doubleval;
+      break;
+    case  NCL_int:
+      missing_xout.intval = (int)missing_dx.doubleval;
+      break;
+    }
+
+/*
  * Free memory.
  */
   if(type_x  != NCL_double)   NclFree(tmp_x);
@@ -151,7 +166,7 @@ NhlErrorTypes round_W( void )
  * Return.
  */
   if(has_missing_x) {
-    return(NclReturnValue(xout,ndims_x,dsizes_x,&missing_x,type_xout,0));
+    return(NclReturnValue(xout,ndims_x,dsizes_x,&missing_xout,type_xout,0));
   }
   else{
     return(NclReturnValue(xout,ndims_x,dsizes_x,NULL,type_xout,0));
@@ -188,7 +203,7 @@ NhlErrorTypes isnan_ieee_W( void )
           2);
 
   if(type_x != NCL_float && type_x != NCL_double) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"isnan_ieee: the input must either be float or double");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"isnan_ieee: the input must be of type float or double");
     return(NhlFATAL);
   }
 /*
@@ -229,20 +244,20 @@ NhlErrorTypes isnan_ieee_W( void )
   return(NclReturnValue(isnan,ndims_x,dsizes_x,NULL,NCL_logical,0));
 }
 
-NhlErrorTypes replace_nanieee_W( void )
+NhlErrorTypes replace_ieeenan_W( void )
 {
 /*
  * Input array variables
  */
   void *x, *value;
-  int *iopt;
+  int *iopt, has_missing_x;
   int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_x, type_value;
+  NclScalar missing_x;
 /*
  * Declare various variables for random purposes.
  */
   int i, size_x;
-  NclScalar missing_x;
 /*
  * Retrieve argument.
  */
@@ -251,13 +266,13 @@ NhlErrorTypes replace_nanieee_W( void )
           3,
           &ndims_x,
           dsizes_x,
-          NULL,
-          NULL,
+          &missing_x,
+          &has_missing_x,
           &type_x,
           2);
 
   if(type_x != NCL_float && type_x != NCL_double) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"replace_nanieee: the first argument must either be float or double");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"replace_ieeenan: the first argument must be of type float or double");
     return(NhlFATAL);
   }
 
@@ -272,7 +287,7 @@ NhlErrorTypes replace_nanieee_W( void )
           2);
 
   if(type_value != NCL_float && type_value != NCL_double) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"replace_nanieee: the second argument must either be float or double");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"replace_ieeenan: the second argument must be of type float or double");
     return(NhlFATAL);
   }
 
@@ -307,7 +322,7 @@ NhlErrorTypes replace_nanieee_W( void )
   }
   else {
     for(i = 0; i < size_x; i++) {
-      if(((double*)x)[i] <= 0 || ((double*)x)[i] >= 0) {
+      if(((double*)x)[i] <= 0. || ((double*)x)[i] >= 0.) {
         continue;
       }
       else {
@@ -319,16 +334,19 @@ NhlErrorTypes replace_nanieee_W( void )
  * Return.
  */
   if(*iopt == 1) {
-    if(type_x == NCL_float) {
-      missing_x.floatval = ((float*)value)[0];
+    if(has_missing_x) {
+      if(type_x == NCL_float) {
+        missing_x.floatval = ((float*)value)[0];
+      }
+      else {
+        missing_x.doubleval = ((double*)value)[0];
+      }
+      return(NclReturnValue(x,ndims_x,dsizes_x,&missing_x,type_x,0));
     }
     else {
-      missing_x.doubleval = ((double*)value)[0];
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"replace_ieeenan: the first argument does not have a _FillValue attribute set, so it cannot be set to the replacement value");
     }
-    return(NclReturnValue(x,ndims_x,dsizes_x,&missing_x,type_x,0));
   }
-  else {
-    return(NclReturnValue(x,ndims_x,dsizes_x,NULL,type_x,0));
-  }
+  return(NclReturnValue(x,ndims_x,dsizes_x,NULL,type_x,0));
 }
 

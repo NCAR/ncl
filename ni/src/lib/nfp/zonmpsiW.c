@@ -31,7 +31,7 @@ NhlErrorTypes zonal_mpsi_W( void )
 /*
  * Various.
  */
-  int i, j, index_v, index_ps, index_zmpsi, size_zmpsi;
+  int i, index_v, index_ps, index_zmpsi, size_zmpsi;
   int nlat, nlon, nlev, ntim, nlatlon, nlatlev, nlatlonlev;
 /*
  * Retrieve parameters
