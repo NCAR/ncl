@@ -12,7 +12,7 @@ void    c_nngetaspects(int, int, float *, int *);
 void    c_nnpntinits(int, float [], float [], float []);
 void    c_nnpnts(float, float, float *);
 void    c_nnpntend();
-float   **c_natgrids(int, float [], float [], float [],
+float   *c_natgrids(int, float [], float [], float [],
                      int, int, float [], float [], int *);
 
 void    c_nnsetrd(char *, double);
@@ -22,5 +22,5 @@ void    c_nngetaspectd(int, int, double *, int *);
 void    c_nnpntinitd(int, double [], double [], double []);
 void    c_nnpntd(double, double, double *);
 void    c_nnpntendd();
-double  **c_natgridd(int, double [], double [], double [],
+double  *c_natgridd(int, double [], double [], double [],
                      int, int, double [], double [], int *);
