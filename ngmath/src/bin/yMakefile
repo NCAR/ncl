@@ -1,0 +1,7 @@
+#
+#       "$Id:"
+#
+
+#define IHaveSubdirs
+
+SUBDIRS = nnalg
