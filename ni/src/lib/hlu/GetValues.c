@@ -1,5 +1,5 @@
 /*
- *      $Id: GetValues.c,v 1.20 1997-01-17 18:57:27 boote Exp $
+ *      $Id: GetValues.c,v 1.21 1997-01-25 00:42:15 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -525,7 +525,7 @@ NhlGetValues
 				context = _NhlCreateConvertContext(l);
 
 			if(_NhlConvertData(context,gextra[i].type_ret,
-					args[i].type,&from,&to) != NhlNOERROR){
+					args[i].type,&from,&to) < NhlINFO){
 
 				NhlPError(NhlWARNING,NhlEUNKNOWN,
 					"NhlGetValues:Error retrieving %s",

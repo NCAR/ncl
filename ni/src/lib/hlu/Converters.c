@@ -1,5 +1,5 @@
 /*
- *      $Id: Converters.c,v 1.44 1997-01-17 18:57:22 boote Exp $
+ *      $Id: Converters.c,v 1.45 1997-01-25 00:42:10 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1251,10 +1251,10 @@ CvtArgs									\
 	tempval = (totype)t##fromext;					\
 									\
 	if(t##fromext != (fromtype)tempval){				\
-		NhlPError(NhlWARNING,NhlEUNKNOWN,			\
+		NhlPError(NhlINFO,NhlEUNKNOWN,			\
 			"%s:" #FROMTYPE " to " #TOTYPE			\
-			" conversion loosing information",func);	\
-		ret = NhlWARNING;					\
+			" conversion losing information",func);	\
+		ret = NhlINFO;						\
 	}								\
 	_NhlSetVal(totype,sizeof(totype),tempval);			\
 }
@@ -2131,13 +2131,12 @@ CvtArgs									\
 		}							\
 									\
 		for(i=0;i < fromgen->num_elements;i++){			\
-			toval[i] = (totype)fromval[i];			\
-			if(fromval[i]!=(fromtype)toval[i]){		\
-				NhlPError(NhlWARNING,NhlEUNKNOWN,	\
-				"%s:Conversion Loosing Information",	\
+			toval[i] = (totype)(fromval[i]);		\
+			if((ret != NhlINFO)&&(fromval[i]!=(fromtype)(toval[i]))){		\
+				NhlPError(NhlINFO,NhlEUNKNOWN,	\
+				"%s:Conversion Losing Information",	\
 								func);	\
-				ret = NhlWARNING;			\
-				break;					\
+				ret = NhlINFO;				\
 			}						\
 		}							\
 	}								\

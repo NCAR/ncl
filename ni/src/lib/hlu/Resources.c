@@ -1,5 +1,5 @@
 /*
- *      $Id: Resources.c,v 1.31 1997-01-17 18:57:43 boote Exp $
+ *      $Id: Resources.c,v 1.32 1997-01-25 00:42:17 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -430,7 +430,7 @@ _NhlGetResources
 						resources[j].nrm_type,
 						&from, &to);
 					
-				if(lret!=NhlNOERROR){
+				if(lret<NhlINFO){
 					NhlPError(NhlWARNING,NhlEUNKNOWN,
 			"Error retrieving resource %s from args - Ignoring Arg",
 					NrmNameToString(resources[i].nrm_name));
@@ -497,7 +497,7 @@ _NhlGetResources
 							resources[i].nrm_type,
 							&from, &to);
 					
-					if(lret == NhlNOERROR){
+					if(lret >= NhlINFO){
 						resfound[i] = True;
 						goto found;
 					}
@@ -584,7 +584,7 @@ _NhlGetResources
 							resources[i].nrm_type,
 							&from, &to);
 					
-					if(lret == NhlNOERROR){
+					if(lret >= NhlINFO){
 						resfound[i] = True;
 						goto found;
 					}

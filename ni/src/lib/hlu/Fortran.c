@@ -1,5 +1,5 @@
 /*
- *      $Id: Fortran.c,v 1.13 1997-01-08 23:05:51 boote Exp $
+ *      $Id: Fortran.c,v 1.14 1997-01-25 00:42:14 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -98,7 +98,7 @@ _NHLCALLF(nhl_frlcreate,NHL_FRLCREATE)
 	to.size = sizeof(rltype);
 	to.data.ptrval = &rltype;
 
-	if(NhlConvertData(NULL,NhlTString,NhlTRLType,&from,&to) != NhlNOERROR){
+	if(NhlConvertData(NULL,NhlTString,NhlTRLType,&from,&to) < NhlINFO){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"Invalid list type \"%s\"",
 								tstring);
 		*listid = NhlFATAL;

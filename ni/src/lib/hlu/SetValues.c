@@ -1,5 +1,5 @@
 /*
- *      $Id: SetValues.c,v 1.24 1997-01-17 18:57:44 boote Exp $
+ *      $Id: SetValues.c,v 1.25 1997-01-25 00:42:19 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -235,7 +235,7 @@ _NhlSetValues
 				to.data.ptrval = ((char*)base +
 						resources[j].nrm_offset);
 
-				if(NhlNOERROR!=_NhlConvertData(context,
+				if(NhlWARNING >_NhlConvertData(context,
 							args[i].type,
 							resources[j].nrm_type,
 							&from, &to)){

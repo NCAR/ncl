@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrays.c,v 1.35 1996-09-14 17:06:01 boote Exp $
+ *      $Id: CoordArrays.c,v 1.36 1997-01-25 00:42:13 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -851,7 +851,7 @@ CvtCArrToCArrTabFlt
 		tval.size = sizeof(float);
 		tval.data.ptrval = &fltlp->max_x;
 		ret = _NhlReConvertData(genQ,floatQ,&fval,&tval);
-		if(ret < NhlNOERROR){
+		if(ret < NhlINFO){
 		NhlPError(ret,NhlEUNKNOWN,"%s:Unable to convert %s to float",
 							func,NhlNctXMaxV);
 			return ret;
@@ -866,7 +866,7 @@ CvtCArrToCArrTabFlt
 		tval.size = sizeof(float);
 		tval.data.ptrval = &fltlp->min_x;
 		ret = _NhlReConvertData(genQ,floatQ,&fval,&tval);
-		if(ret < NhlNOERROR){
+		if(ret < NhlINFO){
 		NhlPError(ret,NhlEUNKNOWN,"%s:Unable to convert %s to float",
 							func,NhlNctXMinV);
 			return ret;
@@ -881,7 +881,7 @@ CvtCArrToCArrTabFlt
 		tval.size = sizeof(float);
 		tval.data.ptrval = &fltlp->max_y;
 		ret = _NhlReConvertData(genQ,floatQ,&fval,&tval);
-		if(ret < NhlNOERROR){
+		if(ret < NhlINFO){
 		NhlPError(ret,NhlEUNKNOWN,"%s:Unable to convert %s to float",
 							func,NhlNctYMaxV);
 			return ret;
@@ -896,7 +896,7 @@ CvtCArrToCArrTabFlt
 		tval.size = sizeof(float);
 		tval.data.ptrval = &fltlp->min_y;
 		ret = _NhlReConvertData(genQ,floatQ,&fval,&tval);
-		if(ret < NhlNOERROR){
+		if(ret < NhlINFO){
 		NhlPError(ret,NhlEUNKNOWN,"%s:Unable to convert %s to float",
 							func,NhlNctYMinV);
 			return ret;

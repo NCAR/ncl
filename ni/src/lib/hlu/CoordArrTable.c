@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrTable.c,v 1.29 1996-09-14 17:05:59 boote Exp $
+ *      $Id: CoordArrTable.c,v 1.30 1997-01-25 00:42:12 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -748,7 +748,7 @@ CvtGenObjToFloatObj
 		to.size = sizeof(float);
 		to.data.ptrval = &fltlpart->max_x;
 		ret = _NhlReConvertData(genQ,floatQ,&from,&to);
-		if(ret < NhlNOERROR){
+		if(ret < NhlINFO){
 		NhlPError(ret,NhlEUNKNOWN,"%s:Unable to convert %s to float",
 							func,NhlNctXMaxV);
 			return ret;
@@ -763,7 +763,7 @@ CvtGenObjToFloatObj
 		to.size = sizeof(float);
 		to.data.ptrval = &fltlpart->min_x;
 		ret = _NhlReConvertData(genQ,floatQ,&from,&to);
-		if(ret < NhlNOERROR){
+		if(ret < NhlINFO){
 		NhlPError(ret,NhlEUNKNOWN,"%s:Unable to convert %s to float",
 							func,NhlNctXMinV);
 			return ret;
@@ -778,7 +778,7 @@ CvtGenObjToFloatObj
 		to.size = sizeof(float);
 		to.data.ptrval = &fltlpart->max_y;
 		ret = _NhlReConvertData(genQ,floatQ,&from,&to);
-		if(ret < NhlNOERROR){
+		if(ret < NhlINFO){
 		NhlPError(ret,NhlEUNKNOWN,"%s:Unable to convert %s to float",
 							func,NhlNctYMaxV);
 			return ret;
@@ -793,7 +793,7 @@ CvtGenObjToFloatObj
 		to.size = sizeof(float);
 		to.data.ptrval = &fltlpart->min_y;
 		ret = _NhlReConvertData(genQ,floatQ,&from,&to);
-		if(ret < NhlNOERROR){
+		if(ret < NhlINFO){
 		NhlPError(ret,NhlEUNKNOWN,"%s:Unable to convert %s to float",
 							func,NhlNctYMinV);
 			return ret;

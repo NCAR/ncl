@@ -1,5 +1,5 @@
 /*
- *      $Id: ScalarField.c,v 1.21 1996-09-14 17:07:11 boote Exp $
+ *      $Id: ScalarField.c,v 1.22 1997-01-25 00:42:18 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -919,7 +919,7 @@ ValidCoordArray
 	if (! Monotonic((float *)ga->data,ga->num_elements)) {
 		e_text = 
                 "%s: irregular coordinate array %s non-monotonic: ignoring %s";
-		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,name,name);
 		return False;
 	}
 	return True;
