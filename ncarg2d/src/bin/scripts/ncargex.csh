@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.72 1994-09-14 16:51:44 kennison Exp $
+#   $Id: ncargex.csh,v 1.73 1994-10-06 17:58:27 haley Exp $
 #
 
 #********************#
@@ -807,6 +807,22 @@ switch($name)
         set graphic_type = "ps"
         set default_file = "gmeta1.ps"
         set message = "PostScript file is named"
+    breaksw
+
+    case wmex01:
+    case wmex02:
+        if ($?psfile) then
+            set ws_type = 26
+            echo ""
+            echo "	This example was set up to use the entire page when"
+            echo "	going to PostScript, so workstation type 26 is being"
+            echo "	used."
+            echo ""
+            unset ncgmfile
+            set graphic_type = "ps"
+            set default_file = "gmeta1.ps"
+            set message = "PostScript file is named"
+        endif
     breaksw
 
     case pgkex26:
