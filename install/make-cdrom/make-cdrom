@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl 
 #
-#      $Id: make-cdrom,v 1.6 1994-03-15 14:46:05 haley Exp $
+#      $Id: make-cdrom,v 1.7 1994-05-09 20:50:34 haley Exp $
 #
 #########################################################################
 #									#
@@ -73,6 +73,7 @@ $do_src = 0;		# do we record the distribution src to cd-rom
 	'SunOS_sun4',		'SUNOS_S4',
 	'Solaris_sun4',		'SOLARIS',
 	'ULTRIX_RISC',		'ULTRIX',
+	'OSF1_alpha',		'OSF1_ALF',
 	'IRIX_IP',		'IRIX_IP',
 	'UNICOS_YMP',		'UCOS_YMP',
 	'src',			'UNUSED'
