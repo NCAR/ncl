@@ -1,5 +1,5 @@
 /*
- *	$Id: c_tareas.c,v 1.1 1994-11-03 18:18:31 haley Exp $
+ *	$Id: c_tareas.c,v 1.2 1994-11-04 16:31:21 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -28,7 +28,7 @@ int *ierror;
     float xca[73],yca[73],ang;
     float xcs[150],ycs[150],rad,xcd,ycd;
     float dtr,xcn,ycn;
-    int ioc[15],icf,nai,itm,it1,it2;
+    int ioc[16],icf,nai,itm,it1,it2;
     int ncd, mcs, mai;
     Gcolr_rep rgb[16];
     Gasfs if1;
@@ -74,21 +74,22 @@ int *ierror;
     rgb[14].rgb.red = 1.00; rgb[14].rgb.green = 0.00; rgb[14].rgb.blue = 0.00;
     rgb[15].rgb.red = 1.00; rgb[15].rgb.green = 1.00; rgb[15].rgb.blue = 1.00;
 
-    ioc[0] = 6;
-    ioc[1] = 2;
-    ioc[2] = 5;
-    ioc[3] = 12;
-    ioc[4] = 10;
-    ioc[5] = 11;
-    ioc[6] = 1;
-    ioc[7] = 3;
-    ioc[8] = 4;
-    ioc[9] = 8;
-    ioc[10] = 9;
-    ioc[11] = 7;
-    ioc[12] = 13;
-    ioc[13] = 14;
-    ioc[14] = 15;
+    ioc[0] = 0;
+    ioc[1] = 6;
+    ioc[2] = 2;
+    ioc[3] = 5;
+    ioc[4] = 12;
+    ioc[5] = 10;
+    ioc[6] = 11;
+    ioc[7] = 1;
+    ioc[8] = 3;
+    ioc[9] = 4;
+    ioc[10] = 8;
+    ioc[11] = 9;
+    ioc[12] = 7;
+    ioc[13] = 13;
+    ioc[14] = 14;
+    ioc[15] = 15;
 
     dtr = .017453292519943;
     ginq_asfs(&ie,&if1);
@@ -96,8 +97,8 @@ int *ierror;
     if1.fill_style_ind=1;
     gset_asfs(&if1);
     gset_fill_int_style(GSTYLE_SOLID);
-    for( j = 1; j <= 15; j++ ) {
-        i=ioc[j-1];
+    for( j = 0; j <= 15; j++ ) {
+        i=ioc[j];
         gset_colr_rep(WKID,j,&rgb[i]);
     }
     c_arinam(iam,5000);
