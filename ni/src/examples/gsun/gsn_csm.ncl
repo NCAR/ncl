@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.29 2000-01-03 16:31:09 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.30 2000-01-07 01:05:36 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -84,10 +84,10 @@ undef("gsn_csm_streamline")
 
 ;***********************************************************************;
 ; Function : xy_interp                                                  ;
-;                  x1: float                                            ;
-;                  x2: float                                            ;
-;                  y1: float                                            ;
-;                  y2: float                                            ;
+;                  x1: numeric                                          ;
+;                  x2: numeric                                          ;
+;                  y1: numeric                                          ;
+;                  y2: numeric                                          ;
 ;                                                                       ;
 ; Given two points, (x1,y1) and (x2,y1) and a reference value (ref),    ;
 ; this function interpolates where on the X axis the line from the 1st  ;
@@ -97,18 +97,18 @@ undef("gsn_csm_streamline")
 ; resources. The Id of the map plot is returned.                        ;
 ;***********************************************************************;
 
-function xy_interp(x1:float, x2:float, y1:float, y2:float, ref:float)
+function xy_interp(x1:numeric,x2:numeric,y1:numeric,y2:numeric,ref:numeric)
 begin
  return(x2-((y2-ref)*(x2-x1))/(y2-y1))
 end
 
 ;***********************************************************************;
 ; Function : ref_line_interp                                            ;
-;                  x: float                                             ;
-;                  y: float                                             ;
-;            xinterp: float                                             ;
-;            yinterp: float                                             ;
-;           ref_line: float                                             ;
+;                  x: numeric                                           ;
+;                  y: numeric                                           ;
+;            xinterp: numeric                                           ;
+;            yinterp: numeric                                           ;
+;           ref_line: numeric                                           ;
 ;                                                                       ;
 ; Given a set of points represented by x and y, add interpolated values ;
 ; where the line crosses at y = ref_line. x and y must be the same      ;
@@ -227,7 +227,7 @@ end
 ; temperature and geopotential data are lacking.                        ;
 ;***********************************************************************;
  
-function gsn_geop_hgt( p[*]:float )
+function gsn_geop_hgt( p[*]:numeric )
 local nsa,psa,zsa,ptmp,npres,found,i,j
  
 begin
@@ -1017,9 +1017,9 @@ local hgt, hnice, pnice, ptmp
 ; Procedure : fill_xy                                                   ;
   if(pres(0).lt.pres(dimsizes(pres)-1))
     ptmp = 1.* pres(::-1)    ; reverse values so descending order
-;                 xin[*]: float                                         ;
-;                 yin[*]: float                                         ;
-;                    ref: float                                         ;
+  else
+    ptmp = 1.* pres          ; Make sure values are floating point.
+  end if
 
   if(.not.(isatt(res,"sfYCStartV").and.isatt(res,"sfYCEndV")))
     set_attr(res,"sfYArray",ptmp)
@@ -1028,8 +1028,8 @@ local hgt, hnice, pnice, ptmp
 ;
 ; Set up the "nice" pressure values for which to label the left axis.
 ;
-procedure fill_xy(wks:graphic,xy:graphic,xin[*]:float,yin[*]:float,ref:float, \
-                  ref_line_above_color,ref_line_below_color)
+procedure fill_xy(wks:graphic,xy:graphic,xin[*]:numeric,yin[*]:numeric,\
+                  ref:numeric,ref_line_above_color,ref_line_below_color)
     res@tmYLValues = (/1000.,  850., 700., 500., 400., 300., 250.,\
                          200., 150., 100.,  70., 50., 30., 10./)
     res@tmYLLabels = (/"1000","850","700","500","400","300","250",\
@@ -1441,7 +1441,7 @@ end
   latvalues    = get_lat_values(min_lat,max_lat,lat_spacing2,mlat_spacing)
         print("add_map_tickmarks: Warning: you cannot use mpLimitMode=" + limit_mode + " with the gsm_csm_map routines")
         return 
-;             data[*][*]: float                                         ;
+      end if
     end if
 
 ; Create tickmark values for lat/lon labels.
@@ -1449,7 +1449,7 @@ end
     lonvalues = get_lon_values(min_lon,max_lon,lon_spacing,mlon_spacing,0,0,0)
     latvalues = get_lat_values(min_lat,max_lat,lat_spacing,mlat_spacing)
 
-function gsn_add_cyclic_point(data[*][*]:float)
+; Create labels for lat/lon tick marks.
 local dims, newdata, ny, mx, mx1
     lonlabels  = get_lon_labels(lonvalues)
 
@@ -1457,13 +1457,26 @@ local dims, newdata, ny, mx, mx1
 
     tickmark = create "tickmarks" tickMarkClass wks
        "vpXF"            : vpxf       ; Set the viewport location of the
-    newdata = new((/ny  ,mx1/),float)
+    if(typeof(data).eq."float")
+      newdata = new((/ny  ,mx1/),float)
+    else
+      if(typeof(data).eq."double")
+        newdata = new((/ny  ,mx1/),double)
+      else
+        if(typeof(data).eq."integer")
+          newdata = new((/ny  ,mx1/),integer)
+        else
+          print("gsn_add_cyclic_point: Error: Don't recognize type of input data")
+          exit
+        end if
+      end if
+    end if
 
        "vpWidthF"        : vpwf       ; the map.
        "vpHeightF"       : vphf
 
        "tmYLDataBottomF" : min_lat    ; Use the lat/lon limits
-        newdata&$newdata!1$(mx) = newdata&$newdata!1$(0) + 360.0
+        newdata&$newdata!1$(mx) = newdata&$newdata!1$(0) + 360
        "tmYLMinorValues"  : latvalues@minor
  
 

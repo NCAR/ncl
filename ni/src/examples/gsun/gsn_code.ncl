@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.27 2000-01-03 16:23:04 haley Exp $
+;      $Id: gsn_code.ncl,v 1.28 2000-01-07 01:05:35 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -1008,6 +1008,21 @@ begin
 ; Loop through each plot and draw it in the new scaled-down size.
     end if
     do i = 0,rows-1
+;
+; Before we add plots to a row, check to see if we have enough plots
+; left to fill that row.  If not, then center the remaining plots.
+;
+      num_plots_left = dimsizes(plot) - i*cols
+
+      if(num_plots_left.lt.cols)
+        num_miss_plots = cols - num_plots_left
+        if(num_miss_plots.gt.0.and.num_miss_plots.lt.cols)
+          delete(xpos)
+          xsp = xrange - new_total_width*(cols-num_miss_plots)
+          xpos = x_lft + xwsp + dx +(xsp/2.+new_total_width*\
+                 ispan(0,cols-num_miss_plots-1,1))
+        end if
+      end if
       do j = 0,cols-1
         if(i*cols+j .lt. dimsizes(plot))
           if(.not.ismissing(plot(i*cols+j)))
