@@ -18,7 +18,6 @@ C      Description:    Demonstrates the title object
 C                      defaults.
 C
       external nhlfapplayerclass
-      external nhlfreslistlayerclass
       external nhlftitlelayerclass
       external nhlfxworkstationlayerclass
 

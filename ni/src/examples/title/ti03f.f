@@ -18,7 +18,6 @@ C      Description:    Demonstrates Title Object resource changes.
 C
 
       external nhlfapplayerclass
-      external nhlfreslistlayerclass
       external nhlftitlelayerclass
       external nhlfxworkstationlayerclass
 

@@ -18,8 +18,6 @@ C      Description:    Demonstrates the TickMark Object
 C                      with reversed and log y axis.
 C
 
-      external nhlfhlulayerclass
-      external nhlfreslistlayerclass
       external nhlfapplayerclass
       external nhlftickmarklayerclass
       external nhlfxworkstationlayerclass
