@@ -1,18 +1,8 @@
 #
-#	$Id: yMakefile,v 1.1 1993-06-16 20:25:31 haley Exp $
+#	$Id: yMakefile,v 1.2 1993-10-26 23:29:16 haley Exp $
 #
-NCARG	= ../../../..
-
-MYNAME	= flabelbar
+MYNAME	= fautograph
 
 GENERIC_SRCS = clbbar.f clbfil.f clblbr.f
 
-install::
-	@for file in $(GENERIC_SRCS); do\
-	($(INSTALL) -m $(INSTALL_LIB) $$file $(EXAMPLESPATH));\
-	done
-
-MakefileTarget
-CleanTarget
-UpdateTarget
-
+InstallTarget($(GENERIC_SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
