@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.69 1998-02-19 18:20:55 ethan Exp $
+ *      $Id: Machine.c,v 1.70 1998-10-07 17:03:41 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -2357,8 +2357,9 @@ if(the_list != NULL) {
 * This only showed up as a problem when using the GUI but it appears it my cause memory
 * problems I'm not sure.
 */
-					(void)_NclStripVarData(data.u.data_var);
+					tmp_md = _NclStripVarData(data.u.data_var);
 					_NclDestroyObj((NclObj)data.u.data_var);
+					tmp_md->obj.status = PERMANENT;
 				}
 			} else {
 				if(check_ret_status) {
@@ -2404,7 +2405,11 @@ void _NclDumpStack
 		case 	NclStk_VAL:
 			fprintf(file,"NclStk_VAL\t");
 			if(tmp_ptr->u.data_obj->obj.obj_type_mask & (Ncl_MultiDValHLUObjData | Ncl_MultiDValnclfileData))
-				fprintf(file,"%s\t",NrmQuarkToString(_NclObjTypeToName(tmp_ptr->u.data_obj->obj.obj_type)));
+				if(tmp_ptr->u.data_obj->obj.obj_type_mask & Ncl_MultiDValHLUObjData) {
+					fprintf(file,"HLU\t");
+				} else {
+					fprintf(file,"FILE\t");
+				}
 			else 
 				fprintf(file,"%s\t",NrmQuarkToString(_NclObjTypeToName(tmp_ptr->u.data_obj->multidval.type->type_class.type)));
 				
