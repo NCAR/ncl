@@ -2468,10 +2468,10 @@ int** dimsizes_lon;
 */
 static int GenericUnPack
 #if NhlNeedProto
-(int fd, void** outdat, void** missing_value, GribRecordInqRec *therec, GribParamList* thevarrec)
+(FILE *fd, void** outdat, void** missing_value, GribRecordInqRec *therec, GribParamList* thevarrec)
 #else
 (fd, outdat, missing_value, therec, thevarrec)
-int fd;
+FILE* fd;
 void** outdat;
 void** missing_value;
 GribRecordInqRec *therec;
@@ -2513,8 +2513,8 @@ GribParamList* thevarrec;
 
 
 	bds = (unsigned char*)NclMalloc((unsigned)therec->bds_size + 4); /* 4 added so that array bounds will never be ovewitten*/
-	lseek(fd,therec->start + therec->bds_off,SEEK_SET);
-	read(fd,(void*)bds,therec->bds_size);
+	fseek(fd,therec->start + therec->bds_off,SEEK_SET);
+	fread((void*)bds,1,therec->bds_size,fd);
 	bds[therec->bds_size] = (char)0;
 	bds[therec->bds_size +1] = (char)0;
 	bds[therec->bds_size + 2] = (char)0;
@@ -2522,8 +2522,8 @@ GribParamList* thevarrec;
 
         if(therec->has_bms) {
                 bms = (unsigned char*)NclMalloc((unsigned)therec->bms_size);
-                lseek(fd,therec->start + therec->bms_off,SEEK_SET);
-                read(fd,(void*)bms,therec->bms_size);
+                fseek(fd,therec->start + therec->bms_off,SEEK_SET);
+                fread((void*)bms,1,therec->bms_size,fd);
                 numeric = CnvtToDecimal(2,&(bms[4]));
                 if(numeric != 0) {
                         NhlPError(NhlFATAL,NhlEUNKNOWN,"GribUnPack: Record uses predefined bit map. Predefined bit maps are not supported yet");
@@ -2713,10 +2713,10 @@ GribParamList* thevarrec;
 
 static int IFOS50UnPack
 #if NhlNeedProto
-(int fd, void** outdat, void** missing_value, GribRecordInqRec *therec, GribParamList* thevarrec)
+(FILE *fd, void** outdat, void** missing_value, GribRecordInqRec *therec, GribParamList* thevarrec)
 #else
 (fd, outdat, missing_value, therec, thevarrec)
-int fd;
+FILE *fd;
 void** outdat;
 void** missing_value;
 GribRecordInqRec *therec;
@@ -2751,8 +2751,8 @@ GribParamList* thevarrec;
 
 
 	bds = (unsigned char*)NclMalloc((unsigned)therec->bds_size + 4);
-	lseek(fd,therec->start + therec->bds_off,SEEK_SET);
-	read(fd,(void*)bds,therec->bds_size);
+	fseek(fd,therec->start + therec->bds_off,SEEK_SET);
+	fread((void*)bds,1,therec->bds_size,fd);
 	bds[therec->bds_size] = (char)0;
 	bds[therec->bds_size +1] = (char)0;
 	bds[therec->bds_size + 2] = (char)0;
@@ -2944,10 +2944,10 @@ GribParamList* thevarrec;
 
 static int IFOSUnPack
 #if NhlNeedProto
-(int fd, void** outdat, void** missing_value, GribRecordInqRec *therec, GribParamList* thevarrec)
+(FILE *fd, void** outdat, void** missing_value, GribRecordInqRec *therec, GribParamList* thevarrec)
 #else
 (fd, outdat, missing_value, therec, thevarrec)
-int fd;
+FILE *fd;
 void** outdat;
 void** missing_value;
 GribRecordInqRec *therec;
@@ -2987,8 +2987,8 @@ GribParamList* thevarrec;
 
 
 	bds = (unsigned char*)NclMalloc((unsigned)therec->bds_size + 4);
-	lseek(fd,therec->start + therec->bds_off,SEEK_SET);
-	read(fd,(void*)bds,therec->bds_size);
+	fseek(fd,therec->start + therec->bds_off,SEEK_SET);
+	fread((void*)bds,1,therec->bds_size,fd);
 	bds[therec->bds_size] = (char)0;
 	bds[therec->bds_size +1] = (char)0;
 	bds[therec->bds_size + 2] = (char)0;
@@ -2996,8 +2996,8 @@ GribParamList* thevarrec;
 
 	if(therec->has_bms) {
 		bms = (unsigned char*)NclMalloc((unsigned)therec->bms_size);
-		lseek(fd,therec->start + therec->bms_off,SEEK_SET);
-		read(fd,(void*)bms,therec->bms_size);
+		fseek(fd,therec->start + therec->bms_off,SEEK_SET);
+		fread((void*)bms,1,therec->bms_size,fd);
 		numeric = CnvtToDecimal(2,&(bms[4]));
 		if(numeric != 0) {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"GribUnPack: Record uses predefined bit map. Predefined bit maps are not supported yet");

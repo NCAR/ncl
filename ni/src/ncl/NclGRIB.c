@@ -21,7 +21,7 @@ extern GridInfoRecord grid[];
 extern GridInfoRecord grid_gds[];
 extern int grid_tbl_len;
 extern int grid_gds_tbl_len;
-
+static void  *vbuf;
 extern void GribPushAtt(
 #if NhlNeedProto
 GribAttInqRecList **att_list_ptr,char* name,void *val,int dimsize,NclObjClass type
@@ -2336,10 +2336,10 @@ unsigned char *val;
 
 int GetNextGribOffset
 #if NhlNeedProto
-(int gribfile, unsigned int *offset, unsigned int *totalsize, unsigned int startoff, unsigned int *nextoff,int* version)
+(FILE *gribfile, unsigned int *offset, unsigned int *totalsize, unsigned int startoff, unsigned int *nextoff,int* version)
 #else
 (gribfile, offset, totalsize, startoff, nextoff,version)
-int gribfile;
+FILE* gribfile;
 unsigned int *offset;
 unsigned int *totalsize;
 unsigned int startoff;
@@ -2363,16 +2363,16 @@ int *version;
 	test[4] = '\0';
 
 	i = startoff;
-	i = lseek(gribfile,i,SEEK_SET);
+	fseek(gribfile,i,SEEK_SET);
 	while(1) {
-		ret1 = read(gribfile,(void*)is,1);
+		ret1 = fread((void*)is,1,1,gribfile);
 		i += ret1;
 		if(ret1 > 0) {
 			if(is[0] == 'G') {
 /*
 				fprintf(stdout,"found G\n");
 */
-				ret2 = read(gribfile,(void*)&(is[1]),7);
+				ret2 = fread((void*)&(is[1]),1,7,gribfile);
 				if(ret2 < 7) {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"Premature end-of-file, file appears to be truncated");
 					*totalsize = 0;
@@ -2394,8 +2394,9 @@ int *version;
 */
 					*offset =  i - (ret1 + ret2);
 					size = UnsignedCnvtToDecimal(3,&(is[4]));
-					ret3 = lseek(gribfile,i+size - (ret1 + ret2) - 4,SEEK_SET);
-					ret4 = read(gribfile,(void*)nd,4);
+					fseek(gribfile,i+size - (ret1 + ret2) - 4,SEEK_SET);
+					ret3 = i+size - (ret1 + ret2) - 4;
+					ret4 = fread((void*)nd,1,4,gribfile);
 					if(ret4 < 4) {
 						NhlPError(NhlFATAL,NhlEUNKNOWN,"Premature end-of-file, file appears to be truncated");
 						*totalsize = 0;
@@ -2425,8 +2426,9 @@ int *version;
 */
 					size = 4;
 					while(1) {
-						t = lseek(gribfile,*offset + size,SEEK_SET);
-						ret4 = read(gribfile,(void*)nd,4);
+						t = *offset + size;
+						fseek(gribfile,t,SEEK_SET);
+						ret4 = fread((void*)nd,1,4,gribfile);
 						if(ret4 < 4) {
 							NhlPError(NhlFATAL,NhlEUNKNOWN,"Premature end-of-file, file appears to be truncated");
 							break;
@@ -2877,7 +2879,7 @@ NclQuark path;
 int wr_status;
 #endif
 {
-	int fd;
+	FILE* fd;
 	int done = 0;
 	unsigned int offset = 0;
 	unsigned int size = 0;
@@ -2906,8 +2908,11 @@ int wr_status;
 	if(wr_status <= 0) {
 		NhlPError(NhlWARNING,NhlEUNKNOWN,"NclGRIB: Grib files are read only continueing but opening file as read only");
 	}
-	fd = open(NrmQuarkToString(path),O_RDONLY);
-	if(fd > 0) {
+	fd = fopen(NrmQuarkToString(path),"r");
+	vbuf = (void*)NclMalloc(4*getpagesize());
+	setvbuf(fd,vbuf,_IOFBF,4*getpagesize());
+	
+	if(fd != NULL) {
 		while(!done) {
 			ret = GetNextGribOffset(fd,&offset,&size,offset,&nextoff,&version);
 			if(ret == GRIBEOF) {
@@ -2919,8 +2924,8 @@ int wr_status;
 				grib_rec->the_dat = NULL;
 				grib_rec->version = version;
 				grib_rec->var_name = NULL;
-				lseek(fd,offset+(version?8:4),SEEK_SET);
-				read(fd,(void*)grib_rec->pds,version?28:24);
+				fseek(fd,offset+(version?8:4),SEEK_SET);
+				fread((void*)grib_rec->pds,1,version?28:24,fd);
 /*
 				fprintf(stdout,"Found: %d\n",(int)(int)grib_rec->pds[8]);
 */
@@ -2972,8 +2977,8 @@ int wr_status;
 				grib_rec->time_offset = 0;
 				grib_rec->pds_size = CnvtToDecimal(3,&(grib_rec->pds[0]));
 				if(grib_rec->has_gds) {
-					lseek(fd,(unsigned)(grib_rec->start + (version?8:4) + grib_rec->pds_size),SEEK_SET);
-					read(fd,(void*)buffer,6);
+					fseek(fd,(unsigned)(grib_rec->start + (version?8:4) + grib_rec->pds_size),SEEK_SET);
+					fread((void*)buffer,1,6,fd);
 					grib_rec->gds_size = CnvtToDecimal(3,buffer);
 					grib_rec->gds_off = (version?8:4) + grib_rec->pds_size;
 					grib_rec->gds_type = (int)buffer[5];
@@ -2981,8 +2986,8 @@ int wr_status;
 					fprintf(stdout,"%d\n",grib_rec->gds_type);
 */
 					grib_rec->gds = (unsigned char*)NclMalloc((unsigned)sizeof(char)*grib_rec->gds_size);
-					lseek(fd,(unsigned)(grib_rec->start + (version?8:4) + grib_rec->pds_size),SEEK_SET);
-					read(fd,(void*)grib_rec->gds,grib_rec->gds_size);
+					fseek(fd,(unsigned)(grib_rec->start + (version?8:4) + grib_rec->pds_size),SEEK_SET);
+					fread((void*)grib_rec->gds,1,grib_rec->gds_size,fd);
 				} else {
 					grib_rec->gds_off = 0;	
 					grib_rec->gds_size = 0;
@@ -3026,8 +3031,8 @@ int wr_status;
 				}
 
 				if(grib_rec->has_bms) {
-					lseek(fd,(unsigned)(grib_rec->start + (version?8:4) + grib_rec->pds_size + grib_rec->gds_size),SEEK_SET);
-					read(fd,(void*)tmpc,3);
+					fseek(fd,(unsigned)(grib_rec->start + (version?8:4) + grib_rec->pds_size + grib_rec->gds_size),SEEK_SET);
+					fread((void*)tmpc,1,3,fd);
 					grib_rec->bms_size = CnvtToDecimal(3,tmpc);
 					grib_rec->bms_off = (version?8:4) + grib_rec->pds_size + grib_rec->gds_size;
 				} else {
@@ -3035,11 +3040,11 @@ int wr_status;
 					grib_rec->bms_size = 0;
 				}
 				grib_rec->bds_off = (version ? 8:4) + grib_rec->pds_size + grib_rec->bms_size + grib_rec->gds_size;
-				lseek(fd,(unsigned)(grib_rec->start + grib_rec->bds_off),SEEK_SET);
-				read(fd,(void*)tmpc,4);
+				fseek(fd,(unsigned)(grib_rec->start + grib_rec->bds_off),SEEK_SET);
+				fread((void*)tmpc,1,4,fd);
 				grib_rec->bds_flags = tmpc[3];
 				grib_rec->bds_size = CnvtToDecimal(3,tmpc);
-				read(fd,(void*)tmpc,1);
+				fread((void*)tmpc,1,1,fd);
 				grib_rec->int_or_float = (int)(tmpc[0]  & (char)0040) ? 1 : 0;
 			}
 
@@ -3417,11 +3422,12 @@ int wr_status;
 			_SetAttributeLists(therec);
 
 
-			close(fd);	
+			fclose(fd);	
+			NclFree(vbuf);
 			return(therec);
 		} 
 	}
-	if(fd <= 0) {
+	if(fd != NULL) {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"NclGRIB: Could not open (%s) check permissions",NrmQuarkToString(path));
 	} else {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"NclGRIB: Could not open (%s) no grib records found",NrmQuarkToString(path));
@@ -3745,254 +3751,260 @@ long* stride;
 void* storage;
 #endif
 {
-GribFileRecord *rec = (GribFileRecord*)therec;
-GribParamList *step;
-GribRecordInqRec *current_rec;
-void *out_data;
-long *grid_start;
-long *grid_finish;
-long *grid_stride;
-int n_other_dims;
-int current_index[3];
-int dim_sizes[3] = {-1,-1,-1};
-int i;
-int offset;
-int done = 0,inc_done =0;
-int data_offset = 0;
-void *tmp;
-void *missing;
-NclScalar missingv;
-int int_or_float;
-int fd;
-int grid_dim_sizes[2];
-int n_grid_dims;
-NclMultiDValData tmp_md;
-NclSelectionRecord  sel_ptr;
-GribInternalVarList *vstep;
+	GribFileRecord *rec = (GribFileRecord*)therec;
+	GribParamList *step;
+	GribRecordInqRec *current_rec;
+	void *out_data;
+	long *grid_start;
+	long *grid_finish;
+	long *grid_stride;
+	int n_other_dims;
+	int current_index[3];
+	int dim_sizes[3] = {-1,-1,-1};
+	int i;
+	int offset;
+	int done = 0,inc_done =0;
+	int data_offset = 0;
+	void *tmp;
+	void *missing;
+	NclScalar missingv;
+	int int_or_float;
+	FILE* fd;
+	int grid_dim_sizes[2];
+	int n_grid_dims;
+	NclMultiDValData tmp_md;
+	NclSelectionRecord  sel_ptr;
+	GribInternalVarList *vstep;
 
-vstep = rec->internal_var_list;
-while(vstep != NULL ) {
-	if(vstep->int_var->var_info.var_name_quark == thevar) {
-		sel_ptr.n_entries = vstep->int_var->var_info.num_dimensions;
-		out_data = storage;
-		for(i = 0; i < vstep->int_var->var_info.num_dimensions; i++ ) {
-			sel_ptr.selection[i].sel_type = Ncl_SUBSCR;
-			sel_ptr.selection[i].dim_num = i;
-			sel_ptr.selection[i].u.sub.start = start[i];
-			sel_ptr.selection[i].u.sub.finish = finish[i];
-			sel_ptr.selection[i].u.sub.stride = stride[i];
-			sel_ptr.selection[i].u.sub.is_single = 0;
+	vstep = rec->internal_var_list;
+	while(vstep != NULL ) {
+		if(vstep->int_var->var_info.var_name_quark == thevar) {
+			sel_ptr.n_entries = vstep->int_var->var_info.num_dimensions;
+			out_data = storage;
+			for(i = 0; i < vstep->int_var->var_info.num_dimensions; i++ ) {
+				sel_ptr.selection[i].sel_type = Ncl_SUBSCR;
+				sel_ptr.selection[i].dim_num = i;
+				sel_ptr.selection[i].u.sub.start = start[i];
+				sel_ptr.selection[i].u.sub.finish = finish[i];
+				sel_ptr.selection[i].u.sub.stride = stride[i];
+				sel_ptr.selection[i].u.sub.is_single = 0;
+			}
+			tmp_md = (NclMultiDValData)_NclReadSubSection((NclData)vstep->int_var->value,&sel_ptr,NULL);
+			memcpy((void*)&((char*)out_data)[data_offset],tmp_md->multidval.val,tmp_md->multidval.totalsize);
+			if(tmp_md->obj.status != PERMANENT) {
+				_NclDestroyObj((NclObj)tmp_md);
+			}
+			return(out_data);
 		}
-		tmp_md = (NclMultiDValData)_NclReadSubSection((NclData)vstep->int_var->value,&sel_ptr,NULL);
-		memcpy((void*)&((char*)out_data)[data_offset],tmp_md->multidval.val,tmp_md->multidval.totalsize);
-		if(tmp_md->obj.status != PERMANENT) {
-			_NclDestroyObj((NclObj)tmp_md);
-		}
-		return(out_data);
+		vstep = vstep->next;
+
 	}
-	vstep = vstep->next;
-
-}
 
 
 
 
 
-step = rec->var_list;
-while(step != NULL) {
-	if(step->var_info.var_name_quark == thevar) {
-		fd = open(NrmQuarkToString(rec->file_path_q),O_RDONLY);
-		out_data = storage;
-		grid_start = &(start[(step->var_info.num_dimensions - 2) ]);
-		grid_finish = &(finish[(step->var_info.num_dimensions - 2) ]);
-		grid_stride = &(stride[(step->var_info.num_dimensions - 2) ]);
-		n_other_dims = step->var_info.num_dimensions - 2;
-		
-		
-		for(i = 0; i < n_other_dims; i++) {
-			current_index[i] = start[i];
-			dim_sizes[i] = step->var_info.dim_sizes[i];
-		}
-		n_grid_dims = 2;
-		grid_dim_sizes[0] = step->var_info.dim_sizes[step->var_info.num_dimensions - 2];
-		grid_dim_sizes[1] = step->var_info.dim_sizes[step->var_info.num_dimensions - 1];
-		sel_ptr.n_entries = 2;
-		sel_ptr.selection[0].sel_type = Ncl_SUBSCR;
-		sel_ptr.selection[0].dim_num = 0;
-		sel_ptr.selection[0].u.sub.start = grid_start[0];
-		sel_ptr.selection[0].u.sub.finish = grid_finish[0];
-		sel_ptr.selection[0].u.sub.stride = grid_stride[0];
-		sel_ptr.selection[0].u.sub.is_single = 0;
-		sel_ptr.selection[1].sel_type = Ncl_SUBSCR;
-		sel_ptr.selection[1].dim_num = 1;
-		sel_ptr.selection[1].u.sub.start = grid_start[1];
-		sel_ptr.selection[1].u.sub.finish = grid_finish[1];
-		sel_ptr.selection[1].u.sub.stride = grid_stride[1];
-		sel_ptr.selection[1].u.sub.is_single = 0;
-		
+	step = rec->var_list;
+	while(step != NULL) {
+		if(step->var_info.var_name_quark == thevar) {
+			fd = fopen(NrmQuarkToString(rec->file_path_q),"r");
+			vbuf = (void*)NclMalloc(4*getpagesize());
+			setvbuf(fd,vbuf,_IOFBF,4*getpagesize());
 
-		offset = 0;
-		while(!done) {
+			out_data = storage;
+			grid_start = &(start[(step->var_info.num_dimensions - 2) ]);
+			grid_finish = &(finish[(step->var_info.num_dimensions - 2) ]);
+			grid_stride = &(stride[(step->var_info.num_dimensions - 2) ]);
+			n_other_dims = step->var_info.num_dimensions - 2;
+			
+			
+			for(i = 0; i < n_other_dims; i++) {
+				current_index[i] = start[i];
+				dim_sizes[i] = step->var_info.dim_sizes[i];
+			}
+			n_grid_dims = 2;
+			grid_dim_sizes[0] = step->var_info.dim_sizes[step->var_info.num_dimensions - 2];
+			grid_dim_sizes[1] = step->var_info.dim_sizes[step->var_info.num_dimensions - 1];
+			sel_ptr.n_entries = 2;
+			sel_ptr.selection[0].sel_type = Ncl_SUBSCR;
+			sel_ptr.selection[0].dim_num = 0;
+			sel_ptr.selection[0].u.sub.start = grid_start[0];
+			sel_ptr.selection[0].u.sub.finish = grid_finish[0];
+			sel_ptr.selection[0].u.sub.stride = grid_stride[0];
+			sel_ptr.selection[0].u.sub.is_single = 0;
+			sel_ptr.selection[1].sel_type = Ncl_SUBSCR;
+			sel_ptr.selection[1].dim_num = 1;
+			sel_ptr.selection[1].u.sub.start = grid_start[1];
+			sel_ptr.selection[1].u.sub.finish = grid_finish[1];
+			sel_ptr.selection[1].u.sub.stride = grid_stride[1];
+			sel_ptr.selection[1].u.sub.is_single = 0;
+			
+
 			offset = 0;
-			if(n_other_dims > 0 ) {
-				for(i = 0; i < n_other_dims - 1; i++) {
-					offset += dim_sizes[i+1] * current_index[i];
+			while(!done) {
+				offset = 0;
+				if(n_other_dims > 0 ) {
+					for(i = 0; i < n_other_dims - 1; i++) {
+						offset += dim_sizes[i+1] * current_index[i];
+					}
+					offset += current_index[n_other_dims-1];
 				}
-				offset += current_index[n_other_dims-1];
-			}
-			current_rec = step->thelist[offset].rec_inq;
-/*
-* For now(4/27/98) missing records persist, Eventually I'll implement one missing record per grid type for
-* general use.
-*/
-			if(current_rec == NULL) {
-				if(step->var_info.data_type == NCL_int) {
-					tmp = NclMalloc(sizeof(int) * grid_dim_sizes[0] * grid_dim_sizes[1]);
-					for( i = 0; i < grid_dim_sizes[0] * grid_dim_sizes[1]; i++){
-						((int*)tmp)[i] = DEFAULT_MISSING_INT;
-						
-					}
-					missingv.intval = DEFAULT_MISSING_INT;
-					step->thelist[offset].rec_inq = _MakeMissingRec();
-					current_rec = step->thelist[offset].rec_inq;
-					current_rec->the_dat = _NclCreateVal(
-								NULL,
-								NULL,
-								Ncl_MultiDValData,
-								0,
-								tmp,
-								&missingv,
-								n_grid_dims,
-								grid_dim_sizes,
-								PERMANENT,
-								NULL,
-								nclTypeintClass
-							);
-				} else {
-					tmp = NclMalloc(sizeof(float) * grid_dim_sizes[0] * grid_dim_sizes[1]);
-					for( i = 0; i < grid_dim_sizes[0] * grid_dim_sizes[1]; i++){
-						((float*)tmp)[i] = DEFAULT_MISSING_FLOAT;
-					}
-					missingv.floatval = DEFAULT_MISSING_FLOAT;
+				current_rec = step->thelist[offset].rec_inq;
+	/*
+	* For now(4/27/98) missing records persist, Eventually I'll implement one missing record per grid type for
+	* general use.
+	*/
+				if(current_rec == NULL) {
+					if(step->var_info.data_type == NCL_int) {
+						tmp = NclMalloc(sizeof(int) * grid_dim_sizes[0] * grid_dim_sizes[1]);
+						for( i = 0; i < grid_dim_sizes[0] * grid_dim_sizes[1]; i++){
+							((int*)tmp)[i] = DEFAULT_MISSING_INT;
+							
+						}
+						missingv.intval = DEFAULT_MISSING_INT;
+						step->thelist[offset].rec_inq = _MakeMissingRec();
+						current_rec = step->thelist[offset].rec_inq;
+						current_rec->the_dat = _NclCreateVal(
+									NULL,
+									NULL,
+									Ncl_MultiDValData,
+									0,
+									tmp,
+									&missingv,
+									n_grid_dims,
+									grid_dim_sizes,
+									PERMANENT,
+									NULL,
+									nclTypeintClass
+								);
+					} else {
+						tmp = NclMalloc(sizeof(float) * grid_dim_sizes[0] * grid_dim_sizes[1]);
+						for( i = 0; i < grid_dim_sizes[0] * grid_dim_sizes[1]; i++){
+							((float*)tmp)[i] = DEFAULT_MISSING_FLOAT;
+						}
+						missingv.floatval = DEFAULT_MISSING_FLOAT;
 
-					step->thelist[offset].rec_inq = _MakeMissingRec();
-					current_rec = step->thelist[offset].rec_inq;
-					current_rec->the_dat = _NclCreateVal(
-								NULL,
-								NULL,
-								Ncl_MultiDValData,
-								0,
-								tmp,
-								&missingv,
-								n_grid_dims,
-								grid_dim_sizes,
-								PERMANENT,
-								NULL,
-								nclTypefloatClass
-							);
+						step->thelist[offset].rec_inq = _MakeMissingRec();
+						current_rec = step->thelist[offset].rec_inq;
+						current_rec->the_dat = _NclCreateVal(
+									NULL,
+									NULL,
+									Ncl_MultiDValData,
+									0,
+									tmp,
+									&missingv,
+									n_grid_dims,
+									grid_dim_sizes,
+									PERMANENT,
+									NULL,
+									nclTypefloatClass
+								);
+					}
 				}
-			}
-			if(current_rec->the_dat == NULL) {
-/*
-* Retrieves LRU cache MultiDVal specific to this grid type
-*/
-				current_rec->the_dat = _NclGetCacheVal(therec,step,current_rec);
-				if(current_rec->the_dat == NULL){
-					NhlPError(NhlFATAL,NhlEUNKNOWN,"NclGRIB: Unrecoverable caching error reading variable can't continue");
-					close(fd);
+				if(current_rec->the_dat == NULL) {
+	/*
+	* Retrieves LRU cache MultiDVal specific to this grid type
+	*/
+					current_rec->the_dat = _NclGetCacheVal(therec,step,current_rec);
+					if(current_rec->the_dat == NULL){
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"NclGRIB: Unrecoverable caching error reading variable can't continue");
+						fclose(fd);
+						NclFree(vbuf);
+						return(NULL);
+					}
+	/*
+	* grid and grid_gds will overwrite tmp
+	*/
+					tmp = current_rec->the_dat->multidval.val;
+					if((current_rec->has_gds)&&(current_rec->grid_number == 255)&&(current_rec->grid_gds_tbl_index > -1)) {
+						if(grid_gds[current_rec->grid_gds_tbl_index].un_pack != NULL) {
+							int_or_float = (*grid_gds[current_rec->grid_gds_tbl_index].un_pack)(fd,&tmp,&missing,current_rec,step);
+						}
+					} else if(current_rec->grid_tbl_index > -1) {
+						if(grid[current_rec->grid_tbl_index].un_pack != NULL) {
+							int_or_float = (*grid[current_rec->grid_tbl_index].un_pack)(fd,&tmp,&missing,current_rec,step);
+						}
+					} else if((current_rec->has_gds)&&(current_rec->grid_gds_tbl_index > -1)) {
+						if(grid_gds[current_rec->grid_gds_tbl_index].un_pack != NULL) {
+							int_or_float = (*grid_gds[current_rec->grid_gds_tbl_index].un_pack)(fd,&tmp,&missing,current_rec,step);
+						}
+					}
+					if(tmp != NULL) {
+						if(int_or_float) {
+							if(missing != NULL) {
+								missingv.intval = *(int*)missing;
+							} else {
+								missingv.intval = DEFAULT_MISSING_INT;
+							}
+	/*
+	* Needed to fix chicken/egg problem with respect to type and missing values
+	*/
+							_NclAdjustCacheTypeAndMissing(int_or_float,current_rec->the_dat,(missing == NULL) ? NULL : &missingv);
+
+							NclFree(missing);
+						} else {
+							if(missing != NULL) {
+								missingv.floatval = *(float*)missing;
+							} else {
+								missingv.floatval = DEFAULT_MISSING_FLOAT;
+							}
+	/*
+	* Needed to fix chicken/egg problem with respect to type and missing values
+	*/
+							_NclAdjustCacheTypeAndMissing(int_or_float,current_rec->the_dat,(missing == NULL) ? NULL : &missingv);
+
+							NclFree(missing);
+						}
+					} else {
+	/*
+	* Need to figure out what to do here
+	*/
+					}
+				} 
+				if(current_rec->the_dat != NULL) {
+					tmp_md = (NclMultiDValData)_NclReadSubSection((NclData)current_rec->the_dat,&sel_ptr,NULL);
+					memcpy((void*)&((char*)out_data)[data_offset],tmp_md->multidval.val,tmp_md->multidval.totalsize);
+					data_offset += tmp_md->multidval.totalsize;
+					if(tmp_md->obj.status != PERMANENT) {
+						_NclDestroyObj((NclObj)tmp_md);
+					}
+				} else {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"NclGRIB: Unrecoverable erro reading variable can't continue");
+					fclose(fd);
+					NclFree(vbuf);
 					return(NULL);
 				}
-/*
-* grid and grid_gds will overwrite tmp
-*/
-				tmp = current_rec->the_dat->multidval.val;
-				if((current_rec->has_gds)&&(current_rec->grid_number == 255)&&(current_rec->grid_gds_tbl_index > -1)) {
-					if(grid_gds[current_rec->grid_gds_tbl_index].un_pack != NULL) {
-						int_or_float = (*grid_gds[current_rec->grid_gds_tbl_index].un_pack)(fd,&tmp,&missing,current_rec,step);
-					}
-				} else if(current_rec->grid_tbl_index > -1) {
-					if(grid[current_rec->grid_tbl_index].un_pack != NULL) {
-						int_or_float = (*grid[current_rec->grid_tbl_index].un_pack)(fd,&tmp,&missing,current_rec,step);
-					}
-				} else if((current_rec->has_gds)&&(current_rec->grid_gds_tbl_index > -1)) {
-					if(grid_gds[current_rec->grid_gds_tbl_index].un_pack != NULL) {
-						int_or_float = (*grid_gds[current_rec->grid_gds_tbl_index].un_pack)(fd,&tmp,&missing,current_rec,step);
-					}
-				}
-				if(tmp != NULL) {
-					if(int_or_float) {
-						if(missing != NULL) {
-							missingv.intval = *(int*)missing;
-						} else {
-							missingv.intval = DEFAULT_MISSING_INT;
-						}
-/*
-* Needed to fix chicken/egg problem with respect to type and missing values
-*/
-						_NclAdjustCacheTypeAndMissing(int_or_float,current_rec->the_dat,(missing == NULL) ? NULL : &missingv);
 
-						NclFree(missing);
-					} else {
-						if(missing != NULL) {
-							missingv.floatval = *(float*)missing;
+				if(n_other_dims > 0 ) {	
+					current_index[n_other_dims-1] += stride[n_other_dims-1];
+					for(i = n_other_dims-1; i > 0 ; i--) {
+						if(current_index[i] > finish[i]) {
+							current_index[i] = start[i];
+							current_index[i-1] += stride[i-1];
 						} else {
-							missingv.floatval = DEFAULT_MISSING_FLOAT;
+							inc_done = 1;
 						}
-/*
-* Needed to fix chicken/egg problem with respect to type and missing values
-*/
-						_NclAdjustCacheTypeAndMissing(int_or_float,current_rec->the_dat,(missing == NULL) ? NULL : &missingv);
-
-						NclFree(missing);
+						if(inc_done) {
+							inc_done = 0;
+							break;
+						}
+					}
+					if(current_index[0] > finish[0]) {
+						done = 1;
 					}
 				} else {
-/*
-* Need to figure out what to do here
-*/
-				}
-			} 
-			if(current_rec->the_dat != NULL) {
-				tmp_md = (NclMultiDValData)_NclReadSubSection((NclData)current_rec->the_dat,&sel_ptr,NULL);
-				memcpy((void*)&((char*)out_data)[data_offset],tmp_md->multidval.val,tmp_md->multidval.totalsize);
-				data_offset += tmp_md->multidval.totalsize;
-				if(tmp_md->obj.status != PERMANENT) {
-					_NclDestroyObj((NclObj)tmp_md);
-				}
-			} else {
-				NhlPError(NhlFATAL,NhlEUNKNOWN,"NclGRIB: Unrecoverable erro reading variable can't continue");
-				close(fd);
-				return(NULL);
-			}
-
-			if(n_other_dims > 0 ) {	
-				current_index[n_other_dims-1] += stride[n_other_dims-1];
-				for(i = n_other_dims-1; i > 0 ; i--) {
-					if(current_index[i] > finish[i]) {
-						current_index[i] = start[i];
-						current_index[i-1] += stride[i-1];
-					} else {
-						inc_done = 1;
-					}
-					if(inc_done) {
-						inc_done = 0;
-						break;
-					}
-				}
-				if(current_index[0] > finish[0]) {
 					done = 1;
 				}
-			} else {
-				done = 1;
 			}
-		}
-		close(fd);
-		return(out_data);
-	} 
-	step = step->next;
-}
-NhlPError(NhlFATAL,NhlEUNKNOWN,"NclGRIB: Variable (%s) is not an element of file (%s)",NrmQuarkToString(thevar),NrmQuarkToString(rec->file_path_q));
+			fclose(fd);
+			NclFree(vbuf);
+			return(out_data);
+		} 
+		step = step->next;
+	}
+	NhlPError(NhlFATAL,NhlEUNKNOWN,"NclGRIB: Variable (%s) is not an element of file (%s)",NrmQuarkToString(thevar),NrmQuarkToString(rec->file_path_q));
 
-return(NULL);
+	return(NULL);
 }
 
 static NclFVarRec *GribGetCoordInfo

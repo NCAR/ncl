@@ -1084,22 +1084,22 @@ int	wr_status;
 		case 0:
 			NhlPError(NhlFATAL,NhlEUNKNOWN," A %s \"sigma coordinate tape\" has been detected.\n\t(MFTYP = %d), this is a non-standard CCM file.\n\tNCL only supports the type \"hybrid coordinate tape\"",(initial_iheader.MFTYP<100)?"model generated":"processor generated",initial_iheader.MFTYP);
 			NclFree(therec);
-			NclFree(vbuf);
 			fclose(fd);
+			NclFree(vbuf);
 			return(NULL);
 			break;
 		case 1:
 			NhlPError(NhlFATAL,NhlEUNKNOWN," A %s \"pressure coordinate tape\" has been detected.\n\t(MFTYP = %d), this is a non-standard CCM file.\n\tNCL only supports the type \"hybrid coordinate tape\"",(initial_iheader.MFTYP<100)?"model generated":"processor generated",initial_iheader.MFTYP);
 			NclFree(therec);
-			NclFree(vbuf);
 			fclose(fd);
+			NclFree(vbuf);
 			return(NULL);
 			break;
 		case 3:
 			NhlPError(NhlFATAL,NhlEUNKNOWN," A %s \"theta coordinate tape\" has been detected.\n\t(MFTYP = %d), this is a non-standard CCM file.\n\tNCL only supports the type \"hybrid coordinate tape\"",(initial_iheader.MFTYP<100)?"model generated":"processor generated",initial_iheader.MFTYP);
 			NclFree(therec);
-			NclFree(vbuf);
 			fclose(fd);
+			NclFree(vbuf);
 			return(NULL);
 			break;
 		case 4:
@@ -1107,23 +1107,23 @@ int	wr_status;
 		case 5:
 			NhlPError(NhlFATAL,NhlEUNKNOWN," A %s \"pressure coordinate tape\" has been detected.\n\t(MFTYP = %d), this is a non-standard CCM file.\n\tNCL only supports the type \"hybrid coordinate tape\"",(initial_iheader.MFTYP<100)?"model generated":"processor generated",initial_iheader.MFTYP);
 			NclFree(therec);
-			NclFree(vbuf);
 			fclose(fd);
+			NclFree(vbuf);
 			return(NULL);
 			break;
 		default:
 			NhlPError(NhlFATAL,NhlEUNKNOWN," A %s \"unknown tape\" has been detected.\n\t(MFTYP = %d), this is a non-standard CCM file.\n\tNCL only supports the type \"hybrid coordinate tape\"",(initial_iheader.MFTYP<100)?"model generated":"processor generated",initial_iheader.MFTYP);
 			NclFree(therec);
-			NclFree(vbuf);
 			fclose(fd);
+			NclFree(vbuf);
 			return(NULL);
 			break;
 		}
 		if(coff == -1) {
 			NclFree(therec);
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"Error opening CCM integer header for file (%s)",NrmQuarkToString(path));
-			NclFree(vbuf);
 					fclose(fd);
+			NclFree(vbuf);
 			return(NULL);
 		}
 
@@ -1148,8 +1148,8 @@ int	wr_status;
 		if(coff == -1) {
 			NclFree(therec);
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"Error opening CCM character header for file (%s)",NrmQuarkToString(path));
-			NclFree(vbuf);
 					fclose(fd);
+			NclFree(vbuf);
 			return(NULL);
 		}
 		cb = coff / BLOCK_SIZE;
@@ -1159,8 +1159,8 @@ int	wr_status;
 		if(coff == -1) {
 			NclFree(therec);
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"Error opening CCM real header for file (%s)",NrmQuarkToString(path));
-			NclFree(vbuf);
 					fclose(fd);
+			NclFree(vbuf);
 			return(NULL);
 		}
 		if((initial_iheader.MPLAT - initial_iheader.MPSIG)==(3*(2*initial_iheader.NLEV + 1))) {
@@ -1392,8 +1392,8 @@ int	wr_status;
 			default:
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"NclCCM: An incorrect value was detected suggesting an error in the CCM file (%s)",NrmQuarkToString(path));
 				NclFree(therec);
-			NclFree(vbuf);
 					fclose(fd);
+			NclFree(vbuf);
 				return(NULL);
 			}
 			therec->vars[i].var_info.dim_sizes[dim_num] = initial_iheader.NLON;
@@ -1412,8 +1412,8 @@ int	wr_status;
 			if((index < 1)||(index > initial_iheader.NOREC)) {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"NclCCM: An error occurred while indexing latitude data records. This file is not a vaild CCM history file");
 				NclFree(therec);
-			NclFree(vbuf);
 				fclose(fd);
+			NclFree(vbuf);
 				return(NULL);
 			}
 			therec->lat_rec_offsets[(index-1)] = coff;
@@ -1460,8 +1460,8 @@ int	wr_status;
 					if((index < 1)||(index > tmp_iheader.NOREC)) {
 						NhlPError(NhlFATAL,NhlEUNKNOWN,"NclCCM: An error occurred while indexing latitude data records. This file is not a vaild CCM history file");
 						NclFree(therec);
-			NclFree(vbuf);
 						fclose(fd);
+			NclFree(vbuf);
 						return(NULL);
 					}
 					therec->lat_rec_offsets[i*tmp_iheader.NOREC+(index-1)] = coff;
@@ -1501,8 +1501,8 @@ int	wr_status;
 				if(tmp_off == -1) {
 					NclFree(therec);
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"Error opening CCM character header for file (%s)",NrmQuarkToString(path));
-			NclFree(vbuf);
 					fclose(fd);
+			NclFree(vbuf);
 					return(NULL);
 				}
 				cb = tmp_off / BLOCK_SIZE;
@@ -1511,16 +1511,16 @@ int	wr_status;
 				if(tmp_off == -1) {
 					NclFree(therec);
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"Error opening CCM real header for file (%s)",NrmQuarkToString(path));
-			NclFree(vbuf);
 					fclose(fd);
+			NclFree(vbuf);
 					return(NULL);
 				}
 				if(!CompareHeaders(&initial_iheader,&initial_cheader,&initial_rheader,
 						    &tmp_iheader,&tmp_cheader,&tmp_rheader)) {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"Comparision of headers failed, headers for timestep number (%d) vary unacceptably from initial header, NCL doesn't handle this",i+1);
 					NclFree(therec);
-			NclFree(vbuf);
 					fclose(fd);
+			NclFree(vbuf);
 					return(NULL);
 
 				} else {
@@ -1563,8 +1563,8 @@ int	wr_status;
 /*
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"Error opening CCM character header for file (%s)",NrmQuarkToString(path));
 */
-			NclFree(vbuf);
 					fclose(fd);
+			NclFree(vbuf);
 					return(NULL);
 				}
 				cb = tmp_off / BLOCK_SIZE;
@@ -1573,16 +1573,16 @@ int	wr_status;
 				if(tmp_off == -1) {
 					NclFree(therec);
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"Error opening CCM real header for file (%s)",NrmQuarkToString(path));
-			NclFree(vbuf);
 					fclose(fd);
+			NclFree(vbuf);
 					return(NULL);
 				}
 				if(!CompareHeaders(&initial_iheader,&initial_cheader,&initial_rheader,
 						    &tmp_iheader,&tmp_cheader,&tmp_rheader)) {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"Comparision of headers failed, headers for timestep number (%d) vary unacceptably from initial header, NCL doesn't handle this",i+1);
 					NclFree(therec);
-			NclFree(vbuf);
 					fclose(fd);
+			NclFree(vbuf);
 					return(NULL);
 
 				} else {
@@ -1607,8 +1607,8 @@ int	wr_status;
 			fprintf(stdout,"%ld\n",therec->lat_rec_offsets[i]);
 		}
 */
-			NclFree(vbuf);
 		fclose(fd);
+			NclFree(vbuf);
 		return(therec);
 	} else if(fd <= 0) {
                 NhlPError(NhlFATAL,NhlEUNKNOWN,"NclCCM: Could not open (%s) check permissions",NrmQuarkToString(path));
