@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.22 1994-09-06 21:51:33 boote Exp $
+#      $Id: yMakefile,v 1.23 1994-10-04 01:02:11 boote Exp $
 #
 #########################################################################
 #									#
@@ -87,7 +87,7 @@ OBJS		= $(COBJS) $(FOBJS)
 LibraryTarget($(MYNAME),$(OBJS))
 BuildIncludes($(HDRS),ncarg/hlu,../..)
 InstallTarget($(HDRS),$(INSTALL_INC),$(HLUINCPATH))
-InstallTarget(hluresfile,$(INSTALL_INC),$(LIBNCARGPATH))
+InstallTarget(sysresfile,$(INSTALL_INC),$(LIBNCARGPATH))
 DependTarget($(CSRCS))
 
 

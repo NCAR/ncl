@@ -1,5 +1,5 @@
 /*
- *      $Id: App.h,v 1.1 1994-08-11 21:36:51 boote Exp $
+ *      $Id: App.h,v 1.2 1994-10-04 01:02:02 boote Exp $
  */
 /************************************************************************
 *									*
@@ -24,10 +24,13 @@
 
 #include <ncarg/hlu/Base.h>
 
-#define	NhlNusrAppDir	"usrAppDir"
-#define	NhlCusrAppDir	"UsrAppDir"
-#define	NhlNsysAppDir	"sysAppDir"
-#define	NhlCsysAppDir	"SysAppDir"
+#define	NhlNappUsrDir	"appUsrDir"
+#define	NhlCappUsrDir	"AppUsrDir"
+#define	NhlNappSysDir	"appSysDir"
+#define	NhlCappSysDir	"AppSysDir"
+
+#define NhlNappFileSuffix	"appFileSuffix"
+#define NhlCappFileSuffix	"AppFileSuffix"
 
 extern NhlLayerClass NhlappLayerClass;
 

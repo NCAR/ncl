@@ -1,5 +1,5 @@
 /*
- *      $Id: DataComm.c,v 1.15 1994-09-23 23:36:40 dbrown Exp $
+ *      $Id: DataComm.c,v 1.16 1994-10-04 01:02:07 boote Exp $
  */
 /************************************************************************
 *									*
@@ -768,6 +768,7 @@ CreateDataNode
 		ret = NhlVACreate(&dspecid,dil->base.name,oset->dataspec_class,
 							dcl->base.id,NULL);
 		dnode->dataspec = (NhlDataSpecLayer)_NhlGetLayer(dspecid);
+		dnode->dspechandle = NULL;
 		if((ret < NhlWARNING) || (dnode->dataspec == NULL)){
 			NhlPError(NhlFATAL,NhlEUNKNOWN,
 				"Unable to process data-dependent resources");
@@ -791,6 +792,7 @@ CreateDataNode
 		dclist->next = dsl->dataspec.dcomm_list;
 		dsl->dataspec.dcomm_list = dclist;
 		dnode->dataspec = dsl;
+		dnode->dspechandle = dclist;
 	}
 
 	return	dnode;
@@ -1249,6 +1251,47 @@ DataCommSetValuesHook
 }
 
 /*
+ * Function:	ReleaseDSpec
+ *
+ * Description:	Removes the given dcommid/res_name from the DComm list
+ *		in the DSpec layer.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	static
+ * Returns:	null
+ * Side Effect:	
+ */
+static void
+ReleaseDSpec
+#ifdef	NhlNeedProto
+(
+	NhlDataSpecLayer	dsl,
+	_NhlDCommList		dclist
+)
+#else
+(dsl,dclist)
+	NhlDataSpecLayer	dsl;
+	_NhlDCommList		dclist;
+#endif
+{
+	_NhlDCommList	*list = &dsl->dataspec.dcomm_list;
+
+	while(*list){
+		if(*list == dclist){
+			*list = dclist->next;
+			NhlFree(dclist);
+			break;
+		}
+		list = &(*list)->next;
+	}
+
+	return;
+}
+
+/*
  * Function:	FreeDataNode
  *
  * Description:	This fuction is used to free a DataNode.
@@ -1295,6 +1338,9 @@ FreeDataNode
 	 */
 	if(node->id != node->dataspec->base.id)
 		(void)NhlDestroy(node->dataspec->base.id);
+	else{
+		ReleaseDSpec(node->dataspec,node->dspechandle);
+	}
 	(void)NhlFree(node);
 
 	return;

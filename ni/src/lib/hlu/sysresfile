@@ -1,0 +1,31 @@
+!
+!      $Id: sysresfile,v 1.1 1994-10-04 01:02:10 boote Exp $
+!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!									!
+!			   Copyright (C)  1993				!
+!	     University Corporation for Atmospheric Research		!
+!			   All Rights Reserved				!
+!									!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!
+!	File:		sysresfile
+!
+!	Author:		Jeff W. Boote
+!			National Center for Atmospheric Research
+!			PO 3000, Boulder, Colorado
+!
+!	Date:		Mon Sep 19 17:35:07 MDT 1994
+!
+!	Description:	This file contains all the system wide resource
+!			defaults used by the hlu library.
+
+! The default system app resource file directory can be determined at the shell
+! % ncargpath sysappres
+!
+! To override this you can set the following resource.
+!App.AppSysDir:	/full/path/to/directory
+!
+! This can even be set on an application by application bases if the programmer
+! sets the name of the App object.
+!MyApp.AppSysDir:	different/dir/then/all/other/applications

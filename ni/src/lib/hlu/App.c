@@ -1,5 +1,5 @@
 /*
- *      $Id: App.c,v 1.3 1994-09-23 23:36:35 dbrown Exp $
+ *      $Id: App.c,v 1.4 1994-10-04 01:02:02 boote Exp $
  */
 /************************************************************************
 *									*
@@ -119,18 +119,17 @@ GetSysAppDir
 /* Resources */
 #define	Oset(field)	NhlOffset(NhlAppLayerRec,app.field)
 static NhlResource resources[] = {
-
 /* Begin-documented-resources */
-
-	{NhlNusrAppDir,NhlCusrAppDir,NhlTString,sizeof(NhlString),
+	{NhlNappUsrDir,NhlCappUsrDir,NhlTString,sizeof(NhlString),
 		Oset(usr_appdir),NhlTImmediate,(NhlPointer)"~",0,
 							(NhlFreeFunc)NhlFree},
-	{NhlNsysAppDir,NhlCsysAppDir,NhlTString,sizeof(NhlString),
+	{NhlNappSysDir,NhlCappSysDir,NhlTString,sizeof(NhlString),
 		Oset(sys_appdir),NhlTProcedure,(NhlPointer)GetSysAppDir,0,
 							(NhlFreeFunc)NhlFree},
-
+	{NhlNappFileSuffix,NhlCappFileSuffix,NhlTString,sizeof(NhlString),
+		Oset(file_suffix),NhlTImmediate,(NhlPointer)".res",0,
+							(NhlFreeFunc)NhlFree},
 /* End-documented-resources */
-
 	{_NhlNappMode,_NhlCappMode,NhlTInteger,sizeof(_NhlC_OR_F),
 		Oset(init_mode),NhlTImmediate,(NhlPointer)_NhlNONE,0,NULL},
 	{_NhlNdefApp,_NhlCdefApp,NhlTBoolean,sizeof(NhlBoolean),
@@ -172,6 +171,32 @@ NhlAppLayerClassRec NhlappLayerClassRec = {
 };
 
 NhlLayerClass NhlappLayerClass = (NhlLayerClass)&NhlappLayerClassRec;
+
+/*
+ * Function:	nhlfappclass
+ *
+ * Description:	fortran ref to this class
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+NhlLayerClass
+_NHLCALLF(nhlfappclass,NHLFAPPCLASS)
+#if	NhlNeedProto
+(
+	void
+)
+#else
+()
+#endif
+{
+	return NhlappLayerClass;
+}
 
 /*
  * Function:	InitBaseDB
@@ -280,6 +305,7 @@ AppLayerClassPartInitialize
 
 static NrmQuark	usrdirQ = NrmNULLQUARK;
 static NrmQuark	sysdirQ = NrmNULLQUARK;
+static NrmQuark	filesuffQ = NrmNULLQUARK;
 static _NhlC_OR_F lang_type = _NhlNONE;
 
 /*
@@ -309,8 +335,9 @@ AppClassInitialize
 	_NhlConvertersInitialize();
 	_NhlResourceListInitialize();
 
-	usrdirQ = NrmStringToQuark(NhlNusrAppDir);
-	sysdirQ = NrmStringToQuark(NhlNsysAppDir);
+	usrdirQ = NrmStringToQuark(NhlNappUsrDir);
+	sysdirQ = NrmStringToQuark(NhlNappSysDir);
+	filesuffQ = NrmStringToQuark(NhlNappFileSuffix);
 
 	return NhlNOERROR;
 }
@@ -387,11 +414,19 @@ AppInitialize
 	if(anew->app.no_appDB){
 		anew->app.usr_appdir = NULL;
 		anew->app.sys_appdir = NULL;
+		anew->app.file_suffix = NULL;
 		anew->app.appDB = NULL;
 	}
 	else{
-		cs = _NGGetNCARGEnv("sysresfile");
+		cs = anew->app.file_suffix;
+		anew->app.file_suffix = NhlMalloc((strlen(cs)+1)*sizeof(char));
+		if(!anew->app.file_suffix){
+			NhlPError(NhlFATAL,ENOMEM,NULL);
+			return NhlFATAL;
+		}
+		strcpy(anew->app.file_suffix,cs);
 
+		cs = _NGGetNCARGEnv("sysresfile");
 		if((void *)cs == (void *)NULL){
 			NhlPError(NhlWARNING,NhlEUNKNOWN,
 				"Unable to Get System Resource File Name?");
@@ -413,6 +448,7 @@ AppInitialize
 			strcpy(tname,anew->app.sys_appdir);
 			strcat(tname,_NhlPATHDELIMITER);
 			strcat(tname,anew->base.name);
+			strcat(tname,anew->app.file_suffix);
 			NrmCombineFileDB(tname,&anew->app.appDB,True);
 		}
 
@@ -437,6 +473,7 @@ AppInitialize
 			strcpy(tname,anew->app.usr_appdir);
 			strcat(tname,_NhlPATHDELIMITER);
 			strcat(tname,anew->base.name);
+			strcat(tname,anew->app.file_suffix);
 			NrmCombineFileDB(tname,&anew->app.appDB,True);
 		}
 	}
@@ -519,14 +556,20 @@ AppSetValues
 
 	if(np->usr_appdir != op->usr_appdir){
 		NhlPError(NhlWARNING,NhlEUNKNOWN,
-		"%s:%s is only settable at Create time.",func,NhlNusrAppDir);
+		"%s:%s is only settable at Create time.",func,NhlNappUsrDir);
 		np->usr_appdir = op->usr_appdir;
 		ret = NhlWARNING;
 	}
 	if(np->sys_appdir != op->sys_appdir){
 		NhlPError(NhlWARNING,NhlEUNKNOWN,
-		"%s:%s is only settable at Create time.",func,NhlNsysAppDir);
+		"%s:%s is only settable at Create time.",func,NhlNappSysDir);
 		np->sys_appdir = op->sys_appdir;
+		ret = NhlWARNING;
+	}
+	if(np->file_suffix != op->file_suffix){
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+		"%s:%s is only settable at Create time.",func,NhlNappFileSuffix);
+		np->file_suffix = op->file_suffix;
 		ret = NhlWARNING;
 	}
 	if(np->init_mode != op->init_mode){
@@ -606,6 +649,18 @@ AppGetValues
 			strcpy(*(NhlString*)args[i].value.ptrval,
 							alp->sys_appdir);
 		}
+		else if(args[i].quark == filesuffQ){
+			*(NhlString*)args[i].value.ptrval =
+				NhlMalloc((strlen(alp->file_suffix)+1) *
+								sizeof(char));
+			if(!*(NhlString*)args[i].value.ptrval){
+				NhlPError(NhlWARNING,ENOMEM,func);
+				ret = MIN(ret,NhlWARNING);
+				continue;
+			}
+			strcpy(*(NhlString*)args[i].value.ptrval,
+							alp->file_suffix);
+		}
 	}
 
 	return ret;
@@ -646,6 +701,7 @@ AppLayerDestroy
 
 	NhlFree(al->app.usr_appdir);
 	NhlFree(al->app.sys_appdir);
+	NhlFree(al->app.file_suffix);
 	NrmDestroyDB(al->app.appDB);
 
 	alc->app_class.num_app--;

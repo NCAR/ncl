@@ -1,5 +1,5 @@
 /*
- *      $Id: Create.c,v 1.10 1994-08-11 21:36:57 boote Exp $
+ *      $Id: Create.c,v 1.11 1994-10-04 01:02:05 boote Exp $
  */
 /************************************************************************
 *									*
@@ -293,7 +293,7 @@ _NhlCreate
 	int		parentid,	/* id# of parent		*/
 	_NhlArgList	args,		/* resources to set in instance	*/
 	int		nargs,		/* number of args		*/
-	NrmQuarkList	child		/* used to create managed child	*/
+	NrmQuarkList	*child		/* used to create managed child	*/
 )
 #else
 (pid, name, lc, parentid, args, nargs, child)
@@ -303,7 +303,7 @@ _NhlCreate
 	int		parentid;	/* id# of parent		*/
 	_NhlArgList	args;		/* resources to set in instance	*/
 	int		nargs;		/* number of args		*/
-	NrmQuarkList	child;		/* used to create managed child	*/
+	NrmQuarkList	*child;		/* used to create managed child	*/
 #endif
 {
 	char			func[] = "_NhlCreate";
@@ -1157,11 +1157,14 @@ CreateChild
 	int			num_args=0;
 	_NhlArg			args[_NhlMAXARGLIST];
 	NrmQuarkList		child=NULL;
+	NrmQuarkList		child_lists[_NhlMAXTREEDEPTH+1];
 	NhlLayerClass		plc = _NhlClass(parent);
 	_NhlChildResList	tresnode=NULL;
 	_NhlChildArgList	targnode=NULL;
 	NhlErrorTypes		ret=NhlNOERROR;
 	_NhlChildList		tchldnode=NULL;
+	NhlLayerClass		tplc,tclc;
+	NhlLayer		tpl;
 
 	if(_NhlIsObj(parent)){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -1184,22 +1187,46 @@ CreateChild
 	}
 
 	/*
-	 * set child to the list of resources that should be forwarded
+	 * set child_lists to the lists of resources that should be forwarded
+	 * Need to travers full instance tree until we reach the first
+	 * parent that doesn't forward resources.  That way, resources that
+	 * are forwarded threw multiple objects can be found.
 	 */
-	tresnode = plc->base_class.child_resources;
+	tplc = plc;
+	tclc = class;
+	tpl = parent;
+	child = NULL;
+	for(i=0;i < _NhlMAXTREEDEPTH;i++){
+		tresnode = tplc->base_class.child_resources;
 
-	while(tresnode != NULL){
-		if(tresnode->class == class){
-			child = tresnode->resources;
-			break;
+		while(tresnode != NULL){
+			if(tresnode->class == tclc){
+				child = tresnode->resources;
+				break;
+			}
+			tresnode = tresnode->next;
 		}
-		tresnode = tresnode->next;
-	}
 
-	if(child == NULL){
+		child_lists[i] = child;
+
+		/*
+		 * If child is Null, then we have reached the top of
+		 * the forwarded resources.
+		 */
+		if(!child)
+			break;
+
+		tpl = tpl->base.parent;
+		tclc = tplc;
+		tplc = tpl->base.layer_class;
+		child = NULL;
+	}
+	child_lists[_NhlMAXTREEDEPTH] = NULL;
+
+	if(child_lists[0] == NULL){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
 		"%s NhlLayerClass is not a registered child class of %s",
-				_NhlClassName(class),_NhlClassName(class));
+				_NhlClassName(class),_NhlClassName(plc));
 		return NhlFATAL;
 	}
 
@@ -1247,7 +1274,8 @@ CreateChild
 	/*
 	 * Create the child
 	 */
-	ret = _NhlCreate(pid,name,class,parent->base.id,args,num_args,child);
+	ret = _NhlCreate(pid,name,class,parent->base.id,args,num_args,
+								child_lists);
 
 	/*
 	 * fill in the child node infomation and add it into the children

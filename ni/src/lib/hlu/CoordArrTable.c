@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrTable.c,v 1.18 1994-09-23 23:36:38 dbrown Exp $
+ *      $Id: CoordArrTable.c,v 1.19 1994-10-04 01:02:04 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1104,16 +1104,6 @@ CoordArrTableInitialize
 		cat->ytypeQ = NrmStringToQuark(cat->ytype);
 		cat->ytype = NrmQuarkToString(cat->ytypeQ);
 
-		if(cat->xsize == 0){
-			cat->xsize = GetTypeSize(cat->xtypeQ);
-			if(cat->xsize == 0){
-				NhlPError(NhlFATAL,NhlEUNKNOWN,
-					"%s:%s must be set if %s is %s",func,
-					NhlNctXElementSize,NhlNctXTableType,
-								cat->xtype);
-				return NhlFATAL;
-			}
-		}
 		if(cat->ysize == 0){
 			cat->ysize = GetTypeSize(cat->ytypeQ);
 			if(cat->ysize == 0){

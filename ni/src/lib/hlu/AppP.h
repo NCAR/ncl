@@ -1,5 +1,5 @@
 /*
- *      $Id: AppP.h,v 1.1 1994-08-11 21:36:53 boote Exp $
+ *      $Id: AppP.h,v 1.2 1994-10-04 01:02:03 boote Exp $
  */
 /************************************************************************
 *									*
@@ -32,6 +32,7 @@ typedef struct _NhlAppLayerPart {
 	/* public resource fields */
 	NhlString	usr_appdir;
 	NhlString	sys_appdir;
+	NhlString	file_suffix;
 
 	/* private fields */
 	_NhlC_OR_F	init_mode;

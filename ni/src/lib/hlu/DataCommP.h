@@ -1,5 +1,5 @@
 /*
- *      $Id: DataCommP.h,v 1.5 1994-05-12 23:50:59 boote Exp $
+ *      $Id: DataCommP.h,v 1.6 1994-10-04 01:02:08 boote Exp $
  */
 /************************************************************************
 *									*
@@ -42,12 +42,15 @@ typedef struct _NhlDataOffsetRec _NhlDataOffsetRec, *_NhlDataOffset;
 typedef struct _NhlDataNodeRec _NhlDataNodeRec, *_NhlDataNodePtr;
 typedef struct _NhlInternalDataListRec _NhlInternDataListRec, *_NhlInternDataList;
 
+typedef struct _NhlDCommListRec _NhlDCommListRec, *_NhlDCommList;
+
 struct _NhlDataNodeRec {
 	int			id;		/* id used to add/remove*/
 	NhlDataSpecLayer	dataspec;	/* DataSpec object	*/
 	NrmQuark		type;		/* Type to convert to	*/
 	int			item;		/* Data Item		*/
-	_NhlDHandle		dhandle;	/* connection to data	*/
+	_NhlDHandle		dhandle;	/* connection to datamgr*/
+	_NhlDCommList		dspechandle;	/* connection to dspec	*/
 };
 
 struct _NhlInternalDataListRec{
@@ -106,7 +109,6 @@ extern NhlDataCommLayerClassRec NhldataCommLayerClassRec;
  * DataSpec definitions
  */
 
-typedef struct _NhlDCommListRec _NhlDCommListRec, *_NhlDCommList;
 
 struct _NhlDCommListRec{
 	int		dcommid;

@@ -1,5 +1,5 @@
 /*
- *      $Id: ResourcesP.h,v 1.6 1994-05-06 18:22:46 ethan Exp $
+ *      $Id: ResourcesP.h,v 1.7 1994-10-04 01:02:09 boote Exp $
  */
 /************************************************************************
 *									*
@@ -54,7 +54,7 @@ extern NhlErrorTypes _NhlGetResources(
 	NhlLayer		l,	/* layer to set resources of	*/
 	_NhlArgList		args,	/* args to override res defaults*/
 	int			num_args,/* number of args		*/
-	NrmQuarkList		child	/* layer is auto-managed chld	*/
+	NrmQuarkList		*child	/* layer is auto-managed chld	*/
 #endif
 );
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: Resources.c,v 1.12 1994-08-16 13:59:50 boote Exp $
+ *      $Id: Resources.c,v 1.13 1994-10-04 01:02:08 boote Exp $
  */
 /************************************************************************
 *									*
@@ -297,7 +297,7 @@ GetResources
 	int			num_res,/* number of resources		*/
 	_NhlArgList		args,	/* args to override defaults	*/
 	int			num_args,/* number of args		*/
-	NrmQuarkList		child	/* look at parent's DB level too*/
+	NrmQuarkList		*child	/* look at parent's DB level too*/
 )
 #else
 (context,resdb,base,nameQ,classQ,resources,num_res,args,num_args,child)
@@ -310,7 +310,7 @@ GetResources
 	int			num_res;/* number of resources		*/
 	_NhlArgList		args;	/* args to override defaults	*/
 	int			num_args;/* number of args		*/
-	NrmQuarkList		child;	/* look at parent's DB level too*/
+	NrmQuarkList		*child;	/* look at parent's DB level too*/
 #endif
 {
 	register int	i,j;
@@ -321,9 +321,6 @@ GetResources
 	NrmHashTable	stackslist[_NhlMAXRESLIST];
 	NrmHashTable	*slist = stackslist;
 	int		slistlen = _NhlMAXRESLIST;
-	NrmHashTable	Pstackslist[_NhlMAXRESLIST];
-	NrmHashTable	*Pslist = Pstackslist;
-	int		Pslistlen = _NhlMAXRESLIST;
 
 	/* Mark each resource as not found */
 	memset((char *)resfound,0, (int)(num_res * sizeof(NhlBoolean)));
@@ -402,32 +399,6 @@ GetResources
 		if(slist == NULL)
 			return NhlFATAL;
 	}
-	if(child != NULL){
-		NrmQuark *tquark;
-
-		/*
-		 * remove last quark from each list because the resources
-		 * should look as if they are actually resources of the
-		 * parent.
-		 */
-		/* SUPPRESS 570 */
-		for(tquark = nameQ;*(tquark+1) != NrmNULLQUARK;tquark++);
-		*tquark = NrmNULLQUARK;
-		/* SUPPRESS 570 */
-		for(tquark = classQ;*(tquark+1) != NrmNULLQUARK;tquark++);
-		*tquark = NrmNULLQUARK;
-		while(!NrmQGetSearchList(resdb,nameQ,classQ,Pslist,Pslistlen)){
-			if(Pslist == Pstackslist)
-				Pslist = NULL;
-
-			Pslistlen *= 2;
-			Pslist = (NrmHashTable *)NhlRealloc(Pslist,
-					sizeof(NrmHashTable) * Pslistlen);
-			if(Pslist == NULL)
-				return NhlFATAL;
-		}
-	}
-
 
 	for (i=0; i < num_res; i++){
 
@@ -494,17 +465,41 @@ GetResources
 		 * Set resources via Nrm database at parents level
 		 * As long as the resource should be forwarded.
 		 */
-		if((child != NULL) && NrmQinQList(child,resources[i].nrm_name)){
-			NrmValue	from, to;
-			NrmQuark	rdbtype;
+		if(child != NULL){
+			NrmQuark	lname[_NhlMAXTREEDEPTH];
+			NrmQuark	lclass[_NhlMAXTREEDEPTH];
+			int		tint;
+			int		tree_len;
 
-			/*
-			 * if appdb is being used try there first.
-			 */
-			if(NrmGetQResFromList(Pslist,resources[i].nrm_name,
-					resources[i].nrm_class,&rdbtype,&from)){
+			tree_len = 0;
+			while(nameQ[tree_len]) tree_len++;
 
-				if(rdbtype != resources[i].nrm_type){
+			memcpy(lname,nameQ,(tree_len+1)*sizeof(NrmQuark));
+			memcpy(lclass,classQ,(tree_len+1)*sizeof(NrmQuark));
+			for(tint=0;(tint < tree_len-1) && child[tint] &&
+				NrmQinQList(child[tint],resources[i].nrm_name);
+									tint++){
+
+				NrmValue	from, to;
+				NrmQuark	rdbtype;
+
+				/*
+				 * remove last Q from lname/lclass:
+				 * Retrieve resource as if it belongs to the
+				 * parent level.
+				 * retrieve resouce using NrmQGetResource.
+				 * 
+				 */
+				lname[tree_len-tint] = NrmNULLQUARK;
+				lclass[tree_len-tint] = NrmNULLQUARK;
+				lname[tree_len-1-tint] = resources[i].nrm_name;
+				lclass[tree_len-1-tint] =resources[i].nrm_class;
+
+
+				if(NrmQGetResource(resdb,lname,lclass,&rdbtype,
+									&from)){
+
+					if(rdbtype != resources[i].nrm_type){
 
 					to.size = resources[i].nrm_size;
 					to.data.ptrval =(NhlPointer)(base +
@@ -516,7 +511,7 @@ GetResources
 					
 					if(lret == NhlNOERROR){
 						resfound[i] = True;
-						continue;
+						continue;continue;
 					}
 					/*
 					 * unspecified error - let res-default
@@ -529,10 +524,10 @@ GetResources
 					NrmNameToString(resources[i].nrm_name));
 
 					ret = MIN(NhlINFO,ret);
-				}
-				else{
+					}
+					else{
 
-				/* no type conversion needed */
+					/* no type conversion needed */
 
 					if(rdbtype == QString){
 						*(NhlString *)
@@ -546,7 +541,8 @@ GetResources
 							resources[i].nrm_size);
 					}
 					resfound[i] = True;
-					continue;
+					continue;continue;
+					}
 				}
 			}
 		}
@@ -692,8 +688,6 @@ GetResources
 
 	if(slist != stackslist)
 		(void)NhlFree(slist);
-	if(Pslist != Pstackslist)
-		(void)NhlFree(Pslist);
 	return(ret);
 }
 
@@ -713,13 +707,13 @@ GetResources
  */
 NhlErrorTypes
 _NhlGetResources
-#if	__STDC__
+#if	NhlNeedProto
 (
 	_NhlConvertContext	context,
 	NhlLayer		l,	/* layer to set resources of	*/
 	_NhlArgList		args,	/* args to override res defaults*/
 	int			num_args,/* number of args		*/
-	NrmQuarkList		child	/* layer is auto-managed chld	*/
+	NrmQuarkList		*child	/* layer is auto-managed chld	*/
 )
 #else
 (context,l,args,num_args,child)
@@ -727,7 +721,7 @@ _NhlGetResources
 	NhlLayer		l;	/* layer to set resources of	*/
 	_NhlArgList		args;	/* args to override res defaults*/
 	int			num_args;/* number of args		*/
-	NrmQuarkList		child;	/* layer is auto-managed chld	*/
+	NrmQuarkList		*child;	/* layer is auto-managed chld	*/
 #endif
 {
 	NrmQuark nameQ[_NhlMAXTREEDEPTH], classQ[_NhlMAXTREEDEPTH];
