@@ -1,5 +1,5 @@
 C
-C      $Id: vc07f.f,v 1.3 1997-05-22 17:15:11 haley Exp $
+C      $Id: vc07f.f,v 1.4 1999-03-18 17:17:58 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -37,7 +37,7 @@ C
       integer i, j
       integer appid, wid, cnid, vcid, mpid
       integer vfield, sfield
-      integer rlist, len_dims(2)
+      integer grlist, rlist, len_dims(2)
       real U(NSIZE,MSIZE),V(NSIZE,MSIZE),P(NSIZE,MSIZE)
       integer ithin(NROWS)
       data ithin /90,15,5,5,4,4,3,3,2,2,2/
