@@ -1,15 +1,12 @@
-
-
-
 /*
- *      $Id: AddHLUObjs.c,v 1.17 2000-06-28 19:05:50 dbrown Exp $
+ *      $Id: AddHLUObjs.c,v 1.18 2003-02-27 18:15:27 grubin Exp $
  */
 /************************************************************************
-*									*
-*			     Copyright (C)  1994			*
-*	     University Corporation for Atmospheric Research		*
-*			     All Rights Reserved			*
-*									*
+*                                                                       *
+*			     Copyright (C)  1994                                    *
+*	     University Corporation for Atmospheric Research                *
+*			     All Rights Reserved                                    *
+*									                                    *
 ************************************************************************/
 /*
  *	File:		AddHLUObjs.c
@@ -22,6 +19,7 @@
  *
  *	Description:	
  */
+
 #ifdef __cpluplus
 extern "C" {
 #endif
@@ -55,6 +53,7 @@ extern NhlClass NhlmapPlotClass;
 extern NhlClass NhlappClass;
 extern NhlClass NhlannoManagerClass;
 extern NhlClass NhlpsWorkstationClass;
+extern NhlClass NhlpdfWorkstationClass;
 extern NhlClass NhlvectorPlotClass;
 extern NhlClass NhlvectorFieldClass;
 extern NhlClass NhlstreamlinePlotClass;
@@ -83,6 +82,7 @@ void _NclAddHLUObjs
 	_NclAddSingleObj(NhlappClass->base_class.class_name,NhlappClass);
 	_NclAddSingleObj(NhlannoManagerClass->base_class.class_name,NhlannoManagerClass);
 	_NclAddSingleObj(NhlpsWorkstationClass->base_class.class_name,NhlpsWorkstationClass);
+	_NclAddSingleObj(NhlpdfWorkstationClass->base_class.class_name, NhlpdfWorkstationClass);
 	_NclAddSingleObj(NhllogLinPlotClass->base_class.class_name,NhllogLinPlotClass);
 	_NclAddSingleObj(NhlirregularPlotClass->base_class.class_name,NhlirregularPlotClass);
 	_NclAddSingleObj(NhlvectorPlotClass->base_class.class_name,NhlvectorPlotClass);
