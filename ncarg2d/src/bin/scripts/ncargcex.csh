@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ncargcex.csh,v 1.14 1994-08-11 19:15:43 haley Exp $
+#	$Id: ncargcex.csh,v 1.15 1994-08-18 13:42:26 haley Exp $
 #
 
 #********************#
@@ -265,6 +265,7 @@ while ($#argv > 0)
             case "23":
             case "26":
             case "29":
+                unset ncgmfile
                 set psfile
             breaksw
 
@@ -272,6 +273,7 @@ while ($#argv > 0)
             case "24":
             case "27":
             case "30":
+                unset ncgmfile
                 set epsfile
             breaksw
 
@@ -279,6 +281,7 @@ while ($#argv > 0)
             case "25":
             case "28":
             case "31":
+                unset ncgmfile
                 set epsifile
             breaksw
 
@@ -344,6 +347,7 @@ switch($name)
     case c_pgkex19:
     case c_pgkex20:
     case c_pgkex21:
+        unset ncgmfile
         set graphic_type = "ps"
         set default_file = "gmeta1.ps"
         set message = "PostScript file is named"
