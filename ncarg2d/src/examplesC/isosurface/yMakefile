@@ -1,10 +1,10 @@
 #
-#	$Id: yMakefile,v 1.4 1994-10-31 03:43:37 haley Exp $
+#	$Id: yMakefile,v 1.5 1994-10-31 14:59:50 haley Exp $
 #
 
-EXAMPLES = c_fispwrzi.c c_fisissrf.c c_tisosr.c
+EXAMPLES = c_fispwrzi.c c_fisissrf.c
 
-TESTS = c_tpwrzi.c
+TESTS = c_tpwrzi.c c_tisosr.c
 
 
 InstallTarget($(EXAMPLES),$(INSTALL_LIB),$(EXAMPLESPATH))
