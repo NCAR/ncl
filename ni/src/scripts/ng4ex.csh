@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ng4ex.csh,v 1.5 2003-03-04 15:54:09 haley Exp $
+#   $Id: ng4ex.csh,v 1.6 2003-03-16 02:00:46 haley Exp $
 #
 #######################################################################
 #                                                                     #
@@ -979,7 +979,7 @@ switch($generic_name)
     case basic07:
         echo ""
         echo "This example was set up to display the output to an"
-        echo "X11 window, an NCGM, and a PostScript workstation."
+        echo "X11 window, an NCGM, a PDF, and a PostScript workstation."
         echo ""
     breaksw
 
