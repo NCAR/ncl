@@ -1,5 +1,5 @@
 /*
- *      $Id: NcgmWorkstation.c,v 1.14 1995-02-23 16:47:19 haley Exp $
+ *      $Id: NcgmWorkstation.c,v 1.15 1995-03-06 06:03:31 boote Exp $
  */
 /************************************************************************
 *									*
@@ -100,7 +100,6 @@ static NhlErrorTypes NcgmWorkstationOpen(
 * with the class part initialize function.
 */
 static _NhlNcgmStatus ncgm_is_initialized = _NhlUNINITED;
-static int default_conid = NCGM_DEFAULT_CONID;
 
 NhlNcgmWorkstationLayerClassRec NhlncgmWorkstationLayerClassRec = {
         {
@@ -207,6 +206,7 @@ static NhlErrorTypes NcgmWorkstationInitialize
 	NhlNcgmWorkstationLayerClass wclass = (NhlNcgmWorkstationLayerClass)class;
 	NhlNcgmWorkstationLayer	wnew = (NhlNcgmWorkstationLayer) new;
 	NhlNcgmWorkstationLayer	wreq = (NhlNcgmWorkstationLayer) req;
+	int default_conid = NCGM_DEFAULT_CONID;
 
 
 
@@ -214,9 +214,17 @@ static NhlErrorTypes NcgmWorkstationInitialize
 			(char*)NhlMalloc(strlen(wreq->ncgm.meta_name) + 1);
 	strcpy(wnew->ncgm.meta_name,wreq->ncgm.meta_name);
 
+	while(1){
+		int	opn, ierr;
+		_NHLCALLF(nhl_finqunit,NHL_FINQUNIT)(&default_conid,&opn,&ierr);
+		if(!opn)
+			break;
+		default_conid++;
+	}
+
 	if(*(wclass->ncgm_class.cgm_inited) == _NhlUNINITED){
 		wnew->work.gkswkstype = NCGM_WORKSTATION_TYPE;
-		wnew->work.gkswksconid = default_conid++;
+		wnew->work.gkswksconid = default_conid;
 		*(wclass->ncgm_class.cgm_inited) = _NhlINITED;
 		return(NhlNOERROR);
 	} else if( *(wclass->ncgm_class.cgm_inited) == _NhlINITED) {

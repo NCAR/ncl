@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.28 1995-03-03 20:25:13 dbrown Exp $
+ *      $Id: Workstation.c,v 1.29 1995-03-06 06:03:32 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1571,7 +1571,7 @@ DrawChildren
  * Returns:	
  * Side Effect:	
  */
-NhlErrorTypes
+static NhlErrorTypes
 WorkstationDraw
 #if	NhlNeedProto
 (
