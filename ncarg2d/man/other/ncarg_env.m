@@ -61,6 +61,9 @@ CGM output is directed to.
 \fBNCARG_GKS_PSOUTPUT\fP allows you to specify what file any PostScript
 output from NCAR GKS is directed to (stdout is allowed).
 .sp
+\fBNCARG_GKS_PDFOUTPUT\fP allows you to specify what file any PDF
+output from NCAR GKS is directed to (stdout is allowed).
+.sp
 \fBNCARG_GRAPHCAP\fP, if set, indicates the default NCAR Graphics
 graphcap to be used.
 .sp

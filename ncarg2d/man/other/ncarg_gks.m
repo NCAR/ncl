@@ -12,6 +12,9 @@ CGM output is directed to.
 \fBNCARG_GKS_PSOUTPUT\fP allows you to specify what file any PostScript
 output from NCAR GKS is directed to (stdout is allowed).
 .sp
+\fBNCARG_GKS_PDFOUTPUT\fP allows you to specify what file any PDF
+output from NCAR GKS is directed to (stdout is allowed).
+.sp
 \fBNCARG_GKS_GENCGM\fP allows you to request that the NCAR GKS
 package generate binary encoded CGM rather than NCGM (the NCAR 
 private encoding of binary encoded CGM).
@@ -76,6 +79,27 @@ setenv NCARG_GKS_PSOUTPUT stdout
 .in -1.0i
 .sp
 causes all PostScript output to be written to standard out.
+.sp
+.SH \fBNCARG_GKS_PDFOUTPUT\fP
+.sp
+By default, PDF output is written to "gmetaNN.pdf"  where "NN" is
+the NCAR GKS workstation ID used in the call to GOPWK to open the
+workstation.  Setting NCARG_GKS_PDFOUTPUT will override all defaults
+and write any PDF output to the designated file.
+.sp
+\fIExamples\fP:
+.sp
+.in +1.0i
+setenv NCARG_GKS_PDFOUTPUT myfile
+.in -1.0i
+.sp
+causes all PDF output to be written to "myfile".
+.sp
+.in +1.0i
+setenv NCARG_GKS_PDFOUTPUT stdout
+.in -1.0i
+.sp
+causes all PDF output to be written to standard out.
 .sp
 .in +1.0i
 .SH \fBNCARG_GKS_GENCGM\fP

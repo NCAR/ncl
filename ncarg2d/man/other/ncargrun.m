@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncargrun.m,v 1.13 2002-06-05 22:02:19 haley Exp $
+.\"	$Id: ncargrun.m,v 1.14 2003-02-27 17:51:59 haley Exp $
 .\"
 .TH NCARGRUN 1NCARG "JUNE 1988" NCAR "NCAR GRAPHICS"
 .SH NAME
@@ -15,7 +15,8 @@ is a script that invokes "program-name", which uses the NCAR GKS
 library, and applies the specified options.
 .LP
 Prior to running your program, this script sets the environment variables
-NCARG_GKS_OUTPUT and NCARG_GKS_PSOUTPUT to produce the desired effect.
+NCARG_GKS_OUTPUT, NCARG_GKS_PSOUTPUT, and NCARG_GKS_PDFOUTPUT to produce the
+desired effect.
 .SH OPTIONS
 .BI \-o " " "filename"
 
