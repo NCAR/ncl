@@ -1,5 +1,5 @@
 /*
- *      $Id: hlu.h,v 1.12 1994-02-18 02:55:11 boote Exp $
+ *      $Id: hlu.h,v 1.13 1994-03-23 15:27:35 boote Exp $
  */
 /************************************************************************
 *									*
@@ -161,12 +161,7 @@ typedef struct _NhlLayerClassRec *NhlLayerClass;
 
 /* These are here because they needs defs from above. */
 #include <ncarg/hlu/Error.h>
-/*
- * Put this in AFTER Development so whole lib doesn't recompile for changes
- */
-#ifdef	NOTYET
 #include <ncarg/hlu/ResList.h>
-#endif
 
 /*
  * These functions are used to create and destroy NhlGenArray description

@@ -1,5 +1,5 @@
 /*
- *      $Id: GetValues.c,v 1.6 1994-02-18 17:19:36 boote Exp $
+ *      $Id: GetValues.c,v 1.7 1994-03-23 15:27:25 boote Exp $
  */
 /************************************************************************
 *									*
@@ -425,7 +425,8 @@ NhlGetValues
 			}
 
 			/*
-			 * if converted to a string - copy memory.
+			 * if converted to a string - copy memory since we
+			 * want the user to own it.
 			 */
 			if(args[i].type == stringQ){
 				NhlString	tstr =

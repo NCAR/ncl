@@ -1,5 +1,5 @@
 /*
- *      $Id: Create.c,v 1.6 1994-02-18 02:54:03 boote Exp $
+ *      $Id: Create.c,v 1.7 1994-03-23 15:27:22 boote Exp $
  */
 /************************************************************************
 *									*
@@ -569,7 +569,7 @@ _NhlCreate
  * Side Effect:	
  */
 /*VARARGS4*/
-NhlDOCTAG(NhlCreate)
+NhlDOCTAG(NhlVACreate)
 NhlErrorTypes
 NhlVACreate
 #if	NeedVarArgProto
@@ -633,6 +633,7 @@ NhlVACreate
  * Returns:	valid id of created layer instance - a negative number on error.
  * Side Effect:	
  */
+NhlDOCTAG(NhlCreate)
 NhlErrorTypes
 NhlCreate
 #if	__STDC__

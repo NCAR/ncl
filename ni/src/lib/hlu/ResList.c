@@ -1,5 +1,5 @@
 /*
- *      $Id: ResList.c,v 1.2 1994-02-18 02:54:43 boote Exp $
+ *      $Id: ResList.c,v 1.3 1994-03-23 15:27:28 boote Exp $
  */
 /************************************************************************
 *									*
@@ -34,6 +34,8 @@ static NrmQuark	stringQ;
 static NrmQuark	genQ;
 static NrmQuark	expMDQ;
 static NrmQuark	expMDTypeQ;
+static NrmQuark	expQ;
+static NrmQuark	expTypeQ;
 
 /*
  * Function:	GetHead
@@ -1151,7 +1153,7 @@ CvtGenToExpMDArray
 
 	if(nargs != 0){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
-			"CvtGenToExpArray:Called w/improper number of args");
+			"CvtGenToExpMDArray:Called w/improper number of args");
 		to->size = 0;
 		return NhlFATAL;
 	}
@@ -1181,7 +1183,7 @@ CvtGenToExpMDArray
 	*exp->data = gen->data;
 	if(!gen->my_data){
 		NhlPError(NhlWARNING,NhlEUNKNOWN,
-	"CvtGenToExpArray:Returning Pointer to Internal Data - Bad Things!");
+	"CvtGenToExpMDArray:Returning Pointer to Internal Data - Bad Things!");
 		ret = NhlWARNING;
 	}
 	/* give ownership to exp */
@@ -1250,6 +1252,45 @@ NhlRLGetMDArray
 	else
 		return NhlFATAL;
 }
+
+/*
+ * Function:	CopyToArg
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+static void
+CopyToArg
+#if	NhlNeedProto
+(
+	NhlPointer	src,
+	_NhlArgVal	*dst,
+	unsigned int	size
+)
+#else
+(src,dst,size)
+	NhlPointer	src;
+	_NhlArgVal	*dst;
+	unsigned int	size;
+#endif
+{ 
+    if      (size == sizeof(long)) dst->lngval = *(long*)src;
+    else if (size == sizeof(short)) dst->shrtval = *(short*)src;
+    else if (size == sizeof(NhlPointer)) dst->ptrval = *(NhlPointer*)src;
+    else if (size == sizeof(char))	dst->charval = *(char*)src;
+    else if (size == sizeof(char*))	dst->strval = *(char**)src;
+    else if (size == sizeof(_NhlArgVal)) *dst = *(_NhlArgVal*)src;
+    else
+        memcpy((NhlPointer)dst,(NhlPointer)&src,size);
+}
+
 
 /*
  * Function:	CvtGenToExpTypeMDArray
@@ -1325,8 +1366,8 @@ CvtGenToExpTypeMDArray
 		fromdata = gen->data;
 
 		for(i=0;i < gen->num_elements;i++){
-			fromval.data.ptrval = *(NhlPointer*)
-						(fromdata + (gen->size * i));
+			CopyToArg((NhlPointer)(fromdata + (gen->size * i)),
+						&fromval.data,gen->size);
 			fromval.size = gen->size;
 			toval.data.ptrval = (NhlPointer)
 						(todata + (exp->size_req * i));
@@ -1411,7 +1452,7 @@ NhlRLGetMDTypeArray
 	NhlString	name,
 	NrmQuark	type,
 	unsigned int	size,
-	void		**data,
+	NhlPointer	*data,
 	int		*num_dimensions,
 	int		**len_dimensions
 )
@@ -1421,7 +1462,7 @@ NhlRLGetMDTypeArray
 	NhlString	name;
 	NrmQuark	type;
 	unsigned int	size;
-	void		**data;
+	NhlPointer	*data;
 	int		*num_dimensions;
 	int		**len_dimensions;
 #endif
@@ -1527,12 +1568,161 @@ NhlRLGetMDFloatArray
 			(NhlPointer*)data,num_dimensions,len_dimensions);
 }
 
-#ifdef	NOTYET
+/*
+ * Function:	CvtGenToExpArray
+ *
+ * Description:	This function is used to convert a "gen" array to an "exp"
+ *		array.  This is how the addresses the user passed in actually
+ *		get set with the data in the "gen" array.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	static
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+/*ARGSUSED*/
+static NhlErrorTypes
+CvtGenToExpArray
+#if	NhlNeedProto
+(
+	NrmValue		*from,
+	NrmValue		*to,
+	NhlConvertArgList	args,
+	int			nargs
+)
+#else
+(from,to,args,nargs)
+	NrmValue		*from;
+	NrmValue		*to;
+	NhlConvertArgList	args;
+	int			nargs;
+#endif
+{
+	char		*error_lead = "CvtGenToExpArray";
+	NhlErrorTypes	ret = NhlNOERROR;
+	NhlGenArray	gen;
+	_NhlExpArray	exp;
+	int		i;
+	NhlString	type;
+
+	if(nargs != 0){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			"%s:Called w/improper number of args",error_lead);
+		to->size = 0;
+		return NhlFATAL;
+	}
+
+	gen = (NhlGenArray)from->data.ptrval;
+	exp = (_NhlExpArray)to->data.ptrval;
+
+	if(gen->num_dimensions == exp->num_dim_req)
+		for(i=0;i < exp->num_dim_req;i++)
+			(*exp->len_dimensions)[i] = gen->len_dimensions[i];
+	else{
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+	"%s:Array resource has %d dimensions:Can't convert to %d dimensions",
+			error_lead,gen->num_dimensions,exp->num_dim_req);
+		to->size = 0;
+		return NhlFATAL;
+	}
+	type = NrmQuarkToString(gen->typeQ);
+	*exp->type = NhlMalloc(strlen(type) + 1);
+	strcpy(*exp->type,type);
+	*exp->size = gen->size;
+	*exp->data = gen->data;
+	if(!gen->my_data){
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+			"%s:Returning Pointer to Internal Data - Bad Things!",
+								error_lead);
+		ret = NhlWARNING;
+	}
+	/* give ownership to exp */
+	gen->my_data = False;
+
+	return ret;
+}
+
+/*
+ * Function:	NhlRLGetDimArray
+ *
+ * Description:	This function is used to retrieve a (N)D array resource into the
+ *		address specified.
+ *		This may turn into a public function at some point if it is
+ *		useful.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	global
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+static NhlErrorTypes
+NhlRLGetDimArray
+#if	NhlNeedProto
+(
+	int		id,
+	NhlString	name,
+	NhlPointer	*data,
+	NhlString	*type,
+	unsigned int	*size,
+	int		num_dim,		/* IN */
+	int		**len_dimensions
+)
+#else
+(id,name,data,type,size,num_dim,len_dimensions)
+	int		id;
+	NhlString	name;
+	NhlPointer	*data;
+	NhlString	*type;
+	unsigned int	*size;
+	int		num_dim;		/* IN */
+	int		**len_dimensions;
+#endif
+{
+	_NhlExpArray	exp = NULL;
+	_NhlArgVal	expval;
+	
+	exp = NhlMalloc(sizeof(_NhlExpArrayRec));
+	if(exp == NULL){
+		NhlPError(NhlFATAL,ENOMEM,NULL);
+		return NhlFATAL;
+	}
+
+	exp->num_dim_req = num_dim;
+	if(num_dim == 1){
+		/*
+		 * for 1D case, the len_dimensions is actually a pointer to
+		 * the (int*) the user passed in as "num_elements".
+		 */
+		exp->num_elements = *len_dimensions;
+		exp->len_dimensions = &exp->num_elements;
+	}
+	else
+		exp->len_dimensions = len_dimensions;
+
+	exp->type = type;
+	exp->size = size;
+	exp->data = data;
+
+	expval.ptrval = exp;
+
+	if(_NhlRLInsert(id,NhlGETRL,NrmStringToQuark(name),expQ,expval,
+							(_NhlFreeFunc)NhlFree))
+		return NhlNOERROR;
+	else
+		return NhlFATAL;
+}
+
 /*
  * Function:	NhlRLGetArray
  *
- * Description:	This function is used to set an array resource with the value
- *		specified as the given type.
+ * Description:	This function is used to retrieve a 1D array resource into the
+ *		address specified.
  *
  * In Args:	
  *
@@ -1548,22 +1738,274 @@ NhlRLGetArray
 (
 	int		id,
 	NhlString	name,
-	NhlPointer	data,
-	NhlString	type,
-	unsigned int	size,
-	int		num_elements
+	NhlPointer	*data,
+	NhlString	*type,
+	unsigned int	*size,
+	int		*num_elements
 )
 #else
 (id,name,data,type,size,num_elements)
 	int		id;
 	NhlString	name;
-	NhlPointer	data;
-	NhlString	type;
-	unsigned int	size;
-	int		num_elements;
+	NhlPointer	*data;
+	NhlString	*type;
+	unsigned int	*size;
+	int		*num_elements;
 #endif
 {
-	return NhlRLGetMDArray(id,name,data,type,size,1,&num_elements);
+	return NhlRLGetDimArray(id,name,data,type,size,1,&num_elements);
+}
+
+/*
+ * Function:	CvtGenToExpTypeArray
+ *
+ * Description:	This function is used to convert a "gen" array to an "exp"
+ *		array.  This is how the addresses the user passed in actually
+ *		get set with the data in the "gen" array.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	static
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+/*ARGSUSED*/
+static NhlErrorTypes
+CvtGenToExpTypeArray
+#if	NhlNeedProto
+(
+	NrmValue		*from,
+	NrmValue		*to,
+	NhlConvertArgList	args,
+	int			nargs
+)
+#else
+(from,to,args,nargs)
+	NrmValue		*from;
+	NrmValue		*to;
+	NhlConvertArgList	args;
+	int			nargs;
+#endif
+{
+	char		*error_lead="CvtGenToExpTypeArray";
+	NhlGenArray	gen;
+	_NhlExpArray	exp;
+	NhlErrorTypes	ret = NhlNOERROR;
+
+	if(nargs != 0){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			"%s:Called w/improper number of args",error_lead);
+		to->size = 0;
+		return NhlFATAL;
+	}
+
+	gen = (NhlGenArray)from->data.ptrval;
+	exp = (_NhlExpArray)to->data.ptrval;
+
+	if(gen->num_dimensions == exp->num_dim_req){
+		int i;
+		for(i=0;i < exp->num_dim_req;i++)
+			(*exp->len_dimensions)[i] = gen->len_dimensions[i];
+	}
+	else{
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+	"%s:Array resource has %d dimensions:Can't convert to %d dimensions",
+			error_lead,gen->num_dimensions,exp->num_dim_req);
+		to->size = 0;
+		return NhlFATAL;
+	}
+
+	/* get data if possible */
+	if(exp->type_req == gen->typeQ){
+		*exp->data = gen->data;
+		if(!gen->my_data){
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
+			"%s:Returning Pointer to Internal Data - Bad Things!",
+								error_lead);
+			ret = NhlWARNING;
+		}
+		/* give ownership to exp */
+		gen->my_data = False;
+	}
+	else if(_NhlConverterExists(gen->typeQ,exp->type_req)){
+		int		i;
+		NrmValue	fromval, toval;
+		char		*fromdata,*todata;
+
+		*exp->data = NhlMalloc(exp->size_req * gen->num_elements);
+		if(*exp->data == NULL){
+			NHLPERROR((NhlFATAL,ENOMEM,NULL));
+			to->size =  0;
+			return NhlFATAL;
+		}
+
+		todata = *exp->data;
+		fromdata = gen->data;
+
+		for(i=0;i < gen->num_elements;i++){
+			CopyToArg((NhlPointer)(fromdata + (gen->size * i)),
+						&fromval.data,gen->size);
+			fromval.size = gen->size;
+			toval.data.ptrval = (NhlPointer)
+						(todata + (exp->size_req * i));
+			toval.size = exp->size_req;
+			if(NhlNOERROR != _NhlReConvertData(gen->typeQ,
+						exp->type_req,&fromval,&toval)){
+				NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+	"CvtGenToExpTypeArray:Unable to preform Element Conversion"));
+				NhlFree(*exp->data);
+				*exp->data = NULL;
+				to->size = 0;
+				return NhlFATAL;
+			}
+		}
+		if(exp->type_req == stringQ){
+			NhlString	*starr = *exp->data;
+			NhlString	tstring;
+			/*
+			 * Need to allocate memory for each element as well.
+			 * The memory is currently owned by the "context".
+			 * or points to "args" in the converter function.
+			 */
+			for(i=0;i < gen->num_elements;i++){
+				tstring = starr[i];
+				starr[i] = NhlMalloc(strlen(tstring)+1);
+				if(starr[i] == NULL){
+					NHLPERROR((NhlFATAL,ENOMEM,NULL));
+					to->size = 0;
+					return NhlFATAL;
+				}
+				strcpy(starr[i],tstring);
+			}
+		}
+	}
+	else{
+		/* Everything fails */
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			"%s:Unable to convert \"%s\" to \"%s\"",error_lead,
+					NrmQuarkToString(gen->typeQ),
+					NrmQuarkToString(exp->type_req));
+		to->size = 0;
+		return NhlFATAL;
+	}
+
+	return ret;
+}
+
+/*
+ * Function:	NhlRLGetTypeDimArray
+ *
+ * Description:	This function is used to retrieve a (N)D array resource into the
+ *		address specified.
+ *		This may turn into a public function at some point if it is
+ *		useful.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	global
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+static NhlErrorTypes
+NhlRLGetTypeDimArray
+#if	NhlNeedProto
+(
+	int		id,
+	NhlString	name,
+	NhlString	type,
+	unsigned int	size,
+	NhlPointer	*data,
+	int		num_dim,		/* IN */
+	int		**len_dimensions
+)
+#else
+(id,name,data,type,size,num_dim,len_dimensions)
+	int		id,
+	NhlString	name,
+	NhlString	type,
+	unsigned int	size,
+	NhlPointer	*data,
+	int		num_dim,		/* IN */
+	int		**len_dimensions
+#endif
+{
+	_NhlExpArray	exp = NULL;
+	_NhlArgVal	expval;
+
+	exp = NhlMalloc(sizeof(_NhlExpArrayRec));
+	if(exp == NULL){
+		NhlPError(NhlFATAL,ENOMEM,NULL);
+		return NhlFATAL;
+	}
+
+	exp->num_dim_req = num_dim;
+	if(num_dim == 1){
+		/*
+		 * for 1D case, the len_dimensions is actually a pointer to
+		 * the (int*) the user passed in as "num_elements".
+		 */
+		exp->num_elements = *len_dimensions;
+		exp->len_dimensions = &exp->num_elements;
+	}
+	else
+		exp->len_dimensions = len_dimensions;
+
+	exp->type = NULL;
+	exp->size = NULL;
+	exp->data = data;
+
+	exp->type_req = NrmStringToQuark(type);
+	exp->size_req = size;
+
+	expval.ptrval = exp;
+
+	if(_NhlRLInsert(id,NhlGETRL,NrmStringToQuark(name),expTypeQ,expval,
+							(_NhlFreeFunc)NhlFree))
+		return NhlNOERROR;
+	else
+		return NhlFATAL;
+}
+
+/*
+ * Function:	NhlRLGetTypeArray
+ *
+ * Description:	This function is used to retrieve a 1D array resource into the
+ *		address specified.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	static
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+static NhlErrorTypes
+NhlRLGetTypeArray
+#if	NhlNeedProto
+(
+	int		id,
+	NhlString	name,
+	NhlString	type,
+	unsigned int	size,
+	NhlPointer	*data,
+	int		*num_elements
+)
+#else
+(id,name,type,size,data,num_elements)
+	int		id;
+	NhlString	name;
+	NhlString	type;
+	unsigned int	size;
+	NhlPointer	*data;
+	int		*num_elements;
+#endif
+{
+	return NhlRLGetTypeDimArray(id,name,type,size,data,1,&num_elements);
 }
 
 /*
@@ -1586,19 +2028,19 @@ NhlRLGetIntArray
 (
 	int		id,
 	NhlString	name,
-	int		*data,
-	int		num_elements
+	int		**data,
+	int		*num_elements
 )
 #else
 (id,name,data,num_elements)
 	int		id;
 	NhlString	name;
-	int		*data;
-	int		num_elements;
+	int		**data;
+	int		*num_elements;
 #endif
 {
-	return NhlRLGetMDArray(id,name,data,NhlTInteger,sizeof(int),1,
-								&num_elements);
+	return NhlRLGetTypeArray(id,name,NhlTInteger,sizeof(int),
+						(NhlPointer*)data,num_elements);
 }
 
 /*
@@ -1621,19 +2063,19 @@ NhlRLGetFloatArray
 (
 	int		id,
 	NhlString	name,
-	float		*data,
-	int		num_elements
+	float		**data,
+	int		*num_elements
 )
 #else
 (id,name,data,num_elements)
 	int		id;
 	NhlString	name;
-	float		*data;
-	int		num_elements;
+	float		**data;
+	int		*num_elements;
 #endif
 {
-	return NhlRLGetMDArray(id,name,data,NhlTFloat,sizeof(float),1,
-								&num_elements);
+	return NhlRLGetTypeArray(id,name,NhlTFloat,sizeof(float),
+						(NhlPointer*)data,num_elements);
 }
 
 /*
@@ -1656,22 +2098,20 @@ NhlRLGetStringArray
 (
 	int		id,
 	NhlString	name,
-	NhlString	*data,
-	int		num_elements
+	NhlString	**data,
+	int		*num_elements
 )
 #else
 (id,name,data,num_elements)
 	int		id;
 	NhlString	name;
-	NhlString	*data;
-	int		num_elements;
+	NhlString	**data;
+	int		*num_elements;
 #endif
 {
-	return NhlRLGetMDArray(id,name,data,NhlTString,sizeof(NhlString),1,
-								&num_elements);
+	return NhlRLGetTypeArray(id,name,NhlTString,sizeof(NhlString),
+						(NhlPointer*)data,num_elements);
 }
-
-#endif
 
 /*
  * Function:	CopyNodeToArgList
@@ -1801,11 +2241,17 @@ _NhlInitRLList
 	genQ = NrmStringToQuark(NhlTGenArray);
 	expMDQ = NrmStringToQuark(_NhlTExpMDArray);
 	expMDTypeQ = NrmStringToQuark(_NhlTExpMDTypeArray);
+	expQ = NrmStringToQuark(_NhlTExpArray);
+	expTypeQ = NrmStringToQuark(_NhlTExpTypeArray);
 
 	(void)NhlRegisterConverter(NhlTGenArray,_NhlTExpMDArray,
 					CvtGenToExpMDArray,NULL,0,False,NULL);
 	(void)NhlRegisterConverter(NhlTGenArray,_NhlTExpMDTypeArray,
 				CvtGenToExpTypeMDArray,NULL,0,False,NULL);
+	(void)NhlRegisterConverter(NhlTGenArray,_NhlTExpArray,
+					CvtGenToExpArray,NULL,0,False,NULL);
+	(void)NhlRegisterConverter(NhlTGenArray,_NhlTExpTypeArray,
+					CvtGenToExpTypeArray,NULL,0,False,NULL);
 	return;
 }
 

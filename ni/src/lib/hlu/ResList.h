@@ -1,5 +1,5 @@
 /*
- *      $Id: ResList.h,v 1.1 1994-02-18 02:54:46 boote Exp $
+ *      $Id: ResList.h,v 1.2 1994-03-23 15:27:31 boote Exp $
  */
 /************************************************************************
 *									*
@@ -230,10 +230,10 @@ extern NhlErrorTypes NhlRLGetArray(
 #if	NhlNeedProto
 	int		id,		/* RL list			*/
 	NhlString	resname,	/* resource to set		*/
-	NhlPointer	data,		/* array			*/
-	NhlString	type,		/* type of elements of array	*/
-	unsigned int	size,		/* size of elements of array	*/
-	int		num_elements	/* number elements in array	*/
+	NhlPointer	*data,		/* array			*/
+	NhlString	*type,		/* type of elements of array	*/
+	unsigned int	*size,		/* size of elements of array	*/
+	int		*num_elements	/* number elements in array	*/
 #endif
 );
 
@@ -241,8 +241,8 @@ extern NhlErrorTypes NhlRLGetIntArray(
 #if	NhlNeedProto
 	int		id,		/* RL list			*/
 	NhlString	resname,	/* resource to set		*/
-	int		*data,		/* array			*/
-	int		num_elements	/* number elements in array	*/
+	int		**data,		/* array			*/
+	int		*num_elements	/* number elements in array	*/
 #endif
 );
 
@@ -250,8 +250,8 @@ extern NhlErrorTypes NhlRLGetFloatArray(
 #if	NhlNeedProto
 	int		id,		/* RL list			*/
 	NhlString	resname,	/* resource to set		*/
-	float		*data,		/* array			*/
-	int		num_elements	/* number elements in array	*/
+	float		**data,		/* array			*/
+	int		*num_elements	/* number elements in array	*/
 #endif
 );
 
@@ -259,8 +259,8 @@ extern NhlErrorTypes NhlRLGetStringArray(
 #if	NhlNeedProto
 	int		id,		/* RL list			*/
 	NhlString	resname,	/* resource to set		*/
-	NhlString	*data,		/* array			*/
-	int		num_elements	/* number elements in array	*/
+	NhlString	**data,		/* array			*/
+	int		*num_elements	/* number elements in array	*/
 #endif
 );
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: ResListP.h,v 1.1 1994-02-18 02:54:48 boote Exp $
+ *      $Id: ResListP.h,v 1.2 1994-03-23 15:27:33 boote Exp $
  */
 /************************************************************************
 *									*
@@ -62,6 +62,8 @@ struct	_NhlExpArrayRec_ {
 	unsigned int	*size;
 	NhlPointer	*data;
 
+	int		*num_elements;
+	int		num_dim_req;
 	NrmQuark	type_req;
 	unsigned int	size_req;
 };
