@@ -1,5 +1,5 @@
 /*
- *	$Id: talkto.c,v 1.12 1992-08-10 22:04:43 clyne Exp $
+ *	$Id: talkto.c,v 1.13 1992-08-12 16:50:06 clyne Exp $
  */
 /*
  *	talkto.c
@@ -15,17 +15,13 @@
 #include <signal.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <string.h>
+#include <sys/types.h>
+#include <sys/time.h>
 
 #ifndef	CRAY
 #include <sys/wait.h>
-#include <sys/time.h>
 #include <sys/resource.h>
-#endif
-
-#ifdef	SYSV
-#include <string.h>
-#else
-#include <strings.h>
 #endif
 
 #ifndef	sun
@@ -41,16 +37,6 @@
 #include "talkto.h"
 
 /*
- *	brain damaged ultrix sets wrong error code when read from non-blocking
- *	pipe should block
- */
-#ifdef	ultrix
-#define	EWOULDBLOCK_	EAGAIN
-#else
-#define	EWOULDBLOCK_	EWOULDBLOCK
-#endif
-
-/*
  * a structure containing information about running translators
  */
 static	struct	{
@@ -58,7 +44,9 @@ static	struct	{
 	int	wfd;		/* a fd for writing to the process	*/
 	int	rfd;		/* fd for reading responses from trans	*/
 	int	r_err_fd;	/* standard error from the process	*/
-	int	pending;	/* outstanding commands with no acks	*/
+	FILE	*rfp;		/* file pointer for rfd			*/
+	FILE	*r_err_fp;	/* file pointer for r_err_fd		*/
+	boolean	pending;	/* outstanding commands with no acks	*/
 	} Translators[MAX_DISPLAYS];	
 
 static	int	hFD = -1;	/* history file file descriptor	*/
@@ -80,14 +68,127 @@ static	void	reaper()
 	sigrelse(SIGCLD);
 }
 #endif
+
+/*
+ *	Get a message from the translator. All translator messages must
+ *	be terminated with an ack defined by the manifest constant PROMPT.
+ *	The message returned is stripped of this prompt and any trailing
+ *	newline. 
+ *
+ * on entry
+ *	*fp		: file pointer to read message from
+ *	size		: max number of characters that may be written to
+ *			  'buf' including the null terminator, '\0'.
+ * on exit
+ *	buf		: contains a NULL terminated string.
+ *	return		: strlen(buf) if ok, else -1.
+ */
+static	int	get_trans_msg(fp, buf, size)
+	FILE	*fp;
+	char	*buf;
+	int	size;
+{
+	int	c;
+	char	*prompt = PROMPT;
+	char	*s = prompt;
+	int	i;
+	boolean	done;
+	int	match;
+	int	over;
+
+	for (i=0, s=prompt, done=FALSE, match=0;! done; i++) {
+		c = getc(fp);
+
+		if (c == EOF) return (-1);
+
+		if (*s == c) {
+			match++;
+			s++;
+		}
+		else {
+			s = prompt;
+			match = 0;
+		}
+
+		if (i < size) {
+			buf[i] = (char) c;
+		}
+
+		if (match == strlen(PROMPT)) {
+			done = TRUE;
+		}
+	}
+
+	i -= strlen(PROMPT);	/* back over prompt	*/
+
+	/*
+	 * null-terminate the string sans the prompt
+	 */
+	if (i >= size) i = size - 1;
+	buf[i] = '\0';
+
+	if (s = strrchr(buf, '\n')) *s = '\0';
+
+	return(strlen(buf));
+}
+
+/*
+ *	Get an error message from the translator. Unlike get_trans_msg()
+ *	this function does no massaging to the string returned on the
+ *	stream 'fp'. Any any and all bytes available on fp at the time
+ *	get_trans_err() is called are returned as a null terminated string.
+ *	if no bytes are available get_trans_err() returns immediately.
+ *
+ * on entry
+ *	*fp		: file pointer to read message from
+ *	size		: max number of characters that may be written to
+ *			  'buf' including the null terminator, '\0'.
+ * on exit
+ *	buf		: contains a NULL terminated string.
+ *	return		: strlen(buf) if ok, else -1.
+ */
+static	int	get_trans_err(fp, buf, size)
+	FILE	*fp;
+	char	*buf;
+	int	size;
+{
+	int		fd = fileno(fp);
+	int		width = fd + 1;
+	fd_set		readfs;
+	int		n, rc;
+	struct timeval	tv;
+
+	FD_ZERO(&readfs);
+	FD_SET(fd, &readfs);
+	tv.tv_sec = tv.tv_usec = 0;	/* poll descriptor	*/
+
+	rc = select( width, &readfs, (fd_set *) NULL, (fd_set *) NULL, tv);
+	if (rc < 0) {
+		return(-1);
+	}
+	else if (rc == 0) {
+		buf[0] = '\0';
+		return(0);
+	}
+
+	if ((n = read(fd, buf, size)) < 0) {
+		return(-1);
+	}
+
+	buf[n-1] = '\0';
+	return(strlen(buf));
+}
 	
 
 /*
  *	OpenTranslator
  *
  *	Fork a translator to process a metafile. Set up communications between
- *	idt and the translator process. All translation from the translator
- *	comes from stderr. All comunication to the translator goes to stdout.
+ *	idt and the translator process. It is assumed the translator will
+ *	write all error messages. Status messages will ge terminated with
+ *	a prompt defined by PROMPT. There will be a single PROMPT terminated
+ *	status message returned by the translator for each command sent to
+ *	the translator.
  * on entry
  *	channel		: Communication channel. All future communication with
  *			  this process will use this unique channel id. channel
@@ -136,20 +237,20 @@ OpenTranslator(channel, argv, hfd)
 	 * set up pipes to communicate with child process. 
 	 */
 	if (pipe(to_child) < 0) {
-		perror((char *) NULL);
+		perror("pipe");
 		return(-1);
 	}
 
 	if (pipe(to_parent) < 0) {
 		(void) close(to_child[0]); (void) close(to_child[1]);
-		perror((char *) NULL);
+		perror("pipe");
 		return(-1);
 	}
 
 	if (pipe(stderr_to_parent) < 0) {
 		(void) close(to_child[0]); (void) close(to_child[1]);
 		(void) close(to_parent[0]); (void) close(to_parent[1]);
-		perror((char *) NULL);
+		perror("pipe");
 		return(-1);
 	}
 		
@@ -157,7 +258,7 @@ OpenTranslator(channel, argv, hfd)
 	pid = FORK();
 	switch	(pid)	{
 	case	-1:
-		perror((char *) NULL);
+		perror("fork");
 		return(-1);
 
 	case	0:	/* the child	*/
@@ -183,7 +284,7 @@ OpenTranslator(channel, argv, hfd)
 		*argptr = NULL;
 		
 		execvp(argv[0], argv);
-		perror((char *) NULL);	/* should never get here	*/
+		perror("execvp");	/* should never get here	*/
 		_exit(127);
 
 		break;
@@ -192,17 +293,18 @@ OpenTranslator(channel, argv, hfd)
 		Translators[channel].wfd = to_child[1];
 		Translators[channel].rfd = to_parent[0];
 		Translators[channel].r_err_fd = stderr_to_parent[0];
-		Translators[channel].pending = 1;
+		Translators[channel].pending = TRUE;
 
 		(void) close(to_child[0]); 
 		(void) close(to_parent[1]);
 		(void) close(stderr_to_parent[1]);
 
-		/*
-		 * do non blocking reads from the translator
-		 */
-		(void) fcntl(Translators[channel].r_err_fd, F_SETFL, O_NDELAY);
-		(void) fcntl(Translators[channel].rfd, F_SETFL, O_NDELAY);
+		Translators[channel].rfp = fdopen(
+			Translators[channel].rfd,"r"
+		);
+		Translators[channel].r_err_fp = fdopen(
+			Translators[channel].r_err_fd,"r"
+		);
 
 	}
 
@@ -224,8 +326,8 @@ void	CloseTranslator(channel)
 		 * close pipes
 		 */
 		(void) close(Translators[channel].wfd); 
-		(void) close(Translators[channel].rfd);
-		(void) close(Translators[channel].r_err_fd);
+		(void) fclose(Translators[channel].rfp);
+		(void) fclose(Translators[channel].r_err_fp);
 		Translators[channel].pid = -1;
 
 }
@@ -233,12 +335,13 @@ void	CloseTranslator(channel)
  *	TalkTo
  *	[exported]
  *	
- *	Send a syntactically correct ictrans command string to the translator
+ *	Send a *single* syntactically correct ictrans command string to 
+ *	the translator
  *	associated with the specified connection channel id.
  *
  * on entry
  *	id		: a connection id created by OpenDisplay
- *	*command_string	: the ictrans command
+ *	*command_string	: A *single* ictrans command
  *	mode		: one of (ASYNC, SYNC). If mode is ASYNC issue command
  *			  and return. If mode is SYNC issue command and wait
  *			  for a responce from the translator. Return 
@@ -254,11 +357,9 @@ char	*TalkTo(id, command_string, mode)
 	char	*command_string;
 	int	mode;
 {
-	static	char	buf[1024];
+	static	char	buf[8192];
 	char	*b, *s;
 	int	pid;
-
-	extern	char *strrchr();
 
 	/*
 	 * see if anybody died
@@ -272,35 +373,33 @@ char	*TalkTo(id, command_string, mode)
 
 	if (Translators[id].pid == -1) return (NULL);
 
-	do {
+	/*
+	 * See if we're expecting any response from the translator. We
+	 * won't have any messages pending if in the last call to 
+	 * TalkTo() mode was set to 'SYNC'.
+	 */
+	if (Translators[id].pending) {
 
-		if (nreads(Translators[id].rfd, buf, sizeof(buf)) < 0) {
-			perror(NULL);
+		if (get_trans_msg(Translators[id].rfp, buf, sizeof(buf)) < 0) {
+			perror("reading from translator");
 			return(NULL);
 		}
 
-		/* 
-		 * remove translator prompt from message
-		 */
-		Translators[id].pending -= strip_prompt(buf);
-
-		if (s = strrchr(buf, '\n')) *s = '\0'; 
+		Translators[id].pending = FALSE;
 
 		/*
 		 * Post any old messages
 		 */
 		if (strlen(buf)) Message(id, buf);
-
-	} while (mode == SYNC && Translators[id].pending > 0);
+	}
 
 	/*
 	 * see if there were any error messages
 	 */
-	if (nreads(Translators[id].r_err_fd, buf, sizeof(buf)) < 0) {
-		perror(NULL);
+	if (get_trans_err(Translators[id].r_err_fp, buf, sizeof(buf)) < 0) {
+		perror("reading from translator");
 		return(NULL);
 	}
-
 	/*
 	 * Post any old messages
 	 */
@@ -309,92 +408,47 @@ char	*TalkTo(id, command_string, mode)
 	/*
 	 * Send the command to the desired translator
 	 */
-	(void)write(Translators[id].wfd, command_string,strlen(command_string));
+	if (write(Translators[id].wfd,command_string,strlen(command_string))<0){
+		perror("writing to translator");
+		return(NULL);
+	}
 
 	if (hFD != -1) {
 		(void) write(hFD, command_string, strlen(command_string));
 	}
-	Translators[id].pending += 1;
+	Translators[id].pending = TRUE;	/* we have an outstanding cmd	*/
 
-	if (mode == ASYNC) {	/* don't wait for response	*/
-		return("");
+	/*
+ 	 * if mode is 'ASYNC' we don't wait for the translator to respond
+	 */
+	if (mode == ASYNC) {
+		return("");	/* no msg from translator, yet	*/
 	}
-	else {	/* wait for translator responce.	 */
-		b = buf;
 
-		/*
-		 * read from translator until we see a translator prompt
-		 * signifying the end of the message or the translator
-		 * dies.
-		 */
-		while(1) {
-			/*
-			 * see if anybody died
-			 */
-#ifndef	CRAY
-			if ((pid = wait3((union wait *) NULL, 
-					WNOHANG, (struct rusage *) NULL)) > 0) {
-
-				close_trans_pid(pid);
-			}
-#endif
-			if (Translators[id].pid == -1) return (NULL);
-
-			if (nreads(Translators[id].rfd, buf, sizeof(buf)) < 0) {
-				perror(NULL);
-				return(NULL);
-			}
-
-			if (strip_prompt(buf)) {
-				Translators[id].pending -= 1;
-				break;	/* get a prompt yet? */
-			}
-
-		}
-		
-		if (s = strrchr(buf, '\n')) *s = '\0'; 
-		/*
-		 * Post the message sans the prompt
-		 */
-		if (strlen(buf)) Message(id, buf);
-
-		/*
-		 * return the message sans the prompt
-		 */
-		return (buf);
+	/*
+	 * read from translator until we see a translator prompt
+	 * signifying the end of the message or the translator
+	 * dies.
+	 */
+	if (get_trans_msg(Translators[id].rfp, buf, sizeof(buf)) < 0) {
+		perror("reading from translator");
+		return(NULL);
 	}
+
+	Translators[id].pending = FALSE;
+
+	/*
+	 * Post any old messages
+	 */
+	if (strlen(buf)) Message(id, buf);
+
+
+	/*
+	 * return the message sans the prompt
+	 */
+	return (buf);
 }
 
-/*
- *	strip_prompt
- *	[internal]
- *
- *	remove the translator prompt from a string
- * on entry
- *	*s		: a C string possibly containing one or more translator
- *			  prompts
- */
-static	strip_prompt(s)
-	char	*s;
-{
-
-	char	*t1, *t2;
-	int	match = 0;
-	int	prompt_len	= strlen(PROMPT);
-
-	while (*s) {
-		if (strncmp(s, PROMPT, prompt_len) == 0) {
-			t2 = s + prompt_len;
-			t1 = s;
-			match++;
-			while(*t1++ = *t2++)
-				;
-		}
-		else
-			s++;
-	}
-	return (match);
-}
 
 /*
  *	SignalTo
@@ -502,38 +556,4 @@ static	close_trans_pid(pid)
 			CloseTranslator(i);
 		}
 	}
-}
-			
-/*
- * read from non-blocking descriptor 'fd' until 'n'-1 bytes are read
- * or read would block. Terminate 'buf' with null character
- */
-static	nreads(fd, buf, n)
-	int	fd;
-	char	*buf;
-	int	n;
-{
-	char	c;
-	int	count;
-	int	status;
-
-	count = 0;
-	while ((status = read(fd, &c, 1)) == 1) {
-                /*
-                 * if there is room in buffer stuff the response in it
-                 */
-                if (count < n-1) {
-                        buf[count++] = c;
-                }
-	}
-	buf[count] = '\0';
-
-	if (status < 0) {
-		if (errno != EWOULDBLOCK_ ) {
-			perror((char *) NULL);
-			return(-1);
-		}
-	}
-
-	return(1);
 }
