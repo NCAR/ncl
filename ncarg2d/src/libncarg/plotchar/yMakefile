@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.2 1992-09-24 19:50:06 ncargd Exp $
+#	$Id: yMakefile,v 1.3 1992-09-25 19:00:21 ncargd Exp $
 #
 NCARG	= ../../../..
 
@@ -25,6 +25,8 @@ OBJECTS = $(GENERIC_OBJS) $(OTHER_OBJS)
 
 FCPP_OBJS	= pcfopn.f plchhq.f plchmq.f
 
+PartialLibrary(libncarg.a,$(OBJECTS))
+
 pcfopn.F: pcfopn.F.sed Makefile
 	@sed \
 	-e 's+SED_DBDIR+$(DBDIR)+' \
@@ -46,8 +48,6 @@ pcfopn.F: pcfopn.F.sed Makefile
 plchmq.o:  plchmq.F
 	$(F77) $(FFLAGS) -W0,-opt,2 -c plchmq.F
 #endif
-
-PartialLibrary(libncarg.a,$(OBJECTS))
 
 clean::
 	@-$(RM) plchhq.f plchmq.f pcfopn.f
