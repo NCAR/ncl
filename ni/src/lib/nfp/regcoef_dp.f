@@ -108,6 +108,7 @@ c XVAR = 0.0
           SSQ    = YMSG
           VB     = YMSG
           SQRTVB = YMSG
+          TVAL   = YMSG
       END IF
 
       REGDBG = .false.
