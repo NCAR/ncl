@@ -1,5 +1,5 @@
 C
-C $Id: nglogo.f,v 1.1 2002-04-04 22:04:17 fred Exp $
+C $Id: nglogo.f,v 1.2 2002-04-16 15:05:58 haley Exp $
 C                                                                      
 C                Copyright (C)  2002
 C        University Corporation for Atmospheric Research
@@ -98,7 +98,7 @@ C
         IF (IACTWKS(I) .EQ. IWK) NOTIN = 0
    10 CONTINUE
       IF (NOTIN .EQ. 1) THEN 
-        CTM(1:47) = 'NGLOGO - argumant 1, workstation is not active.'
+        CTM(1:47) = 'NGLOGO - argument 1, workstation is not active.'
         RETURN
       ENDIF
 C
