@@ -1,5 +1,5 @@
 /*
- *      $Id: Transform.c,v 1.52 2000-06-30 20:36:13 dbrown Exp $
+ *      $Id: Transform.c,v 1.53 2001-09-07 21:16:04 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2566,10 +2566,10 @@ NhlErrorTypes NhlAddPrimitive
 	char			*entry_name = "NhlAddPrimitive";
 	NhlLayer	transform = _NhlGetLayer(transform_id);
 	NhlLayer	primitive = _NhlGetLayer(primitive_id);
-	NhlLayer	after = _NhlGetLayer(before_id);
+	NhlLayer	before = _NhlGetLayer(before_id);
 	NhlTransformLayer tf;
 	NhlTransformLayerPart *tfp;
-	int i,j,count;
+	int i,j,count,bid;
 	int *pids;
 	NhlGenArray gen;
 
@@ -2588,11 +2588,13 @@ NhlErrorTypes NhlAddPrimitive
 		return NhlFATAL;
 	}
 
+	bid = MAX(NhlNULLOBJID,before_id);
 	if (before_id > NhlNULLOBJID && 
-	    ! NhlIsClass(before_id,NhlprimitiveClass)) {
-		e_text = "%s: invalid after id, defaulting to end of list";
+		! NhlIsClass(before_id,NhlprimitiveClass)) {
+		e_text = "%s: invalid before_id, defaulting to end of list";
 		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
 		ret = MIN(ret,NhlWARNING);
+		bid = NhlNULLOBJID;
 	}
 
 	tf = (NhlTransformLayer) transform;
@@ -2626,24 +2628,70 @@ NhlErrorTypes NhlAddPrimitive
 		NHLPERROR((NhlFATAL,ENOMEM,NULL));
 		return NhlFATAL;
 	}
-	if (before_id <= 0) {
+	if (bid == NhlNULLOBJID) {
 		/* goes at the end */
 		pids[count-1] = primitive_id;
 	}
 	else {
+		NhlBoolean found = False;
 		for (i = 0; i < count-1; i++) {
-			if (pids[i] == before_id) {
+			if (pids[i] == bid) {
 				for (j = i; j < count-1; j++) 
 					pids[j+1] = pids[j];
 				pids[i] = primitive_id;
+				found = True;
 				break;
 			}
 		}
+		if (! found) {
+			e_text = 
+			 "%s: before_id not found, defaulting to end of list";
+			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+			ret = MIN(ret,NhlWARNING);
+			pids[count-1] = primitive_id;
+		}
+			
 	}
 	tfp->poly_draw_list->num_elements = count;
 	tfp->poly_draw_list->data = pids;
 
 	return ret;
+}
+
+
+/*
+ * Function:	nhlpfaddprimitive
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+void _NHLCALLF(nhlpfaddprimitive,NHLPFADDPRIMITIVE)
+#if	NhlNeedProto
+(
+	int	*itid,
+	int	*ipid,
+	int	*ibid,
+	int	*ierr
+)
+#else
+(itid,ipid,ibid,ierr
+	int	*itid;
+	int	*ipid;
+	int	*ibid;
+	int	*ierr;
+
+#endif
+{
+	*ierr = NhlAddPrimitive(*itid,*ipid,*ibid);
+
+	return;
 }
 
 NhlErrorTypes NhlRemovePrimitive
@@ -2716,6 +2764,41 @@ NhlErrorTypes NhlRemovePrimitive
 	return MIN(ret,NhlWARNING);
 }
 
+
+/*
+ * Function:	nhlpfremoveprimitive
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+void _NHLCALLF(nhlpfremoveprimitive,NHLPFREMOVEPRIMITIVE)
+#if	NhlNeedProto
+(
+	int	*itid,
+	int	*ipid,
+	int	*ibid,
+	int	*ierr
+)
+#else
+(itid,ipid,ibid,ierr
+	int	*itid;
+	int	*ipid;
+	int	*ibid;
+	int	*ierr;
+
+#endif
+{
+	*ierr = NhlRemovePrimitive(*itid,*ipid);
+
+	return;
+}
 		
 
 		

@@ -1,5 +1,5 @@
 C
-C $Id: TRANSFORM.f,v 1.4 1997-05-05 21:45:24 boote Exp $
+C $Id: TRANSFORM.f,v 1.5 2001-09-07 21:16:04 dbrown Exp $
 C
 C****************************************************************
 C								*
@@ -78,4 +78,14 @@ C
 
 	integer id,istat
 	call nhlpfistransform(id,istat)
+      end
+      subroutine nhlfaddprimitive(itid,ipid,ibid,ierr)
+	integer itid,ipid,ibid,ierr
+
+	call nhlpfaddprimitive(itid,ipid,ibid,ierr)
+      end
+      subroutine nhlfremoveprimitive(itid,ipid,ierr)
+	integer itid,ipid,ierr
+
+	call nhlpfremoveprimitive(itid,ipid,ierr)
       end
