@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.98 1996-10-05 04:36:01 haley Exp $
+#   $Id: ncargex.csh,v 1.99 1996-10-07 17:34:32 haley Exp $
 #
 
 if ($#argv < 1) goto usage
@@ -1252,6 +1252,16 @@ switch($name)
       echo "  the name of the metafile from within the program."
       echo ""
       set tmp_msg = "Metafiles META01 and META02 produced."
+      set no_file
+    breaksw
+
+    case pgkex27:
+      unset tmp_ws_type
+      echo ""
+      echo "  This example was set up to demonstrate how to write"
+      echo "  to more than one metafile at a time."
+      echo ""
+      set tmp_msg = "Metafiles gmeta1 and gmeta2 produced."
       set no_file
     breaksw
 
