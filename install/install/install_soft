@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: install_soft,v 1.14 1996-05-24 17:18:17 haley Exp $
+#      $Id: install_soft,v 1.15 1996-06-10 17:50:20 haley Exp $
 #
 #########################################################################
 #                                                                       #
@@ -58,16 +58,17 @@ clear
 
 cat <<EOF
 
-    Please enter the 4-digit site ID number that can be found in
-    the top right corner of the cover of the NCAR Graphics Installer's
-    Guide. This number is the one that the NCAR Graphics consulting office
-    will ask for when the site rep or site installer calls for help. If
-    you don't have the Installer's Guide, or you don't see any such number,
-    hit return twice and you will be given instructions later on what to do.
+    Please enter the 3 or 4-digit order number that can be found
+    in the top right corner of the cover of the NCAR Graphics
+    Installer's Guide. This number is the one that the NCAR Graphics
+    consulting office will ask for when the site rep or site installer
+    calls for help. If you don't have the Installer's Guide, or you
+    don't see any such number, hit return twice and you will be given
+    instructions later on what to do.
 
 EOF
 
-echo -n "    Site ID number: " > /dev/tty
+echo -n "    NCAR Graphics order number: " > /dev/tty
 set answer1 =  $<
 
 echo -n "    Please enter it again to verify: " > /dev/tty
@@ -212,7 +213,7 @@ EOF
         echo "" > /dev/tty
         echo "" > /dev/tty
         echo "" > /dev/tty
-        echo "  Site ID Number:        $NCARG_SITE_ID" > /dev/tty
+        echo "  Order Number:          $NCARG_SITE_ID" > /dev/tty
         echo "  Installation source:   $INSTALL_SOURCE" > /dev/tty
         echo "  Source device:         $device" > /dev/tty
         echo "  Installation type:     $INSTALL_TYPE" > /dev/tty

@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: perf_install,v 1.10 1996-05-24 17:18:18 haley Exp $
+#      $Id: perf_install,v 1.11 1996-06-10 17:50:21 haley Exp $
 #
 #########################################################################
 #									#
@@ -264,10 +264,11 @@ cat <<EOF > /dev/tty
 
    For consulting purposes, it would help to create the file
    \$NCARG_ROOT/lib/ncarg/$NCARG_SITE_FILE and enter in your
-   4-digit NCAR Graphics Site ID number.  This number can be found
-   on the upper right corner of the NCAR Graphics Installer's Guide.
-   If you don't see any such number, you can call (303) 497-1201
-   or send email to ncarginf@ncar.ucar.edu to get that information.
+   3 or 4-digit NCAR Graphics Order number.  This number can
+   be found on the upper right corner of the cover of the
+   NCAR Graphics Installer's Guide. If you don't see any such
+   number, you can call (303) 497-1201 or send email to
+   ncarginf@ncar.ucar.edu to get that information.
 
 EOF
    
