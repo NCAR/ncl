@@ -1,5 +1,5 @@
 /*
- *      $Id: shaper.c,v 1.9 1998-08-21 01:14:21 dbrown Exp $
+ *      $Id: shaper.c,v 1.10 1998-09-17 02:25:19 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -188,7 +188,7 @@ UpdateShaperCoord
                 XmString xmstr;
                 char *name;
 
-                if (si->vinfo->coordnames[dim_ix] <= NrmNULLQUARK)
+                if (si->vinfo->dim_info[dim_ix].dim_quark <= NrmNULLQUARK)
                         name = "<unnamed>";
                 else
                         name = NrmQuarkToString
