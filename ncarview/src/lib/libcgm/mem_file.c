@@ -1,5 +1,5 @@
 /*
- *	$Id: mem_file.c,v 1.3 1991-09-27 14:12:02 clyne Exp $
+ *	$Id: mem_file.c,v 1.4 1992-02-24 17:52:33 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -134,13 +134,8 @@ CGM_openMemFile(metafile, record_size, type)
 	 */
 	if (! strcmp(type, "w") || ! strcmp(type, "w+")) {
 
-		*cgm_iobuf[index].len = *cgm_iobuf[index].size = 0;
-
-		if (cgm_iobuf[index]._base) 
-			cfree((char *) (cgm_iobuf[index]._base));
-
-		cgm_iobuf[index]._ptr	= 
-		cgm_iobuf[index]._base	= (unsigned char *) NULL;
+		*cgm_iobuf[index].len = 0;
+		cgm_iobuf[index]._ptr = cgm_iobuf[index]._base;
 
 	}
 

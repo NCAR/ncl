@@ -1,5 +1,5 @@
 /*
- *	$Id: cgm_tools.c,v 1.9 1991-10-01 15:59:51 clyne Exp $
+ *	$Id: cgm_tools.c,v 1.10 1992-02-24 17:52:22 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -1475,8 +1475,10 @@ static	int	memory_seek(cgm_fd, offset, whence)
 	int	whence;
 {
 	int	fd = cgmTab[cgm_fd].fd;
+	int	r = cgmTab[cgm_fd].record_size;
+	int	offset_ = r ? offset / r : 0;
 
-	return (CGM_lseekMemFile(fd, offset, whence));
+	return (CGM_lseekMemFile(fd, offset_, whence));
 }
 static	int	stream_close(cgm_fd)
 	Cgm_fd		cgm_fd;
