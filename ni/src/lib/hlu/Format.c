@@ -1,5 +1,5 @@
 /*
- *      $Id: Format.c,v 1.11 1996-01-19 18:06:29 dbrown Exp $
+ *      $Id: Format.c,v 1.12 1996-04-26 01:11:35 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -822,6 +822,7 @@ NhlString _NhlFormatFloat
 #endif
 {
         int ndgd,lmsd,iexp,lexp;
+#if 0
         char *c1[] = { " "," ","x",":F18:U:F:" };
         int  lex1[] = { 1,1,1,1 };
         char *c2[] = { "e","E","10**","10:S:" };
@@ -831,6 +832,16 @@ NhlString _NhlFormatFloat
         int lex3[] = { 0,0,0,0 };
         int len_diff[] = { 0,0,0,14 };
 	int exp_len[] = {1,1,5,14 };
+#endif
+        char *c1[] = { " "," ","x",":L1:4" };
+        int  lex1[] = { 1,1,1,1 };
+        char *c2[] = { "e","E","10**","10:S:" };
+        int lex2[] = { 0,0,4,2 };
+        char *c3[] = { " "," "," ",":N:" };
+	char cex1[10],cex2[6],cex3[4];
+        int lex3[] = { 0,0,0,0 };
+        int len_diff[] = { 0,0,0,10 };
+	int exp_len[] = {1,1,5,10 };
         int ioma,iodp,iotz;
         static char cbuf[256];
         int nbuf;

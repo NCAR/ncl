@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.c,v 1.13 1996-04-16 17:28:19 dbrown Exp $
+ *      $Id: VectorPlot.c,v 1.14 1996-04-26 01:11:40 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -4365,6 +4365,8 @@ static NhlErrorTypes ManageLabels
 			vcp->refvec_anno.aap->arrow_line_color;
 		vcp->minvec_anno.aap->arrow_fill_color = 
 			vcp->refvec_anno.aap->arrow_fill_color;
+		vcp->minvec_anno.aap->arrow_edge_color = 
+			vcp->refvec_anno.aap->arrow_edge_color;
 	}
 
 /* Manage constant field label */

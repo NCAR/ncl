@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlot.c,v 1.7 1996-03-26 21:48:56 dbrown Exp $
+ *      $Id: StreamlinePlot.c,v 1.8 1996-04-26 01:11:35 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -163,8 +163,8 @@ static NhlResource resources[] = {
 	{NhlNstLineStartStride,NhlCstLineStartStride,NhlTInteger,
 		 sizeof(int),Oset(line_start_stride),NhlTImmediate,
 		  _NhlUSET((NhlPointer) 2),0,NULL},
-	{NhlNstArrowStartStride,NhlCstArrowStartStride,NhlTInteger,
-		 sizeof(int),Oset(arrow_start_stride),NhlTImmediate,
+	{NhlNstArrowStride,NhlCstArrowStride,NhlTInteger,
+		 sizeof(int),Oset(arrow_stride),NhlTImmediate,
 		  _NhlUSET((NhlPointer) 2),0,NULL},
 
 /* Level resources */
@@ -425,7 +425,7 @@ static NhlResource resources[] = {
 	{ NhlNpmLabelBarDisplayMode,NhlCpmLabelBarDisplayMode,
 		 NhlTAnnotationDisplayMode,sizeof(NhlAnnotationDisplayMode),
 		 Oset(display_labelbar),
-		 NhlTImmediate,_NhlUSET((NhlPointer) NhlNEVER),0,NULL},
+		 NhlTImmediate,_NhlUSET((NhlPointer) NhlNOCREATE),0,NULL},
 	{NhlNlbLabelStrings, NhlClbLabelStrings, NhlTStringGenArray,
 		 sizeof(NhlPointer),Oset(lbar_labels_res),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
@@ -2823,7 +2823,7 @@ static NhlErrorTypes stDraw
 		 35 : stp->length_check_count);
 	c_stseti("CKX",stp->crossover_check_count);
 	c_stseti("SGD",stp->line_start_stride);
-	c_stseti("AGD",stp->arrow_start_stride);
+	c_stseti("AGD",stp->arrow_stride);
 
 	cix = stp->line_color < 0 ? 
 		_NhlGetGksCi(stl->base.wkptr,NhlFOREGROUND) :

@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlot.h,v 1.3 1996-02-26 21:46:04 dbrown Exp $
+ *      $Id: StreamlinePlot.h,v 1.4 1996-04-26 01:11:36 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -51,7 +51,7 @@
 #define NhlNstMinArrowSpacingF		"stMinArrowSpacingF"	/* AMD */
 #define NhlNstMinLineSpacingF		"stMinLineSpacingF"	/* SSP */
 #define NhlNstLineStartStride		"stLineStartStride"     /* SGD */
-#define NhlNstArrowStartStride		"stArrowStartStride"    /* AGD */
+#define NhlNstArrowStride		"stArrowStride"    	/* AGD */
 
 
 #define NhlNstLevels			"stLevels"
@@ -136,7 +136,7 @@
 #define NhlCstMinArrowSpacingF		"StMinArrowSpacingF"	/* AMD */
 #define NhlCstMinLineSpacingF		"StMinLineSpacingF"	/* SSP */
 #define NhlCstLineStartStride		"StLineStartStride"     /* SGD */
-#define NhlCstArrowStartStride		"StArrowStartStride"    /* AGD */
+#define NhlCstArrowStride		"StArrowStride"         /* AGD */
 
 #define NhlCstLevels			"StLevels"
 #define NhlCstLevelCount		"StLevelCount"		/* read-only */

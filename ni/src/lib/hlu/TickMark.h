@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.h,v 1.12 1996-01-19 18:06:34 dbrown Exp $
+ *      $Id: TickMark.h,v 1.13 1996-04-26 01:11:39 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -137,6 +137,9 @@ typedef enum { NhlLOG, NhlLINEAR, NhlIRREGULAR, NhlGEOGRAPHIC, NhlTIME }
 #define NhlNtmXBLabelAngleF		"tmXBLabelAngleF"
 #define NhlNtmXBLabelDirection		"tmXBLabelDirection"
 #define NhlNtmXBLabelFuncCode		"tmXBLabelFuncCode"
+#define NhlNtmXBLabelFontThicknessF	"tmXBLabelFontThicknessF"
+#define NhlNtmXBLabelFontQuality	"tmXBLabelFontQuality"
+#define NhlNtmXBLabelConstantSpacingF	"tmXBLabelConstantSpacingF"
 
 #define NhlNtmXBLabelDeltaF		"tmXBLabelDeltaF"
 
@@ -193,6 +196,9 @@ typedef enum { NhlLOG, NhlLINEAR, NhlIRREGULAR, NhlGEOGRAPHIC, NhlTIME }
 #define NhlNtmXTLabelAngleF		"tmXTLabelAngleF"
 #define NhlNtmXTLabelDirection		"tmXTLabelDirection"
 #define NhlNtmXTLabelFuncCode		"tmXTLabelFuncCode"
+#define NhlNtmXTLabelFontThicknessF	"tmXTLabelFontThicknessF"
+#define NhlNtmXTLabelFontQuality	"tmXTLabelFontQuality"
+#define NhlNtmXTLabelConstantSpacingF	"tmXTLabelConstantSpacingF"
 
 #define NhlNtmXTLabelDeltaF		"tmXTLabelDeltaF"
 
@@ -286,6 +292,9 @@ typedef enum { NhlLOG, NhlLINEAR, NhlIRREGULAR, NhlGEOGRAPHIC, NhlTIME }
 #define NhlNtmYLLabelAngleF		"tmYLLabelAngleF"
 #define NhlNtmYLLabelDirection		"tmYLLabelDirection"
 #define NhlNtmYLLabelFuncCode		"tmYLLabelFuncCode"
+#define NhlNtmYLLabelFontThicknessF	"tmYLLabelFontThicknessF"
+#define NhlNtmYLLabelFontQuality	"tmYLLabelFontQuality"
+#define NhlNtmYLLabelConstantSpacingF	"tmYLLabelConstantSpacingF"
 
 #define NhlNtmYLLabelDeltaF		"tmYLLabelDeltaF"
 
@@ -341,6 +350,9 @@ typedef enum { NhlLOG, NhlLINEAR, NhlIRREGULAR, NhlGEOGRAPHIC, NhlTIME }
 #define NhlNtmYRLabelAngleF		"tmYRLabelAngleF"
 #define NhlNtmYRLabelDirection		"tmYRLabelDirection"
 #define NhlNtmYRLabelFuncCode		"tmYRLabelFuncCode"
+#define NhlNtmYRLabelFontThicknessF	"tmYRLabelFontThicknessF"
+#define NhlNtmYRLabelFontQuality	"tmYRLabelFontQuality"
+#define NhlNtmYRLabelConstantSpacingF	"tmYRLabelConstantSpacingF"
 
 #define NhlNtmYRLabelDeltaF		"tmYRRLabelDeltaF"
 
@@ -361,6 +373,9 @@ typedef enum { NhlLOG, NhlLINEAR, NhlIRREGULAR, NhlGEOGRAPHIC, NhlTIME }
 #define NhlCtmLabelFontHeightsF		"TmLabelFontHeightsF"
 #define NhlCtmLabelFontColors		"TmLabelFontColors"
 #define NhlCtmLabelFontAspectsF		"TmLabelFontAspectsF"
+#define NhlCtmLabelFontThicknessesF	"TmLabelFontThicknessesF"
+#define NhlCtmLabelFontQualities        "TmLabelFontQualities"
+#define NhlCtmLabelConstantSpacingsF	"TmLabelConstantSpacingsF"
 #define NhlCtmMajorThicknessesF		"TmMajorThicknessesF"
 #define NhlCtmMajorLineColors		"TmMajorLineColors"
 #define NhlCtmMajorLengthsF		"TmMajorLengthsF"

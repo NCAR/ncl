@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.c,v 1.44 1996-01-19 18:06:33 dbrown Exp $
+ *      $Id: TickMark.c,v 1.45 1996-04-26 01:11:38 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -326,6 +326,20 @@ static NhlResource resources[] = {
 		  sizeof(char),
 		  NhlOffset(NhlTickMarkLayerRec,tick.x_b_label_fcode),
 		  NhlTString,_NhlUSET(":"),0,NULL},
+	{NhlNtmXBLabelFontThicknessF,NhlCtmLabelFontThicknessesF,NhlTFloat,
+		 sizeof(float),
+		 NhlOffset(NhlTickMarkLayerRec,tick.x_b_label_font_thickness),
+		 NhlTString,_NhlUSET("1.0"),0,NULL},
+	{NhlNtmXBLabelFontQuality, NhlCtmLabelFontQualities, NhlTFontQuality,
+		 sizeof(NhlFontQuality),
+		 NhlOffset(NhlTickMarkLayerRec,
+			   tick.x_b_label_font_quality), NhlTImmediate,
+		 _NhlUSET((NhlPointer)NhlHIGH ),0,NULL},
+	{NhlNtmXBLabelConstantSpacingF, NhlCtmLabelConstantSpacingsF,NhlTFloat,
+		 sizeof(float),
+		 NhlOffset(NhlTickMarkLayerRec,
+			   tick.x_b_label_constant_spacing),
+		 NhlTString,_NhlUSET("0.0" ), 0,NULL},
 	{ NhlNtmXBLabelDeltaF, NhlCtmXBLabelDeltaF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlTickMarkLayerRec,tick.x_b_label_delta),
 		NhlTString,_NhlUSET( "0.0" ),0,NULL},
@@ -360,10 +374,12 @@ static NhlResource resources[] = {
 		sizeof(NhlGenArray),
 		NhlOffset(NhlTickMarkLayerRec,tick.x_t_irregular_points),
 		NhlTImmediate,_NhlUSET( NULL),0,(NhlFreeFunc)NhlFreeGenArray},
-	{ NhlNtmXTValues, NhlCtmXTValues, NhlTFloatGenArray, sizeof(NhlGenArray),
+	{ NhlNtmXTValues, NhlCtmXTValues,
+		  NhlTFloatGenArray, sizeof(NhlGenArray),
 		NhlOffset(NhlTickMarkLayerRec,tick.x_t_values),
 		NhlTImmediate,_NhlUSET( NULL ),0,(NhlFreeFunc)NhlFreeGenArray},
-	{ NhlNtmXTLabels, NhlCtmXTLabels, NhlTStringGenArray, sizeof(NhlGenArray),
+	{ NhlNtmXTLabels, NhlCtmXTLabels, NhlTStringGenArray,
+		  sizeof(NhlGenArray),
 		NhlOffset(NhlTickMarkLayerRec,tick.x_t_labels),
 		NhlTImmediate,_NhlUSET( NULL ),0,(NhlFreeFunc)NhlFreeGenArray},
 	{ NhlNtmXTMajorThicknessF, NhlCtmMajorThicknessesF, NhlTFloat,
@@ -414,7 +430,7 @@ static NhlResource resources[] = {
 		NhlOffset(NhlTickMarkLayerRec, tick.x_t_label_font),
 		NhlTImmediate,_NhlUSET( (NhlPointer)0 ),0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
-		 NhlOffset(NhlTickMarkLayerRec, tick.x_t_label_font_height_set),
+		 NhlOffset(NhlTickMarkLayerRec,tick.x_t_label_font_height_set),
 		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{NhlNtmXTLabelFontHeightF, NhlCtmLabelFontHeightsF, NhlTFloat, 
 		sizeof(float),
@@ -442,6 +458,20 @@ static NhlResource resources[] = {
 		  sizeof(char),
 		  NhlOffset(NhlTickMarkLayerRec,tick.x_t_label_fcode),
 		  NhlTString,_NhlUSET(":"),0,NULL},
+	{NhlNtmXTLabelFontThicknessF,NhlCtmLabelFontThicknessesF,NhlTFloat,
+		 sizeof(float),
+		 NhlOffset(NhlTickMarkLayerRec,tick.x_t_label_font_thickness),
+		 NhlTString,_NhlUSET("1.0"),0,NULL},
+	{NhlNtmXTLabelFontQuality, NhlCtmLabelFontQualities, NhlTFontQuality,
+		 sizeof(NhlFontQuality),
+		 NhlOffset(NhlTickMarkLayerRec,
+			   tick.x_t_label_font_quality), NhlTImmediate,
+		 _NhlUSET((NhlPointer)NhlHIGH ),0,NULL},
+	{NhlNtmXTLabelConstantSpacingF, NhlCtmLabelConstantSpacingsF,NhlTFloat,
+		 sizeof(float),
+		 NhlOffset(NhlTickMarkLayerRec,
+			   tick.x_t_label_constant_spacing),
+		 NhlTString,_NhlUSET("0.0" ), 0,NULL},
 	{ NhlNtmXTLabelDeltaF, NhlCtmXTLabelDeltaF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlTickMarkLayerRec,tick.x_t_label_delta),
 		NhlTString,_NhlUSET( "0.0" ),0,NULL},
@@ -590,10 +620,12 @@ static NhlResource resources[] = {
 		sizeof(NhlGenArray),
 		NhlOffset(NhlTickMarkLayerRec,tick.y_l_irregular_points),
 		NhlTImmediate,_NhlUSET( NULL),0,(NhlFreeFunc)NhlFreeGenArray},
-	{ NhlNtmYLValues, NhlCtmYLValues, NhlTFloatGenArray, sizeof(NhlGenArray),
+	{ NhlNtmYLValues, NhlCtmYLValues, NhlTFloatGenArray, 
+		sizeof(NhlGenArray),
 		NhlOffset(NhlTickMarkLayerRec,tick.y_l_values),
 		NhlTImmediate,_NhlUSET( NULL ),0,(NhlFreeFunc)NhlFreeGenArray},
-	{ NhlNtmYLLabels, NhlCtmYLLabels, NhlTStringGenArray, sizeof(NhlGenArray),
+	{ NhlNtmYLLabels, NhlCtmYLLabels, NhlTStringGenArray, 
+		sizeof(NhlGenArray),
 		NhlOffset(NhlTickMarkLayerRec,tick.y_l_labels),
 		NhlTImmediate,_NhlUSET( NULL ),0,(NhlFreeFunc)NhlFreeGenArray},
 	{ NhlNtmYLMajorThicknessF, NhlCtmMajorThicknessesF, NhlTFloat,
@@ -673,6 +705,19 @@ static NhlResource resources[] = {
 		  sizeof(char),
 		  NhlOffset(NhlTickMarkLayerRec,tick.y_l_label_fcode),
 		  NhlTString,_NhlUSET(":"),0,NULL},
+	{NhlNtmYLLabelFontThicknessF,NhlCtmLabelFontThicknessesF,NhlTFloat,
+		 sizeof(float), 
+		 NhlOffset(NhlTickMarkLayerRec,tick.y_l_label_font_thickness),
+		 NhlTString,_NhlUSET("1.0"),0,NULL},
+	{NhlNtmYLLabelFontQuality, NhlCtmLabelFontQualities, NhlTFontQuality,
+		 sizeof(NhlFontQuality),
+		 NhlOffset(NhlTickMarkLayerRec,tick.y_l_label_font_quality),
+		 NhlTImmediate,_NhlUSET((NhlPointer)NhlHIGH ),0,NULL},
+	{NhlNtmYLLabelConstantSpacingF, NhlCtmLabelConstantSpacingsF,NhlTFloat,
+		 sizeof(float), 
+		 NhlOffset(NhlTickMarkLayerRec,
+			   tick.y_l_label_constant_spacing),
+		 NhlTString,_NhlUSET("0.0" ), 0,NULL},
 	{ NhlNtmYLLabelDeltaF, NhlCtmYLLabelDeltaF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlTickMarkLayerRec,tick.y_l_label_delta),
 		NhlTString,_NhlUSET( "0.0" ),0,NULL},
@@ -792,6 +837,21 @@ static NhlResource resources[] = {
 		  sizeof(char),
 		  NhlOffset(NhlTickMarkLayerRec,tick.y_r_label_fcode),
 		  NhlTString,_NhlUSET(":"),0,NULL},
+	{NhlNtmYRLabelFontThicknessF,NhlCtmLabelFontThicknessesF,NhlTFloat,
+		 sizeof(float), 
+		 NhlOffset(NhlTickMarkLayerRec,
+			   tick.y_r_label_font_thickness),
+		 NhlTString,_NhlUSET("1.0"),0,NULL},
+	{NhlNtmYRLabelFontQuality, NhlCtmLabelFontQualities, NhlTFontQuality,
+		 sizeof(NhlFontQuality),
+		 NhlOffset(NhlTickMarkLayerRec,
+			   tick.y_r_label_font_quality), NhlTImmediate,
+		 _NhlUSET((NhlPointer)NhlHIGH ),0,NULL},
+	{NhlNtmYRLabelConstantSpacingF, NhlCtmLabelConstantSpacingsF,NhlTFloat,
+		 sizeof(float), 
+		 NhlOffset(NhlTickMarkLayerRec,
+			   tick.y_r_label_constant_spacing),
+		 NhlTString,_NhlUSET("0.0" ), 0,NULL},
 	{ NhlNtmYRLabelDeltaF, NhlCtmYRLabelDeltaF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlTickMarkLayerRec,tick.y_r_label_delta),
 		NhlTString,_NhlUSET( "0.0" ),0,NULL},
@@ -3971,6 +4031,11 @@ static void SetTop
        	tnew->tick.x_t_label_angle = tnew->tick.x_b_label_angle;
 	tnew->tick.x_t_label_direction = tnew->tick.x_b_label_direction;
 	tnew->tick.x_t_label_fcode = tnew->tick.x_b_label_fcode;
+	tnew->tick.x_t_label_font_thickness = 
+		tnew->tick.x_b_label_font_thickness;
+	tnew->tick.x_t_label_font_quality = tnew->tick.x_b_label_font_quality;
+	tnew->tick.x_t_label_constant_spacing = 
+		tnew->tick.x_b_label_constant_spacing;
 	tnew->tick.x_t_label_delta = tnew->tick.x_b_label_delta;
 	tnew->tick.x_t_precision_set = tnew->tick.x_b_precision_set;
 	tnew->tick.x_t_precision = tnew->tick.x_b_precision;
@@ -4047,6 +4112,11 @@ NhlTickMarkLayer	tnew;
 	tnew->tick.y_r_label_font_aspect = tnew->tick.y_l_label_font_aspect;
 	tnew->tick.y_r_label_angle = tnew->tick.y_l_label_angle;
 	tnew->tick.y_r_label_direction = tnew->tick.y_l_label_direction;
+	tnew->tick.y_r_label_font_thickness = 
+		tnew->tick.y_l_label_font_thickness;
+	tnew->tick.y_r_label_font_quality = tnew->tick.y_l_label_font_quality;
+	tnew->tick.y_r_label_constant_spacing = 
+		tnew->tick.y_l_label_constant_spacing;
 	tnew->tick.y_r_label_fcode = tnew->tick.y_l_label_fcode;
 	tnew->tick.y_r_label_delta = tnew->tick.y_l_label_delta;
 	tnew->tick.y_r_precision_set = tnew->tick.y_l_precision_set;
@@ -6950,6 +7020,11 @@ int		c_or_s;
                         NhlNtxDirection,tnew->tick.x_b_label_direction,
                         NhlNtxFontColor,tnew->tick.x_b_label_font_color,
                         NhlNtxFuncCode,tnew->tick.x_b_label_fcode,
+                        NhlNtxFontThicknessF,
+					 tnew->tick.x_b_label_font_thickness,
+                        NhlNtxFontQuality,tnew->tick.x_b_label_font_quality,
+                        NhlNtxConstantSpacingF,
+					tnew->tick.x_b_label_constant_spacing,
                         NULL);
 			if(subret < NhlWARNING) {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: Could not create MultiText item for bottom tick mark labels, cannot continue",error_lead);
@@ -6973,6 +7048,11 @@ int		c_or_s;
                         NhlNtxDirection,tnew->tick.x_b_label_direction,
                         NhlNtxFontColor,tnew->tick.x_b_label_font_color,
                         NhlNtxFuncCode,tnew->tick.x_b_label_fcode,
+                        NhlNtxFontThicknessF,
+					 tnew->tick.x_b_label_font_thickness,
+                        NhlNtxFontQuality,tnew->tick.x_b_label_font_quality,
+                        NhlNtxConstantSpacingF,
+					tnew->tick.x_b_label_constant_spacing,
                         NULL);
 			if(subret < NhlWARNING) {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: Could not set MultiText item values for bottom tick mark labels, cannot continue",error_lead);
@@ -7071,6 +7151,11 @@ int		c_or_s;
                         NhlNtxDirection,tnew->tick.x_t_label_direction,
                         NhlNtxFontColor,tnew->tick.x_t_label_font_color,
                         NhlNtxFuncCode,tnew->tick.x_t_label_fcode,
+                        NhlNtxFontThicknessF,
+					 tnew->tick.x_t_label_font_thickness,
+                        NhlNtxFontQuality,tnew->tick.x_t_label_font_quality,
+                        NhlNtxConstantSpacingF,
+					tnew->tick.x_t_label_constant_spacing,
                         NULL);
 			if(subret < NhlWARNING) {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: Could not create MultiText item for top tick mark labels, cannot continue",error_lead);
@@ -7094,6 +7179,11 @@ int		c_or_s;
                         NhlNtxDirection,tnew->tick.x_t_label_direction,
                         NhlNtxFontColor,tnew->tick.x_t_label_font_color,
                         NhlNtxFuncCode,tnew->tick.x_t_label_fcode,
+                        NhlNtxFontThicknessF,
+					 tnew->tick.x_t_label_font_thickness,
+                        NhlNtxFontQuality,tnew->tick.x_t_label_font_quality,
+                        NhlNtxConstantSpacingF,
+					tnew->tick.x_t_label_constant_spacing,
                         NULL);
 			if(subret < NhlWARNING) {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: Could not set MultiText item values for top tick mark labels, cannot continue",error_lead);
@@ -7187,6 +7277,11 @@ int		c_or_s;
                         NhlNtxDirection,tnew->tick.y_l_label_direction,
                         NhlNtxFontColor,tnew->tick.y_l_label_font_color,
                         NhlNtxFuncCode,tnew->tick.y_l_label_fcode,
+                        NhlNtxFontThicknessF,
+					 tnew->tick.y_l_label_font_thickness,
+                        NhlNtxFontQuality,tnew->tick.y_l_label_font_quality,
+                        NhlNtxConstantSpacingF,
+					tnew->tick.y_l_label_constant_spacing,
                         NULL);
 			if(subret < NhlWARNING) {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: Could not create MultiText item for left tick mark labels, cannot continue",error_lead);
@@ -7210,6 +7305,11 @@ int		c_or_s;
                         NhlNtxDirection,tnew->tick.y_l_label_direction,
                         NhlNtxFontColor,tnew->tick.y_l_label_font_color,
                         NhlNtxFuncCode,tnew->tick.y_l_label_fcode,
+                        NhlNtxFontThicknessF,
+					 tnew->tick.y_l_label_font_thickness,
+                        NhlNtxFontQuality,tnew->tick.y_l_label_font_quality,
+                        NhlNtxConstantSpacingF,
+					tnew->tick.y_l_label_constant_spacing,
                         NULL);
 			if(subret < NhlWARNING) {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: Could not set MultiText item values for left tick mark labels, cannot continue",error_lead);
@@ -7305,6 +7405,11 @@ int		c_or_s;
                         NhlNtxDirection,tnew->tick.y_r_label_direction,
                         NhlNtxFontColor,tnew->tick.y_r_label_font_color,
                         NhlNtxFuncCode,tnew->tick.y_r_label_fcode,
+                        NhlNtxFontThicknessF,
+					 tnew->tick.y_r_label_font_thickness,
+                        NhlNtxFontQuality,tnew->tick.y_r_label_font_quality,
+                        NhlNtxConstantSpacingF,
+					tnew->tick.y_r_label_constant_spacing,
                         NULL);
 		if(subret < NhlWARNING) {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: Could not create MultiText item for right tick mark labels, cannot continue",error_lead);
@@ -7328,6 +7433,11 @@ int		c_or_s;
                         NhlNtxDirection,tnew->tick.y_r_label_direction,
                         NhlNtxFontColor,tnew->tick.y_r_label_font_color,
                         NhlNtxFuncCode,tnew->tick.y_r_label_fcode,
+                        NhlNtxFontThicknessF,
+					 tnew->tick.y_r_label_font_thickness,
+                        NhlNtxFontQuality,tnew->tick.y_r_label_font_quality,
+                        NhlNtxConstantSpacingF,
+					tnew->tick.y_r_label_constant_spacing,
                         NULL);
 		if(subret < NhlWARNING) {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: Could not set MultiText item values for right tick mark labels, cannot continue",error_lead);

@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlotP.h,v 1.3 1996-03-18 09:32:47 dbrown Exp $
+ *      $Id: StreamlinePlotP.h,v 1.4 1996-04-26 01:11:37 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -134,7 +134,7 @@ typedef struct _NhlStreamlinePlotLayerPart {
 	int			length_check_count;
 	int			crossover_check_count;
 	int			line_start_stride;
-	int			arrow_start_stride;
+	int			arrow_stride;
 	
 	NhlGenArray		levels;
 	int			level_count;
