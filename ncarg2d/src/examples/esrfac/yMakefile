@@ -1,9 +1,17 @@
 #
-#	$Id: yMakefile,v 1.4 1994-12-05 23:29:00 haley Exp $
+#	$Id: yMakefile,v 1.5 1995-06-13 21:49:55 haley Exp $
 #
 
 MYNAME	= esrfac
 
-GENERIC_SRCS = srex01.f srex01.dat
+SRCS = srex01.f srex01.dat
+OBJS = srex01.o
 
-InstallTarget($(GENERIC_SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
+PROG_LIBS		= $(NCARGLIBS)
+SYS_LIBS		= -lm
+EXTRA_LIBS		= $(XLIB)
+EXTRA_DEFINES	= -DSED_WSTYPE=1
+
+InstallTarget($(SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
+
+FExampleTarget(srex01,srex01.o)

@@ -1,12 +1,37 @@
 #
-#	$Id: yMakefile,v 1.9 1995-06-08 20:25:17 kennison Exp $
+#	$Id: yMakefile,v 1.10 1995-06-13 21:49:35 haley Exp $
 #
 
 MYNAME	= econpa
 
-GENERIC_SRCS = \
+SRCS = \
 	cpexcc.f cpex01.f cpex02.f cpex03.f cpex04.f cpex05.f cpex06.f \
 	cpex07.f cpex08.f cpex09.f cpex10.f cpex11.f cpex12.f cpex13.f \
 	cbex01.f
 
-InstallTarget($(GENERIC_SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
+OBJS = \
+	cpexcc.o cpex01.o cpex02.o cpex03.o cpex04.o cpex05.o cpex06.o \
+	cpex07.o cpex08.o cpex09.o cpex10.o cpex11.o cpex12.o cpex13.o \
+	cbex01.o
+
+PROG_LIBS		= $(NCARGLIBS)
+SYS_LIBS		= -lm
+EXTRA_LIBS		= $(XLIB)
+EXTRA_DEFINES	= -DSED_WSTYPE=1
+
+InstallTarget($(SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
+
+FExampleTarget(cbex01,cbex01.o)
+FExampleTarget(cpex01,cpex01.o cpexcc.o)
+FExampleTarget(cpex02,cpex02.o cpexcc.o)
+FExampleTarget(cpex03,cpex03.o cpexcc.o)
+FExampleTarget(cpex04,cpex04.o cpexcc.o)
+FExampleTarget(cpex05,cpex05.o cpexcc.o)
+FExampleTarget(cpex06,cpex06.o cpexcc.o)
+FExampleTarget(cpex07,cpex07.o cpexcc.o)
+FExampleTarget(cpex08,cpex08.o cpexcc.o)
+FExampleTarget(cpex09,cpex09.o cpexcc.o)
+FExampleTarget(cpex10,cpex10.o cpexcc.o)
+FExampleTarget(cpex11,cpex11.o cpexcc.o)
+FExampleTarget(cpex12,cpex12.o cpexcc.o)
+FExampleTarget(cpex13,cpex13.o cpexcc.o)

@@ -1,9 +1,17 @@
 #
-#	$Id: yMakefile,v 1.3 1994-12-05 23:29:02 haley Exp $
+#	$Id: yMakefile,v 1.4 1995-06-13 21:49:57 haley Exp $
 #
 
 MYNAME	= estitl
 
-GENERIC_SRCS = slex01.f
+SRCS = slex01.f
+OBJS = slex01.o
 
-InstallTarget($(GENERIC_SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
+PROG_LIBS		= $(NCARGLIBS)
+SYS_LIBS		= -lm
+EXTRA_LIBS		= $(XLIB)
+EXTRA_DEFINES	= -DSED_WSTYPE=1
+
+InstallTarget($(SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
+
+FExampleTarget(slex01,slex01.o)

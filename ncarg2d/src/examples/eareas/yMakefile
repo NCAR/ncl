@@ -1,8 +1,18 @@
 #
-#	$Id: yMakefile,v 1.5 1995-05-12 19:37:29 kennison Exp $
+#	$Id: yMakefile,v 1.6 1995-06-13 21:49:25 haley Exp $
 #
 MYNAME	= eareas
 
-GENERIC_SRCS = arex01.f arex02.f arex03.f
+SRCS = arex01.f arex02.f arex03.f
+OBJS = arex01.o arex02.o arex03.o
 
-InstallTarget($(GENERIC_SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
+PROG_LIBS		= $(NCARGLIBS)
+SYS_LIBS		= -lm
+EXTRA_LIBS		= $(XLIB)
+EXTRA_DEFINES	= -DSED_WSTYPE=1
+
+InstallTarget($(SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
+
+FExampleTarget(arex01,arex01.o)
+FExampleTarget(arex02,arex02.o)
+FExampleTarget(arex03,arex03.o)

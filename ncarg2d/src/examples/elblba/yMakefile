@@ -1,8 +1,16 @@
 #
-#	$Id: yMakefile,v 1.4 1994-12-05 23:28:50 haley Exp $
+#	$Id: yMakefile,v 1.5 1995-06-13 21:49:41 haley Exp $
 #
 MYNAME	= elblba
 
-GENERIC_SRCS = elblba.f
+SRCS = elblba.f
+OBJS = elblba.o
 
-InstallTarget($(GENERIC_SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
+PROG_LIBS		= $(NCARGLIBS)
+SYS_LIBS		= -lm
+EXTRA_LIBS		= $(XLIB)
+EXTRA_DEFINES	= -DSED_WSTYPE=1
+
+InstallTarget($(SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
+
+FExampleTarget(elblba,elblba.o)

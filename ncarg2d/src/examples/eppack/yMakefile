@@ -1,8 +1,16 @@
 #
-#       $Id: yMakefile,v 1.1 1994-06-20 20:06:32 kennison Exp $
+#       $Id: yMakefile,v 1.2 1995-06-13 21:49:49 haley Exp $
 #
 MYNAME  = eppack
 
-GENERIC_SRCS = ppex01.f
+SRCS = ppex01.f
+OBJS = ppex01.o
 
-InstallTarget($(GENERIC_SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
+PROG_LIBS		= $(NCARGLIBS)
+SYS_LIBS		= -lm
+EXTRA_LIBS		= $(XLIB)
+EXTRA_DEFINES	= -DSED_WSTYPE=1
+
+InstallTarget($(SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
+
+FExampleTarget(ppex01,ppex01.o)

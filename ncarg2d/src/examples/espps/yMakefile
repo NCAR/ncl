@@ -1,9 +1,18 @@
 #
-#	$Id: yMakefile,v 1.5 1994-12-05 23:28:58 haley Exp $
+#	$Id: yMakefile,v 1.6 1995-06-13 21:49:53 haley Exp $
 #
 
 MYNAME	= espps
 
-GENERIC_SRCS = splogy.f sprevx.f
+SRCS = splogy.f sprevx.f
+OBJS = splogy.o sprevx.o
 
-InstallTarget($(GENERIC_SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
+PROG_LIBS		= $(NCARGLIBS)
+SYS_LIBS		= -lm
+EXTRA_LIBS		= $(XLIB)
+EXTRA_DEFINES	= -DSED_WSTYPE=1
+
+InstallTarget($(SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
+
+FExampleTarget(splogy,splogy.o)
+FExampleTarget(sprevx,sprevx.o)

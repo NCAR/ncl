@@ -1,11 +1,31 @@
 #
-#       $Id: yMakefile,v 1.3 1994-12-16 18:27:49 haley Exp $
+#       $Id: yMakefile,v 1.4 1995-06-13 21:50:04 haley Exp $
 #
 MYNAME  = ewmap
 
-GENERIC_SRCS = wmex01.f wmex02.f wmex03.f wmex04.f wmex05.f \
-	wmex06.f wmex07.f wmex08.f wmex09.f wmex10.f wmex11.f \
-	wmex12.f wmex13.f wmex14.f
+SRCS = wmex01.f wmex02.f wmex03.f wmex04.f wmex05.f wmex06.f wmex07.f \
+	wmex08.f wmex09.f wmex10.f wmex11.f wmex12.f wmex13.f wmex14.f
+OBJS = wmex01.o wmex02.o wmex03.o wmex04.o wmex05.o wmex06.o wmex07.o \
+	wmex08.o wmex09.o wmex10.o wmex11.o wmex12.o wmex13.o wmex14.o
 
-InstallTarget($(GENERIC_SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
+PROG_LIBS		= $(NCARGLIBS)
+SYS_LIBS		= -lm
+EXTRA_LIBS		= $(XLIB)
+EXTRA_DEFINES	= -DSED_WSTYPE=1
 
+InstallTarget($(SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
+
+FExampleTarget(wmex01,wmex01.o)
+FExampleTarget(wmex02,wmex02.o)
+FExampleTarget(wmex03,wmex03.o)
+FExampleTarget(wmex04,wmex04.o)
+FExampleTarget(wmex05,wmex05.o)
+FExampleTarget(wmex06,wmex06.o)
+FExampleTarget(wmex07,wmex07.o)
+FExampleTarget(wmex08,wmex08.o)
+FExampleTarget(wmex09,wmex09.o)
+FExampleTarget(wmex10,wmex10.o)
+FExampleTarget(wmex11,wmex11.o)
+FExampleTarget(wmex12,wmex12.o)
+FExampleTarget(wmex13,wmex13.o)
+FExampleTarget(wmex14,wmex14.o)

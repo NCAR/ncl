@@ -1,11 +1,34 @@
 #
-#	$Id: yMakefile,v 1.4 1994-12-05 23:28:34 haley Exp $
+#	$Id: yMakefile,v 1.5 1995-06-13 21:49:31 haley Exp $
 #
 
 MYNAME	= eautog
 
-GENERIC_SRCS = \
+SRCS = \
 	 agex01.f agex02.f agex03.f agex04.f agex05.f agex06.f agex07.f\
 	 agex08.f agex09.f agex10.f agex11.f agex12.f agex13.f agda13.dat
 
-InstallTarget($(GENERIC_SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
+OBJS = \
+	 agex01.o agex02.o agex03.o agex04.o agex05.o agex06.o agex07.o\
+	 agex08.o agex09.o agex10.o agex11.o agex12.o agex13.o
+
+PROG_LIBS		= $(NCARGLIBS)
+SYS_LIBS		= -lm
+EXTRA_LIBS		= $(XLIB)
+EXTRA_DEFINES	= -DSED_WSTYPE=1
+
+InstallTarget($(SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
+
+FExampleTarget(agex01,agex01.o)
+FExampleTarget(agex02,agex02.o)
+FExampleTarget(agex03,agex03.o)
+FExampleTarget(agex04,agex04.o)
+FExampleTarget(agex05,agex05.o)
+FExampleTarget(agex05,agex05.o)
+FExampleTarget(agex07,agex07.o)
+FExampleTarget(agex08,agex08.o)
+FExampleTarget(agex09,agex09.o)
+FExampleTarget(agex10,agex10.o)
+FExampleTarget(agex11,agex11.o)
+FExampleTarget(agex12,agex12.o)
+FExampleTarget(agex13,agex13.o)

@@ -1,8 +1,16 @@
 #
-#	$Id: yMakefile,v 1.4 1994-12-05 23:28:48 haley Exp $
+#	$Id: yMakefile,v 1.5 1995-06-13 21:49:39 haley Exp $
 #
 MYNAME	= eezmpa
 
-GENERIC_SRCS = eezmpa.f
+SRCS = eezmpa.f
+OBJS = eezmpa.o
 
-InstallTarget($(GENERIC_SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
+PROG_LIBS		= $(NCARGLIBS)
+SYS_LIBS		= -lm
+EXTRA_LIBS		= $(XLIB)
+EXTRA_DEFINES	= -DSED_WSTYPE=1
+
+InstallTarget($(SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
+
+FExampleTarget(eezmpa,eezmpa.o)

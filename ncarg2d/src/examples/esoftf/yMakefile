@@ -1,9 +1,18 @@
 #
-#	$Id: yMakefile,v 1.4 1994-12-05 23:28:56 haley Exp $
+#	$Id: yMakefile,v 1.5 1995-06-13 21:49:51 haley Exp $
 #
 
 MYNAME	= esoftf
 
-GENERIC_SRCS = sfex01.f sfex02.f
+SRCS = sfex01.f sfex02.f
+OBJS = sfex01.o sfex02.o
 
-InstallTarget($(GENERIC_SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
+PROG_LIBS		= $(NCARGLIBS)
+SYS_LIBS		= -lm
+EXTRA_LIBS		= $(XLIB)
+EXTRA_DEFINES	= -DSED_WSTYPE=1
+
+InstallTarget($(SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
+
+FExampleTarget(sfex01,sfex01.o)
+FExampleTarget(sfex02,sfex02.o)

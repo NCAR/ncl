@@ -1,10 +1,28 @@
 #
-#	$Id: yMakefile,v 1.4 1994-12-05 23:28:46 haley Exp $
+#	$Id: yMakefile,v 1.5 1995-06-13 21:49:37 haley Exp $
 #
 MYNAME	= eezmap
 
-GENERIC_SRCS = \
-	 mpexcc.f mpex01.f mpex02.f mpex03.f mpex04.f mpex05.f mpex06.f\
-	 mpex07.f mpex08.f mpex09.f mpex10.f mpexfi.f mpexfi.dat
+SRCS = mpexcc.f mpex01.f mpex02.f mpex03.f mpex04.f mpex05.f mpex06.f \
+	mpex07.f mpex08.f mpex09.f mpex10.f mpexfi.f mpexfi.dat
+OBJS = mpexcc.o mpex01.o mpex02.o mpex03.o mpex04.o mpex05.o mpex06.o \
+	mpex07.o mpex08.o mpex09.o mpex10.o mpexfi.o
 
-InstallTarget($(GENERIC_SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
+PROG_LIBS		= $(NCARGLIBS)
+SYS_LIBS		= -lm
+EXTRA_LIBS		= $(XLIB)
+EXTRA_DEFINES	= -DSED_WSTYPE=1
+
+InstallTarget($(SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
+
+FExampleTarget(mpex01,mpex01.o)
+FExampleTarget(mpex02,mpex02.o)
+FExampleTarget(mpex03,mpex03.o)
+FExampleTarget(mpex04,mpex04.o)
+FExampleTarget(mpex05,mpex05.o)
+FExampleTarget(mpex06,mpex06.o)
+FExampleTarget(mpex07,mpex07.o)
+FExampleTarget(mpex08,mpex08.o)
+FExampleTarget(mpex09,mpex09.o)
+FExampleTarget(mpex10,mpex10.o)
+FExampleTarget(mpexfi,mpexfi.o)
