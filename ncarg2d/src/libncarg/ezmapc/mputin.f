@@ -1,40 +1,22 @@
 C
-C $Id: mputin.f,v 1.2 1999-04-08 23:30:24 kennison Exp $
+C $Id: mputin.f,v 1.3 1999-04-19 22:09:57 kennison Exp $
 C
-      SUBROUTINE MPUTIN (IPRJ,IZON,ISPH,PARA,UMIN,UMAX,VMIN,VMAX)
+      SUBROUTINE MPUTIN (IPRJ,IZON,ISPH,PADP,UMIN,UMAX,VMIN,VMAX)
 C
-C Declare the USGS block data external to force it to load.
+        DOUBLE PRECISION PADP(15),UMIN,UMAX,VMIN,VMAX
 C
-        EXTERNAL GTPZBD
-C
-        DOUBLE PRECISION PARA(15)
+        REAL PASP(15)
 C
 C Declare common blocks required to communicate with USGS code.
 C
-        COMMON /ERRMZ0/ IERR
-        SAVE   /ERRMZ0/
-C
-        COMMON /ELLPZ0/ AZ,EZ,ESZ,E0Z,E1Z,E2Z,E3Z,E4Z
-          DOUBLE PRECISION AZ,EZ,ESZ,E0Z,E1Z,E2Z,E3Z,E4Z
-        SAVE   /ELLPZ0/
-C
-        COMMON /PROJZ0/ IPRO
-        SAVE   /PROJZ0/
-C
-        COMMON /SPCSIR/ ISPHER
-        SAVE   /SPCSIR/
-C
-        COMMON /USGSC1/ IPRF,UTPA(15),UUMN,UUMX,UVMN,UVMX
-          DOUBLE PRECISION UTPA
+        COMMON /USGSC1/ UTPA(15),UUMN,UUMX,UVMN,UVMX,IPRF
+          DOUBLE PRECISION UTPA,UUMN,UUMX,UVMN,UVMX
+          INTEGER IPRF
         SAVE   /USGSC1/
 C
-C Initialize the error flag.
+C Declare the USGS "BLOCK DATA" external to force it to load.
 C
-        IERR=0
-C
-C Initialize the projection number in the USGS code's common block.
-C
-        IPRO=IPRJ
+        EXTERNAL GTPZBD
 C
 C Initialize minimum and maximum values in the USGS code's common block.
 C
@@ -43,15 +25,21 @@ C
         UVMN=VMIN
         UVMX=VMAX
 C
-C Initialize the spheroid parameters.
+C Copy some input parameters for the call to PJINSP.
 C
-        ISPHER=ISPH
+        ISSP=ISPH
 C
-        IF (IPRJ.NE.2) CALL SPHDZ0 (ISPH,PARA)
+        DO 101 I=1,15
+          PASP(I)=REAL(PADP(I))
+  101   CONTINUE
 C
-C Call PJINIT to finish initializing the USGS code.
+C Call PJINDP to initialize the double-precision form of the USGS code.
 C
-        CALL PJINIT (IPRJ,IZON,PARA)
+        CALL PJINDP (IPRJ,IZON,ISPH,PADP)
+C
+C Call PJINSP to initialize the single-precision form of the USGS code.
+C
+        CALL PJINSP (IPRJ,IZON,ISSP,PASP)
 C
 C Initialize EZMAP.
 C

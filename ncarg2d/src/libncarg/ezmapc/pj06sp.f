@@ -1,0 +1,73 @@
+C
+C $Id: pj06sp.f,v 1.1 1999-04-19 22:10:14 kennison Exp $
+C
+      SUBROUTINE PJ06SP (COORD,CRDIO,INDIC)
+C
+C -- P O L A R   S T E R E O G R A P H I C
+C
+      IMPLICIT REAL (A-Z)
+      INTEGER IND
+      INTEGER INDIC
+      DIMENSION GEOG(2),PROJ(2),COORD(2),CRDIO(2)
+C **** PARAMETERS **** A,E,ES,LON0,LATC,X0,Y0,E4,MCS,TCS,FAC,IND *******
+      COMMON /ERRMZ0/ IERR
+        INTEGER IERR
+      SAVE   /ERRMZ0/
+      COMMON /PRINZ0/ IPEMSG,IPELUN,IPPARM,IPPLUN
+        INTEGER IPEMSG,IPELUN,IPPARM,IPPLUN
+      SAVE   /PRINZ0/
+      COMMON /PC06SP/ A,LON0,X0,Y0,E,E4,FAC,MCS,TCS,IND
+      DATA ZERO,ONE,TWO /0.0E0,1.0E0,2.0E0/
+C
+C -- F O R W A R D   . . .
+C
+      IF (INDIC .EQ. 0) THEN
+C
+         GEOG(1) = COORD(1)
+         GEOG(2) = COORD(2)
+         IERR = 0
+         CON1 = FAC * ADJLSP (GEOG(1) - LON0)
+         CON2 = FAC * GEOG(2)
+         SINPHI = SIN (CON2)
+         TS = TSFNSP (E,CON2,SINPHI)
+         IF (IND .EQ. 0) GO TO 240
+         RH = A * MCS * TS / TCS
+         GO TO 260
+  240    RH = TWO * A * TS / E4
+  260    PROJ(1) = X0 + FAC * RH * SIN (CON1)
+         PROJ(2) = Y0 - FAC * RH * COS (CON1)
+         CRDIO(1) = PROJ(1)
+         CRDIO(2) = PROJ(2)
+         RETURN
+      END IF
+C
+C -- I N V E R S E   . . .
+C
+      IF (INDIC .EQ. 1) THEN
+C
+         PROJ(1) = COORD(1)
+         PROJ(2) = COORD(2)
+         IERR = 0
+         X = FAC * (PROJ(1) - X0)
+         Y = FAC * (PROJ(2) - Y0)
+         RH = SQRT (X * X + Y * Y)
+         IF (IND .EQ. 0) GO TO 340
+         TS = RH * TCS / (A * MCS)
+         GO TO 360
+  340    TS = RH * E4 / (TWO * A)
+  360    GEOG(2) = FAC * PHI2SP (E,TS)
+         IF (IERR .EQ. 0) GO TO 380
+         IERR = 064
+         RETURN
+  380    IF (RH .NE. ZERO) GO TO 400
+         GEOG(1) = FAC * LON0
+         CRDIO(1) = GEOG(1)
+         CRDIO(2) = GEOG(2)
+         RETURN
+  400    GEOG(1) = ADJLSP (FAC * ATAN2 (X , -Y) + LON0)
+         CRDIO(1) = GEOG(1)
+         CRDIO(2) = GEOG(2)
+         RETURN
+      END IF
+C
+      END

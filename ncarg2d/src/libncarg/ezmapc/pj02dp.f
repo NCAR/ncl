@@ -1,0 +1,96 @@
+C
+C $Id: pj02dp.f,v 1.1 1999-04-19 22:10:09 kennison Exp $
+C
+      SUBROUTINE PJ02DP (COORD,CRDIO,INDIC)
+C
+C -- S T A T E   P L A N E
+C
+      IMPLICIT DOUBLE PRECISION (A-Z)
+      INTEGER ITYPE
+      INTEGER INDIC, FWD, INV
+      DIMENSION GEOG(2),PROJ(2),COORD(2),CRDIO(2)
+      COMMON /ERRMZ0/ IERR
+        INTEGER IERR
+      SAVE   /ERRMZ0/
+      COMMON /PRINZ0/ IPEMSG,IPELUN,IPPARM,IPPLUN
+        INTEGER IPEMSG,IPELUN,IPPARM,IPPLUN
+      SAVE   /PRINZ0/
+      COMMON /PC02DP/ ITYPE
+C
+      PARAMETER (FWD=0, INV=1)
+C
+C -- F O R W A R D   . . .
+C
+      IF (INDIC .EQ. 0) THEN
+C
+         GEOG(1) = COORD(1)
+         GEOG(2) = COORD(2)
+         IERR = 0
+C
+C     TRANSVERSE MERCATOR PROJECTION
+C
+         IF (ITYPE .EQ. 1) THEN
+            CALL PJ09DP (GEOG,PROJ,FWD)
+         END IF
+C
+C     LAMBERT CONFORMAL PROJECTION
+C
+         IF (ITYPE .EQ. 2) THEN
+            CALL PJ04DP (GEOG,PROJ,FWD)
+         END IF
+C
+C     POLYCONIC PROJECTION
+C
+         IF (ITYPE .EQ. 3) THEN
+            CALL PJ07DP (GEOG,PROJ,FWD)
+         END IF
+C
+C     OBLIQUE MERCATOR PROJECTION
+C
+         IF (ITYPE .EQ. 4) THEN
+            CALL PJ20DP (GEOG,PROJ,FWD)
+         END IF
+C
+         CRDIO(1) = PROJ(1)
+         CRDIO(2) = PROJ(2)
+         RETURN
+      END IF
+C
+C -- I N V E R S E   . . .
+C
+      IF (INDIC .EQ. 1) THEN
+C
+         PROJ(1) = COORD(1)
+         PROJ(2) = COORD(2)
+         IERR = 0
+C
+C     TRANSVERSE MERCATOR PROJECTION
+C
+         IF (ITYPE .EQ. 1) THEN
+            CALL PJ09DP (PROJ,GEOG,INV)
+         END IF
+C
+C     LAMBERT CONFORMAL PROJECTION
+C
+         IF (ITYPE .EQ. 2) THEN
+            CALL PJ04DP (PROJ,GEOG,INV)
+         END IF
+C
+C     POLYCONIC PROJECTION
+C
+         IF (ITYPE .EQ. 3) THEN
+            CALL PJ07DP (PROJ,GEOG,INV)
+         END IF
+C
+C     OBLIQUE MERCATOR PROJECTION
+C
+         IF (ITYPE .EQ. 4) THEN
+            CALL PJ20DP (PROJ,GEOG,INV)
+         END IF
+C
+         CRDIO(1) = GEOG(1)
+         CRDIO(2) = GEOG(2)
+         RETURN
+      END IF
+C
+      END

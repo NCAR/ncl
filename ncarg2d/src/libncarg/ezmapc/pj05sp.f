@@ -1,0 +1,64 @@
+C
+C $Id: pj05sp.f,v 1.1 1999-04-19 22:10:13 kennison Exp $
+C
+      SUBROUTINE PJ05SP (COORD,CRDIO,INDIC)
+C
+C -- M E R C A T O R
+C
+      IMPLICIT REAL (A-Z)
+      INTEGER INDIC
+      DIMENSION GEOG(2),PROJ(2),COORD(2),CRDIO(2)
+C **** PARAMETERS **** A,E,ES,LON0,X0,Y0,NS,F,RH0,LAT1,M1 **************
+      COMMON /ERRMZ0/ IERR
+        INTEGER IERR
+      SAVE   /ERRMZ0/
+      COMMON /PRINZ0/ IPEMSG,IPELUN,IPPARM,IPPLUN
+        INTEGER IPEMSG,IPELUN,IPPARM,IPPLUN
+      SAVE   /PRINZ0/
+      COMMON /PC05SP/ A,LON0,X0,Y0,E,M1
+      DATA HALFPI /1.5707963267948966E0/
+      DATA EPSLN /1.0E-10/
+C
+C -- F O R W A R D   . . .
+C
+      IF (INDIC .EQ. 0) THEN
+C
+         GEOG(1) = COORD(1)
+         GEOG(2) = COORD(2)
+         IERR = 0
+         IF (ABS(ABS(GEOG(2)) - HALFPI) .GT. EPSLN) GO TO 240
+         IF (IPEMSG .EQ. 0) WRITE (IPELUN,2020)
+ 2020    FORMAT (/' ERROR PJ05SP'/
+     .            ' TRANSFORMATION CANNOT BE COMPUTED AT THE POLES')
+         IERR = 053
+         RETURN
+  240    SINPHI = SIN (GEOG(2))
+         TS = TSFNSP (E,GEOG(2),SINPHI)
+         PROJ(1) = X0 + A * M1 * ADJLSP (GEOG(1) - LON0)
+         PROJ(2) = Y0 - A * M1 * LOG (TS)
+         CRDIO(1) = PROJ(1)
+         CRDIO(2) = PROJ(2)
+         RETURN
+      END IF
+C
+C -- I N V E R S E   . . .
+C
+      IF (INDIC .EQ. 1) THEN
+C
+         PROJ(1) = COORD(1)
+         PROJ(2) = COORD(2)
+         IERR = 0
+         X = PROJ(1) - X0
+         Y = PROJ(2) - Y0
+         TS = EXP (- Y / (A * M1))
+         GEOG(2) = PHI2SP (E,TS)
+         IF (IERR .EQ. 0) GO TO 280
+         IERR = 055
+         RETURN
+  280    GEOG(1) = ADJLSP (LON0 + X / (A * M1))
+         CRDIO(1) = GEOG(1)
+         CRDIO(2) = GEOG(2)
+         RETURN
+      END IF
+C
+      END
