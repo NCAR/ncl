@@ -1,5 +1,5 @@
 /*
- *      $Id: ctrans_api.c,v 1.11 1992-07-16 18:07:24 clyne Exp $
+ *      $Id: ctrans_api.c,v 1.12 1992-07-16 23:12:47 clyne Exp $
  */
 /*
  *	File:		ctrans_api.c
@@ -46,9 +46,10 @@
  *      a global structure that contains values of command line options
  */
 static  struct  {
-	float   lmin;	/* minimum line width           */
-	float   lmax;	/* maximun line width           */
-	float   lscale;	/* additional line scaling      */
+	float   lmin;		/* minimum line width           */
+	float   lmax;		/* maximun line width           */
+	float   lscale;		/* additional line scaling      */
+	float   rgbscale;	/* rbg color intensity scaling	*/
 } opt;
 
 
@@ -56,6 +57,7 @@ static  OptDescRec      set_options[] = {
 	{"lmin", 1, "-1", "Set minimum line width"},
 	{"lmax", 1, "-1", "Set maximum line width"},
 	{"lscale", 1, "-1", "Scale all lines by 'arg0'"},
+	{"rgbscale", 1, "1.0", "Scale rgb color intensities by 'arg0'"},
 	{NULL}
 };
 
@@ -65,6 +67,9 @@ static  Option  get_options[] = {
 	{"lmax", NCARGCvtToFloat, (Voidptr) &opt.lmax, sizeof (opt.lmax )
 	},
 	{"lscale", NCARGCvtToFloat, (Voidptr) &opt.lscale, sizeof (opt.lscale)
+	},
+	{"rgbscale", NCARGCvtToFloat, (Voidptr) &opt.rgbscale, 
+						sizeof (opt.rgbscale)
 	},
 	{NULL
 	}
@@ -93,6 +98,8 @@ static	Cgm_fd	cgm_fd = -1;		/* file descriptor for metafile	*/
 static	boolean	initialized = FALSE;	/* initialization state		*/
 static	int	frameCount = 0;		/* current frame offset		*/
 
+static	char	*argv_[10];
+
 /*
  *
  *	CtransOpenBatch
@@ -103,18 +110,18 @@ static	int	frameCount = 0;		/* current frame offset		*/
  *	The X driver will not respond to X events from the user.
  *
  * on entry:
- *	device_name	: name of device (graphcap) to translate to. If 
+ *	*device_name	: name of device (graphcap) to translate to. If 
  *			device_name is a graphcap and does not contain
  *			an explicit path ctrans will look for the graphcap
  *			in the default directory. Otherwise ctrans will use
  *			whatever path is specified.
- *	font_name	: name of fontcap to use for rendering fonts. As
+ *	*font_name	: name of fontcap to use for rendering fonts. As
  *			with device_name if an explicit path is not provided
  * 			ctrans will look in the default font directory for the
  *			named font.
- *	metafile	: name of metafile to translate.
- *	dev_argc	: device specific argument  count
- *	dev_argv	: device specific arguments
+ *	*metafile	: name of metafile to translate.
+ *	**dev_argc	: device specific argument  count
+ *	*dev_argv	: device specific arguments
  *
  * on exit
  *	return		: [FATAL, WARN, EOM, OK]
@@ -128,13 +135,15 @@ CtransRC	CtransOpenBatch(device_name, font_name, metafile, dev_argc, dev_argv)
 	char	*device_name,
 		*font_name,
 		*metafile;
-	int	dev_argc;
+	int	*dev_argc;
 	char	**dev_argv;
 {
 	char	*gcap,		/* the path to the graphcap	*/
 		*fcap;		/* path to the fontcap		*/
 
+#ifdef	DEAD
 	char	**dev_argv_;
+#endif
 
 	static	boolean softFillOption = FALSE;
 	static	boolean deBugOption = FALSE;
@@ -148,8 +157,10 @@ CtransRC	CtransOpenBatch(device_name, font_name, metafile, dev_argc, dev_argv)
 	/*
 	 * set all these hideous global variables to something resonable
 	 */
-	Argv = (char **) NULL;
-	Argc = 0;
+	argv_[0] = dev_argv[0];
+	argv_[1] = NULL;
+	Argv = argv_;
+	Argc = 1;
 	stand_Alone = TRUE;		/* X driver creates own window	*/
 	Batch = TRUE;			/* drivers don't prompt user	*/
 	softFill = &softFillOption;	/* no soft fill			*/
@@ -177,6 +188,7 @@ CtransRC	CtransOpenBatch(device_name, font_name, metafile, dev_argc, dev_argv)
 		return(FATAL);
         }
 
+#ifdef	DEAD
 	/*
 	 * force the loading of device specific option defaults. The process
 	 * is destructive to dev_argc/dev_argv so pass a copy of the arg list
@@ -189,10 +201,11 @@ CtransRC	CtransOpenBatch(device_name, font_name, metafile, dev_argc, dev_argv)
 		dev_argv_[i] = (char *) malloc (strlen(dev_argv[i] + 1));
 		(void) strcpy (dev_argv_[i], dev_argv[i]);
 	}
+#endif
 	optionDesc = OpenOptionTbl();
 	(void) LoadOptionTable(optionDesc, set_options);
 	if (ParseOptionTable(
-		optionDesc, &dev_argc, dev_argv_, devices[currdev].opt) < 0) 
+		optionDesc, dev_argc, dev_argv, devices[currdev].opt) < 0) 
 	{
 		CtransSetError_(ERR_INV_ARG);
 		return(FATAL);
@@ -212,6 +225,7 @@ CtransRC	CtransOpenBatch(device_name, font_name, metafile, dev_argc, dev_argv)
 	if (opt.lmin > -1) SetMinLineWidthDefault(opt.lmin);
 	if (opt.lmax > -1) SetMaxLineWidthDefault(opt.lmax);
 	if (opt.lscale > -1) SetAdditionalLineScale(opt.lscale);
+	if (opt.lscale != 1.0) SetRGBIntensityScale(opt.rgbscale);
 
 
 

@@ -1,5 +1,5 @@
 /*
- *	$Id: default.c,v 1.9 1992-07-16 18:07:29 clyne Exp $
+ *	$Id: default.c,v 1.10 1992-07-16 23:12:51 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -33,7 +33,8 @@ static	struct	{
 	boolean	max_line_width_set;
 	float	line_width_scale;
 	boolean	line_width_scale_set;
-	} oPtion = {1.0, FALSE, 1.0, FALSE, 1.0, FALSE};
+	float	rgb_scale;
+	} oPtion = {1.0, FALSE, 1.0, FALSE, 1.0, FALSE, 1.0};
 
 static	ColorElement defaultCmap[] = {
 	{{  0,   0,   0}, TRUE, TRUE},	/* background color	*/
@@ -48,10 +49,6 @@ static	ColorElement defaultCmap[] = {
 
 static	int	defaultCmapSize = sizeof (defaultCmap) / sizeof (ColorElement);
 
-/*
- * the color lookup table
- */
-static	ColorLUTable	colorLUTable;
 
 /*
  *	DefaultColorTable contains the color lookup table which is defined
@@ -65,9 +62,22 @@ static	ColorElement		*colorDefaultTable;
  */
 static	ColorElement		*picColorDefaultTable;
 
+static DEFAULTTABLE	picdefaulttable;
+DEFAULTTABLE		*dt = &defaulttable;
+
+/*
+ * the color lookup table
+ */
+static	ColorLUTable	colorLUTable;
+ColorLUTable		*clut = &colorLUTable;
+
+
+
 InitDefault()
 {
 	static	boolean	isInit = FALSE;
+	int	max_intensity = (1 << DCP) - 1;
+	int	tmp;
 	int	i;
 
 	/*
@@ -96,7 +106,19 @@ InitDefault()
 	 */
 	for (i=0; i<defaultCmapSize; i++) {
 		colorLUTable.ce[i].damage = TRUE;
-		colorLUTable.ce[i] = defaultCmap[i];
+		colorLUTable.ce[i].defined = TRUE;
+
+		tmp = defaultCmap[i].rgb.red * oPtion.rgb_scale;
+		tmp = tmp > max_intensity ? max_intensity : tmp;
+		colorLUTable.ce[i].rgb.red = (unsigned char) tmp;
+
+		tmp = defaultCmap[i].rgb.green * oPtion.rgb_scale;
+		tmp = tmp > max_intensity ? max_intensity : tmp;
+		colorLUTable.ce[i].rgb.green = (unsigned char) tmp;
+
+		tmp = defaultCmap[i].rgb.blue * oPtion.rgb_scale;
+		tmp = tmp > max_intensity ? max_intensity : tmp;
+		colorLUTable.ce[i].rgb.blue = (unsigned char) tmp;
 	}
 	for (; i<=MAX_C_I; i++) {
 		colorLUTable.ce[i].damage = FALSE;
@@ -1123,7 +1145,9 @@ int ColrTable(c)
 CGMC *c;
 {
 	int	color_index;
+	int	tmp;
 	int	i;
+	int	max_intensity = (1 << DCP) - 1;
 
 	color_index = c->ci[0];
 	if (color_index == 0) {
@@ -1131,9 +1155,18 @@ CGMC *c;
 	}
 
 	for (i=0; i < c->CDnum && i<=MAX_C_I; i++, color_index++) {
-		clut->ce[color_index].rgb.red = (unsigned char) c->cd[i].red;
-		clut->ce[color_index].rgb.green = (unsigned char)c->cd[i].green;
-		clut->ce[color_index].rgb.blue = (unsigned char) c->cd[i].blue;
+		tmp = c->cd[i].red * oPtion.rgb_scale;
+		tmp = tmp > max_intensity ? max_intensity : tmp;
+		clut->ce[color_index].rgb.red = (unsigned char) tmp;
+
+		tmp = c->cd[i].green * oPtion.rgb_scale;
+		tmp = tmp > max_intensity ? max_intensity : tmp;
+		clut->ce[color_index].rgb.green = (unsigned char) tmp;
+
+		tmp = c->cd[i].blue * oPtion.rgb_scale;
+		tmp = tmp > max_intensity ? max_intensity : tmp;
+		clut->ce[color_index].rgb.blue = (unsigned char) tmp;
+
 		clut->ce[color_index].defined = TRUE;
 		if (! clut->ce[color_index].damage) {
 			clut->total_damage++;
@@ -1210,4 +1243,15 @@ SetAdditionalLineScale(line_scale)
 
 	oPtion.line_width_scale = line_scale;
 	oPtion.line_width_scale_set = TRUE;;
+}
+
+/*
+ *	set rgb intensity scaling
+ */
+SetRGBIntensityScale(rgb_scale)
+	float	rgb_scale;
+{
+	COLOUR_TABLE_DAMAGE = TRUE;
+
+	oPtion.rgb_scale = rgb_scale;
 }

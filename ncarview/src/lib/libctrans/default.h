@@ -1,5 +1,5 @@
 /*
- *	$Id: default.h,v 1.9 1992-07-16 18:07:32 clyne Exp $
+ *	$Id: default.h,v 1.10 1992-07-16 23:12:56 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -282,17 +282,11 @@ static DEFAULTTABLE	defaulttable = {
 	
 };
 
-static DEFAULTTABLE	picdefaulttable;
-DEFAULTTABLE		*dt = &defaulttable;
-ColorLUTable		*clut;
-
-#else	
-
-extern 	DEFAULTTABLE		*dt;
-extern	ColorLUTable		*clut;
 
 #endif
 
+extern 	DEFAULTTABLE		*dt;
+extern	ColorLUTable		*clut;
 
 #define	MFVERSION	dt->mfversion	/* METAFILE VERSION		*/
 
