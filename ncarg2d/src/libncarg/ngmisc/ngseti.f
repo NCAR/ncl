@@ -1,5 +1,5 @@
 C
-C	$Id: ngseti.f,v 1.10 1996-01-12 21:31:09 boote Exp $
+C	$Id: ngseti.f,v 1.11 1996-10-07 19:18:17 fred Exp $
 C
       SUBROUTINE NGSETI (CNP,IVP)
 C
@@ -115,6 +115,17 @@ C
           IDR(6:7) = ' 0'
         ENDIF
         CALL GESC(-1517,1,IDR,1,IDUM,CDUM)
+        GO TO 120
+C
+C  IG - Flag for indicating whether clipping rectangles in segments
+C       should be transformed according the the current segment
+C       transformation.
+C
+      ELSE IF (CNP(1:2).EQ.'IG' .OR. CNP(1:2).EQ.'ig' .OR.
+     +         CNP(1:2).EQ.'Ig') THEN
+        INCSEG = IVP
+        WRITE(IDR(1:5), 500) INCSEG
+        CALL GESC(-1386,1,IDR,1,IDUM,CDUM)
         GO TO 120
 C
 C  SS - Flag for indicating whether segments should be saved.
