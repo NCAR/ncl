@@ -1,5 +1,5 @@
 C     
-C      $Id: xy04f.f,v 1.4 1995-02-22 16:35:41 haley Exp $
+C      $Id: xy04f.f,v 1.5 1995-02-26 14:20:00 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -25,9 +25,9 @@ C                  show how to change the appearance of these multiple
 C                  lines.
 C
 C                  The "CoordArrays" object is used to set up the data,
-C                  and the "DataDep" object is used to describe
-C                  attributes of the data being plotted, like the
-C                  line color and the dash patterns.
+C                  and the resource file is used to set up attributes
+C                  of the data being plotted, like the line color and
+C                  the dash patterns.
 C
       external nhlfapplayerclass
       external nhlfxworkstationlayerclass
@@ -37,7 +37,7 @@ C
       parameter(NPTS=500,NCURVE=4)
       parameter(PI100=.031415926535898)
 
-      integer appid,xworkid,plotid,dataid,datadepid
+      integer appid,xworkid,plotid,dataid
       integer rlist, i, j, len(2)
       real ydra(NPTS,NCURVE), theta
       data len/NPTS,NCURVE/

@@ -1,5 +1,5 @@
 /*
-**      $Id: xy04c.c,v 1.5 1995-02-22 16:35:40 haley Exp $
+**      $Id: xy04c.c,v 1.6 1995-02-26 14:19:58 haley Exp $
 */
 /***********************************************************************
 *                                                                      *
@@ -25,9 +25,9 @@
 **                 lines.
 **
 **                 The "CoordArrays" object is used to set up the data,
-**                 and the "DataDep" object is used to describe
-**                 attributes of the data being plotted, like the
-**                 line color and the dash patterns.
+**                 and the resource file is used to set up attributes
+**                 of the data being plotted, like the line color and
+**                 the dash patterns.
 **
 */
 
@@ -49,7 +49,7 @@ int len[2] = {NCURVE,NPTS};
 
 main()
 {
-    int     appid,xworkid,plotid,dataid,datadepid;
+    int     appid,xworkid,plotid,dataid;
     int     rlist;
     int     i, j;
     float   theta;
