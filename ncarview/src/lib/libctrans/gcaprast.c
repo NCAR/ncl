@@ -1,5 +1,5 @@
 /*
- *	$Id: gcaprast.c,v 1.2 1991-07-18 16:25:31 clyne Exp $
+ *	$Id: gcaprast.c,v 1.3 1991-08-16 10:52:06 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -474,20 +474,16 @@ CGMC	*c;
  * on exit
  *	return		: 0 => Ok, else error
  */
+/*ARGSUSED*/
 Ct_err	CellArray_(c, P, Q, R, nx, ny)
 	CGMC		*c;
 	Ptype	P, Q, R;
 	int	nx, ny;
 {
 	unsigned int	image_height,	/* image height in pixels	*/
-			image_width,	/* image width in pixels	*/
-			image_size,	/* size of image data in bytes	*/
-			pad;
+			image_width;	/* image width in pixels	*/
 
-	int		step_x,		/* step size for incrementing in
-					 * x direction within the image
-					 */
-			step_y;		/* step size for incrementing in
+	int		step_y;		/* step size for incrementing in
 					 * y direction within the image
 					 */
 
@@ -499,13 +495,12 @@ Ct_err	CellArray_(c, P, Q, R, nx, ny)
 					 * pixels making up a row (col) in
 					 * a the cell at row (col)[i]
 					 */
-	unsigned char	*index_array,	/* color indeces for a cell row	*/
-			index;		/* color index for current cell */
+	unsigned char	*index_array;	/* color indeces for a cell row	*/
 	int		cgmc_index;	/* index into the cgmc		*/
 	boolean		swap;
 
 
-	register int	i,j,k,l;
+	register int	i,j,k;
 
 	void	SetUpCellArrayIndexing(), set_up_addressing(), swap_array();
 
@@ -532,7 +527,8 @@ Ct_err	CellArray_(c, P, Q, R, nx, ny)
 	 * making up each cell. We do this to avoid floating point arithmatic
 	 * later on
 	 */
-	SetUpCellArrayIndexing(image_width, image_height, rows, cols, nx, ny);
+	SetUpCellArrayIndexing(image_width, image_height, rows, cols, 
+					(unsigned) nx, (unsigned) ny);
 
 
 	/*
@@ -583,7 +579,7 @@ Ct_err	CellArray_(c, P, Q, R, nx, ny)
 					(void)formatcoord(start_y,(long)0,1);
 					break;
 				case (char)VC:
-					(void)formatrasterveccnt(nx);
+					(void)formatrasterveccnt((long) nx);
 					break;
 				case (char)RL:
 					Runlength = TRUE;

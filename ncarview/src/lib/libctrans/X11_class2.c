@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class2.c,v 1.4 1991-05-16 11:41:11 clyne Exp $
+ *	$Id: X11_class2.c,v 1.5 1991-08-16 10:54:55 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -130,7 +130,9 @@ Ct_err	X11_BackColr(c)
 	pixel = Colortab[0];
 	if (strcmp("X11", devices[currdev].name) == 0) {
 		XSetWindowBackground(dpy, win, pixel);
+#ifdef	DEAD
 		XClearWindow(dpy, win);
+#endif
 	}
 
 	return (OK);

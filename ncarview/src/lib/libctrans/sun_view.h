@@ -11,7 +11,7 @@ static	struct	{
 	} pointBuf = {NULL, 0};
 
 #define	INITIAL_COLOR_ALLOCATION	2
-#define	MAX_COLOR	128
+#define	MAX_COLOR	256
 #define	MAX_COLOR_INDEX	256
 #define	UNALLOCATED	-1
 

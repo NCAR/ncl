@@ -1,8 +1,9 @@
 /*
- *	$Id: rastdev.c,v 1.2 1991-06-18 15:03:41 clyne Exp $
+ *	$Id: rastdev.c,v 1.3 1991-08-16 10:54:19 clyne Exp $
  */
 #include <stdio.h>
 #include <ncarg_ras.h>
+#include <cterror.h>
 #include "rast.h"
 #include "cgmc.h"
 #include "default.h"
@@ -33,6 +34,7 @@ void	rast_pointflush(coord_buf, coord_buf_num)
 {
 	int	i;
 	void	line_();
+	Ct_err	ComLineSim();
 
 	if (LINE_TYPE != 1) {
 		for(i=1;i<*coord_buf_num;i++)
@@ -48,8 +50,10 @@ void	rast_pointflush(coord_buf, coord_buf_num)
 	 */
 	if (rasLineWidth == 1) {
 		for (i=1; i<*coord_buf_num; i++) {
-		line_(XConvert(coord_buf[i-1].x), YConvert(coord_buf[i-1].y), 
-			XConvert(coord_buf[i].x), YConvert(coord_buf[i].y));
+		line_((int) XConvert(coord_buf[i-1].x), 
+			(int) YConvert(coord_buf[i-1].y), 
+			(int) XConvert(coord_buf[i].x), 
+			(int) YConvert(coord_buf[i].y));
 		}
 	}
 	else {
@@ -67,7 +71,6 @@ void	rast_line(x1_,y1_,x2_,y2_)
 	long	x1_,y1_,x2_,y2_;
 {
 
-	int	i;
 	long	x1, y1, x2, y2;
 	void	line_();
 
@@ -75,7 +78,8 @@ void	rast_line(x1_,y1_,x2_,y2_)
 		return;
 	}
 
-	line_(XConvert(x1), YConvert(y1), XConvert(x2), YConvert(y2));
+	line_((int) XConvert(x1), (int) YConvert(y1), 
+		(int) XConvert(x2), (int) YConvert(y2));
 }
 
 /*
@@ -86,7 +90,7 @@ void	rast_devline(x1_,y1_,x2_,y2_)
 {
 	void	line_();
 
-	line_(x1_, y1_, x2_, y2_);
+	line_((int) x1_, (int) y1_, (int) x2_, (int) y2_);
 }
 
 void	rast_linestyle()

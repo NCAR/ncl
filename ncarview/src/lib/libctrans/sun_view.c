@@ -1,5 +1,5 @@
 /*
- *	$Id: sun_view.c,v 1.6 1991-07-18 16:25:39 clyne Exp $
+ *	$Id: sun_view.c,v 1.7 1991-08-16 10:52:33 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -314,7 +314,6 @@ CGMC *c;
 Ct_err	SunV_BegPicBody(c)
 CGMC *c;
 {
-	unsigned op = 0;
 
 	/*	
 	 *	check to see if any CGM picture descriptor elements 
@@ -328,12 +327,6 @@ CGMC *c;
 	 */
 	pw_batch_on(pixReg);
 #endif
-
-	/* clear the screen	*/
-	op = PIX_SRC | PIX_COLOR(0);
-	pw_writebackground(pixReg, 0,0, dev.width, dev.height, op);
-		
-
 	return (OK);
 }
 
@@ -341,6 +334,8 @@ CGMC *c;
 Ct_err	SunV_EndPic(c)
 CGMC *c;
 {
+	unsigned op = 0;
+
 #ifdef	BATCH
 	/*
 	 * turn off batching. 
@@ -380,8 +375,25 @@ CGMC *c;
 		(void) notify_dispatch();
 	}
 	nextFrame = FALSE;	/* inform notifier to go on	*/
-	return (OK);
 
+	return (OK);
+}
+
+/*ARGSUSED*/
+Ct_err	SunV_ClearDevice(c)
+CGMC *c;
+{
+	unsigned op = 0;
+
+	/* 
+	 * clear the screen
+	 */
+	op = PIX_SRC | PIX_COLOR(0);
+	pw_writebackground(pixReg, 0,0, dev.width, dev.height, op);
+
+	return(OK);
+
+	
 }
 
 
@@ -807,6 +819,7 @@ CGMC *c;
 	Etype	mode;		/* cell representation mode		*/
 
 	Ct_err	raster_();
+	void	SetUpCellArrayIndexing();
 
 	/*
 	 *	check any control elements
@@ -848,7 +861,9 @@ CGMC *c;
 		cols = (int *) icMalloc((unsigned) nx * sizeof (int));
 		rows = (int *) icMalloc((unsigned) ny * sizeof (int));
 
-		SetUpCellArrayIndexing(ABS(P.x - Q.x) + 1, ABS(P.y - Q.y) + 1,
+		SetUpCellArrayIndexing(
+			(unsigned) ABS(P.x - Q.x) + 1, 
+			(unsigned) ABS(P.y - Q.y) + 1,
 			rows, cols, (unsigned) nx, (unsigned) ny);
 		
 		/*
@@ -1265,7 +1280,11 @@ static	Notify_value destroy_proc_(frame, status)
 	}
 
 	close_ctrans();
+#ifdef	lint
+	return(NOTIFY_DONE);
+#else
 	exit(0);
+#endif
 }
 
 /*

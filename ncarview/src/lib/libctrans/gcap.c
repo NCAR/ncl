@@ -1,5 +1,5 @@
 /*
- *	$Id: gcap.c,v 1.9 1991-07-18 16:25:25 clyne Exp $
+ *	$Id: gcap.c,v 1.10 1991-08-16 10:51:31 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -99,6 +99,8 @@ CGMC *c;
 	DCtype	x_extent;
 
 	extern	int	commFillScaleFactor;
+
+	void	SetDevWin();
 	
 	/*
 	 * 	Init translation values and the formating routines
@@ -168,6 +170,11 @@ CGMC *c;
 	if (POLYGON_START_SIZE == 0 && POLYGON_SIMULATE) {
 		*softFill = TRUE;
 	}
+
+	/*
+	 * if not connected to a tty put ourselves in BATCH mode
+	 */
+	if (! isatty(fileno(stdout))) BATCH = TRUE;
 
 	/*
 	 * if not Batch put the device in graphics mode. Else its up
@@ -317,16 +324,23 @@ CGMC *c;
 		(void)buffer(GRAPHIC_INIT, GRAPHIC_INIT_SIZE);
 
 	}
-	/*
-	 * Clear the display
-	 */
-	(void)buffer(ERASE, ERASE_SIZE);
 
 
 	/*
 	 * reset to default attributes
 	 */
 	(void)SetInPic((boolean)FALSE);
+	return (OK);
+}
+
+/*ARGSUSED*/
+Ct_err	ClearDevice(c)
+CGMC *c;
+{
+	/*
+	 * Clear the display
+	 */
+	(void)buffer(ERASE, ERASE_SIZE);
 	return (OK);
 }
 
@@ -383,7 +397,7 @@ CGMC *c;
         static  startx = 0,starty = 0;
         static  offset = 0;
 
-	void	gcap_pointflush();
+	void	gcap_pointflush(), gcap_fillcolour();
 
 	nx = c->i[0];
 	ny = c->i[1];
@@ -471,7 +485,8 @@ CGMC *c;
 	Etype	mode;		/* cell representation mode		*/
 	boolean	clip = FALSE;
 
-	Ct_err	cell_array(), non_rect_cell_array();
+	Ct_err	cell_array(), non_rect_cell_array(), CellArray_();
+	void	gcap_line();
 	extern	long	clipxmax, clipxmin, clipymax, clipymin;
 
 	/*

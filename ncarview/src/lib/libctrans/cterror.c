@@ -1,5 +1,5 @@
 /*
- *	$Id: cterror.c,v 1.7 1991-07-18 16:25:09 clyne Exp $
+ *	$Id: cterror.c,v 1.8 1991-08-16 10:47:50 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -44,12 +44,12 @@
 
 #define	PRINT_E(X) (void) fprintf(errfile, X)
 
-extern	char *mktemp();
+extern	char *mktemp(), *strcpy(), *strcat();
 extern	struct	device	devices[];
 extern	Ct_err	(*cmdtab[][MAXCLASS+1][MAXFUNCPERCLASS+1])();
 extern	int	currdev;
-extern	CGMC	command;
 
+static	CGMC	cgmc;
 static	FILE	*errfile;
 static	char    tempFile[80];
 
@@ -355,7 +355,7 @@ char	*message;
 				 */
 				devnum = devices[currdev].number;
 				(void)
-				(*cmdtab[devnum][DEL_ELEMENT][END_MF])(&command);
+				(*cmdtab[devnum][DEL_ELEMENT][END_MF])(&cgmc);
 				if (devices[currdev].usegcap) 
 					flush();
 			}

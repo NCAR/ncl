@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class5.c,v 1.5 1991-07-19 12:25:40 clyne Exp $
+ *	$Id: X11_class5.c,v 1.6 1991-08-16 10:55:36 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -80,12 +80,11 @@ CGMC *c;
 	(void) fprintf(stderr,"X11_ColrTable\n");
 #endif DEBUG
 
-	int	i,
-		index;
+	int		color_index,		/* current color index	*/
+			cgmc_index;		/* index into cgmc->cd[]*/
+
 	Pixeltype	planedummy[1];		/* not used	*/
 	Pixeltype	pixel_return[1];	/* device index	*/
-
-	int	start;
 
 	Ct_err	X11_BackColr();
 
@@ -102,15 +101,17 @@ CGMC *c;
 	MARKER_COLOUR_DAMAGE = TRUE;
 	LINE_COLOUR_DAMAGE = TRUE;
 
+	cgmc_index = 0;
+	color_index = c->ci[0];
 	/*
 	 * This is a hack to ensure background color gets set correctly
 	 * in the case that colr table index 0 is changed *and* no
 	 * coresponding CGM BACKGROUND COLOUR is received
 	 */
-	start = c->ci[0];
-	if (start == 0) {
+	if (color_index == 0) {
 		(void) X11_BackColr(c);
-		start++;	/* skip index 0 for the rest of this func */
+		cgmc_index++;	/* skip index 0 for the rest of this func */
+		color_index++;	/* skip to next color index		*/
 	}
 
 	/* 
@@ -122,12 +123,11 @@ CGMC *c;
 
 
 		/*	load the colours from the cgmc into the colour map */
-		i = start;
-		for(index=start; i < c->CDnum; i++,index++) {
+		for( ; cgmc_index < c->CDnum; cgmc_index++,color_index++) {
 
 
 		/* convert CGM rgb values to X rgb values	*/
-		CGMrgb_2_Xrgb(c->cd[i], &color);
+		CGMrgb_2_Xrgb(c->cd[cgmc_index], &color);
 		
                 if (!XAllocColor(dpy, Cmap, &color)) {
 
@@ -136,8 +136,8 @@ CGMC *c;
                         return (pre_err);
 		}
 
-		Colortab[index] = color.pixel;
-		Colordef[index] = TRUE;
+		Colortab[color_index] = color.pixel;
+		Colordef[color_index] = TRUE;
 
 		}
 
@@ -147,13 +147,12 @@ CGMC *c;
 	/*	
 	 * load the colours from the cgmc into the colour map 
 	 */
-	i = start;
-	for (index=start; i<c->CDnum; index++,i++) {
+	for( ; cgmc_index < c->CDnum; cgmc_index++,color_index++) {
 		/*
 		 * if this index has not had a cell allocated to it previously
 		 * we need to do it now.
 		 */
-		if (! Colordef[index]) {
+		if (! Colordef[color_index]) {
 			/*
 			 * try and alloc a new cell in the color map
 			 */
@@ -168,19 +167,19 @@ CGMC *c;
 			/* 
 			 *	record pixel in the colortable
 			 */
-			Colortab[index] = pixel_return[0];
-			Colordef[index] = TRUE;
+			Colortab[color_index] = pixel_return[0];
+			Colordef[color_index] = TRUE;
 		}
 
 		/* 
 		 *	set cell index in the colour map
 		 */
-		color.pixel = Colortab[index];
+		color.pixel = Colortab[color_index];
 
 		/* 
 		 *	convert CGM rgb values to X rgb values
 		 */
-		CGMrgb_2_Xrgb(c->cd[i], &color);
+		CGMrgb_2_Xrgb(c->cd[cgmc_index], &color);
  
 		/* 
 		 *	store the colour in the map

@@ -1,7 +1,8 @@
 /*
- *	$Id: gcapdev.c,v 1.4 1991-07-18 16:25:29 clyne Exp $
+ *	$Id: gcapdev.c,v 1.5 1991-08-16 10:53:53 clyne Exp $
  */
 #include <stdio.h>
+#include <cterror.h>
 #include "graphcap.h"
 #include "cgmc.h"
 #include "soft_fill.h"
@@ -9,6 +10,7 @@
 #include "ctrandef.h"
 #include "default.h"
 
+extern	Ct_err	formatveccnt(), formatcoord(), formatindex(), formatwidth();
 
 /*
  * defines for the markers in the strings
@@ -19,14 +21,14 @@
 #define	YC 	-4	/* Y Coord */
 #define	XYC 	-5	/* X-Y Coord Pair */
 
-gcap_open(max_poly_points)
+void	gcap_open(max_poly_points)
 	unsigned long	*max_poly_points;
 {
 	*max_poly_points = POLY_MAX_POINTS;
 
 }
 
-gcap_close() 
+void	gcap_close() 
 {
 }
 
@@ -50,6 +52,8 @@ boolean polysim;	/* True if to simulate polygons with lines */
 	boolean mass = FALSE;	/* true if can buffer all points at once */
 
 	int	line_width = ROUND(LINE_WIDTH);
+
+	Ct_err	ComLineSim();
 
 	/*
 	 *	If the line style is not the default then send the 

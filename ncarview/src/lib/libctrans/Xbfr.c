@@ -1,5 +1,5 @@
 /*
- *	$Id: Xbfr.c,v 1.4 1991-06-18 18:10:57 clyne Exp $
+ *	$Id: Xbfr.c,v 1.5 1991-08-16 10:48:20 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -315,11 +315,6 @@ CGMC *c;
 	back_color.index = 0;
 	(void) GCsetcolor(back_color, bgGC);
 
-	/*
-	 *	clear the pixmap by drawing a filled rectangle the size of 
-	 *	the pixmap in the background colour
-	 */
-	XFillRectangle(dpy, drawable, bgGC, 0, 0, xsh.width+1, xsh.height+1);
 	return (OK);
 }
 
@@ -354,4 +349,17 @@ CGMC *c;
 	if (! *bellOff) XBell(dpy, 0);
 	return(OK);
 
+}
+
+/*ARGSUSED*/
+Ct_err	xbfr_ClearDevice(c)
+CGMC *c;
+{
+	/*
+	 *	clear the pixmap by drawing a filled rectangle the size of 
+	 *	the pixmap in the background colour
+	 */
+	XFillRectangle(dpy, drawable, bgGC, 0, 0, xsh.width+1, xsh.height+1);
+
+	return(OK);
 }

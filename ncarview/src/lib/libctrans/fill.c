@@ -1,5 +1,5 @@
 /*
- *	$Id: fill.c,v 1.5 1991-07-18 16:25:18 clyne Exp $
+ *	$Id: fill.c,v 1.6 1991-08-16 10:50:22 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -18,6 +18,7 @@
 #include	"cgmc.h"
 #include	"in.h"
 #include	"default.h"
+#include	"ctrandef.h"
 
 
 /*

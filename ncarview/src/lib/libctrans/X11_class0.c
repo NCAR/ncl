@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class0.c,v 1.5 1991-06-18 15:04:08 clyne Exp $
+ *	$Id: X11_class0.c,v 1.6 1991-08-16 10:54:40 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -544,8 +544,6 @@ CGMC *c;
 #endif DEBUG
 
 
-	/* clear the screen	*/
-	XClearWindow(dpy,win);
 
 	return (OK);
 }
@@ -558,6 +556,7 @@ CGMC *c;
 	XKeyEvent		*key_event;
 	int			len;
 	char			keybuffer[8];
+	boolean			loop;
 
 #ifdef DEBUG
 	(void) fprintf(stderr,"X11_EndPic\n");
@@ -591,6 +590,7 @@ CGMC *c;
 	 * if not stand alone do not interact with user. Let interface do it
 	 */
 	if (!stand_Alone) {
+		XFlush(dpy);
 		return(OK);
 	}
 
@@ -609,51 +609,68 @@ CGMC *c;
 	button_event = (XButtonPressedEvent *) &event;
 	key_event = (XKeyEvent *) &event;
 
-	while (TRUE) {
+	loop = TRUE;
+	while (loop) {
 
 		XNextEvent(dpy, &event);
 
 		switch (event.type) {
 
-			case ButtonPress:
+		case ButtonPress:
+			/*
+			 * go on to next frame
+			 */
+			if (button_event->button == Button1) {
+				loop = FALSE;
+			}
+			break;
 
-			/*	go on to next frame	*/
-				if (button_event->button == Button1)
-					return (OK);
+		case KeyPress:
+			/* 
+			 * press q, Q, or ^C to abort further translation
+			 */
+			len = XLookupString(key_event, 
+				keybuffer, sizeof(keybuffer), 
+				(KeySym *) NULL, 
+				(XComposeStatus *) NULL);
 
-				/* leave event loop	*/
-				break;
+			if (len == 1 && (keybuffer[0] == 'q' 
+				|| keybuffer[0] == 'Q'
+				|| keybuffer[0] == '\003')) {
 
-			case KeyPress:
-			/* press q, Q, or ^C to abort further translation */
-				len = XLookupString(key_event, 
-					keybuffer, sizeof(keybuffer), 
-					(KeySym *) NULL, 
-					(XComposeStatus *) NULL);
-
-				if (len == 1 && (keybuffer[0] == 'q' 
-					|| keybuffer[0] == 'Q'
-					|| keybuffer[0] == '\003')) {
-
-						close_ctrans();
+					close_ctrans();
 						exit(0);
 
-				}
+			}
 
-			/* press space or return for next frame	*/
-				if (len == 1 && (keybuffer[0] == ' '
-					|| keybuffer[0] == ''))
-				
-					return (OK);
-				break;
+			/*
+			 * press space or return for next frame
+			 */
+			if (len == 1 && (keybuffer[0] == ' '
+				|| keybuffer[0] == '')) {
 
-			default:
+				loop = FALSE;
+			}
+			break;
 
-				break;
+		default:
+			break;
 		} /* end switch */
 
 	} /* end while */
 
+	return(OK);
+}
+
+/*ARGSUSED*/
+Ct_err	X11_ClearDevice(c)
+CGMC *c;
+{
+	/* 
+	 * clear the screen
+	 */
+	XClearWindow(dpy,win);
+	return(OK);
 }
 
 

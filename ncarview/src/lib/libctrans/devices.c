@@ -1,5 +1,5 @@
 /*
- *	$Id: devices.c,v 1.5 1991-07-18 16:25:13 clyne Exp $
+ *	$Id: devices.c,v 1.6 1991-08-16 10:49:44 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -42,7 +42,7 @@ int	devicenum = (sizeof(devices)/sizeof(struct device));
 
 /*	Class 0	*/
 
-Ct_err BegMF(), EndMF(), BegPic(), BegPicBody(), EndPic();
+Ct_err BegMF(), EndMF(), BegPic(), BegPicBody(), EndPic(), ClearDevice();
 
 /*	Class 1	*/
 
@@ -95,7 +95,8 @@ Ct_err Message(), ApplData();
 
 /*	Class 0	*/
 
-Ct_err	 Ras_BegMF(), Ras_EndMF(), Ras_BegPic(), Ras_BegPicBody(), Ras_EndPic();
+Ct_err	Ras_BegMF(), Ras_EndMF(), Ras_BegPic(), Ras_BegPicBody(), 
+	Ras_EndPic(), Ras_ClearDevice();
 
 /*	Class 4	*/
 
@@ -120,7 +121,8 @@ Ct_err	Ras_ColrTable();
 
 /* 	Class 0	*/	
 
-Ct_err X11_BegMF(), X11_EndMF(), X11_BegPic(), X11_BegPicBody(), X11_EndPic();
+Ct_err	X11_BegMF(), X11_EndMF(), X11_BegPic(), X11_BegPicBody(), X11_EndPic(),
+	X11_ClearDevice();
 
 /*	Class 1	*/
 
@@ -159,7 +161,8 @@ Ct_err X11_Message(), X11_ApplData();
  *	When the X11 driver is define the XBFR driver gets defined
  *	as well.
  */
-Ct_err	xbfr_BegMF(), xbfr_BegPic(), xbfr_BegPicBody(), xbfr_EndPic();
+Ct_err	xbfr_BegMF(), xbfr_BegPic(), xbfr_BegPicBody(), xbfr_EndPic(),
+	xbfr_ClearDevice();
 
 #endif X11
 
@@ -175,7 +178,7 @@ Ct_err	xbfr_BegMF(), xbfr_BegPic(), xbfr_BegPicBody(), xbfr_EndPic();
 /*	Class 0	*/
 
 Ct_err	CTXT_NoOp(), CTXT_BegMF(), CTXT_EndMF(), CTXT_BegPic(), 
-	CTXT_BegPicBody(), CTXT_EndPic();
+	CTXT_BegPicBody(), CTXT_EndPic(), CTXT_ClearDevice();
 
 /*	Class 1	*/
 
@@ -237,7 +240,7 @@ Ct_err	CTXT_Message(), CTXT_ApplData();
  */
 /*	class 1	*/
 Ct_err	SunV_BegMF(), SunV_EndMF(), SunV_BegPic(), SunV_BegPicBody(), 
-	SunV_EndPic();
+	SunV_EndPic(), SunV_ClearDevice();
 
 /*	Class 4	*/
 
@@ -259,7 +262,7 @@ Ct_err	SunV_ColrTable();
  */
 /*	class 1	*/
 Ct_err	SunR_BegMF(), SunR_EndMF(), SunR_BegPic(), SunR_BegPicBody(), 
-	SunR_EndPic();
+	SunR_EndPic(), SunR_ClearDevice();
 
 /*	Class 4	*/
 
@@ -289,7 +292,7 @@ Ct_err  (*cmdtab[][MAXCLASS+1][MAXFUNCPERCLASS+1])() = {
 	/* Class 0 */
 	{
 	noop, BegMF, EndMF, BegPic, BegPicBody, 
-	EndPic, NULL, NULL, NULL, NULL, 
+	EndPic, ClearDevice, NULL, NULL, NULL, 
 	NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, 
 	NULL, NULL, NULL, NULL, NULL, NULL, 
@@ -383,7 +386,7 @@ Ct_err  (*cmdtab[][MAXCLASS+1][MAXFUNCPERCLASS+1])() = {
 	/* Class 0 */
 	{
 	noop, Ras_BegMF, Ras_EndMF, Ras_BegPic, Ras_BegPicBody,
-	Ras_EndPic, NULL, NULL, NULL, NULL, 
+	Ras_EndPic, Ras_ClearDevice, NULL, NULL, NULL, 
 	NULL, NULL, NULL, NULL, NULL, 
 	NULL, NULL, NULL, NULL, NULL, 
 	NULL, NULL, NULL, NULL, NULL, 
@@ -513,7 +516,7 @@ Ct_err  (*cmdtab[][MAXCLASS+1][MAXFUNCPERCLASS+1])() = {
 	/* Class 0 */
 	{
 	noop, X11_BegMF, X11_EndMF, X11_BegPic, X11_BegPicBody,
-	X11_EndPic, NULL, NULL, NULL, NULL, 
+	X11_EndPic, X11_ClearDevice, NULL, NULL, NULL, 
 	NULL, NULL, NULL, NULL, NULL, 
 	NULL, NULL, NULL, NULL, NULL, 
 	NULL, NULL, NULL, NULL, NULL, 
@@ -611,7 +614,7 @@ Ct_err  (*cmdtab[][MAXCLASS+1][MAXFUNCPERCLASS+1])() = {
 	/* Class 0 */
 	{
 	noop, xbfr_BegMF, X11_EndMF, xbfr_BegPic, xbfr_BegPicBody,
-	xbfr_EndPic, NULL, NULL, NULL, NULL, 
+	xbfr_EndPic, xbfr_ClearDevice, NULL, NULL, NULL, 
 	NULL, NULL, NULL, NULL, NULL, 
 	NULL, NULL, NULL, NULL, NULL, 
 	NULL, NULL, NULL, NULL, NULL, 
@@ -714,7 +717,7 @@ Ct_err  (*cmdtab[][MAXCLASS+1][MAXFUNCPERCLASS+1])() = {
 	/* Class 0 */
 	{
 	CTXT_NoOp, CTXT_BegMF, CTXT_EndMF, CTXT_BegPic, CTXT_BegPicBody,
-	CTXT_EndPic, NULL, NULL, NULL, NULL, 
+	CTXT_EndPic, CTXT_ClearDevice, NULL, NULL, NULL, 
 	NULL, NULL, NULL, NULL, NULL, 
 	NULL, NULL, NULL, NULL, NULL, 
 	NULL, NULL, NULL, NULL, NULL, 
@@ -793,7 +796,7 @@ Ct_err  (*cmdtab[][MAXCLASS+1][MAXFUNCPERCLASS+1])() = {
 	/* Class 0 */
 	{
 	noop, SunV_BegMF, SunV_EndMF, SunV_BegPic, SunV_BegPicBody,
-	SunV_EndPic, NULL, NULL, NULL, NULL, 
+	SunV_EndPic, SunV_ClearDevice, NULL, NULL, NULL, 
 	NULL, NULL, NULL, NULL, NULL, 
 	NULL, NULL, NULL, NULL, NULL, 
 	NULL, NULL, NULL, NULL, NULL, 
@@ -888,7 +891,7 @@ Ct_err  (*cmdtab[][MAXCLASS+1][MAXFUNCPERCLASS+1])() = {
 	/* Class 0 */
 	{
 	noop, SunR_BegMF, SunR_EndMF, SunR_BegPic, SunR_BegPicBody,
-	SunR_EndPic, NULL, NULL, NULL, NULL, 
+	SunR_EndPic, SunR_ClearDevice, NULL, NULL, NULL, 
 	NULL, NULL, NULL, NULL, NULL, 
 	NULL, NULL, NULL, NULL, NULL, 
 	NULL, NULL, NULL, NULL, NULL, 

@@ -1,5 +1,5 @@
 /*
- *	$Id: ctrandef.h,v 1.5 1991-06-18 14:59:38 clyne Exp $
+ *	$Id: ctrandef.h,v 1.6 1991-08-16 10:48:03 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -51,6 +51,24 @@
 #define	SIGN(X)		(((X) < (0)) ? (-1) : (1))
 #endif
 
+#ifndef	MIN3
+#define	MIN3(A,B,C)	(((A)<(B)) ? ((A)<(C)?(A):(C)) : ((B)<(C)?(B):(C)))
+#endif
+
+#ifndef	MAX3
+#define	MAX3(A,B,C)	(((A)>(B)) ? ((A)>(C)?(A):(C)) : ((B)>(C)?(B):(C)))
+#endif
+
+#ifndef	ROUND
+#define	ROUND(A)	((A) > 0 ? (int) ((A) + 0.5) : -(int) (0.5 - (A)))
+#endif
+
 typedef	float	Matrix2d[3][3];
+
+/*
+ *	This manifest constant is used to index the ClearDevice() function
+ *	call
+ */
+#define	CLEAR_DEVICE	6
 
 #endif	_ctrandef_

@@ -1,5 +1,5 @@
 /*
- *	$Id: clear_text.c,v 1.2 1991-01-09 11:08:58 clyne Exp $
+ *	$Id: clear_text.c,v 1.3 1991-08-16 10:49:05 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -37,7 +37,7 @@
 #include "text.h"
 
 #ifndef lint
-static char *RCSid = "$Header: /home/brownrig/SVN/CVS/ncarg/ncarview/src/lib/libctrans/clear_text.c,v 1.2 1991-01-09 11:08:58 clyne Exp $";
+static char *RCSid = "$Header: /home/brownrig/SVN/CVS/ncarg/ncarview/src/lib/libctrans/clear_text.c,v 1.3 1991-08-16 10:49:05 clyne Exp $";
 #endif
 
 extern	Ct_err	Instr_Dec();
@@ -137,7 +137,12 @@ CGMC *c;
 	return (OK);
 }
 
-
+/*ARGSUSED*/
+Ct_err	CTXT_ClearDevice(c)
+CGMC *c;
+{
+	return(OK);
+}
 
 /*
  *	Class 1 elements

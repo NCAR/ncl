@@ -1,5 +1,5 @@
 /*
- *	$Id: ctrans.c,v 1.7 1991-04-18 13:26:45 clyne Exp $
+ *	$Id: ctrans.c,v 1.8 1991-08-16 10:49:58 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -36,7 +36,7 @@
  * rev 1.01 clyne 4/18/90	: expanded application programmer interace
  */
 #ifndef lint
-static char *RCSid = "$Header: /home/brownrig/SVN/CVS/ncarg/ncarview/src/lib/libctrans/ctrans.c,v 1.7 1991-04-18 13:26:45 clyne Exp $";
+static char *RCSid = "$Header: /home/brownrig/SVN/CVS/ncarg/ncarview/src/lib/libctrans/ctrans.c,v 1.8 1991-08-16 10:49:58 clyne Exp $";
 #endif
 
 
@@ -53,11 +53,12 @@ static char *RCSid = "$Header: /home/brownrig/SVN/CVS/ncarg/ncarview/src/lib/lib
 #include 	<signal.h>
 #include 	<ncarv.h>
 #include	<cterror.h>
-#include 	"cgmc.h"
 #include	<cgm_tools.h>
+#include 	"cgmc.h"
 #include 	"defines.h"
 #include 	"translate.h"
 #include 	"devices.h"
+#include 	"ctrandef.h"
 #include 	"graphcap.h"
 
 
@@ -92,16 +93,20 @@ boolean *softFill = &softfill;
 boolean *deBug = &debug;
 boolean *bellOff = &bell_off;
 
-CGMC	command;
-
 FILE	*tty = NULL;
 
-boolean	ctransIsInit = FALSE;	/* ctrans device independent initialization
-				 * state 
-				 */
-boolean	deviceIsInit = FALSE;	/* device dependent initialization state
-				 * (cgi, X11, graphcap, clear_text)
-				 */
+/*
+ * device dependent initialization state  (cgi, X11, graphcap, clear_text)
+ */
+boolean	deviceIsInit = FALSE;	
+
+
+/* 
+ * ctrans device independent initialization state 
+ */
+static	boolean	ctransIsInit = FALSE;	
+static	CGMC	command;
+
 
 /* 
  *	The current device index -- the default is the Gcap routines.
@@ -140,6 +145,7 @@ int	currdev = -1;
  *	be specified as /usr/local/lib/cgi even though there is no such
  *	file.
  */
+/*ARGSUSED*/
 Ct_err	init_ctrans(argc, argv, prog_name, gcap, fcap, stand_alone,				batch)
 	int	*argc;
 	char	**argv;
@@ -162,7 +168,7 @@ Ct_err	init_ctrans(argc, argv, prog_name, gcap, fcap, stand_alone,				batch)
 	}
 
 
-	if (!batch)
+	if (!Batch)
 		(void)signal(SIGINT,sigint_handler);
 
 	/*
@@ -189,7 +195,7 @@ Ct_err	init_ctrans(argc, argv, prog_name, gcap, fcap, stand_alone,				batch)
 	Argv = argv;
 	Argc = *argc;
 
-	Init_cgmc(&command);
+	init_cgmc(&command);
 
 	/*
 	 * the following is a kludge to ensure a minimum linewidth
@@ -315,6 +321,7 @@ Ct_err	init_metafile(record, cgm_fd)
 }
 
 
+
 /*
  *	ctrans:
  *	PUBLIC
@@ -332,6 +339,9 @@ Ct_err	init_metafile(record, cgm_fd)
 Ct_err	ctrans(record)
 	int	record;
 {
+
+	Ct_err	status;
+
 	/*
 	 * 	make sure we've been initialized
 	 */
@@ -340,6 +350,9 @@ Ct_err	ctrans(record)
 		return(DIE);
 	}
 
+	/*
+	 * do we need to do random frame access
+	 */
 	if (record != NEXT ) {
 		if (SetRecord(record) != OK) {
 			return(pre_err);
@@ -350,41 +363,69 @@ Ct_err	ctrans(record)
 	}
 
 	/*
-	 * 	Do until get a END PICTURE or END METAFILE element
+	 * see if we've reached the end of the file
 	 */
-	while (((command.class != DEL_ELEMENT) 
-			|| (command.command != END_PIC))
-		&& ((command.class != DEL_ELEMENT) 
-			|| (command.command != END_MF))) {
-
-		Process(&command);
-
-		if (Instr_Dec(&command) != OK) {
-			return(pre_err);
-		}
+	if (command.class == DEL_ELEMENT && command.command == END_MF) {
+		Process(&command);	/* process the END MF command	*/
+		return(EOM);
 	}
 
 	/*
-	 * process END_PICTURE or END_METAFILE
+	 * current element better be a begin picture
 	 */
-	Process(&command);
+	if (! (command.class == DEL_ELEMENT && command.command == BEG_PIC)) {
+		ct_error(T_NULL, "not in proper state");
+		return(DIE);
+	}
+	Process(&command); /* process the begin picture element    */
 
-	if (command.command == END_MF)
 
-		/* end of metafile		*/
-		return(EOM);
-	else {
-		/* 
-		 * end of a single frame. Get BEG_PIC command for next 
-		 * invocation of  ctrans()
+	/*
+	 * if we're in batch mode we clear the device *before*  processing
+	 * the frame. We need to do this now because we can't do it at 
+	 * the end of this call because when we're in batch mode it is
+	 * expected that the calling program will do any user interaction
+	 * instead of having it handled by the devices EndPic element
+	 * handler. 
+	 */
+	if (Batch) clear_device();
+
+
+	/*
+	 * process elements until we get an end of picture 
+	 */
+	while ((status = Instr_Dec(&command)) == OK) {
+
+		/*
+		 * execute the cgmc
 		 */
-		if (Instr_Dec(&command) != OK) {
-			return(pre_err);
+		Process(&command);
+
+		if (command.class == DEL_ELEMENT && command.command == END_PIC){
+
+			break;	/* we're done	*/
 		}
-		return(OK);
 	}
 
+	if (status != OK) {
+		return(pre_err);
+	}
+
+
+	/*
+	 * get the next instruction. It should be either a Begin Pic or 
+	 * an End MF
+	 */
+	if (Instr_Dec(&command) != OK) {
+		return(pre_err);
+	}
+
+	if (! Batch) clear_device();
+
+	return(OK);
 }
+
+
 /*
  *	ctrans_merge:
  *	PUBLIC
@@ -577,7 +618,8 @@ SetDevice(gcap)
  *
  *	Set the font device to fontcap. The font is
  *	specified on the call to init_ctrans. This functions allows
- *	the font to be changed.
+ *	the font to be changed. This function may only be called after
+ *	SetDevice() or after init_ctrans() has been called.
  * on entry
  *	*fcap		: name of font
  * on exit
@@ -654,50 +696,50 @@ CGMC	*c;
 #define NUMTOALLOC	32
 
 /*
- *	Init_cgmc:
+ *	init_cgmc:
  *	PRIVATE
  *
  *	Inits the cgmc by allocating it space for each type.
  *	This is not done staticly at compile time because
  *	there is the need to dynamicaly change it.
  */
-Init_cgmc (cgmc)
+init_cgmc (cgmc)
 CGMC *cgmc;
 {
 	int	i;
 
-	cgmc->ci = (CItype *) icMalloc (NUMTOALLOC * sizeof(CItype));  	
+	cgmc->ci = (CItype *) icMalloc((unsigned)(NUMTOALLOC * sizeof(CItype)));
 	cgmc->CIspace = NUMTOALLOC;
 	cgmc->CInum = 0;
 
-	cgmc->cd = (CDtype *) icMalloc (NUMTOALLOC * sizeof(CDtype));  	
+	cgmc->cd = (CDtype *) icMalloc((unsigned)(NUMTOALLOC * sizeof(CDtype)));
 	cgmc->CDspace = NUMTOALLOC;
 	cgmc->CDnum = 0;
 
-	cgmc->ix = (IXtype *) icMalloc (NUMTOALLOC * sizeof(IXtype));  	
+	cgmc->ix = (IXtype *) icMalloc((unsigned)(NUMTOALLOC * sizeof(IXtype)));
 	cgmc->IXnum = 0;
 	cgmc->IXspace = NUMTOALLOC;
 
-	cgmc->e  = (Etype *) 	icMalloc (NUMTOALLOC * sizeof(Etype));    	
+	cgmc->e  = (Etype *) icMalloc((unsigned)(NUMTOALLOC * sizeof(Etype)));
 	cgmc->Espace = NUMTOALLOC;
 	cgmc->Enum = 0;
 
-	cgmc->i  = (Itype *) 	icMalloc (NUMTOALLOC * sizeof(Itype));    	
+	cgmc->i  = (Itype *) icMalloc ((unsigned) (NUMTOALLOC * sizeof(Itype)));
 	cgmc->Ispace = NUMTOALLOC;
 	cgmc->Inum = 0;
 
-	cgmc->r  = (Rtype *) 	icMalloc (NUMTOALLOC * sizeof(Rtype));    	
+	cgmc->r  = (Rtype *) icMalloc ((unsigned) (NUMTOALLOC * sizeof(Rtype)));
 	cgmc->Rspace = NUMTOALLOC;
 	cgmc->Rnum = 0;
 
-	cgmc->s  = (Stype *) 	icMalloc (sizeof(Stype));    	
+	cgmc->s  = (Stype *) icMalloc (sizeof(Stype));
 	cgmc->Sspace = NUMTOALLOC;
 	cgmc->Snum = 0;
 		cgmc->s->string = (char **)
-			icMalloc(cgmc->Sspace * sizeof(char *));
+			icMalloc((unsigned) (cgmc->Sspace * sizeof(char *)));
 
 		cgmc->s->string_space = (int *)
-			icMalloc(cgmc->Sspace * sizeof(int));
+			icMalloc((unsigned) (cgmc->Sspace * sizeof(int)));
 
 		cgmc->s->string_space[0] = 256;
 		cgmc->s->string[0] = (char *) icMalloc 
@@ -708,23 +750,44 @@ CGMC *cgmc;
 			cgmc->s->string[i] = NULL;
 		}
 
-	cgmc->vdc= (VDCtype *)icMalloc (NUMTOALLOC * sizeof(VDCtype));	
+	cgmc->vdc=(VDCtype *)icMalloc((unsigned)(NUMTOALLOC * sizeof(VDCtype)));
 	cgmc->VDCspace = NUMTOALLOC;
 	cgmc->VDCnum = 0;
 
-	cgmc->p  = (Ptype *) 	icMalloc (NUMTOALLOC * sizeof(Ptype));    	
+	cgmc->p  = (Ptype *) icMalloc ((unsigned) (NUMTOALLOC * sizeof(Ptype)));
 	cgmc->Pspace = NUMTOALLOC;
 	cgmc->Pnum = 0;
 
-	cgmc->c  = (Ctype *) 	icMalloc (NUMTOALLOC * sizeof(Ctype));    	
+	cgmc->c  = (Ctype *) icMalloc ((unsigned) (NUMTOALLOC * sizeof(Ctype)));
 	cgmc->Cspace = NUMTOALLOC;
 	cgmc->Cnum = 0;
 
-	cgmc->d  = (Ctype *) 	icMalloc (NUMTOALLOC * sizeof(Dtype));    	
+	cgmc->d  = (Ctype *) icMalloc ((unsigned) (NUMTOALLOC * sizeof(Dtype)));
 	cgmc->Dspace = NUMTOALLOC;
 	cgmc->Dnum = 0;
 
 	cgmc->more = FALSE;
+}
+
+free_cgmc(cgmc)
+	CGMC	*cgmc;
+{
+	/*
+	 * free the cgmc
+	 */
+	cfree((char *) cgmc->c);
+	cfree((char *) cgmc->ci);
+	cfree((char *) cgmc->cd);
+	cfree((char *) cgmc->e);
+	cfree((char *) cgmc->i);
+	cfree((char *) cgmc->ix);
+	cfree((char *) cgmc->p);
+	cfree((char *) cgmc->r);
+	cfree((char *) cgmc->s->string[0]);
+	cfree((char *) cgmc->s->string);
+	cfree((char *) cgmc->s->string_space);
+	cfree((char *) cgmc->s);
+	cfree((char *) cgmc->vdc);
 }
 
 
@@ -754,6 +817,7 @@ GraphicsMode(on)
 		(void) buffer(ERASE, ERASE_SIZE);
 	}
 	else {	/* put device in text mode	*/
+		(void) buffer(ERASE, ERASE_SIZE);
 		(void) buffer(TEXT_INIT, TEXT_INIT_SIZE);
 		deviceIsInit = FALSE;
 	}
@@ -803,22 +867,7 @@ close_ctrans()
 	 */
 	close_ct_error();
 
-	/*
-	 * free the cgmc
-	 */
-	cfree((char *) command.c);
-	cfree((char *) command.ci);
-	cfree((char *) command.cd);
-	cfree((char *) command.e);
-	cfree((char *) command.i);
-	cfree((char *) command.ix);
-	cfree((char *) command.p);
-	cfree((char *) command.r);
-			cfree((char *) command.s->string[0]);
-		cfree((char *) command.s->string);
-		cfree((char *) command.s->string_space);
-	cfree((char *) command.s);
-	cfree((char *) command.vdc);
+	free_cgmc(&command);
 
 	ctransIsInit = FALSE;
 }
@@ -833,4 +882,13 @@ void	sigint_handler()
 {
 	close_ctrans();
 	exit(0);
+}
+
+static	clear_device()
+{
+	CGMC	temp_cgmc;
+
+	temp_cgmc.class = DEL_ELEMENT;
+	temp_cgmc.command = CLEAR_DEVICE;
+	Process(&temp_cgmc);
 }

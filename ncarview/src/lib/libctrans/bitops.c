@@ -1,5 +1,5 @@
 /*
- *	$Id: bitops.c,v 1.2 1991-01-09 11:08:17 clyne Exp $
+ *	$Id: bitops.c,v 1.3 1991-08-16 10:48:42 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -69,19 +69,26 @@ long GetInt(bufptr,prec,is_signed)
 
 
 		return(neg ? (((*bufptr << 8) |*(bufptr+1)) | (~0 << prec))
-			:  ((*bufptr << 8) | *(bufptr+1)));
+			:  (((unsigned) *bufptr << 8) | *(bufptr+1)));
 	}
 
 
 	if (prec == 24 ) 
-		return(neg ? (((*bufptr << 16) | (*(bufptr+1) << 8) 
-			| *(bufptr+2)) | (~0 << prec))
-			: ((*bufptr << 16) | (*(bufptr+1) << 8) | *(bufptr+2)));
+		return(neg ? ((((unsigned) *bufptr << 16) | 
+			((unsigned) *(bufptr+1) << 8) | 
+			(unsigned) *(bufptr+2)) | 
+			(~0 << prec))
+			: 
+			(((unsigned) *bufptr << 16) | 
+			((unsigned) *(bufptr+1) << 8) | 
+			*(bufptr+2)));
 
 	if (prec == 32)  {
 
-		return ((*bufptr << 24) | (*(bufptr+1) << 16)
-                         | (*(bufptr+2) << 8) | *(bufptr+3));
+		return (((unsigned) *bufptr << 24) | 
+			((unsigned) *(bufptr+1) << 16) | 
+			((unsigned) *(bufptr+2) << 8) | 
+			*(bufptr+3));
 
 	}
 

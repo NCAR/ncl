@@ -1,5 +1,5 @@
 /*
- *	$Id: default.h,v 1.5 1991-06-18 14:59:50 clyne Exp $
+ *	$Id: default.h,v 1.6 1991-08-16 10:49:20 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -142,7 +142,7 @@ static DEFAULTTABLE	defaulttable = {
 
 	8,				/*COLOUR PRECISION		*/
 	8,				/*COLOUR INDEX PRECISION	*/
-	63,				/*MAXIMUM COLOUR INDEX	*/ 
+	255,				/*MAXIMUM COLOUR INDEX	*/ 
 
 					/*COLOUR VALUE EXTENT		*/
 	0,				/*minimum red	*/
@@ -430,7 +430,7 @@ ACCESS_TABLE	access_table = {
 	TRUE,
 	TRUE,
 	TRUE,
-	TRUE
+	FALSE
 	};
 	
 ACCESS_TABLE	*at = &access_table;

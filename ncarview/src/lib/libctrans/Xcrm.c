@@ -1,5 +1,5 @@
 /*
- *	$Id: Xcrm.c,v 1.4 1991-04-08 11:14:42 clyne Exp $
+ *	$Id: Xcrm.c,v 1.5 1991-08-16 10:48:32 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -49,7 +49,7 @@ free_colors()
 	extern	boolean		Colordef[];
 
 	free_list = (Pixeltype *) icMalloc 
-			((unsigned) MAX_COLOR_SIZE * sizeof(Pixeltype));
+			((unsigned) (MAX_COLOR_SIZE * sizeof(Pixeltype)));
 
 
 	for (i = 0; i < MAX_COLOR_SIZE; i++) {

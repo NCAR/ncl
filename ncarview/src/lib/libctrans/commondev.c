@@ -1,8 +1,9 @@
 /*
- *	$Id: commondev.c,v 1.5 1991-07-18 16:25:04 clyne Exp $
+ *	$Id: commondev.c,v 1.6 1991-08-16 10:53:03 clyne Exp $
  */
 #include <stdio.h>
 #include <math.h>
+#include <ncarv.h>
 #include "cterror.h"
 #include "commondev.h"
 #include "gcapdev.h"

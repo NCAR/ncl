@@ -1,5 +1,5 @@
 /*
- *	$Id: cterror.h,v 1.4 1991-03-12 17:35:28 clyne Exp $
+ *	$Id: cterror.h,v 1.5 1991-08-16 10:49:32 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -105,6 +105,7 @@ typedef enum {
 	 */
 	T_CNOD,			/* can not open device			*/
 	T_MALLOC,		/* memmory allocation error		*/
+	T_EE,			/* error in cgm encoding		*/
 
 
 	/*

@@ -1,5 +1,5 @@
 /*
- *	$Id: sunraster.c,v 1.6 1991-07-18 16:25:44 clyne Exp $
+ *	$Id: sunraster.c,v 1.7 1991-08-16 10:52:47 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -219,23 +219,6 @@ CGMC *c;
 Ct_err	SunR_BegPicBody(c)
 CGMC *c;
 {
-	unsigned op = 0;
-
-	struct pr_pos	rectangle[5];
-	int	num_points = 5;
-
-	
-	
-	rectangle[0].x = rectangle[0].y = 
-	rectangle[4].x = rectangle[4].y = 
-	rectangle[3].x = rectangle[1].y = 0;
-	rectangle[1].x = rectangle[2].x = dev.width;
-	rectangle[2].y = rectangle[3].y = dev.height;
-
-	/* clear the screen	*/
-	op = PIX_SRC | PIX_COLOR(0);
-	pr_polygon_2(pixRect, 0, 0, 1, &num_points, rectangle, op,
-		(Pixrect *) NULL, 0, 0);
 
 	return (OK);
 }
@@ -278,6 +261,33 @@ CGMC *c;
 
 }
 
+/*ARGSUSED*/
+Ct_err	SunR_ClearDevice(c)
+CGMC *c;
+{
+	unsigned op = 0;
+
+	struct pr_pos	rectangle[5];
+	int	num_points = 5;
+
+	
+	
+	rectangle[0].x = rectangle[0].y = 
+	rectangle[4].x = rectangle[4].y = 
+	rectangle[3].x = rectangle[1].y = 0;
+	rectangle[1].x = rectangle[2].x = dev.width;
+	rectangle[2].y = rectangle[3].y = dev.height;
+
+
+	/* 
+	 * clear the screen
+	 */
+	op = PIX_SRC | PIX_COLOR(0);
+	pr_polygon_2(pixRect, 0, 0, 1, &num_points, rectangle, op,
+		(Pixrect *) NULL, 0, 0);
+
+	return(OK);
+}
 
 
 
@@ -696,6 +706,7 @@ CGMC *c;
 	Etype	mode;		/* cell representation mode		*/
 
 	Ct_err	raster_();
+	void	SetUpCellArrayIndexing();
 
 	/*
 	 *	check any control elements
@@ -737,7 +748,9 @@ CGMC *c;
 		cols = (int *) icMalloc((unsigned) (nx * sizeof (int)));
 		rows = (int *) icMalloc((unsigned) (ny * sizeof (int)));
 
-		SetUpCellArrayIndexing(ABS(P.x - Q.x) + 1, ABS(P.y - Q.y) + 1,
+		SetUpCellArrayIndexing(
+			(unsigned) ABS(P.x - Q.x) + 1, 
+			(unsigned) ABS(P.y - Q.y) + 1,
 			rows, cols, (unsigned) nx, (unsigned) ny);
 		
 		/*

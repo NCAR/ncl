@@ -1,4 +1,5 @@
 # include "stdio.h"
+#include "input.h"
 # define U(x) x
 # define NLSTATE yyprevious=YYNEWLINE
 # define BEGIN yybgin = yysvec + 1 +
@@ -8,7 +9,7 @@
 # define YYOPTIM 1
 # define YYLMAX BUFSIZ
 # define output(c) putc(c,yyout)
-# define input() (((yytchar=yysptr>yysbuf?U(*--yysptr):getc(yyin))==10?(yylineno++,yytchar):yytchar)==EOF?0:yytchar)
+# define input() (((yytchar=yysptr>yysbuf?U(*--yysptr):my_getc(yyin))==10?(yylineno++,yytchar):yytchar)==EOF?0:yytchar)
 # define unput(c) {yytchar= (c);if(yytchar=='\n')yylineno--;*yysptr++=yytchar;}
 # define yymore() (yymorfg=1)
 # define ECHO fprintf(yyout, "%s",yytext)

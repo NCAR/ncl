@@ -1,5 +1,5 @@
 /*
- *	$Id: ictrans.c,v 1.4 1991-04-18 15:19:58 clyne Exp $
+ *	$Id: ictrans.c,v 1.5 1991-08-16 10:56:49 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -62,7 +62,7 @@ static	OptDescRec	set_options[] = {
 	{"device", OptSepArg, NULL},	
 	{"font", OptSepArg, NULL},	
 	{"softfill", OptIsArg, "false"},
-	{"bell", OptIsArg, "false"},
+	{"bell", OptIsArg, "true"},
 	{"lmin", OptSepArg, "-1"},	
 	{"lmax", OptSepArg, "-1"},	
 	{"lscale", OptSepArg, "-1"},	
@@ -114,7 +114,7 @@ ICTrans(argc, argv, mem_cgm)
 					 * list of metafiles to process
 					 */
 	char	**meta_files = (char **) icMalloc ((argc * sizeof(char *)) + 1);
-	int	i;
+	int	i,j;
 
 	void	ex_command();
 	extern	char	*GetCurrentAlias();
@@ -208,17 +208,24 @@ ICTrans(argc, argv, mem_cgm)
 	 * and make sure
 	 */
 	meta_files[0] = NULL;
-	for (i = 1; i < argc; i++) {
+	for (i = 1, j=0; i < argc; i++) {
 		if (*argv[i] == '-') {
-			ct_error(T_NSO, "");
-			break;
+			if (! strcmp(argv[i], "-e")) {
+				i++;
+				if (i >= argc) ct_error(T_NSO, "");
+				(void) AppendString(argv[i]);
+			}
+			else {
+				ct_error(T_NSO, "");
+				break;
+			}
 		} 
 		else {
-			meta_files[i-1] = argv[i];
+			meta_files[j++] = argv[i];
 		}
 	}
 
-	meta_files[i-1] = NULL;	/* terminate list	*/
+	meta_files[j] = NULL;	/* terminate list	*/
 
 	/*
 	 *	if a metafile was not given exit

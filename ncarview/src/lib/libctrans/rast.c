@@ -1,5 +1,5 @@
 /*
- *	$Id: rast.c,v 1.3 1991-07-18 16:25:35 clyne Exp $
+ *	$Id: rast.c,v 1.4 1991-08-16 10:51:45 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -27,6 +27,9 @@
 extern	boolean	*softFill;
 extern	boolean	deviceIsInit;
 extern  int  	currdev;
+
+extern	char	*RasterGetError();
+extern	char	*strcpy();
 
 
 static	struct	RasterCommLineOpt_ {
@@ -136,6 +139,11 @@ CGMC *c;
 		return (DIE);
 	}
 
+	/*
+	 * clear the grid
+	 */
+	clear_grid(rastGrid);
+
 	deviceIsInit = TRUE;
 	return (OK);
 }
@@ -203,7 +211,6 @@ CGMC *c;
 		BACKCOLR_DAMAGE = FALSE;
 	}
 
-	clear_grid(rastGrid);
 	return (OK);
 }
 
@@ -238,6 +245,14 @@ CGMC *c;
 	 */
 	(void)SetInPic((boolean)FALSE);
 	return (OK);
+}
+
+/*ARGSUSED*/
+Ct_err	Ras_ClearDevice(c)
+CGMC *c;
+{
+	clear_grid(rastGrid);
+	return(OK);
 }
 
 Ct_err	Ras_PolyMarker(c)
@@ -343,9 +358,9 @@ CGMC *c;
 clear_grid(grid)
 	Raster	*grid;
 {
+#ifdef	DEAD
 	int	x,y;
 
-#ifdef	DEAD
 	for(y = 0; y < grid->ny; y++)
 	for(x=0; x < grid->nx; x++) {
 		INDEXED_PIXEL(grid, x, y) = 0;
@@ -358,8 +373,6 @@ clear_grid(grid)
 
 init_color_tab()
 {
-	int	i;
-
 
 	/*
 	 * set rgb-component pointers to default portion of 
@@ -371,9 +384,8 @@ init_color_tab()
 	 * record the foreground and background color in the
 	 * colorTab. These values can be overwritten by the CGM
 	 */
-	colorTab.rgb[0].red = colorTab.rgb[0].green = colorTab.rgb[0].blue = 0;
-
-	colorTab.rgb[1].red = colorTab.rgb[1].green = colorTab.rgb[1].blue = 255;
+	colorTab.rgb[0].red = colorTab.rgb[0].green = colorTab.rgb[0].blue =0;
+	colorTab.rgb[1].red = colorTab.rgb[1].green = colorTab.rgb[1].blue =255;
 
 }
 	
@@ -426,12 +438,13 @@ get_resolution(dev_extent, opts, name)
 
 
 
+/*ARGSUSED*/
 static	Ct_err	ras_non_rect_cell_array(c, Pcoord, Qcoord, Rcoord, nx, ny)
 	CGMC		*c;
         Ptype  Pcoord, Qcoord, Rcoord;
         int     nx, ny;
 {
-        return(0);      /* non rectangular cell arrays are not supported */
+        return(OK);      /* non rectangular cell arrays are not supported */
 }
 
 
@@ -485,6 +498,7 @@ static	Ct_err	ras_cell_array(c, Pcoord, Qcoord, Rcoord, nx, ny)
 	register int	i,j,k,l;
 
 	void	SetUpCellArrayIndexing(), SetUpCellArrayAddressing();
+	Ct_err	Instr_Dec();
 
 	image_width = ABS(Pcoord.x - Qcoord.x) + 1;
 	image_height = ABS(Pcoord.y - Qcoord.y) + 1;
@@ -510,15 +524,16 @@ static	Ct_err	ras_cell_array(c, Pcoord, Qcoord, Rcoord, nx, ny)
 	xoff = MIN3(Pcoord.x, Qcoord.x, Rcoord.x);
 	yoff = MIN3(Pcoord.y, Qcoord.y, Rcoord.y);
 	SetUpCellArrayAddressing(Pcoord, Qcoord, Rcoord, image_size, pad, 1,
-		rastGrid->nx, xoff, yoff, 
-		&step_x, &step_y, &start_x, &start_y, &data);
+		(unsigned) rastGrid->nx, xoff, yoff, 
+		&step_x, &step_y, &start_x, &start_y, (char **) &data);
 
 	/*
 	 * set up rows and cols arrays with info about number of pixels
 	 * making up each cell. We do this to avoid floating point arithmatic
 	 * later on
 	 */
-	SetUpCellArrayIndexing(image_width, image_height, rows, cols, nx, ny);
+	SetUpCellArrayIndexing(image_width, image_height, 
+				rows, cols, (unsigned) nx, (unsigned) ny);
 
 
 	/*
@@ -589,27 +604,27 @@ static	build_ras_arg(ras_argc, ras_argv, rasterCommLineOpt)
 
 	i = 0;
 
-	ras_argv[i] = icMalloc(strlen("ctrans") + 1);
-	strcpy(ras_argv[i], "ctrans");
+	ras_argv[i] = icMalloc((unsigned) strlen("ctrans") + 1);
+	(void) strcpy(ras_argv[i], "ctrans");
 	i++;
 
-	ras_argv[i] = icMalloc(strlen("-dpi") + 1);
-	strcpy(ras_argv[i], "-dpi");
+	ras_argv[i] = icMalloc((unsigned) strlen("-dpi") + 1);
+	(void) strcpy(ras_argv[i], "-dpi");
 	i++;
 
-	ras_argv[i] = icMalloc(strlen(rasterCommLineOpt.dpi) + 1);
-	strcpy(ras_argv[i], rasterCommLineOpt.dpi);
+	ras_argv[i] = icMalloc((unsigned) strlen(rasterCommLineOpt.dpi) + 1);
+	(void) strcpy(ras_argv[i], rasterCommLineOpt.dpi);
 	i++;
 
 	if (rasterCommLineOpt.compress) {
-		ras_argv[i] = icMalloc(strlen("-compress") + 1);
-		strcpy(ras_argv[i], "-compress");
+		ras_argv[i] = icMalloc((unsigned) strlen("-compress") + 1);
+		(void) strcpy(ras_argv[i], "-compress");
 		i++;
 	}
 
 	if (rasterCommLineOpt.rle) {
-		ras_argv[i] = icMalloc(strlen("-rle") + 1);
-		strcpy(ras_argv[i], "-rle");
+		ras_argv[i] = icMalloc((unsigned) strlen("-rle") + 1);
+		(void) strcpy(ras_argv[i], "-rle");
 		i++;
 	}
 
