@@ -1,5 +1,5 @@
 /*
- *      $Id: Create.c,v 1.40 2000-06-28 19:03:57 dbrown Exp $
+ *      $Id: Create.c,v 1.41 2004-05-28 20:45:26 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -536,7 +536,8 @@ _NhlCreate
 		else if(_NhlIsStyle(layer)){
 			/* a workstation is okay but deprecated */
 			layer->base.wkptr = _NhlGetWorkstationLayer(parent);
-			if(! (layer->base.wkptr || _NhlIsApp(parent))){
+			if(! (layer->base.wkptr || _NhlIsApp(parent) ||
+			      _NhlIsStyle(parent))) {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,
 "%s:Style objects must have an App class object for their parent",func);
 				NhlFree(layer);
