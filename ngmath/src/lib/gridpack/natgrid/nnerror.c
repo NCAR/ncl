@@ -1,5 +1,5 @@
 /*
- * $Id: nnerror.c,v 1.7 2000-08-25 23:29:44 fred Exp $
+ * $Id: nnerror.c,v 1.8 2005-01-28 21:31:10 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -27,7 +27,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define  MAX_ERROR 31
+#define  MAX_ERROR 33
 
 void     ErrorLog(int, char *, FILE *, char *);
 char     *ErrMsg(int);
@@ -149,10 +149,12 @@ char *ErrMsg(int i)
     "Fortran DOUBLE PRECISION entries are not supported on UNICOS.",
 
 /* #030 */
-    "Error number out of range."
+    "Error number out of range.",
 
 /* #031 */
-    "Weights can be returned only for linear interpolation when in \n single point mode."
+    "Weights can be returned only for linear interpolation when in \n single point mode.",
+/* #032 */
+    "Single point mode terminated without its ever having been initialized."
    };
 
   if (i >= MAX_ERROR) {

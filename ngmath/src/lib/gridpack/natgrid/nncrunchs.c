@@ -1,5 +1,5 @@
 /*
- * $Id: nncrunchs.c,v 1.12 2004-09-27 22:23:38 fred Exp $
+ * $Id: nncrunchs.c,v 1.13 2005-01-28 21:31:10 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -680,6 +680,12 @@ void c_nnpnts(float x, float y, float *point)
 }
 void c_nnpntend()
 {
+   if (single_point == 0) {
+     ErrorHnd(32, "c_nnpntend", stderr, "\n");
+     error_status = 32;
+     return;
+   }
+
    single_point = 0;
    first_single = 0;
    horilap = horilap_save;
