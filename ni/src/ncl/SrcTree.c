@@ -1,6 +1,6 @@
 
 /*
- *      $Id: SrcTree.c,v 1.25 1996-01-31 23:53:29 ethan Exp $
+ *      $Id: SrcTree.c,v 1.26 1996-04-24 00:19:48 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -876,6 +876,25 @@ NclSrcListNode *dec_list;
 	pf_sym->u.procfunc = tmp1;
 }
 
+void _NclNFunctionDefDestroy
+#if	NhlNeedProto
+(struct ncl_genericnode *thenode)
+#else 
+(thenode)
+	struct ncl_genericnode *thenode;
+#endif
+{
+	NclFuncDef *tmp = (NclFuncDef*)thenode;
+	NclSrcListNode *tmp_dec,*dec = tmp->dec_list;
+	while(dec != NULL) {
+		tmp_dec = dec->next;
+		NclFree((void*)dec);
+		dec = tmp_dec;
+	}
+
+	NclFree((void*)tmp);
+	
+}
 
 /*
  * Function:	_NclMakeNFunctionDef
@@ -917,12 +936,14 @@ NclSymTableListNode* thescope;
 	tmp->dec_list = dec_list;
 	tmp->block = block;
 	tmp->scope = thescope;
-	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclGenericDestroy;
+	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclNFunctionDefDestroy;
 
 	if(func->u.procfunc != NULL) {
 		func->u.procfunc->thescope = thescope;
 	} else {
+/*
 		_NclAddProcFuncInfoToSym(func,dec_list);
+*/
 		if(func->u.procfunc ==NULL) {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not create procedure or function paremeter info");
 			return(NULL);
@@ -1096,6 +1117,26 @@ void * _NclMakeDimSizeNode
 	return((void*)tmp);
 }
 
+void _NclProcDefDestroy
+#if	NhlNeedProto
+(struct ncl_genericnode *thenode)
+#else 
+(thenode)
+	struct ncl_genericnode *thenode;
+#endif
+{
+	NclProcDef *tmp = (NclProcDef*)thenode;
+	NclSrcListNode *tmp_dec,*dec = tmp->dec_list;
+	while(dec != NULL) {
+		tmp_dec = dec->next;
+		NclFree((void*)dec);
+		dec = tmp_dec;
+		
+	}
+
+	NclFree((void*)tmp);
+	
+}
 
 /*
  * Function:	_NclMakeProcDef
@@ -1122,8 +1163,6 @@ NclSymTableListNode *thescope;
 #endif
 {
 	NclProcDef *tmp = (NclProcDef*)NclMalloc((unsigned)sizeof(NclProcDef));
-	NclProcFuncInfo  *tmp1 = (NclProcFuncInfo*)NclMalloc((unsigned)
-                                sizeof(NclProcFuncInfo));
         NclSrcListNode *step, *step1;
         NclLocalVarDec *var_dec;
         NclDimSizeListNode *dim_size;
@@ -1137,60 +1176,26 @@ NclSymTableListNode *thescope;
 	tmp->name = src_tree_names[Ncl_PROCDEF];
 	tmp->line = cur_line_number;
 	tmp->file = cur_load_file;
-	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclGenericDestroy;
+	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclProcDefDestroy;
 	tmp->proc = var;	
 	tmp->dec_list = arg_list;
 	tmp->block = block;
 	tmp->scope = thescope;
-        if(tmp1 == NULL) {
-                NhlPError(NhlFATAL,errno,"Not enough memory for source tree construction");
-                return(NULL);
-        }
-        if(tmp->dec_list != NULL) {
-                step = tmp->dec_list;
-                i = 0;
-                while(step != NULL) {
-                        i++;
-                        step = step->next;
-                }
-                step = tmp->dec_list;
-                tmp1->nargs = i;
-                tmp1->theargs = (NclArgTemplate*)
-                                NclMalloc((unsigned)sizeof(NclArgTemplate)*i);
-                step = tmp->dec_list;
-                i = 0;
-                while( step != NULL ) {
-                        var_dec = (NclLocalVarDec*)step->node;
-                        if(var_dec->dim_size_list != NULL) {
-                                tmp1->theargs[i].is_dimsizes = 1;
-                                step1 = var_dec->dim_size_list;
-                                j = 0;
-                                while(step1 != NULL) {
-                                        dim_size = (NclDimSizeListNode*)step1->node;
-                                        tmp1->theargs[i].dim_sizes[j] = dim_size->size;
-                                        step1 = step1->next;
-                                        j++;
-                                }
-				tmp1->theargs[i].n_dims = j;
-                        } else {
-                                tmp1->theargs[i].is_dimsizes = 0;
-                        }
-                        tmp1->theargs[i].arg_data_type = var_dec->data_type;
-			tmp1->theargs[i].arg_sym = var_dec->var;
+	if(var->u.procfunc != NULL) {
+		var->u.procfunc->thescope = thescope;
+	} else {
+/*
+		_NclAddProcFuncInfoToSym(func,dec_list);
+*/
+		if(var->u.procfunc ==NULL) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not create procedure or function paremeter info");
+			return(NULL);
+		} else {
+			var->u.procfunc->thescope = thescope;
+		}
+	}
 
-                        step = step->next;
-                        i++;
-                }
-                tmp1->thesym = var;
-                tmp1->mach_rec_ptr = NULL;
-        } else {
-                tmp1->nargs = 0;
-                tmp1->theargs = NULL;
-                tmp1->thesym = var;
-                tmp1->mach_rec_ptr= NULL;
-        }
-	tmp1->thescope = thescope;
-        var->u.procfunc = tmp1;
+
 	_NclRegisterNode((NclGenericNode*)tmp);
 	return((void*)tmp);
 }

@@ -130,7 +130,9 @@ statement_list :  statement eoln			{
 									strt = _NclTranslate($1,thefptr);
 									_NclTransTerminate();
 									_NclPrintMachine(strt,-1,theoptr);
+#ifndef PRINTTREEONLY
 									_NclExecute(strt);
+#endif
 									_NclResetNewSymStack();
 									_NclFreeTree();
 								} else {
@@ -153,7 +155,9 @@ statement_list :  statement eoln			{
 									strt = _NclTranslate($2,thefptr);
 									_NclTransTerminate();
 									_NclPrintMachine(strt,-1,theoptr);
+#ifndef PRINTTREEONLY
 									_NclExecute(strt);
+#endif
 									_NclResetNewSymStack();
 									_NclFreeTree();
 								} else {
@@ -228,6 +232,10 @@ statement_list :  statement eoln			{
 										_NclPushNewInputStr(tmp_input,tmp,buff.st_size,cur_line_number);
 										cur_line_number = 0;
 										fclose(tmp_file);
+/*
+										fprintf(stdout,"closing0 %s\n",tmp);
+										fflush(stdout);
+*/
 										loading += 1;
 									}	
 								} else {
@@ -267,6 +275,10 @@ statement_list :  statement eoln			{
 										}
 										_NclPushNewInputStr(tmp_input,tmp,buff.st_size,cur_line_number);
 										cur_line_number = 0;
+/*
+										fprintf(stdout,"closing1 %s\n",tmp);
+										fflush(stdout);
+*/
 										fclose(tmp_file);
 										loading += 1;
 									}	
@@ -294,11 +306,6 @@ block_statement_list : statement eoln {
 									$$ = _NclMakeNewListNode();
 									$$->next = NULL;
 									$$->node = $1;
-/*
-									$$->next = _NclMakeNewListNode();
-									$$->next->node = $2;
-									$$->next->next = NULL;
-*/
 								} else {
 									$$ = NULL;
 								}
@@ -323,11 +330,6 @@ block_statement_list : statement eoln {
 										$$ = _NclMakeNewListNode();
 										$$->next = NULL;
 										$$->node = $2;
-/*
-										$$->next = _NclMakeNewListNode();
-										$$->next->node = $3;
-										$$->next->next = NULL;
-*/
 									} else if($2 == NULL) {
 										$$ = NULL;
 									}
@@ -338,11 +340,6 @@ block_statement_list : statement eoln {
 									}
 									step->next = _NclMakeNewListNode();
 									step= step->next;
-/*
-									step->next = _NclMakeNewListNode();
-									step->next->node = $3;
-									step->next->next = NULL;
-*/
 									step->next = NULL;
 									step->node = $2;
 									$$ = $1;
@@ -410,6 +407,10 @@ block_statement_list : statement eoln {
                                                                                 }
                                                                                 _NclPushNewInputStr(tmp_input,tmp,buff.st_size,cur_line_number);
                                                                                 cur_line_number = 0;
+/*
+										fprintf(stdout,"closing2 %s\n",tmp);
+										fflush(stdout);
+*/
                                                                                 fclose(tmp_file);
                                                                                 loading += 1;
                                                                         }
@@ -451,6 +452,10 @@ block_statement_list : statement eoln {
                                                                                 }
                                                                                 _NclPushNewInputStr(tmp_input,tmp,buff.st_size,cur_line_number);
                                                                                 cur_line_number = 0;
+/*
+										fprintf(stdout,"closing3 %s\n",tmp);
+										fflush(stdout);
+*/
                                                                                 fclose(tmp_file);
                                                                                 loading += 1;
                                                                         }

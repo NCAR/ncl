@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclVar.c,v 1.23 1996-04-23 00:10:21 ethan Exp $
+ *      $Id: NclVar.c,v 1.24 1996-04-24 00:19:46 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -735,14 +735,24 @@ NclStatus status)
 				}
 			}
 		}
+		_NclAddParent(_NclGetObj(var_out->var.thevalue_id),(NclObj)var_out);
+		if(class_ptr == nclVarClass) {
+			_NclCallCallBacks((NclObj)var_out,CREATED);
+		}
 	} else {
 		if(att_id != -1) {
+/*
+* Unfortunately atts are created as permanent always so I have to check ref count instead
 			if(!_NclSetStatus((NclObj)_NclGetObj(att_id),PERMANENT)) {
+*/
+			tmp_att = (NclAtt)_NclGetObj(att_id);
+			if(tmp_att->obj.ref_count != 0) {
 				tmp_att = _NclCopyAtt((NclAtt)_NclGetObj(att_id),NULL);
 				_NclSetStatus((NclObj)tmp_att,PERMANENT);
 				_NclAddParent((NclObj)tmp_att,(NclObj)var_out);
 				var_out->var.att_id = tmp_att->obj.id;
 			} else {
+				var_out->var.att_id = tmp_att->obj.id;
 				_NclAddParent(_NclGetObj(att_id),(NclObj)var_out);
 			}
 		} else {

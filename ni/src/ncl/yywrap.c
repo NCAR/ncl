@@ -24,8 +24,10 @@ int yywrap()
 {
 	if(loading) {
 #if     defined(SunOS) && (MAJOR == 4)
+		fclose(nclin);
 		nclin = _NclPopInputFile();
 #else
+		fclose(yyin);
 		yyin = _NclPopInputFile();
 #endif
 		loading -= 1;

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.31 1996-04-23 00:10:11 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.32 1996-04-24 00:19:40 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -928,6 +928,7 @@ NhlErrorTypes _NclIAddFile
 		p_md = path.u.data_obj;
 	} else {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"addfile: incorrect type of object passed to addfile");
+		NclFree(id);
 		return(NhlFATAL);
 	}
 	if(rw_status.kind == NclStk_VAR) {
@@ -938,6 +939,7 @@ NhlErrorTypes _NclIAddFile
 		rw_md = rw_status.u.data_obj;
 	} else {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"addfile: incorrect type of object passed to addfile");
+		NclFree(id);
 		return(NhlFATAL);
 	}
 	rw = NrmQuarkToString(*(NclQuark*)rw_md->multidval.val);
@@ -958,6 +960,7 @@ NhlErrorTypes _NclIAddFile
 			_NclPlaceReturn(out_data);
 			return(NhlNOERROR);
 		} else {
+			NclFree(id);
 			_NclDestroyObj((NclObj)file);
 			return(NhlFATAL);
 		}
@@ -979,8 +982,10 @@ NhlErrorTypes _NclIAddFile
 			out_data.kind = NclStk_VAL;
 			out_data.u.data_obj = out_md;
 			_NclPlaceReturn(out_data);
+			NclFree(id);
 			return(NhlWARNING);
 		} else {
+			NclFree(id);
 			_NclDestroyObj((NclObj)file);
 			return(NhlFATAL);
 		}
