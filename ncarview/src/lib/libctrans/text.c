@@ -1,5 +1,5 @@
 /*
- *	$Id: text.c,v 1.22 1993-01-11 21:19:54 clyne Exp $
+ *	$Id: text.c,v 1.23 1993-01-22 01:10:35 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -422,6 +422,79 @@ static	int	middle_most(s, strlen)
 	return (left + ((right - left) / 2));
 }
 
+/*	left_extent:
+ *
+ *	Return the left extent of the given character.
+ *
+ * on entry
+ *	c		: the character
+ * on exit
+ *	return 		= left extent of character
+ */
+static	int	left_extent(c)
+	char	c;
+{
+	int	index;
+
+	if (! var_space) return (0);
+
+	index = c - F_CHAR_START(fcap_template);
+	return(leftExtent2[index]);
+}
+
+/*	right_extent:
+ *
+ *	Return the right extent of the given character.
+ *
+ * on entry
+ *	c		: the character
+ * on exit
+ *	return 		= right extent of character
+ */
+static	int	right_extent(c)
+	char	c;
+{
+	int	index;
+
+	if (! var_space) return (F_FONT_RIGHT(fcap_current));
+
+	index = c - F_CHAR_START(fcap_template);
+	return(rightExtent2[index]);
+}
+
+/*	txt_ext_width:
+ *
+ *	Calculate the width of the text extent rectangle bounding the
+ *	given string.
+ *
+ * on entry
+ *	var_space 	: true or false;
+ *	strlen 		: length of string to print
+ *	Width  		: amount of additional spacing to add due to
+ *			  CHAR_SPACING if var_space is true, else it is
+ *			  the with of a mono space character.
+ * on exit
+ *	return 		= Width of text extent rectangle
+ */
+static	int	text_extent_width(s,strlen)
+	char	*s;
+	int	strlen;
+{
+	int	i;
+	int	index;
+	int	total = 0;
+
+	if (! strlen) return(0);
+
+	if (! var_space) return ((Width * strlen) - Spacing);
+
+	for (i=0;i<strlen;i++) {
+		index = s[i] - F_CHAR_START(fcap_template);
+		total += (Widtharray2[index] + Width);
+	}
+	total += (strlen - 1) * X_spacing;	/* add text spacing	*/
+	return(total);
+}
 
 /*	str_width:
  *		This function calculates the translation along baseline that
@@ -452,10 +525,10 @@ static int	str_width(strlen, s)
 	case A_NORM_H :	
 		switch (TEXT_PATH) {
 		case PATH_RIGHT :	/*left align*/
-			return(left_most(s, strlen));		
+			return(left_extent(s[0]));
 
 		case PATH_LEFT 	: 	/*right align*/
-			return(right_most(s, strlen));
+			return(right_extent(s[0]));
 
 		case PATH_UP 	:   	/*centre align*/ 
 		case PATH_DOWN 	: 
@@ -465,12 +538,10 @@ static int	str_width(strlen, s)
 	case A_LEFT :	/* align left	*/
 		switch (TEXT_PATH) {
 		case PATH_LEFT  : 
-			if (var_space) {
-				return (-(var_width( (char *) s+1, strlen-1)));
-			}
+			return(- text_extent_width(s+1,strlen-1));
 
-			return(-((strlen-1) * Width));
 		case PATH_RIGHT : 
+			return(left_extent(s[0]));
 		case PATH_UP    : 
 		case PATH_DOWN  : return(left_most(s, strlen));
 		}
@@ -478,17 +549,12 @@ static int	str_width(strlen, s)
 	case A_CENTER :	/*align center	*/
 		switch (TEXT_PATH) {
 		case PATH_RIGHT : 
-			if (var_space) return((var_width(s,strlen) -Spacing)/2);
+			return((text_extent_width(s,strlen) / 2) +
+				left_extent(s[0]));
 
-			return(((strlen * Width) - Spacing) / 2);
 		case PATH_LEFT 	: 
-			if (var_space) {
-				return(-(((var_width(s,strlen) - Spacing) / 2) 
-						- F_FONT_RIGHT(fcap_current)));
-			}
-
-			return(-((((strlen * Width) - Spacing) / 2) 
-					- F_FONT_RIGHT(fcap_current)));
+			return(-((text_extent_width(s,strlen) / 2) -
+					F_FONT_RIGHT(fcap_current)));
 		case PATH_UP 	: 
 		case PATH_DOWN  : return(middle_most(s, strlen));
 		}
@@ -496,10 +562,10 @@ static int	str_width(strlen, s)
 	case A_RIGHT  : 	/*align right	*/
 		switch (TEXT_PATH) {
 		case PATH_RIGHT : 
-			if (var_space) return(var_width(s,strlen) - Width);
-
-			return(((strlen-1) * Width)+F_FONT_RIGHT(fcap_current));
+			return(text_extent_width(s,strlen) + 
+				left_extent(s[0]));
 		case PATH_LEFT 	:  
+			return(right_extent(s[0]));
 		case PATH_UP	: 
 		case PATH_DOWN 	:  return(right_most(s,strlen));
 		}
@@ -618,34 +684,6 @@ static void	text_align(transx,transy, strlen,s)
 }
 
 
-/*	var_width:
- *		This function calculates the width of the text extent
- *	rectangle for a variable spaced font.
- *
- *	on entry:
- *		var_space is true;
- *		strlen : length of string to print
- *		Width  : amount of additional spacing to add due to
- *				CHAR_SPACING	
- *	on exit :
- *		return = Width of text extent rectangle
- */
-
-int	var_width(s,strlen)
-	char	*s;
-	int	strlen;
-{
-	int	i;
-	int	index;
-	int	total = 0;
-
-	for (i=0;i<strlen;i++) {
-		index = s[i] - F_CHAR_START(fcap_template);
-		total += (Widtharray2[index] + Width);
-	}
-
-	return(total);
-}
 
 
 /*
@@ -800,10 +838,6 @@ int	Text(cgmc)
 	int	numstroke;	/* number of strokes making up the font	*/
 	int	char_ind;
 	int	str_ind;	/* index to the current string		*/
-	int	var_x_adj = 0;
-	int	var_y_adj = 0;	/* space adjustment needed for variable space
-				 * fonts
-				 */
 	int	status = 0;
 
 	static	char *string = NULL;	/* the string currently being stroked */
@@ -846,6 +880,22 @@ int	Text(cgmc)
 
 	(void) strcpy(string,cgmc->s->string[0]);
 
+	/*
+	 * make sure every character in the string has a definition. If
+	 * not change that character to a space so we can do something 
+	 * reasonable when computing the alignment of the entire string
+	 */
+	for (i=0; i<strlen(string); i++) {
+
+		index = string[i] - F_CHAR_START(fcap_template);	
+		numstroke = F_NUMSTROKE(fcap_current, index);
+		if (numstroke <= 1) {
+			string[i] = ' ';
+		}
+	}
+
+		
+
 	/* calculate text alignment	*/
 	text_align(&trans_x, &trans_y, strlen(string), string); 
 
@@ -862,47 +912,21 @@ int	Text(cgmc)
 		/* index into Fontable*/
 		index = string[char_ind] - F_CHAR_START(fcap_template);	
 
+		if (index < 0 || index >= F_NUMCHAR(fcap_template)){
+			continue;
+		}
+
 		/* number of strokes making up a character.	*/
 		numstroke = F_NUMSTROKE(fcap_current, index);
 
-		/*
-		 * if its a non-charcter convert it to a space.
-		 */
-		if (numstroke <= 1) {
-			index = (int) ' ' - F_CHAR_START(fcap_template);
-			numstroke = F_NUMSTROKE(fcap_current, index);
-		}
 
-		if (index >=0 && index < F_NUMCHAR(fcap_template)){
-			if (numstroke) {
-
-
-			/* calculate possistion of THIS character for
-			 * for variable space font
-			 */
-			if (var_space && ((TEXT_PATH == PATH_RIGHT) ||
-				(TEXT_PATH == PATH_LEFT)))  {
-
-				var_x_adj = 
-				var_y_adj = 
-					-((F_FONT_RIGHT(fcap_current) 
-					- Widtharray2[index])/2);
-
-				var_x_adj *=
-					CHAR_X_BASE/MAG(CHAR_X_BASE,CHAR_Y_BASE);
-				var_y_adj *=
-					CHAR_Y_BASE/MAG(CHAR_X_BASE,CHAR_Y_BASE);
-				if (TEXT_PATH == PATH_LEFT) {
-					var_x_adj *= -1;
-					var_y_adj *= -1;
-				}
-			}
+		if (numstroke) {
 
 			p[k].x = F_X_COORD(fcap_current, index, i)
-				+ x_space + var_x_adj + pStart.x;
+				+ x_space + pStart.x;
 
 			p[k].y = F_Y_COORD(fcap_current, index, i)
-				+ y_space + var_y_adj + pStart.y;
+				+ y_space + pStart.y;
 
 			k++; i++; 
 
@@ -917,10 +941,10 @@ int	Text(cgmc)
 					k = 0;
 				} 
 
-				p[k].x = F_X_COORD(fcap_current, index, i)					+ x_space + var_x_adj + pStart.x;
+				p[k].x = F_X_COORD(fcap_current, index, i)					+ x_space + pStart.x;
 
 				p[k].y = F_Y_COORD(fcap_current, index, i)
-					+ y_space + var_y_adj + pStart.y;
+					+ y_space + pStart.y;
 				k++; 
 			}
 
@@ -929,41 +953,40 @@ int	Text(cgmc)
 			}
 			k = 0;
 
-			}	/* if numstroke	*/
+		}	/* if numstroke	*/
 
-			/* calculate possistion of NEXT character for
-			 * for variable space font
-			 */
-			if (var_space && (TEXT_PATH == PATH_RIGHT))  {
-				x_space += X_spacing 
-					+ (Widtharray2[index] 
-				* CHAR_X_BASE/MAG(CHAR_X_BASE,CHAR_Y_BASE));
+		/* calculate possistion of NEXT character for
+		 * for variable space font
+		 */
+		if (var_space && (TEXT_PATH == PATH_RIGHT))  {
+			x_space += X_spacing 
+				+ (Widtharray2[index] 
+			* CHAR_X_BASE/MAG(CHAR_X_BASE,CHAR_Y_BASE));
 
-				y_space += Y_spacing 
-					+ (Widtharray2[index] 
-				* CHAR_Y_BASE/MAG(CHAR_X_BASE,CHAR_Y_BASE));
-			}
+			y_space += Y_spacing 
+				+ (Widtharray2[index] 
+			* CHAR_Y_BASE/MAG(CHAR_X_BASE,CHAR_Y_BASE));
+		}
 
-			if (var_space && (TEXT_PATH == PATH_LEFT))  {
-				x_space += (X_spacing 
-					- (Widtharray2[index] 
+		if (var_space && (TEXT_PATH == PATH_LEFT))  {
+			x_space += (X_spacing 
+				- (Widtharray2[index] 
 				* CHAR_X_BASE/MAG(CHAR_X_BASE,CHAR_Y_BASE)));
 
-				y_space += (Y_spacing 
-					- (Widtharray2[index] 
+			y_space += (Y_spacing 
+				- (Widtharray2[index] 
 				* CHAR_Y_BASE/MAG(CHAR_X_BASE,CHAR_Y_BASE)));
-			}
+		}
 	
-			/* calculate possistion of next character for
-			 * for mono space font
-			 */
-			if (!(var_space) || (TEXT_PATH == PATH_UP)
-				|| (TEXT_PATH == PATH_DOWN)) {
-				x_space += X_spacing; 
-				y_space += Y_spacing;
-			}
+		/* calculate possistion of next character for
+		 * for mono space font
+		 */
+		if (!(var_space) || (TEXT_PATH == PATH_UP)
+			|| (TEXT_PATH == PATH_DOWN)) {
+			x_space += X_spacing; 
+			y_space += Y_spacing;
+		}
 
-		}	/* if index	*/
 	}
 
 
