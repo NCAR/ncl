@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.114 2003-09-25 22:44:13 haley Exp $
+;      $Id: gsn_code.ncl,v 1.115 2003-11-25 19:49:25 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -3603,8 +3603,9 @@ begin
         if(panel_debug) then
           print("-------Panel viewport values for each plot-------")
           print("    plot #" + nplot)
-          print("    x,y     = " + xpos(nc) + "," + ypos(nr))
-          print("    wdt,hgt = " + scale*old_vp(nplot,2) + "," + scale*old_vp(nplot,3))
+          print("    x,y          = " + xpos(nc) + "," + ypos(nr))
+          print("    orig wdt,hgt = " + old_vp(nplot,2) + "," + old_vp(nplot,3))
+          print("    new wdt,hgt  = " + scale*old_vp(nplot,2) + "," + scale*old_vp(nplot,3))
         end if
 
         setvalues pplot
