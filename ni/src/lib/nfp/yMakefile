@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.79 2004-07-02 03:48:21 haley Exp $
+#      $Id: yMakefile,v 1.80 2004-07-26 03:47:58 haley Exp $
 #
 #########################################################################
 #																		#
@@ -15,7 +15,7 @@
 #				National Center for Atmospheric Research
 #				POB 3000, Boulder, Colorado
 #
-#	$Date: 2004-07-02 03:48:21 $
+#	$Date: 2004-07-26 03:47:58 $
 #
 #	Description:	
 
@@ -55,7 +55,7 @@ CSRCS = areavolW.c betaincW.c bytesW.c calcorcW.c cdf_dpW.c chiinvW.c	\
 	randomW.c rcmW.c regcoefW.c relhumW.c remapW.c rhombtriW.c			\
 	shgridW.c simpsonW.c sindexW.c slpW.c skewtW.c smth9W.c sortW.c	\
 	specxW.c sph2W.c sphintW.c sstoiW.c statW.c svdW.c taperW.c			\
-	tdpackW.c tempnamW.c rvsphW.c varimaxW.c vibetaW.c waveletW.c		\
+	tdpackW.c tempnamW.c trvsphW.c varimaxW.c vibetaW.c waveletW.c		\
 	wgneW.c wmapW.c writematrixW.c wrunaveW.c wrapper.c utilW.c			\
 	vinth2pW.c vinth2peW.c zonmpsiW.c
 
