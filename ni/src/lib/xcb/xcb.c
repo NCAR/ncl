@@ -1,5 +1,5 @@
 /*
- *      $Id: xcb.c,v 1.5 1998-01-29 16:10:03 boote Exp $
+ *      $Id: xcb.c,v 1.6 1998-03-11 19:00:15 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1829,8 +1829,9 @@ FreePixmapCache(
 	_XcbPixmapCache	node
 )
 {
-	if(node->next)
-		FreePixmapCache(xcb,node->next);
+	if (!node)
+		return;
+	FreePixmapCache(xcb,node->next);
 	(void)FreePixmapNode(xcb,node);
 
 	return;
