@@ -1,5 +1,5 @@
 /*
- *      $Id: App.c,v 1.11 1995-03-29 10:01:39 boote Exp $
+ *      $Id: App.c,v 1.12 1995-03-31 21:51:10 boote Exp $
  */
 /************************************************************************
 *									*
@@ -905,6 +905,32 @@ NhlAppGetDefaultParentID
 		return NhlappLayerClassRec.app_class.current_app->base.id;
 
 	return (int)NhlFATAL;
+}
+
+/*
+ * Function:	nhl_fappgetdefaultparentid
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+_NHLCALLF(nhl_fappgetdefaultparentid,NHL_FAPPGETDEFAULTPARENTID)
+#if	NhlNeedProto
+(
+	int	*id
+)
+#else
+(id)
+	int	*id;
+#endif
+{
+	*id = NhlAppGetDefaultParentId();
 }
 
 /*
