@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.8 1997-03-05 19:16:18 haley Exp $
+#	$Id: yMakefile,v 1.9 1997-04-11 18:11:24 haley Exp $
 #
 #
 #	Makefile for NCAR Graphics source directories
@@ -7,5 +7,5 @@
 
 #define IHaveSubdirs
 
-SUBDIRS = libncarg libncarg_gks liboptional libncargC bin db \
+SUBDIRS = libncarg libncarg_gks liboptional bin db \
 	examples fundamental tests tutorial examplesC pdocexamples
