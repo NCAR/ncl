@@ -1,9 +1,9 @@
 C
-C $Id: epltch.f,v 1.3 1992-11-17 19:54:43 kennison Exp $
+C $Id: epltch.f,v 1.4 1993-01-15 22:05:58 kennison Exp $
 C
       PROGRAM EXMPLS
 C
-C ---------------------------------------------------------------------
+C --- D E C L A R A T I O N S -----------------------------------------
 C
 C Define arrays for column labels and row labels for the plots showing
 C the complex and duplex character sets.
@@ -63,7 +63,7 @@ C
       DATA IFFN / 1, 21, 22, 25, 26, 29, 30, 33, 34, 35, 36, 37 ,
      +              121,122,125,126,129,130,133,134,135,136,137 /
 C
-C ---------------------------------------------------------------------
+C --- E X E C U T A B L E   C O D E -----------------------------------
 C
 C Open GKS.
 C
@@ -77,7 +77,7 @@ C Do a call to SET which allows us to use fractional coordinates.
 C
       CALL SET (0.,1.,0.,1.,0.,1.,0.,1.,1)
 C
-C Examples 1-1 through 1-8. -------------------------------------------
+C --- E X A M P L E S   1 - 1   T H R O U G H   1 - 8 -----------------
 C
 C Produce examples of the complex and duplex character sets.
 C
@@ -187,7 +187,7 @@ C use fractional coordinates.
 C
       IF (ICMP.NE.0) CALL SET (0.,1.,0.,1.,0.,1.,0.,1.,1)
 C
-C Example 1-9. --------------------------------------------------------
+C --- E X A M P L E   1 - 9 -------------------------------------------
 C
 C Do a single frame showing various capabilities of PLCHHQ.
 C
@@ -319,7 +319,7 @@ C Advance the frame.
 C
       CALL FRAME
 C
-C Example 1-10. -------------------------------------------------------
+C --- E X A M P L E   1 - 1 0 -----------------------------------------
 C
 C Do a single frame showing the medium-quality characters with various
 C aspect ratios.
@@ -353,13 +353,14 @@ C Advance the frame.
 C
       CALL FRAME
 C
-C Example 1-11. -------------------------------------------------------
+C --- E X A M P L E   1 - 1 1 -----------------------------------------
 C
 C Do a single frame showing all the characters in the fontcap databases,
 C access to which was added in June of 1990.
 C
 C Double the line width.
 C
+      CALL PLOTIF (0.,0.,2)
       CALL GSLWSC (2.)
 C
 C Put a label at the top of the plot.
@@ -427,13 +428,14 @@ C Advance the frame.
 C
       CALL FRAME
 C
-C Example 1-12. -------------------------------------------------------
+C --- E X A M P L E   1 - 1 2 -----------------------------------------
 C
 C Do a single frame showing the use of fontcap databases and some of
-C new features added in June of 1990.
+C the new features added in June of 1990.
 C
 C Double the line width.
 C
+      CALL PLOTIF (0.,0.,2)
       CALL GSLWSC (2.)
 C
 C Put a label at the top of the plot.
@@ -591,7 +593,7 @@ C Advance the frame.
 C
       CALL FRAME
 C
-C Example 1-13. -------------------------------------------------------
+C --- E X A M P L E   1 - 1 3 -----------------------------------------
 C
 C Do a single frame showing all the characters in the fontcap databases,
 C access to which was added in October of 1992.
@@ -656,7 +658,178 @@ C Advance the frame.
 C
       CALL FRAME
 C
-C ---------------------------------------------------------------------
+C --- E X A M P L E   1 - 1 4 -----------------------------------------
+C
+C Do a single frame showing some of the new features added in December
+C of 1992.
+C
+C Put a label at the top of the plot and, below that, an explanatory
+C note.
+C
+      CALL PLCHHQ (.5,.975,':F25:PLCHHQ - FEATURES ADDED 12/92',
+     +                                                       .025,0.,0.)
+C
+      CALL PCSETR ('SS - SUBTRACT SPACE BETWEEN CHARACTERS',.275)
+      CALL PLCHHQ (.5,.938,':F13:(Use idt''s ''zoom'' to view some of th
+     +is in detail, especially stacking.)',
+     +                                                       .017,0.,0.)
+      CALL PCSETR ('SS - SUBTRACT SPACE BETWEEN CHARACTERS',0.)
+C
+C Illustrate the use of filled fonts with shadows and outlines.  First,
+C define some colors to use.
+C
+      CALL GSCR (1,2,0.,.5,.5)
+      CALL GSCR (1,3,.9,.9,0.)
+      CALL GSCR (1,4,1.,.3,.3)
+      CALL GSCR (1,5,0.,0.,1.)
+      CALL GSCR (1,6,.2,.2,.2)
+C
+C Write a line.
+C
+      CALL PLCHHQ (.5,.900,':F26:By default, the current foreground colo
+     +r is used.',
+     +                                                       .024,0.,0.)
+C
+C Define the principal color to be used for characters.
+C
+      CALL PCSETI ('CC - CHARACTER COLOR',4)
+C
+C Write another line.
+C
+      CALL PLCHHQ (.5,.850,':F26:A non-negative ''CC'' requests a differ
+     +ent color.',
+     +                                                       .026,0.,0.)
+C
+C Turn on character shadows and define various characteristics of the
+C shadow.
+C
+      CALL PCSETI ('SF - SHADOW FLAG',1)
+      CALL PCSETR ('SX - SHADOW OFFSET IN X',-.1)
+      CALL PCSETR ('SY - SHADOW OFFSET IN Y',-.1)
+      CALL PCSETI ('SC - SHADOW COLOR',2)
+C
+C Write another line.
+C
+      CALL PLCHHQ (.5,.796,':F26:''SF'', ''SC'', ''SX'', and ''SY'' crea
+     +te shadows.',
+     +                                                       .028,0.,0.)
+C
+C Turn on character outlines and define the color of the outline.
+C
+      CALL PCSETI ('OF - OUTLINE FLAG',1)
+      CALL PCSETI ('OC - OUTLINE COLOR',3)
+      CALL PCSETI ('OL - OUTLINE LINE WIDTH',1)
+C
+C Write another line.
+C
+      CALL PLCHHQ (.5,.738,':F26:''OF'', ''OC'', and ''OL'' add outlines
+     +.',
+     +                                                       .030,0.,0.)
+C
+C Turn on the drawing of boxes and define characteristics of them.
+C
+      CALL PCSETI ('BF - BOX FLAG',7)
+      CALL PCSETI ('BL - BOX LINE WIDTH',2)
+      CALL PCSETR ('BM - BOX MARGIN',.15)
+      CALL PCSETR ('BX - BOX SHADOW X OFFSET',-.1)
+      CALL PCSETR ('BY - BOX SHADOW Y OFFSET',-.1)
+      CALL PCSETI ('BC(1) - BOX COLOR - BOX OUTLINE    ',5)
+      CALL PCSETI ('BC(2) - BOX COLOR - BOX FILL       ',6)
+      CALL PCSETI ('BC(3) - BOX COLOR - BOX SHADOW FILL',2)
+C
+C Write another line.
+C
+      CALL PLCHHQ (.5,.672,':F26:''BF'', ''BC'', ''BL'', ''BM'', ''BX'',
+     + and ''BY'' add a box.',
+     +                                                       .026,0.,0.)
+C
+C Get rid of the box shadow, which doesn't add much.
+C
+      CALL PCSETI ('BF - BOX FLAG',3)
+C
+C Write another line.
+C
+      CALL PCSETC ('FC - FUNCTION-CODE CHARACTER','/')
+      CALL PLCHHQ (.5,.592,'/F26/''MA'' and ''OR'' are used for mapping:
+     +',
+     +                                                       .030,0.,0.)
+      CALL PCSETC ('FC - FUNCTION CODE CHARACTER',':')
+C
+C Write a couple of headers for the plots that follow.
+C
+      CALL PLCHHQ (.28,.528,':F25:(EZMAP)',.024,0.,0.)
+      CALL PLCHHQ (.72,.528,':F33:(r:F25: and :F33:q)',.024,0.,0.)
+C
+C Initialize EZMAP and draw a background.
+C
+      CALL MAPSTC ('OU','CO')
+      CALL MAPSTI ('GR',5)
+      CALL MAPPOS (.065,.495,.065,.495)
+      CALL MAPSTR ('SA',8.5)
+      CALL MAPROJ ('SV',0.,-25.,0.)
+      CALL MAPINT
+      CALL MAPLOT
+      CALL MAPGRD
+C
+C Tell PLOTCHAR to map characters through EZMAP.
+C
+      CALL PCSETI ('MA - MAPPING FLAG',1)
+      CALL PCSETR ('OR - OUT-OF-RANGE FLAG',1.E12)
+C
+C Write a line across the surface of the globe.
+C
+      CALL PLCHHQ (-25.,0.,':F25Y200:NCAR GRAPHICS',8.,30.,0.)
+C
+C Do an appropriate SET call for a rho-theta mapping.
+C
+      CALL SET    (.505,.935,.065,.495,-27.5,27.5,-27.5,27.5,1)
+C
+C Tell PLOTCHAR to use a rho-theta mapping.
+C
+      CALL PCSETI ('MA - MAPPING FLAG',2)
+      CALL PCSETR ('OR - OUT-OF-RANGE FLAG',0.)
+C
+C Write three lines in rho/theta space, orienting them so they come out
+C in a circle after mapping.
+C
+      CALL PLCHHQ (20., 90.,':F25Y125:NCAR GRAPHICS',8.,-90.,0.)
+      CALL PLCHHQ (20.,210.,':F25Y125:NCAR GRAPHICS',8.,-90.,0.)
+      CALL PLCHHQ (20.,-30.,':F25Y125:NCAR GRAPHICS',8.,-90.,0.)
+C
+C Turn off mapping and recall SET to allow fractional coordinates again.
+C
+      CALL PCSETI ('MA - MAPPING FLAG',0)
+C
+      CALL SET    (0.,1.,0.,1.,0.,1.,0.,1.,1)
+C
+C Change the drawing order to allow for "stacking" characters from
+C right to left.
+C
+      CALL PCSETI ('DO - DRAWING ORDER',-2)
+C
+C Reduce the space between characters so the "stacking" is visible.
+C
+      CALL PCSETR ('SS - SUBTRACT-SPACE FLAG',.3)
+C
+C Turn off the box.  Make the shadows black and position them so they
+C help make the stacked characters readable.
+C
+      CALL PCSETI ('BF - BOX FLAG',0)
+      CALL PCSETI ('SC - SHADOW COLOR',0)
+      CALL PCSETR ('SX - SHADOW OFFSET IN X',.1)
+      CALL PCSETR ('SY - SHADOW OFFSET IN Y',0.)
+C
+C Write a final line demonstrating "stacking".
+C
+      CALL PLCHHQ (.5,.030,':F26:Use    ''DO''    and    ''SS''    to   +
+     + "stack"    characters    in    either    direction.',
+     +                                                       .026,0.,0.)
+C
+C Advance the frame.
+C
+      CALL FRAME
+C
+C --- E N D   O F   E X A M P L E S -----------------------------------
 C
 C Close GKS.
 C
@@ -666,9 +839,10 @@ C Done.
 C
       STOP
 C
-C ---------------------------------------------------------------------
-C
       END
+
+
+
       SUBROUTINE DRAWBX (XCEN,YCEN,ANGD,XTRA)
       CALL PCGETR ('DL - DISTANCE LEFT  ',DSTL)
       CALL PCGETR ('DR - DISTANCE RIGHT ',DSTR)
