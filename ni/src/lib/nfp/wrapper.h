@@ -1,12 +1,23 @@
+#include <ncarg/ncargC.h>
+#include <ncarg/gks.h>
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/NresDB.h>
 #include <ncarg/ncl/defs.h>
 #include "Symbol.h"
-#include "NclMdInc.h"
+#include "NclDataDefs.h"
 #include "Machine.h"
-#include <ncarg/ncl/NclDataDefs.h>
-#include <ncarg/ncl/NclBuiltInSupport.h>
-#include <ncarg/gks.h>
+#include "NclMdInc.h"
+#include "TypeSupport.h"
+#include "NclData.h"
+#include "AttSupport.h"
+#include "NclAtt.h"
+#include "NclCoordVar.h"
+#include "NclVar.h"
+#include "VarSupport.h"
+#include "DataSupport.h"
+#include "NclBuiltInSupport.h"
+#include "NclBuiltIns.h"
+#include "NclHLUObj.h"
 
 #define min(x,y)   ((x) < (y) ? (x) : (y))
 #define max(x,y)   ((x) > (y) ? (x) : (y))
@@ -24,11 +35,11 @@ extern double *copy_scalar_to_array(double *, int, int *, int);
 
 extern float *coerce_output_float(double *, void *, int, int);
 
-extern void *coerce_output_float_only(void *,double *,int, int);
+extern void coerce_output_float_only(void *,double *,int, int);
 
-extern void *coerce_output_int_only(void *,double *,int, int);
+extern void coerce_output_int_only(void *,double *,int, int);
 
-extern void *coerce_output_float_or_double(void *,double *,
+extern void coerce_output_float_or_double(void *,double *,
 					   NclBasicDataTypes,int,int);
 
 extern float *coerce_input_float(void*,NclBasicDataTypes,int,int,

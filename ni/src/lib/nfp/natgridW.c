@@ -1577,7 +1577,7 @@ NhlErrorTypes nnpnt_W( void )
 /*
  * Coerce npts subsection of x (tmp_x) to double.
  */
-      coerce_subset_input_double(x,tmp_x,i,type_x,1,NULL,NULL,NULL);
+      coerce_subset_input_double(x,tmp_x,i,type_x,1,0,NULL,NULL);
     }
     else {
 /*
@@ -1590,7 +1590,7 @@ NhlErrorTypes nnpnt_W( void )
 /*
  * Coerce npts subsection of y (tmp_y) to double.
  */
-      coerce_subset_input_double(y,tmp_y,i,type_y,1,NULL,NULL,NULL);
+      coerce_subset_input_double(y,tmp_y,i,type_y,1,0,NULL,NULL);
     }
     else {
 /*

@@ -1,18 +1,5 @@
 #include <stdio.h>
-#include <ncarg/hlu/hlu.h>
-#include <ncarg/hlu/NresDB.h>
-#include <ncarg/ncl/defs.h>
-#include <ncarg/ncl/NclBuiltIns.h>
-#include <ncarg/ncl/NclDataDefs.h>
-#include <ncarg/ncl/NclBuiltInSupport.h>
-#include "Symbol.h"
-#include "Machine.h"
-#include <ncarg/ncl/NclVar.h>
-#include "NclCoordVar.h"
-#include "VarSupport.h"
-#include "DataSupport.h"
-#include "NclMdInc.h"
-#include "TypeSupport.h"
+#include "wrapper.h"
 
 NhlErrorTypes vinth2p_W
 #if	NhlNeedProto
