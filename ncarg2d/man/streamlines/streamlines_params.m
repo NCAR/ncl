@@ -167,7 +167,7 @@ obtain a pleasing plot. LWD affects the linewidth of the directional
 arrowheads as well as the streamlines themselves. The arrowhead length
 also increases somewhat when the linewidth is greater than the
 default. However, the arrowhead length parameter still affects the
-length. The default is 0.0, specifying a device-dependent minimum
+length. The default is 1.0, specifying a device-dependent minimum
 linewidth.
 .IP "MAP - Map Transformation Code - Integer"
 MAP defines the mapping transformation between the data and user
@@ -645,8 +645,8 @@ The parameter YCN specifies the Y coordinate value that corresponds to
 the value of the STINIT input parameter, N, for the second subscript
 of the U and V vector component arrays as well as the P scalar data
 array, if used.  Together with YC1, XC1, and XCM it establishes the
-mapping from grid coordinate space to data coordinate space. If XC1 is
-equal to XCM, the value of N, converted to a real, will be used. You
+mapping from grid coordinate space to data coordinate space. If YC1 is
+equal to YCN, the value of N, converted to a real, will be used. You
 must initialize Streamlines with a call to STINIT after modifying this
 parameter.  The default value of YCN is 0.0
 .SH SEE ALSO
