@@ -24,35 +24,33 @@ c nomenclature:
 
 c .   input
 c .
-C*PL*ERROR* Comment line too long
-c .   x         - real series containing the data (unchanged upon return)
+c .   x         - real series containing the data (unchanged upon
+c .               return)
 c .   nx        - number of points in x
 c .               nx need not be a power of 2 but the fft will run
 c .               optimally if nx is highly factorable.
 c .   iopt      - detrending option
 c .               iopt<0 : do no detrending.
-C*PL*ERROR* Comment line too long
-c .               iopt=0 : remove series mean (minimum recommended option)
-C*PL*ERROR* Comment line too long
-c .               iopt=1 : remove the series mean and lst sqrs linear trend
-C*PL*ERROR* Comment line too long
-c .               iopt=2 : remove the series mean and lst sqrs quadratic trend
-C*PL*ERROR* Comment line too long
-c .                        know what you are doing before applying this option
+c .               iopt=0 : remove series mean (minimum recommended
+c .                        option)
+c .               iopt=1 : remove the series mean and lst sqrs linear
+c .                        trend
+c .               iopt=2 : remove the series mean and lst sqrs
+c .                        quadratic trend
+c .                        know what you are doing before applying
+c .                        this option
 c .   jave      - smoothing to be performed on the periodiogram
-C*PL*ERROR* Comment line too long
-c .               this should be an odd number (>=3) , if not, the routine
-c .               will force it to the next largest odd number.
+c .               this should be an odd number (>=3) , if not, the
+c .               routine will force it to the next largest odd number.
 c .               jave=0 : do no smoothing
-C*PL*ERROR* Comment line too long
-c .                        spcx contains raw spectral estimates (periodogram)
+c .                        spcx contains raw spectral estimates 
+c .                        (periodogram)
 c .               jave>0 : average jave periodogram estimates together
 c .                        utilizing modified daniell smoothing (good
 c .                        stability but may lead to large bias ).
-C*PL*ERROR* Comment line too long
-c .                        all weights are 1/jave except wgt(1) and wgt(jave)
-C*PL*ERROR* Comment line too long
-c .                        which are 1/(2*jave). this is the recommended option.
+c .                        all weights are 1/jave except wgt(1) and
+c .                        wgt(jave) which are 1/(2*jave). this is 
+c .                        the recommended option.
 c .   pct       - % of the series to be tapered [0.<=pct>=1.]
 c .               if pct=0. no tapering will be done
 c .               if pct=1. the whole series is effected
@@ -62,20 +60,19 @@ c .   scl       - scaling factor (there are 4 special cases.)
 c .               scl = -1.: spcx estimates are scaled so that the area
 c .                          under the curve [ s(f)*df ] equals one.
 c .               scl = 0. : spcx estimates are scaled so that the sum
-C*PL*ERROR* Comment line too long
-c .                          of the spectral estimates is the same as the
-C*PL*ERROR* Comment line too long
-c .                          variance of the detrended (optional) input series
+c .                          of the spectral estimates is the same as
+c .                          the variance of the detrended (optional)
+c .                          input series
 c .               scl = 1. : spcx estimates are as calculated  by g13cbf
 c .               scl = 2. : spcx estimates are scaled so that the area
 c .                          under the curve [ s(f)*df ] equals the
-C*PL*ERROR* Comment line too long
-c .                          variance of the detrended (optional) input series.
+c .                          variance of the detrended (optional)
+c .                          input series.
 c .               scl= 2 or -1. is recommended
 c .   work      - work array
 c .               if jave.ne.0 then upon return work(1 thru nspc) will
-C*PL*ERROR* Comment line too long
-c .               contain the raw spectral estimates [i.e. , periodogram]
+c .               contain the raw spectral estimates [i.e. , 
+c .               periodogram]
 c .   lwork     - length of work [ must be >= 5*nx + 17 +iabs(jave)]
 c .
 c .   output
@@ -123,10 +120,10 @@ c .   coef      - contains coef utilized to remove trend (if any)
 c .   xinfo(1)  - mean of x prior to tapering / detrending
 c .        (2)  - variance of x prior to tapering / detrending
 c .        (3)  - variance of x after detrending and prior to tapering
-C*PL*ERROR* Comment line too long
-c .        (4)  - raw sum of spcx(2 thru nspc) with no scaling or smoothing
-C*PL*ERROR* Comment line too long
-c .               this is the variance of the detrended - tapered series.
+c .        (4)  - raw sum of spcx(2 thru nspc) with no scaling or
+c .               smoothing
+c .               this is the variance of the detrended - tapered
+c .               series.
 c .        (5)  - raw sum of spcx(2 thru nspc) after smoothing
 c .        (6)  - scaling utilized to normalize the spectrum to xinfo(3)
 c .        (7)  - white noise level [=scale*xinfo(3)/(nspc-1)]
@@ -220,8 +217,7 @@ C NCL add to sinfo
 
       RETURN
       END
-C*PL*ERROR* Comment line too long
-c ----------------------------------------------------------------------
+c -------------------------------------------------------------------
       SUBROUTINE DSPECXY(X,Y,NX,IOPT,JAVE,PCT,SCL,WORK,LWORK,FRQ,SPCX,
      +                   SPCY,COSPC,QUSPC,COHER,PHASE,NSPC,SINFO,IER)
       DOUBLE PRECISION PCT
@@ -244,21 +240,21 @@ c nomenclature:
 
 c .   input
 c .
-C*PL*ERROR* Comment line too long
-c .   x         - real series containing the data (unchanged upon return)
-C*PL*ERROR* Comment line too long
-c .   y         - real series containing the data (unchanged upon return)
+c .   x         - real series containing the data (unchanged upon
+c .               return)
+c .   y         - real series containing the data (unchanged upon
+c .               return)
 c .   nx        - number of points in x and y (need not be a power of 2)
 c .   iopt      - detrending option
 c .               iopt<0 : do no detrending.
-C*PL*ERROR* Comment line too long
-c .               iopt=0 : remove series mean (minimum recommended option)
-C*PL*ERROR* Comment line too long
-c .               iopt=1 : remove the series mean and lst sqrs linear trend
-C*PL*ERROR* Comment line too long
-c .               iopt=2 : remove the series mean and lst sqrs quadratic trend
-C*PL*ERROR* Comment line too long
-c .                        know what you are doing before applying this option
+c .               iopt=0 : remove series mean (minimum recommended 
+c .                        option)
+c .               iopt=1 : remove the series mean and lst sqrs linear
+c .                        trend
+c .               iopt=2 : remove the series mean and lst sqrs
+c .                        quadratic trend
+c .                        know what you are doing before applying
+c .                        this option
 c .   jave      - no. of spectral estimates to be averaged
 c .   pct       - % of the series to be tapered [0.<=pct>=1.]
 c .               if pct=0. no tapering will be done
@@ -269,15 +265,14 @@ c .   scl       - scaling factor (there are 4 special cases.)
 c .               scl = -1.: spcx estimates are scaled so that the area
 c .                          under the curve [ s(f)*df ] equals one.
 c .               scl = 0. : spcx estimates are scaled so that the sum
-C*PL*ERROR* Comment line too long
-c .                          of the spectral estimates is the same as the
-C*PL*ERROR* Comment line too long
-c .                          variance of the detrended (optional) input series
+c .                          of the spectral estimates is the same as
+c .                          the variance of the detrended (optional)
+c .                          input series
 c .               scl = 1. : spcx estimates are as calculated  by g13cbf
 c .               scl = 2. : spcx estimates are scaled so that the area
 c .                          under the curve [ s(f)*df ] equals the
-C*PL*ERROR* Comment line too long
-c .                          variance of the detrended (optional) input series.
+c .                          variance of the detrended (optional) 
+c .                          input series.
 c .   work      - work array
 c .   lwork     - length of work [ must be >= 10*nx ]
 c .
@@ -289,12 +284,11 @@ c .               spcx(nspc) - spectral estimate at freq = 0.5
 c .   cospc     - cospectrum : vector of length nspc
 c .               this is the real part of the cross spectrum. it
 c .               measures the extent to which there are oscillations
-C*PL*ERROR* Comment line too long
-c .               with the same phase in the two series (or with opposite
-c .               sign ,i.e. , with a phase shift of half a cycle).
-c .               in other words : it measures the contribution of
-c .               different frequencies to the total cross-covariance
-c .               at zero lag.
+c .               with the same phase in the two series (or with
+c .               opposite sign ,i.e. , with a phase shift of half a
+c .               cycle). In other words : it measures the
+c .               contribution of different frequencies to the total
+c .               cross-covariance at zero lag.
 c .   quspc     - quadrature spectrum  : vector of length nspc
 c .               this is the imaginary part of the cross spectrum. it
 c .               measures the extent to which there are oscillations
@@ -315,14 +309,13 @@ c .   nspc      - the number of spectral estimates returned
 c .               routine is set up so that nspc=nx/2+1
 c .   sinfo     - must be dimensioned at least 10 in calling prog
 c .               sinfo(1)  - degrees of freedom  (dof)
-C*PL*ERROR* Comment line too long
-c .                           the dof for the cospc,quspc,coher and phase
-c .                           is approximately dof-2 .
+c .                           the dof for the cospc,quspc,coher and
+c .                            phase is approximately dof-2 .
 c .                    (2)  - lag1 autocor of detrended/tapered x series
 c .                    (3)  - lag1 autocor of detrended/tapered y series
 c .                    (4)  - unused
-C*PL*ERROR* Comment line too long
-c .                    (5)  - freq spacing at which values should be plotted
+c .                    (5)  - freq spacing at which values should be
+c .                           plotted
 c .                    (6)  - `normal' bandwidth
 c .                    (7)  - mult factor for  5% limit (imsl)
 c .                    (8)  - mult factor for 95% limit (imsl)
@@ -341,8 +334,8 @@ c .          (2)  - variance of x prior to tapering / detrending
 c .          (3)  - variance of x after detrending and prior to tapering
 c .          (4)  - raw sum of spcx(2 thru nspc) after smoothing
 c .          (5)  - same as xinfo(4)
-C*PL*ERROR* Comment line too long
-c .          (6)  - scaling utilized to normalize the spectrum to xinfo(3)
+c .          (6)  - scaling utilized to normalize the spectrum to
+c .                 xinfo(3)
 c .          (7)  - white noise level [=xinfo(3)/(nspc-1)]
 c .          (8)  - correction factor to dof due to tapering  (cftapr)
 c .          (9)  - unused
@@ -477,8 +470,8 @@ C can use work again
       CALL DSWRNAV(QUSPC(2),NSPC-1,WORK(KPTWGT),JAVODD,KOPT,SPVAL,WORK,
      +            IER)
 
-C*PL*ERROR* Comment line too long
-c compute the coherence and phase now that the co/quspc have been calculated
+c compute the coherence and phase now that the co/quspc have been
+c calculated
 
       SCLCOH = 1.0D0
       DO 70 N = 1,NSPC
@@ -547,22 +540,21 @@ c perform detrending option (iopt)
 c .   the mean and variance will always be calculated
 c .   note : if iopt=1 or 2 then the variance of x on output [xinfo(3)]
 c .   may be considerably different (reduced) from the variance of x
-C*PL*ERROR* Comment line too long
-c .   on input [xinfo(2)]. xinfo(1) will contain the mean of the input series.
+c .   on input [xinfo(2)]. xinfo(1) will contain the mean of the
+c .   input series.
 
       CALL DDTRNDXD(X,NX,IOPT,XINFO(1),XINFO(2),XINFO(3),COEF,IER)
 
 c perform tapering on detrended x vector
 c .   the tapering procedure alters the variance of the input
-C*PL*ERROR* Comment line too long
-c .   series and as a result lowers the dof associated with each spectral
-c .   estimate. if pct is 0.05 or 0.10 then the effect is small.
-C*PL*ERROR* Comment line too long
-c .   the purpose of tapering when viewed from the frequency domain is to
-c .   suppress large side lobes in the effective filter obtained with
-c .   the raw transform. in the time domain , the object of tapering is
-c .   to round off potential discontinuities at each end of the finite
-c .   segment being analyzed.
+c .   series and as a result lowers the dof associated with each
+c .   spectral estimate. if pct is 0.05 or 0.10 then the effect is
+c .   small.
+c .   the purpose of tapering when viewed from the frequency domain
+c .   is to suppress large side lobes in the effective filter obtained
+c .   with the raw transform. in the time domain , the object of
+c .   tapering is to round off potential discontinuities at each end
+c .   of the finite segment being analyzed.
 
       IF (PCT.GT.0.0D0) THEN
           IF (IOPT.GE.0) THEN
@@ -621,11 +613,10 @@ c .   normalized wgts to calculate the deg of freedom
   125     WGTSQ = WGTSQ + WGT(N)**2
 
 c perform weighted running ave
-C*PL*ERROR* Comment line too long
-c .   kopt = 1 means to utilize symmetric averaging at the ends of the spectrum.
-c .   note : spc(1) is not utilized. if the user does want this estimate
-c .   included in the averaging change the (2) to (1) for both spc and x
-c .   and nspcm1 to nspc.
+c .   kopt = 1 means to utilize symmetric averaging at the ends of
+c .   the spectrum. note : spc(1) is not utilized. if the user does
+c .   want this estimate included in the averaging change the (2) to
+c .   (1) for both spc and x and nspcm1 to nspc.
 
           KOPT = 1
           X(1) = SPC(1)
@@ -727,8 +718,8 @@ c
 c .   x         - series to be detrended
 c .   npts      - length of x
 c .   iopt      - detrending option
-C*PL*ERROR* Comment line too long
-c .               iopt < 0 : calculate the mean and variance of x then return
+c .               iopt < 0 : calculate the mean and variance of x
+c .                          then return
 c .               iopt = 0 : remove the mean only
 c .               iopt = 1 : remove the mean and use linear lst sqrs to
 c .               iopt = 2 : remove the mean and use quadratic lst sqrs
@@ -893,11 +884,10 @@ c .               nptav must be odd and >= 3
 c .   kopt      - end-point option
 c .               kopt < 0 : utilize cyclic conditions
 c .                          e.g.,  nptav=3 at n=1
-C*PL*ERROR* Comment line too long
-c .                          x(1)=(wgt(1)*x(npts)+wgt(2)*x(1)+wgt(3)*x(2))
-c .                              /(wgt(1)+wgt(2)+wgt(3))
-C*PL*ERROR* Comment line too long
-c .               kopt = 0 : set unsmoothed beginning and end pts to spvl
+c .                          x(1)=(wgt(1)*x(npts)+wgt(2)*x(1)+ 
+c .                                wgt(3)*x(2))/(wgt(1)+wgt(2)+wgt(3))
+c .               kopt = 0 : set unsmoothed beginning and end pts to
+c .                          spvl
 c .                          e.g.,  nptav=3 , x(1) = spvl and x(npts) =
 c .               kopt > 0 : utilize reflective (symmetric) conditions
 c .                          e.g.,  nptav=3 at n=1

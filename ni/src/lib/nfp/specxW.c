@@ -43,9 +43,9 @@ NhlErrorTypes specx_anal_W( void )
 /*
  * Output variables
  */
-  double *dof;
-  float *rdof;
+  void *dof;
   NclBasicDataTypes type_dof;
+  NclObjClass type_output;
 /*
  * Attribute variables
  */
@@ -53,10 +53,8 @@ NhlErrorTypes specx_anal_W( void )
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
-  double *frq, *spcx, *bw, *xavei, *xvari, *xvaro, *xlag1, *xslope;
-  float *rfrq, *rspcx, *rbw, *rxavei, *rxvari, *rxvaro, *rxlag1;
-  float *rxslope;
-  double sinfo[50];
+  double *frq_tmp, *spcx_tmp, sinfo[50];
+  void *spcx, *frq, *bw, *xavei, *xvari, *xvaro, *xlag1, *xslope;
 /*
  * Declare variables for random purposes.
  */
@@ -169,50 +167,49 @@ NhlErrorTypes specx_anal_W( void )
  * Check if any input is double.
  */
   if(type_x != NCL_double && type_pct != NCL_double) {
-    type_dof = NCL_float;
+    type_dof    = NCL_float;
+    type_output = nclTypefloatClass;
 /*
  * Allocate space for float output variables.
  */
-    rdof     = (float *)calloc(1,sizeof(float));
-    rfrq     = (float *)calloc(nspcmx,sizeof(float));
-    rspcx    = (float *)calloc(nspcmx,sizeof(float));
-    rbw      = (float *)calloc(1,sizeof(float));
-    rxavei   = (float *)calloc(1,sizeof(float));
-    rxvari   = (float *)calloc(1,sizeof(float));
-    rxvaro   = (float *)calloc(1,sizeof(float));
-    rxlag1   = (float *)calloc(1,sizeof(float));
-    rxslope  = (float *)calloc(1,sizeof(float));
-    if(  rdof == NULL ||  rfrq == NULL || rspcx == NULL ||   rbw == NULL || 
-       rxavei == NULL ||rxvari == NULL ||rxvaro == NULL ||rxlag1 == NULL ||
-      rxslope == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"specx_anal: Unable to allocate memory for output variables");
-      return(NhlFATAL);
-    }
+    dof     = (void *)calloc(1,sizeof(float));
+    frq     = (void *)calloc(nspcmx-1,sizeof(float));
+    spcx    = (void *)calloc(nspcmx-1,sizeof(float));
+    bw      = (void *)calloc(1,sizeof(float));
+    xavei   = (void *)calloc(1,sizeof(float));
+    xvari   = (void *)calloc(1,sizeof(float));
+    xvaro   = (void *)calloc(1,sizeof(float));
+    xlag1   = (void *)calloc(1,sizeof(float));
+    xslope  = (void *)calloc(1,sizeof(float));
   }
   else {
-    type_dof = NCL_double;
+    type_dof    = NCL_double;
+    type_output = nclTypedoubleClass;
 /*
  * Allocate space for double output variables.
  */
-    dof     = (double *)calloc(1,sizeof(double));
-    bw      = (double *)calloc(1,sizeof(double));
-    xavei   = (double *)calloc(1,sizeof(double));
-    xvari   = (double *)calloc(1,sizeof(double));
-    xvaro   = (double *)calloc(1,sizeof(double));
-    xlag1   = (double *)calloc(1,sizeof(double));
-    xslope  = (double *)calloc(1,sizeof(double));
-    if(   dof == NULL ||    bw == NULL || xavei == NULL || xvari == NULL || 
-        xvaro == NULL || xlag1 == NULL || xslope == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"specx_anal: Unable to allocate memory for output variables");
-      return(NhlFATAL);
-    }
+    dof     = (void *)calloc(1,sizeof(double));
+    frq     = (void *)calloc(nspcmx-1,sizeof(double));
+    spcx    = (void *)calloc(nspcmx-1,sizeof(double));
+    bw      = (void *)calloc(1,sizeof(double));
+    xavei   = (void *)calloc(1,sizeof(double));
+    xvari   = (void *)calloc(1,sizeof(double));
+    xvaro   = (void *)calloc(1,sizeof(double));
+    xlag1   = (void *)calloc(1,sizeof(double));
+    xslope  = (void *)calloc(1,sizeof(double));
+  }
+  if(   dof == NULL ||    bw == NULL ||  spcx == NULL ||   frq == NULL ||
+      xavei == NULL || xvari == NULL || xvaro == NULL || xlag1 == NULL ||
+     xslope == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"specx_anal: Unable to allocate memory for output variables");
+    return(NhlFATAL);
   }
 /*
  * Allocate space for stuff to be returned by dspecx.
  */
-  frq     = (double *)calloc(nspcmx,sizeof(double));
-  spcx    = (double *)calloc(nspcmx,sizeof(double));
-  if( frq == NULL || spcx == NULL) {
+  frq_tmp  = (double *)calloc(nspcmx,sizeof(double));
+  spcx_tmp = (double *)calloc(nspcmx,sizeof(double));
+  if( frq_tmp == NULL || spcx_tmp == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"specx_anal: Unable to allocate memory for output variables");
     return(NhlFATAL);
   }
@@ -221,7 +218,7 @@ NhlErrorTypes specx_anal_W( void )
  * Allocate space for work array.
  */
   lwork = 5 * nx + 17 + abs(*jave);
-  work   = (double *)calloc(lwork,sizeof(double));
+  work  = (double *)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"specx_anal: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -231,416 +228,236 @@ NhlErrorTypes specx_anal_W( void )
  */
   scl = 2.0;
   NGCALLF(dspecx,DSPECX)(dx,&nx,iopt,jave,dpct,&scl,work,&lwork,
-                         frq,spcx,&nspc,sinfo,&ier);
+                         frq_tmp,spcx_tmp,&nspc,sinfo,&ier);
 
   if( ier > 700000 ) {
     NhlPError(NhlWARNING,NhlEUNKNOWN,"specx_anal: 'x' contains all constant values");
   }
-/*
- * Free up memory.
- */
-  NclFree(work);
-  if((void*)dx   != x) NclFree(dx);
-  if((void*)dpct != pct) NclFree(dpct);
-
   if(type_dof == NCL_float) {
 /*
  * Copy double values to float values.
  */
-    *rdof   = (float)sinfo[0]; /* deg. of freedom */
-    *rxlag1 = (float)sinfo[1]; /* lag1 auto correltn after dtrending */
-    *rbw    = (float)sinfo[5]; /* band width */
-    *rxavei = (float)sinfo[10];/* mean prior to dtrending */
-
-    *rxvari = (float)sinfo[11];/* variance prior to detrending*/
-    *rxvaro = (float)sinfo[12];/* variance after detrending */
-    *rxslope= (float)sinfo[31];/* slope of linear trend (if iopt=1) */
-    for(i = 0; i < nspcmx; i++ ) {
-      rfrq[i] = (float)frq[i];
-      rspcx[i] = (float)spcx[i];
+    ((float*)dof)[0]    = (float)sinfo[0];   /* deg. of freedom */
+    ((float*)xlag1)[0]  = (float)sinfo[1];   /* lag1 auto crltn after
+                                                dtrending */
+    ((float*)bw)[0]     = (float)sinfo[5];   /* band width */
+    ((float*)xavei)[0]  = (float)sinfo[10];  /* mean prior to dtrending */
+    ((float*)xvari)[0]  = (float)sinfo[11];  /* variance prior to dtrending*/
+    ((float*)xvaro)[0]  = (float)sinfo[12];  /* variance after dtrending */
+    ((float*)xslope)[0] = (float)sinfo[31];  /* slope of linear trend 
+                                                (if iopt=1) */
+    for(i = 0; i < nspcmx-1; i++ ) {
+      ((float*)frq)[i]  = (float)frq_tmp[i+1];
+      ((float*)spcx)[i] = (float)spcx_tmp[i+1];
     }
-/*
- * Free up double precision vars we don't need anymore.
- */
-    NclFree(frq);
-    NclFree(spcx);
-/*
- * Set up variable to return.
- */
-    dsizes[0] = 1;
-    return_md = _NclCreateVal(
-                              NULL,
-                              NULL,
-                              Ncl_MultiDValData,
-                              0,
-                              (void*)rdof,
-                              NULL,
-                              1,
-                              dsizes,
-                              TEMPORARY,
-                              NULL,
-                              (NclObjClass)nclTypefloatClass
-                              );
-/*
- * Set up attributes to return.
- */
-    att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
-
-    dsizes[0] = nspcmx-1;      /* returning nx/2 points, not nx/2 + 1 */
-    att_md = _NclCreateVal(
-                           NULL,
-                           NULL,
-                           Ncl_MultiDValData,
-                           0,
-                           rspcx,
-                           NULL,
-                           1,
-                           dsizes,
-                           TEMPORARY,
-                           NULL,
-                           (NclObjClass)nclTypefloatClass
-                           );
-    _NclAddAtt(
-               att_id,
-               "spcx",
-               att_md,
-               NULL
-               );
-
-    att_md = _NclCreateVal(
-                           NULL,
-                           NULL,
-                           Ncl_MultiDValData,
-                           0,
-                           rfrq,
-                           NULL,
-                           1,
-                           dsizes,
-                           TEMPORARY,
-                           NULL,
-                           (NclObjClass)nclTypefloatClass
-                           );
-    _NclAddAtt(
-               att_id,
-               "frq",
-               att_md,
-               NULL
-               );
-
-    dsizes[0] = 1;
-    att_md = _NclCreateVal(
-                           NULL,
-                           NULL,
-                           Ncl_MultiDValData,
-                           0,
-                           rbw,
-                           NULL,
-                           1,
-                           dsizes,
-                           TEMPORARY,
-                           NULL,
-                           (NclObjClass)nclTypefloatClass
-                           );
-    _NclAddAtt(
-               att_id,
-               "bw",
-               att_md,
-               NULL
-               );
-
-    att_md = _NclCreateVal(
-                           NULL,
-                           NULL,
-                           Ncl_MultiDValData,
-                           0,
-                           rxavei,
-                           NULL,
-                           1,
-                           dsizes,
-                           TEMPORARY,
-                           NULL,
-                           (NclObjClass)nclTypefloatClass
-                           );
-    _NclAddAtt(
-               att_id,
-               "xavei",
-               att_md,
-               NULL
-               );
-
-    att_md = _NclCreateVal(
-                           NULL,
-                           NULL,
-                           Ncl_MultiDValData,
-                           0,
-                           rxvari,
-                           NULL,
-                           1,
-                           dsizes,
-                           TEMPORARY,
-                           NULL,
-                           (NclObjClass)nclTypefloatClass
-                           );
-    _NclAddAtt(
-               att_id,
-               "xvari",
-               att_md,
-               NULL
-               );
-
-    att_md = _NclCreateVal(
-                           NULL,
-                           NULL,
-                           Ncl_MultiDValData,
-                           0,
-                           rxvaro,
-                           NULL,
-                           1,
-                           dsizes,
-                           TEMPORARY,
-                           NULL,
-                           (NclObjClass)nclTypefloatClass
-                           );
-    _NclAddAtt(
-               att_id,
-               "xvaro",
-               att_md,
-               NULL
-               );
-
-    att_md = _NclCreateVal(
-                           NULL,
-                           NULL,
-                           Ncl_MultiDValData,
-                           0,
-                           rxlag1,
-                           NULL,
-                           1,
-                           dsizes,
-                           TEMPORARY,
-                           NULL,
-                           (NclObjClass)nclTypefloatClass
-                           );
-    _NclAddAtt(
-               att_id,
-               "xlag1",
-               att_md,
-               NULL
-               );
-
-    att_md = _NclCreateVal(
-                           NULL,
-                           NULL,
-                           Ncl_MultiDValData,
-                           0,
-                           rxslope,
-                           NULL,
-                           1,
-                           dsizes,
-                           TEMPORARY,
-                           NULL,
-                           (NclObjClass)nclTypefloatClass
-                           );
-    _NclAddAtt(
-               att_id,
-               "xslope",
-               att_md,
-               NULL
-               );
   }
   else {
-    *dof    = sinfo[0];  /* Degrees of freedom [spcx@dof] */
-    *xlag1  = sinfo[1];  /* lag1 auto correlation after detrending [@xlag1] */
-    *bw     = sinfo[5];  /* band width         [spcx@band_width] */
-    *xavei  = sinfo[10]; /* mean     prior to detrending [@xavei]  */
-    *xvari  = sinfo[11]; /* variance prior to detrending [@xvari]  */
-    *xvaro  = sinfo[12]; /* variance after detrending    [@xvaro] */
-    *xslope = sinfo[31]; /* slope of linear trend (if iopt=1) [@xslope] */
+    ((double*)dof)[0]    = sinfo[0];   /* deg. of freedom */
+    ((double*)xlag1)[0]  = sinfo[1];   /* lag1 auto crltn after
+                                          dtrending */
+    ((double*)bw)[0]     = sinfo[5];   /* band width */
+    ((double*)xavei)[0]  = sinfo[10];  /* mean prior to dtrending */
+    ((double*)xvari)[0]  = sinfo[11];  /* variance prior to dtrending*/
+    ((double*)xvaro)[0]  = sinfo[12];  /* variance after dtrending */
+    ((double*)xslope)[0] = sinfo[31];  /* slope of linear trend 
+                                          (if iopt=1) */
+    for(i = 0; i < nspcmx-1; i++ ) {
+      ((double*)frq)[i]  = frq_tmp[i+1];
+      ((double*)spcx)[i] = spcx_tmp[i+1];
+    }
+  }
+/*
+ * Free up memory.
+ */
+  NclFree(frq_tmp);
+  NclFree(spcx_tmp);
+  NclFree(work);
+  if((void*)dx   != x) NclFree(dx);
+  if((void*)dpct != pct) NclFree(dpct);
 
 /*
  * Set up variable to return.
  */
-    dsizes[0] = 1;
-    return_md = _NclCreateVal(
-                              NULL,
-                              NULL,
-                              Ncl_MultiDValData,
-                              0,
-                              (void*)dof,
-                              NULL,
-                              1,
-                              dsizes,
-                              TEMPORARY,
-                              NULL,
-                              (NclObjClass)nclTypedoubleClass
-                              );
+  dsizes[0] = 1;
+  return_md = _NclCreateVal(
+                            NULL,
+                            NULL,
+                            Ncl_MultiDValData,
+                            0,
+                            dof,
+                            NULL,
+                            1,
+                            dsizes,
+                            TEMPORARY,
+                            NULL,
+                            type_output
+                            );
 /*
  * Set up attributes to return.
  */
-    att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
+  att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
     
-    dsizes[0] = nspcmx-1;      /* returning nx/2 points, not nx/2 + 1 */
-    att_md = _NclCreateVal(
-                           NULL,
-                           NULL,
-                           Ncl_MultiDValData,
-                           0,
-                           spcx,
-                           NULL,
-                           1,
-                           dsizes,
-                           TEMPORARY,
-                           NULL,
-                           (NclObjClass)nclTypedoubleClass
-                           );
-    _NclAddAtt(
-               att_id,
-               "spcx",
-               att_md,
-               NULL
-               );
+  dsizes[0] = nspcmx-1;      /* returning nx/2 points, not nx/2 + 1 */
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         spcx,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         type_output
+                         );
+  _NclAddAtt(
+             att_id,
+             "spcx",
+             att_md,
+             NULL
+             );
     
-    att_md = _NclCreateVal(
-                           NULL,
-                           NULL,
-                           Ncl_MultiDValData,
-                           0,
-                           frq,
-                           NULL,
-                           1,
-                           dsizes,
-                           TEMPORARY,
-                           NULL,
-                           (NclObjClass)nclTypedoubleClass
-                           );
-    _NclAddAtt(
-               att_id,
-               "frq",
-               att_md,
-               NULL
-               );
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         frq,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         type_output
+                         );
+  _NclAddAtt(
+             att_id,
+             "frq",
+             att_md,
+             NULL
+             );
     
-    dsizes[0] = 1;
-    att_md = _NclCreateVal(
-                           NULL,
-                           NULL,
-                           Ncl_MultiDValData,
-                           0,
-                           bw,
-                           NULL,
-                           1,
-                           dsizes,
-                           TEMPORARY,
-                           NULL,
-                           (NclObjClass)nclTypedoubleClass
-                           );
-    _NclAddAtt(
-               att_id,
-               "bw",
-               att_md,
-               NULL
-               );
+  dsizes[0] = 1;
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         bw,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         type_output
+                         );
+  _NclAddAtt(
+             att_id,
+             "bw",
+             att_md,
+             NULL
+             );
     
-    att_md = _NclCreateVal(
-                           NULL,
-                           NULL,
-                           Ncl_MultiDValData,
-                           0,
-                           xavei,
-                           NULL,
-                           1,
-                           dsizes,
-                           TEMPORARY,
-                           NULL,
-                           (NclObjClass)nclTypedoubleClass
-                           );
-    _NclAddAtt(
-               att_id,
-               "xavei",
-               att_md,
-               NULL
-               );
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         xavei,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         type_output
+                         );
+  _NclAddAtt(
+             att_id,
+             "xavei",
+             att_md,
+             NULL
+             );
     
-    att_md = _NclCreateVal(
-                           NULL,
-                           NULL,
-                           Ncl_MultiDValData,
-                           0,
-                           xvari,
-                           NULL,
-                           1,
-                           dsizes,
-                           TEMPORARY,
-                           NULL,
-                           (NclObjClass)nclTypedoubleClass
-                           );
-    _NclAddAtt(
-               att_id,
-               "xvari",
-               att_md,
-               NULL
-               );
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         xvari,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         type_output
+                         );
+  _NclAddAtt(
+             att_id,
+             "xvari",
+             att_md,
+             NULL
+             );
     
-    att_md = _NclCreateVal(
-                           NULL,
-                           NULL,
-                           Ncl_MultiDValData,
-                           0,
-                           xvaro,
-                           NULL,
-                           1,
-                           dsizes,
-                           TEMPORARY,
-                           NULL,
-                           (NclObjClass)nclTypedoubleClass
-                           );
-    _NclAddAtt(
-               att_id,
-               "xvaro",
-               att_md,
-               NULL
-               );
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         xvaro,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         type_output
+                         );
+  _NclAddAtt(
+             att_id,
+             "xvaro",
+             att_md,
+             NULL
+             );
     
-    att_md = _NclCreateVal(
-                           NULL,
-                           NULL,
-                           Ncl_MultiDValData,
-                           0,
-                           xlag1,
-                           NULL,
-                           1,
-                           dsizes,
-                           TEMPORARY,
-                           NULL,
-                           (NclObjClass)nclTypedoubleClass
-                           );
-    _NclAddAtt(
-               att_id,
-               "xlag1",
-               att_md,
-               NULL
-               );
-    
-    att_md = _NclCreateVal(
-                           NULL,
-                           NULL,
-                           Ncl_MultiDValData,
-                           0,
-                           xslope,
-                           NULL,
-                           1,
-                           dsizes,
-                           TEMPORARY,
-                           NULL,
-                           (NclObjClass)nclTypedoubleClass
-                           );
-    _NclAddAtt(
-               att_id,
-               "xslope",
-               att_md,
-               NULL
-               );
-  }
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         xlag1,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         type_output
+                         );
+  _NclAddAtt(
+             att_id,
+             "xlag1",
+             att_md,
+             NULL
+             );
+
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         xslope,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         type_output
+                         );
+  _NclAddAtt(
+             att_id,
+             "xslope",
+             att_md,
+             NULL
+             );
   tmp_var = _NclVarCreate(
                           NULL,
                           NULL,
@@ -682,9 +499,9 @@ NhlErrorTypes specxy_anal_W( void )
 /*
  * Output variables
  */
-  double *dof;
-  float *rdof;
+  void *dof;
   NclBasicDataTypes type_dof;
+  NclObjClass type_output;
 /*
  * Attribute variables
  */
@@ -692,13 +509,12 @@ NhlErrorTypes specxy_anal_W( void )
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
-  double *frq, *spcx, *spcy, *cospc, *quspc, *coher, *phase, *bw;
-  double *xavei, *xvari, *xvaro, *xlag1, *xslope;
-  double *yavei, *yvari, *yvaro, *ylag1, *yslope; 
-  float *rfrq, *rspcx, *rspcy, *rcospc, *rquspc, *rcoher, *rphase, *rbw;
-  float *rxavei, *rxvari, *rxvaro, *rxlag1, *rxslope;
-  float *ryavei, *ryvari, *ryvaro, *rylag1, *ryslope; 
+  double *frq_tmp, *spcx_tmp, *spcy_tmp;
+  double *cospc_tmp, *quspc_tmp, *coher_tmp, *phase_tmp;
   double sinfo[50];
+  void *bw, *frq, *spcx, *spcy, *cospc, *quspc, *coher, *phase;
+  void *xavei, *xvari, *xvaro, *xlag1, *xslope;
+  void *yavei, *yvari, *yvaro, *ylag1, *yslope; 
 /*
  * Declare variables for random purposes.
  */
@@ -834,76 +650,78 @@ NhlErrorTypes specxy_anal_W( void )
      type_pct != NCL_double) {
 
     type_dof = NCL_float;
+    type_output = nclTypefloatClass;
 /* 
  * Allocate space for float output variables.
  */
-    rdof     = (float *)calloc(1,sizeof(float));
-    rfrq     = (float *)calloc(nspcmx,sizeof(float));
-    rspcx    = (float *)calloc(nspcmx,sizeof(float));
-    rspcy    = (float *)calloc(nspcmx,sizeof(float));
-    rcospc   = (float *)calloc(nspcmx,sizeof(float));
-    rquspc   = (float *)calloc(nspcmx,sizeof(float));
-    rcoher   = (float *)calloc(nspcmx,sizeof(float));
-    rphase   = (float *)calloc(nspcmx,sizeof(float));
-    rbw      = (float *)calloc(1,sizeof(float));
-    rxavei   = (float *)calloc(1,sizeof(float));
-    rxvari   = (float *)calloc(1,sizeof(float));
-    rxvaro   = (float *)calloc(1,sizeof(float));
-    rxlag1   = (float *)calloc(1,sizeof(float));
-    rxslope  = (float *)calloc(1,sizeof(float));
-    ryavei   = (float *)calloc(1,sizeof(float));
-    ryvari   = (float *)calloc(1,sizeof(float));
-    ryvaro   = (float *)calloc(1,sizeof(float));
-    rylag1   = (float *)calloc(1,sizeof(float));
-    ryslope  = (float *)calloc(1,sizeof(float));
-
-    if(  rdof == NULL ||   rfrq == NULL ||  rspcx == NULL ||  rspcy == NULL || 
-       rcospc == NULL || rquspc == NULL || rcoher == NULL || rphase == NULL || 
-          rbw == NULL || rxavei == NULL || rxvari == NULL || rxvaro == NULL || 
-       rxlag1 == NULL ||rxslope == NULL || ryavei == NULL || ryvari == NULL ||
-       ryvaro == NULL || rylag1 == NULL ||ryslope == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"specxy_anal: Unable to allocate memory for output variables");
-      return(NhlFATAL);
-    }
+    dof      = (void *)calloc(1,sizeof(float));
+    frq      = (void *)calloc(nspcmx-1,sizeof(float));
+    spcx     = (void *)calloc(nspcmx-1,sizeof(float));
+    spcy     = (void *)calloc(nspcmx-1,sizeof(float));
+    cospc    = (void *)calloc(nspcmx-1,sizeof(float));
+    quspc    = (void *)calloc(nspcmx-1,sizeof(float));
+    coher    = (void *)calloc(nspcmx-1,sizeof(float));
+    phase    = (void *)calloc(nspcmx-1,sizeof(float));
+    bw       = (void *)calloc(1,sizeof(float));
+    xavei    = (void *)calloc(1,sizeof(float));
+    xvari    = (void *)calloc(1,sizeof(float));
+    xvaro    = (void *)calloc(1,sizeof(float));
+    xlag1    = (void *)calloc(1,sizeof(float));
+    xslope   = (void *)calloc(1,sizeof(float));
+    yavei    = (void *)calloc(1,sizeof(float));
+    yvari    = (void *)calloc(1,sizeof(float));
+    yvaro    = (void *)calloc(1,sizeof(float));
+    ylag1    = (void *)calloc(1,sizeof(float));
+    yslope   = (void *)calloc(1,sizeof(float));
   }
   else {
     type_dof = NCL_double;
+    type_output = nclTypedoubleClass;
 /*
  * Allocate space for double output variables.
  */
-    dof     = (double *)calloc(1,sizeof(double));
-    bw      = (double *)calloc(1,sizeof(double));
-    xavei   = (double *)calloc(1,sizeof(double));
-    xvari   = (double *)calloc(1,sizeof(double));
-    xvaro   = (double *)calloc(1,sizeof(double));
-    xlag1   = (double *)calloc(1,sizeof(double));
-    xslope  = (double *)calloc(1,sizeof(double));
-    yavei   = (double *)calloc(1,sizeof(double));
-    yvari   = (double *)calloc(1,sizeof(double));
-    yvaro   = (double *)calloc(1,sizeof(double));
-    ylag1   = (double *)calloc(1,sizeof(double));
-    yslope  = (double *)calloc(1,sizeof(double));
-  
-    if(   dof == NULL ||   bw == NULL || xavei == NULL || xvari == NULL ||
-        xvaro == NULL ||xlag1 == NULL ||xslope == NULL || yavei == NULL ||
-        yvari == NULL ||yvaro == NULL || ylag1 == NULL | yslope == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"specxy_anal: Unable to allocate memory for output variables");
-      return(NhlFATAL);
-    }
+    dof     = (void *)calloc(1,sizeof(double));
+    bw      = (void *)calloc(1,sizeof(double));
+    frq     = (void *)calloc(nspcmx-1,sizeof(double));
+    spcx    = (void *)calloc(nspcmx-1,sizeof(double));
+    spcy    = (void *)calloc(nspcmx-1,sizeof(double));
+    cospc   = (void *)calloc(nspcmx-1,sizeof(double));
+    quspc   = (void *)calloc(nspcmx-1,sizeof(double));
+    coher   = (void *)calloc(nspcmx-1,sizeof(double));
+    phase   = (void *)calloc(nspcmx-1,sizeof(double));
+    xavei   = (void *)calloc(1,sizeof(double));
+    xvari   = (void *)calloc(1,sizeof(double));
+    xvaro   = (void *)calloc(1,sizeof(double));
+    xlag1   = (void *)calloc(1,sizeof(double));
+    xslope  = (void *)calloc(1,sizeof(double));
+    yavei   = (void *)calloc(1,sizeof(double));
+    yvari   = (void *)calloc(1,sizeof(double));
+    yvaro   = (void *)calloc(1,sizeof(double));
+    ylag1   = (void *)calloc(1,sizeof(double));
+    yslope  = (void *)calloc(1,sizeof(double));
+  }
+  if(   dof == NULL ||    bw == NULL || xavei == NULL || xvari == NULL ||
+        frq == NULL ||  spcx == NULL ||  spcy == NULL || cospc == NULL ||
+      quspc == NULL || coher == NULL || phase == NULL || xvaro == NULL ||
+      xlag1 == NULL ||xslope == NULL || yavei == NULL || yvari == NULL ||
+      yvaro == NULL || ylag1 == NULL | yslope == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"specxy_anal: Unable to allocate memory for output variables");
+    return(NhlFATAL);
   }
 
 /*
  * Allocate space for stuff to be returned by dspecx.
  */
-  frq     = (double *)calloc(nspcmx,sizeof(double));
-  spcx    = (double *)calloc(nspcmx,sizeof(double));
-  spcy    = (double *)calloc(nspcmx,sizeof(double));
-  cospc   = (double *)calloc(nspcmx,sizeof(double));
-  quspc   = (double *)calloc(nspcmx,sizeof(double));
-  coher   = (double *)calloc(nspcmx,sizeof(double));
-  phase   = (double *)calloc(nspcmx,sizeof(double));
-  if(  frq == NULL ||  spcx == NULL ||  spcy == NULL || cospc == NULL ||
-       quspc == NULL || coher == NULL || phase == NULL) {
+  frq_tmp   = (double *)calloc(nspcmx,sizeof(double));
+  spcx_tmp  = (double *)calloc(nspcmx,sizeof(double));
+  spcy_tmp  = (double *)calloc(nspcmx,sizeof(double));
+  cospc_tmp = (double *)calloc(nspcmx,sizeof(double));
+  quspc_tmp = (double *)calloc(nspcmx,sizeof(double));
+  coher_tmp = (double *)calloc(nspcmx,sizeof(double));
+  phase_tmp = (double *)calloc(nspcmx,sizeof(double));
+  if(    frq_tmp == NULL ||  spcx_tmp == NULL ||  spcy_tmp == NULL || 
+       cospc_tmp == NULL || quspc_tmp == NULL || coher_tmp == NULL || 
+       phase_tmp == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"specxy_anal: Unable to allocate memory for output variables");
     return(NhlFATAL);
   }
@@ -912,7 +730,7 @@ NhlErrorTypes specxy_anal_W( void )
  * Allocate space for work array.
  */
   lwork = 10 * nx;
-  work   = (double *)calloc(lwork,sizeof(double));
+  work  = (double *)calloc(lwork,sizeof(double));
   if( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"specxy_anal: Unable to allocate memory for work array");
     return(NhlFATAL);
@@ -922,13 +740,464 @@ NhlErrorTypes specxy_anal_W( void )
  */
   scl = 2.0;
   NGCALLF(dspecxy,DSPECXY)(dx,dy,&nx,iopt,jave,dpct,&scl,work,&lwork,
-                           frq,spcx,spcy,cospc,quspc,coher,phase,
-                           &nspc,sinfo,&ier);
+                           frq_tmp,spcx_tmp,spcy_tmp,cospc_tmp,quspc_tmp,
+                           coher_tmp,phase_tmp,&nspc,sinfo,&ier);
 
   if( ier > 700000 ) {
     NhlPError(NhlWARNING,NhlEUNKNOWN,"specxy_anal: 'x' and/or 'y' contains all constant values");
   }
 
+  if(type_dof == NCL_float) {
+/*
+ * Copy double values to float values.
+ */
+    ((float*)dof)[0]   = (float)sinfo[0];   /* Deg. of freedom  */
+    ((float*)xlag1)[0] = (float)sinfo[1];   /* lag1 auto crltn after
+                                               dtrending */
+    ((float*)ylag1)[0] = (float)sinfo[2];   /* lag1 auto crltn after
+                                               dtrending */
+    ((float*)bw)[0]    = (float)sinfo[5];   /* band width */
+    ((float*)xavei)[0] = (float)sinfo[10];  /* mean prior to detrending  */
+    ((float*)xvari)[0] = (float)sinfo[11];  /* variance prior to detrending */
+    ((float*)xvaro)[0] = (float)sinfo[12];  /* variance after detrending */
+    ((float*)xslope)[0]= (float)sinfo[31];  /* slope of linear trend 
+                                               (if iopt=1) */
+
+    ((float*)yavei)[0] = (float)sinfo[20];  /* mean prior to detrending */
+    ((float*)yvari)[0] = (float)sinfo[21];  /* variance prior to detrending */
+    ((float*)yvaro)[0] = (float)sinfo[22];  /* variance after detrending */
+    ((float*)yslope)[0]= (float)sinfo[34];  /* slope of linear trend
+                                               (if iopt=1) */
+    for(i = 0; i < nspcmx-1; i++ ) {
+      ((float*)frq)[i]   = (float)frq_tmp[i+1];
+      ((float*)spcx)[i]  = (float)spcx_tmp[i+1];
+      ((float*)spcy)[i]  = (float)spcy_tmp[i+1];
+      ((float*)cospc)[i] = (float)cospc_tmp[i+1];
+      ((float*)quspc)[i] = (float)quspc_tmp[i+1];
+      ((float*)coher)[i] = (float)coher_tmp[i+1];
+      ((float*)phase)[i] = (float)phase_tmp[i+1];
+    }
+  }
+  else {
+/*
+ * Copy double values to float values.
+ */
+    ((double*)dof)[0]    = sinfo[0];    /* Deg. of freedom [spcx@dof] */
+    ((double*)xlag1)[0]  = sinfo[1];    /* lag1 auto crltn after
+                                           detrending [@xlag1] */
+    ((double*)ylag1)[0]  = sinfo[2];    /* lag1 auto correlation after
+                                           detrending [@ylag1] */
+    ((double*)bw)[0]     = sinfo[5];    /* band width [spcx@band_width] */
+    ((double*)xavei)[0]  = sinfo[10];   /* mean prior to detrending
+                                           [@xavei]  */
+    ((double*)xvari)[0]  = sinfo[11];   /* variance prior to detrending 
+                                           [@xvari]  */
+    ((double*)xvaro)[0]  = sinfo[12];   /* variance after detrending
+                                           [@xvaro] */
+    ((double*)xslope)[0] = sinfo[31];   /* slope of linear trend (if iopt=1)
+                                           [@xslope] */
+    ((double*)yavei)[0]  = sinfo[20];   /* mean prior to detrending 
+                                           [@yavei]  */
+    ((double*)yvari)[0]  = sinfo[21];   /* variance prior to detrending 
+                                           [@yvari]  */
+    ((double*)yvaro)[0]  = sinfo[22];   /* variance after detrending
+                                           [@yvaro] */
+    ((double*)yslope)[0] = sinfo[34];   /* slope of linear trend 
+                                           (if iopt=1) [@yslope] */
+    for(i = 0; i < nspcmx-1; i++ ) {
+      ((double*)frq)[i]   = frq_tmp[i+1];
+      ((double*)spcx)[i]  = spcx_tmp[i+1];
+      ((double*)spcy)[i]  = spcy_tmp[i+1];
+      ((double*)cospc)[i] = cospc_tmp[i+1];
+      ((double*)quspc)[i] = quspc_tmp[i+1];
+      ((double*)coher)[i] = coher_tmp[i+1];
+      ((double*)phase)[i] = phase_tmp[i+1];
+    }
+  }
+/*
+ * Set up variable to return.
+ */
+  dsizes[0] = 1;
+  return_md = _NclCreateVal(
+                            NULL,
+                            NULL,
+                            Ncl_MultiDValData,
+                            0,
+                            dof,
+                            NULL,
+                            1,
+                            dsizes,
+                            TEMPORARY,
+                            NULL,
+                            type_output
+                            );
+  /*
+   * Set up attributes to return.
+   */
+  att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
+  
+  dsizes[0] = nspcmx-1;      /* returning nx/2 points, not nx/2 + 1 */
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         spcx,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         type_output
+                         );
+  _NclAddAtt(
+             att_id,
+             "spcx",
+             att_md,
+             NULL
+             );
+  
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         spcy,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         type_output
+                         );
+  _NclAddAtt(
+             att_id,
+             "spcy",
+             att_md,
+             NULL
+             );
+  
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         frq,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         type_output
+                         );
+  _NclAddAtt(
+             att_id,
+             "frq",
+             att_md,
+             NULL
+             );
+  
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         cospc,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         type_output
+                         );
+  _NclAddAtt(
+             att_id,
+             "cospc",
+             att_md,
+             NULL
+             );
+  
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         quspc,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         type_output
+                         );
+  _NclAddAtt(
+             att_id,
+             "quspc",
+             att_md,
+             NULL
+             );
+  
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         coher,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         type_output
+                         );
+  _NclAddAtt(
+             att_id,
+             "coher",
+             att_md,
+             NULL
+             );
+  
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         phase,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         type_output
+                         );
+  _NclAddAtt(
+             att_id,
+             "phase",
+             att_md,
+             NULL
+             );
+  
+  dsizes[0] = 1;
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         bw,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         type_output
+                         );
+  _NclAddAtt(
+             att_id,
+             "bw",
+             att_md,
+             NULL
+             );
+  
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         xavei,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         type_output
+                         );
+  _NclAddAtt(
+             att_id,
+             "xavei",
+             att_md,
+             NULL
+             );
+  
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         xvari,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         type_output
+                         );
+  _NclAddAtt(
+             att_id,
+             "xvari",
+             att_md,
+             NULL
+             );
+  
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         xvaro,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         type_output
+                         );
+  _NclAddAtt(
+             att_id,
+             "xvaro",
+             att_md,
+             NULL
+             );
+  
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         xlag1,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         type_output
+                         );
+  _NclAddAtt(
+             att_id,
+             "xlag1",
+             att_md,
+             NULL
+             );
+  
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         xslope,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         type_output
+                         );
+  _NclAddAtt(
+             att_id,
+             "xslope",
+             att_md,
+             NULL
+             );
+  
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         yavei,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         type_output
+                         );
+  
+  _NclAddAtt(
+             att_id,
+             "yavei",
+             att_md,
+             NULL
+             );
+  
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         yvari,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         type_output
+                         );
+  _NclAddAtt(
+             att_id,
+             "yvari",
+             att_md,
+             NULL
+             );
+  
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         yvaro,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         type_output
+                         );
+  _NclAddAtt(
+             att_id,
+             "yvaro",
+             att_md,
+             NULL
+             );
+  
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         ylag1,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         type_output
+                         );
+  _NclAddAtt(
+             att_id,
+             "ylag1",
+             att_md,
+             NULL
+             );
+  
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         yslope,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         type_output
+                         );
+  _NclAddAtt(
+             att_id,
+             "yslope",
+             att_md,
+             NULL
+             );
 /*
  * Free up memory.
  */
@@ -937,834 +1206,16 @@ NhlErrorTypes specxy_anal_W( void )
   if((void*)dy   != y) NclFree(dy);
   if((void*)dpct != pct) NclFree(dpct);
 
-  if(type_dof == NCL_float) {
+  NclFree(frq_tmp);
+  NclFree(spcx_tmp);
+  NclFree(spcy_tmp);
+  NclFree(cospc_tmp);
+  NclFree(quspc_tmp);
+  NclFree(coher_tmp);
+  NclFree(phase_tmp);
 /*
- * Copy double values to float values.
+ * Return variable.
  */
-    *rdof   = (float)sinfo[0]; /* Deg. of freedom  */
-    *rxlag1 = (float)sinfo[1]; /* lag1 auto corrltn after dtrending */
-    *rylag1 = (float)sinfo[2]; /* lag1 auto corrltn after dtrending */
-    *rbw    = (float)sinfo[5]; /* band width */
-    
-    *rxavei = (float)sinfo[10];/* mean prior to detrending  */
-    *rxvari = (float)sinfo[11];/* variance prior to detrending */
-    *rxvaro = (float)sinfo[12];/* variance after detrending */
-    *rxslope= (float)sinfo[31];/* slope of linear trend (if iopt=1) */
-    
-    *ryavei = (float)sinfo[20];/* mean     prior to detrending */
-    *ryvari = (float)sinfo[21];/* variance prior to detrending */
-    *ryvaro = (float)sinfo[22];/* variance after detrending */
-    *ryslope= (float)sinfo[34];/* slope of linear trend (if iopt=1) */
-
-    for(i = 0; i < nspcmx; i++ ) {
-      rfrq[i]   = (float)frq[i];
-      rspcx[i]  = (float)spcx[i];
-      rspcy[i]  = (float)spcy[i];
-      rcospc[i] = (float)cospc[i];
-      rquspc[i] = (float)quspc[i];
-      rcoher[i] = (float)coher[i];
-      rphase[i] = (float)phase[i];
-    }
-/*
- * Free up double precision vars we don't need anymore.
- */
-    NclFree(frq);
-    NclFree(spcx);
-    NclFree(spcy);
-    NclFree(cospc);
-    NclFree(quspc);
-    NclFree(coher);
-    NclFree(phase);
-/*
- * Set up variable to return.
- */
-    dsizes[0] = 1;
-    return_md = _NclCreateVal(
-                              NULL,
-                              NULL,
-                              Ncl_MultiDValData,
-                              0,
-                              (void*)rdof,
-                              NULL,
-                              1,
-                              dsizes,
-                              TEMPORARY,
-                              NULL,
-                              (NclObjClass)nclTypefloatClass
-                              );
-/*
- * Set up attributes to return.
- */
-    att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
-    
-    dsizes[0] = nspcmx-1;      /* returning nx/2 points, not nx/2 + 1 */
-    att_md = _NclCreateVal(
-                           NULL,
-                           NULL,
-                           Ncl_MultiDValData,
-                           0,
-                           rspcx,
-                           NULL,
-                           1,
-                           dsizes,
-                           TEMPORARY,
-                           NULL,
-                           (NclObjClass)nclTypefloatClass
-                           );
-    _NclAddAtt(
-               att_id,
-               "spcx",
-               att_md,
-               NULL
-               );
-    
-    att_md = _NclCreateVal(
-                           NULL,
-                           NULL,
-                           Ncl_MultiDValData,
-                           0,
-                           rspcy,
-                           NULL,
-                           1,
-                           dsizes,
-                           TEMPORARY,
-                           NULL,
-                           (NclObjClass)nclTypefloatClass
-                           );
-    _NclAddAtt(
-               att_id,
-               "spcy",
-               att_md,
-               NULL
-               );
-    
-    att_md = _NclCreateVal(
-                           NULL,
-                           NULL,
-                           Ncl_MultiDValData,
-                           0,
-                           rfrq,
-                           NULL,
-                           1,
-                           dsizes,
-                           TEMPORARY,
-                           NULL,
-                           (NclObjClass)nclTypefloatClass
-                           );
-    _NclAddAtt(
-               att_id,
-               "frq",
-               att_md,
-               NULL
-               );
-    
-    att_md = _NclCreateVal(
-                           NULL,
-                           NULL,
-                           Ncl_MultiDValData,
-                           0,
-                           rcospc,
-                           NULL,
-                           1,
-                           dsizes,
-                           TEMPORARY,
-                           NULL,
-                           (NclObjClass)nclTypefloatClass
-                           );
-    _NclAddAtt(
-               att_id,
-               "cospc",
-               att_md,
-               NULL
-               );
-    
-    att_md = _NclCreateVal(
-                           NULL,
-                           NULL,
-                           Ncl_MultiDValData,
-                           0,
-                           rquspc,
-                           NULL,
-                           1,
-                           dsizes,
-                           TEMPORARY,
-                           NULL,
-                           (NclObjClass)nclTypefloatClass
-                           );
-    _NclAddAtt(
-               att_id,
-               "quspc",
-               att_md,
-               NULL
-               );
-    
-    att_md = _NclCreateVal(
-                           NULL,
-                           NULL,
-                           Ncl_MultiDValData,
-                           0,
-                           rcoher,
-                           NULL,
-                           1,
-                           dsizes,
-                           TEMPORARY,
-                           NULL,
-                           (NclObjClass)nclTypefloatClass
-                           );
-    _NclAddAtt(
-               att_id,
-               "coher",
-               att_md,
-               NULL
-               );
-    
-    att_md = _NclCreateVal(
-                           NULL,
-                           NULL,
-                           Ncl_MultiDValData,
-                           0,
-                           rphase,
-                           NULL,
-                           1,
-                           dsizes,
-                           TEMPORARY,
-                           NULL,
-                           (NclObjClass)nclTypefloatClass
-                           );
-    _NclAddAtt(
-               att_id,
-               "phase",
-               att_md,
-               NULL
-               );
-    
-    dsizes[0] = 1;
-    att_md = _NclCreateVal(
-                           NULL,
-                           NULL,
-                           Ncl_MultiDValData,
-                           0,
-                           rbw,
-                           NULL,
-                           1,
-                           dsizes,
-                           TEMPORARY,
-                           NULL,
-                           (NclObjClass)nclTypefloatClass
-                           );
-    _NclAddAtt(
-               att_id,
-               "bw",
-               att_md,
-               NULL
-               );
-    
-    att_md = _NclCreateVal(
-                           NULL,
-                           NULL,
-                           Ncl_MultiDValData,
-                           0,
-                           rxavei,
-                           NULL,
-                           1,
-                           dsizes,
-                           TEMPORARY,
-                           NULL,
-                           (NclObjClass)nclTypefloatClass
-                           );
-    _NclAddAtt(
-               att_id,
-               "xavei",
-               att_md,
-               NULL
-               );
-    
-    att_md = _NclCreateVal(
-                           NULL,
-                           NULL,
-                           Ncl_MultiDValData,
-                           0,
-                           rxvari,
-                           NULL,
-                           1,
-                           dsizes,
-                           TEMPORARY,
-                           NULL,
-                           (NclObjClass)nclTypefloatClass
-                           );
-    _NclAddAtt(
-               att_id,
-               "xvari",
-               att_md,
-               NULL
-               );
-    
-    att_md = _NclCreateVal(
-                           NULL,
-                           NULL,
-                           Ncl_MultiDValData,
-                           0,
-                           rxvaro,
-                           NULL,
-                           1,
-                           dsizes,
-                           TEMPORARY,
-                           NULL,
-                           (NclObjClass)nclTypefloatClass
-                           );
-    _NclAddAtt(
-               att_id,
-               "xvaro",
-               att_md,
-               NULL
-               );
-    
-    att_md = _NclCreateVal(
-                           NULL,
-                           NULL,
-                           Ncl_MultiDValData,
-                           0,
-                           rxlag1,
-                           NULL,
-                           1,
-                           dsizes,
-                           TEMPORARY,
-                           NULL,
-                           (NclObjClass)nclTypefloatClass
-                           );
-    _NclAddAtt(
-               att_id,
-               "xlag1",
-               att_md,
-               NULL
-               );
-    
-    att_md = _NclCreateVal(
-                           NULL,
-                           NULL,
-                           Ncl_MultiDValData,
-                           0,
-                           rxslope,
-                           NULL,
-                           1,
-                           dsizes,
-                           TEMPORARY,
-                           NULL,
-                           (NclObjClass)nclTypefloatClass
-                           );
-    _NclAddAtt(
-               att_id,
-               "xslope",
-               att_md,
-               NULL
-               );
-    
-    att_md = _NclCreateVal(
-                           NULL,
-                           NULL,
-                           Ncl_MultiDValData,
-                           0,
-                           ryavei,
-                           NULL,
-                           1,
-                           dsizes,
-                           TEMPORARY,
-                           NULL,
-                           (NclObjClass)nclTypefloatClass
-                           );
-    
-    _NclAddAtt(
-               att_id,
-               "yavei",
-               att_md,
-               NULL
-               );
-    
-    att_md = _NclCreateVal(
-                           NULL,
-                           NULL,
-                           Ncl_MultiDValData,
-                           0,
-                           ryvari,
-                           NULL,
-                           1,
-                           dsizes,
-                           TEMPORARY,
-                           NULL,
-                           (NclObjClass)nclTypefloatClass
-                           );
-    _NclAddAtt(
-               att_id,
-               "yvari",
-               att_md,
-               NULL
-               );
-    
-    att_md = _NclCreateVal(
-                           NULL,
-                           NULL,
-                           Ncl_MultiDValData,
-                           0,
-                           ryvaro,
-                           NULL,
-                           1,
-                           dsizes,
-                           TEMPORARY,
-                           NULL,
-                           (NclObjClass)nclTypefloatClass
-                           );
-    _NclAddAtt(
-               att_id,
-               "yvaro",
-               att_md,
-               NULL
-               );
-    
-    att_md = _NclCreateVal(
-                           NULL,
-                           NULL,
-                           Ncl_MultiDValData,
-                           0,
-                           rylag1,
-                           NULL,
-                           1,
-                           dsizes,
-                           TEMPORARY,
-                           NULL,
-                           (NclObjClass)nclTypefloatClass
-                           );
-    _NclAddAtt(
-               att_id,
-               "ylag1",
-               att_md,
-               NULL
-               );
-    
-    att_md = _NclCreateVal(
-                           NULL,
-                           NULL,
-                           Ncl_MultiDValData,
-                           0,
-                           ryslope,
-                           NULL,
-                           1,
-                           dsizes,
-                           TEMPORARY,
-                           NULL,
-                           (NclObjClass)nclTypefloatClass
-                           );
-    _NclAddAtt(
-               att_id,
-               "yslope",
-               att_md,
-               NULL
-               );
-  }
-  else {
-/*
- * Copy double values to float values.
- */
-    *dof    = sinfo[0];  /* Degrees of freedom [spcx@dof] */
-    *xlag1  = sinfo[1];  /* lag1 auto correlation after detrending [@xlag1] */
-    *ylag1  = sinfo[2];  /* lag1 auto correlation after detrending [@ylag1] */
-    *bw     = sinfo[5];  /* band width         [spcx@band_width] */
-    
-    *xavei  = sinfo[10]; /* mean     prior to detrending [@xavei]  */
-    *xvari  = sinfo[11]; /* variance prior to detrending [@xvari]  */
-    *xvaro  = sinfo[12]; /* variance after detrending    [@xvaro] */
-    *xslope = sinfo[31]; /* slope of linear trend (if iopt=1) [@xslope] */
-    
-    *yavei  = sinfo[20]; /* mean     prior to detrending [@yavei]  */
-    *yvari  = sinfo[21]; /* variance prior to detrending [@yvari]  */
-    *yvaro  = sinfo[22]; /* variance after detrending    [@yvaro] */
-    *yslope = sinfo[34]; /* slope of linear trend (if iopt=1) [@yslope] */
-
-/*
- * Set up variable to return.
- */
-    dsizes[0] = 1;
-    return_md = _NclCreateVal(
-                              NULL,
-                              NULL,
-                              Ncl_MultiDValData,
-                              0,
-                              (void*)dof,
-                              NULL,
-                              1,
-                              dsizes,
-                              TEMPORARY,
-                              NULL,
-                              (NclObjClass)nclTypedoubleClass
-                              );
-/*
- * Set up attributes to return.
- */
-    att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
-    
-    dsizes[0] = nspcmx-1;      /* returning nx/2 points, not nx/2 + 1 */
-    att_md = _NclCreateVal(
-                           NULL,
-                           NULL,
-                           Ncl_MultiDValData,
-                           0,
-                           spcx,
-                           NULL,
-                           1,
-                           dsizes,
-                           TEMPORARY,
-                           NULL,
-                           (NclObjClass)nclTypedoubleClass
-                           );
-    _NclAddAtt(
-               att_id,
-               "spcx",
-               att_md,
-               NULL
-               );
-    
-    att_md = _NclCreateVal(
-                           NULL,
-                           NULL,
-                           Ncl_MultiDValData,
-                           0,
-                           spcy,
-                           NULL,
-                           1,
-                           dsizes,
-                           TEMPORARY,
-                           NULL,
-                           (NclObjClass)nclTypedoubleClass
-                           );
-    _NclAddAtt(
-               att_id,
-               "spcy",
-               att_md,
-               NULL
-               );
-    
-    att_md = _NclCreateVal(
-                           NULL,
-                           NULL,
-                           Ncl_MultiDValData,
-                           0,
-                           frq,
-                           NULL,
-                           1,
-                           dsizes,
-                           TEMPORARY,
-                           NULL,
-                           (NclObjClass)nclTypedoubleClass
-                           );
-    _NclAddAtt(
-               att_id,
-               "frq",
-               att_md,
-               NULL
-               );
-    
-    att_md = _NclCreateVal(
-                           NULL,
-                           NULL,
-                           Ncl_MultiDValData,
-                           0,
-                           cospc,
-                           NULL,
-                           1,
-                           dsizes,
-                           TEMPORARY,
-                           NULL,
-                           (NclObjClass)nclTypedoubleClass
-                           );
-    _NclAddAtt(
-               att_id,
-               "cospc",
-               att_md,
-               NULL
-               );
-    
-    att_md = _NclCreateVal(
-                           NULL,
-                           NULL,
-                           Ncl_MultiDValData,
-                           0,
-                           quspc,
-                           NULL,
-                           1,
-                           dsizes,
-                           TEMPORARY,
-                           NULL,
-                           (NclObjClass)nclTypedoubleClass
-                           );
-    _NclAddAtt(
-               att_id,
-               "quspc",
-               att_md,
-               NULL
-               );
-    
-    att_md = _NclCreateVal(
-                           NULL,
-                           NULL,
-                           Ncl_MultiDValData,
-                           0,
-                           coher,
-                           NULL,
-                           1,
-                           dsizes,
-                           TEMPORARY,
-                           NULL,
-                           (NclObjClass)nclTypedoubleClass
-                           );
-    _NclAddAtt(
-               att_id,
-               "coher",
-               att_md,
-               NULL
-               );
-    
-    att_md = _NclCreateVal(
-                           NULL,
-                           NULL,
-                           Ncl_MultiDValData,
-                           0,
-                           phase,
-                           NULL,
-                           1,
-                           dsizes,
-                           TEMPORARY,
-                           NULL,
-                           (NclObjClass)nclTypedoubleClass
-                           );
-    _NclAddAtt(
-               att_id,
-               "phase",
-               att_md,
-               NULL
-               );
-    
-    dsizes[0] = 1;
-    att_md = _NclCreateVal(
-                           NULL,
-                           NULL,
-                           Ncl_MultiDValData,
-                           0,
-                           bw,
-                           NULL,
-                           1,
-                           dsizes,
-                           TEMPORARY,
-                           NULL,
-                           (NclObjClass)nclTypedoubleClass
-                           );
-    _NclAddAtt(
-               att_id,
-               "bw",
-               att_md,
-               NULL
-               );
-    
-    att_md = _NclCreateVal(
-                           NULL,
-                           NULL,
-                           Ncl_MultiDValData,
-                           0,
-                           xavei,
-                           NULL,
-                           1,
-                           dsizes,
-                           TEMPORARY,
-                           NULL,
-                           (NclObjClass)nclTypedoubleClass
-                           );
-    _NclAddAtt(
-               att_id,
-               "xavei",
-               att_md,
-               NULL
-               );
-    
-    att_md = _NclCreateVal(
-                           NULL,
-                           NULL,
-                           Ncl_MultiDValData,
-                           0,
-                           xvari,
-                           NULL,
-                           1,
-                           dsizes,
-                           TEMPORARY,
-                           NULL,
-                           (NclObjClass)nclTypedoubleClass
-                           );
-    _NclAddAtt(
-               att_id,
-               "xvari",
-               att_md,
-               NULL
-               );
-    
-    att_md = _NclCreateVal(
-                           NULL,
-                           NULL,
-                           Ncl_MultiDValData,
-                           0,
-                           xvaro,
-                           NULL,
-                           1,
-                           dsizes,
-                           TEMPORARY,
-                           NULL,
-                           (NclObjClass)nclTypedoubleClass
-                           );
-    _NclAddAtt(
-               att_id,
-               "xvaro",
-               att_md,
-               NULL
-               );
-    
-    att_md = _NclCreateVal(
-                           NULL,
-                           NULL,
-                           Ncl_MultiDValData,
-                           0,
-                           xlag1,
-                           NULL,
-                           1,
-                           dsizes,
-                           TEMPORARY,
-                           NULL,
-                           (NclObjClass)nclTypedoubleClass
-                           );
-    _NclAddAtt(
-               att_id,
-               "xlag1",
-               att_md,
-               NULL
-               );
-    
-    att_md = _NclCreateVal(
-                           NULL,
-                           NULL,
-                           Ncl_MultiDValData,
-                           0,
-                           xslope,
-                           NULL,
-                           1,
-                           dsizes,
-                           TEMPORARY,
-                           NULL,
-                           (NclObjClass)nclTypedoubleClass
-                           );
-    _NclAddAtt(
-               att_id,
-               "xslope",
-               att_md,
-               NULL
-               );
-    
-    att_md = _NclCreateVal(
-                           NULL,
-                           NULL,
-                           Ncl_MultiDValData,
-                           0,
-                           yavei,
-                           NULL,
-                           1,
-                           dsizes,
-                           TEMPORARY,
-                           NULL,
-                           (NclObjClass)nclTypedoubleClass
-                           );
-    
-    _NclAddAtt(
-               att_id,
-               "yavei",
-               att_md,
-               NULL
-               );
-    
-    att_md = _NclCreateVal(
-                           NULL,
-                           NULL,
-                           Ncl_MultiDValData,
-                           0,
-                           yvari,
-                           NULL,
-                           1,
-                           dsizes,
-                           TEMPORARY,
-                           NULL,
-                           (NclObjClass)nclTypedoubleClass
-                           );
-    _NclAddAtt(
-               att_id,
-               "yvari",
-               att_md,
-               NULL
-               );
-    
-    att_md = _NclCreateVal(
-                           NULL,
-                           NULL,
-                           Ncl_MultiDValData,
-                           0,
-                           yvaro,
-                           NULL,
-                           1,
-                           dsizes,
-                           TEMPORARY,
-                           NULL,
-                           (NclObjClass)nclTypedoubleClass
-                           );
-    _NclAddAtt(
-               att_id,
-               "yvaro",
-               att_md,
-               NULL
-               );
-    
-    att_md = _NclCreateVal(
-                           NULL,
-                           NULL,
-                           Ncl_MultiDValData,
-                           0,
-                           ylag1,
-                           NULL,
-                           1,
-                           dsizes,
-                           TEMPORARY,
-                           NULL,
-                           (NclObjClass)nclTypedoubleClass
-                           );
-    _NclAddAtt(
-               att_id,
-               "ylag1",
-               att_md,
-               NULL
-               );
-    
-    att_md = _NclCreateVal(
-                           NULL,
-                           NULL,
-                           Ncl_MultiDValData,
-                           0,
-                           yslope,
-                           NULL,
-                           1,
-                           dsizes,
-                           TEMPORARY,
-                           NULL,
-                           (NclObjClass)nclTypedoubleClass
-                           );
-    _NclAddAtt(
-               att_id,
-               "yslope",
-               att_md,
-               NULL
-               );
-    
-  }
   tmp_var = _NclVarCreate(
                           NULL,
                           NULL,
