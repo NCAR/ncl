@@ -1,5 +1,5 @@
 C
-C $Id: mapgrd.f,v 1.5 1994-05-03 21:17:23 kennison Exp $
+C $Id: mapgrd.f,v 1.6 1994-12-06 00:50:30 kennison Exp $
 C
       SUBROUTINE MAPGRD
 C
@@ -141,7 +141,7 @@ C
       RLAT=MAX(SLAT,-XLAT)
       XLAT=MIN(BLAT,XLAT)
       IF (IMF) THEN
-        DLAT=.5*(XLAT-RLAT)
+        DLAT=.25*(XLAT-RLAT)
       ELSE
         DLAT=(XLAT-RLAT)/CLING((XLAT-RLAT)/GRDR)
       END IF
@@ -183,7 +183,7 @@ C
       RLON=FLOOR(SLON)
       XLON=MIN(CLING(BLON),RLON+360.)
       IF (IPF) THEN
-        DLON=.5*(XLON-RLON)
+        DLON=.25*(XLON-RLON)
       ELSE
         DLON=(XLON-RLON)/CLING((XLON-RLON)/GRDR)
       END IF
