@@ -1,5 +1,5 @@
 /*
- *      $Id: app.c,v 1.26 1999-09-23 19:48:29 dbrown Exp $
+ *      $Id: app.c,v 1.27 1999-09-30 21:42:29 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -181,7 +181,7 @@ AppMgrClassInitialize
  * before the first workstation is created. This will allow user-defined
  * color maps to be used as the default color map.
  */
-	return NhlPalLoadColormapFiles(NhlworkstationClass);
+	return NhlPalLoadColormapFiles(NhlworkstationClass,False);
 
 }
 
@@ -843,13 +843,18 @@ _NgCBWPCallback
 	if(cbwp->state & (NgCBWPDESTROY | NgCBWPCLEANOUT))
 		return;
 
+/*
+ * If the copy func does not create its own cbdata then it should not
+ * have a free func, and the original cbdata can be propagated.
+ * If it does have a free func anyway, bad things will happen.
+ */
 	memset(&lcbdata,0,sizeof(lcbdata));
 	memset(&cmpval,0,sizeof(cmpval));
 	if(cbwp->copy_func){
 		if(!(*cbwp->copy_func)(cbdata,cbwp->udata,&lcbdata))
 			return;
 	}
-	if (memcmp(&lcbdata,&cmpval,sizeof(lcbdata)))
+	if (! memcmp(&lcbdata,&cmpval,sizeof(lcbdata)))
 		lcbdata = cbdata;
 
 	wpnode = NhlMalloc(sizeof(_NgCBWP_WPLRec));

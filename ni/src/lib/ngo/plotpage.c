@@ -1,5 +1,5 @@
 /*
- *      $Id: plotpage.c,v 1.4 1999-09-29 02:06:00 dbrown Exp $
+ *      $Id: plotpage.c,v 1.5 1999-09-30 21:42:31 dbrown Exp $
  */
 /*******************************************x*****************************
 *									*
@@ -228,120 +228,6 @@ static void TalkToDataLinks
 	}
 
 	return;
-}
-
-static NhlErrorTypes GetPlotObjCreateMessage
-(
-        brPage		*page,
-	NgPageMessage   message,
-	NhlBoolean	reset
-        )
-{
-        brPageData	*pdp = page->pdata;
-	brPlotPageRec	*rec = (brPlotPageRec	*)pdp->type_rec;
-        NgPlotPage 	*pub = &rec->public;
-	brPlotObjCreate	obj_create;
-	NhlBoolean	do_link = False;
-	NgPageMessageType reply_req = _NgNOMESSAGE;
-	NhlErrorTypes ret = NhlNOERROR;
-
-	obj_create = (brPlotObjCreate) message->message;
-	pub->plot_style = obj_create->plot_style;
-	pub->plot_style_dir = obj_create->plot_style_dir;
-	rec->has_input_data = obj_create->has_input_data;
-	rec->app_id = obj_create->app_id;
-	rec->state = obj_create->state;
-	if (rec->data_profile) {
-		NgFreeDataProfile(rec->data_profile);
-		rec->data_profile = NULL;
-	}
-	/* 
-	 * The DataProfile will have a free func defined only if it is a
-	 * copy that can be freed.
-	 */
-	if (obj_create->dprof) {
-		if (obj_create->dprof->free) { /* dprof is a copy */
-			rec->data_profile = obj_create->dprof;
-			obj_create->dprof = NULL; 
-		}
-		else 
-			rec->data_profile = 
-				NgCopyDataProfile(obj_create->dprof);
-	}
-	if (rec->hlu_ids) {
-		NhlFree(rec->hlu_ids);
-	}
-	if (obj_create->obj_count) {
-		rec->hlu_count = obj_create->obj_count;
-		rec->hlu_ids = NhlMalloc(sizeof(int) * rec->hlu_count);
-		memcpy(rec->hlu_ids,obj_create->obj_ids,
-		       sizeof(int) * rec->hlu_count);
-	}
-	else if (rec->data_profile->obj_count) {
-		rec->hlu_count = rec->data_profile->obj_count;
-		rec->hlu_ids = NhlMalloc(sizeof(int) * rec->hlu_count);
-		memset(rec->hlu_ids,(char) 0,
-		       sizeof(int) * rec->hlu_count);
-	}
-	else {
-		rec->hlu_count = 0;
-		rec->hlu_ids = NULL;
-	}
-			
-	/* A free func is provided only if the message data is a copy and
-	   therefore is owned by the message itself */
-
-	if (message->message_free) {
-		(*message->message_free)(obj_create);
-	}
-
-	/* send reply if appropriate */
-	switch (message->reply_req) {
-	case _NgNOMESSAGE:
-		break;
-	case _NgDATAPROFILELINK_REQ:
-		reply_req = _NgDATAPROFILE;
-		do_link = True;
-		break;
-	case _NgVARDATALINK_REQ:
-		reply_req = _NgVARDATA;
-		do_link = True;
-		break;
-	default:
-		NHLPERROR((NhlWARNING,NhlEUNKNOWN,
-			   "invalid reply message request"));
-		ret = NhlWARNING;
-	}
-	if (do_link) {
-		brPage *frpage = 
-			_NgGetPageRef(rec->go->base.id,message->from_id);
-
-		if (frpage) {
-			brDataLinkReqRec data_link_req;
-
-			data_link_req.on = True;
-			data_link_req.link_ditem = 
-				rec->data_profile->master_data_ix;
-			NgPostPageMessage
-				(page->go->base.id,page->id,
-				 _NgNOMESSAGE,_brPLOTVAR,
-				 frpage->qfile,frpage->qvar,
-				 message->reply_req,
-				 (NhlPointer)&data_link_req,True,
-				 NULL,True);
-			if (! UpdateDataLink
-			    (rec,True,reply_req,
-			     frpage->id,frpage->qfile,frpage->qvar)) {
-				return NhlFATAL;
-			}
-		}
-	}
-	/* call update on this page */
-
-	if (reset)
-		return MIN(ret,NgResetPage(rec->go->base.id,page->id));
-	else
-		return ret;
 }
 
 static void SetInputDataFlag
@@ -603,9 +489,7 @@ static NhlErrorTypes GetPageMessages
 			ret = MIN(ret,subret);
 			break;
 		case _NgPLOTCREATE:
-			subret = GetPlotObjCreateMessage
-				(page,messages[i],update);
-			ret = MIN(ret,subret);
+			NHLPERROR((NhlFATAL,NhlEUNKNOWN,"internal error"));
 			break;
 		case _NgDATAPROFILELINK_REQ:
 		case _NgVARDATALINK_REQ:
@@ -2443,7 +2327,7 @@ static NhlErrorTypes ResetPlotPage
 			XtManageChild(rec->data_source_grid->grid);
 
 		SetInputDataFlag(rec);
-
+#if 0
 		if (rec->state == _plotCREATED) {
 			NhlArgVal       sel,udata;
 
@@ -2463,7 +2347,7 @@ static NhlErrorTypes ResetPlotPage
 				 sel,DProfSetValCB,udata);
 			}
 		}
-			
+#endif			
 	}
 
         
@@ -2563,6 +2447,23 @@ NewPlotPage
         pdp->pane = pane;
         
 	XtUnmapWidget(pdp->form);
+	
+        rec->create_update = XtVaCreateManagedWidget
+                ("Create/Update",xmPushButtonGadgetClass,pdp->form,
+                 XmNtopAttachment,XmATTACH_WIDGET,
+                 XmNrightAttachment,XmATTACH_NONE,
+                 XmNbottomAttachment,XmATTACH_NONE,
+                 NULL);
+
+        rec->auto_update = XtVaCreateManagedWidget
+                ("Auto Update",xmToggleButtonGadgetClass,pdp->form,
+		 XmNset,rec->do_auto_update,
+                 XmNleftAttachment,XmATTACH_WIDGET,
+                 XmNleftWidget,rec->create_update,
+                 XmNrightAttachment,XmATTACH_NONE,
+                 XmNbottomAttachment,XmATTACH_NONE,
+                 NULL);
+
 	if (! rec->data_profile) {
 		rec->data_var_grid = NgCreateDataVarGrid
 			(rec->go,pdp->form,page->qvar,0,NULL);
@@ -2574,6 +2475,8 @@ NewPlotPage
 			 rec->data_profile->plotdata);
 	}	
         XtVaSetValues(rec->data_var_grid->grid,
+		      XmNtopAttachment,XmATTACH_WIDGET,
+		      XmNtopWidget,rec->create_update,
                       XmNbottomAttachment,XmATTACH_NONE,
                       XmNrightAttachment,XmATTACH_NONE,
                       NULL);
@@ -2586,25 +2489,6 @@ NewPlotPage
                       XmNbottomAttachment,XmATTACH_NONE,
                       XmNrightAttachment,XmATTACH_NONE,
                       NULL);
-        
-        rec->create_update = XtVaCreateManagedWidget
-                ("Create/Update",xmPushButtonGadgetClass,pdp->form,
-                 XmNtopAttachment,XmATTACH_WIDGET,
-                 XmNtopWidget,rec->data_source_grid->grid,
-                 XmNrightAttachment,XmATTACH_NONE,
-                 XmNbottomAttachment,XmATTACH_NONE,
-                 NULL);
-
-        rec->auto_update = XtVaCreateManagedWidget
-                ("Auto Update",xmToggleButtonGadgetClass,pdp->form,
-		 XmNset,rec->do_auto_update,
-                 XmNtopAttachment,XmATTACH_WIDGET,
-                 XmNtopWidget,rec->data_source_grid->grid,
-                 XmNleftAttachment,XmATTACH_WIDGET,
-                 XmNleftWidget,rec->create_update,
-                 XmNrightAttachment,XmATTACH_NONE,
-                 XmNbottomAttachment,XmATTACH_NONE,
-                 NULL);
         
         return pdp;
 }

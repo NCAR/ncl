@@ -1,5 +1,5 @@
 /*
- *      $Id: plotstylemenu.c,v 1.3 1999-09-29 02:06:01 dbrown Exp $
+ *      $Id: plotstylemenu.c,v 1.4 1999-09-30 21:42:32 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1131,7 +1131,7 @@ static void CreateDialog
 	}
 	else {
 		priv->config_pb = XtVaCreateManagedWidget
-			("ConfigurePB",
+			("configurePB",
 			 xmPushButtonGadgetClass,priv->create_dialog,
 			 XmNuserData,pstyle,
 			 NULL);
@@ -1185,7 +1185,7 @@ static void CreateDialog
 			 NULL);
 
 		label = XtVaCreateManagedWidget
-			("Display plot in ",xmLabelGadgetClass,
+			("plotDisplayLbl",xmLabelGadgetClass,
 			 form,
 			 XmNrightAttachment,XmATTACH_NONE,
 			 XmNbottomAttachment,XmATTACH_NONE,
@@ -1204,7 +1204,7 @@ static void CreateDialog
 			 NULL);
 
 		priv->exist_tgl = XtVaCreateManagedWidget
-			("Existing window:",xmToggleButtonGadgetClass,
+			("existingWindowTgl",xmToggleButtonGadgetClass,
 			 radio,
 			 XmNset,True,
 			 NULL);
@@ -1212,7 +1212,7 @@ static void CreateDialog
 			      ChooseNewOrExistingXwkCB,priv); 
 
 		priv->new_tgl = XtVaCreateManagedWidget
-			("New window:",xmToggleButtonGadgetClass,
+			("newWindowTgl",xmToggleButtonGadgetClass,
 			 radio,
 			 NULL);
 		XtAddCallback(priv->new_tgl,XmNvalueChangedCallback,

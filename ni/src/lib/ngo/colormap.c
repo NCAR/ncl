@@ -1,5 +1,5 @@
 /*
- *      $Id: colormap.c,v 1.8 1999-09-29 02:05:56 dbrown Exp $
+ *      $Id: colormap.c,v 1.9 1999-09-30 21:42:30 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -890,6 +890,10 @@ SetPaletteCB
 								&cmap_len);
 	if(ret < NhlNOERROR)
 		return;
+/*
+ * Ngi does not overwrite the background and foreground
+ * colors. 
+ */
 
 	NhlVAGetValues(cp->work,
 		       NhlNwkBackgroundColor,&bg_ga,

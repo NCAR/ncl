@@ -1,5 +1,5 @@
 /*
- *      $Id: xwk.c,v 1.21 1999-09-29 02:06:02 dbrown Exp $
+ *      $Id: xwk.c,v 1.22 1999-09-30 21:42:33 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -862,6 +862,37 @@ AutoRefreshOptionCB
 	return;
 }
 
+void
+ExchangeForeBackCB
+(
+	Widget		w,
+	XtPointer	udata,
+	XtPointer	cbdata
+)
+{
+	XmPushButtonCallbackStruct	*xmcb = 
+		(XmPushButtonCallbackStruct*)cbdata;
+	NgXWk			xwk = (NgXWk)udata;
+	NhlGenArray		back_gen,fore_gen;
+
+#if DEBUG_XWK
+	fprintf(stderr,"exchanging foreground and background colors\n");
+#endif
+	NhlVAGetValues(xwk->xwk.xwork->base.id,
+		       NhlNwkBackgroundColor,&back_gen,
+		       NhlNwkForegroundColor,&fore_gen,
+		       NULL);
+	NhlVASetValues(xwk->xwk.xwork->base.id,
+		       NhlNwkBackgroundColor,fore_gen,
+		       NhlNwkForegroundColor,back_gen,
+		       NULL);
+		       
+	NhlFreeGenArray(fore_gen);
+	NhlFreeGenArray(back_gen);
+
+	return;
+}
+
 static NhlBoolean
 XWkCreateWin
 (
@@ -888,6 +919,11 @@ XWkCreateWin
 	w = XtVaCreateManagedWidget("colorMapEditor",xmPushButtonGadgetClass,
 		xwk->go.emenu,NULL);
 	XtAddCallback(w,XmNactivateCallback,_NgGODefActionCB,NULL);
+
+	w = XtVaCreateManagedWidget("exchangeForeBackGround",
+				    xmPushButtonGadgetClass,
+				    xwk->go.emenu,NULL);
+	XtAddCallback(w,XmNactivateCallback,ExchangeForeBackCB,xwk);
 
 
 	XtVaSetValues(xwk->go.options,

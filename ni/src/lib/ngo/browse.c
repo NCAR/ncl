@@ -1,5 +1,5 @@
 /*
- *      $Id: browse.c,v 1.31 1999-09-29 02:05:53 dbrown Exp $
+ *      $Id: browse.c,v 1.32 1999-09-30 21:42:29 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1755,6 +1755,7 @@ static void BrowseHluCB
 	NgGO		go = (NgGO) udata;
 	NrmQuark	qvar;
         static timer_data tdata;
+	NclExtValueRec	*val;
         
 #if	DEBUG_DATABROWSER & DEBUG_ENTRY
 	fprintf(stderr,"BrowseVarCB(IN)\n");
@@ -1766,10 +1767,24 @@ static void BrowseHluCB
 #if	DEBUG_DATABROWSER & DEBUG_FOLDER
 	fprintf(stderr,"browsing var %s\n", NrmQuarkToString(qvar));
 #endif
-
+	/*
+	 * figure out if the variable is a plot (array) or an individual
+	 * HLU object
+	 */
+	
         tdata.go = go;
         tdata.qvar = qvar;
-        tdata.type = _brHLUVAR;
+
+	val = NclGetHLUObjId(NrmQuarkToString(qvar));
+	if (! val) {
+		NHLPERROR((NhlFATAL,ENOMEM,NULL));
+		return;
+	}
+	if (val->totalelements > 1)
+		tdata.type = _brPLOTVAR;
+	else
+		tdata.type = _brHLUVAR;
+	NclFreeExtValue(val);
         
         XtAppAddTimeOut(go->go.x->app,50,BrowseTimeoutCB,&tdata);
         
@@ -1903,7 +1918,7 @@ static void BrowseFunctionCB
 	return;
 }
 
-        
+#if 0        
 static void BrowsePlotCB 
 (
 	Widget		w,
@@ -1916,14 +1931,14 @@ static void BrowsePlotCB
         static timer_data tdata;
         
 #if	DEBUG_DATABROWSER & DEBUG_ENTRY
-	fprintf(stderr,"BrowseVarCB(IN)\n");
+	fprintf(stderr,"BrowsePlotCB(IN)\n");
 #endif
 	XtVaGetValues(w,
 		      XmNuserData,&qvar,
 		      NULL);
 
 #if	DEBUG_DATABROWSER & DEBUG_FOLDER
-	fprintf(stderr,"browsing var %s\n", NrmQuarkToString(qvar));
+	fprintf(stderr,"browsing plot %s\n", NrmQuarkToString(qvar));
 #endif
 
         tdata.go = go;
@@ -1934,7 +1949,7 @@ static void BrowsePlotCB
         
 	return;
 }
-
+#endif
 static NgVarMenus
 CreateVarMenus
 (
