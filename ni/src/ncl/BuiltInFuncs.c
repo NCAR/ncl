@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.70 1997-05-23 20:50:49 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.71 1997-05-29 18:27:12 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -646,7 +646,7 @@ NhlErrorTypes _NclINhlDataToNDC
 					_NclResetMissingValue(tmp_mds[3],missing);
 				}
 			}
-			if((tmp_vars[4] != NULL)&&(_NclVarIsAtt(tmp_vars[4],NCL_MISSING_VALUE_ATT))) {
+			if(tmp_vars[4] != NULL) {
 				missing1 = (NclScalar*)NclMalloc((unsigned)sizeof(NclScalar));
 				*missing1 = *missing;
 				tmp_miss_md4 = (NclMultiDValData)_NclCreateVal( NULL, NULL, Ncl_MultiDValData, 0, (void*)missing1, NULL, 1 , &tmp_dimsizes, TEMPORARY, NULL, (NclObjClass)tmp_mds[4]->multidval.type);
@@ -754,7 +754,7 @@ NhlErrorTypes _NclINhlNDCToData
 					_NclResetMissingValue(tmp_mds[3],missing);
 				}
 			}
-			if((tmp_vars[4] != NULL)&&(_NclVarIsAtt(tmp_vars[4],NCL_MISSING_VALUE_ATT))) {
+			if(tmp_vars[4] != NULL) {
 				missing1 = (NclScalar*)NclMalloc((unsigned)sizeof(NclScalar));
 				*missing1 = *missing;
 				tmp_miss_md4 = (NclMultiDValData)_NclCreateVal( NULL, NULL, Ncl_MultiDValData, 0, (void*)missing1, NULL, 1 , &tmp_dimsizes, TEMPORARY, NULL, (NclObjClass)tmp_mds[4]->multidval.type);
@@ -5360,7 +5360,6 @@ NhlErrorTypes _NclIIsProc
 				s = _NclLookUp(NrmQuarkToString(vals[i]));
 				if( s != NULL){
 					switch(s->type) {
-					case PROC:
 					case NPROC:
 					case IPROC:
 						outval[i] = 1;
@@ -5381,7 +5380,6 @@ NhlErrorTypes _NclIIsProc
 			s = _NclLookUp(NrmQuarkToString(vals[i]));
 			if( s != NULL){
 				switch(s->type) {
-				case PROC:
 				case NPROC:
 				case IPROC:
 					outval[i] = 1;
@@ -5447,7 +5445,6 @@ NhlErrorTypes _NclIIsFunc
 				s = _NclLookUp(NrmQuarkToString(vals[i]));
 				if( s != NULL){
 					switch(s->type) {
-					case FUNC:
 					case NFUNC:
 					case IFUNC:
 						outval[i] = 1;
@@ -5468,7 +5465,6 @@ NhlErrorTypes _NclIIsFunc
 			s = _NclLookUp(NrmQuarkToString(vals[i]));
 			if( s != NULL){
 				switch(s->type) {
-				case FUNC:
 				case NFUNC:
 				case IFUNC:
 					outval[i] = 1;
@@ -5525,11 +5521,9 @@ NhlErrorTypes _NclIUnDef
 				s = _NclLookUp(NrmQuarkToString(vals[i]));
 				if( s != NULL) {
 					switch(s->type) {	
-						case PROC:
 						case NPROC:
 						case PIPROC:
 						case IPROC:
-						case FUNC:
 						case NFUNC:
 						case IFUNC:
 						case UNDEF:
@@ -5567,11 +5561,9 @@ NhlErrorTypes _NclIUnDef
 			if(s!=NULL){
 
 			 		switch(s->type) {	
-						case PROC:
 						case NPROC:
 						case PIPROC:
 						case IPROC:
-						case FUNC:
 						case NFUNC:
 						case IFUNC:
 						case UNDEF:
