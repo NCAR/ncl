@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclVar.c,v 1.48 1997-10-02 22:44:26 ethan Exp $
+ *      $Id: NclVar.c,v 1.49 1998-01-07 00:13:25 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -2074,7 +2074,10 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 			}
 			for(i = 0; i < lhs->var.n_dims; i++) {
 				if(tmp_coord_array[i] != NULL) {
-                        		_NclWriteCoordVar(lhs,tmp_coord_array[i],NrmQuarkToString(tmp_name_array[i]),NULL);
+                                        tmp_sel.selection[0] = lhs_sel_ptr->selection[i];
+                                        tmp_sel.selection[0].dim_num = 0;
+
+                        		_NclWriteCoordVar(lhs,tmp_coord_array[i],NrmQuarkToString(tmp_name_array[i]),&tmp_sel);
 					AttCopyWrite(_NclReadCoordVar(lhs,NrmQuarkToString(tmp_name_array[i]),NULL),tmp_coord_vars[i]);
 				}
 			}
