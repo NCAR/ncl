@@ -1,5 +1,5 @@
 /*
- *      $Id: gksP.h,v 1.6 2000-08-22 03:23:31 haley Exp $
+ *      $Id: gksP.h,v 1.7 2004-03-20 00:06:54 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -58,6 +58,7 @@
 #define NGC_XALLOCCOLOR	3
 #define NGC_XSIZECHG	4
 #define NGC_XWINCONFIG	5
+#define NGC_PIXCONFIG	6
 
 typedef struct {
 	int		type;
@@ -115,6 +116,15 @@ typedef struct {
 } _NGCXWinConfig;
 
 typedef struct {
+	int			type;
+	int			work_id;
+	int			width;
+	int			height;
+	int                     format;
+	char                    *filename;
+} _NGCPixConfig;
+
+typedef struct {
 	int		type;
 	int		work_id;
 } _NGCAny;
@@ -127,6 +137,7 @@ typedef union _NGCescapeRec_ {
 	_NGCXAllocColor	xalloccolor;
 	_NGCXGetSizeChg	xgetsizechg;
 	_NGCXWinConfig	xwinconfig;
+	_NGCPixConfig   pixconfig;
 } _NGCesc;
 
 /*

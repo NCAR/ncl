@@ -1,5 +1,5 @@
 /*
- *	$Id: pixddi.h,v 1.1 2004-03-16 18:50:41 fred Exp $
+ *	$Id: pixddi.h,v 1.2 2004-03-20 00:06:55 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -52,16 +52,28 @@ typedef	struct PIXddi_ColorStatus_ {
 	Pixeltype	xpixnum;
 } PIXddpColorStatus;
 
+
+/* 
+ * the defines correspond to the HLU enumerative NhlImageFormat
+ */
+
+#define PIX_XWD 0
+#define PIX_PNG 1
+
+
 typedef	struct	PIXddi_	{
 	XWorkType	xwtype;
 	int		dead;
 	Display		*dpy;
 	Screen		*scr;
 	Visual		*vis;
-	Window		win;
+	Drawable	win;
+	Drawable        pix;
 	unsigned int	depth;
 	unsigned 	dim;
 	Transform2D	transform;
+	char		*filename;
+	int             format;
 	GC		line_gc,
 			marker_gc,
 			text_gc,
@@ -98,6 +110,8 @@ typedef	struct	PIXddi_	{
 	TransSystem	tsystem;
 	int		percent_colerr;
 	float		pcerr_sqr;
+	int             clear;
+	int             frame_count;
 } PIXddp;
 
 extern void PIX_private_color(
@@ -110,6 +124,18 @@ extern void PIX_free_ci(
 #ifdef	NeedFuncProto
 	PIXddp		*xi,
 	unsigned	index
+#endif
+);
+
+extern int PIX_Write_XWD(
+#ifdef	NeedFuncProto
+	PIXddp		*xi
+#endif
+);
+
+extern int PIX_Write_PNG(
+#ifdef	NeedFuncProto
+	PIXddp		*xi
 #endif
 );
 

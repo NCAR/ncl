@@ -1,5 +1,5 @@
 /*
- *      $Id: pixoutput.c,v 1.1 2004-03-16 18:50:42 fred Exp $
+ *      $Id: pixoutput.c,v 1.2 2004-03-20 00:06:55 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -77,7 +77,7 @@ static  hatch_fill
 #ifdef  NeedFuncProto
 (
         Display         *dpy,
-        Window          win,
+        Drawable          win,
         XPoint          *pptr,
         int             n,
         int             hatch_index,
@@ -88,7 +88,7 @@ static  hatch_fill
 #else
 (dpy,win,pptr,n,hatch_index,fill_gc,bg_gc,depth)
         Display         *dpy;
-        Window          win;
+        Drawable          win;
         XPoint          *pptr;
         int             n;
         int             hatch_index;
@@ -241,7 +241,7 @@ static  void    text_strokes(x, y, num, lines_data)
 
         PIXddp    *xi = (PIXddp *) lines_data;
         Display *dpy = xi->dpy;
-        Window  win = xi->win;
+        Drawable  win = xi->win;
 
         static  XPoint  *pptr = (XPoint *) NULL;
         static  unsigned        point_buf_size = 0;
@@ -268,13 +268,13 @@ static  void    text_strokes(x, y, num, lines_data)
                 pptr[i].y = -(y[i]);
         }
 
-        XDrawLines(dpy, win, xi->text_gc, pptr, num, CoordModeOrigin);
+        XDrawLines(dpy, xi->pix, xi->text_gc, pptr, num, CoordModeOrigin);
 }
 
 /*ARGSUSED*/
 static  non_rect_cell_array(dpy, win, gc, color_pal, P, Q, R, nx, ny, xptr)
         Display *dpy;
-        Window  win;
+        Drawable  win;
         GC      gc;
         Pixeltype       *color_pal;
         XPoint  P, Q, R;
@@ -525,7 +525,7 @@ static  cell_array
         Display         *dpy,
         Visual          *visual,
         unsigned int    depth,
-        Window          win,
+        Drawable          win,
         GC              gc,
         Pixeltype       *color_pal,
         XPoint          P,
@@ -540,7 +540,7 @@ static  cell_array
         Display         *dpy;
         Visual          *visual;
         unsigned int    depth;
-        Window          win;
+        Drawable          win;
         GC              gc;
         Pixeltype       *color_pal;
         XPoint          P,
@@ -699,6 +699,7 @@ static  cell_array
                                         image_width, image_height);
 
 
+
         XDestroyImage(ximage);  /* frees ximage->data too       */
         free((char *) rows);
         free((char *) cols);
@@ -712,12 +713,12 @@ PIX_Polyline(gksc)
 {
         PIXddp    *xi = (PIXddp *) gksc->ddp;
         Display *dpy = xi->dpy;
-        Window  win = xi->win;
+        Drawable  win = xi->win;
 
         XPoint  *pptr = (XPoint *) gksc->p.list;
         int     n = gksc->p.num;
 
-        XDrawLines(dpy, win, xi->line_gc, pptr, n, CoordModeOrigin);
+        XDrawLines(dpy, xi->pix, xi->line_gc, pptr, n, CoordModeOrigin);
 
         return(0);
 }
@@ -728,7 +729,7 @@ PIX_Polymarker(gksc)
 {
         PIXddp    *xi = (PIXddp *) gksc->ddp;
         Display *dpy = xi->dpy;
-        Window  win = xi->win;
+        Drawable  win = xi->pix;
 
         int     n = gksc->p.num;
         XPoint  *pptr = (XPoint *) gksc->p.list;
@@ -835,7 +836,7 @@ PIX_FillArea(gksc)
 {
         PIXddp    *xi = (PIXddp *) gksc->ddp;
         Display *dpy = xi->dpy;
-        Window  win = xi->win;
+        Drawable  win = xi->win;
 
         int     n = gksc->p.num;
         XPoint  *pptr = (XPoint *) gksc->p.list;
@@ -860,6 +861,7 @@ PIX_FillArea(gksc)
                          * just draw a polyline 
                          */
                         XDrawLines(dpy, win, gc, pptr, n, CoordModeOrigin);
+                        XDrawLines(dpy, xi->pix, gc, pptr, n, CoordModeOrigin);
 
                         /*
                          * make sure first and last point are coincident
@@ -870,7 +872,7 @@ PIX_FillArea(gksc)
                                 /*
                                  * close the polygon
                                  */
-                                XDrawLine(dpy, win, gc, 
+                                XDrawLine(dpy, xi->pix, gc, 
                                         pptr[0].x, pptr[0].y,
                                         pptr[n-1].x, pptr[n-1].y);
                         }
@@ -878,7 +880,7 @@ PIX_FillArea(gksc)
                         break;
 
                 case    SOLID_FILL:
-                        XFillPolygon(dpy, win, gc, pptr, n, 
+                        XFillPolygon(dpy, xi->pix, gc, pptr, n, 
                                                 Complex, CoordModeOrigin);
                         break;
 
@@ -896,7 +898,7 @@ PIX_FillArea(gksc)
                          *      stipple for the area. See section 5.4.3.
                          */
                 
-                        status = hatch_fill(dpy,win,pptr,n,hatch_index,gc,
+                        status = hatch_fill(dpy,xi->pix,pptr,n,hatch_index,gc,
                                                 &xi->hatch_gc,xi->depth);
                         break;
 
@@ -912,7 +914,7 @@ PIX_Cellarray(gksc)
 {
         PIXddp    *xi = (PIXddp *) gksc->ddp;
         Display *dpy = xi->dpy;
-        Window  win = xi->win;
+        Drawable  win = xi->win;
         GC      gc = xi->cell_gc;
         Pixeltype *color_pal = xi->color_pal;
 
@@ -930,14 +932,15 @@ PIX_Cellarray(gksc)
          * see if cell array is rectangular or not
          */
         if (Rptr->x != Qptr->x || Pptr->y != Rptr->y) {
-                return (non_rect_cell_array(dpy, win, gc, color_pal, *Pptr, 
-                                        *Qptr, *Rptr, nx, ny, xptr));
+                return (non_rect_cell_array(dpy, xi->pix, gc, color_pal, 
+					    *Pptr, 
+					    *Qptr, *Rptr, nx, ny, xptr));
         }
 
         /*
          * cell array is a rectangluar
          */
-        return(cell_array(dpy,xi->vis,xi->depth,win,gc,color_pal,*Pptr,*Qptr,
-                                                        *Rptr,nx,ny,xptr));
+        return(cell_array(dpy,xi->vis,xi->depth,xi->pix,gc,color_pal,
+			  *Pptr,*Qptr,*Rptr,nx,ny,xptr));
                 
 }

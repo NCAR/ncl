@@ -1,5 +1,5 @@
 /*
- *      $Id: pixcontrol.c,v 1.1 2004-03-16 18:50:41 fred Exp $
+ *      $Id: pixcontrol.c,v 1.2 2004-03-20 00:06:55 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -198,10 +198,7 @@ init_color
                 default:
                 case CM_UNDEFINED:
 
-                if(xi->xwtype == XUSRWIN)
-                        xi->color_model = CM_SHARED;
-                else
-                        xi->color_model = CM_MIXED;
+                xi->color_model = CM_MIXED;
 
                 case CM_MIXED:
                 case CM_SHARED:
@@ -413,6 +410,7 @@ pause
 {
         XEvent  event;
 
+#if 0
         /*
          * discard all events that a impatient user
          * may have aquired while waiting for a plot to finnish
@@ -423,7 +421,7 @@ pause
          * wait for next buttonpress or keypress
          */
         XMaskEvent(dpy,ButtonPressMask|KeyPressMask,&event);
-
+#endif
         return;
 }
 
@@ -432,12 +430,14 @@ CreateXWorkWindow
 #ifdef  NeedFuncProto
 (
         Display         *dpy,
-        _NGCXWinConfig  *xwc
+        _NGCPixConfig  *pixc,
+	Pixmap          *pix
 )
 #else
-(dpy,xwc)
+(dpy,pixc,pix)
         Display         *dpy;
-        _NGCXWinConfig  *xwc;
+        _NGCPixConfig  *pixc;
+	Pixmap          *pix;
 #endif
 {
         Window                  win;
@@ -477,74 +477,22 @@ CreateXWorkWindow
         XEvent                   event; /* Event received               */
         Atom                    wm_del;
 
-        /*
-         * get the geometry resource string from the resource manager
-         */
-        if (!geometry) geometry = XGetDefault (dpy, xch.res_name, "geometry");
-        if (!geometry) geometry = XGetDefault (dpy, xch.res_name, "Geometry");
-        if (!geometry) geometry = XGetDefault (dpy, xch.res_class, "geometry");
-        if (!geometry) geometry = XGetDefault (dpy, xch.res_class, "Geometry");
-
-        if (geometry) {
-                geom_mask = XParseGeometry (geometry, &xsh.x, &xsh.y,
-                                (unsigned int *)&xsh.width,
-                                (unsigned int *)&xsh.height);
-        }
-
-        /*
-         * if xwc is set, it takes precedence over "geometry" resource.
-         */
-        if(xwc){
-                if(xwc->x >= 0){
-                        xsh.x = xwc->x;
-                        geom_mask &= ~XNegative;
-                        geom_mask |= XValue;
-                }
-                if(xwc->y >= 0){
-                        xsh.y = xwc->y;
-                        geom_mask &= ~YNegative;
-                        geom_mask |= YValue;
-                }
-                if(xwc->width >= 0){
-                        xsh.width = xwc->width;
+	xsh.y = 0;
+	xsh.x = 0;
+	xsh.width = 512;
+	xsh.height = 512;
+    
+        if(pixc){
+                if(pixc->width >= 0){
+                        xsh.width = pixc->width;
                         geom_mask |= WidthValue;
                 }
-                if(xwc->height >= 0){
-                        xsh.height = xwc->height;
+                if(pixc->height >= 0){
+                        xsh.height = pixc->height;
                         geom_mask |= HeightValue;
                 }
         }
 
-        /*
-         * see if user specified a window position. 
-         */
-        if ((geom_mask & XValue) || (geom_mask & YValue)) {
-                xsh.flags |= USPosition;
-        }
-
-        /*
-         * deal with negative position
-         */
-        if ((geom_mask & XValue) && (geom_mask & XNegative)) {
-                xsh.x = DisplayWidth (dpy, DefaultScreen(dpy)) + xsh.x -
-                xsh.width - bw * 2;
-        }
-
-        if ((geom_mask & YValue) && (geom_mask & YNegative)) {
-                xsh.y = DisplayWidth (dpy, DefaultScreen(dpy)) + xsh.y -
-                xsh.height - bw * 2;
-        }
-
-
-        /*
-         * see if user specified a dimension, else we use program defaults
-         */
-        if ((geom_mask & WidthValue) || (geom_mask & HeightValue)) {
-                xsh.flags |= USSize;
-        }
-        else {
-                xsh.flags |= PSize;
-        }
 
         /*
          * Ensure that the window's colormap field points to the default
@@ -557,37 +505,38 @@ CreateXWorkWindow
         xswa.border_pixel = BlackPixel(dpy, DefaultScreen(dpy));
 
         /* 
-         * Create the Window with the information in the XSizeHints, the
-         * border width, and the border & background pixels.
+         * You need a window to create a PIXMAP from. It could be the
+         * root window, but then mods to the colormap would not be
+         * be available for the PIXMAP. For now just create a regular
+         * X window. Then create a pixmap based on its geometry. 
+         * This is also useful for debugging, because the window can
+	 * be made visible (see below) in order to compare the image
+	 * file output with the X Window.
          */
         win = XCreateWindow(dpy, RootWindow(dpy,DefaultScreen(dpy)),
                 xsh.x, xsh.y, xsh.width, xsh.height,
                 bw,CopyFromParent,InputOutput,CopyFromParent,
                 (CWBitGravity|CWBackingStore|CWBackPixel|CWBorderPixel),&xswa);
 
-        /*
-         * Set the standard properties for the window managers. 
-         */
-        window_name.encoding = XA_STRING;
-        window_name.format = 8;
-        if(xwc && xwc->title)
-                window_name.value = (unsigned char *) xwc->title;
-        else
-                window_name.value = (unsigned char *) "NCAR Xgks";
-        window_name.nitems = strlen ((char *)window_name.value);
+	{
+		Status s;
+		Window root;
+		int x,y,width,height,bw,depth;
+		       
+		s = XGetGeometry(dpy,win,&root,&x,&y,&width,&height,
+				 &bw,&depth);
 
-        icon_name.encoding = XA_STRING;
-        icon_name.format = 8;
-        if(xwc && xwc->icon_title)
-                icon_name.value = (unsigned char *) xwc->icon_title;
-        else
-                icon_name.value = (unsigned char *) "xgks";
-        icon_name.nitems = strlen ((char *)icon_name.value);
+		*pix = XCreatePixmap(dpy, win, width, height, depth);
+	}
 
-        XSetWMProperties(dpy,win,&window_name,&icon_name,NULL,0,&xsh,&xwmh,
-                                                                        &xch);
 
+#if 0
         /* 
+	 * I'm leaving this in for now in order to allow a regular
+	 * window to be created for debugging purposes. It can be 
+	 * compared to the image output to make sure it's the same.
+	 * Change the '#if 0' to '#if 1' here and in the pause 
+	 * routine to enable a regular X window. 
          * Select notification of Expose event that is generated when
          * the window is first mapped (becomes visible) to the screen.
          */
@@ -634,7 +583,7 @@ CreateXWorkWindow
 
         wm_del = XInternAtom(dpy,"WM_DELETE_WINDOW",False);
         XSetWMProtocols(dpy,win,&wm_del,1);
-
+#endif
         return win;
 }
 
@@ -719,7 +668,7 @@ PIX_OpenWorkstation
         CoordSpace              square_screen;
         int                     *iptr = (int *) gksc->i.list;
         _NGCesc                 *cesc;
-        _NGCXWinConfig          *xwc=NULL;
+        _NGCPixConfig          *pixc=NULL;
 
         if((xi = (PIXddp *) malloc (sizeof (PIXddp))) == (PIXddp *) NULL){
                 ESprintf(ERR_DTABLE_MEMORY, "malloc(%d)", sizeof(PIXddp));
@@ -744,6 +693,9 @@ PIX_OpenWorkstation
 
         xi->size_change = NULL;
         xi->sref = NULL;
+	xi->format = 1;
+	xi->filename = NULL;
+	xi->clear = 1;
 
         while(cesc = _NGGetCEscInit()){
                 _NGCXAllocColor *xac;
@@ -755,8 +707,8 @@ PIX_OpenWorkstation
                                 xi->cref = xac->cref;
                                 break;
                         
-                        case NGC_XWINCONFIG:
-                                xwc = (_NGCXWinConfig*)cesc;
+                        case NGC_PIXCONFIG:
+                                pixc = (_NGCPixConfig*)cesc;
 
                                 break;
                         default:
@@ -786,26 +738,24 @@ PIX_OpenWorkstation
                 return(ERR_OPN_DISPLAY);
         }
 
-        if(xi->xwtype == XUSRWIN){
-                /*
-                 * Window id is first element in iptr for type 7
-                 */
-                xi->win = (Window)iptr[0];
-        }
-        else{
-                xi->win = CreateXWorkWindow(xi->dpy,xwc);
-        }
+
+	xi->win = CreateXWorkWindow(xi->dpy,pixc,&xi->pix);
 
         if(XGetWindowAttributes(xi->dpy,xi->win,&xwa) == 0){
                 ESprintf(ERR_WIN_ATTRIB, "XGetWindowAttributes(,,)");
                 return ERR_WIN_ATTRIB;
         }
 
-        if(xwc){
-                xwc->x = xwa.x;
-                xwc->y = xwa.y;
-                xwc->width = xwa.width;
-                xwc->height = xwa.height;
+        if(pixc){
+                pixc->width = xwa.width;
+                pixc->height = xwa.height;
+		xi->format = pixc->format;
+		if (pixc->filename) {
+			xi->filename = 
+				malloc((strlen(pixc->filename)+1) *
+					sizeof(char));
+			strcpy(xi->filename,pixc->filename);
+		}
         }
         xi->scr = xwa.screen;
         xi->vis = xwa.visual;
@@ -844,6 +794,8 @@ PIX_OpenWorkstation
         xi->depth = xwa.depth;
 
         init_color(xi);
+	XFillRectangle(xi->dpy,xi->pix,xi->bg_gc,0,0,xwa.width,xwa.height);
+	xi->frame_count = 0;
 
         xi->marker_size = 1.0;
 
@@ -871,9 +823,16 @@ PIX_ActivateWorkstation
 
         XWindowAttributes       xwa;    /* Get window attributes        */
         CoordSpace      square_screen;
-
+	
+	if (xi->clear) {
+		XFillRectangle
+			(xi->dpy,xi->pix,xi->bg_gc,0,0,xwa.width,xwa.height);
+		xi->clear = 0;
+	}
 
         /*
+	 *    This stuff is unnecessary for the PIX driver, but
+         *    I'm leaving it in for the debugging window.
          *      Find out how big the window is; calculate the
          *      coordinate translation macros.
          */
@@ -928,7 +887,18 @@ PIX_UpdateWorkstation
 {
         PIXddp    *xi = (PIXddp *) gksc->ddp;
         Display *dpy = xi->dpy;
+	Status s;
+	Window root;
+	int x,y,width,height,bw,depth;
+	int pix_width,pix_height;
+		       
+	s = XGetGeometry(dpy,xi->pix,&root,&x,&y,&pix_width,&pix_height,
+			 &bw,&depth);
+	s = XGetGeometry(dpy,xi->win,&root,&x,&y,&width,&height,
+			 &bw,&depth);
 
+	XCopyArea(dpy,xi->pix,xi->win,xi->cell_gc,0,0,
+		  pix_width,pix_height,x,y);
         XSync(dpy, False);
         return(0);
 }
@@ -959,9 +929,30 @@ PIX_CloseWorkstation
                 XCloseDisplay(dpy);
         }
         if(xi->color_def) free(xi->color_def);
+	if (xi->filename) free(xi->filename);
         free((char *) xi);
 
         return(0);
+}
+
+int OutputFrame
+#ifdef  NeedFuncProto
+(
+        PIXddp    *xi
+
+)
+#else
+(xi)
+        PIXddp    *xi;
+#endif
+{
+	switch(xi->format) {
+	case PIX_XWD:
+		
+		return PIX_Write_XWD(xi);
+	case PIX_PNG:
+		return PIX_Write_PNG(xi);
+	}
 }
 
 int
@@ -982,12 +973,19 @@ PIX_ClearWorkstation
         XWindowAttributes       xwa;    /* Get window attributes        */
         CoordSpace      square_screen;
 
+	OutputFrame(xi);
+	xi->frame_count++;
+
         /* 
          *      clear the screen
          */
         XClearWindow(dpy,win);
+	xi->clear = 1;
+
 
         /*
+	 *  This stuff is unnecessary for the PIX driver but I'm
+         *  leaving it for now to facilitate the debug X window.
          *      find out how big window is. calculate coordinate translation 
          *      macros. (The user may have resized the window between frames).
          */
@@ -1038,10 +1036,6 @@ PIX_Esc
 
         switch (iptr[0]) {
         case    ESCAPE_PAUSE:
-                /*
-                 * Pause does nothing for XUSRWIN type
-                 */
-                if(xi->xwtype == XUSRWIN) break;
 
                 pause(xi->dpy);
                 break;
