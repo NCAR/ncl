@@ -1,5 +1,5 @@
 /*
- *	$Id: gcap.c,v 1.34 1993-03-26 01:55:14 clyne Exp $
+ *	$Id: gcap.c,v 1.35 1993-03-26 15:43:24 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -55,6 +55,7 @@
 #include "soft_fill.h"
 #include "translate.h"
 #include "format.h"
+#include "gcapdev.h"
 
 FILE	*tty = (FILE *) NULL;
 extern	boolean	Batch;
@@ -113,6 +114,7 @@ CGMC *c;
 
 	extern	int	commFillScaleFactor;
 	extern	int	commHatchScaleFactor;
+
 	int	status = 0;
 
 	startedDrawing = FALSE;
@@ -642,7 +644,6 @@ CGMC *c;
 	boolean	clip = FALSE;
 
 	int	cell_array(), non_rect_cell_array(), CellArray_();
-	void	gcap_line(), gcap_update_color_table();
 	extern	long	clipxmax, clipxmin, clipymax, clipymin;
 
 	if (COLOUR_TABLE_DAMAGE) {
