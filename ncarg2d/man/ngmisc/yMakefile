@@ -1,8 +1,9 @@
 #
-#	$Id: yMakefile,v 1.11 1996-10-03 21:53:16 haley Exp $
+#	$Id: yMakefile,v 1.12 2002-04-04 22:08:47 fred Exp $
 #
 
-MAN = ngckop ngdots nggcog nggetc nggeti nggetr nggsog ngmftc ngmisc \
+MAN = ngckop ngdots nggcog nggetc nggeti nggetr nggsog ngmftc \
+      nglogo ngezlogo  ngmisc \
       ngpict ngpswk ngreop ngritd ngsetc ngseti ngsetr ngsrat \
       ngwsym ngmisc_params
 
