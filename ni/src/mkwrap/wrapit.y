@@ -2016,6 +2016,6 @@ void yyerror
 	int i;
 
 	
-	fprintf(stderr,"A syntax error occurred while parsinge: %s\n",yytext);
+	fprintf(stderr,"A syntax error occurred while parsing: %s\n",yytext);
 	exit(0);
 }
