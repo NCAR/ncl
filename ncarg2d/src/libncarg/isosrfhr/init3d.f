@@ -1,5 +1,5 @@
 C
-C	$Id: init3d.f,v 1.3 2000-08-22 15:05:02 haley Exp $
+C       $Id: init3d.f,v 1.4 2004-06-29 17:04:10 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -275,22 +275,22 @@ C
   103 X = 1.
       Y = 1.
       Z = W
-      ASSIGN 104 TO IBAK
+      IBAK = 1
       GO TO 123
   104 YTS = YT
       X = U
       Y = V
       Z = 1.
-      ASSIGN 105 TO IBAK
+      IBAK = 2
       GO TO 123
   105 YB = YT
       Y = 1.
-      ASSIGN 106 TO IBAK
+      IBAK = 3
       GO TO 123
   106 XL = XT
       X = 1.
       Y = V
-      ASSIGN 107 TO IBAK
+      IBAK = 4
       GO TO 123
   107 XR = XT
 C
@@ -374,7 +374,7 @@ C
 C
 C RETAIN OLD CODE FOR TRANSFORMING OUTER POINTS
 C
-  122 ASSIGN 127 TO IBAK
+  122 IBAK = 5
   123 Q = D/((X-EX)*COSAL+(Y-EY)*COSBE+(Z-EZ)*COSGA)
       GO TO (124,125),JUMP
   124 XT = ((EX+Q*(X-EX)-AX)*COSBE-(EY+Q*(Y-EY)-AY)*COSAL)*R
@@ -382,6 +382,6 @@ C
       GO TO 126
   125 XT = ((EZ+Q*(Z-EZ)-AZ)*COSAL-(EX+Q*(X-EX)-AX)*COSGA)*R
       YT = (EY+Q*(Y-EY)-AY)*R
-  126 GO TO IBAK,(104,105,106,107,127)
+  126 GO TO (104,105,106,107,127) , IBAK
   127 RETURN
       END

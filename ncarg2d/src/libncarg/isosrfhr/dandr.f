@@ -1,5 +1,5 @@
 C
-C	$Id: dandr.f,v 1.3 2000-08-22 15:05:02 haley Exp $
+C       $Id: dandr.f,v 1.4 2004-06-29 17:04:10 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -46,7 +46,7 @@ C
       NNX = NX
       NNY = NY
       IIU = IU
-      ASSIGN 112 TO IRET
+      IRET = 3
 C
 C RX AND RY ARE USED TO MAP PLOTTER COORDINATES INTO THE
 C IMAGE PLANE MODEL.
@@ -100,7 +100,7 @@ C THE CELL (LOWER-RIGHT LINE), AND A DIAGONAL CONNECTING THE
 C MIDDLE OF THE LEFT SIDE TO THE MIDDLE OF THE TOP (UPPER-
 C LEFT LINE) OF THE CELL.
 C
-  101       ASSIGN 109 TO IRET
+  101       IRET = 2
 C
 C LOWER-RIGHT LINE
 C
@@ -112,7 +112,7 @@ C
 C
 C LOWER-LEFT AND UPPER-RIGHT
 C
-  103       ASSIGN 106 TO IRET
+  103       IRET = 1
 C
 C LOWER-LEFT
 C
@@ -132,7 +132,7 @@ C
 C
 C UPPER-RIGHT
 C
-  106       ASSIGN 112 TO IRET
+  106       IRET = 3
   107       X1 = X+DX
             Y1 = Y-DY
             X2 = X
@@ -146,7 +146,7 @@ C
             X2 = X
             Y2 = Y+DZ
             GO TO 111
-  109       ASSIGN 112 TO IRET
+  109       IRET = 3
 C
 C UPPER-LEFT
 C
@@ -166,19 +166,19 @@ C
 C IF EITHER END OF THE LINE IS AT A MARKED SPOT ON THE IMAGE
 C PLANE MODEL, THE LINE IS HIDDEN
 C
-            IF (IV .NE. 0) GO TO IRET,(106,109,112)
+            IF (IV .NE. 0) GO TO (106,109,112) , IRET
             IX = (X2-S(1))*RX
             IY = MOD(IFIX((Y2-S(3))*RY-SLOPE*FLOAT(IX))+NNY,NNY)+1
             IBIT = MOD(IX,NBPW)+1
             IX = IX/NBPW+1
             IV = IAND(IS2(IX,IY),MASK(IBIT))
-            IF (IV .NE. 0) GO TO IRET,(106,109,112)
+            IF (IV .NE. 0) GO TO (106,109,112) , IRET
             PX(1) = CPUX(IFIX(X1))
             PX(2) = CPUX(IFIX(X2))
             PY(1) = CPUY(IFIX(Y1))
             PY(2) = CPUY(IFIX(Y2))
             CALL GPL (2,PX,PY)
-            GO TO IRET,(106,109,112)
+            GO TO (106,109,112) , IRET
   112    CONTINUE
   212    CONTINUE
   113 CONTINUE
