@@ -56,7 +56,7 @@ begin
 ; Draw the default MapPlot object
 ;
     mapid = create "Map0" mapPlotLayerClass wid
-        "ovTitleDisplayMode" : "always"
+        "pmTitleDisplayMode" : "always"
         "tiMainString" : "mp01n - Frame 1"
     end create
 

@@ -69,7 +69,7 @@ begin
 ; By default the geophysical boundary set is used both for outline and fill.
 ;
     mapid = create "Map0" mapPlotLayerClass wid
-        "ovTitleDisplayMode" : "Always"
+        "pmTitleDisplayMode" : "Always"
         "tiMainString" : "mp02n - Frame 1"
         "mpFillOn" : "True"
         "mpProjection" : "Orthographic"

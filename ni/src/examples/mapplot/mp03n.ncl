@@ -238,7 +238,7 @@ begin
 ;
     mapid = create "Map1" mapPlotLayerClass wid
         "mpFillOn" : "true"
-        "ovTitleDisplayMode" : "always"
+        "pmTitleDisplayMode" : "always"
         "tiMainString" : "mp03n"
         "mpFillDrawOrder" : "postdraw"
         "mpAreaMaskingOn" : "true"
