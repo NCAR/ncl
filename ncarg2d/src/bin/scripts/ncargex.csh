@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.109 1998-02-09 17:28:47 haley Exp $
+#   $Id: ncargex.csh,v 1.110 1998-05-07 23:09:13 kennison Exp $
 #
 
 if ($#argv < 1) goto usage
@@ -248,8 +248,8 @@ set c_list = ($c_list $dashpack_clist)
 #                      #
 #**********************#
 set ezmap_fex   = (mpex01 mpex02 mpex03 mpex04 mpex05 mpex06 mpex07 mpex08 \
-                  mpex09 mpex10 mpexfi eezmpa)
-set ezmap_ftst  = (tezmap tezmpa)
+                  mpex09 mpex10 mpex11 mpex12 mpexfi eezmpa)
+set ezmap_ftst  = (tezmap tezmpa tezmpb)
 set ezmap_fttr  = (cezmap1 cezmap2 cezmap3 cmpclr cmpdd cmpdrw cmpel \
                   cmpfil cmpgci cmpgrd cmpgrp cmpita cmpitm cmplab cmplbl \
                   cmplot cmpmsk cmpou cmppos cmpsat cmpsup cmptit cmptra \
