@@ -1,5 +1,5 @@
 /*
- *      $Id: restree.c,v 1.6 1997-10-23 00:27:06 dbrown Exp $
+ *      $Id: restree.c,v 1.7 1997-10-23 02:17:54 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -330,7 +330,7 @@ static void ExpandClassGroup
         NhlLayer layer = _NhlGetLayer(rtp->hlu_id);
 
 #if DEBUG_RESTREE
-        sprintf(stderr,"expanding class group\n");
+        fprintf(stderr,"expanding class group\n");
 #endif
 
         switch (class_group) {
@@ -816,7 +816,7 @@ static void ExpandClass
         rtResData *resp;
 
 #if DEBUG_RESTREE
-        sprintf(stderr,"expanding class\n");
+        fprintf(stderr,"expanding class\n");
 #endif
 
         res_start = 0;
@@ -914,7 +914,7 @@ static void ExpandResGroup
         NgResTree *pub_rtp = &rtp->restree;
 
 #if DEBUG_RESTREE
-        sprintf(stderr,"expanding res group\n");
+        fprintf(stderr,"expanding res group\n");
 #endif
         
         return;
@@ -935,7 +935,7 @@ static void ExpandRes
         char buf[256];
         
 #if DEBUG_RESTREE
-        sprintf(stderr,"expanding res\n");
+        fprintf(stderr,"expanding res\n");
 #endif
 
         rowcount = 3;
@@ -1018,14 +1018,14 @@ static void PrintTree
 
         for (i = 0; i < rtp->res_data_count; i++) {
                 rtResData *resp = &rtp->res_data[i];
-                sprintf(stderr,"%d %s: ",i,
+                fprintf(stderr,"%d %s: ",i,
 			NrmQuarkToString(resp->res->nrm_name));
                 if (resp->ndata) {
-                        sprintf(stderr,"row %d ",resp->ndata->row);
+                        fprintf(stderr,"row %d ",resp->ndata->row);
                         if (resp->ndata->info != (void *) resp) 
-                                sprintf(stderr,"addr mismatch");
+                                fprintf(stderr,"addr mismatch");
                 }
-                sprintf(stderr,"\n");
+                fprintf(stderr,"\n");
                 
         }
 #endif
@@ -1067,7 +1067,7 @@ static void ExpandTree
                 Char_Height = ch;
                 Row_Height = MAX(rh,h/nrows);
 #if DEBUG_RESTREE
-                sprintf(stderr,"ch %d rh %d rh1 %d\n", ch,rh,h/nrows);
+                fprintf(stderr,"ch %d rh %d rh1 %d\n", ch,rh,h/nrows);
 #endif
                 rtp->expand_called = True;
         }
@@ -1247,7 +1247,7 @@ static void UnFocusCB
         if (ndata) {
                 res_data = (rtResData *)ndata->info;
 #if DEBUG_RESTREE
-                sprintf(stderr,"unfocusing edit row %d %s -- %s\n",
+                fprintf(stderr,"unfocusing edit row %d %s -- %s\n",
                        rtp->edit_row,
                        NrmQuarkToString(res_data[i].res->nrm_name),
                        editable ? "editable" : "not editable");
@@ -1258,7 +1258,7 @@ static void UnFocusCB
                        if (rtp->res_data[i].ndata &&
                            rtp->edit_row == rtp->res_data[i].ndata->row) {
 #if DEBUG_RESTREE
-                               sprintf(stderr,
+                               fprintf(stderr,
 				       "unfocusing edit row %d %s -- %s\n",
 #endif
                                       rtp->edit_row,
@@ -1321,11 +1321,11 @@ static void FocusCB
         
 #if DEBUG_RESTREE
         if (cb->reason == XmCR_CELL_FOCUS_OUT) {
-                sprintf(stderr,
+                fprintf(stderr,
 			"focus out: row %d col %d \n",cb->row,cb->column);
 	}
         if (cb->reason == XmCR_CELL_FOCUS_IN) {
-                sprintf(stderr,
+                fprintf(stderr,
 			"focus in: row %d col %d \n",cb->row,cb->column);
         }
 #endif
@@ -1616,7 +1616,7 @@ static void RestoreSensitivity
         xev->same_screen = True;
         
 #if DEBUG_RESTREE
-        sprintf(stderr,"calling action proc\n");
+        fprintf(stderr,"calling action proc\n");
 #endif
         XtCallActionProc
                 (pub_rtp->tree,"XmLGridSelect",(XEvent*)&xev,&param1,1);
@@ -1648,7 +1648,7 @@ static void EnumEdCB
         XButtonEvent	*xev = &cb->event->xbutton;
         
 #if DEBUG_RESTREE
-        sprintf(stderr,"in enum ed cb\n");
+        fprintf(stderr,"in enum ed cb\n");
 #endif
 
         rtp->size_update_req = False;
@@ -1698,7 +1698,7 @@ static void UnmapEnumEdCB
 	XmRowColumnCallbackStruct *cb = (XmRowColumnCallbackStruct*)cb_data;
 
 #if DEBUG_RESTREE
-        sprintf(stderr,"destroying enum popup\n");
+        fprintf(stderr,"destroying enum popup\n");
 #endif
         
         XtDestroyWidget(ep->popup);
@@ -1770,7 +1770,7 @@ ButtonReleaseEH
 	rtEnumInfoRec		*ep = &rtp->enum_info;
 
 #if DEBUG_RESTREE
-        sprintf(stderr,"in edit enum button release EH\n");
+        fprintf(stderr,"in edit enum button release EH\n");
 #endif
 
         if (event->type == ButtonRelease) {
@@ -1896,7 +1896,7 @@ static void EditEnum
                  XmNuserData,		rtp,
                  NULL);
 #if DEBUG_RESTREE
-        sprintf(stderr,"ep popup %x parent window %x\n",ep->popup,
+        fprintf(stderr,"ep popup %x parent window %x\n",ep->popup,
                XtWindow(pub_rtp->tree));
 #endif
         
@@ -1912,7 +1912,7 @@ static void EditEnum
 		      NULL);
 	if (menupost) {
 #if DEBUG_RESTREE
-		sprintf(stderr,"menupost: %s %d\n", menupost,which);
+		fprintf(stderr,"menupost: %s %d\n", menupost,which);
 #endif
 		XtFree(menupost);
 	}
@@ -1970,7 +1970,7 @@ static void EditEnum
         
         XtManageChild(ep->menu);
         XtAddGrab(ep->popup, True, True);
-        sprintf(stderr,"managing enum editor\n");
+        fprintf(stderr,"managing enum editor\n");
 
 
 
@@ -2000,7 +2000,7 @@ static void SelectCB
 	rtResData 	*resp;
 
 #if DEBUG_RESTREE
-        sprintf(stderr,"in select callback, col %d row %d %x %x %d\n",
+        fprintf(stderr,"in select callback, col %d row %d %x %x %d\n",
                cb->column,cb->row,rtp,
                &rtp->enum_info,cb->event->xbutton.time);
 #endif
@@ -2009,7 +2009,7 @@ static void SelectCB
         
         if (rtp->enum_info.up) {
 #if DEBUG_RESTREE
-                sprintf(stderr,"unmanaging enum editor\n");
+                fprintf(stderr,"unmanaging enum editor\n");
 #endif
 #if 0                
                 XtPopdown(rtp->enum_info.popup);
@@ -2184,7 +2184,7 @@ static void ScrollCB
 	NgResTreeRec *rtp = (NgResTreeRec *) udata;
 
 #if DEBUG_RESTREE
-        sprintf(stderr,"in scroll callback\n");
+        fprintf(stderr,"in scroll callback\n");
 #endif
 #if 0
         AdjustTextWidget(rtp);
@@ -2379,7 +2379,7 @@ static void OrderResources
                         }
                 }
 #if DEBUG_RESTREE
-                sprintf(stderr,"%s %d\n",
+                fprintf(stderr,"%s %d\n",
                        rtp->class_info[i].class->base_class.class_name,
                        rtp->class_info[i].res_count);
 #endif
@@ -2420,7 +2420,7 @@ NhlErrorTypes NgResTreeResUpdateComplete
 	NhlClass last_class = NULL;
         
 #if DEBUG_RESTREE
-	sprintf(stderr,"in res tree res update complete\n");
+	fprintf(stderr,"in res tree res update complete\n");
 #endif
 
         if (hlu_id <= NhlNULLOBJID)
@@ -2481,7 +2481,7 @@ NhlErrorTypes NgResTreeResUpdateComplete
                 
         }
 #if DEBUG_RESTREE
-        sprintf(stderr,"res count is %d; getval_count is %d\n",
+        fprintf(stderr,"res count is %d; getval_count is %d\n",
 		res_count,getval_count);
 #endif
 
@@ -2490,7 +2490,7 @@ NhlErrorTypes NgResTreeResUpdateComplete
                 NhlGetValues(rtp->hlu_id,Grlist);
         
 #if DEBUG_RESTREE
-        sprintf(stderr,"updating tree\n");
+        fprintf(stderr,"updating tree\n");
 #endif
         for (i=0; i < res_count; i++,resp++) {
                 NhlBoolean null_val = False;
@@ -2593,7 +2593,7 @@ NhlErrorTypes NgResTreeResUpdateComplete
                 rtp->size_update_req = False;
         }
 #if DEBUG_RESTREE
-	sprintf(stderr,"leaving res tree res update complete\n");
+	fprintf(stderr,"leaving res tree res update complete\n");
 #endif
         return NhlNOERROR;
         
@@ -2707,7 +2707,7 @@ void NgResTreePreviewResList
         int i;
 
 #if DEBUG_RESTREE
-	sprintf(stderr,"in res tree add res list\n");
+	fprintf(stderr,"in res tree add res list\n");
 #endif
 
         rtp = (NgResTreeRec *) res_tree;
@@ -2788,7 +2788,7 @@ void NgResTreeAddResList
         NhlBoolean *quote;
 
 #if DEBUG_RESTREE
-	sprintf(stderr,"in res tree add res list\n");
+	fprintf(stderr,"in res tree add res list\n");
 #endif
 
         rtp = (NgResTreeRec *) res_tree;
@@ -3325,7 +3325,7 @@ static void EnumButtonUpAction(
 	rtEnumInfoRec		*ep;
         
 #if DEBUG_RESTREE
-        sprintf(stderr,"in enum button up action %x\n",XtWindow(w));
+        fprintf(stderr,"in enum button up action %x\n",XtWindow(w));
 #endif
 
         XtVaGetValues(w,
@@ -3338,7 +3338,7 @@ static void EnumButtonUpAction(
         ep = &rtp->enum_info;
 
 #if DEBUG_RESTREE
-        sprintf(stderr,"%x %x %d %d %d \n",rtp,ep,xev->xbutton.time,
+        fprintf(stderr,"%x %x %d %d %d \n",rtp,ep,xev->xbutton.time,
                XtGetMultiClickTime(XtDisplay(w)), ep->time);
 #endif
 }

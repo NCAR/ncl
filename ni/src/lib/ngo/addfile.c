@@ -1,5 +1,5 @@
 /*
- *      $Id: addfile.c,v 1.14 1997-10-23 00:26:58 dbrown Exp $
+ *      $Id: addfile.c,v 1.15 1997-10-23 02:17:53 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1931,7 +1931,7 @@ FileRefDeleteCB
         XmString	xmstring;
         
 #if	DEBUG_ADDFILE
-        sprintf(stderr,"in fileref delete callback\n");
+        fprintf(stderr,"in fileref delete callback\n");
 #endif
 
         XtVaGetValues(np->vname,

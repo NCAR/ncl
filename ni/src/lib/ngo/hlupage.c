@@ -1,5 +1,5 @@
 /*
- *      $Id: hlupage.c,v 1.10 1997-10-23 00:27:04 dbrown Exp $
+ *      $Id: hlupage.c,v 1.11 1997-10-23 02:17:53 dbrown Exp $
  */
 /*******************************************x*****************************
 *									*
@@ -46,7 +46,7 @@ SetValCB
 	brHluPageRec	*rec;
 
 #if DEBUG_HLUPAGE
-        sprintf(stderr,"in setval cb\n");
+        fprintf(stderr,"in setval cb\n");
 #endif
 	rec = (brHluPageRec *)NgPageData(info->goid,info->pid);
         if (! rec || rec->hlu_id <= NhlNULLOBJID)
@@ -730,7 +730,7 @@ static void CreateUpdateCB
         NhlBoolean	work_created;
 
 #if DEBUG_HLUPAGE
-        sprintf(stderr,"in CreateUpdateCB\n");
+        fprintf(stderr,"in CreateUpdateCB\n");
 #endif
         
         wk_id = GetWorkstation(page,&work_created);
@@ -757,7 +757,7 @@ static void AutoUpdateCB
         Boolean		set;
 
 #if DEBUG_HLUPAGE
-        sprintf(stderr,"in AutoUpdateCB\n");
+        fprintf(stderr,"in AutoUpdateCB\n");
 #endif
 
         XtVaGetValues(w,
@@ -869,7 +869,7 @@ static void HluPageInputNotify (
         
                 
 #if DEBUG_HLUPAGE
-        sprintf(stderr,"in hlu page input notify\n");
+        fprintf(stderr,"in hlu page input notify\n");
 #endif
 
         switch (output_page_type) {
@@ -911,7 +911,7 @@ static NhlPointer PublicHluPageData (
         NgHluPage 	*pub = &rec->public;
         
 #if DEBUG_HLUPAGE
-        sprintf(stderr,"in public hlu page data\n");
+        fprintf(stderr,"in public hlu page data\n");
 #endif
         
         return (NhlPointer) pub;
@@ -1053,7 +1053,7 @@ static NhlErrorTypes UpdateHluPage
 	int		hlu_id;
         
 #if DEBUG_HLUPAGE
-        sprintf(stderr,"in updata hlu page\n");
+        fprintf(stderr,"in updata hlu page\n");
 #endif
 
         if (! pub->class_name) {
@@ -1064,7 +1064,7 @@ static NhlErrorTypes UpdateHluPage
         } 
                 
 #if DEBUG_HLUPAGE
-        sprintf(stderr,"%s\n",pub->class_name);
+        fprintf(stderr,"%s\n",pub->class_name);
 #endif
 
         if (rec->hlu_id > NhlNULLOBJID)
