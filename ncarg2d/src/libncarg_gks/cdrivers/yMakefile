@@ -1,23 +1,26 @@
 #
-#	$Id: yMakefile,v 1.2 1994-06-08 16:58:09 boote Exp $
+#	$Id: yMakefile,v 1.3 1996-03-16 21:43:51 boote Exp $
 #
 
 MYNAME		= cdrivers
 
+INCLUDES	= gksP.h
 SOURCES		= \
 		ctxt.c ctxt_conv.c font.c fort_c.c gks_device.c gksc.c \
 		text.c transform.c x_conv.c xattribute.c xcontrol.c \
 		ps.c ps_conv.c psfill.c \
-		xinquiry.c xoutput.c
+		xinquiry.c xoutput.c gksP.c
 
 OBJECTS		= \
 		ctxt.o ctxt_conv.o font.o fort_c.o gks_device.o gksc.o \
 		text.o transform.o x_conv.o xattribute.o xcontrol.o \
 		ps.o ps_conv.o psfill.o \
-		xinquiry.o xoutput.o
+		xinquiry.o xoutput.o gksP.o
 
 EXTRA_CDEFINES	= $(OS_DEF) -DCTXT -DX11 -DPS
 
 PartialLibraryTarget(libncarg_gks.a,$(OBJECTS))
 PartialSourceLibraryTarget($(MYNAME),srcncarg_gks.a,$(SOURCES))
+BuildIncludes($(INCLUDES),ncarg,..)
+InstallTarget($(INCLUDES),$(INSTALL_INC),$(NCARGINCPATH))
 DependTarget($(SOURCES))

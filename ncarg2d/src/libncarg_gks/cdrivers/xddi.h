@@ -1,5 +1,5 @@
 /*
- *	$Id: xddi.h,v 1.4 1996-01-12 21:13:10 boote Exp $
+ *	$Id: xddi.h,v 1.5 1996-03-16 21:43:51 boote Exp $
  */
 /*
  *      File:		xddi.h
@@ -68,5 +68,18 @@ typedef	struct	Xddi_	{
 	int		percent_colerr;
 	float		pcerr_sqr;
 } Xddp;
+
+extern void X11_private_color(
+#ifdef	NeedFuncProto
+	Xddp	*xi
+#endif
+);
+
+extern void X11_free_ci(
+#ifdef	NeedFuncProto
+	Xddp		*xi,
+	unsigned	index
+#endif
+);
 
 #endif	/*	_xddi_	*/

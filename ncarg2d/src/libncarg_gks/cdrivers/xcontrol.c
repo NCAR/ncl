@@ -1,5 +1,5 @@
 /*
- *	$Id: xcontrol.c,v 1.10 1996-01-18 14:57:26 boote Exp $
+ *	$Id: xcontrol.c,v 1.11 1996-03-16 21:43:50 boote Exp $
  */
 /*
  *      File:		xcontrol.c
@@ -24,6 +24,7 @@
 #include "common.h"
 #include "gksc.h"
 #include "gks.h"
+#include <ncarg/gksP.h>
 #include "x.h"
 #include "x_device.h"
 #include "xddi.h"
@@ -852,6 +853,9 @@ X11_Esc
 	int			*iptr = (int *) gksc->i.list;
 	char			*tstr;
 	int			tint;
+	_NGCesc			*cesc = (_NGCesc*)gksc->native;
+	_NGCXGetXPix		*gxpix;
+	_NGCXFreeCi		*fci;
 
 	switch (iptr[0]) {
 	case	ESCAPE_PAUSE:
@@ -940,9 +944,26 @@ X11_Esc
 		}
 		break;
 
+	case NGESC_CNATIVE:
+		switch(cesc->type){
+		case NGC_XGETXPIX:
+			gxpix = (_NGCXGetXPix*)cesc;
+			if((gxpix->gksci > (MAX_COLORS - 1))||(gxpix->gksci<0))
+				return ERR_MAX_COLOR;
+			gxpix->xpixnum = xi->color_pal[gxpix->gksci];
+			break;
+		case NGC_XFREECI:
+			fci = (_NGCXFreeCi*)cesc;
+			X11_free_ci(xi,fci->gksci);
+			break;
+		default:
+			return ERR_INV_ESCAPE;
+		}
+
+		break;
 	default:
-		return(ERR_INV_ESCAPE);
+		return ERR_INV_ESCAPE;
 	}
 
-	return(0);
+	return 0;
 }

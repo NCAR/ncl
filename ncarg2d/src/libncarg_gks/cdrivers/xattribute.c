@@ -1,5 +1,5 @@
 /*
- *	$Id: xattribute.c,v 1.6 1996-01-18 14:57:26 boote Exp $
+ *	$Id: xattribute.c,v 1.7 1996-03-16 21:43:50 boote Exp $
  */
 /*
  *      File:		xattribute.c
@@ -597,10 +597,30 @@ update_gcs
 	return;
 }
 
-extern void
-X11_private_color(
-	Xddp	*xi
-);
+void
+X11_free_ci(
+	Xddp		*xi,
+	unsigned	index
+)
+{
+	int		*color_info = xi->color_info;
+	XddpColorStatus	*color_status = xi->color_status;
+	Boolean		*color_def = xi->color_def;
+
+	if(color_info[index] > -1){
+		color_status[color_info[index]].ref_count--;
+
+		if(color_status[color_info[index]].ref_count < 1){
+			if(xi->cmap_ro){
+				XFreeColors(xi->dpy,xi->cmap,
+				&color_status[color_info[index]].xpixnum,1,0);
+			}
+			color_def[color_status[color_info[index]].xpixnum]--;
+			xi->mycmap_cells--;
+		}
+		color_info[index] = -1;
+	}
+}
 
 int
 X11_SetColorRepresentation
@@ -640,19 +660,7 @@ X11_SetColorRepresentation
 	/*
 	 * If this index has a color allocated for it, free it up
 	 */
-	if(color_info[index] > -1){
-		color_status[color_info[index]].ref_count--;
-
-		if(color_status[color_info[index]].ref_count < 1){
-			if(xi->cmap_ro){
-				XFreeColors(xi->dpy,xi->cmap,
-				&color_status[color_info[index]].xpixnum,1,0);
-			}
-			color_def[color_status[color_info[index]].xpixnum]--;
-			xi->mycmap_cells--;
-		}
-		color_info[index] = -1;
-	}
+	X11_free_ci(xi,index);
 
 	if(xi->mycmap && !xi->cmap_ro){
 		/*

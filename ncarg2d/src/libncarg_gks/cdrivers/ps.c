@@ -1,5 +1,5 @@
 /*
- *	$Id: ps.c,v 1.10 1995-11-30 20:24:45 fred Exp $
+ *	$Id: ps.c,v 1.11 1996-03-16 21:43:49 boote Exp $
  */
 /*
  *
@@ -3279,8 +3279,9 @@ ps_Esc(gksc)
 		psa->ps_clip.urx = psa->dspace.urx;
 		psa->ps_clip.ury = psa->dspace.ury;
 		psa->ps_clip.null = FALSE;
-
 		break;
+	default:
+		return ERR_INV_ESCAPE;
 	}
 
 	return(0);
