@@ -69,7 +69,7 @@ C
 C  Flush the SPPS pen move buffer and update the workstation.
 C
       CALL PLOTIF(0.,0.,2)
-      CALL GUWK(WKID,0)      
+      CALL GUWK(WKID,1)      
 C
       IF (ICAT .EQ. 4) THEN
 C
