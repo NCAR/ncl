@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.179 2004-12-15 18:05:23 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.180 2004-12-31 17:32:19 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -1714,13 +1714,13 @@ begin
                                   "gsnRightStringParallelPosF",  1.0)
 
   orthpos = get_res_value(amres,"amOrthogonalPosF",0.01*vph)
-  orthgonal_pos = new(3,float)
-  orthgonal_pos(0) = get_res_value(left_string, \
-                                  "gsnLeftStringOrthgonalPosF",  orthpos)
-  orthgonal_pos(1) = get_res_value(center_string, \
-                                  "gsnCenterStringOrthgonalPosF",orthpos)
-  orthgonal_pos(2) = get_res_value(right_string, \
-                                  "gsnRightStringOrthgonalPosF", orthpos)
+  orthogonal_pos = new(3,float)
+  orthogonal_pos(0) = get_res_value(left_string, \
+                                  "gsnLeftStringOrthogonalPosF",  orthpos)
+  orthogonal_pos(1) = get_res_value(center_string, \
+                                  "gsnCenterStringOrthogonalPosF",orthpos)
+  orthogonal_pos(2) = get_res_value(right_string, \
+                                  "gsnRightStringOrthogonalPosF", orthpos)
 
   just         = (/"left","center","right"/)
   fhghts       = (/0.,0.,0./)
@@ -1786,7 +1786,7 @@ begin
           "amSide"          : "top"         ; Subtitle at top.
           "amParallelPosF"  : parallel_pos(i)
           "amJust"          : "bottom"+just(i)
-          "amOrthogonalPosF": orthgonal_pos(i) ; Move away from top edge
+          "amOrthogonalPosF": orthogonal_pos(i) ; Move away from top edge
           "amResizeNotify"  : True          ; Resize subtitle if map resized.
         end setvalues
         attsetvalues_check(anno,amres)   ; Set some annotation resources.
