@@ -1,5 +1,5 @@
 /*
- *      $Id: mp03c.c,v 1.1 1995-01-24 23:27:41 haley Exp $
+ *      $Id: mp03c.c,v 1.2 1995-01-27 23:12:07 haley Exp $
  */
 /************************************************************************
 *									*
@@ -62,7 +62,7 @@ main(int argc, char *argv[])
         rlist = NhlRLCreate(NhlSETRL);
         NhlRLClear(rlist);
 	NhlRLSetString(rlist,NhlNappUsrDir,"./");
-	NhlCreate(&appid,"mp03",NhlappLayerClass,NhlNOPARENT,rlist);
+	NhlCreate(&appid,"mp03",NhlappLayerClass,NhlDEFAULT_APP,rlist);
 
 #if NCGM
 /*
@@ -72,7 +72,7 @@ main(int argc, char *argv[])
         NhlRLClear(rlist);
         NhlRLSetString(rlist,NhlNwkMetaName,"./mp03c.ncgm");
         NhlCreate(&wid,"mp03Work",
-                  NhlncgmWorkstationLayerClass,NhlNOPARENT,rlist);
+                  NhlncgmWorkstationLayerClass,NhlDEFAULT_APP,rlist);
 #else
 /*
  * Create an X workstation
