@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncargpath.m,v 1.2 1994-11-29 15:08:21 haley Exp $
+.\"	$Id: ncargpath.m,v 1.3 1995-02-16 15:15:50 haley Exp $
 .\"
 .TH NCARGPATH 8NCARG "November 1994" NCAR "NCAR GRAPHICS"
 .SH NAME
@@ -19,52 +19,67 @@ directory that contains all the examples is installed.  The following
 arguments are recognized:
 .sp
 .IP "bin" 18
-directory where NCAR Graphics binaries are installed
+Directory where NCAR Graphics binaries are installed.
 .IP "config" 18
-directory where NCAR Graphics configuration files are installed
+Directory where NCAR Graphics configuration files are installed.
+.IP "data" 18
+Directory where NCAR Graphics HLU and NCL example data files are installed
+(only on SGIs running IRIX 5.x and Suns running SunOS 4.1.x).
 .IP "database" 18
-directory where NCAR Graphics databases (like the Ezmap database) 
-are installed
+Directory where NCAR Graphics databases (like the Ezmap database) 
+are installed.
 .IP "examples" 18
-directory where NCAR Graphics Fortran and C examples are installed
+Directory where NCAR Graphics LLU Fortran and C examples are installed.
 .IP "fontcap" 18
-the default fontcap being used; only returns a valid fontcap if the 
+The default fontcap being used; only returns a valid fontcap if the 
 environment variable FONTCAP is set.
 .IP "fontcaps" 18
-directory where NCAR Graphics fontcaps are installed
+Directory where NCAR Graphics fontcaps are installed.
 .IP "gks_output" 18
-the default name of the metafile
+The default name of the metafile.
 .IP "graphcap" 18
-the default graphcap being used; only returns a valid graphcap if the 
+The default graphcap being used; only returns a valid graphcap if the
 environment variable GRAPHCAP is set.
 .IP "graphcaps" 18
-directory where NCAR Graphics graphcaps are installed
+Directory where NCAR Graphics graphcaps are installed.
+.IP "hluex" 18
+Directory where NCAR Graphics HLU Fortran and C examples are installed
+(only on SGIs running IRIX 5.x and Suns running SunOS 4.1.x).
 .IP "include" 18
-directory where NCAR Graphics include files are installed
+Directory where NCAR Graphics include files are installed.
 .IP "lib" 18
-directory where NCAR Graphics libraries are installed
+Directory where NCAR Graphics libraries are installed.
 .IP "man" 18
-directory where NCAR Graphics man pages are installed
+Directory where NCAR Graphics man pages are installed.
 .IP "ncarg" 18
-root directory where NCAR Graphics examples, databases resource files, etc. are installed
+Root directory where NCAR Graphics examples, databases resource files, etc.
+are installed.
+.IP "nclex" 18
+Directory where NCAR Graphics NCL examples are installed (only on SGIs
+running IRIX 5.x and Suns running SunOS 4.1.x).
+.IP "resfiles" 18
+Directory where resource files for the NCL and HLU examples are installed
+(only on SGIs running IRIX 5.x and Suns running SunOS 4.1.x).
 .IP "root" 18
-parent directory where NCAR Graphics is installed
+Parent directory where NCAR Graphics is installed.
 .IP "sysappres" 18
-directory where the NCAR Graphics systems application resource file is installed; only applicable on Sun and SGI systems.
+Directory where the NCAR Graphics systems application resource file is
+installed (only on SGIs running IRIX 5.x and Suns running SunOS 4.1.x).
 .IP "sysresfile" 18
-directory where the NCAR Graphics system resource file is installed; only
-applicable on Sun and SGI systems.
+Directory where the NCAR Graphics system resource file is installed (only
+on SGIs running IRIX 5.x and Suns running SunOS 4.1.x).
 .IP "tests" 18
-directory where NCAR Graphics Fortran and C test examples are installed
+Directory where NCAR Graphics LLU Fortran and C test examples are installed.
 .IP "tmp" 18
-directory where NCAR Graphics temporary files will be written
+Directory where NCAR Graphics temporary files will be written.
 .IP "tutorial" 18
-directory where NCAR Graphics tutorial C and Fortran examples are installed
+Directory where NCAR Graphics LLU tutorial C and Fortran examples are
+installed.
 .IP "usrresfile" 18
-directory where the NCAR Graphics user resource file is installed; only
-applicable on Sun and SGI systems.
+Directory where the NCAR Graphics user resource file is installed
+(only on SGIs running IRIX 5.x and Suns running SunOS 4.1.x).
 .IP "xapp" 18
-directory where NCAR Graphics X application default files are installed
+Directory where NCAR Graphics X application default files are installed.
 .SH SEE ALSO
 Online:
 .BR ncarg_gks(3NCARG), ncargintro(5NCARG)
