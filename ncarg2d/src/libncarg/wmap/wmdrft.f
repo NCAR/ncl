@@ -1,5 +1,5 @@
 C
-C	$Id: wmdrft.f,v 1.7 2000-04-08 00:06:24 fred Exp $
+C	$Id: wmdrft.f,v 1.8 2000-04-12 17:27:28 fred Exp $
 C
       SUBROUTINE WMDRFT(N,X,Y)
 C
@@ -167,6 +167,25 @@ C
               PRINT *,    'WMDRFT - Warning: not enough space along the 
      +input curve to draw two symbols for a stationary front'
               NUMSYM = 0
+C
+C  For a stationary front, draw the line and return.  First find
+C  the index that marks the midpoint of the line.
+C
+              HLFLEN = 0.5*ALEN(NPTS)
+              IHLF = 2
+              DO 90 I=1,NPTS
+                IF (ALEN(I) .GE. HLFLEN) THEN
+                  IHLF = I
+                  GO TO 91
+                ENDIF 
+   90         CONTINUE
+   91         CONTINUE
+              ICOLOR = ICOLDC
+              CALL WMLGPL(IHLF,XOUT,YOUT)
+              ICOLOR = IWARMC
+              IR = NPTS-IHLF+1
+              CALL WMLGPL(IR,XOUT(IHLF),YOUT(IHLF))
+              RETURN
             ELSE
               PRINT *,    'WMDRFT - Warning: not enough space along the 
      +input curve to draw two symbols for an occluded front'
