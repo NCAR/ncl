@@ -2,7 +2,7 @@
 .EL I
 
 I
-I $Id: CodeIftran,v 1.2 2004-06-29 19:34:15 kennison Exp $
+I $Id: CodeIftran,v 1.3 2005-01-10 21:21:02 kennison Exp $
 I
 
       FUNCTION MAPACI (IAI)
@@ -303,7 +303,8 @@ C
 C Projection:     US  LC  ST  OR  LE  GN  AE  CE  ME  MO  RO
 C
           GO TO (100,101,108,102,103,108,104,107,107,105,107,
-     +                                       107,107,105,107) , IPRJ+1
+     +                                       107,107,105,107,
+     +                                           107        ) , IPRJ+1
 C
 C USGS transformations.
 C
@@ -643,11 +644,17 @@ C
               IF (IPRJ.EQ.7.OR.IPRJ.EQ.11)
                 U=TEMP*RLON-UOFF
                 V=TEMP*RLAT-VOFF
-              ELSE IF (IPRJ.EQ.8.OR.IPRJ.EQ.12)
+              ELSE IF (IPRJ.EQ.8.OR.IPRJ.EQ.12.OR.IPRJ.EQ.15)
                 U=TEMP*DTOR*RLON-UOFF
                 V=TEMP*LOG(TAN((MAX(-89.999999D0,
      +                          MIN(+89.999999D0,RLAT))+
      +                                                90.D0)*DTRH))-VOFF
+                IF (IPRJ.EQ.15)
+                  UTMP=U*COSR+V*SINR
+                  VTMP=V*COSR-U*SINR
+                  U=UTMP
+                  V=VTMP
+                END IF
               ELSE
                 U=TEMP*(RLON/180.D0)*RBGLEN(RLAT)-UOFF
                 V=TEMP*RBGDFE(RLAT)-VOFF
@@ -1136,7 +1143,8 @@ C
 C Projection:   US  LC  ST  OR  LE  GN  AE  CE  ME  MO  RO
 C
         GO TO (100,101,108,102,103,108,104,107,107,105,107,
-     +                                     107,107,105,107) , IPRJ+1
+     +                                     107,107,105,107,
+     +                                         107        ) , IPRJ+1
 C
 C USGS transformations.
 C
@@ -1454,10 +1462,16 @@ C
             IF (IPRJ.EQ.7.OR.IPRJ.EQ.11)
               U=TEMP*RLON-UOFF
               V=TEMP*RLAT-VOFF
-            ELSE IF (IPRJ.EQ.8.OR.IPRJ.EQ.12)
+            ELSE IF (IPRJ.EQ.8.OR.IPRJ.EQ.12.OR.IPRJ.EQ.15)
               U=TEMP*DTOR*RLON-UOFF
               V=TEMP*LOG(TAN((MAX(-89.999999D0,
      +                        MIN(+89.999999D0,RLAT))+90.D0)*DTRH))-VOFF
+              IF (IPRJ.EQ.15)
+                UTMP=U*COSR+V*SINR
+                VTMP=V*COSR-U*SINR
+                U=UTMP
+                V=VTMP
+              END IF
             ELSE
               U=TEMP*(RLON/180.D0)*RBGLEN(RLAT)-UOFF
               V=TEMP*RBGDFE(RLAT)-VOFF
@@ -1789,7 +1803,7 @@ C
 C OLAT is the latitude at which meridians that do not extend all the
 C way to the poles are to stop.
 C
-        IF (IPRJ.EQ.11.OR.IPRJ.EQ.12.OR.IPRJ.EQ.14)
+        IF (IPRJ.EQ.11.OR.IPRJ.EQ.12.OR.IPRJ.EQ.14.OR.IPRJ.EQ.15)
           OLAT=90.D0
         ELSE
           IF (INT(GRPO/1000.D0).EQ.0)
