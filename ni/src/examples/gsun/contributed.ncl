@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.53 2004-10-28 20:05:37 shea Exp $
+;      $Id: contributed.ncl,v 1.54 2004-11-17 20:41:06 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -5949,4 +5949,27 @@ begin
       system("/bin/rm ./DaTaBoGuSfile")
   end if
   return(table)
+end
+procedure printMinMax (x:numeric,optSpace:logical)  
+;  Usage:   printMinMax (T,True)                   
+begin                                             
+          ; attribute names to check             
+   vLongName = (/"long_name", "description", "standard_name" /)
+   long_name = ""        
+   do n=0,dimsizes(vLongName)-1            
+      if (isatt(x,vLongName(n))) then     
+          long_name = x@$vLongName(n)$   
+          break
+      end if
+   end do
+        
+   if (optSpace) then
+       print (" ")  
+   end if          
+                  
+   if (long_name.ne."") then 
+       print (long_name+ ": min="+min(x)+"   max="+max(x)) 
+   else 
+       print ("min="+min(x)+"   max="+max(x))
+   end if 
 end
