@@ -1,5 +1,5 @@
 /*
- *      $Id: Fortran.c,v 1.14 1997-01-25 00:42:14 ethan Exp $
+ *      $Id: Fortran.c,v 1.15 1997-02-14 21:20:35 haley Exp $
  */
 /************************************************************************
 *									*
@@ -587,7 +587,7 @@ _NHLCALLF(nhl_frlsetmdfloatarray,NHL_FRLSETMDFLOATARRAY)
  * Side Effect:	
  */
 void
-_NHLCALLF(nhl_frlsetmddoublearray,NHL_FRLSETMDFLOATARRAY)
+_NHLCALLF(nhl_frlsetmddoublearray,NHL_FRLSETMDDOUBLEARRAY)
 #if	NhlNeedProto
 (
 	int		*id,
