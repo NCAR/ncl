@@ -1,5 +1,5 @@
 C
-C	$Id: coex01.f,v 1.1 1993-04-16 17:01:36 haley Exp $
+C	$Id: coex01.f,v 1.2 1994-07-08 16:27:36 stautler Exp $
 C
 C
 C  This program produces five 9 x 9 color charts.  Blue and green
@@ -10,13 +10,18 @@ C  available, unsatisfactory results will obtain.
 C
       PROGRAM CCHART
 C
+C  Define error file, Fortran unit number, and workstation type,
+C  and workstation ID.
+C
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+C
       DIMENSION RGB(3,405)
 C
 C  Open GKS.
 C
-      CALL GOPKS(6)
-      CALL GOPWK(1,2,1)
-      CALL GACWK(1)
+      CALL GOPKS (IERRF, ISZDM)
+      CALL GOPWK (IWKID, LUNIT, IWTYPE)
+      CALL GACWK (IWKID)
 C
 C  Set fill area interior style to solid.
 C
@@ -29,17 +34,17 @@ C
 C  Put out 5 color charts, varying the red value with each frame.
 C
       DO 10 NPAGE=1,5
-        CALL SETCOL(RGB,NPAGE)
+        CALL SETCOL(RGB,NPAGE,IWKID)
         CALL TTLBAR()
         CALL CUBE()
-        CALL TITLE(NPAGE)
+        CALL TITLE(NPAGE,IWKID)
         CALL FRAME
    10 CONTINUE
 C
 C  Close GKS.
 C
-      CALL GDAWK(1)
-      CALL GCLWK(1)
+      CALL GDAWK(IWKID)
+      CALL GCLWK(IWKID)
       CALL GCLKS
 C
       END
@@ -70,14 +75,15 @@ C
 C
       RETURN
       END
-      SUBROUTINE SETCOL(RGB,INDEX)
+
+      SUBROUTINE SETCOL(RGB,INDEX,IWKID)
 C
 C  Define color indices 3-84 to contain the desired colors.
 C
       DIMENSION RGB(3,405)
       NDX = 81*(INDEX-1)+1
       DO 10 N=1,81
-      CALL GSCR(1,N+2,RGB(1,NDX),RGB(2,NDX),RGB(3,NDX))
+      CALL GSCR(IWKID,N+2,RGB(1,NDX),RGB(2,NDX),RGB(3,NDX))
       NDX = NDX + 1
    10 CONTINUE
 C
@@ -157,7 +163,7 @@ C
 C
       RETURN
       END
-      SUBROUTINE TITLE(NPAGE)
+      SUBROUTINE TITLE(NPAGE,IWKID)
 C
 C  Label the chart using white characters..
 C
@@ -171,7 +177,7 @@ C
       DATA IL(1),IL(2),IL(3),IL(4),IL(5),IL(6),IL(7),IL(8),IL(9)
      1    /    3,    2,    2,    2,    1,    1,    1,    1,    1/
 C
-      CALL GSCR(1,1,1.,1.,1.)
+      CALL GSCR(IWKID,1,1.,1.,1.)
       CALL GSPLCI(1)
 C
 C  Print the title of each axis.

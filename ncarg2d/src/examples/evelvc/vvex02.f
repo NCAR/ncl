@@ -1,5 +1,5 @@
 C
-C	$Id: vvex02.f,v 1.7 1993-04-08 23:37:58 dbrown Exp $
+C	$Id: vvex02.f,v 1.8 1994-07-08 16:29:17 stautler Exp $
 C
       PROGRAM VVEX02
 C
@@ -9,21 +9,26 @@ C directions are transformed into the map coordinate space.
 C The last five frame make additional adjustments to the vector
 C rendering parameters.
 C
+C Define error file, Fortran unit number, and workstation type,
+C and workstation ID.
+C
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+C
       PARAMETER ( M=70 , N=150 , NPR=155)
       DIMENSION A(M,NPR),B(M,N),ZDAT(M,N)
       EQUIVALENCE (A(1,5),B(1,1))
 C
 C     Open GKS, open workstation, activate workstation.
 C
-      CALL GOPKS (6,ISZ)
-      CALL GOPWK (1, 2, 1)
-      CALL GACWK (1)
+      CALL GOPKS (IERRF, ISZDM)
+      CALL GOPWK (IWKID, LUNIT, IWTYPE)
+      CALL GACWK (IWKID)
 C
 C     Generate the input arrays and set up the color table
 C
       CALL GENARA(B,A,M,N)
       CALL GENDAT (ZDAT,60,60,60,25,25,-1E+2, +1E+2)
-      CALL DFCLRS
+      CALL DFCLRS(IWKID)
 C
 C Set up the Ezmap mapping, and the data coordinate space, 
 C
@@ -94,8 +99,8 @@ C
 C
 C     Deactivate and close workstation, close GKS.
 C
-      CALL GDAWK (1)
-      CALL GCLWK (1)
+      CALL GDAWK (IWKID)
+      CALL GCLWK (IWKID)
       CALL GCLKS
       STOP
       END

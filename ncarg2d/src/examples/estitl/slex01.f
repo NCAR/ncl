@@ -1,13 +1,18 @@
 C
-C	$Id: slex01.f,v 1.1 1993-04-16 17:03:09 haley Exp $
+C	$Id: slex01.f,v 1.2 1994-07-08 16:29:06 stautler Exp $
 C
       PROGRAM STEX01
 C
+C  Define error file, Fortran unit number, and workstation type,
+C  and workstation ID.
+C
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+C
 C  Open GKS.
 C
-      CALL GOPKS(6)
-      CALL GOPWK(1,2,1)
-      CALL GACWK(1)
+      CALL GOPKS (IERRF, ISZDM)
+      CALL GOPWK (IWKID, LUNIT, IWTYPE)
+      CALL GACWK (IWKID)
 C
 C  Invoke STITLE example.
 C
@@ -15,8 +20,8 @@ C
 C
 C  Close GKS.
 C
-      CALL GDAWK(1)
-      CALL GCLWK(1)
+      CALL GDAWK (IWKID)
+      CALL GCLWK (IWKID)
       CALL GCLKS
 C
       END

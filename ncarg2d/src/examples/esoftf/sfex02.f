@@ -1,7 +1,12 @@
 C
-C	$Id: sfex02.f,v 1.1.1.1 1992-04-17 22:33:24 ncargd Exp $
+C	$Id: sfex02.f,v 1.2 1994-07-08 16:28:51 stautler Exp $
 C
       PROGRAM TEST
+C
+C Define error file, Fortran unit number, and workstation type,
+C and workstation ID.
+C
+        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
 C
 C Declare required dimensioned arrays.
 C
@@ -21,7 +26,9 @@ C
 C
 C Open GKS.
 C
-        CALL OPNGKS
+        CALL GOPKS (IERRF, ISZDM)
+        CALL GOPWK (IWKID, LUNIT, IWTYPE)
+        CALL GACWK (IWKID)
 C
 C Turn off the clipping indicator.
 C
@@ -37,7 +44,7 @@ C
 C
 C Define color indices.
 C
-        CALL DFCLRS
+        CALL DFCLRS(IWKID)
 C
 C Define the window and viewport to make it easy to do seven rows
 C containing sixteen ovals apiece.
@@ -101,14 +108,16 @@ C
 C
 C Close GKS.
 C
-      CALL CLSGKS
+      CALL GDAWK (IWKID)
+      CALL GCLWK (IWKID)
+      CALL GCLKS
 C
 C Done.
 C
       STOP
 C
       END
-      SUBROUTINE DFCLRS
+      SUBROUTINE DFCLRS(IWKID)
 C
 C Define a set of RGB color triples for colors 1 through 15.
 C
@@ -136,10 +145,10 @@ C Define 16 different color indices, for indices 0 through 15.  The
 C color corresponding to index 0 is black and the color corresponding
 C to index 1 is white.
 C
-        CALL GSCR (1,0,0.,0.,0.)
+        CALL GSCR (IWKID,0,0.,0.,0.)
 C
         DO 101 I=1,15
-          CALL GSCR (1,I,RGBV(1,I),RGBV(2,I),RGBV(3,I))
+          CALL GSCR (IWKID,I,RGBV(1,I),RGBV(2,I),RGBV(3,I))
   101   CONTINUE
 C
 C Done.

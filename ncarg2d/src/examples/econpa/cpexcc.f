@@ -1,5 +1,5 @@
 C
-C	$Id: cpexcc.f,v 1.1.1.1 1992-04-17 22:33:10 ncargd Exp $
+C	$Id: cpexcc.f,v 1.2 1994-07-08 16:27:58 stautler Exp $
 C
       SUBROUTINE GENDAT (DATA,IDIM,M,N,MLOW,MHGH,DLOW,DHGH)
 C
@@ -144,7 +144,7 @@ C
         RETURN
 C
       END
-      SUBROUTINE DFCLRS
+      SUBROUTINE DFCLRS(IWKID)
 C
 C Define a set of RGB color triples for colors 1 through 15.
 C
@@ -172,10 +172,10 @@ C Define 16 different color indices, for indices 0 through 15.  The
 C color corresponding to index 0 is black and the color corresponding
 C to index 1 is white.
 C
-        CALL GSCR (1,0,0.,0.,0.)
+        CALL GSCR (IWKID,0,0.,0.,0.)
 C
         DO 101 I=1,15
-          CALL GSCR (1,I,RGBV(1,I),RGBV(2,I),RGBV(3,I))
+          CALL GSCR (IWKID,I,RGBV(1,I),RGBV(2,I),RGBV(3,I))
   101   CONTINUE
 C
 C Done.

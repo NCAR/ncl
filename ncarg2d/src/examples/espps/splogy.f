@@ -1,7 +1,12 @@
       PROGRAM NGLOGY
 C
 C  This test program is an example of logarithmic axis scaling
-C   in the NCAR Graphics User Coordinate System.
+C  in the NCAR Graphics User Coordinate System.
+C
+C       Define error file, Fortran unit number, and workstation type,
+C       and workstation ID.
+C
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
 C
 C       Dimension a line of 100 points
 C
@@ -10,7 +15,9 @@ C
 C
 C       Open GKS
 C
-      CALL OPNGKS
+      CALL GOPKS (IERRF, ISZDM)
+      CALL GOPWK (IWKID, LUNIT, IWTYPE)
+      CALL GACWK (IWKID)
 C
 C       Turn clipping off
 C
@@ -31,7 +38,7 @@ C
 C       Set attributes for output
 C        Assign yellow to color index 2
 C
-      CALL GSCR(1,2,1.,1.,0.)
+      CALL GSCR(IWKID,2,1.,1.,0.)
 C
 C       Generate output (GKS, SPPS, or NCAR utilities)
 C
@@ -66,7 +73,9 @@ C
 C
 C       Close GKS
 C
-      CALL CLSGKS
+      CALL GDAWK (IWKID)
+      CALL GCLWK (IWKID)
+      CALL GCLKS
 C
       STOP
       END

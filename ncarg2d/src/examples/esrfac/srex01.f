@@ -1,7 +1,12 @@
 C
-C	$Id: srex01.f,v 1.1.1.1 1992-04-17 22:33:25 ncargd Exp $
+C	$Id: srex01.f,v 1.2 1994-07-08 16:29:01 stautler Exp $
 C
       PROGRAM TEST
+C
+C Define error file, Fortran unit number, and workstation type,
+C and workstation ID.
+C
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
 C
       COMMON /SRFIP1/ IFR        ,ISTP       ,IROTS      ,IDRX       ,
      1                IDRY       ,IDRZ       ,IUPPER     ,ISKIRT     ,
@@ -25,9 +30,9 @@ C
 C
 C Open GKS, open workstation of type 1, activate workstation.
 C
-      CALL GOPKS (6)
-      CALL GOPWK (1, 2, 1)
-      CALL GACWK (1)
+      CALL GOPKS (IERRF, ISZDM)
+      CALL GOPWK (IWKID, LUNIT, IWTYPE)
+      CALL GACWK (IWKID)
 C
 C Generate x-coordinate values.
 C
@@ -127,8 +132,8 @@ C
 C
 C Deactivate and close workstation, close GKS.
 C
-      CALL GDAWK (1)
-      CALL GCLWK (1)
+      CALL GDAWK (IWKID)
+      CALL GCLWK (IWKID)
       CALL GCLKS
       STOP
 C

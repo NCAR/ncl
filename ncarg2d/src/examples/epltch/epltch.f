@@ -1,7 +1,12 @@
 C
-C $Id: epltch.f,v 1.5 1994-04-20 23:34:52 kennison Exp $
+C $Id: epltch.f,v 1.6 1994-07-08 16:28:41 stautler Exp $
 C
       PROGRAM EXMPLS
+C
+C Define error file, Fortran unit number, and workstation type,
+C and workstation ID.
+C
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
 C
 C --- D E C L A R A T I O N S -----------------------------------------
 C
@@ -67,7 +72,9 @@ C --- E X E C U T A B L E   C O D E -----------------------------------
 C
 C Open GKS.
 C
-      CALL OPNGKS
+      CALL GOPKS (IERRF, ISZDM)
+      CALL GOPWK (IWKID, LUNIT, IWTYPE)
+      CALL GACWK (IWKID)
 C
 C Set the "fill area interior style" to "solid".
 C
@@ -678,11 +685,11 @@ C
 C Illustrate the use of filled fonts with shadows and outlines.  First,
 C define some colors to use.
 C
-      CALL GSCR (1,2,0.,.5,.5)
-      CALL GSCR (1,3,.9,.9,0.)
-      CALL GSCR (1,4,1.,.3,.3)
-      CALL GSCR (1,5,0.,0.,1.)
-      CALL GSCR (1,6,.2,.2,.2)
+      CALL GSCR (IWKID,2,0.,.5,.5)
+      CALL GSCR (IWKID,3,.9,.9,0.)
+      CALL GSCR (IWKID,4,1.,.3,.3)
+      CALL GSCR (IWKID,5,0.,0.,1.)
+      CALL GSCR (IWKID,6,.2,.2,.2)
 C
 C Write a line.
 C
@@ -833,7 +840,9 @@ C --- E N D   O F   E X A M P L E S -----------------------------------
 C
 C Close GKS.
 C
-      CALL CLSGKS
+      CALL GDAWK (IWKID)
+      CALL GCLWK (IWKID)
+      CALL GCLKS
 C
 C Done.
 C

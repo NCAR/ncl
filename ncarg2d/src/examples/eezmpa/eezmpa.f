@@ -1,7 +1,12 @@
 C
-C	$Id: eezmpa.f,v 1.1.1.1 1992-04-17 22:33:16 ncargd Exp $
+C	$Id: eezmpa.f,v 1.2 1994-07-08 16:28:24 stautler Exp $
 C
       PROGRAM COLRIT
+C
+C Define error file, Fortran unit number, and workstation type,
+C and workstation ID.
+C
+        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
 C
 C Define the array that holds the area map.  It is put in a labeled
 C common block only because, on some machines, having a local array
@@ -47,7 +52,9 @@ C
 C
 C Open GKS.
 C
-        CALL OPNGKS
+        CALL GOPKS (IERRF, ISZDM)
+        CALL GOPWK (IWKID, LUNIT, IWTYPE)
+        CALL GACWK (IWKID)
 C
 C Re-set certain aspect source flags to "individual".
 C
@@ -65,10 +72,10 @@ C the color spectrum and the final one is black.
 C
         DO 101 J=1,14
           I=IOC(J)
-          CALL GSCR(1,J,RGB(1,I),RGB(2,I),RGB(3,I))
+          CALL GSCR(IWKID,J,RGB(1,I),RGB(2,I),RGB(3,I))
   101   CONTINUE
 C
-        CALL GSCR(1,15,0.,0.,0.)
+        CALL GSCR(IWKID,15,0.,0.,0.)
 C
 C Set up EZMAP, but don't draw anything.
 C
@@ -106,7 +113,7 @@ C
 C
 C Set the background color.
 C
-        CALL GSCR (1,0,1.,1.,1.)
+        CALL GSCR (IWKID,0,1.,1.,1.)
 C
 C Color the map.
 C
@@ -138,7 +145,9 @@ C
 C
 C Close GKS.
 C
-        CALL CLSGKS
+        CALL GDAWK (IWKID)
+        CALL GCLWK (IWKID)
+        CALL GCLKS
 C
 C Done.
 C

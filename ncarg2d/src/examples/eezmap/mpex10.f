@@ -1,5 +1,5 @@
 C
-C	$Id: mpex10.f,v 1.1.1.1 1992-04-17 22:33:15 ncargd Exp $
+C	$Id: mpex10.f,v 1.2 1994-07-08 16:28:17 stautler Exp $
 C
       PROGRAM XMPL10
 C
@@ -21,6 +21,11 @@ C the physical quantity and therefore the color index associated with
 C the cell.  When the cell array is complete, it is drawn by a call to
 C the GKS routine GCA.
 C
+C
+C Define error file, Fortran unit number, and workstation type,
+C and workstation ID.
+C
+        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
 C
 C Define an integer array in which to build the cell array.
 C
@@ -85,17 +90,19 @@ C
 C
 C Open GKS.
 C
-        CALL OPNGKS
+        CALL GOPKS (IERRF, ISZDM)
+        CALL GOPWK (IWKID, LUNIT, IWTYPE)
+        CALL GACWK (IWKID)
 C
 C Define the color indices required.  0 and 1 are used for black and
 C white (as is customary); the next NCLR values are distributed between
 C pure blue (color 2) and pure red (color NCLR+1).
 C
-        CALL GSCR (1,0,0.,0.,0.)
-        CALL GSCR (1,1,1.,1.,1.)
+        CALL GSCR (IWKID,0,0.,0.,0.)
+        CALL GSCR (IWKID,1,1.,1.,1.)
 C
         DO 101 ICLR=1,NCLR
-          CALL GSCR (1,1+ICLR,REAL(ICLR-1)/REAL(NCLR-1),0.,
+          CALL GSCR (IWKID,1+ICLR,REAL(ICLR-1)/REAL(NCLR-1),0.,
      +                        REAL(NCLR-ICLR)/REAL(NCLR-1))
   101   CONTINUE
 C
@@ -165,7 +172,9 @@ C
 C
 C Close GKS.
 C
-        CALL CLSGKS
+        CALL GDAWK (IWKID)
+        CALL GCLWK (IWKID)
+        CALL GCLKS
 C
 C Done.
 C

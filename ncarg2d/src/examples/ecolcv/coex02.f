@@ -1,7 +1,12 @@
 C
-C	$Id: coex02.f,v 1.1 1993-04-16 17:01:37 haley Exp $
+C	$Id: coex02.f,v 1.2 1994-07-08 16:27:37 stautler Exp $
 C
       PROGRAM SMPCOL
+C
+C  Define error file, Fortran unit number, and workstation type,
+C  and workstation ID.
+C
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
 C
 C  Number of squares in the X and Y directions.
 C
@@ -55,7 +60,9 @@ C
       DATA TLAB(3,4)/'Dark Gray'/
       DATA TLAB(4,4)/'Black'/
 C
-      CALL OPNGKS
+      CALL GOPKS (IERRF, ISZDM)
+      CALL GOPWK (IWKID, LUNIT, IWTYPE)
+      CALL GACWK (IWKID)
 C
 C  Use the Duplex character set of PLOTCHAR.
 C
@@ -65,7 +72,7 @@ C  Define color indices and RGB labels..
 C
       DO 10 J=1,NY
       DO 20 I=1,NX
-      CALL GSCR(1,NX*(J-1)+I+1,RGB(1,I,J),RGB(2,I,J),RGB(3,I,J))
+      CALL GSCR(IWKID,NX*(J-1)+I+1,RGB(1,I,J),RGB(2,I,J),RGB(3,I,J))
       WRITE(BLAB(I,J),500) RGB(1,I,J),RGB(2,I,J),RGB(3,I,J)
   500 FORMAT('R=',F4.2,' G=',F4.2,' B=',F4.2)
    20 CONTINUE
@@ -77,7 +84,7 @@ C
       Y = Y0+(J-1)*(SPY+SZY)
       DO 30 I=1,NX
       X = SPX+(I-1)*(SPX+SZX)
-      CALL DRBOX(X,Y,SZX,Y0,SZY,TLAB(I,J),BLAB(I,J),NX*(J-1)+I+1)
+      CALL DRBOX(X,Y,SZX,Y0,SZY,TLAB(I,J),BLAB(I,J),NX*(J-1)+I+1,IWKID)
    30 CONTINUE
    40 CONTINUE
 C
@@ -91,18 +98,20 @@ C
 C
       CALL FRAME
 C
-      CALL CLSGKS
+      CALL GDAWK (IWKID)
+      CALL GCLWK (IWKID)
+      CALL GCLKS
 C
       STOP
       END
-      SUBROUTINE DRBOX (X,Y,SZX,Y0,SZY,TLAB,BLAB,INDX)
+      SUBROUTINE DRBOX (X,Y,SZX,Y0,SZY,TLAB,BLAB,INDX,IWKID)
 C
 C  Draw a color square with lower left corner (X,Y)
 C
       CHARACTER*(*) TLAB,BLAB
       DIMENSION  A(5),B(5)
 C
-      CALL GSCR(1,1,1.,1.,1.)
+      CALL GSCR(IWKID,1,1.,1.,1.)
       CALL GSFACI(INDX)
       CALL GSFAIS(1)
       A(1) = X
@@ -119,7 +128,7 @@ C
 C
 C  If the color is black, draw a boundary.
 C
-      CALL GQCR(1,INDX,0,IER,CR,CG,CB)
+      CALL GQCR(IWKID,INDX,0,IER,CR,CG,CB)
       IF (CR.EQ.0. .AND. CG.EQ.0. .AND. CB.EQ.0.) THEN
         CALL GSPLCI(1)
         CALL GPL(5,A,B)

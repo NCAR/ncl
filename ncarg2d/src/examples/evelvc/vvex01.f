@@ -1,5 +1,5 @@
 C
-C       $Id: vvex01.f,v 1.5 1994-03-24 18:37:31 dbrown Exp $
+C       $Id: vvex01.f,v 1.6 1994-07-08 16:29:17 stautler Exp $
 C
       PROGRAM VVEX01
 C
@@ -9,6 +9,11 @@ C the vectors according to the data used to generate the contour plot,
 C with the result that the color of the vectors corresponds to the 
 C contour level at each location. In the second frame the vectors 
 C are colored by magnitude.
+C
+C Define error file, Fortran unit number, and workstation type,
+C and workstation ID.
+C
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
 C 
 C The contour, vector field component, and area map array declarations:
 C
@@ -39,7 +44,9 @@ C Initialization
 C ==================================================================
 C Open GKS.
 C
-      CALL OPNGKS
+      CALL GOPKS (IERRF, ISZDM)
+      CALL GOPWK (IWKID, LUNIT, IWTYPE)
+      CALL GACWK (IWKID)
       CALL GSCLIP (0)
 C
 C Generate a scalar data array, then create a special value region
@@ -59,7 +66,7 @@ C Then set up the color table.
 C
       CALL GENARA(U,V,60,60)
       CALL GENARA(V,U,60,60)
-      CALL DFCLRS 
+      CALL DFCLRS(IWKID) 
 C
 C Conpack setup:
 C ===============================================================
@@ -243,7 +250,9 @@ C
 C     
 C Close GKS.
 C
-      CALL CLSGKS
+      CALL GDAWK (IWKID)
+      CALL GCLWK (IWKID)
+      CALL GCLKS
 C
 C Done.
 C

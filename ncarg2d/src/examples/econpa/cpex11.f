@@ -3,6 +3,11 @@ C
 C This program demonstrates the use of the new internal parameter 'PIT',
 C which was installed in May of 1994.
 C
+C Define error file, Fortran unit number, and workstation type,
+C and workstation ID.
+C
+        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+C
 C Declare the data array and the real and integer workspace arrays.
 C
         DIMENSION ZDAT(37,19),RWRK(10000),IWRK(10000)
@@ -50,7 +55,9 @@ C
 C
 C Open GKS.
 C
-        CALL OPNGKS
+        CALL GOPKS (IERRF, ISZDM)
+        CALL GOPWK (IWKID, LUNIT, IWTYPE)
+        CALL GACWK (IWKID)
 C
 C Turn off clipping by GKS.
 C
@@ -253,7 +260,9 @@ C
 C
 C Close GKS.
 C
-        CALL CLSGKS
+        CALL GDAWK (IWKID)
+        CALL GCLWK (IWKID)
+        CALL GCLKS
 C
 C Done.
 C

@@ -1,5 +1,5 @@
 C
-C	$Id: mpex09.f,v 1.1.1.1 1992-04-17 22:33:15 ncargd Exp $
+C	$Id: mpex09.f,v 1.2 1994-07-08 16:28:16 stautler Exp $
 C
       PROGRAM EXMPL9
 C
@@ -10,6 +10,12 @@ C the program.  In each of the seven places marked off by rows of
 C dashes, un-comment the first card to do outline dataset 'CO',
 C the second to do 'US', the third to do 'PO', and the fourth to
 C do 'PS'.
+C
+C
+C Define error file, Fortran unit number, and workstation type,
+C and workstation ID.
+C
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
 C
 C The common block LIMITS communicates values between TESTIT and
 C the routines MAPEOD and MOVEIT.
@@ -95,7 +101,9 @@ C
 C
 C Open GKS.
 C
-      CALL OPNGKS
+      CALL GOPKS (IERRF, ISZDM)
+      CALL GOPWK (IWKID, LUNIT, IWTYPE)
+      CALL GACWK (IWKID)
 C
 C Finish the plot label.
 C
@@ -181,7 +189,9 @@ C
 C
 C Close GKS.
 C
-      CALL CLSGKS
+      CALL GDAWK (IWKID)
+      CALL GCLWK (IWKID)
+      CALL GCLKS
 C
 C Done.
 C

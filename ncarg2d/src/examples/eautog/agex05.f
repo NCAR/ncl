@@ -1,7 +1,12 @@
 C
-C	$Id: agex05.f,v 1.1.1.1 1992-04-17 22:33:08 ncargd Exp $
+C	$Id: agex05.f,v 1.2 1994-07-08 16:27:22 stautler Exp $
 C
       PROGRAM EXMPL5
+C
+C Define error file, Fortran unit number, and workstation type,
+C and workstation ID.
+C
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
 C
 C Define the data arrays.
 C
@@ -9,7 +14,9 @@ C
 C
 C Initialize GKS.
 C
-      CALL OPNGKS
+      CALL GOPKS (IERRF, ISZDM)
+      CALL GOPWK (IWKID, LUNIT, IWTYPE)
+      CALL GACWK (IWKID)
 C
 C Compute required constants.
 C
@@ -93,7 +100,9 @@ C
 C
 C Close GKS.
 C
-      CALL CLSGKS
+      CALL GDAWK (IWKID)
+      CALL GCLWK (IWKID)
+      CALL GCLKS
 C
       STOP
 C

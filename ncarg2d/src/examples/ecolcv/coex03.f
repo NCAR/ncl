@@ -1,5 +1,5 @@
 C
-C	$Id: coex03.f,v 1.1 1993-04-16 17:01:38 haley Exp $
+C	$Id: coex03.f,v 1.2 1994-07-08 16:27:38 stautler Exp $
 C
       PROGRAM CWHEEL
 C
@@ -12,6 +12,11 @@ C The hues vary from 0. to 360. around the color wheel starting
 C at pure red, and returning to pure red.
 C
 C This program requires PLOTCHAR for drawing its characters.
+C
+C  Define error file, Fortran unit number, and workstation type,
+C  and workstation ID.
+C
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
 C
 C  Define the number of values, the number of hues, the number
 C  of saturations, and the number of points bounding a color box.
@@ -33,15 +38,17 @@ C  Y-coordinates for the saturation labels.
 C
       DATA ST(1),ST(2),ST(3),ST(4)/-.1, -.375, -.625, -.850/
 C
-      CALL OPNGKS
+      CALL GOPKS (IERRF, ISZDM)
+      CALL GOPWK (IWKID, LUNIT, IWTYPE)
+      CALL GACWK (IWKID)
       CALL GSCLIP(0)
       CALL GSASF(IASF)
       CALL GSFAIS(1)
 C
 C  Background and foreground colors.
 C
-      CALL GSCR(1,0,0.0,0.0,0.0)
-      CALL GSCR(1,1,1.0,1.0,1.0)
+      CALL GSCR(IWKID,0,0.0,0.0,0.0)
+      CALL GSCR(IWKID,1,1.0,1.0,1.0)
 C
 C  Loop on the values.
 C
@@ -68,7 +75,7 @@ C
           DO 10 ISAT = 1,NSAT
             SAT = (FLOAT(ISAT - 1) * SINC)
             CALL HSVRGB(HUE,SAT,VAL(IL),R,G,B)
-            CALL GSCR(1,INDEX,R,G,B)
+            CALL GSCR(IWKID,INDEX,R,G,B)
             CALL GSFACI(INDEX)
             RLEN = FLOAT(ISAT) / FLOAT(NSAT)
             X(2) = COS(THETA1) * RLEN
@@ -110,7 +117,9 @@ C
         CALL PLCHHQ( .80,-.740,'Hue=315.',15.0,0.0,-1.0)
         CALL FRAME
  30   CONTINUE
-      CALL CLSGKS
+      CALL GDAWK (IWKID)
+      CALL GCLWK (IWKID)
+      CALL GCLKS
 C
  700  FORMAT('VALUE = ',F4.2)
  710  FORMAT('S=',F4.2)

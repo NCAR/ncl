@@ -1,5 +1,5 @@
 C
-C	$Id: cbex01.f,v 1.1 1993-04-16 17:01:52 haley Exp $
+C	$Id: cbex01.f,v 1.2 1994-07-08 16:27:44 stautler Exp $
 C
       PROGRAM CPBIVR
 C
@@ -41,6 +41,11 @@ C                        nine x/y positions.
 C
 C PORTABILITY            ANSI standard.
 C
+C
+C Define error file, Fortran unit number, and workstation type,
+C and workstation ID.
+C
+        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
 C
 C Define arrays to be used below.  XRAN, YRAN, and ZRAN are used for
 C the "random data".  XCNV and YCNV are used to define the convex hull
@@ -116,7 +121,9 @@ C
 C
 C Open GKS.
 C
-        CALL OPNGKS
+        CALL GOPKS (IERRF, ISZDM)
+        CALL GOPWK (IWKID, LUNIT, IWTYPE)
+        CALL GACWK (IWKID)
 C
 C Turn off clipping.
 C
@@ -124,7 +131,7 @@ C
 C
 C Define a set of colors to use.
 C
-        CALL DFCLRS
+        CALL DFCLRS(IWKID)
 C
 C Tell CONPACK to position labels using the "regular" scheme.
 C
@@ -312,14 +319,16 @@ C
 C
 C Close GKS.
 C
-        CALL CLSGKS
+        CALL GDAWK (IWKID)
+        CALL GCLWK (IWKID)
+        CALL GCLKS
 C
 C Done.
 C
         STOP
 C
       END
-      SUBROUTINE DFCLRS
+      SUBROUTINE DFCLRS(IWKID)
 C
 C Define a set of RGB color triples for colors 1 through 15 on
 C workstation 1.
@@ -348,10 +357,10 @@ C Define 16 different color indices, for indices 0 through 15.  The
 C color corresponding to index 0 is black and the color corresponding
 C to index 1 is white.
 C
-        CALL GSCR (1,0,0.,0.,0.)
+        CALL GSCR (IWKID,0,0.,0.,0.)
 C
         DO 101 I=1,15
-          CALL GSCR (1,I,RGBV(1,I),RGBV(2,I),RGBV(3,I))
+          CALL GSCR (IWKID,I,RGBV(1,I),RGBV(2,I),RGBV(3,I))
   101   CONTINUE
 C
 C Done.

@@ -1,5 +1,5 @@
 C
-C $Id: arex02.f,v 1.2 1994-03-22 22:41:55 kennison Exp $
+C $Id: arex02.f,v 1.3 1994-07-08 16:27:07 stautler Exp $
 C
       PROGRAM AREX02
 C
@@ -11,6 +11,11 @@ C instead, an area map array of a fixed size is used, and the AREAS
 C routines are only told about a part of that array.  Still, the idea
 C is much the same as one would use in C or, presumably, in FORTRAN
 C 90 (if and when compilers become generally available for FORTRAN 90).
+C
+C Define error file, Fortran unit number, and workstation type,
+C and workstation ID.
+C
+        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
 C
 C Define the size of the area map array to be used.  The part of this
 C used by the AREAS routines will fluctuate as needed.
@@ -108,7 +113,9 @@ C
 C
 C Open GKS.
 C
-        CALL OPNGKS
+        CALL GOPKS (IERRF, ISZDM)
+        CALL GOPWK (IWKID, LUNIT, IWTYPE)
+        CALL GACWK (IWKID)
 C
 C Change the GKS "fill area interior style" to be "solid".
 C
@@ -116,13 +123,13 @@ C
 C
 C Define the colors to be used.
 C
-        CALL GSCR (1,0,0.,0.,0.)
-        CALL GSCR (1,1,1.,1.,1.)
+        CALL GSCR (IWKID,0,0.,0.,0.)
+        CALL GSCR (IWKID,1,1.,1.,1.)
 C
         DO 101 I=1,9
           S=REAL(I)/9.
-          CALL GSCR (1,10+I,S,1.-S,0.)
-          CALL GSCR (1,20+I,S,1.-S,1.)
+          CALL GSCR (IWKID,10+I,S,1.-S,0.)
+          CALL GSCR (IWKID,20+I,S,1.-S,1.)
   101   CONTINUE
 C
 C Define the mapping from the user system to the plotter frame.
@@ -197,7 +204,9 @@ C
 C
 C Close GKS.
 C
-        CALL CLSGKS
+        CALL GDAWK (IWKID)
+        CALL GCLWK (IWKID)
+        CALL GCLKS
 C
 C Done.
 C
@@ -263,8 +272,11 @@ C
 C A recoverable error occurred.  See if it was due to overflowing the
 C area map array and if we can do something about it.
 C
+	write(*,*) 'SEMESS(2) ', SEMESS(2)
+	write(*,*) 'NAMA ', NAMA
+	write(*,*) 'LAMA ', LAMA
           IF (SEMESS(2).EQ.'AREA-MAP ARRAY OVERFLOW'.AND.
-     +                                                NAMA.LT.LAMA) THEN
+     +                                          NAMA.LT.LAMA) THEN
 C
 C Recover from an area map array overflow.  First, log what's happening.
 C

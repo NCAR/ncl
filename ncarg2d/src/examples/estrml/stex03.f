@@ -1,5 +1,5 @@
 C
-C	$Id: stex03.f,v 1.7 1993-04-09 23:46:13 dbrown Exp $
+C	$Id: stex03.f,v 1.8 1994-07-08 16:29:12 stautler Exp $
 C
       PROGRAM STEX03
 C
@@ -12,15 +12,20 @@ C
 C All projections use the maximum possible extent of the globe, except
 C except for frame 3, a Lambert Conical projection, for which a full
 C globe projection is impossible.
+C
+C Define error file, Fortran unit number, and workstation type,
+C and workstation ID.
+C
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
 C  
       PARAMETER (M=25, N=25)
       DIMENSION A(M,N),B(M,N),WRK(M*N*2)
 C
 C     Open GKS, open workstation, activate workstation.
 C
-      CALL GOPKS (6,ISZ)
-      CALL GOPWK (1, 2, 1)
-      CALL GACWK (1)
+      CALL GOPKS (IERRF, ISZDM)
+      CALL GOPWK (IWKID, LUNIT, IWTYPE)
+      CALL GACWK (IWKID)
 C
 C     Generate the polar input mode component arrays.
 C
@@ -33,7 +38,7 @@ C
 C
 C Set up a GKS color table
 C
-      CALL DFCLRS
+      CALL DFCLRS(IWKID)
 C
 C Do 10 different EZMAP projections, with Vectors and Streamlines
 C superimposed
@@ -91,8 +96,8 @@ C
 C
 C     Deactivate and close workstation, close GKS.
 C
-      CALL GDAWK (1)
-      CALL GCLWK (1)
+      CALL GDAWK (IWKID)
+      CALL GCLWK (IWKID)
       CALL GCLKS
 C
       STOP
@@ -100,7 +105,7 @@ C
 C
 C ==============================================================
 C
-      SUBROUTINE DFCLRS
+      SUBROUTINE DFCLRS(IWKID)
 C
 C Define a set of RGB color triples for colors 0 through 15.
 C
@@ -132,7 +137,7 @@ C color corresponding to index 0 is black and the color corresponding
 C to index 1 is white.
 C
       DO 101 I=1,NCLRS
-         CALL GSCR (1,I-1,RGBV(1,I),RGBV(2,I),RGBV(3,I))
+         CALL GSCR (IWKID,I-1,RGBV(1,I),RGBV(2,I),RGBV(3,I))
  101  CONTINUE
 C
 C Done.

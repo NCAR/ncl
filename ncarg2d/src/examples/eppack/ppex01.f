@@ -1,7 +1,12 @@
 C
-C $Id: ppex01.f,v 1.2 1994-06-22 22:37:54 kennison Exp $
+C $Id: ppex01.f,v 1.3 1994-07-08 16:28:45 stautler Exp $
 C
       PROGRAM TESTIT
+C
+C Define error file, Fortran unit number, and workstation type,
+C and workstation ID.
+C
+        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
 C
 C Declare arrays in which to define the clip polygon and the subject
 C polygon.
@@ -53,7 +58,9 @@ C
 C
 C Open GKS.
 C
-        CALL OPNGKS
+        CALL GOPKS (IERRF, ISZDM)
+        CALL GOPWK (IWKID, LUNIT, IWTYPE)
+        CALL GACWK (IWKID)
 C
 C Enable solid fill instead of the default hollow fill.
 C
@@ -69,12 +76,12 @@ C
 C
 C Define some colors to use for various purposes.
 C
-        CALL GSCR   (1,0,0.,0.,0.)
-        CALL GSCR   (1,1,1.,1.,1.)
-        CALL GSCR   (1,2,1.,0.,0.)
-        CALL GSCR   (1,3,0.,1.,0.)
-        CALL GSCR   (1,4,0.,0.,1.)
-        CALL GSCR   (1,5,1.,0.,1.)
+        CALL GSCR   (IWKID,0,0.,0.,0.)
+        CALL GSCR   (IWKID,1,1.,1.,1.)
+        CALL GSCR   (IWKID,2,1.,0.,0.)
+        CALL GSCR   (IWKID,3,0.,1.,0.)
+        CALL GSCR   (IWKID,4,0.,0.,1.)
+        CALL GSCR   (IWKID,5,1.,0.,1.)
 C
 C Define the mapping from the user system to the fractional system.
 C
@@ -403,7 +410,9 @@ C
 C
 C Close GKS.
 C
-        CALL CLSGKS
+        CALL GDAWK (IWKID)
+        CALL GCLWK (IWKID)
+        CALL GCLKS
 C
 C Done.
 C

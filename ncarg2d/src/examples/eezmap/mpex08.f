@@ -1,11 +1,16 @@
 C
-C	$Id: mpex08.f,v 1.1.1.1 1992-04-17 22:33:15 ncargd Exp $
+C	$Id: mpex08.f,v 1.2 1994-07-08 16:28:15 stautler Exp $
 C
       PROGRAM EXMPL8
 C
 C Produce a Mercator projection of the whole globe, using a
 C version of MAPUSR which dots the grid lines and dashes the
 C continental outlines.
+C
+C Define error file, Fortran unit number, and workstation type,
+C and workstation ID.
+C
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
 C
 C Define the label for the top of the map.
 C
@@ -15,7 +20,9 @@ C
 C
 C Open GKS.
 C
-      CALL OPNGKS
+      CALL GOPKS (IERRF, ISZDM)
+      CALL GOPWK (IWKID, LUNIT, IWTYPE)
+      CALL GACWK (IWKID)
 C
 C Weird up the projection a little.
 C
@@ -36,7 +43,9 @@ C
 C
 C Close GKS.
 C
-      CALL CLSGKS
+      CALL GDAWK (IWKID)
+      CALL GCLWK (IWKID)
+      CALL GCLKS
 C
 C Done.
 C

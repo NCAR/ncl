@@ -1,5 +1,5 @@
 C
-C	$Id: bnchmk.f,v 1.2 1993-03-05 18:28:01 dbrown Exp $
+C	$Id: bnchmk.f,v 1.3 1994-07-08 16:28:35 stautler Exp $
 C
       PROGRAM BNCHMK
 C
@@ -27,6 +27,13 @@ C     This will force the functions FX and FY supplied in this
 C     package to be loaded.  The documentation for FX explains
 C     the transformations provided.
 C
+
+C
+C Define error file, Fortran unit number, and workstation type,
+C and workstation ID.
+C
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+
       PARAMETER ( M=70 , N=150 , NPR=155)
       PARAMETER (PI=3.14159 , TWOPI=2.*PI , EPS=PI/6.)
       DIMENSION A(M,NPR),B(M,N)
@@ -42,9 +49,9 @@ C End of modification for UNIX Version.
 C
 C     Open GKS, open workstation, activate workstation.
 C
-      CALL GOPKS (6,ISZ)
-      CALL GOPWK (1, 2, 1)
-      CALL GACWK (1)
+      CALL GOPKS (IERRF, ISZDM)
+      CALL GOPWK (IWKID, LUNIT, IWTYPE)
+      CALL GACWK (IWKID)
       ZERO = CHAR(0)
 C
 C     Generate the input array.
@@ -149,8 +156,8 @@ C
 C
 C     Deactivate and close workstation, close GKS.
 C
-      CALL GDAWK (1)
-      CALL GCLWK (1)
+      CALL GDAWK (IWKID)
+      CALL GCLWK (IWKID)
       CALL GCLKS
       STOP
       END

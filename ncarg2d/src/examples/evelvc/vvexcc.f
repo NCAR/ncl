@@ -1,5 +1,5 @@
 C
-C	$Id: vvexcc.f,v 1.5 1993-04-09 23:47:41 dbrown Exp $
+C	$Id: vvexcc.f,v 1.6 1994-07-08 16:29:19 stautler Exp $
 C
       SUBROUTINE GENDAT (DATA,IDIM,M,N,MLOW,MHGH,DLOW,DHGH)
 C
@@ -123,7 +123,7 @@ C
 C
       END
 C
-      SUBROUTINE DFCLRS
+      SUBROUTINE DFCLRS(IWKID)
 C
 C Define a set of RGB color triples for colors 0 through 15.
 C
@@ -155,7 +155,7 @@ C color corresponding to index 0 is black and the color corresponding
 C to index 1 is white.
 C
       DO 101 I=1,NCLRS
-         CALL GSCR (1,I-1,RGBV(1,I),RGBV(2,I),RGBV(3,I))
+         CALL GSCR (IWKID,I-1,RGBV(1,I),RGBV(2,I),RGBV(3,I))
  101  CONTINUE
 C
 C Done.

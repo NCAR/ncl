@@ -1,5 +1,5 @@
 C
-C	$Id: arex01.f,v 1.1 1993-04-16 17:01:21 haley Exp $
+C	$Id: arex01.f,v 1.2 1994-07-08 16:27:06 stautler Exp $
 C
       PROGRAM EXMPLE
 C
@@ -18,6 +18,11 @@ C components are what they would have been over "water", but we add
 C a maximal blue component to wash out the color into a pastel shade.
 C A rectangular area (in which, one might imagine, data were missing)
 C is masked out so as to be left uncolored.
+C
+C Define error file, Fortran unit number, and workstation type,
+C and workstation ID.
+C
+        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
 C
 C Define the size of the area map to be used.
 C
@@ -122,7 +127,9 @@ C
 C
 C Open GKS.
 C
-        CALL OPNGKS
+        CALL GOPKS (IERRF, ISZDM)
+        CALL GOPWK (IWKID, LUNIT, IWTYPE)
+        CALL GACWK (IWKID)
 C
 C Change the GKS "fill area interior style" to be "solid".
 C
@@ -133,13 +140,13 @@ C background and foreground colors (black and white, respectively).
 C Color indices 11 through 19 are to be used over "ocean" and color
 C indices 21 through 29 are to be used over "land".
 C
-        CALL GSCR (1,0,0.,0.,0.)
-        CALL GSCR (1,1,1.,1.,1.)
+        CALL GSCR (IWKID,0,0.,0.,0.)
+        CALL GSCR (IWKID,1,1.,1.,1.)
 C
         DO 101 I=1,9
           S=REAL(I)/9.
-          CALL GSCR (1,10+I,S,1.-S,0.)
-          CALL GSCR (1,20+I,S,1.-S,1.)
+          CALL GSCR (IWKID,10+I,S,1.-S,0.)
+          CALL GSCR (IWKID,20+I,S,1.-S,1.)
   101   CONTINUE
 C
 C Define the mapping from the user system to the plotter frame.
@@ -200,7 +207,9 @@ C
 C
 C Close GKS.
 C
-        CALL CLSGKS
+        CALL GDAWK (IWKID)
+        CALL GCLWK (IWKID)
+        CALL GCLKS
 C
 C Done.
 C

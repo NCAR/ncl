@@ -1,14 +1,19 @@
 C
-C	$Id: example.f,v 1.1.1.1 1992-04-17 22:33:18 ncargd Exp $
+C	$Id: example.f,v 1.2 1994-07-08 16:28:36 stautler Exp $
 C
       PROGRAM EXMPLE
+C
+C Define error file, Fortran unit number, and workstation type,
+C and workstation ID.
+C
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
       REAL Y(21)
 C
 C OPEN GKS, OPEN WORKSTATION OF TYPE 1, ACTIVATE WORKSTATION
 C
-      CALL GOPKS (6,IDUM) 
-      CALL GOPWK (1, 2, 1)
-      CALL GACWK (1) 
+      CALL GOPKS (IERRF, ISZDM)
+      CALL GOPWK (IWKID, LUNIT, IWTYPE)
+      CALL GACWK (IWKID)
 C
 C Fill Y array for entry EZY of AUTOGRAPH.
 C
@@ -20,8 +25,8 @@ C
 C
 C     DEACTIVATE AND CLOSE WORKSTATION, CLOSE GKS.
 C
-      CALL GDAWK (1)
-      CALL GCLWK (1)
+      CALL GDAWK (IWKID)
+      CALL GCLWK (IWKID)
       CALL GCLKS
 C
       END

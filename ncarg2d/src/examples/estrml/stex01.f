@@ -1,7 +1,12 @@
 C
-C	$Id: stex01.f,v 1.6 1993-04-13 16:29:11 dbrown Exp $
+C	$Id: stex01.f,v 1.7 1994-07-08 16:29:10 stautler Exp $
 C
       PROGRAM STEX01
+C
+C Define error file, Fortran unit number, and workstation type,
+C and workstation ID.
+C
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
 C
 C Example illustrating polar coordinates using Streamlines
 C
@@ -11,13 +16,13 @@ C
 C
 C     Open GKS, open workstation, activate workstation.
 C
-      CALL GOPKS (6,ISZ)
-      CALL GOPWK (1, 2, 1)
-      CALL GACWK (1)
+      CALL GOPKS (IERRF, ISZDM)
+      CALL GOPWK (IWKID, LUNIT, IWTYPE)
+      CALL GACWK (IWKID)
 C
 C Define a GKS color table
 C
-      CALL DFCLRS
+      CALL DFCLRS(IWKID)
 C
 C Do the SET call, set the mapping mode and data coordinate boundaries
 C appropriately for polar coordinate mapping
@@ -64,8 +69,8 @@ C
 C
 C     Deactivate and close workstation, close GKS.
 C
-      CALL GDAWK (1)
-      CALL GCLWK (1)
+      CALL GDAWK (IWKID)
+      CALL GCLWK (IWKID)
       CALL GCLKS
 C
       STOP
@@ -73,7 +78,7 @@ C
 C
 C ==============================================================
 C
-      SUBROUTINE DFCLRS
+      SUBROUTINE DFCLRS(IWKID)
 C
 C Define a set of RGB color triples for colors 0 through 15.
 C
@@ -105,7 +110,7 @@ C color corresponding to index 0 is black and the color corresponding
 C to index 1 is white.
 C
       DO 101 I=1,NCLRS
-         CALL GSCR (1,I-1,RGBV(1,I),RGBV(2,I),RGBV(3,I))
+         CALL GSCR (IWKID,I-1,RGBV(1,I),RGBV(2,I),RGBV(3,I))
  101  CONTINUE
 C
 C Done.

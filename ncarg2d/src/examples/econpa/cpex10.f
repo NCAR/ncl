@@ -9,6 +9,12 @@ C in white, and lines of latitude and longitude are drawn in a light
 C gray.  Two-letter mnemonics are used to identify the states; each
 C is written using new mapping capabilities of the package PLOTCHAR.
 C
+C
+C Define error file, Fortran unit number, and workstation type,
+C and workstation ID.
+C
+        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+C
 C Define parameters specifying the lengths of the two area maps and
 C the real and integer workspaces that are used.
 C
@@ -195,7 +201,9 @@ C
 C
 C Open GKS.
 C
-        CALL OPNGKS
+        CALL GOPKS (IERRF, ISZDM)
+        CALL GOPWK (IWKID, LUNIT, IWTYPE)
+        CALL GACWK (IWKID)
 C
 C Turn off clipping.
 C
@@ -214,14 +222,14 @@ C Boulder.  Color indices 101 through 116 are to be used for contour
 C bands in the area near Boulder; they are evenly distributed between
 C pure red and pure blue.
 C
-        CALL GSCR   (1,2,.6,.6,.6)
-        CALL GSCR   (1,3,0.,0.,0.)
-        CALL GSCR   (1,4,1.,1.,1.)
-        CALL GSCR   (1,5,.4,.4,.4)
-        CALL GSCR   (1,6,1.,1.,0.)
+        CALL GSCR   (IWKID,2,.6,.6,.6)
+        CALL GSCR   (IWKID,3,0.,0.,0.)
+        CALL GSCR   (IWKID,4,1.,1.,1.)
+        CALL GSCR   (IWKID,5,.4,.4,.4)
+        CALL GSCR   (IWKID,6,1.,1.,0.)
 C
         DO 103 I=101,116
-          CALL GSCR (1,I,REAL(116-I)/15.,0.,REAL(I-101)/15.)
+          CALL GSCR (IWKID,I,REAL(116-I)/15.,0.,REAL(I-101)/15.)
   103   CONTINUE
 C
 C Put a label at the top of the plot.
@@ -404,7 +412,9 @@ C
 C
 C Close GKS.
 C
-        CALL CLSGKS
+        CALL GDAWK (IWKID)
+        CALL GCLWK (IWKID)
+        CALL GCLKS
 C
 C Compute or get information about the amount of space used in each
 C area-map array and in the real and integer workspace arrays and

@@ -1,7 +1,12 @@
 C
-C $Id: cpex01.f,v 1.2 1994-05-18 16:53:38 kennison Exp $
+C $Id: cpex01.f,v 1.3 1994-07-08 16:27:45 stautler Exp $
 C
       PROGRAM EXMPL1
+C
+C Define error file, Fortran unit number, and workstation type,
+C and workstation ID.
+C
+        PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
 C
 C Declare an array to hold the data to be contoured.
 C
@@ -45,7 +50,9 @@ C
 C
 C Open GKS.
 C
-        CALL OPNGKS
+        CALL GOPKS (IERRF, ISZDM)
+        CALL GOPWK (IWKID, LUNIT, IWTYPE)
+        CALL GACWK (IWKID)
 C
 C Turn off the clipping indicator.
 C
@@ -416,7 +423,9 @@ C ---------------------------------------------------------------------
 C
 C Close GKS.
 C
-        CALL CLSGKS
+        CALL GDAWK (IWKID)
+        CALL GCLWK (IWKID)
+        CALL GCLKS
 C
 C Done.
 C
