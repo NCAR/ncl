@@ -1,5 +1,5 @@
 /*
- *      $Id: Converters.c,v 1.52 2000-06-07 21:44:24 dbrown Exp $
+ *      $Id: Converters.c,v 1.53 2003-09-10 04:43:48 haley Exp $
  */
 /************************************************************************
 *									*
@@ -1952,7 +1952,7 @@ CvtArgs
 	}
 
 	if(gen->num_elements > 1){
-		NhlPError(NhlINFO,NhlEUNKNOWN,"%s:%s to %s loosing information",
+		NhlPError(NhlINFO,NhlEUNKNOWN,"%s:%s to %s losing information",
 						func,NhlTGenArray,NhlTScalar);
 	}
 	else if(gen->num_elements < 1){
@@ -2154,7 +2154,7 @@ CvtArgs
 
 	if(gen->num_elements > 1){
 		NhlPError(NhlWARNING,NhlEUNKNOWN,
-			"%s:%s to %s conversion loosing information",func,
+			"%s:%s to %s conversion losing information",func,
 			NrmQuarkToString(from->typeQ),NhlTVariable);
 		ret = NhlWARNING;
 
