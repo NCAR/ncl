@@ -1,5 +1,5 @@
 C
-C       $Id: vvectr.f,v 1.19 2000-08-22 15:07:34 haley Exp $
+C       $Id: vvectr.f,v 1.20 2001-01-11 23:16:50 dbrown Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -366,9 +366,9 @@ C
 C
 C Bypass vectors that fall outside the user-specified range.
 C
-            IF (UVMG .LT. UVMN) GO TO 196
+            IF (VLOM .NE. 0.0 .AND. UVMG .LT. UVMN) GO TO 196
 C
-            IF (UVMG .GT. UVMX) GO TO 197
+            IF (VHIM .NE. 0.0 .AND. UVMG .GT. UVMX) GO TO 197
 C
 C Eliminate zero vectors unless using wind barbs
 C
