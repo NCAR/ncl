@@ -1,5 +1,5 @@
 C
-C $Id: mdptrn.f,v 1.1 2001-08-16 23:09:36 kennison Exp $
+C $Id: mdptrn.f,v 1.2 2001-08-17 19:10:28 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -81,7 +81,7 @@ C
 C
 C Declare function types.
 C
-        DOUBLE PRECISION MPGDDP,RBGDFE,RBGLEN
+        DOUBLE PRECISION MDGDDP,RBGDFE,RBGLEN
 C
 C Check for an uncleared prior error.
 C
@@ -144,7 +144,7 @@ C
         ELSE IF (IPRF.EQ.9) THEN
           P=V
         ELSE IF (IPRF.EQ.11.OR.IPRF.EQ.12) THEN
-          IF (MPGDDP(RLAT,RLON,UTPA(6),UTPA(5)).GT.179.99D0) GO TO 200
+          IF (MDGDDP(RLAT,RLON,UTPA(6),UTPA(5)).GT.179.99D0) GO TO 200
         ELSE IF (IPRF.EQ.20) THEN
           P=U*SIN(DTOR*UTPA(4))+V*COS(DTOR*UTPA(4))
         ELSE IF (IPRF.EQ.22) THEN
