@@ -1,5 +1,5 @@
 /*
- *  $Id: s_gopwk.c,v 1.4 2000-08-22 15:08:49 haley Exp $
+ *  $Id: s_gopwk.c,v 1.5 2003-03-04 16:02:13 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -130,9 +130,11 @@ void gopen_ws
             NGCALLF(gopwk,GOPWK)(&ws_id,&iconn_id,&ws_type);
         }
 	}
-	else if( ws_type == 8 || ws_type == 10 || 
-           ( ws_type >= 20 && ws_type <= 31) ) {
-        iconn_id = 0;
-        NGCALLF(gopwk,GOPWK)(&ws_id,&iconn_id,&ws_type);
+/*
+ * Everybody else ends up here.
+ */
+	else {
+	  iconn_id = 0;
+	  NGCALLF(gopwk,GOPWK)(&ws_id,&iconn_id,&ws_type);
 	}
 }
