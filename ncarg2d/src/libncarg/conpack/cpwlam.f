@@ -1,5 +1,5 @@
 C
-C $Id: cpwlam.f,v 1.5 1995-04-26 22:45:19 kennison Exp $
+C $Id: cpwlam.f,v 1.6 1998-01-20 23:43:38 kennison Exp $
 C
       SUBROUTINE CPWLAM (XNXT,YNXT,IFST,IAMA,IGID,IAIL,IAIR)
 C
@@ -60,6 +60,21 @@ C be done.
 C
       IF (IFST.NE.0) THEN
 C
+C The left and right area identifiers passed to AREDAM must be defined
+C to be consistent with the user coordinate system, rather than the
+C fractional system.
+C
+        CALL GETSET (XVPL,XVPR,YVPB,YVPT,XWDL,XWDR,YWDB,YWDT,LNLG)
+C
+        IF ((XWDL.LT.XWDR.AND.YWDB.LT.YWDT).OR.
+     +      (XWDL.GT.XWDR.AND.YWDB.GT.YWDT)) THEN
+          JAIL=IAIL
+          JAIR=IAIR
+        ELSE
+          JAIL=IAIR
+          JAIR=IAIL
+        END IF
+C
 C There are various possible cases, depending on whether the last point
 C was inside or outside the window and whether the next point is inside
 C or outside the window.
@@ -74,7 +89,7 @@ C
           IF (ICFELL('CPWLAM',3).NE.0) RETURN
           YCRA(2)=CFUY(YNXT)
           IF (ICFELL('CPWLAM',4).NE.0) RETURN
-          CALL AREDAM (IAMA,XCRA,YCRA,2,IGID,IAIL,IAIR)
+          CALL AREDAM (IAMA,XCRA,YCRA,2,IGID,JAIL,JAIR)
           IF (ICFELL('CPWLAM',5).NE.0) RETURN
           GO TO 115
         ELSE
@@ -110,7 +125,7 @@ C
         IF (ICFELL('CPWLAM',8).NE.0) RETURN
         YCRA(2)=CFUY(YPEW)
         IF (ICFELL('CPWLAM',9).NE.0) RETURN
-        CALL AREDAM (IAMA,XCRA,YCRA,2,IGID,IAIL,IAIR)
+        CALL AREDAM (IAMA,XCRA,YCRA,2,IGID,JAIL,JAIR)
         IF (ICFELL('CPWLAM',10).NE.0) RETURN
 C
         GO TO 115
@@ -143,7 +158,7 @@ C
         IF (ICFELL('CPWLAM',13).NE.0) RETURN
         YCRA(2)=CFUY(YNXT)
         IF (ICFELL('CPWLAM',14).NE.0) RETURN
-        CALL AREDAM (IAMA,XCRA,YCRA,2,IGID,IAIL,IAIR)
+        CALL AREDAM (IAMA,XCRA,YCRA,2,IGID,JAIL,JAIR)
         IF (ICFELL('CPWLAM',15).NE.0) RETURN
 C
         GO TO 115
@@ -223,7 +238,7 @@ C
         IF (ICFELL('CPWLAM',18).NE.0) RETURN
         YCRA(2)=CFUY(YPE2)
         IF (ICFELL('CPWLAM',19).NE.0) RETURN
-        CALL AREDAM (IAMA,XCRA,YCRA,2,IGID,IAIL,IAIR)
+        CALL AREDAM (IAMA,XCRA,YCRA,2,IGID,JAIL,JAIR)
         IF (ICFELL('CPWLAM',20).NE.0) RETURN
 C
       END IF
