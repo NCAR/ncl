@@ -1,5 +1,5 @@
 /*
- *	$Id: xwd.c,v 1.12 1992-09-24 22:55:39 don Exp $
+ *	$Id: xwd.c,v 1.13 1992-12-09 22:50:01 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -39,7 +39,6 @@
 #include <sys/types.h>
 #endif /* CRAY */
 
-#include <X11/Xos.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/XWDFile.h>
