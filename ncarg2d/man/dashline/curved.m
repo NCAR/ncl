@@ -11,11 +11,14 @@ CALL CURVED (X, Y, N)
 void c_curved (float *x, float *y, int n)
 .SH DESCRIPTION 
 .IP X 12
-Array of X values in user coordinates, of length N.
+(an input array of type REAL) defining the X user coordinates of
+the curve.  Array X is of length N.
 .IP Y 12
-Array of Y values in user coordinates, of length N.
-.IP N 12 
-Number of points to be connected.
+(an input array of type REAL) defining the Y user coordinates of
+the curve.  Array Y is of length N.
+.IP N 12
+(an input parameter of type INTEGER) the value of which is the number
+of points in the curve.
 .SH C-BINDING DESCRIPTION
 The C-binding argument descriptions are the same as the Fortran 
 argument description.

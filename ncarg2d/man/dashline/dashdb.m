@@ -10,8 +10,11 @@ CALL DASHDB (IPAT)
 .sp
 void c_dashdb (int *ipat)
 .SH DESCRIPTION 
-IPAT is a 16-bit dash pattern (1=solid, 0=blank); e.g.,
-1111000011110000 will give dashes of medium length.
+.IP IPAT 12
+(an input parameter of type INTEGER) the value of which is
+a 16-bit dash pattern (1=solid, 0=blank); e.g., the binary
+number 1111000011110000, which is a decimal 61680,
+will give dashes of medium length.
 .SH C-BINDING DESCRIPTION
 The C-binding argument description is the same as the Fortran 
 argument description.

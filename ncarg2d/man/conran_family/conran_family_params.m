@@ -2,7 +2,7 @@
 .na
 .nh
 .SH NAME
-Conran_family_params - This document briefly describes all Conran
+Conran_family_params - Includes a brief description of all Conran_family
 internal parameters.
 .SH DESCRIPTION 
 There are three Conran entries, CONRAN, CONRAQ, and CONRAS.  CONRAN

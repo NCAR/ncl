@@ -13,11 +13,11 @@ CALL CURVE (PX,PY,NP)
 void c_curve (float *px, float *py, int np)
 .SH DESCRIPTION 
 .IP PX 12
-(an input coordinate of type REAL) defining the X user coordinate of
-a point in the curve.
+(an input array of type REAL) defining the X user coordinates of
+the curve.  Array PX is of length NP.
 .IP PY 12
-(an input coordinate of type REAL) defining the Y user coordinate of
-a point in the curve.
+(an input array of type REAL) defining the Y user coordinates of
+the curve.  Array PY is of length NP.
 .IP NP 12
 (an input parameter of type INTEGER) the value of which is the number
 of points in the curve.
@@ -38,9 +38,9 @@ Use the ncargex command to see the following relevant examples:
 sfex01, sfex02, and tsoftf.
 .SH ACCESS
 To use CURVE, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_curve, load the 
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_curve, load the 
 NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.
 .SH SEE ALSO
 Online:
 gpl, gsln, gslwsc, gscr, gsplci,

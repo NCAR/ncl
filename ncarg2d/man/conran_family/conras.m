@@ -58,7 +58,7 @@ through entries CONRAQ and CONRAN, respectively.
 Use the ncargex command to see the relevant example tconas.f.
 .SH ACCESS 
 To use CONRAS, load the NCAR Graphics libraries conras, dashsupr,
-ncarg, ncarg_gks, and ncarg_loc, preferably in that order.
+ncarg, ncarg_gks, ncarg_c, and ncarg_loc, preferably in that order.
 .sp
 The conras and dashsupr libraries are not loaded as part of the normal NCAR Graphics
 installation.  They can be loaded by the user directly, or loaded implicitly
@@ -71,8 +71,8 @@ See the conran_family man page for a description of all Conran_family
 error messages and/or informational messages.
 .SH SEE ALSO
 Online:
-conraq, conran, conran_family_params, conran_family, conop1, conop2, conop3, conop4,
-conpack, conpack_params, bivar,
+conraq, conran, conran_family_params, conran_family, conop1, conop2, conop3,
+conop4, conpack, conpack_params, bivar,
 dashline_family, ncargf77
 .sp
 Hardcopy:  

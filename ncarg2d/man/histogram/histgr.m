@@ -155,7 +155,7 @@ See the histogram man page for a description of all histogram error
 messages and/or informational messages.
 .SH SEE ALSO
 Online:
-histogram, histgr_params, hstopc, hstopi, hstopl, hstopr, ncarg_cbind
+histogram, histogram_params, hstopc, hstopi, hstopl, hstopr, ncarg_cbind
 .sp
 Hardcopy:  
 NCAR Graphics Fundamentals, UNIX Version

@@ -11,9 +11,10 @@ CALL DASHDC (IPAT, JCRT, JSIZE)
 void c_dashdc (char *ipat, int jcrt, int jsize)
 .SH DESCRIPTION 
 .IP IPAT 12
-A character string of arbitrary length (60 characters
-seems to be a practical limit) which specifies the dash
-pattern to be used.  This pattern is repeated for successive
+(an input parameter of type CHARACTER) the value of which is
+the dash pattern to be used.  Although IPAT is of arbitrary
+length, 60 characters seems to be a practical limit.
+This pattern is repeated for successive
 line segments until the full line is drawn.
 A dollar sign in IPAT indicates
 solid; an apostrophe indicates a gap; blanks are
@@ -23,11 +24,14 @@ of a line label. Each line label can be at most 15
 characters in length. Sufficient white space is
 reserved in the dashed line for writing line labels.
 .IP JCRT 12
-Specifies the length in Normalized Device Coordinates (NDCs) * 1024
-assigned to each gap (dollar sign) or line (apostrophe) increment.
+(an input parameter of type INTEGER) the value of which is
+the length in Normalized Device Coordinates (NDCs) * 1024 to be
+assigned to each increment of the line pattern.  Increments are
+either a gap (dollar sign) or a line segment (apostrophe).
 JCRT must be greater than or equal to 1 to produce a line draw.
 .IP JSIZE 12
-Specifies the width of the plotted characters according to:
+(an input parameter of type INTEGER) the value of which is
+the width of the plotted characters according to:
 .nf
 
   JSIZE    NDCs

@@ -90,7 +90,7 @@ histogram and overlap of bars in the comparison
 of two histograms.
 .SH SEE ALSO
 Online:
-histogram, histgr, hstopc, hstopi, hstopl, hstopr
+histogram, histgr, hstopc, hstopi, hstopl, hstopr, ncarg_cbind
 .sp
 Hardcopy:
 NCAR Graphics Fundamentals, UNIX Version

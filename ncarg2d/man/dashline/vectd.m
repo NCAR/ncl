@@ -12,9 +12,11 @@ CALL VECTD (X, Y)
 void c_vectd (float x, float y)
 .SH DESCRIPTION 
 .IP X 12
-the X position of the current point in user coordinates
+(an input coordinate of type REAL) defining the X user coordinate of
+the current point in a line segment.
 .IP Y 12
-the Y position of the current point in user coordinates
+(an input coordinate of type REAL) defining the Y user coordinate of
+the current point in a line segment.
 .SH C-BINDING DESCRIPTION
 The C-binding argument descriptions are the same as the Fortran 
 argument descriptions.

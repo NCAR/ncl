@@ -11,9 +11,11 @@ CALL FRSTD (X, Y)
 void c_frstd (float x, float y)
 .SH DESCRIPTION 
 .IP X 12
-X position of point in user coordinates
+(an input coordinate of type REAL) defining the X user coordinate of
+the starting point of a line segment.
 .IP Y 12
-Y position of point in user coordinates
+(an input coordinate of type REAL) defining the Y user coordinate of
+the starting point of a line segment.
 .SH C-BINDING DESCRIPTION
 The C-binding argument descriptions are the same as the Fortran 
 argument descriptions.

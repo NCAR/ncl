@@ -12,13 +12,17 @@ CALL LINED (XA, XB, YA, YB)
 void c_lined (float xa, float xb, float ya, float yb)
 .SH DESCRIPTION 
 .IP XA 12
-the X position of the first point in user coordinates
+(an input coordinate of type REAL) defining the X user coordinate of
+the starting point of a line segment.
 .IP YA 12
-the Y position of the first point in user coordinates
+(an input coordinate of type REAL) defining the Y user coordinate of
+the starting point of a line segment.
 .IP XB 12
-the X position of the second point in user coordinates
+(an input coordinate of type REAL) defining the X user coordinate of
+the ending point of a line segment.
 .IP YB 12
-the Y position of the second point in user coordinates
+(an input coordinate of type REAL) defining the Y user coordinate of
+the ending point of a line segment.
 .SH C-BINDING DESCRIPTION
 The C-binding argument descriptions are the same as the Fortran 
 argument descriptions.
