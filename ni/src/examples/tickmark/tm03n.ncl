@@ -36,9 +36,10 @@ labels = (/ "90:S:o:N:S", "60:S:o:N:S", "30:S:o:N:S", "EQ", \
 labellocs = (/ -90.0, -60.0, -30.0, 0.0, 30.0, 60.0, 90.0 /)
         
 ;
-; Create an application context. Set the app dir to the current directory
-; so the application looks for a resource file in the working directory.
-; In this example the resource file supplies the plot title only.
+; Create an application context. Set the app dir to the current
+; directory so the application looks for a resource file in the working
+; directory. In this example the resource file supplies the plot title
+; only.
 ;
 appid = create "tm03" appLayerClass defaultapp
     "appDefaultParent" : "True"
@@ -46,11 +47,25 @@ appid = create "tm03" appLayerClass defaultapp
 end create
 
 ;
+; Default is to display output to an X workstation.
+;
+NCGM=0
+
+if (NCGM .eq. 1) then
+;
+; Create an ncgmWorkstation object.
+;
+  wid = create "tm03Work" ncgmWorkstationLayerClass defaultapp
+      "wkMetaName" : "tm03n.ncgm"
+  end create
+else
+;
 ; Create an XWorkstation object.
 ;
-wid = create "tm03Work" xWorkstationLayerClass defaultapp
-    "wkPause" : "True"
-end create
+  wid = create "tm03Work" xWorkstationLayerClass defaultapp
+      "wkPause" : "True"
+  end create
+end if
 
 pid = create "TickMarks" tickMarkLayerClass wid
     "vpXF" : .2

@@ -19,15 +19,20 @@ C                      defaults.
 C
       external nhlfapplayerclass
       external nhlftickmarklayerclass
+      external nhlfncgmworkstationlayerclass
       external nhlfxworkstationlayerclass
         
       integer appid, wid, pid
       integer rlist, ierr
+      integer NCGM
+C
+C Default is to create an X workstation.
+C
+      NCGM=0
 C
 C Initialize the high level utility library
 C
       call nhlfinitialize
-
 C
 C Create an application context. Set the app dir to the current
 C directory so the application looks for a resource file in the
@@ -39,13 +44,24 @@ C
       call nhlfrlsetstring(rlist,'appUsrDir','./',ierr)
       call nhlfrlsetstring(rlist,'appDefaultParent','True',ierr)
       call nhlfcreate(appid,'tm02',nhlfapplayerclass,0,rlist,ierr)
+
+      if (NCGM.eq.1) then
+C
+C Create an NCGM workstation object.
+C
+         call nhlfrlclear(rlist)
+         call nhlfrlsetstring(rlist,'wkMetaName','./tm02f.ncgm',ierr)
+         call nhlfcreate(wid,'tm02Work',nhlfncgmworkstationlayerclass,0,
+     $        rlist,ierr)
+      else
 C
 C Create an XWorkstation object.
 C
-      call nhlfrlclear(rlist)
-      call nhlfrlsetinteger(rlist,'wkPause','True',ierr)
-      call nhlfcreate(wid,'tm02Work',nhlfxworkstationlayerclass,0,
-     1      rlist,ierr)
+         call nhlfrlclear(rlist)
+         call nhlfrlsetstring(rlist,'wkPause','True',ierr)
+         call nhlfcreate(wid,'tm02Work',nhlfxworkstationlayerclass,0,
+     1        rlist,ierr)
+      endif
 C
 C Specify the viewport extent of the object.
 C

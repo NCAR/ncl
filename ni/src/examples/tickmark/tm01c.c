@@ -23,18 +23,18 @@
 #include <ncarg/hlu/App.h>
 #include <ncarg/hlu/TickMark.h>
 #include <ncarg/hlu/XWorkstation.h>
+#include <ncarg/hlu/NcgmWorkstation.h>
 
 main()
 {
     int appid, wid, pid;
     int rlist;
-
+    int NCGM=0;
 /*
  * Initialize the high level utility library
  */
 
     NhlInitialize();
-
 /*
  * Create an application context. Set the app dir to the current
  * directory so the application looks for a resource file in the
@@ -47,13 +47,24 @@ main()
     NhlRLSetString(rlist,NhlNappDefaultParent,"True");
     NhlCreate(&appid,"tm01",NhlappLayerClass,NhlDEFAULT_APP,rlist);
 
+    if (NCGM) {
+/*
+ * Create a meta file workstation object.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkMetaName,"./tm01c.ncgm");
+        NhlCreate(&wid,"tm01Work",NhlncgmWorkstationLayerClass,
+                  NhlDEFAULT_APP,rlist);
+    }
+    else {
 /*
  * Create an XWorkstation object.
  */
-    NhlRLClear(rlist);
-    NhlRLSetInteger(rlist,NhlNwkPause,True);
-    NhlCreate(&wid,"tm01Work",NhlxWorkstationLayerClass,NhlDEFAULT_APP,
-                                    rlist);
+        NhlRLClear(rlist);
+        NhlRLSetInteger(rlist,NhlNwkPause,True);
+        NhlCreate(&wid,"tm01Work",NhlxWorkstationLayerClass,
+                  NhlDEFAULT_APP,rlist);
+    }
 /*
  * Specify the viewport extent of the object.
  */

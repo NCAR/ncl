@@ -4,7 +4,7 @@
 ;        University Corporation for Atmospheric Research               ;
 ;                All Rights Reserved                                   ;
 ;                                                                      ;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;/
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;
 ;      File:           tm02n.ncl
 ;
@@ -24,9 +24,10 @@
 begin
 
 ;
-; Create an application context. Set the app dir to the current directory
-; so the application looks for a resource file in the working directory.
-; In this example the resource file supplies the plot title only.
+; Create an application context. Set the app dir to the current
+; directory so the application looks for a resource file in the working
+; directory. In this example the resource file supplies the plot title
+; only.
 ;
 appid = create "tm02" appLayerClass defaultapp
     "appUsrDir" : "./"
@@ -34,11 +35,25 @@ appid = create "tm02" appLayerClass defaultapp
 end create
 
 ;
+; Default is to display output to an X workstation.
+;
+NCGM=0
+
+if (NCGM .eq. 1) then
+;
+; Create an ncgmWorkstation object.
+;
+  wid = create "tm02Work" ncgmWorkstationLayerClass defaultapp
+      "wkMetaName" : "tm02n.ncgm"
+  end create
+else
+;
 ; Create an XWorkstation object.
 ;
-wid = create "tm02Work" xWorkstationLayerClass defaultapp
-    "wkPause" : "True"
-end create
+  wid = create "tm02Work" xWorkstationLayerClass defaultapp
+      "wkPause" : "True"
+  end create
+end if
 
 ;
 ; Specify the viewport extent of the object.
