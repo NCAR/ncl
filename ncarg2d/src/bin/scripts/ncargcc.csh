@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ncargcc.csh,v 1.39 1997-03-10 23:19:42 haley Exp $
+#	$Id: ncargcc.csh,v 1.40 1997-03-26 22:32:05 haley Exp $
 #
 
 #*********************************************#
@@ -43,7 +43,7 @@ set super  = "$ro/libdashsupr.o $ro/libconrcspr.o $ro/libconras.o"
 #
 set libncarg    = "-lncarg"
 set libgks      = "-lncarg_gks"
-set libmath     = "-lngmath"
+set libmath     = ""
 set libncarg_c  = "-lncarg_c"
 set libcbind    = "-lncargC"
 set ncarg_libs  = "$libcbind $libncarg $libgks $libncarg_c $libmath"
@@ -53,6 +53,10 @@ set robjs
 foreach arg ($argv)
 
 	switch ($arg)
+
+    case "-ngmath":
+      set libmath     = "-lngmath"
+      breaksw
 
 	case "-sungks":
 		echo "Using Sun GKS"
@@ -146,6 +150,7 @@ foreach arg ($argv)
 	endsw
 
 end
+set ncarg_libs  = "$libcbind $libncarg $libgks $libncarg_c $libmath"
 
 set newargv = "$newargv $stub_file $libpath $incpath $ctrans_libs $robjs $ncarg_libs $f77libs $xlib $libextra"
 

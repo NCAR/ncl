@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.102 1997-03-24 13:55:45 haley Exp $
+#   $Id: ncargex.csh,v 1.103 1997-03-26 22:32:06 haley Exp $
 #
 
 if ($#argv < 1) goto usage
@@ -1490,6 +1490,7 @@ switch ($name)
     case nnex09:
     case nnex01d:
         set extra_src_files = (nnplotf.f)
+        set comp_flags = ($comp_flags "-ngmath")
     breaksw
 
     case c_nnex01:
@@ -1498,6 +1499,7 @@ switch ($name)
     case c_nnex06:
     case c_nnex01d:
         set extra_src_files = (nnplotc.c)
+        set comp_flags = ($comp_flags "-ngmath")
     breaksw
 
 #************************************************#           
