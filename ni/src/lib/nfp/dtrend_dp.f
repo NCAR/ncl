@@ -1,5 +1,4 @@
-C*PL*ERROR* Comment line too long
-C -----------------------------------------------------------------------
+C -----------------------------------------------------------
 C NCLFORTSTART
       SUBROUTINE DDTRNDX(X,NPTS,IOPT,XMEAN,XVARI,XVARO,C,IER)
       DOUBLE PRECISION XMEAN
@@ -27,13 +26,13 @@ C .   INPUT
 C .   X         - SERIES TO BE DETRENDED
 C .   NPTS      - LENGTH OF X
 C .   IOPT      - DETRENDING OPTION
-C*PL*ERROR* Comment line too long
-C .               IOPT < 0 : CALCULATE THE MEAN AND VARIANCE OF X THEN RETURN
+C .               IOPT < 0 : CALCULATE THE MEAN AND VARIANCE OF X THEN
+C .                          RETURN
 C .               IOPT = 0 : REMOVE THE MEAN ONLY
-C*PL*ERROR* Comment line too long
-C .               IOPT = 1 : REMOVE THE MEAN AND USE LINEAR LST SQRS TO DETREND
-C*PL*ERROR* Comment line too long
-C .               IOPT = 2 : REMOVE THE MEAN AND USE QUADRATIC LST SQRS TO DETRD
+C .               IOPT = 1 : REMOVE THE MEAN AND USE LINEAR LST SQRS TO
+C .                          DETREND
+C .               IOPT = 2 : REMOVE THE MEAN AND USE QUADRATIC LST SQRS TO
+C .                          DETRD
 C .
 C .   OUTPUT
 C .
@@ -149,6 +148,126 @@ C .   XBAR SHOULD BE ZERO TO MACHINE ACCURACY SUBTRACT IT OUT ANYWAY
       XBAR = XBAR/DBLE(N)
       DO 95 I = 1,N
    95 X(I) = X(I) - XBAR
+
+      RETURN
+      END
+c -------------------------------------------------------------
+      SUBROUTINE DDTRNDMSG(X,Y,NPTS,XMSG,YMSG,IOPT,YDT,SLOPE,YINT,IER)
+      IMPLICIT NONE
+
+c NCL:   yNew = dtrend_msg (x[*]:numeric, y:numeric
+c                          ,remove_mean:logical, return_info:logical)
+
+c this routine will calculate the least squares "slope" and y-intercept
+c .   remove the trend.
+c .   (a) missing data are allowed.
+c .   (b) data need not be equally spaced in "x"
+
+c .   yLine = slope*y + yint
+c .   ydt   = y - yLine
+
+c arguments :
+c .   x,y      - input vectors
+c .   npts     - length of vectors x and y
+c .   x/ymsg   - missing code: if no msg values set to some number
+c .                            which will not be encountered.
+c .              ymsg will be used to fill missing values
+c .   iopt     - remove the mean of y prior to detrending
+C*PL*ERROR* Comment line too long
+c .              this does not affect the slope but does affect the y-intercept
+c .   ydt      - detrended series
+c .              this could be "y" if original series not needed
+c .   slope    - slope (trend ... regression coef)
+c .   yint     - y-intercept
+c .   ier      - if (ier.ne.0) an error has occurred
+
+      INTEGER NPTS,IOPT,IER
+      DOUBLE PRECISION X(1:NPTS),Y(1:NPTS),SLOPE,YINT,YDT(1:NPTS)
+      DOUBLE PRECISION XMSG,YMSG
+
+      INTEGER N
+      DOUBLE PRECISION XYN,XSUM,YSUM,X2SUM,Y2SUM,XYSUM
+      DOUBLE PRECISION XBAR,YBAR,XVAR,YVAR,XYVAR
+
+
+      IER = 0
+      SLOPE = YMSG
+      YINT = YMSG
+
+      IF (NPTS.LT.2) IER = 1
+      IF (IER.NE.0) RETURN
+
+      DO N = 1,NPTS
+          YDT(N) = Y(N)
+      END DO
+c                         this was added after the original code
+      IF (IOPT.NE.0) THEN
+          XYN = 0.0D0
+          YSUM = 0.0D0
+          DO N = 1,NPTS
+              IF (X(N).NE.XMSG .AND. YDT(N).NE.YMSG) THEN
+                  YSUM = YSUM + YDT(N)
+                  XYN = XYN + 1.D0
+              END IF
+          END DO
+c                               all msg values
+          IF (XYN.LT.1.D0) THEN
+              IER = 5
+              RETURN
+          END IF
+
+          YBAR = YSUM/XYN
+          DO N = 1,NPTS
+              IF (YDT(N).NE.YMSG) THEN
+                  YDT(N) = YDT(N) - YBAR
+              END IF
+          END DO
+      END IF
+
+
+      XYN = 0.0D0
+      XSUM = 0.0D0
+      YSUM = 0.0D0
+      X2SUM = 0.0D0
+      Y2SUM = 0.0D0
+      XYSUM = 0.0D0
+      DO N = 1,NPTS
+          IF (X(N).NE.XMSG .AND. YDT(N).NE.YMSG) THEN
+              XSUM = XSUM + X(N)
+              YSUM = YSUM + YDT(N)
+              X2SUM = X2SUM + X(N)*X(N)
+              Y2SUM = Y2SUM + Y(N)*YDT(N)
+              XYSUM = XYSUM + X(N)*YDT(N)
+              XYN = XYN + 1.D0
+          END IF
+      END DO
+
+      IF (XYN.LT.1.D0) THEN
+C all msg values
+          IER = 5
+          RETURN
+      ELSE IF (XYN.LT.3.D0) THEN
+C not enough data
+          IER = 6
+          RETURN
+      END IF
+
+      XBAR = XSUM/XYN
+      YBAR = YSUM/XYN
+      XVAR = X2SUM - XSUM*XSUM/XYN
+      YVAR = Y2SUM - YSUM*YSUM/XYN
+      XYVAR = XYSUM - XSUM*YSUM/XYN
+
+      SLOPE = XYVAR/XVAR
+      YINT = YBAR - SLOPE*XBAR
+
+      DO N = 1,NPTS
+          IF (X(N).NE.XMSG .AND. YDT(N).NE.YMSG) THEN
+              YDT(N) = YDT(N) - (SLOPE*X(N)+YINT)
+          ELSE
+              YDT(N) = YMSG
+          END IF
+      END DO
 
       RETURN
       END

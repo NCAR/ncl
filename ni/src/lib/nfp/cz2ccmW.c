@@ -331,18 +331,10 @@ NhlErrorTypes cz2ccm_W( void )
   if(type_hybm != NCL_double) NclFree(tmp_hybm);
   if(type_hyai != NCL_double) NclFree(tmp_hyai);
   if(type_hybi != NCL_double) NclFree(tmp_hybi);
-        
-  if(type_z2 != NCL_double) {
-    NclFree(tmp_z2);
+  if(type_z2 != NCL_double) NclFree(tmp_z2);
+
 /*
- * return float array
+ * Return.
  */
-    return(NclReturnValue(z2,ndims_tv,dsizes_tv,NULL,NCL_float,0));
-  }
-  else {
-/*
- * return double array
- */
-    return(NclReturnValue(z2,ndims_tv,dsizes_tv,NULL,NCL_double,0));
-  }
+  return(NclReturnValue(z2,ndims_tv,dsizes_tv,NULL,type_z2,0));
 }

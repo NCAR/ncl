@@ -6,18 +6,22 @@
  */
 #include "wrapper.h"
 
+extern double NGCALLF(drelhum,DRELHUM)(double*,double*,double*);
+
 NhlErrorTypes relhum_W( void )
 {
-  extern double NGCALLF(drelhum,DRELHUM)(double*,double*,double*);
-  int i, j, total_size_rh;
 /*
  * Input variables
  */
   void *t, *w, *p;
   double *tmp_t, *tmp_w, *tmp_p;
-  int ndims_t, dsizes_t[NCL_MAX_DIMENSIONS];
-  int ndims_w, dsizes_w[NCL_MAX_DIMENSIONS];
-  int ndims_p, dsizes_p[NCL_MAX_DIMENSIONS];
+  int ndims_t, dsizes_t[NCL_MAX_DIMENSIONS], has_missing_t;
+  int ndims_w, dsizes_w[NCL_MAX_DIMENSIONS], has_missing_w;
+  int ndims_p, dsizes_p[NCL_MAX_DIMENSIONS], has_missing_p;
+  NclScalar missing_t, missing_dt;
+  NclScalar missing_w, missing_dw;
+  NclScalar missing_p, missing_dp;
+  NclScalar missing_drh, missing_rrh;
   NclBasicDataTypes type_t, type_w, type_p;
 /*
  * Output variables
@@ -25,6 +29,10 @@ NhlErrorTypes relhum_W( void )
   void *rh;
   double *tmp_rh;
   NclBasicDataTypes type_rh;
+/*
+ * Various.
+ */
+  int i, found_missing_t, found_missing_w, found_missing_p, total_size_rh;
 /*
  * Retrieve parameters
  *
@@ -38,8 +46,8 @@ NhlErrorTypes relhum_W( void )
           3,
           &ndims_t, 
           dsizes_t,
-          NULL,
-          NULL,
+          &missing_t,
+          &has_missing_t,
           &type_t,
           2);
 /*
@@ -50,8 +58,8 @@ NhlErrorTypes relhum_W( void )
           3,
           &ndims_w, 
           dsizes_w,
-          NULL,
-          NULL,
+          &missing_w,
+          &has_missing_w,
           &type_w,
           2);
 /*
@@ -62,8 +70,8 @@ NhlErrorTypes relhum_W( void )
           3,
           &ndims_p, 
           dsizes_p,
-          NULL,
-          NULL,
+          &missing_p,
+          &has_missing_p,
           &type_p,
           2);
 /*
@@ -73,6 +81,34 @@ NhlErrorTypes relhum_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"relhum: The input arrays must have the same number of dimensions");
     return(NhlFATAL);
   }
+/*
+ * Determine type of output.
+ */
+  if(type_t != NCL_double && type_w != NCL_double && type_p != NCL_double) {
+    type_rh = NCL_float;
+  }
+  else {
+    type_rh = NCL_double;
+  }
+/*
+ * If one _FillValue attribute is set, then all of them must be set.
+ */
+  if(has_missing_t || has_missing_w || has_missing_p) {
+    if(!(has_missing_t && has_missing_w && has_missing_p)) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"relhum: If one _FillValue attribute is set, then all of them must be set.");
+      return(NhlFATAL);
+    }
+/*
+ * Set the return missing value to T's missing value.
+ */
+    coerce_missing(type_rh,1,&missing_t,&missing_drh,&missing_rrh);
+  }
+/*
+ * Coerce missing values, if any.
+ */
+  coerce_missing(type_t,has_missing_t,&missing_t,&missing_dt,NULL);
+  coerce_missing(type_w,has_missing_w,&missing_w,&missing_dw,NULL);
+  coerce_missing(type_p,has_missing_p,&missing_p,&missing_dp,NULL);
 /*
  * Calculate total size of arrays.
  */
@@ -117,9 +153,7 @@ NhlErrorTypes relhum_W( void )
 /*
  * Allocate space for output array.
  */
-  if(type_t != NCL_double && type_w != NCL_double && type_p != NCL_double) {
-
-    type_rh = NCL_float;
+  if(type_rh == NCL_float) {
     rh     = (void*)calloc(total_size_rh,sizeof(float));
     tmp_rh = (void*)calloc(1,sizeof(float));
     if(tmp_rh == NULL || rh == NULL) {
@@ -128,13 +162,13 @@ NhlErrorTypes relhum_W( void )
     }
   }
   else {
-    type_rh = NCL_double;
     rh = (void*)calloc(total_size_rh,sizeof(double));
     if(rh == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"relhum: Unable to allocate memory for output array");
       return(NhlFATAL);
     }
   }
+
 /*
  * Call function.
  */
@@ -180,7 +214,21 @@ NhlErrorTypes relhum_W( void )
 
     if(type_rh == NCL_double) tmp_rh = &((double*)rh)[i];
 
-    *tmp_rh = NGCALLF(drelhum,DRELHUM)(tmp_t,tmp_w,tmp_p);
+/*
+ * Check for a missing value.
+ */
+    found_missing_t = contains_missing(tmp_t,1,has_missing_t,
+                                       missing_dt.doubleval);
+    found_missing_w = contains_missing(tmp_w,1,has_missing_w,
+                                       missing_dw.doubleval);
+    found_missing_p = contains_missing(tmp_p,1,has_missing_p,
+                                       missing_dp.doubleval);
+    if(found_missing_t || found_missing_w || found_missing_p) {
+      *tmp_rh = missing_drh.doubleval;
+    }
+    else {
+      *tmp_rh = NGCALLF(drelhum,DRELHUM)(tmp_t,tmp_w,tmp_p);
+    }
 /*
  * Copy output values from temporary tmp_zh to zh.
  */
@@ -197,17 +245,21 @@ NhlErrorTypes relhum_W( void )
 /*
  * Return.
  */
-  if(type_rh != NCL_double) {
+  if(has_missing_t) {
 /*
- * Return float values.
+ * Return values with _FillValue set.
  */
-    return(NclReturnValue(rh,ndims_t,dsizes_t,NULL,NCL_float,0));
+    if(type_rh == NCL_double) { 
+      return(NclReturnValue(rh,ndims_t,dsizes_t,&missing_drh,
+                            type_rh,0));
+    }
+    else {
+      return(NclReturnValue(rh,ndims_t,dsizes_t,&missing_rrh,
+                            type_rh,0));
+    }
   }
   else {
-/*
- * Return double values.
- */
-    return(NclReturnValue(rh,ndims_t,dsizes_t,NULL,NCL_double,0));
+    return(NclReturnValue(rh,ndims_t,dsizes_t,NULL,type_rh,0));
   }
 }
 

@@ -27,15 +27,15 @@ NhlErrorTypes ezfftf_W( void )
  * Input array variables
  */
   void *x;
-  double *dx;
   int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_x;
+  double *tmp_x;
 /*
  * Output array variables
  */
-  float *rcf;
-  double *dcf;
-  int dsizes_cf[2];
+  void *cf, *xbar;
+  int ndims_cf, dsizes_cf[NCL_MAX_DIMENSIONS];
+  double *tmp_cf1, *tmp_cf2, *tmp_xbar;
 /*
  * Attribute variables
  */
@@ -45,15 +45,11 @@ NhlErrorTypes ezfftf_W( void )
   NclVar tmp_var;
   NclStackEntry return_data;
 /*
- * Attribute variables
- */
-  float *rxbar;
-  double *dxbar;
-/*
  * various
  */
   double *work;
-  int i, npts, npts2, npts22;
+  int i, j, npts, npts2, lnpts2, npts22, index_x, index_cf;
+  int size_leftmost, size_cf;
 /*
  * Retrieve parameters
  *
@@ -70,25 +66,53 @@ NhlErrorTypes ezfftf_W( void )
            &type_x,
            2);
 /*
+ * Calculate number of leftmost elements.
+ */
+  size_leftmost = 1;
+  for( i = 0; i < ndims_x-1; i++ ) size_leftmost *= dsizes_x[i];
+/*
  * Calculate size of output array.
  */
-  npts   = dsizes_x[0];
+  npts   = dsizes_x[ndims_x-1];
   npts2  = npts/2;
+  lnpts2 = npts2 * size_leftmost;
   npts22 = 2*npts2;
-  dsizes_cf[0] = 2;
-  dsizes_cf[1] = npts2;
+  size_cf = size_leftmost * npts22;
+
+  ndims_cf           = ndims_x + 1;
+  dsizes_cf[0]       = 2;
+  for(i = 1; i < ndims_x; i++ ) dsizes_cf[i] = dsizes_x[i-1];
+  dsizes_cf[ndims_x] = npts2;
 /*
- * Coerce x to double if necessary.
+ * Create space for temporary input array if necessary.
  */
-  dx = coerce_input_double(x,type_x,npts,0,NULL,NULL);
-  if ( dx == NULL ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"ezfftf: Cannot allocate memory for coercing input array to double precision");
+  if(type_x != NCL_double) {
+    tmp_x = (double*)calloc(npts,sizeof(double));
+    if(tmp_x == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"ezfftf: Unable to allocate memory for coercing input array to double precision");
+      return(NhlFATAL);
+    }
+  }
+/*
+ * Allocate space for output arrays.
+ */
+  tmp_xbar = (double*)calloc(1,sizeof(double));
+  tmp_cf1  = (double*)calloc(npts2,sizeof(double));
+  tmp_cf2  = (double*)calloc(npts2,sizeof(double));
+  if ( tmp_cf1 == NULL || tmp_cf2 == NULL || tmp_xbar == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ezfftf: Cannot allocate memory for temporary output arrays" );
     return(NhlFATAL);
   }
-  dxbar = (double *)calloc(1,sizeof(double));
-  dcf   = (double*)calloc(npts22,sizeof(double));
-  if ( dcf == NULL || dxbar == NULL ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"ezfftf: Cannot allocate memory for output values" );
+  if(type_x == NCL_double) {
+    cf   = (void*)calloc(size_cf,sizeof(double));
+    xbar = (void*)calloc(size_leftmost,sizeof(double));
+  }
+  else {
+    cf   = (void*)calloc(size_cf,sizeof(float));
+    xbar = (void*)calloc(size_leftmost,sizeof(float));
+  }
+  if ( cf == NULL || xbar == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ezfftf: Cannot allocate memory for output arrays" );
     return(NhlFATAL);
   }
 
@@ -103,36 +127,49 @@ NhlErrorTypes ezfftf_W( void )
 /*
  * Call the f77 version of 'dezfftf' with the full argument list.
  */
-  NGCALLF(dezffti,DEZFFTI)(&npts,work);
-  NGCALLF(dezfftf,DEZFFTF)(&npts,dx,dxbar,&dcf[0],&dcf[npts2],work);
+  index_x = index_cf = 0;
+  for(i = 0; i < size_leftmost; i++) {
+    if(type_x != NCL_double) { 
+      coerce_subset_input_double(x,tmp_x,index_x,type_x,npts,0,NULL,NULL);
+    }
+    else {
+      tmp_x = &((double*)x)[index_x];
+    }
+
+    NGCALLF(dezffti,DEZFFTI)(&npts,work);
+    NGCALLF(dezfftf,DEZFFTF)(&npts,tmp_x,tmp_xbar,tmp_cf1,tmp_cf2,work);
+/*
+ * Copy results back into cf.
+ */
+    if(type_x == NCL_double) {
+      ((double*)xbar)[i] = *tmp_xbar;
+      for(j = 0; j < npts2; j++) {
+        ((double*)cf)[index_cf+j]        = tmp_cf1[j];
+        ((double*)cf)[lnpts2+index_cf+j] = tmp_cf2[j];
+      }
+    }
+    else {
+      ((float*)xbar)[i] = (float)*tmp_xbar;
+      for(j = 0; j < npts2; j++) {
+        ((float*)cf)[index_cf+j]        = (float)tmp_cf1[j];
+        ((float*)cf)[lnpts2+index_cf+j] = (float)tmp_cf2[j];
+      }
+    }
+    index_x  += npts;
+    index_cf += npts2;
+  }
 /*
  * Free up memory.
  */
+  if(type_x != NCL_double) NclFree(tmp_x);
   NclFree(work);
-  if((void*)dx != x) NclFree(dx);
+  NclFree(tmp_cf1);
+  NclFree(tmp_cf2);
+  NclFree(tmp_xbar);
 /*
  * Set up variable to return.
  */
   if(type_x != NCL_double) {
-/*
- * Copy double values to float values.
- */
-    rcf   = (float*)calloc(npts22,sizeof(float));
-    rxbar = (float*)calloc(1,sizeof(float));
-    if( rcf == NULL || rxbar == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"ezfftf: Unable to allocate memory for output values");
-      return(NhlFATAL);
-    }
-/*
- * Copy double values to float.
- */
-    for( i = 0; i < npts22; i++ ) rcf[i] = (float)dcf[i];
-    *rxbar = (float)*dxbar;
-/*
- * Free up double precision versions of these variables.
- */
-    NclFree(dcf);
-    NclFree(dxbar);
 /*
  * Set up return values.
  */
@@ -141,9 +178,9 @@ NhlErrorTypes ezfftf_W( void )
                         NULL,
                         Ncl_MultiDValData,
                         0,
-                        (void*)rcf,
+                        cf,
                         NULL,
-                        2,
+                        ndims_cf,
                         dsizes_cf,
                         TEMPORARY,
                         NULL,
@@ -154,13 +191,13 @@ NhlErrorTypes ezfftf_W( void )
  */
     att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
 
-    dsizes[0] = 1;
+    dsizes[0] = size_leftmost;
     att_md = _NclCreateVal(
                         NULL,
                         NULL,
                         Ncl_MultiDValData,
                         0,
-                        (void*)rxbar,
+                        xbar,
                         NULL,
                         1,
                         dsizes,
@@ -184,9 +221,9 @@ NhlErrorTypes ezfftf_W( void )
                         NULL,
                         Ncl_MultiDValData,
                         0,
-                        (void*)dcf,
+                        cf,
                         NULL,
-                        2,
+                        ndims_cf,
                         dsizes_cf,
                         TEMPORARY,
                         NULL,
@@ -197,13 +234,13 @@ NhlErrorTypes ezfftf_W( void )
  */
     att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
         
-    dsizes[0] = 1;
+    dsizes[0] = size_leftmost;
     att_md = _NclCreateVal(
                            NULL,
                            NULL,
                            Ncl_MultiDValData,
                            0,
-                           (void*)dxbar,
+                           xbar,
                            NULL,
                            1,
                            dsizes,
@@ -252,23 +289,23 @@ NhlErrorTypes ezfftb_W( void )
  * Input array variables
  */
   void *cf;
-  double *dcf;
-  float *rcf;
+  double *tmp_cf1, *tmp_cf2;
   int ndims_cf, dsizes_cf[NCL_MAX_DIMENSIONS];
   void *xbar;
-  double *dxbar;
+  double *tmp_xbar;
   NclBasicDataTypes type_cf, type_xbar;
 /*
  * Output array variables
  */
-  float *rx;
-  double *dx;
-  int dsizes_x[1];
+  void *x;
+  double *tmp_x;
+  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS];
+  NclBasicDataTypes type_x;
 /*
  * various
  */
   double *work;
-  int i, npts, npts2;
+  int i, j, npts, npts2, lnpts2, index_cf, index_x, size_x, size_leftmost;
 /*
  * Retrieve parameters
  *
@@ -294,29 +331,61 @@ NhlErrorTypes ezfftb_W( void )
            &type_xbar,
            2);
 /*
+ * Calculate number of leftmost elements.
+ */
+  size_leftmost = 1;
+  for( i = 1; i < ndims_cf-1; i++ ) size_leftmost *= dsizes_cf[i];
+/*
  * Calculate size of output array.
  */
-  npts2 = dsizes_cf[1];
-  npts  = 2*npts2;
-  dsizes_x[0] = npts;
+  npts2  = dsizes_cf[ndims_cf-1];
+  npts   = 2*npts2;
+  lnpts2 = npts2 * size_leftmost;
+  size_x = size_leftmost * npts;
+
+  ndims_x = ndims_cf - 1;
+  for(i = 0; i < ndims_x-1; i++ ) dsizes_x[i] = dsizes_cf[i+1];
+  dsizes_x[ndims_x-1] = npts;
 /*
- * Coerce input data to double if necessary.
+ * Coerce input arrays to double if necessary.
  */
-  dcf = coerce_input_double(cf,type_cf,npts,0,NULL,NULL);
-  dxbar = coerce_input_double(xbar,type_xbar,1,0,NULL,NULL);
-  if (dcf == NULL || dxbar == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"ezfftb: Cannot allocate memory for coercing input arrays to double precision");
-    return(NhlFATAL);
+  if(type_cf != NCL_double) {
+    tmp_cf1 = (double*)calloc(npts2,sizeof(double));
+    tmp_cf2 = (double*)calloc(npts2,sizeof(double));
+    if(tmp_cf1 == NULL || tmp_cf2 == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"ezfftb: Unable to allocate memory for coercing input array to double precision");
+      return(NhlFATAL);
+    }
   }
+
+  if(type_xbar != NCL_double) {
+    tmp_xbar = (double*)calloc(1,sizeof(double));
+    if(tmp_xbar == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"ezfftb: Unable to allocate memory for coercing input array to double precision");
+      return(NhlFATAL);
+    }
+  }
+
 /*
  * Allocate memory for output array.
  */
-  dx = (double*)calloc(npts,sizeof(double));
-  if ( dx == NULL ) {
+  tmp_x = (double *)calloc(npts,sizeof(double));
+  if (tmp_x == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ezfftb: Cannot allocate memory for temporary output array" );
+    return(NhlFATAL);
+  }
+  if(type_cf == NCL_double) {
+    type_x = NCL_double;
+    x = (void*)calloc(size_x,sizeof(double));
+  }
+  else {
+    type_x = NCL_float;
+    x = (void*)calloc(size_x,sizeof(float));
+  }
+  if (x == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"ezfftb: Cannot allocate memory for output array" );
     return(NhlFATAL);
   }
-
 /*
  * Allocate memory for work array
  */
@@ -328,40 +397,55 @@ NhlErrorTypes ezfftb_W( void )
 /*
  * Call the f77 version of 'dezfftb' with the full argument list.
  */
-  NGCALLF(dezffti,DEZFFTI)(&npts,work);
-  NGCALLF(dezfftb,DEZFFTB)(&npts,dx,dxbar,&dcf[0],&dcf[npts2],work);
+  index_x = index_cf = 0;
+  for(i = 0; i < size_leftmost; i++) {
+    if(type_cf != NCL_double) { 
+      coerce_subset_input_double(cf,tmp_cf1,index_cf,type_cf,npts2,0,
+				 NULL,NULL);
+      coerce_subset_input_double(cf,tmp_cf2,lnpts2+index_cf,type_cf,npts2,0,
+				 NULL,NULL);
+    }
+    else {
+      tmp_cf1 = &((double*)cf)[index_cf];
+      tmp_cf2 = &((double*)cf)[lnpts2+index_cf];
+    }
+
+    if(type_xbar != NCL_double) { 
+      coerce_subset_input_double(xbar,tmp_xbar,i,type_xbar,1,0,NULL,NULL);
+    }
+    else {
+      tmp_xbar = &((double*)xbar)[i];
+    }
+
+    NGCALLF(dezffti,DEZFFTI)(&npts,work);
+    NGCALLF(dezfftb,DEZFFTB)(&npts,tmp_x,tmp_xbar,tmp_cf1,tmp_cf2,work);
+/*
+ * Copy results back into x.
+ */
+    if(type_cf == NCL_double) {
+      for(j = 0; j < npts; j++) {
+        ((double*)x)[index_x+j] = tmp_x[j];
+      }
+    }
+    else {
+      for(j = 0; j < npts; j++) {
+        ((float*)x)[index_x+j] = (float)(tmp_x[j]);
+      }
+    }
+    index_x  += npts;
+    index_cf += npts2;
+  }
 /*
  * Free up memory.
  */
+  if(type_cf != NCL_double) {
+    NclFree(tmp_cf1);
+    NclFree(tmp_cf2);
+  }
+  if(type_xbar != NCL_double) NclFree(tmp_xbar);
+  NclFree(tmp_x);
   NclFree(work);
 
-  if((void*)dcf != cf) NclFree(dcf);
-
-  if(type_cf != NCL_double) {
-/*
- * Copy double values to float values.
- */
-    rx = (float*)calloc(npts,sizeof(float));
-    if( rx == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"ezfftb: Unable to allocate memory for output array");
-      return(NhlFATAL);
-    }
-    for( i = 0; i < npts; i++ ) rx[i] = (float)dx[i];
-
-/* 
- * Free up double precision array.
- */
-    NclFree(dx);
-/*
- * return float values 
- */
-    return(NclReturnValue((void*)rx,1,dsizes_x,NULL,NCL_float,0));
-  }
-  else {
-/*
- * return double values
- */
-    return(NclReturnValue((void*)dx,1,dsizes_x,NULL,NCL_double,0));
-  }
+  return(NclReturnValue(x,ndims_x,dsizes_x,NULL,type_x,0));
 }
 

@@ -28,7 +28,7 @@ NhlErrorTypes wgt_runave_W( void )
 /*
  * Output variable.
  */
-  void *runave;
+  void *wrunave;
 /*
  * Work array.
  */
@@ -95,7 +95,7 @@ NhlErrorTypes wgt_runave_W( void )
  */
   tmp_x = (double*)calloc(npts,sizeof(double));
   if( tmp_x == NULL ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"runave: Unable to allocate memory for coercing x array to double precision");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_runave: Unable to allocate memory for coercing x array to double precision");
     return(NhlFATAL);
   }
 /*
@@ -106,13 +106,13 @@ NhlErrorTypes wgt_runave_W( void )
  * Allocate space for output array.
  */
   if(type_x != NCL_double) {
-    runave = (void*)calloc(total_size_x,sizeof(float));
+    wrunave = (void*)calloc(total_size_x,sizeof(float));
   }
   else {
-    runave = (void*)calloc(total_size_x,sizeof(double));
+    wrunave = (void*)calloc(total_size_x,sizeof(double));
   }
-  if( runave == NULL ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"runave: Unable to allocate memory for output array");
+  if( wrunave == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_runave: Unable to allocate memory for output array");
     return(NhlFATAL);
   }
 
@@ -140,10 +140,10 @@ NhlErrorTypes wgt_runave_W( void )
                                    &missing_dx.doubleval,work,&lwork,&ier);
     for(j = 0; j < npts; j++) {
       if(type_x != NCL_double) {
-        ((float*)runave)[index_x+j] = (float)(tmp_x[j]);
+        ((float*)wrunave)[index_x+j] = (float)(tmp_x[j]);
       }
       else {
-        ((double*)runave)[index_x+j] = tmp_x[j];
+        ((double*)wrunave)[index_x+j] = tmp_x[j];
       }
     }
 
@@ -160,13 +160,13 @@ NhlErrorTypes wgt_runave_W( void )
 /*
  * Return float values with missing value set.
  */
-    return(NclReturnValue(runave,ndims_x,dsizes_x,&missing_rx,NCL_float,0));
+    return(NclReturnValue(wrunave,ndims_x,dsizes_x,&missing_rx,NCL_float,0));
   }
   else {
 /*
  * Return double values with missing value set.
  */
-    return(NclReturnValue(runave,ndims_x,dsizes_x,&missing_dx,NCL_double,0));
+    return(NclReturnValue(wrunave,ndims_x,dsizes_x,&missing_dx,NCL_double,0));
   }
 }
 
@@ -185,7 +185,7 @@ NhlErrorTypes runave_W( void )
 /*
  * Output variable.
  */
-  void *wrunave;
+  void *runave;
 /*
  * Work array.
  */
@@ -259,13 +259,13 @@ NhlErrorTypes runave_W( void )
  * Allocate space for output array.
  */
   if(type_x != NCL_double) {
-    wrunave = (void*)calloc(total_size_x,sizeof(float));
+    runave = (void*)calloc(total_size_x,sizeof(float));
   }
   else {
-    wrunave = (void*)calloc(total_size_x,sizeof(double));
+    runave = (void*)calloc(total_size_x,sizeof(double));
   }
-  if( wrunave == NULL ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_runave: Unable to allocate memory for output array");
+  if( runave == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"runave: Unable to allocate memory for output array");
     return(NhlFATAL);
   }
 /*
@@ -293,10 +293,10 @@ NhlErrorTypes runave_W( void )
                              work,&lwork,&ier);
     for(j = 0; j < npts; j++) {
       if(type_x != NCL_double) {
-        ((float*)wrunave)[index_x+j] = (float)(tmp_x[j]);
+        ((float*)runave)[index_x+j] = (float)(tmp_x[j]);
       }
       else {
-        ((double*)wrunave)[index_x+j] = tmp_x[j];
+        ((double*)runave)[index_x+j] = tmp_x[j];
       }
     }
 
@@ -312,13 +312,13 @@ NhlErrorTypes runave_W( void )
 /*
  * Return float values with missing value set.
  */
-    return(NclReturnValue(wrunave,ndims_x,dsizes_x,&missing_rx,NCL_float,0));
+    return(NclReturnValue(runave,ndims_x,dsizes_x,&missing_rx,NCL_float,0));
   }
   else {
 /*
  * Return double values with missing value set.
  */
-    return(NclReturnValue(wrunave,ndims_x,dsizes_x,&missing_dx,NCL_double,0));
+    return(NclReturnValue(runave,ndims_x,dsizes_x,&missing_dx,NCL_double,0));
   }
 }
 

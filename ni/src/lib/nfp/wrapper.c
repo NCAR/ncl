@@ -252,6 +252,7 @@ extern NhlErrorTypes wgt_runave_W(void);
 extern NhlErrorTypes wgt_areaave_W(void);
 extern NhlErrorTypes wgt_volave_W(void);
 extern NhlErrorTypes dtrend_W(void);
+extern NhlErrorTypes dtrend_msg_W(void);
 extern NhlErrorTypes local_min_W(void);
 extern NhlErrorTypes local_max_W(void);
 extern NhlErrorTypes fluxEddy_W(void);
@@ -2737,7 +2738,7 @@ void NclAddUserFuncs(void)
     args = NewArgs(2);
     SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
     dimsizes[0] = 1;
-    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
 
     NclRegisterFunc(ezfftb_W,args,"ezfftb",nargs);
 /*
@@ -3006,6 +3007,18 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
     SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
     NclRegisterFunc(dtrend_W,args,"dtrend",nargs);
+
+/*
+ * Register "dtrend_msg".
+ */
+    nargs = 0;
+    args = NewArgs(4);
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
+    NclRegisterFunc(dtrend_msg_W,args,"dtrend_msg",nargs);
 
 /*
  * Register "local_min".

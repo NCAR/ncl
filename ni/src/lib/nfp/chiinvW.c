@@ -128,16 +128,8 @@ NhlErrorTypes chiinv_W( void )
   if((void*)ddf != df) NclFree(ddf);
   if(type_chi != NCL_double) NclFree(tmp_chi);
 
-  if(type_chi != NCL_double) {
 /*
- * Return float values.
+ * Return.
  */
-    return(NclReturnValue(chi,ndims_p,dsizes_p,NULL,NCL_float,0));
-  }
-  else {
-/*
- * Return double values.
- */
-    return(NclReturnValue(chi,ndims_p,dsizes_p,NULL,NCL_double,0));
-  }
+  return(NclReturnValue(chi,ndims_p,dsizes_p,NULL,type_chi,0));
 }

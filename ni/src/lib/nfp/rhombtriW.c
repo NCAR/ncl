@@ -19,7 +19,7 @@ NhlErrorTypes rhomb_trunC_W( void )
   double *tmp_a, *tmp_b;
   void *new_ab;
   int ndims_ab, dsizes_ab[NCL_MAX_DIMENSIONS];
-  NclBasicDataTypes type_ab;
+  NclBasicDataTypes type_ab, type_new_ab;
   int nt, m, n, nm, total_size_ab, total_size_ab2;
   int *T;
 /*
@@ -89,9 +89,11 @@ NhlErrorTypes rhomb_trunC_W( void )
  * Allocate space for output array.
  */
   if(type_ab != NCL_double) {
+    type_new_ab = NCL_float;
     new_ab = (void*)calloc(total_size_ab2,sizeof(float));
   }
   else {
+    type_new_ab = NCL_double;
     new_ab = (void*)calloc(total_size_ab2,sizeof(double));
   }
   if( new_ab == NULL ) {
@@ -117,7 +119,7 @@ NhlErrorTypes rhomb_trunC_W( void )
  * Copy a and b arrays back into new_ab array.
  */
     for(j = 0; j < nm; j++) {
-      if(type_ab != NCL_double) {
+      if(type_ab == NCL_float) {
         ((float*)new_ab)[index_nm+j]       = (float)(tmp_a[j]);
         ((float*)new_ab)[start+index_nm+j] = (float)(tmp_b[j]);
       }
@@ -137,18 +139,7 @@ NhlErrorTypes rhomb_trunC_W( void )
 /*
  * Return values. 
  */
-  if(type_ab != NCL_double) {
-/*
- * Return float values.
- */
-    return(NclReturnValue(new_ab,ndims_ab,dsizes_ab,NULL,NCL_float,0));
-  }
-  else {
-/*
- * Return double values.
- */
-    return(NclReturnValue(new_ab,ndims_ab,dsizes_ab,NULL,NCL_double,0));
-  }
+  return(NclReturnValue(new_ab,ndims_ab,dsizes_ab,NULL,type_new_ab,0));
 }
 
 
@@ -161,7 +152,7 @@ NhlErrorTypes tri_trunC_W( void )
   double *tmp_a, *tmp_b;
   void *new_ab;
   int ndims_ab, dsizes_ab[NCL_MAX_DIMENSIONS];
-  NclBasicDataTypes type_ab;
+  NclBasicDataTypes type_ab, type_new_ab;
   int nt, m, n, nm, total_size_ab, total_size_ab2;
   int *T;
 /*
@@ -231,9 +222,11 @@ NhlErrorTypes tri_trunC_W( void )
  * Allocate space for output array.
  */
   if(type_ab != NCL_double) {
+    type_new_ab = NCL_float;
     new_ab = (void*)calloc(total_size_ab2,sizeof(float));
   }
   else {
+    type_new_ab = NCL_double;
     new_ab = (void*)calloc(total_size_ab2,sizeof(double));
   }
   if( new_ab == NULL ) {
@@ -259,7 +252,7 @@ NhlErrorTypes tri_trunC_W( void )
  * Copy a and b arrays back into new_ab array.
  */
     for(j = 0; j < nm; j++) {
-      if(type_ab != NCL_double) {
+      if(type_new_ab == NCL_float) {
         ((float*)new_ab)[index_nm+j]       = (float)(tmp_a[j]);
         ((float*)new_ab)[start+index_nm+j] = (float)(tmp_b[j]);
       }
@@ -279,18 +272,7 @@ NhlErrorTypes tri_trunC_W( void )
 /*
  * Return values. 
  */
-  if(type_ab != NCL_double) {
-/*
- * Return float values.
- */
-    return(NclReturnValue(new_ab,ndims_ab,dsizes_ab,NULL,NCL_float,0));
-  }
-  else {
-/*
- * Return double values.
- */
-    return(NclReturnValue(new_ab,ndims_ab,dsizes_ab,NULL,NCL_double,0));
-  }
+  return(NclReturnValue(new_ab,ndims_ab,dsizes_ab,NULL,type_new_ab,0));
 }
 
 NhlErrorTypes rhomb_trunc_W( void )

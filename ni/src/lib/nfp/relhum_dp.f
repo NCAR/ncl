@@ -71,7 +71,9 @@ C*PL*ERROR* Too many continuation lines generated
       ES = ES*1.0D-01
 
       DRELHUM = (W* (P-0.378D0*ES)/ (0.622D0*ES))*100.D0
-      IF (DRELHUM.LT.0.D0) DRELHUM = 0.0001D0
+
+      IF (DRELHUM.GT.100.D0) DRELHUM = 100.D0
+      IF (DRELHUM.LT.0.D0)   DRELHUM = 0.0001D0
 
       RETURN
       END

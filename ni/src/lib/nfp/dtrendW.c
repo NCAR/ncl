@@ -18,45 +18,49 @@
 extern void NGCALLF(ddtrndx,DDTRNDX)(double*,int*,int*,double*,double*,
                                      double*,double*,int*);
 
+extern void NGCALLF(ddtrndmsg,DDTRNDMSG)(double*,double*,int*,double*,
+                                         double*,int*,double*,double*,
+                                         double*,int*);
+
 NhlErrorTypes dtrend_W( void )
 {
 /*
  * Input array variables
  */
-  void *x;
-  double *tmp_x;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x, found_missing;
-  NclScalar missing_x, missing_dx, missing_rx;
+  void *y;
+  double *tmp_y;
+  int ndims_y, dsizes_y[NCL_MAX_DIMENSIONS], has_missing_y, found_missing;
+  NclScalar missing_y, missing_dy, missing_ry;
   logical *return_slope;
-  NclBasicDataTypes type_x;
+  NclBasicDataTypes type_y, type_dtrend_y;
 /*
  * Output array variables
  */
-  void *dtrend_x, *slope;
-  double xmean, xvari, xvaro;
+  void *dtrend_y, *slope, *yintp;
+  double xmean, yvari, yvaro;
 /*
  * Attribute variables
  */
-  int att_id, dsizes_slope[NCL_MAX_DIMENSIONS];
+  int att_id, dsizes[NCL_MAX_DIMENSIONS];
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
 /*
  * Declare various variables for random purposes.
  */
-  int i, j, index_x, npts, size_leftmost, size_x, ier, iopt = 1;
+  int i, j, index_y, npts, size_leftmost, size_y, ier, iopt = 1;
   double c[3];
 /*
  * Retrieve arguments.
  */
-  x = (void*)NclGetArgValue(
+  y = (void*)NclGetArgValue(
           0,
           2,
-          &ndims_x,
-          dsizes_x,
-          &missing_x,
-          &has_missing_x,
-          &type_x,
+          &ndims_y,
+          dsizes_y,
+          &missing_y,
+          &has_missing_y,
+          &type_y,
           2);
 
   return_slope = (logical*)NclGetArgValue(
@@ -71,7 +75,7 @@ NhlErrorTypes dtrend_W( void )
 /*
  * Check input sizes.
  */
-  npts = dsizes_x[ndims_x-1];
+  npts = dsizes_y[ndims_y-1];
   if( npts < 2) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"dtrend: The last dimension of x must be greater than 2");
     return(NhlFATAL);
@@ -81,47 +85,51 @@ NhlErrorTypes dtrend_W( void )
  * Compute the total size of the output array.
  */
   size_leftmost = 1;
-  for( i = 0; i < ndims_x-1; i++ ) size_leftmost *= dsizes_x[i];
-  size_x = size_leftmost * npts;
+  for( i = 0; i < ndims_y-1; i++ ) size_leftmost *= dsizes_y[i];
+  size_y = size_leftmost * npts;
 
 /*
  * Check for missing values.
  */
-  coerce_missing(type_x,has_missing_x,&missing_x,&missing_dx,&missing_rx);
+  coerce_missing(type_y,has_missing_y,&missing_y,&missing_dy,&missing_ry);
 /*
  * Coerce data to double no matter what, since input array also becomes
  * output array. 
  */
-  tmp_x = (double*)calloc(npts,sizeof(double));
-  if( tmp_x == NULL ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"dtrend: Unable to allocate memory for coercing x array to double precision");
+  tmp_y = (double*)calloc(npts,sizeof(double));
+  if( tmp_y == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dtrend: Unable to allocate memory for coercing y array to double precision");
     return(NhlFATAL);
   }
 /*
- * Compute size of slope.
+ * Compute size of slope and y intercept.
  */
   if(*return_slope) {
-    if(type_x != NCL_double) {
+    if(type_y != NCL_double) {
       slope = (void *)calloc(size_leftmost,sizeof(double));
+      yintp = (void *)calloc(size_leftmost,sizeof(double));
     }
     else {
       slope = (void *)calloc(size_leftmost,sizeof(float));
+      yintp = (void *)calloc(size_leftmost,sizeof(float));
     }
-    if( slope == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"dtrend: Cannot allocate space for slope");
+    if( slope == NULL || yintp == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"dtrend: Cannot allocate space for slope and y-intercept");
       return(NhlFATAL);
     }
   }
 /*
  * Allocate space for output array
  */
-  if(type_x != NCL_double) {
-    dtrend_x = (void*)calloc(size_x,sizeof(float));
+  if(type_y != NCL_double) {
+    type_dtrend_y = NCL_float;
+    dtrend_y = (void*)calloc(size_y,sizeof(float));
   }
   else {
-    dtrend_x = (void*)calloc(size_x,sizeof(double));
+    type_dtrend_y = NCL_double;
+    dtrend_y = (void*)calloc(size_y,sizeof(double));
   }
-  if( dtrend_x == NULL ) {
+  if( dtrend_y == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"dtrend: Unable to allocate memory for output array");
     return(NhlFATAL);
   }
@@ -129,50 +137,52 @@ NhlErrorTypes dtrend_W( void )
 /*
  * Call the Fortran version of this routine.
  */
-  index_x = 0;
+  index_y = 0;
   for( i = 0; i < size_leftmost; i++ ) {
 /*
- * Coerce subsection of x (tmp_x) to double.
+ * Coerce subsection of y (tmp_y) to double.
  */
-    coerce_subset_input_double(x,tmp_x,index_x,type_x,npts,0,NULL,NULL);
+    coerce_subset_input_double(y,tmp_y,index_y,type_y,npts,0,NULL,NULL);
 /*
  * Check for missing values.
  */
-    found_missing = contains_missing(tmp_x,npts,has_missing_x,
-                                     missing_x.doubleval);
+    found_missing = contains_missing(tmp_y,npts,has_missing_y,
+                                     missing_y.doubleval);
     if(found_missing) {
-      set_subset_output_missing(dtrend_x,index_x,type_x,npts,
-                                missing_dx.doubleval);
-      NhlPError(NhlWARNING,NhlEUNKNOWN,"dtrend: An input array contains missing values. No dtrending performed on this array.");
+      set_subset_output_missing(dtrend_y,index_y,type_y,npts,
+                                missing_dy.doubleval);
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"dtrend_msg: An input array contains missing values. No dtrending performed on this array.");
     }
     else {
-      NGCALLF(ddtrndx,DDTRNDX)(tmp_x,&npts,&iopt,&xmean,&xvari,&xvaro,
+
+      NGCALLF(ddtrndx,DDTRNDX)(tmp_y,&npts,&iopt,&xmean,&yvari,&yvaro,
                                c,&ier);
 
-      for(j = 0; j < npts; j++) {
-        if(type_x != NCL_double) {
-          ((float*)dtrend_x)[index_x+j] = (float)(tmp_x[j]);
+      if(type_dtrend_y == NCL_float) {
+        for(j = 0; j < npts; j++) {
+          ((float*)dtrend_y)[index_y+j] = (float)(tmp_y[j]);
         }
-        else {
-          ((double*)dtrend_x)[index_x+j] = tmp_x[j];
-        }
-      }
-
-      if(*return_slope) {
-        if(type_x != NCL_double) {
+        if(*return_slope) {
+          ((float*)yintp)[i] = (float)c[0];
           ((float*)slope)[i] = (float)c[1];
         }
-        else {
+      }
+      else {
+        for(j = 0; j < npts; j++) {
+          ((double*)dtrend_y)[index_y+j] = tmp_y[j];
+        }
+        if(*return_slope) {
+          ((double*)yintp)[i] = c[0];
           ((double*)slope)[i] = c[1];
         }
       }
     }
-    index_x += npts;
+    index_y += npts;
   }
 /*
  * Free memory.
  */
-  NclFree(tmp_x);
+  NclFree(tmp_y);
 
 /*
  * Get ready to return all this stuff to NCL.
@@ -181,20 +191,20 @@ NhlErrorTypes dtrend_W( void )
 /*
  * The slope will be returned as an attribute.
  */
-    if(type_x != NCL_double) {
+    if(type_y != NCL_double) {
 /*
  * Input is not double, so return float values.
  */
-      if(has_missing_x) {
+      if(has_missing_y) {
         return_md = _NclCreateVal(
                                 NULL,
                                 NULL,
                                 Ncl_MultiDValData,
                                 0,
-                                dtrend_x,
-                                &missing_rx,
-                                ndims_x,
-                                dsizes_x,
+                                dtrend_y,
+                                &missing_ry,
+                                ndims_y,
+                                dsizes_y,
                                 TEMPORARY,
                                 NULL,
                                 (NclObjClass)nclTypefloatClass
@@ -206,10 +216,10 @@ NhlErrorTypes dtrend_W( void )
                                 NULL,
                                 Ncl_MultiDValData,
                                 0,
-                                dtrend_x,
+                                dtrend_y,
                                 NULL,
-                                ndims_x,
-                                dsizes_x,
+                                ndims_y,
+                                dsizes_y,
                                 TEMPORARY,
                                 NULL,
                                 (NclObjClass)nclTypefloatClass
@@ -220,16 +230,16 @@ NhlErrorTypes dtrend_W( void )
 /* 
  * Input was double, so return double values.
  */
-      if(has_missing_x) {
+      if(has_missing_y) {
         return_md = _NclCreateVal(
                                   NULL,
                                   NULL,
                                   Ncl_MultiDValData,
                                   0,
-                                  dtrend_x,
-                                  &missing_dx,
-                                  ndims_x,
-                                  dsizes_x,
+                                  dtrend_y,
+                                  &missing_dy,
+                                  ndims_y,
+                                  dsizes_y,
                                   TEMPORARY,
                                   NULL,
                                   (NclObjClass)nclTypedoubleClass
@@ -241,10 +251,10 @@ NhlErrorTypes dtrend_W( void )
                                 NULL,
                                 Ncl_MultiDValData,
                                 0,
-                                dtrend_x,
+                                dtrend_y,
                                 NULL,
-                                ndims_x,
-                                dsizes_x,
+                                ndims_y,
+                                dsizes_y,
                                 TEMPORARY,
                                 NULL,
                                 (NclObjClass)nclTypedoubleClass
@@ -252,11 +262,11 @@ NhlErrorTypes dtrend_W( void )
       }
     }
     att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
-    dsizes_slope[0] = size_leftmost;
+    dsizes[0] = size_leftmost;
 /*
  * Set up float attribute to return.
  */
-    if(type_x != NCL_double) {
+    if(type_y != NCL_double) {
       att_md = _NclCreateVal(
                              NULL,
                              NULL,
@@ -265,11 +275,38 @@ NhlErrorTypes dtrend_W( void )
                              slope,
                              NULL,
                              1,
-                             dsizes_slope,
+                             dsizes,
                              TEMPORARY,
                              NULL,
                              (NclObjClass)nclTypefloatClass
                              );
+      _NclAddAtt(
+                 att_id,
+                 "slope",
+                 att_md,
+                 NULL
+                 );
+
+      att_md = _NclCreateVal(
+                             NULL,
+                             NULL,
+                             Ncl_MultiDValData,
+                             0,
+                             yintp,
+                             NULL,
+                             1,
+                             dsizes,
+                             TEMPORARY,
+                             NULL,
+                             (NclObjClass)nclTypefloatClass
+                             );
+      _NclAddAtt(
+                 att_id,
+                 "y_intercept",
+                 att_md,
+                 NULL
+                 );
+
     }
     else {
 /*
@@ -283,19 +320,39 @@ NhlErrorTypes dtrend_W( void )
                              slope,
                              NULL,
                              1,
-                             dsizes_slope,
+                             dsizes,
                              TEMPORARY,
                              NULL,
                              (NclObjClass)nclTypedoubleClass
                              );
-    }
-    _NclAddAtt(
-               att_id,
-               "slope",
-               att_md,
-               NULL
-               );
+      _NclAddAtt(
+                 att_id,
+                 "slope",
+                 att_md,
+                 NULL
+                 );
 
+      att_md = _NclCreateVal(
+                             NULL,
+                             NULL,
+                             Ncl_MultiDValData,
+                             0,
+                             yintp,
+                             NULL,
+                             1,
+                             dsizes,
+                             TEMPORARY,
+                             NULL,
+                             (NclObjClass)nclTypedoubleClass
+                             );
+      _NclAddAtt(
+                 att_id,
+                 "y_intercept",
+                 att_md,
+                 NULL
+                 );
+
+    }
     tmp_var = _NclVarCreate(
                           NULL,
                           NULL,
@@ -320,26 +377,404 @@ NhlErrorTypes dtrend_W( void )
   }
   else {
 /*
- * No slope is being returned, so we don't need to do all that attribute
- * stuff.
+ * No slope/y-intercept is being returned, so we don't need to do all
+ * that attribute stuff.
  */
-    if(type_x != NCL_double) {
-      if(has_missing_x) {
-        return(NclReturnValue(dtrend_x,ndims_x,dsizes_x,&missing_rx,
+    if(type_dtrend_y == NCL_float) {
+      if(has_missing_y) {
+        return(NclReturnValue(dtrend_y,ndims_y,dsizes_y,&missing_ry,
                               NCL_float,0));
       }
       else {
-        return(NclReturnValue(dtrend_x,ndims_x,dsizes_x,NULL,NCL_float,0));
+        return(NclReturnValue(dtrend_y,ndims_y,dsizes_y,NULL,NCL_float,0));
       }
     }
     else {
-      if(has_missing_x) {
-        return(NclReturnValue(dtrend_x,ndims_x,dsizes_x,&missing_dx,
+      if(has_missing_y) {
+        return(NclReturnValue(dtrend_y,ndims_y,dsizes_y,&missing_dy,
                               NCL_double,0));
       }
       else {
-        return(NclReturnValue(dtrend_x,ndims_x,dsizes_x,NULL,NCL_double,0));
+        return(NclReturnValue(dtrend_y,ndims_y,dsizes_y,NULL,NCL_double,0));
       }
+    }
+  }
+}
+
+NhlErrorTypes dtrend_msg_W( void )
+{
+/*
+ * Input array variables
+ */
+  void *x, *y;
+  double *tmp_x, *tmp_y;
+  int dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
+  int ndims_y, dsizes_y[NCL_MAX_DIMENSIONS], has_missing_y;
+  NclScalar missing_x, missing_dx, missing_rx;
+  NclScalar missing_y, missing_dy, missing_ry;
+  logical *return_slope, *remove_mean;
+  NclBasicDataTypes type_y, type_x, type_dtrend_y;
+/*
+ * Output array variables
+ */
+  void *dtrend_y, *slope, *yintp;
+  double *ydt, slpe, yint;
+/*
+ * Attribute variables
+ */
+  int att_id, dsizes[NCL_MAX_DIMENSIONS];
+  NclMultiDValData att_md, return_md;
+  NclVar tmp_var;
+  NclStackEntry return_data;
+/*
+ * Declare various variables for random purposes.
+ */
+  int i, j, index_y, npts, size_leftmost, size_y, ier, iopt = 1;
+/*
+ * Retrieve arguments.
+ */
+  x = (void*)NclGetArgValue(
+          0,
+          4,
+          NULL,
+          dsizes_x,
+          &missing_x,
+          &has_missing_x,
+          &type_x,
+          2);
+
+  y = (void*)NclGetArgValue(
+          1,
+          4,
+          &ndims_y,
+          dsizes_y,
+          &missing_y,
+          &has_missing_y,
+          &type_y,
+          2);
+
+  remove_mean = (logical*)NclGetArgValue(
+          2,
+          4,
+          NULL,
+          NULL,
+          NULL,
+          NULL,
+          NULL,
+          2);
+
+  return_slope = (logical*)NclGetArgValue(
+          3,
+          4,
+          NULL,
+          NULL,
+          NULL,
+          NULL,
+          NULL,
+          2);
+/*
+ * Check input sizes.
+ */
+  npts = dsizes_y[ndims_y-1];
+  if( npts < 2) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dtrend_msg: The last dimension of x must be greater than 2");
+    return(NhlFATAL);
+  }
+  
+/*
+ * Compute the total size of the output array.
+ */
+  size_leftmost = 1;
+  for( i = 0; i < ndims_y-1; i++ ) size_leftmost *= dsizes_y[i];
+  size_y = size_leftmost * npts;
+
+/*
+ * Check for missing values.
+ */
+  coerce_missing(type_x,has_missing_x,&missing_x,&missing_dx,&missing_rx);
+  coerce_missing(type_y,has_missing_y,&missing_y,&missing_dy,&missing_ry);
+/*
+ * Coerce y to double no matter what, since input array also becomes
+ * output array. 
+ */
+  if(type_x != NCL_double) {
+    tmp_x = (double*)calloc(npts,sizeof(double));
+    if( tmp_x == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"dtrend_msg: Unable to allocate memory for coercing x array to double precision");
+      return(NhlFATAL);
+    }
+  }
+  if(type_y != NCL_double) {
+    tmp_y = (double*)calloc(npts,sizeof(double));
+    if( tmp_y == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"dtrend_msg: Unable to allocate memory for coercing y array to double precision");
+      return(NhlFATAL);
+    }
+  }
+/*
+ * Compute size of slope and y intercept.
+ */
+  if(*return_slope) {
+    if(type_y != NCL_double) {
+      slope = (void *)calloc(size_leftmost,sizeof(double));
+      yintp = (void *)calloc(size_leftmost,sizeof(double));
+    }
+    else {
+      slope = (void *)calloc(size_leftmost,sizeof(float));
+      yintp = (void *)calloc(size_leftmost,sizeof(float));
+    }
+    if( slope == NULL || yintp == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"dtrend_msg: Cannot allocate space for slope and y-intercept");
+      return(NhlFATAL);
+    }
+  }
+/*
+ * Allocate space for output array
+ */
+  if(type_y != NCL_double) {
+    type_dtrend_y = NCL_float;
+    dtrend_y = (void*)calloc(size_y,sizeof(float));
+  }
+  else {
+    type_dtrend_y = NCL_double;
+    dtrend_y = (void*)calloc(size_y,sizeof(double));
+  }
+  ydt = (double*)calloc(npts,sizeof(double));
+  if( dtrend_y == NULL || ydt == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dtrend_msg: Unable to allocate memory for output array");
+    return(NhlFATAL);
+  }
+
+/*
+ * Coerce x (tmp_x) to double.
+ */
+  if(type_x != NCL_double) {
+    coerce_subset_input_double(x,tmp_x,0,type_x,npts,0,NULL,NULL);
+  }
+  else {
+/*
+ * Point tmp_x to x.
+ */
+    tmp_x = &((double*)x)[0];
+  }
+/*
+ * Call the Fortran version of this routine.
+ */
+  index_y = 0;
+  for( i = 0; i < size_leftmost; i++ ) {
+/*
+ * Coerce subsection of y (tmp_y) to double.
+ */
+    if(type_y != NCL_double) {
+      coerce_subset_input_double(y,tmp_y,index_y,type_y,npts,0,NULL,NULL);
+    }
+    else {
+/*
+ * Point tmp_y to y.
+ */
+      tmp_y = &((double*)y)[index_y];
+    }
+
+    NGCALLF(ddtrndmsg,DDTRNDMSG)(tmp_x,tmp_y,&npts,&missing_dx.doubleval,
+                                 &missing_dy.doubleval,remove_mean,ydt,
+                                 &slpe,&yint,&ier);
+
+    if(type_dtrend_y == NCL_float) {
+      for(j = 0; j < npts; j++) {
+        ((float*)dtrend_y)[index_y+j] = (float)(ydt[j]);
+      }
+      if(*return_slope) {
+        ((float*)yintp)[i] = (float)yint;
+        ((float*)slope)[i] = (float)slpe;
+      }
+    }
+    else {
+      for(j = 0; j < npts; j++) {
+        ((double*)dtrend_y)[index_y+j] = ydt[j];
+      }
+      if(*return_slope) {
+        ((double*)yintp)[i] = yint;
+        ((double*)slope)[i] = slpe;
+      }
+    }
+    index_y += npts;
+  }
+/*
+ * Free memory.
+ */
+  if(type_x != NCL_double) NclFree(tmp_x);
+  if(type_y != NCL_double) NclFree(tmp_y);
+  NclFree(ydt);
+
+/*
+ * Get ready to return all this stuff to NCL.
+ */
+  if(*return_slope) {
+/*
+ * The slope will be returned as an attribute.
+ */
+    if(type_dtrend_y == NCL_float) {
+/*
+ * Input is not double, so return float values.
+ */
+      return_md = _NclCreateVal(
+                                NULL,
+                                NULL,
+                                Ncl_MultiDValData,
+                                0,
+                                dtrend_y,
+                                &missing_ry,
+                                ndims_y,
+                                dsizes_y,
+                                TEMPORARY,
+                                NULL,
+                                (NclObjClass)nclTypefloatClass
+                                );
+    }
+    else {
+/* 
+ * Input was double, so return double values.
+ */
+      return_md = _NclCreateVal(
+                                NULL,
+                                NULL,
+                                Ncl_MultiDValData,
+                                0,
+                                dtrend_y,
+                                &missing_dy,
+                                ndims_y,
+                                dsizes_y,
+                                TEMPORARY,
+                                NULL,
+                                (NclObjClass)nclTypedoubleClass
+                                );
+    }
+    att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
+    dsizes[0] = size_leftmost;
+/*
+ * Set up float attribute to return.
+ */
+    if(type_dtrend_y == NCL_float) {
+      att_md = _NclCreateVal(
+                             NULL,
+                             NULL,
+                             Ncl_MultiDValData,
+                             0,
+                             slope,
+                             NULL,
+                             1,
+                             dsizes,
+                             TEMPORARY,
+                             NULL,
+                             (NclObjClass)nclTypefloatClass
+                             );
+      _NclAddAtt(
+                 att_id,
+                 "slope",
+                 att_md,
+                 NULL
+                 );
+
+      att_md = _NclCreateVal(
+                             NULL,
+                             NULL,
+                             Ncl_MultiDValData,
+                             0,
+                             yintp,
+                             NULL,
+                             1,
+                             dsizes,
+                             TEMPORARY,
+                             NULL,
+                             (NclObjClass)nclTypefloatClass
+                             );
+      _NclAddAtt(
+                 att_id,
+                 "y_intercept",
+                 att_md,
+                 NULL
+                 );
+
+    }
+    else {
+/*
+ * Set up double attribute to return.
+ */
+      att_md = _NclCreateVal(
+                             NULL,
+                             NULL,
+                             Ncl_MultiDValData,
+                             0,
+                             slope,
+                             NULL,
+                             1,
+                             dsizes,
+                             TEMPORARY,
+                             NULL,
+                             (NclObjClass)nclTypedoubleClass
+                             );
+      _NclAddAtt(
+                 att_id,
+                 "slope",
+                 att_md,
+                 NULL
+                 );
+
+      att_md = _NclCreateVal(
+                             NULL,
+                             NULL,
+                             Ncl_MultiDValData,
+                             0,
+                             yintp,
+                             NULL,
+                             1,
+                             dsizes,
+                             TEMPORARY,
+                             NULL,
+                             (NclObjClass)nclTypedoubleClass
+                             );
+      _NclAddAtt(
+                 att_id,
+                 "y_intercept",
+                 att_md,
+                 NULL
+                 );
+
+    }
+    tmp_var = _NclVarCreate(
+                          NULL,
+                          NULL,
+                          Ncl_Var,
+                          0,
+                          NULL,
+                          return_md,
+                          NULL,
+                          att_id,
+                          NULL,
+                          RETURNVAR,
+                          NULL,
+                          TEMPORARY
+                          );
+/*
+ * Return output grid and attributes to NCL.
+ */
+    return_data.kind = NclStk_VAR;
+    return_data.u.data_var = tmp_var;
+    _NclPlaceReturn(return_data);
+    return(NhlNOERROR);
+  }
+  else {
+/*
+ * No slope/y-intercept is being returned, so we don't need to do all
+ * that attribute stuff.
+ */
+    if(type_dtrend_y == NCL_float) {
+      return(NclReturnValue(dtrend_y,ndims_y,dsizes_y,&missing_ry,
+                            NCL_float,0));
+    }
+    else {
+      return(NclReturnValue(dtrend_y,ndims_y,dsizes_y,&missing_dy,
+                            NCL_double,0));
     }
   }
 }

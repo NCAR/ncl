@@ -29,7 +29,7 @@ NhlErrorTypes g2gsh_W( void )
   double *tmp_Ta;
   int ndims_Ta, dsizes_Ta[NCL_MAX_DIMENSIONS];
   NclScalar missing_Ta, missing_dTa, missing_rTa;
-  NclBasicDataTypes type_Ta;
+  NclBasicDataTypes type_Ta, type_Tb;
   int has_missing_Ta, found_missing;
   int nlata, nlona, igrida[2];
 /*
@@ -123,6 +123,7 @@ NhlErrorTypes g2gsh_W( void )
  * appropriate locations in Ta and Tb.
  */
   if(type_Ta != NCL_double) {
+    type_Tb = NCL_float;
     Tb = (void*)calloc(total_size_Tb,sizeof(float));
     tmp_Tb = (double*)calloc(nlatbnlonb,sizeof(double));
     tmp_Ta = (double*)calloc(nlatanlona,sizeof(double));
@@ -132,6 +133,7 @@ NhlErrorTypes g2gsh_W( void )
     }
   } 
   else { 
+    type_Tb = NCL_double;
     Tb = (void*)calloc(total_size_Tb,sizeof(double));
     if(Tb == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"g2gsh: Unable to allocate memory for output array");
@@ -237,7 +239,7 @@ NhlErrorTypes g2gsh_W( void )
 /*
  * Copy output values from temporary array "tmp_Tb" to final array "Tb".
  */
-      if(type_Ta != NCL_double) {
+      if(type_Tb == NCL_float) {
         for(j = 0; j < nlatbnlonb; j++) {
           ((float*)Tb)[index_Tb+j] = (float)(tmp_Tb[j]);
         }
@@ -263,35 +265,18 @@ NhlErrorTypes g2gsh_W( void )
   dsizes_Tb2[ndims_Ta-2] = nlatb;
   dsizes_Tb2[ndims_Ta-1] = nlonb;
 /*
- * Check whether to return floats or doubles. 
+ * Check if we need to return the missing value attribute.
  */
-  if(type_Ta != NCL_double) {
-/*
- * Return float values with missing value set.
- */
-    if(has_missing_Ta) {
-      return(NclReturnValue(Tb,ndims_Ta,dsizes_Tb2,&missing_rTa,NCL_float,0));
+  if(has_missing_Ta) {
+    if(type_Tb == NCL_float) {
+      return(NclReturnValue(Tb,ndims_Ta,dsizes_Tb2,&missing_rTa,type_Tb,0));
     }
-/*
- * Return float values with no missing value set.
- */
     else {
-      return(NclReturnValue(Tb,ndims_Ta,dsizes_Tb2,NULL,NCL_float,0));
+      return(NclReturnValue(Tb,ndims_Ta,dsizes_Tb2,&missing_dTa,type_Tb,0));
     }
   }
   else {
-/*
- * Return double values with missing value set.
- */
-    if(has_missing_Ta) {
-      return(NclReturnValue(Tb,ndims_Ta,dsizes_Tb2,&missing_dTa,NCL_double,0));
-    }
-/*
- * Return double values with no missing value set.
- */
-    else {
-      return(NclReturnValue(Tb,ndims_Ta,dsizes_Tb2,NULL,NCL_double,0));
-    }
+    return(NclReturnValue(Tb,ndims_Ta,dsizes_Tb2,NULL,type_Tb,0));
   }
 }
 
@@ -305,7 +290,7 @@ NhlErrorTypes f2gsh_W( void )
   double *tmp_Ta;
   int ndims_Ta, dsizes_Ta[NCL_MAX_DIMENSIONS];
   NclScalar missing_Ta, missing_dTa, missing_rTa;
-  NclBasicDataTypes type_Ta;
+  NclBasicDataTypes type_Ta, type_Tb;
   int has_missing_Ta, found_missing;
   int nlata, nlona, igrida[2];
 /*
@@ -399,6 +384,7 @@ NhlErrorTypes f2gsh_W( void )
  * appropriate locations in Ta and Tb.
  */
   if(type_Ta != NCL_double) {
+    type_Tb = NCL_float;
     Tb = (void*)calloc(total_size_Tb,sizeof(float));
     tmp_Tb = (double*)calloc(nlatbnlonb,sizeof(double));
     tmp_Ta = (double*)calloc(nlatanlona,sizeof(double));
@@ -408,6 +394,7 @@ NhlErrorTypes f2gsh_W( void )
     }
   } 
   else { 
+    type_Tb = NCL_double;
     Tb = (void*)calloc(total_size_Tb,sizeof(double));
     if(Tb == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"f2gsh: Unable to allocate memory for output array");
@@ -513,7 +500,7 @@ NhlErrorTypes f2gsh_W( void )
 /*
  * Copy output values from temporary array "tmp_Tb" to final array "Tb".
  */
-      if(type_Ta != NCL_double) {
+      if(type_Tb == NCL_float) {
         for(j = 0; j < nlatbnlonb; j++) {
           ((float*)Tb)[index_Tb+j] = (float)(tmp_Tb[j]);
         }
@@ -539,35 +526,18 @@ NhlErrorTypes f2gsh_W( void )
   dsizes_Tb2[ndims_Ta-2] = nlatb;
   dsizes_Tb2[ndims_Ta-1] = nlonb;
 /*
- * Check whether to return floats or doubles. 
+ * Check if we need to return the missing value attribute.
  */
-  if(type_Ta != NCL_double) {
-/*
- * Return float values with missing value set.
- */
-    if(has_missing_Ta) {
-      return(NclReturnValue(Tb,ndims_Ta,dsizes_Tb2,&missing_rTa,NCL_float,0));
+  if(has_missing_Ta) {
+    if(type_Tb == NCL_float) {
+      return(NclReturnValue(Tb,ndims_Ta,dsizes_Tb2,&missing_rTa,type_Tb,0));
     }
-/*
- * Return float values with no missing value set.
- */
     else {
-      return(NclReturnValue(Tb,ndims_Ta,dsizes_Tb2,NULL,NCL_float,0));
+      return(NclReturnValue(Tb,ndims_Ta,dsizes_Tb2,&missing_dTa,type_Tb,0));
     }
   }
   else {
-/*
- * Return double values with missing value set.
- */
-    if(has_missing_Ta) {
-      return(NclReturnValue(Tb,ndims_Ta,dsizes_Tb2,&missing_dTa,NCL_double,0));
-    }
-/*
- * Return double values with no missing value set.
- */
-    else {
-      return(NclReturnValue(Tb,ndims_Ta,dsizes_Tb2,NULL,NCL_double,0));
-    }
+    return(NclReturnValue(Tb,ndims_Ta,dsizes_Tb2,NULL,type_Tb,0));
   }
 }
 
@@ -581,7 +551,7 @@ NhlErrorTypes g2fsh_W( void )
   double *tmp_Ta;
   int ndims_Ta, dsizes_Ta[NCL_MAX_DIMENSIONS];
   NclScalar missing_Ta, missing_dTa, missing_rTa;
-  NclBasicDataTypes type_Ta;
+  NclBasicDataTypes type_Ta, type_Tb;
   int has_missing_Ta, found_missing;
   int nlata, nlona, igrida[2];
 /*
@@ -663,6 +633,7 @@ NhlErrorTypes g2fsh_W( void )
  * appropriate locations in Ta and Tb.
  */
   if(type_Ta != NCL_double) {
+    type_Tb = NCL_float;
     Tb = (void*)calloc(total_size_Tb,sizeof(float));
     tmp_Tb = (double*)calloc(nlatbnlonb,sizeof(double));
     tmp_Ta = (double*)calloc(nlatanlona,sizeof(double));
@@ -672,6 +643,7 @@ NhlErrorTypes g2fsh_W( void )
     }
   } 
   else { 
+    type_Tb = NCL_double;
     Tb = (void*)calloc(total_size_Tb,sizeof(double));
     if(Tb == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"g2fsh: Unable to allocate memory for output array");
@@ -762,7 +734,7 @@ NhlErrorTypes g2fsh_W( void )
 /*
  * Copy output values from temporary array "tmp_Tb" to final array "Tb".
  */
-      if(type_Ta != NCL_double) {
+      if(type_Tb == NCL_float) {
         for(j = 0; j < nlatbnlonb; j++) {
           ((float*)Tb)[index_Tb+j] = (float)(tmp_Tb[j]);
         }
@@ -788,35 +760,18 @@ NhlErrorTypes g2fsh_W( void )
   dsizes_Tb2[ndims_Ta-2] = nlatb;
   dsizes_Tb2[ndims_Ta-1] = nlonb;
 /*
- * Check whether to return floats or doubles. 
+ * Check if we need to return the missing value attribute.
  */
-  if(type_Ta != NCL_double) {
-/*
- * Return float values with missing value set.
- */
-    if(has_missing_Ta) {
-      return(NclReturnValue(Tb,ndims_Ta,dsizes_Tb2,&missing_rTa,NCL_float,0));
+  if(has_missing_Ta) {
+    if(type_Tb == NCL_float) {
+      return(NclReturnValue(Tb,ndims_Ta,dsizes_Tb2,&missing_rTa,type_Tb,0));
     }
-/*
- * Return float values with no missing value set.
- */
     else {
-      return(NclReturnValue(Tb,ndims_Ta,dsizes_Tb2,NULL,NCL_float,0));
+      return(NclReturnValue(Tb,ndims_Ta,dsizes_Tb2,&missing_dTa,type_Tb,0));
     }
   }
   else {
-/*
- * Return double values with missing value set.
- */
-    if(has_missing_Ta) {
-      return(NclReturnValue(Tb,ndims_Ta,dsizes_Tb2,&missing_dTa,NCL_double,0));
-    }
-/*
- * Return double values with no missing value set.
- */
-    else {
-      return(NclReturnValue(Tb,ndims_Ta,dsizes_Tb2,NULL,NCL_double,0));
-    }
+    return(NclReturnValue(Tb,ndims_Ta,dsizes_Tb2,NULL,type_Tb,0));
   }
 }
 
@@ -831,7 +786,7 @@ NhlErrorTypes f2fsh_W( void )
   double *tmp_Ta;
   int ndims_Ta, dsizes_Ta[NCL_MAX_DIMENSIONS];
   NclScalar missing_Ta, missing_dTa, missing_rTa;
-  NclBasicDataTypes type_Ta;
+  NclBasicDataTypes type_Ta, type_Tb;
   int has_missing_Ta, found_missing;
   int nlata, nlona, igrida[2];
 /*
@@ -913,6 +868,7 @@ NhlErrorTypes f2fsh_W( void )
  * appropriate locations in Ta and Tb.
  */
   if(type_Ta != NCL_double) {
+    type_Tb = NCL_float;
     Tb = (void*)calloc(total_size_Tb,sizeof(float));
     tmp_Tb = (double*)calloc(nlatbnlonb,sizeof(double));
     tmp_Ta = (double*)calloc(nlatanlona,sizeof(double));
@@ -922,6 +878,7 @@ NhlErrorTypes f2fsh_W( void )
     }
   } 
   else { 
+    type_Tb = NCL_double;
     Tb = (void*)calloc(total_size_Tb,sizeof(double));
     if(Tb == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"f2fsh: Unable to allocate memory for output array");
@@ -1011,7 +968,7 @@ NhlErrorTypes f2fsh_W( void )
 /*
  * Copy output values from temporary array "tmp_Tb" to final array "Tb".
  */
-      if(type_Ta != NCL_double) {
+      if(type_Tb == NCL_float) {
         for(j = 0; j < nlatbnlonb; j++) {
           ((float*)Tb)[index_Tb+j] = (float)(tmp_Tb[j]);
         }
@@ -1037,35 +994,18 @@ NhlErrorTypes f2fsh_W( void )
   dsizes_Tb2[ndims_Ta-2] = nlatb;
   dsizes_Tb2[ndims_Ta-1] = nlonb;
 /*
- * Check whether to return floats or doubles. 
+ * Check if we need to return the missing value attribute.
  */
-  if(type_Ta != NCL_double) {
-/*
- * Return float values with missing value set.
- */
-    if(has_missing_Ta) {
-      return(NclReturnValue(Tb,ndims_Ta,dsizes_Tb2,&missing_rTa,NCL_float,0));
+  if(has_missing_Ta) {
+    if(type_Tb == NCL_float) {
+      return(NclReturnValue(Tb,ndims_Ta,dsizes_Tb2,&missing_rTa,type_Tb,0));
     }
-/*
- * Return float values with no missing value set.
- */
     else {
-      return(NclReturnValue(Tb,ndims_Ta,dsizes_Tb2,NULL,NCL_float,0));
+      return(NclReturnValue(Tb,ndims_Ta,dsizes_Tb2,&missing_dTa,type_Tb,0));
     }
   }
   else {
-/*
- * Return double values with missing value set.
- */
-    if(has_missing_Ta) {
-      return(NclReturnValue(Tb,ndims_Ta,dsizes_Tb2,&missing_dTa,NCL_double,0));
-    }
-/*
- * Return double values with no missing value set.
- */
-    else {
-      return(NclReturnValue(Tb,ndims_Ta,dsizes_Tb2,NULL,NCL_double,0));
-    }
+    return(NclReturnValue(Tb,ndims_Ta,dsizes_Tb2,NULL,type_Tb,0));
   }
 }
 
@@ -1080,7 +1020,7 @@ NhlErrorTypes fo2fsh_W( void )
   int ndims_goff, jlat, jlat1, ilon;
   int dsizes_goff[NCL_MAX_DIMENSIONS];
   NclScalar missing_goff, missing_dgoff, missing_rgoff;
-  NclBasicDataTypes type_goff;
+  NclBasicDataTypes type_goff, type_greg;
   int has_missing_goff, found_missing;
 /*
  * Output array variables
@@ -1141,6 +1081,7 @@ NhlErrorTypes fo2fsh_W( void )
  * appropriate locations in goff and greg.
  */
   if(type_goff != NCL_double) {
+    type_greg = NCL_float;
     greg = (void*)calloc(total_size_greg,sizeof(float));
     tmp_greg = (double*)calloc(jlat1ilon,sizeof(double));
     tmp_goff = (double*)calloc(jlatilon,sizeof(double));
@@ -1150,6 +1091,7 @@ NhlErrorTypes fo2fsh_W( void )
     }
   } 
   else { 
+    type_greg = NCL_double;
     greg = (void*)calloc(total_size_greg,sizeof(double));
     if(greg == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"fo2fsh: Unable to allocate memory for output array");
@@ -1234,7 +1176,7 @@ NhlErrorTypes fo2fsh_W( void )
 /*
  * Copy output values from temporary array "tmp_goff" to final array "goff".
  */
-      if(type_goff != NCL_double) {
+      if(type_greg == NCL_float) {
         for(j = 0; j < jlat1ilon; j++) {
           ((float*)greg)[index_greg+j] = (float)(tmp_greg[j]);
         }
@@ -1253,38 +1195,20 @@ NhlErrorTypes fo2fsh_W( void )
     NclFree(tmp_greg);
   }
 /*
- * Check whether to return floats or doubles. 
+ * Check if we need to return the missing value attribute.
  */
-  if(type_goff != NCL_double) {
-/*
- * Return float values with missing value set.
- */
-    if(has_missing_goff) {
+  if(has_missing_goff) {
+    if(type_greg == NCL_float) {
       return(NclReturnValue(greg,ndims_goff,dsizes_greg,&missing_rgoff,
-                            NCL_float,0));
+                            type_greg,0));
     }
-/*
- * Return float values with no missing value set.
- */
     else {
-      return(NclReturnValue(greg,ndims_goff,dsizes_greg,NULL,NCL_float,0));
+      return(NclReturnValue(greg,ndims_goff,dsizes_greg,&missing_dgoff,
+                            type_greg,0));
     }
   }
   else {
-/*
- * Return double values with missing value set.
- */
-    if(has_missing_goff) {
-      return(NclReturnValue(greg,ndims_goff,dsizes_greg,&missing_dgoff,
-                            NCL_double,0));
-    }
-/*
- * Return double values with no missing value set.
- */
-    else {
-      return(NclReturnValue(greg,ndims_goff,dsizes_greg,NULL,
-                            NCL_double,0));
-    }
+    return(NclReturnValue(greg,ndims_goff,dsizes_greg,NULL,type_greg,0));
   }
 }
 
@@ -1299,7 +1223,7 @@ NhlErrorTypes f2fosh_W( void )
   int ndims_greg, jlat, jlat1, ilon;
   int dsizes_greg[NCL_MAX_DIMENSIONS];
   NclScalar missing_greg, missing_dgreg, missing_rgreg;
-  NclBasicDataTypes type_greg;
+  NclBasicDataTypes type_greg, type_goff;
   int has_missing_greg, found_missing;
 /*
  * Output array variables
@@ -1360,6 +1284,7 @@ NhlErrorTypes f2fosh_W( void )
  * appropriate locations in goff and greg.
  */
   if(type_greg != NCL_double) {
+    type_goff = NCL_float;
     goff = (void*)calloc(total_size_goff,sizeof(float));
     tmp_greg = (double*)calloc(jlat1ilon,sizeof(double));
     tmp_goff = (double*)calloc(jlatilon,sizeof(double));
@@ -1369,6 +1294,7 @@ NhlErrorTypes f2fosh_W( void )
     }
   } 
   else { 
+    type_goff = NCL_double;
     goff = (void*)calloc(total_size_goff,sizeof(double));
     if(goff == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"f2fosh: Unable to allocate memory for output array");
@@ -1451,7 +1377,7 @@ NhlErrorTypes f2fosh_W( void )
 /*
  * Copy output values from temporary array "tmp_greg" to final array "greg".
  */
-      if(type_greg != NCL_double) {
+      if(type_goff == NCL_float) {
         for(j = 0; j < jlatilon; j++) {
           ((float*)goff)[index_goff+j] = (float)(tmp_goff[j]);
         }
@@ -1470,35 +1396,20 @@ NhlErrorTypes f2fosh_W( void )
     NclFree(tmp_greg);
   }
 /*
- * Check whether to return floats or doubles. 
+ * Check if we need to return the missing value attribute.
  */
-  if(type_greg != NCL_double) {
-    if(has_missing_greg) {
+  if(has_missing_greg) {
+    if(type_goff == NCL_float) {
       return(NclReturnValue(goff,ndims_greg,dsizes_goff,&missing_rgreg,
-                            NCL_float,0));
+                            type_goff,0));
     }
-/*
- * Return float values with no missing value set.
- */
     else {
-      return(NclReturnValue(goff,ndims_greg,dsizes_goff,NULL,NCL_float,0));
+      return(NclReturnValue(goff,ndims_greg,dsizes_goff,&missing_dgreg,
+                            type_goff,0));
     }
   }
   else {
-/*
- * Return double values with missing value set.
- */
-    if(has_missing_greg) {
-      return(NclReturnValue(goff,ndims_greg,dsizes_goff,&missing_dgreg,
-                            NCL_double,0));
-    }
-/*
- * Return double values with no missing value set.
- */
-    else {
-      return(NclReturnValue(goff,ndims_greg,dsizes_goff,NULL,
-                            NCL_double,0));
-    }
+    return(NclReturnValue(goff,ndims_greg,dsizes_goff,NULL,type_goff,0));
   }
 }
 

@@ -235,19 +235,5 @@ NhlErrorTypes hydro_W( void )
   if(type_zsfc != NCL_double) NclFree(tmp_zsfc);
   if(type_zh   != NCL_double) NclFree(tmp_zh);
 
-/*
- * Return values
- */
-  if(type_zh != NCL_double) {
-/*
- * Return float values.
- */
-    return(NclReturnValue(zh,ndims_p,dsizes_p,NULL,NCL_float,0));
-  }
-  else {
-/*
- * Return double values.
- */
-    return(NclReturnValue(zh,ndims_p,dsizes_p,NULL,NCL_double,0));
-  }
+  return(NclReturnValue(zh,ndims_p,dsizes_p,NULL,type_zh,0));
 }
