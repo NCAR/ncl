@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.63 1998-04-16 03:08:47 dbrown Exp $
+ *      $Id: MapPlot.c,v 1.64 1998-04-21 18:32:37 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -873,6 +873,22 @@ NhlMapPlotClassRec NhlmapPlotClassRec = {
 
 NhlClass NhlmapPlotClass = (NhlClass)&NhlmapPlotClassRec;
 
+static char *BGroup_Names[] = { 
+	NhlmpNULLAREA,
+	NhlmpALLNATIONAL,
+	NhlmpALLGEOPHYSICAL,
+	NhlmpLAND,
+	NhlmpWATER,
+	NhlmpINLANDWATER,
+	NhlmpOCEANS,
+	NhlmpCONTINENTS,
+	NhlmpISLANDS,
+	NhlmpLARGEISLANDS,
+	NhlmpSMALLISLANDS,
+	NhlmpALLUSSTATES,
+	NhlmpUSSTATESLAND,
+	NhlmpUSSTATESWATER };
+
 static NrmQuark	Qfloat = NrmNULLQUARK;
 static NrmQuark Qint = NrmNULLQUARK;
 static NrmQuark Qstring = NrmNULLQUARK;
@@ -897,10 +913,6 @@ static NhlBoolean Global_Amap_Inited;
 static NhlBoolean US_Amap_Inited;
 static NhlBoolean Grid_Setup;
 
-#if 0
-static int Init_Colors[] ={106,104,57,104,19,23,41,53,60,88,90,100,110};
-static int Init_Colors[] ={84,56,74,56,89,65,81,70,39,68,72,56,95};
-#endif
 static int Init_Colors[] ={16,10, 8,10,26,22,11,23,13,19,24,25,21,20,18};
 
 
@@ -1040,35 +1052,6 @@ static short Exp_Ids_Count[][2] = {
 	{0,NhlNumber(PS_Bahamas_2)},
 	{0,NhlNumber(PS_Bahamas_3)},
 	{0,0} };
-
-#if 0
-/* north+southamerica */
-static int NatCOSegs[] = {
-/* n+s-america */
-	21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,
-	42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,
-/* tierra-del-fuego */
-	84,85,86,
-/* haiti-dominican-republic */
-	94,95,96,
-/* africa-eurasia */
-	163,164,165,166,167,168,169,170,171,172,173,
-	174,175,176,177,178,179,180,181,182,183,184,185,186,187,188,189,
-	190,191,192,193,194,195,196,197,198,199,200,201,202,203,204,205,
-	206,207,208,209,211,212,213,214,215,216,217,218,219,220,221,222,
-	223,224,225,226,227,228,229,230,231,232,233,234,235,236,237,238,
-	239,240,241,242,243,244,245,246,247,248,249,250,251,252,253,254,
-	255,256,257,258,259,
-/* england-scotland-wales */
-	349,350,351,352,353,
-/* ireland */
-	354,355,356,
-/* borneo */
-	403,404,405,
-	406,407,
-/* new-guinea */
-	416,417,418 };
-#endif
 
 /*
  * Function:	nhlfmapplotclass
@@ -2675,10 +2658,11 @@ static NhlErrorTypes mpFill
                flx,frx,fby,fuy,wlx,wrx,wby,wuy); 
 #endif
 
-	if (1) {
 #if 0
-	if (mpp->global_fill_mode != mpNONE) {
+	if (1) {
 #endif
+
+	if (mpp->global_fill_mode != mpNONE) {
 		
 		subret = mpSetUpAreamap(mp,&aws,mpGLOBAL_AMAP,entry_name);
 		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
@@ -2792,7 +2776,8 @@ static NhlErrorTypes mpGrid
 		_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
 		return ret;
 	}
-	if (mpp->global_fill_mode != mpNONE) {
+	if (mpp->global_fill_mode > mpNONE ||
+            mpp->usstates_fill_mode == mpNOSET) {
 		
 		subret = mpSetUpAreamap(mp,&aws,mpGLOBAL_AMAP,entry_name);
 		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
@@ -3058,8 +3043,9 @@ static NhlErrorTypes mpSetUpDrawIds
 /*
  * Set Up the Draw List for the map boundary catagories. The specification
  * lists are parsed later and thus overrride the general catagories.
- */
 	for (i = 0; i < NhlmpOUTLINE_TYPE_COUNT - 2; i++) {
+ */
+	for (i = 0; i < NhlmpOUTLINE_TYPE_COUNT; i++) {
 		if (groups[i].u.f.draw_mode > mpBACKGROUND) {
 			uflags.flags = groups[i].u.flags;
 			s_index = groups[i].s_ix;
@@ -3286,9 +3272,12 @@ static NhlErrorTypes mpSetUpStateDrawIds
 	}
 
 	if (draw_op != mpDRAWOUTLINE) {
+                unsigned char draw_mode = gmode == mpNONE ?
+                        mpBACKGROUND : mpSYSEXCLUDE;
+                
 		for (i = 0; i < NhlNumber(USState_Excludes); i++) {
 			DrawIds[USState_Excludes[i]-offset].u.f.draw_mode = 
-				mpSYSEXCLUDE;
+				draw_mode;
 		}
 	}
 
@@ -5425,6 +5414,10 @@ static NhlErrorTypes mpSetUpTransObj
 		subret = _NhlVACreateChild(&tmpid,buffer,
 					   NhlmapTransObjClass,
 					   (NhlLayer) mpnew, 
+                                           NhlNtrDataXStartF,tfp->data_xstart,
+                                           NhlNtrDataXEndF,tfp->data_xend,
+                                           NhlNtrDataYStartF,tfp->data_ystart,
+                                           NhlNtrDataYEndF,tfp->data_yend,
 					   NhlNmpPreserveAspectRatio,
 					   preserve_aspect,
 					   NULL);
@@ -5441,6 +5434,13 @@ static NhlErrorTypes mpSetUpTransObj
 
 	}
 	else {
+                    /*
+                     * Note that MapPlot never changes the data limits
+                     * itself, but plot objects must update the data limits
+                     * each time they draw in order to ensure that MapTransObj
+                     * is operating with the correct longitude cycle.
+                     */
+                
 		if (mpnew->mapplot.shape_mode != mpold->mapplot.shape_mode) {
 			if (mpnew->mapplot.shape_mode == NhlFREEASPECT)
 				preserve_aspect = False;
@@ -5746,107 +5746,138 @@ int (_NHLCALLF(hlumaskgrid,HLUMASKGRID))
 	id = *iai - Id_Offset[Outline_Set];
 	if (id < 0)
 		return 0;
-	switch (Mpp->grid_mask_mode) {
-	case NhlMASKNONE:
-	default:
-		draw_line = True;
-		break;
-	case NhlMASKOCEAN:
-		if (id != 1)
-			draw_line = True;
-		break;
-	case NhlMASKNOTOCEAN:
-		if (id == 1 ||
-		    DrawIds[id].u.f.draw_mode == mpBACKGROUND) {
-			draw_line = True;
-		}
-		break;
-	case NhlMASKLAND:
-		switch (Outline_Set) {
-		case mpEMPTY:
-			draw_line = True;
-			break;
-		case mpCO:
-			ix = 0;
-			type = mpInlandWater;
-			break;
-		case mpPO:
-			ix = 1;
-			type = mpInlandWater;
-			break;
-		case mpUS:
-			ix = 1;
-			type = mpUSStateWater;
-			break;
-		case mpPS:
-			ix = 2;
-			type = mpInlandWater;
-			break;
-		}
+        
+        if (DrawIds[id].u.f.draw_mode == mpBACKGROUND)
+                draw_line = True;
+        else {
+                switch (Mpp->grid_mask_mode) {
+                    case NhlMASKNONE:
+                    default:
+                            draw_line = True;
+                            break;
+                    case NhlMASKOCEAN:
+                            switch (Outline_Set) {
+                                case mpEMPTY:
+                                        draw_line = True;
+                                        break;
+                                case mpCO:
+                                case mpPO:
+                                case mpPS:
+                                        if (id != 1)
+                                                draw_line = True;
+                                        break;
+                                case mpUS:
+                                        if (id > 0)
+                                                draw_line = True;
+                                        break;
+                            }
+                            break;
+                    case NhlMASKNOTOCEAN:
+                            switch (Outline_Set) {
+                                case mpEMPTY:
+                                        draw_line = True;
+                                        break;
+                                case mpCO:
+                                case mpPO:
+                                case mpPS:
+                                        if (id == 1)
+                                                draw_line = True;
+                                        break;
+                                case mpUS:
+                                        break;
+                            }
+                            break;
+                    case NhlMASKLAND:
+                            switch (Outline_Set) {
+                                case mpEMPTY:
+                                        draw_line = True;
+                                        break;
+                                case mpCO:
+                                        ix = 0;
+                                        type = mpInlandWater;
+                                        if (id == 1)
+                                                draw_line = True;
+                                        break;
+                                case mpPO:
+                                        ix = 1;
+                                        if (id == 1)
+                                                draw_line = True;
+                                        type = mpInlandWater;
+                                        break;
+                                case mpUS:
+                                        ix = 1;
+                                        type = mpUSStateWater;
+                                        break;
+                                case mpPS:
+                                        ix = 2;
+                                        if (id == 1)
+                                                draw_line = True;
+                                        type = mpInlandWater;
+                                        break;
+                            }
+                            if (! draw_line) {
+                                    for (i = Otype_Start[type]; 
+                                         i < Otype_Start[type + 1]; i++) {
+                                            if (id == OutRecs[i].id[ix] - 
+                                                Id_Offset[Outline_Set]) {
+                                                    draw_line = True;
+                                                    break;
+                                            }
+                                    }
+                            }
+                            break;
+                    case NhlMASKNOTLAND:
+                            draw_line = True;
+                            switch (Outline_Set) {
+                                case mpEMPTY:
+                                        draw_line = True;
+                                        break;
+                                case mpCO:
+                                        ix = 0;
+                                        if (id == 1)
+                                                draw_line = False;
+                                        type = mpInlandWater;
+                                        break;
+                                case mpPO:
+                                        ix = 1;
+                                        if (id == 1)
+                                                draw_line = False;
+                                        type = mpInlandWater;
+                                        break;
+                                case mpUS:
+                                        ix = 0;
+                                        if (id <= 0)
+                                                draw_line = False;
+                                        type = mpUSStateWater;
+                                        break;
+                                case mpPS:
+                                        ix = 2;
+                                        if (id == 1)
+                                                draw_line = False;
+                                        type = mpInlandWater;
+                                        break;
+                            }
 
-		if (id == 1) {
-			draw_line = True;
-		}
-		else {
-			for (i = Otype_Start[mpInlandWater]; 
-			     i < Otype_Start[mpInlandWater + 1]; i++) {
-				if (id == OutRecs[i].id[ix] - 
-				    Id_Offset[Outline_Set]) {
-					draw_line = True;
-					break;
-				}
-			}
-		}
-		break;
-	case NhlMASKNOTLAND:
-		draw_line = True;
-		switch (Outline_Set) {
-		case mpEMPTY:
-			draw_line = True;
-			break;
-		case mpCO:
-			ix = 0;
-			type = mpInlandWater;
-			break;
-		case mpPO:
-			ix = 1;
-			type = mpInlandWater;
-			break;
-		case mpUS:
-			ix = 0;
-			type = mpUSStateWater;
-			break;
-		case mpPS:
-			ix = 2;
-			type = mpInlandWater;
-			break;
-		}
-
-		if (id == 1) {
-			draw_line = False;
-		}
-		else {
-			for (i = Otype_Start[mpInlandWater]; 
-			     i < Otype_Start[mpInlandWater + 1]; i++) {
-				if (id == OutRecs[i].id[ix] - 
-				    Id_Offset[Outline_Set]) {
-					draw_line = False;
-					break;
-				}
-			}
-		}
-		break;
-	case NhlMASKFILLAREA:
-		if (DrawIds[id].u.f.draw_mode == mpBACKGROUND) {
-			draw_line = True;
-		}
-		break;
-	case NhlMASKMASKAREA:
-		if (DrawIds[id].u.f.draw_mode < mpMASK) {
-			draw_line = True;
-		}
-		break;
-	}
+                            if (draw_line) {
+                                    for (i = Otype_Start[type]; 
+                                         i < Otype_Start[type + 1]; i++) {
+                                            if (id == OutRecs[i].id[ix] - 
+                                                Id_Offset[Outline_Set]) {
+                                                    draw_line = False;
+                                                    break;
+                                            }
+                                    }
+                            }
+                            break;
+                    case NhlMASKFILLAREA:
+                            break;
+                    case NhlMASKMASKAREA:
+                            if (DrawIds[id].u.f.draw_mode < mpMASK) {
+                                    draw_line = True;
+                            }
+                            break;
+                }
+        }
 	if (! draw_line)
 		return 0;
 		

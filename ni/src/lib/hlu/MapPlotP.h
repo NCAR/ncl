@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlotP.h,v 1.16 1997-08-14 16:30:16 dbrown Exp $
+ *      $Id: MapPlotP.h,v 1.17 1998-04-21 18:32:38 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -197,22 +197,6 @@ typedef enum _mpBGroups {
 	mpUSSTATESLAND,
 	mpUSSTATESWATER 
 } mpBGroups;
-
-static char *BGroup_Names[] = { 
-	NhlmpNULLAREA,
-	NhlmpALLNATIONAL,
-	NhlmpALLGEOPHYSICAL,
-	NhlmpLAND,
-	NhlmpWATER,
-	NhlmpINLANDWATER,
-	NhlmpOCEANS,
-	NhlmpCONTINENTS,
-	NhlmpISLANDS,
-	NhlmpLARGEISLANDS,
-	NhlmpSMALLISLANDS,
-	NhlmpALLUSSTATES,
-	NhlmpUSSTATESLAND,
-	NhlmpUSSTATESWATER };
 
 typedef struct NhlMapPlotLayerPart {
 

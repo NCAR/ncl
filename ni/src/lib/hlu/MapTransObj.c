@@ -1,5 +1,5 @@
 /*
-*      $Id: MapTransObj.c,v 1.41 1998-04-16 03:08:51 dbrown Exp $
+*      $Id: MapTransObj.c,v 1.42 1998-04-21 18:32:38 dbrown Exp $
 */
 /************************************************************************
 *									*
@@ -1322,9 +1322,13 @@ static NhlErrorTypes  MapTransSetValues
 	char *e_text, *entry_name = "MapTransSetValues";
 
 	if (num_args == 2 && 
-	    (args[0].quark == Qdataxstart || args[0].quark == Qdataxend))
-	    return NhlNOERROR;
-
+	    (args[0].quark == Qdataxstart || args[0].quark == Qdataxend)) {
+                mtp->data_xmin = MIN(mnew->trobj.data_xstart,
+                                     mnew->trobj.data_xend);
+                mtp->data_xmax = MAX(mnew->trobj.data_xstart,
+                                     mnew->trobj.data_xend);
+                return NhlNOERROR;
+        }
 	mtp->trans_changed = True;
 	mnew->trobj.change_count++;
 
