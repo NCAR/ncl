@@ -1,8 +1,8 @@
-#!/bin/csh
-set version = 030128    # YYMMDD
-if ($argv[1]:q == "-h") then
+#!/bin/csh -f
+set version = 030327    # YYMMDD
 echo " " 
 echo "WRAPIT Version: "$version 
+if ($argv[1]:q == "-h") then
 echo written by Mark Stevens, NCAR/CGD/Climate Modeling Section
 echo e-mail: stevens@ucar.edu
 echo "---------------------------------------------------------------------"
@@ -32,7 +32,8 @@ echo " "
 echo "-------------------- Command Line Options --------------------------"
 echo The six available options must appear on the command line before
 echo the fortran file names. 
-echo "OPTION: -d displays debug information and prevents file cleanup." 
+echo "OPTION: -d turns on array bounds checking, turns off optimization,"
+echo "displays some debug information and prevents file cleanup." 
 echo "OPTION: -h displays information comments and usage examples."
 echo "OPTION: -l <libname> passes a library name to the linker."
 echo "OPTION: -L <libpath> passes a directory path to the linker."
@@ -113,49 +114,8 @@ else
 endif
 #echo ARGUMENTS: $argv 
 
-# set the initial compiler options
-if ($OS == "Linux") then            # determine Linux compiler 
-  which pgf90                       # Portland Group compiler
-  if ($status) then                 # no pgf90 compiler (status=1)
-    which lf95                      # Lahey/Fujitsu compiler
-    if ($status) then               # no lf95 compiler (status=1)
-      echo "NO f90/f95 COMPILER FOUND. CHECKING FOR f77 (or g77) COMPILER." 
-      which f77
-      if ($status) then             # no f77 compiler found (status=1)
-        which g77
-        if ($status) then           # no g77 compiler found (status=1)
-          echo "ERROR: NO f77 or g77 COMPILER FOUND, PLEASE CHECK YOUR PATH." 
-          exit
-        else
-          set f90c = g77            # use g77 (has to be there!)
-        endif
-      else
-        set f90c = f77              # f77
-      endif
-      set fopts = "-c -O"
-    else
-      set f90c = lf95               # Lahey/Fujitsu compiler
-      set fopts = "-c -O"
-    endif
-  else                              # Portland Group compiler
-    set f90c = pgf90
-    set fopts = "-c -O"
-  endif
-else if ($OS == "AIX") then          # AIX 
-  set fopts = "-c -q64 -qmaxmem=-1 -qarch=auto -O" 
-else if ($OS == "IRIX64") then       # SGI
-  set fopts = "-c -64 -O"
-else if ($OS == "Darwin") then       # MacOSX
-  set f90c = g77                     
-  set fopts = "-c -O -fno-common"
-else if ($OS == "HP-UX") then        # HP-UX
-  set fopts = "+z -c -O"
-else                                 # SunOS and OSF1 
-  set fopts = "-c -O" 
-endif
-
-set real8 = 0                         # flag for real*8
-set debug = 0
+set real8 = 0     # off 
+set debug = 0     # off
 
 # get a name for the shared object file
 set SharedObj = NONE
@@ -165,8 +125,6 @@ while ($#argv)
 # echo ARG: $arg
   if ($arg:q == "-d") then
     set debug = 1
-    echo " " 
-    echo DEBUG ON
   else if ($arg:q == "-r8") then
     set real8 = 1
   else if ($arg:q == "-n") then
@@ -221,31 +179,136 @@ end
 
 set args = ($argv)     # save list of remaining arguments
 
+# set the compiler options
+if ($OS == "Linux") then            # determine Linux compiler 
+  which pgf90                       # Portland Group compiler
+  if ($status) then                 # no pgf90 compiler (status=1)
+    which lf95                      # Lahey/Fujitsu compiler
+    if ($status) then               # no lf95 compiler (status=1)
+      echo "NO f90/f95 COMPILER FOUND. CHECKING FOR f77 (or g77) COMPILER." 
+      which f77
+      if ($status) then             # no f77 compiler found (status=1)
+        which g77
+        if ($status) then           # no g77 compiler found (status=1)
+          echo "ERROR: NO f77 or g77 COMPILER FOUND, PLEASE CHECK YOUR PATH." 
+          exit
+        else
+          set f90c = g77            # use g77 (has to be there!)
+        endif
+      else
+        set f90c = f77              # f77
+      endif
+      if ($debug == 1) then
+        set fopts = "-c -C"
+      else
+        set fopts = "-c -O"
+      endif
+    else
+      set f90c = lf95               # Lahey/Fujitsu compiler
+      if ($debug == 1) then
+        set fopts = "-c -C"
+      else
+        set fopts = "-c -O"
+      endif 
+    endif
+  else                              # Portland Group compiler
+    set f90c = pgf90
+    if ($debug == 1) then
+      set fopts = "-c -C"
+    else
+      set fopts = "-c -O"
+    endif
+  endif
+else if ($OS == "AIX") then          # AIX 
+  if ($debug == 1) then
+    set fopts = "-c -C -q64 -qmaxmem=-1 -qarch=auto" 
+  else
+    set fopts = "-c -q64 -qmaxmem=-1 -qarch=auto -O" 
+  endif
+else if ($OS == "IRIX64") then       # SGI
+  if ($debug == 1) then
+    set fopts = "-c -C -64"
+  else
+    set fopts = "-c -64 -O"
+  endif
+else if ($OS == "Darwin") then       # MacOSX
+  set f90c = g77                     
+  if ($debug == 1) then
+    set fopts = "-c -C -fno-common"
+  else
+    set fopts = "-c -O -fno-common"
+  endif
+else if ($OS == "HP-UX") then        # HP-UX
+  if ($debug == 1) then
+    set fopts = "+z -c -C"
+  else
+    set fopts = "+z -c -O"
+  endif
+else                                 # SunOS and OSF1 
+  if ($debug == 1) then
+    set fopts = "-c -C" 
+  else
+    set fopts = "-c -O" 
+  endif
+endif
+
 # reset compiler options for real*8
 if ($real8 == 1) then
   if ($OS == "AIX") then
-    set fopts = "-c -q64 -qmaxmem=-1 -qarch=auto -O -qautodbl=dbl4"
+    if ($debug == 1) then
+      set fopts = "-c -q64 -qmaxmem=-1 -qarch=auto -C -qautodbl=dbl4"
+    else
+      set fopts = "-c -q64 -qmaxmem=-1 -qarch=auto -O -qautodbl=dbl4"
+    endif
   else if ($OS == "IRIX64") then
-    set fopts = "-c -64 -O -r8" 
+    if ($debug == 1) then
+      set fopts = "-c -64 -C -r8" 
+    else
+      set fopts = "-c -64 -O -r8" 
+    endif
   else if ($OS == "OSF1") then
-    set fopts = "-c -O -r8" 
+    if ($debug == 1) then
+      set fopts = "-c -C -r8" 
+    else
+      set fopts = "-c -O -r8" 
+    endif
   else if ($OS == "HP-UX") then
-    set fopts = "+z -c -O +r8" 
+    if ($debug == 1) then
+      set fopts = "+z -c -C +r8" 
+    else
+      set fopts = "+z -c -O +r8" 
+    endif
   else if ($OS == "SunOS") then
-    set fopts = "-c -O -xtypemap=real:64"
+    if ($debug == 1) then
+      set fopts = "-c -C -xtypemap=real:64"
+    else
+      set fopts = "-c -O -xtypemap=real:64"
+    endif
   else                                # Linux 
     if ($f90c == "pgf90") then        # Portland Group
-      set fopts = "-c -O -r8"
+      if ($debug == 1) then
+        set fopts = "-c -C -r8"
+      else
+        set fopts = "-c -O -r8"
+      endif
     else if ($f90c == "lf95") then    # Lahey/Fujitsu
-      set fopts = "-c -O --dbl"
+      if ($debug == 1) then
+        set fopts = "-c -C --dbl"
+      else
+        set fopts = "-c -O --dbl"
+      endif
     else
-      set fopts = "-c -O"             # g77 (f77)
+      if ($debug == 1) then
+        set fopts = "-c -C"             # g77 (f77)
+      else
+        set fopts = "-c -O"             # g77 (f77)
+      endif
     endif
   endif
 endif
 
-if ($debug) then
-  echo "WRAPIT Version: "$version
+if ($debug == 1) then
+# echo "WRAPIT Version: "$version
   echo "OPERATING SYSTEM: "$OS
   if ($OS == "Linux" || $OS == "Darwin") then
     echo "FORTRAN COMPILER (f90c): "$f90c
@@ -267,19 +330,40 @@ while ($#argv)
     exit
   endif
 end
-wrapit77 < WRAPIT.stub >! WRAPIT.c
+$NCARG_ROOT/bin/wrapit77 < WRAPIT.stub >! WRAPIT.c
 
 if ($OS == "AIX") then
-  xlc -DRS6000 -D_POSIX_SOURCE -D_XOPEN_SOURCE -D_XOPEN_SOURCE_EXTENDED=1 \
+  if ($debug == 1) then
+    xlc -DRS6000 -D_POSIX_SOURCE -D_XOPEN_SOURCE -D_XOPEN_SOURCE_EXTENDED=1 \
+     -c -q64 -qmaxmem=-1 -qarch=auto -C -I${NCARG_ROOT}/include WRAPIT.c 
+  else
+    xlc -DRS6000 -D_POSIX_SOURCE -D_XOPEN_SOURCE -D_XOPEN_SOURCE_EXTENDED=1 \
      -c -q64 -qmaxmem=-1 -qarch=auto -O -I${NCARG_ROOT}/include WRAPIT.c 
+  endif
 else if ($OS == "IRIX64") then
-  cc -c -64 -O -I${NCARG_ROOT}/include WRAPIT.c
+  if ($debug == 1) then
+    cc -c -64 -C -I${NCARG_ROOT}/include WRAPIT.c
+  else
+    cc -c -64 -O -I${NCARG_ROOT}/include WRAPIT.c
+  endif
 else if ($OS == "Darwin") then
-  cc -c -fno-common -O -I${NCARG_ROOT}/include WRAPIT.c
+  if ($debug == 1) then
+    cc -c -fno-common -C -I${NCARG_ROOT}/include WRAPIT.c
+  else
+    cc -c -fno-common -O -I${NCARG_ROOT}/include WRAPIT.c
+  endif
 else if ($OS == "HP-UX") then
-  cc +z -c -O -I${NCARG_ROOT}/include WRAPIT.c
+  if ($debug == 1) then
+    cc +z -c -C -I${NCARG_ROOT}/include WRAPIT.c
+  else
+    cc +z -c -O -I${NCARG_ROOT}/include WRAPIT.c
+  endif
 else           # Linux, OSF1 SunOS 
-  cc -c -O -I${NCARG_ROOT}/include WRAPIT.c
+  if ($debug == 1) then
+    cc -c -C -I${NCARG_ROOT}/include WRAPIT.c
+  else
+    cc -c -O -I${NCARG_ROOT}/include WRAPIT.c
+  endif
 endif
 echo WRAPIT.o > objects
 
@@ -293,7 +377,7 @@ foreach arg ($args)
         else                               # free format
           xlf90 $fopts -qsuffix=f=f90 $arg
         endif
-      else if ($OS == "Linux" || $OS == "Darwin") then  # use g77
+      else if ($OS == "Linux" || $OS == "Darwin") then  
         $f90c $fopts $arg
       else                                # IRIX64, OSF1, SunOS, HP-UX 
         f90 $fopts $arg
@@ -324,14 +408,15 @@ if ($debug) then
   echo " "
 endif
 
+echo LINKING
 if ($OS == "AIX") then
-  if ($debug) then
-    ld -bnoquiet -G -b64 -bnoentry -bexpall -lm -lc -lxlf90 $ld_suffix
+  if ($debug == 1) then
+    ld -bnoquiet -G -b64 -bnoentry -bexpall -lm -lc -lxlf90 -lxlf $ld_suffix
   else
-    ld -G -b64 -bnoentry -bexpall -lm -lc -lxlf90 $ld_suffix
+    ld -G -b64 -bnoentry -bexpall -lm -lc -lxlf90 -lxlf $ld_suffix
   endif
 else if ($OS == "IRIX64") then
-  if ($debug) then
+  if ($debug == 1) then
     ld -v -V -64 -shared $ld_suffix
   else
     ld -64 -shared $ld_suffix
@@ -339,13 +424,15 @@ else if ($OS == "IRIX64") then
   'rm' so_locations
 else if ($OS == "Linux") then 
   if ($f90c == "pgf90") then   # PG compiler
-    if ($debug) then
+    if ($debug == 1) then
       $f90c -V -v -shared $ld_suffix
     else
       $f90c -shared $ld_suffix
     endif
-  else                         # LF compiler
-   $f90c --shared -lfj9f6 -lfj9i6 -lfj9e6 $ld_suffix
+  else if ($f90c == "lf95")    # LF compiler
+    $f90c --shared -lfj9f6 -lfj9i6 -lfj9e6 $ld_suffix
+  else                         # g77 compiler
+    ld -shared $ld_suffix
   endif
 else if ($OS == "OSF1") then 
   f90 -shared $ld_suffix
@@ -355,7 +442,7 @@ else if ($OS == "Darwin") then   # MacOSX
 else if ($OS == "HP-UX") then    # HP-UX
   ld -b $ld_suffix
 else                             # SunOS
-  if ($debug) then
+  if ($debug == 1) then
     ld -V -G -lsunperf -lfsu -lfai2 -lfsumai $ld_suffix
   else
     ld -G -lsunperf -lfsu -lfai2 -lfsumai $ld_suffix
@@ -363,9 +450,11 @@ else                             # SunOS
 endif
 
 # clean up
-if (! $debug) then
+if ($debug == 0) then
  'rm' $object_files
  'rm' objects
  'rm' WRAPIT.c
  'rm' WRAPIT.stub
 endif
+echo END WRAPIT
+echo " "
