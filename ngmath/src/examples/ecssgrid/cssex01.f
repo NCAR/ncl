@@ -1,5 +1,5 @@
 C
-C       $Id: cssex01.f,v 1.5 2000-01-12 22:58:02 fred Exp $
+C       $Id: cssex01.f,v 1.6 2000-01-12 23:50:55 fred Exp $
 C
       PROGRAM CSEX01
 C
@@ -106,14 +106,14 @@ C
      +              NCA,NUMV,NV,IER)
         DO 855 NN=2,NUMV
 C
-C  Convert latitudes and longitudes to radians.
+C  Get a polygonal segment.
 C
           RLAT1 = PLAT(NV(NN-1))
           RLON1 = PLON(NV(NN-1))
           RLAT2 = PLAT(NV(NN))
           RLON2 = PLON(NV(NN))
 C
-C  Plot.
+C  Plot it.
 C
           CALL GSPLCI(3)
           CALL MAPGCI(RLAT1,RLON1,RLAT2,RLON2,NARC,ARCLAT,ARCLON)

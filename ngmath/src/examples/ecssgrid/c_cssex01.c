@@ -1,5 +1,5 @@
 /*
- *      $Id: c_cssex01.c,v 1.6 2000-01-12 22:58:01 fred Exp $
+ *      $Id: c_cssex01.c,v 1.7 2000-01-12 23:50:55 fred Exp $
  */
 
 #include <stdio.h>
@@ -149,7 +149,7 @@ main()
 
 /*
  *  Draw the Voronoi polygons (note that c_csvcoro has already
- *  been call once above with no intervening call that would
+ *  been called once above with no intervening call that would
  *  change the work arrays).
  */
   for (i = 0; i < N; i++) {
