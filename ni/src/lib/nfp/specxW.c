@@ -730,10 +730,10 @@ NhlErrorTypes specxy_anal_W( void )
 /*
  * Calculate coherence corresponding to the 90, 95, 99, and 99.9% levels.
  */
-  prob_tmp[0] = 1.-pow((1.-0.900),(sinfo[0]/2.-1.));
-  prob_tmp[1] = 1.-pow((1.-0.950),(sinfo[0]/2.-1.));
-  prob_tmp[2] = 1.-pow((1.-0.990),(sinfo[0]/2.-1.));
-  prob_tmp[3] = 1.-pow((1.-0.999),(sinfo[0]/2.-1.));
+  prob_tmp[0] = 1.-pow((1.-0.900),(1./(sinfo[0]/2.-1.)));
+  prob_tmp[1] = 1.-pow((1.-0.950),(1./(sinfo[0]/2.-1.)));
+  prob_tmp[2] = 1.-pow((1.-0.990),(1./(sinfo[0]/2.-1.)));
+  prob_tmp[3] = 1.-pow((1.-0.999),(1./(sinfo[0]/2.-1.)));
 
 
   coerce_output_float_or_double(   dof,    &sinfo[0],type_dof,1,0);
