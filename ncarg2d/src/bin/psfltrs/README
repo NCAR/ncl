@@ -1,6 +1,6 @@
 This filters created in this directory may be tested (at NCAR) as follows:
 
-  ftrans -d ps.color ps.input.file > ps.output.file
+  ctrans -d ps.color ps.input.file > ps.output.file
   psblack < ps.output.file > ps.output.file.black
   pswhite < ps.output.file > ps.output.file.white
   ps.imagen ps.output.file
