@@ -1,5 +1,5 @@
 /*
- *	$Id: rasdraw.h,v 1.4 1992-09-01 23:40:10 clyne Exp $
+ *	$Id: rasdraw.h,v 1.5 1993-11-03 23:57:24 clyne Exp $
  */
 #ifndef	_rasdraw_
 #define	_rasdraw_
@@ -31,6 +31,7 @@ typedef	struct	{
 	Widget	canvas;		/* we draw in this widgets window	*/
 	Boolean	batch;		/* Should DrawRas interact with user	*/
 	Boolean	load_pal;	/* Should DrawRas load pal from *ras	*/
+	Boolean	pal_loaded;	/* Default palette already loaded?	*/
 	XColor	*xcolors;	/* color map for image			*/
 	RGBList	default_pal;	/* default palette to use if !load_pal	*/
 	int	xcolor_size;	/* memory allocated to colors		*/

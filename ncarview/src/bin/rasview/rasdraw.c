@@ -1,5 +1,5 @@
 /*
- *	$Id: rasdraw.c,v 1.11 1993-03-31 20:28:31 clyne Exp $
+ *	$Id: rasdraw.c,v 1.12 1993-11-03 23:57:20 clyne Exp $
  */
 /*
  *	rasdraw.c
@@ -279,10 +279,14 @@ static	int	load_palette(ras, context)
 						(unsigned) ras->ncolor,context);
 		}
 		else {
-			(void) load_palette_(context->default_pal.red, 
-				context->default_pal.green, 
-				context->default_pal.blue,
-				context->default_pal.ncolor, context);
+			if (! context->pal_loaded) {	/* already loaded? */
+				(void) load_palette_(context->default_pal.red, 
+					context->default_pal.green, 
+					context->default_pal.blue,
+					context->default_pal.ncolor, context);
+
+				context->pal_loaded = True;
+			}
 		}
 	}
 	else {
@@ -291,10 +295,17 @@ static	int	load_palette(ras, context)
 						(unsigned) ras->ncolor,context);
 		}
 		else {
-			(void) load_static_pal_(context->default_pal.red, 
-				context->default_pal.green, 
-				context->default_pal.blue,
-				context->default_pal.ncolor, context);
+			if (! context->pal_loaded) {	/* already loaded? */
+
+				(void) load_static_pal_(
+					context->default_pal.red, 
+					context->default_pal.green, 
+					context->default_pal.blue,
+					context->default_pal.ncolor, context
+				);
+
+				context->pal_loaded = True;
+			}
 		}
 
 	}
@@ -969,6 +980,7 @@ int	RasDrawSetPalette(context, red, green, blue, ncolor)
 
 	context->default_pal.ncolor = ncolor;
 	context->load_pal = False;
+	context->pal_loaded = False;
 
 	return(1);
 }
