@@ -1,5 +1,5 @@
 /*
-*      $Id: MapTransObj.c,v 1.51 2001-11-13 01:26:50 dbrown Exp $
+*      $Id: MapTransObj.c,v 1.52 2001-11-28 01:01:01 dbrown Exp $
 */
 /************************************************************************
 *									*
@@ -540,7 +540,8 @@ static mpWinLimits Win_Limits[] = {
 	{ -mpPI, 2.0 * mpPI, -mpPI, 2.0 * mpPI },
 	{ -180.0, 360.0, -90.0, 180.0 },
 	{ -1.0, 2.0, -1.0, 2.0 },
-	{ -1.0, 2.0, -1.0, 2.0 }
+	{ -1.0, 2.0, -1.0, 2.0 },
+        { -1.0, 2.0, -0.5072, 2 * 0.5072 }
 };
 
 static NhlLayer Wkptr = NULL;
@@ -660,7 +661,8 @@ NhlLayer parent;
 		break;
 	case NhlMOLLWEIDE:
 		cproj = "MO";
-		h_angle_lim = v_angle_lim = 180;
+		h_angle_lim = 180;
+		v_angle_lim = 90;
 		ix = 5;
 		break;
 	case NhlMERCATOR:
@@ -671,8 +673,8 @@ NhlLayer parent;
 		break;
 	case NhlCYLINDRICALEQUIDISTANT:
 		cproj = "CE";
-		h_angle_lim = 90;
-		v_angle_lim = 180;
+		h_angle_lim = 180;
+		v_angle_lim = 90;
 		ix = 7;
 		break;
 	case NhlLAMBERTCONFORMAL:
@@ -691,6 +693,12 @@ NhlLayer parent;
 		h_angle_lim = v_angle_lim = 90;
 		cproj = "SV";
 		ix = 9;
+		break;
+	case NhlROBINSON:
+		cproj = "RO";
+		h_angle_lim = 180;
+		v_angle_lim = 90;
+		ix = 10;
 		break;
 	default:
 		e_text = "%s: internal enumeration error - projection";
@@ -1893,8 +1901,11 @@ static NhlErrorTypes GetWindowLimits
 				lon_done = True;
 			}
                         c_maptra(tlat,tlon,&uval,&vval);
-                        if (uval > 1E9)
+                        if (uval > 1E9) {
+				if (lon_done)
+					break;
                                 continue;
+			}
                         if (uval < umin) umin = uval;
                         if (uval > umax) umax = uval;
                         if (vval < vmin) vmin = vval;
@@ -1910,8 +1921,11 @@ static NhlErrorTypes GetWindowLimits
 					lon_done = True;
 				}
 				c_maptra(tlat,tlon,&uval,&vval);
-				if (uval > 1E9)
+				if (uval > 1E9) {
+					if (lon_done)
+						break;
 					continue;
+				}
 				if (uval < umin) umin = uval;
 				if (uval > umax) umax = uval;
 				if (vval < vmin) vmin = vval;
@@ -2004,8 +2018,8 @@ static NhlErrorTypes CheckMapLimits
 		v_angle_lim = 85;
 		break;
 	case NhlCYLINDRICALEQUIDISTANT:
-		h_angle_lim = 90;
-		v_angle_lim = 180;
+		h_angle_lim = 180;
+		v_angle_lim = 90;
 		break;
 	case NhlLAMBERTCONFORMAL:
 		if (mtp->map_limit_mode == NhlANGLES) {
@@ -2018,6 +2032,10 @@ static NhlErrorTypes CheckMapLimits
 		break;
 	case NhlSATELLITE:
 		h_angle_lim = v_angle_lim = 90;
+		break;
+	case NhlROBINSON:
+		h_angle_lim = 180;
+		v_angle_lim = 90;
 		break;
 	default:
 		e_text = "%s: internal enumeration error - projection";
@@ -2274,7 +2292,8 @@ static NhlErrorTypes    MapTransClassInitialize
         {NhlMOLLWEIDE,			"Mollweide"},
         {NhlMERCATOR,			"Mercator"},
         {NhlCYLINDRICALEQUIDISTANT,	"CylindricalEquidistant"},
-        {NhlLAMBERTCONFORMAL,		"LambertConformal"}
+        {NhlLAMBERTCONFORMAL,		"LambertConformal"},
+	{NhlROBINSON,			"Robinson"}
         };
 
         _NhlRegisterEnumType(NhlmapTransObjClass,NhlTMapLimitMode,limitmodelist,
