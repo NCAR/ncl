@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.4 1993-03-08 16:00:48 haley Exp $
+#	$Id: yMakefile,v 1.5 1993-03-26 23:28:25 haley Exp $
 #
 NCARG = ../../../..
 
@@ -21,7 +21,11 @@ COMMON_LIBS =	$(LIBPATH)/libncarg.a \
 		$(LIBPATH)/libncarg_c.a \
 		$(LIBPATH)/libncarg_loc.a -lm
 
+#if defined(Solaris) && defined(sun4)
+LIBS = $(OTHER_LIBS) $(COMMON_LIBS) /usr/ucblib/libucb.a
+#else
 LIBS = $(OTHER_LIBS) $(COMMON_LIBS)
+#endif
 
 all:: $(MYNAME)
 
