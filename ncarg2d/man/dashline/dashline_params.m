@@ -114,7 +114,7 @@ YSAVE, XP, YP, TEMP, and SLEN in the routine FDVDLD must be increased to
 the new value of L1.
 [Default = 70]
 .IP MLLINE 12
-The maximum length in either cooordinate of a single line segment to be
+The maximum length in either coordinate of a single line segment to be
 processed by the crowded line algorithm.  Line segments longer than MLLINE
 units in either coordinate are broken into smaller segments, each of which
 is processed separately.  This is done to prevent anomalies in the removal

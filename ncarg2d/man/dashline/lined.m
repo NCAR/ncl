@@ -31,7 +31,7 @@ argument descriptions.
 Use the ncargex command to see the following relevant examples: 
 tdashc, tdashl, tdashp, tdashs, 
 fcoord1, fcoord2,
-fdldashc, fdldashd, fgk.nclr, fgklnwth
+fdldashc, fdldashd, fgklnclr, fgklnwth
 dashdb, dashdc, frstd, lined, reset, vectd, ncarg_cbind
 .SH ACCESS
 To use LINED, load the NCAR Graphics libraries ncarg, ncarg_gks,

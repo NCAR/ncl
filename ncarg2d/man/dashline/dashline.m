@@ -117,10 +117,10 @@ error file (as defined by I1MACH(4)) and then terminates
 execution. The possible error messages are as follows:
 .IP "CFVLD  -- VECTD CALL OCCURS BEFORE A CALL TO FRSTD"
 You must call FRSTD before the first call to VECTD.
-.IP "DASHDB -- BLOCKDATA DASHBD APPARRENTLY NOT LOADED CORRECTLY"
+.IP "DASHDB -- BLOCKDATA DASHBD APPARENTLY NOT LOADED CORRECTLY"
 If you have used the ncargf77 command options as discussed in
 the ACCESS Section, see your system administrator.
-.IP "DASHDC -- BLOCKDATA DASHBD APPARRENTLY NOT LOADED CORRECTLY"
+.IP "DASHDC -- BLOCKDATA DASHBD APPARENTLY NOT LOADED CORRECTLY"
 You have called DASHDC when using the "quick" version of Dashline.
 This is not allowed.
 .IP "FDVDLD -- VECTD CALL OCCURS BEFORE A CALL TO FRSTD"
