@@ -1,3 +1,6 @@
+/*
+ *	$Id: hdf.c,v 1.2 1991-08-16 11:09:43 clyne Exp $
+ */
 /***********************************************************************
 *                                                                      *
 *                          Copyright (C)  1991                         *
@@ -43,11 +46,13 @@ extern char	*ProgramName;
 
 extern int	OptionCompression;
 
+extern	char	*calloc();
+
+/*ARGSUSED*/
 int
 HDFProbe(name)
 	char	*name;
 {
-	int		status;
 	FILE		*fp;
 
 	if (name == (char *) NULL) return(False);
@@ -60,7 +65,9 @@ HDFProbe(name)
 		return(RAS_ERROR);
 	}
 	
-	fclose(fp);
+	(void) fclose(fp);
+
+	return(True);
 }
 
 /**********************************************************************
@@ -96,10 +103,10 @@ HDFOpen(name)
 		return( (Raster *) NULL );
 	}
 
-	ras->name = (char *) calloc(strlen(name) + 1, 1);
+	ras->name = (char *) calloc((unsigned) strlen(name) + 1, 1);
 	(void) strcpy(ras->name, name);
 
-	ras->format = (char *) calloc(strlen(FormatName) + 1, 1);
+	ras->format = (char *) calloc((unsigned) strlen(FormatName) + 1, 1);
 	(void) strcpy(ras->format, FormatName);
 
 	status = DFR8getdims(ras->name, &ras->nx, &ras->ny, &palette_exists);
@@ -110,7 +117,7 @@ HDFOpen(name)
 	
 	ras->length = ras->nx * ras->ny;
 	
-	ras->data = (unsigned char *) calloc(ras->length, 1);
+	ras->data = (unsigned char *) calloc((unsigned) ras->length, 1);
 	if (ras->data == (unsigned char *) NULL) {
 		(void) RasterSetError(RAS_E_SYSTEM);
 		return( (Raster *) NULL );
@@ -129,11 +136,12 @@ HDFOpen(name)
 	ras->type = RAS_INDEXED; 
 	ras->ncolor = 256;
 
-	HDFSetFunctions(ras);
+	(void) HDFSetFunctions(ras);
 
 	return(ras);
 }
 
+/*ARGSUSED*/
 Raster *
 HDFOpenWrite(name, nx, ny, comment, encoding)
 	char		*name;
@@ -166,10 +174,10 @@ HDFOpenWrite(name, nx, ny, comment, encoding)
 		}
 	}
 
-	ras->name = (char *) calloc(strlen(name) + 1, 1);
-	strcpy(ras->name, name);
+	ras->name = (char *) calloc((unsigned) strlen(name) + 1, 1);
+	(void) strcpy(ras->name, name);
 
-	ras->format = (char *) calloc(strlen(FormatName) + 1, 1);
+	ras->format = (char *) calloc((unsigned) strlen(FormatName) + 1, 1);
 	(void) strcpy(ras->format, FormatName);
 
 	ras->written	= False;
@@ -178,13 +186,13 @@ HDFOpenWrite(name, nx, ny, comment, encoding)
 	ras->length	= ras->nx * ras->ny;
 	ras->ncolor	= 256;
 	ras->type	= RAS_INDEXED;
-	ras->red	= (unsigned char *) calloc(ras->ncolor, 1);
-	ras->green	= (unsigned char *) calloc(ras->ncolor, 1);
-	ras->blue	= (unsigned char *) calloc(ras->ncolor, 1);
-	ras->data	= (unsigned char *) calloc(ras->length, 1);
+	ras->red	= (unsigned char *) calloc((unsigned) ras->ncolor, 1);
+	ras->green	= (unsigned char *) calloc((unsigned) ras->ncolor, 1);
+	ras->blue	= (unsigned char *) calloc((unsigned) ras->ncolor, 1);
+	ras->data	= (unsigned char *) calloc((unsigned) ras->length, 1);
 
 	if (encoding != RAS_INDEXED) {
-		RasterSetError(RAS_E_8BIT_PIXELS_ONLY);
+		(void) RasterSetError(RAS_E_8BIT_PIXELS_ONLY);
 		return( (Raster *) NULL );
 	}
 	else {
@@ -249,13 +257,14 @@ HDFWrite(ras)
  *		is always zero.
  *		
  *********************************************************************/
+/*ARGSUSED*/
 int
 HDFPrintInfo(ras)
 	Raster		*ras;
 {
-	fprintf(stderr, "\n");
-	fprintf(stderr, "HDF Rasterfile Information\n");
-	fprintf(stderr, "--------------------------\n");
+	(void) fprintf(stderr, "\n");
+	(void) fprintf(stderr, "HDF Rasterfile Information\n");
+	(void) fprintf(stderr, "--------------------------\n");
 	return(RAS_OK);
 }
 
@@ -273,7 +282,7 @@ HDFRead(ras)
 
 #ifdef DEAD
 		if (retry != 0)
-			fprintf(stderr, "Retrying HDF Read\n");
+			(void) fprintf(stderr, "Retrying HDF Read\n");
 #endif DEAD
 
 		status = DFR8getimage(ras->name, ras->data, 

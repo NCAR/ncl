@@ -1,3 +1,6 @@
+/*
+ *	$Id: cleartext.c,v 1.2 1991-08-16 11:14:46 clyne Exp $
+ */
 /***********************************************************************
 *                                                                      *
 *                          Copyright (C)  1991                         *
@@ -37,7 +40,7 @@ int
 ClearTextProbe(name)
 	char	*name;
 {
-	fprintf(stderr, "ClearTextProbe(%s)\n", name);
+	(void) fprintf(stderr, "ClearTextProbe(%s)\n", name);
 }
 
 Raster *
@@ -47,7 +50,7 @@ ClearTextOpen(name)
 	Raster	*ras;
 	char	*calloc();
 
-	fprintf(stderr, "ClearTextOpen(%s)\n", name);
+	(void) fprintf(stderr, "ClearTextOpen(%s)\n", name);
 
 	ras = (Raster *) calloc(sizeof(Raster), 1);
 	if (ras == (Raster *) NULL) {
@@ -61,11 +64,12 @@ ClearTextOpen(name)
 	ras->format = (char *) calloc((unsigned) (strlen(FormatName) + 1), 1);
 	(void) strcpy(ras->format, FormatName);
 
-	ClearTextSetFunctions(ras);
+	(void) ClearTextSetFunctions(ras);
 
 	return(ras);
 }
 
+/*ARGSUSED*/
 Raster *
 ClearTextOpenWrite(name, nx, ny, comment, encoding)
 	char		*name;
@@ -131,7 +135,7 @@ int
 ClearTextWrite(ras)
 	Raster	*ras;
 {
-	fprintf(stderr, "ClearTextPrintInfo(%s)\n", ras->name);
+	(void) fprintf(stderr, "ClearTextPrintInfo(%s)\n", ras->name);
 	return(RAS_OK);
 }
 
@@ -139,7 +143,7 @@ int
 ClearTextPrintInfo(ras)
 	Raster		*ras;
 {
-	fprintf(stderr, "ClearTextPrintInfo(%s)\n", ras->name);
+	(void) fprintf(stderr, "ClearTextPrintInfo(%s)\n", ras->name);
 	return(RAS_OK);
 }
 
@@ -147,7 +151,7 @@ int
 ClearTextRead(ras)
 	Raster	*ras;
 {
-	fprintf(stderr, "ClearTextRead(%s)\n", ras->name);
+	(void) fprintf(stderr, "ClearTextRead(%s)\n", ras->name);
 	return(RAS_OK);
 }
 
@@ -155,7 +159,7 @@ int
 ClearTextClose(ras)
 	Raster	*ras;
 {
-	fprintf(stderr, "ClearTextClose(%s)\n", ras->name);
+	(void) fprintf(stderr, "ClearTextClose(%s)\n", ras->name);
 	return(RAS_OK);
 }
 
@@ -163,7 +167,7 @@ int
 ClearTextSetFunctions(ras)
 	Raster	*ras;
 {
-	fprintf(stderr, "ClearTextSetFunctions(%s)\n", ras->name);
+	(void) fprintf(stderr, "ClearTextSetFunctions(%s)\n", ras->name);
 	ras->Open      = ClearTextOpen;
 	ras->OpenWrite = ClearTextOpenWrite;
 	ras->Read      = ClearTextRead;

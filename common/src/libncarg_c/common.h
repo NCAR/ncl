@@ -39,8 +39,6 @@
 		(TARG) &= ~(~((~0) << (N)) << (((POSS)+1) - (N))); \
 		(TARG) |= (((SRC) & ~((~0) << (N))) << (((POSS)+1) - (N))) 
 
-#define MIN(X, Y)       ((X) < (Y) ? (X) : (Y))
-
 #define ZERO_INDEX(X)   (X < 0 ? 0 : X)	
 
 #endif common_

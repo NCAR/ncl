@@ -1,7 +1,7 @@
 NCARG	= ..
 
 #ifdef	BuildUnsupportedAthenaApplications
-SUBDIRS = src man bin app bits
+SUBDIRS = src man bin app
 #else
 SUBDIRS = src man bin
 #endif

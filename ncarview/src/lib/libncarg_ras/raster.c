@@ -1,3 +1,6 @@
+/*
+ *	$Id: raster.c,v 1.2 1991-08-16 11:12:45 clyne Exp $
+ */
 /***********************************************************************
 *                                                                      *
 *                          Copyright (C)  1991                         *
@@ -37,6 +40,8 @@ int	OptionDitherBits = 5;
 
 char	*ProgramName;
 
+/*LINTLIBRARY*/
+
 
 /**********************************************************************
  *	Function: RasterInit()
@@ -71,59 +76,59 @@ RasterInit(argc, argv)
 
 	for(i=1; i<*argc; ) {
 		if (!strcmp(argv[i], "-printoptions")) {
-			argdel(argc, argv, i);
+			(void) argdel(argc, argv, i);
 			RasterPrintOptions();
 		}
 		else if (!strcmp(argv[i], "-landscape")) {
 			OptionOrientation = RAS_LANDSCAPE;
-			argdel(argc, argv, i);
+			(void) argdel(argc, argv, i);
 		}
 		else if (!strcmp(argv[i], "-portrait")) {
 			OptionOrientation = RAS_PORTRAIT;
-			argdel(argc, argv, i);
+			(void) argdel(argc, argv, i);
 		}
 		else if (!strcmp(argv[i], "-nocompress")) {
 			OptionCompression = RAS_COMPRESS_OFF;
-			argdel(argc, argv, i);
+			(void) argdel(argc, argv, i);
 		}
 		else if (!strcmp(argv[i], "-compress")) {
 			OptionCompression = RAS_COMPRESS_RLE;
-			argdel(argc, argv, i);
+			(void) argdel(argc, argv, i);
 		}
 		else if (!strcmp(argv[i], "-rle")) {
 			OptionCompression = RAS_COMPRESS_RLE;
-			argdel(argc, argv, i);
+			(void) argdel(argc, argv, i);
 		}
 		else if (!strcmp(argv[i], "-ditherpopular")) {
 			OptionDitherPopular = True;
-			argdel(argc, argv, i);
+			(void) argdel(argc, argv, i);
 		}
 		else if (!strcmp(argv[i], "-ditherbits")) {
 			if (i >= (*argc-1)) {
 				(void) RasterSetError(RAS_E_BAD_OPTION);
 				return(RAS_ERROR);
 			}
-			argdel(argc, argv, i);
+			(void) argdel(argc, argv, i);
 			OptionDitherBits = atoi(argv[i]);
-			argdel(argc, argv, i);
+			(void) argdel(argc, argv, i);
 		}
 		else if (!strcmp(argv[i], "-dithercolors")) {
 			if (i >= (*argc-1)) {
 				(void) RasterSetError(RAS_E_BAD_OPTION);
 				return(RAS_ERROR);
 			}
-			argdel(argc, argv, i);
+			(void) argdel(argc, argv, i);
 			OptionDitherColors = atoi(argv[i]);
-			argdel(argc, argv, i);
+			(void) argdel(argc, argv, i);
 		}
 		else if (!strcmp(argv[i], "-dpi")) {
 			if (i >= (*argc-1)) {
 				(void) RasterSetError(RAS_E_BAD_OPTION);
 				return(RAS_ERROR);
 			}
-			argdel(argc, argv, i);
+			(void) argdel(argc, argv, i);
 			OptionDotsPerInch = atoi(argv[i]);
-			argdel(argc, argv, i);
+			(void) argdel(argc, argv, i);
 		}
 		else {
 			i++;
@@ -136,32 +141,36 @@ int
 RasterPrintOptions()
 {
 	if (OptionOrientation == RAS_PORTRAIT) {
-		fprintf(stderr, "Orientation     = Portrait\n");
+		(void) fprintf(stderr, "Orientation     = Portrait\n");
 	}
 	else if (OptionOrientation == RAS_LANDSCAPE) {
-		fprintf(stderr, "Orientation     = Landscape\n");
+		(void) fprintf(stderr, "Orientation     = Landscape\n");
 	}
 
 	if (OptionCompression == 0) {
-		fprintf(stderr, "Compression     = None\n");
+		(void) fprintf(stderr, "Compression     = None\n");
 	}
 	else if (OptionCompression == 1) {
-		fprintf(stderr, "Compression     = Run-length-encoding\n");
+		(void) fprintf(stderr, 
+			"Compression     = Run-length-encoding\n");
 	}
 
-		fprintf(stderr, "Dots Per Inch   = %d\n", OptionDotsPerInch);
+		(void) fprintf(stderr, 
+			"Dots Per Inch   = %d\n", OptionDotsPerInch);
 	if (OptionDitherPopular == 0) {
-		fprintf(stderr, "Dithering       = Standard 332\n");
+		(void) fprintf(stderr, "Dithering       = Standard 332\n");
 	}
 	else {
-		fprintf(stderr, "Dithering       = Popularity\n");
+		(void) fprintf(stderr, "Dithering       = Popularity\n");
 	}
 
-		fprintf(stderr, "Dither Bits     = %d\n", OptionDitherBits);
-		fprintf(stderr, "Dither Map Size = %d\n", OptionDitherColors);
+		(void) fprintf(stderr, 
+			"Dither Bits     = %d\n", OptionDitherBits);
+		(void) fprintf(stderr, 
+			"Dither Map Size = %d\n", OptionDitherColors);
 }
 
-argdel(argc, argv, i)
+static	argdel(argc, argv, i)
 	int	*argc;
 	char	*argv[];
 	int	i;
@@ -208,7 +217,7 @@ RasterOpen(name, format)
 	int	i;
 
 	if (name == (char *) NULL) {
-		RasterSetError(RAS_E_NULL_NAME);
+		(void) RasterSetError(RAS_E_NULL_NAME);
 		return ((Raster *) NULL);
 	}
 
@@ -226,7 +235,7 @@ RasterOpen(name, format)
 			format++;
 		}
 		else {
-			RasterSetError(RAS_E_NO_FORMAT_SPECIFIED);
+			(void) RasterSetError(RAS_E_NO_FORMAT_SPECIFIED);
 			return ((Raster *) NULL);
 		}
 	}
@@ -238,7 +247,7 @@ RasterOpen(name, format)
 		}
 	}
 
-	RasterSetError(RAS_E_UNKNOWN_FORMAT);
+	(void) RasterSetError(RAS_E_UNKNOWN_FORMAT);
 	return( (Raster *) NULL);
 }
 
@@ -282,7 +291,7 @@ RasterOpenWrite(name, nx, ny, comment, encoding, format)
 	int	i;
 
 	if (name == (char *) NULL) {
-		RasterSetError(RAS_E_NULL_NAME);
+		(void) RasterSetError(RAS_E_NULL_NAME);
 		return ((Raster *) NULL);
 	}
 
@@ -300,7 +309,7 @@ RasterOpenWrite(name, nx, ny, comment, encoding, format)
 			format++;
 		}
 		else {
-			RasterSetError(RAS_E_UNKNOWN_FORMAT);
+			(void) RasterSetError(RAS_E_UNKNOWN_FORMAT);
 			return ((Raster *) NULL);
 		}
 	}
@@ -313,7 +322,7 @@ RasterOpenWrite(name, nx, ny, comment, encoding, format)
 		}
 	}
 
-	RasterSetError(RAS_E_UNKNOWN_FORMAT);
+	(void) RasterSetError(RAS_E_UNKNOWN_FORMAT);
 	return( (Raster *) NULL);
 }
 
@@ -389,17 +398,19 @@ int
 RasterPrintInfo(ras)
 	Raster	*ras;
 {
-	fprintf(stderr, "Format-Independent Information\n");
-	fprintf(stderr, "------------------------------\n");
-	fprintf(stderr, "Name:             %s\n", ras->name);
-	fprintf(stderr, "NX:               %d\n", ras->nx);
-	fprintf(stderr, "NY:               %d\n", ras->ny);
-	fprintf(stderr, "Encoding:         %s\n", raster_encodings[ras->type]);
+	(void) fprintf(stderr, "Format-Independent Information\n");
+	(void) fprintf(stderr, "------------------------------\n");
+	(void) fprintf(stderr, "Name:             %s\n", ras->name);
+	(void) fprintf(stderr, "NX:               %d\n", ras->nx);
+	(void) fprintf(stderr, "NY:               %d\n", ras->ny);
+	(void) fprintf(stderr, 
+		"Encoding:         %s\n", raster_encodings[ras->type]);
+
 	if (ras->text != (char *) NULL)
-		fprintf(stderr, "Text:             %s\n", ras->text);
+		(void) fprintf(stderr, "Text:             %s\n", ras->text);
 	else
-		fprintf(stderr, "Text:             %s\n", "No Text");
-	fprintf(stderr, "Number of Colors: %d\n", ras->ncolor);
+		(void) fprintf(stderr, "Text:             %s\n", "No Text");
+	(void) fprintf(stderr, "Number of Colors: %d\n", ras->ncolor);
 
 	(void) ras->PrintInfo(ras);
 	return(RAS_OK);
@@ -431,12 +442,12 @@ RasterLoadPalette(ras, colors)
 	int	i;
 
 	if (ras->map_loaded) {
-		RasterSetError(RAS_E_IMPROPER_COLORMAP_LOAD);
+		(void) RasterSetError(RAS_E_IMPROPER_COLORMAP_LOAD);
 		return(RAS_ERROR);
 	}
 
 	if (ras->type == RAS_DIRECT) {
-		RasterSetError(RAS_E_IMPROPER_COLORMAP_LOAD);
+		(void) RasterSetError(RAS_E_IMPROPER_COLORMAP_LOAD);
 		return(RAS_ERROR);
 	}
 
@@ -466,7 +477,7 @@ RasterPrintColors(ras)
 
 	if (ras->type == RAS_INDEXED) {
 		for(i=0; i<ras->ncolor; i++) {
-			fprintf(stderr, "Index %3d: (%3d,%3d,%3d)\n",
+			(void) fprintf(stderr, "Index %3d: (%3d,%3d,%3d)\n",
 				i, ras->red[i], ras->green[i], ras->blue[i]);
 		}
 	}
@@ -490,7 +501,7 @@ RasterCopyColormap(src, dst)
 	int	i;
 
 	if (src->type == RAS_DIRECT || dst->type == RAS_DIRECT) {
-	  RasterSetError(RAS_E_IMPROPER_COLORMAP_LOAD);
+	  (void) RasterSetError(RAS_E_IMPROPER_COLORMAP_LOAD);
 	  return(RAS_ERROR);
 	}
 
@@ -526,7 +537,7 @@ RasterCreate(nx, ny, encoding)
 	ras = (Raster *) calloc(sizeof(Raster), 1);
 
 	if (ras == (Raster *) NULL) {
-		RasterSetError(RAS_E_SYSTEM);
+		(void) RasterSetError(RAS_E_SYSTEM);
 		return( (Raster *) NULL );
 	}
 
@@ -537,7 +548,7 @@ RasterCreate(nx, ny, encoding)
 		ras->length = ras->nx * ras->ny;
 		ras->data = (unsigned char *) calloc((unsigned) ras->length, 1);
 		if (ras->data == (unsigned char *) NULL) {
-			RasterSetError(RAS_E_SYSTEM);
+			(void) RasterSetError(RAS_E_SYSTEM);
 			return( (Raster *) NULL );
 		}
 
@@ -548,7 +559,7 @@ RasterCreate(nx, ny, encoding)
 		if (ras->red == (unsigned char *) NULL ||
 		    ras->green == (unsigned char *) NULL ||
 		    ras->blue == (unsigned char *) NULL) {
-			RasterSetError(RAS_E_SYSTEM);
+			(void) RasterSetError(RAS_E_SYSTEM);
 			return( (Raster *) NULL );
 		}
 
@@ -563,7 +574,7 @@ RasterCreate(nx, ny, encoding)
 		ras->length = ras->nx * ras->ny * 3;
 		ras->data = (unsigned char *) calloc((unsigned)ras->length, 1);
 		if (ras->data == (unsigned char *) NULL) {
-			RasterSetError(RAS_E_SYSTEM);
+			(void) RasterSetError(RAS_E_SYSTEM);
 			return( (Raster *) NULL );
 		}
 

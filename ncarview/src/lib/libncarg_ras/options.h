@@ -1,3 +1,6 @@
+/*
+ *	$Id: options.h,v 1.2 1991-08-16 11:11:43 clyne Exp $
+ */
 #ifndef __OPTIONS__
 #define __OPTIONS__
 

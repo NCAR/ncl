@@ -1,3 +1,6 @@
+/*
+ *	$Id: df.h,v 1.2 1991-08-16 11:10:45 clyne Exp $
+ */
 /*****************************************************************************
 * 
 *			  NCSA HDF version 3.10r3
@@ -20,14 +23,17 @@
 *****************************************************************************/
 
 #ifdef RCSID
-static char RcsId[] = "@(#)$Revision: 1.1 $"
+static char RcsId[] = "@(#)$Revision: 1.2 $"
 #endif
 /*
-$Header: /home/brownrig/SVN/CVS/ncarg/ncarview/src/lib/libncarg_ras/Attic/df.h,v 1.1 1991-06-18 15:11:16 clyne Exp $
+$Header: /home/brownrig/SVN/CVS/ncarg/ncarview/src/lib/libncarg_ras/Attic/df.h,v 1.2 1991-08-16 11:10:45 clyne Exp $
 $Log: df.h,v $
-Revision 1.1  1991-06-18 15:11:16  clyne
-Initial revision
+Revision 1.2  1991-08-16 11:10:45  clyne
+*** empty log message ***
 
+ * Revision 1.1  91/06/18  15:11:16  clyne
+ * Initial revision
+ * 
  * Revision 1.1.1.1  90/12/11  14:22:37  clyne
  * hdf 3.10r3 distribution
  * 

@@ -1,5 +1,11 @@
+/*
+ *	$Id: palette.c,v 1.2 1991-08-16 11:12:00 clyne Exp $
+ */
 #include <string.h>
 #include "ncarg_ras.h"
+
+
+/*LINTLIBRARY*/
 
 int
 PaletteRead(name, format, colors)
@@ -11,7 +17,7 @@ PaletteRead(name, format, colors)
 	FILE		*fp;
 
 	if (name == (char *) NULL) {
-		RasterSetError(RAS_E_NULL_NAME);
+		(void) RasterSetError(RAS_E_NULL_NAME);
 		return(RAS_ERROR);
 	}
 
@@ -21,7 +27,7 @@ PaletteRead(name, format, colors)
 	else {
 		fp = fopen(name, "r");
 		if (fp == (FILE *) NULL) {
-			RasterSetError(RAS_E_SYSTEM);
+			(void) RasterSetError(RAS_E_SYSTEM);
 			return(RAS_ERROR);
 		}
 	}
@@ -32,7 +38,7 @@ PaletteRead(name, format, colors)
 			format++;
 		}
 		else {
-			RasterSetError(RAS_E_NO_FORMAT_SPECIFIED);
+			(void) RasterSetError(RAS_E_NO_FORMAT_SPECIFIED);
 			return(RAS_ERROR);
 		}
 	}
@@ -44,7 +50,7 @@ PaletteRead(name, format, colors)
 		status = PaletteReadHDF(fp, colors);
 	}
 	else {
-		RasterSetError(RAS_E_UNKNOWN_FORMAT);
+		(void) RasterSetError(RAS_E_UNKNOWN_FORMAT);
 		return(RAS_ERROR);
 	}
 
@@ -77,7 +83,7 @@ PaletteReadText(fp, colors)
 
 	while(fscanf(fp,"%d %d %d %d", &index, &r, &g, &b) == 4) {
 		if (index < 0 || index > 255) {
-			RasterSetError(RAS_E_INVALID_COLORMAP);
+			(void) RasterSetError(RAS_E_INVALID_COLORMAP);
 			return(RAS_ERROR);
 		}
 		set[index] = True;
@@ -135,7 +141,7 @@ PaletteReadHDF(fp, colors)
 {
 	int		status;
 
-	status = fread(colors, 1, 768, fp);
+	status = fread((char *) colors, 1, 768, fp);
 	if (status != 768) return(RAS_EOF);
 	return(RAS_OK);
 }
@@ -150,7 +156,7 @@ PaletteWrite(name, format, colors)
 	FILE		*fp;
 
 	if (name == (char *) NULL) {
-		RasterSetError(RAS_E_NULL_NAME);
+		(void) RasterSetError(RAS_E_NULL_NAME);
 		return(RAS_ERROR);
 	}
 
@@ -160,7 +166,7 @@ PaletteWrite(name, format, colors)
 	else {
 		fp = fopen(name, "w");
 		if (fp == (FILE *) NULL) {
-			RasterSetError(RAS_E_SYSTEM);
+			(void) RasterSetError(RAS_E_SYSTEM);
 			return(RAS_ERROR);
 		}
 	}
@@ -171,7 +177,7 @@ PaletteWrite(name, format, colors)
 			format++;
 		}
 		else {
-			RasterSetError(RAS_E_UNKNOWN_FORMAT);
+			(void) RasterSetError(RAS_E_UNKNOWN_FORMAT);
 			return(RAS_ERROR);
 		}
 	}
@@ -183,7 +189,7 @@ PaletteWrite(name, format, colors)
 		status = PaletteWriteHDF(fp, colors);
 	}
 	else {
-		RasterSetError(RAS_E_UNKNOWN_FORMAT);
+		(void) RasterSetError(RAS_E_UNKNOWN_FORMAT);
 		return(RAS_ERROR);
 	}
 
@@ -202,7 +208,7 @@ PaletteWriteText(fp, colors)
 	int		i;
 
 	for(i=0; i<256; i++) {
-		fprintf(fp, "%3d %3d %3d %3d\n",
+		(void) fprintf(fp, "%3d %3d %3d %3d\n",
 			i, colors[i], colors[i+256], colors[i+512]);
 	}
 	return(RAS_OK);
@@ -215,7 +221,7 @@ PaletteWriteHDF(fp, colors)
 {
 	int		status;
 
-	status = fwrite(colors, 1, 768, fp);
+	status = fwrite((char *) colors, 1, 768, fp);
 	if (status != 768) return(RAS_EOF);
 	return(RAS_OK);
 }

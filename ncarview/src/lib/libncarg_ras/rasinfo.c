@@ -1,3 +1,6 @@
+/*
+ *	$Id: rasinfo.c,v 1.2 1991-08-16 11:12:34 clyne Exp $
+ */
 #include <stdio.h>
 #include <fcntl.h>
 #include "ncarg_ras.h"
@@ -15,7 +18,7 @@ main(argc, argv)
 	char	*arg;
 
 	if (argc == 1) {
-		fprintf(stderr, "Wrong number of arguments\n");
+		(void) fprintf(stderr, "Wrong number of arguments\n");
 		Usage();
 	}
 
@@ -29,7 +32,7 @@ main(argc, argv)
 				OptionPrintColors = True;
 			}
 			else {
-				fprintf(stderr, "Bad option: %s\n", arg);
+				(void) fprintf(stderr, "Bad option: %s\n", arg);
 				Usage();
 			}
 		}
@@ -66,8 +69,8 @@ Print(name, argc, argv)
 	}
 
 	if (OptionPrintColors) {
-		fprintf(stderr, "\nColor Table\n");
-		fprintf(stderr,   "-----------\n");
+		(void) fprintf(stderr, "\nColor Table\n");
+		(void) fprintf(stderr,   "-----------\n");
 		status = RasterPrintColors(ras);
 		if (status == RAS_ERROR) {
 			(void) RasterPrintError( (char *) NULL );
@@ -83,6 +86,6 @@ Print(name, argc, argv)
 
 Usage()
 {
-	fprintf(stderr, "usage: rasinfo rasterfile\n");
+	(void) fprintf(stderr, "usage: rasinfo rasterfile\n");
 	exit(1);
 }

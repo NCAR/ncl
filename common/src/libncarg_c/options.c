@@ -1,5 +1,5 @@
 /*
- *	$Id: options.c,v 1.4 1991-03-22 10:16:15 clyne Exp $
+ *	$Id: options.c,v 1.5 1991-08-16 11:06:04 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -223,6 +223,7 @@ buildOptionTable(opts)
 	 * as necessary.
 	 */
 	for (i = 0, n = optDescRecNum; i < num; i++, optDescRecNum++, n++) {
+		optDescRec[n].option = optDescRec[n].value = NULL;
 		if (opts[i].option) {
 			optDescRec[n].option = (char *) icMalloc 
 				((unsigned) (strlen (opts[i].option) + 1));
@@ -276,6 +277,8 @@ parseOptionTable(argc, argv, opts)
 	if (opts) {
 		(void) buildOptionTable(opts);
 	}
+
+	if (! argv) return;
 
 	
 	/*
@@ -368,7 +371,7 @@ static	OptDescRec	*get_option (name)
 	nmatches = 0;
 	found = NULL;
 
-	for (o = optDescRec; p = o->option; o++) {
+	for (o = optDescRec; o && (p = o->option); o++) {
 		for (q = name; *q == *p++; q++) {
 			if (*q == 0)            /* exact match? */
 				return (o);

@@ -17,4 +17,6 @@
 #include <icmalloc.h>
 #include <options.h>
 
+extern	char	*GetNCARGPath();
+
 #endif

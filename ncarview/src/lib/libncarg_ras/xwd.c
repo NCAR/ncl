@@ -1,3 +1,6 @@
+/*
+ *	$Id: xwd.c,v 1.2 1991-08-16 11:12:58 clyne Exp $
+ */
 /***********************************************************************
 *                                                                      *
 *                          Copyright (C)  1991                         *
@@ -44,6 +47,7 @@ static char	*FormatName = "xwd";
 extern char	*ProgramName;
 static char	*Comment = "XWD file from NCAR raster utilities";
 
+/*ARGSUSED*/
 int
 XWDProbe(name)
 	char	*name;
@@ -62,7 +66,7 @@ XWDProbe(name)
 		return(RAS_ERROR);
 	}
 	
-	fclose(fp);
+	(void) fclose(fp);
 #endif DEAD
 }
 
@@ -77,19 +81,19 @@ XWDOpen(name)
 	XWDFileHeader	*dep;
 
 	if (name == (char *) NULL) {
-		RasterSetError(RAS_E_NULL_NAME);
+		(void) RasterSetError(RAS_E_NULL_NAME);
 		return( (Raster *) NULL );
 	}
 
 	ras = (Raster *) calloc(sizeof(Raster), 1);
 	if (ras == (Raster *) NULL) {
-		RasterSetError(RAS_E_SYSTEM);
+		(void) RasterSetError(RAS_E_SYSTEM);
 		return( (Raster *) NULL );
 	}
 
 	ras->dep = calloc(sizeof(XWDFileHeader),1);
 	if (ras->dep == (char *) NULL) {
-		RasterSetError(RAS_E_SYSTEM);
+		(void) RasterSetError(RAS_E_SYSTEM);
 		return( (Raster *) NULL );
 	}
 	
@@ -108,22 +112,22 @@ XWDOpen(name)
 	else {
 		ras->fd  = open(name, O_RDONLY);
 		if (ras->fd == -1) {
-			RasterSetError(RAS_E_SYSTEM);
+			(void) RasterSetError(RAS_E_SYSTEM);
 			return( (Raster *) NULL );
 		}
 
 		ras->fp = fdopen(ras->fd, "r");
 
 		if (ras->fp == (FILE *) NULL) {
-			RasterSetError(RAS_E_SYSTEM);
+			(void) RasterSetError(RAS_E_SYSTEM);
 			return( (Raster *) NULL );
 		}
 	}
 
-	ras->name = (char *) calloc(strlen(name) + 1, 1);
-	strcpy(ras->name, name);
+	ras->name = (char *) calloc((unsigned) strlen(name) + 1, 1);
+	(void) strcpy(ras->name, name);
 
-	ras->format = (char *) calloc(strlen(FormatName) + 1, 1);
+	ras->format = (char *) calloc((unsigned) strlen(FormatName) + 1, 1);
 	(void) strcpy(ras->format, FormatName);
 
 	XWDSetFunctions(ras);
@@ -137,36 +141,36 @@ XWDPrintInfo(ras)
 {
 	XWDFileHeader	*dep;
 
-	fprintf(stderr, "\n");
-	fprintf(stderr, "XWD Rasterfile Information\n");
-	fprintf(stderr, "--------------------------\n");
+	(void) fprintf(stderr, "\n");
+	(void) fprintf(stderr, "XWD Rasterfile Information\n");
+	(void) fprintf(stderr, "--------------------------\n");
 
 	dep = (XWDFileHeader *) ras->dep;
-	fprintf(stderr, "header_size      %d\n", dep->header_size);
-	fprintf(stderr, "file_version     %d\n", dep->file_version);
-	fprintf(stderr, "pixmap_format    %d\n", dep->pixmap_format);
-	fprintf(stderr, "pixmap_depth     %d\n", dep->pixmap_depth);
-	fprintf(stderr, "pixmap_width     %d\n", dep->pixmap_width);
-	fprintf(stderr, "pixmap_height    %d\n", dep->pixmap_height);
-	fprintf(stderr, "xoffset          %d\n", dep->xoffset);
-	fprintf(stderr, "byte_order       %d\n", dep->byte_order);
-	fprintf(stderr, "bitmap_unit      %d\n", dep->bitmap_unit);
-	fprintf(stderr, "bitmap_bit_order %d\n", dep->bitmap_bit_order);
-	fprintf(stderr, "bitmap_pad       %d\n", dep->bitmap_pad);
-	fprintf(stderr, "bits_per_pixel   %d\n", dep->bits_per_pixel);
-	fprintf(stderr, "bytes_per_line   %d\n", dep->bytes_per_line);
-	fprintf(stderr, "visual_class     %d\n", dep->visual_class);
-	fprintf(stderr, "red_mask         %d\n", dep->red_mask);
-	fprintf(stderr, "green_mask       %d\n", dep->green_mask);
-	fprintf(stderr, "blue_mask        %d\n", dep->blue_mask);
-	fprintf(stderr, "bits_per_rgb     %d\n", dep->bits_per_rgb);
-	fprintf(stderr, "colormap_entries %d\n", dep->colormap_entries);
-	fprintf(stderr, "ncolors          %d\n", dep->ncolors);
-	fprintf(stderr, "window_width     %d\n", dep->window_width);
-	fprintf(stderr, "window_height    %d\n", dep->window_height);
-	fprintf(stderr, "window_x         %d\n", dep->window_x);
-	fprintf(stderr, "window_y         %d\n", dep->window_y);
-	fprintf(stderr, "window_bdrwidth  %d\n", dep->window_bdrwidth);
+	(void) fprintf(stderr, "header_size      %d\n", dep->header_size);
+	(void) fprintf(stderr, "file_version     %d\n", dep->file_version);
+	(void) fprintf(stderr, "pixmap_format    %d\n", dep->pixmap_format);
+	(void) fprintf(stderr, "pixmap_depth     %d\n", dep->pixmap_depth);
+	(void) fprintf(stderr, "pixmap_width     %d\n", dep->pixmap_width);
+	(void) fprintf(stderr, "pixmap_height    %d\n", dep->pixmap_height);
+	(void) fprintf(stderr, "xoffset          %d\n", dep->xoffset);
+	(void) fprintf(stderr, "byte_order       %d\n", dep->byte_order);
+	(void) fprintf(stderr, "bitmap_unit      %d\n", dep->bitmap_unit);
+	(void) fprintf(stderr, "bitmap_bit_order %d\n", dep->bitmap_bit_order);
+	(void) fprintf(stderr, "bitmap_pad       %d\n", dep->bitmap_pad);
+	(void) fprintf(stderr, "bits_per_pixel   %d\n", dep->bits_per_pixel);
+	(void) fprintf(stderr, "bytes_per_line   %d\n", dep->bytes_per_line);
+	(void) fprintf(stderr, "visual_class     %d\n", dep->visual_class);
+	(void) fprintf(stderr, "red_mask         %d\n", dep->red_mask);
+	(void) fprintf(stderr, "green_mask       %d\n", dep->green_mask);
+	(void) fprintf(stderr, "blue_mask        %d\n", dep->blue_mask);
+	(void) fprintf(stderr, "bits_per_rgb     %d\n", dep->bits_per_rgb);
+	(void) fprintf(stderr, "colormap_entries %d\n", dep->colormap_entries);
+	(void) fprintf(stderr, "ncolors          %d\n", dep->ncolors);
+	(void) fprintf(stderr, "window_width     %d\n", dep->window_width);
+	(void) fprintf(stderr, "window_height    %d\n", dep->window_height);
+	(void) fprintf(stderr, "window_x         %d\n", dep->window_x);
+	(void) fprintf(stderr, "window_y         %d\n", dep->window_y);
+	(void) fprintf(stderr, "window_bdrwidth  %d\n", dep->window_bdrwidth);
 	return(RAS_OK);
 }
 
@@ -207,7 +211,7 @@ XWDRead(ras)
 	/* Read in header, "dep" is format dependent data. */
 
 	dep = (XWDFileHeader *) ras->dep;
-	bcopy(dep, &old_dep, sizeof(XWDFileHeader));
+	bcopy((char *) dep, (char *) &old_dep, sizeof(XWDFileHeader));
 
 	status = fread( (char *)dep, 1, sizeof(XWDFileHeader), ras->fp);
 	if (status != sizeof(XWDFileHeader)) return(RAS_EOF);
@@ -219,11 +223,11 @@ XWDRead(ras)
 	/* Check to see if the xwd file is the proper revision. */
 
 	if (dep->file_version != XWD_FILE_VERSION) {
-		fprintf(stderr, "XWD file format version mismatch\n");
+		(void) fprintf(stderr, "XWD file format version mismatch\n");
 	}
 
 	if (dep->header_size < sizeof(XWDFileHeader)) {
-		RasterSetError(RAS_E_NOT_IN_CORRECT_FORMAT);
+		(void) RasterSetError(RAS_E_NOT_IN_CORRECT_FORMAT);
 		return(RAS_ERROR);
 	}
 
@@ -232,7 +236,7 @@ XWDRead(ras)
 	ras->length = ras->nx * ras->ny;
 
 	if (dep->ncolors > 256) {
-		RasterSetError(RAS_E_COLORMAP_TOO_BIG);
+		(void) RasterSetError(RAS_E_COLORMAP_TOO_BIG);
 		return(RAS_ERROR);
 	}
 
@@ -241,7 +245,7 @@ XWDRead(ras)
 	/* Make sure we have a format we can handle */
 
 	if (dep->pixmap_format != ZPixmap) {
-		RasterSetError(RAS_E_UNSUPPORTED_ENCODING);
+		(void) RasterSetError(RAS_E_UNSUPPORTED_ENCODING);
 		return(RAS_ERROR);
 	}
 
@@ -249,7 +253,7 @@ XWDRead(ras)
 		ras->type = RAS_INDEXED;
 	}
 	else {
-		RasterSetError(RAS_E_8BIT_PIXELS_ONLY);
+		(void) RasterSetError(RAS_E_8BIT_PIXELS_ONLY);
 		return(RAS_ERROR);
 	}
 
@@ -261,22 +265,22 @@ XWDRead(ras)
 		buffer_size = image_size(dep);
 		ras->data = (unsigned char *) malloc (buffer_size);
 		if (ras->data == (unsigned char *) NULL) {
-			RasterSetError(RAS_E_SYSTEM);
+			(void) RasterSetError(RAS_E_SYSTEM);
 			return(RAS_ERROR);
 		}
 
-		ras->red = (unsigned char *) calloc(ras->ncolor, 1);
-		ras->green = (unsigned char *) calloc(ras->ncolor, 1);
-		ras->blue = (unsigned char *) calloc(ras->ncolor, 1);
+		ras->red = (unsigned char *) calloc((unsigned) ras->ncolor, 1);
+		ras->green = (unsigned char *) calloc((unsigned) ras->ncolor,1);
+		ras->blue = (unsigned char *) calloc((unsigned) ras->ncolor, 1);
 	}
 	else {
 		if (dep->pixmap_width != old_dep.pixmap_width) {
-			RasterSetError(RAS_E_IMAGE_SIZE_CHANGED);
+			(void) RasterSetError(RAS_E_IMAGE_SIZE_CHANGED);
 			return(RAS_ERROR);
 		}
 
 		if (dep->pixmap_height != old_dep.pixmap_height) {
-			RasterSetError(RAS_E_IMAGE_SIZE_CHANGED);
+			(void) RasterSetError(RAS_E_IMAGE_SIZE_CHANGED);
 			return(RAS_ERROR);
 		}
 	}
@@ -285,7 +289,7 @@ XWDRead(ras)
 
 	win_name_size = (dep->header_size - sizeof(XWDFileHeader));
 	if ((ras->text = malloc((unsigned) win_name_size)) == NULL) {
-		RasterSetError(RAS_E_SYSTEM);
+		(void) RasterSetError(RAS_E_SYSTEM);
 		return(RAS_ERROR);
 	}
 
@@ -319,7 +323,7 @@ XWDRead(ras)
 	
 	/* Read in the image */
 
-	status   = fread(ras->data, 1, (int) buffer_size, ras->fp);
+	status   = fread((char *) ras->data, 1, (int) buffer_size, ras->fp);
 	if (status != buffer_size) return(RAS_EOF);
 
 	/* Remove padding if it exists (X dumps padded to word boundaries) */
@@ -328,7 +332,7 @@ XWDRead(ras)
 		cptr1 = ras->data + ras->nx;
 		cptr2 = ras->data + dep->bytes_per_line;
 		for (i = 1; i < dep->pixmap_height; i++) {
-			bcopy(cptr2, cptr1, ras->nx);
+			bcopy((char *) cptr2, (char *) cptr1, ras->nx);
 			cptr1 += ras->nx; 
 			cptr2 += dep->bytes_per_line;
 		}
@@ -348,6 +352,7 @@ image_size(header)
 	return((unsigned)header->bytes_per_line * header->pixmap_height);
 }
 
+/*ARGSUSED*/
 Raster *
 XWDOpenWrite(name, nx, ny, comment, encoding)
 	char		*name;
@@ -360,7 +365,7 @@ XWDOpenWrite(name, nx, ny, comment, encoding)
 	XWDFileHeader	*dep;
 
 	if (name == (char *) NULL) {
-		RasterSetError(RAS_E_NULL_NAME);
+		(void) RasterSetError(RAS_E_NULL_NAME);
 		return( (Raster *) NULL );
 	}
 
@@ -371,7 +376,7 @@ XWDOpenWrite(name, nx, ny, comment, encoding)
 	dep = (XWDFileHeader *) ras->dep;
 
 	if (ras == (Raster *) NULL) {
-		RasterSetError(RAS_E_SYSTEM);
+		(void) RasterSetError(RAS_E_SYSTEM);
 		return( (Raster *) NULL );
 	}
 
@@ -382,15 +387,15 @@ XWDOpenWrite(name, nx, ny, comment, encoding)
 		ras->fd = open(name, O_WRONLY | O_CREAT, 0644);
 
 		if (ras->fd == -1) {
-			RasterSetError(RAS_E_SYSTEM);
+			(void) RasterSetError(RAS_E_SYSTEM);
 			return( (Raster *) NULL );
 		}
 	}
 
-	ras->name = (char *) calloc(strlen(name) + 1, 1);
-	strcpy(ras->name, name);
+	ras->name = (char *) calloc((unsigned) strlen(name) + 1, 1);
+	(void) strcpy(ras->name, name);
 
-	ras->format = (char *) calloc(strlen(FormatName) + 1, 1);
+	ras->format = (char *) calloc((unsigned) strlen(FormatName) + 1, 1);
 	(void) strcpy(ras->format, FormatName);
 
 	ras->nx	= nx;
@@ -398,13 +403,13 @@ XWDOpenWrite(name, nx, ny, comment, encoding)
 	ras->length	= ras->nx * ras->ny;
 	ras->ncolor	= 256;
 	ras->type	= RAS_INDEXED;
-	ras->red	= (unsigned char *) calloc(ras->ncolor, 1);
-	ras->green	= (unsigned char *) calloc(ras->ncolor, 1);
-	ras->blue	= (unsigned char *) calloc(ras->ncolor, 1);
-	ras->data	= (unsigned char *) calloc(ras->length, 1);
+	ras->red	= (unsigned char *) calloc((unsigned) ras->ncolor, 1);
+	ras->green	= (unsigned char *) calloc((unsigned) ras->ncolor, 1);
+	ras->blue	= (unsigned char *) calloc((unsigned) ras->ncolor, 1);
+	ras->data	= (unsigned char *) calloc((unsigned) ras->length, 1);
 
 	if (encoding != RAS_INDEXED) {
-		RasterSetError(RAS_E_UNSUPPORTED_ENCODING);
+		(void) RasterSetError(RAS_E_UNSUPPORTED_ENCODING);
 		return( (Raster *) NULL );
 	}
 	else {
@@ -489,12 +494,12 @@ int
 XWDClose(ras)
 	Raster	*ras;
 {
-	free(ras->data);
-	free(ras->red);
-	free(ras->green);
-	free(ras->blue);
-	if (ras->fd >= 0) close(ras->fd);
-	free(ras);
+	free((char *) ras->data);
+	free((char *) ras->red);
+	free((char *) ras->green);
+	free((char *) ras->blue);
+	if (ras->fd >= 0) (void) close(ras->fd);
+	free((char *) ras);
 	return(RAS_OK);
 }
 

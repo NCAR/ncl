@@ -1,3 +1,6 @@
+/*
+ *	$Id: ncarg_ras.h,v 1.2 1991-08-16 11:13:45 clyne Exp $
+ */
 #ifndef _RASTER_
 #define _RASTER_
 
@@ -91,6 +94,7 @@ struct RasterStruct {
 
 typedef struct RasterStruct Raster;
 
+#ifndef	lint
 static char *raster_encodings[] = {
 	"RAS_UNKNOWN",
 	"RAS_INDEXED",
@@ -104,6 +108,10 @@ static char *raster_formats[] = {
 	"xwd",
 	"hdf"
 };
+#else
+extern	char	*raster_encodings[];
+extern	char	*raster_formats[];
+#endif
 
 #define INDEXED_PIXEL(ras, x, y) \
 	ras->data[((y) * ras->nx) + (x)]

@@ -1,3 +1,6 @@
+/*
+ *	$Id: dfgr.h,v 1.2 1991-08-16 11:09:26 clyne Exp $
+ */
 /*****************************************************************************
 * 
 *			  NCSA HDF version 3.10r3
@@ -20,12 +23,15 @@
 *****************************************************************************/
 
 /*
-$Header: /home/brownrig/SVN/CVS/ncarg/ncarview/src/lib/libncarg_ras/Attic/dfgr.h,v 1.1 1991-06-18 15:07:44 clyne Exp $
+$Header: /home/brownrig/SVN/CVS/ncarg/ncarview/src/lib/libncarg_ras/Attic/dfgr.h,v 1.2 1991-08-16 11:09:26 clyne Exp $
 
 $Log: dfgr.h,v $
-Revision 1.1  1991-06-18 15:07:44  clyne
-Initial revision
+Revision 1.2  1991-08-16 11:09:26  clyne
+*** empty log message ***
 
+ * Revision 1.1  91/06/18  15:07:44  clyne
+ * Initial revision
+ * 
  * Revision 1.1.1.1  90/12/11  14:23:53  clyne
  * hdf 3.10r3 distribution
  * 

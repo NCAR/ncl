@@ -1,3 +1,6 @@
+/*
+ *	$Id: hplj.c,v 1.2 1991-08-16 11:13:11 clyne Exp $
+ */
 /***********************************************************************
 *                                                                      *
 *                          Copyright (C)  1991                         *
@@ -31,7 +34,6 @@
 #include <stdio.h>
 #include <fcntl.h>
 #include <sys/types.h>
-#include <malloc.h>
 #include "ncarg_ras.h"
 #include "options.h"
 #include "hplj.h"
@@ -40,6 +42,10 @@
 static char	*FormatName = "hplj";
 static char	*Comment = "hplj file from NCAR raster utilities";
 
+extern	char	*malloc(), *calloc(), *strcpy();
+
+
+/*ARGSUSED*/
 Raster *
 HPLJOpen(name)
 	char	*name;
@@ -54,7 +60,6 @@ HPLJPrintInfo(ras)
 {
 	HPLJ_Info	*dep = (HPLJ_Info *) ras->dep;
 	HPLJ_Ras	*rdep = (HPLJ_Ras *) &(dep->ras);	
-	int		i;
 
 	(void) fprintf(stderr, "\n");
 	(void) fprintf(stderr, "HPLJ Rasterfile Information\n");
@@ -77,6 +82,7 @@ HPLJPrintInfo(ras)
 }
 
 
+/*ARGSUSED*/
 Raster *
 HPLJOpenWrite(name, nx, ny, comment, encoding)
 	char		*name;
@@ -94,7 +100,7 @@ HPLJOpenWrite(name, nx, ny, comment, encoding)
 	char	*position();
 
 	if (name == (char *) NULL) {
-		RasterSetError(RAS_E_NULL_NAME);
+		(void) RasterSetError(RAS_E_NULL_NAME);
 		return( (Raster *) NULL );
 	}
 
@@ -102,7 +108,7 @@ HPLJOpenWrite(name, nx, ny, comment, encoding)
 	orientation = OptionOrientation;
 
 	if ( !(dpi == 75 || dpi == 100 || dpi == 150 || dpi == 300)) {
-		RasterSetError(RAS_E_UNSUPPORTED_RESOLUTION);
+		(void) RasterSetError(RAS_E_UNSUPPORTED_RESOLUTION);
 		return( (Raster *) NULL );
 	}
 		
@@ -110,14 +116,14 @@ HPLJOpenWrite(name, nx, ny, comment, encoding)
 	ras = (Raster *) calloc(sizeof(Raster), 1);
 
 	if (ras == (Raster *) NULL) {
-		RasterSetError(RAS_E_SYSTEM);
+		(void) RasterSetError(RAS_E_SYSTEM);
 		return( (Raster *) NULL );
 	}
 
 	ras->dep = (char *) calloc(sizeof(HPLJ_Info),1);
 
 	if (ras->dep == (char *) NULL) {
-		RasterSetError(RAS_E_SYSTEM);
+		(void) RasterSetError(RAS_E_SYSTEM);
 		return( (Raster *) NULL );
 	}
 
@@ -130,20 +136,20 @@ HPLJOpenWrite(name, nx, ny, comment, encoding)
 	 */
 	dep->dpi = dpi;
 
-	rdep->reset = malloc(strlen(HPLJ_RESET) + 1);
+	rdep->reset = malloc((unsigned) strlen(HPLJ_RESET) + 1);
 	(void) strcpy(rdep->reset, HPLJ_RESET);
 	
 	if (orientation == RAS_LANDSCAPE) { /* landscape or portrait mode? */
-		rdep->orientation = malloc(strlen(HPLJ_LANDSCAPE) + 1);
+		rdep->orientation = malloc((unsigned) strlen(HPLJ_LANDSCAPE)+1);
 		(void) strcpy(rdep->orientation, HPLJ_LANDSCAPE);
 	} 
 	else {
-		rdep->orientation = malloc(strlen(HPLJ_PORTRAIT) + 1);
+		rdep->orientation = malloc((unsigned) strlen(HPLJ_PORTRAIT) +1);
 		(void) strcpy(rdep->orientation, HPLJ_PORTRAIT);
 
 	}
 
-	rdep->encoding = malloc(strlen(HPLJ_ENCODING) + 1);
+	rdep->encoding = malloc((unsigned) strlen(HPLJ_ENCODING) + 1);
 	(void) strcpy(rdep->encoding, HPLJ_ENCODING);
 
 	/* 
@@ -151,18 +157,18 @@ HPLJOpenWrite(name, nx, ny, comment, encoding)
 	 */
 	rdep->position = position(nx, ny, dpi, orientation);
 
-	rdep->start_graph = malloc(strlen(HPLJ_START) + 1);
+	rdep->start_graph = malloc((unsigned) strlen(HPLJ_START) + 1);
 	(void) strcpy(rdep->start_graph, HPLJ_START);
 
 	if (create_data_space(dep, nx, ny) < 0) {
-		RasterSetError(RAS_E_SYSTEM);
+		(void) RasterSetError(RAS_E_SYSTEM);
 		return( (Raster *) NULL );
 	}
 
-	rdep->end_graph = malloc(strlen(HPLJ_END) + 1);
+	rdep->end_graph = malloc((unsigned) strlen(HPLJ_END) + 1);
 	(void) strcpy(rdep->end_graph, HPLJ_END);
 	
-	rdep->eject = malloc(strlen(HPLJ_EJECT) + 1);
+	rdep->eject = malloc((unsigned) strlen(HPLJ_EJECT) + 1);
 	(void) strcpy(rdep->eject, HPLJ_EJECT);
 
 	if (!strcmp(name, "stdout")) {
@@ -172,15 +178,15 @@ HPLJOpenWrite(name, nx, ny, comment, encoding)
 		ras->fd = open(name, O_WRONLY | O_CREAT, 0644);
 
 		if (ras->fd == -1) {
-			RasterSetError(RAS_E_SYSTEM);
+			(void) RasterSetError(RAS_E_SYSTEM);
 			return( (Raster *) NULL );
 		}
 	}
 
-	ras->name = (char *) calloc(strlen(name) + 1, 1);
-	strcpy(ras->name, name);
+	ras->name = (char *) calloc((unsigned) strlen(name) + 1, 1);
+	(void) strcpy(ras->name, name);
 
-	ras->format = (char *) calloc(strlen(FormatName) + 1, 1);
+	ras->format = (char *) calloc((unsigned) strlen(FormatName) + 1, 1);
 	(void) strcpy(ras->format, FormatName);
 
 	ras->nx	= nx;
@@ -188,13 +194,13 @@ HPLJOpenWrite(name, nx, ny, comment, encoding)
 	ras->length	= ras->nx * ras->ny;
 	ras->ncolor	= 256;
 	ras->type	= RAS_INDEXED;
-	ras->red	= (unsigned char *) calloc(ras->ncolor, 1);
-	ras->green	= (unsigned char *) calloc(ras->ncolor, 1);
-	ras->blue	= (unsigned char *) calloc(ras->ncolor, 1);
-	ras->data	= (unsigned char *) calloc(ras->length, 1);
+	ras->red	= (unsigned char *) calloc((unsigned) ras->ncolor, 1);
+	ras->green	= (unsigned char *) calloc((unsigned) ras->ncolor, 1);
+	ras->blue	= (unsigned char *) calloc((unsigned) ras->ncolor, 1);
+	ras->data	= (unsigned char *) calloc((unsigned) ras->length, 1);
 
 	if (encoding != RAS_INDEXED) {
-		RasterSetError(RAS_E_UNSUPPORTED_ENCODING);
+		(void) RasterSetError(RAS_E_UNSUPPORTED_ENCODING);
 		return( (Raster *) NULL );
 	}
 	else {
@@ -222,7 +228,7 @@ HPLJWrite(ras)
 	int		len;	/* length of dep->trans_data		*/
 
 	if (ras == (Raster *) NULL) {
-		RasterSetError(RAS_E_BOGUS_RASTER_STRUCTURE);
+		(void) RasterSetError(RAS_E_BOGUS_RASTER_STRUCTURE);
 		return(RAS_ERROR);
 	}
 
@@ -235,7 +241,10 @@ HPLJWrite(ras)
 	hp = rdep->data;
 	for (i=0; i < ras->ny; i++) {
 		mask = 0x80;
-		bcopy(dep->trans_data, hp, len); /* insert control string */
+		/* 
+		 * insert control string
+		 */
+		bcopy(dep->trans_data, (char*) hp, len); 
 		ptr = hp + len;		/* begining data for this row	*/
 		
 		/*
@@ -259,7 +268,7 @@ HPLJWrite(ras)
 	 */
 	nb = write(ras->fd, (char *) rdep->reset, strlen(rdep->reset));
 	if (nb != strlen(rdep->reset)) {
-		RasterSetError(RAS_E_SYSTEM);
+		(void) RasterSetError(RAS_E_SYSTEM);
 		return(RAS_ERROR);
 	}
 
@@ -268,7 +277,7 @@ HPLJWrite(ras)
 	 */
 	nb = write(ras->fd,(char *)rdep->orientation,strlen(rdep->orientation));
 	if (nb != strlen(rdep->orientation)) {
-		RasterSetError(RAS_E_SYSTEM);
+		(void) RasterSetError(RAS_E_SYSTEM);
 		return(RAS_ERROR);
 	}
 
@@ -277,7 +286,7 @@ HPLJWrite(ras)
 	 */
 	nb = write(ras->fd, (char *) rdep->encoding, strlen(rdep->encoding));
 	if (nb != strlen(rdep->encoding)) {
-		RasterSetError(RAS_E_SYSTEM);
+		(void) RasterSetError(RAS_E_SYSTEM);
 		return(RAS_ERROR);
 	}
 
@@ -286,7 +295,7 @@ HPLJWrite(ras)
 	 */
 	nb = write(ras->fd, (char *) rdep->position, strlen(rdep->position));
 	if (nb != strlen(rdep->position)) {
-		RasterSetError(RAS_E_SYSTEM);
+		(void) RasterSetError(RAS_E_SYSTEM);
 		return(RAS_ERROR);
 	}
 
@@ -295,7 +304,7 @@ HPLJWrite(ras)
 	 */
 	nb = write(ras->fd,(char *)rdep->start_graph,strlen(rdep->start_graph));
 	if (nb != strlen(rdep->start_graph)) {
-		RasterSetError(RAS_E_SYSTEM);
+		(void) RasterSetError(RAS_E_SYSTEM);
 		return(RAS_ERROR);
 	}
 
@@ -304,7 +313,7 @@ HPLJWrite(ras)
 	 */
 	nb = write(ras->fd, (char *) rdep->data, dep->image_size);
 	if (nb != dep->image_size) {
-		RasterSetError(RAS_E_SYSTEM);
+		(void) RasterSetError(RAS_E_SYSTEM);
 		return(RAS_ERROR);
 	}
 
@@ -313,7 +322,7 @@ HPLJWrite(ras)
 	 */
 	nb = write(ras->fd, (char *) rdep->end_graph, strlen(rdep->end_graph));
 	if (nb != strlen(rdep->end_graph)) {
-		RasterSetError(RAS_E_SYSTEM);
+		(void) RasterSetError(RAS_E_SYSTEM);
 		return(RAS_ERROR);
 	}
 
@@ -322,7 +331,7 @@ HPLJWrite(ras)
 	 */
 	nb = write(ras->fd, (char *) rdep->eject, strlen(rdep->eject));
 	if (nb != strlen(rdep->eject)) {
-		RasterSetError(RAS_E_SYSTEM);
+		(void) RasterSetError(RAS_E_SYSTEM);
 		return(RAS_ERROR);
 	}
 
@@ -333,13 +342,13 @@ int
 HPLJClose(ras)
 	Raster	*ras;
 {
-	HPLJ_Info	*dep;
+	HPLJ_Info	*dep = (HPLJ_Info *) ras->dep;
 
 	free((char *) ras->data);
 	free((char *) ras->red);
 	free((char *) ras->green);
 	free((char *) ras->blue);
-	if (ras->fd >= 0) close(ras->fd);
+	if (ras->fd >= 0) (void) close(ras->fd);
 	if (dep) {
 		if (dep->ras.reset) free(dep->ras.reset);
 		if (dep->ras.orientation) free(dep->ras.orientation);
@@ -437,7 +446,7 @@ static	char	*position(nx, ny, dpi, orientation)
 	image_width = nx * HPLJ_MAX_RES / dpi;
 	image_height = ny * HPLJ_MAX_RES / dpi;
 
-	if (orientation = RAS_LANDSCAPE) {
+	if (orientation == RAS_LANDSCAPE) {
 		y_start = (total_width - image_width) / 2;
 		x_start = ((total_height - image_height) / 2) + image_height;
 	}
@@ -447,9 +456,9 @@ static	char	*position(nx, ny, dpi, orientation)
 	}
 
 	bzero(buf, 80);
-	sprintf(buf, "*p%dx%dY", x_start, y_start);
+	(void) sprintf(buf, "*p%dx%dY", x_start, y_start);
 
-	if ((cptr = malloc(strlen(buf) + 1)) == NULL) return(NULL);
+	if ((cptr = malloc((unsigned) strlen(buf) + 1)) == NULL) return(NULL);
 
 	(void) strcpy(cptr, buf);
 	return(cptr);
@@ -484,8 +493,8 @@ static	create_data_space(hplj, nx, ny)
 	 * set up transfer raster data command
 	 */
 	bzero(buf, 80);
-	sprintf(buf, "*b%dW", num_bytes);
-	if ((trans_data = malloc(strlen(buf) + 1)) == NULL) return(-1);
+	(void) sprintf(buf, "*b%dW", num_bytes);
+	if ((trans_data = malloc((unsigned)strlen(buf)+1)) == NULL) return(-1);
 	(void) strcpy(trans_data, buf);
 
 	/*
@@ -493,8 +502,10 @@ static	create_data_space(hplj, nx, ny)
 	 */
 	row_size = num_bytes + strlen(trans_data);
 
-	if ((data = (unsigned char *)malloc(row_size * ny)) == NULL) return(-1);
-	bzero(data, row_size * ny);
+	data = (unsigned char *) malloc ((unsigned) (row_size * ny));
+	if (! data) return(-1);
+
+	bzero((char *) data, row_size * ny);
 
 	hplj->trans_data = trans_data;
 	hplj->row_size = row_size;

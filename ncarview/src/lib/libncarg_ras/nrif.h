@@ -1,3 +1,6 @@
+/*
+ *	$Id: nrif.h,v 1.2 1991-08-16 11:11:10 clyne Exp $
+ */
 #ifndef FALSE
 #define FALSE	0
 #endif	FALSE

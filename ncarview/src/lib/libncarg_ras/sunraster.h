@@ -1,3 +1,6 @@
+/*
+ *	$Id: sunraster.h,v 1.2 1991-08-16 11:12:24 clyne Exp $
+ */
 #ifndef _RASTER_SUN_
 #define _RASTER_SUN_
 

@@ -12,13 +12,20 @@ MYNAME		= libncarv.a
 CDEFINES	= -I$(LOCINCDIR)
 
 INCLUDES	= boolean.h options.h icmalloc.h ncarv.h common.h
-SRCS		= options.c icmalloc.c misc.c
-OBJECTS		= options.o icmalloc.o misc.o
+SRCS		= options.c icmalloc.c misc.c ncarg_path.c
+OBJECTS		= options.o icmalloc.o misc.o ncarg_path.o
+
+EQUALHACK	= =
 
 all::
 	@$(CP) $(INCLUDES) $(LOCINCDIR)
 
 Library($(MYNAME),$(OBJECTS))
 
+
+ncarg_path.o:	Makefile
+	$(CC) $(CFLAGS) -DPARFIL_MACRO$(EQUALHACK)'"$(PARFIL_PERM)"' -c $*.c
+
 lint:
-	$(LINT) -I$(LOCINCDIR) $(SRCS) 1> lint.out 2>&1
+	$(LINT) -I$(LOCINCDIR) -DPARFIL_MACRO$(EQUALHACK)'"$(PARFIL_PERM)"' \
+		$(SRCS) 1> lint.out 2>&1

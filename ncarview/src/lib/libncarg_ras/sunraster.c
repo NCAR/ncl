@@ -1,3 +1,6 @@
+/*
+ *	$Id: sunraster.c,v 1.2 1991-08-16 11:09:56 clyne Exp $
+ */
 /***********************************************************************
 *                                                                      *
 *                          Copyright (C)  1991                         *
@@ -108,6 +111,7 @@ SunOpen(name)
 	return(ras);
 }
 
+/*ARGSUSED*/
 Raster *
 SunOpenWrite(name, nx, ny, comment, encoding)
 	char		*name;
@@ -228,17 +232,17 @@ SunPrintInfo(ras)
 
 	dep = (SunInfo *) ras->dep;
 
-	fprintf(stderr, "\n");
-	fprintf(stderr, "Sun Rasterfile Information\n");
-	fprintf(stderr, "--------------------------\n");
-	fprintf(stderr, "ras_magic:        %8x\n", dep->ras_magic);
-	fprintf(stderr, "ras_width:        %d\n", dep->ras_width);
-	fprintf(stderr, "ras_height:       %d\n", dep->ras_height);
-	fprintf(stderr, "ras_depth:        %d\n", dep->ras_depth);
-	fprintf(stderr, "ras_length:       %d\n", dep->ras_length);
-	fprintf(stderr, "ras_type:         %d\n", dep->ras_type);
-	fprintf(stderr, "ras_maptype:      %d\n", dep->ras_maptype);
-	fprintf(stderr, "ras_maplength:    %d\n", dep->ras_maplength);
+	(void) fprintf(stderr, "\n");
+	(void) fprintf(stderr, "Sun Rasterfile Information\n");
+	(void) fprintf(stderr, "--------------------------\n");
+	(void) fprintf(stderr, "ras_magic:        %8x\n", dep->ras_magic);
+	(void) fprintf(stderr, "ras_width:        %d\n", dep->ras_width);
+	(void) fprintf(stderr, "ras_height:       %d\n", dep->ras_height);
+	(void) fprintf(stderr, "ras_depth:        %d\n", dep->ras_depth);
+	(void) fprintf(stderr, "ras_length:       %d\n", dep->ras_length);
+	(void) fprintf(stderr, "ras_type:         %d\n", dep->ras_type);
+	(void) fprintf(stderr, "ras_maptype:      %d\n", dep->ras_maptype);
+	(void) fprintf(stderr, "ras_maplength:    %d\n", dep->ras_maplength);
 
 	return(RAS_OK);
 }

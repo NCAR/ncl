@@ -1,3 +1,6 @@
+/*
+ *	$Id: error.c,v 1.2 1991-08-16 11:08:37 clyne Exp $
+ */
 /***********************************************************************
 *                                                                      *
 *                          Copyright (C)  1991                         *
@@ -40,6 +43,9 @@
 #include <varargs.h>
 #include "ncarg_ras.h"
 
+/*LINTLIBRARY*/
+
+extern	char	*strcpy(), *strcat();
 extern int	errno;
 extern char	*sys_errlist[];
 
@@ -97,19 +103,19 @@ wooga()
 {
 	int	fd;
 	fd = open("snooga", 0);
-	if (fd == -1) RasterSetError(RAS_E_SYSTEM);
+	if (fd == -1) (void) RasterSetError(RAS_E_SYSTEM);
 	return(RAS_ERROR);
 }
 
 booga()
 {
-	RasterSetError(RAS_E_8BIT_PIXELS_ONLY);
+	(void) RasterSetError(RAS_E_8BIT_PIXELS_ONLY);
 	return(RAS_ERROR);
 }
 
 snooga()
 {
-	RasterSetError(RAS_E_8BIT_INTENSITIES_ONLY);
+	(void) RasterSetError(RAS_E_8BIT_INTENSITIES_ONLY);
 	return(RAS_ERROR);
 }
 #else
@@ -122,7 +128,7 @@ RasterSetError(errno)
 	int	errno;
 {
 	if (errno > (ras_nerr-1)) {
-		fprintf(stderr, 
+		(void) fprintf(stderr, 
 		"Now you're in trouble! The error routine has an error\n");
 		return(RAS_ERROR);
 	}
@@ -146,21 +152,21 @@ RasterPrintError(msg)
 	char	*msg;
 {
 	if (ras_errno == RAS_E_SYSTEM) {
-		strcpy(msgbuf, ProgramName);
+		(void) strcpy(msgbuf, ProgramName);
 		if (msg != (char *) NULL) {
-			strcat(msgbuf, " - ");
-			strcat(msgbuf, msg);
+			(void) strcat(msgbuf, " - ");
+			(void) strcat(msgbuf, msg);
 		}
 		perror(msgbuf);
 	}
 	else {
 		if (msg != (char *) NULL) {
-			fprintf(stderr,"%s - %s: %s\n",
+			(void) fprintf(stderr,"%s - %s: %s\n",
 				ProgramName, msg,
 				ras_errlist[ras_errno]);
 		}
 		else {
-			fprintf(stderr,"%s: %s\n",
+			(void) fprintf(stderr,"%s: %s\n",
 				ProgramName,
 				ras_errlist[ras_errno]);
 		}

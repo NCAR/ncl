@@ -1,3 +1,6 @@
+/*
+ *	$Id: error.h,v 1.2 1991-08-16 11:09:01 clyne Exp $
+ */
 #ifndef __RAS_ERROR__
 #define __RAS_ERROR__
 

@@ -1,3 +1,6 @@
+/*
+ *	$Id: dfi.h,v 1.2 1991-08-16 11:11:26 clyne Exp $
+ */
 /*****************************************************************************
 * 
 *			  NCSA HDF version 3.10r3
@@ -20,14 +23,17 @@
 *****************************************************************************/
 
 #ifdef RCSID
-static char RcsId[] = "@(#)$Revision: 1.1 $"
+static char RcsId[] = "@(#)$Revision: 1.2 $"
 #endif
 /*
-$Header: /home/brownrig/SVN/CVS/ncarg/ncarview/src/lib/libncarg_ras/Attic/dfi.h,v 1.1 1991-06-18 15:12:10 clyne Exp $
+$Header: /home/brownrig/SVN/CVS/ncarg/ncarview/src/lib/libncarg_ras/Attic/dfi.h,v 1.2 1991-08-16 11:11:26 clyne Exp $
 $Log: dfi.h,v $
-Revision 1.1  1991-06-18 15:12:10  clyne
-Initial revision
+Revision 1.2  1991-08-16 11:11:26  clyne
+*** empty log message ***
 
+ * Revision 1.1  91/06/18  15:12:10  clyne
+ * Initial revision
+ * 
  * Revision 1.3  90/12/12  14:03:05  clyne
  * ported hdf to rs6000
  * 

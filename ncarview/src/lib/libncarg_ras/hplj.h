@@ -1,3 +1,6 @@
+/*
+ *	$Id: hplj.h,v 1.2 1991-08-16 11:14:02 clyne Exp $
+ */
 #ifndef	_hplj_
 #define	_hplh_
 

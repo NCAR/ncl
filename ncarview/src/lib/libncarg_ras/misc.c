@@ -1,3 +1,6 @@
+/*
+ *	$Id: misc.c,v 1.2 1991-08-16 11:10:27 clyne Exp $
+ */
 /***********************************************************************
 *                                                                      *
 *                          Copyright (C)  1991                         *
@@ -40,7 +43,7 @@ read_swap(fp, nb, buf, swapflag)
 	if (status != nb) return(RAS_EOF);
 
 	if (swapflag && *(char *) &swaptest)
-		_swaplong((char *) buf, nb);
+		_swaplong((char *) buf, (unsigned) nb);
 	
 	return(RAS_OK);
 }
@@ -54,13 +57,13 @@ read_decode(fd, nbytes)
 	unsigned char	buf[4];
 
 	if (nbytes > 4) {
-		RasterSetError(RAS_E_INTERNAL_PROGRAMMING);
+		(void) RasterSetError(RAS_E_INTERNAL_PROGRAMMING);
 		return(RAS_ERROR);
 	}
 
-	status = read(fd, buf, nbytes);
+	status = read(fd, (char *) buf, nbytes);
 	if (status != nbytes) {
-		RasterSetError(RAS_E_SYSTEM);
+		(void) RasterSetError(RAS_E_SYSTEM);
 		return(RAS_ERROR);
 	}
 	else {
@@ -82,30 +85,6 @@ char_decode(buf, nbytes)
 	return(result);
 }
 
-int
-char_encode(value, buf, nbytes)
-	int		value;
-	unsigned char	*buf;
-	int		nbytes;
-{
-	switch (nbytes) {
-		case 2:
-			buf[1] = (value & 0x000000ff) >> 0;
-			buf[0] = (value & 0x0000ff00) >> 8;
-			break;
-
-		case 4:
-			buf[3] = (value & 0x000000ff) >> 0;
-			buf[2] = (value & 0x0000ff00) >> 8;
-			buf[1] = (value & 0x00ff0000) >> 16;
-			buf[0] = (value & 0xff000000) >> 24;
-			break;
-		
-		default:
-			RasterSetError(RAS_E_INTERNAL_PROGRAMMING);
-			break;
-	}
-}
 
 /* Swiped from John Clyne */
 

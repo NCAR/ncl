@@ -1,3 +1,6 @@
+/*
+ *	$Id: dither.c,v 1.2 1991-08-16 11:08:14 clyne Exp $
+ */
 #include "ncarg_ras.h"
 
 extern int	OptionDitherPopular;
@@ -6,6 +9,8 @@ extern int	OptionDitherColors;
 
 #define MAXBITS		6
 #define MAXBINS		(1 << MAXBITS)
+
+/*LINTLIBRARY*/
 
 int
 RasterDither(src, dst, verbose)
@@ -35,7 +40,7 @@ RasterDither(src, dst, verbose)
 
 	for(y=0; y<src->ny; y++) {
 		if (y%50 == 0 && verbose) 
-			fprintf(stderr, "Dithering row %4d\n", y);
+			(void) fprintf(stderr, "Dithering row %4d\n", y);
 
 		for(x=0; x<src->nx; x++) {
 			r = DIRECT_RED(src, x, y);
@@ -63,7 +68,7 @@ RasterDitherPopular(src, dst, verbose)
 	int		dist, mini, mindist;
 	int		bins, shift;
 	int		count;
-	int		cmapsize, qbits;
+	int		qbits;
 	int		hist[MAXBINS][MAXBINS][MAXBINS];
 	int		chist[256];
 
@@ -72,7 +77,6 @@ RasterDitherPopular(src, dst, verbose)
 		return(RAS_ERROR);
 	}
 
-	cmapsize = OptionDitherColors;
 	qbits = OptionDitherBits;
 	bins = 1 << qbits;
 	shift = 8 - qbits;
@@ -83,11 +87,12 @@ RasterDitherPopular(src, dst, verbose)
 	}
 
 	if (verbose) {
-		fprintf(stderr, "Popularity Dithering with %d bits\n", qbits);
+		(void) fprintf(stderr, 
+			"Popularity Dithering with %d bits\n", qbits);
 	}
 
 	/* Initialize the colormap histogram */
-	if (verbose) fprintf(stderr, "Initializing...");
+	if (verbose) (void) fprintf(stderr, "Initializing...");
 	for(i=0; i<256; i++) {
 		chist[i] = 0;
 		dst->red[i] = 0;
@@ -98,9 +103,9 @@ RasterDitherPopular(src, dst, verbose)
 	for(r=0; r<bins; r++) for(g=0; g<bins; g++) for(b=0; b<bins; b++) {
 		hist[r][g][b] = 0;
 	}
-	if (verbose) fprintf(stderr, "Done\n");
+	if (verbose) (void) fprintf(stderr, "Done\n");
 
-	if (verbose) fprintf(stderr, "Calculating histogram...");
+	if (verbose) (void) fprintf(stderr, "Calculating histogram...");
 	for(y=0; y<src->ny; y++) {
 		for(x=0; x<src->nx; x++) {
 			r = DIRECT_RED(src, x, y)   >> shift;
@@ -109,11 +114,11 @@ RasterDitherPopular(src, dst, verbose)
 			hist[r][g][b]++;
 		}
 	}
-	if (verbose) fprintf(stderr, "Done\n");
+	if (verbose) (void) fprintf(stderr, "Done\n");
 
-	if (verbose) fprintf(stderr, "Building new colormap...");
+	if (verbose) (void) fprintf(stderr, "Building new colormap...");
 	for(r=0;r<bins;r++) {
-	if (verbose) fprintf(stderr, "red = %d\n", r);
+	if (verbose) (void) fprintf(stderr, "red = %d\n", r);
 	for(g=0;g<bins;g++) for(b=0;b<bins;b++) {
 		count = hist[r][g][b];
 		if (count == 0) continue;
@@ -135,22 +140,24 @@ RasterDitherPopular(src, dst, verbose)
 		}
 	}
 	}
-	if (verbose) fprintf(stderr, "Done\n");
+	if (verbose) (void) fprintf(stderr, "Done\n");
 
 	/* Reuse the RGB histogram as an associative memory */
 
-	if (verbose) fprintf(stderr, "Encoding color table...");
+	if (verbose) (void) fprintf(stderr, "Encoding color table...");
 	for(i=0; i<256; i++) {
 		hist[dst->red[i]][dst->green[i]][dst->blue[i]] = -1 - i;
 		dst->red[i] = dst->red[i] << shift;
 		dst->green[i] = dst->green[i] << shift;
 		dst->blue[i] = dst->blue[i] << shift;
 	}
-	if (verbose) fprintf(stderr, "Done\n");
+	if (verbose) (void) fprintf(stderr, "Done\n");
 		
-	if (verbose) fprintf(stderr, "Remapping the image...\n");
+	if (verbose) (void) fprintf(stderr, "Remapping the image...\n");
 	for(y=0; y<src->ny; y++) {
-		if (y%50==0 && verbose) fprintf(stderr,"Remapping row %d\n",y);
+		if (y%50==0 && verbose) {
+			(void) fprintf(stderr,"Remapping row %d\n",y);
+		}
 		for(x=0; x<src->nx; x++) {
 			r = DIRECT_RED(src, x, y);
 			g = DIRECT_GREEN(src, x, y);
@@ -162,9 +169,9 @@ RasterDitherPopular(src, dst, verbose)
 			else {
 				mindist = 1000; mini = -1;
 				for(i=0; i<256; i++) {
-					dist = abs(r - dst->red[i]) +
-					       abs(g - dst->green[i]) +
-					       abs(b - dst->blue[i]);
+					dist = abs((int) (r - dst->red[i])) +
+					       abs((int) (g - dst->green[i])) +
+					       abs((int) (b - dst->blue[i]));
 					if (dist < mindist) {
 						mindist = dist;
 						mini = i;
@@ -174,7 +181,7 @@ RasterDitherPopular(src, dst, verbose)
 			}
 		}
 	}
-	if (verbose) fprintf(stderr, "Done\n");
+	if (verbose) (void) fprintf(stderr, "Done\n");
 
 	return(RAS_OK);
 }
