@@ -1,5 +1,5 @@
 /*
- *      $Id: Symbol.c,v 1.55 1999-02-23 03:04:42 dbrown Exp $
+ *      $Id: Symbol.c,v 1.56 1999-06-29 22:06:01 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -2050,7 +2050,8 @@ NclExtValueRec *_NclGetHLUObjId
 				} else {
 					for(i = 0; i<the_hlu->multidval.n_dims; i++) {
 						tmp->dim_sizes[i] = the_hlu->multidval.dim_sizes[i];
-
+					}
+					for(i = 0; i < the_hlu->multidval.totalelements; i++) {
 						if((!the_hlu->multidval.missing_value.has_missing)||(((int*)the_hlu->multidval.val)[i] != the_hlu->multidval.missing_value.value.objval)) {
 							hlu = (NclHLUObj)_NclGetObj(((int*)the_hlu->multidval.val)[i]);
 							value[i] = hlu->hlu.hlu_id;
