@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularTransObj.c,v 1.16 1995-05-03 03:11:11 dbrown Exp $
+ *      $Id: IrregularTransObj.c,v 1.17 1995-05-10 01:17:55 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -588,6 +588,7 @@ NhlLayer inst;
 	free(ir->irtrans.compc_xmax_dat);
 	free(ir->irtrans.compc_ymin_dat);
 	free(ir->irtrans.compc_ymax_dat);
+	_NhlDestroySplineCoordApprox(&(ir->irtrans.thecoord));
 
 	return NhlNOERROR;
 }
@@ -961,6 +962,9 @@ static NhlErrorTypes SetUpTrans
 	}
 
 	if(call_spline_create) {
+		if (c_or_s == SET) {
+			ret = _NhlDestroySplineCoordApprox(&(irp->thecoord));
+		}
 		inew->trobj.change_count++;
 		ret = _NhlCreateSplineCoordApprox(&(irp->thecoord),
 			irp->x_use_log,

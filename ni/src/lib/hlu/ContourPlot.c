@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.12 1995-05-04 01:09:51 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.13 1995-05-10 01:17:52 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2722,7 +2722,6 @@ NhlLayer inst;
 	NhlFreeGenArray(cnp->line_thicknesses);
 	NhlFreeGenArray(cnp->llabel_strings);
 	NhlFreeGenArray(cnp->llabel_colors);
-	NhlFreeGenArray(cnp->legend_labels);
 	if (cnp->ll_text_heights != NULL)
 		NhlFreeGenArray(cnp->ll_text_heights);
 	if (cnp->ll_strings != NULL) {

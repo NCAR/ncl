@@ -888,12 +888,32 @@ NhlString _NhlFormatFloat
         iotz = (int) ! format->zero;
 
         NGCALLF(cpinrc,CPINRC)();
-        NGCALLF(cpnumb,CPNUMB)(&value,&ndgd,&lmsd,&iexp,&lexp,
-			       cex1[ix],cex2[ix],cex3[ix],
+
+	{
+		int len1,len2,len3,len4;
+		NGstring cex1_f;
+		NGstring cex2_f;
+		NGstring cex3_f;
+		NGstring cbuf_f;
+		char *cbuf_c;
+		len1 = NGSTRLEN(cex1[ix]);
+		len2 = NGSTRLEN(cex2[ix]);
+		len3 = NGSTRLEN(cex3[ix]);
+		len4 = 128;
+		cex1_f = NGCstrToFstr(cex1[ix],len1);
+		cex2_f = NGCstrToFstr(cex2[ix],len2);
+		cex3_f = NGCstrToFstr(cex3[ix],len3);
+		cbuf_f = NGCstrToFstr(cbuf,len4);
+        	NGCALLF(cpnumb,CPNUMB)(&value,&ndgd,&lmsd,&iexp,&lexp,
+			       cex1_f,cex2_f,cex3_f,
 			       &lex1[ix],&lex2[ix],&lex3[ix],
-			       &ioma,&iodp,&iotz,cbuf,&nbuf,&ndgs,&ieva,
-			       strlen(cex1[ix]),strlen(cex2[ix]),
-			       strlen(cex3[ix]),128);
+			       &ioma,&iodp,&iotz,cbuf_f,&nbuf,&ndgs,&ieva,
+			       len1,len2,len3,len4);
+		cbuf_c = NGFstrToCstr(cbuf_f);
+		if (cbuf_c != &cbuf[0])
+			strcpy(cbuf,cbuf_c);
+		cbuf[nbuf] = '\0';
+	}
 
 
 /*

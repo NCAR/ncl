@@ -1,5 +1,5 @@
 /*
- *      $Id: TextItem.c,v 1.31 1995-04-29 18:53:28 boote Exp $
+ *      $Id: TextItem.c,v 1.32 1995-05-10 01:17:57 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -762,6 +762,7 @@ static NhlErrorTypes    TextItemDraw
 	int ll;
 	NhlErrorTypes ret = NhlNOERROR;
 	char buf[10];
+	char *func = "TextItemDraw";
 
 	c_getset(&fl,&fr,&fb,&ft,&ul,&ur,&ub,&ut,&ll);
 
@@ -824,6 +825,7 @@ static NhlErrorTypes    TextItemDraw
 	c_plchhq(tlayer->text.real_x_pos,tlayer->text.real_y_pos,
 		tlayer->text.real_string,tlayer->text.real_size,
 		tlayer->text.angle,tlayer->text.cntr);
+	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 
 	c_set(fl,fr,fb,ft,ul,ur,ub,ut,ll);
 
@@ -861,6 +863,7 @@ static NhlErrorTypes    TextItemSegDraw
 	int ll;
 	NhlErrorTypes ret = NhlNOERROR;
 	char buf[10];
+	char *func = "TextItemDraw";
 
 	c_getset(&fl,&fr,&fb,&ft,&ul,&ur,&ub,&ut,&ll);
 
@@ -892,6 +895,7 @@ static NhlErrorTypes    TextItemSegDraw
 	c_plchhq(tlayer->text.real_x_pos,tlayer->text.real_y_pos,
 		tlayer->text.real_string,tlayer->text.real_size,
 		tlayer->text.angle,tlayer->text.cntr);
+	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 
 	c_set(fl,fr,fb,ft,ul,ur,ub,ut,ll);
 
@@ -994,6 +998,7 @@ static NhlErrorTypes FigureAndSetTextBBInfo
 	NhlErrorTypes ret = NhlNOERROR;
 	int i;
 	float space;
+	char *func = "TextItem";
 /*
 * All points get calculated as if no rotation is going to happen then
 * all points are passed through a generic 2D rotational matrix, which gives
@@ -1028,10 +1033,16 @@ static NhlErrorTypes FigureAndSetTextBBInfo
 			c_plchhq(0.5,0.5,
 				tnew->text.real_string,tnew->text.real_size,
 				360.0,tnew->text.cntr);
+			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 			c_pcgetr("DL",&tmpdl);
 			c_pcgetr("DR",&tmpdr);
 			c_pcgetr("DT",&tmpdt);
 			c_pcgetr("DB",&tmpdb);
+			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
+			if (fabs(tmpdl) > 10.0) tmpdl = 0.0001;
+			if (fabs(tmpdr) > 10.0) tmpdr = 0.0001;
+			if (fabs(tmpdb) > 10.0) tmpdb = 0.0001;
+			if (fabs(tmpdt) > 10.0) tmpdt = 0.0001;
 			if(tnew->text.direction == NhlACROSS) {
 				tnew->text.real_x_pos = tnew->text.pos_x;
 				tnew->text.real_y_pos = tnew->text.pos_y;
@@ -1053,10 +1064,16 @@ static NhlErrorTypes FigureAndSetTextBBInfo
 			c_plchhq(tnew->text.real_x_pos,tnew->text.real_y_pos,
 				tnew->text.real_string,tnew->text.real_size,
 				360.0,tnew->text.cntr);
+			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 			c_pcgetr("DL",&tmpdl);
 			c_pcgetr("DR",&tmpdr);
 			c_pcgetr("DT",&tmpdt);
 			c_pcgetr("DB",&tmpdb);
+			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
+			if (fabs(tmpdl) > 10.0) tmpdl = 0.0001;
+			if (fabs(tmpdr) > 10.0) tmpdr = 0.0001;
+			if (fabs(tmpdb) > 10.0) tmpdb = 0.0001;
+			if (fabs(tmpdt) > 10.0) tmpdt = 0.0001;
 			break;
 		case NhlCENTERRIGHT:
 /*
@@ -1073,10 +1090,16 @@ static NhlErrorTypes FigureAndSetTextBBInfo
 			c_plchhq(0.5,0.5,
 				tnew->text.real_string,tnew->text.real_size,
 				360.0,tnew->text.cntr);
+			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 			c_pcgetr("DL",&tmpdl);
 			c_pcgetr("DR",&tmpdr);
 			c_pcgetr("DT",&tmpdt);
 			c_pcgetr("DB",&tmpdb);
+			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
+			if (fabs(tmpdl) > 10.0) tmpdl = 0.0001;
+			if (fabs(tmpdr) > 10.0) tmpdr = 0.0001;
+			if (fabs(tmpdb) > 10.0) tmpdb = 0.0001;
+			if (fabs(tmpdt) > 10.0) tmpdt = 0.0001;
 			if(tnew->text.direction == NhlACROSS) {
 				tnew->text.real_x_pos = tnew->text.pos_x;
 				tnew->text.real_y_pos = tnew->text.pos_y;
@@ -1100,10 +1123,16 @@ static NhlErrorTypes FigureAndSetTextBBInfo
 			c_plchhq(.5,.5,
 				tnew->text.real_string,tnew->text.real_size,
 				360.0,tnew->text.cntr);
+			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 			c_pcgetr("DL",&tmpdl);
 			c_pcgetr("DR",&tmpdr);
 			c_pcgetr("DT",&tmpdt);
 			c_pcgetr("DB",&tmpdb);
+			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
+			if (fabs(tmpdl) > 10.0) tmpdl = 0.0001;
+			if (fabs(tmpdr) > 10.0) tmpdr = 0.0001;
+			if (fabs(tmpdb) > 10.0) tmpdb = 0.0001;
+			if (fabs(tmpdt) > 10.0) tmpdt = 0.0001;
 			if(tnew->text.direction == NhlACROSS) {
 				tnew->text.real_x_pos = tnew->text.pos_x;
 				tnew->text.real_y_pos = tnew->text.pos_y - tmpdt;
@@ -1130,10 +1159,16 @@ static NhlErrorTypes FigureAndSetTextBBInfo
 			c_plchhq(.5,.5,
 				tnew->text.real_string,tnew->text.real_size,
 				360.0,tnew->text.cntr);
+			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 			c_pcgetr("DL",&tmpdl);
 			c_pcgetr("DR",&tmpdr);
 			c_pcgetr("DT",&tmpdt);
 			c_pcgetr("DB",&tmpdb);
+			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
+			if (fabs(tmpdl) > 10.0) tmpdl = 0.0001;
+			if (fabs(tmpdr) > 10.0) tmpdr = 0.0001;
+			if (fabs(tmpdb) > 10.0) tmpdb = 0.0001;
+			if (fabs(tmpdt) > 10.0) tmpdt = 0.0001;
 			if(tnew->text.direction == NhlACROSS) {
 				tnew->text.real_x_pos = tnew->text.pos_x;
 				tnew->text.real_y_pos = tnew->text.pos_y - tmpdt;
@@ -1157,10 +1192,16 @@ static NhlErrorTypes FigureAndSetTextBBInfo
 			c_plchhq(0.5,0.5,
 				tnew->text.real_string,tnew->text.real_size,
 				360.0,tnew->text.cntr);
+			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 			c_pcgetr("DL",&tmpdl);
 			c_pcgetr("DR",&tmpdr);
 			c_pcgetr("DT",&tmpdt);
 			c_pcgetr("DB",&tmpdb);
+			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
+			if (fabs(tmpdl) > 10.0) tmpdl = 0.0001;
+			if (fabs(tmpdr) > 10.0) tmpdr = 0.0001;
+			if (fabs(tmpdb) > 10.0) tmpdb = 0.0001;
+			if (fabs(tmpdt) > 10.0) tmpdt = 0.0001;
 			if(tnew->text.direction == NhlACROSS) {
 				tnew->text.real_x_pos = tnew->text.pos_x;
 				tnew->text.real_y_pos = tnew->text.pos_y - tmpdt;
@@ -1187,10 +1228,16 @@ static NhlErrorTypes FigureAndSetTextBBInfo
 			c_plchhq(.5,.5,
 				tnew->text.real_string,tnew->text.real_size,
 				360.0,tnew->text.cntr);
+			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 			c_pcgetr("DL",&tmpdl);
 			c_pcgetr("DR",&tmpdr);
 			c_pcgetr("DT",&tmpdt);
 			c_pcgetr("DB",&tmpdb);
+			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
+			if (fabs(tmpdl) > 10.0) tmpdl = 0.0001;
+			if (fabs(tmpdr) > 10.0) tmpdr = 0.0001;
+			if (fabs(tmpdb) > 10.0) tmpdb = 0.0001;
+			if (fabs(tmpdt) > 10.0) tmpdt = 0.0001;
 			if(tnew->text.direction == NhlACROSS) {
 				tnew->text.real_x_pos = tnew->text.pos_x;
 				tnew->text.real_y_pos = tnew->text.pos_y + tmpdb;
@@ -1214,10 +1261,16 @@ static NhlErrorTypes FigureAndSetTextBBInfo
 			c_plchhq(.5,.5,
 				tnew->text.real_string,tnew->text.real_size,
 				360.0,tnew->text.cntr);
+			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 			c_pcgetr("DL",&tmpdl);
 			c_pcgetr("DR",&tmpdr);
 			c_pcgetr("DT",&tmpdt);
 			c_pcgetr("DB",&tmpdb);
+			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
+			if (fabs(tmpdl) > 10.0) tmpdl = 0.0001;
+			if (fabs(tmpdr) > 10.0) tmpdr = 0.0001;
+			if (fabs(tmpdb) > 10.0) tmpdb = 0.0001;
+			if (fabs(tmpdt) > 10.0) tmpdt = 0.0001;
 			if(tnew->text.direction == NhlACROSS) {
 				tnew->text.real_x_pos = tnew->text.pos_x;
 				tnew->text.real_y_pos = tnew->text.pos_y + tmpdb;
@@ -1237,10 +1290,16 @@ static NhlErrorTypes FigureAndSetTextBBInfo
 			c_plchhq(.5,.5,
 				tnew->text.real_string,tnew->text.real_size,
 				360.0,tnew->text.cntr);
+			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 			c_pcgetr("DL",&tmpdl);
 			c_pcgetr("DR",&tmpdr);
 			c_pcgetr("DT",&tmpdt);
 			c_pcgetr("DB",&tmpdb);
+			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
+			if (fabs(tmpdl) > 10.0) tmpdl = 0.0001;
+			if (fabs(tmpdr) > 10.0) tmpdr = 0.0001;
+			if (fabs(tmpdb) > 10.0) tmpdb = 0.0001;
+			if (fabs(tmpdt) > 10.0) tmpdt = 0.0001;
 			if(tnew->text.direction == NhlACROSS) {
 				tnew->text.real_x_pos = tnew->text.pos_x;
 				tnew->text.real_y_pos = tnew->text.pos_y + tmpdb;
@@ -1254,7 +1313,6 @@ static NhlErrorTypes FigureAndSetTextBBInfo
 			ret = NhlWARNING;
 			break;
 	}
-
 	xpoints[0] = tnew->text.real_x_pos - tmpdl;
 	ypoints[0] = tnew->text.real_y_pos - tmpdb;
 	tnew->text.heightvecx[0] = xpoints[0];
