@@ -1,5 +1,5 @@
 C
-C	$Id: wmcomn.h,v 1.12 2001-02-14 01:05:05 fred Exp $
+C	$Id: wmcomn.h,v 1.13 2001-08-07 18:37:32 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -92,6 +92,10 @@ C    WBBASE  WBC   Diameter of sky cover at base of wind barb as a fraction
 C                  of the shaft length.
 C    IWBBAS  WBF   Flag indicating whether space should be left at the base
 C                  of a wind barb (=1) or not (=0, the default).
+C    IWBDIR  WDF   Flag indicating wind barb direction.  The default (=0)
+C                  means plot the barb shaft away from the wind;
+C                  WDF non-zero means plot the barb shaft in the 
+C                  direction of the wind (the meteorological convention).
 C    WBLSIZ  WBL   Size of text labels in station model display.
 C    ISUNC1  SC1   Color index for center of sun symbol.
 C    ISUNC2  SC2   Color index for points of sun symbol.
@@ -143,14 +147,14 @@ C
      +                ARWSIZ, ARWLEN, ARWDIR, CDOTSZ, CTYMRG, TMPMRG,
      +                IBGCTY, IFGTRG, IDOTCO, WBSHFT, WBFTIC, WBDIST,
      +                WBCLMR, WBBANG, WBXL  , WBXR  , WBYB  , WBYT  ,
-     +                WBBASE, IWBBAS, WBLSIZ, ISUNC1, ISUNC2, ISUNC3,
-     +                ISUNC4, ICLDC1, ICLDC2, ICLDC3, ILTNC1, ILTNC2,
-     +                ILTNC3, DLINWD, NUMSYO, IWARMC, ICOLDC, IHIGC1,
-     +                IHIGC2, IHIGC3, ILOWC1, ILOWC2, ILOWC3, IRGLC1,
-     +                IRGLC2, IRGLC3, IRGLC4, IDOTBG, IAROWC, IARSHC,
-     +                IRLLSC, IRLOUC, IRLBKC, IHIGC4, IAROUC, IRGLC5,
-     +                ITRO1C, ITRO2C, ILOWC4, IEZFLG, TNSION, ISMOTH,
-     +                RSMOTH, OBSERR, RSMRET, OBSRET,
+     +                WBBASE, IWBBAS, IWBDIR, WBLSIZ, ISUNC1, ISUNC2, 
+     +                ISUNC3, ISUNC4, ICLDC1, ICLDC2, ICLDC3, ILTNC1, 
+     +                ILTNC2, ILTNC3, DLINWD, NUMSYO, IWARMC, ICOLDC, 
+     +                IHIGC1, IHIGC2, IHIGC3, ILOWC1, ILOWC2, ILOWC3, 
+     +                IRGLC1, IRGLC2, IRGLC3, IRGLC4, IDOTBG, IAROWC, 
+     +                IARSHC, IRLLSC, IRLOUC, IRLBKC, IHIGC4, IAROUC, 
+     +                IRGLC5, ITRO1C, ITRO2C, ILOWC4, IEZFLG, TNSION, 
+     +                ISMOTH, RSMOTH, OBSERR, RSMRET, OBSRET,
      +                ISTYPE(ISDIM)
 C
 C  WMARRS contains arrray space.

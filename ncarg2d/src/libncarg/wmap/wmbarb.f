@@ -1,5 +1,5 @@
 C
-C	$Id: wmbarb.f,v 1.4 2000-08-22 15:07:42 haley Exp $
+C	$Id: wmbarb.f,v 1.5 2001-08-07 18:37:31 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -76,8 +76,18 @@ C
         GO TO 100
       ENDIF
 C
-      COSANG = U/SPEED
-      SINANG = V/SPEED
+C  Shift the wind direction by 180 degrees if the user has
+C  set the direction flag.
+C
+      IF (IWBDIR .NE. 0) THEN
+        UP = -U
+        VP = -V
+      ELSE
+        UP =  U
+        VP =  V
+      ENDIF
+      COSANG = UP/SPEED
+      SINANG = VP/SPEED
 C
 C  Draw shaft (adjust if the flag is set to allow for the sky cover
 C  circle to be drawn at the base).

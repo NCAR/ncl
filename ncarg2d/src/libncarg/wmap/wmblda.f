@@ -1,5 +1,5 @@
 C
-C	$Id: wmblda.f,v 1.11 2001-02-14 01:05:04 fred Exp $
+C	$Id: wmblda.f,v 1.12 2001-08-07 18:37:32 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -171,6 +171,10 @@ C    shaft length of the wind barb.
 C
       DATA WBSHFT,WBFTIC,WBDIST,WBCLMR,WBBANG,WBBASE,IWBBAS,WBLSIZ
      +    / 0.035,  0.33,  0.10,  0.25,   62.,  0.30,     0,  0.17 /       
+C
+C  Wind barb direction (=0 away from wind; =1 toward the wind).
+C
+      DATA IWBDIR/0/
 C
 C  Extent of barb ticks.
 C

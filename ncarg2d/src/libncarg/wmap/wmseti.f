@@ -1,5 +1,5 @@
 C
-C	$Id: wmseti.f,v 1.10 2001-02-14 01:05:06 fred Exp $
+C	$Id: wmseti.f,v 1.11 2001-08-07 18:37:36 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -240,6 +240,17 @@ C
       ELSE IF (CNP(1:3).EQ.'WBF' .OR. CNP(1:3).EQ.'wbf' .OR.
      +    CNP(1:3).EQ.'Wbf') THEN
         IWBBAS = IVP
+        GO TO 120
+C
+C  WDF - Flag indicating wind barb direction.  The default (=0)
+C        means plot the barb shaft away from the wind (which is
+C        is not the meteorological convention) and WDF non-zero
+C        means plot the barb shaft in the direction of the wind
+C        (the meteorological convention). 
+C
+      ELSE IF (CNP(1:3).EQ.'WDF' .OR. CNP(1:3).EQ.'wdf' .OR.
+     +    CNP(1:3).EQ.'Wdf') THEN
+        IWBDIR = IVP
         GO TO 120
 C
 C  SC1 - color index for center of sun symbol.

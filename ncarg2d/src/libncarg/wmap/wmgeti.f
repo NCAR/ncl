@@ -1,5 +1,5 @@
 C
-C	$Id: wmgeti.f,v 1.11 2001-02-14 01:05:05 fred Exp $
+C	$Id: wmgeti.f,v 1.12 2001-08-07 18:37:35 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -251,6 +251,14 @@ C
       ELSE IF (CNP(1:3).EQ.'LOC' .OR. CNP(1:3).EQ.'loc' .OR. 
      +    CNP(1:3).EQ.'Loc') THEN
         IVP = ILOWC4
+        GO TO 110
+      ELSE IF (CNP(1:3).EQ.'WBF' .OR. CNP(1:3).EQ.'wbf' .OR. 
+     +    CNP(1:3).EQ.'Wbf') THEN
+        IVP = IWBBAS
+        GO TO 110
+      ELSE IF (CNP(1:3).EQ.'WDF' .OR. CNP(1:3).EQ.'wdf' .OR. 
+     +    CNP(1:3).EQ.'Wdf') THEN
+        IVP = IWBDIR
         GO TO 110
       ELSE
         CTM(1:36) = 'WMGETI - Parameter name not known - '

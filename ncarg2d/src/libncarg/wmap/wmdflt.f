@@ -1,5 +1,5 @@
 C
-C	$Id: wmdflt.f,v 1.6 2000-08-22 15:07:43 haley Exp $
+C	$Id: wmdflt.f,v 1.7 2001-08-07 18:37:35 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -63,6 +63,7 @@ C
       DLINWD =  2.00000
 C
       IWBBAS =   0
+      IWBDIR =   0
       IBGCTY =   0
       IFGTRG =   1
       IDOTCO =   1
