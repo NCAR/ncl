@@ -1,8 +1,5 @@
 C
-C	$Id: cpsetr.f,v 1.3 1992-09-04 20:34:53 ncargd Exp $
-C
-C
-C-----------------------------------------------------------------------
+C $Id: cpsetr.f,v 1.4 1994-03-17 01:51:57 kennison Exp $
 C
       SUBROUTINE CPSETR (WHCH,RVAL)
 C
@@ -60,7 +57,7 @@ C
       COMMON /CPCOM2/ TXCF,TXHI,TXIL,TXLO
       CHARACTER*13 CHEX
       CHARACTER*40 CLBL
-      CHARACTER*32 CLDP
+      CHARACTER*128 CLDP
       CHARACTER*500 CTMA,CTMB
       CHARACTER*8 FRMT
       CHARACTER*40 TXCF
@@ -69,13 +66,17 @@ C
       CHARACTER*20 TXLO
       SAVE   /CPCOM2/
 C
+C Check for an uncleared prior error.
+C
+      IF (ICFELL('CPSETR - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+C
 C Check for a parameter name that is too short.
 C
       IF (LEN(WHCH).LT.3) THEN
-        CTMB(1:46)='CPSETI OR CPSETR - PARAMETER NAME TOO SHORT - '
-        CTMB(47:46+LEN(WHCH))=WHCH
-        CALL SETER (CTMB(1:46+LEN(WHCH)),1,2)
-        STOP
+        CTMB(1:36)='CPSETR - PARAMETER NAME TOO SHORT - '
+        CTMB(37:36+LEN(WHCH))=WHCH
+        CALL SETER (CTMB(1:36+LEN(WHCH)),2,1)
+        RETURN
       END IF
 C
 C Check for incorrect use of the index parameter.
@@ -102,10 +103,10 @@ C
 C
       GO TO 10005
 10002 CONTINUE
-        CTMB(1:46)='CPSETI OR CPSETR - SETTING XXX - PAI INCORRECT'
-        CTMB(28:30)=WHCH(1:3)
-        CALL SETER (CTMB(1:46),2,2)
-        STOP
+        CTMB(1:36)='CPSETR - SETTING XXX - PAI INCORRECT'
+        CTMB(18:20)=WHCH(1:3)
+        CALL SETER (CTMB(1:36),3,1)
+        RETURN
 10005 CONTINUE
 C
 C Set the appropriate parameter value.
@@ -264,9 +265,9 @@ C
       ELSE IF (WHCH(1:3).EQ.'NCL'.OR.WHCH(1:3).EQ.'ncl') THEN
         NCLV=INT(RVAL)
         IF (NCLV.LT.1.OR.NCLV.GT.256) THEN
-          CALL SETER ('CPSETI OR CPSETR - NCL LESS THAN 1 OR GREATER THA
-     +N 256',3,2)
-          STOP
+          CALL SETER ('CPSETR - NCL LESS THAN 1 OR GREATER THAN 256',4,1
+     +)
+          RETURN
         END IF
       ELSE IF (WHCH(1:3).EQ.'NEL'.OR.WHCH(1:3).EQ.'nel') THEN
         NEXL=INT(RVAL)
@@ -356,7 +357,7 @@ C
       ELSE IF (WHCH(1:3).EQ.'WDT'.OR.WHCH(1:3).EQ.'wdt') THEN
         UWDT=RVAL
       ELSE IF (WHCH(1:3).EQ.'WSO'.OR.WHCH(1:3).EQ.'wso') THEN
-        IWSO=MAX(0,MIN(2,INT(RVAL)))
+        IWSO=MAX(0,MIN(3,INT(RVAL)))
       ELSE IF (WHCH(1:3).EQ.'XC1'.OR.WHCH(1:3).EQ.'xc1') THEN
         UXA1=RVAL
       ELSE IF (WHCH(1:3).EQ.'XCM'.OR.WHCH(1:3).EQ.'xcm') THEN
@@ -376,10 +377,10 @@ C
       ELSE IF (WHCH(1:3).EQ.'ZDV'.OR.WHCH(1:3).EQ.'zdv') THEN
         ZDVL=RVAL
       ELSE
-        CTMB(1:46)='CPSETI OR CPSETR - PARAMETER NAME NOT KNOWN - '
-        CTMB(47:49)=WHCH(1:3)
-        CALL SETER (CTMB(1:49),4,2)
-        STOP
+        CTMB(1:36)='CPSETR - PARAMETER NAME NOT KNOWN - '
+        CTMB(37:39)=WHCH(1:3)
+        CALL SETER (CTMB(1:39),5,1)
+        RETURN
       END IF
 C
 C Done.

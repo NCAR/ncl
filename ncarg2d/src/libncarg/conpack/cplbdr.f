@@ -1,8 +1,5 @@
 C
-C	$Id: cplbdr.f,v 1.1.1.1 1992-04-17 22:32:44 ncargd Exp $
-C
-C
-C-----------------------------------------------------------------------
+C $Id: cplbdr.f,v 1.2 1994-03-17 01:51:20 kennison Exp $
 C
       SUBROUTINE CPLBDR (ZDAT,RWRK,IWRK)
 C
@@ -62,7 +59,7 @@ C
       COMMON /CPCOM2/ TXCF,TXHI,TXIL,TXLO
       CHARACTER*13 CHEX
       CHARACTER*40 CLBL
-      CHARACTER*32 CLDP
+      CHARACTER*128 CLDP
       CHARACTER*500 CTMA,CTMB
       CHARACTER*8 FRMT
       CHARACTER*40 TXCF
@@ -80,58 +77,68 @@ C from the GKS routine GQCLIP.
 C
       DIMENSION DUMI(4)
 C
+C Check for an uncleared prior error.
+C
+      IF (ICFELL('CPLBDR - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+C
 C If initialization has not been done, log an error and quit.
 C
       IF (INIT.EQ.0) THEN
-        CALL SETER ('CPLBDR - INITIALIZATION CALL NOT DONE',1,2)
-        STOP
+        CALL SETER ('CPLBDR - INITIALIZATION CALL NOT DONE',2,1)
+        RETURN
       END IF
 C
 C Do the proper SET call.
 C
       CALL SET (XVPL,XVPR,YVPB,YVPT,XWDL,XWDR,YWDB,YWDT,LNLG)
+      IF (ICFELL('CPLBDR',3).NE.0) RETURN
 C
 C If the constant-field flag is set, write the constant-field message
 C and quit.
 C
       IF (ICFF.NE.0) THEN
         CALL CPCFLB (1,RWRK,IWRK)
+        IF (ICFELL('CPLBDR',4).NE.0) RETURN
         RETURN
       END IF
 C
 C Make sure contour-label positions have been chosen.
 C
       CALL CPPKLP (ZDAT,RWRK,IWRK)
+      IF (ICFELL('CPLBDR',5).NE.0) RETURN
 C
 C If there are still no labels in the label list, do the informational
 C label and the high/low labels directly and quit.
 C
       IF (NLBS.LE.0) THEN
         CALL CPINLB (ZDAT,RWRK,IWRK,2,IAMA)
+        IF (ICFELL('CPLBDR',6).NE.0) RETURN
         CALL CPHLLB (ZDAT,RWRK,IWRK,2,IAMA)
+        IF (ICFELL('CPLBDR',7).NE.0) RETURN
         RETURN
       END IF
 C
 C Redo the SET call so that we can use fractional-system coordinates.
 C
       CALL SET (XVPL,XVPR,YVPB,YVPT,XVPL,XVPR,YVPB,YVPT,1)
+      IF (ICFELL('CPLBDR',8).NE.0) RETURN
 C
 C Set up color-index controls.
 C
       CALL GQPLCI (IGER,ISLC)
       IF (IGER.NE.0) THEN
-        CALL SETER ('CPLBDR - ERROR EXIT FROM GQPLCI',2,2)
-        STOP
+        CALL SETER ('CPLBDR - ERROR EXIT FROM GQPLCI',9,1)
+        RETURN
       END IF
       CALL GQTXCI (IGER,ISTC)
       IF (IGER.NE.0) THEN
-        CALL SETER ('CPLBDR - ERROR EXIT FROM GQTXCI',3,2)
-        STOP
+        CALL SETER ('CPLBDR - ERROR EXIT FROM GQTXCI',10,1)
+        RETURN
       END IF
       CALL GQFACI (IGER,ISFC)
       IF (IGER.NE.0) THEN
-        CALL SETER ('CPLBDR - ERROR EXIT FROM GQFACI',4,2)
-        STOP
+        CALL SETER ('CPLBDR - ERROR EXIT FROM GQFACI',11,1)
+        RETURN
       END IF
 C
       IF (ICIL.GE.0) THEN
@@ -245,13 +252,17 @@ C
           END IF
           IF (ITYP.EQ.1) THEN
             CALL CPCHIL (+2)
+            IF (ICFELL('CPLBDR',12).NE.0) RETURN
           ELSE IF (ITYP.EQ.2) THEN
             CALL CPCHHL (+2)
+            IF (ICFELL('CPLBDR',13).NE.0) RETURN
           ELSE IF (ITYP.EQ.3) THEN
             CALL CPCHHL (+6)
+            IF (ICFELL('CPLBDR',14).NE.0) RETURN
           ELSE
             IPAI=ICLB
             CALL CPCHLL (+2)
+            IF (ICFELL('CPLBDR',15).NE.0) RETURN
           END IF
           IF (CTMA(1:LCTM).NE.' ') THEN
             BFXC(1)=XCLB-DLLB*CALB+DBLB*SALB
@@ -266,18 +277,23 @@ C
           END IF
           IF (ITYP.EQ.1) THEN
             CALL CPCHIL (-2)
+            IF (ICFELL('CPLBDR',16).NE.0) RETURN
           ELSE IF (ITYP.EQ.2) THEN
             CALL CPCHHL (-2)
+            IF (ICFELL('CPLBDR',17).NE.0) RETURN
           ELSE IF (ITYP.EQ.3) THEN
             CALL CPCHHL (-6)
+            IF (ICFELL('CPLBDR',18).NE.0) RETURN
           ELSE
             IPAI=ICLB
             CALL CPCHLL (-2)
+            IF (ICFELL('CPLBDR',19).NE.0) RETURN
           END IF
         END IF
 C
         IF (JSLC.NE.JCOL) THEN
           CALL PLOTIF (0.,0.,2)
+          IF (ICFELL('CPLBDR',20).NE.0) RETURN
           CALL GSPLCI (JCOL)
           JSLC=JCOL
         END IF
@@ -290,85 +306,112 @@ C
         IF (ITYP.EQ.1) THEN
           CALL GQCLIP (IGER,IGCF,DUMI)
           IF (IGER.NE.0) THEN
-            CALL SETER ('CPLBDR - ERROR EXIT FROM GQCLIP',5,2)
-            STOP
+            CALL SETER ('CPLBDR - ERROR EXIT FROM GQCLIP',21,1)
+            RETURN
           END IF
           IF (IGCF.NE.0) THEN
             CALL PLOTIF (0.,0.,2)
+            IF (ICFELL('CPLBDR',22).NE.0) RETURN
             CALL GSCLIP (0)
           END IF
           CALL CPCHIL (+3)
+          IF (ICFELL('CPLBDR',23).NE.0) RETURN
         ELSE IF (ITYP.EQ.2) THEN
           CALL CPCHHL (+3)
+          IF (ICFELL('CPLBDR',24).NE.0) RETURN
         ELSE IF (ITYP.EQ.3) THEN
           CALL CPCHHL (+7)
+          IF (ICFELL('CPLBDR',25).NE.0) RETURN
         ELSE
           IPAI=ICLB
           CALL CPCHLL (+3)
+          IF (ICFELL('CPLBDR',26).NE.0) RETURN
         END IF
         IF (CTMA(1:LCTM).NE.' ') THEN
           CALL PLCHHQ (XLBC,YLBC,CTMA(1:LCTM),WCHR,ANGD,0.)
+          IF (ICFELL('CPLBDR',27).NE.0) RETURN
         END IF
         IF (ITYP.EQ.1) THEN
           CALL CPCHIL (-3)
+          IF (ICFELL('CPLBDR',28).NE.0) RETURN
           IF (IGCF.NE.0) THEN
             CALL PLOTIF (0.,0.,2)
+            IF (ICFELL('CPLBDR',29).NE.0) RETURN
             CALL GSCLIP (IGCF)
           END IF
         ELSE IF (ITYP.EQ.2) THEN
           CALL CPCHHL (-3)
+          IF (ICFELL('CPLBDR',30).NE.0) RETURN
         ELSE IF (ITYP.EQ.3) THEN
           CALL CPCHHL (-7)
+          IF (ICFELL('CPLBDR',31).NE.0) RETURN
         ELSE
           IPAI=ICLB
           CALL CPCHLL (-3)
+          IF (ICFELL('CPLBDR',32).NE.0) RETURN
         END IF
 C
         IF (MOD(IBOX,2).NE.0) THEN
           IF (WDTH.GT.0.) THEN
             CALL GQLWSC (IGER,SFLW)
             IF (IGER.NE.0) THEN
-              CALL SETER ('CPLBDR - ERROR EXIT FROM GQLWSC',6,2)
-              STOP
+              CALL SETER ('CPLBDR - ERROR EXIT FROM GQLWSC',33,1)
+              RETURN
             END IF
             CALL PLOTIF (0.,0.,2)
+            IF (ICFELL('CPLBDR',34).NE.0) RETURN
             CALL GSLWSC (WDTH)
           END IF
           IF (ITYP.EQ.1) THEN
             CALL CPCHIL (+4)
+            IF (ICFELL('CPLBDR',35).NE.0) RETURN
           ELSE IF (ITYP.EQ.2) THEN
             CALL CPCHHL (+4)
+            IF (ICFELL('CPLBDR',36).NE.0) RETURN
           ELSE IF (ITYP.EQ.3) THEN
             CALL CPCHHL (+8)
+            IF (ICFELL('CPLBDR',37).NE.0) RETURN
           ELSE
             IPAI=ICLB
             CALL CPCHLL (+4)
+            IF (ICFELL('CPLBDR',38).NE.0) RETURN
           END IF
           IF (CTMA(1:LCTM).NE.' ') THEN
             CALL PLOTIF (XCLB-DLLB*CALB+DBLB*SALB,
      +                   YCLB-DLLB*SALB-DBLB*CALB,0)
+            IF (ICFELL('CPLBDR',39).NE.0) RETURN
             CALL PLOTIF (XCLB+DRLB*CALB+DBLB*SALB,
      +                   YCLB+DRLB*SALB-DBLB*CALB,1)
+            IF (ICFELL('CPLBDR',40).NE.0) RETURN
             CALL PLOTIF (XCLB+DRLB*CALB-DTLB*SALB,
      +                   YCLB+DRLB*SALB+DTLB*CALB,1)
+            IF (ICFELL('CPLBDR',41).NE.0) RETURN
             CALL PLOTIF (XCLB-DLLB*CALB-DTLB*SALB,
      +                   YCLB-DLLB*SALB+DTLB*CALB,1)
+            IF (ICFELL('CPLBDR',42).NE.0) RETURN
             CALL PLOTIF (XCLB-DLLB*CALB+DBLB*SALB,
      +                   YCLB-DLLB*SALB-DBLB*CALB,1)
+            IF (ICFELL('CPLBDR',43).NE.0) RETURN
             CALL PLOTIF (0.,0.,2)
+            IF (ICFELL('CPLBDR',44).NE.0) RETURN
           END IF
           IF (ITYP.EQ.1) THEN
             CALL CPCHIL (-4)
+            IF (ICFELL('CPLBDR',45).NE.0) RETURN
           ELSE IF (ITYP.EQ.2) THEN
             CALL CPCHHL (-4)
+            IF (ICFELL('CPLBDR',46).NE.0) RETURN
           ELSE IF (ITYP.EQ.3) THEN
             CALL CPCHHL (-8)
+            IF (ICFELL('CPLBDR',47).NE.0) RETURN
           ELSE
             IPAI=ICLB
             CALL CPCHLL (-4)
+            IF (ICFELL('CPLBDR',48).NE.0) RETURN
           END IF
           IF (WDTH.GT.0.) THEN
             CALL PLOTIF (0.,0.,2)
+            IF (ICFELL('CPLBDR',49).NE.0) RETURN
             CALL GSLWSC (SFLW)
           END IF
         END IF
@@ -379,6 +422,7 @@ C Return the color indices to their original values.
 C
       IF (JSLC.NE.ISLC) THEN
         CALL PLOTIF (0.,0.,2)
+        IF (ICFELL('CPLBDR',50).NE.0) RETURN
         CALL GSPLCI (ISLC)
       END IF
       IF (JSTC.NE.ISTC) CALL GSTXCI (ISTC)
@@ -387,6 +431,7 @@ C
 C Restore the original SET parameters.
 C
       CALL SET (XVPL,XVPR,YVPB,YVPT,XWDL,XWDR,YWDB,YWDT,LNLG)
+      IF (ICFELL('CPLBDR',51).NE.0) RETURN
 C
 C Done.
 C

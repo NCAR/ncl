@@ -1,8 +1,5 @@
 C
-C	$Id: cpcpag.f,v 1.1.1.1 1992-04-17 22:32:47 ncargd Exp $
-C
-C
-C-----------------------------------------------------------------------
+C $Id: cpcpag.f,v 1.2 1994-03-17 01:50:44 kennison Exp $
 C
       SUBROUTINE CPCPAG (ZDAT,RWRK)
 C
@@ -65,7 +62,7 @@ C
       COMMON /CPCOM2/ TXCF,TXHI,TXIL,TXLO
       CHARACTER*13 CHEX
       CHARACTER*40 CLBL
-      CHARACTER*32 CLDP
+      CHARACTER*128 CLDP
       CHARACTER*500 CTMA,CTMB
       CHARACTER*8 FRMT
       CHARACTER*40 TXCF
@@ -109,7 +106,7 @@ C
           XCD3=REAL(I)
           YCD3=REAL(J+1)
           ZCD3=ZDAT(I,J+1)
-          ASSIGN 10008 TO L10009
+          L10009=    1
           GO TO 10009
 10008     CONTINUE
         GO TO 10005
@@ -140,7 +137,7 @@ C
           XCD3=REAL(I-1)
           YCD3=REAL(J)
           ZCD3=ZDAT(I-1,J)
-          ASSIGN 10016 TO L10009
+          L10009=    2
           GO TO 10009
 10016     CONTINUE
         GO TO 10013
@@ -171,7 +168,7 @@ C
           XCD3=REAL(I)
           YCD3=REAL(J-1)
           ZCD3=ZDAT(I,J-1)
-          ASSIGN 10023 TO L10009
+          L10009=    3
           GO TO 10009
 10023     CONTINUE
         GO TO 10020
@@ -202,7 +199,7 @@ C
           XCD3=REAL(I+1)
           YCD3=REAL(J)
           ZCD3=ZDAT(I+1,J)
-          ASSIGN 10030 TO L10009
+          L10009=    4
           GO TO 10009
 10030     CONTINUE
         GO TO 10027
@@ -258,10 +255,13 @@ C
             XTMP=XGD1
             YTMP=YGD1
             CALL CPMPXY (IMPF,XTMP,YTMP,XGD1,YGD1)
+            IF (ICFELL('CPCPAG',1).NE.0) RETURN
             IF (OORV.NE.0..AND.(XGD1.EQ.OORV.OR.YGD1.EQ.OORV)) IVI1=0
           END IF
           XGD1=CUFX(XGD1)
+          IF (ICFELL('CPCPAG',2).NE.0) RETURN
           YGD1=CUFY(YGD1)
+          IF (ICFELL('CPCPAG',3).NE.0) RETURN
           ZGD1=ZCD1
         END IF
 C
@@ -275,10 +275,13 @@ C
             XTMP=XGD2
             YTMP=YGD2
             CALL CPMPXY (IMPF,XTMP,YTMP,XGD2,YGD2)
+            IF (ICFELL('CPCPAG',4).NE.0) RETURN
             IF (OORV.NE.0..AND.(XGD2.EQ.OORV.OR.YGD2.EQ.OORV)) IVI2=0
           END IF
           XGD2=CUFX(XGD2)
+          IF (ICFELL('CPCPAG',5).NE.0) RETURN
           YGD2=CUFY(YGD2)
+          IF (ICFELL('CPCPAG',6).NE.0) RETURN
           ZGD2=ZCD2
         END IF
 C
@@ -292,10 +295,13 @@ C
             XTMP=XGD3
             YTMP=YGD3
             CALL CPMPXY (IMPF,XTMP,YTMP,XGD3,YGD3)
+            IF (ICFELL('CPCPAG',7).NE.0) RETURN
             IF (OORV.NE.0..AND.(XGD3.EQ.OORV.OR.YGD3.EQ.OORV)) IVI3=0
           END IF
           XGD3=CUFX(XGD3)
+          IF (ICFELL('CPCPAG',8).NE.0) RETURN
           YGD3=CUFY(YGD3)
+          IF (ICFELL('CPCPAG',9).NE.0) RETURN
           ZGD3=ZCD3
         END IF
 C
@@ -423,6 +429,6 @@ C                       RWRK(IGRM*IGRN+IR02+(L-1)*IGRM+K)=GANG
             END IF
           END IF
         END IF
-      GO TO L10009 , (10030,10023,10016,10008)
+      GO TO (10008,10016,10023,10030) , L10009
 C
       END

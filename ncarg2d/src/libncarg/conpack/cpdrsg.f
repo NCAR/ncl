@@ -1,8 +1,5 @@
 C
-C	$Id: cpdrsg.f,v 1.1.1.1 1992-04-17 22:32:47 ncargd Exp $
-C
-C
-C-----------------------------------------------------------------------
+C $Id: cpdrsg.f,v 1.2 1994-03-17 01:50:48 kennison Exp $
 C
       SUBROUTINE CPDRSG (RWRK,IPTX,IPTY,NXYC)
 C
@@ -58,7 +55,7 @@ C
       COMMON /CPCOM2/ TXCF,TXHI,TXIL,TXLO
       CHARACTER*13 CHEX
       CHARACTER*40 CLBL
-      CHARACTER*32 CLDP
+      CHARACTER*128 CLDP
       CHARACTER*500 CTMA,CTMB
       CHARACTER*8 FRMT
       CHARACTER*40 TXCF

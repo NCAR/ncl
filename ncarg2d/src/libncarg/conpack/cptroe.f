@@ -1,8 +1,5 @@
 C
-C	$Id: cptroe.f,v 1.1.1.1 1992-04-17 22:32:52 ncargd Exp $
-C
-C
-C-----------------------------------------------------------------------
+C $Id: cptroe.f,v 1.2 1994-03-17 01:52:27 kennison Exp $
 C
       SUBROUTINE CPTROE (XCRA,YCRA,NCRA,OFFS,RWRK,IOCF,IAMA,IGID,IAIL,
      +                                                           IAIR)
@@ -92,6 +89,7 @@ C
         END IF
       ELSE
         CALL CPWLAM (RWRK(7),RWRK(8),IFST,IAMA,IGID,IAIL,IAIR)
+        IF (ICFELL('CPTROE',1).NE.0) RETURN
         IFST=1
         ICRA=0
         XCPB=RWRK(5)
@@ -182,6 +180,7 @@ C
         XNXT=XCPP+(YNXT-YCPP)*(XDBC/YDBC)
       END IF
       CALL CPWLAM (XNXT,YNXT,IFST,IAMA,IGID,IAIL,IAIR)
+      IF (ICFELL('CPTROE',2).NE.0) RETURN
       IFST=1
       GO TO IJMP , (101,104)
 C
@@ -213,6 +212,7 @@ C
         YNXT=YCPP+(YCPQ-YCPP)*TEMP
       END IF
       CALL CPWLAM (XNXT,YNXT,IFST,IAMA,IGID,IAIL,IAIR)
+      IF (ICFELL('CPTROE',3).NE.0) RETURN
       IFST=1
       GO TO IJMP , (102,103,104)
 C

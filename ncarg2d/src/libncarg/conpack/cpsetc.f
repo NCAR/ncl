@@ -1,8 +1,5 @@
 C
-C	$Id: cpsetc.f,v 1.3 1992-09-04 20:34:51 ncargd Exp $
-C
-C
-C-----------------------------------------------------------------------
+C $Id: cpsetc.f,v 1.4 1994-03-17 01:51:53 kennison Exp $
 C
       SUBROUTINE CPSETC (WHCH,CVAL)
 C
@@ -61,7 +58,7 @@ C
       COMMON /CPCOM2/ TXCF,TXHI,TXIL,TXLO
       CHARACTER*13 CHEX
       CHARACTER*40 CLBL
-      CHARACTER*32 CLDP
+      CHARACTER*128 CLDP
       CHARACTER*500 CTMA,CTMB
       CHARACTER*8 FRMT
       CHARACTER*40 TXCF
@@ -70,13 +67,17 @@ C
       CHARACTER*20 TXLO
       SAVE   /CPCOM2/
 C
+C Check for an uncleared prior error.
+C
+      IF (ICFELL('CPSETC - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+C
 C Check for a parameter name that is too short.
 C
       IF (LEN(WHCH).LT.3) THEN
         CTMB(1:36)='CPSETC - PARAMETER NAME TOO SHORT - '
         CTMB(37:36+LEN(WHCH))=WHCH
-        CALL SETER (CTMB(1:36+LEN(WHCH)),1,2)
-        STOP
+        CALL SETER (CTMB(1:36+LEN(WHCH)),2,1)
+        RETURN
       END IF
 C
 C Check for incorrect use of the index parameter.
@@ -99,8 +100,8 @@ C
 10002 CONTINUE
         CTMB(1:36)='CPSETC - SETTING XXX - PAI INCORRECT'
         CTMB(18:20)=WHCH(1:3)
-        CALL SETER (CTMB(1:36),2,2)
-        STOP
+        CALL SETER (CTMB(1:36),3,1)
+        RETURN
 10004 CONTINUE
 C
 C Compute the length of CVAL, excluding blanks.
@@ -161,8 +162,8 @@ C
       ELSE
         CTMB(1:36)='CPSETC - PARAMETER NAME NOT KNOWN - '
         CTMB(37:39)=WHCH(1:3)
-        CALL SETER (CTMB(1:39),3,2)
-        STOP
+        CALL SETER (CTMB(1:39),4,1)
+        RETURN
       END IF
 C
 C Done.

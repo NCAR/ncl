@@ -1,8 +1,5 @@
 C
-C	$Id: cpsp2a.f,v 1.2 1992-09-17 13:30:43 ncargd Exp $
-C
-C
-C-----------------------------------------------------------------------
+C $Id: cpsp2a.f,v 1.3 1994-03-17 01:52:04 kennison Exp $
 C
       SUBROUTINE CPSP2A (XSPS,YSPS,ZSPS,KSPS,MSPS,NSPS,RWRK,IWRK,ZDAT)
 C
@@ -58,7 +55,7 @@ C
       COMMON /CPCOM2/ TXCF,TXHI,TXIL,TXLO
       CHARACTER*13 CHEX
       CHARACTER*40 CLBL
-      CHARACTER*32 CLDP
+      CHARACTER*128 CLDP
       CHARACTER*500 CTMA,CTMB
       CHARACTER*8 FRMT
       CHARACTER*40 TXCF
@@ -101,16 +98,20 @@ C
                 CALL CPGIWS (IWRK,1,LI01+100,IWSE)
                 IF (IWSE.NE.0) THEN
                   CALL SETER ('CPSPS2 - CANNOT CONTINUE WITHOUT WORKSPAC
-     +E',2,2)
-                  STOP
+     +E',4,1)
+                  RETURN
+                ELSE IF (ICFELL('CPSPS2',5).NE.0) THEN
+                  RETURN
                 END IF
               END IF
               IF (NSVS.GE.LR01) THEN
                 CALL CPGRWS (RWRK,1,LR01+100,IWSE)
                 IF (IWSE.NE.0) THEN
                   CALL SETER ('CPSPS2 - CANNOT CONTINUE WITHOUT WORKSPAC
-     +E',3,2)
-                  STOP
+     +E',6,1)
+                  RETURN
+                ELSE IF (ICFELL('CPSPS2',7).NE.0) THEN
+                  RETURN
                 END IF
               END IF
               NSVS=NSVS+1
@@ -185,8 +186,8 @@ C
 C
             IF (MEST.LE.0) THEN
               CALL SETER ('CPSPS2 - SPECIAL-VALUE REPLACEMENT FAILURE'
-     +                                                           ,4,2)
-              STOP
+     +                                                           ,8,1)
+              RETURN
             END IF
 C
           ELSE
@@ -222,8 +223,10 @@ C
       CALL CPGRWS (RWRK,1,3*MSPS*NSPS+MSPS+NSPS+NSPS,IWSE)
 C
       IF (IWSE.NE.0) THEN
-        CALL SETER ('CPSPS2 - CANNOT CONTINUE WITHOUT WORKSPACE',5,2)
-        STOP
+        CALL SETER ('CPSPS2 - CANNOT CONTINUE WITHOUT WORKSPACE',9,1)
+        RETURN
+      ELSE IF (ICFELL('CPSPS2',10).NE.0) THEN
+        RETURN
       END IF
 C
       CALL MSSRF1 (MSPS,NSPS,XSPS,YSPS,ZSPS,KSPS,RWRK,RWRK,RWRK,RWRK,
@@ -231,8 +234,8 @@ C
      +             RWRK(IR01+1+3*MSPS*NSPS),T3DS,IERR)
 C
       IF (IERR.NE.0) THEN
-        CALL SETER ('CPSPS2 - ERROR IN CALL TO MSSRF1',6,2)
-        STOP
+        CALL SETER ('CPSPS2 - ERROR IN CALL TO MSSRF1',11,1)
+        RETURN
       END IF
 C
       DO 10009 I=1,IZDM
@@ -241,6 +244,7 @@ C
           YCPT=YSPS(1)+(REAL(J-1)/REAL(IZDN-1))*(YSPS(NSPS)-YSPS(1))
           ZDAT(I,J)=MSSRF2 (XCPT,YCPT,MSPS,NSPS,XSPS,YSPS,ZSPS,KSPS,
      +                     RWRK(IR01+1),T3DS)
+          CALL SETER ('CPSPS2 - ERROR IN CALL TO MSSRF2',12,1)
 10010   CONTINUE
 10009 CONTINUE
 C
@@ -299,6 +303,7 @@ C
 C CPINIT does the rest.
 C
       CALL CPINIT (ZDAT,RWRK,IWRK)
+      IF (ICFELL('CPSPS2',13).NE.0) RETURN
 C
 C Done.
 C

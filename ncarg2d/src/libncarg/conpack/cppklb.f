@@ -1,8 +1,5 @@
 C
-C	$Id: cppklb.f,v 1.1.1.1 1992-04-17 22:32:45 ncargd Exp $
-C
-C
-C-----------------------------------------------------------------------
+C $Id: cppklb.f,v 1.2 1994-03-17 01:51:33 kennison Exp $
 C
       SUBROUTINE CPPKLB (ZDAT,RWRK,IWRK)
 C
@@ -62,7 +59,7 @@ C
       COMMON /CPCOM2/ TXCF,TXHI,TXIL,TXLO
       CHARACTER*13 CHEX
       CHARACTER*40 CLBL
-      CHARACTER*32 CLDP
+      CHARACTER*128 CLDP
       CHARACTER*500 CTMA,CTMB
       CHARACTER*8 FRMT
       CHARACTER*40 TXCF
@@ -79,11 +76,15 @@ C SCHX is a thirteen-character temporary variable.
 C
       CHARACTER*13 SCHX
 C
+C Check for an uncleared prior error.
+C
+      IF (ICFELL('CPPKLB - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+C
 C If initialization has not been done, log an error and quit.
 C
       IF (INIT.EQ.0) THEN
-        CALL SETER ('CPPKLB - INITIALIZATION CALL NOT DONE',1,2)
-        STOP
+        CALL SETER ('CPPKLB - INITIALIZATION CALL NOT DONE',2,1)
+        RETURN
       END IF
 C
 C If the constant-field flag is set, do nothing.
@@ -92,7 +93,10 @@ C
 C
 C If no contour levels are defined, try to define them.
 C
-      IF (NCLV.LE.0) CALL CPPKCL (ZDAT,RWRK,IWRK)
+      IF (NCLV.LE.0) THEN
+        CALL CPPKCL (ZDAT,RWRK,IWRK)
+        IF (ICFELL('CPPKLB',3).NE.0) RETURN
+      END IF
 C
 C Get indices for the contour levels in ascending order.
 C

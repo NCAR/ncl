@@ -1,8 +1,5 @@
 C
-C	$Id: cptres.f,v 1.1.1.1 1992-04-17 22:32:50 ncargd Exp $
-C
-C
-C-----------------------------------------------------------------------
+C $Id: cptres.f,v 1.2 1994-03-17 01:52:22 kennison Exp $
 C
       SUBROUTINE CPTRES (ZDAT,RWRK,IWRK,IJMP,IAIC,IRW1,IRW2,NRWK)
 C
@@ -79,7 +76,7 @@ C
       COMMON /CPCOM2/ TXCF,TXHI,TXIL,TXLO
       CHARACTER*13 CHEX
       CHARACTER*40 CLBL
-      CHARACTER*32 CLDP
+      CHARACTER*128 CLDP
       CHARACTER*500 CTMA,CTMB
       CHARACTER*8 FRMT
       CHARACTER*40 TXCF
@@ -109,7 +106,7 @@ C Assign space to use for storing the X and Y coordinates of points.
 C
       MPLS=LRWC
       CALL CPGRWS (RWRK,1,2*MPLS,IWSE)
-      IF (IWSE.NE.0) RETURN
+      IF (IWSE.NE.0.OR.ICFELL('CPTRES',1).NE.0) RETURN
 C
 C Compute constants required to get from indices to X and Y coordinates.
 C
@@ -163,7 +160,7 @@ C
 10015       CONTINUE
             IF (.NOT.(NHSS.GE.LI01)) GO TO 10016
               CALL CPGIWS (IWRK,1,LI01+100,IWSE)
-              IF (IWSE.NE.0) GO TO 105
+              IF (IWSE.NE.0.OR.ICFELL('CPTRES',2).NE.0) GO TO 105
 10016       CONTINUE
             NHSS=NHSS+1
             IWRK(II01+NHSS)=IPXY
@@ -173,7 +170,7 @@ C
             XCND=REAL(I)
             YCND=REAL(J)
             ZCND=ZDAT(I,J)
-            ASSIGN 10017 TO L10018
+            L10018=    1
             GO TO 10018
 10017       CONTINUE
             INSX=I
@@ -201,12 +198,12 @@ C
                 XCND=XCES
                 YCND=YCES
                 ZCND=ZCES
-                ASSIGN 10022 TO L10018
+                L10018=    2
                 GO TO 10018
 10022           CONTINUE
               GO TO 10023
 10020         CONTINUE
-                ASSIGN 10024 TO L10025
+                L10025=    1
                 GO TO 10025
 10024           CONTINUE
 10023         CONTINUE
@@ -310,14 +307,15 @@ C
                 IDIR=MOD(IDIR+5,8)+1
 10029         CONTINUE
               CALL SETER ('CPTRES - ALGORITHM FAILURE - SEE SPECIALIST'
-     +                                                           ,1,2)
-              STOP
+     +                                                           ,3,1)
+              IJMP=0
+              RETURN
   103         INDX=INOX+INCX(IDIR)
               INDY=INOY+INCY(IDIR)
               IF (.NOT.(IDIR.EQ.5)) GO TO 10046
                 IF (.NOT.(NHSS.GE.LI01)) GO TO 10047
                   CALL CPGIWS (IWRK,1,LI01+100,IWSE)
-                  IF (IWSE.NE.0) GO TO 105
+                  IF (IWSE.NE.0.OR.ICFELL('CPTRES',4).NE.0) GO TO 105
 10047           CONTINUE
                 NHSS=NHSS+1
                 IWRK(II01+NHSS)=IZDN*INOX+INOY
@@ -373,7 +371,7 @@ C
 10051     CONTINUE
             ZCND=SVAL
 10052     CONTINUE
-          ASSIGN 10053 TO L10018
+          L10018=    3
           GO TO 10018
 10053     CONTINUE
           IF (.NOT.(SVAL.EQ.0..OR.(ZCOD.NE.SVAL.AND.ZCND.NE.SVAL)))
@@ -388,7 +386,7 @@ C
                 ICLV=ICLP(K)
                 IF (.NOT.(CLEV(ICLV).GT.ZCOD.AND.CLEV(ICLV).LT.ZCND.AND.
      +(IAIA(ICLV).NE.0.OR.IAIB(ICLV).NE.0))) GO TO 10059
-                  ASSIGN 10060 TO L10061
+                  L10061=    1
                   GO TO 10061
 10060             CONTINUE
 10059           CONTINUE
@@ -406,7 +404,7 @@ C
                 ICLV=ICLP(K)
                 IF (.NOT.(CLEV(ICLV).GT.ZCND.AND.CLEV(ICLV).LT.ZCOD.AND.
      +(IAIA(ICLV).NE.0.OR.IAIB(ICLV).NE.0))) GO TO 10067
-                  ASSIGN 10068 TO L10061
+                  L10061=    2
                   GO TO 10061
 10068             CONTINUE
 10067           CONTINUE
@@ -421,12 +419,12 @@ C
 10069     CONTINUE
             IFOP=1
 10070     CONTINUE
-          ASSIGN 10071 TO L10072
+          L10072=    1
           GO TO 10072
 10071     CONTINUE
         GO TO 10048
 10049   CONTINUE
-      GO TO L10025 , (10024)
+      GO TO (10024) , L10025
 C
 C The following internal procedure interpolates a point where a contour
 C line intersects the piece of the edge segment that we're working on.
@@ -441,11 +439,11 @@ C
         XCND=XCOD+(XCND-XCOD)*FRCT(ZCOD,ZCND)
         YCND=YCOD+(YCND-YCOD)*FRCT(ZCOD,ZCND)
         ZCND=CLEV(ICLV)
-        ASSIGN 10073 TO L10018
+        L10018=    4
         GO TO 10018
 10073   CONTINUE
         IFOP=1
-        ASSIGN 10074 TO L10072
+        L10072=    2
         GO TO 10072
 10074   CONTINUE
         XCOD=XCND
@@ -460,7 +458,7 @@ C
         XCNU=XCSU
         YCNU=YCSU
         IVNU=IVSU
-      GO TO L10061 , (10068,10060)
+      GO TO (10060,10068) , L10061
 C
 C The following internal procedure processes a piece of a segment.
 C There are several cases, depending on whether both endpoints are
@@ -526,7 +524,7 @@ C
               YCVD=YCND
               XCVU=XCNU
               YCVU=YCNU
-              ASSIGN 10090 TO L10091
+              L10091=    1
               GO TO 10091
 10090         CONTINUE
               XCOD=XCVD
@@ -559,7 +557,7 @@ C
             RUDN=(ABS(XCNU-XCOU)+ABS(YCNU-YCOU))/
      +           (ABS(XCND-XCOD)+ABS(YCND-YCOD))
             IF (.NOT.(RUDN.GT.10.*RUDO)) GO TO 10096
-              ASSIGN 10097 TO L10098
+              L10098=    1
               GO TO 10098
 10097         CONTINUE
 10096       CONTINUE
@@ -578,7 +576,7 @@ C
             YCVU=YCOU
             XCID=XCND
             YCID=YCND
-            ASSIGN 10102 TO L10091
+            L10091=    2
             GO TO 10091
 10102       CONTINUE
             IJMP=4
@@ -593,7 +591,7 @@ C
 C
         IF (IAIC.NE.-9) IAIC=IAID
 C
-      GO TO L10072 , (10074,10071)
+      GO TO (10071,10074) , L10072
 C
 C The following internal procedure is invoked when an unusually large
 C jump in the position of mapped points on the edge is seen.  It checks
@@ -618,6 +616,7 @@ C
           YC3D=(YC1D+YC2D)/2.
           CALL CPMPXY (IMPF,XAT1+RZDM*(XC3D-1.),YAT1+RZDN*(YC3D-1.),
      +                                                      XC3U,YC3U)
+          IF (ICFELL('CPTRES',5).NE.0) RETURN
           IF (.NOT.(OORV.EQ.0..OR.(XC3U.NE.OORV.AND.YC3U.NE.OORV)))
      +    GO TO 10104
             DST1=ABS(XC3U-XC1U)+ABS(YC3U-YC1U)
@@ -646,7 +645,7 @@ C
             YCVU=YCOU
             XCID=XC3D
             YCID=YC3D
-            ASSIGN 10109 TO L10091
+            L10091=    3
             GO TO 10091
 10109       CONTINUE
             IJMP=5
@@ -662,7 +661,7 @@ C
             YCVD=YCND
             XCVU=XCNU
             YCVU=YCNU
-            ASSIGN 10110 TO L10091
+            L10091=    4
             GO TO 10091
 10110       CONTINUE
             ITMP=1000
@@ -685,7 +684,7 @@ C
           RWRK(IR01+MPLS+1)=YC2U
           RUDN=0.
 10111   CONTINUE
-      GO TO L10098 , (10097)
+      GO TO (10097) , L10098
 C
 C Given two points in the data-array-index coordinate system, one of
 C which maps to a visible point and the other of which maps to an
@@ -699,6 +698,7 @@ C
           YCHD=(YCVD+YCID)/2.
           CALL CPMPXY (IMPF,XAT1+RZDM*(XCHD-1.),YAT1+RZDN*(YCHD-1.),
      +                                                      XCHU,YCHU)
+          IF (ICFELL('CPTRES',6).NE.0) RETURN
           IF (.NOT.(XCHU.NE.OORV)) GO TO 10113
             IF (XCHD.EQ.XCVD.AND.YCHD.EQ.YCVD) GO TO 10114
             XCVD=XCHD
@@ -718,7 +718,7 @@ C
         NPLS=NPLS+1
         RWRK(IR01+NPLS)=XCVU
         RWRK(IR01+MPLS+NPLS)=YCVU
-      GO TO L10091 , (10110,10109,10102,10090)
+      GO TO (10090,10102,10109,10110) , L10091
 C
 C The following internal procedure is given the data-system coordinates
 C of a point (XCND,YCND) and computes the user-system coordinates of
@@ -735,9 +735,10 @@ C
           XTMP=XCNU
           YTMP=YCNU
           CALL CPMPXY (IMPF,XTMP,YTMP,XCNU,YCNU)
+          IF (ICFELL('CPTRES',7).NE.0) RETURN
           IF ((OORV.NE.0.).AND.(XCNU.EQ.OORV.OR.YCNU.EQ.OORV)) IVNU=0
 10116   CONTINUE
 C
-      GO TO L10018 , (10073,10053,10022,10017)
+      GO TO (10017,10022,10053,10073) , L10018
 C
       END

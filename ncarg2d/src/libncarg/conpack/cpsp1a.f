@@ -1,8 +1,5 @@
 C
-C	$Id: cpsp1a.f,v 1.2 1992-09-17 13:30:39 ncargd Exp $
-C
-C
-C-----------------------------------------------------------------------
+C $Id: cpsp1a.f,v 1.3 1994-03-17 01:52:02 kennison Exp $
 C
       SUBROUTINE CPSP1A (ZSPS,KSPS,MSPS,NSPS,RWRK,IWRK,ZDAT)
 C
@@ -57,7 +54,7 @@ C
       COMMON /CPCOM2/ TXCF,TXHI,TXIL,TXLO
       CHARACTER*13 CHEX
       CHARACTER*40 CLBL
-      CHARACTER*32 CLDP
+      CHARACTER*128 CLDP
       CHARACTER*500 CTMA,CTMB
       CHARACTER*8 FRMT
       CHARACTER*40 TXCF
@@ -94,13 +91,13 @@ C
             IF (ZSPS(ISPS,JSPS).EQ.SVAL) THEN
               IF (NSVS.GE.LI01) THEN
                 CALL CPGIWS (IWRK,1,LI01+100,IWSE)
-                IF (IWSE.NE.0) THEN
+                IF (IWSE.NE.0.OR.ICFELL('CPSPS1',4).NE.0) THEN
                   GO TO 10006
                 END IF
               END IF
               IF (NSVS.GE.LR01) THEN
                 CALL CPGRWS (RWRK,1,LR01+100,IWSE)
-                IF (IWSE.NE.0) THEN
+                IF (IWSE.NE.0.OR.ICFELL('CPSPS1',5).NE.0) THEN
                   GO TO 10006
                 END IF
               END IF
@@ -164,8 +161,8 @@ C
 C
             IF (MEST.LE.0) THEN
               CALL SETER ('CPSPS1 - SPECIAL-VALUE REPLACEMENT FAILURE'
-     +                                                           ,2,2)
-              STOP
+     +                                                           ,6,1)
+              RETURN
             END IF
 C
           ELSE
@@ -200,16 +197,18 @@ C Do the interpolation from the sparse array to the dense array.
 C
       CALL CPGRWS (RWRK,1,3*MSPS*NSPS+MAX(MSPS+NSPS+NSPS,4*IZDM),IWSE)
 C
-      IF (IWSE.NE.0) THEN
+      IF (IWSE.NE.0.OR.ICFELL('CPSPS1',7).NE.0) THEN
         GO TO 10006
       END IF
 C
       CALL MSBSF1 (MSPS,NSPS,1.,REAL(MSPS),1.,REAL(NSPS),ZSPS,KSPS,
      +             RWRK(IR01+1),RWRK(IR01+1+3*MSPS*NSPS),T3DS)
+      IF (ICFELL('CPSPS1',8).NE.0) RETURN
 C
       CALL MSBSF2 (1.,REAL(MSPS),IZDM,1.,REAL(NSPS),IZDN,ZDAT,IZD1,
      +             MSPS,NSPS,1.,REAL(MSPS),1.,REAL(NSPS),ZSPS,KSPS,
      +             RWRK(IR01+1),RWRK(IR01+1+3*MSPS*NSPS),T3DS)
+      IF (ICFELL('CPSPS1',9).NE.0) RETURN
 C
       LR01=0
 C
@@ -260,6 +259,7 @@ C
 C CPINIT does the rest.
 C
       CALL CPINIT (ZDAT,RWRK,IWRK)
+      IF (ICFELL('CPSPS1',10).NE.0) RETURN
 C
 C Done.
 C
@@ -268,8 +268,8 @@ C
 C Error exit.
 C
 10006 CONTINUE
-        CALL SETER ('CPSPS1 - CANNOT CONTINUE WITHOUT WORKSPACE',3,
-     +                                                            2)
-        STOP
+        CALL SETER ('CPSPS1 - CANNOT CONTINUE WITHOUT WORKSPACE',11,
+     +                                                            1)
+        RETURN
 C
       END

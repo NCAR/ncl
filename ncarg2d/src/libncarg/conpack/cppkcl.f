@@ -1,8 +1,5 @@
 C
-C	$Id: cppkcl.f,v 1.1.1.1 1992-04-17 22:32:45 ncargd Exp $
-C
-C
-C-----------------------------------------------------------------------
+C $Id: cppkcl.f,v 1.2 1994-03-17 01:51:30 kennison Exp $
 C
       SUBROUTINE CPPKCL (ZDAT,RWRK,IWRK)
 C
@@ -61,7 +58,7 @@ C
       COMMON /CPCOM2/ TXCF,TXHI,TXIL,TXLO
       CHARACTER*13 CHEX
       CHARACTER*40 CLBL
-      CHARACTER*32 CLDP
+      CHARACTER*128 CLDP
       CHARACTER*500 CTMA,CTMB
       CHARACTER*8 FRMT
       CHARACTER*40 TXCF
@@ -70,11 +67,15 @@ C
       CHARACTER*20 TXLO
       SAVE   /CPCOM2/
 C
+C Check for an uncleared prior error.
+C
+      IF (ICFELL('CPPKCL - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+C
 C If initialization has not been done, log an error and quit.
 C
       IF (INIT.EQ.0) THEN
-        CALL SETER ('CPPKCL - INITIALIZATION CALL NOT DONE',1,2)
-        STOP
+        CALL SETER ('CPPKCL - INITIALIZATION CALL NOT DONE',2,1)
+        RETURN
       END IF
 C
 C If contour level selection is suppressed, do nothing.
@@ -92,8 +93,8 @@ C
       IF (ICLS.LT.0) THEN
 C
         IF (-ICLS.GT.256) THEN
-          CALL SETER ('CPPKCL - TOO MANY CONTOUR LEVELS',2,2)
-          STOP
+          CALL SETER ('CPPKCL - TOO MANY CONTOUR LEVELS',3,1)
+          RETURN
         END IF
 C
         NCLV=MIN(-ICLS,256)

@@ -1,8 +1,5 @@
 C
-C	$Id: cpwlam.f,v 1.1.1.1 1992-04-17 22:32:52 ncargd Exp $
-C
-C
-C-----------------------------------------------------------------------
+C $Id: cpwlam.f,v 1.2 1994-03-17 01:52:32 kennison Exp $
 C
       SUBROUTINE CPWLAM (XNXT,YNXT,IFST,IAMA,IGID,IAIL,IAIR)
 C
@@ -70,10 +67,15 @@ C
         IF (LPOW.EQ.0) THEN
           IF (NPOW.NE.0) GO TO 101
           XCRA(1)=CFUX(XLST)
+          IF (ICFELL('CPWLAM',1).NE.0) RETURN
           YCRA(1)=CFUY(YLST)
+          IF (ICFELL('CPWLAM',2).NE.0) RETURN
           XCRA(2)=CFUX(XNXT)
+          IF (ICFELL('CPWLAM',3).NE.0) RETURN
           YCRA(2)=CFUY(YNXT)
+          IF (ICFELL('CPWLAM',4).NE.0) RETURN
           CALL AREDAM (IAMA,XCRA,YCRA,2,IGID,IAIL,IAIR)
+          IF (ICFELL('CPWLAM',5).NE.0) RETURN
           GO TO 115
         ELSE
           IF (NPOW.EQ.0) GO TO 103
@@ -101,10 +103,15 @@ C
         END IF
 C
   102   XCRA(1)=CFUX(XLST)
+        IF (ICFELL('CPWLAM',6).NE.0) RETURN
         YCRA(1)=CFUY(YLST)
+        IF (ICFELL('CPWLAM',7).NE.0) RETURN
         XCRA(2)=CFUX(XPEW)
+        IF (ICFELL('CPWLAM',8).NE.0) RETURN
         YCRA(2)=CFUY(YPEW)
+        IF (ICFELL('CPWLAM',9).NE.0) RETURN
         CALL AREDAM (IAMA,XCRA,YCRA,2,IGID,IAIL,IAIR)
+        IF (ICFELL('CPWLAM',10).NE.0) RETURN
 C
         GO TO 115
 C
@@ -129,10 +136,15 @@ C
         END IF
 C
   104   XCRA(1)=CFUX(XPEW)
+        IF (ICFELL('CPWLAM',11).NE.0) RETURN
         YCRA(1)=CFUY(YPEW)
+        IF (ICFELL('CPWLAM',12).NE.0) RETURN
         XCRA(2)=CFUX(XNXT)
+        IF (ICFELL('CPWLAM',13).NE.0) RETURN
         YCRA(2)=CFUY(YNXT)
+        IF (ICFELL('CPWLAM',14).NE.0) RETURN
         CALL AREDAM (IAMA,XCRA,YCRA,2,IGID,IAIL,IAIR)
+        IF (ICFELL('CPWLAM',15).NE.0) RETURN
 C
         GO TO 115
 C
@@ -204,10 +216,15 @@ C
         IF (XPE2.LT.XMIN.OR.XPE2.GT.XMAX) GO TO 115
 C
   114   XCRA(1)=CFUX(XPE1)
+        IF (ICFELL('CPWLAM',16).NE.0) RETURN
         YCRA(1)=CFUY(YPE1)
+        IF (ICFELL('CPWLAM',17).NE.0) RETURN
         XCRA(2)=CFUX(XPE2)
+        IF (ICFELL('CPWLAM',18).NE.0) RETURN
         YCRA(2)=CFUY(YPE2)
+        IF (ICFELL('CPWLAM',19).NE.0) RETURN
         CALL AREDAM (IAMA,XCRA,YCRA,2,IGID,IAIL,IAIR)
+        IF (ICFELL('CPWLAM',20).NE.0) RETURN
 C
       END IF
 C

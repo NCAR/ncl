@@ -1,8 +1,5 @@
 C
-C	$Id: cpseti.f,v 1.1.1.1 1992-04-17 22:32:46 ncargd Exp $
-C
-C
-C-----------------------------------------------------------------------
+C $Id: cpseti.f,v 1.2 1994-03-17 01:51:56 kennison Exp $
 C
       SUBROUTINE CPSETI (WHCH,IVAL)
 C
@@ -60,7 +57,7 @@ C
       COMMON /CPCOM2/ TXCF,TXHI,TXIL,TXLO
       CHARACTER*13 CHEX
       CHARACTER*40 CLBL
-      CHARACTER*32 CLDP
+      CHARACTER*128 CLDP
       CHARACTER*500 CTMA,CTMB
       CHARACTER*8 FRMT
       CHARACTER*40 TXCF
@@ -69,10 +66,15 @@ C
       CHARACTER*20 TXLO
       SAVE   /CPCOM2/
 C
+C Check for an uncleared prior error.
+C
+      IF (ICFELL('CPSETI - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+C
 C Float the integer value and pass it on to CPSETR.
 C
       RVAL=REAL(IVAL)
       CALL CPSETR (WHCH,RVAL)
+      IF (ICFELL('CPSETI',2).NE.0) RETURN
 C
 C Done.
 C

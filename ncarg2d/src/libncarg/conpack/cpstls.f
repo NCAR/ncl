@@ -1,8 +1,5 @@
 C
-C	$Id: cpstls.f,v 1.1.1.1 1992-04-17 22:32:49 ncargd Exp $
-C
-C
-C-----------------------------------------------------------------------
+C $Id: cpstls.f,v 1.2 1994-03-17 01:52:13 kennison Exp $
 C
       SUBROUTINE CPSTLS (ZDAT,RWRK,IWRK)
 C
@@ -61,7 +58,7 @@ C
       COMMON /CPCOM2/ TXCF,TXHI,TXIL,TXLO
       CHARACTER*13 CHEX
       CHARACTER*40 CLBL
-      CHARACTER*32 CLDP
+      CHARACTER*128 CLDP
       CHARACTER*500 CTMA,CTMB
       CHARACTER*8 FRMT
       CHARACTER*40 TXCF
@@ -82,19 +79,29 @@ C
           SIZE=CHWM*WCLL*(XVPR-XVPL)
           WWSP=CHWM*WWLL*(XVPR-XVPL)
           CALL PCGETI ('TE',ITMP)
+          IF (ICFELL('CPSTLS',1).NE.0) RETURN
           CALL PCSETI ('TE',1)
+          IF (ICFELL('CPSTLS',2).NE.0) RETURN
           LCTM=KCLB
           CTMA(1:LCTM)=CLBL(ICLV)(1:KCLB)
           IPAI=ICLV
           CALL CPCHLL (+1)
+          IF (ICFELL('CPSTLS',3).NE.0) RETURN
           CALL PLCHHQ (XLBC,YLBC,CTMA(1:LCTM),SIZE,360.,0.)
+          IF (ICFELL('CPSTLS',4).NE.0) RETURN
           IPAI=ICLV
           CALL CPCHLL (-1)
+          IF (ICFELL('CPSTLS',5).NE.0) RETURN
           CALL PCGETR ('DB',DSTB)
+          IF (ICFELL('CPSTLS',6).NE.0) RETURN
           CALL PCGETR ('DL',DSTL)
+          IF (ICFELL('CPSTLS',7).NE.0) RETURN
           CALL PCGETR ('DR',DSTR)
+          IF (ICFELL('CPSTLS',8).NE.0) RETURN
           CALL PCGETR ('DT',DSTT)
+          IF (ICFELL('CPSTLS',9).NE.0) RETURN
           CALL PCSETI ('TE',ITMP)
+          IF (ICFELL('CPSTLS',10).NE.0) RETURN
           CLDB(ICLV)=DSTB+WWSP
           CLDL(ICLV)=DSTL+WWSP
           CLDR(ICLV)=DSTR+WWSP

@@ -1,8 +1,5 @@
 C
-C	$Id: cprect.f,v 1.1.1.1 1992-04-17 22:32:45 ncargd Exp $
-C
-C
-C-----------------------------------------------------------------------
+C $Id: cprect.f,v 1.2 1994-03-17 01:51:44 kennison Exp $
 C
       SUBROUTINE CPRECT (ZDAT,KZDT,MZDT,NZDT,RWRK,KRWK,IWRK,KIWK)
 C
@@ -74,7 +71,7 @@ C
       COMMON /CPCOM2/ TXCF,TXHI,TXIL,TXLO
       CHARACTER*13 CHEX
       CHARACTER*40 CLBL
-      CHARACTER*32 CLDP
+      CHARACTER*128 CLDP
       CHARACTER*500 CTMA,CTMB
       CHARACTER*8 FRMT
       CHARACTER*40 TXCF
@@ -83,10 +80,17 @@ C
       CHARACTER*20 TXLO
       SAVE   /CPCOM2/
 C
+C Check for an uncleared prior error.
+C
+      IF (ICFELL('CPRECT - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+C
 C If no CONPACK routine has been called before, initialize required
 C constants.
 C
-      IF (INIT.EQ.0) CALL CPINRC
+      IF (INIT.EQ.0) THEN
+        CALL CPINRC
+        IF (ICFELL('CPRECT',2).NE.0) RETURN
+      END IF
 C
 C Transfer the array dimensions to variables in COMMON.
 C
@@ -116,6 +120,7 @@ C
 C CPINIT does the rest.
 C
       CALL CPINIT (ZDAT,RWRK,IWRK)
+      IF (ICFELL('CPRECT',3).NE.0) RETURN
 C
 C Done.
 C

@@ -1,8 +1,5 @@
 C
-C	$Id: cpclam.f,v 1.1.1.1 1992-04-17 22:32:43 ncargd Exp $
-C
-C
-C-----------------------------------------------------------------------
+C $Id: cpclam.f,v 1.2 1994-03-17 01:50:32 kennison Exp $
 C
       SUBROUTINE CPCLAM (ZDAT,RWRK,IWRK,IAMA)
 C
@@ -63,7 +60,7 @@ C
       COMMON /CPCOM2/ TXCF,TXHI,TXIL,TXLO
       CHARACTER*13 CHEX
       CHARACTER*40 CLBL
-      CHARACTER*32 CLDP
+      CHARACTER*128 CLDP
       CHARACTER*500 CTMA,CTMB
       CHARACTER*8 FRMT
       CHARACTER*40 TXCF
@@ -81,20 +78,28 @@ C Define a couple of little workspace arrays required by CPTROE.
 C
       DIMENSION RWKL(8),RWKR(8)
 C
+C Check for an uncleared prior error.
+C
+      IF (ICFELL('CPCLAM - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+C
 C If initialization has not been done, log an error and quit.
 C
       IF (INIT.EQ.0) THEN
-        CALL SETER ('CPCLAM - INITIALIZATION CALL NOT DONE',1,2)
-        STOP
+        CALL SETER ('CPCLAM - INITIALIZATION CALL NOT DONE',2,1)
+        RETURN
       END IF
 C
 C Do the proper SET call.
 C
       CALL SET (XVPL,XVPR,YVPB,YVPT,XWDL,XWDR,YWDB,YWDT,LNLG)
+      IF (ICFELL('CPCLAM',3).NE.0) RETURN
 C
 C If no contour levels are defined, try to pick a set of levels.
 C
-      IF (NCLV.LE.0) CALL CPPKCL (ZDAT,RWRK,IWRK)
+      IF (NCLV.LE.0) THEN
+        CALL CPPKCL (ZDAT,RWRK,IWRK)
+        IF (ICFELL('CPCLAM',4).NE.0) RETURN
+      END IF
 C
 C Get indices for the contour levels in ascending order.
 C
@@ -104,8 +109,9 @@ C Get a little real workspace to use and re-do the call to SET so that
 C we can use fractional coordinates.
 C
       CALL CPGRWS (RWRK,1,10,IWSE)
-      IF (IWSE.NE.0) RETURN
+      IF (IWSE.NE.0.OR.ICFELL('CPCLAM',5).NE.0) RETURN
       CALL SET (XVPL,XVPR,YVPB,YVPT,XVPL,XVPR,YVPB,YVPT,1)
+      IF (ICFELL('CPCLAM',6).NE.0) RETURN
 C
 C Add the viewport perimeter to the area map.  This avoids problems
 C which arise when mapping is turned on and the mapping function has
@@ -128,16 +134,19 @@ C
       RWRK(IR01+10)=YVPB
 C
       CALL AREDAM (IAMA,RWRK(IR01+1),RWRK(IR01+6),5,IGCL,0,-1)
+      IF (ICFELL('CPCLAM',7).NE.0) RETURN
 C
 C If it is to be done, put into the area map edges creating a set of
 C vertical strips.
 C
       IF (NOVS.NE.0) THEN
         CALL AREDAM (IAMA,RWRK(IR01+1),RWRK(IR01+6),5,IGVS,0,-1)
+        IF (ICFELL('CPCLAM',8).NE.0) RETURN
         DO 10001 IOVS=1,NOVS-1
           RWRK(IR01+1)=XVPL+REAL(IOVS)*(XVPR-XVPL)/REAL(NOVS)
           RWRK(IR01+2)=RWRK(IR01+1)
           CALL AREDAM (IAMA,RWRK(IR01+1),RWRK(IR01+9),2,IGVS,0,0)
+          IF (ICFELL('CPCLAM',9).NE.0) RETURN
 10001   CONTINUE
       END IF
 C
@@ -145,6 +154,7 @@ C Discard the real workspace used above and re-call SET.
 C
       LR01=0
       CALL SET (XVPL,XVPR,YVPB,YVPT,XWDL,XWDR,YWDB,YWDT,LNLG)
+      IF (ICFELL('CPCLAM',10).NE.0) RETURN
 C
 C Put edges of areas which are invisible into the area map.  This one
 C is done first because the area-identifier information on the visible
@@ -168,6 +178,7 @@ C
         TST2=0.
 C
         CALL CPMPXY (0,TST1,TST2,TST3,TST4)
+        IF (ICFELL('CPCLAM',11).NE.0) RETURN
 C
         IF (TST2.NE.2..AND.TST2.NE.3.) THEN
 C
@@ -178,13 +189,16 @@ C
 C
 10002     CONTINUE
             CALL CPTREV (ZDAT,RWRK,IWRK,IJMP,IAIC,IRW1,IRW2,NRWK)
+            IF (ICFELL('CPCLAM',12).NE.0) RETURN
             IF (IJMP.EQ.0) GO TO 10003
             IF (MIRO.EQ.0) THEN
               CALL AREDAM (IAMA,RWRK(IRW1+1),RWRK(IRW2+1),NRWK,IGCL,
      +                                              IAIA(259),IAIC)
+              IF (ICFELL('CPCLAM',13).NE.0) RETURN
             ELSE
               CALL AREDAM (IAMA,RWRK(IRW1+1),RWRK(IRW2+1),NRWK,IGCL,
      +                                              IAIC,IAIA(259))
+              IF (ICFELL('CPCLAM',14).NE.0) RETURN
             END IF
           GO TO 10002
 10003     CONTINUE
@@ -206,15 +220,20 @@ C
 C
 10004     CONTINUE
             CALL CPTRVE (ZDAT,RWRK,IWRK,IJMP,IAIC,IRW1,IRW2,NRWK)
+            IF (ICFELL('CPCLAM',15).NE.0) RETURN
             IF (IJMP.EQ.0) GO TO 10005
             DO 10006 I=1,NRWK
               RWRK(IRW1+I)=CUFX(RWRK(IRW1+I))
+              IF (ICFELL('CPCLAM',16).NE.0) RETURN
               RWRK(IRW2+I)=CUFY(RWRK(IRW2+I))
+              IF (ICFELL('CPCLAM',17).NE.0) RETURN
 10006       CONTINUE
             CALL CPTROE (RWRK(IRW1+1),RWRK(IRW2+1),NRWK,+.001,RWKL,
      +                            IOCF,IAMA,IGCL,IAIA(259),IAIC)
+            IF (ICFELL('CPCLAM',18).NE.0) RETURN
             CALL CPTROE (RWRK(IRW1+1),RWRK(IRW2+1),NRWK,-.001,RWKR,
      +                            IOCF,IAMA,IGCL,IAIA(259),IAIC)
+            IF (ICFELL('CPCLAM',19).NE.0) RETURN
           GO TO 10004
 10005     CONTINUE
 C
@@ -229,13 +248,16 @@ C
 C
 10007 CONTINUE
         CALL CPTREG (ZDAT,RWRK,IWRK,IJMP,IAIC,IRW1,IRW2,NRWK)
+        IF (ICFELL('CPCLAM',20).NE.0) RETURN
         IF (IJMP.EQ.0) GO TO 10008
         IF (MIRO.EQ.0) THEN
           CALL AREDAM (IAMA,RWRK(IRW1+1),RWRK(IRW2+1),NRWK,IGCL,
      +                                              IAIC,IAIA(257))
+          IF (ICFELL('CPCLAM',21).NE.0) RETURN
         ELSE
           CALL AREDAM (IAMA,RWRK(IRW1+1),RWRK(IRW2+1),NRWK,IGCL,
      +                                              IAIA(257),IAIC)
+          IF (ICFELL('CPCLAM',22).NE.0) RETURN
         END IF
       GO TO 10007
 10008 CONTINUE
@@ -247,13 +269,16 @@ C
 C
 10009 CONTINUE
         CALL CPTRES (ZDAT,RWRK,IWRK,IJMP,IAIC,IRW1,IRW2,NRWK)
+        IF (ICFELL('CPCLAM',23).NE.0) RETURN
         IF (IJMP.EQ.0) GO TO 10010
         IF (MIRO.EQ.0) THEN
           CALL AREDAM (IAMA,RWRK(IRW1+1),RWRK(IRW2+1),NRWK,IGCL,
      +                                              IAIA(258),IAIC)
+          IF (ICFELL('CPCLAM',24).NE.0) RETURN
         ELSE
           CALL AREDAM (IAMA,RWRK(IRW1+1),RWRK(IRW2+1),NRWK,IGCL,
      +                                              IAIC,IAIA(258))
+          IF (ICFELL('CPCLAM',25).NE.0) RETURN
         END IF
       GO TO 10009
 10010 CONTINUE
@@ -289,16 +314,16 @@ C
                 IF (IAIA(JCLV).NE.0) THEN
                   IF (JAIA.NE.0.AND.JAIA.NE.IAIA(JCLV)) THEN
                     CALL SETER ('CPCLAM - CONTRADICTORY AREA-IDENTIFIER
-     +INFORMATION',2,2)
-                    STOP
+     +INFORMATION',26,1)
+                    RETURN
                   END IF
                   JAIA=IAIA(JCLV)
                 END IF
                 IF (IAIB(JCLV).NE.0) THEN
                   IF (JAIB.NE.0.AND.JAIB.NE.IAIB(JCLV)) THEN
                     CALL SETER ('CPCLAM - CONTRADICTORY AREA-IDENTIFIER
-     +INFORMATION',3,2)
-                    STOP
+     +INFORMATION',27,1)
+                    RETURN
                   END IF
                   JAIB=IAIB(JCLV)
                 END IF
@@ -311,13 +336,16 @@ C
 10015           CONTINUE
                   CALL CPTRCL (ZDAT,RWRK,IWRK,CLEV(ICLV),IJMP,
      +                                         IRW1,IRW2,NRWK)
+                  IF (ICFELL('CPCLAM',28).NE.0) RETURN
                   IF (IJMP.EQ.0) GO TO 10016
                   IF (MIRO.EQ.0) THEN
                     CALL AREDAM (IAMA,RWRK(IRW1+1),RWRK(IRW2+1),NRWK,
      +                                                 IGCL,JAIB,JAIA)
+                    IF (ICFELL('CPCLAM',29).NE.0) RETURN
                   ELSE
                     CALL AREDAM (IAMA,RWRK(IRW1+1),RWRK(IRW2+1),NRWK,
      +                                                 IGCL,JAIA,JAIB)
+                    IF (ICFELL('CPCLAM',30).NE.0) RETURN
                   END IF
                 GO TO 10015
 10016           CONTINUE

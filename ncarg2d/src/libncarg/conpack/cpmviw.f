@@ -1,9 +1,13 @@
 C
-C $Id: cpback.f,v 1.2 1994-03-17 01:50:12 kennison Exp $
+C $Id: cpmviw.f,v 1.1 1994-03-17 01:51:24 kennison Exp $
 C
-      SUBROUTINE CPBACK (ZDAT,RWRK,IWRK)
+      SUBROUTINE CPMVIW (IWKO,IWKN,LWKN)
 C
-      DIMENSION ZDAT(IZD1,*),RWRK(*),IWRK(*)
+      DIMENSION IWKO(LIWK),IWKN(LWKN)
+C
+C This subroutine is called to move what CONPACK has in the integer
+C workspace array to a new array.  IWKO is the old array, IWKN the
+C new one.  LWKN is the length of the new array.
 C
 C Declare all of the CONPACK common blocks.
 C
@@ -58,28 +62,72 @@ C
       CHARACTER*20 TXLO
       SAVE   /CPCOM2/
 C
+C Declare local versions of the arrays used to keep track of workspace
+C usage.
+C
+      DIMENSION LCLI(2),LCLL(2)
+C
 C Check for an uncleared prior error.
 C
-      IF (ICFELL('CPBACK - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+      IF (ICFELL('CPMVIW - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
 C
-C If initialization has not been done, log an error and quit.
+C First, zero the local pointers and lengths and, at the same time,
+C compute the total space required in the new array.
 C
-      IF (INIT.EQ.0) THEN
-        CALL SETER ('CPBACK - INITIALIZATION CALL NOT DONE',2,1)
+      DO 10001 I=1,2
+        LCLI(I)=0
+        LCLL(I)=0
+        ITMP=ITMP+LIWS(I)
+10001 CONTINUE
+C
+C If there isn't enough space available in the new array, log an error
+C and quit.
+C
+      IF (ITMP.GT.LWKN) THEN
+        CALL SETER ('CPMVIW - NEW WORKSPACE ARRAY IS TOO SMALL',2,1)
         RETURN
       END IF
 C
-C Do the proper SET call.
+C Zero an index into the new workspace array.
 C
-      CALL SET (XVPL,XVPR,YVPB,YVPT,XWDL,XWDR,YWDB,YWDT,LNLG)
-      IF (ICFELL('CPBACK',3).NE.0) RETURN
+      IINW=0
 C
-C If the mapping flag is off, do a simple call to PERIM.
+C Now, the trick is to move the stuff without stepping on our own toes
+C if the user gives us the same array as both the old and the new array.
+C We move the blocks closer to the beginning of the array first.
 C
-      IF (IMPF.EQ.0) THEN
-        CALL PERIM (IZDM-1,0,IZDN-1,0)
-        IF (ICFELL('CPBACK',4).NE.0) RETURN
-      END IF
+10002 CONTINUE
+ 
+        ITM1=0
+        ITM2=LIWK
+C
+        DO 10003 I=1,2
+          IF (LIWS(I).NE.0.AND.IIWS(I).LT.ITM2) ITM1=I
+10003   CONTINUE
+C
+        IF (ITM1.NE.0) THEN
+          DO 10004 J=1,LIWS(ITM1)
+            IWKN(IINW+J)=IWKO(IIWS(ITM1)+J)
+10004     CONTINUE
+          LCLI(ITM1)=IINW
+          LCLL(ITM1)=LIWS(ITM1)
+          IIWS(ITM1)=0
+          LIWS(ITM1)=0
+          IINW=IINW+LCLL(ITM1)
+        END IF
+C
+      IF (.NOT.(ITM1.EQ.0)) GO TO 10002
+C
+C Now, copy the local set of pointers and lengths to common.
+C
+      DO 10005 I=1,2
+        IIWS(I)=LCLI(I)
+        LIWS(I)=LCLL(I)
+10005 CONTINUE
+C
+C Update the variable that says how much integer workspace we have.
+C
+      LIWK=LWKN
 C
 C Done.
 C

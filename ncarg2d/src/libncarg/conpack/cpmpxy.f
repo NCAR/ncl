@@ -1,5 +1,5 @@
 C
-C $Id: cpmpxy.f,v 1.2 1993-11-18 18:28:20 kennison Exp $
+C $Id: cpmpxy.f,v 1.3 1994-03-17 01:51:22 kennison Exp $
 C
       SUBROUTINE CPMPXY (IMAP,XINP,YINP,XOTP,YOTP)
 C
@@ -61,8 +61,10 @@ C
       ELSE IF (ABS(IMAP).EQ.1) THEN
         IF (IMAP.GT.0) THEN
           CALL MAPTRA (YINP,XINP,XOTP,YOTP)
+          IF (ICFELL('CPMPXY',1).NE.0) RETURN
         ELSE
           CALL MAPTRI (XINP,YINP,YOTP,XOTP)
+          IF (ICFELL('CPMPXY',2).NE.0) RETURN
         END IF
 C
 C ... the polar coordinate case ...

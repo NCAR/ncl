@@ -1,8 +1,5 @@
 C
-C	$Id: cpgrws.f,v 1.1.1.1 1992-04-17 22:32:47 ncargd Exp $
-C
-C
-C-----------------------------------------------------------------------
+C $Id: cpgrws.f,v 1.2 1994-03-17 01:51:01 kennison Exp $
 C
       SUBROUTINE CPGRWS (RWRK,IOWS,LOWS,IERR)
 C
@@ -66,7 +63,7 @@ C
       COMMON /CPCOM2/ TXCF,TXHI,TXIL,TXLO
       CHARACTER*13 CHEX
       CHARACTER*40 CLBL
-      CHARACTER*32 CLDP
+      CHARACTER*128 CLDP
       CHARACTER*500 CTMA,CTMB
       CHARACTER*8 FRMT
       CHARACTER*40 TXCF
@@ -78,8 +75,8 @@ C
 C Check for argument error.
 C
       IF (IOWS.LT.1.OR.IOWS.GT.4.OR.LOWS.LT.0) THEN
-        CALL SETER ('CPGRWS - ARGUMENT ERROR - SEE SPECIALIST',1,2)
-        STOP
+        CALL SETER ('CPGRWS - ARGUMENT ERROR - SEE SPECIALIST',1,1)
+        RETURN
       END IF
 C
 C Clear error flag.
@@ -110,9 +107,14 @@ C
      +    WRITE (I1MACH(4),'('' CPGRWS'',
      +                       I8,'' WORDS REQUESTED'',
      +                       I8,'' WORDS AVAILABLE'')') LOWS,NLFT
-        IF (IWSO.LE.0)
-     +    CALL SETER ('CPGRWS - REAL WORKSPACE OVERFLOW',2,2)
-        IERR=1
+        IF (IWSO.LE.0) THEN
+          CALL SETER ('CPGRWS - REAL WORKSPACE OVERFLOW',2,2)
+          STOP
+        ELSE IF (IWSO.GE.3) THEN
+          CALL SETER ('CPGRWS - REAL WORKSPACE OVERFLOW',3,1)
+        ELSE
+          IERR=1
+        END IF
         RETURN
       END IF
 C

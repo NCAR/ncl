@@ -1,8 +1,5 @@
 C
-C	$Id: cpgetr.f,v 1.3 1992-09-04 20:34:48 ncargd Exp $
-C
-C
-C-----------------------------------------------------------------------
+C $Id: cpgetr.f,v 1.4 1994-03-17 01:50:56 kennison Exp $
 C
       SUBROUTINE CPGETR (WHCH,RVAL)
 C
@@ -61,7 +58,7 @@ C
       COMMON /CPCOM2/ TXCF,TXHI,TXIL,TXLO
       CHARACTER*13 CHEX
       CHARACTER*40 CLBL
-      CHARACTER*32 CLDP
+      CHARACTER*128 CLDP
       CHARACTER*500 CTMA,CTMB
       CHARACTER*8 FRMT
       CHARACTER*40 TXCF
@@ -70,13 +67,17 @@ C
       CHARACTER*20 TXLO
       SAVE   /CPCOM2/
 C
+C Check for an uncleared prior error.
+C
+      IF (ICFELL('CPGETR - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+C
 C Check for a parameter name that is too short.
 C
       IF (LEN(WHCH).LT.3) THEN
-        CTMB(1:46)='CPGETI OR CPGETR - PARAMETER NAME TOO SHORT - '
-        CTMB(47:46+LEN(WHCH))=WHCH
-        CALL SETER (CTMB(1:46+LEN(WHCH)),1,2)
-        STOP
+        CTMB(1:36)='CPGETR - PARAMETER NAME TOO SHORT - '
+        CTMB(37:36+LEN(WHCH))=WHCH
+        CALL SETER (CTMB(1:36+LEN(WHCH)),2,1)
+        RETURN
       END IF
 C
 C Check for incorrect use of the index parameter.
@@ -102,10 +103,10 @@ C
 C
       GO TO 10005
 10002 CONTINUE
-        CTMB(1:46)='CPGETI OR CPGETR - GETTING XXX - PAI INCORRECT'
-        CTMB(28:30)=WHCH(1:3)
-        CALL SETER (CTMB(1:46),2,2)
-        STOP
+        CTMB(1:36)='CPGETR - GETTING XXX - PAI INCORRECT'
+        CTMB(18:20)=WHCH(1:3)
+        CALL SETER (CTMB(1:36),3,1)
+        RETURN
 10005 CONTINUE
 C
 C Get the appropriate parameter value.
@@ -367,10 +368,10 @@ C
       ELSE IF (WHCH(1:3).EQ.'ZMX'.OR.WHCH(1:3).EQ.'zmx') THEN
         RVAL=ZMAX
       ELSE
-        CTMB(1:46)='CPGETI OR CPGETR - PARAMETER NAME NOT KNOWN - '
-        CTMB(47:49)=WHCH(1:3)
-        CALL SETER (CTMB(1:49),3,2)
-        STOP
+        CTMB(1:36)='CPGETR - PARAMETER NAME NOT KNOWN - '
+        CTMB(37:39)=WHCH(1:3)
+        CALL SETER (CTMB(1:39),4,1)
+        RETURN
       END IF
 C
 C Done.

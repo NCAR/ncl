@@ -1,8 +1,5 @@
 C
-C $Id: cphchr.f,v 1.2 1993-04-13 16:55:50 kennison Exp $
-C
-C
-C-----------------------------------------------------------------------
+C $Id: cphchr.f,v 1.3 1994-03-17 01:51:04 kennison Exp $
 C
       SUBROUTINE CPHCHR (RWRK,IPTX,IPTY,NXYC)
 C
@@ -58,7 +55,7 @@ C
       COMMON /CPCOM2/ TXCF,TXHI,TXIL,TXLO
       CHARACTER*13 CHEX
       CHARACTER*40 CLBL
-      CHARACTER*32 CLDP
+      CHARACTER*128 CLDP
       CHARACTER*500 CTMA,CTMB
       CHARACTER*8 FRMT
       CHARACTER*40 TXCF
@@ -113,7 +110,9 @@ C
   101 CONTINUE
       DO 10002 I=1,NXYC
         RWRK(IPTX+I)=CUFX(RWRK(IPTX+I))
+        IF (ICFELL('CPHCHR',1).NE.0) RETURN
         RWRK(IPTY+I)=CUFY(RWRK(IPTY+I))
+        IF (ICFELL('CPHCHR',2).NE.0) RETURN
 10002 CONTINUE
 C
 C Compute the total length of the polyline.
@@ -154,9 +153,11 @@ C
           XCP1=RWRK(IPTX+I)+FRCT*(RWRK(IPTX+I+1)-RWRK(IPTX+I))
           YCP1=RWRK(IPTY+I)+FRCT*(RWRK(IPTY+I+1)-RWRK(IPTY+I))
           CALL PLOTIF (XCP1,YCP1,0)
+          IF (ICFELL('CPHCHR',3).NE.0) RETURN
           XCP2=XCP1-HCHD*(RWRK(IPTY+I+1)-RWRK(IPTY+I))/SLEN
           YCP2=YCP1+HCHD*(RWRK(IPTX+I+1)-RWRK(IPTX+I))/SLEN
           CALL PLOTIF (XCP2,YCP2,1)
+          IF (ICFELL('CPHCHR',4).NE.0) RETURN
           PNHM=PNHM+DBHM
         GO TO 10006
 10007   CONTINUE

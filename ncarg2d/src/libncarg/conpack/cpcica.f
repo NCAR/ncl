@@ -1,8 +1,5 @@
 C
-C	$Id: cpcica.f,v 1.1.1.1 1992-04-17 22:32:51 ncargd Exp $
-C
-C
-C-----------------------------------------------------------------------
+C $Id: cpcica.f,v 1.2 1994-03-17 01:50:29 kennison Exp $
 C
       SUBROUTINE CPCICA (ZDAT,RWRK,IWRK,ICRA,ICA1,ICAM,ICAN,XCPF,YCPF,
      +                                                      XCQF,YCQF)
@@ -81,7 +78,7 @@ C
       COMMON /CPCOM2/ TXCF,TXHI,TXIL,TXLO
       CHARACTER*13 CHEX
       CHARACTER*40 CLBL
-      CHARACTER*32 CLDP
+      CHARACTER*128 CLDP
       CHARACTER*500 CTMA,CTMB
       CHARACTER*8 FRMT
       CHARACTER*40 TXCF
@@ -91,11 +88,15 @@ C
       SAVE   /CPCOM2/
 C
 C
+C Check for an uncleared prior error.
+C
+      IF (ICFELL('CPCICA - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+C
 C If initialization has not been done, log an error and quit.
 C
       IF (INIT.EQ.0) THEN
-        CALL SETER ('CPCICA - INITIALIZATION CALL NOT DONE',1,2)
-        STOP
+        CALL SETER ('CPCICA - INITIALIZATION CALL NOT DONE',2,1)
+        RETURN
       END IF
 C
 C If the mapping flag is turned on and CPMPXY is not capable of doing
@@ -107,11 +108,12 @@ C
         TST2=0.
 C
         CALL CPMPXY (0,TST1,TST2,TST3,TST4)
+        IF (ICFELL('CPCICA',3).NE.0) RETURN
 C
         IF (TST2.NE.2..AND.TST2.NE.3.) THEN
           CALL SETER ('CPCICA - CANNOT CONTINUE - CPMPXY DOES NOT DO INV
-     +ERSE MAPPINGS',2,2)
-          STOP
+     +ERSE MAPPINGS',4,1)
+          RETURN
         END IF
       END IF
 C
@@ -119,24 +121,28 @@ C Check for errors in the arguments.
 C
       IF (ICAM.LE.0.OR.ICAN.LE.0.OR.ICAM.GT.ICA1) THEN
         CALL SETER ('CPCICA - THE DIMENSIONS OF THE CELL ARRAY ARE INCOR
-     +RECT',3,2)
-        STOP
+     +RECT',5,1)
+        RETURN
       END IF
 C
       IF (XCPF.LT.0..OR.XCPF.GT.1..OR.YCPF.LT.0..OR.YCPF.GT.1..OR.XCQF.L
      +T.0..OR.XCQF.GT.1..OR.YCQF.LT.0..OR.YCQF.GT.1.) THEN
         CALL SETER ('CPCICA - ONE OF THE CORNER POINTS OF THE CELL ARRAY
-     + IS INCORRECT',4,2)
-        STOP
+     + IS INCORRECT',6,1)
+        RETURN
       END IF
 C
 C Do the proper SET call.
 C
       CALL SET (XVPL,XVPR,YVPB,YVPT,XWDL,XWDR,YWDB,YWDT,LNLG)
+      IF (ICFELL('CPCICA',7).NE.0) RETURN
 C
 C If no contour levels are defined, try to pick a set of levels.
 C
-      IF (NCLV.LE.0) CALL CPPKCL (ZDAT,RWRK,IWRK)
+      IF (NCLV.LE.0) THEN
+        CALL CPPKCL (ZDAT,RWRK,IWRK)
+        IF (ICFELL('CPCICA',8).NE.0) RETURN
+      END IF
 C
 C If no levels are defined now, do nothing.
 C
@@ -154,11 +160,13 @@ C
 C
         XCCF=XCPF+(REAL(I)-.5)*((XCQF-XCPF)/REAL(ICAM))
         XCCU=CFUX(XCCF)
+        IF (ICFELL('CPCICA',9).NE.0) RETURN
 C
         DO 10002 J=1,ICAN
 C
           YCCF=YCPF+(REAL(J)-.5)*((YCQF-YCPF)/REAL(ICAN))
           YCCU=CFUY(YCCF)
+          IF (ICFELL('CPCICA',10).NE.0) RETURN
 C
 C Find the center point of each cell in the data index system.  The flag
 C IOOR is set non-zero if, in the process, the point is found to be
@@ -173,6 +181,7 @@ C
             YCCI=1.+((YCCU-YAT1)/(YATN-YAT1))*REAL(IZDN-1)
           ELSE
             CALL CPMPXY (-IMPF,XCCU,YCCU,XCCD,YCCD)
+            IF (ICFELL('CPCICA',11).NE.0) RETURN
             IF ((OORV.EQ.0..OR.XCCD.NE.OORV).AND.XCCD.GE.XAT1.AND.XCCD.L
      +T.XATM.AND.YCCD.GE.YAT1.AND.YCCD.LT.YATN) THEN
               XCCI=1.+((XCCD-XAT1)/(XATM-XAT1))*REAL(IZDM-1)
@@ -270,6 +279,7 @@ C
           ELSE
             CALL CPSCAE (ICRA,ICA1,ICAM,ICAN,XCPF,YCPF,XCQF,YCQF,
      +                                             I,J,ICAF,IAID)
+            IF (ICFELL('CPCICA',12).NE.0) RETURN
           END IF
 C
 10002   CONTINUE

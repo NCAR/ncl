@@ -1,8 +1,5 @@
 C
-C	$Id: cpnumb.f,v 1.1.1.1 1992-04-17 22:32:48 ncargd Exp $
-C
-C
-C-----------------------------------------------------------------------
+C $Id: cpnumb.f,v 1.2 1994-03-17 01:51:28 kennison Exp $
 C
       SUBROUTINE CPNUMB (VALU,NDGD,LMSD,IEXP,LEXP,CEX1,CEX2,CEX3,LEX1,
      +                   LEX2,LEX3,IOMA,IODP,IOTZ,CBUF,NBUF,NDGS,IEVA)
@@ -174,7 +171,7 @@ C
       COMMON /CPCOM2/ TXCF,TXHI,TXIL,TXLO
       CHARACTER*13 CHEX
       CHARACTER*40 CLBL
-      CHARACTER*32 CLDP
+      CHARACTER*128 CLDP
       CHARACTER*500 CTMA,CTMB
       CHARACTER*8 FRMT
       CHARACTER*40 TXCF

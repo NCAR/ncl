@@ -1,8 +1,5 @@
 C
-C	$Id: cpinrc.f,v 1.2 1992-10-15 17:22:07 haley Exp $
-C
-C
-C-----------------------------------------------------------------------
+C $Id: cpinrc.f,v 1.3 1994-03-17 01:51:14 kennison Exp $
 C
       SUBROUTINE CPINRC
 C
@@ -55,7 +52,7 @@ C
       COMMON /CPCOM2/ TXCF,TXHI,TXIL,TXLO
       CHARACTER*13 CHEX
       CHARACTER*40 CLBL
-      CHARACTER*32 CLDP
+      CHARACTER*128 CLDP
       CHARACTER*500 CTMA,CTMB
       CHARACTER*8 FRMT
       CHARACTER*40 TXCF

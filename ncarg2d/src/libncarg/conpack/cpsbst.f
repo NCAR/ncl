@@ -1,8 +1,5 @@
 C
-C	$Id: cpsbst.f,v 1.1.1.1 1992-04-17 22:32:49 ncargd Exp $
-C
-C
-C-----------------------------------------------------------------------
+C $Id: cpsbst.f,v 1.2 1994-03-17 01:51:49 kennison Exp $
 C
       SUBROUTINE CPSBST (CHSI,CHSO,NCHO)
 C
@@ -60,7 +57,7 @@ C
       COMMON /CPCOM2/ TXCF,TXHI,TXIL,TXLO
       CHARACTER*13 CHEX
       CHARACTER*40 CLBL
-      CHARACTER*32 CLDP
+      CHARACTER*128 CLDP
       CHARACTER*500 CTMA,CTMB
       CHARACTER*8 FRMT
       CHARACTER*40 TXCF
@@ -95,28 +92,28 @@ C
      +004
             IF (.NOT.(CHSI(KCHI+1:KCHI+3).EQ.'ZDV')) GO TO 10005
               VALU=ZDVL
-              ASSIGN 10006 TO L10007
+              L10007=    1
               GO TO 10007
 10006         CONTINUE
             GO TO 10008
 10005       CONTINUE
             IF (.NOT.(CHSI(KCHI+1:KCHI+3).EQ.'ZMN')) GO TO 10009
               VALU=ZMIN
-              ASSIGN 10010 TO L10007
+              L10007=    2
               GO TO 10007
 10010         CONTINUE
             GO TO 10008
 10009       CONTINUE
             IF (.NOT.(CHSI(KCHI+1:KCHI+3).EQ.'ZMX')) GO TO 10011
               VALU=ZMAX
-              ASSIGN 10012 TO L10007
+              L10007=    3
               GO TO 10007
 10012         CONTINUE
             GO TO 10008
 10011       CONTINUE
             IF (.NOT.(CHSI(KCHI+1:KCHI+3).EQ.'CIU')) GO TO 10013
               VALU=CINU
-              ASSIGN 10014 TO L10015
+              L10015=    1
               GO TO 10015
 10014         CONTINUE
             GO TO 10008
@@ -128,7 +125,7 @@ C
 10017         CONTINUE
                 VALU=CLEV(ICLP(1))
 10018         CONTINUE
-              ASSIGN 10019 TO L10015
+              L10015=    2
               GO TO 10015
 10019         CONTINUE
             GO TO 10008
@@ -140,7 +137,7 @@ C
 10021         CONTINUE
                 VALU=CLEV(ICLP(NCLV))
 10022         CONTINUE
-              ASSIGN 10023 TO L10015
+              L10015=    3
               GO TO 10015
 10023         CONTINUE
             GO TO 10008
@@ -153,7 +150,7 @@ C
               IOMA=1
               IODP=1
               IOTZ=1
-              ASSIGN 10025 TO L10026
+              L10026=    1
               GO TO 10026
 10025         CONTINUE
 10008       CONTINUE
@@ -172,16 +169,16 @@ C $CMN$, and $CMX$ as unrounded or rounded numbers.
 C
 10015 CONTINUE
         IF (.NOT.(ICLS.LT.0)) GO TO 10027
-          ASSIGN 10028 TO L10007
+          L10007=    4
           GO TO 10007
 10028     CONTINUE
         GO TO 10029
 10027   CONTINUE
-          ASSIGN 10030 TO L10031
+          L10031=    1
           GO TO 10031
 10030     CONTINUE
 10029   CONTINUE
-      GO TO L10015 , (10023,10019,10014)
+      GO TO (10014,10019,10023) , L10015
 C
 C The following internal procedure is used to handle numbers known not
 C to have been rounded to nice values.
@@ -194,10 +191,10 @@ C
         IOMA=JOMA
         IODP=JODP
         IOTZ=JOTZ
-        ASSIGN 10032 TO L10026
+        L10026=    2
         GO TO 10026
 10032   CONTINUE
-      GO TO L10007 , (10028,10012,10010,10006)
+      GO TO (10006,10010,10012,10028) , L10007
 C
 C The following internal procedure is used to handle numbers which are
 C likely to have been rounded to nice values, so that it is probably a
@@ -211,10 +208,10 @@ C
         IOMA=JOMA
         IODP=JODP
         IOTZ=1
-        ASSIGN 10033 TO L10026
+        L10026=    3
         GO TO 10026
 10033   CONTINUE
-      GO TO L10031 , (10030)
+      GO TO (10030) , L10031
 C
 C The following internal procedure generates, in the output string, the
 C representation of a numeric value.  It then updates the pointers into
@@ -229,6 +226,6 @@ C
         NCHO=NCHO+NCHS-1
         KCHI=KCHI+4
         IF (CHSI(KCHI:KCHI).NE.'$') KCHI=KCHI+1
-      GO TO L10026 , (10033,10032,10025)
+      GO TO (10025,10032,10033) , L10026
 C
       END

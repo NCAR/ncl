@@ -1,8 +1,5 @@
 C
-C	$Id: cprset.f,v 1.1.1.1 1992-04-17 22:32:46 ncargd Exp $
-C
-C
-C-----------------------------------------------------------------------
+C $Id: cprset.f,v 1.2 1994-03-17 01:51:47 kennison Exp $
 C
       SUBROUTINE CPRSET
 C
@@ -53,7 +50,7 @@ C
       COMMON /CPCOM2/ TXCF,TXHI,TXIL,TXLO
       CHARACTER*13 CHEX
       CHARACTER*40 CLBL
-      CHARACTER*32 CLDP
+      CHARACTER*128 CLDP
       CHARACTER*500 CTMA,CTMB
       CHARACTER*8 FRMT
       CHARACTER*40 TXCF
@@ -61,6 +58,10 @@ C
       CHARACTER*100 TXIL
       CHARACTER*20 TXLO
       SAVE   /CPCOM2/
+C
+C Check for an uncleared prior error.
+C
+      IF (ICFELL('CPRSET - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
 C
 C Reset individual parameters.
 C

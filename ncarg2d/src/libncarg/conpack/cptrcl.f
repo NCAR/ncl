@@ -1,8 +1,5 @@
 C
-C	$Id: cptrcl.f,v 1.1.1.1 1992-04-17 22:32:50 ncargd Exp $
-C
-C
-C-----------------------------------------------------------------------
+C $Id: cptrcl.f,v 1.2 1994-03-17 01:52:15 kennison Exp $
 C
       SUBROUTINE CPTRCL (ZDAT,RWRK,IWRK,CLVL,IJMP,IRW1,IRW2,NRWK)
 C
@@ -76,7 +73,7 @@ C
       COMMON /CPCOM2/ TXCF,TXHI,TXIL,TXLO
       CHARACTER*13 CHEX
       CHARACTER*40 CLBL
-      CHARACTER*32 CLDP
+      CHARACTER*128 CLDP
       CHARACTER*500 CTMA,CTMB
       CHARACTER*8 FRMT
       CHARACTER*40 TXCF
@@ -113,7 +110,7 @@ C
         CALL CPGRWS (RWRK,1,7*LRWC,IWSE)
 10002 CONTINUE
 C
-      IF (IWSE.NE.0) RETURN
+      IF (IWSE.NE.0.OR.ICFELL('CPTRCL',1).NE.0) RETURN
 C
 C Set the offset from one portion of the real workspace to the next.
 C
@@ -165,7 +162,7 @@ C
         IF (.NOT.(ZDAT(IVBX-1,1).LT.CLVL.AND.ZDAT(IVBX,1).GE.CLVL))
      +  GO TO 10008
           INCI=1
-          ASSIGN 10009 TO L10010
+          L10010=    1
           GO TO 10010
 10009     CONTINUE
 10008   CONTINUE
@@ -184,7 +181,7 @@ C
         IF (.NOT.(ZDAT(IZDM,IVBY-1).LT.CLVL.AND.ZDAT(IZDM,IVBY).GE.CLVL)
      +) GO TO 10014
           INCI=7
-          ASSIGN 10015 TO L10010
+          L10010=    2
           GO TO 10010
 10015     CONTINUE
 10014   CONTINUE
@@ -203,7 +200,7 @@ C
         IF (.NOT.(ZDAT(IVBX+1,IZDN).LT.CLVL.AND.ZDAT(IVBX,IZDN).GE.CLVL)
      +) GO TO 10019
           INCI=5
-          ASSIGN 10020 TO L10010
+          L10010=    3
           GO TO 10010
 10020     CONTINUE
 10019   CONTINUE
@@ -222,7 +219,7 @@ C
         IF (.NOT.(ZDAT(1,IVBY+1).LT.CLVL.AND.ZDAT(1,IVBY).GE.CLVL))
      +  GO TO 10024
           INCI=3
-          ASSIGN 10025 TO L10010
+          L10010=    4
           GO TO 10010
 10025     CONTINUE
 10024   CONTINUE
@@ -255,12 +252,12 @@ C
 10033       CONTINUE
             IF (.NOT.(NHSS.GE.LI01)) GO TO 10034
               CALL CPGIWS (IWRK,1,LI01+100,IWSE)
-              IF (IWSE.NE.0) GO TO 102
+              IF (IWSE.NE.0.OR.ICFELL('CPTRCL',2).NE.0) GO TO 102
 10034       CONTINUE
             NHSS=NHSS+1
             IWRK(II01+NHSS)=IPXY
             INCI=1
-            ASSIGN 10035 TO L10010
+            L10010=    5
             GO TO 10010
 10035       CONTINUE
   101     CONTINUE
@@ -314,7 +311,7 @@ C
 C
 C Map the coordinates (XCND,YCND) into user coordinates (XCNU,YCNU).
 C
-        ASSIGN 10038 TO L10039
+        L10039=    1
         GO TO 10039
 10038   CONTINUE
 C
@@ -384,14 +381,14 @@ C
      +                                             ZDAT(IVEX,IVEY))
 10046       CONTINUE
 C
-            ASSIGN 10047 TO L10039
+            L10039=    2
             GO TO 10039
 10047       CONTINUE
 C
 C Save the coordinates of the point.  Special values complicate things.
 C
             IF (.NOT.(SVAL.EQ.0.)) GO TO 10048
-              ASSIGN 10049 TO L10050
+              L10050=    1
               GO TO 10050
 10049         CONTINUE
             GO TO 10051
@@ -410,13 +407,13 @@ C
      +AL.OR.ZDAT(IVDX,IVDY).EQ.SVAL.OR.ZDAT(IVEX,IVEY).EQ.SVAL)) GO TO 1
      +0054
                 IF (.NOT.(NPLS.GT.1)) GO TO 10055
-                  ASSIGN 10056 TO L10057
+                  L10057=    1
                   GO TO 10057
 10056             CONTINUE
 10055           CONTINUE
               GO TO 10058
 10054         CONTINUE
-                ASSIGN 10059 TO L10050
+                L10050=    2
                 GO TO 10050
 10059           CONTINUE
 10058         CONTINUE
@@ -428,7 +425,7 @@ C
             IF (.NOT.(INCI.EQ.1)) GO TO 10060
               IF (.NOT.(NHSS.GE.LI01)) GO TO 10061
                 CALL CPGIWS (IWRK,1,LI01+100,IWSE)
-                IF (IWSE.NE.0) GO TO 102
+                IF (IWSE.NE.0.OR.ICFELL('CPTRCL',3).NE.0) GO TO 102
 10061         CONTINUE
               NHSS=NHSS+1
               IWRK(II01+NHSS)=IZDN*IVBX+IVBY
@@ -448,7 +445,7 @@ C
 C Process any remaining portion of the contour line.
 C
         IF (.NOT.(NPLS.GT.1)) GO TO 10062
-          ASSIGN 10063 TO L10057
+          L10057=    2
           GO TO 10057
 10063     CONTINUE
 10062   CONTINUE
@@ -460,7 +457,7 @@ C
 C
 C Done.
 C
-      GO TO L10010 , (10035,10025,10020,10015,10009)
+      GO TO (10009,10015,10020,10025,10035) , L10010
 C
 C The following internal procedure, given a line segment, adds visible
 C portions of it to the coordinate arrays.
@@ -485,11 +482,11 @@ C
             IF (I .GT.(IABS(IPIC))) GO TO 10066
             XCND=XSOD+REAL(I)/REAL(IABS(IPIC)+1)*(XSND-XSOD)
             YCND=YSOD+REAL(I)/REAL(IABS(IPIC)+1)*(YSND-YSOD)
-            ASSIGN 10068 TO L10039
+            L10039=    3
             GO TO 10039
 10068       CONTINUE
             IF (.NOT.(IPIC.GT.0.OR.IVNU.NE.IVOU)) GO TO 10069
-              ASSIGN 10070 TO L10071
+              L10071=    1
               GO TO 10071
 10070         CONTINUE
               XCOD=XCND
@@ -509,11 +506,11 @@ C
 C
 C Finish off the job.
 C
-        ASSIGN 10072 TO L10071
+        L10071=    2
         GO TO 10071
 10072   CONTINUE
 C
-      GO TO L10050 , (10059,10049)
+      GO TO (10049,10059) , L10050
 C
 C The following internal procedure examines the points (XCOD,YCOD),
 C which projects into (XCOU,YCOU), and (XCND,YCND), which projects into
@@ -538,7 +535,7 @@ C
                 YCVD=YCND
                 XCVU=XCNU
                 YCVU=YCNU
-                ASSIGN 10078 TO L10079
+                L10079=    1
                 GO TO 10079
 10078           CONTINUE
                 XCOD=XCVD
@@ -553,7 +550,7 @@ C
           IF (.NOT.(NPLS.EQ.MPLS)) GO TO 10081
             XSAV=RWRK(IR01+NPLS)
             YSAV=RWRK(IR01+MPLS+NPLS)
-            ASSIGN 10082 TO L10057
+            L10057=    3
             GO TO 10057
 10082       CONTINUE
             RWRK(IR01+1)=XSAV
@@ -569,7 +566,7 @@ C
               RUDN=(ABS(XCNU-XCOU)+ABS(YCNU-YCOU))/
      +             (ABS(XCND-XCOD)+ABS(YCND-YCOD))
               IF (.NOT.(RUDN.GT.10.*RUDO)) GO TO 10085
-                ASSIGN 10086 TO L10087
+                L10087=    1
                 GO TO 10087
 10086           CONTINUE
 10085         CONTINUE
@@ -586,17 +583,17 @@ C
               YCVU=YCOU
               XCID=XCND
               YCID=YCND
-              ASSIGN 10090 TO L10079
+              L10079=    2
               GO TO 10079
 10090         CONTINUE
-              ASSIGN 10091 TO L10057
+              L10057=    4
               GO TO 10057
 10091         CONTINUE
 10089       CONTINUE
 10088     CONTINUE
 10073   CONTINUE
 C
-      GO TO L10071 , (10072,10070)
+      GO TO (10070,10072) , L10071
 C
 C The following internal procedure is given the data-system coordinates
 C of a point (XCND,YCND) and computes the user-system coordinates of
@@ -613,10 +610,11 @@ C
           XTMP=XCNU
           YTMP=YCNU
           CALL CPMPXY (IMPF,XTMP,YTMP,XCNU,YCNU)
+          IF (ICFELL('CPTRCL',4).NE.0) RETURN
           IF ((OORV.NE.0.).AND.(XCNU.EQ.OORV.OR.YCNU.EQ.OORV)) IVNU=0
 10092   CONTINUE
 C
-      GO TO L10039 , (10068,10047,10038)
+      GO TO (10038,10047,10068) , L10039
 C
 C The following internal procedure is invoked when an unusually large
 C jump in the position of mapped points on the contour line is seen.
@@ -641,6 +639,7 @@ C
           YC3D=(YC1D+YC2D)/2.
           CALL CPMPXY (IMPF,XAT1+RZDM*(XC3D-1.),YAT1+RZDN*(YC3D-1.),
      +                                                      XC3U,YC3U)
+          IF (ICFELL('CPTRCL',5).NE.0) RETURN
           IF (.NOT.(OORV.EQ.0..OR.(XC3U.NE.OORV.AND.YC3U.NE.OORV)))
      +    GO TO 10094
             DST1=ABS(XC3U-XC1U)+ABS(YC3U-YC1U)
@@ -669,10 +668,10 @@ C
             YCVU=YCOU
             XCID=XC3D
             YCID=YC3D
-            ASSIGN 10099 TO L10079
+            L10079=    3
             GO TO 10079
 10099       CONTINUE
-            ASSIGN 10100 TO L10057
+            L10057=    5
             GO TO 10057
 10100       CONTINUE
             XCID=XC3D
@@ -681,7 +680,7 @@ C
             YCVD=YCND
             XCVU=XCNU
             YCVU=YCNU
-            ASSIGN 10101 TO L10079
+            L10079=    4
             GO TO 10079
 10101       CONTINUE
             ITMP=1000
@@ -694,14 +693,14 @@ C
           NPLS=NPLS+1
           RWRK(IR01+NPLS)=XC1U
           RWRK(IR01+MPLS+NPLS)=YC1U
-          ASSIGN 10103 TO L10057
+          L10057=    6
           GO TO 10057
 10103     CONTINUE
           NPLS=NPLS+1
           RWRK(IR01+NPLS)=XC2U
           RWRK(IR01+MPLS+NPLS)=YC2U
 10102   CONTINUE
-      GO TO L10087 , (10086)
+      GO TO (10086) , L10087
 C
 C Given two points in the data-array-index coordinate system, one of
 C which maps to a visible point and the other of which maps to an
@@ -715,6 +714,7 @@ C
           YCHD=(YCVD+YCID)/2.
           CALL CPMPXY (IMPF,XAT1+RZDM*(XCHD-1.),YAT1+RZDN*(YCHD-1.),
      +                                                      XCHU,YCHU)
+          IF (ICFELL('CPTRCL',6).NE.0) RETURN
           IF (.NOT.(XCHU.NE.OORV.AND.YCHU.NE.OORV)) GO TO 10105
             IF (XCHD.EQ.XCVD.AND.YCHD.EQ.YCVD) GO TO 10106
             XCVD=XCHD
@@ -734,7 +734,7 @@ C
         NPLS=NPLS+1
         RWRK(IR01+NPLS)=XCVU
         RWRK(IR01+MPLS+NPLS)=YCVU
-      GO TO L10079 , (10101,10099,10090,10078)
+      GO TO (10078,10090,10099,10101) , L10079
 C
 C The following internal procedure processes a complete line segment.
 C If the 2D smoother is turned on, the routines MSKRV1 and MSKRV2 are
@@ -802,6 +802,7 @@ C
      +                   SLP1,SLPN,RWRK(IR01+2*MPLS+1),
      +                   RWRK(IR01+3*MPLS+1),RWRK(IR01+5*MPLS+1),
      +                   RWRK(IR01+4*MPLS+1),ABS(T2DS),ISLP)
+            IF (ICFELL('CPTRCL',7).NE.0) RETURN
 C
             NINT=MAX(3,1+INT(RWRK(IR01+4*MPLS+NPLS)/DBPI))
 C
@@ -824,6 +825,7 @@ C
      +                       RWRK(IR01+1),RWRK(IR01+MPLS+1),
      +                       RWRK(IR01+2*MPLS+1),RWRK(IR01+3*MPLS+1),
      +                       RWRK(IR01+4*MPLS+1),ABS(T2DS),0,DUMI)
+                IF (ICFELL('CPTRCL',8).NE.0) RETURN
               GO TO 10124
 10125         CONTINUE
                 XTMP=RWRK(IR01+NPLS)
@@ -845,6 +847,7 @@ C
                 XTND=XTMP
                 YTND=YTMP
                 CALL CPMPXY (IMPF,XTND,YTND,XTNU,YTNU)
+                IF (ICFELL('CPTRCL',9).NE.0) RETURN
                 IVSN=1
                 IF (OORV.NE.0..AND.
      +              (XTNU.EQ.OORV.OR.YTNU.EQ.OORV)) IVSN=0
@@ -857,7 +860,7 @@ C
                       YTVD=YTND
                       XTVU=XTNU
                       YTVU=YTNU
-                      ASSIGN 10132 TO L10133
+                      L10133=    1
                       GO TO 10133
 10132                 CONTINUE
                       XTOD=XTVD
@@ -879,7 +882,7 @@ C
                       TUDN=(ABS(XTNU-XTOU)+ABS(YTNU-YTOU))/
      +                     (ABS(XTND-XTOD)+ABS(YTND-YTOD))
                       IF (.NOT.(TUDN.GT.10.*TUDO)) GO TO 10137
-                        ASSIGN 10138 TO L10139
+                        L10139=    1
                         GO TO 10139
 10138                   CONTINUE
 10137                 CONTINUE
@@ -895,7 +898,7 @@ C
                     YTVU=YTOU
                     XTID=XTND
                     YTID=YTND
-                    ASSIGN 10141 TO L10133
+                    L10133=    2
                     GO TO 10133
 10141               CONTINUE
                     IJMP=2
@@ -932,6 +935,7 @@ C
      +                     RWRK(IR01+MPLS+1),RWRK(IR01+2*MPLS+1),
      +                     RWRK(IR01+3*MPLS+1),RWRK(IR01+4*MPLS+1),
      +                     ABS(T2DS),1,SBFS)
+              IF (ICFELL('CPTRCL',10).NE.0) RETURN
 10143       CONTINUE
 C
             XELS=RWRK(IR01+NPLS)
@@ -940,6 +944,7 @@ C
      +                   RWRK(IR01+MPLS+1),RWRK(IR01+2*MPLS+1),
      +                   RWRK(IR01+3*MPLS+1),RWRK(IR01+4*MPLS+1),
      +                   ABS(T2DS),1,SELS)
+            IF (ICFELL('CPTRCL',11).NE.0) RETURN
 C
 C
 10114   CONTINUE
@@ -949,7 +954,7 @@ C
 C
 C Done.
 C
-      GO TO L10057 , (10103,10100,10091,10082,10063,10056)
+      GO TO (10056,10063,10082,10091,10100,10103) , L10057
 C
 C The following internal procedure is invoked when an unusually large
 C jump in the position of mapped points on the contour line is seen.
@@ -974,6 +979,7 @@ C
           YT3D=(YT1D+YT2D)/2.
           CALL CPMPXY (IMPF,XAT1+RZDM*(XT3D-1.),YAT1+RZDN*(YT3D-1.),
      +                                                      XT3U,YT3U)
+          IF (ICFELL('CPTRCL',12).NE.0) RETURN
           IF (.NOT.(OORV.EQ.0..OR.(XT3U.NE.OORV.AND.YT3U.NE.OORV)))
      +    GO TO 10145
             DST1=ABS(XT3U-XT1U)+ABS(YT3U-YT1U)
@@ -1002,7 +1008,7 @@ C
             YTVU=YTOU
             XTID=XT3D
             YTID=YT3D
-            ASSIGN 10150 TO L10133
+            L10133=    3
             GO TO 10133
 10150       CONTINUE
             IJMP=4
@@ -1018,7 +1024,7 @@ C
             YTVD=YTND
             XTVU=XTNU
             YTVU=YTNU
-            ASSIGN 10151 TO L10133
+            L10133=    4
             GO TO 10133
 10151       CONTINUE
             ITMP=1000
@@ -1041,7 +1047,7 @@ C
           RWRK(IR01+6*MPLS+1)=YT2U
           TUDN=0.
 10152   CONTINUE
-      GO TO L10139 , (10138)
+      GO TO (10138) , L10139
 C
 C Given two points in the unmapped user coordinate system, one of
 C which maps to a visible point and the other of which maps to an
@@ -1054,6 +1060,7 @@ C
           XTHD=(XTVD+XTID)/2.
           YTHD=(YTVD+YTID)/2.
           CALL CPMPXY (IMPF,XTHD,YTHD,XTHU,YTHU)
+          IF (ICFELL('CPTRCL',13).NE.0) RETURN
           IF (.NOT.(XTHU.NE.OORV.AND.YTHU.NE.OORV)) GO TO 10154
             IF (XTHD.EQ.XTVD.AND.YTHD.EQ.YTVD) GO TO 10155
             XTVD=XTHD
@@ -1073,6 +1080,6 @@ C
         NOUT=NOUT+1
         RWRK(IR01+5*MPLS+NOUT)=XTVU
         RWRK(IR01+6*MPLS+NOUT)=YTVU
-      GO TO L10133 , (10151,10150,10141,10132)
+      GO TO (10132,10141,10150,10151) , L10133
 C
       END

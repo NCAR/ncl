@@ -1,8 +1,5 @@
 C
-C	$Id: cpsps2.f,v 1.1.1.1 1992-04-17 22:32:47 ncargd Exp $
-C
-C
-C-----------------------------------------------------------------------
+C $Id: cpsps2.f,v 1.2 1994-03-17 01:52:11 kennison Exp $
 C
       SUBROUTINE CPSPS2 (XSPS,YSPS,ZSPS,KSPS,MSPS,NSPS,RWRK,KRWK,IWRK,
      +                   KIWK,ZDAT,KZDT)
@@ -86,7 +83,7 @@ C
       COMMON /CPCOM2/ TXCF,TXHI,TXIL,TXLO
       CHARACTER*13 CHEX
       CHARACTER*40 CLBL
-      CHARACTER*32 CLDP
+      CHARACTER*128 CLDP
       CHARACTER*500 CTMA,CTMB
       CHARACTER*8 FRMT
       CHARACTER*40 TXCF
@@ -95,10 +92,17 @@ C
       CHARACTER*20 TXLO
       SAVE   /CPCOM2/
 C
+C Check for an uncleared prior error.
+C
+      IF (ICFELL('CPSPS2 - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+C
 C If no CONPACK routine has been called before, initialize required
 C constants.
 C
-      IF (INIT.EQ.0) CALL CPINRC
+      IF (INIT.EQ.0) THEN
+        CALL CPINRC
+        IF (ICFELL('CPSPS2',2).NE.0) RETURN
+      END IF
 C
 C If the user has not provided the dimensions of the dense array,
 C compute them; otherwise, check the supplied values for errors.
@@ -113,8 +117,8 @@ C
         IF (IZD1.LT.IZDM.OR.IZDM.LT.2.OR.IZDN.LT.2.OR.IZDM*IZDN.GT.KZDT)
      + THEN
           CALL SETER ('CPSPS2 - IZD1, IZDM, OR IZDN SET INCORRECTLY',
-     +                                                            1,2)
-          STOP
+     +                                                            3,1)
+          RETURN
         END IF
       END IF
 C

@@ -1,8 +1,5 @@
 C
-C	$Id: cpdrpl.f,v 1.1.1.1 1992-04-17 22:32:44 ncargd Exp $
-C
-C
-C-----------------------------------------------------------------------
+C $Id: cpdrpl.f,v 1.2 1994-03-17 01:50:46 kennison Exp $
 C
       SUBROUTINE CPDRPL (XCS,YCS,NCS,IAI,IAG,NAI)
 C
@@ -58,7 +55,7 @@ C
       COMMON /CPCOM2/ TXCF,TXHI,TXIL,TXLO
       CHARACTER*13 CHEX
       CHARACTER*40 CLBL
-      CHARACTER*32 CLDP
+      CHARACTER*128 CLDP
       CHARACTER*500 CTMA,CTMB
       CHARACTER*8 FRMT
       CHARACTER*40 TXCF
@@ -82,8 +79,10 @@ C
       IF (IDR.NE.0) THEN
         IF (IDUF.EQ.0) THEN
           CALL CURVE  (XCS,YCS,NCS)
+          IF (ICFELL('CPDRPL',1).NE.0) RETURN
         ELSE
           CALL CURVED (XCS,YCS,NCS)
+          IF (ICFELL('CPDRPL',2).NE.0) RETURN
         END IF
       END IF
 C

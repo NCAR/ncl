@@ -1,8 +1,5 @@
 C
-C	$Id: cppklp.f,v 1.1.1.1 1992-04-17 22:32:45 ncargd Exp $
-C
-C
-C-----------------------------------------------------------------------
+C $Id: cppklp.f,v 1.2 1994-03-17 01:51:36 kennison Exp $
 C
       SUBROUTINE CPPKLP (ZDAT,RWRK,IWRK)
 C
@@ -61,7 +58,7 @@ C
       COMMON /CPCOM2/ TXCF,TXHI,TXIL,TXLO
       CHARACTER*13 CHEX
       CHARACTER*40 CLBL
-      CHARACTER*32 CLDP
+      CHARACTER*128 CLDP
       CHARACTER*500 CTMA,CTMB
       CHARACTER*8 FRMT
       CHARACTER*40 TXCF
@@ -70,16 +67,21 @@ C
       CHARACTER*20 TXLO
       SAVE   /CPCOM2/
 C
+C Check for an uncleared prior error.
+C
+      IF (ICFELL('CPPKLP - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+C
 C If initialization has not been done, log an error and quit.
 C
       IF (INIT.EQ.0) THEN
-        CALL SETER ('CPPKLP - INITIALIZATION CALL NOT DONE',1,2)
-        STOP
+        CALL SETER ('CPPKLP - INITIALIZATION CALL NOT DONE',2,1)
+        RETURN
       END IF
 C
 C Do the proper SET call.
 C
       CALL SET (XVPL,XVPR,YVPB,YVPT,XWDL,XWDR,YWDB,YWDT,LNLG)
+      IF (ICFELL('CPPKLP',3).NE.0) RETURN
 C
 C If the constant-field flag is set, do nothing.
 C
@@ -92,7 +94,9 @@ C
 C Make sure contour labels are completely defined.
 C
       CALL CPPKLB (ZDAT,RWRK,IWRK)
+      IF (ICFELL('CPPKLP',4).NE.0) RETURN
       CALL CPSTLS (ZDAT,RWRK,IWRK)
+      IF (ICFELL('CPPKLP',5).NE.0) RETURN
 C
 C This routine only does something meaningful if labels are being
 C positioned along the contour lines using the regular scheme or the
@@ -107,6 +111,7 @@ C
 C Add the informational label, if any, to the list.
 C
       CALL CPINLB (ZDAT,RWRK,IWRK,1,IWRK)
+      IF (ICFELL('CPPKLP',6).NE.0) RETURN
 C
 C Save the index of the high/low labels.
 C
@@ -115,6 +120,7 @@ C
 C Add the high/low labels, if any, to the list.
 C
       CALL CPHLLB (ZDAT,RWRK,IWRK,1,IWRK)
+      IF (ICFELL('CPPKLP',7).NE.0) RETURN
 C
 C Save the index of the contour-line labels.
 C
@@ -127,8 +133,9 @@ C
         IGRM=MAX(10,INT(SQRT(RWTH*REAL(LRWG))))
         IGRN=MAX(10,LRWG/IGRM)
         CALL CPGRWS (RWRK,2,IGRM*IGRN,IWSE)
-        IF (IWSE.NE.0) RETURN
+        IF (IWSE.NE.0.OR.ICFELL('CPPKLP',8).NE.0) RETURN
         CALL CPCPAG (ZDAT,RWRK)
+        IF (ICFELL('CPPKLP',9).NE.0) RETURN
       END IF
 C
 C If the label-positioning flag is positive, force 2D smoothing off
@@ -154,11 +161,14 @@ C
 10004       CONTINUE
               CALL CPTRCL (ZDAT,RWRK,IWRK,CLEV(ICLV),IJMP,IRW1,IRW2,
      +                                                           NRWK)
+              IF (ICFELL('CPPKLP',10).NE.0) RETURN
               IF (IJMP.EQ.0) GO TO 10005
               IF (ABS(IPLL).EQ.2) THEN
                 CALL CPPLAR (RWRK,IRW1,IRW2,NRWK)
+                IF (ICFELL('CPPKLP',11).NE.0) RETURN
               ELSE
                 CALL CPPLPS (RWRK,IRW1,IRW2,NRWK)
+                IF (ICFELL('CPPKLP',12).NE.0) RETURN
               END IF
             GO TO 10004
 10005       CONTINUE

@@ -1,8 +1,5 @@
 C
-C	$Id: cptrve.f,v 1.1.1.1 1992-04-17 22:32:52 ncargd Exp $
-C
-C
-C-----------------------------------------------------------------------
+C $Id: cptrve.f,v 1.2 1994-03-17 01:52:30 kennison Exp $
 C
       SUBROUTINE CPTRVE (ZDAT,RWRK,IWRK,IJMP,IAIC,IRW1,IRW2,NRWK)
 C
@@ -84,7 +81,7 @@ C
       COMMON /CPCOM2/ TXCF,TXHI,TXIL,TXLO
       CHARACTER*13 CHEX
       CHARACTER*40 CLBL
-      CHARACTER*32 CLDP
+      CHARACTER*128 CLDP
       CHARACTER*500 CTMA,CTMB
       CHARACTER*8 FRMT
       CHARACTER*40 TXCF
@@ -106,7 +103,7 @@ C Assign space to use for storing the X and Y coordinates of points.
 C
       MPLS=LRWC
       CALL CPGRWS (RWRK,1,2*MPLS,IWSE)
-      IF (IWSE.NE.0) RETURN
+      IF (IWSE.NE.0.OR.ICFELL('CPTRVE',1).NE.0) RETURN
 C
 C Compute required constants.  By default, we work with a grid of
 C approximately 2500 boxes in the current viewport; each of the boxes
@@ -130,7 +127,12 @@ C Define the first search point.
 C
       IVBX=1
       IVBY=1
-      CALL CPMPXY (-IMPF,CFUX(XVPL),CFUY(YVPB),XPRN,YPRN)
+      XDUM=CFUX(XVPL)
+      IF (ICFELL('CPTRVE',2).NE.0) RETURN
+      YDUM=CFUY(YVPB)
+      IF (ICFELL('CPTRVE',3).NE.0) RETURN
+      CALL CPMPXY (-IMPF,XDUM,YDUM,XPRN,YPRN)
+      IF (ICFELL('CPTRVE',4).NE.0) RETURN
 C
 C Search the viewport for pieces of the visible/invisible edge.  We
 C first search the edges of the viewport for open-ended pieces and
@@ -147,12 +149,16 @@ C
       IF (.NOT.(IVBX.LT.IIDM)) GO TO 10002
         IVBX=IVBX+1
         XPRP=XPRN
-        CALL CPMPXY (-IMPF,CFUX(XVPL+RIDM*REAL(IVBX-1)),
-     +                     CFUY(YVPB                  ),XPRN,YPRN)
+        XDUM=CFUX(XVPL+RIDM*REAL(IVBX-1))
+        IF (ICFELL('CPTRVE',5).NE.0) RETURN
+        YDUM=CFUY(YVPB)
+        IF (ICFELL('CPTRVE',6).NE.0) RETURN
+        CALL CPMPXY (-IMPF,XDUM,YDUM,XPRN,YPRN)
+        IF (ICFELL('CPTRVE',7).NE.0) RETURN
         IF (.NOT.(XPRP.EQ.OORV.AND.XPRN.NE.OORV)) GO TO 10003
           IOCF=0
           INCI=1
-          ASSIGN 10004 TO L10005
+          L10005=    1
           GO TO 10005
 10004     CONTINUE
 10003   CONTINUE
@@ -163,12 +169,16 @@ C
       IF (.NOT.(IVBY.LT.IIDN)) GO TO 10007
         IVBY=IVBY+1
         XPRP=XPRN
-        CALL CPMPXY (-IMPF,CFUX(XVPL+RIDM*REAL(IIDM-1)),
-     +                     CFUY(YVPB+RIDN*REAL(IVBY-1)),XPRN,YPRN)
+        XDUM=CFUX(XVPL+RIDM*REAL(IIDM-1))
+        IF (ICFELL('CPTRVE',8).NE.0) RETURN
+        YDUM=CFUY(YVPB+RIDN*REAL(IVBY-1))
+        IF (ICFELL('CPTRVE',9).NE.0) RETURN
+        CALL CPMPXY (-IMPF,XDUM,YDUM,XPRN,YPRN)
+        IF (ICFELL('CPTRVE',10).NE.0) RETURN
         IF (.NOT.(XPRP.EQ.OORV.AND.XPRN.NE.OORV)) GO TO 10008
           IOCF=0
           INCI=7
-          ASSIGN 10009 TO L10005
+          L10005=    2
           GO TO 10005
 10009     CONTINUE
 10008   CONTINUE
@@ -179,12 +189,16 @@ C
       IF (.NOT.(IVBX.GT.1)) GO TO 10011
         IVBX=IVBX-1
         XPRP=XPRN
-        CALL CPMPXY (-IMPF,CFUX(XVPL+RIDM*REAL(IVBX-1)),
-     +                     CFUY(YVPB+RIDN*REAL(IIDN-1)),XPRN,YPRN)
+        XDUM=CFUX(XVPL+RIDM*REAL(IVBX-1))
+        IF (ICFELL('CPTRVE',11).NE.0) RETURN
+        YDUM=CFUY(YVPB+RIDN*REAL(IIDN-1))
+        IF (ICFELL('CPTRVE',12).NE.0) RETURN
+        CALL CPMPXY (-IMPF,XDUM,YDUM,XPRN,YPRN)
+        IF (ICFELL('CPTRVE',13).NE.0) RETURN
         IF (.NOT.(XPRP.EQ.OORV.AND.XPRN.NE.OORV)) GO TO 10012
           IOCF=0
           INCI=5
-          ASSIGN 10013 TO L10005
+          L10005=    3
           GO TO 10005
 10013     CONTINUE
 10012   CONTINUE
@@ -195,12 +209,16 @@ C
       IF (.NOT.(IVBY.GT.1)) GO TO 10015
         IVBY=IVBY-1
         XPRP=XPRN
-        CALL CPMPXY (-IMPF,CFUX(XVPL                  ),
-     +                     CFUY(YVPB+RIDN*REAL(IVBY-1)),XPRN,YPRN)
+        XDUM=CFUX(XVPL)
+        IF (ICFELL('CPTRVE',14).NE.0) RETURN
+        YDUM=CFUY(YVPB+RIDN*REAL(IVBY-1))
+        IF (ICFELL('CPTRVE',15).NE.0) RETURN
+        CALL CPMPXY (-IMPF,XDUM,YDUM,XPRN,YPRN)
+        IF (ICFELL('CPTRVE',16).NE.0) RETURN
         IF (.NOT.(XPRP.EQ.OORV.AND.XPRN.NE.OORV)) GO TO 10016
           IOCF=0
           INCI=3
-          ASSIGN 10017 TO L10005
+          L10005=    4
           GO TO 10005
 10017     CONTINUE
 10016   CONTINUE
@@ -213,8 +231,12 @@ C
         IVBY =IVBY +1
 10020   CONTINUE
         IF (IVBY .GT.(IIDN-1)) GO TO 10019
+        XDUM=CFUX(XVPL)
+        IF (ICFELL('CPTRVE',17).NE.0) RETURN
         RVBY=CFUY(YVPB+RIDN*REAL(IVBY-1))
-        CALL CPMPXY (-IMPF,CFUX(XVPL),RVBY,XPRN,YPRN)
+        IF (ICFELL('CPTRVE',18).NE.0) RETURN
+        CALL CPMPXY (-IMPF,XDUM,RVBY,XPRN,YPRN)
+        IF (ICFELL('CPTRVE',19).NE.0) RETURN
           IVBX = 2
           GO TO 10023
 10021     CONTINUE
@@ -222,8 +244,10 @@ C
 10023     CONTINUE
           IF (IVBX .GT.(IIDM)) GO TO 10022
           XPRP=XPRN
-          CALL CPMPXY (-IMPF,CFUX(XVPL+RIDM*REAL(IVBX-1)),
-     +                                             RVBY,XPRN,YPRN)
+          XDUM=CFUX(XVPL+RIDM*REAL(IVBX-1))
+          IF (ICFELL('CPTRVE',20).NE.0) RETURN
+          CALL CPMPXY (-IMPF,XDUM,RVBY,XPRN,YPRN)
+          IF (ICFELL('CPTRVE',21).NE.0) RETURN
           IF (.NOT.(XPRP.EQ.OORV.AND.XPRN.NE.OORV)) GO TO 10024
             IPXY=IIDN*IVBX+IVBY
             DO 10025 I=1,NHSS
@@ -231,13 +255,13 @@ C
 10025       CONTINUE
             IF (.NOT.(NHSS.GE.LI01)) GO TO 10026
               CALL CPGIWS (IWRK,1,LI01+100,IWSE)
-              IF (IWSE.NE.0) GO TO 102
+              IF (IWSE.NE.0.OR.ICFELL('CPTRVE',22).NE.0) GO TO 102
 10026       CONTINUE
             NHSS=NHSS+1
             IWRK(II01+NHSS)=IPXY
             IOCF=1
             INCI=1
-            ASSIGN 10027 TO L10005
+            L10005=    5
             GO TO 10005
 10027       CONTINUE
   101     CONTINUE
@@ -275,7 +299,7 @@ C
         IVEX=IVBX+INCX(INCI)
         IVEY=IVBY+INCY(INCI)
 C
-        ASSIGN 10028 TO L10029
+        L10029=    1
         GO TO 10029
 10028   CONTINUE
 C
@@ -289,8 +313,12 @@ C
           IF (IVEX.LT.1.OR.IVEX.GT.IIDM.OR.IVEY.LT.1.OR.IVEY.GT.IIDN)
      +    GO TO 10031
 C
-          CALL CPMPXY (-IMPF,CFUX(XVPL+RIDM*REAL(IVEX-1)),
-     +                       CFUY(YVPB+RIDN*REAL(IVEY-1)),XTMP,YTMP)
+          XDUM=CFUX(XVPL+RIDM*REAL(IVEX-1))
+          IF (ICFELL('CPTRVE',23).NE.0) RETURN
+          YDUM=CFUY(YVPB+RIDN*REAL(IVEY-1))
+          IF (ICFELL('CPTRVE',24).NE.0) RETURN
+          CALL CPMPXY (-IMPF,XDUM,YDUM,XTMP,YTMP)
+          IF (ICFELL('CPTRVE',25).NE.0) RETURN
           IF (.NOT.(XTMP.NE.OORV)) GO TO 10032
 C
             IVBX=IVEX
@@ -301,14 +329,14 @@ C
 10032     CONTINUE
           IF (.NOT.((INCI/2)*2.NE.INCI)) GO TO 10034
 C
-            ASSIGN 10035 TO L10029
+            L10029=    2
             GO TO 10029
 10035       CONTINUE
 C
             IF (.NOT.(INCI.EQ.1)) GO TO 10036
               IF (.NOT.(NHSS.GE.LI01)) GO TO 10037
                 CALL CPGIWS (IWRK,1,LI01+100,IWSE)
-                IF (IWSE.NE.0) GO TO 102
+                IF (IWSE.NE.0.OR.ICFELL('CPTRVE',26).NE.0) GO TO 102
 10037         CONTINUE
               NHSS=NHSS+1
               IWRK(II01+NHSS)=IIDN*IVBX+IVBY
@@ -335,7 +363,7 @@ C
   103   IVBX=MVBX
         IVBY=MVBY
 C
-      GO TO L10005 , (10027,10017,10013,10009,10004)
+      GO TO (10004,10009,10013,10017,10027) , L10005
 C
 C The following procedure, given a point on either side of the limb,
 C uses a binary-halving technique to determine a point on the limb and
@@ -349,7 +377,12 @@ C
 C
         XCVF=XVPL+RIDM*REAL(IVBX-1)
         YCVF=YVPB+RIDN*REAL(IVBY-1)
-        CALL CPMPXY (-IMPF,CFUX(XCVF),CFUY(YCVF),XCVD,YCVD)
+        XDUM=CFUX(XCVF)
+        IF (ICFELL('CPTRVE',27).NE.0) RETURN
+        YDUM=CFUY(YCVF)
+        IF (ICFELL('CPTRVE',28).NE.0) RETURN
+        CALL CPMPXY (-IMPF,XDUM,YDUM,XCVD,YCVD)
+        IF (ICFELL('CPTRVE',29).NE.0) RETURN
 C
         XCIF=XVPL+RIDM*REAL(IVEX-1)
         YCIF=YVPB+RIDN*REAL(IVEY-1)
@@ -359,7 +392,12 @@ C
 10039   CONTINUE
           XCHF=(XCVF+XCIF)/2.
           YCHF=(YCVF+YCIF)/2.
-          CALL CPMPXY (-IMPF,CFUX(XCHF),CFUY(YCHF),XCHD,YCHD)
+          XDUM=CFUX(XCHF)
+          IF (ICFELL('CPTRVE',30).NE.0) RETURN
+          YDUM=CFUY(YCHF)
+          IF (ICFELL('CPTRVE',31).NE.0) RETURN
+          CALL CPMPXY (-IMPF,XDUM,YDUM,XCHD,YCHD)
+          IF (ICFELL('CPTRVE',32).NE.0) RETURN
           IF (.NOT.(XCHD.NE.OORV)) GO TO 10040
             IF (XCHF.EQ.XCVF.AND.YCHF.EQ.YCVF) GO TO 10041
             XCVF=XCHF
@@ -438,9 +476,12 @@ C
 10043   CONTINUE
 C
         IF (.NOT.(NPLS.NE.0)) GO TO 10056
-          IF (.NOT.(ABS(XCVF-CUFX(RWRK(IR01+NPLS))).LE..0001*ABS(XVPR-XV
-     +PL).AND.ABS(YCVF-CUFY(RWRK(IR01+MPLS+NPLS))).LE..0001*ABS(YVPT-YVP
-     +B)))GO TO 10057
+          XDUM=CUFX(RWRK(IR01+     NPLS))
+          IF (ICFELL('CPTRVE',33).NE.0) RETURN
+          YDUM=CUFY(RWRK(IR01+MPLS+NPLS))
+          IF (ICFELL('CPTRVE',34).NE.0) RETURN
+          IF (.NOT.(ABS(XCVF-XDUM).LE..0001*ABS(XVPR-XVPL).AND.ABS(YCVF-
+     +YDUM).LE..0001*ABS(YVPT-YVPB))) GO TO 10057
             IF (NPLS.EQ.1) GO TO 108
             NPLS=NPLS-1
 10057     CONTINUE
@@ -462,9 +503,11 @@ C
 C
         NPLS=NPLS+1
         RWRK(IR01     +NPLS)=CFUX(XCVF)
+        IF (ICFELL('CPTRVE',35).NE.0) RETURN
         RWRK(IR01+MPLS+NPLS)=CFUY(YCVF)
+        IF (ICFELL('CPTRVE',36).NE.0) RETURN
 C
   108 CONTINUE
-      GO TO L10029 , (10035,10028)
+      GO TO (10028,10035) , L10029
 C
       END

@@ -1,8 +1,5 @@
 C
-C	$Id: cpscae.f,v 1.1.1.1 1992-04-17 22:32:52 ncargd Exp $
-C
-C
-C-----------------------------------------------------------------------
+C $Id: cpscae.f,v 1.2 1994-03-17 01:51:52 kennison Exp $
 C
       SUBROUTINE CPSCAE (ICRA,ICA1,ICAM,ICAN,XCPF,YCPF,XCQF,YCQF,
      +                                       IND1,IND2,ICAF,IAID)

@@ -1,8 +1,5 @@
 C
-C	$Id: cpinit.f,v 1.1.1.1 1992-04-17 22:32:48 ncargd Exp $
-C
-C
-C-----------------------------------------------------------------------
+C $Id: cpinit.f,v 1.2 1994-03-17 01:51:10 kennison Exp $
 C
       SUBROUTINE CPINIT (ZDAT,RWRK,IWRK)
 C
@@ -52,7 +49,7 @@ C
       COMMON /CPCOM2/ TXCF,TXHI,TXIL,TXLO
       CHARACTER*13 CHEX
       CHARACTER*40 CLBL
-      CHARACTER*32 CLDP
+      CHARACTER*128 CLDP
       CHARACTER*500 CTMA,CTMB
       CHARACTER*8 FRMT
       CHARACTER*40 TXCF
@@ -89,6 +86,7 @@ C
       IF (ISET.EQ.0) THEN
 C
         CALL GETSET (XVPL,XVPR,YVPB,YVPT,XWDL,XWDR,YWDB,YWDT,LNLG)
+        IF (ICFELL('CPINIT',1).NE.0) RETURN
 C
       ELSE
 C
@@ -135,6 +133,7 @@ C
         END IF
 C
         CALL SET (XVPL,XVPR,YVPB,YVPT,XWDL,XWDR,YWDB,YWDT,LNLG)
+        IF (ICFELL('CPINIT',2).NE.0) RETURN
 C
       END IF
 C
@@ -158,16 +157,19 @@ C
             XTMP=XCFP
             YTMP=YCFP
             CALL CPMPXY (IMPF,XTMP,YTMP,XCFP,YCFP)
+            IF (ICFELL('CPINIT',3).NE.0) RETURN
             IF ((OORV.NE.0.).AND.(XCFP.EQ.OORV.OR.YCFP.EQ.OORV))
      +                                                       GO TO 101
             XTMP=XCLP
             YTMP=YCLP
             CALL CPMPXY (IMPF,XTMP,YTMP,XCLP,YCLP)
+            IF (ICFELL('CPINIT',4).NE.0) RETURN
             IF ((OORV.NE.0.).AND.(XCLP.EQ.OORV.OR.YCLP.EQ.OORV))
      +                                                       GO TO 101
             XTMP=XCPR
             YTMP=YCPR
             CALL CPMPXY (IMPF,XTMP,YTMP,XCPR,YCPR)
+            IF (ICFELL('CPINIT',5).NE.0) RETURN
             IF ((OORV.NE.0.).AND.(XCPR.EQ.OORV.OR.YCPR.EQ.OORV))
      +                                                       GO TO 101
             IF (ABS(XCLP-XCFP).LT..0001*ABS(XWDR-XWDL).AND.
@@ -293,6 +295,7 @@ C
 C Retrieve the current PLOTCHAR function code signal character.
 C
       CALL PCGETC ('FC',SCHR)
+      IF (ICFELL('CPINIT',6).NE.0) RETURN
 C
 C If highs and lows are to be labelled, attempt to make sure that the
 C string will be treated properly by PLOTCHAR.

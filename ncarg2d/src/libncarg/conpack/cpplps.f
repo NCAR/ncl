@@ -1,8 +1,5 @@
 C
-C	$Id: cpplps.f,v 1.2 1992-10-15 17:22:12 haley Exp $
-C
-C
-C-----------------------------------------------------------------------
+C $Id: cpplps.f,v 1.3 1994-03-17 01:51:40 kennison Exp $
 C
       SUBROUTINE CPPLPS (RWRK,IPTX,IPTY,NXYC)
 C
@@ -59,7 +56,7 @@ C
       COMMON /CPCOM2/ TXCF,TXHI,TXIL,TXLO
       CHARACTER*13 CHEX
       CHARACTER*40 CLBL
-      CHARACTER*32 CLDP
+      CHARACTER*128 CLDP
       CHARACTER*500 CTMA,CTMB
       CHARACTER*8 FRMT
       CHARACTER*40 TXCF
@@ -120,7 +117,9 @@ C system.
 C
       DO 10001 I=1,NXYC
         RWRK(IPTX+I)=CUFX(RWRK(IPTX+I))
+        IF (ICFELL('CPPLPS',1).NE.0) RETURN
         RWRK(IPTY+I)=CUFY(RWRK(IPTY+I))
+        IF (ICFELL('CPPLPS',2).NE.0) RETURN
 10001 CONTINUE
 C
 C Cull points that are too close to one another.
@@ -462,7 +461,7 @@ C
             CALL CPGRWS (RWRK,3,MAX(4*NLBS,LR03+100),IWSE)
             IPTX=IPTX-IS01+IR01
             IPTY=IPTY-IS01+IR01
-            IF (IWSE.NE.0) THEN
+            IF (IWSE.NE.0.OR.ICFELL('CPPLPS',3).NE.0) THEN
               NLBS=NLBS-1
               RETURN
             END IF

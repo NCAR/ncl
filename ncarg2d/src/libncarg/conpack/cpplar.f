@@ -1,8 +1,5 @@
 C
-C	$Id: cpplar.f,v 1.1.1.1 1992-04-17 22:32:48 ncargd Exp $
-C
-C
-C-----------------------------------------------------------------------
+C $Id: cpplar.f,v 1.2 1994-03-17 01:51:38 kennison Exp $
 C
       SUBROUTINE CPPLAR (RWRK,IPTX,IPTY,NXYC)
 C
@@ -59,7 +56,7 @@ C
       COMMON /CPCOM2/ TXCF,TXHI,TXIL,TXLO
       CHARACTER*13 CHEX
       CHARACTER*40 CLBL
-      CHARACTER*32 CLDP
+      CHARACTER*128 CLDP
       CHARACTER*500 CTMA,CTMB
       CHARACTER*8 FRMT
       CHARACTER*40 TXCF
@@ -87,7 +84,9 @@ C system.
 C
       DO 10001 I=1,NXYC
         RWRK(IPTX+I)=CUFX(RWRK(IPTX+I))
+        IF (ICFELL('CPPLAR',1).NE.0) RETURN
         RWRK(IPTY+I)=CUFY(RWRK(IPTY+I))
+        IF (ICFELL('CPPLAR',2).NE.0) RETURN
 10001 CONTINUE
 C
 C Initialize.  NLBI is the number of labels initially in the list, DATL
@@ -222,7 +221,7 @@ C
             CALL CPGRWS (RWRK,3,MAX(4*NLBS,LR03+100),IWSE)
             IPTX=IPTX-IS01+IR01
             IPTY=IPTY-IS01+IR01
-            IF (IWSE.NE.0) THEN
+            IF (IWSE.NE.0.OR.ICFELL('CPPLAR',3).NE.0) THEN
               NLBS=NLBS-1
               RETURN
             END IF

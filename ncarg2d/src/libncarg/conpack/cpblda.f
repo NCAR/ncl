@@ -1,53 +1,5 @@
 C
-C	$Id: cpblda.f,v 1.1.1.1 1992-04-17 22:32:42 ncargd Exp $
-C
-C***********************************************************************
-C C O N P A C K   -   I N T R O D U C T I O N
-C***********************************************************************
-C
-C This file contains the code of a contouring package called CONPACK.
-C Double-spaced headers like the one above set off the major portions
-C of the file.  Included are implementation instructions, user-level
-C routines, and internal routines.
-C
-C***********************************************************************
-C C O N P A C K   -   I M P L E M E N T A T I O N
-C***********************************************************************
-C
-C The master version of CONPACK is written in IFTRAN, an extended form
-C of FORTRAN which provides many conveniences.  Running it through the
-C IFTRAN preprocessor yields a standard FORTRAN 77 file, which is the
-C version distributed as a part of NCAR Graphics.  If the file in which
-C you are reading these words begins with
-C
-C    .OP LS=10000 LI=1 CB RT ES=< ET=> OC UC=0
-C
-C it is the IFTRAN version; otherwise, it is the FORTRAN 77 version.
-C
-C CONPACK requires various parts of the NCAR Graphics package to have
-C been implemented (in particular, it uses the support routines I1MACH,
-C SETER, MSKRV1, MSKRV2, MSBSF1, and MSBSF2, various routines from SPPS,
-C and the utility packages DASHCHAR and AREAS).
-C
-C The distributed FORTRAN version of CONPACK will handle up to 256
-C contour levels at a time, which is probably sufficient for most
-C purposes.  To increase this number, find all occurrences of the
-C strings "256", "257", "258", and "259" and increase them consistently.
-C (Array elements 257, 258, and 259 in the "contour level" arrays are
-C used to hold parameter values describing the edge of the grid, the
-C edge of the special-value area, if any, and the edge of the visible
-C area, if any, respectively.)
-C
-C The distributed FORTRAN version of CONPACK contains two variables
-C which are declared to be of type "CHARACTER*500".  This may be too
-C large for some compilers.  To change this in the FORTRAN version,
-C find all occurrences of the string "500" and change all but one
-C (which is part of a comment) to the largest value your compiler will
-C accept.
-C
-C***********************************************************************
-C C O N P A C K   -   B L O C K   D A T A   ( D E F A U L T S )
-C***********************************************************************
+C $Id: cpblda.f,v 1.2 1994-03-17 01:50:14 kennison Exp $
 C
       BLOCK DATA CPBLDA
 C
@@ -95,7 +47,7 @@ C
       COMMON /CPCOM2/ TXCF,TXHI,TXIL,TXLO
       CHARACTER*13 CHEX
       CHARACTER*40 CLBL
-      CHARACTER*32 CLDP
+      CHARACTER*128 CLDP
       CHARACTER*500 CTMA,CTMB
       CHARACTER*8 FRMT
       CHARACTER*40 TXCF

@@ -1,8 +1,5 @@
 C
-C	$Id: cplbam.f,v 1.1.1.1 1992-04-17 22:32:44 ncargd Exp $
-C
-C
-C-----------------------------------------------------------------------
+C $Id: cplbam.f,v 1.2 1994-03-17 01:51:18 kennison Exp $
 C
       SUBROUTINE CPLBAM (ZDAT,RWRK,IWRK,IAMA)
 C
@@ -64,7 +61,7 @@ C
       COMMON /CPCOM2/ TXCF,TXHI,TXIL,TXLO
       CHARACTER*13 CHEX
       CHARACTER*40 CLBL
-      CHARACTER*32 CLDP
+      CHARACTER*128 CLDP
       CHARACTER*500 CTMA,CTMB
       CHARACTER*8 FRMT
       CHARACTER*40 TXCF
@@ -73,27 +70,33 @@ C
       CHARACTER*20 TXLO
       SAVE   /CPCOM2/
 C
+C Check for an uncleared prior error.
+C
+      IF (ICFELL('CPLBAM - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+C
 C If initialization has not been done, log an error and quit.
 C
       IF (INIT.EQ.0) THEN
-        CALL SETER ('CPLBAM - INITIALIZATION CALL NOT DONE',1,2)
-        STOP
+        CALL SETER ('CPLBAM - INITIALIZATION CALL NOT DONE',2,1)
+        RETURN
       END IF
 C
 C Do the proper SET call.
 C
       CALL SET (XVPL,XVPR,YVPB,YVPT,XWDL,XWDR,YWDB,YWDT,LNLG)
+      IF (ICFELL('CPLBAM',3).NE.0) RETURN
 C
 C Make sure we have space for 10 coordinate values in real workspace 1.
 C
       CALL CPGRWS (RWRK,1,10,IWSE)
-      IF (IWSE.NE.0) GO TO 102
+      IF (IWSE.NE.0.OR.ICFELL('CPLBAM',4).NE.0) GO TO 102
 C
 C If the constant-field flag is set, put the constant-field message box
 C into the area map and quit.
 C
       IF (ICFF.NE.0) THEN
         CALL CPCFLB (2,RWRK,IAMA)
+        IF (ICFELL('CPLBAM',5).NE.0) RETURN
         GO TO 101
       END IF
 C
@@ -104,6 +107,7 @@ C forcing contour levels to be sorted.  Otherwise, just do the sort.
 C
       IF (NLBS.LE.0.AND.(ABS(IPLL).EQ.2.OR.ABS(IPLL).EQ.3)) THEN
         CALL CPPKLP (ZDAT,RWRK,IWRK)
+        IF (ICFELL('CPLBAM',6).NE.0) RETURN
       ELSE
         IF (NCLV.GT.0) CALL CPSORT (CLEV,NCLV,ICLP)
       END IF
@@ -113,13 +117,16 @@ C label and the high/low labels directly and quit.
 C
       IF (NLBS.LE.0) THEN
         CALL CPINLB (ZDAT,RWRK,IWRK,3,IAMA)
+        IF (ICFELL('CPLBAM',7).NE.0) RETURN
         CALL CPHLLB (ZDAT,RWRK,IWRK,3,IAMA)
+        IF (ICFELL('CPLBAM',8).NE.0) RETURN
         GO TO 101
       END IF
 C
 C Put label boxes in the area map.
 C
       CALL SET (XVPL,XVPR,YVPB,YVPT,XVPL,XVPR,YVPB,YVPT,1)
+      IF (ICFELL('CPLBAM',9).NE.0) RETURN
 C
       DO 10001 I=1,NLBS
         XCLB=RWRK(IR03+4*(I-1)+1)
@@ -150,15 +157,18 @@ C
         RWRK(IR01+ 9)=YCLB-DLLB*SALB+DTLB*CALB
         RWRK(IR01+10)=RWRK(IR01+6)
         CALL AREDAM (IAMA,RWRK(IR01+1),RWRK(IR01+6),5,IGLB,-1,0)
+        IF (ICFELL('CPLBAM',10).NE.0) RETURN
 10001 CONTINUE
 C
       CALL SET (XVPL,XVPR,YVPB,YVPT,XWDL,XWDR,YWDB,YWDT,LNLG)
+      IF (ICFELL('CPLBAM',11).NE.0) RETURN
 C
 C If the area map has no edges in it, something has gone wrong.  Put
 C a dummy rectangle in the area map to prevent problems which result.
 C
   101 IF (IAMA(7).EQ.0) THEN
         CALL SET (XVPL,XVPR,YVPB,YVPT,XVPL,XVPR,YVPB,YVPT,1)
+        IF (ICFELL('CPLBAM',12).NE.0) RETURN
         RWRK(IR01+ 1)=0.
         RWRK(IR01+ 2)=1.
         RWRK(IR01+ 3)=1.
@@ -170,7 +180,9 @@ C
         RWRK(IR01+ 9)=1.
         RWRK(IR01+10)=RWRK(IR01+6)
         CALL AREDAM (IAMA,RWRK(IR01+1),RWRK(IR01+6),5,IGLB,0,-1)
+        IF (ICFELL('CPLBAM',13).NE.0) RETURN
         CALL SET (XVPL,XVPR,YVPB,YVPT,XWDL,XWDR,YWDB,YWDT,LNLG)
+        IF (ICFELL('CPLBAM',14).NE.0) RETURN
       END IF
 C
 C Release real workspace 1.

@@ -1,8 +1,5 @@
 C
-C $Id: cphchm.f,v 1.2 1993-04-13 16:55:47 kennison Exp $
-C
-C
-C-----------------------------------------------------------------------
+C $Id: cphchm.f,v 1.3 1994-03-17 01:51:03 kennison Exp $
 C
       SUBROUTINE CPHCHM (RWRK,IPTX,IPTY,NXYC,IAMA,IWRK,RTPL)
 C
@@ -60,7 +57,7 @@ C
       COMMON /CPCOM2/ TXCF,TXHI,TXIL,TXLO
       CHARACTER*13 CHEX
       CHARACTER*40 CLBL
-      CHARACTER*32 CLDP
+      CHARACTER*128 CLDP
       CHARACTER*500 CTMA,CTMB
       CHARACTER*8 FRMT
       CHARACTER*40 TXCF
@@ -120,7 +117,9 @@ C
   101 CONTINUE
       DO 10002 I=1,NXYC
         RWRK(IPTX+I)=CUFX(RWRK(IPTX+I))
+        IF (ICFELL('CPHCHM',1).NE.0) RETURN
         RWRK(IPTY+I)=CUFY(RWRK(IPTY+I))
+        IF (ICFELL('CPHCHM',2).NE.0) RETURN
 10002 CONTINUE
 C
 C Compute the total length of the polyline.
@@ -163,12 +162,17 @@ C
           XCPT(2)=XCPT(1)-HCHD*(RWRK(IPTY+I+1)-RWRK(IPTY+I))/SLEN
           YCPT(2)=YCPT(1)+HCHD*(RWRK(IPTX+I+1)-RWRK(IPTX+I))/SLEN
           XCPT(1)=CFUX(XCPT(1))
+          IF (ICFELL('CPHCHM',3).NE.0) RETURN
           YCPT(1)=CFUY(YCPT(1))
+          IF (ICFELL('CPHCHM',4).NE.0) RETURN
           XCPT(2)=CFUX(XCPT(2))
+          IF (ICFELL('CPHCHM',5).NE.0) RETURN
           YCPT(2)=CFUY(YCPT(2))
+          IF (ICFELL('CPHCHM',6).NE.0) RETURN
           CALL ARDRLN (IAMA,XCPT,YCPT,2,
      +                 RWRK(IR02+1),RWRK(IR02+1+LRWM),LRWM,
      +                 IWRK(II02+1),IWRK(II02+1+LIWM),LIWM,RTPL)
+          IF (ICFELL('CPHCHM',7).NE.0) RETURN
           PNHM=PNHM+DBHM
         GO TO 10006
 10007   CONTINUE
