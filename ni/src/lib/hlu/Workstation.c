@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.92 1999-03-27 00:44:59 dbrown Exp $
+ *      $Id: Workstation.c,v 1.93 1999-03-29 18:31:40 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -4426,27 +4426,34 @@ WorkstationFill
 NhlBoolean LLUGksWorkIsOpen
 #if     NhlNeedProto
 (
+	NhlLayer l,
         int     gks_id
 )
 #else
-(gks_id)
+(l,gks_id)
+	NhlLayer l;
         int     gks_id;
 #endif
 {
         int i,wkid,numopen,errind,tmp = 1;
+	NhlWorkstationLayer wl = (NhlWorkstationLayer) l;
 
+	/*
+	 * can't use this check for Ncgm workstations because it could
+	 * be temporarily closed, and then it doesn't show up.
+	 */
+	if (wl->work.gkswkstype == 1)
+		return True;
 /* FORTRAN */ _NHLCALLF(gqopwk,GQOPWK)(&tmp,&errind,&numopen,&wkid);
         if(wkid == gks_id)
-                return(1);
-
-
+                return(True);
 
         for(i  = 2; i <= numopen; i++ ) {
 /* FORTRAN */ _NHLCALLF(gqopwk,GQOPWK)(&i,&errind,&tmp,&wkid);
                 if(wkid == gks_id)
-                        return(1);
+                        return(True);
         }
-        return(0);
+        return(False);
 }
 
 
@@ -5294,7 +5301,7 @@ _NhlAllocateColors
 	if(!wl->work.cmap_changed)
 		return ret;
 
-	if (!LLUGksWorkIsOpen(wl->work.gkswksid)) {
+	if (!LLUGksWorkIsOpen((NhlLayer)wl,wl->work.gkswksid)) {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
 			"Workstation with PID#%d is not open",wl->base.id);
 		return NhlFATAL;
@@ -5378,7 +5385,7 @@ NhlUpdateWorkstation
 			"PID#%d is not a Workstation Class object",workid);
 		return NhlFATAL;
 	}
-	if (!LLUGksWorkIsOpen(wl->work.gkswksid)) {
+	if (!LLUGksWorkIsOpen(l,wl->work.gkswksid)) {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
 			"Workstation with PID#%d is not open",workid);
 		return NhlFATAL;

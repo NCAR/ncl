@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.h,v 1.6 1999-03-27 00:44:59 dbrown Exp $
+ *      $Id: VectorPlot.h,v 1.7 1999-03-29 18:31:40 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -241,13 +241,7 @@ typedef enum _NhlVectorGlyphStyle {
 #define NhlCvcRefLengthF		"VcRefLengthF" 
 #define NhlCvcMinFracLengthF		"VcMinFracLengthF"
 
-#define NhlCvcLevels			"VcLevels"
 #define NhlCvcLevelCount		"VcLevelCount"		/* read-only */
-#define NhlCvcLevelSelectionMode	"VcLevelSelectionMode"
-#define NhlCvcMaxLevelCount		"VcMaxLevelCount"
-#define NhlCvcLevelSpacingF		"VcLevelSpacingF"
-#define NhlCvcMinLevelValF		"VcMinLevelValF"
-#define NhlCvcMaxLevelValF		"VcMaxLevelValF"
 #define NhlCvcLevelColors		"VcLevelColors"
 #define NhlCvcUseScalarArray		"VcUseScalarArray"
 #define NhlCvcScalarMissingValColor	"VcScalarMissingValColor"
@@ -288,9 +282,6 @@ typedef enum _NhlVectorGlyphStyle {
 #define NhlCvcRefAnnoString1		"VcRefAnnoString1"
 #define NhlCvcRefAnnoString2On		"VcRefAnnoString2On"
 #define NhlCvcRefAnnoString2		"VcRefAnnoString2"
-#define NhlCvcRefAnnoFormat		"VcRefAnnoFormat"
-#define NhlCvcRefAnnoPerimOn		"VcRefAnnoPerimOn"
-#define NhlCvcRefAnnoPerimSpaceF	"VcRefAnnoPerimSpaceF"
 
 #define NhlCvcRefAnnoZone		"VcRefAnnoZone"
 #define NhlCvcRefAnnoSide		"VcRefAnnoSide"
@@ -309,9 +300,6 @@ typedef enum _NhlVectorGlyphStyle {
 #define NhlCvcMinAnnoString1		"VcMinAnnoString1"
 #define NhlCvcMinAnnoString2On		"VcMinAnnoString2On"
 #define NhlCvcMinAnnoString2		"VcMinAnnoString2"
-#define NhlCvcMinAnnoFormat		"VcMinAnnoFormat"
-#define NhlCvcMinAnnoPerimOn		"VcMinAnnoPerimOn"
-#define NhlCvcMinAnnoPerimSpaceF	"VcMinAnnoPerimSpaceF"
 
 #define NhlCvcMinAnnoZone		"VcMinAnnoZone"
 #define NhlCvcMinAnnoSide		"VcMinAnnoSide"
@@ -323,9 +311,6 @@ typedef enum _NhlVectorGlyphStyle {
 #define NhlCvcNoDataLabelString		"VcNoDataLabelString"
 #define NhlCvcZeroFLabelOn		"VcZeroFLabelOn"
 #define NhlCvcZeroFLabelString		"VcZeroFLabelString"
-#define NhlCvcZeroFLabelFormat		"VcZeroFLabelFormat"
-#define NhlCvcZeroFLabelPerimOn		"VcZeroFLabelPerimOn"
-#define NhlCvcZeroFLabelPerimSpaceF	"VcZeroFLabelPerimSpaceF"
 
 #define NhlCvcZeroFLabelZone		"VcZeroFLabelZone"
 #define NhlCvcZeroFLabelSide		"VcZeroFLabelSide"
@@ -336,12 +321,10 @@ typedef enum _NhlVectorGlyphStyle {
 #define NhlCvcMagnitudeScalingMode	"VcMagnitudeScalingMode"
 #define NhlCvcMagnitudeScaleValueF	"VcMagnitudeScaleValueF"
 #define NhlCvcMagnitudeScaleFactorF	"VcMagnitudeScaleFactorF" /*ro*/
-#define NhlCvcMagnitudeFormat		"VcMagnitudeFormat"
 
 #define NhlCvcScalarValueScalingMode	"VcScalarValueScalingMode"
 #define NhlCvcScalarValueScaleValueF	"VcScalarValueScaleValueF"
 #define NhlCvcScalarValueScaleFactorF 	"VcScalarValueScaleFactorF" /*ro*/
-#define NhlCvcScalarValueFormat		"VcScalarValueFormat"
 
 #define NhlCvcExplicitLabelBarLabelsOn	"VcExplicitLabelBarLabelsOn"
 #define NhlCvcLabelBarEndLabelsOn	"VcLabelBarEndLabelsOn"
@@ -353,6 +336,13 @@ typedef enum _NhlVectorGlyphStyle {
  * These class resources have been eliminated
  */
 #if 0
+#define NhlCvcLevels			"VcLevels"
+#define NhlCvcLevelSelectionMode	"VcLevelSelectionMode"
+#define NhlCvcMaxLevelCount		"VcMaxLevelCount"
+#define NhlCvcLevelSpacingF		"VcLevelSpacingF"
+#define NhlCvcMinLevelValF		"VcMinLevelValF"
+#define NhlCvcMaxLevelValF		"VcMaxLevelValF"
+
 #define NhlCvcLineArrowThicknessF	"VcLineArrowThicknessF"
 #define NhlCvcLineArrowColor		"VcLineArrowColor"
 #define NhlCvcFillArrowFillColor	"VcFillArrowFillColor"
@@ -360,6 +350,9 @@ typedef enum _NhlVectorGlyphStyle {
 #define NhlCvcFillArrowEdgeThicknessF	"VcFillArrowEdgeThicknessF"
 #define NhlCvcWindBarbColor		"VcWindBarbColor"
 #define NhlCvcWindBarbLineThicknessF	"VcWindBarbLineThicknessF"
+#define NhlCvcRefAnnoFormat		"VcRefAnnoFormat"
+#define NhlCvcRefAnnoPerimOn		"VcRefAnnoPerimOn"
+#define NhlCvcRefAnnoPerimSpaceF	"VcRefAnnoPerimSpaceF"
 #define NhlCvcRefAnnoArrowLineColor	"VcRefAnnoArrowLineColor"
 #define NhlCvcRefAnnoArrowFillColor	"VcRefAnnoArrowFillColor"
 #define NhlCvcRefAnnoArrowEdgeColor	"VcRefAnnoArrowEdgeColor"
@@ -374,8 +367,11 @@ typedef enum _NhlVectorGlyphStyle {
 #define NhlCvcRefAnnoFuncCode		"VcRefAnnoFuncCode"
 #define NhlCvcRefAnnoAngleF		"VcRefAnnoAngleF"
 #define NhlCvcRefAnnoBackgroundColor	"VcRefAnnoBackgroundColor"
+#define NhlCvcMinAnnoPerimOn		"VcMinAnnoPerimOn"
+#define NhlCvcMinAnnoPerimSpaceF	"VcMinAnnoPerimSpaceF"
 #define NhlCvcRefAnnoPerimThicknessF	"VcRefAnnoPerimThicknessF"
 #define NhlCvcRefAnnoPerimColor		"VcRefAnnoPerimColor"
+#define NhlCvcMinAnnoFormat		"VcMinAnnoFormat"
 #define NhlCvcMinAnnoArrowLineColor	"VcMinAnnoArrowLineColor"
 #define NhlCvcMinAnnoArrowFillColor	"VcMinAnnoArrowFillColor"
 #define NhlCvcMinAnnoArrowEdgeColor	"VcMinAnnoArrowEdgeColor"
@@ -392,6 +388,7 @@ typedef enum _NhlVectorGlyphStyle {
 #define NhlCvcMinAnnoBackgroundColor	"VcMinAnnoBackgroundColor"
 #define NhlCvcMinAnnoPerimThicknessF	"VcMinAnnoPerimThicknessF"
 #define NhlCvcMinAnnoPerimColor		"VcMinAnnoPerimColor"
+#define NhlCvcZeroFLabelFormat		"VcZeroFLabelFormat"
 #define NhlCvcZeroFLabelFontHeightF	"VcZeroFLabelFontHeightF"
 #define NhlCvcZeroFLabelTextDirection	"VcZeroFLabelTextDirection"
 #define NhlCvcZeroFLabelFont		"VcZeroFLabelFont"
@@ -403,10 +400,14 @@ typedef enum _NhlVectorGlyphStyle {
 #define NhlCvcZeroFLabelAngleF		"VcZeroFLabelAngleF"
 #define NhlCvcZeroFLabelFuncCode	"VcZeroFLabelFuncCode"
 #define NhlCvcZeroFLabelBackgroundColor "VcZeroFLabelBackgroundColor"
+#define NhlCvcZeroFLabelPerimOn		"VcZeroFLabelPerimOn"
+#define NhlCvcZeroFLabelPerimSpaceF	"VcZeroFLabelPerimSpaceF"
 #define NhlCvcZeroFLabelPerimThicknessF "VcZeroFLabelPerimThicknessF"
 #define NhlCvcZeroFLabelPerimColor	"VcZeroFLabelPerimColor"
 #define NhlCvcLabelFontColor		"VcLabelFontColor"
 #define NhlCvcLabelFontHeightF		"VcLabelFontHeightF"
+#define NhlCvcMagnitudeFormat		"VcMagnitudeFormat"
+#define NhlCvcScalarValueFormat		"VcScalarValueFormat"
 
 #endif
 

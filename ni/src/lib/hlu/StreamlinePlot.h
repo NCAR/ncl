@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlot.h,v 1.5 1999-03-27 00:44:54 dbrown Exp $
+ *      $Id: StreamlinePlot.h,v 1.6 1999-03-29 18:31:35 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -115,12 +115,8 @@
 #define NhlCstMaxLevelValF		"StMaxLevelValF"
 
 
-#define NhlCstNoDataLabelOn		"StNoDataLabelOn"
 #define NhlCstNoDataLabelString		"StNoDataLabelString"
-#define NhlCstZeroFLabelOn		"StZeroFLabelOn"
 #define NhlCstZeroFLabelString		"StZeroFLabelString"
-#define NhlCstZeroFLabelFormat		"StZeroFLabelFormat"
-#define NhlCstZeroFLabelPerimSpaceF	"StZeroFLabelPerimSpaceF"
 
 #define NhlCstZeroFLabelZone		"StZeroFLabelZone"
 #define NhlCstZeroFLabelSide		"StZeroFLabelSide"
@@ -134,6 +130,8 @@
 #if 0
 #define NhlCstLineThicknessF		"StLineThicknessF"	/* LWD */
 #define NhlCstLineColor			"StLineColor"
+#define NhlCstNoDataLabelOn		"StNoDataLabelOn"
+#define NhlCstZeroFLabelOn		"StZeroFLabelOn"
 #define NhlCstZeroFLabelFontHeightF	"StZeroFLabelFontHeightF"
 #define NhlCstZeroFLabelTextDirection	"StZeroFLabelTextDirection"
 #define NhlCstZeroFLabelFont		"StZeroFLabelFont"
@@ -144,6 +142,7 @@
 #define NhlCstZeroFLabelConstantSpacingF "StZeroFLabelConstantSpacingF"
 #define NhlCstZeroFLabelAngleF		"StZeroFLabelAngleF"
 #define NhlCstZeroFLabelFuncCode	"StZeroFLabelFuncCode"
+#define NhlCstZeroFLabelPerimSpaceF	"StZeroFLabelPerimSpaceF"
 #define NhlCstZeroFLabelPerimOn		"StZeroFLabelPerimOn"
 #define NhlCstZeroFLabelBackgroundColor "StZeroFLabelBackgroundColor"
 #define NhlCstZeroFLabelPerimThicknessF "StZeroFLabelPerimThicknessF"
@@ -164,7 +163,6 @@
 #define NhlNstStreamlineFillColor		"stStreamlineFillColor"
 #define NhlNstStreamlineColors		"stStreamlineColors"
 #define NhlNstScalarMissingValColor	"stScalarMissingValColor"
-
 
 #define NhlNstMagnitudeScalingMode	"stMagnitudeScalingMode"
 #define NhlNstMagnitudeScaleValueF	"stMagnitudeScaleValueF"
@@ -192,12 +190,10 @@
 #define NhlCstMagnitudeScalingMode	"StMagnitudeScalingMode"
 #define NhlCstMagnitudeScaleValueF	"StMagnitudeScaleValueF"
 #define NhlCstMagnitudeScaleFactorF	"StMagnitudeScaleFactorF" /*ro*/
-#define NhlCstMagnitudeFormat		"StMagnitudeFormat"
 
 #define NhlCstScalarValueScalingMode	"StScalarValueScalingMode"
 #define NhlCstScalarValueScaleValueF	"StScalarValueScaleValueF"
 #define NhlCstScalarValueScaleFactorF 	"StScalarValueScaleFactorF" /*ro*/
-#define NhlCstScalarValueFormat		"StScalarValueFormat"
 
 #define NhlCstExplicitLabelBarLabelsOn	"StExplicitLabelBarLabelsOn"
 #define NhlCstLabelBarEndLabelsOn	"StLabelBarEndLabelsOn"
