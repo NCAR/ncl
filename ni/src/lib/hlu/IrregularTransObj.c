@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularTransObj.c,v 1.12 1994-12-16 20:04:16 boote Exp $
+ *      $Id: IrregularTransObj.c,v 1.13 1995-02-22 22:40:49 haley Exp $
  */
 /************************************************************************
 *									*
@@ -1238,7 +1238,7 @@ int nargs;
 					(void*)irp->x_coord_points,
 					irp->x_num_points * sizeof(float));
 			} else {
-				*((float*)args[i].value.ptrval) = NULL;
+				*((float**)args[i].value.ptrval) = NULL;
 			}
 		} 
 		if(args[i].quark == QtrXInterPoints) {
@@ -1248,7 +1248,7 @@ int nargs;
 					(void*)irp->x_inter_points,
 					irp->x_num_points * sizeof(float));
 			} else {
-				*((float*)args[i].value.ptrval) = NULL;
+				*((float**)args[i].value.ptrval) = NULL;
 			}
 		} 
 		if(args[i].quark == QtrYCoordPoints ) {
@@ -1258,7 +1258,7 @@ int nargs;
 					(void*)irp->y_coord_points,
 					irp->y_num_points * sizeof(float));
 			} else {
-				*((float*)args[i].value.ptrval) = NULL;
+				*((float**)args[i].value.ptrval) = NULL;
 			}
 		} 
 		if(args[i].quark == QtrYInterPoints) {
@@ -1268,7 +1268,7 @@ int nargs;
 					(void*)irp->y_inter_points,
 					irp->y_num_points * sizeof(float));
 			} else {
-				*((float*)args[i].value.ptrval) = NULL;
+				*((float**)args[i].value.ptrval) = NULL;
 			}
 		} 
 	}

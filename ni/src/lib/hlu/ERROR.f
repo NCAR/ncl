@@ -1,5 +1,5 @@
 C
-C $Id: ERROR.f,v 1.4 1994-09-20 19:49:48 haley Exp $
+C $Id: ERROR.f,v 1.5 1995-02-22 22:40:48 haley Exp $
 C
 C****************************************************************
 C								*
@@ -34,7 +34,7 @@ C
 
 	inquire(iunit,OPENED=opn,IOSTAT=ierr)
 	if(ierr .EQ. 0) then
-		if (opn .EQ. .TRUE.) then
+		if (opn .EQV. .TRUE.) then
 			iconn = 1
 		else
 			iconn = 0
