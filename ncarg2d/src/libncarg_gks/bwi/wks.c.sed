@@ -1,5 +1,5 @@
 /*
- *      $Id: wks.c.sed,v 1.14 1994-04-29 20:27:33 fred Exp $
+ *      $Id: wks.c.sed,v 1.15 1994-05-07 00:47:46 fred Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -79,6 +79,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <ncarg/c.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/types.h>
@@ -117,12 +118,15 @@ static struct
 
 /*************************************************************************
 *
-*	Function:	opnwks_(unit, string, status)
+*	Function:	opnwks_(unit, openf, string, status)
 *
 *			The filename contained in "string" is
-*			opened an associated with a fake Fortran
+*			opened and associated with a fake Fortran
 *			LU number, "unit". The argument "status"
 *			is loaded with a status code on return.
+*                       "openf" is a flag for the open mode:
+*			  = 0  open for reading only
+*			  = 1  truncate and open for reading and writing
 *
 *	Called From:	Mostly Fortran routines in the NCAR GKS library.
 *
@@ -133,19 +137,19 @@ static struct
 ************************************************************************/
 
 #ifdef cray
-opnwks_(unit, rdwt, fname_, status)
+opnwks_(unit, openf, fname_, status)
 	_fcd	fname_;
 #else
-int	opnwks_(unit, rdwt, fname, status)
+int	opnwks_(unit, openf, fname, status)
 	char	*fname;
 #endif
-	int	*unit, *rdwt, *status;
+	int	*unit, *openf, *status;
 {
 	int		i, pipes[2], stat;
 	char	*p;
 	int		default_bufsize;
 	int		bufsize = 0;
-	char	*otype;
+	char	*otype, *tpath, *tname;
 #ifdef cray
 	unsigned	length = _fcdlen(fname_);
 	char		*fname;
@@ -210,8 +214,15 @@ int	opnwks_(unit, rdwt, fname, status)
 		/* Output is a segment. */
 
 		mftab[*unit].type    = FILE_OUTPUT;
-		mftab[*unit].name    = malloc(strlen(fname)+1);
-		strcpy(mftab[*unit].name, fname);
+  		
+		/* Put the file in the NGTMPDIR directory */
+		tpath = (char *) GetNCARGPath(NGTMPDIR);
+		tname = malloc(strlen(tpath) + strlen("/") + strlen(fname) + 1);
+		(void) strcpy(tname, tpath);
+		(void) strcat(tname, "/");
+		(void) strcat(tname, fname);	
+		mftab[*unit].name    = tname;
+
 		mftab[*unit].segment = TRUE;
 	}
 	else {
@@ -330,7 +341,7 @@ int	opnwks_(unit, rdwt, fname, status)
 		 * read/write flag argument.  Files to be written will
 		 * be truncated if they exist.
 		 */
-		if (*rdwt == 0)  {
+		if (*openf == 0)  {
 			otype = "r";
 		}
 		else {
@@ -837,5 +848,56 @@ flswks_(unit, status)
 		*status = 304;
 	}
 
+	return(0);
+}
+
+/*************************************************************************
+*
+*       Function:       delfil_(string, status)
+*
+*                       The filename contained in "string" is
+*                       deleted from the file system.  This is
+*                       used for deleting segments that were
+*                       created during job execution (and hence
+*                       stored in the NGTMPDIR directory).
+*
+*       Called From:    Fortran routines in the NCAR GKS library.
+*
+*       Returns:        "status", which is always returned as "0".
+*                       Since this function may possibly be legally 
+*                       called with invalid file names, all errors
+*                       are ignored.  Does not return a meaningful 
+*                       function value.
+*
+************************************************************************/
+#ifdef cray
+delfil_(fname_, status)
+	_fcd	fname_;
+#else
+int	delfil_(fname, status)
+	char	*fname;
+#endif
+	int	*status;
+{
+	char	*tpath, *tname;
+#ifdef cray
+	unsigned	length = _fcdlen(fname_);
+	char		*fname;
+
+	fname = (char *)malloc(sizeof(char)*(length+1));
+	strcpy( fname, _fcdtocp(fname_), length );
+#endif
+	/*
+	 *  Any errors are ignored since this function may possibly
+	 *  be legally called with invalid file names.
+	 */
+	tpath = (char *) GetNCARGPath(NGTMPDIR);
+	tname = malloc(strlen(tpath) + strlen("/") + strlen(fname) + 1);
+	(void) strcpy(tname, tpath);
+	(void) strcat(tname, "/");
+	(void) strcat(tname, fname);	
+	(void) remove(tname);
+	free(tname);
+	*status = 0;
 	return(0);
 }

@@ -1,5 +1,5 @@
 C
-C	$Id: g01mio.f,v 1.4 1994-04-29 20:27:29 fred Exp $
+C	$Id: g01mio.f,v 1.5 1994-05-07 00:47:44 fred Exp $
 C
       SUBROUTINE G01MIO (OP, UNIT, FNAME, BUFFER, LENGTH, ERROR)
 C------------------------------------------------------------------------------
@@ -35,7 +35,7 @@ C
 C    INPUT PARAMETERS
 C      OP     - Operation:
 C                 = 1, open workstation for reading and writing on 
-C                      IABS(UNIT).
+C                      IABS(UNIT) - truncates existing files.
 C                 = 2, close workstation on IABS(UNIT).
 C                 = 3, write buffer to IABS(UNIT).
 C                 = 4, read IABS(UNIT) to buffer.
@@ -45,6 +45,7 @@ C                 = 6, position the record pointer to the previous
 C                      record.
 C                 = 7, flush the I/O buffers for UNIT.
 C                 = 8, open workstation for reading only on IABS(UNIT).
+C                 = 9, delete the segment whose file name is in FNAME.
 C      UNIT   - IABS(UNIT) is the Fortran LUN on which OP is to occur.
 C      FNAME  - filename used for open.
 C      BUFFER - buffer containing data for a read/write operation.
@@ -74,21 +75,20 @@ C
       CHARACTER*80      MPNAME
 C
 C  Local variables:  IAUNIT is the Fortran LUN.
-C                    IRDWTF is a read/write flag (0 for read only; 
-C                           1 for read and write).
+C                    IOPENF is a flag for the file open:
+C                             = 0  open read only; 
+C                             = 1  truncate and open for reading and writing
 C
-      INTEGER IAUNT,IRDWTF
-C
+      INTEGER IAUNT,IOPENF
 C
       ERROR = 0
-
       IAUNT = IABS(UNIT)
 
 C Open the workstation with filename FNAME
 
       IF (OP.EQ.1) THEN
-        IRDWTF = 1
-	CALL OPNWKS(IAUNT, IRDWTF, FNAME, ERROR)
+        IOPENF = 1
+	CALL OPNWKS(IAUNT, IOPENF, FNAME, ERROR)
 
 C Close the workstation attached to IAUNT
 
@@ -121,8 +121,11 @@ C Flush the I/O buffers for a given unit
 	CALL FLSWKS(IAUNT, ERROR)
 
       ELSE IF (OP.EQ.8) THEN
-        IRDWTF = 0
-	CALL OPNWKS(IAUNT, IRDWTF, FNAME, ERROR)
+        IOPENF = 0
+	CALL OPNWKS(IAUNT, IOPENF, FNAME, ERROR)
+
+      ELSE IF (OP.EQ.9) THEN
+	CALL DELFIL(FNAME, ERROR)
 
       ENDIF
 

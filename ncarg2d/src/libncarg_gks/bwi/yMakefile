@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.6 1993-11-01 17:40:54 boote Exp $
+#	$Id: yMakefile,v 1.7 1994-05-07 00:47:48 fred Exp $
 #
 
 MYNAME	= bwi
@@ -26,11 +26,14 @@ g01tx.o   g01wdr.o  g01wkt.o  gflcnv.o  giargs.o  ginlod.o  gkasci.o \
 gmflod.o  gmpart.o  gopnic.o  gputmd.o  gputni.o  gputpr.o  gputps.o  gtnlen.o \
 gupasf.o  gupdva.o  gupdvi.o  gupdvr.o 
 
+EXTRA_DEFINES   = -DNGTMPDIR='"$(NGTMPDIR)"'
+
 OTHER_SRCS = wks.c wks.h
 OTHER_OBJS = wks.o
 
 SOURCES = $(GENERIC_SRCS) $(OTHER_SRCS)
 OBJECTS = $(GENERIC_OBJS) $(OTHER_OBJS)
+
 
 PartialLibraryTarget(libncarg_gks.a, $(OBJECTS))
 PartialSourceLibraryTarget($(MYNAME),srcncarg_gks.a,$(SOURCES))
