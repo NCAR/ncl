@@ -1,5 +1,5 @@
 C
-C	$Id: cmpitm.f,v 1.2 1992-10-01 21:56:19 ncargd Exp $
+C	$Id: cmpitm.f,v 1.3 1992-12-17 23:39:34 haley Exp $
 C
 C
 C This program draws a map, then it draws the projection of a circle, 
@@ -123,7 +123,6 @@ C
      +	JLIM, PLIM1, PLIM2, PLIM3, PLIM4, GRD, MAP, LMAP)
 
 	EXTERNAL MASK2
-*	PARAMETER (LMAP=150000,NWRK=1000,ISIZ=5)
 	PARAMETER (NWRK=5000,ISIZ=2)
 
 	CHARACTER*2 PROJ, OUTLN, JLIM

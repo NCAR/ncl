@@ -1,5 +1,5 @@
 C
-C	$Id: cmpit.f,v 1.1 1992-09-29 16:10:02 ncargd Exp $
+C	$Id: cmpit.f,v 1.2 1992-12-17 23:39:32 haley Exp $
 C
       PARAMETER(IGRD=2)
       PARAMETER(M=180/IGRD,N=360/IGRD)
@@ -19,7 +19,6 @@ C
 	    LEFT  = (J+181)*1000 + (I+91)
 	    CALL MAPIT(REAL(I),REAL(J)     ,0)
 	    CALL MAPIT(REAL(I),REAL(J+IGRD),1)
-*	    CALL MAPIQ
  2	  CONTINUE
 	    CALL MAPIQ
  1	CONTINUE
@@ -31,7 +30,6 @@ C
 	  DO 4 J=-90,90-IGRD,IGRD
 	    CALL MAPIT(REAL(J),     REAL(I),0)
 	    CALL MAPIT(REAL(J+IGRD),REAL(I),1)
-*	    CALL MAPIQ
  4	  CONTINUE
 	    CALL MAPIQ
  3	CONTINUE

@@ -1,5 +1,5 @@
 C
-C	$Id: cmptit.f,v 1.2 1992-10-01 21:56:24 ncargd Exp $
+C	$Id: cmptit.f,v 1.3 1992-12-17 23:39:36 haley Exp $
 C
 	PROGRAM MAPTIT
 C
@@ -219,26 +219,3 @@ C
 	STOP
 C
 	END
-*	SUBROUTINE MAPEOD (NOUT,NSEG,IDLS,IDRS,NPTS,PNTS)
-C
-*	DIMENSION PNTS(*)
-C
-C This version of MAPEOD uses area identifiers for the outline
-C dataset 'CO' to suppress all but the major global land masses.
-C
-*	IF (IDLS.NE.  2.AND.IDRS.NE.  2) NPTS=0
-C
-*	IF (IDLS.NE.  1.AND.IDRS.NE.  1.AND.
-*     +    IDLS.NE.  3.AND.IDRS.NE.  3.AND.
-*     +    IDLS.NE. 11.AND.IDRS.NE. 11.AND.
-*     +    IDLS.NE. 79.AND.IDRS.NE. 79.AND.
-*     +    IDLS.NE. 99.AND.IDRS.NE. 99.AND.
-*     +    IDLS.NE.104.AND.IDRS.NE.104.AND.
-*     +    IDLS.NE.107.AND.IDRS.NE.107.AND.
-*     +    IDLS.NE.163.AND.IDRS.NE.163     ) NPTS=0
-C
-C Done.
-C
-*	RETURN
-C
-*	END
