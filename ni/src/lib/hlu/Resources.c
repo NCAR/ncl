@@ -1,5 +1,5 @@
 /*
- *      $Id: Resources.c,v 1.40 1998-10-24 01:38:23 dbrown Exp $
+ *      $Id: Resources.c,v 1.41 2000-06-07 21:44:29 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -157,9 +157,10 @@ _NhlConvertArg
      * as a long.  So, to get to the actual value, I treat the long as
      * an array of two ints, and pull off the second int.
 	 */
-	else if(_NhlIsSubtypeQ(charQ,name) ||
-			_NhlIsSubtypeQ(byteQ,name))
+	else if(_NhlIsSubtypeQ(charQ,name))
 		tmp.charval = (char)((int*)&arg->value.lngval)[1];
+	else if(_NhlIsSubtypeQ(byteQ,name))
+		tmp.byteval = (unsigned char)((int*)&arg->value.lngval)[1];
 	else if(_NhlIsSubtypeQ(shortQ,name))
 		tmp.shrtval = (short)((int*)&arg->value.lngval)[1];
 	else if(_NhlIsSubtypeQ(intQ,name))
@@ -170,9 +171,10 @@ _NhlConvertArg
 	 * In fact, it looks like it even works for the byte-swaped
 	 * 64 bit DEC Alpha.
 	 */
-	else if(_NhlIsSubtypeQ(charQ,name) ||
-			_NhlIsSubtypeQ(byteQ,name))
+	else if(_NhlIsSubtypeQ(charQ,name))
 		tmp.charval = (char)arg->value.intval;
+	else if (_NhlIsSubtypeQ(byteQ,name))
+		tmp.byteval = (unsigned char)arg->value.intval;
 	else if(_NhlIsSubtypeQ(shortQ,name))
 		tmp.shrtval = (short)arg->value.intval;
 	else if(_NhlIsSubtypeQ(intQ,name))

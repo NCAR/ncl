@@ -1,5 +1,5 @@
 /*
- *      $Id: Converters.c,v 1.51 1998-10-23 17:30:11 boote Exp $
+ *      $Id: Converters.c,v 1.52 2000-06-07 21:44:24 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1347,7 +1347,7 @@ CvtArgs									\
 }
 
 #define	_FromType(ftype,FTYPE,fext)\
-_ToType(ftype,FTYPE,fext,char,Byte)					\
+_ToType(ftype,FTYPE,fext,unsigned char,Byte)				\
 _ToType(ftype,FTYPE,fext,char,Character)				\
 _ToType(ftype,FTYPE,fext,double,Double)					\
 _ToType(ftype,FTYPE,fext,float,Float)					\
@@ -1360,7 +1360,7 @@ _ToType(ftype,FTYPE,fext,short,Short)
  * of these six types to each of these six types. These are all the
  * conversions that can be done using simple casts.
  */
-_FromType(char,Byte,char)
+_FromType(unsigned char,Byte,byte)
 _FromType(char,Character,char)
 _FromType(double,Double,dbl)
 _FromType(float,Float,flt)
@@ -1387,7 +1387,7 @@ CvtArgs
 		return NhlFATAL;
 	}
 
-	sprintf(buff,"%d",from->data.charval);
+	sprintf(buff,"%d",(unsigned char)from->data.byteval);
 	tstring = NhlConvertMalloc(sizeof(char) * (strlen(buff)+1));
 	if(tstring == NULL){
 		NHLPERROR((NhlFATAL,ENOMEM,NULL));
@@ -1572,7 +1572,7 @@ NhlCvtStringToByte
 CvtArgs
 {
 	char		func[] = "NhlCvtStringToByte";
-	char		tmp;
+	unsigned char	tmp;
 	NhlString	t2=NULL;
 	NrmValue	val;
 	NhlGenArray	sgen;
@@ -1592,7 +1592,7 @@ CvtArgs
 		return _NhlReConvertData(strgenQ,to->typeQ,&val,to);
 	}
 
-	tmp = (char)strtol(from->data.strval,&t2,10);
+	tmp = (unsigned char)strtol(from->data.strval,&t2,10);
 	if(!tmp && (from->data.strval == t2)){
 		NhlPError(NhlWARNING,NhlEUNKNOWN,"%s:Can't Convert \"%s\"",
 			func,from->data.strval);
@@ -1600,7 +1600,7 @@ CvtArgs
 		return NhlFATAL;
 	}
 
-	_NhlSetVal(char,sizeof(char),tmp);
+	_NhlSetVal(unsigned char,sizeof(unsigned char),tmp);
 }
 
 /*ARGSUSED*/
@@ -2235,7 +2235,7 @@ CvtArgs									\
 }
 
 #define	_FromArrType(ftype,FTYPE,fext)\
-_ToArrType(ftype,FTYPE,fext,char,Byte)					\
+_ToArrType(ftype,FTYPE,fext,unsigned char,Byte)				\
 _ToArrType(ftype,FTYPE,fext,char,Character)				\
 _ToArrType(ftype,FTYPE,fext,double,Double)				\
 _ToArrType(ftype,FTYPE,fext,float,Float)				\
@@ -2248,7 +2248,7 @@ _ToArrType(ftype,FTYPE,fext,short,Short)
  * of these six types to each of these six types. These are all the
  * conversions that can be done using simple casts.
  */
-_FromArrType(char,Byte,char)
+_FromArrType(unsigned char,Byte,byte)
 _FromArrType(char,Character,char)
 _FromArrType(double,Double,dbl)
 _FromArrType(float,Float,flt)
@@ -2265,7 +2265,7 @@ NhlCvtByteGenArrayToStringGenArray
 CvtArgs
 {
 	NhlGenArray	togen,fromgen;
-	char		*fromval;
+	unsigned char	*fromval;
 	NhlString	*toval;
 	char		func[] = "NhlCvtByteGenArrayToStringGenArray";
 	char		buff[_NhlMAXLINELEN];
@@ -2637,7 +2637,7 @@ CvtArgs
 {
 	NhlGenArray	togen,fromgen;
 	NhlString	*fromval;
-	char		*toval;
+	unsigned char	*toval;
 	int		i;
 	char		func[] = "NhlCvtStringGenArrayToByteGenArray";
 	NhlErrorTypes	ret = NhlNOERROR;
@@ -2655,13 +2655,14 @@ CvtArgs
 	}
 	fromval = fromgen->data;
 
-	toval = (char *)NhlConvertMalloc(sizeof(char) * fromgen->num_elements);
+	toval = (unsigned char *)
+		NhlConvertMalloc(sizeof(unsigned char)*fromgen->num_elements);
 	if(toval == NULL){
 		NhlPError(NhlFATAL,ENOMEM,"%s",func);
 		return NhlFATAL;
 	}
 
-	togen = _NhlConvertCreateGenArray(toval,NhlTByte,sizeof(char),
+	togen = _NhlConvertCreateGenArray(toval,NhlTByte,sizeof(unsigned char),
 			fromgen->num_dimensions,fromgen->len_dimensions);
 	if(togen == NULL){
 		NhlPError(NhlFATAL,ENOMEM,"%s",func);
@@ -2672,7 +2673,7 @@ CvtArgs
 		char	*t2;
 
 		t2=NULL;
-		toval[i] = (char)strtol(fromval[i],&t2,10);
+		toval[i] = (unsigned char)strtol(fromval[i],&t2,10);
 		if(!toval[i] && (fromval[i] == t2)){
 			NhlPError(NhlWARNING,NhlEUNKNOWN,
 				"%s:Can't Convert \"%s\"",func,fromval[i]);

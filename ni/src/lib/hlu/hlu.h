@@ -1,5 +1,5 @@
 /*
- *      $Id: hlu.h,v 1.37 1999-04-19 23:28:53 dbrown Exp $
+ *      $Id: hlu.h,v 1.38 2000-06-07 21:44:30 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -144,6 +144,7 @@ typedef enum _NhlErrType{
 
 union _NhlType_ {
 	NhlPointer	ptrval;
+	unsigned char	byteval;
 	char		charval;
 	short		shrtval;
 	int		intval;
