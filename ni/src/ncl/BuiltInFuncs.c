@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.162 2003-08-18 14:56:42 grubin Exp $
+ *      $Id: BuiltInFuncs.c,v 1.163 2003-08-20 02:49:51 grubin Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -62,6 +62,7 @@ extern "C" {
 #include "NclFileInterfaces.h"
 #include <signal.h>
 #include <netcdf.h>
+
 
 extern int cmd_line;
 NhlErrorTypes _NclIListHLUObjs
@@ -11482,11 +11483,11 @@ NhlErrorTypes sprinti_W( void )
 }
 
 
-NhlErrorTypes sprintf_W( void )
+NhlErrorTypes sprintf_W(void)
 {
     /* Input */
     string  *format_string;
-    double  *input_var;
+    void    *input_var;
 
     int ndims_input_var,
         dsizes_input_var[NCL_MAX_DIMENSIONS];
@@ -11497,11 +11498,25 @@ NhlErrorTypes sprintf_W( void )
     NclBasicDataTypes   type;
 
     /* Output */
-    double  *output_var;
     string  *output_str;
 
+    double  *tmp_d;
+    float   *tmp_f;
+    NclScalar   missing_output_var;
+
     int i;
-    char buffer[80];
+    char buffer[255];
+
+    /*
+     * External functions necessary to coerce data.  They are located at:
+     *  ../lib/nfp/wrapper.[ch]
+     */
+    extern double   *coerce_input_double(void *, NclBasicDataTypes, int, int,
+                        NclScalar *, NclScalar *);
+    extern float    *coerce_input_float(void *, NclBasicDataTypes, int, int,
+                        NclScalar *, NclScalar *);
+    extern void     coerce_missing(NclBasicDataTypes, int, NclScalar *,
+                        NclScalar *, NclScalar *);
 
 
     /*
@@ -11521,10 +11536,9 @@ NhlErrorTypes sprintf_W( void )
         2);
 
     /*
-     * sprintf() converts any floating point argument to C type double,
-     * so accept arguments as type double, and coerce as necessary
+     * Accept args of any numeric type and coerce as necessary.
      */
-    input_var = (double *) NclGetArgValue(
+    input_var = (void *) NclGetArgValue(
         1,
         2,
         &ndims_input_var, 
@@ -11535,22 +11549,12 @@ NhlErrorTypes sprintf_W( void )
         2);
 
     /*
-     * compute total number of elements based on input
+     * Compute total number of elements based on input and allocate
+     * storage for the output strings.
      */
     total_elements = 1;
-    for (i = 0; i < ndims_input_var; i++) {
+    for (i = 0; i < ndims_input_var; i++)
         total_elements *= dsizes_input_var[i];
-    }
-
-    /*
-     * Output data spaces: (possibly) converted numerical values and
-     * the formatted output string.
-     */
-    output_var = (double *) NclMalloc((unsigned int) sizeof(double) * total_elements);
-    if (output_var == (double *) NULL) {
-        NhlPError(NhlFATAL, errno, " sprintf(): memory allocation error (var)");
-        return NhlFATAL;
-    }
 
     output_str = (string *) NclMalloc((unsigned int) sizeof(string) * total_elements);
     if (output_str == (string *) NULL) {
@@ -11558,22 +11562,42 @@ NhlErrorTypes sprintf_W( void )
         return NhlFATAL;
     }
 
-    /*
-     * Build formatted output; if necessary, convert any numeric type
-     * (short, int, long, float) to type double.
-     */
-    for (i = 0; i < total_elements; i++) {
-        if ((type == NCL_short) || (type == NCL_int) || (type == NCL_long) || (type == NCL_float))
-            (void) _NclScalarCoerce(&(input_var[i]), type, &(output_var[i]), NCL_double);
-        else
-            output_var[i] = input_var[i];
+    switch (type) {
+        case NCL_double:
+            tmp_d = coerce_input_double(input_var, type, total_elements, 0, NULL, NULL);
+            coerce_missing(type, has_missing_input_var, &missing_input_var,
+                    &missing_output_var, NULL);
 
-        (void) sprintf(buffer, NrmQuarkToString(*format_string), output_var[i]);
-        output_str[i] = NrmStringToQuark(buffer);
+            for (i = 0; i < total_elements; i++) {
+                (void) sprintf(buffer, NrmQuarkToString(*format_string), tmp_d[i]);
+                output_str[i] = NrmStringToQuark(buffer);
+            }
+    
+            break;
+
+        case NCL_short:
+            /* fall through */
+        case NCL_int:
+            /* fall through */
+        case NCL_long:
+            /* fall through */
+        case NCL_float:
+            /* fall through */
+        default:
+            tmp_f = coerce_input_float(input_var, type, total_elements, 0, NULL, NULL);
+            coerce_missing(type, has_missing_input_var, &missing_input_var,
+                    &missing_output_var, NULL);
+
+            for (i = 0; i < total_elements; i++) {
+                (void) sprintf(buffer, NrmQuarkToString(*format_string), tmp_f[i]);
+                output_str[i] = NrmStringToQuark(buffer);
+            }
+
+            break;
     }
-  
+
     return NclReturnValue((void *) output_str, ndims_input_var, dsizes_input_var,
-            NULL, NCL_string, 0);
+                            NULL, NCL_string, 0);
 }
 
 NhlErrorTypes _NclIAttSetValues( void )
