@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.136 2003-08-20 20:56:29 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.137 2003-08-25 15:01:55 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -3254,7 +3254,7 @@ begin
   mpres@tmXTOn                = False
   mpres@tmBorderLineColor     = "background"
   mpres@tmBorderThicknessF    = get_res_value_keep(res, \
-                                "tmBorderThicknessF",1.5)
+                                "tmBorderThicknessF",2.0)
 ;
 ; Now that we've set all these resources, apply them to the map.
 ;
