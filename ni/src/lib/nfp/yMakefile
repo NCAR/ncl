@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.28 2000-08-18 22:42:25 haley Exp $
+#      $Id: yMakefile,v 1.29 2000-08-21 21:30:59 haley Exp $
 #
 #########################################################################
 #									#
@@ -22,6 +22,9 @@
 MYNAME		=	libnfp
 
 EXTRA_INCLUDES  = -I../../ncl
+
+EXFSRCS = d1mach_sun.f
+EXFOBJS = d1mach_sun.o
 
 HDRS = wrapper.h
 
@@ -67,7 +70,15 @@ FOBJS = aam.o areaAve.o areaRmse.o dbetai.o calcorc_dp.o chiin_dp.o \
 	trvsph77_dp.o upsl_dp.o varimax_dp.o vibeta_dp.o volAve.o \
 	wrunave_dp.o vinth2p_dp.o vinth2p_ecmwf.o volRmse.o
 
-OBJS = $(COBJS) $(FOBJS)
+#if defined(alpha)
+EXFSRCS = d1mach_alpha.f
+EXFOBJS = d1mach_alpha.o
+#elif defined(linux)
+EXFSRCS = d1mach_linux.f
+EXFOBJS = d1mach_linux.o
+#endif
+
+OBJS = $(COBJS) $(FOBJS) $(EXFOBJS)
 
 BuildSharedLibTarget(libNGnfp,$(OBJS),1,0,$(NCARGLIB) $(NCARGGKSLIB) $(NCARGCLIB) $(CTOFLIBS) -lm -lc)
 LibraryTarget($(MYNAME),$(OBJS))

@@ -998,6 +998,7 @@ NhlErrorTypes equiv_sample_size_W( void )
  */
   void *x, *siglvl;
   double *tmp_x, *tmp_siglvl;
+  int *opt;
   NclScalar missing_x, missing_dx;
   int has_missing_x;
   int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS];
@@ -1019,7 +1020,7 @@ NhlErrorTypes equiv_sample_size_W( void )
 
   x = (void*)NclGetArgValue(
           0,
-          2,
+          3,
           &ndims_x,
           dsizes_x,
           &missing_x,
@@ -1029,12 +1030,22 @@ NhlErrorTypes equiv_sample_size_W( void )
 
   siglvl = (int*)NclGetArgValue(
           1,
-          2,
+          3,
           NULL,
           NULL,
           NULL,
           NULL,
           &type_siglvl,
+          2);
+
+  opt = (int*)NclGetArgValue(
+          2,
+          3,
+          NULL,
+          NULL,
+          NULL,
+          NULL,
+          NULL,
           2);
 
   nx = dsizes_x[ndims_x-1];
@@ -1059,7 +1070,7 @@ NhlErrorTypes equiv_sample_size_W( void )
  * Set up variables for coercing input to double (if necessary).
  */
   if(type_x != NCL_double) {
-    tmp_x = (double*)calloc(1,sizeof(double));
+    tmp_x = (double*)calloc(nx,sizeof(double));
     if( tmp_x == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"equiv_sample_size: Unable to allocate memory for coercing x to double precision");
       return(NhlFATAL);

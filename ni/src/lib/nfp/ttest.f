@@ -175,7 +175,7 @@ c Local variables
 
 c c c real     betai
       DOUBLE PRECISION DBETAISLATEC
-      DOUBLE PRECISION XMEAN,XVAR,XSD,XCOV,XN,DF,SUM,TVAL,ALPHA,R1,PROB
+      DOUBLE PRECISION XMEAN,XVAR,XSD,XCOV,XN,DF,SUM,TVAL,ALPHA,R1
       INTEGER N,LAG,JER,NPTUSED
 
 c compute 1st two moments
@@ -202,8 +202,8 @@ c compute lag-1 autocorrelation coef
 
 c the approach below does not work when r<0.
 
+      NEQV = NPTUSED
       IF (R1.LE.0.0D0) THEN
-          NEQV = XN
           RETURN
       END IF
 
@@ -212,15 +212,14 @@ c .   [see Numerical Recipies: Linear Correlation]
 c .   [also: Climatic Change, WMO Tech Note 79, p66
 c .          says "tval" formula is good for xn>=8]
 
-      DF = XN - 2.D0
+      DF = NPTUSED - 2.D0
       TVAL = R1*SQRT(DF/ (1.D0-DMIN1(R1*R1,0.999D0)))
 c c c alpha = betai ( 0.5*df, 0.5, df/(df+tval**2) )
-      ALPHA = DBETAISLATEC(0.5D0*DF,0.5D0,DF/ (DF+TVAL**2))
+      ALPHA = DBETAISLATEC(DF/ (DF+TVAL**2),0.5D0*DF,0.5D0)
 
 c test r1 to see if it is sig different from zero at user
 c specified level.
 
-      NEQV = XN
       IF (ALPHA.LE.SIGLVL) THEN
           IF (XN.GE.50.D0 .AND. ABS(R1).NE.1.D0) THEN
               NEQV = XN* (1.D0-R1)/ (1.D0+R1)
@@ -228,12 +227,12 @@ c specified level.
               SUM = 1.0D0
               DO N = 1,NPTS
                   IF (X(N).NE.XMSG) THEN
-                      SUM = SUM + 2.D0* (1.D0-N/XN)*R1
+                      SUM = SUM + 2.D0* (1.D0-N/XN)*R1**N
                   END IF
               END DO
               NEQV = XN/SUM
           END IF
-          NEQV = MIN(NEQV,INT(XN))
+          NEQV = MIN(NEQV,NPTUSED)
       END IF
 
       RETURN

@@ -3394,10 +3394,11 @@ void NclAddUserFuncs(void)
  * Register "equiv_sample_size".
  */
     nargs = 0;
-    args = NewArgs(2);
+    args = NewArgs(3);
     SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
     dimsizes[0] = 1;
     SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
 
     NclRegisterFunc(equiv_sample_size_W,args,"equiv_sample_size",nargs);
 
