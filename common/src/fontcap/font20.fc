@@ -1,5 +1,5 @@
 /*
-/*	$Id: font20.fc,v 1.2 1992-09-04 19:49:58 ncargd Exp $
+/*	$Id: font20.fc,v 1.3 1992-11-25 23:02:44 fred Exp $
 /*
 /*
 /* Character fontcap for: HERSHEY:SYMBOL_SET2
@@ -64,7 +64,7 @@ PAINT_END_LEN
 
 
 CHAR
-/* ASCII-32('Space') 36-strokes, 116-139(x), 0-0(y)
+/* ASCII-32('Space') 0-strokes, 116-139(x), 0-0(y)
 /*  Character left and character right values
   116  139
 
