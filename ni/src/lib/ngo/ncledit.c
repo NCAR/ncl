@@ -1,5 +1,5 @@
 /*
- *      $Id: ncledit.c,v 1.8 1997-06-11 20:47:24 boote Exp $
+ *      $Id: ncledit.c,v 1.9 1997-09-04 17:05:44 boote Exp $
  */
 /************************************************************************
 *									*
@@ -111,7 +111,7 @@ NgNclEditClassRec NgnclEditClassRec = {
 /* create_win_hook	*/	NULL,
 	},
 	{
-/* foo			*/	0,
+/* nedit		*/	0,
 	},
 };
 
@@ -162,7 +162,8 @@ NEInitialize
 	np->high_gc = NULL;
 	np->high_drawn = False;
 
-	NgAppAddNclEditor(ncl->go.appmgr,new->base.id);
+	np->submitcb = np->promptcb = np->resetcb =
+					np->outputcb = np->erroutputcb = NULL;
 
 	return NhlNOERROR;
 }
@@ -175,8 +176,6 @@ NEDestroy
 {
 	NgNclEdit	ncl = (NgNclEdit)l;
 	NgNclEditPart	*np = &((NgNclEdit)l)->ncledit;
-
-	NgAppRemoveNclEditor(ncl->go.appmgr,l->base.id);
 
 	/*
 	 * Don't destroy widgets!  NgGO takes care of that.
@@ -198,6 +197,12 @@ NEDestroy
 
 	if(np->high_gc != None)
 		XFreeGC(ncl->go.x->dpy,np->high_gc);
+
+	_NhlCBDelete(np->submitcb);
+	_NhlCBDelete(np->promptcb);
+	_NhlCBDelete(np->resetcb);
+	_NhlCBDelete(np->outputcb);
+	_NhlCBDelete(np->erroutputcb);
 
 	return NhlNOERROR;
 }
@@ -950,10 +955,7 @@ NECreateWin
 {
 	char		func[]="NECreateWin";
 	NgNclEditPart	*np = &((NgNclEdit)go)->ncledit;
-	Widget		menubar,menush,fmenu,emenu;
-	Widget		vmenu,omenu,wmenu,hmenu;
-	Widget		file,edit,view,options,window,help;
-	Widget		addfile,load,close,quit,browse;
+	NgNclEditClass	nec = (NgNclEditClass)go->base.layer_class;
 	Widget		pane,sform,sform1;
 	Widget		slabel;
 	Widget		hoframe,holabel;
@@ -971,112 +973,20 @@ NECreateWin
 	char		buff[20];
 	XmString	msg;
 
-	menubar =XtVaCreateManagedWidget("menubar",xmRowColumnWidgetClass,
-								go->go.manager,
-		XmNrowColumnType,	XmMENU_BAR,
-		NULL);
+	_NgGOCreateMenubar(go);
+	if(nec->ncledit_class.nedit)
+		sprintf(buff,"NCL Editor %d",nec->ncledit_class.nedit++);
+	else{
+		strcpy(buff,"NCL Editor");
+		nec->ncledit_class.nedit++;
+	}
 
-	menush = XtVaCreatePopupShell("menush",xmMenuShellWidgetClass,
-								go->go.shell,
-		XmNwidth,		5,
-		XmNheight,		5,
-		XmNallowShellResize,	True,
-		XtNoverrideRedirect,	True,
-		NULL);
-	fmenu = XtVaCreateWidget("fmenu",xmRowColumnWidgetClass,menush,
-		XmNrowColumnType,	XmMENU_PULLDOWN,
-		NULL);
-
-	emenu = XtVaCreateWidget("emenu",xmRowColumnWidgetClass,menush,
-		XmNrowColumnType,	XmMENU_PULLDOWN,
-		NULL);
-
-	vmenu = XtVaCreateWidget("vmenu",xmRowColumnWidgetClass,menush,
-		XmNrowColumnType,	XmMENU_PULLDOWN,
-		NULL);
-
-	omenu = XtVaCreateWidget("omenu",xmRowColumnWidgetClass,menush,
-		XmNrowColumnType,	XmMENU_PULLDOWN,
-		NULL);
-
-	wmenu = XtVaCreateWidget("wmenu",xmRowColumnWidgetClass,menush,
-		XmNrowColumnType,	XmMENU_PULLDOWN,
-		NULL);
-
-	hmenu = XtVaCreateWidget("hmenu",xmRowColumnWidgetClass,menush,
-		XmNrowColumnType,	XmMENU_PULLDOWN,
-		NULL);
-
-	file = XtVaCreateManagedWidget("file",xmCascadeButtonGadgetClass,
-									menubar,
-		XmNsubMenuId,	fmenu,
-		NULL);
-
-	edit = XtVaCreateManagedWidget("edit",xmCascadeButtonGadgetClass,
-									menubar,
-		XmNsubMenuId,	emenu,
-		NULL);
-
-	view = XtVaCreateManagedWidget("view",xmCascadeButtonGadgetClass,
-									menubar,
-		XmNsubMenuId,	vmenu,
-		NULL);
-
-	options = XtVaCreateManagedWidget("options",xmCascadeButtonGadgetClass,
-									menubar,
-		XmNsubMenuId,	omenu,
-		NULL);
-
-	window = XtVaCreateManagedWidget("window",xmCascadeButtonGadgetClass,
-									menubar,
-		XmNsubMenuId,	wmenu,
-		NULL);
-
-	help = XtVaCreateManagedWidget("help",xmCascadeButtonGadgetClass,
-									menubar,
-		XmNsubMenuId,	hmenu,
-		NULL);
-
-	XtVaSetValues(menubar,
-		XmNmenuHelpWidget,	help,
-		NULL);
-
-	addfile = XtVaCreateManagedWidget("addFile",
-					xmPushButtonGadgetClass,fmenu,
-		NULL);
-	XtAddCallback(addfile,XmNactivateCallback,_NgGODefActionCB,NULL);
-
-	load = XtVaCreateManagedWidget("loadScript",
-					xmPushButtonGadgetClass,fmenu,
-		NULL);
-	XtAddCallback(load,XmNactivateCallback,_NgGODefActionCB,NULL);
-
-	close = XtVaCreateManagedWidget("closeWindow",
-					xmPushButtonGadgetClass,fmenu,
-		NULL);
-	XtAddCallback(close,XmNactivateCallback,_NgGODefActionCB,NULL);
-
-	quit = XtVaCreateManagedWidget("quitApplication",
-					xmPushButtonGadgetClass,fmenu,
-		NULL);
-	XtAddCallback(quit,XmNactivateCallback,_NgGODefActionCB,NULL);
-        
-	browse = XtVaCreateManagedWidget("browseWindow",
-					xmPushButtonGadgetClass,wmenu,
-		NULL);
-	XtAddCallback(browse,XmNactivateCallback,_NgGODefActionCB,NULL);
-
-	XtManageChild(fmenu);
-	XtManageChild(emenu);
-	XtManageChild(vmenu);
-	XtManageChild(omenu);
-	XtManageChild(wmenu);
-	XtManageChild(hmenu);
+	_NgGOSetTitle(go,buff,NULL);
 
 	pane = XtVaCreateManagedWidget("pane",xmPanedWindowWidgetClass,
 								go->go.manager,
 		XmNtopAttachment,	XmATTACH_WIDGET,
-		XmNtopWidget,		menubar,
+		XmNtopWidget,		go->go.menubar,
 		NULL);
 
 	sform = XtVaCreateManagedWidget("sform",xmFormWidgetClass,pane,

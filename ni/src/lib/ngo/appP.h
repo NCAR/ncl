@@ -1,5 +1,5 @@
 /*
- *      $Id: appP.h,v 1.3 1997-01-03 01:37:59 boote Exp $
+ *      $Id: appP.h,v 1.4 1997-09-04 17:05:40 boote Exp $
  */
 /************************************************************************
 *									*
@@ -41,6 +41,7 @@ struct _NgWorkProcRec{
 typedef struct _NgAppGOListRec _NgAppGOListRec, *_NgAppGOList;
 struct _NgAppGOListRec{
 	int		go[_NgGOLISTSIZE];
+	unsigned int	kind[_NgGOLISTSIZE];
 	int		num;
 	_NgAppGOList	next;
 };
@@ -59,9 +60,9 @@ typedef struct _NgAppMgrPart {
 	int			nclstate;
 
 /* private fields */
+	_NhlCBList		gochangecb;
 	_NgWorkProc		wp;
 	_NgAppGOList		go;
-	_NgAppGOList		ncleditors;
 	_NgAppFStack		active;
 
 } NgAppMgrPart;

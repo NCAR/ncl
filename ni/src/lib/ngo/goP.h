@@ -1,5 +1,5 @@
 /*
- *      $Id: goP.h,v 1.5 1997-08-27 21:00:42 boote Exp $
+ *      $Id: goP.h,v 1.6 1997-09-04 17:05:43 boote Exp $
  */
 /************************************************************************
 *									*
@@ -38,6 +38,7 @@ typedef struct _NgGOPart {
 	NhlBoolean	sensitive;
 
 /* private fields */
+	XmString	xm_title;
 	int		appmgr;
 
 	NhlBoolean	x_sensitive;
@@ -56,6 +57,15 @@ typedef struct _NgGOPart {
 	Widget		shell;
 	Xcb		xcb;
 	Widget		manager;	/* subclasses must use this container */
+
+	Widget		menubar;
+	Widget		menush;
+	Widget		fmenu;
+	Widget		emenu;
+	Widget		vmenu;
+	Widget		omenu;
+	Widget		wmenu,wsep1,wsep2;
+	Widget		hmenu;
 
 	XtTranslations	global_trans;
 
@@ -134,9 +144,14 @@ extern void _NgGODefActionCB(
 	XtPointer	cbdata
 );
 
-extern Widget _NgGOCreateMenubar(
+extern void _NgGOCreateMenubar(
+	NgGO		go
+);
+
+extern void _NgGOSetTitle(
 	NgGO		go,
-	Widget		manager
+	Const char	*title,
+	Const char	*icon_title
 );
 
 #endif	/* _NG_GOP_H_ */

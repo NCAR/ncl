@@ -1,5 +1,5 @@
 /*
- *      $Id: app.c,v 1.8 1997-08-25 20:24:25 boote Exp $
+ *      $Id: app.c,v 1.9 1997-09-04 17:05:39 boote Exp $
  */
 /************************************************************************
 *									*
@@ -40,6 +40,11 @@ static NhlResource resources[] = {
 };
 #undef	Oset
 
+static _NhlRawObjCB callbacks[] = {
+	{NgCBAppGoChange,NhlOffset(NgAppMgrRec,app.gochangecb),
+		0,NULL,NULL,NULL},
+};
+
 static NhlErrorTypes AppMgrClassPartInitialize(
 	NhlClass	lc
 );
@@ -76,10 +81,10 @@ NgAppMgrClassRec NgappMgrClassRec = {
 /* layer_resources		*/	resources,
 /* num_resources		*/	NhlNumber(resources),
 /* all_resources		*/	NULL,
-/* callbacks			*/	NULL,
-/* num_callbacks		*/	0,
-/* class_callbacks	*/	NULL,
-/* num_class_callbacks	*/	0,
+/* callbacks			*/	callbacks,
+/* num_callbacks		*/	NhlNumber(callbacks),
+/* class_callbacks		*/	NULL,
+/* num_class_callbacks		*/	0,
 
 /* class_part_initialize	*/	AppMgrClassPartInitialize,
 /* class_initialize		*/	AppMgrClassInitialize,
@@ -193,7 +198,6 @@ AppMgrInitialize
 
 	app->wp = NULL;
 	app->go = NULL;
-	app->ncleditors = NULL;
 	app->active = NULL;
 
 	ac->app_class.num_mgrs++;
@@ -267,7 +271,6 @@ AppMgrDestroy
 	}
 
 	FreeGOList(ap->go);
-	FreeGOList(ap->ncleditors);
 
 	afs1 = ap->active;
 	while(afs1){
@@ -876,6 +879,48 @@ NgCBWPDestroy
 	return;
 }
 
+static void
+CompressGOList
+(
+	_NgAppGOList	*list
+)
+{
+	_NgAppGOList	end=NULL;
+	_NgAppGOList	next;
+	int		n;
+
+	while(*list){
+		next = (*list)->next;
+		n = _NgGOLISTSIZE - (*list)->num;
+		if(!next || (n <= 0)){
+			list = &(*list)->next;
+			continue;
+		}
+		memcpy(&(*list)->go[(*list)->num],next->go,sizeof(int)*n);
+		(*list)->num += n;
+		next->num -= n;
+		if(next->num > 0){
+			memmove(next->go,&next->go[n],sizeof(int)*next->num);
+			list = &(*list)->next;
+		}
+		else{
+			/*
+			 * if node is empty, save it in the "end" list.
+			 */
+			(*list)->next = next->next;
+			next->next = end;
+			end = next;
+		}
+	}
+
+	/*
+	 * Place empty nodes on end of list.
+	 */
+	*list = end;
+
+	return;
+}
+
 /*
  * Function:	NgAppAddGO
  *
@@ -892,23 +937,52 @@ NgCBWPDestroy
 void
 NgAppAddGO
 (
-	int	appid,
-	int	goid
+	int		appid,
+	int		goid
 )
 {
-	char		func[] = "NgAppAddGO";
-	NgAppMgr	app = (NgAppMgr)_NhlGetLayer(appid);
-	_NgAppGOList	*go;
-	int		i;
+	char			func[] = "NgAppAddGO";
+	NgAppMgr		app = (NgAppMgr)_NhlGetLayer(appid);
+	_NgAppGOList		*go;
+	int			i;
+	NhlBoolean		compress=False;
+	NhlArgVal		cbdata,sel;
+	NgAppGoChangeRec	gc;
 
 	if(!app || !_NhlIsClass((NhlLayer)app,NgappMgrClass)){
 		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s:invalid appid.",func));
 		return;
 	}
 
-	go = &app->app.go;
-	while(*go && (*go)->num >= _NgGOLISTSIZE)
-		go = &(*go)->next;
+	/*
+	 * Find the last node with entries...
+	 */
+	REDO:
+	for(go = &app->app.go;*go;go=&(*go)->next){
+		/*
+		 * If the current node is full, get the next one.
+		 */
+		if((*go)->num >= _NgGOLISTSIZE){
+			/*
+			 * If this is the last node, and it is full, try
+			 * compressing the list.
+			 */
+			if(!compress && !(*go)->next){
+				CompressGOList(&app->app.go);
+				compress=True;
+				goto REDO;
+			}
+			continue;
+		}
+
+		/*
+		 * There is room in the current node - if there is no next
+		 * node, or it is empty, then we can add the go to the
+		 * current node.
+		 */
+		if(!(*go)->next || ((*go)->next->num <= 0))
+			break;
+	}
 
 	if(!*go){
 		*go = NhlMalloc(sizeof(_NgAppGOListRec));
@@ -921,21 +995,18 @@ NgAppAddGO
 		(*go)->next = NULL;
 	}
 
-	for(i=0;i<_NgGOLISTSIZE;i++){
-		if((*go)->go[i] == NhlDEFAULT_APP){
-			(*go)->go[i] = goid;
-			(*go)->num++;
-			/*
-			 * If there is a current grab, then this needs
-			 * to be added in the disabled state.
-			 */
-			if(app->app.active)
-				NgGOSensitive(goid,False);
-			return;
-		}
-	}
+	(*go)->go[(*go)->num++] = goid;
+	if(app->app.active)
+		NgGOSensitive(goid,False);
 
-	NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s:Unable to add goid???",func));
+	NhlINITVAR(cbdata);
+	NhlINITVAR(sel);
+	gc.reason = NgAppGoAdd;
+	gc.goid = goid;
+	cbdata.ptrval = &gc;
+	sel.lngval = 0; /* ignored */
+	_NhlCallObjCallbacks((NhlLayer)app,NgCBAppGoChange,sel,cbdata);
+
 	return;
 }
 
@@ -959,7 +1030,67 @@ NgAppRemoveGO
 	int	goid
 )
 {
-	char		func[] = "NgAppRemoveGO";
+	char			func[] = "NgAppRemoveGO";
+	NgAppMgr		app = (NgAppMgr)_NhlGetLayer(appid);
+	_NgAppGOList		*go;
+	int			i,j;
+	NhlArgVal		cbdata,sel;
+	NgAppGoChangeRec	gc;
+
+	if(!app || !_NhlIsClass((NhlLayer)app,NgappMgrClass)){
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s:invalid appid.",func));
+		return;
+	}
+
+	go = &app->app.go;
+
+	while(*go && (*go)->num){
+		for(i=0;i<(*go)->num;i++){
+			if((*go)->go[i] == goid){
+				NgAppReleaseFocus(appid,goid);
+				(*go)->num--;
+				if((*go)->num){
+					for(j=i;j<(*go)->num;j++)
+						(*go)->go[j] = (*go)->go[j+1];
+				}
+				else{
+					/*
+					 * Move empty record to end of list
+					 */
+					_NgAppGOList	tmp = *go;
+					*go = (*go)->next;
+					while(*go)
+						go = &(*go)->next;
+					*go = tmp;
+				}
+
+				NhlINITVAR(cbdata);
+				NhlINITVAR(sel);
+				gc.reason = NgAppGoRemove;
+				gc.goid = goid;
+				cbdata.ptrval = &gc;
+				sel.lngval = 0; /* ignored */
+				_NhlCallObjCallbacks((NhlLayer)app,
+						NgCBAppGoChange,sel,cbdata);
+				return;
+			}
+		}
+		go = &(*go)->next;
+	}
+
+	NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s:Unable to find goid %d",func,goid));
+	return;
+}
+
+void
+NgAppEnumerateGO
+(
+	int		appid,
+	NgAppGOEnumFunc	enumerate,
+	NhlPointer	udata
+)
+{
+	char		func[] = "NgAppEnumerateGO";
 	NgAppMgr	app = (NgAppMgr)_NhlGetLayer(appid);
 	_NgAppGOList	go;
 	int		i;
@@ -971,178 +1102,15 @@ NgAppRemoveGO
 
 	go = app->app.go;
 
-	while(go){
-		if(go->num){
-			for(i=0;i<_NgGOLISTSIZE;i++){
-				if(go->go[i] == goid){
-					go->go[i] = NhlDEFAULT_APP;
-					go->num--;
-					NgAppReleaseFocus(appid,goid);
-					return;
-				}
-			}
+	while(go && go->num){
+		for(i=0;i<go->num;i++){
+			if(!(*enumerate)(go->go[i],udata))
+				return;
 		}
 		go = go->next;
 	}
 
-	NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s:Unable to find goid %d",func,goid));
 	return;
-}
-
-/*
- * Function:	NgAppAddNclEditor
- *
- * Description:	
- *
- * In Args:	
- *
- * Out Args:	
- *
- * Scope:	
- * Returns:	
- * Side Effect:	
- */
-void
-NgAppAddNclEditor
-(
-	int	appid,
-	int	goid
-)
-{
-	char		func[] = "NgAppAddNclEditor";
-	NgAppMgr	app = (NgAppMgr)_NhlGetLayer(appid);
-	_NgAppGOList	*go;
-	int		i;
-
-	if(!app || !_NhlIsClass((NhlLayer)app,NgappMgrClass)){
-		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s:invalid appid.",func));
-		return;
-	}
-
-	go = &app->app.ncleditors;
-	while(*go && (*go)->num >= _NgGOLISTSIZE)
-		go = &(*go)->next;
-
-	if(!*go){
-		*go = NhlMalloc(sizeof(_NgAppGOListRec));
-		if(!*go){
-			NHLPERROR((NhlFATAL,ENOMEM,NULL));
-			return;
-		}
-		memset((*go)->go,NhlDEFAULT_APP,sizeof(int)*_NgGOLISTSIZE);
-		(*go)->num = 0;
-		(*go)->next = NULL;
-	}
-
-	for(i=0;i<_NgGOLISTSIZE;i++){
-		if((*go)->go[i] == NhlDEFAULT_APP){
-			(*go)->go[i] = goid;
-			(*go)->num++;
-			return;
-		}
-	}
-
-	NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s:Unable to add NclEditor???",func));
-	return;
-}
-
-/*
- * Function:	NgAppRemoveNclEditor
- *
- * Description:	
- *
- * In Args:	
- *
- * Out Args:	
- *
- * Scope:	
- * Returns:	
- * Side Effect:	
- */
-void
-NgAppRemoveNclEditor
-(
-	int	appid,
-	int	goid
-)
-{
-	char		func[] = "NgAppRemoveNclEditor";
-	NgAppMgr	app = (NgAppMgr)_NhlGetLayer(appid);
-	_NgAppGOList	go;
-	int		i;
-
-	if(!app || !_NhlIsClass((NhlLayer)app,NgappMgrClass)){
-		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s:invalid appid.",func));
-		return;
-	}
-
-	go = app->app.ncleditors;
-
-	while(go){
-		if(go->num){
-			for(i=0;i<_NgGOLISTSIZE;i++){
-				if(go->go[i] == goid){
-					go->go[i] = NhlDEFAULT_APP;
-					go->num--;
-					return;
-				}
-			}
-		}
-		go = go->next;
-	}
-
-	NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s:Unable to find NclEditor %d",func,
-									goid));
-	return;
-}
-
-/*
- * Function:	NgAppGetNclEditor
- *
- * Description:	
- *
- * In Args:	
- *
- * Out Args:	
- *
- * Scope:	
- * Returns:	
- * Side Effect:	
- */
-int
-NgAppGetNclEditor
-(
-	int		appid,
-	NhlBoolean	new
-)
-{
-	char		func[] = "NgAppGetNclEditor";
-	NgAppMgr	app = (NgAppMgr)_NhlGetLayer(appid);
-	_NgAppGOList	go;
-	int		i;
-	int		ne;
-
-	if(!app || !_NhlIsClass((NhlLayer)app,NgappMgrClass)){
-		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s:invalid appid.",func));
-		return;
-	}
-
-	go = app->app.ncleditors;
-
-	while(go && !new){
-		if(go->num){
-			for(i=0;i<_NgGOLISTSIZE;i++){
-				if(go->go[i] != NhlDEFAULT_APP)
-					return go->go[i];
-			}
-		}
-		go = go->next;
-	}
-
-	NhlVACreate(&ne,"ncledit",NgnclEditClass,app->base.appobj->base.id,
-		NULL);
-
-	return ne;
 }
 
 /*

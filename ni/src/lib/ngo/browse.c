@@ -1,5 +1,5 @@
 /*
- *      $Id: browse.c,v 1.9 1997-08-27 20:39:16 boote Exp $
+ *      $Id: browse.c,v 1.10 1997-09-04 17:05:40 boote Exp $
  */
 /************************************************************************
 *									*
@@ -173,6 +173,7 @@ BrowseDestroy
 	return NhlNOERROR;
 }
 
+#if	NOT
 static Widget
 CreateMenuBar
 (
@@ -310,6 +311,7 @@ CreateMenuBar
         return menubar;
         
 }
+#endif
 
 /*
  * Sets the folder size to the greater of the available space
@@ -2062,7 +2064,7 @@ BrowseCreateWin
 	char		func[]="BrowseCreateWin";
 	NgBrowse	browse = (NgBrowse)go;
 	NgBrowsePart	*np = &browse->browse;
-        Widget		menubar, datamenubar;
+        Widget		datamenubar;
 	Widget		form,sep;
         brPane		*pane;
         XmString	xmstring;
@@ -2076,12 +2078,13 @@ BrowseCreateWin
         XtAddEventHandler(go->go.manager,StructureNotifyMask,
                           False,ChangeSizeEH,(XtPointer)go);
 
-        menubar = CreateMenuBar(go);
+	_NgGOSetTitle(go,"Browse:",NULL);
+	_NgGOCreateMenubar(go);
         form = XtVaCreateManagedWidget
                 ("form",xmFormWidgetClass,
                  go->go.manager,
                  XmNtopAttachment,	XmATTACH_WIDGET,
-                 XmNtopWidget,		menubar,
+                 XmNtopWidget,		go->go.menubar,
                  XmNbottomAttachment,	XmATTACH_NONE,
                  NULL);
         np->vmenus = CreateVarMenus(go,form);

@@ -1,5 +1,5 @@
 /*
- *      $Id: xwk.c,v 1.4 1997-08-25 20:24:30 boote Exp $
+ *      $Id: xwk.c,v 1.5 1997-09-04 17:05:46 boote Exp $
  */
 /************************************************************************
 *									*
@@ -299,6 +299,11 @@ XWkInitialize
 
 	np->size = NULL;
 
+	if(!xwk->go.xm_title){
+		xwk->go.xm_title = NgXAppCreateXmString(xwk->go.appmgr,
+					xwk->xwk.xwork->xwork.xwinconfig.title);
+	}
+
 	return NhlNOERROR;
 }
 
@@ -465,24 +470,21 @@ XWkCreateWin
 	NgXWk			xwk = (NgXWk)go;
 	NgXWkPart		*xp = &xwk->xwk;
 	NgXAppExport		x = go->go.x;
-	Widget			manager;
-	Widget			menubar;
 	XcbAttrRec		xcbattr;
 	unsigned long		mask = 0;
 	XcbMode			cmode;
 
-	manager = XtVaCreateManagedWidget("mgr",xmFormWidgetClass,
-								go->go.manager,
-		NULL);
+	_NgGOSetTitle(go,xwk->xwk.xwork->xwork.xwinconfig.title,
+				xwk->xwk.xwork->xwork.xwinconfig.icon_title);
 
-	menubar = _NgGOCreateMenubar(go,manager);
+	_NgGOCreateMenubar(go);
 
 	xp->graphicsSW = XtVaCreateManagedWidget("xworkSW",
-					xmScrolledWindowWidgetClass,manager,
+				xmScrolledWindowWidgetClass,go->go.manager,
 		XmNscrollingPolicy,		XmAUTOMATIC,
 		XmNscrollBarDisplayPolicy,	XmSTATIC,
 		XmNtopAttachment,		XmATTACH_WIDGET,
-		XmNtopWidget,			menubar,
+		XmNtopWidget,			go->go.menubar,
 		NULL);
 
 	XtVaGetValues(go->go.shell,

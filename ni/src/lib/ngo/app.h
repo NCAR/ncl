@@ -1,5 +1,5 @@
 /*
- *      $Id: app.h,v 1.6 1997-08-20 20:48:59 dbrown Exp $
+ *      $Id: app.h,v 1.7 1997-09-04 17:05:39 boote Exp $
  */
 /************************************************************************
 *									*
@@ -138,19 +138,22 @@ extern void NgAppRemoveGO(
 	int	goid
 );
 
-extern void NgAppAddNclEditor(
-	int	appid,
-	int	goid
+/*
+ * The return value of the enumerate function indicates if you want the
+ * NgAppEnumerateGO to continue or not. (i.e. if you return True, the
+ * next goid will have the enumerate function called on it, if you return
+ * False, the enumeration terminates, and NgAppEnumerateGO returns.
+ */
+
+typedef NhlBoolean (*NgAppGOEnumFunc)(
+	int		goid,
+	NhlPointer	udata
 );
 
-extern void NgAppRemoveNclEditor(
-	int	appid,
-	int	goid
-);
-
-extern int NgAppGetNclEditor(
+extern void NgAppEnumerateGO(
 	int		appid,
-	NhlBoolean	new
+	NgAppGOEnumFunc	enumerate,
+	NhlPointer	udata
 );
 
 extern int NgAppGetSelectedWork(
@@ -167,5 +170,18 @@ extern void NgAppReleaseFocus(
 	int	appid,
 	int	goid
 );
+
+typedef struct NgAppGoChangeRec NgAppGoChangeRec, *NgAppGoChange;
+typedef enum _NgAppGoChangeType{
+	NgAppGoAdd,
+	NgAppGoRemove
+} NgAppGoChangeType;
+
+struct NgAppGoChangeRec{
+	NgAppGoChangeType	reason;
+	int			goid;
+};
+
+#define	NgCBAppGoChange	"CBAppGoChange"	/* cbdata.ptrval is NgAppGoChange */
 
 #endif	/* _NG_APPMGR_H */

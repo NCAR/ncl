@@ -1,5 +1,5 @@
 /*
- *      $Id: ncleditP.h,v 1.5 1997-01-17 18:59:29 boote Exp $
+ *      $Id: ncleditP.h,v 1.6 1997-09-04 17:05:44 boote Exp $
  */
 /************************************************************************
 *									*
@@ -95,7 +95,7 @@ typedef struct _NgNclEditRec {
 } NgNclEditRec;
 
 typedef struct _NgNclEditClassPart {
-	int		foo;
+	int		nedit;
 } NgNclEditClassPart;
 
 typedef struct _NgNclEditClassRec {

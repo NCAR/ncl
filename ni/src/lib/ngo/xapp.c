@@ -1,5 +1,5 @@
 /*
- *      $Id: xapp.c,v 1.7 1997-07-02 15:30:55 boote Exp $
+ *      $Id: xapp.c,v 1.8 1997-09-04 17:05:45 boote Exp $
  */
 /************************************************************************
 *									*
@@ -54,9 +54,6 @@ static NhlResource resources[] = {
 		_NhlRES_GONLY,NULL},
 	{NgNxappLoadFile,NgCxappLoadFile,NhlTInteger,sizeof(int),
 		Oset(loadfile),NhlTImmediate,_NhlUSET((NhlPointer)NULL),
-		_NhlRES_GONLY,NULL},
-	{NgNxappBrowseWindow,NgCxappBrowseWindow,NhlTInteger,sizeof(int),
-		Oset(browse_window),NhlTImmediate,_NhlUSET((NhlPointer)NULL),
 		_NhlRES_GONLY,NULL},
 };
 #undef	Oset
@@ -166,7 +163,6 @@ XAppMgrClassPartInitialize
 static NrmQuark	qexp = NrmNULLQUARK;
 static NrmQuark	qlfile = NrmNULLQUARK;
 static NrmQuark	qafile = NrmNULLQUARK;
-static NrmQuark	qbrowse = NrmNULLQUARK;
 
 /*
  * Function:	XAppMgrClassInitialize
@@ -192,7 +188,6 @@ XAppMgrClassInitialize
 	qexp = NrmStringToQuark(NgNxappExport);
 	qafile = NrmStringToQuark(NgNxappAddFile);
 	qlfile = NrmStringToQuark(NgNxappLoadFile);
-	qbrowse = NrmStringToQuark(NgNxappBrowseWindow);
 
 	_NhlInitializeClass(NgxWkClass);
 
@@ -353,7 +348,6 @@ XAppMgrInitialize
 
 	xapp->addfile = NhlDEFAULT_APP;
 	xapp->loadfile = NhlDEFAULT_APP;
-	xapp->browse_window = NhlDEFAULT_APP;
 
 	xapp->app_widget = XtVaAppCreateShell(new->base.appobj->base.name,
 			"NgNGO",xcbApplicationShellWidgetClass,xapp->x.dpy,
@@ -424,14 +418,6 @@ XAppMgrGetValues
 					NULL);
 			*(int*)args[i].value.ptrval = xapp->loadfile;
 		}
-		else if(args[i].quark == qbrowse){
-			if(xapp->browse_window == NhlDEFAULT_APP)
-				NhlVACreate(&xapp->browse_window,"browse",
-						NgbrowseClass,
-						l->base.appobj->base.id,
-					NULL);
-			*(int*)args[i].value.ptrval = xapp->browse_window;
-		}
 	}
 
 	return NhlNOERROR;
@@ -462,7 +448,6 @@ XAppMgrDestroy
  */
 	NhlDestroy(xapp->addfile);
 	NhlDestroy(xapp->loadfile);
-	NhlDestroy(xapp->browse_window);
 	XtDestroyWidget(xapp->app_widget);
 	XCloseDisplay(xapp->x.dpy);
 

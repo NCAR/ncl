@@ -1,5 +1,5 @@
 /*
- *      $Id: go.c,v 1.8 1997-08-27 21:00:43 boote Exp $
+ *      $Id: go.c,v 1.9 1997-09-04 17:05:42 boote Exp $
  */
 /************************************************************************
 *									*
@@ -22,6 +22,9 @@
 #include <ncarg/ngo/goP.h>
 #include <ncarg/ngo/xapp.h>
 #include <ncarg/ngo/nclstate.h>
+#include <ncarg/ngo/ncledit.h>
+#include <ncarg/ngo/browse.h>
+#include <ncarg/ngo/xwk.h>
 
 #include <Xm/Xm.h>
 #include <Xm/Protocols.h>
@@ -32,6 +35,8 @@
 #include <Xm/RowColumn.h>
 #include <Xm/CascadeBG.h>
 #include <Xm/PushBG.h>
+#include <Xm/ToggleBG.h>
+#include <Xm/SeparatoG.h>
 
 #include <Xcb/xcbShells.h>
 
@@ -142,10 +147,9 @@ GOClassPartInitialize
 	if(lc == NggOClass)
 		return ret;
 
-	if(!gc->go_class.create_win)
-		gc->go_class.create_win = sc->go_class.create_win;
-	if(!gc->go_class.create_win_hook)
-		gc->go_class.create_win_hook = sc->go_class.create_win_hook;
+	/*
+	 * Do Inheritance here - none currently.
+	 */
 
 	return ret;
 }
@@ -387,6 +391,23 @@ loadScript
 	return;
 }
 
+static NhlBoolean
+GetNclEditor
+(
+	int		goid,
+	NhlPointer	udata
+)
+{
+	int	*ncledit = (int*)udata;
+
+	if(NhlIsClass(goid,NgnclEditClass)){
+		*ncledit = goid;
+		return False;
+	}
+
+	return True;
+}
+
 /*
  * Function:	nclWindow
  *
@@ -414,6 +435,7 @@ nclWindow
 	int		appmgr = NhlDEFAULT_APP;
 	int		ne = NhlDEFAULT_APP;
 	NhlBoolean	new = False;
+	NhlLayer	app;
 
 	goid = NgGOWidgetToGoId(w);
 	if(goid == NhlDEFAULT_APP){
@@ -425,6 +447,7 @@ nclWindow
 		_NhlNguiData,	&appmgr,
 		NULL);
 
+
 	if(*num_params > 1){
 		NHLPERROR((NhlFATAL,NhlEUNKNOWN,
 					"%s:wrong number of params",func));
@@ -434,13 +457,38 @@ nclWindow
 		new = True;
 	}
 
-	ne = NgAppGetNclEditor(appmgr,new);
+	app = _NhlGetLayer(appmgr);
+	if(!app || !_NhlIsClass((NhlLayer)app,NgappMgrClass)){
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s:invalid appid",func));
+		return;
+	}
 
+	if(!new)
+		NgAppEnumerateGO(appmgr,GetNclEditor,&ne);
+	if(ne == NhlDEFAULT_APP)
+		NhlVACreate(&ne,"ncledit",NgnclEditClass,
+						app->base.appobj->base.id,NULL);
 	NgGOPopup(ne);
 
 	return;
 }
 
+static NhlBoolean
+GetBrowser
+(
+	int		goid,
+	NhlPointer	udata
+)
+{
+	int	*browse = (int*)udata;
+
+	if(NhlIsClass(goid,NgbrowseClass)){
+		*browse = goid;
+		return False;
+	}
+
+	return True;
+}
 
 /*
  * Function:	browseWindow
@@ -468,6 +516,8 @@ browseWindow
 	int		goid = NhlDEFAULT_APP;
 	int		appmgr = NhlDEFAULT_APP;
 	int		browse = NhlDEFAULT_APP;
+	NhlBoolean	new = False;
+	NhlLayer	app;
 
 	goid = NgGOWidgetToGoId(w);
 	if(goid == NhlDEFAULT_APP){
@@ -479,21 +529,27 @@ browseWindow
 		_NhlNguiData,	&appmgr,
 		NULL);
 
-	if(*num_params > 0){
+
+	if(*num_params > 1){
 		NHLPERROR((NhlFATAL,NhlEUNKNOWN,
 					"%s:wrong number of params",func));
 		return;
 	}
+	else if((*num_params == 1) && !strcmp(params[0],"new")){
+		new = True;
+	}
 
-	/*
-	 * Popup browse window.
-	 */
-	NhlVAGetValues(appmgr,
-		NgNxappBrowseWindow,	&browse,
-		NULL);
-	/*
-	 *TODO: move load window to center of goid window.
-	 */
+	app = _NhlGetLayer(appmgr);
+	if(!app || !_NhlIsClass((NhlLayer)app,NgappMgrClass)){
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s:invalid appid",func));
+		return;
+	}
+
+	if(!new)
+		NgAppEnumerateGO(appmgr,GetBrowser,&browse);
+	if(browse == NhlDEFAULT_APP)
+		NhlVACreate(&browse,"browse",NgbrowseClass,
+						app->base.appobj->base.id,NULL);
 	NgGOPopup(browse);
 
 	return;
@@ -559,7 +615,10 @@ GOInitialize
 			return NhlFATAL;
 		}
 		strcpy(go->title,rgo->title);
+		go->xm_title = NgXAppCreateXmString(go->appmgr,go->title);
 	}
+	else
+		go->xm_title = NULL;
 
 	go->sensitive = True;
 	go->x_sensitive = True;
@@ -590,6 +649,8 @@ GOInitialize
 
 	go->up = False;
 	go->shell = NULL;
+
+	go->menubar = NULL;
 
 	NgAppAddGO(go->appmgr,new->base.id);
 
@@ -627,6 +688,16 @@ GODestroy
 )
 {
 	NgGOPart	*go = &((NgGO)l)->go;
+
+	if(go->title){
+		NhlFree(go->title);
+		go->title = NULL;
+	}
+
+	if(go->xm_title){
+		NgXAppFreeXmString(go->appmgr,go->xm_title);
+		go->xm_title = NULL;
+	}
 
 	NgAppRemoveGO(go->appmgr,l->base.id);
 
@@ -1043,133 +1114,466 @@ _NgGODefActionCB
 	XtCallActionProc(w,XtName(w),xmcb->event,params,i);
 }
 
-Widget
-_NgGOCreateMenubar
+static void
+NoChangeCB
 (
-	NgGO	go,
-	Widget	manager
+	Widget		w,
+	XtPointer	udata,
+	XtPointer	cbdata
 )
 {
-	Widget	m;
-	Widget	menubar,menush,fmenu,emenu;
-	Widget	vmenu,omenu,wmenu,hmenu;
-	Widget	file,edit,view,options,window,help;
-	Widget	addfile,load,close,quit;
-	Widget	ncledit,browse;
+	XmToggleButtonCallbackStruct	*cbs =
+					(XmToggleButtonCallbackStruct*)cbdata;
+	XmToggleButtonGadgetSetState(w,!cbs->set,False);
 
-	if(manager)
-		m = manager;
+	return;
+}
+
+static void
+WinLabelCB
+(
+	Widget		w,
+	XtPointer	udata,
+	XtPointer	cbdata
+)
+{
+	Widget	tog = (Widget)udata;
+	int	goid;
+	NgGO	go;
+
+	XtVaGetValues(tog,
+		XmNuserData,	&goid,
+		NULL);
+	go = (NgGO)_NhlGetLayer(goid);
+
+	if(!go || !_NhlIsClass((NhlLayer)go,NggOClass))
+		return;
+
+	XtVaSetValues(tog,
+		XmNlabelString,	go->go.xm_title,
+		NULL);
+
+	return;
+}
+
+static void
+AddGOWin
+(
+	NgGO	go,
+	int	goid
+)
+{
+	Widget	w;
+	short	start;
+	short	pos;
+	int	which=0;	/* 0 none, 1 ncledit, 2 browse */
+
+	if(NhlIsClass(goid,NgnclEditClass)){
+		start=0;
+		which=1;
+		XtVaGetValues(go->go.wsep1,
+			XmNpositionIndex,	&pos,
+			NULL);
+	}
+	else if(NhlIsClass(goid,NgbrowseClass)){
+		which=2;
+		XtVaGetValues(go->go.wsep1,
+			XmNpositionIndex,	&start,
+			NULL);
+		start++;
+		XtVaGetValues(go->go.wsep2,
+			XmNpositionIndex,	&pos,
+			NULL);
+	}
+	else if(NhlIsClass(goid,NgxWkClass)){
+		pos = XmLAST_POSITION;
+	}
 	else
-		m = go->go.manager;
+		return;
 
-	menubar =XtVaCreateManagedWidget("menubar",xmRowColumnWidgetClass,m,
+	w = XtVaCreateManagedWidget("enumWin",xmToggleButtonGadgetClass,
+								go->go.wmenu,
+		XmNset,			(goid == go->base.id),
+		XmNuserData,		goid,
+		XmNpositionIndex,	pos,
+		NULL);
+	if(which && pos == start){
+		switch(which){
+			/* ncledit */
+			case 1:
+				XtVaSetValues(w,
+					XtVaTypedArg, XmNacceleratorText,
+							XtRString,"Alt+N",6,
+					NULL);
+				break;
+			case 2:
+				XtVaSetValues(w,
+					XtVaTypedArg, XmNacceleratorText,
+							XtRString,"Alt+B",6,
+					NULL);
+				break;
+			default:
+				NHLPERROR((NhlFATAL,NhlEUNKNOWN,NULL));
+		}
+	}
+	XtAddCallback(w,XmNvalueChangedCallback,_NgGOPopupCB,(XtPointer)goid);
+	XtAddCallback(w,XmNvalueChangedCallback,NoChangeCB,NULL);
+	XtAddCallback(go->go.wmenu,XmNmapCallback,WinLabelCB,(XtPointer)w);
+
+	return;
+}
+
+static void
+RemoveGOWin
+(
+	NgGO	go,
+	int	goid
+)
+{
+	short		start,end;
+	WidgetList	children;
+	Cardinal	nchildren;
+	int		i,w_goid;
+	int		which=0;	/* 0 none, 1 ncledit, 2 browse */
+
+	XtVaGetValues(go->go.wmenu,
+		XmNchildren,	&children,
+		XmNnumChildren,	&nchildren,
+		NULL);
+
+
+	if(NhlIsClass(goid,NgnclEditClass)){
+		which=1;
+		start = 0;
+		XtVaGetValues(go->go.wsep1,
+			XmNpositionIndex,	&end,
+			NULL);
+	}
+	else if(NhlIsClass(goid,NgbrowseClass)){
+		which=2;
+		XtVaGetValues(go->go.wsep1,
+			XmNpositionIndex,	&start,
+			NULL);
+		start++;
+		XtVaGetValues(go->go.wsep2,
+			XmNpositionIndex,	&end,
+			NULL);
+
+	}
+	else if(NhlIsClass(goid,NgxWkClass)){
+		XtVaGetValues(go->go.wsep2,
+			XmNpositionIndex,	&start,
+			NULL);
+		start++;
+		end = nchildren;
+	}
+	else
+		return;
+
+	for(i=start;i<end;i++){
+		XtVaGetValues(children[i],
+			XmNuserData,	&w_goid,
+			NULL);
+		if(goid == w_goid){
+			if(which && (i == start) && ((i+1) < end)){
+				switch(which){
+					/* ncledit */
+					case 1:
+						XtVaSetValues(children[i+1],
+							XtVaTypedArg,
+							XmNacceleratorText,
+							XtRString,"Alt+N",6,
+							NULL);
+						break;
+					case 2:
+						XtVaSetValues(children[i+1],
+							XtVaTypedArg,
+							XmNacceleratorText,
+							XtRString,"Alt+B",6,
+							NULL);
+						break;
+					default:
+						NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+									NULL));
+				}
+			}
+			XtRemoveCallback(go->go.wmenu,XmNmapCallback,
+					WinLabelCB,(XtPointer)children[i]);
+			XtDestroyWidget(children[i]);
+			return;
+		}
+	}
+
+	return;
+}
+
+static NhlBoolean
+EnumWindows
+(
+	int		goid,
+	NhlPointer	udata
+)
+{
+	Widget	w;
+	NgGO	go = (NgGO)udata;
+
+	AddGOWin(go,goid);
+
+	return True;
+}
+
+static void
+GOChangeCB
+(
+	NhlArgVal	cbdata,
+	NhlArgVal	udata
+)
+{
+	NgAppGoChange	gc = (NgAppGoChange)cbdata.ptrval;
+	NgGO		go = (NgGO)udata.ptrval;
+
+	if(gc->reason == NgAppGoAdd)
+		AddGOWin(go,gc->goid);
+	else if(gc->reason == NgAppGoRemove)
+		RemoveGOWin(go,gc->goid);
+
+	return;
+}
+
+static void
+DelGoChangeCB
+(
+	Widget		w,
+	XtPointer	udata,
+	XtPointer	cbdata
+)
+{
+	_NhlCBDelete((_NhlCB)udata);
+}
+
+void
+_NgGOCreateMenubar
+(
+	NgGO	go
+)
+{
+	char		func[]="_NgGOCreateMenubar";
+	NgGOPart	*gp = &go->go;
+	Widget		file,edit,view,options,window,help;
+	Widget		addfile,load,close,quit;
+	Widget		ncledit,browse;
+	static char	*new[]= {"new",NULL};
+	_NhlCB		cb;
+	NhlArgVal	dummy,udata;
+
+	if(gp->menubar){
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s:menubar exists?",func));
+		return;
+	}
+
+	gp->menubar =XtVaCreateManagedWidget("menubar",
+					xmRowColumnWidgetClass,gp->manager,
 		XmNrowColumnType,	XmMENU_BAR,
 		NULL);
 
-	menush = XtVaCreatePopupShell("menush",xmMenuShellWidgetClass,
-								go->go.shell,
+	gp->menush = XtVaCreatePopupShell("menush",xmMenuShellWidgetClass,
+								gp->shell,
 		XmNwidth,		5,
 		XmNheight,		5,
 		XmNallowShellResize,	True,
 		XtNoverrideRedirect,	True,
 		NULL);
-	fmenu = XtVaCreateWidget("fmenu",xmRowColumnWidgetClass,menush,
+	gp->fmenu = XtVaCreateWidget("fmenu",xmRowColumnWidgetClass,gp->menush,
 		XmNrowColumnType,	XmMENU_PULLDOWN,
 		NULL);
 
-	emenu = XtVaCreateWidget("emenu",xmRowColumnWidgetClass,menush,
+	gp->emenu = XtVaCreateWidget("emenu",xmRowColumnWidgetClass,gp->menush,
 		XmNrowColumnType,	XmMENU_PULLDOWN,
 		NULL);
 
-	vmenu = XtVaCreateWidget("vmenu",xmRowColumnWidgetClass,menush,
+	gp->vmenu = XtVaCreateWidget("vmenu",xmRowColumnWidgetClass,gp->menush,
 		XmNrowColumnType,	XmMENU_PULLDOWN,
 		NULL);
 
-	omenu = XtVaCreateWidget("omenu",xmRowColumnWidgetClass,menush,
+	gp->omenu = XtVaCreateWidget("omenu",xmRowColumnWidgetClass,gp->menush,
 		XmNrowColumnType,	XmMENU_PULLDOWN,
 		NULL);
 
-	wmenu = XtVaCreateWidget("wmenu",xmRowColumnWidgetClass,menush,
+	gp->wmenu = XtVaCreateWidget("wmenu",xmRowColumnWidgetClass,gp->menush,
 		XmNrowColumnType,	XmMENU_PULLDOWN,
 		NULL);
 
-	hmenu = XtVaCreateWidget("hmenu",xmRowColumnWidgetClass,menush,
+	gp->hmenu = XtVaCreateWidget("hmenu",xmRowColumnWidgetClass,gp->menush,
 		XmNrowColumnType,	XmMENU_PULLDOWN,
 		NULL);
 
 	file = XtVaCreateManagedWidget("file",xmCascadeButtonGadgetClass,
-									menubar,
-		XmNsubMenuId,	fmenu,
+								gp->menubar,
+		XmNsubMenuId,	gp->fmenu,
 		NULL);
 
 	edit = XtVaCreateManagedWidget("edit",xmCascadeButtonGadgetClass,
-									menubar,
-		XmNsubMenuId,	emenu,
+								gp->menubar,
+		XmNsubMenuId,	gp->emenu,
 		NULL);
 
 	view = XtVaCreateManagedWidget("view",xmCascadeButtonGadgetClass,
-									menubar,
-		XmNsubMenuId,	vmenu,
+								gp->menubar,
+		XmNsubMenuId,	gp->vmenu,
 		NULL);
 
-	options = XtVaCreateManagedWidget("options",xmCascadeButtonGadgetClass,
-									menubar,
-		XmNsubMenuId,	omenu,
+	options = XtVaCreateManagedWidget("options",
+					xmCascadeButtonGadgetClass,gp->menubar,
+		XmNsubMenuId,	gp->omenu,
 		NULL);
 
-	window = XtVaCreateManagedWidget("window",xmCascadeButtonGadgetClass,
-									menubar,
-		XmNsubMenuId,	wmenu,
+	window = XtVaCreateManagedWidget("window",
+					xmCascadeButtonGadgetClass,gp->menubar,
+		XmNsubMenuId,	gp->wmenu,
 		NULL);
 
 	help = XtVaCreateManagedWidget("help",xmCascadeButtonGadgetClass,
-									menubar,
-		XmNsubMenuId,	hmenu,
+								gp->menubar,
+		XmNsubMenuId,	gp->hmenu,
 		NULL);
 
-	XtVaSetValues(menubar,
+	XtVaSetValues(gp->menubar,
 		XmNmenuHelpWidget,	help,
 		NULL);
 
 	addfile = XtVaCreateManagedWidget("addFile",
-					xmPushButtonGadgetClass,fmenu,
+					xmPushButtonGadgetClass,gp->fmenu,
 		NULL);
 	XtAddCallback(addfile,XmNactivateCallback,_NgGODefActionCB,NULL);
 
 	load = XtVaCreateManagedWidget("loadScript",
-					xmPushButtonGadgetClass,fmenu,
+					xmPushButtonGadgetClass,gp->fmenu,
 		NULL);
 	XtAddCallback(load,XmNactivateCallback,_NgGODefActionCB,NULL);
 
+	XtVaCreateManagedWidget("fsep",xmSeparatorGadgetClass,gp->fmenu,
+		NULL);
+
+	browse = XtVaCreateManagedWidget("browseWindow",xmPushButtonGadgetClass,
+							gp->fmenu,
+		NULL);
+	XtAddCallback(browse,XmNactivateCallback,_NgGODefActionCB,new);
+
+	ncledit = XtVaCreateManagedWidget("nclWindow",xmPushButtonGadgetClass,
+							gp->fmenu,
+		NULL);
+	XtAddCallback(ncledit,XmNactivateCallback,_NgGODefActionCB,new);
+
+	XtVaCreateManagedWidget("fsep",xmSeparatorGadgetClass,gp->fmenu,
+		NULL);
+
 	close = XtVaCreateManagedWidget("closeWindow",
-					xmPushButtonGadgetClass,fmenu,
+					xmPushButtonGadgetClass,gp->fmenu,
 		NULL);
 	XtAddCallback(close,XmNactivateCallback,_NgGODefActionCB,NULL);
 
 	quit = XtVaCreateManagedWidget("quitApplication",
-					xmPushButtonGadgetClass,fmenu,
+					xmPushButtonGadgetClass,gp->fmenu,
 		NULL);
 	XtAddCallback(quit,XmNactivateCallback,_NgGODefActionCB,NULL);
 
-	ncledit = XtVaCreateManagedWidget("nclWindow",
-					xmPushButtonGadgetClass,wmenu,
-		NULL);
-	XtAddCallback(ncledit,XmNactivateCallback,_NgGODefActionCB,NULL);
+	/*
+	 * Dynamic Menu Entries
+	 */
 
-	browse = XtVaCreateManagedWidget("browseWindow",
-					xmPushButtonGadgetClass,wmenu,
+	gp->wsep1= XtVaCreateManagedWidget("fsep",xmSeparatorGadgetClass,
+								gp->wmenu,
 		NULL);
-	XtAddCallback(browse,XmNactivateCallback,_NgGODefActionCB,NULL);
-        
-	XtManageChild(fmenu);
-	XtManageChild(emenu);
-	XtManageChild(vmenu);
-	XtManageChild(omenu);
-	XtManageChild(wmenu);
-	XtManageChild(hmenu);
 
-	return menubar;
+	gp->wsep2= XtVaCreateManagedWidget("fsep",xmSeparatorGadgetClass,
+								gp->wmenu,
+		NULL);
+
+	NgAppEnumerateGO(gp->appmgr,EnumWindows,go);
+
+	NhlINITVAR(dummy);
+	NhlINITVAR(udata);
+	udata.ptrval = go;
+	cb = _NhlAddObjCallback(_NhlGetLayer(gp->appmgr),NgCBAppGoChange,dummy,
+			GOChangeCB,udata);
+
+	XtAddCallback(gp->menubar,XmNdestroyCallback,DelGoChangeCB,cb);
+
+	XtManageChild(gp->fmenu);
+	XtManageChild(gp->emenu);
+	XtManageChild(gp->vmenu);
+	XtManageChild(gp->omenu);
+	XtManageChild(gp->wmenu);
+	XtManageChild(gp->hmenu);
+
+	return;
 }
+
+/*
+ * Function:	_NgGOSetTitle
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+void
+_NgGOSetTitle
+(
+	NgGO		go,
+	Const char	*title,
+	Const char	*icon_title
+)
+{
+	Arg	arg[2];
+	int	narg;
+	if(!go)
+		return;
+
+	if(go->go.shell){
+		narg=0;
+		if(title){
+			XtSetArg(arg[narg],XmNtitle,title);narg++;
+		}
+		if(icon_title){
+			XtSetArg(arg[narg],XmNiconName,icon_title);narg++;
+		}
+		else if(title){
+			XtSetArg(arg[narg],XmNiconName,title);narg++;
+		}
+		XtSetValues(go->go.shell,arg,narg);
+	}
+
+	if(go->go.xm_title){
+		NgXAppFreeXmString(go->go.appmgr,go->go.xm_title);
+		go->go.xm_title = NULL;
+	}
+
+	if(go->go.title){
+		NhlFree(go->go.title);
+		go->go.title = NULL;
+	}
+
+	if(!title)
+		return;
+
+	go->go.title = NhlMalloc(sizeof(char)*(strlen(title)+1));
+	if(!go->go.title){
+		NHLPERROR((NhlFATAL,ENOMEM,NULL));
+		return;
+	}
+	strcpy(go->go.title,title);
+
+	go->go.xm_title = NgXAppCreateXmString(go->go.appmgr,(char*)title);
+
+	return;
+}
+
 /*
  * Public API
  */
