@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.74 2001-09-14 21:17:55 haley Exp $
+;      $Id: gsn_code.ncl,v 1.75 2001-09-25 17:07:11 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -3178,9 +3178,18 @@ begin
 ;  
   if(.not.is_row_spec) then
     newbb  = new((/dimsizes(newplots),4/),float)
-    newbb  = NhlGetBB(newplots)       ; Get bounding boxes of plots, plus
-                                      ; labelbar and text string if they
-                                      ; exist.  
+;
+; Have to deal with special case of only having one plot.
+;
+    if(dimsizes(newplots).eq.1)
+      newbb(0,:)  = NhlGetBB(newplots)  ; Get bounding boxes of plots, plus
+                                        ; labelbar and text string if they
+                                        ; exist.  
+    else
+      newbb  = NhlGetBB(newplots)       ; Get bounding boxes of plots, plus
+                                        ; labelbar and text string if they
+                                        ; exist.  
+    end if
 ;
 ; Get largest bounding box that encompasses all non-missing graphical
 ; objects.
@@ -3190,16 +3199,22 @@ begin
     newlft = min(newbb(:,2))
     newrgt = max(newbb(:,3))
     delete(newbb)
-    if(.not.rgt_pnl.and.nplots.gt.ncols.and. \ 
-       all(ismissing(plot(ncols-1:nplots-1:ncols))))
+    if(.not.rgt_pnl.and.nplots.gt.ncols)
+;
+; Double check that this little calculation doesn't yield array
+; indices that are out-of-bounds.
+;
+       if(((ncols-1).ge.0.and.(ncols-1).le.(nplots-1)).and.\
+          all(ismissing(plot(ncols-1:nplots-1:ncols))))
 ;
 ; The rightmost graphical object is either the rightmost edge of
 ; the rightmost plot, or the rightmost edge of the labelbar or
 ; text string (if they exist).
 ;
-      irgt                      = ncols - 1        ; 1st rightmost plot.
-      xrgt                      = xpos(irgt)+scaled_width+dxr
-      maxbb@gsnPanelInvsblRight = max((/xrgt,newrgt/))
+        irgt                      = ncols - 1        ; 1st rightmost plot.
+        xrgt                      = xpos(irgt)+scaled_width+dxr
+        maxbb@gsnPanelInvsblRight = max((/xrgt,newrgt/))
+      end if
     end if
 
     if(.not.lft_pnl.and.all(ismissing(plot(0:nplots-1:ncols))))
@@ -3224,16 +3239,22 @@ begin
       maxbb@gsnPanelInvsblTop = max((/xtop,newtop/))
     end if
 
-    if(.not.bot_pnl.and.nplots.gt.(nrows-1)*ncols.and. \ 
-       all(ismissing(plot(nplots-ncols-1:nplots-1))))
+    if(.not.bot_pnl.and.nplots.gt.(nrows-1)*ncols)
+;
+; Double check that this little calculation doesn't yield array
+; indices that are out-of-bounds.
+;
+      if(((nplots-ncols-1).ge.0.and.(nplots-ncols-1).le.(nplots-1)).and. \
+         all(ismissing(plot(nplots-ncols-1:nplots-1))))
 ;
 ; The bottommost graphical object is either the bottommost edge of
 ; the bottommost plot, or the bottommost edge of the labelbar or
 ; text string (if they exist).
 ;
-      ibot                       = nplots-ncols-1   ; 1st bottommost plot.
-      xbot                       = ypos(ibot)-scaled_height-dyb
-      maxbb@gsnPanelInvsblBottom = min((/xbot,newbot/))
+        ibot                       = nplots-ncols-1   ; 1st bottommost plot.
+        xbot                       = ypos(ibot)-scaled_height-dyb
+        maxbb@gsnPanelInvsblBottom = min((/xbot,newbot/))
+      end if
     end if
   end if
 ; 
