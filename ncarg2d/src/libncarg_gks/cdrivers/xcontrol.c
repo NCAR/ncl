@@ -1,5 +1,5 @@
 /*
- *	$Id: xcontrol.c,v 1.12 1996-04-01 05:15:06 boote Exp $
+ *	$Id: xcontrol.c,v 1.13 1996-05-09 14:42:32 haley Exp $
  */
 /*
  *      File:		xcontrol.c
@@ -103,7 +103,7 @@ X11_private_color
 		default:
 
 		newcmap = XCreateColormap(xi->dpy,xi->win,xi->vis,AllocAll);
-		if(colors = malloc(sizeof(XColor)*xi->max_x_colors)){
+		if(colors = (void *)malloc(sizeof(XColor)*xi->max_x_colors)){
 			for(i=0;i<xi->max_x_colors;i++)
 				colors[i].pixel = i;
 			XQueryColors(xi->dpy,xi->cmap,colors,xi->max_x_colors);
@@ -171,9 +171,9 @@ init_color
 	}
 
 	if(xi->x_ref_count){
-		xi->color_def = malloc(sizeof(int)*xi->max_x_colors);
+		xi->color_def = (void *)malloc(sizeof(int)*xi->max_x_colors);
 		if(xi->color_def)
-			memset(xi->color_def,0,sizeof(int)*xi->max_x_colors);
+			memset((char *)xi->color_def,0,sizeof(int)*xi->max_x_colors);
 		else
 			xi->x_ref_count = False;
 	}
@@ -227,7 +227,7 @@ init_color
 
 			newcmap = XCreateColormap(xi->dpy,xi->win,xi->vis,
 								AllocAll);
-			if(colors = malloc(sizeof(XColor)*xi->max_x_colors)){
+			if(colors = (void *)malloc(sizeof(XColor)*xi->max_x_colors)){
 				for(i=0;i<xi->max_x_colors;i++)
 					colors[i].pixel = i;
 				XQueryColors(xi->dpy,xi->cmap,colors,
