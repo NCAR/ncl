@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.c,v 1.60 1998-02-18 01:24:38 dbrown Exp $
+ *      $Id: TickMark.c,v 1.61 1998-02-20 22:41:20 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1333,7 +1333,7 @@ static NhlErrorTypes	TickMarkSetValues
 	if (_NhlArgIsSet(args,num_args,NhlNvpYF)) view_args++;
 	if (_NhlArgIsSet(args,num_args,NhlNvpWidthF)) view_args++;
 	if (_NhlArgIsSet(args,num_args,NhlNvpHeightF)) view_args++;
-
+	if (_NhlArgIsSet(args,num_args,NhlNvpOn)) view_args++;
 
 	if (_NhlArgIsSet(args,num_args,NhlNtmXBPrecision)) 
 		tnew->tick.x_b_precision_set = True;

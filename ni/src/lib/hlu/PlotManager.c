@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManager.c,v 1.45 1998-02-18 01:23:35 dbrown Exp $
+ *      $Id: PlotManager.c,v 1.46 1998-02-20 22:41:05 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -390,9 +390,10 @@ static NhlJustification ConstrainJustification(
 
 static NhlErrorTypes UpdateAnnoData(
 #if	NhlNeedProto
-	NhlAnnoRec	*anno_list,
-	int		*max_zone,
-	NhlString	entry_name
+        NhlTransformLayer	plot,
+	NhlAnnoRec		*anno_list,
+	int			*max_zone,
+	NhlString		entry_name
 #endif
 );
 
@@ -1166,7 +1167,8 @@ static NhlErrorTypes PlotManagerSetValues
 	}
 
 /*
- * Only a master overlay with member plots needs to execute the remaining code
+ * Only a base plotmanager with overlay plots needs to execute
+ * the remaining code.
  */
 
 /*
@@ -1598,7 +1600,8 @@ static NhlErrorTypes PlotManagerPreDraw
  * Update the annotation data 
  */
 	for (max_zone = 0, i = 0; i < ovp->overlay_count; i++) {
-		subret = UpdateAnnoData(ovp->pm_recs[i]->anno_list,
+		subret = UpdateAnnoData(ovp->pm_recs[i]->plot,
+                                        ovp->pm_recs[i]->anno_list,
 					&ovp->pm_recs[i]->max_zone,
 					entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
@@ -1611,7 +1614,8 @@ static NhlErrorTypes PlotManagerPreDraw
 	flags[0] = flags[1] = flags[2] = flags[3] = False;
 	for (i = 0; i <= max_zone; i++) {
 		for (j = 0; j < ovp->overlay_count; j++) {
-
+                        if (! _NhlViewOn((NhlLayer)ovp->pm_recs[j]->plot))
+                                continue;
 			subret = SetAnnoViews(ovl,ovp->pm_recs[j]->plot,
 					      ovp->pm_recs[j]->anno_list,
 					      i,flags,entry_name);
@@ -1835,10 +1839,12 @@ static NhlErrorTypes PlotManagerPostDraw
 	for (i = 0; i < ovp->overlay_count; i++) {
 		NhlAnnoRec	*anlp = ovp->pm_recs[i]->anno_list;
 
+                if (! _NhlViewOn((NhlLayer) ovp->pm_recs[i]->plot))
+                        continue;
 		for ( ; anlp != NULL; anlp = anlp->next) {
 
 			NhlLayer view;
-			if (anlp->status <= NhlNEVER)
+			if (! anlp->viewable)
 				continue;
 			else if (anlp->status == NhlCONDITIONAL) {
 				switch (anlp->type) {
@@ -1938,7 +1944,8 @@ static NhlErrorTypes PlotManagerGetBB
  * Update the annotation data 
  */
 	for (max_zone = 0, i = 0; i < ovp->overlay_count; i++) {
-		subret = UpdateAnnoData(ovp->pm_recs[i]->anno_list,
+		subret = UpdateAnnoData(ovp->pm_recs[i]->plot,
+                                        ovp->pm_recs[i]->anno_list,
 					&ovp->pm_recs[i]->max_zone,
 					entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
@@ -1951,7 +1958,8 @@ static NhlErrorTypes PlotManagerGetBB
 	flags[0] = flags[1] = flags[2] = flags[3] = False;
 	for (i = 0; i <= max_zone; i++) {
 		for (j = 0; j < ovp->overlay_count; j++) {
-
+                        if (! _NhlViewOn((NhlLayer) ovp->pm_recs[j]->plot))
+                                continue;
 			subret = SetAnnoViews(ovl,ovp->pm_recs[j]->plot,
 					      ovp->pm_recs[j]->anno_list,
 					      i,flags,entry_name);
@@ -2102,8 +2110,10 @@ static NhlErrorTypes SetAnnoViews
 		
 		if (anlp->zone != zone)
 			continue;
-		else if (anlp->status <= NhlNEVER)
+		else if (anlp->status <= NhlNEVER) {
+                        anlp->viewable = False;
 			continue;
+                }
 		else if (anlp->status == NhlCONDITIONAL) {
 			switch (anlp->type) {
 			case ovTICKMARK:
@@ -2123,6 +2133,7 @@ static NhlErrorTypes SetAnnoViews
 				break;
 			}
 		}
+                anlp->viewable = True;
 		switch (anlp->type) {
 		case ovTICKMARK:
 			subret = SetTickMarkView(ovl,anlp,entry_name);
@@ -2134,7 +2145,8 @@ static NhlErrorTypes SetAnnoViews
 			SetTitleView(ovl,anlp,entry_name);
 			if ((ret = MIN(ret,subret)) < NhlWARNING)
 				return ret;
-			flags[1] = True;
+                        if (anlp->viewable)
+                                flags[1] = True;
 			break;
 		case ovLEGEND:
 			SetExternalView(ovl,anlp,entry_name);
@@ -2239,13 +2251,17 @@ static NhlErrorTypes SetTitleView
 	NhlPosition		x_axis_pos,y_axis_pos,main_pos;
         NhlSArg			sargs[16];
         int			nargs = 0;
-	NhlPlotManagerLayer		an_ovl;
+	NhlPlotManagerLayer	an_ovl;
 	int			zone;
+        NhlBoolean		main_on,x_on,y_on;
 	
 /*
  * Get relevant title attributes
  */
 	subret = NhlVAGetValues(anno_rec->plot_id,
+                                NhlNtiMainOn,&main_on,
+                                NhlNtiXAxisOn,&x_on,
+                                NhlNtiYAxisOn,&y_on,
 				NhlNtiMainOffsetXF,&get_main_off_x,
 				NhlNtiXAxisOffsetXF,&get_x_off_x,
 				NhlNtiYAxisOffsetYF,&get_y_off_y,
@@ -2264,6 +2280,10 @@ static NhlErrorTypes SetTitleView
 		NhlPError(ret,NhlEUNKNOWN,e_text, entry_name);
 		if (ret < NhlWARNING) return ret;
 	}
+        if (! (main_on || x_on || y_on)) {
+                anno_rec->viewable = False;
+                return;
+        }
 
 /*
  * Get the bounding box, then set the title positions with respect to it.
@@ -2776,10 +2796,12 @@ static NhlErrorTypes InternalGetBB
 	for (i = 0; i < ovl_basep->overlay_count; i++) {
 		NhlAnnoRec *anno_list = ovl_basep->pm_recs[i]->anno_list;
 
+                if (! _NhlViewOn((NhlLayer) ovl_basep->pm_recs[i]->plot))
+                                continue;
 		for ( ; anno_list != NULL; anno_list = anno_list->next) {
 			if (anno_list->zone > zone || anno_list->zone < 2)
 				continue;
-			else if (anno_list->status == NhlNEVER)
+			else if (! anno_list->viewable)
 				continue;
 			else if (anno_list->plot_id < 1)
 				continue;
@@ -3410,23 +3432,29 @@ static NhlErrorTypes
 UpdateAnnoData
 #if	NhlNeedProto
 (
-	NhlAnnoRec	*anno_list,
-	int		*max_zone,
-	NhlString	entry_name
+        NhlTransformLayer	plot,
+	NhlAnnoRec		*anno_list,
+	int			*max_zone,
+	NhlString		entry_name
 )
 #else
-(anno_list,max_zone,entry_name)
-	NhlAnnoRec	*anno_list;
-	int		*max_zone;
-	NhlString	entry_name;
+(plot,anno_list,max_zone,entry_name)
+	NhlTransformLayer	plot;
+	NhlAnnoRec		*anno_list;
+	int			*max_zone;
+	NhlString		entry_name;
 #endif
 {
 	NhlErrorTypes		ret = NhlNOERROR,subret = NhlNOERROR;
 	NhlAnnoRec		*anlp;
 	NhlBoolean		on;
+        NhlBoolean		viewable = _NhlViewOn((NhlLayer) plot);
 
 	*max_zone	= 0;
 	for (anlp = anno_list; anlp != NULL; anlp = anlp->next) {
+                anlp->viewable = viewable;
+                if (! viewable)
+                        continue;
 		if (anlp->type == ovEXTERNAL) {
 			subret = NhlVAGetValues(
 				anlp->anno_id,
@@ -3444,8 +3472,9 @@ UpdateAnnoData
 				NULL);
 			if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
 			anlp->status = on ? NhlALWAYS : NhlNEVER;
+                        anlp->viewable = on;
 		}
-		if (anlp->zone > *max_zone)
+		if (anlp->viewable && anlp->zone > *max_zone)
 			*max_zone = anlp->zone;
 	}
 

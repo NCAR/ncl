@@ -1,5 +1,5 @@
 /*
- *      $Id: TransObj.c,v 1.28 1998-02-18 01:25:23 dbrown Exp $
+ *      $Id: TransObj.c,v 1.29 1998-02-20 22:41:37 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -295,6 +295,7 @@ TransInitialize
         if (! tp->y_max_set) {
                 tp->y_max = 1.0;
         }
+        tp->off_screen = False;
         
 }
 
@@ -689,10 +690,11 @@ NhlErrorTypes _NhlTransLLUSet
     float wb,
     float wt,
     int lf,
+    NhlBoolean *off_screen,
     NhlString entry
 )
 #else
-(vl,vr,vb,vt,wl,wr,wb,wt,lf,entry)
+(vl,vr,vb,vt,wl,wr,wb,wt,lf,off_screen,entry)
     float vl;
     float vr;
     float vb;
@@ -702,11 +704,13 @@ NhlErrorTypes _NhlTransLLUSet
     float wb;
     float wt;
     int lf;
+    NhlBoolean *off_screen;
     NhlString entry;
 #endif
 {
         float fl,fr,fb,ft,ul,ur,ub,ut;
         float fwidth,fheight,uwidth,uheight;
+        *off_screen = False;
 
         if (vl >= 0.0 && vr <= 1.0 && vb >=0.0 && vt <= 1.0) {
                 _NHLCALLF(set,SET) (&vl,&vr,&vb,&vt,&wl,&wr,&wb,&wt,&lf);
@@ -714,9 +718,10 @@ NhlErrorTypes _NhlTransLLUSet
         }
 
         if (vl >= 1.0 || vr <= 0.0 || vb >= 1.0 || vt <= 0.0) {
-                NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+                *off_screen = True;
+                NHLPERROR((NhlINFO,NhlEUNKNOWN,
                     "%s: plot entirely outside viewspace; cannot draw",entry));
-                return NhlFATAL;
+                return NhlINFO;
         }
 
         fwidth = vr-vl;

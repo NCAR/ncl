@@ -1,5 +1,5 @@
 /*
-*      $Id: MapTransObj.c,v 1.39 1998-02-18 01:23:20 dbrown Exp $
+*      $Id: MapTransObj.c,v 1.40 1998-02-20 22:40:59 dbrown Exp $
 */
 /************************************************************************
 *									*
@@ -579,13 +579,7 @@ NhlLayer parent;
         xr = xl + width;
         yb = yt - height;
         
-        if (xl >= 1.0 || xr <= 0.0 || yb >= 1.0 || yt <= 0.0) {
-                NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                           "%s: plot entirely outside viewspace; cannot draw",
-                           entry_name));
-                return NhlFATAL;
-        }
-        else if (xl < 0.0 || xr > 1.0 || yb < 0.0 || yt > 1.0) {
+        if (xl < 0.0 || xr > 1.0 || yb < 0.0 || yt > 1.0) {
                 outside_viewspace = True;
         }
         
@@ -843,7 +837,8 @@ NhlLayer parent;
                 _NhlTransLLUSet(mtp->map_pos_l,mtp->map_pos_r,
                                 mtp->map_pos_b,mtp->map_pos_t,
                                 mtp->ul,mtp->ur,mtp->ub,mtp->ut,
-                                loglin,entry_name);
+                                loglin,&minstance->trobj.off_screen,
+                                entry_name);
         }
         else if (outside_viewspace) {
                 float npl,npr,npb,npt;
@@ -860,7 +855,8 @@ NhlLayer parent;
                 _NhlTransLLUSet(mtp->map_pos_l,mtp->map_pos_r,
                                 mtp->map_pos_b,mtp->map_pos_t,
                                 mtp->ul,mtp->ur,mtp->ub,mtp->ut,
-                                loglin,entry_name);
+                                loglin,&minstance->trobj.off_screen,
+                                entry_name);
         }
 	mtp->left_ndc = mtp->map_pos_l;
 	mtp->right_ndc = mtp->map_pos_r;

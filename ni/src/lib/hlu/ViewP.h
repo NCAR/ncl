@@ -1,5 +1,5 @@
 /*
- *      $Id: ViewP.h,v 1.14 1997-01-17 18:57:48 boote Exp $
+ *      $Id: ViewP.h,v 1.15 1998-02-20 22:41:48 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -204,5 +204,11 @@ extern NhlErrorTypes _NhlSetAnnoView(
 #define NHL_DEFAULT_VIEW_Y_STR	".8"
 
 #define	_NhlViewOn(l)	(((NhlViewLayer)l)->view.on)
+
+#define _NhlViewOffScreen(l) ( \
+	((NhlViewLayer)l)->view.fr <= 0.0 || \
+        ((NhlViewLayer)l)->view.fl >= 1.0 || \
+        ((NhlViewLayer)l)->view.ft <= 0.0 || \
+        ((NhlViewLayer)l)->view.fb >= 1.0 )
 
 #endif	/*_NVIEWP_h*/

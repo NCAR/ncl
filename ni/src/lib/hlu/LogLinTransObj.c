@@ -1,5 +1,5 @@
 /*
- *      $Id: LogLinTransObj.c,v 1.34 1998-02-18 01:22:52 dbrown Exp $
+ *      $Id: LogLinTransObj.c,v 1.35 1998-02-20 22:40:48 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -712,7 +712,9 @@ static NhlErrorTypes LlSetTrans
 	return(_NhlTransLLUSet(tp->x,xr,yb,tp->y,
 			       linstance->lltrans.ul,linstance->lltrans.ur,
 			       linstance->lltrans.ub,linstance->lltrans.ut,
-			       linstance->lltrans.log_lin_value,entry_name));
+			       linstance->lltrans.log_lin_value,
+                               &linstance->trobj.off_screen,
+                               entry_name));
 	
 }
 

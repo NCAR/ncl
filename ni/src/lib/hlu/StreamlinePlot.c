@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlot.c,v 1.40 1998-02-18 01:23:55 dbrown Exp $
+ *      $Id: StreamlinePlot.c,v 1.41 1998-02-20 22:41:13 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1390,6 +1390,7 @@ static NhlBoolean NewDrawArgs
 		NhlNvpYF,
 		NhlNvpWidthF,
 		NhlNvpHeightF,
+                NhlNvpOn,
 		NhlNpmTickMarkDisplayMode,
 		NhlNpmTitleDisplayMode,
 		NhlNpmLegendDisplayMode,

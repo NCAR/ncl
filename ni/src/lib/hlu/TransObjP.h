@@ -1,5 +1,5 @@
 /*
- *      $Id: TransObjP.h,v 1.16 1998-02-18 01:25:25 dbrown Exp $
+ *      $Id: TransObjP.h,v 1.17 1998-02-20 22:41:39 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -99,6 +99,7 @@ typedef struct _NhlTransObjLayerPart {
 	float		data_xmax;
 	float		data_ymin;
 	float		data_ymax;
+        NhlBoolean	off_screen;
 }NhlTransObjLayerPart;
 
 
@@ -177,6 +178,7 @@ NhlErrorTypes _NhlTransLLUSet(
     float wb,
     float wt,
     int lf,
+    NhlBoolean *off_screen,
     NhlString entry
 #endif
 );

@@ -1,5 +1,5 @@
 /*
- *      $Id: Legend.c,v 1.57 1998-02-18 01:22:27 dbrown Exp $
+ *      $Id: Legend.c,v 1.58 1998-02-20 22:40:42 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -885,6 +885,7 @@ static NhlErrorTypes LegendSetValues
 	}
 	if (_NhlArgIsSet(args,num_args,NhlNvpXF)) view_args++;
 	if (_NhlArgIsSet(args,num_args,NhlNvpYF)) view_args++;
+	if (_NhlArgIsSet(args,num_args,NhlNvpOn)) view_args++;
 	if (_NhlArgIsSet(args,num_args,NhlNvpWidthF)) {
 		view_args++;
 		do_scaling = True;

@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.c,v 1.46 1998-02-18 01:25:50 dbrown Exp $
+ *      $Id: VectorPlot.c,v 1.47 1998-02-20 22:41:42 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2027,7 +2027,7 @@ static NhlBoolean NewDrawArgs
 		NhlNvpYF,
 		NhlNvpWidthF,
 		NhlNvpHeightF,
-
+                NhlNvpOn,
 		NhlNpmTickMarkDisplayMode,
 		NhlNpmTitleDisplayMode,
 		NhlNpmLegendDisplayMode,

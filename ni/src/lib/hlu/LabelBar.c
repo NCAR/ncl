@@ -1,5 +1,5 @@
 /*
- *      $Id: LabelBar.c,v 1.56 1998-02-18 01:22:01 dbrown Exp $
+ *      $Id: LabelBar.c,v 1.57 1998-02-20 22:40:36 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -771,6 +771,9 @@ static NhlErrorTypes LabelBarSetValues
 	if (_NhlArgIsSet(args,num_args,NhlNvpHeightF)) {
 		view_args++;
 		do_scaling = True;
+	}
+	if (_NhlArgIsSet(args,num_args,NhlNvpOn)) {
+		view_args++;
 	}
 
 	if (num_args > view_args ||

@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularTransObj.c,v 1.38 1998-02-18 01:21:54 dbrown Exp $
+ *      $Id: IrregularTransObj.c,v 1.39 1998-02-20 22:40:29 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1215,7 +1215,9 @@ static NhlErrorTypes IrSetTrans
 	return(_NhlTransLLUSet(top->x,top->x+top->width,
 			       top->y-top->height,top->y,
 			       tp->ul,tp->ur,tp->ub,tp->ut,
-			       tp->log_lin_value,"IrSetTrans"));
+			       tp->log_lin_value,
+                               &top->off_screen,
+                               "IrSetTrans"));
 
 }
 

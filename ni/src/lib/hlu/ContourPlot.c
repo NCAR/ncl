@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.71 1998-02-18 01:21:22 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.72 1998-02-20 22:40:18 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2251,6 +2251,7 @@ static NhlBoolean NewDrawArgs
 		NhlNvpYF,
 		NhlNvpWidthF,
 		NhlNvpHeightF,
+                NhlNvpOn,
 		NhlNcnExplicitLabelBarLabelsOn,
 		NhlNcnLabelBarEndLabelsOn,
 		NhlNcnExplicitLegendLabelsOn,

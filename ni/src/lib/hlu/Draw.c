@@ -1,5 +1,5 @@
 /*
- *      $Id: Draw.c,v 1.16 1997-05-05 21:45:12 boote Exp $
+ *      $Id: Draw.c,v 1.17 1998-02-20 22:40:26 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -365,7 +365,8 @@ _NhlPreDraw
 		return(NhlFATAL);
 	}
 	
-	if(_NhlIsView(layer) && !_NhlViewOn(layer))
+	if(_NhlIsView(layer) && 
+           (! _NhlViewOn(layer) || _NhlViewOffScreen(layer)))
 		return NhlNOERROR;
 
 	return CallPreDraw(layer,layer->base.layer_class);
@@ -404,7 +405,8 @@ _NhlDraw
 		return(NhlFATAL);
 	}
 
-	if(_NhlIsView(layer) && !_NhlViewOn(layer))
+	if(_NhlIsView(layer) && 
+           (! _NhlViewOn(layer) || _NhlViewOffScreen(layer)))
 		return NhlNOERROR;
 
 	return CallDraw(layer,layer->base.layer_class);
@@ -444,7 +446,8 @@ _NhlPostDraw
 		return(NhlFATAL);
 	}
 
-	if(_NhlIsView(layer) && !_NhlViewOn(layer))
+	if(_NhlIsView(layer) && 
+           (! _NhlViewOn(layer) || _NhlViewOffScreen(layer)))
 		return NhlNOERROR;
 
 	return CallPostDraw(layer,layer->base.layer_class);

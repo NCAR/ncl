@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.61 1998-02-18 01:23:03 dbrown Exp $
+ *      $Id: MapPlot.c,v 1.62 1998-02-20 22:40:53 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1547,7 +1547,8 @@ static NhlBoolean NewDrawArgs
 		NhlNvpXF,
 		NhlNvpYF,
 		NhlNvpWidthF,
-		NhlNvpHeightF
+		NhlNvpHeightF,
+                NhlNvpOn
 	};
 	int i,pass_count = 0;
 
