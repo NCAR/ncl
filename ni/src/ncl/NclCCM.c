@@ -1102,14 +1102,17 @@ int *dimsizes;
 		return(tmp_off);
 		break;
 	case 4:
-		tmp_off = MyRead(therec,fd,buffer,n_elem/4+2,tmp_off);
-		total = 2;
-		ctodpf(buffer,ll,&total,&zero);
-		k = 8;
-		for(i = 0; i < n_elem; i++) {
-			memcpy(&sval,&(((char*)buffer)[k*2]),2);
-			((float*)rbuffer)[i] = (float)(ll[0] + ((double)sval)/ll[1]);
-			k++;
+		tmp_off = MyRead(therec,fd,buffer,(n_elem/4) + 2*dimsizes[0],tmp_off);
+		k = 0;
+		for(j = 0; j < dimsizes[0]; j++) {
+			total = 2;
+			ctodpf(&(((char*)buffer)[k*2]),ll,&total,&zero);
+			k += 8;
+			for(i = 0; i < dimsizes[1]; i++) {
+				memcpy(&sval,&(((char*)buffer)[k*2]),2);
+				((float*)rbuffer)[j*dimsizes[1] + i] = (float)(ll[0] + ((double)sval)/ll[1]);
+				k++;
+			}
 		}
 		return(tmp_off);
 		break;
