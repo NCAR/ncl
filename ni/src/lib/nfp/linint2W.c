@@ -92,12 +92,18 @@ NhlErrorTypes linint1_W( void )
           NULL,
           2);
 /*
- * Compute the total number of elements in our arrays.
+ * Compute the total number of elements in our arrays and check them.
  */
   nxi = dsizes_xi[0];
   nxo = dsizes_xo[0];
   nfi = nxi;
   nfo = nxo;
+
+  if(nxi <= 2 || nxo <= 2) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"linint1: The rightmost dimensions of xi and xo must be greater than 2");
+    return(NhlFATAL);
+  }
+
 /*
  * Check dimensions of fi.
  */
@@ -192,12 +198,25 @@ NhlErrorTypes linint1_W( void )
     NGCALLF(dlinint1,DLININT1)(&nxi,tmp_xi,tmp_fi,wrap,&nxo,tmp_xo,tmp_fo,
                                &missing_dfi.doubleval,&ier);
 
-    for(j = 0; j < nfo; j++) {
-      if(type_fi == NCL_double) {
-        ((double*)fo)[index_fo+j] = tmp_fo[j];
+    if(ier) {
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"linint1: xi and xo must be monotonically increasing");
+      for(j = 0; j < nfo; j++) {
+        if(type_fi == NCL_double) {
+          ((double*)fo)[index_fo+j] = missing_dfi.doubleval;
+        }
+        else {
+          ((double*)fo)[index_fo+j] = missing_dfi.floatval;
+        }
       }
-      else {
-        ((float*)fo)[index_fo+j] = (float)(tmp_fo[j]);
+    }
+    else {
+      for(j = 0; j < nfo; j++) {
+        if(type_fi == NCL_double) {
+          ((double*)fo)[index_fo+j] = tmp_fo[j];
+        }
+        else {
+          ((float*)fo)[index_fo+j] = (float)(tmp_fo[j]);
+        }
       }
     }
     index_fi += nfi;
@@ -333,6 +352,10 @@ NhlErrorTypes linint2_W( void )
   nyo = dsizes_yo[0];
   nfi = nxi * nyi;
   nfo = nxo * nyo;
+  if(nxi <= 2 || nxo <= 2 || nyi <= 2 || nyo <= 2) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"linint2: The rightmost dimensions of xi, yi, xo, and yo must be greater than 2");
+    return(NhlFATAL);
+  }
 /*
  * Check dimensions of fi.
  */
@@ -454,12 +477,25 @@ NhlErrorTypes linint2_W( void )
                                tmp_xo,&nyo,tmp_yo,tmp_fo,
                                &missing_dfi.doubleval,&ier);
 
-    for(j = 0; j < nfo; j++) {
-      if(type_fi == NCL_double) {
-        ((double*)fo)[index_fo+j] = tmp_fo[j];
+    if(ier) {
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"linint2: xi, yi, xo, and yo must be monotonically increasing");
+      for(j = 0; j < nfo; j++) {
+        if(type_fi == NCL_double) {
+          ((double*)fo)[index_fo+j] = missing_dfi.doubleval;
+        }
+        else {
+          ((double*)fo)[index_fo+j] = missing_dfi.floatval;
+        }
       }
-      else {
-        ((float*)fo)[index_fo+j] = (float)(tmp_fo[j]);
+    }
+    else {
+      for(j = 0; j < nfo; j++) {
+        if(type_fi == NCL_double) {
+          ((double*)fo)[index_fo+j] = tmp_fo[j];
+        }
+        else {
+          ((float*)fo)[index_fo+j] = (float)(tmp_fo[j]);
+        }
       }
     }
     index_fi += nfi;

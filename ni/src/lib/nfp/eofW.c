@@ -17,19 +17,13 @@
 extern void NGCALLF(ddrveof,DDRVEOF)(double *,int *,int *,int *,int *,
                                      double *,int *,double *, double *,
                                      float*,double *,int *,int *,double*,
-                                     int *, double *,int *,double *,int *,
-                                     int *,int *,int *,int *);
-
-extern void NGCALLF(ddrveof,DDRVEOF)(double *,int *,int *,int *,int *,
-                                     double *,int *,double *, double *,
-                                     float*,double *,int *,int *,double*,
-                                     int *, double *,int *,double *,int *,
+                                     long *, double *,int *,double *,int *,
                                      int *,int *,int *,int *);
 
 extern void NGCALLF(dncldrv,dncldrv)(double *,double *,int *,int *,int *,
                                      int *,double *,int *,double *,double *,
                                      float *,double *,int *,int *,double *,
-                                     double *,double *,int *,double *, int *,
+                                     double *,double *,long *,double *, int *,
                                      double *,int *,int *,int *,int *,int*);
 
 extern void NGCALLF(deofts7,DEOFTS7)(double *,int *,int *,int *,int *,
@@ -58,7 +52,8 @@ NhlErrorTypes eofcov_W( void )
  */
   double *cssm, *work, *weval;
   int   *iwork, *ifail;
-  int lcssm, lwork, liwork, lifail;
+  int lwork, liwork, lifail;
+  long lcssm;
 /*
  * Attribute variables
  */
@@ -162,7 +157,7 @@ NhlErrorTypes eofcov_W( void )
  * these arrays created dynamically in the Fortran file (which makes
  * it Fortran 90, and unportable to some systems. 
  */
-  lcssm  = msta*(msta+1)/2;
+  lcssm  = (long)msta*((long)msta+1)/2;
   lwork  = 8*msta;
   liwork = 5*msta;
   lifail = msta;
@@ -452,7 +447,8 @@ NhlErrorTypes eofcor_W( void )
  */
   double *cssm, *work, *weval;
   int   *iwork, *ifail;
-  int lcssm, lwork, liwork, lifail;
+  int lwork, liwork, lifail;
+  long lcssm;
 /*
  * Attribute variables
  */
@@ -556,7 +552,7 @@ NhlErrorTypes eofcor_W( void )
  * these arrays created dynamically in the Fortran file (which makes
  * it Fortran 90, and unportable to some systems. 
  */
-  lcssm  = msta*(msta+1)/2;
+  lcssm  = (long)msta*((long)msta+1)/2;
   lwork  = 8*msta;
   liwork = 5*msta;
   lifail = msta;
@@ -846,7 +842,8 @@ NhlErrorTypes eofcov_pcmsg_W( void )
  */
   double *tmp_x, *cssm, *work, *weval, *evecx;
   int   *iwork, *ifail;
-  int lcssm, lwork, liwork, lifail;
+  int lwork, liwork, lifail;
+  long lcssm, total_mem;
 /*
  * Attribute variables
  */
@@ -968,7 +965,7 @@ NhlErrorTypes eofcov_pcmsg_W( void )
  * these arrays created dynamically in the Fortran file (which makes
  * it Fortran 90, and unportable to some systems. 
  */
-  lcssm  = msta*(msta+1)/2;
+  lcssm  = (long)msta*((long)msta+1)/2;
   lwork  = 8*msta;
   liwork = 5*msta;
   lifail = msta;
@@ -979,9 +976,10 @@ NhlErrorTypes eofcov_pcmsg_W( void )
   ifail  =    (int *)calloc(lifail,sizeof(int));
   tmp_x  = (double *)calloc(total_size_x,sizeof(double));
   evecx  =  (double *)calloc(total_size_evec,sizeof(double));
-  if( cssm == NULL || work == NULL || weval == NULL || iwork == NULL || 
-      ifail == NULL || tmp_x == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_pcmsg: Unable to allocate memory for work arrays");
+  total_mem = 8*(lcssm+(long)lwork+(long)lifail+(long)total_size_x+(long)total_size_evec)+4*((long)liwork+(long)lifail);
+  if(  cssm == NULL ||  work == NULL || weval == NULL || iwork == NULL || 
+      ifail == NULL || tmp_x == NULL || evecx == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_pcmsg: Unable to allocate memory for work arrays. A total of %d bytes need to be allocated",total_mem);
     return(NhlFATAL);
   }
 /*
@@ -990,7 +988,7 @@ NhlErrorTypes eofcov_pcmsg_W( void )
   NGCALLF(dncldrv,DNCLDRV)(dx,tmp_x,&nrow,&ncol,&nobs,&msta,
                            &missing_dx.doubleval,neval,eval,evec,pcvar,
                            trace,&iopt,&jopt,dpcmsg,evecx,cssm,&lcssm,
-						   work,&lwork,weval,iwork,&liwork,ifail,&lifail,&ier);
+			   work,&lwork,weval,iwork,&liwork,ifail,&lifail,&ier);
 /*
  * Check various possible error messages.
  */
@@ -1263,7 +1261,8 @@ NhlErrorTypes eofcor_pcmsg_W( void )
  */
   double *tmp_x, *cssm, *work, *weval, *evecx;
   int    *iwork, *ifail;
-  int lcssm, lwork, liwork, lifail;
+  int lwork, liwork, lifail;
+  long lcssm, total_mem;
 /*
  * Attribute variables
  */
@@ -1385,7 +1384,7 @@ NhlErrorTypes eofcor_pcmsg_W( void )
  * these arrays created dynamically in the Fortran file (which makes
  * it Fortran 90, and unportable to some systems. 
  */
-  lcssm  = msta*(msta+1)/2;
+  lcssm  = (long)msta*((long)msta+1)/2;
   lwork  = 8*msta;
   liwork = 5*msta;
   lifail = msta;
@@ -1396,9 +1395,10 @@ NhlErrorTypes eofcor_pcmsg_W( void )
   ifail  =    (int *)calloc(lifail,sizeof(int));
   tmp_x  = (double *)calloc(total_size_x,sizeof(double));
   evecx  =  (double *)calloc(total_size_evec,sizeof(double));
-  if( cssm == NULL || work == NULL || weval == NULL || iwork == NULL || 
-      ifail == NULL || tmp_x == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcor_pcmsg: Unable to allocate memory for work arrays");
+  total_mem = 8*(lcssm+lwork+lifail+total_size_x+total_size_evec)+4*(liwork+lifail);
+  if(  cssm == NULL ||  work == NULL || weval == NULL || iwork == NULL || 
+      ifail == NULL || tmp_x == NULL || evecx == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcor_pcmsg: Unable to allocate memory for work arrays. A total of %d bytes need to be allocated",total_mem);
     return(NhlFATAL);
   }
 /*
@@ -1407,7 +1407,7 @@ NhlErrorTypes eofcor_pcmsg_W( void )
   NGCALLF(dncldrv,DNCLDRV)(dx,tmp_x,&nrow,&ncol,&nobs,&msta,
                            &missing_dx.doubleval,neval,eval,evec,pcvar,
                            trace,&iopt,&jopt,dpcmsg,evecx,cssm,&lcssm,
-						   work,&lwork,weval,iwork,&liwork,ifail,&lifail,&ier);
+			   work,&lwork,weval,iwork,&liwork,ifail,&lifail,&ier);
 /*
  * Check various possible error messages.
  */
