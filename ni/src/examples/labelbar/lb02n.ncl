@@ -54,6 +54,7 @@ end create
 NCGM=0
 X11=1
 PS=0
+PDF=0
 
 if (NCGM.eq.1) then
 ;
@@ -78,6 +79,15 @@ else
       wid = create "lb02Work" psWorkstationClass defaultapp
         "wkPSFileName" : "./lb02n.ps"
       end create
+    else
+      if (PDF.eq.1) then
+;
+; Create a PDF workstation.
+;
+        wid = create "lb02Work" pdfWorkstationClass defaultapp
+          "wkPDFFileName" : "./lb02n.pdf"
+        end create
+      end if
     end if
   end if
 end if

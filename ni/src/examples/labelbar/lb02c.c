@@ -26,13 +26,14 @@
 #include <ncarg/hlu/XWorkstation.h>
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
+#include <ncarg/hlu/PDFWorkstation.h>
         
 main()
 {
     int appid, wid, pid, rlist;
     int i, colors[16];
     char *line_labels[16];
-    int NCGM=0, X11=1, PS=0;
+    int NCGM=0, X11=1, PS=0, PDF=0;
 /*
  * Initialize data values
  */
@@ -94,6 +95,15 @@ main()
         NhlRLClear(rlist);
         NhlRLSetString(rlist,NhlNwkPSFileName,"./lb02c.ps");
         NhlCreate(&wid,"lb02Work",NhlpsWorkstationClass,NhlDEFAULT_APP,
+                  rlist);
+    }
+    else if (PDF) {
+/*
+ * Create a PDF workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkPDFFileName,"./lb02c.pdf");
+        NhlCreate(&wid,"lb02Work",NhlpdfWorkstationClass,NhlDEFAULT_APP,
                   rlist);
     }
 /*
