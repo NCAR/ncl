@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ctrans.m,v 1.18 1993-03-23 15:06:16 clyne Exp $
+.\"	$Id: ctrans.m,v 1.19 1993-05-04 22:03:37 haley Exp $
 .\"
 .\" ctrans 3.2 
 .TH CTRANS 1NCARG "January 1993" NCARG "NCAR GRAPHICS"
@@ -630,6 +630,9 @@ The binary NCAR Fontcap files
 .BR ras_palette(5NCARG), 
 .BR med(1NCARG), 
 .BR ictrans(1NCARG)
+.sp
+Hardcopy:
+NCAR Graphics Fundamentals, UNIX Version
 .SH CAVEATS
 Running in "movie" mode may give surprising results on slower devices, 
 such as dumb terminals. If too short a time interval is specified slow devices
@@ -660,3 +663,8 @@ in question to
 .BR ctrans .
 Consult the aforementioned publication for a discussion of 
 Graphcaps and Fontcaps as well.
+.SH COPYRIGHT
+Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
+for Atmospheric Research
+.br
+All Rights Reserved

@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: idt.m,v 1.13 1993-02-03 04:26:31 clyne Exp $
+.\"	$Id: idt.m,v 1.14 1993-05-04 22:03:50 haley Exp $
 .\"
 .\" NCAR View: idt.man,v 1.0 89/09/10 clyne 
 .\" Revision 3.01 90/11/15 clyne
@@ -456,6 +456,9 @@ $NCARG_ROOT/lib/ncarg/ncarv_spool
 .BR ncarv_spool(5NCARG),
 .BR X(1),
 .BR xrdb(1)
+.sp
+Hardcopy:
+NCAR Graphics Fundamentals, UNIX Version
 .SH BUGS
 Zooming in on large cell arrays causes the translator to crash.
 .SH CAVEATS
@@ -480,3 +483,8 @@ for containing screen coordinate data.
 .PP
 SGI users should not set use the shared memory connection to their
 X server. i.e don't use the display shm:0.
+.SH COPYRIGHT
+Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
+for Atmospheric Research
+.br
+All Rights Reserved

@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: med.m,v 1.11 1993-02-03 04:26:34 clyne Exp $
+.\"	$Id: med.m,v 1.12 1993-05-04 22:03:54 haley Exp $
 .\"
 .\" @(#)med.l 1.0 90/02/15 NCAR; from UCB 4.3 and S5R4
 .tr ##
@@ -449,6 +449,8 @@ one could execute:
 .IR ed(1),
 .BR sed(1V)
 .sp
+Hardcopy:
+NCAR Graphics Fundamentals, UNIX Version
 .SH BUGS 
 .B med
  does not understand filenames that begin with a digit.
@@ -468,4 +470,8 @@ within a metafile frame affect all succeeding primitives. Thus a frame
 which is the product of the 
 .B merge
 command may appear differently than expected.
-
+.SH COPYRIGHT
+Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
+for Atmospheric Research
+.br
+All Rights Reserved

@@ -294,3 +294,11 @@ image.
 .LP
 rasview(1NCARG), rasls(1NCARG), rascat(1NCARG), rasgetpal(1NCARG),
 rasssplit(1NCARG)
+.sp
+Hardcopy:
+NCAR Graphics Fundamentals, UNIX Version
+.SH COPYRIGHT
+Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
+for Atmospheric Research
+.br
+All Rights Reserved

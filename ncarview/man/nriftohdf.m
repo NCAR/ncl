@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: nriftohdf.m,v 1.8 1993-02-03 04:26:38 clyne Exp $
+.\"	$Id: nriftohdf.m,v 1.9 1993-05-04 22:04:04 haley Exp $
 .\"
 .TH NRIFTOHDF 1NCARG "January 1993" NCARG "NCAR GRAPHICS"
 .SH NAME
@@ -52,3 +52,8 @@ or Direct color segregated run length at any precision.
 .B nriftohdf
 is an obsolete utility which simply calls
 .BR rascat(1NCARG).
+.SH COPYRIGHT
+Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
+for Atmospheric Research
+.br
+All Rights Reserved

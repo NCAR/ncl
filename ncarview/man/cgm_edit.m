@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: cgm_edit.m,v 1.6 1993-01-16 00:02:14 clyne Exp $
+.\"	$Id: cgm_edit.m,v 1.7 1993-05-04 22:03:34 haley Exp $
 .\"
 .\" NCAR View: cgm_edit.man,v 1.0 89/09/10 clyne 
 .TH CGM_EDIT 1NCARG "September 1989" NCARG "NCAR GRAPHICS"
@@ -142,3 +142,8 @@ independent entities. Hence reading in frame from other files may give
 surprising results. Similarly, writing a frame out to a file requires
 that this boiler plate be included.  See the ANSI standard on CGM 
 (ANSI X3.122 - 1986)
+.SH COPYRIGHT
+Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
+for Atmospheric Research
+.br
+All Rights Reserved

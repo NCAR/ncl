@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: cgm2ncgm.m,v 1.8 1993-01-16 00:02:12 clyne Exp $
+.\"	$Id: cgm2ncgm.m,v 1.9 1993-05-04 22:03:32 haley Exp $
 .\"
 .\"	ncgm2cgm.l 3.00 10/5/89 NCAR View
 .TH NCAR2CGM 1NCARG "January 1993" NCARG "NCAR GRAPHICS"
@@ -30,6 +30,7 @@ Print the version number and then exit.
 .nf
 \fIISO/DIS 8632 CGM Functional Specification\fR (Nov. 1985)
 \fINCAR Installer's Guide\fR, Version 2.00 (Aug. 1987)
+\fINCAR Graphics Fundamentals, UNIX Version\fR
 .fi
 .SH BUGS
 Some 
@@ -43,3 +44,8 @@ not be the case that the aforementioned interpreters will be able to translate
 .I true
 vanilla metafiles, such as produced by 
 .B ncgm2cgm.
+.SH COPYRIGHT
+Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
+for Atmospheric Research
+.br
+All Rights Reserved

@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: rassplit.m,v 1.3 1993-02-17 23:20:58 don Exp $
+.\"	$Id: rassplit.m,v 1.4 1993-05-04 22:04:21 haley Exp $
 .\"
 .TH RASSPLIT 1NCARG "January 1993" NCARG "NCAR VIEW"
 .SH \fBNAME\fP
@@ -79,3 +79,11 @@ over again.
 .LP
 \fBrasview\fP(1NCARG),\fBrascat\fP(1NCARG),\fBrasls\fP(1NCARG),
 \fBrasgetpal\fP(1NCARG),\fBras_formats\fP(5NCARG),\fBras_palette\fP(5NCARG)
+.sp
+Hardcopy:
+NCAR Graphics Fundamentals, UNIX Version
+.SH COPYRIGHT
+Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
+for Atmospheric Research
+.br
+All Rights Reserved

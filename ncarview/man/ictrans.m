@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ictrans.m,v 1.15 1993-04-28 22:14:33 haley Exp $
+.\"	$Id: ictrans.m,v 1.16 1993-05-04 22:03:47 haley Exp $
 .\"
 .\" ictrans 3.01 90/06/22 
 .TH ICTRANS 1NCARG "January 1993" NCARG "NCAR GRAPHICS"
@@ -674,8 +674,16 @@ spooler config file
 .BR idt(1NCARG),
 .BR med(1NCARG),
 .BR ncarv_spool(5NCARG)
+.sp
+Hardcopy:
+NCAR Graphics Fundamentals, UNIX Version
 .SH CAVEATS
 Metafile frames written to an existing file via the 
 .B save
 command will be subject to the effects of any global "attribute elements"
 contained within the file.
+.SH COPYRIGHT
+Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
+for Atmospheric Research
+.br
+All Rights Reserved

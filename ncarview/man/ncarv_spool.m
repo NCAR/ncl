@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncarv_spool.m,v 1.8 1993-02-03 04:26:36 clyne Exp $
+.\"	$Id: ncarv_spool.m,v 1.9 1993-05-04 22:03:58 haley Exp $
 .\"
 .\" ncarv_spool 3.01 90/06/22 
 .TH NCARV_SPOOL 5NCARG "January 1993" NCARG "NCAR GRAPHICS"
@@ -124,3 +124,11 @@ $HOME/.ncarv_spool
 .SH SEE ALSO
 .BR ctrans(1NCARG) ,
 .BR ictrans(1NCARG)
+.sp
+Hardcopy:
+NCAR Graphics Fundamentals, UNIX Version
+.SH COPYRIGHT
+Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
+for Atmospheric Research
+.br
+All Rights Reserved

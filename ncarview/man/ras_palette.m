@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ras_palette.m,v 1.4 1993-02-20 00:01:08 don Exp $
+.\"	$Id: ras_palette.m,v 1.5 1993-05-04 22:04:10 haley Exp $
 .\"
 .TH RAS_PALETTE 5NCARG "January 1993" NCARG "NCAR GRAPHICS"
 .SH \fBNAME\fP
@@ -100,3 +100,8 @@ file, "temp.txt".
 .SH \fBBUGS/CAVEATS\fP
 .LP
 Color palettes are only useful with indexed-color imagery.
+.SH COPYRIGHT
+Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
+for Atmospheric Research
+.br
+All Rights Reserved
