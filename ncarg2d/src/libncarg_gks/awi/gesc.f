@@ -1,5 +1,5 @@
 C
-C	$Id: gesc.f,v 1.2 1993-01-09 01:58:29 fred Exp $
+C	$Id: gesc.f,v 1.3 1993-01-13 19:53:01 fred Exp $
 C
       SUBROUTINE GESC(FCTID,LIDR,IDR,MLODR,LODR,ODR)
 C
@@ -13,7 +13,7 @@ C
       INTEGER FCTID,LIDR,TBUF(720)
       CHARACTER*(*) IDR(LIDR),ODR(MLODR)
       CHARACTER*57  NAMET
-      CHARACTER*1   DNAME
+      CHARACTER*5   DNAME
 C
 C  Check if GKS is in the proper state.
 C
@@ -230,9 +230,9 @@ C
         ID(1) = GCGM
         STRL1 = 80
         STRL2 = 80
-        IDR(2)(1:5) = '00000'
+        DNAME = '00000'
         STR(1:75) = IDR(1)(1:75)
-        STR(76:80) = IDR(2)(1:5)
+        STR(76:80) = DNAME(1:5)
         CALL GZTOWK
         IF (RERR .NE. 0) THEN
           ERS = 1
