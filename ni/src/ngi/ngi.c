@@ -1,5 +1,5 @@
 /*
- *      $Id: ngi.c,v 1.7 1997-09-04 16:57:34 boote Exp $
+ *      $Id: ngi.c,v 1.8 1998-02-26 15:21:55 boote Exp $
  */
 /************************************************************************
 *									*
@@ -35,7 +35,7 @@
 #include <ncarg/ngo/browse.h>
 
 static NhlString resdb[] = {
-#ifndef	DEBUG
+#ifndef	RESDEBUG
 #include "ngi.res.h"
 #endif
 	NULL

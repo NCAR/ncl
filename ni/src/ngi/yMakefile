@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.13 1998-01-29 16:01:15 boote Exp $
+#      $Id: yMakefile,v 1.14 1998-02-26 15:21:55 boote Exp $
 #
 #########################################################################
 #									#
@@ -21,9 +21,9 @@
 
 MYNAME	= ngi
 
-#ifdef	DEBUG
+#ifdef	RESDEBUG
 DEBUGLIBS	=	$(XMULIB)
-DEBUGDEFS	=	-DDEBUG
+DEBUGDEFS	=	-DRESDEBUG
 #else
 PRODUCTIONHDRS	=	$(GENHDRS)
 #endif
