@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.c,v 1.35 1995-05-03 03:11:25 dbrown Exp $
+ *      $Id: TickMark.c,v 1.36 1995-05-03 08:23:16 boote Exp $
  */
 /************************************************************************
 *									*
@@ -3782,10 +3782,10 @@ static NhlErrorTypes CheckKeyVals
 		tnew->tick.x_t_nminor = 0;
 	}
 	if(!tnew->tick.y_l_minor_on) {
-		tnew->tick.y_r_nminor = 0;
+		tnew->tick.y_l_nminor = 0;
 	}
 	if(!tnew->tick.y_r_minor_on) {
-		tnew->tick.y_l_nminor = 0;
+		tnew->tick.y_r_nminor = 0;
 	}
 	return(ret);
 }
