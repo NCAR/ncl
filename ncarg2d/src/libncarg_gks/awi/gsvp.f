@@ -1,5 +1,5 @@
 C
-C	$Id: gsvp.f,v 1.2 1993-01-09 02:03:31 fred Exp $
+C	$Id: gsvp.f,v 1.3 1994-05-28 00:42:28 fred Exp $
 C
       SUBROUTINE GSVP(TNR,XMIN,XMAX,YMIN,YMAX)
 C
@@ -63,13 +63,10 @@ C
         CALL GSCHH(CCHH)
         CALL GSCHUP(CCHUP(1),CCHUP(2))
 C
-C  Suppress issuing warning of unsupported elements.
+C  Pattern size and pattern reference point currently not implemented.
 C
-        IFLGO  = CUFLAG
-        CUFLAG = -2
-        CALL GSPA(CPA(1),CPA(2))
-        CALL GSPARF(CPARF(1),CPARF(2))
-        CUFLAG = IFLGO
+C       CALL GSPA(CPA(1),CPA(2))
+C       CALL GSPARF(CPARF(1),CPARF(2))
         CALL GSCLIP(CCLIP)
       ENDIF
 C

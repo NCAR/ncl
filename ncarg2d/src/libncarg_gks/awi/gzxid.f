@@ -1,5 +1,5 @@
 C
-C	$Id: gzxid.f,v 1.1 1993-01-09 02:04:43 fred Exp $
+C	$Id: gzxid.f,v 1.2 1994-05-28 00:42:35 fred Exp $
 C
       SUBROUTINE GZXID(WKID,XID,IER)
 C
@@ -27,6 +27,7 @@ C
       DO 10 I=1,NOPWK
         IF (WKID .EQ. SOPWK(I)) THEN
           XID = LXWKID(I)
+          IF (XID .EQ. -1) IER = 25
           RETURN
         ENDIF
    10 CONTINUE

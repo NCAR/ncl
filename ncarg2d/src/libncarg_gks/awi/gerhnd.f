@@ -1,5 +1,5 @@
 C
-C	$Id: gerhnd.f,v 1.3 1994-05-07 00:51:10 fred Exp $
+C	$Id: gerhnd.f,v 1.4 1994-05-28 00:42:18 fred Exp $
 C
       SUBROUTINE GERHND(ERRNR,FCTID,ERRFIL)
 C
@@ -22,7 +22,7 @@ C  errors before abort.
 C
       DATA MNERR/0/
 C
-      IF (CUFLAG.EQ.-1 .OR. ERRNR.NE.-109) MNERR = MNERR+1
+      MNERR = MNERR+1
       IF (MNERR .GT. MXERMG) THEN
         CALL GERLOG(-107,FCTID,ERRFIL)
         STOP

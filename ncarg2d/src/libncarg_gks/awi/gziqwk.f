@@ -1,5 +1,5 @@
 C
-C	$Id: gziqwk.f,v 1.3 1994-04-29 00:44:49 fred Exp $
+C	$Id: gziqwk.f,v 1.4 1994-05-28 00:42:31 fred Exp $
 C
       SUBROUTINE GZIQWK(WTYPE,WKID)
 C
@@ -33,13 +33,6 @@ C
      +              RL1,RL2,RX,RY,STRL1,STRL2,IDUM,RERR,XERMSG) 
         IF (RERR .NE. 0) THEN
           ERS = 1
-C
-C  Set any out-of-range error to the error number flagging a local
-C  driver fault.     
-C
-          IF (RERR.LT.-200 .OR. RERR.GT.2100) THEN
-            RERR = -113
-          ENDIF
           CALL GERHND(RERR,0,ERF)
           ERS = 0
           RERR = 0

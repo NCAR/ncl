@@ -1,5 +1,5 @@
 C
-C	$Id: gztowk.f,v 1.7 1994-05-07 00:51:24 fred Exp $
+C	$Id: gztowk.f,v 1.8 1994-05-28 00:42:33 fred Exp $
 C
       SUBROUTINE GZTOWK
 C
@@ -52,7 +52,7 @@ C
             NUMP  = 7
             CALL GGKWDR(IID,FCODE,0,NUMP,IL2,ID,IC1,IC2,IC,
      -                  RL1,RL2,RX,RY,STRL1,STRL2,ADESTR,RERR,XERMSG)
-            IF (RERR .EQ. -113) RETURN
+            IF (RERR .LE. -100) RETURN
           ELSE IF (ID(3) .EQ. GWSS) THEN
             CALL GZSRAT(3,ICNTX,RCNTX)
             CALL GWIWDR(ICNTX,RCNTX)
@@ -128,6 +128,7 @@ C  Get the local workstation ID and convert characters to ADE
 C  before invoking the interface.
 C
               CALL GZXID(SOPWK(I),XID,RERR)
+              IF (RERR .NE. 0) GO TO 55
 C
               IF (STRL2 .GT. 0) THEN
                 DO 210 J=1,IADIM
@@ -140,12 +141,6 @@ C
 C
               CALL GGKWDR(XID,FCODE,CONT,IL1,IL2,ID,IC1,IC2,IC,
      -                    RL1,RL2,RX,RY,STRL1,STRL2,ADESTR,RERR,XERMSG)
-              IF (RERR .EQ. -113) THEN
-                ERS = 1
-                CALL GERHND(RERR,0,ERF)
-                ERS = 0
-                RERR = 0
-              ENDIF
             ELSE IF (SWKTP(I) .EQ. GWSS) THEN
               IF (FCODE .EQ. 0) THEN
                 IF (CUFLAG.GE.0 .AND. SOPWK(I).NE.CUFLAG) GO TO 10
@@ -155,6 +150,7 @@ C
                 CALL GWIWDR(ICNTX,RCNTX)
               ENDIF
             ENDIF
+   55       CONTINUE
           ENDIF
    10   CONTINUE
       ENDIF
@@ -198,6 +194,7 @@ C  Get the local workstation ID and convert characters to ADE
 C  before invoking the interface.
 C
               CALL GZXID(SACWK(I),XID,RERR)
+              IF (RERR .NE. 0) GO TO 65
               IF (STRL2 .GT. 0) THEN
                 DO 220 J=1,IADIM
                   ADESTR(J) = 0
@@ -208,13 +205,8 @@ C
               ENDIF
               CALL GGKWDR(XID,FCODE,CONT,IL1,IL2,ID,IC1,IC2,IC,
      +                    RL1,RL2,RX,RY,STRL1,STRL2,ADESTR,RERR,XERMSG)
-              IF (RERR .EQ. -113) THEN
-                ERS = 1
-                CALL GERHND(RERR,0,ERF)
-                ERS = 0
-                RERR = 0
-              ENDIF
             ENDIF
+   65       CONTINUE
           ENDIF
    20   CONTINUE
       ENDIF

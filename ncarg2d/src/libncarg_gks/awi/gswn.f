@@ -1,5 +1,5 @@
 C
-C	$Id: gswn.f,v 1.3 1994-05-19 19:26:56 fred Exp $
+C	$Id: gswn.f,v 1.4 1994-05-28 00:42:30 fred Exp $
 C
       SUBROUTINE GSWN (TNR,XMIN,XMAX,YMIN,YMAX)
 C
@@ -65,13 +65,10 @@ C
         CALL GSCHH(CCHH)
         CALL GSCHUP(CCHUP(1),CCHUP(2))
 C
-C  Suppress issuing warning of unsupported elements.
+C  Pattern size and pattern reference point currently not implemented.
 C
-        IFLGO = CUFLAG
-        CUFLAG = -2
-        CALL GSPA(CPA(1),CPA(2))
-        CALL GSPARF(CPARF(1),CPARF(2))
-        CUFLAG = IFLGO
+C       CALL GSPA(CPA(1),CPA(2))
+C       CALL GSPARF(CPARF(1),CPARF(2))
       ENDIF
 C
 C  Set flag to indicate that GSWN has been called.
