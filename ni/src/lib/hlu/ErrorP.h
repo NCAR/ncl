@@ -1,5 +1,5 @@
 /*
- *      $Id: ErrorP.h,v 1.2 1993-10-19 17:50:48 boote Exp $
+ *      $Id: ErrorP.h,v 1.3 1993-12-13 22:29:03 boote Exp $
  */
 /************************************************************************
 *									*
@@ -63,12 +63,6 @@ typedef struct _ErrorLayerPart {
 	NhlErrorTypes	error_level;
 	NhlBoolean	print_errors;
 	char		*error_file;
-
-	/*
-	 * Temporary resource used to determine if UNSUPPORTED message
-	 * should be printed.
-	 */
-	NhlBoolean	unsupported_msg;
 
 	/* Internal private fields */
 	FILE		*error_fp;

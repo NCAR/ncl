@@ -1,5 +1,5 @@
 /*
- *      $Id: Error.c,v 1.2 1993-10-19 17:50:44 boote Exp $
+ *      $Id: Error.c,v 1.3 1993-12-13 22:28:57 boote Exp $
  */
 /************************************************************************
 *									*
@@ -47,16 +47,14 @@
 /* Resources */
 #define Oset(field)	NhlOffset(ErrorLayerRec,error.field)
 static NhlResource resources[] = {
-	{ NhlNbufferErrors, NhlCbufferErrors, NhlTBoolean, sizeof(NhlBoolean),
-			Oset(buffer_errors),NhlTImmediate,False},
-	{ NhlNerrorLevel, NhlCerrorLevel, NhlTErrorTypes, sizeof(NhlErrorTypes),
-			Oset(error_level),NhlTString,(NhlPointer)"WARNING"},
-	{ NhlNprintErrors, NhlCprintErrors, NhlTBoolean, sizeof(NhlBoolean),
-			Oset(print_errors),NhlTImmediate,(NhlPointer)True},
-	{ NhlNerrorFile, NhlCerrorFile, NhlTString, sizeof(NhlString),
-			Oset(error_file),NhlTImmediate,(NhlPointer)"stderr"},
-	{ NhlNunsupportedMsg, NhlCunsupportedMsg,NhlTBoolean,sizeof(NhlBoolean),
-		Oset(unsupported_msg),NhlTImmediate,(NhlPointer)True}
+	{NhlNerrbuffer,NhlCerrbuffer,NhlTBoolean,sizeof(NhlBoolean),
+		Oset(buffer_errors),NhlTImmediate,False},
+	{NhlNerrLevel,NhlCerrLevel,NhlTErrorTypes,sizeof(NhlErrorTypes),
+		Oset(error_level),NhlTString,(NhlPointer)"WARNING"},
+	{NhlNerrPrint,NhlCerrPrint,NhlTBoolean,sizeof(NhlBoolean),
+		Oset(print_errors),NhlTImmediate,(NhlPointer)True},
+	{NhlNerrFileName,NhlCerrFileName,NhlTString,sizeof(NhlString),
+		Oset(error_file),NhlTImmediate,(NhlPointer)"stderr"},
 };
 #undef Oset
 
@@ -218,13 +216,6 @@ ErrorInitialize
 	ErrorLayer	enew = (ErrorLayer)new;
 	Const char	*tfname = NULL;
 	NhlErrorTypes	ret = NOERROR;
-
-	if(enew->error.unsupported_msg){
-		fprintf(stderr,"*********************************************************\n");
-		fprintf(stderr,"* This version of the HLU Library is a prototype only.\t*\n");
-		fprintf(stderr,"* It is therefore provided with NO SUPPORT.\t\t*\n");
-		fprintf(stderr,"*********************************************************\n");
-	}
 
 	if(elc->error_class.num_error_instances > 0){
 		NHLPERROR((FATAL,E_UNKNOWN,

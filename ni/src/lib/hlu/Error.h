@@ -1,5 +1,5 @@
 /*
- *      $Id: Error.h,v 1.2 1993-10-19 17:50:46 boote Exp $
+ *      $Id: Error.h,v 1.3 1993-12-13 22:29:01 boote Exp $
  */
 /************************************************************************
 *									*
@@ -31,20 +31,14 @@
 
 /* Resource Names */
 
-#define NhlNbufferErrors	"bufferErrors"
-#define NhlCbufferErrors	"BufferErrors"
-#define NhlNerrorLevel		"errorLevel"
-#define NhlCerrorLevel		"ErrorLevel"
-#define NhlNprintErrors		"printErrors"
-#define NhlCprintErrors		"PrintErrors"
-#define NhlNerrorFile		"errorFile"
-#define NhlCerrorFile		"ErrorFile"
-/*
- * This resource is a TEMPORARY resource used to determine if the error
- * INIT will print the UNSUPPORTED message to stderr.
- */
-#define NhlNunsupportedMsg	"unsupportedMsg"
-#define NhlCunsupportedMsg	"UnsupportedMsg"
+#define NhlNerrbuffer	"errBuffer"
+#define NhlCerrbuffer	"ErrBuffer"
+#define NhlNerrLevel	"errLevel"
+#define NhlCerrLevel	"ErrLevel"
+#define NhlNerrPrint	"errPrint"
+#define NhlCerrPrint	"ErrPrint"
+#define NhlNerrFileName	"errFileName"
+#define NhlCerrFileName	"ErrFileName"
 
 /* new type names */
 
