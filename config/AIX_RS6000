@@ -1,4 +1,5 @@
 #define BuildXlibDependentCode
+#define BuildAthenaApplications
 #define RS6000
 /*
 ** Define which raster drivers will be built.

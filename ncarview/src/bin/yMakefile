@@ -4,8 +4,13 @@
 
 NCARG	= ../../..
 
+#ifdef BuildAthenaApplications
 SUBDIRS	= ctrans ictrans filter med scripts rascat xwdtohdf nriftohdf \
-	  rasstat ncgmstat cgm_edit idt rasview rasls rasgetpal rassplit
+	rasstat ncgmstat cgm_edit idt rasview rasls rasgetpal rassplit
+#else
+SUBDIRS	= ctrans ictrans filter med scripts rascat xwdtohdf nriftohdf \
+	rasstat ncgmstat rasls rasgetpal rassplit
+#endif
 
 MakeSubdirs($(SUBDIRS))
 InstallSubdirs($(SUBDIRS))

@@ -1,4 +1,5 @@
 #define BuildXlibDependentCode
+#define BuildAthenaApplications
 /*
 ** Define which raster drivers will be built.
 */
