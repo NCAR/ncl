@@ -1,10 +1,23 @@
 load "gsn_code.ncl"
+load "gsn_csm.ncl"
 
 begin
   datadir=ncargpath("data")
   datafile=datadir + "/cdf/meccatemp.cdf"
   ncfile =  addfile (datafile,"r")
 
+  t0 = ncfile->t(0,::4,::4)
+  t1 = ncfile->t(1,::4,::4)
+  t2 = ncfile->t(2,::4,::4)
+  t3 = ncfile->t(3,::4,::4)
+
+  type = "ps"
+;   type@wkOrientation  = "portrait"
+;   type@wkDeviceLowerX  =   0
+;   type@wkDeviceLowerY  =  0
+;   type@wkDeviceUpperX  = 700
+;   type@wkDeviceUpperY  = 700
+;  wks = gsn_open_wks(type,"gsn_cgd")
   wks = gsn_open_wks("x11","gsn_cgd")
   setvalues wks
     "wkColorMap":(/(/1.000,1.000,1.000/), (/.000,.000,.000/), \
@@ -42,13 +55,12 @@ begin
   end setvalues
 
   mpres = True
-  mpres@sfXCStartV      = ncfile->lon(0)  
-  mpres@sfXCEndV        = ncfile->lon(dimsizes(ncfile->lon)-1)
-  mpres@sfYCStartV      = ncfile->lat(0)
-  mpres@sfYCEndV        = ncfile->lat(dimsizes(ncfile->lat)-1)
+  mpres@sfXCStartV      = t0&lon(0)
+  mpres@sfXCEndV        = t0&lon(dimsizes(t0&lon)-1)
+  mpres@sfYCStartV      = t0&lat(0)
+  mpres@sfYCEndV        = t0&lat(dimsizes(t0&lat)-1)
   mpres@cnFillOn        = True
   mpres@cnFillColors    = ispan(2,63,2)
-  mpres@pmLabelBarSide  = "bottom"
   mpres@cnMinLevelValF  =  195.0
   mpres@cnMaxLevelValF  =  328.0
   mpres@cnLevelSpacingF = 5.50
@@ -57,67 +69,23 @@ begin
   mpres@cnHighLabelsOn  = False
   mpres@cnLowLabelsOn   = False
   mpres@cnInfoLabelOn   = False
-  mpres@tiMainString    = ":F26:January Global Surface Temperature - Day 1"
   mpres@gsnDraw         = False
   mpres@gsnFrame        = False
-;  mpres@pmLabelBarDisplayMode = "Always"
-  mp1 = gsn_contour_map(wks,ncfile->t(0,:,:),mpres)
+  mpres@lbLabelBarOn    = False
+  mp = new(4,graphic)
+  mp(0) = gsn_csm_contour_map(wks,t0,mpres)
 
-  mpres@tiMainString = ":F26:January Global Surface Temperature - Day 2"
-  mp2 = gsn_contour_map(wks,ncfile->t(1,:,:),mpres)
+  mp(1) = gsn_csm_contour_map(wks,t1,mpres)
 
-  mpres@tiMainString = ":F26:January Global Surface Temperature - Day 3"
-  mp3 = gsn_contour_map(wks,ncfile->t(2,:,:),mpres)
+  mp(2) = gsn_csm_contour_map(wks,t2,mpres)
 
-  mpres@tiMainString = ":F26:January Global Surface Temperature - Day 4"
-  mp4 = gsn_contour_map(wks,ncfile->t(3,:,:),mpres)
+  mp(3) = gsn_csm_contour_map(wks,t3,mpres)
 
-  gsn_panel(wks,(/mp1,mp2,mp3/),(/3,1/),False)
-
-  getvalues mp1@contour
-    "tiMainFontHeightF" : fheight
-  end getvalues
-
-  setvalues mp1@contour
-    "tiMainOn" : False
-  end setvalues
-
-  setvalues mp2@contour
-    "tiMainOn" : False
-  end setvalues
-
-  setvalues mp3@contour
-    "tiMainOn" : False
-  end setvalues
-
-  res@gsnFrame = False
   res = True
-  res@gsnPanelBottom = .06
-  res@gsnPanelTop = .94
-  gsn_panel(wks,(/mp1,mp2,mp3/),(/3,1/),res)
-  txres = True
-  txres@txFontHeightF = fheight
-  gsn_text_ndc(wks,":F26:January Global Surface Temperature - Days 1-4",.5,.95,txres)
-
-  getvalues mp1@contour
-    "cnLevels" : levels
-  end getvalues
-
-  frame(wks)
-
-  lbres = True
-  lbres@lbOrientation  = "horizontal"
-  lbres@lbFillColors   = ispan(2,63,2)
-  lbres@lbPerimOn      = False
-  lbres@lbBoxLinesOn   = False
-  lbres@lbWidthF  =  .6
-  lbres@lbHeightF  =  .1
-  gsn_labelbar_ndc(wks,dimsizes(levels),levels,.1,.6,lbres)
-
-  delete(lbres)
-  lbres = True
-  lbres@lbPerimOn = False         ; Turn off labelbar perimeter.
-  lbres@lbLabelFont = "helvetica" ; Change font to helvetica.
-  gsn_labelbar_ndc(wks,3,(/"one","two","three"/),0.2,0.8,lbres)
-  frame(wks)
+  res@gsnPanelLabelBar = True
+  res@lbLabelStride = 2
+  res@gsnPanelFigureStrings = (/"one","two","three"/)
+  res@amJust = "bottomleft"
+  res@txFont = "helvetica-bold"
+  gsn_panel(wks,mp,(/2,2/),res)
 end

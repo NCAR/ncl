@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.35 2000-05-10 17:31:03 haley Exp $
+;      $Id: gsn_code.ncl,v 1.36 2000-06-12 15:07:40 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -64,10 +64,10 @@ undef("gsn_polyline")
 undef("gsn_polyline_ndc")
 undef("gsn_polymarker")
 undef("gsn_polymarker_ndc")
+undef("gsn_labelbar_ndc")
 undef("gsn_panel")
 undef("gsn_contour")
 undef("gsn_contour_map")
-undef("gsn_labelbar_ndc")
 undef("gsn_map")
 undef("gsn_streamline")
 undef("gsn_streamline_map")
@@ -1281,6 +1281,63 @@ funccode, res2, calldraw, callframe
 end
     delete(yf)
 ;***********************************************************************;
+; Procedure : gsn_labelbar_ndc                                          ;
+          "txString"   : text
+;                  nbox: number of labelbar boxes                       ;
+;                labels: labels for boxes                               ;
+;                     x: X NDC position of labelbar                     ;
+;                     y: Y NDC position of labelbar                     ;
+    else
+      txid = create wksname + "_text" textItemClass wks
+; This procedure draws a labelbar on the workstation "wks" (the         ;
+; variable returned from a previous call to "gsn_open_wks").            ;
+; "resources" is an optional list of resources.                         ;
+
+
+procedure gsn_labelbar_ndc(wks:graphic, nbox:integer, labels:string, \
+                           x,y,resources:logical )
+local i, lbid, attnames, res, lb_res_index, lbres
+;***********************************************************************;
+
+    if(isatt(wks,"name"))
+      wksname = wks@name
+    else
+      wksname = "gsnapp"
+    end if
+;               resources: optional resources                           ;
+    lbid = create wksname + "_labelbar" labelBarClass wks
+      "vpXF"           : x
+      "vpYF"           : y
+      "lbBoxCount"     : nbox
+      "lbLabelStrings" : labels
+; the text will stay with the plot.                                     ;
+    end create
+    lbres = get_res_eq(resources,(/"lb","vp"/))
+    if(lbres.and..not.any(ismissing(getvaratts(lbres))))
+    "pmAnnoViews" : text_ids
+; A special test is needed for the resource lbLabelFontHeightF.
+; If it is set, then we need to turn off lbAutoManage.
+  if(.not.any(ismissing(text_ids)))
+      if(isatt(lbres,"lbLabelFontHeightF"))
+        setvalues lbid
+          "lbAutoManage"       : False
+          "lbLabelJust"        : "CenterCenter"
+          "lbLabelFontHeightF" : lbres@lbLabelFontHeightF
+        end setvalues
+        delete(lbres@lbLabelFontHeightF)
+      end if
+      if(lbres.and..not.any(ismissing(getvaratts(lbres))))
+        attsetvalues(lbid,lbres)
+      end if
+    end if
+  setvalues plotid
+; Draw labelbar.
+;
+    draw(lbid)
+    delete(lbid)
+; then set its location in data coordinate space.
+;
+  getvalues plotid
     "pmAnnoManagers": am_ids
   end getvalues
 
@@ -1315,7 +1372,8 @@ vpx, vpy, vpwidth, vpheight, bb, plot_width, plot_height, \
 xwsp_perc, ywsp_perc, xwsp, ywsp, dx, dy, total_width, total_height, \
 col_scale, row_scale, scale, xpos, ypos, xsp, ysp, panel_center, \
 new_plot_height, new_plot_width, new_total_height, new_total_width, \
-i, j, old_vpx, old_vpy, old_vpwidth, old_vpheight, callframe
+i, j, old_vpx, old_vpy, old_vpwidth, old_vpheight, callframe, text, pplot, \
+amres, txres, anno, added_anno, fig_index
 begin
     rows = floattointeger(dims(0))
     cols = floattointeger(dims(1))
@@ -1323,6 +1381,29 @@ begin
     xcols = dims(1)
     res = resources              ; Make copy of resources
     end do
+; Get and set resource values for possible figure strings
+; on the plots.
+;
+    justs  = (/"BottomRight", "TopRight", "TopLeft", "BottomLeft"/)
+    ljusts = (/"bottomright", "topright", "topleft", "bottomleft"/)
+    paras = (/     0.5,           0.5,      -0.5,       -0.5/)
+    orths = (/     0.5,          -0.5,      -0.5,        0.5/)
+
+    txres = get_res_eq(res,"tx")
+    amres = get_res_eq(res,"am")
+    perim = get_res_value(txres,"txPerimOn",True)
+    bkgrn = get_res_value(txres,"txBackgroundFillColor",0)
+    just  = get_res_value(amres,"amJust","BottomRight")
+
+    fig_index = ind(just.eq.justs.or.just.eq.ljusts)
+    if(ismissing(fig_index))
+      fig_index = 0
+      just      = justs(fig_index)
+    end if
+
+    para  = get_res_value(amres,"amParallelPosF",  paras(fig_index))
+    orth  = get_res_value(amres,"amOrthogonalPosF",orths(fig_index));
+;
   else
     if(ddims.ne.2)
     panel_center   = get_res_value(res,"gsnPanelCenter",True)
@@ -1335,6 +1416,12 @@ begin
     x_rgt          = get_res_value(res,"gsnPanelRight",1.)
     y_bot          = get_res_value(res,"gsnPanelBottom",0.)
     y_top          = get_res_value(res,"gsnPanelTop",1.)
+    if(isatt(res,"gsnPanelFigureStrings"))
+      is_figure_strings = True
+      panel_strings = get_res_value(res,"gsnPanelFigureStrings","")      
+    else
+      is_figure_strings = False
+    end if
     orths = (/     1.0,          -1.0,      -1.0,        1.0/)
     if(xwsp_perc.lt.0.or.xwsp_perc.ge.100.)
       print("Warning: gsn_panel: attribute gsnPanelXWhiteSpacePercent must be >= 0 and < 100.")
@@ -1383,7 +1470,53 @@ begin
       print("than gsnPanelBottom ("+y_bot+").")
       exit
     end if
+    print("Defaulting to 1.")
+    y_top = 1.0
+  end if
+
+  if(y_bot.lt.0..or.y_bot.ge.1.)
+    plot_type = "unknown"
+    class = NhlClassName(plot)
     y_bot = 0.0
+    if(class(0).ne."contourPlotClass".and.class(0).ne."vectorPlotClass") then
+      if(isatt(plot,"contour")) then
+        contour_plot = plot@contour
+        plot_type = "contour"
+      else
+        if(isatt(plot,"vector")) then
+          vector_plot = plot@vector
+          plot_type = "vector"
+        end if
+      end if
+    exit
+      if(class(0).eq."contourPlotClass") then
+        contour_plot = plot(0)
+        plot_type = "contour"
+      else
+        vector_plot = plot(0)
+  if(y_top.le.y_bot)
+    print("Error: gsn_panel: attribute gsnPanelTop ("+y_top+") must be greater")
+    print("than gsnPanelBottom ("+y_bot+").")
+        vector_plot = plot@vector
+        plot_type = "vector"
+      end if
+    if(is_figure_strings.or.panel_labelbar) then
+      if(plot_type.eq."contour") then
+        getvalues contour_plot
+          "cnInfoLabelFontHeightF" : font_height
+      else
+        if(class(0).eq."xyPlotClass") then
+        if(plot_type.eq."contour") then
+          getvalues vector_plot
+            "vcRefAnnoFontHeightF" : font_height
+          end getvalues
+        else
+          font_height = 0.01
+          print("Warning: gsn_panel: unrecognized plot type, thus unable to get information for font height.")
+          print("Defaulting to " + font_height)
+        end if
+  if(is_figure_strings.or.panel_labelbar) then
+    if(plot_type.eq."contour") then
 ;
 ; Make sure we have enough panels to fit all of the plots.
 ;
@@ -1417,17 +1550,18 @@ begin
     total_width  = 2.*xwsp + plot_width   ; Calculate total width and height
     total_height = 2.*ywsp + plot_height  ; with white space added.
 ; the first one, this should be the size of all of them.
-; If we are putting a global labelbar  at the bottom, make it 2/10
+; If we are putting a global labelbar at the bottom, make it 2/10
 ; the height of the plot.
   top    = bb(0)           ; all of its annotations.
     if(panel_labelbar) then
-      getvalues plot(0)
-        "vpWidthF"  : vpwidth
-        "vpHeightF" : vpheight
-      end getvalues
   total_height = 2.*ywsp + plot_height  ; with white space added.
-      labelbar_height = 0.20 * vpheight + 2.*ywsp
-      labelbar_width  = vpwidth
+      labelbar_height = 0.20 * plot_height + 2.*ywsp
+
+      if(nplots.gt.1.and.cols.gt.1) then
+        labelbar_width  = (cols-1) * (2.*xwsp + plot_width)
+      else
+        labelbar_width  = plot_width
+      labelbar_width = 0.20 * plot_width + 2.*xwsp
     else
       labelbar_height = 0.
       labelbar_width  = 0.
@@ -1502,42 +1636,79 @@ begin
         end if
       end if
       do j = 0,cols-1
-        if(i*cols+j .lt. dimsizes(plot))
-          if(.not.ismissing(plot(i*cols+j)))
-            getvalues plot(i*cols+j)
+        nplot = i*cols+j
+        if(nplot .lt. dimsizes(plot))
+          if(.not.ismissing(plot(nplot)))
+            pplot = plot(nplot)
+            getvalues pplot
               "vpXF"      : old_vpx
               "vpYF"      : old_vpy
               "vpWidthF"  : old_vpwidth
               "vpHeightF" : old_vpheight
             end getvalues
 
-            setvalues plot(i*cols+j)
+            setvalues pplot
               "vpXF"      : xpos(j)
               "vpYF"      : ypos(i)
               "vpWidthF"  : scale*old_vpwidth 
               "vpHeightF" : scale*old_vpheight
             end setvalues
     new_ncols = min((/num_plots_left,row_spec(nr)/))
-            draw(plot(i*cols+j))  ; Draw the scaled down plot.
+            added_anno = False
+            if(is_figure_strings) then
+              if(nplot .lt. dimsizes(panel_strings).and. \
+                panel_strings(nplot).ne."")
+                text = create "string" textItemClass wks
+                  "txString"              : panel_strings(nplot)
+                  "txFontHeightF"         : font_height
+                  "txPerimOn"             : perim
+                  "txBackgroundFillColor" : bkgrn
+                end create
+                if(txres.and..not.any(ismissing(getvaratts(txres))))
+                  attsetvalues(text,txres)
+                end if
+                anno = NhlAddAnnotation(pplot,text)
+                added_anno = True
+                setvalues anno
+                  "amZone"           : 0
+                  "amJust"           : just
+                  "amParallelPosF"   : para
+                  "amOrthogonalPosF" : orth
+                  "amResizeNotify"   : True
+                end setvalues
+                if(amres.and..not.any(ismissing(getvaratts(amres))))
+                  attsetvalues(anno,amres)
+                end if
+                delete(text)
+              end if
+            end if
+        pplot = plot(nplot)
+            draw(pplot)  ; Draw the scaled down plot.
+            if(added_anno) then
+              NhlRemoveAnnotation(pplot,anno)
+            end if
 
             if(panel_labelbar.or.draw_boxes) then
-              bb = NhlGetBB(plot(i*cols+j)) ; Get bounding box of plot
+              bb = NhlGetBB(pplot) ; Get bounding box of plot
               bot = bb(1)
               if(draw_boxes)
                 top = bb(0)
                 lft = bb(2)
                 rgt = bb(3)
+                gsres = True
+                gsres@gsLineThicknessF = 5.0
                 gsn_polyline_ndc(wks,(/lft,rgt,rgt,lft,lft/), \
-                                     (/bot,bot,top,top,bot/),False)
+                                     (/bot,bot,top,top,bot/),gsres)
               end if
             end if
 
-            setvalues plot(i*cols+j)
+            setvalues pplot
               "vpXF"      : old_vpx
               "vpYF"      : old_vpy
               "vpWidthF"  : old_vpwidth
               "vpHeightF" : old_vpheight
             end setvalues
+            delete(pplot)
 ;
 ; Save this plot.
       end do  ; end of columns
@@ -1548,31 +1719,6 @@ begin
     if(panel_labelbar) then
       lbres = get_res_eq(res,(/"lb","vp"/))  ; Get labelbar resources.
           end if
-; "plot" can be a map, in which case the vector or contour plot overlaid
-; on it will be indicated by "plot@contour" or "plot@vector"
-;
-      plot_type = "unknown"
-      class = NhlClassName(plot)
-      if(class(0).ne."contourPlotClass".and.class(0).ne."vectorPlotClass") then
-        if(isatt(plot,"contour")) then
-          contour_plot = plot@contour
-          plot_type = "contour"
-        else
-          if(isatt(plot,"vector")) then
-            vector_plot = plot@vector
-            plot_type = "vector"
-          end if
-        end if
-      else
-        if(class(0).eq."contourPlotClass") then
-          contour_plot = plot(0)
-          plot_type = "contour"
-        else
-          vector_plot = plot(0)
-          plot_type = "vector"
-        end if
-      end if
-;
 ; If plot type is unknown, then we can't get labelbar information.
       end if
       if(plot_type.ne."unknown") then
@@ -1589,7 +1735,6 @@ begin
             "cnMonoFillPattern"      : mono_fill_pat
             "cnMonoFillScale"        : mono_fill_scl
             "cnMonoFillColor"        : mono_fill_col
-            "cnInfoLabelFontHeightF" : labelbar_font_height
           end getvalues
         else
 ;
@@ -1601,7 +1746,6 @@ begin
             "vcLevels"                 : levels
             "vcLevelColors"            : colors
             "vcMonoFillArrowFillColor" : mono_fill_col
-            "vcRefAnnoFontHeightF"    : labelbar_font_height
           end getvalues
         end if
         getvalues contour_plot
@@ -1609,7 +1753,7 @@ begin
           "cnFillColors"           : colors
         labelbar_height      = scale * labelbar_height
         labelbar_width       = scale * labelbar_width
-        labelbar_font_height = scale * labelbar_font_height
+        labelbar_font_height = font_height
           "cnMonoFillScale"        : mono_fill_scl
           "cnMonoFillColor"        : mono_fill_col
         end getvalues
@@ -1965,63 +2109,6 @@ function gsn_contour_map(wks:graphic,data[*][*]:numeric,\
     if(sprdcols)
       cnres2 = True
       set_attr(cnres2,"cnFillColors",\
-end
-
-;***********************************************************************;
-; Procedure : gsn_labelbar_ndc                                          ;
-;                   wks: workstation object                             ;
-;                  nbox: number of labelbar boxes                       ;
-;                labels: labels for boxes                               ;
-;                     x: X NDC position of labelbar                     ;
-;                     y: Y NDC position of labelbar                     ;
-;               resources: optional resources                           ;
-;                                                                       ;
-; This procedure draws a labelbar on the workstation "wks" (the         ;
-; variable returned from a previous call to "gsn_open_wks").            ;
-; "resources" is an optional list of resources.                         ;
-;***********************************************************************;
-
-procedure gsn_labelbar_ndc(wks:graphic, nbox:integer, labels:string, \
-                           x,y,resources:logical )
-local i, lbid, attnames, res, lb_res_index, lbres
-begin
-
-    if(isatt(wks,"name"))
-      wksname = wks@name
-    else
-      wksname = "gsnapp"
-    end if
-
-    lbid = create wksname + "_labelbar" labelBarClass wks
-      "vpXF"           : x
-      "vpYF"           : y
-      "lbBoxCount"     : nbox
-      "lbLabelStrings" : labels
-    end create
-
-    lbres = get_res_eq(resources,(/"lb","vp"/))
-    if(lbres.and..not.any(ismissing(getvaratts(lbres))))
-
-; A special test is needed for the resource lbLabelFontHeightF.
-; If it is set, then we need to turn off lbAutoManage.
-
-      if(isatt(lbres,"lbLabelFontHeightF"))
-        setvalues lbid
-          "lbAutoManage"       : False
-          "lbLabelJust"        : "CenterCenter"
-          "lbLabelFontHeightF" : lbres@lbLabelFontHeightF
-        end setvalues
-        delete(lbres@lbLabelFontHeightF)
-      end if
-      if(lbres.and..not.any(ismissing(getvaratts(lbres))))
-        attsetvalues(lbid,lbres)
-      end if
-    end if
-
-; Draw labelbar.
-
-    draw(lbid)
-    delete(lbid)
                spread_colors(wks,contour_object,min_index,max_index))
       attsetvalues(contour_object,cnres2)
     end if

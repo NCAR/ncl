@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.40 2000-05-10 17:28:09 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.41 2000-06-12 15:07:41 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -524,7 +524,7 @@ end
 ; Function : get_allowed_latnames                                       ;
 ;                                                                       ;
 ; Get list of names allowed for a latitude coordinate array.            ; 
-           "lon_u","lon_t"/))
+           "long","lon_u","lon_t"/))
 ;***********************************************************************;
 function get_allowed_latnames()
 ; are longitudes names from a grib file, so their units are assumed to  ;
@@ -659,7 +659,7 @@ local lonname, char_lonname, array_name, start_name, end_name, \
 allowed_lonnames
     array_name = "sfXArray"
     start_name = "sfXCStartV"
-; Get list of allowed latitude coordinate array names.
+; Get list of allowed longitude coordinate array names.
 ;
   allowed_lonnames = get_allowed_lonnames()
 ;
