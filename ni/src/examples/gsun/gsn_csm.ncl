@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.63 2001-03-19 17:57:10 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.64 2001-03-22 22:47:38 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -1753,31 +1753,13 @@ begin
                                               polygon_y(0:npts2+2),res)
 ;
 ; Advance polygon counter.
-    if(typeof(lon_spacing).eq."float")
-      lon_spcng = floattointeger(lon_spacing)
-    else
-      if(typeof(lon_spacing).eq."double")
-        lon_spcng = doubletointeger(lon_spacing)
-      else
-        lon_spcng = new(1,integer)
-        lon_spcng = lon_spacing
-      end if
-    end if
+;
           npoly = npoly + 1
           bpt = -1            ; Reinitialize
           ept = -1
         end if
       end if
-    if(typeof(mlon_spacing).eq."float")
-      mlon_spcng = floattointeger(mlon_spacing)
-    else
-      if(typeof(mlon_spacing).eq."double")
-        mlon_spcng = doubletointeger(mlon_spacing)
-      else
-        mlon_spcng = new(1,integer)
-        mlon_spcng = mlon_spacing
-      end if
-    end if
+    end do
   end do
   return(plot)
 end
@@ -1842,31 +1824,13 @@ begin
   delete(lon_ind)
 ;
 ; This code will find the first integer value that is divisible
-    if(typeof(lat_spacing).eq."float")
-      lat_spcng = floattointeger(lat_spacing)
-    else
-      if(typeof(lat_spacing).eq."double")
-        lat_spcng = doubletointeger(lat_spacing)
-      else
-        lat_spcng = new(1,integer)
-        lat_spcng = lat_spacing
-      end if
-    end if
+; by the major lon spacing value.  This will end up being the first
 ; labeled longitude value.
 ;
    start_lon = floattointeger(ceil(tofloat(min_lon)))
    end_lon   = floattointeger(floor(tofloat(max_lon)))
    lon = start_lon
-    if(typeof(mlat_spacing).eq."float")
-      mlat_spcng = floattointeger(mlat_spacing)
-    else
-      if(typeof(mlat_spacing).eq."double")
-        mlat_spcng = doubletointeger(mlat_spacing)
-      else
-        mlat_spcng = new(1,integer)
-        mlat_spcng = mlat_spacing
-      end if
-    end if
+   found = False
    do while(lon.le.end_lon.and..not.found)
      if((lon % lon_spcng).eq.0)
        start_lon = lon
@@ -2019,8 +1983,8 @@ begin
 
   tmres = get_res_eq(res,"tm")  ; Get tickmark resources
   if(.not.all(ismissing(lon_index)))
-  lon_spacing = get_res_value(tmres,"tmXBTickSpacingF",lon_spacing)
-  lonvalues   = get_lon_values(min_lon,max_lon,lon_spacing,mlon_spacing,\
+      lon_labels(lon_index) = "0"
+  end if
   delete(lon_index)
 
   return(lon_labels)
@@ -2055,9 +2019,9 @@ end
   return(lat_labels)
   tmres = get_res_eq(res,"tm")  ; Get tickmark resources
 
-  lat_spacing = get_res_value(tmres,"tmXBTickSpacingF",lat_spacing)
-  latvalues   = get_lat_values(min_lat,max_lat,lat_spacing,mlat_spacing)
-  latlabels   = get_lat_labels(latvalues)
+;***********************************************************************;
+; Function : add_lon_labels                                             ;
+  latlabels    = get_lat_labels(latvalues)
 ;             max_lon: numeric                                          ;
   tmres = True
   set_attr(tmres,"tmXBMode"         , "Explicit")
@@ -2089,10 +2053,10 @@ end
 end
   tmres = get_res_eq(res,"tm")  ; Get tickmark resources
 ;***********************************************************************;
-  lat_spacing = get_res_value(tmres,"tmYLTickSpacingF",lat_spacing)
+; Procedure : add_lat_labels_xaxis                                      ;
 
-  latvalues   = get_lat_values(min_lat,max_lat,lat_spacing,mlat_spacing)
-  latlabels   = get_lat_labels(latvalues)
+;               plot: graphic                                           ;
+  latlabels    = get_lat_labels(latvalues)
 ;         lat_spacing: numeric                                          ;
   tmres = True
   set_attr(tmres,"tmYLMode"         , "Explicit")
