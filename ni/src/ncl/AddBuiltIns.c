@@ -1,6 +1,6 @@
 
 /*
- *      $Id: AddBuiltIns.c,v 1.51 2000-06-28 19:05:50 dbrown Exp $
+ *      $Id: AddBuiltIns.c,v 1.52 2000-09-21 20:34:55 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -56,6 +56,11 @@ void
 #endif
 );
 extern NhlErrorTypes sprintf_W(
+#if NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes sprinti_W(
 #if NhlNeedProto
 void
 #endif
@@ -1471,6 +1476,13 @@ void _NclAddBuiltIns
     SetArgTemplate(args,nargs,"string",1,dimsizes);nargs++;
     SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
     NclRegisterFunc(sprintf_W,args,"sprintf",nargs);
+
+    nargs = 0;
+    args = NewArgs(2);
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"string",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",NclANY,NclANY);nargs++;
+    NclRegisterFunc(sprinti_W,args,"sprinti",nargs);
 
     nargs = 0;
     args = NewArgs(1);
