@@ -1,5 +1,5 @@
 /*
- *      $Id: yMakefile,v 1.17 1998-03-12 17:11:38 haley Exp $
+ *      $Id: yMakefile,v 1.18 2001-10-09 23:03:54 haley Exp $
  */
 /************************************************************************
 *									*
@@ -22,7 +22,7 @@
  */
 SRCS	=	ymake-filter.c
 OBJS	=	ymake-filter.o
-CONFIG-PROGRAMS	= ymake-filter fcpp callconv mkdirhier ymake-install ldrel
+CONFIG-PROGRAMS	= ymake-filter fcpp callconv ymake-install ldrel
 
 ARCHFILES	=	AIX_RS6000 AlphaOSF1 Cray \
 			HPUX_snake Sun4 SGI_IRIX \

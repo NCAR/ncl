@@ -148,9 +148,7 @@ INSTALL_DB		0644
 INSTALL_INC		0644
 SHELL			/bin/sh
 CALLCONV		$(CONFIGPATH)/callconv
-MKDIRHIER		$(CONFIGPATH)/mkdirhier
-CALLCONV		$(CONFIGSRC)/callconv
-MKDIRHIER		$(CONFIGSRC)/mkdirhier
+MKDIRHIER		mkdir -p
 COPT			dynamic		uses DEBUG to determine
 FOPT			dynamic		uses DEBUG to determine
 

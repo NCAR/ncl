@@ -1,5 +1,5 @@
 /*
- *      $Id: Template,v 1.35 1998-01-09 16:31:37 haley Exp $
+ *      $Id: Template,v 1.36 2001-10-09 23:03:55 haley Exp $
  */
 /************************************************************************
 *									*
@@ -758,7 +758,7 @@ YMAKEDEP	= $(CONFIGSRC)/ymake-filter
 FSPLIT		= FsplitCommand
 SHELL		= /bin/sh
 CALLCONV	= $(CONFIG_DIR)/callconv
-MKDIRHIER	= $(CONFIG_DIR)/mkdirhier
+MKDIRHIER	= mkdir -p
 
 #ifdef	_NO_PROJECT_FILE
 NGCOMM########################################################################
