@@ -206,8 +206,8 @@ c initilize fft work space
 c spectral driver
 
       NLAG1 = 2
-      CALL DSPECXD(WORK,NX,IOPT,JAVE,PCT,SCL,FRQ,SPCX,NSPC,FRQSP,DOF,IER,
-     +            WORK(KPTRC),WORK(KPTIC),WORK(KPTSAV),WORK(KPTWGT),
+      CALL DSPECXD(WORK,NX,IOPT,JAVE,PCT,SCL,FRQ,SPCX,NSPC,FRQSP,DOF,
+     +            IER,WORK(KPTRC),WORK(KPTIC),WORK(KPTSAV),WORK(KPTWGT),
      +            SPVAL,NX2,COEF,XINFO,SINFO,NLAG1)
 
 C NCL add to sinfo
@@ -221,7 +221,7 @@ C NCL add to sinfo
       RETURN
       END
 C*PL*ERROR* Comment line too long
-c -----------------------------------------------------------------------
+c ----------------------------------------------------------------------
       SUBROUTINE DSPECXY(X,Y,NX,IOPT,JAVE,PCT,SCL,WORK,LWORK,FRQ,SPCX,
      +                   SPCY,COSPC,QUSPC,COHER,PHASE,NSPC,SINFO,IER)
       DOUBLE PRECISION PCT
@@ -441,9 +441,9 @@ c initilize fft work space
 c spectral driver (x vector)
 
       NLAG1 = 2
-      CALL DSPECXD(WORK,NX,IOPT,JAVE,PCT,SCL,FRQ,SPCX,NSPC,FRQSP,DOF,IER,
-     +            WORK(KPTRCX),WORK(KPTICX),WORK(KPTSAV),WORK(KPTWGT),
-     +            SPVAL,NX2,XCOEF,XINFO,SINFO,NLAG1)
+      CALL DSPECXD(WORK,NX,IOPT,JAVE,PCT,SCL,FRQ,SPCX,NSPC,FRQSP,DOF,
+     +            IER,WORK(KPTRCX),WORK(KPTICX),WORK(KPTSAV),
+     +            WORK(KPTWGT),SPVAL,NX2,XCOEF,XINFO,SINFO,NLAG1)
 
 c transfer the input series y to the work array
 
@@ -453,9 +453,9 @@ c transfer the input series y to the work array
 c spectral driver (y vector)
 
       NLAG1 = 3
-      CALL DSPECXD(WORK,NX,IOPT,JAVE,PCT,SCL,FRQ,SPCY,NSPC,FRQSP,DOF,IER,
-     +            WORK(KPTRCY),WORK(KPTICY),WORK(KPTSAV),WORK(KPTWGT),
-     +            SPVAL,NX2,YCOEF,YINFO,SINFO,NLAG1)
+      CALL DSPECXD(WORK,NX,IOPT,JAVE,PCT,SCL,FRQ,SPCY,NSPC,FRQSP,DOF,
+     +            IER,WORK(KPTRCY),WORK(KPTICY),WORK(KPTSAV),
+     +            WORK(KPTWGT),SPVAL,NX2,YCOEF,YINFO,SINFO,NLAG1)
 
 c compute the cospectrum and quadrature spectrum
 
@@ -503,8 +503,7 @@ C NCL add to sinfo
 
       RETURN
       END
-C*PL*ERROR* Comment line too long
-c -----------------------------------------------------------------------
+c --------------------------------------------------------------------
       SUBROUTINE DSPECXD(X,NX,IOPT,JAVE,PCT,SCL,FRQ,SPC,NSPC,FRQSP,DOF,
      +                   IER,CR,CI,SAVE,WGT,SPVAL,NX2,COEF,XINFO,SINFO,
      +                   NLAG1)
@@ -712,8 +711,7 @@ c c c call specdf  (frq,spc,nspc,sinfo(9),ier)
 
       RETURN
       END
-C*PL*ERROR* Comment line too long
-c -----------------------------------------------------------------------
+c -------------------------------------------------------------------
       SUBROUTINE DDTRNDXD(X,NPTS,IOPT,XMEAN,XVARI,XVARO,C,IER)
       DOUBLE PRECISION XMEAN
       DOUBLE PRECISION XVARI
@@ -837,8 +835,7 @@ C*PT*WARNING* Non-reversible tranformation (SNGL)
 
       RETURN
       END
-C*PL*ERROR* Comment line too long
-c -----------------------------------------------------------------------
+c --------------------------------------------------------------------
       SUBROUTINE DTAPERX(X,N,P,XAV,CFT)
       DOUBLE PRECISION X
       DOUBLE PRECISION P
@@ -873,8 +870,7 @@ c
       CFT = 0.5D0* (128.D0-93.D0*P)/ (8.D0-5.D0*P)**2
       RETURN
       END
-C*PL*ERROR* Comment line too long
-c -----------------------------------------------------------------------
+c -------------------------------------------------------------------
       SUBROUTINE DSWRNAV(X,NPTS,WGT,NPTAV,KOPT,SPVL,WORK,IER)
       DOUBLE PRECISION X
       DOUBLE PRECISION WGT

@@ -1,4 +1,5 @@
-      SUBROUTINE DINT2P(PIN,XIN,P,X,NPIN,POUT,XOUT,NPOUT,LINLOG,XMSG,IER)
+      SUBROUTINE DINT2P(PIN,XIN,P,X,NPIN,POUT,XOUT,NPOUT,LINLOG,XMSG,
+     +     IER)
       IMPLICIT NONE
 
 c routine to interpolate from one set of pressure levels
