@@ -1,11 +1,16 @@
 #include <stdio.h>
 #include <udunits.h>
 #include "wrapper.h"
+#include   "NclAtt.h"
+#include   <ncarg/ncl/NclVar.h>
+#include   "DataSupport.h"
+#include   "AttSupport.h"
+#include   "VarSupport.h"
 
 /*
  * Function for initializing Udunits package.  If UDUNITS_PATH is
  * set, then this path is used for the "udunits.dat" file. Otherwise,
- * the path within NCL ($NCARG_ROOT/lib/ncarg/udunits) is used.
+ * the path within NCL ($NCARG_ROOT/lib/ncarg/udunits/) is used.
  */
 int utopen()
 {
@@ -46,6 +51,32 @@ int utopen()
   return(utret);
 }
 
+/*
+ * The NCAR/CSM convention states the following:
+ *
+ *    The calendar calculations done by the udunits package use a mixed
+ *    Gregorian/Julian calendar, i.e., dates prior to 1582-10-15 are
+ *    assumed to use the Julian calendar. Time coordinates that use
+ *    other calendars are thus not able to make use of the udunits
+ *    library for this purpose. However, it is still required to use the
+ *    time unit format described above as this contains all the
+ *    information required to make calendar calculations once the
+ *    calendar has been specified. We describe a calendar attribute for
+ *    the time coordinate variable below that may be used for this
+ *    purpose.
+ *
+ * The ut_calendar function below depends on udunits, so it is the 
+ * user's responsibility to make sure that the input refers to
+ * the mixed Gregorian/Julian calendar.
+ *
+ * The NCL function below checks for a "calendar" attribute. If
+ * it is not present or has the values "standard" or "gregorian",
+ * then this function will return the dates as returned
+ * from the udunits package. If the "calendar" attribute is present
+ * and it has other values, i.e. "n kyr B.P.", "common_year",
+ * "no_leap", "365_day", then _FillValue will be returned.
+ */
+
 NhlErrorTypes ut_calendar_W( void )
 {
 /*
@@ -60,6 +91,14 @@ NhlErrorTypes ut_calendar_W( void )
   NclScalar missing_x, missing_dx;
   NclBasicDataTypes type_x;
 /*
+ * Variables for retrieving attributes from "options".
+ */
+  NclAttList  *attr_list;
+  NclAtt  attr_obj;
+  NclStackEntry   stack_entry;
+  string *calendar;
+  char   *ccal;
+/*
  * Variables for Udunits package.
  */
   int utopen();
@@ -68,8 +107,7 @@ NhlErrorTypes ut_calendar_W( void )
  * Output variables.
  */
   int year, month, day, hour, minute;
-  float second;
-  void *date;
+  float second, *date;
   int ndims_date, *dsizes_date;
   NclScalar missing_date;
 /*
@@ -130,12 +168,13 @@ NhlErrorTypes ut_calendar_W( void )
   cspec = NrmQuarkToString(*sspec);
 
 /*
- * Make sure cspec is a valid udunits string.
+ * Coerce missing value to double, and get the default missing
+ * value for a float type.
  */
-  if(utScan(cspec, &unit) != 0) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"ut_calendar: Invalid specification string");
-    return(NhlFATAL);
-  }
+  coerce_missing(type_x,has_missing_x,&missing_x,&missing_dx,NULL);
+
+  missing_date = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis;
+
 /*
  * Calculate total size of input array, and size and dimensions for
  * output array, and alloc memory for output array.
@@ -150,7 +189,7 @@ NhlErrorTypes ut_calendar_W( void )
 
   ndims_date  = ndims_x + 1;
   dsizes_date = (int *)calloc(ndims_date,sizeof(int));
-  date        = (void *)calloc(6*total_size_x,sizeof(float));
+  date        = (float *)calloc(6*total_size_x,sizeof(float));
 
   if( date == NULL || dsizes_date == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"ut_calendar: Unable to allocate memory for output arrays");
@@ -160,13 +199,70 @@ NhlErrorTypes ut_calendar_W( void )
   dsizes_date[0] = 6;
   for( i = 0; i < ndims_x; i++ ) dsizes_date[i+1] = dsizes_x[i];
 
-/*
- * Coerce missing value to double, and get the default missing
- * value for a float type.
+/* 
+ * Check if time variable has "calendar" attribute set. If so, it
+ * must be set to "standard" or "gregorian". Otherwise, we need to 
+ * return missing values.  
  */
-  coerce_missing(type_x,has_missing_x,&missing_x,&missing_dx,NULL);
+  stack_entry = _NclGetArg(0, 3, DONT_CARE);
+  switch (stack_entry.kind) {
+  case NclStk_VAR:
+    if (stack_entry.u.data_var->var.att_id != -1) {
+      attr_obj = (NclAtt) _NclGetObj(stack_entry.u.data_var->var.att_id);
+      if (attr_obj == NULL) {
+        break;
+      }
+    }
+    else {
+/*
+ * att_id == -1 ==> no optional args given; use default calendar.
+ */
+      break;
+    }
+/* 
+ * Get optional arguments; if none specified, use default calendar.
+ */
+    if (attr_obj->att.n_atts == 0) {
+      break;
+    }
+    else {
+      attr_list = attr_obj->att.att_list;
+      while (attr_list != NULL) {
+        if ((strcmp(attr_list->attname, "calendar")) == 0) {
+          calendar = (string *) attr_list->attvalue->multidval.val;
+          ccal     = NrmQuarkToString(*calendar);
+          if(strcmp(ccal,"standard") && strcmp(ccal,"gregorian")) {
+            NhlPError(NhlWARNING,NhlEUNKNOWN,"ut_calendar: the 'calendar' attribute is not equal to 'standard' or 'gregorian'. This function only understands a mixed Julian/Gregorian calendar. Returning all missing values.");
+            for(i = 0; i < 6*total_size_x; i++) {
+              date[i] = missing_date.floatval;
+            }
+/*
+ * Close up Udunits.
+ */
+            utTerm();
+/*
+ * Return all missing values.
+ */
+            return(NclReturnValue(date,ndims_date,dsizes_date,
+                                  &missing_date,NCL_float,0));
+            
+          }
+        }
+        attr_list = attr_list->next;
+      }
+    }
+  default:
+    break;
+  }
 
-  missing_date = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis;
+
+/*
+ * Make sure cspec is a valid udunits string.
+ */
+  if(utScan(cspec, &unit) != 0) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ut_calendar: Invalid specification string");
+    return(NhlFATAL);
+  }
 
 /*
  * Convert input to double if necessary.
@@ -182,20 +278,20 @@ NhlErrorTypes ut_calendar_W( void )
       (void) utCalendar(tmp_x[i],&unit,&year,&month,&day,
             &hour,&minute,&second);
     
-      ((float*)date)[i]                  = (float)year;
-      ((float*)date)[i+total_size_x]     = (float)month;
-      ((float*)date)[i+(2*total_size_x)] = (float)day;
-      ((float*)date)[i+(3*total_size_x)] = (float)hour;
-      ((float*)date)[i+(4*total_size_x)] = (float)minute;
-      ((float*)date)[i+(5*total_size_x)] = second;
+      date[i]                  = (float)year;
+      date[i+total_size_x]     = (float)month;
+      date[i+(2*total_size_x)] = (float)day;
+      date[i+(3*total_size_x)] = (float)hour;
+      date[i+(4*total_size_x)] = (float)minute;
+      date[i+(5*total_size_x)] = second;
     }
     else {
-      ((float*)date)[i]                  = missing_date.floatval;
-      ((float*)date)[i+total_size_x]     = missing_date.floatval;
-      ((float*)date)[i+(2*total_size_x)] = missing_date.floatval;
-      ((float*)date)[i+(3*total_size_x)] = missing_date.floatval;
-      ((float*)date)[i+(4*total_size_x)] = missing_date.floatval;
-      ((float*)date)[i+(5*total_size_x)] = missing_date.floatval;
+      date[i]                  = missing_date.floatval;
+      date[i+total_size_x]     = missing_date.floatval;
+      date[i+(2*total_size_x)] = missing_date.floatval;
+      date[i+(3*total_size_x)] = missing_date.floatval;
+      date[i+(4*total_size_x)] = missing_date.floatval;
+      date[i+(5*total_size_x)] = missing_date.floatval;
     }
   }
 

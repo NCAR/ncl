@@ -3875,10 +3875,10 @@ void NclAddUserFuncs(void)
  */
         SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
         SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
         SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
         SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
-        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
-        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
 /*
  * Register wrapper function pointer and argument templates.
  */
@@ -3896,10 +3896,10 @@ void NclAddUserFuncs(void)
  */
         SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
         SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"double",NclANY,NclANY);nargs++;
         SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
         SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
-        SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
-        SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"double",NclANY,NclANY);nargs++;
 /*
  * Register wrapper function pointer and argument templates.
  */
@@ -3914,7 +3914,7 @@ void NclAddUserFuncs(void)
 
         SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
         SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
-        SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
         SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
         SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
 /*
@@ -3935,11 +3935,11 @@ void NclAddUserFuncs(void)
         SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
         SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
         SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
         SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
         SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
         SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
-        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
-        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
 /*
  * Register wrapper function pointer and argument templates.
  */
@@ -3958,11 +3958,11 @@ void NclAddUserFuncs(void)
         SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
         SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
         SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"double",NclANY,NclANY);nargs++;
         SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
         SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
         SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
-        SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
-        SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"double",NclANY,NclANY);nargs++;
 /*
  * Register wrapper function pointer and argument templates.
  */
@@ -3979,7 +3979,7 @@ void NclAddUserFuncs(void)
         SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
         SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
         SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
-        SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
         SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
         SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
         SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
