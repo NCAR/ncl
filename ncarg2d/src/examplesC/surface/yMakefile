@@ -1,29 +1,10 @@
 #
-#	$Id: yMakefile,v 1.3 1994-08-16 16:43:43 haley Exp $
+#	$Id: yMakefile,v 1.4 1994-10-31 04:09:47 haley Exp $
 #
 
-CSRCS = c_fsrezsrf.c c_fsrsrfac.c c_tsrfac.c
+EXAMPLES = c_fsrezsrf.c c_fsrsrfac.c c_srex01.c c_tpwrzs.c c_fsrpwrzs.c
 
-SED_SRCS = c_srex01.c c_tpwrzs.c c_fsrpwrzs.c
+TESTS = c_tsrfac.c
 
-GENERIC_SRCS = $(CSRCS) $(SED_SRCS)
-
-InstallTarget($(GENERIC_SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
-CleanFilesTarget($(SED_SRCS))
-
-#
-# Files containing C functions that are called from FORTRAN or that have to
-# be modified to include a macro from the configuration file.
-#
-
-c_tpwrzs.c: c_tpwrzs.c.sed Makefile
-	@-$(RM) $@
-	@$(CALLCONV) $(SYSTEM_INCLUDE) $@ srfip1
-
-c_fsrpwrzs.c: c_fsrpwrzs.c.sed Makefile
-	@-$(RM) $@
-	@$(CALLCONV) $(SYSTEM_INCLUDE) $@ srfip1
-
-c_srex01.c: c_srex01.c.sed Makefile
-	@-$(RM) $@
-	@$(CALLCONV) $(SYSTEM_INCLUDE) $@ srfip1
+InstallTarget($(EXAMPLES),$(INSTALL_LIB),$(EXAMPLESPATH))
+InstallTarget($(TESTS),$(INSTALL_LIB),$(TESTSPATH))
