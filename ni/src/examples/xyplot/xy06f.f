@@ -1,5 +1,5 @@
 C
-C      $Id: xy06f.f,v 1.9 1996-05-09 15:38:13 haley Exp $
+C      $Id: xy06f.f,v 1.10 1997-02-21 18:14:36 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -148,7 +148,7 @@ C
      +        0,rlist,ierr)
       else if (PS.eq.1) then
 C
-C Create an NCGM workstation.
+C Create a PostScript workstation.
 C
          call NhlFRLClear(rlist)
          call NhlFRLSetString(rlist,'wkPSFileName','./xy06f.ps',ierr)

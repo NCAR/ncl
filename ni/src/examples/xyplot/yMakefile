@@ -1,5 +1,5 @@
 #
-#   $Id: yMakefile,v 1.33 1995-10-19 14:49:00 haley Exp $
+#   $Id: yMakefile,v 1.34 1997-02-21 18:14:37 haley Exp $
 #
 #   Makefile for HLU XYPlot examples
 #
@@ -13,7 +13,7 @@ SYS_LIBS    =   $(CTOFLIBS) -lm
 CSRCS      = xy01c.c xy02c.c xy03c.c xy04c.c xy05c.c xy06c.c xy07c.c \
              xy08c.c xy09c.c xy10c.c xy11c.c xy12c.c xy13c.c xy14c.c xy15c.c
 FSRCS      = xy01f.f xy02f.f xy03f.f xy04f.f xy05f.f xy06f.f xy07f.f \
-			xy08f.f xy09f.f xy10f.f xy11f.f xy14f.f xy15f.f
+			xy08f.f xy09f.f xy10f.f xy11f.f xy14f.f xy15f.f xy16f.f
 NSRCS      = xy01n.ncl xy02n.ncl xy03n.ncl xy04n.ncl xy05n.ncl xy06n.ncl \
              xy07n.ncl xy08n.ncl xy09n.ncl xy10n.ncl xy11n.ncl xy14n.ncl \
 			 xy15n.ncl
@@ -64,6 +64,7 @@ FExampleTarget(xy10f,xy10f.o)
 FExampleTarget(xy11f,xy11f.o)
 FExampleTarget(xy14f,xy14f.o)
 FExampleTarget(xy15f,xy15f.o)
+FExampleTarget(xy16f,xy16f.o)
 
 CleanFilesTarget($(OBJS))
 CleanFilesTarget($(NCGMS))
