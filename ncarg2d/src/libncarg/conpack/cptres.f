@@ -1,5 +1,5 @@
 C
-C $Id: cptres.f,v 1.6 1995-05-22 16:53:56 kennison Exp $
+C $Id: cptres.f,v 1.7 1995-06-02 00:24:04 kennison Exp $
 C
       SUBROUTINE CPTRES (ZDAT,RWRK,IWRK,IJMP,IAIC,IRW1,IRW2,NRWK)
 C
@@ -96,7 +96,7 @@ C
 C If this is a re-entry after coordinate processing by the caller, jump
 C back to the appropriate point in the code.
 C
-      IF (IJMP.NE.0) GO TO (101,102,108,109,110,111,112) , IJMP
+      IF (IJMP.NE.0) GO TO (101,102,106,107,108,109,110) , IJMP
 C
 C If there are no special values in the field, do nothing.
 C
@@ -490,74 +490,48 @@ C
               IAID=1
             GO TO 10080
 10079       CONTINUE
-              IAID=0
               ZAVG=.5*(ZCND+ZCOD)
-              DO 10081 L=1,NCLV
-                JCLV=ICLP(L)
-                IF (.NOT.(ZAVG.LE.CLEV(JCLV))) GO TO 10082
-                  IF (.NOT.(IAIB(JCLV).NE.0)) GO TO 10083
-                    IAID=IAIB(JCLV)
-                    GO TO 107
-10083             CONTINUE
-                    IF (L.EQ.NCLV) GO TO 106
-                    IF (ZAVG.NE.CLEV(JCLV).AND.
-     +                  CLEV(JCLV).NE.CLEV(ICLP(L+1))) GO TO 106
-10082           CONTINUE
-10081         CONTINUE
-  106         CONTINUE
-              DO 10084 L=NCLV,1,-1
-                JCLV=ICLP(L)
-                IF (.NOT.(ZAVG.GE.CLEV(JCLV))) GO TO 10085
-                  IF (.NOT.(IAIA(JCLV).NE.0)) GO TO 10086
-                    IAID=IAIA(JCLV)
-                    GO TO 107
-10086             CONTINUE
-                    IF (L.EQ.1) GO TO 107
-                    IF (ZAVG.NE.CLEV(JCLV).AND.
-     +                  CLEV(JCLV).NE.CLEV(ICLP(L-1))) GO TO 107
-10085           CONTINUE
-10084         CONTINUE
-  107       CONTINUE
+              CALL CPGVAI (ZAVG,IAID)
 10080       CONTINUE
 10078     CONTINUE
 10076   CONTINUE
 C
-        IF (.NOT.(NPLS.EQ.0)) GO TO 10087
-          IF (.NOT.(IVOU.NE.0)) GO TO 10088
-            IF (.NOT.(IMPF.NE.0.AND.PITH.GT.0.)) GO TO 10089
+        IF (.NOT.(NPLS.EQ.0)) GO TO 10081
+          IF (.NOT.(IVOU.NE.0)) GO TO 10082
+            IF (.NOT.(IMPF.NE.0.AND.PITH.GT.0.)) GO TO 10083
               XCLD=XCOD
               YCLD=YCOD
               XCLU=XCOU
               YCLU=YCOU
-10089       CONTINUE
+10083       CONTINUE
             RWRK(IR01+1)=XCOU
             RWRK(IR01+MPLS+1)=YCOU
             NPLS=1
-          GO TO 10090
-10088     CONTINUE
-          IF (.NOT.(IVNU.NE.0)) GO TO 10091
+          GO TO 10084
+10082     CONTINUE
+          IF (.NOT.(IVNU.NE.0)) GO TO 10085
             XCID=XCOD
             YCID=YCOD
             XCVD=XCND
             YCVD=YCND
             XCVU=XCNU
             YCVU=YCNU
-            L10093=    1
-            GO TO 10093
-10092       CONTINUE
-            L10095=    1
-            GO TO 10095
-10094       CONTINUE
+            L10087=    1
+            GO TO 10087
+10086       CONTINUE
+            L10089=    1
+            GO TO 10089
+10088       CONTINUE
             XCOD=XCVD
             YCOD=YCVD
             XCOU=XCVU
             YCOU=YCVU
             IVOU=1
-10090     CONTINUE
-10091     CONTINUE
-        GO TO 10096
-10087   CONTINUE
-        IF (.NOT.(NPLS.EQ.MPLS.OR.IAID.NE.IAIC)) GO TO 10097
+10084     CONTINUE
+10085     CONTINUE
+        GO TO 10090
+10081   CONTINUE
+        IF (.NOT.(NPLS.EQ.MPLS.OR.IAID.NE.IAIC)) GO TO 10091
           XSAV=RWRK(IR01+NPLS)
           YSAV=RWRK(IR01+MPLS+NPLS)
           IJMP=3
@@ -565,47 +539,47 @@ C
           IRW2=IR01+MPLS
           NRWK=NPLS
           RETURN
-  108     RWRK(IR01+1)=XSAV
+  106     RWRK(IR01+1)=XSAV
           RWRK(IR01+MPLS+1)=YSAV
           NPLS=1
-10096   CONTINUE
-10097   CONTINUE
+10090   CONTINUE
+10091   CONTINUE
 C
         IAIC=IAID
 C
-        IF (.NOT.(IVNU.NE.0)) GO TO 10098
-          L10100=    1
-          GO TO 10100
-10099     CONTINUE
-        GO TO 10101
-10098   CONTINUE
-        IF (.NOT.(IVOU.NE.0)) GO TO 10102
+        IF (.NOT.(IVNU.NE.0)) GO TO 10092
+          L10094=    1
+          GO TO 10094
+10093     CONTINUE
+        GO TO 10095
+10092   CONTINUE
+        IF (.NOT.(IVOU.NE.0)) GO TO 10096
           XCVD=XCOD
           YCVD=YCOD
           XCVU=XCOU
           YCVU=YCOU
           XCID=XCND
           YCID=YCND
-          L10093=    2
-          GO TO 10093
-10103     CONTINUE
+          L10087=    2
+          GO TO 10087
+10097     CONTINUE
           XCND=XCVD
           YCND=YCVD
           XCNU=XCVU
           YCNU=YCVU
           IFOP=1
-          L10100=    2
-          GO TO 10100
-10104     CONTINUE
+          L10094=    2
+          GO TO 10094
+10098     CONTINUE
           IJMP=4
           IRW1=IR01
           IRW2=IR01+MPLS
           NRWK=NPLS
           RETURN
-  109     NPLS=0
+  107     NPLS=0
           RUDN=0.
-10101   CONTINUE
-10102   CONTINUE
+10095   CONTINUE
+10096   CONTINUE
 C
       GO TO (10071,10075) , L10072
 C
@@ -616,34 +590,34 @@ C Similarly, if mapping is being done and point interpolation is
 C activated, we check for a large enough jump in the mapped position
 C to justify interpolating points.
 C
-10100 CONTINUE
+10094 CONTINUE
         IF (.NOT.(IMPF.NE.0.AND.(XCND.NE.XCOD.OR.YCND.NE.YCOD)))
-     +  GO TO 10105
+     +  GO TO 10099
           RUDO=RUDN
           RUDN=(ABS(XCNU-XCOU)+ABS(YCNU-YCOU))/
      +         (ABS(XCND-XCOD)+ABS(YCND-YCOD))
-          IF (.NOT.(RUDN.GT.2.*RUDO)) GO TO 10106
+          IF (.NOT.(RUDN.GT.2.*RUDO)) GO TO 10100
             IFOP=1
-            L10108=    1
-            GO TO 10108
-10107       CONTINUE
-10106     CONTINUE
-          IF (.NOT.(PITH.GT.0.)) GO TO 10109
+            L10102=    1
+            GO TO 10102
+10101       CONTINUE
+10100     CONTINUE
+          IF (.NOT.(PITH.GT.0.)) GO TO 10103
             XCTD=XCND
             YCTD=YCND
             XCTU=XCNU
             YCTU=YCNU
-            L10111=    1
-            GO TO 10111
-10110       CONTINUE
-10109     CONTINUE
-10105   CONTINUE
-        IF (.NOT.(IFOP.NE.0)) GO TO 10112
+            L10105=    1
+            GO TO 10105
+10104       CONTINUE
+10103     CONTINUE
+10099   CONTINUE
+        IF (.NOT.(IFOP.NE.0)) GO TO 10106
           NPLS=NPLS+1
           RWRK(IR01+NPLS)=XCNU
           RWRK(IR01+MPLS+NPLS)=YCNU
-10112   CONTINUE
-      GO TO (10099,10104) , L10100
+10106   CONTINUE
+      GO TO (10093,10098) , L10094
 C
 C The following internal procedure is invoked when an unusually large
 C jump in the position of mapped points on the edge is seen.  It checks
@@ -653,7 +627,7 @@ C if there is such a discontinuity, we must generate a final point on
 C one side of it, dump the polyline, and then start a new polyline on
 C the other side.
 C
-10108 CONTINUE
+10102 CONTINUE
         XC1D=XCOD
         YC1D=YCOD
         XC1U=XCOU
@@ -663,7 +637,7 @@ C
         XC2U=XCNU
         YC2U=YCNU
         ITMP=0
-10113   CONTINUE
+10107   CONTINUE
           DSTO=ABS(XC2U-XC1U)+ABS(YC2U-YC1U)
           XC3D=(XC1D+XC2D)/2.
           YC3D=(YC1D+YC2D)/2.
@@ -672,49 +646,49 @@ C
      +                                   XC3U,YC3U)
           IF (ICFELL('CPTRES',5).NE.0) GO TO 105
           IF (.NOT.(OORV.EQ.0..OR.(XC3U.NE.OORV.AND.YC3U.NE.OORV)))
-     +    GO TO 10114
+     +    GO TO 10108
             DST1=ABS(XC3U-XC1U)+ABS(YC3U-YC1U)
             DST2=ABS(XC3U-XC2U)+ABS(YC3U-YC2U)
-            IF (.NOT.(MIN(DST1,DST2).GT.DSTO)) GO TO 10115
+            IF (.NOT.(MIN(DST1,DST2).GT.DSTO)) GO TO 10109
               ITMP=1000
-              GO TO 10116
-10115       CONTINUE
-            IF (.NOT.(DST1.LT.DST2)) GO TO 10117
-              IF (XC3D.EQ.XC1D.AND.YC3D.EQ.YC1D) GO TO 10116
+              GO TO 10110
+10109       CONTINUE
+            IF (.NOT.(DST1.LT.DST2)) GO TO 10111
+              IF (XC3D.EQ.XC1D.AND.YC3D.EQ.YC1D) GO TO 10110
               XC1D=XC3D
               YC1D=YC3D
               XC1U=XC3U
               YC1U=YC3U
-            GO TO 10118
-10117       CONTINUE
-              IF (XC3D.EQ.XC2D.AND.YC3D.EQ.YC2D) GO TO 10116
+            GO TO 10112
+10111       CONTINUE
+              IF (XC3D.EQ.XC2D.AND.YC3D.EQ.YC2D) GO TO 10110
               XC2D=XC3D
               YC2D=YC3D
               XC2U=XC3U
               YC2U=YC3U
-10118       CONTINUE
+10112       CONTINUE
             ITMP=ITMP+1
-            IF (ITMP.EQ.64) GO TO 10116
-          GO TO 10119
-10114     CONTINUE
+            IF (ITMP.EQ.64) GO TO 10110
+          GO TO 10113
+10108     CONTINUE
             XCVD=XCOD
             YCVD=YCOD
             XCVU=XCOU
             YCVU=YCOU
             XCID=XC3D
             YCID=YC3D
-            L10093=    3
-            GO TO 10093
-10120       CONTINUE
-            L10095=    2
-            GO TO 10095
-10121       CONTINUE
+            L10087=    3
+            GO TO 10087
+10114       CONTINUE
+            L10089=    2
+            GO TO 10089
+10115       CONTINUE
             IJMP=5
             IRW1=IR01
             IRW2=IR01+MPLS
             NRWK=NPLS
             RETURN
-  110       NPLS=0
+  108       NPLS=0
             RUDN=0.
             XCID=XC3D
             YCID=YC3D
@@ -722,28 +696,28 @@ C
             YCVD=YCND
             XCVU=XCNU
             YCVU=YCNU
-            L10093=    4
-            GO TO 10093
-10122       CONTINUE
-            L10095=    3
-            GO TO 10095
-10123       CONTINUE
+            L10087=    4
+            GO TO 10087
+10116       CONTINUE
+            L10089=    3
+            GO TO 10089
+10117       CONTINUE
             ITMP=1000
-            GO TO 10116
-10119     CONTINUE
-        GO TO 10113
-10116   CONTINUE
+            GO TO 10110
+10113     CONTINUE
+        GO TO 10107
+10110   CONTINUE
         IF (.NOT.(ITMP.NE.1000.AND.(ABS(XC1U-XC2U).GT.SMLX.OR.ABS(YC1U-Y
-     +C2U).GT.SMLY))) GO TO 10124
-          IF (.NOT.(IMPF.NE.0.AND.PITH.GT.0.)) GO TO 10125
+     +C2U).GT.SMLY))) GO TO 10118
+          IF (.NOT.(IMPF.NE.0.AND.PITH.GT.0.)) GO TO 10119
             XCTD=XC1D
             YCTD=YC1D
             XCTU=XC1U
             YCTU=YC1U
-            L10111=    2
-            GO TO 10111
-10126       CONTINUE
-10125     CONTINUE
+            L10105=    2
+            GO TO 10105
+10120       CONTINUE
+10119     CONTINUE
           NPLS=NPLS+1
           RWRK(IR01+NPLS)=XC1U
           RWRK(IR01+MPLS+NPLS)=YC1U
@@ -752,77 +726,77 @@ C
           IRW2=IR01+MPLS
           NRWK=NPLS
           RETURN
-  111     CONTINUE
-          IF (.NOT.(IMPF.NE.0.AND.PITH.GT.0.)) GO TO 10127
+  109     CONTINUE
+          IF (.NOT.(IMPF.NE.0.AND.PITH.GT.0.)) GO TO 10121
             XCLD=XC2D
             YCLD=YC2D
             XCLU=XC2U
             YCLU=YC2U
-10127     CONTINUE
+10121     CONTINUE
           RWRK(IR01+1)=XC2U
           RWRK(IR01+MPLS+1)=YC2U
           NPLS=1
           RUDN=0.
-10124   CONTINUE
-      GO TO (10107) , L10108
+10118   CONTINUE
+      GO TO (10101) , L10102
 C
 C Given two points in the data-array-index coordinate system, one of
 C which maps to a visible point and the other of which maps to an
 C invisible point, this internal routine searches the line between
 C them for a point near the edge of visibility.
 C
-10093 CONTINUE
+10087 CONTINUE
         ITMP=0
-10128   CONTINUE
+10122   CONTINUE
           XCHD=(XCVD+XCID)/2.
           YCHD=(YCVD+YCID)/2.
           CALL HLUCPMPXY (IMPF,XAT1+RZDM*(XCHD-1.),
      +                         YAT1+RZDN*(YCHD-1.),
      +                                   XCHU,YCHU)
           IF (ICFELL('CPTRES',6).NE.0) GO TO 105
-          IF (.NOT.(XCHU.NE.OORV.AND.YCHU.NE.OORV)) GO TO 10129
-            IF (XCHD.EQ.XCVD.AND.YCHD.EQ.YCVD) GO TO 10130
+          IF (.NOT.(XCHU.NE.OORV.AND.YCHU.NE.OORV)) GO TO 10123
+            IF (XCHD.EQ.XCVD.AND.YCHD.EQ.YCVD) GO TO 10124
             XCVD=XCHD
             YCVD=YCHD
             XCVU=XCHU
             YCVU=YCHU
-          GO TO 10131
-10129     CONTINUE
-            IF (XCHD.EQ.XCID.AND.YCHD.EQ.YCID) GO TO 10130
+          GO TO 10125
+10123     CONTINUE
+            IF (XCHD.EQ.XCID.AND.YCHD.EQ.YCID) GO TO 10124
             XCID=XCHD
             YCID=YCHD
-10131     CONTINUE
+10125     CONTINUE
           ITMP=ITMP+1
-          IF (ITMP.EQ.64) GO TO 10130
-        GO TO 10128
-10130   CONTINUE
-      GO TO (10092,10103,10120,10122) , L10093
+          IF (ITMP.EQ.64) GO TO 10124
+        GO TO 10122
+10124   CONTINUE
+      GO TO (10086,10097,10114,10116) , L10087
 C
 C The following internal procedure outputs a visible edge point found
 C by the previous internal procedure.
 C
-10095 CONTINUE
-        IF (.NOT.(IMPF.NE.0.AND.PITH.GT.0.)) GO TO 10132
-          IF (.NOT.(NPLS.EQ.0)) GO TO 10133
+10089 CONTINUE
+        IF (.NOT.(IMPF.NE.0.AND.PITH.GT.0.)) GO TO 10126
+          IF (.NOT.(NPLS.EQ.0)) GO TO 10127
             XCLD=XCVD
             YCLD=YCVD
             XCLU=XCVU
             YCLU=YCVU
-          GO TO 10134
-10133     CONTINUE
+          GO TO 10128
+10127     CONTINUE
             XCTD=XCVD
             YCTD=YCVD
             XCTU=XCVU
             YCTU=YCVU
-            L10111=    3
-            GO TO 10111
-10135       CONTINUE
-10134     CONTINUE
-10132   CONTINUE
+            L10105=    3
+            GO TO 10105
+10129       CONTINUE
+10128     CONTINUE
+10126   CONTINUE
         NPLS=NPLS+1
         RWRK(IR01+NPLS)=XCVU
         RWRK(IR01+MPLS+NPLS)=YCVU
-      GO TO (10094,10121,10123) , L10095
+      GO TO (10088,10115,10117) , L10089
 C
 C The following internal procedure is invoked when mapping is being
 C done and a new point is about to be added to the polyline buffer.
@@ -833,16 +807,16 @@ C all points in between are visible; if that is found not to be the
 C case, no attempt is made to rectify the situation: the user probably
 C screwed up the definition of the mapping function.
 C
-10111 CONTINUE
-10136   CONTINUE
+10105 CONTINUE
+10130   CONTINUE
         IF (.NOT.(ABS(XCTU-XCLU).GT.PITX.OR.ABS(YCTU-YCLU).GT.PITY))
-     +  GO TO 10137
+     +  GO TO 10131
           IFND=0
           XCQD=0.
           YCQD=0.
           RDST=.50
           RSTP=.25
-10138     CONTINUE
+10132     CONTINUE
             XCPD=XCLD+RDST*(XCTD-XCLD)
             YCPD=YCLD+RDST*(YCTD-YCLD)
             CALL HLUCPMPXY (IMPF,XAT1+RZDM*(XCPD-1.),
@@ -850,32 +824,32 @@ C
      +                                     XCPU,YCPU)
             IF (ICFELL('CPTRES',7).NE.0) GO TO 105
             IF (OORV.NE.0..AND.(XCPU.EQ.OORV.OR.YCPU.EQ.OORV)) GO TO 101
-     +39
+     +33
             IF (.NOT.(ABS(XCPU-XCLU).LT.PITX.AND.ABS(YCPU-YCLU).LT.PITY)
-     +)     GO TO 10140
+     +)     GO TO 10134
               IFND=1
               XCQD=XCPD
               YCQD=YCPD
               XCQU=XCPU
               YCQU=YCPU
               IF (ABS(XCQU-XCLU).GT..5*PITX.OR.ABS(YCQU-YCLU).GT..5*PITY
-     +)       GO TO 10139
+     +)       GO TO 10133
               RDST=RDST+RSTP
-            GO TO 10141
-10140       CONTINUE
+            GO TO 10135
+10134       CONTINUE
               RDST=RDST-RSTP
-10141       CONTINUE
+10135       CONTINUE
             RSTP=RSTP/2.
-            IF (RSTP.LT..001) GO TO 10139
-          GO TO 10138
-10139     CONTINUE
+            IF (RSTP.LT..001) GO TO 10133
+          GO TO 10132
+10133     CONTINUE
           IF (.NOT.(IFND.NE.0.AND.(XCQD.NE.XCLD.OR.YCQD.NE.YCLD)))
-     +    GO TO 10142
+     +    GO TO 10136
             IFOP=1
             NPLS=NPLS+1
             RWRK(IR01+NPLS)=XCQU
             RWRK(IR01+MPLS+NPLS)=YCQU
-            IF (.NOT.(NPLS.EQ.MPLS)) GO TO 10143
+            IF (.NOT.(NPLS.EQ.MPLS)) GO TO 10137
               XSAV=RWRK(IR01+NPLS)
               YSAV=RWRK(IR01+MPLS+NPLS)
               IJMP=7
@@ -883,28 +857,28 @@ C
               IRW2=IR01+MPLS
               NRWK=NPLS
               RETURN
-  112         RWRK(IR01+1)=XSAV
+  110         RWRK(IR01+1)=XSAV
               RWRK(IR01+MPLS+1)=YSAV
               NPLS=1
-10143       CONTINUE
+10137       CONTINUE
             XCLD=XCQD
             YCLD=YCQD
             XCLU=XCQU
             YCLU=YCQU
-          GO TO 10144
-10142     CONTINUE
+          GO TO 10138
+10136     CONTINUE
             XCLD=XCTD
             YCLD=YCTD
             XCLU=XCTU
             YCLU=YCTU
-10144     CONTINUE
-        GO TO 10136
-10137   CONTINUE
+10138     CONTINUE
+        GO TO 10130
+10131   CONTINUE
         XCLD=XCTD
         YCLD=YCTD
         XCLU=XCTU
         YCLU=YCTU
-      GO TO (10110,10126,10135) , L10111
+      GO TO (10104,10120,10129) , L10105
 C
 C The following internal procedure is given the data-system coordinates
 C of a point (XCND,YCND) and computes the user-system coordinates of
@@ -917,13 +891,13 @@ C
         YCNU=YAT1+RZDN*(YCND-1.)
         IVNU=1
 C
-        IF (.NOT.(IMPF.NE.0)) GO TO 10145
+        IF (.NOT.(IMPF.NE.0)) GO TO 10139
           XTMP=XCNU
           YTMP=YCNU
           CALL HLUCPMPXY (IMPF,XTMP,YTMP,XCNU,YCNU)
           IF (ICFELL('CPTRES',8).NE.0) GO TO 105
           IF ((OORV.NE.0.).AND.(XCNU.EQ.OORV.OR.YCNU.EQ.OORV)) IVNU=0
-10145   CONTINUE
+10139   CONTINUE
 C
       GO TO (10017,10022,10053,10074) , L10018
 C

@@ -1,5 +1,5 @@
 C
-C $Id: cptrev.f,v 1.7 1995-05-16 17:34:28 kennison Exp $
+C $Id: cptrev.f,v 1.8 1995-06-02 00:24:05 kennison Exp $
 C
       SUBROUTINE CPTREV (ZDAT,RWRK,IWRK,IJMP,IAIC,IRW1,IRW2,NRWK)
 C
@@ -111,7 +111,7 @@ C
 C If this is a re-entry after coordinate processing by the caller, jump
 C back to the appropriate point in the code.
 C
-      IF (IJMP.NE.0) GO TO (103,106,107) , IJMP
+      IF (IJMP.NE.0) GO TO (103,104,105,107) , IJMP
 C
 C Save the initial value of IAIC.
 C
@@ -130,6 +130,9 @@ C
 C
       RIDM=(XATM-XAT1)/REAL(IIDM-1)
       RIDN=(YATN-YAT1)/REAL(IIDN-1)
+C
+      DELX=.0001*ABS(XATM-XAT1)
+      DELY=.0001*ABS(YATN-YAT1)
 C
 C Zero the count of horizontal segments seen.
 C
@@ -402,65 +405,43 @@ C
               IAID=1
             GO TO 10047
 10046       CONTINUE
-              IAID=0
               XDEL=XTMP-REAL(ITMP)
               YDEL=YTMP-REAL(JTMP)
               ZINT=(1.-YDEL)*
      +             ((1.-XDEL)*ZDAT(ITMP,JTMP)+XDEL*ZDAT(ITP1,JTMP))+
      +             YDEL*
      +             ((1.-XDEL)*ZDAT(ITMP,JTP1)+XDEL*ZDAT(ITP1,JTP1))
-              DO 10048 J=1,NCLV
-                JCLV=ICLP(J)
-                IF (.NOT.(ZINT.LE.CLEV(JCLV))) GO TO 10049
-                  IF (.NOT.(IAIB(JCLV).NE.0)) GO TO 10050
-                    IAID=IAIB(JCLV)
-                    GO TO 105
-10050             CONTINUE
-                    IF (J.EQ.NCLV) GO TO 104
-                    IF (ZINT.NE.CLEV(JCLV).AND.
-     +                  CLEV(JCLV).NE.CLEV(ICLP(J+1))) GO TO 104
-10049           CONTINUE
-10048         CONTINUE
-  104         CONTINUE
-              DO 10051 J=NCLV,1,-1
-                JCLV=ICLP(J)
-                IF (.NOT.(ZINT.GE.CLEV(JCLV))) GO TO 10052
-                  IF (.NOT.(IAIA(JCLV).NE.0)) GO TO 10053
-                    IAID=IAIA(JCLV)
-                    GO TO 105
-10053             CONTINUE
-                    IF (J.EQ.1) GO TO 105
-                    IF (ZINT.NE.CLEV(JCLV).AND.
-     +                  CLEV(JCLV).NE.CLEV(ICLP(J-1))) GO TO 105
-10052           CONTINUE
-10051         CONTINUE
-  105       CONTINUE
+              CALL CPGVAI (ZINT,IAID)
 10047       CONTINUE
 10045     CONTINUE
 10043   CONTINUE
 C
-        IF (.NOT.(NPLS.NE.0)) GO TO 10054
-          IF (.NOT.(ABS(XCVU-RWRK(IR01+NPLS)).LE..001*ABS(XWDR-XWDL).AND
-     +.ABS(YCVU-RWRK(IR01+MPLS+NPLS)).LE..001*ABS(YWDT-YWDB))) GO TO 100
-     +55
-            IF (NPLS.EQ.1) GO TO 108
-            NPLS=NPLP
-            SINN=SINP
-            COSN=COSP
-            ANGN=ANGP
-10055     CONTINUE
-10054   CONTINUE
+        IF (.NOT.(IAID.NE.IAIC)) GO TO 10048
+          IF (.NOT.(NPLS.GT.1)) GO TO 10049
+            XSAV=RWRK(IR01     +NPLS)
+            YSAV=RWRK(IR01+MPLS+NPLS)
+            IJMP=2
+            IRW1=IR01
+            IRW2=IR01+MPLS
+            NRWK=NPLS
+            RETURN
+  104       RWRK(IR01     +1)=XSAV
+            RWRK(IR01+MPLS+1)=YSAV
+            NPLS=1
+10049     CONTINUE
+          IAIC=0
+10048   CONTINUE
 C
         NINT=0
-        DELX=.0001*ABS(XATM-XAT1)
-        DELY=.0001*ABS(YATN-YAT1)
+C
         XCDN=MAX(MIN(XAT1,XATM),MIN(MAX(XAT1,XATM),
      +                                  XCVD+DELX))
         YCDN=MAX(MIN(YAT1,YATN),MIN(MAX(YAT1,YATN),
      +                                       YCVD))
         CALL HLUCPMPXY (IMPF,XCDN,YCDN,OORN,YTMP)
         IF (ICFELL('CPTREV',14).NE.0) GO TO 102
-        DO 10056 I=1,8
+C
+        DO 10050 I=1,8
           XCDP=XCDN
           YCDP=YCDN
           OORP=OORN
@@ -470,55 +451,54 @@ C
      +                            YCVD+DELY*YOUC(I)))
           CALL HLUCPMPXY (IMPF,XCDN,YCDN,OORN,YTMP)
           IF (ICFELL('CPTREV',15).NE.0) GO TO 102
-          IF (.NOT.(OORP.EQ.OORV.AND.OORN.NE.OORV)) GO TO 10057
+          IF (.NOT.(OORP.EQ.OORV.AND.OORN.NE.OORV)) GO TO 10051
             XCDI=XCDP
             YCDI=YCDP
             XCDV=XCDN
             YCDV=YCDN
-            GO TO 10059
-10057     CONTINUE
-          IF (.NOT.(OORP.NE.OORV.AND.OORN.EQ.OORV)) GO TO 10060
+            GO TO 10053
+10051     CONTINUE
+          IF (.NOT.(OORP.NE.OORV.AND.OORN.EQ.OORV)) GO TO 10054
             XCDV=XCDP
             YCDV=YCDP
             XCDI=XCDN
             YCDI=YCDN
-            GO TO 10059
-10060     CONTINUE
-          GO TO 10062
-10059     CONTINUE
-            IF (.NOT.(NINT.LT.3)) GO TO 10063
+            GO TO 10053
+10054     CONTINUE
+          GO TO 10056
+10053     CONTINUE
+            IF (.NOT.(NINT.LT.3)) GO TO 10057
               NINT=NINT+1
               CALL HLUCPMPXY (IMPF,XCDV,YCDV,XCUV(NINT),YCUV(NINT))
               IF (ICFELL('CPTREV',16).NE.0) GO TO 102
               ITMP=0
-10064         CONTINUE
+10058         CONTINUE
                 XCDH=(XCDV+XCDI)/2.
                 YCDH=(YCDV+YCDI)/2.
                 CALL HLUCPMPXY (IMPF,XCDH,YCDH,XCUH,YCUH)
                 IF (ICFELL('CPTREV',17).NE.0) GO TO 102
-                IF (.NOT.(XCUH.NE.OORV)) GO TO 10065
-                  IF (XCDH.EQ.XCDV.AND.YCDH.EQ.YCDV) GO TO 10066
+                IF (.NOT.(XCUH.NE.OORV)) GO TO 10059
+                  IF (XCDH.EQ.XCDV.AND.YCDH.EQ.YCDV) GO TO 10060
                   XCDV=XCDH
                   YCDV=YCDH
                   XCUV(NINT)=XCUH
                   YCUV(NINT)=YCUH
-                GO TO 10067
-10065           CONTINUE
-                  IF (XCDH.EQ.XCDI.AND.YCDH.EQ.YCDI) GO TO 10066
+                GO TO 10061
+10059           CONTINUE
+                  IF (XCDH.EQ.XCDI.AND.YCDH.EQ.YCDI) GO TO 10060
                   XCDI=XCDH
                   YCDI=YCDH
-10067           CONTINUE
+10061           CONTINUE
                 ITMP=ITMP+1
-                IF (ITMP.EQ.64) GO TO 10066
-              GO TO 10064
-10066         CONTINUE
-10063       CONTINUE
-10062     CONTINUE
-10056   CONTINUE
+                IF (ITMP.EQ.64) GO TO 10060
+              GO TO 10058
+10060         CONTINUE
+10057       CONTINUE
+10056     CONTINUE
+10050   CONTINUE
 C
-        IF (.NOT.(NINT.EQ.2)) GO TO 10068
+        IF (.NOT.(NINT.EQ.2)) GO TO 10062
 C
-          NPLP=NPLS
           SINP=SINN
           COSP=COSN
           ANGP=ANGN
@@ -526,7 +506,17 @@ C
           COSN=XCUV(2)-XCUV(1)
           ANGN=57.2957795130823*ATAN2(SINN,COSN)
 C
-          IF (.NOT.(NPLS.NE.0)) GO TO 10069
+          IF (.NOT.(NPLS.NE.0)) GO TO 10063
+C
+            IF (.NOT.(ABS(XCVU-RWRK(IR01+NPLS)).LE..001*ABS(XWDR-XWDL).A
+     +ND.ABS(YCVU-RWRK(IR01+MPLS+NPLS)).LE..001*ABS(YWDT-YWDB))) GO TO 1
+     +0064
+              IF (.NOT.(XCVU.NE.RWRK(IR01+NPLS).OR.YCVU.NE.RWRK(IR01+MPL
+     +S+NPLS))) GO TO 10065
+                GO TO 106
+10065         CONTINUE
+                GO TO 108
+10064       CONTINUE
 C
             ANGC=57.2957795130823*ATAN2(YCVU-RWRK(IR01+MPLS+NPLS),
      +                                  XCVU-RWRK(IR01     +NPLS))
@@ -535,47 +525,46 @@ C
             ANGN=ANGN-180.*SIGN(REAL(INT((ABS(ANGN-ANGC)+90.)/180.)),
      +                                                      ANGN-ANGC)
             IF (.NOT.((MIRO.EQ.0.AND.ANGP.LT.ANGC.AND.ANGC.LT.ANGN).OR.(
-     +MIRO.NE.0.AND.ANGP.GT.ANGC.AND.ANGC.GT.ANGN))) GO TO 10070
+     +MIRO.NE.0.AND.ANGP.GT.ANGC.AND.ANGC.GT.ANGN))) GO TO 10066
               DNOM=COSN*SINP-SINN*COSP
-              IF (.NOT.(DNOM.NE.0.)) GO TO 10071
+              IF (.NOT.(DNOM.NE.0.)) GO TO 10067
                 XINT=(COSN*(SINP*RWRK(IR01     +NPLS)-
      +                      COSP*RWRK(IR01+MPLS+NPLS))-
      +                COSP*(SINN*XCVU-COSN*YCVU))/DNOM
                 YINT=(SINN*(SINP*RWRK(IR01     +NPLS)-
      +                      COSP*RWRK(IR01+MPLS+NPLS))-
      +                SINP*(SINN*XCVU-COSN*YCVU))/DNOM
-                IF (.NOT.(NPLS.GE.MPLS-1)) GO TO 10072
+                IF (.NOT.(NPLS.GE.MPLS-1)) GO TO 10068
                   XSAV=RWRK(IR01     +NPLS)
                   YSAV=RWRK(IR01+MPLS+NPLS)
-                  IJMP=2
+                  IJMP=3
                   IRW1=IR01
                   IRW2=IR01+MPLS
                   NRWK=NPLS
                   RETURN
-  106             RWRK(IR01     +1)=XSAV
+  105             RWRK(IR01     +1)=XSAV
                   RWRK(IR01+MPLS+1)=YSAV
                   NPLS=1
-                  NPLP=1
-10072           CONTINUE
+10068           CONTINUE
                 NPLS=NPLS+1
                 RWRK(IR01     +NPLS)=XINT
                 RWRK(IR01+MPLS+NPLS)=YINT
-10071         CONTINUE
-10070       CONTINUE
+10067         CONTINUE
+10066       CONTINUE
 C
-10069     CONTINUE
+10063     CONTINUE
 C
-10068   CONTINUE
+10062   CONTINUE
 C
-        NPLS=NPLS+1
+  106   NPLS=NPLS+1
         RWRK(IR01     +NPLS)=XCVU
         RWRK(IR01+MPLS+NPLS)=YCVU
 C
         IF (.NOT.(NPLS.GE.MPLS.OR.(NPLS.GT.1.AND.IAID.NE.IAIC)))
-     +  GO TO 10073
+     +  GO TO 10069
           XSAV=RWRK(IR01     +NPLS)
           YSAV=RWRK(IR01+MPLS+NPLS)
-          IJMP=3
+          IJMP=4
           IRW1=IR01
           IRW2=IR01+MPLS
           NRWK=NPLS
@@ -583,8 +572,7 @@ C
   107     RWRK(IR01     +1)=XSAV
           RWRK(IR01+MPLS+1)=YSAV
           NPLS=1
-          NPLP=1
-10073   CONTINUE
+10069   CONTINUE
 C
   108   IAIC=IAID
 C

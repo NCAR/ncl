@@ -1,10 +1,10 @@
 C
-C $Id: cptroe.f,v 1.5 1995-04-26 22:45:17 kennison Exp $
+C $Id: cptroe.f,v 1.6 1995-06-02 00:24:06 kennison Exp $
 C
       SUBROUTINE CPTROE (XCRA,YCRA,NCRA,OFFS,RWRK,IOCF,IAMA,IGID,IAIL,
      +                                                           IAIR)
 C
-      DIMENSION XCRA(*),YCRA(*),RWRK(8),IAMA(*)
+      DIMENSION XCRA(*),YCRA(*),RWRK(12),IAMA(*)
 C
 C The routine CPTROE is given the (fractional) X and Y coordinates of
 C points defining a curve C.  It generates a curve C' which is parallel
@@ -18,8 +18,8 @@ C XCRA and YCRA are X and Y coordinate arrays defining NCRA points that
 C define part of the curve C.  OFFS is the distance, in the fractional
 C coordinate system, from C to C'; if OFFS is positive, C' is to the
 C left of C and, if OFFS is negative, C' is to the right of C.  RWRK is
-C a workspace array, dimensioned 8, in which required X/Y coordinates
-C can be saved from call to call.  (It is expected, for a given curve,
+C a workspace array, dimensioned 12, in which required information can
+C be saved from call to call.  (It is expected, for a given curve,
 C that the last point in one call will be the first point in the next
 C call; if the curve is closed, it is expected that the last point in
 C the last call will match the first point in the first call.  Still,
@@ -43,6 +43,8 @@ C ends are to be extended to intersect the edges of the plotter frame,
 C and T = 1 says that C is closed on itself.  IAMA is an area map array.
 C IGID is the group identifier and IAIL and IAIR are the left and right
 C area identifiers to be passed on to CPWLAM and eventually to AREDAM.
+C IGID must be the same for all calls defining a given curve, but IAIL
+C and IAIR may change from call to call.
 C
 C Note that, in the sequence of calls to CPTROE for a particular curve,
 C IOCF takes on values like the following:
@@ -84,16 +86,35 @@ C
         ELSE
           RWRK(1)=XCRA(2)
           RWRK(2)=YCRA(2)
-          RWRK(3)=XCRA(3)
-          RWRK(4)=YCRA(3)
+          IF (NCRA.GE.3) THEN
+            RWRK(3)=XCRA(3)
+            RWRK(4)=YCRA(3)
+            RWRK(5)=REAL(IAIL)
+            RWRK(6)=REAL(IAIR)
+          ELSE
+            RWRK(3)=1.E36
+            RWRK(4)=1.E36
+            RWRK(5)=1.E36
+            RWRK(6)=1.E36
+          END IF
         END IF
       ELSE
-        CALL CPWLAM (RWRK(7),RWRK(8),IFST,IAMA,IGID,IAIL,IAIR)
+        IF (RWRK(3).EQ.1.E36) THEN
+          RWRK(3)=XCRA(2)
+          RWRK(4)=YCRA(2)
+          RWRK(5)=REAL(IAIL)
+          RWRK(6)=REAL(IAIR)
+        END IF
+        XNXT=RWRK(9)
+        YNXT=RWRK(10)
+        JAIL=INT(RWRK(11))
+        JAIR=INT(RWRK(12))
+        CALL CPWLAM (XNXT,YNXT,IFST,IAMA,IGID,JAIL,JAIR)
         IF (ICFELL('CPTROE',1).NE.0) RETURN
         IFST=1
         ICRA=0
-        XCPB=RWRK(5)
-        YCPB=RWRK(6)
+        XCPB=RWRK(7)
+        YCPB=RWRK(8)
         XCPC=XCRA(1)
         YCPC=YCRA(1)
       END IF
@@ -117,10 +138,12 @@ C
 C Do necessary final stuff.
 C
       IF (IEND.EQ.0) THEN
-        RWRK(5)=XCRA(NCRA-1)
-        RWRK(6)=YCRA(NCRA-1)
-        RWRK(7)=XNXT
-        RWRK(8)=YNXT
+        RWRK( 7)=XCRA(NCRA-1)
+        RWRK( 8)=YCRA(NCRA-1)
+        RWRK( 9)=XNXT
+        RWRK(10)=YNXT
+        RWRK(11)=REAL(IAIL)
+        RWRK(12)=REAL(IAIR)
         GO TO 104
       ELSE
         IF (ICLO.EQ.0) THEN
@@ -145,6 +168,8 @@ C
       YCPB=YCPC
       XCPC=RWRK(3)
       YCPC=RWRK(4)
+      JAIL=INT(RWRK(5))
+      JAIR=INT(RWRK(6))
       ASSIGN 104 TO IJMP
       GO TO 301
 C
@@ -211,9 +236,11 @@ C
         XNXT=XCPP+(XCPQ-XCPP)*TEMP
         YNXT=YCPP+(YCPQ-YCPP)*TEMP
       END IF
-      CALL CPWLAM (XNXT,YNXT,IFST,IAMA,IGID,IAIL,IAIR)
+      CALL CPWLAM (XNXT,YNXT,IFST,IAMA,IGID,JAIL,JAIR)
       IF (ICFELL('CPTROE',3).NE.0) RETURN
       IFST=1
+      JAIL=IAIL
+      JAIR=IAIR
       GO TO IJMP , (102,103,104)
 C
       END

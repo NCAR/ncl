@@ -1,5 +1,5 @@
 C
-C $Id: cpclam.f,v 1.6 1995-04-26 22:44:32 kennison Exp $
+C $Id: cpclam.f,v 1.7 1995-06-02 00:24:02 kennison Exp $
 C
       SUBROUTINE CPCLAM (ZDAT,RWRK,IWRK,IAMA)
 C
@@ -76,7 +76,7 @@ C
 C
 C Define a couple of little workspace arrays required by CPTROE.
 C
-      DIMENSION RWKL(8),RWKR(8)
+      DIMENSION RWKL(12),RWKR(12)
 C
 C Check for an uncleared prior error.
 C

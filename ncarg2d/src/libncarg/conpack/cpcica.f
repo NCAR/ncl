@@ -1,5 +1,5 @@
 C
-C $Id: cpcica.f,v 1.5 1995-04-26 22:44:31 kennison Exp $
+C $Id: cpcica.f,v 1.6 1995-06-02 00:24:01 kennison Exp $
 C
       SUBROUTINE CPCICA (ZDAT,RWRK,IWRK,ICRA,ICA1,ICAM,ICAN,XCPF,YCPF,
      +                                                      XCQF,YCQF)
@@ -231,43 +231,9 @@ C
 C
 C Given the data value, find an area identifier associated with it.
 C
-              IAID=0
+              CALL CPGVAI (ZVAL,IAID)
 C
-C First, search forward for a value in the parameter array 'AIB'.
-C
-              DO 10003 K=1,NCLV
-                JCLV=ICLP(K)
-                IF (ZVAL.LE.CLEV(JCLV)) THEN
-                  IF (IAIB(JCLV).NE.0) THEN
-                    IAID=IAIB(JCLV)
-                    GO TO 103
-                  ELSE
-                    IF (K.EQ.NCLV) GO TO 102
-                    IF (ZVAL.NE.CLEV(JCLV).AND.
-     +                  CLEV(JCLV).NE.CLEV(ICLP(K+1))) GO TO 102
-                  END IF
-                END IF
-10003         CONTINUE
-C
-C If necessary, search backward for a value in the parameter array
-C 'AIA'.
-C
-  102         CONTINUE
-              DO 10004 K=NCLV,1,-1
-                JCLV=ICLP(K)
-                IF (ZVAL.GE.CLEV(JCLV)) THEN
-                  IF (IAIA(JCLV).NE.0) THEN
-                    IAID=IAIA(JCLV)
-                    GO TO 103
-                  ELSE
-                    IF (K.EQ.1) GO TO 103
-                    IF (ZVAL.NE.CLEV(JCLV).AND.
-     +                  CLEV(JCLV).NE.CLEV(ICLP(K-1))) GO TO 103
-                  END IF
-                END IF
-10004         CONTINUE
-C
-  103       END IF
+            END IF
 C
           END IF
 C

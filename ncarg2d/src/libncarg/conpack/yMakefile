@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.7 1995-04-26 22:45:25 kennison Exp $
+#	$Id: yMakefile,v 1.8 1995-06-02 00:24:08 kennison Exp $
 #
 
 MYNAME	= conpack
@@ -15,28 +15,28 @@ MYNAME	= conpack
 GENERIC_SRCS = \
 	cpblda.f cpback.f cpchcf.f cpchcl.f cpchhl.f cpchil.f cpchll.f \
 	cpclam.f cpcldm.f cpcldr.f cpcnrc.f cpdrpl.f cpezct.f cpgetc.f \
-	cpgeti.f cpgetr.f cpinrk.f cplbam.f cplbdr.f cpmpxy.f cpmviw.f \
-	cpmvrw.f cppkcl.f cppklb.f cppklp.f cprect.f cprset.f cpsetc.f \
-	cpseti.f cpsetr.f cpsprs.f cpsps1.f cpsp1a.f cpsps2.f cpsp2a.f \
-	cpcflb.f cpcpag.f cpdrsg.f cpgiws.f cpgrws.f cphllb.f cpinit.f \
-	cpinlb.f cpinrc.f cpnumb.f cpplar.f cpplps.f cpranf.f cpsbst.f \
-	cpsort.f cpstls.f cptrcl.f cptreg.f cptres.f cptrev.f cpcltr.f \
-	cpcica.f cphchm.f cphchr.f cpscae.f cptroe.f cptrve.f cpwlam.f \
-	hlucpchcf.f hlucpchcl.f hlucpchhl.f hlucpchil.f hlucpchll.f \
+	cpgeti.f cpgetr.f cpgvai.f cpinrk.f cplbam.f cplbdr.f cpmpxy.f \
+	cpmviw.f cpmvrw.f cppkcl.f cppklb.f cppklp.f cprect.f cprset.f \
+	cpsetc.f cpseti.f cpsetr.f cpsprs.f cpsps1.f cpsp1a.f cpsps2.f \
+	cpsp2a.f cpcflb.f cpcpag.f cpdrsg.f cpgiws.f cpgrws.f cphllb.f \
+	cpinit.f cpinlb.f cpinrc.f cpnumb.f cpplar.f cpplps.f cpranf.f \
+	cpsbst.f cpsort.f cpstls.f cptrcl.f cptreg.f cptres.f cptrev.f \
+	cpcltr.f cpcica.f cphchm.f cphchr.f cpscae.f cptroe.f cptrve.f \
+	cpwlam.f hlucpchcf.f hlucpchcl.f hlucpchhl.f hlucpchil.f hlucpchll.f \
 	hlucpmpxy.f hlucpscae.f
 
 
 GENERIC_OBJS	= \
 	cpblda.o cpback.o cpchcf.o cpchcl.o cpchhl.o cpchil.o cpchll.o \
 	cpclam.o cpcldm.o cpcldr.o cpcnrc.o cpdrpl.o cpezct.o cpgetc.o \
-	cpgeti.o cpgetr.o cpinrk.o cplbam.o cplbdr.o cpmpxy.o cpmviw.o \
-	cpmvrw.o cppkcl.o cppklb.o cppklp.o cprect.o cprset.o cpsetc.o \
-	cpseti.o cpsetr.o cpsprs.o cpsps1.o cpsp1a.o cpsps2.o cpsp2a.o \
-	cpcflb.o cpcpag.o cpdrsg.o cpgiws.o cpgrws.o cphllb.o cpinit.o \
-	cpinlb.o cpinrc.o cpnumb.o cpplar.o cpplps.o cpranf.o cpsbst.o \
-	cpsort.o cpstls.o cptrcl.o cptreg.o cptres.o cptrev.o cpcltr.o \
-	cpcica.o cphchm.o cphchr.o cpscae.o cptroe.o cptrve.o cpwlam.o \
-	hlucpchcf.o hlucpchcl.o hlucpchhl.o hlucpchil.o hlucpchll.o \
+	cpgeti.o cpgetr.o cpgvai.o cpinrk.o cplbam.o cplbdr.o cpmpxy.o \
+	cpmviw.o cpmvrw.o cppkcl.o cppklb.o cppklp.o cprect.o cprset.o \
+	cpsetc.o cpseti.o cpsetr.o cpsprs.o cpsps1.o cpsp1a.o cpsps2.o \
+	cpsp2a.o cpcflb.o cpcpag.o cpdrsg.o cpgiws.o cpgrws.o cphllb.o \
+	cpinit.o cpinlb.o cpinrc.o cpnumb.o cpplar.o cpplps.o cpranf.o \
+	cpsbst.o cpsort.o cpstls.o cptrcl.o cptreg.o cptres.o cptrev.o \
+	cpcltr.o cpcica.o cphchm.o cphchr.o cpscae.o cptroe.o cptrve.o \
+	cpwlam.o hlucpchcf.o hlucpchcl.o hlucpchhl.o hlucpchil.o hlucpchll.o \
 	hlucpmpxy.o hlucpscae.o
 
 SOURCES = $(GENERIC_SRCS)

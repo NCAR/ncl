@@ -1,5 +1,5 @@
 C
-C $Id: cpblda.f,v 1.5 1995-04-26 22:44:25 kennison Exp $
+C $Id: cpblda.f,v 1.6 1995-06-02 00:24:00 kennison Exp $
 C
       BLOCK DATA CPBLDA
 C
@@ -702,7 +702,7 @@ C
 C PITH is the parameter 'PIT', the "point interpolation threshold".  In
 C routines that map polylines using CPMPXY, this value is used to check
 C whether two points have mapped so far apart that some interpolated
-C points should be inserted.  The value less than or equal to zero (like
+C points should be inserted.  A value less than or equal to zero (like
 C the default) says that no such checks are to be performed.  A value
 C greater than zero represents a fraction of the height or width of the
 C window in the user coordinate system.
