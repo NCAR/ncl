@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.1.1.1 1992-04-17 22:33:26 ncargd Exp $
+#	$Id: yMakefile,v 1.2 1992-09-29 17:05:07 ncargd Exp $
 #
 NCARG	= ../../..
 
@@ -25,7 +25,7 @@ all::
 
 install:: $(GENERIC_SRCS)
 	@for name in $(GENERIC_SRCS); do\
-	($(INSTALL) -m $(INSTALL_LIB) $$name $(TESTDIR) );\
+	($(INSTALL) -m $(INSTALL_LIB) $$name $(TESTSPATH) );\
 	done
 
 MakefileTarget

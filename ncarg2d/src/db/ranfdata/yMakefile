@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.1.1.1 1992-04-17 22:35:26 ncargd Exp $
+#	$Id: yMakefile,v 1.2 1992-09-29 17:04:16 ncargd Exp $
 #
 NCARG	= ../../../..
 
@@ -10,7 +10,7 @@ GENERICS = ranfdata
 all::
 
 install:: ranfdata
-	@$(INSTALL) -m $(INSTALL_DB) ranfdata $(DBDIR)
+	@$(INSTALL) -m $(INSTALL_DB) ranfdata $(DBPATH)
 
 MakefileTarget
 CleanTarget

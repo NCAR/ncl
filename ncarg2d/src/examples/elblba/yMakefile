@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.1.1.1 1992-04-17 22:33:17 ncargd Exp $
+#	$Id: yMakefile,v 1.2 1992-09-29 17:00:11 ncargd Exp $
 #
 NCARG	= ../../../..
 
@@ -11,7 +11,7 @@ GENERIC_OBJS = elblba.o
 
 install::
 	@for file in $(GENERIC_SRCS); do\
-	($(INSTALL) -m $(INSTALL_LIB) $$file $(EXAMPLEDIR));\
+	($(INSTALL) -m $(INSTALL_LIB) $$file $(EXAMPLESPATH));\
 	done
 
 MakefileTarget

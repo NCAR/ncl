@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.1.1.1 1992-04-17 22:35:25 ncargd Exp $
+#	$Id: yMakefile,v 1.2 1992-09-29 17:03:58 ncargd Exp $
 #
 NCARG	= ../../../..
 
@@ -18,7 +18,7 @@ ezmapdata: ezmapdat mapconvrt
 	@./mapconvrt
 
 install::
-	@$(INSTALL) -m $(INSTALL_DB) ezmapdata $(DBDIR)
+	@$(INSTALL) -m $(INSTALL_DB) ezmapdata $(DBPATH)
 
 clean::
 	-@$(RM) $(TARGETS)

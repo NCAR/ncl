@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.1.1.1 1992-04-17 22:35:18 ncargd Exp $
+#	$Id: yMakefile,v 1.2 1992-09-29 17:04:10 ncargd Exp $
 #
 NCARG	= ../../../..
 
@@ -13,7 +13,7 @@ FSOURCES = \
 	 ccheck.f creb15.f crebin.f dcheck.f dport.f mkmsk.f pcrbin.f\
 	 xtch.f
 
-LIBS	= $(LIBDIR)/libncarg.a $(LIBDIR)/libncarg_loc.a
+LIBS	= $(LIBPATH)/libncarg.a $(LIBPATH)/libncarg_loc.a
 
 TARGETS = pwritxnt pwritdata
 
@@ -28,7 +28,7 @@ pwritdata: pwritxnt pwritxc1 pwritxd1 pwritxc2 pwritxd2
 	@./pwritxnt
 	
 install:: pwritdata
-	@$(INSTALL) -m $(INSTALL_DB) pwritdata $(DBDIR)
+	@$(INSTALL) -m $(INSTALL_DB) pwritdata $(DBPATH)
 	-@$(RM) pwritdata
 
 clean::
