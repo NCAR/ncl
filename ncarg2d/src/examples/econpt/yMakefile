@@ -1,18 +1,18 @@
 #
-#       $Id: yMakefile,v 1.4 2003-10-21 21:42:00 kennison Exp $
+#       $Id: yMakefile,v 1.5 2003-12-12 00:09:02 kennison Exp $
 #
 
 MYNAME  = econpt
 
 SRCS =  ctcbay.f ctex01.f ctex02.f ctfite.f ctgaus.f ctgeo1.f ctgeo2.f \
 	ctiscp.f ctllg1.f ctllg2.f ctllg3.f ctorca.f ctpopg.f ctswth.f \
-	ctwng1.f ctwng2.f \
+	ctwng1.f ctwng2.f ctnccl.f \
 	ctcbay.dat ctfite.dat ctgaus.dat ctiscp.dat ctorca.dat ctpopg.dat \
-	ctswth.dat ctwng1.dat ctwng2.dat
+	ctswth.dat ctwng1.dat ctwng2.dat ctnccl.dat
 
 OBJS =  ctcbay.o ctex01.o ctex02.o ctfite.o ctgaus.o ctgeo1.o ctgeo2.o \
 	ctiscp.o ctllg1.o ctllg2.o ctllg3.o ctorca.o ctpopg.o ctswth.o \
-	ctwng1.o ctwng2.o
+	ctwng1.o ctwng2.o ctnccl.o
 
 PROG_LIBS		= $(NCARGLIBS)
 SYS_LIBS		= -lm
@@ -36,3 +36,4 @@ FExampleTarget(ctpopg,ctpopg.o)
 FExampleTarget(ctswth,ctswth.o)
 FExampleTarget(ctwng1,ctwng1.o)
 FExampleTarget(ctwng2,ctwng2.o)
+FExampleTarget(ctnccl,ctnccl.o)
