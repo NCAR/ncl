@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclVar.c,v 1.49 1998-01-07 00:13:25 ethan Exp $
+ *      $Id: NclVar.c,v 1.50 1998-01-23 22:34:08 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1374,6 +1374,33 @@ NclSelectionRecord *sel_ptr;
 				if((tmp_md != value)&&(tmp_md->obj.status != PERMANENT))	
 					_NclDestroyObj((NclObj)tmp_md);
 				return(NhlNOERROR);
+			} else if( value->multidval.kind == SCALAR) {
+				if(value->multidval.type->type_class.type != thevalue->multidval.type->type_class.type) {
+	/*
+	* Don't care about the missing values here because the _subsection function 
+	* handles differences in missing values
+	*/
+					tmp_md = _NclCoerceData(value,
+						thevalue->multidval.type->type_class.type,
+						NULL);
+					if(tmp_md==NULL) {
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"Assignment type mismatch, right hand side can't be coerced to type of left hand side");
+						return(NhlFATAL);
+					}
+				} else {
+	/*
+	* Handle missing value diffs here
+	*/
+					tmp_md = value;
+				}
+				mysel.n_entries = thevalue->multidval.n_dims;
+				for( i = 0; i < thevalue->multidval.n_dims; i++) {
+					mysel.selection[i].sel_type = Ncl_SUB_ALL;
+					mysel.selection[i].dim_num = i;
+					mysel.selection[i].u.sub.stride = 1;
+				}
+				_NclWriteSubSection((NclData)thevalue, &mysel, (NclData)tmp_md);
+				return(ret);
 			} else {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"Number of dimensions on right hand side do not match number of dimension in left hand side");
 				return(NhlFATAL);
