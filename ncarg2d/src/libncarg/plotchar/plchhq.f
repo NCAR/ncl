@@ -1,5 +1,5 @@
 C
-C $Id: plchhq.f,v 1.10 1993-04-30 22:28:02 kennison Exp $
+C $Id: plchhq.f,v 1.11 1993-09-21 17:16:03 kennison Exp $
 C
       SUBROUTINE PLCHHQ (XPOS,YPOS,CHRS,SIZE,ANGD,CNTR)
 C
@@ -462,10 +462,21 @@ C
 C
 C If the function-code signal character is encountered, flip the value
 C of the function-code processing flag and go get the next character.
+C Two function-code signal characters in a row are treated as a single
+C occurrence of the character itself, selecting a character to be drawn.
 C
       IF (NCOL.EQ.NFCC) THEN
-        IPFC=1-IPFC
-        GO TO 103
+        IF (IPFC.EQ.0.AND.ICHR.LT.NCHR) THEN
+          NNXT=ICHAR(CHRS(ICHR+1:ICHR+1))
+        ELSE
+          NNXT=-1
+        END IF
+        IF (NNXT.EQ.NFCC) THEN
+          ICHR=ICHR+1
+        ELSE
+          IPFC=1-IPFC
+          GO TO 103
+        END IF
       END IF
 C
 C NDPC is the number of the character in the DPC collating sequence.
