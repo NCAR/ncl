@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl 
 #
-#      $Id: make-tape,v 1.14 1996-08-21 15:00:30 haley Exp $
+#      $Id: make-tape,v 1.15 1997-01-29 15:34:54 haley Exp $
 #
 #########################################################################
 #									#
@@ -62,6 +62,7 @@ $doDebug = 0;
 	'HPUX_HP9000_7xx',
 	'OSF1_alpha',
 	'LINUX_PC',
+	'Solaris_PC',
 	'UNICOS_YMP',
 	'UNICOS_J90',
 	'UNICOS_C90',
