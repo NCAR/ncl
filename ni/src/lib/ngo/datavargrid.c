@@ -1,5 +1,5 @@
 /*
- *      $Id: datavargrid.c,v 1.6 1999-11-03 20:29:26 dbrown Exp $
+ *      $Id: datavargrid.c,v 1.7 1999-11-19 02:10:05 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -452,16 +452,16 @@ Column1String
 			if ((vdata->finish[i] - vdata->start[i])
 			    /vdata->stride[i] == 0)
 				sprintf(&Buffer[strlen(Buffer)],
-					"%d,",vdata->start[i]);
+					"%ld,",vdata->start[i]);
 			else if (vdata->finish[i] == vdata->size[i] - 1 &&
 				 vdata->start[i] == 0 &&
 				 vdata->stride[i] == 1)
 				sprintf(&Buffer[strlen(Buffer)],":,");
 			else if (vdata->stride[i] == 1)
-				sprintf(&Buffer[strlen(Buffer)],"%d:%d,",
+				sprintf(&Buffer[strlen(Buffer)],"%ld:%ld,",
 					vdata->start[i],vdata->finish[i]);
 			else
-				sprintf(&Buffer[strlen(Buffer)],"%d:%d:%d,",
+				sprintf(&Buffer[strlen(Buffer)],"%ld:%ld:%ld,",
 					vdata->start[i],
 					vdata->finish[i],vdata->stride[i]);
 		}

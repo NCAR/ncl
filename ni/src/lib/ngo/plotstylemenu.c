@@ -1,5 +1,5 @@
 /*
- *      $Id: plotstylemenu.c,v 1.5 1999-11-03 20:29:30 dbrown Exp $
+ *      $Id: plotstylemenu.c,v 1.6 1999-11-19 02:10:08 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -754,14 +754,17 @@ static NhlBoolean SetSelectedWorkstation
 	}
 	else {
 		Widget pb;
+		XtPointer udata;
 		NrmQuark qxwk_name;
 
 		XtVaGetValues(priv->xwk_menu,
 			      XmNmenuHistory,&pb,
 			      NULL);
 		XtVaGetValues(pb,
-			      XmNuserData,&qxwk_name,
+			      XmNuserData,&udata,
 			      NULL);
+		qxwk_name = (NrmQuark) udata;
+
 		if (qxwk_name <= NrmNULLQUARK) {
 			NHLPERROR((NhlFATAL,NhlEUNKNOWN,
 				   "This shouldn't happen"));

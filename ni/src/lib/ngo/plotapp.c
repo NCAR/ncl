@@ -1,5 +1,5 @@
 /*
- *      $Id: plotapp.c,v 1.11 1999-11-03 20:29:29 dbrown Exp $
+ *      $Id: plotapp.c,v 1.12 1999-11-19 02:10:07 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2383,7 +2383,7 @@ static void EditDataItem
 		ditem->mindims = rprof->mindims;
 	if (rprof->maxdims > -1) 
 		ditem->maxdims = rprof->maxdims;
-	if ((int)rprof->data > -1) 
+	if ((long)rprof->data > -1) 
 		ditem->data = rprof->data;
 	if (rprof->save_to_compare > -1) 
 		ditem->save_to_compare = (NhlBoolean)rprof->save_to_compare;
@@ -2474,7 +2474,7 @@ static void MergeObjResDataItems
 				 qres,obj->qbasename,
 				 obj->class,ditype,rprof->mindims,
 				 rprof->maxdims,
-				 ((int)rprof->data) < 0 ? NULL : rprof->data,
+				 ((long)rprof->data) < 0 ? NULL : rprof->data,
 				 rprof->required < 0 ? False : rprof->required,
 				 rprof->vis < 0 ? True : rprof->vis,
 				 set_only,
@@ -2948,14 +2948,14 @@ static NhlBoolean WriteCoords
 					sprintf(cp,":,");
 			}
 			else {
-				sprintf(cp,"%d:%d:%d,",
+				sprintf(cp,"%ld:%ld:%ld,",
 					vd->start[i],vd->finish[i],
 					vd->stride[i]);
 			}
 			coord_ix--;
 		}
 		else { /* one element only is accepted */
-			sprintf(cp,"%d,",vd->start[i]);
+			sprintf(cp,"%ld,",vd->start[i]);
 		}
 	}
 	buf[strlen(buf)-1] = ')';
@@ -3003,7 +3003,7 @@ static NhlBoolean WriteReorderedCoords
 		}
 		 /* one element only is accepted */
 
-		sprintf(cp,"%s | %d,",NrmQuarkToString(qdim),vd->start[i]);
+		sprintf(cp,"%s | %ld,",NrmQuarkToString(qdim),vd->start[i]);
 		dim_ix++;
 	}
 /*
@@ -3032,7 +3032,7 @@ static NhlBoolean WriteReorderedCoords
 			sprintf(cp,"%s | :,",NrmQuarkToString(qdim));
 		}
 		else {
-			sprintf(cp,"%s | %d:%d:%d,",NrmQuarkToString(qdim),
+			sprintf(cp,"%s | %ld:%ld:%ld,",NrmQuarkToString(qdim),
 				vd->start[ix],vd->finish[ix],vd->stride[ix]);
 		}
 		dim_ix++;
@@ -3184,7 +3184,7 @@ static NhlBoolean ReplaceDataSymRef
 				sprintf(&tbuf[strlen(tbuf)],"(:)");
 			}
 			else {
-				sprintf(&tbuf[strlen(tbuf)],"(%d:%d:%d)",
+				sprintf(&tbuf[strlen(tbuf)],"(%ld:%ld:%ld)",
 					vd->start[i],vd->finish[i],
 					vd->stride[i]);
 			}

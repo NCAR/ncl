@@ -1,5 +1,5 @@
 /*
- *      $Id: shapeinfogrid.c,v 1.17 1999-11-03 20:29:31 dbrown Exp $
+ *      $Id: shapeinfogrid.c,v 1.18 1999-11-19 02:10:11 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -186,7 +186,7 @@ SubscriptText
         Buffer[0] = '\0';
 	for (i=0; i < vinfo->n_dims; i++) {
                 strcat(Buffer,"|");
-		sprintf(dimstr,"%d:%d:%d",
+		sprintf(dimstr,"%ld:%ld:%ld",
                         sip->start[i],sip->finish[i],sip->stride[i]);
 		strcat(Buffer,dimstr);
                 sirp->cwidths[i+1] = MAX(sirp->cwidths[i+1],strlen(dimstr));
@@ -215,7 +215,7 @@ StartText
         Buffer[0] = '\0';
 	for (i=0; i < vinfo->n_dims; i++) {
                 if (sip->index_mode || vinfo->coordnames[i] <= NrmNULLQUARK) {
-                        sprintf(dimstr,"%d",sip->start[i]);
+                        sprintf(dimstr,"%ld",sip->start[i]);
                 }
                 else if (sirp->float_types[i]) {
 		  	sprintf(dimstr,"%.*g",FLT_DIG,sirp->start_coords[i]);
@@ -254,7 +254,7 @@ FinishText
         Buffer[0] = '\0';
         for (i=0; i < vinfo->n_dims; i++) {
                 if (sip->index_mode || vinfo->coordnames[i] <= NrmNULLQUARK) {
-                        sprintf(dimstr,"%d",sip->finish[i]);
+                        sprintf(dimstr,"%ld",sip->finish[i]);
                 }
                 else if (sirp->float_types[i]) {
 		  	sprintf(dimstr,"%.*g",FLT_DIG,sirp->finish_coords[i]);
@@ -291,7 +291,7 @@ StrideText
 #endif        
         Buffer[0] = '\0';
 	for (i=0; i < vinfo->n_dims; i++) {
-		sprintf(dimstr,"%d",sip->stride[i]);
+		sprintf(dimstr,"%ld",sip->stride[i]);
 		strcat(Buffer,dimstr);
                 strcat(Buffer,"|");
                 sirp->cwidths[i+1] = MAX(sirp->cwidths[i+1],strlen(dimstr));

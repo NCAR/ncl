@@ -1,5 +1,5 @@
 /*
- *      $Id: hlupage.c,v 1.29 1999-10-22 00:37:25 dbrown Exp $
+ *      $Id: hlupage.c,v 1.30 1999-11-19 02:10:05 dbrown Exp $
  */
 /*******************************************x*****************************
 *									*
@@ -482,7 +482,7 @@ static NhlErrorTypes GetDoSetValCBMessage
         brPageData	*pdp = page->pdata;
 	brHluPageRec	*rec = (brHluPageRec	*)pdp->type_rec;
 
-	rec->do_setval_cb = (NhlBoolean) message->message;
+	rec->do_setval_cb = message->message ? True : False;
 /*
  * If something in this hlu object was set by another object while the
  * setval_cb was disabled, then it will not have been updated correctly.
@@ -696,11 +696,11 @@ static NhlBoolean GetDataVal
 		for (i = 0; i < vdata->ndims; i++) {
 			if (abs((vdata->finish[i] - vdata->start[i]) /
 				vdata->stride[i]) < 1) {
-				sprintf(&buf[strlen(buf)],"%d,",
+				sprintf(&buf[strlen(buf)],"%ld,",
 					vdata->start[i]);
 				continue;
 			}
-	                sprintf(&buf[strlen(buf)],"%d:%d:%d,",
+	                sprintf(&buf[strlen(buf)],"%ld:%ld:%ld,",
                         vdata->start[i],vdata->finish[i],vdata->stride[i]);
 		}
 		/* backing up 1 to get rid of last comma */

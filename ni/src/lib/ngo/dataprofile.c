@@ -1,5 +1,5 @@
 /*
- *      $Id: dataprofile.c,v 1.9 1999-11-04 17:36:50 dbrown Exp $
+ *      $Id: dataprofile.c,v 1.10 1999-11-19 02:10:04 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2191,7 +2191,8 @@ NhlBoolean NgSetDependentVarData
 	DimProfileRec	rdim_prof_rec;
 	int		i;
 	NgVarData	vdata,rvdata = NULL;
-	int		coord_num,dim;
+	int		dim;
+	long		coord_num;
 	NclApiDataList          *rdl = NULL;
 	NclApiVarInfoRec	*rvinfo = NULL;	
 	int		start,end;
@@ -2261,7 +2262,7 @@ NhlBoolean NgSetDependentVarData
 			 * coordinate variable is defined for the dimension
 			 */
 			dim = rdim_prof_rec.last_dim;
-			coord_num = (int) dp->ditems[i]->data;
+			coord_num = (long) dp->ditems[i]->data;
 			while (--coord_num) {
 				dim--;
 				while (dim > -1 &&
@@ -2387,7 +2388,7 @@ NhlBoolean NgConformingDataItem
 
 	if (ditem->item_type == _NgCOORDVAR) {
 		int dim = ref_dim_prof.last_dim;
-		int coord_num = (int)ditem->data;
+		long coord_num = (long)ditem->data;
 		while (--coord_num) {
 			dim--;
 			while (dim > -1 && ! ref_dim_prof.dim_sizes[dim])

@@ -1,5 +1,5 @@
 /*
- *      $Id: datasourcegrid.c,v 1.9 1999-09-11 01:06:10 dbrown Exp $
+ *      $Id: datasourcegrid.c,v 1.10 1999-11-19 02:10:04 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -184,7 +184,7 @@ Column1String
 		if (vdata->ndims)
 			sprintf(&Buffer[strlen(Buffer)-1],": size (");
 		for (i=0; i< vdata->ndims; i++) {
-			sprintf(&Buffer[strlen(Buffer)],"%d,",
+			sprintf(&Buffer[strlen(Buffer)],"%ld,",
 				vdata->finish[i]+1);
 		}
 		if (vdata->ndims) {
@@ -225,12 +225,12 @@ Column1String
 			if ((vdata->finish[i] - vdata->start[i])
 			    /vdata->stride[i] == 0)
 				sprintf(&Buffer[strlen(Buffer)],
-					"%d,",vdata->start[i]);
+					"%ld,",vdata->start[i]);
 			else if (vdata->stride[i] == 1)
-				sprintf(&Buffer[strlen(Buffer)],"%d:%d,",
+				sprintf(&Buffer[strlen(Buffer)],"%ld:%ld,",
 					vdata->start[i],vdata->finish[i]);
 			else
-				sprintf(&Buffer[strlen(Buffer)],"%d:%d:%d,",
+				sprintf(&Buffer[strlen(Buffer)],"%ld:%ld:%ld,",
 					vdata->start[i],
 					vdata->finish[i],vdata->stride[i]);
 		}

@@ -1,5 +1,5 @@
 /*
- *      $Id: ncledit.c,v 1.16 1999-09-11 01:06:38 dbrown Exp $
+ *      $Id: ncledit.c,v 1.17 1999-11-19 02:10:06 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -882,11 +882,13 @@ PromptScrollCB
 	XmScrollBarCallbackStruct	*cbs =
 					(XmScrollBarCallbackStruct *)cbdata;
 	Widget		prompt = (Widget)udata;
+	XtPointer	userdata;
 	int		cur_top,lines;
 
 	XtVaGetValues(prompt,
-		XmNuserData,	&cur_top,
+		XmNuserData, &userdata,
 		NULL);
+	cur_top = (int) userdata;
 
 	lines = cbs->value - cur_top;
 	XtVaSetValues(prompt,

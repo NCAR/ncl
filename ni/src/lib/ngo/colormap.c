@@ -1,5 +1,5 @@
 /*
- *      $Id: colormap.c,v 1.11 1999-11-04 17:36:46 dbrown Exp $
+ *      $Id: colormap.c,v 1.12 1999-11-19 02:10:03 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -517,7 +517,7 @@ SelDButtonCB
 
 	if(bpe->type != ButtonRelease){
 		NhlPError(NhlWARNING,NhlEUNKNOWN,
-						"Not a ButtonRelease Event???");
+			  "Not a ButtonRelease Event???");
 		return;
 	}
 
@@ -613,7 +613,7 @@ DragColorCB
 	if(cp->allocated[cp->sel_indx])
 		XcbFreeColor(cm->go.xcb,xcol->pixel);
 
-	switch((int)userData){
+	switch((long)userData){
 
 	case 1:		/*red*/
 		xcol->red = (short)((float)cbs->value/1000*_NgCM_MAX_CVAL);

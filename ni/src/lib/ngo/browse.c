@@ -1,5 +1,5 @@
 /*
- *      $Id: browse.c,v 1.35 1999-10-18 22:12:26 dbrown Exp $
+ *      $Id: browse.c,v 1.36 1999-11-19 02:10:02 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1680,13 +1680,15 @@ static void BrowseHluCB
 	NrmQuark	qvar;
         static timer_data tdata;
 	NclExtValueRec	*val;
+	XtPointer	userdata;
         
 #if	DEBUG_DATABROWSER & DEBUG_ENTRY
 	fprintf(stderr,"BrowseVarCB(IN)\n");
 #endif
 	XtVaGetValues(w,
-		      XmNuserData,&qvar,
+		      XmNuserData,&userdata,
 		      NULL);
+	qvar = (NrmQuark) userdata;
 
 #if	DEBUG_DATABROWSER & DEBUG_FOLDER
 	fprintf(stderr,"browsing var %s\n", NrmQuarkToString(qvar));
@@ -1724,6 +1726,7 @@ static void BrowseVarCB
 )
 {
 	NgGO		go = (NgGO) udata;
+	XtPointer	userdata;
 	NrmQuark	qvar;
         static timer_data tdata;
         
@@ -1731,8 +1734,9 @@ static void BrowseVarCB
 	fprintf(stderr,"BrowseVarCB(IN)\n");
 #endif
 	XtVaGetValues(w,
-		      XmNuserData,&qvar,
+		      XmNuserData,&userdata,
 		      NULL);
+	qvar = (NrmQuark) userdata;
 
 #if	DEBUG_DATABROWSER & DEBUG_FOLDER
 	fprintf(stderr,"browsing var %s\n", NrmQuarkToString(qvar));
@@ -1757,14 +1761,17 @@ static void BrowseFileCB
 {
 	NgGO		go = (NgGO) udata;
 	NrmQuark	qfile;
+	XtPointer	userdata;
         static timer_data tdata;
 
 #if	DEBUG_DATABROWSER & DEBUG_ENTRY
 	fprintf(stderr,"BrowseFileCB(IN)\n");
 #endif
 	XtVaGetValues(w,
-		      XmNuserData,&qfile,
+		      XmNuserData,&userdata,
 		      NULL);
+	qfile = (NrmQuark) userdata;
+	
 
 #if	DEBUG_DATABROWSER & DEBUG_FOLDER
 	fprintf(stderr,"browsing file %s\n", NrmQuarkToString(qfile));
@@ -1788,14 +1795,17 @@ static void BrowseFileVarCB
 {
 	NgGO		go = (NgGO) udata;
 	NrmQuark	qvar;
+	XtPointer	userdata;
         static timer_data tdata;
 
 #if	DEBUG_DATABROWSER & DEBUG_ENTRY
 	fprintf(stderr,"BrowseFileVarCB(IN)\n");
 #endif
 	XtVaGetValues(w,
-		      XmNuserData,&qvar,
+		      XmNuserData,&userdata,
 		      NULL);
+	qvar = (NrmQuark) userdata;
+
 #if	DEBUG_DATABROWSER & DEBUG_FOLDER
 	fprintf(stderr,"browsing filevar %s in file %s\n",
                NrmQuarkToString(qvar),
@@ -1820,14 +1830,16 @@ static void BrowseFunctionCB
 {
 	NgGO		go = (NgGO) udata;
 	NrmQuark	qvar;
+	XtPointer	userdata;
         static timer_data tdata;
         
 #if	DEBUG_DATABROWSER & DEBUG_ENTRY
 	fprintf(stderr,"BrowseFunctionCB(IN)\n");
 #endif
 	XtVaGetValues(w,
-		      XmNuserData,&qvar,
+		      XmNuserData,&userdata,
 		      NULL);
+	qvar = (NrmQuark) userdata;
 
 #if	DEBUG_DATABROWSER & DEBUG_FOLDER
 	fprintf(stderr,"browsing function %s\n", NrmQuarkToString(qvar));
@@ -1852,14 +1864,16 @@ static void BrowsePlotCB
 {
 	NgGO		go = (NgGO) udata;
 	NrmQuark	qvar;
+	XtPointer	userdata;
         static timer_data tdata;
         
 #if	DEBUG_DATABROWSER & DEBUG_ENTRY
 	fprintf(stderr,"BrowsePlotCB(IN)\n");
 #endif
 	XtVaGetValues(w,
-		      XmNuserData,&qvar,
+		      XmNuserData,&userdata,
 		      NULL);
+	qvar = (NrmQuark) userdata;
 
 #if	DEBUG_DATABROWSER & DEBUG_FOLDER
 	fprintf(stderr,"browsing plot %s\n", NrmQuarkToString(qvar));

@@ -1,5 +1,5 @@
 /*
- *      $Id: plotpage.c,v 1.9 1999-10-22 00:37:28 dbrown Exp $
+ *      $Id: plotpage.c,v 1.10 1999-11-19 02:10:08 dbrown Exp $
  */
 /*******************************************x*****************************
 *									*
@@ -340,7 +340,7 @@ static NhlErrorTypes GetDoSetValCBMessage
         brPageData	*pdp = page->pdata;
 	brPlotPageRec	*rec = (brPlotPageRec	*)pdp->type_rec;
 
-	rec->do_setval_cb = (NhlBoolean) message->message;
+	rec->do_setval_cb = message->message ? True : False;
 /*
  * If something in this plot object was set by another object while the
  * setval_cb was disabled, then it will not have been updated correctly.
@@ -430,7 +430,7 @@ static NhlErrorTypes HandleDataVarUpdateMessage
 	brPlotPageRec	*rec = (brPlotPageRec	*)pdp->type_rec;
 	NhlBoolean	data_update;
 
-	data_update = (NhlBoolean) message->message;
+	data_update = message->message ? True : False;
 
 	if (data_update)
 		rec->new_data = True;
@@ -581,11 +581,11 @@ static NhlBoolean GetDataVal
 		for (i = 0; i < vdata->ndims; i++) {
 			if (abs((vdata->finish[i] - vdata->start[i]) /
 				vdata->stride[i]) < 1) {
-				sprintf(&buf[strlen(buf)],"%d,",
+				sprintf(&buf[strlen(buf)],"%ld,",
 					vdata->start[i]);
 				continue;
 			}
-	                sprintf(&buf[strlen(buf)],"%d:%d:%d,",
+	                sprintf(&buf[strlen(buf)],"%ld:%ld:%ld,",
                         vdata->start[i],vdata->finish[i],vdata->stride[i]);
 		}
 		/* backing up 1 to get rid of last comma */
@@ -1462,7 +1462,7 @@ static NhlErrorTypes DoUpdateFuncs
 		default:
 			break;
 		case _NgUPDATEFUNC:
-			if (sequence !=  (int) ditem->data)
+			if ((long) sequence !=  (long) ditem->data)
 				break;
 			if (! init) {
 				if (ditem->init_only)
@@ -1526,7 +1526,6 @@ CreateInstance
 	brPlotPageRec	*rec = (brPlotPageRec *) pdp->type_rec;
         int		i,j;
 	NgDataProfile	dprof = rec->data_profile;
-        NhlArgVal       sel,user_data;
 #if 0
 	NhlBoolean	success = True;
 #endif
@@ -1568,7 +1567,7 @@ CreateInstance
 		for (i = 0; i < dprof->n_dataitems; i++) {
 			NgDataItem ditem = dprof->ditems[i];
 			if (ditem->item_type == _NgUPDATEFUNC) {
-				int seq = (int) ditem->data;
+				long seq = (long) ditem->data;
 				if (seq > rec->max_seq_num)
 					rec->max_seq_num = seq;
 			}
@@ -2073,7 +2072,7 @@ CreateUpdate
 		}
 	}
 
-
+	XSync(rec->go->go.x->dpy,False);
 	return;
 }
 
@@ -2479,18 +2478,22 @@ static NhlErrorTypes UpdatePlotPage
         brPage *page
 )
 {
+        brPageData	*pdp = page->pdata;
         int		wk_id;
         NhlBoolean	work_created;
 
 #if DEBUG_PLOTPAGE
         fprintf(stderr,"in UpdatePlotPage\n");
 #endif
+	XtUnmapWidget(pdp->form);
+
         wk_id = GetWorkstation(page,&work_created);
 #if 0
 	CreateUpdate(page,wk_id,False,False);
 #endif
 
 	CreateUpdate(page,wk_id,False);
+	XtMapWidget(pdp->form);
         return NhlNOERROR;
 
 }

@@ -1,5 +1,5 @@
 /*
- *      $Id: plottree.c,v 1.2 1999-10-13 17:15:50 dbrown Exp $
+ *      $Id: plottree.c,v 1.3 1999-11-19 02:10:09 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -34,10 +34,9 @@
 #include  <ncarg/ngo/Tree.h>
 #include <float.h>
 
-static NrmQuark Qlong_name;
 static Dimension Row_Height;
 
-static Pixmap Check_Pixmap,No_Check_Pixmap,Mask_Pixmap;
+static Pixmap Check_Pixmap,No_Check_Pixmap;
 
 static void Button3ObjectAction(
 	Widget		w,
@@ -442,7 +441,7 @@ DataItemValue
 		if (vdata->ndims)
 			sprintf(&buffer[strlen(buffer)-1],": size (");
 		for (i=0; i< vdata->ndims; i++) {
-			sprintf(&buffer[strlen(buffer)],"%d,",
+			sprintf(&buffer[strlen(buffer)],"%ld,",
 				vdata->finish[i]+1);
 		}
 		if (vdata->ndims) {
@@ -483,12 +482,12 @@ DataItemValue
 			if ((vdata->finish[i] - vdata->start[i])
 			    /vdata->stride[i] == 0)
 				sprintf(&buffer[strlen(buffer)],
-					"%d,",vdata->start[i]);
+					"%ld,",vdata->start[i]);
 			else if (vdata->stride[i] == 1)
-				sprintf(&buffer[strlen(buffer)],"%d:%d,",
+				sprintf(&buffer[strlen(buffer)],"%ld:%ld,",
 					vdata->start[i],vdata->finish[i]);
 			else
-				sprintf(&buffer[strlen(buffer)],"%d:%d:%d,",
+				sprintf(&buffer[strlen(buffer)],"%ld:%ld:%ld,",
 					vdata->start[i],
 					vdata->finish[i],vdata->stride[i]);
 		}
@@ -992,10 +991,8 @@ NgPlotTree *NgCreatePlotTree
          if (first) {
  		NgBrowse browse = (NgBrowse) go;
 
-                Qlong_name = NrmStringToQuark("long_name");
 		Check_Pixmap = browse->browse.pixmaps.check;
 		No_Check_Pixmap = browse->browse.pixmaps.no_check;
-		Mask_Pixmap = browse->browse.pixmaps.mask_check;
                 first = False;
         }
         
