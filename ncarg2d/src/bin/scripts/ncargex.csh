@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.149 2004-04-07 21:35:24 kennison Exp $
+#   $Id: ncargex.csh,v 1.150 2004-04-08 13:17:53 haley Exp $
 #                                                                      
 #                Copyright (C)  2000
 #        University Corporation for Atmospheric Research
@@ -1620,6 +1620,7 @@ switch ($name)
     breaksw
 
     case ctgeo3:
+    case ctgc23:
 	set other_data_files = (ctgeo3.dat)
     breaksw
 
