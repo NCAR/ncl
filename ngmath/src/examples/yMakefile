@@ -1,0 +1,8 @@
+#
+#      "$Id:"
+#
+
+#define IHaveSubdirs
+
+SUBDIRS = \
+        enatgrid
