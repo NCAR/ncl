@@ -1,0 +1,16 @@
+#
+#		ictrans sample spooler configuration file
+#
+#	There are three ':' separated fields in this file: the alias field, 
+#	which is simply
+#	a name used to refer to a particular printer; the ictrans argument
+#	filed; and a list of '|' separted filters which receive input from 
+#	ctrans. The '>' symbol may be used in the last field to direct output
+#	from the last filter to a file. Also note that a '#' is used to start
+#	a comment line like this one.
+#
+#imagen : -d imagen -f font1 : | ipr -Pscdimagen -Limpress 
+#postscript : -d ps.mono -f font1 : | psimagen | ipr -Pscdimagen 
+#xwd : -d xbfr -geom 1152x900 : > ./xraster
+
+
