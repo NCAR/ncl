@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: remove_soft,v 1.3 1993-03-30 22:05:35 clyne Exp $
+#      $Id: remove_soft,v 1.4 1993-05-04 22:58:28 clyne Exp $
 #
 #########################################################################
 #									#
@@ -130,7 +130,7 @@ if ($status == 0) then
 	end
 endif
 
-if ($pre3_2 == "" && $instbls == "") then
+if ("$pre3_2" == "" && "$instbls" == "") then
 	clear
 	echo ""
 	echo ""
