@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.101 1997-12-29 19:52:58 ethan Exp $
+ *      $Id: Execute.c,v 1.102 1998-02-23 16:01:14 haley Exp $
  */
 /************************************************************************
 *									*
@@ -1603,7 +1603,7 @@ void CallVARVAL_READ_OP(void) {
 						estatus = NhlFATAL;
 					}
 				} else if(nsubs != var->u.data_var->var.n_dims) {
-					NhlPError(NhlFATAL,NhlEUNKNOWN,"Number of subscripts do not match number of dimesions of variable,(%d) Subscripts used, (%d) Subscripts expected",nsubs,var->u.data_var->var.n_dims);
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"Number of subscripts do not match number of dimensions of variable,(%d) Subscripts used, (%d) Subscripts expected",nsubs,var->u.data_var->var.n_dims);
 					estatus = NhlFATAL;
 					_NclCleanUpStack(nsubs);
 				} else {
@@ -1683,7 +1683,7 @@ void CallVAR_READ_OP(void) {
 				} else if(nsubs == 0) {
 					estatus = _NclPush(*var);
 				} else if(nsubs != var->u.data_var->var.n_dims) {
-					NhlPError(NhlFATAL,NhlEUNKNOWN,"Number of subscripts do not match number of dimesions of variable,(%d) Subscripts used, (%d) Subscripts expected",nsubs,var->u.data_var->var.n_dims);
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"Number of subscripts do not match number of dimensions of variable,(%d) Subscripts used, (%d) Subscripts expected",nsubs,var->u.data_var->var.n_dims);
 					estatus = NhlFATAL;
 					_NclCleanUpStack(nsubs);
 				} else {
@@ -5104,7 +5104,7 @@ void CallASSIGN_VAR_VAR_OP(void) {
 */
 					}
 					} else {
-						NhlPError(NhlFATAL,NhlEUNKNOWN,"Number of subscripts on rhs do not match number of dimesions of variable,(%d) Subscripts used, (%d) Subscripts expected",rhs_nsubs,rhs_var->u.data_var->var.n_dims);
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"Number of subscripts on rhs do not match number of dimensions of variable,(%d) Subscripts used, (%d) Subscripts expected",rhs_nsubs,rhs_var->u.data_var->var.n_dims);
 						estatus = NhlFATAL;
 						_NclCleanUpStack(rhs_nsubs);
 						
@@ -5118,7 +5118,7 @@ void CallASSIGN_VAR_VAR_OP(void) {
 					if(rhs_nsubs == 0) {
 						rhs_sel_ptr = NULL;
 					} else if((estatus != NhlFATAL)&&(rhs_nsubs != rhs_var->u.data_var->var.n_dims)) {
-						NhlPError(NhlFATAL,NhlEUNKNOWN,"Number of subscripts on rhs do not match number of dimesions of variable,(%d) Subscripts used, (%d) Subscripts expected",rhs_nsubs,rhs_var->u.data_var->var.n_dims);
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"Number of subscripts on rhs do not match number of dimensions of variable,(%d) Subscripts used, (%d) Subscripts expected",rhs_nsubs,rhs_var->u.data_var->var.n_dims);
 						estatus = NhlFATAL;
 						_NclCleanUpStack(rhs_nsubs);
 					} else {
@@ -5159,7 +5159,7 @@ void CallASSIGN_VAR_VAR_OP(void) {
 					if((lhs_nsubs ==0)&&(estatus != NhlFATAL)){
 						lhs_sel_ptr = NULL;
 					} else if((estatus != NhlFATAL)&&(lhs_nsubs != lhs_var->u.data_var->var.n_dims)) {
-						NhlPError(NhlFATAL,NhlEUNKNOWN,"Number of subscripts on lhs do not match number of dimesions of variable,(%d) Subscripts used, (%d) Subscripts expected",lhs_nsubs,lhs_var->u.data_var->var.n_dims);
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"Number of subscripts on lhs do not match number of dimensions of variable,(%d) Subscripts used, (%d) Subscripts expected",lhs_nsubs,lhs_var->u.data_var->var.n_dims);
 						estatus = NhlFATAL;
 						_NclCleanUpStack(lhs_nsubs);
 					} else if (estatus != NhlFATAL) {
