@@ -1,5 +1,5 @@
 /*
- *	$Id: options.c,v 1.19 1993-01-07 18:38:59 clyne Exp $
+ *	$Id: options.c,v 1.20 1994-02-03 01:41:45 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -530,7 +530,13 @@ LoadOptionTable(od, optd)
 		char	*value;
 		char	*s;
 
-		s = optd[i].value;
+		if (optd[i].arg_count == 0) {
+			s = "false";
+		}
+		else {
+			s = optd[i].value;
+		}
+
 		if (s) {
 			value = malloc(strlen(s) + 1);
 			if (! value) {
@@ -542,8 +548,6 @@ LoadOptionTable(od, optd)
 		else {
 			value = NULL;
 		}
-
-		if (optd[i].arg_count == 0) value = "false";
 
 		if (! optd[i].option) {
 			ESprintf(EINVAL, ("Invalid option descriptor"));
