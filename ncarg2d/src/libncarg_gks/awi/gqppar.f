@@ -1,5 +1,5 @@
 C
-C	$Id: gqppar.f,v 1.2 1993-01-09 02:01:18 fred Exp $
+C	$Id: gqppar.f,v 1.3 1994-06-16 17:42:09 fred Exp $
 C
       SUBROUTINE GQPPAR(WTYPE,PPAI,NMX,MMX,ERRIND,N,M,PARRAY)
 C
@@ -34,54 +34,61 @@ C
         GO TO 100
       ENDIF
 C
+C  Since no drivers currently support pattern representations, return
+C  error indicator 90.  When and if any drivers supports pattern fill,
+C  uncomment the remaining code.
+C
+      ERRIND = 90
+      GO TO 100
+C
 C  Invoke interface.
 C
-      FCODE = -120
-      CONT  = 0
-      CALL GZROI(0)
-      IL1   = 4
-      IL2   = 4
-      ID(1) = WTYPE
-      ID(2) = PPAI
-      ID(3) = NMX
-      ID(4) = MMX
-      IWK   = -1
-      CALL GZIQWK(WTYPE,IWK)
-      IF (RERR.NE.0) THEN
-      ERRIND = RERR
-      GOTO 100
-      ENDIF
-      N = ID(5)
-      M = ID(6)
+C     FCODE = -120
+C     CONT  = 0
+C     CALL GZROI(0)
+C     IL1   = 4
+C     IL2   = 4
+C     ID(1) = WTYPE
+C     ID(2) = PPAI
+C     ID(3) = NMX
+C     ID(4) = MMX
+C     IWK   = -1
+C     CALL GZIQWK(WTYPE,IWK)
+C     IF (RERR.NE.0) THEN
+C       ERRIND = RERR
+C       GOTO 100
+C     ENDIF
+C     N = ID(5)
+C     M = ID(6)
 C
 C  Bring over the pattern array.
 C
-      INDX = (N*M-1)/128
-      IF (INDX.EQ.0) THEN
-        CALL GZFMWK
-        INDX = 0
-        DO 200 J=1,M
-          DO 201 I=1,N
-            INDX = INDX+1
-            PARRAY(I,J) = ID(INDX)
-  201     CONTINUE
-  200   CONTINUE
-      ELSE
-        CALL GZFMWK
-        INDX = 0
-        DO 202 J=1,M
-          DO 203 I=1,N
-            INDX = INDX+1
-            PARRAY(I,J) = ID(INDX)
-            JMD = MOD(INDX,128)
-            IF (JMD.EQ.0.AND.CONT.EQ.1) THEN
-             CALL GZFMWK
-             INDX = 0
-            ENDIF
-  203     CONTINUE
-  202   CONTINUE
-      ENDIF
-      RETURN
+C     INDX = (N*M-1)/128
+C     IF (INDX.EQ.0) THEN
+C       CALL GZFMWK
+C       INDX = 0
+C       DO 200 J=1,M
+C         DO 201 I=1,N
+C           INDX = INDX+1
+C           PARRAY(I,J) = ID(INDX)
+C 201     CONTINUE
+C 200   CONTINUE
+C     ELSE
+C       CALL GZFMWK
+C       INDX = 0
+C       DO 202 J=1,M
+C         DO 203 I=1,N
+C           INDX = INDX+1
+C           PARRAY(I,J) = ID(INDX)
+C           JMD = MOD(INDX,128)
+C           IF (JMD.EQ.0.AND.CONT.EQ.1) THEN
+C            CALL GZFMWK
+C            INDX = 0
+C           ENDIF
+C 203     CONTINUE
+C 202   CONTINUE
+C     ENDIF
+C     RETURN
 C
   100 CONTINUE
       N = -1

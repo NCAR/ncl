@@ -1,5 +1,5 @@
 C
-C	$Id: gksbd.f,v 1.8 1994-06-08 16:19:50 boote Exp $
+C	$Id: gksbd.f,v 1.9 1994-06-16 17:42:04 fred Exp $
 C
       BLOCKDATA GKSBD
 C
@@ -215,7 +215,8 @@ C
      +             -111, -112, -200, -201, -202, -203, -204, -205,
      +             -206, -207, -208, -209, -210, -211, -212, -213,
      +             -214, -215, -216, -300, -301, -302, -303, -217,
-     +             -218, -219, -220                               /
+     +             -218, -219, -220, 2200, 2201, 2202, 2203, 2204,
+     +               90                                           /
       DATA ERMSGS(  1)/' --GKS NOT IN PROPER STATE: GKS SHALL BE IN STAT
      +E GKCL'/
       DATA ERMSGS(  2)/' --GKS NOT IN PROPER STATE: GKS SHALL BE IN STAT
@@ -384,8 +385,20 @@ C
      +ation identifiers'/
       DATA ERMSGS(114)/' --X driver error: color index exceeds maximum a
      +llowed'/
-      DATA ERMSGS(115)/' --X driver error: using different color than re
-     +quested'/
+      DATA ERMSGS(115)/' --X driver warning: color allocated is differen
+     +t from the color requested'/
+      DATA ERMSGS(116)/' --C-binding specific error: buffer overflow in 
+     +input or inquiry function'/
+      DATA ERMSGS(117)/' --C-binding specific error: start index out of 
+     +range'/
+      DATA ERMSGS(118)/' --C-binding specific error: enumeration type ou
+     +t of range'/
+      DATA ERMSGS(119)/' --C-binding specific error: length of list is n
+     +egative'/
+      DATA ERMSGS(120)/' --C-binding specific error: cannot allocate mem
+     +ory'/
+      DATA ERMSGS(121)/' --INTERIOR STYLE PATTERN IS NOT SUPPORTED ON TH
+     +IS WORKSTATION'/
 C
       DATA GNAM(001),GNAM(002),GNAM(003)/'GOPKS' ,'GCLKS' ,'GOPWK' /
       DATA GNAM(004),GNAM(005),GNAM(006)/'GCLWK' ,'GACWK' ,'GDAWK' /

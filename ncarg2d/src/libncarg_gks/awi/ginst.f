@@ -1,5 +1,5 @@
 C
-C	$Id: ginst.f,v 1.1 1993-01-09 01:58:51 fred Exp $
+C	$Id: ginst.f,v 1.2 1994-06-16 17:42:02 fred Exp $
 C
       SUBROUTINE GINST (WKID,STDNR,LSTR,ISTR,PET,XMIN,XMAX,YMIN,
      +                  YMAX,BUFLEN,INIPOS,LDR,DATREC)
@@ -15,7 +15,7 @@ C
       CHARACTER*80 DATREC(LDR)
 C
 C  The only reason this subroutine is in the NCAR GKS package is
-C  to support the pause feature of FRAME and NBPICT in a standard
+C  to support the pause feature of FRAME and NGPICT in a standard
 C  manner so that those two subroutines can work with a any level
 C  2B GKS package.
 C

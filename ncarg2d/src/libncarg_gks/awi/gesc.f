@@ -1,5 +1,5 @@
 C
-C	$Id: gesc.f,v 1.13 1994-06-02 21:56:39 fred Exp $
+C	$Id: gesc.f,v 1.14 1994-06-16 17:41:59 fred Exp $
 C
       SUBROUTINE GESC(FCTID,LIDR,IDR,MLODR,LODR,ODR)
 C
@@ -52,10 +52,14 @@ C      -1397  --  Color table identifier for use by NCAR Interactive.
 C      -1398  --  Maximum number of error messages before abort.
 C      -1399  --  Flag for GKS clipping (0 = off; 1 = on).
 C
-C  Reserved for the X drivers:
-C      -1400 through -1410
+C  X driver specific escapes (-1400 through -1410):
+C      -1400  --  Specify the error allowed in matching a requested
+C                 color, expressed as a percentage.
+C      -1401  --  Used to tell the X driver that the window should have
+C                 its own color map, allowing that window to have 256 
+C                 colors.
 C
-C  PostScript specific escapes.
+C  PostScript specific escapes:
 C
 C      -1510  --  Flags beginning of segment copy for PS workstations.
 C      -1511  --  Flags end of segment copy for PS workstations.

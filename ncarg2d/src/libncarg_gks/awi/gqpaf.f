@@ -1,5 +1,5 @@
 C
-C	$Id: gqpaf.f,v 1.2 1993-01-09 02:00:54 fred Exp $
+C	$Id: gqpaf.f,v 1.3 1994-06-16 17:42:08 fred Exp $
 C
       SUBROUTINE GQPAF(WTYPE,ERRIND,NPPAI)
 C
@@ -26,21 +26,27 @@ C
         GO TO 100
       ENDIF
 C
-      IF (ERRIND .NE. 0) GO TO 100
-      FCODE = -115
-      CONT  = 0
-      CALL GZROI(0)
-      IL1   = 1
-      IL2   = 1
-      ID(1) = WTYPE
-      IWK   = -1
-      CALL GZIQWK(WTYPE,IWK)
-      IF (RERR.NE.0) THEN
-        ERRIND = RERR
-        GOTO 100
-      ENDIF
-      NPPAI = ID(2)
+C  Set NPPAI to zero and return.  If and when any driver supports
+C  pattern fill, uncomment the remaining section of code.
+C
+      NPPAI = 0
       RETURN
+C     
+C     IF (ERRIND .NE. 0) GO TO 100
+C     FCODE = -115
+C     CONT  = 0
+C     CALL GZROI(0)
+C     IL1   = 1
+C     IL2   = 1
+C     ID(1) = WTYPE
+C     IWK   = -1
+C     CALL GZIQWK(WTYPE,IWK)
+C     IF (RERR.NE.0) THEN
+C       ERRIND = RERR
+C       GOTO 100
+C     ENDIF
+C     NPPAI = ID(2)
+C     RETURN
 C
   100 CONTINUE
       NPPAI = -1
