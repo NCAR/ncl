@@ -1,5 +1,5 @@
 /*
-*      $Id: MapTransObj.c,v 1.27 1996-05-17 19:18:56 haley Exp $
+*      $Id: MapTransObj.c,v 1.28 1996-06-13 21:34:04 boote Exp $
 */
 /************************************************************************
 *									*
@@ -414,6 +414,20 @@ extern int (_NHLCALLF(hlumappolygon,HLUMAPPOLYGON))(
 	int *iai, 
 	int *iag, 
 	int *nai
+#endif
+);
+
+extern int (_NHLCALLF(mapiqd,MAPIQD))(
+#if	NhlNeedProto
+	void
+#endif
+);
+
+extern int (_NHLCALLF(mapitd,MAPITD))(
+#if	NhlNeedProto
+	float	*y,
+	float	*x,
+	int	*ifst
 #endif
 );
 
