@@ -1,5 +1,5 @@
 /*
- *      $Id: Project,v 1.21 1995-06-13 16:17:39 haley Exp $
+ *      $Id: Project,v 1.22 1995-06-13 17:32:38 haley Exp $
  */
 /************************************************************************
 *									*
@@ -153,6 +153,7 @@ TUTORIALDIR		= tutorial
 TESTSDIR		= tests
 RESDIR			= resfiles
 ROBJDIR			= robj
+WWWDIR			= ngwww
 XAPPDIR			= xapp
 
 LIBNCARGROOT		= $(LIBROOT)/$(NCARGDIR)
@@ -166,6 +167,7 @@ EXAMPLESROOT		= $(LIBNCARGROOT)/$(EXAMPLESDIR)
 ROBJROOT		= $(LIBNCARGROOT)/$(ROBJDIR)
 TESTSROOT		= $(LIBNCARGROOT)/$(TESTSDIR)
 TUTORIALROOT		= $(LIBNCARGROOT)/$(TUTORIALDIR)
+WWWROOT			= $(LIBNCARGROOT)/$(WWWDIR)
 XAPPROOT		= $(LIBNCARGROOT)/$(XAPPDIR)
 HLUEXROOT		= $(LIBNCARGROOT)/$(HLUEXDIR)
 RESFILEROOT		= $(LIBNCARGROOT)/$(RESDIR)
@@ -182,6 +184,7 @@ EXAMPLESPATH		= $(LIBNCARGPATH)/$(EXAMPLESDIR)
 ROBJPATH		= $(LIBNCARGPATH)/$(ROBJDIR)
 TESTSPATH		= $(LIBNCARGPATH)/$(TESTSDIR)
 TUTORIALPATH		= $(LIBNCARGPATH)/$(TUTORIALDIR)
+WWWPATH			= $(LIBNCARGPATH)/$(WWWDIR)
 XAPPPATH		= $(LIBNCARGPATH)/$(XAPPDIR)
 LIBNCLPATH		= $(LIBNCARGPATH)/$(NCLDIR)
 HLUEXPATH		= $(LIBNCARGPATH)/$(HLUEXDIR)
@@ -191,7 +194,7 @@ NCARGINCPATH		= $(INCPATH)/$(NCARGDIR)
 HLUINCPATH		= $(NCARGINCPATH)/$(HLUDIR)
 NCLINCPATH		= $(NCARGINCPATH)/$(NCLDIR)
 USRRESFILE		= "~/.hluresfile"
-NCARGWWW		= "www"
+NCARGURL		= "ngurl"
 
 ROOTPATHCHECK		= "/lib/ncarg/fontcaps/font1"
 
@@ -250,7 +253,8 @@ NGENV_DESCRIPT	= '{"tmp","TMPDIR",NULL,"$(TMPROOT)",NULL,	\
 		"tests",NULL,"ncarg",NULL,NULL,			\
 		"tutorial",NULL,"ncarg",NULL,NULL,		\
 		"xapp",NULL,"ncarg",NULL,NULL,			\
-		"www",NULL,"ncarg",NULL,NULL,			\
+		"ngwww",NULL,"ncarg",NULL,NULL,			\
+		"ngurl",NULL,"ngwww",NULL,NULL,			\
 		"sysresfile",NULL,"ncarg",NULL,NULL,		\
 		"sysappres",NULL,"ncarg",NULL,NULL,		\
 		NULL}'
