@@ -1,5 +1,5 @@
 /*
- *	$Id: ymake-filter.c,v 1.3 1993-10-19 17:14:07 boote Exp $
+ *	$Id: ymake-filter.c,v 1.4 1994-03-10 00:54:55 boote Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -32,6 +32,7 @@
  *		
  */
 
+#include <stdlib.h>
 #include <stdio.h>
 #include <ctype.h>
 
@@ -120,8 +121,15 @@ getcppline()
 				if ( p == buf ) return (char *) NULL;
 				/* fall through */
 			case '\n':
-			case ']':
 				*p = '\0';
+				break;
+			case ']':
+				if ((p != buf) && (*(p-1) == '\\')){
+					*(p-1) = c;
+					c = ' ';
+				}
+				else
+					*p = '\0';
 				break;
 
 			default:

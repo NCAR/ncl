@@ -1,5 +1,5 @@
 /*
- *      $Id: Site,v 1.4 1993-11-12 02:44:19 boote Exp $
+ *      $Id: Site,v 1.5 1994-03-10 00:54:51 boote Exp $
  *
  ************************************************************************
  *									*
@@ -44,7 +44,6 @@
  */
 
 #define YmakeRoot /usr/local/ncarg
-#define DEBUG
 #define	InstallYmake
 
 /* #define BinRoot /usr/local/bin */

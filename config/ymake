@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ymake,v 1.12 1994-02-22 17:09:46 haley Exp $
+#	$Id: ymake,v 1.13 1994-03-10 00:54:53 boote Exp $
 #
 ######################################################################
 #
@@ -180,12 +180,6 @@ if ($?YMAKE_DEV_FILE) then
 	endif
 endif
 
-
-if (-e /usr/ccs/lib/cpp) then
-	set cpp = /usr/ccs/lib/cpp
-else 
-	set cpp = /lib/cpp
-endif
 
 
 set ymakefile
@@ -518,8 +512,25 @@ cat <<'EOF' >! $outfile
 
 'EOF'
 
+if (-e /usr/ccs/lib/cpp) then
+	set cpp = /usr/ccs/lib/cpp
+else 
+	set cpp = /lib/cpp
+endif
+
+# set cpp options
+
+switch ("$opsys")
+case	UNICOS:
+	set cppopt = -N
+	breaksw
+default:
+	set cppopt
+	breaksw
+endsw
+
 echo '#include "Template"' | \
-$cpp -I. -D_COMMENT_="" -DNGCOMM=\# $defines -DYMAKEFILE=\"$tmp1\" | \
+$cpp $cppopt -I. -D_COMMENT_="" -DNGCOMM=\# $defines -DYMAKEFILE=\"$tmp1\" | \
 "$config_dir"/ymake-filter >>$outfile
 
 /bin/rm -f $outfile.bak $tmp1
