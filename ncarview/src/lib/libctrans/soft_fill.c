@@ -1,5 +1,5 @@
 /*
- *	$Id: soft_fill.c,v 1.11 1994-03-05 00:09:12 clyne Exp $
+ *	$Id: soft_fill.c,v 1.12 1995-01-05 20:42:12 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -38,6 +38,13 @@
 #include	"ctrandef.h"
 #include	"cgmc.h"
 #include	"soft_fill.h"
+
+/*
+**	clamp a value between `MIN' and `MAX'
+*/
+#define	CLAMP(VAL,MIN,MAX)	 \
+			VAL = VAL < (MIN) ? (MIN) : VAL; \
+			VAL = VAL > (MAX) ? (MAX) : VAL; 
 
 /*
  * becuase device coordinates may not begin at zero, or worse yet even
@@ -90,6 +97,7 @@ static	add_line(x1, y1, x2, y2, yoff)
 	DCtype	lasty;	/* previous value of plot{x,y}		*/
 	unsigned short	plot;	/* boolean				*/
 	int	temp;
+	DCtype	y1_clip, y2_clip;	/* clipped Y coords		*/
 
 	/*
 	 * bogus algorithm draws lines differently from top to bottom
@@ -108,8 +116,21 @@ static	add_line(x1, y1, x2, y2, yoff)
 	inc = MAX(ix, iy);
 
 	plotx = x1;
-	ploty = lasty = y1;
+	ploty = y1;
 	x = y = 0;
+
+	/*
+	** Clip the Y extents
+	*/
+	y1_clip = y1;
+	y2_clip = y2;
+	CLAMP(y1_clip, minY, maxY);
+	CLAMP(y2_clip, minY, maxY);
+
+	/*
+	** make sure we omit first endpoint 
+	*/
+	lasty = y1_clip;
 
 	for (i = 0; i <= inc; ++i) {
 		x += ix;
@@ -134,21 +155,31 @@ static	add_line(x1, y1, x2, y2, yoff)
 
 
 		if (plot) {
+
+			/*
+			** clip to device extents
+			*/
+			if (plotx < minX) plotx = minX;
+			if (plotx > maxX) plotx = maxX;
+
 			/*
 			 * only insert a point if it has different y coord
 			 * from the last point inserted and is not the 
-			 * end point (the last y value)
+			 * end point (the last y value) and it is within
+			 * the Y clip range.
 			 */
-			if (ploty != lasty && ploty != y2 &&
-				ploty >= minY && ploty <= maxY &&
-				plotx >= minX && plotx <= maxX) {
+			if (	ploty != lasty && 
+				ploty != y2_clip && 
+				ploty >= minY && 
+				ploty <= maxY 
+			) {
 
 				/* insert	*/
 			fillTable.x_coord[ploty-yoff][fillTable.x_count[ploty-yoff]] = plotx;
 			fillTable.x_count[ploty-yoff]++;
+			lasty = ploty;	/* keep track of previous point	*/
 			}
 
-			lasty = ploty;	/* keep track of previous point	*/
 		}
 	}
 
@@ -466,8 +497,8 @@ FillTable	*buildFillTable(point_list, count)
 {
 
 	int	i,j;
-	DCtype	ymax = 0; 
-	DCtype	ymin = maxY;
+	DCtype	ymax; 
+	DCtype	ymin;
 	int	xwidth;		/* how wide a table we need	*/
 	int	inc;
 
@@ -478,7 +509,8 @@ FillTable	*buildFillTable(point_list, count)
 	/*
 	 * find max y and min y.
 	 */
-	for (i = 0; i < count; i++) {
+	ymax = ymin = point_list[0].y;
+	for (i = 1; i < count; i++) {
 		if (ymax < point_list[i].y) ymax = (DCtype) point_list[i].y;
 		if (ymin > point_list[i].y) ymin = (DCtype) point_list[i].y;
 
@@ -486,8 +518,8 @@ FillTable	*buildFillTable(point_list, count)
 	/*
 	 * clip to device extents
 	 */
-	ymax = ymax > maxY ? maxY : ymax;
-	ymin = ymin < minY ? minY : ymin;
+	CLAMP(ymax, minY, maxY);
+	CLAMP(ymin, minY, maxY);
 
 	ySoftFillOffset = ymin;		/* offset for XC_INDEX()	*/
 
@@ -500,9 +532,8 @@ FillTable	*buildFillTable(point_list, count)
 	for(i=1; i<=count; i++) {
 		inc = point_list[i-1].y < point_list[i % count].y ? 1 : -1;
 		for(j=point_list[i-1].y; j!=point_list[i % count].y; j+=inc) {
-			if (j >= ymin && j <= ymax) {
-				tableWidths[j-ymin]++;
-			}
+			CLAMP(j, minY, maxY);
+			tableWidths[j-ymin]++;
 		}
 	}
 
@@ -562,7 +593,6 @@ FillTable	*buildFillTable(point_list, count)
 	 * parity fill algorithm
 	 */
 	add_end_points(point_list, count, ySoftFillOffset);
-
 
 	/*
 	 *	sort the table so x coordinates are in ascending order
