@@ -1,12 +1,12 @@
 #
-#	$Id: yMakefile,v 1.5 1993-02-12 15:05:40 haley Exp $
+#	$Id: yMakefile,v 1.6 1993-03-08 15:58:17 haley Exp $
 #
 NCARG	= ../../../..
 
 MYNAME	= impltest
 
 #if defined(ardent) || (defined(u370) && defined(unix))
-OTHER_LIBS =	$(LIBPATH)/libncarbd.o
+OTHER_LIBS =	$(ROBJPATH)/libncarbd.o
 #endif
 
 COMMON_LIBS =	$(LIBPATH)/libncarg.a \
