@@ -1748,8 +1748,11 @@ C
             DO 101 K=1,3
               CCGC(K)=(1.-P)*((1.-Q)*CCLL(K)+Q*CCUL(K))+
      +                    P *((1.-Q)*CCLR(K)+Q*CCUR(K))
-              CALL GSCR (IWID,IFCI+NCOL*I+J,CCGC(1),CCGC(2),CCGC(3))
   101       CONTINUE
+            CALL GSCR (IWID,IFCI+NCOL*I+J,
+     +                 MAX(0.,MIN(1.,CCGC(1))),
+     +                 MAX(0.,MIN(1.,CCGC(2))),
+     +                 MAX(0.,MIN(1.,CCGC(3))))
   102     CONTINUE
   103   CONTINUE
 C
