@@ -1,5 +1,5 @@
 /*
- *      $Id: HPUX_snake,v 1.9 1998-02-26 21:15:02 haley Exp $
+ *      $Id: HPUX_snake,v 1.10 1998-03-12 17:12:54 haley Exp $
  */
 /************************************************************************
 *									*
@@ -25,12 +25,12 @@
 #define	Cdynamic	-Wl,-a,default
 #define	Cstatic		-Wl,-a,archive
 #define	FCompiler	fort77
-#define COptimizeFlag    +O2
-#define FOptimizeFlag    +O2
+#define FOptimizeFlag    -O2
+
 
 #define	ArQuickOpt	ql
 #define DoesRanlib	NO
 #define	CtoFLibraries	-lf -lm
 
-#define ArchRecLibSearch	-L/usr/lib/Motif1.2 -L/usr/lib/X11R5
-#define ArchRecIncSearch	-I/usr/include/Motif1.2 -I/usr/include/X11R5
+#define ArchRecLibSearch	-L/usr/lib/Motif1.2_R6 -L/usr/lib/X11R6
+#define ArchRecIncSearch	-I/usr/include/Motif1.2 -I/usr/include/X11R6
