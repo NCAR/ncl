@@ -1,5 +1,5 @@
 #
-#   $Id: yMakefile,v 1.12 1995-03-23 16:31:35 haley Exp $
+#   $Id: yMakefile,v 1.13 1995-04-04 21:56:20 haley Exp $
 #
 #   Makefile for HLU XYPlot examples
 #
@@ -10,18 +10,18 @@ PROG_LIBS   =   $(HLULIBS) $(CNCARGLIBS) $(NCARGLIBS)
 EXTRA_LIBS  =   $(XMOTIFCLIENTLIBS)
 SYS_LIBS    =   $(CTOFLIBS) -lm
 
-CSRCS      = xy01c.c xy02c.c xy03c.c xy04c.c xy05c.c xy06c.c xy11c.c xy12c.c \
-             xy13c.c 
-FSRCS      = xy01f.f xy02f.f xy03f.f xy04f.f xy05f.f xy11f.f
+CSRCS      = xy01c.c xy02c.c xy03c.c xy04c.c xy05c.c xy06c.c \
+             xy11c.c xy12c.c xy13c.c 
+FSRCS      = xy01f.f xy02f.f xy03f.f xy04f.f xy05f.f xy06f.f xy11f.f
 NSRCS      = xy01n.ncl xy02n.ncl xy03n.ncl xy04n.ncl xy05n.ncl
-COBJS      = xy01c.o xy02c.o xy03c.o xy04c.o xy05c.o xy06c.o xy11c.o xy12c.o \
-             xy13c.o 
+COBJS      = xy01c.o xy02c.o xy03c.o xy04c.o xy05c.o xy06c.o \
+             xy11c.o xy12c.o xy13c.o 
 FOBJS      = xy01f.o xy02f.o xy03f.o xy04f.o xy05f.o xy11f.o
 SRCS       = $(CSRCS) $(FSRCS)
 OBJS       = $(COBJS) $(FOBJS)
 INCLUDES   = xy13c.h 
 ASCDATA    = xy12c.asc
-RESFILES   = xy01.res xy02.res xy03.res xy04.res xy05.res
+RESFILES   = xy01.res xy02.res xy03.res xy04.res xy05.res xy06.res
 NCGMS	   = xy11c.ncgm xy11f.ncgm xy12c.ncgm
 EXFILES    = $(SRCS) $(INCLUDES)
 
@@ -35,7 +35,7 @@ HLUCExampleTarget(xy02c,xy02c.o)
 HLUCExampleTarget(xy03c,xy03c.o)
 HLUCExampleTarget(xy04c,xy04c.o)
 HLUCExampleTarget(xy05c,xy05c.o)
-HLUCExampleTarget(xy06c,xy06c.o)
+HLUCExampleTarget(xy06c,xy06c.o $(NCARG_ROOT)/lib/libnetcdf.a)
 HLUCExampleTarget(xy11c,xy11c.o)
 HLUCExampleTarget(xy12c,xy12c.o)
 HLUCExampleTarget(xy13c,xy13c.o)
@@ -45,6 +45,7 @@ HLUFExampleTarget(xy02f,xy02f.o)
 HLUFExampleTarget(xy03f,xy03f.o)
 HLUFExampleTarget(xy04f,xy04f.o)
 HLUFExampleTarget(xy05f,xy05f.o)
+HLUFExampleTarget(xy06f,xy06f.o $(NCARG_ROOT)/lib/libnetcdf.a)
 HLUFExampleTarget(xy11f,xy11f.o)
 
 CleanFilesTarget($(OBJS))

@@ -1,13 +1,13 @@
-C     
-C      $Id: xy05f.f,v 1.7 1995-04-01 16:24:53 haley Exp $
 C
-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-C                                                                      C
-C                Copyright (C)  1995                                   C
-C        University Corporation for Atmospheric Research               C
-C                All Rights Reserved                                   C
-C                                                                      C
-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C      $Id: xy05f.f,v 1.8 1995-04-04 21:56:14 haley Exp $
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C                                                                     C
+C                Copyright (C)  1995                                  C
+C        University Corporation for Atmospheric Research              C
+C                All Rights Reserved                                  C
+C                                                                     C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C  File:       xy05f.f
 C
@@ -15,21 +15,18 @@ C  Author:     Mary Haley
 C          National Center for Atmospheric Research
 C          PO 3000, Boulder, Colorado
 C
-C  Date:       Thu Feb  9 15:17:35 MST 1995
+C  Date:       Tue Apr  4 09:49:35 MDT 1995
 C
-C  Description:    This example shows how to create an XyPlot object
-C                  with multiple lines using the CoordArrays and
-C                  multiple Data objects.  Using multiple Data
-C                  objects allows you to have a different number of
-C                  points in each line.
-C
-C                  Some of the XyPlot marker resources are tweaked in
-C                  the resource file to show how to change the
-C                  appearance of these multiple lines.  This example
-C                  also shows you how to use the xyYIrregularPoints
-C                  resource to define your own Y axis values.
+C  Description:    This example shows one way on how to create an
+C                  XyPlot object with multiple lines and multiple
+C                  lengths  using multiple data objects.  Some of the
+C                  XyPlot line resources are tweaked to show how to
+C                  change the appearances of the lines.
 C
 C                  The "CoordArrays" object is used to set up the data.
+C                  (The C version uses the "CoordArrTable" object which
+C                  is not available in Fortran or NCL.)
+C
 C
       external NhlFAppLayerClass
       external NhlFXWorkstationLayerClass
@@ -37,49 +34,34 @@ C
       external NhlFCoordArraysLayerClass
       external NhlFXyPlotLayerClass
 
-      parameter(NPTS=500,NCURVE=4)
-      parameter(PI100=.031415926535898)
+      parameter(NPTS=100,NCURVE=10,PI=3.14159)
+C
+C Create data arrays for XyPlot object.
+C
+      real y(NPTS,NCURVE)
+      integer length(NCURVE)
 
-      integer appid,xworkid,plotid
-      integer dataid(ncurve)
-      integer rlist, i, j, len(NCURVE)
-      real explicit_values(10)
+      integer appid,xworkid,plotid,dataid(NCURVE)
+      integer rlist, i, j, num
       character*10 datastr
-      real ydra(NPTS,NCURVE), theta
-      data len/500,200,400,300/
       integer NCGM
 C
 C Default is to an X workstation.
 C
       NCGM=0
 C
-C Initialize some data for the XyPlot object.
-C
-      do 20 j = 1,NCURVE
-         do 10 i = 1,len(j)
-            theta = PI100*real(i-1)
-            ydra(i,j) = j*100.+.9*real(i-1)*sin(theta)
- 10      continue
- 20   continue
-C
-C Set up the array of points we want to use for the Y axis.
-C
-      do 30 i = 1,10
-         explicit_values(i) = 2.**real(i+3)
- 30   continue
-C
-C Initialize the HLU library and set up resource template.
+C Initialize the HLU library and set up resource template
 C
       call NhlFInitialize
       call NhlFRLCreate(rlist,'setrl')
 C
 C Create Application object.  The Application object name is used to
-C determine the name of the resource file, which is "xy05.res" in
-C this case.
+C determine the name of the resource file, which is "xy05.res" in this
+C case.
 C
       call NhlFRLClear(rlist)
-      call NhlFRLSetstring(rlist,'appDefaultParent','True',ierr)
-      call NhlFRLSetstring(rlist,'appUsrDir','./',ierr)
+      call NhlFRLSetString(rlist,'appDefaultParent','True',ierr)
+      call NhlFRLSetString(rlist,'appUsrDir','./',ierr)
       call NhlFCreate(appid,'xy05',NhlFAppLayerClass,0,rlist,ierr)
 
       if (NCGM.eq.1) then
@@ -87,7 +69,7 @@ C
 C Create an NCGM workstation.
 C
          call NhlFRLClear(rlist)
-         call NhlFRLSetstring(rlist,'wkMetaName','./xy05f.ncgm',ierr)
+         call NhlFRLSetString(rlist,'wkMetaName','./xy05f.ncgm',ierr)
          call NhlFCreate(xworkid,'xy05Work',
      +        NhlFNcgmWorkstationLayerClass,0,rlist,ierr)
       else
@@ -95,40 +77,42 @@ C
 C Create an xworkstation object.
 C
          call NhlFRLClear(rlist)
-         call NhlFRLSetstring(rlist,'wkPause','True',ierr)
+         call NhlFRLSetString(rlist,'wkPause','True',ierr)
          call NhlFCreate(xworkid,'xy05Work',NhlFXWorkstationLayerClass,
-     +        0,rlist,ierr)
+     +                0,rlist,ierr)
       endif
 C
-C Define the Data objects.  Since only the Y values are specified here,
-C each Y value will be paired with its integer array index.  The id for
-C each object will then later be used in the xyCoordData resource of
-C the plot.
+C Initialize data.
 C
-      do 40 i=1,NCURVE
+      do 20 j = 1,NCURVE
+         length(j) = NPTS - (j-1)*10
+         do 10 i = 1,length(j)
+            y(i,j) = real(j)*sin((2.*(i-1)*PI)/real(length(j)-1))
+ 10      continue
+ 20   continue
+C
+C Create NCURVE CoordArray objects which define the data for the XyPlot
+C object. The id array from this object will become the value for the
+C XyPlot resource, "xyCoordData".
+C
+      do 30 i=1,NCURVE
          call NhlFRLClear(rlist)
-         call NhlFRLSetfloatarray(rlist,'caYArray',ydra(1,i),len(i),
-     +        ierr)
-         write(datastr,50)i
+         call NhlFRLSetFloatArray(rlist,'caYArray',y(1,i),
+     +        length(i),ierr)
+         write(datastr,40)i-1
          call NhlFCreate(dataid(i),datastr,NhlFCoordArraysLayerClass,
-     +        appid,rlist,ierr)
- 40   continue
- 50   format('xyData',i1)
+     +                0,rlist,ierr)
+ 30   continue
+ 40   format('xyData',i1)
 C
-C This array of Data objects is now the resource value for
-C xyCoordData.  Tweak some more XYPlot resources in the resource file
-C An XyDataSpec object gets created by XyPlot internally to deal
-C with each DataItem that is in the xyCoordData resource.  So,
-C you can set Data Specific resources using the name of each data
-C item that you add.  See the resource file ("xy05.res").
+C Create the XyPlot object and tweak some of the tickmark, title and
+C view port resources (some in the "xy05.res" resource file).
 C
       call NhlFRLClear(rlist)
-      call NhlFRLSetfloatarray(rlist,'xyYIrregularPoints',
-     +     explicit_values,10,ierr)
-      call NhlFRLSetintegerarray(rlist,'xyCoordData',dataid,NCURVE,
+      call NhlFRLSetIntegerArray(rlist,'xyCoordData',dataid,NCURVE,
      +     ierr)
       call NhlFCreate(plotid,'xyPlot',NhlFXyPlotLayerClass,xworkid,
-     +                rlist,ierr)
+     +     rlist,ierr)
 C
 C Draw the plot (to its parent XWorkstation).
 C
@@ -147,4 +131,3 @@ C
       call NhlFClose
       stop
       end
-

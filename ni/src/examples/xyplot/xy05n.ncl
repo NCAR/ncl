@@ -1,13 +1,13 @@
 ;
-;      $Id: xy05n.ncl,v 1.7 1995-03-28 23:50:45 haley Exp $
+;      $Id: xy05n.ncl,v 1.8 1995-04-04 21:56:15 haley Exp $
 ;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;                                                                      ;
-;                Copyright (C)  1995                                   ;
-;        University Corporation for Atmospheric Research               ;
-;                All Rights Reserved                                   ;
-;                                                                      ;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;                                                                     ;
+;                Copyright (C)  1995                                  ;
+;        University Corporation for Atmospheric Research              ;
+;                All Rights Reserved                                  ;
+;                                                                     ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;
 ;;  File:       xy05n.ncl
 ;;
@@ -15,26 +15,18 @@
 ;;          National Center for Atmospheric Research
 ;;          PO 3000, Boulder, Colorado
 ;;
-;;  Date:       Thu Feb  9 10:33:47 MST 1995
+;;  Date:       Tue Apr  4 13:02:35 MDT 1995
 ;;
-;; Description:    This example shows how to create an XyPlot object
-;;                 with multiple lines using the CoordArrays and
-;;                 multiple Data objects.  Using multiple Data
-;;                 objects allows you to have a different number of
-;;                 points in each line.
+;; Description:    This example shows one way on how to create an
+;;                 XyPlot object with multiple lines and multiple
+;;                 lengths using multiple data objects.  Some of the
+;;                 XyPlot line resources are tweaked to show how to
+;;                 change the appearances of the lines.
 ;;
-;;                 Some of the XyPlot marker resources are tweaked in
-;;                 the resource file to show how to change the
-;;                 appearance of these multiple lines.  This example
-;;                 also shows you how to use the xyYIrregularPoints
-;;                 resource to define your own Y axis values.
+;;                 The "CoordArrays" object is used to set up the data.
+;;                 (The C version uses the "CoordArrTable" object which
+;;                 is not available in Fortran or NCL.)
 ;;
-;;                 The "CoordArrays" object is used to set up the data,
-;;                 and the "DataDep" object is used to describe
-;;                 attributes of the data being plotted, like the
-;;                 marker styles and sizes.
-;;
-
 ;
 ; Begin NCL script.
 ;
@@ -42,53 +34,41 @@ begin
 
 procedure assigndata(
     y[*][*]:float,
+    length[*]:integer,
     npts:integer,
     ncurve:integer
 ) 
 local
     i,
     j,
-    theta
+    pi
 begin
+  pi = 3.14159
   do j = 0, ncurve-1
+    length(j) = npts - j*10
     do i = 0, npts-1
-      theta = 0.031415926535898*i
-      y(j,i) = (j+1)*100.+.9*i*sin(theta)
+      y(j,i) = (j+1)*sin((2.*i*pi)/(length(j)-1))
     end do
-  end do
-end
-
-procedure assignexp(
-    exp[*]:float,
-    npts:integer
-) 
-local
-    i
-begin
-  do i = 0, npts-1
-    exp(i) = 2.^(i+4)
   end do
 end
 
 ;
 ; Create variables to contain data.
 ;
-ncurve = 4
-npts = 500
-len = new(ncurve,integer)
-len = (/500,200,400,300/)
-ydra = new((/ncurve,npts/),float)
+ncurve = 10
+npts = 100
+y = new((/ncurve,npts/),float)
+length = new(ncurve,integer)
 
 ;
-; Create array for explicit data values.
+; Create array to contain dataitem ids.
 ;
-exp_vals = new(10,float)
-assignexp(exp_vals,10)
+dataid = new(ncurve,graphic)
 
 ;
 ; Initialize some data for the XyPlot object.
 ; 
-assigndata(ydra,npts,ncurve)
+assigndata(y,length,npts,ncurve)
 
 ;
 ; Create Application object.  The Application object name is used to
@@ -122,26 +102,22 @@ else
 end if
 
 ;
-; Define the Data objects.  Since only the Y values are specified here,
-; each Y value will be paired with its integer array index.  The id for
-; each object will then later be used as a value for a DataDep
-; resource, "dsDataItem".
+; Create the CoordArrays which defines the data for the XyPlot
+; object. The id from this object will become the value for the XyPlot
+; resource, "xyCoordData".
 ;
-dataid = new(ncurve,graphic)
-do i=1,ncurve
-  dataid(i-1) = create "xyData"+i coordArraysLayerClass defaultapp
-    "caYArray": ydra(i-1,0:(len(i-1)-1))
+do i=0,ncurve-1
+  dataid(i) = create "xyData"+i coordArraysLayerClass defaultapp
+    "caYArray": y(i,0:length(i)-1)
   end create
 end do
 
 ;
-; Create the XyPlot object which is created as a child of the
-; XWorkstation object.  The resources that are being changed are done
-; in the "xy05.res" file, and they will affect this XyPlot object.
+; Create the XyPlot object and tweak some of the tickmark, title and
+; view port resources (some in the "xy05.res" resource file).
 ;
 plotid = create "xyPlot" xyPlotLayerClass xworkid
     "xyCoordData": dataid
-    "xyYIrregularPoints":  exp_vals
 end create
 
 ;

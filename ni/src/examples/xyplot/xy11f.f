@@ -1,5 +1,5 @@
 C
-C     $Id: xy11f.f,v 1.7 1995-04-01 16:24:54 haley Exp $
+C     $Id: xy11f.f,v 1.8 1995-04-04 21:56:19 haley Exp $
 C
 C****************************************************************
 C                                                               *
@@ -78,7 +78,7 @@ C   Fill the ResList with the resources for the X Workstation
 C   object - then create the X Workstation object.
 C
       call NhlFRLClear(list)
-      call NhlFRLSetinteger(list,'wkPause',1,ierr)
+      call NhlFRLSetInteger(list,'wkPause',1,ierr)
       call NhlFCreate(ixwork,'myxwork',NhlFXWorkstationLayerClass,0,
      %  list,ierr)
 
@@ -87,7 +87,7 @@ C   Fill the ResList with the resources for the NCGM Workstation
 C   object - then create the NCGM Workstation object.
 C
       call NhlFRLClear(list)
-      call NhlFRLSetstring(list,'wkMetaName','xy11f.ncgm',ierr)
+      call NhlFRLSetString(list,'wkMetaName','xy11f.ncgm',ierr)
       call NhlFCreate(incgmwork,'myncgmwork',
      %  NhlFNcgmWorkstationLayerClass,0,list,ierr)
 
@@ -97,8 +97,8 @@ C   object - then create the CoordArrays data object.
 C   This object is used to describe data to the HLU library.
 C
       call NhlFRLClear(list)
-      call NhlFRLSetfloatarray(list,'caXArray',Temp,28,ierr)
-      call NhlFRLSetfloatarray(list,'caYArray',Pressure,28,ierr)
+      call NhlFRLSetFloatArray(list,'caXArray',Temp,28,ierr)
+      call NhlFRLSetFloatArray(list,'caYArray',Pressure,28,ierr)
       call NhlFCreate(idata,'mydata',NhlFCoordArraysLayerClass,0,list,
      %  ierr)
 
@@ -109,16 +109,16 @@ C   including the "Data" which is the object id for the
 C   CoordArrays object that was just created.
 C
       call NhlFRLClear(list)
-      call NhlFRLSetfloat(list,'vpXF',0.25,ierr)
-      call NhlFRLSetfloat(list,'vpYF',0.75,ierr)
-      call NhlFRLSetfloat(list,'vpXWidthF',0.5,ierr)
-      call NhlFRLSetfloat(list,'vpHeightF',0.5,ierr)
+      call NhlFRLSetFloat(list,'vpXF',0.25,ierr)
+      call NhlFRLSetFloat(list,'vpYF',0.75,ierr)
+      call NhlFRLSetFloat(list,'vpXWidthF',0.5,ierr)
+      call NhlFRLSetFloat(list,'vpHeightF',0.5,ierr)
 
-      call NhlFRLSetinteger(list,'xyCoordData',idata,ierr)
+      call NhlFRLSetInteger(list,'xyCoordData',idata,ierr)
 
-      call NhlFRLSetinteger(list,'tiMainOn',1,ierr)
-      call NhlFRLSetinteger(list,'tiXAxisOn',1,ierr)
-      call NhlFRLSetinteger(list,'tiYAxisOn',1,ierr)
+      call NhlFRLSetInteger(list,'tiMainOn',1,ierr)
+      call NhlFRLSetInteger(list,'tiXAxisOn',1,ierr)
+      call NhlFRLSetInteger(list,'tiYAxisOn',1,ierr)
 
       call NhlFCreate(ixyplot,'myxyplot',NhlFXyPlotLayerClass,ixwork,
      %  list,ierr)

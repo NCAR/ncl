@@ -1,5 +1,5 @@
 C     
-C      $Id: xy03f.f,v 1.9 1995-04-01 16:24:52 haley Exp $
+C      $Id: xy03f.f,v 1.10 1995-04-04 21:56:10 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -64,8 +64,8 @@ C determine the name of the resource file, which is "xy03.res" in
 C this case.
 C
       call NhlFRLClear(rlist)
-      call NhlFRLSetstring(rlist,'appDefaultParent','True',ierr)
-      call NhlFRLSetstring(rlist,'appUsrDir','./',ierr)
+      call NhlFRLSetString(rlist,'appDefaultParent','True',ierr)
+      call NhlFRLSetString(rlist,'appUsrDir','./',ierr)
       call NhlFCreate(appid,'xy03',NhlFAppLayerClass,0,rlist,ierr)
 
       if (NCGM.eq.1) then
@@ -73,7 +73,7 @@ C
 C Create an NCGM workstation.
 C
          call NhlFRLClear(rlist)
-         call NhlFRLSetstring(rlist,'wkMetaName','./xy03f.ncgm',ierr)
+         call NhlFRLSetString(rlist,'wkMetaName','./xy03f.ncgm',ierr)
          call NhlFCreate(xworkid,'xy03Work',
      +        NhlFNcgmWorkstationLayerClass,0,rlist,ierr)
       else
@@ -81,7 +81,7 @@ C
 C Create an xworkstation object.
 C
          call NhlFRLClear(rlist)
-         call NhlFRLSetstring(rlist,'wkPause','True',ierr)
+         call NhlFRLSetString(rlist,'wkPause','True',ierr)
          call NhlFCreate(xworkid,'xy03Work',NhlFXWorkstationLayerClass,
      +        0,rlist,ierr)
       endif
@@ -90,8 +90,8 @@ C Define the data object.  The id for this object will later be used
 C as the value for the XyPlot data resource, 'xyCoordData'.
 C
       call NhlFRLClear(rlist)
-      call NhlFRLSetfloatarray(rlist,'caXArray',xdra,NPTS,ierr)
-      call NhlFRLSetfloatarray(rlist,'caYArray',ydra,NPTS,ierr)
+      call NhlFRLSetFloatArray(rlist,'caXArray',xdra,NPTS,ierr)
+      call NhlFRLSetFloatArray(rlist,'caYArray',ydra,NPTS,ierr)
       call NhlFCreate(dataid,'xyData',NhlFCoordArraysLayerClass,
      +                0,rlist,ierr)
 C
@@ -100,7 +100,7 @@ C Xworkstation object.  The resources that are being changed are done
 C in the "xy03.res" file.
 C
       call NhlFRLClear(rlist)
-      call NhlFRLSetinteger(rlist,'xyCoordData',dataid,ierr)
+      call NhlFRLSetInteger(rlist,'xyCoordData',dataid,ierr)
       call NhlFCreate(plotid,'xyPlot',NhlFXyPlotLayerClass,xworkid,
      +                rlist,ierr)
 C

@@ -1,5 +1,5 @@
 C     
-C      $Id: xy04f.f,v 1.8 1995-04-01 16:24:53 haley Exp $
+C      $Id: xy04f.f,v 1.9 1995-04-04 21:56:11 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -69,8 +69,8 @@ C determine the name of the resource file, which is "xy04.res" in
 C this case.
 C
       call NhlFRLClear(rlist)
-      call NhlFRLSetstring(rlist,'appDefaultParent','True',ierr)
-      call NhlFRLSetstring(rlist,'appUsrDir','./',ierr)
+      call NhlFRLSetString(rlist,'appDefaultParent','True',ierr)
+      call NhlFRLSetString(rlist,'appUsrDir','./',ierr)
       call NhlFCreate(appid,'xy04',NhlFAppLayerClass,0,rlist,ierr)
 
       if (NCGM.eq.1) then
@@ -78,7 +78,7 @@ C
 C Create an NCGM workstation.
 C
          call NhlFRLClear(rlist)
-         call NhlFRLSetstring(rlist,'wkMetaName','./xy04f.ncgm',ierr)
+         call NhlFRLSetString(rlist,'wkMetaName','./xy04f.ncgm',ierr)
          call NhlFCreate(xworkid,'xy04Work',
      +        NhlFNcgmWorkstationLayerClass,0,rlist,ierr)
       else
@@ -86,7 +86,7 @@ C
 C Create an xworkstation object.
 C
          call NhlFRLClear(rlist)
-         call NhlFRLSetstring(rlist,'wkPause','True',ierr)
+         call NhlFRLSetString(rlist,'wkPause','True',ierr)
          call NhlFCreate(xworkid,'xy04Work',NhlFXWorkstationLayerClass,
      +                0,rlist,ierr)
       endif
@@ -97,7 +97,7 @@ C Since only the Y values are specified here, each Y value will be
 C paired with its integer array index.
 C
       call NhlFRLClear(rlist)
-      call NhlFRLSetmdfloatarray(rlist,'caYArray',ydra,2,len,ierr)
+      call NhlFRLSetMDFloatArray(rlist,'caYArray',ydra,2,len,ierr)
       call NhlFCreate(dataid,'xyData',NhlFCoordArraysLayerClass,
      +                0,rlist,ierr)
 C
@@ -115,7 +115,7 @@ C XWorkstation object.  The resources that are being changed are done
 C in the "xy04.res" file.
 C
       call NhlFRLClear(rlist)
-      call NhlFRLSetinteger(rlist,'xyCoordData',dataid,ierr)
+      call NhlFRLSetInteger(rlist,'xyCoordData',dataid,ierr)
       call NhlFCreate(plotid,'xyPlot',NhlFXyPlotLayerClass,xworkid,
      +                rlist,ierr)
 C
