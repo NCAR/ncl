@@ -38,8 +38,8 @@ end create
 ;
 ; Default is to display output to an X workstation
 ;
-NCGM=1
-X11=0
+NCGM=0
+X11=1
 PS=0
 if (NCGM .eq. 1) then
 ;
