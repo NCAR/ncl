@@ -1,7 +1,3 @@
-typedef struct _GribTable {
-	int index;
-	char *name;
-} GribTable;
 
 GribTable centers[] = {
 	{1, "Melbourne (WMC)"},

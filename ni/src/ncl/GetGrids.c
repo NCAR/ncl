@@ -87,7 +87,6 @@ double dpi = (double)3.14159265358979323846;
 double rtod = (double)180.0/(double)3.14159265358979323846;
 double dtor = (double)3.14159265358979323846/(double)180.0;
 
-
 typedef int (*Index_Func) (
 #if NhlNeedProto
 int index,
@@ -3781,14 +3780,27 @@ int * nlonatts;
 	NclQuark *tmp_string;
 	int is_thinned_lon = 0;
 	int idir;
+	int ix;
+	int found = 0;
+
 
 	if((thevarrec->thelist != NULL)&&(thevarrec->thelist->rec_inq != NULL)) {
 			
 		*n_dims_lat = 1;
 		*dimsizes_lat = malloc(sizeof(int));
 		(*dimsizes_lat)[0] = (int)UnsignedCnvtToDecimal(2,&(thevarrec->thelist->rec_inq->gds[8]));
-
+		
 		nlat = 2 * UnsignedCnvtToDecimal(2,&(thevarrec->thelist->rec_inq->gds[25]));
+		
+		/* 
+		 * this is a hack for certain IPCC data that does not have the correct info in gds[25+] 
+		 * and also seems to use unrecognized center numbers.
+		 * I hope it doesn't screw anything else up.
+		 */
+		
+		if (thevarrec->thelist->rec_inq->center_ix == -1) {
+		  nlat = (*dimsizes_lat)[0];
+		}
 		theta = (double*)NclMalloc(sizeof(double)*nlat);
 		wts = (double*)NclMalloc(sizeof(double)*nlat);
 		lwork = 4 * nlat*(nlat+1)+2;

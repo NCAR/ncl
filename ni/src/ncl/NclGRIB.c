@@ -4090,6 +4090,13 @@ int wr_status;
 				subcenter = (int)grib_rec->pds[25];
 				process = (int)grib_rec->pds[5];
 				ptable_version = (int)grib_rec->pds[3];
+				grib_rec->center_ix = -1;
+				for (i = 0; i < sizeof(centers)/sizeof(GribTable); i++) {
+				  if (centers[i].index == (int) grib_rec->pds[4]) {
+				    grib_rec->center_ix = i;
+				  }
+				}
+				
 /*
 				grib_rec->grid_number = 255;
 */

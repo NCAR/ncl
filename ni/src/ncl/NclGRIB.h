@@ -167,6 +167,7 @@ struct _GribRecordInqRec {
 	int grid_number;
 	int version;
 	int rec_num;
+	int center_ix;
 /*
 * This is the time offset from the beginning reference
 * time of the parameter set. The units are set in
@@ -315,6 +316,11 @@ extern int Is_UV(
 int param_number
 #endif
 );
+
+typedef struct _GribTable {
+	int index;
+	char *name;
+} GribTable;
 
 #define DEFAULT_MISSING_FLOAT ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval
 #define DEFAULT_MISSING_INT ((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval
