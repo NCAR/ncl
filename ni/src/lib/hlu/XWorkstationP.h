@@ -1,5 +1,5 @@
 /*
- *      $Id: XWorkstationP.h,v 1.7 1998-10-05 19:13:51 boote Exp $
+ *      $Id: XWorkstationP.h,v 1.8 2000-03-29 03:59:07 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -23,6 +23,7 @@
 #define _XWorkstation_h
 #include <ncarg/hlu/WorkstationP.h>
 #include <ncarg/hlu/XWorkstation.h>
+#include <ncarg/gksP.h>
 
 #define NCGM_DEFAULT_CONID -1
 #define NCGM_WORKSTATION_TYPE 1

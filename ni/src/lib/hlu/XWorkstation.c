@@ -1,5 +1,5 @@
 /*
- *      $Id: XWorkstation.c,v 1.33 1998-10-22 17:35:52 boote Exp $
+ *      $Id: XWorkstation.c,v 1.34 2000-03-29 03:59:06 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -18,7 +18,6 @@
  *	Date:		Tue Sep 15 10:00:09 MDT 1992
  *
  *	Description:	Responsible for managing the X workstation element */
-#include <ncarg/gksP.h>
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/ErrorI.h>
 #include <ncarg/hlu/XWorkstationP.h>
