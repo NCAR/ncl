@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.64 1997-08-20 22:56:15 ethan Exp $
+ *      $Id: Machine.c,v 1.65 1997-09-02 17:18:21 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -681,8 +681,8 @@ void _NclAbortFrame
 				(void)_NclPopScope();
 			}
 			flist.next = flist.next->next;
+			_NclCleanUpStack(sb_off - tmp->fp - 5);
 			NclFree(tmp);
-			_NclCleanUpStack(sb_off - 5);
 			_NclPopFrame(INTRINSIC_PROC_CALL);
 			
 
