@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ncargcex.csh,v 1.25 1994-11-29 15:34:46 haley Exp $
+#	$Id: ncargcex.csh,v 1.26 1994-11-29 18:05:13 haley Exp $
 #
 
 #**************************#
@@ -14,7 +14,7 @@ if ($#argv < 1) then
   echo " Options:"
   echo ""
   echo " To invoke various classes of examples:"
-  echo "   [-A] [-ps] [-x11]"
+  echo "   [-A] [-E] [-F] [-P] [-T] [-U] [-ps] [-x11]"
   echo ""
   echo " To invoke various utilities:"
   echo "   [-areas] [-autograph] [-bivar] [-colconv] [-conpack]  "
@@ -417,6 +417,12 @@ while ($#argv > 0)
     case "-F":
       shift
       set names=($names $fnd_list)
+      breaksw
+        
+    case "-allpdocs":
+    case "-P":
+      shift
+      set names=($names $pdc_list)
       breaksw
         
     case "-areas":
