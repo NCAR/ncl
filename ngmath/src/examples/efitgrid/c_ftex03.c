@@ -1,5 +1,5 @@
 /*
- *  $Id: c_ftex03.c,v 1.1 1998-02-06 19:40:46 fred Exp $
+ *  $Id: c_ftex03.c,v 1.2 1998-06-05 16:11:39 haley Exp $
  */
 #include <stdio.h>
 #include <ncarg/ncargC.h>
@@ -86,7 +86,7 @@ void c_drwft3(float xl, float xr, int n, float x[], float y[],
   rgb.rgb.blue = 1.;
   gset_colr_rep(WKID,3,&rgb);
 
-  gset_clip_ind(1);
+  gset_clip_ind(GIND_CLIP);
 
 /*
  * Graph the interpolated function values and mark the original

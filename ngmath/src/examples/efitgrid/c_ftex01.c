@@ -1,5 +1,5 @@
 /*
- *  $Id: c_ftex01.c,v 1.1 1998-02-06 19:40:44 fred Exp $
+ *  $Id: c_ftex01.c,v 1.2 1998-06-05 16:11:38 haley Exp $
  */
 #include <stdio.h>
 #include <ncarg/ncargC.h>
@@ -96,7 +96,7 @@ void c_drwft1(int n, float x[], float y[], int m, float xo[], float yo[],
 /*
  * Plot the main title.
  */
-  gset_clip_ind(0);
+  gset_clip_ind(GIND_NO_CLIP);
   c_plchhq(.5,.95,":F25:Demo for c_ftcurv, c_ftcurvd, c_ftcurvi",0.03,0.,0.);
 
 /*
