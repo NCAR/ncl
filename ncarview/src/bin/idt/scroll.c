@@ -1,5 +1,5 @@
 /*
- *	$Id: scroll.c,v 1.8 1992-08-24 23:01:10 clyne Exp $
+ *	$Id: scroll.c,v 1.9 1992-12-14 22:05:11 clyne Exp $
  */
 /*
  *	scroll.c
@@ -14,6 +14,7 @@
 #include <sys/types.h>
 #include "commands.h"
 #include "display.h"
+#include "scroll.h"
 
 /*
  *	ScrollTo

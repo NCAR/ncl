@@ -1,5 +1,5 @@
 /*
- *	$Id: w_dialog.c,v 1.6 1992-09-01 23:39:04 clyne Exp $
+ *	$Id: w_dialog.c,v 1.7 1992-12-14 22:05:21 clyne Exp $
  */
 /*
  *	w_dialog.c
@@ -24,20 +24,91 @@
 
 #include <ncarg/c.h>
 #include "idt.h"
+#include "w_dialog.h"
 
 /*
  * callbacks
  */
-static	void	Cancel(), Ok();
 
 typedef	struct	{
 	Voidptr	data;		/* data to invoke func() with		*/
 	Widget	popup;		/* the popup widget			*/
 	Widget	dialog;		/* the dialog widget			*/
-	void	(*func)();	/* function to call when selected	*/
+	void	(*func)(Voidptr, char *);	/* func to call when selected*/
 	} CallbackData;
 
 static	Widget	dialog;
+
+static	void	destroy_popup(popup)
+	Widget	popup;
+{
+	XtDestroyWidget(popup);
+}
+
+/*
+ *	Callbacks
+ */
+/*ARGSUSED*/
+static	void	Ok(widget, client_data, call_data)
+	Widget	widget;
+	XtPointer	client_data,	/* call data	*/
+			call_data;	/* unused	*/
+{
+	CallbackData	*cd = (CallbackData *) client_data;
+
+	char	*value;	/* dialog value	*/
+
+	/*
+	 * get user input to dialog box
+	 */
+	value = XawDialogGetValueString(cd->dialog);
+
+	/*
+	 * invoke the select function with the given data and the dialog value 
+	 */
+	((*(cd->func)) (cd->data, value));
+
+
+	/*
+	 * popdown the popup. We're done
+	 */
+	destroy_popup(cd->popup);
+}
+
+
+/*ARGSUSED*/
+static	void	Cancel(widget, client_data, call_data)
+	Widget	widget;
+	XtPointer	client_data,	/* call data	*/
+			call_data;	/* unused 	*/
+{
+	CallbackData	*cd = (CallbackData *) client_data;
+
+	destroy_popup(cd->popup);
+
+}
+
+/*
+ *	The actions for the dialog box
+ */
+
+/*
+ *	OkSDTranslation
+ *
+ *	May be invoked to call the Ok() callback
+ */
+/*ARGSUSED*/
+void	OkSDTranslation(widget, event, params, num_params)
+	Widget widget;          /* not used     */
+	XEvent *event;          /* not used     */
+	String *params;         /* not used     */
+	Cardinal *num_params;   /* not used     */
+{
+
+	XtCallCallbacks(XtNameToWidget(dialog, "ok"),
+		XtNcallback, (XtPointer) NULL);
+}
+
 
 /*
  *	CreateSimpleDialogPopup()
@@ -51,7 +122,7 @@ static	Widget	dialog;
  *	the same time. 
  *
  *	The function select is defined:
- *		void	select(Voidptr *data, char *value)
+ *		void	select(Voidptr data, char *value)
  *
  *	select() is invoked when the "OK" button is selected from the
  *	dialog box. 'data' is passed unmolested to select as it is
@@ -69,7 +140,7 @@ static	Widget	dialog;
 void	CreateSimpleDialogPopup(button, label, select, data, default_value)
 	Widget	button;
 	char	*label;
-	void	(*select)();
+	void	(*select)(Voidptr, char *);
 	Voidptr		data;
 	char	*default_value;
 {
@@ -135,75 +206,4 @@ void	CreateSimpleDialogPopup(button, label, select, data, default_value)
 	XtPopup(popup, XtGrabExclusive);
 }
 
-
-static	void	destroy_popup(popup)
-	Widget	popup;
-{
-	XtDestroyWidget(popup);
-}
-
-/*
- *	Callbacks
- */
-/*ARGSUSED*/
-static	void	Ok(widget, client_data, call_data)
-	Widget	widget;
-	XtPointer	client_data,	/* call data	*/
-			call_data;	/* unused	*/
-{
-	CallbackData	*cd = (CallbackData *) client_data;
-
-	char	*value;	/* dialog value	*/
-
-	/*
-	 * get user input to dialog box
-	 */
-	value = XawDialogGetValueString(cd->dialog);
-
-	/*
-	 * invoke the select function with the given data and the dialog value 
-	 */
-	((*(cd->func)) (cd->data, value));
-
-
-	/*
-	 * popdown the popup. We're done
-	 */
-	destroy_popup(cd->popup);
-}
-
-
-/*ARGSUSED*/
-static	void	Cancel(widget, client_data, call_data)
-	Widget	widget;
-	XtPointer	client_data,	/* call data	*/
-			call_data;	/* unused 	*/
-{
-	CallbackData	*cd = (CallbackData *) client_data;
-
-	destroy_popup(cd->popup);
-
-}
-
-/*
- *	The actions for the dialog box
- */
-
-/*
- *	OkSDTranslation
- *
- *	May be invoked to call the Ok() callback
- */
-/*ARGSUSED*/
-void
-OkSDTranslation(widget, event, params, num_params)
-	Widget widget;          /* not used     */
-	XEvent *event;          /* not used     */
-	String *params;         /* not used     */
-	Cardinal *num_params;   /* not used     */
-{
-
-	XtCallCallbacks(XtNameToWidget(dialog, "ok"),
-		XtNcallback, (XtPointer) NULL);
-}
 

@@ -1,5 +1,5 @@
 /*
- *	$Id: w_file.c,v 1.9 1992-10-14 19:52:43 clyne Exp $
+ *	$Id: w_file.c,v 1.10 1992-12-14 22:05:32 clyne Exp $
  */
 /*
  *	w_file.c
@@ -26,11 +26,12 @@
 
 #include <ncarg/c.h>
 #include "idt.h"
+#include "file.h"
+#include "w_file.h"
 
 /*
  * callbacks
  */
-static	void	Cancel(), Finder(), OkFile();
 
 static	Widget	textDisplay,	/* widget to display file names	*/
 		dialogSelection;
@@ -41,7 +42,88 @@ static	char	*fileFinder = NULL;	/* current file finder	*/
 
 static	FuncPtrPasser	selectAction;
 
-extern	char	*GetFiles();
+static	void	destroy_popup(popup)
+	Widget	popup;
+{
+	XtDestroyWidget(popup);
+}
+
+/*
+ *	File Selection Box Callbacks
+ */
+/*ARGSUSED*/
+static	void	OkFile(widget, client_data, call_data)
+	Widget	widget;
+	XtPointer	client_data,	/* the popup	*/
+			call_data;	/* unused	*/
+{
+	Widget	popup = (Widget) client_data;
+	char	*file;
+
+
+	/*
+	 * get the currently selected file from the selection dialog box
+	 * Set it is the users current selection.
+	 */
+	file = XawDialogGetValueString(dialogSelection);
+
+	(void) SetFileSelection(file, selectAction);
+
+	/*
+	 * popdown the popup. We're done
+	 */
+	destroy_popup(popup);
+}
+
+/*ARGSUSED*/
+static	void	Finder(widget, client_data, call_data)
+	Widget	widget;
+	XtPointer	client_data,	/* unused	*/
+			call_data;	/* the dialog 	*/
+{
+	Widget	dialog = (Widget) client_data;
+	Arg	args[1];
+
+	String	files;
+	char	*file_finder;
+	int	longest;
+	Cardinal	n;
+
+	if (fileFinder)	free((Voidptr) fileFinder);
+	/*
+	 * Get the new file finder input by the user. Use it to get a new
+	 * set of files. Display the new set of files in the text widget
+	 */
+	file_finder = XawDialogGetValueString(dialog);
+	if (! file_finder) file_finder = "*";
+	fileFinder = malloc((unsigned) (strlen(file_finder) + 1));
+	if ( !fileFinder) {
+		perror("malloc()");
+		exit(1);
+	}
+	(void) strcpy(fileFinder, file_finder);
+
+
+	files = (String) GetFiles(fileFinder, &longest);
+
+	n = 0;
+	XtSetArg(args[n], XtNstring, files);	n++;
+	XtSetValues(textDisplay, args, n);
+
+}
+
+/*ARGSUSED*/
+static	void	Cancel(widget, client_data, call_data)
+	Widget	widget;
+	XtPointer	client_data,	/* the popup	*/
+			call_data;	/* unused 	*/
+{
+	Widget	popup = (Widget) client_data;
+
+
+	destroy_popup(popup);
+
+}
 
 /*
  *	CreateFileSelectPopup()
@@ -200,90 +282,6 @@ void	CreateFileSelectPopup(button, select_action)
 }
 
 
-static	void	destroy_popup(popup)
-	Widget	popup;
-{
-	XtDestroyWidget(popup);
-}
-
-/*
- *	File Selection Box Callbacks
- */
-/*ARGSUSED*/
-static	void	OkFile(widget, client_data, call_data)
-	Widget	widget;
-	XtPointer	client_data,	/* the popup	*/
-			call_data;	/* unused	*/
-{
-	Widget	popup = (Widget) client_data;
-	char	*file;
-
-	extern	void	SetFileSelection();
-
-
-	/*
-	 * get the currently selected file from the selection dialog box
-	 * Set it is the users current selection.
-	 */
-	file = XawDialogGetValueString(dialogSelection);
-
-	(void) SetFileSelection(file, selectAction);
-
-	/*
-	 * popdown the popup. We're done
-	 */
-	destroy_popup(popup);
-}
-
-/*ARGSUSED*/
-static	void	Finder(widget, client_data, call_data)
-	Widget	widget;
-	XtPointer	client_data,	/* unused	*/
-			call_data;	/* the dialog 	*/
-{
-	Widget	dialog = (Widget) client_data;
-	Arg	args[1];
-
-	String	files;
-	char	*file_finder;
-	int	longest;
-	Cardinal	n;
-
-	if (fileFinder)	free((Voidptr) fileFinder);
-	/*
-	 * Get the new file finder input by the user. Use it to get a new
-	 * set of files. Display the new set of files in the text widget
-	 */
-	file_finder = XawDialogGetValueString(dialog);
-	if (! file_finder) file_finder = "*";
-	fileFinder = malloc((unsigned) (strlen(file_finder) + 1));
-	if ( !fileFinder) {
-		perror("malloc()");
-		exit(1);
-	}
-	(void) strcpy(fileFinder, file_finder);
-
-
-	files = (String) GetFiles(fileFinder, &longest);
-
-	n = 0;
-	XtSetArg(args[n], XtNstring, files);	n++;
-	XtSetValues(textDisplay, args, n);
-
-}
-
-/*ARGSUSED*/
-static	void	Cancel(widget, client_data, call_data)
-	Widget	widget;
-	XtPointer	client_data,	/* the popup	*/
-			call_data;	/* unused 	*/
-{
-	Widget	popup = (Widget) client_data;
-
-
-	destroy_popup(popup);
-
-}
 
 /*
  *	The Actions. These actions are available to the translation table

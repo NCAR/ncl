@@ -1,5 +1,5 @@
 /*
- *      $Id: animate.c,v 1.2 1992-09-01 23:38:36 clyne Exp $
+ *      $Id: animate.c,v 1.3 1992-12-14 22:05:02 clyne Exp $
  */
 /************************************************************************
 *									*
@@ -424,7 +424,7 @@ void	AnimateDisplayPrev(a)
  */
 void	AnimateDispContForward(a, update_func, data)
 	AnimateType	*a;
-	void		(*update_func)();	
+	void		(*update_func)(Voidptr, int);	
 	Voidptr		data;
 {
 	int	i;
@@ -505,7 +505,7 @@ void	AnimateDispContForward(a, update_func, data)
  */
 void	AnimateDispContReverse(a, update_func, data)
 	AnimateType	*a;
-	void		(*update_func)();	
+	void		(*update_func)(Voidptr, int);	
 	Voidptr		data;
 {
 	int	i;

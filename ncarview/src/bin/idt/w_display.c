@@ -1,5 +1,5 @@
 /*
- *	$Id: w_display.c,v 1.15 1992-10-14 17:55:20 clyne Exp $
+ *	$Id: w_display.c,v 1.16 1992-12-14 22:05:28 clyne Exp $
  */
 /*
  *	w_display.c
@@ -38,6 +38,8 @@
 #include "talkto.h"
 #include "bits.h"
 #include "commands.h"
+#include "scroll.h"
+#include "xrubber.h"
 
 extern	void	Animate(
 #ifdef	NeedFuncProto
@@ -260,8 +262,6 @@ static  void    Scroll(widget, client_data, call_data)
 	WidgetData	*wd = (WidgetData *) client_data;
 	float		percent = *(float *) call_data;
 
-	extern	void	ScrollTo();
-
 	ScrollTo(wd, percent);
 
 }
@@ -430,8 +430,6 @@ static  void    Done(widget, client_data, call_data)
 
 	WidgetData	*wd = (WidgetData *) client_data;
 
-	void	CloseDisplay();
-
 	if (wd->do_animate) {
 		/*
 		 * turn animation off by calling animation callback.
@@ -524,8 +522,6 @@ static  void    Zoom(widget, client_data, call_data)
 		new_urx, new_ury;
 	float	ax, bx, ay, by;
 	char	buf[80];
-
-	extern	char	*ZoomCoords();
 
 	root = RootWindowOfScreen(XtScreen(widget));
 

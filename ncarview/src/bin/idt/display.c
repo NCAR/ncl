@@ -1,5 +1,5 @@
 /*
- *	$Id: display.c,v 1.10 1992-09-01 23:38:47 clyne Exp $
+ *	$Id: display.c,v 1.11 1992-12-14 22:05:05 clyne Exp $
  */
 /*
  *	Display.c
@@ -116,8 +116,6 @@ int	StartTranslator(id, metafile, wid)
 void	CloseDisplay(id)
 	int	id;
 {
-	void	CloseTranslator();
-
 	CloseTranslator(id);
 
 	usedMask &= (~(1 << id));
@@ -142,11 +140,9 @@ void	CloseDisplay(id)
  *	history		: if true record all commands sent to translator to
  *			  a history file
  */
-void	InitDisplayModule(program_name, targv, targc, history)
-	char	*program_name;
-	char	**targv;
-	int	targc;
-	short	history;
+void	InitDisplayModule(
+	char *program_name, char **targv, int targc, short history
+	)
 {
 
 	if (history) {

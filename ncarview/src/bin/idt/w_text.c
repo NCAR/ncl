@@ -1,5 +1,5 @@
 /*
- *	$Id: w_text.c,v 1.7 1992-09-01 23:39:19 clyne Exp $
+ *	$Id: w_text.c,v 1.8 1992-12-14 22:05:41 clyne Exp $
  */
 /*
  *	w_text.c
@@ -18,6 +18,7 @@
 #include <X11/Xaw/AsciiText.h>
 #include <ncarg/c.h>
 #include "idt.h"
+#include "text.h"
 
 static	Widget	textWidget;
 

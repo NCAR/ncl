@@ -79,4 +79,39 @@ typedef	enum	{
 #define	FRAME_LABEL_DISPLAY	"Scrolled to Frame -> "
 
 
+
+
+
+extern	int	OpenDisplay();
+
+extern	int	StartTranslator(
+#ifdef	NeedFuncProto
+	int	id,
+	char	*metafile,
+	int	wid
+#endif
+);
+
+extern	void	CloseDisplay(
+#ifdef	NeedFuncProto
+	int	id
+#endif
+);
+
+extern	void	InitDisplayModule(
+#ifdef	NeedFuncProto
+	char	*program_name,
+	char	**targv,
+	int	targc,
+	short	history
+#endif
+);
+
+extern	void	CloseDisplayModule();
+
+
+
+
+
+
 #endif	/* _display_	*/

@@ -1,5 +1,5 @@
 /*
- *	$Id: xrubber.c,v 1.9 1992-08-12 22:57:32 clyne Exp $
+ *	$Id: xrubber.c,v 1.10 1992-12-14 22:05:44 clyne Exp $
  */
 /*
  *	xrubber.c
@@ -16,6 +16,7 @@
 #include <X11/Xutil.h>
 #include <X11/cursorfont.h>
 #include <X11/Xmu/WinUtil.h>
+#include "xrubber.h"
 
 typedef	unsigned long	Pixel;
 

@@ -1,5 +1,5 @@
 /*
- *	$Id: talkto.c,v 1.18 1992-10-22 23:03:25 haley Exp $
+ *	$Id: talkto.c,v 1.19 1992-12-14 22:05:16 clyne Exp $
  */
 /*
  *	talkto.c
@@ -18,6 +18,7 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/time.h>
+#include "text.h"
 
 #ifdef RS6000
 #define NBBY    8       /* xlc compiler isn't config'ed properly        */
@@ -513,7 +514,6 @@ void	Message(id, s)
 	int	max_len = sizeof(buf) - strlen(format) - 1;
 	char	*t;
 
-	void	AppendText();
 
 	s = strncpy(msg, s, sizeof(buf)-1);
 	/*
@@ -547,8 +547,6 @@ void	ErrorMessage(id, s)
 	char	*format = "Display(%1d): Error - %s\n";
 	int	max_len = sizeof(buf) - strlen(format) - 1;
 	char	*t;
-
-	void	AppendText();
 
 	s = strncpy(msg, s, sizeof(buf)-1);
 	/*

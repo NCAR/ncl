@@ -1,5 +1,5 @@
 /*
- *	$Id: w_idt.c,v 1.27 1992-10-14 19:52:47 clyne Exp $
+ *	$Id: w_idt.c,v 1.28 1992-12-14 22:05:38 clyne Exp $
  */
 /*
  *	w_idt.c
@@ -29,6 +29,10 @@
 #include <X11/Xaw/Cardinals.h>
 #include <ncarg/c.h>
 #include "idt.h"
+#include "text.h"
+#include "file.h"
+#include "w_file.h"
+#include "w_dialog.h"
 
 
 AppData	App_Data;	/* global data settable by user resources	*/
@@ -134,8 +138,6 @@ static	String fallback_resources[] = {
 	NULL
 	};
 
-void	FinderTranslation(), SelectFileTranslation(), 
-		OkFileTranslation(), OkSDTranslation();
 
 /*
  *	Actions to be added to the translation table
@@ -437,10 +439,6 @@ static	void Display_(widget, closure, call_data)
 	XtPointer	call_data;	/* unused	*/
 {
 	char	*file;
-	void	AppendText();
-	void	CreateDisplayPopup();
-
-	extern	char	*GetFileSelection();
 
 	file = GetFileSelection();
 
@@ -457,7 +455,6 @@ static	void Quit(widget, closure, call_data)
 	XtPointer	closure;	/* unused	*/
 	XtPointer	call_data;	/* unused	*/
 {
-	(void) CloseDisplayModule();
 	exit(0);
 }
 
@@ -486,12 +483,9 @@ create_main_panel(parent, select_action)
 		ascent, descent; 	/* retrieve bounds of font	*/
 	XCharStruct	overall;
 
-	extern	void	AppendText();
-	extern	Widget	InitText();
-
 	char *line1 = " Copyright (C) 1991 - All Rights Reserved    \n";
 	char *line2 = " University Corporation for Atmospheric Research   \n";
-	char *line3 = " NCAR View - UNIX Version 3.01   \n";
+	char *line3 = " NCAR View - UNIX Version " VERSION "   \n";
 
 	int	message_height	= App_Data.message_height;
 
