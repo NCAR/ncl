@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ncargcex.csh,v 1.10 1994-05-11 16:23:55 haley Exp $
+#	$Id: ncargcex.csh,v 1.11 1994-05-13 18:01:53 haley Exp $
 #
 
 #********************#
@@ -9,9 +9,14 @@
 #                    #
 #********************#
 if ($#argv < 1) then
-  echo "usage: ncargcex [-all] [-clean] [-n] [-onebyone] names               "
-  echo "                                                                     "
-  echo "See <man ncargcex>                                                   "
+  echo ""
+  echo "usage: ncargcex [-all,-A] [-autograph] [-bivar] [-conpack] [-ezmap] "
+  echo "                [-gks] [-labelbar] [-plotchar] [-scrolled_title]    "
+  echo "                [-softfill] [-inter] [-clean] [-n] [-onebyone]      "
+  echo "                names                                               "
+  echo ""
+  echo "See <man ncargcex>                                                  "
+  echo ""
   exit
 endif
 
@@ -42,13 +47,93 @@ if (! -d "$example_dir") then
   exit 1
 endif
 
-set example_list=(\
-c_agex07 c_colcon c_mpex05 c_eezmpa c_elblba c_epltch c_cbex01 \
-c_slex01 c_sfex02 c_gtxpac)
+set ex_list
 
-set intexample_list = (c_xwndws)
+#**************************#
+#                          #
+#  Set autograph examples  #
+#                          #
+#**************************#
+set autograph_list = (c_agex07)
+set ex_list = ($ex_list $autograph_list)
 
-set X11_option = ""
+#******************************#
+#                              #
+#  Set bivar/conpack examples  #
+#                              #
+#******************************#
+set cbivar_list = (c_cbex01)
+set ex_list = ($ex_list $cbivar_list)
+
+#************************#
+#                        #
+#  Set conpack examples  #
+#                        #
+#************************#
+set conpack_list = (c_colcon)
+set ex_list = ($ex_list $conpack_list)
+
+#**********************#
+#                      #
+#  Set ezmap examples  #
+#                      #
+#**********************#
+set ezmap_list = (c_eezmpa c_mpex05)
+set ex_list = ($ex_list $ezmap_list)
+
+#******************#
+#                  #
+# set gks examples #
+#                  #
+#******************#
+set gks_list   = (c_gtxpac)
+set ex_list = ($ex_list $gks_list)
+
+#***********************#
+#                       #
+# set labelbar examples #
+#                       #
+#***********************#
+set labelbar_list   = (c_elblba)
+set ex_list = ($ex_list $labelbar_list)
+
+#***********************#
+#                       #
+# set plotchar examples #
+#                       #
+#***********************#
+set plotchar_list   = (c_epltch)
+set ex_list = ($ex_list $plotchar_list)
+
+#*****************************#
+#                             #
+# set scrolled title examples #
+#                             #
+#*****************************#
+set scrlld_title_list   = (c_slex01)
+set ex_list = ($ex_list $scrlld_title_list)
+
+#***********************#
+#                       #
+# set softfill examples #
+#                       #
+#***********************#
+set softfill_list = (c_sfex02)
+set ex_list = ($ex_list $softfill_list)
+
+#**************************#
+#                          #
+# set interactive examples #
+#                          #
+#**************************#
+set interactive_list = (c_xwndws)
+
+#*********************************#
+#                                 #
+# Default is to load in X library #
+#                                 #
+#*********************************#
+set X11_option
 
 #***************#
 #               #
@@ -64,9 +149,59 @@ while ($#argv > 0)
         case "-all":
         case "-A":
             shift
-            set names=($example_list)
+            set names=($ex_list)
             breaksw
         
+        case "-autograph":
+            shift
+            set names=($names $autograph_list)
+            breaksw
+
+        case "-bivar":
+            shift
+            set names=($names $cbivar_list)
+            breaksw
+
+        case "-conpack":
+            shift
+            set names=($names $conpack_list)
+            breaksw
+
+        case "-ezmap":
+            shift
+            set names=($names $ezmap_list)
+            breaksw
+
+        case "-gks":
+            shift
+            set names=($names $gks_list)
+            breaksw
+
+        case "-labelbar":
+            shift
+            set names=($names $labelbar_list)
+            breaksw
+
+        case "-plotchar":
+            shift
+            set names=($names $plotchar_list)
+            breaksw
+
+        case "-scrolled_title":
+            shift
+            set names=($names ${scrlld_title_list})
+            breaksw
+
+        case "-softfill":
+            shift
+            set names=($names $softfill_list)
+            breaksw
+
+        case "-inter":
+            shift
+            set names=($names $interactive_list)
+            breaksw
+
         case "-clean":
             shift
             set CleanOption
@@ -111,8 +246,6 @@ end
 
 foreach name ($names)
 
-set rmfiles
-
 #*************************************#
 #                                     #
 # Find out what type of example it is #
@@ -120,13 +253,13 @@ set rmfiles
 #*************************************#
 set type="Unknown"
 
-foreach known ($example_list)
+foreach known ($ex_list)
     if ("$name" == "$known") then
         set type="Example"
     endif
 end
 
-foreach known ($intexample_list)
+foreach known ($interactive_list)
     if ("$name" == "$known") then
         set type="Interactive_Example"
     endif
@@ -137,12 +270,12 @@ if ($?List) then
    exit
 endif
 
-#****************************#
-#                            #
-# Code for handling examples #
-#                            #
-#****************************#
-
+#***********************************************#
+#                                               #
+# If you just want to see what list of examples #
+# you have asked for, list them and exit        #
+#                                               #
+#***********************************************#
 if ($?List) then
    echo $name
    goto theend
@@ -155,14 +288,17 @@ endif
 #**************************#
 switch ($type)
     case Example:
+        echo ""
         echo "NCAR Graphics C Example <$name>"
     breaksw
 
     case Interactive_Example:
+        echo ""
         echo "NCAR Graphics Interactive C Example <$name>"
     breaksw
 
     case Unknown:
+        echo ""
         echo "ncargcex: <$name> is not a known example"
         goto theend
     breaksw
@@ -180,7 +316,9 @@ if ($?Unique && -f $name.ncgm) goto theend
 
 set c_files = $name.c
 set copy_files="$c_files"
-set rmfiles=($rmfiles $copy_files)
+set rmfiles=($copy_files)
+
+set ncargf77flags
 
 #***********************#
 #                       #
@@ -210,26 +348,28 @@ if (! $?NoRunOption) then
         echo ""
         echo ""
         echo "Compiling and Linking..."
-        ncargcc -o $name $c_files
+        ncargcc $ncargf77flags -o $name $c_files
     else
         echo ""
         echo "Compiling and Linking..."
-        ncargcc $X11_option -o $name $c_files
+        ncargcc $ncargf77flags $X11_option -o $name $c_files
     endif
     if ($status != 0) then
             echo ""
             echo "The compile and link failed"
             exit -1
     endif
+#*****************#
+#                 #
+# Run the example #
+#                 #
+#*****************#
     echo ""
     echo "Executing <$name>..."
     ncargrun -o $name.ncgm $name
-    set rmfiles = ($rmfiles $name.o $name)
-    echo "Metafile is named $name.ncgm"
-endif
+    endsw
 
-if ("$name" == "c_slex01") then
-    set rmfiles = ($rmfiles GNFB09)
+    set rmfiles = ($rmfiles $name.o $name)
 endif
 
 #************************#
