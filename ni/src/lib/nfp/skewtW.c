@@ -5,18 +5,28 @@
  * They should be located in ${NCARG_ROOT}/include.
  */
 #include "wrapper.h"
+#include "Machine.h"
+#include "NclAtt.h"
+#include <ncarg/ncl/NclVar.h>
+#include "DataSupport.h"
+#include "AttSupport.h"
+#include "VarSupport.h"
+#include "NclCoordVar.h"
+#include <ncarg/ncl/NclCallBacksI.h>
+#include <math.h>
 
-extern void NGCALLF(skewty,SKEWTY)(double*,int*,double*);
-extern void NGCALLF(skewtx,SKEWTX)(double*,double*,int*,double*);
-extern double NGCALLF(tmrskewt,TMRSKEWT)(double*,double*);
-extern double NGCALLF(tdaskewt,TMRSKEWT)(double*,double*);
-extern double NGCALLF(satlftskewt,SATLFTSKEWT)(double*,double*);
-extern void NGCALLF(ptlclskewt,PTLCLSKEWT)(double*,double*,double*,
-					   double*,double*);
-extern double NGCALLF(showalskewt,SHOWALSKEWT)(double*,double*,double*,int*);
-extern double NGCALLF(pwskewt,SHOWALSKEWT)(double*,double*,int*);
-extern double NGCALLF(capencl,CAPENCL)(double*,double*,int*,double*,int*,
-				       double*,double*,int*,int*,int*);
+extern void NGCALLF(dskewty,DSKEWTY)(double*,int*,double*);
+extern void NGCALLF(dskewtx,DSKEWTX)(double*,double*,int*,double*);
+extern double NGCALLF(dtmrskewt,DTMRSKEWT)(double*,double*);
+extern double NGCALLF(dtdaskewt,DTMRSKEWT)(double*,double*);
+extern double NGCALLF(dsatlftskewt,DSATLFTSKEWT)(double*,double*);
+extern void NGCALLF(dptlclskewt,DPTLCLSKEWT)(double*,double*,double*,
+                                           double*,double*);
+extern double NGCALLF(dshowalskewt,DSHOWALSKEWT)(double*,double*,double*,int*);
+extern double NGCALLF(dpwskewt,DSHOWALSKEWT)(double*,double*,int*);
+extern double NGCALLF(dcapethermo,DCAPETHERMO)(double*,double*,int*,double*,
+                                               int*,double*,double*,int*,int*,
+                                               int*);
 
 NhlErrorTypes y_skewt_W( void )
 {
@@ -26,7 +36,7 @@ NhlErrorTypes y_skewt_W( void )
   void *pres;
   int np;
   double *tmp_pres;
-  int ndims_pres, dsizes_pres[NCL_MAX_DIMENSIONS];
+  int dsizes_pres[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_pres;
 /*
  * Output array variables
@@ -36,26 +46,21 @@ NhlErrorTypes y_skewt_W( void )
 /*
  * Declare various variables for random purposes.
  */
-  int i, j, index_pres, size_leftmost, size_pres;
+  int i;
 /*
  * Retrieve arguments.
  */
   pres = (void*)NclGetArgValue(
           0,
           1,
-          &ndims_pres,
+          NULL,
           dsizes_pres,
           NULL,
           NULL,
           &type_pres,
           2);
-/*
- * Compute the total size of the output array.
- */
-  np = dsizes_pres[ndims_pres-1];
-  size_leftmost = 1;
-  for( i = 0; i < ndims_pres-1; i++ ) size_leftmost *= dsizes_pres[i];
-  size_pres = size_leftmost * np;
+
+  np = dsizes_pres[0];
 
 /*
  * Create a temporary array to hold subarray of pres and yskewt.
@@ -77,10 +82,10 @@ NhlErrorTypes y_skewt_W( void )
  * Allocate space for output array
  */
   if(type_pres != NCL_double) {
-    yskewt = (void*)calloc(size_pres,sizeof(float));
+    yskewt = (void*)calloc(np,sizeof(float));
   }
   else {
-    yskewt = (void*)calloc(size_pres,sizeof(double));
+    yskewt = (void*)calloc(np,sizeof(double));
   }
   if( yskewt == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"y_skewt: Unable to allocate memory for output array");
@@ -88,36 +93,29 @@ NhlErrorTypes y_skewt_W( void )
   }
 
 /*
- * Call the Fortran version of this routine.
- */
-  index_pres = 0;
-  for( i = 0; i < size_leftmost; i++ ) {
-/*
  * Coerce subsection of pres (tmp_pres) to double.
  */
-    if(type_pres != NCL_double) {
-      coerce_subset_input_double(pres,tmp_pres,index_pres,type_pres,np,0,NULL,NULL);
-    }
-    else {
+  if(type_pres != NCL_double) {
+    coerce_subset_input_double(pres,tmp_pres,0,type_pres,np,0,NULL,NULL);
+  }
+  else {
 /*
  * Point tmp_pres to appropriate locations in pres.
  */
-      tmp_pres = &((double*)pres)[index_pres];
-    }
+    tmp_pres = &((double*)pres)[0];
+  }
 /*
  * Call Fortran routine.
  */
-    NGCALLF(skewty,SKEWTY)(tmp_pres,&np,tmp_yskewt);
+  NGCALLF(dskewty,DSKEWTY)(tmp_pres,&np,tmp_yskewt);
 
-    for(j = 0; j < np; j++) {
-      if(type_pres != NCL_double) {
-	((float*)yskewt)[index_pres+j] = (float)(tmp_yskewt[j]);
-      }
-      else {
-	((double*)yskewt)[index_pres+j] = tmp_yskewt[j];
-      }
+  for(i = 0; i < np; i++) {
+    if(type_pres != NCL_double) {
+      ((float*)yskewt)[i] = (float)(tmp_yskewt[i]);
     }
-    index_pres += np;
+    else {
+      ((double*)yskewt)[i] = tmp_yskewt[i];
+    }
   }
 /*
  * Free memory.
@@ -125,7 +123,7 @@ NhlErrorTypes y_skewt_W( void )
   if(type_pres != NCL_double) NclFree(tmp_pres);
   NclFree(tmp_yskewt);
 
-  return(NclReturnValue(yskewt,ndims_pres,dsizes_pres,NULL,type_pres,0));
+  return(NclReturnValue(yskewt,1,dsizes_pres,NULL,type_pres,0));
 }
 
 NhlErrorTypes x_skewt_W( void )
@@ -136,8 +134,8 @@ NhlErrorTypes x_skewt_W( void )
   void *temp, *y;
   int nty;
   double *tmp_temp, *tmp_y;
-  int ndims_temp, dsizes_temp[NCL_MAX_DIMENSIONS];
-  int ndims_y, dsizes_y[NCL_MAX_DIMENSIONS];
+  int dsizes_temp[NCL_MAX_DIMENSIONS];
+  int dsizes_y[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_temp, type_y;
 /*
  * Output array variables
@@ -148,14 +146,14 @@ NhlErrorTypes x_skewt_W( void )
 /*
  * Declare various variables for random purposes.
  */
-  int i, j, index_temp, size_leftmost, size_temp;
+  int i;
 /*
  * Retrieve arguments.
  */
   temp = (void*)NclGetArgValue(
           0,
           2,
-          &ndims_temp,
+          NULL,
           dsizes_temp,
           NULL,
           NULL,
@@ -164,7 +162,7 @@ NhlErrorTypes x_skewt_W( void )
   y = (void*)NclGetArgValue(
           1,
           2,
-          &ndims_y,
+          NULL,
           dsizes_y,
           NULL,
           NULL,
@@ -173,24 +171,12 @@ NhlErrorTypes x_skewt_W( void )
 /*
  * temp and y must be the same size.
  */
-  if(ndims_temp != ndims_y) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"x_skewt: The input arrays must have the same number of dimensions");
+  if(dsizes_temp[0] != dsizes_y[0]) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"x_skewt: The input arrays must have the same dimension sizes");
     return(NhlFATAL);
   }
-  for( i = 0; i < ndims_temp; i++ ) {
-    if(dsizes_temp[i] != dsizes_y[i]) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"x_skewt: The input arrays must have the same dimension sizes");
-      return(NhlFATAL);
-    }
-  }
 
-/*
- * Compute the total size of the output array.
- */
-  nty = dsizes_temp[ndims_temp-1];
-  size_leftmost = 1;
-  for( i = 0; i < ndims_temp-1; i++ ) size_leftmost *= dsizes_temp[i];
-  size_temp = size_leftmost * nty;
+  nty = dsizes_temp[0];
 
 /*
  * Create a temporary array to hold subarray of temp, y, and xskewt.
@@ -221,11 +207,11 @@ NhlErrorTypes x_skewt_W( void )
  */
   if(type_temp == NCL_double || type_y == NCL_double) {
     type_xskewt = NCL_double;
-    xskewt = (void*)calloc(size_temp,sizeof(double));
+    xskewt = (void*)calloc(nty,sizeof(double));
   }
   else {
     type_xskewt = NCL_float;
-    xskewt = (void*)calloc(size_temp,sizeof(float));
+    xskewt = (void*)calloc(nty,sizeof(float));
   }
   if( xskewt == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"x_skewt: Unable to allocate memory for output array");
@@ -233,48 +219,41 @@ NhlErrorTypes x_skewt_W( void )
   }
 
 /*
- * Call the Fortran version of this routine.
- */
-  index_temp = 0;
-  for( i = 0; i < size_leftmost; i++ ) {
-/*
  * Coerce subsection of temp (tmp_temp) to double.
  */
-    if(type_temp != NCL_double) {
-      coerce_subset_input_double(temp,tmp_temp,index_temp,type_temp,nty,0,NULL,NULL);
-    }
-    else {
+  if(type_temp != NCL_double) {
+    coerce_subset_input_double(temp,tmp_temp,0,type_temp,nty,0,NULL,NULL);
+  }
+  else {
 /*
  * Point tmp_temp to appropriate locations in temp.
  */
-      tmp_temp = &((double*)temp)[index_temp];
-    }
+    tmp_temp = &((double*)temp)[0];
+  }
 /*
  * Coerce subsection of y (tmp_y) to double.
  */
-    if(type_y != NCL_double) {
-      coerce_subset_input_double(y,tmp_y,index_temp,type_y,nty,0,NULL,NULL);
-    }
-    else {
+  if(type_y != NCL_double) {
+    coerce_subset_input_double(y,tmp_y,0,type_y,nty,0,NULL,NULL);
+  }
+  else {
 /*
  * Point tmp_y to appropriate locations in y.
  */
-      tmp_y = &((double*)y)[index_temp];
-    }
+    tmp_y = &((double*)y)[0];
+  }
 /*
  * Call Fortran routine.
  */
-    NGCALLF(skewtx,SKEWTX)(tmp_temp,tmp_y,&nty,tmp_xskewt);
+  NGCALLF(dskewtx,DSKEWTX)(tmp_temp,tmp_y,&nty,tmp_xskewt);
 
-    for(j = 0; j < nty; j++) {
-      if(type_xskewt == NCL_double) {
-	((double*)xskewt)[index_temp+j] = tmp_xskewt[j];
-      }
-      else {
-	((float*)xskewt)[index_temp+j] = (float)(tmp_xskewt[j]);
-      }
+  for(i = 0; i < nty; i++) {
+    if(type_xskewt == NCL_double) {
+      ((double*)xskewt)[i] = tmp_xskewt[i];
     }
-    index_temp += nty;
+    else {
+      ((float*)xskewt)[i] = (float)(tmp_xskewt[i]);
+    }
   }
 /*
  * Free memory.
@@ -283,7 +262,7 @@ NhlErrorTypes x_skewt_W( void )
   if(type_y    != NCL_double) NclFree(tmp_y);
   NclFree(tmp_xskewt);
 
-  return(NclReturnValue(xskewt,ndims_temp,dsizes_temp,NULL,type_xskewt,0));
+  return(NclReturnValue(xskewt,1,dsizes_temp,NULL,type_xskewt,0));
 }
 
 NhlErrorTypes tmr_skewt_W( void )
@@ -293,8 +272,7 @@ NhlErrorTypes tmr_skewt_W( void )
  */
   void *w, *p;
   double *tmp_w, *tmp_p;
-  int ndims_w, dsizes_w[NCL_MAX_DIMENSIONS];
-  int ndims_p, dsizes_p[NCL_MAX_DIMENSIONS];
+  int dsizes[1];
   NclBasicDataTypes type_w, type_p;
 /*
  * Output array variables
@@ -303,17 +281,13 @@ NhlErrorTypes tmr_skewt_W( void )
   double *tmp_tmrskewt;
   NclBasicDataTypes type_tmrskewt;
 /*
- * Declare various variables for random purposes.
- */
-  int i, j, size_w;
-/*
  * Retrieve arguments.
  */
   w = (void*)NclGetArgValue(
           0,
           2,
-          &ndims_w,
-          dsizes_w,
+          NULL,
+          NULL,
           NULL,
           NULL,
           &type_w,
@@ -321,32 +295,12 @@ NhlErrorTypes tmr_skewt_W( void )
   p = (void*)NclGetArgValue(
           1,
           2,
-          &ndims_p,
-          dsizes_p,
+          NULL,
+          NULL,
           NULL,
           NULL,
           &type_p,
           2);
-/*
- * w and p must be the same size.
- */
-  if(ndims_w != ndims_p) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"tmr_skewt: The input arrays must have the same number of dimensions");
-    return(NhlFATAL);
-  }
-  for( i = 0; i < ndims_w; i++ ) {
-    if(dsizes_w[i] != dsizes_p[i]) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"tmr_skewt: The input arrays must have the same dimension sizes");
-      return(NhlFATAL);
-    }
-  }
-
-/*
- * Compute the total size of the input arrays.
- */
-  size_w = 1;
-  for( i = 0; i < ndims_w; i++ ) size_w *= dsizes_w[i];
-
 /*
  * Create temp arrays to hold subarray of w, y, and tmrskewt.
  */
@@ -375,11 +329,11 @@ NhlErrorTypes tmr_skewt_W( void )
  */
   if(type_w == NCL_double || type_p == NCL_double) {
     type_tmrskewt = NCL_double;
-    tmrskewt = (void*)calloc(size_w,sizeof(double));
+    tmrskewt = (void*)calloc(1,sizeof(double));
   }
   else {
     type_tmrskewt = NCL_float;
-    tmrskewt = (void*)calloc(size_w,sizeof(float));
+    tmrskewt = (void*)calloc(1,sizeof(float));
   }
   if( tmrskewt == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"tmr_skewt: Unable to allocate memory for output");
@@ -387,44 +341,39 @@ NhlErrorTypes tmr_skewt_W( void )
   }
 
 /*
- * Call the Fortran version of this routine.
- */
-  for( i = 0; i < size_w; i++ ) {
-/*
  * Coerce subsection of w (tmp_w) to double.
  */
-    if(type_w != NCL_double) {
-      coerce_subset_input_double(w,tmp_w,i,type_w,1,0,NULL,NULL);
-    }
-    else {
+  if(type_w != NCL_double) {
+    coerce_subset_input_double(w,tmp_w,0,type_w,1,0,NULL,NULL);
+  }
+  else {
 /*
  * Point tmp_w to appropriate locations in w.
  */
-      tmp_w = &((double*)w)[i];
-    }
+    tmp_w = &((double*)w)[0];
+  }
 /*
  * Coerce subsection of p (tmp_p) to double.
  */
-    if(type_p != NCL_double) {
-      coerce_subset_input_double(p,tmp_p,i,type_p,1,0,NULL,NULL);
-    }
-    else {
+  if(type_p != NCL_double) {
+    coerce_subset_input_double(p,tmp_p,0,type_p,1,0,NULL,NULL);
+  }
+  else {
 /*
  * Point tmp_p to appropriate locations in p.
  */
-      tmp_p = &((double*)p)[i];
-    }
+    tmp_p = &((double*)p)[0];
+  }
 /*
  * Call Fortran routine.
  */
-    *tmp_tmrskewt = NGCALLF(tmrskewt,TMRSKEWT)(tmp_w,tmp_p);
+  *tmp_tmrskewt = NGCALLF(dtmrskewt,DTMRSKEWT)(tmp_w,tmp_p);
 
-    if(type_tmrskewt == NCL_double) {
-      ((double*)tmrskewt)[i] = *tmp_tmrskewt;
-    }
-    else {
-      ((float*)tmrskewt)[i] = (float)(*tmp_tmrskewt);
-    }
+  if(type_tmrskewt == NCL_double) {
+    ((double*)tmrskewt)[0] = *tmp_tmrskewt;
+  }
+  else {
+    ((float*)tmrskewt)[0] = (float)(*tmp_tmrskewt);
   }
 /*
  * Free memory.
@@ -433,7 +382,8 @@ NhlErrorTypes tmr_skewt_W( void )
   if(type_p != NCL_double) NclFree(tmp_p);
   NclFree(tmp_tmrskewt);
 
-  return(NclReturnValue(tmrskewt,ndims_w,dsizes_w,NULL,type_tmrskewt,0));
+  dsizes[0] = 1;
+  return(NclReturnValue(tmrskewt,1,dsizes,NULL,type_tmrskewt,0));
 }
 
 NhlErrorTypes tda_skewt_W( void )
@@ -443,8 +393,7 @@ NhlErrorTypes tda_skewt_W( void )
  */
   void *o, *p;
   double *tmp_o, *tmp_p;
-  int ndims_o, dsizes_o[NCL_MAX_DIMENSIONS];
-  int ndims_p, dsizes_p[NCL_MAX_DIMENSIONS];
+  int dsizes[1];
   NclBasicDataTypes type_o, type_p;
 /*
  * Output array variables
@@ -453,17 +402,13 @@ NhlErrorTypes tda_skewt_W( void )
   double *tmp_tdaskewt;
   NclBasicDataTypes type_tdaskewt;
 /*
- * Declare various variables for random purposes.
- */
-  int i, j, size_o;
-/*
  * Retrieve arguments.
  */
   o = (void*)NclGetArgValue(
           0,
           2,
-          &ndims_o,
-          dsizes_o,
+          NULL,
+          NULL,
           NULL,
           NULL,
           &type_o,
@@ -471,32 +416,12 @@ NhlErrorTypes tda_skewt_W( void )
   p = (void*)NclGetArgValue(
           1,
           2,
-          &ndims_p,
-          dsizes_p,
+          NULL,
+          NULL,
           NULL,
           NULL,
           &type_p,
           2);
-/*
- * o and p must be the same size.
- */
-  if(ndims_o != ndims_p) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"tda_skewt: The input arrays must have the same number of dimensions");
-    return(NhlFATAL);
-  }
-  for( i = 0; i < ndims_o; i++ ) {
-    if(dsizes_o[i] != dsizes_p[i]) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"tda_skewt: The input arrays must have the same dimension sizes");
-      return(NhlFATAL);
-    }
-  }
-
-/*
- * Compute the total size of the input arrays.
- */
-  size_o = 1;
-  for( i = 0; i < ndims_o; i++ ) size_o *= dsizes_o[i];
-
 /*
  * Create temp arrays to hold subarray of o, y, and tdaskewt.
  */
@@ -526,11 +451,11 @@ NhlErrorTypes tda_skewt_W( void )
  */
   if(type_o == NCL_double || type_p == NCL_double) {
     type_tdaskewt = NCL_double;
-    tdaskewt = (void*)calloc(size_o,sizeof(double));
+    tdaskewt = (void*)calloc(1,sizeof(double));
   }
   else {
     type_tdaskewt = NCL_float;
-    tdaskewt = (void*)calloc(size_o,sizeof(float));
+    tdaskewt = (void*)calloc(1,sizeof(float));
   }
   if( tdaskewt == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"tda_skewt: Unable to allocate memory for output");
@@ -538,44 +463,39 @@ NhlErrorTypes tda_skewt_W( void )
   }
 
 /*
- * Call the Fortran version of this routine.
- */
-  for( i = 0; i < size_o; i++ ) {
-/*
  * Coerce subsection of o (tmp_o) to double.
  */
-    if(type_o != NCL_double) {
-      coerce_subset_input_double(o,tmp_o,i,type_o,1,0,NULL,NULL);
-    }
-    else {
+  if(type_o != NCL_double) {
+    coerce_subset_input_double(o,tmp_o,0,type_o,1,0,NULL,NULL);
+  }
+  else {
 /*
  * Point tmp_o to appropriate locations in o.
  */
-      tmp_o = &((double*)o)[i];
-    }
+    tmp_o = &((double*)o)[0];
+  }
 /*
  * Coerce subsection of p (tmp_p) to double.
  */
-    if(type_p != NCL_double) {
-      coerce_subset_input_double(p,tmp_p,i,type_p,1,0,NULL,NULL);
-    }
-    else {
+  if(type_p != NCL_double) {
+    coerce_subset_input_double(p,tmp_p,0,type_p,1,0,NULL,NULL);
+  }
+  else {
 /*
  * Point tmp_p to appropriate locations in p.
  */
-      tmp_p = &((double*)p)[i];
-    }
+    tmp_p = &((double*)p)[0];
+  }
 /*
  * Call Fortran routine.
  */
-    *tmp_tdaskewt = NGCALLF(tdaskewt,TDASKEWT)(tmp_o,tmp_p);
+  *tmp_tdaskewt = NGCALLF(dtdaskewt,DTDASKEWT)(tmp_o,tmp_p);
 
-    if(type_tdaskewt == NCL_double) {
-      ((double*)tdaskewt)[i] = *tmp_tdaskewt;
-    }
-    else {
-      ((float*)tdaskewt)[i] = (float)(*tmp_tdaskewt);
-    }
+  if(type_tdaskewt == NCL_double) {
+    ((double*)tdaskewt)[0] = *tmp_tdaskewt;
+  }
+  else {
+    ((float*)tdaskewt)[0] = (float)(*tmp_tdaskewt);
   }
 /*
  * Free memory.
@@ -584,7 +504,8 @@ NhlErrorTypes tda_skewt_W( void )
   if(type_p != NCL_double) NclFree(tmp_p);
   NclFree(tmp_tdaskewt);
 
-  return(NclReturnValue(tdaskewt,ndims_o,dsizes_o,NULL,type_tdaskewt,0));
+  dsizes[0] = 1;
+  return(NclReturnValue(tdaskewt,1,dsizes,NULL,type_tdaskewt,0));
 }
 
 NhlErrorTypes satlft_skewt_W( void )
@@ -594,8 +515,7 @@ NhlErrorTypes satlft_skewt_W( void )
  */
   void *thw, *p;
   double *tmp_thw, *tmp_p;
-  int ndims_thw, dsizes_thw[NCL_MAX_DIMENSIONS];
-  int ndims_p, dsizes_p[NCL_MAX_DIMENSIONS];
+  int dsizes[1];
   NclBasicDataTypes type_thw, type_p;
 /*
  * Output array variables
@@ -604,17 +524,13 @@ NhlErrorTypes satlft_skewt_W( void )
   double *tmp_satlftskewt;
   NclBasicDataTypes type_satlftskewt;
 /*
- * Declare various variables for random purposes.
- */
-  int i, j, size_thw;
-/*
  * Retrieve arguments.
  */
   thw = (void*)NclGetArgValue(
           0,
           2,
-          &ndims_thw,
-          dsizes_thw,
+          NULL,
+          NULL,
           NULL,
           NULL,
           &type_thw,
@@ -622,32 +538,12 @@ NhlErrorTypes satlft_skewt_W( void )
   p = (void*)NclGetArgValue(
           1,
           2,
-          &ndims_p,
-          dsizes_p,
+          NULL,
+          NULL,
           NULL,
           NULL,
           &type_p,
           2);
-/*
- * thw and p must be the same size.
- */
-  if(ndims_thw != ndims_p) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"satlft_skewt: The input arrays must have the same number of dimensions");
-    return(NhlFATAL);
-  }
-  for( i = 0; i < ndims_thw; i++ ) {
-    if(dsizes_thw[i] != dsizes_p[i]) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"satlft_skewt: The input arrays must have the same dimension sizes");
-      return(NhlFATAL);
-    }
-  }
-
-/*
- * Compute the total size of the input arrays.
- */
-  size_thw = 1;
-  for( i = 0; i < ndims_thw; i++ ) size_thw *= dsizes_thw[i];
-
 /*
  * Create temp arrays to hold subarray of o, y, and satlftskewt.
  */
@@ -677,56 +573,50 @@ NhlErrorTypes satlft_skewt_W( void )
  */
   if(type_thw == NCL_double || type_p == NCL_double) {
     type_satlftskewt = NCL_double;
-    satlftskewt = (void*)calloc(size_thw,sizeof(double));
+    satlftskewt = (void*)calloc(1,sizeof(double));
   }
   else {
     type_satlftskewt = NCL_float;
-    satlftskewt = (void*)calloc(size_thw,sizeof(float));
+    satlftskewt = (void*)calloc(1,sizeof(float));
   }
   if( satlftskewt == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"satlft_skewt: Unable to allocate memory for output");
     return(NhlFATAL);
   }
-
-/*
- * Call the Fortran version of this routine.
- */
-  for( i = 0; i < size_thw; i++ ) {
 /*
  * Coerce subsection of thw (tmp_thw) to double.
  */
-    if(type_thw != NCL_double) {
-      coerce_subset_input_double(thw,tmp_thw,i,type_thw,1,0,NULL,NULL);
-    }
-    else {
+  if(type_thw != NCL_double) {
+      coerce_subset_input_double(thw,tmp_thw,0,type_thw,1,0,NULL,NULL);
+  }
+  else {
 /*
  * Point tmp_thw to appropriate locations in thw.
  */
-      tmp_thw = &((double*)thw)[i];
-    }
+    tmp_thw = &((double*)thw)[0];
+  }
 /*
  * Coerce subsection of p (tmp_p) to double.
  */
-    if(type_p != NCL_double) {
-      coerce_subset_input_double(p,tmp_p,i,type_p,1,0,NULL,NULL);
-    }
-    else {
+  if(type_p != NCL_double) {
+    coerce_subset_input_double(p,tmp_p,0,type_p,1,0,NULL,NULL);
+  }
+  else {
 /*
  * Point tmp_p to appropriate locations in p.
  */
-      tmp_p = &((double*)p)[i];
-    }
+    tmp_p = &((double*)p)[0];
+  }
 /*
  * Call Fortran routine.
  */
-    *tmp_satlftskewt = NGCALLF(satlftskewt,SATLFTSKEWT)(tmp_thw,tmp_p);
+  *tmp_satlftskewt = NGCALLF(dsatlftskewt,DSATLFTSKEWT)(tmp_thw,tmp_p);
 
-    if(type_satlftskewt == NCL_double) {
-      ((double*)satlftskewt)[i] = *tmp_satlftskewt;
-    }
-    else {
-      ((float*)satlftskewt)[i] = (float)(*tmp_satlftskewt);
-    }
+  if(type_satlftskewt == NCL_double) {
+    ((double*)satlftskewt)[0] = *tmp_satlftskewt;
+  }
+  else {
+    ((float*)satlftskewt)[0] = (float)(*tmp_satlftskewt);
   }
 /*
  * Free memory.
@@ -735,7 +625,8 @@ NhlErrorTypes satlft_skewt_W( void )
   if(type_p   != NCL_double) NclFree(tmp_p);
   NclFree(tmp_satlftskewt);
 
-  return(NclReturnValue(satlftskewt,ndims_thw,dsizes_thw,NULL,type_satlftskewt,0));
+  dsizes[0] = 1;
+  return(NclReturnValue(satlftskewt,1,dsizes,NULL,type_satlftskewt,0));
 }
 
 NhlErrorTypes ptlcl_skewt_W( void )
@@ -745,30 +636,23 @@ NhlErrorTypes ptlcl_skewt_W( void )
  */
   void *p, *t, *td;
   double *tmp_t, *tmp_p, *tmp_td;
-  int ndims_t, dsizes_t[NCL_MAX_DIMENSIONS];
-  int ndims_p, dsizes_p[NCL_MAX_DIMENSIONS];
-  int ndims_td, dsizes_td[NCL_MAX_DIMENSIONS];
+  int dsizes[1];
   NclBasicDataTypes type_t, type_p, type_td;
 /*
  * Output array variables
  */
   void *pc, *tc;
   double *tmp_pc, *tmp_tc;
-  int ndims_pc, dsizes_pc[NCL_MAX_DIMENSIONS];
-  int ndims_tc, dsizes_tc[NCL_MAX_DIMENSIONS];
+  int dsizes_tc[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_ptlclskewt, type_pc, type_tc;
-/*
- * Declare various variables for random purposes.
- */
-  int i, j, size_t;
 /*
  * Retrieve arguments.
  */
   p = (void*)NclGetArgValue(
           0,
           5,
-          &ndims_p,
-          dsizes_p,
+          NULL,
+          NULL,
           NULL,
           NULL,
           &type_p,
@@ -776,8 +660,8 @@ NhlErrorTypes ptlcl_skewt_W( void )
   t = (void*)NclGetArgValue(
           1,
           5,
-          &ndims_t,
-          dsizes_t,
+          NULL,
+          NULL,
           NULL,
           NULL,
           &type_t,
@@ -785,8 +669,8 @@ NhlErrorTypes ptlcl_skewt_W( void )
   td = (void*)NclGetArgValue(
           2,
           5,
-          &ndims_td,
-          dsizes_td,
+          NULL,
+          NULL,
           NULL,
           NULL,
           &type_td,
@@ -794,8 +678,8 @@ NhlErrorTypes ptlcl_skewt_W( void )
   pc = (void*)NclGetArgValue(
           3,
           5,
-          &ndims_pc,
-          dsizes_pc,
+          NULL,
+          NULL,
           NULL,
           NULL,
           &type_pc,
@@ -803,27 +687,12 @@ NhlErrorTypes ptlcl_skewt_W( void )
   tc = (void*)NclGetArgValue(
           4,
           5,
-          &ndims_tc,
-          dsizes_tc,
+          NULL,
+          NULL,
           NULL,
           NULL,
           &type_tc,
           2);
-/*
- * arrays must be the same size.
- */
-  if(ndims_t != ndims_p || ndims_t != ndims_td || ndims_t != ndims_pc ||
-     ndims_t != ndims_tc) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"ptlcl_skewt: The input arrays must have the same number of dimensions");
-    return(NhlFATAL);
-  }
-  for( i = 0; i < ndims_t; i++ ) {
-    if(dsizes_t[i] !=  dsizes_p[i] || dsizes_t[i] != dsizes_td[i] ||
-       dsizes_t[i] != dsizes_pc[i] || dsizes_t[i] != dsizes_tc[i]) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"ptlcl_skewt: The input arrays must have the same dimension sizes");
-      return(NhlFATAL);
-    }
-  }
 /*
  * Output variables must be float or double.
  */
@@ -832,12 +701,6 @@ NhlErrorTypes ptlcl_skewt_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"ptlcl_skewt: pc and tc must be float or double");
     return(NhlFATAL);
   }
-/*
- * Compute the total size of the input arrays.
- */
-  size_t = 1;
-  for( i = 0; i < ndims_t; i++ ) size_t *= dsizes_t[i];
-
 /*
  * Create temp arrays to hold subarray of p, t, td, pc, and tc.
  */
@@ -880,59 +743,53 @@ NhlErrorTypes ptlcl_skewt_W( void )
       return(NhlFATAL);
     }
   }
-
-/*
- * Call the Fortran version of this routine.
- */
-  for( i = 0; i < size_t; i++ ) {
 /*
  * Coerce subsection of t (tmp_t) to double.
  */
-    if(type_t != NCL_double) {
-      coerce_subset_input_double(t,tmp_t,i,type_t,1,0,NULL,NULL);
-    }
-    else {
+  if(type_t != NCL_double) {
+    coerce_subset_input_double(t,tmp_t,0,type_t,1,0,NULL,NULL);
+  }
+  else {
 /*
  * Point tmp_t to appropriate locations in t.
  */
-      tmp_t = &((double*)t)[i];
-    }
+    tmp_t = &((double*)t)[0];
+  }
 
 /*
  * Coerce subsection of p (tmp_p) to double.
  */
-    if(type_p != NCL_double) {
-      coerce_subset_input_double(p,tmp_p,i,type_p,1,0,NULL,NULL);
-    }
-    else {
+  if(type_p != NCL_double) {
+    coerce_subset_input_double(p,tmp_p,0,type_p,1,0,NULL,NULL);
+  }
+  else {
 /*
  * Point tmp_p to appropriate locations in p.
  */
-      tmp_p = &((double*)p)[i];
-    }
+    tmp_p = &((double*)p)[0];
+  }
 /*
  * Coerce subsection of td (tmp_td) to double.
  */
-    if(type_td != NCL_double) {
-      coerce_subset_input_double(td,tmp_td,i,type_td,1,0,NULL,NULL);
-    }
-    else {
+  if(type_td != NCL_double) {
+    coerce_subset_input_double(td,tmp_td,0,type_td,1,0,NULL,NULL);
+  }
+  else {
 /*
  * Point tmp_td to appropriate locations in td.
  */
-      tmp_td = &((double*)td)[i];
-    }
+    tmp_td = &((double*)td)[0];
+  }
 /*
  * Call Fortran routine.
  */
-    if(type_pc == NCL_double) tmp_pc = &((double*)pc)[i];
-    if(type_tc == NCL_double) tmp_tc = &((double*)tc)[i];
+  if(type_pc == NCL_double) tmp_pc = &((double*)pc)[0];
+  if(type_tc == NCL_double) tmp_tc = &((double*)tc)[0];
 
-    NGCALLF(ptlclskewt,PTLCLSKEWT)(tmp_p,tmp_t,tmp_td,tmp_pc,tmp_tc);
+  NGCALLF(dptlclskewt,DPTLCLSKEWT)(tmp_p,tmp_t,tmp_td,tmp_pc,tmp_tc);
 
-    if(type_pc != NCL_double) ((float*)pc)[i] = (float)*tmp_pc;
-    if(type_tc != NCL_double) ((float*)tc)[i] = (float)*tmp_tc;
-  }
+  if(type_pc != NCL_double) ((float*)pc)[0] = (float)*tmp_pc;
+  if(type_tc != NCL_double) ((float*)tc)[0] = (float)*tmp_tc;
 /*
  * Free memory.
  */
@@ -952,9 +809,8 @@ NhlErrorTypes showal_skewt_W( void )
  */
   void *p, *t, *td;
   double *tmp_t, *tmp_p, *tmp_td;
-  int ndims_t, dsizes_t[NCL_MAX_DIMENSIONS];
-  int ndims_p, dsizes_p[NCL_MAX_DIMENSIONS];
-  int ndims_td, dsizes_td[NCL_MAX_DIMENSIONS];
+  int dsizes_t[NCL_MAX_DIMENSIONS], dsizes_p[NCL_MAX_DIMENSIONS];
+  int dsizes_td[NCL_MAX_DIMENSIONS], dsizes[1];
   NclBasicDataTypes type_t, type_p, type_td;
 /*
  * Output array variables
@@ -965,14 +821,14 @@ NhlErrorTypes showal_skewt_W( void )
 /*
  * Declare various variables for random purposes.
  */
-  int i, j, nlvls, index_t, size_leftmost;
+  int i, nlvls;
 /*
  * Retrieve arguments.
  */
   p = (void*)NclGetArgValue(
           0,
           3,
-          &ndims_p,
+          NULL,
           dsizes_p,
           NULL,
           NULL,
@@ -981,7 +837,7 @@ NhlErrorTypes showal_skewt_W( void )
   t = (void*)NclGetArgValue(
           1,
           3,
-          &ndims_t,
+          NULL,
           dsizes_t,
           NULL,
           NULL,
@@ -990,7 +846,7 @@ NhlErrorTypes showal_skewt_W( void )
   td = (void*)NclGetArgValue(
           2,
           3,
-          &ndims_td,
+          NULL,
           dsizes_td,
           NULL,
           NULL,
@@ -999,23 +855,11 @@ NhlErrorTypes showal_skewt_W( void )
 /*
  * input arrays must be the same size.
  */
-  if(ndims_t != ndims_p || ndims_t != ndims_td) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"showal_skewt: The input arrays must have the same number of dimensions");
+  nlvls = dsizes_t[0];
+  if(dsizes_p[0] != nlvls || dsizes_td[0] != nlvls) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"showal_skewt: The input arrays must have the same dimension sizes");
     return(NhlFATAL);
   }
-  for( i = 0; i < ndims_t; i++ ) {
-    if(dsizes_t[i] !=  dsizes_p[i] || dsizes_t[i] != dsizes_td[i]) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"showal_skewt: The input arrays must have the same dimension sizes");
-      return(NhlFATAL);
-    }
-  }
-
-/*
- * Compute the total size of the input arrays.
- */
-  nlvls = dsizes_t[ndims_t-1];
-  size_leftmost = 1;
-  for( i = 0; i < ndims_t-1; i++ ) size_leftmost *= dsizes_t[i];
 
 /*
  * Create temp arrays to hold subarray of p, t, td.
@@ -1053,11 +897,11 @@ NhlErrorTypes showal_skewt_W( void )
  */
   if(type_t == NCL_double || type_p == NCL_double || type_td == NCL_double) {
     type_showalskewt = NCL_double;
-    showalskewt = (void*)calloc(size_leftmost,sizeof(double));
+    showalskewt = (void*)calloc(1,sizeof(double));
   }
   else {
     type_showalskewt = NCL_float;
-    showalskewt = (void*)calloc(size_leftmost,sizeof(float));
+    showalskewt = (void*)calloc(1,sizeof(float));
   }
   if( showalskewt == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"showal_skewt: Unable to allocate memory for output");
@@ -1065,58 +909,52 @@ NhlErrorTypes showal_skewt_W( void )
   }
 
 /*
- * Call the Fortran version of this routine.
- */
-  for( i = 0; i < size_leftmost; i++ ) {
-/*
  * Coerce subsection of t (tmp_t) to double.
  */
-    if(type_t != NCL_double) {
-      coerce_subset_input_double(t,tmp_t,index_t,type_t,nlvls,0,NULL,NULL);
-    }
-    else {
+  if(type_t != NCL_double) {
+    coerce_subset_input_double(t,tmp_t,0,type_t,nlvls,0,NULL,NULL);
+  }
+  else {
 /*
  * Point tmp_t to appropriate locations in t.
  */
-      tmp_t = &((double*)t)[index_t];
-    }
+    tmp_t = &((double*)t)[0];
+  }
 
 /*
  * Coerce subsection of p (tmp_p) to double.
  */
-    if(type_p != NCL_double) {
-      coerce_subset_input_double(p,tmp_p,index_t,type_p,nlvls,0,NULL,NULL);
-    }
-    else {
+  if(type_p != NCL_double) {
+    coerce_subset_input_double(p,tmp_p,0,type_p,nlvls,0,NULL,NULL);
+  }
+  else {
 /*
  * Point tmp_p to appropriate locations in p.
  */
-      tmp_p = &((double*)p)[index_t];
-    }
+    tmp_p = &((double*)p)[0];
+  }
 /*
  * Coerce subsection of td (tmp_td) to double.
  */
-    if(type_td != NCL_double) {
-      coerce_subset_input_double(td,tmp_td,index_t,type_td,nlvls,0,NULL,NULL);
-    }
-    else {
+  if(type_td != NCL_double) {
+    coerce_subset_input_double(td,tmp_td,0,type_td,nlvls,0,NULL,NULL);
+  }
+  else {
 /*
  * Point tmp_td to appropriate locations in td.n
  */
-      tmp_td = &((double*)td)[index_t];
-    }
+    tmp_td = &((double*)td)[0];
+  }
 /*
  * Call Fortran routine.
  */
-    *tmp_showalskewt = NGCALLF(showalskewt,SHOWALSKEWT)(tmp_p,tmp_t,tmp_td,
-							&nlvls);
-    if(type_showalskewt == NCL_double) {
-      ((double*)showalskewt)[i] = *tmp_showalskewt;
-    }
-    else {
-      ((float*)showalskewt)[i] = (float)(*tmp_showalskewt);
-    }
-    index_t += nlvls;
+  *tmp_showalskewt = NGCALLF(dshowalskewt,DSHOWALSKEWT)(tmp_p,tmp_t,tmp_td,
+                                                        &nlvls);
+  if(type_showalskewt == NCL_double) {
+    ((double*)showalskewt)[0] = *tmp_showalskewt;
+  }
+  else {
+    ((float*)showalskewt)[0] = (float)(*tmp_showalskewt);
   }
 /*
  * Free memory.
@@ -1126,7 +964,8 @@ NhlErrorTypes showal_skewt_W( void )
   if(type_td != NCL_double) NclFree(tmp_td);
   NclFree(tmp_showalskewt);
 
-  return(NclReturnValue(showalskewt,ndims_t,dsizes_t,NULL,type_showalskewt,0));
+  dsizes[0] = 1;
+  return(NclReturnValue(showalskewt,1,dsizes,NULL,type_showalskewt,0));
 }
 
 NhlErrorTypes pw_skewt_W( void )
@@ -1136,8 +975,7 @@ NhlErrorTypes pw_skewt_W( void )
  */
   void *p, *td;
   double *tmp_p, *tmp_td;
-  int ndims_p, dsizes_p[NCL_MAX_DIMENSIONS];
-  int ndims_td, dsizes_td[NCL_MAX_DIMENSIONS];
+  int dsizes_p[NCL_MAX_DIMENSIONS], dsizes_td[NCL_MAX_DIMENSIONS], dsizes[1];
   NclBasicDataTypes type_p, type_td;
 /*
  * Output array variables
@@ -1148,14 +986,14 @@ NhlErrorTypes pw_skewt_W( void )
 /*
  * Declare various variables for random purposes.
  */
-  int i, j, n, index_td, size_td, size_leftmost;
+  int i, n;
 /*
  * Retrieve arguments.
  */
   td = (void*)NclGetArgValue(
           0,
           2,
-          &ndims_td,
+          NULL,
           dsizes_td,
           NULL,
           NULL,
@@ -1164,7 +1002,7 @@ NhlErrorTypes pw_skewt_W( void )
   p = (void*)NclGetArgValue(
           1,
           2,
-          &ndims_p,
+          NULL,
           dsizes_p,
           NULL,
           NULL,
@@ -1173,24 +1011,11 @@ NhlErrorTypes pw_skewt_W( void )
 /*
  * input arrays must be the same size.
  */
-  if(ndims_td != ndims_p) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"pw_skewt: The input arrays must have the same number of dimensions");
+  if(dsizes_td[0] != dsizes_p[0]) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"pw_skewt: The input arrays must have the same dimension sizes");
     return(NhlFATAL);
   }
-  for( i = 0; i < ndims_td; i++ ) {
-    if(dsizes_td[i] != dsizes_p[i]) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"pw_skewt: The input arrays must have the same dimension sizes");
-      return(NhlFATAL);
-    }
-  }
-
-/*
- * Compute the total size of the input arrays.
- */
-  n = dsizes_td[ndims_td-1];
-  size_leftmost = 1;
-  for( i = 0; i < ndims_td-1; i++ ) size_leftmost *= dsizes_td[i];
-
+  n = dsizes_td[0];
 /*
  * Create temp arrays to hold subarray of p, t, td.
  */
@@ -1219,11 +1044,11 @@ NhlErrorTypes pw_skewt_W( void )
  */
   if(type_td == NCL_double || type_p == NCL_double) {
     type_pwskewt = NCL_double;
-    pwskewt = (void*)calloc(size_leftmost,sizeof(double));
+    pwskewt = (void*)calloc(1,sizeof(double));
   }
   else {
     type_pwskewt = NCL_float;
-    pwskewt = (void*)calloc(size_leftmost,sizeof(float));
+    pwskewt = (void*)calloc(1,sizeof(float));
   }
   if( pwskewt == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"pw_skewt: Unable to allocate memory for output");
@@ -1231,44 +1056,39 @@ NhlErrorTypes pw_skewt_W( void )
   }
 
 /*
- * Call the Fortran version of this routine.
- */
-  for( i = 0; i < size_leftmost; i++ ) {
-/*
  * Coerce subsection of p (tmp_p) to double.
  */
-    if(type_p != NCL_double) {
-      coerce_subset_input_double(p,tmp_p,index_td,type_p,n,0,NULL,NULL);
-    }
-    else {
+  if(type_p != NCL_double) {
+    coerce_subset_input_double(p,tmp_p,0,type_p,n,0,NULL,NULL);
+  }
+  else {
 /*
  * Point tmp_p to appropriate locations in p.
  */
-      tmp_p = &((double*)p)[index_td];
-    }
+    tmp_p = &((double*)p)[0];
+  }
+
 /*
  * Coerce subsection of td (tmp_td) to double.
  */
-    if(type_td != NCL_double) {
-      coerce_subset_input_double(td,tmp_td,index_td,type_td,n,0,NULL,NULL);
-    }
-    else {
+  if(type_td != NCL_double) {
+    coerce_subset_input_double(td,tmp_td,0,type_td,n,0,NULL,NULL);
+  }
+  else {
 /*
  * Point tmp_td to appropriate locations in td.n
  */
-      tmp_td = &((double*)td)[index_td];
-    }
+    tmp_td = &((double*)td)[0];
+  }
 /*
  * Call Fortran routine.
  */
-    *tmp_pwskewt = NGCALLF(pwskewt,PWSKEWT)(tmp_td,tmp_p,&n);
-    if(type_pwskewt == NCL_double) {
-      ((double*)pwskewt)[i] = *tmp_pwskewt;
-    }
-    else {
-      ((float*)pwskewt)[i] = (float)(*tmp_pwskewt);
-    }
-    index_td += n;
+  *tmp_pwskewt = NGCALLF(dpwskewt,DPWSKEWT)(tmp_td,tmp_p,&n);
+  if(type_pwskewt == NCL_double) {
+    ((double*)pwskewt)[0] = *tmp_pwskewt;
+  }
+  else {
+    ((float*)pwskewt)[0] = (float)(*tmp_pwskewt);
   }
 /*
  * Free memory.
@@ -1277,7 +1097,8 @@ NhlErrorTypes pw_skewt_W( void )
   if(type_td != NCL_double) NclFree(tmp_td);
   NclFree(tmp_pwskewt);
 
-  return(NclReturnValue(pwskewt,ndims_td,dsizes_td,NULL,type_pwskewt,0));
+  dsizes[0] = 1;
+  return(NclReturnValue(pwskewt,1,dsizes,NULL,type_pwskewt,0));
 }
 
 NhlErrorTypes cape_thermo_W( void )
@@ -1287,30 +1108,37 @@ NhlErrorTypes cape_thermo_W( void )
  */
   void *penv, *tenv, *lclmb;
   int *iprint;
-  double *tmp_tenv, *tmp_penv, *tmp_lclmb;
-  int ndims_tenv, dsizes_tenv[NCL_MAX_DIMENSIONS];
-  int ndims_penv, dsizes_penv[NCL_MAX_DIMENSIONS];
-  int ndims_lclmb, dsizes_lclmb[NCL_MAX_DIMENSIONS];
+  double *tmp_tenv, *tmp_penv, *tmp_lclmb, *tmp_cape;
+  NclScalar missing_tenv, missing_dtenv, missing_rtenv;
+  int dsizes_tenv[NCL_MAX_DIMENSIONS], has_missing_tenv;
+  int dsizes_penv[NCL_MAX_DIMENSIONS], dsizes[1];
   NclBasicDataTypes type_tenv, type_penv, type_lclmb;
 /*
  * Output array variables
  */
   void *cape;
-  double *tmp_cape;
   NclBasicDataTypes type_cape;
+/*
+ * Attribute variables
+ */
+  int att_id;
+  NclMultiDValData att_md, return_md;
+  NclVar tmp_var;
+  NclStackEntry return_data;
 /*
  * Declare various variables for random purposes.
  */
-  double *tparcel, *tmsg;
+  double *tparcel;
+  float *rtparcel;
   int *jlcl, *jlfc, *jcross;
-  int i, j, nlvls, index_tenv, size_leftmost;
+  int i, nlvls;
 /*
  * Retrieve arguments.
  */
   penv = (void*)NclGetArgValue(
           0,
           4,
-          &ndims_penv,
+          NULL,
           dsizes_penv,
           NULL,
           NULL,
@@ -1319,17 +1147,17 @@ NhlErrorTypes cape_thermo_W( void )
   tenv = (void*)NclGetArgValue(
           1,
           4,
-          &ndims_tenv,
+          NULL,
           dsizes_tenv,
-          NULL,
-          NULL,
+          &missing_tenv,
+          &has_missing_tenv,
           &type_tenv,
           2);
   lclmb = (void*)NclGetArgValue(
           2,
           4,
-          &ndims_lclmb,
-          dsizes_lclmb,
+          NULL,
+          NULL,
           NULL,
           NULL,
           &type_lclmb,
@@ -1346,32 +1174,20 @@ NhlErrorTypes cape_thermo_W( void )
 /*
  * tenv and penv must be the same size.
  */
-  if(ndims_tenv != ndims_penv) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"cape_thermo: tenv and penv must have the same number of dimensions");
+  if(dsizes_tenv[0] !=  dsizes_penv[0]) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"cape_thermo: tenv and penv must have the same dimension sizes");
     return(NhlFATAL);
   }
-  for( i = 0; i < ndims_tenv; i++ ) {
-    if(dsizes_tenv[i] !=  dsizes_penv[i]) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"cape_thermo: tenv and penv must have the same dimension sizes");
-      return(NhlFATAL);
-    }
-  }
+  nlvls = dsizes_tenv[0];
 
 /*
- * Compute the total size of the input arrays.
+ * Check for missing values.
  */
-  nlvls = dsizes_tenv[ndims_tenv-1];
-  size_leftmost = 1;
-  for( i = 0; i < ndims_tenv-1; i++ ) size_leftmost *= dsizes_tenv[i];
-
+  coerce_missing(type_tenv,has_missing_tenv,&missing_tenv,&missing_dtenv,
+                 &missing_rtenv);
 /*
  * Create temp arrays to hold subarray of penv, tenv, lclmb.
  */
-  tmp_cape = (double*)calloc(size_leftmost,sizeof(double));
-  if(tmp_cape == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"cape_thermo: Unable to allocate memory for output");
-    return(NhlFATAL);
-  }
   if(type_tenv != NCL_double) {
     tmp_tenv = (double*)calloc(nlvls,sizeof(double));
     if(tmp_tenv == NULL) {
@@ -1400,88 +1216,88 @@ NhlErrorTypes cape_thermo_W( void )
  */
   if(type_tenv == NCL_double || type_penv == NCL_double) {
     type_cape = NCL_double;
-    cape = (void*)calloc(size_leftmost,sizeof(double));
+    cape      = (void*)calloc(1,sizeof(double));
+    tmp_cape  = (double*)calloc(1,sizeof(double));
+    if( tmp_cape == NULL || cape == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"cape_thermo: Unable to allocate memory for output");
+      return(NhlFATAL);
+    }
   }
   else {
     type_cape = NCL_float;
-    cape = (void*)calloc(size_leftmost,sizeof(float));
-  }
-  if( cape == NULL ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"cape_thermo: Unable to allocate memory for output");
-    return(NhlFATAL);
+    rtparcel  = (float*)calloc(nlvls,sizeof(float));
+    cape      = (void*)calloc(1,sizeof(float));
+    tmp_cape = (double*)calloc(1,sizeof(double));
+    if( tmp_cape == NULL || cape == NULL || rtparcel == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"cape_thermo: Unable to allocate memory for output");
+      return(NhlFATAL);
+    }
   }
 /*
  * Allocate space for dummy variables.
  */
   tparcel = (double*)calloc(nlvls,sizeof(double));
-  tmsg    = (double*)calloc(1,sizeof(double));
   jlcl    = (int*)calloc(1,sizeof(int));
   jlfc    = (int*)calloc(1,sizeof(int));
   jcross  = (int*)calloc(1,sizeof(int));
-  if(tparcel == NULL || tmsg == NULL || jlcl == NULL || jlfc == NULL || 
-      jcross == NULL) {
+  if(tparcel == NULL || jlcl == NULL || jlfc == NULL || jcross == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"cape_thermo: Unable to allocate memory for output variables");
     return(NhlFATAL);
   }
 
-
-/*
- * Call the Fortran version of this routine.
- */
-  for( i = 0; i < size_leftmost; i++ ) {
 /*
  * Coerce subsection of tenv (tmp_tenv) to double.
  */
-    if(type_tenv != NCL_double) {
-      coerce_subset_input_double(tenv,tmp_tenv,index_tenv,type_tenv,nlvls,
-				 0,NULL,NULL);
-    }
-    else {
+  if(type_tenv != NCL_double) {
+    coerce_subset_input_double(tenv,tmp_tenv,0,type_tenv,nlvls,0,NULL,NULL);
+  }
+  else {
 /*
  * Point tmp_tenv to appropriate locations in tenv.
  */
-      tmp_tenv = &((double*)tenv)[index_tenv];
-    }
+    tmp_tenv = &((double*)tenv)[0];
+  }
 
 /*
  * Coerce subsection of penv (tmp_penv) to double.
  */
-    if(type_penv != NCL_double) {
-      coerce_subset_input_double(penv,tmp_penv,index_tenv,type_penv,nlvls,
-				 0,NULL,NULL);
-    }
-    else {
+  if(type_penv != NCL_double) {
+    coerce_subset_input_double(penv,tmp_penv,0,type_penv,nlvls,0,NULL,NULL);
+  }
+  else {
 /*
  * Point tmp_penv to appropriate locations in penv.
  */
-      tmp_penv = &((double*)penv)[index_tenv];
-    }
+    tmp_penv = &((double*)penv)[0];
+  }
 
 /*
  * Coerce subsection of lclmb (tmp_lclmb) to double.
  */
-    if(type_lclmb != NCL_double) {
-      coerce_subset_input_double(lclmb,tmp_lclmb,i,type_lclmb,1,0,NULL,NULL);
-    }
-    else {
+  if(type_lclmb != NCL_double) {
+    coerce_subset_input_double(lclmb,tmp_lclmb,0,type_lclmb,1,0,NULL,NULL);
+  }
+  else {
 /*
  * Point tmp_lclmb to appropriate locations in lclmb.n
  */
-      tmp_lclmb = &((double*)lclmb)[i];
-    }
+    tmp_lclmb = &((double*)lclmb)[0];
+  }
 /*
  * Call Fortran routine.
  */
-    *tmp_cape = NGCALLF(capencl,CAPENCL)(tmp_penv,tmp_tenv,&nlvls,tmp_lclmb,
-					 iprint,tparcel,tmsg,jlcl,jlfc,
-					 jcross);
-    if(type_cape == NCL_double) {
-      ((double*)cape)[i] = *tmp_cape;
-    }
-    else {
-      ((float*)cape)[i] = (float)(*tmp_cape);
-    }
-    index_tenv += nlvls;
+  *tmp_cape = NGCALLF(dcapethermo,DCAPETHERMO)(tmp_penv,tmp_tenv,
+                                               &nlvls,tmp_lclmb,
+                                               iprint,tparcel,
+                                               &missing_dtenv.doubleval,
+                                               jlcl,jlfc,jcross);
+  if(type_cape == NCL_double) {
+    ((double*)cape)[0] = *tmp_cape;
+  }
+  else {
+    ((float*)cape)[0] = (float)*tmp_cape;
+    for(i = 0; i < nlvls; i++ ) rtparcel[i] = (float)tparcel[i];
+    NclFree(tparcel);
   }
 /*
  * Free memory.
@@ -1491,6 +1307,72 @@ NhlErrorTypes cape_thermo_W( void )
   if(type_lclmb != NCL_double) NclFree(tmp_lclmb);
   NclFree(tmp_cape);
 
-  return(NclReturnValue(cape,ndims_lclmb,dsizes_lclmb,NULL,type_cape,0));
+  if(type_cape == NCL_double) {
+    dsizes[0] = 1;
+    return_md = _NclCreateVal(NULL,NULL,Ncl_MultiDValData,0,cape,NULL,1,
+                              dsizes,TEMPORARY,NULL,
+                              (NclObjClass)nclTypedoubleClass);
+/*
+ * Set up double attribute to return.
+ */
+    att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
+    dsizes[0] = nlvls;
+    att_md = _NclCreateVal(NULL,NULL,Ncl_MultiDValData,0,tparcel,NULL,1,
+                           dsizes,TEMPORARY,NULL,
+                           (NclObjClass)nclTypedoubleClass);
+  }
+  else {
+    dsizes[0] = 1;
+    return_md = _NclCreateVal(NULL,NULL,Ncl_MultiDValData,0,cape,NULL,1,
+                              dsizes,TEMPORARY,NULL,
+                              (NclObjClass)nclTypefloatClass);
+/*
+ * Set up float attribute to return.
+ */
+    att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
+    dsizes[0] = nlvls;
+    att_md = _NclCreateVal(NULL,NULL,Ncl_MultiDValData,0,rtparcel,NULL,1,
+                           dsizes,TEMPORARY,NULL,
+                           (NclObjClass)nclTypefloatClass);
+  }
+  _NclAddAtt(att_id,"tparcel",att_md,NULL);
+
+  dsizes[0] = 1;
+  att_md = _NclCreateVal(NULL,NULL,Ncl_MultiDValData,0,jlcl,NULL,1,
+                         dsizes,TEMPORARY,NULL,
+                         (NclObjClass)nclTypeintClass);
+  _NclAddAtt(att_id,"jlcl",att_md,NULL);
+
+  att_md = _NclCreateVal(NULL,NULL,Ncl_MultiDValData,0,jlfc,NULL,1,
+                         dsizes,TEMPORARY,NULL,
+                         (NclObjClass)nclTypeintClass);
+  _NclAddAtt(att_id,"jlfc",att_md,NULL);
+
+  att_md = _NclCreateVal(NULL,NULL,Ncl_MultiDValData,0,jcross,NULL,1,
+                         dsizes,TEMPORARY,NULL,
+                         (NclObjClass)nclTypeintClass);
+  _NclAddAtt(att_id,"jcross",att_md,NULL);
+
+  tmp_var = _NclVarCreate(
+                          NULL,
+                          NULL,
+                          Ncl_Var,
+                          0,
+                          NULL,
+                          return_md,
+                          NULL,
+                          att_id,
+                          NULL,
+                          RETURNVAR,
+                          NULL,
+                          TEMPORARY
+                          );
+/*
+ * Return output grid and attributes to NCL.
+ */
+  return_data.kind = NclStk_VAR;
+  return_data.u.data_var = tmp_var;
+  _NclPlaceReturn(return_data);
+  return(NhlNOERROR);
 }
 

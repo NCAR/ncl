@@ -5,7 +5,7 @@ c (2) Routines used to plot the data
 c only routines that have NCLFORTSTART/NCLEND need have wrappers
 C -----------------------------------------------------------
 C NCLFORTSTART
-      SUBROUTINE SKEWTY(PRES,NP,YSKEWT)
+      SUBROUTINE DSKEWTY(PRES,NP,YSKEWT)
 
 C       NCL: y = ySkewT (pres[*]:numeric)   ; np is dimension of pres
 
@@ -24,7 +24,7 @@ C NCLEND
       END
 C -----------------------------------------------------------
 C NCLFORTSTART
-      SUBROUTINE SKEWTX(TEMP,Y,NTY,XSKEWT)
+      SUBROUTINE DSKEWTX(TEMP,Y,NTY,XSKEWT)
 
 
 C NCL: y = xSkewT (temp[*]:numeric, y[*]:numeric) ; nty dimension of y
@@ -44,7 +44,7 @@ C NCLEND
       END
 C -----------------------------------------------------------
 C NCLFORTSTART
-      DOUBLE PRECISION FUNCTION TMRSKEWT(W,P)
+      DOUBLE PRECISION FUNCTION DTMRSKEWT(W,P)
       DOUBLE PRECISION W
       DOUBLE PRECISION P
       DOUBLE PRECISION C1
@@ -68,12 +68,12 @@ c
 
       X = DLOG10(W*P/ (622.D0+W))
       TMRK = 10.D0** (C1*X+C2) - C3 + C4* ((10.D0** (C5*X)-C6)**2.D0)
-      TMRSKEWT = TMRK - 273.15D0
+      DTMRSKEWT = TMRK - 273.15D0
       RETURN
       END
 C -----------------------------------------------------------
 C NCLFORTSTART
-      DOUBLE PRECISION FUNCTION TDASKEWT(O,P)
+      DOUBLE PRECISION FUNCTION DTDASKEWT(O,P)
       DOUBLE PRECISION O
       DOUBLE PRECISION P
       DOUBLE PRECISION OK
@@ -89,21 +89,20 @@ c   poisson's equation.
 
       OK = O + 273.15D0
       TDAK = OK* ((P*.001D0)**.286D0)
-      TDASKEWT = TDAK - 273.15D0
+      DTDASKEWT = TDAK - 273.15D0
       RETURN
       END
 C -----------------------------------------------------------
 C NCLFORTSTART
-      DOUBLE PRECISION FUNCTION SATLFTSKEWT(THW,P)
+      DOUBLE PRECISION FUNCTION DSATLFTSKEWT(THW,P)
       DOUBLE PRECISION THW
       DOUBLE PRECISION P
       DOUBLE PRECISION CTA
       DOUBLE PRECISION AKAP
-      DOUBLE PRECISION SATLFT
       DOUBLE PRECISION PWRP
       DOUBLE PRECISION TONE
       DOUBLE PRECISION EONE
-      DOUBLE PRECISION WOBFSKEWT
+      DOUBLE PRECISION DWOBFSKEWT
       DOUBLE PRECISION RATE
       DOUBLE PRECISION TTWO
       DOUBLE PRECISION ETWO
@@ -134,7 +133,7 @@ c   78, pp.319-322, smithsonian meteorological tables, by roland list
 c   (6th revised edition).
 
       IF (P.NE.1000.D0) GO TO 5
-      SATLFT = THW
+      DSATLFTSKEWT = THW
       RETURN
     5 CONTINUE
 
@@ -148,7 +147,7 @@ c   consider the moist adiabat ew1 through tone at p.  using the defini-
 c   tion of the wobus function (see documentation on wobf), it can be
 c   shown that eone = ew1-thw.
 
-      EONE = WOBFSKEWT(TONE) - WOBFSKEWT(THW)
+      EONE = DWOBFSKEWT(TONE) - DWOBFSKEWT(THW)
       RATE = 1.D0
       GO TO 15
 
@@ -175,18 +174,18 @@ c   pt is the potential temperature (celsius) corresponding to ttwo at p
 c   consider the moist adiabat ew2 through ttwo at p. using the defini-
 c   tion of the wobus function, it can be shown that etwo = ew2-thw.
 
-      ETWO = PT + WOBFSKEWT(TTWO) - WOBFSKEWT(PT) - THW
+      ETWO = PT + DWOBFSKEWT(TTWO) - DWOBFSKEWT(PT) - THW
 
 c   dlt is the correction to be subtracted from ttwo.
 
       DLT = ETWO*RATE
       IF (ABS(DLT).GT.0.1D0) GO TO 10
-      SATLFTSKEWT = TTWO - DLT
+      DSATLFTSKEWT = TTWO - DLT
       RETURN
       END
 c ----------------------------------------------------------
 C NCLFORTSTART
-      SUBROUTINE PTLCLSKEWT(P,T,TD,PC,TC)
+      SUBROUTINE DPTLCLSKEWT(P,T,TD,PC,TC)
       DOUBLE PRECISION P
       DOUBLE PRECISION T
       DOUBLE PRECISION TD
@@ -212,7 +211,7 @@ C NCLEND
       END
 c ----------------------------------------------------------
 C NCLFORTSTART
-      DOUBLE PRECISION FUNCTION SHOWALSKEWT(P,T,TD,NLVLS)
+      DOUBLE PRECISION FUNCTION DSHOWALSKEWT(P,T,TD,NLVLS)
       DOUBLE PRECISION SHWLTR
       DOUBLE PRECISION FLAG
 
@@ -237,7 +236,7 @@ C
 C
 C External functions.
 C
-      DOUBLE PRECISION INTERPSKEWT,TSASKEWT,EPTSKEWT
+      DOUBLE PRECISION DINTERPSKEWT,DTSASKEWT,DEPTSKEWT
 C
 C Subroutine constants.
 C
@@ -261,8 +260,8 @@ C
               P1 = DLOG(P(I-1))
               P2 = DLOG(PRES)
               P3 = DLOG(P(I))
-              T850 = INTERPSKEWT(T(I-1),T(I),P1,P2,P3)
-              TD850 = INTERPSKEWT(TD(I-1),TD(I),P1,P2,P3)
+              T850 = DINTERPSKEWT(T(I-1),T(I),P1,P2,P3)
+              TD850 = DINTERPSKEWT(TD(I-1),TD(I),P1,P2,P3)
               GO TO 2
           END IF
     1 CONTINUE
@@ -271,11 +270,11 @@ C
 C Compute the moist adiabat (given by an equivalent potential
 C temperature) through the 850 mb based LCL.
 C
-      TMOIST = EPTSKEWT(T850,TD850,PRES)
+      TMOIST = DEPTSKEWT(T850,TD850,PRES)
 C
 C Compute the parcel temperature along this moist adiabat at 500 mb.
 C
-      TP500 = TSASKEWT(TMOIST,500.D0)
+      TP500 = DTSASKEWT(TMOIST,500.D0)
 C
 C Determine 500 mb temperature from the sounding.
 C
@@ -285,7 +284,7 @@ C
               P1 = DLOG(P(I-1))
               P2 = DLOG(PRES)
               P3 = DLOG(P(I))
-              T500 = INTERPSKEWT(T(I-1),T(I),P1,P2,P3)
+              T500 = DINTERPSKEWT(T(I-1),T(I),P1,P2,P3)
               GO TO 4
           END IF
     3 CONTINUE
@@ -294,18 +293,18 @@ C
 C Compute the showalter index.
 C
       SHWLTR = T500 - TP500
-      SHOWALSKEWT = SHWLTR
+      DSHOWALSKEWT = SHWLTR
 
   999 CONTINUE
       RETURN
       END
 c ---------------------------------------------------------------------
 C NCLFORTSTART
-      DOUBLE PRECISION FUNCTION PWSKEWT(TD,P,N)
+      DOUBLE PRECISION FUNCTION DPWSKEWT(TD,P,N)
       DOUBLE PRECISION G
       DOUBLE PRECISION PW
       DOUBLE PRECISION WBOT
-      DOUBLE PRECISION WMRSKEWT
+      DOUBLE PRECISION DWMRSKEWT
       DOUBLE PRECISION WTOP
       DOUBLE PRECISION W
       DOUBLE PRECISION WL
@@ -329,9 +328,9 @@ c   initialize value of precipitable water
       PW = 0.D0
       NL = N - 1
 c   calculate the mixing ratio at the lowest level.
-      WBOT = WMRSKEWT(P(1),TD(1))
+      WBOT = DWMRSKEWT(P(1),TD(1))
       DO 5 I = 1,NL
-          WTOP = WMRSKEWT(P(I+1),TD(I+1))
+          WTOP = DWMRSKEWT(P(I+1),TD(I+1))
 c   calculate the layer-mean mixing ratio (g/kg).
           W = 0.5D0* (WTOP+WBOT)
 c   make the mixing ratio dimensionless.
@@ -343,13 +342,13 @@ c   the factor of 1000. below converts from millibars to dynes/cm**2.
           PW = PW + (QL/G)*DP
           WBOT = WTOP
     5 CONTINUE
-      PWSKEWT = PW
+      DPWSKEWT = PW
       RETURN
       END
 
 C -------------------------------------------------------
 C NCLFORTSTART
-      DOUBLE PRECISION FUNCTION CAPENCL(PENV,TENV,NLVL,LCLMB,IPRNT,
+      DOUBLE PRECISION FUNCTION DCAPETHERMO(PENV,TENV,NLVL,LCLMB,IPRNT,
      +                 TPARCEL,TMSG,JLCL,JLFC,JCROSS)
       DOUBLE PRECISION TNOT
       DOUBLE PRECISION CAPEVAL
@@ -364,7 +363,7 @@ c                               ! lifting condensation lvl [mb]
 c                               ! returned parcel temp [C]
       DOUBLE PRECISION TPARCEL(NLVL)
       DOUBLE PRECISION TMSG
-c c c   real capencl           ! J  [ignore here]
+c c c   real capethermo           ! J  [ignore here]
 
 C NCL: cape = capeThermo(penv[*]:numeric, tenv[*]:numeric, lclmb:numeric\
 C                       ,iprnt:integer)
@@ -377,13 +376,13 @@ C                          level
 C                   jlfc = returned as attribute of cape
 C                          (integer) subscript of level of free
 C                          convection
-C                   jlfc = returned as attribute of cape
+C                 jcross = returned as attribute of cape
 C                          (integer) subscript where tparcel crosses env
-C                           sounding
+C                          sounding
 C NCLEND
 C                               ! maximum number of sounding levels
       PARAMETER (NLMAX=500)
-C                               ! must match "tpar" in cape_djs
+C                               ! must match "tpar" in capedjs
       DOUBLE PRECISION TPAR(NLMAX)
 
 
@@ -397,8 +396,8 @@ C                               ! must match "tpar" in cape_djs
 
       DO NL = 1,NLVL
           IF (TENV(NL).EQ.TMSG) THEN
-              PRINT *,'fortran: capencl: no missing values allowed'
-              CAPENCL = TMSG
+              PRINT *,'fortran: capethermo: no missing values allowed'
+              DCAPETHERMO = TMSG
               RETURN
           END IF
       END DO
@@ -411,13 +410,13 @@ C                               ! must match "tpar" in cape_djs
           TPAR(N) = TMSG
       END DO
 
-      CALL CAPE_DJS(PENV,TENV,NLVL,LCLMB,IPLOT,IPRNT,CAPEVAL,TPAR,JLCL,
-     +              JLFC,JCROSS,IER)
+      CALL DCAPEDJS(PENV,TENV,NLVL,LCLMB,IPLOT,IPRNT,CAPEVAL,TPAR,JLCL,
+     +     JLFC,JCROSS,IER)
 
       DO NL = 1,NLVL
           TENV(NL) = TENV(NL) - TNOT
           TPARCEL(NL) = TPAR(NL) - TNOT
-c          write (*,"(' capencl: ',i5,4f10.2)") nl, penv(nl),tenv(nl)
+c          write (*,"(' capethermo: ',i5,4f10.2)") nl, penv(nl),tenv(nl)
 c    *                          ,tparcel(nl)
 c    *                          ,(tparcel(nl)-tenv(nl))
       END DO
@@ -426,15 +425,15 @@ c    *                          ,(tparcel(nl)-tenv(nl))
       JLFC = JLFC - 1
       JCROSS = JCROSS - 1
 
-      CAPENCL = CAPEVAL
-c       print *,"capencl=",capencl
+      DCAPETHERMO = CAPEVAL
+c       print *,"dcapethermo=",dcapethermo
 
       RETURN
       END
 C -------------------------------------------------------
 C ---> NO MORE FUNCTIONS FOR NCL ------------------------
 C -------------------------------------------------------
-      DOUBLE PRECISION FUNCTION WOBFSKEWT(T)
+      DOUBLE PRECISION FUNCTION DWOBFSKEWT(T)
       DOUBLE PRECISION T
       DOUBLE PRECISION X
       DOUBLE PRECISION POL
@@ -444,26 +443,26 @@ C called by satlftSkewT
           POL = 1.D0 + X* (-8.8416605D-03+
      +          X* (1.4714143D-04+X* (-9.6719890D-07+X* (-3.2607217D-08+
      +          X* (-3.8598073D-10)))))
-          WOBFSKEWT = 15.130D0/POL**4
+          DWOBFSKEWT = 15.130D0/POL**4
       ELSE
           POL = 1.D0 + X* (3.6182989D-03+
      +          X* (-1.3603273D-05+X* (4.9618922D-07+X* (-6.1059365D-09+
      +          X* (3.9401551D-11+X* (-1.2588129D-13+
      +          X* (1.6688280D-16)))))))
-          WOBFSKEWT = 29.930D0/POL**4 + 0.96D0*X - 14.8D0
+          DWOBFSKEWT = 29.930D0/POL**4 + 0.96D0*X - 14.8D0
       END IF
 
       RETURN
       END
 c ----------------------------------------------------------
-      DOUBLE PRECISION FUNCTION INTERPSKEWT(Y1,Y3,X1,X2,X3)
+      DOUBLE PRECISION FUNCTION DINTERPSKEWT(Y1,Y3,X1,X2,X3)
       DOUBLE PRECISION Y1,Y3,X1,X2,X3
 
-      INTERPSKEWT = Y1 + ((Y3-Y1)* ((X2-X1)/ (X3-X1)))
+      DINTERPSKEWT = Y1 + ((Y3-Y1)* ((X2-X1)/ (X3-X1)))
       RETURN
       END
 c ----------------------------------------------------------
-      DOUBLE PRECISION FUNCTION TSASKEWT(OS,P)
+      DOUBLE PRECISION FUNCTION DTSASKEWT(OS,P)
       DOUBLE PRECISION OS
       DOUBLE PRECISION P
       DOUBLE PRECISION B
@@ -472,7 +471,7 @@ c ----------------------------------------------------------
       DOUBLE PRECISION D
       DOUBLE PRECISION TQK
       DOUBLE PRECISION X
-      DOUBLE PRECISION WXSKEWT
+      DOUBLE PRECISION DWXSKEWT
 
 c   this function returns the temperature tsa (celsius) on a saturation
 c   adiabat at pressure p (millibars). os is the equivalent potential
@@ -496,20 +495,20 @@ c   of stipanuk (1973) for equation used in iteration.
       DO 1 I = 1,12
           TQK = TQ - 273.15D0
           D = D/2.D0
-          X = A*EXP(-B*WXSKEWT(TQK,P)/TQ) - TQ* ((1000.D0/P)**.286D0)
+          X = A*EXP(-B*DWXSKEWT(TQK,P)/TQ) - TQ* ((1000.D0/P)**.286D0)
           IF (ABS(X).LT.1D-7) GO TO 2
           TQ = TQ + SIGN(D,X)
     1 CONTINUE
-    2 TSASKEWT = TQ - 273.15D0
+    2 DTSASKEWT = TQ - 273.15D0
       RETURN
       END
 
 c ---------------------------------------------------------------------
-      DOUBLE PRECISION FUNCTION WXSKEWT(T,P)
+      DOUBLE PRECISION FUNCTION DWXSKEWT(T,P)
       DOUBLE PRECISION T
       DOUBLE PRECISION P
       DOUBLE PRECISION X
-      DOUBLE PRECISION ESATSKEWT
+      DOUBLE PRECISION DESATSKEWT
 
 c  this function returns the mixing ratio (grams of water vapor per
 c  kilogram of dry air) given the dew point (celsius) and pressure
@@ -517,12 +516,12 @@ c  (millibars). if the temperture  is input instead of the
 c  dew point, then saturation mixing ratio (same units) is returned.
 c  the formula is found in most meteorological texts.
 
-      X = ESATSKEWT(T)
-      WXSKEWT = 622.D0*X/ (P-X)
+      X = DESATSKEWT(T)
+      DWXSKEWT = 622.D0*X/ (P-X)
       RETURN
       END
 c ---------------------------------------------------------------------
-      DOUBLE PRECISION FUNCTION ESATSKEWT(T)
+      DOUBLE PRECISION FUNCTION DESATSKEWT(T)
       DOUBLE PRECISION T
       DOUBLE PRECISION TK
       DOUBLE PRECISION P1
@@ -543,18 +542,18 @@ c   electronics command, white sands missile range, new mexico 88002.
       C1 = 23.832241D0 - 5.02808D0*DLOG10(TK)
       ESAT = 10.D0** (C1-1.3816D-7*10.D0**P1+8.1328D-3*10.D0**P2-
      +       2949.076D0/TK)
-      ESATSKEWT = ESAT
+      DESATSKEWT = ESAT
       RETURN
       END
 c -----------------------------------------
-      DOUBLE PRECISION FUNCTION EPTSKEWT(T,TD,P)
+      DOUBLE PRECISION FUNCTION DEPTSKEWT(T,TD,P)
       DOUBLE PRECISION T
       DOUBLE PRECISION TD
       DOUBLE PRECISION P
       DOUBLE PRECISION W
-      DOUBLE PRECISION WMRSKEWT
+      DOUBLE PRECISION DWMRSKEWT
       DOUBLE PRECISION TLCL
-      DOUBLE PRECISION TCONSKEWT
+      DOUBLE PRECISION DTCONSKEWT
       DOUBLE PRECISION TK
       DOUBLE PRECISION TL
       DOUBLE PRECISION PT
@@ -563,27 +562,27 @@ c -----------------------------------------
 c   compute the mixing ratio (grams of water vapor per kilogram of
 c   dry air).
 
-      W = WMRSKEWT(P,TD)
+      W = DWMRSKEWT(P,TD)
 
 c   compute the temperature (celsius) at the lifting condensation level.
 
-      TLCL = TCONSKEWT(T,TD)
+      TLCL = DTCONSKEWT(T,TD)
       TK = T + 273.15D0
       TL = TLCL + 273.15D0
       PT = TK* (1000.D0/P)** (0.2854D0* (1.D0-0.00028D0*W))
       EPTK = PT*EXP((3.376D0/TL-0.00254D0)*W* (1.D0+0.00081D0*W))
-      EPTSKEWT = EPTK - 273.15D0
+      DEPTSKEWT = EPTK - 273.15D0
       RETURN
       END
 c -----------------------------------------
-      DOUBLE PRECISION FUNCTION WMRSKEWT(P,T)
+      DOUBLE PRECISION FUNCTION DWMRSKEWT(P,T)
       DOUBLE PRECISION P
       DOUBLE PRECISION T
       DOUBLE PRECISION EPS
       DOUBLE PRECISION X
       DOUBLE PRECISION WFW
       DOUBLE PRECISION FWESW
-      DOUBLE PRECISION ESWSKEWT
+      DOUBLE PRECISION DESWSKEWT
       DOUBLE PRECISION R
 
 c   this function approximates the mixing ratio wmr (grams of water
@@ -605,16 +604,16 @@ c   in the atmosphere.
 
       X = 0.02D0* (T-12.5D0+7500.D0/P)
       WFW = 1.D0 + 4.5D-06*P + 1.4D-03*X*X
-      FWESW = WFW*ESWSKEWT(T)
+      FWESW = WFW*DESWSKEWT(T)
       R = EPS*FWESW/ (P-FWESW)
 
 c   convert r from a dimensionless ratio to grams/kilogram.
 
-      WMRSKEWT = 1000.D0*R
+      DWMRSKEWT = 1000.D0*R
       RETURN
       END
 c -----------------------------------------
-      DOUBLE PRECISION FUNCTION ESWSKEWT(T)
+      DOUBLE PRECISION FUNCTION DESWSKEWT(T)
       DOUBLE PRECISION T
       DOUBLE PRECISION ES0
       DOUBLE PRECISION POL
@@ -636,11 +635,11 @@ c   es0 = saturation vapor ressure over liquid water at 0c
      +      T* (0.78736169D-04+T* (-0.61117958D-06+T* (0.43884187D-08+
      +      T* (-0.29883885D-10+T* (0.21874425D-12+T* (-0.17892321D-14+
      +      T* (0.11112018D-16+T* (-0.30994571D-19)))))))))
-      ESWSKEWT = ES0/POL**8
+      DESWSKEWT = ES0/POL**8
       RETURN
       END
 c ---------------------------------------------------------------------
-      DOUBLE PRECISION FUNCTION TCONSKEWT(T,D)
+      DOUBLE PRECISION FUNCTION DTCONSKEWT(T,D)
       DOUBLE PRECISION T
       DOUBLE PRECISION D
       DOUBLE PRECISION S
@@ -659,18 +658,18 @@ c   polynomial is unknown.
 
       DLT = S* (1.2185D0+1.278D-03*T+S*
      +      (-2.19D-03+1.173D-05*S-5.2D-06*T))
-      TCONSKEWT = T - DLT
+      DTCONSKEWT = T - DLT
       RETURN
       END
 c ---------------------------------------------------------------------
-c ------cape_djs not called directly by NCL--------------------------
+c ------capedjs not called directly by NCL--------------------------
 cNAME
 c     cape - calculates CAPE, given temperature/pressure
 c              data from a vertical sounding
 c
 cSYNOPSIS
-c  call cape_djs(penv,tenv,nlvl,lclmb,iplot,iprnt,capeval,ier) (old)
-c  call cape_djs(penv,tenv,nlvl,lclmb,iplot,iprnt,capeval,tparcel,ier)
+c  call capedjs(penv,tenv,nlvl,lclmb,iplot,iprnt,capeval,ier) (old)
+c  call capedjs(penv,tenv,nlvl,lclmb,iplot,iprnt,capeval,tparcel,ier)
 c           (change for NCL)
 c
 cDESCRIPTION
@@ -680,37 +679,37 @@ c     optional plots of environmental temperature, parcel
 c     temperature, and cape as a function of altitude are available
 c
 c     definition of CAPE: the integral wrt -ln(p/p0) of
-c             R*(Tparcel-Tenv)	 from the Level of Free Convection
+c             R*(Tparcel-Tenv)   from the Level of Free Convection
 c             'up' to the 'crossing level'.
 c
 cPARAMETERS
-c     Parameter	Type	Description
+c     Parameter Type    Description
 c
-c     penv		(i)	environmental pressure sounding array in mb;
+c     penv              (i)     environmental pressure sounding array in mb;
 c                             the pressure array is assumed to be
 c                             loaded in a monotonically decreasing
 c                             sequence.
 c
-c     tenv		(i)	temperature sounding array in Kelvin at
+c     tenv              (i)     temperature sounding array in Kelvin at
 c                             the pressure levels
 c
-c     nlvl		(i)	number of sounding levels
+c     nlvl              (i)     number of sounding levels
 c
-c     lclmb		(i)	approximate pressure at lifting condensation
+c     lclmb             (i)     approximate pressure at lifting condensation
 c                   level (mb). the pressure ACTUALLY USED will
 c                   be the first value on the sounding grid greater
 c                   than or equal to lclmb.
 c
-c     iplot		(i)	plotting flag: plots (=1); no plots (=other).
+c     iplot             (i)     plotting flag: plots (=1); no plots (=other).
 c                             the parcel and environmental temperature
 c                             profiles are plotted throughout the
 c                             sounding depth; the CAPE profile is
 c                             plotted only between the LFC and the 
 c                             crossing level.
 c
-c     iprnt		(i)	printing flag: print (>0); no print (=0). DJS
+c     iprnt             (i)     printing flag: print (>0); no print (=0). DJS
 c
-c     capeval		(o)	CAPE at the 'crossing level',
+c     capeval           (o)     CAPE at the 'crossing level',
 c                             defined to be the height where the
 c                             parcel temp has decreased enough to
 c                             again equal the environmental temp.
@@ -723,9 +722,9 @@ c                             capeval will be assigned the value of
 c                             CAPE at the "top" of the
 c                             sounding (i.e. smallest pressure)
 c
-c     tparcel		(o)	temperature of parcel
+c     tparcel           (o)     temperature of parcel
 c
-c     ier		(o)	error status:
+c     ier               (o)     error status:
 c                             zero on successful return;
 c                             minus one on error;
 c                             minus two if 'crossing level' does not
@@ -746,7 +745,7 @@ c       performed in the calling program, if iplot = 1
 cAUTHOR
 c     GLF 9/95
 
-      SUBROUTINE CAPE_DJS(PENV,TENV,NLVL,LCLMB,IPLOT,IPRNT,CAPEVAL,
+      SUBROUTINE DCAPEDJS(PENV,TENV,NLVL,LCLMB,IPLOT,IPRNT,CAPEVAL,
      +                    TPARCEL,JLCL,JLFC,JCROSS,IER)
 
       IMPLICIT NONE
@@ -768,15 +767,12 @@ C                               number of sounding levels
       DOUBLE PRECISION ZLEV,TPAR,PE,TEMPENV,ZZLEV,PPE
       DIMENSION ZLEV(NLMAX),TPAR(NLMAX),PE(NLMAX),TEMPENV(NLMAX)
       DIMENSION ZZLEV(NLMAX),PPE(NLMAX)
-      DOUBLE PRECISION TMLAPSKEWT
+      DOUBLE PRECISION DTMLAPSKEWT
 
 c     arrays and equivalences for NCAR graphics   [ NOT USED]
       DOUBLE PRECISION WORK,XI,THE
-      INTEGER IDSH
-      DIMENSION WORK(NLMAX,2),IDSH(2),XI(5),THE(5)
+      DIMENSION WORK(NLMAX,2),XI(5),THE(5)
       EQUIVALENCE (WORK(1,1),TEMPENV(1)), (WORK(1,2),TPAR(1))
-c       character*16 agdshn
-c       data idsh/ O"177777",O"177777"/
 
       RD = 287.D0
       IF (NLVL.GT.NLMAX) THEN
@@ -842,13 +838,15 @@ C                                   convert to C
 c     linmin determines theta_e
 
 
-      CALL LINMIN(THE,XI,NDIM,FRET,PLCL,TLCL)
+      FRET = 0.D0
+      CALL DLINMIN(THE,XI,NDIM,FRET,PLCL,TLCL)
+
       DO II = JLCL1,NLVL
           PMB = PPAR0*EXP(-ZLEV(II))
 
 c        tmlapskewt computes temperature given theta_e and pressure
 
-          TPAR(II) = CENTKEL + TMLAPSKEWT(THE(1),PMB)
+          TPAR(II) = CENTKEL + DTMLAPSKEWT(THE(1),PMB)
       END DO
       IF (IPRNT.GT.0) THEN
           PRINT *,' '
@@ -964,7 +962,7 @@ c    *                           ,(work(ii,2)-work(ii,1))
       RETURN
       END
 c ----------Not called by NCL directly--------------------------
-      SUBROUTINE LINMIN(P,XI,N,FRET,PLCL,TLCL)
+      SUBROUTINE DLINMIN(P,XI,N,FRET,PLCL,TLCL)
       DOUBLE PRECISION P
       DOUBLE PRECISION XI
       DOUBLE PRECISION FRET
@@ -981,7 +979,7 @@ c ----------Not called by NCL directly--------------------------
       DOUBLE PRECISION FA
       DOUBLE PRECISION FX
       DOUBLE PRECISION FB
-      DOUBLE PRECISION BRENT
+      DOUBLE PRECISION DBRENT
       DOUBLE PRECISION XMIN
 c
 c  LINMIN: given the n-dim point P and n-dim direction XI, move and
@@ -994,7 +992,8 @@ c=================================================================
       PARAMETER (NMAX=50,TOL=1.D-5)
       COMMON /F1COM/PCOM(NMAX),XICOM(NMAX),PLCLX,TLCLX,NCOM
       DIMENSION P(N),XI(N)
-      EXTERNAL FUNC
+      DOUBLE PRECISION DFUNCSHEA
+      EXTERNAL DFUNCSHEA
 c
 c  set common block
 c---------------------
@@ -1011,8 +1010,8 @@ c---------------------
       AX = 0.0D0
       XX = 1.0D0
       BX = 2.0D0
-      CALL MNBRAK(AX,XX,BX,FA,FX,FB,FUNC)
-      FRET = BRENT(AX,XX,BX,FUNC,TOL,XMIN)
+      CALL DMNBRAK(AX,XX,BX,FA,FX,FB,DFUNCSHEA)
+      FRET = DBRENT(AX,XX,BX,DFUNCSHEA,TOL,XMIN)
 c
 c  construct vector results
 c---------------------------
@@ -1026,14 +1025,14 @@ c---------------
       RETURN
       END
 c ----------Not called by NCL directly--------------------------
-      SUBROUTINE MNBRAK(AX,BX,CX,FA,FB,FC,FUNC)
+      SUBROUTINE DMNBRAK(AX,BX,CX,FA,FB,FC,DFUNCSHEA)
       DOUBLE PRECISION AX
       DOUBLE PRECISION BX
       DOUBLE PRECISION CX
       DOUBLE PRECISION FA
       DOUBLE PRECISION FB
       DOUBLE PRECISION FC
-      DOUBLE PRECISION FUNC
+      DOUBLE PRECISION DFUNCSHEA
       DOUBLE PRECISION GOLD
       DOUBLE PRECISION GLIMIT
       DOUBLE PRECISION TINY
@@ -1052,15 +1051,15 @@ c     which bracket a minimum of the funtion. Also returned are the
 c     function values at the three points, FA, FB, FC.
 c===================================================================
       SAVE
-ccc   parameter(GOLD=1.618034d0,GLIMIT=100.d0,TINY=1.d-20)
+      parameter(GOLD=1.618034d0,GLIMIT=100.d0,TINY=1.d-20)
 cc    parameter(GOLD=1.6180340,GLIMIT=100.0,TINY=1.e-7)
-      PARAMETER (GOLD=1.6180340D0,GLIMIT=100.0D0,TINY=1.D-5)
-      EXTERNAL FUNC
+c      PARAMETER (GOLD=1.6180340D0,GLIMIT=100.0D0,TINY=1.D-5)
+      EXTERNAL DFUNCSHEA
 c
 c  get intial function values switch roles of A and B if needed.
 c------------------------------------------------------------------
-      FA = FUNC(AX)
-      FB = FUNC(BX)
+      FA = DFUNCSHEA(AX)
+      FB = DFUNCSHEA(BX)
       IF (FB.GT.FA) THEN
           DUM = AX
           AX = BX
@@ -1073,7 +1072,7 @@ c
 c  first guess
 c-------------
       CX = BX + GOLD* (BX-AX)
-      FC = FUNC(CX)
+      FC = DFUNCSHEA(CX)
 c
 c  loop point for bracketing
 c=============================
@@ -1085,7 +1084,7 @@ c=============================
      +        (2.0D0*SIGN(MAX(ABS(Q-R),TINY),Q-R))
           ULIM = BX + GLIMIT* (CX-BX)
           IF ((BX-U)* (U-CX).GT.0.0D0) THEN
-              FU = FUNC(U)
+              FU = DFUNCSHEA(U)
               IF (FU.LT.FC) THEN
                   AX = BX
                   FA = FB
@@ -1098,23 +1097,23 @@ c=============================
                   GO TO 100
               END IF
               U = CX + GOLD* (CX-BX)
-              FU = FUNC(U)
+              FU = DFUNCSHEA(U)
           ELSE IF ((CX-U)* (U-ULIM).GT.0.0D0) THEN
-              FU = FUNC(U)
+              FU = DFUNCSHEA(U)
               IF (FU.LT.FC) THEN
                   BX = CX
                   CX = U
                   U = CX + GOLD* (CX-BX)
                   FB = FC
                   FC = FU
-                  FU = FUNC(U)
+                  FU = DFUNCSHEA(U)
               END IF
           ELSE IF ((U-ULIM)* (ULIM-CX).GE.0.0D0) THEN
               U = ULIM
-              FU = FUNC(U)
+              FU = DFUNCSHEA(U)
           ELSE
               U = CX + GOLD* (CX-BX)
-              FU = FUNC(U)
+              FU = DFUNCSHEA(U)
           END IF
           AX = BX
           BX = CX
@@ -1130,12 +1129,12 @@ c--------------
       RETURN
       END
 c ----------Not called by NCL directly--------------------------
-      FUNCTION BRENT(AX,BX,CX,FUNC,TOL,XMIN)
-      DOUBLE PRECISION BRENT
+      FUNCTION DBRENT(AX,BX,CX,DFUNCSHEA,TOL,XMIN)
+      DOUBLE PRECISION DBRENT
       DOUBLE PRECISION AX
       DOUBLE PRECISION BX
       DOUBLE PRECISION CX
-      DOUBLE PRECISION FUNC
+      DOUBLE PRECISION DFUNCSHEA
       DOUBLE PRECISION TOL
       DOUBLE PRECISION XMIN
       DOUBLE PRECISION CGOLD
@@ -1160,7 +1159,7 @@ c ----------Not called by NCL directly--------------------------
       DOUBLE PRECISION U
       DOUBLE PRECISION FU
 c
-c  BRENT: given a subroutine 'func' which returns a function value,
+c DBRENT: given a subroutine 'func' which returns a function value,
 c    and given a bracketing triplet of abscissas AX, BX, CX (such that
 c    BX is between AX and CX, and F(BX) is less than both F(AX) and
 c    F(CX) ), this routine isolates the minimum to a frational precision
@@ -1169,9 +1168,9 @@ c    the abscissa of the minimum is returned as XMIN, and the minimum
 c    function value is returned as BRENT.
 c======================================================================
       SAVE
-ccc   parameter(ITMAX=100,CGOLD=.3819660,ZEPS=1.e-10)
-      PARAMETER (ITMAX=100,CGOLD=.3819660D0,ZEPS=1.D-3)
-      EXTERNAL FUNC
+      parameter(ITMAX=100,CGOLD=.3819660,ZEPS=1.e-10)
+ccc      PARAMETER (ITMAX=100,CGOLD=.3819660D0,ZEPS=1.D-3)
+      EXTERNAL DFUNCSHEA
 c
 c  set initial values
 c-------------------------
@@ -1182,7 +1181,7 @@ cc    print *,' ax=',ax,' bx=',bx,' cx=',cx,' a=',a,' b=',b
       W = V
       X = V
       E = 0.0D0
-      FX = FUNC(X)
+      FX = DFUNCSHEA(X)
       FV = FX
       FW = FX
 c
@@ -1225,7 +1224,7 @@ cc    print *,'|x-xm|=',abs(x-xm),' t2-(b-a)/2=',(tol2-.5e0*(b-a))
           ELSE
               U = X + SIGN(TOL1,D)
           END IF
-          FU = FUNC(U)
+          FU = DFUNCSHEA(U)
           IF (FU.LE.FX) THEN
               IF (U.GE.X) THEN
                   A = X
@@ -1255,7 +1254,7 @@ cc    print *,'|x-xm|=',abs(x-xm),' t2-(b-a)/2=',(tol2-.5e0*(b-a))
               END IF
           END IF
   300 CONTINUE
-      PRINT *,' BRENT ERROR STOP: Maximum Number of Iterations'
+      PRINT *,' DBRENT ERROR STOP: Maximum Number of Iterations'
       PRINT *,'      reached, ITMAX=',ITMAX
       STOP
 c
@@ -1263,19 +1262,18 @@ c  end routine
 c-----------------
   400 CONTINUE
       XMIN = X
-      BRENT = FX
+      DBRENT = FX
       RETURN
       END
 c ----------Not called by NCL directly--------------------------
-      FUNCTION FUNC(X)
-      DOUBLE PRECISION FUNC
+      DOUBLE PRECISION FUNCTION DFUNCSHEA(X)
       DOUBLE PRECISION X
       DOUBLE PRECISION P
       DOUBLE PRECISION XI
       DOUBLE PRECISION PLCL
       DOUBLE PRECISION TLCL
       DOUBLE PRECISION XT
-      DOUBLE PRECISION TMLAPSKEWT
+      DOUBLE PRECISION DTMLAPSKEWT
 c
       SAVE
       PARAMETER (NMAX=50)
@@ -1288,22 +1286,21 @@ c
 c
 c  end routine
 c--------------
-      FUNC = ABS(TLCL-TMLAPSKEWT(XT,PLCL))
+      DFUNCSHEA = ABS(TLCL-DTMLAPSKEWT(XT,PLCL))
       RETURN
       END
 c ---------------------------------------------------------------------
-      DOUBLE PRECISION FUNCTION TMLAPSKEWT(THETAE,P)
+      DOUBLE PRECISION FUNCTION DTMLAPSKEWT(THETAE,P)
       DOUBLE PRECISION THETAE
       DOUBLE PRECISION P
       DOUBLE PRECISION CRIT
       DOUBLE PRECISION EQ0
       DOUBLE PRECISION TLEV
       DOUBLE PRECISION EQ1
-      DOUBLE PRECISION EPTSKEWT
+      DOUBLE PRECISION DEPTSKEWT
       DOUBLE PRECISION DIF
       DOUBLE PRECISION DT
-      DOUBLE PRECISION TMLAPSSKEWT
-c c c   real function tmlapsSkewT(thetae,p)
+c c c   real FUNCTION DtmlapsSkewT(thetae,p)
 
 c   this function returns the temperature tmlapskewt (celsius) at
 c   pressure p (millibars) along the moist adiabat corresponding
@@ -1324,7 +1321,7 @@ c   initial guess for solution
 c   compute the saturation equivalent potential temperature correspon-
 c   ding to temperature tlev and pressure p.
 
-      EQ1 = EPTSKEWT(TLEV,TLEV,P)
+      EQ1 = DEPTSKEWT(TLEV,TLEV,P)
       DIF = ABS(EQ1-EQ0)
       IF (DIF.LT.CRIT) GO TO 3
       IF (EQ1.GT.EQ0) GO TO 1
@@ -1337,7 +1334,7 @@ c   dt is the initial stepping increment.
     1 DT = -10.D0
       I = 1
     2 TLEV = TLEV + DT
-      EQ1 = EPTSKEWT(TLEV,TLEV,P)
+      EQ1 = DEPTSKEWT(TLEV,TLEV,P)
       DIF = ABS(EQ1-EQ0)
       IF (DIF.LT.CRIT) GO TO 3
       J = -1
@@ -1350,6 +1347,6 @@ c   and decrease the stepping increment.
       TLEV = TLEV - DT
       DT = DT/10.D0
       GO TO 2
-    3 TMLAPSSKEWT = TLEV
+    3 DTMLAPSKEWT = TLEV
       RETURN
       END
