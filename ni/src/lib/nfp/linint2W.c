@@ -8,12 +8,12 @@
 
 extern void NGCALLF(dlinint1,DLININT1)(int *,double *,double *,int *,int *,
                                        double *,double *,double *,double *,
-                                       int *,double *,int *);
+                                       int *,double *,int *,int *);
 
 extern void NGCALLF(dlinint2,DLININT2)(int *,double *,int *,double *,
                                        double *,int *,int *,double *,int *,
                                        double *,double *,double *, double *,
-                                       int *,double *,int *);
+                                       int *,double *,int *,int *);
 
 
 extern void NGCALLF(dlinint2pts,DLININT2PTS)(int *,double *,int *,double *,
@@ -42,9 +42,9 @@ NhlErrorTypes linint1_W( void )
 /*
  * Other variables
  */
-  double *xiw, *fixw;
   int nxi, nxi2, nfi, nxo, nfo, size_leftmost, size_fo;
   int i, j, index_fi, index_fo, ier;
+  double *xiw, *fxiw;
 /*
  * Retrieve parameters
  *
@@ -105,7 +105,6 @@ NhlErrorTypes linint1_W( void )
  */
   nxi = dsizes_xi[0];
   nxo = dsizes_xo[0];
-  nxi2 = nxi+2;
   nfi = nxi;
   nfo = nxo;
 
@@ -161,12 +160,14 @@ NhlErrorTypes linint1_W( void )
 /*
  * Allocate space for work arrays.
  */
+  nxi2 = nxi + 2;
   xiw  = (double*)calloc(nxi2,sizeof(double));
-  fixw = (double*)calloc(nxi2,sizeof(double));
-  if(xiw == NULL || fixw == NULL) {
+  fxiw = (double*)calloc(nxi2,sizeof(double));
+  if(xiw == NULL || fxiw == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"linint1: Unable to allocate memory for work arrays");
     return(NhlFATAL);
   }
+
 /*
  * Coerce input arrays to double if necessary.
  */
@@ -197,8 +198,8 @@ NhlErrorTypes linint1_W( void )
       tmp_fi = &((double*)fi)[index_fi];
     }
 
-    NGCALLF(dlinint1,DLININT1)(&nxi,tmp_xi,tmp_fi,wrap,&nxo,tmp_xo,tmp_fo,
-                               xiw,fixw,&nxi2,&missing_dfi.doubleval,&ier);
+    NGCALLF(dlinint1,DLININT1)(&nxi,tmp_xi,tmp_fi,wrap,&nxo,tmp_xo,tmp_fo,xiw,
+                               fxiw,&nxi2,&missing_dfi.doubleval,opt,&ier);
 
     if(ier) {
       NhlPError(NhlWARNING,NhlEUNKNOWN,"linint1: xi and xo must be monotonically increasing");
@@ -224,6 +225,8 @@ NhlErrorTypes linint1_W( void )
   if(type_xo != NCL_double) NclFree(tmp_xo);
   if(type_fi != NCL_double) NclFree(tmp_fi);
   NclFree(tmp_fo);
+  NclFree(xiw);
+  NclFree(fxiw);
 
   if(type_fi == NCL_double) {
 /*
@@ -261,9 +264,9 @@ NhlErrorTypes linint2_W( void )
 /*
  * Other variables
  */
-  double *xiw, *fixw;
-  int nxi, nxi2, nyi, nfi, nxo, nyo, nfo, size_leftmost, size_fo;
+  int nxi, nyi, nxi2, nfi, nxo, nyo, nfo, size_leftmost, size_fo;
   int i, j, index_fi, index_fo, ier;
+  double *xiw, *fxiw;
 /*
  * Retrieve parameters
  *
@@ -343,7 +346,6 @@ NhlErrorTypes linint2_W( void )
  * Compute the total number of elements in our arrays.
  */
   nxi  = dsizes_xi[0];
-  nxi2 = nxi+2;
   nyi  = dsizes_yi[0];
   nxo  = dsizes_xo[0];
   nyo  = dsizes_yo[0];
@@ -401,9 +403,10 @@ NhlErrorTypes linint2_W( void )
 /*
  * Allocate space for work arrays.
  */
+  nxi2 = nxi + 2;
   xiw  = (double*)calloc(nxi2,sizeof(double));
-  fixw = (double*)calloc(nxi2,sizeof(double));
-  if(xiw == NULL || fixw == NULL) {
+  fxiw = (double*)calloc(nxi2,sizeof(double));
+  if(xiw == NULL || fxiw == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"linint2: Unable to allocate memory for work arrays");
     return(NhlFATAL);
   }
@@ -441,8 +444,8 @@ NhlErrorTypes linint2_W( void )
     }
 
     NGCALLF(dlinint2,DLININT2)(&nxi,tmp_xi,&nyi,tmp_yi,tmp_fi,wrap,&nxo,
-                               tmp_xo,&nyo,tmp_yo,tmp_fo,xiw,fixw,&nxi2,
-                               &missing_dfi.doubleval,&ier);
+                               tmp_xo,&nyo,tmp_yo,tmp_fo,xiw,fxiw,&nxi2,
+                               &missing_dfi.doubleval,opt,&ier);
 
     if(ier) {
       NhlPError(NhlWARNING,NhlEUNKNOWN,"linint2: xi, yi, xo, and yo must be monotonically increasing");
@@ -470,6 +473,8 @@ NhlErrorTypes linint2_W( void )
   if(type_yo != NCL_double) NclFree(tmp_yo);
   if(type_fi != NCL_double) NclFree(tmp_fi);
   NclFree(tmp_fo);
+  NclFree(xiw);
+  NclFree(fxiw);
 
   if(type_fi == NCL_double) {
 /*
@@ -507,7 +512,7 @@ NhlErrorTypes linint2_points_W( void )
 /*
  * Other variables
  */
-  double *xiw, *fixw;
+  double *xiw, *fxiw;
   int nxi, nxi2, nyi, nfi, nxyo, size_leftmost, size_fo;
   int i, j, index_fi, index_fo, ier;
 /*
@@ -649,8 +654,8 @@ NhlErrorTypes linint2_points_W( void )
  * Allocate space for work arrays.
  */
   xiw  = (double*)calloc(nxi2,sizeof(double));
-  fixw = (double*)calloc(nyi*nxi2,sizeof(double));
-  if(xiw == NULL || fixw == NULL) {
+  fxiw = (double*)calloc(nyi*nxi2,sizeof(double));
+  if(xiw == NULL || fxiw == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"linint2_points: Unable to allocate memory for work arrays");
     return(NhlFATAL);
   }
@@ -689,7 +694,7 @@ NhlErrorTypes linint2_points_W( void )
     }
 
     NGCALLF(dlinint2pts,DLININT2PTS)(&nxi,tmp_xi,&nyi,tmp_yi,tmp_fi,wrap,
-                                     &nxyo,tmp_xo,tmp_yo,tmp_fo,xiw,fixw,
+                                     &nxyo,tmp_xo,tmp_yo,tmp_fo,xiw,fxiw,
                                      &nxi2,&missing_dfi.doubleval,&ier);
 
     if(ier) {

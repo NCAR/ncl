@@ -179,8 +179,8 @@ NhlErrorTypes rcm2rgrid_W( void )
 /*
  * Coerce input arrays to double if necessary.
  */
-  tmp_lat2d = coerce_input_double(lat2d,type_lat2d,nlat2d,0,NULL,NULL);
-  tmp_lon2d = coerce_input_double(lon2d,type_lon2d,nlon2d,0,NULL,NULL);
+  tmp_lat2d = coerce_input_double(lat2d,type_lat2d,nfi,0,NULL,NULL);
+  tmp_lon2d = coerce_input_double(lon2d,type_lon2d,nfi,0,NULL,NULL);
   tmp_lat1d = coerce_input_double(lat1d,type_lat1d,nlat1d,0,NULL,NULL);
   tmp_lon1d = coerce_input_double(lon1d,type_lon1d,nlon1d,0,NULL,NULL);
   tmp_opt   = coerce_input_double(opt,type_opt,1,0,NULL,NULL);
@@ -221,14 +221,7 @@ NhlErrorTypes rcm2rgrid_W( void )
 
     if(ier) {
       NhlPError(NhlWARNING,NhlEUNKNOWN,"rcm2rgrid: lat2d, lon2d, lat1d, lon1d must be monotonically increasing");
-      for(j = 0; j < nfo; j++) {
-        if(type_fi == NCL_double) {
-          ((double*)fo)[index_fo+j] = missing_dfi.doubleval;
-        }
-        else {
-          ((double*)fo)[index_fo+j] = missing_dfi.floatval;
-        }
-      }
+      set_subset_output_missing(fo,index_fo,type_fi,nfo,missing_dfi.doubleval);
     }
     else {
       coerce_output_float_or_double(fo,tmp_fo,type_fi,nfo,index_fo);
@@ -425,8 +418,8 @@ NhlErrorTypes rgrid2rcm_W( void )
 /*
  * Coerce input arrays to double if necessary.
  */
-  tmp_lat2d = coerce_input_double(lat2d,type_lat2d,nlat2d,0,NULL,NULL);
-  tmp_lon2d = coerce_input_double(lon2d,type_lon2d,nlon2d,0,NULL,NULL);
+  tmp_lat2d = coerce_input_double(lat2d,type_lat2d,nfo,0,NULL,NULL);
+  tmp_lon2d = coerce_input_double(lon2d,type_lon2d,nfo,0,NULL,NULL);
   tmp_lat1d = coerce_input_double(lat1d,type_lat1d,nlat1d,0,NULL,NULL);
   tmp_lon1d = coerce_input_double(lon1d,type_lon1d,nlon1d,0,NULL,NULL);
   tmp_opt   = coerce_input_double(opt,type_opt,1,0,NULL,NULL);
@@ -467,14 +460,7 @@ NhlErrorTypes rgrid2rcm_W( void )
 
     if(ier) {
       NhlPError(NhlWARNING,NhlEUNKNOWN,"rgrid2rcm: lat2d, lon2d, lat1d, lon1d must be monotonically increasing");
-      for(j = 0; j < nfo; j++) {
-        if(type_fi == NCL_double) {
-          ((double*)fo)[index_fo+j] = missing_dfi.doubleval;
-        }
-        else {
-          ((double*)fo)[index_fo+j] = missing_dfi.floatval;
-        }
-      }
+      set_subset_output_missing(fo,index_fo,type_fi,nfo,missing_dfi.doubleval);
     }
     else {
       coerce_output_float_or_double(fo,tmp_fo,type_fi,nfo,index_fo);

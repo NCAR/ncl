@@ -1,10 +1,12 @@
 C -----------------------------------------------------------
 C NCLFORTSTART
-      SUBROUTINE DLININT1(NXI,XI,FI,ICYCX,NXO,XO,FO,XMSG,IOPT,IER)
+      SUBROUTINE DLININT1(NXI,XI,FI,ICYCX,NXO,XO,FO,XIW,FXIW,NXI2,XMSG,
+     +                    IOPT,IER)
       IMPLICIT NONE
-      INTEGER NXI,NXO,IOPT,ICYCX,IER
+      INTEGER NXI,NXO,NXI2,IOPT,ICYCX,IER
       DOUBLE PRECISION XI(NXI),FI(NXI)
       DOUBLE PRECISION XO(NXO),FO(NXO),XMSG
+      DOUBLE PRECISION XIW(NXI2),FXIW(NXI2)
 C NCLEND
 
 C This is written  with GNU f77 acceptable extensions
@@ -48,11 +50,8 @@ c .             =1;   not enough points in input/output array
 c .             =2;   xi are not monotonically increasing
 c .             =4;   xo yo are not monotonically increasing
 c
-c                              local automatic temporary/work arrays
-      DOUBLE PRECISION XIW(0:NXI+1),FXIW(0:NXI+1)
 c                              local
-      INTEGER NX,NY,NPTS,IFLAG,NXSTRT,NXLAST
-      DOUBLE PRECISION DX
+      INTEGER NX,NPTS,IFLAG,NXSTRT,NXLAST
 c                              gross error checking
       IER = 0
       IF (NXO.LT.1) THEN
@@ -83,20 +82,20 @@ c                              collapse data array (eliminate msg)
               DO NX = 1,NXI
                   IF (FI(NX).NE.XMSG) THEN
                       NPTS = NPTS + 1
-                      XIW(NPTS) = XI(NX)
-                      FXIW(NPTS) = FI(NX)
+                      XIW(NPTS+1)  = XI(NX)
+                      FXIW(NPTS+1) = FI(NX)
                   END IF
               END DO
 
-              CALL DLIN2INT1(NPTS,XIW(1),FXIW(1),NXO,XO,FO,XMSG,IFLAG)
+              CALL DLIN2INT1(NPTS,XIW(2),FXIW(2),NXO,XO,FO,XMSG,IFLAG)
           END IF
       ELSE
 c                              data are cyclic
           IF (IOPT.EQ.0) THEN
 c                              preserve msg region
               DO NX = 1,NXI
-                  XIW(NX) = XI(NX)
-                  FXIW(NX) = FI(NX)
+                  XIW(NX+1)  = XI(NX)
+                  FXIW(NX+1) = FI(NX)
               END DO
 
               CALL DLINCYC(NXI,XI,FI,1,NXI,IFLAG,XIW,FXIW,NXI)
@@ -110,8 +109,8 @@ c                              collapse data array
               DO NX = 1,NXI
                   IF (FI(NX).NE.XMSG) THEN
                       NPTS = NPTS + 1
-                      XIW(NPTS) = XI(NX)
-                      FXIW(NPTS) = FI(NX)
+                      XIW(NPTS+1)  = XI(NX)
+                      FXIW(NPTS+1) = FI(NX)
                       IF (NPTS.EQ.1) NXSTRT = NX
                       NXLAST = NX
                   END IF
@@ -125,7 +124,7 @@ c                              collapse data array
               CALL DLINCYC(NXI,XI,FI,NXSTRT,NXLAST,IFLAG,XIW,FXIW,NPTS)
               CALL DLIN2INT1(NPTS+2,XIW,FXIW,NXO,XO,FO,XMSG,IFLAG)
 c c c         do nx=0,npts+1
-c c c            write (*,"(i5,2(1x,f10.5))") nx, xiw(nx), fxiw(nx)
+c c c            write (*,"(i5,2(1x,f10.5))") nx, xiw(nx+1), fxiw(nx+1)
 c c c         end do
           END IF
 
@@ -135,12 +134,13 @@ c c c         end do
       END
 c -----------------------------------------------------------
 C NCLFORTSTART
-      SUBROUTINE DLININT2(NXI,XI,NYI,YI,FI,ICYCX,NXO,XO,NYO,YO,FO,XMSG,
-     +                   IOPT,IER)
+      SUBROUTINE DLININT2(NXI,XI,NYI,YI,FI,ICYCX,NXO,XO,NYO,YO,FO,XIW,
+     +                    FXIW,NXI2,XMSG,IOPT,IER)
       IMPLICIT NONE
-      INTEGER NXI,NYI,NXO,NYO,ICYCX,IOPT,IER
+      INTEGER NXI,NYI,NXO,NYO,NXI2,ICYCX,IOPT,IER
       DOUBLE PRECISION XI(NXI),YI(NYI),FI(NXI,NYI)
       DOUBLE PRECISION XO(NXO),YO(NYO),FO(NXO,NYO),XMSG
+      DOUBLE PRECISION XIW(NXI2),FXIW(NXI2)
 C NCLEND
 
 C This is written  with GNU f77 acceptable extensions
@@ -185,15 +185,13 @@ c .             =1;   not enough points in input/output array
 c .             =2;   xi or xo are not monotonically (in/de)creasing
 c .             =3;   yi or yo are not monotonically (in/de)creasing
 c
-c                              local and automatic temporary/work arrays
+c                              local and temporary/work arrays
       INTEGER IFLAG,NPTS,NXSTRT,NXLAST
-      DOUBLE PRECISION XIW(0:NXI+1),FXIW(0:NXI+1)
       DOUBLE PRECISION YIW(NYI),FYIW(NYI),FOYW(NYO)
       DOUBLE PRECISION FTMP(NXO,NYI)
 
 c                              local
       INTEGER NX,NY
-      DOUBLE PRECISION DX
 c                              error checking
       IER = 0
       IF (NXO.LT.1 .OR. NYO.LT.1) THEN
@@ -229,7 +227,7 @@ c                               preserve missing areas
 c                               interpolate in the x direction
               DO NY = 1,NYI
                   CALL DLIN2INT1(NXI,XI,FI(1,NY),NXO,XO,FTMP(1,NY),
-     +                           XMSG,IFLAG)
+     +                          XMSG,IFLAG)
               END DO
 c                               interpolate in the y direction
               DO NX = 1,NXO
@@ -251,13 +249,13 @@ c                               collapse data array
                   DO NX = 1,NXI
                       IF (FI(NX,NY).NE.XMSG) THEN
                           NPTS = NPTS + 1
-                          XIW(NPTS) = XI(NX)
-                          FXIW(NPTS) = FI(NX,NY)
+                          XIW(NPTS+1)  = XI(NX)
+                          FXIW(NPTS+1) = FI(NX,NY)
                       END IF
                   END DO
 
-                  CALL DLIN2INT1(NPTS,XIW(1),FXIW(1),NXO,XO,FTMP(1,NY),
-     +                           XMSG,IFLAG)
+                  CALL DLIN2INT1(NPTS,XIW(2),FXIW(2),NXO,XO,FTMP(1,NY),
+     +                          XMSG,IFLAG)
               END DO
 c                               interpolate in the y direction
               DO NX = 1,NXO
@@ -284,15 +282,15 @@ c                               create cyclic "x" coordinates
           IF (IOPT.EQ.0) THEN
               DO NY = 1,NYI
                   DO NX = 1,NXI
-                      XIW(NX) = XI(NX)
-                      FXIW(NX) = FI(NX,NY)
+                      XIW(NX+1)  = XI(NX)
+                      FXIW(NX+1) = FI(NX,NY)
                   END DO
 
                   NPTS = NXI
                   CALL DLINCYC(NXI,XI,FI(1,NY),1,NXI,IFLAG,XIW,FXIW,
      +                         NPTS)
-                  CALL DLIN2INT1(NXI+2,XIW,FXIW,NXO,XO,FTMP(1,NY),
-     +                          XMSG,IFLAG)
+                  CALL DLIN2INT1(NXI+2,XIW,FXIW,NXO,XO,FTMP(1,NY),XMSG,
+     +                           IFLAG)
               END DO
 c                               interpolate in the y direction
               DO NX = 1,NXO
@@ -316,8 +314,8 @@ c                              collapse data array
                   DO NX = 1,NXI
                       IF (FI(NX,NY).NE.XMSG) THEN
                           NPTS = NPTS + 1
-                          XIW(NPTS) = XI(NX)
-                          FXIW(NPTS) = FI(NX,NY)
+                          XIW(NPTS+1)  = XI(NX)
+                          FXIW(NPTS+1) = FI(NX,NY)
                           IF (NPTS.EQ.1) NXSTRT = NX
                           NXLAST = NX
                       END IF
@@ -325,8 +323,8 @@ c                              collapse data array
 
                   CALL DLINCYC(NXI,XI,FI(1,NY),NXSTRT,NXLAST,IFLAG,XIW,
      +                         FXIW,NPTS)
-                  CALL DLIN2INT1(NPTS+2,XIW,FXIW,NXO,XO,FTMP(1,NY),XMSG,
-     +                          IFLAG)
+                  CALL DLIN2INT1(NPTS+2,XIW,FXIW,NXO,XO,FTMP(1,NY),
+     +                           XMSG,IFLAG)
               END DO
 c                               interpolate in the y direction
               DO NX = 1,NXO
@@ -357,7 +355,7 @@ c -----------------------------------------------------------
       DOUBLE PRECISION XI(NIN),FI(NIN),XO(NOUT),FO(NOUT),XMSG
 
 c perform 1D piecewise linear interpolation allowing for missing data
-c .  this works with dlin2int [does no error chk]
+c .  this works with lin2int [does no error chk]
 c .  nothing fancy
 c                              local
       INTEGER NI,NO,NISTRT,NIS,NEXACT
@@ -509,7 +507,7 @@ c
       INTEGER NIN,NOUT,IFLAG,IER
       DOUBLE PRECISION XI(NIN),XO(NOUT)
 c                              local
-      INTEGER NI,NO,NFLAG,NER
+      INTEGER NFLAG,NER
 
       IER = 0
       IFLAG = 0
@@ -528,6 +526,7 @@ c                              local
 
       RETURN
       END
+
 c -----------------------------------------------------------
 C NCLFORTSTART
       SUBROUTINE DLININT2PTS(NXI,XI,NYI,YI,FI,ICYCX,NXYO,XO,YO,FO,
