@@ -2778,7 +2778,7 @@ GribParamList* thevarrec;
 
 				vals[N*(jmain+1)+M] = tmpb;
 				vals[N*(jmain+1)+M] *= (float)pow(2.0,-24.0);
-				vals[N*(jmain+1)+M] *= 2.0*(float)pow(16.0,(double)(tmpa - 64));
+				vals[N*(jmain+1)+M] *= (float)sqrt(2.0)*2.0*(float)pow(16.0,(double)(tmpa - 64));
 				if(sign) {
 					vals[N*(jmain+1)+M] = -vals[N*(jmain+1)+M];
 				}
@@ -2796,7 +2796,7 @@ GribParamList* thevarrec;
 
 				imvals[N*(jmain+1)+M] = tmpb;
 				imvals[N*(jmain+1)+M] *= (float)pow(2.0,-24.0);
-				imvals[N*(jmain+1)+M] *= 2.0*(float)pow(16.0,(double)(tmpa - 64));
+				imvals[N*(jmain+1)+M] *=  (float)sqrt(2.0)*2.0*(float)pow(16.0,(double)(tmpa - 64));
 				if(sign) {
 					imvals[N*(jmain+1)+M] = -imvals[N*(jmain+1)+M];
 				}
@@ -2824,7 +2824,7 @@ GribParamList* thevarrec;
 				X = X << bboff;
 				X = X >> (isize - number_of_bits);
 				vals[N*(jmain+1)+M] = (float)(reference_value + (X * pow(2.0,(double)binary_scale_factor)))/pow(10.0,(double)(decimal_scale_factor));
-				vals[N*(jmain+1)+M] *= 2.0*factor[N];
+				vals[N*(jmain+1)+M] *=  (float)sqrt(2.0)*2.0*factor[N];
 				tbits += number_of_bits;
 				sindex = (int)(tbits/8.0) + packed_start;
 				bboff = tbits % 8;
@@ -2833,7 +2833,7 @@ GribParamList* thevarrec;
 				X = X << bboff;
 				X = X >> (isize - number_of_bits);
 				imvals[N*(jmain+1)+M] = (float)(reference_value + (X * pow(2.0,(double)binary_scale_factor)))/pow(10.0,(double)(decimal_scale_factor));
-				imvals[N*(jmain+1)+M] *= 2.0*factor[N];
+				imvals[N*(jmain+1)+M] *=  (float)sqrt(2.0)*2.0*factor[N];
 				tbits += number_of_bits;
 				sindex = (int)(tbits/8.0) + packed_start;
 				bboff = tbits % 8;
