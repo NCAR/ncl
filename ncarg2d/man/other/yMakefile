@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.15 1998-07-28 20:35:15 haley Exp $
+#	$Id: yMakefile,v 1.16 1999-03-22 22:47:16 haley Exp $
 #
 
 #ifdef BuildNCARGSourceLibrary
@@ -10,7 +10,7 @@ MOREMAN1 = nhlf90 ncargf90
 #endif
 
 MAN1 = findg ncargcc ncargcex ncargex ncargf77 ncargrun nhlcc nhlf77 \
-	ncargfile $(MOREMAN1) ncargversion pre2ncgm psblack pswhite
+	ncargfile $(MOREMAN1) ncargversion pre2ncgm psblack pswhite psplit
 MAN3 = ncarg_cbind ncarg_gks ncarg_gks_cbind 
 MAN5 = ncargintro ncarg_env
 
