@@ -4,11 +4,7 @@
 #include <ncarg/ncargC.h>
 #include <ncarg/gks.h>
 
-
-#define IWTYPE 20
 #define WKID   1
-
-#define IWTYPE   1
 
 /*
  *  Illustrate line joins, caps, and miter limits.
