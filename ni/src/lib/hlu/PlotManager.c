@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManager.c,v 1.29 1996-10-10 21:02:50 dbrown Exp $
+ *      $Id: PlotManager.c,v 1.30 1996-11-14 23:14:40 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1742,6 +1742,9 @@ static NhlErrorTypes PlotManagerPostDraw
 			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
 			return(ret);
 		}
+	}
+	for (i = 0; i < ovp->overlay_count; i++) {
+		NhlAnnoRec	*anlp = ovp->pm_recs[i]->anno_list;
 
 		for ( ; anlp != NULL; anlp = anlp->next) {
 
