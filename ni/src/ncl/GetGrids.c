@@ -2524,11 +2524,15 @@ GribParamList* thevarrec;
 	additional_flags = (bds[3] & (char)0020) ? 1 : 0;
 
 
-	tmp[0] = (therec->pds[26] & (char)0177);
-	tmp[1] = therec->pds[27];
-	decimal_scale_factor  = CnvtToDecimal(2,tmp);
-	if(therec->pds[26] & (char)0200) 
-		decimal_scale_factor = -decimal_scale_factor;
+	if(therec->version != 0) {
+		tmp[0] = (therec->pds[26] & (char)0177);
+		tmp[1] = therec->pds[27];
+		decimal_scale_factor  = CnvtToDecimal(2,tmp);
+		if(therec->pds[26] & (char)0200) 
+			decimal_scale_factor = -decimal_scale_factor;
+	} else {
+		decimal_scale_factor = 0;
+	}
 
 	number_of_bits = (int)bds[10];
 	tmp[0] = (unsigned char)(bds[3] & (char)0017);
@@ -2690,11 +2694,15 @@ GribParamList* thevarrec;
 	additional_flags = (bds[3] & (char)0020) ? 1 : 0;
 
 
-	tmp[0] = (therec->pds[26] & (char)0177);
-	tmp[1] = therec->pds[27];
-	decimal_scale_factor  = CnvtToDecimal(2,tmp);
-	if(therec->pds[26] & (char)0200) 
-		decimal_scale_factor = -decimal_scale_factor;
+	if(therec->version != 0 ) {
+		tmp[0] = (therec->pds[26] & (char)0177);
+		tmp[1] = therec->pds[27];
+		decimal_scale_factor  = CnvtToDecimal(2,tmp);
+		if(therec->pds[26] & (char)0200) 
+			decimal_scale_factor = -decimal_scale_factor;
+	} else {
+		decimal_scale_factor = 0;
+	}
 
 	number_of_bits = (int)bds[10];
 	tmp[0] = (unsigned char)(bds[3] & (char)0017);
@@ -2917,11 +2925,15 @@ GribParamList* thevarrec;
 	additional_flags = (bds[3] & (char)0020) ? 1 : 0;
 
 
-	tmp[0] = (therec->pds[26] & (char)0177);
-	tmp[1] = therec->pds[27];
-	decimal_scale_factor  = CnvtToDecimal(2,tmp);
-	if(therec->pds[26] & (char)0200) 
-		decimal_scale_factor = -decimal_scale_factor;
+	if(therec->version != 0) {
+		tmp[0] = (therec->pds[26] & (char)0177);
+		tmp[1] = therec->pds[27];
+		decimal_scale_factor  = CnvtToDecimal(2,tmp);
+		if(therec->pds[26] & (char)0200) 
+			decimal_scale_factor = -decimal_scale_factor;
+	} else {
+		decimal_scale_factor = 0;
+	}
 
 	number_of_bits = (int)bds[10];
 	tmp[0] = (char)(bds[3] & (char)0017);

@@ -124,6 +124,7 @@ struct _GribRecordInqRec {
 	int param_tbl_index;
 	int grid_tbl_index;
 	int grid_number;
+	int version;
 /*
 * This is the time offset from the beginning reference
 * time of the parameter set. The units are set in

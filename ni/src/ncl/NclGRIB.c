@@ -87,7 +87,67 @@ int natts;
 
 }
 
+static void _GribFreeParamRec0
+#if	NhlNeedProto
+(GribParamList * vstep)
+#else
+(vstep)
+GribParamList * vstep;
+#endif
+{
+	int i;
+	GribAttInqRecList *astep= NULL,*tmp =NULL;
+	GribRecordInqRecList *list,*tlist;
 
+	if(vstep != NULL){
+		if(vstep->it_vals != NULL) {
+			NclFree(vstep->it_vals);
+		}
+		list = vstep->thelist;
+		for(i= 0; i< vstep->n_entries; i++) {
+			if(list->rec_inq != NULL) {
+				if(list->rec_inq->var_name != NULL) {
+					NclFree(list->rec_inq->var_name);
+				}
+				if(list->rec_inq->gds != NULL) {
+					NclFree(list->rec_inq->gds);
+				}
+				if(list->rec_inq->the_dat != NULL) {
+					_NclDestroyObj((NclObj)list->rec_inq->the_dat);
+				}
+				NclFree(list->rec_inq);
+			}
+			tlist = list;
+			list = list->next;
+			NclFree(tlist);
+		}
+		if(vstep->forecast_time != NULL) {
+			_NclDestroyObj((NclObj)vstep->forecast_time);
+		}
+		if(vstep->yymmddhh!= NULL) {
+			_NclDestroyObj((NclObj)vstep->yymmddhh);
+		}
+		if(vstep->levels!= NULL) {
+			_NclDestroyObj((NclObj)vstep->levels);
+		}
+		if(vstep->levels0!= NULL) {
+			_NclDestroyObj((NclObj)vstep->levels0);
+		}
+		if(vstep->levels1!= NULL) {
+			_NclDestroyObj((NclObj)vstep->levels1);
+		}
+		astep = vstep->theatts;
+		for(i = 0; i < vstep->n_atts; i++) {
+			_NclDestroyObj((NclObj)astep->att_inq->thevalue);
+			NclFree(astep->att_inq);	
+			tmp = astep;
+			astep = astep->next;
+			NclFree(tmp);
+		}
+		NclFree(vstep);
+	}
+	return;
+}
 static void _GribFreeParamRec
 #if	NhlNeedProto
 (GribParamList * vstep)
@@ -806,7 +866,7 @@ GribFileRecord *therec;
 		step = step->next;
 	}
 }
-int GdsCompare(char *a,char *b,int n) {
+int GdsCompare(unsigned char *a,unsigned char *b,int n) {
 	int i;
 	for( i = 0; i < n ; i++) {
 		if(*(a++)!=*(b++)) {	
@@ -1242,7 +1302,7 @@ GribFileRecord *therec;
 						tmp->dim_name = NrmStringToQuark(buffer);
 						tmp->is_gds = step->gds_type;
 						tmp->gds_size = step->thelist->rec_inq->gds_size;
-						tmp->gds = (char*)NclMalloc(step->thelist->rec_inq->gds_size);
+						tmp->gds = (unsigned char*)NclMalloc(step->thelist->rec_inq->gds_size);
 						memcpy(tmp->gds,step->thelist->rec_inq->gds,step->thelist->rec_inq->gds_size);
 						ptr = (GribDimInqRecList*)NclMalloc((unsigned)sizeof(GribDimInqRecList));
 						ptr->dim_inq= tmp;
@@ -1282,7 +1342,7 @@ GribFileRecord *therec;
 						tmp->dim_name = NrmStringToQuark(buffer);
 						tmp->is_gds = step->gds_type;
 						tmp->gds_size = step->thelist->rec_inq->gds_size;
-						tmp->gds = (char*)NclMalloc(step->thelist->rec_inq->gds_size);
+						tmp->gds = (unsigned char*)NclMalloc(step->thelist->rec_inq->gds_size);
 						memcpy(tmp->gds,step->thelist->rec_inq->gds,step->thelist->rec_inq->gds_size);
 						ptr = (GribDimInqRecList*)NclMalloc((unsigned)sizeof(GribDimInqRecList));
 						ptr->dim_inq= tmp;
@@ -1332,7 +1392,7 @@ GribFileRecord *therec;
 						tmp->dim_name = NrmStringToQuark(buffer);
 						tmp->is_gds = step->gds_type;
 						tmp->gds_size = step->thelist->rec_inq->gds_size;
-						tmp->gds = (char*)NclMalloc(step->thelist->rec_inq->gds_size);
+						tmp->gds = (unsigned char*)NclMalloc(step->thelist->rec_inq->gds_size);
 						memcpy(tmp->gds,step->thelist->rec_inq->gds,step->thelist->rec_inq->gds_size);
 						ptr = (GribDimInqRecList*)NclMalloc((unsigned)sizeof(GribDimInqRecList));
 						ptr->dim_inq= tmp;
@@ -1378,7 +1438,7 @@ GribFileRecord *therec;
 						tmp->dim_name = NrmStringToQuark(buffer);
 						tmp->is_gds = step->gds_type;
 						tmp->gds_size = step->thelist->rec_inq->gds_size;
-						tmp->gds = (char*)NclMalloc(step->thelist->rec_inq->gds_size);
+						tmp->gds = (unsigned char*)NclMalloc(step->thelist->rec_inq->gds_size);
 						memcpy(tmp->gds,step->thelist->rec_inq->gds,step->thelist->rec_inq->gds_size);
 						ptr = (GribDimInqRecList*)NclMalloc((unsigned)sizeof(GribDimInqRecList));
 						ptr->dim_inq= tmp;
@@ -1436,7 +1496,7 @@ GribFileRecord *therec;
 			}
 			tmpstep = step;
 			step = step->next;
-			_GribFreeParamRec(tmpstep);
+			_GribFreeParamRec0(tmpstep);
 			therec->n_vars--;
 		}
 	}
@@ -2069,22 +2129,23 @@ unsigned char *val;
 
 int GetNextGribOffset
 #if NhlNeedProto
-(int gribfile, unsigned int *offset, unsigned int *totalsize, unsigned int startoff, unsigned int *nextoff)
+(int gribfile, unsigned int *offset, unsigned int *totalsize, unsigned int startoff, unsigned int *nextoff,int* version)
 #else
-(gribfile, offset, totalsize, startoff, *nextoff)
+(gribfile, offset, totalsize, startoff, nextoff,version)
 int gribfile;
 unsigned int *offset;
 unsigned int *totalsize;
 unsigned int startoff;
 unsigned int *nextoff;
+int *version;
 #endif
 {
         int i,ret1,ret2,ret3,ret4;
         char test[10];
         unsigned char nd[10];
         unsigned char is[10];
-        unsigned int version;
         unsigned int size;
+	unsigned int t;
 
 
         ret1 = 0;
@@ -2110,12 +2171,12 @@ unsigned int *nextoff;
                                 test[1] = is[1];
                                 test[2] = is[2];
                                 test[3] = is[3];
-				version = UnsignedCnvtToDecimal(1,&(is[7]));
+				*version = UnsignedCnvtToDecimal(1,&(is[7]));
 				test[4] = '\0';
 /*
 				fprintf(stdout,"%d\t%c%c%c%c\n",ret2,is[0],is[1],is[2],is[3]);
 */
-                                if((!strncmp(test,"GRIB",4))&&(version ==1)){
+                                if((!strncmp(test,"GRIB",4))&&(*version ==1)){
 /*
 					fprintf(stdout,"found GRIB\n");
 */
@@ -2140,9 +2201,42 @@ unsigned int *nextoff;
                                                 *totalsize = size;
                                                 return(GRIBERROR);
                                         }
-                                }
+                                } else if((!strncmp(test,"GRIB",4))&&(*version ==0)) {
+					*offset = i - (ret1 + ret2);
+/*
+* This gives me the pds size
+*/
+					size = 4;
+					while(1) {
+						t = lseek(gribfile,*offset + size,SEEK_SET);
+						ret4 = read(gribfile,(void*)nd,4);
+						if(ret4 != 4) {
+							break;
+						}
+						test[0] = nd[0];
+						test[1] = nd[1];
+						test[2] = nd[2];
+						test[3] = nd[3];
+						test[4] = '\0';
+						if(!strncmp("7777",test,4)) {
+							size += ret4;
+							*nextoff = *offset + size ;
+							*totalsize = size;
+							return(GRIBOK);
+						} else {
+							size += UnsignedCnvtToDecimal(3,nd);
+						}
+						
+					}
+					*totalsize = size;
+                        		return(GRIBEOF);
+				} else if(!strncmp(test,"GRIB",4)){
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"NclGRIB: Unknown version number (%d),can't read this data",*version);
+                        		return(GRIBEOF);
+				}
                         }
                 } else {
+			*totalsize = 0;
                         return(GRIBEOF);
                 }
         }
@@ -2566,6 +2660,7 @@ int wr_status;
 	int tmp_day;
 	int tmp_hour;
 	int tmp_minute;
+	int version;
 	NhlErrorTypes retvalue;
 
 	if(wr_status <= 0) {
@@ -2574,16 +2669,18 @@ int wr_status;
 	fd = open(NrmQuarkToString(path),O_RDONLY);
 	if(fd > 0) {
 		while(!done) {
-			ret = GetNextGribOffset(fd,&offset,&size,offset,&nextoff);
+			ret = GetNextGribOffset(fd,&offset,&size,offset,&nextoff,&version);
 			if(ret == GRIBEOF) {
 				done = 1;
-			} else if(ret != GRIBERROR) {
+			} 
+			if((ret != GRIBERROR)&&(size != 0)) {
 				grib_rec = NclMalloc((unsigned)sizeof(GribRecordInqRec));
 				grib_rec->gds = NULL;
 				grib_rec->the_dat = NULL;
+				grib_rec->version = version;
 				grib_rec->var_name = NULL;
-				lseek(fd,offset+8,SEEK_SET);
-				read(fd,(void*)grib_rec->pds,28);
+				lseek(fd,offset+(version?8:4),SEEK_SET);
+				read(fd,(void*)grib_rec->pds,version?28:24);
 /*
 				fprintf(stdout,"Found: %d\n",(int)(int)grib_rec->pds[8]);
 */
@@ -2606,18 +2703,27 @@ int wr_status;
 				grib_rec->initial_time.year = (short)(((short)grib_rec->pds[24] - 1 )*100 + (short)(int)grib_rec->pds[12]);
 				grib_rec->initial_time.days_from_jan1 = JulianDayDiff(1,1,grib_rec->initial_time.year,(int)grib_rec->pds[14],(int)grib_rec->pds[13],grib_rec->initial_time.year);
         			grib_rec->initial_time.minute_of_day = (short)grib_rec->pds[15] * 60 + (short)grib_rec->pds[16];
-				if(((int)grib_rec->pds[24] < 1)|| ((int)grib_rec->pds[15] > 24)||((int)grib_rec->pds[16] > 60)||((int)grib_rec->pds[13] > 12)||((int)grib_rec->pds[12] > 100)){
-					NhlPError(NhlFATAL,NhlEUNKNOWN,"NclGRIB: Corrupted record found. Time values out of appropriate ranges, skipping record");
-					NhlFree(grib_rec);
-					grib_rec = NULL;
+				if(grib_rec->version != 0) {
+					if(((int)grib_rec->pds[24] < 1)|| ((int)grib_rec->pds[15] > 24)||((int)grib_rec->pds[16] > 60)||((int)grib_rec->pds[13] > 12)||((int)grib_rec->pds[12] > 100)){
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"NclGRIB: Corrupted record found. Time values out of appropriate ranges, skipping record");
+						NhlFree(grib_rec);
+						grib_rec = NULL;
 
+					}
+				} else {
+					if(((int)grib_rec->pds[15] > 24)||((int)grib_rec->pds[16] > 60)||((int)grib_rec->pds[13] > 12)||((int)grib_rec->pds[12] > 100)){
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"NclGRIB: Corrupted record found. Time values out of appropriate ranges, skipping record");
+						NhlFree(grib_rec);
+						grib_rec = NULL;
+
+					}
 				}
 
 			if(grib_rec != NULL) {
 				grib_rec->time_offset = 0;
 				grib_rec->pds_size = CnvtToDecimal(3,&(grib_rec->pds[0]));
 				if(grib_rec->has_gds) {
-					lseek(fd,(unsigned)(grib_rec->start + 8 + grib_rec->pds_size),SEEK_SET);
+					lseek(fd,(unsigned)(grib_rec->start + (version?8:4) + grib_rec->pds_size),SEEK_SET);
 					read(fd,(void*)buffer,6);
 					grib_rec->gds_size = CnvtToDecimal(3,buffer);
 					grib_rec->gds_off = 8 + grib_rec->pds_size;
@@ -2626,7 +2732,7 @@ int wr_status;
 					fprintf(stdout,"%d\n",grib_rec->gds_type);
 */
 					grib_rec->gds = (unsigned char*)NclMalloc((unsigned)sizeof(char)*grib_rec->gds_size);
-					lseek(fd,(unsigned)(grib_rec->start + 8 + grib_rec->pds_size),SEEK_SET);
+					lseek(fd,(unsigned)(grib_rec->start + (version?8:4) + grib_rec->pds_size),SEEK_SET);
 					read(fd,(void*)grib_rec->gds,grib_rec->gds_size);
 				} else {
 					grib_rec->gds_off = 0;	
@@ -2671,7 +2777,7 @@ int wr_status;
 				}
 
 				if(grib_rec->has_bms) {
-					lseek(fd,(unsigned)(grib_rec->start + 8 + grib_rec->pds_size + grib_rec->gds_size),SEEK_SET);
+					lseek(fd,(unsigned)(grib_rec->start + (version?8:4) + grib_rec->pds_size + grib_rec->gds_size),SEEK_SET);
 					read(fd,(void*)tmpc,3);
 					grib_rec->bms_size = CnvtToDecimal(3,tmpc);
 					grib_rec->bms_off = 8 + grib_rec->pds_size + grib_rec->gds_size;
@@ -2910,7 +3016,7 @@ int wr_status;
 						}
 					}
 				}
-			} else {
+			} else if(ret==GRIBERROR){
 				NhlPError(NhlWARNING, NhlEUNKNOWN, "NclGRIB: Detected incomplete record, skipping record");
 			}
 			offset = nextoff;
