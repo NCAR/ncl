@@ -1,5 +1,5 @@
 /*
- *      $Id: NclApi.c,v 1.19 1995-05-23 15:53:19 ethan Exp $
+ *      $Id: NclApi.c,v 1.20 1995-06-01 23:26:17 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -121,6 +121,15 @@ int NclInitServer
 
 
 	start_state = NclSubmitBlock1("begin\nend",strlen("begin\nend"));
+	the_input_buffer = "begin\nend\n"
+	the_input_buffer_ptr = the_input_buffer;
+	the_input_buffer_size = strlen("begin\nend\n");
+#if     defined(SunOS) && (MAJOR == 4)
+        start_state = nclparse(1);
+#else
+        start_state = yyparse(1);
+#endif
+
 	return(1);	
 	
 }
