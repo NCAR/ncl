@@ -194,6 +194,8 @@ digit	[0-9]
 	} else {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not open (%s)\n",tmp);
 		_NclResetScanner();
+
+
 		SetLine(line_numbers[loading]);
 	}
 
