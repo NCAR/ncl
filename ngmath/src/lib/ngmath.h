@@ -1,5 +1,5 @@
 /* 
- * $Id: ngmath.h,v 1.14 2001-08-20 15:31:51 haley Exp $
+ * $Id: ngmath.h,v 1.15 2002-08-03 00:30:19 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -135,6 +135,8 @@ int c_ftcurvi(float, float, int, float [], float [], float *);
 int c_ftcurvp(int, float [], float [], float, int, float [], float yo[]);
 int c_ftcurvpi(float, float, float, int, float [], float [], float *);
 int c_ftcurvs(int, float [], float [], int, float [], int, float [], float []);
+int c_ftcurvs1(int, float [], float [], int, float [],
+               int, float, float, float [], float []);
 int c_ftcurvps(int, float [], float [], float, int, float [],
                int, float [], float []);
 int c_ftkurv(int, float [], float [], int, float [], float [], float []);
