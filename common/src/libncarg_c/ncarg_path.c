@@ -1,5 +1,5 @@
 /*
- *      $Id: ncarg_path.c,v 1.19 1994-08-10 22:08:36 boote Exp $
+ *      $Id: ncarg_path.c,v 1.20 1995-03-16 14:43:57 haley Exp $
  */
 /*
  *	File:		ncarg_path.c
@@ -422,7 +422,7 @@ NGCALLF(gngpat,GNGPAT)
 	dir_C[dirlen] = '\0';	/* strncpy does not null terminate	*/
 
 
-	bzero(path, pathlen);
+	memset(path, 0, pathlen);
 	if ((s = _NGGetNCARGEnv(dir_C)) == NULL) {
 		*status = -1;
 		strncpy(path, ErrMsgBuf, pathlen-1);
