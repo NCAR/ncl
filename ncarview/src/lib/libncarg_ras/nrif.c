@@ -1,5 +1,5 @@
 /*
- *	$Id: nrif.c,v 1.8 1992-03-23 21:45:39 clyne Exp $
+ *	$Id: nrif.c,v 1.9 1992-09-10 20:56:14 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -27,44 +27,62 @@
  *		basic file access functions for NRIF (NCAR
  *		Raster Interchange Format) files.
  *
- *		Encoding schemes are limited to:
- *			* 8-bit indexed	color with 8-bit color map values.
- *			* true color with 8-bit color map values.
- *		Others may be easily added if necessary.
+ *		All pixels, colormap values, and run lengths must be 8 bit.
+ *
+ *		Encoding schemes supported include:
+ *			* Indexed Color
+ *			* Indexed Color Run-length Encoded
+ *			* Direct Color
+ *			* Direct Color Run-length Encoded
  *		
  */
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <errno.h>
 #include <fcntl.h>
 #include "ncarg_ras.h"
+#include "options.h"
 #include "nrif.h"
 
 /*LINTLIBRARY*/
 
 static char	*FormatName = "nrif";
 
-extern char	*ProgramName;
-
-char		*calloc(), *strcpy(), *strncpy();
-
+static int	_NrifReadIndexed();
+static int	_NrifReadIndexedRLE();
+static int	_NrifReadDirect();
+static int	_NrifReadDirectRLE();
+static int	_NrifWriteHeader();
+static int	_NrifWriteIndexed();
+static int	_NrifWriteIndexedRLE();
+static int	_NrifWriteDirect();
+static int	_NrifWriteDirectRLE();
 static int	char_encode();
 static int	char_decode();
 static int	read_decode();
+
+static unsigned char	buf[32]; /* for unpacking NRIF headers. */
+
+static unsigned char	*tmpbuf		= (unsigned char *) NULL;
+static int		tmpbuf_size	= 0;
 
 Raster *
 NrifOpen(name)
 	char	*name;
 {
+	char		*errmsg = "NrifOpen(\"%s\")";
 	Raster		*ras;
 
 	ras = (Raster *) calloc(sizeof(Raster), 1);
 	if (ras == (Raster *) NULL) {
-		(void) RasterSetError(RAS_E_SYSTEM);
+		(void) ESprintf(errno, errmsg, name);
 		return( (Raster *) NULL );
 	}
 
 	ras->dep = calloc(sizeof(NrifInfo),1);
 	if (ras == (Raster *) NULL) {
-		(void) RasterSetError(RAS_E_SYSTEM);
+		(void) ESprintf(errno, errmsg, name);
 		return( (Raster *) NULL );
 	}
 
@@ -75,13 +93,13 @@ NrifOpen(name)
 	else {
 		ras->fd  = open(name, O_RDONLY);
 		if (ras->fd == -1) {
-			(void) RasterSetError(RAS_E_SYSTEM);
+			(void) ESprintf(errno, errmsg, name);
 			return( (Raster *) NULL );
 		}
 
 		ras->fp = fdopen(ras->fd, "r");
 		if (ras->fp == (FILE *) NULL) {
-			(void) RasterSetError(RAS_E_SYSTEM);
+			(void) ESprintf(errno, errmsg, name);
 			return( (Raster *) NULL );
 		}
 	}
@@ -101,21 +119,19 @@ int
 NrifRead(ras)
 	Raster	*ras;
 {
+	char			*errmsg = "NrifRead(\"%s\")";
 	NrifInfo		*dep;
-	unsigned char		buf[1024];
-	unsigned char		dummy[256];
-	int			length;
-	int			x, y;
 	int			status;
 
 	dep = (NrifInfo *) ras->dep;
 
 	status = fread((char *) buf, 1, 4, ras->fp);
 	if (status == 0) {
+		(void) ESprintf(RAS_E_NOT_IN_CORRECT_FORMAT, errmsg, ras->name);
 		return(RAS_EOF);
 	}
 	else if (status != 4) {
-		(void) RasterSetError(RAS_E_SYSTEM);
+		(void) ESprintf(RAS_E_NOT_IN_CORRECT_FORMAT, errmsg, ras->name);
 		return(RAS_ERROR);
 	}
 
@@ -128,17 +144,17 @@ NrifRead(ras)
 		status = fread((char *) buf, 1, 4, ras->fp);
 		if (status != 4) return(RAS_EOF);
 		if (strncmp( (char *) buf, NRIF_MAGIC, 4)) {
-			(void) RasterSetError(RAS_E_NOT_IN_CORRECT_FORMAT);
+			(void) ESprintf(RAS_E_BOGUS_COOKIE, errmsg, ras->name);
 			return(RAS_ERROR);
 		}
 		else {
 			(void) strncpy(dep->magic, (char *) buf, 4);
 		}
 
-		dep->encapsulated = TRUE;
+		dep->encapsulated = True;
 	}
 	else {
-		dep->encapsulated = FALSE;
+		dep->encapsulated = False;
 	}
 
 	status = fread( (char *)buf, 1, 32, ras->fp);
@@ -176,141 +192,333 @@ NrifRead(ras)
 		dep->device_info = (char *) NULL;
 	}
 
-	/* Encoding Information */
+	/* Initialize per-file information on first read. */
+
+	if (ras->read == False) {
+		ras->read      = True;
+		ras->file_nx   = dep->nx;
+		ras->file_ny   = dep->ny;
+		switch(dep->encoding) {
+			case NRIF_INDEXED:
+			case NRIF_INDEXED_RLE:
+				ras->file_type = RAS_INDEXED;
+				break;
+
+			case NRIF_DIRECT:
+			case NRIF_DIRECT_RLE:
+				ras->file_type = RAS_DIRECT;
+				break;
+			
+			default:
+				ras->file_type = RAS_INVALID_ENCODING;
+		}
+	}
+
+	/* Make sure that resolution has not changed between frames.  */
+
+	if (dep->nx != ras->file_nx || dep->ny != ras->file_ny) {
+		(void) ESprintf(RAS_E_IMAGE_SIZE_CHANGED, errmsg, ras->name);
+		return(RAS_ERROR);
+	}
+
+	/* Make sure that resolution has not changed between frames.  */
 
 	switch(dep->encoding) {
 		case NRIF_INDEXED:
-		  /* Read the NRIF encoding information. */
-		  status = fread( (char *)buf, 1, 12, ras->fp);
-		  if (status != 12) return(RAS_EOF);
-
-		  dep->ibits = char_decode(&buf[0], 4);
-		  dep->ncolor = char_decode(&buf[4], 4);
-		  dep->cbits = char_decode(&buf[8], 4);
-
-		  if (dep->ibits != 8) {
-		    (void) RasterSetError(RAS_E_8BIT_INTENSITIES_ONLY);
-		    return(RAS_ERROR);
-		  }
-
-		  if (dep->cbits != 8) {
-		    (void) RasterSetError(RAS_E_8BIT_PIXELS_ONLY);
-		    return(RAS_ERROR);
-		  }
-
-		  /* Add new information to the raster structure */
-
-		  ras->nx = dep->nx;
-		  ras->ny = dep->ny;
-		  ras->type = RAS_INDEXED;
-		  ras->ncolor = dep->ncolor;
-		  ras->length = ras->nx * ras->ny;
-
-		  /* Allocate space for color tables and image. */
-
-		  if (ras->data == (unsigned char *) NULL) {
-		  ras->red = (unsigned char *)calloc((unsigned) ras->ncolor,1);
-		  ras->green =(unsigned char *)calloc((unsigned) ras->ncolor,1);
-		  ras->blue = (unsigned char *)calloc((unsigned) ras->ncolor,1);
-		  ras->data = (unsigned char *)calloc((unsigned) ras->length,1);
-		  }
-
-		  /* Read color table and image frame. */
-
-		  if (ras->map_loaded == False) {
-		    status=fread((char *)ras->red,1,ras->ncolor,ras->fp);
-		    if (status != ras->ncolor) return(RAS_EOF);
-
-		    status=fread((char *)ras->green,1,ras->ncolor,ras->fp);
-		    if (status != ras->ncolor) return(RAS_EOF);
-
-		    status=fread((char *)ras->blue,1,ras->ncolor,ras->fp);
-		    if (status != ras->ncolor) return(RAS_EOF);
-		  }
-		  else {
-		    status=fread((char *)dummy,1,ras->ncolor,ras->fp);
-		    if (status != ras->ncolor) return(RAS_EOF);
-
-		    status=fread((char *)dummy,1,ras->ncolor,ras->fp);
-		    if (status != ras->ncolor) return(RAS_EOF);
-
-		    status=fread((char *)dummy,1,ras->ncolor,ras->fp);
-		    if (status != ras->ncolor) return(RAS_EOF);
-		  }
-
-		  status = fread((char *)ras->data, 1, ras->length, ras->fp);
-		  if (status != ras->length) return(RAS_EOF);
-
-		  break;
+		case NRIF_INDEXED_RLE:
+			if (ras->file_type != RAS_INDEXED) {
+				(void) ESprintf(RAS_E_IMAGE_TYPE_CHANGED,
+						errmsg, ras->name);
+				return(RAS_ERROR);
+			}
+			break;
 
 		case NRIF_DIRECT:
-		  dep->cbits = read_decode((int) ras->fp, 4);
-		  if (dep->cbits == RAS_EOF) return(RAS_EOF);
+		case NRIF_DIRECT_RLE:
+			if (ras->file_type != RAS_DIRECT) {
+				(void) ESprintf(RAS_E_IMAGE_TYPE_CHANGED,
+						errmsg, ras->name);
+				return(RAS_ERROR);
+			}
+			break;
+	}
 
-		  if (dep->cbits != 8) {
-		    (void) RasterSetError(RAS_E_8BIT_PIXELS_ONLY);
-		    return(RAS_ERROR);
-		  }
+	/* Process each encoding scheme. */
 
-		  ras->nx = dep->nx;
-		  ras->ny = dep->ny;
-		  ras->type = RAS_DIRECT;
-		  ras->ncolor = dep->ncolor;
-		  ras->length = ras->nx * ras->ny * 3;
+	switch(dep->encoding) {
+		case NRIF_INDEXED:
+			status = _NrifReadIndexed(ras);
+			break;
 
-		  if (ras->data == (unsigned char *) NULL) {
-		  ras->data = (unsigned char *) calloc((unsigned)ras->length,1);
-		  }
-		
-		  status = fread((char *)ras->data, 1, ras->length, ras->fp);
-		  if (status != ras->length) return(RAS_EOF);
-		  break;
+		case NRIF_INDEXED_RLE:
+			status = _NrifReadIndexedRLE(ras);
+			break;
+
+		case NRIF_DIRECT:
+			status = _NrifReadDirect(ras);
+			break;
 
 		case NRIF_DIRECT_RLE:
-		  dep->cbits = read_decode((int) ras->fp, 4);
-		  if (dep->cbits == -1) return(RAS_EOF);
+			status = _NrifReadDirectRLE(ras);
+			break;
 
-		  if (dep->cbits != 8) {
-			(void) RasterSetError(RAS_E_8BIT_PIXELS_ONLY);
-			return(RAS_ERROR);
-		  }
-
-		  dep->rbits = read_decode((int) ras->fp, 4);
-		  if (dep->rbits == -1) return(RAS_EOF);
-
-		  if (dep->cbits != 8) {
-			(void) RasterSetError(RAS_E_8BIT_RUNLENGTHS_ONLY);
-			return(RAS_ERROR);
-		  }
-
-		  ras->nx	= dep->nx;
-		  ras->ny	= dep->ny;
-		  ras->type	= RAS_DIRECT;
-		  ras->ncolor	= 0;
-		  ras->length	= ras->nx * ras->ny * 3;
-
-		  if (ras->data == (unsigned char *) NULL) {
-		  ras->data	= (unsigned char *) 
-					calloc ((unsigned) ras->length, 1);
-		  }
-
-		  for(length=0, y=0; y<ras->ny; y++)
-		  for(x=0; x<ras->nx; x++) {
-			if (length == 0) {
-		  		status = fread((char *)buf, 1, 4, ras->fp);
-				if (status != 4) return(RAS_EOF);
-				length = buf[0];
-			}
-			DIRECT_RED(ras,x,y)	= buf[1];
-			DIRECT_GREEN(ras,x,y)	= buf[2];
-			DIRECT_BLUE(ras,x,y)	= buf[3];
-			length--;
-		  }
-		  break;
-		
 		default:
-		  (void) RasterSetError(RAS_E_UNSUPPORTED_ENCODING);
+		  (void) ESprintf(RAS_E_UNSUPPORTED_ENCODING,
+			"NrifRead(\"%s\") - %s",
+			ras->name, nrif_types[dep->encoding]);
 		  return(RAS_ERROR);
+	}
+
+	return(status);
+}
+
+static int
+_NrifReadIndexed(ras)
+	Raster		*ras;
+{
+	int		status;
+	char		*errmsg = "_NrifReadIndexed(\"%s\")";
+	char		dummy[RAS_DEFAULT_NCOLORS];
+	NrifInfo	*dep;
+
+	dep = (NrifInfo *) ras->dep;
+
+	/* Read the NRIF encoding information. */
+	status = fread( (char *)buf, 1, 12, ras->fp);
+	if (status != 12) return(RAS_EOF);
+
+	dep->ibits  = char_decode(&buf[0], 4);
+	dep->ncolor = char_decode(&buf[4], 4);
+	dep->cbits  = char_decode(&buf[8], 4);
+
+	if (dep->ibits != 8) {
+		(void) ESprintf(RAS_E_8BIT_INTENSITIES_ONLY, errmsg, ras->name);
+		return(RAS_ERROR);
+	}
+
+	if (dep->cbits != 8) {
+		(void) ESprintf(RAS_E_8BIT_PIXELS_ONLY, errmsg, ras->name);
+		return(RAS_ERROR);
+	}
+
+	/* Add new information to the raster structure */
+
+	ras->nx = dep->nx;
+	ras->ny = dep->ny;
+	ras->type = RAS_INDEXED;
+	ras->ncolor = dep->ncolor;
+	ras->length = ras->nx * ras->ny;
+
+	/* Allocate space for color tables and image. */
+	
+	if (ras->data == (unsigned char *) NULL) {
+		ras->red = (unsigned char *)calloc((unsigned) ras->ncolor,1);
+		ras->green =(unsigned char *)calloc((unsigned) ras->ncolor,1);
+		ras->blue = (unsigned char *)calloc((unsigned) ras->ncolor,1);
+		ras->data = (unsigned char *)calloc((unsigned) ras->length,1);
+	}
+
+	/* Read color table and image frame. */
+
+	if (ras->map_forced == False) {
+		status=fread((char *)ras->red,1,ras->ncolor,ras->fp);
+		if (status != ras->ncolor) return(RAS_EOF);
+
+		status=fread((char *)ras->green,1,ras->ncolor,ras->fp);
+		if (status != ras->ncolor) return(RAS_EOF);
+
+		status=fread((char *)ras->blue,1,ras->ncolor,ras->fp);
+		if (status != ras->ncolor) return(RAS_EOF);
+	}
+	else {
+		status=fread((char *)dummy,1,ras->ncolor,ras->fp);
+		if (status != ras->ncolor) return(RAS_EOF);
+
+		status=fread((char *)dummy,1,ras->ncolor,ras->fp);
+		if (status != ras->ncolor) return(RAS_EOF);
+
+		status=fread((char *)dummy,1,ras->ncolor,ras->fp);
+		if (status != ras->ncolor) return(RAS_EOF);
+	}
+
+	status = fread((char *)ras->data, 1, ras->length, ras->fp);
+	if (status != ras->length) return(RAS_EOF);
+
+	return(RAS_OK);
+}
+
+static int
+_NrifReadIndexedRLE(ras)
+	Raster		*ras;
+{
+	int		status;
+	char		*errmsg = "_NrifReadIndexedRLE(\"%s\")";
+	char		dummy[RAS_DEFAULT_NCOLORS];
+	int		x, y, length;
+	NrifInfo	*dep;
+
+	dep = (NrifInfo *) ras->dep;
+
+	/* Read the NRIF encoding information. */
+	status = fread( (char *)buf, 1, 16, ras->fp);
+	if (status != 16) return(RAS_EOF);
+
+	dep->ibits  = char_decode(&buf[0], 4);
+	dep->ncolor = char_decode(&buf[4], 4);
+	dep->cbits  = char_decode(&buf[8], 4);
+	dep->rbits  = char_decode(&buf[12], 4);
+
+	if (dep->ibits != 8) {
+		(void) ESprintf(RAS_E_8BIT_INTENSITIES_ONLY, errmsg, ras->name);
+		return(RAS_ERROR);
+	}
+
+	if (dep->cbits != 8) {
+		(void) ESprintf(RAS_E_8BIT_PIXELS_ONLY, errmsg, ras->name);
+		return(RAS_ERROR);
+	}
+
+	if (dep->rbits != 8) {
+		(void) ESprintf(RAS_E_8BIT_RUNLENGTHS_ONLY, errmsg, ras->name);
+		return(RAS_ERROR);
+	}
+
+	/* Add new information to the raster structure */
+
+	ras->nx     = dep->nx;
+	ras->ny     = dep->ny;
+	ras->type   = RAS_INDEXED;
+	ras->ncolor = dep->ncolor;
+	ras->length = ras->nx * ras->ny;
+
+	/* Allocate space for color tables and image. */
+	
+	if (ras->data == (unsigned char *) NULL) {
+		ras->red = (unsigned char *)calloc((unsigned) ras->ncolor,1);
+		ras->green =(unsigned char *)calloc((unsigned) ras->ncolor,1);
+		ras->blue = (unsigned char *)calloc((unsigned) ras->ncolor,1);
+		ras->data = (unsigned char *)calloc((unsigned) ras->length,1);
+	}
+
+	/* Read color table and image frame. */
+
+	if (ras->map_forced == False) {
+		status=fread((char *)ras->red,1,ras->ncolor,ras->fp);
+		if (status != ras->ncolor) return(RAS_EOF);
+
+		status=fread((char *)ras->green,1,ras->ncolor,ras->fp);
+		if (status != ras->ncolor) return(RAS_EOF);
+
+		status=fread((char *)ras->blue,1,ras->ncolor,ras->fp);
+		if (status != ras->ncolor) return(RAS_EOF);
+	}
+	else {
+		status=fread((char *)dummy,1,ras->ncolor,ras->fp);
+		if (status != ras->ncolor) return(RAS_EOF);
+
+		status=fread((char *)dummy,1,ras->ncolor,ras->fp);
+		if (status != ras->ncolor) return(RAS_EOF);
+
+		status=fread((char *)dummy,1,ras->ncolor,ras->fp);
+		if (status != ras->ncolor) return(RAS_EOF);
+	}
+
+	for(length=0, y=0; y<ras->ny; y++)
+	for(x=0; x<ras->nx; x++) {
+		if (length == 0) {
+		status = fread((char *)buf, 1, 2, ras->fp);
+			if (status != 2) return(RAS_EOF);
+			length = buf[0];
+		}
+		INDEXED_PIXEL(ras, x, y) = buf[1];
+		length--;
+	}
+
+	return(RAS_OK);
+}
+
+static int
+_NrifReadDirect(ras)
+	Raster		*ras;
+{
+	int		status;
+	char		*errmsg = "_NrifReadDirect(\"%s\")";
+	NrifInfo	*dep;
+
+	dep = (NrifInfo *) ras->dep;
+
+	dep->cbits = read_decode((int) ras->fp, 4);
+	if (dep->cbits == RAS_EOF) return(RAS_EOF);
+
+	if (dep->cbits != 8) {
+		(void) ESprintf(RAS_E_8BIT_PIXELS_ONLY, errmsg, ras->name);
+		return(RAS_ERROR);
+	}
+
+	ras->nx = dep->nx;
+	ras->ny = dep->ny;
+	ras->type = RAS_DIRECT;
+	ras->ncolor = 256*256*256;
+	ras->length = ras->nx * ras->ny * 3;
+
+	if (ras->data == (unsigned char *) NULL) {
+		ras->data = (unsigned char *) calloc((unsigned)ras->length,1);
+	}
+	
+	status = fread((char *)ras->data, 1, ras->length, ras->fp);
+	if (status != ras->length) return(RAS_EOF);
+
+	return(RAS_OK);
+}
+
+static int
+_NrifReadDirectRLE(ras)
+	Raster		*ras;
+{
+	int		status;
+	char		*errmsg = "_NrifReadDirectRLE(\"%s\")";
+	int		x, y, length;
+	NrifInfo	*dep;
+
+	dep = (NrifInfo *) ras->dep;
+
+	dep->cbits = read_decode((int) ras->fp, 4);
+	if (dep->cbits == -1) return(RAS_EOF);
+
+	if (dep->cbits != 8) {
+		(void) ESprintf(RAS_E_8BIT_PIXELS_ONLY, errmsg, ras->name);
+		return(RAS_ERROR);
+	}
+
+	dep->rbits = read_decode((int) ras->fp, 4);
+	if (dep->rbits == -1) return(RAS_EOF);
+
+	if (dep->rbits != 8) {
+		(void) ESprintf(RAS_E_8BIT_RUNLENGTHS_ONLY, errmsg, ras->name);
+		return(RAS_ERROR);
+	}
+
+	ras->nx		= dep->nx;
+	ras->ny		= dep->ny;
+	ras->type	= RAS_DIRECT;
+	ras->ncolor	= 256*256*256;
+	ras->length	= ras->nx * ras->ny * 3;
+
+	if (ras->data == (unsigned char *) NULL) {
+		ras->data = (unsigned char *)calloc ((unsigned) ras->length, 1);
+	}
+
+	for(length=0, y=0; y<ras->ny; y++)
+	for(x=0; x<ras->nx; x++) {
+		if (length == 0) {
+		status = fread((char *)buf, 1, 4, ras->fp);
+			if (status != 4) return(RAS_EOF);
+			length = buf[0];
+		}
+		DIRECT_RED(ras,x,y)	= buf[1];
+		DIRECT_GREEN(ras,x,y)	= buf[2];
+		DIRECT_BLUE(ras,x,y)	= buf[3];
+		length--;
 	}
 
 	return(RAS_OK);
@@ -322,20 +530,21 @@ NrifOpenWrite(name, nx, ny, comment, encoding)
 	int		nx;
 	int		ny;
 	char		*comment;
-	int		encoding;
+	RasterEncoding	encoding;
 {
+	char		*errmsg = "NrifOpenWrite(\"%s\")";
 	Raster		*ras;
 	NrifInfo	*dep;
 
 	ras = (Raster *) calloc(sizeof(Raster), 1);
 	if (ras == (Raster *) NULL) {
-		(void) RasterSetError(RAS_E_SYSTEM);
+		(void) ESprintf(errno, errmsg, name);
 		return( (Raster *) NULL );
 	}
 
 	ras->dep = calloc(sizeof(NrifInfo),1);
 	if (ras->dep == (char *) NULL) {
-		(void) RasterSetError(RAS_E_SYSTEM);
+		(void) ESprintf(errno, errmsg, name);
 		return( (Raster *) NULL );
 	}
 
@@ -347,7 +556,7 @@ NrifOpenWrite(name, nx, ny, comment, encoding)
 	else {
 		ras->fd = open(name, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 		if (ras->fd == -1) {
-			(void) RasterSetError(RAS_E_SYSTEM);
+			(void) ESprintf(errno, errmsg, name);
 			return( (Raster *) NULL );
 		}
 	}
@@ -358,92 +567,58 @@ NrifOpenWrite(name, nx, ny, comment, encoding)
 	ras->format = (char *) calloc((unsigned) strlen(FormatName) + 1, 1);
 	(void) strcpy(ras->format, FormatName);
 
-	(void) strncpy(dep->magic, NRIF_MAGIC, 4);
-	dep->encapsulated = False;
-	dep->vplot = False;
-	dep->nx = nx;
-	dep->ny = ny;
-
-	dep->comment = comment;
 	if (comment != (char *) NULL) {
-		dep->cmtlen = strlen(comment);
+		ras->text = (char *)calloc((unsigned) (strlen(comment) + 1), 1);
+		(void) strcpy(ras->text, comment);
 	}
 
 	switch (encoding) {
 		case RAS_INDEXED:
-			dep->encoding = NRIF_INDEXED;
-			dep->cbits = 8;
-			dep->ibits = 8;
-			dep->rbits = 0;
-			dep->ncolor = 256;
-			dep->enclen = 12 + dep->ncolor * 3;
-
-			ras->nx = dep->nx;
-			ras->ny = dep->ny;
-			ras->length = ras->nx * ras->ny;
-			ras->ncolor = dep->ncolor;
-			ras->type = RAS_INDEXED;
-			ras->red = (unsigned char *) 
-					calloc((unsigned) ras->ncolor, 1);
-			ras->green = (unsigned char *) 
-					calloc((unsigned) ras->ncolor, 1);
-			ras->blue = (unsigned char *) 
-					calloc((unsigned) ras->ncolor, 1);
-			ras->data = (unsigned char *) 
-					calloc((unsigned) ras->length, 1);
-
-			if (dep->encapsulated) {
-				dep->objtype = 0;
-				dep->control = 0x1000;
-				dep->recsize = 8 + NRIF_HEADER_SIZE +
-						dep->enclen +
-						dep->devlen +
-						dep->cmtlen +
-						ras->length;
+			if (OptionCompression == RAS_COMPRESS_OFF) {
+				dep->encoding = NRIF_INDEXED;
 			}
 			else {
-				dep->recsize = 0;
+				dep->encoding = NRIF_INDEXED_RLE;
 			}
+			ras->nx		= nx;
+			ras->ny		= ny;
+			ras->length	= nx * ny;
+			ras->ncolor	= RAS_DEFAULT_NCOLORS;
+			ras->type	= RAS_INDEXED;
+			ras->red	= (unsigned char *) 
+					  calloc((unsigned) ras->ncolor, 1);
+			ras->green	= (unsigned char *) 
+					  calloc((unsigned) ras->ncolor, 1);
+			ras->blue	= (unsigned char *) 
+					  calloc((unsigned) ras->ncolor, 1);
+			ras->data	= (unsigned char *) 
+					  calloc((unsigned) ras->length, 1);
 
 			break;
 		
 		case RAS_DIRECT:
-			dep->encoding = NRIF_DIRECT;
-			dep->cbits = 8;
-			dep->ibits = 0;
-			dep->rbits = 0;
-			dep->ncolor = 0;
-			dep->enclen = 4;
-
-			ras->nx = dep->nx;
-			ras->ny = dep->ny;
-			ras->type = RAS_DIRECT;
-			ras->red = (unsigned char *) NULL;
-			ras->blue = (unsigned char *) NULL;
-			ras->green = (unsigned char *) NULL;
-			ras->ncolor = 0;
-			ras->length = ras->nx * ras->ny * 3;
+			if (OptionCompression == RAS_COMPRESS_OFF) {
+				dep->encoding = NRIF_DIRECT;
+			}
+			else {
+				dep->encoding = NRIF_DIRECT_RLE;
+			}
+			ras->nx		= nx;
+			ras->ny		= ny;
+			ras->type	= RAS_DIRECT;
+			ras->red	= (unsigned char *) NULL;
+			ras->blue	= (unsigned char *) NULL;
+			ras->green	= (unsigned char *) NULL;
+			ras->ncolor	= 256*256*256;
+			ras->length	= nx * ny * 3;
 
 			ras->data = (unsigned char *) 
 				calloc ((unsigned) ras->length, 1);
 
-			if (dep->encapsulated) {
-				dep->objtype = 0;
-				dep->control = 0x1000;
-				dep->recsize = 8 + NRIF_HEADER_SIZE +
-						dep->enclen +
-						dep->devlen +
-						dep->cmtlen +
-						ras->length;
-			}
-			else {
-				dep->recsize = 0;
-			}
-		
 			break;
 		
 		default:
-			(void) RasterSetError(RAS_E_UNSUPPORTED_ENCODING);
+			(void) ESprintf(RAS_E_UNSUPPORTED_ENCODING,errmsg,name);
 			return( (Raster *) NULL );
 	}
 
@@ -462,7 +637,7 @@ NrifClose(ras)
 		if(ras->fp != stdin && ras->fp != stdout) {
 			status = fclose(ras->fp);
 			if (status != 0) {
-				RasterSetError(RAS_E_SYSTEM);
+				ESprintf(errno, "NrifClose()");
 				return(RAS_ERROR);
 			}
 		}
@@ -471,7 +646,7 @@ NrifClose(ras)
 		if (ras->fd != fileno(stdin) && ras->fd != fileno(stdout)) {
 			status = close(ras->fd);
 			if (status != 0) {
-				RasterSetError(RAS_E_SYSTEM);
+				ESprintf(errno, "NrifClose()");
 				return(RAS_ERROR);
 			}
 		}
@@ -489,6 +664,10 @@ NrifClose(ras)
 			break;
 	}
 
+	if (tmpbuf != (unsigned char *) NULL) {
+		(void) free(tmpbuf);
+	}
+
 	return(RAS_OK);
 }
 
@@ -496,37 +675,80 @@ int
 NrifWrite(ras)
 	Raster	*ras;
 {
+	char			*errmsg = "NrifWrite(\"%s\")";
 	NrifInfo		*dep;
-	unsigned char		buf[1024];
 	int			status;
 
 	dep = (NrifInfo *) ras->dep;
 
-	if (dep->encapsulated == TRUE) {
+	switch(dep->encoding) {
+		case NRIF_INDEXED:
+			status = _NrifWriteIndexed(ras);
+			break;
+
+		case NRIF_INDEXED_RLE:
+			status = _NrifWriteIndexedRLE(ras);
+			break;
+
+		case NRIF_DIRECT:
+			status = _NrifWriteDirect(ras);
+			break;
+
+		case NRIF_DIRECT_RLE:
+			status = _NrifWriteDirectRLE(ras);
+			break;
+		
+		default:
+			(void) ESprintf(RAS_E_UNSUPPORTED_ENCODING,
+					errmsg, ras->name);
+			status = RAS_OK;
+	}
+
+	return(status);
+}
+
+static int
+_NrifWriteHeader(ras)
+	Raster		*ras;
+{
+	NrifInfo	*dep;
+	int		status;
+
+	dep = (NrifInfo *) ras->dep;
+
+	/* If it's an encapsulated file, write out the encap header. */
+
+	if (dep->encapsulated == True) {
+		dep->objtype = 0;
+		dep->control = NRIF_CONTROL;
+		dep->recsize = 8 + NRIF_HEADER_SIZE +
+				dep->enclen +
+				dep->devlen +
+				dep->cmtlen +
+				ras->length;
 		(void) char_encode((int) dep->objtype, &buf[0], 2);
 		(void) char_encode((int) dep->control, &buf[2], 2);
 		(void) char_encode((int) dep->recsize, &buf[4], 4);
-		status = write(ras->fd, (char *) buf, 8);
+		status = write(ras->fd, buf, 8);
 		if (status != 8) return(RAS_EOF);
 	}
 
+	/* Write the NRIF header.  */
+
 	(void) strncpy((char *) buf, NRIF_MAGIC, 4);
-	status = write(ras->fd, (char *) buf, 4);
-	if (status != 4) return(RAS_EOF);
-
-	(void) char_encode((int) dep->flags, &buf[0], 4);
-	(void) char_encode((int) dep->nx, &buf[4], 4);
-	(void) char_encode((int) dep->ny, &buf[8], 4);
-	(void) char_encode((int) dep->cmtlen, &buf[12], 4);
-	(void) char_encode((int) dep->device, &buf[16], 4);
-	(void) char_encode((int) dep->devlen, &buf[20], 4);
-	(void) char_encode((int) dep->encoding, &buf[24], 4);
-	(void) char_encode((int) dep->enclen, &buf[28], 4);
-	status = write(ras->fd, (char *) buf, 32);
-	if (status != 32) return(RAS_EOF);
+	(void) char_encode((int) dep->flags, &buf[4], 4);
+	(void) char_encode((int) dep->nx, &buf[8], 4);
+	(void) char_encode((int) dep->ny, &buf[12], 4);
+	(void) char_encode((int) dep->cmtlen, &buf[16], 4);
+	(void) char_encode((int) dep->device, &buf[20], 4);
+	(void) char_encode((int) dep->devlen, &buf[24], 4);
+	(void) char_encode((int) dep->encoding, &buf[28], 4);
+	(void) char_encode((int) dep->enclen, &buf[32], 4);
+	status = write(ras->fd, (char *) buf, NRIF_HEADER_SIZE);
+	if (status != NRIF_HEADER_SIZE) return(RAS_EOF);
 
 
-	/* Comment Field */
+	/* Write the comment field. */
 
 	if (dep->cmtlen > 0) {
 		status = write(ras->fd, dep->comment, (int) dep->cmtlen);
@@ -540,39 +762,262 @@ NrifWrite(ras)
 		if (status != dep->devlen) return(RAS_EOF);
 	}
 
-	/* Encoding Information */
+	return(RAS_OK);
+}
 
-	switch(dep->encoding) {
-		case NRIF_INDEXED:
-			(void) char_encode((int) dep->ibits, &buf[0], 4);
-			(void) char_encode((int) dep->ncolor, &buf[4], 4);
-			(void) char_encode((int) dep->cbits, &buf[8], 4);
-			status = write(ras->fd, (char *) buf, 12);
-			if (status != 12) return(RAS_EOF);
+static int
+_NrifWriteIndexed(ras)
+	Raster		*ras;
+{
+	NrifInfo	*dep;
+	int		status;
 
-			status = write(ras->fd,(char *) ras->red,ras->ncolor);
-			if (status != ras->ncolor) return(RAS_EOF);
-			status = write(ras->fd,(char *) ras->green,ras->ncolor);
-			if (status != ras->ncolor) return(RAS_EOF);
-			status = write(ras->fd,(char *) ras->blue,ras->ncolor);
-			if (status != ras->ncolor) return(RAS_EOF);
-			status = write(ras->fd, (char *) ras->data,ras->length);
-			if (status != ras->length) return(RAS_EOF);
+	dep = (NrifInfo *) ras->dep;
 
-			break;
+	(void) strncpy(dep->magic, NRIF_MAGIC, 4);
+	dep->encapsulated = False;
+	dep->vplot	= False;
+	dep->nx		= ras->nx;
+	dep->ny		= ras->ny;
+	dep->encoding	= NRIF_INDEXED;
+	dep->ibits	= 8;
+	dep->ncolor	= RAS_DEFAULT_NCOLORS;
+	dep->cbits	= 8;
+	dep->enclen	= 12 + dep->ncolor * 3;
 
-		case NRIF_DIRECT:
-			(void) char_encode((int) dep->cbits, buf, 4);
-			status = write(ras->fd, (char *) buf, 4);
-			if (status != 4) return(RAS_EOF);
-			status = write(ras->fd, (char *) ras->data,ras->length);
-			if (status != ras->length) return(RAS_EOF);
-			break;
-		
-		default:
-			(void) RasterSetError(RAS_E_UNSUPPORTED_ENCODING);
-			return(RAS_ERROR);
+	status = _NrifWriteHeader(ras);
+	if (status != RAS_OK) return(status);
+
+	(void) char_encode((int) dep->ibits, &buf[0], 4);
+	(void) char_encode((int) dep->ncolor, &buf[4], 4);
+	(void) char_encode((int) dep->cbits, &buf[8], 4);
+	status = write(ras->fd, (char *) buf, 12);
+	if (status != 12) return(RAS_EOF);
+
+	status = write(ras->fd,(char *) ras->red,ras->ncolor);
+	if (status != ras->ncolor) return(RAS_EOF);
+	status = write(ras->fd,(char *) ras->green,ras->ncolor);
+	if (status != ras->ncolor) return(RAS_EOF);
+	status = write(ras->fd,(char *) ras->blue,ras->ncolor);
+	if (status != ras->ncolor) return(RAS_EOF);
+
+	status = write(ras->fd, (char *) ras->data,ras->length);
+	if (status != ras->length) return(RAS_EOF);
+
+	return(RAS_OK);
+}
+
+static int
+_NrifWriteIndexedRLE(ras)
+	Raster		*ras;
+{
+	char		*errmsg = "_NrifWriteIndexedRLE(\"%s\")";
+	NrifInfo	*dep;
+	int		status;
+	int		x, y, runx, length;
+	int		image_length = 0;
+	unsigned char	p1, p2;
+
+	dep = (NrifInfo *) ras->dep;
+
+	(void) strncpy(dep->magic, NRIF_MAGIC, 4);
+	dep->encapsulated = False;
+	dep->vplot	= False;
+	dep->nx		= ras->nx;
+	dep->ny		= ras->ny;
+	dep->encoding	= NRIF_INDEXED_RLE;
+	dep->ibits	= 8;
+	dep->ncolor	= RAS_DEFAULT_NCOLORS;
+	dep->cbits	= 8;
+	dep->rbits	= 8;
+	dep->enclen	= 16 + dep->ncolor * 3;
+
+	status = _NrifTmpbuf(ras->length);
+	if (status != RAS_OK) {
+		(void) ESprintf(errno, errmsg, ras->name);
+		return(RAS_ERROR);
 	}
+	
+	for(y=0; y<ras->ny; y++) {
+	for(x=0; x<ras->nx; x+=length) {
+		p1 = INDEXED_PIXEL(ras, x, y);
+		for(runx=x,length=0;length<255&&runx<ras->nx;runx++,length++) {
+			/*
+			(void) fprintf(stderr,
+			"Comparing x=%d to runx=%d (len=%d)\n",x,runx,length);
+			*/
+			p2 = INDEXED_PIXEL(ras, runx, y);
+			if (p1!=p2) break;
+		}
+
+		/*
+		If the compressed image becomes longer than
+		what the uncompressed would be, bail.
+		*/
+
+		if (image_length > tmpbuf_size - 2) {
+		(void) fprintf(stderr,
+		"Note: %s was written uncompressed, which was more efficient\n",
+		ras->name);
+		status = _NrifWriteIndexed(ras);
+		return(status);
+		}
+
+		/*
+		(void) fprintf(stderr, "value %3d  length %3d\n", length, p1);
+		*/
+		tmpbuf[image_length++] = length;
+		tmpbuf[image_length++] = p1;
+	}}
+
+	/* Write the header. */
+
+	status = _NrifWriteHeader(ras);
+	if (status != RAS_OK) return(status);
+
+	/* Write the encoding information. */
+
+	(void) char_encode((int) dep->ibits,  &buf[0], 4);
+	(void) char_encode((int) dep->ncolor, &buf[4], 4);
+	(void) char_encode((int) dep->cbits,  &buf[8], 4);
+	(void) char_encode((int) dep->rbits,  &buf[12], 4);
+	status = write(ras->fd, (char *) buf, 16);
+	if (status != 16) return(RAS_EOF);
+
+	/* Write the color table. */
+
+	status = write(ras->fd,(char *) ras->red,ras->ncolor);
+	if (status != ras->ncolor) return(RAS_EOF);
+	status = write(ras->fd,(char *) ras->green,ras->ncolor);
+	if (status != ras->ncolor) return(RAS_EOF);
+	status = write(ras->fd,(char *) ras->blue,ras->ncolor);
+	if (status != ras->ncolor) return(RAS_EOF);
+
+	/* Write the image. */
+	(void) fprintf(stderr,
+	"Writing RLE Indexed %d bytes\n", image_length);
+	status = write(ras->fd, (char *) tmpbuf, image_length);
+	if (status != image_length) {
+		(void) ESprintf(errno, errmsg, ras->name);
+		return(RAS_ERROR);
+	}
+
+	return(RAS_OK);
+}
+
+static int
+_NrifWriteDirect(ras)
+	Raster		*ras;
+{
+	NrifInfo	*dep;
+	int		status;
+
+	dep = (NrifInfo *) ras->dep;
+
+	(void) strncpy(dep->magic, NRIF_MAGIC, 4);
+	dep->encapsulated = False;
+	dep->vplot	= False;
+	dep->nx		= ras->nx;
+	dep->ny		= ras->ny;
+	dep->encoding	= NRIF_DIRECT;
+	dep->enclen	= 4;
+	dep->cbits	= 8;
+
+	status = _NrifWriteHeader(ras);
+	if (status != RAS_OK) return(status);
+
+	(void) char_encode((int) dep->cbits, buf, 4);
+	status = write(ras->fd, (char *) buf, 4);
+	if (status != 4) return(RAS_EOF);
+
+	status = write(ras->fd, (char *) ras->data,ras->length);
+	if (status != ras->length) return(RAS_EOF);
+
+	return(RAS_OK);
+}
+
+static int
+_NrifWriteDirectRLE(ras)
+	Raster		*ras;
+{
+	char		*errmsg = "_NrifWriteDirectRLE(\"%s\")";
+	NrifInfo	*dep;
+	int		status;
+	int		x, y, runx, length;
+	int		image_length = 0;
+	unsigned char	*p1, r1, g1, b1, *p2, r2, g2, b2;
+
+	dep = (NrifInfo *) ras->dep;
+
+	(void) strncpy(dep->magic, NRIF_MAGIC, 4);
+	dep->encapsulated = False;
+	dep->vplot	= False;
+	dep->nx		= ras->nx;
+	dep->ny		= ras->ny;
+	dep->encoding	= NRIF_DIRECT_RLE;
+	dep->enclen	= 8;
+	dep->cbits	= 8;
+	dep->rbits	= 8;
+
+	status = _NrifTmpbuf(ras->length);
+	if (status != RAS_OK) {
+		(void) ESprintf(errno, errmsg, ras->name);
+		return(RAS_ERROR);
+	}
+	
+	for(y=0; y<ras->ny; y++) {
+	for(x=0; x<ras->nx; x+=length) {
+		p1 = &DIRECT_RED(ras, x, y);
+		r1 = *p1++; g1 = *p1++; b1 = *p1++;
+		for(runx=x,length=0;length<255&&runx<ras->nx;runx++,length++) {
+			/*
+			(void) fprintf(stderr,
+			"Comparing x=%d to runx=%d (len=%d)\n",x,runx,length);
+			*/
+			p2 = &DIRECT_RED(ras, runx, y);
+			r2 = *p2++; g2 = *p2++; b2 = *p2++;
+			if (r1!=r2 || g1!=g2 || b1!=b2) break;
+		}
+
+		/*
+		If the compressed image becomes longer than
+		what the uncompressed would be, bail.
+		*/
+
+		if (image_length > (tmpbuf_size - 4)) {
+		(void) fprintf(stderr,
+		"Note: %s was written uncompressed, which was more efficient\n",
+		ras->name);
+		status = _NrifWriteDirect(ras);
+		return(status);
+		}
+
+		tmpbuf[image_length++] = length;
+		tmpbuf[image_length++] = r1;
+		tmpbuf[image_length++] = g1;
+		tmpbuf[image_length++] = b1;
+	}}
+
+	/* Write the header. */
+
+	status = _NrifWriteHeader(ras);
+	if (status != RAS_OK) return(status);
+
+	/* Write the encoding information. */
+
+	(void) char_encode((int) dep->cbits, &buf[0], 4);
+	(void) char_encode((int) dep->rbits, &buf[4], 4);
+	status = write(ras->fd, (char *) buf, 8);
+	if (status != 8) return(RAS_EOF);
+
+	/* Write the image. */
+
+	status = write(ras->fd, (char *) tmpbuf, image_length);
+	if (status != image_length) {
+		(void) ESprintf(errno, errmsg, ras->name);
+		return(RAS_ERROR);
+	}
+
 	return(RAS_OK);
 }
 
@@ -582,16 +1027,18 @@ read_decode(fp, nbytes)
 	int	nbytes;
 {
 	int		status;
-	unsigned char	buf[4];
 
 	if (nbytes > 4) {
-		(void) fprintf(stderr, 
-			"%s: Programming error in read_decode()\n",ProgramName);
-		exit(1);
+		(void) ESprintf(RAS_E_INTERNAL, "read_decode(fp, %s)", nbytes);
+		return(RAS_ERROR);
 	}
 
 	status  = fread( (char *) buf, 1, nbytes, fp);
-	if (status != nbytes) return(RAS_EOF);
+	if (status != nbytes) {
+		(void) ESprintf(RAS_E_PREMATURE_EOF,
+			"read_decode(fp,%d)", nbytes);
+		return(RAS_ERROR);
+	}
 
 	return(char_decode(buf, nbytes));
 }
@@ -630,7 +1077,8 @@ char_encode(value, buf, nbytes)
 			break;
 		
 		default:
-			(void) RasterSetError(RAS_E_INTERNAL_PROGRAMMING);
+			(void) ESprintf(RAS_E_INTERNAL,
+				"char_encode(%d,,%d)", value, nbytes);
 			return(RAS_ERROR);
 	}
 	return(RAS_OK);
@@ -679,4 +1127,22 @@ NrifSetFunctions(ras)
 	ras->Close     = NrifClose;
 	ras->PrintInfo = NrifPrintInfo;
 	ras->ImageCount = ImageCount_;
+}
+
+int
+_NrifTmpbuf(size)
+	int	size;
+{
+	unsigned char	*p;
+
+	if (tmpbuf_size >= size) {
+		return(RAS_OK);
+	}
+	else {
+		p = (unsigned char *) realloc(tmpbuf, size);
+		if (p == (unsigned char *) NULL) return(RAS_ERROR);
+		tmpbuf		= p;
+		tmpbuf_size	= size;
+	}
+	return(RAS_OK);
 }
