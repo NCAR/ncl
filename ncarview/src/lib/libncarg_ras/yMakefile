@@ -1,0 +1,86 @@
+#
+#	Makefile for libraster - libraries for dealing with
+#	a variety of raster image formats.
+#
+
+#define	BuildRasterHDF
+#define	BuildRasterHPLaser
+#define	BuildRasterNrif
+#define	BuildRasterSun
+#define	BuildRasterXWD
+
+NCARG		= ../../../..
+LOCINCDIR	= ../../include
+MYNAME		= libncarg_ras.a
+INCLUDES	= ncarg_ras.h
+
+#ifdef BuildRasterHDF
+HDF_OBJS =	hdf.o
+HDF_DEFS = 	-DBuildRasterHDF
+#endif
+
+#ifdef BuildRasterHPLaser
+HPLJ_OBJS =	hplj.o
+HPLJ_DEFS =	-DBuildRasterHPLaser
+#endif
+
+#ifdef BuildRasterNrif
+NRIF_OBJS =	nrif.o
+NRIF_DEFS = 	-DBuildRasterNrif
+#endif
+
+#ifdef BuildRasterSun
+SUN_OBJS =	sunraster.o
+SUN_DEFS = 	-DBuildRasterSun
+#endif
+
+#ifdef BuildRasterXWD
+XWD_OBJS =	xwd.o
+XWD_DEFS = 	-DBuildRasterXWD
+#endif
+
+#ifdef BuildRasterParallax
+PARALLAX_OBJS =	parallax.o
+PARALLAX_DEFS =	-DBuildRasterParallax
+#endif
+
+CDEFINES =	-I$(LOCINCDIR) \
+		$(HDF_DEFS) $(HPLJ_DEFS) $(NRIF_DEFS) $(SUN_DEFS) \
+		$(XWD_DEFS) $(PARALLAX_DEFS)
+
+DEVICE_OBJS =	$(HDF_OBJS) $(HPLJ_OBJS) $(NRIF_OBJS) $(SUN_OBJS) \
+		$(XWD_OBJS) $(PARALLAX_OBJS)
+
+GENERIC_OBJS =	raster.o cleartext.o error.o misc.o palette.o dither.o \
+		$(DEVICE_OBJS)
+			
+#ifdef CRAY
+OTHER_OBJS	= bsd-sysv.o
+OTHER_SRCS	= bsd-sysv.c
+#endif
+
+OBJS		= $(GENERIC_OBJS) $(OTHER_OBJS)
+SRCS		= $(GENERIC_SRCS) $(OTHER_SRCS)
+
+Library($(MYNAME),$(OBJS))
+
+dither.o:	ncarg_ras.h
+error.o:	ncarg_ras.h
+hdf.o:		ncarg_ras.h options.h
+misc.o:		ncarg_ras.h
+nrif.o:		ncarg_ras.h nrif.h
+palette.o:	ncarg_ras.h
+rasinfo.o:	ncarg_ras.h
+raster.o:	ncarg_ras.h options.h devices.h
+sunraster.o:	ncarg_ras.h sunraster.h
+xwd.o:		ncarg_ras.h
+parallax.o:	ncarg_ras.h parallax.h
+hplj.o:		ncarg_ras.h hplj.h
+cleartext.o:	ncarg_ras.h
+
+all::
+	@$(INSTALL) $(INCLUDES) $(LOCINCDIR)
+
+lint:
+	$(LINT) -I$(LOCINCDIR) $(SRCS) 1> lint.out 2>&1
+
