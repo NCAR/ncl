@@ -1,5 +1,5 @@
 /*
- *	$Id: talkto.c,v 1.25 1997-03-09 01:52:11 boote Exp $
+ *	$Id: talkto.c,v 1.26 1997-04-11 15:55:00 boote Exp $
  */
 /*
  *	talkto.c
@@ -19,8 +19,11 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/time.h>
-#include <sys/select.h>
 #include "text.h"
+
+#ifdef	Solaris
+#include <sys/select.h>
+#endif
 
 #ifdef RS6000
 #define NBBY    8       /* xlc compiler isn't config'ed properly        */
