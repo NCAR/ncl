@@ -1,0 +1,14 @@
+#
+#   $Id: yMakefile,v 1.1 1996-04-04 19:39:56 haley Exp $
+#
+#   Makefile for GRIB data files
+#
+
+MYNAME = grb
+
+DATA  = ced1.lf00.t00z.eta.grb
+		
+InstallTarget($(DATA),$(INSTALL_LIB),$(DATAROOT)/grb)
+
+
+

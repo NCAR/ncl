@@ -1,0 +1,13 @@
+#
+#   $Id: yMakefile,v 1.1 1996-04-04 19:36:02 haley Exp $
+#
+#   Makefile for ASC data files
+#
+
+MYNAME = asc
+
+DATA  = ex05B1_uv_jan_mm92.hs.asc oceanland30e.asc
+		
+InstallTarget($(DATA),$(INSTALL_LIB),$(DATAROOT)/asc)
+
+

@@ -1,0 +1,14 @@
+#
+#   $Id: yMakefile,v 1.1 1996-04-04 19:37:20 haley Exp $
+#
+#   Makefile for BIN data files
+#
+
+MYNAME = bin
+
+DATA  = ex01B1_uv300.hs.mdl
+		
+InstallTarget($(DATA),$(INSTALL_LIB),$(DATAROOT)/bin)
+
+
+
