@@ -1,5 +1,5 @@
 #
-#       $Id: yMakefile,v 1.7 2001-10-10 02:27:37 haley Exp $
+#       $Id: yMakefile,v 1.8 2002-02-23 01:02:52 haley Exp $
 #
 
 MYNAME  = nnalg
@@ -8,9 +8,14 @@ SRCS = nadisp.F  nadraw.f  naskln.f  nasort.f
 OBJS = nadisp.o  nadraw.o  naskln.o  nasort.o
 
 FCPP_OBJS       = nadisp.f
+EXTRA_LIBS = $(CTOFLIBS)
 
 PROG_LIBS = $(NCARGLIBS)
 DEP_LIBS = $(DEPNCARGLIBS)
 SYS_LIBS = $(XLIB)
 
 FortranProgram($(MYNAME),$(OBJS),$(DEP_LIBS))
+
+#if (!defined(i386) || defined(linux)) && !defined(Darwin)
+CleanFilesTarget($(FONTCAPS))
+#endif
