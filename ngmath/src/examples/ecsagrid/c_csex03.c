@@ -1,5 +1,5 @@
 /*
- *  $Id: c_csex03.c,v 1.3 1999-01-29 01:14:04 fred Exp $
+ *  $Id: c_csex03.c,v 1.4 2000-07-24 22:09:53 haley Exp $
  */
 
 #include <stdio.h>
@@ -132,7 +132,7 @@ void c_drwft1(int n, float x[], float y[], int m, float xo[],
 /*
  * Plot the main title.
  */
-  gset_clip_ind(0);
+  gset_clip_ind(GIND_NO_CLIP);
   c_plchhq(.5,.95,":F21:Data sparse areas",0.03,0.,0.);
 
 /*

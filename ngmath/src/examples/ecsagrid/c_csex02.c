@@ -1,5 +1,5 @@
 /*
- *  $Id: c_csex02.c,v 1.2 1999-01-28 23:55:26 fred Exp $
+ *  $Id: c_csex02.c,v 1.3 2000-07-24 22:09:53 haley Exp $
  */
 
 #include <stdio.h>
@@ -143,7 +143,7 @@ void c_drwft1(int n, float x[], float y[], int m, float xo[],
 /*
  * Plot the main title.
  */
-  gset_clip_ind(0);
+  gset_clip_ind(GIND_NO_CLIP);
   c_plchhq(.5,.95,":F21:Effect of data weights",0.035,0.,0.);
 
 /*
