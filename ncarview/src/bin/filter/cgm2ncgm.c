@@ -1,5 +1,5 @@
 /*
- *	$Id: cgm2ncgm.c,v 1.4 1991-09-27 14:25:27 clyne Exp $
+ *	$Id: cgm2ncgm.c,v 1.5 1992-02-13 18:22:06 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -58,7 +58,11 @@ main (argc,argv)
 		char	*arg = argv[i];
 
 		if (arg[0] == '-') {
-			if (arg[1] != 's') {	/* look for '-s <size>'	*/
+			if (arg[1] == 'V') {
+				PrintVersion(argv[0]);
+				exit(0);
+			}
+			else if (arg[1] != 's') {/* look for '-s <size>'*/
 				usage();
 			}
 			if (++i >= argc) {
@@ -270,6 +274,6 @@ get_data(count)
 }
 usage()
 {
-	(void) fprintf(stderr, "Usage: cgm2ncgm [-s <input record size>]\n");
+	(void)fprintf(stderr,"Usage: cgm2ncgm [-V | -s <input record size>]\n");
 	exit(1);
 }

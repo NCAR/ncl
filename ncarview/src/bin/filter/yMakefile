@@ -1,5 +1,8 @@
 #
 #
+#	$Id: yMakefile,v 1.2 1992-02-13 18:22:10 clyne Exp $
+#
+#
 #	Makefile for cgm filters -- filter between NCAR CGM and vanilla CGM
 #
 #

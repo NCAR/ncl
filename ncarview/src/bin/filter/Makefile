@@ -86,6 +86,9 @@ SHELL           = /bin/sh
 
 #
 #
+#	$Id: Makefile,v 1.7 1992-02-13 18:22:04 clyne Exp $
+#
+#
 #	Makefile for cgm filters -- filter between NCAR CGM and vanilla CGM
 #
 #
