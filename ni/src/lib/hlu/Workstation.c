@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.3 1993-10-23 00:35:00 dbrown Exp $
+ *      $Id: Workstation.c,v 1.4 1993-11-04 19:51:10 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -941,9 +941,11 @@ static NhlErrorTypes WorkstationInitialize
 	}
 	newl->work.color_map_len = newl->work.num_private_colors - 1;
 
-
-	ga = newl->work.color_map;
-
+/*
+ * Create the gen_array initially using the static default color map data.
+ * Note the my_data field is set False. (it's the default, but just to
+ * be certain...)
+ */
 	count[0] = newl->work.color_map_len;
 	count[1] = 3;
 	if ((ga = NhlCreateGenArray((NhlPointer)def_color,NhlTFloat,
@@ -953,7 +955,7 @@ static NhlErrorTypes WorkstationInitialize
 			  NhlNwkColorMap);
 		return FATAL;
 	}
-	newl->work.color_map->my_data = False;
+	ga->my_data = False;
 
 	if (newl->work.color_map != NULL) {		
 		subret = _NhlValidatedGenArrayCopy(&ga,newl->work.color_map,
