@@ -78,7 +78,7 @@ vector in both grid and metacode coordinates, returns the X coordinate of
 the other end of the vector in metacode coordinates.
 .sp
 MYF - MYF is a user modifiable function that, given one end point of a
-vector in both grid and metcode coordinates, returns the Y coordinate
+vector in both grid and metacode coordinates, returns the Y coordinate
 of the other end of the vector in metacode coordinates.
 .SH STATUS
 Like FX and FY, MXF and MYF are obsolete and should not be employed when
