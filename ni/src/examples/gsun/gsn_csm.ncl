@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.177 2004-12-09 23:13:08 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.178 2004-12-14 23:31:43 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -3380,7 +3380,7 @@ begin
     iproj = res@mpProjection
     if((typeof(iproj).eq."integer".and.iproj.ne.9).or.\
        (typeof(iproj).eq."string".and. \
-        lower_case(iproj).ne."LambertConformal")) then
+        lower_case(iproj).ne."lambertconformal")) then
       print("mask_lambert_conformal: warning: you are using a projection other")
       print("  than LambertConformal. Unexpected results will likely occur.")
     end if
