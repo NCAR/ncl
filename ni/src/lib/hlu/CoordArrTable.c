@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrTable.c,v 1.23 1995-01-26 02:53:48 boote Exp $
+ *      $Id: CoordArrTable.c,v 1.24 1995-03-03 02:56:24 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1229,6 +1229,7 @@ CoordArrTableSetValues
 	NhlBoolean			impx,impy;
 	NhlBoolean			invx,invy;
 	NhlBoolean			status=False;
+	NhlBoolean			update_minmax=False;
 
 	if(ncatp->xtype == NULL){
 		if(ncatp->xtable != NULL){
@@ -1409,16 +1410,6 @@ CoordArrTableSetValues
 			NhlFreeGenArray(ocatp->own_x);
 		NhlFreeGenArray(ocatp->xtable);
 		NhlFreeGenArray(ocatp->xtable_lens);
-
-		if(!ncatp->sticky_max_x && (ncatp->max_x == ocatp->max_x)){
-			NhlFreeGenArray(ncatp->max_x);
-			ncatp->max_x = ocatp->max_x = NULL;
-		}
-
-		if(!ncatp->sticky_min_x && (ncatp->min_x == ocatp->min_x)){
-			NhlFreeGenArray(ncatp->min_x);
-			ncatp->min_x = ocatp->min_x = NULL;
-		}
 	}
 
 	/*
@@ -1447,16 +1438,6 @@ CoordArrTableSetValues
 			NhlFreeGenArray(ocatp->own_y);
 		NhlFreeGenArray(ocatp->ytable);
 		NhlFreeGenArray(ocatp->ytable_lens);
-
-		if(!ncatp->sticky_max_y && (ncatp->max_y == ocatp->max_y)){
-			NhlFreeGenArray(ncatp->max_y);
-			ncatp->max_y = ocatp->max_y = NULL;
-		}
-
-		if(!ncatp->sticky_min_y && (ncatp->min_y == ocatp->min_y)){
-			NhlFreeGenArray(ncatp->min_y);
-			ncatp->min_y = ocatp->min_y = NULL;
-		}
 	}
 
 	if(ncatp->missing_x != ocatp->missing_x){
@@ -1481,26 +1462,54 @@ CoordArrTableSetValues
 		NhlFreeGenArray(ocatp->missing_y);
 	}
 
+	update_minmax = status;
+
 	if(ncatp->max_x != ocatp->max_x){
 		ncatp->max_x = _NhlCopyGenArray(ncatp->max_x,True);
+		if(!ncatp->max_x)
+			NHLPERROR((NhlFATAL,ENOMEM,NULL));
 		status = True;
 		NhlFreeGenArray(ocatp->max_x);
 	}
+	else if(update_minmax && !!ncatp->sticky_max_x){
+		NhlFreeGenArray(ncatp->max_x);
+		ncatp->max_x = NULL;
+	}
+
 	if(ncatp->min_x != ocatp->min_x){
 		ncatp->min_x = _NhlCopyGenArray(ncatp->min_x,True);
+		if(!ncatp->max_x)
+			NHLPERROR((NhlFATAL,ENOMEM,NULL));
 		status = True;
 		NhlFreeGenArray(ocatp->min_x);
+	}
+	else if(update_minmax && !!ncatp->sticky_min_x){
+		NhlFreeGenArray(ncatp->min_x);
+		ncatp->min_x = NULL;
 	}
 
 	if(ncatp->max_y != ocatp->max_y){
 		ncatp->max_y = _NhlCopyGenArray(ncatp->max_y,True);
+		if(!ncatp->max_x)
+			NHLPERROR((NhlFATAL,ENOMEM,NULL));
 		status = True;
 		NhlFreeGenArray(ocatp->max_y);
 	}
+	else if(update_minmax && !!ncatp->sticky_max_y){
+		NhlFreeGenArray(ncatp->max_y);
+		ncatp->max_y = NULL;
+	}
+
 	if(ncatp->min_y != ocatp->min_y){
 		ncatp->min_y = _NhlCopyGenArray(ncatp->min_y,True);
+		if(!ncatp->max_x)
+			NHLPERROR((NhlFATAL,ENOMEM,NULL));
 		status = True;
 		NhlFreeGenArray(ocatp->min_y);
+	}
+	else if(update_minmax && !!ncatp->sticky_min_y){
+		NhlFreeGenArray(ncatp->min_y);
+		ncatp->min_y = NULL;
 	}
 
 	_NhlDataChanged((NhlDataItemLayer)ncat,status);

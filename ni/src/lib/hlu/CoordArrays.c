@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrays.c,v 1.22 1995-02-03 22:25:46 boote Exp $
+ *      $Id: CoordArrays.c,v 1.23 1995-03-03 02:56:25 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1277,6 +1277,7 @@ CoordArraysSetValues
 	NhlCoordArraysLayerPart	*ocap = &ocarr->carr;
 	NhlBoolean		impx = False, impy = False;
 	NhlBoolean		status = False;
+	NhlBoolean		update_minmax = False;
 
 
 	if(ncap->xarray != ocap->xarray){
@@ -1364,6 +1365,10 @@ CoordArraysSetValues
 			ncap->missing_x = ocap->missing_x;
 			ret = MIN(ret,NhlWARNING);
 		}
+		else{
+			status = True;
+			NhlFreeGenArray(ocap->missing_x);
+		}
 	}
 	if(ncap->missing_y != ocap->missing_y){
 		ncap->missing_y = _NhlCopyGenArray(ncap->missing_y,True);
@@ -1373,7 +1378,13 @@ CoordArraysSetValues
 			ncap->missing_y = ocap->missing_y;
 			ret = MIN(ret,NhlWARNING);
 		}
+		else{
+			status = True;
+			NhlFreeGenArray(ocap->missing_y);
+		}
 	}
+
+	update_minmax = status;
 
 	if(ncap->max_x != ocap->max_x){
 		ncap->max_x = _NhlCopyGenArray(ncap->max_x,True);
@@ -1383,9 +1394,17 @@ CoordArraysSetValues
 			ncap->max_x = ocap->max_x;
 			ret = MIN(ret,NhlWARNING);
 		}
-		else
+		else{
+			NhlFreeGenArray(ocap->max_x);
 			ncap->sticky_max_x = True;
+			status = True;
+		}
 	}
+	else if(update_minmax && !ncap->sticky_max_x){
+		NhlFreeGenArray(ncap->max_x);
+		ncap->max_x = NULL;
+	}
+
 	if(ncap->max_y != ocap->max_y){
 		ncap->max_y = _NhlCopyGenArray(ncap->max_y,True);
 		if(!ncap->max_y){
@@ -1394,9 +1413,17 @@ CoordArraysSetValues
 			ncap->max_y = ocap->max_y;
 			ret = MIN(ret,NhlWARNING);
 		}
-		else
+		else{
+			NhlFreeGenArray(ocap->max_y);
 			ncap->sticky_max_y = True;
+			status = True;
+		}
 	}
+	else if(update_minmax && !ncap->sticky_max_y){
+		NhlFreeGenArray(ncap->max_y);
+		ncap->max_y = NULL;
+	}
+
 	if(ncap->min_x != ocap->min_x){
 		ncap->min_x = _NhlCopyGenArray(ncap->min_x,True);
 		if(!ncap->min_x){
@@ -1405,9 +1432,17 @@ CoordArraysSetValues
 			ncap->min_x = ocap->min_x;
 			ret = MIN(ret,NhlWARNING);
 		}
-		else
+		else{
+			NhlFreeGenArray(ocap->min_y);
 			ncap->sticky_min_x = True;
+			status = True;
+		}
 	}
+	else if(update_minmax && !ncap->sticky_min_x){
+		NhlFreeGenArray(ncap->min_x);
+		ncap->min_x = NULL;
+	}
+
 	if(ncap->min_y != ocap->min_y){
 		ncap->min_y = _NhlCopyGenArray(ncap->min_y,True);
 		if(!ncap->min_y){
@@ -1416,8 +1451,15 @@ CoordArraysSetValues
 			ncap->min_y = ocap->min_y;
 			ret = MIN(ret,NhlWARNING);
 		}
-		else
+		else{
+			NhlFreeGenArray(ocap->min_y);
 			ncap->sticky_min_y = True;
+			status = True;
+		}
+	}
+	else if(update_minmax && !ncap->sticky_min_y){
+		NhlFreeGenArray(ncap->min_y);
+		ncap->min_y = NULL;
 	}
 
 	_NhlDataChanged((NhlDataItemLayer)new,status);

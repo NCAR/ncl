@@ -1,5 +1,5 @@
 /*
- *      $Id: Fortran.c,v 1.6 1995-01-12 22:02:33 boote Exp $
+ *      $Id: Fortran.c,v 1.7 1995-03-03 02:56:28 boote Exp $
  */
 /************************************************************************
 *									*
@@ -36,6 +36,7 @@ static NrmQuark	intQ;
 static NrmQuark	floatQ;
 static NrmQuark	stringQ;
 static NrmQuark	genQ;
+static NrmQuark	strgenQ;
 static NrmQuark	FExpStrQ;
 static NrmQuark	FExpStrArrQ;
 static NrmQuark	FExpArrQ;
@@ -665,8 +666,8 @@ _NHLCALLF(nhl_frlsetstringarray,NHL_FRLSETSTRINGARRAY)
 	gen->my_data = True;
 	val.ptrval = gen;
 
-	if(_NhlRLInsert(*id,NhlSETRL,_NhlFstrToQuark(fname,*fname_len),genQ,val,
-			sizeof(NhlGenArray),(_NhlFreeFunc)NhlFreeGenArray))
+	if(_NhlRLInsert(*id,NhlSETRL,_NhlFstrToQuark(fname,*fname_len),strgenQ,
+			val,sizeof(NhlGenArray),(_NhlFreeFunc)NhlFreeGenArray))
 		*err = NhlNOERROR;
 	else
 		*err = NhlFATAL;
@@ -1609,6 +1610,7 @@ FortranInit
 	floatQ = NrmStringToQuark(NhlTFloat);
 	stringQ = NrmStringToQuark(NhlTString);
 	genQ = NrmStringToQuark(NhlTGenArray);
+	strgenQ = NrmStringToQuark(NhlTStringGenArray);
 	FExpStrQ = NrmStringToQuark(_NhlTFExpString);
 	FExpStrArrQ = NrmStringToQuark(_NhlTFExpStringArr);
 	FExpArrQ = NrmStringToQuark(_NhlTFExpArray);

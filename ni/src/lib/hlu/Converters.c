@@ -1,5 +1,5 @@
 /*
- *      $Id: Converters.c,v 1.27 1995-02-17 10:23:01 boote Exp $
+ *      $Id: Converters.c,v 1.28 1995-03-03 02:56:23 boote Exp $
  */
 /************************************************************************
 *									*
@@ -630,7 +630,7 @@ NhlCvtScalarToEnum
 	ival.size = sizeof(int);
 	ival.data.ptrval = &tint;
 	if(_NhlReConvertData(from->typeQ,intQ,from,&ival) < NhlWARNING){
-		NhlPError(NhlFATAL,NhlEUNKNOWN,
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
 			"%s:Unable to convert from %s to %s",func,
 				NrmQuarkToString(from->typeQ),NhlTInteger);
 		return NhlFATAL;
@@ -644,9 +644,13 @@ NhlCvtScalarToEnum
 	}
 
 	if(!set){
-		NhlPError(NhlFATAL,NhlEUNKNOWN,
-			"%s:Unable to convert from %s to %s",func,
-				NrmQuarkToString(from->typeQ),NhlTInteger);
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+			"%s:Unable to convert from %s to %s,\n\t%d is not a valid value for %s",
+			func,
+			NrmQuarkToString(from->typeQ),
+			NrmQuarkToString(to->typeQ),
+			tint,
+			NrmQuarkToString(to->typeQ));
 		return NhlFATAL;
 	}
 
@@ -833,6 +837,11 @@ NhlCvtGenArrayToEnumGenArray
 				"%s:Called with improper number of args",func);
 		to->size = 0;
 		return NhlFATAL;
+	}
+
+	tgen = from->data.ptrval;
+	if(tgen->typeQ == stringQ){
+		return _NhlReConvertData(strgenQ,to->typeQ,from,to);
 	}
 
 	ival.size = sizeof(NhlGenArray);

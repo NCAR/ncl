@@ -1,5 +1,5 @@
 /*
- *      $Id: DataMgr.c,v 1.9 1995-02-17 10:23:12 boote Exp $
+ *      $Id: DataMgr.c,v 1.10 1995-03-03 02:56:27 boote Exp $
  */
 /************************************************************************
 *									*
@@ -493,7 +493,7 @@ CreateCache
 	 * First check cache and see if the requested type is already there.
 	 */
 	for(new = mgr->datamgr.data_list;new != NULL; new = new->next){
-		if(new->type == type){
+		if(new->type == type && new->uptodate){
 			new->ref_count++;
 			return new;
 		}

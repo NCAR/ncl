@@ -1,5 +1,5 @@
 /*
- *      $Id: DataComm.c,v 1.24 1995-02-19 08:17:52 boote Exp $
+ *      $Id: DataComm.c,v 1.25 1995-03-03 02:56:26 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1167,6 +1167,7 @@ ListNotShared
 
 	ilist = gen->data;
 	ilist->shared_list = False;
+	ilist->extra = NULL;
 
 	return;
 }

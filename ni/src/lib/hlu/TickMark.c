@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.c,v 1.28 1995-02-19 08:18:49 boote Exp $
+ *      $Id: TickMark.c,v 1.29 1995-03-03 02:56:32 boote Exp $
  */
 /************************************************************************
 *									*
@@ -3733,6 +3733,8 @@ static NhlErrorTypes CheckKeyVals
                 (tnew->tick.x_b_on)){
                 NhlPError(NhlWARNING,NhlEUNKNOWN,"%s: Neither NhltmXBDataLeftF nor NhltmXBDataRightF are set and NhltmXBOn is set, turning off bottom ticks",error_lead);
                 tnew->tick.x_b_on = 0;
+		if(tnew->tick.x_use_bottom)
+			tnew->tick.x_t_on = False;
 		ret = NhlWARNING;
         }
         if((tnew->tick.x_t_data_left == 0.0)&&
@@ -3761,7 +3763,9 @@ static NhlErrorTypes CheckKeyVals
                 (tnew->tick.y_l_data_top ==0.0)&&
                 (tnew->tick.y_l_on)){
                 NhlPError(NhlWARNING,NhlEUNKNOWN,"%s: Neither NhltmYLDataBottomF nor NhltmYLDataTopF are set and NhltmYLOn is set, turning off left ticks",error_lead);
-                tnew->tick.y_l_on = 0;
+                tnew->tick.y_l_on = False;
+		if(tnew->tick.y_use_left)
+			tnew->tick.y_r_on = False;
 		ret = NhlWARNING;
         }
         if((tnew->tick.y_r_data_bottom == 0.0)&&

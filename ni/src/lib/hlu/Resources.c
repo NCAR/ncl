@@ -1,5 +1,5 @@
 /*
- *      $Id: Resources.c,v 1.18 1995-02-19 08:18:30 boote Exp $
+ *      $Id: Resources.c,v 1.19 1995-03-03 02:56:29 boote Exp $
  */
 /************************************************************************
 *									*
@@ -613,7 +613,7 @@ GetResources
 					 * NhlPointer so func's and strings
 					 * work correctly.
 					 */
-					to.size = sizeof(NhlPointer);
+					to.size = resources[i].nrm_size;
 				}
 			}
 

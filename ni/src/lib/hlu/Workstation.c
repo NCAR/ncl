@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.25 1995-02-19 08:19:17 boote Exp $
+ *      $Id: Workstation.c,v 1.26 1995-03-03 02:56:34 boote Exp $
  */
 /************************************************************************
 *									*
@@ -3433,18 +3433,18 @@ void _NhlSetLineInfo
 	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 
 	/*
-	 * Use .7619 as multiplier to determine WOC from Font Height.
-	 * This comes from 16(PW)/21(PH) Principal Width and Height
-	 * in PlotChar.  Therefore, we need to make sure plotchar is
-	 * using these default values.  This means it is not possible
-	 * to change the font aspect in Line Labels - ya gotta draw
-	 * the line somewhere.
+	 * Use .8571 as multiplier to determine WOC from Font Height.
+	 * This comes from 16(PW)/21(PH)*1/.8888(SA) Principal Width and Height
+	 * and SIZA multiplyer in PlotChar.  Therefore, we need to make
+	 * sure plotchar is using these default values.  This means it is
+	 * not possible to change the font aspect in Line Labels -
+	 * ya gotta draw the line somewhere.
 	 */
 	c_pcseti("PW",16);
 	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 	c_pcseti("PH",21);
 	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
-	c_dpsetr("WOC",wklp->line_label_font_height * 0.7619);
+	c_dpsetr("WOC",wklp->line_label_font_height * 0.8571);
 	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 
         gset_linewidth(wklp->line_thickness);
@@ -4234,6 +4234,10 @@ static NhlErrorTypes WorkstationMarker
 	float			p_height, p_width;
 
 /*
+ * Flush plotif buffer...
+ */
+	c_plotif(0.,0.,2);
+/*
  * Make the user space coincide with the NDC space for the
  * duration of the routine
  */
@@ -4298,7 +4302,11 @@ static NhlErrorTypes WorkstationMarker
 		string = marker_table[NhlWK_DEF_MARKER]->marker;
 			
 		for (i=0; i<num_points; i++) {
-			c_plchhq(x[i]+x_off,y[i]+y_off,string,marker_size,
+			/*
+			 * marker size is multiplied by 1.125 to account
+			 * for 'SA' parameter of PlotChar.
+			 */
+			c_plchhq(x[i]+x_off,y[i]+y_off,string,marker_size*1.125,
 								0.0,0.0);
 			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 		}
@@ -4329,9 +4337,13 @@ static NhlErrorTypes WorkstationMarker
 			y_off = marker_size * 
 				(marker_table[index]->y_off + 
 				 mkp->marker_y_off);
+			/*
+			 * marker size is multiplied by 1.125 to account
+			 * for 'SA' parameter of PlotChar.
+			 */
 			c_plchhq(x[i]+x_off,y[i]+y_off,
 				 marker_table[index]->marker,
-				 marker_size,0.0,0.0);
+				 marker_size*1.125,0.0,0.0);
 			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 		}
 	}
@@ -4350,8 +4362,12 @@ static NhlErrorTypes WorkstationMarker
 	c_set(fl,fr,fb,ft,ul,ur,ub,ut,ll);
 	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 
-	return(ret);
+/*
+ * Flush plotif buffer...
+ */
+	c_plotif(0.,0.,2);
 
+	return(ret);
 }
 
 NhlErrorTypes CallWorkstationMarker

@@ -1,5 +1,5 @@
 /*
- *      $Id: TextItem.c,v 1.19 1995-02-19 08:18:35 boote Exp $
+ *      $Id: TextItem.c,v 1.20 1995-03-03 02:56:30 boote Exp $
  */
 /************************************************************************
 *									*
@@ -508,8 +508,7 @@ static NhlErrorTypes    TextItemClassInitialize
 
 	_NhlEnumVals	textdirlist[] = {
 		{NhlDOWN,	"down"},
-		{NhlACROSS,	"across"},
-		{NhlUP,		"up"}
+		{NhlACROSS,	"across"}
 	};
 
 	_NhlRegisterEnumType(NhlTFQuality,fontqlist,NhlNumber(fontqlist));
@@ -554,8 +553,12 @@ DoPcCalc
 		tnew->text.real_ph_width = 21.0 * 1.0/tnew->text.font_aspect;
 		tnew->text.real_ph_height = 21.0;
 	}
+	/*
+	 * The 1.125 is used to make up for the font height difference the
+	 * 'SA' parameter of plotchar introduces.
+	 */
 	tnew->text.real_size = 1.0/tnew->text.font_aspect *
-							tnew->text.font_height;
+					tnew->text.font_height * 1.125;
 
 	/*
 	 * Need to determine how big text is so the real posistions of x and y
@@ -624,7 +627,7 @@ static NhlErrorTypes    TextItemInitialize
 
 	tnew->text.x_corners = (float*)NhlMalloc((unsigned)4*sizeof(float));
 	tnew->text.y_corners = (float*)NhlMalloc((unsigned)4*sizeof(float));
-	if((tnew->text.direction == NhlUP)||(tnew->text.direction == NhlDOWN)) {
+	if(tnew->text.direction == NhlDOWN) {
 		sprintf(tnew->text.dirstr,"%cD%c",tnew->text.func_code,
 							tnew->text.func_code);
 	} else {
@@ -787,8 +790,7 @@ static NhlErrorTypes TextItemSetValues
 
 	if((tnew->text.direction != told->text.direction)||(tnew->text.func_code != told->text.func_code)){
 		rstringchange = 1;
-		if((tnew->text.direction == NhlUP)||
-					(tnew->text.direction == NhlDOWN)) {
+		if(tnew->text.direction == NhlDOWN) {
 			sprintf(tnew->text.dirstr,"%cD%c",tnew->text.func_code,
 							tnew->text.func_code);
 		} else {
