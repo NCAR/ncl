@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: nhlcc.csh,v 1.5 1995-05-17 17:13:44 haley Exp $
+#	$Id: nhlcc.csh,v 1.6 1997-03-05 19:53:04 haley Exp $
 #
 
 #*********************************************#
@@ -33,7 +33,7 @@ set incpath = "-I$incdir $sysincdir"
 # set up default libraries
 #
 set libncarg    = "-lncarg"
-set libgks      = "-lncarg_gksC -lncarg_gks"
+set libgks      = "-lncarg_gks"
 set libncarg_c  = "-lncarg_c"
 set libcbind    = "-lncargC"
 set libhlu      = "-lhlu"

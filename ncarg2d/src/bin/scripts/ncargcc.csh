@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ncargcc.csh,v 1.37 1995-09-18 19:34:01 haley Exp $
+#	$Id: ncargcc.csh,v 1.38 1997-03-05 19:53:02 haley Exp $
 #
 
 #*********************************************#
@@ -42,7 +42,7 @@ set super  = "$ro/libdashsupr.o $ro/libconrcspr.o $ro/libconras.o"
 # set up default libraries
 #
 set libncarg    = "-lncarg"
-set libgks      = "-lncarg_gksC -lncarg_gks"
+set libgks      = "-lncarg_gks"
 set libncarg_c  = "-lncarg_c"
 set libcbind    = "-lncargC"
 set ncarg_libs  = "$libcbind $libncarg $libgks $libncarg_c"
