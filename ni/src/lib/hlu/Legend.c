@@ -1,5 +1,5 @@
 /*
- *      $Id: Legend.c,v 1.38 1995-05-10 02:31:47 dbrown Exp $
+ *      $Id: Legend.c,v 1.39 1995-05-18 20:05:39 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1837,7 +1837,7 @@ static NhlErrorTypes    ManageDynamicArrays
 
 	count = lg_p->item_count;
 
-	if (lg_p->item_types != olg_p->item_types) {
+	if (_NhlArgIsSet(args,num_args,NhlNlgItemTypes)) {
 		
 		ret_1 = _NhlValidatedGenArrayCopy(&(olg_p->item_types),
 						  lg_p->item_types,
@@ -1882,7 +1882,7 @@ static NhlErrorTypes    ManageDynamicArrays
 		     NhlNwkDashTableLength, &len_1,
 		     NhlNwkMarkerTableLength, &len_2, NULL);
 
-	if (lg_p->dash_indexes != olg_p->dash_indexes) {
+	if (_NhlArgIsSet(args,num_args,NhlNlgDashIndexes)) {
 		
 		ret_1 = _NhlValidatedGenArrayCopy(&(olg_p->dash_indexes),
 						  lg_p->dash_indexes,
@@ -1920,7 +1920,7 @@ static NhlErrorTypes    ManageDynamicArrays
 		lg_p->dash_indexes->num_elements = lg_p->item_count;
 	}
 
-	if (lg_p->marker_indexes != olg_p->marker_indexes) {
+	if (_NhlArgIsSet(args,num_args,NhlNlgMarkerIndexes)) {
 		
 		ret_1 = _NhlValidatedGenArrayCopy(&(olg_p->marker_indexes),
 						  lg_p->marker_indexes,
@@ -1970,7 +1970,7 @@ static NhlErrorTypes    ManageDynamicArrays
  * created for the additional elements.
  */
 
-	if (lg_p->line_labels != olg_p->line_labels) {
+	if (_NhlArgIsSet(args,num_args,NhlNlgLineLabelStrings)) {
 		
 		ret_1 = _NhlValidatedGenArrayCopy(&(olg_p->line_labels),
 						  lg_p->line_labels,
@@ -2024,7 +2024,7 @@ static NhlErrorTypes    ManageDynamicArrays
 	/*
 	 * First Line colors, then Marker colors.
 	 */
-	if (lg_p->line_colors != olg_p->line_colors) {
+	if (_NhlArgIsSet(args,num_args,NhlNlgLineColors)) {
 		ret_1 = _NhlValidatedGenArrayCopy(&(olg_p->line_colors),
 						  lg_p->line_colors,
 						  NhlLG_MAX_ITEMS,True,False,
@@ -2059,7 +2059,7 @@ static NhlErrorTypes    ManageDynamicArrays
 	/*
 	 * Now marker colors.
 	 */
-	if (lg_p->marker_colors != olg_p->marker_colors) {
+	if (_NhlArgIsSet(args,num_args,NhlNlgMarkerColors)) {
 		ret_1 = _NhlValidatedGenArrayCopy(&(olg_p->marker_colors),
 						  lg_p->marker_colors,
 						  NhlLG_MAX_ITEMS,True,False,
@@ -2097,7 +2097,7 @@ static NhlErrorTypes    ManageDynamicArrays
 
 	count = lg_p->item_count;
 
-	if (lg_p->line_dash_seglens != olg_p->line_dash_seglens) {
+	if (_NhlArgIsSet(args,num_args,NhlNlgLineDashSegLens)) {
 		
 		ret_1 = _NhlValidatedGenArrayCopy(&(olg_p->line_dash_seglens),
 						  lg_p->line_dash_seglens,
@@ -2148,7 +2148,7 @@ static NhlErrorTypes    ManageDynamicArrays
 
 	count = lg_p->item_count;
 
-	if (lg_p->line_thicknesses != olg_p->line_thicknesses) {
+	if (_NhlArgIsSet(args,num_args,NhlNlgLineThicknesses)) {
 		
 		ret_1 = _NhlValidatedGenArrayCopy(&(olg_p->line_thicknesses),
 						  lg_p->line_thicknesses,
@@ -2199,7 +2199,7 @@ static NhlErrorTypes    ManageDynamicArrays
 
 	count = lg_p->item_count;
 
-	if (lg_p->marker_thicknesses != olg_p->marker_thicknesses) {
+	if (_NhlArgIsSet(args,num_args,NhlNlgMarkerThicknesses)) {
 		
 		ret_1 = _NhlValidatedGenArrayCopy(&(olg_p->marker_thicknesses),
 						  lg_p->marker_thicknesses,
@@ -2248,7 +2248,7 @@ static NhlErrorTypes    ManageDynamicArrays
 
 	count = lg_p->item_count;
 
-	if (lg_p->line_label_font_heights != olg_p->line_label_font_heights){
+	if (_NhlArgIsSet(args,num_args,NhlNlgLineLabelFontHeights)){
 		
 		ret_1 = _NhlValidatedGenArrayCopy(
 					&(olg_p->line_label_font_heights),
@@ -2299,7 +2299,7 @@ static NhlErrorTypes    ManageDynamicArrays
 
 	count = lg_p->item_count;
 
-	if (lg_p->marker_sizes != olg_p->marker_sizes) {
+	if (_NhlArgIsSet(args,num_args,NhlNlgMarkerSizes)) {
 		
 		ret_1 = _NhlValidatedGenArrayCopy(&(olg_p->marker_sizes),
 						  lg_p->marker_sizes,
@@ -2354,7 +2354,7 @@ static NhlErrorTypes    ManageDynamicArrays
  * created for the additional elements.
  */
 
-	if (lg_p->label_strings != olg_p->label_strings) {
+	if (_NhlArgIsSet(args,num_args,NhlNlgLabelStrings)) {
 		
 		ret_1 = _NhlValidatedGenArrayCopy(&(olg_p->label_strings),
 						  lg_p->label_strings,
@@ -2406,7 +2406,7 @@ static NhlErrorTypes    ManageDynamicArrays
  */
 
 
-	if (lg_p->line_label_colors != olg_p->line_label_colors) {
+	if (_NhlArgIsSet(args,num_args,NhlNlgLineLabelFontColors)) {
 		ret_1 = _NhlValidatedGenArrayCopy(&(olg_p->line_label_colors),
 						  lg_p->line_label_colors,
 						  NhlLG_MAX_ITEMS,True,False,
@@ -2449,7 +2449,7 @@ static NhlErrorTypes    ManageDynamicArrays
  * is handled later. The box fraction array contains one more element than
  * the box count.
  */
-	if (lg_p->item_positions != olg_p->item_positions) {
+	if (_NhlArgIsSet(args,num_args,NhlNlgItemPositions)) {
 		ret_1 = _NhlValidatedGenArrayCopy(&(olg_p->item_positions),
 						  lg_p->item_positions,
 						  NhlLG_MAX_ITEMS,True,False,

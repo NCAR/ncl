@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlotP.h,v 1.3 1995-05-03 03:11:08 dbrown Exp $
+ *      $Id: ContourPlotP.h,v 1.4 1995-05-18 20:05:33 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -43,6 +43,7 @@
 #define Nhl_cnSTD_VIEW_HEIGHT	0.5
 #define NhlcnMAPVAL		99
 #define NhlcnDEF_INFO_LABEL	"CONTOUR FROM $CMN$ TO $CMX$ BY $CIU$"
+#define NhlcnDEF_NODATA_LABEL	"NO CONTOUR DATA"
 #define NhlcnDEF_CONSTF_LABEL	"CONSTANT FIELD - VALUE IS $ZDV$"
 #define NhlcnDEF_HIGH_LABEL	"H:B:$ZDV$:E:"
 #define NhlcnDEF_LOW_LABEL	"L:B:$ZDV$:E:"
@@ -143,6 +144,16 @@ typedef struct _NhlContourPlotLayerPart {
         NhlBoolean	check_point_distance;
         float		max_point_distance;
 
+	NhlBoolean	explicit_line_labels_on;
+	NhlBoolean	explicit_lbar_labels_on;
+	NhlBoolean	lbar_end_labels_on;
+	NhlBoolean	explicit_lgnd_labels_on;
+	NhlGenArray	lgnd_level_flags;
+	NhlBoolean	raster_mode_on;
+	NhlBoolean	cell_size_set;
+	float		cell_size;
+	NhlBoolean	cyclic_mode_on;
+
 	NhlGenArray	levels;
 	NhlBoolean	mono_level_flag;
 	NhlcnLevelUseMode	level_flag;
@@ -186,6 +197,8 @@ typedef struct _NhlContourPlotLayerPart {
 	NhlString		info_string; /* before substitution */
 	NhlcnLabelAttrs 	info_lbl;
 	NhlAnnotationRec	info_lbl_rec;
+	NhlString		no_data_string; /* before substitution */
+	NhlBoolean		no_data_label_on;
 	NhlString		constf_string; /* before substitution */
 	NhlcnLabelAttrs 	constf_lbl;
 	NhlAnnotationRec	constf_lbl_rec;
@@ -210,12 +223,11 @@ typedef struct _NhlContourPlotLayerPart {
 	float		y_max;
 	NhlBoolean	y_log;
 	NhlBoolean	y_reverse;
-	NhlBoolean	auto_legend_labels;
-	NhlGenArray	legend_labels;
+	NhlGenArray	lbar_labels_res;
+	NhllbLabelAlignmentMode lbar_alignment;
+	NhlGenArray	lgnd_labels_res;
 	NhlBoolean	draw_lgnd_line_lbls_set;
 	NhlBoolean	draw_lgnd_line_lbls;
-	NhlBoolean	auto_labelbar_labels;
-	NhlGenArray	labelbar_labels;
 
 	/* private resource */
 
@@ -230,26 +242,29 @@ typedef struct _NhlContourPlotLayerPart {
         NhlTransDat	*draw_dat;
         NhlTransDat	*postdraw_dat;
 	NhlBoolean	new_draw_req;
+	float		out_of_range_val;
 
 	NhlLayer	overlay_object;
 	NhlBoolean	data_init;
 	NhlBoolean	cprect_call_req;
 	int		ref_level;
 	float		*real_levels;
+	NhlColorIndex	*gks_fill_colors;
 	NhlColorIndex	*gks_line_colors;
 	NhlColorIndex	*gks_llabel_colors;
 	NhlGenArray	dash_table;
 	float		zmin;
 	float		zmax;
 	NhlBoolean	const_field;
-	NhlBoolean	display_constf;
+	NhlBoolean	display_constf_no_data;
+	NhlString	constf_no_data_string;
 	int		fill_count;
 	int		line_count;
 	NhlGenArray	ll_strings;
-	NhlGenArray	ll_text_heights;
 	int		*label_amap;
 	int		iws_id;
 	int		fws_id;
+	int		cws_id;
 	int		label_aws_id;
 	int		fill_aws_id;
 	int		ezmap_aws_id;
@@ -267,10 +282,32 @@ typedef struct _NhlContourPlotLayerPart {
 	NhlBoolean	do_lines;
 	NhlBoolean	do_fill;
 	NhlBoolean	do_labels;
-	NhlWorkspace	*fws,*iws,*aws;
-	NhlBoolean	area_ws_inited;
+	NhlWorkspace	*fws,*iws,*aws,*cws;
+	NhlBoolean	area_ws_inuse;
+	NhlBoolean	fws_inuse;
+	NhlBoolean	iws_inuse;
+	NhlBoolean	cws_inuse;
+	NhlBoolean	wk_active;
+	NhlBoolean	seg_open;
 	float		*data;
 	NhlBoolean	do_low_level_log;
+
+	/* labelbar and legend stuff */
+
+	NhlBoolean	lbar_labels_res_set;
+	NhlBoolean	lbar_labels_set;
+	NhlGenArray	lbar_labels;
+
+	NhlBoolean	lgnd_labels_res_set;
+	NhlBoolean	lgnd_labels_set;
+
+	int		lgnd_line_count;
+	NhlGenArray	lgnd_labels;
+	NhlGenArray	lgnd_l_colors;
+	NhlGenArray	lgnd_l_dash_pats;
+	NhlGenArray	lgnd_l_thicknesses;
+	NhlGenArray	lgnd_ll_font_colors;
+	NhlGenArray	lgnd_ll_strings;
 
 } NhlContourPlotLayerPart;
 

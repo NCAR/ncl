@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.h,v 1.4 1995-04-07 10:41:08 boote Exp $
+ *      $Id: ContourPlot.h,v 1.5 1995-05-18 20:05:32 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -126,6 +126,14 @@ typedef enum _NhlcnHighLowLabelOverlapMode {
 #define NhlNcnCheckPointDistance	"cnCheckPointDistance"
 #define NhlNcnMaxPointDistanceF		"cnMaxPointDistanceF"
 
+#define NhlNcnExplicitLineLabelsOn	"cnExplicitLineLabelsOn"
+#define NhlNcnExplicitLegendLabelsOn	"cnExplicitLegendLabelsOn"
+#define NhlNcnLegendLevelFlags		"cnLegendLevelFlags"
+#define NhlNcnExplicitLabelBarLabelsOn	"cnExplicitLabelBarLabelsOn"
+#define NhlNcnLabelBarEndLabelsOn	"cnLabelBarEndLabelsOn"
+#define NhlNcnRasterModeOn		"cnRasterModeOn"
+#define NhlNcnRasterCellSizeF		"cnRasterCellSizeF"
+#define NhlNcnCyclicModeOn		"cnCyclicModeOn"
 
 #define NhlNcnLevels			"cnLevels"
 #define NhlNcnMonoLevelFlag		"cnMonoLevelFlag"
@@ -239,6 +247,8 @@ typedef enum _NhlcnHighLowLabelOverlapMode {
 #define NhlNcnInfoLabelParallelPosF	"cnInfoLabelParallelPosF"
 #define NhlNcnInfoLabelOrthogonalPosF	"cnInfoLabelOrthogonalPosF"
 
+#define NhlNcnNoDataLabelOn		"cnNoDataLabelOn"
+#define NhlNcnNoDataLabelString		"cnNoDataLabelString"
 #define NhlNcnConstFLabelOn		"cnConstFLabelOn"
 #define NhlNcnConstFLabelString		"cnConstFLabelString"
 #define NhlNcnConstFLabelFormat		"cnconstFLabelFormat"
@@ -322,6 +332,15 @@ typedef enum _NhlcnHighLowLabelOverlapMode {
 #define NhlCcnSmoothingDistanceF	"CnSmoothingDistanceF"
 #define NhlCcnCheckPointDistance	"CnCheckPointDistance"
 #define NhlCcnMaxPointDistanceF		"CnMaxPointDistanceF"
+
+#define NhlCcnExplicitLineLabelsOn	"CnExplicitLineLabelsOn"
+#define NhlCcnExplicitLabelBarLabelsOn	"CnExplicitLabelBarLabelsOn"
+#define NhlCcnLabelBarEndLabelsOn	"CnLabelBarEndLabelsOn"
+#define NhlCcnExplicitLegendLabelsOn	"CnExplicitLegendLabelsOn"
+#define NhlCcnLegendLevelFlags		"CnLegendLevelFlags"
+#define NhlCcnRasterModeOn		"CnRasterModeOn"
+#define NhlCcnRasterCellSizeF		"CnRasterCellSizeF"
+#define NhlCcnCyclicModeOn		"CnCyclicModeOn"
 
 #define NhlCcnLevels			"CnLevels"
 #define NhlCcnMonoLevelFlag		"CnMonoLevelFlag"
@@ -441,6 +460,9 @@ typedef enum _NhlcnHighLowLabelOverlapMode {
 #define NhlCcnInfoLabelJust		"CnInfoLabelJust"
 #define NhlCcnInfoLabelParallelPosF	"CnInfoLabelParallelPosF"
 #define NhlCcnInfoLabelOrthogonalPosF	"CnInfoLabelOrthogonalPosF"
+
+#define NhlCcnNoDataLabelOn		"CnNoDataLabelOn"
+#define NhlCcnNoDataLabelString		"CnNoDataLabelString"
 
 #define NhlCcnConstFLabelOn		"CnConstFLabelOn"
 #define NhlCcnConstFLabelString		"CnConstFLabelString"

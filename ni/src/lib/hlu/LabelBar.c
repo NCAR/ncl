@@ -1,5 +1,5 @@
 /*
- *      $Id: LabelBar.c,v 1.36 1995-05-10 02:31:45 dbrown Exp $
+ *      $Id: LabelBar.c,v 1.37 1995-05-18 20:05:36 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -718,13 +718,6 @@ static NhlErrorTypes    LabelBarInitialize
 
 	ret1 = InitializeDynamicArrays(new,req,args,num_args);
 	ret = MIN(ret,ret1);
-
-/*
- * Return now if the labelbar is turned off
- */
-
-	if (! lb_p->labelbar_on)
-		return ret;
 
 /*
  * Calculate labelbar geometry

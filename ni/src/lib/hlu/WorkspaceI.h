@@ -1,5 +1,5 @@
 /*
- *      $Id: WorkspaceI.h,v 1.8 1995-04-07 09:36:12 boote Exp $
+ *      $Id: WorkspaceI.h,v 1.9 1995-05-18 20:05:49 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -25,7 +25,7 @@
 #include <ncarg/hlu/Workspace.h>
 
 typedef enum _NhlwsType {
-	NhlwsAREAMAP, NhlwsCNFLOAT, NhlwsCNINT, NhlwsSEGDATA
+	NhlwsAREAMAP, NhlwsCNFLOAT, NhlwsCNINT, NhlwsSEGDATA, NhlwsOTHER
 } NhlwsType;
 
 typedef enum _NhlPersistence {
@@ -198,6 +198,24 @@ extern NhlErrorTypes _NhlCplbdr(
 	float		*zdat,
 	NhlWorkspace	*flt_ws,
 	NhlWorkspace	*int_ws,
+	char		*entry_name
+#endif
+);
+
+extern NhlErrorTypes _NhlCpcica(
+#if	NhlNeedProto
+	NhlLayer	trans_obj,
+	float		*zdat,
+	NhlWorkspace	*flt_ws,
+	NhlWorkspace	*int_ws,
+	NhlWorkspace	*cell_ws,
+	int		ica1,
+	int		icam,
+	int		ican,
+	float		xcpf,
+	float		ycpf,
+	float		xcqf,
+	float		ycqf,
 	char		*entry_name
 #endif
 );

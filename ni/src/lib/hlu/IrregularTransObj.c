@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularTransObj.c,v 1.17 1995-05-10 01:17:55 dbrown Exp $
+ *      $Id: IrregularTransObj.c,v 1.18 1995-05-18 20:05:35 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -919,7 +919,8 @@ static NhlErrorTypes SetUpTrans
 		}
 	}
 
-	if(_NhlArgIsSet(args,nargs,NhlNtrXInterPoints)) {
+	if((c_or_s == CREATE && irp->x_inter_points != NULL) ||
+	   _NhlArgIsSet(args,nargs,NhlNtrXInterPoints)) {
 		if((c_or_s == SET)&&(iold->irtrans.x_inter_points != NULL)) {
 			NhlFree(iold->irtrans.x_inter_points);
 		}
@@ -937,7 +938,8 @@ static NhlErrorTypes SetUpTrans
 		call_spline_create = 1;
 	}
 	
-	if(_NhlArgIsSet(args,nargs,NhlNtrYInterPoints)) {
+	if((c_or_s == CREATE && irp->y_inter_points != NULL) ||
+	   _NhlArgIsSet(args,nargs,NhlNtrYInterPoints)) {
 		if((c_or_s == SET)&&(iold->irtrans.y_inter_points != NULL)) {
 			NhlFree(iold->irtrans.y_inter_points);
 		}

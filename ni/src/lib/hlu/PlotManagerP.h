@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManagerP.h,v 1.3 1995-05-03 03:11:23 dbrown Exp $
+ *      $Id: PlotManagerP.h,v 1.4 1995-05-18 20:05:45 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -75,7 +75,7 @@ typedef struct _NhlPlotManagerLayerPart {
 
 	/* Public resource fields */
 
-	NhlGenArray		plot_ids;	/* read only */
+	NhlGenArray		overlay_seq_ids;	/* read only */
 	NhlGenArray		pre_draw_order;
 	NhlGenArray		post_draw_order;
 

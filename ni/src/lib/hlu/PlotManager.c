@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManager.c,v 1.10 1995-05-03 03:11:21 dbrown Exp $
+ *      $Id: PlotManager.c,v 1.11 1995-05-18 20:05:43 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -88,8 +88,8 @@ static NhlResource resources[] = {
 
 /* Begin-documented-resources */
 
-	{NhlNpmPlotIds,NhlCpmPlotIds,NhlTObjIdGenArray,
-		sizeof(NhlPointer),Oset(plot_ids),
+	{NhlNpmOverlaySequenceIds,NhlCpmOverlaySequenceIds,NhlTObjIdGenArray,
+		sizeof(NhlPointer),Oset(overlay_seq_ids),
 		NhlTImmediate,_NhlUSET(NULL),_NhlRES_GONLY,(NhlFreeFunc)NhlFreeGenArray},
 
 /* Bounding Box resources */
@@ -590,7 +590,7 @@ NhlPlotManagerClassRec NhlplotManagerClassRec = {
 NhlClass NhlplotManagerClass = 
 		(NhlClass)&NhlplotManagerClassRec;
 
-static NrmQuark Qplot_ids;
+static NrmQuark Qoverlay_seq_ids;
 static NrmQuark Qoverlay_recs;
 static NrmQuark Qpre_draw_order;
 static NrmQuark Qpost_draw_order;
@@ -637,7 +637,7 @@ PlotManagerClassInitialize
         _NhlRegisterEnumType(NhlTAnnotationDisplayMode,annotationdisplaylist,
 					     NhlNumber(annotationdisplaylist));
 
-	Qplot_ids = NrmStringToQuark(NhlNpmPlotIds);
+	Qoverlay_seq_ids = NrmStringToQuark(NhlNpmOverlaySequenceIds);
 	Qoverlay_recs = NrmStringToQuark(NhlNpmPlotManagerRecs);
 	Qpre_draw_order = NrmStringToQuark(NhlNpmPreDrawOrder);
 	Qpost_draw_order = NrmStringToQuark(NhlNpmPostDrawOrder);
@@ -1158,7 +1158,7 @@ static NhlErrorTypes PlotManagerSetValues
  *
  * Side Effects: 
  *	Memory is allocated when the following resources are retrieved:
- *		NhlNpmPlotIds
+ *		NhlNpmOverlaySequenceIds
  *	The user is responsible for freeing this memory.
  */
 
@@ -1183,7 +1183,7 @@ static NhlErrorTypes	PlotManagerGetValues
 
 	for ( i = 0; i< num_args; i++ ) {
 
-		if (args[i].quark == Qplot_ids) {
+		if (args[i].quark == Qoverlay_seq_ids) {
 
 			if ((ids = (int *) NhlMalloc(ovp->overlay_count * 
 						     sizeof(int))) == NULL) {
@@ -1205,7 +1205,7 @@ static NhlErrorTypes	PlotManagerGetValues
 				e_text = "%s: error creating %s GenArray";
 				NhlPError(NhlFATAL,NhlEUNKNOWN,
 					  e_text,entry_name,
-					  NhlNpmPlotIds);
+					  NhlNpmOverlaySequenceIds);
 				return NhlFATAL;
 			}
 			ga->my_data = True;
@@ -3396,9 +3396,11 @@ ManageTickMarks
 	trobj_name = (trobj->base.layer_class)->base_class.class_name;
 
 	if (trobj_name == NhlmapTransObjClass->base_class.class_name) {
-		e_text = 
+		if (ovp->display_tickmarks > NhlNEVER) {
+			e_text = 
 	"%s: MAP tick mark style not yet implemented; turning tick marks off";
-		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+			NhlPError(NhlINFO,NhlEUNKNOWN,e_text,entry_name);
+		}
 		if (init) {
 			anno_rec->status = 
 				ovp->display_tickmarks = NhlNOCREATE;
@@ -3979,11 +3981,13 @@ ManageLabelBar
 			NhlSetSArg(&sargs[nargs++],NhlNlbLabelBarOn,True);
 		else {
 			NhlSetSArg(&sargs[nargs++],NhlNlbLabelBarOn,False);
+#if 0
 			if (! init) 
 				return _NhlALSetValuesChild(
 						    ovp->labelbar->base.id,
 						    (NhlLayer)ovnew,
 							    sargs,nargs);
+#endif
 		}
 	}
 /*
@@ -4120,16 +4124,18 @@ ManageLabelBar
 	if (ovp->labelbar == NULL) {	
 		strcpy(buffer,ovnew->base.parent->base.name);
 		strcat(buffer,".LabelBar");
-		subret = _NhlVACreateChild(&tmpid,buffer,NhllabelBarClass,
-				    (NhlLayer)ovnew,
-				    NhlNvpUseSegments,ovnew->view.use_segments,
-				    NhlNvpXF,ovp->lbar_x,
-				    NhlNvpYF,ovp->lbar_y,
-				    NhlNvpWidthF,ovp->lbar_width,
-				    NhlNvpHeightF,ovp->lbar_height,
-				    NhlNlbJustification,ovp->real_lbar_just,
-				    NhlNlbOrientation,ovp->lbar_orient,
-				    NULL);
+		NhlSetSArg(&sargs[nargs++],
+			   NhlNvpUseSegments,ovnew->view.use_segments);
+		NhlSetSArg(&sargs[nargs++],NhlNvpXF,ovp->lbar_x);
+		NhlSetSArg(&sargs[nargs++],NhlNvpYF,ovp->lbar_y);
+		NhlSetSArg(&sargs[nargs++],NhlNvpWidthF,ovp->lbar_width);
+		NhlSetSArg(&sargs[nargs++],NhlNvpHeightF,ovp->lbar_height);
+		NhlSetSArg(&sargs[nargs++],
+			   NhlNlbJustification,ovp->real_lbar_just);
+		NhlSetSArg(&sargs[nargs++],
+			   NhlNlbOrientation,ovp->lbar_orient);
+		subret = _NhlALCreateChild(&tmpid,buffer,NhllabelBarClass,
+					   (NhlLayer)ovnew,sargs,nargs);
 		anno_rec->plot_id = tmpid;
 		if ((ret = MIN(ret,subret)) < NhlWARNING || 
 		    (ovp->labelbar = _NhlGetLayer(tmpid)) == NULL) {
@@ -4138,7 +4144,9 @@ ManageLabelBar
 			return(NhlFATAL);
 		}
 	} else {
-
+		if (ovnew->view.use_segments != ovold->view.use_segments)
+			NhlSetSArg(&sargs[nargs++],
+				   NhlNvpUseSegments,ovnew->view.use_segments);
 		if (ovp->lbar_x != oovp->lbar_x)
 			NhlSetSArg(&sargs[nargs++],NhlNvpXF,ovp->lbar_x);
 		if (ovp->lbar_y != oovp->lbar_y)
@@ -4244,10 +4252,12 @@ ManageLegend
 			NhlSetSArg(&sargs[nargs++],NhlNlgLegendOn,True);
 		else {
 			NhlSetSArg(&sargs[nargs++],NhlNlgLegendOn,False);
+#if 0
 			if (! init) 
 				return _NhlALSetValuesChild(
 						ovp->legend->base.id,
 						(NhlLayer)ovnew,sargs,nargs);
+#endif
 		}
 	}
 /*
@@ -4358,16 +4368,20 @@ ManageLegend
 	if (ovp->legend == NULL) {	
 		strcpy(buffer,ovnew->base.parent->base.name);
 		strcat(buffer,".Legend");
-		subret = _NhlVACreateChild(&tmpid,buffer,NhllegendClass,
-				    (NhlLayer)ovnew,
-				    NhlNvpUseSegments,ovnew->view.use_segments,
-				    NhlNvpXF,ovp->lgnd_x,
-				    NhlNvpYF,ovp->lgnd_y,
-				    NhlNvpWidthF,ovp->lgnd_width,
-				    NhlNvpHeightF,ovp->lgnd_height,
-				    NhlNlgJustification,ovp->real_lgnd_just,
-				    NhlNlgOrientation,ovp->lgnd_orient,
-				    NULL);
+
+		NhlSetSArg(&sargs[nargs++],
+			   NhlNvpUseSegments,ovnew->view.use_segments);
+		NhlSetSArg(&sargs[nargs++],NhlNvpXF,ovp->lgnd_x);
+		NhlSetSArg(&sargs[nargs++],NhlNvpYF,ovp->lgnd_y);
+		NhlSetSArg(&sargs[nargs++],
+			   NhlNlgJustification,ovp->real_lgnd_just);
+		NhlSetSArg(&sargs[nargs++],NhlNvpWidthF,ovp->lgnd_width);
+		NhlSetSArg(&sargs[nargs++],NhlNvpHeightF,ovp->lgnd_height);
+		NhlSetSArg(&sargs[nargs++],
+				   NhlNlgOrientation,ovp->lgnd_orient);
+
+		subret = _NhlALCreateChild(&tmpid,buffer,NhllegendClass,
+					   (NhlLayer)ovnew,sargs,nargs);
 		anno_rec->plot_id = tmpid;
 		if ((ret = MIN(ret,subret)) < NhlWARNING || 
 		    (ovp->legend = _NhlGetLayer(tmpid)) == NULL) {

@@ -1,5 +1,5 @@
 /*
- *      $Id: Workspace.c,v 1.24 1995-04-07 10:44:18 boote Exp $
+ *      $Id: Workspace.c,v 1.25 1995-05-18 20:05:47 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -36,6 +36,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <ncarg/hlu/WorkspaceP.h>
+#include <ncarg/hlu/TransObjI.h>
 
 /* Method declarations	*/
 
@@ -137,6 +138,14 @@ static NhlErrorTypes	EnlargeWorkspace(
 static NhlErrorTypes	TrimWorkspace(
 #if	NhlNeedProto
 	NhlWorkspaceRec	*wsrp,
+	char		*entry_name
+#endif
+);
+
+static NhlErrorTypes	ChangeWorkspaceSize(
+#if	NhlNeedProto
+	NhlWorkspaceRec	*wsrp,
+	int		amount,
 	char		*entry_name
 #endif
 );
@@ -1623,6 +1632,87 @@ static NhlErrorTypes	TrimWorkspace
 }
 
 /*
+ * Function:	ChangeWorkspaceSize
+ *
+ * Description: Changes a Workspace size by a specific amount.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	static
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+static NhlErrorTypes	ChangeWorkspaceSize
+#if	NhlNeedProto
+(
+	NhlWorkspaceRec	*wsrp,
+	int		amount,
+	char		*entry_name
+)
+#else
+(wsrp,amount,entry_name)
+	NhlWorkspaceRec	*wsrp;
+	int		amount;
+	char 		*entry_name;
+#endif
+{
+	NhlErrorTypes ret = NhlNOERROR;
+	char *e_text;
+	int over_threshold;
+	int nsize;
+
+	over_threshold = 
+		WSp->total_size + amount - WSp->threshold_size;
+	if (over_threshold > 0) {
+		ret = ReduceCurrentAlloc(over_threshold,entry_name);
+		if (ret < NhlWARNING) return NhlFATAL;
+	}
+	
+/*
+ * If additional workspace size plus the current total allocation
+ * is greater than the current maximum size, bail out with a fatal error.
+ */
+	if (WSp->total_size + amount > WSp->maximum_size) {
+		e_text =
+	       "%s: Workspace reallocation would exceed maximum size %d";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,
+			  entry_name,WSp->maximum_size);
+		return NhlFATAL;
+	}
+
+	if ((wsrp->ws_ptr = (NhlPointer) 
+		     NhlRealloc(wsrp->ws_ptr,
+				wsrp->cur_size + amount)) == NULL) {
+		e_text = "%s: dynamic memory allocation error";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
+	}
+	WSp->total_size += amount;
+	wsrp->cur_size += amount;
+	if (wsrp->type == NhlwsAREAMAP) {
+		nsize = wsrp->cur_size / sizeof(int);
+		c_armvam(wsrp->ws_ptr,wsrp->ws_ptr,nsize);
+	}
+	else if (wsrp->type == NhlwsCNFLOAT) {
+		int nsize = wsrp->cur_size/sizeof(float);
+		c_cpmvrw(wsrp->ws_ptr,wsrp->ws_ptr,nsize);
+	}
+	else if (wsrp->type == NhlwsCNINT) {
+		int nsize = wsrp->cur_size/sizeof(int);
+		c_cpmviw(wsrp->ws_ptr,wsrp->ws_ptr,nsize);
+	}
+
+#if 0
+	printf("Workspace: total size: %d\n", WSp->total_size);
+
+#endif
+	return NhlNOERROR;
+}
+
+
+/*
  * Function:	EnlargeWorkspace
  *
  * Description: Enlarges a Workspace that one of the lower level routines
@@ -2670,6 +2760,140 @@ NhlErrorTypes _NhlCplbdr
 		}
 	} while (! done);
 	
+	c_retsr(save_mode);
+
+	return NhlNOERROR;
+}
+
+/*
+ * Function:	_NhlCpcica
+ *
+ * Description: Conpack routine CPCICA
+ *		
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	Global Friend
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+NhlErrorTypes _NhlCpcica
+#if	NhlNeedProto
+(
+	NhlLayer	trans_obj,
+	float		*zdat,
+	NhlWorkspace	*flt_ws,
+	NhlWorkspace	*int_ws,
+	NhlWorkspace	*cell_ws,
+	int		ica1,
+	int		icam,
+	int		ican,
+	float		xcpf,
+	float		ycpf,
+	float		xcqf,
+	float		ycqf,
+	char		*entry_name
+)
+#else
+(trans_obj,zdat,flt_ws,int_ws,amap_ws,entry_name)
+	NhlLayer	trans_obj,
+	float		*zdat;
+	NhlWorkspace	*flt_ws;
+	NhlWorkspace	*int_ws;
+	NhlWorkspace	*cell_ws;
+	int		ica1;
+	int		icam;
+	int		ican;
+	float		xcpf;
+	float		ycpf;
+	float		xcqf;
+	float		ycqf;
+	char		*entry_name;
+#endif
+{
+	NhlErrorTypes	ret = NhlNOERROR;
+	char		*e_text;
+	NhlWorkspaceRec *fwsrp = (NhlWorkspaceRec *) flt_ws;
+	NhlWorkspaceRec *iwsrp = (NhlWorkspaceRec *) int_ws;
+	NhlWorkspaceRec *cwsrp = (NhlWorkspaceRec *) cell_ws;
+	int		save_mode;
+	NhlBoolean	done = False;
+	char		*e_msg;
+	char		*cmp_msg1 = "REAL WORKSPACE OVERFLOW";
+	char		*cmp_msg2 = "INTEGER WORKSPACE OVERFLOW";
+	int		err_num;
+	float		fl,fr,fb,ft,wl,wr,wb,wt;
+	int		ll;
+	int		start = 1;
+
+	c_entsr(&save_mode,1);
+
+	if (cwsrp->cur_size != icam * ican * sizeof(int)) {
+		int amount = (icam * ican) * sizeof(int) - cwsrp->cur_size;
+		ret = ChangeWorkspaceSize(cwsrp,amount,entry_name);
+		if (ret < NhlWARNING) return ret;
+	}
+
+	do {
+		NGCALLF(cpcica,CPCICA)
+			(zdat,fwsrp->ws_ptr,iwsrp->ws_ptr,cwsrp->ws_ptr,
+			 &ica1,&icam,&ican,&xcpf,&ycpf,&xcqf,&ycqf);
+
+		if (c_nerro(&err_num) == 0) {
+			done = True;
+		}
+		else {
+			e_msg = c_semess(0);
+			c_errof();
+			if (strstr(e_msg,cmp_msg1)) {
+#if 0
+				printf("resizing flt_ws old %d",
+				       fwsrp->cur_size);
+#endif
+				ret = EnlargeWorkspace(fwsrp,entry_name);
+				if (ret < NhlWARNING) return ret;
+#if 0
+				printf(" new %d\n", fwsrp->cur_size);
+#endif
+			}
+			else if (strstr(e_msg,cmp_msg2)) {
+#if 0
+				printf("resizing int_ws old %d",
+				       iwsrp->cur_size);
+#endif
+				ret = EnlargeWorkspace(iwsrp,entry_name);
+				if (ret < NhlWARNING) return ret;
+#if 0
+				printf(" new %d\n", iwsrp->cur_size);
+#endif
+			}
+			else {
+				e_text = "%s: %s";
+				NhlPError(NhlFATAL,NhlEUNKNOWN,
+					  e_text,entry_name,e_msg);
+				return NhlFATAL;
+			}
+		}
+	} while (! done);
+
+/*
+ * Since all the transformations have been applied during the creation of
+ * the cell array, it must be placed into the frame using an identity
+ * transformation.
+ */
+	c_getset(&fl,&fr,&fb,&ft,&wl,&wr,&wb,&wt,&ll);
+	(void)_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
+	c_set(fl,fr,fb,ft,fl,fr,fb,ft,1);
+	(void)_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
+
+	_NHLCALLF(gca,GCA)(&fl,&fb,&fr,&ft,&icam,&ican,
+			   &start,&start,&icam,&ican,cwsrp->ws_ptr);
+	(void)_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
+
+	c_set(fl,fr,fb,ft,wl,wr,wb,wt,ll);
+	(void)_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
+
 	c_retsr(save_mode);
 
 	return NhlNOERROR;
