@@ -1,6 +1,6 @@
 
 /*
- *      $Id: rascat.c,v 1.2 1992-02-25 14:32:04 clyne Exp $
+ *      $Id: rascat.c,v 1.3 1992-03-26 19:31:49 clyne Exp $
  */
 /*
  *	File:		rascat.c
@@ -23,9 +23,9 @@
  *
  *	Options:
  *
- *			-v	Operate in verbose mode
+ *			-verbose	Operate in verbose mode
  *
- *			-V	Print version number to the tty
+ *			-Version	Print version number to the tty
  *
  *			-ifmt <format>
  *				'format' specifies the file format of *all*
@@ -45,7 +45,7 @@
  *				and height of the region, respectively. The
  *				default is to copy the entire image.
  *
- *			-o <file>
+ *			-outfile <file>
  *				Write output to 'file' instead of the standard
  *				output.
  *
@@ -60,6 +60,7 @@
 #else
 #include <string.h>
 #endif
+#include <ncarv.h>
 #include <ncarg_ras.h>
 
 static	void	Usage(msg) 
@@ -70,30 +71,87 @@ static	void	Usage(msg)
 	if (msg) {
 		fprintf(stderr, "rascat: %s\n", msg);
 	}
-	fprintf(stderr, "rascat: %s\n", opts);
+	fprintf(stderr, "Usage: rascat %s\n", opts);
+	PrintOptionHelp(stderr);
 }
+
+typedef struct	Subregion_ {
+	int	nx;
+	int	ny;
+	int	x;
+	int	y;
+	} Subregion;
+
+/*
+ * 	command line options
+ */
+static	struct	{
+	boolean	do_verbose;
+	boolean	do_version;
+	Subregion	win;
+	boolean	do_stdin;
+	char	*dstfile;
+	char	*srcformat;
+	char	*dstformat;
+	} opt;
+
+static  OptDescRec      set_options[] = {
+	{"verbose", 0, NULL, "Do operate in verbose mode"},
+	{"Version", 0, NULL, "Print version and exit"},
+	{"window", 4, "-1 -1 -1 -1", "Extract a subregion - nx ny x y"},
+	{"", 0, NULL, "Do get input from standard input"},
+	{"output", 1, "stdout", "Specify output file"},
+	{"ifmt", 1, NULL, "Specify format of input file"},
+	{"ofmt", 1, NULL, "Specify format of output file"},
+	{NULL},
+};
+
+static	Option get_options[] = {
+	{"verbose", NCARGCvtToBoolean, (Voidptr) &opt.do_verbose, 
+							sizeof(opt.do_verbose)
+	},
+	{"Version", NCARGCvtToBoolean, (Voidptr) &opt.do_version, 
+							sizeof(opt.do_version)
+	},
+	{"window", NCARGCvtToInt, (Voidptr) &opt.win, sizeof (opt.win.nx)
+	},
+	{"", NCARGCvtToBoolean, (Voidptr) &opt.do_stdin, sizeof(opt.do_stdin)
+	},
+	{"output", NCARGCvtToString, (Voidptr) &opt.dstfile, sizeof(opt.dstfile)
+	},
+	{"ifmt", NCARGCvtToString, (Voidptr) &opt.srcformat, 
+							sizeof(opt.srcformat)
+	},
+	{"ofmt", NCARGCvtToString, (Voidptr) &opt.dstformat, 
+							sizeof(opt.dstformat)
+	},
+	{NULL
+	}
+};
+
+	
+/*
+ * default input file
+ */
+static	char	*stdin_array[] = {"stdin"};
+
 
 main(argc, argv)
 	int	argc;
 	char	*argv[];
 {
-	int	do_verbose = False;
-	int	do_version = False;
 	int	do_window  = False;
 
-	char	*dstfile = "stdout";
-	char	*srcformat = (char *) NULL;
-	char	*dstformat = (char *) NULL;
 	char	*Comment = "Created by rascat";
 	char	*arg;
 	Raster	*src, *dst, *RasterOpen(), *RasterOpenWrite();
 	int	frame = 0;
-	int	src_x, src_nx, src_y, src_ny;
-	char	**rfiles;
-	int	rcount = 0;
 	int	status;
 	int	nX, nY;
 	RasterEncoding	rasterType;
+	Subregion	*win;
+	int	rcount;		/* number of files to process	*/
+	char	**rfiles;	/* the input files		*/
 	int	i;
 
 	char	*prog_name;
@@ -102,86 +160,69 @@ main(argc, argv)
 
 	(void) RasterInit(&argc, argv);
 
-	rfiles = (char **) malloc(argc * sizeof(char *));
-	if (! rfiles) {
-		perror(prog_name);
+
+	if (ParseOptionTable(&argc, argv, set_options) < 0) {
+		fprintf(
+			stderr, "%s : Error parsing options - %s\n", 
+			prog_name, ErrGetMsg()
+		);
 		exit(1);
 	}
 
-	while(--argc) {
-		arg = *++argv;
-
-		if (!strcmp(arg, "-")) {
-			continue;
-		}
-		else if (!strcmp(arg, "-v")) {
-			do_verbose = True;
-		}
-		else if (!strcmp(arg, "-V")) {
-			do_version = True;
-		}
-		else if (!strcmp(arg, "-o")) {
-			if (argc >= 1) {
-				argc--;
-				dstfile = *++argv;
-			}
-			else {
-				Usage("ran out of args");
-			}
-		}
-		else if (!strcmp(arg, "-ifmt")) {
-			if (argc >= 1) {
-				argc--;
-				srcformat = *++argv;
-			}
-			else {
-				Usage("ran out of args");
-			}
-		}
-		else if (!strcmp(arg, "-ofmt")) {
-			if (argc >= 1) {
-				argc--;
-				dstformat = *++argv;
-			}
-			else {
-				Usage("ran out of args");
-			}
-		}
-		else if (!strcmp(arg, "-win")) {
-			if (argc >= 4) {
-				argc -= 4;
-				do_window = True;
-				src_nx = atoi(*++argv);
-				src_ny = atoi(*++argv);
-				src_x  = atoi(*++argv);
-				src_y  = atoi(*++argv);
-			}
-			else {
-				Usage("ran out of args");
-			}
-		}
-		else if (*arg == '-') {
-			Usage("invalid option");
-		}
-		else {
-			rfiles[rcount++] = arg;
-		}
+	/*
+	 * load the options into opt
+	 */
+	if (GetOptions(get_options) < 0) {
+		fprintf(
+			stderr, "%s : Error getting options - %s\n", 
+			prog_name, ErrGetMsg()
+		);
+		Usage(NULL);
+		exit(1);
 	}
 
-	if (do_version) {
+
+	win = &opt.win;
+	do_window = win->nx != -1;
+
+
+	if (opt.do_version) {
 		PrintVersion(prog_name);
+		exit(0);
 	}
 
-	if (! rcount) rfiles[rcount++] = "stdin";
-	rfiles[rcount] = NULL;
+	/*
+	 * make  sure no options left on command line
+	 */
+	for(i=1; i<argc; i++) {
+		if (*argv[i] == '-') {
+			fprintf(
+				stderr, "%s: Invalid option - %s\n", 
+				prog_name, argv[i]
+			);
+			Usage(NULL);
+			exit(1);
+		}
+	}
 
-
+	/*
+	 * if no files read from stdin
+	 */
+	if (argc < 2) {
+		rcount = 1;
+		rfiles = stdin_array;
+	}
+	else {
+		rcount = argc - 1;
+		rfiles = argv + 1;
+	}
 
 	dst = (Raster *) NULL;
 	for(i=0; i<rcount; i++) {
+
 		/* Open the source file and read the header. */
 
-		src = RasterOpen(rfiles[i], srcformat);
+		src = RasterOpen(rfiles[i], opt.srcformat);
 		if (src == (Raster *) NULL) {
 			(void) RasterPrintError(rfiles[i]);
 			continue;
@@ -195,14 +236,14 @@ main(argc, argv)
 		}
 
 		if (!do_window) {
-			src_x = 0; src_nx = src->nx;
-			src_y = 0; src_ny = src->ny;
+			win->x = 0; win->nx = src->nx;
+			win->y = 0; win->ny = src->ny;
 		}
 		else {
-			if (src_x < 0 || src_x > src->nx - 1 ||
-				src_y < 0 || src_y > src->ny - 1 ||
-				(src_x + src_nx - 1) > (src->nx - 1) ||
-				(src_y + src_ny - 1) > (src->ny - 1)) {
+			if (win->x < 0 || win->x > src->nx - 1 ||
+				win->y < 0 || win->y > src->ny - 1 ||
+				(win->x + win->nx - 1) > (src->nx - 1) ||
+				(win->y + win->ny - 1) > (src->ny - 1)) {
 
 				fprintf(stderr, "Window out of range\n");
 				exit(1);
@@ -221,14 +262,14 @@ main(argc, argv)
 			 * use the input format. If thats not specified 
 			 * use whatever format the first input file is
 			 */
-			if (! strcmp(dstfile, "stdout") && dstformat == NULL) {
-				dstformat = src->format;
+			if (!strcmp(opt.dstfile,"stdout") && opt.dstformat == NULL){
+				opt.dstformat = src->format;
 			}
 
 			if (src->type == RAS_INDEXED) {
 				dst = RasterOpenWrite(
-					dstfile,src_nx,src_ny, Comment, 
-					RAS_INDEXED, dstformat
+					opt.dstfile,win->nx,win->ny, Comment, 
+					RAS_INDEXED, opt.dstformat
 				);
 				if (dst == (Raster *) NULL) {
 					(void) RasterPrintError((char *) NULL);
@@ -239,8 +280,8 @@ main(argc, argv)
 			}
 			else {
 				dst = RasterOpenWrite(
-					dstfile, src_nx, src_ny, Comment, 
-					RAS_DIRECT, dstformat
+					opt.dstfile, win->nx, win->ny, Comment, 
+					RAS_DIRECT, opt.dstformat
 				);
 				if (dst == (Raster *) NULL) {
 					(void) RasterPrintError((char *) NULL);
@@ -273,7 +314,7 @@ main(argc, argv)
 		}
 
 		do {
-			RasterOp(src, dst, src_x, src_y, src_nx, src_ny,0,0,0);
+			RasterOp(src, dst, win->x, win->y, win->nx, win->ny,0,0,0);
 
 			status = RasterWrite(dst);
 			if (status != RAS_OK) {
@@ -281,10 +322,10 @@ main(argc, argv)
 				exit(1);
 			}
 
-			if (do_verbose) {
+			if (opt.do_verbose) {
 				fprintf(
 					stderr, "Copied frame %5d to %s\n", 
-					frame++, dstfile
+					frame++, opt.dstfile
 				);
 			}
 		
@@ -369,3 +410,4 @@ RasterOp(src, dst, src_x, src_y, src_nx, src_ny, dst_x, dst_y, op)
 		}
 	}
 }
+
