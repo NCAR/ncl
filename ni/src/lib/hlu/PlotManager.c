@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManager.c,v 1.27 1996-09-14 17:07:07 boote Exp $
+ *      $Id: PlotManager.c,v 1.28 1996-10-04 18:00:46 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -5229,11 +5229,13 @@ int NhlAddAnnotation
 	int anno_view_id;
 #endif
 {
+	NhlErrorTypes		ret = NhlNOERROR;
 	char			*e_text;
 	char			*entry_name = "NhlAddAnnotation";
 	NhlLayer		base = _NhlGetLayer(plot_id);
 	NhlLayer		anno_view = _NhlGetLayer(anno_view_id);
 	NhlLayer		plot_overlay;
+	int			anno_manager_id;
 
 	if (base == NULL || ! _NhlIsTransform(base)) {
 		e_text = "%s: invalid plot id";
@@ -5268,7 +5270,21 @@ int NhlAddAnnotation
  */
 
 	if (_NhlIsOverlayMember(anno_view_id)) {
-		e_text = "%s: view is already an plot member: %d";
+		e_text = "%s: view is already a plot member: %d";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,anno_view_id);
+		return NhlFATAL;
+	}
+
+/*
+ * Ensure that the annotation view is not currently an annotation
+ */
+
+	ret = NhlVAGetValues(anno_view_id,
+			     NhlNvpAnnoManagerId,&anno_manager_id,
+			     NULL);
+	if (ret < NhlWARNING) return NhlFATAL;
+	if (anno_manager_id != NhlNULLOBJID) {
+		e_text = "%s: view is already an annotation: %d";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,anno_view_id);
 		return NhlFATAL;
 	}
