@@ -1,9 +1,7 @@
 #
-#	$Id: yMakefile,v 1.1 1994-05-12 19:31:34 haley Exp $
+#	$Id: yMakefile,v 1.2 1994-10-31 04:04:08 haley Exp $
 #
 
-CSRCS = c_sfex02.c
+EXAMPLES = c_sfex02.c
 
-GENERIC_SRCS = $(CSRCS)
-
-InstallTarget($(GENERIC_SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
+InstallTarget($(EXAMPLES),$(INSTALL_LIB),$(EXAMPLESPATH))

@@ -1,24 +1,8 @@
 #
-#	$Id: yMakefile,v 1.4 1994-08-03 14:42:32 haley Exp $
+#	$Id: yMakefile,v 1.5 1994-10-31 04:05:06 haley Exp $
 #
 
-CSRCS = c_fspponts.c c_fsppoint.c c_sprevx.c c_splogy.c c_fspline.c \
-	c_fcoord1.c c_fcoord2.c c_fcoord.c c_fspcurve.c
+EXAMPLES = c_fspponts.c c_fsppoint.c c_sprevx.c c_splogy.c c_fspline.c \
+	c_fcoord1.c c_fcoord2.c c_fcoord.c c_fspcurve.c c_spps.c
 
-SED_SRCS = c_spps.c
-
-GENERIC_SRCS = $(CSRCS) $(SED_SRCS)
-
-InstallTarget($(GENERIC_SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
-CleanFilesTarget($(SED_SRCS))
-
-#
-# Files containing C functions that are called from FORTRAN or that have to
-# be modified to include a macro from the configuration file.
-#
-
-c_spps.c: c_spps.c.sed Makefile
-	@-$(RM) $@
-	@$(CALLCONV) $(SYSTEM_INCLUDE) $@ cmfx cmfy cmux cmuy cpfx cpfy cpux cpuy \
-		kfmx kfmy kumx kumy kfpx kfpy kupx kupy kmpx kmpy kpmx kpmy cfux cfuy \
-		cufx cufy
+InstallTarget($(EXAMPLES),$(INSTALL_LIB),$(EXAMPLESPATH))
