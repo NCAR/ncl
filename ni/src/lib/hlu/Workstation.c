@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.81 1998-05-29 22:52:33 dbrown Exp $
+ *      $Id: Workstation.c,v 1.82 1998-10-02 19:35:21 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1068,40 +1068,61 @@ NhlErrorTypes
 DoCmap
 #if	NhlNeedProto
 (
-	NhlWorkstationLayer	wl,
+	NhlWorkstationLayer	nwl,
+	NhlWorkstationLayer	owl,
 	NhlString		entry_name
 )
 #else
-(wl,entry_name)
-	NhlWorkstationLayer	wl;
+(nwl,owl,entry_name)
+	NhlWorkstationLayer	nwl;
+	NhlWorkstationLayer	owl;
 	NhlString		entry_name;
 #endif
 {
-	NhlWorkstationClass	wc = (NhlWorkstationClass)wl->base.layer_class;
+	NhlWorkstationClass	wc=(NhlWorkstationClass)nwl->base.layer_class;
 	NhlWorkstationClassPart	*wcp = &wc->work_class;
-	NhlWorkstationLayerPart	*wp = &wl->work;
+	NhlWorkstationLayerPart	*owp, *nwp = &nwl->work;
 	int			i;
 	NhlColor		tc;
 	NhlColor		*tcp = NULL;
-	NhlPrivateColor		*pcmap = wp->private_color_map;
+	NhlPrivateColor		*pcmap = nwp->private_color_map;
 	NhlString		e_text;
 	NhlErrorTypes 		ret = NhlNOERROR;
+	NhlBoolean		fg_changed = False, bg_changed = False;
 
+	if (owl)
+		owp = &owl->work;
 	/*
 	 * If cmap is set, use it.
 	 */
-	if(wp->color_map){
-		tcp = wp->color_map->data;
-		wp->color_map_len = wp->color_map->len_dimensions[0];
-		if(wp->color_map_len > _NhlMAX_COLOR_MAP) {
-			NhlPError(NhlWARNING,NhlEUNKNOWN,"DoCmap: Maximum color map length exceeded. Limit is (%d). Requested length is (%d), using only first (%d) elements.",_NhlMAX_COLOR_MAP,wp->color_map_len,_NhlMAX_COLOR_MAP);
-			wp->color_map_len = _NhlMAX_COLOR_MAP;
+	if(nwp->color_map) {
+		tcp = nwp->color_map->data;
+		nwp->color_map_len = nwp->color_map->len_dimensions[0];
+		if(nwp->color_map_len > _NhlMAX_COLOR_MAP) {
+			NhlPError(NhlWARNING,NhlEUNKNOWN,"DoCmap: Maximum color map length exceeded. Limit is (%d). Requested length is (%d), using only first (%d) elements.",_NhlMAX_COLOR_MAP,nwp->color_map_len,_NhlMAX_COLOR_MAP);
+			nwp->color_map_len = _NhlMAX_COLOR_MAP;
 			ret = NhlWARNING;
 		}
-		wp->color_map = NULL;
-		wp->cmap_changed = True;
+		/* copy the pointer to the old work so the setvalues cb will
+		   work (new and old must be different) */
+		if (owl) 
+			owp->color_map = nwp->color_map; 
+		nwp->color_map = NULL;
+		nwp->cmap_changed = True;
+		
+		if (tcp[0][0] >= 0.0 &&
+		    ! (tcp[0][0] == pcmap[0].red &&
+		       tcp[0][1] == pcmap[0].green &&
+		       tcp[0][2] == pcmap[0].blue))
+			bg_changed = True; 
+				
+		if (tcp[1][0] >= 0.0 &&
+		    ! (tcp[1][0] == pcmap[1].red &&
+		       tcp[1][1] == pcmap[1].green &&
+		       tcp[1][2] == pcmap[1].blue))
+			fg_changed = True; 
 
-		for(i=0;i < wp->color_map_len;i++){
+		for(i=0;i < nwp->color_map_len;i++){
 			if (tcp[i][0] < 0.0)
 				continue;
 			pcmap[i].red = tcp[i][0];
@@ -1112,7 +1133,7 @@ DoCmap
 			else
 				pcmap[i].cstat = _NhlCOLCHANGE;
 		}
-		for(i=wp->color_map_len; i < _NhlMAX_COLOR_MAP;i++){
+		for(i=nwp->color_map_len; i < _NhlMAX_COLOR_MAP;i++){
 			if(pcmap[i].cstat == _NhlCOLSET)
 				pcmap[i].cstat = _NhlCOLREMOVE;
 		}
@@ -1127,8 +1148,8 @@ DoCmap
 	 * background is accepted only if it has exactly 3 elements.
 	 */
 	tcp = NULL;
-	if(wp->bkgnd_color){
-		if (wp->bkgnd_color->num_elements != 3) {
+	if(nwp->bkgnd_color){
+		if (nwp->bkgnd_color->num_elements != 3) {
 			e_text = 
 	      "%s: ignoring %s; 3 color elements required (red, green, blue)";
 		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
@@ -1136,7 +1157,7 @@ DoCmap
 			tcp = NULL;
 		}
 		else {
-			tcp = wp->bkgnd_color->data;
+			tcp = nwp->bkgnd_color->data;
 			if((*tcp)[0] == -1.0){
 				tcp = NULL;
 			}
@@ -1150,13 +1171,20 @@ DoCmap
 				tcp = NULL;
 			}
 		}
-		wp->bkgnd_color = NULL;
+		/* copy the pointer to the old work so the setvalues cb will
+		   work (new and old must be different) */
+		if (owl) 
+			owp->bkgnd_color = nwp->bkgnd_color;
+		nwp->bkgnd_color = NULL;
 	}
+	else if (owl && bg_changed)
+		owp->bkgnd_color = (NhlGenArray) -1;
+
 	if((pcmap[NhlBACKGROUND].cstat == _NhlCOLUNSET) && !tcp){
 		tcp = &wcp->def_background;
 	}
 	if(tcp){
-		wp->cmap_changed = True;
+		nwp->cmap_changed = True;
 		pcmap[NhlBACKGROUND].cstat =
 			(pcmap[NhlBACKGROUND].cstat == _NhlCOLUNSET)?
 			_NhlCOLNEW:_NhlCOLCHANGE;
@@ -1173,8 +1201,8 @@ DoCmap
 	 * geometric space.
 	 */
 	tcp = NULL;
-	if(wp->foregnd_color){
-		if (wp->foregnd_color->num_elements != 3) {
+	if(nwp->foregnd_color){
+		if (nwp->foregnd_color->num_elements != 3) {
 			e_text = 
 	      "%s: ignoring %s; 3 color elements required (red, green, blue)";
 		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
@@ -1182,7 +1210,7 @@ DoCmap
 			tcp = NULL;
 		}
 		else {
-			tcp = wp->foregnd_color->data;
+			tcp = nwp->foregnd_color->data;
 			if((*tcp)[0] == -1.0){
 				tcp = NULL;
 			}
@@ -1196,8 +1224,14 @@ DoCmap
 				tcp = NULL;
 			}
 		}
-		wp->foregnd_color = NULL;
+		/* copy the pointer to the old work so the setvalues cb will
+		   work (new and old must be different) */
+		if (owl) 
+			owp->foregnd_color = nwp->foregnd_color;
+		nwp->foregnd_color = NULL;
 	}
+	else if (owl && fg_changed)
+		owp->foregnd_color = (NhlGenArray) -1;
 	if((pcmap[NhlFOREGROUND].cstat == _NhlCOLUNSET) && !tcp){
 		if(pcmap[NhlBACKGROUND].red * pcmap[NhlBACKGROUND].red +
 		pcmap[NhlBACKGROUND].green * pcmap[NhlBACKGROUND].green +
@@ -1214,7 +1248,7 @@ DoCmap
 		tcp = &tc;
 	}
 	if(tcp){
-		wp->cmap_changed = True;
+		nwp->cmap_changed = True;
 		pcmap[NhlFOREGROUND].cstat =
 			(pcmap[NhlFOREGROUND].cstat == _NhlCOLUNSET)?
 			_NhlCOLNEW:_NhlCOLCHANGE;
@@ -1307,7 +1341,7 @@ static NhlErrorTypes WorkstationInitialize
 		wp->private_color_map[i].cstat = _NhlCOLUNSET;
 
 	wp->cmap_changed = True;
-	retcode = DoCmap(newl,entry_name);
+	retcode = DoCmap(newl,NULL,entry_name);
 
 	newl->work.fill_table_len = fill_table_len - 1;
 	newl->work.marker_table_len = marker_table_len - 1;
@@ -1670,7 +1704,7 @@ WorkstationSetValues
 	 * This function sets the private colormap based on the public
 	 * resources.
 	 */
-	subret = DoCmap(newl,entry_name);
+	subret = DoCmap(newl,oldl,entry_name);
 	retcode = MIN(retcode,subret);
 
 	/*
