@@ -1,0 +1,16 @@
+#
+#	$Id: yMakefile,v 1.1 2003-10-07 03:42:39 haley Exp $
+#
+
+SRCS = c_ctllg3.c
+OBJS = c_ctllg3.o
+
+PROG_LIBS		= $(NCARGLIBS)
+SYS_LIBS		= $(CTOFLIBS) -lm
+EXTRA_LIBS		= $(XLIB)
+
+InstallTarget($(SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
+
+CExampleTarget(c_ctllg3,c_ctllg3.o)
+
+
