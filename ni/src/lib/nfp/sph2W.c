@@ -15804,7 +15804,7 @@ NhlErrorTypes sfvp2uvf_W( void )
   lwork3  = max(4*(nlat+1),nlat*(2*nlon+max(6*l2,nlon))+nlat*(4*l1+1));
   ldwork1 = nlat+1;
   ldwork2 = 2*(nlat+2);
-  lvhsec  = 4*nlat*l2+3*max(l1-2,0)*(2*nlat-l1-1)+nlon+15;
+  lvhsec  = 4*nlat*l2+3*max(l1-2,0)*(2*nlat-l1+1)+nlon+15;
   lshaec  = 2*nlat*l2+3*(max(l1-2,0)*(nlat+nlat-l1-1))/2+nlon+15;
 
   work1  = (double*)calloc(lwork1,sizeof(double));
@@ -16166,7 +16166,7 @@ NhlErrorTypes sfvp2uvg_W( void )
   ldwork1 = nlat*(nlat+4);
   ldwork2 = 2*nlat*(nlat+1)+1;
   lshagc  = nlat*(2*l2+3*l1-2)+3*l1*max(1-l1,0)/2+nlon+15;
-  lvhsgc  = 4*nlat*l2+3*max(l1-2,0)*(2*nlat-l1-1)+nlon+15;
+  lvhsgc  = 4*nlat*l2+3*max(l1-2,0)*(2*nlat-l1+1)+nlon+15;
 
   work1  = (double*)calloc(lwork1,sizeof(double));
   work2  = (double*)calloc(lwork2,sizeof(double));
