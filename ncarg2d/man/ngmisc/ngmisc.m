@@ -1,36 +1,39 @@
-.\"
-.\"     $Id: ngmisc.m,v 1.3 1993-03-23 23:12:49 haley Exp $
-.\"
-.TH NGMISC 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
+.TH Ngmisc 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
+.na
+.nh
 .SH NAME
-NGMISC - is a miscellaneous collection of useful functions that are
-task-specific and not complex enough to be packages in their own 
-right.
+Ngmisc - A collection of miscellaneous NCAR Graphics routines.
 .SH SYNOPSIS
-.nf
-NGDOTS - Draws filled circular dots at specified positions.
-NGPICT - Facilitates GKS workstation control functions.
-NGWSYM - Draws symbols from the official WMO/NOAA weather symbol charts.
-.SH C-BINDING SYNOPSIS
-#include <ncarg/ncargC.h>
+NGDOTS - Draws filled circular dots at coordinate positions
+(X(I),Y(I),I=1,NUM) at size SIZE with color given by the color index ICOLOR.
 .sp
-void c_ngdots(float *x, float *y, int num, float size, int icolor);
-void c_ngpict(int wkid, int action);
-void c_ngwsym(char *ftype, int num, float x, float y, float size, int icolor, int ialt);
-.SH ACCESS
-To use any of the functions in the NGMISC collection, load the NCAR 
-Graphics libraries ncarg, ncarg_gks, and ncarg_loc, preferably in that order.
-To use any of the NGMISC C-bindings, load the libraries ncargC, ncarg_gksC, 
-ncarg, ncarg_gks, and ncarg_loc, preferably in that order.
-.SH MESSAGES
-See the man pages for the individual functions for details on all
-appropriate messages.
+NGPICT - Effects a break in the picture drawing sequence in a FORTRAN
+code using GKS.  The actions taken depend on whether the designated
+workstation is a metafile or an output/input workstation.  An option
+is provided for prompting the user when an output/input workstation is
+ready and waiting after a pause.
+.sp
+NGWSYM - Draws a symbol from the standard WMO/NOAA meteorological
+fonts by reference to the font name and symbol number within that
+font.
+.SH C-BINDING SYNOPSIS
+c_ngdots
+.br
+c_ngpict
+.br
+c_ngwsym
+.SH USER-MODIFIABLE INTERNAL ROUTINES
+None.
+.SH ACCESS 
+To use Ngmisc routines, load the NCAR Graphics libraries ncarg, ncarg_gks,
+and ncarg_loc, preferably in that order.  To use the C bindings, load the 
+NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
+and ncarg_loc, preferably in that order.
 .SH SEE ALSO
 Online:
-ngdots(3NCARG),
-ngpict(3NCARG),
-ngwsym(3NCARG),
-ncarg_cbind(3NCARG)
+NGDOTS(3NCARG),
+NGPICT(3NCARG),
+NGWSYM(3NCARG)
 .SH COPYRIGHT
 Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research

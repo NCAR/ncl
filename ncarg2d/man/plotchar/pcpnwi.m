@@ -9,7 +9,7 @@ CALL PCPNWI (PNAM,IPAI)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void c_PCPNWI (char *pnam, int *ipai)
+void c_pcpnwi (char *pnam, int *ipai)
 .SH DESCRIPTION 
 .IP PNAM 12
 (character string) 
@@ -30,9 +30,9 @@ For a complete list of parameters available
 in this utility, see the plotchar_params man page.
 .SH ACCESS
 To use PCPNWI, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_pcpnwi, load the 
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_pcpnwi, load the 
 NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.
 .SH MESSAGES
 See the plotchar page for a description of all Plotchar error 
 messages and/or informational messages.

@@ -1,6 +1,3 @@
-.\"
-.\"     $Id: ngdots.m,v 1.3 1993-03-23 23:12:46 haley Exp $
-.\"
 .TH NGDOTS 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .na
 .nh
@@ -12,7 +9,9 @@ CALL NGDOTS(X,Y,NUM,SIZE,ICOLOR)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void c_ngdots(float *x, float *y, int num, float size, int icolor);
+void c_ngdots(float *x, float *y, int num, float size, \\
+.br 
+int icolor)
 .SH DESCRIPTION 
 .IP X 12
 (an input array of type REAL) defining the X world coordinates where a 
@@ -60,10 +59,14 @@ that color index 2 has been defined as red in a call to GSCR, then
 
 .fi
 would draw a single red dot at world coordinate position (.5,.25)
-with a diameter of .1 .
+with a diameter of \&.1 .
+.sp
+Use the ncargex command to see the following relevant
+example: 
+fngngdts.
 .SH ACCESS
 To use NGDOTS, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.To use c_ngdots, load the
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_ngdots, load the
 NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks, and 
 ncarg_loc, preferably in that order.
 .SH MESSAGES

@@ -1,6 +1,3 @@
-.\"
-.\"     $Id: ngwsym.m,v 1.3 1993-03-23 23:12:53 haley Exp $
-.\"
 .TH NGWSYM 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .na
 .nh
@@ -13,27 +10,32 @@ CALL NGWSYM(FTYPE,NUM,X,Y,SIZE,ICOLOR,IALT)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void c_ngwsym(char *ftype, int num, float x, float y, float size, int icolor, int ialt);
+void c_ngwsym(char *ftype, int num, float x, float y, \\
+.br
+float size,  
+int icolor, int ialt)
 .SH DESCRIPTION 
 .IP FTYPE 12
 (an input parameter of type CHARACTER) specifying the desired font.  Legal
 values are:
-.IP "            'WW'" 18
--  Present weather.
-.IP "            'C'" 18
--  Cloud types.
-.IP "            'CL'" 18
--  Low clouds.
-.IP "            'CM'" 18
--  Medium clouds.
-.IP "            'CH'" 18
--  High clouds.
-.IP "            'W'" 18
--  Past weather.
-.IP "            'N'" 18
--  Sky cover.
-.IP "            'a'" 18
--  Pressure tendency.
+.RS
+.IP "'WW'" 
+\-  Present weather.
+.IP "'C'" 
+\-  Cloud types.
+.IP "'CL'" 
+\-  Low clouds.
+.IP "'CM'" 
+\-  Medium clouds.
+.IP "'CH'" 
+\-  High clouds.
+.IP "'W'" 
+\-  Past weather.
+.IP "'N'" 
+\-  Sky cover.
+.IP "'a'" 
+\-  Pressure tendency.
+.RE
 .IP NUM 12
 (an input parameter of type INTEGER) specifying the number of the
 desired symbol within the specified font.
@@ -62,25 +64,23 @@ The C binding argument descriptions are the same as the FORTRAN
 argument descriptions.
 .SH USAGE
 This function simply looks up the appropriate symbol in either
-font 36 or 37 of PLOTCHAR and uses PLOTCHAR to draw the symbol.
+font 36 or 37 of Plotchar and uses Plotchar to draw the symbol.
 .SH EXAMPLES
-.sp
-       CALL NGWSYM('N',5,.5,.5,.25,1,0)
-.sp
-would plot the symbol for six-tenths cloud cover
+.IP "CALL NGWSYM('N',5,.5,.5,.25,1,0)"
+Plots the symbol for six-tenths cloud cover
 at position (.5,.5) and height .25 in the foreground color.
-.sp
-       CALL NGWSYM('a',6,.2,.8,.3,1,0)
-.sp
-would plot the symbol for barometric pressure that is falling then steady.
-.sp
-       CALL NGWSYM('WW',95,.5,.5,.2,1,1)
-.sp
-would plot the alternate symbol for slight or moderate 
+.IP "CALL NGWSYM('a',6,.2,.8,.3,1,0)"
+Plots the symbol for barometric pressure that is falling then steady.
+.IP "CALL NGWSYM('WW',95,.5,.5,.2,1,1)"
+Plots the alternate symbol for slight or moderate 
 thunderstorm without hail.
+.sp
+Use the ncargex command to see the following relevant
+example: 
+fngwsym.
 .SH ACCESS
 To use NGWSYM, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_ngwsym, load the
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_ngwsym, load the
 NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks, and 
 ncarg_loc, preferably in that order.
 .SH MESSAGES

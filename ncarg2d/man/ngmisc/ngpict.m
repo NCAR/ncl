@@ -1,11 +1,8 @@
-.\"
-.\"     $Id: ngpict.m,v 1.3 1993-03-23 23:12:51 haley Exp $
-.\"
 .TH NGPICT 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .na
 .nh
 .SH NAME
-NGPICT - Effects a break in the picture drawing sequence in a Fortran
+NGPICT - Effects a break in the picture drawing sequence in a FORTRAN
 code using GKS.  The actions taken depend on whether the designated
 workstation is a metafile or an output/input workstation.  An option
 is provided for prompting the user when an output/input workstation is
@@ -15,7 +12,7 @@ CALL NGPICT(WKID,ACTION)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void c_ngpict(int wkid, int action);
+void c_ngpict(int wkid, int action)
 .SH DESCRIPTION 
 .IP WKID 12
 (an input parameter of type INTEGER) which designates the workstation
@@ -24,20 +21,22 @@ identifier of a workstation as it was specified in a GOPWK call.
 (an input parameter of type INTEGER) the value of which specifies the
 action to be taken on the workstation WKID.
 Legal values are:
-.IP "            0" 18
+.RS
+.IP 0 
 Execute an UPDATE WORKSTATION on WKID.
-.IP "            1" 18
+.IP 1
 Execute an UPDATE WORKSTATION followed by a CLEAR WORKSTATION.
-.IP "            2" 18
+.IP 2
 Execute an UPDATE WORKSTATION followed by a pause waiting for a 
 mouse click or a key click.
-.IP "            3" 18
+.IP 3 
 Execute an UPDATE WORKSTATION followed by a pause followed by a 
 CLEAR WORKSTATION after the pause has been terminated by a mouse
 click or a key click.
-.IP "            4" 18
+.IP 4
 Same as 3 except a "<READY>" prompt is issued in the lower left
 corner of the window after the UPDATE WORKSTATION.
+.RE
 .SH C-BINDING DESCRIPTION
 The C binding argument descriptions are the same as the FORTRAN
 argument descriptions.
@@ -48,7 +47,7 @@ case would be the same as that resulting from a call to FRAME.  The
 only valid actions for a metafile workstation are 0 and 1.
 .sp
 NGPICT is designed to be used when more precise control over individual
-workstatioins is desired than that
+workstations is desired than that
 offered by FRAME.  This might be desirable, for example, when an 
 application is controlling several simultaneously active workstations.
 To use NGPICT one should be opening GKS workstations with GOPWK rather 
@@ -76,7 +75,7 @@ in the X11 window, that window will be cleared before program execution
 continues.
 .SH ACCESS
 To use NGPICT, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_ngpict, load the
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_ngpict, load the
 NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks, and 
 ncarg_loc, preferably in that order.
 .SH MESSAGES
