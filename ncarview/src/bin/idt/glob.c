@@ -1,5 +1,5 @@
 /*
- *	$Id: glob.c,v 1.11 1994-03-08 16:49:31 clyne Exp $
+ *	$Id: glob.c,v 1.12 1994-03-09 01:04:26 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -25,6 +25,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <ncarg/c.h>
+#include "glob.h"
 
 static int	to_child[2],
 		to_parent[2];	/* pipes for talking to spawned process	*/
@@ -106,13 +107,13 @@ static	talkto(argv)
  *	specified by the enviroment variable "SHELL" to do expansion. If 
  *	SHELL is not set glob uses /bin/sh by default.
  * on entry
- *	*s		: the string
+ *	*string		: the string
  * on exit
  *	***r_argv	: a list of files expanded by the shell
  *	*r_argc		: size of r_argv
  */
-glob(s, r_argv, r_argc)
-	char	*s;
+void	glob(string, r_argv, r_argc)
+	const char	*string;
 	char	***r_argv;
 	int	*r_argc;
 {
@@ -128,7 +129,7 @@ glob(s, r_argv, r_argc)
 	char	*cptr;
 	int	nbytes;
 	char	*shell_argv[3];
-	char	*t;
+	char	*t, *s;
 
 	*r_argv = NULL;
 	*r_argc = argc = 0;
@@ -175,8 +176,8 @@ glob(s, r_argv, r_argc)
 		sprintf(ackString, "/bin/echo %s\n", Magic);
 	}
 
-	if ((strlen(outbuf) + strlen(s) + 1) >= sizeof(outbuf)) {
-		(void) fprintf(stderr, "Line too long: %s\n", s);
+	if ((strlen(outbuf) + strlen(string) + 1) >= sizeof(outbuf)) {
+		(void) fprintf(stderr, "Line too long: %s\n", string);
 		return;
 	}
 
@@ -184,7 +185,7 @@ glob(s, r_argv, r_argc)
 	 * build command to send to the shell. 
 	 */
 	(void) strcpy(outbuf, "/bin/echo ");
-	(void) strcat(outbuf, s);
+	(void) strcat(outbuf, string);
 	(void) strcat(outbuf, "\n");
 
 	/*

@@ -1,5 +1,5 @@
 /*
- *	$Id: file.c,v 1.10 1993-04-27 16:55:23 clyne Exp $
+ *	$Id: file.c,v 1.11 1994-03-09 01:04:25 clyne Exp $
  */
 /*
  *	file.c
@@ -16,6 +16,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ncarg/c.h>
+#include "glob.h"
 #include "idt.h"
 
 static	char	*currentFileSelection = NULL;	/* user's current selection */

@@ -1,5 +1,5 @@
 /*
- *	$Id: commands.c,v 1.31 1994-03-08 23:21:32 clyne Exp $
+ *	$Id: commands.c,v 1.32 1994-03-09 01:04:35 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -26,6 +26,7 @@
 #include <ncarg/cgm_tools.h>
 #include <ncarg/ctrans.h>
 #include "ictrans.h"
+#include "glob.h"
 
 IcState	icState = {
 		FALSE, 1, 1, 1, 0, 0, FALSE, 0, NULL, NULL, NULL, NULL, NULL,
