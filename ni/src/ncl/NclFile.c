@@ -259,39 +259,53 @@ NclQuark *dimnames;
 	int i;
 	NclTypeClass typec;
 	int dindex;
+	int add_scalar_dim = 0;
 	
 	if((thefile->file.wr_status <= 0)&&(thefile->file.format_funcs->add_var != NULL)) {
 		if((FileIsVar(thefile,varname)) == -1) {
-				for(i = 0; i < n_dims; i++) {
-					dindex = FileIsDim(thefile,dimnames[i]);
-					if(dindex == -1) {
+			for(i = 0; i < n_dims; i++) {
+				dindex = FileIsDim(thefile,dimnames[i]);
+				if(dindex == -1) {
+					if (n_dims == 1 && dimnames[0] == NrmStringToQuark("ncl_scalar")) {
+						add_scalar_dim = 1;
+						dim_sizes[i] = 1;
+					}
+					else {
 						NhlPError(NhlFATAL,NhlEUNKNOWN,"FileAddVar: Dimension (%s) is not currently defined, can't add variable",NrmQuarkToString(dimnames[i]));
 						return(NhlFATAL);
-					} else {
-						dim_sizes[i] = thefile->file.file_dim_info[i]->dim_size;
-					}
-					
-				}
-
-				typec = _NclNameToTypeClass(type); 
-				if(typec != NULL) {
-					ret = (*thefile->file.format_funcs->add_var)(
-						thefile->file.private_rec,
-						varname,
-						typec->type_class.data_type,	
-						n_dims,
-						dimnames,
-						dim_sizes
-					);
-					if(ret == NhlFATAL) {
-						NhlPError(NhlFATAL,NhlEUNKNOWN,"FileAddVar: an error occurred while adding a variable to a file, check to make sure data type is supported by the output format");
 					}
 				} else {
-					NhlPError(NhlFATAL,NhlEUNKNOWN,"FileAddVar Incorrect type specified, can't add variable (%s)",NrmQuarkToString(varname));
-					ret = NhlFATAL;
+					dim_sizes[i] = thefile->file.file_dim_info[i]->dim_size;
 				}
+					
+			}
+			typec = _NclNameToTypeClass(type); 
+			if(typec != NULL) {
+				ret = (*thefile->file.format_funcs->add_var)(
+					thefile->file.private_rec,
+					varname,
+					typec->type_class.data_type,	
+					n_dims,
+					dimnames,
+					dim_sizes
+					);
+				if(ret == NhlFATAL) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"FileAddVar: an error occurred while adding a variable to a file, check to make sure data type is supported by the output format");
+				}
+			} else {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"FileAddVar Incorrect type specified, can't add variable (%s)",NrmQuarkToString(varname));
+				ret = NhlFATAL;
+			}
 			if(ret < NhlWARNING) 
 				return(ret);
+			if (add_scalar_dim) {
+				/* since the scalar dim is always first, all the other dims need to shift down one element */
+				for (i = thefile->file.n_file_dims; i > 0; i--) {
+					 thefile->file.file_dim_info[i] = thefile->file.file_dim_info[i-1];
+				}
+				thefile->file.file_dim_info[0] = (*thefile->file.format_funcs->get_dim_info)(thefile->file.private_rec,dimnames[0]);
+				thefile->file.n_file_dims++;
+			}
 			thefile->file.var_info[thefile->file.n_vars] = (*thefile->file.format_funcs->get_var_info)(thefile->file.private_rec,varname);
 			thefile->file.var_att_info[thefile->file.n_vars] = NULL;
 			thefile->file.var_att_ids[thefile->file.n_vars] = -1;

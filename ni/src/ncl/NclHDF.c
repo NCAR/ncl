@@ -1,5 +1,5 @@
 /*
- *      $Id: NclHDF.c,v 1.10 2002-09-26 22:14:39 haley Exp $
+ *      $Id: NclHDF.c,v 1.11 2003-02-20 01:32:33 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1331,6 +1331,7 @@ long* dim_sizes;
 	nc_type *the_data_type;
 	int dim_ids[MAX_NC_DIMS];
 	HDFDimInqRecList* stepdl = NULL;
+	int add_scalar_dim = 0;
 
 	if(rec->wr_status <= 0) {
 		cdfid = sd_ncopen(NrmQuarkToString(rec->file_path_q),NC_WRITE);
@@ -1342,6 +1343,7 @@ long* dim_sizes;
 /*
 * All dimensions are correct dimensions for the file
 */
+		dim_ids[0] = -999;
 		for(i = 0; i < n_dims; i++) {
 			stepdl = rec->dims;
 			while(stepdl != NULL) {
@@ -1357,6 +1359,17 @@ long* dim_sizes;
 				}
 			}
 		} 
+		if (dim_ids[0] == -999) {
+			if (n_dims == 1 && dim_sizes[0] == 1 && dim_names[0] == NrmStringToQuark("ncl_scalar")) {
+				dim_ids[0] = -5;
+				add_scalar_dim = 1;
+			}
+			else {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"NetCdf: internal error adding variable");
+				return(NhlFATAL);
+			}
+		}
+
 		if(the_data_type != NULL) {
 			sd_ncredef(cdfid);
 			if((n_dims == 1)&&(dim_ids[0] == -5)) {
@@ -1408,6 +1421,21 @@ long* dim_sizes;
 				}
 				rec->n_vars++;
 			}
+			if (add_scalar_dim) {
+				rec->has_scalar_dim = 1;
+				stepdl = rec->dims;
+				rec->dims = (HDFDimInqRecList*)NclMalloc(
+					(unsigned) sizeof(HDFDimInqRecList));
+				rec->dims->dim_inq = (HDFDimInqRec*)NclMalloc(
+					(unsigned)sizeof(HDFDimInqRec));
+				rec->dims->next = stepdl;
+				rec->dims->dim_inq->dimid = -5;
+				rec->dims->dim_inq->size = 1;
+				rec->dims->dim_inq->is_unlimited = 0;
+				rec->dims->dim_inq->name = NrmStringToQuark("ncl_scalar");
+				rec->n_dims++;
+			}
+
 			NclFree(the_data_type);
 			return(NhlNOERROR);
 		} else {
