@@ -175,9 +175,9 @@ CPSCAE -
 Updates a particular element of a user's cell array.	
 .SH ACCESS 
 To use Conpack, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use the C bindings, load the 
+ncarg_c, and ncarg_loc, preferably in that order.  To use the C bindings, load the 
 NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.
 .SH MESSAGES
 In this section are listed, in alphabetical order, all the
 error messages that may be written by Conpack. Each error

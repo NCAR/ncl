@@ -71,9 +71,9 @@ The second dimension of the user's cell array.
 The first dimension of the user's cell array.
 .SH ACCESS
 To use CPCICA, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_cpcica, load the 
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_cpcica, load the 
 NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_loc, preferably in that order.
 .SH MESSAGES
 See the conpack man page for a description of all Conpack error
 messages and/or informational messages.
