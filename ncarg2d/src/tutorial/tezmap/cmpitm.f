@@ -1,5 +1,5 @@
 C
-C	$Id: cmpitm.f,v 1.1 1993-01-13 17:59:59 haley Exp $
+C	$Id: cmpitm.f,v 1.2 1993-05-06 15:20:32 haley Exp $
 C
 C
 C This program draws a map, then it draws the projection of a circle, 
@@ -26,7 +26,7 @@ C
 C
 C Draw the map, and set up area map.
 C
-      CALL CMPMSK('ME',0.,-75.,0.,'PO','CO',
+      CALL CMPMSK('ME',0.,-75.,0.,'PS','CO',
      +		PLIM1,PLIM2,PLIM3,PLIM4,2.,MAP,LMAP)
 C
 C Define a circle centered at RLAT,RLON
@@ -213,3 +213,4 @@ C Otherwise, don't draw the line - mask it.
 
 	RETURN
 	END
+
