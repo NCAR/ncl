@@ -1,5 +1,5 @@
 #
-#   $Id: yMakefile,v 1.12 1995-09-26 23:31:04 haley Exp $
+#   $Id: yMakefile,v 1.13 1996-07-09 23:54:34 haley Exp $
 #
 #   Makefile for HLU Basic examples
 #
@@ -15,7 +15,7 @@ CSRCS    = basic01c.c basic02c.c basic03c.c basic04c.c basic05c.c basic06c.c \
 FSRCS    = basic01f.f basic02f.f basic03f.f basic04f.f basic05f.f basic06f.f \
            basic07f.f basic08f.f
 NSRCS    = basic01n.ncl basic02n.ncl basic03n.ncl basic04n.ncl basic05n.ncl \
-	   basic06n.ncl basic07n.ncl basic08n.ncl
+	   basic06n.ncl basic07n.ncl basic08n.ncl basic09n.ncl
 COBJS    = basic01c.o basic02c.o basic03c.o basic04c.o basic05c.o basic06c.o \
            basic07c.o basic08c.o
 FOBJS    = basic01f.o basic02f.o basic03f.o basic04f.o basic05f.o basic06c.o \
