@@ -1,5 +1,5 @@
 !
-!      $Id: ngi.res,v 1.31 1999-10-22 00:41:56 dbrown Exp $
+!      $Id: ngi.res,v 1.32 1999-10-28 20:03:02 dbrown Exp $
 !
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !									!
@@ -29,10 +29,10 @@
 !NgNGO*synchronous:	True
 *dragInitiatorProtocolStyle:	XmDRAG_NONE
 *dragReceiverProtocolStyle:	XmDRAG_NONE
-*dragInitiatorProtocolStyle:	XmDRAG_DROP_ONLY
-*dragReceiverProtocolStyle:	XmDRAG_DROP_ONLY
-*allowDragSelected:		True
-*allowDrop:			True
+!*dragInitiatorProtocolStyle:	XmDRAG_DROP_ONLY
+!*dragReceiverProtocolStyle:	XmDRAG_DROP_ONLY
+!*allowDragSelected:		True
+!*allowDrop:			True
 
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -102,6 +102,13 @@ NgNGO*cellRightBorderColor:	#656565
 NgNGO*cellTopBorderColor:	#e1e1e1
 NgNGO*connectingLineColor:	black
 NgNGO*plusMinusColor:		black
+
+*cursorForeground:		black
+*validCursorForeground:    black
+*invalidCursorForeground:  black
+*noneCursorForeground:  black
+*cursorBackground: #b2b2b2
+
 
 NgNGO*XmList.background:	#bfbfbf
 NgNGO*XmText.background:	#bfbfbf
@@ -876,6 +883,8 @@ browse.title:				Data Browser
 *FilesBtn.labelString: Files
 *FileVarsBtn.labelString: File Vars
 *FunctionsBtn.labelString: Functions
+
+!*ShapeTool.transient: False
 
 !*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!
 
