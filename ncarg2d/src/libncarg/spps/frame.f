@@ -1,5 +1,5 @@
 C
-C $Id: frame.f,v 1.4 1994-03-17 01:43:28 kennison Exp $
+C $Id: frame.f,v 1.5 2000-02-16 17:40:49 kennison Exp $
 C
       SUBROUTINE FRAME
       COMMON /GFLASH/MODEF,IOPWKS(100),IOACT(100),NUMOP,IWISSI
@@ -72,7 +72,7 @@ C  Illegal to call FRAME while a FLASH buffer is open.
 C
           IF (MODEF .EQ. 1) THEN
             CALL SETER 
-     -    ('FRAME - ILLEGAL TO CALL FRAME WHILE A FLASH BUFFER IS OPEN',      
+     -    ('FRAME - ILLEGAL TO CALL FRAME WHILE A FLASH BUFFER IS OPEN',
      -      7,1)
           ENDIF
           CALL GCLRWK(WKID,1)
@@ -104,7 +104,7 @@ C
         END IF
         IF (ICAT.EQ.2) THEN
           ISTR(1:1) = CHAR(0)
-          CALL GINST(WKID,1,0,ISTR,1,0.,1279.,0.,1023.,1,1,1,DATREC)       
+          CALL GINST(WKID,1,0,ISTR,1,0.,1279.,0.,1023.,1,1,1,DATREC)
           CALL GSSTM(WKID,1,0,0)
           CALL GRQST(WKID,1,ISTAT,LOSTR,STR)
           GO TO 110
