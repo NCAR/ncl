@@ -1,5 +1,5 @@
 /*
- *      $Id: View.c,v 1.21 1996-01-04 21:47:55 dbrown Exp $
+ *      $Id: View.c,v 1.22 1996-01-12 02:04:29 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -894,7 +894,9 @@ void _NhlDeleteViewSegment
 					step->next = step->next->next;
 					_NhlDestroySegTransDat(tmp->seg_trans_dat);
 					NhlFree(tmp);
+					break;
 				}
+				step = step->next;
 			}
 		}
 	}
