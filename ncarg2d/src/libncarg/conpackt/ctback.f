@@ -1,7 +1,7 @@
 C
-C $Id: ctback.f,v 1.2 2004-03-19 22:51:53 kennison Exp $
+C $Id: ctback.f,v 1.3 2004-04-27 23:01:44 kennison Exp $
 C
-C                Copyright (C)  2000
+C                Copyright (C)  2001
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
 C
