@@ -96,8 +96,12 @@ begin
 end
 
 begin
+; Get current location of data directory
+datadir=ncargpath("data")
+datafile=datadir + "/cdf/meccatemp.cdf"
+
 ; Load a file record from the netCDF file as a read only data set.
-mfile =  addfile ("meccatemp.cdf","r")
+mfile =  addfile (datafile,"r")
 
 ; Create an ncgm workstation using the defaults.
 wks = create "wks" ncgmWorkstationClass noparent end create
