@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.30 1995-04-07 00:40:01 dbrown Exp $
+ *      $Id: MapPlot.c,v 1.31 1995-04-07 09:35:53 boote Exp $
  */
 /************************************************************************
 *									*
@@ -2570,9 +2570,9 @@ static NhlErrorTypes mpGrid
 		c_getset(&flx,&frx,&fby,&fuy,&wlx,&wrx,&wby,&wuy,&ll);
 		avlat = (wby + wuy) / 2.0;
 		avlon = (wrx + wlx) / 2.0;
-		_NhlWinToData(mp->trans.trans_obj,(NhlLayer)mp,&avlon,&avlat,
+		_NhlWinToData(mp->trans.trans_obj,&avlon,&avlat,
 			      1,&lon1,&lat1,&status,NULL,NULL);
-		_NhlWinToData(mp->trans.trans_obj,(NhlLayer)mp,&wrx,&avlat,
+		_NhlWinToData(mp->trans.trans_obj,&wrx,&avlat,
 			      1,&lon2,&lat2,&status,NULL,NULL);
 		
 		spacing = 2.0 * (lon2 - lon1) * mpp->grid_spacing;

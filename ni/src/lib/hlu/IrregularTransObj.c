@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularTransObj.c,v 1.13 1995-02-22 22:40:49 haley Exp $
+ *      $Id: IrregularTransObj.c,v 1.14 1995-04-07 09:35:39 boote Exp $
  */
 /************************************************************************
 *									*
@@ -54,10 +54,10 @@ static NhlResource resources[] = {
 
 	{ NhlNtrXCoordPoints,NhlCtrXCoordPoints,NhlTPointer,sizeof(float*),
 		NhlOffset(NhlIrregularTransObjLayerRec,irtrans.x_coord_points),
-		NhlTImmediate,NULL,0,(NhlFreeFunc)NhlFree},
+		NhlTImmediate,NULL,_NhlRES_NORACCESS,(NhlFreeFunc)NhlFree},
 	{ NhlNtrXInterPoints,NhlCtrXInterPoints,NhlTPointer,sizeof(float*),
 		NhlOffset(NhlIrregularTransObjLayerRec,irtrans.x_inter_points),
-		NhlTImmediate,NULL,0,(NhlFreeFunc)NhlFree },
+		NhlTImmediate,NULL,_NhlRES_NORACCESS,(NhlFreeFunc)NhlFree },
 	{ NhlNtrXMaxF, NhlCtrXMaxF, NhlTFloat, sizeof(float),
                 NhlOffset(NhlIrregularTransObjLayerRec,irtrans.x_max),
                 NhlTString, "0.0" ,0,NULL},
@@ -66,7 +66,7 @@ static NhlResource resources[] = {
                 NhlTString, "0.0" ,0,NULL},
 	{ NhlNtrXNumPoints,NhlCtrXNumPoints,NhlTInteger,sizeof(int),
 		NhlOffset(NhlIrregularTransObjLayerRec,irtrans.x_num_points),
-		NhlTImmediate,0 ,0,NULL},
+		NhlTImmediate,0 ,_NhlRES_NORACCESS,NULL},
 	{ NhlNtrXReverse, NhlCtrXReverse, NhlTBoolean,sizeof(NhlBoolean),
 		NhlOffset(NhlIrregularTransObjLayerRec,irtrans.x_reverse),
 		NhlTImmediate,False,0,NULL},
@@ -81,10 +81,10 @@ static NhlResource resources[] = {
 		NhlTImmediate,False,0,NULL},
 	{ NhlNtrYCoordPoints,NhlCtrYCoordPoints,NhlTPointer,sizeof(float*),
 		NhlOffset(NhlIrregularTransObjLayerRec,irtrans.y_coord_points),
-		NhlTImmediate,NULL ,0,(NhlFreeFunc)NhlFree},
+		NhlTImmediate,NULL ,_NhlRES_NORACCESS,(NhlFreeFunc)NhlFree},
 	{ NhlNtrYInterPoints,NhlCtrYInterPoints,NhlTPointer,sizeof(float*),
 		NhlOffset(NhlIrregularTransObjLayerRec,irtrans.y_inter_points),
-		NhlTImmediate,NULL ,0,(NhlFreeFunc)NhlFree},
+		NhlTImmediate,NULL ,_NhlRES_NORACCESS,(NhlFreeFunc)NhlFree},
 	{ NhlNtrYMaxF, NhlCtrYMaxF, NhlTFloat, sizeof(float),
                 NhlOffset(NhlIrregularTransObjLayerRec,irtrans.y_max),
                 NhlTString, "0.0" ,0,NULL},
@@ -93,7 +93,7 @@ static NhlResource resources[] = {
                 NhlTString, "0.0",0,NULL },
 	{ NhlNtrYNumPoints,NhlCtrYNumPoints,NhlTInteger,sizeof(int),
 		NhlOffset(NhlIrregularTransObjLayerRec,irtrans.y_num_points),
-		NhlTImmediate,0,0,NULL},
+		NhlTImmediate,0,_NhlRES_NORACCESS,NULL},
 	{ NhlNtrYReverse, NhlCtrYReverse, NhlTBoolean,sizeof(NhlBoolean),
 		NhlOffset(NhlIrregularTransObjLayerRec,irtrans.y_reverse),
 		NhlTImmediate,False,0,NULL },
@@ -150,7 +150,6 @@ NhlLayer  /*parent*/
 static NhlErrorTypes IrWinToNDC(
 #if	NhlNeedProto
 NhlLayer	/*instance*/,
-NhlLayer	/* parent */,
 float*	/*x*/,
 float*   /*y*/,
 int	/* n*/,
@@ -166,7 +165,6 @@ int*	/* status */
 static NhlErrorTypes IrNDCToWin(
 #if	NhlNeedProto
 NhlLayer	/*instance*/,
-NhlLayer	/*parent */,
 float*	/*x*/,
 float*   /*y*/,
 int	/* n*/,
@@ -182,7 +180,6 @@ int*  /* status */
 static NhlErrorTypes IrDataToCompc(
 #if	NhlNeedProto
 NhlLayer   /*instance */,
-NhlLayer   /*parent */,
 float*  /*x*/,
 float*   /*y*/,
 int     /* n*/,
@@ -197,7 +194,6 @@ int*  /* status */
 static NhlErrorTypes IrCompcToData(
 #if	NhlNeedProto
 NhlLayer   /*instance */,
-NhlLayer   /*parent */,
 float*  /*x*/,
 float*   /*y*/,
 int     /* n*/,
@@ -212,7 +208,6 @@ int*  /* status */
 static NhlErrorTypes IrDataToWin(
 #if	NhlNeedProto
 NhlLayer   /*instance */,
-NhlLayer   /*parent */,
 float*  /*x*/,
 float*   /*y*/,
 int     /* n*/,
@@ -227,7 +222,6 @@ int*  /* status */
 static NhlErrorTypes IrNDCLineTo(
 #if 	NhlNeedProto
 NhlLayer	/* instance */,
-NhlLayer   /* parent */,
 float   /* x */,
 float   /* y */,
 int     /* upordown */
@@ -237,7 +231,6 @@ int     /* upordown */
 static NhlErrorTypes IrDataLineTo(
 #if 	NhlNeedProto
 NhlLayer	/* instance */,
-NhlLayer   /* parent */,
 float   /* x */,
 float   /* y */,
 int     /* upordown */
@@ -255,7 +248,6 @@ static NhlErrorTypes IrTransGetValues(
 static NhlErrorTypes IrCompcLineTo(
 #if 	NhlNeedProto
 NhlLayer	/* instance */,
-NhlLayer   /* parent */,
 float   /* x */,
 float   /* y */,
 int     /* upordown */
@@ -601,38 +593,30 @@ static NhlErrorTypes IrTransInitialize
 
 static NhlErrorTypes IrSetTrans
 #if	NhlNeedProto
-(NhlLayer instance, NhlLayer parent) 
+(
+	NhlLayer	tobj,
+	NhlLayer	vobj
+) 
 #else
-(instance, parent)
-NhlLayer   instance;
-NhlLayer   parent;
+(tobj,vobj)
+	NhlLayer	tobj;
+	NhlLayer	vobj;
 #endif
 {
-	float x;
-	float y;
-	float width;
-	float height;
-	NhlIrregularTransObjLayer iinstance = (NhlIrregularTransObjLayer)instance;
+	NhlIrregularTransObjLayer	to = (NhlIrregularTransObjLayer)tobj;
+	NhlTransObjLayerPart		*top = &to->trobj;
+	NhlIrregularTransObjLayerPart	*tp = &to->irtrans;
 	NhlErrorTypes ret;
-	
 
-	ret = NhlVAGetValues(parent->base.id,
-		NhlNvpXF,&x,
-		NhlNvpYF,&y,
-		NhlNvpWidthF,&width,
-		NhlNvpHeightF,&height,NULL);
-	if(ret < NhlWARNING) {
-		return(ret);
-	}
-	
-		
-		
+	ret = (*NhltransObjLayerClassRec.trobj_class.set_trans)(tobj,vobj);
+	if(ret < NhlWARNING)
+		return ret;
 
-	c_set(x,x+width,y-height,y,iinstance->irtrans.ul,iinstance->irtrans.ur,
-		iinstance->irtrans.ub,iinstance->irtrans.ut,1);
+	c_set(top->x,top->x+top->width,top->y-top->height,top->y,
+		tp->ul,tp->ur,tp->ub,tp->ut,1);
 
 	
-	return(NhlNOERROR);
+	return ret;
 	
 }
 
@@ -660,39 +644,39 @@ NhlLayer   parent;
 
 static NhlErrorTypes IrWinToNDC
 #if	NhlNeedProto
-(NhlLayer instance,NhlLayer parent ,float *x,float *y,int n,float* xout,float* yout,float *xmissing,float *ymissing,int * status)
+(
+	NhlLayer	instance,
+	float		*x,
+	float		*y,
+	int		n,
+	float		*xout,
+	float		*yout,
+	float		*xmissing,
+	float		*ymissing,
+	int		*status
+)
 #else
-(instance, parent,x,y,n,xout,yout,xmissing,ymissing,status)
-	NhlLayer   instance;
-	NhlLayer   parent;
-	float   *x;
-	float   *y;
-	int	n;
-	float*  xout;
-	float*  yout;
-	float*  xmissing;	
-	float*  ymissing;
-	int*	status;
+(instance,x,y,n,xout,yout,xmissing,ymissing,status)
+	NhlLayer	instance;
+	float		*x;
+	float		*y;
+	int		n;
+	float		*xout;
+	float		*yout;
+	float		*xmissing;
+	float		*ymissing;
+	int		*status;
 #endif
 {
-	float x0;
-	float y0;
-	float width;
-	float height;
-	NhlIrregularTransObjLayer iinstance = (NhlIrregularTransObjLayer)instance;
+	NhlIrregularTransObjLayer	iinstance =
+					(NhlIrregularTransObjLayer)instance;
+	NhlIrregularTransObjLayerPart	*ip = &iinstance->irtrans;
+	NhlTransObjLayerPart		*tp = &iinstance->trobj;
 	int i;
 	NhlErrorTypes ret;
 
 	*status = 0;	
 	
-	ret= NhlVAGetValues(parent->base.id,
-		NhlNvpXF,&x0,
-		NhlNvpYF,&y0,
-		NhlNvpWidthF,&width,
-		NhlNvpHeightF,&height,NULL);
-	if(ret < NhlWARNING) {
-		return(ret);
-	}
 	if((xmissing == NULL)&&(ymissing == NULL)) {
 		for(i = 0; i< n ; i++) {
 /*
@@ -710,7 +694,8 @@ static NhlErrorTypes IrWinToNDC
 					iinstance->irtrans.ur,
 					iinstance->irtrans.ub,
 					iinstance->irtrans.ut,
-					 x0,x0+width,y0-height,y0,x[i],y[i],
+					tp->x,tp->x+tp->width,
+					tp->y-tp->height,tp->y,x[i],y[i],
 					&(xout[i]),&(yout[i]));
 
 			}
@@ -732,7 +717,8 @@ static NhlErrorTypes IrWinToNDC
 					iinstance->irtrans.ur,
 					iinstance->irtrans.ub,
 					iinstance->irtrans.ut,
-					 x0,x0+width,y0-height,y0,x[i],y[i],
+					tp->x,tp->x+tp->width,
+					tp->y-tp->height,tp->y,x[i],y[i],
 					&(xout[i]),&(yout[i]));
 			}
 		}
@@ -757,11 +743,10 @@ static NhlErrorTypes IrWinToNDC
  */
 static NhlErrorTypes IrNDCToWin
 #if	NhlNeedProto
-(NhlLayer instance,NhlLayer parent ,float *x,float *y,int n,float* xout,float* yout,float *xmissing,float *ymissing,int* status)
+(NhlLayer instance,float *x,float *y,int n,float* xout,float* yout,float *xmissing,float *ymissing,int* status)
 #else
-(instance, parent,x,y,n,xout,yout,xmissing,ymissing,status)
+(instance,x,y,n,xout,yout,xmissing,ymissing,status)
 	NhlLayer   instance;
-	NhlLayer   parent;
 	float   *x;
 	float   *y;
 	int	n;
@@ -772,39 +757,29 @@ static NhlErrorTypes IrNDCToWin
 	int * status;
 #endif
 {
-	float x0;
-	float y0;
-	float width;
 	int i;
-	float height;
-	NhlIrregularTransObjLayer iinstance = (NhlIrregularTransObjLayer)instance;
-	NhlErrorTypes ret;
+	NhlIrregularTransObjLayer	iinstance =
+					(NhlIrregularTransObjLayer)instance;
+	NhlTransObjLayerPart		*tp = &iinstance->trobj;
+	NhlErrorTypes			ret;
 	
 
 	*status = 0;	
-	ret = NhlVAGetValues(parent->base.id,
-		NhlNvpXF,&x0,
-		NhlNvpYF,&y0,
-		NhlNvpWidthF,&width,
-		NhlNvpHeightF,&height,NULL);
-	if( ret < NhlWARNING)
-		return(ret);
-
 	if((xmissing == NULL) &&(ymissing == NULL)) {	
 		for(i = 0; i< n; i++) {
-			if((x[i] < x0)
-				||(x[i] > x0 + width)
-				||(y[i] < y0 - height)
-				||(y[i] > y0)) {
+			if((x[i] < tp->x)
+				||(x[i] > tp->x + tp->width)
+				||(y[i] < tp->y - tp->height)
+				||(y[i] > tp->y)) {
 			
 				*status = 1;	
 				xout[i]=yout[i]=iinstance->trobj.out_of_range;
 			} else {
 	
-			strans(x0,x0+width,y0-height,y0,iinstance->irtrans.ul,
-				iinstance->irtrans.ur, iinstance->irtrans.ub,
-				iinstance->irtrans.ut, x[i],y[i],
-				&(xout[i]),&(yout[i]));
+			strans(tp->x,tp->x+tp->width,tp->y-tp->height,tp->y,
+				iinstance->irtrans.ul, iinstance->irtrans.ur,
+				iinstance->irtrans.ub, iinstance->irtrans.ut,
+				x[i],y[i],&(xout[i]),&(yout[i]));
 
 			}
 		}
@@ -812,18 +787,18 @@ static NhlErrorTypes IrNDCToWin
 		for(i = 0; i< n; i++) {
 			if(((xmissing != NULL)&&(*xmissing == x[i]))
 				|| ((ymissing != NULL)&&(*ymissing == y[i]))
-				||(x[i] < x0)
-                                ||(x[i] > x0 + width)
-                                ||(y[i] < y0 - height)
-                                ||(y[i] > y0)) {
+				||(x[i] < tp->x)
+                                ||(x[i] > tp->x + tp->width)
+                                ||(y[i] < tp->y - tp->height)
+                                ||(y[i] > tp->y)) {
 
 				*status = 1;	
 				xout[i]=yout[i]=iinstance->trobj.out_of_range;
 			} else {
-			strans(x0,x0+width,y0-height,y0,iinstance->irtrans.ul,
-				iinstance->irtrans.ur, iinstance->irtrans.ub,
-				iinstance->irtrans.ut, x[i],y[i],
-				&(xout[i]),&(yout[i]));
+			strans(tp->x,tp->x+tp->width,tp->y-tp->height,tp->y,
+				iinstance->irtrans.ul,iinstance->irtrans.ur,
+				iinstance->irtrans.ub,iinstance->irtrans.ut,
+				x[i],y[i],&(xout[i]),&(yout[i]));
 			}
 		}
 	}
@@ -848,11 +823,10 @@ static NhlErrorTypes IrNDCToWin
 /*ARGSUSED*/
 static NhlErrorTypes IrDataToCompc
 #if	NhlNeedProto
-(NhlLayer instance,NhlLayer parent ,float *x,float *y,int n,float* xout,float* yout,float *xmissing,float *ymissing,int *status)
+(NhlLayer instance,float *x,float *y,int n,float* xout,float* yout,float *xmissing,float *ymissing,int *status)
 #else
-(instance, parent,x,y,n,xout,yout,xmissing,ymissing,status)
+(instance, x,y,n,xout,yout,xmissing,ymissing,status)
         NhlLayer   instance;
-        NhlLayer   parent;
         float   *x;
         float   *y;
         int     n;
@@ -904,11 +878,10 @@ static NhlErrorTypes IrDataToCompc
 /*ARGSUSED*/
 static NhlErrorTypes IrCompcToData
 #if	NhlNeedProto
-(NhlLayer instance,NhlLayer parent ,float *x,float *y,int n,float* xout,float* yout,float *xmissing, float *ymissing,int *status)
+(NhlLayer instance,float *x,float *y,int n,float* xout,float* yout,float *xmissing, float *ymissing,int *status)
 #else
-(instance, parent,x,y,n,xout,yout,xmissing,ymissing,status)
+(instance, x,y,n,xout,yout,xmissing,ymissing,status)
         NhlLayer   instance;
-        NhlLayer   parent;
         float   *x;
         float   *y;
         int     n;
@@ -962,11 +935,10 @@ static NhlErrorTypes IrCompcToData
 /*ARGSUSED*/
 static NhlErrorTypes IrDataToWin
 #if	NhlNeedProto
-(NhlLayer instance,NhlLayer parent ,float *x,float *y,int n,float* xout,float* yout,float *xmissing, float *ymissing,int *status)
+(NhlLayer instance,float *x,float *y,int n,float* xout,float* yout,float *xmissing, float *ymissing,int *status)
 #else
-(instance, parent,x,y,n,xout,yout,xmissing,ymissing,status)
+(instance, x,y,n,xout,yout,xmissing,ymissing,status)
         NhlLayer   instance;
-        NhlLayer   parent;
         float   *x;
         float   *y;
         int     n;
@@ -1003,11 +975,10 @@ static NhlErrorTypes IrDataToWin
 
 static NhlErrorTypes IrCompcLineTo
 #if	NhlNeedProto
-(NhlLayer instance, NhlLayer parent,float x, float y, int upordown )
+(NhlLayer instance, float x, float y, int upordown )
 #else
-(instance, parent,x, y, upordown )
+(instance, x, y, upordown )
 NhlLayer instance;
-NhlLayer parent;
 float x;
 float y;
 int upordown;
@@ -1059,12 +1030,12 @@ int upordown;
                                 call_frstd = 1;
                         }
                         if(call_frstd == 1) {
-				IrCompcToData(instance,parent,&lastx,&lasty,1,&tmpx,&tmpy,NULL,NULL,&status);
-                                _NhlWorkstationLineTo(parent->base.wkptr,c_cufx(tmpx),c_cufy(tmpy),1);
+				IrCompcToData(instance,&lastx,&lasty,1,&tmpx,&tmpy,NULL,NULL,&status);
+                                _NhlWorkstationLineTo(iinst->trobj.wkptr,c_cufx(tmpx),c_cufy(tmpy),1);
                                 call_frstd = 2;
                         }
-			IrCompcToData(instance,parent,&currentx,&currenty,1,&tmpx,&tmpy,NULL,NULL,&status);
-                        _NhlWorkstationLineTo(parent->base.wkptr,c_cufx(currentx),c_cufy(currenty),0);
+			IrCompcToData(instance,&currentx,&currenty,1,&tmpx,&tmpy,NULL,NULL,&status);
+                        _NhlWorkstationLineTo(iinst->trobj.wkptr,c_cufx(currentx),c_cufy(currenty),0);
                         lastx = x;
                         lasty = y;
                         return(NhlNOERROR);
@@ -1077,11 +1048,10 @@ int upordown;
 /*ARGSUSED*/
 static NhlErrorTypes IrDataLineTo
 #if	NhlNeedProto
-(NhlLayer instance, NhlLayer parent,float x, float y, int upordown )
+(NhlLayer instance, float x, float y, int upordown )
 #else
-(instance, parent,x, y, upordown )
+(instance, x, y, upordown )
 NhlLayer instance;
-NhlLayer parent;
 float x;
 float y;
 int upordown;
@@ -1125,16 +1095,16 @@ int upordown;
                         lastx = x;
                         lasty = y;
                         call_frstd = 1;
-                        return(_NhlWorkstationLineTo(parent->base.wkptr,c_cufx(x),c_cufy(y),1));
+                        return(_NhlWorkstationLineTo(iinst->trobj.wkptr,c_cufx(x),c_cufy(y),1));
                 } else {
                         if((lastx != holdx)||(lasty!= holdy)) {
                                 call_frstd = 1;
                         }
                         if(call_frstd == 1) {
-                                _NhlWorkstationLineTo(parent->base.wkptr,c_cufx(lastx),c_cufy(lasty),1);
+                                _NhlWorkstationLineTo(iinst->trobj.wkptr,c_cufx(lastx),c_cufy(lasty),1);
                                 call_frstd = 2;
                         }
-                        _NhlWorkstationLineTo(parent->base.wkptr,c_cufx(currentx),c_cufy(currenty),0);
+                        _NhlWorkstationLineTo(iinst->trobj.wkptr,c_cufx(currentx),c_cufy(currenty),0);
                         lastx = x;
                         lasty = y;
                         return(NhlNOERROR);
@@ -1145,11 +1115,10 @@ int upordown;
 
 static NhlErrorTypes IrNDCLineTo
 #if	NhlNeedProto
-(NhlLayer instance, NhlLayer parent, float x, float y, int upordown)
+(NhlLayer instance, float x, float y, int upordown)
 #else
-(instance, parent, x, y, upordown)
+(instance, x, y, upordown)
 NhlLayer instance;
-NhlLayer parent;
 float x;
 float y;
 int upordown;
@@ -1158,7 +1127,6 @@ int upordown;
         static float lastx,lasty;
         static call_frstd = 1;
         float currentx,currenty;
-        float xvp,yvp,widthvp,heightvp;
         NhlErrorTypes ret = NhlNOERROR,ret1 = NhlNOERROR;
         float holdx,holdy;
 	NhlTransObjLayer trinst = (NhlTransObjLayer)instance;
@@ -1176,12 +1144,9 @@ int upordown;
                 currenty = y;
                 holdx = lastx;
                 holdy = lasty;
-                NhlVAGetValues(parent->base.id,
-                        NhlNvpXF,&xvp,
-                        NhlNvpYF,&yvp,
-                        NhlNvpWidthF,&widthvp,
-                        NhlNvpHeightF,&heightvp,NULL);
-                _NhlTransClipLine( xvp, xvp+widthvp, yvp-heightvp, yvp,
+                _NhlTransClipLine(trinst->trobj.x,
+			trinst->trobj.x+trinst->trobj.width,
+			trinst->trobj.y-trinst->trobj.height, trinst->trobj.y,
                         &lastx, &lasty, &currentx, &currenty,
                         trinst->trobj.out_of_range);
                 if((lastx == trinst->trobj.out_of_range)
@@ -1194,16 +1159,16 @@ int upordown;
                         lastx  = x;
                         lasty  = y;
                         call_frstd = 1;
-                        return(_NhlWorkstationLineTo(parent->base.wkptr,x,y,1));
+                        return(_NhlWorkstationLineTo(trinst->trobj.wkptr,x,y,1));
                 } else {
                         if((lastx != holdx)||(lasty!= holdy)) {
                                 call_frstd = 1;
                         }
                         if(call_frstd == 1) {
-                                ret1 = _NhlWorkstationLineTo(parent->base.wkptr, lastx,lasty,1);
+                                ret1 = _NhlWorkstationLineTo(trinst->trobj.wkptr, lastx,lasty,1);
                                 call_frstd = 2;
                         }
-                        ret = _NhlWorkstationLineTo(parent->base.wkptr,currentx, currenty,0);
+                        ret = _NhlWorkstationLineTo(trinst->trobj.wkptr,currentx, currenty,0);
                         lastx = x;
                         lasty = y;
                         return(MIN(ret1,ret));

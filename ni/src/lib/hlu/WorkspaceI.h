@@ -1,5 +1,5 @@
 /*
- *      $Id: WorkspaceI.h,v 1.7 1994-12-16 20:05:03 boote Exp $
+ *      $Id: WorkspaceI.h,v 1.8 1995-04-07 09:36:12 boote Exp $
  */
 /************************************************************************
 *									*
@@ -273,6 +273,3 @@ extern NhlErrorTypes _NhlMapgrm(
 );
 
 #endif	/* _NWORKSPACEI_H */
-
-
-

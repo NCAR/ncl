@@ -1,5 +1,5 @@
 /*
- *      $Id: TransObjI.h,v 1.2 1994-12-16 20:04:52 boote Exp $
+ *      $Id: TransObjI.h,v 1.3 1995-04-07 09:36:09 boote Exp $
  */
 /************************************************************************
 *									*
@@ -29,7 +29,6 @@
 extern NhlErrorTypes _NhlDataLineTo(
 #if	NhlNeedProto
 NhlLayer   /* instance */,
-NhlLayer   /* parent */,
 float   /* x */,
 float   /* y */,
 int     /* upordown */
@@ -39,7 +38,6 @@ int     /* upordown */
 extern NhlErrorTypes _NhlCompcLineTo(
 #if	NhlNeedProto
 NhlLayer   /* instance */,
-NhlLayer   /* parent */,
 float   /* x */,
 float   /* y */,
 int     /* upordown */
@@ -49,7 +47,6 @@ int     /* upordown */
 extern NhlErrorTypes _NhlWinLineTo(
 #if	NhlNeedProto
 NhlLayer   /* instance */,
-NhlLayer   /* parent */,
 float   /* x */,
 float   /* y */,
 int     /* upordown */
@@ -59,7 +56,6 @@ int     /* upordown */
 extern NhlErrorTypes _NhlNDCLineTo(
 #if	NhlNeedProto
 NhlLayer   /* instance */,
-NhlLayer   /* parent */,
 float   /* x */,
 float   /* y */,
 int     /* upordown */
@@ -73,7 +69,6 @@ int     /* upordown */
 extern NhlErrorTypes _NhlDataToWin(
 #if	NhlNeedProto
 	NhlLayer /* instance */,
-	NhlLayer /* parent */,
 	float* /* x */,
 	float* /* y */,
 	int 	/* n */,
@@ -88,7 +83,6 @@ extern NhlErrorTypes _NhlDataToWin(
 extern NhlErrorTypes _NhlWinToData(
 #if	NhlNeedProto
 	NhlLayer /* instance */,
-	NhlLayer /* parent */,
 	float* /* x */,
 	float* /* y */,
 	int 	/* n */,
@@ -103,7 +97,6 @@ extern NhlErrorTypes _NhlWinToData(
 extern NhlErrorTypes _NhlWinToNDC(
 #if	NhlNeedProto
 	NhlLayer /* instance */,
-	NhlLayer /* parent */,
 	float* /* x */,
 	float* /* y */,
 	int 	/* n */,
@@ -117,7 +110,6 @@ extern NhlErrorTypes _NhlWinToNDC(
 extern NhlErrorTypes _NhlNDCToWin(
 #if	NhlNeedProto
 	NhlLayer /* instance */,
-	NhlLayer /* parent */,
 	float* /* x */,
 	float* /* y */,
 	int 	/* n */,
@@ -131,7 +123,6 @@ extern NhlErrorTypes _NhlNDCToWin(
 extern NhlErrorTypes _NhlDataToCompc(
 #if	NhlNeedProto
 	NhlLayer /* instance */,
-	NhlLayer /* parent */,
 	float* /* x */,
 	float* /* y */,
 	int 	/* n */,
@@ -145,7 +136,6 @@ extern NhlErrorTypes _NhlDataToCompc(
 extern NhlErrorTypes _NhlCompcToData(
 #if	NhlNeedProto
 	NhlLayer /* instance */,
-	NhlLayer /* parent */,
 	float* /* x */,
 	float* /* y */,
 	int 	/* n */,
@@ -159,7 +149,6 @@ extern NhlErrorTypes _NhlCompcToData(
 extern NhlErrorTypes _NhlCompcToWin(
 #if	NhlNeedProto
 	NhlLayer /* instance */,
-	NhlLayer /* parent */,
 	float* /* x */,
 	float* /* y */,
 	int 	/* n */,
@@ -174,7 +163,6 @@ extern NhlErrorTypes _NhlCompcToWin(
 extern NhlErrorTypes _NhlWinToCompc(
 #if	NhlNeedProto
 	NhlLayer /* instance */,
-	NhlLayer /* parent */,
 	float* /* x */,
 	float* /* y */,
 	int 	/* n */,

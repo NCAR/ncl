@@ -1,5 +1,5 @@
 /*
- *      $Id: Legend.c,v 1.31 1995-04-07 00:39:55 dbrown Exp $
+ *      $Id: Legend.c,v 1.32 1995-04-07 09:35:46 boote Exp $
  */
 /************************************************************************
 *									*
@@ -5187,6 +5187,8 @@ static NhlErrorTypes    LegendDraw
 
 			string = lg_p->line_labels_on ? line_labels[i] : NULL;
 				
+			xpoints[0] = xpoints[0] + 
+					(xpoints[1] - xpoints[0]) / 2.0;
 
 			if (item_type != NhlMARKERS){
 				NhlVASetValues(lgl->base.wkptr->base.id,
@@ -5208,8 +5210,6 @@ static NhlErrorTypes    LegendDraw
 				  _NhlNwkLineLabelFuncCode,lg_p->ll_func_code,
 					       NULL);
 				_NhlSetLineInfo(lgl->base.wkptr,layer);
-				xpoints[0] = xpoints[0] + 
-					(xpoints[1] - xpoints[0]) / 2.0;
 				_NhlWorkstationLineTo(lgl->base.wkptr, 
 					      xpoints[0],ypoints[0], 1);
 				_NhlWorkstationLineTo(lgl->base.wkptr, 
@@ -5224,8 +5224,6 @@ static NhlErrorTypes    LegendDraw
 					     _NhlNwkMarkerColor, marker_color, 
 					     NULL);
 				_NhlSetMarkerInfo(lgl->base.wkptr,layer);
-				xpoints[0] = xpoints[0] + 
-					(xpoints[1] - xpoints[0]) / 2.0;
 				_NhlWorkstationMarker(lgl->base.wkptr, 
 						      xpoints,
 						      &tcoord, 1);
@@ -5315,6 +5313,8 @@ static NhlErrorTypes    LegendDraw
 
 			string = lg_p->line_labels_on ? line_labels[i] : NULL;
 
+			ypoints[0] = ypoints[0] + 
+					(ypoints[2] - ypoints[0]) / 2.0;
 			if (item_type != NhlMARKERS){
 				NhlVASetValues(lgl->base.wkptr->base.id,
 				  _NhlNwkLineLabel, string,
@@ -5335,8 +5335,6 @@ static NhlErrorTypes    LegendDraw
 				  _NhlNwkLineLabelFuncCode,lg_p->ll_func_code,
 					     NULL);
 			   _NhlSetLineInfo(lgl->base.wkptr,layer);
-			   ypoints[0] = ypoints[0] + 
-				   (ypoints[2] - ypoints[0]) / 2.0;
 			   _NhlWorkstationLineTo(lgl->base.wkptr, 
 						 xpoints[0],
 						 ypoints[0], 1);
@@ -5353,8 +5351,6 @@ static NhlErrorTypes    LegendDraw
 					     _NhlNwkMarkerColor, marker_color, 
 					     NULL);
 				_NhlSetMarkerInfo(lgl->base.wkptr,layer);
-				ypoints[0] = ypoints[0] + 
-					(ypoints[2] - ypoints[1]) / 2.0;
 				_NhlWorkstationMarker(lgl->base.wkptr, 
 						      &tcoord,
 						      ypoints, 1);

@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.4 1995-04-07 00:39:46 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.5 1995-04-07 09:35:35 boote Exp $
  */
 /************************************************************************
 *									*
@@ -3473,7 +3473,7 @@ static NhlErrorTypes AddDataBoundToAreamap
 				     NhlNtrYMaxF,&tymax,
 				     NULL);
 
-		_NhlDataToWin(cnp->trans_obj,(NhlLayer) cl,&txmin,&tymin,
+		_NhlDataToWin(cnp->trans_obj,&txmin,&tymin,
 			      1,&twlx,&twby,&status,
 			      NULL,NULL);
 		if (status) {
@@ -3483,7 +3483,7 @@ static NhlErrorTypes AddDataBoundToAreamap
 			return ret;
 		}
 
-		_NhlDataToWin(cnp->trans_obj,(NhlLayer) cl,&txmax,&tymax,
+		_NhlDataToWin(cnp->trans_obj,&txmax,&tymax,
 			      1,&twrx,&twuy,&status,
 			      NULL,NULL);
 		if (status) {
@@ -3498,7 +3498,7 @@ static NhlErrorTypes AddDataBoundToAreamap
 		gymin = MAX(tymin,cnp->ylb);
 		gymax = MIN(tymax,cnp->yub);
 
-		_NhlDataToWin(cnp->trans_obj,(NhlLayer) cl,&gxmin,&gymin,
+		_NhlDataToWin(cnp->trans_obj,&gxmin,&gymin,
 			      1,&gwlx,&gwby,&status,
 			      NULL,NULL);
 		if (status) {
@@ -3508,7 +3508,7 @@ static NhlErrorTypes AddDataBoundToAreamap
 			return ret;
 		}
 
-		_NhlDataToWin(cnp->trans_obj,(NhlLayer) cl,&gxmax,&gymax,
+		_NhlDataToWin(cnp->trans_obj,&gxmax,&gymax,
 			      1,&gwrx,&gwuy,&status,
 			      NULL,NULL);
 		if (status) {
@@ -9121,11 +9121,11 @@ void   (_NHLCALLF(cpmpxy,CPMPXY))
 	}
 	else {
 		if (*imap > 0)
-			_NhlCompcToWin((NhlLayer)Cnp->trans_obj,(NhlLayer)Cnl,
+			_NhlCompcToWin((NhlLayer)Cnp->trans_obj,
 				       xinp,yinp,1,xotp,yotp,
 				       &status,NULL,NULL);
 		else
-			_NhlWinToCompc((NhlLayer)Cnp->trans_obj,(NhlLayer)Cnl,
+			_NhlWinToCompc((NhlLayer)Cnp->trans_obj,
 				       xinp,yinp,1,xotp,yotp,
 				       &status,NULL,NULL);
 	}

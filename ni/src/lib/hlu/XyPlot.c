@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.42 1995-04-06 22:03:32 boote Exp $
+ *      $Id: XyPlot.c,v 1.43 1995-04-07 09:36:17 boote Exp $
  */
 /************************************************************************
 *									*
@@ -2197,10 +2197,11 @@ DrawCurves
 	NhlXyPlotLayer	xlayer;
 #endif
 {
+	char			func[] = "DrawCurves";
 	int			i,j;
 	NhlErrorTypes		ret = NhlNOERROR;
 	NhlErrorTypes		ret1 = NhlNOERROR;
-	int			upordownflag = 1;
+	int			upflag = 1;
 	NhlTransformLayerPart	*tfp = &xlayer->trans;
 	NhlLayer		thetrans = NULL;
 	NhlXyPlotLayerPart	*xlp = &xlayer->xyplot;
@@ -2224,11 +2225,24 @@ DrawCurves
 	int			*missing_set = xlp->missing_set->data;
 	float			*xmissing = xlp->xmissing->data;
 	float			*ymissing = xlp->ymissing->data;
+	float			*tx,*ty;
+	int			size;
+
+	/*
+	 * If there is no data, then don't do anything.
+	 */
+	if(!xlp->num_cpairs) return NhlNOERROR;
+	size = *len_vectors;
+	for(i=1;i<xlp->num_cpairs;i++){
+		size = MAX(len_vectors[i],size);
+	}
+	if(size <= 0)
+		return NhlNOERROR;
 
 	ret = _NhlActivateWorkstation((NhlLayer)xlayer->base.wkptr);	
 	if(ret < NhlWARNING) {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
-"DrawCurves:Could not activate workstation no data curves will be drawn");
+			"%s:Unable to activate workstation",func);
 		return(NhlFATAL);
 	}
 	ret1 = MIN(ret,ret1);
@@ -2242,10 +2256,20 @@ DrawCurves
 		ret = _NhlSetTrans(thetrans,(NhlLayer)xlayer);
 		if(ret < NhlWARNING) {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,
-	"DrawCurves:Could not set transformation no data curves will be drawn");
+				"%s:Unable to set transformation",func);
 			return(NhlFATAL);
 		}
 		ret1 = MIN(ret,ret1);
+	}
+
+	/*
+	 * Get some memory to transform points into.
+	 */
+	tx = NhlMalloc(sizeof(float)*size);
+	ty = NhlMalloc(sizeof(float)*size);
+	if(!tx || !ty){
+		NHLPERROR((NhlFATAL,ENOMEM,NULL));
+		return NhlFATAL;
 	}
 
 	NhlVASetValues(xlayer->base.wkptr->base.id,
@@ -2257,8 +2281,8 @@ DrawCurves
 		float		xtmp,ytmp;
 		int		status;
 		float 		out_of_range;
-		float		*xvect = xvectors[i];
-		float		*yvect = yvectors[i];
+		float		*xvect;
+		float		*yvect;
 
 		NhlVASetValues(xlayer->base.wkptr->base.id,
 			_NhlNwkLineDashSegLenF,
@@ -2276,350 +2300,147 @@ DrawCurves
 			_NhlNwkMarkerThicknessF,	marker_thicknesses[i],
 			NULL);
 
-		if(item_types[i] != NhlMARKERS)
+		if(xvectors[i])
+			xvect = xvectors[i];
+		else{
+			for(j=0;j<len_vectors[i];j++)
+				tx[j] = (float)j+1;
+			xvect = tx;
+		}
+		if(yvectors[i])
+			yvect = yvectors[i];
+		else{
+			for(j=0;j<len_vectors[i];j++)
+				ty[j] = (float)j+1;
+			yvect = ty;
+		}
+
+
+		if(item_types[i] != NhlMARKERS){
 			_NhlSetLineInfo(xlayer->base.wkptr,(NhlLayer)xlayer);
 
-		if(item_types[i] != NhlLINES)
-			_NhlSetMarkerInfo(xlayer->base.wkptr,(NhlLayer)xlayer);
+			upflag = 1;
 
-		upordownflag = 1;
-
-		if(xvect && yvect){
-			/* both vectors exist */
 			if(missing_set[i] & XMISS_SET & YMISS_SET){
 				int 	status;
 
 				for(j=0;j < len_vectors[i];j++){
 					if((xvect[j] == xmissing[i]) ||
 						(yvect[j] == ymissing[i]))
-						upordownflag = 1;
+						upflag = 1;
 					else{
-						if(item_types[i] != NhlMARKERS){
 						_NhlDataLineTo(thetrans,
-							(NhlLayer)xlayer,
 							xvect[j],
 							yvect[j],
-							upordownflag);
-						}
-						if(item_types[i] != NhlLINES){
-
-							NhlDataToNDC(
-							xlayer->base.id,
-							&(xvect[j]),&(yvect[j]),
-							1,
-							&xtmp, &ytmp,
-							&xmissing[i],
-							&ymissing[i],
-							&status,
-							&out_of_range);
-							_NhlWorkstationMarker(
-							xlayer->base.wkptr,
-								&xtmp,
-								&ytmp,
-								1
-							);
-						}
-						
-
-						upordownflag = 0;
+							upflag);
+						upflag = 0;
 					}
 				}
 			}
 			else if(missing_set[i] & XMISS_SET){
 				for(j=0;j < len_vectors[i];j++){
 					if(xvect[j] == xmissing[i])
-						upordownflag = 1;
+						upflag = 1;
 					else{
-						if(item_types[i] != NhlMARKERS){
-							_NhlDataLineTo(thetrans,
-							(NhlLayer)xlayer,
+						_NhlDataLineTo(thetrans,
 								xvect[j],
 								yvect[j],
-								upordownflag);
-						}
-						if(item_types[i] != NhlLINES){
-
-							NhlDataToNDC(
-							xlayer->base.id,
-							&(xvect[j]),
-							&(yvect[j]),
-							1,
-							&xtmp,
-							&ytmp,
-							&xmissing[i],
-							NULL,
-							&status,
-							&out_of_range);
-							_NhlWorkstationMarker(
-							xlayer->base.wkptr,
-								&xtmp,
-								&ytmp,
-								1
-							);
-						}
-						upordownflag = 0;
+								upflag);
+						upflag = 0;
 					}
 				}
 			}
 			else if(missing_set[i] & YMISS_SET){
 				for(j=0;j < len_vectors[i];j++){
 					if(yvect[j] == ymissing[i])
-						upordownflag = 1;
+						upflag = 1;
 					else{
-						if(item_types[i] != NhlMARKERS){
-							_NhlDataLineTo(thetrans,
-							(NhlLayer)xlayer,
+						_NhlDataLineTo(thetrans,
 								xvect[j],
 								yvect[j],
-								upordownflag);
-						}
-
-						if(item_types[i] != NhlLINES){
-							NhlDataToNDC(
-								xlayer->base.id,
-								&(xvect[j]),
-								&(yvect[j]),
-								1,
-								&xtmp,
-								&ytmp,
-								NULL,
-								&ymissing[i],
-								&status,
-								&out_of_range);
-							_NhlWorkstationMarker(
-							xlayer->base.wkptr,
-								&xtmp,
-								&ytmp,
-								1
-							);
-						}
-						upordownflag = 0;
+								upflag);
+						upflag = 0;
 					}
 				}
 			}
 			else{
 				for(j=0;j < len_vectors[i];j++){
-					if(item_types[i] != NhlMARKERS){
-						_NhlDataLineTo(
-							thetrans,
-							(NhlLayer)xlayer,
-							xvect[j],
-							yvect[j],
-							upordownflag);
-					}
-					if(item_types[i] != NhlLINES){
-
-						NhlDataToNDC(
-							xlayer->base.id,
-							&(xvect[j]),
-							&(yvect[j]),
-							1,
-							&xtmp,
-							&ytmp,
-							NULL,
-							NULL,
-							&status,
-							&out_of_range);
-						_NhlWorkstationMarker(
-							xlayer->base.wkptr,
-							&xtmp,
-							&ytmp,
-							1
-						);
-					}
-					upordownflag = 0;
+					_NhlDataLineTo(thetrans,
+						xvect[j],yvect[j],upflag);
+					upflag = 0;
 				}
 			}
+			/*
+			 * This is called here to flush the "lineto" buffer.
+			 */
+			_NhlWorkstationLineTo(xlayer->base.wkptr,1.0,1.0,1);
 		}
-		else if(!xvect && !yvect){
-			/* both vectors implied */
-			for(j=0;j < len_vectors[i];j++){
-				if(item_types[i] != NhlMARKERS){
-					_NhlDataLineTo(thetrans,
-						(NhlLayer)xlayer,
-						(float)(j+1),
-						(float)(j+1),
-						upordownflag);
-				}
 
-				if(item_types[i] != NhlLINES){
-					xtmp = (float)(j+1);
-					ytmp = (float)(j+1);
-					NhlDataToNDC(
-						xlayer->base.id,
-						&xtmp,
-						&ytmp,
-						1,
-						&xtmp,
-						&ytmp,
-						NULL,
-						NULL,
-						&status,
-						&out_of_range);
+		if(item_types[i] != NhlLINES){
+			float	oor;
+			float	*xmiss = NULL;
+			float	*ymiss = NULL;
+
+			if(missing_set[i] & XMISS_SET)
+				xmiss = &xmissing[i];
+			if(missing_set[i] & YMISS_SET)
+				ymiss = &ymissing[i];
+
+			NhlVAGetValues(thetrans->base.id,
+				NhlNtrOutOfRangeF,	&oor,
+				NULL);
+
+			ret = _NhlDataToWin(thetrans,xvect,yvect,len_vectors[i],
+					tx,ty,&status,xmiss,ymiss);
+			if(ret < NhlWARNING){
+				NhlPError(NhlWARNING,NhlEUNKNOWN,
+					"%s:Unable to transform Marker Points",
+					func);
+				ret1 = MIN(ret1,NhlWARNING);
+				/*
+				 * Skip this set of markers.
+				 */
+				continue;
+			}
+			ret = _NhlWinToNDC(thetrans,tx,ty,len_vectors[i],tx,ty,
+						&status,&oor,&oor);
+			if(ret < NhlWARNING){
+				NhlPError(NhlWARNING,NhlEUNKNOWN,
+					"%s:Unable to transform Marker Points",
+					func);
+				ret1 = MIN(ret1,NhlWARNING);
+				/*
+				 * Skip this set of markers.
+				 */
+				continue;
+			}
+
+			_NhlSetMarkerInfo(xlayer->base.wkptr,(NhlLayer)xlayer);
+
+			if(status){
+				for(j=0;j<len_vectors[i];j++){
+					if((tx[j] == oor)||(ty[j] == oor))
+						continue;
 					_NhlWorkstationMarker(
 						xlayer->base.wkptr,
-							&xtmp,
-							&ytmp,
-							1
-						);
-				}
-				upordownflag = 0;
-			}
-		}
-		else if(!xvect){
-			if(missing_set[i] & YMISS_SET){
-				for(j=0;j < len_vectors[i];j++){
-					if(yvect[j] == ymissing[i])
-						upordownflag = 1;
-					else{
-						if(item_types[i] != NhlMARKERS){
-							_NhlDataLineTo(thetrans,
-							(NhlLayer)xlayer,
-								(float)(j+1),
-								yvect[j],
-								upordownflag);
-						}
-						if(item_types[i] != NhlLINES){
-							xtmp = (float)(j+1);
-							NhlDataToNDC(
-								xlayer->base.id,
-								&xtmp,
-								&(yvect[j]),
-								1,
-								&xtmp,
-								&ytmp,
-								NULL,
-								&ymissing[i],
-								&status,
-								&out_of_range);
-							_NhlWorkstationMarker(
-							xlayer->base.wkptr,
-								&xtmp,
-								&ytmp,
-								1
-							);
-						}
-						upordownflag = 0;
-					}
+						&tx[j],&ty[j],1);
 				}
 			}
 			else{
-				for(j=0;j < len_vectors[i];j++){
-					if(item_types[i] != NhlMARKERS) {
-					_NhlDataLineTo(
-						thetrans,
-						(NhlLayer)xlayer,
-						(float)(j+1),
-						yvect[j],
-						upordownflag);
-					}
-					if(item_types[i] != NhlLINES){
-						xtmp = (float)(j+1);
-						NhlDataToNDC(
-							xlayer->base.id,
-							&xtmp,
-							&(yvect[j]),
-							1,
-							&xtmp,
-							&ytmp,
-							NULL,
-							NULL,
-							&status,
-							&out_of_range);
-						_NhlWorkstationMarker(
-							xlayer->base.wkptr,
-							&xtmp,
-							&ytmp,
-							1
-						);
-					}
-					upordownflag = 0;
-				}
+				_NhlWorkstationMarker(xlayer->base.wkptr,
+					tx,ty,len_vectors[i]);
 			}
 		}
-		else if(!yvect){
-			if(missing_set[i] & XMISS_SET){
-				for(j=0;j < len_vectors[i];j++){
-					if(xvect[j] == xmissing[i])
-						upordownflag = 1;
-					else{
-						if(item_types[i] != NhlMARKERS){
-							_NhlDataLineTo(thetrans,
-							(NhlLayer)xlayer,
-								xvect[j],
-								(float)(j+1),
-								upordownflag);
-						}
-						if(item_types[i] != NhlLINES){
-							ytmp = (float)(j+1);
-							NhlDataToNDC(
-								xlayer->base.id,
-								&(xvect[j]),
-								&ytmp,
-								1,
-								&xtmp,
-								&ytmp,
-								&xmissing[i],
-								NULL,
-								&status,
-								&out_of_range);
-							_NhlWorkstationMarker(
-							xlayer->base.wkptr,
-								&xtmp,
-								&ytmp,
-								1
-							);
-						}
-						upordownflag = 0;
-					}
-				}
-			}
-			else{
-				for(j=0;j < len_vectors[i];j++){
-					if(item_types[i] != NhlMARKERS) {
-						_NhlDataLineTo(
-							thetrans,
-							(NhlLayer)xlayer,
-							xvect[j],
-							(float)(j+1),
-							upordownflag);
-					}
-					if(item_types[i] != NhlLINES){
-						ytmp = (float)(j+1);
-						NhlDataToNDC(
-							xlayer->base.id,
-							&(xvect[j]),
-							&ytmp,
-							1,
-							&xtmp,
-							&ytmp,
-							NULL,
-							NULL,
-							&status,
-							&out_of_range);
-						_NhlWorkstationMarker(
-							xlayer->base.wkptr,
-							&xtmp,
-							&ytmp,
-							1
-						);
-					}
-					upordownflag = 0;
-				}
-			}
-		}
-		/*
-		 * This is called here so lastd is called for the last line.
-		 */
-		_NhlWorkstationLineTo(xlayer->base.wkptr,1.0,1.0,1);
 	}
 
 
 	ret = _NhlDeactivateWorkstation(xlayer->base.wkptr);	
-	if(ret < ret1)
-		ret1 = ret;
-	return(ret);
-	
+	ret1 = MIN(ret,ret1);
+
+	NhlFree(tx);
+	NhlFree(ty);
+
+	return ret1;
 }
 
 /*

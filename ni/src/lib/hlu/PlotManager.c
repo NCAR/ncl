@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManager.c,v 1.5 1995-04-04 17:38:09 dbrown Exp $
+ *      $Id: PlotManager.c,v 1.6 1995-04-07 09:35:58 boote Exp $
  */
 /************************************************************************
 *									*
@@ -4529,11 +4529,11 @@ void _NhlovCpMapXY
         int status = 0;
 
         if (PlotManager_Trans_Obj == NULL || PlotManager_Trans_Obj == Trans_Obj) {
-		_NhlCompcToWin(Trans_Obj,Plot,xin,yin,1,xout,yout,
+		_NhlCompcToWin(Trans_Obj,xin,yin,1,xout,yout,
 			       &status,NULL,NULL);
 	}
         else {
-		_NhlCompcToData(Trans_Obj,Plot,xin,yin,1,xout,yout,
+		_NhlCompcToData(Trans_Obj,xin,yin,1,xout,yout,
 				&status,NULL,NULL);
 
 		if (status) return;
@@ -4541,7 +4541,7 @@ void _NhlovCpMapXY
 		fprintf (stderr,"inter: %f %f : ",*xout,*yout);
 #endif
 
-		_NhlDataToWin(PlotManager_Trans_Obj,PlotManager_Plot,
+		_NhlDataToWin(PlotManager_Trans_Obj,
 			     xout,yout,1,xout,yout,&status,NULL,NULL);
         }
 
@@ -4567,11 +4567,11 @@ void _NhlovCpInvMapXY
         int status = 0;
 
         if (PlotManager_Trans_Obj == NULL || PlotManager_Trans_Obj == Trans_Obj) {
-		_NhlWinToCompc(Trans_Obj,Plot,xin,yin,1,xout,yout,
+		_NhlWinToCompc(Trans_Obj,xin,yin,1,xout,yout,
 			       &status,NULL,NULL);
 	}
         else {
-		_NhlWinToData(PlotManager_Trans_Obj,PlotManager_Plot,
+		_NhlWinToData(PlotManager_Trans_Obj,
 			      xin,yin,1,xout,yout,
 			      &status,NULL,NULL);
 
@@ -4580,7 +4580,7 @@ void _NhlovCpInvMapXY
 		fprintf (stderr,"inter: %f %f : ",*xout,*yout);
 #endif
 
-		_NhlDataToCompc(Trans_Obj,Plot,xout,yout,1,xout,yout,
+		_NhlDataToCompc(Trans_Obj,xout,yout,1,xout,yout,
 				&status,NULL,NULL);
         }
 

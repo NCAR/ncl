@@ -1,5 +1,5 @@
 /*
- *      $Id: LogLinTransObj.c,v 1.17 1995-04-01 00:04:04 dbrown Exp $
+ *      $Id: LogLinTransObj.c,v 1.18 1995-04-07 09:35:50 boote Exp $
  */
 /************************************************************************
 *									*
@@ -92,7 +92,6 @@ static NhlErrorTypes LlTransInitialize(
 static NhlErrorTypes LlNDCLineTo(
 #if     NhlNeedProto
 NhlLayer   /* instance */,
-NhlLayer   /* parent */,
 float   /* x */,
 float   /* y */,
 int     /* upordown */
@@ -101,17 +100,11 @@ int     /* upordown */
 static NhlErrorTypes LlDataLineTo(
 #if     NhlNeedProto
 NhlLayer   /* instance */,
-NhlLayer   /* parent */,
 float   /* x */,
 float   /* y */,
 int     /* upordown */
 #endif
 );
-
-
-
-
-
 
 static NhlErrorTypes LlSetTrans(
 #if	NhlNeedProto
@@ -123,7 +116,6 @@ NhlLayer  /*parent*/
 static NhlErrorTypes LlDataToWin(
 #if	NhlNeedProto
 NhlLayer	/*instance*/,
-NhlLayer	/* parent */,
 float*	/*x*/,
 float*   /*y*/,
 int	/* n*/,
@@ -137,7 +129,6 @@ int* 	/*status*/
 static NhlErrorTypes LlWinToNDC(
 #if	NhlNeedProto
 NhlLayer	/*instance*/,
-NhlLayer	/* parent */,
 float*	/*x*/,
 float*   /*y*/,
 int	/* n*/,
@@ -153,7 +144,6 @@ int* 	/*status*/
 static NhlErrorTypes LlNDCToWin(
 #if	NhlNeedProto
 NhlLayer	/*instance*/,
-NhlLayer	/*parent */,
 float*	/*x*/,
 float*   /*y*/,
 int	/* n*/,
@@ -378,44 +368,40 @@ static NhlErrorTypes LlTransInitialize
 
 static NhlErrorTypes LlSetTrans
 #if	NhlNeedProto
-(NhlLayer instance, NhlLayer parent) 
+(
+	NhlLayer	tobj,
+	NhlLayer	vobj
+) 
 #else
-(instance, parent)
-NhlLayer   instance;
-NhlLayer   parent;
+(tobj,vobj)
+	NhlLayer	tobj;
+	NhlLayer	vobj;
 #endif
 {
-	float x;
-	float y;
-	float width;
-	float height;
-	NhlLogLinTransObjLayer linstance = (NhlLogLinTransObjLayer)instance;
-	NhlString entry_name = "LlSetTrans";
-	NhlString e_text;
-	NhlErrorTypes ret;
+	NhlLogLinTransObjLayer	linstance = (NhlLogLinTransObjLayer)tobj;
+	NhlTransObjLayerPart	*tp = &linstance->trobj;
+	NhlString		entry_name = "LlSetTrans";
+	NhlString		e_text;
+	NhlErrorTypes		ret;
 	float xr, yb;
 	
-	ret = NhlVAGetValues(parent->base.id,
-		NhlNvpXF,&x,
-		NhlNvpYF,&y,
-		NhlNvpWidthF,&width,
-		NhlNvpHeightF,&height,NULL);
-	if(ret < NhlWARNING) {
-		return(ret);
-	}
-	xr = x + width;
-	yb = y - height;
-	if (x < 0.0 || y > 1.0 || xr > 1.0 || yb < 0.0) {
+	ret = (*NhltransObjLayerClassRec.trobj_class.set_trans)(tobj,vobj);
+	if(ret < NhlWARNING)
+		return ret;
+
+	xr = tp->x + tp->width;
+	yb = tp->y - tp->height;
+	if (tp->x < 0.0 || tp->y > 1.0 || xr > 1.0 || yb < 0.0) {
 		e_text = "%s: View extent is outside NDC range: constraining";
 		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
 		ret = MIN(ret,NhlWARNING);
-		x = MAX(x,0.0);
+		tp->x = MAX(tp->x,0.0);
 		xr = MIN(xr,1.0);
-		y = MIN(y,1.0);
+		tp->y = MIN(tp->y,1.0);
 		yb = MAX(yb,0.0);
 		
 	}
-	c_set(x,xr,yb,y,
+	c_set(tp->x,xr,yb,tp->y,
 	      linstance->lltrans.ul,linstance->lltrans.ur,
 	      linstance->lltrans.ub,linstance->lltrans.ut,
 	      linstance->lltrans.log_lin_value);
@@ -427,11 +413,10 @@ NhlLayer   parent;
 /*ARGSUSED*/
 static NhlErrorTypes LlDataToWin
 #if	NhlNeedProto
-(NhlLayer instance,NhlLayer parent ,float *x,float *y,int n,float* xout,float* yout,float *xmissing,float *ymissing,int* status)
+(NhlLayer instance,float *x,float *y,int n,float* xout,float* yout,float *xmissing,float *ymissing,int* status)
 #else
-(instance, parent,x,y,n,xout,yout,xmissing,ymissing,status)
+(instance, x,y,n,xout,yout,xmissing,ymissing,status)
 	NhlLayer   instance;
-	NhlLayer   parent;
 	float   *x;
 	float   *y;
 	int	n;
@@ -488,11 +473,10 @@ static NhlErrorTypes LlDataToWin
 
 static NhlErrorTypes LlWinToNDC
 #if	NhlNeedProto
-(NhlLayer instance,NhlLayer parent ,float *x,float *y,int n,float* xout,float* yout,float *xmissing,float *ymissing,int* status)
+(NhlLayer instance,float *x,float *y,int n,float* xout,float* yout,float *xmissing,float *ymissing,int* status)
 #else
-(instance, parent,x,y,n,xout,yout,xmissing,ymissing,status)
+(instance, x,y,n,xout,yout,xmissing,ymissing,status)
 	NhlLayer   instance;
-	NhlLayer   parent;
 	float   *x;
 	float   *y;
 	int	n;
@@ -503,25 +487,14 @@ static NhlErrorTypes LlWinToNDC
 	int *	status;
 #endif
 {
-	float x0;
-	float y0;
-	float width;
+	NhlLogLinTransObjLayer	linstance = (NhlLogLinTransObjLayer)instance;
+	NhlTransObjLayerPart	*tp = &linstance->trobj;
 	int i;
-	float height;
-	NhlLogLinTransObjLayer linstance = (NhlLogLinTransObjLayer)instance;
 	NhlErrorTypes ret;
 	float urtmp,ultmp,uttmp,ubtmp;
 	float xmin,ymin,xmax,ymax;
 	float tmpx,tmpy;
 	
-	
-	ret = NhlVAGetValues(parent->base.id,
-		NhlNvpXF,&x0,
-		NhlNvpYF,&y0,
-		NhlNvpWidthF,&width,
-		NhlNvpHeightF,&height,NULL);
-	if( ret < NhlWARNING)
-		return(ret);
 	*status = 0;
 	switch(linstance->lltrans.log_lin_value) {
 		case 4:
@@ -554,14 +527,16 @@ static NhlErrorTypes LlWinToNDC
 
 					} else {
 
-						strans( ultmp, urtmp, ubtmp, uttmp, 
-							x0,x0+width,y0-height,y0,
+						strans(ultmp,urtmp,ubtmp,uttmp, 
+							tp->x,tp->x+tp->width,
+							tp->y-tp->height,tp->y,
 							tmpx, tmpy, 
 							&(xout[i]),&(yout[i]));
 					}
 				} else {
 					*status = 1;	
-					xout[i]=yout[i]=linstance->trobj.out_of_range;
+					xout[i] = yout[i] =
+						linstance->trobj.out_of_range;
 				}
 			}
 			break;
@@ -577,20 +552,25 @@ static NhlErrorTypes LlWinToNDC
 			for(i = 0; i< n; i++) {
 				if(x[i] > 0) {
 					tmpx = log10(x[i]);
-					if(((xmissing != NULL) &&(*xmissing == x[i]))
-						||((ymissing != NULL) &&(*ymissing == y[i]))
+					if(((xmissing != NULL)
+							&&(*xmissing == x[i]))
+						||((ymissing != NULL)
+							&&(*ymissing == y[i]))
 						||(tmpx < xmin)
 						||(tmpx > xmax)
-						||(y[i] < linstance->lltrans.y_min)
-						||(y[i] > linstance->lltrans.y_max)) {
+						||(y[i]<linstance->lltrans.y_min)
+						||(y[i]>linstance->lltrans.y_max)) {
 						
 						*status = 1;
 						xout[i]=yout[i]=linstance->trobj.out_of_range;
 					} else {
-						strans( ultmp, urtmp, linstance->lltrans.ub, 
-							linstance->lltrans.ut, x0,x0+width,
-							y0-height,y0,tmpx,y[i], 
-						&(xout[i]),&(yout[i]));
+						strans(ultmp,urtmp,
+							linstance->lltrans.ub, 
+							linstance->lltrans.ut,
+							tp->x,tp->x+tp->width,
+							tp->y-tp->height,tp->y,
+							tmpx,y[i], 
+							&(xout[i]),&(yout[i]));
 					}
 				} else {
 					*status = 1;
@@ -620,9 +600,11 @@ static NhlErrorTypes LlWinToNDC
 						xout[i]=yout[i]=linstance->trobj.out_of_range;
 
 					} else {
-						strans( linstance->lltrans.ul, 
-							linstance->lltrans.ur, ubtmp,uttmp, 
-							x0,x0+width,y0-height,y0,
+						strans(linstance->lltrans.ul, 
+							linstance->lltrans.ur,
+							ubtmp,uttmp, 
+							tp->x,tp->x+tp->width,
+							tp->y-tp->height,tp->y,
 							x[i],tmpy,
 							&(xout[i]),&(yout[i]));
 					}
@@ -652,8 +634,9 @@ static NhlErrorTypes LlWinToNDC
 						linstance->lltrans.ur, 
 						linstance->lltrans.ub, 
 						linstance->lltrans.ut, 
-						x0,x0+width,y0-height,y0,
-						x[i],y[i], &(xout[i]),&(yout[i]));
+						tp->x,tp->x+tp->width,
+						tp->y-tp->height,tp->y,
+						x[i],y[i],&(xout[i]),&(yout[i]));
 				}
 			}
 			break;
@@ -681,11 +664,10 @@ static NhlErrorTypes LlWinToNDC
  */
 static NhlErrorTypes LlNDCToWin
 #if	NhlNeedProto
-(NhlLayer instance,NhlLayer parent ,float *x,float *y,int n,float* xout,float* yout,float *xmissing, float *ymissing,int *status)
+(NhlLayer instance,float *x,float *y,int n,float* xout,float* yout,float *xmissing, float *ymissing,int *status)
 #else
-(instance, parent,x,y,n,xout,yout,xmissing,ymissing,status)
+(instance, x,y,n,xout,yout,xmissing,ymissing,status)
 	NhlLayer   instance;
-	NhlLayer   parent;
 	float   *x;
 	float   *y;
 	int	n;
@@ -696,26 +678,17 @@ static NhlErrorTypes LlNDCToWin
 	int *status;
 #endif
 {
-	float x0;
-	float y0;
-	float width;
 	int i;
-	float height;
 	NhlLogLinTransObjLayer linstance = (NhlLogLinTransObjLayer)instance;
 	NhlErrorTypes ret;
 	float urtmp,ultmp,uttmp,ubtmp;
 	float xmin,ymin,xmax,ymax;
 	
 	
-	ret = NhlVAGetValues(parent->base.id,
-		NhlNvpXF,&x0,
-		NhlNvpYF,&y0,
-		NhlNvpWidthF,&width,
-		NhlNvpHeightF,&height,NULL);
-	xmin = x0;
-	xmax = x0 + width;
-	ymin = y0 - height;
-	ymax = y0;
+	xmin = linstance->trobj.x;
+	xmax = linstance->trobj.x + linstance->trobj.width;
+	ymin = linstance->trobj.y - linstance->trobj.height;
+	ymax = linstance->trobj.y;
 	if( ret < NhlWARNING)
 		return(ret);
 	*status = 0;
@@ -848,11 +821,10 @@ static NhlErrorTypes LlNDCToWin
 /*ARGSUSED*/
 static NhlErrorTypes LlDataLineTo
 #if	NhlNeedProto
-(NhlLayer instance, NhlLayer parent,float x, float y, int upordown )
+(NhlLayer instance, float x, float y, int upordown )
 #else
-(instance, parent,x, y, upordown )
+(instance, x, y, upordown )
 NhlLayer instance;
-NhlLayer parent;
 float x;
 float y;
 int upordown;
@@ -895,16 +867,16 @@ int upordown;
 			lastx = x;	
 			lasty = y;
 			call_frstd = 1;
-			return(_NhlWorkstationLineTo(parent->base.wkptr,c_cufx(x),c_cufy(y),1));
+			return(_NhlWorkstationLineTo(llinst->trobj.wkptr,c_cufx(x),c_cufy(y),1));
 		} else {
                         if((lastx != holdx)||(lasty!= holdy)) {
                                 call_frstd = 1;
                         }
 			if(call_frstd == 1) {
-				_NhlWorkstationLineTo(parent->base.wkptr,c_cufx(lastx),c_cufy(lasty),1);
+				_NhlWorkstationLineTo(llinst->trobj.wkptr,c_cufx(lastx),c_cufy(lasty),1);
 				call_frstd = 2;
 			}
-			_NhlWorkstationLineTo(parent->base.wkptr,c_cufx(currentx),c_cufy(currenty),0);
+			_NhlWorkstationLineTo(llinst->trobj.wkptr,c_cufx(currentx),c_cufy(currenty),0);
 			lastx = x;
 			lasty = y;
 			return(NhlNOERROR);
@@ -919,21 +891,20 @@ int upordown;
 /*ARGSUSED*/
 static NhlErrorTypes LlNDCLineTo
 #if	NhlNeedProto
-(NhlLayer instance, NhlLayer parent, float x, float y, int upordown)
+(NhlLayer instance, float x, float y, int upordown)
 #else
-(instance, parent, x, y, upordown)
+(instance, x, y, upordown)
 NhlLayer instance;
-NhlLayer parent;
 float x;
 float y;
 int upordown;
 #endif
 {
-	NhlLogLinTransObjLayer llinst = (NhlLogLinTransObjLayer)instance;
+	NhlLogLinTransObjLayer	llinst = (NhlLogLinTransObjLayer)instance;
+	NhlTransObjLayerPart	*tp = &llinst->trobj;
 	static float lastx,lasty;
 	static call_frstd = 1;
 	float currentx,currenty;
-	float xvp,yvp,widthvp,heightvp;
 	NhlErrorTypes ret = NhlNOERROR,ret1 = NhlNOERROR;
 	float holdx,holdy;
 
@@ -950,12 +921,7 @@ int upordown;
 		currenty = y;
 		holdx = lastx;
 		holdy = lasty;
-		NhlVAGetValues(parent->base.id,
-			NhlNvpXF,&xvp,
-			NhlNvpYF,&yvp,
-			NhlNvpWidthF,&widthvp,
-			NhlNvpHeightF,&heightvp,NULL);
-		_NhlTransClipLine( xvp, xvp+widthvp, yvp-heightvp, yvp,
+		_NhlTransClipLine(tp->x,tp->x+tp->width,tp->y-tp->height,tp->y,
 			&lastx, &lasty, &currentx, &currenty,
 			llinst->trobj.out_of_range);
 		if((lastx == llinst->trobj.out_of_range)
@@ -968,22 +934,19 @@ int upordown;
 			lastx  = x;
 			lasty  = y;
 			call_frstd = 1;
-			return(_NhlWorkstationLineTo(parent->base.wkptr,x,y,1));
+			return(_NhlWorkstationLineTo(llinst->trobj.wkptr,x,y,1));
 		} else {
                         if((lastx != holdx)||(lasty!= holdy)) {
                                 call_frstd = 1;
                         }
 			if(call_frstd == 1) {
-				ret1 = _NhlWorkstationLineTo(parent->base.wkptr,lastx,lasty,1);
+				ret1 = _NhlWorkstationLineTo(llinst->trobj.wkptr,lastx,lasty,1);
 				call_frstd = 2;
 			}
-			ret = _NhlWorkstationLineTo(parent->base.wkptr,currentx,currenty,0);
+			ret = _NhlWorkstationLineTo(llinst->trobj.wkptr,currentx,currenty,0);
 			lastx = x;
 			lasty = y;			
 			return(MIN(ret1,ret));
 		}
-			
-			
 	}
-	
 }

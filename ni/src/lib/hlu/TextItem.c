@@ -1,5 +1,5 @@
 /*
- *      $Id: TextItem.c,v 1.26 1995-04-04 17:16:22 boote Exp $
+ *      $Id: TextItem.c,v 1.27 1995-04-07 09:36:01 boote Exp $
  */
 /************************************************************************
 *									*
@@ -413,7 +413,10 @@ DoPcCalc
 	c_pcsetr("PH",tnew->text.real_ph_height);
 	c_pcsetr("PW",tnew->text.real_ph_width);
 	c_pcseti("QU",tnew->text.qual);
-	c_pcseti("FN",tnew->text.font);
+	if(tnew->text.qual == 2)
+		c_pcseti("FN",1);
+	else
+		c_pcseti("FN",tnew->text.font);
 	c_getset(&fl,&fr,&fb,&ft,&ul,&ur,&ub,&ut,&ll);
 
 
@@ -802,6 +805,12 @@ static NhlErrorTypes    TextItemDraw
 	c_pcsetc("FC",buf);
 
 	_NhlActivateWorkstation(tlayer->base.wkptr);
+	if(tlayer->text.qual == 2){
+		Gtext_font_prec gtfp;
+		gtfp.font = 1;
+		gtfp.prec = GPREC_STROKE;
+		gset_text_font_prec(&gtfp);
+	}
 	NhlVASetValues(tlayer->base.wkptr->base.id,
 		_NhlNwkReset,	True,
 		NULL);
@@ -888,6 +897,12 @@ static NhlErrorTypes    TextItemSegDraw
 	c_pcsetr("PH",tlayer->text.real_ph_height);
 	c_pcsetr("PW",tlayer->text.real_ph_width);
 	c_pcseti("QU",tlayer->text.qual);
+	if(tlayer->text.qual == 2){
+		Gtext_font_prec gtfp;
+		gtfp.font = 1;
+		gtfp.prec = GPREC_STROKE;
+		gset_text_font_prec(&gtfp);
+	}
 	c_pcseti("FN",tlayer->text.font);
 	c_pcseti("OC",_NhlGetGksCi(tlayer->base.wkptr,tlayer->text.font_color));
 	c_pcseti("CC",_NhlGetGksCi(tlayer->base.wkptr,tlayer->text.font_color));

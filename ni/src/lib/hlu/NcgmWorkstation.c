@@ -1,5 +1,5 @@
 /*
- *      $Id: NcgmWorkstation.c,v 1.15 1995-03-06 06:03:31 boote Exp $
+ *      $Id: NcgmWorkstation.c,v 1.16 1995-04-07 09:35:56 boote Exp $
  */
 /************************************************************************
 *									*
@@ -33,7 +33,7 @@ static NhlResource resources[] = {
 
 	{ NhlNwkMetaName, NhlCwkMetaName, NhlTString, sizeof(char*),
 	NhlOffset(NhlNcgmWorkstationLayerRec,ncgm.meta_name),NhlTString,
-		DEFAULT_META_NAME,0,(NhlFreeFunc)NhlFree }
+		NULL,0,(NhlFreeFunc)NhlFree }
 
 /* End-documented-resources */
 
@@ -203,16 +203,31 @@ static NhlErrorTypes NcgmWorkstationInitialize
         int num_args; 
 #endif
 {
-	NhlNcgmWorkstationLayerClass wclass = (NhlNcgmWorkstationLayerClass)class;
-	NhlNcgmWorkstationLayer	wnew = (NhlNcgmWorkstationLayer) new;
-	NhlNcgmWorkstationLayer	wreq = (NhlNcgmWorkstationLayer) req;
-	int default_conid = NCGM_DEFAULT_CONID;
+	char				func[] = "NcgmWorkstationInitialize";
+	int				default_conid = NCGM_DEFAULT_CONID;
+	NhlNcgmWorkstationLayerClass	wclass=
+					(NhlNcgmWorkstationLayerClass)class;
+	NhlNcgmWorkstationLayer		wnew = (NhlNcgmWorkstationLayer)new;
+	NhlNcgmWorkstationLayerPart	*np = &wnew->ncgm;
+	char				*tfname = NULL;
+	NhlErrorTypes			ret = NhlNOERROR;
 
+	if(np->meta_name){
+		tfname = (char*)_NGResolvePath(np->meta_name);
+		if(!tfname){
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
+		"%s:Unable to resolve path name for \"%s\", defaulting %s",
+				func,np->meta_name,NhlNwkMetaName);
+			ret = NhlWARNING;
+		}
+	}
 
+	if(!tfname){
+		tfname = DEFAULT_META_NAME;
+	}
 
-	wnew->ncgm.meta_name =
-			(char*)NhlMalloc(strlen(wreq->ncgm.meta_name) + 1);
-	strcpy(wnew->ncgm.meta_name,wreq->ncgm.meta_name);
+	np->meta_name = (char*)NhlMalloc(strlen(tfname) + 1);
+	strcpy(np->meta_name,tfname);
 
 	while(1){
 		int	opn, ierr;
@@ -226,10 +241,12 @@ static NhlErrorTypes NcgmWorkstationInitialize
 		wnew->work.gkswkstype = NCGM_WORKSTATION_TYPE;
 		wnew->work.gkswksconid = default_conid;
 		*(wclass->ncgm_class.cgm_inited) = _NhlINITED;
-		return(NhlNOERROR);
-	} else if( *(wclass->ncgm_class.cgm_inited) == _NhlINITED) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"NcgmWorkstationInitialize: Only one NCGM workstation is allowed by NCAR Graphics");
-		return(NhlFATAL);
+		return ret;
+	}
+	else{
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			"%s:Only one NCGMWorkstation is allowed",func);
+		return NhlFATAL;
 	} 
 }
 

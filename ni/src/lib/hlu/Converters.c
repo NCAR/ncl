@@ -1,5 +1,5 @@
 /*
- *      $Id: Converters.c,v 1.34 1995-03-29 10:01:41 boote Exp $
+ *      $Id: Converters.c,v 1.35 1995-04-07 09:35:37 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1880,6 +1880,8 @@ CvtArgs
 	NhlGenArray	sgen;
 	NrmValue	val;
 	NhlPointer	data;
+	char		buff[_NhlMAXRESNAMLEN];
+	NrmQuark	newfromQ;
 	NhlErrorTypes	ret = NhlNOERROR;
 
 	if(nargs != 0){
@@ -1915,22 +1917,31 @@ CvtArgs
 	}
 	else
 		memcpy(data,&from->data,from->size);
-	sgen = _NhlConvertCreateGenArray(data,NrmQuarkToString(from->typeQ),
-							from->size,1,NULL);
-
+	strcpy(buff,NrmQuarkToString(from->typeQ));
+	sgen = _NhlConvertCreateGenArray(data,buff,from->size,1,NULL);
 	if(!sgen){
 		NhlPError(NhlFATAL,ENOMEM,"%s:unable to create array",func);
 		return NhlFATAL;
 	}
 
-	if(to->typeQ == genQ){
+	/*
+	 * We need a more specific name for the from GenArray so the
+	 * specific converters can be called.
+	 */
+	strcat(buff,NhlTGenArray);
+	newfromQ = NrmStringToQuark(buff);
+
+	/*
+	 * If they are now equal, then just set.
+	 */
+	if((newfromQ == to->typeQ) || (genQ == to->typeQ)){
 		SetVal(NhlGenArray,sizeof(NhlGenArray),sgen);
 	}
 
 	val.size = sizeof(NhlGenArray);
 	val.data.ptrval = sgen;
 
-	return _NhlReConvertData(genQ,to->typeQ,&val,to);
+	return _NhlReConvertData(newfromQ,to->typeQ,&val,to);
 }
 
 /*

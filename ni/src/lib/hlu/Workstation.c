@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.33 1995-03-29 20:58:39 dbrown Exp $
+ *      $Id: Workstation.c,v 1.34 1995-04-07 09:36:14 boote Exp $
  */
 /************************************************************************
 *									*
@@ -3289,6 +3289,12 @@ void _NhlSetLineInfo
 
 	memset((void *) buffer,'\0', sizeof(buffer)*sizeof(char));
 
+/*
+ * Flush plotif buffer...
+ */
+	c_plotif(0.,0.,2);
+
+
 	c_pcseti("FN",0);
 	c_pcseti("CL",1);
 	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
@@ -3395,6 +3401,16 @@ void _NhlSetLineInfo
 		c_pcseti("CS",wklp->line_label_const_spacing);
 		c_pcseti("FN",wklp->line_label_font);
 		c_pcseti("QU",wklp->line_label_font_quality);
+		/*
+		 * Make sure GKS is using font 1. - Since plotchar uses
+		 * GTX when quality is NhlLOW.
+		 */
+		if(wklp->line_label_font_quality == NhlLOW){
+			Gtext_font_prec	gtfp;
+			gtfp.font = 1;
+			gtfp.prec = GPREC_STROKE;
+			gset_text_font_prec(&gtfp);
+		}
 		fcode[0] = wklp->line_label_func_code;
 		fcode[1] = '\0';
 		c_pcsetc("FC",fcode);
@@ -3729,47 +3745,26 @@ static NhlErrorTypes WorkstationFill
 
 }
 
-NhlErrorTypes CallWorkstationFill
-#if  NhlNeedProto
-(NhlLayerClass lc, NhlLayer instance,  float *x, float *y, int num_points)
-#else
-(lc, instance,  x, y, num_points)
-NhlLayerClass lc;
-NhlLayer instance;
-float *x;
-float *y;
-int num_points;
-#endif
-{
-        NhlWorkstationLayerClass tlc = (NhlWorkstationLayerClass)lc;
-
-        if(tlc->work_class.fill_work == NULL){
-                if(tlc->base_class.superclass != NULL) {
-                        return(CallWorkstationFill(lc->base_class.superclass,
-						   instance,x,y,num_points));
-                } else {
-                        NhlPError(NhlWARNING,NhlEUNKNOWN,"_NhlWorkstationFill: Transformation object of type (%s) does not have fill_work function",
-				  tlc->base_class.class_name);
-                        return(NhlWARNING);
-                }
-        } else {
-                return((*tlc->work_class.fill_work)(instance,x,y,num_points));
-        }
-}
-
 NhlErrorTypes _NhlWorkstationFill
 #if NhlNeedProto
-(NhlLayer instance, float *x, float *y, int num_points)
+(
+	NhlLayer	instance,
+	float		*x,
+	float		*y,
+	int		num_points
+)
 #else
 (instance,x,y,num_points)
-NhlLayer instance;
-float   *x;
-float *y;
-int num_points;
+	NhlLayer	instance;
+	float		*x;
+	float		*y;
+	int		num_points;
 #endif
 {
-        return(CallWorkstationFill(instance->base.layer_class,
-				   instance,x,y,num_points));
+	NhlWorkstationLayerClassPart *wcp =
+	&((NhlWorkstationLayerClass)instance->base.layer_class)->work_class;
+
+	return (*wcp->fill_work)(instance,x,y,num_points);
 }
 
 
@@ -4073,72 +4068,45 @@ void _NHLCALLF(nhl_fsetmarker,NHL_FSETMARKER)
 	return;
 }
 
+static struct{
+	float	xoff;
+	float	yoff;
+	float	size;
+	char	*string;
+} minfo;
+
 /*ARGSUSED*/
 void _NhlSetMarkerInfo
 #if  NhlNeedProto
-(NhlLayer instance,NhlLayer plot)
+(
+	NhlLayer	instance,
+	NhlLayer	plot
+)
 #else
 (instance,plot)
-        NhlLayer instance;
-        NhlLayer plot;
+        NhlLayer	instance;
+        NhlLayer	plot;
 #endif
 {
 	char			func[] = "_NhlSetMarkerInfo";
         NhlWorkstationLayer	tinst = (NhlWorkstationLayer)instance;
 	NhlWorkstationLayerPart	*wk_p = &tinst->work;
 	_NhlMarkerInfo		*mkp = &wk_p->private_markinfo;
-        float			fl,fr,fb,ft,ul,ur,ub,ut;
-        float			x0,x1;
-        int			ll,ix;
-        char			buffer[80];
+	int			index;
+	int			marker_color;
+	float			p_height, p_width;
 
-
-	if (wk_p->marker_lines_on && wk_p->marker_line_dash_pattern < 0) {
-		/* NhlWARNING - but it's a void function right now */
-		NhlPError(NhlWARNING,NhlEUNKNOWN,
-		  "_NhlSetMarkerInfo: invalid marker dash pattern index");
-		wk_p->marker_line_dash_pattern = NhlSOLIDLINE;
-	}
-	else if (wk_p->edges_on && wk_p->marker_line_dash_pattern > 0) {
-		memset((void *) buffer, 0, 80 * sizeof(char));
-
-		c_sflush();
-
-		c_getset(&fl,&fr,&fb,&ft,&ul,&ur,&ub,&ut,&ll);
-		if(_NhlLLErrCheckPrnt(NhlFATAL,func))
-			return;
-
-		x0 = fl;
-		x1 = fl + wk_p->marker_line_dash_seglen;
-		x0 = (float)c_kfpy(x0);
-		x1 = (float)c_kfpy(x1);
-	
-		if ((ix = wk_p->marker_line_dash_pattern) > 
-		    wk_p->dash_table_len) {
-			/* NhlINFO - but it's a void function right now */
-			NhlPError(NhlINFO,NhlEUNKNOWN,
-       "_NhlSetMarkerInfo: using mod function on dash pattern index: %d", ix);
-
-			ix = 1 + (ix - 1) % wk_p->dash_table_len;
-		}
-		wk_p->marker_line_dash_dollar_size = (x1 - x0) /
-			strlen(dash_patterns[ix]) + 0.5;
-		if(wk_p->marker_line_dash_dollar_size < 1)
-                        wk_p->marker_line_dash_dollar_size = 1;
-		
-		strcpy(buffer,dash_patterns[ix]);
-		
-		c_dashdc(buffer,wk_p->marker_line_dash_dollar_size,1);
-		(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
-	}
-
+/*
+ * Flush plotif buffer...
+ */
+	c_plotif(0.,0.,2);
 /*
  * Make sure the marker size is okay
  */
 	if (mkp->marker_size <= 0.0) {
 		/* NhlWARNING - but it's a void function right now */
 		NhlPError(NhlWARNING,NhlEUNKNOWN,
-		"_NhlSetMarkerInfo: marker size must be greater than 0.0");
+			"%s: marker size must be greater than 0.0",func);
 		mkp->marker_size = 0.007;
 	}
 /*
@@ -4146,17 +4114,59 @@ void _NhlSetMarkerInfo
  * level. Error and set to default marker.
  */
 
-	if ((ix = mkp->marker_index) < 0) {
+	if((index = mkp->marker_index) < 0){
 		/* NhlWARNING - but it's a void function right now */
 		NhlPError(NhlWARNING,NhlEUNKNOWN,
-			   "_NhlSetMarkerInfo: invalid marker index");
-		mkp->marker_index = NhlWK_DEF_MARKER;
+				"%s: invalid marker index:%d",func,index);
+		index = NhlWK_DEF_MARKER;
 	}
-	else if (ix >wk_p->marker_table_len) {
-		/* NhlINFO - but it's a void function right now */
-		NhlPError(NhlINFO,NhlEUNKNOWN,
-	 "_NhlSetLineInfo: using mod function on marker index: %d", ix);
+
+	if(index == 0){
+		p_width = 16.0;
+		p_height = 21.0;
+		minfo.size = marker_table[NhlWK_DEF_MARKER]->size_adj *
+					mkp->marker_size;
+		minfo.xoff = minfo.size *
+			(marker_table[NhlWK_DEF_MARKER]->x_off +
+			mkp->marker_x_off);
+		minfo.yoff = minfo.size *
+			(marker_table[NhlWK_DEF_MARKER]->y_off +
+			mkp->marker_y_off);
+		minfo.string = marker_table[NhlWK_DEF_MARKER]->marker;
 	}
+	else if (index > 0) {
+		index = 1 + (index - 1) % wk_p->marker_table_len;
+		if (marker_table[index]->aspect_adj <= 1.0) {
+			p_width = 21.0;
+			p_height = 21.0 * marker_table[index]->aspect_adj;
+		} else {
+			p_width = 21.0 / marker_table[index]->aspect_adj;
+			p_height = 21.0;
+		}
+
+		minfo.size = marker_table[index]->size_adj * mkp->marker_size;
+		minfo.xoff = minfo.size *
+			(marker_table[index]->x_off + mkp->marker_x_off);
+		minfo.yoff = minfo.size *
+			(marker_table[index]->y_off + mkp->marker_y_off);
+		minfo.string = marker_table[index]->marker;
+
+	}
+	c_pcsetr("PH",p_height);
+	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
+	c_pcsetr("PW",p_width);
+	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
+
+	c_pcseti("FN", 1);
+	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
+	gset_linewidth(mkp->marker_thickness);
+	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
+
+	marker_color = _NhlGetGksCi(tinst->base.wkptr, mkp->marker_color);
+	c_pcseti("OC",marker_color);
+	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
+	c_pcseti("CC",marker_color);
+	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 
         return;
 }
@@ -4174,26 +4184,10 @@ static NhlErrorTypes WorkstationMarker
 #endif
 {
 	char			func[] = "WorkstationMarker";
-        NhlWorkstationLayer	inst = (NhlWorkstationLayer)l;
-	NhlWorkstationLayerPart	*wk_p = &inst->work;
-	_NhlMarkerInfo		*mkp = &wk_p->private_markinfo;
         float			fl,fr,fb,ft,ul,ur,ub,ut;
-	int			ll, i, index;
-	int			save_font;
-	Gint			save_linecolor;
-	Gint			save_linetype;
-	Gdouble			save_linewidth;
-	Gint			err_ind;
-	float			marker_size, x_off, y_off;
+	int			ll, i;
 	NhlErrorTypes		ret = NhlNOERROR;
-	char			*string;
-	int			marker_color,line_color;
-	float			p_height, p_width;
 
-/*
- * Flush plotif buffer...
- */
-	c_plotif(0.,0.,2);
 /*
  * Make the user space coincide with the NDC space for the
  * duration of the routine
@@ -4204,172 +4198,45 @@ static NhlErrorTypes WorkstationMarker
 	c_set(fl,fr,fb,ft,fl,fr,fb,ft,1);
 	if(_NhlLLErrCheckPrnt(NhlFATAL,func))
 		return NhlFATAL;
-/*
- * Save attributes that may be modified
- */
-	ginq_line_colr_ind(&err_ind, &save_linecolor);
-	ginq_linewidth(&err_ind, &save_linewidth);
-	ginq_linetype(&err_ind, &save_linetype);
-	c_pcgeti("FN",&save_font);
-	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
-	marker_color = _NhlGetGksCi(inst->base.wkptr, mkp->marker_color);
 
-/*
- * If marker lines are on, draw lines connecting the marker points
- */
-	if (wk_p->marker_lines_on && num_points > 1) {
-		gset_linewidth(wk_p->marker_line_thickness);
-		(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
-		line_color = _NhlGetGksCi(inst->base.wkptr, 
-					  wk_p->marker_line_color);
-		gset_line_colr_ind((Gint) line_color);
-		(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
-		if (wk_p->marker_line_dash_pattern > 0) {
-			c_curved(x,y,num_points);
-			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
-		}
-		else {
-			c_curve(x,y,num_points);
-			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
-		}
+	for (i=0; i<num_points; i++) {
+		/*
+		 * marker size is multiplied by 1.125 to account
+		 * for 'SA' parameter of PlotChar.
+		 */
+		c_plchhq(x[i]+minfo.xoff,y[i]+minfo.yoff,minfo.string,
+			minfo.size*1.125,0.0,0.0);
+		if(_NhlLLErrCheckPrnt(NhlWARNING,func))
+			ret = NhlWARNING;
 	}
-		
-/*
- * Draw the markers; markers that do not define their own font using
- * a function code are drawn using the default font (font #1).
- */
-	c_pcseti("FN", 1);
-	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
-	gset_linewidth(mkp->marker_thickness);
-	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
-	c_pcseti("OC",marker_color);
-	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
-	c_pcseti("CC",marker_color);
-	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
-	if ((index = mkp->marker_index) <= 0) {
-		/* the marker string is used to define the marker */
-		x_off = mkp->marker_size * mkp->marker_x_off;
-		y_off = mkp->marker_size * mkp->marker_y_off;
-		marker_size = marker_table[NhlWK_DEF_MARKER]->size_adj *
-					mkp->marker_size;
-		x_off = marker_size * (marker_table[NhlWK_DEF_MARKER]->x_off + 
-				 mkp->marker_x_off);
-		y_off = marker_size * (marker_table[NhlWK_DEF_MARKER]->y_off +
-				 mkp->marker_y_off);
-		string = marker_table[NhlWK_DEF_MARKER]->marker;
-			
-		for (i=0; i<num_points; i++) {
-			/*
-			 * marker size is multiplied by 1.125 to account
-			 * for 'SA' parameter of PlotChar.
-			 */
-			c_plchhq(x[i]+x_off,y[i]+y_off,string,marker_size*1.125,
-								0.0,0.0);
-			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
-		}
-
-	}
-	else if (index > 0) {
-		index = 1 + (index - 1) % wk_p->marker_table_len;
-		for (i=0; i<num_points; i++) {
-			if (marker_table[index]->aspect_adj <= 1.0) {
-				p_height = 21.0 * 
-					marker_table[index]->aspect_adj;
-				p_width = 21.0;
-			} else {
-				p_width = 21.0 / 
-					marker_table[index]->aspect_adj;
-				p_height = 21.0;
-			}
-			
-			c_pcsetr("PH",p_height);
-			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
-			c_pcsetr("PW",p_width);
-			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
-			marker_size = marker_table[index]->size_adj *
-				mkp->marker_size;
-			x_off = marker_size * 
-				(marker_table[index]->x_off + 
-				 mkp->marker_x_off);
-			y_off = marker_size * 
-				(marker_table[index]->y_off + 
-				 mkp->marker_y_off);
-			/*
-			 * marker size is multiplied by 1.125 to account
-			 * for 'SA' parameter of PlotChar.
-			 */
-			c_plchhq(x[i]+x_off,y[i]+y_off,
-				 marker_table[index]->marker,
-				 marker_size*1.125,0.0,0.0);
-			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
-		}
-	}
-
-/*
- * Restore state
- */
-
-	gset_line_colr_ind(save_linecolor);
-	gset_linewidth(save_linewidth);
-	gset_linetype(save_linetype);
-	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
-	c_pcseti("FN",save_font);
-	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 
 	c_set(fl,fr,fb,ft,ul,ur,ub,ut,ll);
-	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
+	if(_NhlLLErrCheckPrnt(NhlWARNING,func))
+		ret = NhlWARNING;
 
-/*
- * Flush plotif buffer...
- */
-	c_plotif(0.,0.,2);
-
-	return(ret);
-}
-
-NhlErrorTypes CallWorkstationMarker
-#if  NhlNeedProto
-(NhlLayerClass lc, NhlLayer instance,  float *x, float *y, int num_points)
-#else
-(lc, instance,  x, y, num_points)
-NhlLayerClass lc;
-NhlLayer instance;
-float *x;
-float *y;
-int num_points;
-#endif
-{
-        NhlWorkstationLayerClass tlc = (NhlWorkstationLayerClass)lc;
-
-        if(tlc->work_class.marker_work == NULL){
-                if(tlc->base_class.superclass != NULL) {
-                        return(CallWorkstationMarker(
-					      lc->base_class.superclass,
-					      instance,x,y,num_points));
-                } else {
-                        NhlPError(NhlWARNING,NhlEUNKNOWN,"_NhlWorkstationMarker: Transformation object of type (%s) does not have marker_work function",
-				  tlc->base_class.class_name);
-                        return(NhlWARNING);
-                }
-        } else {
-                return((*tlc->work_class.marker_work)(instance,
-						      x,y,num_points));
-        }
+	return ret;
 }
 
 NhlErrorTypes _NhlWorkstationMarker
 #if NhlNeedProto
-(NhlLayer instance, float *x, float *y, int num_points)
+(
+	NhlLayer	instance,
+	float		*x,
+	float		*y,
+	int		num_points
+)
 #else
 (instance,x,y,num_points)
-NhlLayer instance;
-float   *x;
-float *y;
-int num_points;
+	NhlLayer	instance;
+	float		*x;
+	float		*y;
+	int		num_points;
 #endif
 {
-        return(CallWorkstationMarker(instance->base.layer_class,
-				     instance,x,y,num_points));
+	NhlWorkstationLayerClassPart *wcp =
+	&((NhlWorkstationLayerClass)instance->base.layer_class)->work_class;
+
+	return (*wcp->marker_work)(instance,x,y,num_points);
 }
 
 /*

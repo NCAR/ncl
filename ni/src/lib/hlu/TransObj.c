@@ -1,5 +1,5 @@
 /*
- *      $Id: TransObj.c,v 1.11 1995-03-31 13:03:34 boote Exp $
+ *      $Id: TransObj.c,v 1.12 1995-04-07 09:36:08 boote Exp $
  */
 /************************************************************************
 *									*
@@ -20,8 +20,8 @@
  *	Description:	
  */
 
+#include <ncarg/hlu/View.h>
 #include <ncarg/hlu/hluP.h>
-
 #include <ncarg/hlu/TransObjP.h>
 
 static NhlResource resources[] =  {
@@ -36,10 +36,16 @@ static NhlResource resources[] =  {
 
 };
 
+static NhlErrorTypes TransSetTrans(
+#if	NhlNeedProto
+	NhlLayer	tobj,
+	NhlLayer	vobj
+#endif
+);
+
 static NhlErrorTypes TransCopyPoints(
 #if	NhlNeedProto
 	NhlLayer	tl,
-	NhlLayer	tlp,
 	float		*x,
 	float		*y,
 	int		n,
@@ -54,7 +60,6 @@ static NhlErrorTypes TransCopyPoints(
 static NhlErrorTypes TransLineTo(
 #if	NhlNeedProto
 	NhlLayer	tl,
-	NhlLayer	tlp,
 	float		x,
 	float		y,
 	int		upordown
@@ -89,7 +94,7 @@ NhlTransObjLayerClassRec NhltransObjLayerClassRec = {
 /* layer_destroy */    NULL,
 	},
 	{
-/* set_trans */		NULL,
+/* set_trans */		TransSetTrans,
 /* trans_type */	NULL,
 /* win_to_ndc */	TransCopyPoints,
 /* ndc_to_win */	TransCopyPoints,
@@ -144,11 +149,35 @@ TransObjClassPartInit
 }
 
 static NhlErrorTypes
+TransSetTrans
+#if	NhlNeedProto
+(
+	NhlLayer	tobj,
+	NhlLayer	vobj
+)
+#else
+(tobj,vobj)
+	NhlLayer	tobj;
+	NhlLayer	vobj;
+#endif
+{
+	NhlTransObjLayerPart	*tp = &((NhlTransObjLayer)tobj)->trobj;
+
+	tp->wkptr = vobj->base.wkptr;
+
+	return NhlVAGetValues(vobj->base.id,
+			NhlNvpXF,	&tp->x,
+			NhlNvpYF,	&tp->y,
+			NhlNvpWidthF,	&tp->width,
+			NhlNvpHeightF,	&tp->height,
+			NULL);
+}
+
+static NhlErrorTypes
 TransCopyPoints
 #if	NhlNeedProto
 (
 	NhlLayer	tl,
-	NhlLayer	tlp,
 	float		*x,
 	float		*y,
 	int		n,
@@ -159,9 +188,8 @@ TransCopyPoints
 	int		*status
 )
 #else
-(tl,tlp,x,y,n,xout,yout,xmissing,ymissing,status)
+(tl,x,y,n,xout,yout,xmissing,ymissing,status)
 	NhlLayer	tl;
-	NhlLayer	tlp;
 	float		*x;
 	float		*y;
 	int		n;
@@ -185,15 +213,13 @@ TransLineTo
 #if	NhlNeedProto
 (
 	NhlLayer	tl,
-	NhlLayer	tlp,
 	float		x,
 	float		y,
 	int		upordown
 )
 #else
-(tl,tlp,x,y,upordown)
+(tl,x,y,upordown)
 	NhlLayer	tl;
-	NhlLayer	tlp;
 	float		x;
 	float		y;
 	int		upordown;
@@ -207,11 +233,10 @@ TransLineTo
 
 NhlErrorTypes _NhlDataLineTo 
 #if	NhlNeedProto
-(NhlLayer instance, NhlLayer parent, float x, float y, int upordown)
+(NhlLayer instance, float x, float y, int upordown)
 #else
-(instance,parent,x,y,upordown)
+(instance,x,y,upordown)
 NhlLayer instance;
-NhlLayer parent;
 float	x;
 float y;
 int upordown;
@@ -220,16 +245,15 @@ int upordown;
 	NhlTransObjLayerClass tlc = (NhlTransObjLayerClass)
 						instance->base.layer_class;
 
-	return((*tlc->trobj_class.data_lineto)(instance,parent,x,y,upordown));
+	return((*tlc->trobj_class.data_lineto)(instance,x,y,upordown));
 }
 
 NhlErrorTypes _NhlWinLineTo 
 #if	NhlNeedProto
-(NhlLayer instance, NhlLayer parent, float x, float y, int upordown)
+(NhlLayer instance, float x, float y, int upordown)
 #else
-(instance,parent,x,y,upordown)
+(instance,x,y,upordown)
 NhlLayer instance;
-NhlLayer parent;
 float	x;
 float y;
 int upordown;
@@ -238,16 +262,15 @@ int upordown;
 	NhlTransObjLayerClass tlc = (NhlTransObjLayerClass)
 						instance->base.layer_class;
 
-	return((*tlc->trobj_class.win_lineto)(instance,parent,x,y,upordown));
+	return((*tlc->trobj_class.win_lineto)(instance,x,y,upordown));
 }
 
 NhlErrorTypes _NhlCompcLineTo 
 #if	NhlNeedProto
-(NhlLayer instance, NhlLayer parent, float x, float y, int upordown)
+(NhlLayer instance, float x, float y, int upordown)
 #else
-(instance,parent,x,y,upordown)
+(instance,x,y,upordown)
 NhlLayer instance;
-NhlLayer parent;
 float	x;
 float y;
 int upordown;
@@ -256,16 +279,15 @@ int upordown;
 	NhlTransObjLayerClass tlc = (NhlTransObjLayerClass)
 						instance->base.layer_class;
 
-	return((*tlc->trobj_class.compc_lineto)(instance,parent,x,y,upordown));
+	return((*tlc->trobj_class.compc_lineto)(instance,x,y,upordown));
 }
 
 NhlErrorTypes _NhlNDCLineTo 
 #if	NhlNeedProto
-(NhlLayer instance, NhlLayer parent, float x, float y, int upordown)
+(NhlLayer instance, float x, float y, int upordown)
 #else
-(instance,parent,x,y,upordown)
+(instance,x,y,upordown)
 NhlLayer instance;
-NhlLayer parent;
 float	x;
 float y;
 int upordown;
@@ -274,7 +296,7 @@ int upordown;
 	NhlTransObjLayerClass tlc = (NhlTransObjLayerClass)
 						instance->base.layer_class;
 
-	return((*tlc->trobj_class.NDC_lineto)(instance,parent,x,y,upordown));
+	return((*tlc->trobj_class.NDC_lineto)(instance,x,y,upordown));
 }
 
 #define CTOP 010

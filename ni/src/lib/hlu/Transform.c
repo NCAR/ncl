@@ -1,5 +1,5 @@
 /*
- *      $Id: Transform.c,v 1.18 1995-04-01 00:18:57 dbrown Exp $
+ *      $Id: Transform.c,v 1.19 1995-04-07 09:36:12 boote Exp $
  */
 /************************************************************************
 *									*
@@ -280,7 +280,7 @@ static NhlErrorTypes TransformDataToNDC
 	NhlVAGetValues(top->base.id,
 		     NhlNtrOutOfRangeF,out_of_range,NULL);
 
-	subret = _NhlDataToWin(top,plot,x,y,n,xout,yout,
+	subret = _NhlDataToWin(top,x,y,n,xout,yout,
 			       &mystatus,xmissing,ymissing);
 
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
@@ -290,7 +290,7 @@ static NhlErrorTypes TransformDataToNDC
 	}
 	*status = mystatus ? 1 : 0;
 
-	subret = _NhlWinToNDC(top,plot,xout,yout,n,xout,yout,
+	subret = _NhlWinToNDC(top,xout,yout,n,xout,yout,
 			      &mystatus,out_of_range,out_of_range);
 
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
@@ -381,7 +381,7 @@ static NhlErrorTypes TransformNDCToData
 	NhlVAGetValues(top->base.id,
 		     NhlNtrOutOfRangeF,out_of_range,NULL);
 
-	subret = _NhlNDCToWin(top,plot,x,y,n,xout,yout,
+	subret = _NhlNDCToWin(top,x,y,n,xout,yout,
 			      &mystatus,xmissing,ymissing);
 
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
@@ -391,7 +391,7 @@ static NhlErrorTypes TransformNDCToData
 	}
 	*status = mystatus ? 1 : 0;
 
-	subret = _NhlWinToData(top,plot,xout,yout,n,xout,yout,
+	subret = _NhlWinToData(top,xout,yout,n,xout,yout,
 			       &mystatus,out_of_range,out_of_range);
 
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
@@ -491,8 +491,7 @@ static NhlErrorTypes TransformDataPolyline
 
 /* Do a pen up to the first point */
 
-	subret = (tocp->trobj_class.data_lineto) 
-					((NhlLayer)top, plot,*x++,*y++,1);
+	subret = _NhlDataLineTo((NhlLayer)top,*x++,*y++,1);
 
 	if ((ret = MIN(ret,subret)) < NhlWARNING) 
 		return ret;
@@ -500,8 +499,7 @@ static NhlErrorTypes TransformDataPolyline
 /* Pen down for the remaining lines */
 
 	for (i = 1; i < n; i++) { 
-		subret = (tocp->trobj_class.data_lineto) 
-					((NhlLayer)top,plot,*x++,*y++,0);
+		subret = _NhlDataLineTo((NhlLayer)top,*x++,*y++,0);
 
 		if ((ret = MIN(ret,subret)) < NhlWARNING) 
 			return ret;
@@ -608,7 +606,7 @@ static NhlErrorTypes TransformNDCPolyline
 
 /* Do a pen up to the first point */
 
-	subret = (tocp->trobj_class.NDC_lineto) ((NhlLayer)top,plot,*x++,*y++,1);
+	subret = _NhlNDCLineTo((NhlLayer)top,*x++,*y++,1);
 
 	if ((ret = MIN(ret,subret)) < NhlWARNING) 
 		return ret;
@@ -616,8 +614,7 @@ static NhlErrorTypes TransformNDCPolyline
 /* Pen down for the remaining lines */
 
 	for (i = 1; i < n; i++) { 
-		subret = (tocp->trobj_class.NDC_lineto) 
-					 ((NhlLayer)top,plot,*x++,*y++,0);
+		subret = _NhlNDCLineTo((NhlLayer)top,*x++,*y++,0);
 
 		if ((ret = MIN(ret,subret)) < NhlWARNING) 
 			return ret;

@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.c,v 1.31 1995-03-15 11:48:47 boote Exp $
+ *      $Id: TickMark.c,v 1.32 1995-04-07 09:36:04 boote Exp $
  */
 /************************************************************************
 *									*
@@ -5786,7 +5786,7 @@ static NhlErrorTypes TransformLocations
 			tnew->tick.y_l_major_data_locs[i] = tnew->tick.y_l_data_min;
 		}
 	}
-        subret = _NhlDataToWin((NhlLayer)tnew->tick.xb_yl_trans_obj,(NhlLayer)tnew,
+        subret = _NhlDataToWin((NhlLayer)tnew->tick.xb_yl_trans_obj,
                 tnew->tick.x_b_major_data_locs,tnew->tick.y_l_major_data_locs,
                 tmpi,
                 tnew->tick.x_b_major_ndc_locs,tnew->tick.y_l_major_ndc_locs,
@@ -5835,7 +5835,7 @@ static NhlErrorTypes TransformLocations
 		}
 	}
         status = 0;
-        subret = _NhlWinToNDC((NhlLayer)tnew->tick.xb_yl_trans_obj,(NhlLayer)tnew,
+        subret = _NhlWinToNDC((NhlLayer)tnew->tick.xb_yl_trans_obj,
                 tnew->tick.x_b_major_ndc_locs,tnew->tick.y_l_major_ndc_locs,
                 tmpi,
                 tnew->tick.x_b_major_ndc_locs,tnew->tick.y_l_major_ndc_locs,
@@ -5900,7 +5900,7 @@ static NhlErrorTypes TransformLocations
 	} else { 
 		tmpi = 0;
 	}
-        subret = _NhlDataToWin((NhlLayer)tnew->tick.xb_yl_trans_obj,(NhlLayer)tnew,
+        subret = _NhlDataToWin((NhlLayer)tnew->tick.xb_yl_trans_obj,
                 tnew->tick.x_b_minor_data_locs,tnew->tick.y_l_minor_data_locs,
                 tmpi,
                 tnew->tick.x_b_minor_ndc_locs,tnew->tick.y_l_minor_ndc_locs,
@@ -5939,7 +5939,7 @@ static NhlErrorTypes TransformLocations
 		}
 	}
         status= 0;
-        subret = _NhlWinToNDC((NhlLayer)tnew->tick.xb_yl_trans_obj,(NhlLayer)tnew,
+        subret = _NhlWinToNDC((NhlLayer)tnew->tick.xb_yl_trans_obj,
                 tnew->tick.x_b_minor_ndc_locs,tnew->tick.y_l_minor_ndc_locs,
                 tmpi,
                 tnew->tick.x_b_minor_ndc_locs,tnew->tick.y_l_minor_ndc_locs,
@@ -6016,7 +6016,7 @@ static NhlErrorTypes TransformLocations
 			tnew->tick.y_r_major_data_locs[i] = tnew->tick.y_r_data_min;
 		}
 	} 
-        subret = _NhlDataToWin((NhlLayer)tnew->tick.xt_yr_trans_obj,(NhlLayer)tnew,
+        subret = _NhlDataToWin((NhlLayer)tnew->tick.xt_yr_trans_obj,
                 tnew->tick.x_t_major_data_locs,tnew->tick.y_r_major_data_locs,
                 tmpi,
                 tnew->tick.x_t_major_ndc_locs,tnew->tick.y_r_major_ndc_locs,
@@ -6055,7 +6055,7 @@ static NhlErrorTypes TransformLocations
 		}
 	}
         status= 0;
-        subret = _NhlWinToNDC((NhlLayer)tnew->tick.xt_yr_trans_obj,(NhlLayer)tnew,
+        subret = _NhlWinToNDC((NhlLayer)tnew->tick.xt_yr_trans_obj,
                 tnew->tick.x_t_major_ndc_locs,tnew->tick.y_r_major_ndc_locs,
                 tmpi,
                 tnew->tick.x_t_major_ndc_locs,tnew->tick.y_r_major_ndc_locs,
@@ -6117,7 +6117,7 @@ static NhlErrorTypes TransformLocations
 	} else {
 		tmpi = 0;
 	}
-        subret = _NhlDataToWin((NhlLayer)tnew->tick.xt_yr_trans_obj,(NhlLayer)tnew,
+        subret = _NhlDataToWin((NhlLayer)tnew->tick.xt_yr_trans_obj,
                 tnew->tick.x_t_minor_data_locs,tnew->tick.y_r_minor_data_locs,
                 tmpi,
                 tnew->tick.x_t_minor_ndc_locs,tnew->tick.y_r_minor_ndc_locs,
@@ -6156,7 +6156,7 @@ static NhlErrorTypes TransformLocations
 		}
 	}
         status= 0;
-        subret = _NhlWinToNDC((NhlLayer)tnew->tick.xt_yr_trans_obj,(NhlLayer)tnew,
+        subret = _NhlWinToNDC((NhlLayer)tnew->tick.xt_yr_trans_obj,
                 tnew->tick.x_t_minor_ndc_locs,tnew->tick.y_r_minor_ndc_locs,
                 tmpi,
                 tnew->tick.x_t_minor_ndc_locs,tnew->tick.y_r_minor_ndc_locs,

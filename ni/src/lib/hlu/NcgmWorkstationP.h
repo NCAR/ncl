@@ -1,5 +1,5 @@
 /*
- *      $Id: NcgmWorkstationP.h,v 1.3 1994-01-27 21:25:13 boote Exp $
+ *      $Id: NcgmWorkstationP.h,v 1.4 1995-04-07 09:35:57 boote Exp $
  */
 /************************************************************************
 *									*
@@ -25,7 +25,7 @@
 #include <ncarg/hlu/NcgmWorkstation.h>
 
 
-typedef enum { _NhlINITED, _NhlINITEDALMOST, _NhlUNINITED } _NhlNcgmStatus;
+typedef enum { _NhlINITED, _NhlUNINITED } _NhlNcgmStatus;
 
 #define NCGM_DEFAULT_CONID 7
 #define NCGM_WORKSTATION_TYPE 1

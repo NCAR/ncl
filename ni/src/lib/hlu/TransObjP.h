@@ -1,5 +1,5 @@
 /*
- *      $Id: TransObjP.h,v 1.7 1995-02-19 08:18:59 boote Exp $
+ *      $Id: TransObjP.h,v 1.8 1995-04-07 09:36:10 boote Exp $
  */
 /************************************************************************
 *									*
@@ -30,7 +30,6 @@
 typedef NhlErrorTypes (*NhlLineToProc)(
 #if	NhlNeedProto
 NhlLayer   /* instance */,
-NhlLayer   /* parent */,
 float   /* x */,
 float   /* y */,
 int     /* upordown */
@@ -40,7 +39,6 @@ int     /* upordown */
 typedef NhlErrorTypes (*NhlTransformPoint)(
 #if 	NhlNeedProto
 NhlLayer	/* instance */,
-NhlLayer	/* parent */,
 float*  /* x */,
 float*  /* y */,
 int 	/* n */,
@@ -60,7 +58,17 @@ NhlLayer 	/* parent */
 );
 
 typedef struct _NhlTransObjLayerPart {
-	float out_of_range;
+	float		out_of_range;
+
+	/*
+	 * These fields are filled in by the "SetTrans" function, and then
+	 * used by the LineTo and CoordToCoord functions.
+	 */
+	NhlLayer	wkptr;
+	float		x;
+	float		y;
+	float		width;
+	float		height;
 }NhlTransObjLayerPart;
 
 
