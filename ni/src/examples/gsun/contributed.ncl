@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.24 2003-12-08 18:44:17 shea Exp $
+;      $Id: contributed.ncl,v 1.25 2003-12-08 19:12:48 shea Exp $
 ;
 ; -------------- added Feb 14 2002
 ; copy_VarMeta
@@ -5578,7 +5578,7 @@ end
 
 ;*************************************************************************
 ; D. Shea
-; read an ascii file and return the data after the header portion
+; read an ascii file and return the table data after the header portion
 ; opt - option
 ;       if type "integer" then it is the number of rows (line)
 ;       for the header. This is a 'fixed' number of lines.
@@ -5587,11 +5587,11 @@ end
 ;       that terminate a variable number of header rows.
 ;       Currently this just checks character sequences
 ;       starting in col 0. 
-;
-; The 1st three arguments are the same as "asciiread"
+; ncol- number of columns in table
 
-function readAsciiTable( fName:string, dims[*]:integer, datatype:string, opt)
-local head, nh, xs, table
+
+function readAsciiTable( fName:string, ncol:integer, datatype:string, opt)
+local head, nh, xs, nrow, table
 begin
   head = readAsciiHead( fName, opt)
   nh   = dimsizes(head)
@@ -5601,8 +5601,10 @@ begin
 ;      (2) read temporary file back in as 2D 
 ; ********************************************************
   xs   = asciiread(fName, -1, "string") ; all rows as strings
+  nrow = dimsizes(xs)-nh
   asciiwrite ("tempBOGUSfile", xs(nh:))
-  table = asciiread("tempBOGUSfile", dims, datatype)
+  table = asciiread("tempBOGUSfile", (/nrow,ncol/), datatype)
   system("/bin/rm tempBOGUSfile")
   return(table)
 end
+
