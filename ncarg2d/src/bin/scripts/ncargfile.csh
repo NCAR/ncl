@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargfile.csh,v 1.1 1993-05-08 16:42:14 haley Exp $
+#   $Id: ncargfile.csh,v 1.2 1993-12-01 17:02:55 haley Exp $
 #
 
 set file_dir=`ncargpath SED_DBDIR`
@@ -31,6 +31,11 @@ while ($#argv > 0)
         case "-all":
             shift
             set files=($file_list)
+            breaksw
+
+        case "-*":
+            echo "$0 : Unknown option <$1>"
+            exit 1
             breaksw
 
         default:
