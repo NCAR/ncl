@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.96 1999-10-18 22:25:52 dbrown Exp $
+ *      $Id: Workstation.c,v 1.97 2000-03-02 01:30:19 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -4440,6 +4440,7 @@ WorkstationFill
 			c_curve(x,y,num_points);
 			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 		}
+		c_plotif(0.0,0.0,2);
 	}
 
 /*
@@ -5635,10 +5636,8 @@ _NhlSetLineInfo
  * Flush plotif buffer...
  */
 
-	c_sflush();
-#if 0
 	c_plotif(0.0,0.0,2);
-#endif
+
 
 /*
  * Since Ezmap does not currently use dashpack, map data polylines and 
@@ -5875,9 +5874,6 @@ _NhlSetFillInfo
 	else if (wkfp->edges_on && wkfp->edge_dash_pattern > 0) {
 		memset((void *) buffer, (char) 0, 80 * sizeof(char));
 
-#if 0
-		c_sflush();
-#endif
 		c_plotif(0.0,0.0,2);
 
 		c_getset(&fl,&fr,&fb,&ft,&ul,&ur,&ub,&ut,&ll);

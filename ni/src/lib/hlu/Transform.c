@@ -1,5 +1,5 @@
 /*
- *      $Id: Transform.c,v 1.48 2000-02-16 01:43:35 dbrown Exp $
+ *      $Id: Transform.c,v 1.49 2000-03-02 01:30:19 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -936,6 +936,8 @@ static NhlErrorTypes TransformDataPolyline
 		subret = _NhlWorkstationLineTo(tl->base.wkptr,0.0,0.0,1);
 	}
 
+	c_plotif(0.0,0.0,2);
+
 	gset_clip_ind(GIND_NO_CLIP);
 
         subret = _NhlDeactivateWorkstation(tl->base.wkptr);
@@ -1055,7 +1057,9 @@ static NhlErrorTypes TransformNDCPolyline
  * This call ensures a NCAR LASTD call
  */
 	subret = _NhlWorkstationLineTo(tl->base.wkptr,0.0,0.0,1);
+	c_plotif(0.0,0.0,2);
 	gset_clip_ind(GIND_NO_CLIP);
+
 
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: error drawing polyline";
