@@ -51,7 +51,7 @@ begin
   if (NCGM .eq. 1) then
       wid = create "vc09Work" ncgmWorkstationClass defaultapp
         "wkMetaName" : "./vc09n.ncgm"
-        "wkColorMap" : "default"
+        "wkColorMap" : "temp1"
       end create
   else
 ;
@@ -60,7 +60,7 @@ begin
     if (X11 .eq. 1) then
       wid = create "vc09Work" xWorkstationClass defaultapp
             "wkPause" : "True"
-        "wkColorMap" : "default"
+            "wkColorMap" : "temp1"
       end create
     else
 ;
@@ -69,6 +69,7 @@ begin
       if (PS .eq. 1) then
         wid = create "vc09Work" psWorkstationClass defaultapp
           "wkPSFileName" : "vc09n.ps"
+          "wkColorMap" : "temp1"
         end create
       end if
     end if
@@ -147,10 +148,10 @@ sfield2 = create "ScalarField2" scalarFieldClass appid
 ; Create a map object
 ;
   mapid = create "map" mapPlotClass wid 
-    "vpXF"          : 0.03
-        "vpYF"          : 0.9
-    "vpWidthF"      : 0.8
-    "vpHeightF"     : 0.8
+        "vpXF"          : 0.03
+        "vpYF"          : 0.85
+        "vpWidthF"      : 0.8
+        "vpHeightF"     : 0.8
         "vpUseSegments" : "true"
         "mpMinLatF"     : MinLat
         "mpMaxLatF"     : MaxLat
@@ -188,13 +189,29 @@ sfield2 = create "ScalarField2" scalarFieldClass appid
         "lbPerimOn"             : "False"
   end create
 
-  tiid = create "Titles" titleClass wid
-    "vpXF"      : 0.03
-        "vpYF"      : 0.9
-    "vpWidthF"  : 0.8
-    "vpHeightF" : 0.8
-        "tiMainFuncCode" : "~"
-        "tiMainString" : vf->reftime  + " + " + vf->timestep(0)
+  title_id1 = create "Titles" titleClass wid
+      "vpXF"      : 0.03
+      "vpYF"      : 0.85
+      "vpWidthF"  : 0.8
+      "vpHeightF" : 0.8
+      "tiMainFuncCode" : "~"
+      "tiMainString" : vf->reftime  + " + " + vf->timestep(0)
+  end create
+
+  title_id2 = create "Titles" titleClass wid
+      "vpXF"      : 0.03
+      "vpYF"      : 0.9
+      "vpWidthF"  : 0.8
+      "vpHeightF" : 0.8
+      "tiMainFont" : 25
+      "tiMainString" : "January 1996 Snow Storm"
+  end create
+
+  txid1 = create "text" textItemClass wid
+      "txPosXF"      : 0.25
+      "txPosYF"      : 0.08
+      "txFontHeightF"    : 0.015
+      "txString" : "Contours represent pressure field.:C:Vectors represent wind direction:C:colored by temperature."
   end create
 
   overlay(mapid,cnid)
@@ -218,12 +235,15 @@ sfield2 = create "ScalarField2" scalarFieldClass appid
         "sfDataArray" : (tf->t(i,:,:)  - 273.15)*9.0/5.0 +32.0
       end setvalues
 
-          setvalues tiid
+          setvalues title_id1
             "tiMainString" : vf->reftime + " + " + vf->timestep(i)
+            "tiMainFont" : 25
           end setvalues
     
           draw(mapid)
-          draw(tiid)
+          draw(title_id1)
+          draw(title_id2)
+          draw(txid1)
           frame(wid)
 
     end if

@@ -6,59 +6,54 @@
 *mpGridAndLimbOn : False
 *mpProjection : LambertEqualArea
 *mpLimitMode : latlon
+*mpOceanFillColor: 9
+*mpLandFillColor: 2
 
 *vcMinVectorDistanceF : 0.00
 *vcRefLengthF : 0.045
 *vcMinFracLengthF : 0.15
-*vcFilledArrowsOn : False
-*vcFillArrowWidthF : 0.055
-*vcFillArrowMinFracWidthF : 0.3
-*vcFillArrowHeadMinFracXF : 0.2
-*vcFillArrowHeadMinFracYF : 0.35
-*vcVectorLineWidthF : 2.0
+*vcFillArrowsOn : true
+*vcMonoFillArrowFillColor : False
 *vcRefMagnitudeF : 20.0
 *vcMinMagnitudeF : 0.001
 *vcLevelSelectionMode : manuallevels
-*vcVectorColors : (/28,30,26,29,27,1,19/)
-*vcMonoVectorLineColor : true
-*vcMonoVectorFillColor : false
+!*vcLevelColors : (/40,43,46,49,52,55,58,61/)
+*vcLevelColors : (/4,12,20,28,36,44,52,60/)
 *vcVectorFillColor : foreground
 *vcVectorLineColor : background
-*vcVectorLineThicknessF : 2.0
+*vcVectorLineThicknessF : 3.0
 *vcLevelSpacingF : 20.0
 *vcMinLevelValF : -20.0
 *vcMaxLevelValF :  100.0
+
 *vcUseRefAnnoRes : true
-*vcRefAnnoArrowUseVecColor : false
-*vcRefAnnoBackgroundColor : 2
-*vcRefAnnoFontColor : 0
 *vcRefAnnoFont : helvetica-bold
-*vcRefAnnoArrowLineColor : 0
 *vcRefAnnoPerimOn : false
-*vcRefAnnoString2 : Maximum magnitude $MXM$
 *vcRefAnnoString2On : false
 *vcRefAnnoString1 : $VMG$ meters per second
+
+*vcRefAnnoBackgroundColor : 2
+*vcRefAnnoFontColor : 0
+*vcRefAnnoArrowLineColor : 5
+*vcRefAnnoArrowFillColor : 5
+
 *vcMinAnnoString2 : Minimum magnitude
 *vcMinAnnoString2On : false
 *vcMinAnnoString1 : $VMG$ meters per second
 *vcMinAnnoOn : true
 *vcMinAnnoExplicitMagnitudeF : 5.0
 *vcFillOverLine : true
+*vcLineArrowThicknessF:  2.0
 
 *cnFillOn: true
 *cnLinesOn: false
 *cnFillDrawOrder: predraw
-*cnFillColors : (/12,4,10,6,20,9,25,17,15,3,18,21,7 /)
-!*cnFillColors : (/ 2,3,4,5,6,8,10,12,16,20,22,24,26,27 /)
-*cnMinLevelValF : 960.0
-*cnMaxLevelValF : 1100.0
-*cnLevelSpacingF : 15.0
+*cnFillColors : (/4,5,8,11,14,17,20,23,26,29,35,38,41,42/)
+*cnMinLevelValF : 980.0
+*cnMaxLevelValF : 1040.0
+*cnLevelSpacingF : 5.0
 *cnLevelSelectionMode : manuallevels
-*cnInfoLabelParallelPosF : 0.0
-*cnInfoLabelJust : topleft
-*cnInfoLabelBackgroundColor : 2
-*cnInfoLabelFontColor : 0
-*cnInfoLabelFont : helvetica-bold
 *cnLineLabelsOn : false
 *cnHighLabelsOn : false
 *cnLowLabelsOn : false
+*cnInfoLabelOn : false
