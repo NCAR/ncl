@@ -1,15 +1,21 @@
 #
-#	$Id: yMakefile,v 1.2 1992-09-29 17:18:20 ncargd Exp $
+#	$Id: yMakefile,v 1.3 1993-01-15 23:33:22 dbrown Exp $
 #
 NCARG	= ../../../..
 
 MYNAME	= velvct
 
 GENERIC_SRCS = \
-	 velvct.f ezvec.f drwvec.f velvec.f veldat.f
+	 vvectr.f velvct.f ezvec.f vvdraw.f velvec.f vvdata.f \
+	 vvsetc.f vvseti.f vvsetr.f vvgetc.f vvgeti.f vvgetr.f \
+	 vvmpxy.f vvumxy.f vvrset.f vvinit.f vvtext.f vvudmv.f \
+	 mxf.f myf.f
 
 GENERIC_OBJS = \
-	 velvct.o ezvec.o drwvec.o velvec.o veldat.o
+	 vvectr.o velvct.o ezvec.o vvdraw.o velvec.o vvdata.o \
+	 vvsetc.o vvseti.o vvsetr.o vvgetc.o vvgeti.o vvgetr.o \
+	 vvmpxy.o vvumxy.o vvrset.o vvinit.o vvtext.o vvudmv.o \
+	 mxf.o myf.o
 
 SOURCES = $(GENERIC_SRCS)
 
