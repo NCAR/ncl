@@ -1,5 +1,5 @@
 #
-#   $Id: yMakefile,v 1.31 1995-10-17 17:09:55 haley Exp $
+#   $Id: yMakefile,v 1.32 1995-10-17 17:50:55 haley Exp $
 #
 #   Makefile for HLU XYPlot examples
 #
@@ -13,13 +13,13 @@ SYS_LIBS    =   $(CTOFLIBS) -lm
 CSRCS      = xy01c.c xy02c.c xy03c.c xy04c.c xy05c.c xy06c.c xy07c.c \
              xy08c.c xy09c.c xy10c.c xy11c.c xy12c.c xy13c.c xy14c.c xy15c.c
 FSRCS      = xy01f.f xy02f.f xy03f.f xy04f.f xy05f.f xy06f.f xy07f.f \
-			xy08f.f xy09f.f xy10f.f xy11f.f xy14f.f
+			xy08f.f xy09f.f xy10f.f xy11f.f xy14f.f xy15f.f
 NSRCS      = xy01n.ncl xy02n.ncl xy03n.ncl xy04n.ncl xy05n.ncl xy06n.ncl \
              xy07n.ncl xy08n.ncl xy09n.ncl xy10n.ncl xy11n.ncl xy14n.ncl
 COBJS      = xy01c.o xy02c.o xy03c.o xy04c.o xy05c.o xy06c.o xy07c.o \
              xy08c.o xy09c.o xy11c.o xy12c.o xy13c.o xy14c.o xy15c.o
 FOBJS      = xy01f.o xy02f.o xy03f.o xy04f.o xy05f.o xy06f.o xy07f.o \
-             xy08f.o xy09f.o xy10f.o xy11f.o xy14f.o
+             xy08f.o xy09f.o xy10f.o xy11f.o xy14f.o xy15f.o 
 SRCS       = $(CSRCS) $(FSRCS)
 OBJS       = $(COBJS) $(FOBJS)
 INCLUDES   = xy13c.h 
@@ -62,6 +62,7 @@ FExampleTarget(xy09f,xy09f.o)
 FExampleTarget(xy10f,xy10f.o)
 FExampleTarget(xy11f,xy11f.o)
 FExampleTarget(xy14f,xy14f.o)
+FExampleTarget(xy15f,xy15f.o)
 
 CleanFilesTarget($(OBJS))
 CleanFilesTarget($(NCGMS))

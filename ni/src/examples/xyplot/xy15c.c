@@ -1,5 +1,5 @@
 /*
- *      $Id: xy15c.c,v 1.1 1995-06-30 20:45:34 dbrown Exp $
+ *      $Id: xy15c.c,v 1.2 1995-10-17 17:50:54 haley Exp $
  */
 /***********************************************************************
  *                                                                      *
@@ -136,8 +136,6 @@ main()
               rlist);
 /*
  * Create 4 XyPlot objects. 
- * XWorkstation object.  The resources that are being changed are done
- * in the "xy15.res" file.
  */
     NhlRLClear(rlist);
     NhlRLSetInteger(rlist,NhlNxyCoordData,dataid1);
