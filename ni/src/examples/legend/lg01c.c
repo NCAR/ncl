@@ -22,11 +22,13 @@
 #include <ncarg/hlu/App.h>
 #include <ncarg/hlu/Legend.h>
 #include <ncarg/hlu/XWorkstation.h>
+#include <ncarg/hlu/NcgmWorkstation.h>
         
 main()
 {
     int appid, wid, pid;
     int rlist;
+    int NCGM=0;
 
 /*
  * Initialize the high level utility library
@@ -44,13 +46,24 @@ main()
     NhlRLSetString(rlist,NhlNappUsrDir,"./");
     NhlCreate(&appid,"lg01",NhlappLayerClass,NhlDEFAULT_APP,rlist);
 
+    if (NCGM) {
 /*
- * Create an XWorkstation object.
+ * Create a meta file workstation.
  */
-    NhlRLClear(rlist);
-    NhlRLSetInteger(rlist,NhlNwkPause,True);
-    NhlCreate(&wid,"lg01Work",NhlxWorkstationLayerClass,NhlDEFAULT_APP,
-                                    rlist);
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkMetaName,"./lg01c.ncgm");
+        NhlCreate(&wid,"lg01Work",NhlncgmWorkstationLayerClass,NhlDEFAULT_APP,
+                  rlist);
+    }
+    else {
+/*
+ * Create an X Workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetInteger(rlist,NhlNwkPause,True);
+        NhlCreate(&wid,"lg01Work",NhlxWorkstationLayerClass,NhlDEFAULT_APP,
+                  rlist);
+    }
 /*
  * Specify the viewport extent of the object.
  */

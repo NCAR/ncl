@@ -1,5 +1,5 @@
 /*
- *  $Id: lg03c.c,v 1.8 1995-03-01 18:33:52 haley Exp $
+ *  $Id: lg03c.c,v 1.9 1995-03-22 17:29:01 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -25,6 +25,8 @@
 #include <ncarg/hlu/App.h>
 #include <ncarg/hlu/Legend.h>
 #include <ncarg/hlu/XWorkstation.h>
+#include <ncarg/hlu/NcgmWorkstation.h>
+
         
 
 main()
@@ -37,6 +39,7 @@ main()
     int types[5];
     int item_ind[5];
     float lnthik;
+    int NCGM=0;
 
 /*
  * Initialize data values
@@ -70,13 +73,24 @@ main()
     NhlRLSetString(rlist,NhlNappDefaultParent,"True");
     NhlCreate(&appid,"lg03",NhlappLayerClass,NhlDEFAULT_APP,rlist);
 
+    if (NCGM) {
 /*
- * Create an XWorkstation object.
+ * Create a meta file workstation.
  */
-    NhlRLClear(rlist);
-    NhlRLSetInteger(rlist,NhlNwkPause,True);
-    NhlCreate(&wid,"lg03Work",NhlxWorkstationLayerClass,NhlDEFAULT_APP,
-                                    rlist);
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkMetaName,"./lg03c.ncgm");
+        NhlCreate(&wid,"lg03Work",NhlncgmWorkstationLayerClass,NhlDEFAULT_APP,
+                  rlist);
+    }
+    else {
+/*
+ * Create an X Workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetInteger(rlist,NhlNwkPause,True);
+        NhlCreate(&wid,"lg03Work",NhlxWorkstationLayerClass,NhlDEFAULT_APP,
+                  rlist);
+    }
 /*
  * Specify the viewport extent of the object.
  */

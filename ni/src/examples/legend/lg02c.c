@@ -22,7 +22,7 @@
 #include <ncarg/hlu/App.h>
 #include <ncarg/hlu/Legend.h>
 #include <ncarg/hlu/XWorkstation.h>
-        
+#include <ncarg/hlu/NcgmWorkstation.h>        
 
 main()
 {
@@ -32,6 +32,7 @@ main()
     NhlColorIndex colors[5];
     NhlMarkerIndex item_ind[5];
     float mkthik[5];
+    int NCGM=0;
 
 /*
  * Initialize data values
@@ -73,13 +74,24 @@ main()
     NhlRLSetString(rlist,NhlNappUsrDir,"./");
     NhlCreate(&appid,"lg02",NhlappLayerClass,NhlDEFAULT_APP,rlist);
 
+    if (NCGM) {
 /*
- * Create an XWorkstation object.
+ * Create a meta file workstation.
  */
-    NhlRLClear(rlist);
-    NhlRLSetInteger(rlist,NhlNwkPause,True);
-    NhlCreate(&wid,"lg02Work",NhlxWorkstationLayerClass,NhlDEFAULT_APP,
-                                    rlist);
+        NhlRLClear(rlist);
+        NhlRLSetString(rlist,NhlNwkMetaName,"./lg02c.ncgm");
+        NhlCreate(&wid,"lg02Work",NhlncgmWorkstationLayerClass,NhlDEFAULT_APP,
+                  rlist);
+    }
+    else {
+/*
+ * Create an X Workstation.
+ */
+        NhlRLClear(rlist);
+        NhlRLSetInteger(rlist,NhlNwkPause,True);
+        NhlCreate(&wid,"lg02Work",NhlxWorkstationLayerClass,NhlDEFAULT_APP,
+                  rlist);
+    }
 /*
  * Specify the viewport extent of the object.
  */

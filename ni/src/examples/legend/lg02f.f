@@ -19,6 +19,7 @@ C
       external nhlfapplayerclass
       external nhlflegendlayerclass
       external nhlfxworkstationlayerclass
+      external nhlfncgmworkstationlayerclass
         
       integer appid, wid, pid
       integer rlist, ierr
@@ -39,6 +40,12 @@ C
       data mkthik / 2.0, 3.0, 4.0, 5.0, 6.0 /
 
       data item_ind / 2, 3, 4, 5, 6 /
+
+      integer NCGM
+C
+C Default is to display output to an X workstation
+C
+      NCGM=0
 C
 C Initialize the high level utility library
 C
@@ -54,13 +61,23 @@ C
       call nhlfrlsetstring(rlist,'appUsrDir','./',ierr)
       call nhlfcreate(appid,'lg02',nhlfapplayerclass,0,rlist,ierr)
 
+      if (NCGM.eq.1) then
 C
-C Create an XWorkstation object.
+C Create an NCGM workstation.
 C
-      call nhlfrlclear(rlist)
-      call nhlfrlsetinteger(rlist,'wkPause',1,ierr)
-      call nhlfcreate(wid,'lg02Work',nhlfxworkstationlayerclass,0,
-     1      rlist,ierr)
+         call nhlfrlclear(rlist)
+         call nhlfrlsetstring(rlist,'wkMetaName','./lg02f.ncgm',ierr)
+         call nhlfcreate(wid,'lg02Work',
+ 1       nhlfncgmworkstationlayerclass,0,rlist,ierr) 
+      else 
+C
+C Create an X Workstation.
+C
+         call nhlfrlclear(rlist)
+         call nhlfrlsetinteger(rlist,'wkPause',1,ierr)
+         call nhlfcreate(wid,'lg02Work',nhlfxworkstationlayerclass,0,
+     1        rlist,ierr)
+      endif
 C
 C Specify the viewport extent of the object.
 C
