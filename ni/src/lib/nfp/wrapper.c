@@ -85,6 +85,7 @@ extern NhlErrorTypes rhomb_trunc_W(void);
 extern NhlErrorTypes rhomb_trunC_W(void);
 extern NhlErrorTypes tri_trunc_W(void);
 extern NhlErrorTypes tri_trunC_W(void);
+extern NhlErrorTypes pop_remap_W(void);
 
 extern NhlErrorTypes nggcog_W(void);
 
@@ -1203,6 +1204,22 @@ void NclAddUserFuncs(void)
 	SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
 
     NclRegisterProc(tri_trunc_W,args,"tri_trunc",nargs);
+
+/*
+ * Register "pop_remap"
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(5);
+
+    SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"float",2,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+
+    NclRegisterProc(pop_remap_W,args,"pop_remap",nargs);
 
 /*
  *  Register nggcog.

@@ -2037,8 +2037,7 @@ NhlErrorTypes ilapsf_W( void )
 /* 
  * invert the laplacian
  */ 
-  l1     = min(nlat,(nlon+1)/2);
-  /*  lwork  = max(nlat+1,nlat*(2*nt*nlon+max(6*l2,nlon)+2*l3+1));*/
+  l1    = min(nlat,(nlon+2)/2);
   lwork = nlat*(2*nt*nlon+max(6*l2,nlon)+2*nt*l1+1);
   ldwork = nlat+1;
   lshsec = 2*nlat*l2+3*(max(l1-2,0)*(nlat+nlat-l1-1))/2+nlon+15;
@@ -2266,7 +2265,7 @@ NhlErrorTypes ilapsF_W( void )
 /* 
  * invert the laplacian
  */ 
-  l1     = min(nlat,(nlon+1)/2);
+  l1     = min(nlat,(nlon+2)/2);
   /*  lwork  = max(nlat+1,nlat*(2*nt*nlon+max(6*l2,nlon)+2*l3+1)); */
   lwork = nlat*(2*nt*nlon+max(6*l2,nlon)+2*nt*l1+1);
   ldwork = nlat+1;
