@@ -1,5 +1,5 @@
 C
-C $Id: ERROR.f,v 1.3 1994-09-06 21:51:26 boote Exp $
+C $Id: ERROR.f,v 1.4 1994-09-20 19:49:48 haley Exp $
 C
 C****************************************************************
 C								*
@@ -66,7 +66,7 @@ C print a message to the unit number
 C
 
       subroutine nhl_fprnmes(iunit,ermess,ierlen)
-      	external integer i1mach
+      	external i1mach
       	integer iunit,ierlen,ierr
      	character*(*) ermess
 	
