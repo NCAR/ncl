@@ -1,5 +1,5 @@
 ;
-;      $Id: skewt_func.ncl,v 1.3 2003-07-15 14:51:58 shea Exp $
+;      $Id: skewt_func.ncl,v 1.4 2004-04-28 16:28:01 haley Exp $
 ;
 ; -------------------------------------------------
 ; Dennis Shea
@@ -7,6 +7,7 @@
 ;        pres   -   pressure  [mb / hPa]
 ;        temp   -   
 ; ------------------------------------------------
+
 function skewty(pres[*]:float)            ; y-coord given pressure (mb)
   begin                             
    return (132.182-44.061*log10(pres))
