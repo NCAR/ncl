@@ -1,5 +1,5 @@
 C
-C       $Id: strmln.f,v 1.12 1993-12-03 21:18:50 kennison Exp $
+C       $Id: strmln.f,v 1.13 1996-02-07 19:06:28 dbrown Exp $
 C
       SUBROUTINE STRMLN (U,V,WORK,IMAX,IPTSX,JPTSY,NSET,IER)
 C
@@ -256,28 +256,6 @@ C LEN             - maximum vector size in Metacode coords
 C IDM             - integer dummy variable
 C
       DATA IDM / 0 /
-C
-C ---------------------------------------------------------------------
-C
-C Initialization of STR02, STR03 common block members
-C
-      EXT       = 0.25
-      SIDE      = 0.90
-      XLT       = 0.05
-      YBT       = 0.05
-C
-      INITA     = 2
-      INITB     = 2
-      AROWL     = 0.33
-      ITERP     = 35
-      ITERC     = -99
-      IGFLG     = 0
-      ICYC      = 0
-      IMSG      = 0
-      UVMSG     = 1.E+36
-      DISPL     = 0.33
-      DISPC     = 0.67
-      CSTOP     = 0.50
 C
 C Save the values of all parameters that may get changed
 C

@@ -1,5 +1,5 @@
 C
-C       $Id: stdata.f,v 1.8 1993-12-03 21:18:30 kennison Exp $
+C       $Id: stdata.f,v 1.9 1996-02-07 19:06:27 dbrown Exp $
 C
       BLOCK DATA STDATA
 C
@@ -103,6 +103,14 @@ C
      +           P2XPI  = 6.28318530717959,
      +           P1D2PI = 1.57079632679489,
      +           P5D2PI = 7.85398163397448) 
+C
+C ---------------------------------------------------------------------
+C Old STRMLN interface common blocks
+C
+      COMMON /STR02/  EXT , SIDE , XLT , YBT
+C
+      COMMON /STR03/  INITA , INITB , AROWL , ITERP , ITERC , IGFLG
+     +             ,  IMSG , UVMSG , ICYC , DISPL , DISPC , CSTOP
 C
 C ---------------------------------------------------------------------
 C
@@ -520,6 +528,36 @@ C FW2W,FH2H -- fraction of viewport to fraction of viewspace
 C
 C RBIG,IBIG -- maximum expressible real and integer values
 C
+C
+C ---------------------------------------------------------------------
+C
+C STRMLN compatibility common blocks
+C
+C Beginning of STR02 initialization
+C
+      DATA EXT  / 0.25 /
+      DATA SIDE / 0.90  /
+      DATA XLT  / 0.05 /
+      DATA YBT  / 0.05 /
+C
+C End of STR02 initialization
+C
+C Beginning of STR03 initialization
+C
+      DATA INITA  / 2 /
+      DATA INITB  / 2  /
+      DATA AROWL  / 0.33 /
+      DATA ITERP  / 35 /
+      DATA ITERC  / -99 /
+      DATA IGFLG  / 0 /
+      DATA ICYC   / 0 /
+      DATA IMSG   / 0 /
+      DATA UVMSG  / 1.E+36 /
+      DATA DISPL  / 0.33 /
+      DATA DISPC  / 0.67 /
+      DATA CSTOP  / 0.50 /
+C
+C End of STR03 initialization
 C
 C ---------------------------------------------------------------------
 C

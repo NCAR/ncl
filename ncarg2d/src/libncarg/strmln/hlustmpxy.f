@@ -1,4 +1,5 @@
 C
+C       $Id: hlustmpxy.f,v 1.2 1996-02-07 19:06:26 dbrown Exp $
 C
 C These routine stand between Streamline and the user call-back routines
 C in stmpxy.f  When HLUs are not in use, this version of the routine
