@@ -1,13 +1,9 @@
 #
-#	$Id: yMakefile,v 1.6 1994-11-03 18:20:50 haley Exp $
+#	$Id: yMakefile,v 1.7 1994-11-03 18:22:37 haley Exp $
 #
 
-EXAMPLES = c_arex01.c c_arex02.c 
-TUTOR = c_cardb1.c c_cardb2.c c_caredg.c c_carfill.c c_carline.c c_carmap.c
 TESTS = c_tareas.c
 
 InstallTarget($(TESTS),$(INSTALL_LIB),$(TESTSPATH))
-InstallTarget($(TUTOR),$(INSTALL_LIB),$(TUTORIALPATH))
-InstallTarget($(EXAMPLES),$(INSTALL_LIB),$(EXAMPLESPATH))
 
 
