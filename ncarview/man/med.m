@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: med.m,v 1.13 1994-03-07 17:23:04 clyne Exp $
+.\"	$Id: med.m,v 1.14 1994-03-07 17:23:48 clyne Exp $
 .\"
 .\" @(#)med.l 1.0 90/02/15 NCAR; from UCB 4.3 and S5R4
 .tr ##
@@ -462,7 +462,7 @@ Hardcopy:
 NCAR Graphics Fundamentals, UNIX Version
 .SH BUGS 
 .B med
- does not understand filenames that begin with a digit.
+ does not understand filenames that begin with a digit or a period.
 .sp
 .SH CAVEATS 
 The 
