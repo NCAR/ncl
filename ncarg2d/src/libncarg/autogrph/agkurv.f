@@ -1,6 +1,6 @@
 C
-C $Id: agkurv.f,v 1.5 2000-08-22 15:02:14 haley Exp $
-C                                                                      
+C $Id: agkurv.f,v 1.6 2001-06-08 21:21:59 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -81,8 +81,10 @@ C
 C
 C Initialization.  Call SET, if necessary, to define a linear mapping.
 C
-      IF (LTYP.NE.1)
-     +              CALL SET (XLCW,XRCW,YBCW,YTCW,XLLW,XRLW,YBLW,YTLW,1)
+      IF (LTYP.NE.1) THEN
+        CALL SFLUSH
+        CALL SET (XLCW,XRCW,YBCW,YTCW,XLLW,XRLW,YBLW,YTLW,1)
+      END IF
 C
 C Beginning of loop through points.  Update indices and determine the
 C user-space coordinates of the next point.
@@ -137,8 +139,10 @@ C
 C
 C Restore logarithmic mapping, if appropriate.
 C
-      IF (LTYP.NE.1)
-     +           CALL SET (XLCW,XRCW,YBCW,YTCW,XLUW,XRUW,YBUW,YTUW,LTYP)
+      IF (LTYP.NE.1) THEN
+        CALL SFLUSH
+        CALL SET (XLCW,XRCW,YBCW,YTCW,XLUW,XRUW,YBUW,YTUW,LTYP)
+      END IF
 C
 C Make sure buffers are flushed.
 C

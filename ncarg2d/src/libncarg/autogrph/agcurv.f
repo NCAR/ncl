@@ -1,6 +1,6 @@
 C
-C $Id: agcurv.f,v 1.4 2000-08-22 15:02:11 haley Exp $
-C                                                                      
+C $Id: agcurv.f,v 1.5 2001-06-08 21:21:59 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -108,6 +108,7 @@ C
 C
 C Now that the dash pattern is determined, do the SET call.
 C
+      CALL SFLUSH
       CALL SET (XLCW,XRCW,YBCW,YTCW,XLUW,XRUW,YBUW,YTUW,
      +                            1+IABS(IFIX(QLUX))*2+IABS(IFIX(QLUY)))
 C

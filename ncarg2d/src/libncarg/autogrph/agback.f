@@ -1,6 +1,6 @@
 C
-C $Id: agback.f,v 1.5 2000-08-22 15:02:09 haley Exp $
-C                                                                      
+C $Id: agback.f,v 1.6 2001-06-08 21:21:59 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -65,6 +65,7 @@ C equivalent to "CALL SET (XLCW,XRCW,YBCW,YTCW,0.,1.,0.,1.,1)", but
 C makes the viewport cover the whole plotter frame, which avoids the
 C problems resulting from clipping by GKS.
 C
+      CALL SFLUSH
       CALL SET (0.,1.,0.,1.,-XLCW/(XRCW-XLCW),(1.-XLCW)/(XRCW-XLCW),
      +                      -YBCW/(YTCW-YBCW),(1.-YBCW)/(YTCW-YBCW),1)
 C
@@ -146,14 +147,11 @@ C
 C
       GO TO 102
 C
-C Do set call for user and return.
+C Do a "SET" call for the user and return.
 C
-  108 CALL SET (XLCW,XRCW,YBCW,YTCW,XLUW,XRUW,YBUW,YTUW,
+  108 CALL SFLUSH
+      CALL SET (XLCW,XRCW,YBCW,YTCW,XLUW,XRUW,YBUW,YTUW,
      +                            1+IABS(IFIX(QLUX))*2+IABS(IFIX(QLUY)))
-C
-C Make sure buffers are flushed.
-C
-      CALL SFLUSH
 C
       RETURN
 C

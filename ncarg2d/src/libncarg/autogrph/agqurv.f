@@ -1,6 +1,6 @@
 C
-C $Id: agqurv.f,v 1.5 2000-08-22 15:02:16 haley Exp $
-C                                                                      
+C $Id: agqurv.f,v 1.6 2001-06-08 21:22:00 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -85,8 +85,10 @@ C
 C Initialization.  Call SET, if necessary, to define a linear mapping.
 C (This greatly simplifies the windowing code.)
 C
-      IF (LTYP.NE.1)
-     +              CALL SET (XLCW,XRCW,YBCW,YTCW,XLLW,XRLW,YBLW,YTLW,1)
+      IF (LTYP.NE.1) THEN
+        CALL SFLUSH
+        CALL SET (XLCW,XRCW,YBCW,YTCW,XLLW,XRLW,YBLW,YTLW,1)
+      END IF
 C
 C Initialization.  Compute mimimum and maximum values of x which are
 C slightly outside the linear window.  (Note:  XLLW and XRLW will not
@@ -314,8 +316,10 @@ C
 C
 C Restore logarithmic mapping, if appropriate.
 C
-      IF (LTYP.NE.1)
-     +           CALL SET (XLCW,XRCW,YBCW,YTCW,XLUW,XRUW,YBUW,YTUW,LTYP)
+      IF (LTYP.NE.1) THEN
+        CALL SFLUSH
+        CALL SET (XLCW,XRCW,YBCW,YTCW,XLUW,XRUW,YBUW,YTUW,LTYP)
+      END IF
 C
 C Make sure buffers are flushed.
 C
