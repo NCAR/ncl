@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.15 1999-03-23 14:23:06 haley Exp $
+;      $Id: gsn_code.ncl,v 1.16 1999-04-09 16:14:33 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -150,25 +150,60 @@ end
     "lbOrientation"     : orientation
     "lbPerimOn"         : perim_on
     "lbLabelAlignment"  : label_align
+    lower_x  =  36
+    lower_y  = 126
+    upper_x  = 576
+    upper_y  = 666
+    cmap     = "default"
+    orient   = "portrait"
+    resltn   = 1800
+    res_file = "gsnapp"
+    
     if(isatt(name,"res_file"))
       res_file = name@res_file
-    else
-      res_file = "gsnapp"
     end if
 
-    if(isatt(name,"wkColorMap"))
-      ps = create res_file psWorkstationClass defaultapp
-        "wkColorMap"   : name@wkColorMap
-        "wkPSFileName" : name
-        "wkPSFormat"   : type
-      end create
-    else
-      ps = create res_file psWorkstationClass defaultapp
-        "wkPSFileName" : name
-        "wkPSFormat"   : type
-      end create
+    if(isatt(type,"wkPSResolution"))
+      resltn = type@wkPSResolution
     end if
 
+    if(isatt(type,"wkOrientation"))
+      orient = type@wkOrientation
+    end if
+
+    if(isatt(type,"wkDeviceLowerX"))
+      lower_x = type@wkDeviceLowerX
+    end if
+
+    if(isatt(type,"wkDeviceLowerY"))
+      lower_y = type@wkDeviceLowerY
+    end if
+
+    if(isatt(type,"wkDeviceUpperX"))
+      upper_x = type@wkDeviceUpperX
+    end if
+
+    if(isatt(type,"wkDeviceUpperY"))
+      upper_y = type@wkDeviceUpperY
+    end if
+end
+    if(isatt(type,"wkColorMap"))
+      delete(cmap)
+      cmap = type@wkColorMap
+    end if
+
+
+;***********************************************************************;
+; Function : gsn_open_ps                                                ;
+;               name : name of PostScript file                          ;
+;                                                                       ;
+; This function opens a PostScript file called "<name>.ps" and returns  ;
+; the workstation id. If "name" is an empty string, then the PostScript ;
+; file is called "gmeta.ps".                                            ;
+;***********************************************************************;
+function gsn_open_ps(type:string,name[1]:string)
+local ps, res_file
+begin
     res_file = get_res_value_keep(name,"res_file","gsnapp")
     resltn   = get_res_value_keep(type,"wkPSResolution",1800)
     orient   = get_res_value_keep(type,"wkOrientation","portrait")
@@ -230,11 +265,11 @@ begin
       do while(not_found.and.i.ge.0)
         if(name_char(i).eq."/")
           res_dir  = chartostring(name_char(0:i))
-; Check if color map being set.
+          not_found = False
+        end if
         i = i - 1
       end do
 
-      ps_file@wkColorMap   = type@wkColorMap
       res_file = chartostring(name_char(i+1:name_len-1))
 
       if(isatt(name,"appUsrDir").and.not_found)
@@ -253,7 +288,7 @@ begin
 ;
                 wks = gsn_open_ncgm(ncgm_file)
 ; passed automatically through "type".
-                 print("Error: "+ type + " is an illegal workstation type.")
+;
     if(isatt(type,"wkColorMap"))
       ncgm_file@wkColorMap = type@wkColorMap
       x_file@wkColorMap    = type@wkColorMap
@@ -305,7 +340,7 @@ i, j, old_vpx, old_vpy, old_vpwidth, old_vpheight, callframe
       if(isatt(resources,"gsnPanelXWhiteSpacePercent"))
         xwsp_perc = resources@gsnPanelXWhiteSpacePercent
         if(xwsp_perc.lt.0.or.xwsp_perc.ge.100.)
-          print("Warning: attribute gsnPanelXWhiteSpacePercent must be >= 0 and < 100.")
+          print("Warning: gsn_panel: attribute gsnPanelXWhiteSpacePercent must be >= 0 and < 100.")
           print("Defaulting to 1.")
           xwsp_perc = 1.
         end if
@@ -313,7 +348,7 @@ i, j, old_vpx, old_vpy, old_vpwidth, old_vpheight, callframe
       if(isatt(resources,"gsnPanelYWhiteSpacePercent"))
         ywsp_perc = resources@gsnPanelYWhiteSpacePercent
         if(ywsp_perc.lt.0.or.ywsp_perc.ge.100.)
-          print("Warning: attribute gsnPanelYWhiteSpacePercent must be >= 0 and < 100.")
+          print("Warning: gsn_panel: attribute gsnPanelYWhiteSpacePercent must be >= 0 and < 100.")
           print("Defaulting to 1.")
           ywsp_perc = 1.
         end if
@@ -322,7 +357,7 @@ i, j, old_vpx, old_vpy, old_vpwidth, old_vpheight, callframe
       if(isatt(resources,"gsnPanelLeft"))
         x_lft = resources@gsnPanelLeft
         if(x_lft.lt.0..or.x_lft.ge.1.)
-          print("Warning: attribute gsnPanelLeft must be >= 0.0 and < 1.0")
+          print("Warning: gsn_panel: attribute gsnPanelLeft must be >= 0.0 and < 1.0")
           print("Defaulting to 0.")
           x_lft = 0.0
         end if
@@ -331,7 +366,7 @@ i, j, old_vpx, old_vpy, old_vpwidth, old_vpheight, callframe
       if(isatt(resources,"gsnPanelRight"))
         x_rgt = resources@gsnPanelRight
         if(x_rgt.le.0..or.x_rgt.gt.1.)
-          print("Warning: attribute gsnPanelRight must be > 0.0 and <= 1.0")
+          print("Warning: gsn_panel: attribute gsnPanelRight must be > 0.0 and <= 1.0")
           print("Defaulting to 1.")
           x_rgt = 1.0
         end if
@@ -340,7 +375,7 @@ i, j, old_vpx, old_vpy, old_vpwidth, old_vpheight, callframe
       if(isatt(resources,"gsnPanelTop"))
         y_top = resources@gsnPanelTop
         if(y_top.le.0..or.y_top.gt.1.)
-          print("Warning: attribute gsnPanelTop must be > 0.0 and <= 1.0")
+          print("Warning: gsn_panel: attribute gsnPanelTop must be > 0.0 and <= 1.0")
           print("Defaulting to 1.")
           y_top = 1.0
         end if
@@ -349,21 +384,21 @@ i, j, old_vpx, old_vpy, old_vpwidth, old_vpheight, callframe
       if(isatt(resources,"gsnPanelBottom"))
         y_bot = resources@gsnPanelBottom
         if(y_bot.lt.0..or.y_bot.ge.1.)
-          print("Warning: attribute gsnPanelBottom must be >= 0.0 and < 1.0")
+          print("Warning: gsn_panel: attribute gsnPanelBottom must be >= 0.0 and < 1.0")
           print("Defaulting to 0.")
           y_bot = 0.0
         end if
       end if
 
       if(x_rgt.le.x_lft)
-        print("Error: attribute gsnPanelRight ("+x_rgt+") must be greater")
-        print("       than gsnPanelLeft ("+x_lft+").")
+        print("Error: gsn_panel: attribute gsnPanelRight ("+x_rgt+") must be greater")
+        print("than gsnPanelLeft ("+x_lft+").")
         exit
       end if
 
       if(y_top.le.y_bot)
-        print("Error: attribute gsnPanelTop ("+y_top+") must be greater")
-        print("       than gsnPanelBottom ("+y_bot+").")
+        print("Error: gsn_panel: attribute gsnPanelTop ("+y_top+") must be greater")
+        print("than gsnPanelBottom ("+y_bot+").")
         exit
       end if
 begin
@@ -375,7 +410,7 @@ end
     nplots  = dimsizes(plot)      ; Total number of plots.
     npanels = rows*cols           ; Total number of panels.
     if(nplots.gt.npanels)
-      print("Warning: you have more plots than you have panels.")
+      print("Warning: gsn_panel: you have more plots than you have panels.")
       print("Only " + npanels + " plots will be drawn.")
     end if
 
@@ -494,8 +529,8 @@ procedure draw_bb(wks:graphic,plot:graphic)
     if(.not.ismissing(index))
   if((typeof(cmap).eq."float".and.(dimsizes(dim_cmap).ne.2.or.dim_cmap(1).ne.3)).or.\
       rgb_values(i,2) = blue(index)
-    print("Warning: cmap must either be a 2-dimensional float array")
-    print("dimensioned n x 3 or a 1-dimensional string array")
+    print("Warning: gsn_define_colormap: cmap must either be a 2-dimensional float array")
+    print("dimensioned n x 3 or a 1-dimensional string array.")
   return(rgb_values)
 end
 
@@ -536,14 +571,23 @@ begin
 
 ; Function : gsn_contour                                                ;
 local i, attnames, data_object, plot_object, res, sf_res_index, \
-cn_res_index, res2
+datares, cnres, trres, cn_res_index, tr_res_index, calldraw, callframe, \
+force_xaxis_linear, force_yaxis_linear, force_xaxis_log, force_yaxis_log, \
+trxmin, trxmax, trymin, trymax, res2
 ; This function creates and draws a contour plot to the workstation     ;
     calldraw = True
     callframe = True
     scale     = False
     shape     = False
+; "wks" (the variable returned from a previous call to "gsn_open_wks"). ;
+    trres     = False
 ; an optional list of resources. The id of the contour plot is returned.;
 ;                                                                       ;
+    force_xaxis_linear = False
+    force_yaxis_linear = False
+    force_xaxis_log    = False
+    force_yaxis_log    = False
+;   gsnShape                                                            ;
 ;   gsnScale                                                            ;
 ;   gsnSpreadColors                                                     ;
     if(isatt(wks,"name"))
@@ -589,6 +633,7 @@ begin
             end if
             delete(res2@gsnDraw)
         end if
+
         if(isatt(res2,"gsnFrame"))
             if(.not.res2@gsnFrame)
                 callframe = False
@@ -612,6 +657,51 @@ begin
             end if
             delete(res2@gsnShape)
         end if
+
+;
+; Check if a linear or log axis is wanted (this should only be used if
+; irregularly-spaced data is used for the X or Y axis (i.e. if sfXArray
+; or sfYArray are set).
+;
+        if(isatt(res2,"gsnXAxisIrregular2Linear"))
+          if(res2@gsnXAxisIrregular2Linear)
+            force_xaxis_linear = True
+          end if
+          delete(res2@gsnXAxisIrregular2Linear)
+        end if
+
+        if(isatt(res2,"gsnYAxisIrregular2Linear"))
+          if(res2@gsnYAxisIrregular2Linear)
+            force_yaxis_linear = True
+          end if
+          delete(res2@gsnYAxisIrregular2Linear)
+        end if
+
+        if(isatt(res2,"gsnXAxisIrregular2Log"))
+          if(res2@gsnXAxisIrregular2Log)
+            force_xaxis_log = True
+          end if
+          delete(res2@gsnXAxisIrregular2Log)
+        end if
+
+        if(isatt(res2,"gsnYAxisIrregular2Log"))
+          if(res2@gsnYAxisIrregular2Log)
+            force_yaxis_log = True
+          end if
+          delete(res2@gsnYAxisIrregular2Log)
+        end if
+
+        if(force_yaxis_log.and.force_yaxis_linear)
+         print("Error: gsn_contour: you cannot set both gsnYAxisIrregular2Log")
+         print("and gsnYAxisIrregular2Linear to True.")
+         exit
+       end if
+
+        if(force_xaxis_log.and.force_xaxis_linear)
+         print("Error: gsn_contour: you cannot set both gsnXAxisIrregular2Log")
+         print("and gsnXAxisIrregular2Linear to True.")
+         exit
+       end if
 
 ; Check if turning tickmarks off.
 
@@ -646,7 +736,14 @@ begin
                     attnames : res2@$attnames$
                 end setvalues
             end if
-        else
+            if(force_xaxis_linear.or.force_xaxis_log.or. \
+               force_yaxis_linear.or.force_yaxis_log)
+              if(chartostring(res(0:1)).eq."tr")
+                trres = True
+                trres@$attnames$ = res2@$attnames$
+              end if
+            end if
+      else
             cn_res_index = ind(chartostring(res(:,0:1)).ne."sf")
             sf_res_index = ind(chartostring(res(:,0:1)).eq."sf")
             if(.not.all(ismissing(sf_res_index)))
@@ -662,6 +759,16 @@ begin
                     cnres@$attnames(cn_res_index(i))$ = res2@$attnames(cn_res_index(i))$
                 end do
                 attsetvalues(plot_object,cnres)
+            end if
+            if(force_xaxis_linear.or.force_xaxis_log.or. \
+               force_yaxis_linear.or.force_yaxis_log)
+              tr_res_index = ind(chartostring(res(:,0:1)).eq."tr")
+              if(.not.all(ismissing(tr_res_index)))
+                  trres = True
+                  do i = 0,dimsizes(tr_res_index)-1
+                    trres@$attnames(tr_res_index(i))$ = res2@$attnames(tr_res_index(i))$
+                  end do
+              end if
             end if
         end if
     scale     = get_res_value(res2,"gsnScale",shape)
@@ -733,6 +840,38 @@ begin
         end setvalues
       set_attr(cnres2,"cnFillColors",\
                spread_colors(wks,plot_object,min_index,max_index))
+      attsetvalues(plot_object,cnres2)
+    end if
+
+     if(force_xaxis_linear.or.force_xaxis_log.or. \
+        force_yaxis_linear.or.force_yaxis_log)
+
+       overlay_plot_object = plot_object
+       delete(plot_object)
+;
+       getvalues overlay_plot_object
+         "trXMinF"    : trxmin
+         "trXMaxF"    : trxmax
+         "trYMinF"    : trymin
+         "trYMaxF"    : trymax
+       end getvalues
+;
+; If gsnScale was set to True, then make sure the X and Y axis labels
+        "trXLog"  : force_xaxis_log
+        "trYLog"  : force_yaxis_log
+    if(scale)
+      gsnp_scale_plot(plot_object)
+    end if
+
+; Check if we need to force the X or Y axis to be linear or log.
+      if(trres)
+        attsetvalues(plot_object,trres)
+      end if
+
+    if(force_x_linear.or.force_x_log.or.force_y_linear.or.force_y_log)
+      overlay_plot_object = plot_object
+      delete(plot_object)
+
     if(calldraw)
         draw(plot_object)
     end if
@@ -1563,14 +1702,22 @@ local i, plot_object, res2
 
 ;***********************************************************************;
 ; Function : gsn_streamline                                             ;
-local i,attnames,data_object,plot_object,res,vf_res_index,st_res_index, res2
+local i,attnames,data_object,plot_object,res,vf_res_index,st_res_index, \
+force_xaxis_linear, force_yaxis_linear, force_xaxis_log, force_yaxis_log, \
+trxmin, trxmax, trymin, trymax, tr_res_index, trres, res2
 ;               resources: optional resources                           ;
-    calldraw = True
+    calldraw  = True
     callframe = True
     scale     = False
     shape     = False
+    trres     = False
 ; This function creates and draws a streamline plot to the workstation  ;
 ; "wks" (the variable returned from a previous call to "gsn_open_wks"). ;
+    force_xaxis_linear = False
+    force_yaxis_linear = False
+    force_xaxis_log    = False
+    force_yaxis_log    = False
+; Special resources ("gsn" prefix) allowed:                             ;
 ;                                                                       ;
 ;   gsnDraw                                                             ;
     if(isatt(wks,"name"))
@@ -1637,6 +1784,51 @@ begin
             delete(res2@gsnShape)
         end if
 
+;
+; Check if a linear or log axis is wanted (this should only be used if
+; irregularly-spaced data is used for the X or Y axis (i.e. if vfXArray
+; or vfYArray are set).
+;
+        if(isatt(res2,"gsnXAxisIrregular2Linear"))
+          if(res2@gsnXAxisIrregular2Linear)
+            force_xaxis_linear = True
+          end if
+          delete(res2@gsnXAxisIrregular2Linear)
+        end if
+
+        if(isatt(res2,"gsnYAxisIrregular2Linear"))
+          if(res2@gsnYAxisIrregular2Linear)
+            force_yaxis_linear = True
+          end if
+          delete(res2@gsnYAxisIrregular2Linear)
+        end if
+
+        if(isatt(res2,"gsnXAxisIrregular2Log"))
+          if(res2@gsnXAxisIrregular2Log)
+            force_xaxis_log = True
+          end if
+          delete(res2@gsnXAxisIrregular2Log)
+        end if
+
+        if(isatt(res2,"gsnYAxisIrregular2Log"))
+          if(res2@gsnYAxisIrregular2Log)
+            force_yaxis_log = True
+          end if
+          delete(res2@gsnYAxisIrregular2Log)
+        end if
+
+        if(force_yaxis_log.and.force_yaxis_linear)
+         print("Error: gsn_streamline: you cannot set both gsnYAxisIrregular2Log")
+         print("and gsnYAxisIrregular2Linear to True.")
+         exit
+       end if
+
+        if(force_xaxis_log.and.force_xaxis_linear)
+         print("Error: gsn_streamline: you cannot set both gsnXAxisIrregular2Log")
+         print("and gsnXAxisIrregular2Linear to True.")
+         exit
+       end if
+
 ; Check if turning tickmarks off.
 
         if(isatt(res2,"gsnTickMarksOn"))
@@ -1667,6 +1859,13 @@ begin
                     attnames : res2@$attnames$
                 end setvalues
             end if
+            if(force_xaxis_linear.or.force_xaxis_log.or. \
+               force_yaxis_linear.or.force_yaxis_log)
+              if(chartostring(res(0:1)).eq."tr")
+                trres = True
+                trres@$attnames$ = res2@$attnames$
+              end if
+            end if
         else
             vf_res_index = ind(chartostring(res(:,0:1)).eq."vf")
             st_res_index = ind(chartostring(res(:,0:1)).ne."vf")
@@ -1683,6 +1882,16 @@ begin
                     stres@$attnames(st_res_index(i))$ = res2@$attnames(st_res_index(i))$
                 end do
                 attsetvalues(plot_object,stres)
+            end if
+            if(force_xaxis_linear.or.force_xaxis_log.or. \
+               force_yaxis_linear.or.force_yaxis_log)
+              tr_res_index = ind(chartostring(res(:,0:1)).eq."tr")
+              if(.not.all(ismissing(tr_res_index)))
+                  trres = True
+                  do i = 0,dimsizes(tr_res_index)-1
+                    trres@$attnames(tr_res_index(i))$ = res2@$attnames(tr_res_index(i))$
+                  end do
+              end if
             end if
         end if
     plot_object = create wksname + "_stream" streamlinePlotClass wks
@@ -1754,6 +1963,38 @@ begin
         end setvalues
     attsetvalues_check(data_object,vfres)
     attsetvalues_check(plot_object,stres)
+
+    if(force_x_linear.or.force_x_log.or.force_y_linear.or.force_y_log)
+        llres = get_res_eq(res2,(/"tr","vp"/))
+     if(force_xaxis_linear.or.force_xaxis_log.or. \
+        force_yaxis_linear.or.force_yaxis_log)
+; If gsnShape was set to True, then resize the X or Y axis so that
+       overlay_plot_object = plot_object
+       delete(plot_object)
+
+       getvalues overlay_plot_object
+         "trXMinF"    : trxmin
+         "trXMaxF"    : trxmax
+         "trYMinF"    : trymin
+         "trYMaxF"    : trymax
+       end getvalues
+;
+; If gsnScale was set to True, then make sure the X and Y axis labels
+        "trXLog"  : force_xaxis_log
+        "trYLog"  : force_yaxis_log
+    if(scale)
+      gsnp_scale_plot(plot_object)
+    end if
+
+; Check if we need to force the X or Y axis to be linear or log.
+      if(trres)
+        attsetvalues(plot_object,trres)
+      end if
+
+    if(force_x_linear.or.force_x_log.or.force_y_linear.or.force_y_log)
+      overlay_plot_object = plot_object
+      delete(plot_object)
+
     if(calldraw)
         draw(plot_object)
     end if
@@ -2132,14 +2373,22 @@ begin
 
 ;                     u: 2-dimensional U array                          ;
 ;                     v: 2-dimensional V array                          ;
-local i,attnames,data_object,plot_object,res,vf_res_index,vc_res_index, res2
+local i,attnames,data_object,plot_object,res,vf_res_index,vc_res_index, \
+force_xaxis_linear, force_yaxis_linear, force_xaxis_log, force_yaxis_log, \
+trxmin, trxmax, trymin, trymax, tr_res_index, trres, res2
 ; (the variable returned from a previous call to "gsn_open_wks").  "u"  ;
     calldraw = True
     callframe = True
     scale     = False
     shape     = False
+    trres     = False
 ; is an optional list of resources. The id of the vector plot is        ;
 ; returned.                                                             ;
+    force_xaxis_linear = False
+    force_yaxis_linear = False
+    force_xaxis_log    = False
+    force_yaxis_log    = False
+;   gsnFrame                                                            ;
 ;   gsnShape                                                            ;
 ;   gsnScale                                                            ;
     if(isatt(wks,"name"))
@@ -2206,6 +2455,51 @@ begin
             delete(res2@gsnShape)
         end if
 
+;
+; Check if a linear or log axis is wanted (this should only be used if
+; irregularly-spaced data is used for the X or Y axis (i.e. if vfXArray
+; or vfYArray are set).
+;
+        if(isatt(res2,"gsnXAxisIrregular2Linear"))
+          if(res2@gsnXAxisIrregular2Linear)
+            force_xaxis_linear = True
+          end if
+          delete(res2@gsnXAxisIrregular2Linear)
+        end if
+
+        if(isatt(res2,"gsnYAxisIrregular2Linear"))
+          if(res2@gsnYAxisIrregular2Linear)
+            force_yaxis_linear = True
+          end if
+          delete(res2@gsnYAxisIrregular2Linear)
+        end if
+
+        if(isatt(res2,"gsnXAxisIrregular2Log"))
+          if(res2@gsnXAxisIrregular2Log)
+            force_xaxis_log = True
+          end if
+          delete(res2@gsnXAxisIrregular2Log)
+        end if
+
+        if(isatt(res2,"gsnYAxisIrregular2Log"))
+          if(res2@gsnYAxisIrregular2Log)
+            force_yaxis_log = True
+          end if
+          delete(res2@gsnYAxisIrregular2Log)
+        end if
+
+        if(force_yaxis_log.and.force_yaxis_linear)
+         print("Error: gsn_vector: you cannot set both gsnYAxisIrregular2Log")
+         print("and gsnYAxisIrregular2Linear to True.")
+         exit
+       end if
+
+        if(force_xaxis_log.and.force_xaxis_linear)
+         print("Error: gsn_vector: you cannot set both gsnXAxisIrregular2Log")
+         print("and gsnXAxisIrregular2Linear to True.")
+         exit
+       end if
+
 ; Check if turning tickmarks off.
 
         if(isatt(res2,"gsnTickMarksOn"))
@@ -2236,6 +2530,13 @@ begin
                     attnames : res2@$attnames$
                 end setvalues
             end if
+            if(force_xaxis_linear.or.force_xaxis_log.or. \
+               force_yaxis_linear.or.force_yaxis_log)
+              if(chartostring(res(0:1)).eq."tr")
+                trres = True
+                trres@$attnames$ = res2@$attnames$
+              end if
+            end if
         else
             vf_res_index = ind(chartostring(res(:,0:1)).eq."vf")
             vc_res_index = ind(chartostring(res(:,0:1)).ne."vf")
@@ -2252,6 +2553,16 @@ begin
                     vcres@$attnames(vc_res_index(i))$ = res2@$attnames(vc_res_index(i))$
                 end do
                 attsetvalues(plot_object,vcres)
+            end if
+            if(force_xaxis_linear.or.force_xaxis_log.or. \
+               force_yaxis_linear.or.force_yaxis_log)
+              tr_res_index = ind(chartostring(res(:,0:1)).eq."tr")
+              if(.not.all(ismissing(tr_res_index)))
+                  trres = True
+                  do i = 0,dimsizes(tr_res_index)-1
+                    trres@$attnames(tr_res_index(i))$ = res2@$attnames(tr_res_index(i))$
+                  end do
+              end if
             end if
         end if
     end if
@@ -2323,6 +2634,38 @@ begin
         end setvalues
     attsetvalues_check(plot_object,vcres)
     if(sprdcols)
+      vcres2 = True
+      set_attr(vcres2,"vcLevelColors",\
+               spread_colors(wks,plot_object,min_index,max_index))
+     if(force_xaxis_linear.or.force_xaxis_log.or. \
+        force_yaxis_linear.or.force_yaxis_log)
+; If gsnShape was set to True, then resize the X or Y axis so that
+       overlay_plot_object = plot_object
+       delete(plot_object)
+
+       getvalues overlay_plot_object
+         "trXMinF"    : trxmin
+         "trXMaxF"    : trxmax
+         "trYMinF"    : trymin
+         "trYMaxF"    : trymax
+       end getvalues
+;
+; If gsnScale was set to True, then make sure the X and Y axis labels
+        "trXLog"  : force_xaxis_log
+        "trYLog"  : force_yaxis_log
+    if(scale)
+      gsnp_scale_plot(plot_object)
+    end if
+
+; Check if we need to force the X or Y axis to be linear or log.
+      if(trres)
+        attsetvalues(plot_object,trres)
+      end if
+
+    if(force_x_linear.or.force_x_log.or.force_y_linear.or.force_y_log)
+      overlay_plot_object = plot_object
+      delete(plot_object)
+
     if(calldraw)
         draw(plot_object)
     end if
@@ -3028,14 +3371,22 @@ begin
 ;                     v: 2-dimensional V array                          ;
 ;                  data: 2-dimensional scalar field                     ;
 local i, attnames, vfdata_object, sfdata_object, plot_object, res, \
-vf_res_index, vc_res_index, sf_res_index, res2
+force_xaxis_linear, force_yaxis_linear, force_xaxis_log, force_yaxis_log, \
+trxmin, trxmax, trymin, trymax, tr_res_index, trres, vf_res_index, \
+vc_res_index, sf_res_index, res2
 ; and "v" are the 2-dimensional arrays to be vectorized, and "data" is  ;
     calldraw = True
     callframe = True
     scale     = False
     shape     = False
+    trres     = False
 ; optional list of resources. The id of the vector plot is returned.    ;
 ;                                                                       ;
+    force_xaxis_linear = False
+    force_yaxis_linear = False
+    force_xaxis_log    = False
+    force_yaxis_log    = False
+;   gsnShape                                                            ;
 ;   gsnScale                                                            ;
 ;   gsnSpreadColors                                                     ;
     if(isatt(wks,"name"))
@@ -3079,9 +3430,9 @@ begin
 ; Check for a missing value.
 
     if(isatt(data,"_FillValue")) then
-        "vcVectorFieldData" : vfdata_object
-        "vcScalarFieldData" : sfdata_object
-        "vcUseScalarArray"  : True
+        setvalues sfdata_object
+            "sfMissingValueV" :data@_FillValue
+        end setvalues
         "vcMonoLineArrowColor"  : "false"
 
 ; Check for missing values.
@@ -3119,6 +3470,51 @@ begin
             delete(res2@gsnShape)
         end if
 
+;
+; Check if a linear or log axis is wanted (this should only be used if
+; irregularly-spaced data is used for the X or Y axis (i.e. if vfXArray
+; or vfYArray are set).
+;
+        if(isatt(res2,"gsnXAxisIrregular2Linear"))
+          if(res2@gsnXAxisIrregular2Linear)
+            force_xaxis_linear = True
+          end if
+          delete(res2@gsnXAxisIrregular2Linear)
+        end if
+
+        if(isatt(res2,"gsnYAxisIrregular2Linear"))
+          if(res2@gsnYAxisIrregular2Linear)
+            force_yaxis_linear = True
+          end if
+          delete(res2@gsnYAxisIrregular2Linear)
+        end if
+
+        if(isatt(res2,"gsnXAxisIrregular2Log"))
+          if(res2@gsnXAxisIrregular2Log)
+            force_xaxis_log = True
+          end if
+          delete(res2@gsnXAxisIrregular2Log)
+        end if
+
+        if(isatt(res2,"gsnYAxisIrregular2Log"))
+          if(res2@gsnYAxisIrregular2Log)
+            force_yaxis_log = True
+          end if
+          delete(res2@gsnYAxisIrregular2Log)
+        end if
+
+        if(force_yaxis_log.and.force_yaxis_linear)
+         print("Error: gsn_vector_scalar: you cannot set both gsnYAxisIrregular2Log")
+         print("and gsnYAxisIrregular2Linear to True.")
+         exit
+       end if
+
+        if(force_xaxis_log.and.force_xaxis_linear)
+         print("Error: gsn_vector_scalar: you cannot set both gsnXAxisIrregular2Log")
+         print("and gsnXAxisIrregular2Linear to True.")
+         exit
+       end if
+
 ; Check if turning tickmarks off.
 
         if(isatt(res2,"gsnTickMarksOn"))
@@ -3155,6 +3551,13 @@ begin
                     end setvalues
                 end if
             end if
+            if(force_xaxis_linear.or.force_xaxis_log.or. \
+               force_yaxis_linear.or.force_yaxis_log)
+              if(chartostring(res(0:1)).eq."tr")
+                trres = True
+                trres@$attnames$ = res2@$attnames$
+              end if
+            end if
         else
             vf_res_index = ind(chartostring(res(:,0:1)).eq."vf")
             sf_res_index = ind(chartostring(res(:,0:1)).eq."sf")
@@ -3180,6 +3583,16 @@ begin
                     vcres@$attnames(vc_res_index(i))$ = res2@$attnames(vc_res_index(i))$
                 end do
                 attsetvalues(plot_object,vcres)
+            end if
+            if(force_xaxis_linear.or.force_xaxis_log.or. \
+               force_yaxis_linear.or.force_yaxis_log)
+              tr_res_index = ind(chartostring(res(:,0:1)).eq."tr")
+              if(.not.all(ismissing(tr_res_index)))
+                  trres = True
+                  do i = 0,dimsizes(tr_res_index)-1
+                    trres@$attnames(tr_res_index(i))$ = res2@$attnames(tr_res_index(i))$
+                  end do
+              end if
             end if
         end if
     end if
@@ -3249,6 +3662,38 @@ begin
           "tmYLMajorLengthF"     : (ylengthf+xlengthf)/2.
           "tmYLMinorLengthF"     : (ymlengthf+xmlengthf)/2.
         end setvalues
+    attsetvalues_check(plot_object,vcres)
+    if(sprdcols)
+      vcres2 = True
+      set_attr(vcres2,"vcLevelColors",\
+               spread_colors(wks,plot_object,min_index,max_index))
+     if(force_xaxis_linear.or.force_xaxis_log.or. \
+        force_yaxis_linear.or.force_yaxis_log)
+; If gsnShape was set to True, then resize the X or Y axis so that
+       overlay_plot_object = plot_object
+       delete(plot_object)
+
+       getvalues overlay_plot_object
+         "trXMinF"    : trxmin
+         "trXMaxF"    : trxmax
+         "trYMinF"    : trymin
+         "trYMaxF"    : trymax
+       end getvalues
+;
+; If gsnScale was set to True, then make sure the X and Y axis labels
+        "trXLog"  : force_xaxis_log
+        "trYLog"  : force_yaxis_log
+    if(scale)
+      gsnp_scale_plot(plot_object)
+    end if
+
+; Check if we need to force the X or Y axis to be linear or log.
+      if(trres)
+        attsetvalues(plot_object,trres)
+      end if
+
+    if(force_x_linear.or.force_x_log.or.force_y_linear.or.force_y_log)
+      overlay_plot_object = plot_object
       delete(plot_object)
 
     if(calldraw)
