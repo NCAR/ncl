@@ -1,5 +1,5 @@
 C
-C     $Id: xy11f.f,v 1.4 1995-02-22 16:35:48 haley Exp $
+C     $Id: xy11f.f,v 1.5 1995-03-03 20:59:00 haley Exp $
 C
 C****************************************************************
 C                                                               *
@@ -114,7 +114,7 @@ C
       call nhlfrlsetfloat(list,'vpWidthF',0.5,ierr)
       call nhlfrlsetfloat(list,'vpHeightF',0.5,ierr)
 
-      call nhlfrlsetinteger(list,'xyCurveData',idata,ierr)
+      call nhlfrlsetinteger(list,'xyCoordData',idata,ierr)
 
       call nhlfrlsetinteger(list,'tiMainOn',1,ierr)
       call nhlfrlsetinteger(list,'tiXAxisOn',1,ierr)
