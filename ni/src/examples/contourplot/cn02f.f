@@ -1,5 +1,5 @@
 C
-C     $Id: cn02f.f,v 1.4 1995-06-22 21:07:39 haley Exp $
+C     $Id: cn02f.f,v 1.5 1995-06-27 00:47:49 dbrown Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -118,32 +118,20 @@ C
       call NhlFCreate(cnid,'ContourPlot1',nhlfcontourplotclass,
      1      wid,srlist,ierr)
 C
-C Draw the plot.  Notice that it illustrates the basic default behavior
-C of the ContourPlot object. The contours appear as solid lines with 
-C unboxed labels in a linear coordinate system with the origin at the 
-C lower left. Tickmarks with labels show the data coordinate range, and
-C an informational label at the lower right gives the minimum and 
-C maximum data values and the contour interval spacing. The title is 
-C NOT a default item: it appears because it is defined in the 
-C resource file.
-C
-      call NhlFDraw(cnid,ierr)
-      call NhlFFrame(wid,ierr)
-C
-C In the ContourPlot object, you can treat most of resources controlling
-C contour level attributes either individually or collectively depending
-C on the setting of an associated 'mono' flag resource. If the 'mono'
-C flag is true, the resource is treated as a scalar: its first element
-C sets the value of the attribute for all levels. Setting the 'mono'
-C flag false has the effect of applying the resource as an array: each
-C element has different default value.  As an illustration, set
-C NhlNcnMonoLineDashPattern and NhlNcnMonoLineColor false to use a
-C different line dash pattern and line color at each level.
+C In the ContourPlot object, many resources that apply to the lines 
+C representing the contour levels and the fill areas between the levels
+C have both a scalar and an array form. You control which applies by 
+C setting an associated boolean flag, identified by the prefix "Mono".
+C As an illustration, set NhlNcnMonoLineDashPattern and 
+C NhlNcnMonoLineColor false to use a different line dash pattern and 
+C line color at each level.
+C At the same time set the line thickness of all lines to twice the
+C default thickness.
 C
       call NhlFRLClear(srlist)
-      call NhlFRLSetfloat(srlist,'cnLineThicknesses',2.0,ierr)
       call NhlFRLSetstring(srlist,'cnMonoLineDashPattern','FALSE',ierr)
       call NhlFRLSetstring(srlist,'cnMonoLineColor','FALSE',ierr)
+      call NhlFRLSetfloat(srlist,'cnLineThicknessF',2.0,ierr)
       call NhlFSetValues(cnid,srlist,ierr)
       call NhlFDraw(cnid,ierr)
       call NhlFFrame(wid,ierr)
@@ -151,10 +139,9 @@ C
 C Change back to a single solid line color and use pattern fill
 C
       call NhlFRLClear(srlist)
-      call NhlFRLSetfloat(srlist,'cnLineThicknesses',1.0,ierr)
+      call NhlFRLSetfloat(srlist,'cnLineThicknessF',1.0,ierr)
       call NhlFRLSetstring(srlist,'cnMonoLineDashPattern','TRUE',ierr)
       call NhlFRLSetstring(srlist,'cnMonoLineColor','TRUE',ierr)
-      call NhlFRLSetstring(srlist,'cnMonoFillScale','FALSE',ierr)
       call NhlFRLSetstring(srlist,'cnFillOn','TRUE',ierr)
       call NhlFRLSetstring(srlist,'cnMonoFillColor','TRUE',ierr)
       call NhlFRLSetstring(srlist,'cnMonoFillPattern','FALSE',ierr)
@@ -162,12 +149,15 @@ C
       call NhlFDraw(cnid,ierr)
       call NhlFFrame(wid,ierr)
 C
-C Get the fill scale array. Note that the preceding SetValues turned off
-C the 'mono' fill scale flag. There was no effect at that stage because
-C the default fill scale array values are all set identically to 1.0. If
-C you try to get the array while the 'mono' flag is set True, you will
-C only get a single element. The user is responsible for freeing the
-C memory allocated for this array.
+C Get the fill scale array to illustrate how you would modify the
+C values of an array resource. By default all elements of this array
+C are set to 1.0, resulting in each fill pattern appearing at its
+C 'standard' size. Note that the array must be declared with
+C at least as many elements as are retrieved. Since ContourPlot permits
+C at most 255 levels, and none of the associated attribute arrays
+C contain more than the number of levels + 1, you should be always
+C be safe declaring any of these arrays with 256 elements. By default,
+C no more than 16 levels will be used.
 C Modify the array to range from sparse (2.5) at the low data values 
 C to dense (0.5) at high values, and set the new values. 
 C
@@ -182,17 +172,18 @@ C
  30   continue
       call NhlFRLClear(srlist)
       call NhlFRLSetfloatarray(srlist,'cnFillScales',fscales,count,ierr)
+      call NhlFRLSetstring(srlist,'cnMonoFillScale','FALSE',ierr)
       call NhlFSetValues(cnid,srlist,ierr)
       call NhlFDraw(cnid,ierr)
       call NhlFFrame(wid,ierr)
 C
 C Use solid multi-colored fill instead of single-colored pattern fill.
-C Change the contour lines to use the background color (note that
-C although the NhlNcnLineColors resource is an array, here it is set
-C as a scalar).
+C Using the scalar form of the line color resource, change the contour
+C lines to use the background color.
+C Change the contour lines to use the background color.
 C
       call NhlFRLClear(srlist)
-      call NhlFRLSetinteger(srlist,'cnLineColors',NhlBACKGROUND,ierr)
+      call NhlFRLSetinteger(srlist,'cnLineColor',NhlBACKGROUND,ierr)
       call NhlFRLSetstring(srlist,'cnMonoFillColor','FALSE',ierr)
       call NhlFRLSetstring(srlist,'cnMonoFillPattern','TRUE',ierr)
       call NhlFSetValues(cnid,srlist,ierr)
@@ -201,8 +192,7 @@ C
 C
 C Invert the fill colors.
 C First get the current array contents, reverse their order, 
-C then re-set the resource using the modified array. Note that the user 
-C is responsible for freeing the memory allocated for the array. 
+C then re-set the resource using the modified array.
 C Turn lines off altogether and also turn off the line and high/low
 C labels.
 C

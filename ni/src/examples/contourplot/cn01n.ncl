@@ -1,0 +1,128 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;                                                                       ;
+;                Copyright (C)  1993                                    ;
+;        University Corporation for Atmospheric Research                ;
+;                All Rights Reserved                                    ;
+;                                                                       ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;   File:       cn01n.ncl
+;
+;   Author:     David Brown
+;           National Center for Atmospheric Research
+;           PO 3000, Boulder, Colorado
+;
+;           Converted to NCL by Ed Stautler
+;
+;   Date:       Tue Oct  4 18:48:08 MDT 1994
+;
+;   Description:     Given a simple mathematically generated data set,
+;		     demonstrates ContourPlot with all resources (other than
+;		     cnScalarFieldData) set to their default value.
+;
+
+begin
+
+M=25
+N=25
+
+T = new((/N,M/),float)
+len_dims = new((/2/),integer)
+
+;
+; create a simple bull's eye pattern test data set
+;
+PI = 3.14159
+
+do i= -N/2,N/2
+    do j= -M/2,M/2
+        x = 8.0 * i
+        y = 8.0 * j
+        T(i+N/2,j+M/2) = 100.0 - sqrt(x*x + y*y);
+    end do
+end do
+
+;
+; Create an application context. Set the app dir to the current directory
+; so the application looks for a resource file in the working directory.
+; In this example the resource file supplies the plot title only.
+;
+appid = create "cn01" appClass defaultapp
+    "appUsrDir" : "./"
+        "appDefaultParent" : "True"
+end create
+
+;
+; Default is to display output to an X workstation
+;
+NCGM=0
+X11=1
+PS=0
+
+if (NCGM.eq.1) then
+;
+; Create an NCGM workstation.
+;
+  wid = create "cn01Work" ncgmWorkstationClass defaultapp
+    "wkMetaName" : "./cn01n.ncgm"
+  end create
+else
+  if (X11.eq.1) then
+;
+; Create an X workstation.
+;
+    wid = create "cn01Work" xWorkstationClass defaultapp
+      "wkPause" : "True"
+    end create
+  else
+    if (PS .eq. 1) then
+;
+; Create a PS workstation.
+;
+      wid = create "cn01Work" psWorkstationClass defaultapp
+        "wkPSFileName" : "./cn01n.ps"
+      end create
+    end if
+  end if
+end if
+
+;
+; Create a ScalarField data object using the data set defined above.
+; By default the array bounds will define the data boundaries (zero-based,
+; as in C language conventions)
+;
+len_dims(0) = N
+len_dims(1) = M
+
+dataid = create "bullseye" scalarFieldClass appid
+        "sfDataArray" : T
+end create
+
+;
+; Create a ContourPlot object, supplying the ScalarField object as data
+;
+cnid = create "ContourPlot1" contourPlotClass wid
+    "cnScalarFieldData" : dataid
+end create
+
+;
+; Draw a plot illustrating the basic default behavior of
+; the ContourPlot object. The contours appear as solid lines with unboxed
+; labels in a linear coordinate system with the origin at the lower left. 
+; Tickmarks with labels show the data coordinate range, and an 
+; informational label at the lower right gives the minimum and maximum
+; data values and the contour interval spacing.
+;
+
+draw(cnid)
+frame(wid)
+    
+;
+; Destroy the objects created, close the HLU library and exit.
+;
+delete(dataid)
+delete(cnid)
+delete(wid)
+delete(appid)
+
+end

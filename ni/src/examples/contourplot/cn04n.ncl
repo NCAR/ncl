@@ -232,6 +232,10 @@ frame(wid)
 ; Free dynamic arrays, destroy the objects created, 
 ; close the HLU library and exit.
 ;
+delete(lvlflags)
+delete(pats)
+delete(levels)
+delete(thicknesses)
 delete(dataid)
 delete(cnid)
 delete(wid)

@@ -1,5 +1,5 @@
 C
-C     $Id: cn04f.f,v 1.5 1995-06-22 21:07:44 haley Exp $
+C     $Id: cn04f.f,v 1.6 1995-06-27 00:47:53 dbrown Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -125,12 +125,11 @@ C
      1   wid,rlist,ierr)
 C
 C In order to set the contour array resources of interest, you must 
-C allocate memory for the arrays and fill in the correct value for each
-C element. But by calling GetValues for the arrays the ContourPlot 
-C object allocates the space and fills in the current values for you. 
+C fill in the correct value for each element. By calling GetValues 
+C for the arrays the ContourPlot fills in the current values for you. 
 C Then all that is necessary is to modify the values that need 
-C changing. Remember, however, that you are responsible for freeing 
-C the memory after you are done with it. Note that a GetValues resource
+C changing. Note that you must declare the arrays to have a least
+C as many elements as you expect to get. Note that a GetValues resource
 C list is different than a SetValues list.
 C
       call NhlFRLCreate(grlist,'GETRL')

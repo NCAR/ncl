@@ -1,5 +1,5 @@
 C
-C     $Id: cn03f.f,v 1.5 1995-06-22 21:07:42 haley Exp $
+C     $Id: cn03f.f,v 1.6 1995-06-27 00:47:52 dbrown Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -140,7 +140,7 @@ C
       call NhlFRLSetstring(rlist,'tiMainString',
      1      'Profile @ 105:S:o:N:W - Frame 1',ierr)
       call NhlFRLSetinteger(rlist,'cnScalarFieldData',dataid,ierr)
-      call NhlFRLSetfloat(rlist,'vpXF',0.12,ierr)
+      call NhlFRLSetfloat(rlist,'vpXF',0.125,ierr)
       call NhlFRLSetfloat(rlist,'vpYF',0.85,ierr)
       call NhlFRLSetfloat(rlist,'vpWidthF',0.6,ierr)
       call NhlFRLSetfloat(rlist,'vpHeightF',0.6,ierr)

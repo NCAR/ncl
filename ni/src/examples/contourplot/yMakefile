@@ -1,5 +1,5 @@
 #
-#   $Id: yMakefile,v 1.9 1995-06-13 21:11:59 haley Exp $
+#   $Id: yMakefile,v 1.10 1995-06-27 00:47:57 dbrown Exp $
 #
 #   Makefile for HLU ContourPlot examples
 #
@@ -10,17 +10,17 @@ PROG_LIBS   = $(HLULIBS) $(CNCARGLIBS) $(NCARGLIBS)
 EXTRA_LIBS  = $(XMOTIFCLIENTLIBS)
 SYS_LIBS    = $(CTOFLIBS) -lm
 
-CSRCS       = cn01c.c cn02c.c cn03c.c cn04c.c
-FSRCS       = cn01f.f cn02f.f cn03f.f cn04f.f
-NSRCS       = cn02n.ncl cn04n.ncl cn05n.ncl cn06n.ncl cn07n.ncl cn08n.ncl \
-			cn09n.ncl cn10n.ncl
-COBJS       = cn01c.o cn02c.o cn03c.o cn04c.o
-FOBJS       = cn01f.o cn02f.o cn03f.o cn04f.o
+CSRCS       = cn01c.c cn02c.c cn03c.c cn04c.c cn11c.c
+FSRCS       = cn01f.f cn02f.f cn03f.f cn04f.f cn11f.f
+NSRCS       = cn01n.ncl cn02n.ncl cn04n.ncl cn05n.ncl cn06n.ncl \
+		cn07n.ncl cn08n.ncl cn09n.ncl cn10n.ncl
+COBJS       = cn01c.o cn02c.o cn03c.o cn04c.o cn11c.o
+FOBJS       = cn01f.o cn02f.o cn03f.o cn04f.o cn11f.o
 SRCS        = $(CSRCS) $(FSRCS)
 OBJS        = $(COBJS) $(FOBJS)
-INCLUDES    = cn01c.h cn03c.h
-RESFILES    = cn01.res cn02.res cn03.res cn04.res
-ASCDATA     = cn01f.asc cn03f.asc cn04n.asc
+INCLUDES    = cn03c.h cn11c.h
+RESFILES    = cn01.res cn02.res cn03.res cn04.res cn11.res
+ASCDATA     = cn03f.asc cn04n.asc cn11f.asc
 EXFILES     = $(SRCS) $(INCLUDES)
 
 InstallTarget($(EXFILES),$(INSTALL_LIB),$(HLUEXROOT)/$(MYNAME))

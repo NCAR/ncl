@@ -1,5 +1,5 @@
 /*
- *      $Id: cn03c.c,v 1.4 1995-06-22 21:07:41 haley Exp $
+ *      $Id: cn03c.c,v 1.5 1995-06-27 00:47:51 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -140,7 +140,7 @@ main()
     NhlRLSetString(rlist,NhlNtiMainString,
                    "Profile @ 105:S:o:N:W - Frame 1");
     NhlRLSetInteger(rlist,NhlNcnScalarFieldData,dataid);
-    NhlRLSetFloat(rlist,NhlNvpXF,0.12);
+    NhlRLSetFloat(rlist,NhlNvpXF,0.125);
     NhlRLSetFloat(rlist,NhlNvpYF,0.85);
     NhlRLSetFloat(rlist,NhlNvpWidthF,0.6);
     NhlRLSetFloat(rlist,NhlNvpHeightF,0.6);
@@ -231,7 +231,7 @@ main()
  * The LogLinPlot becomes the Base Plot, since it controls the coordinate
  * system that we are mapping to. Overlay the ContourPlot object on the base,
  * then plot the LogLinPlot object. Note that you cannot draw the ContourPlot 
- * object directly, once it becomes an Overlay Plot.
+ * object directly, once it becomes an overlay Plot.
  */
     NhlAddOverlay(llid,cnid,-1);
     NhlDraw(llid);

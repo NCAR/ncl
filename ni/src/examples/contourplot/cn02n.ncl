@@ -104,18 +104,6 @@ cnid = create "ContourPlot1" contourPlotClass wid
 end create
 
 ;
-; Draw the plot, notice that it illustrates the basic default behavior of
-; the ContourPlot object. The contours appear as solid lines with unboxed
-; labels in a linear coordinate system with the origin at the lower left. 
-; Tickmarks with labels show the data coordinate range, and an 
-; informational label at the lower right gives the minimum and maximum
-; data values and the contour interval spacing. The title is NOT a default
-; item, it appears because it is defined in the resource file.
-;
-draw(cnid)
-frame(wid)
-
-;
 ; In the ContourPlot object, many resources that apply to the lines 
 ; representing the contour levels and the fill areas between the levels
 ; have both a scalar and an array form. You control which applies by 
@@ -126,9 +114,9 @@ frame(wid)
 ; default thickness.
 ;
 setvalues cnid
-    "cnLineThicknessF" : 2.0
     "cnMonoLineDashPattern" : "false"
     "cnMonoLineColor" : "false"
+    "cnLineThicknessF" : 2.0
 end setvalues
 
 draw(cnid)
@@ -221,6 +209,8 @@ frame(wid)
 ;
 ; Destroy the objects created, close the HLU library and exit.
 ;
+delete(colors)
+delete(fscales)
 delete(dataid)
 delete(cnid)
 delete(wid)

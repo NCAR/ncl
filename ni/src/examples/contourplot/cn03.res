@@ -10,6 +10,8 @@
 !
 *cn03Work.ContourPlot1*cnInfoLabelZone : 5
 *cn03Work.ContourPlot1*cnInfoLabelOrthogonalPosF : 0.075
+*cn03Work.ContourPlot1*cnInfoLabelJust : centercenter
+*cn03Work.ContourPlot1*cnInfoLabelParallelPosF : 0.5
 *cn03Work.ContourPlot1*cnInfoLabelFont : 25
 *cn03Work.ContourPlot1*cnInfoLabelFontHeightF : .020
 *cn03Work.ContourPlot1*cnInfoLabelFontAspectF : 1.3125
@@ -30,8 +32,8 @@
 !
 *cn03Work.ContourPlot1*pmLegendSide : right
 *cn03Work.ContourPlot1*pmLegendParallelPosF : 0.5
-*cn03Work.ContourPlot1*pmLegendWidthF : 0.2
-*cn03Work.ContourPlot1*pmLegendHeightF : 0.2
+*cn03Work.ContourPlot1*pmLegendWidthF : 0.19
+*cn03Work.ContourPlot1*pmLegendHeightF : 0.4
 *cn03Work.ContourPlot1*lgJustification : centerleft
 *cn03Work.ContourPlot1*lgTitleString : Line Key
 *cn03Work.ContourPlot1*lgLineLabelsOn : False

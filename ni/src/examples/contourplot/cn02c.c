@@ -1,5 +1,5 @@
 /*
- *      $Id: cn02c.c,v 1.5 1995-06-22 21:07:38 haley Exp $
+ *      $Id: cn02c.c,v 1.6 1995-06-27 00:47:48 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -120,18 +120,6 @@ main(int argc, char *argv[])
     NhlRLClear(srlist);
     NhlRLSetInteger(srlist,NhlNcnScalarFieldData,dataid);
     NhlCreate(&cnid,"ContourPlot1",NhlcontourPlotClass,wid,srlist);
-
-/*
- * Draw the plot; notice that it illustrates the basic default behavior of
- * the ContourPlot object. The contours appear as solid lines with unboxed
- * labels in a linear coordinate system with the origin at the lower left. 
- * Tickmarks with labels show the data coordinate range, and an 
- * informational label at the lower right gives the minimum and maximum
- * data values and the contour interval spacing. The title is NOT a default
- * item; it appears because it is defined in the resource file.
- */
-    NhlDraw(cnid);
-    NhlFrame(wid);
 /*
  * In the ContourPlot object, many resources that apply to the lines 
  * representing the contour levels and the fill areas between the levels
@@ -165,7 +153,7 @@ main(int argc, char *argv[])
 /*
  * Get the fill scale array to illustrate how you would modify the
  * values of an array resource. By default all elements of this array
- * are set to 1.0, resulting in all fill patterns appearing at its
+ * are set to 1.0, resulting in each fill pattern appearing at its
  * 'standard' size.
  * The user is responsible for freeing the memory allocated for this array.
  * Modify the array to range from sparse (2.5) at the low data values 
@@ -188,8 +176,8 @@ main(int argc, char *argv[])
     NhlFrame(wid);
 /*
  * Use solid multi-colored fill instead of single-colored pattern fill.
- * Change the contour lines to use the background color using the scalar
- * form of the line color resource.
+ * Using the scalar form of the line color resource, change the contour 
+ * lines to use the background color.
  */
     NhlRLClear(srlist);
     NhlRLSetInteger(srlist,NhlNcnLineColor,NhlBACKGROUND);
