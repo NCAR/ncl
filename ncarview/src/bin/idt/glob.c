@@ -1,5 +1,5 @@
 /*
- *	$Id: glob.c,v 1.3 1991-06-18 14:50:06 clyne Exp $
+ *	$Id: glob.c,v 1.4 1991-07-10 20:30:27 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -65,7 +65,8 @@ glob(s, r_argv, r_argc)
 	char	*cptr;
 	int	nbytes;
 	char	*shell;
-	extern	char	*getenv();
+	char	*t;
+	extern	char	*getenv(), *strrchr();
 
 	*r_argv = NULL;
 	*r_argc = argc = 0;
@@ -82,6 +83,15 @@ glob(s, r_argv, r_argc)
 		if ((shell = getenv ("SHELL")) == NULL) {
 			shell = "/bin/sh";
 		}
+
+		/*
+		 * if using csh then use csh with the fast option, '-f'
+		 */
+        	t = (t = strrchr(shell, '/')) ? ++t : shell;
+		if (!(strcmp(t, "csh"))) {
+			shell = "/bin/csh -f";
+		}
+
 
 		talkto(shell);		/* spawn shell to talk to	*/
 		is_init = 1;
