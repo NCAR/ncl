@@ -1,5 +1,5 @@
 C
-C	$Id: gksbd.f,v 1.7 1994-06-02 21:16:54 fred Exp $
+C	$Id: gksbd.f,v 1.8 1994-06-08 16:19:50 boote Exp $
 C
       BLOCKDATA GKSBD
 C
@@ -384,7 +384,8 @@ C
      +ation identifiers'/
       DATA ERMSGS(114)/' --X driver error: color index exceeds maximum a
      +llowed'/
-      DATA ERMSGS(115)/' --X driver error: cannot allocate color'/
+      DATA ERMSGS(115)/' --X driver error: using different color than re
+     +quested'/
 C
       DATA GNAM(001),GNAM(002),GNAM(003)/'GOPKS' ,'GCLKS' ,'GOPWK' /
       DATA GNAM(004),GNAM(005),GNAM(006)/'GCLWK' ,'GACWK' ,'GDAWK' /
