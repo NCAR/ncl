@@ -1,5 +1,5 @@
 
-;      $Id: xy06n.ncl,v 1.7 1995-07-10 23:19:48 haley Exp $
+;      $Id: xy06n.ncl,v 1.8 1996-10-08 20:32:01 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -191,9 +191,9 @@ do j = 0,NHOURS-1
     print("station " + station_abrev(l))
     if(i .lt. isize) 
       print("loaded hour " + j)
-      temp(l,j) = tdata(i)
-      pressure(l,j) = pdata(i)
-      wind_speed(l,j) = vdata(i)
+      temp(l,j) = (/tdata(i)/)
+      pressure(l,j) = (/pdata(i)/)
+      wind_speed(l,j) = (/vdata(i)/)
     else
       print("missing hour " + j)
       temp(l,j) = spv
