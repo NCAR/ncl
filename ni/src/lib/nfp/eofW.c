@@ -177,16 +177,16 @@ NhlErrorTypes eofcov_W( void )
  */
   if (ier != 0) {
     if (ier == -1) {
-      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcov: cssm contains one or more missing values\n" );
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcov: cssm contains one or more missing values.\n(One or more series contains all missing values.)" );
     }
     else if (ier == -88) {
-      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcov: trace is equal to zero\n" );
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcov: trace is equal to zero.\nAll data entries are missing or are equal to zero." );
     }
     else if (ier < 0) {
-      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcov: The %d-th argument had an illegal value\n", abs(ier) );
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcov: The %d-th argument had an illegal value", abs(ier) );
     }
     else {
-      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcov: %d eigenvectors failed to converge\n",ier);
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcov: %d eigenvectors failed to converge",ier);
     }
   }
 /*
@@ -601,16 +601,16 @@ NhlErrorTypes eofcor_W( void )
  */
   if (ier != 0) {
     if (ier == -1) {
-      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcor: cssm contains one or more missing values\n" );
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcor: cssm contains one or more missing values" );
     }
     else if (ier == -88) {
-      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcor: trace is equal to zero\n" );
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcor: trace is equal to zero" );
     }
     else if (ier < 0) {
-      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcor: The %d-th argument had an illegal value\n", abs(ier) );
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcor: The %d-th argument had an illegal value", abs(ier) );
     }
     else {
-      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcor: %d eigenvectors failed to converge\n",ier);
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcor: %d eigenvectors failed to converge.\nPoorly conditioned correlation matrix.",ier);
     }
   }
 /*
@@ -1063,16 +1063,16 @@ NhlErrorTypes eofcov_pcmsg_W( void )
  */
   if (ier != 0) {
     if (ier == -1) {
-      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcov_pcmsg: cssm contains one or more missing values\n" );
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcov_pcmsg: cssm contains one or more missing values" );
     }
     else if (ier == -88) {
-      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcov_pcmsg: trace is equal to zero\n" );
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcov_pcmsg: trace is equal to zero" );
     }
     else if (ier < 0) {
-      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcov_pcmsg: The %d-th argument had an illegal value\n", abs(ier) );
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcov_pcmsg: The %d-th argument had an illegal value", abs(ier) );
     }
     else {
-      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcov_pcmsg: %d eigenvectors failed to converge\n",ier);
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcov_pcmsg: %d eigenvectors failed to converge",ier);
     }
   }
 /*
@@ -1578,16 +1578,16 @@ NhlErrorTypes eofcor_pcmsg_W( void )
  */
   if (ier != 0) {
     if (ier == -1) {
-      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcor_pcmsg: cssm contains one or more missing values\n" );
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcor_pcmsg: cssm contains one or more missing values.\n(One or more series contains all missing values.)" );
     }
     else if (ier == -88) {
-      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcor_pcmsg: trace is equal to zero\n" );
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcor_pcmsg: trace is equal to zero.\nAll data entries are missing or are equal to zero." );
     }
     else if (ier < 0) {
-      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcor_pcmsg: The %d-th argument had an illegal value\n", abs(ier) );
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcor_pcmsg: The %d-th argument had an illegal value", abs(ier) );
     }
     else {
-      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcor_pcmsg: %d eigenvectors failed to converge\n",ier);
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcor_pcmsg: %d eigenvectors failed to converge.\nPoorly conditioned correlation matrix.",ier);
     }
   }
 /*
@@ -2038,16 +2038,16 @@ NhlErrorTypes eofcov_ts_W( void )
  */
   if (ier != 0) {
     if (ier == -1) { 
-       NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcov_ts: cssm contains one or more missing values\n" );
+       NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcov_ts: cssm contains one or more missing values" );
     }
     else if (ier == -88) {
-      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcov_ts: trace is equal to zero\n" );
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcov_ts: trace is equal to zero" );
     }
     else if (ier < 0) {
-      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcov_ts: The %d-th argument had an illegal value\n", abs(ier) );
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcov_ts: The %d-th argument had an illegal value", abs(ier) );
     }
     else {
-      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcov_ts: %d eigenvectors failed to converge\n",ier);
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcov_ts: %d eigenvectors failed to converge",ier);
     }
   }
 /*
@@ -2331,16 +2331,16 @@ NhlErrorTypes eofcor_ts_W( void )
  */
   if (ier != 0) {
     if (ier == -1) {
-      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcor_ts: cssm contains one or more missing values\n" );
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcor_ts: cssm contains one or more missing values" );
     }
     else if (ier == -88) {
-      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcor_ts: trace is equal to zero\n" );
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcor_ts: trace is equal to zero" );
     }
     else if (ier < 0) {
-      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcor_ts: The %d-th argument had an illegal value\n", abs(ier) );
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcor_ts: The %d-th argument had an illegal value", abs(ier) );
     }
     else {
-      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcor_ts: %d eigenvectors failed to converge\n",ier);
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcor_ts: %d eigenvectors failed to converge",ier);
     }
   }
 /*
@@ -2632,16 +2632,16 @@ NhlErrorTypes eofcov_ts_pcmsg_W( void )
  */
   if (ier != 0) {
     if (ier == -1) {
-      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcov_ts_pcmsg: cssm contains one or more missing values\n" );
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcov_ts_pcmsg: cssm contains one or more missing values" );
     }
     else if (ier == -88) {
-      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcov_ts_pcmsg: trace is equal to zero\n" );
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcov_ts_pcmsg: trace is equal to zero" );
     }
     else if (ier < 0) {
-      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcov_ts_pcmsg: The %d-th argument had an illegal value\n", abs(ier) );
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcov_ts_pcmsg: The %d-th argument had an illegal value", abs(ier) );
     }
     else {
-      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcov_ts_pcmsg: %d eigenvectors failed to converge\n",ier);
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcov_ts_pcmsg: %d eigenvectors failed to converge",ier);
     }
   }
 /*
@@ -2831,16 +2831,16 @@ NhlErrorTypes eofcor_ts_pcmsg_W( void )
  */
   if (ier != 0) {
     if (ier == -1) {
-      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcor_ts_pcmsg: cssm contains one or more missing values\n" );
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcor_ts_pcmsg: cssm contains one or more missing values" );
     }
     else if (ier == -88) {
-      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcor_ts_pcmsg: trace is equal to zero\n" );
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcor_ts_pcmsg: trace is equal to zero" );
     }
     else if (ier < 0) {
-      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcor_ts_pcmsg: The %d-th argument had an illegal value\n", abs(ier) );
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcor_ts_pcmsg: The %d-th argument had an illegal value", abs(ier) );
     }
     else {
-      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcor_ts_pcmsg: %d eigenvectors failed to converge\n",ier);
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcor_ts_pcmsg: %d eigenvectors failed to converge",ier);
     }
   }
 /*
