@@ -1,0 +1,29 @@
+#
+#	$Id: yMakefile,v 1.1 1993-02-11 17:45:32 haley Exp $
+#
+
+MYNAME	= ncargworld
+
+SRCS    = ncargworld.f
+OBJS    = ncargworld.o
+
+ROBJS = $(ROBJPATH)/ggkwdr_stub.o
+
+OBJECTS	= $(OBJS) $(ROBJS)
+
+#if defined(ardent) || (defined(u370) && defined(unix))
+OTHER_LIBS =	$(LIBPATH)/libncarbd.o
+#endif
+
+COMMON_LIBS =	$(LIBPATH)/libncarg.a \
+		$(LIBPATH)/libncarg_gks.a \
+		$(LIBPATH)/libncarg_c.a \
+		$(LIBPATH)/libncarg_loc.a -lm
+
+LIBS = $(OTHER_LIBS) $(COMMON_LIBS)
+
+all:: $(MYNAME)
+
+FortranProgramLeaf($(MYNAME),$(OBJECTS),$(LIBS))
+CleanTarget
+
