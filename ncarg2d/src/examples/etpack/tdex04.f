@@ -1,6 +1,4 @@
-C
-C $Id: tdex04.f,v 1.1 2000-02-16 23:40:17 kennison Exp $
-C
+
       PROGRAM XMPL04
 C
 C This is a modified version of the TDPACK example "tdex01".  The two
@@ -57,7 +55,9 @@ C ISTE is a flag that says whether to do a simple image (ISTE=0),
 C a one-frame stereo image (ISTE=-1), or a two-frame stereo image
 C (ISTE=+1).
 C
-	DATA ISTE / -1 /
+        DATA ISTE / -1 /
+C       DATA ISTE /  0 /
+C       DATA ISTE / +1 /
 C
 C ASTE is the desired angle (in degrees) between the lines of sight for
 C a pair of stereo views.
