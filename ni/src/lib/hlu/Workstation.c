@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.37 1995-04-27 22:34:17 boote Exp $
+ *      $Id: Workstation.c,v 1.38 1995-04-28 00:14:35 boote Exp $
  */
 /************************************************************************
 *									*
@@ -661,7 +661,7 @@ WorkstationClassInitialize
 		_NhlCvtGenArrayToIndexGenArray,fillargs,NhlNumber(fillargs),
 		False,NULL);
 
-	(void)_NhlInitPallets();
+	(void)_NhlInitPalettes();
 
 	intQ = NrmStringToQuark(NhlTInteger);
 	intgenQ = NrmStringToQuark(NhlTIntegerGenArray);
