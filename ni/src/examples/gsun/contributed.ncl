@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.22 2003-11-01 00:06:13 shea Exp $
+;      $Id: contributed.ncl,v 1.23 2003-11-01 00:20:43 shea Exp $
 ;
 ; -------------- added Feb 14 2002
 ; copy_VarMeta
@@ -5440,7 +5440,8 @@ end
 undef("partitionString")
 function partitionString(s:string , fs:string)
 ; D Shea
-; subset a string into part depending upon a strting separator
+; Subset a string into parts depending upon a string separator [fs].
+; The fs argument can be only one character.
 ;
 ;    code = "apple:orange:cider:peach"     ; 4 components
 ;    a    = partitionString(code, ":")
@@ -5451,6 +5452,12 @@ local cs, cfs, i, nStr, str, n, iStrt, iLast
 begin
   cs  = stringtochar(s)     ; string to individual characters   
   cfs = stringtochar(fs)    ; string separator as character
+  if (dimsizes(cfs).ne.2) then
+      print ("*****")
+      print ("partitionString: fs can contain only one character, fs="+fs)
+      print ("*****")
+      return(s)
+  end if
  
   i   = ind(cs .eq. cfs(0)) ; indices where fs occurs
   
@@ -5472,4 +5479,3 @@ begin
 
   return(str)
 end
-
