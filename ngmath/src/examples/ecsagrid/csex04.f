@@ -1,0 +1,98 @@
+C
+C       $Id: csex04.f,v 1.1 1998-12-10 00:09:10 fred Exp $
+C
+      PROGRAM CSEX04
+C
+C  Do a 2D approximation and find mixed second partial derivatives.
+C
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1, IWKID=1)
+      PARAMETER (NDIM=2, NDATA=1000, NX=29, NY=25,
+     +           N1=4, N2=4,NCF=N1*N2, NWRK=NCF*(NCF+3))
+      DIMENSION XDATA(NDIM,NDATA),YDATA(NDATA),KNOTS(NDIM),WORK(NWRK),
+     +          NDERIV(2)
+      DATA XMIN,YMIN,XMAX,YMAX / -1.0, -1.0, 1.0, 1.0/
+      DATA NDERIV(1),NDERIV(2) / 0, 0/
+      REAL XO(NX), YO(NY), FUNC(NX,NY),FUNCD(NX,NY)
+C
+C  Generate input data using the functiuon f(x,y) = y**2 - 0.5*y*x**2
+C
+      INDX = NDATA
+      DO 10 I=1,INDX
+        XDATA(1,I) = XMIN+(XMAX-XMIN)*DSRND1()
+        XDATA(2,I) = YMIN+(YMAX-YMIN)*DSRND1()
+        XX = XDATA(1,I)
+        YY = XDATA(2,I)
+        YDATA(I) = YY*YY - 0.5*YY*XX*XX
+   10 CONTINUE
+C
+C  Create the output grid.
+C
+      DO 102 I=1,NX
+        XO(I) = XMIN+(REAL(I-1)/REAL(NX-1))*(XMAX-XMIN)
+  102 CONTINUE
+      DO 103 J =1,NY
+        YO(J)= YMIN+(REAL(J-1)/REAL(NY-1))*(YMAX-YMIN)
+  103 CONTINUE
+C
+C  Specify the numbers of knots in each coordinate direction.
+C
+      KNOTS(1) = N1
+      KNOTS(2) = N2
+C
+C  Calculate the approximated functuion values.
+C
+      CALL CSA2S (INDX,XDATA,YDATA,KNOTS,NX,NY,XO,YO,FUNC,NWRK,WORK,IER)
+C
+C  Calculate the second order mixed partial.
+C
+      NDERIV(1) = 1
+      NDERIV(2) = 1
+      CALL CSA2XS (INDX,XDATA,YDATA,-1.,KNOTS,0.,NDERIV,NX,NY,
+     +                  XO,YO,FUNCD,NWRK,WORK,IER)
+C
+C  Plot a surfaces.
+C
+C  Open GKS and define the foreground and background color.
+C
+      CALL GOPKS (IERRF, ISZDM)
+      CALL GOPWK (IWKID, LUNIT, IWTYPE)
+      CALL GACWK (IWKID)
+C
+C  Approximated function.
+C
+      CALL TDEZ2D(NX, NY, XO, YO, FUNC, 2.7, 45., 78., 6)
+      CALL SET(0.,1.,0.,1.,0.,1.,0.,1.,1)
+      CALL PLCHHQ(0.5,0.85,
+     +   ':F25:z = f(x,y) = y:S:2:E:  - -:H-10::S:1:E::B::V-6:2:E:  x:S:
+     +2:E:',0.04,0.,0.)
+      CALL FRAME()
+C
+C  Mixed partial.
+C
+      CALL TDEZ2D(NX, NY, XO, YO, FUNCD, 2.7, 45., 78., 6)
+      CALL SET(0.,1.,0.,1.,0.,1.,0.,1.,1)
+      CALL PLCHHQ(0.5,0.88,
+     + ':F25:z =  :F34::S::H8:6:F25::S:2:E::E::F34:>:B::F34::H-35::V-6:6
+     +:F25:x:F34:6:F25:y:E:  f(x,y) = - x',0.04,0.,0.)
+      CALL FRAME()
+C
+C Close GKS.
+C
+      CALL GDAWK (IWKID)
+      CALL GCLWK (IWKID)
+      CALL GCLKS
+C
+      STOP
+      END
+      REAL FUNCTION DSRND1()
+C
+      DATA ISEED/1/
+      SAVE ISEED
+C
+      ISEED = ISEED*1103515245 + 12345
+      IT = IAND(ISHIFT(ISEED,-16),32767)
+C
+      DSRND1 = REAL(IT)/32767.
+C
+      RETURN
+      END

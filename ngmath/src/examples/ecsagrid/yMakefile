@@ -1,0 +1,41 @@
+#
+#	$Id: yMakefile,v 1.1 1998-12-10 00:09:11 fred Exp $
+#
+
+MYNAME	= csasgrid
+
+SRCS = \
+	c_csex01.c   c_csex02.c   c_csex03.c     \
+	c_csex04.c   c_csex05.c   c_csex06.c     \
+	c_csex07.c                               \
+	csex01.f     csex02.f     csex03.f       \
+	csex04.f     csex05.f     csex06.f       \
+	csex07.f
+
+OBJS = \
+	c_ccsx01.o   c_csex02.o   c_csex03.o     \
+	c_csex04.o   c_csex05.o   c_csex06.o     \
+	c_csex07.o                               \
+	csex01.o     csex02.o     csex03.o       \
+	csex04.o     csex05.o     csex06.o       \
+	csex07.o
+
+PROG_LIBS               = $(NCARGLIBS) $(NGMATHLIBS)
+SYS_LIBS		= $(XLIB) $(CTOFLIBS)
+
+InstallTarget($(SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
+
+FExampleTarget(csex01,csex01.o)
+FExampleTarget(csex02,csex02.o)
+FExampleTarget(csex03,csex03.o)
+FExampleTarget(csex04,csex04.o)
+FExampleTarget(csex05,csex05.o)
+FExampleTarget(csex06,csex06.o)
+FExampleTarget(csex07,csex07.o)
+CExampleTarget(c_csex01,c_csex01.o)
+CExampleTarget(c_csex02,c_csex02.o)
+CExampleTarget(c_csex03,c_csex03.o)
+CExampleTarget(c_csex04,c_csex04.o)
+CExampleTarget(c_csex05,c_csex05.o)
+CExampleTarget(c_csex06,c_csex06.o)
+CExampleTarget(c_csex07,c_csex07.o)
