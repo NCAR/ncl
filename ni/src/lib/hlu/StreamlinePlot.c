@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlot.c,v 1.59 2001-07-24 20:17:08 dbrown Exp $
+ *      $Id: StreamlinePlot.c,v 1.60 2001-08-29 18:35:48 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -6165,8 +6165,7 @@ static NhlErrorTypes    SetupLevelsAutomatic
                 spacing = 0.0;
 		zero_or_equal = True;
         }
-        
-	if (stp->level_spacing_set) {
+	else if (stp->level_spacing_set) {
 		spacing = stp->level_spacing;
 		lmin = ceil(lmin / spacing) * spacing;
 		lmax = MIN(lmax,floor(lmax / spacing) * spacing);
@@ -6242,8 +6241,8 @@ static NhlErrorTypes    SetupLevelsAutomatic
 		for (i=0; i < count; i++) {
 			(*levels)[i] = lmin + i * spacing;
 		}
+		(*levels)[count-1] = MIN((*levels)[count-1],max);
 	}
-        (*levels)[count-1] = MIN((*levels)[count-1],max);
 
 	stp->level_spacing = spacing;
 	stp->level_count = count;

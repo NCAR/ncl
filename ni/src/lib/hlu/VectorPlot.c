@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.c,v 1.72 2001-07-24 20:17:09 dbrown Exp $
+ *      $Id: VectorPlot.c,v 1.73 2001-08-29 18:35:48 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -8218,8 +8218,7 @@ static NhlErrorTypes    SetupLevelsAutomatic
                 spacing = 0.0;
 		zero_or_equal = True;
         }
-        
-	if (vcp->level_spacing_set) {
+	else if (vcp->level_spacing_set) {
 		spacing = vcp->level_spacing;
 		lmin = ceil(lmin / spacing) * spacing;
 		lmax = MIN(lmax,floor(lmax / spacing) * spacing);
@@ -8295,8 +8294,8 @@ static NhlErrorTypes    SetupLevelsAutomatic
 		for (i=0; i < count; i++) {
 			(*levels)[i] = lmin + i * spacing;
 		}
+		(*levels)[count-1] = MIN((*levels)[count-1],max);
 	}
-        (*levels)[count-1] = MIN((*levels)[count-1],max);
 
 	vcp->level_spacing = spacing;
 	vcp->level_count = count;

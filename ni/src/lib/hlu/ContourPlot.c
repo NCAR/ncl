@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.105 2001-07-24 20:17:07 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.106 2001-08-29 18:35:47 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -10167,8 +10167,7 @@ static NhlErrorTypes    SetupLevelsAutomatic
                 count = 1;
                 spacing = cnp->level_spacing;
         }
-        
-	if (cnp->level_spacing_set) {
+	else if (cnp->level_spacing_set) {
 		spacing = cnp->level_spacing;
 		lmin = ceil(lmin / spacing) * spacing;
 		lmax = MIN(lmax,floor(lmax / spacing) * spacing);
