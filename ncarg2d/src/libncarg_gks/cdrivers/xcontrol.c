@@ -1,5 +1,5 @@
 /*
- *	$Id: xcontrol.c,v 1.5 1994-06-21 03:31:44 boote Exp $
+ *	$Id: xcontrol.c,v 1.6 1994-06-27 15:51:57 boote Exp $
  */
 /*
  *      File:		xcontrol.c
@@ -28,52 +28,167 @@
 #include "x_device.h"
 #include "xddi.h"
 
-/*	init_color
+/*
+ * Function:	init_color
  *
- *		intialize the color table
+ * Description:	initialize the color table and the color indirection table.
  *
- * on entry
- *	palette_size	: size of the color palette
- * 
- * on exit
- *	Cmap	: contains the color map
- *	Color_ava	: true if have a color display
- *	fg, bg, bd	: set to default colours as described in name
+ * In Args:	
+ *		Xddp -	X device dependent pointer. The color tables are
+ *			initialized.
+ *
+ * Out Args:	
+ *
+ * Scope:	static
+ * Returns:	void
+ * Side Effect:	
  */
 static	void
 init_color
 #ifdef	NeedFuncProto
 (
-	Screen		*scr,
-	Pixeltype	color_palette[],
-	int		color_info[],
-	XddpColorStatus	color_status[]
+	Xddp		*xi,
+	Boolean		create
 )
 #else
-(scr,color_palette,color_info,color_status)
-	Screen		*scr;
-	Pixeltype	color_palette[];
-	int		color_info[];
-	XddpColorStatus	color_status[];
+(xi,create)
+	Xddp		*xi;
+	Boolean		create;
 #endif
 {
 	int		i;
+	int		fg_indx;
+	XColor		tcolor;
+	XGCValues	gcv;		/* struc for manip. a GC*/
 
 	/*
-	 * initialize the color palette to the WhitePixel color initialy.
-	 * Thus any reference to a undefined color palette entry will get
-	 * the WhitePixel of the screen.
+	 * init background(gks 0) to black and foreground(gks 1) to white.
 	 */
-	for (i=0; i<MAX_COLORS; i++) {
-		color_palette[i] = WhitePixelOfScreen(scr);
-		color_info[i] = -1;
-		color_status[i].ref_count = 0;
+	tcolor.flags = (DoRed | DoGreen | DoBlue);
+	tcolor.pad = '\0';
+
+	/* rw model */
+	if(xi->mycmap && !xi->cmap_ro){
+		/*
+		 * Background
+		 */
+		tcolor.red = (unsigned short)0;
+		tcolor.green = (unsigned short)0;
+		tcolor.blue = (unsigned short)0;
+		xi->color_info[0] = tcolor.pixel = 0;
+		xi->color_status[0].xpixnum = xi->color_pal[0] = 0;
+		XStoreColor(xi->dpy,xi->cmap,&tcolor);
+		xi->color_status[0].ref_count = 1;
+		xi->color_status[0].red = tcolor.red;
+		xi->color_status[0].green = tcolor.green;
+		xi->color_status[0].blue = tcolor.blue;
+
+		/*
+		 * Foreground
+		 */
+		tcolor.red = (unsigned short)MAX_INTENSITY;
+		tcolor.green = (unsigned short)MAX_INTENSITY;
+		tcolor.blue = (unsigned short)MAX_INTENSITY;
+		xi->color_info[1] = tcolor.pixel = 1;
+		xi->color_status[1].xpixnum = xi->color_pal[1] = 1;
+		XStoreColor(xi->dpy,xi->cmap,&tcolor);
+		xi->color_status[1].ref_count = 1;
+		xi->color_status[1].red = tcolor.red;
+		xi->color_status[1].green = tcolor.green;
+		xi->color_status[1].blue = tcolor.blue;
 	}
+	/* ro model - use if we can */
+	else{
+		/*
+		 * Background
+		 */
+		tcolor.red = (unsigned short)0;
+		tcolor.green = (unsigned short)0;
+		tcolor.blue = (unsigned short)0;
+		XAllocColor(xi->dpy, xi->cmap, &tcolor);
+		xi->color_info[0] = 0;
+		xi->color_status[0].xpixnum = xi->color_pal[0] = tcolor.pixel;
+		xi->color_status[0].ref_count = 1;
+		xi->color_status[0].red = tcolor.red;
+		xi->color_status[0].green = tcolor.green;
+		xi->color_status[0].blue = tcolor.blue;
+
+		/*
+		 * Foreground
+		 */
+		tcolor.red = (unsigned short)MAX_INTENSITY;
+		tcolor.green = (unsigned short)MAX_INTENSITY;
+		tcolor.blue = (unsigned short)MAX_INTENSITY;
+		XAllocColor(xi->dpy, xi->cmap, &tcolor);
+		xi->color_info[1] = 1;
+		xi->color_status[1].xpixnum = xi->color_pal[1] = tcolor.pixel;
+		xi->color_status[1].ref_count = 1;
+		xi->color_status[1].red = tcolor.red;
+		xi->color_status[1].green = tcolor.green;
+		xi->color_status[1].blue = tcolor.blue;
+	}
+
 	/*
-	 * Set palette 0 to BlackPixel since it is default background
+	 * Set all remaining colors in the gks colormap to the same color
+	 * as foreground gks_cmap(1).
 	 */
-	color_palette[0] = BlackPixelOfScreen(scr);
-		
+	fg_indx = xi->color_info[1];
+	for (i=2; i<MAX_COLORS; i++) {
+		xi->color_pal[i] = xi->color_status[fg_indx].xpixnum;
+		xi->color_status[fg_indx].ref_count++;
+		xi->color_info[i] = fg_indx;
+	}
+
+	/* 
+	 * Create all the GC's so the graphics primatives use the
+	 * foreground color (gks 1) of the colormap, and background color
+	 * (gks 0).
+	 */
+	gcv.background = xi->color_pal[0];
+	gcv.foreground = xi->color_pal[1];
+
+	if(create){
+		xi->line_gc = XCreateGC(xi->dpy,xi->win,
+					(GCForeground|GCBackground),&gcv);
+		xi->fill_gc = XCreateGC(xi->dpy,xi->win,
+					(GCForeground|GCBackground),&gcv);
+		xi->marker_gc = XCreateGC(xi->dpy,xi->win,
+					(GCForeground|GCBackground),&gcv);
+		xi->cell_gc = XCreateGC(xi->dpy,xi->win,
+					(GCForeground|GCBackground),&gcv);
+		xi->text_gc = XCreateGC(xi->dpy,xi->win,
+					(GCForeground|GCBackground),&gcv);
+	}
+	else{
+		XChangeGC(xi->dpy,xi->line_gc,(GCForeground|GCBackground),&gcv);
+		XChangeGC(xi->dpy,xi->fill_gc,(GCForeground|GCBackground),&gcv);
+		XChangeGC(xi->dpy,xi->marker_gc,(GCForeground|GCBackground),
+									&gcv);
+		XChangeGC(xi->dpy,xi->cell_gc,(GCForeground|GCBackground),&gcv);
+		XChangeGC(xi->dpy,xi->text_gc,(GCForeground|GCBackground),&gcv);
+	}
+
+	/*
+	 * create a background gc (gc for drawing in background color)
+	 */
+	gcv.background = xi->color_pal[1];
+	gcv.foreground = xi->color_pal[0];
+	if(create)
+		xi->bg_gc = XCreateGC(xi->dpy,xi->win,
+					(GCForeground|GCBackground),&gcv);
+	else
+		XChangeGC(xi->dpy,xi->bg_gc,(GCForeground|GCBackground),&gcv);
+
+	/*
+	 * If the index in these vars change, then the corresponding GC
+	 * has to be updated.
+	 */
+	xi->line_index = 1;
+	xi->fill_index = 1;
+	xi->marker_index = 1;
+	xi->cell_index = 1;
+	xi->text_index = 1;
+	xi->bg_index = 1;
 
 	return;
 }
@@ -369,7 +484,6 @@ X11_OpenWorkstation
 	static char		dpy_mem[MAX_DPY_LEN];
 	static char		*dpy_name=NULL;	/* Display name	*/
 	XWindowAttributes	xwa;		/* Get Attributes	*/
-	XGCValues		gcv;		/* struc for manip. a GC*/
 	CoordSpace		square_screen;
         int			*iptr = (int *) gksc->i.list;
 
@@ -455,8 +569,6 @@ X11_OpenWorkstation
 	xi->height = xwa.height;
 	xi->dim = xwa.width;
 
-	init_color(xi->scr,xi->color_pal,xi->color_info,xi->color_status);
-
 	/*
 	 * all output primitives will use Color_ava to see 
 	 * if they have a colour display
@@ -469,30 +581,7 @@ X11_OpenWorkstation
 
 	xi->depth = xwa.depth;
 
-	/* 
-	 * 	create default graphics contexts for the win.
-	 * 	Use defaults except for backround, foreground.
-	 */
-	gcv.background = xi->color_pal[0];
-	gcv.foreground = xi->color_pal[1];
-
-	xi->line_gc = XCreateGC(xi->dpy,xi->win,(GCForeground|GCBackground),
-									&gcv);
-	xi->fill_gc = XCreateGC(xi->dpy,xi->win,(GCForeground|GCBackground),
-									&gcv);
-	xi->marker_gc = XCreateGC(xi->dpy,xi->win,(GCForeground|GCBackground),
-									&gcv);
-	xi->cell_gc = XCreateGC(xi->dpy,xi->win,(GCForeground|GCBackground),
-									&gcv);
-	xi->text_gc = XCreateGC(xi->dpy,xi->win,(GCForeground|GCBackground),
-									&gcv);
-
-	/*
-	 * create a background gc (gc for drawing in background color)
-	 */
-	gcv.background = xi->color_pal[1];
-	gcv.foreground = xi->color_pal[0];
-	xi->bg_gc = XCreateGC(xi->dpy,xi->win,(GCForeground|GCBackground),&gcv);
+	init_color(xi,TRUE);
 
 	xi->marker_size = 1.0;
 
@@ -717,8 +806,7 @@ X11_Esc
 				break;
 		}
 		
-		init_color(xi->scr,xi->color_pal,xi->color_info,
-							xi->color_status);
+		init_color(xi,FALSE);
 		XSetWindowColormap(xi->dpy,xi->win,xi->cmap);
 		XSetWindowBackground(xi->dpy,xi->win,xi->color_pal[0]);
 		XClearWindow(xi->dpy,xi->win);

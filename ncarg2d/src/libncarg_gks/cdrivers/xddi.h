@@ -1,5 +1,5 @@
 /*
- *	$Id: xddi.h,v 1.2 1994-06-08 16:58:03 boote Exp $
+ *	$Id: xddi.h,v 1.3 1994-06-27 15:52:00 boote Exp $
  */
 /*
  *      File:		xddi.h
@@ -44,6 +44,12 @@ typedef	struct	Xddi_	{
 			fill_gc,
 			cell_gc,
 			bg_gc;
+	int		line_index,
+			marker_index,
+			text_index,
+			fill_index,
+			cell_index,
+			bg_index;
 	Boolean		color_ava;
 	Pixeltype	color_pal[MAX_COLORS];
 	int		color_info[MAX_COLORS];

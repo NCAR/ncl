@@ -1,5 +1,5 @@
 /*
- *	$Id: xoutput.c,v 1.3 1994-06-08 16:58:07 boote Exp $
+ *	$Id: xoutput.c,v 1.4 1994-06-27 15:52:03 boote Exp $
  */
 /*
  *      File:		xoutput.c
@@ -857,7 +857,6 @@ X11_FillArea(gksc)
 			 *	for the area. See section 5.4.3.
 			 */
 		
-			XSetForeground(dpy, xi->bg_gc, xi->color_pal[0]);
 			status = hatch_fill(dpy,win,pptr,n,hatch_index,gc,
 							xi->bg_gc,xi->depth);
 			break;

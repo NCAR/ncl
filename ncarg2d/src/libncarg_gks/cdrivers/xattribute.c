@@ -1,5 +1,5 @@
 /*
- *	$Id: xattribute.c,v 1.3 1994-06-08 16:57:58 boote Exp $
+ *	$Id: xattribute.c,v 1.4 1994-06-27 15:51:52 boote Exp $
  */
 /*
  *      File:		xattribute.c
@@ -195,6 +195,7 @@ X11_SetPolylineColorIndex
 	int		*xptr = (int *) gksc->x.list;
 	unsigned	index	= (unsigned) xptr[0];
 
+	xi->line_index = index;
 	return(set_foreground_color(dpy, xi->line_gc, xi->color_pal, index));
 }
 
@@ -266,6 +267,7 @@ X11_SetPolymarkerColorIndex
 	int		*xptr = (int *) gksc->x.list;
 	unsigned	index	= (unsigned) xptr[0];
 
+	xi->marker_index = index;
 	return(set_foreground_color(dpy, xi->marker_gc, xi->color_pal, index));
 }
 
@@ -373,6 +375,7 @@ X11_SetTextColorIndex
 	int		*xptr = (int *) gksc->x.list;
 	unsigned	index	= (unsigned) xptr[0];
 
+	xi->text_index = index;
 	return(set_foreground_color(dpy, xi->text_gc, xi->color_pal, index));
 }
 
@@ -535,8 +538,63 @@ X11_SetFillAreaColorIndex
 	int		*xptr = (int *) gksc->x.list;
 	unsigned	index	= (unsigned) xptr[0];
 
+	xi->fill_index = index;
 	return(set_foreground_color(dpy, xi->fill_gc, xi->color_pal, index));
 
+}
+
+/*
+ * Function:	update_gcs
+ *
+ * Description:	This function checks the GC's and determines if any of them
+ *		were using a color that should be updated.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+static void
+update_gcs
+#ifdef	NeedFuncProto
+(
+	Xddp		*xi,
+	int		index
+)
+#else
+(xi,index)
+	Xddp		*xi;
+	int		index;
+#endif
+{
+	XGCValues	gcv;		/* struc for manip. a GC*/
+	/* 
+	 * Reset the GC's that were set using the index that is changing.
+	 */
+	gcv.background = xi->color_pal[0];
+	gcv.foreground = xi->color_pal[index];
+
+	if((index == 0) || (index == xi->line_index))
+		XChangeGC(xi->dpy,xi->line_gc,(GCForeground|GCBackground),&gcv);
+	if((index == 0) || (index == xi->fill_index))
+		XChangeGC(xi->dpy,xi->fill_gc,(GCForeground|GCBackground),&gcv);
+	if((index == 0) || (index == xi->marker_index))
+		XChangeGC(xi->dpy,xi->marker_gc,(GCForeground|GCBackground),
+									&gcv);
+	if((index == 0) || (index == xi->cell_index))
+		XChangeGC(xi->dpy,xi->cell_gc,(GCForeground|GCBackground),&gcv);
+	if((index == 0) || (index == xi->text_index))
+		XChangeGC(xi->dpy,xi->text_gc,(GCForeground|GCBackground),&gcv);
+
+	gcv.background = xi->color_pal[index];
+	gcv.foreground = xi->color_pal[0];
+	if((index == 0) || (index == xi->bg_index))
+		XChangeGC(xi->dpy,xi->bg_gc,(GCForeground|GCBackground),&gcv);
+
+	return;
 }
 
 
@@ -686,6 +744,11 @@ X11_SetColorRepresentation
 		XSetWindowBackground(dpy, win, color_pal[index]);
 		XClearWindow(dpy, win);
 	}
+
+	/*
+	 * update the GC's to the new color.
+	 */
+	update_gcs(xi,index);
 
 	if(xi->percent_colerr){
 		float	local;
