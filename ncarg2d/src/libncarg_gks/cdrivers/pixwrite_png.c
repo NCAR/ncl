@@ -1,5 +1,5 @@
 /*
- *      $Id: pixwrite_png.c,v 1.2 2004-04-02 22:18:31 fred Exp $
+ *      $Id: pixwrite_png.c,v 1.3 2004-05-06 00:16:19 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -58,6 +58,7 @@ typedef unsigned long Pixel;
 #include "../libpng/png.h"
 
 void write_png(unsigned char *, unsigned long, unsigned long, int, FILE *);
+int isf(int i);
 
 static FILE *OpenPNGFile (PIXddp *xi)
 {
@@ -81,7 +82,7 @@ int PIX_Write_PNG (PIXddp *xi)
 {
   Status s;
   Window root;
-  int x,y;
+  int x,y,rshift,gshift,bshift,kount;
   long pval,tval;
   unsigned int width,height,bw,depth;
   XImage *image;
@@ -134,18 +135,23 @@ int PIX_Write_PNG (PIXddp *xi)
   pixmap = (unsigned char *) calloc(width*height*(depth/3),sizeof(char));
 
   vis = xi->vis;
+
   redm = vis->red_mask;
   greenm = vis->green_mask;
   bluem = vis->blue_mask;
+  rshift = isf(redm);
+  gshift = isf(greenm);
+  bshift = isf(bluem);
+
   indx = 0;
   for (ii = 0; ii < height; ii++) {
     for (jj = 0; jj < width; jj++) {
       pval = XGetPixel(image,jj,ii);
-      tval = pval & redm;
+      tval = (pval & redm) >> rshift;
       pixmap[indx] = tval;
-      tval = (pval & greenm) >> 8;
+      tval = (pval & greenm) >> gshift;
       pixmap[indx+1] = tval;
-      tval = (pval & bluem) >> 16;
+      tval = (pval & bluem) >> bshift;
       pixmap[indx+2] = tval;
       indx += 3;
     }
@@ -209,4 +215,21 @@ void write_png(unsigned char *pix_map, unsigned long width,
 
   png_write_png(png_ptr, info_ptr, 0, NULL);
   png_destroy_write_struct(&png_ptr, &info_ptr);
+}
+
+/*
+ *  isf returns the number of zero bits in the least significant
+ *  part of an integer.
+ */
+int isf(int i) {
+ int kount = 0;
+
+ if (i != 0) {
+   while (((i >> kount) & 1) != 1) kount++;
+ }
+ else {
+   kount = 0;
+ }
+ return(kount);
+
 }
