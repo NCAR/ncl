@@ -1,12 +1,16 @@
 /*
- *	$Id: fontlist.h,v 1.1 1994-03-14 20:55:41 clyne Exp $
+ *	$Id: fontlist.h,v 1.2 1995-07-07 22:49:39 clyne Exp $
  */
 #ifndef	_fontlist_h_
 #define	_fontlist_h_
 
 #include "cgmc.h"
 
-extern void	InitFontList();
+extern void	InitFontList(
+#ifdef	NeedFuncProto
+	const char	*default_font
+#endif
+);
 
 extern	int	FontList(
 #ifdef	NeedFuncProto

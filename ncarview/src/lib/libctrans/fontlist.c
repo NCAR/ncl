@@ -1,5 +1,5 @@
 /*
- *	$Id: fontlist.c,v 1.13 1995-07-07 18:53:50 clyne Exp $
+ *	$Id: fontlist.c,v 1.14 1995-07-07 22:49:37 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -42,6 +42,8 @@ static	char *my_strdup(const char *s1)
 	if (! s2) return (NULL);
 
 	strcpy(s2, s1);
+
+	return(s2);
 }
 
 #define	MAXFONT		25	/* maximum number of fonts in the fontlist */	
