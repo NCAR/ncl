@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrays.c,v 1.21 1995-01-26 02:53:49 boote Exp $
+ *      $Id: CoordArrays.c,v 1.22 1995-02-03 22:25:46 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1001,7 +1001,7 @@ CheckArray
 		*imp = True;
 
 	if(*cast_set){
-		if((imp) && (*cast != NhlcaSingleVector)){
+		if((*imp) && (*cast != NhlcaSingleVector)){
 			NhlPError(NhlWARNING,NhlEUNKNOWN,
 				"%s:%s must be %d if %s is implied",func,
 				cast_res,NhlcaSingleVector,arr_res);
