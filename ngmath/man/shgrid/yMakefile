@@ -1,0 +1,19 @@
+#
+#       $Id: yMakefile,v 1.1 1999-09-18 00:20:38 fred Exp $
+#
+
+MAN = c_shgeti c_shgetnp c_shgrid c_shseti shgeti  \
+	shgetnp shgrid shgrid_errors shgrid_params shseti
+
+# Install preformatted troff documents on systems without troff
+#if UseCatDirs
+FORMAT_EXT      = .p
+#else
+FORMAT_EXT      = .m
+#endif
+
+MPATH   = $(MAN3PATH)
+MSECT   = $(MAN3_SECTION)
+
+InstallManPages($(MAN),$(FORMAT_EXT),$(MPATH),$(MSECT))
+FormatManPages($(MAN),.m,.p)
