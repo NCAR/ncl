@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.157 2003-05-01 20:48:08 grubin Exp $
+ *      $Id: BuiltInFuncs.c,v 1.158 2003-05-06 21:57:34 grubin Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -12491,7 +12491,6 @@ NhlErrorTypes   _NclIVarIsUnlimited
 
     /* dimension names, types */
     string  *dname;
-    NclApiDataList  *ddata;
 
     /* dimensions, sizes */
     int dimsizes = 1;
@@ -12500,8 +12499,7 @@ NhlErrorTypes   _NclIVarIsUnlimited
 
     logical isunlimited = 0;
 
-    int i = 0,
-        j = 0;
+    int i = 0;
 
 
     /* get file information (1st arg.) */
@@ -12529,20 +12527,13 @@ NhlErrorTypes   _NclIVarIsUnlimited
 
     /* get dimension info and check for unlimited */
     if (f != NULL) {
-        ddata = _NclGetFileVarInfo2(f, *dname);
-        if (ddata != NULL) {
-            for (i = 0; i < ddata->u.var->n_dims; i++) {
-                for (j = 0; j < f->file.n_file_dims; j++) {
-                    if (f->file.file_dim_info[j]->dim_name_quark
-                            == ddata->u.var->dim_info[i].dim_quark) {
-                        isunlimited = f->file.file_dim_info[j]->is_unlimited;
-                        break;
-                    }
+        if (f->file.n_file_dims > 0) {
+            for (i = 0; i < f->file.n_file_dims; i++) {
+                if (f->file.file_dim_info[i]->dim_name_quark == *dname) {
+                    isunlimited = f->file.file_dim_info[i]->is_unlimited;
+                    break;
                 }
             }
-
-            if (ddata != NULL)
-                _NclFreeApiDataList((void *) ddata);
         }
     }
     else {
