@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.c,v 1.35 1997-07-16 23:27:43 dbrown Exp $
+ *      $Id: VectorPlot.c,v 1.36 1997-07-18 20:35:50 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1202,19 +1202,6 @@ static NhlErrorTypes    ManageGenArray(
 	int		*init_count,
 	NhlBoolean	*need_check,
 	NhlBoolean	*changed,				       
-	NhlString	resource_name,
-	NhlString	entry_name
-#endif
-);
-
-static NhlErrorTypes	CheckColorArray(
-#if	NhlNeedProto
-	NhlVectorPlotLayer	cl,
-	NhlGenArray	ga,
-	int		count,
-	int		init_count,
-	int		last_count,
-	int		**gks_colors,
 	NhlString	resource_name,
 	NhlString	entry_name
 #endif
@@ -3662,11 +3649,12 @@ static NhlErrorTypes vcDraw
 		for (i=0; i < vcp->level_count; i++) {
 			c_vvseti("PAI",i+1);
 			c_vvsetr("TVL",tvl[i]);
-			c_vvseti("CLR",clr[i]);
+			c_vvseti("CLR",_NhlGetGksCi(vcl->base.wkptr,clr[i]));
 		}
 		c_vvseti("PAI",vcp->level_count+1);
-		c_vvsetr("TVL",1E12);
-		c_vvseti("CLR",clr[vcp->level_count]);
+		c_vvsetr("TVL",1E36);
+		c_vvseti("CLR",_NhlGetGksCi(vcl->base.wkptr,
+					    clr[vcp->level_count]));
 	}
 
 	c_vvsetr("VMD",vcp->min_distance);
@@ -7178,6 +7166,7 @@ static NhlErrorTypes    ManageDynamicArrays
 	int	init_count;
 	NhlBoolean need_check,changed;
 	int old_count;
+	int *ip;
 	float *levels = NULL;
 	NhlBoolean levels_modified = False;
 	NhlvcScaleInfo 		*sip,*osip;
@@ -7274,14 +7263,11 @@ static NhlErrorTypes    ManageDynamicArrays
 	ovcp->level_colors = changed ? NULL : vcp->level_colors;
 	vcp->level_colors = ga;
 
-		
-	if (need_check) {
-		subret = CheckColorArray(vcnew,ga,count,init_count,old_count,
-					 &vcp->gks_level_colors,
-					 NhlNvcLevelColors,entry_name);
-		if ((ret = MIN(ret,subret)) < NhlWARNING)
-			return ret;
+	ip = (int*)vcp->level_colors->data;
+	for (i=init_count; i < count; i++) {
+		ip[i] = 1 + i;
 	}
+
 /*=======================================================================*/
 	
 /*
@@ -7553,97 +7539,6 @@ static NhlErrorTypes    ManageGenArray
 	return ret;
 }
 
-
-/*
- * Function:    CheckColorArray
- *
- * Description:	Checks color array values for validity, initializing any
- *		currently uninitialized values and keeps the GKS index
- *		arrays up-to-date.
- *
- * In Args:	count		number of elements to create in the GenArray
- *		resource_name	name of the GenArray resource 		
- *		entry_name	name of the high level caller of the routine 
- *
- * Out Args:	*ga		If non-NULL on input, contains a previously
- *				allocated GenArray, whose data will be 
- *				replaced if necessary.
- *				Out: An allocated GenArray with allocated data
- *		*init_count	number of values initialized - if init_val is
- *				non-NULL, will contain count; if init_val is
- *				NULL will contain MIN(count,number of 
- *				elements in copy_ga); if copy_ga is also NULL
- *				will contain 0.
- *
- * Return Values:
- *
- * Side Effects: The internal copy of each GenArray is modified to reflect
- *	changes requested via VectorPlotSetValues
- */
-
-/*ARGSUSED*/
-
-static NhlErrorTypes	CheckColorArray
-#if	NhlNeedProto
-	(NhlVectorPlotLayer	cl,
-	NhlGenArray	ga,
-	int		count,
-	int		init_count,
-	int		last_count,
-	int		**gks_colors,
-	NhlString	resource_name,
-	NhlString	entry_name)
-#else
-(cl,ga,count,init_count,last_count,gks_colors,resource_name,entry_name)
-	NhlVectorPlotLayer	cl;
-	NhlGenArray	ga;
-	int		count;
-	int		init_count;
-	int		last_count;
-	int		**gks_colors;
-	NhlString	resource_name;
-	NhlString	entry_name;
-#endif
-{
-	NhlErrorTypes ret = NhlNOERROR;
-	char *e_text;
-	int *ip;
-	int i;
-	
-
-	ip = (int *) ga->data;
-
-	for (i=init_count; i < count; i++) {
-		ip[i] = 1 + i;
-	}
-
-	if (last_count == 0) {
-		if ((*gks_colors = 
-		     (int *) NhlMalloc(count * sizeof(int))) == NULL) {
-			e_text = "%s: dynamic memory allocation error";
-			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-			return NhlFATAL;
-		}
-	}
-	else if (count > last_count) {
-		if ((*gks_colors = 
-		     (int *) NhlRealloc(*gks_colors,
-					count * sizeof(int))) == NULL) {
-			e_text = "%s: dynamic memory allocation error";
-			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-			return NhlFATAL;
-		}
-	}
-
-	for (i=0; i<count; i++) {
-                if (ip[i] == NhlTRANSPARENT)
-                        (*gks_colors)[i] = NhlTRANSPARENT;
-                else
-                        (*gks_colors)[i] =
-                                _NhlGetGksCi(cl->base.wkptr,ip[i]);
-	}
-	return ret;
-}
 
 
 /*

@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.56 1997-07-16 23:27:26 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.57 1997-07-18 20:35:43 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -9322,22 +9322,12 @@ static NhlErrorTypes	CheckColorArray
 		ip[i] = 1 + i;
 	}
 
-	if (last_count == 0) {
-		if ((*gks_colors = 
-		     (int *) NhlMalloc(count * sizeof(int))) == NULL) {
-			e_text = "%s: dynamic memory allocation error";
-			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-			return NhlFATAL;
-		}
-	}
-	else if (count > last_count) {
-		if ((*gks_colors = 
-		     (int *) NhlRealloc(*gks_colors,
-					count * sizeof(int))) == NULL) {
-			e_text = "%s: dynamic memory allocation error";
-			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-			return NhlFATAL;
-		}
+	if (*gks_colors)
+		NhlFree(*gks_colors);
+	if ((*gks_colors = (int *) NhlMalloc(count * sizeof(int))) == NULL) {
+		e_text = "%s: dynamic memory allocation error";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
 	}
 
 	for (i=0; i<count; i++) {
