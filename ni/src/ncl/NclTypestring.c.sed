@@ -1,5 +1,5 @@
 /*
- *      $Id: NclTypestring.c.sed,v 1.15 2003-05-12 23:37:38 dbrown Exp $
+ *      $Id: NclTypestring.c.sed,v 1.16 2005-03-18 20:28:14 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -182,11 +182,17 @@ string mis;
 	char * rs_ptr;
 	string ret_val;
 
+#if 0
 	if(mis_ls == ls) {
 		return(mis);
 	} else if(mis_rs == rs) {
 		return(mis);
-	} else {
+	}
+#endif
+	if (mis_ls == ls && mis_rs == rs) {
+		return (mis);
+	}
+	else {
 		ls_ptr = NrmQuarkToString(ls);
 		rs_ptr = NrmQuarkToString(rs);
 		tmp = (char*)NclMalloc(strlen(ls_ptr)+strlen(rs_ptr)+1);
