@@ -1,5 +1,5 @@
 /*
- *      $Id: nm03c.c,v 1.4 1997-12-17 17:54:56 haley Exp $
+ *      $Id: nm03c.c,v 1.5 1997-12-17 19:25:39 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -43,7 +43,7 @@
 #define NumYOut  21
 #define RAD2DEG 57.29578
 
-extern void drwsrfc (int WKID, int nx, int ny, float *x, float *y, float *z,
+extern void drwsrfc (int nx, int ny, float *x, float *y, float *z,
               float s1, float s2, float s3);
 
 main(int argc, char *argv[])
@@ -103,10 +103,8 @@ main(int argc, char *argv[])
   int   len_dims[2];
   int   appid,wid,dataid,cnid,vfid,vcid,gkswid;
   int   srlist, grlist;
-  int   i, j, ier, iam;
-  int   NCGM=0, X11=1, PS=0;
-  float cnlevels[7];
-  float p, wrk;
+  int   i, j, ier;
+  int   NCGM=1, X11=0, PS=0;
 /*
  * Initialize the high level utility library
  */
@@ -122,6 +120,8 @@ main(int argc, char *argv[])
   NhlRLSetString(srlist,NhlNappUsrDir,"./");
   NhlCreate(&appid,"nm03",NhlappClass,NhlDEFAULT_APP,srlist);
 
+  len_dims[0] = 9;
+  len_dims[1] = 3;
   if (NCGM) {
 /*
  * Create a meta file workstation.
@@ -186,7 +186,7 @@ main(int argc, char *argv[])
  * LLUs to get a surface plot.
  */
 	gactivate_ws (gkswid);
-	drwsrfc(gkswid,NumXOut,NumYOut,xo,yo,out,10.,-25.,50.);
+	drwsrfc(NumXOut,NumYOut,xo,yo,out,10.,-25.,50.);
 	gdeactivate_ws (gkswid);
 /*
  *  Get the aspects.
@@ -212,9 +212,7 @@ main(int argc, char *argv[])
 
   NhlRLClear(srlist);
   NhlRLSetInteger(srlist,NhlNvcVectorFieldData,vfid);
-  NhlRLSetString(srlist,NhlNpmTickMarkDisplayMode,"never");
-  NhlRLSetString(srlist,NhlNvcRefAnnoOn,"false");
-  NhlCreate(&vcid,"vector",NhlvectorPlotClass,wid,srlist);
+  NhlCreate(&vcid,"VectorPlot",NhlvectorPlotClass,wid,srlist);
 
   NhlDraw(vcid);
   NhlFrame(wid);
@@ -236,28 +234,17 @@ main(int argc, char *argv[])
     len_dims[1] = NumYOut;
     NhlRLSetMDFloatArray(srlist,NhlNsfDataArray,&u[0][0],2,len_dims);
     NhlCreate(&dataid,"data",NhlscalarFieldClass,appid,srlist);
-/*
- *  Plot the slopes as a contour plot.
- */
-    for (i = 0 ; i < 7 ; i++) {
-      cnlevels[i] = 10. * (float)(i+1);
-    }
     NhlRLClear(srlist);
     NhlRLSetInteger(srlist,NhlNcnScalarFieldData,dataid);
-    NhlRLSetInteger(srlist,NhlNcnFillOn,True);
-    NhlRLSetString(srlist,NhlNcnLevelSelectionMode,"ExplicitLevels");
-    NhlRLSetFloat(srlist,NhlNcnSmoothingTensionF,4.);
-    NhlRLSetFloatArray(srlist,NhlNcnLevels,cnlevels,7);
-    NhlRLSetString(srlist,NhlNpmTickMarkDisplayMode,"never");
     NhlCreate(&cnid,"ContourPlot",NhlcontourPlotClass,wid,srlist);
 
     NhlDraw(cnid);
     NhlFrame(wid);
-    NhlDestroy(vfid);
-    NhlDestroy(dataid);
 /*
  * Destroy the objects created, close the HLU library and exit.
  */
+    NhlDestroy(vfid);
+    NhlDestroy(dataid);
     NhlDestroy(cnid);
     NhlDestroy(wid);
     NhlDestroy(appid);
@@ -289,23 +276,15 @@ float armx(int, float *);
  *
  */
 
-void drwsrfc (int WKID, int nx, int ny, float *x, float *y, float *z,
+void drwsrfc (int nx, int ny, float *x, float *y, float *z,
               float s1, float s2, float s3)
 {
     Gcolr_rep colval;
-    float xmn, xmx, ymn, ymx, zmn, zmx, eye[6];
+    float xmn, xmx, ymn, ymx, zmn, zmx, eye[6], *fz;
     int i, j, *iwk;
 
 	iwk = (int *)malloc(2*nx*ny*sizeof(int));
 
-	colval.rgb.red = 1.;
-	colval.rgb.green = 1.;
-	colval.rgb.blue = 1.;
-	gset_colr_rep(WKID,0,&colval);
-	colval.rgb.red = 0.;
-	colval.rgb.green = 0.;
-	colval.rgb.blue = 0.;
-	gset_colr_rep(WKID,1,&colval);
 /*
  *  Find the extreme data values.
  */
@@ -328,9 +307,21 @@ void drwsrfc (int WKID, int nx, int ny, float *x, float *y, float *z,
     eye[4] = 0.5 * (ymx-ymn);
     eye[5] = 0.5 * (zmx-zmn);
 /*
+ *  Rearrange the array, since c_srface expects an array ordered as 
+ *  per Fortran.
+ */
+    fz = (float *) calloc(nx*ny,sizeof(float));
+
+    for (i = 0; i < nx; i++) {
+       for (j = 0; j < ny; j++) {
+           
+          fz[j*nx+i] = z[i*ny+j];
+       }
+    }
+/*
  *  Plot the surface.
  */
-    c_srface (x,y,z,iwk,nx,nx,ny,eye,0.);
+    c_srface (x,y,fz,iwk,nx,nx,ny,eye,0.);
     free(iwk);
 }
 

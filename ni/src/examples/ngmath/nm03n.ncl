@@ -91,6 +91,13 @@ begin
 ;
   out = natgrids(x, y, z, xo, yo)
 ;
+; Create an application object.
+;
+  appid = create "nm03" appClass defaultapp
+    "appUsrDir" : "./"
+    "appDefaultParent" : "True"
+  end create
+;
 ; Create our workstation object and then retrieve the GKS workstation
 ; id.
 ;
@@ -140,30 +147,53 @@ begin
   do i=0,NUMXOUT-1
     do j=0,NUMYOUT-1
        rtmp = nngetaspects(i,j)
-       u(i,j) = sin(rtmp)
-       v(i,j) = cos(rtmp)
+       u(j,i) = sin(rtmp)
+       v(j,i) = cos(rtmp)
     end do
   end do
 
 ;
+; Create a VectorField object; then use its id as the value of
+; the 'vcVectorFieldData' resource when creating the VectorPlot object.
+;
+  vfid = create "vectorfield" vectorFieldClass defaultapp
+    "vfUDataArray":  u
+    "vfVDataArray":  v
+  end create
+
+  vcid = create "VectorPlot" vectorPlotClass wid
+    "vcVectorFieldData":  vfid
+  end create
+;
 ; Plot the aspects as a vector plot.
 ;
-  drwvctc(gkswid,u,v)
-
+  draw(vcid)
+  frame(wid)
 ;
 ;  Get the slopes.
 ;
   do i = 0,NUMXOUT-1
     do j = 0,NUMYOUT-1
-      rtmp = nngetslopes(i, j);
-      u(i,j) = RAD2DEG*rtmp
+      rtmp = nngetslopes(i, j)
+      u(j,i) = RAD2DEG*rtmp
     end do
   end do
+;
+; Create a ScalarField object; then use its id as the value of
+; the 'cnScalarFieldData' resource when creating the ContourPlot object.
+;
+  dataid = create "data" scalarFieldClass defaultapp
+    "sfDataArray":  u
+  end create
 
+  cnid = create "ContourPlot" contourPlotClass wid
+    "cnScalarFieldData":  dataid
+  end create
 ;
 ;  Plot the slopes as a contour plot.
 ;
-  drwconc(gkswid,u)
+  draw(cnid)
+  frame(wid)
 
 end
 
