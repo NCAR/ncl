@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.128 2002-03-26 22:15:08 haley Exp $
+#   $Id: ncargex.csh,v 1.129 2002-04-04 22:11:24 fred Exp $
 #                                                                      
 #                Copyright (C)  2000
 #        University Corporation for Atmospheric Research
@@ -433,7 +433,7 @@ set c_list = ($c_list $ngmath_clist)
 # set ngmisc examples #
 #                     #
 #*********************#
-set ngmisc_ffnd  = (fngngdts fngwsym)
+set ngmisc_ffnd  = (fngngdts fngwsym miex01)
 set ngmisc_flist = ($ngmisc_ffnd)
 
 set ngmisc_cfnd  = (c_fngwsym)
