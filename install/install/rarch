@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: rarch,v 1.1 1993-02-20 00:11:25 clyne Exp $
+#      $Id: rarch,v 1.2 1993-12-30 17:51:16 haley Exp $
 #
 #########################################################################
 #									#
@@ -73,6 +73,10 @@ case AIX:
 case IRIX:
 	echo IRIX_IP
 	exit 0
+
+case OSF1:
+ 	echo OSF1_alpha
+ 	exit 0
 
 case ULTRIX:
 	echo ULTRIX_RISC

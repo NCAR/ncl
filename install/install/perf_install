@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: perf_install,v 1.6 1993-06-23 19:37:52 clyne Exp $
+#      $Id: perf_install,v 1.7 1993-12-30 17:51:14 haley Exp $
 #
 #########################################################################
 #									#
@@ -187,6 +187,10 @@ case	"cdrom":
 	case	"Solaris_sun4"
 		set cd_system = "solaris"
 		set tars = ($ltars)
+		breaksw
+
+	case	"OSF1_alpha"
+		set cd_system = "OSF1_ALF"
 		breaksw
 
 	case	"ULTRIX_RISC"
