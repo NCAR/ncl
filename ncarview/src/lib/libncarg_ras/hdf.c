@@ -1,5 +1,5 @@
 /*
- *	$Id: hdf.c,v 1.9 1992-03-30 21:40:01 don Exp $
+ *	$Id: hdf.c,v 1.10 1992-09-10 21:12:38 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -27,18 +27,22 @@
  *		basic file access functions for HDF (Hierarchical
  *		Data Format) from NCSA.
  *
- *		Encoding schemes are limited to:
- *			* 8-bit indexed	color with 8-bit color map values.
+ *		Encoding schemes supported are:
+ *			* HDF 8-bit images.
+ *			* HDF 24-bit images.
  *
  *	Other libraries required:
  *		libdf.a - HDF C library.
  *		
  */
 #include <stdio.h>
+#include <errno.h>
+#include <stdlib.h>
 #include <fcntl.h>
 #include <string.h>
-#include "dfgr.h"
+#include <hdf/dfgr.h>
 #include "ncarg_ras.h"
+#include "hdf.h"
 #include "options.h"
 
 #ifndef	TMPDIR
@@ -49,11 +53,9 @@
 
 static char	*FormatName = "hdf";
 
-extern char	*ProgramName;
-
 extern int	OptionCompression;
+extern int	DFerror;
 
-extern	char	*calloc();
 
 /**********************************************************************
  *	Function: HDFOpen(name)
@@ -71,20 +73,25 @@ Raster *
 HDFOpen(name)
 	char	*name;
 {
-	Raster		*ras;
-	char		*calloc();
 	int		status;
-	int		palette_exists;
+	Raster		*ras;
+	HDFInfo		*dep;
 
 	ras = (Raster *) calloc(sizeof(Raster), 1);
-
 	if (ras == (Raster *) NULL) {
-		(void) RasterSetError(RAS_E_SYSTEM);
+		(void) ESprintf(errno, "calloc()");
 		return( (Raster *) NULL );
 	}
 
+	ras->dep = calloc(sizeof(HDFInfo),1);
+	if (ras->dep == (char *) NULL) {
+		(void) ESprintf(E_UNKNOWN, "calloc()");
+		return( (Raster *) NULL );
+	}
+	dep = (HDFInfo *) ras->dep;
+
 	if (!strcmp(name, "stdin")) {
-		(void) RasterSetError(RAS_E_NO_STDIN_WITH_HDF);
+		(void) ESprintf(E_UNKNOWN, "stdin cannot be used with HDF");
 		return( (Raster *) NULL );
 	}
 
@@ -94,34 +101,93 @@ HDFOpen(name)
 	ras->format = (char *) calloc((unsigned) strlen(FormatName) + 1, 1);
 	(void) strcpy(ras->format, FormatName);
 
-	status = DFR8restart();
+	/* Insidious bugs unless these initializations are done. */
 
-	status = DFR8getdims(ras->name, &ras->nx, &ras->ny, &palette_exists);
-	if (status == -1) {
-		(void) RasterSetError(RAS_E_SYSTEM);
-		return( (Raster *) NULL );
+	(void) DFR8restart();
+	(void) DF24restart();
+
+	/* Get initial information on file. Check for 8 and 24 bit formats. */
+
+	status = DFR8getdims(ras->name, (int32 *) &ras->nx, (int32 *) &ras->ny,
+				&dep->palette_exists);
+	if (status != -1) {
+		ras->type = RAS_INDEXED;
+		ras->length = ras->nx * ras->ny;
+	}
+	else {
+		status = DF24getdims(ras->name,
+					(int32 *) &ras->nx, (int32 *) &ras->ny,
+					(int *) &dep->interlace);
+
+		if (status < 0) {
+			(void) ESprintf(HDF_ERRNO,
+				"HDFOpen(\"%s\") - DF24getdims(%s) failed",
+				ras->name, ras->name);
+			return( (Raster *) NULL );
+		}
+
+		ras->type = RAS_DIRECT;
+		ras->length = ras->nx * ras->ny * 3;
+		
+		switch(dep->interlace) {
+			/* Pixel interlacing is supported */
+			case HDF_IL_PIXEL:
+			break;
+
+			/*
+			Scanplane interlacing is not supported in HDF3.1r5.
+			*/
+			case HDF_IL_SCANPLANE:
+			(void) ESprintf(E_UNKNOWN,
+			"Scanplane interlace is not supported by HDF3.1r5");
+			return( (Raster *) NULL );
+
+			case HDF_IL_SCANLINE:
+			(void) ESprintf(E_UNKNOWN,
+			"Scan-line interlace not supported by NCAR Graphics");
+			return( (Raster *) NULL );
+
+			default:
+			(void) ESprintf(E_UNKNOWN,
+			"Internal Error - Bogus interlace type for HDF");
+			return( (Raster *) NULL );
+		}
 	}
 	
-	ras->length = ras->nx * ras->ny;
+
+	/* Set the constants associated with the file. */
+
+	if (ras->file_nx == 0) {
+		ras->file_nx   = ras->nx;
+		ras->file_ny   = ras->ny;
+		ras->file_type = ras->type;
+	}
+
+	/* Allocate memory for image storage. */
 	
 	ras->data = (unsigned char *) calloc((unsigned) ras->length, 1);
 	if (ras->data == (unsigned char *) NULL) {
-		(void) RasterSetError(RAS_E_SYSTEM);
-		return( (Raster *) NULL );
-	}
-	
-	ras->red = (unsigned char *) calloc(256, 1);
-	ras->green = (unsigned char *) calloc(256, 1);
-	ras->blue = (unsigned char *) calloc(256, 1);
-	if (ras->red == (unsigned char *) NULL ||
-	    ras->green == (unsigned char *) NULL ||
-	    ras->blue == (unsigned char *) NULL) {
-		(void) RasterSetError(RAS_E_SYSTEM);
+		(void) ESprintf(errno, "calloc()");
 		return( (Raster *) NULL );
 	}
 
-	ras->type = RAS_INDEXED; 
-	ras->ncolor = 256;
+	/* Allocate memory for color table for RAS_INDEXED files. */
+	
+	if (ras->type == RAS_INDEXED) {
+		ras->ncolor = RAS_DEFAULT_NCOLORS;
+		ras->red   = (unsigned char *) calloc(RAS_DEFAULT_NCOLORS, 1);
+		ras->green = (unsigned char *) calloc(RAS_DEFAULT_NCOLORS, 1);
+		ras->blue  = (unsigned char *) calloc(RAS_DEFAULT_NCOLORS, 1);
+		if (ras->red   == (unsigned char *) NULL ||
+		    ras->green == (unsigned char *) NULL ||
+		    ras->blue  == (unsigned char *) NULL) {
+			(void) ESprintf(errno, "calloc()");
+			return( (Raster *) NULL );
+		}
+	}
+	else if (ras->type == RAS_DIRECT) {
+		ras->ncolor = 256 * 256 * 256;
+	}
 
 	(void) HDFSetFunctions(ras);
 
@@ -135,20 +201,17 @@ HDFOpenWrite(name, nx, ny, comment, encoding)
 	int		nx;
 	int		ny;
 	char		*comment;
-	int		encoding;
+	RasterEncoding	encoding;
 {
 	Raster		*ras;
 
 	if (name == (char *) NULL) {
-		(void) RasterSetError(RAS_E_NULL_NAME);
+		(void) ESprintf(RAS_E_NULL_NAME, "HDFOpenWrite(\"%s\")",name);
 		return( (Raster *) NULL );
 	}
 
-	ras = (Raster *) calloc(sizeof(Raster), 1);
-	if (ras == (Raster *) NULL) {
-		(void) RasterSetError(RAS_E_SYSTEM);
-		return( (Raster *) NULL );
-	}
+	ras = RasterCreate(nx, ny, encoding);
+	if (ras == (Raster *) NULL) return(ras);
 
 	if (!strcmp(name, "stdout")) {
 		ras->fd = fileno(stdout);
@@ -168,23 +231,8 @@ HDFOpenWrite(name, nx, ny, comment, encoding)
 	ras->format = (char *) calloc((unsigned) strlen(FormatName) + 1, 1);
 	(void) strcpy(ras->format, FormatName);
 
-	ras->written	= False;
-	ras->nx		= nx;
-	ras->ny		= ny;
-	ras->length	= ras->nx * ras->ny;
-	ras->ncolor	= 256;
-	ras->type	= RAS_INDEXED;
-	ras->red	= (unsigned char *) calloc((unsigned) ras->ncolor, 1);
-	ras->green	= (unsigned char *) calloc((unsigned) ras->ncolor, 1);
-	ras->blue	= (unsigned char *) calloc((unsigned) ras->ncolor, 1);
-	ras->data	= (unsigned char *) calloc((unsigned) ras->length, 1);
-
-	if (encoding != RAS_INDEXED) {
-		(void) RasterSetError(RAS_E_8BIT_PIXELS_ONLY);
-		return( (Raster *) NULL );
-	}
-	else {
-		ras->type = RAS_INDEXED;
+	if (encoding == RAS_DIRECT) {
+		DF24setil(HDF_IL_PIXEL);
 	}
 
 	(void) HDFSetFunctions(ras);
@@ -192,6 +240,21 @@ HDFOpenWrite(name, nx, ny, comment, encoding)
 	return(ras);
 }
 
+/*
+ * Function:		HDFWrite(ras)
+ *
+ * Description:		Writes the supplied raster structure to
+ *			an HDF file.
+ *
+ * In Args:		"ras", the raster structure to write.
+ *
+ * Out Args:		None.
+ *
+ * Return Values:	RAS_OK or RAS_EOF
+ *
+ * Side Effects:	The "written" structure element of "ras"
+ *			is set to True once a frame is written.
+ */
 int
 HDFWrite(ras)
 	Raster	*ras;
@@ -201,37 +264,79 @@ HDFWrite(ras)
 	int			status;
 	int			compress;
 
-	for(i=0; i<256; i++) {
-		palette[i*3 + 0] = ras->red[i];
-		palette[i*3 + 1] = ras->green[i];
-		palette[i*3 + 2] = ras->blue[i];
+	if (ras->type == RAS_INDEXED) {
+
+		/* Load the HDF color palette array. */
+
+		for(i=0; i<RAS_DEFAULT_NCOLORS; i++) {
+			palette[i*3 + 0] = ras->red[i];
+			palette[i*3 + 1] = ras->green[i];
+			palette[i*3 + 2] = ras->blue[i];
+		}
+
+		/* Set a new palette for every frame write. */
+
+		status = DFR8setpalette(palette);
+		if (status < 0) return(RAS_EOF);
+
+		/*
+		Set compression option based on current package options.
+		Only applies to RIS8 files.
+		*/
+
+		if (OptionCompression == RAS_COMPRESS_OFF) {
+			compress = 0;
+		}
+		else if (OptionCompression == RAS_COMPRESS_RLE) {
+			compress = DFTAG_RLE;
+		}
+		else {
+			compress = 0;
+		}
 	}
 
-	if (OptionCompression == RAS_COMPRESS_OFF) {
-		compress = 0;
-	}
-	else if (OptionCompression == RAS_COMPRESS_RLE) {
-		compress = DFTAG_RLE;
-	}
-	else {
-		compress = 0;
-	}
+	/*
+	The first image must go out with a putimage(), subsequent images
+	with addimage(). ras->written is used for book-keeping.
+	*/
 
 	if (!ras->written) {
-		status = DFR8setpalette(palette);
-		if (status == -1) return(RAS_EOF);
-		
-		status = DFR8putimage(ras->name, ras->data, 
-					ras->nx, ras->ny, compress);
+		if (ras->type == RAS_INDEXED) {
+		status = DFR8putimage(ras->name, (VOIDP) ras->data, 
+					(int32) ras->nx, (int32) ras->ny,
+					(uint16) compress);
+		}
+		else if (ras->type == RAS_DIRECT) {
+		status = DF24putimage(ras->name, (VOIDP) ras->data, 
+					(int32) ras->nx, (int32) ras->ny);
+		}
 			
-		if (status == -1) return(RAS_EOF);
+		if (status < 0) {
+			(void) ESprintf(HDF_ERRNO, "HDFWrite()");
+			return(RAS_ERROR);
+		}
 		ras->written = True;
 	}
 	else {
-		status = DFR8addimage(ras->name, ras->data, 
-					ras->nx, ras->ny, compress);
-		if (status == -1) return(RAS_EOF);
+		switch(ras->type) {
+
+			case RAS_INDEXED:
+			status = DFR8addimage(ras->name, (VOIDP) ras->data, 
+					(int32) ras->nx, (int32) ras->ny,
+					(uint16) compress);
+			break;
+
+			case RAS_DIRECT:
+			status = DF24addimage(ras->name, (VOIDP) ras->data, 
+					(int32) ras->nx, (int32) ras->ny);
+		}
+
+		if (status < 0) {
+			(void) ESprintf(HDF_ERRNO, "HDFWrite()");
+			return(RAS_ERROR);
+		}
 	}
+
 	return(RAS_OK);
 }
 
@@ -250,9 +355,22 @@ int
 HDFPrintInfo(ras)
 	Raster		*ras;
 {
+	HDFInfo		*dep;
+
+	dep = (HDFInfo *) ras->dep;
+
 	(void) fprintf(stderr, "\n");
 	(void) fprintf(stderr, "HDF Rasterfile Information\n");
 	(void) fprintf(stderr, "--------------------------\n");
+
+	if (ras->type == RAS_INDEXED) {
+	(void) fprintf(stderr, "Has color palette: %d\n",dep->palette_exists);
+	}
+
+	if (ras->type == RAS_DIRECT) {
+	(void) fprintf(stderr, "Interleaving type: %d\n",dep->interlace);
+	}
+
 	return(RAS_OK);
 }
 
@@ -264,21 +382,46 @@ HDFRead(ras)
 	int		i;
 	int		retry;
 	int		status;
+	HDFInfo		*dep;
+
+	dep = (HDFInfo *) ras->dep;
 
 	for(retry = 0, status = EOF; status == EOF; retry++) {
 		if (retry == 4) return(RAS_EOF);
 
-#ifdef DEAD
-		if (retry != 0)
-			(void) fprintf(stderr, "Retrying HDF Read\n");
-#endif /* DEAD */
+		switch(ras->type) {
+			case RAS_INDEXED:
+				status = DFR8getimage(ras->name, ras->data, 
+					ras->nx, ras->ny, pal);
+				break;
 
-		status = DFR8getimage(ras->name, ras->data, 
-				ras->nx, ras->ny, pal);
+			case RAS_DIRECT:
+#ifdef DEAD
+				status = DF24reqil(HDF_IL_PIXEL);
+#endif 
+				status = DF24getimage(ras->name, 
+							(VOIDP) ras->data, 
+							(int32) ras->nx,
+							(int32) ras->ny);
+				break;
+
+			default:
+				break;
+		}
 	}
+
+	if (ras->type == RAS_DIRECT) {
+		if (dep->interlace == HDF_IL_SCANPLANE) {
+			(void) fprintf(stderr, "wooga!\n");
+		}
+	}
+
+	/*
+	Load a new color table, providing it hasn't been previously forced.
+	*/
 		
-	if (ras->map_loaded == False) {
-		for(i=0; i<256; i++) {
+	if (ras->type == RAS_INDEXED && ras->map_forced != True) {
+		for(i=0; i<RAS_DEFAULT_NCOLORS; i++) {
 			ras->red[i]   = pal[i*3 + 0];
 			ras->green[i] = pal[i*3 + 1];
 			ras->blue[i]  = pal[i*3 + 2];
@@ -311,12 +454,13 @@ HDFClose(ras)
 		int	tmp_fd;
 
 		if ((buf = malloc (BUFSIZ)) == NULL) {
-			(void) RasterSetError(RAS_E_SYSTEM);
+			(void) ESprintf(errno, "malloc()");
 			return(RAS_ERROR);
 		}
 
 		if ((tmp_fd = open(ras->name, O_RDONLY)) < 0 ) {
-			(void) RasterSetError(RAS_E_SYSTEM);
+			(void) ESprintf(errno, "open(%s, %d)",
+					ras->name, O_RDONLY);
 			return(RAS_ERROR);
 		}
 
