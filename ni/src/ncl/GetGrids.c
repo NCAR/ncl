@@ -135,6 +135,7 @@ NhlDummyWorkstationClassRec NhldummyWorkstationClassRec = {
 /* gks_wks_recs		*/	NULL,
 /* hlu_wks_flag		*/	NULL,
 /* def_background	*/	{0.0,0.0,0.0},
+/* rgb_dbm              */      NULL,
 /* pal			*/	NhlInheritPalette,
 /* open_work		*/	DummyWorkstationOpen,
 /* close_work		*/	DummyWorkstationClose,
