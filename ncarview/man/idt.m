@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: idt.m,v 1.9 1992-08-12 23:07:58 clyne Exp $
+.\"	$Id: idt.m,v 1.10 1992-08-25 22:49:27 clyne Exp $
 .\"
 .\" NCAR View: idt.man,v 1.0 89/09/10 clyne 
 .\" Revision 3.01 90/11/15 clyne
@@ -199,6 +199,16 @@ during subsequent plays, if skip is set to
 every third frame is 
 displayed, etc. The default value for skip is 
 .BR 0.
+.IP delay
+Set the between-frame animation delay-time. When 
+.B idt
+is in animation mode you may request that
+.idt 
+pause for a period of time between the display of each image.
+The effect of setting a delay time is 
+to govern the speed at which 
+.B idt
+"plays" imagery.
 .IP "start segment"
 Define the first frame in the segment. This button and the 
 .B stop segment
@@ -240,7 +250,7 @@ Save a frame to a file. This command allows you to write the metacode
 for the current frame to a file. The result is a complete NCAR 
 Computer Graphics Metafile (CGM) containing a single frame.
 .IP unzoom
-Reset windowing transformatations previously set by the
+Reset windowing transformations previously set by the
 .B zoom
 command back to their default. 
 .IP zoom
@@ -251,6 +261,17 @@ provides you with a cursor with which you can rubberband an area of your X
 window. The area enclosed will be re-rendered to fit the dimensions of 
 the window while preserving the aspect ratio of the viewport described by
 the rubberband.
+.IP animate
+Toggle 
+animation mode on or off. When 
+.B idt
+is put into animation mode the currently defined segment is rasterized
+with the translator and loaded into the X server memory. Subsequent 
+.B idt
+commands operate on the memory-resident images. Not all 
+.B idt 
+commands are available in animation mode. By default animation is 
+off.
 .SH RESOURCES
 As with all standard X applications,
 .B idt
@@ -367,6 +388,12 @@ The hierarchy of the display panel popup
 							Label  label
 							Command  ok
 							Command  cancel
+				Command delay
+					TransientShell  simpleDialog
+						Dialog  dialog
+							Label  label
+							Command  ok
+							Command  cancel
 				Command "start segment"
 					TransientShell  simpleDialog
 						Dialog  dialog
@@ -407,6 +434,7 @@ The hierarchy of the display panel popup
 							Command  cancel
 				Command  zoom
 				Command  unzoom
+				Toggle animate
 .fi
 .sp
 Paned
