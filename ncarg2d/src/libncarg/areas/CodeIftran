@@ -190,14 +190,6 @@ I available from COS, on the Cray.
 I
 .EL T
 I
-I Selection of code to include CVS "$Id: CodeIftran,v 1.1 2004-05-11 16:56:17 kennison Exp $" comments.
-I --------- -- ---- -- ------- --- ------ --------
-I
-I To include a CVS "$Id: CodeIftran,v 1.1 2004-05-11 16:56:17 kennison Exp $" comment in each routine, use ".DE A"; else,
-I use ".EL A".
-I
-.DE A
-I
 I The AREAS common blocks
 I --- ----- ------ ------
 I
@@ -221,9 +213,6 @@ I
 I The BLOCK DATA routine ARBLDA
 I --- ----- ---- ------- ------
 I
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 16:56:17 kennison Exp $
-A
       BLOCK DATA ARBLDA
 C
 C Declare the AREAS common block.
@@ -327,9 +316,6 @@ I
 I The function ARRAT2
 I --- -------- ------
 I
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 16:56:17 kennison Exp $
-A
       FUNCTION ARRAT2 (YVL,XVL)
 C
 C The function ARRAT2, given two real values YVL and XVL, approximates
@@ -370,9 +356,6 @@ I
 I The function ARDAT2
 I --- -------- ------
 I
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 16:56:17 kennison Exp $
-A
       FUNCTION ARDAT2 (YVL,XVL)
 C
 C The function ARDAT2, given two double precision values YVL and XVL,
@@ -423,9 +406,6 @@ I
 I The subroutine ARDBDA.
 I --- ---------- -------
 I
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 16:56:17 kennison Exp $
-A
       SUBROUTINE ARDBDA (X1,Y1,X2,Y2,IL,IR,IF,IG)
 C
 C The routine ARDBDA is called by ARDBPA, below, to draw an arrow from
@@ -558,9 +538,6 @@ I
 I The subroutine ARDBPA.
 I --- ---------- -------
 I
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 16:56:17 kennison Exp $
-A
       SUBROUTINE ARDBPA (IAMA,IGIP,LABL)
 C
         DIMENSION IAMA(*)
@@ -729,9 +706,6 @@ I
 I The subroutine ARDRLN.
 I --- ---------- -------
 I
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 16:56:17 kennison Exp $
-A
       SUBROUTINE ARDRLN (IAM,XCD,YCD,NCD,XCS,YCS,MCS,IAI,IAG,MAI,LPR)
 C
         DIMENSION IAM(*),XCD(*),YCD(*),XCS(*),YCS(*),IAI(*),IAG(*)
@@ -1294,9 +1268,6 @@ I
 I The subroutine AREDAM.
 I --- ---------- -------
 I
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 16:56:17 kennison Exp $
-A
       SUBROUTINE AREDAM (IAM,XCA,YCA,LCA,IGI,IDL,IDR)
 C
         DIMENSION IAM(*),XCA(*),YCA(*)
@@ -1744,9 +1715,6 @@ I
 I The subroutine ARGETI.
 I --- ---------- -------
 I
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 16:56:17 kennison Exp $
-A
       SUBROUTINE ARGETI (IPN,IVL)
 C
         CHARACTER*(*) IPN
@@ -1840,9 +1808,6 @@ I
 I The subroutine ARGETR.
 I --- ---------- -------
 I
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 16:56:17 kennison Exp $
-A
       SUBROUTINE ARGETR (IPN,RVL)
 C
         CHARACTER*(*) IPN
@@ -1936,9 +1901,6 @@ I
 I The subroutine ARGPAI.
 I --- ---------- -------
 I
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 16:56:17 kennison Exp $
-A
       SUBROUTINE ARGPAI (CHS,IBG,IVL)
 C
 C This routine looks for a subscript of the form "(n)" in positions IBG
@@ -1994,9 +1956,6 @@ I
 I The subroutine ARGTAI.
 I --- ---------- -------
 I
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 16:56:17 kennison Exp $
-A
       SUBROUTINE ARGTAI (IAM,XCD,YCD,IAI,IAG,MAI,NAI,ICF)
 C
         DIMENSION IAM(*),IAI(*),IAG(*)
@@ -2201,9 +2160,6 @@ I
 I The subroutine ARINAM.
 I --- ---------- -------
 I
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 16:56:17 kennison Exp $
-A
       SUBROUTINE ARINAM (IAM,LAM)
 C
         DIMENSION IAM(LAM)
@@ -2312,9 +2268,6 @@ I
 I The subroutine ARINIT
 I --- ---------- -------
 I
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 16:56:17 kennison Exp $
-A
       SUBROUTINE ARINIT (IER)
 C
 C Declare the AREAS common block.
@@ -2383,9 +2336,6 @@ I
 I The subroutine ARINI2.
 I --- ---------- -------
 I
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 16:56:17 kennison Exp $
-A
       SUBROUTINE ARINI2 (ILC,RS1,RS2,RS3,DS1,DS2,DS3,RS4,RS5,RS6)
 C
         DOUBLE PRECISION DS1,DS2,DS3
@@ -2415,9 +2365,6 @@ I
 I The subroutine ARMPIA.
 I --- ---------- -------
 I
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 16:56:17 kennison Exp $
-A
       SUBROUTINE ARMPIA (IOP,DPV,IER)
 C
         DOUBLE PRECISION DPV
@@ -2648,9 +2595,6 @@ I
 I The subroutine ARMVAM.
 I --- ---------- -------
 I
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 16:56:17 kennison Exp $
-A
       SUBROUTINE ARMVAM (IAM,IAN,LAN)
 C
         DIMENSION IAM(*),IAN(*)
@@ -2737,9 +2681,6 @@ I
 I The subroutine ARPRAM.
 I --- ---------- -------
 I
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 16:56:17 kennison Exp $
-A
       SUBROUTINE ARPRAM (IAM,IF1,IF2,IF3)
 C
         DIMENSION IAM(*)
@@ -4528,9 +4469,6 @@ I
 I The subroutine ARSCAM.
 I --- ---------- -------
 I
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 16:56:17 kennison Exp $
-A
       SUBROUTINE ARSCAM (IAM,XCS,YCS,MCS,IAI,IAG,MAI,APR)
 C
         DIMENSION IAM(*),XCS(MCS),YCS(MCS),IAI(MAI),IAG(MAI)
@@ -5460,9 +5398,6 @@ I
 I The subroutine ARSETI.
 I --- ---------- -------
 I
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 16:56:17 kennison Exp $
-A
       SUBROUTINE ARSETI (IPN,IVL)
 C
         CHARACTER*(*) IPN
@@ -5548,9 +5483,6 @@ I
 I The subroutine ARSETR.
 I --- ---------- -------
 I
-A
-A $Id: CodeIftran,v 1.1 2004-05-11 16:56:17 kennison Exp $
-A
       SUBROUTINE ARSETR (IPN,RVL)
 C
         CHARACTER*(*) IPN
