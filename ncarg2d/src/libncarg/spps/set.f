@@ -1,5 +1,5 @@
 C
-C $Id: set.f,v 1.3 1994-03-17 01:44:15 kennison Exp $
+C $Id: set.f,v 1.4 1994-03-19 00:12:59 kennison Exp $
 C
       SUBROUTINE SET (VL,VR,VB,VT,WL,WR,WB,WT,LF)
 C
@@ -22,6 +22,10 @@ C flags.
 C
       COMMON /IUTLCM/ LL,MI,MX,MY,IU(96)
       SAVE /IUTLCM/
+C
+C Check for an uncleared prior error.
+C
+      IF (ICFELL('SET - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
 C
 C Set the GKS viewport for transformation 1.
 C

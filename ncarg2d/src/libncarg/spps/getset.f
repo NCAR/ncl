@@ -1,5 +1,5 @@
 C
-C $Id: getset.f,v 1.3 1994-03-17 01:43:32 kennison Exp $
+C $Id: getset.f,v 1.4 1994-03-19 00:12:57 kennison Exp $
 C
       SUBROUTINE GETSET (VL,VR,VB,VT,WL,WR,WB,WT,LF)
 C
@@ -26,6 +26,10 @@ C
 C Define variables to receive the GKS viewport and window.
 C
       DIMENSION VP(4),WD(4)
+C
+C Check for an uncleared prior error.
+C
+      IF (ICFELL('GETSET - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
 C
 C Retrieve the number of the current GKS normalization transformation.
 C
