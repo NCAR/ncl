@@ -1,5 +1,5 @@
 C
-C	$Id: gesc.f,v 1.12 1994-05-19 19:26:48 fred Exp $
+C	$Id: gesc.f,v 1.13 1994-06-02 21:56:39 fred Exp $
 C
       SUBROUTINE GESC(FCTID,LIDR,IDR,MLODR,LODR,ODR)
 C
@@ -39,6 +39,8 @@ C       CALL GERHND(180,EESC,ERF)
       ENDIF
 C
 C  Process legal escape function ID'S:
+C      -1390  --  Returns 'NCAR_GKS0A--VERSION_4.0' in ODR as a check 
+C                 to see if the NCAR GKS package is being used.
 C      -1391  --  Metafile name
 C      -1392  --  FLASH4 support
 C      -1393  --  Picture name
@@ -271,6 +273,8 @@ C
 C
 C  PostScript escapes.
 C
+      ELSE IF (FCTID .EQ. -1390) THEN
+        ODR(1) = 'NCAR_GKS0A--VERSION_4.0'
       ELSE IF (FCTID.GE.-1530 .AND. FCTID.LE.-1510) THEN
 C
 C  Decode the workstation ID.
