@@ -8,6 +8,7 @@
  * set, then this path is used for the "udunits.dat" file. Otherwise,
  * the path within NCL ($NCARG_ROOT/lib/ncarg/udunits/) is used.
  */
+
 int utopen()
 {
   const char *path = NULL;
@@ -86,6 +87,13 @@ NhlErrorTypes ut_calendar_W( void )
   int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
   NclScalar missing_x, missing_dx;
   NclBasicDataTypes type_x;
+/* 
+ * Variables for calculating fraction of year,  if the option is 4.
+ */
+  int nsid, doy, total_seconds_in_year, seconds_in_doy, seconds_in_hour;
+  int seconds_in_minute; 
+  double current_seconds_in_year, fraction_of_year;
+
 /*
  * Variables for retrieving attributes from "options".
  */
@@ -103,13 +111,15 @@ NhlErrorTypes ut_calendar_W( void )
  * Output variables.
  */
   int year, month, day, hour, minute;
-  float second, *date;
+  float second;
+  void *date;
   int ndims_date, *dsizes_date;
   NclScalar missing_date;
+  NclBasicDataTypes type_date;
 /*
  * various
  */
-  int i, total_size_x, index_date, return_missing;
+  int i, total_size_x, total_size_date, index_date, return_missing;
 
 /*
  * Before we do anything, initialize the Udunits package.
@@ -137,6 +147,7 @@ NhlErrorTypes ut_calendar_W( void )
 /*
  * Get option.
  */
+
   option = (int*)NclGetArgValue(
            1,
            2,
@@ -146,37 +157,68 @@ NhlErrorTypes ut_calendar_W( void )
            NULL,
            NULL,
            1);
-/*
- * Coerce missing value to double, and get the default missing
- * value for a float type.
- */
-  coerce_missing(type_x,has_missing_x,&missing_x,&missing_dx,NULL);
-
-  missing_date = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis;
 
 /*
- * Calculate total size of input array, and size and dimensions for
- * output array, and alloc memory for output array.
- *
- * Since we are returning 6 separate values for each input value
- * (year, month, day, hour, minute, second), and since
- * seconds are float and everybody else is integer, return a float
- * array dimensioned (6,total_size_x array).
+ * Calculate size of input array.
  */
   total_size_x = 1;
   for( i = 0; i < ndims_x; i++ ) total_size_x *= dsizes_x[i];
 
-  ndims_date  = ndims_x + 1;
-  dsizes_date = (int *)calloc(ndims_date,sizeof(int));
-  date        = (float *)calloc(6*total_size_x,sizeof(float));
+/*
+ * Calculate size and dimensions for output array, and allocate
+ * memory for output array.  The output size will vary depending
+ * on what option the user has specified.  Only options -3 to 4
+ * are currently recognized.
+ */
 
+  if(*option < -3 || *option > 4) {
+	NhlPError(NhlWARNING,NhlEUNKNOWN,"ut_calendar: Unknown option, defaulting to 0.");
+	*option = 0;
+  }
+
+  if(*option == 0) {
+	type_date       = NCL_float;
+	total_size_date = 6 * total_size_x;
+	missing_date    = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis;
+	ndims_date      = ndims_x + 1;
+	date            = (float *)calloc(total_size_date,sizeof(float));
+  }
+  else if(*option >= 1 && *option <= 4) {
+	type_date       = NCL_double;
+	total_size_date = total_size_x;
+	missing_date    = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis;
+	ndims_date      = ndims_x;
+	date            = (double *)calloc(total_size_date,sizeof(double));
+  }
+  else if(*option >= -3 && *option <= -1) {
+	type_date       = NCL_int;
+	total_size_date = total_size_x;
+	missing_date    = ((NclTypeClass)nclTypeintClass)->type_class.default_mis;
+	ndims_date      = ndims_x;
+	date            = (int *)calloc(total_size_date,sizeof(int));
+  }
+  dsizes_date = (int *)calloc(ndims_date,sizeof(int));
+
+/*
+ * Make sure we have enough memory for output.
+ */
   if( date == NULL || dsizes_date == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"ut_calendar: Unable to allocate memory for output arrays");
     return(NhlFATAL);
   }
 
+/*
+ * Calculate output dimension sizes.
+ */
   for( i = 0; i < ndims_x; i++ ) dsizes_date[i] = dsizes_x[i];
-  dsizes_date[ndims_x] = 6;
+  if(*option == 0) {
+	dsizes_date[ndims_x] = 6;
+  }
+
+/*
+ * Coerce missing values to double.
+ */
+  coerce_missing(type_x,has_missing_x,&missing_x,&missing_dx,NULL);
 
 /* 
  * The "units" attribute of "time" must be set, otherwise missing
@@ -249,22 +291,35 @@ NhlErrorTypes ut_calendar_W( void )
 
 /* 
  * If we reach this point and return_missing is not 0, then either
- * "units" was invalid or wasn't set , or "calendar" was not a
- * recoginized calendar. We return all missing values in this case
+ * "units" was invalid or wasn't set, or "calendar" was not a
+ * recoginized calendar. We return all missing values in this case.
  */
   if(return_missing) {
-    for(i = 0; i < 6*total_size_x; i++) {
-      date[i] = missing_date.floatval;
-    }
+	if(*option == 0) {
+	  for(i = 0; i < total_size_date; i++ ) {
+		((float*)date)[i] = missing_date.floatval;
+	  }
+	}
+	else if(*option >= 1 && *option <= 4) {
+	  for(i = 0; i < total_size_date; i++ ) {
+		((double*)date)[i] = missing_date.doubleval;
+	  }
+	}
+	else if(*option >= -3 && *option <= -1) {
+	  for(i = 0; i < total_size_date; i++ ) {
+		((int*)date)[i] = missing_date.intval;
+	  }
+	}
 /*
  * Close up Udunits.
  */
     utTerm();
+
 /*
  * Return all missing values.
  */
     return(NclReturnValue(date,ndims_date,dsizes_date,
-                          &missing_date,NCL_float,0));
+                          &missing_date,type_date,0));
   }
             
 /*
@@ -272,6 +327,7 @@ NhlErrorTypes ut_calendar_W( void )
  */
   tmp_x = coerce_input_double(x,type_x,total_size_x,has_missing_x,&missing_x,
                   &missing_dx);
+
 /* 
  * Loop through each element and get the 6 values.
  */
@@ -282,40 +338,147 @@ NhlErrorTypes ut_calendar_W( void )
       (void) utCalendar(tmp_x[i],&unit,&year,&month,&day,
             &hour,&minute,&second);
     
-      date[index_date]   = (float)year;
-      date[index_date+1] = (float)month;
-      date[index_date+2] = (float)day;
-      date[index_date+3] = (float)hour;
-      date[index_date+4] = (float)minute;
-      date[index_date+5] = second;
+/*
+ * Calculate the return values, based on the input option.
+ */
+
+	  switch(*option) {
+
+	  case 0:
+		((float*)date)[index_date]   = (float)year;
+		((float*)date)[index_date+1] = (float)month;
+		((float*)date)[index_date+2] = (float)day;
+		((float*)date)[index_date+3] = (float)hour;
+		((float*)date)[index_date+4] = (float)minute;
+		((float*)date)[index_date+5] = second;
+		break;
+
+/*
+ * YYYYMM
+ */
+	  case -1:
+		((int*)date)[index_date] = (100*year) + month;
+		break;
+
+	  case 1:
+		((double*)date)[index_date] = (double)(100*year) + (double)month;
+		break;
+/*
+ * YYYYMMDD
+ */
+	  case -2:
+		((int*)date)[index_date] = (10000*year) + (100*month) + day;
+		break;
+
+	  case 2:
+		((double*)date)[index_date] = (double)(10000*year)
+                                    + (double)(100*month) 
+                                    + (double)day;
+		break;
+
+/*
+ * YYYYMMDDHH
+ */
+	  case -3:
+		((int*)date)[index_date] = (1000000*year) + (10000*month) 
+  	                             + (100*day) + hour;		
+		break;
+		
+	  case 3:
+		((double*)date)[index_date] = (double)(1000000*year) 
+ 		                            + (double)(10000*month) 
+	 	                            + (double)(100*day)
+                                    + (double)hour;		
+		break;
+		
+/*
+ *  YYYY.fraction_of_year
+ */
+	  case 4:
+		nsid             = 86400;      /* num seconds in a day */
+		total_seconds_in_year  = isleapyear(year) ? 366*nsid : 365*nsid;
+		doy                    = day_of_year(year,month,day);
+		if(doy > 1) {
+		  seconds_in_doy = (doy-1) * nsid;
+		}
+		else {
+		  seconds_in_doy = 0;
+		}
+		if(hour > 1) {
+		  seconds_in_hour  = (hour-1) * 3600;
+		}
+		else {
+		  seconds_in_hour  = 0;
+		}
+		if(minute > 1) {
+		  seconds_in_minute  = (minute-1) * 60;
+		}
+		else {
+		  seconds_in_minute  = 0;
+		}
+		current_seconds_in_year = seconds_in_doy + 
+		                          seconds_in_hour + 
+                                  seconds_in_minute + 
+                                  second;
+		fraction_of_year = current_seconds_in_year/(double)total_seconds_in_year;
+		((double*)date)[index_date] = (double)year + fraction_of_year;
+		break;
+	  }
     }
     else {
-      date[index_date]   = missing_date.floatval;
-      date[index_date+1] = missing_date.floatval;
-      date[index_date+2] = missing_date.floatval;
-      date[index_date+3] = missing_date.floatval;
-      date[index_date+4] = missing_date.floatval;
-      date[index_date+5] = missing_date.floatval;
+	  switch(*option) {
+
+	  case 0:
+		((float*)date)[index_date]   = missing_date.floatval;
+		((float*)date)[index_date+1] = missing_date.floatval;
+		((float*)date)[index_date+2] = missing_date.floatval;
+		((float*)date)[index_date+3] = missing_date.floatval;
+		((float*)date)[index_date+4] = missing_date.floatval;
+		((float*)date)[index_date+5] = missing_date.floatval;
+		break;
+
+	  case 1:
+	  case 2:
+	  case 3:
+	  case 4:
+		((double*)date)[index_date] = missing_date.doubleval;
+		break;
+
+	  case -1:
+	  case -2:
+	  case -3:
+		((int*)date)[index_date] = missing_date.intval;
+		break;
+	  }
     }
-    index_date += 6;
+    if(*option == 0) {
+	  index_date += 6;
+	}
+	else {
+	  index_date++;
+	}
   }
 
 /*
  * Free the work arrays.
  */
+
   if(type_x != NCL_double) NclFree(tmp_x);
+
 /*
  * Close up Udunits.
  */
+
   utTerm();
+
 /*
  * Return.
  */ 
   if(has_missing_x) {
-    return(NclReturnValue(date,ndims_date,dsizes_date,&missing_date,NCL_float,0));
+    return(NclReturnValue(date,ndims_date,dsizes_date,&missing_date,type_date,0));
   }
   else {
-    return(NclReturnValue(date,ndims_date,dsizes_date,NULL,NCL_float,0));
+    return(NclReturnValue(date,ndims_date,dsizes_date,NULL,type_date,0));
   }
 }
 
