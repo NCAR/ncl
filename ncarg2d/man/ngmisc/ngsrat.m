@@ -8,7 +8,7 @@ CALL NGSRAT(IOPT, IAT, RAT)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void c_ngsrat(int iopt, float *iat, float *rat)
+void c_ngsrat(int iopt, int *iat, float *rat)
 .SH DESCRIPTION 
 .IP IOPT 12
 (an input variable of type INTEGER) indicating the desired action:
