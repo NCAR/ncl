@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ncargcex.csh,v 1.15 1994-08-18 13:42:26 haley Exp $
+#	$Id: ncargcex.csh,v 1.16 1994-08-26 18:36:07 haley Exp $
 #
 
 #********************#
@@ -44,18 +44,6 @@ if (! -d "$example_dir") then
   echo "Example directory <$example_dir> does not exist."
   exit 1
 endif
-
-set tutorial_dir = `ncargpath SED_TUTORIALDIR`
-
-if ($status != 0) then
-        exit 1
-endif
-
-if (! -d "$tutorial_dir") then
-  echo "Tutorial directory <$tutorial_dir> does not exist."
-  exit 1
-endif
-
 
 #**************************#
 #                          #
