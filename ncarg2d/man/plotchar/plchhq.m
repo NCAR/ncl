@@ -313,7 +313,9 @@ coex03,
 epltch,
 sfex02,
 srex01,
-tpltch.
+tpltch,
+fcoord1,
+fcoord2.
 .SH ACCESS
 To use PCHIQU, load the NCAR Graphics libraries ncarg, ncarg_gks,
 ncarg_c, and ncarg_loc, preferably in that order.  To use c_pchiqu, load 
@@ -334,6 +336,10 @@ pcsetc,
 pcseti,
 pcsetr,
 ncarg_cbind.
+.sp
+Hardcopy:
+NCAR Graphics Contouring and Mapping Tutorial;
+NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
 Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research

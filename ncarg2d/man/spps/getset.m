@@ -40,16 +40,18 @@ window in user coordinates.
 window in user coordinates.
 .IP LS 12
 (an output variable of type INTEGER) defines the linear/log nature of
-the mapping, where:
-.nf
-
-LS = 1, is linear X, linear Y
-LS = 2, is linear X, log Y
-LS = 3, is log X,    linear Y
-LS = 4, is log X,    log Y
-
-.fi
-.SH C-BINDING DESCRIPTION                               ,,
+the mapping, as follows:
+.RS
+.IP 1 3
+linear X, linear Y
+.IP 2 3
+linear X, log Y
+.IP 3 3
+log X, linear Y
+.IP 4 3
+log X, log Y
+.RE
+.SH C-BINDING DESCRIPTION
 The C-binding argument descriptions are the same as the FORTRAN
 argument descriptions.
 .SH USAGE

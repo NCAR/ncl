@@ -51,20 +51,20 @@ horizontal orientation.
 .IP IC 12
 (an input expression of type INTEGER) specifies the centering
 option, as follows:
-.nf
-
-IC < 0 - (PX,PY) will be in the vertical center
-         of the left edge of the leftmost character
-         in the original horizontal string.
-
-IC = 0 - (PX,PY) will be in the center of the
-         text extent rectangle.
-
-IC > 0 - (PX,PY) will be in the vertical center
-         of the right edge of the rightmost character
-         in the original horizontal string.
-
-.fi
+.RS
+.IP "<0" 4
+(PX,PY) will be in the vertical center
+of the left edge of the leftmost character
+in the original horizontal string.
+.IP "=0" 4
+(PX,PY) will be in the center of the
+text extent rectangle.
+.IP ">0" 4
+(PX,PY) will be in the vertical center
+of the right edge of the rightmost character
+in the original horizontal string.
+.RE
+.PP
 A call to WTSTR causes the SPPS polyline buffer to be flushed and leaves
 the "pen" (for subsequent calls to FRSTPT, VECTOR, PLOTIF, and PLOTIT)
 at the location (PX,PY).

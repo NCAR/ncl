@@ -38,6 +38,9 @@ messages and/or informational messages.
 Online:
 labelbar, labelbar_params, lbfill, lbgeti, lbgetr, lblbar,
 lbseti, ncarg_cbind
+.sp
+Hardcopy:
+NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
 Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research

@@ -76,7 +76,7 @@ to ensure that XUS and YUS are within the current
 boundaries of the user coordinate system. 
 .sp
 When implementing a custom mapping, you may wish to look at the coding
-of the pre-defined mappings (0, identity mapping; 1, EZMAP
+of the pre-defined mappings (0, identity mapping; 1, Ezmap
 projections; and 2, polar coordinate mapping) in the file
 \'stmpxy.f\'. For these mappings, the subroutine STMPXY is the
 equivalent of STUMXY; it has an identical interface and may serve as
@@ -100,6 +100,9 @@ stumsl,
 stumta,
 stumxy,
 ncarg_cbind.
+.sp
+Hardcopy:
+NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
 Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research

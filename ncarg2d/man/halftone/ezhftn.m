@@ -24,12 +24,8 @@ half-tone plotted.
 (an input parameter of type INTEGER) which is the first dimension of
 the Z array.
 .IP N 12
-(an input parameter of type INTEGER) which is the extent of the
-second dimension of array Z to be plotted.
-.IP SPVAL 12
-(an iput parameter of type REAL) used to
-denote missing values in the Z array.
-This argument is ignored if ISPV = 0.
+(an input parameter of type INTEGER) which is the second dimension of
+the Z array.
 .SH USAGE
 EZHFTN has a shortened argument list from entry HAFTON which is
 based upon the following assumptions.

@@ -115,6 +115,7 @@ the references to "first dimension" and "second dimension" are exchanged.
 .SH EXAMPLES
 Use the ncargex command to see the following relevant examples: 
 bnchmk,
+fcover,
 ffex00,
 ffex01,
 ffex02,
@@ -146,6 +147,9 @@ vvsetr,
 vvudmv,
 vvumxy,
 ncarg_cbind.
+.sp
+Hardcopy:
+NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
 Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research

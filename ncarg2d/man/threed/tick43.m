@@ -2,25 +2,45 @@
 .na
 .nh
 .SH NAME
-TICK43 - Allows control of tick mark length.
+TICK43 - Gives user control of tick mark length in PERIM3.
 .SH SYNOPSIS
-CALL TICK43 (MAGU,MINU,MAGV,MINV,MAGW,MINW)
+CALL TICK43 (MAJORU,MINORU,MAJORV,MINORV,MAJORW,MINORW)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void c_tick43 (int magu, int minu, int magv, int minv, 
+void c_tick43 (int majoru, int minoru, int majorv, int minorv,
 .br
-int magw, int minw)
+int majorw, int minorw)
 .SH DESCRIPTION 
-.IP "MAGU, MAGV, MAGW" 12
-Specify the length, in plotter address units of
-major division tick marks on  the U, V, and W axes.
-.IP "MINU, MINV, MINW" 12
-Specify the length, in plotter address units
-of minor division tick marks on  the U, V, and W axes.
+.IP "MAJORU" 12
+(an input expression of type INTEGER) specifies the length of major ticks
+to be used on perimeter sides that are parallel to the U axis.
+.IP "MINORU" 12
+(an input expression of type INTEGER) specifies the length of minor ticks
+to be used on perimeter sides that are parallel to the U axis.
+.IP "MAJORV,MINORV" 12
+(input expressions of type INTEGER) specify the lengths of major and minor
+ticks for perimeter sides parallel to the V axis.
+.IP "MAJORW,MINORW" 12
+(input expressions of type INTEGER) specify the lengths of major and minor
+ticks for perimeter sides parallel to the W axis.
+.PP
+All tick lengths are specified as integers between 0 and 1024.  The value
+"n" produces a tick that is n/1024ths as long as the longest side of the
+box defined by the arguments UMIN, UMAX, VMIN, VMAX, WMIN, and WMAX in
+the last call to SET3.  The default values are 12 for a major tick and 8
+for a minor tick.
 .SH C-BINDING DESCRIPTION
 The C-binding argument descriptions are the same as the FORTRAN 
 argument descriptions.
+.SH EXAMPLES
+Use the ncargex command to see the following relevant
+examples:
+fthex01,
+fthex02,
+fthex03,
+fthex04,
+fthex05.
 .SH ACCESS
 To use TICK43, load the NCAR Graphics libraries ncarg, ncarg_gks,
 ncarg_c, and ncarg_loc, preferably in that order.  To use c_tick43, load the 
@@ -43,6 +63,9 @@ threed,
 tick3,
 vect3,
 ncarg_cbind.
+.sp
+Hardcopy:
+NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
 Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research

@@ -51,30 +51,34 @@ intensities.  The sign of NOPT controls
 the directness or inverseness of the
 mapping.
 
-. NOPT positive yields direct mapping.
-  The largest value of Z produces the
-  most dense dots.  On mechanical plotters,
-  large values of Z will produce a dark
-  area on the paper.  With the film
-  development methods used at NCAR,
-  large values of Z will produce many
-  (white) dots on the film, also
-  resulting in a dark area on
-  reader-printer paper.
-. NOPT negative yields inverse mapping.
-  The smallest values of Z produce the
-  most dense dots resulting in dark
-  areas on the paper.
+NOPT positive yields direct mapping.
+The largest value of Z produces the
+most dense dots.  On mechanical plotters,
+large values of Z will produce a dark
+area on the paper.  With the film
+development methods used at NCAR,
+large values of Z will produce many
+(white) dots on the film, also
+resulting in a dark area on
+reader-printer paper.
+
+NOPT negative yields inverse mapping.
+The smallest values of Z produce the
+most dense dots resulting in dark
+areas on the paper.
 
 The absolute value of NOPT determines the
 mapping of Z onto the intensities.  For
 IABS(NOPT)
+
 = 0  The mapping is linear.  For
      each intensity there is an equal
      range in Z value.
+
 = 1  The mapping is linear.  For
      each intensity there is an equal
      range in Z value.
+
 = 2  The mapping is exponential.  For
      larger values of Z, there is a
      larger difference in intensity for
@@ -82,12 +86,15 @@ IABS(NOPT)
      in the larger values of Z are displayed
      at the expense of the smaller values
      of Z.
+
 = 3  The mapping is logrithmic, so
      details of smaller values of Z are show
      at the expense of larger values of Z.
+
 = 4  Sinusoidal mapping, so mid-range values
      of Z show details at the expense of
      extreme values of Z.
+
 = 5  Arcsine mapping, so extreme values of
      Z are shown at the expense of mid-range
 .IP NPRM 12
@@ -95,15 +102,17 @@ IABS(NOPT)
 to control the drawing of a
 perimeter around the half-tone picture.
 
-. NPRM=0:  The perimeter is drawn with
-  ticks pointing at data locations.
-  (Side lengths are proportional to number
-  of data values.)
-. NPRM positive:  No perimeter is drawn.  The
-  picture fills the frame.
-. NPRM negative:  The picture is within the
-  confines of the user's current viewport
-  setting.
+NPRM=0:  The perimeter is drawn with
+ticks pointing at data locations.
+(Side lengths are proportional to number
+of data values.)
+
+NPRM positive:  No perimeter is drawn.  The
+picture fills the frame.
+
+NPRM negative:  The picture is within the
+confines of the user's current viewport
+setting.
 .IP ISPV 12
 (an input parameter of type INTEGER) used
 to tell if the special value feature
@@ -112,22 +121,28 @@ is used to mark areas where the data is
 not known or holes are wanted in the
 picture.
 
-. ISPV = 0:  Special value feature not in
-  use.  SPVAL is ignored.
-. ISPV non-zero:  Special value feature
-  in use.  SPVAL defines the special
-  value.  Where Z contains the special
-  value, no half-tone is drawn.  If ISPV
-  = 0  Special value feature not in use.
-       SPVAL is ignored.
-  = 1  Nothing is drawn in special value
-       area.
-  = 2  Contiguous special value areas are
-       surrounded by a polygonal line.
-  = 3  Special value areas are filled
-       with X(s).
-  = 4  Special value areas are filled in
-       with the highest intensity.
+ISPV = 0:  Special value feature not in
+use.  SPVAL is ignored.
+
+ISPV non-zero:  Special value feature
+in use.  SPVAL defines the special
+value.  Where Z contains the special
+value, no half-tone is drawn.  If ISPV
+
+= 0  Special value feature not in use.
+     SPVAL is ignored.
+
+= 1  Nothing is drawn in special value
+     area.
+
+= 2  Contiguous special value areas are
+     surrounded by a polygonal line.
+
+= 3  Special value areas are filled
+     with X(s).
+
+= 4  Special value areas are filled in
+     with the highest intensity.
 .IP SPVAL 12
 (an iput parameter of type REAL) used to
 denote missing values in the Z array.

@@ -41,12 +41,12 @@ examples:
 cpex01,
 cpex09,
 cpexcc,
-coex02,
-coex03,
 epltch,
 srex01,
 vvexcc.
 fcell0,
+fcoord1,
+fcoord2,
 fgkgpm,
 fgpm01,
 fngwsym,
@@ -73,6 +73,9 @@ pcpnwi,
 pcsetc,
 pcsetr,
 ncarg_cbind.
+.sp
+Hardcopy:
+NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
 Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research

@@ -3,7 +3,7 @@
 .nh
 .SH NAME
 STITLE - 
-Creates scrolled movie titles. It receives all
+Creates scrolled movie or video titles. It receives all
 input through the argument list.
 .SH UTILITY
 This routine is part of the Scrolled_title utility in NCAR Graphics.  To
@@ -147,7 +147,8 @@ are partially outside the window.
 .SH EXAMPLES
 Use the ncargex command to see the following relevant
 examples: 
-stex01,
+slex01,
+fslfont,
 tstitl.
 .SH ACCESS
 To use STITLE, load the NCAR Graphics libraries ncarg, ncarg_gks,

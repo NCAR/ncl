@@ -31,6 +31,10 @@ argument descriptions.
 This routine allows you to set the current value of Vectors parameters
 of type CHARACTER.  For a complete list of parameters available in
 this utility, see the vectors_params man page.
+.SH EXAMPLES
+Use the ncargex command to see the following relevant examples:
+fcover,
+ffex00.
 .SH ACCESS
 To use VVSETC, load the NCAR Graphics libraries ncarg, ncarg_gks,
 ncarg_c, and ncarg_loc, preferably in that order.  To use c_vvsetc, load the 
@@ -54,6 +58,9 @@ vvsetr,
 vvudmv,
 vvumxy,
 ncarg_cbind.
+.sp
+Hardcopy:
+NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
 Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research

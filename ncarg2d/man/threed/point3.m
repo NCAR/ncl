@@ -2,7 +2,7 @@
 .na
 .nh
 .SH NAME
-POINT3 - Draws a point in 3-space.
+POINT3 - Draws the projection of a point in 3-space.
 .SH SYNOPSIS
 CALL POINT3 (U,V,W)
 .SH C-BINDING SYNOPSIS
@@ -10,11 +10,30 @@ CALL POINT3 (U,V,W)
 .sp
 void c_point3 (float u, float v, float w)
 .SH DESCRIPTION 
-.IP "U, V, W" 12
-Coordinates for the point in 3-space.
+.IP "U,V,W" 12
+(input expressions of type REAL) are the coordinates of a point in
+3-space.
+.PP
+Each point is drawn by calling the GKS routine GPM to draw a polymarker
+of type 1.  Points are therefore drawn in the current polymarker color, as
+determined by the last call to the GKS routine GSPMCI; by default, color
+index 1 is the one used.
+.PP
+Calling the GKS routine GSMKSC to change the polymarker size does not
+normally affect polymarkers of type 1, so there is no good way to make
+the points bigger; if you want to do this, you should use LINE3 (or perhaps
+FRST3 and VECT3) instead of POINT3 to draw an object of the desired size.
 .SH C-BINDING DESCRIPTION
 The C-binding argument descriptions are the same as the FORTRAN 
 argument descriptions.
+.SH EXAMPLES
+Use the ncargex command to see the following relevant
+examples:
+fthex01,
+fthex02,
+fthex03,
+fthex04,
+fthex05.
 .SH ACCESS
 To use POINT3, load the NCAR Graphics libraries ncarg, ncarg_gks,
 ncarg_c, and ncarg_loc, preferably in that order.  To use c_point3, load 
@@ -37,6 +56,9 @@ tick3,
 tick43,
 vect3,
 ncarg_cbind.
+.sp
+Hardcopy:
+NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
 Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research

@@ -47,7 +47,8 @@ Online:
 gpl, gsln, gslwsc, gscr, gsplci,
 frstpt, vector, plotif, line, spps, spps_params, ncarg_cbind
 .sp
-Hardcopy:  
+Hardcopy:
+NCAR Graphics Fundamentals, UNIX Version
 User's Guide for NCAR GKS-0A Graphics;
 "The Use of X/Y Coordinates in NCAR Graphics" SCD User Document
 .SH COPYRIGHT

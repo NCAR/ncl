@@ -1,3 +1,4 @@
+'\" t
 .TH Streamlines_params 3NCARG "April 1993" UNIX "NCAR GRAPHICS"
 .na
 .nh
@@ -10,7 +11,7 @@ description begins with a line giving the three-character
 mnemonic name of the parameter, the phrase for which the
 mnemonic stands, and the intrinsic type of the parameter.
 .IP "AGD - Arrow Placement Grid Increment - Integer"
-This parameter allows the user a degree of control over directional
+This parameter allows you a degree of control over directional
 arrowhead spacing in the field flow plot.  Streamlines allows a
 maximum of one directional arrowhead for each grid box, where a grid
 box is the space between adjacent integer grid coordinates in the grid
@@ -25,10 +26,7 @@ grid coordinate space to NDC space, then the spacing of the
 arrowheads should be more or less uniform over the field
 flow plot. However, if there is a non-linearity anywhere in
 the pipeline, the arrowheads will probably be more crowded
-in some areas than in others. Future enhancements to the
-Streamlines utility are expected to provide uniform
-arrowhead spacing across non-linear grid to NDC space
-mappings. The default value of AGD is 2.
+in some areas than in others. The default value of AGD is 2.
 .IP "ARL - Arrow Head Length - Real"
 ARL defines the length of each of the two lines used to
 create the directional arrow head as a fraction of the
@@ -70,31 +68,31 @@ can have a noticeable impact on performance. By default, CKX has the
 value -99, causing Streamlines to check for crossover only on entrance
 to a new grid box.
 .IP "CYK - Cyclical Data Flag - Integer"
-The user may use this parameter to specify that the data in the vector
-field arrays has a cyclical nature: that is, it repeats with a period
-of M-1 (M, the input parameter to STINIT) along the first dimensional
-axis. If the flag is set to specify that the data is cyclical,
-Streamlines checks to see if the field data meet certain criteria. If
-they do, then an internal cyclical flag is set, causing the normalized
-vector interpolation routines to consider data from the opposite ends
-of the dataset when interpolating near the first dimensional dataset
-boundaries. If the criteria are not met, then Streamlines sets an
-error flag, retrievable by the user through the parameter ERR;
-processing continues without interruption, except that Streamlines now
-interpolates near the first dimensional boundaries without
-consideration of data at the opposite end. The test the data must pass
-in order to be deemed cyclical is that for each subscript value along
-the second dimensional axis, the first element and the last element
-along the first dimensional axis must be identical. A value of 0 for
-CYK means that the data is to be considered non-cyclical; any other
-value means that Streamlines should test for the cyclical condition.
-You must initialize Streamlines with a call to STINIT after modifying
-this parameter. The default value of CYK is 0.
+Use this parameter to specify that the data in the vector field arrays
+is cyclical: that is, it repeats with a period of M-1 (M, the input
+parameter to STINIT) along the first dimensional axis. If the flag is
+set on, Streamlines checks to see if the field data meet certain
+criteria. If they do, an internal cyclical flag is set, causing the
+normalized vector interpolation routines to consider data from the
+opposite ends of the dataset when interpolating near the first
+dimensional dataset boundaries. If the criteria are not met,
+Streamlines sets an error flag, retrievable by the user through the
+parameter ERR. Processing, however, continues without interruption,
+except that Streamlines now interpolates (as it would ordinarily) near
+the first dimensional end points without consideration of data at the
+opposite end. The data must pass the following test in order to be deemed
+cyclical: for each subscript value along the second dimensional
+axis, the first element and the last element along the first
+dimensional axis must be identical. A value of 0 for CYK means that
+the data is to be considered non-cyclical; any other value means that
+Streamlines should test for the cyclical condition.  You must
+initialize Streamlines with a call to STINIT after modifying this
+parameter. The default value of CYK is 0.
 .IP "CPM - Compatibility Mode - Integer"
 Controls the degree of compatibility between versions of the
 Streamlines utility prior to NCAR Graphics 3.2 and the current
-version. The nine settings provided allow the user to independently
-control three behaviors:
+version. You can independently control three behaviors using the nine
+settings provided:
 .RS
 .IP \(bu
 use of STRMLN input parameters;
@@ -111,7 +109,7 @@ STINIT and STREAM, only the third behavior option has any
 meaning.
 .sp
 When CPM is set to 0, its default value, the Streamlines utility\'s
-behavior varies depending on whether the utility has been accessed
+behavior varies depending on whether you access it 
 through one of the pre-Version 3.2 entry points (STRMLN and EZSTRM),
 or through the STINIT/STREAM interface. Otherwise, positive values
 result in invocation of the older coordinate mapping routines (FX and
@@ -144,7 +142,8 @@ Value/Use FX and FY/Use STR02,STR03/Use NSET
 .sp
 (*) Old means EZSTRM or STRMLN entry point; new, STINIT/STREAM.
 Only the first column is applicable to the behavior
-of the STINIT/STREAM interface
+of the STINIT/STREAM interface. See the
+strmln man page for more detailed emulation information.
 .IP "DFM - Streamline Differential Magnitude"
 DFM specifies the length of the differential magnitude step size used
 by Streamlines, as a fraction of the viewport width. When the Version
@@ -160,17 +159,16 @@ in this case the step size is determined by the setting of the
 parameter VNL as a fraction of a grid box in the grid coordinate
 system. The default value of DFM is 0.02.
 .IP "LWD - Streamline Linewidth - Real"
-LWD controls the linewidth used to draw the streamlines.
-Note that since the linewidth in NCAR Graphics is always
-calculated relative to a unit linewidth that is dependent
-on the output device, the linewidth value may need to be
-adjusted depending on the output conditions to obtain a
-pleasing plot. LWD affects the linewidth of the directional
-arrowheads as well as the streamlines themselves. The
-arrowhead length also increases somewhat when the linewidth
-is greater than the default. However, the arrowhead length
-parameter still affects the length. The default is 0.0,
-specifying a device-dependent minimum linewidth.
+LWD controls the linewidth used to draw the streamlines.  Note that
+since the linewidth in NCAR Graphics is always calculated relative to
+a unit linewidth that is dependent on the output device, you may need
+to adjust the linewidth value depending on the output conditions to
+obtain a pleasing plot. LWD affects the linewidth of the directional
+arrowheads as well as the streamlines themselves. The arrowhead length
+also increases somewhat when the linewidth is greater than the
+default. However, the arrowhead length parameter still affects the
+length. The default is 0.0, specifying a device-dependent minimum
+linewidth.
 .IP "MAP - Map Transformation Code - Integer"
 MAP defines the mapping transformation between the data and user
 coordinate space. For more information on coordinate mapping
@@ -201,31 +199,27 @@ indices are linearly related to the angle
 in degrees.
 .RE
 .IP ""
-If MAP has any other value, the user-modifiable mapping
-subroutines are invoked. The default version of these
-routines simply perform identity mappings, without
-considering the semantic value of the TRT parameter. The
-effect is the same as if one were to set both MAP and TRT
-to zero. Note that, while the Streamlines utility does not
-actually prohibit the practice, the user is advised not to
-use negative integers for user-defined mappings, since
-other utilities in the NCAR Graphics toolkit attach a
-special meaning to negative mapping codes.
+If MAP has any other value, Streamlines invokes the user-modifiable
+subroutines, STUMXY, STUIXY, and STUMTA to perform the mapping. The
+default version of these routines simply performs an identity mapping.
+Note that, while the Streamlines utility does not actually prohibit
+the practice, you are advised not to use negative integers for
+user-defined mappings, since other utilities in the NCAR Graphics
+toolkit attach a special meaning to negative mapping codes.
 .sp
-For all the predefined mappings, the linear relationship
-between the grid array indices and the data coordinate
-system is established using the four parameters, XC1, XCM,
-YC1, and YCN. The X parameters define a mapping for the
-first and last indices of the first dimension of the data
-arrays, and the Y parameters do the same for the second
-dimension. If MAP is set to a value of one, you need to be
-careful to ensure that the SET parameter is given a value
-of zero, since the Ezmap routines require a specific user
-coordinate space for each projection type, and internally
-call the SET routine to define the user to NDC mapping.
-Otherwise, you may choose whether or not to issue a SET
-call prior to calling STINIT, modifying the value of SET as
-required.
+For all the predefined mappings, the linear relationship between the
+grid array indices and the data coordinate system is established using
+the four parameters, XC1, XCM, YC1, and YCN. The X parameters define a
+mapping for the first and last indices of the first dimension of the
+data arrays, and the Y parameters do the same for the second
+dimension. If MAP is set to a value of one, you need to be careful to
+ensure that the SET parameter is given a value of zero, since the
+Ezmap routines require a specific user coordinate space for each
+projection type, and internally call the SET routine to define the
+user to NDC mapping.  Otherwise, you may choose whether or not to
+issue a SET call prior to calling STINIT, modifying the value of SET
+as required. See the description of the parameter, TRT, and the man
+pages, stumxy, stuixy, and stumta for more information.
 .IP "MSK - Mask To Area Map Flag - Integer"
 Use this parameter to control masking of streamlines to an
 existing area map created by routines in the Areas utility.
@@ -333,9 +327,10 @@ differential step count. Here is a sample of the output:
 .sp
 STREAM Statistics
 .br
-                Streamlines plotted: 119
+.ta 36nR +2n 
+	Streamlines plotted:	119
 .br
-      Total differential step count: 2903
+	Total differential step count:	2903
 .RE
 .fi
 .IP ""
@@ -415,7 +410,7 @@ Only location is transformed
 Direction and location are transformed
 .RE
 .IP ""
-This parameter allows the user to distinguish between a
+This parameter allows you to distinguish between a
 system that provides a mapping of location only into an
 essentially cartesian space, and one in which the space
 itself mapped. To understand the difference, using polar
@@ -453,12 +448,12 @@ discussion a uniform linear transformation is defined as
 one which satisfies the following equations:
 .RS 10
 .sp
-Xout = Xoffset + Sconstant * Xin
+x_out = x_offset + scale_constant * x_in
 .br
-Yout = Yoffset + Sconstant * Yin
+y_out = y_offset + scale_constant * y_in
 .RE
 .IP ""
-If the Sconstant is not the same for both equations then
+If scale_constant is not the same for both equations then
 the mapping is non-uniform.
 .sp
 This option is currently implemented only for the pre-defined MAP
@@ -498,11 +493,11 @@ has non-linearities, the grid size does not remain constant
 over the transformation and the step size can vary greatly,
 resulting in discontinuities in certain areas of the plot.
 .sp
-Streamline\'s new mapping routines defines the streamline differential
+Streamline\'s new mapping routines define the streamline differential
 magnitude in NDC space, ensuring a constant step size over the whole
 plot, notwithstanding any non-linearity in the transformation. When
 using the new mapping routines, the parameter DFM controls the step
-size in NDC space, and VNL is not adjustable by the user.  (See the
+size in NDC space, and VNL is not adjustable by the user. (See the
 discussion of the compatibility mode parameter, CPM, for a discussion
 of how to switch between the old and new mapping routines.) The
 default value of VNL is 0.33.
@@ -663,14 +658,10 @@ stinit,
 stream,
 strset,
 stseti,
-stsetr,
-stuixy,
-stumsl,
-stumta,
-stumxy,
-ncarg_cbind.
+stsetr.
 .sp
-Hardcopy: NCAR Graphics Fundamentals, UNIX Version
+Hardcopy:
+NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
 Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research

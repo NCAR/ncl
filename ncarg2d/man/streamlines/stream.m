@@ -81,11 +81,11 @@ CALL STREAM(U,V,IDM,IDM,IDM,WRK)
 where IDM is an arbitrary variable that need not have been initialized.
 .sp
 The masking capability supported by Streamlines allows you to
-overlay vector fields on top of graphics produced by other utilities,
-such as CONPACK contour plots, without encroaching on areas, like
+overlay streamlines on graphics produced by other utilities,
+such as Conpack contour plots, without encroaching on areas, like
 label boxes, that should appear in the foreground. Normally the area
 map should be generated and used in the normal way (as described in
-the AREAS and CONPACK documentation) before calling any routines in
+the Areas and Conpack documentation) before calling any routines in
 the Streamlines utility. When the parameter MSK has a non-zero value,
 masking is enabled and a previously created area map must be passed to
 STREAM. STREAM examines the map, returning an error if the map appears
@@ -107,6 +107,7 @@ ffex00,
 ffex01,
 ffex03,
 ffex04,
+fstream,
 stex01,
 stex02,
 stex03,
@@ -134,6 +135,9 @@ stumsl,
 stumta,
 stumxy,
 ncarg_cbind.
+.sp
+Hardcopy:
+NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
 Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research

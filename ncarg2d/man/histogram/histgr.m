@@ -108,15 +108,17 @@ dependencies:
 .sp
 IFLAG = 0 CLASS is not used.
 .sp
-IFLAG = 1 NCLASS+1 class interval end points are loaded
-	into array CLASS in a monotonically increasing
-	order.  The intervals need not be of equal width.
+IFLAG = 1 NCLASS+1 class interval end points
+        are loaded into array CLASS in a
+        monotonically increasing order.  The
+        intervals need not be of equal width.
 .sp
-IFLAG = 2 NCLASS midpoint intervals are loaded into
-	array CLASS. They must be in monotonically
-	increasing order, but need not be of equal
-	widths. The histogram bars will however be
-	displayed with equal widths.
+IFLAG = 2 NCLASS midpoint intervals are loaded
+        into array CLASS. They must be in
+        monotonically increasing order, but
+        need not be of equal widths. The
+        histogram bars will however be
+        displayed with equal widths.
 .sp
 IFLAG = 3 Same as for IFLAG = 2.
 .IP NCLASS 12

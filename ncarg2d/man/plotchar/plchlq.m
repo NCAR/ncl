@@ -125,7 +125,8 @@ tpwrzs,
 tsoftf,
 tstrml,
 tthree,
-tvelvc.
+tvelvc,
+fstream.
 .SH ACCESS
 To use PCLOQU, load the NCAR Graphics libraries ncarg, ncarg_gks,
 ncarg_c, and ncarg_loc, preferably in that order.  To use c_pcloqu, load 
@@ -146,6 +147,9 @@ pcsetc,
 pcseti,
 pcsetr,
 ncarg_cbind.
+.sp
+Hardcopy:
+NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
 Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research

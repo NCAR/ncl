@@ -109,7 +109,7 @@ t is dimensioned mw by mv by mu
 The third dimension of the array f
 .IP mw 12
 The first dimension of the array f
-.SH USAGE@@@
+.SH USAGE
 Transformations can be achieved by adjusting scaling statement
 functions in ISOSRF, SET3D, and TR32.
 .sp
@@ -135,6 +135,9 @@ Online:
 isosurface, isosurface_params, ezisos, 
 isgeti, isgetr, isseti, issetr, pwrzi, 
 ncarg_cbind
+.sp
+Hardcopy:
+NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
 Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research

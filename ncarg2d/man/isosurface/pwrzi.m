@@ -68,7 +68,7 @@ absolute value.
 .SH C-BINDING DESCRIPTION
 The C-binding argument descriptions are the same as the FORTRAN 
 argument descriptions.
-.SH USAGE@@@
+.SH USAGE
 Call PWRZI after calling ISOSRF and before calling FRAME.
 .SH EXAMPLES
 Use the ncargex command to see the following relevant
@@ -85,6 +85,9 @@ Online:
 isosurface, isosurface_params, ezisos, 
 isgeti, isgetr, isosrf, isseti, issetr, 
 ncarg_cbind
+.sp
+Hardcopy:
+NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
 Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research

@@ -64,15 +64,15 @@ the eight components of a histogram graphic when \'COL=ON\'.
 .sp
 ICOL(1) = color index used for area fill of
 .br
-		histogram bars of dataset 1.
+                histogram bars of dataset 1.
 .br
 ICOL(2) = color index used for area fill of
 .br
-		histogram bars of dataset 2.
+                histogram bars of dataset 2.
 .br
-		(When two datasets are compared
+                (When two datasets are compared
 .br
-		using parameter IFLAG = 3).
+                using parameter IFLAG = 3).
 .br
 ICOL(3) = color index used for bar outlines.
 .br
@@ -80,17 +80,17 @@ ICOL(4) = color index used for drawing axes.
 .br
 ICOL(5) = color index used for drawing a median
 .br
-		line.
+                line.
 .br
 ICOL(6) = color index used for text output
 .br
-		(labels.)
+                (labels.)
 .br
 ICOL(7) = color index used for titles.
 .br
 ICOL(8) = color index used for drawing the
 .br
-		perimeter box.
+                perimeter box.
 .sp
 The default color index is 1 for all (when \'COL=OFF\').
 .sp

@@ -1,4 +1,4 @@
-.TH Scrolled_title_params 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
+.TH Scrolled_t*_params 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .na
 .nh
 .SH NAME
@@ -186,6 +186,8 @@ Storage); this is used internally in
 the calls to Gflash.
 .SH SEE ALSO
 Online:
+gflash,
+plotchar,
 slgeti,
 slgetr,
 slseti,

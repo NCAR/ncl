@@ -60,7 +60,7 @@ where NIM is as defined above.
 .SH C-BINDING DESCRIPTION
 The C-binding argument descriptions are the same as the 
 FORTRAN argument descriptions.
-.SH USAGE@@@
+.SH USAGE
 Both SFWRLD and SFNORM fill the area defined by the points
 (XRA(I),YRA(I)), for I from 1 to NRA. The lines connecting
 point 1 to point 2, point 2 to point 3, ..., point NRA-1 to
@@ -97,6 +97,9 @@ error messages and/or informational messages.
 Online: 
 softfill, softfill_params, sfgetc, sfgeti, sfgetp, sfgetr,
 sfsetc, sfseti, sfsetp, sfsetr, sfsgfa, ncarg_cbind
+.sp
+Hardcopy:
+NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
 Copyright 1987, 1988, 1989, 1991, 1993 University Corporation 
 for Atmospheric Research

@@ -24,24 +24,28 @@ of markers to be drawn.
 .IP IC 12
 (an input expression of type INTEGER) describes the type of marker
 to be drawn, as follows:
-.sp
-IC < 0 - draw a GKS polymarker of type -IC where
-.sp
-.nf
-    IC = -1 requests a dot (.),
-         -2 requests a plus (+),
-         -3 requests an asterisk (*),
-         -4 requests a circle (o), and
-         -5 requests a cross (x).
-.fi
-.sp
+.IP " " 12
+IC < 0 - draw a GKS polymarker of type -IC, as follows:
+.RS
+.IP "  -1" 6
+requests a dot (.),
+.IP "  -2" 6
+requests a plus (+),
+.IP "  -3" 6
+requests an asterisk (*),
+.IP "  -4" 6
+requests a circle (o), and
+.IP "  -5" 6
+requests a cross (x).
+.RE
+.IP " " 12
 The polymarker size and color can be set by calling the
 GKS routines GSMKSC, GSCR, and GSPMCI before calling POINTS.
-.sp
+.IP " " 12
 IC = 0 - draw a dot (.).  Effect is the same as IC = -1.
-.sp
+.IP " " 12
 IC > 0 - draw the FORTRAN77 character CHAR(IC).
-.sp
+.IP " " 12
 In this case, the GKS routine GTX is used to draw the specified
 character CHAR(IC) at each of the NP points.  Each character is
 drawn with the horizontal and vertical text alignment centered
@@ -53,9 +57,9 @@ GKS text attribute setting routines before the call to the routine POINTS.
 .IP IL 12
 (a input expression of type INTEGER) determines if the markers are
 to be connected with line segments.
-.sp
+.IP " " 12
 IL = 0 - do not connect the markers with line segments.
-.sp
+.IP " " 12
 IL .NE. 0 - connect the markers with line segments.
 .SH C-BINDING DESCRIPTION
 The C-binding argument descriptions are the same as the FORTRAN

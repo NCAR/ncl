@@ -80,7 +80,8 @@ points(3NCARG),
 set(3NCARG),
 ncarg_cbind(3NCARG)
 .sp
-Hardcopy:  
+Hardcopy:
+NCAR Graphics Fundamentals, UNIX Version;
 User's Guide for NCAR GKS-0A Graphics;
 "The Use of X/Y Coordinates in NCAR Graphics" SCD User Document
 .SH COPYRIGHT

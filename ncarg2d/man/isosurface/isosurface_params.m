@@ -119,6 +119,9 @@ default value is 1.
 .SH SEE ALSO
 Online:
 isgeti, isgetr, isseti, issetr
+.sp
+Hardcopy:
+NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
 Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research

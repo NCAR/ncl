@@ -23,32 +23,35 @@ text string to be drawn using polylines.
 text string to be drawn using polylines.
 .IP IDPC 12
 (an input string of type CHARACTER) which are the characters to be
-drawn.  There may also be embedded function codes describing how
-certain characters are to be drawn.
+drawn.
 .IP NCHAR 12
 (an input parameter of type INTEGER) giving the number of characters
-in the IDPC string.  NCHAR includes a count of all characters in the
-string including the function codes.
+in the IDPC string.
 .IP JSIZE 12
 (an input parameter of type INTEGER) giving the width of the characters
-to be drawn.  See MESSAGES.
-.nf
-	0  -  1.0 * the size of the digitized characters in the database
-	1  -  1.5 * digitized size
-	2  -  2.0 * digitized size
-	3  -  3.0 * digitized size
-
-	If greater than 3:
-
-	Principal characters =          JSIZE
-	Indexical characters =  (13/21)*JSIZE
-     Cartographic characters =  ( 9/21)*JSIZE
-
-.fi
+to be drawn.
+.sp
+0  -   8./1023. NDCs
+.br
+1  -  12./1023. NDCs
+.br
+2  -  16./1023. NDCs
+.br
+3  -  24./1023. NDCs
+.sp
+If greater than 3:
+.sp
+FLOAT(JSIZE)/1023. NDCs
+.sp
 One can relate these sizes to a viewport in normalized device coordinates
-(each axis runs 0. to 1.) by dividing by 1024.  That is a character of
+(each axis runs 0. to 1.) by dividing by 1023.  That is a character of
 width .05 would take up 5% of the possible picture width meaning that less
 than 20 characters could fit on a line.
+.sp
+Note that there is an important difference in how text sizes are
+handled in GKS versus PWRITY.  In GKS, text size is given in terms
+of character heights.  In PWRITY, text size (JSIZE) is given in
+character width.
 .IP JOR 12
 (an input parameter of type INTEGER) giving the orientation at which
 the IDPC string is to be drawn.  JOR is measured counter-clockwise
@@ -59,20 +62,17 @@ the IDPC character string.
 .nf
 
     0, (X,Y) is the center of the entire IDPC string.
-   -1, (X,Y) is the center of the left edge of the first character.
-    1  (X,Y) is the center of the right edge of the last character.
+   -1, (X,Y) is the center of the left edge of the
+             first character.
+    1  (X,Y) is the center of the right edge of the
+             last character.
 .fi
 .SH ACCESS 
 To use PWRITY, load the NCAR Graphics libraries ncarg, ncarg_gks,
 ncarg_c, ncarg_c, and ncarg_loc, preferably in that order.
-.SH MESSAGES
-Note that there is an important difference in how text sizes are
-handled in GKS versus PWRITY.  In GKS, text size is given in terms
-of character heights.  In PWRITY, text size (JSIZE) is given in
-character width.
 .SH SEE ALSO
 Online:
-pwrite_family, pwrity,
+pwrite_family, pwritx,
 plotchar, plchhq, plchmq, plchlq
 .sp
 Hardcopy:  

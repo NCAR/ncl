@@ -93,8 +93,10 @@ gclrwk(3NCARG),
 gupwk(3NCARG),
 ncarg_cbind(3NCARG)
 .sp
-Hardcopy:  
-User's Guide for NCAR GKS-0A Graphics;
+Hardcopy:
+NCAR Graphics Contouring and Mapping Tutorial;
+NCAR Graphics Fundamentals, UNIX Version;
+User's Guide for NCAR GKS-0A Graphics
 .SH COPYRIGHT
 Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research

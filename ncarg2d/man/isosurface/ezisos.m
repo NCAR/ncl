@@ -58,7 +58,7 @@ t is dimensioned mw by mv by mu
 The third dimension of the array f
 .IP mw 12
 The first dimension of the array f
-.SH USAGE@@@
+.SH USAGE
 EZISOS is called to draw an isosurface if all of the input array is to
 be used (rather than a subset of it), if ISOSRF's argument IFLAG is to be
 chosen internally, and if a frame advance is to be done after the isosurface
@@ -78,6 +78,9 @@ Online:
 isosurface, isosurface_params, 
 isgeti, isgetr, isosrf, isseti, issetr, pwrzi, 
 ncarg_cbind
+.sp
+Hardcopy:
+NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
 Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research

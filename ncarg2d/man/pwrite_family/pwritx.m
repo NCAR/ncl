@@ -33,22 +33,29 @@ string including the function codes.
 (an input parameter of type INTEGER) giving the width of the characters
 to be drawn.
 .nf
-	0  -  1.0 * the size of the digitized characters in the database
-	1  -  1.5 * digitized size
-	2  -  2.0 * digitized size
-	3  -  3.0 * digitized size
 
-	If greater than 3:
+        0  -  1.0 * the size of the digitized
+                    characters in the database
+        1  -  1.5 * digitized size
+        2  -  2.0 * digitized size
+        3  -  3.0 * digitized size
 
-	Principal characters =          JSIZE
-	Indexical characters =  (13/21)*JSIZE
+        If greater than 3:
+
+        Principal characters =          JSIZE
+        Indexical characters =  (13/21)*JSIZE
      Cartographic characters =  ( 9/21)*JSIZE
 
 .fi
 One can relate these sizes to a viewport in normalized device coordinates
-(each axis runs 0. to 1.) by dividing by 1024.  That is a character of
+(each axis runs 0. to 1.) by dividing by 1023.  That is a character of
 width .05 would take up 5% of the possible picture width meaning that less
 than 20 characters could fit on a line.
+.sp
+Note that there is an important difference in how text sizes are
+handled in GKS versus PWRITX.  In GKS, text size is given in terms
+of character heights.  In PWRITX, text size (JSIZE) is given in
+character width.
 .IP JOR 12
 (an input parameter of type INTEGER) giving the orientation at which
 the IDPC string is to be drawn.  JOR is measured counter-clockwise
@@ -59,17 +66,14 @@ the IDPC character string.
 .nf
 
     0, (X,Y) is the center of the entire IDPC string.
-   -1, (X,Y) is the center of the left edge of the first character.
-    1  (X,Y) is the center of the right edge of the last character.
+   -1, (X,Y) is the center of the left edge of the
+             first character.
+    1  (X,Y) is the center of the right edge of the
+             last character.
 .fi
 .SH ACCESS 
 To use PWRITX, load the NCAR Graphics libraries ncarg, ncarg_gks,
 ncarg_c, ncarg_c, and ncarg_loc, preferably in that order.
-.SH MESSAGES
-Note that there is an important difference in how text sizes are
-handled in GKS versus PWRITX.  In GKS, text size is given in terms
-of character heights.  In PWRITX, text size (JSIZE) is given in
-character width.
 .SH SEE ALSO
 Online:
 pwrite_family, pwrity,

@@ -4,32 +4,53 @@
 .SH NAME
 THREED - 3-d line drawing package.
 .SH SYNOPSIS
-CURVE3 - Draws a curve through points.
+CURVE3 -
+Draws the projection of a curve defined by a
+sequence of points in 3-space.
 .sp
-FENCE3 - Draws a line in 3-space as well as a "fence"
-between the line and the plane normal to one of the coordinate
-axes.
+FENCE3 -
+Draws the projection of a curve, just as CURVE3
+does, but with a "fence" of straight line segments
+that are parallel to one of the three axes and
+that extend to a specified plane perpendicular
+to that axis.
 .sp
-FRST3 - Positions the pen on a point in 3-space.
+FRST3 -
+Specifies the first in a sequence of points connected
+by straight-line segments, the projections of which
+are to be drawn. (FRST3 is called for the first point
+in the sequence and VECT3 is called for the rest.)
 .sp
-LINE3 - Draws a line between two points in 3-space.
+LINE3 -
+Draws the projection of a straight-line segment.
 .sp
-PERIM3 - Draws a perimeter with tick marks.
+PERIM3 -
+Draws the projection of a rectangular perimeter in
+a plane parallel to one of the three coordinate
+planes, with inward-pointing tick marks at specified
+intervals.
 .sp
-POINT3 - Draws a point in 3-space.
+POINT3 -
+Draws the projection of a point.
 .sp
-PWRZT - A character-plotting routine for plotting characters in
-three-space when using Threed.
+PWRZT -
+Draws the projection of character strings that are
+positioned in a plane parallel to one of the three
+coordinate planes.
 .sp
-SET3 - Set up 3D equivalents of viewport and window, as well as
-perspective angle.
+SET3 -
+Defines the transformation from three dimensions to
+two dimensions.
 .sp
-TICK43 - Allows control of tick mark length.
+TICK43 -
+Gives user control of tick mark length in PERIM3.
 .sp
-VECT3 - Draws a line between the current pen position and the
-point (UA,VA,WA).  The current pen position becomes (UA,VA,WA).
-Note that a curve can be drawn by using a FRST3 call followed by
-a sequence of VECT3 calls.
+VECT3 -
+Defines the second and all subsequent points in a sequence of
+points connected by straight-line segments, the
+projections of which are to be drawn. (FRST3 is
+called for the first point in the sequence and
+VECT3 is called for the rest.)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
@@ -76,6 +97,9 @@ tick3,
 tick43,
 vect3,
 ncarg_cbind.
+.sp
+Hardcopy:
+NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
 Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research

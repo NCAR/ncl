@@ -38,14 +38,17 @@ window in user coordinates.
 window in user coordinates.
 .IP LF 12
 (an input expression of type INTEGER) defines the linear/log nature of
-the mapping, where:
-.nf
-
-LF = 1 requests linear X, linear Y
-LF = 2 requests linear X, log Y
-LF = 3 requests log X,    linear Y
-LF = 4 requests log X,    log Y
-.fi
+the mapping, as follows:
+.RS
+.IP 1 3
+linear X, linear Y
+.IP 2 3
+linear X, log Y
+.IP 3 3
+log X, linear Y
+.IP 4 3
+log X, log Y
+.RE
 .SH C-BINDING DESCRIPTION
 The C-binding argument descriptions are the same as the FORTRAN
 argument descriptions.
@@ -83,8 +86,9 @@ Online:
 gsvp, gswn, getset, getusv, setusv, spps, spps_params, ncarg_cbind
 .sp
 Hardcopy:  
+NCAR Graphics Contouring and Mapping Tutorial;
 NCAR Graphics Fundamentals, UNIX Version;
-User's Guide for NCAR GKS-0A Graphics
+User's Guide for NCAR GKS-0A Graphics;
 .SH COPYRIGHT
 Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research

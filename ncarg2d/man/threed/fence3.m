@@ -2,9 +2,11 @@
 .na
 .nh
 .SH NAME
-FENCE3 - Draws a line in 3-space as well as a "fence"
-between the line and the plane normal to one of the coordinate
-axes.
+FENCE3 - Draws the projection of a curve, just as CURVE3
+does, but with a "fence" of straight line segments
+that are parallel to one of the three axes and
+extend from the curve to a specified plane perpendicular
+to that axis.
 .SH SYNOPSIS
 CALL FENCE3 (U,V,W,N,IOREN,BOT)
 .SH C-BINDING SYNOPSIS
@@ -14,24 +16,53 @@ void c_fence3 (float *u, float *v, float *w, int n,
 .br
 int ioren, float bot)
 .SH DESCRIPTION 
-.IP "U, V, W" 12
-Specify real arrays containing locations of points.
+.IP "U,V,W" 12
+(input arrays, dimensioned at least N, of type REAL) contain the U, V,
+and W coordinates, respectively, of the points defining the curve whose
+projection is to be drawn.
 .IP N 12
-Specifies the number of points to be plotted.  U, V, and W must be
-dimensioned N or greater.
+(an input expression of type INTEGER) is the number of points defining the
+curve.
 .IP IOREN 12
-Specifies the direction in which the fence lines are to
-be drawn (1 indicates parallel to the U-axis, 2
-indicates parallel to the V-axis, and 3 indicates
-parallel to to the W-axis.)
+(an input expression of type INTEGER)
+is the direction in which fence lines are to be drawn, as
+follows:
+.RS
+.IP 1 3
+Parallel to the U axis.
+.IP 2 3
+Parallel to the V axis.
+.IP 3 3
+Parallel to the W axis.
+.RE
 .IP BOT 12
-Specifies where the bottom of the fence is to be drawn.
-If the fence lines are to be drawn parallel to the
+(an input expression of type REAL)
+specifies where the bottom of the fence is to be drawn.
+For example, if the fence lines are to be drawn parallel to the
 W-axis, and BOT=2., then the bottom of the fence would
 be the plane W=2.
+.sp
+The word "bottom" may be misleading here; the entire curve might be below
+the plane of the "bottom" and the fence might be horizontal, rather than
+vertical, in the three-dimensional space.
+.PP
+The curve and the fence are drawn in the colors implied by the values of the
+variables ITHRMJ and ITHRMN, respectively, in the Threed COMMON block
+.PP
+.RS
+.IP " " 6
+COMMON /THRINT/ ITHRMJ,ITHRMN,ITHRTX
+.RE
+.PP
+The default value of both ITHRMJ and ITHRMN is 1; user code may change
+these values.
 .SH C-BINDING DESCRIPTION
 The C-binding argument descriptions are the same as the FORTRAN 
 argument descriptions.
+.SH EXAMPLES
+Use the ncargex command to see the following relevant
+example:
+fthex04.
 .SH ACCESS
 To use FENCE3, load the NCAR Graphics libraries ncarg, ncarg_gks,
 ncarg_c, and ncarg_loc, preferably in that order.  To use c_fence3, load 
@@ -54,6 +85,9 @@ tick3,
 tick43,
 vect3,
 ncarg_cbind.
+.sp
+Hardcopy:
+NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
 Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research

@@ -143,9 +143,9 @@ descriptions of the internal parameters.)
 .IP "Input Argument" 22
 Internal Parameter
 .IP "FLO" 22
-VLC
+VLC (VLC is set to -FLO if FLO is positive, 0.0 otherwise)
 .IP "HI" 22
-VHC
+VHC (VHC is set to -HI if HI is positive, 0.0 otherwise)
 .IP "NSET" 22
 SET (NSET = 0 is approximately equivalent to SET = 1)
 .IP "LENGTH" 22
@@ -192,19 +192,19 @@ MXT (If IOFFM is non-zero, MXT is set to " ", indicating that the
 maximum text block is not to be displayed. Otherwise MXT is set to the
 string "MAXIMUM VECTOR")
 .IP "IOFFM" 22
-MXX (If IOFFM is 0, MXX is set to the value 1.0, indicating the right edge of 
-the viewport.)
+MXX (If IOFFM is 0, MXX is set to a computed value that, as a fraction
+of the viewport width, specifies a point 0.05 in NDC left of the right
+hand edge of the plotter frame.)
 .IP "IOFFM" 22
-MXY (If IOFFM is 0, MXY is set to the value -0.01, indicating a text position 
-just below the bottom of the viewport)
+MXY (If IOFFM is 0, MXY is set to a computed value that, as a fraction
+of the viewport height, specifies a point 0.005 in NDC up from the
+bottom edge of the plotter frame.)
 .IP "IOFFM" 22
-MXP (If IOFFM is 0, MXP is set to 4, indicating that the text block should be 
-upper-right justified.
+MXP (If IOFFM is 0, MXP is set to -2, indicating that the text block
+should be lower-right justified.
 .SH
 Note that the emulation of the maximum vector text block differs from
-the older implementation in that it now uses high-quality text; also
-it is placed relative to the viewport instead of the lower left
-corner of the plotter frame.
+the older implementation in that it now uses high-quality text.
 .SH EXAMPLES
 Use the ncargex command to see the following relevant
 example:
