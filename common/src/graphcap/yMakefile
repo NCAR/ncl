@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.6 1993-11-01 17:28:42 boote Exp $
+#	$Id: yMakefile,v 1.7 1994-03-08 21:54:44 fred Exp $
 #
 
 MYNAME	= graphcap
@@ -11,7 +11,8 @@ MYNAME	= graphcap
 #		"form.gc" is just an example and not installed.
 
 GENERIC_SRCS = \
-	adm5.gc aed.a.gc aed.b.gc balsml.gc hpgl.gc hpgl.land.gc \
+	adm5.gc aed.a.gc aed.b.gc balsml.gc hpgl.gc \
+	hpgl2.gc hpgl2.dual.gc hpgl2pe.gc hpgl2pe.dual.gc \
 	hp150.gc hp2648a.gc hp7475a.gc hp7510a.gc hplj100l.gc hplj100p.gc \
 	hplj150l.gc hplj150p.gc hplj300l.gc hplj300p.gc hplj75l.gc hplj75p.gc \
 	hpljo75l.gc hpljo75p.gc imagen.gc imagen.port.gc pc.mono.gc \
@@ -22,8 +23,9 @@ GENERIC_SRCS = \
 	vt340w.gc ditroff.gc
 
 GRAPHCAPS = \
-	adm5 aed.a aed.b balsml hpgl hpgl.land \
+	adm5 aed.a aed.b balsml hpgl \
 	hp150 hp2648a hp7475a hp7510a hplj100l hplj100p \
+	hpgl2 hpgl2.dual hpgl2pe hpgl2pe.dual \
 	hplj150l hplj150p hplj300l hplj300p hplj75l hplj75p \
 	hpljo75l hpljo75p imagen imagen.port pc.mono \
 	ps.color ps.land.color ps.land.mono ps.mono qms800 \

@@ -1,26 +1,23 @@
 /*  hpgl
 /*
-/*  This graphcap is for the original HP-GL language in its most 
-/*  primitive form.  This graphcap is intended for older plotters
-/*  that existed before the HP-GL language was standardized.
-/*  You should check if your output device is using 
-/*  the HP-GL/2 language, or the HP-GL/2 language with palette 
-/*  extensions (for user-defined color), or if your device is running 
-/*  in dual context mode (can accept languages in addition to HP-GL).  
-/*  In these cases you will want to use one of the other HP-GL 
-/*  graphcaps provided for those devices.
+/*  This graphcap is for the HP-GL/2 language and is for 
+/*  outut devices using the dual context extensions (devices
+/*  that accept languages in addition to HP-GL/2).  If your output 
+/*  device does not support the dual context extension, use the hpgl 
+/*  graphcap that is appropriate for your device.
 /*
 
 USER_PROMPT
-S P 1 ; LF P U 1 0 , 1 0 0 ; LF L B < R E A D Y > ETX
+S P 1 ; LF P U 1 0 0 , 5 0 0 ; LF L B < R E A D Y > ETX
 
 DEVICE_BATCH
 TRUE
-
 DEVICE_GRAPHIC_INIT
-I N ; LF S C 0 , 9 6 0 0 , 0 , 9 6 0 0 , 1 ; LF S P 1 ; LF
+ESC E ESC % 0 B I N ; LF S C 0 , 9 6 0 0 , 0 , 9 6 0 0 , 1 ; LF S P 1 ; LF
+W U 1 ; LF P W ;
+
 DEVICE_TEXT_INIT
-S P 0 ; LF
+P U ; LF S P 0 ; LF S D ; LF
 
 DEVICE_COORD_LOWER_LEFT_X
 0
@@ -30,9 +27,6 @@ DEVICE_COORD_UPPER_RIGHT_X
 9600
 DEVICE_COORD_UPPER_RIGHT_Y
 9600
-
-DEVICE_COORD_XOFFSET
-DEVICE_COORD_YOFFSET
 
 DEVICE_COORD_FORMAT
 /* bit_start  bit_count  data_type  data_value
@@ -53,14 +47,21 @@ DEVICE_COLOR_INDEX_ENCODING
 DEVICE_COLOR_INDEX_FORMAT
 /* bit_start  bit_count  data_type  data_value
       0          8          1           7
-DEVICE_MAP_INDEX_RANGE_DEFINED
-255
 DEVICE_MAP_AVAILABLE
 FALSE
+DEVICE_MAP_INDEX_RANGE_MAX
+256
+DEVICE_MAP_INTENSITY_ENCODING
+DEVICE_MAP_INTENSITY_FORMAT
+DEVICE_MAP_INIT
+DEVICE_MAP_INDIVIDUAL
+DEVICE_MAP_INSTRUCTION_START
+DEVICE_MAP_INSTRUCTION_TERMINATOR
 
 DEVICE_ERASE
-P U ; LF S P 1 ; LF P G ; LF
-I N ; LF S C 0 , 9 6 0 0 , 0 , 9 6 0 0 , 1 ; LF S P 1 ; LF
+P U ; LF
+ESC % 0 A FF ESC % 0 B I N ; LF W U 1 ; LF
+S C 0 , 9 6 0 0 , 0 , 9 6 0 0 , 1 ; LF S P 1 ; LF
 
 LINE_DRAW_POLY_FLAG
 TRUE
@@ -74,23 +75,48 @@ S P
 LINE_COLOR_INSTRUCTION_TERMINATOR
 ; LF
 
-LINE_WIDTH_INSTRUCTION_START
-LINE_WIDTH_INSTRUCTION_TERMINATOR
-LINE_WIDTH_ENCODING
-/* 0 binary, 1 ascii decimal, 2 ascii hex, 3 ascii octal, 4 ascii tek
-LINE_WIDTH_FORMAT
-/* bit_start  bit_count  data_type  data_value
-LINE_WIDTH_RANGE
-/* two values giving low and high DC width values
-LINE_WIDTH_SCALE
-
 MARKER_COLOR_INSTRUCTION_START
 S P
 MARKER_COLOR_INSTRUCTION_TERMINATOR
 ; LF
 
+LINE_WIDTH_INSTRUCTION_START
+P W
+LINE_WIDTH_INSTRUCTION_TERMINATOR
+; LF
+LINE_WIDTH_FORMAT
+/* bit_start  bit_count  data_type  data_value
+      0          16          1           15
+LINE_WIDTH_ENCODING
+/* 0 binary,1 ascii decimal,2 ascii hex,3 ascii octal,4 ascii tek,5 ascii real
+5
+LINE_WIDTH_SCALE
+1.25
+LINE_WIDTH_RANGE
+/* two values giving low and high DC width values
+0 1000
+LINE_WIDTH_FLOATING_INFO
+0. 10000. 0. 100.
+
+POLYGON_INSTRUCTION_START
+P U XYC ; LF P M 0 ; LF P D
+POLYGON_POINT_START
+POLYGON_POINT_TERMINATOR
+POLYGON_INSTRUCTION_TERMINATOR
+; LF P M 2 F P ; LF
+
+POLYGON_COLOR_INSTRUCTION_START
+S P
+POLYGON_COLOR_INSTRUCTION_TERMINATOR
+; LF
+
+POLYGON_MAXIMUM_POINTS
+20000
 POLYGON_SIMULATION_SPACING
 10
+
+RASTER_SIMULATE
+FALSE
 
 /* these bundles are defined for the current NCAR metafile translator
 /* they may be redifined but not all of them have any effect as of yet
