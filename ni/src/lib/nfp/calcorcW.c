@@ -12,8 +12,8 @@
 extern void NGCALLF(dcalcorc,DCALCORC)(double*,double*,double*,double*,int*,
                                        double*,double*,double*,int*);
 
-extern void NGCALLF(dstat2,DSTAT2)(double*,int*,double*,double*,double*,
-                                   double*,int*,int*);
+extern void NGCALLF(collapsexy,COLLAPSEXY)(double*,double*,int*,double*,
+                                     double*,double*,double*,int*);
 
 NhlErrorTypes escorc_W( void )
 {
@@ -37,7 +37,9 @@ NhlErrorTypes escorc_W( void )
 /*
  * various
  */
-  int i, j, index_x, index_y, index_corc, ier, ier_count, nxy, dimsizes_same;
+  double *xx, *yy;
+  int i, j, index_x, index_y, index_corc, ier, ier_count;
+  int nxy, mxy, dimsizes_same;
   int total_size_leftmost_x, total_size_x;
   int total_size_leftmost_y, total_size_y;
   int total_size_corc;
@@ -129,6 +131,16 @@ NhlErrorTypes escorc_W( void )
       return(NhlFATAL);
     }
   }
+
+/*
+ * Allocate space for collapsing x and y arrays if necessary.
+ */
+  xx = (double*)calloc(nxy,sizeof(double));
+  yy = (double*)calloc(nxy,sizeof(double));
+  if( xx == NULL || yy == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"escorc: Unable to allocate memory for work arrays");
+    return(NhlFATAL);
+  }
 /* 
  * Get size of output variable, which is equal to the product of all but
  * the last dimension of x and y (unless the dimension sizes of x and y
@@ -217,10 +229,15 @@ NhlErrorTypes escorc_W( void )
       if(type_corc == NCL_double) {
         tmp_corc = &((double*)corc)[index_corc];
       }
-      NGCALLF(dstat2,DSTAT2)(tmp_x,&nxy,&missing_dx.doubleval,&xave,&xvar,
-                             &xstd,&nptusx,&ier);
-      NGCALLF(dcalcorc,DCALCORC)(tmp_x,&xave,&xstd,&missing_dx.doubleval,
-                                 &nxy,tmp_y,&missing_dy.doubleval,
+/*
+ * Collapse x and y (remove missing values)
+ */
+      NGCALLF(collapsexy,COLLAPSEXY)(tmp_x,tmp_y,&nxy,&missing_dx.doubleval,
+                                     &missing_dy.doubleval,xx,yy,&mxy);
+
+      xave = xstd = missing_dx.doubleval;
+      NGCALLF(dcalcorc,DCALCORC)(xx,&xave,&xstd,&missing_dx.doubleval,
+                                 &mxy,yy,&missing_dy.doubleval,
                                  tmp_corc,&ier);
 /*
  * Copy output values from temporary array "tmp_corc" to final array "corc".
@@ -251,9 +268,6 @@ NhlErrorTypes escorc_W( void )
  */
         tmp_x = &((double*)x)[index_x];
       }
-      NGCALLF(dstat2,DSTAT2)(tmp_x,&nxy,&missing_dx.doubleval,&xave,&xvar,
-                             &xstd,&nptusx,&ier);
-
       for(j = 1; j <= total_size_leftmost_y; j++) {
         if(type_y != NCL_double) {
 /*
@@ -272,10 +286,16 @@ NhlErrorTypes escorc_W( void )
           tmp_corc = &((double*)corc)[index_corc];
         }
 
-        NGCALLF(dcalcorc,DCALCORC)(tmp_x,&xave,&xstd,&missing_dx.doubleval,
-                                   &nxy,tmp_y,&missing_dy.doubleval,
+/*
+ * Collapse x and y (remove missing values)
+ */
+        NGCALLF(collapsexy,COLLAPSEXY)(tmp_x,tmp_y,&nxy,&missing_dx.doubleval,
+                                       &missing_dy.doubleval,xx,yy,&mxy);
+
+        xave = xstd = missing_dx.doubleval;
+        NGCALLF(dcalcorc,DCALCORC)(xx,&xave,&xstd,&missing_dx.doubleval,
+                                   &mxy,yy,&missing_dy.doubleval,
                                    tmp_corc,&ier);
-        
 /*
  * Copy output values from temporary array "tmp_Tb" to final array "Tb".
  */
@@ -298,6 +318,8 @@ NhlErrorTypes escorc_W( void )
 /*
  * free memory.
  */
+  NclFree(xx);
+  NclFree(yy);
   if(type_x    != NCL_double) NclFree(tmp_x);
   if(type_y    != NCL_double) NclFree(tmp_y);
   if(type_corc != NCL_double) NclFree(tmp_corc);

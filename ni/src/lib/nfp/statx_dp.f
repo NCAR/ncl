@@ -1462,3 +1462,26 @@ c                                  the unsorted array
       A(K+1) = T
       GO TO 65
       END
+
+      SUBROUTINE COLLAPSEXY(X,Y,NPTS,XMSG,YMSG,XX,YY,MPTS)
+      IMPLICIT NONE
+      INTEGER NPTS,MPTS
+      DOUBLE PRECISION X(NPTS),Y(NPTS)
+      DOUBLE PRECISION XX(NPTS),YY(NPTS)
+      DOUBLE PRECISION XMSG,YMSG
+
+      INTEGER N
+
+      MPTS = 0
+      DO N = 1,NPTS
+          IF (X(N).NE.XMSG .AND. Y(N).NE.YMSG) THEN
+              MPTS = MPTS + 1
+              XX(MPTS) = X(N)
+              YY(MPTS) = Y(N)
+c              PRINT *,'n, mpts, xx(mpts), yy(mpts)=',N,MPTS,XX(MPTS),
+c     +          YY(MPTS)
+          END IF
+      END DO
+
+      RETURN
+      END

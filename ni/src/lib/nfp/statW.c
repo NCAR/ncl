@@ -41,6 +41,9 @@ extern void NGCALLF(descros,DESCROS)(double*, double*, int*, double*,
                                      double*, double*, double*, double*,
                                      double*, int*, double*, double*, int*);
 
+extern void NGCALLF(collapsexy,COLLAPSEXY)(double*,double*,int*,double*,
+                                           double*,double*,double*,int*);
+
 NhlErrorTypes stat2_W( void )
 {
 /*
@@ -1465,10 +1468,11 @@ NhlErrorTypes esccr_W( void )
 /*
  * various
  */
+  double *xx, *yy;
   int i, j, index_x, index_y, index_ccr;
   int total_size_x1, total_size_x, total_size_y1, total_size_y;
   int total_size_ccr;
-  int ier = 0, ier_count, npts, dimsizes_same;
+  int ier = 0, ier_count, npts, mpts, dimsizes_same;
   double xmean, xsd, ymean, ysd;
 /*
  * Retrieve parameters
@@ -1638,6 +1642,15 @@ NhlErrorTypes esccr_W( void )
     }
   }
 /*
+ * Allocate space for collapsing x and y arrays if necessary.
+ */
+  xx = (double*)calloc(npts,sizeof(double));
+  yy = (double*)calloc(npts,sizeof(double));
+  if( xx == NULL || yy == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"esccr: Unable to allocate memory for work arrays");
+    return(NhlFATAL);
+  }
+/*
  * Call the f77 version of 'descros' with the full argument list.
  */
   if(dimsizes_same) {
@@ -1666,10 +1679,15 @@ NhlErrorTypes esccr_W( void )
       if(type_ccr == NCL_double) {
         tmp_ccr = &((double*)ccr)[index_ccr];
       }
+/*
+ * Collapse x and y (remove missing values)
+ */
+      NGCALLF(collapsexy,COLLAPSEXY)(tmp_x,tmp_y,&npts,&missing_dx.doubleval,
+                                     &missing_dy.doubleval,xx,yy,&mpts);
 
       xmean = xsd = missing_dx.doubleval;
       ymean = ysd = missing_dy.doubleval;
-      NGCALLF(descros,DESCROS)(tmp_x,tmp_y,&npts,&missing_dx.doubleval,
+      NGCALLF(descros,DESCROS)(xx,yy,&mpts,&missing_dx.doubleval,
                                &missing_dy.doubleval,&xmean,&ymean,&xsd,
                                &ysd,mxlag,tmp_ccv,tmp_ccr,&ier);
       if(type_ccr != NCL_double) {
@@ -1714,10 +1732,16 @@ NhlErrorTypes esccr_W( void )
         if(type_ccr == NCL_double) {
           tmp_ccr = &((double*)ccr)[index_ccr];
         }
+/*
+ * Collapse x and y (remove missing values)
+ */
+        NGCALLF(collapsexy,COLLAPSEXY)(tmp_x,tmp_y,&npts,
+                                       &missing_dx.doubleval,
+                                       &missing_dy.doubleval,xx,yy,&mpts);
 
         xmean = xsd = missing_dx.doubleval;
         ymean = ysd = missing_dy.doubleval;
-        NGCALLF(descros,DESCROS)(tmp_x,tmp_y,&npts,&missing_dx.doubleval,
+        NGCALLF(descros,DESCROS)(xx,yy,&mpts,&missing_dx.doubleval,
                                  &missing_dy.doubleval,&xmean,&ymean,&xsd,
                                  &ysd,mxlag,tmp_ccv,tmp_ccr,&ier);
         if(type_ccr != NCL_double) {
@@ -1739,6 +1763,8 @@ NhlErrorTypes esccr_W( void )
  * free memory.
  */
   NclFree(tmp_ccv);
+  NclFree(xx);
+  NclFree(yy);
   if(type_x   != NCL_double) NclFree(tmp_x);
   if(type_y   != NCL_double) NclFree(tmp_y);
   if(type_ccr != NCL_double) NclFree(tmp_ccr);
