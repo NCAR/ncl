@@ -1643,7 +1643,6 @@ yyerror
 
 	if(is_error < NCL_MAX_ERROR) {
 		if(yytext[0] == '\n') {
-			fprintf(stderr,"In yyerror and yytext == \\n and loading == %d\n",loading);
 			sprintf(error_buffer,"%s\n",cur_line_text);
 			len = strlen(error_buffer);
 			for(i=0; i<last_line_length-1;i++) sprintf(&(error_buffer[len+i]),"-");
@@ -1656,7 +1655,6 @@ yyerror
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: line %d before or near \\n \n%s\n",s,cur_line_number+1,error_buffer);
 			} 
 		} else {
-			fprintf(stderr,"In yyerror and yytext != \\n and loading == %d\n",loading);
 			sprintf((char*)&(error_buffer[0]),"%s\n",cur_line_text);
 			len = strlen(error_buffer);
 			for(i=0; i<cur_line_length-1;i++) sprintf(&(error_buffer[len+i]),"-");
