@@ -1,5 +1,5 @@
 /*
- *	$Id: c_ppex01.c,v 1.2 1994-06-24 22:05:56 haley Exp $
+ *	$Id: c_ppex01.c,v 1.3 1994-11-03 20:55:54 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -16,6 +16,7 @@
  * Define the size of the polyline this subroutine is to generate.
  */
 #define NCRA 100
+
 /*
  * The parameter LWRK specifies the length of the workspace to be used
  * by the polyline package.

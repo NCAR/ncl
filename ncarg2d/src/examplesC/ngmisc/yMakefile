@@ -1,8 +1,8 @@
 #
-#	$Id: yMakefile,v 1.2 1994-10-31 03:54:50 haley Exp $
+#	$Id: yMakefile,v 1.3 1994-11-03 20:51:57 haley Exp $
 #
 
-EXAMPLES = c_fngngdts.c c_fngwsym.c
+EXAMPLES = c_fngwsym.c
 
 
 InstallTarget($(EXAMPLES),$(INSTALL_LIB),$(EXAMPLESPATH))

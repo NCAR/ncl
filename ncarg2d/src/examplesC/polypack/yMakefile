@@ -1,10 +1,8 @@
 #
-#	$Id: yMakefile,v 1.1 1994-06-24 19:12:21 haley Exp $
+#	$Id: yMakefile,v 1.2 1994-11-03 20:55:55 haley Exp $
 #
 
-CSRCS = c_tppack.c c_ppex01.c
+EXAMPLES = c_ppex01.c
 
-GENERIC_SRCS = $(CSRCS)
-
-InstallTarget($(GENERIC_SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
+InstallTarget($(EXAMPLES),$(INSTALL_LIB),$(EXAMPLESPATH))
 
