@@ -520,7 +520,7 @@ FILE* Openr ()
 
       	if (open == 0)
 	{
-        	filenm = (char*)malloc(128*sizeof(char));
+        	filenm = (char*)malloc(129*sizeof(char));
     		strcpy(filenm,"                                                                                                                                ");
 		/*
 		** Take care of Cray machine dependencies
