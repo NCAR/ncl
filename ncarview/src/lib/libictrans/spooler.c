@@ -1,5 +1,5 @@
 /*
- *	$Id: spooler.c,v 1.4 1991-08-16 10:57:43 clyne Exp $
+ *	$Id: spooler.c,v 1.5 1991-12-30 09:35:31 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -516,8 +516,10 @@ static	file_get_spooler(fp, spoolers)
 		 */
 		if (spoolers->num == spoolers->size) {
 			spoolers->size += SMALL_MALLOC_BLOCK;
-			spoolers->spool = (Spooler *) icMalloc 
-				(spoolers->size * sizeof (Spooler));
+			spoolers->spool = (Spooler *) icRealloc( 
+				(char *) spoolers->spool, 
+				(spoolers->size * sizeof (Spooler))
+				);
 		}
 
 		spoolers->spool[spoolers->num++] =  *spool;
