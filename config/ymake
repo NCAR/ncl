@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ymake,v 1.22 1996-01-13 00:30:06 haley Exp $
+#	$Id: ymake,v 1.23 1996-04-19 16:44:15 haley Exp $
 #
 ######################################################################
 #
@@ -279,6 +279,7 @@ switch ("$foo")
 case SunOS:
 case AIX:
 case IRIX:
+case IRIX64:
 case ULTRIX:
 case HP-UX:
 case OSF1:
@@ -399,6 +400,23 @@ case	IRIX:
 
 	breaksw
 
+case	IRIX64:
+	set os = $opsys
+
+	switch ("$mach")
+	case	IP*:
+		set arch = $mach
+		breaksw
+	default:
+		echo "$0 : Unknown machine type" > /dev/tty
+		exit 1
+	endsw
+
+	set sysincs = SGIR8
+	set vendor = SGI
+
+	breaksw
+
 case	ULTRIX:
 case	OSF1:
 	set os = $opsys
@@ -499,6 +517,7 @@ case	OSF1:
 	set subminor = `uname -r | cut -d. -f3`
 	breaksw
 case	SunOS:
+case	IRIX64:
 case	IRIX:
 case	ULTRIX:
 case	HP-UX:
