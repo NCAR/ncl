@@ -44,13 +44,13 @@ NhlErrorTypes wmsetp_W(void)
                       "end", "lin", "lwd", "oer", "rht", "rmg",
                       "sht", "sig", "sl1", "sl2", "smt", "swi",
                       "tht", "wba", "wbc", "wbd", "wbl", "wbr",
-                      "wbs", "wbt", "wht",
+                      "wbs", "wbt", "wht", "blw",
                       "ARC", "ARD", "ARL", "ARS", "BEG", "BET",
                       "CHT", "CMG", "CS1", "CS2", "DTS", "DWD",
                       "END", "LIN", "LWD", "OER", "RHT", "RMG",
                       "SHT", "SIG", "SL1", "SL2", "SMT", "SWI",
                       "THT", "WBA", "WBC", "WBD", "WBL", "WBR",
-                      "WBS", "WBT", "WHT"
+                      "WBS", "WBT", "WHT", "BLW"
                      };
 
   char *params_c[] = {"erf", "fro",
@@ -229,11 +229,13 @@ NhlErrorTypes wmgetp_W(void)
                       "end", "lin", "lwd", "rht", "rmg", "sht",
                       "sl1", "sl2", "swi", "tht", "wba", "wbc",
                       "wbd", "wbl", "wbr", "wbs", "wbt", "wht",
+                      "blw",
                       "ARC", "ARD", "ARL", "ARS", "BEG", "BET",
                       "CHT", "CMG", "CS1", "CS2", "DTS", "DWD",
                       "END", "LIN", "LWD", "RHT", "RMG", "SHT",
                       "SL1", "SL2", "SWI", "THT", "WBA", "WBC",
-                      "WBD", "WBL", "WBR", "WBS", "WBT", "WHT"
+                      "WBD", "WBL", "WBR", "WBS", "WBT", "WHT",
+                      "BLW"
                      };
 
   char *params_c[] = {"erf", "fro",
