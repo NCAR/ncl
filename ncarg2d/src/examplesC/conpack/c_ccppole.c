@@ -1,5 +1,5 @@
 /*
- * $Id: c_ccppole.c,v 1.2 1994-05-24 22:42:04 haley Exp $
+ * $Id: c_ccppole.c,v 1.3 1994-05-26 21:48:46 haley Exp $
  */
 
 #include <stdio.h>
@@ -23,28 +23,29 @@
 #define LAMA  600000
 #define NCRA  20000
 
-main()
-{
 /*
  * Declare the data array.
  */
-	float zdat[NLAT][NLON];
+float zdat[NLAT][NLON];
 /*
  * Declare the area map array.
  */
-	int iama[LAMA];
+int iama[LAMA];
 /*
  * Declare the real and integer workspace arrays for CONPACK.
  */
-	float rwrk[LRWK];
-	int iwrk[LIWK];
+float rwrk[LRWK];
+int iwrk[LIWK];
 /*
  * Declare arrays for ARSCAM and MAPGRM to use in calls to COLRAM and
  * COLRLL, respectively.  XCRA and YCRA hold X and Y coordinates; IAIA
  * and IGIA hold area identifiers and group identifiers.
  */
-	float xcra[NCRA],ycra[NCRA];
-	int iaia[10],igia[10];
+float xcra[NCRA],ycra[NCRA];
+int iaia[10],igia[10];
+
+main()
+{
 /*
  * Declare an array in which to retrieve aspect source flags.
  */
@@ -282,9 +283,9 @@ main()
 }
 
 int colram(
-    float *xcra,
-    float *ycra,
-    int *ncra,
+    float *xwrk,
+    float *ywrk,
+    int *nwrk,
     int *iaia,
     int *igia,
     int *nagi
@@ -292,8 +293,8 @@ int colram(
 {
 /*
  * This routine is called to color an area from an area map.  Its
- * coordinates are given by the NCRA coordinates in the arrays XCRA and
- * YCRA.  For each I from 1 to NAGI, IAIA(I) is the area identifier of
+ * coordinates are given by the NWRK coordinates in the arrays XWRK and
+ * YWRK.  For each I from 1 to NAGI, IAIA(I) is the area identifier of
  * the area relative to the group whose group identifier is IGIA(I).
  *
  * Find the area identifier for the area relative to groups 1 and 3.
@@ -332,16 +333,16 @@ int colram(
 
  * Create structure to pass to gfill_area
  */
-            fill_area.num_points = *ncra-1;
+            fill_area.num_points = *nwrk-1;
             fill_area.points = (Gpoint *) malloc(fill_area.num_points*sizeof(Gpoint));
             if( !fill_area.points ) {
                 fprintf( stderr, "colram: Not enough memory to create fill area structure\n" );
                 gemergency_close_gks();
                 exit(1);
             }
-			for( i = 0; i < *ncra-1; i++ ) {
-				fill_area.points[i].x = xcra[i];
-				fill_area.points[i].y = ycra[i];
+			for( i = 0; i < *nwrk-1; i++ ) {
+				fill_area.points[i].x = xwrk[i];
+				fill_area.points[i].y = ywrk[i];
 			}
 			gfill_area(&fill_area);
 			free((Gpoint *)fill_area.points);
@@ -354,9 +355,9 @@ int colram(
 }
 
 int colrcl(
-    float *xcra,
-    float *ycra,
-    int *ncra,
+    float *xwrk,
+    float *ywrk,
+    int *nwrk,
     int *iaia,
     int *igia,
     int *nagi
@@ -365,7 +366,7 @@ int colrcl(
 /*
  * This routine is called to draw a portion of a contour line which is
  * wholly contained in some area of an area map.  Its coordinates are
- * given by the NCRA coordinates in the arrays XCRA and YCRA.  For each
+ * given by the NWRK coordinates in the arrays XWRK and YWRK.  For each
  * I from 1 to NAGI, IAIA(I) is the area identifier of the area relative
  * to the group whose group identifier is IGIA(I).
  *
@@ -394,16 +395,16 @@ int colrcl(
 /*
  * Create structure to pass to gpolyline
  */
-        line.num_points = *ncra;
+        line.num_points = *nwrk;
         line.points = (Gpoint *) malloc(line.num_points*sizeof(Gpoint));
         if( !line.points ) {
             fprintf( stderr, "colrcl: Not enough memory to create fill area structure\n" );
             gemergency_close_gks();
             exit(1);
         }
-        for( i = 0; i < *ncra; i++ ) {
-            line.points[i].x = xcra[i];
-            line.points[i].y = ycra[i];
+        for( i = 0; i < *nwrk; i++ ) {
+            line.points[i].x = xwrk[i];
+            line.points[i].y = ywrk[i];
         }
         gpolyline(&line);
         free((Gpoint *)line.points);
@@ -415,9 +416,9 @@ int colrcl(
 }
 
 int colrll(
-    float *xcra,
-    float *ycra,
-    int *ncra,
+    float *xwrk,
+    float *ywrk,
+    int *nwrk,
     int *iaia,
     int *igia,
     int *nagi
@@ -426,8 +427,8 @@ int colrll(
 /*
  * This routine is called to draw a portion of a line of latitude or
  * longitude which is wholly contained in some area of an area map.  Its
- * coordinates are given by the NCRA coordinates in the arrays XCRA and
- * YCRA.  For each I from 1 to NAGI, IAIA(I) is the area identifier of
+ * coordinates are given by the NWRK coordinates in the arrays XWRK and
+ * YWRK.  For each I from 1 to NAGI, IAIA(I) is the area identifier of
  * the area relative to the group whose group identifier is IGIA(I).
  *
  * Find the area identifier for the area relative to group 1, which will
@@ -446,16 +447,16 @@ int colrll(
 /*
  * Create structure to pass to gpolyline
  */
-		line.num_points = *ncra;
+		line.num_points = *nwrk;
 		line.points = (Gpoint *) malloc(line.num_points*sizeof(Gpoint));
 		if( !line.points ) {
 			fprintf( stderr, "colrcl: Not enough memory to create fill area structure\n" );
             gemergency_close_gks();
             exit(1);
         }
-        for( i = 0; i < *ncra; i++ ) {
-            line.points[i].x = xcra[i];
-            line.points[i].y = ycra[i];
+        for( i = 0; i < *nwrk; i++ ) {
+            line.points[i].x = xwrk[i];
+            line.points[i].y = ywrk[i];
         }
         gpolyline(&line);
         free((Gpoint *)line.points);
