@@ -65,9 +65,11 @@ Add triangles defining a simple surface to a triangle list.
 Add triangles defining an isosurface to a triangle list.
 .IP "  TDMTRI -" 11
 Add triangles defining a 3D marker to a triangle list.
-.IP "  TDOTRI -" 11
+.IP "  TDCTRI -" 11
 Order the triangles in a triangle list for proper rendering.
 .IP "  TDSORT -" 11
+Cut triangles with a plane perpendicular to one of the axes.
+.IP "  TDOTRI -" 11
 Generic sorting routine
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
@@ -119,6 +121,8 @@ c_tditri
 c_tdmtri
 .br
 c_tdotri
+.br
+c_tdctri
 .br
 c_tdsort
 .SH ACCESS
