@@ -1,5 +1,5 @@
 /*
- *      $Id: createmenus.c,v 1.4 1997-07-23 22:23:35 dbrown Exp $
+ *      $Id: createmenus.c,v 1.5 1997-08-20 20:49:02 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -93,7 +93,7 @@ static NgDataSinkRec DataSinks[] = {
          { "vector field u", "vector field v", "x coord", "y coord" },
          {NrmNULLQUARK,NrmNULLQUARK,NrmNULLQUARK,NrmNULLQUARK},{ 2, 3 }
         },
-        {NgNclVariable, ngNCLVARIABLE,"ncl_var","none",
+        {NgNclVariable, ngNCLVARIABLE,"ncl_var",NULL,
          1,{ -1 },{"var"},{ 1, 1 }
         }
 };
@@ -186,8 +186,8 @@ static void CreateCB
                         printf("error updating hlu page\n");
                         return;
                 }
-                
                 (*pub->output_notify)(pub->pdata,page_id);
+                
         }
         
         return;

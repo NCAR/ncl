@@ -1,7 +1,7 @@
 /*
- *      $Id: hlupage.c,v 1.5 1997-07-23 22:23:37 dbrown Exp $
+ *      $Id: hlupage.c,v 1.6 1997-08-20 20:49:03 dbrown Exp $
  */
-/************************************************************************
+/*******************************************x*****************************
 *									*
 *			     Copyright (C)  1996			*
 *	     University Corporation for Atmospheric Research		*
@@ -45,8 +45,28 @@ ManageScalarField
         char sfbuf[256];
         int i,dimcount = 0;
         NgVarPageOutput *ditem = rec->var_data[0];
-        int nclstate;
+        int block_id;
+        NhlString res_names[] =
+        { "sfDataArray", "sfMissingValueV" };
+        NhlString values[2];
+        NhlBoolean quote[2] = { False, False };
+        int res_count = 1;
 
+/*
+ * Start vis block
+ */
+	if (create) {
+                block_id = NgNclVisBlockBegin
+                        (rec->nclstate,_NgCREATE,sfname,"defaultapp",
+                         "scalarFieldClass");
+	}
+	else {
+                block_id = NgNclVisBlockBegin
+                        (rec->nclstate,_NgSETVAL,sfname,NULL,NULL);
+	}
+/*
+ * Set up res list
+ */
         if (ditem->qfile > NrmNULLQUARK)
                 sprintf(sfbuf,"%s->%s(",
                         NrmQuarkToString(ditem->qfile),
@@ -76,36 +96,16 @@ ManageScalarField
                         ditem->start[i],ditem->finish[i],ditem->stride[i]);
         }
         sfbuf[strlen(sfbuf)-1] = ')';
+        values[0] = sfbuf;
 
 	if (fillvalue) {
-		char prefix[] = "\"sfMissingValueV\" : ";
-		fillvaluestring = 
-			NhlMalloc(strlen(prefix) + strlen(fillvalue) + 3);
-		strcpy(fillvaluestring,prefix);
-		strcat(fillvaluestring,fillvalue);
-		strcat(fillvaluestring,"\n");
+                res_count = 2;
+                values[1] = fillvalue;
 	}
-
-	if (create) {
-		sprintf(buf,
-       "%s = create \"%s\" %s %s\n\"sfDataArray\" : %s\n%send create\n",
-			sfname,sfname,"scalarFieldClass","defaultapp",
-			sfbuf,fillvaluestring);
-	}
-	else {
-		sprintf(buf,
-		   "setvalues %s\n\"sfDataArray\" : %s\n%send setvalues\n",
-			sfname,
-			sfbuf,fillvaluestring);
-	}
-        NhlVAGetValues(page->go->go.appmgr,
-                       NgNappNclState,	&nclstate,
-                       NULL);
-
-        (void)NgNclSubmitBlock(nclstate,buf);
+        NgNclVisBlockAddResList(rec->nclstate,block_id,res_count,
+                                res_names,values,quote);
         
-	if (strlen(fillvaluestring) > 1)
-		NhlFree(fillvaluestring);
+        NgNclVisBlockEnd(rec->nclstate,block_id);
 
 	return NhlNOERROR;
 }
@@ -129,6 +129,8 @@ static Boolean ManagePlotObj
         int wid;
         Dimension h,w;
 	char cellsizestring[16];
+        int block_id;
+        int res_count = 0;
         
 	char *cnlineres[] = {
 		"cnScalarFieldData",
@@ -271,9 +273,10 @@ static Boolean ManagePlotObj
 	char **res;
 	char **values;
 	char *copy_res[16];
+        NhlBoolean quote[16];
+        
 	int i;
 	int sv_res_count[16] = { 1, 1, 1, 1, 2, 2, 3, 3 };
-        int nclstate;
 
 	switch (dsp->type) {
  	case (int)ngLINECONTOUR:
@@ -318,48 +321,30 @@ static Boolean ManagePlotObj
 		values[i] = dataitemlist[i];
 	}
 
-	if (!rec->created) {
-		sprintf(buf,"%s = create \"%s\" %s %s\n",
-                        NrmQuarkToString(page->qvar),
-                        NrmQuarkToString(page->qvar),
-			rec->public.class_name,NhlName(wk_id));
-		for (i=0; res[i] != NULL; i++) 
-			copy_res[i] = res[i];
-		copy_res[i] = NULL;
-	}
-	else {
-		sprintf(buf,"setvalues %s\n",NrmQuarkToString(page->qvar));
-		for (i=0; i < sv_res_count[dsp->type]; i++) 
-			copy_res[i] = res[i];
-		copy_res[i] = NULL;
-	}
-
-	cp += strlen(buf);
-#if 0        
-	if (plotobj->title) {
-		sprintf(cp,title,plotobj->title);
-	}
-#endif
-	for (i = 0; copy_res[i] != NULL; i++) {
-		char *resp = copy_res[i];
-		char *valp = values[i];
-		cp = buf + strlen(buf);
-		if (! valp) continue;
-		sprintf(cp,"\"%s\" : %s\n",resp,valp);
-	}
-	cp = buf + strlen(buf);
-	if (!rec->created) {
-		sprintf(cp,"end create\n");
-	}
-	else {
-		sprintf(cp,"end setvalues\n");
-	}
-
-        NhlVAGetValues(page->go->go.appmgr,
-                       NgNappNclState,	&nclstate,
-                       NULL);
-
-        (void)NgNclSubmitBlock(nclstate,buf);
+        if (!rec->created) {
+                block_id = NgNclVisBlockBegin(rec->nclstate,_NgCREATE,
+                                              NrmQuarkToString(page->qvar),
+                                              (NhlString)NhlName(wk_id),
+                                              rec->public.class_name);
+		for (i=0; res[i] != NULL; i++){
+                        res_count++;
+                        quote[i] = False;
+                }
+        }
+        else {
+                block_id = NgNclVisBlockBegin(rec->nclstate,_NgSETVAL,
+                                              NrmQuarkToString(page->qvar),
+                                              NULL,NULL);
+		for (i=0; i < sv_res_count[dsp->type]; i++) {
+                        res_count++;
+                        quote[i] = False;
+                }
+        }
+        NgNclVisBlockAddResList(rec->nclstate,block_id,res_count,
+                                res,values,quote);
+        NgResTreeAddResList(rec->res_tree,block_id);
+        
+        NgNclVisBlockEnd(rec->nclstate,block_id);
                 
 	return True;
 }
@@ -368,7 +353,8 @@ static void
 ContourCreateUpdate
 (
         brPage		*page,
-        int		wk_id
+        int		wk_id,
+	NhlBoolean	configure
 )
 {
 	brPageData	*pdp = page->pdata;
@@ -384,7 +370,6 @@ ContourCreateUpdate
         int i;
         static NrmQuark QFillValue = NrmNULLQUARK;
         NhlErrorTypes ret;
-        int nclstate;
         
         if (QFillValue == NrmNULLQUARK) {
                 QFillValue = NrmStringToQuark("_FillValue"); 
@@ -433,18 +418,29 @@ ContourCreateUpdate
         
         if (ret < NhlWARNING)
                 return;
-
+        rec->res_tree->preview_instance = configure ? True : False;
+        
         if  (ManagePlotObj(page,dataitemlist,1,wk_id)) {
-                rec->created = True;
-
-                sprintf(buf,"clear(%s)\ndraw(%s)\nframe(%s)",Ng_SELECTED_WORK,
-                        NrmQuarkToString(page->qvar),Ng_SELECTED_WORK);
-
-                NhlVAGetValues(page->go->go.appmgr,
-                               NgNappNclState,	&nclstate,
-                               NULL);
-
-                (void)NgNclSubmitBlock(nclstate,buf);
+                if (!rec->created) {
+                        NclExtValueRec *val;
+                        val = NclGetHLUObjId(NrmQuarkToString(page->qvar));
+                        if (val->totalelements > 1)
+                                printf("var references hlu object array\n");
+			rec->hlu_id = ((int*)val->value)[0];
+                        NclFreeExtValue(val);    
+                }
+		if (! configure) {
+			rec->created = True;
+			sprintf(buf,"clear(%s)\ndraw(%s)\n",
+				Ng_SELECTED_WORK,
+				NrmQuarkToString(page->qvar));
+			(void)NgNclSubmitBlock(rec->nclstate,buf);
+		}
+                NgResTreeResUpdateComplete(rec->res_tree,rec->hlu_id,False);
+#if 0                
+                NgUpdateResTree
+                        (rec->res_tree,page->qvar,rec->class,rec->hlu_id);
+#endif                
         }
         
 	return;
@@ -462,6 +458,8 @@ static void CreateUpdateCB
 	brPageData	*pdp = page->pdata;
 	brHluPageRec	*rec = (brHluPageRec *) pdp->type_rec;
         int		wk_id;
+	char		buf[512];
+        NhlBoolean	work_created;
 
         printf("in CreateUpdateCB\n");
         
@@ -471,9 +469,18 @@ static void CreateUpdateCB
                 return;
         }
 
-        wk_id = NgAppGetSelectedWork(page->go->go.appmgr);
+        wk_id = NgAppGetSelectedWork(page->go->go.appmgr,&work_created);
+        if (work_created) {
+                XRaiseWindow(rec->go->go.x->dpy,
+                             XtWindow(rec->go->go.shell));
+        }
 
-        ContourCreateUpdate(page,wk_id);
+	if (! rec->created && rec->hlu_id > NhlNULLOBJID) {
+		sprintf(buf,"destroy(%s)\n",
+			NrmQuarkToString(page->qvar));
+		(void)NgNclSubmitBlock(rec->nclstate,buf);
+	}
+        ContourCreateUpdate(page,wk_id,False);
 
         return;
 }
@@ -597,6 +604,7 @@ static void HluPageInputNotify (
         NgHluPage 	*pub = &rec->public;
         NgVarPageOutput	*var_data = (NgVarPageOutput *)output_data;
         int		wk_id;
+        NhlBoolean 	work_created;
                 
         printf("in hlu page input notify\n");
 
@@ -611,11 +619,24 @@ static void HluPageInputNotify (
             default:
                     printf("page type not supported for input\n");
         }
-                    
-        if (rec->do_auto_update) {
-                wk_id = NgAppGetSelectedWork(page->go->go.appmgr);
-                ContourCreateUpdate(page,wk_id);
+        if (! rec->created) {
+		wk_id = NgAppGetSelectedWork(page->go->go.appmgr,
+                                             &work_created);
+		ContourCreateUpdate(page,wk_id,True);
+	}
+        else if (rec->do_auto_update) {
+                wk_id = NgAppGetSelectedWork(page->go->go.appmgr,
+                                             &work_created);
+		if (! rec->created)
+			ContourCreateUpdate(page,wk_id,True);
+		else
+			ContourCreateUpdate(page,wk_id,False);
         }
+        if (work_created) {
+                XRaiseWindow(rec->go->go.x->dpy,
+                             XtWindow(rec->go->go.shell));
+        }
+        
         
         return;
 }
@@ -632,7 +653,20 @@ static NhlPointer PublicHluPageData (
         
         return (NhlPointer) pub;
 }
+static void SetValuesCB 
+(
+	Widget		w,
+	XtPointer	udata,
+	XtPointer	cb_data
+)
+{
+        brPage		*page = (brPage *)udata;
+	brPageData	*pdp = page->pdata;
+	brHluPageRec	*rec = (brHluPageRec *) pdp->type_rec;
 
+	NgResTreeSetValues(rec->res_tree);
+	return;
+}
 static void
 DeactivateHluPage
 (
@@ -648,6 +682,9 @@ DeactivateHluPage
         if (rec->auto_update)
                 XtRemoveCallback(rec->auto_update,
                                  XmNvalueChangedCallback,AutoUpdateCB,page);
+        if (rec->set_values)
+                XtRemoveCallback(rec->set_values,
+                                 XmNactivateCallback,SetValuesCB,page);
 
         rec->created = False;
         rec->do_auto_update = False;
@@ -717,9 +754,18 @@ AdjustHluPageGeometry
                               XmNheight,&h,
                               NULL);
         }
+	twidth = w;
+        
+        if (rec->res_tree)
+                XtVaGetValues(rec->res_tree->tree,
+                              XmNwidth,&w,
+                              XmNy,&y,
+                              XmNheight,&h,
+                              NULL);
         
 	twidth = MAX(w,twidth);
         theight = y + h;
+        
         NgSetFolderSize(page->pdata->pane,
                         twidth,theight,&avail_width,&avail_height);
 	
@@ -734,26 +780,72 @@ static NhlErrorTypes UpdateHluPage
         brPageData	*pdp = page->pdata;
 	brHluPageRec	*rec = (brHluPageRec	*)pdp->type_rec;
         NgHluPage 	*pub = &rec->public;
+	int		hlu_id;
         
         printf("in updata hlu page\n");
 
         printf("%s\n",pub->class_name);
 
-        if (pub->data_info->n_dataitems > rec->var_data_count) {
-                int i;
-                
-                rec->var_data = NhlRealloc
-                        (rec->var_data,pub->data_info->n_dataitems *
-                         sizeof(NgVarPageOutput *));
-                for (i = rec->var_data_count;
-                     i < pub->data_info->n_dataitems; i++)
-                        rec->var_data[i] = NULL;
-        }
-        rec->var_data_count = pub->data_info->n_dataitems;
+        if (rec->hlu_id > NhlNULLOBJID)
+                rec->class = NhlClassOfObject(rec->hlu_id);
+        else
+                rec->class = NgNclHluClassPtrFromName(rec->nclstate,
+                                                      pub->class_name);
         
-        rec->data_sink_grid->dataitems = rec->var_data;
-        NgUpdateDataSinkGrid(rec->data_sink_grid,page->qvar,pub->data_info);
+        if (!rec->class) {
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+                           "%s is not a user instantiable class",
+                           pub->class_name));
+                return NhlFATAL;
+        }
 
+        if (pub->data_info) {
+		if (pub->data_info->n_dataitems > rec->var_data_count) {
+                	int i;
+                
+			rec->var_data = NhlRealloc
+				(rec->var_data,pub->data_info->n_dataitems *
+				 sizeof(NgVarPageOutput *));
+			for (i = rec->var_data_count;
+			     i < pub->data_info->n_dataitems; i++)
+				rec->var_data[i] = NULL;
+		}
+		rec->var_data_count = pub->data_info->n_dataitems;
+        
+		rec->data_sink_grid->dataitems = rec->var_data;
+		NgUpdateDataSinkGrid
+			(rec->data_sink_grid,page->qvar,pub->data_info);
+	}
+
+
+/* ResTree */
+        
+        if (!rec->res_tree) {
+                rec->res_tree = NgCreateResTree
+                                (page->go,pdp->form,page->qvar,
+                                 rec->class,rec->hlu_id);
+                XtVaSetValues(rec->res_tree->tree,
+                              XmNrightAttachment,XmATTACH_NONE,
+                              XmNbottomAttachment,XmATTACH_NONE,
+                              XmNtopOffset,8,
+                              XmNtopAttachment,XmATTACH_WIDGET,
+                              XmNtopWidget,rec->set_values,
+                              NULL);
+                rec->res_tree->geo_notify = AdjustHluPageGeometry;
+        }
+        else {
+                rec->res_tree->preview_instance = rec->created ?
+                        False : True;
+                NgUpdateResTree
+                        (rec->res_tree,page->qvar,rec->class,rec->hlu_id);
+        }
+        XtVaGetValues(pdp->pane->scroller,
+                      XmNhorizontalScrollBar,&rec->res_tree->h_scroll,
+                      XmNverticalScrollBar,&rec->res_tree->v_scroll,
+                      NULL);
+        
+        rec->res_tree->geo_data = (NhlPointer) page;
+        
         return NhlNOERROR;
 
 }
@@ -763,14 +855,14 @@ NewHluPage
 (
   	NgGO		go,
         brPane		*pane,
-        NhlBoolean	is_hlu
+	brPage		*page
         )
 {
 	brPageData	*pdp;
 	brHluPageRec	*rec;
         NhlString	e_text;
         int		i;
-        
+
 	if (!(pdp = NhlMalloc(sizeof(brPageData)))) {
 		e_text = "%s: dynamic memory allocation error";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,_NhlName(go));
@@ -788,17 +880,27 @@ NewHluPage
                 return NULL;
 	}
         pdp->type_rec = (NhlPointer) rec;
+        rec->go = go;
+        
+        NhlVAGetValues(rec->go->go.appmgr,
+                       NgNappNclState,	&rec->nclstate,
+                       NULL);
+        
         rec->activated = False;
         rec->data_sink_grid = NULL;
+        rec->res_tree = NULL;
         rec->create_update = NULL;
         rec->auto_update = NULL;
+	rec->set_values = NULL;
         rec->var_data_count = 0;
         rec->var_data = NULL;
         rec->created = False;
         rec->do_auto_update = False;
         rec->public.data_info = NULL;
         rec->public.class_name = NULL;
-        
+        rec->class = NULL;
+        rec->hlu_id = NhlNULLOBJID;
+	rec->pre_hlu_id = NhlNULLOBJID;
         for (i=0; i <  8; i++)
                 rec->data_objects[i] = NrmNULLQUARK;
         
@@ -815,6 +917,7 @@ NewHluPage
         pdp->page_input_notify = HluPageInputNotify;
         pdp->public_page_data = PublicHluPageData;
         pdp->update_page = UpdateHluPage;
+        pdp->pane = pane;
         
         return pdp;
 }
@@ -837,15 +940,18 @@ NgGetHluPage
         int			count;
         NhlBoolean		is_hlu = False;
         int			i;
+        static int		first = True;
+	int			hlu_id, *hlu_array = NULL;
 
-        qhlus = NclGetHLUVarSymNames(&count);
-        for (i = 0; i < count; i++) {
-                if (qhlus[i] == page->qvar) {
-                        is_hlu = True;
-                        break;
-                }
-        }
-        NclFree(qhlus);
+	hlu_id = NgNclGetHluObjId(NrmQuarkToString(page->qvar),&hlu_array);
+	if (hlu_id < NhlNOERROR)
+		return NULL;
+	if (hlu_array) {
+		NHLPERROR((NhlWARNING,NhlEUNKNOWN,
+                       "variable %s is an array: only handling first element",
+                           NrmQuarkToString(page->qvar)));
+		NhlFree(hlu_array);
+	}
 
 	if (copy_page) {
 		copy_rec = (brHluPageRec *) copy_page->pdata->type_rec;
@@ -855,7 +961,7 @@ NgGetHluPage
 		  break;
 	}
         if (! pdp)
-                pdp = NewHluPage(go,pane,is_hlu);
+                pdp = NewHluPage(go,pane,page);
         if (! pdp)
                 return NULL;
         page->pdata = pdp;
@@ -892,21 +998,72 @@ NgGetHluPage
                          XmNbottomAttachment,XmATTACH_NONE,
                          NULL);
         }
+        if (! rec->set_values) {
+                rec->set_values = XtVaCreateManagedWidget
+                        ("Set Values",xmPushButtonGadgetClass,
+                         pdp->form,
+                         XmNtopAttachment,XmATTACH_WIDGET,
+                         XmNtopWidget,rec->create_update,
+                         XmNrightAttachment,XmATTACH_NONE,
+                         XmNbottomAttachment,XmATTACH_NONE,
+                         NULL);
+        }
         if (! rec->activated) {
                 rec->activated = True;
                 XtAddCallback(rec->create_update,
                               XmNactivateCallback,CreateUpdateCB,page);
                 XtAddCallback(rec->auto_update,
                               XmNvalueChangedCallback,AutoUpdateCB,page);
+                XtAddCallback(rec->set_values,
+                              XmNactivateCallback,SetValuesCB,page);
         }
+	if (hlu_id > NhlNULLOBJID) {
+		rec->hlu_id = hlu_id;
+		rec->class = NhlClassOfObject(hlu_id);
+		rec->public.class_name = rec->class->base_class.class_name;
+	}
 	pdp->in_use = True;
 
-        if (! copy_page)
+        if (! copy_page) {
+                if (rec->hlu_id > NhlNULLOBJID)
+                        UpdateHluPage(page);
                 return pdp;
+        }
 
         rec->public.class_name = copy_rec->public.class_name;
         rec->public.data_info = copy_rec->public.data_info;
+        rec->class = copy_rec->class;
+        rec->hlu_id = copy_rec->hlu_id;
+        rec->created = copy_rec->created;
         
+/* ResTree */
+        
+        if (rec->res_tree) {
+                 NgDupResTree(page->go,pdp->form,page->qvar,
+                              rec->class,rec->hlu_id,
+                              rec->res_tree,copy_rec->res_tree);
+        }
+        else {
+                rec->res_tree = NgDupResTree
+                        (page->go,pdp->form,page->qvar,
+                         rec->class,rec->hlu_id,
+                         NULL,copy_rec->res_tree);
+                XtVaSetValues(rec->res_tree->tree,
+                              XmNrightAttachment,XmATTACH_NONE,
+                              XmNbottomAttachment,XmATTACH_NONE,
+                              XmNtopOffset,8,
+                              XmNtopAttachment,XmATTACH_WIDGET,
+                              XmNtopWidget,rec->set_values,
+                              NULL);
+                rec->res_tree->geo_notify = AdjustHluPageGeometry;
+        }
+        XtVaGetValues(pdp->pane->scroller,
+                      XmNhorizontalScrollBar,&rec->res_tree->h_scroll,
+                      XmNverticalScrollBar,&rec->res_tree->v_scroll,
+                      NULL);
+        rec->res_tree->geo_data = (NhlPointer) page;
+        rec->res_tree->preview_instance = rec->created ?
+                False : True;
         rec->class = copy_rec->class;
         rec->created = copy_rec->created;
         rec->do_auto_update = copy_rec->do_auto_update;
@@ -932,5 +1089,7 @@ NgGetHluPage
                 NgUpdateDataSinkGrid
                         (rec->data_sink_grid,page->qvar,rec->public.data_info);
         }
+        if (rec->hlu_id > NhlNULLOBJID)
+                UpdateHluPage(page);
         return pdp;
 }

@@ -1,5 +1,5 @@
 /*
- *      $Id: varmenusP.h,v 1.1 1997-06-04 18:08:35 dbrown Exp $
+ *      $Id: varmenusP.h,v 1.2 1997-08-20 20:49:08 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -32,7 +32,7 @@
 
 typedef enum _NgbrVarType
 {
-	_brREGULAR, _brFILEREF, _brFILEVAR
+	_brREGULAR, _brFILEREF, _brFILEVAR, _brHLUVAR
 } NgbrVarType;
 
 typedef struct _NgFileVarRec 
@@ -65,9 +65,11 @@ typedef struct _VarMenusRec
 {
         int		appmgr;
         int		nsid;
+	NgVarRec	hluvars;
         NgVarRec	regvars;
         NgVarRec	filerefs;
         NgVarRec	filevars;
+        XtCallbackProc	hluvar_cb;
         XtCallbackProc	regvar_cb;
         XtCallbackProc	fileref_cb;
         XtCallbackProc	filevar_cb;

@@ -1,5 +1,5 @@
 /*
- *      $Id: hlupage.h,v 1.2 1997-06-23 21:06:25 dbrown Exp $
+ *      $Id: hlupage.h,v 1.3 1997-08-20 20:49:04 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -24,6 +24,7 @@
 
 #include <ncarg/ngo/go.h>
 #include <ncarg/ngo/createmenus.h>
+#include <ncarg/ngo/restree.h>
 
 #ifndef _NCL_H_
 #include <ncarg/ncl/defs.h>

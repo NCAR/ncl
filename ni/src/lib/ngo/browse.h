@@ -1,5 +1,5 @@
 /*
- *      $Id: browse.h,v 1.3 1997-06-23 21:06:20 dbrown Exp $
+ *      $Id: browse.h,v 1.4 1997-08-20 20:49:02 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -71,5 +71,12 @@ extern NhlErrorTypes NgUpdatePage(
         int		goid,
         NgPageId	page_id
         );
+
+extern int NgGetPageId(
+        int		goid,
+        NrmQuark	qsym1,
+        NrmQuark	qsym2
+        );
+
 
 #endif	/* _NG_BROWSE_H */

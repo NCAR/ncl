@@ -1,5 +1,5 @@
 /*
- *      $Id: nclstate.c,v 1.9 1997-07-02 15:30:53 boote Exp $
+ *      $Id: nclstate.c,v 1.10 1997-08-20 20:49:05 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -128,7 +128,7 @@ NclStateClassPartInitialize
 		return NhlFATAL;
 
 	NgnclStateClassRec.nclstate_class.num = 0;
-
+        
 	return NhlNOERROR;
 }
 
@@ -817,8 +817,12 @@ NclStateInitialize
 
 
 	(void)UpdateFuncList((NhlPointer)nncl);
+        ns->classlist = NclGetHLUClassPtrs(&ns->classcount);
 
-
+        ns->block_id = 0;
+        ns->bufsize = 0;
+        ns->buffer = NULL;
+        
 	return NhlNOERROR;
 }
 
@@ -1338,6 +1342,30 @@ NgNclGetSymName
 	return buff;
 }
 
+/*
+ * Function:	NgNclGetHluObjId
+ *
+ * Description:	
+ *        (1) If variable not defined or it's not a graphic var, a
+ *        warning is issued and an error is returned.
+ *        (2) If var is defined but does not represent an instantiated 
+ *        hlu object, NhlNULLOBJID is returned but no warning is issued.
+ *        (3) If var is an array, the first member is returned as a 
+ *        scalar; all members (including first) are returned in an allocated 
+ *        array. The caller is responsible for freeing this array. Each 
+ *        member that does not represent an instantiated hlu object is set 
+ *        to NhlNULLOBJID.
+ *        (4) If var is scalar it is returned and the array will be NULL.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	memory possibly allocated
+ */
+
 int
 NgNclGetHluObjId(
 	NhlString	hlu_varname,
@@ -1346,37 +1374,259 @@ NgNclGetHluObjId(
 {
 	char		func[] = "NgNclGetHluObjId";
         NclExtValueRec	*val;
-        int		scalar_id;
+        int		i, scalar_id;
 
         *id_array = NULL;
         
         val = NclGetHLUObjId(hlu_varname);
         if (! val) {
-                NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                           "%s:selected workstation variable unavailable",
-                           func));
-                return NhlNULLOBJID;
+                NHLPERROR((NhlWARNING,NhlEUNKNOWN,
+                           "%s: variable %s not defined or not graphic",
+                           func,hlu_varname));
+                return NhlWARNING;
         }
         
         scalar_id = ((int *)val->value)[0];
+	if (val->has_missing && scalar_id == val->missing.objval)
+		scalar_id = NhlNULLOBJID;
         if (val->totalelements == 1) {
                 if (val->constant != 0)
                         NclFree(val->value);
                 NclFreeExtValue(val);
                 return scalar_id;
         }
+
+	*id_array = NhlMalloc(sizeof(int) * val->totalelements);
+	memcpy((char*)*id_array,(char*)val->value,
+	       sizeof(int) * val->totalelements);
+	for (i = 0; i < val->totalelements; i++)
+		if ((*id_array)[i] == val->missing.objval)
+			(*id_array)[i] = NhlNULLOBJID;
+
         if (val->constant != 0) {
-                *id_array = (int *) val->value;
-                NclFreeExtValue(val);
-                return scalar_id;
-        }
-        
-        *id_array = NhlMalloc(sizeof(int) * val->totalelements);
-        memcpy((char*)*id_array,(char*)val->value,
-               sizeof(int) * val->totalelements);
+		NclFree(val->value);
+	}
+	NclFreeExtValue(val);
         
         return scalar_id;
+}
+#if 0
+int
+NgNclGetHluSymbols(
+        int		nclstate,
+        NgGraphicType	type,
+        NrmQuark	**qsymbols,
+        NhlBoolean	count_only
+        )
+{
+	NgNclState	ncl = (NgNclState)_NhlGetLayer(nclstate);
+	NgNclStatePart	*ns;
+        NclApiDataList	*dlist;
+        NclApiHLUVarInfoRec *vinfo;
+        NclApiHLUObjInfoRec *hinfo;
+        int		hlu_count;
+        int		i,type_count;
+
+        *qsymbols = NULL;
+
+        dlist = NclGetHLUObjsList();
+        vi
+        for (i = 0; i < count; i++) {
+                int *id_array = NULL;
+                int hlu_id = NgNclGetHluObjId();
+        }
+                
+                
+}
+#endif
+
+NhlClass
+NgNclHluClassPtrFromName(
+        int		nclstate,
+	NhlString	hlu_classname
+        )
+{
+	NgNclState	ncl = (NgNclState)_NhlGetLayer(nclstate);
+	NgNclStatePart	*ns;
+
+        int i;
+
+        if (! ncl) return NULL;
+        
+        ns = &ncl->nclstate;
+        for (i = 0; i < ns->classcount; i++) {
+                if (! strcmp(hlu_classname,
+                             ns->classlist[i]->base_class.class_name))
+                        return ns->classlist[i];
+        }
+        return NULL;
+}
+
+int
+NgNclVisBlockBegin
+(
+        int		nclstate,
+        NgNclBlockType	type,
+        NhlString	ncl_graphic,
+        NhlString	ncl_parent,
+        NhlString	classname
+        )
+{
+	NgNclState	ncl = (NgNclState)_NhlGetLayer(nclstate);
+	NgNclStatePart	*ns;
+
+        if (! ncl) {
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Invalid nclstate id"));
+                return NhlFATAL;
+        }
+        
+        ns = &ncl->nclstate;
+        ns->block_id++;
+        ns->block_type = type;
+
+        if (! ns->buffer) {
+                ns->buffer = NhlMalloc(512);
+                if (!ns->buffer) {
+                        NHLPERROR((NhlFATAL,ENOMEM,NULL));
+                        return (int) NhlFATAL;
+                }
+                ns->bufsize = 512;
+        }
+        
+        switch (type) {
+            case _NgCREATE:
+                    sprintf(ns->buffer,"%s = create \"%s\" %s %s\n",
+                            ncl_graphic,ncl_graphic,classname,ncl_parent);
+                    break;
+            case _NgSETVAL:
+                    sprintf(ns->buffer,"setvalues %s\n",
+                            ncl_graphic);
+                    break;
+            case _NgGETVAL:
+                    sprintf(ns->buffer,"getvalues %s\n",
+                            ncl_graphic);
+                    break;
+        }
+
+        return ns->block_id;
+}
+
+NhlErrorTypes
+NgNclVisBlockEnd
+(
+        int		nclstate,
+        int		block_id
+        )
+{
+	NgNclState	ncl = (NgNclState)_NhlGetLayer(nclstate);
+	NgNclStatePart	*ns;
+        char		*endstr;
+
+        if (! ncl) {
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Invalid nclstate id"));
+                return NhlFATAL;
+        }
+ 
+        ns = &ncl->nclstate;
+
+        if (block_id != ns->block_id) {
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Ncl block sequence error"));
+                return NhlFATAL;
+        }
+        
+        switch (ns->block_type) {
+            case _NgCREATE:
+                    endstr = "end create\n";
+                    break;
+            case _NgSETVAL:
+                    endstr = "end setvalues\n";
+                    break;
+            case _NgGETVAL:
+                    endstr = "end getvalues\n";
+                    break;
+        }
+
+        if (strlen(ns->buffer) + strlen(endstr) > ns->bufsize) {
+                ns->bufsize += 512;
+                ns->buffer = NhlRealloc(ns->buffer,ns->bufsize);
+                if (!ns->buffer) {
+                        NHLPERROR((NhlFATAL,ENOMEM,NULL));
+                        return NhlFATAL;
+                }
+        }
+        strcat(ns->buffer,endstr);
+        NgNclSubmitBlock(nclstate,ns->buffer);
+
+        return NhlNOERROR;
+}
+
+NhlErrorTypes
+NgNclVisBlockAddResList
+(
+        int		nclstate,
+        int		block_id,
+        int		res_count,
+        NhlString	*res_names,
+        NhlString	*values,
+        NhlBoolean	*quote
+        )
+{
+        
+	NgNclState	ncl = (NgNclState)_NhlGetLayer(nclstate);
+	NgNclStatePart	*ns;
+        int		endlen,addlen,buflen;
+        int		i;
+        
+            /* Note that string values are expected to be already
+               enclosed in escaped quotes */
+        if (! ncl) {
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Invalid nclstate id"));
+                return NhlFATAL;
+        }
+ 
+        ns = &ncl->nclstate;
+
+        if (block_id != ns->block_id) {
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,"Ncl block sequence error"));
+                return NhlFATAL;
+        }
+        
+        switch (ns->block_type) {
+            case _NgCREATE:
+                    endlen = strlen("end create\n");
+                    break;
+            case _NgSETVAL:
+                    endlen = strlen("end setvalues\n");
+                    break;
+            case _NgGETVAL:
+                    NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+                               "Invalid type for NgNclVisBlockAddCSList"));
+                    return NhlFATAL;
+        }
+        
+        for (i = 0; i < res_count; i++) {
+                addlen = endlen + 8 + strlen(res_names[i]) + strlen(values[i]);
+                buflen = strlen(ns->buffer);
+                if (buflen + addlen > ns->bufsize) {
+                        ns->buffer = NhlRealloc
+                                (ns->buffer,MAX(512,buflen+addlen));
+                        NHLPERROR((NhlFATAL,ENOMEM,NULL));
+                        return NhlFATAL;
+                }
+                if (quote[i])
+                        sprintf(&ns->buffer[buflen],"\"%s\" : \"%s\"\n",
+                                res_names[i],values[i]);
+                else
+                        sprintf(&ns->buffer[buflen],"\"%s\" : %s\n",
+                                res_names[i],values[i]);
+        }
+        return NhlNOERROR;
 }
 
 
         
+
+        
+
+
+

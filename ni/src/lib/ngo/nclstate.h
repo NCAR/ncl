@@ -1,5 +1,5 @@
 /*
- *      $Id: nclstate.h,v 1.5 1997-07-02 15:30:54 boote Exp $
+ *      $Id: nclstate.h,v 1.6 1997-08-20 20:49:06 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -23,6 +23,7 @@
 #define	_NG_NCLSTATE_H
 
 #include <ncarg/hlu/Base.h>
+#include <ncarg/hlu/NresDB.h>
 #include <ncarg/ngo/ngo.h>
 
 extern NhlClass NgnclStateClass;
@@ -233,6 +234,9 @@ NgNclGetSymName(
  * by the ncl symbol name. If the variable is scalar then the id_array
  * output parameter will be set to NULL. Otherwise it will be the array 
  * of Hlu Ids and will need to be freed by the caller.
+ * If the variable is of graphic type but no hlu object exists, NHlNULLOBJID
+ * will be returned. If the variable does not exist or is not of graphic type
+ * a warning is issued and the return value will be NhlWARNING.
  */
  
 extern int
@@ -240,5 +244,71 @@ NgNclGetHluObjId(
 	NhlString	hlu_varname,
         int		**id_array
         );
-        
+
+/*
+ * Given the class name of a user-instantiable Hlu class, returns the
+ * class pointer. Returns NULL if the name does not match a valid class.
+ */
+
+extern NhlClass
+NgNclHluClassPtrFromName(
+        int		nclstate,
+	NhlString	hlu_classname
+        );
+
+typedef enum _NgGraphicType 
+{
+        NgWORKSTATION,NgDATAITEM,NgTRANSFORM,NgVIEW,
+        NgANNOMANAGER,NgSTYLE,NgDATASPEC
+} NgGraphicType;
+
+/*
+ * returns list of Hlu symbols that represent objects whose class falls into
+ * the requested category. If the symbol is an array,
+ * it is included in the list if any element belongs to the category.
+ * If the count_only value is True, then only the count is returned.
+ */
+ 
+extern int
+NgNclGetHluSymbols(
+        int		nclstate,
+        NgGraphicType	type,
+        NrmQuark	*qsymbols,
+        NhlBoolean	count_only
+        );
+
+typedef enum _NgNclBlockType 
+{
+        _NgCREATE, _NgSETVAL, _NgGETVAL
+} NgNclBlockType;
+
+
+extern int
+NgNclVisBlockBegin
+(
+        int		nclstate,
+        NgNclBlockType	type,
+        NhlString	ncl_graphic,
+        NhlString	ncl_parent,
+        NhlString	classname
+        );
+
+extern NhlErrorTypes
+NgNclVisBlockAddResList
+(
+        int		nclstate,
+        int		block_id,
+        int		res_count,
+        NhlString	*res_names,
+        NhlString	*values,
+        NhlBoolean	*quote
+        );
+
+extern NhlErrorTypes
+NgNclVisBlockEnd
+(
+        int		nclstate,
+        int		block_id
+        );
+
 #endif	/* _NG_NCLSTATE_H */

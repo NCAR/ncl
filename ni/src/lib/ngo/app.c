@@ -1,5 +1,5 @@
 /*
- *      $Id: app.c,v 1.6 1997-06-24 15:00:00 dbrown Exp $
+ *      $Id: app.c,v 1.7 1997-08-20 20:48:58 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1276,13 +1276,15 @@ NgAppReleaseFocus
 int
 NgAppGetSelectedWork
 (
-	int		appid
+	int		appid,
+        NhlBoolean	*created
 )
 {
 	char		func[] = "NgAppGetSelectedWork";
 	NgAppMgr	app = (NgAppMgr)_NhlGetLayer(appid);
         int		selected_id,*ids;
 
+        *created = False;
         if (! NclSymbolDefined(Ng_SELECTED_WORK)) {
                 char *name, line[512];
                     /*
@@ -1295,6 +1297,7 @@ NgAppGetSelectedWork
                 (void)NgNclSubmitBlock(app->app.nclstate,line);
                 sprintf(line,"%s = %s\n",Ng_SELECTED_WORK,name);
                 (void)NgNclSubmitBlock(app->app.nclstate,line);
+                *created = True;
         }
         selected_id = NgNclGetHluObjId(Ng_SELECTED_WORK,&ids);
         if (ids) {

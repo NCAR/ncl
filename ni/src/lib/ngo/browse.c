@@ -1,5 +1,5 @@
 /*
- *      $Id: browse.c,v 1.7 1997-07-23 22:23:33 dbrown Exp $
+ *      $Id: browse.c,v 1.8 1997-08-20 20:49:00 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1517,6 +1517,41 @@ static void BrowseTimeoutCB
 
 }
         
+static void BrowseHluCB 
+(
+	Widget		w,
+	XtPointer	udata,
+	XtPointer	cb_data
+)
+{
+	NgGO		go = (NgGO) udata;
+	NgBrowse	browse = (NgBrowse)udata;
+	NgBrowsePart	*np = &browse->browse;
+	NrmQuark	qvar;
+        brPage		*page;
+        brPane		*pane;
+        static timer_data tdata;
+        
+#if	DEBUG_DATABROWSER & DEBUG_ENTRY
+	fprintf(stderr,"BrowseVarCB(IN)\n");
+#endif
+	XtVaGetValues(w,
+		      XmNuserData,&qvar,
+		      NULL);
+
+#if	DEBUG_DATABROWSER & DEBUG_FOLDER
+	fprintf(stderr,"browsing var %s\n", NrmQuarkToString(qvar));
+#endif
+
+        tdata.go = go;
+        tdata.qvar = qvar;
+        tdata.type = _brHLUVAR;
+        
+        XtAppAddTimeOut(go->go.x->app,50,BrowseTimeoutCB,&tdata);
+        
+	return;
+}
+        
 static void BrowseVarCB 
 (
 	Widget		w,
@@ -1686,6 +1721,7 @@ CreateVarMenus
                  NULL);
         return NgCreateVarMenus(browse->go.appmgr,
                                 np->nsid,menubar,
+				BrowseHluCB,
                                 BrowseVarCB,
                                 BrowseFileCB,
                                 BrowseFileVarCB,
@@ -2143,6 +2179,7 @@ extern void NgPageOutputNotify(
         return;
 }
 
+        
 extern NhlPointer NgPageData(
         int		goid,
         NgPageId	page_id
@@ -2177,6 +2214,37 @@ extern NhlErrorTypes NgUpdatePage
         return ((*page->pdata->update_page)(page));
 
 }
+
+extern int
+NgGetPageId
+(
+        int		goid,
+        NrmQuark	qsym1,
+        NrmQuark	qsym2
+        )
+{
+        NgGO		go = (NgGO)_NhlGetLayer(goid);
+	NgBrowse	browse = (NgBrowse)go;
+	NgBrowsePart	*np = &browse->browse;
+        brPaneControl	*pcp = &np->pane_ctrl;
+        brPane		*pane;
+        brPage		*page;
+        int		i,j;
+         
+        for (i = 0; i < pcp->alloc_count; i++) {
+                pane = pcp->panes[i];
+                for (j = 0; j < pane->pagecount; j++) {
+                        page = XmLArrayGet(pane->pagelist,j);
+                        if (qsym2 > NrmNULLQUARK) 
+                            if (page->qvar == qsym1 && page->qfile == qsym2)
+                                    return page->id;
+                        else if (page->qvar == qsym1)
+                                return page->id;
+                }
+        }
+        return NgNoPage;
+}
+
 
 static void TabFocusAction
 (

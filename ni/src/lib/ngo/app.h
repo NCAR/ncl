@@ -1,5 +1,5 @@
 /*
- *      $Id: app.h,v 1.5 1997-06-24 15:00:01 dbrown Exp $
+ *      $Id: app.h,v 1.6 1997-08-20 20:48:59 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -154,7 +154,8 @@ extern int NgAppGetNclEditor(
 );
 
 extern int NgAppGetSelectedWork(
-	int		appid
+	int		appid,
+        NhlBoolean	*created
 );
 
 extern void NgAppGrabFocus(

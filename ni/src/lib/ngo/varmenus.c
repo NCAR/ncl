@@ -1,5 +1,5 @@
 /*
- *      $Id: varmenus.c,v 1.2 1997-06-06 03:14:56 dbrown Exp $
+ *      $Id: varmenus.c,v 1.3 1997-08-20 20:49:07 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -301,6 +301,9 @@ static void VarMenuCB
                 XtUnmanageChildren(vrec->vbuttons,vrec->in_use);
         }
 	switch (vrec->vtype) {
+	case _brHLUVAR:
+		vrec->qvars = NclGetHLUVarSymNames(&count);
+		break;
 	case _brREGULAR:
 		vrec->qvars = NclGetVarSymNames(&count);
 		break;
@@ -308,14 +311,25 @@ static void VarMenuCB
 	case _brFILEVAR:
 		vrec->qvars = NclGetFileSymNames(&count);
 		break;
-
 	}
+	printf("count %d\n",count);
         NgSortQuarkList(vrec->qvars,count,False);
         
         if (count > vrec->alloced) {
                 vrec->vbuttons = NhlRealloc(vrec->vbuttons,
                                             count * sizeof(Widget));
                 switch (vrec->vtype) {
+                case _brHLUVAR:
+                        for (i = vrec->alloced; i < count; i++) {
+                                vrec->vbuttons[i] = XtVaCreateWidget
+                                        ("vbutton",xmCascadeButtonGadgetClass,
+                                         vrec->menu,NULL);
+                                XtAddCallback
+                                        (vrec->vbuttons[i],
+                                         XmNactivateCallback,vp->hluvar_cb,
+                                         vp->udata);
+                        }
+                        break;
                 case _brREGULAR:
                         for (i = vrec->alloced; i < count; i++) {
                                 vrec->vbuttons[i] = XtVaCreateWidget
@@ -380,6 +394,7 @@ static void VarMenuCB
                 XmString xmname;
                 char *name = NrmQuarkToString(vrec->qvars[i]);
 
+		printf("name %s\n",name);
                 if (strncmp(name,"_Ng",3) == 0)
                         continue;
                 
@@ -406,6 +421,7 @@ NgCreateVarMenus
         int		appmgr,
         int		nsid,
         Widget		parent,
+        XtCallbackProc	hluvar_cb,
         XtCallbackProc	regvar_cb,
         XtCallbackProc	fileref_cb,
         XtCallbackProc	filevar_cb,
@@ -428,10 +444,19 @@ NgCreateVarMenus
         vmenus->qfile = NrmNULLQUARK;
         vp->appmgr = appmgr;
         vp->nsid = nsid;
+        vp->hluvar_cb = hluvar_cb;
         vp->regvar_cb = regvar_cb;
         vp->fileref_cb = fileref_cb;
         vp->filevar_cb = filevar_cb;
         vp->udata = udata;
+
+        vp->hluvars.varcount = 0;
+        vp->hluvars.alloced = 0;
+        vp->hluvars.in_use = 0;
+        vp->hluvars.vbuttons = NULL;
+        vp->hluvars.modified = True;
+        vp->hluvars.vtype = _brHLUVAR;
+        vp->hluvars.priv = NULL;
 
         vp->regvars.varcount = 0;
         vp->regvars.alloced = 0;
@@ -447,7 +472,7 @@ NgCreateVarMenus
         vp->filerefs.vbuttons = NULL;
         vp->filerefs.modified = True;
         vp->filerefs.vtype = _brFILEREF;
-        vp->filevars.priv = NULL;
+        vp->filerefs.priv = NULL;
 
         vp->filevars.varcount = 0;
         vp->filevars.alloced = 0;
@@ -455,6 +480,7 @@ NgCreateVarMenus
         vp->filevars.vbuttons = NULL;
         vp->filevars.modified = True;
         vp->filevars.vtype = _brFILEVAR;
+        vp->filevars.priv = NULL;
 
         fvar = NhlMalloc(sizeof(NgFileVarRec));
         fvar->next = NULL;
@@ -474,6 +500,21 @@ NgCreateVarMenus
                  XmNheight,		5,
                  XmNallowShellResize,	True,
                  XtNoverrideRedirect,	True,
+                 NULL);
+
+        vp->hluvars.menu = XtVaCreateWidget
+                ("Hlu Vars",xmRowColumnWidgetClass,menush,
+                 XmNrowColumnType,	XmMENU_PULLDOWN,
+		 XmNuserData,	&vp->hluvars,
+                 NULL);
+	XtAddCallback(vp->hluvars.menu,
+		      XmNmapCallback,VarMenuCB,vmenus);
+
+	vmenus->hluvars_mbutton = vp->hluvars.mbutton =
+                XtVaCreateManagedWidget
+                ("Hlu Vars",xmCascadeButtonGadgetClass,
+                 parent,
+                 XmNsubMenuId,	vp->hluvars.menu,
                  NULL);
 
         vp->regvars.menu = XtVaCreateWidget
@@ -521,6 +562,7 @@ NgCreateVarMenus
                  XmNsubMenuId,	vp->filevars.menu,
                  NULL);
         
+	XtManageChild(vp->hluvars.menu);
 	XtManageChild(vp->regvars.menu);
 	XtManageChild(vp->filerefs.menu);
 	XtManageChild(vp->filevars.menu);
@@ -528,6 +570,11 @@ NgCreateVarMenus
         qvars = NclGetVarSymNames(&count);
         vp->regvars.varcount = count;
 	XtSetSensitive(vp->regvars.mbutton,count > 0);
+        NclFree(qvars);
+
+        qvars = NclGetHLUVarSymNames(&count);
+        vp->hluvars.varcount = count;
+	XtSetSensitive(vp->hluvars.mbutton,count > 0);
         NclFree(qvars);
         
         qvars = NclGetFileSymNames(&count);
@@ -539,6 +586,12 @@ NgCreateVarMenus
 
 	NhlINITVAR(sel);
 	NhlINITVAR(user_data);
+
+	user_data.ptrval = &vp->hluvars;
+	sel.lngval = NgNclCBCREATE_HLUVAR;
+	_NhlAddObjCallback(ncl,NgCBnsObject,sel,CreateCB,user_data);
+	sel.lngval = NgNclCBDELETE_HLUVAR;
+	_NhlAddObjCallback(ncl,NgCBnsObject,sel,DeleteCB,user_data);
         
 	user_data.ptrval = &vp->regvars;
 	sel.lngval = NgNclCBCREATE_VAR;

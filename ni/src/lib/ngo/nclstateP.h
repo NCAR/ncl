@@ -1,5 +1,5 @@
 /*
- *      $Id: nclstateP.h,v 1.3 1997-07-02 15:30:54 boote Exp $
+ *      $Id: nclstateP.h,v 1.4 1997-08-20 20:49:06 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -33,10 +33,12 @@ typedef struct _NgNclStateRec *NgNclState;
 
 typedef struct _NgNclStatePart {
 /* required fields */
-	int		foo;
+        int		foo;
 
 /* internal data */
 	int		appmgr;
+	int		classcount;
+        NhlClass	*classlist;
 
 /* submission state */
 	NhlBoolean	istate;
@@ -78,6 +80,11 @@ typedef struct _NgNclStatePart {
 	_NhlCBList	post_submitcb;
 
 	_NhlCB		appdestroy_cb;
+
+        int		block_id;
+        int		bufsize;
+        char		*buffer;
+        NgNclBlockType	block_type;
 
 } NgNclStatePart;
 
