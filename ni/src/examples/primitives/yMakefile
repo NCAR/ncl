@@ -1,5 +1,5 @@
 #
-#   $Id: yMakefile,v 1.4 1996-05-13 19:58:58 haley Exp $
+#   $Id: yMakefile,v 1.5 1996-05-13 20:24:59 haley Exp $
 #
 #   Makefile for HLU Primitives examples
 #
@@ -11,10 +11,10 @@ EXTRA_LIBS  =   $(XMOTIFCLIENTLIBS)
 SYS_LIBS    =   $(CTOFLIBS) -lm
 
 CSRCS    = pr01c.c pr02c.c pr03c.c
-FSRCS    = pr01f.f pr02f.f
+FSRCS    = pr01f.f pr02f.f pr03f.f
 NSRCS    = pr01n.ncl pr02n.ncl pr03n.ncl
 COBJS    = pr01c.o pr02c.o pr03c.o
-FOBJS    = pr01f.o pr02f.o
+FOBJS    = pr01f.o pr02f.o pr03f.o
 SRCS     = $(CSRCS) $(FSRCS)
 OBJS     = $(COBJS) $(FOBJS)
 RESFILES = pr02.res pr03.res
@@ -29,6 +29,7 @@ CExampleTarget(pr03c,pr03c.o)
 
 FExampleTarget(pr01f,pr01f.o)
 FExampleTarget(pr02f,pr02f.o)
+FExampleTarget(pr03f,pr03f.o)
 
 CleanFilesTarget($(OBJS))
 DependTarget($(SRCS))

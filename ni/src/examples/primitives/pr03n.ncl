@@ -1,5 +1,5 @@
 ;
-;      $Id: pr03n.ncl,v 1.1 1996-05-13 19:58:57 haley Exp $
+;      $Id: pr03n.ncl,v 1.2 1996-05-13 20:24:58 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -123,10 +123,10 @@ end setvalues
 draw(canvas)
 
 ;
-; The polyline call uses the default GraphicStyle; Polygon and Polymarker
-; use the explicitly created GraphicStyle.
+; The polyline call uses the default GraphicStyle; Polygon and
+; Polymarker use the explicitly created GraphicStyle.
 ;
-NhlNDCPolyline(canvas,gsid,plx,ply)
+NhlNDCPolyline(canvas,id,plx,ply)
 NhlNDCPolygon(canvas,gsid,pgx,pgy)
 NhlNDCPolymarker(canvas,gsid,pmx,pmy)
 frame(wid)
