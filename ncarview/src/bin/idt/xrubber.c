@@ -1,5 +1,5 @@
 /*
- *	$Id: xrubber.c,v 1.10 1992-12-14 22:05:44 clyne Exp $
+ *	$Id: xrubber.c,v 1.11 1993-01-06 21:07:35 clyne Exp $
  */
 /*
  *	xrubber.c
@@ -12,6 +12,7 @@
  *	rubberbanding on a window.
  */
 #include <stdio.h>
+#include <assert.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/cursorfont.h>
@@ -195,8 +196,7 @@ static	void	init_rubber(dpy, win, fg)
  *			  rubber band the user selected. Which corner this is
  *			  can be determined from band_width and band_height
  *	*band_width,
- *	*band_height	: width and height of the rubberband with respect to
- *			  (x,y). i.e. the values can be negative
+ *	*band_height	: width and height of the rubberband 
  *	win_width,
  *	win_height	: width and height of the window that contained the
  *			  rubberband
@@ -208,8 +208,8 @@ static	rubber_band_window(dpy, root, fg, x, y,
 	Display	*dpy;
 	Window	root;
 	Pixel	fg;
-	int	*x, *y, 
-		*band_width, *band_height;
+	int	*x, *y;
+	unsigned	*band_width, *band_height;
 	unsigned	*win_width, *win_height;
 {
 
@@ -348,18 +348,65 @@ static	rubber_band_window(dpy, root, fg, x, y,
 	MoveOutline(dpy, rubber_win, 0, 0, 0, 0);
 
 	/*
+	 * make sure width and heigh of rubber band are positive
+	 */
+	if (orig_x > new_x) {
+		int	tmp = orig_x;
+		orig_x = new_x;
+		new_x = tmp;
+	}
+	if (orig_y > new_y) {
+		int	tmp = orig_y;
+		orig_y = new_y;
+		new_y = tmp;
+	}
+		
+
+	/*
 	 * the return values
 	 */
 	*x = orig_x;
 	*y = orig_y;
-	*band_width = new_x - orig_x;
-	*band_height = new_y - orig_y;
+	*band_width = (unsigned) (new_x - orig_x + 1);
+	*band_height = (unsigned) (new_y - orig_y + 1);
 
 	XUngrabPointer(dpy, CurrentTime);
 	XUngrabServer(dpy);
 
 	return(1);
 }
+
+/*
+ *	return the coordinates of largest rectangle which maintains the 
+ *	given aspect ratio, $ar, and fits in the rectangle given by 
+ *	$x, $y, $width, $height. The rectangle is centered in the 
+ *	original rectangle.
+ */
+void	get_largest_rect(ar, x, y, width, height)
+	double	ar;
+	int	*x, *y, *width, *height;
+{
+	double	ar2;
+
+	assert (*width != 0);	/* should never happen	*/
+
+	ar2 = (double) *width / (double) *height;
+
+	if (ar < ar2) {	/* height is correct	*/
+		int	width_;
+		width_ = (int) ((ar * (double) *height) + 0.5);
+		*x +=  (int) (((double) (*width - width_) / 2) + 0.5);
+		*width = width_;
+	}
+	else {		/* width is correct	*/
+		int	height_;
+		height_ = (int) (((double) *width / ar) + 0.5);
+		*y +=  (int) (((double) (*height - height_) / 2) + 0.5);
+		*height = height_;
+	}
+}
+
+
 
 /*
  *	ZoomCoords
@@ -369,6 +416,7 @@ static	rubber_band_window(dpy, root, fg, x, y,
  * on entry
  *	*dpy		: the display
  *	*root		: the root window
+ *	ar		: aspect ratio to maintain.
  * on exit
  *	*llx		: lower left x if non-null on entry.
  *	*lly		: lower left y if non-null on entry.
@@ -378,31 +426,27 @@ static	rubber_band_window(dpy, root, fg, x, y,
  *			  selection for lower left and upper right coords 
  *			  for the ictrans "zoom" command
  */	
-char	*ZoomCoords(dpy, root, llx, lly, urx, ury)
-	Display	*dpy;
-	Window	root;
-	float	*llx, *lly, *urx, *ury;
+char	*ZoomCoords(Display *dpy, Window root, float ar, float *llx, 
+			float *lly, float *urx, float *ury)
 {
 
-	int		x1, y1, x2, y2;
-	float		norm_x1, norm_y1, norm_x2, norm_y2;
+	int		wx, wy;		/* window origin	*/
+	int		bx, by;		/* band origin		*/
+	float		norm_bx, norm_by;	/* normalized band origin */
+	float		norm_band_width,
+			norm_band_height;	/* normalized band height */
 	int		tmp;
-	int		band_width, band_height;
+	float		a, b;
+	float		llx_, lly_, urx_, ury_;
+	unsigned	band_width, band_height;
 	unsigned	win_width, win_height;
-
-	int		x_aspect_correct,
-			y_aspect_correct;
-
-	unsigned	dimension;	/* length of a side of window corrected
-					 * for non-square aspect ratio	
-					 */
 
 	static	char	buf[80];
 
 	/*
 	 * User makes selection with a rubberband
 	 */
-	if (rubber_band_window(dpy, root, (Pixel) 1, &x1, &y1, 
+	if (rubber_band_window(dpy, root, (Pixel) 1, &bx, &by, 
 			&band_width, &band_height, 
 			&win_width, &win_height) < 0) {
 
@@ -417,105 +461,55 @@ char	*ZoomCoords(dpy, root, llx, lly, urx, ury)
 		return ((char *) NULL);
 	}
 
+
 	/*
-	 * correct for window border. Don't know why we have to do this
+	 * adjust the source window coordinates to maintain the given
+	 * aspect ratio. i.e. find the largest rectangle within the 
+	 * window which maintains the given aspect ratio. The rectangle is
+	 * centered.
 	 */
-	if (x1 < 0) x1 = 0;	if (x1 > win_width) x1 = win_width;
-	if (y1 < 0) y1 = 0;	if (y1 > win_height) y1 = win_height;
-
-	x2 = x1 + band_width;
-	y2 = y1 + band_height;
-
-	if (x2 < 0) x2 = 0;	if (x2 > win_width) x2 = win_width;
-	if (y2 < 0) y2 = 0;	if (y2 > win_height) y2 = win_height;
+	wx = wy = 0;
+	get_largest_rect(ar, &wx, &wy, &win_width, &win_height); 
 
 
 	/*
-	 * The window containing the image may not be square. We assume
-	 * that the translator corrects for this and maintains a square
-	 * aspect ratio. ie. the entire window is NOT used. This code 
-	 * constrains the bounds of the rubberband to the largest square
-	 * that will fit in the window
+	 * convert the coordinates of the rubber band into normalized coords
+	 * with respect to the above rectantle
 	 */
-	x_aspect_correct = y_aspect_correct = 0;
-	if (win_width > win_height) {
-		dimension = win_height;
-		x_aspect_correct = (win_width - win_height) / 2;
-
-		if (x1 < x_aspect_correct) 
-			x1 = x_aspect_correct;
-
-		if (x1 > x_aspect_correct + dimension) 
-			x1 = x_aspect_correct + dimension;
-
-		if (x2 < x_aspect_correct) 
-			x2 = x_aspect_correct;
-
-		if (x2 > x_aspect_correct + dimension) 
-			x2 = x_aspect_correct + dimension;
-
-		x1 -= x_aspect_correct;
-		x2 -= x_aspect_correct;
-	}
-	else {
-		dimension = win_width;
-		y_aspect_correct = (win_height - win_width) / 2;
-
-		if (y1 < y_aspect_correct) 
-			y1 = y_aspect_correct;
-
-		if (y1 > y_aspect_correct + dimension) 
-			y1 = y_aspect_correct + dimension;
-
-		if (y2 < y_aspect_correct) 
-			y2 = y_aspect_correct;
-
-		if (y2 > y_aspect_correct + dimension) 
-			y2 = y_aspect_correct + dimension;
-
-		y1 -= y_aspect_correct;
-		y2 -= y_aspect_correct;
-	}
+	norm_band_width = (float) band_width / (float) win_width;
+	norm_band_height = (float) band_height / (float) win_height;
 
 	/*
-	 * origin for translator is at lower left. For X its at upper left. We 
-	 * want (x1,y1) to be lower left and  (x2, y2) to be upper right
+	 * find the mapping for the coords
 	 */
-	if (x1 > x2) {	/*	swap	*/
-		tmp = x2;
-		x2 = x1;
-		x1 = tmp;
-	}
-	if (y1 < y2) {	/*	swap	*/
-		tmp = y2;
-		y2 = y1;
-		y1 = tmp;
-	}
+	a = 1.0 / (double) (win_width - 1);
+	b = - ((double) wx * a);
+	norm_bx = ((double) bx * a) + b;
+
+	a = 1.0 / (double) (win_height - 1);
+	b = - ((double) wy * a);
+	norm_by = ((double) by * a) + b;
+
 
 	/*
-	 * normalize the coordinates on [0.0 , 1.0]
+	 * map the rectangle in terms of its lower left and upper right
+	 * coords. We assume an origin of lower left. (X origin is upper left)
 	 */
-	norm_x1 = (float) x1 / (float) dimension;
-	norm_y1 = (float) y1 / (float) dimension;
-	norm_x2 = (float) x2 / (float) dimension;
-	norm_y2 = (float) y2 / (float) dimension;
-
-	/*
-	 * swap top and bottom
-	 */
-	norm_y1 = 1 - norm_y1;
-	norm_y2 = 1 - norm_y2;
-
+	llx_ = norm_bx;
+	urx_ = llx_ + norm_band_width;
+	lly_ = 1.0 - (norm_by + norm_band_height);
+	ury_ = 1.0 - norm_by;
+	
 	/*
 	 * create the data string
 	 */
 	(void) sprintf(buf, 
-		"%6.4f %6.4f %6.4f %6.4f",norm_x1,norm_y1,norm_x2,norm_y2);
+		"%6.4f %6.4f %6.4f %6.4f",llx_,lly_,urx_,ury_);
 
-	if (llx) *llx = norm_x1;
-	if (lly) *lly = norm_y1;
-	if (urx) *urx = norm_x2;
-	if (ury) *ury = norm_y2;
+	if (llx) *llx = llx_;
+	if (lly) *lly = lly_;
+	if (urx) *urx = urx_;
+	if (ury) *ury = ury_;
 
 	return(buf);
 }

@@ -1,5 +1,5 @@
 /*
- *	$Id: w_display.c,v 1.16 1992-12-14 22:05:28 clyne Exp $
+ *	$Id: w_display.c,v 1.17 1993-01-06 21:07:32 clyne Exp $
  */
 /*
  *	w_display.c
@@ -402,6 +402,11 @@ void	SetWindowSelect(data, value)
 
 	Command(wd->id, SET_WINDOW_STRING, value);
 	strncpy(wd->pcv.set_window, value, sizeof(wd->pcv.set_window));
+
+	/*
+	 * SetWindow should really update wd->ar, wd->llx, etc in the
+	 * same manner as  Zoom() does. Some day...
+	 */
 }
 /*ARGSUSED*/
 static  void    Set_Window(widget, client_data, call_data)
@@ -515,10 +520,8 @@ static  void    Zoom(widget, client_data, call_data)
 {
 	WidgetData	*wd = (WidgetData *) client_data;
         Window  root;
-	char	*zoom_str;
-	float	llx, lly, urx, ury;
-	float	llx_, lly_, urx_, ury_;
-	float	new_llx, new_lly,
+	float	llx, lly, urx, ury;	/* coords of rubber band	*/
+	float	new_llx, new_lly,	/* zoom coords			*/
 		new_urx, new_ury;
 	float	ax, bx, ay, by;
 	char	buf[80];
@@ -528,34 +531,36 @@ static  void    Zoom(widget, client_data, call_data)
 	/*
 	 * get the new mapping
 	 */
-        if (ZoomCoords(XtDisplay(widget), root, &llx,&lly,&urx,&ury) == NULL){
+        if (ZoomCoords(
+		XtDisplay(widget), root, wd->ar, &llx,&lly,&urx,&ury) == NULL){
+
                 (void) fprintf(stderr, "Zoom failed\n");
 		return;
-        }
-
-	/*
-	 * grab the old mapping
-	 */
-	zoom_str = TalkTo(wd->id, "zoom\n", SYNC);
-	if (sscanf(zoom_str, "llx = %f, lly = %f, urx = %f, ury = %f", 
-					&llx_, &lly_, &urx_, &ury_) != 4) {
-
-		(void) fprintf(stderr, "Zoom failed\n");
-		return;
 	}
+
 
 	/*
 	 * map the new mapping into the old
 	 */
-	bx = llx_;
-	ax = urx_ - bx;
-	by = lly_;
-	ay = ury_ - by;
+	bx = wd->llx;
+	ax = wd->urx - bx;
+	by = wd->lly;
+	ay = wd->ury - by;
 
 	new_llx = (ax * llx) + bx;
 	new_lly = (ay * lly) + by;
 	new_urx = (ax * urx) + bx;
 	new_ury = (ay * ury) + by;
+
+	/*
+	 * remember the new coords and aspect ratio
+	 */
+	wd->ar = (new_urx - new_llx) / (new_ury - new_lly);
+	wd->llx = new_llx;
+	wd->lly = new_lly;
+	wd->urx = new_urx;
+	wd->ury = new_ury;
+
 
 	sprintf(buf, "%6.4f %6.4f %6.4f %6.4f",new_llx,new_lly,new_urx,new_ury);
 	
@@ -576,6 +581,9 @@ static  void    UnZoom(widget, client_data, call_data)
 {
 	WidgetData	*wd = (WidgetData *) client_data;
 
+	wd->ar = 1.0;
+	wd->llx = wd->lly = 0.0;
+	wd->urx = wd->ury = 1.0;
 	simple_command(wd, UNZOOM_STRING, UNZOOM);
 }
 
@@ -827,6 +835,9 @@ static	Widget	create_bottom_panel(paned, wd)
 	XtSetArg(args[n], XtNfromHoriz, wd->save);	n++;
         wd->zoom = XtCreateManagedWidget("zoom",commandWidgetClass,form,args,n);
 	XtAddCallback(wd->zoom, XtNcallback, Zoom, (XtPointer) wd);
+	wd->ar = 1.0;
+	wd->llx = wd->lly = 0.0;
+	wd->urx = wd->ury = 1.0;
 
         n = 0;
 	XtSetArg(args[n], XtNfromHoriz, wd->zoom);	n++;

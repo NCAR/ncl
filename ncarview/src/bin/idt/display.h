@@ -40,6 +40,12 @@ typedef	struct	WidgetDataStruct {
 	Bool			do_play;	/* in play mode?	*/
 	Bool			do_animate;	/* in animate mode?	*/
 	AnimateType		*a;
+	float			ar;	/* current zoom aspect ratio	*/
+	float			llx,
+				lly,
+				urx,
+				ury;	/* current zoom coords		*/
+				
 
 	/*
 	 * command buttons

@@ -7,6 +7,7 @@ extern	char	*ZoomCoords(
 #ifdef	NeedFuncProto
 	Display	*dpy,
 	Window	root,
+	float	ar,
 	float	*llx, 
 	float	*lly, 
 	float	*urx, 
