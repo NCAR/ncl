@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.60 1997-03-11 16:20:33 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.61 1997-03-14 20:26:00 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -803,7 +803,7 @@ NhlErrorTypes _Nclsystem
 		if(!system(command)) {
 			return(NhlNOERROR);
 		} else {
-                	return(NhlFATAL);
+                	return(NhlWARNING);
 		}
 	} else {
                 return(NhlFATAL);

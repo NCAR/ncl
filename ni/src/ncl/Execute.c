@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.87 1997-03-13 17:53:09 ethan Exp $
+ *      $Id: Execute.c,v 1.88 1997-03-14 20:26:03 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -4190,6 +4190,9 @@ NclExecuteReturnStatus _NclExecute
 								NclFree(sel_ptr);
 							}
 							
+						} else {
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"Error writing file variable attribute, either thefile or the variable (%s) are undefined",NrmQuarkToString(var));
+							estatus = NhlFATAL;
 						}
 					}
 				} else {
