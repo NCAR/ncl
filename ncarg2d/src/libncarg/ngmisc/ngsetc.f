@@ -1,5 +1,5 @@
 C
-C	$Id: ngsetc.f,v 1.1 1994-04-26 18:22:45 fred Exp $
+C	$Id: ngsetc.f,v 1.2 1994-09-20 16:49:19 fred Exp $
 C
       SUBROUTINE NGSETC (CNP,CVP)
 C
@@ -76,7 +76,16 @@ C
      +         CNP(1:2).EQ.'Pi') THEN
         IDR(1) = CVP
         CPICNM = CVP
-        CALL GESC(-1393,NLEN,IDR,1,IDUM,CDUM)
+        CALL GESC(-1393,1,IDR,1,IDUM,CDUM)
+        GO TO 120
+C
+C  SE - Root name for segment file names.
+C
+      ELSE IF (CNP(1:2).EQ.'SE' .OR. CNP(1:2).EQ.'se' .OR.
+     +         CNP(1:2).EQ.'Se') THEN
+        IDR(1) = CVP
+        CSEGNM = CVP
+        CALL GESC(-1394,1,IDR,1,IDUM,CDUM)
         GO TO 120
       ELSE
         CTM(1:36) = 'NGSETC - Parameter name not known - '

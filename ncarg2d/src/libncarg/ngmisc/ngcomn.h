@@ -21,7 +21,6 @@ C    ICOSCL  -  Scale factor for PostScript coordinate representation.
 C    RMITER  -  Miter limit for PostScript lines when line join type is
 C               miter.
 C    IERRMX  -  Maximum number of GKS errors allowed before abort.
-C    ISGSAV  -  Flag for saving GKS segments at close WISS time.
 C    IGKSCP  -  Flag for controlling if GKS clipping is on.
 C    IPERCX  -  Percentage error allowed in matching colors in X output.
 C    IPRIVX  -  Flags whether an X window should have a private color
@@ -32,7 +31,7 @@ C
       COMMON /NGCOMI/  IWKID, IFULLB,   IXPS, ISTKMX, IPTHMX, 
      +                ILJOIN,  ILCAP,   ILLX,   ILLY,   IURX,
      +                  IURY, FILSPC, HATSPC, RNLSCL, ICOSCL,
-     +                RMITER, IERRMX, ISGSAV, IGKSCP, IPERCX,
+     +                RMITER, IERRMX, IGKSCP, IPERCX,
      +                IPRIVX, ICDFLG
-      COMMON /NGCOMC/ CFILNM, CPICNM
-      CHARACTER CFILNM*256, CPICNM*80
+      COMMON /NGCOMC/ CFILNM, CPICNM, CSEGNM
+      CHARACTER CFILNM*256, CPICNM*80, CSEGNM*15

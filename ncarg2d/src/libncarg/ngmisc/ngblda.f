@@ -1,5 +1,5 @@
 C
-C	$Id: ngblda.f,v 1.5 1994-07-29 17:07:02 fred Exp $
+C	$Id: ngblda.f,v 1.6 1994-09-20 16:49:09 fred Exp $
 C
       BLOCKDATA NGBLDA
 C
@@ -46,11 +46,6 @@ C
 C  Maximum number of GKS errors allowed before abort.
 C
       DATA IERRMX/10/
-C
-C  Flag for whether segments will be erased at close WISS time,
-C  (0 = no; 1 = yes).
-C
-      DATA ISGSAV/1/
 C
 C  Flag to control whether GKS clipping is on (0 = no; 1 = yes).
 C

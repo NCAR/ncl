@@ -19,6 +19,8 @@ C  The number of points used for the circle is adjusted depending
 C  on the relative size of the circle.  The maximum number of points
 C  is 512 and the minimum is 8.
 C
+      SAVE
+C
       include 'ngcomn.h'
 C
       DIMENSION X(NUM),Y(NUM),TWIN(4),TVPT(4)

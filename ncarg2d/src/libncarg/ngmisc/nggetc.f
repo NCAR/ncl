@@ -1,5 +1,5 @@
 C
-C	$Id: nggetc.f,v 1.1 1994-04-26 18:22:38 fred Exp $
+C	$Id: nggetc.f,v 1.2 1994-09-20 16:49:15 fred Exp $
 C
       SUBROUTINE NGGETC (CNP,CVP)
 C
@@ -83,6 +83,28 @@ C
           GO TO 110
         ENDIF
         CVP = CPICNM(1:ILEN)
+        GO TO 110
+      ELSE IF (CNP(1:2).EQ.'SE' .OR. CNP(1:2).EQ.'se' .OR.
+     +    CNP(1:2).EQ.'Se') THEN
+C
+C  Check to see if the length of the supplied string is long enough
+C  to hold the result.
+C
+        ILEN = 0
+        DO 50 I=1,15
+          IF (CSEGNM(I:I).EQ.' ' .OR. CSEGNM(I:I).EQ.CHAR(0)) THEN
+            ILEN = I-1
+            GO TO 60
+          ENDIF
+   50   CONTINUE
+        ILEN = 15
+   60   CONTINUE
+        IF (ILEN .GT. LEN(CVP)) THEN
+          CALL SETER('NGGETC - supplied string not long enough to receiv       
+     +e value for SE', 4, 1)
+          GO TO 110
+        ENDIF
+        CVP = CSEGNM(1:ILEN)
         GO TO 110
       ELSE
         CTM(1:36) = 'NGGETC - Parameter name not known - '
