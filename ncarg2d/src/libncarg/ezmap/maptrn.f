@@ -1,5 +1,5 @@
 C
-C $Id: maptrn.f,v 1.9 1999-04-19 21:29:51 kennison Exp $
+C $Id: maptrn.f,v 1.10 1999-06-04 21:44:56 kennison Exp $
 C
       SUBROUTINE MAPTRN (RLAT,RLON,U,V)
 C
@@ -96,8 +96,13 @@ C
         CALL MPUTFS (RLAT,RLON,U,V)
       ELSE
         CALL MPUTFD (DBLE(RLAT),DBLE(RLON),UDBL,VDBL)
-        U=REAL(UDBL)
-        V=REAL(VDBL)
+        IF (UDBL.NE.1.D12) THEN
+          U=REAL(UDBL)
+          V=REAL(VDBL)
+        ELSE
+          U=1.E12
+          V=1.E12
+        END IF
       END IF
 C
       IF (IPRF.EQ. 3.OR.IPRF.EQ. 4.OR.IPRF.EQ. 5.OR.IPRF.EQ. 7.OR.

@@ -1,5 +1,5 @@
 C
-C $Id: maptri.f,v 1.9 1999-04-19 21:29:50 kennison Exp $
+C $Id: maptri.f,v 1.10 1999-06-04 21:44:56 kennison Exp $
 C
       SUBROUTINE MAPTRI (UVAL,VVAL,RLAT,RLON)
 C
@@ -86,8 +86,13 @@ C
         CALL MPUTIS (UVAL,VVAL,RLAT,RLON)
       ELSE
         CALL MPUTID (DBLE(UVAL),DBLE(VVAL),DLAT,DLON)
-        RLAT=REAL(DLAT)
-        RLON=REAL(DLON)
+        IF (DLAT.NE.1.D12) THEN
+          RLAT=REAL(DLAT)
+          RLON=REAL(DLON)
+        ELSE
+          RLAT=1.E12
+          RLON=1.E12
+        END IF
       END IF
       IF (RLAT.NE.1.E12) GO TO 201
       RETURN
