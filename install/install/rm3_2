@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: rm3_2,v 1.5 1999-07-28 17:23:54 haley Exp $
+#      $Id: rm3_2,v 1.6 2003-02-27 06:13:55 haley Exp $
 #
 #########################################################################
 #									#
@@ -62,7 +62,7 @@ shift;
 
 set bins = 	(ConvertMapData WritePlotcharData byacc bnchmk cgm2ncgm \
 		cgm_edit cgmtrans cgmtrans.hplj cgmtrans.nolj ctlib ctrans \
-		fcaps findg fontc ftrans gcaps graphc ictrans idt \
+		ezmapdemo fcaps findg fontc ftrans gcaps graphc ictrans idt \
 		med ncargcc ncargcex ncargex ncargf77 ngi wrapit77 \
 		ncargfile ncargmv ncargpath ncargrun ncargtar nnalg \
 		ncargversion ncarvversion ncargworld ncgm2cgm ncgmstat \
