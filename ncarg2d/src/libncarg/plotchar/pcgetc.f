@@ -1,7 +1,4 @@
 C
-C	$Id: pcgetc.f,v 1.1.1.1 1992-04-17 22:32:18 ncargd Exp $
-C
-C
 C***********************************************************************
 C C O D E   -   P A R A M E T E R - A C C E S S   R O U T I N E S
 C***********************************************************************
@@ -25,7 +22,7 @@ C The only possibility is the function-code character.  What is really
 C stored is the index of the character in the local collating sequence.
 C Provide for the case that the parameter had not been initialized yet.
 C
-      IF (WHCH(1:2).EQ.'FC') THEN
+      IF (WHCH(1:2).EQ.'FC'.OR.WHCH(1:2).EQ.'fc') THEN
         IF (NFCC.EQ.0) NFCC=ICHAR(':')
         CVAL=CHAR(NFCC)
       ELSE

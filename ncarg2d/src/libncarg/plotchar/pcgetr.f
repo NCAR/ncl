@@ -1,7 +1,4 @@
 C
-C	$Id: pcgetr.f,v 1.1.1.1 1992-04-17 22:32:19 ncargd Exp $
-C
-C
 C ---------------------------------------------------------------------
 C
       SUBROUTINE PCGETR (WHCH,RVAL)
@@ -27,67 +24,67 @@ C
 C
 C Get the selected parameter.
 C
-      IF (WHCH(1:2).EQ.'AS') THEN
+      IF      (WHCH(1:2).EQ.'AS'.OR.WHCH(1:2).EQ.'as') THEN
         RVAL=ADDS
-      ELSE IF (WHCH(1:2).EQ.'CD') THEN
+      ELSE IF (WHCH(1:2).EQ.'CD'.OR.WHCH(1:2).EQ.'cd') THEN
         RVAL=REAL(JCOD)
-      ELSE IF (WHCH(1:2).EQ.'CE') THEN
+      ELSE IF (WHCH(1:2).EQ.'CE'.OR.WHCH(1:2).EQ.'ce') THEN
         RVAL=REAL(ICEN)
-      ELSE IF (WHCH(1:2).EQ.'CH') THEN
+      ELSE IF (WHCH(1:2).EQ.'CH'.OR.WHCH(1:2).EQ.'ch') THEN
         RVAL=HPIC(3)
-      ELSE IF (WHCH(1:2).EQ.'CS') THEN
+      ELSE IF (WHCH(1:2).EQ.'CS'.OR.WHCH(1:2).EQ.'cs') THEN
         RVAL=2.*CONS
-      ELSE IF (WHCH(1:2).EQ.'CV') THEN
+      ELSE IF (WHCH(1:2).EQ.'CV'.OR.WHCH(1:2).EQ.'cv') THEN
         RVAL=VPIC(3)
-      ELSE IF (WHCH(1:2).EQ.'CW') THEN
+      ELSE IF (WHCH(1:2).EQ.'CW'.OR.WHCH(1:2).EQ.'cw') THEN
         RVAL=WPIC(3)
-      ELSE IF (WHCH(1:2).EQ.'DB') THEN
+      ELSE IF (WHCH(1:2).EQ.'DB'.OR.WHCH(1:2).EQ.'db') THEN
         RVAL=DSTB
-      ELSE IF (WHCH(1:2).EQ.'DL') THEN
+      ELSE IF (WHCH(1:2).EQ.'DL'.OR.WHCH(1:2).EQ.'dl') THEN
         RVAL=DSTL
-      ELSE IF (WHCH(1:2).EQ.'DR') THEN
+      ELSE IF (WHCH(1:2).EQ.'DR'.OR.WHCH(1:2).EQ.'dr') THEN
         RVAL=DSTR
-      ELSE IF (WHCH(1:2).EQ.'DT') THEN
+      ELSE IF (WHCH(1:2).EQ.'DT'.OR.WHCH(1:2).EQ.'dt') THEN
         RVAL=DSTT
-      ELSE IF (WHCH(1:2).EQ.'FN') THEN
+      ELSE IF (WHCH(1:2).EQ.'FN'.OR.WHCH(1:2).EQ.'fn') THEN
         RVAL=REAL(NFNT)
-      ELSE IF (WHCH(1:2).EQ.'HW') THEN
+      ELSE IF (WHCH(1:2).EQ.'HW'.OR.WHCH(1:2).EQ.'hw') THEN
         RVAL=RHTW
-      ELSE IF (WHCH(1:2).EQ.'IH') THEN
+      ELSE IF (WHCH(1:2).EQ.'IH'.OR.WHCH(1:2).EQ.'ih') THEN
         RVAL=HPIC(2)
-      ELSE IF (WHCH(1:2).EQ.'IS') THEN
+      ELSE IF (WHCH(1:2).EQ.'IS'.OR.WHCH(1:2).EQ.'is') THEN
         RVAL=SSIC
-      ELSE IF (WHCH(1:2).EQ.'IV') THEN
+      ELSE IF (WHCH(1:2).EQ.'IV'.OR.WHCH(1:2).EQ.'iv') THEN
         RVAL=VPIC(2)
-      ELSE IF (WHCH(1:2).EQ.'IW') THEN
+      ELSE IF (WHCH(1:2).EQ.'IW'.OR.WHCH(1:2).EQ.'iw') THEN
         RVAL=WPIC(2)
-      ELSE IF (WHCH(1:2).EQ.'PH') THEN
+      ELSE IF (WHCH(1:2).EQ.'PH'.OR.WHCH(1:2).EQ.'ph') THEN
         RVAL=HPIC(1)
-      ELSE IF (WHCH(1:2).EQ.'PS') THEN
+      ELSE IF (WHCH(1:2).EQ.'PS'.OR.WHCH(1:2).EQ.'ps') THEN
         RVAL=SSPR
-      ELSE IF (WHCH(1:2).EQ.'PV') THEN
+      ELSE IF (WHCH(1:2).EQ.'PV'.OR.WHCH(1:2).EQ.'pv') THEN
         RVAL=VPIC(1)
-      ELSE IF (WHCH(1:2).EQ.'PW') THEN
+      ELSE IF (WHCH(1:2).EQ.'PW'.OR.WHCH(1:2).EQ.'pw') THEN
         RVAL=WPIC(1)
-      ELSE IF (WHCH(1:2).EQ.'QU') THEN
+      ELSE IF (WHCH(1:2).EQ.'QU'.OR.WHCH(1:2).EQ.'qu') THEN
         RVAL=REAL(IQUF)
-      ELSE IF (WHCH(1:2).EQ.'SC') THEN
+      ELSE IF (WHCH(1:2).EQ.'SC'.OR.WHCH(1:2).EQ.'sc') THEN
         RVAL=REAL(ISCR)
-      ELSE IF (WHCH(1:2).EQ.'SS') THEN
+      ELSE IF (WHCH(1:2).EQ.'SS'.OR.WHCH(1:2).EQ.'ss') THEN
         RVAL=SUBS
-      ELSE IF (WHCH(1:2).EQ.'TE') THEN
+      ELSE IF (WHCH(1:2).EQ.'TE'.OR.WHCH(1:2).EQ.'te') THEN
         RVAL=REAL(ITEF)
-      ELSE IF (WHCH(1:2).EQ.'XB') THEN
+      ELSE IF (WHCH(1:2).EQ.'XB'.OR.WHCH(1:2).EQ.'xb') THEN
         RVAL=XBEG
-      ELSE IF (WHCH(1:2).EQ.'XC') THEN
+      ELSE IF (WHCH(1:2).EQ.'XC'.OR.WHCH(1:2).EQ.'xc') THEN
         RVAL=XCEN
-      ELSE IF (WHCH(1:2).EQ.'XE') THEN
+      ELSE IF (WHCH(1:2).EQ.'XE'.OR.WHCH(1:2).EQ.'xe') THEN
         RVAL=XEND
-      ELSE IF (WHCH(1:2).EQ.'YB') THEN
+      ELSE IF (WHCH(1:2).EQ.'YB'.OR.WHCH(1:2).EQ.'yb') THEN
         RVAL=YBEG
-      ELSE IF (WHCH(1:2).EQ.'YC') THEN
+      ELSE IF (WHCH(1:2).EQ.'YC'.OR.WHCH(1:2).EQ.'yc') THEN
         RVAL=YCEN
-      ELSE IF (WHCH(1:2).EQ.'YE') THEN
+      ELSE IF (WHCH(1:2).EQ.'YE'.OR.WHCH(1:2).EQ.'ye') THEN
         RVAL=YEND
       ELSE
         CALL SETER ('PCGETR - UNRECOGNIZED PARAMETER NAME',1,2)

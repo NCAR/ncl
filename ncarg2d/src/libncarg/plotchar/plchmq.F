@@ -1,7 +1,4 @@
 C
-C	$Id: plchmq.F,v 1.1.1.1 1992-04-17 22:32:18 ncargd Exp $
-C
-C
 C-----------------------------------------------------------------------
 C
       SUBROUTINE PLCHMQ (XPOS,YPOS,CHRS,SIZE,ANGD,CNTR)
@@ -54,7 +51,7 @@ C starts at KXCO(336) and KYCO(336).
 C
       DATA (LCHR(I),I=  1, 94) /
 #if defined(mips) && defined(ultrix)
-     O                         '!','"','#','$','%','&',"'",'(',')','*',
+     O                         '!','"','#','$','%','&','\'','(',')','*',
 #else
      O                         '!','"','#','$','%','&','''','(',')','*',
 #endif
