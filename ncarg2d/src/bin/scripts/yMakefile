@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.14 1993-01-26 16:50:16 haley Exp $
+#	$Id: yMakefile,v 1.15 1993-01-28 20:49:36 haley Exp $
 #
 NCARG	= ../../../..
 
@@ -7,10 +7,10 @@ MYNAME	= scripts
 
 #if ! defined BuildNCARGSourceLibrary
 SCRIPTS = cgmtrans ncargf77 ncargcc ncargversion \
-	ncargrun ncargfile ftrans ncargex ncargCex pre2ncgm plt
+	ncargrun ncargfile ftrans ncargex ncargcex pre2ncgm plt
 #else
 SCRIPTS = cgmtrans ncargf77 ncargcc ncargversion plt \
-	ncargrun ncargfile ftrans ncargex ncargCex pre2ncgm ncargsrc ncargsrcy
+	ncargrun ncargfile ftrans ncargex ncargcex pre2ncgm ncargsrc ncargsrcy
 #endif
 
 all:: $(SCRIPTS)
@@ -74,11 +74,11 @@ ncargex: ncargex.csh Makefile
 	-e 's+SED_TUTORIALDIR+$(TUTORIALDIR)+' \
 	<ncargex.csh >ncargex
 
-ncargCex: ncargCex.csh Makefile
+ncargcex: ncargcex.csh Makefile
 	@sed \
 	-e 's+SED_EXAMPLESDIR+$(EXAMPLESDIR)+' \
 	-e 's+SED_TESTSDIR+$(TESTSDIR)+' \
-	<ncargCex.csh >ncargCex
+	<ncargcex.csh >ncargcex
 
 ncargfile: ncargfile.csh Makefile
 	@sed \
@@ -103,5 +103,5 @@ MakefileTarget
 CleanTarget
 
 clean::
-	@-$(RM) ncargf77 ncargcc ncargex ncargCex ncargsrc ncargsrcy ncargfile \
+	@-$(RM) ncargf77 ncargcc ncargex ncargcex ncargsrc ncargsrcy ncargfile \
 	ncargversion
