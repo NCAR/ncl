@@ -1,4 +1,4 @@
-#	$Id: yMakefile,v 1.49 2001-04-12 15:51:02 haley Exp $
+#	$Id: yMakefile,v 1.50 2002-02-24 17:15:26 haley Exp $
 #
 #	Makefile for libraster - libraries for dealing with
 #	a variety of raster image formats.
@@ -17,7 +17,7 @@
 
 #ifdef	BuildXlibDependentCode
 #define	BuildRasterXWD
-#endif	BuildXlibDependentCode
+#endif
 
 MYNAME		= libncarg_ras
 INCLUDES	= ncarg_ras.h
@@ -130,7 +130,11 @@ BuildIncludes($(INCLUDES),ncarg,..)
 InstallTarget($(INCLUDES),$(INSTALL_INC),$(NCARGINCPATH))
 DependTarget($(SRCS))
 
-hdf.o:      Makefile
+#if defined(AIX)
+STD_DEFINES =  -DSYSV -DRS6000 -D_XOPEN_SOURCE -D_XOPEN_SOURCE_EXTENDED=1
+#endif
+
+hdf.o:		Makefile
 raster.o:	Makefile
 
 test: rasls.o rascopy.o
