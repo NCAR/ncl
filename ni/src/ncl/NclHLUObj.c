@@ -146,40 +146,57 @@ static void HLUObjDestroy
 			
 		}
 		if(hlu_obj->hlu.c_list != NULL) {
-			tmp1 = hlu_obj->hlu.c_list;
-			hlu_obj->hlu.c_list = NULL;
-			while(tmp1 != NULL) {
+/*
+* exp_list could change as a result of Destroy call
+*/
+			while(hlu_obj->hlu.c_list != NULL) {
+				tmp1 = hlu_obj->hlu.c_list;
 				tmp_obj = _NclGetObj(tmp1->child_id);
 				tmp2 = tmp1;
-				tmp1 = tmp1->next;
+				hlu_obj->hlu.c_list = tmp1->next;
 /*
 * This line keeps HLUObjDestroy from calling DelHLUChild on subsequent 
 * this object
 */
-				if(((NclHLUObj)tmp_obj)->hlu.parent_hluobj_id == hlu_obj->obj.id)
-					((NclHLUObj)tmp_obj)->hlu.parent_hluobj_id = -1;
+#ifdef NCLDEBUG
+					if(((NclHLUObj)tmp_obj)->hlu.parent_hluobj_id == hlu_obj->obj.id)
+						((NclHLUObj)tmp_obj)->hlu.parent_hluobj_id = -1;
 				if(tmp_obj != NULL){
+#else
+				if(tmp_obj != NULL){
+					if(((NclHLUObj)tmp_obj)->hlu.parent_hluobj_id == hlu_obj->obj.id)
+						((NclHLUObj)tmp_obj)->hlu.parent_hluobj_id = -1;
+#endif
 					_NclDestroyObj(tmp_obj);
 				}
 				NclFree(tmp2);
 			}
 		}
 		if(hlu_obj->hlu.exp_list != NULL) {
-			etmp1 = hlu_obj->hlu.exp_list;
-			hlu_obj->hlu.exp_list = NULL;
-			while(etmp1 != NULL) {
+/*
+* exp_list could change as a result of DelParent call
+*/
+
+			while(hlu_obj->hlu.exp_list != NULL) {
+				etmp1 = hlu_obj->hlu.exp_list;
 				tmp_obj = _NclGetObj(etmp1->child_id);
 				etmp2 = etmp1;
-				etmp1 = etmp1->next;
+				hlu_obj->hlu.exp_list = etmp1->next;
 /*
 * This line keeps HLUObjDestroy from calling DelHLUChild on subsequent 
 * this object
 */
 				_NhlCBDelete(etmp2->cb);
 				NclFree(etmp2->crec);
-				if(((NclHLUObj)tmp_obj)->hlu.parent_hluobj_id == hlu_obj->obj.id)
-					((NclHLUObj)tmp_obj)->hlu.parent_hluobj_id = -1;
+#ifdef NCLDEBUG
+					if(((NclHLUObj)tmp_obj)->hlu.parent_hluobj_id == hlu_obj->obj.id)
+						((NclHLUObj)tmp_obj)->hlu.parent_hluobj_id = -1;
 				if(tmp_obj != NULL){
+#else
+				if(tmp_obj != NULL){
+					if(((NclHLUObj)tmp_obj)->hlu.parent_hluobj_id == hlu_obj->obj.id)
+						((NclHLUObj)tmp_obj)->hlu.parent_hluobj_id = -1;
+#endif
 					_NclDelParent(tmp_obj,(NclObj)hlu_obj);
 				}
 				NclFree(etmp2);

@@ -1432,10 +1432,6 @@ NclStackEntry missing_expr;
 
 	}
 	if(size_md != NULL) {
-		if(size_md->multidval.missing_value.has_missing) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"New: The dimension size list contains missing values, can't determine size");
-			return(NhlFATAL);
-		}
 		if(!(size_md->multidval.type->type_class.type & Ncl_Typelong)) {
 			tmp1_md = _NclCoerceData(size_md,Ncl_Typelong,NULL);
 			if(tmp1_md == NULL) {
@@ -1446,6 +1442,14 @@ NclStackEntry missing_expr;
 			tmp1_md = size_md;
 		}
 		dim_size_list = (long*)tmp1_md->multidval.val;
+		if(tmp1_md->multidval.missing_value.has_missing) {
+			for(i = 0; i < tmp1_md->multidval.totalelements; i++ ) {
+				if(tmp1_md->multidval.missing_value.value.longval == dim_size_list[i]) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"New: The dimension size list contains missing values, can't determine size");
+					return(NhlFATAL);
+				}
+			}
+		}
 		total = 1;
 		j = 0;
 		if((tmp1_md->multidval.dim_sizes[0] == 1)&&(dim_size_list[0] > 0)) {
