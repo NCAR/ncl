@@ -1,10 +1,12 @@
 /*
- *	$Id: c_cbex01.c.sed,v 1.7 1993-01-23 15:14:54 haley Exp $
+ *	$Id: c_cbex01.c.sed,v 1.8 1993-02-04 16:34:18 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
 #include <ncarg/ncargC.h>
 #include <ncarg/gks.h>
+
+#define pow2(x)   ((x)*(x))
 
 int icll, iama[10000];
 
@@ -93,8 +95,8 @@ main()
  * Specify the Z input data values.
  */
     for( i =0; i < 9; i++ ) {
-        zran[i]=exp(-pow(xran[i]-3.,2.)/9.-pow(yran[i]-5.,2.)/25.)-
-                exp(-pow(xran[i]-6.,2.)/9.-pow(yran[i]-5.,2.)/25.);
+        zran[i]=exp(-pow2(xran[i]-3.)/9.-pow2(yran[i]-5.)/25.)-
+                exp(-pow2(xran[i]-6.)/9.-pow2(yran[i]-5.)/25.);
     }
 /*
  * Specify the points defining the convex hull.

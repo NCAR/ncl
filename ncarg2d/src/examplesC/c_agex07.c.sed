@@ -1,5 +1,5 @@
 /*
- *	$Id: c_agex07.c.sed,v 1.5 1993-01-23 15:14:51 haley Exp $
+ *	$Id: c_agex07.c.sed,v 1.6 1993-02-04 16:34:15 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -8,6 +8,8 @@
  * Include function prototypes
  */
 #include <ncarg/ncargC.h>
+
+#define pow2(x)  ((x) * (x))
 
 main()
 {
@@ -34,7 +36,7 @@ main()
         sprintf( dshp[j], "$$$$$$$$$$$$$$$$$$$$$'j'='%d'", j+1 );
         fj=j+1;
         for( i = 0; i < 101; i++ ) {
-            ydra[j][i]=3.*fj-(fj/2700.)*pow(xdra[i],2.);
+            ydra[j][i]=3.*fj-(fj/2700.)*pow2(xdra[i]);
         }
     }
 /*

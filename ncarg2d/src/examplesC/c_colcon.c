@@ -17,6 +17,7 @@
 
 #define min(x,y)    ((x) < (y) ? (x) : (y))
 #define max(x,y)    ((x) > (y) ? (x) : (y))
+#define pow2(x)     ((x) * (x))
 
 main()
 {
@@ -268,8 +269,8 @@ int idim, m, n, mlow, mhgh;
         for( i = 1; i <= m; i++ ) {
             data[ii]=.5*(dlow+dhgh);
             for( k = 1; k <= ncnt; k++ ) {
-                temp = -(pow((fovm*((float)(i)-ccnt[0][k-1])),2.)+
-                        pow(fovn*((float)(j)-ccnt[1][k-1]),2.));
+                temp = -(pow2((fovm*((float)i-ccnt[0][k-1])))+
+                         pow2(fovn*((float)j-ccnt[1][k-1])));
                 if (temp >= -20.) data[ii]=data[ii]+.5*(dhgh-dlow)
                                            *ccnt[2][k-1]*exp(temp);
             }
