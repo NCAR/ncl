@@ -1,5 +1,5 @@
 C
-C $Id: maptre.f,v 1.5 1998-05-23 20:20:00 kennison Exp $
+C $Id: maptre.f,v 1.6 1999-04-02 22:59:40 kennison Exp $
 C
       SUBROUTINE MAPTRE (UINS,VINS,UOUT,VOUT,UINT,VINT)
 C
@@ -14,9 +14,9 @@ C
 C Declare required common blocks.  See MAPBD for descriptions of these
 C common blocks and the variables in them.
 C
-      COMMON /MAPCM2/ UMIN,UMAX,VMIN,VMAX,UEPS,VEPS,UCEN,VCEN,URNG,VRNG,
-     +                BLAM,SLAM,BLOM,SLOM,ISSL
-      SAVE /MAPCM2/
+      COMMON /MAPCM2/ UMIN,UMAX,VMIN,VMAX,UCEN,VCEN,URNG,VRNG,BLAM,SLAM,
+     +                BLOM,SLOM,ISSL,PEPS
+      SAVE   /MAPCM2/
 C
 C What's involved is just a lot of algebra.
 C

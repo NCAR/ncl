@@ -1,5 +1,5 @@
 C
-C $Id: mpsetl.f,v 1.7 1998-05-23 20:20:11 kennison Exp $
+C $Id: mpsetl.f,v 1.8 1999-04-02 22:59:46 kennison Exp $
 C
       SUBROUTINE MPSETL (WHCH,LVAL)
       CHARACTER*(*) WHCH

@@ -1,5 +1,5 @@
 C
-C $Id: mapio.f,v 1.12 1998-05-23 20:19:43 kennison Exp $
+C $Id: mapio.f,v 1.13 1999-04-02 22:59:32 kennison Exp $
 C
       SUBROUTINE MAPIO (IACT)
 C
@@ -13,11 +13,11 @@ C common blocks and the variables in them.
 C
       COMMON /MAPCM3/ ITPN,NOUT,NPTS,IGID,IDLS,IDRS,BLAG,SLAG,BLOG,SLOG,
      +                PNTS(200),IDOS(4)
-      SAVE /MAPCM3/
+      SAVE   /MAPCM3/
 C
-      COMMON /MAPCM5/ DDCT(5),DDCL(5),LDCT(6),LDCL(6),PDCT(10),PDCL(10)
+      COMMON /MAPCM5/ DDCT(5),DDCL(5),LDCT(6),LDCL(6),PDCT(12),PDCL(12)
       CHARACTER*2     DDCT,DDCL,LDCT,LDCL,PDCT,PDCL
-      SAVE /MAPCM5/
+      SAVE   /MAPCM5/
 C
 C Declare a variable in which to form the name of an outline data file.
 C

@@ -1,5 +1,5 @@
 C
-C $Id: maproj.f,v 1.10 1998-05-23 20:19:51 kennison Exp $
+C $Id: maproj.f,v 1.11 1999-04-02 22:59:36 kennison Exp $
 C
       SUBROUTINE MAPROJ (ARG1,ARG2,ARG3,ARG4)
 C
@@ -13,18 +13,18 @@ C
      +                ELPF,XLOW,XROW,YBOW,YTOW,IDTL,GRDR,SRCH,ILCW,GRLA,
      +                GRLO,GRPO
       LOGICAL         INTF,LBLF,PRMF,ELPF
-      SAVE /MAPCM4/
+      SAVE   /MAPCM4/
 C
-      COMMON /MAPCM5/ DDCT(5),DDCL(5),LDCT(6),LDCL(6),PDCT(10),PDCL(10)
+      COMMON /MAPCM5/ DDCT(5),DDCL(5),LDCT(6),LDCL(6),PDCT(12),PDCL(12)
       CHARACTER*2     DDCT,DDCL,LDCT,LDCL,PDCT,PDCL
-      SAVE /MAPCM5/
+      SAVE   /MAPCM5/
 C
       COMMON /MAPSAT/ SALT,SSMO,SRSS,ALFA,BETA,RSNA,RCSA,RSNB,RCSB
-      SAVE /MAPSAT/
+      SAVE   /MAPSAT/
 C
       COMMON /MAPDPS/ DSNA,DCSA,DSNB,DCSB
       DOUBLE PRECISION DSNA,DCSA,DSNB,DCSB
-      SAVE /MAPDPS/
+      SAVE   /MAPDPS/
 C
 C Check for an uncleared prior error.
 C
@@ -32,16 +32,16 @@ C
 C
 C Transfer the parameters defining the projection.
 C
-      I=IDICTL(ARG1,PDCT,10)
-      IF (I.EQ.0) I=IDICTL(ARG1,PDCL,10)
+      I=IDICTL(ARG1,PDCT,12)
+      IF (I.EQ.0) I=IDICTL(ARG1,PDCL,12)
       IF (I.EQ.0) GO TO 901
 C
-      JPRJ=I
+      JPRJ=I-1
 C
       IF (JPRJ.EQ.3) THEN
         CALL MAPSTR ('SA',0.)
         IF (ICFELL('MAPROJ',2).NE.0) RETURN
-      ELSE IF (JPRJ.EQ.10) THEN
+      ELSE IF (JPRJ.EQ.11) THEN
         JPRJ=3
         IF (ABS(SALT).LE.1.) THEN
           CALL MAPSTR ('SA',6.631)
@@ -49,9 +49,9 @@ C
         END IF
       END IF
 C
-      PHIA=ARG2
-      PHIO=ARG3
-      ROTA=ARG4
+      PHIA=MAX(-90.,MIN(90.,ARG2))
+      PHIO=ARG3-SIGN(180.,ARG3+180.)+SIGN(180.,180.-ARG3)
+      ROTA=ARG4-SIGN(180.,ARG4+180.)+SIGN(180.,180.-ARG4)
 C
 C Set the flag to indicate that initialization is now required.
 C

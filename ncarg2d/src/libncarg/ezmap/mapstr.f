@@ -1,5 +1,5 @@
 C
-C $Id: mapstr.f,v 1.9 1998-05-23 20:19:58 kennison Exp $
+C $Id: mapstr.f,v 1.10 1999-04-02 22:59:39 kennison Exp $
 C
       SUBROUTINE MAPSTR (WHCH,RVAL)
 C
@@ -8,31 +8,32 @@ C
 C Declare required common blocks.  See MAPBD for descriptions of these
 C common blocks and the variables in them.
 C
-      COMMON /MAPCM2/ UMIN,UMAX,VMIN,VMAX,UEPS,VEPS,UCEN,VCEN,URNG,VRNG,
-     +                BLAM,SLAM,BLOM,SLOM,ISSL
-      SAVE /MAPCM2/
+      COMMON /MAPCM2/ UMIN,UMAX,VMIN,VMAX,UCEN,VCEN,URNG,VRNG,BLAM,SLAM,
+     +                BLOM,SLOM,ISSL,PEPS
+      SAVE   /MAPCM2/
 C
       COMMON /MAPCM4/ INTF,JPRJ,PHIA,PHIO,ROTA,ILTS,PLA1,PLA2,PLA3,PLA4,
      +                PLB1,PLB2,PLB3,PLB4,PLTR,GRID,IDSH,IDOT,LBLF,PRMF,
      +                ELPF,XLOW,XROW,YBOW,YTOW,IDTL,GRDR,SRCH,ILCW,GRLA,
      +                GRLO,GRPO
       LOGICAL         INTF,LBLF,PRMF,ELPF
-      SAVE /MAPCM4/
+      SAVE   /MAPCM4/
 C
       COMMON /MAPCM7/ ULOW,UROW,VBOW,VTOW
-      SAVE /MAPCM7/
+      SAVE   /MAPCM7/
 C
       COMMON /MAPCMA/ DPLT,DDTS,DSCA,DPSQ,DSSQ,DBTD,DATL
-      SAVE /MAPCMA/
+      SAVE   /MAPCMA/
 C
       COMMON /MAPSAT/ SALT,SSMO,SRSS,ALFA,BETA,RSNA,RCSA,RSNB,RCSB
-      SAVE /MAPSAT/
+      SAVE   /MAPSAT/
 C
       COMMON /MAPDPS/ DSNA,DCSA,DSNB,DCSB
       DOUBLE PRECISION DSNA,DCSA,DSNB,DCSB
-      SAVE /MAPDPS/
+      SAVE   /MAPDPS/
 C
       IF (ICFELL('MAPSTR - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+C
       IF      (WHCH(1:2).EQ.'DD'.OR.WHCH(1:2).EQ.'dd') THEN
         DDTS=RVAL
         DBTD=DDTS/DSCA
@@ -51,29 +52,31 @@ C
         DPSQ=DPLT*DPLT
       ELSE IF (WHCH(1:2).EQ.'RE'.OR.WHCH(1:2).EQ.'re') THEN
         PLTR=RVAL
-        DSCA=(UROW-ULOW)*PLTR/(UMAX-UMIN)
-        DSSQ=DSCA*DSCA
-        DBTD=DDTS/DSCA
+        INTF=.TRUE.
       ELSE IF (WHCH(1:2).EQ.'SA'.OR.WHCH(1:2).EQ.'sa') THEN
         SALT=RVAL
         IF (ABS(SALT).GT.1.) THEN
           SSMO=SALT*SALT-1.
           SRSS=SQRT(SSMO)
         END IF
+        INTF=.TRUE.
       ELSE IF (WHCH(1:2).EQ.'S1'.OR.WHCH(1:2).EQ.'s1') THEN
         ALFA=ABS(RVAL)
         DSNA=SIN(DBLE(.017453292519943*ALFA))
         RSNA=REAL(DSNA)
         DCSA=COS(DBLE(.017453292519943*ALFA))
         RCSA=REAL(DCSA)
+        INTF=.TRUE.
       ELSE IF (WHCH(1:2).EQ.'S2'.OR.WHCH(1:2).EQ.'s2') THEN
         BETA=RVAL
         DSNB=SIN(DBLE(.017453292519943*BETA))
         RSNB=REAL(DSNB)
         DCSB=COS(DBLE(.017453292519943*BETA))
         RCSB=REAL(DCSB)
+        INTF=.TRUE.
       ELSE IF (WHCH(1:2).EQ.'SR'.OR.WHCH(1:2).EQ.'sr') THEN
         SRCH=MAX(.001,MIN(10.,RVAL))
+        INTF=.TRUE.
       ELSE
         GO TO 901
       END IF

@@ -1,5 +1,5 @@
 C
-C $Id: mapstl.f,v 1.9 1998-05-23 20:19:57 kennison Exp $
+C $Id: mapstl.f,v 1.10 1999-04-02 22:59:39 kennison Exp $
 C
       SUBROUTINE MAPSTL (WHCH,LVAL)
 C
@@ -14,7 +14,7 @@ C
      +                ELPF,XLOW,XROW,YBOW,YTOW,IDTL,GRDR,SRCH,ILCW,GRLA,
      +                GRLO,GRPO
       LOGICAL         INTF,LBLF,PRMF,ELPF
-      SAVE /MAPCM4/
+      SAVE   /MAPCM4/
 C
       IF (ICFELL('MAPSTL - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
 C

@@ -1,5 +1,5 @@
 C
-C $Id: mprset.f,v 1.3 1998-05-23 20:20:09 kennison Exp $
+C $Id: mprset.f,v 1.4 1999-04-02 22:59:45 kennison Exp $
 C
       SUBROUTINE MPRSET
 C
@@ -13,8 +13,8 @@ C
       DOUBLE PRECISION DSNO,DCSO,DSNR,DCSR
       SAVE   /MAPDP1/
 C
-      COMMON /MAPCM2/ UMIN,UMAX,VMIN,VMAX,UEPS,VEPS,UCEN,VCEN,URNG,VRNG,
-     +                BLAM,SLAM,BLOM,SLOM,ISSL
+      COMMON /MAPCM2/ UMIN,UMAX,VMIN,VMAX,UCEN,VCEN,URNG,VRNG,BLAM,SLAM,
+     +                BLOM,SLOM,ISSL,PEPS
       SAVE   /MAPCM2/
 C
       COMMON /MAPCM3/ ITPN,NOUT,NPTS,IGID,IDLS,IDRS,BLAG,SLAG,BLOG,SLOG,
@@ -28,7 +28,7 @@ C
       LOGICAL         INTF,LBLF,PRMF,ELPF
       SAVE   /MAPCM4/
 C
-      COMMON /MAPCM5/ DDCT(5),DDCL(5),LDCT(6),LDCL(6),PDCT(10),PDCL(10)
+      COMMON /MAPCM5/ DDCT(5),DDCL(5),LDCT(6),LDCL(6),PDCT(12),PDCL(12)
       CHARACTER*2     DDCT,DDCL,LDCT,LDCL,PDCT,PDCL
       SAVE   /MAPCM5/
 C
@@ -84,7 +84,7 @@ C
       PLB2=0.
       PLB3=0.
       PLB4=0.
-      PLTR=4096.
+      PLTR=32768.
       GRID=10.
       GRLA=0.
       GRLO=0.
@@ -104,7 +104,7 @@ C
       ILCW=1
       ULOW=0.
       UROW=1.
-      DPLT=4.
+      DPLT=1.
       DDTS=12.
       DSCA=1.
       IGI1=1
@@ -127,5 +127,6 @@ C
       DSNB=0.D0
       DCSB=1.D0
       CALL MAPINT
+      IF (ICFELL('MPRSET',2).NE.0) RETURN
       RETURN
       END

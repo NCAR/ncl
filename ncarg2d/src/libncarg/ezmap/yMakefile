@@ -1,30 +1,30 @@
 #
-#	$Id: yMakefile,v 1.12 1996-10-25 21:43:39 boote Exp $
+#       $Id: yMakefile,v 1.13 1999-04-02 22:59:49 kennison Exp $
 #
 
 MYNAME	= ezmap
 
 GENERIC_SRCS = \
-	hlumapeod.f hlumapusr.f \
-	idictl.f mapbd.f  mapcem.f mapchi.f mapdrw.f mapeod.f mapfst.f \
-	mapgci.f mapgrd.f mapgtc.f mapgti.f mapgtl.f mapgtr.f mapin2.f \
-	mapint.f mapio.f  mapiq.f  mapiqd.f mapit.f  mapitd.f maplbl.f \
-	maplmb.f maplot.f mappos.f maproj.f maprs.f  maprst.f mapsav.f \
-	mapset.f mapstc.f mapsti.f mapstl.f mapstr.f maptra.f maptre.f \
-	maptri.f maptrn.f maptrp.f mapusr.f mapvec.f mapvp.f  mapvpd.f \
-	mpgetc.f mpgeti.f mpgetl.f mpgetr.f mprset.f mpsetc.f mpseti.f \
-	mpsetl.f mpsetr.f supcon.f supmap.f
+	hlumapeod.f    hlumapusr.f idictl.f  mapbd.f mapcem.f mapchi.f \
+	mapdrw.f mapeod.f mapfst.f mapgci.f mapgrd.f mapgtc.f mapgti.f \
+	mapgtl.f mapgtr.f mapin1.f mapin2.f mapint.f  mapio.f  mapiq.f \
+	mapiqd.f  mapit.f mapitd.f maplbl.f maplmb.f maplot.f mappos.f \
+	maproj.f  maprs.f maprst.f mapsav.f mapset.f mapstc.f mapsti.f \
+	mapstl.f mapstr.f maptra.f maptre.f maptri.f maptrn.f maptrp.f \
+	mapusr.f mapvec.f  mapvp.f mapvpd.f mapwnd.f mpgetc.f mpgeti.f \
+	mpgetl.f mpgetr.f mpitve.f mprset.f mpsetc.f mpseti.f mpsetl.f \
+	mpsetr.f rbgdfe.f rbglen.f rbidfe.f supcon.f supmap.f
 
 GENERIC_OBJS = \
-	hlumapeod.o hlumapusr.o \
-	idictl.o mapbd.o  mapcem.o mapchi.o mapdrw.o mapeod.o mapfst.o \
-	mapgci.o mapgrd.o mapgtc.o mapgti.o mapgtl.o mapgtr.o mapin2.o \
-	mapint.o mapio.o  mapiq.o  mapiqd.o mapit.o  mapitd.o maplbl.o \
-	maplmb.o maplot.o mappos.o maproj.o maprs.o  maprst.o mapsav.o \
-	mapset.o mapstc.o mapsti.o mapstl.o mapstr.o maptra.o maptre.o \
-	maptri.o maptrn.o maptrp.o mapusr.o mapvec.o mapvp.o  mapvpd.o \
-	mpgetc.o mpgeti.o mpgetl.o mpgetr.o mprset.o mpsetc.o mpseti.o \
-	mpsetl.o mpsetr.o supcon.o supmap.o
+	hlumapeod.o    hlumapusr.o idictl.o  mapbd.o mapcem.o mapchi.o \
+	mapdrw.o mapeod.o mapfst.o mapgci.o mapgrd.o mapgtc.o mapgti.o \
+	mapgtl.o mapgtr.o mapin1.o mapin2.o mapint.o  mapio.o  mapiq.o \
+	mapiqd.o  mapit.o mapitd.o maplbl.o maplmb.o maplot.o mappos.o \
+	maproj.o  maprs.o maprst.o mapsav.o mapset.o mapstc.o mapsti.o \
+	mapstl.o mapstr.o maptra.o maptre.o maptri.o maptrn.o maptrp.o \
+	mapusr.o mapvec.o  mapvp.o mapvpd.o mapwnd.o mpgetc.o mpgeti.o \
+	mpgetl.o mpgetr.o mpitve.o mprset.o mpsetc.o mpseti.o mpsetl.o \
+	mpsetr.o rbgdfe.o rbglen.o rbidfe.o supcon.o supmap.o
 
 UNIX_SRCS = mpdbdi.f
 

@@ -1,5 +1,5 @@
 C
-C $Id: mapitd.f,v 1.3 1998-05-23 20:19:46 kennison Exp $
+C $Id: mapitd.f,v 1.4 1999-04-02 22:59:34 kennison Exp $
 C
       SUBROUTINE MAPITD (XLAT,XLON,IFST)
 C
@@ -7,38 +7,34 @@ C Declare required common blocks.  See MAPBD for descriptions of these
 C common blocks and the variables in them.
 C
       COMMON /MAPCM1/ IPRJ,PHOC,IROD,RSNO,RCSO,RSNR,RCSR
-      SAVE /MAPCM1/
+      SAVE   /MAPCM1/
 C
-      COMMON /MAPDP1/ DSNO,DCSO,DSNR,DCSR
-      DOUBLE PRECISION DSNO,DCSO,DSNR,DCSR
-      SAVE /MAPDP1/
-C
-      COMMON /MAPCM2/ UMIN,UMAX,VMIN,VMAX,UEPS,VEPS,UCEN,VCEN,URNG,VRNG,
-     +                BLAM,SLAM,BLOM,SLOM,ISSL
-      SAVE /MAPCM2/
+      COMMON /MAPCM2/ UMIN,UMAX,VMIN,VMAX,UCEN,VCEN,URNG,VRNG,BLAM,SLAM,
+     +                BLOM,SLOM,ISSL,PEPS
+      SAVE   /MAPCM2/
 C
       COMMON /MAPCM4/ INTF,JPRJ,PHIA,PHIO,ROTA,ILTS,PLA1,PLA2,PLA3,PLA4,
      +                PLB1,PLB2,PLB3,PLB4,PLTR,GRID,IDSH,IDOT,LBLF,PRMF,
      +                ELPF,XLOW,XROW,YBOW,YTOW,IDTL,GRDR,SRCH,ILCW,GRLA,
      +                GRLO,GRPO
       LOGICAL         INTF,LBLF,PRMF,ELPF
-      SAVE /MAPCM4/
+      SAVE   /MAPCM4/
 C
       COMMON /MAPCM8/ P,Q,R
-      SAVE /MAPCM8/
+      SAVE   /MAPCM8/
 C
       COMMON /MAPCMA/ DPLT,DDTS,DSCA,DPSQ,DSSQ,DBTD,DATL
-      SAVE /MAPCMA/
+      SAVE   /MAPCMA/
 C
-      DIMENSION CPRJ(3)
+      COMMON /USGSC1/ IPRF,UTPA(15),UUMN,UUMX,UVMN,UVMX
+        DOUBLE PRECISION UTPA
+      SAVE   /USGSC1/
 C
       DIMENSION RLATI(100),RLONI(100)
 C
-      SAVE IVSO,POLD,QOLD,UOLD,VOLD,XLTO,XLNO,RMLO
+      SAVE XLTO,XLNO,RMLO,IVSO,RLTO,RLNO,POLD,UOLD,VOLD
 C
-      DATA CPRJ / 360.,6.28318530717959,4. /
-C
-      DATA IVSO,POLD,QOLD,UOLD,VOLD / 0,0.,0.,0.,0. /
+      DATA XLTO,XLNO,RMLO,IVSO,RLTO,RLNO,POLD,UOLD,VOLD / 3*0.,0,5*0. /
 C
       DATA DTOR / .017453292519943 /
       DATA RTOD / 57.2957795130823 /
@@ -46,6 +42,13 @@ C
 C Check for an uncleared prior error.
 C
       IF (ICFELL('MAPITD - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+C
+C If EZMAP needs initialization, do it.
+C
+      IF (INTF) THEN
+        CALL MAPINT
+        IF (ICFELL('MAPITD',2).NE.0) RETURN
+      END IF
 C
 C Initialize the variables that control interpolation.
 C
@@ -55,11 +58,47 @@ C
 C If the projection is one of those in which great distortion occurs at
 C points opposite the pole, see if some points need to be interpolated.
 C
-      IF (IPRJ.EQ.2.OR.IPRJ.EQ.4.OR.IPRJ.EQ.5.OR.IPRJ.EQ.6) THEN
-        CPLT=COS(DTOR*PHIA)
-        SPLT=SIN(DTOR*PHIA)
-        CPLN=COS(DTOR*PHOC)
-        SPLN=SIN(DTOR*PHOC)
+C Note that I originally did this for four different projections, but it
+C really needs to be done only for the Lambert Equal-Area and Azimuthal
+C Equidistant projections, as these are the only two that are sometimes
+C used to show the entire globe.  When I added the USGS projections, I
+C did not bother to provide interpolation for the other two projections
+C (the Gnomonic and the Stereographic), but I also did not remove the
+C interpolation that was being done for the forms of these projections
+C that we already had (03/11/99).
+C
+      IF ((IPRJ.EQ.0.AND.(IPRF.EQ. 3.OR.IPRF.EQ. 8.OR.
+     +                    IPRF.EQ.11.OR.IPRF.EQ.12)).OR.
+     +    IPRJ.EQ.2.OR.IPRJ.EQ.4.OR.IPRJ.EQ.5.OR.IPRJ.EQ.6) THEN
+        IF (IPRJ.EQ.0) THEN
+          IF (IPRF.EQ.3.OR.IPRF.EQ.8) THEN
+            CPLT=0.
+            SPLT=1.
+            CPLN=1.
+            SPLN=0.
+            IF (IPRF.EQ.8.AND.UTPA(9).EQ.0.D0) THEN
+              DTST=REAL(UTPA(3))
+            ELSE
+              DTST=.5*REAL(UTPA(3)+UTPA(4))
+            END IF
+            IF (DTST.GT.0.) THEN
+              DTST=90.-DTST
+            ELSE
+              SPLT=-SPLT
+              DTST=DTST+90.
+            END IF
+          ELSE
+            CPLT=COS(DTOR*REAL(UTPA(6)))
+            SPLT=SIN(DTOR*REAL(UTPA(6)))
+            CPLN=COS(DTOR*REAL(UTPA(5)))
+            SPLN=SIN(DTOR*REAL(UTPA(5)))
+          END IF
+        ELSE
+          CPLT=COS(DTOR*PHIA)
+          SPLT=SIN(DTOR*PHIA)
+          CPLN=COS(DTOR*PHOC)
+          SPLN=SIN(DTOR*PHOC)
+        END IF
         CXLT=COS(DTOR*XLAT)
         SXLT=SIN(DTOR*XLAT)
         CXLN=COS(DTOR*XLON)
@@ -67,35 +106,41 @@ C
         APTX=2.*RTOD*ASIN(SQRT((CXLT*CXLN-CPLT*CPLN)**2+
      +                         (CXLT*SXLN-CPLT*SPLN)**2+
      +                         (SXLT     -SPLT     )**2)/2.)
-        IF (IPRJ.EQ.2) THEN
-          IF (APTX.LE.179.999) THEN
-            RMUL=2./(1.+COS(DTOR*APTX))
+        IF (IPRJ.EQ.0.AND.(IPRF.EQ.3.OR.IPRF.EQ.8)) THEN
+          IF (APTX.LE.DTST) THEN
+            RMUL=MAX(1.,MIN(51.,51.*((DTST-APTX)/DTST)**8))
           ELSE
-            RMUL=201.
+            RMUL=MAX(1.,MIN(51.,51.*((APTX-DTST)/(180.-DTST))**8))
           END IF
-        ELSE IF (IPRJ.EQ.4) THEN
-          IF (APTX.LE.179.999) THEN
-            RMUL=2./SQRT(2.*(1.+COS(DTOR*APTX)))
+        ELSE IF (IPRJ.EQ.2) THEN
+          IF (APTX.LE.179.9999) THEN
+            RMUL=MIN(101.,1./(1.+COS(DTOR*APTX)))
           ELSE
-            RMUL=201.
+            RMUL=101.
+          END IF
+        ELSE IF ((IPRJ.EQ.0.AND.IPRF.EQ.11).OR.IPRJ.EQ.4) THEN
+          IF (APTX.LE.179.9999) THEN
+            RMUL=MIN(101.,2./SQRT(2.*(1.+COS(DTOR*APTX))))
+          ELSE
+            RMUL=101.
           END IF
         ELSE IF (IPRJ.EQ.5) THEN
-          IF (APTX.LT.89.999) THEN
-            RMUL=1./COS(DTOR*APTX)
+          IF (APTX.LT.89.9999) THEN
+            RMUL=MIN(21.,1./COS(DTOR*APTX))
           ELSE
-            RMUL=201.
+            RMUL=21.
           END IF
-        ELSE IF (IPRJ.EQ.6) THEN
+        ELSE IF ((IPRJ.EQ.0.AND.IPRF.EQ.12).OR.IPRJ.EQ.6) THEN
           IF (APTX.LE..001) THEN
             RMUL=1.
-          ELSE IF (APTX.LT.179.999) THEN
-            RMUL=DTOR*APTX/SIN(DTOR*APTX)
+          ELSE IF (APTX.LT.179.9999) THEN
+            RMUL=MIN(101.,DTOR*APTX/SIN(DTOR*APTX))
           ELSE
-            RMUL=201.
+            RMUL=101.
           END IF
         END IF
         IF (IFST.NE.0) THEN
-          NOPI=MAX(0,MIN(100,(INT(MAX(RMLO,RMUL))-1)/2))
+          NOPI=MAX(0,MIN(50,INT(MAX(RMLO,RMUL))/2))
           IF (NOPI.NE.0)
      +              CALL MAPGCI (XLTO,XLNO,XLAT,XLON,NOPI,RLATI,RLONI)
         END IF
@@ -106,7 +151,7 @@ C
 C
 C Return here for the next interpolated point.
 C
-  100 IF (IOPI.LT.NOPI) THEN
+  101 IF (IOPI.LT.NOPI) THEN
         IOPI=IOPI+1
         RLAT=RLATI(IOPI)
         RLON=RLONI(IOPI)
@@ -116,246 +161,131 @@ C
         RLON=XLON
       END IF
 C
-C Project the point (RLAT,RLON) to (U,V).
+C Project the point (RLAT,RLON) to (UNEW,VNEW), using the routine
+C MAPTRA, which returns 1.E12 for UNEW and VNEW in areas outside the
+C perimeter and on the "wrong" side of a limb line.  Also save PNEW
+C for "crossover" testing.
 C
-      CALL MAPTRN (RLAT,RLON,U,V)
-      IF (ICFELL('MAPITD',2).NE.0) RETURN
+      CALL MAPTRA (RLAT,RLON,UNEW,VNEW)
+      IF (ICFELL('MAPITD',3).NE.0) RETURN
+      PNEW=P
 C
-C For the sake of efficiency, execute one of two parallel algorithms,
-C depending on whether an elliptical or a rectangular perimeter is in
-C use.  (That way, we test ELPF only once.)
+C If the new point is invisible, we only have to draw something if it's
+C not a first point and the last point was visible, in which case we
+C interpolate to find a point at the edge of the visible area and then
+C extend the line we're drawing to that point.  In any case, we jump to
+C save information about the new point and get another.
 C
-      IF (ELPF) THEN
-C
-C Elliptical - assume the new point is visible until we find otherwise.
-C
-        IVIS=1
-C
-C See if the new point is invisible.
-C
-        IF (((U-UCEN)/URNG)**2+((V-VCEN)/VRNG)**2.GT.1.) THEN
-C
-C The new point is invisible.  Reset the visibility flag.
-C
-          IVIS=0
-C
-C If the new point is a "first point" or if the last point was not
-C visible or if the new point is invisible because its projection is
-C undefined, draw nothing.  The possible existence of a visible segment
-C along the line joining two invisible points is intentionally ignored,
-C for reasons of efficiency.  For this reason, objects should not be
-C drawn using long line segments.
-C
-          IF (IFST.EQ.0.OR.IVSO.EQ.0.OR.U.GE.1.E12) GO TO 108
-C
-C Otherwise, the new point is not a "first point", the last point was
-C visible, and the projection of the new point is defined, so we need
-C to continue the line.  First, if there's a cross-over problem, move
-C the new point to its alternate position.  This may make it visible.
-C
-          IF (ABS(P-POLD).GT.UEPS.OR.ABS(Q-QOLD).GT.VEPS) THEN
-C
-            IF (JPRJ.GE.7) THEN
-              P=P-SIGN(CPRJ(JPRJ-6),P)
-              U=P
-              IF (JPRJ.EQ.9) U=U*SQRT(1.-V*V)
-            ELSE
-              GO TO 108
-            END IF
-C
-            IF (((U-UCEN)/URNG)**2+((V-VCEN)/VRNG)**2.LE.1.) THEN
-              IVIS=1
-              GO TO 107
-            END IF
-C
-          END IF
-C
-C If it's still invisible, interpolate to the edge of the frame, extend
-C the line to that point, and quit.
-C
-          CALL MAPTRE (UOLD,VOLD,U,V,UINT,VINT)
-          CALL MAPVPD (UOLD,VOLD,UINT,VINT)
-          IF (ICFELL('MAPITD',3).NE.0) RETURN
-          GO TO 108
-C
-        END IF
-C
-C The new point is visible.  If it's the first point of a line, go start
-C a new line.
-C
-        IF (IFST.EQ.0.OR.UOLD.GE.1.E12) GO TO 106
-C
-C The new point is visible, but it's not the first point of a line.
-C Check for cross-over problems.
-C
-        IF (ABS(P-POLD).GT.UEPS.OR.ABS(Q-QOLD).GT.VEPS) GO TO 101
-C
-C The new point is visible, it's not the first point of a line, and
-C there are no cross-over problems.  If the old point was invisible,
-C jump to draw the visible portion of the line from the old point to
-C the new one.
-C
-        IF (IVSO.EQ.0) GO TO 102
-C
-C The new point is visible, it's not the first point of a line, there
-C are no cross-over problems, and the last point was visible.  Jump to
-C just continue the line.
-C
-        GO TO 107
-C
-C We have the most difficult case.  The new point is visible, it's not
-C the first point of a line, and there is a cross-over problem.  None,
-C one, or two segments may need to be drawn.
-C
-  101   IF (JPRJ.LT.7) GO TO 106
-C
-C If the old point was visible, generate the alternate projection of the
-C new point and draw the visible portion of the line segment joining the
-C old point to the alternate projection point.
-C
-        IF (IVSO.NE.0) THEN
-C
-          UTMP=P-SIGN(CPRJ(JPRJ-6),P)
-          VTMP=Q
-          IF (JPRJ.EQ.9) UTMP=UTMP*SQRT(1.-VTMP*VTMP)
-C
-          IF (((UTMP-UCEN)/URNG)**2+((VTMP-VCEN)/VRNG)**2.GT.1.) THEN
-            CALL MAPTRE (UOLD,VOLD,UTMP,VTMP,UTMP,VTMP)
-          END IF
-C
-          CALL MAPVPD (UOLD,VOLD,UTMP,VTMP)
+      IF (UNEW.GE.1.E12) THEN
+        IVIS=0
+        IF (IFST.NE.0.AND.IVSO.NE.0) THEN
+          CALL MPITVE (RLTO,RLNO,POLD,UOLD,VOLD,
+     +                 RLAT,RLON,PNEW,UNEW,VNEW,
+     +                 RLTE,RLNE,PAPE,UCOE,VCOE)
           IF (ICFELL('MAPITD',4).NE.0) RETURN
-C
-        END IF
-C
-C Now generate an alternate projection of the old point close to the new
-C one and draw the visible portion of the line segment joining it to the
-C new point.
-C
-        UOLD=POLD-SIGN(CPRJ(JPRJ-6),POLD)
-        IF (JPRJ.EQ.9) UOLD=UOLD*SQRT(1.-VOLD*VOLD)
-C
-        IF (((UOLD-UCEN)/URNG)**2+((VOLD-VCEN)/VRNG)**2.LE.1.) GO TO 105
-C
-C Move (UOLD,VOLD) by interpolating to the edge of the frame.
-C
-  102   CALL MAPTRE (U,V,UOLD,VOLD,UOLD,VOLD)
-C
-      ELSE
-C
-C Rectangular - repeat the above code, changing the tests for a point's
-C being inside/outside the perimeter.  Commenting will be abbreviated.
-C
-        IVIS=1
-C
-        IF (U.LT.UMIN.OR.U.GT.UMAX.OR.V.LT.VMIN.OR.V.GT.VMAX) THEN
-C
-          IVIS=0
-C
-          IF (IFST.EQ.0.OR.IVSO.EQ.0.OR.U.GE.1.E12) GO TO 108
-C
-          IF (ABS(P-POLD).GT.UEPS.OR.ABS(Q-QOLD).GT.VEPS) THEN
-C
-            IF (JPRJ.GE.7) THEN
-              P=P-SIGN(CPRJ(JPRJ-6),P)
-              U=P
-              IF (JPRJ.EQ.9) U=U*SQRT(1.-V*V)
-            ELSE
-              GO TO 108
-            END IF
-C
-            IF (U.GE.UMIN.AND.U.LE.UMAX.AND.
-     +          V.GE.VMIN.AND.V.LE.VMAX) THEN
-              IVIS=1
-              GO TO 107
-            END IF
-          END IF
-C
-          CALL MAPTRP (UOLD,VOLD,U,V,UINT,VINT)
-          CALL MAPVPD (UOLD,VOLD,UINT,VINT)
+          CALL MAPVPD (UOLD,VOLD,UCOE,VCOE)
           IF (ICFELL('MAPITD',5).NE.0) RETURN
-          GO TO 108
-C
         END IF
+        GO TO 103
+      END IF
 C
-        IF (IFST.EQ.0.OR.UOLD.GE.1.E12) GO TO 106
+C Otherwise, the new point is visible; things get more complicated.
 C
-        IF (ABS(P-POLD).GT.UEPS.OR.ABS(Q-QOLD).GT.VEPS) GO TO 103
+      IVIS=1
 C
-        IF (IVSO.EQ.0) GO TO 104
+C If the new point is a first point, initialize a new set of line draws,
+C then jump to save information about the new point and get another.
 C
-        GO TO 107
-C
-  103   IF (JPRJ.LT.7) GO TO 106
-C
-        IF (IVSO.NE.0) THEN
-C
-          UTMP=P-SIGN(CPRJ(JPRJ-6),P)
-          VTMP=Q
-          IF (JPRJ.EQ.9) UTMP=UTMP*SQRT(1.-VTMP*VTMP)
-C
-          IF (UTMP.LT.UMIN.OR.UTMP.GT.UMAX.OR.
-     +        VTMP.LT.VMIN.OR.VTMP.GT.VMAX) THEN
-            CALL MAPTRP (UOLD,VOLD,UTMP,VTMP,UTMP,VTMP)
-          END IF
-C
-          CALL MAPVPD (UOLD,VOLD,UTMP,VTMP)
+      IF (IFST.EQ.0) THEN
+        IF (IDTL.EQ.0) THEN
+          CALL DPFRST (UNEW,VNEW)
           IF (ICFELL('MAPITD',6).NE.0) RETURN
+        ELSE
+          DATL=0.
         END IF
-C
-        UOLD=POLD-SIGN(CPRJ(JPRJ-6),POLD)
-        IF (JPRJ.EQ.9) UOLD=UOLD*SQRT(1.-VOLD*VOLD)
-C
-        IF (UOLD.GE.UMIN.AND.UOLD.LE.UMAX.AND.
-     +      VOLD.GE.VMIN.AND.VOLD.LE.VMAX) GO TO 105
-C
-  104   CALL MAPTRP (U,V,UOLD,VOLD,UOLD,VOLD)
-C
+        GO TO 103
       END IF
 C
-C Draw the visible portion of the line joining the old point to the new.
+C Otherwise, the new point is visible and it's not a first point; if the
+C last point was invisible, find a point at the edge of the visible area
+C and start a new set of line draws there.
 C
-  105 IF (IDTL.EQ.0) THEN
-        CALL DPFRST (UOLD,VOLD)
+      IF (IVSO.EQ.0) THEN
+        CALL MPITVE (RLAT,RLON,PNEW,UNEW,VNEW,
+     +               RLTO,RLNO,POLD,UOLD,VOLD,
+     +               RLTO,RLNO,POLD,UOLD,VOLD)
         IF (ICFELL('MAPITD',7).NE.0) RETURN
-      ELSE
-        DATL=0.
+        IVSO=1
+        IF (IDTL.EQ.0) THEN
+          CALL DPFRST (UOLD,VOLD)
+          IF (ICFELL('MAPITD',8).NE.0) RETURN
+        ELSE
+          DATL=0.
+        END IF
       END IF
 C
-      CALL MAPVPD (UOLD,VOLD,U,V)
-      IF (ICFELL('MAPITD',8).NE.0) RETURN
+C The new point is visible; so was the old one.  If the projection type
+C is one of those for which "crossover" is not possible, just jump to
+C extend the line to the new point.
 C
-      GO TO 108
+      IF (JPRJ.GE.2.AND.JPRJ.LE.6) GO TO 102
 C
-C Start a new line.
+      IF (JPRJ.EQ.0.AND.(IPRF.EQ. 6.OR.IPRF.EQ.10.OR.IPRF.EQ.11.OR.
+     +                   IPRF.EQ.12.OR.IPRF.EQ.13.OR.IPRF.EQ.14.OR.
+     +                   IPRF.EQ.15.OR.IPRF.EQ.23)) GO TO 102
 C
-  106 IF (IDTL.EQ.0) THEN
-        CALL DPFRST (U,V)
-        IF (ICFELL('MAPITD',9).NE.0) RETURN
-      ELSE
-        DATL=0.
-      END IF
+C Test for "crossover"; if it has not occurred, jump to extend the line.
 C
-      GO TO 108
+      IF (ABS(PNEW-POLD).LT.PEPS) GO TO 102
 C
-C Continue the line.  If this point is too close to the last, skip it.
+C The new and old points are both visible and "crossover" has occurred.
+C We must extend the line to one edge of the map and restart it at the
+C other edge.
 C
-  107 IF (IFST.LT.2.AND.((U-UOLD)**2+(V-VOLD)**2)*DSSQ.LE.DPSQ)GO TO 109
-C
-      CALL MAPVPD (UOLD,VOLD,U,V)
+      CALL MPITVE (RLTO,RLNO,POLD,UOLD,VOLD,
+     +             RLAT,RLON,PNEW,UNEW,VNEW,
+     +             RLTE,RLNE,PAPE,UCOE,VCOE)
+      IF (ICFELL('MAPITD',9).NE.0) RETURN
+      CALL MAPVPD (UOLD,VOLD,UCOE,VCOE)
       IF (ICFELL('MAPITD',10).NE.0) RETURN
 C
-C Save information about the current point for the next call and quit.
+      CALL MPITVE (RLAT,RLON,PNEW,UNEW,VNEW,
+     +             RLTO,RLNO,POLD,UOLD,VOLD,
+     +             RLTO,RLNO,POLD,UOLD,VOLD)
+      IF (ICFELL('MAPITD',11).NE.0) RETURN
 C
-  108 IVSO=IVIS
-      POLD=P
-      QOLD=Q
-      UOLD=U
-      VOLD=V
+C Start a new series of line draws with the old point.
+C
+      IVSO=1
+      IF (IDTL.EQ.0) THEN
+        CALL DPFRST (UOLD,VOLD)
+        IF (ICFELL('MAPITD',12).NE.0) RETURN
+      ELSE
+        DATL=0.
+      END IF
+C
+C Continue the line to the new point.  If it's too close to the old
+C point and output of it isn't forced, skip it.
+C
+  102 IF ((IOPI.LE.NOPI.OR.IFST.LT.2).AND.
+     +    ((UNEW-UOLD)**2+(VNEW-VOLD)**2)*DSSQ.LE.DPSQ)GO TO 104
+      CALL MAPVPD (UOLD,VOLD,UNEW,VNEW)
+      IF (ICFELL('MAPITD',13).NE.0) RETURN
+C
+C Save information about the current point for the next call.
+C
+  103 IVSO=IVIS
+      RLTO=RLAT
+      RLNO=RLON
+      POLD=PNEW
+      UOLD=UNEW
+      VOLD=VNEW
 C
 C If interpolation is taking place, loop back for the next point.
 C
-  109 IF (IOPI.LE.NOPI) GO TO 100
+  104 IF (IOPI.LE.NOPI) GO TO 101
+C
+C Done.
 C
       RETURN
 C

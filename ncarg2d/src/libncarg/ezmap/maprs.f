@@ -1,17 +1,17 @@
 C
-C $Id: maprs.f,v 1.6 1998-05-23 20:19:52 kennison Exp $
+C $Id: maprs.f,v 1.7 1999-04-02 22:59:37 kennison Exp $
 C
       SUBROUTINE MAPRS
 C
 C Declare required common blocks.  See MAPBD for descriptions of these
 C common blocks and the variables in them.
 C
-      COMMON /MAPCM2/ UMIN,UMAX,VMIN,VMAX,UEPS,VEPS,UCEN,VCEN,URNG,VRNG,
-     +                BLAM,SLAM,BLOM,SLOM,ISSL
-      SAVE /MAPCM2/
+      COMMON /MAPCM2/ UMIN,UMAX,VMIN,VMAX,UCEN,VCEN,URNG,VRNG,BLAM,SLAM,
+     +                BLOM,SLOM,ISSL,PEPS
+      SAVE   /MAPCM2/
 C
       COMMON /MAPCM7/ ULOW,UROW,VBOW,VTOW
-      SAVE /MAPCM7/
+      SAVE   /MAPCM7/
 C
 C Check for an uncleared prior error.
 C

@@ -1,5 +1,5 @@
 C
-C $Id: hlumapeod.f,v 1.2 1998-05-23 20:19:26 kennison Exp $
+C $Id: hlumapeod.f,v 1.3 1999-04-02 22:59:24 kennison Exp $
 C
       SUBROUTINE HLUMAPEOD (NOUT,NSEG,IDLS,IDRS,NPTS,PNTS)
       DIMENSION PNTS(*)

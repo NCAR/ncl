@@ -1,5 +1,5 @@
 C
-C $Id: mapvp.f,v 1.6 1998-05-23 20:20:04 kennison Exp $
+C $Id: mapvp.f,v 1.7 1999-04-02 22:59:42 kennison Exp $
 C
       SUBROUTINE MAPVP (UOLD,VOLD,U,V)
 C
@@ -15,13 +15,13 @@ C
      +                ELPF,XLOW,XROW,YBOW,YTOW,IDTL,GRDR,SRCH,ILCW,GRLA,
      +                GRLO,GRPO
       LOGICAL         INTF,LBLF,PRMF,ELPF
-      SAVE /MAPCM4/
+      SAVE   /MAPCM4/
 C
       COMMON /MAPCMA/ DPLT,DDTS,DSCA,DPSQ,DSSQ,DBTD,DATL
-      SAVE /MAPCMA/
+      SAVE   /MAPCMA/
 C
       COMMON /MAPCMP/ NPTB,XPTB(50),YPTB(50)
-      SAVE /MAPCMP/
+      SAVE   /MAPCMP/
 C
 C Select vector or dot mode.
 C

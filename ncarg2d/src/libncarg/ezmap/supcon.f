@@ -1,5 +1,5 @@
 C
-C $Id: supcon.f,v 1.6 1998-05-23 20:20:12 kennison Exp $
+C $Id: supcon.f,v 1.7 1999-04-02 22:59:48 kennison Exp $
 C
       SUBROUTINE SUPCON (RLAT,RLON,UVAL,VVAL)
       IF (ICFELL('SUPCON - UNCLEARED PRIOR ERROR',1).NE.0) RETURN

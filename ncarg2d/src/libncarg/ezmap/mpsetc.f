@@ -1,5 +1,5 @@
 C
-C $Id: mpsetc.f,v 1.7 1998-05-23 20:20:10 kennison Exp $
+C $Id: mpsetc.f,v 1.8 1999-04-02 22:59:45 kennison Exp $
 C
       SUBROUTINE MPSETC (WHCH,CVAL)
       CHARACTER*(*) WHCH,CVAL

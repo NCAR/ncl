@@ -1,5 +1,5 @@
 C
-C $Id: mappos.f,v 1.6 1998-05-23 20:19:51 kennison Exp $
+C $Id: mappos.f,v 1.7 1999-04-02 22:59:36 kennison Exp $
 C
       SUBROUTINE MAPPOS (ARG1,ARG2,ARG3,ARG4)
 C
@@ -11,7 +11,7 @@ C
      +                ELPF,XLOW,XROW,YBOW,YTOW,IDTL,GRDR,SRCH,ILCW,GRLA,
      +                GRLO,GRPO
       LOGICAL         INTF,LBLF,PRMF,ELPF
-      SAVE /MAPCM4/
+      SAVE   /MAPCM4/
 C
 C Check for an uncleared prior error.
 C

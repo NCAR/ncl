@@ -1,5 +1,5 @@
 C
-C $Id: mapiqd.f,v 1.3 1998-05-23 20:19:45 kennison Exp $
+C $Id: mapiqd.f,v 1.4 1999-04-02 22:59:33 kennison Exp $
 C
       SUBROUTINE MAPIQD
 C
@@ -7,7 +7,7 @@ C Declare required common blocks.  See MAPBD for descriptions of these
 C common blocks and the variables in them.
 C
       COMMON /MAPCMP/ NPTB,XPTB(50),YPTB(50)
-      SAVE /MAPCMP/
+      SAVE   /MAPCMP/
 C
 C Check for an uncleared prior error.
 C

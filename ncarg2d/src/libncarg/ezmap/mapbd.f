@@ -1,5 +1,5 @@
 C
-C $Id: mapbd.f,v 1.9 1998-05-23 20:19:29 kennison Exp $
+C $Id: mapbd.f,v 1.10 1999-04-02 22:59:26 kennison Exp $
 C
       BLOCK DATA MAPBD
 C
@@ -18,8 +18,8 @@ C
 C
 C The common block MAPCM2 contains area-specification variables.
 C
-      COMMON /MAPCM2/ UMIN,UMAX,VMIN,VMAX,UEPS,VEPS,UCEN,VCEN,URNG,VRNG,
-     +                BLAM,SLAM,BLOM,SLOM,ISSL
+      COMMON /MAPCM2/ UMIN,UMAX,VMIN,VMAX,UCEN,VCEN,URNG,VRNG,BLAM,SLAM,
+     +                BLOM,SLOM,ISSL,PEPS
       SAVE   /MAPCM2/
 C
 C The common block MAPCM3 contains parameters having to do with reading
@@ -41,7 +41,7 @@ C
 C The common block MAPCM5 contains various lists ("dictionaries") of
 C two-character codes required by EZMAP for parameter-setting.
 C
-      COMMON /MAPCM5/ DDCT(5),DDCL(5),LDCT(6),LDCL(6),PDCT(10),PDCL(10)
+      COMMON /MAPCM5/ DDCT(5),DDCL(5),LDCT(6),LDCL(6),PDCT(12),PDCL(12)
       CHARACTER*2     DDCT,DDCL,LDCT,LDCL,PDCT,PDCL
       SAVE   /MAPCM5/
 C
@@ -119,14 +119,35 @@ C
 C
 C Variables in MAPCM1:
 C
-C IPRJ is an integer between 1 and 12, specifying what projection is
-C currently in use.  The values 10, 11, and 12 specify fast-path
-C versions of the values 7, 8, and 9, respectively.  PHOC is just a
-C copy of PHIO, from the common block MAPCM4.  IROD is a flag which,
-C if non-zero, says that we have to use double precision at selected
-C points.  RSNO, RCSO, RSNR, and RCSR are real projection variables
-C computed by MAPINT for use by MAPTRN.  DSNO, DCSO, DSNR, and DCSR
-C are double precision versions of them.
+C IPRJ is an integer between 0 and 14, specifying what projection is
+C currently in use.  The values 11, 12, 13, and 14 specify fast-path
+C versions of the values 7, 8, 9, and 10, respectively.  The meanings
+C of the various possible values of IPRJ are as follows:
+C
+C     IPRJ    Projection Selected                    Type
+C     ----    -----------------------------------    -----------
+C       0     USGS transformations                   Various
+C       1     Lambert Conformal                      Conical
+C       2     Stereographic                          Azimuthal
+C       3     Orthographic (or Satellite)            Azimuthal
+C       4     Lambert Equal-Area                     Azimuthal
+C       5     Gnomonic                               Azimuthal
+C       6     Azimuthal Equidistant                  Azimuthal
+C       7     Cylindrical Equidistant (arbitrary)    Cylindrical
+C       8     Mercator (arbitrary)                   Cylindrical
+C       9     Mollweide (arbitrary)                  Cylindrical
+C      10     Robinson (arbitrary)                   Cylindrical
+C      11     Cylindrical Equidistant (fast-path)    Cylindrical
+C      12     Mercator (fast-path)                   Cylindrical
+C      13     Mollweide (fast-path)                  Cylindrical
+C      14     Robinson (fast-path)                   Cylindrical
+C
+C PHOC is just a copy of PHIO, from the common block MAPCM4.  IROD is
+C a flag which, if non-zero, says that we have to use double precision
+C at selected points.  RSNO, RCSO, RSNR, and RCSR are real projection
+C variables computed by MAPINT for use by MAPTRN.  DSNO, DCSO, DSNR,
+C and DCSR are double precision versions of them.
+C
 C
       DATA IROD / 0 /
 C
@@ -134,19 +155,19 @@ C
 C Variables in MAPCM2:
 C
 C UMIN, UMAX, VMIN, and VMAX specify the limits of the rectangle to be
-C drawn, in projection space.  UEPS and VEPS are set by MAPINT for use
-C in MAPIT in testing for cross-over problems.  UCEN, VCEN, URNG, and
-C VRNG are computed by MAPINT for use when the map perimeter is made
-C elliptical (by setting the flag ELPF).  BLAM, SLAM, BLOM, and SLOM
-C are respectively the biggest latitude, the smallest latitude, the
-C biggest longitude, and the smallest longitude on the map.  They are
-C used in MAPGRD and in MAPLOT to make the drawing of grids and outlines
-C more efficient.  ISSL is a flag set by MAPINT to indicate the success
-C (ISSL=1) or failure (ISSL=0) of the code setting BLAM, SLAM, BLOM,
-C and SLOM; failure indicates that default values were used and that it
-C is not safe to take the efficient paths in MAPGRD.  UMIN and UMAX are
-C given default values to prevent code in MAPSTI and MAPSTR from blowing
-C up when PLTR is set prior to the first call to MAPINT.
+C drawn, in projection space.  UCEN, VCEN, URNG, and VRNG are computed
+C by MAPINT for use when the map perimeter is made elliptical (by
+C setting the flag ELPF).  BLAM, SLAM, BLOM, and SLOM are respectively
+C the biggest latitude, the smallest latitude, the biggest longitude,
+C and the smallest longitude on the map.  They are used in MAPGRD and
+C in MAPLOT to make the drawing of grids and outlines more efficient.
+C ISSL is a flag set by MAPINT to indicate the success (ISSL=1) or
+C failure (ISSL=0) of the code setting BLAM, SLAM, BLOM, and SLOM;
+C failure indicates that default values were used and that it is not
+C safe to take the efficient paths in MAPGRD.  PEPS is set by MAPINT
+C for use in MAPIT in testing for cross-over problems.  UMIN and UMAX
+C are given default values to prevent code in MAPSTI and MAPSTR from
+C blowing up when PLTR is set prior to the first call to MAPINT.
 C
       DATA UMIN,UMAX / 0.,1. /
 C
@@ -183,7 +204,7 @@ C Variables in MAPCM4:
 C
 C INTF is a flag whose value at any given time indicates whether the
 C package EZMAP is in need of initialization (.TRUE.) or not (.FALSE.).
-C JPRJ is an integer between 1 and 9 indicating the type of projection
+C JPRJ is an integer between 0 and 10 indicating the type of projection
 C currently in use.  PHIA, PHIO, and ROTA are the pole latitude and
 C longitude and the rotation angle specified by the last user call to
 C MAPROJ.  ILTS is an integer between 1 and 6, specifying how the limits
@@ -232,8 +253,8 @@ C
       DATA INTF,JPRJ,PHIA,PHIO,ROTA,ILTS,PLA1,PLA2,PLA3,PLA4,PLB1,PLB2 /
      1   .TRUE.,   7,  0.,  0.,  0.,   1,  0.,  0.,  0.,  0.,  0.,  0. /
 C
-      DATA PLB3,PLB4, PLTR,GRID, IDSH,IDOT, LBLF , PRMF ,  ELPF ,IDTL /
-     1       0.,  0.,4096., 10.,21845,   0,.TRUE.,.TRUE.,.FALSE.,   0 /
+      DATA PLB3,PLB4,  PLTR,GRID, IDSH,IDOT, LBLF , PRMF ,  ELPF ,IDTL /
+     1       0.,  0.,32768., 10.,21845,   0,.TRUE.,.TRUE.,.FALSE.,   0 /
 C
       DATA XLOW,XROW,YBOW,YTOW / .05,.95,.05,.95 /
 C
@@ -250,14 +271,20 @@ C DDCT is the dictionary of available datasets, LDCT the dictionary of
 C map limit definition types, and PDCT the dictionary of map projection
 C names.  DDCL, LDCL, and PDCL are lower-case equivalents.
 C
-      DATA DDCT / 'NO','CO','US','PS','PO' /
-      DATA DDCL / 'no','co','us','ps','po' /
+      DATA DDCT
+     +        / 'NO','CO','US','PS','PO' /
+      DATA DDCL
+     +        / 'no','co','us','ps','po' /
 C
-      DATA LDCT / 'MA','CO','PO','AN','LI','GR' /
-      DATA LDCL / 'ma','co','po','an','li','gr' /
+      DATA LDCT
+     +        / 'MA','CO','PO','AN','LI','GR' /
+      DATA LDCL
+     +        / 'ma','co','po','an','li','gr' /
 C
-      DATA PDCT / 'LC','ST','OR','LE','GN','AE','CE','ME','MO','SV' /
-      DATA PDCL / 'lc','st','or','le','gn','ae','ce','me','mo','sv' /
+      DATA PDCT
+     +   / 'UT','LC','ST','OR','LE','GN','AE','CE','ME','MO','RO','SV' /
+      DATA PDCL
+     +   / 'ut','lc','st','or','le','gn','ae','ce','me','mo','ro','sv' /
 C
 C
 C Variables in MAPCM6:
@@ -320,7 +347,7 @@ C MAPSTR from blowing up when DDTS is set prior to any call to MAPINT.
 C DATL is used by MAPIT and MAPVP to keep track of where the next point
 C along a curve should go.
 C
-      DATA DPLT,DDTS,DSCA / 4.,12.,1. /
+      DATA DPLT,DDTS,DSCA / 1.,96.,1. /
 C
 C
 C Variables in MAPCMC:
