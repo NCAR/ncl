@@ -71,7 +71,6 @@ FORTRAN utilities in NCAR Graphics:
 .BR gridall(3NCARG),
 .BR histogram(3NCARG),
 .BR isosurface(3NCARG),
-.BR isosrfhr(3NCARG),
 .BR labelbar(3NCARG),
 .BR ngmisc(3NCARG),
 .BR plotchar(3NCARG),
@@ -135,7 +134,7 @@ Utilities for generating NCAR Graphics Fortran and C examples:
 .sp
 Hardcopy:
 .sp
-NCAR Graphics Fundamentals, UNIX Version;
-Tutorial: A Step-by-Step Guide to Contouring and Mapping
+NCAR Graphics Fundamentals;
+NCAR Graphics Contouring and Mapping Tutorial;
 User's Guide for NCAR GKS-0A Graphics;
-NCAR Graphics Installer's Guide;
+NCAR Graphics Installer's Guide
