@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.89 1998-10-28 03:32:39 dbrown Exp $
+ *      $Id: Workstation.c,v 1.90 1998-11-19 17:00:42 boote Exp $
  */
 /************************************************************************
 *									*
@@ -688,7 +688,7 @@ _NhlLookupColor
 	char		*lname;
 	char		*s;
 	NGdatum		rgbdata;
-	int		r,g,b;
+	unsigned short	r,g,b;
 	float		rf,gf,bf;
 
 	if(!name)
