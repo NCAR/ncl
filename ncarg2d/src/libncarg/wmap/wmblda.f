@@ -1,5 +1,5 @@
 C
-C	$Id: wmblda.f,v 1.4 1994-10-14 01:23:45 fred Exp $
+C	$Id: wmblda.f,v 1.5 1994-10-25 22:24:09 fred Exp $
 C
       BLOCKDATA WMBLDA
 C
@@ -144,7 +144,7 @@ C    the sky cover circle that is drawn in the station model;
 C  size of text label in the station model as a percentage of the
 C    shaft length of the wind barb.
 C
-      DATA WBSHFT,WBFTIC,WBDIST,WBCLMR,WBBANG,IWBBAS,WBBASE,WBLSIZ
+      DATA WBSHFT,WBFTIC,WBDIST,WBCLMR,WBBANG,WBBASE,IWBBAS,WBLSIZ
      +    / 0.035,  0.33,  0.10,  0.25,   62.,  0.30,     0,  0.17 /       
 C
 C  Extent of barb ticks.
