@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: paths.HPUX_HP9000_7xx,v 1.2 1995-06-12 21:30:58 haley Exp $
+#      $Id: paths.HPUX_HP9000_7xx,v 1.3 1995-06-13 16:49:18 haley Exp $
 #
 #########################################################################
 #									#
@@ -36,7 +36,7 @@ set bin_path = /usr/local/bin
 set inc_path = /usr/local/include
 set lib_path = /usr/local/lib
 set man_path = /usr/local/man
-set htmldoc_path = /usr/local/http/droot/ncarg
+set htmldoc_path = /usr/local/lib/ncarg/html
 set psdoc_path = /usr/local/lib/ncarg/doc
 set man1 = man1
 set man3 = man3
