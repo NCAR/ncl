@@ -1,5 +1,5 @@
 /*
- *      $Id: xcb.c,v 1.2 1997-07-02 15:31:09 boote Exp $
+ *      $Id: xcb.c,v 1.3 1997-09-19 14:42:38 boote Exp $
  */
 /************************************************************************
 *									*
@@ -646,10 +646,21 @@ FindDupNode(
 	XColor		*col
 )
 {
-	_XcbCStat	node = _XcbGetCubeNodeList(xcb,col);
-	while(node && (node->xcol.pixel != col->pixel))
-		node = node->next;
-	return node;
+	_XcbCStatRec	key;
+	_XcbCStat	*node = NULL;
+
+	if((col->pixel < xcb->scstat) && (col->pixel >= 0)){
+		if(xcb->cstat[col->pixel].ref > 0)
+			return &xcb->cstat[col->pixel];
+		return NULL;
+	}
+	_XcbDoPixSort(xcb);
+	key.xcol = *col;
+	node = bsearch(&key,xcb->csort,xcb->ncsort,sizeof(_XcbCStat),
+								_XcbPixSort);
+	if(node)
+		return *node;
+	return NULL;
 }
 
 static void
@@ -2269,7 +2280,6 @@ _XcbClosestColor(
 	XColor		nc;
 	unsigned int	i,j,D,M;
 	
-	list = _XcbGetCubeNodeList(xcb,col);
 	if(xcb->my_cmap && (xcb->visinfo->class == DirectColor) &&
 				_XcbDirectClosestColor(xcb,col,&nc)){
 		if(new = FindDupNode(xcb,&nc))
@@ -2301,6 +2311,7 @@ _XcbClosestColor(
 		return new;
 	}
 
+	list = _XcbGetCubeNodeList(xcb,col);
 	new = NULL;
 	while(list){
 		float		cerr,berr;
