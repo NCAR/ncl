@@ -1,5 +1,5 @@
 C
-C	$Id: g01snp.f,v 1.7 2000-08-22 15:09:38 haley Exp $
+C	$Id: g01snp.f,v 1.8 2002-03-29 18:20:34 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -81,20 +81,20 @@ C
 C
 C  Put out opcode (CLASS and ID) and length.
 C
-        CALL GPUTNI (CLCTBL, IDCTBL, NBYTES, RERR)
-        IF (RERR.NE.0)  GO TO 77
+        CALL GPUTNI (CLCTBL, IDCTBL, NBYTES, ERROR)
+        IF (ERROR.NE.0)  GO TO 77
 C
 C  Put out parameter index (DATA, PRECIS, COUNT)
 C
-        CALL GPUTPR (MCOLI(I), MCIXFW, 1, RERR)
-        IF (RERR.NE.0)  GO TO 77
+        CALL GPUTPR (MCOLI(I), MCIXFW, 1, ERROR)
+        IF (ERROR.NE.0)  GO TO 77
 C
 C  Put out the color components.
 C
         ITMP(1) = SRED(I)*REAL(MDCCRG)
         ITMP(2) = SGREEN(I)*REAL(MDCCRG)
         ITMP(3) = SBLUE(I)*REAL(MDCCRG)
-        CALL GPUTPR (ITMP, MDCCFW, 3, RERR)
+        CALL GPUTPR (ITMP, MDCCFW, 3, ERROR)
    10 CONTINUE
 C
       RETURN
