@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.2 1992-09-22 14:41:08 ncargd Exp $
+#	$Id: yMakefile,v 1.3 1992-09-25 21:04:21 ncargd Exp $
 #
 NCARG	= ../../../..
 
@@ -80,4 +80,4 @@ MakefileTarget
 CleanTarget
 
 clean::
-	@-$(RM) ncargf77 ncargcc
+	@-$(RM) ncargf77 ncargcc ncargex ncargsrc ncargsrcy ncargfile
