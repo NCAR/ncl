@@ -86,6 +86,10 @@ main(argc, argv)
 		exit(0);
 	}
 
+	if (opt.help) {
+		Usage(ProgramName, (char *) NULL, opt_id);
+		exit(0);
+	}
 
 	if (argc < 2) {	/* no more args, read from stdin	*/
 		files = (char **) malloc (sizeof(char *));
