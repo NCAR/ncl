@@ -1,5 +1,5 @@
 /*
- *      $Id: xy13c.c,v 1.1 1995-01-24 23:31:26 haley Exp $
+ *      $Id: xy13c.c,v 1.2 1995-01-30 16:31:15 haley Exp $
  */
 /************************************************************************
 *									*
@@ -54,9 +54,9 @@
 /*
  * global HLU objects
  */
-int	appid = NhlNOPARENT;
-int	xworkid = NhlNOPARENT;
-int	xyplotid = NhlNOPARENT;
+int	appid = NhlDEFAULT_APP;
+int	xworkid = NhlDEFAULT_APP;
+int	xyplotid = NhlDEFAULT_APP;
 int	grlist=0,srlist=0;
 
 XtAppContext	app_con;
@@ -726,7 +726,7 @@ main
 
 	srlist = NhlRLCreate(NhlSETRL);
 	grlist = NhlRLCreate(NhlGETRL);
-	NhlCreate(&appid,"xy03",NhlappLayerClass,NhlNOPARENT,0);
+	NhlCreate(&appid,"xy03",NhlappLayerClass,NhlDEFAULT_APP,0);
 
 	/*
 	 * Create GUI interface and retrieve the window to display the graphics
@@ -752,7 +752,7 @@ main
 	NhlRLSetString(srlist,NhlNctYTableType,NhlTFloat);
 	NhlRLSetArray(srlist,NhlNctYTable,ydata,NhlTPointer,sizeof(float*),31);
 	NhlRLSetIntegerArray(srlist,NhlNctYTableLengths,lengths,31);
-	NhlCreate(&dataid,"dataid",NhlcoordArrTableLayerClass,NhlNOPARENT,
+	NhlCreate(&dataid,"dataid",NhlcoordArrTableLayerClass,NhlDEFAULT_APP,
 								srlist);
 
 	NhlRLClear(srlist);
@@ -761,7 +761,7 @@ main
 	NhlRLSetIntegerArray(srlist,NhlNxyDashPatterns,dash_patterns,31);
 	NhlRLSetInteger(srlist,NhlNxyLabelMode,NhlCUSTOM);
 	NhlRLSetStringArray(srlist,NhlNxyExplicitLabels,line_labels,31);
-	NhlCreate(&xydata,"xydata",NhlxyDataDepLayerClass,NhlNOPARENT,srlist);
+	NhlCreate(&xydata,"xydata",NhlxyDataDepLayerClass,NhlDEFAULT_APP,srlist);
 
 	NhlRLClear(srlist);
 	NhlRLSetInteger(srlist,NhlNxyCurveData,xydata);

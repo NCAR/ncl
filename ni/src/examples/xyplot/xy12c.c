@@ -1,5 +1,5 @@
 /*
- *      $Id: xy12c.c,v 1.1 1995-01-24 23:31:25 haley Exp $
+ *      $Id: xy12c.c,v 1.2 1995-01-30 16:31:14 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -54,7 +54,7 @@
 
 /* hlu objects	*/
 int	xworkid,ncgmwid,dataid,appid;
-int	xyplotid = NhlNULL_LAYER;
+int	xyplotid = NhlDEFAULT_APP;
 
 /* X vars needed	*/
 XtAppContext	app_con;
@@ -266,14 +266,14 @@ NextFrameCB
 							sizeof(NhlPointer),1);
 		NhlRLSetFloat(rlist,NhlNctYMissingV,-9999.0);
 		NhlCreate(&dataid,"xy_data",NhlcoordArrTableLayerClass,
-							NhlNULL_LAYER,rlist);
+							NhlDEFAULT_APP,rlist);
 
 		NhlRLClear(rlist);
 		NhlRLSetInteger(rlist,NhlNdsDataItem,dataid);
 		NhlRLSetInteger(rlist,NhlNxyColor,4);
 		NhlRLSetInteger(rlist,NhlNxyDashPattern,1);
 		NhlCreate(&dataspecid,"xy_spec",NhlxyDataDepLayerClass,
-							NhlNULL_LAYER,rlist);
+							NhlDEFAULT_APP,rlist);
 
 		NhlRLClear(rlist);
 		NhlRLSetFloat(rlist,NhlNvpXF,.25);
@@ -743,7 +743,7 @@ main
 	 * Call this before X calls so I can use NhlPError stuff
 	 */
 	NhlInitialize();
-	NhlCreate(&appid,"xy02",NhlappLayerClass,NhlNOPARENT,0);
+	NhlCreate(&appid,"xy02",NhlappLayerClass,NhlDEFAULT_APP,0);
 
 	/*
 	 * Create GUI interface and retrieve the window to display the graphics
@@ -754,13 +754,13 @@ main
 	/*
 	 * Create the Workstation Class objects
 	 */
-	NhlVACreate(&xworkid,"xy02xWork",NhlxWorkstationLayerClass,NhlNOPARENT,
+	NhlVACreate(&xworkid,"xy02xWork",NhlxWorkstationLayerClass,NhlDEFAULT_APP,
 		NhlNwkWindowId,		graphicsWin,
 		NhlNwkPause,		False,
 		NULL);
 
 	NhlVACreate(&ncgmwid,"xy02ncgmWork",NhlncgmWorkstationLayerClass,
-								NhlNOPARENT,
+								NhlDEFAULT_APP,
 		NhlNwkMetaName,		"xy02c.ncgm",
 		NULL);
 

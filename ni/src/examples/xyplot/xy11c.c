@@ -1,5 +1,5 @@
 /*
- *      $Id: xy11c.c,v 1.1 1995-01-24 23:31:22 haley Exp $
+ *      $Id: xy11c.c,v 1.2 1995-01-30 16:31:13 haley Exp $
  */
 /************************************************************************
 *									*
@@ -106,7 +106,7 @@ main()
 
 	rlist = NhlRLCreate(NhlSETRL);
 
-	NhlCreate(&appid,"xy01",NhlappLayerClass,NhlNULL_LAYER,0);
+	NhlCreate(&appid,"xy01",NhlappLayerClass,NhlDEFAULT_APP,0);
 
 	/*
 	 * Create the Workstation objects.
@@ -114,18 +114,18 @@ main()
 	 */
 	NhlRLClear(rlist);
 	NhlRLSetInteger(rlist,NhlNwkPause,True);
-	NhlCreate(&xworkid,"xy01xWork",NhlxWorkstationLayerClass,NhlNULL_LAYER,
+	NhlCreate(&xworkid,"xy01xWork",NhlxWorkstationLayerClass,NhlDEFAULT_APP,
 									rlist);
 
 	NhlRLClear(rlist);
 	NhlRLSetString(rlist,NhlNwkMetaName,"xy01c.ncgm");
 	NhlCreate(&ncgmwid,"xy01ncgmWork",NhlncgmWorkstationLayerClass,
-							NhlNULL_LAYER,rlist);
+							NhlDEFAULT_APP,rlist);
 
 	NhlRLClear(rlist);
 	NhlRLSetFloatArray(rlist,NhlNcaXArray,Temp,NhlNumber(Temp));
 	NhlRLSetFloatArray(rlist,NhlNcaYArray,Pressure,NhlNumber(Pressure));
-	NhlCreate(&dataid,"mydata",NhlcoordArraysLayerClass,NhlNULL_LAYER,
+	NhlCreate(&dataid,"mydata",NhlcoordArraysLayerClass,NhlDEFAULT_APP,
 									rlist);
 
 
