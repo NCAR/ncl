@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.108 1999-04-23 22:07:49 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.109 1999-04-27 17:57:49 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -7979,10 +7979,12 @@ NhlErrorTypes _NclIvariance
 /*
 * return missing
 */
+				NhlPError(NhlWARNING,NhlEUNKNOWN,"variance: Entire input array contains missing values, can't compute variance");
 				if(out_data_type == NCL_double) {
 					*(double*)out1_val = missing.doubleval;
 				} else {
 					*(float*)out1_val = (float)missing.doubleval;
+					missing.floatval = (float)missing.doubleval;
 				}
 				if(did_coerce)_NclDestroyObj(tmp_md);
 				return(NclReturnValue(
@@ -8325,10 +8327,12 @@ NhlErrorTypes _NclIstddev
 /*
 * return missing
 */
+				NhlPError(NhlWARNING,NhlEUNKNOWN,"stddev: Entire input array contains missing values, can't compute standard deviation");
 				if(out_data_type == NCL_double) {
 					*(double*)out1_val = missing.doubleval;
 				} else {
 					*(float*)out1_val = (float)missing.doubleval;
+					missing.floatval = (float)missing.doubleval;
 				}
 				if(did_coerce)_NclDestroyObj((NclObj)tmp_md);
 				return(NclReturnValue(
@@ -8473,7 +8477,7 @@ NhlErrorTypes _Nclavg
 /*
 * return missing
 */
-				NhlPError(NhlFATAL,NhlEUNKNOWN,"avg: Entire input array contains missing values, can't compute average");
+				NhlPError(NhlWARNING,NhlEUNKNOWN,"avg: Entire input array contains missing values, can't compute average");
 				if(out_data_type == NCL_double) {
 					NclFree(tmp);
 					memcpy(out_val,&missing,the_type->type_class.size);
@@ -8490,6 +8494,7 @@ NhlErrorTypes _Nclavg
 					NclFree(tmp);
 					*((float*)out_val) = (float)tmp_md->multidval.missing_value.value.doubleval;
 					if(did_coerce) _NclDestroyObj((NclObj)tmp_md);
+					missing.floatval = (float)tmp_md->multidval.missing_value.value.doubleval;
 					return(NclReturnValue(
 						out_val,
 						1,
