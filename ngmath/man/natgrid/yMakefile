@@ -1,0 +1,24 @@
+#
+#       "$Id:"
+#
+
+MAN = natgrid natgrid_params natgrids nnseti nngeti nnsetr nngetr nnsetc \
+	nngetc nngetaspects nngetslopes nnpntinits nnpnts nnpntend       \
+	natgridd nnsetrd nngetrd nngetsloped nngetaspectd nnpntinitd     \
+        nnpntd nnpntendd c_natgrids c_nnseti c_nngeti c_nnsetr c_nngetr  \
+	c_nnsetc c_nngetc c_nngetslopes c_nngetaspects c_nnpntinits      \
+	c_nnpnts c_nnpntend c_natgridd c_nnsetrd c_nngetrd c_nngetsloped \
+	c_nngetaspectd c_nnpntinitd c_nnpntd c_nnpntendd natgrid_errors
+
+# Install preformatted troff documents on systems without troff
+#if UseCatDirs
+FORMAT_EXT      = .p
+#else
+FORMAT_EXT      = .m
+#endif
+
+MPATH   = $(MAN3PATH)
+MSECT   = $(MAN3_SECTION)
+
+InstallManPages($(MAN),$(FORMAT_EXT),$(MPATH),$(MSECT))
+FormatManPages($(MAN),.m,.p)
