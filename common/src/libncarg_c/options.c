@@ -1,5 +1,5 @@
 /*
- *	$Id: options.c,v 1.3 1991-01-09 11:17:32 clyne Exp $
+ *	$Id: options.c,v 1.4 1991-03-22 10:16:15 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -344,6 +344,7 @@ parseOptionTable(argc, argv, opts)
 				
 	}
 	*argc = new_argc;
+	argv[*argc] = NULL;
 }
 
 /*
