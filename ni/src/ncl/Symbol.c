@@ -1,5 +1,5 @@
 /*
- *      $Id: Symbol.c,v 1.25 1995-11-04 00:49:30 ethan Exp $
+ *      $Id: Symbol.c,v 1.26 1996-02-22 00:53:16 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -614,6 +614,10 @@ void _NclDeleteSym
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"_NhlDeleteSym: Ack!! a big problem has just occured in the symbol table");
 		}
 	} else if(sym->sympre == NULL) {
+/*
+* New top of list
+*/
+		step->this_scope[sym->ind].thelist = sym->symnext;
 		sym->symnext->sympre = NULL;
 	} else if(sym->symnext == NULL) {
 		sym->sympre->symnext = NULL;
