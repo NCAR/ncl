@@ -1,5 +1,5 @@
 /*
- * $Id: bofred.c,v 1.2 1994-08-30 17:28:27 kennison Exp $
+ * $Id: bofred.c,v 1.3 1996-04-30 22:31:48 ethan Exp $
  */
 
 #include <stdio.h>
@@ -44,4 +44,5 @@ NGCALLF(bofred,BOFRED)(unit, fnum, ios, status)
 
 	*unit = fd;
 	*ios = *status;
+	free(pathname);
 }
