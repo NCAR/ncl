@@ -166,7 +166,7 @@ C
 C
 C Declare a scratch array to be used to sort points.
 C
-        DIMENSION IPPP(2,MPPP)
+        DIMENSION IPPP(3,MPPP)
 C
 C Declare a scratch array to be used to sort edges.
 C
@@ -361,8 +361,8 @@ C C R E A T E   A   T R I A N G U L A R   M E S H ----------------------
 C
 C
 C To create the initial triangular mesh, we use a routine, described
-C in the programmer document for CONPACKT, called CTTMTL (ConpackT,
-C Triangular Mesh from a Triangle List).
+C in the programmer document for CONPACKT, called CTTMTX (ConpackT,
+C Triangular Mesh from a Triangle list, eXtended).
 C
         PRINT * , ' '
         PRINT * , 'CREATING TRIANGULAR MESH FOR SIDE LENGTH ',SIDE
@@ -418,8 +418,9 @@ C triangles, process KBUF randomly-chosen triangles from it, leaving the
 C remainder at the beginning of the buffer.
 C
             IF (NBUF+4.GT.MBUF) THEN
-              CALL CTTMTL (KBUF,                 !  number to process
+              CALL CTTMTX (KBUF,                 !  number to process
      +                     TBUF,MBUF,NBUF,       !  triangle buffer
+     +                     ELEN/10.,             !  tolerance value
      +                     IPPP,MPPP,NPPP,       !  point sorting array
      +                     IPPE,MPPE,NPPE,       !  edge sorting array
      +                     RPNT,MPNT,NPNT,LOPN,  !  point node array
@@ -497,8 +498,9 @@ C
 C Process any triangles that remain in the triangle buffer.
 C
         IF (NBUF.NE.0) THEN
-          CALL CTTMTL (NBUF,                 !  number to process
+          CALL CTTMTX (NBUF,                 !  number to process
      +                 TBUF,MBUF,NBUF,       !  triangle buffer
+     +                 ELEN/10.,             !  tolerance value
      +                 IPPP,MPPP,NPPP,       !  point sorting array
      +                 IPPE,MPPE,NPPE,       !  edge sorting array
      +                 RPNT,MPNT,NPNT,LOPN,  !  point node array
