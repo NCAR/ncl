@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.103 1997-03-26 22:32:06 haley Exp $
+#   $Id: ncargex.csh,v 1.104 1997-04-16 21:30:42 haley Exp $
 #
 
 if ($#argv < 1) goto usage
@@ -1293,6 +1293,16 @@ switch($name)
       echo "  This example was set up to demonstrate the X11"
       echo "  driver.  It also generates a graphic file."
       echo ""
+    breaksw
+
+    case nnex08:
+    case nnex09:
+      unset tmp_ws_type
+      set tmp_msg = "   "
+      echo ""
+      echo "  This example does not produce a metafile."
+      echo ""
+      set no_file
     breaksw
 
     case ccpcff:
