@@ -7,7 +7,7 @@ C
 C  Define error file, Fortran unit number, and workstation type,
 C  and workstation ID.
 C
-      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1, IWKID=1)
       PARAMETER (NX=20, NY=20, NITER=101)
       INTEGER COLIA(NX,NY)
       COMPLEX Z
@@ -33,9 +33,9 @@ C
       DO 11 K = 1,NITER
         H = REAL(K)/REAL(NITER)*360.
         CALL HLSRGB(H,50.,100.,RV,GV,BV)
-        CALL GSCR(IWKID,K,RV,GV,BV)
+        CALL GSCR(1,K,RV,GV,BV)
    11 CONTINUE
-      CALL GSCR(IWKID,NITER+1,0.,0.,1.)
+      CALL GSCR(1,NITER+1,0.,0.,1.)
 C
 C  Set up the cell array and call GCA.
 C

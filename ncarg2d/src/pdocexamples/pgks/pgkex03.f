@@ -9,7 +9,7 @@ C
 C  Define error file, Fortran unit number, and workstation type,
 C  and workstation ID.
 C
-      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=SED_WSTYPE, IWKID=1)
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1, IWKID=1)
       DIMENSION X(100),Y(100)
 C
 C  Open GKS, open and activate a workstation.
@@ -52,15 +52,15 @@ C
 C
 C  Put out a couple of labels (DRWTXT uses NDC space).
 C
-      CALL DRWTXT(.50,.07,'The X axis is linear',-13,.025,0.)
-      CALL DRWTXT(.07,.50,'The Y axis is log',-13,.025,90.)
+      CALL DRWTXT(.50,.07,'The X axis is linear',-7,.025,0.)
+      CALL DRWTXT(.07,.50,'The Y axis is log',-7,.025,90.)
 C
 C  Terminate the picture, deactivate and close the CGM workstation,
 C  and close GKS.
 C
       CALL FRAME
-      CALL GDAWK (IWKID)
-      CALL GCLWK (IWKID)
+      CALL GDAWK(IWKID)
+      CALL GCLWK(IWKID)
       CALL GCLKS
 C
       STOP
