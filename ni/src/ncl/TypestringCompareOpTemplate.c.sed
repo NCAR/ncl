@@ -1,6 +1,6 @@
 
 /*
- *      $Id: TypestringCompareOpTemplate.c.sed,v 1.1 1995-01-28 01:53:19 ethan Exp $
+ *      $Id: TypestringCompareOpTemplate.c.sed,v 1.2 1995-03-28 00:05:10 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -35,7 +35,7 @@ int nrhs;
 #endif
 {
         string *ls,*rs;
-	int *res;
+	logical *res;
 	int stopi = 1;
 	int linc = 0;
 	int rinc = 0;
@@ -43,7 +43,7 @@ int nrhs;
 
 	ls = (string*)lhs;
 	rs = (string*)rhs;
-	res = (int*)result;
+	res = (logical*)result;
 
 	if(nlhs > nrhs) 
 		stopi = nlhs;
@@ -59,19 +59,19 @@ int nrhs;
 
 	if((lhs_m == NULL)&&(rhs_m == NULL)) {
 		for(i = 0 ; i < stopi; i++, res++, ls += linc, rs += rinc) {
-			*res = (int)(CMPFUNC(*ls,*rs));
+			*res = (logical)(CMPFUNC(*ls,*rs));
 		}
 	} else if(rhs_m == NULL) {
 		for(i = 0 ; i < stopi; i++, res++, ls += linc, rs += rinc) {
-			*res = (int)(( lhs_m->stringval == *ls) ? (NCL_DEFAULT_MISSING_VALUE) : (CMPFUNC(*ls,*rs)));
+			*res = (logical)(( lhs_m->stringval == *ls) ? (((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval) : (CMPFUNC(*ls,*rs)));
 		}
 	} else if(lhs_m == NULL ) {
 		for(i = 0 ; i < stopi; i++, res++, ls += linc, rs += rinc) {
-			*res = (int)(( rhs_m->stringval == *rs) ? ( NCL_DEFAULT_MISSING_VALUE) : (CMPFUNC(*ls,*rs)));
+			*res = (logical)(( rhs_m->stringval == *rs) ? ( ((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval) : (CMPFUNC(*ls,*rs)));
 		}
 	} else {
 		for(i = 0 ; i < stopi; i++, res++, ls += linc, rs += rinc) {
-			*res = (int)((( lhs_m->stringval == *ls)|| ( rhs_m->stringval == *rs)) ? (NCL_DEFAULT_MISSING_VALUE) : (CMPFUNC(*ls,*rs)));
+			*res = (logical)((( lhs_m->stringval == *ls)|| ( rhs_m->stringval == *rs)) ? (((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval) : (CMPFUNC(*ls,*rs)));
 		}
 	}
 	return(NhlNOERROR);
@@ -84,5 +84,5 @@ NclTypeClass Ncl_Type_string_FUNCNAME_type
 ()
 #endif
 {
-	return((NclTypeClass)nclTypeintClass);
+	return((NclTypeClass)nclTypelogicalClass);
 }

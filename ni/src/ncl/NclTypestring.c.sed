@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclTypestring.c.sed,v 1.2 1995-02-17 01:01:09 ethan Exp $
+ *      $Id: NclTypestring.c.sed,v 1.3 1995-03-28 00:05:03 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -29,6 +29,7 @@
 #include <errno.h>
 #include <math.h>
 #include "NclTypeint.h"
+#include "NclTypelogical.h"
 #include "NclTypestring.h"
 #include "NclMultiDValData.h"
 

@@ -292,9 +292,9 @@ NhlErrorTypes _NclBuildArray
 		_NclCleanUpStack(n_items);
 		return(NhlFATAL);
 	}
-	if(obj_type & NCL_VAL_NUMERIC_MASK) {
+	if(obj_type & (NCL_VAL_NUMERIC_MASK | Ncl_Typelogical)) {
 		must_be_numeric =1;
-		result_type = obj_type & NCL_VAL_NUMERIC_MASK;
+		result_type = obj_type & (NCL_VAL_NUMERIC_MASK | Ncl_Typelogical);
 	} else if(obj_type & NCL_VAL_CHARSTR_MASK) {
 		must_be_numeric =0;
 		result_type = obj_type & NCL_VAL_CHARSTR_MASK;

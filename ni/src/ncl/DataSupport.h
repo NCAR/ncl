@@ -1,6 +1,6 @@
 
 /*
- *      $Id: DataSupport.h,v 1.4 1995-01-28 01:50:45 ethan Exp $
+ *      $Id: DataSupport.h,v 1.5 1995-03-28 00:05:00 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -185,6 +185,12 @@ NclMultiDValData self, void* val
 extern int _NclGetObjRefCount(
 #if NhlNeedProto
 int /*the_id*/
+#endif
+);
+
+extern  struct _NclTypeClass *_NclNameToTypeClass(
+#if  NhlNeedProto
+NclQuark /*obj_type*/
 #endif
 );
 

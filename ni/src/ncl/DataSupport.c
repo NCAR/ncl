@@ -1,5 +1,5 @@
 /*
- *      $Id: DataSupport.c,v 1.12 1995-01-31 22:25:45 ethan Exp $
+ *      $Id: DataSupport.c,v 1.13 1995-03-28 00:04:57 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -224,6 +224,55 @@ NclMultiDValData char_md;
 			(NclTypeClass)nclTypestringClass));
 	}
 }
+
+NclTypeClass _NclNameToTypeClass
+#if  NhlNeedProto
+(NclQuark typename)
+#else
+(typename)
+	NclQuark typename;
+#endif
+{
+	static int first = 1;
+	static NclQuark quarks[10];
+	NclTypeClass classes[10];
+	int i;
+
+	if(first) {
+		first = 0;
+		quarks[0] = NrmStringToQuark("double");
+		classes[0] = (NclTypeClass)nclTypedoubleClass;
+		quarks[1] = NrmStringToQuark("float");
+		classes[1] = (NclTypeClass)nclTypefloatClass;
+		quarks[2] = NrmStringToQuark("long");
+		classes[2] = (NclTypeClass)nclTypelongClass;
+		quarks[3] = NrmStringToQuark("integer");
+		classes[3] = (NclTypeClass)nclTypeintClass;
+		quarks[4] = NrmStringToQuark("short");
+		classes[4] = (NclTypeClass)nclTypeshortClass;
+		quarks[5] = NrmStringToQuark("string");
+		classes[5] = (NclTypeClass)nclTypestringClass;
+		quarks[6] = NrmStringToQuark("char");
+		classes[6] = (NclTypeClass)nclTypecharClass;
+		quarks[7] = NrmStringToQuark("byte");
+		classes[7] = (NclTypeClass)nclTypebyteClass;
+		quarks[8] = NrmStringToQuark("logical");
+		classes[8] = (NclTypeClass)nclTypelogicalClass;
+		quarks[9] = NrmStringToQuark("file");
+		classes[9] = (NclTypeClass)nclTypeobjClass;
+		quarks[10] = NrmStringToQuark("graphic");
+		classes[10] =(NclTypeClass)nclTypeobjClass;
+		quarks[11] = NrmStringToQuark("obj");
+		classes[11] = (NclTypeClass)nclTypeobjClass;
+	}	
+	for(i = 0; i < 12; i++) {
+		if(quarks[i] == typename) {
+			return(classes[i]);
+		}
+	}
+	return(NULL);
+}
+
 
 /*
 * Probably should put stuff like this in the actual data object to avoid having to
