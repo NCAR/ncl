@@ -1,5 +1,5 @@
 /*
- *      $Id: xapp.h,v 1.7 1998-08-21 01:14:23 dbrown Exp $
+ *      $Id: xapp.h,v 1.8 1999-11-03 20:29:33 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -66,6 +66,7 @@ struct NgXAppExportRec{
 	Cursor		wait;
 
 	Xcb		xcb;
+	float		avg_font_width_mult;
 };
 
 /*

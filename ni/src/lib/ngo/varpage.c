@@ -1,5 +1,5 @@
 /*
- *      $Id: varpage.c,v 1.17 1999-09-20 23:59:40 dbrown Exp $
+ *      $Id: varpage.c,v 1.18 1999-11-03 20:29:32 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -712,6 +712,21 @@ NhlBoolean InitializeDimInfo
 
 }
 
+static NhlErrorTypes UpdateVarPage
+(
+        brPage *page
+)
+{
+        brPageData	*pdp = page->pdata;
+	brVarPageRec	*rec = (brVarPageRec	*)pdp->type_rec;
+
+	if (rec->shaper)
+		NgShapeInfoGridEditFocusCellComplete
+			(rec->shaper->shapeinfogrid,True);
+
+	return NhlNOERROR;
+}
+
 static brPageData *
 NewVarPage
 (
@@ -773,7 +788,7 @@ NewVarPage
 	pdp->deactivate_page = DeactivateVarPage;
 	pdp->page_message_notify = VarPageMessageNotify;
         pdp->public_page_data = NULL;
-        pdp->update_page = NULL;
+        pdp->update_page = UpdateVarPage;
         pdp->reset_page = NULL;
         pdp->page_focus_notify = NULL;
         
@@ -875,7 +890,8 @@ _NgGetVarPage
         
         if (! rec->diminfogrid) {
                 rec->diminfogrid = NgCreateDimInfoGrid
-                        (pdp->form,page->qfile,pdp->dl->u.var,True,False);
+                        (go->base.id,
+			 pdp->form,page->qfile,pdp->dl->u.var,True,False);
                 XtVaSetValues(rec->diminfogrid->grid,
                               XmNrightAttachment,XmATTACH_NONE,
                               XmNbottomAttachment,XmATTACH_NONE,

@@ -1,5 +1,5 @@
 /*
- *      $Id: diminfogrid.c,v 1.7 1999-09-11 01:06:15 dbrown Exp $
+ *      $Id: diminfogrid.c,v 1.8 1999-11-03 20:29:27 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -42,11 +42,13 @@ ColumnWidths
 {
 	int	i;
         NclApiVarInfoRec *vinfo = dip->vinfo;
+	float	mult = dip->go->go.x->avg_font_width_mult;
         char	sizestr[10];
 
         Buffer[0] = '\0';
 	for (i=0; i <= vinfo->n_dims; i++) {
-                sprintf(sizestr,"%dc ",dip->cwidths[i]);
+		int cwidth = (int)(mult * dip->cwidths[i]);
+                sprintf(sizestr,"%dc ",cwidth);
                 if (strlen(sizestr) + strlen(Buffer) + 1> Buflen) {
                         Buffer = NhlRealloc(Buffer,Buflen+BUFINC);
                 }
@@ -339,6 +341,7 @@ NhlErrorTypes NgUpdateDimInfoGrid
 
 NgDimInfoGrid *NgCreateDimInfoGrid
 (
+	int			go_id,
         Widget			parent,
         NrmQuark 		qfileref,
         NclApiVarInfoRec	*vinfo,
@@ -362,6 +365,7 @@ NgDimInfoGrid *NgCreateDimInfoGrid
         dip = NhlMalloc(sizeof(NgDimInfoGridRec));
         if (!dip) return NULL;
 	dip->creating = True;
+	dip->go = (NgGO) _NhlGetLayer(go_id);
 
         nrows = headline_on ? 4 : 3;
         sel_policy = highlight_on ? XmSELECT_BROWSE_ROW : XmSELECT_NONE;

@@ -1,5 +1,5 @@
 /*
- *      $Id: plotapp.c,v 1.10 1999-10-18 22:12:35 dbrown Exp $
+ *      $Id: plotapp.c,v 1.11 1999-11-03 20:29:29 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -30,19 +30,6 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
-static NrmQuark QString = NrmNULLQUARK;
-static NrmQuark QndvData = NrmNULLQUARK;
-static NrmQuark QndvObjects = NrmNULLQUARK;
-static NrmQuark QndvFuncDirs = NrmNULLQUARK;
-static NrmQuark QndvFuncFiles = NrmNULLQUARK;
-static NrmQuark QndvFunctions = NrmNULLQUARK;
-static NrmQuark QndvExecFunction = NrmNULLQUARK;
-static NrmQuark QpmOverlays = NrmNULLQUARK;
-static NrmQuark QmpDataLimitObject = NrmNULLQUARK;
-static NrmQuark QndvUpdateFunc = NrmNULLQUARK;
-
-static NrmQuark *QAppResList = NULL;
-
 typedef char ObjResType;
 
 #define _NgRES_REGULAR		0
@@ -50,16 +37,57 @@ typedef char ObjResType;
 #define _NgRES_PROFILE		2
 #define _NgRES_UPDATE_FUNC	3
 
-static NrmQuark *QFakeRes[] = { 
-	&QpmOverlays,&QmpDataLimitObject,&QndvUpdateFunc
-};
-
 /*
  * Enhanced resource file key strings and characters
  */
 #define PROFILESTRING "%Profile" /* signature for a Profile type resource */
 #define DYNRES_TOKEN "@"      /* the dynamic resource binding token */
 #define COORD_TOKEN "!"      /* indicates a coord resource  */
+
+
+typedef struct _FuncFileRec {
+	struct _FuncFileRec *next;
+	NrmQuark	    qfuncdir;
+	NrmQuark	    qfuncfile;
+	int		    func_count;
+	NrmQuark	    *qfuncs;
+} FuncFileRec, *FuncFile;
+
+/*
+ * this record contains a list of functions along with the PlotApp that 
+ * caused them to be loaded, and the file information that goes along with
+ * them. If a func name occurs in more than one PlotApp, there need to 
+ * be checks to ensure that the function is coming from the correct file
+ * each time the PlotApp is updated. If not the correct func file needs to
+ * be reloaded at update time. In essence this will give separate function
+ * name spaces for each PlotApp.
+ */
+
+typedef struct _FuncInfoRec {
+	struct _FuncInfoRec	*next;
+	NrmQuark		qfunc;
+	NrmQuark		qplotapp;
+	FuncFile		ffile;
+	NclApiDataList		*dl;
+} FuncInfoRec, *FuncInfo;
+
+
+/*
+ * This record lists the functions referenced by a single resource value.
+ */
+
+#define RESFUNCMAX 8
+#define DELIM_MAX 32
+
+typedef struct _ResFuncRec {
+	struct _ResFuncRec *next;
+	FuncInfo 	finfo;
+	short		func_pos; /* num chars from beginning of string */
+	int		paren_level; /* nesting depth inside func parens */
+	int		delim_count; /* == nparams + 1 */
+	short		delim_pos[DELIM_MAX]; /* locs of '(', ',' ,')' */
+} ResFuncRec, *ResFunc;
+		
 
 /*
  * This record type describes the data profile for a resource
@@ -76,27 +104,6 @@ typedef struct _AppResProfileRec {
 	NhlPointer	data;
 	int		save_to_compare;
 } AppResProfileRec, *AppResProfile;
-
-/*
- * Each field in the data profile is recognized in the resource file within
- * a string array resource where each element is a name-value pair separated
- * by the colon character. The names are defined by a static array of the
- * following records. The index field matches the resource to the field in
- * the AppResProfile record. Note that not all resources are supported yet.
- */
-typedef struct _ProfResRec {
-	NhlString	name;
-	int		len;
-	int		index;
-} ProfResRec;
-
-static ProfResRec ProfRes[] = {
-	{"Name", 0, 0},
-	{"Reference", 0, 1},
-	{"Visibility", 0 , 2},
-	{"SaveForCompare", 0, 3},
-	{"InitializeOnly", 0, 4 }
-};
 
 /*
  * List of AppObject resources (identified by <object_name>DYNRES_TOKEN in the
@@ -119,7 +126,7 @@ typedef char RefKind;
 /*
  * When references to objects or data appear in the resfile they are 
  * dilimited by '$'. The character following the '$' may qualify the
- * the reference as a coordinate(!), an attribute(@) or as a subset(\().
+ * the reference as a coordinate(!), an attribute(@) or as a subset((\..\)).
  * For subsets white space may be permitted eventually. It's not yet
  * understood.
  */
@@ -148,25 +155,8 @@ typedef struct _AppObjResRec {
 	ObjResType		type;
 	AppResProfile		prof;
 	AppResSymRef		symrefs;
+	ResFunc			rfuncs;
 } AppObjResRec, *AppObjRes;
-
-/*
- * All the references to data and object symbols are recorded here -- one
- * record for each object resource that references the symbol. The starting
- * location(s) of the symbol in the resource value string are recorded
- * in the locs field. 
- */
-
-
-/* this should go away in a little while */
-
-typedef struct _AppResRefLocRec {
-	struct _AppResRefLocRec *next;
-	struct _AppObjectRec	*obj;	/* -> to actual AppObject element */
-	AppObjRes		objres;   /* -> to the actual AppObjRes el. */
-	int			loc_count; /* #refs in this obj resource val */
-	char			**locs;   /* location list -> to initial '$'*/
-} AppResRefLocRec, *AppResRefLoc;
 
 /*
  * Data resources are all synthetic, and attach to the data symbol, not
@@ -182,6 +172,7 @@ typedef struct _AppDataResRec {
 	NhlBoolean		is_coord;
 	int			coord_ix;
 	AppResSymRef		symrefs;
+	ResFunc			rfuncs;
 } AppDataResRec, *AppDataRes;
 
 /*
@@ -194,7 +185,6 @@ typedef struct _AppDataRec {
 	NhlString		description;
 	NhlBoolean		required;
 	int			ndims;
-	AppResRefLoc		dlocs; /* I don't think these are needed */
 	AppDataRes		datares;
 } AppDataRec, *AppData;
 
@@ -207,8 +197,8 @@ typedef struct _AppObjectRec {
 	NrmQuark		qbasename;
 	NhlClass		class;
 	AppObjRes		objres;
-	AppResRefLoc		olocs; /* I don't think these are needed */
 } AppObjectRec, *AppObject;
+
 
 /*
  * Central data structure for each PlotApp
@@ -232,10 +222,17 @@ typedef struct _PlotAppRec {
 	AppObject		objects;  
 	int			data_count;
 	AppData			data;
+	int			ffile_count;
+	FuncFile		*ffiles;
 } PlotAppRec, *PlotApp;
 
-static PlotApp PlotAppList = NULL;
+static PlotApp PlotAppList = NULL; /* master list of active Plot Apps */
 
+static FuncInfo FuncInfoList = NULL; /* list of plotapp referenced functions */
+
+static FuncFile FuncFileList = NULL; /* list of files containing ref funcs */ 
+
+static NclApiDataList *NclFuncs = NULL; /* return from NclGetProcFuncInfo */
 
 typedef struct _DataTableRec {
 	AppData		appdata;
@@ -249,20 +246,61 @@ typedef struct _DataTableRec {
 	NgVarDataRec	vd_rec;
 } DataTableRec, *DataTable;
 
-static DataTable Data_Table = NULL;
+static DataTable Data_Table = NULL;  /* used while processing Data Profile */
 static int DataTableAllocCount = 0;
 
-typedef struct _FuncFileRec {
-	struct _FuncFileRec *next;
-	NrmQuark	    qfuncdir;
-	NrmQuark	    qfuncfile;
-} FuncFileRec, *FuncFile;
+/*
+ * Each field in the data profile is recognized in the resource file within
+ * a string array resource where each element is a name-value pair separated
+ * by the colon character. The names are defined by a static array of the
+ * following records. The index field matches the resource to the field in
+ * the AppResProfile record. Note that not all resources are supported yet.
+ */
+typedef struct _ProfResRec {
+	NhlString	name;
+	int		len;
+	int		index;
+} ProfResRec;
 
-static FuncFile FuncFileList = NULL;
+static ProfResRec ProfRes[] = {
+	{"Name", 0, 0},
+	{"Reference", 0, 1},
+	{"Visibility", 0 , 2},
+	{"SaveForCompare", 0, 3},
+	{"InitializeOnly", 0, 4 }
+};
 
 #define BUFINC  256
-static char	*Buffer;
+static char	*Buffer;	/* growable buffer */
 static int	BufSize;
+
+static NrmQuark QString = NrmNULLQUARK;
+static NrmQuark QndvData = NrmNULLQUARK;
+static NrmQuark QndvObjects = NrmNULLQUARK;
+static NrmQuark QndvFuncDirs = NrmNULLQUARK;
+static NrmQuark QndvFuncFiles = NrmNULLQUARK;
+static NrmQuark QndvFunctions = NrmNULLQUARK;
+static NrmQuark QndvExecFunction = NrmNULLQUARK;
+static NrmQuark QpmOverlays = NrmNULLQUARK;
+static NrmQuark QmpDataLimitObject = NrmNULLQUARK;
+static NrmQuark QndvUpdateFunc = NrmNULLQUARK;
+
+static NrmQuark *QAppResList = NULL;
+
+
+static NrmQuark *QFakeRes[] = { 
+	&QpmOverlays,&QmpDataLimitObject,&QndvUpdateFunc
+};
+
+/*
+ * There is a small subset of the legal Ncl keywords that may be 
+ * legitimately encountered in a plot style file. This are listed below
+ * so they can be recognized.
+ */
+
+static NhlString NclKeywords[] = {
+	"True","False","noparent","defaultapp","null" };
+static NrmQuark QNclKeywords[NhlNumber(NclKeywords)];
 
 static NhlBoolean UpdateBufSize
 (
@@ -425,20 +463,154 @@ SetAppResProfile
 	return;
 }
 
+static NhlBoolean IsKeyword
+(
+	NhlString string
+)
+{
+	int i;
+
+	for (i = 0; i < NhlNumber(NclKeywords); i++) {
+		if (! strcmp(string,NclKeywords[i]))
+			return True;
+	}
+	return False;
+}
+
+static NclApiDataList *GetNclFuncData
+(
+	 NclApiDataList *ncl_funcs,
+	 NrmQuark	qfunc
+)
+{
+	NclApiDataList **dlp;
+	NclApiDataList *func_dl;
+
+	for (dlp = &ncl_funcs; *dlp; dlp = &(*dlp)->next) {
+		NclApiFuncInfoRec *finfo = (*dlp)->u.func;
+		if (finfo->name == qfunc) {
+			func_dl = *dlp;
+			*dlp = (*dlp)->next;
+			func_dl->next = NULL;
+			return func_dl;
+		}
+	}
+		
+	return NULL;
+}
+
+NhlBoolean IsFunc
+(
+	PlotApp		papp,
+	NhlString	fsym,
+	FuncInfo	*finfo
+)
+{
+	NrmQuark qfsym = NrmStringToQuark(fsym);
+	FuncInfo	tfinfo;
+	NclApiDataList	*fdl;
 /*
- * states: 
+ * First see if the symbol has been loaded with a plot app.
+ */
+	for (tfinfo = FuncInfoList; tfinfo; tfinfo = tfinfo->next) {
+		if (tfinfo->qfunc == qfsym) {
+			*finfo = tfinfo;
+			return True;
+		}
+	}
+	fdl = GetNclFuncData(NclFuncs,qfsym);
+
+	if (!fdl) 
+		return False;
+
+	tfinfo = NhlMalloc(sizeof(FuncInfoRec));
+	
+	if (!tfinfo) {
+		NHLPERROR((NhlFATAL,ENOMEM,NULL));
+		return False;
+	}
+	tfinfo->qfunc = qfsym;
+	tfinfo->qplotapp = NrmNULLQUARK; /* not loaded from a plotapp */
+	tfinfo->ffile = NULL; /* not loaded from a plotapp */
+	tfinfo->dl = fdl;
+	tfinfo->next = FuncInfoList;
+	FuncInfoList = tfinfo;
+	
+	*finfo = tfinfo;
+
+	return True;
+}
+
+
+NhlBoolean CheckFunctions
+(
+	ResFunc rfuncs,
+	char	*buf
+)
+
+{
+	ResFunc rf;
+
+	for (rf = rfuncs; rf; rf = rf->next) {
+#if DEBUG_PLOTAPP
+		fprintf(stderr,"func: %s -- ",
+			NrmQuarkToString(rf->finfo->qfunc));
+		if (rf->func_pos == 0 
+		    && rf->delim_pos[rf->delim_count-1] == 
+		    strlen(buf) - 1)
+			fprintf(stderr,"single-term func\n");
+		else if (rf->paren_level > 1)
+			fprintf(stderr,"func is parameter\n");
+		else 
+			fprintf(stderr,
+			     "func is component of multi-term expression\n");
+
+		for (j = 0; j < rf->delim_count - 1; j++) {
+			int len = rf->delim_pos[j+1] 
+				- rf->delim_pos[j] - 1;
+			strncpy(pbuf,&buf[rf->delim_pos[j]+1],len);
+			pbuf[len] = '\0';
+			fprintf(stderr,"\tparam %d: %s\n",j+1,pbuf);
+		}
+#endif
+		if (! rf->finfo->dl) {
+			NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+			   "Ncl information for function %s not obtained",
+				   NrmQuarkToString(rf->finfo->qfunc)));  
+			return True;
+		}
+		if (rf->finfo->dl->u.func->nparams > -1 &&
+		    rf->finfo->dl->u.func->nparams != 
+		    rf->delim_count - 1) {
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
+			  "Function %s has incorrect number of parameters",
+				  NrmQuarkToString(rf->finfo->qfunc));
+			return True;
+		}
+	}
+	return False;
+}
+
+
+/*
+ * states for the parser 
  */
 
 #define BASIC 0
 #define INQUOTES 1
 #define INHANDLE 2
+#define END_INHANDLE 3
+#define INATTRIBUTE 4
+#define INDIMENSION 5
+#define INSYMBOL 6
 
-static NhlBoolean CheckValueSyntax
+static NhlBoolean ParseResourceValue
 (
 	PlotApp papp,
 	char	*res,
 	char	*value,
-	int	*bogus_pos
+	int	*bogus_pos,
+	ResFunc *rfuncs_ret
 )
 {
 	int state = BASIC;
@@ -448,6 +620,16 @@ static NhlBoolean CheckValueSyntax
 	char *ch = value;
 	NhlBoolean bogus = False;
 	int bufpos = 0;
+	NhlBoolean found_space = False;
+	NhlBoolean symbol_end = False;
+	char *start_sym = NULL;
+	char symbuf[256];
+	int len;
+	ResFunc rf,rfuncs = NULL;
+	FuncInfo finfo;
+	int sym_start_pos;
+
+	*rfuncs_ret = NULL;
 /*
  * Finds some basic syntax errors
  * Also eliminates extra white space by copying the string w/o whitespace
@@ -473,33 +655,80 @@ static NhlBoolean CheckValueSyntax
 			 * replace any amount of whitespace with 1 space
 			 */
 			if (isspace(*ch)) {
-				while(isspace(*ch))
-					ch++;
-				ch--;
-				*ch = ' ';
+				found_space = True;
+				while (isspace(*ch))
+				       ch++;
+			}
+/*
+ * turns out to be unnecessary because the resource parser already removes
+ * escaped newlines.
+ */
+#if 0
+			if (*ch == '\\' && *(ch+1) == '\n') {
+				ch += 2;
+				found_space = True;
+				continue;
+			}
+#endif
+			if (found_space) {
 				break;
 			}
 			switch (*ch) {
 			case '"':
 				state = INQUOTES;
+				if (symbol_end)
+					bogus = True;
 				break;
 			case '(':
-				if (*(ch+1) == '/')
+				if (*(ch+1) == '/') {
 					arraylevel++;
-				else
-					parenlevel++;
+					break;
+				}
+				parenlevel++;
+				for (rf = rfuncs; rf; rf = rf->next) {
+					if (parenlevel == rf->paren_level)
+					rf->delim_pos[rf->delim_count++] 
+						 = bufpos;
+				}
 				break;
+
 			case ')':
-				if (*(ch-1) == '/')
+				if (*(ch-1) == '/') {
 					arraylevel--;
-				else
-					parenlevel--;
+					break;
+				}
+				for (rf = rfuncs; rf; rf = rf->next) {
+					if (parenlevel == rf->paren_level)
+					rf->delim_pos[rf->delim_count++] 
+						 = bufpos;
+				}
+				parenlevel--;
 				break;
 			case '$':
 				state = INHANDLE;
 				begin = True;
+				if (symbol_end)
+					bogus = True;
+				break;
+			case ',':
+				if (arraylevel > 0)
+					break;
+				for (rf = rfuncs; rf; rf = rf->next) {
+					if (parenlevel == rf->paren_level)
+					rf->delim_pos[rf->delim_count++] 
+						 = bufpos;
+				}
 				break;
 			default:
+				if (symbol_end) {
+					if (isalnum(*ch) || *ch == '_')
+						bogus = True;
+				}
+				if (isalpha(*ch) || *ch == '_') {
+					start_sym = ch;
+					sym_start_pos = bufpos;
+					state = INSYMBOL;
+				}
 				break;
 			}
 			break;
@@ -511,26 +740,142 @@ static NhlBoolean CheckValueSyntax
 				begin = False;
 				break;
 			}
-			if (*ch == '$') 
-				state = BASIC;
+			if (*ch == '$')
+				state = END_INHANDLE;
 			else if (! (isalnum(*ch) || *ch == '_')) {
 				bogus = True;
 			}
 			break;
+		case END_INHANDLE:
+			if (*ch == '@') {
+				begin = True;
+				state = INATTRIBUTE;
+			}
+			else if (*ch == '!') {
+				begin = True;
+				state = INDIMENSION;
+			}
+			else {
+				symbol_end = True;
+				state = BASIC;
+				continue; /* look at this char again */
+			}
+			break;
+		case INATTRIBUTE:
+			if (begin) {
+				if (! (isalpha(*ch) || *ch == '_'))
+					bogus = True;
+				begin = False;
+			}
+			else if (! (isalnum(*ch) || *ch == '_')) {
+				symbol_end = True;
+				state = BASIC;
+				continue; /* look at this char again */
+			}
+			break;
+		case INDIMENSION:
+			if (begin) {
+				if (! (isdigit(*ch) || *ch == '-'))
+					bogus = True;
+				begin = False;
+			}
+			else if (! isdigit(*ch)) {
+				symbol_end = True;
+				state = BASIC;
+				continue; /* look at this char again */
+			}
+			break;
+		case INSYMBOL:
+			if (! (isalnum(*ch) || *ch == '_')) {
+				symbol_end = True;
+				state = BASIC;
+			}
+			if (symbol_end) {
+				len = ch - start_sym;
+				strncpy(symbuf,start_sym,len);
+				symbuf[len] = '\0';
+				
+				if (IsKeyword(symbuf)) {
+					continue; /* look at this char again */
+				}
+				if (! NclSymbolDefined(symbuf)) {
+					bogus = True;
+					break;
+				}
+#if DEBUG_PLOTAPP
+				fprintf(stderr,"symbol found: %s\n",symbuf);
+#endif
+				if (IsFunc(papp,symbuf,&finfo)) {
+					ResFunc rfunc = 
+						NhlMalloc(sizeof(ResFuncRec));
+					if (! rfunc) {
+						NHLPERROR((NhlFATAL,
+							   ENOMEM,NULL));
+						bogus = True;
+						break;
+					}
+					rfunc->paren_level = parenlevel + 1;
+					rfunc->finfo = finfo;
+					rfunc->delim_count = 0;
+					rfunc->func_pos = sym_start_pos;
+					rfunc->next = rfuncs;
+					rfuncs = rfunc;
+				}
+				continue; /* look at this char again */
+			}
+			break;
 		}
+
+		symbol_end = False;
 		if (parenlevel < 0 || arraylevel < 0)
 			bogus = True;
 		if (bogus)
 			break;
-		Buffer[bufpos++] = *ch;
-		ch++;
+		if (found_space) {
+			found_space = False;
+			/* no spaces at beginning */
+			if (bufpos > 0) 
+				Buffer[bufpos++] = ' ';
+			/* don't increment ch (pointer into value) on space */
+		}
+		else {
+			Buffer[bufpos++] = *ch;
+			ch++;
+		}
 	}
 	Buffer[bufpos] = '\0';
 	if (parenlevel > 0 || arraylevel > 0)
 		bogus = True;
-	if (state != BASIC)
+	switch (state) {
+	default:
+	case INQUOTES:
+	case INHANDLE:
 		bogus = True;
+		break;
+	case END_INHANDLE:
+	case INATTRIBUTE:
+	case INDIMENSION:
+	case BASIC:
+		break;
+	case INSYMBOL:
+		strcpy(symbuf,start_sym);
+				
+		if (! IsKeyword(symbuf)) {
+#if DEBUG_PLOTAPP
+			fprintf(stderr,"symbol found: %s\n",symbuf);
+#endif
+			if (! NclSymbolDefined(symbuf)) {
+				bogus = True;
+				break;
+			}
+		}
+		break;
+	}
 
+	if (CheckFunctions(rfuncs,Buffer)) {
+		bogus = True;
+		*bogus_pos = strlen(Buffer);
+	}
 	if (bogus) {
 		*bogus_pos = ch - value;
 		Buffer[*bogus_pos] = '\0';
@@ -540,6 +885,13 @@ static NhlBoolean CheckValueSyntax
 			  NrmQuarkToString(papp->qdir),
 			  NrmQuarkToString(papp->qname));
 	}
+
+	/*
+	 * Assertion:
+	 * strlen(Buffer) should always be less than or equal to strlen(value).
+	 */
+	strcpy(value,Buffer);
+	*rfuncs_ret = rfuncs;
 	return bogus;
 }
 
@@ -580,13 +932,11 @@ static void ParseAppObjRes
 		NhlVAGetValues(papp->app_id,
 			       res,&value,
 			       NULL);
-		objres->bogus = CheckValueSyntax
-			(papp,res,value,&objres->bogus_pos);
 		objres->value = value;
-		strcpy(objres->value,Buffer);
 		objres->type = _NgRES_REGULAR;
 		objres->prof = NULL;
 		objres->symrefs = NULL;
+		objres->rfuncs = NULL;
 		if ((cp = strstr(objresstr,PROFILESTRING))) {
 			int reslen = cp - objresstr;
 			objres->type = _NgRES_PROFILE;
@@ -596,25 +946,33 @@ static void ParseAppObjRes
 			Buffer[reslen] = '\0';
 			qobjres = NrmStringToQuark(Buffer); /* overwritable */
 			objres->qres = qobjres;
-		}
-		else if (! strncmp(objresstr,
-				 NhlNndvUpdateFunc,update_func_len)) {
-			qobjres = NrmStringToQuark(objresstr);
-			objres->qres = qobjres;
-			objres->type = _NgRES_UPDATE_FUNC;
+			objres->bogus = False;
+			objres->bogus_pos = -1;
 		}
 		else {
-			qobjres = NrmStringToQuark(objresstr);
-			objres->qres = qobjres;
-			for (j = 0; j < NhlNumber(QFakeRes); j++) {
-				if (*QFakeRes[j] == qobjres) {
-					objres->type = _NgRES_FAKE;
-					break;
+			objres->bogus = ParseResourceValue
+				(papp,res,value,&objres->bogus_pos,
+				 &objres->rfuncs);
+			if (! strncmp(objresstr,
+				      NhlNndvUpdateFunc,update_func_len)) {
+				qobjres = NrmStringToQuark(objresstr);
+				objres->qres = qobjres;
+				objres->type = _NgRES_UPDATE_FUNC;
+			}
+			else {
+				qobjres = NrmStringToQuark(objresstr);
+				objres->qres = qobjres;
+				for (j = 0; j < NhlNumber(QFakeRes); j++) {
+					if (*QFakeRes[j] == qobjres) {
+						objres->type = _NgRES_FAKE;
+						break;
+					}
 				}
 			}
 		}
-#if 0
-		printf("\tobject: %s type: %d res: %s value: %s\n",
+				
+#if DEBUG_PLOTAPP
+		fprintf(stderr,"\tobject: %s type: %d res: %s value: %s\n",
 		       obj_name,objres->type,
 		       NrmQuarkToString(objres->qres),
 		       objres->value);
@@ -635,75 +993,10 @@ static void ParseAppObjRes
 			}
 		}
 	}
+	
 			
 		
 }
-
-static AppResRefLoc GetAppRefLocs
-(
-	PlotApp		papp,
-	NhlString	refname
-)
-{
-	AppObject	appobj;
-	int		len = strlen(refname);
-	AppResRefLoc 	base_rloc = NULL,last_rloc = NULL;
-
-	for (appobj = papp->objects; appobj != NULL; appobj = appobj->next) {
-		AppObjRes res;
-		for (res = appobj->objres; res != NULL; res = res->next) {
-			AppResRefLoc rloc = NULL;
-			char *loc;
-			if (res->bogus)
-				continue;
-			loc = strchr(res->value,'$');
-			while (loc) {
-				if (! strncmp(loc+1,refname,len) &&
-				    *(loc + len + 1) == '$') {
-					if (! rloc) {
-						rloc = NhlMalloc
-						    (sizeof(AppResRefLocRec));
-						rloc->obj = appobj;
-						rloc->objres = res;
-						rloc->loc_count = 0;
-						rloc->locs = NULL;
-						rloc->next = NULL;
-					}
-					rloc->loc_count++;
-					rloc->locs = NhlRealloc
-						(rloc->locs,rloc->loc_count *
-						 sizeof(char *));
-					rloc->locs[rloc->loc_count-1] = loc;
-					loc = strchr(loc+len+2,'$');
-				}
-				else {
-					/*
-					 * end of this Handle
-					 */
-					loc = strchr(loc+1,'$');
-					/*
-					 * beginning of next Handle
-					 */
-					loc = strchr(loc+1,'$');
-				}
-			}
-			if (rloc) {
-#if 0
-				printf("%s: %d refs to %s\n",
-				       NrmQuarkToString(res->qres),
-				       rloc->loc_count,refname);
-#endif
-				if (! base_rloc)
-					base_rloc = rloc;
-				if (last_rloc)
-					last_rloc->next = rloc;
-				last_rloc = rloc;
-			}
-		}
-	}
-	return base_rloc;
-}		
-
  
 static void RecordObjects
 (
@@ -748,8 +1041,8 @@ static void RecordObjects
 		while (*str && (isspace(*str) || *str == ':'))
 			str++;
 		class_str = str;
-#if 0
-		printf("name %s class %s\n",name,class_str);
+#if DEBUG_PLOTAPP
+		fprintf(stderr,"name %s class %s\n",name,class_str);
 #endif
 		class = NgNclHluClassPtrFromName(go->go.nclstate,class_str);
 		if (! class)
@@ -767,6 +1060,7 @@ static void RecordObjects
 		last_appobj = appobj;
 		ParseAppObjRes(papp,appobj);
 	}
+#if 0
 	/*
 	 * Now that all resources have been parsed, find references from
 	 * one object to another.
@@ -775,6 +1069,7 @@ static void RecordObjects
 		appobj->olocs = GetAppRefLocs
 			(papp,NrmQuarkToString(appobj->qbasename));
 	}
+#endif
 	NhlFree(objects_str);
 	_NhlFreeConvertContext(context);
 	return;
@@ -828,16 +1123,16 @@ static void ParseAppDataRes
  */
 		if (! strcmp(dataresstr,"Description")) {
 			appdata->description = value;
-#if 0
-			printf("\tdata sym: %s res: %s value: %s\n",
+#if DEBUG_PLOTAPP
+			fprintf(stderr,"\tdata sym: %s res: %s value: %s\n",
 			       data_sym,dataresstr,value);
 #endif
 		}
 		else if (! strcmp(dataresstr,"Required")) {
 			if (! strcasecmp(value,"True"))
 				appdata->required = True;
-#if 0
-			printf("\tdata sym: %s res: %s value: %s\n",
+#if DEBUG_PLOTAPP
+			fprintf(stderr,"\tdata sym: %s res: %s value: %s\n",
 			       data_sym,dataresstr,value);
 #endif
 		}
@@ -845,24 +1140,32 @@ static void ParseAppDataRes
 			datares = NhlMalloc(sizeof(AppDataResRec));
 			datares->next = appdata->datares;
 			appdata->datares = datares;
-
-			datares->bogus = CheckValueSyntax
-				(papp,res,value,&datares->bogus_pos);
 			datares->value = value;
-			strcpy(datares->value,Buffer);
+
+			if (! strcmp(dataresstr,"Pattern")) {
+				datares->bogus = False;
+				datares->bogus_pos = -1;
+			}
+			else {
+				datares->bogus = ParseResourceValue
+					(papp,res,value,&datares->bogus_pos,
+					 &datares->rfuncs);
+			}
 			datares->is_coord = is_coord;
 			datares->coord_ix = coord_ix;
 			datares->symrefs = NULL;
+			datares->rfuncs = NULL;
 
 			qdatares = NrmStringToQuark(dataresstr);
 			datares->qres = qdatares;
-#if 0
-			printf("\tdata sym: %s res: %s value: %s",
+#if DEBUG_PLOTAPP
+			fprintf(stderr,"\tdata sym: %s res: %s value: %s",
 			       data_sym,dataresstr,value);
 			if (datares->is_coord)
-				printf(" coord: %d\n",datares->coord_ix);
+				fprintf(stderr,
+					" coord: %d\n",datares->coord_ix);
 			else 
-				printf("\n");
+				fprintf(stderr,"\n");
 #endif
 		}
 	}
@@ -916,8 +1219,8 @@ static void RecordData
 		while (*str && (isspace(*str) || *str == ':'))
 			str++;
 		ndims = strtol(str,&tcp,10);
-#if 0
-		printf("name: %s ndims: %d \n",name,ndims);
+#if DEBUG_PLOTAPP
+		fprintf(stderr,"name: %s ndims: %d \n",name,ndims);
 #endif
 		appdata = NhlMalloc(sizeof(AppDataRec));
 		appdata->qdataname = NrmStringToQuark(name);
@@ -927,7 +1230,9 @@ static void RecordData
 		appdata->required = False;
 		appdata->description = NULL;
 		papp->data = appdata;
+#if 0
 		appdata->dlocs = GetAppRefLocs(papp,name);
+#endif
 		ParseAppDataRes(papp,appdata);
 	}
 
@@ -985,17 +1290,99 @@ static NhlBoolean Readable
 	return False;
 }
 
+static NrmQuark *GetFunctionNames
+(
+	NhlString	dir,
+	NhlString	funcfile,
+	int		*func_count
+)
+{
+	FILE		*fp;
+	char		*cp;
+	int		alloced = 0, count = 0;
+	NrmQuark	*qfuncs = NULL;
+	NhlBoolean	expecting_symbol = False;
+
+	*func_count = 0;
+
+	if (funcfile[0] == '/')
+		sprintf(Buffer,"%s",funcfile);
+	else {
+		sprintf(Buffer,"%s/%s",dir,funcfile);
+		fp = fopen(Buffer,"r");
+	}
+	fp = fopen(Buffer,"r");
+	if (! fp) {
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+			   "error opening Ncl function file %s",Buffer));
+		return NULL;
+	}	
+	while (cp = fgets(Buffer,255,fp)) {
+		char *start;
+
+		if (! expecting_symbol) {
+			while (isspace(*cp))
+				cp++;
+			if (! *cp)
+				continue;
+
+			if (strncmp(cp,"function",8))
+				continue;
+			cp += 8;
+		}
+		while (isspace(*cp))
+			cp++;
+		if (*cp == '\\' && *(cp+1) == '\n') {
+			expecting_symbol = True;
+			continue;
+		}
+		expecting_symbol = False;
+		if (! (isalpha(*cp) || *cp == '_')) {
+			/* 
+			 * This is a syntax error, but we won't say anything
+			 * for now.
+			 */
+			continue;
+		}
+		start = cp;
+		while (isalnum(*cp) || *cp == '_')
+			cp++;
+		*cp = '\0';
+		if (count == alloced) {
+			alloced += 10;
+			qfuncs = NhlRealloc(qfuncs,alloced * sizeof(NrmQuark));
+		}
+		qfuncs[count++] = NrmStringToQuark(start);
+	}
+	*func_count = count;
+
+	return qfuncs;
+}
+	
+	 
 static void Load
 (
-	NgGO	  go,
-	NrmQuark  qdir,
-	NrmQuark  qfuncfile
+	NgGO	  	go,
+	PlotApp		papp,
+	NrmQuark  	qdir,
+	NrmQuark  	qfuncfile
 )
 {
 	NhlString	funcfile = NrmQuarkToString(qfuncfile);
 	NhlString	dir = NrmQuarkToString(qdir);
 	FuncFile	ffile;
-	
+	NrmQuark	*newfuncs;
+	int		i,newfunc_count;
+
+	for (ffile = FuncFileList; ffile; ffile = ffile->next) {
+		if (qdir == ffile->qfuncdir && qfuncfile == ffile->qfuncfile) {
+			papp->ffiles[papp->ffile_count++] = ffile;
+			return;
+		}
+	}
+
+	newfuncs = GetFunctionNames(dir,funcfile,&newfunc_count);
+
 	if (funcfile[0] == '/') {
 		sprintf(Buffer,"load \"%s\"\n",funcfile);
 	}
@@ -1012,10 +1399,47 @@ static void Load
 	}
 	ffile->qfuncdir = qdir;
 	ffile->qfuncfile = qfuncfile;
+	ffile->qfuncs = newfuncs;
+	ffile->func_count = newfunc_count;
 
 	ffile->next = FuncFileList;
 	FuncFileList = ffile;
-	
+
+	if (NclFuncs)
+		NclFreeDataList(NclFuncs);
+	NclFuncs = NclGetProcFuncList();
+
+	for (i = 0; i < ffile->func_count; i++) {
+		FuncInfo finfo;
+		NhlBoolean found = False;
+		for (finfo = FuncInfoList; finfo; finfo = finfo->next) {
+			if (finfo->qfunc == ffile->qfuncs[i]) {
+				finfo->qplotapp = papp->qname;
+				finfo->ffile = ffile;
+				finfo->dl = GetNclFuncData
+					(NclFuncs,finfo->qfunc);
+				found = True;
+				break;
+			}
+		}
+		if (found)
+			continue;
+		finfo = NhlMalloc(sizeof(FuncInfoRec));
+		if (!finfo) {
+			NHLPERROR((NhlFATAL,ENOMEM,NULL));
+			return;
+		}
+		finfo->qfunc = ffile->qfuncs[i];
+		finfo->qplotapp = papp->qname;
+		finfo->ffile = ffile;
+		finfo->dl = GetNclFuncData(NclFuncs,finfo->qfunc);	
+		finfo->next = FuncInfoList;
+		FuncInfoList = finfo;
+	}
+				
+
+	papp->ffiles[papp->ffile_count++] = ffile;
+
 	return;
 }
 static void RecordAndLoadFunctions
@@ -1064,12 +1488,24 @@ static void RecordAndLoadFunctions
 	 * is ignored.
 	 */
 
+	if (papp->ffile_count) {
+		NhlFree(papp->ffiles);
+	}
+	papp->ffiles = NhlMalloc(func_file_count * sizeof(NrmQuark));
+	if (! papp->ffiles) {
+		NHLPERROR((NhlFATAL,ENOMEM,NULL));
+		return;
+	}
+/* 
+ * This will be incremented as files are encountered.
+ */
+	papp->ffile_count = 0; 
+		
 	if (! func_dir_count) {
 		for (i = 0; i < func_file_count; i++) {
 			NrmQuark qfuncfile = NrmStringToQuark(func_files[i]);
-			if (! Loaded(papp->qdir,qfuncfile) &&
-			    Readable(papp->qdir,qfuncfile))
-				Load(go,papp->qdir,qfuncfile);
+			if (Readable(papp->qdir,qfuncfile))
+				Load(go,papp,papp->qdir,qfuncfile);
 		}
 	}
 	else {
@@ -1077,9 +1513,8 @@ static void RecordAndLoadFunctions
 			NrmQuark qfuncfile = NrmStringToQuark(func_files[i]);
 			for (j = 0; j < func_dir_count; j++) {
 				NrmQuark qdir = NrmStringToQuark(func_dirs[j]);
-				if (! Loaded(qdir,qfuncfile) &&
-				    Readable(qdir,qfuncfile)) {
-					Load(go,qdir,qfuncfile);
+				if (Readable(qdir,qfuncfile)) {
+					Load(go,papp,qdir,qfuncfile);
 					break;
 				}
 			}
@@ -1340,8 +1775,8 @@ static void ParseAppResources
 				  (appres->num_elements + 1));
 
 	for (i = 0; i < appres->num_elements; i++) {
-#if 0
-		printf("%s\n",res[i]);
+#if DEBUG_PLOTAPP
+		fprintf(stderr,"%s\n",res[i]);
 #endif
 		papp->qapp_res[i] = NrmStringToQuark(res[i]);
 		if (papp->qapp_res[i] == QndvObjects)
@@ -1357,6 +1792,13 @@ static void ParseAppResources
 	}
 	papp->qapp_res[i] = NrmNULLQUARK;
 
+
+	funcdirs = (funcdir_ix >= 0) ? res[funcdir_ix] : NULL;
+	funcfiles = (funcdir_ix >= 0) ? res[funcfile_ix] : NULL;
+	execfunc = (execfunc_ix >= 0) ? res[execfunc_ix] : NULL;
+
+	RecordAndLoadFunctions(papp,funcdirs,funcfiles,execfunc);
+
 	if (obj_ix >= 0) {
 		RecordObjects(papp,res[obj_ix]);
 	}
@@ -1365,62 +1807,11 @@ static void ParseAppResources
 	}
 	RecordObjectAndDataReferences(papp);
 
-	funcdirs = (funcdir_ix >= 0) ? res[funcdir_ix] : NULL;
-	funcfiles = (funcdir_ix >= 0) ? res[funcfile_ix] : NULL;
-	execfunc = (execfunc_ix >= 0) ? res[execfunc_ix] : NULL;
-
-	RecordAndLoadFunctions(papp,funcdirs,funcfiles,execfunc);
-
 	NhlFreeGenArray(appres);
 
 	return;
 }
 
-static PlotApp Plot_App;
-
-static int ObjectComp
-(
-        const void *p1,
-        const void *p2
-)
-{
-        const NrmQuark q1 = *(NrmQuark *) p1;
-        const NrmQuark q2 = *(NrmQuark *) p2;
-	AppObject appobj;
-	AppObjRes objres;
-
- 	for (appobj = Plot_App->objects; appobj; appobj = appobj->next) {
-		if (appobj->qbasename != q1)
-			continue;
-		for (objres = appobj->objres; objres; objres = objres->next) {
-			AppResSymRef	symref;
-			if (objres->bogus)
-				continue;
-			for (symref = objres->symrefs; symref; 
-			     symref = symref->next) {
-				if (! symref->kind == _NgOBJ_REF)
-					continue;
-				if (symref->sym.o->qbasename == q2)
-					return 1;
-			}
-		}
-	}
- 	for (appobj = Plot_App->objects; appobj; appobj = appobj->next) {
-		if (appobj->qbasename != q2)
-			continue;
-		for (objres = appobj->objres; objres; objres = objres->next) {
-			AppResSymRef	symref;
-			for (symref = objres->symrefs; symref; 
-			     symref = symref->next) {
-				if (! symref->kind == _NgOBJ_REF)
-					continue;
-				if (symref->sym.o->qbasename == q1)
-					return -1;
-			}
-		}
-	}
-        return 0;
-}
 
 static int ReorderObjDependencies
 (
@@ -1464,7 +1855,7 @@ static void SetUpObjDependencyList
 	 * First populate the dependency list with the objects;
 	 * then move things around based on dependencies
 	 */
-	Plot_App = papp;
+
 	for (appobj = papp->objects,i = 0; appobj; appobj = appobj->next) {
 		papp->qobj_deps[i++] = appobj->qbasename;
 	}
@@ -1477,14 +1868,14 @@ static void SetUpObjDependencyList
 				break;
 			}
 		}
-#if 0
-		printf("Class %s: %s, ",
+#if DEBUG_PLOTAPP
+		fprintf(stderr,"Class %s: %s, ",
 		       papp->obj_classes[i]->base_class.class_name,
 		       NrmQuarkToString(papp->qobj_deps[i]));
 #endif
 	}
-#if 0
-	printf("\n");
+#if DEBUG_PLOTAPP
+	fprintf(stderr,"\n");
 #endif
 
 	return;
@@ -1728,8 +2119,9 @@ void NgDeletePlotAppRef
 		if ((*papp)->qname == qplotstyle) {
 			dpapp = *papp;
 			dpapp->ref_count--;
-#if 0
-			printf("delete ref count: %d\n",dpapp->ref_count);
+#if DEBUG_PLOTAPP
+			fprintf(stderr,
+				"delete ref count: %d\n",dpapp->ref_count);
 #endif
 			if (dpapp->ref_count > 0)
 				return;
@@ -1765,18 +2157,38 @@ void NgDeletePlotAppRef
 		while (obj->objres) {
 			AppObjRes objres = obj->objres;
 			obj->objres = objres->next;
+			while (objres->symrefs) {
+				AppResSymRef symref = objres->symrefs;
+				objres->symrefs = symref->next;
+				NhlFree(symref);
+			}
+			while (objres->rfuncs) {
+				ResFunc rfunc = objres->rfuncs;
+				objres->rfuncs = rfunc->next;
+				NhlFree(rfunc);
+			}
 			NhlFree(objres);
 		}
 		NhlFree(obj);
 	}
+
 	while (dpapp->data) {
 		AppData data = dpapp->data;
 		dpapp->data = data->next;
-		while (data->dlocs) {
-			AppResRefLoc dloc = data->dlocs;
-			data->dlocs = dloc->next;
-			NhlFree(dloc->locs);
-			NhlFree(dloc);
+		while (data->datares) {
+			AppDataRes datares = data->datares;
+			data->datares = datares->next;
+			while (datares->symrefs) {
+				AppResSymRef symref = datares->symrefs;
+				datares->symrefs = symref->next;
+				NhlFree(symref);
+			}
+			while (datares->rfuncs) {
+				ResFunc rfunc = datares->rfuncs;
+				datares->rfuncs = rfunc->next;
+				NhlFree(rfunc);
+			}
+			NhlFree(datares);
 		}
 		NhlFree(data);
 	}
@@ -1818,6 +2230,7 @@ int NgNewPlotAppRef
 
 	if (QString == NrmNULLQUARK) {
 		int qapp_rescount = 0;
+		int i;
 		QString = NrmStringToQuark(NhlTString);
 		QndvFuncDirs = NrmStringToQuark(NhlNndvFuncDirs);
 		qapp_rescount++;
@@ -1856,12 +2269,15 @@ int NgNewPlotAppRef
 			NHLPERROR((NhlFATAL,ENOMEM,NULL));
 			return (int) NhlFATAL;
 		}
+		for (i = 0; i < NhlNumber(NclKeywords); i++) {
+			QNclKeywords[i] = NrmStringToQuark(NclKeywords[i]);
+		}
 	}
 	while (papp) {
 		if (papp->qname == qplotstyle) {
 			papp->ref_count++;
-#if 0
-			printf("add ref count: %d\n",papp->ref_count);
+#if DEBUG_PLOTAPP
+			fprintf(stderr,"add ref count: %d\n",papp->ref_count);
 #endif
 
 			if (papp->preview && ! preview) {
@@ -1878,8 +2294,8 @@ int NgNewPlotAppRef
 		}
 		papp = papp->next;
 	}
-#if 0
-	printf("creating plot app: %s\n",NrmQuarkToString(qplotstyle));
+#if DEBUG_PLOTAPP
+	fprintf(stderr,"creating plot app: %s\n",NrmQuarkToString(qplotstyle));
 #endif
 
 	app_id = CreatePlotApp(go_id,qplotstyle,qplotstyledir,preview,
@@ -1899,6 +2315,8 @@ int NgNewPlotAppRef
 		papp->objects = NULL;
 		papp->data = NULL;
 		papp->qapp_res = NULL;
+		papp->ffiles = NULL;
+		papp->ffile_count = 0;
 	}
 
 	papp->go_id = go_id;
@@ -2150,9 +2568,9 @@ static NhlBoolean PerlMatch
 	sprintf(Buffer,cmd,match_text,pattern);
 	errno = 0;
 	ret = system(Buffer);
-#if 0
+#if DEBUG_PLOTAPP
 	perror(match_text);
-	printf("status %d %d\n",WIFEXITED(ret), WEXITSTATUS(ret));
+	fprintf(stderr,"status %d %d\n",WIFEXITED(ret), WEXITSTATUS(ret));
 #endif
 	if (WEXITSTATUS(ret) == 1) {
 		return True;

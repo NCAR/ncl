@@ -1,5 +1,5 @@
 /*
- *      $Id: attrinfogrid.h,v 1.2 1997-06-04 18:08:21 dbrown Exp $
+ *      $Id: attrinfogrid.h,v 1.3 1999-11-03 20:29:23 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -47,6 +47,7 @@ typedef struct _NgAttrInfoGrid
 
 NgAttrInfoGrid *NgCreateAttrInfoGrid
 (
+	int			go_id,
         Widget			parent,
         NrmQuark 		qfileref,
         NclApiDataList		*dlist

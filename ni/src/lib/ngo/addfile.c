@@ -1,5 +1,5 @@
 /*
- *      $Id: addfile.c,v 1.26 1999-09-11 01:05:48 dbrown Exp $
+ *      $Id: addfile.c,v 1.27 1999-11-03 20:29:20 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -669,7 +669,7 @@ CreateDimInfoPopup
                                         NULL);
 
         dip->grid = NgCreateDimInfoGrid
-                (form,QPreviewFile,dip->vinfo,True,True);
+                (l->base.id,form,QPreviewFile,dip->vinfo,True,True);
         
         return;
         
@@ -760,7 +760,7 @@ CreateAttrPopup
                                         xmFormWidgetClass,aip->frame,
                                         NULL);
 
-        aip->grid = NgCreateAttrInfoGrid(form,QPreviewFile,dlist);
+        aip->grid = NgCreateAttrInfoGrid(l->base.id,form,QPreviewFile,dlist);
         
         return;
         

@@ -1,5 +1,5 @@
 /*
- *      $Id: diminfogridP.h,v 1.3 1998-12-16 23:51:34 dbrown Exp $
+ *      $Id: diminfogridP.h,v 1.4 1999-11-03 20:29:29 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -46,6 +46,7 @@ typedef struct _NgDimInfoGridRec
         Dimension		height;
         
             /* private fields */
+	NgGO			go;
         NrmQuark		qfileref;
  	NclApiVarInfoRec	*vinfo;
         int			cwidths[32];

@@ -1,5 +1,5 @@
 /*
- *      $Id: attrinfogridP.h,v 1.2 1997-06-04 18:08:21 dbrown Exp $
+ *      $Id: attrinfogridP.h,v 1.3 1999-11-03 20:29:23 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -46,6 +46,7 @@ typedef struct _NgAttrInfoGridRec
         Dimension		height;
         
             /* private fields */
+	NgGO			go;
         NrmQuark		qfileref;
  	NclApiDataList		*dlist;
         int			cwidths[2];

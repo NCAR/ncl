@@ -1,5 +1,5 @@
 /*
- *      $Id: attrinfogrid.c,v 1.5 1999-09-11 01:05:51 dbrown Exp $
+ *      $Id: attrinfogrid.c,v 1.6 1999-11-03 20:29:22 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -43,10 +43,11 @@ ColumnWidths
 	int	i;
         char	sizestr[10];
         int	twidth = 0;
+	float	mult = aip->go->go.x->avg_font_width_mult;
         
         Buffer[0] = '\0';
 	for (i=0; i < 2; i++) {
-                int width = aip->cwidths[i];
+                int width = (int)(mult * aip->cwidths[i]);
                 if (width + twidth > Max_Width)
                         width = Max_Width - twidth;
                 twidth += width;
@@ -308,6 +309,7 @@ NhlErrorTypes NgUpdateAttrInfoGrid
 
 NgAttrInfoGrid *NgCreateAttrInfoGrid
 (
+	int			go_id,
         Widget			parent,
         NrmQuark 		qfileref,
         NclApiDataList		*dlist
@@ -327,6 +329,7 @@ NgAttrInfoGrid *NgCreateAttrInfoGrid
         aip = NhlMalloc(sizeof(NgAttrInfoGridRec));
         if (!aip) return NULL;
 
+	aip->go = (NgGO) _NhlGetLayer(go_id);
         aip->too_long = NhlMalloc(16 * sizeof(short));
         aip->last_too_long = NhlMalloc(16 * sizeof(short));
         memset(aip->too_long,0,16 * sizeof(short));

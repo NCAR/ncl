@@ -1,5 +1,5 @@
 /*
- *      $Id: datagrid.c,v 1.8 1999-09-11 01:06:06 dbrown Exp $
+ *      $Id: datagrid.c,v 1.9 1999-11-03 20:29:24 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -162,7 +162,8 @@ static NclExtValueRec *ReadMoreData
 
 static void FillVisibleGrid
 (
-        NgDataGridRec *dgrp
+        NgDataGridRec	*dgrp,
+	NhlBoolean	init
         )
 {
         NgDataGrid *dgp = &dgrp->datagrid;
@@ -276,10 +277,11 @@ static void FillVisibleGrid
                                      XmCONTENT,start_col,Buffer);
         }
 
-        if (save_cell_width < cell_width ||
+        if (init || save_cell_width < cell_width ||
             save_cell_width > cell_width + 1) {
                 XtVaSetValues(dgp->grid,
-                              XmNcolumnWidth,cell_width,
+                              XmNcolumnWidth,(int) (cell_width * 
+			       dgrp->go->go.x->avg_font_width_mult),
                               NULL);
         }
         
@@ -330,7 +332,7 @@ static void GridPositionCB
                       XmNlayoutFrozen,True,
                       NULL);
 
-        FillVisibleGrid(dgrp);
+        FillVisibleGrid(dgrp,False);
 
         XtVaSetValues(dgp->grid,
                       XmNlayoutFrozen,False,
@@ -379,7 +381,8 @@ static void SetIndexes
 #if 0                      
                       XmNscrollColumn,0,
 #endif                      
-                      XmNcolumnWidth,width,
+                      XmNcolumnWidth,
+		      (int)(width * dgrp->go->go.x->avg_font_width_mult),
                       NULL);
         return;
 }
@@ -633,7 +636,8 @@ static void SetData
                 XtVaSetValues(dgp->grid,
                               XmNcolumn,col_ix,
                               XmNcolumnType,XmHEADING,
-                              XmNcolumnWidth,width,
+                              XmNcolumnWidth,(int)
+			      (width * dgrp->go->go.x->avg_font_width_mult),
                               NULL);
 		dgrp->cell_widths[col_ix] = width;
         }
@@ -643,7 +647,7 @@ static void SetData
                       XmNscrollRow,0,
                       NULL);
 #endif        
-        FillVisibleGrid(dgrp);
+        FillVisibleGrid(dgrp,True);
         return;
 		
 }

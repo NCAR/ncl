@@ -1,5 +1,5 @@
 /*
- *      $Id: plotstylemenu.c,v 1.4 1999-09-30 21:42:32 dbrown Exp $
+ *      $Id: plotstylemenu.c,v 1.5 1999-11-03 20:29:30 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -844,6 +844,7 @@ static void CreateCB
 		XtFree(vartext);
 		return;
 	}
+	NgUpdatePage(priv->go->base.id,pub->page_id);
 
         if (!strcmp(pstyle->class_name,NGPLOTCLASS)){
 		brPlotObjCreateRec plot_create_rec;

@@ -1,5 +1,5 @@
 /*
- *      $Id: xapp.c,v 1.13 1999-09-11 01:07:09 dbrown Exp $
+ *      $Id: xapp.c,v 1.14 1999-11-03 20:29:32 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -350,6 +350,17 @@ XAppMgrInitialize
 	xapp->x.wm_delete_window = XmInternAtom(xapp->x.dpy,"WM_DELETE_WINDOW",
 									False);
 	xapp->x.wait = XCreateFontCursor(xapp->x.dpy,XC_watch);
+
+/*
+ * Eventually we should actually look at the font that used to compute
+ * a font width multiplier, but for now, since only default fonts are used,
+ * set it to 1.0 unless the Server is a Sun, where the average font width
+ * needs to be expanded to avoid a crowded look in Grid widget cells.
+ */
+	if (! strncmp(ServerVendor(xapp->x.dpy),"Sun",3))
+		xapp->x.avg_font_width_mult = 1.3;
+	else
+		xapp->x.avg_font_width_mult = 1.0;
 
 	LoadXresFromNres(_NhlGetResDB(new),xapp->x.dpy);
 

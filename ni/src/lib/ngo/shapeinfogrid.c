@@ -1,5 +1,5 @@
 /*
- *      $Id: shapeinfogrid.c,v 1.16 1999-09-11 01:06:54 dbrown Exp $
+ *      $Id: shapeinfogrid.c,v 1.17 1999-11-03 20:29:31 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -43,11 +43,12 @@ ColumnWidths
 {
 	int	i;
         NclApiVarInfoRec *vinfo = sirp->vinfo;
+	float	mult = sirp->go->go.x->avg_font_width_mult;
         char	sizestr[10];
 
         Buffer[0] = '\0';
 	for (i=0; i <= vinfo->n_dims+1; i++) {
-                sprintf(sizestr,"%dc ",sirp->cwidths[i]);
+                sprintf(sizestr,"%dc ",(int)(mult * sirp->cwidths[i]));
                 if (strlen(sizestr) + strlen(Buffer) + 1> Buflen) {
                         Buffer = NhlRealloc(Buffer,Buflen+BUFINC);
                 }

@@ -1,5 +1,5 @@
 /*
- *      $Id: datavargrid.c,v 1.5 1999-10-13 17:15:45 dbrown Exp $
+ *      $Id: datavargrid.c,v 1.6 1999-11-03 20:29:26 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -232,6 +232,9 @@ static void CreateShapeTool
 
 	XtVaSetValues(go->go.shell,
 		      XmNtitle,buf,
+#if 0
+		      XmNtransient,False,
+#endif
 		      NULL);
 
 	NgUpdateShaper(dvp->shaper,vdata->qfile,
