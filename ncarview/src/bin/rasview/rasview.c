@@ -1,5 +1,5 @@
 /*
- *	$Id: rasview.c,v 1.14 1993-11-02 22:07:22 clyne Exp $
+ *	$Id: rasview.c,v 1.15 1994-04-12 17:46:27 clyne Exp $
  */
 /*
  *	rasview.c
@@ -270,6 +270,7 @@ main(argc, argv)
 				progName, *files, opt.ifmt, ErrGetMsg()
 			);
 			exit_status++;
+			files++;
 			continue;	/* skip this file	*/
 		}
 
