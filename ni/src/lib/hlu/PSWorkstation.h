@@ -1,5 +1,5 @@
 /*
- *      $Id: PSWorkstation.h,v 1.4 1999-04-03 01:04:33 dbrown Exp $
+ *      $Id: PSWorkstation.h,v 1.5 2000-12-22 00:04:15 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -56,6 +56,12 @@
 
 #define	NhlNwkColorModel	"wkColorModel"
 #define	NhlCwkColorModel	"WkColorModel"
+
+#define	NhlNwkSuppressBackground	"wkSuppressBackground"
+#define	NhlCwkSuppressBackground	"WkSuppressBackground"
+
+#define	NhlNwkSuppressBBInfo	"wkSuppressBBInfo"
+#define	NhlCwkSuppressBBInfo	"WkSuppressBBInfo"
 
 /*
  * New Types.
