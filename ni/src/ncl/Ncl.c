@@ -24,6 +24,7 @@ extern "C" {
 #else
 #include <dlfcn.h>
 #endif
+extern NhlClass NhlworkstationClass;
 
 
 
@@ -136,6 +137,7 @@ stdin_fp = stdin;
 	NhlVACreate(&appid,"ncl",NhlappClass,NhlDEFAULT_APP,
 		NhlNappDefaultParent,1,
 		NhlNappUsrDir,"./",NULL);
+	NhlPalLoadColormapFiles(NhlworkstationClass);
 	errid = NhlErrGetID();
 	NhlVAGetValues(errid,NhlNerrFileName,&tmp,NULL);
 	
