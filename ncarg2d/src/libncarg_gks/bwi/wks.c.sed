@@ -1,5 +1,5 @@
 /*
- *      $Id: wks.c.sed,v 1.11 1994-02-18 20:55:06 haley Exp $
+ *      $Id: wks.c.sed,v 1.12 1994-03-01 21:50:41 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -585,7 +585,7 @@ wrtwks_(unit, buffer, length, status)
 		return(0);
 	}
 
-	if ( (*length * sizeof(long)) != RECORDSIZE)
+	if ( (*length * sizeof(int)) != RECORDSIZE)
 	{
 		(void) fprintf(stderr, 
 			"wks.c: Error in wrtwks_() - Invalid length (%d)\n",
@@ -697,7 +697,7 @@ rdwks_(unit, buffer, length, status)
 		return(0);
 	}
 
-	if ( (*length * sizeof(long)) != RECORDSIZE)
+	if ( (*length * sizeof(int)) != RECORDSIZE)
 	{
 		(void) fprintf(stderr, 
 			"wks.c: Error in rdwks_() - Invalid length (%d)\n",
