@@ -1,4 +1,4 @@
-.TH PCMPXY 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
+.TH PCMPXY 3NCARG "August 1993" UNIX "NCAR GRAPHICS"
 .na
 .nh
 .SH NAME
@@ -10,6 +10,10 @@ request mapping of characters from one X/Y coordinate
 system to another.
 .SH SYNOPSIS
 CALL PCMPXY (IMAP,XINP,YINP,XOTP,YOTP)
+.SH C-BINDING SYNOPSIS
+#include <ncarg/ncargC.h>
+.br
+void c_pcmpxy (int imap, float xinp, float yinp, float *xotp, float *yotp)
 .SH DESCRIPTION 
 .IP IMAP 12
 (an input expression of type INTEGER) specifies
@@ -199,6 +203,9 @@ being drawn, for example).
 Note: When IMAP is less than or equal to zero (which cannot
 currently happen, but may someday be possible), XOTP and
 YOTP are used differently, as shown in the table above.
+.SH C-BINDING DESCRIPTION
+The C-binding argument descriptions are the same as the FORTRAN 
+argument descriptions.
 .SH USAGE
 This routine is normally not called directly by the user
 (though it can be). It is called by each of the routines PCHIQU, PCMEQU, and
@@ -213,8 +220,10 @@ CALL PCMPXY (IMAP,XINP,YINP,XOTP,YOTP)
 The default version of PCMPXY does several useful mappings;
 a user version may be supplied to do others.
 .SH ACCESS
-To use PCMPXY, load the NCAR Graphics libraries @@@ ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.  
+To use PCMPXY, load the NCAR Graphics libraries ncarg, ncarg_gks,
+ncarg_c, and ncarg_loc, preferably in that order.  To use c_pcmpxy, load 
+the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
+ncarg_c, and ncarg_loc, preferably in that order.
 .SH SEE ALSO
 Online:
 plotchar,
