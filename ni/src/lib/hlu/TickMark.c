@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.c,v 1.79 2001-12-05 00:19:05 dbrown Exp $
+ *      $Id: TickMark.c,v 1.80 2001-12-13 01:57:46 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -51,7 +51,7 @@ static NhlResource resources[] = {
 	{ NhlNtmLabelAutoStride, NhlCLabelAutoStride, 
 	  NhlTBoolean, sizeof(NhlBoolean),
 	  NhlOffset(NhlTickMarkLayerRec,tick.label_auto_stride),
-	  NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
+	  NhlTImmediate,_NhlUSET((NhlPointer)False),0,NULL},
 	{ NhlNtmXUseBottom, NhlCtmXUseBottom, NhlTBoolean, sizeof(NhlBoolean),
 		  NhlOffset(NhlTickMarkLayerRec, tick.x_use_bottom),
 		  NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},

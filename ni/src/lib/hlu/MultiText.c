@@ -1,5 +1,5 @@
 /*
- *      $Id: MultiText.c,v 1.24 2001-12-05 00:19:04 dbrown Exp $
+ *      $Id: MultiText.c,v 1.25 2001-12-13 01:57:46 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -919,16 +919,27 @@ MultiTextSetValues
 			return NhlFATAL;
 		}
 		if (mtnew->multitext.auto_stride) {
-			int num_strings = mtreq->multitext.num_strings;
 			NhlFree(mtnew->multitext.extents);
-			mtnew->multitext.extents = 
-				(float*)NhlMalloc(num_strings*sizeof(float));
 			NhlFree(mtnew->multitext.do_draw);
+			mtnew->multitext.extents = NULL;
+			mtnew->multitext.do_draw = NULL;
+		}
+		
+	}
+	if (mtnew->multitext.auto_stride) {
+		int num_strings = mtreq->multitext.num_strings;
+		if (! mtnew->multitext.extents)
+			mtnew->multitext.extents  = 
+				(float*)NhlMalloc(num_strings*sizeof(float));
+		if (! mtnew->multitext.do_draw)
 			mtnew->multitext.do_draw = 
 				(NhlBoolean*)NhlMalloc
 				(num_strings*sizeof(NhlBoolean));
+		if (! (mtnew->multitext.extents &&
+		       mtnew->multitext.do_draw)) {
+			NHLPERROR((NhlFATAL,ENOMEM,NULL));
+			return NhlFATAL;
 		}
-		
 	}
 
 	/*

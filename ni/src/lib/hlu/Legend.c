@@ -1,5 +1,5 @@
 /*
- *      $Id: Legend.c,v 1.68 2001-12-05 00:19:03 dbrown Exp $
+ *      $Id: Legend.c,v 1.69 2001-12-13 01:57:45 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -242,7 +242,7 @@ static NhlResource resources[] = {
 	{ NhlNlgLabelAutoStride, NhlCLabelAutoStride, 
 	  NhlTBoolean, sizeof(NhlBoolean),
 	  NhlOffset(NhlLegendLayerRec,legend.label_auto_stride),
-	  NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},	
+	  NhlTImmediate,_NhlUSET((NhlPointer)False),0,NULL},	
 {NhlNlgLabelsOn, NhlClgLabelsOn, NhlTBoolean, 
 	 sizeof(NhlBoolean), NhlOffset(NhlLegendLayerRec,legend.labels_on),
 	 NhlTImmediate, _NhlUSET((NhlPointer) True),0,NULL},

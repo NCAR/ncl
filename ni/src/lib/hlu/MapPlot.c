@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.83 2001-12-08 00:57:41 dbrown Exp $
+ *      $Id: MapPlot.c,v 1.84 2001-12-13 01:57:45 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -499,8 +499,11 @@ static NhlResource resources[] = {
 	{NhlNpmTickMarkDisplayMode,NhlCpmTickMarkDisplayMode,
 	 NhlTAnnotationDisplayMode,sizeof(NhlAnnotationDisplayMode),
 	 Oset(display_tickmarks),NhlTImmediate,
-
 	 _NhlUSET((NhlPointer) NhlNEVER),_NhlRES_INTERCEPTED,NULL},
+	{ NhlNtmLabelAutoStride, NhlCLabelAutoStride, 
+	  NhlTBoolean, sizeof(NhlBoolean),
+	  Oset(label_auto_stride),
+	  NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 	 Oset(xb_major_length_set),NhlTImmediate,_NhlUSET((NhlPointer)True),
 	 _NhlRES_PRIVATE,NULL},
@@ -1066,6 +1069,7 @@ MapPlotClassPartInitialize
 					False,False,
 					NhlNpmTickMarkDisplayMode,
 					NhlNtmEqualizeXYSizes,
+					NhlNtmLabelAutoStride,
 					NhlNtmXBOn,
 					NhlNtmXBLabelsOn,
 					NhlNtmXBMode,
@@ -4567,6 +4571,8 @@ static NhlErrorTypes ManageTickMarks
 			if (! mpp->yr_font_height_set)
 				mpp->yr_font_height *= deltay;
 		}
+		if (mpp->label_auto_stride != ompp->label_auto_stride)
+			update = True;
 	}
 
 	if (! (init || update))
@@ -4614,6 +4620,9 @@ static NhlErrorTypes ManageTickMarks
 	ret = MIN(subret,ret);
 	
 	NhlSetSArg(&sargs[(*nargs)++],NhlNtmEqualizeXYSizes,True);
+	NhlSetSArg(&sargs[(*nargs)++],
+		   NhlNtmLabelAutoStride,mpp->label_auto_stride);
+
 	if (! xbcount) {
 		xbon = False;
 		xb_labels_on = False;

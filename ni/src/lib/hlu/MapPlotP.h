@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlotP.h,v 1.22 2001-12-05 00:19:04 dbrown Exp $
+ *      $Id: MapPlotP.h,v 1.23 2001-12-13 01:57:46 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -164,6 +164,7 @@ typedef struct NhlMapPlotLayerPart {
 	/* intercepted resources */
 
         NhlAnnotationDisplayMode display_tickmarks;
+	NhlBoolean	label_auto_stride;
 	NhlTickMarkMode	xb_mode;
 	NhlGenArray	xb_values;
 	NhlGenArray	xb_labels;
