@@ -1,5 +1,5 @@
 #
-#   $Id: yMakefile,v 1.5 1995-02-21 17:14:45 stautler Exp $
+#   $Id: yMakefile,v 1.6 1995-05-24 19:35:54 haley Exp $
 #
 #   Makefile for HLU Basic examples
 #
@@ -12,7 +12,8 @@ SYS_LIBS    =   $(CTOFLIBS) -lm
 
 CSRCS    = basic01c.c basic02c.c basic03c.c basic04c.c basic05c.c
 FSRCS    = basic01f.f basic02f.f basic03f.f basic04f.f basic05f.f
-NSRCS    = basic01n.ncl basic02n.ncl basic03n.ncl basic04n.ncl basic05n.ncl
+NSRCS    = basic01n.ncl basic02n.ncl basic03n.ncl basic04n.ncl basic05n.ncl \
+			basic06n.ncl
 COBJS    = basic01c.o basic02c.o basic03c.o basic04c.o basic05c.o
 FOBJS    = basic01f.o basic02f.o basic03f.o basic04f.o basic05f.o
 SRCS     = $(CSRCS) $(FSRCS)
