@@ -1,9 +1,10 @@
 #
-#	$Id: yMakefile,v 1.9 1996-09-30 23:39:01 fred Exp $
+#	$Id: yMakefile,v 1.10 1996-10-01 22:53:22 fred Exp $
 #
 
-MAN = ngdots nggcog nggetc nggeti nggetr nggsog ngmft ngmisc ngpict ngpswk \
-      ngreop ngritd ngsetc ngseti ngsetr ngsrat ngwsym ngmisc_params
+MAN = ngckop ngdots nggcog nggetc nggeti nggetr nggsog ngmft ngmisc \
+      ngpict ngpswk ngreop ngritd ngsetc ngseti ngsetr ngsrat \
+      ngwsym ngmisc_params
 
 # Install preformatted troff documents on systems without troff
 #if UseCatDirs
