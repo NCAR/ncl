@@ -1,6 +1,6 @@
 
 /*
- *      $Id: SrcTree.h,v 1.2 1993-10-06 22:54:41 ethan Exp $
+ *      $Id: SrcTree.h,v 1.3 1993-10-14 18:33:38 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -25,20 +25,6 @@
 #ifndef _NCSrcTree_h
 #define _NCSrcTree_h
 
-typedef struct src_node_list {
-        void *node;
-        struct src_node_list *next;
-}NclSrcListNode;
-
-typedef struct ncl_rcl_list {
-        int nelem;
-	int  line;
-	char *file;
-        struct src_node_list *list;
-        struct src_node_list *currentitem;
-}NclRclList;
-
-
 typedef enum {Ncl_BLOCK, Ncl_RETURN, Ncl_IFTHEN, Ncl_IFTHENELSE,
 			Ncl_VISBLKSET, Ncl_VISBLKGET, Ncl_VISBLKCREATE, 
 			Ncl_DOFROMTO, Ncl_DOFROMTOSTRIDE, 
@@ -61,25 +47,210 @@ typedef enum {Ncl_BLOCK, Ncl_RETURN, Ncl_IFTHEN, Ncl_IFTHENELSE,
 			Ncl_FILEVAR, Ncl_FILEDIMNUM, Ncl_FILEDIMNAME,
 			Ncl_FILEATT, Ncl_UNDEFERROR, Ncl_IDNEXPR, 
 			Ncl_RESOURCE, Ncl_GETRESOURCE, Ncl_OBJ,
-			Ncl_EOLN, Ncl_BREAK, Ncl_CONTINUE
+			Ncl_BREAK, Ncl_CONTINUE
                         } NclSrcTreeTypes;
 
+typedef enum { Ncl_READIT, Ncl_WRITEIT, Ncl_PARAMIT } NclReferenceTypes;
 
+typedef struct ncl_genericnode NclGenericNode, NclBreak, NclContinue;
+typedef struct ncl_genericrefnode NclGenericRefNode;
 
-typedef struct ncl_genericnode{
+typedef void (*NclSrcTreeDestroyProc)(
+#if 	NhlNeedProto
+	NclGenericNode* /*thenode*/
+#endif
+);
+
+struct ncl_genericnode{
 	NclSrcTreeTypes kind;
 	char *name;
 	int  line;
 	char *file;
-} NclGenericNode,NclEoln,NclBreak,NclContinue;
+	NclSrcTreeDestroyProc destroy_it;
+};
+
+struct ncl_genericrefnode {
+	NclSrcTreeTypes kind;
+        char *name;
+        int  line;
+        char *file;
+        NclSrcTreeDestroyProc destroy_it;
+	NclReferenceTypes ref_type;
+};
+
+typedef struct src_node_list {
+        void *node;
+        struct src_node_list *next;
+}NclSrcListNode;
+
+typedef struct ncl_rcl_list {
+        int nelem;
+	int  line;
+	char *file;
+	NclSrcTreeDestroyProc destroy_it;
+        struct src_node_list *list;
+        struct src_node_list *currentitem;
+}NclRclList;
 
 
+/* Start constructs that are ncl_genericrefnodes */
+
+typedef struct ncl_funccall{
+	NclSrcTreeTypes kind;
+	char *name;
+	int  line;
+	char *file;
+	NclSrcTreeDestroyProc destroy_it;
+	NclReferenceTypes ref_type;
+	NclSymbol *func;
+	NclSrcListNode *arg_list;
+} NclFuncCall; 
+
+typedef struct ncl_array{
+	NclSrcTreeTypes kind;
+	char *name;
+	int  line;
+	char *file;
+	NclSrcTreeDestroyProc destroy_it;
+	NclReferenceTypes ref_type;
+	struct ncl_rcl_list *rcl;
+} NclArray;
+
+typedef struct ncl_string{
+	NclSrcTreeTypes kind;
+	char *name;
+	int  line;
+	char *file;
+	NclSrcTreeDestroyProc destroy_it;
+	NclReferenceTypes ref_type;
+	char *string;
+} NclString; 
+
+typedef struct ncl_int {
+	NclSrcTreeTypes kind;
+	char *name;
+	int  line;
+	char *file;
+	NclSrcTreeDestroyProc destroy_it;
+	NclReferenceTypes ref_type;
+	int integer;
+} NclInt;
+
+typedef struct ncl_real{
+	NclSrcTreeTypes kind;
+	char *name;
+	int  line;
+	char *file;
+	NclSrcTreeDestroyProc destroy_it;
+	NclReferenceTypes ref_type;
+	float real;
+} NclReal;
+
+typedef struct ncl_file {
+	NclSrcTreeTypes kind;
+	char *name;
+	int  line;
+	char *file;
+	NclSrcTreeDestroyProc destroy_it;
+	NclReferenceTypes ref_type;
+	NclSymbol *dfile;
+}NclFile;
+
+typedef struct ncl_filevar {
+	NclSrcTreeTypes kind;
+	char *name;
+	int  line;
+	char *file;
+	NclSrcTreeDestroyProc destroy_it;
+	NclReferenceTypes ref_type;
+	NclSymbol *dfile;
+	NclSymbol *filevar;
+	NclSrcListNode *subscript_list;
+}NclFileVar;
+
+typedef struct ncl_vardim{
+	NclSrcTreeTypes kind;
+	char *name;
+	int  line;
+	char *file;
+	NclSrcTreeDestroyProc destroy_it;
+	NclReferenceTypes ref_type;
+	NclSymbol *sym;
+	union {
+		int	dimnum;
+		char 	*dimname;
+	}u;
+}NclVarDim;
+
+typedef struct ncl_filedim {
+	NclSrcTreeTypes kind;
+	char *name;
+	int  line;
+	char *file;
+	NclSrcTreeDestroyProc destroy_it;
+	NclReferenceTypes ref_type;
+	NclSymbol *dfile;
+	union {
+		int dimnum;
+		char * dimname;
+	}u;
+}NclFileDim;
+
+typedef struct ncl_fileatt {
+	NclSrcTreeTypes kind;
+	char *name;
+	int  line;
+	char *file;
+	NclSrcTreeDestroyProc destroy_it;
+	NclReferenceTypes ref_type;
+	NclSymbol *dfile;
+	char *attname;
+	NclSrcListNode *subscript_list;
+}NclFileAtt;
+
+typedef struct ncl_varatt{
+	NclSrcTreeTypes kind;
+	char *name;
+	int  line;
+	char *file;
+	NclSrcTreeDestroyProc destroy_it;
+	NclReferenceTypes ref_type;
+	NclSymbol *sym;
+	char *attname;
+	NclSrcListNode *subscript_list;
+}NclVarAtt;
+
+typedef struct ncl_var{
+	NclSrcTreeTypes kind;
+	char *name;
+	int  line;
+	char *file;
+	NclSrcTreeDestroyProc destroy_it;
+	NclReferenceTypes ref_type;
+	NclSymbol *sym;
+	NclSrcListNode *subscript_list;
+}NclVar;
+
+typedef struct ncl_coord {
+	NclSrcTreeTypes kind;
+	char *name;
+	int  line;
+	char *file;
+	NclSrcTreeDestroyProc destroy_it;
+	NclReferenceTypes ref_type;
+	NclSymbol *sym;
+	char *coord_name;
+	NclSrcListNode *subscript_list;
+}NclCoord;
+
+/* End of structures that are of type ncl_genericrefnode */
 
 typedef struct ncl_block{
 	NclSrcTreeTypes kind;
 	char *name;
 	int  line;
 	char *file;
+	NclSrcTreeDestroyProc destroy_it;
 	NclSrcListNode *stmnts;
 } NclBlock; 
 
@@ -88,6 +259,7 @@ typedef struct ncl_visblk{
 	char *name;
 	int  line;
 	char *file;
+	NclSrcTreeDestroyProc destroy_it;
 	void *objname;
 	void *objtype;
 	NclSrcListNode *resource_list;
@@ -97,27 +269,28 @@ typedef struct ncl_resource{
 	NclSrcTreeTypes kind;
 	char *name;
 	int  line;
+	NclSrcTreeDestroyProc destroy_it;
 	char *file;
 	char *res_name;
 	void *expr;
 }NclResource;
-
 
 typedef struct ncl_getresource{
 	NclSrcTreeTypes kind;
 	char *name;
 	int  line;
 	char *file;
+	NclSrcTreeDestroyProc destroy_it;
 	char *res_name;
 	NclSymbol *var;
 }NclGetResource;
-
 
 typedef struct ncl_return{
 	NclSrcTreeTypes kind;
 	char *name;
 	int  line;
 	char *file;
+	NclSrcTreeDestroyProc destroy_it;
 	void *expr;
 } NclReturn; 
 
@@ -126,6 +299,7 @@ typedef struct ncl_ifthen{
 	char *name;
 	int  line;
 	char *file;
+	NclSrcTreeDestroyProc destroy_it;
 	void *cond_expr;
 	NclSrcListNode *block_stmnt_list;
 } NclIfThen; 
@@ -135,17 +309,18 @@ typedef struct ncl_ifthenelse{
 	char *name;
 	int  line;
 	char *file;
+	NclSrcTreeDestroyProc destroy_it;
 	void *cond_expr;
 	NclSrcListNode *block_stmnt_list1;
 	NclSrcListNode *block_stmnt_list2;
 } NclIfThenElse;
-
 
 typedef struct ncl_dofromto {
 	NclSrcTreeTypes kind;
 	char *name;
 	int  line;
 	char *file;
+	NclSrcTreeDestroyProc destroy_it;
 	int	new_inc_var;
 	NclSymbol *inc_var;
 	void	*start_expr;
@@ -158,6 +333,7 @@ typedef struct ncl_dofromtostride{
 	char *name;
 	int  line;
 	char *file;
+	NclSrcTreeDestroyProc destroy_it;
 	int new_inc_var;
 	NclSymbol *inc_var;
 	void	*start_expr;
@@ -171,6 +347,7 @@ typedef struct ncl_proccall{
 	char *name;
 	int  line;
 	char *file;
+	NclSrcTreeDestroyProc destroy_it;
 	NclSymbol *proc;
 	NclSrcListNode *arg_list;
 } NclProcCall;
@@ -180,11 +357,9 @@ typedef struct ncl_funcdef{
 	char *name;
 	int  line;
 	char *file;
+	NclSrcTreeDestroyProc destroy_it;
 	NclSymbol	*func;
 	NclSrcListNode  *dec_list;
-/*
-	NclSrcListNode  *local_dec_list;
-*/
 	void		*block;
 	NclSymTableListNode *scope;
 } NclFuncDef; 
@@ -194,6 +369,7 @@ typedef struct ncl_externfuncdef {
 	char *name;
 	int  line;
 	char *file;
+	NclSrcTreeDestroyProc destroy_it;
 	NclSymbol	*func;
 	NclSrcListNode  *dec_list;
 	char *path_info_string;
@@ -205,6 +381,7 @@ typedef struct ncl_localvardec{
 	char *name;
 	int  line;
 	char *file;
+	NclSrcTreeDestroyProc destroy_it;
 	NclSymbol *var;
 	NclSrcListNode *dim_size_list;
 	NclSymbol *data_type;
@@ -215,6 +392,7 @@ typedef struct ncl_dimsizelistnode{
 	char *name;
 	int  line;
 	char *file;
+	NclSrcTreeDestroyProc destroy_it;
 	int   any;
 	int   size;
 } NclDimSizeListNode; 
@@ -224,11 +402,9 @@ typedef struct ncl_procdef{
 	char *name;
 	int  line;
 	char *file;
+	NclSrcTreeDestroyProc destroy_it;
 	NclSymbol *proc;
 	NclSrcListNode *dec_list;
-/*
-	NclSrcListNode *local_dec_list;
-*/
 	void	*block;
 	NclSymTableListNode *scope;
 } NclProcDef;
@@ -238,6 +414,7 @@ typedef struct ncl_externprocdef{
 	char *name;
 	int  line;
 	char *file;
+	NclSrcTreeDestroyProc destroy_it;
 	NclSymbol * proc;
 	NclSrcListNode *dec_list;
 	char *path_info_string;
@@ -249,6 +426,7 @@ typedef struct ncl_assign{
 	char *name;
 	int  line;
 	char *file;
+	NclSrcTreeDestroyProc destroy_it;
 	int  new_left;
 	void *left_side;
 	void *right_side;
@@ -260,6 +438,7 @@ typedef struct ncl_idnref{
 	char *name;
 	int  line;
 	char *file;
+	NclSrcTreeDestroyProc destroy_it;
 	void *thename;
 	NclSrcListNode *subscript_list;
 } NclIdnRef;
@@ -269,6 +448,7 @@ typedef struct ncl_subscript{
 	char *name;
 	int  line;
 	char *file;
+	NclSrcTreeDestroyProc destroy_it;
 	void *subexpr;
 	char *dimname;
 } NclSubscript; 
@@ -278,6 +458,7 @@ typedef struct ncl_singleindex{
 	char *name;
 	int  line;
 	char *file;
+	NclSrcTreeDestroyProc destroy_it;
 	void *expr;
 } NclSingleIndex;
 
@@ -286,6 +467,7 @@ typedef struct ncl_rangeindex{
 	char *name;
 	int  line;
 	char *file;
+	NclSrcTreeDestroyProc destroy_it;
 	void *start_expr;
 	void *end_expr;	
 	void *stride;
@@ -296,6 +478,7 @@ typedef struct ncl_monoexpr{
 	char *name;
 	int  line;
 	char *file;
+	NclSrcTreeDestroyProc destroy_it;
 	void *expr;
 } NclMonoExpr; 
 
@@ -304,6 +487,7 @@ typedef struct ncl_idnexpr {
 	char *name;
 	int  line;
 	char *file;
+	NclSrcTreeDestroyProc destroy_it;
 	void *idn_ref_node;
 } NclIdnExpr;
 
@@ -312,151 +496,29 @@ typedef struct ncl_dualexpr{
 	char *name;
 	int  line;
 	char *file;
+	NclSrcTreeDestroyProc destroy_it;
 	void *left_expr;
 	void *right_expr;
 } NclDualExpr; 
-
-typedef struct ncl_real{
-	NclSrcTreeTypes kind;
-	char *name;
-	int  line;
-	char *file;
-	float real;
-} NclReal;
-
-typedef struct ncl_int {
-	NclSrcTreeTypes kind;
-	char *name;
-	int  line;
-	char *file;
-	int integer;
-} NclInt;
-
-typedef struct ncl_string{
-	NclSrcTreeTypes kind;
-	char *name;
-	int  line;
-	char *file;
-	char *string;
-} NclString; 
-
-typedef struct ncl_funccall{
-	NclSrcTreeTypes kind;
-	char *name;
-	int  line;
-	char *file;
-	NclSymbol *func;
-	NclSrcListNode *arg_list;
-} NclFuncCall; 
-
-typedef struct ncl_array{
-	NclSrcTreeTypes kind;
-	char *name;
-	int  line;
-	char *file;
-	struct ncl_rcl_list *rcl;
-} NclArray;
 
 typedef struct ncl_dowhile{
 	NclSrcTreeTypes kind;
 	char *name;
 	int  line;
 	char *file;
+	NclSrcTreeDestroyProc destroy_it;
 	void *cond_expr;
 	NclSrcListNode *stmnts;
 } NclDoWhile;
-
-typedef struct ncl_file {
-	NclSrcTreeTypes kind;
-	char *name;
-	int  line;
-	char *file;
-	NclSymbol *dfile;
-}NclFile;
-
-typedef struct ncl_filevar {
-	NclSrcTreeTypes kind;
-	char *name;
-	int  line;
-	char *file;
-	NclSymbol *dfile;
-	NclSymbol *filevar;
-	NclSrcListNode *subscript_list;
-}NclFileVar;
-
-typedef struct ncl_filedim {
-	NclSrcTreeTypes kind;
-	char *name;
-	int  line;
-	char *file;
-	NclSymbol *dfile;
-	union {
-		int dimnum;
-		char * dimname;
-	}u;
-}NclFileDim;
-
-typedef struct ncl_fileatt {
-	NclSrcTreeTypes kind;
-	char *name;
-	int  line;
-	char *file;
-	NclSymbol *dfile;
-	char *attname;
-	NclSrcListNode *subscript_list;
-}NclFileAtt;
-	
-
-
-typedef struct ncl_var{
-	NclSrcTreeTypes kind;
-	char *name;
-	int  line;
-	char *file;
-	NclSymbol *sym;
-	NclSrcListNode *subscript_list;
-}NclVar;
 
 typedef struct ncl_obj{
 	NclSrcTreeTypes kind;
 	char *name;
 	int  line;
 	char *file;
+	NclSrcTreeDestroyProc destroy_it;
 	NclSymbol *obj;
 }NclObj;
-
-typedef struct ncl_vardim{
-	NclSrcTreeTypes kind;
-	char *name;
-	int  line;
-	char *file;
-	NclSymbol *sym;
-	union {
-		int	dimnum;
-		char 	*dimname;
-	}u;
-}NclVarDim;
-
-typedef struct ncl_varatt{
-	NclSrcTreeTypes kind;
-	char *name;
-	int  line;
-	char *file;
-	NclSymbol *sym;
-	char *attname;
-	NclSrcListNode *subscript_list;
-}NclVarAtt;
-
-typedef struct ncl_coord {
-	NclSrcTreeTypes kind;
-	char *name;
-	int  line;
-	char *file;
-	NclSymbol *sym;
-	char *coord_name;
-	NclSrcListNode *subscript_list;
-}NclCoord;
-
 
 extern void *_NclMakeReturn(
 #ifdef NhlNeedProto
@@ -525,9 +587,6 @@ extern void *_NclMakeNFunctionDef(
 #ifdef NhlNeedProto
 NclSymbol * /* func */,
 NclSrcListNode * /*dec_list*/,
-/*
-NclSrcListNode * /*local_dec_list*/,
-*/
 void*		/* block */,
 NclSymTableListNode * /*scope*/
 #endif
@@ -560,9 +619,6 @@ extern void * _NclMakeProcDef(
 #ifdef NhlNeedProto
 NclSymbol * /*var*/,
 NclSrcListNode * /*arg_list */,
-/*
-NclSrcListNode * /*locals*/,
-*/
 void*	/*block*/,
 NclSymTableListNode * /*thescope*/
 #endif
@@ -664,20 +720,6 @@ extern void * _NclMakeFuncCall(
 	NclSrcListNode * /*argument_list*/,
 	NclSrcTreeTypes  /*type*/
 #endif
-);
-
-extern void *_NclMakeEFuncCall(
-#ifdef NhlNeedProto
-	NclSymbol * /*fname*/,
-        NclSrcListNode * /*argument_list*/
-#endif 
-);
-
-extern void *_NclMakeNFuncCall(
-#ifdef NhlNeedProto
-        NclSymbol * /*fname*/,
-        NclSrcListNode * /*argument_list*/
-#endif  
 );
 
 extern void *_NclMakeArrayNode(
@@ -812,10 +854,23 @@ void
 
 extern void *_NclMakeBreakCont(
 #ifdef NhlNeedProto
-NclSymbol *thesym;
+NclSymbol * /*thesym*/
 #endif
 );
 
+extern void _NclPrintTree(
+#ifdef NhlNeedProto
+void * /*root*/,
+FILE * /*fp*/
+#endif
+);
+
+extern void _NclFreeTree(
+#ifdef NhlNeedProto
+void *root,
+int is_error
+#endif
+);
 
 
 

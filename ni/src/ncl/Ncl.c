@@ -4,20 +4,19 @@
 #include <Symbol.h>
 #include <y.tab.h>
 #include <Machine.h>
+#include <unistd.h>
 
 extern FILE *yyin;
 FILE *thefptr;
 FILE *theoptr;
 int cmd_line;
+extern int cur_line_number;
+extern int yyparse();
 
 #define BUFF_SIZE 512
 
 main() {
 
-	FILE *fp;
-	char buffer[BUFF_SIZE];
-	int i,j=0;
-	int linenumber = 0;
 #ifdef YYDEBUG
 	extern int yydebug;
 /*		
@@ -38,7 +37,7 @@ main() {
 	_NclInitSymbol();	
 
 	if(cmd_line)	
-		fprintf(stdout,"ncl 1> ");
+		fprintf(stdout,"ncl %d> ",0);
 	yyparse();
 	fclose(thefptr);
 	exit(0);

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: defs.h,v 1.2 1993-10-06 22:54:51 ethan Exp $
+ *      $Id: defs.h,v 1.3 1993-10-14 18:33:50 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -29,6 +29,7 @@
 #define NCL_MAX_STRING 256
 #define NCL_MAX_ATTRIBUTES 32
 #define NCL_MAX_SYMS_PER_STMNT 300
+#define NCL_SRC_TREE_NODE_LIST_SIZE 1000
 
 /*
 * Maximum number of error messages to be printed

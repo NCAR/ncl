@@ -1,6 +1,6 @@
 
 #
-#      $Id: yMakefile,v 1.2 1993-10-06 22:54:59 ethan Exp $
+#      $Id: yMakefile,v 1.3 1993-10-14 18:33:58 ethan Exp $
 #
 #########################################################################
 #									#
@@ -65,6 +65,7 @@ OBJS	= Machine.o Memory.o Printtoken.o SrcTree.o Symbol.o Translate.o \
 
 APIOBJS	= $(API_OBJS) $(OBJS)
 EXEOBJS	= $(EXE_OBJS) $(OBJS)
+ALLOBJS = $(API_OBJS) $(OBJS) $(EXE_OBJS)
 
 InstallTarget(ncl,$(INSTALL_INC),$(XAPPPATH))
 InstallTarget(libncl.a,$(INSTALL_LIB),$(LIBPATH))
@@ -73,7 +74,7 @@ DependTarget($(ALLSRCS))
 ncl:: $(EXEOBJS) $(DEPLIBS)
 	$(CC_LD) $(CC_LDOPTIONS) -o ncl $(EXEOBJS) $(PROG_LIBS) $(CSTATIC) $(LDLIBS) $(CDYNAMIC) $(EXTRA_LDLIBS)
 InstallTarget(ncl, $(INSTALL_BIN),$(BINPATH))
-CleanFilesTarget(ncl $(ALLOBJS))
+CleanFilesTarget(ncl $(ALLOBJS) y.tab.c y.tab.h lex.yy.c)
 
 libncl.a::
 	-$(RM) $(APIOBJS) y.tab.h y.tab.c lex.yy.c

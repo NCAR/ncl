@@ -44,15 +44,17 @@ let	[_a-zA-Z]
 alnum   [_a-zA-Z0-9]
 white	[\t ]
 digit	[0-9]
-%START AA 
+%START AA
 %%
 <AA>[^\n] {
 	cur_line_number++;
+	fprintf(stdout,"----->inc'ing %d<-----\n",cur_line_number);
 	BEGIN 0;
 	yyless(yyleng-1);
 }
 <AA>[\n] {
 	cur_line_number++;
+	fprintf(stdout,"----->inc'ing %d<-----\n",cur_line_number);
 	printtoken(yytext[0],(char*)NULL); 
 	cur_line_length += yyleng;
 	strcpy(cur_line_text_pos,yytext);
@@ -82,6 +84,7 @@ digit	[0-9]
 	*cur_line_text_pos = '\0';
 	cur_line_text_pos = &(cur_line_text[0]);
 	cur_line_number++;
+	fprintf(stdout,"----->inc'ing %d<-----\n",cur_line_number);
 	return EOLN;
 }
 [\n] {
@@ -94,6 +97,7 @@ digit	[0-9]
 	cur_line_length = 0;
 	*cur_line_text_pos = '\0';
 	cur_line_text_pos = &(cur_line_text[0]);
+	fprintf(stdout,"NORMAL EOLN\n");
 	BEGIN AA;
 	return EOLN;
 }
@@ -102,69 +106,6 @@ digit	[0-9]
 	cur_line_text_pos += yyleng;
 	cur_line_length += yyleng;
 	
-}
-".gt."|".GT." {
-	printtoken(GT,(char*)NULL);
-	cur_line_length += yyleng;
-	strcpy(cur_line_text_pos,yytext);
-	cur_line_text_pos += yyleng;
-	return GT;
-}
-".lt."|".LT." {
-	printtoken(LT,(char*)NULL);
-	cur_line_length += yyleng;
-	strcpy(cur_line_text_pos,yytext);
-	cur_line_text_pos += yyleng;
-	return LT;
-} 
-".le."|".LE." { 
-	printtoken(LE,(char*)NULL);
-	cur_line_length += yyleng;
-	strcpy(cur_line_text_pos,yytext);
-	cur_line_text_pos += yyleng;
-	return LE;
-}
-".eq."|".EQ." { 
-	printtoken(EQ,(char*)NULL);
-	cur_line_length += yyleng;
-	strcpy(cur_line_text_pos,yytext);
-	cur_line_text_pos += yyleng;
-	return EQ;
-}
-".ge."|".GE." {
-	printtoken(GE,(char*)NULL);
-	cur_line_length += yyleng;
-	strcpy(cur_line_text_pos,yytext);
-	cur_line_text_pos += yyleng;
-	return GE;
-}
-".ne."|".NE." {
-	printtoken(NE,(char*)NULL);
-	cur_line_length += yyleng;
-	strcpy(cur_line_text_pos,yytext);
-	cur_line_text_pos += yyleng;
-	return NE;
-}
-".and."|".AND." {
-	printtoken(AND,(char*)NULL);
-	cur_line_length += yyleng;
-	strcpy(cur_line_text_pos,yytext);
-	cur_line_text_pos += yyleng;
-	return AND;
-}
-".or."|".OR." {
-	printtoken(OR,(char*)NULL);
-	cur_line_length += yyleng;
-	strcpy(cur_line_text_pos,yytext);
-	cur_line_text_pos += yyleng;
-	return OR;
-}
-".xor."|".XOR." {
-	printtoken(XOR,(char*)NULL);
-	cur_line_length += yyleng;
-	strcpy(cur_line_text_pos,yytext);
-	cur_line_text_pos += yyleng;
-	return XOR;
 }
 {digit}+\.|{digit}*\.{digit}+ {
 		sscanf(yytext,"%lf",&(yylval.real));
@@ -280,6 +221,69 @@ digit	[0-9]
 	cur_line_text_pos += yyleng;
         return INT;
 }
+".gt."|".GT." {
+	printtoken(GT,(char*)NULL);
+	cur_line_length += yyleng;
+	strcpy(cur_line_text_pos,yytext);
+	cur_line_text_pos += yyleng;
+	return GT;
+}
+".lt."|".LT." {
+	printtoken(LT,(char*)NULL);
+	cur_line_length += yyleng;
+	strcpy(cur_line_text_pos,yytext);
+	cur_line_text_pos += yyleng;
+	return LT;
+} 
+".le."|".LE." { 
+	printtoken(LE,(char*)NULL);
+	cur_line_length += yyleng;
+	strcpy(cur_line_text_pos,yytext);
+	cur_line_text_pos += yyleng;
+	return LE;
+}
+".eq."|".EQ." { 
+	printtoken(EQ,(char*)NULL);
+	cur_line_length += yyleng;
+	strcpy(cur_line_text_pos,yytext);
+	cur_line_text_pos += yyleng;
+	return EQ;
+}
+".ge."|".GE." {
+	printtoken(GE,(char*)NULL);
+	cur_line_length += yyleng;
+	strcpy(cur_line_text_pos,yytext);
+	cur_line_text_pos += yyleng;
+	return GE;
+}
+".ne."|".NE." {
+	printtoken(NE,(char*)NULL);
+	cur_line_length += yyleng;
+	strcpy(cur_line_text_pos,yytext);
+	cur_line_text_pos += yyleng;
+	return NE;
+}
+".and."|".AND." {
+	printtoken(AND,(char*)NULL);
+	cur_line_length += yyleng;
+	strcpy(cur_line_text_pos,yytext);
+	cur_line_text_pos += yyleng;
+	return AND;
+}
+".or."|".OR." {
+	printtoken(OR,(char*)NULL);
+	cur_line_length += yyleng;
+	strcpy(cur_line_text_pos,yytext);
+	cur_line_text_pos += yyleng;
+	return OR;
+}
+".xor."|".XOR." {
+	printtoken(XOR,(char*)NULL);
+	cur_line_length += yyleng;
+	strcpy(cur_line_text_pos,yytext);
+	cur_line_text_pos += yyleng;
+	return XOR;
+}
 "->"{alnum}+ {
 
 	strcpy(yylval.str,yytext);
@@ -357,9 +361,6 @@ digit	[0-9]
 	return DIM;
 }
 [&]{let}{alnum}* {
-	NclSymbol *s;
-	NclSymbol *f;
-	char *tmp;
 
 	strcpy(yylval.str,yytext);
 	printtoken(COORD,yylval.str);
@@ -367,6 +368,7 @@ digit	[0-9]
 	strcpy(cur_line_text_pos,yytext);
 	cur_line_text_pos += yyleng;
 	return COORD;
+/* NOTREACHED */
 }
 ["][^"\n]*["] {
 	char *tmp;

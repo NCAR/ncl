@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Symbol.h,v 1.2 1993-10-06 22:54:46 ethan Exp $
+ *      $Id: Symbol.h,v 1.3 1993-10-14 18:33:43 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -80,7 +80,7 @@ extern NclSymbol *_NclAddInScope(
 #endif
 );
 
-extern NclSymbol *_NclDeleteSymInScope(
+extern void _NclDeleteSymInScope(
 #ifdef NhlNeedProto
 NclSymTableListNode * /*thetable*/,
 NclSymbol * /*sym*/

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.h,v 1.2 1993-10-06 22:54:25 ethan Exp $
+ *      $Id: Machine.h,v 1.3 1993-10-14 18:33:24 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -21,6 +21,8 @@
  *	Description:	contains necessary extern definitions so other
  *			parts of NCL can access pc,sp and fp.
  */
+#ifndef _NCMachine_h
+#define _NCMachine_h
 /*
 * This is dynamically allocated so that ReAlloc can be used to grow the
 * machine incase of overflow. The reason for making the machine a stack
@@ -43,7 +45,7 @@ typedef struct mach_stack {
 
 extern void _NclPush(
 #ifdef NhlNeedProto
-void * /*data*/
+NclStackEntry /*data*/
 #endif
 );
 
@@ -121,3 +123,21 @@ extern void _NclPushMachine(
 void * /*the_mach_rec */
 #endif
 );
+
+extern int _NclGetCurrentOffset(
+#ifdef NhlNeedProto 
+void
+#endif
+);
+
+extern int _NclPrintMachine(
+#ifdef NhlNeedProto
+int /*from */,
+int /*to*/,
+FILE * /* fp*/
+#endif
+);
+
+
+
+#endif

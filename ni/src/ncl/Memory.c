@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Memory.c,v 1.1 1993-09-24 23:40:40 ethan Exp $
+ *      $Id: Memory.c,v 1.2 1993-10-14 18:33:26 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -23,6 +23,7 @@
 
 #include <ncarg/hlu/hlu.h>
 #include <errno.h>
+#include <defs.h>
 
 
 void

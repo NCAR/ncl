@@ -85,7 +85,7 @@ char *cur_load_file = NULL;
 %type <src_node> procedure function_def procedure_def block do conditional
 %type <src_node> visblk statement_list
 %type <src_node> declaration identifier expr
-%type <src_node> subscript0 eoln opt_eoln break_cont
+%type <src_node> subscript0 break_cont
 %type <src_node> subscript1 subexpr primary function array error
 %type <list> the_list arg_dec_list subscript_list opt_arg_list 
 %type <list> block_statement_list resource_list dim_size_list vcreate 
@@ -97,8 +97,9 @@ char *cur_load_file = NULL;
 statement_list :  statement eoln			{	
 								int strt;
 
-								if(cmd_line)
-									fprintf(stdout,"ncl %d> ",yylineno);
+								if(cmd_line) {
+									fprintf(stdout,"ncl %d> ",cur_line_number);
+								}
 								if(($1 != NULL)&&!(is_error)) {
 									_NclPrintTree($1,thefptr);
 									strt = _NclTranslate($1,thefptr);
@@ -116,20 +117,18 @@ statement_list :  statement eoln			{
 									return(1);
 #endif
 								}
-								$$ == $2;
 							}
 	| statement_list statement eoln			{		
 								int strt;
 
 								if(cmd_line)
-									fprintf(stdout,"ncl %d> ",yylineno);
+									fprintf(stdout,"ncl %d> ",cur_line_number);
 								if(($2 != NULL) && !(is_error)) {
 									_NclPrintTree($2,thefptr);
 									strt = _NclTranslate($2,thefptr);
 									_NclPrintMachine(strt,-1,theoptr);
 									_NclResetNewSymStack();
 									_NclFreeTree($2,is_error);
-									$$ = $3;
 #ifdef MAKEAPI
 									return(0);
 #endif 
@@ -137,7 +136,6 @@ statement_list :  statement eoln			{
 									_NclDeleteNewSymStack();
 									_NclFreeTree($2,is_error);
 									is_error = 0;
-									$$ = $3;
 #ifdef MAKEAPI
 									return(1);
 #endif
@@ -148,29 +146,29 @@ statement_list :  statement eoln			{
 * These record statments have to occur here so that the record command isn't written out
 * by the scanner. The scanner writes each line when an EOLN is scanned.
 */
-								char *tmp_string;
 								recfp = fopen(_NhlResolvePath($3),"w"); 
-								tmp_string = $3;
 								if(recfp != NULL){ 
 									rec =1;
 								} else {
 									NhlPError(WARNING,errno,"Could not open record file");
 									rec = 0;
 								}
-								$$ = $4;
+								if(cmd_line)
+									fprintf(stdout,"ncl %d> ",cur_line_number);
 #ifdef MAKEAPI
 									return(0);
 #endif 
 							}
 	| RECORD STRING eoln				{ 
-								char *tmp_string;
 								recfp = fopen(_NhlResolvePath($2),"w"); 
-								tmp_string = $2;
 								if(recfp != NULL){ 
 									rec =1;
 								} else {
 									NhlPError(WARNING,errno,"Could not open record file");
 									rec = 0;
+								}
+								if(cmd_line) {
+									fprintf(stdout,"ncl %d> ",cur_line_number);
 								}
 #ifdef MAKEAPI
 									return(0);
@@ -191,7 +189,7 @@ statement_list :  statement eoln			{
 								} else {
 									tmp_file = fopen(_NhlResolvePath($2),"r");	
 									if(tmp_file != NULL) {
-										top_level_line = cur_line_number;
+										top_level_line = cur_line_number + 1;
 										cur_line_number = 0;
 										yyin = tmp_file;
 										cmd_line = isatty(fileno(tmp_file));
@@ -213,11 +211,11 @@ statement_list :  statement eoln			{
 								} else {
 									tmp_file = fopen(_NhlResolvePath($3),"r");	
 									if(tmp_file != NULL) {
-										top_level_line = cur_line_number;
+										top_level_line = cur_line_number + 1;
 										cur_line_number = 0;
 										yyin = tmp_file;
 										loading = 1;
-										cur_load_file = (char*)NclMalloc(strlen((char*)$2)+1);
+										cur_load_file = (char*)NclMalloc(strlen((char*)$3)+1);
 										cmd_line = isatty(fileno(tmp_file));
 										strcpy(cur_load_file,$3);
 									} else {
@@ -238,7 +236,7 @@ block_statement_list : statement eoln {
 									} else {
 										_NclResetNewSymStack();
 									}
-									fprintf(stdout,"ncl %d> ",yylineno);
+									fprintf(stdout,"ncl %d> ",cur_line_number);
 								}
 								if($1 != NULL) {
 									$$ = _NclMakeNewListNode();
@@ -265,7 +263,7 @@ block_statement_list : statement eoln {
 									} else {
 										_NclResetNewSymStack();
 									}
-									fprintf(stdout,"ncl %d> ",yylineno);
+									fprintf(stdout,"ncl %d> ",cur_line_number);
 								}
 								if($1 == NULL) {
 									if($2 != NULL) {
@@ -300,9 +298,7 @@ block_statement_list : statement eoln {
 								}
 							}
 	| block_statement_list RECORD STRING eoln				{ 
-								char *tmp_string;
 								recfp = fopen(_NhlResolvePath($3),"w"); 
-								tmp_string = $3;
 								if(recfp != NULL){ 
 									rec =1;
 								} else {
@@ -310,17 +306,19 @@ block_statement_list : statement eoln {
 									rec = 0;
 								}
 								$$ = $1;
+								if(cmd_line)
+									fprintf(stdout,"ncl %d> ",cur_line_number);
 							}
 	| RECORD STRING eoln				{ 
-								char *tmp_string;
 								recfp = fopen(_NhlResolvePath($2),"w"); 
-								tmp_string = $2;
 								if(recfp != NULL){ 
 									rec =1;
 								} else {
 									NhlPError(WARNING,errno,"Could not open record file");
 									rec = 0;
 								}
+								if(cmd_line)
+									fprintf(stdout,"ncl %d> ",cur_line_number);
 								$$ = NULL;
 							}
 /*
@@ -338,7 +336,7 @@ block_statement_list : statement eoln {
 								} else {
 									tmp_file = fopen(_NhlResolvePath($2),"r");	
 									if(tmp_file != NULL) {
-										top_level_line = cur_line_number;
+										top_level_line = cur_line_number +1;
 										cur_line_number = 0;
 										yyin = tmp_file;
 										cmd_line = isatty(fileno(tmp_file));
@@ -363,12 +361,12 @@ block_statement_list : statement eoln {
 								} else {
 									tmp_file = fopen(_NhlResolvePath($3),"r");	
 									if(tmp_file != NULL) {
-										top_level_line = cur_line_number;
+										top_level_line = cur_line_number +1;
 										cur_line_number = 0;
 										yyin = tmp_file;
 										cmd_line = isatty(fileno(tmp_file));
 										loading = 1;
-										cur_load_file = (char*)NclMalloc((unsigned)strlen((char*)$2)+1);
+										cur_load_file = (char*)NclMalloc((unsigned)strlen((char*)$3)+1);
 										strcpy(cur_load_file,$3);
 									} else {
 										NhlPError(WARNING,E_UNKNOWN,"Could not open %s",$3);
@@ -380,11 +378,15 @@ block_statement_list : statement eoln {
 							}
 ;
 
-opt_eoln : 		{ $$ = NULL; }
-	| eoln		{ yyerrok; $$ = $1;}
+opt_eoln : 		{ /* do nothing */ }
+	| eoln		{ 
+				yyerrok; 
+				if(cmd_line)
+                                      fprintf(stdout,"ncl %d> ",cur_line_number);
+			}
 ;
 
-eoln : EOLN 						{ yyerrok; $$ = _NclMakeEoln();}
+eoln : EOLN 						{ yyerrok; }
 
 statement :     					{ $$ = NULL; }
 	| 	assignment 				{
@@ -431,6 +433,7 @@ statement :     					{ $$ = NULL; }
 								if(rec ==1 ) {
 									fclose(recfp);
 								} 
+								$$ = NULL;
 							}
 ;
 
@@ -656,10 +659,12 @@ do_stmnt : block_statement_list						{
 ;
 
 do : DO identifier '=' expr ',' expr do_stmnt END DO 			 	{ 
+										((NclGenericRefNode*)$2)->ref_type = Ncl_WRITEIT;
 										
 										$$ = _NclMakeDoFromTo($2,$4, $6, $7);
 									}
-	| DO identifier '=' expr ',' expr ',' expr do_stmnt END DO	 	{ 
+	| DO identifier '=' expr ',' expr ',' expr do_stmnt END DO	 { 
+										((NclGenericRefNode*)$2)->ref_type = Ncl_WRITEIT;
 										$$ = _NclMakeDoFromToStride($2,$4,$6,$8,$9);
 									}
 	| DO WHILE expr block_statement_list END DO {   
@@ -732,6 +737,12 @@ opt_arg_list : LP arg_list RP			{ $$ = $2;    }
 ;
 
 arg_list: expr					{ 
+						/* Code to check type of expression, iff its and identifier then stamp it with
+							the Ncl_PARAMIT tag so the translator can add extra code */
+							if(((NclGenericNode*)$1)->kind == Ncl_IDNEXPR) {
+								((NclGenericRefNode*)((NclIdnExpr*)$1)->idn_ref_node)->ref_type =
+									Ncl_PARAMIT;
+							}
 							$$ = _NclMakeNewListNode();
 							$$->next = NULL;
 							$$->node = $1;
@@ -745,6 +756,12 @@ arg_list: expr					{
 							step = $1;
 							while(step->next != NULL) {
 								step = step->next;
+							}
+						/* Code to check type of expression, iff its and identifier then stamp it with
+							the Ncl_PARAMIT tag so the translator can add extra code */
+							if(((NclGenericNode*)$3)->kind == Ncl_IDNEXPR) {
+								((NclGenericRefNode*)((NclIdnExpr*)$3)->idn_ref_node)->ref_type =
+									Ncl_PARAMIT;
 							}
 							step->next = _NclMakeNewListNode();
 							step->next->next = NULL;
@@ -788,9 +805,12 @@ function_def :  func_identifier LP arg_dec_list  RP opt_eoln block
 
 									if(is_error) {
 										_NclDeleteNewSymStack();
-									}	
-									tmp = _NclPopScope();	
-									$$ = _NclMakeNFunctionDef(_NclChangeSymbolType($1,NFUNC),$3,$6,tmp);  
+										tmp = _NclPopScope();	
+										$$ = NULL;
+									}else {
+										tmp = _NclPopScope();	
+										$$ = _NclMakeNFunctionDef(_NclChangeSymbolType($1,NFUNC),$3,$6,tmp);  
+									}
 								}
 	|  func_identifier LP arg_dec_list  RP opt_eoln LOCAL local_list opt_eoln block		
 								{  
@@ -798,18 +818,24 @@ function_def :  func_identifier LP arg_dec_list  RP opt_eoln block
 
 									if(is_error) {
 										_NclDeleteNewSymStack();
-									}	
-									tmp = _NclPopScope();	
-									$$ = _NclMakeNFunctionDef(_NclChangeSymbolType($1,NFUNC),$3,$9,tmp);  
+										tmp = _NclPopScope();	
+										$$ = NULL;
+									}else {
+										tmp = _NclPopScope();	
+										$$ = _NclMakeNFunctionDef(_NclChangeSymbolType($1,NFUNC),$3,$9,tmp);  
+									}
 								}
 	| EXTERNAL func_identifier LP arg_dec_list  RP opt_eoln STRING 
 								{  
 									NclSymTableListNode *tmp;
 									if(is_error) {
 										_NclDeleteNewSymStack();
-									}	
-									tmp = _NclPopScope();	
-									$$ = _NclMakeEFunctionDef(_NclChangeSymbolType($2,EFUNC),$4,$7,tmp);  
+										tmp = _NclPopScope();	
+										$$ = NULL;
+									} else {
+										tmp = _NclPopScope();	
+										$$ = _NclMakeEFunctionDef(_NclChangeSymbolType($2,EFUNC),$4,$7,tmp);  
+									}
 								}
 
 /*---------------------------------------------ERROR HANDLING BELOW THIS LINE-----------------------------------------------------*/
@@ -904,20 +930,20 @@ declaration : vname		{
 	| pfname datatype	{ 
 					NclSymbol *s;
 
-					s = _NclAddSym($1->name,UNDEF);
-					$$ = _NclMakeLocalVarDec($1,NULL,$2); 
+					s= _NclAddSym($1->name,UNDEF);
+					$$ = _NclMakeLocalVarDec(s,NULL,$2); 
 				}
 	| pfname dim_size_list	{ 
 					NclSymbol *s;
 
 					s = _NclAddSym($1->name,UNDEF);
-					$$ = _NclMakeLocalVarDec($1,$2,NULL); 
+					$$ = _NclMakeLocalVarDec(s,$2,NULL); 
 				}
 	| pfname dim_size_list datatype	{ 
 					NclSymbol *s;
 
 					s = _NclAddSym($1->name,UNDEF);
-					$$ = _NclMakeLocalVarDec($1,$2,$3); 
+					$$ = _NclMakeLocalVarDec(s,$2,$3); 
 				}
 ;
 
@@ -1033,6 +1059,7 @@ procedure_def : proc_identifier LP arg_dec_list RP opt_eoln LOCAL local_list opt
 ;
 
 assignment :  identifier '=' expr		{
+						((NclGenericRefNode*)$1)->ref_type = Ncl_WRITEIT;
 						$$ = _NclMakeAssignment($1,$3);
 						  
 					}
@@ -1047,7 +1074,6 @@ identifier : vname {
 		  }
 	| vname FVAR 			{
 						NclSymbol *s = NULL;
-						NclFileInfo *test;
 						if($1->type == DFILE) {
 							s = _NclLookUpInScope($1->u.file->filescope,&(($2)[2]));
 							if(s == NULL) {
@@ -1060,7 +1086,6 @@ identifier : vname {
 					}
 	| vname FVAR MARKER		{
 						NclSymbol *s;
-						NclFileInfo *test;
 						if($1->type == DFILE) {	
 							s = _NclLookUpInScope($1->u.file->filescope,&(($2)[2]));
 							if(s == NULL) {
@@ -1320,6 +1345,12 @@ expr :  primary				{
 					}
 ;
 primary : REAL				{
+/*
+* Note all of the structures created below the primary rule are special! They
+* contain the ref_type field which is used to determine if the item
+* is a parameter to a function or a procedure. The LP expr RP is an
+* exception
+*/
 						$$ = _NclMakeIdnExpr(_NclMakeRealExpr($1));
 					}
 	| INT				{
@@ -1331,7 +1362,7 @@ primary : REAL				{
 	| function			{	
 						$$ = _NclMakeIdnExpr($1);
 					}
-	| identifier				{
+	| identifier			{
 						$$ = _NclMakeIdnExpr($1);
 					}
 	| array 		 	{
@@ -1359,10 +1390,38 @@ function: FUNC opt_arg_list		{
 						}
 					}
 	| EFUNC opt_arg_list		{
-						$$ = _NclMakeFuncCall($1,$2,Ncl_EXTERNFUNCCALL);
+						NclSrcListNode *step;
+						int count = 0;
+					
+						step = $2;
+						while(step != NULL) {
+							count++;
+							step = step->next;
+						}
+						if(count != $1->u.procfunc->nargs) {
+							is_error += 1;
+							NhlPError(FATAL,E_UNKNOWN,"syntax error: function %s expects %d arguments, got %d",$1->name,$1->u.procfunc->nargs,count);
+							$$ = NULL;
+						} else {
+							$$ = _NclMakeFuncCall($1,$2,Ncl_EXTERNFUNCCALL);
+						}
 					}
 	| NFUNC opt_arg_list		{
-						$$ = _NclMakeFuncCall($1,$2,Ncl_FUNCCALL);
+						NclSrcListNode *step;
+						int count = 0;
+					
+						step = $2;
+						while(step != NULL) {
+							count++;
+							step = step->next;
+						}
+						if(count != $1->u.procfunc->nargs) {
+							is_error += 1;
+							NhlPError(FATAL,E_UNKNOWN,"syntax error: function %s expects %d arguments, got %d",$1->name,$1->u.procfunc->nargs,count);
+							$$ = NULL;
+						} else {
+							$$ = _NclMakeFuncCall($1,$2,Ncl_FUNCCALL);
+						}
 					}
 	| FUNC 				{
 						if($1->u.procfunc->nargs != 0) {
@@ -1374,10 +1433,22 @@ function: FUNC opt_arg_list		{
 						}
 					}
 	| EFUNC 			{
-						$$ = _NclMakeFuncCall($1,NULL,Ncl_EXTERNFUNCCALL);
+						if($1->u.procfunc->nargs != 0) {
+							is_error += 1;
+							NhlPError(FATAL,E_UNKNOWN,"syntax error: function %s expects %d arguments, got %d",$1->name,$1->u.procfunc->nargs,0);
+							$$ = NULL;
+						} else {
+							$$ = _NclMakeFuncCall($1,NULL,Ncl_EXTERNFUNCCALL);
+						}
 					}
 	| NFUNC 			{
-						$$ = _NclMakeFuncCall($1,NULL,Ncl_FUNCCALL);
+						if($1->u.procfunc->nargs != 0) {
+							is_error += 1;
+							NhlPError(FATAL,E_UNKNOWN,"syntax error: function %s expects %d arguments, got %d",$1->name,$1->u.procfunc->nargs,0);
+							$$ = NULL;
+						} else {
+							$$ = _NclMakeFuncCall($1,NULL,Ncl_FUNCCALL);
+						}
 					}
 ;
 array : LPSLSH expr_list SLSHRP	 { 
@@ -1423,13 +1494,25 @@ yyerror(s)
 			len = strlen(error_buffer);
 			for(i=0; i<last_line_length-1;i++) sprintf(&(error_buffer[len+i]),"-");
 			sprintf(&(error_buffer[len+last_line_length-1]),"^\n");
-			NhlPError(FATAL,E_UNKNOWN,"%s: near \\n \n%s\n",s,error_buffer);
+			if(loading) {
+				NhlPError(FATAL,E_UNKNOWN,"%s: line %d in file %s before or near \\n \n%s\n",s,cur_line_number,cur_load_file,error_buffer);
+			} else if(cmd_line){
+				NhlPError(FATAL,E_UNKNOWN,"%s: line %d before or near \\n \n%s\n",s,cur_line_number-1,error_buffer);
+			} else {
+				NhlPError(FATAL,E_UNKNOWN,"%s: line %d before or near \\n \n%s\n",s,cur_line_number,error_buffer);
+			} 
 		} else {
 			sprintf(error_buffer,"%s\n",cur_line_text);
 			len = strlen(error_buffer);
 			for(i=0; i<cur_line_length-1;i++) sprintf(&(error_buffer[len+i]),"-");
 			sprintf(&(error_buffer[len+cur_line_length-1]),"^\n");
-			NhlPError(FATAL,E_UNKNOWN,"%s: near %s \n%s\n",s,yytext,error_buffer);
+			if(loading) {
+				NhlPError(FATAL,E_UNKNOWN,"%s: line %d in file %s before or near %s \n%s\n",s,cur_line_number,cur_load_file,yytext,error_buffer);
+			} else if(cmd_line){
+				NhlPError(FATAL,E_UNKNOWN,"%s: line %d before or near %s \n%s\n",s,cur_line_number-1,yytext,error_buffer);
+			} else {
+				NhlPError(FATAL,E_UNKNOWN,"%s: line %d before or near %s \n%s\n",s,cur_line_number,yytext,error_buffer);
+			}
 		}
 	} else if(is_error == NCL_MAX_ERROR) {
 			NhlPError(FATAL,E_UNKNOWN,"Maximum number of errors exceeded, no more will be printed");

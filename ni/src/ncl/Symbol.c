@@ -1,5 +1,5 @@
 /*
- *      $Id: Symbol.c,v 1.2 1993-10-06 22:54:43 ethan Exp $
+ *      $Id: Symbol.c,v 1.3 1993-10-14 18:33:40 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -437,7 +437,7 @@ void _NclDeleteSym
 				tmp = sym->u.file->filescope->this_scope[i].thelist;
 				while(tmp != NULL) {
 					tmp2 = tmp->symnext;
-					NclFree(tmp);
+					NclFree((void*)tmp);
 					tmp = tmp2;
 				}
 			}
@@ -457,7 +457,7 @@ void _NclDeleteSym
                 break;
 
 	}
-	NclFree(sym);
+	NclFree((void*)sym);
 }
 
 /*
@@ -580,7 +580,7 @@ NclSymbol *_NclAddInScope
 	return(s);
 }
 
-NclSymbol *_NclDeleteSymInScope
+void _NclDeleteSymInScope
 #if __STDC__
 (NclSymTableListNode *thetable, NclSymbol *sym)
 #else
@@ -589,9 +589,6 @@ NclSymTableListNode *thetable;
 NclSymbol *sym;
 #endif
 {
-	NclSymTableListNode *step;
-	NclSymbol *tmp,*tmp2;
-	int i;
 
 	thetable->this_scope[sym->ind].nelem--;
 	sym->sympre->symnext = sym->symnext;
@@ -604,14 +601,15 @@ NclSymbol *sym;
 *
 */
 		if(sym->u.fvar != NULL) {
-			NclFree(sym->u.fvar);
+			NclFree((void*)sym->u.fvar);
 		}
 		break;
 	default:
                 break;
 
 	}
-	NclFree(sym);
+	NclFree((void*)sym);
+	return;
 }
 
 

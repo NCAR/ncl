@@ -28,7 +28,7 @@ int yywrap()
 		cmd_line = isatty(fileno(stdin));
 		cur_load_file = NULL;
 		if(cmd_line) {
-			fprintf(stdout,"ncl %d> ",yylineno);
+			fprintf(stdout,"ncl %d> ",cur_line_number);
 
 		}
 		return(0);
