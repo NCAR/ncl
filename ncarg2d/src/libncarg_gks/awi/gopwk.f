@@ -152,10 +152,10 @@ C  positioning coordinates back to defaults; set the PostScript
 C  coordinate scale factor back to the default.
 C
         GFNAME = 'DEFAULT'
-        CLLX = -1
-        CLLY = -1
-        CURX = -1
-        CURY = -1
+        CLLX = -9999
+        CLLY = -9999
+        CURX = -9999
+        CURY = -9999
         CPSCL = -1
 C
 C  For an X window that does not currently exist, obtain the local 
