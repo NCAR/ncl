@@ -1,4 +1,4 @@
-.TH IDSFFT 3NCARG "Marc 1993" UNIX "NCAR GRAPHICS"
+.TH IDSFFT 3NCARG "November 1995" UNIX "NCAR GRAPHICS"
 .na
 .nh
 .SH NAME
@@ -6,15 +6,15 @@ IDSFFT - Performs smooth surface fitting when the projections
 of the data points in the X-Y plane are irregularly distributed
 in the plane.
 .SH SYNOPSIS
- CALL IDSFFT (MD, NRAN, XRAN, YRAN, ZRAN, MREG, NREG, KREG, 
+ CALL IDSFFT (MD, NDP, XD, YD, ZD, MREG, NREG, KREG,
 .br
 + XREG, YREG, ZREG, IWK, WK)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void c_idsfft (int md, int nran, float *xran, float *yran, 
+void c_idsfft (int md, int ndp, float *xd, float *yd,
 .br
-float *zran, int mreg, int nreg, int kreg, float *xreg, 
+float *zd, int mreg, int nreg, int kreg, float *xreg,
 .br
 float *yreg, float *zreg, int *iwk, float *wk)
 .SH DESCRIPTION
@@ -25,40 +25,40 @@ Mode of computation (must be 1,
 .RS
 .IP "1"
 If this is the first call to this subroutine, or if the value 
-of NRAN has been changed from the previous call, or if 
-the contents of the XRAN or YRAN arrays have been 
+of NDP has been changed from the previous call, or if
+the contents of the XD or YD arrays have been
 changed from the previous call.
 .IP "2"
-If the values of NRAN and the XRAN, YRAN arrays are 
+If the values of NDP and the XD, YD arrays are
 unchanged from the previous call, but new values for 
-XREG, YREG are being used. If MD=2 and NRAN has been 
+XREG, YREG are being used. If MD=2 and NDP has been
 changed since the previous call to IDSFFT, an error return 
 occurs.
 .IP "3"
-If the values of NRAN, MREG, NREG, XRAN, YRAN, XREG, 
+If the values of NDP, MREG, NREG, XD, YD, XREG,
 YREG are unchanged from the previous call, that is, if the 
-only change on input to IDSFFT is in the ZRAN array. If 
-MD=3 and NRAN, MREG or NREG has been changed since the 
+only change on input to IDSFFT is in the ZD array. If
+MD=3 and NDP, MREG or NREG has been changed since the
 previous call to IDSFFT, an error return occurs.
 .sp
 Between the call with MD=2 or MD=3 and the preceding 
 call, the IWK and WK work arrays should not be disturbed.
 .RE
-.IP "NRAN" 12
+.IP "NDP" 12
 (Integer, Input) - 
 Number of random data points (must be 4 
 or greater).
-.IP "XRAN(NRAN)" 12
+.IP "XD(NDP)" 12
 (Real array, Input) - 
-Array of dimension NRAN containing 
+Array of dimension NDP containing
 the X coordinates of the data points.
-.IP "YRAN(NRAN)" 12
+.IP "YD(NDP)" 12
 (Real array, Input) - 
-Array of dimension NRAN containing 
+Array of dimension NDP containing
 the Y coordinates of the data points.
-.IP "ZRAN(NRAN)" 12
+.IP "ZD(NDP)" 12
 (Real array, Input) - 
-Array of dimension NRAN containing 
+Array of dimension NDP containing
 the Z coordinates of the data points.
 .IP "MREG" 12
 (Integer, Input) - 
@@ -88,11 +88,11 @@ dimension (KREG,NREG), storing the interpolated Z values
 at the output grid points.
 .IP "IWK(*)" 12 
 (Integer array, Workspace) - Integer work array 
-of dimension at least 31 * NRAN + MREG * NREG.
+of dimension at least 31 * NDP + MREG * NREG.
 .IP "WK(*)" 12 
 (Real array, Workspace) - 
 Real work array of 
-dimension at least 6 * NRAN.
+dimension at least 6 * NDP.
 .SH ""
 Inadequate work space IWK and WK may may cause incorrect results.
 .sp
@@ -140,16 +140,20 @@ See the bivar man page for a description of all Bivar error
 messages and/or informational messages.
 .SH SEE ALSO
 Online:
-bivar, idbvip, ncarg_cbind
+bivar, bivar_params, idbvip, idpltr, idgeti, idgetr, idseti, idsetr,
+ncarg_cbind
 .sp
 Hardcopy:
 NCAR Graphics Contouring and Mapping Tutorial
-.SH ACKNOWLEDGEMENTS
-Bivar was written by Hiroshi Akima in august 1975 and rewritten
-by him in late 1976.  In 1989 a new version of Bivar,
+.SH ACKNOWLEDGMENTS
+Bivar was written by Hiroshi Akima in August 1975 and rewritten
+by him in late 1976.  In 1989, a new version of Bivar,
 incorporating changes described in a Rocky Mountain Journal of
 Mathematics was obtained from Dr. Akima, and included in NCAR
-Graphics with his permission.
+Graphics with his permission.  In 1995, Dave Kennison incorporated
+the capability of doing linear interpolation and a different kind
+of triangulation, put in a parameter access interface, and wrote a
+routine to allow the triangulation to be plotted.
 .SH COPYRIGHT
 Copyright (C) 1987-1995
 .br

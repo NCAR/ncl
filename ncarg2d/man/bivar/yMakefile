@@ -1,8 +1,8 @@
 #
-#	$Id: yMakefile,v 1.6 1994-04-08 22:02:02 haley Exp $
+#	$Id: yMakefile,v 1.7 1995-11-06 22:42:49 kennison Exp $
 #
 
-MAN = bivar idbvip idsfft
+MAN = bivar bivar_params idbvip idsfft idpltr idgeti idgetr idseti idsetr
 
 # Install preformatted troff documents on systems without troff
 #if UseCatDirs

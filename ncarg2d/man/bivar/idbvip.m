@@ -1,4 +1,4 @@
-.TH IDBVIP 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
+.TH IDBVIP 3NCARG "November 1995" UNIX "NCAR GRAPHICS"
 .na
 .nh
 .SH NAME
@@ -95,13 +95,17 @@ See the bivar man page for a description of all Bivar error
 messages and/or informational messages.
 .SH SEE ALSO
 Online:
-bivar, idsfft, ncarg_cbind
+bivar, bivar_params, idsfft, idpltr, idgeti, idgetr, idseti, idsetr,
+ncarg_cbind
 .SH ACKNOWLEDGMENTS
-Bivar was written by Hiroshi Akima in august 1975 and rewritten
-by him in late 1976.  In 1989 a new version of Bivar,
+Bivar was written by Hiroshi Akima in August 1975 and rewritten
+by him in late 1976.  In 1989, a new version of Bivar,
 incorporating changes described in a Rocky Mountain Journal of
 Mathematics was obtained from Dr. Akima, and included in NCAR
-Graphics with his permission.
+Graphics with his permission.  In 1995, Dave Kennison incorporated
+the capability of doing linear interpolation and a different kind
+of triangulation, put in a parameter access interface, and wrote a
+routine to allow the triangulation to be plotted.
 .SH COPYRIGHT
 Copyright (C) 1987-1995
 .br

@@ -1,4 +1,4 @@
-.TH Bivar 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
+.TH Bivar 3NCARG "November 1995" UNIX "NCAR GRAPHICS"
 .na
 .nh
 .SH NAME
@@ -19,10 +19,30 @@ data points on a grid.
 Performs smooth surface fitting when the projections
 of the data points in the X-Y plane are irregularly
 distributed in the plane.
+.IP IDPLTR 12
+Plots the triangulation of the data points.
+.IP IDGETI 12
+Retrieves the integer value of a Bivar parameter.
+.IP IDGETR 12
+Retrieves the real value of a Bivar parameter.
+.IP IDSETI 12
+Provides a new integer value for a Bivar parameter.
+.IP IDSETR 12
+Provides a new real value for a Bivar parameter.
 .SH C-BINDING SYNOPSIS
 c_idbvip, 
 .br
 c_idsfft
+.br
+c_idpltr
+.br
+c_idgeti
+.br
+c_idgetr
+.br
+c_idseti
+.br
+c_idsetr
 .SH EXAMPLES
 See the example "cbex01".
 .SH ACCESS 
@@ -32,33 +52,63 @@ load the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
 and ncarg_c, preferably in that order.
 .SH MESSAGES
 When error conditions are detected, the support routine SETER
-is called in such a way that it writes a message to the standard
+is called. By default, SETER writes a message to the standard
 error file (as defined by I1MACH(4)) and then terminates
-execution. The possible error messages are as follows:
+execution.  It is possible to put SETER into recovery mode and
+regain control after a recoverable error (which includes
+all of the possible errors).
 .sp
-IDBVIP (BIVAR) - INPUT PARAMETER MD OUT OF RANGE
+The possible error messages are listed below.  All errors are recoverable
+in the sense that a user program which has called ENTSR to set recovery
+mode will get control back after one of these errors occurs.
 .sp
-IDBVIP (BIVAR) - INPUT PARAMETER NDP OUT OF RANGE
+IDBVIP (BIVAR) - UNCLEARED PRIOR ERROR
 .sp
-IDBVIP (BIVAR) - INPUT PARAMETER NIP OUT OF RANGE
+IDBVIP (BIVAR) - INPUT VARIABLE MD IS OUT OF RANGE
 .sp
-IDBVIP (BIVAR) - MD=2 OR 3 BUT NDP WAS CHANGED SINCE LAST CALL
+IDBVIP (BIVAR) - INPUT VARIABLE NDP IS OUT OF RANGE
 .sp
-IDBVIP (BIVAR) - MD=3 BUT NIP WAS CHANGED SINCE LAST CALL
+IDBVIP (BIVAR) - INPUT VARIABLE NIP IS OUT OF RANGE
 .sp
-IDSFFT (BIVAR) - INPUT PARAMETER MD OUT OF RANGE
+IDBVIP (BIVAR) - MD = 2 OR 3 BUT NDP WAS CHANGED SINCE LAST CALL
 .sp
-IDSFFT (BIVAR) - INPUT PARAMETER NDP OUT OF RANGE
+IDBVIP (BIVAR) - MD = 3 BUT ITY WAS CHANGED SINCE LAST CALL
 .sp
-IDSFFT (BIVAR) - INPUT PARAMETER NXI OR NYI OUT OF RANGE
+IDBVIP (BIVAR) - MD = 3 BUT NIP WAS CHANGED SINCE LAST CALL
 .sp
-IDSFFT (BIVAR) - INPUT PARAMETER NZI IS LESS THAN NXI
+IDGETI (BIVAR) - UNCLEARED PRIOR ERROR
 .sp
-IDSFFT (BIVAR) - MD=2 OR 3 BUT NDP WAS CHANGED SINCE LAST CALL
+IDGETR (BIVAR) - UNCLEARED PRIOR ERROR
 .sp
-IDSFFT (BIVAR) - MD=3 BUT NXI WAS CHANGED SINCE LAST CALL
+IDGETR (BIVAR) - INVALID KEYWORD: xxx
 .sp
-IDSFFT (BIVAR) - MD=3 BUT NYI WAS CHANGED SINCE LAST CALL
+IDGRID (BIVAR) - INTERNAL ERROR - SEE CONSULTANT
+.sp
+IDPLTR (BIVAR) - UNCLEARED PRIOR ERROR
+.sp
+IDSETI (BIVAR) - UNCLEARED PRIOR ERROR
+.sp
+IDSETR (BIVAR) - UNCLEARED PRIOR ERROR
+.sp
+IDSETR (BIVAR) - INVALID KEYWORD: xxx
+.sp
+IDSFFT (BIVAR) - UNCLEARED PRIOR ERROR
+.sp
+IDSFFT (BIVAR) - INPUT VARIABLE MD IS OUT OF RANGE
+.sp
+IDSFFT (BIVAR) - INPUT VARIABLE NDP IS OUT OF RANGE
+.sp
+IDSFFT (BIVAR) - INPUT VARIABLE NXI OR NYI IS OUT OF RANGE
+.sp
+IDSFFT (BIVAR) - INPUT VARIABLE NZI IS LESS THAN NXI
+.sp
+IDSFFT (BIVAR) - MD = 2 OR 3 BUT NDP WAS CHANGED SINCE LAST CALL
+.sp
+IDSFFT (BIVAR) - MD = 3 BUT ITY WAS CHANGED SINCE LAST CALL
+.sp
+IDSFFT (BIVAR) - MD = 3 BUT NXI WAS CHANGED SINCE LAST CALL
+.sp
+IDSFFT (BIVAR) - MD = 3 BUT NYI WAS CHANGED SINCE LAST CALL
 .sp
 IDTANG (BIVAR) - INPUT PARAMETER NDP OUT OF RANGE
 .sp
@@ -67,17 +117,21 @@ IDTANG (BIVAR) - TWO OF THE INPUT DATA POINTS ARE IDENTICAL
 IDTANG (BIVAR) - ALL COLLINEAR DATA POINTS
 .SH SEE ALSO
 Online:
-idbvip, idsfft, ncarg_cbind
+bivar_params, idbvip, idsfft, idpltr, idgeti, idgetr, idseti, idsetr,
+ncarg_cbind
 .sp
 Hardcopy:
 NCAR Graphics Contouring and Mapping Tutorial;
 NCAR Graphics Fundamentals, UNIX Version
 .SH ACKNOWLEDGMENTS
 Bivar was written by Hiroshi Akima in August 1975 and rewritten
-by him in late 1976.  In 1989 a new version of Bivar,
+by him in late 1976.  In 1989, a new version of Bivar,
 incorporating changes described in a Rocky Mountain Journal of
 Mathematics was obtained from Dr. Akima, and included in NCAR
-Graphics with his permission.
+Graphics with his permission.  In 1995, Dave Kennison incorporated
+the capability of doing linear interpolation and a different kind
+of triangulation, put in a parameter access interface, and wrote a
+routine to allow the triangulation to be plotted.
 .SH COPYRIGHT
 Copyright (C) 1987-1995
 .br
