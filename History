@@ -839,3 +839,13 @@
 	temporary changes made in the unit number during the reading of one 
 	font will not affect the unit number subsequently used in reading 
 	another font.
+10/15/92 - In CONPACK, code was provided to cull too-close-together 
+	points from the incoming points defining the contour line which is 
+	to be labelled.
+
+	In CPINRC, the computation of EPSI was changed to compensate for 
+	the fact that, on some machines, variables which are declared to 
+	be REAL are carried in double-precision registers and may be used from 
+	there rather than from memory, which can cause computations aimed at 
+	determining machine precision to be incorrect.
+
