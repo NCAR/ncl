@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.158 2004-12-09 23:13:08 haley Exp $
+;      $Id: gsn_code.ncl,v 1.159 2004-12-14 05:17:41 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -2702,7 +2702,7 @@ begin
     wks_res = True
     do i=0,dimsizes(varatts)-1
       if(varatts(i).ne."wkColorMap".and.varatts(i).ne."wkWidth".and. \
-         varatts(i).ne."wkHeight") then
+         varatts(i).ne."wkHeight".and.varatts(i).ne."wkColorModel") then
         wks_res@$varatts(i)$ = type@$varatts(i)$
       end if  
     end do
