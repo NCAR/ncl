@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ymake,v 1.33 1999-03-09 22:39:32 haley Exp $
+#	$Id: ymake,v 1.34 2000-09-13 14:01:30 haley Exp $
 #
 ######################################################################
 #
@@ -322,7 +322,6 @@ case    SunOS:
 
         switch ("$mach")
         case    sun4*:
-        case    i86pc*:
                 set arch = sun4
 
                 if ($?extraos == 0) then
@@ -333,6 +332,13 @@ case    SunOS:
                 if ("$extraos" == Solaris) then
                         set sysincs = Sun4Solaris
                         breaksw
+                endif
+                breaksw
+        case    i86pc*:
+                set arch = PC
+                if ("$extraos" == Solaris) then
+                  set sysincs = SolarisPC
+                  breaksw
                 endif
                 breaksw
         case    sun3*:

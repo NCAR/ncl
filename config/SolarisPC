@@ -1,5 +1,5 @@
 /*
- *      $Id: SolarisPC,v 1.1 1999-03-24 20:49:44 haley Exp $
+ *      $Id: SolarisPC,v 1.2 2000-09-13 14:01:30 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -34,6 +34,8 @@
 #define XLibrary -lX11 -lXext
 #define XmotifLibrary -lXm
  
+#define UseCatDirs        YES
+ 
 #define CCompiler       gcc
 #define FCompiler       g77
 #define XToolLibrary      -lXt -Wl,-Bdynamic -lSM -lICE -Wl,-Bstatic
@@ -42,3 +44,4 @@
 #define ArchRecIncSearch        -I/usr/openwin/include -I/usr/dt/include 
 #define CtoFLibraries    -lg2c -lm
  
+
