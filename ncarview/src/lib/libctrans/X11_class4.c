@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class4.c,v 1.29 1994-03-07 19:52:12 clyne Exp $
+ *	$Id: X11_class4.c,v 1.30 1996-01-18 14:48:32 boote Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -43,7 +43,7 @@
 #include	"soft_fill.h"
 #include	"translate.h"
 
-extern	boolean	Colordef[];
+extern	int	Colordef[];
 extern	boolean	*softFill;
 extern	Pixeltype	Colortab[];
 extern	boolean	Color_ava;
@@ -81,7 +81,7 @@ static	int	GCsetcolor(color, gc)
 	if (CSM == MODE_INDEXED) {
 
 		/* see if the color has been defined	*/
-		if (Colordef[color.index]) { 
+		if (Colordef[color.index] > -1) { 
 			XSetForeground(dpy, gc, Colortab[color.index]);
 		}
 		else {

@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class5.c,v 1.15 1993-03-12 18:21:31 clyne Exp $
+ *	$Id: X11_class5.c,v 1.16 1996-01-18 14:48:32 boote Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -43,18 +43,12 @@
 #include	"Xcrm.h"
 
 
-Pixeltype	Colortab[MAX_COLOR_SIZE]; 	/* index into color map	*/
-boolean		Colordef[MAX_COLOR_SIZE];	/* true if an index in Colortab
-						 * has been allocated
-						 */
-boolean		Color_ava = FALSE;		/* true if device has color*/
+extern Pixeltype	Colortab[]; 		/* index into color map	*/
 
-
-Pixeltype	max_colour;			/* maximum r or g or b value
+boolean			Color_ava = FALSE;	/* true if device has color*/
+Pixeltype		max_colour;		/* maximum r or g or b value
 						 * specifiable in the CGM
 						 */
-
-
 
 static	Visual	*get_best_8bit_visual(depth, dpy)
 	int	*depth;
@@ -97,8 +91,6 @@ static	Visual	*get_best_8bit_visual(depth, dpy)
  * on entry
  *	*foreground	: Default foreground color name
  *	*background	: Default background color name
- *	do_pcmap	: If true create private colormap else use default.
- *	best_vis	: If true try to get the best visual, else use default.
  *
  * on exit
  *	Cmap		: contains the color map
@@ -109,12 +101,10 @@ static	Visual	*get_best_8bit_visual(depth, dpy)
  */
 
 
-int	init_color(foreground, background, do_pcmap, reverse, best_vis,fg,bg,bd)
+int	init_color(foreground,background,reverse,fg,bg,bd)
 	char		*foreground,
 			*background;
-	boolean		do_pcmap;
 	boolean		reverse;
-	boolean		best_vis;
 	Pixeltype	*fg, *bg, *bd;
 {
 
@@ -122,6 +112,7 @@ int	init_color(foreground, background, do_pcmap, reverse, best_vis,fg,bg,bd)
 	char	*name[2];
 	int	col_2_alloc;
 	int	status = 0;
+	XColor	oldcolors[MAX_COLOR_SIZE];
 
 	static	XColor	color = {
 		0,0,0,0,(DoRed | DoGreen | DoBlue), '\0'
@@ -134,19 +125,11 @@ int	init_color(foreground, background, do_pcmap, reverse, best_vis,fg,bg,bd)
 	if (background) name[col_2_alloc++] = background;
 	if (foreground) name[col_2_alloc++] = foreground;
 
-	
-
-
 	/*
 	 * get the visual
 	 */
-	if (best_vis) {
-		bestVisual = get_best_8bit_visual(&DspDepth, dpy);
-	}
-	else {
-		bestVisual = DefaultVisual(dpy, DefaultScreen(dpy));
-		DspDepth = DefaultDepth(dpy, DefaultScreen(dpy));
-	}
+	bestVisual = DefaultVisual(dpy, DefaultScreen(dpy));
+	DspDepth = DefaultDepth(dpy, DefaultScreen(dpy));
 
 	if (DspDepth == 1) {
 
@@ -166,16 +149,6 @@ int	init_color(foreground, background, do_pcmap, reverse, best_vis,fg,bg,bd)
 		return (0);
 	}
 
-
-	/* 
-	 *			colour display
-	 *
-	 *	We should be able to allocate "basic"  colours on any kind 
-	 *	of colour system (visual type). So say Oriely and Associates.
-	 */
-
-
-
 	/*
 	 * all output primitives will use Color_ava to see 
 	 * if they have a colour display
@@ -186,16 +159,40 @@ int	init_color(foreground, background, do_pcmap, reverse, best_vis,fg,bg,bd)
 	 * if we are requested to create a new color map or we are not
 	 * using the default visual we need to create our own color map
 	 */
-	if (do_pcmap || bestVisual != DefaultVisual(dpy, DefaultScreen(dpy))) {
-		Cmap = XCreateColormap(
-			dpy, RootWindow(dpy, DefaultScreen(dpy)), 
-			bestVisual, AllocAll
-		);
-		privateCmap = TRUE;
+	Cmap = DefaultColormap(dpy, DefaultScreen(dpy));
+	if (ColorModel == CM_PRIVATE) {
+		MyCmap = TRUE;
+		switch(bestVisual->class){
+			/*
+			 * RO model
+			 */
+			case TrueColor:
+			case StaticColor:
+			case StaticGray:
+				RoCmap = True;
+				Cmap = XCopyColormapAndFree(dpy,Cmap);
+				break;
+
+			/*
+			 * RW model - copy current table to minimize flashing.
+			 */
+			default:
+				RoCmap = False;
+
+				for(i=0;i<MAX_COLOR_SIZE;i++)
+					oldcolors[i].pixel = i;
+				XQueryColors(dpy,Cmap,oldcolors,MAX_COLOR_SIZE);
+				XFreeColormap(dpy,Cmap);
+				Cmap = XCreateColormap(dpy,
+					RootWindow(dpy,DefaultScreen(dpy)), 
+					bestVisual,AllocAll);
+				XStoreColors(dpy,Cmap,oldcolors,MAX_COLOR_SIZE);
+				break;
+		}
 	}
 	else {
-		Cmap = DefaultColormap(dpy, DefaultScreen(dpy));
-		privateCmap = FALSE;
+		MyCmap = FALSE;
+		RoCmap = True;
 	}
 
 	/* 
@@ -207,9 +204,7 @@ int	init_color(foreground, background, do_pcmap, reverse, best_vis,fg,bg,bd)
 	 * 	initialize the color table to empty 
 	 *	and mark all indexes as not defined
 	 */
-	for (i=0;i<MAX_COLOR_SIZE;i++) { 
-		Colordef[i] = FALSE;
-	}
+	X11_initColorTable();
 
 	/*
 	 * if the user requested that the default foreground and/or background
@@ -230,9 +225,18 @@ int	init_color(foreground, background, do_pcmap, reverse, best_vis,fg,bg,bd)
 				ESprintf(E_UNKNOWN,"XParseColor(,,%s,)",name[i]);
 				status = -1;
 			}
-			cgmc.cd[i].red = color.red / X_MAX_RGB * max_colour;
-			cgmc.cd[i].green = color.green / X_MAX_RGB* max_colour;
-			cgmc.cd[i].blue = color.blue / X_MAX_RGB * max_colour;
+			cgmc.cd[i].red = 0;
+			cgmc.cd[i].green = 0;
+			cgmc.cd[i].blue = 0;
+			if(color.flags & DoRed)
+				cgmc.cd[i].red = color.red /
+							X_MAX_RGB * max_colour;
+			if(color.flags & DoGreen)
+				cgmc.cd[i].green = color.green /
+							X_MAX_RGB* max_colour;
+			if(color.flags & DoBlue)
+				cgmc.cd[i].blue = color.blue /
+							X_MAX_RGB * max_colour;
 		}
 		cgmc.CDnum = col_2_alloc;
 

@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class0.c,v 1.34 1995-01-14 00:25:08 clyne Exp $
+ *	$Id: X11_class0.c,v 1.35 1996-01-18 14:48:31 boote Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -99,6 +99,8 @@ static	struct	{
 	int	wid;
 	boolean	ignorebg;
 	boolean	pcmap;
+	boolean	scmap;
+	int	colerr;
 	} x11_opts;
 
 static	Option	options[] =  {
@@ -137,6 +139,14 @@ static	Option	options[] =  {
 	{
 	"pcmap", NCARGCvtToBoolean, 
 		(Voidptr) &x11_opts.pcmap, sizeof (x11_opts.pcmap )
+	},
+	{
+	"scmap", NCARGCvtToBoolean, 
+		(Voidptr) &x11_opts.scmap, sizeof (x11_opts.scmap )
+	},
+	{
+	"colerr", NCARGCvtToInt, 
+		(Voidptr) &x11_opts.colerr, sizeof (x11_opts.colerr )
 	},
 	{
 	NULL
@@ -262,8 +272,6 @@ CGMC *c;
 		(void) X11_EndMF(c);
 	}
 
-
-
 	/*
 	 *      parse X11 specific command line args
 	 */
@@ -336,10 +344,6 @@ CGMC *c;
 		}
 	}
 
-
-
-
-
 	/*
 	 *		intitialize color map if available
 	 *	select default colours for border, background and foreground 
@@ -353,11 +357,27 @@ CGMC *c;
 	 *	window to have been created with the default visual, depth
 	 *	and colormap;
 	 */
+	if(x11_opts.scmap || x11_opts.wid != -1)
+		ColorModel = CM_SHARED;
+	else if(x11_opts.pcmap)
+		ColorModel = CM_PRIVATE;
+	else
+		ColorModel = CM_MIXED;
+
+	if(x11_opts.colerr < 0 || x11_opts.colerr > 100){
+		ESprintf(E_UNKNOWN,"Invalid color error [%d]",x11_opts.colerr);
+		status = -1;
+		x11_opts.colerr = 10;
+	}
+	else if(x11_opts.colerr == 100)
+		x11_opts.colerr = 0;
+	ColorErr =(float)x11_opts.colerr*((float)(X_MAX_INTEN_DIST)/(float)100);
+	ColorErr *= ColorErr;
+
 	startedDrawing = FALSE;
 	(void) init_color(
-		x11_opts.foreground, x11_opts.background, 
-		x11_opts.pcmap, (boolean) x11_opts.reverse, 
-		(boolean) (x11_opts.wid == -1 ? TRUE : FALSE), &fg, &bg, &bd
+		x11_opts.foreground, x11_opts.background,
+		(boolean) x11_opts.reverse,&fg, &bg, &bd
 	);
 
 	/*
@@ -624,18 +644,6 @@ CGMC *c;
 
 	if (!deviceIsInit)
 		return(0);
-
-	/*
-	 * free any color resources allocated (only try freeing if 
-	 * color map is writable)
-	 */
-	if (Color_ava && 
-		((bestVisual->class == DirectColor)
-		|| (bestVisual->class == PseudoColor)
-		|| (bestVisual->class == GrayScale))) {
-
-		free_colors();
-	}
 
 	/* 
 	 * hack to inform init_color that we no longer have a valid

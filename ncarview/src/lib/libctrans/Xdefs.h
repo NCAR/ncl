@@ -19,9 +19,14 @@ typedef	struct  {
 
 
 #define	X_MAX_RGB	65535
+/* sqrt(X_MAX_RGB^2+X_MAX_RGB^2+X_MAX_RGB^2)	*/
+#define	X_MAX_INTEN_DIST	113510
+
+#define CM_SHARED	(0)
+#define CM_PRIVATE	(1)
+#define CM_MIXED	(2)
 
 #ifdef	X11_class0
-
 
 Display		*dpy;		/* X server connection		*/
 Drawable	win = 0;	/* Window ID 			*/
@@ -29,7 +34,10 @@ Drawable	drawable;	/* the drawable			*/
 Visual		*bestVisual;
 int		DspDepth;	/* depth in pixels of display	*/
 Colormap	Cmap;		/* current colormap for $win	*/
-boolean		privateCmap;	/* true if have private colormap*/
+int		ColorModel;	/* color model			*/
+boolean		MyCmap;		/* I created Cmap		*/
+boolean		RoCmap;		/* Read Only Cmap		*/
+int		ColorErr;	/* % color error allowed	*/
 /*
  *      If true the driver will not attempt to set the background
  *      color or clear the window.
@@ -54,7 +62,10 @@ extern	Drawable	drawable;
 extern	Visual		*bestVisual;
 extern	int		DspDepth;
 extern	Colormap	Cmap;
-extern	boolean		privateCmap;
+extern	int		ColorModel;
+extern	boolean		MyCmap;
+extern	boolean		RoCmap;
+extern	int		ColorErr;
 extern	boolean 	ignoreBGChanges;
 
 extern	GC	lineGC;	

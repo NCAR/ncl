@@ -1,5 +1,5 @@
 /*
- *	$Id: ctrans.c,v 1.39 1995-07-07 18:53:49 clyne Exp $
+ *	$Id: ctrans.c,v 1.40 1996-01-18 14:48:34 boote Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -381,7 +381,7 @@ CtransRC	Process(c)
 
 		ESprintf(
 			E_UNKNOWN, 
-			"Could not process CGM element(class=%d, id=%d, name=\"%s\") [ %s ]",
+			"Error processing CGM element(class=%d, id=%d, name=\"%s\") [ %s ]",
 			c->cgmclass, c->command, name, ErrGetMsg()
 		);
 		elog(ErrGetMsg());

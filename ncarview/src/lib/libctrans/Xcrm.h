@@ -14,8 +14,13 @@
 #define	RGB_SEARCH	0
 #define	PIXEL_SEARCH	1
 
-extern	void	free_colors();
+extern	void	X11_initColorTable();
 extern	int	X11_UpdateColorTable_();
 
+typedef struct X11_ColorStatus_{
+	int		ref_count;
+	unsigned short	red,green,blue;
+	Pixeltype	xpixnum;
+} X11_ColorStatus;
 
 #endif

@@ -1,5 +1,5 @@
 /*
- *	$Id: devices.h,v 1.19 1995-05-03 22:40:24 clyne Exp $
+ *	$Id: devices.h,v 1.20 1996-01-18 14:48:35 boote Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -124,6 +124,8 @@ static	OptDescRec	X11_opts[] = {
 	{"wid", 1, "-1", "Drawing window id, 'arg0'"},
 	{"ignorebg", 0, NULL, "Ignore CGM requests to change background color"},
 	{"pcmap", 0, NULL, "Create a private colormap"},
+	{"scmap", 0, NULL, "Use a shared colormap"},
+	{"colerr", 1, "10", "Percent Color Error allowed"},
 	{NULL}
 	};
 #endif
