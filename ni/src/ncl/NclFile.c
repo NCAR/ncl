@@ -218,7 +218,7 @@ FILE    *fp;
 	}
 	fprintf(fp,"\tvariables:\n");
 	for(i = 0; i < thefile->file.n_vars; i++) {
-		fprintf(fp,"\t\t%s %s(","unknown",NrmQuarkToString(thefile->file.var_info[i]->var_name_quark));
+		fprintf(fp,"\t\t%s %s(",_NclBasicDataTypeToName(thefile->file.var_info[i]->data_type),NrmQuarkToString(thefile->file.var_info[i]->var_name_quark));
 		for(j=0; j< thefile->file.var_info[i]->num_dimensions - 1; j++) {
 			fprintf(fp,"%s,",NrmQuarkToString(FileGetDimName(thefile,thefile->file.var_info[i]->file_dim_num[j])));
 		}

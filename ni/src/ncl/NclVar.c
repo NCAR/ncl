@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclVar.c,v 1.4 1994-09-01 17:42:00 ethan Exp $
+ *      $Id: NclVar.c,v 1.5 1994-09-23 16:15:48 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -369,11 +369,11 @@ FILE *fp;
 		fprintf(fp,"Variable: %s\n","unnamed");
 		break;
 	}
-	fprintf(fp,"Type: %s\n","unknown");
 	if(thevalue == NULL) {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"The value associated with variable (%s) has been freed, can't print it",v_name);
 		return;
 	}
+	fprintf(fp,"Type: %s\n",_NclBasicDataTypeToName(thevalue->multidval.data_type));
 	fprintf(fp,"Total Size: %d bytes\n",thevalue->multidval.totalsize);
 	fprintf(fp,"            %d values\n",thevalue->multidval.totalelements);
 	fprintf(fp,"Number of Dimensions: %d\n",self->var.n_dims);
