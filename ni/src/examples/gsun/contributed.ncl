@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.23 2003-11-01 00:20:43 shea Exp $
+;      $Id: contributed.ncl,v 1.24 2003-12-08 18:44:17 shea Exp $
 ;
 ; -------------- added Feb 14 2002
 ; copy_VarMeta
@@ -5478,4 +5478,131 @@ begin
   end if
 
   return(str)
+end
+
+undef ("yyyymmddhh2yyyyFrac")
+function yyyymmddhh2yyyyFrac (yyyymmddhh[*]:integer)
+;
+; given, say, 1979071906  where 0719 is the 200th day of the year
+;       yrFrac = yyyymmddhh2yyyyFrac (1979071906)
+;       yrFrac = 1979.5458984375    ([200-1]*86400.+hh*3600.)/(86400*365)
+;
+; yyyymmddhh     - scalar or array of dates
+;
+; assumes Gregorian calendar
+ 
+local year, mmddhh, mon, ddhh, day, hour, dayYear, nTim, yrFrac, n, ysec, dsec
+begin
+     year   = yyyymmddhh/1000000
+     mmddhh = yyyymmddhh-year*1000000
+     mon  = mmddhh/10000
+     ddhh = mmddhh-mon*10000
+     day  = ddhh/100
+     hour = ddhh-day*100
+     delete (mmddhh)
+     delete (ddhh)
+
+
+     dayYear = day_of_year(year, mon, day)  ; Gregorian calendar
+     delete (mon)
+     delete (day)
+
+     nTim   = dimsizes(yyyymmddhh)
+     yrFrac = new( nTim, "double")
+     delete(yrFrac@_FillValue)
+
+     do n=0,nTim-1
+        if (isleapyear(year(n))) then
+            ysec = 86400.*366.
+        else
+            ysec = 86400.*365.
+         end if
+         dsec = (dayYear(n)-1)*86400. + hour(n)*3600.
+         yrFrac(n) = year(n) + dsec/ysec
+     end do
+
+     yrFrac@long_name = "Time"
+     yrFrac@units     = "YYYY + fractional portion of year"
+     yrFrac@NCL       = "contributed.ncl: function yyyymmddhh2yyyyFrac"
+
+     return(yrFrac)
+end
+
+;*************************************************************************
+; D. Shea
+; read an ascii file and return just the header as a 1D array of strings.
+;
+; The header is the non-numeric part. Note upon
+; return this may have to be parsed individually for specific info. 
+;
+; opt - option
+;       if type "integer" then it is the number of rows (line)
+;       for the header. This is a 'fixed' number of lines.
+;
+;       if type "string" then it is a sequence of characters
+;       that terminate a variable number of header rows.
+;       Currently this just checks character sequences
+;       starting in col 0. 
+
+function readAsciiHead( fName:string, opt)
+local xs, xc, nr, nrow, noptc, nxc
+begin
+  xs   = asciiread(fName, -1, "string") ; all rows as strings
+ 
+  if (typeof(opt).eq."integer") then
+      if (opt.gt.0) then
+          return( xs(0:opt-1) )       ; return just header rows
+      else
+          print ("contributed: readAsciiHead: opt must be >0")
+          return( "missing" )
+      end if
+  end if
+
+  if (typeof(opt).eq."string") then
+      nrow  = dimsizes(xs)
+      noptc = dimsizes(stringtochar(opt))-1
+    ;;print ("nrow="+nrow+"  noptc="+noptc)
+      
+      do nr=0,nrow-1
+         xc  = stringtochar(xs(nr))
+         nxc = dimsizes(xc)
+         if (nxc.ge.noptc .and. opt.eq.chartostring(xc(0:noptc))) then
+             return( xs(0:nr) )
+             exit
+         end if
+         delete (xc)
+      end do
+      return( "missing" )           ; return just header
+  end if
+end
+
+;*************************************************************************
+; D. Shea
+; read an ascii file and return the data after the header portion
+; opt - option
+;       if type "integer" then it is the number of rows (line)
+;       for the header. This is a 'fixed' number of lines.
+;
+;       if type "string" then it is a sequence of characters
+;       that terminate a variable number of header rows.
+;       Currently this just checks character sequences
+;       starting in col 0. 
+;
+; The 1st three arguments are the same as "asciiread"
+
+function readAsciiTable( fName:string, dims[*]:integer, datatype:string, opt)
+local head, nh, xs, table
+begin
+  head = readAsciiHead( fName, opt)
+  nh   = dimsizes(head)
+; ********************************************************
+; read each data row: trick
+;      (1) write strings as a tempoarary file;
+;      (2) read temporary file back in as 2D 
+; ********************************************************
+  xs   = asciiread(fName, -1, "string") ; all rows as strings
+  asciiwrite ("tempBOGUSfile", xs(nh:))
+  table = asciiread("tempBOGUSfile", dims, datatype)
+  system("/bin/rm tempBOGUSfile")
+  return(table)
 end
