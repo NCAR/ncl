@@ -1,5 +1,5 @@
 /*
- *      $Id: ncarg_path.c,v 1.18 1994-08-05 23:03:37 boote Exp $
+ *      $Id: ncarg_path.c,v 1.19 1994-08-10 22:08:36 boote Exp $
  */
 /*
  *	File:		ncarg_path.c
@@ -306,7 +306,7 @@ const	char	*_NGGetNCARGEnv(name)
 					return NULL;
 				}
 
-#define	EMSGSTR "\nWarning: %s environment variable not set.\n\tAssuming %s as the value for %s.\n\tPlease see the 'ncargintro' man page for\n\tinformation on the %s environment variable\n"
+#define	EMSGSTR "\n\nWarning: %s environment variable not set.\n\tAssuming %s as the value for\n\t%s.\n\tPlease see the 'ncargintro' man page for\n\tinformation on the %s environment variable.\n\n"
 				fprintf(stderr,EMSGSTR,env_name,direct_val,
 							env_name,env_name);
 			}
