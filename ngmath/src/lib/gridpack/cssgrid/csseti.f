@@ -1,5 +1,5 @@
 C
-C	$Id: csseti.f,v 1.1 2000-01-12 22:56:15 fred Exp $
+C	$Id: csseti.f,v 1.2 2000-03-25 00:53:28 fred Exp $
 C
       SUBROUTINE CSSETI (CNP,IVP)
 C
@@ -79,6 +79,15 @@ C
       ELSE IF (CNP(1:3).EQ.'IGR' .OR. CNP(1:3).EQ.'igr' .OR.
      +    CNP(1:3).EQ.'Igr') THEN
          IGFLG = IVP
+        GO TO 120
+C
+C  MVL - Missing value to be used with NCL functions that return arrays.
+C        if MVL is set, it will be used as the missing value to be
+C        returned.
+C
+      ELSE IF (CNP(1:3).EQ.'MVL' .OR. CNP(1:3).EQ.'mvl' .OR.
+     +         CNP(1:3).EQ.'Mvl') THEN
+        RMVAL = DBLE(IVP)
         GO TO 120
       ELSE
         CTM(1:36) = 'CSSETI - Parameter name not known - '

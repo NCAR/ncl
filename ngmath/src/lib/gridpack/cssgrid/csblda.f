@@ -1,5 +1,5 @@
 C
-C	$Id: csblda.f,v 1.2 2000-03-10 01:06:05 fred Exp $
+C	$Id: csblda.f,v 1.3 2000-03-25 00:53:28 fred Exp $
 C
       BLOCKDATA CSBLDA
 C
@@ -26,9 +26,9 @@ C
       DATA TOLSG/0.01D0/
 C
 C  Fill value to use with NCL functions that can return a missing
-C  valur.
+C  value.
 C
-      DATA RMVAL/-1.0D0/
+      DATA RMVAL/-8.D0/
 C
 C  Maximum number of iterations to use in computing SIGMA array.
 C
