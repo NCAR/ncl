@@ -1,5 +1,5 @@
 /*
- *	$Id: ps.c,v 1.25 2001-01-23 22:26:40 fred Exp $
+ *	$Id: ps.c,v 1.26 2001-02-06 21:16:47 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -516,7 +516,7 @@ void PSpreamble (PSddp *psa, preamble_type type)
 		 *  Gs --  gsave
 		 *  Gr --  grestore
 		 *  Im --  image
-		 *  In --  image
+		 *  In --  initgraphics
 		 *  Ld --  prologue for landscape mode
 		 *  Ls --  locally-defined save of graphics state on the 
 		 *         operand stack
@@ -529,6 +529,7 @@ void PSpreamble (PSddp *psa, preamble_type type)
 		 *  Oc --  output new clipping path (usage: llx lly urx ury Oc))
 		 *  Oh --  horizontal outline text (usage: char_space string Oh)
 		 *  Ov --  vertical outline text (usage: char_space string Ov)
+		 *  Pt --  prologue for portrait mode
 		 *  Rh --  readhexstring
 		 *  Rm --  rmoveto
 		 *  Sc --  invoke setcmykcolor instead of setrgbcolor
@@ -842,6 +843,13 @@ void PSpreamble (PSddp *psa, preamble_type type)
                 (void) fprintf(fp," /lly exch def /llx exch def\n");
                 (void) fprintf(fp," -90 rotate\n");
 		(void) fprintf(fp," lly urx add neg llx lly sub translate\n");
+                (void) fprintf(fp,"} bind def\n");
+
+                (void) fprintf(fp,"/Pt\n");
+                (void) fprintf(fp,"{/ury exch def /urx exch def ");
+                (void) fprintf(fp," /lly exch def /llx exch def\n");
+                (void) fprintf(fp," 90 rotate\n");
+		(void) fprintf(fp," lly urx add lly llx sub translate\n");
                 (void) fprintf(fp,"} bind def\n");
 
 		(void) fprintf(fp, "%%%%EndProlog\n\n");
@@ -3338,7 +3346,7 @@ ps_Esc(gksc)
 	char	*sptr = (char *) gksc->s.list, *strng;
 	int	*iptr = (int *) gksc->i.list;
 
-	int	escape_id = iptr[0];
+	int	escape_id = iptr[0], plflag;
 	float	rscale;
 	static	int	saved_color_index;
 
@@ -3446,7 +3454,41 @@ ps_Esc(gksc)
                 strng = strtok((char *) NULL, " ");
                 psa->suppress_flag = (int) atoi(strng);
                 break;
-                
+	case -1525:  /* Specify portrait/landscape mode */
+                strng = strtok(sptr, " ");
+                strng = strtok((char *) NULL, " ");
+                plflag = (int) atoi(strng);
+                if (plflag == 0) {
+                  psa->orientation = PORTRAIT;
+                }
+                else {
+                  psa->orientation = LANDSCAPE;
+                }
+                break;
+	case -1526:  /* Corner points for positioning plot on the page */
+		rscale = 1./psa->scaling;
+		strng = strtok(sptr, " ");  /* Skip over the workstation ID */
+		strng = strtok((char *) NULL, " ");
+		psa->dspace.llx = (int) (rscale * (float) atoi(strng));
+		strng = strtok((char *) NULL, " ");
+		psa->dspace.lly = (int) (rscale * (float) atoi(strng));
+		strng = strtok((char *) NULL, " ");
+		psa->dspace.urx = (int) (rscale * (float) atoi(strng));
+		strng = strtok((char *) NULL, " ");
+		psa->dspace.ury = (int) (rscale * (float) atoi(strng));
+
+		psa->dspace.xspan = ((psa->dspace.urx) - (psa->dspace.llx));
+		psa->dspace.yspan = ((psa->dspace.ury) - (psa->dspace.lly));
+
+		psa->ps_clip.llx = psa->dspace.llx;
+		psa->ps_clip.lly = psa->dspace.lly;
+		psa->ps_clip.urx = psa->dspace.urx;
+		psa->ps_clip.ury = psa->dspace.ury;
+		psa->ps_clip.null = FALSE;
+    
+	        (void) fprintf(psa->file_pointer, "initclip\n");
+
+		break;
 	default:
 		return ERR_INV_ESCAPE;
 	}

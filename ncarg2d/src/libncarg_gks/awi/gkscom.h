@@ -1,5 +1,5 @@
 C
-C $Id: gkscom.h,v 1.18 2000-12-21 22:27:43 fred Exp $
+C $Id: gkscom.h,v 1.19 2001-02-06 21:16:39 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -41,7 +41,7 @@ C  Details on all GKS COMMON variables are in the GKS BLOCKDATA.
      +               CNT   , LSNT(2)       , NTWN(2,4)     , NTVP(2,4),
      +               CCLIP , SWKTP(MXNWK)  , NOPICT, NWKTP ,
      +               LXWKID(MXNWK) , ECONID, CLLX  , CLLY  , CURX  ,
-     +               CURY  , CPSCL , CCMDL,  COLMOD, CSUPR
+     +               CURY  , CPSCL , CCMDL,  COLMOD, CSUPR , CPTLD
       INTEGER        SOPWK , SACWK , CPLI  , CLN   , CPLCI , CLNA  ,
      +               CLWSCA, CPLCIA, CPMI  , CMK   , CPMCI , CMKA  ,
      +               CMKSA , CPMCIA, CTXI  , CTXFP , CTXCI , CTXFPA,
@@ -49,7 +49,7 @@ C  Details on all GKS COMMON variables are in the GKS BLOCKDATA.
      +               CFAIS , CFASI , CFACI , CFAISA, CFASIA, CFACIA,
      +               CNT   , LSNT  , CCLIP , SWKTP , NOPICT, NWKTP ,
      +               LXWKID, ECONID, CLLX  , CLLY  , CURX  , CURY  ,
-     +               CPSCL , CCMDL,  COLMOD, CSUPR
+     +               CPSCL , CCMDL,  COLMOD, CSUPR , CPTLD
       REAL           NTWN  , NTVP
       COMMON /GKETBI/IERNMS(NUMERS)
       INTEGER IERNMS

@@ -1,5 +1,5 @@
 C
-C	$Id: gesc.f,v 1.31 2001-01-24 17:58:01 fred Exp $
+C	$Id: gesc.f,v 1.32 2001-02-06 21:16:39 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -126,6 +126,7 @@ C                   0 = put out background and bounding box;
 C                   1 = neither background or bounding box;
 C                   2 = no background;
 C                   3 = no bounding box
+C      -1525  --  Indicate portrait (=0) or landscape (=1) mode for PS.
 C
       IF (FCTID .EQ. -1399) THEN
 C
@@ -694,8 +695,7 @@ C
 C  Color model selection (1=RGB, 0=CMYK).
 C
         IF (FCTID .EQ. -1523) THEN
-          READ(IDR(1)(1:5),501) CCMDL
-          RETURN
+          READ(IDR(1)(1: 5),501) CCMDL
         ENDIF 
 C
 C  Suppress flag for background color and/or bounding box.
@@ -705,12 +705,44 @@ C
           RETURN
         ENDIF 
 C
-C  Return if not a PostScript workstation, unless FCTID = -1521.
+C  Portrait/landscape flag for PS output.
+C
+        IF (FCTID .EQ. -1525) THEN
+          READ(IDR(1)(1:5),501,ERR=146) IWKID
+          GO TO 166 
+  146     CONTINUE
+          ERS = 1
+          CALL GERHND(182,EESC,ERF)
+          ERS = 0
+          RETURN
+  166     CONTINUE
+          CUFLAG = IWKID
+          READ(IDR(1)(6:10),501) CPTLD
+        ENDIF 
+C
+C  Positioning coordinates for PS that can be set between pictures
+C  or in the middle of a picture.
+C
+        IF (FCTID .EQ. -1526) THEN
+          READ(IDR(1)(1:5),501,ERR=145) IWKID
+          GO TO 165 
+  145     CONTINUE
+          ERS = 1
+          CALL GERHND(182,EESC,ERF)
+          ERS = 0
+          RETURN
+  165     CONTINUE
+          CUFLAG = IWKID
+        ENDIF 
+C
+C  Return if not a PostScript workstation, unless FCTID = -1521
+C  or FCTID = -1525, or FCTID = -1526.
 C
         CALL GQWKC(IWKID,IER,ICONID,ITYP)
         IF (ITYP.GT.GPSMAX .OR. ITYP.LT.GPSMIN) THEN
           CUFLAG = -1
-          IF (FCTID .NE. -1521) RETURN
+          IF (FCTID.NE.-1521 .AND. FCTID.NE.-1525 .AND.
+     +        FCTID.NE.-1526) RETURN
         ENDIF
 C
         FCODE = 6

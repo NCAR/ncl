@@ -1,5 +1,5 @@
 C
-C	$Id: gzopwk.f,v 1.6 2000-12-22 19:01:04 fred Exp $
+C	$Id: gzopwk.f,v 1.7 2001-02-06 21:16:40 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -110,8 +110,8 @@ C
         CONT  = 0
         CALL GZROI(0)
         IF (WTYPE.GE.GPSMIN .AND. WTYPE.LE.GPSMAX) THEN
-          IL1   = 10
-          IL2   = 10
+          IL1   = 11
+          IL2   = 11
           ID(1) = WKID
           ID(2) = CONID
           ID(3) = WTYPE
@@ -134,6 +134,10 @@ C
 C  Flag for suppressing background color for PS.
 C
           ID(10) = CSUPR
+C
+C  Flag for portrait/landscape mode (0 or non-zero)
+C
+          ID(11) = CPTLD
 	ELSE IF (WTYPE.EQ.GXWE .OR. WTYPE.EQ.GXWC) THEN
 	  IL1   = 4
 	  IL2   = 4
