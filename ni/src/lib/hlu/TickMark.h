@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.h,v 1.4 1993-12-13 23:34:55 ethan Exp $
+ *      $Id: TickMark.h,v 1.5 1994-01-14 23:36:31 boote Exp $
  */
 /************************************************************************
 *									*
@@ -74,8 +74,8 @@ typedef enum { LOG, LINEAR, IRREGULAR, GEOGRAPHIC, TIME } TickMarkStyles;
 
 #define NhlNtmXBMinorPerMajor	"tmXBMinorPerMajor"
 #define NhlNtmXTMinorPerMajor	"tmXTMinorPerMajor"
-#define NhlNtmXBNoMinor		"tmXBNoMinor"
-#define NhlNtmXTNoMinor		"tmXTNoMinor"
+#define NhlNtmXBMinorOn		"tmXBMinorOn"
+#define NhlNtmXTMinorOn		"tmXTMinorOn"
 
 #define NhlNtmXBLabelStride		"tmXBLabelStride"
 #define NhlNtmXTLabelStride		"tmXTLabelStride"
@@ -94,8 +94,6 @@ typedef enum { LOG, LINEAR, IRREGULAR, GEOGRAPHIC, TIME } TickMarkStyles;
 */
 #define NhlNtmXBIrregularPoints	"tmXBIrregularPoints"
 #define NhlCtmXBIrregularPoints	"TmXBIrregularPoints"
-#define NhlNtmXBNumIrregularPoints "tmXBNumIrregularPoints"
-#define NhlCtmXBNumIrregularPoints "TmXBNumIrregularPoints"
 
 /*
 * X Axis Bottom Resources only used for manual mode
@@ -107,7 +105,6 @@ typedef enum { LOG, LINEAR, IRREGULAR, GEOGRAPHIC, TIME } TickMarkStyles;
 * XAxis Bottom Resources only used for explicit mode
 */
 #define NhlNtmXBValues		"tmXBValues"
-#define NhlNtmXBNumValues	"tmXBNumValues"
 #define NhlNtmXBLabels		"tmXBLabels"
 
 /*
@@ -152,8 +149,6 @@ typedef enum { LOG, LINEAR, IRREGULAR, GEOGRAPHIC, TIME } TickMarkStyles;
 */
 #define NhlNtmXTIrregularPoints	"tmXTIrregularPoints"
 #define NhlCtmXTIrregularPoints	"TmXTIrregularPoints"
-#define NhlNtmXTNumIrregularPoints "tmXTNumIrregularPoints"
-#define NhlCtmXTNumIrregularPoints "TmXTNumIrregularPoints"
 
 /*
 * X Axis Top Resources only used for manual mode
@@ -165,7 +160,6 @@ typedef enum { LOG, LINEAR, IRREGULAR, GEOGRAPHIC, TIME } TickMarkStyles;
 * XAxis Top Resources only used for explicit mode
 */
 #define NhlNtmXTValues		"tmXTValues"
-#define NhlNtmXTNumValues	"tmXTNumValues"
 #define NhlNtmXTLabels		"tmXTLabels"
 
 /*
@@ -228,8 +222,8 @@ typedef enum { LOG, LINEAR, IRREGULAR, GEOGRAPHIC, TIME } TickMarkStyles;
 
 #define NhlNtmYLMinorPerMajor	"tmYLMinorPerMajor"
 #define NhlNtmYRMinorPerMajor	"tmYRMinorPerMajor"
-#define NhlNtmYLNoMinor		"tmYLNoMinor"
-#define NhlNtmYRNoMinor		"tmYRNoMinor"
+#define NhlNtmYLMinorOn		"tmYLMinorOn"
+#define NhlNtmYRMinorOn		"tmYRMinorOn"
 
 #define NhlNtmYLLabelStride		"tmYLLabelStride"
 #define NhlNtmYRLabelStride		"tmYRLabelStride"
@@ -248,8 +242,6 @@ typedef enum { LOG, LINEAR, IRREGULAR, GEOGRAPHIC, TIME } TickMarkStyles;
 */
 #define NhlNtmYLIrregularPoints	"tmYLIrregularPoints"
 #define NhlCtmYLIrregularPoints	"TmYLIrregularPoints"
-#define NhlNtmYLNumIrregularPoints "tmYLNumIrregularPoints"
-#define NhlCtmYLNumIrregularPoints "TmYLNumIrregularPoints"
 /*
 * X Axis Left Resources only used for manual mode
 */
@@ -260,7 +252,6 @@ typedef enum { LOG, LINEAR, IRREGULAR, GEOGRAPHIC, TIME } TickMarkStyles;
 * XAxis Left Resources only used for explicit mode
 */
 #define NhlNtmYLValues		"tmYLValues"
-#define NhlNtmYLNumValues	"tmYLNumValues"
 #define NhlNtmYLLabels		"tmYLLabels"
 
 /*
@@ -305,8 +296,6 @@ typedef enum { LOG, LINEAR, IRREGULAR, GEOGRAPHIC, TIME } TickMarkStyles;
 */
 #define NhlNtmYRIrregularPoints	"tmYRIrregularPoints"
 #define NhlCtmYRIrregularPoints	"TmYRIrregularPoints"
-#define NhlNtmYRNumIrregularPoints "tmYRNumIrregularPoints"
-#define NhlCtmYRNumIrregularPoints "TmYRNumIrregularPoints"
 /*
 * Y Axis Right Resources only used for manual mode
 */
@@ -317,7 +306,6 @@ typedef enum { LOG, LINEAR, IRREGULAR, GEOGRAPHIC, TIME } TickMarkStyles;
 * XAxis Right Resources only used for explicit mode
 */
 #define NhlNtmYRValues		"tmYRValues"
-#define NhlNtmYRNumValues	"tmYRNumValues"
 #define NhlNtmYRLabels		"tmYRLabels"
 
 /*
@@ -416,10 +404,10 @@ typedef enum { LOG, LINEAR, IRREGULAR, GEOGRAPHIC, TIME } TickMarkStyles;
 #define NhlCtmXTStyle 		"TmXTStyle"
 #define NhlCtmXBIrrTensionF	"TmXBIrrTensionF"
 #define NhlCtmXTIrrTensionF	"TmXTIrrTensionF"
-#define NhlCtmXMajorGrid		"TmXMajorGrid"
-#define NhlCtmXMinorGrid		"TmXMinorGrid"
-#define NhlCtmXBNoMinor		"TmXBNoMinor"
-#define NhlCtmXTNoMinor		"TmXTNoMinor"
+#define NhlCtmXMajorGrid	"TmXMajorGrid"
+#define NhlCtmXMinorGrid	"TmXMinorGrid"
+#define NhlCtmXBMinorOn		"TmXBMinorOn"
+#define NhlCtmXTMinorOn		"TmXTMinorOn"
 #define NhlCtmXBLabelStride	"TmXBLabelStride"
 #define NhlCtmXBDataLeftF	"TmXBDataLeftF"
 #define NhlCtmXBDataRightF	"TmXBDataRightF"
@@ -429,7 +417,6 @@ typedef enum { LOG, LINEAR, IRREGULAR, GEOGRAPHIC, TIME } TickMarkStyles;
 #define NhlCtmXBTickSpacingF	"TmXBTickSpacingF"
 #define NhlCtmXBSpacingType	"TmXBSpacingType"
 #define NhlCtmXBValues		"TmXBValues"
-#define NhlCtmXBNumValues	"TmXBNumValues"
 #define NhlCtmXBLabels		"TmXBLabels"
 #define NhlCtmXBLabelDeltaF	"TmXBLabelDeltaF"
 #define NhlCtmXTLabelStride	"TmXTLabelStride"
@@ -441,7 +428,6 @@ typedef enum { LOG, LINEAR, IRREGULAR, GEOGRAPHIC, TIME } TickMarkStyles;
 #define NhlCtmXTTickSpacingF	"TmXTTickSpacingF"
 #define NhlCtmXTSpacingType	"TmXTSpacingType"
 #define NhlCtmXTValues		"TmXTValues"
-#define NhlCtmXTNumValues	"TmXTNumValues"
 #define NhlCtmXTLabels		"TmXTLabels"
 #define NhlCtmXTLabelDeltaF	"TmXLabelDeltaF"
 #define NhlCtmYUseLeft		"TmYUseLeft"
@@ -459,8 +445,8 @@ typedef enum { LOG, LINEAR, IRREGULAR, GEOGRAPHIC, TIME } TickMarkStyles;
 #define NhlCtmYRIrrTensionF	"TmYRIrrTensionF"
 #define NhlCtmYMajorGrid		"TmYMajorGrid"
 #define NhlCtmYMinorGrid		"TmYMinorGrid"
-#define NhlCtmYLNoMinor		"TmYLNoMinor"
-#define NhlCtmYRNoMinor		"TmYRNoMinor"
+#define NhlCtmYLMinorOn		"TmYLMinorOn"
+#define NhlCtmYRMinorOn		"TmYRMinorOn"
 #define NhlCtmYLLabelStride	"TmYLLabelStride"
 #define NhlCtmYLDataTopF	"TmYLDataTopF"
 #define NhlCtmYLDataBottomF	"TmYLDataBottomF"
@@ -470,7 +456,6 @@ typedef enum { LOG, LINEAR, IRREGULAR, GEOGRAPHIC, TIME } TickMarkStyles;
 #define NhlCtmYLTickSpacingF	"TmYLTickSpacingF"
 #define NhlCtmYLSpacingType	"TmYLSpacingType"
 #define NhlCtmYLValues		"TmYLValues"
-#define NhlCtmYLNumValues	"TmYLNumValues"
 #define NhlCtmYLLabels		"TmYLLabels"
 #define NhlCtmYLLabelDeltaF	"TmYLLabelDeltaF"
 #define NhlCtmYRLabelStride	"TmYRLabelStride"
@@ -482,7 +467,6 @@ typedef enum { LOG, LINEAR, IRREGULAR, GEOGRAPHIC, TIME } TickMarkStyles;
 #define NhlCtmYRTickSpacingF	"TmYRTickSpacingF"
 #define NhlCtmYRSpacingType	"TmYRSpacingType"
 #define NhlCtmYRValues		"TmYRValues"
-#define NhlCtmYRNumValues	"TmYRNumValues"
 #define NhlCtmYRLabels		"TmYRLabels"
 #define NhlCtmYRLabelDeltaF	"TmYRLabelDeltaF"
 extern LayerClass tickMarkLayerClass;

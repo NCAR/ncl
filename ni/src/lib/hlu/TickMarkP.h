@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMarkP.h,v 1.3 1993-11-10 01:19:36 ethan Exp $
+ *      $Id: TickMarkP.h,v 1.4 1994-01-14 23:36:34 boote Exp $
  */
 /************************************************************************
 *									*
@@ -32,13 +32,13 @@
 typedef struct _TickMarkLayerPart {
 	/* Publically setable resources */
 	int		sci_note_cutoff;
-	int		x_use_bottom;
-	int		x_b_on;
-	int		x_t_on;
-	int		x_b_labels_on;
-	int		x_t_labels_on;
-	int		x_b_border_on;
-	int		x_t_border_on;
+	NhlBoolean	x_use_bottom;
+	NhlBoolean	x_b_on;
+	NhlBoolean	x_t_on;
+	NhlBoolean	x_b_labels_on;
+	NhlBoolean	x_t_labels_on;
+	NhlBoolean	x_b_border_on;
+	NhlBoolean	x_t_border_on;
 	TickMarkModes	x_b_mode;
 	TickMarkModes	x_t_mode;
 	TickMarkStyles	x_b_style;
@@ -49,8 +49,8 @@ typedef struct _TickMarkLayerPart {
 	int		x_t_precision;
 	float		border_thickness;
 	int		border_line_color;
-	int		x_major_grid;
-	int		x_minor_grid;
+	NhlBoolean	x_major_grid;
+	NhlBoolean	x_minor_grid;
 	float		x_major_grid_thickness;
 	int		x_major_grid_line_color;
 	int		x_major_grid_line_dash_pattern;
@@ -59,8 +59,8 @@ typedef struct _TickMarkLayerPart {
 	int		x_minor_grid_line_dash_pattern;
 	int		x_b_minor_per_major;
 	int		x_t_minor_per_major;
-	int		x_b_no_minor;
-	int		x_t_no_minor;
+	NhlBoolean	x_b_minor_on;
+	NhlBoolean	x_t_minor_on;
 	int		x_b_label_stride;
 	int		x_t_label_stride;
 	float		x_b_data_left;
@@ -70,11 +70,9 @@ typedef struct _TickMarkLayerPart {
 	int		x_b_max_ticks;
 	float		x_b_tick_spacing;
 	int		x_b_spacing_type;
-	float		*x_b_irregular_points;
-	int		x_b_num_irregular_points;
-	float		*x_b_values;
-	int		x_b_num_values;
-	char		**x_b_labels;
+	NhlGenArray	x_b_irregular_points;
+	NhlGenArray	x_b_values;
+	NhlGenArray	x_b_labels;
 	float		x_b_major_thickness;
 	int		x_b_major_line_color;
 	float 		x_b_major_length;
@@ -83,7 +81,7 @@ typedef struct _TickMarkLayerPart {
 	int		x_b_minor_line_color;
 	float		x_b_minor_length;
 	float		x_b_minor_outward_length;
-	int		x_b_label_font;	
+	NhlFont		x_b_label_font;	
 	float		x_b_label_font_height;
 	int		x_b_label_font_color;
 	float		x_b_label_font_aspect;
@@ -91,7 +89,7 @@ typedef struct _TickMarkLayerPart {
 	float		x_b_label_angle;
 	TextDirection   x_b_label_direction;
 	float		x_b_label_delta;
-	int		x_b_auto_precision;
+	NhlBoolean	x_b_auto_precision;
 	float		x_t_data_left;
 	float		x_t_data_right;
 	float		x_t_tick_start;
@@ -99,11 +97,9 @@ typedef struct _TickMarkLayerPart {
 	int		x_t_max_ticks;
 	float		x_t_tick_spacing;
 	int		x_t_spacing_type;
-	float		*x_t_irregular_points;
-	int		x_t_num_irregular_points;
-	float		*x_t_values;
-	int		x_t_num_values;
-	char		**x_t_labels;
+	NhlGenArray	x_t_irregular_points;
+	NhlGenArray	x_t_values;
+	NhlGenArray	x_t_labels;
 	float		x_t_major_thickness;
 	int		x_t_major_line_color;
 	float 		x_t_major_length;
@@ -112,7 +108,7 @@ typedef struct _TickMarkLayerPart {
 	int		x_t_minor_line_color;
 	float		x_t_minor_length;
 	float		x_t_minor_outward_length;
-	int		x_t_label_font;	
+	NhlFont		x_t_label_font;	
 	float		x_t_label_font_height;
 	int		x_t_label_font_color;
 	float		x_t_label_font_aspect;
@@ -120,14 +116,14 @@ typedef struct _TickMarkLayerPart {
 	float		x_t_label_angle;
 	TextDirection   x_t_label_direction;
 	float		x_t_label_delta;
-	int		x_t_auto_precision;
-	int		y_use_left;
-	int		y_r_on;
-	int		y_l_on;
-	int		y_r_labels_on;
-	int		y_l_labels_on;
-	int		y_r_border_on;
-	int		y_l_border_on;
+	NhlBoolean	x_t_auto_precision;
+	NhlBoolean	y_use_left;
+	NhlBoolean	y_r_on;
+	NhlBoolean	y_l_on;
+	NhlBoolean	y_r_labels_on;
+	NhlBoolean	y_l_labels_on;
+	NhlBoolean	y_r_border_on;
+	NhlBoolean	y_l_border_on;
 	TickMarkModes	y_r_mode;
 	TickMarkModes	y_l_mode;
 	TickMarkStyles	y_l_style;
@@ -136,8 +132,8 @@ typedef struct _TickMarkLayerPart {
 	float		y_r_tension;
 	int		y_l_precision;
 	int		y_r_precision;
-	int		y_major_grid;
-	int		y_minor_grid;
+	NhlBoolean	y_major_grid;
+	NhlBoolean	y_minor_grid;
 	float		y_major_grid_thickness;
 	int		y_major_grid_line_color;
 	int		y_major_grid_line_dash_pattern;
@@ -146,8 +142,8 @@ typedef struct _TickMarkLayerPart {
 	int		y_minor_grid_line_dash_pattern;
 	int		y_r_minor_per_major;
 	int		y_l_minor_per_major;
-	int		y_r_no_minor;
-	int		y_l_no_minor;
+	NhlBoolean	y_r_minor_on;
+	NhlBoolean	y_l_minor_on;
 	int		y_r_label_stride;
 	int		y_l_label_stride;
 	float		y_l_data_top;
@@ -157,11 +153,9 @@ typedef struct _TickMarkLayerPart {
 	int		y_l_max_ticks;
 	float		y_l_tick_spacing;
 	int		y_l_spacing_type;
-	float		*y_l_irregular_points;
-	int		y_l_num_irregular_points;
-	float		*y_l_values;
-	int		y_l_num_values;
-	char		**y_l_labels;
+	NhlGenArray	y_l_irregular_points;
+	NhlGenArray	y_l_values;
+	NhlGenArray	y_l_labels;
 	float		y_l_major_thickness;
 	int		y_l_major_line_color;
 	float 		y_l_major_length;
@@ -170,7 +164,7 @@ typedef struct _TickMarkLayerPart {
 	int		y_l_minor_line_color;
 	float		y_l_minor_length;
 	float		y_l_minor_outward_length;
-	int		y_l_label_font;	
+	NhlFont		y_l_label_font;	
 	float		y_l_label_font_height;
 	int		y_l_label_font_color;
 	float		y_l_label_font_aspect;
@@ -178,7 +172,7 @@ typedef struct _TickMarkLayerPart {
 	float		y_l_label_angle;
 	TextDirection   y_l_label_direction;
 	float		y_l_label_delta;
-	int		y_l_auto_precision;
+	NhlBoolean	y_l_auto_precision;
 	float		y_r_data_top;
 	float		y_r_data_bottom;
 	float		y_r_tick_start;
@@ -186,11 +180,9 @@ typedef struct _TickMarkLayerPart {
 	int		y_r_max_ticks;
 	float		y_r_tick_spacing;
 	int		y_r_spacing_type;
-	float		*y_r_irregular_points;
-	int		y_r_num_irregular_points;
-	float		*y_r_values;
-	int		y_r_num_values;
-	char		**y_r_labels;
+	NhlGenArray	y_r_irregular_points;
+	NhlGenArray	y_r_values;
+	NhlGenArray	y_r_labels;
 	float		y_r_major_thickness;
 	int		y_r_major_line_color;
 	float 		y_r_major_length;
@@ -199,7 +191,7 @@ typedef struct _TickMarkLayerPart {
 	int		y_r_minor_line_color;
 	float		y_r_minor_length;
 	float		y_r_minor_outward_length;
-	int		y_r_label_font;	
+	NhlFont		y_r_label_font;	
 	float		y_r_label_font_height;
 	int		y_r_label_font_color;
 	float		y_r_label_font_aspect;
@@ -207,7 +199,7 @@ typedef struct _TickMarkLayerPart {
 	float		y_r_label_angle;
 	TextDirection   y_r_label_direction;
 	float		y_r_label_delta;
-	int		y_r_auto_precision;
+	NhlBoolean	y_r_auto_precision;
 /* Private fields */
 	Layer		xb_yl_trans_obj;  /* used to tranform tick mark data locations
 					to tickmark NDC locations */
@@ -238,10 +230,10 @@ typedef struct _TickMarkLayerPart {
 	float 		ir_xtmax;
 	float 		ir_ylmax;
 	float 		ir_yrmax;
-	int		new_ir_xb;
-	int		new_ir_xt;
-	int		new_ir_yl;
-	int		new_ir_yr;
+	NhlBoolean	new_ir_xb;
+	NhlBoolean	new_ir_xt;
+	NhlBoolean	new_ir_yl;
+	NhlBoolean	new_ir_yr;
 
 	float		*x_b_major_ndc_locs;
 	float		*x_b_major_data_locs;

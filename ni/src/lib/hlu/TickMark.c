@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.c,v 1.7 1994-01-13 21:46:40 ethan Exp $
+ *      $Id: TickMark.c,v 1.8 1994-01-14 23:36:20 boote Exp $
  */
 /************************************************************************
 *									*
@@ -35,28 +35,28 @@
 static NhlResource resources[] = {
 	{ NhlNtmSciNoteCutoff, NhlCtmSciNoteCutoff, NhlTInteger,sizeof(int),
 		NhlOffset(TickMarkLayerRec, tick.sci_note_cutoff),
-		NhlTString,"6" },
-	{ NhlNtmXUseBottom, NhlCtmXUseBottom, NhlTInteger, sizeof(int),
+		NhlTImmediate,(NhlPointer)6},
+	{ NhlNtmXUseBottom, NhlCtmXUseBottom, NhlTBoolean, sizeof(NhlBoolean),
 		NhlOffset(TickMarkLayerRec, tick.x_use_bottom),
-		NhlTString,"1" },
-	{ NhlNtmXBOn, NhlCtmXBOn, NhlTInteger, sizeof(int),
+		NhlTImmediate,(NhlPointer)True},
+	{ NhlNtmXBOn, NhlCtmXBOn, NhlTBoolean, sizeof(NhlBoolean),
 		NhlOffset(TickMarkLayerRec, tick.x_b_on),
-		NhlTString,"1" },
-	{ NhlNtmXTOn, NhlCtmXTOn, NhlTInteger, sizeof(int),
+		NhlTImmediate,(NhlPointer)True},
+	{ NhlNtmXTOn, NhlCtmXTOn, NhlTBoolean, sizeof(NhlBoolean),
 		NhlOffset(TickMarkLayerRec, tick.x_t_on),
-		NhlTString,"1" },
-	{ NhlNtmXBLabelsOn, NhlCtmXBLabelsOn, NhlTInteger, sizeof(int),
+		NhlTImmediate,(NhlPointer)True},
+	{ NhlNtmXBLabelsOn, NhlCtmXBLabelsOn, NhlTBoolean, sizeof(NhlBoolean),
 		NhlOffset(TickMarkLayerRec, tick.x_b_labels_on),
-		NhlTString,"1" },
-	{ NhlNtmXTLabelsOn, NhlCtmXTLabelsOn, NhlTInteger, sizeof(int),
+		NhlTImmediate,(NhlPointer)True },
+	{ NhlNtmXTLabelsOn, NhlCtmXTLabelsOn, NhlTBoolean, sizeof(NhlBoolean),
 		NhlOffset(TickMarkLayerRec, tick.x_t_labels_on),
-		NhlTString,"0" },
-	{ NhlNtmXBBorderOn, NhlCtmXBBorderOn, NhlTInteger, sizeof(int),
+		NhlTImmediate,(NhlPointer)False },
+	{ NhlNtmXBBorderOn, NhlCtmXBBorderOn, NhlTBoolean, sizeof(NhlBoolean),
 		NhlOffset(TickMarkLayerRec, tick.x_b_border_on),
-		NhlTString,"1" },
-	{ NhlNtmXTBorderOn, NhlCtmXTBorderOn, NhlTInteger, sizeof(int),
+		NhlTImmediate,(NhlPointer)True },
+	{ NhlNtmXTBorderOn, NhlCtmXTBorderOn, NhlTBoolean, sizeof(NhlBoolean),
 		NhlOffset(TickMarkLayerRec, tick.x_t_border_on),
-		NhlTString,"1" },
+		NhlTImmediate,(NhlPointer)True },
 	{ NhlNtmXBMode, NhlCtmXBMode, NhlTTickMarkModes, sizeof(TickMarkModes),
 		NhlOffset(TickMarkLayerRec, tick.x_b_mode),
 		NhlTImmediate,(NhlPointer) AUTOMATIC },
@@ -83,21 +83,21 @@ static NhlResource resources[] = {
 		NhlTString,"2.0" },
 	{ NhlNtmBorderLineColor,NhlCtmBorderLineColor,NhlTInteger,
 		sizeof(int), NhlOffset(TickMarkLayerRec, tick.border_line_color),
-		NhlTString,"1"},
+		NhlTImmediate,(NhlPointer)1},
 
 	{ NhlNtmXBPrecision, NhlCtmPrecisions, NhlTInteger,sizeof(int),
 		NhlOffset(TickMarkLayerRec, tick.x_b_precision),
-		NhlTString, "4" },
+		NhlTImmediate, (NhlPointer)4 },
 	{ NhlNtmXTPrecision, NhlCtmPrecisions, NhlTInteger,sizeof(int),
 		NhlOffset(TickMarkLayerRec, tick.x_t_precision),
-		NhlTString, "4" },
+		NhlTImmediate, (NhlPointer)4 },
 
-	{ NhlNtmXMajorGrid, NhlCtmXMajorGrid, NhlTInteger, sizeof(int),
+	{ NhlNtmXMajorGrid, NhlCtmXMajorGrid, NhlTBoolean, sizeof(NhlBoolean),
 		NhlOffset(TickMarkLayerRec, tick.x_major_grid),
-		NhlTString, "0" },
-	{ NhlNtmXMinorGrid, NhlCtmXMinorGrid, NhlTInteger, sizeof(int),
+		NhlTImmediate, (NhlPointer)False },
+	{ NhlNtmXMinorGrid, NhlCtmXMinorGrid, NhlTBoolean, sizeof(NhlBoolean),
 		NhlOffset(TickMarkLayerRec, tick.x_minor_grid),
-		NhlTString, "0" },
+		NhlTImmediate, (NhlPointer)False },
 	{ NhlNtmXMajorGridThicknessF, NhlCtmMajorGridThicknessesF, NhlTFloat,
 		sizeof(float),
 		NhlOffset(TickMarkLayerRec,tick.x_major_grid_thickness),
@@ -105,41 +105,43 @@ static NhlResource resources[] = {
 	{ NhlNtmXMajorGridLineColor, NhlCtmMajorGridLineColors, NhlTInteger,
 		sizeof(int),
 		NhlOffset(TickMarkLayerRec, tick.x_major_grid_line_color),
-		NhlTString, "1" },
+		NhlTImmediate, (NhlPointer)1 },
 	{ NhlNtmXMajorGridLineDashPattern, NhlCtmMajorGridLineDashPatterns,
 		NhlTInteger,sizeof(int),
 		NhlOffset(TickMarkLayerRec,tick.x_major_grid_line_dash_pattern),
-		NhlTString, "0" },
+		NhlTImmediate, (NhlPointer)0 },
 
 	{ NhlNtmXMinorGridThicknessF, NhlCtmMinorGridThicknessesF, NhlTFloat,
 		sizeof(float),
 		NhlOffset(TickMarkLayerRec, tick.x_minor_grid_thickness),
 		NhlTString, "1.0" },
 	{ NhlNtmXMinorGridLineColor, NhlCtmMinorGridLineColors, NhlTInteger,
-		sizeof(float),
+		sizeof(int),
 		NhlOffset(TickMarkLayerRec, tick.x_minor_grid_line_color),
-		NhlTString, "1" },
+		NhlTImmediate, (NhlPointer)1 },
 	{ NhlNtmXMinorGridLineDashPattern, NhlCtmMinorGridLineDashPatterns,
 		NhlTInteger, sizeof(int),
 		NhlOffset(TickMarkLayerRec,tick.x_minor_grid_line_dash_pattern),
-		NhlTString, "0" },
+		NhlTImmediate, (NhlPointer)0 },
 
 	{ NhlNtmXBMinorPerMajor, NhlCtmXMinorPerMajor,NhlTInteger,sizeof(int),
 		NhlOffset(TickMarkLayerRec,tick.x_b_minor_per_major),
-		NhlTString, "3" },
+		NhlTImmediate, (NhlPointer)3 },
 	{ NhlNtmXTMinorPerMajor, NhlCtmXMinorPerMajor,NhlTInteger,sizeof(int),
 		NhlOffset(TickMarkLayerRec,tick.x_t_minor_per_major),
-		NhlTString, "3" },
-	{ NhlNtmXBNoMinor, NhlCtmXBNoMinor, NhlTInteger, sizeof(int),
-		NhlOffset(TickMarkLayerRec,tick.x_b_no_minor), NhlTString,"0" },
-	{ NhlNtmXTNoMinor, NhlCtmXTNoMinor, NhlTInteger, sizeof(int),
-		NhlOffset(TickMarkLayerRec,tick.x_t_no_minor), NhlTString,"0" },
+		NhlTImmediate, (NhlPointer)3 },
+	{ NhlNtmXBMinorOn, NhlCtmXBMinorOn, NhlTBoolean, sizeof(NhlBoolean),
+		NhlOffset(TickMarkLayerRec,tick.x_b_minor_on),
+		NhlTImmediate,(NhlPointer)True },
+	{ NhlNtmXTMinorOn, NhlCtmXTMinorOn, NhlTBoolean, sizeof(NhlBoolean),
+		NhlOffset(TickMarkLayerRec,tick.x_t_minor_on),
+		NhlTImmediate,(NhlPointer)True },
 	{ NhlNtmXBLabelStride, NhlCtmXBLabelStride, NhlTInteger,sizeof(int),
 		NhlOffset(TickMarkLayerRec,tick.x_b_label_stride),
-		NhlTString,"0" },
+		NhlTImmediate,(NhlPointer)0 },
 	{ NhlNtmXTLabelStride, NhlCtmXTLabelStride, NhlTInteger,sizeof(int),
 		NhlOffset(TickMarkLayerRec,tick.x_t_label_stride),
-		NhlTString,"0" },
+		NhlTImmediate,(NhlPointer)0 },
 
 	{ NhlNtmXBDataLeftF, NhlCtmXBDataLeftF,NhlTFloat, sizeof(float),
 		NhlOffset(TickMarkLayerRec,tick.x_b_data_left),
@@ -155,28 +157,21 @@ static NhlResource resources[] = {
 		NhlTString,"0.0" },
 	{ NhlNtmXBMaxTicks, NhlCtmXBMaxTicks, NhlTInteger,sizeof(int),
 		NhlOffset(TickMarkLayerRec,tick.x_b_max_ticks),
-		NhlTString, "7" },
+		NhlTImmediate, (NhlPointer)7 },
 	{ NhlNtmXBTickSpacingF,NhlCtmXBTickSpacingF, NhlTFloat, sizeof(float),
 		NhlOffset(TickMarkLayerRec,tick.x_b_tick_spacing),
 		NhlTString, "0.0" },
 	{ NhlNtmXBSpacingType, NhlCtmXBSpacingType, NhlTInteger, sizeof(int),
 		NhlOffset(TickMarkLayerRec,tick.x_b_spacing_type),
-		NhlTString, "0" },
-	{ NhlNtmXBIrregularPoints, NhlCtmXBIrregularPoints,NhlTFloatPtr,
-		sizeof(float*),
+		NhlTImmediate, (NhlPointer)0 },
+	{ NhlNtmXBIrregularPoints, NhlCtmXBIrregularPoints,NhlTGenArray,
+		sizeof(NhlPointer),
 		NhlOffset(TickMarkLayerRec,tick.x_b_irregular_points),
 		NhlTImmediate, NULL},
-	{ NhlNtmXBNumIrregularPoints, NhlCtmXBNumIrregularPoints,NhlTInteger,
-		sizeof(int),
-		NhlOffset(TickMarkLayerRec,tick.x_b_num_irregular_points),
-		NhlTString,"0" },
-	{ NhlNtmXBValues, NhlCtmXBValues, NhlTFloatPtr, sizeof(float*),
+	{ NhlNtmXBValues, NhlCtmXBValues, NhlTGenArray, sizeof(NhlGenArray),
 		NhlOffset(TickMarkLayerRec,tick.x_b_values),
 		NhlTImmediate, NULL },
-	{ NhlNtmXBNumValues, NhlCtmXBNumValues, NhlTInteger, sizeof(int),
-		NhlOffset(TickMarkLayerRec,tick.x_b_num_values),
-		NhlTString, "0" },
-	{ NhlNtmXBLabels, NhlCtmXBLabels, NhlTStringPtr, sizeof(char**),
+	{ NhlNtmXBLabels, NhlCtmXBLabels, NhlTGenArray, sizeof(NhlGenArray),
 		NhlOffset(TickMarkLayerRec,tick.x_b_labels),
 		NhlTImmediate, NULL },
 	{ NhlNtmXBMajorThicknessF, NhlCtmMajorThicknessesF, NhlTFloat,
@@ -185,7 +180,7 @@ static NhlResource resources[] = {
 		NhlTString, "2.0" },
 	{NhlNtmXBMajorLineColor, NhlCtmMajorLineColors, NhlTInteger,sizeof(int),
 		NhlOffset(TickMarkLayerRec,tick.x_b_major_line_color),
-		NhlTString, "1"},
+		NhlTImmediate, (NhlPointer)1},
 	{NhlNtmXBMajorLengthF, NhlCtmMajorLengthsF, NhlTFloat,sizeof(float),
 		NhlOffset(TickMarkLayerRec,tick.x_b_major_length),
 		NhlTString, ".02"},
@@ -199,7 +194,7 @@ static NhlResource resources[] = {
 		NhlTString, "1.0" },
 	{NhlNtmXBMinorLineColor, NhlCtmMinorLineColors, NhlTInteger,sizeof(int),
 		NhlOffset(TickMarkLayerRec,tick.x_b_minor_line_color),
-		NhlTString, "1"},
+		NhlTImmediate, (NhlPointer)1},
 	{NhlNtmXBMinorLengthF, NhlCtmMinorLengthsF, NhlTFloat,sizeof(float),
 		NhlOffset(TickMarkLayerRec,tick.x_b_minor_length),
 		NhlTString, ".01"},
@@ -207,22 +202,23 @@ static NhlResource resources[] = {
 		sizeof(float),
 		NhlOffset(TickMarkLayerRec, tick.x_b_minor_outward_length),
 		NhlTString, "0.0"},	
-	{NhlNtmXBLabelFont, NhlCtmLabelFonts, NhlTInteger, sizeof(int),
+	{NhlNtmXBLabelFont, NhlCtmLabelFonts, NhlTFont, sizeof(NhlFont),
 		NhlOffset(TickMarkLayerRec, tick.x_b_label_font),
-		NhlTString, "0" },
+		NhlTImmediate, (NhlPointer)0 },
 	{NhlNtmXBLabelFontHeightF, NhlCtmLabelFontHeightsF, NhlTFloat, 
 		sizeof(float),
 		NhlOffset(TickMarkLayerRec, tick.x_b_label_font_height),
 		NhlTString, "0.02" },
 	{NhlNtmXBLabelFontColor, NhlCtmLabelFontColors, NhlTInteger,sizeof(int),
 		NhlOffset(TickMarkLayerRec,tick.x_b_label_font_color),
-		NhlTString, "1" },
-	{NhlNtmXBLabelFontAspectF, NhlCtmLabelFontAspectsF,NhlTFloat,sizeof(float),
+		NhlTImmediate, (NhlPointer)1 },
+	{NhlNtmXBLabelFontAspectF, NhlCtmLabelFontAspectsF,NhlTFloat,
+		sizeof(float),
 		NhlOffset(TickMarkLayerRec,tick.x_b_label_font_aspect),
 		NhlTString, "1.3125" },
 	{NhlNtmXBLabelJust, NhlCtmXLabelJusts,NhlTInteger,sizeof(int),
 		NhlOffset(TickMarkLayerRec,tick.x_b_label_just),
-		NhlTString, "3" },
+		NhlTImmediate, (NhlPointer)3 },
 	{NhlNtmXBLabelAngleF, NhlCtmXLabelAnglesF, NhlTFloat, sizeof(float),
 		NhlOffset(TickMarkLayerRec,tick.x_b_label_angle),
 		NhlTString, "0.0" },
@@ -233,9 +229,10 @@ static NhlResource resources[] = {
 	{ NhlNtmXBLabelDeltaF, NhlCtmXBLabelDeltaF, NhlTFloat, sizeof(float),
 		NhlOffset(TickMarkLayerRec,tick.x_b_label_delta),
 		NhlTString, "0.0" },
-	{ NhlNtmXBAutoPrecision, NhlCtmAutoPrecision, NhlTInteger, sizeof(int),
+	{ NhlNtmXBAutoPrecision, NhlCtmAutoPrecision, NhlTBoolean,
+		sizeof(NhlBoolean),
 		NhlOffset(TickMarkLayerRec,tick.x_b_auto_precision),
-		NhlTString, "1" },
+		NhlTImmediate, (NhlPointer)True },
 	
 
 	{ NhlNtmXTDataLeftF, NhlCtmXTDataLeftF,NhlTFloat, sizeof(float),
@@ -252,28 +249,21 @@ static NhlResource resources[] = {
 		NhlTString,"0.0" },
 	{ NhlNtmXTMaxTicks, NhlCtmXTMaxTicks, NhlTInteger,sizeof(int),
 		NhlOffset(TickMarkLayerRec,tick.x_t_max_ticks),
-		NhlTString, "7" },
+		NhlTImmediate, (NhlPointer)7 },
 	{ NhlNtmXTTickSpacingF, NhlCtmXTTickSpacingF, NhlTFloat, sizeof(float),
 		NhlOffset(TickMarkLayerRec,tick.x_t_tick_spacing),
 		NhlTString, "0.0" },
 	{ NhlNtmXTSpacingType, NhlCtmXTSpacingType, NhlTInteger, sizeof(int),
 		NhlOffset(TickMarkLayerRec,tick.x_t_spacing_type),
-		NhlTString, "0" },
-	{ NhlNtmXTIrregularPoints, NhlCtmXTIrregularPoints,NhlTFloatPtr,
-		sizeof(float*),
+		NhlTImmediate, (NhlPointer)0 },
+	{ NhlNtmXTIrregularPoints, NhlCtmXTIrregularPoints,NhlTGenArray,
+		sizeof(NhlPointer),
 		NhlOffset(TickMarkLayerRec,tick.x_t_irregular_points),
 		NhlTImmediate, NULL},
-	{ NhlNtmXTNumIrregularPoints, NhlCtmXTNumIrregularPoints,NhlTInteger,
-		sizeof(int),
-		NhlOffset(TickMarkLayerRec,tick.x_t_num_irregular_points),
-		NhlTString,"0" },
-	{ NhlNtmXTValues, NhlCtmXTValues, NhlTFloatPtr, sizeof(float*),
+	{ NhlNtmXTValues, NhlCtmXTValues, NhlTGenArray, sizeof(NhlGenArray),
 		NhlOffset(TickMarkLayerRec,tick.x_t_values),
 		NhlTImmediate, NULL },
-	{ NhlNtmXTNumValues, NhlCtmXTNumValues, NhlTInteger, sizeof(int),
-		NhlOffset(TickMarkLayerRec,tick.x_t_num_values),
-		NhlTString, "0" },
-	{ NhlNtmXTLabels, NhlCtmXTLabels, NhlTStringPtr, sizeof(char**),
+	{ NhlNtmXTLabels, NhlCtmXTLabels, NhlTGenArray, sizeof(NhlGenArray),
 		NhlOffset(TickMarkLayerRec,tick.x_t_labels),
 		NhlTImmediate, NULL },
 	{ NhlNtmXTMajorThicknessF, NhlCtmMajorThicknessesF, NhlTFloat,
@@ -282,7 +272,7 @@ static NhlResource resources[] = {
 		NhlTString, "2.0" },
 	{NhlNtmXTMajorLineColor, NhlCtmMajorLineColors, NhlTInteger,sizeof(int),
 		NhlOffset(TickMarkLayerRec,tick.x_t_major_line_color),
-		NhlTString, "1"},
+		NhlTImmediate, (NhlPointer)1},
 	{NhlNtmXTMajorLengthF, NhlCtmMajorLengthsF, NhlTFloat,sizeof(float),
 		NhlOffset(TickMarkLayerRec,tick.x_t_major_length),
 		NhlTString, ".02"},
@@ -296,7 +286,7 @@ static NhlResource resources[] = {
 		NhlTString, "1.0" },
 	{NhlNtmXTMinorLineColor, NhlCtmMinorLineColors, NhlTInteger,sizeof(int),
 		NhlOffset(TickMarkLayerRec,tick.x_t_minor_line_color),
-		NhlTString, "1"},
+		NhlTImmediate, (NhlPointer)1},
 	{NhlNtmXTMinorLengthF, NhlCtmMinorLengthsF, NhlTFloat,sizeof(float),
 		NhlOffset(TickMarkLayerRec,tick.x_t_minor_length),
 		NhlTString, ".01"},
@@ -304,22 +294,23 @@ static NhlResource resources[] = {
 		sizeof(float),
 		NhlOffset(TickMarkLayerRec, tick.x_t_minor_outward_length),
 		NhlTString, "0.0"},	
-	{NhlNtmXTLabelFont, NhlCtmLabelFonts, NhlTInteger, sizeof(int),
+	{NhlNtmXTLabelFont, NhlCtmLabelFonts, NhlTFont, sizeof(NhlFont),
 		NhlOffset(TickMarkLayerRec, tick.x_t_label_font),
-		NhlTString, "0" },
+		NhlTImmediate, (NhlPointer)0 },
 	{NhlNtmXTLabelFontHeightF, NhlCtmLabelFontHeightsF, NhlTFloat, 
 		sizeof(float),
 		NhlOffset(TickMarkLayerRec, tick.x_t_label_font_height),
 		NhlTString, "0.02" },
 	{NhlNtmXTLabelFontColor, NhlCtmLabelFontColors, NhlTInteger,sizeof(int),
 		NhlOffset(TickMarkLayerRec,tick.x_t_label_font_color),
-		NhlTString, "1" },
-	{NhlNtmXTLabelFontAspectF, NhlCtmLabelFontAspectsF,NhlTFloat,sizeof(float),
+		NhlTImmediate, (NhlPointer)1 },
+	{NhlNtmXTLabelFontAspectF, NhlCtmLabelFontAspectsF,NhlTFloat,
+		sizeof(float),
 		NhlOffset(TickMarkLayerRec,tick.x_t_label_font_aspect),
 		NhlTString, "1.3125" },
 	{NhlNtmXTLabelJust, NhlCtmXLabelJusts,NhlTInteger,sizeof(int),
 		NhlOffset(TickMarkLayerRec,tick.x_t_label_just),
-		NhlTString, "5" },
+		NhlTImmediate, (NhlPointer)5 },
 	{NhlNtmXTLabelAngleF, NhlCtmXLabelAnglesF, NhlTFloat, sizeof(float),
 		NhlOffset(TickMarkLayerRec,tick.x_t_label_angle),
 		NhlTString, "0.0" },
@@ -330,31 +321,32 @@ static NhlResource resources[] = {
 	{ NhlNtmXTLabelDeltaF, NhlCtmXTLabelDeltaF, NhlTFloat, sizeof(float),
 		NhlOffset(TickMarkLayerRec,tick.x_t_label_delta),
 		NhlTString, "0.0" },
-	{ NhlNtmXTAutoPrecision, NhlCtmAutoPrecision, NhlTInteger, sizeof(int),
+	{ NhlNtmXTAutoPrecision, NhlCtmAutoPrecision, NhlTBoolean,
+		sizeof(NhlBoolean),
 		NhlOffset(TickMarkLayerRec,tick.x_t_auto_precision),
-		NhlTString, "1" },
+		NhlTImmediate, (NhlPointer)True },
 
-	{ NhlNtmYUseLeft, NhlCtmYUseLeft, NhlTInteger, sizeof(int),
+	{ NhlNtmYUseLeft, NhlCtmYUseLeft, NhlTBoolean, sizeof(NhlBoolean),
 		NhlOffset(TickMarkLayerRec, tick.y_use_left),
-		NhlTString,"1" },
-	{ NhlNtmYLOn, NhlCtmYLOn, NhlTInteger, sizeof(int),
+		NhlTImmediate,(NhlPointer)True },
+	{ NhlNtmYLOn, NhlCtmYLOn, NhlTBoolean, sizeof(NhlBoolean),
 		NhlOffset(TickMarkLayerRec, tick.y_l_on),
-		NhlTString,"1" },
-	{ NhlNtmYROn, NhlCtmYROn, NhlTInteger, sizeof(int),
+		NhlTImmediate,(NhlPointer)True },
+	{ NhlNtmYROn, NhlCtmYROn, NhlTBoolean, sizeof(NhlBoolean),
 		NhlOffset(TickMarkLayerRec, tick.y_r_on),
-		NhlTString,"1" },
-	{ NhlNtmYLLabelsOn, NhlCtmYLLabelsOn, NhlTInteger, sizeof(int),
+		NhlTImmediate,(NhlPointer)True },
+	{ NhlNtmYLLabelsOn, NhlCtmYLLabelsOn, NhlTBoolean, sizeof(NhlBoolean),
 		NhlOffset(TickMarkLayerRec, tick.y_l_labels_on),
-		NhlTString,"1" },
-	{ NhlNtmYRLabelsOn, NhlCtmYRLabelsOn, NhlTInteger, sizeof(int),
+		NhlTImmediate,(NhlPointer)True },
+	{ NhlNtmYRLabelsOn, NhlCtmYRLabelsOn, NhlTBoolean, sizeof(NhlBoolean),
 		NhlOffset(TickMarkLayerRec, tick.y_r_labels_on),
-		NhlTString,"0" },
-	{ NhlNtmYLBorderOn, NhlCtmYLBorderOn, NhlTInteger, sizeof(int),
+		NhlTImmediate,(NhlPointer)False },
+	{ NhlNtmYLBorderOn, NhlCtmYLBorderOn, NhlTBoolean, sizeof(NhlBoolean),
 		NhlOffset(TickMarkLayerRec, tick.y_l_border_on),
-		NhlTString,"1" },
-	{ NhlNtmYRBorderOn, NhlCtmYRBorderOn, NhlTInteger, sizeof(int),
+		NhlTImmediate,(NhlPointer)True },
+	{ NhlNtmYRBorderOn, NhlCtmYRBorderOn, NhlTBoolean, sizeof(NhlBoolean),
 		NhlOffset(TickMarkLayerRec, tick.y_r_border_on),
-		NhlTString,"1" },
+		NhlTImmediate,(NhlPointer)True },
 	{ NhlNtmYLMode, NhlCtmYLMode, NhlTTickMarkModes, sizeof(TickMarkModes),
 		NhlOffset(TickMarkLayerRec, tick.y_l_mode),
 		NhlTImmediate,(NhlPointer) AUTOMATIC },
@@ -377,18 +369,18 @@ static NhlResource resources[] = {
 
 	{ NhlNtmYLPrecision,NhlCtmPrecisions, NhlTInteger, sizeof(int),
 		NhlOffset(TickMarkLayerRec, tick.y_l_precision),
-		NhlTString,"4" },
+		NhlTImmediate,(NhlPointer)4 },
 
 	{ NhlNtmYRPrecision,NhlCtmPrecisions, NhlTInteger, sizeof(int),
 		NhlOffset(TickMarkLayerRec, tick.y_r_precision),
-		NhlTString,"4" },
+		NhlTImmediate,(NhlPointer)4 },
 
-	{ NhlNtmYMajorGrid, NhlCtmXMajorGrid, NhlTInteger, sizeof(int),
+	{ NhlNtmYMajorGrid, NhlCtmXMajorGrid, NhlTBoolean, sizeof(NhlBoolean),
 		NhlOffset(TickMarkLayerRec, tick.y_major_grid),
-		NhlTString, "0" },
-	{ NhlNtmYMinorGrid, NhlCtmXMinorGrid, NhlTInteger, sizeof(int),
+		NhlTImmediate, (NhlPointer)False },
+	{ NhlNtmYMinorGrid, NhlCtmXMinorGrid, NhlTBoolean, sizeof(NhlBoolean),
 		NhlOffset(TickMarkLayerRec, tick.y_minor_grid),
-		NhlTString, "0" },
+		NhlTImmediate, (NhlPointer)False },
 	{ NhlNtmYMajorGridThicknessF, NhlCtmMajorGridThicknessesF, NhlTFloat,
 		sizeof(float),
 		NhlOffset(TickMarkLayerRec,tick.y_major_grid_thickness),
@@ -396,41 +388,43 @@ static NhlResource resources[] = {
 	{ NhlNtmYMajorGridLineColor, NhlCtmMajorGridLineColors, NhlTInteger,
 		sizeof(int),
 		NhlOffset(TickMarkLayerRec, tick.y_major_grid_line_color),
-		NhlTString, "1" },
+		NhlTImmediate, (NhlPointer)1 },
 	{ NhlNtmYMajorGridLineDashPattern, NhlCtmMajorGridLineDashPatterns,
 		NhlTInteger,sizeof(int),
 		NhlOffset(TickMarkLayerRec,tick.y_major_grid_line_dash_pattern),
-		NhlTString, "0" },
+		NhlTImmediate, (NhlPointer)0 },
 
 	{ NhlNtmYMinorGridThicknessF, NhlCtmMinorGridThicknessesF, NhlTFloat,
 		sizeof(float),
 		NhlOffset(TickMarkLayerRec, tick.y_minor_grid_thickness),
 		NhlTString, "1.0" },
 	{ NhlNtmYMinorGridLineColor, NhlCtmMinorGridLineColors, NhlTInteger,
-		sizeof(float),
+		sizeof(int),
 		NhlOffset(TickMarkLayerRec, tick.y_minor_grid_line_color),
-		NhlTString, "1" },
+		NhlTImmediate, (NhlPointer)1 },
 	{ NhlNtmYMinorGridLineDashPattern, NhlCtmMinorGridLineDashPatterns,
 		NhlTInteger, sizeof(int),
 		NhlOffset(TickMarkLayerRec,tick.y_minor_grid_line_dash_pattern),
-		NhlTString, "0" },
+		NhlTImmediate, (NhlPointer)0 },
 
 	{ NhlNtmYLMinorPerMajor, NhlCtmYMinorPerMajor,NhlTInteger,sizeof(int),
 		NhlOffset(TickMarkLayerRec,tick.y_l_minor_per_major),
-		NhlTString, "3" },
+		NhlTImmediate, (NhlPointer)3 },
 	{ NhlNtmYRMinorPerMajor, NhlCtmYMinorPerMajor,NhlTInteger,sizeof(int),
 		NhlOffset(TickMarkLayerRec,tick.y_r_minor_per_major),
-		NhlTString, "3" },
-	{ NhlNtmYLNoMinor, NhlCtmYLNoMinor, NhlTInteger, sizeof(int),
-		NhlOffset(TickMarkLayerRec,tick.y_l_no_minor), NhlTString,"0" },
-	{ NhlNtmYRNoMinor, NhlCtmYRNoMinor, NhlTInteger, sizeof(int),
-		NhlOffset(TickMarkLayerRec,tick.y_r_no_minor), NhlTString,"0" },
+		NhlTImmediate, (NhlPointer)3 },
+	{ NhlNtmYLMinorOn, NhlCtmYLMinorOn, NhlTBoolean, sizeof(NhlBoolean),
+		NhlOffset(TickMarkLayerRec,tick.y_l_minor_on),
+		NhlTImmediate,(NhlPointer)True },
+	{ NhlNtmYRMinorOn, NhlCtmYRMinorOn, NhlTBoolean, sizeof(NhlBoolean),
+		NhlOffset(TickMarkLayerRec,tick.y_r_minor_on),
+		NhlTImmediate,(NhlPointer)True },
 	{ NhlNtmYLLabelStride, NhlCtmYLLabelStride, NhlTInteger,sizeof(int),
 		NhlOffset(TickMarkLayerRec,tick.y_l_label_stride),
-		NhlTString,"0" },
+		NhlTImmediate,(NhlPointer)0 },
 	{ NhlNtmYRLabelStride, NhlCtmYRLabelStride, NhlTInteger,sizeof(int),
 		NhlOffset(TickMarkLayerRec,tick.y_r_label_stride),
-		NhlTString,"0" },
+		NhlTImmediate,(NhlPointer)0 },
 
 	{ NhlNtmYLDataTopF, NhlCtmYLDataTopF,NhlTFloat, sizeof(float),
 		NhlOffset(TickMarkLayerRec,tick.y_l_data_top),
@@ -446,28 +440,21 @@ static NhlResource resources[] = {
 		NhlTString,"0.0" },
 	{ NhlNtmYLMaxTicks, NhlCtmYLMaxTicks, NhlTInteger,sizeof(int),
 		NhlOffset(TickMarkLayerRec,tick.y_l_max_ticks),
-		NhlTString, "7" },
+		NhlTImmediate, (NhlPointer)7 },
 	{ NhlNtmYLTickSpacingF, NhlCtmYLTickSpacingF, NhlTFloat, sizeof(float),
 		NhlOffset(TickMarkLayerRec,tick.y_l_tick_spacing),
 		NhlTString, "0.0" },
 	{ NhlNtmYLSpacingType, NhlCtmYLSpacingType, NhlTInteger, sizeof(int),
 		NhlOffset(TickMarkLayerRec,tick.y_l_spacing_type),
-		NhlTString, "0" },
-	{ NhlNtmYLIrregularPoints, NhlCtmYLIrregularPoints,NhlTFloatPtr,
-		sizeof(float*),
+		NhlTImmediate, (NhlPointer)0 },
+	{ NhlNtmYLIrregularPoints, NhlCtmYLIrregularPoints,NhlTGenArray,
+		sizeof(NhlPointer),
 		NhlOffset(TickMarkLayerRec,tick.y_l_irregular_points),
 		NhlTImmediate, NULL},
-	{ NhlNtmYLNumIrregularPoints, NhlCtmYLNumIrregularPoints,NhlTInteger,
-		sizeof(int),
-		NhlOffset(TickMarkLayerRec,tick.y_l_num_irregular_points),
-		NhlTString,"0" },
-	{ NhlNtmYLValues, NhlCtmYLValues, NhlTFloatPtr, sizeof(float*),
+	{ NhlNtmYLValues, NhlCtmYLValues, NhlTGenArray, sizeof(NhlGenArray),
 		NhlOffset(TickMarkLayerRec,tick.y_l_values),
 		NhlTImmediate, NULL },
-	{ NhlNtmYLNumValues, NhlCtmYLNumValues, NhlTInteger, sizeof(int),
-		NhlOffset(TickMarkLayerRec,tick.y_l_num_values),
-		NhlTString, "0" },
-	{ NhlNtmYLLabels, NhlCtmYLLabels, NhlTStringPtr, sizeof(char**),
+	{ NhlNtmYLLabels, NhlCtmYLLabels, NhlTGenArray, sizeof(NhlGenArray),
 		NhlOffset(TickMarkLayerRec,tick.y_l_labels),
 		NhlTImmediate, NULL },
 	{ NhlNtmYLMajorThicknessF, NhlCtmMajorThicknessesF, NhlTFloat,
@@ -476,7 +463,7 @@ static NhlResource resources[] = {
 		NhlTString, "2.0" },
 	{NhlNtmYLMajorLineColor, NhlCtmMajorLineColors, NhlTInteger,sizeof(int),
 		NhlOffset(TickMarkLayerRec,tick.y_l_major_line_color),
-		NhlTString, "1"},
+		NhlTImmediate, (NhlPointer)1},
 	{NhlNtmYLMajorLengthF, NhlCtmMajorLengthsF, NhlTFloat,sizeof(float),
 		NhlOffset(TickMarkLayerRec,tick.y_l_major_length),
 		NhlTString, ".02"},
@@ -490,7 +477,7 @@ static NhlResource resources[] = {
 		NhlTString, "1.0" },
 	{NhlNtmYLMinorLineColor, NhlCtmMinorLineColors, NhlTInteger,sizeof(int),
 		NhlOffset(TickMarkLayerRec,tick.y_l_minor_line_color),
-		NhlTString, "1"},
+		NhlTImmediate, (NhlPointer)1},
 	{NhlNtmYLMinorLengthF, NhlCtmMinorLengthsF, NhlTFloat,sizeof(float),
 		NhlOffset(TickMarkLayerRec,tick.y_l_minor_length),
 		NhlTString, ".01"},
@@ -498,22 +485,23 @@ static NhlResource resources[] = {
 		sizeof(float),
 		NhlOffset(TickMarkLayerRec, tick.y_l_minor_outward_length),
 		NhlTString, "0.0"},	
-	{NhlNtmYLLabelFont, NhlCtmLabelFonts, NhlTInteger, sizeof(int),
+	{NhlNtmYLLabelFont, NhlCtmLabelFonts, NhlTFont, sizeof(NhlFont),
 		NhlOffset(TickMarkLayerRec, tick.y_l_label_font),
-		NhlTString, "0" },
+		NhlTImmediate, (NhlPointer)0 },
 	{NhlNtmYLLabelFontHeightF, NhlCtmLabelFontHeightsF, NhlTFloat, 
 		sizeof(float),
 		NhlOffset(TickMarkLayerRec, tick.y_l_label_font_height),
 		NhlTString, "0.02" },
 	{NhlNtmYLLabelFontColor, NhlCtmLabelFontColors, NhlTInteger,sizeof(int),
 		NhlOffset(TickMarkLayerRec,tick.y_l_label_font_color),
-		NhlTString, "1" },
-	{NhlNtmYLLabelFontAspectF, NhlCtmLabelFontAspectsF,NhlTFloat,sizeof(float),
+		NhlTImmediate, (NhlPointer)1 },
+	{NhlNtmYLLabelFontAspectF, NhlCtmLabelFontAspectsF,NhlTFloat,
+		sizeof(float),
 		NhlOffset(TickMarkLayerRec,tick.y_l_label_font_aspect),
 		NhlTString, "1.3125" },
 	{NhlNtmYLLabelJust, NhlCtmYLabelJusts,NhlTInteger,sizeof(int),
 		NhlOffset(TickMarkLayerRec,tick.y_l_label_just),
-		NhlTString, "7" },
+		NhlTImmediate, (NhlPointer)7 },
 	{NhlNtmYLLabelAngleF, NhlCtmYLabelAnglesF, NhlTFloat, sizeof(float),
 		NhlOffset(TickMarkLayerRec,tick.y_l_label_angle),
 		NhlTString, "0.0" },
@@ -524,9 +512,10 @@ static NhlResource resources[] = {
 	{ NhlNtmYLLabelDeltaF, NhlCtmYLLabelDeltaF, NhlTFloat, sizeof(float),
 		NhlOffset(TickMarkLayerRec,tick.y_l_label_delta),
 		NhlTString, "0.0" },
-	{ NhlNtmYLAutoPrecision, NhlCtmAutoPrecision, NhlTInteger, sizeof(int),
+	{ NhlNtmYLAutoPrecision, NhlCtmAutoPrecision, NhlTBoolean,
+		sizeof(NhlBoolean),
 		NhlOffset(TickMarkLayerRec,tick.y_l_auto_precision),
-		NhlTString, "1" },
+		NhlTImmediate, (NhlPointer)True },
 	
 
 	{ NhlNtmYRDataTopF, NhlCtmYRDataTopF,NhlTFloat, sizeof(float),
@@ -543,28 +532,21 @@ static NhlResource resources[] = {
 		NhlTString,"0.0" },
 	{ NhlNtmYRMaxTicks, NhlCtmYRMaxTicks, NhlTInteger,sizeof(int),
 		NhlOffset(TickMarkLayerRec,tick.y_r_max_ticks),
-		NhlTString, "7" },
+		NhlTImmediate, (NhlPointer)7 },
 	{ NhlNtmYRTickSpacingF, NhlCtmYRTickSpacingF, NhlTFloat, sizeof(float),
 		NhlOffset(TickMarkLayerRec,tick.y_r_tick_spacing),
 		NhlTString, "0.0" },
 	{ NhlNtmYRSpacingType, NhlCtmYRSpacingType, NhlTInteger, sizeof(int),
 		NhlOffset(TickMarkLayerRec,tick.y_r_spacing_type),
-		NhlTString, "0" },
-	{ NhlNtmYRIrregularPoints, NhlCtmYRIrregularPoints,NhlTFloatPtr,
-		sizeof(float*),
+		NhlTImmediate, (NhlPointer)0 },
+	{ NhlNtmYRIrregularPoints, NhlCtmYRIrregularPoints,NhlTGenArray,
+		sizeof(NhlPointer),
 		NhlOffset(TickMarkLayerRec,tick.y_r_irregular_points),
 		NhlTImmediate, NULL},
-	{ NhlNtmYRNumIrregularPoints, NhlCtmYRNumIrregularPoints,NhlTInteger,
-		sizeof(int),
-		NhlOffset(TickMarkLayerRec,tick.y_r_num_irregular_points),
-		NhlTString,"0" },
-	{ NhlNtmYRValues, NhlCtmYRValues, NhlTFloatPtr, sizeof(float*),
+	{ NhlNtmYRValues, NhlCtmYRValues, NhlTGenArray, sizeof(NhlGenArray),
 		NhlOffset(TickMarkLayerRec,tick.y_r_values),
 		NhlTImmediate, NULL },
-	{ NhlNtmYRNumValues, NhlCtmYRNumValues, NhlTInteger, sizeof(int),
-		NhlOffset(TickMarkLayerRec,tick.y_r_num_values),
-		NhlTString, "0" },
-	{ NhlNtmYRLabels, NhlCtmYRLabels, NhlTStringPtr, sizeof(char**),
+	{ NhlNtmYRLabels, NhlCtmYRLabels, NhlTGenArray, sizeof(NhlGenArray),
 		NhlOffset(TickMarkLayerRec,tick.y_r_labels),
 		NhlTImmediate, NULL },
 	{ NhlNtmYRMajorThicknessF, NhlCtmMajorThicknessesF, NhlTFloat,
@@ -573,7 +555,7 @@ static NhlResource resources[] = {
 		NhlTString, "2.0" },
 	{NhlNtmYRMajorLineColor, NhlCtmMajorLineColors, NhlTInteger,sizeof(int),
 		NhlOffset(TickMarkLayerRec,tick.y_r_major_line_color),
-		NhlTString, "1"},
+		NhlTImmediate, (NhlPointer)1},
 	{NhlNtmYRMajorLengthF, NhlCtmMajorLengthsF, NhlTFloat,sizeof(float),
 		NhlOffset(TickMarkLayerRec,tick.y_r_major_length),
 		NhlTString, ".02"},
@@ -587,7 +569,7 @@ static NhlResource resources[] = {
 		NhlTString, "1.0" },
 	{NhlNtmYRMinorLineColor, NhlCtmMinorLineColors, NhlTInteger,sizeof(int),
 		NhlOffset(TickMarkLayerRec,tick.y_r_minor_line_color),
-		NhlTString, "1"},
+		NhlTImmediate, (NhlPointer)1},
 	{NhlNtmYRMinorLengthF, NhlCtmMinorLengthsF, NhlTFloat,sizeof(float),
 		NhlOffset(TickMarkLayerRec,tick.y_r_minor_length),
 		NhlTString, ".01"},
@@ -595,22 +577,23 @@ static NhlResource resources[] = {
 		sizeof(float),
 		NhlOffset(TickMarkLayerRec, tick.y_r_minor_outward_length),
 		NhlTString, "0.0"},	
-	{NhlNtmYRLabelFont, NhlCtmLabelFonts, NhlTInteger, sizeof(int),
+	{NhlNtmYRLabelFont, NhlCtmLabelFonts, NhlTFont, sizeof(NhlFont),
 		NhlOffset(TickMarkLayerRec, tick.y_r_label_font),
-		NhlTString, "0" },
+		NhlTImmediate, (NhlPointer)0 },
 	{NhlNtmYRLabelFontHeightF, NhlCtmLabelFontHeightsF, NhlTFloat, 
 		sizeof(float),
 		NhlOffset(TickMarkLayerRec, tick.y_r_label_font_height),
 		NhlTString, "0.02" },
 	{NhlNtmYRLabelFontColor, NhlCtmLabelFontColors, NhlTInteger,sizeof(int),
 		NhlOffset(TickMarkLayerRec,tick.y_r_label_font_color),
-		NhlTString, "1" },
-	{NhlNtmYRLabelFontAspectF, NhlCtmLabelFontAspectsF,NhlTFloat,sizeof(float),
+		NhlTImmediate, (NhlPointer)1 },
+	{NhlNtmYRLabelFontAspectF, NhlCtmLabelFontAspectsF,NhlTFloat,
+		sizeof(float),
 		NhlOffset(TickMarkLayerRec,tick.y_r_label_font_aspect),
 		NhlTString, "1.3125" },
 	{NhlNtmYRLabelJust, NhlCtmYLabelJusts,NhlTInteger,sizeof(int),
 		NhlOffset(TickMarkLayerRec,tick.y_r_label_just),
-		NhlTString, "1" },
+		NhlTImmediate, (NhlPointer)1 },
 	{NhlNtmYRLabelAngleF, NhlCtmYLabelAnglesF, NhlTFloat, sizeof(float),
 		NhlOffset(TickMarkLayerRec,tick.y_r_label_angle),
 		NhlTString, "0.0" },
@@ -621,9 +604,10 @@ static NhlResource resources[] = {
 	{ NhlNtmYRLabelDeltaF, NhlCtmYRLabelDeltaF, NhlTFloat, sizeof(float),
 		NhlOffset(TickMarkLayerRec,tick.y_r_label_delta),
 		NhlTString, "0.0" },
-	{ NhlNtmYRAutoPrecision, NhlCtmAutoPrecision, NhlTInteger, sizeof(int),
+	{ NhlNtmYRAutoPrecision, NhlCtmAutoPrecision, NhlTBoolean,
+		sizeof(NhlBoolean),
 		NhlOffset(TickMarkLayerRec,tick.y_r_auto_precision),
-		NhlTString, "1" }
+		NhlTImmediate, (NhlPointer)True }
 };
 
 static NhlErrorTypes DrawLabels (
@@ -967,6 +951,9 @@ TickMarkLayerClassRec tickMarkLayerClassRec = {
 
 
 LayerClass tickMarkLayerClass = (LayerClass)&tickMarkLayerClassRec;
+
+static NrmQuark Qfloat = NrmNULLQUARK;
+static NrmQuark Qstring = NrmNULLQUARK;
 
 /*
 * Function definitions
@@ -1498,12 +1485,9 @@ static NhlErrorTypes	TickMarkDestroy
 	if(tinst->tick.xt_yr_trans_obj != NULL) 
 		NhlDestroy(tinst->tick.xt_yr_trans_obj->base.id);
 
-	if(tinst->tick.x_b_irregular_points != NULL) {
-		NhlFree(tinst->tick.x_b_irregular_points);
-	}	
-	if(tinst->tick.x_b_values != NULL) {
-		NhlFree(tinst->tick.x_b_values);
-	} 
+	NhlFreeGenArray(tinst->tick.x_b_irregular_points);
+	NhlFreeGenArray(tinst->tick.x_b_values);
+
 /*
 * Have to be carefull here because ExplicitComputeTickMarks just copies
 * string pointers from tick.x_b_labels to tick.x_b_major_labels so I don't
@@ -1512,11 +1496,7 @@ static NhlErrorTypes	TickMarkDestroy
 * when requested tick locations are outside of data window. 
 */
 	if(tinst->tick.x_b_labels != NULL) {
-		for(i = 0; i < tinst->tick.x_b_num_values; i++) {
-			if(tinst->tick.x_b_labels[i] != NULL)
-				NhlFree(tinst->tick.x_b_labels[i]);
-		}
-		NhlFree(tinst->tick.x_b_labels);
+		NhlFreeGenArray(tinst->tick.x_b_labels);
 		NhlFree(tinst->tick.x_b_major_labels);
 	} else {
 		for(i=0; i< tinst->tick.x_b_nmajor; i++) {
@@ -1530,18 +1510,11 @@ static NhlErrorTypes	TickMarkDestroy
 	NhlFree(tinst->tick.x_b_minor_data_locs);
 	NhlFree(tinst->tick.x_b_minor_ndc_locs);
 
-	if(tinst->tick.x_t_irregular_points != NULL) {
-		NhlFree(tinst->tick.x_t_irregular_points);
-	}	
-	if(tinst->tick.x_t_values != NULL) {
-		NhlFree(tinst->tick.x_t_values);
-	} 
+	NhlFreeGenArray(tinst->tick.x_t_irregular_points);
+	NhlFreeGenArray(tinst->tick.x_t_values);
+
 	if(tinst->tick.x_t_labels != NULL) {
-		for(i = 0; i < tinst->tick.x_t_num_values; i++) {
-			if(tinst->tick.x_t_labels[i] != NULL)
-				NhlFree(tinst->tick.x_t_labels[i]);
-		}
-		NhlFree(tinst->tick.x_t_labels);
+		NhlFreeGenArray(tinst->tick.x_t_labels);
 		NhlFree(tinst->tick.x_t_major_labels);
 	} else {
 		for(i=0; i< tinst->tick.x_t_nmajor; i++) {
@@ -1555,18 +1528,11 @@ static NhlErrorTypes	TickMarkDestroy
 	NhlFree(tinst->tick.x_t_minor_data_locs);
 	NhlFree(tinst->tick.x_t_minor_ndc_locs);
 
-	if(tinst->tick.y_r_irregular_points != NULL) {
-		NhlFree(tinst->tick.y_r_irregular_points);
-	}	
-	if(tinst->tick.y_r_values != NULL) {
-		NhlFree(tinst->tick.y_r_values);
-	} 
+	NhlFreeGenArray(tinst->tick.y_r_irregular_points);
+	NhlFreeGenArray(tinst->tick.y_r_values);
+
 	if(tinst->tick.y_r_labels != NULL) {
-		for(i = 0; i < tinst->tick.y_r_num_values; i++) {
-			if(tinst->tick.y_r_labels[i] != NULL)
-				NhlFree(tinst->tick.y_r_labels[i]);
-		}
-		NhlFree(tinst->tick.y_r_labels);
+		NhlFreeGenArray(tinst->tick.y_r_labels);
 		NhlFree(tinst->tick.y_r_major_labels);
 	} else {
 		for(i=0; i< tinst->tick.y_r_nmajor; i++) {
@@ -1580,18 +1546,11 @@ static NhlErrorTypes	TickMarkDestroy
 	NhlFree(tinst->tick.y_l_minor_data_locs);
 	NhlFree(tinst->tick.y_l_minor_ndc_locs);
 
-	if(tinst->tick.y_l_irregular_points != NULL) {
-		NhlFree(tinst->tick.y_l_irregular_points);
-	}	
-	if(tinst->tick.y_l_values != NULL) {
-		NhlFree(tinst->tick.y_l_values);
-	} 
+	NhlFreeGenArray(tinst->tick.y_l_irregular_points);
+	NhlFreeGenArray(tinst->tick.y_l_values);
+
 	if(tinst->tick.y_l_labels != NULL) {
-		for(i = 0; i < tinst->tick.y_l_num_values; i++) {
-			if(tinst->tick.y_l_labels[i] != NULL)
-				NhlFree(tinst->tick.y_l_labels[i]);
-		}
-		NhlFree(tinst->tick.y_l_labels);
+		NhlFreeGenArray(tinst->tick.y_l_labels);
 		NhlFree(tinst->tick.y_l_major_labels);
 	} else {
 		for(i=0; i< tinst->tick.y_l_nmajor; i++) {
@@ -1650,6 +1609,10 @@ static NhlErrorTypes	TickMarkClassInitialize
 				tmarkmodes,NhlNumber(tmarkmodes),False,NULL);
 	NhlRegisterConverter(NhlTString,NhlTTickMarkStyles,NhlCvtStringToEnum,
 				tmarkstyles,NhlNumber(tmarkstyles),False,NULL);
+
+	Qfloat = NrmStringToQuark(NhlTFloat);
+	Qstring = NrmStringToQuark(NhlTString);
+
 	return(NOERROR);
 }
 
@@ -1791,7 +1754,7 @@ TickMarkLayer tlayer;
 		c_sflush();
 	}
 	if(tlayer->tick.x_minor_grid) {
-		if((tlayer->tick.x_b_on)&&(!tlayer->tick.x_b_no_minor)) {
+		if((tlayer->tick.x_b_on)&&(tlayer->tick.x_b_minor_on)) {
 			gset_line_colr_ind((Gint)_NhlGetGksCi(
                                 tlayer->base.wkptr,
                                 tlayer->tick.x_minor_grid_line_color));
@@ -1803,7 +1766,7 @@ TickMarkLayer tlayer;
 					tlayer->tick.x_b_minor_ndc_locs[i],
 					yt);
 			}
-		} else if((tlayer->tick.x_t_on)&&(!tlayer->tick.x_t_no_minor)){
+		} else if((tlayer->tick.x_t_on)&&(tlayer->tick.x_t_minor_on)){
 			gset_line_colr_ind((Gint)_NhlGetGksCi(
                                 tlayer->base.wkptr,
                                 tlayer->tick.x_minor_grid_line_color));
@@ -1853,7 +1816,7 @@ TickMarkLayer tlayer;
 		c_sflush();
 	}
 	if(tlayer->tick.y_minor_grid) {
-		if((tlayer->tick.y_l_on)&&(!tlayer->tick.y_l_no_minor)) {
+		if((tlayer->tick.y_l_on)&&(tlayer->tick.y_l_minor_on)) {
 			gset_line_colr_ind((Gint)_NhlGetGksCi(
                                 tlayer->base.wkptr,
                                 tlayer->tick.y_minor_grid_line_color));
@@ -1865,7 +1828,7 @@ TickMarkLayer tlayer;
 					xr,
 					tlayer->tick.y_l_minor_ndc_locs[i]);
 			}
-		} else if((tlayer->tick.y_r_on)&&(!tlayer->tick.y_r_no_minor)){
+		} else if((tlayer->tick.y_r_on)&&(tlayer->tick.y_r_minor_on)){
 			gset_line_colr_ind((Gint)_NhlGetGksCi(
                                 tlayer->base.wkptr,
                                 tlayer->tick.y_minor_grid_line_color));
@@ -1946,7 +1909,7 @@ TickMarkLayer tlayer;
 				- tlayer->tick.x_b_major_outward_length);
 		}
 		c_sflush();
-		if(!tlayer->tick.x_b_no_minor) {
+		if(tlayer->tick.x_b_minor_on) {
 			gset_line_colr_ind((Gint)_NhlGetGksCi(tlayer->base.wkptr
 				, tlayer->tick.x_b_minor_line_color));
 			gset_linewidth((Gdouble)
@@ -1973,7 +1936,7 @@ TickMarkLayer tlayer;
 				+ tlayer->tick.x_t_major_outward_length);
 		}
 		c_sflush();
-		if(!tlayer->tick.x_t_no_minor) {
+		if(tlayer->tick.x_t_minor_on) {
 			gset_line_colr_ind((Gint)_NhlGetGksCi(tlayer->base.wkptr
 				, tlayer->tick.x_t_minor_line_color));
 			gset_linewidth((Gdouble)
@@ -2000,7 +1963,7 @@ TickMarkLayer tlayer;
 				tlayer->tick.y_l_major_ndc_locs[i]);
 		}
 		c_sflush();
-		if(!tlayer->tick.y_l_no_minor) {
+		if(tlayer->tick.y_l_minor_on) {
 			gset_line_colr_ind((Gint)_NhlGetGksCi(tlayer->base.wkptr
 				,tlayer->tick.y_l_minor_line_color));
 			gset_linewidth((Gdouble)
@@ -2027,7 +1990,7 @@ TickMarkLayer tlayer;
 				tlayer->tick.y_r_major_ndc_locs[i]);
 		}
 		c_sflush();
-		if(!tlayer->tick.y_r_no_minor) {
+		if(tlayer->tick.y_r_minor_on) {
 			gset_line_colr_ind((Gint)_NhlGetGksCi(tlayer->base.wkptr
 				, tlayer->tick.y_r_minor_line_color));
 			gset_linewidth((Gdouble)
@@ -3614,7 +3577,7 @@ static void SetTop
 	tnew->tick.x_t_style = tnew->tick.x_b_style;
 	tnew->tick.x_t_mode = tnew->tick.x_b_mode;
 	tnew->tick.x_t_minor_per_major = tnew->tick.x_b_minor_per_major;
-	tnew->tick.x_t_no_minor = tnew->tick.x_b_no_minor;
+	tnew->tick.x_t_minor_on = tnew->tick.x_b_minor_on;
 	tnew->tick.x_t_data_left = tnew->tick.x_b_data_left;
 	tnew->tick.x_t_data_right = tnew->tick.x_b_data_right;
 	tnew->tick.x_t_tick_start = tnew->tick.x_b_tick_start;
@@ -3623,7 +3586,6 @@ static void SetTop
 	tnew->tick.x_t_tick_spacing = tnew->tick.x_b_tick_spacing;
 	tnew->tick.x_t_spacing_type = tnew->tick.x_b_spacing_type;
 	tnew->tick.x_t_values = tnew->tick.x_b_values;
-	tnew->tick.x_t_num_values = tnew->tick.x_b_num_values;
 	tnew->tick.x_t_labels = tnew->tick.x_b_labels;
 	tnew->tick.x_t_major_thickness = tnew->tick.x_b_major_thickness;
 	tnew->tick.x_t_major_line_color = tnew->tick.x_b_major_line_color;
@@ -3643,7 +3605,6 @@ static void SetTop
 	tnew->tick.x_t_precision = tnew->tick.x_b_precision;
 	tnew->tick.x_t_auto_precision = tnew->tick.x_b_auto_precision;
 	tnew->tick.x_t_irregular_points = tnew->tick.x_b_irregular_points;
-	tnew->tick.x_t_num_irregular_points = tnew->tick.x_b_num_irregular_points;
 	tnew->tick.x_t_label_stride = tnew->tick.x_b_label_stride;
 	tnew->tick.x_t_tension = tnew->tick.x_b_tension;
 
@@ -3686,7 +3647,7 @@ TickMarkLayer	tnew;
 	tnew->tick.y_r_style = tnew->tick.y_l_style;
 	tnew->tick.y_r_mode = tnew->tick.y_l_mode;
 	tnew->tick.y_r_minor_per_major = tnew->tick.y_l_minor_per_major;
-	tnew->tick.y_r_no_minor = tnew->tick.y_l_no_minor;
+	tnew->tick.y_r_minor_on = tnew->tick.y_l_minor_on;
 	tnew->tick.y_r_data_top = tnew->tick.y_l_data_top;
 	tnew->tick.y_r_data_bottom = tnew->tick.y_l_data_bottom;
 	tnew->tick.y_r_tick_start = tnew->tick.y_l_tick_start;
@@ -3695,7 +3656,6 @@ TickMarkLayer	tnew;
 	tnew->tick.y_r_tick_spacing = tnew->tick.y_l_tick_spacing;
 	tnew->tick.y_r_spacing_type = tnew->tick.y_l_spacing_type;
 	tnew->tick.y_r_values = tnew->tick.y_l_values;
-	tnew->tick.y_r_num_values = tnew->tick.y_l_num_values;
 	tnew->tick.y_r_labels = tnew->tick.y_l_labels;
 	tnew->tick.y_r_major_thickness = tnew->tick.y_l_major_thickness;tnew->tick.y_r_major_line_color = tnew->tick.y_l_major_line_color;
 	tnew->tick.y_r_major_length = tnew->tick.y_l_major_length;
@@ -3714,7 +3674,6 @@ TickMarkLayer	tnew;
 	tnew->tick.y_r_precision = tnew->tick.y_l_precision;
 	tnew->tick.y_r_auto_precision = tnew->tick.y_l_auto_precision;
 	tnew->tick.y_r_irregular_points = tnew->tick.y_l_irregular_points;
-	tnew->tick.y_r_num_irregular_points = tnew->tick.y_l_num_irregular_points;
 	tnew->tick.y_r_label_stride = tnew->tick.y_l_label_stride;
 	tnew->tick.y_r_tension = tnew->tick.y_l_tension;
 }
@@ -3812,16 +3771,16 @@ static NhlErrorTypes CheckKeyVals
                 tnew->tick.y_r_on = 0;
 		ret = WARNING;
         }
-	if(tnew->tick.x_b_no_minor != 0) {
+	if(!tnew->tick.x_b_minor_on) {
 		tnew->tick.x_b_nminor = 0;
 	}
-	if(tnew->tick.x_t_no_minor != 0) {
+	if(!tnew->tick.x_t_minor_on) {
 		tnew->tick.x_t_nminor = 0;
 	}
-	if(tnew->tick.y_l_no_minor != 0) {
+	if(!tnew->tick.y_l_minor_on) {
 		tnew->tick.y_r_nminor = 0;
 	}
-	if(tnew->tick.y_r_no_minor != 0) {
+	if(!tnew->tick.y_r_minor_on) {
 		tnew->tick.y_l_nminor = 0;
 	}
 	return(ret);
@@ -4049,6 +4008,73 @@ static NhlErrorTypes CheckNotAuto
 	return(ret);
 }
 
+/*
+ * Function:	CopyLabelArray
+ *
+ * Description:	copies an array of strings, padding the end with NULL's to
+ *		make it at least the size of the second gen array passed in.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	static
+ * Returns:	NhlGenArray
+ * Side Effect:	
+ */
+NhlGenArray
+CopyLabelArray
+#if	__STDC__
+(
+	NhlGenArray	oldarr,
+	NhlGenArray	minarr
+)
+#else
+(oldarr,minarr)
+	NhlGenArray	oldarr;
+	NhlGenArray	minarr;
+#endif
+{
+	int		i,size = 0;
+	NhlGenArray	gen;
+	NhlString	*otable;
+	NhlString	*ntable;
+
+	if(oldarr == NULL)
+		return NULL;
+
+	if(minarr != NULL)
+		size = MAX(size,minarr->num_elements);
+
+	gen = _NhlCopyGenArray(oldarr,False);
+	if(gen == NULL)
+		return NULL;
+
+	size = MAX(size,gen->num_elements);
+
+	gen->data = NhlMalloc(sizeof(NhlString)*size);
+	if(gen->data == NULL)
+		return NULL;
+
+	gen->my_data = True;
+
+	otable = oldarr->data;
+	ntable = gen->data;
+
+	for(i=0;i < size; i++){
+		if((i >= oldarr->num_elements) || (otable[i] == NULL)){
+			ntable[i] = NULL;
+		}
+		else{
+			ntable[i] = NhlMalloc(strlen(otable[i])+1);
+			if(ntable[i] == NULL)
+				return NULL;
+			strcpy(ntable[i],otable[i]);
+		}
+	}
+
+	return gen;
+}
 
 /*
  * Function:	CheckExplicit
@@ -4080,322 +4106,446 @@ static NhlErrorTypes CheckExplicit
 	int		c_or_s;
 #endif
 {
-	char *error_lead;
-	float *tmpfptr;
-	char *tmpcptr;
-	char **tmpcptrptr;
-	int i;
-	NhlErrorTypes ret = NOERROR;
+	char		*error_lead;
+	NhlGenArray	gen;
+	NhlErrorTypes	ret = NOERROR;
+	NhlBoolean	free_xb_val=False, skip_xb_val=False;
+	NhlBoolean	free_xt_val=False, skip_xt_val=False;
+	NhlBoolean	free_yl_val=False, skip_yl_val=False;
+	NhlBoolean	free_yr_val=False, skip_yr_val=False;
+	NhlBoolean	free_xb_labels=False, skip_xb_labels=False;
+	NhlBoolean	free_xt_labels=False, skip_xt_labels=False;
+	NhlBoolean	free_yl_labels=False, skip_yl_labels=False;
+	NhlBoolean	free_yr_labels=False, skip_yr_labels=False;
 
 	if(c_or_s == SET) {
 		error_lead = "TickMarkSetValues";
+
+		if(told->tick.x_b_values != tnew->tick.x_b_values)
+			free_xb_val = True;
+		else
+			skip_xb_val = True;
+
+		if(told->tick.x_t_values != tnew->tick.x_t_values)
+			free_xt_val = True;
+		else
+			skip_xt_val = True;
+
+		if(told->tick.y_l_values != tnew->tick.y_l_values)
+			free_yl_val = True;
+		else
+			skip_yl_val = True;
+
+		if(told->tick.y_r_values != tnew->tick.y_r_values)
+			free_yr_val = True;
+		else
+			skip_yr_val = True;
+		if(told->tick.x_b_labels != tnew->tick.x_b_labels)
+			free_xb_labels = True;
+		else
+			skip_xb_labels = True;
+
+		if(told->tick.x_t_labels != tnew->tick.x_t_labels)
+			free_xt_labels = True;
+		else
+			skip_xt_labels = True;
+
+		if(told->tick.y_l_labels != tnew->tick.y_l_labels)
+			free_yl_labels = True;
+		else
+			skip_yl_labels = True;
+
+		if(told->tick.y_r_labels != tnew->tick.y_r_labels)
+			free_yr_labels = True;
+		else
+			skip_yr_labels = True;
+
 	} else {
 		error_lead = "TickMarkInitialize";
 	}
-        if((tnew->tick.x_b_values != NULL)&&(tnew->tick.x_b_num_values >0)) {
-		if((c_or_s == CREATE)||(tnew->tick.x_b_values != told->tick.x_b_values)) {
-			if((c_or_s == SET)&&(told->tick.x_b_values !=NULL)) {
-				NhlFree((void*)told->tick.x_b_values);
-			}
-                       	tmpfptr = tnew->tick.x_b_values;
-                       	tnew->tick.x_b_values = (float*)NhlMalloc((unsigned)
-                               sizeof(float)*tnew->tick.x_b_num_values);
-                       	memcpy((char*)tnew->tick.x_b_values,(char*)tmpfptr, 
-                               	sizeof(float)*tnew->tick.x_b_num_values);
+
+	/*
+	 * Set values fields
+	 */
+
+	if((tnew->tick.x_b_values != NULL) && !skip_xb_val){
+
+		gen = (NhlGenArray)tnew->tick.x_b_values;
+
+		if((gen->typeQ != Qfloat) || (gen->size != sizeof(float)) ||
+			(gen->num_dimensions != 1) || (gen->num_elements < 1)){
+
+			NhlPError(WARNING,E_UNKNOWN,
+				"%s:%s must be a 1 dim float array: resetting",
+						error_lead,NhlNtmXBValues);
+
+			if(c_or_s == SET)
+				tnew->tick.x_b_values = told->tick.x_b_values;
+			else
+				tnew->tick.x_b_values = NULL;
+
+			free_xb_val = False;
+			ret = MIN(ret,WARNING);
 		}
-		if((c_or_s == CREATE)|| (tnew->tick.x_b_labels != told->tick.x_b_labels)) {
-			if(tnew->tick.x_b_labels != NULL) {
-				if((c_or_s == SET)&&(told->tick.x_b_labels!=NULL)) {
-					for(i=0;i<told->tick.x_b_num_values;i++){
-						if(told->tick.x_b_labels[i] != NULL)
-						NhlFree((void*)told->tick.x_b_labels[i]);
-					}
-					NhlFree((void*)told->tick.x_b_labels);
-				}
-                       		tmpcptrptr = 
-				(char**)NhlMalloc((unsigned)
-					sizeof(char*)*
-					tnew->tick.x_b_num_values);
-                       		for(i = 0; i< tnew->tick.x_b_num_values; i++) {
-                               		tmpcptr = tnew->tick.x_b_labels[i];
-					if(tmpcptr != NULL) {
-                               		tmpcptrptr[i]=(char*)
-						NhlMalloc((unsigned)
-						strlen( tmpcptr)+1);
-                               		strcpy(tmpcptrptr[i],
-                              	         	        tmpcptr);
-					} else {
-						tmpcptrptr[i] = NULL;
-						}
-                        		}
-				tnew->tick.x_b_labels = tmpcptrptr;
-				
-			} else {
-				NhlPError(WARNING,E_UNKNOWN,"CheckExplicit: Explicit tick mark locations for bottom x axis provided but no labels provided");	
-				ret = WARNING;
+		else{
+			tnew->tick.x_b_values = _NhlCopyGenArray(gen,True);
+			if(tnew->tick.x_b_values == NULL){
+				NhlPError(FATAL,ENOMEM,NULL);
+				return FATAL;
+			}
+		}
+	}
+
+	if(free_xb_val)
+		NhlFreeGenArray(told->tick.x_b_values);
+
+	if((tnew->tick.x_t_values != NULL) && !skip_xt_val){
+
+		gen = (NhlGenArray)tnew->tick.x_t_values;
+
+		if((gen->typeQ != Qfloat) || (gen->size != sizeof(float)) ||
+			(gen->num_dimensions != 1) || (gen->num_elements < 1)){
+
+			NhlPError(WARNING,E_UNKNOWN,
+				"%s:%s must be a 1 dim float array: resetting",
+						error_lead,NhlNtmXTValues);
+
+			if(c_or_s == SET)
+				tnew->tick.x_t_values = told->tick.x_t_values;
+			else
+				tnew->tick.x_t_values = NULL;
+
+			free_xt_val = False;
+			ret = MIN(ret,WARNING);
+		}
+		else{
+			tnew->tick.x_t_values = _NhlCopyGenArray(gen,True);
+			if(tnew->tick.x_t_values == NULL){
+				NhlPError(FATAL,ENOMEM,NULL);
+				return FATAL;
+			}
+		}
+	}
+
+	if(free_xt_val)
+		NhlFreeGenArray(told->tick.x_t_values);
+
+	if((tnew->tick.y_l_values != NULL) && !skip_yl_val){
+
+		gen = (NhlGenArray)tnew->tick.y_l_values;
+
+		if((gen->typeQ != Qfloat) || (gen->size != sizeof(float)) ||
+			(gen->num_dimensions != 1) || (gen->num_elements < 1)){
+
+			NhlPError(WARNING,E_UNKNOWN,
+				"%s:%s must be a 1 dim float array: resetting",
+						error_lead,NhlNtmYLValues);
+
+			if(c_or_s == SET)
+				tnew->tick.y_l_values = told->tick.y_l_values;
+			else
+				tnew->tick.y_l_values = NULL;
+
+			free_yl_val = False;
+			ret = MIN(ret,WARNING);
+		}
+		else{
+			tnew->tick.y_l_values = _NhlCopyGenArray(gen,True);
+			if(tnew->tick.y_l_values == NULL){
+				NhlPError(FATAL,ENOMEM,NULL);
+				return FATAL;
+			}
+		}
+	}
+
+	if(free_yl_val)
+		NhlFreeGenArray(told->tick.y_l_values);
+
+	if((tnew->tick.y_r_values != NULL) && !skip_yr_val){
+
+		gen = (NhlGenArray)tnew->tick.y_r_values;
+
+		if((gen->typeQ != Qfloat) || (gen->size != sizeof(float)) ||
+			(gen->num_dimensions != 1) || (gen->num_elements < 1)){
+
+			NhlPError(WARNING,E_UNKNOWN,
+				"%s:%s must be a 1 dim float array: resetting",
+						error_lead,NhlNtmYRValues);
+
+			if(c_or_s == SET)
+				tnew->tick.y_r_values = told->tick.y_r_values;
+			else
+				tnew->tick.y_r_values = NULL;
+
+			free_yr_val = False;
+			ret = MIN(ret,WARNING);
+		}
+		else{
+			tnew->tick.y_r_values = _NhlCopyGenArray(gen,True);
+			if(tnew->tick.y_r_values == NULL){
+				NhlPError(FATAL,ENOMEM,NULL);
+				return FATAL;
+			}
+		}
+	}
+
+	if(free_yr_val)
+		NhlFreeGenArray(told->tick.y_r_values);
+
+	/*
+	 * Set labels fields
+	 */
+
+	if((tnew->tick.x_b_labels != NULL) && !skip_xb_labels){
+
+		gen = (NhlGenArray)tnew->tick.x_b_labels;
+
+		if((gen->typeQ != Qstring) || (gen->size != sizeof(NhlString))||
+			(gen->num_dimensions != 1) || (gen->num_elements < 1)){
+
+			NhlPError(WARNING,E_UNKNOWN,
+				"%s:%s must be a 1 dim char* array: resetting",
+						error_lead,NhlNtmXBLabels);
+
+			if(c_or_s == SET)
+				tnew->tick.x_b_labels = told->tick.x_b_labels;
+			else
 				tnew->tick.x_b_labels = NULL;
+
+			free_xb_labels = False;
+			ret = MIN(ret,WARNING);
+		}
+		else{
+			tnew->tick.x_b_labels = CopyLabelArray(gen,
+							tnew->tick.x_b_values);
+			if(tnew->tick.x_b_labels == NULL){
+				NhlPError(FATAL,ENOMEM,NULL);
+				return FATAL;
 			}
+		}
+	}
 
+	if(free_xb_labels)
+		NhlFreeGenArray(told->tick.x_b_labels);
+
+	if((tnew->tick.x_t_labels != NULL) && !skip_xt_labels){
+
+		gen = (NhlGenArray)tnew->tick.x_t_labels;
+
+		if((gen->typeQ != Qstring) || (gen->size != sizeof(NhlString))||
+			(gen->num_dimensions != 1) || (gen->num_elements < 1)){
+
+			NhlPError(WARNING,E_UNKNOWN,
+				"%s:%s must be a 1 dim char* array: resetting",
+						error_lead,NhlNtmXTLabels);
+
+			if(c_or_s == SET)
+				tnew->tick.x_t_labels = told->tick.x_t_labels;
+			else
+				tnew->tick.x_t_labels = NULL;
+
+			free_xt_labels = False;
+			ret = MIN(ret,WARNING);
 		}
-        } else if(tnew->tick.x_b_values != NULL){
-		NhlPError(WARNING,E_UNKNOWN,"CheckExplicit: tmXBValues set but not tmXBNumValues, can not copy tmXBValues into internal storage, turning EXPLICIT mode off if set");
-		tnew->tick.x_b_labels = NULL;
-		tnew->tick.x_b_values = NULL;
-		tnew->tick.x_b_num_values = 0;
-		if(tnew->tick.x_b_mode == EXPLICIT) {
-			tnew->tick.x_b_mode = AUTOMATIC;
+		else{
+			tnew->tick.x_t_labels = CopyLabelArray(gen,
+							tnew->tick.x_t_values);
+			if(tnew->tick.x_t_labels == NULL){
+				NhlPError(FATAL,ENOMEM,NULL);
+				return FATAL;
+			}
 		}
-	} else if(tnew->tick.x_b_num_values > 0) {
-		NhlPError(WARNING,E_UNKNOWN,"CheckExplicit: tmXBNumValues set but not tmXBValues, can not copy tmXBValues into internal storage, turning EXPLICIT mode off if set");
-		tnew->tick.x_b_labels = NULL;
-		tnew->tick.x_b_values = NULL;
-		tnew->tick.x_b_num_values = 0;
-		if(tnew->tick.x_b_mode == EXPLICIT) {
-			tnew->tick.x_b_mode = AUTOMATIC;
+	}
+
+	if(free_xt_labels)
+		NhlFreeGenArray(told->tick.x_t_labels);
+
+	if((tnew->tick.y_l_labels != NULL) && !skip_yl_labels){
+
+		gen = (NhlGenArray)tnew->tick.y_l_labels;
+
+		if((gen->typeQ != Qstring) || (gen->size != sizeof(NhlString))||
+			(gen->num_dimensions != 1) || (gen->num_elements < 1)){
+
+			NhlPError(WARNING,E_UNKNOWN,
+				"%s:%s must be a 1 dim char* array: resetting",
+						error_lead,NhlNtmYLLabels);
+
+			if(c_or_s == SET)
+				tnew->tick.y_l_labels = told->tick.y_l_labels;
+			else
+				tnew->tick.y_l_labels = NULL;
+
+			free_yl_labels = False;
+			ret = MIN(ret,WARNING);
 		}
-	} else if(tnew->tick.x_b_mode == EXPLICIT) {
-		NhlPError(WARNING,E_UNKNOWN,"CheckExplict: tmXBMode set to EXPLICIT but no values or labels supplied, defaulting to AUTOMATIC");
+		else{
+			tnew->tick.y_l_labels = CopyLabelArray(gen,
+							tnew->tick.y_l_values);
+			if(tnew->tick.y_l_labels == NULL){
+				NhlPError(FATAL,ENOMEM,NULL);
+				return FATAL;
+			}
+		}
+	}
+
+	if(free_yl_labels)
+		NhlFreeGenArray(told->tick.y_l_labels);
+
+	if((tnew->tick.y_r_labels != NULL) && !skip_yr_labels){
+
+		gen = (NhlGenArray)tnew->tick.y_r_labels;
+
+		if((gen->typeQ != Qstring) || (gen->size != sizeof(NhlString))||
+			(gen->num_dimensions != 1) || (gen->num_elements < 1)){
+
+			NhlPError(WARNING,E_UNKNOWN,
+				"%s:%s must be a 1 dim char* array: resetting",
+						error_lead,NhlNtmYRLabels);
+
+			if(c_or_s == SET)
+				tnew->tick.y_r_labels = told->tick.y_r_labels;
+			else
+				tnew->tick.y_r_labels = NULL;
+
+			free_yr_labels = False;
+			ret = MIN(ret,WARNING);
+		}
+		else{
+			tnew->tick.y_r_labels = CopyLabelArray(gen,
+							tnew->tick.y_r_values);
+			if(tnew->tick.y_r_labels == NULL){
+				NhlPError(FATAL,ENOMEM,NULL);
+				return FATAL;
+			}
+		}
+	}
+
+	if(free_yr_labels)
+		NhlFreeGenArray(told->tick.y_r_labels);
+
+	/*
+	 * Check "mode" fields
+	 */
+
+	if((tnew->tick.x_b_mode == EXPLICIT) &&
+					(tnew->tick.x_b_values == NULL)){
+		NhlPError(WARNING,E_UNKNOWN,
+			"%s:%s not set: setting %s to AUTOMATIC",error_lead,
+			NhlNtmXBValues,NhlNtmXBMode);
 		tnew->tick.x_b_mode = AUTOMATIC;
-	} 
+		ret = MIN(ret,WARNING);
+	}
+	if((tnew->tick.x_t_mode == EXPLICIT) &&
+					(tnew->tick.x_t_values == NULL)){
+		NhlPError(WARNING,E_UNKNOWN,
+			"%s:%s not set: setting %s to AUTOMATIC",error_lead,
+			NhlNtmXTValues,NhlNtmXTMode);
+		tnew->tick.x_t_mode = AUTOMATIC;
+		ret = MIN(ret,WARNING);
+	}
+	if((tnew->tick.y_l_mode == EXPLICIT) &&
+					(tnew->tick.y_l_values == NULL)){
+		NhlPError(WARNING,E_UNKNOWN,
+			"%s:%s not set: setting %s to AUTOMATIC",error_lead,
+			NhlNtmYLValues,NhlNtmYLMode);
+		tnew->tick.y_l_mode = AUTOMATIC;
+		ret = MIN(ret,WARNING);
+	}
+	if((tnew->tick.y_r_mode == EXPLICIT) &&
+					(tnew->tick.y_r_values == NULL)){
+		NhlPError(WARNING,E_UNKNOWN,
+			"%s:%s not set: setting %s to AUTOMATIC",error_lead,
+			NhlNtmYRValues,NhlNtmYRMode);
+		tnew->tick.y_r_mode = AUTOMATIC;
+		ret = MIN(ret,WARNING);
+	}
 
+	/*
+	 * Give INFO warning if no labels are given
+	 */
+	if((tnew->tick.x_b_mode == EXPLICIT) &&
+					(tnew->tick.x_b_labels == NULL)){
+		NhlPError(INFO,E_UNKNOWN,"%s:%s is EXPLICIT but %s not set",
+					error_lead,NhlNtmXBMode,NhlNtmXBLabels);
+		ret = MIN(ret,INFO);
+	}
+	if((tnew->tick.x_t_mode == EXPLICIT) &&
+					(tnew->tick.x_t_labels == NULL)){
+		NhlPError(INFO,E_UNKNOWN,"%s:%s is EXPLICIT but %s not set",
+					error_lead,NhlNtmXTMode,NhlNtmXTLabels);
+		ret = MIN(ret,INFO);
+	}
+	if((tnew->tick.y_l_mode == EXPLICIT) &&
+					(tnew->tick.y_l_labels == NULL)){
+		NhlPError(INFO,E_UNKNOWN,"%s:%s is EXPLICIT but %s not set",
+					error_lead,NhlNtmYLMode,NhlNtmYLLabels);
+		ret = MIN(ret,INFO);
+	}
+	if((tnew->tick.y_r_mode == EXPLICIT) &&
+					(tnew->tick.y_r_labels == NULL)){
+		NhlPError(INFO,E_UNKNOWN,"%s:%s is EXPLICIT but %s not set",
+					error_lead,NhlNtmYRMode,NhlNtmYRLabels);
+		ret = MIN(ret,INFO);
+	}
+
+
+	/*
+	 * Check MinorOn fields
+	 */
 	if((tnew->tick.x_b_on)&&(tnew->tick.x_b_mode == EXPLICIT)) {
-                if(!tnew->tick.x_b_no_minor) {
-                        NhlPError(WARNING,E_UNKNOWN,"%s: Minor tick marks cannot be on when in EXPLICIT mode, turning bottom minor ticks off",error_lead);
+                if(tnew->tick.x_b_minor_on) {
+                        NhlPError(WARNING,E_UNKNOWN,
+			"%s:%s cannot be on when %s is EXPLICIT:setting %s off",
+				error_lead,NhlNtmXBMinorOn,NhlNtmXBMode,
+							NhlNtmXBMinorOn);
 
 			ret = WARNING;
-                        tnew->tick.x_b_no_minor = 1;
+                        tnew->tick.x_b_minor_on = False;
                         tnew->tick.x_b_nminor = 0;
                 }
 	}
-
-        if((tnew->tick.x_t_values != NULL)&&(tnew->tick.x_t_num_values >0)) {
-		if((c_or_s == CREATE)||(tnew->tick.x_t_values != told->tick.x_t_values)) {
-			if((c_or_s == SET)&&(told->tick.x_t_values !=NULL)) {
-				NhlFree((void*)told->tick.x_t_values);
-			}
-                       	tmpfptr = tnew->tick.x_t_values;
-                       	tnew->tick.x_t_values = (float*)NhlMalloc((unsigned)
-                               sizeof(float)*tnew->tick.x_t_num_values);
-                       	memcpy((char*)tnew->tick.x_t_values,(char*)tmpfptr, 
-				sizeof(float)*tnew->tick.x_t_num_values);
-		}
-		if((c_or_s == CREATE)||(tnew->tick.x_t_labels != told->tick.x_t_labels)) {
-			if(tnew->tick.x_t_labels != NULL) {
-				if((c_or_s == SET)&&(told->tick.x_t_labels!=NULL)) {
-					for(i=0;i<told->tick.x_t_num_values;i++){
-						if(told->tick.x_t_labels[i] != NULL)
-						NhlFree((void*)told->tick.x_t_labels[i]);
-					}
-					NhlFree((void*)told->tick.x_t_labels);
-				}
-                       		tmpcptrptr = 
-				(char**)NhlMalloc((unsigned)
-					sizeof(char*)*
-					tnew->tick.x_t_num_values);
-                       		for(i = 0; i< tnew->tick.x_t_num_values; i++) {
-                               		tmpcptr = tnew->tick.x_t_labels[i];
-					if(tmpcptr != NULL) {
-                               		tmpcptrptr[i]=(char*)
-						NhlMalloc((unsigned)
-						strlen( tmpcptr)+1);
-                               		strcpy(tmpcptrptr[i],
-                              	         	        tmpcptr);
-					} else {
-						tmpcptrptr[i] = NULL;
-						}
-                        		}
-				tnew->tick.x_t_labels = tmpcptrptr;
-				
-			} else {
-				NhlPError(WARNING,E_UNKNOWN,"CheckExplicit: Explicit tick mark locations for top x axis provided but no labels provided");	
-				ret = WARNING;
-				tnew->tick.x_t_labels = NULL;
-			}
-
-		}
-        } else if(tnew->tick.x_t_values != NULL) {
-		NhlPError(WARNING,E_UNKNOWN,"CheckExplicit: tmXTValues set but not tmXTNumValues, can not copy tmXTValues into internal storage, turning EXPLICIT mode off if set");
-		tnew->tick.x_t_labels = NULL;
-		tnew->tick.x_t_values = NULL;
-		tnew->tick.x_t_num_values = 0;
-		if(tnew->tick.x_t_mode == EXPLICIT) {
-			tnew->tick.x_t_mode = AUTOMATIC;
-		}
-	} else if(tnew->tick.x_t_num_values > 0) {
-		NhlPError(WARNING,E_UNKNOWN,"CheckExplicit: tmXTNumValues set but not tmXTValues, can not copy tmXTValues into internal storage, turning EXPLICIT mode off if set");
-		tnew->tick.x_t_labels = NULL;
-		tnew->tick.x_t_values = NULL;
-		tnew->tick.x_t_num_values = 0;
-		if(tnew->tick.x_t_mode == EXPLICIT) {
-			tnew->tick.x_t_mode = AUTOMATIC;
-		}
-	} else if(tnew->tick.x_t_mode == EXPLICIT) {
-		NhlPError(WARNING,E_UNKNOWN,"CheckExplict: tmXTMode set to EXPLICIT but no values or labels supplied, defaulting to AUTOMATIC");
-		tnew->tick.x_t_mode = AUTOMATIC;
-	} 
-
 	if((tnew->tick.x_t_on)&&(tnew->tick.x_t_mode == EXPLICIT)) {
-                if(!tnew->tick.x_t_no_minor) {
-                        NhlPError(WARNING,E_UNKNOWN,"%s: Minor tick marks cannot be on when in EXPLICIT mode, turning top minor ticks off",error_lead);
+                if(tnew->tick.x_t_minor_on) {
+                        NhlPError(WARNING,E_UNKNOWN,
+			"%s:%s cannot be on when %s is EXPLICIT:setting %s off",
+				error_lead,NhlNtmXTMinorOn,NhlNtmXTMode,
+							NhlNtmXTMinorOn);
 
 			ret = WARNING;
-                        tnew->tick.x_t_no_minor = 1;
+                        tnew->tick.x_t_minor_on = False;
                         tnew->tick.x_t_nminor = 0;
                 }
 	}
-
-        if((tnew->tick.y_l_values != NULL)&&(tnew->tick.y_l_num_values >0)) {
-		if((c_or_s == CREATE)||(tnew->tick.y_l_values != told->tick.y_l_values)) {
-			if((c_or_s == SET)&&(told->tick.y_l_values !=NULL)) {
-				NhlFree((void*)told->tick.y_l_values);
-			}
-                       	tmpfptr = tnew->tick.y_l_values;
-                       	tnew->tick.y_l_values = (float*)NhlMalloc((unsigned)
-                               sizeof(float)*tnew->tick.y_l_num_values);
-                       	memcpy((char*)tnew->tick.y_l_values,(char*)tmpfptr, 
-				sizeof(float)*tnew->tick.y_l_num_values);
-		}
-		if((c_or_s == CREATE)||(tnew->tick.y_l_labels != told->tick.y_l_labels)){
-			if(tnew->tick.y_l_labels != NULL) {
-				if((c_or_s == SET)&&(told->tick.y_l_labels!=NULL)) {
-					for(i=0;i<told->tick.y_l_num_values;i++){
-						if(told->tick.y_l_labels[i] != NULL)
-						NhlFree((void*)told->tick.y_l_labels[i]);
-					}
-					NhlFree((void*)told->tick.y_l_labels);
-				}
-                       		tmpcptrptr = 
-				(char**)NhlMalloc((unsigned)
-					sizeof(char*)*
-					tnew->tick.y_l_num_values);
-                       		for(i = 0; i< tnew->tick.y_l_num_values; i++) {
-                               		tmpcptr = tnew->tick.y_l_labels[i];
-					if(tmpcptr != NULL) {
-                               		tmpcptrptr[i]=(char*)
-						NhlMalloc((unsigned)
-						strlen( tmpcptr)+1);
-                               		strcpy(tmpcptrptr[i],
-                              	         	        tmpcptr);
-					} else {
-						tmpcptrptr[i] = NULL;
-						}
-                        		}
-				tnew->tick.y_l_labels = tmpcptrptr;
-				
-			} else {
-				NhlPError(WARNING,E_UNKNOWN,"CheckExplicit: Explicit tick mark locations for left y axis provided but no labels provided");	
-				ret = WARNING;
-				tnew->tick.y_l_labels = NULL;
-			}
-
-		}
-        } else if(tnew->tick.y_l_values != NULL){
-		NhlPError(WARNING,E_UNKNOWN,"CheckExplicit: tmYLValues set but not tmYLNumValues, can not copy tmYLValues into internal storage, turning EXPLICIT mode off if set");
-		tnew->tick.y_l_labels = NULL;
-		tnew->tick.y_l_values = NULL;
-		tnew->tick.y_l_num_values = 0;
-		if(tnew->tick.y_l_mode == EXPLICIT) {
-			tnew->tick.y_l_mode = AUTOMATIC;
-		}
-	} else if(tnew->tick.y_l_num_values > 0) {
-		NhlPError(WARNING,E_UNKNOWN,"CheckExplicit: tmYLNumValues set but not tmYLValues, can not copy tmYLValues into internal storage, turning EXPLICIT mode off if set");
-		tnew->tick.y_l_labels = NULL;
-		tnew->tick.y_l_values = NULL;
-		tnew->tick.y_l_num_values = 0;
-		if(tnew->tick.y_l_mode == EXPLICIT) {
-			tnew->tick.y_l_mode = AUTOMATIC;
-		}
-	} else if(tnew->tick.y_l_mode == EXPLICIT) {
-		NhlPError(WARNING,E_UNKNOWN,"CheckExplict: tmYLMode set to EXPLICIT but no values or labels supplied, defaulting to AUTOMATIC");
-		tnew->tick.y_l_mode = AUTOMATIC;
-	} 
-
 	if((tnew->tick.y_l_on)&&(tnew->tick.y_l_mode == EXPLICIT)) {
-                if(!tnew->tick.y_l_no_minor) {
-                        NhlPError(WARNING,E_UNKNOWN,"%s: Minor tick marks cannot be on when in EXPLICIT mode, turning left minor ticks off",error_lead);
+                if(tnew->tick.y_l_minor_on) {
+                        NhlPError(WARNING,E_UNKNOWN,
+			"%s:%s cannot be on when %s is EXPLICIT:setting %s off",
+				error_lead,NhlNtmYLMinorOn,NhlNtmYLMode,
+							NhlNtmYLMinorOn);
 
 			ret = WARNING;
-                        tnew->tick.y_l_no_minor = 1;
+                        tnew->tick.y_l_minor_on = False;
                         tnew->tick.y_l_nminor = 0;
                 }
 	}
-
-
-        if((tnew->tick.y_r_values != NULL)&&(tnew->tick.y_r_num_values >0)) {
-		if((c_or_s == CREATE)||(tnew->tick.y_r_values != told->tick.y_r_values)) {
-			if((c_or_s == SET)&&(told->tick.y_r_values !=NULL)) {
-				NhlFree((void*)told->tick.y_r_values);
-			}
-                       	tmpfptr = tnew->tick.y_r_values;
-                       	tnew->tick.y_r_values = (float*)NhlMalloc((unsigned)
-                               sizeof(float)*tnew->tick.y_r_num_values);
-                       	memcpy((char*)tnew->tick.y_r_values,(char*)tmpfptr, 
-				sizeof(float)*tnew->tick.y_r_num_values);
-		}
-		if((c_or_s == CREATE)||(tnew->tick.y_r_labels != told->tick.y_r_labels)) {
-			if(tnew->tick.y_r_labels != NULL) {
-				if((c_or_s == SET)&&(told->tick.y_r_labels!=NULL)) {
-					for(i=0;i<told->tick.y_r_num_values;i++){
-						if(told->tick.y_r_labels[i] != NULL)
-						NhlFree((void*)told->tick.y_r_labels[i]);
-					}
-					NhlFree((void*)told->tick.y_r_labels);
-				}
-                       		tmpcptrptr = 
-				(char**)NhlMalloc((unsigned)
-					sizeof(char*)*
-					tnew->tick.y_r_num_values);
-                       		for(i = 0; i< tnew->tick.y_r_num_values; i++) {
-                               		tmpcptr = tnew->tick.y_r_labels[i];
-					if(tmpcptr != NULL) {
-                               		tmpcptrptr[i]=(char*)
-						NhlMalloc((unsigned)
-						strlen( tmpcptr)+1);
-                               		strcpy(tmpcptrptr[i],
-                              	         	        tmpcptr);
-					} else {
-						tmpcptrptr[i] = NULL;
-						}
-                        		}
-				tnew->tick.y_r_labels = tmpcptrptr;
-				
-			} else {
-				NhlPError(WARNING,E_UNKNOWN,"CheckExplicit: Explicit tick mark locations for right y axis provided but no labels provided");	
-				ret = WARNING;
-				tnew->tick.y_r_labels = NULL;
-			}
-
-		}
-        } else if(tnew->tick.y_r_values != NULL) {
-		NhlPError(WARNING,E_UNKNOWN,"CheckExplicit: tmYRValues set but not tmYRNumValues, can not copy tmYRValues into internal storage, turning EXPLICIT mode off if set");
-		tnew->tick.y_r_labels = NULL;
-		tnew->tick.y_r_values = NULL;
-		tnew->tick.y_r_num_values = 0;
-		if(tnew->tick.y_r_mode == EXPLICIT) {
-			tnew->tick.y_r_mode = AUTOMATIC;
-		}
-	} else if(tnew->tick.y_r_num_values > 0) {
-		NhlPError(WARNING,E_UNKNOWN,"CheckExplicit: tmYRNumValues set but not tmYRValues, can not copy tmYRValues into internal storage, turning EXPLICIT mode off if set");
-		tnew->tick.y_r_labels = NULL;
-		tnew->tick.y_r_values = NULL;
-		tnew->tick.y_r_num_values = 0;
-		if(tnew->tick.y_r_mode == EXPLICIT) {
-			tnew->tick.y_r_mode = AUTOMATIC;
-		}
-	} else if(tnew->tick.y_r_mode == EXPLICIT) {
-		NhlPError(WARNING,E_UNKNOWN,"CheckExplict: tmYRMode set to EXPLICIT but no values or labels supplied, defaulting to AUTOMATIC");
-		tnew->tick.y_r_mode = AUTOMATIC;
-	} 
-
 	if((tnew->tick.y_r_on)&&(tnew->tick.y_r_mode == EXPLICIT)) {
-                if(!tnew->tick.y_r_no_minor) {
-                        NhlPError(WARNING,E_UNKNOWN,"%s: Minor tick marks cannot be on when in EXPLICIT mode, turning right minor ticks off",error_lead);
+                if(tnew->tick.y_r_minor_on) {
+                        NhlPError(WARNING,E_UNKNOWN,
+			"%s:%s cannot be on when %s is EXPLICIT:setting %s off",
+				error_lead,NhlNtmYRMinorOn,NhlNtmYRMode,
+							NhlNtmYRMinorOn);
 
 			ret = WARNING;
-                        tnew->tick.y_r_no_minor = 1;
+                        tnew->tick.y_r_minor_on = False;
                         tnew->tick.y_r_nminor = 0;
                 }
 	}
+
+
+	/*
+	 * Set start and end ticks
+	 */
         if((tnew->tick.x_b_on)&&(tnew->tick.x_b_mode == EXPLICIT)){
                 if((tnew->tick.x_b_tick_start == 0.0)&&
                         (tnew->tick.x_b_tick_end == 0.0)) {
@@ -4432,6 +4582,7 @@ static NhlErrorTypes CheckExplicit
 			ret = WARNING;
                 }
         }
+
 	return(ret);
 }
 
@@ -4669,193 +4820,240 @@ static NhlErrorTypes CheckIrregular
 	int		c_or_s;
 #endif
 {
-	float *tmpfptr;
-	int i;
+	NhlBoolean	free_xb_irreg = False, skip_xb_irreg = False;
+	NhlBoolean	free_xt_irreg = False, skip_xt_irreg = False;
+	NhlBoolean	free_yl_irreg = False, skip_yl_irreg = False;
+	NhlBoolean	free_yr_irreg = False, skip_yr_irreg = False;
+	NhlGenArray	gen;
 	NhlErrorTypes ret = NOERROR;
+	char		*error_lead = "CheckIrregular";
 
-	if((tnew->tick.x_b_irregular_points != NULL)&&(tnew->tick.x_b_num_irregular_points >0)) {
-		if((c_or_s == CREATE)||(tnew->tick.x_b_irregular_points != 
-				told->tick.x_b_irregular_points)){
-			if((c_or_s == SET)&&
-				(told->tick.x_b_irregular_points!=NULL)){
-				NhlFree((void*)told->tick.x_b_irregular_points);
-			}
-                       	tmpfptr = tnew->tick.x_b_irregular_points;
-                       	tnew->tick.x_b_irregular_points = (float*)
-				NhlMalloc((unsigned)sizeof(float)
-                               	*tnew->tick.x_b_num_irregular_points);
-
-			tnew->tick.ir_xbmin = tnew->tick.ir_xbmax = tmpfptr[0];
-
-                       	for(i = 0; i< tnew->tick.x_b_num_irregular_points;i++){
-                               	tnew->tick.x_b_irregular_points[i] = 
-						tmpfptr[i];
-				if(tmpfptr[i] > tnew->tick.ir_xbmax) {
-					tnew->tick.ir_xbmax = tmpfptr[i];
-				} else if(tmpfptr[i] < tnew->tick.ir_xbmin) {
-					tnew->tick.ir_xbmin = tmpfptr[i];
-				}
-			}
-			tnew->tick.new_ir_xb = 1;
-		} else {
-			tnew->tick.new_ir_xb = 0;
-		}
-        } else if(tnew->tick.x_b_irregular_points != NULL) {
-		NhlPError(WARNING,E_UNKNOWN,"CheckIrregular: XBIrregularPoints set but XBNumIrregularPoints not set, cannot copy XBIrregularPoints into internal storage, setting XBStyle to LINEAR if set");
-		tnew->tick.x_b_irregular_points = NULL;
-		tnew->tick.x_b_num_irregular_points = 0; 
-		if(tnew->tick.x_b_style == IRREGULAR)
-			tnew->tick.x_b_style = LINEAR;
-		ret = WARNING;
-	} else if(tnew->tick.x_b_num_irregular_points > 0) {
-		NhlPError(WARNING,E_UNKNOWN,"CheckIrregular: XBNumIrregularPoints set but XBIrregularPoints not set, cannot copy XBIrregularPoints into internal storage, setting XBStyle to LINEAR if set");
-		tnew->tick.x_b_irregular_points = NULL;
-		tnew->tick.x_b_num_irregular_points = 0; 
-		if(tnew->tick.x_b_style == IRREGULAR)
-			tnew->tick.x_b_style = LINEAR;
-		ret = WARNING;
-	} else if(tnew->tick.x_b_style == IRREGULAR) {
-		NhlPError(WARNING,E_UNKNOWN,"CheckIrregular: XBStyle is IRREGULAR but XBIrregularPoints not set, defaulting to LINEAR");
-		tnew->tick.x_b_style = LINEAR;
-		ret = WARNING;
-	}
-
-	if((tnew->tick.x_t_irregular_points != NULL)&&(tnew->tick.x_t_num_irregular_points >0)) {
-		if((c_or_s == CREATE)||(tnew->tick.x_t_irregular_points != 
-			told->tick.x_t_irregular_points)){
-			if((c_or_s == SET)&&
-				(told->tick.x_t_irregular_points!=NULL)){
-				NhlFree((void*)told->tick.x_t_irregular_points);
-			}
-                       	tmpfptr = tnew->tick.x_t_irregular_points;
-                       	tnew->tick.x_t_irregular_points = (float*)
-				NhlMalloc((unsigned)sizeof(float)
-                               	*tnew->tick.x_t_num_irregular_points);
-
-			tnew->tick.ir_xtmin = tnew->tick.ir_xtmax = tmpfptr[0];
-
-                       	for(i = 0; i< tnew->tick.x_t_num_irregular_points;i++){
-                               	tnew->tick.x_t_irregular_points[i] = 
-						tmpfptr[i];
 		
-				if(tmpfptr[i] > tnew->tick.ir_xtmax) {
-					tnew->tick.ir_xtmax = tmpfptr[i];
-				} else if(tmpfptr[i] < tnew->tick.ir_xtmin) {
-					tnew->tick.ir_xtmin = tmpfptr[i];
-				}
-			}
-			tnew->tick.new_ir_xt = 1;
-		} else {
-			tnew->tick.new_ir_xt = 0;
+	/*
+	 * take care of irregular_points
+	 */
+
+	if(c_or_s == SET){
+		if(told->tick.x_b_irregular_points !=
+						tnew->tick.x_b_irregular_points)
+			free_xb_irreg = True;
+		else
+			skip_xb_irreg = True;
+		if(told->tick.x_t_irregular_points !=
+						tnew->tick.x_t_irregular_points)
+			free_xt_irreg = True;
+		else
+			skip_xt_irreg = True;
+		if(told->tick.y_l_irregular_points !=
+						tnew->tick.y_l_irregular_points)
+			free_yl_irreg = True;
+		else
+			skip_yl_irreg = True;
+		if(told->tick.y_r_irregular_points !=
+						tnew->tick.y_r_irregular_points)
+			free_yr_irreg = True;
+		else
+			skip_yr_irreg = True;
+	}
+
+	if((tnew->tick.x_b_irregular_points != NULL) && !skip_xb_irreg){
+		gen = (NhlGenArray)tnew->tick.x_b_irregular_points;
+
+		if((gen->typeQ != Qfloat) || (gen->size != sizeof(float)) ||
+		(gen->num_dimensions != 1) || (gen->len_dimensions[0] < 3)){
+			NhlPError(WARNING,E_UNKNOWN,
+	"%s:%s must be a 1 dim float array with a min of 3 elements: resetting",
+				error_lead,NhlNtmXBIrregularPoints);
+
+			if(c_or_s == SET)
+				tnew->tick.x_b_irregular_points =
+						told->tick.x_b_irregular_points;
+			else
+				tnew->tick.x_b_irregular_points = NULL;
+
+			free_xb_irreg = False;
+			ret = MIN(ret,WARNING);
 		}
-        } else if(tnew->tick.x_t_irregular_points != NULL) {
-		NhlPError(WARNING,E_UNKNOWN,"CheckIrregular: XTIrregularPoints set but XTNumIrregularPoints not set, cannot copy XTIrregularPoints into internal storage, setting XTStyle to LINEAR if set");
-		tnew->tick.x_t_irregular_points = NULL;
-		tnew->tick.x_t_num_irregular_points = 0; 
-		if(tnew->tick.x_t_style == IRREGULAR)
-			tnew->tick.x_t_style = LINEAR;
-		ret = WARNING;
-	} else if(tnew->tick.x_t_num_irregular_points > 0) {
-		NhlPError(WARNING,E_UNKNOWN,"CheckIrregular: XTNumIrregularPoints set but XTIrregularPoints not set, cannot copy XTIrregularPoints into internal storage, setting XTStyle to LINEAR if set");
-		tnew->tick.x_t_irregular_points = NULL;
-		tnew->tick.x_t_num_irregular_points = 0; 
-		if(tnew->tick.x_t_style == IRREGULAR)
-			tnew->tick.x_t_style = LINEAR;
-		ret = WARNING;
-	} else if(tnew->tick.x_t_style == IRREGULAR) {
-		NhlPError(WARNING,E_UNKNOWN,"CheckIrregular: XTStyle is IRREGULAR but XTIrregularPoints not set, defaulting to LINEAR");
+		else{
+			float	*tarr;
+
+			tnew->tick.x_b_irregular_points =
+						_NhlCopyGenArray(gen,True);
+			if(tnew->tick.x_b_irregular_points == NULL){
+				NhlPError(FATAL,ENOMEM,NULL);
+				return FATAL;
+			}
+			tarr = (float*)gen->data;
+			tnew->tick.ir_xbmin =
+				MIN(tarr[0],tarr[gen->len_dimensions[0]-1]);
+			tnew->tick.ir_xbmax =
+				MAX(tarr[0],tarr[gen->len_dimensions[0]-1]);
+			tnew->tick.new_ir_xb = True;
+		}
+	}
+	else
+		tnew->tick.new_ir_xb = False;
+
+	if(free_xb_irreg)
+		NhlFreeGenArray(told->tick.x_b_irregular_points);
+
+	if((tnew->tick.x_t_irregular_points != NULL) && !skip_xt_irreg){
+		gen = (NhlGenArray)tnew->tick.x_t_irregular_points;
+
+		if((gen->typeQ != Qfloat) || (gen->size != sizeof(float)) ||
+		(gen->num_dimensions != 1) || (gen->len_dimensions[0] < 3)){
+			NhlPError(WARNING,E_UNKNOWN,
+	"%s:%s must be a 1 dim float array with a min of 3 elements: resetting",
+				error_lead,NhlNtmXTIrregularPoints);
+
+			if(c_or_s == SET)
+				tnew->tick.x_t_irregular_points =
+						told->tick.x_t_irregular_points;
+			else
+				tnew->tick.x_t_irregular_points = NULL;
+
+			free_xt_irreg = False;
+			ret = MIN(ret,WARNING);
+		}
+		else{
+			float	*tarr;
+
+			tnew->tick.x_t_irregular_points =
+						_NhlCopyGenArray(gen,True);
+			if(tnew->tick.x_t_irregular_points == NULL){
+				NhlPError(FATAL,ENOMEM,NULL);
+				return FATAL;
+			}
+			tarr = (float*)gen->data;
+			tnew->tick.ir_xtmin =
+				MIN(tarr[0],tarr[gen->len_dimensions[0]-1]);
+			tnew->tick.ir_xtmax =
+				MAX(tarr[0],tarr[gen->len_dimensions[0]-1]);
+			tnew->tick.new_ir_xt = True;
+		}
+	}
+	else
+		tnew->tick.new_ir_xt = False;
+
+	if(free_xt_irreg)
+		NhlFreeGenArray(told->tick.x_t_irregular_points);
+
+	if((tnew->tick.y_l_irregular_points != NULL) && !skip_yl_irreg){
+		gen = (NhlGenArray)tnew->tick.y_l_irregular_points;
+
+		if((gen->typeQ != Qfloat) || (gen->size != sizeof(float)) ||
+		(gen->num_dimensions != 1) || (gen->len_dimensions[0] < 3)){
+			NhlPError(WARNING,E_UNKNOWN,
+	"%s:%s must be a 1 dim float array with a min of 3 elements: resetting",
+				error_lead,NhlNtmYLIrregularPoints);
+
+			if(c_or_s == SET)
+				tnew->tick.y_l_irregular_points =
+						told->tick.y_l_irregular_points;
+			else
+				tnew->tick.y_l_irregular_points = NULL;
+
+			free_yl_irreg = False;
+			ret = MIN(ret,WARNING);
+		}
+		else{
+			float	*tarr;
+
+			tnew->tick.y_l_irregular_points =
+						_NhlCopyGenArray(gen,True);
+			if(tnew->tick.y_l_irregular_points == NULL){
+				NhlPError(FATAL,ENOMEM,NULL);
+				return FATAL;
+			}
+			tarr = (float*)gen->data;
+			tnew->tick.ir_ylmin =
+				MIN(tarr[0],tarr[gen->len_dimensions[0]-1]);
+			tnew->tick.ir_ylmax =
+				MAX(tarr[0],tarr[gen->len_dimensions[0]-1]);
+			tnew->tick.new_ir_yl = True;
+		}
+	}
+	else
+		tnew->tick.new_ir_yl = False;
+
+	if(free_yl_irreg)
+		NhlFreeGenArray(told->tick.y_l_irregular_points);
+
+	if((tnew->tick.y_r_irregular_points != NULL) && !skip_yr_irreg){
+		gen = (NhlGenArray)tnew->tick.y_r_irregular_points;
+
+		if((gen->typeQ != Qfloat) || (gen->size != sizeof(float)) ||
+		(gen->num_dimensions != 1) || (gen->len_dimensions[0] < 3)){
+			NhlPError(WARNING,E_UNKNOWN,
+	"%s:%s must be a 1 dim float array with a min of 3 elements: resetting",
+				error_lead,NhlNtmYRIrregularPoints);
+
+			if(c_or_s == SET)
+				tnew->tick.y_r_irregular_points =
+						told->tick.y_r_irregular_points;
+			else
+				tnew->tick.y_r_irregular_points = NULL;
+
+			free_yr_irreg = False;
+			ret = MIN(ret,WARNING);
+		}
+		else{
+			float	*tarr;
+
+			tnew->tick.y_r_irregular_points =
+						_NhlCopyGenArray(gen,True);
+			if(tnew->tick.y_r_irregular_points == NULL){
+				NhlPError(FATAL,ENOMEM,NULL);
+				return FATAL;
+			}
+			tarr = (float*)gen->data;
+			tnew->tick.ir_yrmin =
+				MIN(tarr[0],tarr[gen->len_dimensions[0]-1]);
+			tnew->tick.ir_yrmax =
+				MAX(tarr[0],tarr[gen->len_dimensions[0]-1]);
+			tnew->tick.new_ir_yr = True;
+		}
+	}
+	else
+		tnew->tick.new_ir_yr = False;
+
+	if(free_yr_irreg)
+		NhlFreeGenArray(told->tick.y_r_irregular_points);
+
+	/*
+	 * Take care of style resources
+	 */
+	if((tnew->tick.x_b_style == IRREGULAR) &&
+				(tnew->tick.x_b_irregular_points == NULL)){
+		NhlPError(WARNING,E_UNKNOWN,
+			"%s:%s not set: setting %s to LINEAR",error_lead,
+			NhlNtmXBIrregularPoints,NhlNtmXBStyle);
+		tnew->tick.x_b_style = LINEAR;
+		ret = MIN(ret,WARNING);
+	}
+	if((tnew->tick.x_t_style == IRREGULAR) &&
+				(tnew->tick.x_t_irregular_points == NULL)){
+		NhlPError(WARNING,E_UNKNOWN,
+			"%s:%s not set: setting %s to LINEAR",error_lead,
+			NhlNtmXTIrregularPoints,NhlNtmXTStyle);
 		tnew->tick.x_t_style = LINEAR;
-		ret = WARNING;
+		ret = MIN(ret,WARNING);
 	}
-
-	if((tnew->tick.y_l_irregular_points != NULL)&&(tnew->tick.y_l_num_irregular_points >0)) {
-		if((c_or_s == CREATE)||(tnew->tick.y_l_irregular_points != 
-			told->tick.y_l_irregular_points)) {
-			if((c_or_s == SET)&&
-				(told->tick.y_l_irregular_points!=NULL)){
-				NhlFree((void*)told->tick.y_l_irregular_points);
-			}
-                       	tmpfptr = tnew->tick.y_l_irregular_points;
-                       	tnew->tick.y_l_irregular_points = (float*)
-				NhlMalloc((unsigned)sizeof(float)
-                               	*tnew->tick.y_l_num_irregular_points);
-			tnew->tick.ir_ylmax = tnew->tick.ir_ylmin = tmpfptr[0];
-                       	for(i = 0; i< tnew->tick.y_l_num_irregular_points;i++){
-                               	tnew->tick.y_l_irregular_points[i] = 
-						tmpfptr[i];
-				if(tmpfptr[i] > tnew->tick.ir_ylmax) {
-					tnew->tick.ir_ylmax = tmpfptr[i];
-				} else if(tmpfptr[i] < tnew->tick.ir_ylmin) {
-					tnew->tick.ir_ylmin = tmpfptr[i];
-				}
-			}
-			tnew->tick.new_ir_yl = 1;
-		} else {
-			tnew->tick.new_ir_yl = 0;
-		}
-        } else if(tnew->tick.y_l_irregular_points != NULL) {
-		NhlPError(WARNING,E_UNKNOWN,"CheckIrregular: YLIrregularPoints set but YLNumIrregularPoints not set, cannot copy YLIrregularPoints into internal storage, setting YLStyle to LINEAR if set");
-		tnew->tick.y_l_irregular_points = NULL;
-		tnew->tick.y_l_num_irregular_points = 0; 
-		if(tnew->tick.y_l_style == IRREGULAR)
-			tnew->tick.y_l_style = LINEAR;
-		ret = WARNING;
-	} else if(tnew->tick.y_l_num_irregular_points > 0) {
-		NhlPError(WARNING,E_UNKNOWN,"CheckIrregular: YLNumIrregularPoints set but YLIrregularPoints not set, cannot copy YLIrregularPoints into internal storage, setting YLStyle to LINEAR if set");
-		tnew->tick.y_l_irregular_points = NULL;
-		tnew->tick.y_l_num_irregular_points = 0; 
-		if(tnew->tick.y_l_style == IRREGULAR)
-			tnew->tick.y_l_style = LINEAR;
-		ret = WARNING;
-	} else if(tnew->tick.y_l_style == IRREGULAR) {
-		NhlPError(WARNING,E_UNKNOWN,"CheckIrregular: YLStyle is IRREGULAR but YLIrregularPoints not set, defaulting to LINEAR");
+	if((tnew->tick.y_l_style == IRREGULAR) &&
+				(tnew->tick.y_l_irregular_points == NULL)){
+		NhlPError(WARNING,E_UNKNOWN,
+			"%s:%s not set: setting %s to LINEAR",error_lead,
+			NhlNtmYLIrregularPoints,NhlNtmYLStyle);
 		tnew->tick.y_l_style = LINEAR;
-		ret = WARNING;
+		ret = MIN(ret,WARNING);
 	}
-
-	if((tnew->tick.y_r_irregular_points != NULL)&&(tnew->tick.y_r_num_irregular_points >0)) {
-		if((c_or_s == CREATE)||(tnew->tick.y_r_irregular_points !=
-			told->tick.y_r_irregular_points)){
-			if((c_or_s == SET)&&
-				(told->tick.y_r_irregular_points!=NULL)){
-				NhlFree((void*)told->tick.y_r_irregular_points);
-			}
-                       	tmpfptr = tnew->tick.y_r_irregular_points;
-                       	tnew->tick.y_r_irregular_points = (float*)
-				NhlMalloc((unsigned)sizeof(float)
-                               	*tnew->tick.y_r_num_irregular_points);
-			tnew->tick.ir_yrmin = tnew->tick.ir_yrmax = tmpfptr[0];
-                       	for(i = 0; i< tnew->tick.y_r_num_irregular_points;i++){
-                               	tnew->tick.y_r_irregular_points[i] = 
-						tmpfptr[i];
-				if(tmpfptr[i] > tnew->tick.ir_yrmax) {
-					tnew->tick.ir_yrmax = tmpfptr[i];
-				} else if(tmpfptr[i] < tnew->tick.ir_yrmin) {
-					tnew->tick.ir_yrmin = tmpfptr[i];
-				}
-			}
-			tnew->tick.new_ir_yr = 1;
-		} else {
-			tnew->tick.new_ir_yr = 0;
-		}
-        } else if(tnew->tick.y_r_irregular_points != NULL) {
-		NhlPError(WARNING,E_UNKNOWN,"CheckIrregular: YRIrregularPoints set but YRNumIrregularPoints not set, cannot copy YRIrregularPoints into internal storage, setting YRStyle to LINEAR if set");
-		tnew->tick.y_r_irregular_points = NULL;
-		tnew->tick.y_r_num_irregular_points = 0; 
-		if(tnew->tick.y_r_style == IRREGULAR)
-			tnew->tick.y_r_style = LINEAR;
-		ret = WARNING;
-	} else if(tnew->tick.y_r_num_irregular_points > 0) {
-		NhlPError(WARNING,E_UNKNOWN,"CheckIrregular: YRNumIrregularPoints set but YRIrregularPoints not set, cannot copy YRIrregularPoints into internal storage, setting YRStyle to LINEAR if set");
-		tnew->tick.y_r_irregular_points = NULL;
-		tnew->tick.y_r_num_irregular_points = 0; 
-		if(tnew->tick.y_r_style == IRREGULAR)
-			tnew->tick.y_r_style = LINEAR;
-		ret = WARNING;
-	} else if(tnew->tick.y_r_style == IRREGULAR) {
-		NhlPError(WARNING,E_UNKNOWN,"CheckIrregular: YRStyle is IRREGULAR but YRIrregularPoints not set, defaulting to LINEAR");
+	if((tnew->tick.y_r_style == IRREGULAR) &&
+				(tnew->tick.y_r_irregular_points == NULL)){
+		NhlPError(WARNING,E_UNKNOWN,
+			"%s:%s not set: setting %s to LINEAR",error_lead,
+			NhlNtmYRIrregularPoints,NhlNtmYRStyle);
 		tnew->tick.y_r_style = LINEAR;
-		ret = WARNING;
+		ret = MIN(ret,WARNING);
 	}
 
 	if(tnew->tick.x_b_style == IRREGULAR) {
@@ -4958,6 +5156,7 @@ static NhlErrorTypes CheckIrregular
 			}
 		}
 	}
+
 	return(ret);
 }
 
@@ -5200,10 +5399,10 @@ static NhlErrorTypes ComputeTickInfo
                                         tnew->tick.x_b_tick_start,
                                         tnew->tick.x_b_tick_end,
                                         tnew->tick.x_b_precision,
-                                        tnew->tick.x_b_values,
-                                        tnew->tick.x_b_labels,
+                                        tnew->tick.x_b_values->data,
+                                        tnew->tick.x_b_labels->data,
                                         &tnew->tick.x_b_nmajor,
-					tnew->tick.x_b_num_values);
+					tnew->tick.x_b_values->num_elements);
                                 break;
                         default:
                                 break;
@@ -5286,10 +5485,10 @@ static NhlErrorTypes ComputeTickInfo
                                         tnew->tick.x_t_tick_start,
                                         tnew->tick.x_t_tick_end,
                                         tnew->tick.x_t_precision,
-                                        tnew->tick.x_t_values,
-                                        tnew->tick.x_t_labels,
+                                        tnew->tick.x_t_values->data,
+                                        tnew->tick.x_t_labels->data,
                                         &tnew->tick.x_t_nmajor,
-					tnew->tick.x_t_num_values);
+					tnew->tick.x_t_values->num_elements);
                                 break;
                         default:
                                 break;
@@ -5372,10 +5571,10 @@ static NhlErrorTypes ComputeTickInfo
                                         tnew->tick.y_l_tick_start,
                                         tnew->tick.y_l_tick_end,
                                         tnew->tick.y_l_precision,
-                                        tnew->tick.y_l_values,
-                                        tnew->tick.y_l_labels,
+                                        tnew->tick.y_l_values->data,
+                                        tnew->tick.y_l_labels->data,
                                         &tnew->tick.y_l_nmajor,
-					tnew->tick.y_l_num_values);
+					tnew->tick.y_l_values->num_elements);
                                 break;
                 }
         } else {
@@ -5456,10 +5655,10 @@ static NhlErrorTypes ComputeTickInfo
                                         tnew->tick.y_r_tick_start,
                                         tnew->tick.y_r_tick_end,
                                         tnew->tick.y_r_precision,
-                                        tnew->tick.y_r_values,
-                                        tnew->tick.y_r_labels,
+                                        tnew->tick.y_r_values->data,
+                                        tnew->tick.y_r_labels->data,
                                         &tnew->tick.y_r_nmajor,
-					tnew->tick.y_r_num_values);
+					tnew->tick.y_r_values->num_elements);
                                 break;
                         default:
                                 break;
@@ -6527,9 +6726,9 @@ int num_args;
 * be the same as told. Also old is already freed!
 */
 				NhlSetSArg(&sargs[nargs++], NhlNtrYCoordPoints,
-					tnew->tick.y_l_irregular_points);
+					tnew->tick.y_l_irregular_points->data);
 				NhlSetSArg(&sargs[nargs++],NhlNtrYNumPoints,
-					tnew->tick.y_l_num_irregular_points);
+					tnew->tick.y_l_irregular_points->len_dimensions[0]);
 				break;
 			case LOG:
 				tmpycoordpoints = (float*)NhlMalloc(
@@ -6579,10 +6778,10 @@ int num_args;
 			case IRREGULAR:
 				NhlSetSArg(&sargs[nargs++],
 					NhlNtrXCoordPoints,
-					tnew->tick.x_b_irregular_points);
+					tnew->tick.x_b_irregular_points->data);
 				NhlSetSArg(&sargs[nargs++],		
 					NhlNtrXNumPoints,
-					tnew->tick.x_b_num_irregular_points);
+					tnew->tick.x_b_irregular_points->len_dimensions[0]);
 				break;
 			case LOG:
 				tmpxcoordpoints = (float*)NhlMalloc(
@@ -6719,9 +6918,9 @@ int num_args;
 			switch(tnew->tick.y_r_style) {
 			case IRREGULAR:
 				NhlSetSArg(&sargs[nargs++], NhlNtrYCoordPoints,
-					tnew->tick.y_r_irregular_points);
+					tnew->tick.y_r_irregular_points->data);
 				NhlSetSArg(&sargs[nargs++],NhlNtrYNumPoints,
-					tnew->tick.y_r_num_irregular_points);
+					tnew->tick.y_r_irregular_points->len_dimensions[0]);
 				break;
 			case LOG:
 				tmpycoordpoints = (float*)NhlMalloc(
@@ -6763,9 +6962,9 @@ int num_args;
 			switch(tnew->tick.x_t_style) {
 			case IRREGULAR:
 				NhlSetSArg(&sargs[nargs++], NhlNtrXCoordPoints,
-					tnew->tick.x_t_irregular_points);
+					tnew->tick.x_t_irregular_points->data);
 				NhlSetSArg(&sargs[nargs++],NhlNtrXNumPoints,
-					tnew->tick.x_t_num_irregular_points);
+					tnew->tick.x_t_irregular_points->len_dimensions[0]);
 				break;
 			case LOG:
 				tmpxcoordpoints = (float*)NhlMalloc(
@@ -7098,10 +7297,10 @@ int num_args;
 
 					NhlSetSArg(&sargs[nargs++], 
 						NhlNtrYCoordPoints,
-                                        	tnew->tick.y_l_irregular_points);
+                                        	tnew->tick.y_l_irregular_points->data);
                                 	NhlSetSArg(&sargs[nargs++],
 						NhlNtrYNumPoints,
-                                        	tnew->tick.y_l_num_irregular_points);
+                                        	tnew->tick.y_l_irregular_points->len_dimensions[0]);
 					}
 					if(told->tick.y_l_tension != 
 						tnew->tick.y_l_tension) {
@@ -7194,12 +7393,14 @@ int num_args;
 					if((told->tick.x_b_style != IRREGULAR)||
 						(tnew->tick.new_ir_xb)) {
 
+					tnew->tick.new_ir_xb = False;
+
 					NhlSetSArg(&sargs[nargs++], 
 						NhlNtrXCoordPoints,
-                                        	tnew->tick.x_b_irregular_points);
+                                        	tnew->tick.x_b_irregular_points->data);
                                 	NhlSetSArg(&sargs[nargs++],
 						NhlNtrXNumPoints,
-                                        	tnew->tick.x_b_num_irregular_points);
+                                        	tnew->tick.x_b_irregular_points->len_dimensions[0]);
 					}
 					if(told->tick.x_b_tension != 
 						tnew->tick.x_b_tension) {
@@ -7350,10 +7551,10 @@ int num_args;
 
 					NhlSetSArg(&sargs[nargs++], 
 						NhlNtrYCoordPoints,
-                                        	tnew->tick.y_r_irregular_points);
+                                        	tnew->tick.y_r_irregular_points->data);
                                 	NhlSetSArg(&sargs[nargs++],
 						NhlNtrYNumPoints,
-                                        	tnew->tick.y_r_num_irregular_points);
+                                        	tnew->tick.y_r_irregular_points->len_dimensions[0]);
 					}
 					if(told->tick.y_r_tension != 
 						tnew->tick.y_r_tension) {
@@ -7435,10 +7636,10 @@ int num_args;
 
 					NhlSetSArg(&sargs[nargs++], 
 						NhlNtrXCoordPoints,
-                                        	tnew->tick.x_t_irregular_points);
+                                        	tnew->tick.x_t_irregular_points->data);
                                 	NhlSetSArg(&sargs[nargs++],
 						NhlNtrXNumPoints,
-                                        	tnew->tick.x_t_num_irregular_points);
+                                        	tnew->tick.x_t_irregular_points->len_dimensions[0]);
 					}
 					if(told->tick.x_t_tension != 
 						tnew->tick.x_t_tension) {

@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrTableIntP.h,v 1.2 1993-10-06 01:55:07 boote Exp $
+ *      $Id: CoordArrTableIntP.h,v 1.3 1994-01-14 23:36:11 boote Exp $
  */
 /************************************************************************
 *									*
@@ -38,6 +38,8 @@ typedef struct _CoordArrTableIntLayerPart{
 	NhlGenArray	xtable_lens;
 	NhlGenArray	ytable_lens;
 
+	NhlBoolean	copy_tables;
+
 	int		missing_x;
 	int		missing_y;
 	int		max_x;
@@ -52,6 +54,8 @@ typedef struct _CoordArrTableIntLayerPart{
 	NhlBoolean	max_y_set;
 	NhlBoolean	min_x_set;
 	NhlBoolean	min_y_set;
+	NhlBoolean	own_x;
+	NhlBoolean	own_y;
 } CoordArrTableIntLayerPart;
 
 typedef struct _CoordArrTableIntLayerRec{

@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrTable.c,v 1.5 1994-01-10 19:48:33 boote Exp $
+ *      $Id: CoordArrTable.c,v 1.6 1994-01-14 23:36:02 boote Exp $
  */
 /************************************************************************
 *									*
@@ -288,6 +288,8 @@ static NhlResource fltresources[] = {
 	{NhlNctYTableLengths,NhlCctYTableLengths,NhlTGenArray,
 		sizeof(NhlGenArray),
 		Oset(ytable_lens),NhlTImmediate,(NhlPointer)NULL},
+	{NhlNctCopyTables,NhlCctCopyTables,NhlTBoolean,sizeof(NhlBoolean),
+		Oset(copy_tables),NhlTImmediate,(NhlPointer)True},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		Oset(missing_x_set),NhlTImmediate,(NhlPointer)True},
 	{NhlNctXMissingF,NhlCctXMissingF,NhlTFloat,sizeof(float),
@@ -311,7 +313,12 @@ static NhlResource fltresources[] = {
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		Oset(min_y_set),NhlTImmediate,(NhlPointer)True},
 	{NhlNctYMinF,NhlCctYMinF,NhlTFloat,sizeof(float),
-		Oset(min_y),NhlTProcedure,(NhlPointer)MinYSet}
+		Oset(min_y),NhlTProcedure,(NhlPointer)MinYSet},
+	/* use reslist to init private "own" fields */
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		Oset(own_x),NhlTImmediate,(NhlPointer)False},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		Oset(own_y),NhlTImmediate,(NhlPointer)False}
 };
 #undef Oset
 
@@ -327,6 +334,8 @@ static NhlResource intresources[] = {
 	{NhlNctYTableLengths,NhlCctYTableLengths,NhlTGenArray,
 		sizeof(NhlGenArray),
 		Oset(ytable_lens),NhlTImmediate,(NhlPointer)NULL},
+	{NhlNctCopyTables,NhlCctCopyTables,NhlTBoolean,sizeof(NhlBoolean),
+		Oset(copy_tables),NhlTImmediate,(NhlPointer)True},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		Oset(missing_x_set),NhlTImmediate,(NhlPointer)True},
 	{NhlNctXMissing,NhlCctXMissing,NhlTFloat,sizeof(float),
@@ -350,7 +359,12 @@ static NhlResource intresources[] = {
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		Oset(min_y_set),NhlTImmediate,(NhlPointer)True},
 	{NhlNctYMin,NhlCctYMin,NhlTFloat,sizeof(float),
-		Oset(min_y),NhlTProcedure,(NhlPointer)MinYSet}
+		Oset(min_y),NhlTProcedure,(NhlPointer)MinYSet},
+	/* use reslist to init private "own" fields */
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		Oset(own_x),NhlTImmediate,(NhlPointer)False},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		Oset(own_y),NhlTImmediate,(NhlPointer)False}
 };
 #undef Oset
 
@@ -415,7 +429,39 @@ static NhlErrorTypes CoordArrTableSetValues(
 #endif
 );
 
+static NhlErrorTypes CoordArrTableFloatSetValues(
+#if	NhlNeedProto
+	Layer		old,		/* old		*/
+	Layer		req,		/* requested	*/
+	Layer		new,		/* new		*/
+	_NhlArgList	args,		/* args to set	*/
+	int		nargs		/* nargs	*/
+#endif
+);
+
+static NhlErrorTypes CoordArrTableIntSetValues(
+#if	NhlNeedProto
+	Layer		old,		/* old		*/
+	Layer		req,		/* requested	*/
+	Layer		new,		/* new		*/
+	_NhlArgList	args,		/* args to set	*/
+	int		nargs		/* nargs	*/
+#endif
+);
+
 static NhlErrorTypes CoordArrTableDestroy(
+#if	NhlNeedProto
+	Layer	l	/* layer to destroy	*/
+#endif
+);
+
+static NhlErrorTypes CoordArrTableFloatDestroy(
+#if	NhlNeedProto
+	Layer	l	/* layer to destroy	*/
+#endif
+);
+
+static NhlErrorTypes CoordArrTableIntDestroy(
 #if	NhlNeedProto
 	Layer	l	/* layer to destroy	*/
 #endif
@@ -437,11 +483,11 @@ CoordArrTableFloatLayerClassRec coordArrTableFloatLayerClassRec = {
 /* class_part_initialize	*/	NULL,
 /* class_initialize		*/	NULL,
 /* layer_initialize		*/	CoordArrTableFloatInitialize,
-/* layer_set_values		*/	NULL,
+/* layer_set_values		*/	CoordArrTableFloatSetValues,
 /* layer_set_values_hook	*/	NULL,
 /* layer_get_values		*/	NULL,
 /* layer_reparent		*/	NULL,
-/* layer_destroy		*/	NULL
+/* layer_destroy		*/	CoordArrTableFloatDestroy
 	},
 	/* CoordArrTableFloatLayerPart */
 	{
@@ -465,11 +511,11 @@ CoordArrTableIntLayerClassRec coordArrTableIntLayerClassRec = {
 /* class_part_initialize	*/	NULL,
 /* class_initialize		*/	NULL,
 /* layer_initialize		*/	CoordArrTableIntInitialize,
-/* layer_set_values		*/	NULL,
+/* layer_set_values		*/	CoordArrTableIntSetValues,
 /* layer_set_values_hook	*/	NULL,
 /* layer_get_values		*/	NULL,
 /* layer_reparent		*/	NULL,
-/* layer_destroy		*/	NULL
+/* layer_destroy		*/	CoordArrTableIntDestroy
 	},
 	/* CoordArrTableIntLayerPart */
 	{
@@ -545,7 +591,7 @@ static	NrmQuark	intQ = NrmNULLQUARK;
  * Side Effect:	
  */
 /*ARGSUSED*/
-NhlErrorTypes
+static NhlErrorTypes
 CvtGenObjToFloatObj
 #if	__STDC__
 (
@@ -685,6 +731,8 @@ CvtGenObjToFloatObj
 		return FATAL;
 	}
 
+	NhlSetSArg(&sargs[nargs++],NhlNctCopyTables,False);
+
 	ret = NhlALCreate((int*)to->addr,"no.name",
 			coordArrTableFloatLayerClass,catl->base.id,sargs,nargs);
 
@@ -773,8 +821,60 @@ CoordArrTableClassPartInitialize
 	return MIN(lret,ret);
 }
 
+#define	COPY_TABLE_LEN(type,dim)\
+{									\
+	if(ncat->cat##type.dim##table_lens != NULL){			\
+	ncat->cat##type.dim##table_lens =				\
+		_NhlCopyGenArray(ncat->cat##type.dim##table_lens,True);	\
+	if(ncat->cat##type.dim##table_lens == NULL){			\
+		NhlPError(FATAL,ENOMEM,NULL);				\
+		return FATAL;						\
+	}								\
+	}								\
+}
+
+#define	COPY_TABLE(type,dim)\
+{									\
+	if(ncat->cat##type.dim##table != NULL){				\
+	ncat->cat##type.dim##table =					\
+		_NhlCopyGenArray(ncat->cat##type.dim##table,True);	\
+	if(ncat->cat##type.dim##table == NULL){				\
+		NhlPError(FATAL,ENOMEM,NULL);				\
+		return FATAL;						\
+	}								\
+	if(ncat->cat##type.copy_tables){				\
+		type	**vals,*ovect,*nvect;				\
+		int	*lens,i;					\
+									\
+		vals = ncat->cat##type.dim##table->data;		\
+		lens = ncat->cat##type.dim##table_lens->data;		\
+									\
+		for(i=0;i < ncat->cat##type.dim##table->num_elements;	\
+								i++){	\
+			ovect = vals[i];				\
+			if(ovect == NULL)				\
+				continue;				\
+									\
+			nvect = NhlMalloc(sizeof(type)*lens[i]);	\
+			if(nvect == NULL){				\
+				NhlPError(FATAL,ENOMEM,NULL);		\
+				return FATAL;				\
+			}						\
+			memcpy(nvect,ovect,sizeof(type)*lens[i]);	\
+			vals[i] = nvect;				\
+		}							\
+									\
+		ncat->cat##type.own_##dim = True;			\
+	}								\
+	else								\
+		ncat->cat##type.own_##dim = False;			\
+	}								\
+}
+
 #define CHECK_TABLES(type,dim,DIM)\
 {									\
+	NhlGenArray	gen, gen2;					\
+									\
 	if((ncat->cat##type.dim##table != NULL) &&			\
 			(ncat->cat##type.dim##table_lens != NULL)){	\
 		gen = ncat->cat##type.dim##table;			\
@@ -785,8 +885,6 @@ CoordArrTableClassPartInitialize
 		"%s:%s and %s must one dimensional arrays:ignoring",	\
 					error_lead,NhlNct##DIM##Table,	\
 					NhlNct##DIM##TableLengths);	\
-			ncat->cat##type.dim##table = NULL;		\
-			ncat->cat##type.dim##table_lens = NULL;		\
 			imp##dim = True;				\
 		}							\
 		else if(gen->len_dimensions[0]!=gen2->len_dimensions[0]){\
@@ -794,50 +892,57 @@ CoordArrTableClassPartInitialize
 	"%s:%s and %s must be arrays of the same length:ignoring",	\
 					error_lead,NhlNct##DIM##Table,	\
 					NhlNct##DIM##TableLengths);	\
-			ncat->cat##type.dim##table = NULL;		\
-			ncat->cat##type.dim##table_lens = NULL;		\
 			imp##dim = True;				\
-		}							\
-		else{							\
-			ncat->cat##type.dim##table =			\
-					_NhlCopyGenArray(gen,True);	\
-			ncat->cat##type.dim##table_lens =		\
-					_NhlCopyGenArray(gen2,True);	\
 		}							\
 	}								\
 	else if((ncat->cat##type.dim##table != NULL) ||			\
 			(ncat->cat##type.dim##table_lens != NULL)){	\
 		NhlPError(WARNING,E_UNKNOWN,				\
-			"%s:%s and %s must be set together:ignoring",	\
+		"%s:%s and %s must be set together:resetting both",	\
 					error_lead,NhlNct##DIM##Table,	\
 					NhlNct##DIM##TableLengths);	\
-		ncat->cat##type.dim##table = NULL;			\
-		ncat->cat##type.dim##table_lens = NULL;			\
 		imp##dim = True;					\
 	}								\
 	else								\
 		imp##dim = True;					\
 }
-#define FREE_TABLES(type,dim)\
+
+#define	FREE_TABLE_LEN(type,dim,pre)\
+	NhlFreeGenArray(pre##cat->cat##type.dim##table_lens);
+
+#define FREE_TABLE(type,dim,pre)\
 {									\
-	NhlFreeGenArray(ncat->cat##type.dim##table);			\
-	NhlFreeGenArray(ncat->cat##type.dim##table_lens);		\
+	if((pre##cat->cat##type.dim##table != NULL) &&			\
+					pre##cat->cat##type.own_##dim){	\
+		type	**vals;						\
+		int	i;						\
+									\
+		vals = pre##cat->cat##type.dim##table->data;		\
+									\
+		for(i=0;i<pre##cat->cat##type.dim##table->num_elements;	\
+								i++)	\
+			NhlFree(vals[i]);				\
+	}								\
+	NhlFreeGenArray(pre##cat->cat##type.dim##table);		\
+}
+
+#define FREE_TABLES(type,dim,pre)\
+{									\
+	FREE_TABLE(type,dim,pre)					\
+	FREE_TABLE_LEN(type,dim,pre)					\
 }
 
 #define	CHECK_MINMAX(type,dim,otherdim)\
 {									\
 	if(!ncat->cat##type.max_##dim##_set ||				\
 				!ncat->cat##type.min_##dim##_set){	\
-		int	*lens,i,j;					\
-		type	**vals,max,min;					\
+		NhlBoolean	initminmax = False;			\
+		int		*lens,i,j;				\
+		type		**vals,max=(type)0,min=(type)0;		\
 									\
 		if(ncat->cat##type.dim##table != NULL){			\
 									\
 			vals=(type**)ncat->cat##type.dim##table->data;	\
-			if(*vals != NULL)				\
-				max = min = **vals;			\
-			else						\
-				max = min = (type)1.0;			\
 									\
 			lens = (int*)ncat->cat##type.dim##table_lens->data;\
 			for(i=0;					\
@@ -848,13 +953,31 @@ CoordArrTableClassPartInitialize
 				if(vals[i] != NULL){			\
 					vect = vals[i];			\
 					for(j=0;j < lens[i];j++){	\
+			if((ncat->cat##type.missing_##dim##_set) &&	\
+			(vect[j] == ncat->cat##type.missing_##dim))	\
+							continue;	\
+									\
+						if(initminmax){		\
 						max = MAX(vect[j],max);	\
 						min = MIN(vect[j],min);	\
+						}			\
+						else{			\
+						max = vect[j];		\
+						min = vect[j];		\
+						initminmax=True;	\
+						}			\
 					}				\
 				}					\
 				else{					\
+					if(initminmax){			\
 					max = MAX(max,lens[i]);		\
 					min = MIN(min,(type)1.0);	\
+					}				\
+					else{				\
+					max = lens[i];			\
+					min = (type)1.0;		\
+					initminmax=True;		\
+					}				\
 				}					\
 			}						\
 									\
@@ -876,26 +999,35 @@ CoordArrTableClassPartInitialize
 	}								\
 }
 
+#define	INIT_TABLES(type,dim,DIM)\
+{									\
+	CHECK_TABLES(type,dim,DIM)					\
+									\
+	if(!imp##dim){							\
+		COPY_TABLE_LEN(type,dim)				\
+		COPY_TABLE(type,dim)					\
+	}								\
+	else{								\
+		ncat->cat##type.dim##table = NULL;			\
+		ncat->cat##type.dim##table_lens = NULL;			\
+	}								\
+}
 
 #define INIT_FUNC(name,type)\
 {									\
 	char		*error_lead = #name "Initialize";		\
 	name##Layer	ncat = (name##Layer)new;			\
-	NhlErrorTypes	ret=NOERROR;					\
-	NhlGenArray	gen, gen2;					\
 	NhlBoolean	impy = False, impx = False;			\
 									\
 	/*								\
 	 * insure accuracy, and copy Table & Table_lens			\
 	 */								\
-	CHECK_TABLES(type,y,Y)						\
-	CHECK_TABLES(type,x,X)						\
+	INIT_TABLES(type,y,Y)						\
+	INIT_TABLES(type,x,X)						\
 									\
 	if(impx && impy){						\
 		NhlPError(FATAL,E_UNKNOWN,				\
 		"%s:Cannot have Implied X and Y values",error_lead);	\
-		FREE_TABLES(type,x)					\
-		FREE_TABLES(type,y)					\
 		return FATAL;						\
 	}								\
 									\
@@ -905,7 +1037,7 @@ CoordArrTableClassPartInitialize
 	CHECK_MINMAX(type,x,y)						\
 	CHECK_MINMAX(type,y,x)						\
 									\
-	return ret;							\
+	return NOERROR;							\
 }		
 
 /*
@@ -988,9 +1120,6 @@ CoordArrTableIntInitialize
 #endif
 INIT_FUNC(CoordArrTableInt,int)
 
-#undef CHECK_TABLES
-#undef FREE_TABLES
-#undef CHECK_MINMAX
 #undef INIT_FUNC
 
 /*
@@ -1107,18 +1236,151 @@ CoordArrTableSetValues
 #endif
 {
 	char			*error_lead = "CoordArrTableSetValues";
+	NhlErrorTypes		ret = NOERROR;
 	CoordArrTableLayer	ncat = (CoordArrTableLayer)new;
 	CoordArrTableLayer	ocat = (CoordArrTableLayer)old;
 
 	if(ncat->cat.type_string != ocat->cat.type_string){
-		NhlPError(WARNING,E_UNKNOWN,
+		NhlPError(INFO,E_UNKNOWN,
 			"%s:%s is setable only at create time - ignoring!",
 							error_lead,NhlNdiType);
 		ncat->cat.type_string = ocat->cat.type_string;
+		ret = INFO;
 	}
 
-	return	NOERROR;
+	return	ret;
 }
+
+#define	SET_TABLES(type,dim,DIM)\
+{									\
+	NhlBoolean	imp##dim = False;				\
+									\
+	/* only do stuff if one of the fields changed */		\
+	if((ncat->cat##type.dim##table !=				\
+					ocat->cat##type.dim##table) ||	\
+		(ncat->cat##type.dim##table_lens !=			\
+				ocat->cat##type.dim##table_lens)){	\
+									\
+		CHECK_TABLES(type,dim,DIM)				\
+									\
+		/* if imp##dim then bad values - reset */		\
+		if(imp##dim){						\
+			ncat->cat##type.dim##table =			\
+					ocat->cat##type.dim##table;	\
+			ncat->cat##type.dim##table_lens =		\
+					ocat->cat##type.dim##table_lens;\
+		}							\
+		else{							\
+			if(ncat->cat##type.dim##table_lens !=		\
+					ocat->cat##type.dim##table_lens){\
+				COPY_TABLE_LEN(type,dim)		\
+				FREE_TABLE_LEN(type,dim,o)		\
+			}						\
+			if(ncat->cat##type.dim##table !=		\
+					ocat->cat##type.dim##table){	\
+				COPY_TABLE(type,dim)			\
+				FREE_TABLE(type,dim,o)			\
+			}						\
+		}							\
+	}								\
+									\
+	/*								\
+	 * if copy_tables is True, but own##dim is False -		\
+	 * need to copy the vectors.					\
+	 */								\
+	if((ncat->cat##type.copy_tables)&&!ncat->cat##type.own_##dim){	\
+		NhlGenArray	tgen = ncat->cat##type.dim##table;	\
+									\
+		COPY_TABLE(type,dim)					\
+		NhlFreeGenArray(tgen);					\
+	}								\
+}
+
+#define	SETVAL_FUNC(name,type)\
+{									\
+	char		*error_lead = #name "SetValues";		\
+	name##Layer	ncat = (name##Layer)new;			\
+	name##Layer	ocat = (name##Layer)old;			\
+									\
+	SET_TABLES(type,x,X)						\
+	SET_TABLES(type,x,X)						\
+									\
+	/*								\
+	 * Set Max's and Min's						\
+	 */								\
+	CHECK_MINMAX(type,x,y)						\
+	CHECK_MINMAX(type,y,x)						\
+									\
+	return	NOERROR;						\
+}
+
+/*
+ * Function:	CoordArrTableFloatSetValues
+ *
+ * Description:	...
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	static
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+/*ARGSUSED*/
+static NhlErrorTypes
+CoordArrTableFloatSetValues
+#if	__STDC__
+(
+	Layer		old,		/* old		*/
+	Layer		req,		/* requested	*/
+	Layer		new,		/* new		*/
+	_NhlArgList	args,		/* args to set	*/
+	int		nargs		/* nargs	*/
+)
+#else
+(old,req,new,args,nargs)
+	Layer		old;		/* old		*/
+	Layer		req;		/* requested	*/
+	Layer		new;		/* new		*/
+	_NhlArgList	args;		/* args to set	*/
+	int		nargs;		/* nargs	*/
+#endif
+SETVAL_FUNC(CoordArrTableFloat,float)
+
+/*
+ * Function:	CoordArrTableIntSetValues
+ *
+ * Description:	...
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	static
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+/*ARGSUSED*/
+static NhlErrorTypes
+CoordArrTableIntSetValues
+#if	__STDC__
+(
+	Layer		old,		/* old		*/
+	Layer		req,		/* requested	*/
+	Layer		new,		/* new		*/
+	_NhlArgList	args,		/* args to set	*/
+	int		nargs		/* nargs	*/
+)
+#else
+(old,req,new,args,nargs)
+	Layer		old;		/* old		*/
+	Layer		req;		/* requested	*/
+	Layer		new;		/* new		*/
+	_NhlArgList	args;		/* args to set	*/
+	int		nargs;		/* nargs	*/
+#endif
+SETVAL_FUNC(CoordArrTableInt,int)
 
 /*
  * Function:	CoordArrTableDestroy
@@ -1147,11 +1409,79 @@ CoordArrTableDestroy
 {
 	CoordArrTableLayer	catl = (CoordArrTableLayer)l;
 
+	/*
+	 * Don't free type_string - it points into Quarks.c's data
+	 */
+
 	if(catl->cat.child != NULL)
 		return _NhlDestroyChild(catl->cat.child->base.id,l);
 
 	return NOERROR;
 }
+
+#define DESTROY_FUNC(name,type)\
+{									\
+	name##Layer	ncat = (name##Layer)l;				\
+									\
+	FREE_TABLES(type,x,n)						\
+	FREE_TABLES(type,y,n)						\
+									\
+	return NOERROR;							\
+}		
+
+/*
+ * Function:	CoordArrTableFloatDestroy
+ *
+ * Description:	This function free's any memory that has been allocated
+ *		on behalf of this instance of the CoordArrTableFloatLayerClass.
+ *
+ * In Args:	Layer	l
+ *
+ * Out Args:	
+ *
+ * Scope:	static
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+static NhlErrorTypes
+CoordArrTableFloatDestroy
+#if	__STDC__
+(
+	Layer	l	/* layer to destroy	*/
+)
+#else
+(l)
+	Layer	l;	/* layer to destroy	*/
+#endif
+DESTROY_FUNC(CoordArrTableFloat,float)
+
+/*
+ * Function:	CoordArrTableIntDestroy
+ *
+ * Description:	This function free's any memory that has been allocated
+ *		on behalf of this instance of the CoordArrTableIntLayerClass.
+ *
+ * In Args:	Layer	l
+ *
+ * Out Args:	
+ *
+ * Scope:	static
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+static NhlErrorTypes
+CoordArrTableIntDestroy
+#if	__STDC__
+(
+	Layer	l	/* layer to destroy	*/
+)
+#else
+(l)
+	Layer	l;	/* layer to destroy	*/
+#endif
+DESTROY_FUNC(CoordArrTableInt,int)
+
+#undef	DESTROY_FUNC
 
 /************************************************************************
 *									*

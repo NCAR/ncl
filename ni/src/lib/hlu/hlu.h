@@ -1,5 +1,5 @@
 /*
- *      $Id: hlu.h,v 1.8 1994-01-12 00:35:26 dbrown Exp $
+ *      $Id: hlu.h,v 1.9 1994-01-14 23:36:46 boote Exp $
  */
 /************************************************************************
 *									*
@@ -98,10 +98,12 @@
 #define	NhlTArray1D	"Array1D"
 #define NhlTNull	"NULL"
 #define NhlTExtraLayer	"ExtraLayer"
+#define	NhlTFont	"Font"
 
 typedef	char	*NhlString;
 typedef	void	*NhlPointer;
 typedef	int	NhlBoolean;
+typedef	int	NhlFont;
 
 typedef	struct NhlGenArrayRec_ *NhlGenArray;
 
