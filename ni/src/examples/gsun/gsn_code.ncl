@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.150 2004-08-09 04:01:49 haley Exp $
+;      $Id: gsn_code.ncl,v 1.151 2004-08-13 22:18:52 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -1000,8 +1000,10 @@ begin
 
   if(.not.ismissing(overlay_plot)) then
     getvalues overlay_plot
-      "cnLevels" : levels
+      "cnLevels"     : levels
+      "cnLevelFlags" : level_flags
     end getvalues
+    levels@flags = level_flags
     return(levels)
   end if
 ;
@@ -1073,6 +1075,8 @@ end
 ; 1, because it assumes if the user wants to set the thickness of other ;
 ; lines, he/she can do so with the cnLineThicknesses resource.          ;
 ;                                                                       ;
+; If thickness is equal to 0, then the line is just not drawn.          ;
+;                                                                       ;
 ;***********************************************************************;
 function set_zero_line_thickness(plot:graphic,thickness)
 begin
@@ -1084,22 +1088,34 @@ begin
     return (plot)
   end if
 
-  nlevels = dimsizes(levels)
-  levels      = fix_zero_contour (levels)
-  thicknesses = new(dimsizes(levels), float)
-  thicknesses = 1.
+  levels = fix_zero_contour (levels)
 
-  do n=0,dimsizes(thicknesses)-1
-    if (levels(n).eq.0.) then
-      thicknesses(n) = thickness
+  if(thickness.gt.0) then
+    thicknesses = new(dimsizes(levels), float)
+    thicknesses = 1.
+  end if
+
+  zeroind = ind(levels.eq.0.0)      ; Get index where level equals 0.0
+  if(.not.ismissing(zeroind)) then
+    if(thickness.gt.0) then
+      thicknesses(zeroind) = thickness
+    else
+      levels@flags(zeroind) = 0     ; Turn off the zero contour line
     end if
-  end do
+  end if
   
   overlay_plot = get_overlay_plot (plot, "contourPlotClass", 0)
-  setvalues overlay_plot
-    "cnMonoLineThickness" : False
-    "cnLineThicknesses"   : thicknesses
-  end setvalues
+   
+  if(thickness.gt.0) then
+    setvalues overlay_plot
+      "cnMonoLineThickness" : False
+      "cnLineThicknesses"   : thicknesses
+    end setvalues
+  else
+    setvalues overlay_plot
+      "cnLevelFlags" : levels@flags
+    end setvalues
+  end if
 
   return (plot)
 end
@@ -1156,11 +1172,11 @@ begin
   end if
 
   levels   = fix_zero_contour (levels)
-  patterns = new(dimsizes(levels),integer)
-  patterns = 0
+  patterns = new(nlevels,integer)
+  patterns = 0     ; default to solid line.
 
   if(.not.any(ismissing(patterns))) then
-    do n=0,dimsizes(patterns)-1
+    do n=0,nlevels-1
       if (levels(n).lt.0.) then
         patterns(n) = pattern
       end if
