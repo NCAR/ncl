@@ -1,7 +1,7 @@
 C
-C $Id: mprdni.f,v 1.1 1998-04-16 20:45:53 kennison Exp $
+C $Id: mplnri.f,v 1.1 1998-04-29 16:42:53 kennison Exp $
 C
-      SUBROUTINE MPRDNI (FLNM)
+      SUBROUTINE MPLNRI (FLNM)
 C
         PARAMETER (MNAI=2000)
 C
@@ -33,7 +33,7 @@ C
 C
 C Check for an uncleared prior error.
 C
-        IF (ICFELL('MPRDNI - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+        IF (ICFELL('MPLNRI - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
 C
 C Form the full name of the ".names" file.
 C
@@ -97,17 +97,17 @@ C
 C
 C Error exits.
 C
-  901   CALL SETER ('MPRDNI - Can''t form name of ".names" file',2,1)
+  901   CALL SETER ('MPLNRI - Can''t form name of ".names" file',2,1)
         RETURN
 C
-  902   CALL SETER ('MPRDNI - Can''t open the ".names" file',3,1)
+  902   CALL SETER ('MPLNRI - Can''t open the ".names" file',3,1)
         RETURN
 C
-  903   CALL SETER ('MPRDNI - Read bad index from ".names" file',4,1)
+  903   CALL SETER ('MPLNRI - Read bad index from ".names" file',4,1)
         CALL NGCLFI (IFDE)
         RETURN
 C
-  904   CALL SETER ('MPRDNI - Read error on ".names" file',5,1)
+  904   CALL SETER ('MPLNRI - Read error on ".names" file',5,1)
         CALL NGCLFI (IFDE)
         RETURN
 C
