@@ -32,11 +32,12 @@
 
 begin
 
-M = 33
+PLOTS = 4
 N = 33
+M = 33
 
-z = new((/N,M/),float)
-len_dims = new((/2/),integer)
+z = new((/PLOTS,N,M/),float)
+len_dims = new((/3/),integer)
 
 ;
 ; Create an application context. Set the app dir to the current directory
@@ -73,12 +74,13 @@ end if
 ;
 ; Read the input data
 ;
-len_dims(0) = N
-len_dims(1) = M
-z = cbinread("cn04n1.bin",len_dims,"float")
+len_dims(0) = PLOTS
+len_dims(1) = N
+len_dims(2) = M
+z = asciiread("data",len_dims,"float")
 
 dataid = create "Gendat" scalarFieldClass appid
-        "sfDataArray" : z
+        "sfDataArray" : z(0,:,:)
 end create
 
 ;
@@ -152,13 +154,8 @@ draw(cnid)
 ; scaling mode.
 ;
 
-;
-; Read the input data
-;
-z = cbinread("cn04n2.bin",len_dims,"float")
-
 setvalues dataid
-        "sfDataArray" : z
+        "sfDataArray" : z(1,:,:)
 end setvalues
 
 setvalues cnid
@@ -176,13 +173,8 @@ draw(cnid)
 ; scaling mode.
 ;
 
-;
-; Read the input data
-;
-z = cbinread("cn04n3.bin",len_dims,"float")
-
 setvalues dataid
-        "sfDataArray" : z
+        "sfDataArray" : z(2,:,:)
 end setvalues
 
 setvalues cnid
@@ -201,13 +193,8 @@ draw(cnid)
 ; scaling mode.
 ;
 
-;
-; Read the input data
-;
-z = cbinread("cn04n4.bin",len_dims,"float")
-
 setvalues dataid
-        "sfDataArray" : z
+        "sfDataArray" : z(3,:,:)
 end setvalues
 
 setvalues cnid
