@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncargex.m,v 1.60 2004-04-08 21:33:59 kennison Exp $
+.\"	$Id: ncargex.m,v 1.61 2004-11-18 00:23:47 kennison Exp $
 .\"
 .\" @(#)f77.1 1.4 86/07/31 SMI; 
 .TH NCARGEX 1NCARG "June 1998" NCAR "NCAR GRAPHICS"
@@ -317,10 +317,10 @@ arex01 arex02 arex03 cardb1 cardb2 caredg carfill carline carmap tareas c_tareas
 .sp
 .I "AUTOGRAPH Examples:"
 .sp
-agex01 agex02 agex03 agex04 agex05 agex06 agex07 agex08
-agex09 agex10 agex11 agex12 agex13 fagaxclr fagaxlbl
-fagaxmax fagcuclr fagcudsh fagezmxy fagezmy fagezxy
-fagezy fagilclr fagovrvw tagupw tautog c_agex07
+agdp01 agex01 agex02 agex03 agex04 agex05 agex06 agex07
+agex08 agex09 agex10 agex11 agex12 agex13 fagaxclr fagaxlbl
+fagaxmax fagcuclr fagcudsh fagezmxy fagezmy fagezxy fagezy
+fagilclr fagovrvw tagupw tautog c_agex07
 .sp
 .I "BIVAR Examples:"
 .sp
