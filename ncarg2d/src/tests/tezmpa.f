@@ -1,5 +1,5 @@
 C
-C $Id: tezmpa.f,v 1.5 1998-05-05 23:37:08 kennison Exp $
+C $Id: tezmpa.f,v 1.6 1999-08-19 15:34:27 haley Exp $
 C
 C
 C Define error file, Fortran unit number, workstation type, and
@@ -73,7 +73,7 @@ C
 C
 C Dimension the arrays needed by ARSCAM and ARDRLN for x/y coordinates.
 C
-        DIMENSION XCRA(200),YCRA(200)
+        DIMENSION XCRA(210),YCRA(210)
 C
 C Dimension the arrays needed by ARSCAM and ARDRLN for area and group
 C identifiers.
@@ -170,7 +170,7 @@ C
 C
 C Color the map.
 C
-        CALL ARSCAM (IAMA,XCRA,YCRA,200,IAAI,IAGI,2,COLRAM)
+        CALL ARSCAM (IAMA,XCRA,YCRA,210,IAAI,IAGI,2,COLRAM)
 C
 C Flush PLOTIT's buffers and set polyline color index to black.
 C
@@ -186,7 +186,7 @@ C
 C
 C Draw lines of latitude and longitude over water.
 C
-        CALL MAPGRM (IAMA,XCRA,YCRA,200,IAAI,IAGI,2,COLRLN)
+        CALL MAPGRM (IAMA,XCRA,YCRA,210,IAAI,IAGI,2,COLRLN)
 C
 C Advance the frame.
 C
