@@ -1,5 +1,5 @@
 /*
- *      $Id: xcb.c,v 1.3 1997-09-19 14:42:38 boote Exp $
+ *      $Id: xcb.c,v 1.4 1997-10-23 00:27:45 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -260,7 +260,11 @@ _XcbRefSort(
 	 * (most apps alloc from low end of table first, this will cause this
 	 * one to alloc from top first - hopefully reducing color flash)
 	 */
+#ifdef Solaris
+	return (int)((long)s2->xcol.pixel-(long)s1->xcol.pixel);
+#else
 	return (int)((long long)s2->xcol.pixel-(long long)s1->xcol.pixel);
+#endif
 }
 
 static int
@@ -277,7 +281,11 @@ _XcbDMapRefSort(
 	if(i!=0)
 		return i;
 
+#ifdef Solaris
+	return (int)((long)s2->index - (long)s1->index);
+#else
 	return (int)((long long)s2->index - (long long)s1->index);
+#endif
 }
 
 static void
