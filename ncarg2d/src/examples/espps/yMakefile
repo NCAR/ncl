@@ -1,0 +1,20 @@
+#
+#	$Id: yMakefile,v 1.1 1993-01-14 00:28:05 haley Exp $
+#
+NCARG	= ../../../..
+
+FSPLIT	= ncarguncat
+
+MYNAME	= espps
+
+GENERIC_SRCS = \
+	nglogy.f ngrevx.f ngset1.f ngset2.f
+
+install::
+	@for file in $(GENERIC_SRCS); do\
+	($(INSTALL) -m $(INSTALL_LIB) $$file $(EXAMPLESPATH));\
+	done
+
+MakefileTarget
+CleanTarget
+UpdateTarget
