@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.85 1995-04-20 19:47:52 haley Exp $
+#   $Id: ncargex.csh,v 1.86 1995-05-12 19:45:42 kennison Exp $
 #
 
 if ($#argv < 1) goto usage
@@ -110,7 +110,7 @@ set c_list
 #  Set areas examples  #
 #                      #
 #**********************#
-set areas_fex   = (arex01 arex02)
+set areas_fex   = (arex01 arex02 arex03)
 set areas_ftst  = (tareas)
 set areas_fttr  = (cardb1 caredg carline cardb2 carfill carmap)
 set areas_flist = ($areas_fex $areas_ftst $areas_fttr)
