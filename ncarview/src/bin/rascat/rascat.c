@@ -1,6 +1,6 @@
 
 /*
- *      $Id: rascat.c,v 1.9 1992-06-24 21:03:28 clyne Exp $
+ *      $Id: rascat.c,v 1.10 1992-08-17 15:03:01 clyne Exp $
  */
 /*
  *	File:		rascat.c
@@ -166,9 +166,9 @@ static	void	Usage(msg)
 	char	*opts = "[-v] [-ifmt format] [-ofmt format] [-win nx ny x y] [-o file] [-scale factor | -res resolution [ -ralgo NN | BL]] [ - | file... ]";
 
 	if (msg) {
-		fprintf(stderr, "%s: %s\n", progName, msg);
+		(void) fprintf(stderr, "%s: %s\n", progName, msg);
 	}
-	fprintf(stderr, "Usage: %s %s\n", progName, opts);
+	(void) fprintf(stderr, "Usage: %s %s\n", progName, opts);
 	PrintOptionHelp(oD, stderr);
 	exit(1);
 }
@@ -207,7 +207,7 @@ main(argc, argv)
 
 	oD = OpenOptionTbl();
 	if (ParseOptionTable(oD, &argc, argv, set_options) < 0) {
-		fprintf(
+		(void) fprintf(
 			stderr, "%s : Error parsing options : %s\n", 
 			progName, ErrGetMsg()
 		);
@@ -218,7 +218,7 @@ main(argc, argv)
 	 * load the options into opt
 	 */
 	if (GetOptions(oD, get_options) < 0) {
-		fprintf(
+		(void) fprintf(
 			stderr, "%s : Error getting options : %s\n", 
 			progName, ErrGetMsg()
 		);
@@ -257,7 +257,7 @@ main(argc, argv)
 	 */
 	for(i=1; i<argc; i++) {
 		if (*argv[i] == '-') {
-			fprintf(
+			(void) fprintf(
 				stderr, "%s: Invalid option : %s\n", 
 				progName, argv[i]
 			);
@@ -286,14 +286,20 @@ main(argc, argv)
 
 		src = RasterOpen(rfiles[i], opt.srcformat);
 		if (src == (Raster *) NULL) {
-			(void) RasterPrintError(rfiles[i]);
+			(void) fprintf(
+				stderr, "RasterOpen(%s, %s) [ %s ]", 
+				rfiles[i],opt.srcformat, ErrGetMsg()
+			);
 			err++;
 			continue;
 		}
 
 		rc = RasterRead(src);
 		if (rc != RAS_OK) {
-			(void) RasterPrintError(rfiles[i]);
+			fprintf(
+				stderr, "Reading input file(%s) [ %s ]",
+				rfiles[i], ErrGetMsg()
+			);
 			(void) RasterClose(src);
 			err++;
 			continue;
@@ -319,7 +325,7 @@ main(argc, argv)
 			{
 
 				opt.dstformat = src->format;
-				fprintf(stderr, 
+				(void) fprintf(stderr, 
 					"%s: Warning: output format not specified, using input format (%s)\n", progName, src->format
 					);
 			}
@@ -337,7 +343,7 @@ main(argc, argv)
 				if (pipe_count_ > 0) {
 					win_ras = RasterCreate(nx,ny,src->type);
 					if (! win_ras) {
-						fprintf(stderr, 
+						(void) fprintf(stderr, 
 						"%s : RasterCreate() : %s\n",
 						progName, RasterGetError());
 					}
@@ -361,7 +367,7 @@ main(argc, argv)
 				if (pipe_count_ > 0) {
 					sca_ras = RasterCreate(nx,ny,src->type);
 					if (! sca_ras) {
-						fprintf(stderr, 
+						(void) fprintf(stderr, 
 						"%s : RasterCreate() : %s\n",
 						progName, RasterGetError());
 					}
@@ -374,7 +380,11 @@ main(argc, argv)
 				src->type, opt.dstformat
 			);
 			if (dst == (Raster *) NULL) {
-				(void) RasterPrintError((char *) NULL);
+				(void) fprintf(stderr, 
+					"RasterOpenWrite(%s, %d, %d, %s,%d,%s) [ %s ]",
+					opt.dstfile, nx, ny, Comment, 
+					src->type, opt.dstformat,ErrGetMsg()
+				);
 				(void) RasterClose(src);
 				exit(1);
 			}
@@ -385,7 +395,7 @@ main(argc, argv)
 		}
 		else {
 			if (! (src->nx == nX && src->ny == nY)) {
-				fprintf(
+				(void) fprintf(
 					stderr, 
 					"Raster size changes not allowed\n"
 				);
@@ -393,7 +403,7 @@ main(argc, argv)
 				continue;
 			}
 			if (src->type != rasterType) {
-				fprintf(
+				(void) fprintf(
 					stderr, 
 					"Raster enconding changes not allowed\n"
 					);
@@ -418,7 +428,7 @@ main(argc, argv)
 				new = sca_ras ? sca_ras : dst;
 				rc = opt.resample(tmp, new, opt.do_verbose);
 				if (rc != RAS_OK) {
-					fprintf(
+					(void) fprintf(
 						stderr, 
 						"%s: Resampling failed : %s\n",
 						progName, RasterGetError()
@@ -430,12 +440,16 @@ main(argc, argv)
 
 			rc = RasterWrite(dst);
 			if (rc != RAS_OK) {
-				(void) RasterPrintError((char *) NULL);
+				(void) fprintf(
+					stderr, 
+					"Writing output file(%s) [ %s ]", 
+					opt.dstfile, ErrGetMsg()
+				);
 				exit(1);
 			}
 
 			if (opt.do_verbose) {
-				fprintf(
+				(void) fprintf(
 					stderr, 
 					"Copied frame %s[%d] to %s[%d]\n", 
 					rfiles[i], src_frame++, 
@@ -447,10 +461,14 @@ main(argc, argv)
 		} while ( rc == RAS_OK );
 
 		if (rc == RAS_ERROR) {
-			(void) RasterPrintError((char *) NULL);
+			(void) fprintf(
+				stderr,"Reading source file(%s) [ %s ]",
+				rfiles[i], ErrGetMsg()
+			);
 		}
 		(void) RasterClose(src);
 	}
+	if (dst) RasterClose(dst);
 	exit(err);
 }
 
@@ -561,7 +579,7 @@ check_win(win, src)
 		(win->x + win->nx - 1) > src->nx - 1 ||
 		(win->y + win->ny - 1) > src->ny - 1) {
 
-		fprintf(stderr,"Window out of range\n");
+		(void) fprintf(stderr,"Window out of range\n");
 		exit(1);
 	}
 }
