@@ -1,5 +1,5 @@
 C
-C $Id: arex02.f,v 1.1 1993-09-23 20:39:39 kennison Exp $
+C $Id: arex02.f,v 1.2 1994-03-22 22:41:55 kennison Exp $
 C
       PROGRAM AREX02
 C
@@ -263,7 +263,7 @@ C
 C A recoverable error occurred.  See if it was due to overflowing the
 C area map array and if we can do something about it.
 C
-          IF (SEMESS(EMSG).EQ.'AREDAM - AREA-MAP ARRAY OVERFLOW'.AND.
+          IF (SEMESS(2).EQ.'AREA-MAP ARRAY OVERFLOW'.AND.
      +                                                NAMA.LT.LAMA) THEN
 C
 C Recover from an area map array overflow.  First, log what's happening.
@@ -331,7 +331,7 @@ C
 C A recoverable error occurred.  See if it was due to overflowing the
 C area map array and if we can do something about it.
 C
-          IF (SEMESS(EMSG).EQ.'ARPRAM - AREA-MAP ARRAY OVERFLOW'.AND.
+          IF (SEMESS(2).EQ.'AREA-MAP ARRAY OVERFLOW'.AND.
      +                                                NAMA.LT.LAMA) THEN
 C
 C Recover from an area map array overflow.  First, log what's happening.
@@ -400,7 +400,7 @@ C
 C A recoverable error occurred.  See if it was due to overflowing the
 C area map array and if we can do something about it.
 C
-          IF (SEMESS(EMSG).EQ.'ARSCAM - AREA-MAP ARRAY OVERFLOW'.AND.
+          IF (SEMESS(2).EQ.'AREA-MAP ARRAY OVERFLOW'.AND.
      +                                                NAMA.LT.LAMA) THEN
 C
 C Recover from an area map array overflow.  First, log what's happening.
