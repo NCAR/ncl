@@ -1,5 +1,5 @@
 C
-C	$Id: seter.f,v 1.1.1.1 1992-04-17 22:32:37 ncargd Exp $
+C	$Id: seter.f,v 1.2 1993-03-20 01:43:48 fred Exp $
 C
       SUBROUTINE SETER(MESSG,NERR,IOPT)
 C
@@ -92,10 +92,10 @@ C
 C
       CALL EPRIN
       CALL FDUM
-      STOP
+      STOP 999
 C
  50   CALL EPRIN
  60   CALL FDUM
-      STOP
+      STOP 998
 C
       END
