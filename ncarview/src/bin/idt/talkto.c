@@ -1,5 +1,5 @@
 /*
- *	$Id: talkto.c,v 1.8 1991-08-26 16:09:43 clyne Exp $
+ *	$Id: talkto.c,v 1.9 1992-02-10 17:33:23 clyne Exp $
  */
 /*
  *	talkto.c
@@ -255,14 +255,11 @@ char	*TalkTo(id, command_string, mode)
 	char	*command_string;
 	int	mode;
 {
-	int	n, l, r;
 	static	char	buf[1024];
 	char	*b, *s;
 	int	pid;
 
 	extern	char *strrchr();
-
-	r = 1024;
 
 	/*
 	 * see if anybody died
@@ -278,56 +275,33 @@ char	*TalkTo(id, command_string, mode)
 
 	do {
 
-	/*
-	 * read any previous messages from the translator that may still
-	 * be waiting in the pipe
-	 */
-	b = buf;
-	for(n=0; n < r; n+=l) {
-		if ((l = read(Translators[id].rfd, b + n, r - n)) < 0) {
-			if (errno != EWOULDBLOCK_ ) {
-				perror((char *) NULL);
-				return(NULL);
-			}
-			else break;
+		if (nreads(Translators[id].rfd, buf, sizeof(buf)) < 0) {
+			perror(NULL);
+			return(NULL);
 		}
-		else if (l == 0) {
-			break;
-		}
-	}
-	buf[n] = '\0';
 
-	/* 
-	 * remove translator prompt from message
-	 */
-	Translators[id].pending -= strip_prompt(buf);
+		/* 
+		 * remove translator prompt from message
+		 */
+		Translators[id].pending -= strip_prompt(buf);
 
-	if (s = strrchr(buf, '\n')) *s = '\0'; 
+		if (s = strrchr(buf, '\n')) *s = '\0'; 
 
-	/*
-	 * Post any old messages
-	 */
-	if (strlen(buf)) Message(id, buf);
+		/*
+		 * Post any old messages
+		 */
+		if (strlen(buf)) Message(id, buf);
 
 	} while (mode == SYNC && Translators[id].pending > 0);
 
 	/*
 	 * see if there were any error messages
 	 */
-	b = buf;
-	for(n=0; n < r; n+=l) {
-		if ((l = read(Translators[id].r_err_fd, b + n, r - n)) < 0) {
-			if (errno != EWOULDBLOCK_ ) {
-				perror((char *) NULL);
-				return(NULL);
-			}
-			else break;
-		}
-		else if (l == 0) {
-			break;
-		}
+	if (nreads(Translators[id].r_err_fd, buf, sizeof(buf)) < 0) {
+		perror(NULL);
+		return(NULL);
 	}
-	buf[n] = '\0';
+
 	/*
 	 * Post any old messages
 	 */
@@ -337,6 +311,7 @@ char	*TalkTo(id, command_string, mode)
 	 * Send the command to the desired translator
 	 */
 	(void)write(Translators[id].wfd, command_string,strlen(command_string));
+
 	if (hFD != -1) {
 		(void) write(hFD, command_string, strlen(command_string));
 	}
@@ -366,21 +341,11 @@ char	*TalkTo(id, command_string, mode)
 #endif
 			if (Translators[id].pid == -1) return (NULL);
 
-			for(n=0; n < r; n+=l) {
-				if ((l = read(Translators[id].rfd, 
-					b + n, r - n)) < 0) {
-
-					if (errno != EWOULDBLOCK_ ) {
-						perror((char *) NULL);
-						return(NULL);
-					}
-					else break;
-				}
-				else if (l == 0) {
-					break;
-				}
+			if (nreads(Translators[id].rfd, buf, sizeof(buf)) < 0) {
+				perror(NULL);
+				return(NULL);
 			}
-			buf[n] = '\0';
+
 			if (strip_prompt(buf)) {
 				Translators[id].pending -= 1;
 				break;	/* get a prompt yet? */
@@ -464,29 +429,31 @@ Message(id, s)
 	int	id;
 	char	*s;
 {
-	char	*cptr;
-	char	buf[20];
+	char	buf[132];
+	char	*format = "Display(%1d): %s\n";
+	int	max_len = sizeof(buf) - strlen(format) - 1;
+	char	*t;
 
 	void	AppendText();
 
-	(void) sprintf(buf, "Translator[%d]: ", id);
+	/*
+	 * remove any newlines.
+	 */
+	for(t=s; *t && *t != '\n' && (t-s <= max_len); t++)
+		;
+	*t = '\0';
 
-	cptr = icMalloc((unsigned) (strlen(buf) + strlen(s) + strlen("\n")+ 1));
-	(void) strcpy(cptr, buf);
-	(void) strcat(cptr, s); 
-	(void) strcat(cptr, "\n"); 
+	(void) sprintf(buf, format, id, s);
 
-	AppendText(cptr);
-
-	cfree(cptr);
+	AppendText(buf);
 }
 
 /*
  *	ErrorMessage
  *	[exported]
  *
- *	Send a message to the idt message handler. Prepend the id of the 
- *	translator generating the message
+ *	Send a *short* message to the idt message handler. Prepend the 
+ *	id of the translator generating the message. 
  * on entry
  *	id		: id of the translator
  *	*s		: message to send
@@ -495,21 +462,24 @@ ErrorMessage(id, s)
 	int	id;
 	char	*s;
 {
-	char	*cptr;
-	char	buf[40];
+	char	buf[132];
+	char	*format = "Display(%1d) Error: %s\n";
+	int	max_len = sizeof(buf) - strlen(format) - 1;
+	char	*t;
 
 	void	AppendText();
 
-	(void) sprintf(buf, "Translator[%d]: Error - ", id);
+	/*
+	 * remove any newlines.
+	 */
+	for(t=s; *t && *t != '\n' && (t-s <= max_len); t++)
+		;
+	*t = '\0';
 
-	cptr = icMalloc((unsigned) (strlen(buf) + strlen(s) + strlen("\n")+ 1));
-	(void) strcpy(cptr, buf);
-	(void) strcat(cptr, s); 
-	(void) strcat(cptr, "\n"); 
+	(void) sprintf(buf, format, id, s);
 
-	AppendText(cptr);
+	AppendText(buf);
 
-	cfree(cptr);
 }
 /*
  *	close_trans_pid
@@ -531,4 +501,36 @@ static	close_trans_pid(pid)
 	}
 }
 			
+/*
+ * read from non-blocking descriptor 'fd' until 'n'-1 bytes are read
+ * or read would block. Terminate 'buf' with null character
+ */
+static	nreads(fd, buf, n)
+	int	fd;
+	char	*buf;
+	int	n;
+{
+	char	c;
+	int	count;
+	int	status;
 
+	count = 0;
+	while ((status = read(fd, &c, 1)) == 1) {
+                /*
+                 * if there is room in buffer stuff the response in it
+                 */
+                if (count < n-1) {
+                        buf[count++] = c;
+                }
+	}
+	buf[count] = '\0';
+
+	if (status < 0) {
+		if (errno != EWOULDBLOCK_ ) {
+			perror((char *) NULL);
+			return(-1);
+		}
+	}
+
+	return(1);
+}
