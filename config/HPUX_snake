@@ -1,5 +1,5 @@
 /*
- *      $Id: HPUX_snake,v 1.7 1995-04-05 16:15:21 haley Exp $
+ *      $Id: HPUX_snake,v 1.8 1996-11-20 16:06:43 haley Exp $
  */
 /************************************************************************
 *									*
@@ -29,8 +29,5 @@
 #define DoesRanlib	NO
 #define	CtoFLibraries	-lf -lm
 
-/*
- * Motif is not really needed yet - but will be at Verson 4.0
- */
 #define ArchRecLibSearch	-L/usr/lib/Motif1.2 -L/usr/lib/X11R5
 #define ArchRecIncSearch	-I/usr/include/Motif1.2 -I/usr/include/X11R5
