@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.33 2000-04-11 17:06:19 haley Exp $
+;      $Id: gsn_code.ncl,v 1.34 2000-04-17 22:48:40 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -1319,30 +1319,31 @@ begin
     callframe = True
     panel_labelbar = False
     draw_boxes     = False
+    res = resources              ; Make copy of resources
     orths = (/     1.0,          -1.0,      -1.0,        1.0/)
-    panel_center = get_res_value(resources,"gsnPanelCenter",True)
+    panel_center = get_res_value(res,"gsnPanelCenter",True)
 ; title string which is also set with tx* resources. We have to figure
-    if(resources)
-      if(isatt(resources,"gsnFrame").and..not.resources@gsnFrame)
+    if(res)
+      if(isatt(res,"gsnFrame").and..not.res@gsnFrame)
           callframe = False
       end if
   else
-      if(isatt(resources,"gsnPanelLabelbar").and.resources@gsnPanelLabelbar)
-        set_attr(resources,"gsnPanelBottom",0.11) ; Leave room for labelbar
+      if(isatt(res,"gsnPanelLabelbar").and.res@gsnPanelLabelbar)
+        set_attr(res,"gsnPanelBottom",0.11) ; Leave room for labelbar
                                                   ; at bottom.
         panel_labelbar = True
       end if
     print("Defaulting to 1.")
-      if(isatt(resources,"gsnPanelXWhiteSpacePercent"))
-        xwsp_perc = resources@gsnPanelXWhiteSpacePercent
+      if(isatt(res,"gsnPanelXWhiteSpacePercent"))
+        xwsp_perc = res@gsnPanelXWhiteSpacePercent
         if(xwsp_perc.lt.0.or.xwsp_perc.ge.100.)
           print("Warning: gsn_panel: attribute gsnPanelXWhiteSpacePercent must be >= 0 and < 100.")
           print("Defaulting to 1.")
           xwsp_perc = 1.
         end if
       end if
-      if(isatt(resources,"gsnPanelYWhiteSpacePercent"))
-        ywsp_perc = resources@gsnPanelYWhiteSpacePercent
+      if(isatt(res,"gsnPanelYWhiteSpacePercent"))
+        ywsp_perc = res@gsnPanelYWhiteSpacePercent
         if(ywsp_perc.lt.0.or.ywsp_perc.ge.100.)
           print("Warning: gsn_panel: attribute gsnPanelYWhiteSpacePercent must be >= 0 and < 100.")
           print("Defaulting to 1.")
@@ -1350,12 +1351,12 @@ begin
         end if
       end if
     print("Defaulting to 1.")
-      if(isatt(resources,"gsnPanelBoxes").and.resources@gsnPanelBoxes)
+      if(isatt(res,"gsnPanelBoxes").and.res@gsnPanelBoxes)
         draw_boxes = True
       end if
     print("Defaulting to 0.")
-      if(isatt(resources,"gsnPanelLeft"))
-        x_lft = resources@gsnPanelLeft
+      if(isatt(res,"gsnPanelLeft"))
+        x_lft = res@gsnPanelLeft
         if(x_lft.lt.0..or.x_lft.ge.1.)
           print("Warning: gsn_panel: attribute gsnPanelLeft must be >= 0.0 and < 1.0")
           print("Defaulting to 0.")
@@ -1363,8 +1364,8 @@ begin
         end if
       end if
     print("Defaulting to 1.")
-      if(isatt(resources,"gsnPanelRight"))
-        x_rgt = resources@gsnPanelRight
+      if(isatt(res,"gsnPanelRight"))
+        x_rgt = res@gsnPanelRight
         if(x_rgt.le.0..or.x_rgt.gt.1.)
           print("Warning: gsn_panel: attribute gsnPanelRight must be > 0.0 and <= 1.0")
           print("Defaulting to 1.")
@@ -1372,8 +1373,8 @@ begin
         end if
       end if
 
-      if(isatt(resources,"gsnPanelTop"))
-        y_top = resources@gsnPanelTop
+      if(isatt(res,"gsnPanelTop"))
+        y_top = res@gsnPanelTop
         if(y_top.le.0..or.y_top.gt.1.)
           print("Warning: gsn_panel: attribute gsnPanelTop must be > 0.0 and <= 1.0")
           print("Defaulting to 1.")
@@ -1381,8 +1382,8 @@ begin
         end if
       end if
 
-      if(isatt(resources,"gsnPanelBottom"))
-        y_bot = resources@gsnPanelBottom
+      if(isatt(res,"gsnPanelBottom"))
+        y_bot = res@gsnPanelBottom
         if(y_bot.lt.0..or.y_bot.ge.1.)
           print("Warning: gsn_panel: attribute gsnPanelBottom must be >= 0.0 and < 1.0")
           print("Defaulting to 0.")
@@ -1543,7 +1544,7 @@ begin
     end do    ; end of rows
 
     if(panel_labelbar)
-      lbres = get_res_eq(resources,"lb")
+      lbres = get_res_eq(res,"lb")
       class_name = NhlClassName(plot@contour)   ; Get the type of plot.
 
       if(class_name.eq."contourPlotClass".or.class_name.eq."logLinPlotClass")
@@ -1792,17 +1793,18 @@ begin
     sfres = get_res_eq(res2,"sf")
 
 ; it exists.
-    if(sprdcols)
-      set_attr(cnres,"cnFillColors",\
-               spread_colors(wks,plot_object,min_index,max_index))
-    end if
-
     if(sfres.and..not.any(ismissing(getvaratts(sfres))))
       attsetvalues(data_object,sfres)
     end if
     if(cnres.and..not.any(ismissing(getvaratts(cnres))))
       attsetvalues(plot_object,cnres)
     end if
+
+    if(isatt(data,"long_name")) then
+      set_attr(res2,"tiMainString",data@long_name)
+    end if
+
+    calldraw  = get_res_value(res2,"gsnDraw", True)
     maxbb     = get_bb_res(res2)
     shape     = get_res_value(res2,"gsnShape",False)
     scale     = get_res_value(res2,"gsnScale",shape)
@@ -1929,11 +1931,6 @@ function gsn_contour_map(wks:graphic,data[*][*]:numeric,\
 ; Check for existence of data@long_name and use it in a title it
 ; it exists.
 
-    if(sprdcols)
-      set_attr(cnres,"cnFillColors",\
-               spread_colors(wks,contour_object,min_index,max_index))
-    end if
-
     if(sfres.and..not.any(ismissing(getvaratts(sfres))))
       attsetvalues(data_object,sfres)
     end if
@@ -1943,6 +1940,12 @@ function gsn_contour_map(wks:graphic,data[*][*]:numeric,\
     if(cnres.and..not.any(ismissing(getvaratts(cnres))))
       attsetvalues(contour_object,cnres)
     end if
+    end if
+
+; Create map object.
+
+    map_object = create wksname + "_map" mapPlotClass wks
+    end create
 
     calldraw  = get_res_value(res2,"gsnDraw", True)
     callframe = get_res_value(res2,"gsnFrame",True)
@@ -2490,18 +2493,18 @@ begin
 
     plot_object = create wksname + "_vector" vectorPlotClass wks
         "vcVectorFieldData" : data_object
-    if(sprdcols)
-      set_attr(vcres,"vcLevelColors",\
-               spread_colors(wks,plot_object,min_index,max_index))
-    end if
-
     if(vfres.and..not.any(ismissing(getvaratts(vfres))))
       attsetvalues(data_object,vfres)
     end if
     if(vcres.and..not.any(ismissing(getvaratts(vcres))))
       attsetvalues(plot_object,vcres)
     end if
-
+    calldraw  = get_res_value(res2,"gsnDraw", True)
+    callframe = get_res_value(res2,"gsnFrame",True)
+    maxbb     = get_bb_res(res2)
+    shape     = get_res_value(res2,"gsnShape",False)
+    scale     = get_res_value(res2,"gsnScale",shape)
+    sprdcols  = get_res_value(res2,"gsnSpreadColors",False)
     min_index = get_res_value(res2,"gsnSpreadColorStart",2)
     max_index = get_res_value(res2,"gsnSpreadColorEnd",-1)
 
@@ -2638,6 +2641,9 @@ begin
 ; Check for a missing value.
     if(isatt(data,"_FillValue")) then
         setvalues sfdata_object
+            "sfMissingValueV" :data@_FillValue
+        end setvalues
+    end if
 
 ; Create vector plot object.
 
@@ -2657,6 +2663,20 @@ begin
       attsetvalues(vector_object,vcres)
     end if
         "cnScalarFieldData" : sfdata_object
+    end create
+
+    maxbb     = get_bb_res(res2)
+    shape     = get_res_value(res2,"gsnShape",False)
+      attsetvalues(contour_object,cnres2)
+    end if
+
+    if(sprdcols)
+      vcres2 = True
+    scale     = get_res_value(res2,"gsnScale",shape)
+    sprdcols  = get_res_value(res2,"gsnSpreadColors",False)
+
+    vfres = get_res_eq(res2,"vf")
+    sfres = get_res_eq(res2,"sf")
     cnres = get_res_eq(res2,(/"cn","vp"/))
     vcres = get_res_ne(res2,(/"vf","sf","cn","vp"/))
 
@@ -2763,6 +2783,9 @@ begin
             "sfMissingValueV" :data@_FillValue
     end if
 
+; Create vector plot object.
+
+    vector_object = create wksname + "_vector" vectorPlotClass wks
         "vcVectorFieldData" : vfdata_object
     end create
 
@@ -2786,6 +2809,20 @@ begin
       attsetvalues(vector_object,vcres)
     end if
 
+    calldraw  = get_res_value(res2,"gsnDraw", True)
+    callframe = get_res_value(res2,"gsnFrame",True)
+    scale     = get_res_value(res2,"gsnScale",shape)
+    sprdcols  = get_res_value(res2,"gsnSpreadColors",False)
+      attsetvalues(contour_object,cnres2)
+    end if
+
+    if(sprdcols)
+      vcres2 = True
+    min_index = get_res_value(res2,"gsnSpreadColorStart",2)
+    max_index = get_res_value(res2,"gsnSpreadColorEnd",-1)
+    sfres = get_res_eq(res2,"sf")
+    cnres = get_res_eq(res2,"cn")
+    mpres = get_res_eq(res2,(/"mp","vp"/))
     vcres = get_res_ne(res2,(/"cn","mp","sf","vf","vp"/))
 
     attsetvalues_check(vfdata_object,vfres)
@@ -2878,11 +2915,6 @@ begin
 ; Create plot object.
 
     vector_object = create wksname + "_vector" vectorPlotClass wks
-    if(sprdcols)
-      set_attr(vcres,"vcLevelColors",\
-               spread_colors(wks,vector_object,min_index,max_index))
-    end if
-
     if(vfres.and..not.any(ismissing(getvaratts(vfres))))
       attsetvalues(data_object,vfres)
     end if
@@ -2893,8 +2925,14 @@ begin
       attsetvalues(vector_object,vcres)
     end if
 ; Create map object.
-    shape     = get_res_value(res2,"gsnShape",False)
 
+    map_object = create wksname + "_map" mapPlotClass wks
+    end create
+
+    calldraw  = get_res_value(res2,"gsnDraw", True)
+    callframe = get_res_value(res2,"gsnFrame",True)
+    maxbb     = get_bb_res(res2)
+    shape     = get_res_value(res2,"gsnShape",False)
     scale     = get_res_value(res2,"gsnScale",shape)
     sprdcols  = get_res_value(res2,"gsnSpreadColors",False)
     min_index = get_res_value(res2,"gsnSpreadColorStart",2)
@@ -3007,11 +3045,6 @@ begin
     plot_object = create wksname + "_vector" vectorPlotClass wks
         "vcVectorFieldData"     : vfdata_object
         "vcScalarFieldData"     : sfdata_object
-    if(sprdcols)
-      set_attr(vcres,"vcLevelColors",\
-               spread_colors(wks,plot_object,min_index,max_index))
-    end if
-
         "vcUseScalarArray"      : True
         "vcMonoLineArrowColor"  : False
     end create
@@ -3025,6 +3058,11 @@ begin
     if(vcres.and..not.any(ismissing(getvaratts(vcres))))
       attsetvalues(plot_object,vcres)
     end if
+    shape     = get_res_value(res2,"gsnShape",False)
+    scale     = get_res_value(res2,"gsnScale",shape)
+    sprdcols  = get_res_value(res2,"gsnSpreadColors",False)
+    min_index = get_res_value(res2,"gsnSpreadColorStart",2)
+    max_index = get_res_value(res2,"gsnSpreadColorEnd",-1)
 
     check_for_irreg2loglin(res2,force_x_linear,force_y_linear,\
                                 force_x_log,force_y_log)
@@ -3173,11 +3211,6 @@ begin
         "vcVectorFieldData"     : vfdata_object
         "vcScalarFieldData"     : sfdata_object
         "vcUseScalarArray"      : True
-    if(sprdcols)
-      set_attr(vcres,"vcLevelColors",\
-               spread_colors(wks,vector_object,min_index,max_index))
-    end if
-
     if(vfres.and..not.any(ismissing(getvaratts(vfres))))
       attsetvalues(vfdata_object,vfres)
     end if
@@ -3189,6 +3222,12 @@ begin
     end if
     if(vcres.and..not.any(ismissing(getvaratts(vcres))))
       attsetvalues(vector_object,vcres)
+    end if
+    map_object = create wksname + "_map" mapPlotClass wks end create
+
+    calldraw  = get_res_value(res2,"gsnDraw", True)
+    callframe = get_res_value(res2,"gsnFrame",True)
+    maxbb     = get_bb_res(res2)
     shape     = get_res_value(res2,"gsnShape",False)
     scale     = get_res_value(res2,"gsnScale",shape)
     sprdcols  = get_res_value(res2,"gsnSpreadColors",False)

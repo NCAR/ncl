@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.38 2000-04-11 17:06:21 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.39 2000-04-17 22:48:40 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -4130,6 +4130,7 @@ begin
     else
       contour_plot = contour_object
     end if
+    lbar_on       = False     ; Labelbar flag
 ; with "gsn."
 
 ; The default is to not add a cyclic point.
@@ -4172,7 +4173,7 @@ begin
 
     check_for_subtitles(res2,left_string,center_string,right_string)
 
-      gsnp_point_tickmarks_outward(contour_object,tmres,xlength,ylength,\
+    if(left_string.or.center_string.or.right_string)
                                                   xmlength,ymlength,\
                                                   major_length,minor_length)
 
