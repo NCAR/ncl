@@ -1,5 +1,5 @@
 C
-C $Id: thstgr.f,v 1.3 1994-03-22 23:07:49 kennison Exp $
+C	$Id: thstgr.f,v 1.4 1994-03-23 19:02:46 haley Exp $
 C
 C
 C OPEN GKS, OPEN WORKSTATION OF TYPE 1, ACTIVATE WORKSTATION
@@ -69,6 +69,7 @@ C
 C
 C  NWRK = NDIM + 3*(NCLS+1)
 C
+      CHARACTER*1 IFC
       CHARACTER*55 MON
       REAL  DAT1(NDIM,2), X, ARR7(7), WORK(NWRK)
       REAL  RGB(3,15), CLASS(NCLS+1)
@@ -95,11 +96,6 @@ C
 C
       DATA TX /.5/, TY/.9765/
 C
-C Turn off recognition of function codes by PLCHHQ so that we can use
-C colons in labels.
-C
-      CALL PCSETC ('FC - FUNCTION CODE CHARACTER',CHAR(0))
-C
 C  Define 15 color indices, 14 spaced throughout the color
 C  spectrum, and the last one being white.
 C
@@ -110,6 +106,12 @@ C
 C  Call ENTSR (from PORT library) to recover from warnings
 C
       CALL ENTSR(IDUM, 1)
+C
+C Change the Plotchar special character code from a : to a @
+C
+      IFC(1:1) = '@'
+      CALL PCSETC('FC',IFC)
+C
 C
 C  Frame 1:  Demonstrate the default version of HISTGR, IFLAG = 0.
 C
@@ -214,7 +216,7 @@ C
 C  Choose large horizontal class labels.
 C
       CALL HSTOPC('TI=ON',
-     +'OPTS CHANGED: HOR, WIN, FRA, MED, COL, SPA, and TIT',9,3)
+     +'OPTIONS: HOR, WIN, FRA, MED, COL, SPA, & TIT',9,3)
       CALL HSTOPL('HO=ON')
       CALL HSTOPL('ME=ON')
 C
@@ -326,6 +328,8 @@ C
       CALL HSTOPR('WI=ON',ARR7,4)
 C
 C  Turn off color, midvalues, frame advance and shading options.
+C
+C  Write the class labels at a 30 deg angle.
 C
       CALL HSTOPI('CO=OF',2,30,COLORS,8)
       CALL HSTOPL('MI=OFF')
