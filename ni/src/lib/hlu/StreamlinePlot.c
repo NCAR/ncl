@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlot.c,v 1.14 1996-06-22 01:27:35 dbrown Exp $
+ *      $Id: StreamlinePlot.c,v 1.15 1996-07-12 18:54:12 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1413,6 +1413,10 @@ StreamlinePlotInitialize
 
 	stp->zerof_anno_id = NhlNULLOBJID;
 	stp->zerof_lbl_rec.id = NhlNULLOBJID;
+	stnew->trans.data_xmin = 0.0;
+	stnew->trans.data_xmax = 1.0;
+	stnew->trans.data_ymin = 0.0;
+	stnew->trans.data_ymax = 1.0;
 
 /* Initialize unset resources */
 
@@ -2446,12 +2450,8 @@ static NhlErrorTypes stUpdateTrans
 		    == NhlmapTransObjClass->base_class.class_name) {
                         Over_Map = True;	
 			subret = NhlVASetValues(stp->trans_obj->base.id,
-						NhlNtrDataXMinF,
-						MIN(stp->vfp->x_start,
-						    stp->vfp->x_end),
-						NhlNtrDataXMaxF,
-						MAX(stp->vfp->x_start,
-						    stp->vfp->x_end),
+						NhlNtrDataXMinF,tfp->data_xmin,
+						NhlNtrDataXMaxF,tfp->data_xmax,
 						NULL);
 
 			if ((ret = MIN(ret,subret)) < NhlWARNING) {
@@ -5022,6 +5022,11 @@ static NhlErrorTypes    ManageVectorData
 	stp->data_changed = True;
 	stp->use_irr_trans = (stp->vfp->x_arr == NULL &&
 			      stp->vfp->y_arr == NULL) ? False : True;
+
+	stnew->trans.data_xmin = MIN(stp->vfp->x_start,stp->vfp->x_end);
+	stnew->trans.data_xmax = MAX(stp->vfp->x_start,stp->vfp->x_end);
+	stnew->trans.data_ymin = MIN(stp->vfp->y_start,stp->vfp->y_end);
+	stnew->trans.data_ymax = MAX(stp->vfp->y_start,stp->vfp->y_end);
 
 	return ret;
 }

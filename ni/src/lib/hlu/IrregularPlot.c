@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularPlot.c,v 1.18 1996-02-26 21:45:55 dbrown Exp $
+ *      $Id: IrregularPlot.c,v 1.19 1996-07-12 18:54:10 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -603,6 +603,14 @@ static NhlErrorTypes SetUpTransObj
 
 	subret = _NhlALSetValuesChild(tfp->trans_obj->base.id,
 				      (NhlLayer) irnew,sargs,nargs);
+
+	subret = NhlVAGetValues(tfp->trans_obj->base.id,
+				NhlNtrXMinF,&tfp->data_xmin,
+				NhlNtrXMaxF,&tfp->data_xmax,
+				NhlNtrYMinF,&tfp->data_ymin,
+				NhlNtrYMaxF,&tfp->data_ymax,
+				NULL);
+
 	return MIN(ret,subret);
 
 }

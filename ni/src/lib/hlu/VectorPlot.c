@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.c,v 1.21 1996-06-22 01:27:38 dbrown Exp $
+ *      $Id: VectorPlot.c,v 1.22 1996-07-12 18:54:15 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -705,7 +705,7 @@ static NhlResource resources[] = {
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(y_min_set),
 		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
-	{ NhlNtrYMinF,NhlCtrYMinF,NhlTFloat,sizeof(float),
+	{NhlNtrYMinF,NhlCtrYMinF,NhlTFloat,sizeof(float),
 		Oset(y_min),NhlTProcedure,
 		 _NhlUSET((NhlPointer)ResourceUnset),0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
@@ -1779,6 +1779,10 @@ VectorPlotInitialize
 	vcp->refvec_anno_rec.id = NhlNULLOBJID;
 	vcp->minvec_anno_rec.id = NhlNULLOBJID;
 	vcp->zerof_lbl_rec.id = NhlNULLOBJID;
+	vcnew->trans.data_xmin = 0.0;
+	vcnew->trans.data_xmax = 1.0;
+	vcnew->trans.data_ymin = 0.0;
+	vcnew->trans.data_ymax = 1.0;
 
 /* Initialize unset resources */
 
@@ -3083,12 +3087,8 @@ static NhlErrorTypes vcUpdateTrans
                 if ((vcp->trans_obj->base.layer_class)->base_class.class_name 
 		    == NhlmapTransObjClass->base_class.class_name) {
 			subret = NhlVASetValues(vcp->trans_obj->base.id,
-						NhlNtrDataXMinF,
-						MIN(vcp->vfp->x_start,
-						    vcp->vfp->x_end),
-						NhlNtrDataXMaxF,
-						MAX(vcp->vfp->x_start,
-						    vcp->vfp->x_end),
+						NhlNtrDataXMinF,tfp->data_xmin,
+						NhlNtrDataXMaxF,tfp->data_xmax,
 						NULL);
 
 			if ((ret = MIN(ret,subret)) < NhlWARNING) {
@@ -6616,6 +6616,11 @@ static NhlErrorTypes    ManageVectorData
 	vcp->data_changed = True;
 	vcp->use_irr_trans = (vcp->vfp->x_arr == NULL &&
 			      vcp->vfp->y_arr == NULL) ? False : True;
+
+	vcnew->trans.data_xmin = MIN(vcp->vfp->x_start,vcp->vfp->x_end);
+	vcnew->trans.data_xmax = MAX(vcp->vfp->x_start,vcp->vfp->x_end);
+	vcnew->trans.data_ymin = MIN(vcp->vfp->y_start,vcp->vfp->y_end);
+	vcnew->trans.data_ymax = MAX(vcp->vfp->y_start,vcp->vfp->y_end);
 
 	return ret;
 }

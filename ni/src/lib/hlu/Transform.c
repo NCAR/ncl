@@ -1,5 +1,5 @@
 /*
- *      $Id: Transform.c,v 1.26 1996-06-22 01:27:38 dbrown Exp $
+ *      $Id: Transform.c,v 1.27 1996-07-12 18:54:13 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -323,7 +323,22 @@ static NhlErrorTypes TransformDataToNDC
 	        }
 	}
 
-	subret = _NhlSetTrans(top, plot);
+/*
+ * If the TransObj is a MapTransObj then set the longitude limits 
+ * expected by the data.
+ * The MapTransSetValues call does a SetTrans internally, so there's
+ * no need to explicitly do a SetTrans in this case.
+ */
+	if ((top->base.layer_class)->base_class.class_name 
+	    == NhlmapTransObjClass->base_class.class_name) {
+		subret = NhlVASetValues(top->base.id,
+					NhlNtrDataXMinF,tfp->data_xmin,
+					NhlNtrDataXMaxF,tfp->data_xmax,
+					NULL);
+	}
+	else {
+		subret = _NhlSetTrans(top, plot);
+	}
 
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: error setting transformation";

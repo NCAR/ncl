@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.60 1996-06-22 01:27:40 dbrown Exp $
+ *      $Id: XyPlot.c,v 1.61 1996-07-12 18:54:16 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1223,6 +1223,11 @@ XyPlotInitialize
 	if(!xp->x_max_set) xp->x_max = 2.0;
 	if(!xp->y_min_set) xp->y_min = 1.0;
 	if(!xp->y_max_set) xp->y_max = 2.0;
+
+	xnew->trans.data_xmin = xp->x_min;
+	xnew->trans.data_xmax = xp->x_max;
+	xnew->trans.data_ymin = xp->y_min;
+	xnew->trans.data_ymax = xp->y_max;
 
 	xp->thetrans = NULL;
 	tfp->trans_obj = NULL;
@@ -2667,8 +2672,8 @@ static NhlErrorTypes xyUpdateTrans
                 if (((*thetrans)->base.layer_class)->base_class.class_name
 		    == NhlmapTransObjClass->base_class.class_name) {
 			subret = NhlVASetValues((*thetrans)->base.id,
-						NhlNtrDataXMinF,xyp->x_min,
-						NhlNtrDataXMaxF,xyp->x_max,
+						NhlNtrDataXMinF,tfp->data_xmin,
+						NhlNtrDataXMaxF,tfp->data_xmax,
 						NULL);
 
 			if ((ret = MIN(ret,subret)) < NhlWARNING) {
@@ -3824,6 +3829,11 @@ ComputeDataExtents
 			num_pairs += di_num_pairs;
 		}
 		xnew->xyplot.num_cpairs = num_pairs;
+
+		xnew->trans.data_xmin = xnew->xyplot.x_data_min;
+		xnew->trans.data_xmax = xnew->xyplot.x_data_max;
+		xnew->trans.data_ymin = xnew->xyplot.y_data_min;
+		xnew->trans.data_ymax = xnew->xyplot.y_data_max;
 	}
 
 	if(xnew->xyplot.check_ranges){

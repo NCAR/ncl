@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.41 1996-06-22 01:27:32 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.42 1996-07-12 18:54:08 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2076,6 +2076,10 @@ ContourPlotInitialize
 	cnp->info_lbl_rec.id = NhlNULLOBJID;
 	cnp->constf_lbl_rec.id = NhlNULLOBJID;
 	cnp->ref_level = 0;
+	cnew->trans.data_xmin = 0.0;
+	cnew->trans.data_xmax = 1.0;
+	cnew->trans.data_ymin = 0.0;
+	cnew->trans.data_ymax = 1.0;
 
 /* Initialize unset resources */
 
@@ -3450,12 +3454,8 @@ static NhlErrorTypes cnUpdateTrans
 		if ((cnp->trans_obj->base.layer_class)->base_class.class_name 
 		    == NhlmapTransObjClass->base_class.class_name) {
 			subret = NhlVASetValues(cnp->trans_obj->base.id,
-						NhlNtrDataXMinF,
-						MIN(cnp->sfp->x_start,
-						    cnp->sfp->x_end),
-						NhlNtrDataXMaxF,
-						MAX(cnp->sfp->x_start,
-						    cnp->sfp->x_end),
+						NhlNtrDataXMinF,tfp->data_xmin,
+						NhlNtrDataXMaxF,tfp->data_xmax,
 						NULL);
 
 			if ((ret = MIN(ret,subret)) < NhlWARNING) {
@@ -8068,6 +8068,11 @@ static NhlErrorTypes    ManageData
 	cnp->data_changed = True;
 	cnp->use_irr_trans = (cnp->sfp->x_arr == NULL &&
 			      cnp->sfp->y_arr == NULL) ? False : True;
+
+	cnnew->trans.data_xmin = MIN(cnp->sfp->x_start,cnp->sfp->x_end);
+	cnnew->trans.data_xmax = MAX(cnp->sfp->x_start,cnp->sfp->x_end);
+	cnnew->trans.data_ymin = MIN(cnp->sfp->y_start,cnp->sfp->y_end);
+	cnnew->trans.data_ymax = MAX(cnp->sfp->y_start,cnp->sfp->y_end);
 
 	return ret;
 }

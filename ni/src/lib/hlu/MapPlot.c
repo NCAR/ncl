@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.52 1996-06-13 02:05:55 dbrown Exp $
+ *      $Id: MapPlot.c,v 1.53 1996-07-12 18:54:11 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1468,6 +1468,13 @@ MapPlotInitialize
 	Mpp->spec_fill_pattern_count = 0;
 	Mpp->spec_fill_scale_count = 0;
 	Mpp->trans_change_count = 0;
+/*
+ * Necessary to initialize these for NDCToData to work correctly.
+ */
+	Mpl->trans.data_xmin = -180.0;
+	Mpl->trans.data_xmax = 180.0;
+	Mpl->trans.data_ymin = -90.0;
+	Mpl->trans.data_ymax = 90.0;
 		
 /*
  * If the Outline Records are not yet initialized, do it now.

@@ -1,5 +1,5 @@
 /*
- *      $Id: TransformP.h,v 1.17 1996-02-26 21:46:14 dbrown Exp $
+ *      $Id: TransformP.h,v 1.18 1996-07-12 18:54:14 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -58,11 +58,17 @@ typedef struct NhlTransformLayerPart {
 	NhltfOverlayStatus	overlay_status;
 
 	/* 
-	 * Private field for members of the Transform class 
-	 * All plots supporting overlays must fill in this field
+	 * Private fields for members of the Transform class 
+	 * All transform classes supporting overlays should fill in 
+         * the first field. The data fields should be filled in by
+	 * all classes that accept data objects.
 	 */
  
 	NhlLayer		trans_obj;
+	float			data_xmin;
+	float			data_xmax;
+	float			data_ymin;
+	float			data_ymax;
 
 } NhlTransformLayerPart;
 
