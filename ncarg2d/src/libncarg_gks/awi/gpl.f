@@ -1,5 +1,5 @@
 C
-C	$Id: gpl.f,v 1.4 1994-07-01 01:20:11 fred Exp $
+C	$Id: gpl.f,v 1.5 1994-07-07 22:47:57 fred Exp $
 C
       SUBROUTINE GPL(N,PX,PY)
 C
@@ -17,10 +17,6 @@ C
 C
       INTEGER N
       REAL PX(N),PY(N)
-C
-C  Set up the real workspace for clipping call.
-C
-      DIMENSION RWKSP(IWDIM)
 C
 C  Check if GKS is in the proper state.
 C
