@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncargex.m,v 1.6 1993-04-15 16:11:26 haley Exp $
+.\"	$Id: ncargex.m,v 1.7 1993-04-15 16:40:15 haley Exp $
 .\"
 .\" @(#)f77.1 1.4 86/07/31 SMI; 
 .TH NCARGEX 1NCARG "March 1993" NCAR "NCAR GRAPHICS"
@@ -198,79 +198,64 @@ tests.
 Specifies that the selected examples and/or tests should be generated one
 at a time and viewed as they are generated.  This is intended for use during
 testing of new releases at NCAR.
+.nf
 .sp
 .I "EXAMPLES AVAILABLE"
 .sp
 .I "AREAS Example:"
-.nf
 	arex01
 .sp
 .I "AUTOGRAPH Examples:"
-.nf
 	agex01 agex02 agex03 agex04 agex05
 	agex06 agex07 agex08 agex09 agex10
 	agex11 agex12 agex13
 .sp
 .I "BIVAR Example:"
-.nf
 	cbex01
 .sp
 .I "CONPACK Examples:"
-.nf
 	cpex01 cpex02 cpex03 cpex04 cpex05
 	cpex06 cpex07 cpex08 cpex09
 .sp
 .I "EZMAP Examples:"
-.nf
 	mpex01 mpex02 mpex03 mpex04 mpex05
 	mpex06 mpex07 mpex08 mpex09 mpex10
 	mpexfi eezmpa
 .sp
 .I "LABELBAR Example:"
-.nf
 	elblba
 .sp
 .I "PLOTCHAR Example:"
-.nf
 	epltch
 .sp
 .I "SCROLLED_TITLE Example:"
-.nf
 	slex01
 .sp
 .I "SOFTFILL Examples:"
-.nf
 	sfex01 sfex02
 .sp
 .I "SPPS Examples:"
-.nf
 	splogy sprevx spset1 spset2
 .sp
 .I "STREAMLINES Examples:"
-.nf
 	stex01 stex02 stex03
 .sp
 .I "SURFACE Example:"
-.nf
 	srex01
 .sp
 .I "VECTORS Examples:"
-.nf
 	vvex01 vvex02
 .sp
 .I "Miscellaneous Examples:"
-.nf
 	coex01 coex02 coex03 bnchmk
 .sp
 .I "Tutorial AREAS Examples:"
-.nf
 	cardb1 caredg carline cardb2 carfill carmap
 .sp
 .I "Tutorial CONPACK/BIVAR Example:"
 	cidsfft
 .sp
 .I "Tutorial CONPACK Examples:"
-.nf
 	ccpback ccpcff ccpcfx ccpcica ccpcir ccpcis ccpcit ccpclc
 	ccpcld ccpcldm ccpcldr ccpcll ccpclu ccpcnrc ccpdflt
 	ccpezct ccpfil ccpga ccphand ccphcf ccphl ccphlt ccpila
@@ -282,13 +267,11 @@ testing of new releases at NCAR.
 	ccptitle ccpvp ccpvs colcon
 .sp
 .I "Tutorial EZMAP Examples:"
-.nf
 	cezmap1 cezmap2 cezmap3 cmpclr cmpdd cmpdrw cmpel cmpfil
 	cmpgci cmpgrd cmpgrp cmpita cmpitm cmplab cmplbl cmplot 
 	cmpmsk cmpou cmppos cmpsat cmpsup cmptit cmptra cmpusr
 .sp
 .I "Fundamental AUTOGRAPH Examples:"
-.nf
 	fagaxclr fagaxlbl fagaxmax fagcuclr fagcudsh fagezmxy
 	fagezmy fagezxy fagezy fagilclr fagovrvw
 .sp
@@ -299,9 +282,7 @@ testing of new releases at NCAR.
 	fdlcurvd fdldashc fdldashd fdlsmth
 .sp
 .I "Fundamental FIELD_FLOW Examples:"
-.nf
-	stex01 stex02 stex03 vvex01 vvex02 tstrml tvelvc fstream
-	ffex00 ffex01 ffex02 ffex03 ffex04 ffex05
+	fstream ffex00 ffex01 ffex02 ffex03 ffex04 ffex05
 .sp
 .I "Fundamental GKS Examples:"
 	fgke01 fgke02 fgke03 fgke04 fcell fcell0 fgpm01 fgkgpl
@@ -338,7 +319,6 @@ testing of new releases at NCAR.
 	ffex00 ffex01 ffex02 ffex05
 .sp
 .I "Programmer Doc GKS Examples:"
-.nf
 	pgkex01 pgkex02 pgkex03 pgkex04 pgkex05 pgkex06 pgkex07
 	pgkex08 pgkex09 pgkex10 pgkex11 pgkex12 pgkex13 pgkex14
 	pgkex15 pgkex16 pgkex17 pgkex18 pgkex19 pgkex20 pgkex21
