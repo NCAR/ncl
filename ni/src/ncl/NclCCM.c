@@ -1033,6 +1033,8 @@ int	wr_status;
 	double *time_var;
 	int time_var_size = 0;
 	int n_time;
+	int *date;
+	int *datesec;
 
 	if(first) {
 		n_quarks = sizeof(ccm_name_tab)/sizeof(CCMNAMES);
@@ -1270,12 +1272,6 @@ int	wr_status;
 		CcmAddStringVarAtt(tmp_var,NrmStringToQuark("long_name"),NrmStringToQuark("seconds to complete base date"));
 
 
-		tmp_var = CcmAddIntVar(therec,NrmStringToQuark("date"),1,_NclNameToTypeClass(NrmStringToQuark("integer")),&therec->header.iheader.NCDATE,STATIC,SCALAR_DIM_NUMBER);
-		CcmAddStringVarAtt(tmp_var,NrmStringToQuark("long_name"),NrmStringToQuark("current date as 6 digit integer (YYMMDD)"));
-
-		tmp_var = CcmAddIntVar(therec,NrmStringToQuark("datesec"),1,_NclNameToTypeClass(NrmStringToQuark("integer")),&therec->header.iheader.NCSEC,STATIC,SCALAR_DIM_NUMBER);
-		CcmAddStringVarAtt(tmp_var,NrmStringToQuark("units"),NrmStringToQuark("s"));
-		CcmAddStringVarAtt(tmp_var,NrmStringToQuark("long_name"),NrmStringToQuark("seconds to complete current date"));
 
 		tmp_var = CcmAddIntVar(therec,NrmStringToQuark("mdt"),1,_NclNameToTypeClass(NrmStringToQuark("integer")),&therec->header.iheader.MDT,STATIC,SCALAR_DIM_NUMBER);
 		CcmAddStringVarAtt(tmp_var,NrmStringToQuark("units"),NrmStringToQuark("s"));
@@ -1427,8 +1423,12 @@ int	wr_status;
 		i = 0;
 		n_time = 0;
 		time_var = (double*)NclMalloc(sizeof(double)*initial_iheader.MFILTH);
+		date = (int*)NclMalloc(sizeof(int)*initial_iheader.MFILTH);
+		datesec = (int*)NclMalloc(sizeof(int)*initial_iheader.MFILTH);
 		time_var_size = initial_iheader.MFILTH;
-		time_var[n_time++] = (double)initial_iheader.NDCUR + initial_iheader.NSCUR/86400.;
+		time_var[n_time] = (double)initial_iheader.NDCUR + initial_iheader.NSCUR/86400.;
+		date[n_time] = initial_iheader.NCDATE;
+		datesec[n_time++] = initial_iheader.NCSEC;
 		while(!done) {
 /*
 * coff NOW POINTING TO BEGINING OF NEXT TIME STEP, have to unpack or skip headers
@@ -1477,7 +1477,9 @@ int	wr_status;
 					done = 1;
 					break;
 				}
-				time_var[n_time++] = (double)tmp_iheader.NDCUR + tmp_iheader.NSCUR/86400.;
+				time_var[n_time] = (double)tmp_iheader.NDCUR + tmp_iheader.NSCUR/86400.;
+				date[n_time] = tmp_iheader.NCDATE;
+				datesec[n_time++] = tmp_iheader.NCSEC;
 				cb = tmp_off / BLOCK_SIZE;
 				cb_off = (tmp_off % BLOCK_SIZE) / WORD_SIZE;
 				tmp_off= UnPackCharHeader(therec,fd,&tmp_iheader,&tmp_cheader,cb,cb_off);
@@ -1527,8 +1529,12 @@ int	wr_status;
 				if(i == time_var_size) {
 					time_var_size *=2;
 					time_var = (double*)NclRealloc(time_var,sizeof(double)*time_var_size);
+					date = (int*)NclRealloc(date,sizeof(int)*time_var_size);
+					datesec= (int*)NclRealloc(datesec,sizeof(int)*time_var_size);
 				}
-				time_var[n_time++] = (double)tmp_iheader.NDCUR + tmp_iheader.NSCUR/86400.;
+				time_var[n_time] = (double)tmp_iheader.NDCUR + tmp_iheader.NSCUR/86400.;
+				date[n_time] = tmp_iheader.NCDATE;
+				datesec[n_time++] = tmp_iheader.NCSEC;
 				therec->lat_rec_offsets = NclRealloc(therec->lat_rec_offsets,(therec->n_lat_recs+tmp_iheader.NOREC)*sizeof(long));
 				therec->n_lat_recs += tmp_iheader.NOREC;
 				cb = tmp_off / BLOCK_SIZE;
@@ -1569,6 +1575,12 @@ int	wr_status;
 		CcmAddStringVarAtt(tmp_var,NrmStringToQuark("long_name"),NrmStringToQuark("time"));
 		CcmAddStringVarAtt(tmp_var,NrmStringToQuark("units"),NrmStringToQuark(time_units(initial_iheader.NBDATE,initial_iheader.NBSEC,units)));
 		
+		tmp_var = CcmAddIntVar(therec,NrmStringToQuark("date"),n_time,_NclNameToTypeClass(NrmStringToQuark("integer")),date,PERMANENT,TIME_DIM_NUMBER);
+		CcmAddStringVarAtt(tmp_var,NrmStringToQuark("long_name"),NrmStringToQuark("current date as 6 digit integer (YYMMDD)"));
+
+		tmp_var = CcmAddIntVar(therec,NrmStringToQuark("datesec"),n_time,_NclNameToTypeClass(NrmStringToQuark("integer")),datesec,PERMANENT,TIME_DIM_NUMBER);
+		CcmAddStringVarAtt(tmp_var,NrmStringToQuark("units"),NrmStringToQuark("s"));
+		CcmAddStringVarAtt(tmp_var,NrmStringToQuark("long_name"),NrmStringToQuark("seconds to complete current date"));
 /*
 		for(i = 0; i < initial_iheader.MFILTH * initial_iheader.NOREC; i++) {
 			fprintf(stdout,"%ld\n",therec->lat_rec_offsets[i]);
