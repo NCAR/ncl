@@ -1,5 +1,5 @@
 C
-C       $Id: csex05.f,v 1.2 1999-01-28 23:55:29 fred Exp $
+C       $Id: csex05.f,v 1.3 1999-02-09 20:19:19 fred Exp $
 C
       PROGRAM CSEX05
 C
@@ -111,15 +111,29 @@ C
       END
       REAL FUNCTION DSRND1()
 C
-C  Random number generator.
+C  Portable random number generator.
 C
-      DATA ISEED/1/
-      SAVE ISEED
+      PARAMETER (MPLIER=16807,MODLUS=2147483647,MOBYMP=127773,
+     +           MOMDMP=2836)
 C
-      ISEED = ISEED*1103515245 + 12345
-      IT = IAND(ISHIFT(ISEED,-16),32767)
+      INTEGER HVLUE, LVLUE, TESTV, NEXTN
+      SAVE    NEXTN
+      DATA JSEED,IFRST/123456789,0/
 C
-      DSRND1 = REAL(IT)/32767.
+      IF (IFRST .EQ. 0) THEN
+        NEXTN = JSEED
+        IFRST = 1
+      ENDIF
+C
+      HVLUE = NEXTN / MOBYMP
+      LVLUE = MOD(NEXTN, MOBYMP)
+      TESTV = MPLIER*LVLUE - MOMDMP*HVLUE
+      IF (TESTV .GT. 0) THEN
+        NEXTN = TESTV
+      ELSE
+        NEXTN = TESTV + MODLUS
+      ENDIF
+      DSRND1 = REAL(NEXTN)/REAL(MODLUS)
 C
       RETURN
       END
