@@ -1,5 +1,5 @@
 C
-C      $Id: xy01f.f,v 1.8 1995-03-23 16:31:15 haley Exp $
+C      $Id: xy01f.f,v 1.9 1995-04-01 16:24:50 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -27,11 +27,11 @@ C                  resources are and what their defaults are set to.
 C                  The whole resource file is commented out.
 C                  The "CoordArrays" object is used to set up the data.
 C
-      external nhlfapplayerclass
-      external nhlfxworkstationlayerclass
-      external nhlfncgmworkstationlayerclass
-      external nhlfxyplotlayerclass
-      external nhlfcoordarrayslayerclass
+      external NhlFAppLayerClass
+      external NhlFXWorkstationLayerClass
+      external NhlFNcgmWorkstationLayerClass
+      external NhlFXyPlotLayerClass
+      external NhlFCoordArraysLayerClass
 C
 C Define the number of points in the curve.
 C
@@ -56,33 +56,33 @@ C
 C
 C Initialize the HLU library and set up resource template.
 C
-      call nhlfinitialize
-      call nhlfrlcreate(rlist,'setrl')
+      call NhlFInitialize
+      call NhlFRLCreate(rlist,'setrl')
 C
 C Create Application object.  The Application object name is used to
 C determine the name of the resource file, which is "xy01.res" in
 C this case.
 C
-      call nhlfrlclear(rlist)
-      call nhlfrlsetstring(rlist,'appDefaultParent','True',ierr)
-      call nhlfrlsetstring(rlist,'appUsrDir','./',ierr)
-      call nhlfcreate(appid,'xy01',nhlfapplayerclass,0,rlist,ierr)
+      call NhlFRLClear(rlist)
+      call NhlFRLSetstring(rlist,'appDefaultParent','True',ierr)
+      call NhlFRLSetstring(rlist,'appUsrDir','./',ierr)
+      call NhlFCreate(appid,'xy01',NhlFAppLayerClass,0,rlist,ierr)
 
       if (NCGM.eq.1) then
 C
 C Create an NCGM workstation.
 C
-         call nhlfrlclear(rlist)
-         call nhlfrlsetstring(rlist,'wkMetaName','./xy01f.ncgm',ierr)
-         call nhlfcreate(xworkid,'xy01Work',
-     +        nhlfncgmworkstationlayerclass,0,rlist,ierr)
+         call NhlFRLClear(rlist)
+         call NhlFRLSetstring(rlist,'wkMetaName','./xy01f.ncgm',ierr)
+         call NhlFCreate(xworkid,'xy01Work',
+     +        NhlFNcgmWorkstationLayerClass,0,rlist,ierr)
       else
 C
 C Create an xworkstation object.
 C
-         call nhlfrlclear(rlist)
-         call nhlfrlsetstring(rlist,'wkPause','True',ierr)
-         call nhlfcreate(xworkid,'xy01Work',nhlfxworkstationlayerclass,
+         call NhlFRLClear(rlist)
+         call NhlFRLSetstring(rlist,'wkPause','True',ierr)
+         call NhlFCreate(xworkid,'xy01Work',NhlFXWorkstationLayerClass,
      +        0,rlist,ierr)
       endif
 C
@@ -91,33 +91,33 @@ C each Y value will be paired with its integer array index.  The id for
 C this object will later be used as the value for the XyPlot data
 C resource, "xyCoordData".
 C
-      call nhlfrlclear(rlist)
-      call nhlfrlsetfloatarray(rlist,'caYArray',ydra,NPTS,ierr)
-      call nhlfcreate(dataid,'xyData',nhlfcoordarrayslayerclass,
+      call NhlFRLClear(rlist)
+      call NhlFRLSetfloatarray(rlist,'caYArray',ydra,NPTS,ierr)
+      call NhlFCreate(dataid,'xyData',NhlFCoordArraysLayerClass,
      +                0,rlist,ierr)
 C
 C Create the XyPlot object which is created as a child of the
 C XWorkstation object.
 C
-      call nhlfrlclear(rlist)
-      call nhlfrlsetinteger(rlist,'xyCoordData',dataid,ierr)
-      call nhlfcreate(plotid,'xyPlot',nhlfxyplotlayerclass,xworkid,
+      call NhlFRLClear(rlist)
+      call NhlFRLSetinteger(rlist,'xyCoordData',dataid,ierr)
+      call NhlFCreate(plotid,'xyPlot',NhlFXyPlotLayerClass,xworkid,
      +                rlist,ierr)
 C
 C Draw the plot (to its parent XWorkstation).
 C
-      call nhlfdraw(plotid,ierr)
-      call nhlfframe(xworkid,ierr)
+      call NhlFDraw(plotid,ierr)
+      call NhlFFrame(xworkid,ierr)
 C
 C NhlDestroy destroys the given id and all of its children
 C so destroying "xworkid" will also destroy "plotid".
 C
-      call nhlfrldestroy(rlist)
-      call nhlfdestroy(xworkid,ierr)
-      call nhlfdestroy(appid,ierr)
+      call NhlFRLDestroy(rlist)
+      call NhlFDestroy(xworkid,ierr)
+      call NhlFDestroy(appid,ierr)
 C
 C Restores state.
 C
-      call nhlfclose
+      call NhlFClose
       stop
       end

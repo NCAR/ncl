@@ -17,22 +17,19 @@ C
 C      Description:    Demonstrates the TickMark Object
 C                      with reversed and log y axis.
 C
-
-      external nhlfapplayerclass
-      external nhlftickmarklayerclass
-      external nhlfxworkstationlayerclass
-      external nhlfncgmworkstationlayerclass
+      external NhlFAppLayerClass
+      external NhlFTickMarkLayerClass
+      external NhlFXWorkstationLayerClass
+      external NhlFNcgmWorkstationLayerClass
 
       real level(10)
       data level / 1000, 850, 700, 500, 400, 300, 250, 200, 150, 100 / 
-
 C
 C Define label strings for EXPLICIT mode tick mark placement
 C
       character*10 labels(7)
       data labels /'90:S:o:N:S', '60:S:o:N:S', '30:S:o:N:S', 'EQ', 
      $     '30:S:o:N:N', '60:S:o:N:N', '90:S:o:N:N' /
-
 C
 C Specify data locations for above labels
 C
@@ -41,6 +38,7 @@ C
         
       integer appid, wid, pid
       integer rlist, ierr
+
       integer NCGM
 C
 C Default is to create an X workstation.
@@ -49,53 +47,53 @@ C
 C
 C Initialize the high level utility library
 C
-      call nhlfinitialize
+      call NhlFInitialize
+
 C
 C Create an application context. Set the app dir to the current
 C directory so the application looks for a resource file in the
 C working directory. In this example the resource file supplies the
 C plot title only.
 C
-      call nhlfrlcreate(rlist,'SETRL')
-      call nhlfrlclear(rlist)
-      call nhlfrlsetstring(rlist,'appUsrDir','./',ierr)
-      call nhlfrlsetstring(rlist,'appDefaultParent','True',ierr)
-      call nhlfcreate(appid,'tm03',nhlfapplayerclass,0,rlist,ierr)
+      call NhlFRLCreate(rlist,'SETRL')
+      call NhlFRLClear(rlist)
+      call NhlFRLSetstring(rlist,'appUsrDir','./',ierr)
+      call NhlFRLSetstring(rlist,'appDefaultParent','True',ierr)
+      call NhlFCreate(appid,'tm03',NhlFAppLayerClass,0,rlist,ierr)
 
       if (NCGM.eq.1) then
 C
 C Create an NCGM workstation object.
 C
-         call nhlfrlclear(rlist)
-         call nhlfrlsetstring(rlist,'wkMetaName','./tm03f.ncgm',ierr)
-         call nhlfcreate(wid,'tm03Work',nhlfncgmworkstationlayerclass,0,
+         call NhlFRLClear(rlist)
+         call NhlFRLSetstring(rlist,'wkMetaName','./tm03f.ncgm',ierr)
+         call NhlFCreate(wid,'tm03Work',NhlFNcgmWorkstationLayerClass,0,
      $        rlist,ierr)
       else
 C
 C Create an XWorkstation object.
 C
-         call nhlfrlclear(rlist)
-         call nhlfrlsetstring(rlist,'wkPause','True',ierr)
-         call nhlfcreate(wid,'tm03Work',nhlfxworkstationlayerclass,0,
+         call NhlFRLClear(rlist)
+         call NhlFRLSetinteger(rlist,'wkPause','True',ierr)
+         call NhlFCreate(wid,'tm03Work',NhlFXWorkstationLayerClass,0,
      $        rlist,ierr)
       endif
-
 C
 C Specify the viewport extent of the object.
 C
-      call nhlfrlclear(rlist)
-      call nhlfrlsetfloat(rlist,'vpXF',.2,ierr)
-      call nhlfrlsetfloat(rlist,'vpYF',.8,ierr)
-      call nhlfrlsetfloat(rlist,'vpWidthF',.6,ierr)
-      call nhlfrlsetfloat(rlist,'vpHeightF',.6,ierr)
-      call nhlfrlsetfloat(rlist,'tmYLDataTopF',100.0,ierr)
-      call nhlfrlsetfloat(rlist,'tmYLDataBottomF',1000.0,ierr)
-      call nhlfrlsetfloat(rlist,'tmXBDataRightF',90.0,ierr)
-      call nhlfrlsetfloat(rlist,'tmXBDataLeftF',-90.0,ierr)
-      call nhlfrlsetstring(rlist,'tmYLStyle','Irregular',ierr)
-      call nhlfrlsetstring(rlist,'tmXBMode','Explicit',ierr)
-      call nhlfrlsetstring(rlist,'tmXBMinorOn','False',ierr)
-      call nhlfrlsetfloatarray(rlist,'tmXBValues',labellocs,
+      call NhlFRLClear(rlist)
+
+      call NhlFRLSetfloat(rlist,'vpYF',.8,ierr)
+      call NhlFRLSetfloat(rlist,'vpWidthF',.6,ierr)
+      call NhlFRLSetfloat(rlist,'vpHeightF',.6,ierr)
+      call NhlFRLSetfloat(rlist,'tmYLDataTopF',100.0,ierr)
+      call NhlFRLSetfloat(rlist,'tmYLDataBottomF',1000.0,ierr)
+      call NhlFRLSetfloat(rlist,'tmXBDataRightF',90.0,ierr)
+      call NhlFRLSetfloat(rlist,'tmXBDataLeftF',-90.0,ierr)
+      call NhlFRLSetstring(rlist,'tmYLStyle','Irregular',ierr)
+      call NhlFRLSetstring(rlist,'tmXBMode','Explicit',ierr)
+      call NhlFRLSetstring(rlist,'tmXBMinorOn','False',ierr)
+      call NhlFRLSetfloatarray(rlist,'tmXBValues',labellocs,
      $     7,ierr)
 
 C
@@ -107,19 +105,20 @@ C how CONPACK thinks the points are spaced, the tick marks will
 C correctly correspond with the  data coordinates. See the HLU User's
 C Guide for a complete discussion of IRREGULAR style transformations.
 C
-      call nhlfrlsetstringarray(rlist,'tmXBLabels',labels,
+      call NhlFRLSetstringarray(rlist,'tmXBLabels',labels,
      $     7,ierr)
-      call nhlfrlsetfloatarray(rlist,'tmYLIrregularPoints',level,
+      call NhlFRLSetfloatarray(rlist,'tmYLIrregularPoints',level,
      $     10,ierr)
-      call nhlfcreate(pid,'TickMarks',nhlftickmarklayerclass,wid,
+      call NhlFCreate(pid,'TickMarks',NhlFTickMarkLayerClass,wid,
      $     rlist,ierr)
 
-      call nhlfdraw(pid,ierr)
-      call nhlfframe(wid,ierr)
-      call nhlfdestroy(pid,ierr)
-      call nhlfdestroy(wid,ierr)
-      call nhlfdestroy(appid,ierr)
-      call nhlfclose
+      call NhlFDraw(pid,ierr)
+      call NhlFFrame(wid,ierr)
+      call NhlFDestroy(pid,ierr)
+      call NhlFDestroy(wid,ierr)
+      call NhlFDestroy(appid,ierr)
+      call NhlFClose
 
       stop
       end
+

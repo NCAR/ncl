@@ -17,10 +17,10 @@ C
 C      Description:    Demonstrates the TickMark Object
 C                      defaults.
 C
-      external nhlfapplayerclass
-      external nhlftickmarklayerclass
-      external nhlfncgmworkstationlayerclass
-      external nhlfxworkstationlayerclass
+      external NhlFAppLayerClass
+      external NhlFTickMarkLayerClass
+      external NhlFXWorkstationLayerClass
+      external NhlFNcgmWorkstationLayerClass
         
       integer appid, wid, pid
       integer rlist, ierr
@@ -32,55 +32,54 @@ C
 C
 C Initialize the high level utility library
 C
-      call nhlfinitialize
+      call NhlFInitialize
 C
 C Create an application context. Set the app dir to the current
 C directory so the application looks for a resource file in the
 C working directory. In this example the resource file supplies the
 C plot title only.
 C
-      call nhlfrlcreate(rlist,'SETRL')
-      call nhlfrlclear(rlist)
-      call nhlfrlsetstring(rlist,'appUsrDir','./',ierr)
-      call nhlfrlsetstring(rlist,'appDefaultParent','True',ierr)
-      call nhlfcreate(appid,'tm02',nhlfapplayerclass,0,rlist,ierr)
+      call NhlFRLCreate(rlist,'SETRL')
+      call NhlFRLClear(rlist)
+      call NhlFRLSetstring(rlist,'appUsrDir','./',ierr)
+      call NhlFRLSetstring(rlist,'appDefaultParent','True',ierr)
+      call NhlFCreate(appid,'tm02',NhlFAppLayerClass,0,rlist,ierr)
 
       if (NCGM.eq.1) then
 C
 C Create an NCGM workstation object.
 C
-         call nhlfrlclear(rlist)
-         call nhlfrlsetstring(rlist,'wkMetaName','./tm02f.ncgm',ierr)
-         call nhlfcreate(wid,'tm02Work',nhlfncgmworkstationlayerclass,0,
+         call NhlFRLClear(rlist)
+         call NhlFRLSetstring(rlist,'wkMetaName','./tm02f.ncgm',ierr)
+         call NhlFCreate(wid,'tm02Work',NhlFNcgmWorkstationLayerClass,0,
      $        rlist,ierr)
       else
 C
 C Create an XWorkstation object.
 C
-         call nhlfrlclear(rlist)
-         call nhlfrlsetstring(rlist,'wkPause','True',ierr)
-         call nhlfcreate(wid,'tm02Work',nhlfxworkstationlayerclass,0,
-     1        rlist,ierr)
+      call NhlFRLClear(rlist)
+      call NhlFRLSetinteger(rlist,'wkPause','True',ierr)
+      call NhlFCreate(wid,'tm02Work',NhlFXWorkstationLayerClass,0,
+     1      rlist,ierr)
       endif
 C
 C Specify the viewport extent of the object.
 C
+      call NhlFRLClear(rlist)
+      call NhlFRLSetfloat(rlist,'vpXF',.2,ierr)
+      call NhlFRLSetfloat(rlist,'vpYF',.8,ierr)
+      call NhlFRLSetfloat(rlist,'vpWidthF',.6,ierr)
+      call NhlFRLSetfloat(rlist,'vpHeightF',.6,ierr)
 
-      call nhlfrlclear(rlist)
-      call nhlfrlsetfloat(rlist,'vpXF',.2,ierr)
-      call nhlfrlsetfloat(rlist,'vpYF',.8,ierr)
-      call nhlfrlsetfloat(rlist,'vpWidthF',.6,ierr)
-      call nhlfrlsetfloat(rlist,'vpHeightF',.6,ierr)
-
-      call nhlfcreate(pid,'TickMarks',NhlFtickMarkLayerClass,wid,
+      call NhlFCreate(pid,'TickMarks',NhlFTickMarkLayerClass,wid,
      1      rlist,ierr)
 
-      call nhlfdraw(pid,ierr)
-      call nhlfframe(wid,ierr)
-      call nhlfdestroy(pid,ierr)
-      call nhlfdestroy(wid,ierr)
-      call nhlfdestroy(appid,ierr)
-      call nhlfclose
+      call NhlFDraw(pid,ierr)
+      call NhlFFrame(wid,ierr)
+      call NhlFDestroy(pid,ierr)
+      call NhlFDestroy(wid,ierr)
+      call NhlFDestroy(appid,ierr)
+      call NhlFClose
 
       stop
       end

@@ -1,5 +1,5 @@
 C
-C     $Id: xy11f.f,v 1.6 1995-03-23 16:31:32 haley Exp $
+C     $Id: xy11f.f,v 1.7 1995-04-01 16:24:54 haley Exp $
 C
 C****************************************************************
 C                                                               *
@@ -24,11 +24,11 @@ C
 C
 C Extern declarations for Types of objects that will be used
 C
-      external nhlfapplayerclass
-      external nhlfxworkstationlayerclass
-      external nhlfncgmworkstationlayerclass
-      external nhlfxyplotlayerclass
-      external nhlfcoordarrayslayerclass
+      external NhlFAppLayerClass
+      external NhlFXWorkstationLayerClass
+      external NhlFNcgmWorkstationLayerClass
+      external NhlFXyPlotLayerClass
+      external NhlFCoordArraysLayerClass
 
 C
 C Create data arrays to be plotted
@@ -64,42 +64,42 @@ C
 C
 C   Initialize the HLU library
 C
-      call nhlfinitialize
-      call nhlfcreate(appid,'xy11',nhlfapplayerclass,0,0,ierr)
+      call NhlFInitialize
+      call NhlFCreate(appid,'xy11',NhlFAppLayerClass,0,0,ierr)
 
 C
 C   Create a ResList - This is filled with resource "Names" and
 C   "Values" to apply to an HLU object.
 C
-      call nhlfrlcreate(list,'setrl')
+      call NhlFRLCreate(list,'setrl')
 
 C
 C   Fill the ResList with the resources for the X Workstation
 C   object - then create the X Workstation object.
 C
-      call nhlfrlclear(list)
-      call nhlfrlsetinteger(list,'wkPause',1,ierr)
-      call nhlfcreate(ixwork,'myxwork',nhlfxworkstationlayerclass,0,
+      call NhlFRLClear(list)
+      call NhlFRLSetinteger(list,'wkPause',1,ierr)
+      call NhlFCreate(ixwork,'myxwork',NhlFXWorkstationLayerClass,0,
      %  list,ierr)
 
 C
 C   Fill the ResList with the resources for the NCGM Workstation
 C   object - then create the NCGM Workstation object.
 C
-      call nhlfrlclear(list)
-      call nhlfrlsetstring(list,'wkMetaName','xy11f.ncgm',ierr)
-      call nhlfcreate(incgmwork,'myncgmwork',
-     %  nhlfncgmworkstationlayerclass,0,list,ierr)
+      call NhlFRLClear(list)
+      call NhlFRLSetstring(list,'wkMetaName','xy11f.ncgm',ierr)
+      call NhlFCreate(incgmwork,'myncgmwork',
+     %  NhlFNcgmWorkstationLayerClass,0,list,ierr)
 
 C
 C   Fill the ResList with the resources for the CoordArrays
 C   object - then create the CoordArrays data object.
 C   This object is used to describe data to the HLU library.
 C
-      call nhlfrlclear(list)
-      call nhlfrlsetfloatarray(list,'caXArray',Temp,28,ierr)
-      call nhlfrlsetfloatarray(list,'caYArray',Pressure,28,ierr)
-      call nhlfcreate(idata,'mydata',nhlfcoordarrayslayerclass,0,list,
+      call NhlFRLClear(list)
+      call NhlFRLSetfloatarray(list,'caXArray',Temp,28,ierr)
+      call NhlFRLSetfloatarray(list,'caYArray',Pressure,28,ierr)
+      call NhlFCreate(idata,'mydata',NhlFCoordArraysLayerClass,0,list,
      %  ierr)
 
 
@@ -108,19 +108,19 @@ C   Fill the ResList with the resources for the XyPlot object
 C   including the "Data" which is the object id for the
 C   CoordArrays object that was just created.
 C
-      call nhlfrlclear(list)
-      call nhlfrlsetfloat(list,'vpXF',0.25,ierr)
-      call nhlfrlsetfloat(list,'vpYF',0.75,ierr)
-      call nhlfrlsetfloat(list,'vpXWidthF',0.5,ierr)
-      call nhlfrlsetfloat(list,'vpHeightF',0.5,ierr)
+      call NhlFRLClear(list)
+      call NhlFRLSetfloat(list,'vpXF',0.25,ierr)
+      call NhlFRLSetfloat(list,'vpYF',0.75,ierr)
+      call NhlFRLSetfloat(list,'vpXWidthF',0.5,ierr)
+      call NhlFRLSetfloat(list,'vpHeightF',0.5,ierr)
 
-      call nhlfrlsetinteger(list,'xyCoordData',idata,ierr)
+      call NhlFRLSetinteger(list,'xyCoordData',idata,ierr)
 
-      call nhlfrlsetinteger(list,'tiMainOn',1,ierr)
-      call nhlfrlsetinteger(list,'tiXAxisOn',1,ierr)
-      call nhlfrlsetinteger(list,'tiYAxisOn',1,ierr)
+      call NhlFRLSetinteger(list,'tiMainOn',1,ierr)
+      call NhlFRLSetinteger(list,'tiXAxisOn',1,ierr)
+      call NhlFRLSetinteger(list,'tiYAxisOn',1,ierr)
 
-      call nhlfcreate(ixyplot,'myxyplot',nhlfxyplotlayerclass,ixwork,
+      call NhlFCreate(ixyplot,'myxyplot',NhlFXyPlotLayerClass,ixwork,
      %  list,ierr)
 
 C
@@ -128,7 +128,7 @@ C   We don't need the ResList any more - so destroy it.  Memory
 C   is allocated for each reslist so it is important to destroy
 C   them when you are done with them.
 C
-      call nhlfrldestroy(list)
+      call NhlFRLDestroy(list)
 
 C
 C   Draw the XyPlot - It was created as a child of the X Workstation
@@ -138,15 +138,15 @@ C   buffers so all the graphics are displayed - and since we
 C   set the wkPause resource to True the program will pause on
 C   the frame call until the user "clicks" in the Window.
 C
-      call nhlfdraw(ixyplot,ierr)
-      call nhlfframe(ixwork,ierr)
+      call NhlFDraw(ixyplot,ierr)
+      call NhlFFrame(ixwork,ierr)
 
 C
 C   Move the XyPlot to the Ncgm Workstation - This makes the
 C   XyPlot a child of the Ncgm Workstation so the XyPlot
 C   will draw to the Ncgm Workstations' device instead of the
 C   X Workstations device.
-      call nhlfchangeworkstation(ixyplot,incgmwork,ierr)
+      call NhlFChangeWorkstation(ixyplot,incgmwork,ierr)
 
 C
 C   Draw the XyPlot - It is now a child of the Ncgm Workstation
@@ -154,26 +154,26 @@ C   so it will draw to the Ncgm Workstation's device (ncgm file).
 C   Then C  Call "Frame" for the Ncgm Workstation - this flushes
 C   the graphics C  buffers so all the graphics are displayed.
 C
-      call nhlfdraw(ixyplot,ierr)
-      call nhlfframe(incgmwork,ierr)
+      call NhlFDraw(ixyplot,ierr)
+      call NhlFFrame(incgmwork,ierr)
 
 C
 C   Destroy the X Workstation object - this also pop's down
 C   the X Window. (Also free's all the memory associated with
 C   the X Workstation)
 C
-      call nhlfdestroy(ixwork,ierr)
+      call NhlFDestroy(ixwork,ierr)
 C
 C   Destroy the Ncgm Workstation object - this closes the metafile
 C   and puts the ENDMETAFILE marker in the file.
 C   This also destroys the XyPlot object since the XyPlot is a
 C   child of the Ncgm Workstation.
 C
-      call nhlfdestroy(incgmwork,ierr)
+      call NhlFDestroy(incgmwork,ierr)
 
 C
 C   Close the library.
 C
-      call nhlfclose
+      call NhlFClose
 
       end
