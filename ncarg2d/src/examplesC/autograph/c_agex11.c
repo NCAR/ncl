@@ -1,5 +1,5 @@
 /*
- *	$Id: c_agex11.c,v 1.2 1994-06-21 14:58:45 haley Exp $
+ *	$Id: c_agex11.c,v 1.3 1994-08-01 22:15:09 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -16,7 +16,7 @@ main()
 /*
  * create a scattergram.
  */
-    float xdra[500],ydra[500];
+    float xdra[500],ydra[500], x;
     int i;
     extern float fran();
     extern void bndary();
@@ -30,8 +30,10 @@ main()
  * fill the data arrays.
  */
     for( i = 0; i < 500; i++ ) {
-        xdra[i]=.5+pow5(2.*((float)fran()-.5));
-        ydra[i]=.5+pow5(2.*((float)fran()-.5));
+        x = fran();
+        xdra[i]=.5+pow5(2.*(x-.5));
+        x = fran();
+        ydra[i]=.5+pow5(2.*(x-.5));
     }
 /*
  * draw a boundary around the edge of the plotter frame.

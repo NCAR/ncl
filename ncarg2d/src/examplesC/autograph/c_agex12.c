@@ -1,5 +1,5 @@
 /*
- *	$Id: c_agex12.c,v 1.2 1994-06-21 14:58:46 haley Exp $
+ *	$Id: c_agex12.c,v 1.3 1994-08-01 22:15:09 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -40,7 +40,7 @@ main()
 
     for( i = 1; i < 100; i+=2 ) {
         xdra[i  ]=xdra[i-1];
-        franny = (float)fran();
+        franny = fran();
         ydra[i  ]=exp(-16.*pow2((float)((i+1)/2.)/50.-.51))+.1*franny;
         xdra[i+1]=xdra[i-1]+.02;
         ydra[i+1]=ydra[i];
