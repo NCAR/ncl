@@ -1,7 +1,7 @@
 .OP LS=10001 LI=1 CB RT ES=< ET=> OC UC=0 BI=77 IF=2
 .EL I
 I
-I $Id: CodeIftran,v 1.6 2004-08-24 21:10:39 kennison Exp $
+I $Id: CodeIftran,v 1.7 2004-09-01 21:48:52 kennison Exp $
 I
 I***********************************************************************
 I C O N P A C K T   -   I N T R O D U C T I O N
@@ -3736,7 +3736,7 @@ C
         IXOR(IONE,ITWO)=IAND(IOR(IONE,ITWO),4095-IAND(IONE,ITWO))
 C
 C ITBF(IARG) is non-zero if and only if a triangle with blocking-flag
-C element IARG is blocked.
+C element IARG is blocked by the user.
 C
         ITBF(IARG)=IAND(IAND(IXOR(IARG,ITBX),ITBA),1)
 C
@@ -3940,11 +3940,13 @@ C in effect cause mirror imaging.  To do this, we look for an unblocked
 C triangle in the mesh, all of whose vertices are visible under the
 C current mapping, and check to see if its vertices, after mapping, are
 C still in counterclockwise order (in which case we set MIRO=0) or not
-C (in which case we set MIRO=1).
+C (in which case we set MIRO=1).  (However, when 'MAP' = 2, saying that
+C TDPACK is being called to do the transformation, MIRO is forced to 0;
+C in that case, the transformation cannot cause mirror imaging.)
 C
         MIRO=0
 C
-        IF (IMPF.NE.0)
+        IF (IMPF.NE.0.AND.IMPF.NE.2)
 C
           DO (I=0,NTRI-LOTN,LOTN)
 C
@@ -6756,7 +6758,7 @@ C
         IXOR(IONE,ITWO)=IAND(IOR(IONE,ITWO),4095-IAND(IONE,ITWO))
 C
 C ITBF(IARG) is non-zero if and only if a triangle with blocking-flag
-C element IARG is blocked.
+C element IARG is blocked by the user.
 C
         ITBF(IARG)=IAND(IAND(IXOR(IARG,ITBX),ITBA),1)
 C
@@ -7183,7 +7185,7 @@ C
         IXOR(IONE,ITWO)=IAND(IOR(IONE,ITWO),4095-IAND(IONE,ITWO))
 C
 C ITBF(IARG) is non-zero if and only if a triangle with blocking-flag
-C element IARG is blocked.
+C element IARG is blocked by the user.
 C
         ITBF(IARG)=IAND(IAND(IXOR(IARG,ITBX),ITBA),1)
 C
