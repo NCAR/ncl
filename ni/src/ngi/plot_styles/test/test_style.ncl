@@ -1,4 +1,5 @@
 undef("spread_colors")
+undef("spread_colors_around_level_val")
 undef("map_tickmarks")
 undef("pos_xy_anno")
 undef("dim_average")
@@ -539,24 +540,6 @@ begin
 		minix = 2
 	end if
 
-	tmax = min(ind(levels.gt.level_val))
-	tmin = max(ind(levels.le.level_val))
-	if (ismissing(tmin)) then
-		valix = tmax
-	else
-		if (ismissing(tmax)) then
-			valix = tmin
-		else
-			if (levels(tmax) - level_val .lt. \
-			    level_val - levels(tmin)) then
-				valix = tmax
-			else
-				valix = tmin
-			end if
-		end if
-	end if
-	
-	
 	minix = max((/0,minix/))
 	maxix = min((/ncols - 1,maxix/))
 	nc = maxix - minix + 1
@@ -570,10 +553,32 @@ begin
 	fmax = maxix
 	fcen = cenix
 	fcols = new(lcount + 1,float)
-	fcols(0:valix) = fspan(fmin,fcen,valix+1)
-	if (valix .lt. lcount) then
-	     fcols(valix+1:lcount) = fspan(fcen,fmax,lcount-valix)
-        end if
+
+;	print(levels)
+;	print("fmin " + fmin + " fmax " + fmax + " fcen " + fcen)
+
+	tmax = min(ind(levels.gt.level_val))
+	tmin = max(ind(levels.le.level_val))
+
+	if (ismissing(tmin)) then
+		fcols = fspan(fcen,fmax,lcount + 1)
+	else
+		if (ismissing(tmax)) then
+			fcols = fspan(fmin,fcen,lcount + 1)
+		else
+			if (levels(tmax) - level_val .lt. \
+			    level_val - levels(tmin)) then
+				valix = tmax
+			else
+				valix = tmin
+			end if
+			fcols(0:valix) = fspan(fmin,fcen,valix+1)
+			if (valix .lt. lcount) then
+			     fcols(valix+1:lcount) = \
+					fspan(fcen,fmax,lcount-valix)
+			end if
+	        end if
+	end if
 
 	icols = floattointeger(fcols + 0.5)
 
@@ -937,7 +942,7 @@ function adjust_labelbar(reftick : graphic, plot : graphic, \
 			 stride : integer, font_height_factor : float)
 
 local dmode,vwidth,fheight,fheight0,stride0,\
-	automanage0,max_llen,spacing,fstride,ret
+	automanage0,max_llen,size,orient,direction,spacing,fstride,ret
 
 begin
 	ret = 0 
@@ -982,6 +987,8 @@ begin
 		"lbAutoManage" : automanage0
 		"lbMaxLabelLenF" : max_llen
 		"lbMinLabelSpacingF" : spacing	
+		"lbOrientation" : orient
+		"lbLabelDirection" : direction	
 	end getvalues
 
 	print("stride0 " + stride0 + " stride " + stride)
@@ -989,14 +996,20 @@ begin
 		fheight = font_height_factor * fheight
 	end if
 
-	if (fheight .ne. fheight0 .or. automanage0 .eq. 1) then
+	if (fheight .ne. fheight0 \
+	    .or. automanage0 .eq. 1) then
 		ret = 1
 		setvalues plot
 			"lbAutoManage" : False
 			"lbLabelFontHeightF" : fheight
 		end setvalues
+;
+; setting the font height can affect these resource values, so retrieve
+; them again.
+
 		getvalues plot
 			"lbMaxLabelLenF" : max_llen
+			"lbMinLabelSpacingF" : spacing	
 		end getvalues
 	end if
 		
@@ -1018,8 +1031,15 @@ begin
 	end if
 
 	stride = stride0
+	if ((orient .eq. 0 .and. direction .eq. 1) .or. \
+	    (orient .eq. 1 .and. direction .eq. 0) ) then
+		size = max_llen + fheight / 2.0
+	else
+		size = 1.5 * fheight
+	end if		
+
 	if (spacing .gt. 0) then
-		fstride = (max_llen + fheight / 2.0) / spacing
+		fstride = size / spacing
 		print(fstride)
 		stride = floattointeger(fstride)
 		print(stride)

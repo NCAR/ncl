@@ -184,7 +184,7 @@
 *cnplot@pmAnnoViews : (/ $timestamp$ /)
 *cnplot@pmAnnoViews%Profile : (/ InitializeOnly : True /)
 *cnplot@ndvUpdateFunc4 : adjust_labelbar($maptick$,$cnplot$,0,0)
-*cnplot@ndvUpdateFunc4%Profile : (/ Name : Contour Colorbar /)
+*cnplot@ndvUpdateFunc4%Profile : (/ Name : Contour LabelBar /)
 *cnplot*cnRasterModeOn : True
 *cnplot*cnRasterSmoothingOn : True
 *cnplot*cnLinesOn : False
@@ -239,6 +239,8 @@
 ! a global file that is read in separately.
 !
 *vpUseSegments : True
+TickMarkClass*vpUseSegments : False
+LabelBarClass*vpUseSegments : False
 *MaxLevelCount : 20
 *TextFuncCode : ~
 
