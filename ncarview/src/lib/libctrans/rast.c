@@ -1,5 +1,5 @@
 /*
- *	$Id: rast.c,v 1.29 1993-04-27 20:32:59 clyne Exp $
+ *	$Id: rast.c,v 1.30 1993-05-10 19:05:39 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -718,7 +718,7 @@ CGMC *c;
 		Rcoord;	/* cell array corner boundries		*/
 	int	nx, ny;		/* dimensions of cell array by number of cells*/
 	Etype	mode;		/* cell representation mode		*/
-	int	status;
+	int	status = 0;
 
 	int	ras_cell_array(), ras_non_rect_cell_array();
 
