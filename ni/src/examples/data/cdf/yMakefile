@@ -1,5 +1,5 @@
 #
-#   $Id: yMakefile,v 1.9 1998-05-14 13:56:12 haley Exp $
+#   $Id: yMakefile,v 1.10 1998-10-09 17:13:29 haley Exp $
 #
 #   Makefile for HLU XYPlot examples
 #
@@ -15,7 +15,7 @@ DATA  = 95031800_sao.cdf 95031801_sao.cdf 95031802_sao.cdf 95031803_sao.cdf \
 		meccatemp.cdf contour.cdf cn10n.cdf ex01B1_uv300.hs.nc \
 		sstdata_netcdf.nc sst30e_netcdf.nc Pstorm.cdf Tstorm.cdf Ustorm.cdf \
 		Vstorm.cdf 941110_UV.cdf 941110_P.cdf U500storm.cdf V500storm.cdf \
-		fice.nc
+		fice.nc color.nc
 
 InstallTarget($(DATA),$(INSTALL_LIB),$(DATAROOT)/cdf)
 
