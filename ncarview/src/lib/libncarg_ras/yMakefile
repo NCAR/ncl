@@ -1,4 +1,4 @@
-#	$Id: yMakefile,v 1.50 2002-02-24 17:15:26 haley Exp $
+#	$Id: yMakefile,v 1.51 2002-11-25 17:31:45 haley Exp $
 #
 #	Makefile for libraster - libraries for dealing with
 #	a variety of raster image formats.
@@ -129,10 +129,6 @@ BuildSharedFromArch(libNGras,libncarg_ras.a,1,0,$(NCARGCLIB) $(HDFLIB) -lm -lc)
 BuildIncludes($(INCLUDES),ncarg,..)
 InstallTarget($(INCLUDES),$(INSTALL_INC),$(NCARGINCPATH))
 DependTarget($(SRCS))
-
-#if defined(AIX)
-STD_DEFINES =  -DSYSV -DRS6000 -D_XOPEN_SOURCE -D_XOPEN_SOURCE_EXTENDED=1
-#endif
 
 hdf.o:		Makefile
 raster.o:	Makefile
