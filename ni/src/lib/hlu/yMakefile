@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.66 2004-08-30 21:31:00 haley Exp $
+#      $Id: yMakefile,v 1.67 2004-08-31 16:59:26 haley Exp $
 #
 #########################################################################
 #                                                                       #
@@ -141,8 +141,10 @@ cmpf.o: cmpf.c
 #endif
 
 #if defined(AIX)
-TextItem.o: TextItem.c
-	$(CC) $(CCOPTIONS) $(ALLDEFINES) -g -c TextItem.c
+SetValues.o: SetValues.c
+        $(CC) $(CCOPTIONS) $(ALLDEFINES) -O2 -qstrict -g -c SetValues.c
+View.o: View.c
+        $(CC) $(CCOPTIONS) $(ALLDEFINES) -g -c View.c
 #endif
 
 /* This is used to expand the huge macros in this file	*/
