@@ -1,5 +1,5 @@
 /*
- *	$Id: ps.c,v 1.28 2002-04-12 00:32:46 fred Exp $
+ *	$Id: ps.c,v 1.29 2002-06-20 20:48:58 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -3356,8 +3356,8 @@ void ps_NcarLogo(GKSC *gksc,float x,float y,float size)
 
   fp = psa->file_pointer;
   scaling = psa->scaling;
-  translate = (char *) calloc(32,sizeof(char));
-  scale = (char *) calloc(28,sizeof(char));
+  translate = (char *) calloc(33,sizeof(char));
+  scale = (char *) calloc(29,sizeof(char));
 
   llx = psa->dspace.llx;
   lly = psa->dspace.lly;
