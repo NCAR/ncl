@@ -1,5 +1,5 @@
 C
-C	$Id: gztowk.f,v 1.2 1993-01-09 02:04:34 fred Exp $
+C	$Id: gztowk.f,v 1.3 1993-01-12 18:40:49 fred Exp $
 C
       SUBROUTINE GZTOWK
 C
@@ -170,7 +170,7 @@ C
 C  If CUFLAG is set, make the interface call only for the specific
 C  workstation.
 C
-              IF (CUFLAG.GE.0 .AND. SOPWK(I).NE.CUFLAG) GO TO 60
+              IF (CUFLAG.GE.0 .AND. SACWK(I).NE.CUFLAG) GO TO 60
               CALL G01WDR(SACWK(I))
    60         CONTINUE
             ELSE IF (ITYP.EQ.GXWC .OR. ITYP.EQ.GXWE .OR.
