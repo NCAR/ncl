@@ -1,5 +1,5 @@
 C
-C $Id: tdshpk.f,v 1.2 1994-09-08 20:03:55 kennison Exp $
+C $Id: tdshpk.f,v 1.3 1994-09-08 20:08:51 kennison Exp $
 C
 C Define error file number, Fortran logical unit number, workstation type, and
 C workstation ID.
@@ -636,7 +636,8 @@ C
 C
 C Done.
 C
-        WRITE (6,'(''DASHPACK TEST EXECUTED OKAY - SEE PLOTS TO CERTIFY'')')
+	WRITE
+     +    (6,'(''DASHPACK TEST EXECUTED OKAY - SEE PLOTS TO CERTIFY'')')
 C
         IERR=0
 C
