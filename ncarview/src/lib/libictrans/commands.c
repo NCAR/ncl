@@ -1,5 +1,5 @@
 /*
- *	$Id: commands.c,v 1.3 1991-02-06 15:30:50 clyne Exp $
+ *	$Id: commands.c,v 1.4 1991-04-25 12:42:29 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -13,6 +13,7 @@
 
 #include <stdio.h>
 #include <signal.h>
+#include <ctype.h>
 
 #ifndef	CRAY
 #include <sys/wait.h>
@@ -219,30 +220,30 @@ int	iCSave(ic)
 		}
 	}
 	else if (status == 0) {	/* file exists but is not a NCAR CGM	*/
-		(void)fprintf(stderr,"Non valid CGM, overwrite file? [y,n](n)");
-		while (c = getchar()) { 
-			if (c == 'y' || c == 'Y') {
-				while ((c = getchar()) != '\n');
-				type = 1;	/* write to file	*/
-				break;
-			}
-			if (c == '\n') 
-				return;
+		(void)fprintf(stderr,"Non valid CGM, overwrite file? [y,n](y)");
+
+		while (c = getchar()) if (isalpha(c)) break; 
+
+		if (c == 'n' || c == 'N') {
+			return;
 		}
+		else {
+			type = 1;	/* write to file	*/
+		}
+		while ((c = getchar()) != '\n');
 	} else  {		/* file exists and is a valid CGM	*/
 		(void) fprintf(stderr, 
 			"File exists, overwrite or append? [o,a](a)");
-		while (c = getchar()) { 
-			if (c == 'o' || c == 'O') {
-				while ((c = getchar()) != '\n');
-				type = 1;	/* write to file	*/
-				break;
-			}
-			if (c == '\n') {
-				type = 0;	/* append to file	*/
-				break;
-			}
+
+		while (c = getchar()) if (isalpha(c)) break; 
+
+		if (c == 'o' || c == 'O') {
+			type = 1;		/* write to file	*/
 		}
+		else {
+			type = 0;		/* append to file	*/
+		}
+		while ((c = getchar()) != '\n');
 	}
 
 	/*
@@ -504,11 +505,58 @@ static	plotit(frame)
 	}
 	return(1);
 }
-
 static	void	sigint_handler()
 {
 	loopAbort = TRUE;
 }
+
+
+
+int	iCMerge(ic)
+	ICommand	*ic;
+{
+	int	frame1, frame2;
+	int	record1, record2;
+	if (!Toc) return;
+
+	/*
+	 * put the device in graphics mode for plotting
+	 */
+#ifndef	DEBUG
+	GraphicsMode(TRUE);
+#endif
+
+	if (ic->cmd.src_frames.num != 2) {
+		(void) fprintf(stderr,
+			"<%s> usage: %s\n",ic->c->c_name,ic->c->c_usage);
+		return;
+	}
+
+	if (ic->cmd.src_frames.fc[0].num_frames != 1 || 
+		ic->cmd.src_frames.fc[1].num_frames != 1 ) {
+		(void) fprintf(stderr,
+			"<%s> usage: %s\n",ic->c->c_name,ic->c->c_usage);
+		return;
+	}
+	frame1 = ic->cmd.src_frames.fc[0].start_frame;
+	frame2 = ic->cmd.src_frames.fc[1].start_frame;
+
+	record1 = CGM_RECORD(Toc, frame1 - 1);
+	record2 = CGM_RECORD(Toc, frame2 - 1);
+
+	(void) ctrans_merge(record1, record2);
+
+	/*
+	 * put the device in text mode
+	 */
+#ifndef	DEBUG
+	GraphicsMode(FALSE);
+#endif
+
+	fprintf(stderr,"Merged frames %d and %d\n", frame1, frame2); 
+
+}
+
 
 int	iCPrint(ic)
 	ICommand	*ic;
