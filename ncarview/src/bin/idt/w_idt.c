@@ -1,5 +1,5 @@
 /*
- *	$Id: w_idt.c,v 1.15 1991-08-20 18:43:51 clyne Exp $
+ *	$Id: w_idt.c,v 1.16 1991-09-26 16:26:43 clyne Exp $
  */
 /*
  *	w_idt.c
@@ -109,7 +109,7 @@ static	String fallback_resources[] = {
 	"*file*file finder*value.translations: #override \\n\
 		 <Key>Return: finderTranslation()",
 	"*file*selection.label:	selection",
-	"*file*selection.value:	\ ",
+	"*file*selection.value:	\\",
 	"*file*selection*value.translations: #override \\n\
 		 <Key>Return: okFileTranslation()",
 	"*file*Text.translations: #override \\n\
