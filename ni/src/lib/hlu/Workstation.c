@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.52 1996-05-08 01:12:30 dbrown Exp $
+ *      $Id: Workstation.c,v 1.53 1996-05-08 14:28:57 boote Exp $
  */
 /************************************************************************
 *									*
@@ -883,7 +883,10 @@ DoCmap
 		}
 		else {
 			tcp = wp->bkgnd_color->data;
-			if((*tcp)[0] < 0.0 || (*tcp)[0] > 1.0 ||
+			if((*tcp)[0] == -1.0){
+				tcp = NULL;
+			}
+			else if((*tcp)[0] < 0.0 || (*tcp)[0] > 1.0 ||
 			   (*tcp)[1] < 0.0 || (*tcp)[1] > 1.0 ||
 			   (*tcp)[2] < 0.0 || (*tcp)[2] > 1.0) {
 				e_text = 
@@ -925,7 +928,10 @@ DoCmap
 		}
 		else {
 			tcp = wp->foregnd_color->data;
-			if((*tcp)[0] < 0.0 || (*tcp)[0] > 1.0 ||
+			if((*tcp)[0] == -1.0){
+				tcp = NULL;
+			}
+			else if((*tcp)[0] < 0.0 || (*tcp)[0] > 1.0 ||
 			   (*tcp)[1] < 0.0 || (*tcp)[1] > 1.0 ||
 			   (*tcp)[2] < 0.0 || (*tcp)[2] > 1.0) {
 				e_text = 
