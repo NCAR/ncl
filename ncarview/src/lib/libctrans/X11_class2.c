@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class2.c,v 1.2 1991-01-09 11:07:04 clyne Exp $
+ *	$Id: X11_class2.c,v 1.3 1991-04-30 17:27:26 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -50,11 +50,15 @@ Ct_err	set_background_colr(colr)
 	extern	Colormap	Cmap;
 	extern	boolean		Colordef[];
 	extern	Pixeltype	Colortab[];
+	extern	boolean		Color_ava;
 	
+	if (! Color_ava) return (OK);
+
 	if (startedDrawing) {
 		ct_error(NT_NULL,"Background color changes ignored after drawing has begun");
 		return (SICK);
 	}
+
 
 	/*
 	 *	convert CGM rgb values to X rgb values
@@ -109,7 +113,7 @@ Ct_err	set_background_colr(colr)
 			return (pre_err);
 		}
 		Colortab[0] = color.pixel;
-		Colortab[0] = TRUE;
+		Colordef[0] = TRUE;
 	}
 
 	/*
