@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.84 1995-04-20 19:42:04 haley Exp $
+#   $Id: ncargex.csh,v 1.85 1995-04-20 19:47:52 haley Exp $
 #
 
 if ($#argv < 1) goto usage
@@ -1082,8 +1082,6 @@ invalid:
       breaksw
     endsw
 end
-
-if ("$names" == "") goto usage
 
 #***********************************************#
 #                                               #
