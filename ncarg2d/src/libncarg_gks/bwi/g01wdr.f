@@ -1,5 +1,5 @@
 C
-C	$Id: g01wdr.f,v 1.2 1993-01-09 02:06:53 fred Exp $
+C	$Id: g01wdr.f,v 1.3 1994-03-30 02:08:28 fred Exp $
 C
         SUBROUTINE G01WDR(WKID)
 C
@@ -127,15 +127,6 @@ C
         RETURN
       ENDIF
 C
-C  Set file name for output metafile.
-C
-      IF (MCODES.EQ.90) THEN
-        MFNAME = STR
-        CALL GTNLEN(MFNAME,ILEN,IER)
-        MFNAME(ILEN+1:ILEN+1) = CHAR(0)
-        RETURN
-      ENDIF
-C
 C  WDT inquiry (-100 thru -199)
 C
       IF (MCODES.LE.-100 .AND. MCODES.GE.-199)  THEN
@@ -218,6 +209,16 @@ C
       MCONID = ID(2)
       MWTYPE = ID(3)
 C
+C  Set the file name.
+C
+      IF (STR(1:7) .EQ. 'DEFAULT') THEN
+        FNAME = 'GMETA'
+      ELSE
+        FNAME = STR
+        CALL GTNLEN(FNAME,ILEN,IER)
+        FNAME(ILEN+1:ILEN+1) = CHAR(0)
+      ENDIF
+C
 C  Initialize metacode record number.
 C
       MRECNM = 1
@@ -228,9 +229,6 @@ C
 C
 C  Open metacode output unit.
 C
-      FNAME = MFNAME
-      CALL GTNLEN(FNAME,ILEN,IER)
-      FNAME(ILEN+1:ILEN+1) = CHAR(0)
       CALL G01MIO (1, MFGLUN, FNAME(1:ILEN), MOUTBF, 1, RERR)
       IF (RERR .NE. 0)  RETURN
 C

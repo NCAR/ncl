@@ -1,5 +1,5 @@
 C
-C	$Id: g01bkd.f,v 1.3 1993-03-19 01:28:21 fred Exp $
+C	$Id: g01bkd.f,v 1.4 1994-03-30 02:08:24 fred Exp $
 C
       BLOCK DATA G01BKD
 C
@@ -179,9 +179,8 @@ C  Flag value in I/O common block.
 C
       DATA  MIOFLG/-9999/
 C
-C  Default metafile file name, picture name.
+C  Default picture name.
 C
-       DATA MFNAME/'GMETA'/
        DATA MPNAME/
      +     '                                                              
      +                    '/

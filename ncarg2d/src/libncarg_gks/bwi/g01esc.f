@@ -1,5 +1,5 @@
 C
-C	$Id: g01esc.f,v 1.2 1993-01-09 02:06:00 fred Exp $
+C	$Id: g01esc.f,v 1.3 1994-03-30 02:08:25 fred Exp $
 C
       SUBROUTINE G01ESC
 C
@@ -21,7 +21,11 @@ C
         IF (STRL1 .GT. 0) THEN
           NBYTES = G01PBL(STRL1,1+(MINTFW-1)/8)
         ELSE
-          NBYTES = 2
+C
+C  Two bytes for the function identifier and one for the string
+C  count of the empty string.
+C
+          NBYTES = 3
         ENDIF
 C
 C  Put out class, id, length
@@ -36,10 +40,12 @@ C
 C
 C  Put out first data record if there is one.
 C
-        IF (STRL2 .GT. 0) THEN
+        IF (STRL2 .EQ. 0) THEN
+          CALL GPUTPS (STR, STRL1,  0, 0, RERR)
+        ELSE IF (STRL2 .GT. 0) THEN
           CALL GPUTPS (STR, STRL1, 80, 0, RERR)
-          IF (RERR .NE. 0)  RETURN
         ENDIF
+        IF (RERR .NE. 0)  RETURN
 C
 C  If there is to be no continuation, check for consistency, and
 C  reset the parameter "KALL".

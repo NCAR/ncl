@@ -1,5 +1,5 @@
 C
-C	$Id: g01snp.f,v 1.2 1993-01-09 02:06:48 fred Exp $
+C	$Id: g01snp.f,v 1.3 1994-03-30 02:08:27 fred Exp $
 C
       SUBROUTINE G01SNP (ERROR)
 C
@@ -23,6 +23,10 @@ C  Put out 'BEGIN PICTURE' element using the picture name in MPNAME.
 C
       CALL GPUTNI (CLBEGP, IDBEGP, G01PBL(60,0), ERROR)
       CALL GPUTPS (MPNAME(1:60), 60, 60, 0, ERROR)
+C
+C  Reset picture name to blank.
+C
+      MPNAME = ' '
       IF (ERROR.NE.0)  GO TO 77
 C
 C  Put out the PICTURE DESCRIPTOR.

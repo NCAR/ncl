@@ -1,5 +1,5 @@
 C
-C	$Id: ginlod.f,v 1.2 1993-01-09 02:07:12 fred Exp $
+C	$Id: ginlod.f,v 1.3 1994-03-30 02:08:29 fred Exp $
 C
       SUBROUTINE GINLOD(GKSERR)
 C
@@ -35,7 +35,7 @@ C  Initialize error status.
 C
       GKSERR = ALLOK
 C
-C  Make sure the element starts on a 16 bit boundry.
+C  Make sure the element starts on a 16 bit boundary.
 C
       TEMP = MOD(MBFPOS,16)
       IF (TEMP .NE. 0) MBFPOS = MBFPOS + (16-TEMP)

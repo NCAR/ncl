@@ -1,5 +1,5 @@
 C
-C	$Id: gputps.f,v 1.2 1993-01-09 02:07:38 fred Exp $
+C	$Id: gputps.f,v 1.3 1994-03-30 02:08:30 fred Exp $
 C
       SUBROUTINE GPUTPS (BUFFER, COUNT1, COUNT2, CONTIN, GKSERR)
 C
@@ -58,6 +58,7 @@ C
       END IF
 C
       CTEMP = COUNT2
+      IF (CTEMP .EQ. 0) RETURN
       STRT = 1
 C
    10 CONTINUE

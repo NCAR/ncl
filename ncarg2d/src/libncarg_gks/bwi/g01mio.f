@@ -1,5 +1,5 @@
 C
-C	$Id: g01mio.f,v 1.2 1993-01-11 20:53:53 don Exp $
+C	$Id: g01mio.f,v 1.3 1994-03-30 02:08:27 fred Exp $
 C
       SUBROUTINE G01MIO (OP, UNIT, FNAME, BUFFER, LENGTH, ERROR)
 C------------------------------------------------------------------------------
@@ -70,8 +70,8 @@ C
         INTEGER         MIOFLG  ,MRECNM ,MPXYSZ ,MPXPY  ,MOBFSZ ,
      +                  MBFPOS  ,MFGLUN ,MOUTBF ,MXBITS ,MDTYPE ,
      +                  MNFFLG  ,MBMFLG ,MEMFLG
-      COMMON  /G01CHA/  MFNAME  ,MPNAME
-      CHARACTER*80      MFNAME  ,MPNAME
+      COMMON  /G01CHA/  MPNAME
+      CHARACTER*80      MPNAME
 C
 C  LOCAL VARIABLES.
 C

@@ -4,5 +4,5 @@
       INTEGER           MIOFLG  ,MRECNM ,MPXYSZ ,MPXPY  ,MOBFSZ ,
      +                  MBFPOS  ,MFGLUN ,MOUTBF ,MXBITS ,MDTYPE ,
      +                  MNFFLG  ,MBMFLG ,MEMFLG
-      COMMON  /G01CHA/  MFNAME  ,MPNAME
-      CHARACTER*80      MFNAME  ,MPNAME
+      COMMON  /G01CHA/  MPNAME
+      CHARACTER*80      MPNAME
