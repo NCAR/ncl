@@ -1,5 +1,5 @@
 /*
- *	$Id: c_cbex01.c.sed,v 1.4 1992-11-06 23:52:59 haley Exp $
+ *	$Id: c_cbex01.c.sed,v 1.5 1992-12-08 16:51:07 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -340,14 +340,6 @@ main()
  * Close GKS.
  */
     c_clsgks();
-}
-
-c_idsfft (md,ndp,xd,yd,zd,nxi,nyi,nzi,xi,yi,zi,iwk,wk)
-float *xd, *yd, *zd, *xi, *yi, *zi, *wk;
-int *iwk, md, ndp, nxi, nyi, nzi;
-{
-    idsfft_(&md,&ndp,xd,yd,zd,&nxi,&nyi,&nzi,xi,yi,zi,iwk,wk);
-    return(1);
 }
 
 void dfclrs()
