@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.2 1993-03-21 01:32:22 haley Exp $
+#	$Id: yMakefile,v 1.3 1993-03-21 02:09:03 haley Exp $
 #
 NCARG	= ../../..
 
@@ -19,6 +19,8 @@ MAN3 = gaccum_tran_matrix gactivate_ws gcell_array gclear_ws gclose_gks \
 	gset_marker_colr_ind gset_marker_size gset_marker_type gset_seg_tran \
 	gset_text_align gset_text_colr_ind gset_text_font_prec gset_text_path \
 	gset_vp gset_win gtext gupd_ws
+
+MAN = $(MAN3)
 
 all:
 

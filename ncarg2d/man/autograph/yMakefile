@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.1 1993-03-11 16:15:04 haley Exp $
+#	$Id: yMakefile,v 1.2 1993-03-21 02:07:42 haley Exp $
 #
 NCARG	= ../../..
 
@@ -7,6 +7,8 @@ MAN3 = agback agbnch agchax agchcu agchil agchnl agcurv agdshn aggetc aggetf \
 	aggeti aggetp aggetr agpwrt agrstr agsave agsetc agsetf agseti agsetp \
 	agsetr agstup agutol anotat autograph autograph_params displa ezmxy ezmy \
 	ezxy ezy
+
+MAN = $(MAN3)
 
 all:
 

@@ -1,9 +1,11 @@
 #
-#	$Id: yMakefile,v 1.1 1993-03-11 16:28:37 haley Exp $
+#	$Id: yMakefile,v 1.2 1993-03-21 02:13:48 haley Exp $
 #
 NCARG	= ../../..
 
 MAN3 = labelbar labelbar_params lbfill lbgeti lbgetr lblbar lbseti lbsetr
+
+MAN = $(MAN3)
 
 all:
 

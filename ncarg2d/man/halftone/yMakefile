@@ -1,9 +1,11 @@
 #
-#	$Id: yMakefile,v 1.1 1993-03-11 16:27:07 haley Exp $
+#	$Id: yMakefile,v 1.2 1993-03-21 02:09:20 haley Exp $
 #
 NCARG	= ../../..
 
 MAN3 =  ezhftn hafton halftone
+
+MAN = $(MAN3)
 
 all:
 

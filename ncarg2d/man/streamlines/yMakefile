@@ -1,10 +1,12 @@
 #
-#	$Id: yMakefile,v 1.1 1993-03-11 16:34:08 haley Exp $
+#	$Id: yMakefile,v 1.2 1993-03-21 02:16:33 haley Exp $
 #
 NCARG	= ../../..
 
 MAN3 = ezstrm fx fy stgeti stgetr stinit stream streamlines \
 	streamlines_params strmln strset stseti stsetr studmv stuixy stumta stumxy
+
+MAN = $(MAN3)
 
 all:
 

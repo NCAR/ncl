@@ -1,10 +1,12 @@
 #
-#	$Id: yMakefile,v 1.1 1993-03-11 16:28:11 haley Exp $
+#	$Id: yMakefile,v 1.2 1993-03-21 02:13:27 haley Exp $
 #
 NCARG	= ../../..
 
 MAN3 = ezisos isgeti isgetr isosrf isosurface isosurface_params isseti issetr \
 	pwrzi
+
+MAN = $(MAN3)
 
 all:
 

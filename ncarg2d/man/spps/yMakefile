@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.1 1993-03-11 16:33:20 haley Exp $
+#	$Id: yMakefile,v 1.2 1993-03-21 02:16:09 haley Exp $
 #
 NCARG	= ../../..
 
@@ -8,6 +8,8 @@ MAN3 = cfux cfuy clsgks cmfx cmfy cmux cmuy cpfx cpfy cpux cpuy cufx cufy \
 	kmpy kpmx kpmy kumx kumy kupx kupy line mxmy opngks plotif plotit point \
 	points pwrit set seti setusv sflush spps spps_converters spps_params \
 	vector wtstr
+
+MAN = $(MAN3)
 
 all:
 

@@ -1,9 +1,11 @@
 #
-#	$Id: yMakefile,v 1.1 1993-03-11 16:15:38 haley Exp $
+#	$Id: yMakefile,v 1.2 1993-03-21 02:07:57 haley Exp $
 #
 NCARG	= ../../..
 
 MAN3 = colconv hlsrgb hsvrgb rgbhls rgbhsv rgbyiq yiqrgb
+
+MAN = $(MAN3)
 
 all:
 

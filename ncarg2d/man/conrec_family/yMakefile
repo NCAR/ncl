@@ -1,9 +1,11 @@
 #
-#	$Id: yMakefile,v 1.1 1993-03-11 16:18:18 haley Exp $
+#	$Id: yMakefile,v 1.2 1993-03-21 02:08:21 haley Exp $
 #
 NCARG	= ../../..
 
 MAN3 = conrec conrec conrec_family conrecqck conrecspr ezcntr
+
+MAN = $(MAN3)
 
 all:
 

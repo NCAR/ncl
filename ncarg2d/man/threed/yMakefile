@@ -1,10 +1,12 @@
 #
-#	$Id: yMakefile,v 1.1 1993-03-11 16:35:06 haley Exp $
+#	$Id: yMakefile,v 1.2 1993-03-21 02:17:05 haley Exp $
 #
 NCARG	= ../../..
 
 MAN3 =  curve3 fence3 frst3 line3 perim3 point3 psym3 pwrz pwrzt set3 threed \
 	threed_params tick3 tick43 vect3
+
+MAN = $(MAN3)
 
 all:
 

@@ -1,10 +1,12 @@
 #
-#	$Id: yMakefile,v 1.1 1993-03-11 16:35:54 haley Exp $
+#	$Id: yMakefile,v 1.2 1993-03-21 02:17:22 haley Exp $
 #
 NCARG	= ../../..
 
 MAN3 =  vectors vectors_params ezvec fx fy velvct velvec vvectr vvgetc vvgeti \
 	vvgetr vvinit vvrset vvsetc vvseti vvsetr vvudmv vvumxy
+
+MAN = $(MAN3)
 
 all:
 

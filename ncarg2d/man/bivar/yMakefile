@@ -1,9 +1,11 @@
 #
-#	$Id: yMakefile,v 1.1 1993-03-12 01:58:39 haley Exp $
+#	$Id: yMakefile,v 1.2 1993-03-21 02:07:50 haley Exp $
 #
 NCARG	= ../../..
 
 MAN3 = bivar idbvip idsfft
+
+MAN = $(MAN3)
 
 all:
 

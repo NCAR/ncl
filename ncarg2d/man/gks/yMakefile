@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.1 1993-03-11 16:24:40 haley Exp $
+#	$Id: yMakefile,v 1.2 1993-03-21 02:08:53 haley Exp $
 #
 NCARG	= ../../..
 
@@ -10,6 +10,8 @@ MAN3 = gactm gacwk gca gclks gclrwk gclsg gclwk gcrsg gcsgwk gdawk gdsg gesc \
 	gschsp gschup gschxp gsclip gscr gselnt gsfaci gsfais gsfasi gsln gslwsc \
 	gsmk gsmksc gsplci gspmci gssgt gstxal gstxci gstxfp gstxp gsvp gswn gtx \
 	guwk
+
+MAN = $(MAN3)
 
 all:
 

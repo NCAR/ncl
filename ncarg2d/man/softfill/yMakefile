@@ -1,10 +1,12 @@
 #
-#	$Id: yMakefile,v 1.1 1993-03-11 16:30:59 haley Exp $
+#	$Id: yMakefile,v 1.2 1993-03-21 02:15:31 haley Exp $
 #
 NCARG	= ../../..
 
 MAN3 = softfill softfill_params sfgetc sfgeti sfgetp sfgetr sfnorm sfsetc \
 	sfseti sfsetp sfsetr sfsgfa sfwrld
+
+MAN = $(MAN3)
 
 all:
 

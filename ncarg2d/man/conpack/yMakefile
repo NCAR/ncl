@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.1 1993-03-11 16:17:24 haley Exp $
+#	$Id: yMakefile,v 1.2 1993-03-21 02:08:07 haley Exp $
 #
 NCARG	= ../../..
 
@@ -7,6 +7,8 @@ MAN3 = conpack conpack_params cpback cpchcf cpchcl cpchhl cpchil cpchll \
 	cpcica cpclam cpcldm cpcldr cpcltr cpcnrc cpdrpl cpezct cpgetc cpgeti \
 	cpgetr cplbam cplbdr cpmpxy cppkcl cppklb cprect cprset cpscae cpsetc \
 	cpseti cpsetr cpsprs cpsps1 cpsps2
+
+MAN = $(MAN3)
 
 all:
 
