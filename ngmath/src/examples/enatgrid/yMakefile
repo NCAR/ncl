@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.4 1997-04-11 18:47:18 haley Exp $
+#	$Id: yMakefile,v 1.5 2000-08-26 00:36:01 fred Exp $
 #
 
 MYNAME	= enatgrid
@@ -9,14 +9,14 @@ SRCS = \
 	c_nnex06.c                                                        \
 	nnplotf.f    nnex01.f     nnex01d.f      nnex02.f      nnex03.f   \
 	nnex04.f     nnex05.f     nnex06.f       nnex07.f      nnex08.f   \
-	nnex09.f
+	nnex09.f     nnes10.f
 
 OBJS = \
 	nnplotc.o    c_nnex01.o   c_nnex01d.o    c_nnex02.o    c_nnex03.o \
 	c_nnex06.o                                                        \
 	nnplotf.o    nnex01.o     nnex01d.o      nnex02.o      nnex03.o   \
 	nnex04.o     nnex05.o     nnex06.o       nnex07.o      nnex08.o   \
-	nnex09.o
+	nnex09.o     nnes10.o
 
 PROG_LIBS               = $(NCARGLIBS) $(NGMATHLIBS)
 SYS_LIBS		= $(XLIB) $(CTOFLIBS)
@@ -32,6 +32,7 @@ FExampleTarget(nnex06,nnex06.o nnplotf.o)
 FExampleTarget(nnex07,nnex07.o nnplotf.o)
 FExampleTarget(nnex08,nnex08.o nnplotf.o)
 FExampleTarget(nnex09,nnex09.o nnplotf.o)
+FExampleTarget(nnex10,nnex10.o nnplotf.o)
 FExampleTarget(nnex01d,nnex01d.o nnplotf.o)
 CExampleTarget(c_nnex01,c_nnex01.o nnplotc.o)
 CExampleTarget(c_nnex02,c_nnex02.o nnplotc.o)
