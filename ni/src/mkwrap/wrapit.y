@@ -322,8 +322,8 @@ interface_list : interface ENDOFIF
 					if(additional_src->src) {
 						fprintf(stdout,"%s",additional_src->src);
 					}
-					additional_src = additional_src->next;
 				} 
+				additional_src = additional_src->next;
 			}
 			c_vdefs = c_vdefs->next;
 		}
@@ -335,8 +335,8 @@ interface_list : interface ENDOFIF
 					if(additional_src->src) {
 						fprintf(stdout,"%s",additional_src->src);
 					}
-					additional_src = additional_src->next;
 				} 
+				additional_src = additional_src->next;
 			}
 			c_vdefs = c_vdefs->next;
 		}
@@ -375,7 +375,7 @@ interface_list : interface ENDOFIF
 		while(c_vdefs != NULL) {
 			additional_src = c_vdefs->def->additional_src;
 			while(additional_src != NULL) {
-				if(c_vdefs->def->order == 2) {
+				if(additional_src->order == 2) {
 					if(additional_src->src) {
 						fprintf(stdout,"%s",additional_src->src);
 					}
