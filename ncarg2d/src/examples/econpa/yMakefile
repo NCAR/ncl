@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.16 2002-05-23 22:11:27 kennison Exp $
+#	$Id: yMakefile,v 1.17 2002-05-30 16:30:58 kennison Exp $
 #
 
 MYNAME	= econpa
@@ -7,7 +7,7 @@ MYNAME	= econpa
 SRCS = \
 	cpexcc.f cpex01.f cpex02.f cpex03.f cpex04.f cpex05.f cpex06.f \
 	cpex07.f cpex08.f cpex09.f cpex10.f cpex11.f cpex12.f cpex13.f \
-	cpex14.f cpex15.f cpex16.f cbex01.f cpex14.dat cpex16.dat.nc
+	cpex14.f cpex15.f cpex16.f cbex01.f cpex14.dat cpex16.dat
 
 OBJS = \
 	cpexcc.o cpex01.o cpex02.o cpex03.o cpex04.o cpex05.o cpex06.o \

@@ -1,23 +1,24 @@
 
       PROGRAM CPEX16
 C
-C This program reads, from a NetCDF file, data defining a global field
-C of temperatures on what is called a POP grid and draws any or all of
-C the following five plots: 1) the POP grid; 2) temperature contours;
-C 3) color-filled temperature contour bands, drawn using AREAS; 4) the
-C same contour bands, drawn using a cell array; and 5) the POP grid
-C cells, filled in the colors chosen by CONPACK for the contour bands.
-C  The values of the flags that determine which of these plots are drawn
-C are set in DATA statements below.
+C This program reads user data defining a global field of temperatures
+C on what is called a POP grid and draws any or all of the following
+C five plots: 1) the POP grid; 2) temperature contours; 3) color-filled
+C temperature contour bands, drawn using AREAS; 4) the same contour
+C bands, drawn using a cell array; and 5) the POP grid cells, filled
+C in the colors chosen by CONPACK for the contour bands.  The values
+C of the flags that determine which of these plots are drawn are set
+C in DATA statements below.
 C
 C Of principal interest is the version of CPMPXY included, which solves
 C the difficult problem of doing the inverse transformation (to find,
 C given a position on the map, that point on the POP grid which maps
 C into that position).
 C
-C Include definitions that "NetCDF" needs.
+C Include definitions that "NetCDF" needs (now commented out, because
+C the data are being read from an ASCII file, instead).
 C
-        include 'netcdf.inc'
+C       include 'netcdf.inc'
 C
 C Define the error file, the Fortran unit number, the workstation type,
 C and the workstation ID.
@@ -165,97 +166,121 @@ C
 C R E A D   T H E   D A T A
 C - - - -   - - -   - - - -
 C
+C The data for this example were originally read from a user's "NetCDF"
+C file.  The code used for the purpose follows, but has been commented
+C out, as the data are now read from an ASCII file.  This gets around
+C certain procedural problems in running the example from "ncargex".
+C
 C Open the "NetCDF" file.
 C
-        ISTA=NF_OPEN('cpex16.dat.nc',0,NCID)
+C       ISTA=NF_OPEN('cpex16.dat.nc',0,NCID)
 C
-        IF (ISTA.NE.NF_NOERR) THEN
-          PRINT * , 'ERROR RETURN FROM NF_OPEN: ',ISTA
-          STOP
-        END IF
+C       IF (ISTA.NE.NF_NOERR) THEN
+C         PRINT * , 'ERROR RETURN FROM NF_OPEN: ',ISTA
+C         STOP
+C       END IF
 C
 C Read the array of latitudes of cell centers.
 C
-        ISTA=NF_INQ_VARID(NCID,'TLAT',IVID)
-        IF (ISTA.NE.NF_NOERR) THEN
-          PRINT * , 'ERROR RETURN FROM NF_INQ_VARID: ',ISTA
-          STOP
-        END IF
+C       ISTA=NF_INQ_VARID(NCID,'TLAT',IVID)
+C       IF (ISTA.NE.NF_NOERR) THEN
+C         PRINT * , 'ERROR RETURN FROM NF_INQ_VARID: ',ISTA
+C         STOP
+C       END IF
 C
-        ISTA=NF_GET_VAR_REAL(NCID,IVID,TLAT)
-        IF (ISTA.NE.NF_NOERR) THEN
-          PRINT * , 'ERROR RETURN FROM NF_GET_VAR_REAL: ',ISTA
-          STOP
-        END IF
+C       ISTA=NF_GET_VAR_REAL(NCID,IVID,TLAT)
+C       IF (ISTA.NE.NF_NOERR) THEN
+C         PRINT * , 'ERROR RETURN FROM NF_GET_VAR_REAL: ',ISTA
+C         STOP
+C       END IF
 C
 C Read the array of longitudes of cell centers.
 C
-        ISTA=NF_INQ_VARID(NCID,'TLONG',IVID)
-        IF (ISTA.NE.NF_NOERR) THEN
-          PRINT * , 'ERROR RETURN FROM NF_INQ_VARID: ',ISTA
-          STOP
-        END IF
+C       ISTA=NF_INQ_VARID(NCID,'TLONG',IVID)
+C       IF (ISTA.NE.NF_NOERR) THEN
+C         PRINT * , 'ERROR RETURN FROM NF_INQ_VARID: ',ISTA
+C         STOP
+C       END IF
 C
-        ISTA=NF_GET_VAR_REAL(NCID,IVID,TLON)
-        IF (ISTA.NE.NF_NOERR) THEN
-          PRINT * , 'ERROR RETURN FROM NF_GET_VAR_REAL: ',ISTA
-          STOP
-        END IF
+C       ISTA=NF_GET_VAR_REAL(NCID,IVID,TLON)
+C       IF (ISTA.NE.NF_NOERR) THEN
+C         PRINT * , 'ERROR RETURN FROM NF_GET_VAR_REAL: ',ISTA
+C         STOP
+C       END IF
 C
 C Read the array of latitudes of cell corner points.
 C
-        ISTA=NF_INQ_VARID(NCID,'ULAT',IVID)
-        IF (ISTA.NE.NF_NOERR) THEN
-          PRINT * , 'ERROR RETURN FROM NF_INQ_VARID: ',ISTA
-          STOP
-        END IF
+C       ISTA=NF_INQ_VARID(NCID,'ULAT',IVID)
+C       IF (ISTA.NE.NF_NOERR) THEN
+C         PRINT * , 'ERROR RETURN FROM NF_INQ_VARID: ',ISTA
+C         STOP
+C       END IF
 C
-        ISTA=NF_GET_VAR_REAL(NCID,IVID,ULAT)
-        IF (ISTA.NE.NF_NOERR) THEN
-          PRINT * , 'ERROR RETURN FROM NF_GET_VAR_REAL: ',ISTA
-          STOP
-        END IF
+C       ISTA=NF_GET_VAR_REAL(NCID,IVID,ULAT)
+C       IF (ISTA.NE.NF_NOERR) THEN
+C         PRINT * , 'ERROR RETURN FROM NF_GET_VAR_REAL: ',ISTA
+C         STOP
+C       END IF
 C
 C Read the array of longitudes of cell corner points.
 C
-        ISTA=NF_INQ_VARID(NCID,'ULONG',IVID)
-        IF (ISTA.NE.NF_NOERR) THEN
-          PRINT * , 'ERROR RETURN FROM NF_INQ_VARID: ',ISTA
-          STOP
-        END IF
+C       ISTA=NF_INQ_VARID(NCID,'ULONG',IVID)
+C       IF (ISTA.NE.NF_NOERR) THEN
+C         PRINT * , 'ERROR RETURN FROM NF_INQ_VARID: ',ISTA
+C         STOP
+C       END IF
 C
-        ISTA=NF_GET_VAR_REAL(NCID,IVID,ULON)
-        IF (ISTA.NE.NF_NOERR) THEN
-          PRINT * , 'ERROR RETURN FROM NF_GET_VAR_REAL: ',ISTA
-          STOP
-        END IF
+C       ISTA=NF_GET_VAR_REAL(NCID,IVID,ULON)
+C       IF (ISTA.NE.NF_NOERR) THEN
+C         PRINT * , 'ERROR RETURN FROM NF_GET_VAR_REAL: ',ISTA
+C         STOP
+C       END IF
 C
 C Read the array of temperature values.
 C
-        ISTA=NF_INQ_VARID(NCID,'TEMP',IVID)
-        IF (ISTA.NE.NF_NOERR) THEN
-          PRINT * , 'ERROR RETURN FROM NF_INQ_VARID: ',ISTA
-          STOP
-        END IF
+C       ISTA=NF_INQ_VARID(NCID,'TEMP',IVID)
+C       IF (ISTA.NE.NF_NOERR) THEN
+C         PRINT * , 'ERROR RETURN FROM NF_INQ_VARID: ',ISTA
+C         STOP
+C       END IF
 C
-        ISTA=NF_GET_VAR_REAL(NCID,IVID,TEMP)
-        IF (ISTA.NE.NF_NOERR) THEN
-          PRINT * , 'ERROR RETURN FROM NF_GET_VAR_REAL: ',ISTA
-          STOP
-        END IF
+C       ISTA=NF_GET_VAR_REAL(NCID,IVID,TEMP)
+C       IF (ISTA.NE.NF_NOERR) THEN
+C         PRINT * , 'ERROR RETURN FROM NF_GET_VAR_REAL: ',ISTA
+C         STOP
+C       END IF
 C
 C Close the "NetCDF" file.
 C
-        ISTA=NF_CLOSE(NCID)
-        IF (ISTA.NE.NF_NOERR) THEN
-          PRINT * , 'ERROR RETURN FROM NF_CLOSE: ',ISTA
-          STOP
-        END IF
+C       ISTA=NF_CLOSE(NCID)
+C       IF (ISTA.NE.NF_NOERR) THEN
+C         PRINT * , 'ERROR RETURN FROM NF_CLOSE: ',ISTA
+C         STOP
+C       END IF
+C
+C Write the data to unit 11.  (These statements are commented out; they
+C were used to create a "fort.11" which was then renamed "cpex16.dat".)
+C
+C       WRITE (11,'(5E16.8)') TLAT
+C       WRITE (11,'(5E16.8)') TLON
+C       WRITE (11,'(5E16.8)') ULAT
+C       WRITE (11,'(5E16.8)') ULON
+C       WRITE (11,'(5E16.8)') TEMP
+C
+C Read the required data from the ASCII file "cpex16.dat".
+C
+        OPEN (11,FILE='cpex16.dat',STATUS='OLD',FORM='FORMATTED')
+C
+        READ (11,'(5E16.8)') TLAT
+        READ (11,'(5E16.8)') TLON
+        READ (11,'(5E16.8)') ULAT
+        READ (11,'(5E16.8)') ULON
+        READ (11,'(5E16.8)') TEMP
 C
 C Print elapsed time.
 C
         IF (ITIM.NE.0) THEN
-          PRINT * , 'AFTER READING NETCDF FILE:'
+          PRINT * , 'AFTER READING INPUT DATA:'
           IF (DTIME(TIME).GE.0.) THEN
             PRINT * , '  USER TIME:  ',TIME(1)
             PRINT * , '  SYSTEM TIME:',TIME(2)
