@@ -395,7 +395,7 @@ if(groot != NULL) {
 */
 				_NclPutInstr(ASSIGN_VAR_OP,dofromto->line,dofromto->file);
 				_NclPutInstr((NclValue)dofromto->inc_sym,dofromto->line,dofromto->file);
-				_NclPutInstr(0,dofromto->line,dofromto->file);
+				_NclPutIntInstr(0,dofromto->line,dofromto->file);
 /*
 * assigns direction sym uncovers start_expr value
 */
@@ -408,7 +408,7 @@ if(groot != NULL) {
 
 				_NclPutInstr(ASSIGN_VAR_OP,dofromto->line,dofromto->file);
 				_NclPutInstr((NclValue)dofromto->dir_sym,dofromto->line,dofromto->file);
-				_NclPutInstr(0,dofromto->line,dofromto->file);
+				_NclPutIntInstr(0,dofromto->line,dofromto->file);
 
 			
 /*
@@ -481,7 +481,7 @@ if(groot != NULL) {
 				off1 = _NclTranslate(dofromtostride->stride_expr,fp);
 				_NclPutInstr(ASSIGN_VAR_OP,dofromtostride->line,dofromtostride->file);
 				_NclPutInstr((NclValue)dofromtostride->inc_sym,dofromtostride->line,dofromtostride->file);
-				_NclPutInstr(0,dofromtostride->line,dofromtostride->file);
+				_NclPutIntInstr(0,dofromtostride->line,dofromtostride->file);
 		
 
 
@@ -492,7 +492,7 @@ if(groot != NULL) {
 				_NclPutInstr(LE_OP,dofromtostride->line,dofromtostride->file);
 				_NclPutInstr(ASSIGN_VAR_OP,dofromtostride->line,dofromtostride->file);
                                 _NclPutInstr((NclValue)dofromtostride->dir_sym,dofromtostride->line,dofromtostride->file);
-                                _NclPutInstr(0,dofromtostride->line,dofromtostride->file);
+                                _NclPutIntInstr(0,dofromtostride->line,dofromtostride->file);
 
 
 				_NclTranslate(dofromtostride->start_expr,fp);
@@ -986,13 +986,13 @@ Unneeded translations
 				step= step->next;
 				_NclPutInstr((NclValue)CONVERT_TO_LOCAL,proccall->line,proccall->file);
 				_NclPutInstr((NclValue)proccall->proc,proccall->line,proccall->file);
-				_NclPutInstr((NclValue)i,proccall->line,proccall->file);
+				_NclPutIntInstr(i,proccall->line,proccall->file);
 				i = 1;
 				while(step != NULL) {
 					_NclTranslate(step->node,fp);
 					_NclPutInstr((NclValue)CONVERT_TO_LOCAL,proccall->line,proccall->file);
 					_NclPutInstr((NclValue)proccall->proc,proccall->line,proccall->file);
-					_NclPutInstr((NclValue)i,proccall->line,proccall->file);
+					_NclPutIntInstr(i,proccall->line,proccall->file);
 					step= step->next;
 					i++;
 				}
@@ -1001,7 +1001,7 @@ Unneeded translations
 				_NclPutInstr(INTRINSIC_PROC_CALL,proccall->line,proccall->file);
 			}
 			_NclPutInstr((NclValue)proccall->proc,proccall->line,proccall->file);
-			_NclPutInstr((NclValue)i,proccall->line,proccall->file);
+			_NclPutIntInstr(i,proccall->line,proccall->file);
 			_NclPutInstrAt(off2,_NclGetCurrentOffset(),proccall->line,proccall->file);
 			break;
 		}
@@ -1022,7 +1022,7 @@ Unneeded translations
 				step= step->next;
 				_NclPutInstr(CONVERT_TO_LOCAL,proccall->line,proccall->file);
 				_NclPutInstr((NclValue)proccall->proc,proccall->line,proccall->file);
-				_NclPutInstr((NclValue)i,proccall->line,proccall->file);
+				_NclPutIntInstr(i,proccall->line,proccall->file);
 				i++;
 			}
 /*
@@ -1082,7 +1082,7 @@ Unneeded translations
 				_NclPutInstr(CONVERT_TO_LOCAL,proccall->line,proccall->file);
 
 				_NclPutInstr((NclValue)proccall->proc,proccall->line,proccall->file);
-				_NclPutInstr((NclValue)i,proccall->line,proccall->file);
+				_NclPutIntInstr(i,proccall->line,proccall->file);
 				i++;
 			}
 /*
@@ -1124,14 +1124,14 @@ Unneeded translations
 				step= step->next;
 				_NclPutInstr((NclValue)CONVERT_TO_LOCAL,funccall->line,funccall->file);
 				_NclPutInstr((NclValue)funccall->func,funccall->line,funccall->file);
-				_NclPutInstr((NclValue)i,funccall->line,funccall->file);
+				_NclPutIntInstr(i,funccall->line,funccall->file);
 				i = 1;
 				while(step != NULL) {
 					_NclTranslate(step->node,fp);
 					step= step->next;
 					_NclPutInstr((NclValue)CONVERT_TO_LOCAL,funccall->line,funccall->file);
 					_NclPutInstr((NclValue)funccall->func,funccall->line,funccall->file);
-					_NclPutInstr((NclValue)i,funccall->line,funccall->file);
+					_NclPutIntInstr(i,funccall->line,funccall->file);
 					i++;
 				}
 				_NclPutInstr(INTRINSIC_FUNC_CALL,funccall->line,funccall->file);
@@ -1139,7 +1139,7 @@ Unneeded translations
 				_NclPutInstr(INTRINSIC_FUNC_CALL,funccall->line,funccall->file);
 			}
 			_NclPutInstr((NclValue)funccall->func,funccall->line,funccall->file);
-			_NclPutInstr((NclValue)i,funccall->line,funccall->file);
+			_NclPutIntInstr(i,funccall->line,funccall->file);
 			_NclPutInstrAt(off2,_NclGetCurrentOffset(),funccall->line,funccall->file);
 			break;
 		}
@@ -1159,7 +1159,7 @@ Unneeded translations
 				step= step->next;
 				_NclPutInstr(CONVERT_TO_LOCAL,funccall->line,funccall->file);
 				_NclPutInstr((NclValue)funccall->func,funccall->line,funccall->file);
-				_NclPutInstr((NclValue)i,funccall->line,funccall->file);
+				_NclPutIntInstr(i,funccall->line,funccall->file);
 				i++;
 			}
 /*
@@ -1211,7 +1211,7 @@ Unneeded translations
 				step=step->next;
 				_NclPutInstr(CONVERT_TO_LOCAL,funccall->line,funccall->file);
 				_NclPutInstr((NclValue)funccall->func,funccall->line,funccall->file);
-				_NclPutInstr((NclValue)i,funccall->line,funccall->file);
+				_NclPutIntInstr(i,funccall->line,funccall->file);
 				i++;
 			}
 /*
