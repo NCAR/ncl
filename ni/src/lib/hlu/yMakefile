@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.34 1996-04-05 21:15:41 boote Exp $
+#      $Id: yMakefile,v 1.35 1996-05-05 22:10:27 boote Exp $
 #
 #########################################################################
 #									#
@@ -47,7 +47,8 @@ HDRS		= Base.h BaseP.h Convert.h ConvertP.h ConvertersP.h\
 		PSWorkstation.h PSWorkstationP.h VectorField.h \
 		VectorFieldFloatP.h VectorFieldP.h VectorPlot.h VectorPlotP.h \
 		VecAnno.h VecAnnoP.h StreamlinePlot.h StreamlinePlotP.h \
-		Style.h StyleP.h GraphicStyle.h GraphicStyleP.h SubStylesP.h
+		Style.h StyleP.h GraphicStyle.h GraphicStyleP.h SubStylesP.h \
+		Callbacks.h CallbacksP.h
 
 CSRCS		= Base.c BoundingBox.c Close.c Convert.c Converters.c \
 		Create.c Destroy.c Draw.c Error.c GetValues.c \
@@ -63,6 +64,7 @@ CSRCS		= Base.c BoundingBox.c Close.c Convert.c Converters.c \
 		ScalarField.c AnnoManager.c Format.c App.c PSWorkstation.c \
 		Palette.c VectorField.c VectorPlot.c VecAnno.c \
 		StreamlinePlot.c Style.c GraphicStyle.c SubStyles.c \
+		Callbacks.c \
 		bsearch.c linaprox.c wksisact.c simpletrans.c wksisopn.c cmpf.c
 
 COBJS		= Base.o BoundingBox.o Close.o Convert.o Converters.o \
@@ -79,6 +81,7 @@ COBJS		= Base.o BoundingBox.o Close.o Convert.o Converters.o \
 		ScalarField.o AnnoManager.o Format.o App.o PSWorkstation.o \
 		Palette.o VectorField.o VectorPlot.o VecAnno.o \
 		StreamlinePlot.o Style.o GraphicStyle.o SubStyles.o \
+		Callbacks.o \
 		bsearch.o linaprox.o wksisact.o simpletrans.o wksisopn.o cmpf.o
 
 FSRCS		= DATACOMM.f ERROR.f HLU.f PLOTMANAGER.f RLGEN.f RLSET.f \
