@@ -1,6 +1,10 @@
 
 MYNAME		= ictrans
 
+#if defined(alpha)
+#define COptOrDebugFlag -g3
+#endif
+
 #
 #	X11 libraries
 #
