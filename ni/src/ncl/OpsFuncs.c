@@ -39,28 +39,29 @@ NhlArgVal cbdata;
 NhlArgVal udata;
 #endif
 {
-	int hlu_id = (int)cbdata.lngval;
+	int hlu_def_parent_id = (int)cbdata.lngval;
 	int nclhluobj_id = (int)udata.lngval;
-	int rl_list;
-	NhlBoolean tmp = 0;
 	NclHLUObj hlu_obj;
-
-	rl_list = NhlRLCreate(NhlGETRL);
-	NhlRLGet(rl_list,NhlNappDefaultParent,NhlTBoolean,&tmp);
-	NhlGetValues(hlu_id,rl_list);
-	NhlRLDestroy(rl_list);
 
 	hlu_obj = (NclHLUObj)_NclGetObj(nclhluobj_id);
 
-	if((hlu_obj != NULL)&&(hlu_obj->hlu.hlu_id == hlu_id)) {
-		if((!tmp)&&(defaultapp_hluobj_id == nclhluobj_id)) {
-			defaultapp_hluobj_id = -1;
-		} else if (tmp) {
-			defaultapp_hluobj_id = nclhluobj_id;
-		}
-	}
+	if(hlu_obj == NULL)
+		return;
 
-	
+	/*
+	 * if this hlu_obj is the HLU Default Parent, then save the
+	 * ncl id of this hlu_obj in defaultapp_hluobj_id.
+	 */
+	if(hlu_obj->hlu.hlu_id == hlu_def_parent_id)
+		defaultapp_hluobj_id = nclhluobj_id;
+	/*
+	 * This hlu_obj is not the HLU Default Parent, but is currently
+	 * saved in the defaultapp_hluobj_id - so reset defaultapp_hluobj_id.
+	 */
+	else if(nclhluobj_id == defaultapp_hluobj_id)
+		defaultapp_hluobj_id = -1;
+
+	return;
 }
 
 
@@ -1040,7 +1041,7 @@ NclStackEntry _NclCreateHLUObjOp
 			defaultapp_hluobj_id = tmp_ho->obj.id;
 		}
 		udata.lngval = tmp_ho->obj.id;
-		tmp_ho->hlu.apcb = NhlSetAppDefaultChangeCB(the_hlu_obj_class->u.obj_class_ptr,DefaultAppChangeCB,udata);
+		tmp_ho->hlu.apcb = _NhlAppAddDefaultChangeCB(DefaultAppChangeCB,udata);
 	}
 
 	
