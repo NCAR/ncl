@@ -1,5 +1,5 @@
 /*
- *      $Id: Callbacks.c,v 1.6 1997-01-17 18:57:18 boote Exp $
+ *      $Id: Callbacks.c,v 1.7 1997-09-26 18:10:11 boote Exp $
  */
 /************************************************************************
 *									*
@@ -171,6 +171,8 @@ _NhlCBAdd
 	cb->cblist = cblist;
 	if(cblist->add_hash)
 		cb->index = (*cblist->add_hash)(selector,udata);
+	else if(cblist->size = 1)
+		cb->index = 0;
 	else
 		cb->index = selector.lngval;
 
@@ -294,6 +296,8 @@ _NhlCBCallCallbacks
 	cblist->state = _NhlCBCALLING;
 	if(cblist->call_hash)
 		index = (*cblist->call_hash)(selector,cbdata);
+	else if(cblist->size == 1)
+		index = 0;
 	else
 		index = selector.lngval;
 
