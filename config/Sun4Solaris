@@ -1,5 +1,5 @@
 /*
- *      $Id: Sun4Solaris,v 1.10 1994-04-08 18:37:20 boote Exp $
+ *      $Id: Sun4Solaris,v 1.11 1995-03-17 05:34:41 haley Exp $
  */
 /************************************************************************
 *									*
@@ -23,7 +23,7 @@
 #define HdfDefines	-DSUN
 #define	Cstatic	-Bstatic
 #define	Cdynamic -Bdynamic
-#define ExtraSysLibraries	-lnsl -lintl -lsocket -ldl -lw /usr/ucblib/libucb.a
+#define ExtraSysLibraries	-lnsl -lintl -lsocket -ldl -lw -lM77 -lm -lsunmath
 #define	CcOptions	-Xc
 #define	CppCommand	/usr/ccs/lib/cpp
 #define	FCppCommand	/usr/ccs/lib/cpp
