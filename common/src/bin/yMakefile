@@ -1,9 +1,9 @@
 #
-#	$Id: yMakefile,v 1.1.1.1 1992-04-17 22:29:57 ncargd Exp $
+#	$Id: yMakefile,v 1.2 1992-09-21 21:19:41 clyne Exp $
 #
 NCARG		= ../../..
 
-SUBDIRS = fontc graphc ncargpar scripts
+SUBDIRS = fontc graphc ncargpath scripts
 
 MakeSubdirs($(SUBDIRS))
 MakefilesSubdirs($(SUBDIRS))
