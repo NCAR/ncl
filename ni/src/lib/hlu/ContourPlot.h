@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.h,v 1.1 1995-04-01 00:03:57 dbrown Exp $
+ *      $Id: ContourPlot.h,v 1.2 1995-04-04 06:47:57 boote Exp $
  */
 /************************************************************************
 *									*
@@ -101,7 +101,7 @@ typedef enum _NhlcnHighLowLabelOverlapMode {
 #define NhlNcnScalarFieldData		"cnScalarFieldData"
 #define NhlNcnOutOfRangeValF		"cnOutOfRangeValF"
 
-#define NhlNcnLevelCount		".cnLevelCount"		/* read-only */
+#define NhlNcnLevelCount		"cnLevelCount"		/* read-only */
 #define NhlNcnLevelSelectionMode	"cnLevelSelectionMode"
 #define NhlNcnMaxLevelCount		"cnMaxLevelCount"
 #define NhlNcnLevelSpacingF		"cnLevelSpacingF"
@@ -118,7 +118,7 @@ typedef enum _NhlcnHighLowLabelOverlapMode {
 
 #define NhlNcnLabelScalingMode		"cnLabelScalingMode"
 #define NhlNcnLabelScaleValueF		"cnLabelScaleValueF"
-#define NhlNcnLabelScaleFactorF		".cnLabelScaleFactorF" /*read-only*/
+#define NhlNcnLabelScaleFactorF		"cnLabelScaleFactorF" /*read-only*/
 #define NhlNcnMaxDataValueFormat	"cnMaxDataValueFormat"
 #define NhlNcnSmoothingOn		"cnSmoothingOn"
 #define NhlNcnSmoothingTensionF		"cnSmoothingTensionF"
@@ -298,7 +298,7 @@ typedef enum _NhlcnHighLowLabelOverlapMode {
 #define NhlCcnScalarFieldData		"CnScalarFieldData"
 #define NhlCcnOutOfRangeValF		"CnOutOfRangeValF"
 
-#define NhlCcnLevelCount		".CnLevelCount"		/* read-only */
+#define NhlCcnLevelCount		"CnLevelCount"		/* read-only */
 #define NhlCcnLevelSelectionMode	"CnLevelSelectionMode"
 #define NhlCcnMaxLevelCount		"CnMaxLevelCount"
 #define NhlCcnLevelSpacingF		"CnLevelSpacingF"
@@ -315,7 +315,7 @@ typedef enum _NhlcnHighLowLabelOverlapMode {
 
 #define NhlCcnLabelScalingMode		"CnLabelScalingMode"
 #define NhlCcnLabelScaleValueF		"CnLabelScaleValueF"
-#define NhlCcnLabelScaleFactorF		".CnLabelScaleFactorF" /*read-only*/
+#define NhlCcnLabelScaleFactorF		"CnLabelScaleFactorF" /*read-only*/
 #define NhlCcnMaxDataValueFormat	"CnMaxDataValueFormat"
 #define NhlCcnSmoothingOn		"CnSmoothingOn"
 #define NhlCcnSmoothingTensionF		"CnSmoothingTensionF"

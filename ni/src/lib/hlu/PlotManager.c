@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManager.c,v 1.3 1995-04-01 23:27:56 dbrown Exp $
+ *      $Id: PlotManager.c,v 1.4 1995-04-04 06:47:58 boote Exp $
  */
 /************************************************************************
 *									*
@@ -91,7 +91,7 @@ static NhlResource resources[] = {
 
 	{NhlNpmPlotIds,NhlCpmPlotIds,NhlTObjIdGenArray,
 		sizeof(NhlPointer),Oset(plot_ids),
-		NhlTImmediate,_NhlUSET(NULL),0,(NhlFreeFunc)NhlFreeGenArray},
+		NhlTImmediate,_NhlUSET(NULL),_NhlRES_GONLY,(NhlFreeFunc)NhlFreeGenArray},
 
 /* Bounding Box resources */
 
@@ -213,11 +213,11 @@ static NhlResource resources[] = {
 	{ NhlNpmPreDrawOrder,NhlCpmPreDrawOrder,NhlTIntegerGenArray,
 		  sizeof(NhlPointer),
 		  Oset(pre_draw_order),
-		  NhlTImmediate,_NhlUSET(NULL),0,(NhlFreeFunc)NhlFreeGenArray},
+		  NhlTImmediate,_NhlUSET(NULL),_NhlRES_NOACCESS,(NhlFreeFunc)NhlFreeGenArray},
 	{ NhlNpmPostDrawOrder,NhlCpmPostDrawOrder,NhlTIntegerGenArray,
 		  sizeof(NhlPointer),
 		  Oset(post_draw_order),
-		  NhlTImmediate,_NhlUSET(NULL),0,(NhlFreeFunc)NhlFreeGenArray},
+		  NhlTImmediate,_NhlUSET(NULL),_NhlRES_NOACCESS,(NhlFreeFunc)NhlFreeGenArray},
 
 /* Private resources */
 

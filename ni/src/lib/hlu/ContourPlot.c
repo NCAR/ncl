@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.2 1995-04-01 23:27:55 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.3 1995-04-04 06:47:55 boote Exp $
  */
 /************************************************************************
 *									*
@@ -113,7 +113,7 @@ static NhlResource resources[] = {
 		  NhlTImmediate,_NhlUSET((NhlPointer) NhlcnAUTOMATIC),0,NULL},
 	{ NhlNcnLevelCount,NhlCcnLevelCount,NhlTInteger,sizeof(int),
 		  Oset(level_count),NhlTImmediate,
-		  _NhlUSET((NhlPointer) 16),0,NULL},
+		  _NhlUSET((NhlPointer) 16),_NhlRES_GONLY,NULL},
 	{ NhlNcnMaxLevelCount,NhlCcnMaxLevelCount,NhlTInteger,sizeof(int),
 		  Oset(max_level_count),NhlTImmediate,
 		  _NhlUSET((NhlPointer) 16),0,NULL},
@@ -289,7 +289,7 @@ static NhlResource resources[] = {
                  NhlTString,_NhlUSET("1.0"),0,NULL},
         {NhlNcnLabelScaleFactorF,NhlCcnLabelScaleFactorF,
                  NhlTFloat,sizeof(float),Oset(label_scale_factor),
-                 NhlTString,_NhlUSET("1.0"),0,NULL},
+                 NhlTString,_NhlUSET("1.0"),_NhlRES_GONLY,NULL},
 	{NhlNcnMaxDataValueFormat,NhlCcnMaxDataValueFormat,
 		 NhlTString,sizeof(NhlString),
 		 Oset(max_data_format.fstring),NhlTImmediate,

@@ -1,5 +1,5 @@
 /*
- *      $Id: TextItem.h,v 1.5 1995-03-15 11:48:41 boote Exp $
+ *      $Id: TextItem.h,v 1.6 1995-04-04 06:48:00 boote Exp $
  */
 /************************************************************************
 *									*
@@ -55,10 +55,6 @@
 #define NhlCtxConstantSpacingF	"TxConstantSpacingF"
 #define NhlNtxFuncCode		"txFuncCode"
 #define NhlCtxFuncCode		"TxFuncCode"
-#define NhlNtxXCorners		".txXCorners"
-#define NhlCtxXCorners		".TxXCorners"
-#define NhlNtxYCorners		".txYCorners"
-#define NhlCtxYCorners		".TxYCorners"
 
 #define NhlNtxPerimOn			"txPerimOn"
 #define NhlNtxPerimColor		"txPerimColor"

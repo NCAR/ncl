@@ -1,5 +1,5 @@
 /*
- *      $Id: Workspace.h,v 1.3 1994-12-16 20:05:03 boote Exp $
+ *      $Id: Workspace.h,v 1.4 1995-04-04 06:48:02 boote Exp $
  */
 /************************************************************************
 *									*
@@ -27,11 +27,11 @@
 
 #define NhlNwsMaximumSize	"wsMaximumSize"
 #define NhlNwsThresholdSize	"wsThresholdSize"
-#define NhlNwsCurrentSize	".wsCurrentSize"
+#define NhlNwsCurrentSize	"wsCurrentSize"
 
 #define NhlCwsMaximumSize	"WsMaximumSize"
 #define NhlCwsThresholdSize	"WsThresholdSize"
-#define NhlCwsCurrentSize	".WsCurrentSize"
+#define NhlCwsCurrentSize	"WsCurrentSize"
 
 extern NhlLayerClass NhlworkspaceLayerClass;
 

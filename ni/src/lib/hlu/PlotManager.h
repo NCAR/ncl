@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManager.h,v 1.1 1995-04-01 00:04:11 dbrown Exp $
+ *      $Id: PlotManager.h,v 1.2 1995-04-04 06:47:59 boote Exp $
  */
 /************************************************************************
 *									*
@@ -40,9 +40,9 @@ typedef enum _NhlAnnotationDisplayMode {
  * PlotManager instance resources
  */
 
-#define NhlNpmPlotIds		".pmPlotIds"
-#define NhlNpmPreDrawOrder	".pmPreDrawOrder"
-#define NhlNpmPostDrawOrder	".pmPostDrawOrder"
+#define NhlNpmPlotIds		"pmPlotIds"
+#define NhlNpmPreDrawOrder	"pmPreDrawOrder"
+#define NhlNpmPostDrawOrder	"pmPostDrawOrder"
 
 #define NhlNpmAnnoViews		"pmAnnoViews"
 #define NhlNpmAnnoManagers	"pmAnnoManagers"
@@ -84,9 +84,9 @@ typedef enum _NhlAnnotationDisplayMode {
  * PlotManager class resources
  */
 
-#define NhlCpmPlotIds		".PmPlotIds"
-#define NhlCpmPreDrawOrder	".PmPreDrawOrder"
-#define NhlCpmPostDrawOrder	".PmPostDrawOrder"
+#define NhlCpmPlotIds		"PmPlotIds"
+#define NhlCpmPreDrawOrder	"PmPreDrawOrder"
+#define NhlCpmPostDrawOrder	"PmPostDrawOrder"
 
 #define NhlCpmAnnoViews		"PmAnnoViews"
 #define NhlCpmAnnoManagers	"PmAnnoManagers"

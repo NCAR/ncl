@@ -1,5 +1,5 @@
 /*
- *      $Id: Workspace.c,v 1.21 1995-03-03 20:14:58 dbrown Exp $
+ *      $Id: Workspace.c,v 1.22 1995-04-04 06:48:01 boote Exp $
  */
 /************************************************************************
 *									*
@@ -201,7 +201,7 @@ static NhlResource resources[] = {
 		 _NhlUSET((NhlPointer) NhlwsDEF_THRESHOLD),0,NULL},
 	{NhlNwsCurrentSize,NhlCwsCurrentSize,NhlTLong,
 		 sizeof(long),Oset(current_size),
-		 NhlTImmediate,_NhlUSET((NhlPointer) 0),0,NULL}
+		 NhlTImmediate,_NhlUSET((NhlPointer) 0),_NhlRES_GONLY,NULL}
 
 /* End-documented-resources */
 
