@@ -1,5 +1,5 @@
 /*
- *      $Id: Sun4Solaris,v 1.22 2002-11-21 21:14:01 haley Exp $
+ *      $Id: Sun4Solaris,v 1.23 2004-03-23 17:07:50 haley Exp $
  */
 /************************************************************************
 *									*
@@ -24,7 +24,7 @@
 #define	Cstatic	-Bstatic
 #define	Cdynamic -Bdynamic
 #define ExtraSysLibraries	-lnsl -lintl -lsocket -ldl -lw
-#define	CcOptions	-Xc
+#define	CcOptions	-Xt
 #define	CppCommand	/usr/ccs/lib/cpp
 #define	FCppCommand	/usr/ccs/lib/cpp
 #define	DoesRanlib	NO
