@@ -1,5 +1,5 @@
 C
-C	$Id: wmdrft.f,v 1.9 2000-04-12 23:41:02 fred Exp $
+C	$Id: wmdrft.f,v 1.10 2000-05-09 17:16:18 fred Exp $
 C
       SUBROUTINE WMDRFT(N,X,Y)
 C
@@ -185,7 +185,7 @@ C
               ICOLOR = IWARMC
               IR = NPTS-IHLF+1
               CALL WMLGPL(IR,XOUT(IHLF),YOUT(IHLF))
-              RETURN
+              GO TO 80
             ELSE
               PRINT *,    'WMDRFT - Warning: not enough space along the 
      +input curve to draw two symbols for an occluded front'
@@ -208,7 +208,7 @@ C
               ICOLOR = IWARMC
               IR = NPTS-IHLF+1
               CALL WMLGPL(IR,XOUT(IHLF),YOUT(IHLF))
-              RETURN
+              GO TO 80
             ENDIF
           ENDIF
         ENDIF
