@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ictrans.m,v 1.4 1991-06-18 14:43:19 clyne Exp $
+.\"	$Id: ictrans.m,v 1.5 1991-06-19 18:07:23 clyne Exp $
 .\"
 .\" ictrans 3.01 90/06/22 
 .TH ICTRANS 1NCARG "22 June 1990" NCAR "NCAR View 3.01"
@@ -67,9 +67,9 @@ overridden.
 Designate the target device for metafile translation where device is one
 of: 
 .I valid_graphcap_name, 
-.B "CTXT , sunraster , sunview , X11"
+.B "CTXT , sunview , X11, sun , nrif , hdf"
 or 
-.B xbfr. 
+.B xwd.
 For all device specifications
 except
 .B X11 
@@ -109,7 +109,7 @@ font provided on the command line. The environment variable FONTCAP
 may be used to specify a default fontcap.
 .TP 
 .B \-soft
-Unconditionally perform sofware filling of all filled polygons. This 
+Unconditionally perform software filling of all filled polygons. This 
 option may be useful for devices which have limits on the number of
 vertices describing a polygon. On some devices this number is known and
 software filling is performed, as appropriate, without user specification.
@@ -164,7 +164,7 @@ for subsequent translation of the metafile. This palette will override any
 color map defined by the CGM being translated. For a description of
 the format of
 .I pal_fname
-see ncar_ras(1NCARG).
+see ncarg_ras(1NCARG).
 .TP
 .BI \-geom " geom"
 .I geom 
@@ -193,9 +193,19 @@ corner of the screen where
 would be displayed. The second example would generate a X11 raster file
 at a resolution of 800 by 800 pixels and store it in the file 
 .IR xwdfile .
+.TP
+.BI \-resolution " width" " x" " height"
+.I width
+and
+.I height
+specify the resolution of the raster file to be created. Only works with
+raster file device specifiers
+.B hdf, nrif, sun
+and
+.B xwd.
 .TP 
 .B \-reverse
-Simulate reverse video by swaping background and foreground colors. Only 
+Simulate reverse video by swapping background and foreground colors. Only 
 works under X11.
 .TP
 .BI \-Ws " width height"

@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ctrans.m,v 1.4 1991-06-18 14:41:24 clyne Exp $
+.\"	$Id: ctrans.m,v 1.5 1991-06-19 18:07:18 clyne Exp $
 .\"
 .\" ctrans 3.01 90/06/22
 .TH CTRANS 1NCARV "22 June 1990" NCAR "NCAR View 3.01"
@@ -66,15 +66,22 @@ independent devices are supported:
 .B sunview,
 under Sun's
 .I Sunview; 
-.B sunraster,
-a Sun rasterizer under Sun's 
-.I Sunview;
+and
 .B X11, 
 under release 3 and 4, version 11 of 
-.I X;
+.I X.
+.B ctrans
+can also translate metacode into the following raster formats: 
+.B xwd, hdf, sun
 and
-.B xbfr, 
-a X11 rasterizer under X.
+.B nrif.
+The device specifier for these formats is the name of the format. For example
+"-d xwd" specifies translation to and xwd formatted raster file. For 
+backwards compatibility the device specifiers
+.B xbfr
+and 
+.B sunraster
+may also be used for specifying xwd and sun raster file formats respectively.
 Additionally, a clear text driver,
 [\ \fB\-d\ CTXT\fR\ ],
 is available on any terminal. 
@@ -221,7 +228,7 @@ for subsequent translation of the metafile. This palette will override any
 color map defined by the CGM being translated. For a description of 
 the format of 
 .I pal_fname
-see ncar_ras(1NCARG).
+see ncarg_ras(1NCARG).
 .PP
 .SH DEVICE-SPECIFIC OPTIONS:
 .PP
@@ -304,6 +311,19 @@ device. This option is meaningless with the
 .B sunraster
 device.
 .PP
+The following options are available when 
+.I device 
+is 
+.B hdf, nrif, sun 
+or 
+.BR xwd :
+.TP
+.BI \-resolution " width" " x" " height"
+.I width
+and
+.I height
+specify the resolution of the raster file to be created.
+.PP
 Unknown options are ignored.
 .PP
 At
@@ -371,7 +391,7 @@ at a resolution of 1024x1024 pixels, call:
 .sp
 .ti +0.5i
 % 
-.B "ctrans -d xbfr -geom 1024x1024 > xwdfile"
+.B "ctrans -d xwd -res 1024x1024 > xwdfile"
 .sp
 .br
 The raster output is in X11 "xwd" format and is sent to the file
@@ -387,7 +407,7 @@ The raster output is in X11 "xwd" format and is sent to the file
 .BR fontcap(1NCARG), 
 .BR gcaps(1NCARG), 
 .BR graphcap(1NCARG), 
-.BR ncar_ras(1NCARG), 
+.BR ncarg_ras(1NCARG), 
 .BR med(1NCARG), 
 .BR ictrans(1NCARG),
 .BR plt(1NCARG)
