@@ -1,5 +1,5 @@
 C
-C	$Id: ardbpa.f,v 1.3 1992-09-04 20:31:21 ncargd Exp $
+C $Id: ardbpa.f,v 1.4 1993-01-15 16:56:43 kennison Exp $
 C
 C
 C The subroutine ARDBPA.
@@ -60,7 +60,7 @@ C
 C
 C Switch to white initially.
 C
-      CALL SFLUSH
+      CALL PLOTIF (0.,0.,2)
       CALL GSPLCI (IDC+4)
       CALL GSTXCI (IDC+4)
       ICLO=IDC+4
@@ -104,7 +104,7 @@ C
             ICLN=IDC+5
 10006     CONTINUE
           IF (.NOT.(ICLN.NE.ICLO)) GO TO 10007
-            CALL SFLUSH
+            CALL PLOTIF (0.,0.,2)
             CALL GSPLCI (ICLN)
             CALL GSTXCI (ICLN)
             ICLO=ICLN
