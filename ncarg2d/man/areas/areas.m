@@ -59,7 +59,7 @@ When error conditions are detected, the support routine SETER
 is called. By default, SETER writes a message to the standard
 error file (as defined by I1MACH(4)) and then terminates
 execution.  It is possible to put SETER into recovery mode and
-regain control after a recoverable error (which includes almost
+regain control after a recoverable error (which includes
 all of the possible errors).
 .sp
 The possible error messages are listed below.  All errors are recoverable
