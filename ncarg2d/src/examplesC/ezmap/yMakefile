@@ -1,21 +1,8 @@
 #
-#	$Id: yMakefile,v 1.1 1994-05-13 16:34:27 haley Exp $
+#	$Id: yMakefile,v 1.2 1994-10-31 03:34:22 haley Exp $
 #
 
-CSRCS = c_eezmpa.c 
+EXAMPLES = c_eezmpa.c c_mpex05.c
 
-SED_SRCS = c_mpex05.c
+InstallTarget($(EXAMPLES),$(INSTALL_LIB),$(EXAMPLESPATH))
 
-GENERIC_SRCS = $(CSRCS) $(SED_SRCS)
-
-InstallTarget($(GENERIC_SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
-CleanFilesTarget($(SED_SRCS))
-
-#
-# Files containing C functions that are called from FORTRAN or that have to
-# be modified to include a macro from the configuration file.
-#
-
-c_mpex05.c: c_mpex05.c.sed Makefile
-	@-$(RM) $@
-	@$(CALLCONV) $(SYSTEM_INCLUDE) $@ mapeod
