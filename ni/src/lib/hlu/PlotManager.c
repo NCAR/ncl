@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManager.c,v 1.42 1997-08-14 16:30:20 dbrown Exp $
+ *      $Id: PlotManager.c,v 1.43 1997-08-15 22:58:37 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -45,10 +45,12 @@ static NhlResource resources[] = {
 
 	{NhlNpmAnnoViews,NhlCpmAnnoViews,NhlTObjIdGenArray,
 		sizeof(NhlPointer),Oset(anno_view_ids),
-		NhlTImmediate,_NhlUSET(NULL),0,(NhlFreeFunc)NhlFreeGenArray},
+		NhlTImmediate,_NhlUSET(NULL),
+         	_NhlRES_NORACCESS,(NhlFreeFunc)NhlFreeGenArray},
 	{NhlNpmAnnoManagers,NhlCpmAnnoManagers,NhlTObjIdGenArray,
 		sizeof(NhlPointer),Oset(annomanager_ids),
-		NhlTImmediate,_NhlUSET(NULL),0,(NhlFreeFunc)NhlFreeGenArray},
+		NhlTImmediate,_NhlUSET(NULL),_NhlRES_GONLY,
+         	(NhlFreeFunc)NhlFreeGenArray},
 
 
 	{ NhlNpmTitleDisplayMode,NhlCpmTitleDisplayMode,

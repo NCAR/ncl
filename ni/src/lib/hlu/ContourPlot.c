@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.62 1997-08-14 16:29:37 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.63 1997-08-15 22:58:28 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -8906,10 +8906,11 @@ static NhlErrorTypes    ManageDynamicArrays
 			}
 			strcpy(sp[i],cp);
 			modified = True;
+                        need_check = True;
 		}
 		if (modified) ocnp->llabel_strings = NULL;
 	}
-	if (flags_modified && line_init) {
+	if (line_init) {
 		NhlString *sp;
 
 		if ((sp = (NhlString *) 
