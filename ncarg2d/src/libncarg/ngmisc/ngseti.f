@@ -1,5 +1,5 @@
 C
-C	$Id: ngseti.f,v 1.6 1994-07-29 17:07:09 fred Exp $
+C	$Id: ngseti.f,v 1.7 1994-08-26 20:42:28 fred Exp $
 C
       SUBROUTINE NGSETI (CNP,IVP)
 C
@@ -137,7 +137,7 @@ C
      +         CNP(1:2).EQ.'St') THEN
         IF (IWKID .LT. 0) THEN
           CTM =
-     +      'NGSETI - you must set a value for WO before setting FU'
+     +      'NGSETI - you must set a value for WO before setting ST'
           CALL SETER (CTM(1:60), 7, 1)
           GO TO 120
         ENDIF
@@ -158,7 +158,7 @@ C
      +         CNP(1:2).EQ.'Pa') THEN
         IF (IWKID .LT. 0) THEN
           CTM =
-     +      'NGSETI - you must set a value for WO before setting FU'
+     +      'NGSETI - you must set a value for WO before setting PA'
           CALL SETER (CTM(1:60), 9, 1)
           GO TO 120
         ENDIF
@@ -199,7 +199,7 @@ C
      +         CNP(1:2).EQ.'Pr') THEN
         IF (IWKID .LT. 0) THEN
           CTM =
-     +      'NGSETI - you must set a value for WO before setting FU'
+     +      'NGSETI - you must set a value for WO before setting PR'
           CALL SETER (CTM(1:60), 13, 1)
           GO TO 120
         ENDIF
@@ -230,7 +230,7 @@ C
      +         CNP(1:2).EQ.'Jo') THEN
         IF (IWKID .LT. 0) THEN
           CTM =
-     +      'NGSETI - you must set a value for WO before setting FU'
+     +      'NGSETI - you must set a value for WO before setting JO'
           CALL SETER (CTM(1:60), 15, 1)
           GO TO 120
         ENDIF
@@ -253,7 +253,7 @@ C
      +         CNP(1:2).EQ.'Ca') THEN
         IF (IWKID .LT. 0) THEN
           CTM =
-     +      'NGSETI - you must set a value for WO before setting FU'
+     +      'NGSETI - you must set a value for WO before setting CA'
           CALL SETER (CTM(1:60), 16, 1)
           GO TO 120
         ENDIF
