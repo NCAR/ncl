@@ -1,5 +1,5 @@
 /*
- *	$Id: sun_view.c,v 1.13 1992-04-03 20:58:30 clyne Exp $
+ *	$Id: sun_view.c,v 1.14 1992-06-24 21:05:24 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -43,6 +43,7 @@ extern	boolean	Batch;
 extern	char	*program_name;
 extern	boolean	*softFill;
 extern	boolean	*doBell;
+extern	int	optionDesc;
 
 /*
  *	command line options supported by sunview driver
@@ -110,7 +111,7 @@ CGMC *c;
                  *      parse sunview specific command line args
                  *      (currently only geometry accepted       )
                  */
-		if (GetOptions(options) < 0) {
+		if (GetOptions(optionDesc, options) < 0) {
 			ct_error(T_NULL, ErrGetMsg());
 			return(DIE);
 		}

@@ -1,5 +1,5 @@
 /*
- *      $Id: rasstat.c,v 1.1 1992-04-02 21:30:05 clyne Exp $
+ *      $Id: rasstat.c,v 1.2 1992-06-24 21:03:40 clyne Exp $
  */
 /*
  *	File:		rasstat
@@ -26,6 +26,7 @@
 static	struct	{
 	boolean		do_dimension;
 	boolean		do_type;
+	boolean		do_image_count;
 	boolean		do_version;
 	boolean		do_help;
 	char		*format;
@@ -34,6 +35,7 @@ static	struct	{
 static  OptDescRec      set_options[] = {
 	{"dimension", 0, NULL, "Print file dimensions and exit"},
 	{"type", 0, NULL, "Print file type and exit"},
+	{"count", 0, NULL, "Report number of images in file and exit"},
 	{"Version", 0, NULL, "Print version and exit"},
 	{"help", 0, NULL, "Print this message and exit"},
 	{"format", 1, NULL, "Raster file format"},
@@ -46,6 +48,9 @@ static	Option get_options[] = {
 	},
 	{"type", NCARGCvtToBoolean, (Voidptr) &opt.do_type, 
 							sizeof(opt.do_type)
+	},
+	{"count", NCARGCvtToBoolean, (Voidptr) &opt.do_image_count, 
+						sizeof(opt.do_image_count)
 	},
 	{"Version", NCARGCvtToBoolean, (Voidptr) &opt.do_version, 
 							sizeof(opt.do_version)
@@ -61,17 +66,18 @@ static	Option get_options[] = {
 };
 
 static	char	*progName;
+static	int	oD;
 	
 static	void	Usage(msg) 
 	char	*msg;
 {
-	char	*opts = "[-format <format>] [-V|d|t] <file>";
+	char	*opts = "[-format <format>] [-V|d|t|c] <file>";
 
 	if (msg) {
 		fprintf(stderr, "%s: %s\n", progName, msg);
 	}
 	fprintf(stderr, "Usage: %s %s\n", progName, opts);
-	PrintOptionHelp(stderr);
+	PrintOptionHelp(oD, stderr);
 	exit(1);
 }
 
@@ -91,13 +97,16 @@ main(argc, argv)
 	char	*argv[];
 {
 	RasStat	ras_stat;
+	int	*ic = (int *) NULL;
+	int	image_count;
 
 	progName = (progName = strrchr(argv[0],'/')) ? ++progName : *argv;
 
 	(void) RasterInit(&argc, argv);
 
 
-	if (ParseOptionTable(&argc, argv, set_options) < 0) {
+	oD = OpenOptionTbl();
+	if (ParseOptionTable(oD, &argc, argv, set_options) < 0) {
 		fprintf(
 			stderr, "%s : Error parsing options : %s\n", 
 			progName, ErrGetMsg()
@@ -108,7 +117,7 @@ main(argc, argv)
 	/*
 	 * load the options into opt
 	 */
-	if (GetOptions(get_options) < 0) {
+	if (GetOptions(oD, get_options) < 0) {
 		fprintf(
 			stderr, "%s : Error getting options : %s\n", 
 			progName, ErrGetMsg()
@@ -129,8 +138,9 @@ main(argc, argv)
 		Usage(NULL);
 	}
 
+	ic = opt.do_image_count ? &image_count : NULL;
 
-	if (RasterStat(argv[1], opt.format, &ras_stat, (int *) NULL) == -1) {
+	if (RasterStat(argv[1], opt.format, &ras_stat, ic) == -1) {
 		fprintf(
 			stderr, "%s : stat failed : %s\n", 
 			progName, ErrGetMsg()
@@ -148,6 +158,9 @@ main(argc, argv)
 		else {
 			fprintf(stdout, "direct\n");
 		}
+	}
+	else if (opt.do_image_count) {
+		fprintf(stdout, "%d\n", image_count);
 	}
 	else {
 		print_ras(&ras_stat);

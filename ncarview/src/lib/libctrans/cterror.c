@@ -1,5 +1,5 @@
 /*
- *	$Id: cterror.c,v 1.11 1992-04-03 20:56:32 clyne Exp $
+ *	$Id: cterror.c,v 1.12 1992-06-24 21:05:03 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -70,12 +70,14 @@ static	void usage(message)
 char	*message;
 {
 	int	i;
+	extern	int	optionDesc;
+
 	(void) fprintf(errfile,"%s\n",message);
 	(void) fprintf(
 		errfile, 
 		"Usage: %s -d <device> -f <font> [options] [device-specific options] [ - | metafile... ]\n", program_name
 	);
-	PrintOptionHelp(errfile);
+	PrintOptionHelp(optionDesc, errfile);
 }
 
 

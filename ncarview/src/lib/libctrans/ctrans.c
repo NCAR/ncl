@@ -1,5 +1,5 @@
 /*
- *	$Id: ctrans.c,v 1.19 1992-04-03 20:56:42 clyne Exp $
+ *	$Id: ctrans.c,v 1.20 1992-06-24 21:05:06 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -95,6 +95,11 @@ FILE	*tty = NULL;
  */
 boolean	deviceIsInit = FALSE;	
 
+/*
+ * device dependent option Descriptor
+ */
+int	optionDesc;
+
 
 /* 
  * ctrans device independent initialization state 
@@ -185,7 +190,8 @@ Ct_err	init_ctrans(argc, argv, prog_name, gcap, fcap, stand_alone,				batch)
 	 * load in any device specific command line options in to the option
 	 * table and parse them
 	 */
-	if (ParseOptionTable(argc, argv, devices[currdev].opt) < 0) {
+	optionDesc = OpenOptionTbl();
+	if (ParseOptionTable(optionDesc, argc, argv, devices[currdev].opt) < 0){
 		ct_error(T_NULL, ErrGetMsg());
 		return(DIE);
 	}	
@@ -915,6 +921,8 @@ close_ctrans()
 	 *	close the error module
 	 */
 	close_ct_error();
+
+	(void) CloseOptionTbl(optionDesc);
 
 	free_cgmc(&command);
 

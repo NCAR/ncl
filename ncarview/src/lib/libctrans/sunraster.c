@@ -1,5 +1,5 @@
 /*
- *	$Id: sunraster.c,v 1.12 1992-04-03 20:58:35 clyne Exp $
+ *	$Id: sunraster.c,v 1.13 1992-06-24 21:05:29 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -43,6 +43,7 @@ extern	boolean	Batch;
 extern	char	*program_name;
 extern	boolean	*softFill;
 extern	boolean	*doBell;
+extern	int	optionDesc;
 
 #define	DEFAULT_WIDTH	1152	/* default raster width		*/
 #define	DEFAULT_HEIGHT	900	/* default raster height	*/
@@ -106,7 +107,7 @@ CGMC *c;
                  *      parse sunview specific command line args
                  *      (currently only geometry accepted       )
                  */
-		if (GetOptions(options) < 0) {
+		if (GetOptions(optionDesc, options) < 0) {
 			ct_error(T_NULL, ErrGetMsg());
 			return(DIE);
 		}

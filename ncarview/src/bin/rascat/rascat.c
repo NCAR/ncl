@@ -1,6 +1,6 @@
 
 /*
- *      $Id: rascat.c,v 1.8 1992-03-31 00:37:54 clyne Exp $
+ *      $Id: rascat.c,v 1.9 1992-06-24 21:03:28 clyne Exp $
  */
 /*
  *	File:		rascat.c
@@ -158,6 +158,7 @@ static	Option get_options[] = {
  */
 static	char	*stdin_array[] = {"stdin"};
 static	char	*progName;
+static	int	oD;
 
 static	void	Usage(msg) 
 	char	*msg;
@@ -168,7 +169,7 @@ static	void	Usage(msg)
 		fprintf(stderr, "%s: %s\n", progName, msg);
 	}
 	fprintf(stderr, "Usage: %s %s\n", progName, opts);
-	PrintOptionHelp(stderr);
+	PrintOptionHelp(oD, stderr);
 	exit(1);
 }
 
@@ -204,7 +205,8 @@ main(argc, argv)
 	(void) RasterInit(&argc, argv);
 
 
-	if (ParseOptionTable(&argc, argv, set_options) < 0) {
+	oD = OpenOptionTbl();
+	if (ParseOptionTable(oD, &argc, argv, set_options) < 0) {
 		fprintf(
 			stderr, "%s : Error parsing options : %s\n", 
 			progName, ErrGetMsg()
@@ -215,7 +217,7 @@ main(argc, argv)
 	/*
 	 * load the options into opt
 	 */
-	if (GetOptions(get_options) < 0) {
+	if (GetOptions(oD, get_options) < 0) {
 		fprintf(
 			stderr, "%s : Error getting options : %s\n", 
 			progName, ErrGetMsg()

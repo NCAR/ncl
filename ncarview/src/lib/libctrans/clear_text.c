@@ -1,5 +1,5 @@
 /*
- *	$Id: clear_text.c,v 1.6 1992-04-03 20:56:20 clyne Exp $
+ *	$Id: clear_text.c,v 1.7 1992-06-24 21:05:01 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -47,6 +47,7 @@ static  Option  options[] =  {
 	{NULL}
         };
 
+extern	int	optionDesc;
 
 /*
  *	some things ctrans needs to know to interpret the metafile
@@ -76,7 +77,7 @@ CGMC *c;
 	 *	parse clear_text specific command line args
 	 */
 
-	if (GetOptions(options) < 0) {
+	if (GetOptions(optionDesc, options) < 0) {
 		ct_error(T_NULL, ErrGetMsg());
 		return(DIE);
 	}

@@ -1,5 +1,5 @@
 /*
- *      $Id: ctrans_api.c,v 1.8 1992-05-05 22:41:39 clyne Exp $
+ *      $Id: ctrans_api.c,v 1.9 1992-06-24 21:05:10 clyne Exp $
  */
 /*
  *	File:		ctrans_api.c
@@ -56,6 +56,7 @@ extern	boolean *deBug;
 extern	boolean *doBell;
 extern	FILE	*tty;
 extern	boolean	deviceIsInit;	
+extern	int	optionDesc;
 extern	int	currdev;
 extern	struct	device	devices[];
 
@@ -166,7 +167,10 @@ CtransOpenBatch(device_name, font_name, metafile, dev_argc, dev_argv)
 		dev_argv_[i] = (char *) malloc (strlen(dev_argv[i] + 1));
 		(void) strcpy (dev_argv_[i], dev_argv[i]);
 	}
-	if (ParseOptionTable(&dev_argc, dev_argv_, devices[currdev].opt) < 0) {
+	optionDesc = OpenOptionTbl();
+	if (ParseOptionTable(
+		optionDesc, &dev_argc, dev_argv_, devices[currdev].opt) < 0) 
+	{
 		CtransSetError_(ERR_INV_ARG);
 		return(-1);
 	}
@@ -437,7 +441,7 @@ CtransCloseBatch()
 		cgm_fd = -1;
 	}
 
-	RemoveOptions(devices[currdev].opt);
+	(void) CloseOptionTbl(optionDesc);
 
 	if (devices[currdev].use_common) ComClose();
 

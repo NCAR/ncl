@@ -1,5 +1,5 @@
 /*
- *	$Id: gcap.c,v 1.21 1992-05-11 23:23:21 clyne Exp $
+ *	$Id: gcap.c,v 1.22 1992-06-24 21:05:16 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -68,6 +68,7 @@ extern	Ct_err	formatwidth();
 extern	Ct_err	raster();
 extern	boolean	Batch;
 extern	boolean	deviceIsInit;
+extern	int	optionDesc;
 
 static	CoordRect	VDCExtent;
 
@@ -116,7 +117,7 @@ CGMC *c;
 	/*
 	 * parse gcap specific options
 	 */
-	if (GetOptions(options) < 0) {
+	if (GetOptions(optionDesc, options) < 0) {
 		ct_error(T_NULL, ErrGetMsg());
 		return(DIE);
 	}

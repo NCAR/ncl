@@ -1,5 +1,5 @@
 /*
- *	$Id: rasview.c,v 1.7 1992-03-26 22:13:07 clyne Exp $
+ *	$Id: rasview.c,v 1.8 1992-06-24 21:03:48 clyne Exp $
  */
 /*
  *	rasview.c
@@ -54,6 +54,8 @@ static	Option	get_options[] = {
 	}
 };
 
+static	int	oD;
+
 main(argc, argv)
 	int	argc;
 	char	**argv;
@@ -77,7 +79,8 @@ main(argc, argv)
 	/*
 	 * register the options we're interested in and have them parsed
 	 */
-	if (ParseOptionTable(&argc, argv, set_options) < 0) {
+	oD = OpenOptionTbl();
+	if (ParseOptionTable(oD, &argc, argv, set_options) < 0) {
 		fprintf(
 			stderr,"%s : Error parsing command line options : %s\n",
 			prog_name, ErrGetMsg()
@@ -88,9 +91,9 @@ main(argc, argv)
 	/*
 	 * load the options into opt
 	 */
-	if (GetOptions(get_options) < 0) {
+	if (GetOptions(oD, get_options) < 0) {
 		fprintf(
-			stderr,"%s : GetOptions() : %s\n",
+			stderr,"%s : GetOptions(,) : %s\n",
 			prog_name,ErrGetMsg()
 		);
 		exit(1);
@@ -254,7 +257,7 @@ void	usage(prog_name, message)
 	(void) fprintf(stderr, 
 		"%s: Usage: %s [-Version] [-pal palette_file] [-quiet] [raster_file...]\n",
 		prog_name, prog_name);
-	PrintOptionHelp(stderr);
+	PrintOptionHelp(oD, stderr);
 
 	exit(1);
 }

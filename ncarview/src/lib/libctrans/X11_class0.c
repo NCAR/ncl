@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class0.c,v 1.12 1992-04-03 20:39:48 clyne Exp $
+ *	$Id: X11_class0.c,v 1.13 1992-06-24 21:04:58 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -54,6 +54,7 @@ extern	boolean	Batch;
 extern	char	*program_name;
 extern	char	**Argv;
 extern	int	Argc;
+extern	int	optionDesc;
 extern	boolean	Color_ava;
 extern	boolean	*softFill;
 extern	boolean	*doBell;
@@ -185,7 +186,7 @@ CGMC *c;
 		 *      parse X11 specific command line args
 		 *      (currently only geometry accepted       )
 		 */
-		if (GetOptions(options) < 0) {
+		if (GetOptions(optionDesc, options) < 0) {
 			ct_error(T_NULL, ErrGetMsg());
 			return(DIE);
 		}

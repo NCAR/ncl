@@ -1,5 +1,5 @@
 /*
- *	$Id: rast.c,v 1.11 1992-05-11 23:23:37 clyne Exp $
+ *	$Id: rast.c,v 1.12 1992-06-24 21:05:20 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -27,6 +27,7 @@
 extern	boolean	*softFill;
 extern	boolean	deviceIsInit;
 extern  int  	currdev;
+extern  int  	optionDesc;
 
 extern	char	*RasterGetError();
 extern	char	*strcpy();
@@ -93,7 +94,7 @@ CGMC *c;
 	 *      parse raster specific command line args
 	 *      (currently only resolution accepted       )
 	 */
-	if (GetOptions(raster_opts) < 0) {
+	if (GetOptions(optionDesc, raster_opts) < 0) {
 		ct_error(T_NULL, ErrGetMsg());
 		return(DIE);
 	}
