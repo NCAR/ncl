@@ -1,5 +1,5 @@
 /*
- *      $Id: Create.c,v 1.15 1995-02-17 10:23:02 boote Exp $
+ *      $Id: Create.c,v 1.16 1995-03-20 10:53:11 boote Exp $
  */
 /************************************************************************
 *									*
@@ -744,7 +744,7 @@ _NHLCALLF(nhl_fcreate,NHL_FCREATE)
 	 * A better test would be nice, but what can we say.
 	 */
 	if(lc_func != NULL){
-#if	!defined(UNICOS) && !defined(AIX)
+#if	!defined(UNICOS) && !defined(AIX) && !defined(HPUX)
 		extern etext[];
 
 		if((void *)lc_func < (void *)etext)
