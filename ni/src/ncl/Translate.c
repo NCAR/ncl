@@ -282,12 +282,80 @@ if(groot != NULL) {
 		case Ncl_ASSIGN:
 		{
 			NclAssign *assign = (NclAssign*)root;
-
-			off1 = _NclTranslate(assign->right_side,fp);
-			_NclTranslate(assign->left_side,fp);
+			NclIdnExpr *idnexpr = NULL;
+			int nsubs = 0;
+		
 /*
-			_NclPutInstr(ASSIGN_OP,assign->line,assign->file);
+* OK why is all this need? Assigment from one variable to another is
+* different than any other identifier references. When one variable
+* is being assigned to another variable all of the attributes, 
+* coordinate vars, and dimension names need to be assigned in 
+* addition to the value. Either major mods were need to the
+* parser or the following type of code needed to be added.
+* All other references just get the value of the variable and
+* not the rest of the info.
 */
+
+			if(((NclGenericNode*)assign->right_side)->kind == Ncl_IDNEXPR) {
+				idnexpr = (NclIdnExpr*)assign->right_side;
+				switch(((NclGenericNode*)idnexpr->idn_ref_node)->kind) {
+				case Ncl_VAR: {
+					NclVar *var = (NclVar*)(idnexpr->idn_ref_node);
+					
+					if(var->subscript_list != NULL) {
+						step = var->subscript_list;
+						off1 = _NclTranslate(step->node,fp);
+						step = step->next;
+						nsubs = 1;
+						while(step != NULL) {
+							(void)_NclTranslate(step->node,fp);
+							step = step->next;
+							nsubs++;
+						}
+						_NclPutInstr(VAR_READ_OP,var->line,var->file);
+					} else {
+/*
+* There are only two situations where the VAR_READ_OP is needed
+* one is when a var is being assign to another var and
+* the other is when the variable is aparameter to afuction
+* The same applies to file variables
+*/
+						off1= _NclPutInstr(VAR_READ_OP,var->line,var->file);
+					}
+					_NclPutInstr((NclValue)var->sym,var->line,var->file);
+					_NclPutInstr((NclValue)nsubs,var->line,var->file);
+				}
+				break;
+				case Ncl_VARCOORD: {
+					NclCoord *coord = (NclCoord*)(idnexpr->idn_ref_node);
+					if(coord->subscript_list != NULL) {
+						step = coord->subscript_list; off1 = _NclTranslate(step->node,fp);
+						step = step->next;
+						nsubs = 1;
+						while(step != NULL) {
+							(void)_NclTranslate(step->node,fp);
+							nsubs++;
+							step = step->next;
+						}
+						_NclPutInstr(VAR_READ_COORD_OP,coord->line,coord->file);
+					} else {
+						off1 = _NclPutInstr(VAR_READ_COORD_OP,coord->line,coord->file);
+					}
+					_NclPutInstr((NclValue)coord->sym,coord->line,coord->file);
+					_NclPutInstr((NclValue)coord->coord_name,coord->line,coord->file);
+					_NclPutInstr((NclValue)nsubs,coord->line,coord->file);
+				}
+				break;
+				case Ncl_FILEVARCOORD: 
+				case Ncl_FILEVAR: 
+				default:
+					off1 = _NclTranslate(assign->right_side,fp);
+					break;
+				}
+			} else {
+				off1 = _NclTranslate(assign->right_side,fp);
+			}
+			_NclTranslate(assign->left_side,fp);
 			break;
 		}
 		case Ncl_INTSUBSCRIPT:	

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: defs.h,v 1.8 1994-01-21 02:49:18 ethan Exp $
+ *      $Id: defs.h,v 1.9 1994-01-25 00:24:17 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -164,7 +164,7 @@ typedef enum {
 
 typedef struct _NclSelection{
         NclSelectionTypes sel_type;
-	int dim_num;
+	long dim_num;
         union {
                 struct _NclSubscriptSelection sub;
                 struct _NclVectorSelection  vec;

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.8 1994-01-21 02:49:03 ethan Exp $
+ *      $Id: Machine.c,v 1.9 1994-01-25 00:24:09 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -138,12 +138,14 @@ static void SetUpOpsStrings() {
 	ops_strings[ASSIGN_FILEVARATT_OP] = "ASSIGN_FILEVARATT_OP";
 	ops_strings[PARAM_FILEVARATT_OP] = "PARAM_FILEVARATT_OP";
 	ops_strings[VAR_OP] = "VAR_OP";
+	ops_strings[VAR_READ_OP] = "VAR_READ_OP";
 	ops_strings[ASSIGN_VAR_OP] = "ASSIGN_VAR_OP";
 	ops_strings[PARAM_VAR_OP] = "PARAM_VAR_OP";
 	ops_strings[VARATT_OP] = "VARATT_OP";
 	ops_strings[ASSIGN_VARATT_OP] = "ASSIGN_VARATT_OP";
 	ops_strings[PARAM_VARATT_OP] = "PARAM_VARATT_OP";
 	ops_strings[VAR_COORD_OP] = "VAR_COORD_OP";
+	ops_strings[VAR_READ_COORD_OP] = "VAR_READ_COORD_OP";
 	ops_strings[ASSIGN_VAR_COORD_OP] = "ASSIGN_VAR_COORD_OP";
 	ops_strings[PARAM_VAR_COORD_OP] = "PARAM_VAR_COORD_OP";
 	ops_strings[VAR_DIM_OP]= "VAR_DIM_OP";
@@ -820,6 +822,7 @@ void _NclPrintMachine
 				fprintf(fp,"\t%d\n",(int)*ptr);
 				break;
 			case VAR_COORD_OP:
+			case VAR_READ_COORD_OP:
 			case ASSIGN_VAR_COORD_OP:
 			case PARAM_VAR_COORD_OP:
 				fprintf(fp,"%s\n",ops_strings[*ptr]);
@@ -871,6 +874,7 @@ void _NclPrintMachine
 				fprintf(fp,"\t%d",*ptr);
 				break;
 			case VAR_OP :
+			case VAR_READ_OP :
 			case ASSIGN_VAR_OP :
 			case PARAM_VAR_OP :
 				fprintf(fp,"%s\n",ops_strings[*ptr]);
@@ -915,7 +919,7 @@ void _NclPrintMachine
 				_NclPrintSymbol((NclSymbol*)*ptr,fp);
 				ptr++;lptr++,fptr++;
 				fprintf(fp,"\t");
-				_NclPrintSymbol((NclSymbol*)*ptr,fp);
+				fprintf(fp,"%s\n",(char*)*ptr);
 				break;
 			default:
 				break;

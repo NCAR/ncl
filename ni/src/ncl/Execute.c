@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.5 1994-01-21 02:48:58 ethan Exp $
+ *      $Id: Execute.c,v 1.6 1994-01-25 00:24:05 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -800,7 +800,7 @@ NclExecuteReturnStatus _NclExecute
 * Two Operand Instructions *
 ***************************/			
 			case PARAM_VAR_OP:
-			case VAR_OP : {
+			case VAR_READ_OP: {
 				int i;
 				int nsubs;
 				NclStackEntry data;
@@ -844,6 +844,58 @@ NclExecuteReturnStatus _NclExecute
 					}
 					data1.kind = NclStk_VAR;
 					data1.u.data_var = _NclVarRead(var->u.data_var,sel_ptr);
+					if(data1.u.data_var != NULL) {
+						_NclPush(data1);
+					} else {
+						status = FATAL;
+					}
+				}
+			}
+			break;
+			case VAR_OP : {
+				int i;
+				int nsubs;
+				NclStackEntry data;
+				NclStackEntry data1;
+				NclStackEntry* var;
+				NclSymbol *sym;
+				NclSelectionRecord *sel_ptr=NULL;
+
+				ptr++;lptr++;fptr++;
+				sym = (NclSymbol*)*ptr;
+				var = _NclRetrieveRec(sym);
+				ptr++;lptr++;fptr++;
+				nsubs = *ptr;
+				if(nsubs == 0) {
+					if(var != NULL) {
+						_NclPush(*var);
+					}
+				} else {
+					sel_ptr = (NclSelectionRecord*)NclMalloc
+						(sizeof(NclSelectionRecord));
+					sel_ptr->n_entries = nsubs;
+					for(i=0;i<nsubs;i++) {
+						data =_NclPop();
+						switch(data.u.sub_rec->sub_type) {
+						case INT_VECT:
+/*
+* Need to free some stuff here
+*/							
+							_NclBuildVSelection(var->u.data_var,data.u.sub_rec->u.vec,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec->name);
+							break;
+						case INT_RANGE:
+/*
+* Need to free some stuff here
+*/							
+							_NclBuildRSelection(var->u.data_var,data.u.sub_rec->u.range,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec->name);
+							break;
+						case COORD_VECT:
+						case COORD_RANGE:
+							break;
+						}
+					}
+					data1.kind = NclStk_VAL;
+					data1.u.data_obj = _NclVarValueRead(var->u.data_var,sel_ptr);
 					_NclPush(data1);
 				}
 				break;
@@ -858,21 +910,12 @@ NclExecuteReturnStatus _NclExecute
 				NclSymbol *sym = NULL;
 				NhlErrorTypes ret = NOERROR;
 			
-			rhs = _NclPop();	
-			if(rhs.kind == NclStk_VAL) {
-				rhs_md = rhs.u.data_obj;
-			} else if(rhs.kind == NclStk_VAR) {
-				rhs_md = _NclGetVarVal(rhs.u.data_var);
-			} else {
-				NhlPError(FATAL,E_UNKNOWN,"Illegal right-hand side type for assignment");
-				status = FATAL;
-			}
 
 			ptr++;lptr++;fptr++;
 			sym = (NclSymbol*)(*ptr);
 
 			ptr++;lptr++;fptr++;
-			nsubs = 0;
+			nsubs = *ptr;
 
 			lhs_var = _NclRetrieveRec(sym);
 			if((status != FATAL)&&(lhs_var != NULL)) {
@@ -887,20 +930,38 @@ NclExecuteReturnStatus _NclExecute
 */
 							(void)_NclPop();
 						}
+/*
+* Pop off right hand side 
+*/
+						rhs = _NclPop();	
 					} else {
-						if(rhs_md->obj.status != TEMPORARY) {
-							rhs_md= _NclCopyVal(rhs_md);
-						} 
-						lhs_var->u.data_var= _NclVarCreate(sym,rhs_md,0,NULL,0,NULL,0,NULL,NORMAL);
-						if(lhs_var->u.data_var != NULL) {
-							(void)_NclChangeSymbolType(sym,VAR);
-							lhs_var->kind = NclStk_VAR;
-							
+						rhs = _NclPop();	
+						if(rhs.kind == NclStk_VAL) {
+							rhs_md = rhs.u.data_obj;
+						} else if(rhs.kind == NclStk_VAR) {
+							rhs_md = _NclGetVarVal(rhs.u.data_var);
 						} else {
-							NhlPError(WARNING,E_UNKNOWN,"Could not create variable (%s)",sym->name);
-							status = WARNING;
-							lhs_var->kind = NclStk_NOVAL;
+							NhlPError(FATAL,E_UNKNOWN,"Illegal right-hand side type for assignment");
+							status = FATAL;
 						}
+						if(rhs_md != NULL) {
+							if(rhs_md->obj.status != TEMPORARY) {
+/*
+* This is ok no ponters are lost since rhs_md was permanent which means that
+* some NclVar object has a reference to it
+*/
+								rhs_md= _NclCopyVal(rhs_md);
+							}
+							lhs_var->u.data_var= _NclVarCreate(sym,rhs_md,0,NULL,0,NULL,0,NULL,NORMAL);
+							if(lhs_var->u.data_var != NULL) {
+								(void)_NclChangeSymbolType(sym,VAR);
+								lhs_var->kind = NclStk_VAR;
+							} else {
+								NhlPError(WARNING,E_UNKNOWN,"Could not create variable (%s)",sym->name);
+								status = WARNING;
+								lhs_var->kind = NclStk_NOVAL;
+							}
+						} 
 					}
 				} else if(lhs_var->kind == NclStk_VAR) {
 					if((nsubs != lhs_var->u.data_var->var.n_dims)&&(nsubs != 0)) {
@@ -912,6 +973,7 @@ NclExecuteReturnStatus _NclExecute
 */
 							(void)_NclPop();
 						}
+						(void)_NclPop();	
 					}
 					if(nsubs != 0) {
 						sel_ptr = (NclSelectionRecord*)NclMalloc (sizeof(NclSelectionRecord));
@@ -939,6 +1001,15 @@ NclExecuteReturnStatus _NclExecute
 						case COORD_RANGE:
 							break;
 						}
+					}
+					rhs = _NclPop();	
+					if(rhs.kind == NclStk_VAL) {
+						rhs_md = rhs.u.data_obj;
+					} else if(rhs.kind == NclStk_VAR) {
+						rhs_md = _NclGetVarVal(rhs.u.data_var);
+					} else {
+						NhlPError(FATAL,E_UNKNOWN,"Illegal right-hand side type for assignment");
+						status = FATAL;
 					}
 					ret = _NclAssignToVar(lhs_var->u.data_var,rhs_md,sel_ptr);
 					if(rhs_md->obj.status != PERMANENT) {
@@ -1052,10 +1123,174 @@ NclExecuteReturnStatus _NclExecute
 				_NclPush(data);
 			}
 			break;
-			case PARAM_FILE_VAR_OP:
+			case ASSIGN_VAR_COORD_OP: {
+				NclStackEntry *var = NULL;
+				NclStackEntry data;
+				NclSymbol* thesym = NULL;
+				char *coord_name = NULL;
+				int nsubs = 0,i;
+				NhlErrorTypes ret = NOERROR;
+				NclSelectionRecord *sel_ptr = NULL;
+				NclMultiDValData thevalue = NULL;
+				
+
+				ptr++;lptr++;fptr++;
+				thesym = (NclSymbol*)*ptr;
+				ptr++;lptr++;fptr++;
+				coord_name = (char*)*ptr;
+				ptr++;lptr++;fptr++;
+				nsubs = (int)*ptr;
+
+				var = _NclRetrieveRec(thesym);
+				if((var == NULL)||(var->u.data_var == NULL)) {
+					status = FATAL;
+				} else if(_NclIsDim(var->u.data_var,coord_name) == -1) {
+					NhlPError(FATAL,E_UNKNOWN,"(%s) is not a named dimension in variable (%s).",coord_name,thesym->name);
+					status = FATAL;
+				} else {
+					if(nsubs == 0) {
+						sel_ptr = NULL;
+					} else if(nsubs == 1){
+						sel_ptr = (NclSelectionRecord*)NclMalloc(sizeof(NclSelectionRecord));
+						sel_ptr->n_entries = 1;
+						data =_NclPop();
+						if(data.u.sub_rec->name != NULL) {
+							NhlPError(WARNING,E_UNKNOWN,"Named dimensions can not be used with coordinate variables since only one dimension applies");
+							status = WARNING;
+						}
+						switch(data.u.sub_rec->sub_type) {
+						case INT_VECT:
+/*
+* Need to free some stuff here
+*/						
+							_NclBuildVSelection(NULL,data.u.sub_rec->u.vec,&(sel_ptr->selection[0]),0,NULL);
+							break;
+						case INT_RANGE:
+/*
+* Need to free some stuff here
+*/							
+							_NclBuildRSelection(NULL,data.u.sub_rec->u.range,&(sel_ptr->selection[0]),0,NULL);
+							break;
+						case COORD_VECT:
+						case COORD_RANGE:
+							NhlPError(FATAL,E_UNKNOWN,"Coordinate indexing can not be used with coordinate variables ");
+							NclFree(sel_ptr);
+							sel_ptr = NULL;
+							status = FATAL;
+							break;
+						}
+
+					} else {
+						NhlPError(FATAL,E_UNKNOWN,"Coordinate variables have only one dimension, %d subscripts on left hand side of assignement",nsubs);
+						for(i = 0; i < nsubs; i++) {
+							(void)_NclPop();
+						}
+						status = FATAL;
+					}
+					if(status != FATAL) {
+						data = _NclPop();
+						switch(data.kind) {
+						case NclStk_VAL: 
+							thevalue = data.u.data_obj;
+							break;
+						case NclStk_VAR:
+							thevalue = _NclVarValueRead(data.u.data_var,NULL);
+							break;
+						default:
+							thevalue = NULL;
+							status = FATAL;
+						break;
+						}
+					
+						if(thevalue != NULL) {
+							ret = _NclWriteCoordVar(var->u.data_var,thevalue,coord_name,sel_ptr);
+							if(status < ret){
+								status = ret;
+							}
+						}
+					} else {
+						(void)_NclPop();
+					}
+				}
+			}
+			break;
 			case PARAM_VAR_COORD_OP:
-			case VAR_COORD_OP:
-			case ASSIGN_VAR_COORD_OP:
+			case VAR_READ_COORD_OP:
+			case VAR_COORD_OP: {
+				NclStackEntry *var = NULL;
+				NclStackEntry data;
+				NclSymbol* thesym = NULL;
+				char *coord_name = NULL;
+				int nsubs = 0,i;
+				NclSelectionRecord *sel_ptr = NULL;
+				
+
+				ptr++;lptr++;fptr++;
+				thesym = (NclSymbol*)*ptr;
+				ptr++;lptr++;fptr++;
+				coord_name = (char*)*ptr;
+				ptr++;lptr++;fptr++;
+				nsubs = (int)*ptr;
+
+				var = _NclRetrieveRec(thesym);
+				if((var == NULL)||(var->u.data_var == NULL)) {
+					status = FATAL;
+				} else if(_NclIsDim(var->u.data_var,coord_name) == -1) {
+					NhlPError(FATAL,E_UNKNOWN,"(%s) is not a named dimension in variable (%s).",coord_name,thesym->name);
+					status = FATAL;
+				} else {
+					if(nsubs == 0) {
+						sel_ptr = NULL;
+					} else if(nsubs == 1){
+						sel_ptr = (NclSelectionRecord*)NclMalloc(sizeof(NclSelectionRecord));
+						sel_ptr->n_entries = 1;
+						data =_NclPop();
+						if(data.u.sub_rec->name != NULL) {
+							NhlPError(WARNING,E_UNKNOWN,"Named dimensions can not be used with coordinate variables since only one dimension applies");
+							status = WARNING;
+						}
+						switch(data.u.sub_rec->sub_type) {
+						case INT_VECT:
+/*
+* Need to free some stuff here
+*/						
+							_NclBuildVSelection(NULL,data.u.sub_rec->u.vec,&(sel_ptr->selection[0]),0,NULL);
+							break;
+						case INT_RANGE:
+/*
+* Need to free some stuff here
+*/							
+							_NclBuildRSelection(NULL,data.u.sub_rec->u.range,&(sel_ptr->selection[0]),0,NULL);
+							break;
+						case COORD_VECT:
+						case COORD_RANGE:
+							NhlPError(FATAL,E_UNKNOWN,"Coordinate indexing can not be used with coordinate variables ");
+							NclFree(sel_ptr);
+							sel_ptr = NULL;
+							status = FATAL;
+							break;
+						}
+
+					} else {
+						NhlPError(FATAL,E_UNKNOWN,"Coordinate variables have only one dimension, %d subscripts used on coordinate variable reference",nsubs);
+						for(i = 0; i < nsubs; i++) {
+							(void)_NclPop();
+						}
+						status = FATAL;
+					}
+					if(status != FATAL) {
+						data.u.data_var = _NclReadCoordVar(var->u.data_var,coord_name,sel_ptr);
+						if(data.u.data_var != NULL) {
+							data.kind = NclStk_VAR;
+							_NclPush(data);
+						} else {
+							status = FATAL;
+						}
+					} 
+				}
+			}
+			break;
+			case PARAM_FILE_VAR_OP:
 			case FILE_VAR_OP :
 			case ASSIGN_FILE_VAR_OP :
 				ptr++;lptr++;fptr++;

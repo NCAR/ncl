@@ -75,4 +75,6 @@
 #define VAR_COORD_OP			75
 #define ASSIGN_VAR_COORD_OP			76
 #define PARAM_VAR_COORD_OP			77
-#define NUM_OPERATORS			78
+#define VAR_READ_OP				78
+#define VAR_READ_COORD_OP			79
+#define NUM_OPERATORS			80
