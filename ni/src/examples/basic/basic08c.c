@@ -42,8 +42,8 @@ void draw_bounded_plot();
 main()
 {
 
-    int appid,rlist;
-    int xwork_id,ll_id,cn_id;
+    int appid,rlist,grlist;
+    int wid,gid,ll_id,cn_id;
 
     float x[5];
     float y[5];
@@ -59,6 +59,7 @@ main()
     NhlInitialize();
 
     rlist = NhlRLCreate(NhlSETRL);
+    grlist = NhlRLCreate(NhlGETRL);
     NhlRLClear(rlist);
     NhlRLSetString(rlist,NhlNappUsrDir,"./");
     NhlCreate(&appid,"basic08",NhlappClass,NhlDEFAULT_APP,rlist);
@@ -71,7 +72,7 @@ main()
        */
           NhlRLClear(rlist);
           NhlRLSetString(rlist,NhlNwkMetaName,"./basic08c.ncgm");
-          NhlCreate(&xwork_id,"simple_ncgm",NhlncgmWorkstationClass,
+          NhlCreate(&wid,"simple_ncgm",NhlncgmWorkstationClass,
                     NhlDEFAULT_APP,rlist);
       }
     
@@ -82,7 +83,7 @@ main()
        */
          NhlRLClear(rlist);
          NhlRLSetInteger(rlist,NhlNwkPause,True);
-         NhlCreate(&xwork_id,"simple_x11",NhlxWorkstationClass,
+         NhlCreate(&wid,"simple_x11",NhlxWorkstationClass,
                    NhlDEFAULT_APP,rlist);
      }
 
@@ -93,7 +94,7 @@ main()
        */
           NhlRLClear(rlist);
           NhlRLSetString(rlist,NhlNwkPSFileName,"./basic08c.ps");
-          NhlCreate(&xwork_id,"simple_ps",NhlpsWorkstationClass,
+          NhlCreate(&wid,"simple_ps",NhlpsWorkstationClass,
                     NhlDEFAULT_APP,rlist);
       }
 
@@ -107,15 +108,19 @@ main()
     NhlRLSetFloat(rlist,NhlNvpYF,1.0);
     NhlRLSetFloat(rlist,NhlNvpWidthF,1.0);
     NhlRLSetFloat(rlist,NhlNvpHeightF,1.0);
-    NhlCreate(&ll_id,"loglin",NhllogLinPlotClass,xwork_id,rlist);
+    NhlCreate(&ll_id,"loglin",NhllogLinPlotClass,wid,rlist);
 
 /* 
- * Set Workstation resources to modify the immediate mode line attributes.
+ * Set GraphicStyle resources to modify the immediate mode line attributes.
  */
+    NhlRLClear(grlist);
+    NhlRLGetInteger(grlist,NhlNwkDefGraphicStyleId,&gid);
+    NhlGetValues(wid,grlist);
+
     NhlRLClear(rlist);
-    NhlRLSetInteger(rlist,NhlNwkLineColor,2);
-    NhlRLSetInteger(rlist,NhlNwkDashPattern,1);
-    NhlSetValues(xwork_id,rlist);
+    NhlRLSetInteger(rlist,NhlNgsLineColor,2);
+    NhlRLSetInteger(rlist,NhlNgsLineDashPattern,1);
+    NhlSetValues(gid,rlist);
     
 /*
  * Create an empty ContourPlot object with a Title, a LabelBar, and a Legend.
@@ -131,7 +136,7 @@ main()
     NhlRLSetFloat(rlist,NhlNvpYF,1.0);
     NhlRLSetFloat(rlist,NhlNvpHeightF,1.0);
     NhlRLSetFloat(rlist,NhlNvpWidthF,1.0);
-    NhlCreate(&cn_id,"contour",NhlcontourPlotClass,xwork_id,rlist);
+    NhlCreate(&cn_id,"contour",NhlcontourPlotClass,wid,rlist);
 
 /*
  * The first frame illustrates drawing the plot with a 5% margin around
@@ -150,13 +155,13 @@ main()
     y[3] = 0.95;
     y[4] = 0.05;
 
-    NhlNDCPolyline(ll_id,0,x,y,5);
+    NhlNDCPolyline(ll_id,gid,x,y,5);
 
 /*
  * Draw the plot with the desired boundary parameters.
  */
     draw_bounded_plot(cn_id,1,0.05,0.95,0.05,0.95,rlist);
-    NhlFrame(xwork_id);
+    NhlFrame(wid);
 
 /*
  * The second frame illustrates use of the draw_bounded_plot procedure
@@ -174,7 +179,7 @@ main()
     y[3] = 0.975;
     y[4] = 0.525;
 
-    NhlNDCPolyline(ll_id,0,x,y,5);
+    NhlNDCPolyline(ll_id,gid,x,y,5);
 
 /*
  * Set the ContourPlot viewport so that the width is twice the height.
@@ -207,7 +212,7 @@ main()
     y[3] = 0.975;
     y[4] = 0.525;
 
-    NhlNDCPolyline(ll_id,0,x,y,5);
+    NhlNDCPolyline(ll_id,gid,x,y,5);
 
 /*
  * Set the ContourPlot viewport so that the height is twice the width.
@@ -239,7 +244,7 @@ main()
     y[3] = 0.4;
     y[4] = 0.1;
 
-    NhlNDCPolyline(ll_id,0,x,y,5);
+    NhlNDCPolyline(ll_id,gid,x,y,5);
 
 /*
  * For this plot the aspect ratio is distored in order to fill as much as
@@ -258,12 +263,12 @@ main()
  * Draw the plot with the desired boundary parameters.
  */
     draw_bounded_plot(cn_id,0,0.125,0.875,0.1,0.4,rlist);
-    NhlFrame(xwork_id);
+    NhlFrame(wid);
 
 /*
  * Clean up.
  */
-    NhlDestroy(xwork_id);
+    NhlDestroy(wid);
     NhlClose();
     exit(0);
 }

@@ -33,8 +33,8 @@ C
       external NhlFLogLinPlotClass
       external NhlFContourPlotClass
       
-      integer appid,rlist
-      integer xwork_id,ll_id,cn_id
+      integer appid,rlist,grlist
+      integer wid,gid,ll_id,cn_id
       integer NCGM,X11,PS
       integer ierr
 
@@ -50,6 +50,7 @@ C Initialize the high level utility library and create application.
 C
       call NhlFInitialize
       call NhlFRLCreate(rlist,'SETRL')
+      call NhlFRLCreate(grlist,'GETRL')
 
       call NhlFRLClear(rlist)
       call NhlFRLSetString(rlist,'appUsrDir','./',ierr)
@@ -63,7 +64,7 @@ C
          call NhlFRLClear(rlist)
          call NhlFRLSetString(rlist,'wkMetaName',
      &        './basic08f.ncgm',ierr)
-         call NhlFCreate(xwork_id,'simple',
+         call NhlFCreate(wid,'simple',
      &        NhlfNcgmWorkstationClass,0,rlist,ierr)
       endif
 
@@ -73,7 +74,7 @@ C Create an X workstation.
 C      
          call NhlFRLClear(rlist)
          call NhlFRLSetString(rlist,'wkPause','True',ierr)
-         call NhlFCreate(xwork_id,'simple',NhlFXWorkstationClass,
+         call NhlFCreate(wid,'simple',NhlFXWorkstationClass,
      &        0,rlist,ierr)
       endif
 
@@ -84,7 +85,7 @@ C
          call NhlFRLClear(rlist)
          call NhlFRLSetString(rlist,'wkPSFileName',
      &        './basic08f.ps',ierr)
-         call NhlFCreate(xwork_id,'simple',NhlFPSWorkstationClass,
+         call NhlFCreate(wid,'simple',NhlFPSWorkstationClass,
      &        0,rlist,ierr)
       endif
 C
@@ -98,14 +99,19 @@ C
       call NhlFRLSetFloat(rlist,'vpHeightF',1.0,ierr)
       call NhlFRLSetFloat(rlist,'vpWidthF',1.0,ierr)
       call NhlFCreate(ll_id,'loglin',NhlFLogLinPlotClass,
-     &     xwork_id,rlist,ierr)
+     &     wid,rlist,ierr)
 C
-C Set Workstation resources to modify the immediate mode line attributes.
+C Set GraphicStyle resources to modify the immediate mode line
+C attributes.
 C
+      call NhlFRLClear(grlist)
+      call NhlFRLGetInteger(grlist,'wkDefGraphicStyleId',gid,ierr)
+      call NhlFGetValues(wid,grlist,ierr)
+
       call NhlFRLClear(rlist)
-      call NhlFRLSetInteger(rlist,'wkLineColor',2,ierr)
-      call NhlFRLSetInteger(rlist,'wkDashPattern',1,ierr)
-      call NhlFSetValues(xwork_id,rlist,ierr)
+      call NhlFRLSetInteger(rlist,'gsLineColor',2,ierr)
+      call NhlFRLSetInteger(rlist,'gsLineDashPattern',1,ierr)
+      call NhlFSetValues(gid,rlist,ierr)
 C
 C Create an empty ContourPlot with a Title, a LableBar, and a Legend.
 C Note that the viewport is square and covers the whole NDC space,
@@ -124,7 +130,7 @@ C
       call NhlFRLSetFloat(rlist,'vpHeightF',1.0,ierr)
       call NhlFRLSetFloat(rlist,'vpWidthF',1.0,ierr)
       call NhlFCreate(cn_id,'contour',NhlFContourPlotClass,
-     &     xwork_id,rlist,ierr)
+     &     wid,rlist,ierr)
 C
 C The first frame illustrates drawing the plot with a 5% margin around
 C the viewable area. Draw an immediate mode line indicating the boundary
@@ -142,12 +148,12 @@ C
       y(4) = 0.95
       y(5) = 0.05
 
-      call NhlFNDCPolyline(ll_id,0,x,y,5,ierr)
+      call NhlFNDCPolyline(ll_id,gid,x,y,5,ierr)
 C
 C Draw the plot with the desired boundary parameters.
 C
       call drbdplt(cn_id,.true.,0.05,0.95,0.05,0.95,rlist)
-      call NhlFFrame(xwork_id,ierr)
+      call NhlFFrame(wid,ierr)
 C
 C The second frame illustrates use of the drbdplt subroutine
 C to place several plots with varying aspect ratios in a single frame.
@@ -164,7 +170,7 @@ C
       y(4) = 0.975
       y(5) = 0.525
 
-      call NhlFNDCPolyline(ll_id,0,x,y,5,ierr)
+      call NhlFNDCPolyline(ll_id,gid,x,y,5,ierr)
 C
 C Set the ContourPlot viewport so that the width is twice the height.
 C (The absolute numbers are not important here, only the ratio matters.)
@@ -196,7 +202,7 @@ C
       y(4) = 0.975
       y(5) = 0.525
 
-      call NhlFNDCPolyline(ll_id,0,x,y,5,ierr)
+      call NhlFNDCPolyline(ll_id,gid,x,y,5,ierr)
 C
 C Set the ContourPlot viewport so that the height is twice the width.
 C
@@ -227,7 +233,7 @@ C
       y(4) = 0.4
       y(5) = 0.1
 
-      call NhlFNDCPolyline(ll_id,0,x,y,5,ierr)
+      call NhlFNDCPolyline(ll_id,gid,x,y,5,ierr)
 C
 C For this plot the aspect ratio is distorted in order to fill as much as
 C possible of the desired area. Note that the space is not completely filled.
@@ -246,11 +252,11 @@ C Draw the plot with the desired boundary parameters.
 C
       call drbdplt(cn_id,.false., 0.125, 0.875, 0.1, 0.4,
      &     rlist)
-      call NhlFFrame(xwork_id,ierr)
+      call NhlFFrame(wid,ierr)
 C
 C Clean up
 C
-      call NhlFDestroy(xwork_id,ierr)
+      call NhlFDestroy(wid,ierr)
       call NhlFClose
 
       stop
