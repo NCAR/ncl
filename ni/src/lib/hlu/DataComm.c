@@ -1,5 +1,5 @@
 /*
- *      $Id: DataComm.c,v 1.4 1994-01-05 22:34:13 boote Exp $
+ *      $Id: DataComm.c,v 1.5 1994-01-06 19:50:30 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1323,7 +1323,7 @@ DataSpecInitialize
 			!_NhlRegisterDSpec((DataItemLayer)dil,dsnew->base.id)){
 			NhlPError(WARNING,E_UNKNOWN,
 				"DataSpecInit:%s resource not valid",
-								NhlNdataItem);
+								NhlNdsDataItem);
 			dsnew->dataspec.data_item = NULL_LAYER;
 			return WARNING;
 		}
@@ -1436,7 +1436,7 @@ DataSpecSetValues
 			return NOERROR;
 
 	NhlPError(WARNING,E_UNKNOWN,"DataSpecSetValues:Invalid %s resource",
-								NhlNdataItem);
+								NhlNdsDataItem);
 	dsnew->dataspec.data_item = NULL_LAYER;
 
 	return WARNING;
