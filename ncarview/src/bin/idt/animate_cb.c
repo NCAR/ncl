@@ -1,6 +1,6 @@
 
 /*
- *      $Id: animate_cb.c,v 1.3 1992-09-01 23:38:42 clyne Exp $
+ *      $Id: animate_cb.c,v 1.4 1993-03-31 15:17:16 clyne Exp $
  */
 /************************************************************************
 *									*
@@ -61,7 +61,6 @@ static	int	animate_on(wd)
 	int		stop = wd->pcv.stop_segment;
 	int		num = ((stop - start) / skip) + 1;	/* num frames */
 	XImage		*ximage;	/* XImage describing images in $images*/
-	char		**images;	/* array of images to animate	*/
 	AnimateType	*a;
 	int		i;
 	char		buf[80];
@@ -70,6 +69,11 @@ static	int	animate_on(wd)
 
 	sprintf(buf, "Loading %d images for animation\n", num);
 	Message(wd->id, buf);
+
+	if (num < 2) {
+		ErrorMessage(wd->id,"Need at least 2 images to animate");
+		return(-1);
+	}
 
 	wd->a = (AnimateType *) NULL;
 
@@ -95,23 +99,28 @@ static	int	animate_on(wd)
 	XtSetArg(args[0], XtNsensitive, True);
 	XtSetValues(wd->delay, args, 1);
 
-	if (! (images = (char **) malloc (sizeof(char *) * num))) {
-		ErrorMessage(wd->id, "Animation failed in malloc()");
-		return(-1);
-	}
-
 	/*
 	 * find out how big the window is where the animation will be
 	 * displayed.
 	 */
 	if (! XGetWindowAttributes(wd->dpy, wd->win, &xwa)) {
-		ErrorMessage(wd->id, "Animation failed in XGetWindowAttributes");
+		ErrorMessage(wd->id,"Animation failed in XGetWindowAttributes");
 		return(-1);
+	}
+
+	if (! (a = AnimateOpen(
+		wd->dpy, wd->canvas, num, 
+		0, 0, 0, 0, xwa.width, xwa.height))) {
+
+		ErrorMessage(wd->id,"Animation failed in AnimateOpen()");
+		return(-1);
+
 	}
 
 	/*
 	 * plot each picture in the list, grab the resulting image.
 	 */
+
 	XSynchronize(wd->dpy,True);
 	for(i=0, frame=start; i<num; frame+=skip, i++) {
 
@@ -140,16 +149,13 @@ static	int	animate_on(wd)
 			return(-1);
 		}
 
-		images[i] = ximage->data;
-
-		/*
-		 * free all but the last ximage structures. We need one
-		 * ximage structure for AnimateOpen().
-		 */
-		if (i != (num-1)) {
-			ximage->data = NULL;	/* don't free the data	*/
-			XDestroyImage(ximage);
+		if (AnimateLoad(a, ximage, (unsigned) i) < 0) {
+			ErrorMessage(wd->id, "Animation failed in loading images");
+			XSynchronize(wd->dpy,False);
+			return(-1);
 		}
+
+		XDestroyImage(ximage);
 
 		if (((i+1) % 10) == 0) {
 			sprintf(buf, "Read %d images", i+1);
@@ -159,24 +165,6 @@ static	int	animate_on(wd)
 	XSynchronize(wd->dpy,False);
 	sprintf(buf, "Done loading %d images", num);
 	Message(wd->id, buf);
-
-	/*
-	 * pass the list of images to the animate module
-	 */
-	a = AnimateOpen(
-		wd->dpy, wd->canvas, ximage, images, num, 
-		0, 0, 0, 0, xwa.width, xwa.height
-	);
-
-	/*
-	 * free all the image junk 
-	 */
-	for (i=0; i<num; i++) {
-		free((Voidptr) images[i]);
-	}
-	free((Voidptr) images);
-	ximage->data = NULL;
-	XDestroyImage(ximage);
 
 	if (! a) {
 		ErrorMessage(wd->id, "Animation failed in AnimateOpen()");

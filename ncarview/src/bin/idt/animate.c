@@ -1,5 +1,5 @@
 /*
- *      $Id: animate.c,v 1.4 1993-02-09 22:28:53 clyne Exp $
+ *      $Id: animate.c,v 1.5 1993-03-31 15:17:11 clyne Exp $
  */
 /************************************************************************
 *									*
@@ -32,10 +32,11 @@
 /*
  * initialize an AnimatePixmaps struct.
  */
-static	int	ap_construct(ap, dpy, size, src_x, src_y, dst_x, 
+static	int	ap_construct(ap, dpy, canvas, size, src_x, src_y, dst_x, 
 						dst_y, width, height)
 	AnimatePixmaps	*ap;
 	Display		*dpy;
+	Widget		canvas;
 	int		size;
 	int		src_x,
 			src_y,
@@ -80,6 +81,8 @@ static	int	ap_construct(ap, dpy, size, src_x, src_y, dst_x,
 	ap->dst_y = dst_y;
 	ap->width = width;
 	ap->height = height;
+	ap->canvas = canvas;
+	ap->win = XtWindow(canvas);
 
 	return(1);
 }
@@ -106,33 +109,38 @@ static	int	ap_destruct(ap)
 /*
  *	load a sequence of images into pixmaps.
  */
-static	int	ap_load(ap, win, gc, ximage, images)
+static	int	ap_load(ap, gc, ximage, index)
 	AnimatePixmaps	*ap;
-	Window		win;
 	GC		gc;
 	XImage		*ximage;
-	char		**images;
+	unsigned	index;
 {
 	int		i;
 	Pixmap		pixmap;
 	int		screen = XDefaultScreen(ap->dpy);
 	unsigned int	depth = DisplayPlanes(ap->dpy, screen);
 
-	for(i=0; i<ap->size; i++) {
-		pixmap = XCreatePixmap(ap->dpy, win,ap->width,ap->height,depth);
-
-		ximage->data = images[i];
-		XPutImage(
-			ap->dpy, pixmap, gc, ximage, 
-			ap->src_x, ap->src_y, ap->dst_x, ap->dst_y, 
-			ap->width, ap->height
-		);
-
-		ap->ap_[i].pixmap = pixmap;
-		ap->ap_[i].pixmap_created = True;
+	if (index >= ap->size) {
+		ESprintf(E_UNKNOWN, "Invalid image index(%d)", index);
+		return(-1);
 	}
 
-	ap->win = win;
+	pixmap = XCreatePixmap(ap->dpy, ap->win,ap->width,ap->height,depth);
+
+	XPutImage(
+		ap->dpy, pixmap, gc, ximage, 
+		ap->src_x, ap->src_y, ap->dst_x, ap->dst_y, 
+		ap->width, ap->height
+	);
+
+	if (ap->ap_[index].pixmap_created) {
+		XFreePixmap(ap->dpy, ap->ap_[index].pixmap);
+	}
+
+	ap->ap_[index].pixmap = pixmap;
+	ap->ap_[index].pixmap_created = True;
+
+	return(0);
 }
 
 /*
@@ -208,18 +216,11 @@ static	int	ap_current_image(ap)
  * Description:		Initialize the animation module. Return an Animation
  *			handle to be used for future Animate*() calls.
  *
- *			AnimateOpen() loads a sequence of images in XImage
- *			format onto the server referenced by $dpy for 
- *			subsequent animation.
- *
  * In Args:
  *	*dpy		the display
  *	canvas		widget whose window in which the animation 
  *			will be displayed.
- *	*ximage		ximage structure describing image format of images
- *			in $images.
- *	*images[]	array of images to be animated
- *	n		number of images in $images, n is > 1
+ *	n		Number of images which will be animated
  *	src_x		src offset in X from left edge of image.
  *	src_y		src offset in Y from top edge of image.
  *	width		src width of subimage within image
@@ -236,13 +237,11 @@ static	int	ap_current_image(ap)
  * Side Effects:
  *
  */
-AnimateType	*AnimateOpen(dpy, canvas, ximage, images, n, 
+AnimateType	*AnimateOpen(dpy, canvas, n, 
 					src_x, src_y, dst_x, 
 					dst_y, width, height)
 	Display		*dpy;
 	Widget		canvas;
-	XImage		*ximage;
-	char		**images;
 	int		n;
         int     	src_x,
                 	src_y,
@@ -254,9 +253,6 @@ AnimateType	*AnimateOpen(dpy, canvas, ximage, images, n,
 
 {
 	AnimateType	*a;
-	GC		gc;	/* gc required by AnimatePixmap::load	*/
-	XtGCMask	gc_mask = 0;	/* read-only gc			*/
-	XGCValues	gcv;
 
 
 	if (n < 2) {
@@ -283,22 +279,11 @@ AnimateType	*AnimateOpen(dpy, canvas, ximage, images, n,
 	/*
 	 * call the AnimatePixmap constructor
 	 */
-	if (a->ap.ap(&a->ap, dpy, n, src_x, src_y, 
+	if (a->ap.ap(&a->ap, dpy, canvas, n, src_x, src_y, 
 					dst_x, dst_y, width, height) < 0) {
 		return((AnimateType *) NULL);
 	}
 
-        /*
-         * need a gc for the Animation module
-         */
-        gc = XtGetGC(canvas, gc_mask, &gcv);
-
-	/*
-	 * load the image array onto the server.
-	 */
-	if (a->ap.load(&a->ap, XtWindow(canvas), gc, ximage, images) < 0) {
-		return((AnimateType *) NULL);
-	}
 
 
 	a->num_frames = n;
@@ -309,6 +294,65 @@ AnimateType	*AnimateOpen(dpy, canvas, ximage, images, n,
 	a->app = XtWidgetToApplicationContext(canvas);
 
 	return(a);
+}
+
+/*
+ * Function:	AnimateLoad()
+ *
+ * Description: Load a single image for subsequent animation. The image $ximage
+ *		will be the $index image in the sequence where 0 <= $index < n,
+ *		where 'n' is the number of images specified in AnimateOpen().
+ *
+ *		AnimateLoad() shall be called at least 'n' times after 
+ *		Animateopen(), once for each of the n images to
+ *		be loaded. After all 'n' images have been loaded any of the
+ *		other Animate*() functions may be called.
+ *
+ *		N.B. At first glance it might appear that a more reasonable
+ *		interface would be to combine AnimateLoad() with AnimateOpen().
+ *		AnimateOpen() would then accept an array of images instead
+ *		of loading them one call at a time. Such an interface
+ *		was considered and discarded because of the memory that would
+ *		be imposed by the image array; memory requirements would
+ *		be double what they currently are for animation.
+ *		
+ *
+ * In Args:
+ *	*a		Pointer an Animate struct created by AnimateOpen()
+ *	*ximage		XImage structure containing a single image. All
+ *			successive calls to a AnimateLoad() between an
+ *			AnimateOpen()/AnimateClose() pair must have identical
+ *			XImage structures, save for the actual image.
+ *	index		index of this image in the sequence.
+ *
+ * Out Args:
+ *
+ * Return Values:	
+ *	< 0		error, else OK
+ *
+ * Side Effects:
+ */
+int	AnimateLoad(a, ximage, index)
+	AnimateType	*a;
+	XImage		*ximage;
+	unsigned	index;
+{
+	GC		gc;	/* gc required by AnimatePixmap::load	*/
+	XtGCMask	gc_mask = 0;	/* read-only gc			*/
+	XGCValues	gcv;
+
+        /*
+         * need a gc for the Animation module
+         */
+        gc = XtGetGC(a->ap.canvas, gc_mask, &gcv);
+
+	/*
+	 * load the image array onto the server.
+	 */
+	if (a->ap.load(&a->ap, gc, ximage, index) < 0) {
+		return(-1);
+	}
+	return(0);
 }
 
 /*

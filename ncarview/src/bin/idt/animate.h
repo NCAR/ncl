@@ -1,6 +1,6 @@
 
 /*
- *      $Id: animate.h,v 1.2 1992-09-01 23:38:39 clyne Exp $
+ *      $Id: animate.h,v 1.3 1993-03-31 15:17:14 clyne Exp $
  */
 /************************************************************************
 *									*
@@ -40,6 +40,7 @@ typedef	struct	AnimatePixmapsStruct {
 	AnimatePixmap_	*ap_, 
 			*current;
 	Display		*dpy;
+	Widget		canvas;		/* canvas to animate in		*/
 	Window		win;		/* window to animate in		*/
 	int		size;		/* number of images in ap_	*/
 	int		src_x,		/* src X passed to XPutImage	*/
@@ -72,8 +73,6 @@ extern	AnimateType	*AnimateOpen(
 #ifdef	NeedFuncProto
 	Display		*dpy,
 	Widget		canvas,
-	XImage		*ximage,
-	char		**images,
 	int		n,
         int     	src_x,
 	int		src_y,
@@ -84,6 +83,13 @@ extern	AnimateType	*AnimateOpen(
 #endif
 );
 
+extern	int	AnimateLoad(
+#ifdef	NeedFuncProto
+	AnimateType	*a,
+	XImage          *ximage,
+	unsigned        index
+#endif
+);
 
 extern	int	AnimateDisplayImage(
 #ifdef	NeedFuncProto
