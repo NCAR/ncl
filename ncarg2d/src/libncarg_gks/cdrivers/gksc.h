@@ -1,5 +1,5 @@
 /*
- *	$Id: gksc.h,v 1.13 2003-03-07 22:23:36 fred Exp $
+ *	$Id: gksc.h,v 1.14 2004-04-02 22:18:31 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -243,6 +243,14 @@ typedef	struct	GKSC_	{
 #define ERR_OPN_PDF        -351	/* error opening output file            */
 #define ERR_PDF_CHAR       -352	/* PDF char not available for requested */
 #define ERR_PDF_RESTORE    -353	/* PDF char not available for requested */
+
+/*
+ *  Errors for image drivers.
+ */
+#define ERR_OPN_XWD        -400	/* error opening xwd output file        */
+#define ERR_OPN_PNG        -401	/* error opening PNG output file        */
+#define ERR_PIX_MAP        -402	/* error reading pixmap                 */
+#define ERR_PIX_DPT        -402	/* error in pixmap depth                */
 
 extern	GKSC    *CreateGKSC(
 #ifdef	NeedFuncProto
