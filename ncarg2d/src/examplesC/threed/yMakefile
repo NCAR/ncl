@@ -1,9 +1,23 @@
 #
-#	$Id: yMakefile,v 1.3 1994-05-26 14:51:48 haley Exp $
+#	$Id: yMakefile,v 1.4 1994-07-29 14:24:31 haley Exp $
 #
 
-CSRCS =  c_fthex03.c c_tpwrzt.c c_tthre2.c c_tthree.c
+CSRCS =  c_fthex01.c c_fthex02.c c_fthex03.c c_fthex04.c c_tpwrzt.c \
+	c_tthre2.c c_tthree.c
 
-GENERIC_SRCS = $(CSRCS)
+SED_SRCS = c_fthex05.c
+
+GENERIC_SRCS = $(CSRCS) $(SED_SRCS)
 
 InstallTarget($(GENERIC_SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
+
+
+#
+# Files containing C functions that are called from FORTRAN or that have to
+# be modified to include a macro from the configuration file.
+#
+
+c_fthex05.c: c_fthex05.c.sed Makefile
+	@-$(RM) $@
+	@$(CALLCONV) $(SYSTEM_INCLUDE) $@ srfip1
+
