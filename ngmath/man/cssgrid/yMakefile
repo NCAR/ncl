@@ -1,10 +1,13 @@
 #
-#       $Id: yMakefile,v 1.1 1999-06-29 00:23:04 fred Exp $
+#       $Id: yMakefile,v 1.2 2000-05-16 00:26:28 fred Exp $
 #
 
-MAN = css_overview cssgrid csstri csscoord cstrans csvoro  \
-	c_cssgrid c_csstri c_csscoord c_cstrans c_csvoro   \
-	cssgrid_errors
+MAN = c_csc2s c_csc2sd c_csgetd c_csgeti c_csgetr c_css2c          \
+	c_css2cd c_cssetd c_csseti c_cssetr c_cssgrid c_cssgridd   \
+	c_csstri c_csstrid c_csvoro c_csvorod csc2s csc2sd         \
+	csgetd csgeti csgetr css2c css2cd css_overview             \
+	cssetd csseti cssetr cssgrid cssgrid_errors cssgrid_params \
+	cssgridd csstri csstrid csvoro csvorod
 
 # Install preformatted troff documents on systems without troff
 #if UseCatDirs
