@@ -1,5 +1,5 @@
 /*
- *  $Id: c_shex03.c,v 1.3 2002-05-03 20:48:13 fred Exp $
+ *  $Id: c_shex03.c,v 1.4 2003-05-22 17:24:47 haley Exp $
  */
 
 #include <math.h>
@@ -18,8 +18,9 @@
 #define YMAX   2.0
 #define ZMIN  -2.0
 #define ZMAX   2.0
-#define IWTYPE   1
-#define WKID     1
+
+#define IWTYPE 1
+#define WKID   1
 
 float dsrnd1();
 

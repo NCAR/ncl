@@ -1,5 +1,5 @@
 /*
- *  $Id: c_shex01.c,v 1.2 1999-08-21 20:20:07 fred Exp $
+ *  $Id: c_shex01.c,v 1.3 2003-05-22 17:24:47 haley Exp $
  */
 
 #include <math.h>
@@ -11,8 +11,8 @@
 #define N        1331
 #define NEAREST   500
 #define FARTHER  N-NEAREST
-#define IWTYPE   1
-#define WKID    1
+#define IWTYPE 1
+#define WKID   1
 
 /*
  *  Define the size of the triangle list for plotting with Tdpack.
