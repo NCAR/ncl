@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManagerP.h,v 1.11 1998-04-16 03:08:59 dbrown Exp $
+ *      $Id: PlotManagerP.h,v 1.12 1998-11-18 19:21:09 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -60,6 +60,10 @@ typedef struct _NhlAnnoRec {
 	float			data_x;
 	float			data_y;
 	NhlBoolean		out_of_range;
+	float			orig_x;
+	float			orig_y;
+	float			orig_height;
+	float			orig_width;
 	struct _NhlAnnoRec	*next;
 } NhlAnnoRec;
 	

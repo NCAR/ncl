@@ -1,5 +1,5 @@
 /*
- *      $Id: TransformI.h,v 1.8 1998-04-16 03:09:14 dbrown Exp $
+ *      $Id: TransformI.h,v 1.9 1998-11-18 19:21:14 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -33,6 +33,12 @@ typedef enum _NhltfOverlayStatus {
 	_tfCurrentOverlayMember
 } NhltfOverlayStatus;
 
+extern NhlBoolean _NhlIsSimpleTransform(
+#if	NhlNeedProto
+	int	pid
+#endif
+);
+
 extern NhlBoolean _NhlIsPlotMember(
 #if	NhlNeedProto
 	int	pid
@@ -64,6 +70,12 @@ extern int _NhlOverlayBase(
 );
 
 extern int _NhlBasePlot(
+#if	NhlNeedProto
+	int	pid
+#endif
+);
+
+extern int _NhlTopLevelView(
 #if	NhlNeedProto
 	int	pid
 #endif
@@ -106,14 +118,6 @@ extern NhlErrorTypes NhlUnregisterAnnotation(
 );
 
 extern NhlErrorTypes _NhlRegisterAnnotation(
-#if	NhlNeedProto
-        NhlLayer	plot,
-	NhlLayer	annomanager,
-	NhlString	entry_name
-#endif
-);
-
-extern NhlErrorTypes _NhlUnregisterAnnotation(
 #if	NhlNeedProto
         NhlLayer	plot,
 	NhlLayer	annomanager,

@@ -1,5 +1,5 @@
 /*
- *      $Id: View.c,v 1.29 1997-08-14 16:30:53 dbrown Exp $
+ *      $Id: View.c,v 1.30 1998-11-18 19:21:16 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -679,6 +679,13 @@ static NhlErrorTypes	ViewDestroy
 	NhlSegTransList	step,tmp;
 	NhlLayerList	step1,tmp1;
 
+
+	if (layer->view.overlay_id) {
+		_NhlRemoveAnnotation(_NhlGetLayer(layer->view.overlay_id),
+				     _NhlGetLayer(layer->view.annomanager_id),
+				     "ViewDestroy");
+	}
+
 	step1 = layer->view.children;
 	_NhlDestroySegTransDat(layer->view.thetrans_children);
 	layer->view.children = NULL;
@@ -695,12 +702,6 @@ static NhlErrorTypes	ViewDestroy
 		tmp = step->next;
 		NhlFree(step);
 		step = tmp;
-	}
-
-	if (layer->view.overlay_id) {
-		_NhlRemoveAnnotation(_NhlGetLayer(layer->view.overlay_id),
-				     _NhlGetLayer(layer->view.annomanager_id),
-				     "ViewDestroy");
 	}
 				     
 	return(NhlNOERROR);

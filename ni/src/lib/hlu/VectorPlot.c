@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.c,v 1.56 1998-11-10 17:18:47 dbrown Exp $
+ *      $Id: VectorPlot.c,v 1.57 1998-11-18 19:21:15 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2591,23 +2591,20 @@ NhlLayer inst;
 	if (vctp->overlay_status == _tfCurrentOverlayMember ||
 	    vctp->overlay_status == _tfCurrentOverlayBase) {
 		if (vcp->refvec_anno_id != NhlNULLOBJID) {
-			subret = _NhlUnregisterAnnotation(vctp->overlay_object,
-					 _NhlGetLayer(vcp->refvec_anno_id),
-							  NULL);
+			subret = NhlUnregisterAnnotation
+				(inst->base.id,vcp->refvec_anno_id);
 			if ((ret = MIN(subret,ret)) < NhlWARNING)
 				return NhlFATAL;
 		}
 		if (vcp->minvec_anno_id != NhlNULLOBJID) {
-			subret = _NhlUnregisterAnnotation(vctp->overlay_object,
-					 _NhlGetLayer(vcp->minvec_anno_id),
-							  NULL);
+			subret = NhlUnregisterAnnotation
+				(inst->base.id,vcp->minvec_anno_id);
 			if ((ret = MIN(subret,ret)) < NhlWARNING)
 				return NhlFATAL;
 		}
 		if (vcp->zerof_anno_id != NhlNULLOBJID) {
-			subret = _NhlUnregisterAnnotation(vctp->overlay_object,
-					 _NhlGetLayer(vcp->zerof_anno_id),
-							  NULL);
+			subret = NhlUnregisterAnnotation
+				(inst->base.id,vcp->zerof_anno_id);
 			if ((ret = MIN(subret,ret)) < NhlWARNING)
 				return NhlFATAL;
 		}

@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManager.c,v 1.53 1998-11-13 01:42:51 dbrown Exp $
+ *      $Id: PlotManager.c,v 1.54 1998-11-18 19:21:08 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -540,6 +540,15 @@ static NhlErrorTypes RemoveOverlayBase(
 static NhlErrorTypes DissolveOverlay(
 #if	NhlNeedProto
 	NhlLayer		overlay_object
+#endif
+);
+
+
+static NhlAnnoRec *UnregisterAnnotation(
+#if	NhlNeedProto
+        NhlLayer	plot,
+	NhlLayer	annomanager,
+	NhlString	entry_name
 #endif
 );
 
@@ -5273,6 +5282,9 @@ NhlErrorTypes NhlRemoveOverlay
 				for (j = i; j < ovp->overlay_count - 1; j++) {
 					ovp->pm_recs[j] = ovp->pm_recs[j+1];
 				}
+				ovp->pm_recs[--ovp->overlay_count] = NULL;
+                                ostatus = _tfNotInOverlay;
+
 				NhlSetSArg(&sargs[nargs++],
 					   NhlNtfOverlayObject, NULL);
 				NhlSetSArg(&sargs[nargs++],
@@ -5288,8 +5300,6 @@ NhlErrorTypes NhlRemoveOverlay
 				if ((ret = MIN(subret,ret)) < NhlWARNING)
 					return ret;
 
-				ovp->pm_recs[--ovp->overlay_count] = NULL;
-                                ostatus = _tfNotInOverlay;
 			}
 			break;
 		}
@@ -5670,6 +5680,8 @@ int _NhlAddAnnotation
  *
  * In Args:	plot_id		id of plot object
  *		anno_manager_id		id of AnnoManager object
+ *                                --- modified 11/13/98 to also work with
+ *                               id of the View object.
  *
  * Out Args:	NONE
  *
@@ -5693,7 +5705,8 @@ NhlErrorTypes NhlRemoveAnnotation
 	char			*e_text;
 	char			*entry_name = "NhlRemoveAnnotation";
 	NhlLayer		base = _NhlGetLayer(plot_id);
-	NhlLayer		annomanager = _NhlGetLayer(anno_manager_id);
+	NhlLayer		l = _NhlGetLayer(anno_manager_id);
+	NhlLayer		annomanager;
 	NhlLayer		plot_overlay;
 
 	if (base == NULL || ! _NhlIsTransform(base)) {
@@ -5707,6 +5720,21 @@ NhlErrorTypes NhlRemoveAnnotation
 	if (plot_overlay == NULL)
 		return NhlFATAL;
 
+	if (! l) {
+		e_text = "%s: invalid annotation id";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
+	}
+	if (! _NhlIsView(l)) {
+		annomanager = l;
+	}
+	else {
+		int id;
+		NhlVAGetValues(anno_manager_id,
+			       NhlNvpAnnoManagerId,&id,
+			       NULL);
+		annomanager = _NhlGetLayer(id);
+	}
 /*
  * Test the annomanager layer pointer.
  */
@@ -5794,7 +5822,9 @@ NhlErrorTypes _NhlRemoveAnnotation
         NhlLayer		anno_view;
         NhlArgVal       	cbdata,dummy;
 	int			i;
+	NhlAnnoRec		*anrp;
         _NhlAnnoStatusCBDataRec	anno_status;
+
 
 	if (entry_name == NULL) entry_name = "_NhlRemoveAnnotation";
 
@@ -5813,13 +5843,14 @@ NhlErrorTypes _NhlRemoveAnnotation
  * Unregister the AnnoManager
  */
 
-	subret = _NhlUnregisterAnnotation(plotmanager,annomanager,entry_name);
-	if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
+	anrp = UnregisterAnnotation(plotmanager,annomanager,entry_name);
+	if (! anrp) 
+		return NhlFATAL;
         
         anno_view = _NhlGetLayer(ovp->view_ids[anno_ix]);
-	subret = _NhlSetAnnoView((NhlViewLayer)
-				 anno_view,
-				 NhlNULLOBJID,NhlNULLOBJID);
+	if (! anno_view->base.being_destroyed)
+		subret = _NhlSetAnnoView((NhlViewLayer)anno_view,
+					 NhlNULLOBJID,NhlNULLOBJID);
 
 /*
  * Delete the AnnoManager and View ids from their respective arrays
@@ -5837,7 +5868,25 @@ NhlErrorTypes _NhlRemoveAnnotation
 	subret = NhlDestroy(annomanager->base.id);
 
 	ret = MIN(subret,ret);
+/*
+ * Restore the view to its original size and position
+ */
+	if (! anno_view->base.being_destroyed)
+		subret = NhlVASetValues(anno_view->base.id,
+					NhlNvpXF,anrp->orig_x,
+					NhlNvpYF,anrp->orig_y,
+					NhlNvpWidthF,anrp->orig_width,
+					NhlNvpHeightF,anrp->orig_height,
+					NULL);
+	ret = MIN(subret,ret);
+/*
+ * Free the anno rec.
+ */
+	NhlFree(anrp);
         
+/*
+ * Do the anno status callback
+ */
 	NhlINITVAR(dummy);
 	NhlINITVAR(cbdata);
         anno_status.id = anno_view->base.id;
@@ -6010,7 +6059,17 @@ NhlErrorTypes _NhlRegisterAnnotation
 	anrp->track_data = track_data;
 	anrp->data_x = data_x;
 	anrp->data_y = data_y;
-
+/*
+ * Get the current view of the annotation so that it can be restored if
+ * the annotation is removed.
+ */
+	NhlVAGetValues(pid,
+		       NhlNvpXF,&anrp->orig_x,
+		       NhlNvpYF,&anrp->orig_y,
+		       NhlNvpWidthF,&anrp->orig_width,
+		       NhlNvpHeightF,&anrp->orig_height,
+		       NULL);
+		       
 	subret = NhlVASetValues(annomanager->base.id,
 				NhlNamOverlayId,overlay->base.id,
 				NULL);
@@ -6024,7 +6083,7 @@ NhlErrorTypes _NhlRegisterAnnotation
  *
  * Description:	
  *
- * In Args:	plot_id	id of overlay plot
+ * In Args:	plot_id		id of the annotation's base plot
  *		annomanager_id	id of AnnoManager Object
  *
  * Out Args:	NONE
@@ -6048,6 +6107,7 @@ NhlErrorTypes NhlUnregisterAnnotation
 	NhlLayer		base = _NhlGetLayer(plot_id);
 	NhlLayer		annomanager = _NhlGetLayer(annomanager_id);
 	NhlLayer		plot_overlay;
+	NhlAnnoRec		*anrp;
 
 	if (base == NULL || ! _NhlIsTransform(base)) {
 		e_text = "%s: invalid base plot id";
@@ -6068,12 +6128,19 @@ NhlErrorTypes NhlUnregisterAnnotation
 		return NhlFATAL;
 	}
 
-	return (_NhlUnregisterAnnotation(plot_overlay,annomanager,entry_name));
+	anrp = UnregisterAnnotation(plot_overlay,annomanager,entry_name);
+	if (! anrp) {
+		e_text = "%s: annotation not found";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
+	}
+	NhlFree(anrp);
 
+	return NhlNOERROR;
 }
 
 /*
- * Function:	_NhlUnregisterAnnotation
+ * Function:	UnregisterAnnotation
  *
  * Description:	
  *
@@ -6081,7 +6148,7 @@ NhlErrorTypes NhlUnregisterAnnotation
  *		annomanager	AnnoManager object layer
  *		entry_name	interface name reported to caller in case
  *				of error. If NULL will be set to
- *				_NhlUnregisterAnnotation
+ *				UnregisterAnnotation
  *
  * Out Args:	NONE
  *
@@ -6090,7 +6157,8 @@ NhlErrorTypes NhlUnregisterAnnotation
  * Side Effects: NONE
  */	
 
-NhlErrorTypes _NhlUnregisterAnnotation
+static
+NhlAnnoRec *UnregisterAnnotation
 #if	NhlNeedProto
 (
 	NhlLayer	overlay, 
@@ -6107,46 +6175,36 @@ NhlErrorTypes _NhlUnregisterAnnotation
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	char			*e_text;
 	NhlPlotManagerLayerPart	*ovp;
-	NhlAnnoRec		*anrp;
+	NhlAnnoRec		**tanrp;
+	NhlAnnoRec		*anrp = NULL;
 	int			i;
 	int			view_id = NhlNULLOBJID - 1;
 
-	if (entry_name == NULL) entry_name = "_NhlUnregisterAnnotation";
+	if (entry_name == NULL) entry_name = "UnregisterAnnotation";
 
 	ovp = &((NhlPlotManagerLayer)overlay)->plotmanager;
 
 	for (i = 0; i < ovp->overlay_count; i++) {
 		
-		if ((anrp = ovp->pm_recs[i]->anno_list) == NULL)
-			continue;
-
-		if (anrp->anno_id == annomanager->base.id) {
-			ovp->pm_recs[i]->anno_list = anrp->next;
-			view_id = anrp->plot_id;
-			NhlFree(anrp);
-			break;
-		}
-		while (anrp->next != NULL) {
-			if (anrp->next->anno_id == annomanager->base.id) {
-				NhlAnnoRec	*free_anno = anrp->next;
-				anrp->next = free_anno->next;
-				view_id = free_anno->plot_id;
-				NhlFree(free_anno);
+		tanrp = &ovp->pm_recs[i]->anno_list;
+		while (*tanrp) {
+			if ((*tanrp)->anno_id == annomanager->base.id) {
+				anrp = *tanrp;
+				*tanrp = anrp->next;
+				anrp->next = NULL;
 				break;
 			}
-			anrp = anrp->next;
+			tanrp = &(*tanrp)->next;
 		}
+		if (anrp)
+			break;
 	}
-	if (view_id < NhlNULLOBJID) {
-		e_text = "%s: annotation not found";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return NhlFATAL;
-	}
-	subret = NhlVASetValues(annomanager->base.id,
-			     NhlNamOverlayId,NhlNULLOBJID,NULL);
-	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
 
-	return ret;
+	if (! annomanager->base.being_destroyed)
+		NhlVASetValues(annomanager->base.id,
+			       NhlNamOverlayId,NhlNULLOBJID,NULL);
+
+	return anrp;
 
 }
 
@@ -6308,13 +6366,15 @@ RemoveOverlayBase
 	ga->my_data = True;
 
 	NhlSetSArg(&sargs[nargs++],NhlNpmPlotManagerRecs, ga);
-	NhlSetSArg(&sargs[nargs++],NhlNtfOverlayStatus,_tfCurrentOverlayBase);
+	NhlSetSArg(&sargs[nargs++],
+		   NhlNtfOverlayStatus,_tfCurrentOverlayBase);
 	NhlSetSArg(&sargs[nargs++],NhlNtfOverlayObject,plot_ovl);
-	NhlSetSArg(&sargs[nargs++],NhlNtfOverlayTrans,plot->trans.trans_obj);
-
+	NhlSetSArg(&sargs[nargs++],
+		   NhlNtfOverlayTrans,plot->trans.trans_obj);
 	
 	subret = NhlALSetValues(plot->base.id,sargs,nargs); 
 	ret = MIN(subret,ret);
+
 		  
 	NhlFree(pm_recs[0]);
 	NhlFreeGenArray(ga);
@@ -6426,6 +6486,8 @@ RestoreOverlayBase
  * of each plot in the overlay that is being restored.
  */
 	for (i = 1; i < new_plot_count; i++) {
+		NhlLayer overlay = (NhlLayer) sub_recs[i]->plot;
+
 		nargs = 0;
 		NhlSetSArg(&sargs[nargs++],NhlNtfOverlayObject, plot_ovl);
 		NhlSetSArg(&sargs[nargs++],
@@ -6435,11 +6497,9 @@ RestoreOverlayBase
 		NhlSetSArg(&sargs[nargs++],NhlNvpWidthF,orec->owidth);
 		NhlSetSArg(&sargs[nargs++],NhlNvpHeightF,orec->oheight);
 
-		subret = NhlALSetValues(sub_recs[i]->plot->base.id,
-					sargs,nargs); 
+		subret = NhlALSetValues(overlay->base.id,sargs,nargs); 
 		if ((ret = MIN(subret,ret)) < NhlWARNING)
 			return ret;
-
 	}
 	nargs = 0;
 
@@ -6449,8 +6509,9 @@ RestoreOverlayBase
  * of the current overlay) use the same GenArray to send the new contents 
  * of the overlay record to the plot (and therefore to its overlay object).
  */
+
 	if (new_plot_count != ga->num_elements) {
-		ga->num_elements = ga->len_dimensions[0] = new_plot_count;
+		ga->num_elements =ga->len_dimensions[0] = new_plot_count;
 		NhlSetSArg(&sargs[nargs++],NhlNpmPlotManagerRecs, ga);
 	}
 
@@ -6460,9 +6521,11 @@ RestoreOverlayBase
  * overlay base plot.
  */
 
-	NhlSetSArg(&sargs[nargs++],NhlNtfOverlayStatus,_tfCurrentOverlayBase);
+	NhlSetSArg(&sargs[nargs++],
+		   NhlNtfOverlayStatus,_tfCurrentOverlayBase);
 	NhlSetSArg(&sargs[nargs++],NhlNtfOverlayObject,plot_ovl);
-	NhlSetSArg(&sargs[nargs++],NhlNtfOverlayTrans,plot->trans.trans_obj);
+	NhlSetSArg(&sargs[nargs++],
+		   NhlNtfOverlayTrans,plot->trans.trans_obj);
 	NhlSetSArg(&sargs[nargs++],NhlNpmUpdateReq,True);
 	NhlSetSArg(&sargs[nargs++],NhlNvpXF,orec->ox);
 	NhlSetSArg(&sargs[nargs++],NhlNvpYF,orec->oy);

@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlot.c,v 1.48 1998-11-06 22:16:14 dbrown Exp $
+ *      $Id: StreamlinePlot.c,v 1.49 1998-11-18 19:21:11 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1668,9 +1668,8 @@ NhlLayer inst;
 	if (sttp->overlay_status == _tfCurrentOverlayMember ||
 	    sttp->overlay_status == _tfCurrentOverlayBase) {
 		if (stp->zerof_anno_id != NhlNULLOBJID) {
-			subret = _NhlUnregisterAnnotation(sttp->overlay_object,
-					 _NhlGetLayer(stp->zerof_anno_id),
-							  NULL);
+			subret = NhlUnregisterAnnotation
+				(inst->base.id,stp->zerof_anno_id);
 			if ((ret = MIN(subret,ret)) < NhlWARNING)
 				return NhlFATAL;
 		}

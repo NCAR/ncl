@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.80 1998-11-10 17:18:43 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.81 1998-11-18 19:21:01 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2779,16 +2779,14 @@ NhlLayer inst;
 	if (cntp->overlay_status == _tfCurrentOverlayMember ||
 	    cntp->overlay_status == _tfCurrentOverlayBase) {
 		if (cnp->info_anno_id != NhlNULLOBJID) {
-			subret = _NhlUnregisterAnnotation(cntp->overlay_object,
-					 _NhlGetLayer(cnp->info_anno_id),
-							  NULL);
+			subret = NhlUnregisterAnnotation
+				(inst->base.id,cnp->info_anno_id);
 			if ((ret = MIN(subret,ret)) < NhlWARNING)
 				return NhlFATAL;
 		}
 		if (cnp->constf_anno_id != NhlNULLOBJID) {
-			subret = _NhlUnregisterAnnotation(cntp->overlay_object,
-					 _NhlGetLayer(cnp->constf_anno_id),
-							  NULL);
+			subret = NhlUnregisterAnnotation
+				(inst->base.id,cnp->constf_anno_id);
 			if ((ret = MIN(subret,ret)) < NhlWARNING)
 				return NhlFATAL;
 		}

@@ -1,5 +1,5 @@
 /*
- *      $Id: Transform.c,v 1.41 1998-10-22 17:39:30 dbrown Exp $
+ *      $Id: Transform.c,v 1.42 1998-11-18 19:21:13 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1752,6 +1752,80 @@ _NhlBasePlot
 	}
 
 	return (_NhlOverlayBase(pid));
+}
+
+
+/*
+ * Function:	_NhlTopLevelView
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+int
+_NhlTopLevelView
+#if	NhlNeedProto
+(
+	int	pid
+)
+#else
+(pid)
+	int	pid;
+#endif
+{
+	int base_plot_id;
+	
+	if (_NhlIsAnnotation(pid)) {
+		base_plot_id = _NhlAnnotationBase(pid);
+		while (_NhlIsAnnotation(base_plot_id))
+			base_plot_id = _NhlAnnotationBase(base_plot_id);
+		return base_plot_id;
+	}
+
+	base_plot_id = _NhlOverlayBase(pid);
+	if (base_plot_id <= NhlNULLOBJID)
+		return pid;
+}
+
+
+/*
+ * Function:	_NhlIsSimpleTransform
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+NhlBoolean
+_NhlIsSimpleTransform
+#if	NhlNeedProto
+(
+	int	pid
+)
+#else
+(pid)
+	int	pid;
+#endif
+{
+	NhlLayer	l = _NhlGetLayer(pid);
+
+	if(l && _NhlIsTransform(l)) {
+		NhlTransformLayer tl = (NhlTransformLayer) l;
+		if (! tl->trans.plot_manager_on)
+			return True;
+	}
+	return False;
 }
 
 /*
