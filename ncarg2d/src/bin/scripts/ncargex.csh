@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.8 1993-01-13 21:07:24 haley Exp $
+#   $Id: ncargex.csh,v 1.9 1993-01-13 23:39:51 haley Exp $
 #
 
 set example_dir=`ncargpath SED_EXAMPLESDIR`
@@ -264,12 +264,6 @@ set f_files = $name.f
 
 set copy_files="$f_files"
 
-if ( "$name" == "cmptit" ) then
-    set copy_files=($copy_files cmpcc.f)
-    set f_files=($f_files cmpcc.f)
-    set rmfiles="cmpcc.o"
-endif
-
 if ( "$name" == "ccpcir" || "$name" == "ccpcnrc" || "$name" == "ccpezct" || \
      "$name" == "ccphl" || "$name" == "ccpmap" || "$name" == "ccpvp" ) then
     set copy_files=($copy_files ggdini.f)
@@ -317,7 +311,11 @@ if (! $?NoRunOption) then
 
     ncargrun -o $name.ncgm $name
     set rmfiles = ($rmfiles $name.o $name)
-    echo "Metafile is named $name.ncgm"
+    if ( "$name" == "ccpcff" ) then
+      rm -f ccpcff.ncgm 
+    else
+      echo "Metafile is named $name.ncgm"
+    endif
 endif
 
 endif
