@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.165 2003-12-12 21:51:40 grubin Exp $
+ *      $Id: BuiltInFuncs.c,v 1.166 2004-01-25 17:10:51 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -2117,7 +2117,7 @@ NhlErrorTypes _Nclidsfft
 			x_coord[i] = xmin + i * spacing;
 		}
 		y_coord = (float*)NclMalloc(n * sizeof(float));
-		spacing = (ymax - ymin)/(m-1);
+		spacing = (ymax - ymin)/(n-1);
 		for(i = 0; i < n; i++) {
 			y_coord[i] = ymin + i * spacing;
 		}
