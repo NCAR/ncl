@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ng4ex.csh,v 1.6 2003-03-16 02:00:46 haley Exp $
+#   $Id: ng4ex.csh,v 1.7 2005-03-04 17:14:15 haley Exp $
 #
 #######################################################################
 #                                                                     #
@@ -104,19 +104,10 @@ endif
 #                                 #
 #*********************************#
 
-set hluex_dir="`ncargpath SED_HLUEXDIR`"
-if (! -d "$hluex_dir") then
-  echo "HLU directory <$hluex_dir> does not exist."
-  exit 1
-endif
+set hluex_dir = "`ncargpath SED_HLUEXDIR`"
+set nclex_dir = "`ncargpath SED_NCLEXDIR`"
+set res_dir   = "`ncargpath SED_RESDIR`"
 
-set nclex_dir="`ncargpath SED_NCLEXDIR`"
-if (! -d "$nclex_dir") then
-  echo "NCL directory <$nclex_dir> does not exist."
-  exit 1
-endif
-
-set res_dir="`ncargpath SED_RESDIR`"
 if (! -d "$res_dir") then
   echo "Resource directory <$res_dir> does not exist."
   exit 1
@@ -802,6 +793,11 @@ set prog_type = `expr $name : '.*[0-9][0-9]\(.\)'`
 set resfile_dir = "$res_dir/$obj_dir"
 
 if ("$prog_type" == "c") then
+  if (! -d "$hluex_dir") then
+    echo "Warning: HLU directory <$hluex_dir> doesn't exist."
+    echo "         Won't generate $name example."
+    continue
+  endif
   set cprog
   set example_dir = "$hluex_dir/$obj_dir"
   set src_file = "$name.c"
@@ -810,6 +806,12 @@ else if ("$prog_type" == "f") then
   set example_dir = "$hluex_dir/$obj_dir"
   set src_file = "$name.f"
 else if ("$prog_type" == "n") then
+  if (! -d "$nclex_dir") then
+    echo "Warning: NCL directory <$nclex_dir> doesn't exist."
+    echo "         Won't generate $name example."
+    continue
+  endif
+
   set nprog
   set example_dir = "$nclex_dir/$obj_dir"
   set src_file = "$name.ncl"
