@@ -227,13 +227,10 @@ c .              value is subtracted from the calculated kurtosis.
 c .              thus neg values are possible and the returned value
 c .              is kurtosis relative to the normal distribution.
 c .              if (kurt-3) > 0 [<0] it is usually more sharply peaked
-C*PL*ERROR* Comment line too long
-c .              [flatter] than the normal distribution. (leptokurtic and
-C*PL*ERROR* Comment line too long
-c .              platykurtic , respectively.) e.g. , a rectangular function has
-C*PL*ERROR* Comment line too long
-c .              a kurtosis of 1.8 or 1.8-3 = -1.2 relative to the normal
-c .              distribution.
+c .              [flatter] than the normal distribution. (leptokurtic
+c .              and platykurtic , respectively.) e.g. , a rectangular
+c.               function has a kurtosis of 1.8 or 1.8-3 = -1.2 relative
+c.               to the normal distribution.
 c .   nptused  - no. of points used to calculate the estimates
 c .   ier      - if (ier.ne.0) an error has occurred
 
@@ -420,19 +417,16 @@ c .   xvar     - sample variance  of the input vector x
 c .              note: if xmean and/or xvar = xmsg this routine will
 c .                    calculate the quantities and return them
 c .   mxlag    - max lag to be estimated  [0 <= mxlag <= npts ]
-C*PL*ERROR* Comment line too long
-c .   acv      - sample autocovariances  [vector of length .ge. (mxlag+1) ]
-C*PL*ERROR* Comment line too long
-c .   acr      - sample autocorrelations [vector of length .ge. (mxlag+1) ]
+c .   acv      - sample autocovariances  [vector of length .ge.
+c .                                      (mxlag+1) ]
+c .   acr      - sample autocorrelations [vector of length .ge. 
+c .                                       (mxlag+1) ]
 
-C*PL*ERROR* Comment line too long
-c .              acv(0)     = xvar (lag 0  )  : acr(0)       = 1.00 ( lag 0  )
-C*PL*ERROR* Comment line too long
-c .              acv(1)     =      (lag 1  )  : acr(1)       =      ( lag 1  )
+c .              acv(0) = xvar (lag 0  )  : acr(0)   = 1.00 ( lag 0  )
+c .              acv(1) =      (lag 1  )  : acr(1)   =      ( lag 1  )
 c .                         .                              .
 c .                         .                              .
-C*PL*ERROR* Comment line too long
-c .              acv(mxlag) =      (lag mxlag): acr(mxlag) =      ( lag mxlag)
+c .              acv(mxlag) = (lag mxlag): acr(mxlag) = ( lag mxlag)
 
 c .   ier      - if (ier.ne.0) an error has occurred
 
@@ -516,34 +510,31 @@ c .   x and y series reversed (also the other arguments) . note
 c .   that  the second ccv(0) and ccr(0) are redundant.
 
 c arguments :
-C*PL*ERROR* Comment line too long
-c .   x,y      - input vectors with which the calculations are to take place.
+c .   x,y      - input vectors with which the calculations are to take
+c .              place.
 c .   npts     - length of vectors x and y
 c .   xmsg,ymsg- missing code: if no msg values set to some number
 c .                            which will not be encountered.
 c .              xmsg will be used to fill missing values
-C*PL*ERROR* Comment line too long
-c .   xmean    - mean of the x vector (if xmean=xmsg: program will calculate)
-C*PL*ERROR* Comment line too long
-c .   ymean    - mean of the y vector (if ymean=ymsg: program will calculate)
-C*PL*ERROR* Comment line too long
-c .   xsd      - st. dev. of x vector (if xsd  =xmsg: program will calculate)
-C*PL*ERROR* Comment line too long
-c .   ysd      - st. dev. of y vector (if ysd  =ymsg: program will calculate)
+c .   xmean    - mean of the x vector (if xmean=xmsg: program will
+c .              calculate)
+c .   ymean    - mean of the y vector (if ymean=ymsg: program will
+c .              calculate)
+c .   xsd      - st. dev. of x vector (if xsd  =xmsg: program will
+c .              calculate)
+c .   ysd      - st. dev. of y vector (if ysd  =ymsg: program will
+c .              calculate)
 c .   mxlag    - max lag crosscovariance/correlation to be estimated
-C*PL*ERROR* Comment line too long
-c .   ccv      - vector of length .ge. (mxlag+1) containing sample cross cov
-C*PL*ERROR* Comment line too long
-c .   ccr      - vector of length .ge. (mxlag+1) containing sample cross cor
+c .   ccv      - vector of length .ge. (mxlag+1) containing sample
+c .              cross cov
+c .   ccr      - vector of length .ge. (mxlag+1) containing sample
+c .              cross cor
 
-C*PL*ERROR* Comment line too long
-c .                ccv(0)     = xyvar (lag 0  )  : ccr(0)     =  ( lag 0   )
-C*PL*ERROR* Comment line too long
-c .                ccv(1)     =       (lag 1  )  : ccr(1)     =  ( lag 1   )
+c .                ccv(0) = xyvar (lag 0  )  : ccr(0) =  ( lag 0   )
+c .                ccv(1) =       (lag 1  )  : ccr(1) =  ( lag 1   )
 c .                           .                               .
 c .                           .                               .
-C*PL*ERROR* Comment line too long
-c .                ccv(mxlag) =       (lag mxlag): ccr(mxlag) =  ( lag mxlag)
+c .                ccv(mxlag) =  (lag mxlag): ccr(mxlag) = ( lag mxlag)
 
 c .   ier      - if (ier.ne.0) an error has occurred
 
@@ -767,12 +758,11 @@ c .   xband    - standard deviation width to be allowed
 c .              (e.g., xband=3.0; check values beyond 99%)
 
 c output arguments:
-C*PL*ERROR* Comment line too long
-c .   locerr   - integer vector which will contain the subscript location of
-c .              potential gross errors. for example: if series x has
-c .              two pts more than xband from xmean and these pts are
-c .              located at x(17) and x(204) then locerr(1) = 17 and
-c .              locerr(2) = 204.
+c .   locerr   - integer vector which will contain the subscript
+c .              location of potential gross errors. for example: if
+c .              series x has two pts more than xband from xmean and
+c .              these pts are located at x(17) and x(204) then
+c .              locerr(1) = 17 and locerr(2) = 204.
 c .   npter    - no. of pts in locerr. in the above example it would be
 c .              two. if a value of zero is returned no gross errors
 c .              have been detected.
@@ -852,9 +842,8 @@ c ----------------------------------------------------------------------
       DOUBLE PRECISION XCACB
 
 c this routine will calculate the variance-covariance matrix (vcm)
-C*PL*ERROR* Comment line too long
-c .   of the array x containing missing data. obviously if x does contain
-c .   missing data then vcm is only an approximation.
+c .   of the array x containing missing data. obviously if x does
+c .   contain missing data then vcm is only an approximation.
 
 c note : conventional storage is utilized for vcm
 
@@ -862,8 +851,8 @@ c     x        - input data array  ( unchanged on output)
 c     nrow,ncol- exact dimensions of x in calling routine
 c     nrt,ncs  - dimension of sub-matrix which contains the data
 c                (nrt@nrow : ncs@ncol)
-C*PL*ERROR* Comment line too long
-c     xmsg     - missing data code (if none set to some no. not encountered)
+c     xmsg     - missing data code (if none set to some no. not
+c                encountered)
 c     vcm      - var-cov matrix
 c     lvcm     - not used in this routine
 c     ier      - error code (if ier=-1 then vcm contains missing entry)
@@ -921,9 +910,8 @@ c ----------------------------------------------------------------------
       DOUBLE PRECISION XCACB
 
 c this routine will calculate the variance-couariance matrix (vcm)
-C*PL*ERROR* Comment line too long
-c .   of the array x containing missing data. obviously if x does contain
-c .   missing data then vcm is only an approximation.
+c .   of the array x containing missing data. obviously if x does
+c .   contain missing data then vcm is only an approximation.
 
 c note : symmetric storage mode is utilized for vcm to save space.
 
@@ -932,8 +920,8 @@ c     x        - input data array  ( unchanged on output)
 c     nrow,ncol- exact dimensions of x in calling routine
 c     nrt,ncs  - dimension of sub-matrix which contains the data
 c                (nrt <= nrow : ncs <= ncol)
-C*PL*ERROR* Comment line too long
-c     xmsg     - missing data code (if none set to some no. not encountered)
+c     xmsg     - missing data code (if none set to some no. not
+c                encountered)
 c output:
 c     vcm      - var-cov matrix
 c     lvcm     - length of vcm
@@ -993,9 +981,8 @@ c ----------------------------------------------------------------------
       DOUBLE PRECISION XVARB
 
 c this routine will calculate the correlation matrix   (crm)
-C*PL*ERROR* Comment line too long
-c .   of the array x containing missing data. obviously if x does contain
-c .   missing data then crm is only an approximation.
+c .   of the array x containing missing data. obviously if x does
+c .   contain missing data then crm is only an approximation.
 
 c note : conventional storage
 
@@ -1003,8 +990,8 @@ c     x        - input data array  ( unchanged on output)
 c     nrow,ncol- exact dimensions of x in calling routine
 c     nrt,ncs  - dimension of sub-matrix which contains the data
 c                (nrt@nrow : ncs@ncol)
-C*PL*ERROR* Comment line too long
-c     xmsg     - missing data code (if none set to some no. not encountered)
+c     xmsg     - missing data code (if none set to some no. not
+c                encountered)
 c     crm      - correlation matrix  [full]
 c     lcrm     - dummy [not used in this routine]
 c     ier      - error code (if ier=-1 then crm contains missing entry)
@@ -1072,9 +1059,8 @@ c ----------------------------------------------------------------------
       DOUBLE PRECISION XVARB
 
 c this routine will calculate the correlation matrix   (crm)
-C*PL*ERROR* Comment line too long
-c .   of the array x containing missing data. obviously if x does contain
-c .   missing data then crm is only an approximation.
+c .   of the array x containing missing data. obviously if x does
+c .   contain missing data then crm is only an approximation.
 
 c note : symmetric storage mode is utilized for crm to save space.
 
@@ -1083,8 +1069,8 @@ c     x        - input data array  ( unchanged on output)
 c     nrow,ncol- exact dimensions of x in calling routine
 c     nrt,ncs  - dimension of sub-matrix which contains the data
 c                (nrt <= nrow : ncs <= ncol)
-C*PL*ERROR* Comment line too long
-c     xmsg     - missing data code (if none set to some no. not encountered)
+c     xmsg     - missing data code (if none set to some no. not
+c                encountered)
 c output:
 c     crm      - correlation matrix
 c     lcrm     - length of crm
@@ -1174,12 +1160,12 @@ c     x        - input data array  ( unchanged on output)
 c     nrow,ncol- exact dimensions of x in calling routine
 c     nrt,ncs  - dimension of sub-matrix which contains the data
 c                (nrt@nrow : ncs@ncol)
-C*PL*ERROR* Comment line too long
-c     xmsg     - missing data code (if none set to some no. not encountered)
+c     xmsg     - missing data code (if none set to some no. not
+c                encountered)
 c     corc     - correlation coef. vector
 c                corc(1) contain correlation coef between y and x(nrt,1)
-C*PL*ERROR* Comment line too long
-c                corc(2) contain correlation coef between y and x(nrt,2) etc.
+c                corc(2) contain correlation coef between y and 
+c                    x(nrt,2) etc.
 c     ier      - error code (if ier=-1 then corc contains missing entry)
 
       DOUBLE PRECISION X(1:NROW,1:NCOL),Y(*),CORC(*)
@@ -1225,8 +1211,7 @@ c .   calculate the mean and variance of column nc in the data array
 
       RETURN
       END
-C*PL*ERROR* Comment line too long
-c ------------------------------------------------------------------------------
+c------------------------------------------------------------------
       SUBROUTINE DSSMIOX(X,NCS)
 
 c output a symmetric storage mode matrix [x]
@@ -1292,33 +1277,25 @@ c sort type "real"
       GO TO 25
    20 R = R - .21875D0
    25 K = I
-C*PL*ERROR* Comment line too long
-c                                  select a central element of the      0530
-C*PL*ERROR* Comment line too long
-c                                  array and save it in location t      0540
+c                          select a central element of the
+c                          array and save it in location t
       IJ = I + (J-I)*R
       T = A(IJ)
-C*PL*ERROR* Comment line too long
-c                                  if first element of array is greater 0570
-C*PL*ERROR* Comment line too long
-c                                  than t, interchange with t           0580
+c                          if first element of array is greater
+c                          than t, interchange with t
       IF (A(I).LE.T) GO TO 30
       A(IJ) = A(I)
       A(I) = T
       T = A(IJ)
    30 L = J
-C*PL*ERROR* Comment line too long
-c                                  if last element of array is less than0640
-C*PL*ERROR* Comment line too long
-c                                  t, interchange with t                0650
+c                           if last element of array is less than
+c                           t, interchange with t
       IF (A(J).GE.T) GO TO 40
       A(IJ) = A(J)
       A(J) = T
       T = A(IJ)
-C*PL*ERROR* Comment line too long
-c                                  if first element of array is greater 0700
-C*PL*ERROR* Comment line too long
-c                                  than t, interchange with t           0710
+c                          if first element of array is greater
+c                          than t, interchange with t
       IF (A(I).LE.T) GO TO 40
       A(IJ) = A(I)
       A(I) = T
@@ -1328,25 +1305,18 @@ c                                  than t, interchange with t           0710
       TT = A(L)
       A(L) = A(K)
       A(K) = TT
-C*PL*ERROR* Comment line too long
-c                                  find an element in the second half of0810
-C*PL*ERROR* Comment line too long
-c                                  the array which is smaller than t    0820
+c                           find an element in the second half of
+c                           the array which is smaller than t
    40 L = L - 1
       IF (A(L).GT.T) GO TO 40
-C*PL*ERROR* Comment line too long
-c                                  find an element in the first half of 0850
-C*PL*ERROR* Comment line too long
-c                                  the array which is greater than t    0860
+c                           find an element in the first half of
+c                           the array which is greater than t
    45 K = K + 1
       IF (A(K).LT.T) GO TO 45
-C*PL*ERROR* Comment line too long
-c                                  interchange these elements           0890
+c                           interchange these elements
       IF (K.LE.L) GO TO 35
-C*PL*ERROR* Comment line too long
-c                                  save upper and lower subscripts of   0910
-C*PL*ERROR* Comment line too long
-c                                  the array yet to be sorted           0920
+c                           save upper and lower subscripts of
+c                           the array yet to be sorted
       IF (L-I.LE.J-K) GO TO 50
       IL(M) = I
       IU(M) = L
@@ -1358,10 +1328,8 @@ c                                  the array yet to be sorted           0920
       J = L
       M = M + 1
       GO TO 60
-C*PL*ERROR* Comment line too long
-c                                  begin again on another portion of    1040
-C*PL*ERROR* Comment line too long
-c                                  the unsorted array                   1050
+c                           begin again on another portion of
+c                           the unsorted array
    55 M = M - 1
       IF (M.EQ.0) RETURN
       I = IL(M)

@@ -235,18 +235,31 @@ NhlErrorTypes escorc_W( void )
       NGCALLF(collapsexy,COLLAPSEXY)(tmp_x,tmp_y,&nxy,&missing_dx.doubleval,
                                      &missing_dy.doubleval,xx,yy,&mxy);
 
-      xave = xstd = missing_dx.doubleval;
-      NGCALLF(dcalcorc,DCALCORC)(xx,&xave,&xstd,&missing_dx.doubleval,
-                                 &mxy,yy,&missing_dy.doubleval,
-                                 tmp_corc,&ier);
+      if(mxy > 0) {
+        xave = xstd = missing_dx.doubleval;
+        NGCALLF(dcalcorc,DCALCORC)(xx,&xave,&xstd,&missing_dx.doubleval,
+                                   &mxy,yy,&missing_dy.doubleval,
+                                   tmp_corc,&ier);
 /*
  * Copy output values from temporary array "tmp_corc" to final array "corc".
  */
-      if(type_corc != NCL_double) {
-        ((float*)corc)[index_corc] = (float)(*tmp_corc);
-      } 
+        if(type_corc != NCL_double) {
+          ((float*)corc)[index_corc] = (float)(*tmp_corc);
+        } 
 
-      if(ier != 0) ier_count++;
+        if(ier != 0) ier_count++;
+      }
+      else {
+/*
+ * Fill this subsection of the output with missing values.
+ */
+        if(type_corc != NCL_double) {
+          ((float*)corc)[index_corc] = missing_rx.floatval;
+        } 
+        else {
+          ((double*)corc)[index_corc] = missing_dx.doubleval;
+        }
+      }
       index_corc++;
       index_x   += nxy;
     }
@@ -296,17 +309,29 @@ NhlErrorTypes escorc_W( void )
         NGCALLF(dcalcorc,DCALCORC)(xx,&xave,&xstd,&missing_dx.doubleval,
                                    &mxy,yy,&missing_dy.doubleval,
                                    tmp_corc,&ier);
+        if(mxy > 0) {
 /*
  * Copy output values from temporary array "tmp_Tb" to final array "Tb".
  */
-        if(type_corc != NCL_double) {
-          ((float*)corc)[index_corc] = (float)(*tmp_corc);
-        } 
+          if(type_corc != NCL_double) {
+            ((float*)corc)[index_corc] = (float)(*tmp_corc);
+          } 
 
-        if(ier != 0) ier_count++;
-        
+          if(ier != 0) ier_count++;
+        }
+        else {
+/*
+ * Fill this subsection of the output with missing values.
+ */
+          if(type_corc != NCL_double) {
+            ((float*)corc)[index_corc] = missing_rx.floatval;
+          } 
+          else {
+            ((double*)corc)[index_corc] = missing_dx.doubleval;
+          }
+        }
         index_corc++;
-        index_y   += nxy;
+        index_y += nxy;
       }
       index_x += nxy;
     }
@@ -342,5 +367,3 @@ NhlErrorTypes escorc_W( void )
                           NCL_double,0));
   }
 }
-
-
