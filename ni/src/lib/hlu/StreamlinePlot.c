@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlot.c,v 1.4 1996-03-12 00:59:58 dbrown Exp $
+ *      $Id: StreamlinePlot.c,v 1.5 1996-03-15 23:03:10 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -5633,6 +5633,7 @@ static NhlErrorTypes    ManageGenArray
 	if (*ga != NULL) {
 		datap = (*ga)->data;
 		*old_count = (*ga)->num_elements;
+		*init_count = *old_count;
 
 		if (count > (*ga)->num_elements) {
 			if ((datap = (NhlPointer)

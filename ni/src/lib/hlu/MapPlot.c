@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.44 1996-02-26 21:46:00 dbrown Exp $
+ *      $Id: MapPlot.c,v 1.45 1996-03-15 23:03:09 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -5093,6 +5093,7 @@ static NhlErrorTypes    mpManageGenArray
 	if (*ga != NULL) {
 		datap = (*ga)->data;
 		*old_count = (*ga)->num_elements;
+		*init_count = *old_count;
 
 		if (count > (*ga)->num_elements) {
 			if ((datap = (NhlPointer)

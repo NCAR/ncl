@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.c,v 1.8 1996-03-12 00:59:59 dbrown Exp $
+ *      $Id: VectorPlot.c,v 1.9 1996-03-15 23:03:11 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -7133,6 +7133,7 @@ static NhlErrorTypes    ManageGenArray
 	if (*ga != NULL) {
 		datap = (*ga)->data;
 		*old_count = (*ga)->num_elements;
+		*init_count = *old_count;
 
 		if (count > (*ga)->num_elements) {
 			if ((datap = (NhlPointer)
