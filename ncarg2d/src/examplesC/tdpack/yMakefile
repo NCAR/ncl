@@ -1,5 +1,5 @@
 #
-#       $Id: yMakefile,v 1.1 1997-06-30 22:14:39 kennison Exp $
+#       $Id: yMakefile,v 1.2 1997-07-11 18:45:50 haley Exp $
 #
 
 SRCS = c_tdex01.c
@@ -9,6 +9,6 @@ PROG_LIBS		= $(NCARGLIBS)
 SYS_LIBS		= $(CTOFLIBS) -lm
 EXTRA_LIBS		= $(XLIB)
 
-InstallTarget($(SRCS),$(INSTALL_LIB),$(TESTSPATH))
+InstallTarget($(SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
 
 CExampleTarget(c_tdex01,c_tdex01.o)
