@@ -1,5 +1,5 @@
 !
-!      $Id: ngi.res,v 1.4 1997-01-03 01:37:52 boote Exp $
+!      $Id: ngi.res,v 1.5 1997-01-17 18:58:37 boote Exp $
 !
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !									!
@@ -23,8 +23,8 @@
 
 ! These resources will *hopefully* be replaced by a configuration dialog
 ! in and "Options" menu.
-NgNGO*loadMGR.pattern:	*.ncl
-NgNGO*loadMGR.directory:	.
+NgNGO*loadfileMGR.pattern:	*.ncl
+NgNGO*loadfileMGR.directory:	.
 NgNGO*addfileMGR.pattern:	*.{cdf,nc,grb}
 NgNGO*addfileMGR.directory:	.
 
@@ -139,9 +139,13 @@ ncledit.ncleditMGR*nclprompt*rightAttachment:	ATTACH_NONE
 ncledit.ncleditMGR*nclprompt*bottomAttachment:	ATTACH_NONE
 ncledit.ncleditMGR*nclprompt*highlightThickness:0
 ncledit.ncleditMGR*nclprompt*borderWidth:	0
+!ncledit.ncleditMGR*nclprompt.shadowThickness:	0
+ncledit.ncleditMGR*nclprompt.marginWidth:	1
 
 ncledit.ncleditMGR*nclcmd*highlightThickness:0
 ncledit.ncleditMGR*nclcmd*borderWidth:		0
+!ncledit.ncleditMGR*nclcmd.shadowThickness:	0
+ncledit.ncleditMGR*nclcmd.marginWidth:		4
 
 ncledit.ncleditMGR*scroll*topOffset:		12
 ncledit.ncleditMGR*scroll*leftOffset:		0
@@ -162,7 +166,6 @@ ncledit.ncleditMGR*ilabel.alignment:		ALIGNMENT_BEGINNING
 ncledit*nclprompt.editable:		False
 ncledit*nclprompt.cursorPositionVisible:False
 ncledit*nclprompt.traversalOn:		False
-ncledit*nclprompt.marginWidth:		2
 ncledit*nclcmd.columns:			40
 ncledit*nclprompt.rows:			15
 ncledit*nclcmd.rows:			15
