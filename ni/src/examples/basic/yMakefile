@@ -1,5 +1,5 @@
 #
-#   $Id: yMakefile,v 1.6 1995-05-24 19:35:54 haley Exp $
+#   $Id: yMakefile,v 1.7 1995-06-07 23:11:53 scheitln Exp $
 #
 #   Makefile for HLU Basic examples
 #
@@ -11,14 +11,14 @@ EXTRA_LIBS  =   $(XMOTIFCLIENTLIBS)
 SYS_LIBS    =   $(CTOFLIBS) -lm
 
 CSRCS    = basic01c.c basic02c.c basic03c.c basic04c.c basic05c.c
-FSRCS    = basic01f.f basic02f.f basic03f.f basic04f.f basic05f.f
+FSRCS    = basic01f.f basic02f.f basic03f.f basic04f.f basic05f.f basic07f.f
 NSRCS    = basic01n.ncl basic02n.ncl basic03n.ncl basic04n.ncl basic05n.ncl \
 			basic06n.ncl
 COBJS    = basic01c.o basic02c.o basic03c.o basic04c.o basic05c.o
-FOBJS    = basic01f.o basic02f.o basic03f.o basic04f.o basic05f.o
+FOBJS    = basic01f.o basic02f.o basic03f.o basic04f.o basic05f.o basic07f.o
 SRCS     = $(CSRCS) $(FSRCS)
 OBJS     = $(COBJS) $(FOBJS)
-RESFILES = basic03.res
+RESFILES = basic03.res basic07.res
 
 InstallTarget($(SRCS),$(INSTALL_LIB),$(HLUEXROOT)/$(MYNAME))
 InstallTarget($(NSRCS),$(INSTALL_LIB),$(NCLEXROOT)/$(MYNAME))
@@ -35,6 +35,7 @@ HLUFExampleTarget(basic02f,basic02f.o)
 HLUFExampleTarget(basic03f,basic03f.o)
 HLUFExampleTarget(basic04f,basic04f.o)
 HLUFExampleTarget(basic05f,basic05f.o)
+HLUFExampleTarget(basic07f,basic07f.o)
 
 CleanFilesTarget($(OBJS))
 DependTarget($(SRCS))
