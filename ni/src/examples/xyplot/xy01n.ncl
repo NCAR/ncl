@@ -1,5 +1,5 @@
 ;
-;      $Id: xy01n.ncl,v 1.12 1996-05-02 22:27:14 haley Exp $
+;      $Id: xy01n.ncl,v 1.13 1997-06-06 21:26:55 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -42,12 +42,9 @@ ydra = new(npts, float)
 ;
 ; Initialize some data for the XyPlot object.
 ; 
-ii = new(npts,float)
-do i = 0, npts-1
-  ii(i) = i
-end do
+ii = ispan(0,npts-1,1)
 ydra = 500.+.9*ii*sin(0.031415926535898*ii)
-
+delete(ii)
 ;
 ; Create Application object.  The Application object name is used to
 ; determine the name of the resource file, which is "xy01.res" in this

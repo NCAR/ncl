@@ -1,5 +1,5 @@
 ;
-;      $Id: xy07n.ncl,v 1.2 1995-06-22 21:09:41 haley Exp $
+;      $Id: xy07n.ncl,v 1.3 1997-06-06 21:26:58 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -48,10 +48,14 @@ procedure assigndata(
 local
     i
 begin
+  franx = new(npts,double)
+  frany = new(npts,double)
   do i = 0, npts-1
-    x(i)=.5+(2.*((doubletofloat(fran(xfran)))-.5))^5
-    y(i)=.5+(2.*((doubletofloat(fran(xfran)))-.5))^5
+    franx(i)=fran(xfran)
+    frany(i)=fran(xfran)
   end do
+  x=.5+(2.*((doubletofloat(franx))-.5))^5
+  y=.5+(2.*((doubletofloat(frany))-.5))^5
 end
 
 ; Create variables to contain data.

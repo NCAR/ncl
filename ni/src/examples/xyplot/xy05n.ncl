@@ -1,5 +1,5 @@
 ;
-;      $Id: xy05n.ncl,v 1.13 1996-05-02 22:27:16 haley Exp $
+;      $Id: xy05n.ncl,v 1.14 1997-06-06 21:26:58 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                     ;
@@ -49,17 +49,16 @@ dataid = new(ncurve,graphic)
 ; 
 
 ii = new((/ncurve,npts/),float)
-jj = new((/ncurve,npts/),float)
-do i=0,npts-1
-  ii(:,i) = i
-end do
-do j=0,ncurve-1
-  jj(j,:) = j+1
-end do
+jj = new((/npts,ncurve/),float)
+ii = onedtond(ispan(0,npts-1,1),(/ncurve,npts/))
+jj = onedtond(ispan(1,ncurve,1),(/npts,ncurve/))
+jj!0 = "x"
+jj!1 = "y"
 
 pi = 3.14159
-y = jj*sin((2.*ii*pi)/((npts-(jj-1)*10)-1))
-
+y = jj(y | :,x | :)*sin((2.*ii*pi)/((npts-(jj(y | :, x | :)-1)*10)-1))
+delete(ii)
+delete(jj)
 ;
 ; Modify the color map.  Color indices '0' and '1' are the background
 ; and foreground colors respectively.
@@ -92,8 +91,8 @@ end create
 ;
 ; Default is to display output to an X workstation
 ;
-NCGM=1
-X11=0
+NCGM=0
+X11=1
 PS=0
 
 if (NCGM .eq. 1) then

@@ -1,5 +1,5 @@
 ;
-;      $Id: xy08n.ncl,v 1.4 1996-05-02 22:27:17 haley Exp $
+;      $Id: xy08n.ncl,v 1.5 1997-06-06 21:26:59 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                     ;
@@ -92,11 +92,7 @@ assigndata(xcoord,xdra,ydra,len,npts,ncurve)
 ;
 ; Initialize tickmark values
 ;
-explicit_values = new(14,float)
-
-do i=0,13
-  explicit_values(i) = 2.^(i-6)
-end do
+explicit_values = 2.^ispan(-6,7,1)
 
 ;
 ; Modify the color map.  Color indices '0' and '1' are the background

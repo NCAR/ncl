@@ -1,5 +1,5 @@
 ;
-;      $Id: xy04n.ncl,v 1.12 1996-05-02 22:27:16 haley Exp $
+;      $Id: xy04n.ncl,v 1.13 1997-06-06 21:26:57 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -46,15 +46,13 @@ ydra = new((/ncurve,npts/), float)
 ; Initialize data for the XyPlot object.
 ; 
 ii = new((/ncurve,npts/),float)
-do i = 0,npts-1
-  ii(:,i) = i
-end do
+jj = new((/npts,ncurve/),float)
+ii = onedtond(ispan(0,npts-1,1),(/ncurve,npts/))
+jj = onedtond(ispan(0,ncurve-1,1),(/npts,ncurve/))
+jj!0 = "x"
+jj!1 = "y"
 
-ydra = ii*.9*sin(0.031415926535898*ii)
-do i = 0,ncurve-1
-  ii(i,:) = i
-end do
-ydra = ii*200.+ydra
+ydra = jj(y | :,x | :)*200.+ii*.9*sin(0.031415926535898*ii)
 
 ;
 ; Modify the color map.  Color indices '0' and '1' are the background

@@ -1,5 +1,5 @@
 ;
-;      $Id: xy03n.ncl,v 1.12 1996-05-02 22:27:15 haley Exp $
+;      $Id: xy03n.ncl,v 1.13 1997-06-06 21:26:57 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -54,13 +54,10 @@ cmap(3,:) = (/0.0,1.0,0.0/)
 ;
 ; Initialize some data for the XyPlot object.
 ; 
-ii = new(npts,float)
-do i = 0, npts-1
-  ii(i) = i
-end do
+ii = ispan(0,npts-1,1)
 xdra = 500.+.9*ii*cos(0.031415926535898*ii)
 ydra = 500.+.9*ii*sin(0.031415926535898*ii)
-
+delete(ii)
 ;
 ; Create Application object.  The Application object name is used to
 ; determine the name of the resource file, which is "xy03.res" in this

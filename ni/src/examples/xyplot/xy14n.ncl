@@ -1,5 +1,5 @@
 ;
-;      $Id: xy14n.ncl,v 1.5 1995-06-22 21:09:52 haley Exp $
+;      $Id: xy14n.ncl,v 1.6 1997-06-06 21:27:00 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -87,14 +87,11 @@ else
 end if
 
 ;
-; Create X-axis values using the NCL "new" and "do" statements.
+; Create X-axis values using the NCL "fspan" statement.
 ;
 
 nhours = 25
-x_array = new(nhours,float)
-do i=0,nhours-1
-  x_array(i) = i
-end do
+x_array = ispan(0,nhours-1,1)
 
 ;
 ; Picture 1:
@@ -104,8 +101,9 @@ end do
 ; and array selection capabilities.
 ;
 
+tr_data(0,:) = 9./5.*tr_data(0,:)+32.
 dataid = create "xyData" coordArraysClass defaultapp
-    "caYArray": (9./5.)*tr_data(0,:)+32.
+    "caYArray": tr_data(0,:)
     "caXArray": x_array
 end create
 
@@ -214,21 +212,11 @@ frame(xworkid)
 ; NCL exponentiation operator (^) and the sqrt function.
 ;
 
-t_mean = 0.
-do i=0,nhours-1
-  t_mean = t_mean+(9./5.)*tr_data(0,i)+32.
-end do
-t_mean = t_mean/nhours
-
-std_dev = 0.
-do i=0,nhours-1
-  std_dev = std_dev+( ((9./5.)*tr_data(0,i)+32.) - t_mean)^2
-end do
-std_dev = sqrt(std_dev/(nhours-1))
-
+t_mean = avg(tr_data(0,:))
+std_dev = sqrt(sum((tr_data(0,:) - t_mean)^2)/(nhours-1))
 
 dataid = create "xyData" coordArraysClass defaultapp
-    "caYArray": ((9./5.)*tr_data(0,:)+32. - t_mean)/std_dev
+    "caYArray": (tr_data(0,:) - t_mean)/std_dev
     "caXArray": x_array
 end create
 
@@ -293,7 +281,7 @@ frame(xworkid)
 ;
 
 dataid = create "xyData" coordArraysClass defaultapp
-    "caYArray": (9./5.)*tr_data(0,2:24:6)+32.
+    "caYArray": tr_data(0,2:24:6)
     "caXArray": x_array(2:24:6)
 end create
 
