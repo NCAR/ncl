@@ -22,7 +22,7 @@ For retrieval only. The value of the map
 limits specifier JLTS from the last 
 call to MAPSET. The default value is 'MA'.
 .IP "\&'Cn' - Integer" 
-The character "n" is a digit between 1 and 7. Each 'Cn', if zero
+The character "n" is a digit between 1 and 8. Each 'Cn', if zero
 or greater, specifies the color index of some part
 of the map. The user must do the calls to GKS
 routines to define the color indices. All default
@@ -43,6 +43,8 @@ Color index for U.S. state outlines. See 'Cn',
 above.
 .IP "\&'C7' - Integer"
 Color index for outlines of countries of the world.
+.IP "\&'C8' - Integer"
+Color index for outlines of counties of the world.
 See 'Cn', above.
 .IP "\&'DA' - Integer"
 Dashed-line pattern for the grids. A 16-bit
