@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.129 2003-05-13 20:52:39 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.130 2003-05-28 22:11:59 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -993,7 +993,8 @@ end
 ;***********************************************************************;
 function get_allowed_pres_units_mb()
 begin
-  return((/"mb","Mb","MB","millibar","millibars","MILLIBARS"/))
+  return((/"mb","Mb","MB","millibar","millibars","MILLIBARS", \
+           "hybrid_sigma_pressure"/))
 end
 
 ;***********************************************************************;

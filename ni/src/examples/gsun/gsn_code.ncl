@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.106 2003-04-01 01:54:57 haley Exp $
+;      $Id: gsn_code.ncl,v 1.107 2003-05-28 22:11:59 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -5370,6 +5370,19 @@ begin
 ; 4. Calculate width of histogram bins and bars in each bin. If 
 ;    comparing two fields, then the histogram bars must be slightly
 ;    smaller in width to accomodate two bars.
+;    
+;    A note about how the bin widths are calculated: the bin locations
+;    (that is, the bin "tickmarks") will be placed along the X axis such
+;    that the first bin location is at X = 0, and the last bin location
+;    is at X = 1.0. When dealing with discrete values, the bin tickmark
+;    falls in the *middle* of the bar, whereas for intervals, the bin
+;    tickmarks fall on either side of the bar. The width of each bin,
+;    then, is [1.0/(the number of bin locations - 1)]. So, for example,
+;    if you have 2 discrete values, the first bin tickmark is at X=0,
+;    and the second bin tickmark at X=1.0, giving a bin width of
+;    1.0. For the special case where you have only 1 discrete value,
+;    you essentially don't have a bin width, so "bin_width" will just 
+;    be equal to 1.
 ;
   extra_bins = 0
 
@@ -5381,7 +5394,11 @@ begin
     extra_bins = extra_bins + 1
   end if
 
-  bin_width = 1./(nbinlocs-1+extra_bins)
+  if(nbinlocs.gt.1) then
+    bin_width = 1./(nbinlocs-1+extra_bins)
+  else
+    bin_width = 1.
+  end if 
 
   if(compare) then
     bar_width = 0.5 * bin_width
@@ -5422,16 +5439,26 @@ begin
     left   = 0.
     right  = max(num_in_bins) * 1.1
     if(setdiscrete) then
-      bottom = -0.6667 * bin_width
-      top    = 1. + 0.6667 * bin_width
+      if(nbars.gt.1) then
+         bottom = -0.6667 * bin_width
+         top    = 1. + 0.6667 * bin_width
+       else
+         bottom = -0.6667
+         top    =  0.6667
+      end if
     else
       bottom = 0
       top    = 1.
     end if
   else
     if(setdiscrete) then
-     left  = -0.6667 * bin_width
-     right = 1. + 0.6667 * bin_width
+      if(nbars.gt.1) then
+        left  = -0.6667 * bin_width
+        right = 1. + 0.6667 * bin_width
+      else
+        left  = -0.6667
+        right =  0.6667
+      end if
     else
       left  = 0.
       right = 1.
