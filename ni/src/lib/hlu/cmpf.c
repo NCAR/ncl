@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+#include <float.h>
 #include <ncarg/hlu/hluutil.h>
 #include <ncarg/hlu/hlu.h>
 
@@ -380,6 +381,8 @@ double _NhlCmpDAny
 	return((double)a_int-(double)b_int);
 }
 
+#define CMPF_DEBUG 0
+#define EXP2TOEXP10 0.3010299956639812
 
 /*
  * Function:	_NhlCmpFAny2
@@ -427,8 +430,6 @@ float	_NhlCmpFAny2
 	int icount = 0;
 	NhlBoolean azero,bzero;
 
-#define CMPF_DEBUG 0
-#define EXP2TOEXP10 0.30102999
 
 #if CMPF_DEBUG
 	fprintf(stderr,"comparing a: %g and b: %g to %d significant digits\n",
@@ -591,4 +592,69 @@ float	_NhlCmpFAny2
  * compare
  */
 	return (float) (arnd - brnd);
+}
+
+/*
+ * Function:	_NhlCmpDAny2
+ *
+ * Description: New version of the _NhlCmpDAny routine. 
+ *		A new parameter allows specification of a minimum nonzero
+ *              value.
+ *              Also: Now uses frexp to break numbers up without fear of
+ *              overflow. Numbers are normalized to the range 
+ *              .1 <= fabs(x) < 1.0, using the base 2 exponent to nearly
+ *              figure out the base 10 exponent to factor out. Iteration
+ *              is then used to get the exact base 10 exponent.
+ *		
+ *
+ * In Args:	a	first floating point number
+ *		b	second floating point number
+ *		sig_dig	<=7 represents number of significant digits to compare.
+ *              min_nonzero the smallest abs value to be treated as nonzero.
+ *
+ * Out Args:	NONE
+ *
+ * Return Values: 0 if equal, <0 if a<b, and >0 if a>b
+ *
+ * Side Effects: NONE
+ */
+double	_NhlCmpDAny2
+#if	NhlNeedProto
+(double a, double b, int sig_dig, double min_nonzero)
+#else
+(a,b,sig_dig,min_nonzero)
+	double a;
+	double b;
+	int sig_dig;
+	double min_nonzero;
+#endif
+{
+	double atmp,btmp;
+	char tstr[30];
+
+
+#if CMPF_DEBUG
+	fprintf(stderr,"comparing a: %g and b: %g to %d significant digits\n",
+		a,b,sig_dig);
+#endif
+	if(sig_dig >= DBL_DIG) { 
+		if (fabs(a-b) < MAX(DBL_EPSILON,min_nonzero))
+			return 0.0;
+		else if (a < b) 
+			return -1.0;
+		else 
+			return 1.0;
+	}
+
+	sprintf(tstr,"%.*g",MIN(sig_dig,DBL_DIG+1),a);
+	atmp = strtod(tstr,NULL);
+	sprintf(tstr,"%.*g",MIN(sig_dig,DBL_DIG+1),b);
+	btmp = strtod(tstr,NULL);
+	if (fabs(atmp - btmp) < MAX(DBL_EPSILON,min_nonzero))
+		return 0.0;
+	else if (atmp < btmp) 
+		return -1.0;
+	else 
+		return 1.0;
+
 }

@@ -1,5 +1,5 @@
 /*
- *      $Id: hluutil.h,v 1.8 2000-08-22 21:49:42 dbrown Exp $
+ *      $Id: hluutil.h,v 1.9 2004-06-16 00:29:39 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -152,6 +152,15 @@ extern float	_NhlCmpFAny2(
 	float b, 
 	int sig_dig,
 	float min_nonzero
+#endif
+);
+
+extern double	_NhlCmpDAny2(
+#if	NhlNeedProto
+	double a, 
+	double b, 
+	int sig_dig,
+	double min_nonzero
 #endif
 );
 
