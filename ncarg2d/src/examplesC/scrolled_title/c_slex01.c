@@ -1,5 +1,5 @@
 /*
- *	$Id: c_slex01.c,v 1.1 1994-05-12 19:31:27 haley Exp $
+ *	$Id: c_slex01.c,v 1.2 1994-07-12 20:46:44 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -39,12 +39,17 @@ char *cards[12] = {
   "  512  200    1  1.5STITLE                                                      "
 };
 
+#define WSTYPE SED_WSTYPE
+#define WKID   1
+
 main()
 {
 /*
  *  Open GKS.
  */
-    c_opngks();
+    gopen_gks("stdout",0);
+    gopen_ws (WKID, NULL, WSTYPE);
+    gactivate_ws(WKID);
 /*
  *  Invoke STITLE example.
  */
@@ -52,7 +57,9 @@ main()
 /*
  *  Close GKS.
  */
-    c_clsgks();
+    gdeactivate_ws (WKID);
+    gclose_ws (WKID);
+    gclose_gks();
 }
 
 exstl0()

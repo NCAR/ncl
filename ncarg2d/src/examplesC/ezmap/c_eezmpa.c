@@ -1,5 +1,5 @@
 /*
- *	$Id: c_eezmpa.c,v 1.2 1994-06-21 15:00:04 haley Exp $
+ *  $Id: c_eezmpa.c,v 1.3 1994-07-12 20:46:34 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -85,9 +85,9 @@ main()
 /*
  * open gks.
  */
-	gopen_gks ("stdout",0);
-	gopen_ws (WKID, NULL, WSTYPE);
-	gactivate_ws(WKID);
+    gopen_gks ("stdout",0);
+    gopen_ws (WKID, NULL, WSTYPE);
+    gactivate_ws(WKID);
 /*
  * re-set certain aspect source flags to "individual".
  */
@@ -174,9 +174,9 @@ main()
 /*
  * close gks.
  */
-	gdeactivate_ws(WKID);
-	gclose_ws(WKID);
-	gclose_gks();
+    gdeactivate_ws(WKID);
+    gclose_ws(WKID);
+    gclose_gks();
 }
 
 #ifdef __STDC__

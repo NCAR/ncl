@@ -1,5 +1,5 @@
 /*
- *	$Id: c_sfex02.c,v 1.1 1994-05-12 19:31:33 haley Exp $
+ *	$Id: c_sfex02.c,v 1.2 1994-07-12 20:46:47 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -9,6 +9,9 @@
  */
 #include <ncarg/ncargC.h>
 #include <ncarg/gks.h>
+
+#define WSTYPE SED_WSTYPE
+#define WKID   1
 
 main()
 {
@@ -41,7 +44,9 @@ main()
 /*
  * Open GKS.
  */
-    c_opngks();
+    gopen_gks("stdout",0);
+    gopen_ws (WKID, NULL, WSTYPE);
+    gactivate_ws(WKID);
 /*
  * Turn off the clipping indicator.
  */
@@ -129,7 +134,9 @@ main()
 /*
  * Close GKS.
  */
-    c_clsgks();
+    gdeactivate_ws (WKID);
+    gclose_ws (WKID);
+    gclose_gks();
 }
 
 dfclrs()
@@ -164,11 +171,11 @@ dfclrs()
  * to index 1 is white.
  */
     color.rgb.red = color.rgb.green = color.rgb.blue = 0.;
-    gset_colr_rep (1,0,&color);
+    gset_colr_rep (WKID,0,&color);
     for( i = 0; i < 15; i++ ) {
         color.rgb.red = rgbv[0][i];
         color.rgb.green = rgbv[1][i];
         color.rgb.blue = rgbv[2][i];
-        gset_colr_rep(1,i+1,&color);
+        gset_colr_rep(WKID,i+1,&color);
     }
 }

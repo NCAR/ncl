@@ -1,5 +1,5 @@
 /*
- *	$Id: c_elblba.c,v 1.1 1994-05-12 19:31:16 haley Exp $
+ *	$Id: c_elblba.c,v 1.2 1994-07-12 20:46:40 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -29,6 +29,9 @@ char *llb3[4] = {"M","N","O","P"};
 char *llb4[4] = {"I","J","K","L"};
 char *llb5[4] = {"E","F","G","H"};
 char *llb6[4] = {"A","B","C","D"};
+
+#define WSTYPE SED_WSTYPE
+#define WKID   1
 
 main()
 {
@@ -62,7 +65,9 @@ main()
 /*
  * Open GKS.
  */
-    c_opngks();
+    gopen_gks("stdout",0);
+    gopen_ws (WKID, NULL, WSTYPE);
+    gactivate_ws(WKID);
 /*
  * Set all the GKS aspect source flags to "individual".
  */
@@ -120,7 +125,9 @@ main()
 /*
  * Close GKS.
  */
-    c_clsgks();
+    gdeactivate_ws (WKID);
+    gclose_ws (WKID);
+    gclose_gks();
 }
 
 void dfclrs()
@@ -153,6 +160,6 @@ void dfclrs()
  * to index 1 is white.
  */
     for( i = 0; i <= 15; i++ ) {
-        gset_colr_rep(1,i,&rgb[i]);
+        gset_colr_rep(WKID,i,&rgb[i]);
     }
 }

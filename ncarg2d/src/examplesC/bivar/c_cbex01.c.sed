@@ -1,5 +1,5 @@
 /*
- *	$Id: c_cbex01.c.sed,v 1.1 1994-05-12 19:31:05 haley Exp $
+ *  $Id: c_cbex01.c.sed,v 1.2 1994-07-12 20:46:29 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -9,6 +9,9 @@
 #define pow2(x)   ((x)*(x))
 
 int icll, iama[10000];
+
+#define WSTYPE SED_WSTYPE
+#define WKID   1
 
 main()
 {
@@ -125,7 +128,9 @@ main()
 /*
  * Open GKS.
  */
-    c_opngks();
+    gopen_gks("stdout",0);
+    gopen_ws(WKID, NULL, WSTYPE);
+    gactivate_ws(WKID);
 /*
  * Turn off clipping.
  */
@@ -341,7 +346,9 @@ main()
 /*
  * Close GKS.
  */
-    c_clsgks();
+    gdeactivate_ws(WKID);
+    gclose_ws(WKID);
+    gclose_gks();
 }
 
 void dfclrs()
@@ -375,11 +382,11 @@ void dfclrs()
  * to index 1 is white.
  */
     rgbv[0].rgb.red = 0.0; rgbv[0].rgb.green = 0.0; rgbv[0].rgb.blue = 0.0;
-    gset_colr_rep (1,0,&rgbv[0]);
+    gset_colr_rep (WKID,0,&rgbv[0]);
     rgbv[0].rgb.red = 1.00; rgbv[0].rgb.green = 1.00; rgbv[0].rgb.blue = 1.00;
 
     for( i = 0; i < 15; i++ ) {
-        gset_colr_rep (1,i+1,&rgbv[i]);
+        gset_colr_rep (WKID,i+1,&rgbv[i]);
     }
 }
 

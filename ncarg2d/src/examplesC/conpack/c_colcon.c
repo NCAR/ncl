@@ -34,9 +34,9 @@ main()
 /*
  * open gks, and turn clipping off
  */
-	gopen_gks ("stdout",0);
-	gopen_ws (WKID, NULL, WSTYPE);
-	gactivate_ws(WKID);
+    gopen_gks ("stdout",0);
+    gopen_ws (WKID, NULL, WSTYPE);
+    gactivate_ws(WKID);
     gset_clip_ind(GIND_NO_CLIP);
 /*
  * call conpack color fill routine
@@ -46,9 +46,9 @@ main()
  * close frame and close gks
  */
     c_frame();
-	gdeactivate_ws(WKID);
-	gclose_ws(WKID);
-	gclose_gks();
+    gdeactivate_ws(WKID);
+    gclose_ws(WKID);
+    gclose_gks();
 }
 
 void colcon(zreg,ncl,proj,rlatmn,rlatmx,rlonmn,rlonmx,plat,plon)
@@ -249,110 +249,110 @@ float dlow, dhgh;
  * The function used is a sum of exponentials.
  */
     int mini, minj, maxi, maxj;
-	int i, j, k, nlow, nhgh, ncnt, m, n;
-	float fovm, fovn, dmin, dmax, temp, aatr, aabr;
-	float q, p, datr, datl;
-	float ccnt[3][50];
-	extern float fran();
-	
-	m = MREG;
-	n = NREG;
-	fovm = 9./(float)m;
-	fovn = 9./(float)n;
+    int i, j, k, nlow, nhgh, ncnt, m, n;
+    float fovm, fovn, dmin, dmax, temp, aatr, aabr;
+    float q, p, datr, datl;
+    float ccnt[3][50];
+    extern float fran();
+    
+    m = MREG;
+    n = NREG;
+    fovm = 9./(float)m;
+    fovn = 9./(float)n;
 
-	nlow = max(1,min(25,mlow));
-	nhgh =  max(1,min(25,mhgh));
-	ncnt = nlow+nhgh;
+    nlow = max(1,min(25,mlow));
+    nhgh =  max(1,min(25,mhgh));
+    ncnt = nlow+nhgh;
 
-	for( k = 0; k < ncnt; k++ ) {
-		ccnt[0][k] = 1.+((float)m-1.)*fran();
-		ccnt[1][k] = 1.+((float)n-1.)*fran();
-		if ((k+1) <= nlow) {
+    for( k = 0; k < ncnt; k++ ) {
+        ccnt[0][k] = 1.+((float)m-1.)*fran();
+        ccnt[1][k] = 1.+((float)n-1.)*fran();
+        if ((k+1) <= nlow) {
             ccnt[2][k] = -1.;
-		}
-		else {
+        }
+        else {
             ccnt[2][k] = 1.;
-		}
-	}
+        }
+    }
 
-	aabr = 0.;
-	aatr = 0.;
+    aabr = 0.;
+    aatr = 0.;
 
-	for( i = 0; i < m; i++ ) {
-		for( j = 0; j < n; j++ ) {
+    for( i = 0; i < m; i++ ) {
+        for( j = 0; j < n; j++ ) {
             zreg[j][i]=.5*(dlow+dhgh);
             for( k = 0; k < ncnt; k++ ) {
-				temp = -(pow2((fovm*((float)(i+1)-ccnt[0][k])))+
+                temp = -(pow2((fovm*((float)(i+1)-ccnt[0][k])))+
                          pow2(fovn*((float)(j+1)-ccnt[1][k])));
-				if (temp >= -20.) {
+                if (temp >= -20.) {
                     zreg[j][i] = zreg[j][i]+.5*(dhgh-dlow)*ccnt[2][k]*exp(temp);
                 }
-			}
-		}
-		aabr = aabr+zreg[0][i];
-		aatr = aatr+zreg[n-1][i];
-	}
+            }
+        }
+        aabr = aabr+zreg[0][i];
+        aatr = aatr+zreg[n-1][i];
+    }
 
-	aabr = aabr/(float)m;
-	aatr = aatr/(float)m;
+    aabr = aabr/(float)m;
+    aatr = aatr/(float)m;
 
-	for( j = 1; j <= n; j++ ) {
-		if ( j <= n/5) {
+    for( j = 1; j <= n; j++ ) {
+        if ( j <= n/5) {
             p = (float)(j-1)/(float)(n/5-1);
-			for( i = 1; i <= m/2; i++ ) {
-				q = 1.-max(0.,.5-.5*(float)(i-1)/(float)(m/5-1));
-				datl = zreg[j-1][i-1];
-				datr = zreg[j-1][m+1-i];
-				zreg[j-1][i-1]   = p*(q*datl+(1.-q)*datr)+(1.-p)*aabr;
-				zreg[j-1][m+1-i] = p*(q*datr+(1.-q)*datl)+(1.-p)*aabr;
-			}
-		}
-		else if (j >= n+1-n/5) {
+            for( i = 1; i <= m/2; i++ ) {
+                q = 1.-max(0.,.5-.5*(float)(i-1)/(float)(m/5-1));
+                datl = zreg[j-1][i-1];
+                datr = zreg[j-1][m+1-i];
+                zreg[j-1][i-1]   = p*(q*datl+(1.-q)*datr)+(1.-p)*aabr;
+                zreg[j-1][m+1-i] = p*(q*datr+(1.-q)*datl)+(1.-p)*aabr;
+            }
+        }
+        else if (j >= n+1-n/5) {
             p = (float)(n-j)/(float)(n/5-1);
-			for( i = 1; i <= m/2; i++ ) {
-				q = 1.-max(0.,.5-.5*(float)(i-1)/(float)(m/5-1));
-				datl = zreg[j-1][i-1];
-				datr = zreg[j-1][m+1-i];
-				zreg[j-1][i-1]   = p*(q*datl+(1.-q)*datr)+(1.-p)*aatr;
-				zreg[j-1][m+1-i] = p*(q*datr+(1.-q)*datl)+(1.-p)*aabr;
-			}
-		}
-		else {
-			for( i = 1; i <= m/2; i++ ) {
-				q = 1.-max(0.,.5-.5*(float)(i-1)/(float)(m/5-1));
-				datl = zreg[j-1][i-1];
-				datr = zreg[j-1][m+1-i];
-				zreg[j-1][i-1]   = q*datl+(1.-q)*datr;
-				zreg[j-1][m+1-i] = q*datr+(1.-q)*datl;
-			}
-		}
-	}
+            for( i = 1; i <= m/2; i++ ) {
+                q = 1.-max(0.,.5-.5*(float)(i-1)/(float)(m/5-1));
+                datl = zreg[j-1][i-1];
+                datr = zreg[j-1][m+1-i];
+                zreg[j-1][i-1]   = p*(q*datl+(1.-q)*datr)+(1.-p)*aatr;
+                zreg[j-1][m+1-i] = p*(q*datr+(1.-q)*datl)+(1.-p)*aabr;
+            }
+        }
+        else {
+            for( i = 1; i <= m/2; i++ ) {
+                q = 1.-max(0.,.5-.5*(float)(i-1)/(float)(m/5-1));
+                datl = zreg[j-1][i-1];
+                datr = zreg[j-1][m+1-i];
+                zreg[j-1][i-1]   = q*datl+(1.-q)*datr;
+                zreg[j-1][m+1-i] = q*datr+(1.-q)*datl;
+            }
+        }
+    }
 
-	dmin = 1.e36;
-	dmax = -1.e36;
+    dmin = 1.e36;
+    dmax = -1.e36;
 
-	for( j = 0; j < n; j++ ) {
-		for( i = 0; i < m; i++ ) {
+    for( j = 0; j < n; j++ ) {
+        for( i = 0; i < m; i++ ) {
             if( dmin > zreg[j][i]) {
-				mini = i;
-				minj = j;
-				dmin = zreg[j][i];
-			}
+                mini = i;
+                minj = j;
+                dmin = zreg[j][i];
+            }
             if( dmax < zreg[j][i]) {
-				maxi = i;
-				maxj = j;
-				dmax = zreg[j][i];
-			}
-		}
-	}
+                maxi = i;
+                maxj = j;
+                dmax = zreg[j][i];
+            }
+        }
+    }
 
-	for( j = 0; j < n; j++ ) {
-		for( i = 0; i < m; i++ ) {
+    for( j = 0; j < n; j++ ) {
+        for( i = 0; i < m; i++ ) {
             zreg[j][i] = (zreg[j][i]-dmin)/(dmax-dmin)*(dhgh-dlow)+dlow;
-		}
-	}
+        }
+    }
 
-	return;
+    return;
 }
 
 float rseq[] = { .749, .973, .666, .804, .081, .483, .919, .903, .951, .960,

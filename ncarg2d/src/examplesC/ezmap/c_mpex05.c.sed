@@ -1,5 +1,5 @@
 /*
- *	$Id: c_mpex05.c.sed,v 1.2 1994-06-21 15:00:09 haley Exp $
+ *  $Id: c_mpex05.c.sed,v 1.3 1994-07-12 20:46:35 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -29,9 +29,9 @@ main()
 /*
  * open GKS.
  */
-	gopen_gks("stdout",0);
-	gopen_ws(WKID, NULL, WSTYPE);
-	gactivate_ws(WKID);
+    gopen_gks("stdout",0);
+    gopen_ws(WKID, NULL, WSTYPE);
+    gactivate_ws(WKID);
 /*
  * Turn off the clipping indicator.
  */
@@ -139,9 +139,9 @@ main()
 /*
  * Close GKS.
  */
-	gdeactivate_ws(WKID);
-	gclose_ws(WKID);
-	gclose_gks();
+    gdeactivate_ws(WKID);
+    gclose_ws(WKID);
+    gclose_gks();
 }
 
 void bndary()

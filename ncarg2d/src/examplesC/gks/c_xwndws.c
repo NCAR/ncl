@@ -24,9 +24,11 @@
 #include <ncarg/ncargC.h>
 
 
+#define WSTYPE SED_WSTYPE
+#define WKID   1
+
 /* NCAR graphic dependent definitions */  
 
-#define META_WIN     	1	/* CGM metafile identifier */
 #define X_WIN     	2	/* X window identifier */
 #define KLICK		2	/* Mouse click? 0=off; 2=on */
 
@@ -64,10 +66,10 @@ void main()
 
 	printf("opening xgks window\n");
  	gopen_gks("stdout", 0);
-      	gopen_ws(X_WIN, "1", 8);
-      	gopen_ws(META_WIN, "metafile", 1);
+   	gopen_ws(X_WIN, "1", 8);
+   	gopen_ws(WKID, NULL, WSTYPE);
 	gactivate_ws(X_WIN);
-	gactivate_ws(META_WIN);
+	gactivate_ws(WKID);
 
 /* set initial drawing and draw it */
 
@@ -77,15 +79,15 @@ void main()
 
 /* update gks xwindow and metafile */
 
-      	c_ngpict (X_WIN,KLICK);
-      	c_ngpict (META_WIN,0);
+   	c_ngpict (X_WIN,KLICK);
+   	c_ngpict (WKID,0);
 
 /* start transformation loops */
 
 	for(i=0; i<STEPS; ++i)
 	{
-      		printf("rendering frame= %2d\n", i+1);
-      		gclear_ws (X_WIN,1);
+   		printf("rendering frame= %2d\n", i+1);
+   		gclear_ws (X_WIN,1);
 
 	/* translate and draw object */
 
@@ -94,16 +96,16 @@ void main()
 
 	/* update gks xwindow and metafile */
 
-      		c_ngpict (X_WIN,KLICK);
-      		c_ngpict (META_WIN,0);
+   		c_ngpict (X_WIN,KLICK);
+   		c_ngpict (WKID,0);
 	}
 
 /* close windows */
 
 	gdeactivate_ws(X_WIN);
-	gdeactivate_ws(META_WIN);
+	gdeactivate_ws(WKID);
  	gclose_ws(X_WIN);
- 	gclose_ws(META_WIN);
+ 	gclose_ws(WKID);
  	gclose_gks();
 }
 

@@ -1,5 +1,5 @@
 /*
- *  $Id: c_epltch.c,v 1.1 1994-05-12 19:31:22 haley Exp $
+ *  $Id: c_epltch.c,v 1.2 1994-07-12 20:46:42 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -34,6 +34,9 @@ char  *rlbl[48] = { "A(01)", "B(02)", "C(03)", "D(04)", "E(05)", "F(06)",
  */
     int iffn[23] = { 1, 21, 22, 25, 26, 29, 30, 33, 34, 35, 36, 37, 
                        121,122,125,126,129,130,133,134,135,136,137 };
+#define WSTYPE SED_WSTYPE
+#define WKID   1
+
 main()
 {
 /*
@@ -54,7 +57,9 @@ main()
 /*
  * Open GKS.
  */
-    c_opngks();
+    gopen_gks("stdout",0);
+    gopen_ws (WKID, NULL, WSTYPE);
+    gactivate_ws(WKID);
 /*
  * Do a call to SET which allows us to use fractional coordinates.
  */
@@ -622,7 +627,7 @@ main()
     rgb[2].rgb.red = 1.;  rgb[2].rgb.green = .3;  rgb[2].rgb.blue = .3;    
 	rgb[3].rgb.red = 0.;  rgb[3].rgb.green = 0.;  rgb[3].rgb.blue = 1.;    
     rgb[4].rgb.red = .2;  rgb[4].rgb.green = .2;  rgb[4].rgb.blue = .2;    
-	for( i = 0; i < 5; i++ ) gset_colr_rep(1,i+2,&rgb[i]);
+	for( i = 0; i < 5; i++ ) gset_colr_rep(WKID,i+2,&rgb[i]);
 /*
  * Write a line.
  */
@@ -760,7 +765,9 @@ main()
  *
  * Close GKS.
  */
-    c_clsgks();
+    gdeactivate_ws (WKID);
+    gclose_ws (WKID);
+    gclose_gks();
 }
 
 drawbx(xcen,ycen,angd,xtra)

@@ -1,5 +1,5 @@
 /*
- *	$Id: c_agex07.c.sed,v 1.1 1994-05-12 19:30:59 haley Exp $
+ *  $Id: c_agex07.c.sed,v 1.2 1994-07-12 20:46:23 haley Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -10,6 +10,9 @@
 #include <ncarg/ncargC.h>
 
 #define pow2(x)  ((x) * (x))
+
+#define WSTYPE SED_WSTYPE
+#define WKID   1
 
 main()
 {
@@ -25,7 +28,9 @@ main()
 /*
  * initialize gks.
  */
-    c_opngks();
+    gopen_gks("stdout",0);
+    gopen_ws(WKID, NULL, WSTYPE);
+    gactivate_ws(WKID);
 /*
  * fill the data arrays and the dash pattern array.
  */
@@ -150,7 +155,9 @@ main()
 /*
  * close gks.
  */
-    c_clsgks();
+    gdeactivate_ws(WKID);
+    gclose_ws(WKID);
+    gclose_gks();
 }
 
 
