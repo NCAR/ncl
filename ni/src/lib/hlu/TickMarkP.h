@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMarkP.h,v 1.15 1998-06-24 19:47:56 ethan Exp $
+ *      $Id: TickMarkP.h,v 1.16 1998-10-23 18:31:16 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -75,7 +75,9 @@ typedef struct _NhlTickMarkLayerPart {
 	int		x_t_label_stride;
 	float		x_b_data_left;
 	float		x_b_data_right;
+	NhlBoolean	x_b_tick_start_set;
 	float		x_b_tick_start;
+	NhlBoolean	x_b_tick_end_set;
 	float		x_b_tick_end;
 	int		x_b_max_ticks;
 	float		x_b_tick_spacing;
@@ -112,7 +114,9 @@ typedef struct _NhlTickMarkLayerPart {
 	NhlBoolean	x_b_auto_precision;
 	float		x_t_data_left;
 	float		x_t_data_right;
+	NhlBoolean	x_t_tick_start_set;
 	float		x_t_tick_start;
+	NhlBoolean	x_t_tick_end_set;
 	float		x_t_tick_end;
 	int		x_t_max_ticks;
 	float		x_t_tick_spacing;
@@ -184,7 +188,9 @@ typedef struct _NhlTickMarkLayerPart {
 	int		y_l_label_stride;
 	float		y_l_data_top;
 	float		y_l_data_bottom;
+	NhlBoolean	y_l_tick_start_set;
 	float		y_l_tick_start;
+	NhlBoolean	y_l_tick_end_set;
 	float		y_l_tick_end;
 	int		y_l_max_ticks;
 	float		y_l_tick_spacing;
@@ -221,7 +227,9 @@ typedef struct _NhlTickMarkLayerPart {
 	NhlBoolean	y_l_auto_precision;
 	float		y_r_data_top;
 	float		y_r_data_bottom;
+	NhlBoolean	y_r_tick_start_set;
 	float		y_r_tick_start;
+	NhlBoolean	y_r_tick_end_set;
 	float		y_r_tick_end;
 	int		y_r_max_ticks;
 	float		y_r_tick_spacing;

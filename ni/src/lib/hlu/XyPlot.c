@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.78 1998-04-16 03:09:31 dbrown Exp $
+ *      $Id: XyPlot.c,v 1.79 1998-10-23 18:31:19 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1280,6 +1280,11 @@ XyPlotInitialize
 	if(!tfp->x_max_set) tfp->x_max = 2.0;
 	if(!tfp->y_min_set) tfp->y_min = 1.0;
 	if(!tfp->y_max_set) tfp->y_max = 2.0;
+
+	xp->x_data_min = xp->x_irreg_min = tfp->x_min;
+	xp->x_data_max = xp->x_irreg_max = tfp->x_max;
+	xp->y_data_min = xp->y_irreg_min = tfp->y_min;
+	xp->y_data_max = xp->y_irreg_max = tfp->y_max;
 	
 	xnew->trans.data_xstart = tfp->x_min;
 	xnew->trans.data_xend = tfp->x_max;
@@ -3272,10 +3277,10 @@ CheckExtent
 		*compute_value = False;
 
 		if(compute_change){
-			NhlPError(NhlWARNING,NhlEUNKNOWN,
+			NhlPError(NhlINFO,NhlEUNKNOWN,
 			"%s:Setting %s to False because %s was specified",
 						error_lead,comp_res,extent_res);
-			ret = NhlWARNING;
+			ret = NhlINFO;
 		}
 	}
 
