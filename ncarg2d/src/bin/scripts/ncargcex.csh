@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ncargcex.csh,v 1.7 1994-03-24 17:10:25 haley Exp $
+#	$Id: ncargcex.csh,v 1.8 1994-03-28 17:43:52 haley Exp $
 #
 
 #********************#
@@ -39,7 +39,9 @@ endif
 
 set example_list=(\
 c_agex07 c_colcon c_mpex05 c_eezmpa c_elblba c_epltch c_cbex01 \
-c_slex01 c_sfex02 c_gtxpac c_xwndws)
+c_slex01 c_sfex02 c_gtxpac)
+
+set intexample_list = (c_xwndws)
 
 set X11_option = ""
 
@@ -109,6 +111,12 @@ foreach known ($example_list)
     endif
 end
 
+foreach known ($intexample_list)
+    if ("$name" == "$known") then
+        set type="Interactive_Example"
+    endif
+end
+
 if ($?List) then
    echo $names
    exit
@@ -142,9 +150,22 @@ foreach file($copy_files)
 end
 
 if (! $?NoRunOption) then
-    echo ""
-    echo "Compiling and Linking..."
-    ncargcc $X11_option -o $name $c_files
+    if ($type == "Interactive_Example") then
+        echo ""
+        echo "    This example is interactive and can only be executed if"
+        echo "    you have X running and have your DISPLAY environment"
+        echo "    variable set properly.  It will create an X11 window"
+        echo "    that you must click on with your mouse to advance the"
+        echo "    frame(s)."
+        echo ""
+        echo ""
+        echo "Compiling and Linking..."
+        ncargcc -o $name $c_files
+    else
+        echo ""
+        echo "Compiling and Linking..."
+        ncargcc $X11_option -o $name $c_files
+    endif
     if ($status != 0) then
             echo ""
             echo "The compile and link failed"
