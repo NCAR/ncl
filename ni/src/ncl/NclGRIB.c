@@ -2329,13 +2329,21 @@ void *s2;
 
 	if((s_1->rec_inq->level0 != -1)&&(s_1->rec_inq->level1 != -1)) {
 		if(s_1->rec_inq->level0 == s_2->rec_inq->level0) {
-			return(s_1->rec_inq->level1 - s_2->rec_inq->level1);
+			if(s_1->rec_inq->level1 == s_2->rec_inq->level1) {
+				return(s_1->rec_inq->bds_size - s_2->rec_inq->bds_size);
+			} else {
+				return(s_1->rec_inq->level1 - s_2->rec_inq->level1);
+			}
 		} else {
 			return(s_1->rec_inq->level0 - s_2->rec_inq->level0);
 		}
 	} else {
-		return(s_1->rec_inq->level0 - s_2->rec_inq->level0);
-	}
+		if(s_1->rec_inq->level0 == s_2->rec_inq->level0) {
+			return(s_1->rec_inq->bds_size - s_2->rec_inq->bds_size);
+		} else {
+			return(s_1->rec_inq->level0 - s_2->rec_inq->level0);
+		}
+	} 
 }
 static int date_comp
 #if 	NhlNeedProto
