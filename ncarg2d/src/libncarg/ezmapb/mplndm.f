@@ -1,5 +1,5 @@
 C
-C $Id: mplndm.f,v 1.4 1998-04-30 22:43:56 kennison Exp $
+C $Id: mplndm.f,v 1.5 1998-05-01 22:36:02 kennison Exp $
 C
       SUBROUTINE MPLNDM (FLNM,ILVL,IAMA,XCRA,YCRA,MCRA,IAAI,IAGI,MNOG,
      +                                                           ULPR)
@@ -45,6 +45,12 @@ C
 C CHRS is a buffer used to read name information.
 C
         CHARACTER*1 CHRS(512)
+C
+C IIII is used in the process of mapping line types into color indices.
+C
+        DIMENSION IIII(3)
+C
+        DATA IIII / 5 , 7 , 6 /
 C
 C Check for an uncleared prior error.
 C
@@ -145,6 +151,11 @@ C
         IWGF=0
         IF (BLAM-SLAM.GT.179.9999.AND.BLOM-SLOM.GT.359.9999) IWGF=1
 C
+C ILTS keeps track of changes in the line type, so that the color index
+C can be changed when necessary.
+C
+        ILTS=0
+C
 C Read and process each of the lines.
 C
   106   CALL NGRDIN (IFDE,NNMS,4,ISTA)
@@ -169,19 +180,31 @@ C
           NPTS=NNMS/2
           CALL HLUMPCHLN (+2,ILTY,IOAL,IOAR,NPTS,PNTS)
           IF (NPTS.LE.1) GO TO 106
+          IF (ILTY.NE.ILTS) THEN
+            IF (ILTS.NE.0) THEN
+              CALL MAPCHM (-IIII(MAX(2,MIN(4,ILTS))-1),0,
+     +                          IAMA,XCRA,YCRA,MCRA,IAAI,IAGI,MNOG,ULPR)
+              IF (ICFELL('MPLNDM',2).NE.0) RETURN
+            END IF
+            CALL MAPCHM (IIII(MAX(2,MIN(4,ILTY))-1),
+     +                                           IOR(ISHIFT(32767,1),1),
+     +                          IAMA,XCRA,YCRA,MCRA,IAAI,IAGI,MNOG,ULPR)
+            IF (ICFELL('MPLNDM',3).NE.0) RETURN
+            ILTS=ILTY
+          END IF
           CALL MAPITM (PNTS(1),PNTS(2),0,
      +                          IAMA,XCRA,YCRA,MCRA,IAAI,IAGI,MNOG,ULPR)
-          IF (ICFELL('MPLNDM',2).NE.0) GO TO 907
+          IF (ICFELL('MPLNDM',4).NE.0) GO TO 907
           DO 107 I=3,NNMS-3,2
             CALL MAPITM (PNTS(I),PNTS(I+1),1,
      +                          IAMA,XCRA,YCRA,MCRA,IAAI,IAGI,MNOG,ULPR)
-            IF (ICFELL('MPLNDM',3).NE.0) GO TO 907
+            IF (ICFELL('MPLNDM',5).NE.0) GO TO 907
   107     CONTINUE
           CALL MAPITM (PNTS(NNMS-1),PNTS(NNMS),2,
      +                          IAMA,XCRA,YCRA,MCRA,IAAI,IAGI,MNOG,ULPR)
-          IF (ICFELL('MPLNDM',4).NE.0) GO TO 907
+          IF (ICFELL('MPLNDM',6).NE.0) GO TO 907
           CALL MAPIQM (         IAMA,XCRA,YCRA,MCRA,IAAI,IAGI,MNOG,ULPR)
-          IF (ICFELL('MPLNDM',5).NE.0) GO TO 907
+          IF (ICFELL('MPLNDM',7).NE.0) GO TO 907
           CALL HLUMPCHLN (-2,ILTY,IOAL,IOAR,NPTS,PNTS)
         END IF
 C
@@ -189,30 +212,38 @@ C
 C
   108   CALL NGCLFI (IFDE)
 C
+C Reset the color index, dotting, and dash pattern, if necessary.
+C
+        IF (ILTS.NE.0) THEN
+          CALL MAPCHM (-IIII(MAX(2,MIN(4,ILTS))-1),0,
+     +                          IAMA,XCRA,YCRA,MCRA,IAAI,IAGI,MNOG,ULPR)
+          IF (ICFELL('MPLNDM',8).NE.0) RETURN
+        END IF
+C
 C Done.
 C
         RETURN
 C
 C Error exits.
 C
-  901   CALL SETER ('MPLNDM - Can''t form name of ".names" file',6,1)
+  901   CALL SETER ('MPLNDM - Can''t form name of ".names" file',9,1)
         RETURN
 C
-  902   CALL SETER ('MPLNDM - Can''t open the ".names" file',7,1)
+  902   CALL SETER ('MPLNDM - Can''t open the ".names" file',10,1)
         RETURN
 C
-  903   CALL SETER ('MPLNDM - Read bad index from ".names" file',8,1)
+  903   CALL SETER ('MPLNDM - Read bad index from ".names" file',11,1)
         CALL NGCLFI (IFDE)
         RETURN
 C
-  904   CALL SETER ('MPLNDM - Read error on ".names" file',9,1)
+  904   CALL SETER ('MPLNDM - Read error on ".names" file',12,1)
         CALL NGCLFI (IFDE)
         RETURN
 C
-  905   CALL SETER ('MPLNDM - Can''t open the ".lines" file',10,1)
+  905   CALL SETER ('MPLNDM - Can''t open the ".lines" file',13,1)
         RETURN
 C
-  906   CALL SETER ('MPLNDM - Read error on ".lines" file',11,1)
+  906   CALL SETER ('MPLNDM - Read error on ".lines" file',14,1)
         CALL NGCLFI (IFDE)
         RETURN
 C
