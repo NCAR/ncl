@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl
 #
-#      $Id: build,v 1.14 1995-05-12 20:40:20 haley Exp $
+#      $Id: build,v 1.15 1995-06-06 18:11:59 haley Exp $
 #
 #########################################################################
 #									#
@@ -271,7 +271,7 @@ while ($ARGV[0] =~ /-/) {
 }
 
 if (@ARGV) {
-	print STDERR "Usage: $progName [-debug] [-quick] [-nomake] [-root <roog>]\n";
+	print STDERR "Usage: $progName [-debug] [-quick] [-nomake] [-root <root>]\n";
 	print STDERR "Terminating build session\n";
 	exit 1;
 }
