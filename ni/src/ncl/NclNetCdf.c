@@ -1,5 +1,5 @@
 /*
- *      $Id: NclNetCdf.c,v 1.13 1995-06-22 21:37:03 ethan Exp $
+ *      $Id: NclNetCdf.c,v 1.14 1995-09-19 23:07:44 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -983,12 +983,12 @@ void* data;
 						}
 						if(stepal->att_inq->data_type == NC_CHAR) {	
 							buffer = NrmQuarkToString(*(NclQuark*)data);
-							if(strlen(buffer) +1 > stepal->att_inq->len) {
+							if(strlen(buffer)  > stepal->att_inq->len) {
 								NhlPError(NhlFATAL,NhlEUNKNOWN,"NetWriteAtt: length of string exceeds available space for attribute (%s)",NrmQuarkToString(theatt));
 								ncclose(cdfid);
 								return(NhlFATAL);
 							} else {
-								ret = ncattput(cdfid,stepvl->var_inq->varid,NrmQuarkToString(theatt),stepal->att_inq->data_type,strlen(buffer)+1,buffer);
+								ret = ncattput(cdfid,stepvl->var_inq->varid,NrmQuarkToString(theatt),stepal->att_inq->data_type,strlen(buffer),buffer);
 							}
 						} else {
 							ret = ncattput(cdfid,stepvl->var_inq->varid,NrmQuarkToString(theatt),stepal->att_inq->data_type,stepal->att_inq->len,data);

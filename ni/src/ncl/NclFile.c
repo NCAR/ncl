@@ -2897,8 +2897,10 @@ struct _NclSelectionRecord *rhs_sel_ptr;
 			step = theatt->att.att_list;
 			while(step != NULL) {
 				ret = FileWriteVarAtt(thefile,lhs_var,step->quark,step->attvalue,NULL);
-				if(ret < NhlWARNING)
-				return(ret);
+				if(ret < NhlWARNING){
+					NhlPError(NhlWARNING,NhlEUNKNOWN,"FileWriteVarVar: Could not attribute (%s) to file (%s), continuing anyway",NrmQuarkToString(step->quark),NrmQuarkToString(thefile->file.fname));
+					ret = NhlWARNING;
+				}
 				step = step->next;
 			}
 		}
@@ -2906,8 +2908,10 @@ struct _NclSelectionRecord *rhs_sel_ptr;
 			if(rhs_var->var.coord_vars[i] != -1) {
 				tmp_var = (NclVar)_NclGetObj(rhs_var->var.coord_vars[i]);
 				ret = FileWriteCoord(thefile,rhs_var->var.dim_info[i].dim_quark,_NclVarValueRead(tmp_var,NULL,NULL),NULL);
-				if(ret < NhlWARNING)
-				return(ret);
+				if(ret < NhlWARNING) {
+					NhlPError(NhlWARNING,NhlEUNKNOWN,"FileWriteVarVar: Could not write coordinate variable (%s) to file (%s), continuing anyway",NrmQuarkToString(rhs_var->var.dim_info[i].dim_quark),NrmQuarkToString(thefile->file.fname));
+					ret = NhlWARNING;
+				}
 			}
 		}
 		return(ret);

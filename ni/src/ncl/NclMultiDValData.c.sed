@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValData.c.sed,v 1.14 1995-06-03 00:45:47 ethan Exp $
+ *      $Id: NclMultiDValData.c.sed,v 1.15 1995-09-19 23:07:42 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1182,23 +1182,29 @@ NclSelectionRecord *from_selection;
 		total_elements_value =total_elements_value * n_elem_value;
 		from_sel_ptr++;
 	}
-	for( i = 0; i < n_dims_value; i++) {
+	i = 0;
+	while(i < n_dims_value) {
 		if(from_output_dim_sizes[i] == 1) {
-			n_dims_value--;
 			for(j = i; j  < n_dims_value; j++) {
-				from_output_dim_sizes[i] = from_output_dim_sizes[i+1];
+				from_output_dim_sizes[j] = from_output_dim_sizes[j+1];
 			}
+			n_dims_value--;
+		} else {
+			i++;
 		}
 	}
 	if(n_dims_value == 0) {
 		n_dims_value = 1;
 	}
-	for( i = 0; i < n_dims_target; i++) {
+	i = 0;
+	while( i < n_dims_target ) {
 		if(to_output_dim_sizes[i] == 1) {
-			n_dims_target--;
 			for(j = i; j  < n_dims_target; j++) {
-				to_output_dim_sizes[i] = to_output_dim_sizes[i+1];
+				to_output_dim_sizes[j] = to_output_dim_sizes[j+1];
 			}
+			n_dims_target--;
+		} else {
+			i++;
 		}
 	}
 	if(n_dims_target == 0) {

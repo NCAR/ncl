@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.45 1995-06-29 21:56:13 ethan Exp $
+ *      $Id: Execute.c,v 1.46 1995-09-19 23:07:35 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -2741,9 +2741,6 @@ NclExecuteReturnStatus _NclExecute
 							if(nsubs != 0) {
 								sel_ptr = (NclSelectionRecord*)NclMalloc(sizeof(NclSelectionRecord));
 								sel_ptr->n_entries = nsubs;
-							} else {
-								sel_ptr = NULL;
-							}
 							for(i = 0 ; i < nsubs; i++) {
 								data = _NclPop();
 								switch(data.u.sub_rec->sub_type) {
@@ -2760,8 +2757,11 @@ NclExecuteReturnStatus _NclExecute
 									estatus = _NclBuildFileCoordRSelection(file,var,data.u.sub_rec->u.range,&(sel_ptr->selection[nsubs - i - 1]),nsubs - i - 1,data.u.sub_rec->name);
 									break;
 								}
-							}
 							_NclFreeSubRec(data.u.sub_rec);
+							}
+							} else {
+								sel_ptr = NULL;
+							}
 /*
 * Coercion must wait until inside of File method
 */

@@ -5,6 +5,7 @@ extern "C" {
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/NresDB.h>
 #include "defs.h"
+#include "parser.h"
 
 #ifdef DEBUGER
 
@@ -210,7 +211,7 @@ void printtoken
 			fprintf(stdout,"NOT\n");
 			break;
 		default:
-			fprintf(stdout,"No match for (%c)",(char)type);
+			fprintf(stdout,"No match for (%c)(%d)",(char)type,(int)type);
 	}
 }
 #endif
