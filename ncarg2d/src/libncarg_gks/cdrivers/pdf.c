@@ -1,5 +1,5 @@
 /*
- *      $Id: pdf.c,v 1.16 2003-03-07 00:25:47 fred Exp $
+ *      $Id: pdf.c,v 1.17 2003-03-07 18:28:27 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -1613,7 +1613,7 @@ static void PDFOutputPolymarker (GKSC *gksc, int markersize, int markertype)
   /*
    *  Put the markers out.
    */
-  tsize = MAX(1, (int) (.9 * (float) markersize));
+  tsize = MAX(1, (int) (1.8 * (float) markersize));
   hs    = 0.500*tsize;
   qs    = 0.707*hs;
 
