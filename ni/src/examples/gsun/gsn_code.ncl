@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.107 2003-05-28 22:11:59 haley Exp $
+;      $Id: gsn_code.ncl,v 1.108 2003-06-26 22:56:55 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -1843,30 +1843,52 @@ end
 ; file is called "gmeta.ps".                                            ;
 ;***********************************************************************;
 function gsn_open_ps(type:string,name[1]:string)
-local ps, res_file
+local ps, res_file, wkres, wkresnew, names, i
 begin
+;
+; If there are resources, copy them over to a logical variable,
+; and only grab the ones that start with "wk".
+;
+    if(.not.any(ismissing(getvaratts(type))))
+      wkres = True
+      names = getvaratts(type)
+      do i=0,dimsizes(names)-1
+        wkres@$names(i)$ = type@$names(i)$    
+      end do
+;
+; Grab only the ones that start with "wk".
+;
+      wkresnew = get_res_eq(wkres,"wk")
+      delete(wkres)
+      delete(names)
+    else
+      wkresnew = False
+    end if
+
     res_file = get_res_value_keep(name,"res_file","gsnapp")
-    resltn   = get_res_value_keep(type,"wkPSResolution",1800)
-    orient   = get_res_value_keep(type,"wkOrientation","portrait")
-    lower_x  = get_res_value_keep(type,"wkDeviceLowerX",36)
-    lower_y  = get_res_value_keep(type,"wkDeviceLowerY",126)
-    upper_x  = get_res_value_keep(type,"wkDeviceUpperX",576)
-    upper_y  = get_res_value_keep(type,"wkDeviceUpperY",666)
-    cmap     = get_res_value_keep(type,"wkColorMap","default")
-    cmodel   = get_res_value_keep(type,"wkColorModel","rgb")
+;
+; These PS resources are ones that must be set at the time
+; the workstation is created. This means that these resources
+; will override whatever setting you might have in a resource
+; file or your .hluresfile.
+;
+    cmodel   = get_res_value(wkresnew,"wkColorModel","rgb")
+    resltn   = get_res_value(wkresnew,"wkPSResolution",1800)
+    visualt  = get_res_value(wkresnew,"wkVisualType","color")
 
     ps = create res_file psWorkstationClass defaultapp
-      "wkColorMap"     : cmap
       "wkColorModel"   : cmodel
-      "wkOrientation"  : orient
       "wkPSResolution" : resltn
       "wkPSFileName"   : name
       "wkPSFormat"     : type
-      "wkDeviceLowerX" : lower_x
-      "wkDeviceLowerY" : lower_y
-      "wkDeviceUpperX" : upper_x
-      "wkDeviceUpperY" : upper_y
+      "wkVisualType"   : visualt
     end create
+
+;
+; Set resources, if any.
+;
+    attsetvalues_check(ps,wkresnew)
+    delete(wkresnew)
 
     return(ps)
 end
@@ -1880,30 +1902,52 @@ end
 ; is called "gmeta.pdf".                                                ;
 ;***********************************************************************;
 function gsn_open_pdf(type:string, name[1]:string)
-local pdf, res_file
+local pdf, res_file, wkres, wkresnew, names, i
 begin
+;
+; If there are resources, copy them over to a logical variable,
+; and only grab the ones that start with "wk".
+;
+    if(.not.any(ismissing(getvaratts(type))))
+      wkres = True
+      names = getvaratts(type)
+      do i=0,dimsizes(names)-1
+        wkres@$names(i)$ = type@$names(i)$    
+      end do
+;
+; Grab only the ones that start with "wk".
+;
+      wkresnew = get_res_eq(wkres,"wk")
+      delete(wkres)
+      delete(names)
+    else
+      wkresnew = False
+    end if
+
     res_file = get_res_value_keep(name,"res_file","gsnapp")
-    resltn   = get_res_value_keep(type,"wkPDFResolution",1800)
-    orient   = get_res_value_keep(type,"wkOrientation","portrait")
-    lower_x  = get_res_value_keep(type,"wkDeviceLowerX",36)
-    lower_y  = get_res_value_keep(type,"wkDeviceLowerY",126)
-    upper_x  = get_res_value_keep(type,"wkDeviceUpperX",576)
-    upper_y  = get_res_value_keep(type,"wkDeviceUpperY",666)
-    cmap     = get_res_value_keep(type,"wkColorMap","default")
-    cmodel   = get_res_value_keep(type,"wkColorModel","rgb")
+;
+; These PDF resources are ones that must be set at the time
+; the workstation is created. This means that these resources
+; will override whatever setting you might have in a resource
+; file or your .hluresfile.
+;
+    cmodel   = get_res_value(wkresnew,"wkColorModel","rgb")
+    resltn   = get_res_value(wkresnew,"wkPDFResolution",1800)
+    visualt  = get_res_value(wkresnew,"wkVisualType","color")
 
     pdf = create res_file pdfWorkstationClass defaultapp
-      "wkColorMap"      : cmap
       "wkColorModel"    : cmodel
-      "wkOrientation"   : orient
       "wkPDFResolution" : resltn
       "wkPDFFileName"   : name
       "wkPDFFormat"     : type
-      "wkDeviceLowerX"  : lower_x
-      "wkDeviceLowerY"  : lower_y
-      "wkDeviceUpperX"  : upper_x
-      "wkDeviceUpperY"  : upper_y
+      "wkVisualType"    : visualt
     end create
+
+;
+; Set resources, if any.
+;
+    attsetvalues_check(pdf,wkresnew)
+    delete(wkresnew)
 
     return(pdf)
 end
@@ -1960,21 +2004,15 @@ begin
 
     x_file = res_file
 
-;
-; Check if color map being set.  The PostScript or PDF color map will get 
-; passed automatically through "type".
-;
-    if(isatt(type,"wkColorMap"))
-      ncgm_file@wkColorMap = type@wkColorMap
-      x_file@wkColorMap    = type@wkColorMap
-    end if
-
     appid = create res_file appClass defaultapp
         "appDefaultParent" : True
         "appUsrDir"        : res_dir
     end create
 
     if(type.eq."x11".or.type.eq."X11") then
+        if(isatt(type,"wkColorMap"))
+          x_file@wkColorMap = type@wkColorMap
+        end if
         wks = gsn_open_x11(x_file)
     else
         if(type.eq."ps".or.type.eq."eps".or.type.eq."epsi".or.\
@@ -1982,7 +2020,11 @@ begin
             wks = gsn_open_ps(type,res_dir+ps_file)
         else
             if(type.eq."ncgm".or.type.eq."NCGM") then
-                wks = gsn_open_ncgm(res_dir+ncgm_file)
+                ncgm_file = res_dir + ncgm_file
+                if(isatt(type,"wkColorMap"))
+                  ncgm_file@wkColorMap = type@wkColorMap
+                end if
+                wks = gsn_open_ncgm(ncgm_file)
             else
                 if (type.eq."pdf".or.type.eq."PDF") then
                     wks = gsn_open_pdf(type, res_dir+pdf_file)
