@@ -183,7 +183,10 @@ c c c real     betai
 c compute 1st two moments
 
       CALL DSTAT2(X,NPTS,XMSG,XMEAN,XVAR,XSD,NPTUSED,JER)
-      if (NPTUSED.LE.0) THEN
+      IF (NPTUSED.LE.0) THEN
+          RETURN
+      ELSEIF (NPTUSED.EQ.1 .OR. XVAR.EQ.0.D0) THEN
+          NEQV = 1
           RETURN
       END IF
 
@@ -227,6 +230,7 @@ c c c alpha = betai ( 0.5*df, 0.5, df/(df+tval**2) )
 c test r1 to see if it is sig different from zero at user
 c specified level.
 
+      NEQV = NPTUSED
       IF (ALPHA.LE.SIGLVL) THEN
           IF (XN.GE.50.D0 .AND. ABS(R1).NE.1.D0) THEN
               NEQV = XN* (1.D0-R1)/ (1.D0+R1)
