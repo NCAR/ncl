@@ -1,125 +1,146 @@
-.\"
-.\"	$Id: gridal.m,v 1.1 1993-03-11 16:26:41 haley Exp $
-.\"
+'\" t
 .TH GRIDAL 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
+.na
+.nh
 .SH NAME
-GRIDAL - Draws a grid, either labeled or unlabeled, with or
-without axes and a perimeter.
+GRIDAL - 
+Draws any of the supported types of backgrounds. Each of
+the other background-drawing routines is implemented by a
+call to GRIDAL.
+.SH UTILITY
+This routine is part of the Gridall utility in NCAR Graphics.  To
+see the overview man page for this utility, type "man gridall".
 .SH SYNOPSIS
-CALL GRIDAL (MJRX, MNRX, MJRY, MNRY, IXLB, IYLB, IGPH, XINT, YINT)
+ CALL GRIDAL (MJRX, MNRX, MJRY, MNRY, IXLB, IYLB, IGPH, 
+.br
++ XINT, YINT)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void c_gridal (int mjrx, int mnrx, int mjry, int mnry, int ixlb, int iylb, int igph, float xint, float yint)
+void c_gridal (int mjrx, int mnrx, int mjry, int mnry, \\
+.br
+int ixlb, int iylb, int igph, float xint, float yint)
 .SH DESCRIPTION 
-.IP "MJRX" 12
-(Integer, Input) - 
-The number of major divisions in the X 
-axes.
-.IP "MNRX" 12
-(Integer, Input) - 
-Determines the number of minor 
-divisions in the X axes.
-.IP "MJRY" 12
-(Integer, Input) - 
-The number of major divisions in the Y 
-axes.
-.IP "MNRY" 12
-(Integer, Input) - 
-Determines the number of minor 
-divisions in the Y axes.
-.sp
-The preceding parameters have different meanings, 
-depending on the current setting of the linear/log flag in 
-SPPS. This flag is set in the final parameter in the SET 
-call.
-.sp
-If the axis is linear, MJRX specifies the number of major 
-divisions of the X/Y axis and MNRX specifies the number 
-of minor divisions within each major division. In each 
-case, the value specifies the number of spaces between 
-GRIDAL lines or ticks rather than the number of lines or 
-ticks. There is always one more major division line or 
-mark than the number of major divisions specified by 
-MJRX. Similarly, there is always one less minor division 
-line or tick per major division than the number of minor 
-divisions per major division specified by MNRX.
-.sp
-If the axis is logarithmic, each major division point 
-occurs at a value 10**MJRX times the previous point. For 
-example, if the minimum X-axis value is 3., the maximum 
-X-axis value is 3000., and MJRX is 1, then the major 
-division points would be 3., 30., 300., and 3000. If 
-MNRX.LE.10, there are nine minor divisions within each 
-major division. For example, between 3. and 30., there 
-would be minor division points at 6., 9., 12., . . . 27. If 
-MNRX.GT.10., minor divisions are omitted.
-.IP "IXLB" 12
-(Integer, Input) - 
-Specifies X-axis appearance.
+.IP "MJRX, MNRX, MJRY, and MNRY" 12
+(input expressions of type
+INTEGER) specify the major and minor divisions of
+the horizontal (X) and vertical (Y) axes
+of the current viewport. The meanings of these parameters
+depend on the current setting of the internal parameter
+\'LS\' of SPPS:
 .RS
-.IP "-1" 4
-No X axis drawn.  No X-axis labels.
-.IP "0" 4
-X axis drawn.  No X-axis labels.
-.IP 1 4
-X axis drawn.  X-axis labels.
+.IP \(bu
+If the value of \'LS\' implies that the axis is linear:
+MJRX(Y) specifies the number of major divisions of the X(Y)
+axis and MNRX(Y) specifies the number of minor divisions
+within each major division. In each case, the value
+specifies the number of spaces between grid lines or ticks
+rather than the number of lines or ticks. Including the
+ones at the ends of the axes, there is always one more
+major division line or mark than the number of major
+divisions specified by MJRX(Y). Similarly, there is always
+one less minor division line or tick per major division
+than the number of minor divisions per major division
+specified by MNRX(Y).
+.IP \(bu
+If the value of \'LS\' implies that the axis is logarithmic:
+Each major division point occurs at a value 10**MJRX(Y)
+times the previous point. For example, if the minimum 
+X-axis value were 3., the maximum X-axis value 3000. and MJRX
+1, then the major division points would be 3., 30., 300.,
+and 3000. If MNRX(Y).LE.10, there are nine minor divisions
+within each major division. For example, between 3. and
+30., there would be minor division points at 6., 9., 12., .
+\&. . 27. If MNRX(Y).GT.10., minor divisions are omitted.
 .RE
-.IP "IYLB" 12
-(Integer, Input) - 
-Specifies Y-axis appearance.
+.IP IXLB 12
+(an input expression of type INTEGER) is defined as
+follows:
 .RS
-.IP "-1" 4
-No axis drawn.  No Y-axis labels.
-.IP "0" 4
-Y axis drawn.  No Y-axis labels.
-.IP "1" 4
-Y axis drawn.  Y-axis labels.
+.IP \(bu
+IXLB = -1 implies that no X axis is to be drawn.
+.IP \(bu
+IXLB = 0 implies that the X axis is to be drawn unlabeled.
+.IP \(bu
+IXLB = 1 implies that the X axis is to be drawn and
+labeled.
 .RE
-.IP "IGPH" 12
-(Integer, Input) - 
-Specifies the background type as indicated by one
-of the following integers:
+.IP IYLB 12
+(an input expression of type INTEGER) is defined as
+follows:
+.RS
+.IP \(bu
+IYLB = -1 implies that no Y axis is to be drawn.
+.IP \(bu
+IYLB = 0 implies that the Y axis is to be drawn unlabeled.
+.IP \(bu
+IYLB = 1 implies that the Y axis is to be drawn and
+labeled.
+.RE
+.IP IGPH 12
+(an input expression of type INTEGER) specifies the
+background type, as follows:
 .sp
+.in +10
 .TS
-tab (/);
-c c c
-l l l .
-IGPH/X axis/Y axis
-.sp
-0/grid/grid
-1/grid/perimeter
-2/grid/axis
-4/perimeter/grid
-5/perimeter/perimeter
-6/perimeter/axis
-8/axis/grid
-9/axis/perimeter
-10/axis/axis
+tab (%);
+l l l.
+IGPH%X axis%Y axis
+----%------%------
+0%grid%grid
+1%grid%perim
+2%grid%halfax
+4%perim%grid
+5%perim%perim
+6%perim%halfax
+8%halfax%grid
+9%halfax%perim
+10%halfax%halfax
 .TE
-.IP "XINT,YINT" 12
-(Real, Input) - 
-The user "world" coordinates of the point of 
-intersection of the two axes if IGPH equals 10. For other 
-values of IGPH for which one of the axes is the axis type, 
-XINT and/or YINT specifies the position of that axis.
+.in -10
+.IP "XINT and YINT" 12
+(input expressions of type REAL), if IGPH has
+the value 10, are the user coordinates of the point of
+intersection of the two axes. For other values of IGPH for
+which one of the axes is of type HALFAX, XINT and/or YINT
+specify the position of that axis.
 .SH C-BINDING DESCRIPTION
-The C-binding argument descriptions are the same as the Fortran 
+The C-binding argument descriptions are the same as the FORTRAN 
 argument descriptions.
+.SH EXAMPLES
+Use the ncargex command to see the following relevant
+example: 
+tgrida.
 .SH ACCESS
 To use GRIDAL, load the NCAR Graphics libraries ncarg, ncarg_gks,
 and ncarg_loc, preferably in that order.  To use c_gridal, load
 the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
 and ncarg_loc, preferably in that order.
+.SH MESSAGES
+See the gridall man page for a description of all Gridall error
+messages and/or informational messages.
 .SH SEE ALSO
 Online:
-gacolr, gagetc, gageti, gagetr, gasetc, gaseti, gasetr, grid, gridal,
-gridl, halfax, labmod, perim, periml, tick4, ticks, ncarg_cbind
-.sp
-Hardcopy: "NCAR Graphics User's Guide," Version 2.00
+gridall,
+gridall_params,
+gacolr,
+gagetc,
+gageti,
+gagetr,
+gasetc,
+gaseti,
+gasetr,
+grid,
+gridl,
+halfax,
+labmod,
+perim,
+periml,
+tick4,
+ticks,
+ncarg_cbind.
 .SH COPYRIGHT
-(c) Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
+Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research
 .br
 All Rights Reserved
-

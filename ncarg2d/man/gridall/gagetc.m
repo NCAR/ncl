@@ -1,9 +1,9 @@
-.\"
-.\"	$Id: gagetc.m,v 1.1 1993-03-11 16:26:23 haley Exp $
-.\"
 .TH GAGETC 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
+.na
+.nh
 .SH NAME
-GAGETC - @Text
+GAGETC - Retrieves the value of a specified internal parameter
+of type CHARACTER.
 .SH SYNOPSIS
 CALL GAGETC (PNAM,CVAL)
 .SH C-BINDING SYNOPSIS
@@ -12,29 +12,54 @@ CALL GAGETC (PNAM,CVAL)
 void c_gagetc (char *pnam, char *cval, int len)
 .SH DESCRIPTION 
 .IP PNAM 12
-@Text
+(an input expression of type CHARACTER) is a string
+three or more characters in length, the first three
+characters of which constitute the name of the internal
+parameter whose value is to be retrieved.
 .IP CVAL 12
-@Text
+(an output variable of type CHARACTER)
+is the name of a variable into which the value of the
+internal parameter specified by PNAM is to be retrieved.
 .SH C-BINDING DESCRIPTION
-The C-binding argument descriptions are the same as the Fortran 
+The C-binding argument descriptions are the same as the FORTRAN 
 argument descriptions with the following exception:
 .sp
 .IP len 12
 The size of cval as dimensioned in the calling program.
+.SH USAGE
+This routine allows you to retrieve set the current value of
+Gridall parameters.  For a complete list of parameters available
+in this utility, see the gridall_params man page.
 .SH ACCESS
 To use GAGETC, load the NCAR Graphics libraries ncarg, ncarg_gks,
 and ncarg_loc, preferably in that order.  To use c_gagetc, load the 
 NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
 and ncarg_loc, preferably in that order.
+.SH MESSAGES
+See the gridall man page for a description of all Gridall error
+messages and/or informational messages.
 .SH SEE ALSO
 Online:
-gacolr, gagetc, gageti, gagetr, gasetc, gaseti, gasetr, grid, gridal,
-gridl, halfax, labmod, perim, periml, tick4, ticks, ncarg_cbind
-.sp
-Hardcopy:  
-"NCAR Graphics User's Guide, Version 2.00"
+gridall,
+gridall_params,
+gacolr,
+gageti,
+gagetr,
+gasetc,
+gaseti,
+gasetr,
+grid,
+gridal,
+gridl,
+halfax,
+labmod,
+perim,
+periml,
+tick4,
+ticks,
+ncarg_cbind.
 .SH COPYRIGHT
-(c) Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
+Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research
 .br
 All Rights Reserved

@@ -1,7 +1,6 @@
-.\"
-.\"	$Id: labmod.m,v 1.1 1993-03-11 16:26:47 haley Exp $
-.\"
 .TH LABMOD 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
+.na
+.nh
 .SH NAME
 LABMOD - Presets parameters controlling the appearance of
 labels drawn by GRIDAL, GRIDL,... et al. LABMOD itself does
@@ -9,130 +8,157 @@ no plotting and, in order to have any effect, must be called
 prior to the background-drawing routines for which it is
 presetting parameters.
 .SH SYNOPSIS
-CALL LABMOD (FMTX, FMTY, NUMX, NUMY, ISZX, ISZY, IXDC, IYDC, IXOR)
+ CALL LABMOD (FMTX, FMTY, NUMX, NUMY, ISZX, ISZY, IXDC, 
+.br
++ IYDC, IXOR)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void c_labmod (char *fmtx, char *fmty, int numx, int numy, int iszx, int iszy, int ixdc, int iydc, int ixor)
+void c_labmod (char *fmtx, char *fmty, int numx, int numy, \\
+.br
+int iszx, int iszy, int ixdc, int iydc, int ixor)
 .SH DESCRIPTION 
-.IP "FMTX" 12
-(Character, Input) - 
-Contains format specifications for the 
-X-axis numerical labels produced by GRIDAL. The 
-specification must begin with a left parenthesis and end 
-with a right parenthesis and must not be more than ten 
-characters long. Conversions of types E, F, G, and I are 
-allowed; for example, one might use '(F8.2)'. The default 
-is '(E10.3)'.
-.IP "FMTY" 12
-(Character, Input) - 
-Contains format specifications for the 
-Y-axis numerical labels produced by GRIDAL. The 
-specification must begin with a left parenthesis and end 
-with a right parenthesis and must not be more than ten 
-characters long. Conversions of types E, F, G, and I are 
-allowed; for example, one might use '(E10.0)'. The default 
-is '(E10.3)'.
-.IP "NUMX" 12
-(Integer, Input) - 
-A nonzero value specifies the number of 
-characters in each X-axis numeric label; if LBLX is a 
-string produced by the format FMTX, then the label is the 
-substring LBLX(1:NUMX). The default value is 0.
-.RS
-.IP "0"
-The label is the substring LBLX(m:n), where LBLX(m:m) is 
-the first non-blank character in LBLX, and LBLX(n:n) is 
-the last nonblank character following LBLX(m:m).
+.IP "FMTX and FMTY" 12
+(input expressions of type CHARACTER) contain
+format specifications for the X-axis and Y-axis numerical
+labels produced by GRIDAL, GRIDL, HALFAX, or PERIML. The
+specification must begin with a left parenthesis and end
+with a right parenthesis and must not be more than ten
+characters long. Conversions of types E, F, G, and I are
+allowed; for example, one might use FMTX=\'(F8.2)\' and
+FMTY=\'(E10.0)\'. The default for both formats is \'(E10.3)\'.
 .sp
-Using a nonzero NUMX causes the labels to be centered 
-differently than if a zero value is used.
-.RE
-.IP "NUMY" 12
-(Integer, Input) - 
-Same as NUMX, except it is used for Y-
-axis labels.
-.IP "ISZX,ISZY" 12
-(Integer, Input) - 
-Character sizes for the labels, specified 
-in thousandths of a screen width, just as for the SPPS 
-routine WTSTR. The default value for both is 10.
+NOTE: I formats are allowed by this version of Gridall; they
+were not allowed by previous versions.
+.IP NUMX 12
+(an input expression of type INTEGER) , if non-zero,
+is the number of characters in each X-axis numeric label;
+if LBLX is a string produced by the format FMTX, then the
+label will be the substring LBLX(1:NUMX). If NUMX is 0,
+then the label will be the substring LBLX(m:n), where
+LBLX(m:m) is the first non-blank character in LBLX, and
+LBLX(n:n) is the last non-blank character following
+LBLX(m:m). Using a non-zero NUMX causes the labels to be
+centered differently than if a zero value is used. The
+default value for NUMX is 0.
+.IP NUMY 12
+(an input expression of type INTEGER) is defined just
+like NUMX, but applies to Y-axis numeric labels.
+.IP "ISZX and ISZY" 12
+(input expressions of type INTEGER) are
+character sizes for the labels, specified in plotter
+address units, just as for the SPPS routines PWRIT and
+WTSTR. The default value for both is 10.
 .IP "IXDC" 12
-(Integer, Input) - 
-The distance, in thousandths of a screen 
-width, from the left edge of the current viewport to the 
-label specified by FMTY, NUMY, and ISZY. There are two 
-special values of IXDC:
+(an input expression of type INTEGER) is the
+decrement, in plotter address units (PAUs - by default, the
+plotter frame is 1023 PAUs in width and height), from the
+left edge of the current viewport to the nearest X address
+of the label specified by FMTY, NUMY, and ISZY. For
+example, if the horizontal extent of the current viewport
+is defined by the normalized device coordinates .1 and .9,
+and if IXDC is 60, and if there has been no call to the
+SPPS routine SETI (which can change the size of a PAU),
+then labels on the Y axis will end at plotter coordinate 43
+(.1*1023+1-60). Negative values may be used to put labels
+on the other side of the viewport; in the example given,
+changing IXDC to -878 (-\.8*1023 -60) would put the labels
+on the right side of the viewport, with their left edges 60
+plotter-coordinate units away from the edge of the
+viewport. There are two special values of IXDC:
 .RS
-.IP "0" 
-The Y-axis labels end 20 thousandths of a screen width 
-(0.02 NDCs) to the left of the viewport. This is 
-equivalent to setting IXDC=20.
-.IP "1"
-Y-axis labels begin 0.02 NDCs to the right of the 
-viewport. This is equivalent to setting IXDC=-20-w, 
-where w/1024 is the width of the viewport in 
-NDCs.
-.sp
-The default value is 20.
-.sp
-When GRIDAL is called with IGPH=2, 6, or 10, IXDC is the 
-distance from the Y axis, rather than from the minimum 
-viewport coordinate, and special values 0 and 1 are 
-equivalent to 20 and -20.
+.IP \(bu
+If IXDC=0, the Y-axis labels will end 20 plotter address
+units to the left of the viewport (equivalent to using
+IXDC=20).
+.IP \(bu
+If IXDC=1, Y-axis labels will begin 20 plotter address
+units to the right of the viewport (equivalent to using
+IXDC=-20-w, where w is the width of the viewport, in
+plotter address units).
 .RE
-.IP "IYDC" 12
-(Integer, Input) - 
-The distance, in thousandths of a screen 
-width, from the bottom edge of the current viewport to 
-the label specified by FMTX, NUMX, and ISZX. There are 
-two special values of IYDC:
+.IP ""
+The default value of IXDC is 20.
+.sp
+When HALFAX is called or when GRIDAL is called with IGPH =
+2, 6, or 10, IXDC is the distance from the Y axis, rather
+than from the minimum viewport coordinate, and the special
+values 0 and 1 are equivalent to 20 and -20.
+.IP IYDC 12
+(an input expression of type INTEGER) is the
+decrement, in plotter address units (PAUs - by default, the
+plotter frame is 1023 PAUs in width and height), from the
+bottom edge of the current viewport to the nearest Y
+address of the label specified by FMTX, NUMX, and ISZX.
+Note that negative values may be used to put labels above
+the viewport. There are two special values of IYDC:
 .RS
-.IP "0"
-The X-axis labels end 20 thousandths of a screen width 
-(0.02 NDCs) below the viewport. This is equivalent to 
-setting IYDC=20.
-.IP "1"
-The X-axis labels begin 0.02 NDCs above the viewport. 
-This is equivalent to setting IYDC=-20-h, where h/1024  
-is the height of the viewport in NDCs.
-.sp
-The default value is 20.
-.sp
-When GRIDAL is called with IGPH=2, 6, or 10, IYDC is the 
-distance from the X axis, rather than from the minimum 
-viewport coordinate, and special values 0 and 1 are 
-equivalent to 20 and -20.
+.IP \(bu 
+If IYDC=0, the top of the X-axis labels will be 20 plotter
+address units below the bottom edge of the viewport
+(equivalent to using IYDC=20).
+.IP \(bu
+If IYDC=1, the bottom of the X-axis labels will be 20
+plotter address units above the top edge of the viewport
+(equivalent to using IYDC=-20-h, where h is the height of
+the viewport, in plotter address units).
 .RE
-.IP "IXOR" 12
-(Integer, Input) - 
-Specifies the orientation of the X-axis 
-labels.
-.RS
-.IP "0"
-Horizontal.
-.IP "1"
-Vertical.
+.IP ""
+The default value of IYDC is 20.
 .sp
+When HALFAX is called or when GRIDAL is called with IGPH =
+8, 9, or 10, IYDC is the distance from the X axis, rather
+than from the minimum viewport coordinate, and the special
+values 0 and 1 are equivalent to 20 and -20.
+.IP IXOR 12
+(an input expression of type INTEGER) specifies the
+orientation of the X-axis labels:
+.RS
+.IP \(bu
+IXOR = 0 implies the use of horizontal labels.
+.IP \(bu
+IXOR = 1 implies the use of vertical labels.
+.RE
+.IP ""
 The default orientation is horizontal.
-.RE
 .SH C-BINDING DESCRIPTION
-The C-binding argument descriptions are the same as the Fortran 
+The C-binding argument descriptions are the same as the FORTRAN 
 argument descriptions.
+.SH USAGE
+This routine allows you to set the current value of
+Gridall parameters.  For a complete list of parameters available
+in this utility, see the gridall_params man page.
+.SH EXAMPLES
+Use the ncargex command to see the following relevant
+example: 
+tgrida.
 .SH ACCESS
-To use LABMOD load the NCAR Graphics libraries ncarg, ncarg_gks,
+To use LABMOD, load the NCAR Graphics libraries ncarg, ncarg_gks,
 and ncarg_loc, preferably in that order.  To use c_labmod, load
 the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks, 
 and ncarg_loc, preferably in that order.
 .SH SEE ALSO
 Online:
-gacolr, gagetc, gageti, gagetr, gasetc, gaseti, gasetr, grid, gridal,
-gridl, halfax, labmod, perim, periml, tick4, ticks, ncarg_cbind
-.sp
-Hardcopy:  "NCAR Graphics User's Guide, Version 2.00"
+gridall,
+gridall_params,
+gacolr,
+gagetc,
+gageti,
+gagetr,
+gasetc,
+gaseti,
+gasetr,
+grid,
+gridal,
+gridl,
+halfax,
+perim,
+periml,
+tick4,
+ticks,
+ncarg_cbind.
 .SH COPYRIGHT
-(c) Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
+Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research
 .br
 All Rights Reserved
-
