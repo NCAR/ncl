@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.154 2004-07-23 05:23:35 haley Exp $
+#   $Id: ncargex.csh,v 1.155 2004-07-25 13:18:02 haley Exp $
 #                                                                      
 #                Copyright (C)  2000
 #        University Corporation for Atmospheric Research
@@ -748,8 +748,8 @@ set list_cps = (c_pgkex21)
 
 #****************************************************#
 #                                                    #
-# Default is to load in the X11 library.             #
-# If the user specifies "-noX11" or "NCGMonly on the #
+# Default is to load in the X11 library. If the      #
+# user specifies "-noX11" or "-NCGMonly on the       #
 # command line, then a stub will be linked instead   #
 # of the X11 library                                 #
 #                                                    #
@@ -1349,7 +1349,7 @@ endif
 #   2. One that creates something other than an NCGM, but can
 #      be changed via the "-W" option. Again, IWTYPE must be present.
 # 
-# Set the "changeable" for types of both #1 and #2.
+# Set the "modifiable" for types of both #1 and #2.
 #
 #   3. One that creates an output file that cannot be changed
 #      via the "-W" option.
@@ -1360,7 +1360,7 @@ endif
 #   4. One that doesn't create a file of the form example_name.xxx,
 #      or creates no file at all.
 # 
-# Unset "changeable" for types of both #3 and #4.
+# Unset "modifiable" for types of both #3 and #4.
 # Unset std_file for types of #4.
 #
 # The variable "orig_ws_type" represents the workstation type.  In most
@@ -1370,16 +1370,16 @@ endif
 # 1, then set orig_ws_type to this value.
 # 
 # If the example does not have an IWTYPE parameter, but it supposed to
-# create a file of the style example_name.xxx, then unset changeable,
+# create a file of the style example_name.xxx, then unset modifiable,
 # but leave std_file set.
 # 
 # If the example is either not meant to create an output file, or else
 # it doesn't create one of the form example_ncgm.xxxx, then unset 
-# changeable AND std_file.
+# modifiable AND std_file.
 # 
 
 set orig_ws_type = "1"
-set changeable
+set modifiable
 set std_file
 
 switch($name)
@@ -1414,7 +1414,7 @@ switch($name)
 
     case pgkex26:
     case fgke03:
-      unset changeable
+      unset modifiable
       unset std_file
       echo ""
       echo "  This example was set up to demonstrate how to change"
@@ -1424,7 +1424,7 @@ switch($name)
     breaksw
 
     case pgkex27:
-      unset changeable
+      unset modifiable
       unset std_file
       echo ""
       echo "  This example was set up to demonstrate how to write"
@@ -1436,7 +1436,7 @@ switch($name)
     case fgke01:
     case fgke04:
       set orig_ws_type = 8
-      unset changeable
+      unset modifiable
       unset std_file
       echo ""
       echo "  This example was set up to demonstrate the X11"
@@ -1449,7 +1449,7 @@ switch($name)
     case nnex09:
     case nnex10:
     case mpex12:
-      unset changeable
+      unset modifiable
       unset std_file
       set tmp_msg = "   "
       echo ""
@@ -1474,7 +1474,7 @@ switch($name)
     case c_ftex05d:
     case c_ftex06d:
     case c_ftex07d:
-      unset changeable
+      unset modifiable
       unset std_file
       set tmp_msg = "   "
       echo ""
@@ -1485,9 +1485,9 @@ endsw
 
 #
 # If the user changed the workstation type with the -W option,
-# then only use it if this particular example is a changeable one.
+# then only use it if this particular example is a modifiable one.
 #
-if ($?change_ws_type && $?changeable) then
+if ($?change_ws_type && $?modifiable) then
   set ws_type = $new_ws_type
 else
   set ws_type = $orig_ws_type
@@ -1495,7 +1495,8 @@ endif
 
 #********************************************#
 #                                            #
-# Cannot have both interactive and noX11 set #
+# "-noX11" only works if going to an NCGM    #
+# file.                                      #
 #                                            #
 #********************************************#
 if ("$X11_option" == "-noX11" && "$ws_type" != "1") then
@@ -1894,24 +1895,27 @@ endif
 # give it the workstation type #
 #                              #
 #******************************#
-   
+
 echo "  Copying $main"
 echo ""
 cp $temp_dir/$main ./$main
-if ($?fprog && $?change_ws_type && $?changeable) then
+if ($?fprog && $?change_ws_type && $?modifiable) then
 if($orig_ws_type != $ws_type) then
 ed << EOF - ./$main >& /dev/null
-g/IWTYPE=$orig_ws_type/s//IWTYPE=$ws_type/g
+g/^ *PARAMETER/s/IWTYPE=[0-9][0-9]*/IWTYPE=$ws_type/g
+.
 w
 q
-EOF
 endif
 endif
 
-if ($?cprog && $?change_ws_type && $?changeable) then
+if ($?cprog && $?change_ws_type && $?modifiable) then
 if($orig_ws_type != $ws_type) then
 ed << EOF - ./$main >& /dev/null
-g/define IWTYPE $orig_ws_type/s//define IWTYPE $ws_type/g
+/define IWTYPE
+c
+#define IWTYPE $ws_type
+.
 w
 q
 EOF
