@@ -1,5 +1,5 @@
 C
-C	$Id: pccffc.f,v 1.1.1.1 1992-04-17 22:32:20 ncargd Exp $
+C	$Id: pccffc.f,v 1.2 1992-10-13 18:45:18 haley Exp $
 C
 C
 C ---------------------------------------------------------------------
@@ -92,6 +92,7 @@ C
 C
 C Open the fontcap file.
 C
+        IBNS=IBNU
         CALL PCFOPN (IBNU,NFNT)
 C
 C Read the fontcap.
@@ -101,6 +102,7 @@ C
 C Close the fontcap file.
 C
         CALL PCFCLS (IBNU,NFNT)
+        IBNU=IBNS
 C
 C Compute quantities needed to unpack X and Y coordinates and pen
 C up/down indicators.

@@ -1,5 +1,5 @@
 C
-C	$Id: plchhq.F,v 1.4 1992-09-25 19:37:13 ncargd Exp $
+C	$Id: plchhq.F,v 1.5 1992-10-13 18:45:21 haley Exp $
 C
 C***********************************************************************
 C P A C K A G E   P L O T C H A R   -   I N T R O D U C T I O N
@@ -361,6 +361,7 @@ C
 C
           ICOD=JCOD
 C
+          IBNS=IBNU
           CALL PCFOPN (IBNU,0)
 C
           IF (ICOD.NE.0) THEN
@@ -372,6 +373,7 @@ C
           CALL PCFRED (IBNU,0,IDDA,IDDL)
 C
           CALL PCFCLS (IBNU,0)
+          IBNU=IBNS
 C
           IERR=0
           IF (ICOD.EQ.0.AND.IVCO.EQ.0) THEN
