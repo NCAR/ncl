@@ -592,7 +592,7 @@ NhlErrorTypes shsetp_W(void)
       goto OK_NAME;
     }
   }
-  NhlPError(NhlFATAL, NhlEUNKNOWN, "nnsetp: unrecognized parameter name");
+  NhlPError(NhlFATAL, NhlEUNKNOWN, "shsetp: unrecognized parameter name");
   return(NhlFATAL);
 
 /*
