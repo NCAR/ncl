@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.29 2004-01-27 23:15:27 shea Exp $
+;      $Id: contributed.ncl,v 1.30 2004-01-29 02:33:40 haley Exp $
 ;
 ; -------------- added Feb 14 2002
 ; copy_VarMeta
@@ -3860,7 +3860,7 @@ begin
    Q_eof_ts = (/ eof_varimax(Q_eof_ts) /)
    Q_eof_ts@long_name = "Q-mode Varimax Rotation"
 
-   if (isatt(Q_eof_ts,"ts_mean") then   
+   if (isatt(Q_eof_ts,"ts_mean")) then   
        delete(Q_eof_ts@ts_mean)         ; not applicable to Q_eof_ts
    end if
                                         ; get the % variance
