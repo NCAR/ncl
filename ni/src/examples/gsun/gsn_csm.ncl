@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.72 2001-06-26 15:30:04 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.73 2001-06-29 21:14:34 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -6910,29 +6910,39 @@ begin
 
           print("gsn_csm_xy: Fatal: if you plan to fill above and/or below reference lines, then the number of reference lines must either equal the number")
           nya = dimsizes(y)
-          nyb = 2*nya
-          yinterp = new(nyb,double)
+          nyb = 2 * (nptsy-1) + 1
           xinterp = new(nyb,double)
-          if(isatt(y,"_FillValue"))
-            yinterp@_FillValue = y@_FillValue
-          end if 
           if(isatt(x,"_FillValue"))
             xinterp@_FillValue = x@_FillValue
           end if 
 ;
 ; Outlines only.
           print("of curves, or be one.")
-; For each old y point, we need two new y points to represent
+; For each original y point, we need two new y points to represent
         end if
       end if                            ; Check if gsnYRefLine set.
-          bar_width = new(nx+1,double)
-          bar_width(0)       = 0.
-          bar_width(1:nx-1)  = x(1:) - x(:nx-2)
-          bar_width(nx)      = 0.
-          yinterp(0:nyb-2:2) = y
-          yinterp(1:nyb-1:2) = y
-          xinterp(0:nyb-2:2) = x - bar_width(0:nx-1)/2.
-          xinterp(1:nyb-1:2) = x + bar_width(1:nx)/2.
+          bar_width = new(nx-1,double)
+          bar_width = x(1:) - x(:nx-2)
+; Check if we want a bar chart. If so, gsnYRefLine must be set.
+          if(ncurves.eq.1)
+            yinterp            = new(nyb,double)
+            yinterp(0:nyb-2:2) = y(:nx-2)
+            yinterp(1:nyb-1:2) = y(:nx-2)
+            yinterp(nyb-1)     = y(nptsy-1)   ; last point
+          else
+            yinterp = new((/ncurves,nyb/),double)
+            do i = 0,ncurves-1
+              yinterp(i,0:nyb-2:2) = y(i,:nx-2)
+              yinterp(i,1:nyb-1:2) = y(i,:nx-2)
+            end do
+            yinterp(:,nyb-1) = y(:,nptsy-1)   ; last point
+          print("gsn_csm_xy: Warning: if drawing bar charts, you must set gsnYRefLine.")
+          print("Drawing a regular XY plot instead.")
+          bar_chart = False
+          end if 
+          xinterp(0:nyb-2:2) = x(:nx-2)
+          xinterp(1:nyb-2:2) = x(:nx-2) + bar_width
+          xinterp(nyb-1)     = x(nx-1)   ; last point, no bar
              (ncurves.eq.1.and.nyref.ne.1))
             print("gsn_csm_xy: Fatal: if you plan to draw a bar chart with values above")
 ; Full bars are desired.  
