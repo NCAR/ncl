@@ -1,7 +1,7 @@
 .\" The first line of this file must contain the '\"[e][r][t][v] line
 .\" to tell man to run the appropriate filter "t" for table.
 .\"
-.\"	$Id: nhlex.man,v 1.1 1993-04-30 17:18:40 boote Exp $
+.\"	$Id: nhlex.man,v 1.2 1994-12-05 23:08:18 haley Exp $
 .\"
 .\"######################################################################
 .\"#									#
@@ -29,21 +29,15 @@ nhlex \- NCAR Graphics High Level Utilties Example Programs
 .SH STATUS
 These examples are part of the Nhl \fBprototype\fP library.  They are provided
 so NCAR Graphics users can see the direction that future versions of the
-package will take.  The Nhl/HLU library is provided with NO SUPPORT.  Since
-this library is a prototype, many things are likely to change before it is
-truly released with Version 4.0 of NCAR Graphics.
-.LP
-Even though we cannot provide support for the Nhl library, we would still
-appreciate any bug reports you want to send.  This will help us to insure that
-the Nhl library is as robust as possible when it is released.
+package will take.  The Nhl/HLU library is provided on Suns and SGIs only.
 .SH SYNOPSIS
 \fBnhlex\fP 
-[\fI\-all, -A\fP]
+[\fI\-A\fP]
 [\fI\-clean\fP]
 [\fI\-n\fP]
 \fIname ...\fP
 .SH OPTIONS
-.IP "\-\fIall, \-A\fP" 1i
+.IP "\-A\fP" 1i
 Copy and execute all available examples.
 .IP \-\fIclean\fP 1i
 Remove everything but the ".ncgm" file.
@@ -53,20 +47,17 @@ Specifies that the example should not copy the executable or run.
 List of example programs to retrieve.
 .SH DESCRIPTION
 .B nhlex
-provides the user with access to example source code
-for the NCAR Graphics High Level Utilities (The Nhl Library). \fBnhlex\fP
-copies the source code and an executable for the specified example(s)
-into the current directory and then
-executes the example. If the requested example creates an NCGM file,
-it will have the same name as the example, suffixed with
-".ncgm". An option allows you to request that
-only the source code be copied to your directory,
-without copying the executable or executing the example.
-Another option allows you to request that only the
-NCGM file be left in your directory and that all other files
-created by \fBnhlex\fP be deleted.
-The argument \fIname\fP may be
-selected from the lists that appear below.
+provides the user with access to example source code for the NCAR
+Graphics High Level Utilities (The HLU Library). \fBnhlex\fP copies
+the source code and an executable for the specified example(s) into
+the current directory and then executes the example. If the requested
+example creates an NCGM file, it will have the same name as the
+example, suffixed with ".ncgm". An option allows you to request that
+only the source code be copied to your directory, without copying the
+executable or executing the example.  Another option allows you to
+request that only the NCGM file be left in your directory and that all
+other files created by \fBnhlex\fP be deleted.  The argument
+\fIname\fP may be selected from the lists that appear below.
 .SH "EXAMPLES AVAILABLE"
 .IP nhl01 1i
 This example demonstrates how to display an XyPlot to an X Window, and then
@@ -75,28 +66,24 @@ copy it to a meta file.
 This example demonstrates how to incorporate the HLU library with a GUI.
 It uses an X/Motif interface, and also allows the user to copy frames from
 the X Window to a meta file.
-.IP nhl03 1i
-This example also demonstrates how to incorporate the HLU library with a GUI.
-It allows the user to probe values from the displayed plot.
-.IP nhl04 1i
-This example shows a more in-depth example of using the XyPlot object.  It
-demonstrates the use of the IRREGULAR style and how to overlay one XyPlot on
-top of another.
 .IP nhl05 1i
 This example shows how to use the TextItem object of the HLU library.
 .IP nhl06 1i
-This example demonstates how to use HLU objects with low leve NCAR Graphics
+This example demonstates how to use HLU objects with low level NCAR Graphics
 library calls. 
+.IP nhl07 1i
+.IP nhl08 1i
+.IP nhl09 1i
+.IP nhl10 1i
+.IP nhl11 1i
+.IP nhl12 1i
+.IP nhl13 1i
+.IP nhlf01 1i
+Fortran example.
 .SH SEE ALSO
 ncargcex(1NCARG)
-.SH "BUG REPORTS"
-Please send all bug reports to the following e-mail address:
-.br
-.RS 1i
-\fIncargproto@ncar.ucar.edu\fP
-.RE
 .SH COPYRIGHT
-Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
+Copyright 1987, 1988, 1989, 1991, 1993, 1994 University Corporation
 for Atmospheric Research
 .br
 All Rights Reserved
