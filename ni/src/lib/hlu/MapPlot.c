@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.47 1996-05-03 23:51:23 dbrown Exp $
+ *      $Id: MapPlot.c,v 1.48 1996-05-08 01:12:25 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2057,6 +2057,9 @@ NhlLayer inst;
 	NhlFreeGenArray(mpp->fill_colors);
 	NhlFreeGenArray(mpp->fill_patterns);
 	NhlFreeGenArray(mpp->fill_scales);
+	NhlFreeGenArray(mpp->spec_fill_colors);
+	NhlFreeGenArray(mpp->spec_fill_patterns);
+	NhlFreeGenArray(mpp->spec_fill_scales);
 
 	if (mpp->fill_recs != NULL)
 		NhlFree(mpp->fill_recs);

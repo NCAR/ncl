@@ -1,5 +1,5 @@
 /*
- *      $Id: Workspace.c,v 1.29 1996-05-03 03:30:57 dbrown Exp $
+ *      $Id: Workspace.c,v 1.30 1996-05-08 01:12:28 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -572,6 +572,8 @@ WorkspaceDestroy
 
 	for (wsrp = wsp->ws_list; wsrp != NULL; wsrp = twsrp) {
 		twsrp = wsrp->next;
+		if (wsrp->ws_ptr != NULL)
+			NhlFree(wsrp->ws_ptr);
 		NhlFree(wsrp);
 	}
 	wsp->ws_list = NULL;
@@ -919,6 +921,28 @@ NhlWorkspace *_NhlUseWorkspace
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return NULL;
 	}
+        switch (wsrp->persistence) {
+        case NhlwsNONE:
+                ret = RemoveFromIdleList(wsrp,
+                                         &ScratchHead,&ScratchTail,entry_name);
+                if (ret < NhlWARNING) return NULL;
+                break;
+        case NhlwsCORE:
+                ret = RemoveFromIdleList(wsrp,
+                                         &CoreHead,&CoreTail,entry_name);
+                if (ret < NhlWARNING) return NULL;
+                break;
+        case NhlwsDISK:
+                ret = RemoveFromIdleList(wsrp,
+                                         &DiskHead,&DiskTail,entry_name);
+                if (ret < NhlWARNING) return NULL;
+                break;
+        default:
+                e_text = "%s: invalid persistence type";
+                NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+                return NULL;
+        }
+
 	wsrp->in_use = True;
 	over_threshold = WSp->total_size - WSp->threshold_size;
 	if (wsrp->ws_ptr == NULL)
@@ -944,22 +968,13 @@ NhlWorkspace *_NhlUseWorkspace
 	case NhlwsNONE:
 		ret = GetScratchSpace(wsrp,entry_name);
 		if (ret < NhlWARNING) return NULL;
-		ret = RemoveFromIdleList(wsrp,
-					 &ScratchHead,&ScratchTail,entry_name);
-		if (ret < NhlWARNING) return NULL;
 		break;
 	case NhlwsCORE:
 		ret = GetCorePreservedSpace(wsrp,entry_name);
 		if (ret < NhlWARNING) return NULL;
-		ret = RemoveFromIdleList(wsrp,
-					 &CoreHead,&CoreTail,entry_name);
-		if (ret < NhlWARNING) return NULL;
 		break;
 	case NhlwsDISK:
 		ret = GetDiskPreservedSpace(wsrp,entry_name);
-		if (ret < NhlWARNING) return NULL;
-		ret = RemoveFromIdleList(wsrp,
-					 &DiskHead,&DiskTail,entry_name);
 		if (ret < NhlWARNING) return NULL;
 		break;
 	default:
@@ -1587,6 +1602,7 @@ static NhlErrorTypes	TrimWorkspace
 	float reduce_fac = 3.0;
 
 	if (wsrp->type == NhlwsAREAMAP) {
+		reduce_fac = 1.0;
  		type_size = sizeof(int);
 		cur_size = wsrp->cur_size / type_size;
 		iws = (int *) wsrp->ws_ptr;

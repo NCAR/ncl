@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.51 1996-05-03 03:30:57 dbrown Exp $
+ *      $Id: Workstation.c,v 1.52 1996-05-08 01:12:30 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -821,11 +821,13 @@ NhlErrorTypes
 DoCmap
 #if	NhlNeedProto
 (
-	NhlWorkstationLayer	wl
+	NhlWorkstationLayer	wl,
+	NhlString		entry_name
 )
 #else
-(wl)
+(wl,entry_name)
 	NhlWorkstationLayer	wl;
+	NhlString		entry_name;
 #endif
 {
 	NhlWorkstationClass	wc = (NhlWorkstationClass)wl->base.layer_class;
@@ -835,6 +837,7 @@ DoCmap
 	NhlColor		tc;
 	NhlColor		*tcp = NULL;
 	NhlPrivateColor		*pcmap = wp->private_color_map;
+	NhlString		e_text;
 
 	/*
 	 * If cmap is set, use it.
@@ -866,13 +869,30 @@ DoCmap
 	 * used.  If they didn't, but they set the cmap resource, it is set
 	 * from the cmap.  If they didn't set either one, it defaults to
 	 * the value of the def_background class field(This is done in
-	 * "WorkstationAllocateColors").
+	 * "WorkstationAllocateColors"). A user-set value for the
+	 * background is accepted only if it has exactly 3 elements.
 	 */
 	tcp = NULL;
 	if(wp->bkgnd_color){
-		tcp = wp->bkgnd_color->data;
-		if((*tcp)[0] < 0.0)
+		if (wp->bkgnd_color->num_elements != 3) {
+			e_text = 
+	      "%s: ignoring %s; 3 color elements required (red, green, blue)";
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
+			  NhlNwkBackgroundColor);
 			tcp = NULL;
+		}
+		else {
+			tcp = wp->bkgnd_color->data;
+			if((*tcp)[0] < 0.0 || (*tcp)[0] > 1.0 ||
+			   (*tcp)[1] < 0.0 || (*tcp)[1] > 1.0 ||
+			   (*tcp)[2] < 0.0 || (*tcp)[2] > 1.0) {
+				e_text = 
+			     "%s: ignoring %s; out of range color elements";
+				NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
+					  entry_name,NhlNwkBackgroundColor);
+				tcp = NULL;
+			}
+		}
 		wp->bkgnd_color = NULL;
 	}
 	if((pcmap[NhlBACKGROUND].cstat == _NhlCOLUNSET) && !tcp){
@@ -896,9 +916,25 @@ DoCmap
 	 */
 	tcp = NULL;
 	if(wp->foregnd_color){
-		tcp = wp->foregnd_color->data;
-		if((*tcp)[0] < 0.0)
+		if (wp->foregnd_color->num_elements != 3) {
+			e_text = 
+	      "%s: ignoring %s; 3 color elements required (red, green, blue)";
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
+			  NhlNwkBackgroundColor);
 			tcp = NULL;
+		}
+		else {
+			tcp = wp->foregnd_color->data;
+			if((*tcp)[0] < 0.0 || (*tcp)[0] > 1.0 ||
+			   (*tcp)[1] < 0.0 || (*tcp)[1] > 1.0 ||
+			   (*tcp)[2] < 0.0 || (*tcp)[2] > 1.0) {
+				e_text = 
+			     "%s: ignoring %s; out of range color elements";
+				NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
+					  entry_name,NhlNwkBackgroundColor);
+				tcp = NULL;
+			}
+		}
 		wp->foregnd_color = NULL;
 	}
 	if((pcmap[NhlFOREGROUND].cstat == _NhlCOLUNSET) && !tcp){
@@ -987,7 +1023,7 @@ static NhlErrorTypes WorkstationInitialize
 	for(i=0;i < _NhlMAX_COLOR_MAP;i++)
 		wp->private_color_map[i].cstat = _NhlCOLUNSET;
 
-	retcode = DoCmap(newl);
+	retcode = DoCmap(newl,entry_name);
 
 	newl->work.fill_table_len = fill_table_len - 1;
 	newl->work.marker_table_len = marker_table_len - 1;
@@ -1349,7 +1385,7 @@ WorkstationSetValues
 	 * This function sets the private colormap based on the public
 	 * resources.
 	 */
-	subret = DoCmap(newl);
+	subret = DoCmap(newl,entry_name);
 	retcode = MIN(retcode,subret);
 
 	/*

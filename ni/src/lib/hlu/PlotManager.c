@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManager.c,v 1.22 1996-05-03 23:51:24 dbrown Exp $
+ *      $Id: PlotManager.c,v 1.23 1996-05-08 01:12:26 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -5982,11 +5982,11 @@ RemoveOverlayBase
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	char			*e_text;
 	char			*entry_name = "NhlRemoveOverlay";
-	NhlPlotManagerLayer		plot_ovl = (NhlPlotManagerLayer) 
+	NhlPlotManagerLayer	plot_ovl = (NhlPlotManagerLayer) 
 					ovp->pm_recs[plot_number]->ov_obj;
-	NhlTransformLayer		plot = ovp->pm_recs[plot_number]->plot;
+	NhlTransformLayer	plot = ovp->pm_recs[plot_number]->plot;
 	NhlGenArray		ga;
-	NhlpmRec			**pm_recs = NULL;
+	NhlpmRec		**pm_recs = NULL;
 	NhlSArg			sargs[10];
         int			nargs = 0;
 	int			i;
@@ -5994,12 +5994,6 @@ RemoveOverlayBase
 	NhlAnnoRec		*anno_list;
 	int			max_zone;
 
-	anno_list = ovp->pm_recs[plot_number]->anno_list;
-	max_zone = ovp->pm_recs[plot_number]->max_zone;
-	for (i = plot_number; i < ovp->overlay_count - 1; i++) {
-		ovp->pm_recs[i] = ovp->pm_recs[i+1];
-	}
-	ovp->pm_recs[--ovp->overlay_count] = NULL;
 /*
  * Create a GenArray of 1 element in order to set the PlotManagerRecs resource
  * of the overlay plot. This will erase its memory of its overlay plots.
@@ -6011,19 +6005,14 @@ RemoveOverlayBase
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return NhlFATAL;
 	}
-
-	pm_recs[0] = (NhlpmRec *) 
-		NhlMalloc(ovp->overlay_count * sizeof(NhlpmRec));
-	if (pm_recs[0] == NULL) {
-		e_text ="%s: dynamic memory allocation error";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return NhlFATAL;
-	}
-
+	pm_recs[0] = ovp->pm_recs[plot_number];
 	pm_recs[0]->plot = plot;
 	pm_recs[0]->ov_obj = (NhlLayer) plot_ovl;
-	pm_recs[0]->anno_list = anno_list;
-	pm_recs[0]->max_zone = max_zone;
+
+	for (i = plot_number; i < ovp->overlay_count - 1; i++) {
+		ovp->pm_recs[i] = ovp->pm_recs[i+1];
+	}
+	ovp->pm_recs[--ovp->overlay_count] = NULL;
 
 	ga = NhlCreateGenArray((NhlPointer)pm_recs,NhlTPointer,
 			       sizeof(NhlpmRec *),1,&count);

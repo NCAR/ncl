@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.c,v 1.45 1996-04-26 01:11:38 dbrown Exp $
+ *      $Id: TickMark.c,v 1.46 1996-05-08 01:12:27 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2910,7 +2910,7 @@ char		func_code;
 	NhlErrorTypes ret = NhlNOERROR;
 	float min_compare,max_compare,min,max,absmax;
 	int divpwr,sig_digits;
-	int left_sig_digit = 0;
+	int left_sig_digit = -10000;
 
 	switch(style) {
 	case NhlLINEAR:	
@@ -3122,7 +3122,7 @@ char		func_code;
 	NhlErrorTypes ret = NhlNOERROR;
 	float absmax;
 	int divpwr,sig_digits,tmpi;
-	int left_sig_digit = 0;
+	int left_sig_digit = -10000;
 
 	min = dmin <= tstart ? tstart : dmin;
 
@@ -3147,7 +3147,6 @@ char		func_code;
 * label or not
 */
 		log_spacing = (int) _NhlRndIt(spacing,2);
-		
 		while(!done) {
 			tmploc = tstart + i;
 			if((_NhlCmpFAny(tmploc,min,compare_precision)>=0.0)
