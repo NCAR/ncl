@@ -1,5 +1,5 @@
 /*
-/*	$Id: ps.land.mono.gc,v 1.1.1.1 1992-04-17 22:29:41 ncargd Exp $
+/*	$Id: ps.land.mono.gc,v 1.2 1995-05-04 20:33:31 fred Exp $
 /*
 /*  ps.land.mono
 /*
@@ -192,7 +192,7 @@ f LF
 POLYGON_MAXIMUM_POINTS
 1500
 POLYGON_SIMULATION_SPACING
-10
+5
 
 
 RASTER_SIMULATE
