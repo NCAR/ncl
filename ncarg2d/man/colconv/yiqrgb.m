@@ -10,7 +10,7 @@ CALL YIQRGB (Y, I, Q, R, G, B)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void c_yiqrgb (float y, float i, float q, float *r, \\
+void c_yiqrgb (float y, float i, float q, float *r, 
 .br
 float *g, float *b)
 .SH DESCRIPTION 

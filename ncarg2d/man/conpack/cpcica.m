@@ -13,9 +13,9 @@ lie relative to the cell array.
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void c_cpcica (float *zdat, float *rwrk, int *iwrk, \\
+void c_cpcica (float *zdat, float *rwrk, int *iwrk, 
 .br
-int *icra, int ica1, int icam, int ican, float xcpf, \\
+int *icra, int ica1, int icam, int ican, float xcpf, 
 .br
 float ycpf, float xcqf, float ycqf)
 .SH DESCRIPTION 

@@ -9,7 +9,7 @@ CALL CPCLAM (ZDAT, RWRK, IWRK, IAMA)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void c_cpclam (float *zdat, float *rwrk, int *iwrk, \\
+void c_cpclam (float *zdat, float *rwrk, int *iwrk, 
 .br
 int *iama)
 .SH DESCRIPTION 

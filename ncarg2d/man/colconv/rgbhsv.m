@@ -10,7 +10,7 @@ CALL RGBHSV (R, G, B, H, S, V)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void c_rgbhsv (float r, float g, float b, float *h, \\
+void c_rgbhsv (float r, float g, float b, float *h, 
 .br
 float *s, float *v)
 .SH DESCRIPTION 

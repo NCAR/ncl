@@ -20,9 +20,9 @@ LZDT)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void c_cpsps2 (float *xsps, float *ysps, float *zsps, \\
+void c_cpsps2 (float *xsps, float *ysps, float *zsps, 
 .br
-int ksps, int msps, int nsps, float *rwrk, int lrwk, \\
+int ksps, int msps, int nsps, float *rwrk, int lrwk, 
 .br
 int *iwrk, int liwk, float *zdat, int lzdt) 
 .SH DESCRIPTION 

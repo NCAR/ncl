@@ -21,9 +21,9 @@ routine CPSPS1.
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void c_cpsps1 (float *zsps, int ksps, int msps, int nsps, \\
+void c_cpsps1 (float *zsps, int ksps, int msps, int nsps, 
 .br
-float *rwrk, int lrwk, int *iwrk, int liwk, float *zdat, \\
+float *rwrk, int lrwk, int *iwrk, int liwk, float *zdat, 
 .br
 int lzdt) 
 .SH DESCRIPTION 

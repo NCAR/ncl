@@ -10,7 +10,7 @@ CALL RGBYIQ (R, G, B, Y, I, Q)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void c_rgbyiq (float r, float g, float b, float *y, \\
+void c_rgbyiq (float r, float g, float b, float *y, 
 .br
 float *i, float *q)
 .SH DESCRIPTION 

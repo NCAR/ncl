@@ -15,7 +15,7 @@ CALL RGBHLS (R, G, B, H, L, S)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void c_rgbhls (float r, float g, float b, float *h, \\
+void c_rgbhls (float r, float g, float b, float *h, 
 .br
 float *l, float *s)
 .SH DESCRIPTION 

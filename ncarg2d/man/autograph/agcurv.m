@@ -12,7 +12,7 @@ CALL AGCURV (XVEC,IIEX,YVEC,IIEY,NEXY,KDSH)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void c_agcurv (float *xvec, int iiex, float *yvec, \\ 
+void c_agcurv (float *xvec, int iiex, float *yvec, 
 .br
 int iiey, int nexy, int kdsh)
 .SH DESCRIPTION

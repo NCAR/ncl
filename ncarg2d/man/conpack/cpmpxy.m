@@ -11,7 +11,7 @@ CALL CPMPXY (IMAP, XINP, YINP, XOTP, YOTP)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void cpmpxy (int *imap, float *xinp, float *yinp, \\
+void cpmpxy (int *imap, float *xinp, float *yinp, 
 .br
 float *xotp, float *yotp)
 .SH DESCRIPTION 

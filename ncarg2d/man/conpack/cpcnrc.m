@@ -11,9 +11,9 @@ has the same arguments and produces similar output.
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void c_cpcnrc (float *zdat, int kzdt, int mzdt, int nzdt, \\
+void c_cpcnrc (float *zdat, int kzdt, int mzdt, int nzdt, 
 .br
-float flow, float fhgh, float finc, int nset, int nhgh, \\
+float flow, float fhgh, float finc, int nset, int nhgh, 
 .br
 int ndsh)
 .SH DESCRIPTION 

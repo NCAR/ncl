@@ -10,9 +10,9 @@ CALL IDBVIP (MD,NDP,XD,YD,ZD,NIP,XI,YI,ZI,IWK,WK)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void c_idbvip (int md, int ndp, float *xd, float *yd, \\
+void c_idbvip (int md, int ndp, float *xd, float *yd, 
 .br
-float *zd, int nip, float *xi, float *yi, float *zi, \\
+float *zd, int nip, float *xi, float *yi, float *zi, 
 .br
 int *iwk, float *wk)
 .SH DESCRIPTION

@@ -12,9 +12,9 @@ in the plane.
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void c_idsfft (int md, int nran, float *xran, float *yran, \\
+void c_idsfft (int md, int nran, float *xran, float *yran, 
 .br
-float *zran, int mreg, int nreg, int kreg, float *xreg, \\
+float *zran, int mreg, int nreg, int kreg, float *xreg, 
 .br
 float *yreg, float *zreg, int *iwk, float *wk)
 .SH DESCRIPTION

@@ -10,7 +10,7 @@ CALL CPCLTR (ZDAT,RWRK,IWRK,CLVL,IJMP,IRW1,IRW2,NRWK)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void c_cpcltr (float *zdat, float *rwrk, int *iwrk, \\
+void c_cpcltr (float *zdat, float *rwrk, int *iwrk, 
 .br
 float clvl, int *ijmp, int *irw1, int *irw2, int *nrwk)
 .SH DESCRIPTION 

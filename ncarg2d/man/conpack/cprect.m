@@ -9,7 +9,7 @@ CALL CPRECT (ZDAT, KZDT, MZDT, NZDT, RWRK, LRWK, IWRK, LIWK)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void c_cprect (float *zdat, int kzdt, int mzdt, int nzdt, \\
+void c_cprect (float *zdat, int kzdt, int mzdt, int nzdt, 
 .br
 float *rwrk, int lrwk, int *iwrk, int liwk) 
 .SH DESCRIPTION 

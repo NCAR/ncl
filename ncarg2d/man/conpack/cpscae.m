@@ -13,9 +13,9 @@ replaced by the user with a version that does something different.
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void c_cpscae (int *icra, int ica1, int icam, int ican, \\
+void c_cpscae (int *icra, int ica1, int icam, int ican, 
 .br
-float xcpf, float ycpf, float xcqf, float ycqf, int ind1, \\
+float xcpf, float ycpf, float xcqf, float ycqf, int ind1, 
 .br
 int ind2, int icaf, int iaid)
 .SH DESCRIPTION 

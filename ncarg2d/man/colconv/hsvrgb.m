@@ -10,7 +10,7 @@ CALL HSVRGB (H, S, V, R, G, B)
 .SH C-BINDING SYNOPSIS
 #include <ncarg/ncargC.h>
 .sp
-void c_hsvrgb (float h, float s, float v, float *r, \\
+void c_hsvrgb (float h, float s, float v, float *r, 
 .br
 float *g, float *b)
 .SH DESCRIPTION 
