@@ -1,8 +1,7 @@
 C
-C       $Id: wmex15.f,v 1.1 2001-02-09 01:58:43 fred Exp $
+C       $Id: wmex15.f,v 1.2 2003-03-03 17:49:49 haley Exp $
 C
       PROGRAM WMEX15
-
 C
 C  Example of adjusting wind barb directions when drawing
 C  station model data.
@@ -16,6 +15,10 @@ C   CITYUY  -  longitude of city.
 C   IMDAT   -  station model date for city.
 C   SV2C    -  variable in which to save two characters.
 C
+C  Define error file, Fortran unit number, and workstation type,
+C  and workstation ID.
+C
+      PARAMETER (IERRF=6, LUNIT=2, IWTYPE=1, IWKID=1)
       PARAMETER(NUMC=27)
       DIMENSION CITYUX(NUMC),CITYUY(NUMC)
       CHARACTER*13 ICITYS(NUMC)
@@ -115,7 +118,9 @@ C
 C
 C  Open GKS.
 C
-      CALL OPNGKS
+      CALL GOPKS (IERRF, ISZDM)
+      CALL GOPWK (IWKID, LUNIT, IWTYPE)
+      CALL GACWK (IWKID)
 C
 C  Set the foreground and background colors.
 C
@@ -192,7 +197,13 @@ C
   101 CONTINUE
 C
       CALL FRAME
-      CALL CLSGKS
+C
+C  Close GKS.
+C
+      CALL GDAWK (IWKID)
+      CALL GCLWK (IWKID)
+      CALL GCLKS
+C
       STOP
 C
       END
