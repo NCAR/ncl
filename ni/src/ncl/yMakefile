@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.69 1999-10-15 18:20:51 haley Exp $
+#      $Id: yMakefile,v 1.70 1999-10-20 21:12:53 haley Exp $
 #
 #########################################################################
 #									#
@@ -97,8 +97,7 @@ INSTALL_HDRS	=	defs.h NclApi.h ApiRecords.h NclVar.h NclBuiltIns.h \
 API_SRCS	=	NclApi.c scanapi.c parseapi.c 
 EXE_SRCS	=	Ncl.c scanner.c parser.c io.c
 
-APISRCS		=	$(API_SRCS) $(SRCS) NclUserHLUStub.c \
-			NclUserFileFormStub.c
+APISRCS		=	$(API_SRCS) $(SRCS)
 EXESRCS		=	$(EXE_SRCS) $(SRCS)
 ALLSRCS		=	$(EXESRCS)
 SRCS		=	$(GEN_SRCS) $(STATIC_SRCS)
@@ -154,8 +153,7 @@ API_OBJS	=	NclApi.o scanapi.o parseapi.o ioapi.o NclHLUObjapi.o
 EXE_OBJS	=	Ncl.o scanner.o parser.o io.o NclHLUObj.o
 
 ALLOBJS		=	$(EXE_OBJS) $(OBJS)
-APIOBJS		=	$(API_OBJS) $(OBJS) \
-			NclUserHLUStub.o NclUserFileFormStub.o
+APIOBJS		=	$(API_OBJS) $(OBJS)
 EXEOBJS		=	$(EXE_OBJS) $(OBJS)  $(HACKOBJS)
 
 LibraryTarget($(MYLIB),$(ALLOBJS))
