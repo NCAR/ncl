@@ -1,5 +1,5 @@
 /*
- *      $Id: Fortran.c,v 1.3 1994-08-11 21:37:01 boote Exp $
+ *      $Id: Fortran.c,v 1.4 1994-12-09 22:27:23 boote Exp $
  */
 /************************************************************************
 *									*
@@ -249,7 +249,7 @@ _NHLCALLF(nhl_frlisset,NHL_FRLISSET)
 }
 
 /*
- * Function:	nhl_frlsetint
+ * Function:	nhl_frlsetinteger
  *
  * Description:	
  *
@@ -262,7 +262,7 @@ _NHLCALLF(nhl_frlisset,NHL_FRLISSET)
  * Side Effect:	
  */
 void
-_NHLCALLF(nhl_frlsetint,NHL_FRLSETINT)
+_NHLCALLF(nhl_frlsetinteger,NHL_FRLSETINTEGER)
 #if	NhlNeedProto
 (
 	int		*id,
@@ -321,7 +321,7 @@ _NHLCALLF(nhl_frlsetfloat,NHL_FRLSETFLOAT)
 	int		*id;
 	_NhlFString	fname;
 	int		*fname_len;
-	int		*fval;
+	float		*fval;
 	int		*err;
 #endif
 {
@@ -441,7 +441,7 @@ NhlFSetMDArray
 }
 
 /*
- * Function:	nhl_frlsetmdintarray
+ * Function:	nhl_frlsetmdintegerarray
  *
  * Description:	Set a multidimentional int array
  *
@@ -454,7 +454,7 @@ NhlFSetMDArray
  * Side Effect:	
  */
 void
-_NHLCALLF(nhl_frlsetmdintarray,NHL_FRLSETMDINTARRAY)
+_NHLCALLF(nhl_frlsetmdintegerarray,NHL_FRLSETMDINTEGERARRAY)
 #if	NhlNeedProto
 (
 	int		*id,
@@ -525,7 +525,7 @@ _NHLCALLF(nhl_frlsetmdfloatarray,NHL_FRLSETMDFLOATARRAY)
 }
 
 /*
- * Function:	nhl_frlsetintarray
+ * Function:	nhl_frlsetintegerarray
  *
  * Description:	Set a multidimentional int array
  *
@@ -538,7 +538,7 @@ _NHLCALLF(nhl_frlsetmdfloatarray,NHL_FRLSETMDFLOATARRAY)
  * Side Effect:	
  */
 void
-_NHLCALLF(nhl_frlsetintarray,NHL_FRLSETINTARRAY)
+_NHLCALLF(nhl_frlsetintegerarray,NHL_FRLSETINTEGERARRAY)
 #if	NhlNeedProto
 (
 	int		*id,
@@ -675,7 +675,7 @@ _NHLCALLF(nhl_frlsetstringarray,NHL_FRLSETSTRINGARRAY)
 }
 
 /*
- * Function:	nhl_frlgetint
+ * Function:	nhl_frlgetinteger
  *
  * Description:	
  *
@@ -688,7 +688,7 @@ _NHLCALLF(nhl_frlsetstringarray,NHL_FRLSETSTRINGARRAY)
  * Side Effect:	
  */
 void
-_NHLCALLF(nhl_frlgetint,NHL_FRLGETINT)
+_NHLCALLF(nhl_frlgetinteger,NHL_FRLGETINTEGER)
 #if	NhlNeedProto
 (
 	int		*id,
@@ -747,7 +747,7 @@ _NHLCALLF(nhl_frlgetfloat,NHL_FRLGETFLOAT)
 	int		*id;
 	_NhlFString	fname;
 	int		*fname_len;
-	int		*fptr;
+	float		*fptr;
 	int		*err;
 #endif
 {
@@ -1239,7 +1239,7 @@ GetFArray
 }
 
 /*
- * Function:	nhl_frlgetmdintarray
+ * Function:	nhl_frlgetmdintegerarray
  *
  * Description:	fortran func
  *
@@ -1252,7 +1252,7 @@ GetFArray
  * Side Effect:	
  */
 void
-_NHLCALLF(nhl_frlgetmdintarray,NHL_FRLGETMDINTARRAY)
+_NHLCALLF(nhl_frlgetmdintegerarray,NHL_FRLGETMDINTEGERARRAY)
 #if	NhlNeedProto
 (
 	int		*id,
@@ -1328,7 +1328,7 @@ _NHLCALLF(nhl_frlgetmdfloatarray,NHL_FRLGETMDFLOATARRAY)
 }
 
 /*
- * Function:	nhl_frlgetintarray
+ * Function:	nhl_frlgetintegerarray
  *
  * Description:	fortran func
  *
@@ -1341,7 +1341,7 @@ _NHLCALLF(nhl_frlgetmdfloatarray,NHL_FRLGETMDFLOATARRAY)
  * Side Effect:	
  */
 void
-_NHLCALLF(nhl_frlgetintarray,NHL_FRLGETINTARRAY)
+_NHLCALLF(nhl_frlgetintegerarray,NHL_FRLGETINTEGERARRAY)
 #if	NhlNeedProto
 (
 	int		*id,

@@ -1,5 +1,5 @@
 C
-C $Id: RLSET.f,v 1.2 1994-06-02 19:23:21 haley Exp $
+C $Id: RLSET.f,v 1.3 1994-12-09 22:27:24 boote Exp $
 C
 C****************************************************************
 C								*
@@ -20,10 +20,10 @@ C
 C      Description:     This file contains all the "set" subroutines for
 C			the Fortran RL interface to the hlu's.
 C
-      subroutine nhlfrlsetint(id,name,ival,ierr)
+      subroutine nhlfrlsetinteger(id,name,ival,ierr)
 	integer id, ival,ierr
 	character*(*) name
-      	call nhl_frlsetint(id,name,len(name),ival,ierr)
+      	call nhl_frlsetinteger(id,name,len(name),ival,ierr)
       end
 C
       subroutine nhlfrlsetfloat(id,name,fval,ierr)
@@ -39,10 +39,11 @@ C
       	call nhl_frlsetstring(id,name,len(name),sval,len(sval),ierr)
       end
 C
-      subroutine nhlfrlsetmdintarray(id,name,iarr,inumdim,ilendim,ierr)
+      subroutine nhlfrlsetmdintegerarray(id,name,iarr,inumdim,ilendim,
+     % ierr)
 	integer id,iarr(*),inumdim,ilendim,ierr
 	character*(*) name
-	call nhl_frlsetmdintarray(id,name,len(name),iarr,inumdim,
+	call nhl_frlsetmdintegerarray(id,name,len(name),iarr,inumdim,
      %	ilendim,ierr)
       end
 C
@@ -55,10 +56,11 @@ C
      %	ilendim,ierr)
       end
 C
-      subroutine nhlfrlsetintarray(id,name,iarr,iarr_len,ierr)
+      subroutine nhlfrlsetintegerarray(id,name,iarr,iarr_len,ierr)
 	integer id,iarr_len,iarr(iarr_len),ierr
 	character*(*) name
-	call nhl_frlsetintarray(id,name,len(name),iarr,iarr_len,ierr)
+	call nhl_frlsetintegerarray(id,name,len(name),iarr,iarr_len,
+     % ierr)
       end
 C
       subroutine nhlfrlsetfloatarray(id,name,farr,farr_len,ierr)

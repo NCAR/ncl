@@ -1,5 +1,5 @@
 C
-C $Id: RLGET.f,v 1.2 1994-06-02 19:23:20 haley Exp $
+C $Id: RLGET.f,v 1.3 1994-12-09 22:27:24 boote Exp $
 C
 C****************************************************************
 C								*
@@ -19,10 +19,10 @@ C      Date:            Thu Apr 7 14:16:21 MDT 1994
 C
 C      Description:     
 C
-      subroutine nhlfrlgetint(id,name,ival,ierr)
+      subroutine nhlfrlgetinteger(id,name,ival,ierr)
 	integer id, ival,ierr
 	character*(*) name
-      	call nhl_frlgetint(id,name,len(name),ival,ierr)
+      	call nhl_frlgetinteger(id,name,len(name),ival,ierr)
       end
 C
       subroutine nhlfrlgetfloat(id,name,fval,ierr)
@@ -38,10 +38,11 @@ C
       	call nhl_frlgetstring(id,name,len(name),sval,len(sval),ierr)
       end
 C
-      subroutine nhlfrlgetmdintarray(id,name,iarr,inumdim,ilendim,ierr)
+      subroutine nhlfrlgetmdintegerarray(id,name,iarr,inumdim,ilendim,
+     % ierr)
 	integer id,iarr(*),inumdim,ilendim,ierr
 	character*(*) name
-	call nhl_frlgetmdintarray(id,name,len(name),iarr,inumdim,
+	call nhl_frlgetmdintegerarray(id,name,len(name),iarr,inumdim,
      %	ilendim,ierr)
       end
 C
@@ -54,10 +55,11 @@ C
      %	ilendim,ierr)
       end
 C
-      subroutine nhlfrlgetintarray(id,name,iarr,iarr_len,ierr)
+      subroutine nhlfrlgetintegerarray(id,name,iarr,iarr_len,ierr)
 	integer id,iarr_len,iarr(iarr_len),ierr
 	character*(*) name
-	call nhl_frlgetintarray(id,name,len(name),iarr,iarr_len,ierr)
+	call nhl_frlgetintegerarray(id,name,len(name),iarr,iarr_len,
+     % ierr)
       end
 C
       subroutine nhlfrlgetfloatarray(id,name,farr,farr_len,ierr)
