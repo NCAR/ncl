@@ -1,5 +1,5 @@
 /*
- *      $Id: PSWorkstation.c,v 1.14 1999-04-03 01:04:33 dbrown Exp $
+ *      $Id: PSWorkstation.c,v 1.15 2000-12-22 00:04:14 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -62,6 +62,12 @@ static NhlResource resources[] = {
 	 	sizeof(NhlColorModel),
 		Oset(color_model),NhlTImmediate,(NhlPointer)NhlRGB,
 		_NhlRES_NOSACCESS,NULL},
+ 	{NhlNwkSuppressBackground,NhlCwkSuppressBackground,NhlTBoolean,
+		sizeof(NhlBoolean),Oset(suppress_background),NhlTImmediate,
+		(NhlPointer)False,_NhlRES_NOSACCESS,NULL},
+ 	{NhlNwkSuppressBBInfo,NhlCwkSuppressBBInfo,NhlTBoolean,
+		sizeof(NhlBoolean),Oset(suppress_bbinfo),NhlTImmediate,
+		(NhlPointer)False,_NhlRES_NOSACCESS,NULL},
 
 /* End-documented-resources */
 };
@@ -554,6 +560,8 @@ PSWorkstationOpen
 	NhlPSWorkstationLayerPart	*pp = &((NhlPSWorkstationLayer)l)->ps;
 	NhlErrorTypes			ret;
 	int				d,w,h;
+	int				su = 0;
+
 
 	c_ngsetc("me",pp->filename);
 	c_ngseti("co",(pp->resolution/72 + 1));
@@ -562,6 +570,15 @@ PSWorkstationOpen
 	c_ngseti("ly",pp->lower_y);
 	c_ngseti("uy",pp->upper_y);
 	c_ngseti("cm",pp->color_model);
+
+	if (pp->suppress_background && pp->suppress_bbinfo)
+		su = 1;
+	else if (pp->suppress_background)
+		su = 2;
+	else if (pp->suppress_bbinfo)
+		su = 3;
+
+	c_ngseti("su",su);
 
 	ret = (*NhlworkstationClassRec.work_class.open_work)(l);
 

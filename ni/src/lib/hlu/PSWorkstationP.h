@@ -1,5 +1,5 @@
 /*
- *      $Id: PSWorkstationP.h,v 1.4 1999-04-03 01:04:33 dbrown Exp $
+ *      $Id: PSWorkstationP.h,v 1.5 2000-12-22 00:04:15 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -48,6 +48,8 @@ typedef struct _NhlPSWorkstationLayerPart {
 	int			upper_y;
 
 	NhlBoolean		full_background;
+	NhlBoolean		suppress_background;
+	NhlBoolean		suppress_bbinfo;
 
 	/* Private internal fields */
 	
