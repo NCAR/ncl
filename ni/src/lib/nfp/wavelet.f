@@ -36,10 +36,11 @@ C
       YVAR = 0.0D0
       YSD = 0.0D0
       LAG1 = 0.0D0
+      NADOF(1) = 0.0D0
+      NADOF(2) = 0.0D0
 C
       DO J = 1,JTOT
           SCALE(J) = 0.0D0
-          NADOF(J) = 0.0D0
           FFTTHEOR(J) = 0.0D0
           SIGNIF(J) = 0.0D0
           PERIOD(J) = 0.0D0

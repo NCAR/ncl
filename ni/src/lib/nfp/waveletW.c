@@ -38,10 +38,10 @@ NhlErrorTypes wavelet_W( void )
   void *y, *dt, *param, *s0, *dj, *siglvl, *nadof;
   int *mother, *jtot, *npad, *noise, *isigtest;
   double *tmp_y, *tmp_dt, *tmp_param, *tmp_s0, *tmp_dj;
-  double *tmp_siglvl, *tmp_nadof;
-  int dsizes_y[NCL_MAX_DIMENSIONS], dsizes_nadof[1];
+  double *tmp_siglvl, tmp_nadof[2];
+  int dsizes_y[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_y, type_dt, type_param, type_s0, type_dj;
-  NclBasicDataTypes type_siglvl, type_nadof;
+  NclBasicDataTypes type_siglvl;
 /*
  * Attribute variables
  */
@@ -184,14 +184,18 @@ NhlErrorTypes wavelet_W( void )
           &type_siglvl,
           2);
 
+/*
+ * nadof is ignored for now.  We'll create a dummy nadof variable and pass
+ * that to the wavelet function.
+ */
   nadof = (void*)NclGetArgValue(
           11,
           12,
           NULL,
-          dsizes_nadof,
           NULL,
           NULL,
-          &type_nadof,
+          NULL,
+          NULL,
           2);
 /*
  * We haven't implemented isigtest = 2, so default to 0 if it isn't.
@@ -201,10 +205,6 @@ NhlErrorTypes wavelet_W( void )
     *isigtest = 0;
   }
 
-  if(dsizes_nadof[0] != *jtot) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wavelet: nadof must be of length jtot");
-    return(NhlFATAL);
-  }
 /*
  * Get size of input array.
  */
@@ -218,12 +218,9 @@ NhlErrorTypes wavelet_W( void )
   tmp_s0     = coerce_input_double(s0,type_s0,1,0,NULL,NULL);
   tmp_dj     = coerce_input_double(dj,type_dj,1,0,NULL,NULL);
   tmp_siglvl = coerce_input_double(siglvl,type_siglvl,1,0,NULL,NULL);
-  tmp_nadof  = coerce_input_double(nadof,type_nadof,dsizes_nadof[0],0,
-                                   NULL,NULL);
 
   if(  tmp_y    == NULL || tmp_dt == NULL ||  tmp_param == NULL || 
-      tmp_s0    == NULL || tmp_dj == NULL || tmp_siglvl == NULL ||
-      tmp_nadof == NULL) {
+       tmp_s0    == NULL || tmp_dj == NULL || tmp_siglvl == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wavelet: Unable to coerce input to double precision");
     return(NhlFATAL);
   }
@@ -327,7 +324,6 @@ NhlErrorTypes wavelet_W( void )
   if(type_s0       != NCL_double) NclFree(tmp_s0);
   if(type_dj       != NCL_double) NclFree(tmp_dj);
   if(type_siglvl   != NCL_double) NclFree(tmp_siglvl);
-  if(type_nadof    != NCL_double) NclFree(tmp_nadof);
 
   if(type_wave != NCL_double) {
     NclFree(tmp_wave);
@@ -711,7 +707,7 @@ NhlErrorTypes wavelet_default_W( void )
  */
   void *y;
   int *mother, jtot, npad, noise, isigtest;
-  double *tmp_y, dt, param, s0, dj, siglvl, *nadof;
+  double *tmp_y, dt, param, s0, dj, siglvl, nadof[2];
   int dsizes_y[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_y;
 /*
@@ -792,7 +788,6 @@ NhlErrorTypes wavelet_default_W( void )
   noise    = 1;
   isigtest = 0;
   siglvl   = 0.05;
-  nadof    = (double*)calloc(jtot,sizeof(double));
   
 /*
  * Coerce input if necessary.
@@ -898,7 +893,6 @@ NhlErrorTypes wavelet_default_W( void )
  * Free memory.
  */
   if(type_y != NCL_double) NclFree(tmp_y);
-  NclFree(nadof);
 
   if(type_wave != NCL_double) {
     NclFree(tmp_wave);
