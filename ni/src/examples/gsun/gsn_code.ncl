@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.143 2004-05-27 15:12:33 haley Exp $
+;      $Id: gsn_code.ncl,v 1.144 2004-05-27 16:05:37 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -6296,11 +6296,26 @@ begin
     xtension  = get_res_value(res2,"trXTensionF", 2.0)
     ytension  = get_res_value(res2,"trYTensionF", 2.0)
 
-    plot_object = create wksname + "_contour" contourPlotClass wks
+;
+; Temporarily (I hope), I need to check if trGridType is being set.
+; If so, it needs to be set during the create call, or otherwise it
+; will cause the tickmarks to possibly not appear.
+;
+    if(res2.and.isatt(res2,"trGridType")) then
+      plot_object = create wksname + "_contour" contourPlotClass wks
+        "cnScalarFieldData" : data_object
         "trXTensionF"       : xtension
         "trYTensionF"       : ytension
+        "trGridType"        : res2@trGridType
+      end create
+      delete(res2@trGridType)
+    else
+      plot_object = create wksname + "_contour" contourPlotClass wks
         "cnScalarFieldData" : data_object
-    end create
+        "trXTensionF"       : xtension
+        "trYTensionF"       : ytension
+      end create
+    end if
 
 ; Check for existence of data@long_name and use it in a title it
 ; it exists.
@@ -6427,12 +6442,21 @@ begin
     xtension  = get_res_value(res2,"trXTensionF", 2.0)
     ytension  = get_res_value(res2,"trYTensionF", 2.0)
 
-    contour_object = create wksname + "_contour" contourPlotClass wks
+    if(res2.and.isatt(res2,"trGridType")) then
+      contour_object = create wksname + "_contour" contourPlotClass wks
+        "cnScalarFieldData" : data_object
+        "trGridType"        : res2@trGridType
+        "trYTensionF"       : ytension
+        "trXTensionF"       : xtension
+      end create
+      delete(res2@trGridType)
+    else
+      contour_object = create wksname + "_contour" contourPlotClass wks
         "cnScalarFieldData" : data_object
         "trYTensionF"       : ytension
         "trXTensionF"       : xtension
-    end create
-
+      end create
+    end if
 ; Check for existence of data@long_name and use it in a title it
 ; it exists.
 
