@@ -1,5 +1,5 @@
 /*
- *      $Id: NclHDF.c,v 1.11 2003-02-20 01:32:33 dbrown Exp $
+ *      $Id: NclHDF.c,v 1.12 2003-02-21 22:52:19 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1263,28 +1263,48 @@ int is_unlimited;
 	int cdfid;
 	HDFDimInqRecList *stepdl;
 	int ret = -1;
+	int add_scalar = 0;
 
 	if(rec->wr_status <=  0) {
 		
-		if((thedim == NrmStringToQuark("ncl_scalar"))&&(size != 1)) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"HDF: \"ncl_scalar\" in a reserved dimension name in NCL, this name can only represent dimensions of size 1");
-
-			return(NhlFATAL);
+		if(thedim == NrmStringToQuark("ncl_scalar")) {
+			if (size != 1) {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,
+					  "HDF: \"ncl_scalar\" is a reserved file dimension name in NCL, this name can only represent dimensions of size 1");
+				return(NhlFATAL);
+			}
+			add_scalar = 1;
 		}
-		cdfid = sd_ncopen(NrmQuarkToString(rec->file_path_q),NC_WRITE);
-		if(cdfid == -1) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"HDF: Could not reopen the file (%s) for writing",NrmQuarkToString(rec->file_path_q));
-			return(NhlFATAL);
-		}
-		sd_ncredef(cdfid);
-		ret = sd_ncdimdef(cdfid,NrmQuarkToString(thedim),(long)size);
-		sd_ncendef(cdfid);
-		sd_ncclose(cdfid);
-		if(ret == -1) {
-			return(NhlFATAL);
+		else {
+			cdfid = sd_ncopen(NrmQuarkToString(rec->file_path_q),NC_WRITE);
+			if(cdfid == -1) {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"HDF: Could not reopen the file (%s) for writing",NrmQuarkToString(rec->file_path_q));
+				return(NhlFATAL);
+			}
+			sd_ncredef(cdfid);
+			ret = sd_ncdimdef(cdfid,NrmQuarkToString(thedim),(long)size);
+			sd_ncendef(cdfid);
+			sd_ncclose(cdfid);
+			if(ret == -1) {
+				return(NhlFATAL);
+			}
 		}
 		stepdl = rec->dims;
-		if(stepdl == NULL) {
+
+		if (add_scalar) {
+			rec->has_scalar_dim = 1;
+			rec->dims = (HDFDimInqRecList*)NclMalloc(
+				(unsigned) sizeof(HDFDimInqRecList));
+			rec->dims->dim_inq = (HDFDimInqRec*)NclMalloc(
+				(unsigned)sizeof(HDFDimInqRec));
+			rec->dims->next = stepdl;
+			rec->dims->dim_inq->dimid = -5;
+			rec->dims->dim_inq->size = 1;
+			rec->dims->dim_inq->is_unlimited = 0;
+			rec->dims->dim_inq->name = NrmStringToQuark("ncl_scalar");
+			rec->n_dims++;
+		}
+		else if(stepdl == NULL) {
 			rec->dims = (HDFDimInqRecList*)NclMalloc((unsigned)sizeof(HDFDimInqRecList));
 			rec->dims->dim_inq = (HDFDimInqRec*)NclMalloc((unsigned)sizeof(HDFDimInqRec));
 			rec->dims->dim_inq->dimid = ret;
@@ -1292,7 +1312,6 @@ int is_unlimited;
 			rec->dims->dim_inq->size = (long)size;
 			rec->dims->next = NULL;
 			rec->n_dims = 1;
-			return(NhlNOERROR);
 		} else {
 			while(stepdl->next != NULL) {
 				stepdl = stepdl->next;
@@ -1304,8 +1323,8 @@ int is_unlimited;
 			stepdl->next->dim_inq->size = (long)size;
 			stepdl->next->next = NULL;
 			rec->n_dims++;
-			return(NhlNOERROR);
-		}
+		}	
+		return(NhlNOERROR);
 	} else {	
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"File (%s) was opened as a read only file, can not write to it",NrmQuarkToString(rec->file_path_q));
 	}
@@ -1365,7 +1384,7 @@ long* dim_sizes;
 				add_scalar_dim = 1;
 			}
 			else {
-				NhlPError(NhlFATAL,NhlEUNKNOWN,"NetCdf: internal error adding variable");
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"HDF: internal error adding variable");
 				return(NhlFATAL);
 			}
 		}
@@ -1545,7 +1564,7 @@ NclQuark to;
 	int cdfid,ret;
 
 	if(to == NrmStringToQuark("ncl_scalar")) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"HDF : \"ncl_scalar\" is an NCL reserved dimension other dimensions can not be changed to it");
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"HDF : \"ncl_scalar\" is a reserved file dimension name in NCL: other dimensions can not be changed to it");
                 return(NhlFATAL);
 	}
 	stepdl = rec->dims;

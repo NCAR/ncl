@@ -207,8 +207,40 @@ struct _NclSelectionRecord* /* sel_ptr */
 #endif
 );
 
-static NhlErrorTypes FileAddDim
+static void AdjustForScalarDim
 #if	NhlNeedProto
+(NclFile thefile)
+#else
+(thefile)
+NclFile thefile;
+#endif
+{
+	int i, j;
+
+	/* since the scalar dim is always first, all the other dims and coord vars need to shift down one element */
+
+	for (i = thefile->file.n_file_dims; i > 0; i--) {
+		thefile->file.file_dim_info[i] = thefile->file.file_dim_info[i-1];
+		thefile->file.coord_vars[i] = thefile->file.coord_vars[i-1];
+	}
+
+	/* also all existing var dim numbers need to be incremented by 1 */
+	/* note that the coord_vars field is just a pointer to the matching var_info field, so don't adjust them separately */ 
+
+	for (i = 0; i < thefile->file.n_vars; i++) {
+		for (j = 0; j < thefile->file.var_info[i]->num_dimensions; j++) {
+			thefile->file.var_info[i]->file_dim_num[j]++;
+		}
+	}
+	thefile->file.file_dim_info[0] = (*thefile->file.format_funcs->get_dim_info)(thefile->file.private_rec,NrmStringToQuark("ncl_scalar"));
+	thefile->file.coord_vars[0] = NULL; /* no coord var for a scalar obviously */
+	thefile->file.n_file_dims++;
+}
+
+
+
+static NhlErrorTypes FileAddDim
+#if  NhlNeedProto
 (NclFile thefile, NclQuark dimname, int dimsize, int is_unlimited)
 #else
 (thefile, dimname, dimsize, is_unlimited)
@@ -221,6 +253,10 @@ int is_unlimited;
 	NhlErrorTypes ret = NhlNOERROR;
 	
 	if((thefile->file.wr_status <= 0)&&(thefile->file.format_funcs->add_dim != NULL)) {
+		if (dimname == NrmStringToQuark("ncl_scalar")) {
+			NhlPError(NhlWARNING,NhlEUNKNOWN,"FileAddDim:\"ncl_scalar\" is a reserved file dimension name in NCL; it cannot be defined by the user");
+			return(NhlWARNING);
+		}
 		if((FileIsDim(thefile,dimname)) == -1) {
 			ret = (*thefile->file.format_funcs->add_dim)(
 				thefile->file.private_rec,
@@ -233,7 +269,7 @@ int is_unlimited;
 			thefile->file.n_file_dims++;
 			return(NhlNOERROR);
 		} else {
-			NhlPError(NhlWARNING,NhlEUNKNOWN,"FileAddDim: Dimension %s is already defined");
+			NhlPError(NhlWARNING,NhlEUNKNOWN,"FileAddDim: Dimension %s is already defined",NrmQuarkToString(dimname));
 			return(NhlWARNING);
 		}
 	} else {
@@ -256,7 +292,7 @@ NclQuark *dimnames;
 {
 	NhlErrorTypes ret = NhlNOERROR;
 	long dim_sizes[NCL_MAX_DIMENSIONS];
-	int i;
+	int i,j;
 	NclTypeClass typec;
 	int dindex;
 	int add_scalar_dim = 0;
@@ -299,12 +335,7 @@ NclQuark *dimnames;
 			if(ret < NhlWARNING) 
 				return(ret);
 			if (add_scalar_dim) {
-				/* since the scalar dim is always first, all the other dims need to shift down one element */
-				for (i = thefile->file.n_file_dims; i > 0; i--) {
-					 thefile->file.file_dim_info[i] = thefile->file.file_dim_info[i-1];
-				}
-				thefile->file.file_dim_info[0] = (*thefile->file.format_funcs->get_dim_info)(thefile->file.private_rec,dimnames[0]);
-				thefile->file.n_file_dims++;
+				AdjustForScalarDim(thefile);
 			}
 			thefile->file.var_info[thefile->file.n_vars] = (*thefile->file.format_funcs->get_var_info)(thefile->file.private_rec,varname);
 			thefile->file.var_att_info[thefile->file.n_vars] = NULL;
@@ -3458,8 +3489,13 @@ int type;
 								0);
 							if(ret < NhlWARNING) 
 								return(ret);
-							thefile->file.file_dim_info[thefile->file.n_file_dims] = (*thefile->file.format_funcs->get_dim_info)(thefile->file.private_rec,new_dim_quarks[i]);
-							thefile->file.n_file_dims++;
+							if (value->multidval.n_dims == 1 && new_dim_quarks[i] == NrmStringToQuark("ncl_scalar")) {
+								AdjustForScalarDim(thefile);
+							}
+							else {
+								thefile->file.file_dim_info[thefile->file.n_file_dims] = (*thefile->file.format_funcs->get_dim_info)(thefile->file.private_rec,new_dim_quarks[i]);
+								thefile->file.n_file_dims++;
+							}
 						} else {
 							if((thefile->file.file_dim_info[dindex]->dim_size != value->multidval.dim_sizes[i])&&(!(thefile->file.file_dim_info[dindex]->is_unlimited))) {
 								NhlPError(NhlFATAL,NhlEUNKNOWN,"File dimension conflict, dimension (%s) has a size of (%d) can not set it to requested size (%d)",NrmQuarkToString(dim_names[i]),thefile->file.file_dim_info[dindex]->dim_size,value->multidval.dim_sizes[i]);

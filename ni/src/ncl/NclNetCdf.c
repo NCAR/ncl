@@ -1,5 +1,5 @@
 /*
- *      $Id: NclNetCdf.c,v 1.29 2003-02-20 01:32:33 dbrown Exp $
+ *      $Id: NclNetCdf.c,v 1.30 2003-02-21 22:52:19 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1414,32 +1414,52 @@ int is_unlimited;
 	int cdfid;
 	NetCdfDimInqRecList *stepdl;
 	int ret = -1;
+	int add_scalar = 0;
 
 	if(rec->wr_status <=  0) {
 		
-		if((thedim == NrmStringToQuark("ncl_scalar"))&&(size != 1)) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"NetCdf: \"ncl_scalar\" in a reserved dimension name in NCL, this name can only represent dimensions of size 1");
-
-			return(NhlFATAL);
+		if(thedim == NrmStringToQuark("ncl_scalar")) {
+			if (size != 1) {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,
+					  "NetCdf: \"ncl_scalar\" is a reserved file dimension name in NCL, this name can only represent dimensions of size 1");
+				return(NhlFATAL);
+			}
+			add_scalar = 1;
 		}
-		cdfid = ncopen(NrmQuarkToString(rec->file_path_q),NC_WRITE);
-		if(cdfid == -1) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"NetCdf: Could not reopen the file (%s) for writing",NrmQuarkToString(rec->file_path_q));
-			return(NhlFATAL);
-		}
-		ncredef(cdfid);
-		if(is_unlimited) {
-			ret = ncdimdef(cdfid,NrmQuarkToString(thedim),NC_UNLIMITED);
-		} else {
-			ret = ncdimdef(cdfid,NrmQuarkToString(thedim),(long)size);
-		}
-		ncendef(cdfid);
-		ncclose(cdfid);
-		if(ret == -1) {
-			return(NhlFATAL);
+		else {
+			cdfid = ncopen(NrmQuarkToString(rec->file_path_q),NC_WRITE);
+			if(cdfid == -1) {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"NetCdf: Could not reopen the file (%s) for writing",NrmQuarkToString(rec->file_path_q));
+				return(NhlFATAL);
+			}
+			ncredef(cdfid);
+			if(is_unlimited) {
+				ret = ncdimdef(cdfid,NrmQuarkToString(thedim),NC_UNLIMITED);
+			} else {
+				ret = ncdimdef(cdfid,NrmQuarkToString(thedim),(long)size);
+			}
+			ncendef(cdfid);
+			ncclose(cdfid);
+			if(ret == -1) {
+				return(NhlFATAL);
+			}
 		}
 		stepdl = rec->dims;
-		if(stepdl == NULL) {
+
+		if (add_scalar) {
+			rec->has_scalar_dim = 1;
+			rec->dims = (NetCdfDimInqRecList*)NclMalloc(
+				(unsigned) sizeof(NetCdfDimInqRecList));
+			rec->dims->dim_inq = (NetCdfDimInqRec*)NclMalloc(
+				(unsigned)sizeof(NetCdfDimInqRec));
+			rec->dims->next = stepdl;
+			rec->dims->dim_inq->dimid = -5;
+			rec->dims->dim_inq->size = 1;
+			rec->dims->dim_inq->is_unlimited = 0;
+			rec->dims->dim_inq->name = NrmStringToQuark("ncl_scalar");
+			rec->n_dims++;
+		}
+		else if(stepdl == NULL) {
 			rec->dims = (NetCdfDimInqRecList*)NclMalloc((unsigned)sizeof(NetCdfDimInqRecList));
 			rec->dims->dim_inq = (NetCdfDimInqRec*)NclMalloc((unsigned)sizeof(NetCdfDimInqRec));
 			rec->dims->dim_inq->dimid = ret;
@@ -1452,8 +1472,8 @@ int is_unlimited;
 			rec->dims->dim_inq->is_unlimited= is_unlimited;
 			rec->dims->next = NULL;
 			rec->n_dims = 1;
-			return(NhlNOERROR);
-		} else {
+		}
+		else {
 			while(stepdl->next != NULL) {
 				stepdl = stepdl->next;
 			}
@@ -1469,8 +1489,8 @@ int is_unlimited;
 			stepdl->next->dim_inq->is_unlimited= is_unlimited;
 			stepdl->next->next = NULL;
 			rec->n_dims++;
-			return(NhlNOERROR);
 		}
+		return(NhlNOERROR);
 	} else {	
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"File (%s) was opened as a read only file, can not write to it",NrmQuarkToString(rec->file_path_q));
 	}
@@ -1514,7 +1534,7 @@ long* dim_sizes;
 			while(stepdl != NULL) {
 				if(stepdl->dim_inq->name == dim_names[i]){
 					if((n_dims > 1)&&(dim_names[i] == NrmStringToQuark("ncl_scalar"))) {
-						NhlPError(NhlFATAL,NhlEUNKNOWN,"NetCdf: the reserved dimension name \"ncl_scalar\" was used in a value with more than one dimension, can not add variable");
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"NetCdf: the reserved file dimension name \"ncl_scalar\" was used in a value with more than one dimension, can not add variable");
 						return(NhlFATAL);
 					}
 					dim_ids[i] = stepdl->dim_inq->dimid;
@@ -1712,7 +1732,7 @@ NclQuark to;
 	int cdfid,ret;
 
 	if(to == NrmStringToQuark("ncl_scalar")) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"NetCdf : \"ncl_scalar\" is an NCL reserved dimension other dimensions can not be changed to it");
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"NetCdf : \"ncl_scalar\" is a reserved file dimension name in NCL: other dimensions can not be changed to it");
                 return(NhlFATAL);
 	}
 	stepdl = rec->dims;
