@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.140 2001-09-28 17:00:53 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.141 2001-09-28 17:01:35 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -11805,7 +11805,7 @@ static nc_type _MapType (NclBasicDataTypes data_type) {
 				the_type = NC_BYTE;
 				break;
 			default:
-				the_type = -1;
+				the_type = 0;
 		}
 	return(the_type);
 }
