@@ -1,5 +1,5 @@
 /*
- *	$Id: rast.h,v 1.3 1992-04-03 20:58:04 clyne Exp $
+ *	$Id: rast.h,v 1.4 1992-05-11 23:23:40 clyne Exp $
  */
 #ifndef	_color_
 #define	_color_
@@ -21,4 +21,15 @@ typedef	struct	{
 	Rgb	current_rgb[MAX_COLOR_INDEX];
 	Rgb	*rgb;
 	} RasColrTab;
+
+#define	RAS_PUT_PIX(ras, x,y, index, table, direct) \
+	if (direct) { \
+		DIRECT_RED((ras),(x),(y)) = (table).rgb[(index)].red; \
+		DIRECT_GREEN((ras),(x),(y)) = (table).rgb[(index)].green; \
+		DIRECT_BLUE((ras),(x),(y)) = (table).rgb[(index)].blue; \
+	} \
+	else { \
+		INDEXED_PIXEL((ras),(x),(y)) = (index); \
+	} 
 #endif;
+

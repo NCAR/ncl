@@ -1,5 +1,5 @@
 /*
- *	$Id: rast.c,v 1.10 1992-04-03 20:58:01 clyne Exp $
+ *	$Id: rast.c,v 1.11 1992-05-11 23:23:37 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -39,6 +39,7 @@ static	struct	Opts {
 	char	*dpi;
 	boolean	rle;
 	boolean	compress;
+	boolean	direct;
 	} rast_opts;
 
 static	Option	raster_opts[] = {
@@ -58,14 +59,17 @@ static	Option	raster_opts[] = {
 	},
 	{"compress",NCARGCvtToBoolean,(Voidptr) &rast_opts.compress,					sizeof (rast_opts.compress)
 	},
+	{"direct",NCARGCvtToBoolean,(Voidptr) &rast_opts.direct,					sizeof (rast_opts.direct)
+	},
 	{
 	NULL
 	}
 };
 
-RasColrTab	colorTab;	/* the color table		*/
+RasColrTab	colorTab;	/* the color table			*/
 
 Raster	*rastGrid;		/* struct for creating output file	*/
+boolean	rasIsDirect;		/* direct encoded image?		*/
 
 /*
  * 	Class 0 Function
@@ -78,6 +82,7 @@ CGMC *c;
 	CoordRect	dev_extent;
 	CoordModifier	coord_mod;
 	int	width, height;
+	int	encoding;
 
 	int	ras_argc;
 	char	*ras_argv[10];
@@ -92,6 +97,7 @@ CGMC *c;
 		ct_error(T_NULL, ErrGetMsg());
 		return(DIE);
 	}
+	rasIsDirect = rast_opts.direct;
 
 	/*
 	 * load options for libraster into ras_argv and initialilze
@@ -169,8 +175,9 @@ CGMC *c;
 	/*
 	 * create the raster buffer
 	 */
+	encoding = rasIsDirect ? RAS_DIRECT : RAS_INDEXED;
 	if ((rastGrid = (RasterOpenWrite("stdout", width, height,
-		"NCAR View 3.01",RAS_INDEXED,devices[currdev].name))) == NULL) {
+		VERSION,encoding,devices[currdev].name))) == NULL) {
 
 		ct_error(T_NULL, RasterGetError());
 		return (DIE);
@@ -261,10 +268,12 @@ CGMC *c;
 	/*
 	 * copy the color map into the Raster*
 	 */
-	for(i=0; i<256; i++) {
-		INDEXED_RED(rastGrid, i) = colorTab.rgb[i].red;
-		INDEXED_GREEN(rastGrid, i) = colorTab.rgb[i].green;
-		INDEXED_BLUE(rastGrid, i) = colorTab.rgb[i].blue;
+	if (! rasIsDirect) {
+		for(i=0; i<256; i++) {
+			INDEXED_RED(rastGrid, i) = colorTab.rgb[i].red;
+			INDEXED_GREEN(rastGrid, i) = colorTab.rgb[i].green;
+			INDEXED_BLUE(rastGrid, i) = colorTab.rgb[i].blue;
+		}
 	}
 
 	/*
@@ -380,17 +389,19 @@ CGMC *c;
 clear_grid(grid)
 	Raster	*grid;
 {
-#ifdef	DEAD
-	int	x,y;
+	if (rasIsDirect) {
+		int	x, y;
 
-	for(y = 0; y < grid->ny; y++)
-	for(x=0; x < grid->nx; x++) {
-		INDEXED_PIXEL(grid, x, y) = 0;
+		for(y=0; y<grid->ny; y++)
+		for(x=0; x<grid->nx; x++) {
+			DIRECT_RED(grid, x, y) = colorTab.rgb[0].red;
+			DIRECT_GREEN(grid, x, y) = colorTab.rgb[0].green;
+			DIRECT_BLUE(grid, x, y) = colorTab.rgb[0].blue;
+		}
 	}
-#else
-	bzero((char *) grid->data, grid->nx * grid->ny);
-#endif
-	
+	else {
+		bzero((char *) grid->data, grid->nx * grid->ny);
+	}
 }
 
 init_color_tab()
@@ -492,7 +503,9 @@ static	Ct_err	ras_cell_array(c, Pcoord, Qcoord, Rcoord, nx, ny)
 	unsigned int	image_height,	/* image height in pixels	*/
 			image_width,	/* image width in pixels	*/
 			image_size,	/* size of image data in bytes	*/
-			pad;
+			pad,
+			pixel_size,	/* pixel size in bytes		*/
+			bytes_per_line;	/* bytes per scan line		*/
 	unsigned char	*data,		/* image data			*/
 			*cptr;
 
@@ -533,8 +546,11 @@ static	Ct_err	ras_cell_array(c, Pcoord, Qcoord, Rcoord, nx, ny)
 	cols = (int *) icMalloc ((unsigned) nx * sizeof (int));
 	index_array = (unsigned char *) icMalloc ((unsigned) nx * sizeof (int));
 
-	image_size = image_height * rastGrid->nx;
-	pad = rastGrid->nx - image_width;
+	pixel_size = rasIsDirect ? 3 : 1;
+	bytes_per_line = rastGrid->nx * pixel_size;
+
+	image_size = image_height * bytes_per_line;
+	pad = pixel_size * (rastGrid->nx - image_width);
 	data = rastGrid->data;
 
  
@@ -542,11 +558,13 @@ static	Ct_err	ras_cell_array(c, Pcoord, Qcoord, Rcoord, nx, ny)
 	 * calculate x & y steping size, position of image in the window,
 	 * and starting address for data destination
 	 */
-	xoff = MIN3(Pcoord.x, Qcoord.x, Rcoord.x);
+	xoff = MIN3(Pcoord.x, Qcoord.x, Rcoord.x) * pixel_size;
 	yoff = MIN3(Pcoord.y, Qcoord.y, Rcoord.y);
-	SetUpCellArrayAddressing(Pcoord, Qcoord, Rcoord, image_size, pad, 1,
-		(unsigned) rastGrid->nx, xoff, yoff, 
-		&step_x, &step_y, &start_x, &start_y, (char **) &data);
+	SetUpCellArrayAddressing(
+		Pcoord, Qcoord, Rcoord, image_size, pad, pixel_size,
+		bytes_per_line, xoff, yoff, &step_x, &step_y, 
+		&start_x, &start_y, (char **) &data
+	);
 
 	/*
 	 * set up rows and cols arrays with info about number of pixels
@@ -597,9 +615,16 @@ static	Ct_err	ras_cell_array(c, Pcoord, Qcoord, Rcoord, nx, ny)
 				 */
 				index = index_array[k];
 				for (l=0; l<cols[k]; l++) {
-					*cptr = index;
-					cptr += step_x;
+				if (rasIsDirect) {
+					cptr[0] = colorTab.rgb[index].red;
+					cptr[1] = colorTab.rgb[index].green;
+					cptr[2] = colorTab.rgb[index].blue;
 				}
+				else {
+					*cptr = index;
+				}
+				cptr += step_x;
+				}	/* for	*/
 			
 			}
 			data += step_y;	/* skip to next row	*/

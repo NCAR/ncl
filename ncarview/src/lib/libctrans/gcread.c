@@ -1,5 +1,5 @@
 /*
- *	$Id: gcread.c,v 1.5 1992-04-16 17:30:15 clyne Exp $
+ *	$Id: gcread.c,v 1.6 1992-05-11 23:23:33 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -218,8 +218,8 @@ F_2_Cstring(Fstring, len)
 	int	i;
 	SignedChar	*ptr;
 
-	for (i=0,ptr = (unsigned char *) Fstring; i<len; i++, ptr++,Fstring++){
-		*ptr = (char) *Fstring; 
+	for (i=0,ptr = (SignedChar *) Fstring; i<len; i++, ptr++,Fstring++){
+		*ptr = (SignedChar) *Fstring; 
 	}
 
 	/*

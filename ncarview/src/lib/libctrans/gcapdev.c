@@ -1,5 +1,5 @@
 /*
- *	$Id: gcapdev.c,v 1.12 1992-04-16 17:30:07 clyne Exp $
+ *	$Id: gcapdev.c,v 1.13 1992-05-11 23:23:25 clyne Exp $
  */
 #include <stdio.h>
 #include <cterror.h>
@@ -51,7 +51,7 @@ boolean polysim;	/* True if to simulate polygons with lines */
 	int	currentpoint = 0;
 	int	i;
 	boolean mass = FALSE;	/* true if can buffer all points at once */
-	SignedChar	s_char;
+	SignedChar	s_char_;
 
 	int	line_width = ROUND(LINE_WIDTH);
 
@@ -88,8 +88,8 @@ boolean polysim;	/* True if to simulate polygons with lines */
 
 		mass = TRUE;
 		for(i=0;i<POLYGON_START_SIZE;i++) {
-			s_char = (SignedChar) POLYGON_START[i];
-			switch ((int) s_char) {
+			s_char_ = (SignedChar) POLYGON_START[i];
+			switch ((int) s_char_) {
 			case VC:
 				(void)formatveccnt(*coord_buf_num + 1);
 				break;
@@ -109,7 +109,7 @@ boolean polysim;	/* True if to simulate polygons with lines */
 					    2);
 				break;
 			default:
-				buffer(&s_char,1);
+				buffer(&s_char_,1);
 				break;
 			}
 		}
@@ -124,8 +124,8 @@ boolean polysim;	/* True if to simulate polygons with lines */
 		mass = TRUE;
 
 		for(i=0;i<LINE_DRAW_START_SIZE;i++) {
-			s_char = (SignedChar) LINE_DRAW_START[i];
-			switch ((int) s_char) {
+			s_char_ = (SignedChar) LINE_DRAW_START[i];
+			switch ((int) s_char_) {
 			case VC:
 				if (polyflag)
 					(void)formatveccnt(*coord_buf_num + 1);
@@ -151,7 +151,7 @@ boolean polysim;	/* True if to simulate polygons with lines */
 				currentpoint = 1;
 				break;
 			default:
-				buffer(&s_char,1);
+				buffer(&s_char_,1);
 				break;
 			}
 		}
@@ -291,7 +291,7 @@ long	x1_,y1_,x2_,y2_;
 	int	i;	/* loop variable */
 
 	long	x1, y1, x2, y2;
-	SignedChar	s_char;
+	SignedChar	s_char_;
 
 	if (!(Clipper(x1_, y1_, x2_, y2_, &x1, &y1, &x2, &y2))) {
 		return;
@@ -299,8 +299,8 @@ long	x1_,y1_,x2_,y2_;
 
 	if (POLY_FLAG) {
 		for(i=0;i<LINE_DRAW_START_SIZE;i++) {
-			s_char = (SignedChar) LINE_DRAW_START[i];
-			switch ((int) s_char) {
+			s_char_ = (SignedChar) LINE_DRAW_START[i];
+			switch ((int) s_char_) {
 			case VC:
 				(void)formatveccnt((long)2);
 				break;
@@ -318,7 +318,7 @@ long	x1_,y1_,x2_,y2_;
 				(void)formatcoord(XConvert(x1), YConvert(y1), 2);
 				break;
 			default:
-				buffer(&s_char,1);
+				buffer(&s_char_,1);
 				break;
 			}
 		}
@@ -372,12 +372,12 @@ void	gcap_devline(x1, y1, x2, y2)
 	DCtype	x1, y1, x2, y2;
 {
 	int	i;	/* loop variable */
-	SignedChar	s_char;
+	SignedChar	s_char_;
 
 	if (POLY_FLAG) {
 		for(i=0;i<LINE_DRAW_START_SIZE;i++) {
-			s_char = (SignedChar) LINE_DRAW_START[i];
-			switch ((int) s_char) {
+			s_char_ = (SignedChar) LINE_DRAW_START[i];
+			switch ((int) s_char_) {
 			case VC:
 				(void)formatveccnt((long)2);
 				break;
@@ -391,7 +391,7 @@ void	gcap_devline(x1, y1, x2, y2)
 				(void)formatcoord((long) x1, (long) y1, 2);
 				break;
 			default:
-				buffer(&s_char,1);
+				buffer(&s_char_,1);
 				break;
 			}
 		}
@@ -561,7 +561,7 @@ void	gcap_update_color_table()
 	long	data[3];
 	boolean	skipping,
 		defining;
-	SignedChar	s_char;
+	SignedChar	s_char_;
 
 
 	if (!COLOUR_AVAIL)
@@ -586,13 +586,13 @@ void	gcap_update_color_table()
 	if (COLOUR_INDEX_DAMAGE(i)) {
 
 		for (k=0;k<MAP_START_SIZE;k++) {
-			s_char = (SignedChar) MAP_START[k];
-			switch ((int) s_char) {
+			s_char_ = (SignedChar) MAP_START[k];
+			switch ((int) s_char_) {
 			case MAD:
 				(void)formatindex(i,FALSE);
 				break;
 			default: 
-				buffer(&s_char,1);
+				buffer(&s_char_,1);
 				break;
 			}
 		}
@@ -663,13 +663,13 @@ void	gcap_update_color_table()
 				 */
 
 				for (k=0;k<MAP_START_SIZE;k++) {
-					s_char = (SignedChar) MAP_START[k];
-					switch ((int) s_char) {
+					s_char_ = (SignedChar) MAP_START[k];
+					switch ((int) s_char_) {
 					case MAD:
 						(void)formatindex(i,FALSE);
 						break;
 					default: 
-						buffer(&s_char,1);
+						buffer(&s_char_,1);
 						break;
 					}
 				}

@@ -1,5 +1,5 @@
 /*
- *	$Id: rastdev.c,v 1.8 1992-04-03 20:58:08 clyne Exp $
+ *	$Id: rastdev.c,v 1.9 1992-05-11 23:23:42 clyne Exp $
  */
 #include <stdio.h>
 #include <ncarg_ras.h>
@@ -11,6 +11,7 @@
 #include "translate.h"
 
 extern	Raster	*rastGrid;
+extern	boolean	rasIsDirect;
 
 static	int	rasColorIndex;
 
@@ -356,6 +357,9 @@ static	void	line_(x1, y1, x2, y2)
 	int	x1, y1, x2, y2;
 {
 	int	d, x, y, ax, ay, sx, sy, dx, dy;
+	int	index = rasColorIndex;
+
+	extern	RasColrTab      colorTab;
 
 	dx = x2-x1; ax = ABS(dx)<<1; sx = SIGN(dx);
 	dy = y2-y1; ay = ABS(dy)<<1; sy = SIGN(dy);
@@ -365,7 +369,7 @@ static	void	line_(x1, y1, x2, y2)
 	if (ax > ay) {	/*	x dominant	*/
 		d = ay - (ax>>1);
 		for (;;) {
-			INDEXED_PIXEL(rastGrid, x, y) = rasColorIndex;
+			RAS_PUT_PIX(rastGrid,x,y,index,colorTab,rasIsDirect);
 			if (x == x2) return;
 			if (d >= 0) {
 				y += sy;
@@ -378,7 +382,7 @@ static	void	line_(x1, y1, x2, y2)
 	else {	/*	y dominant	*/
 		d = ax-(ay>>1);
 		for (;;) {
-			INDEXED_PIXEL(rastGrid, x, y) = rasColorIndex;
+			RAS_PUT_PIX(rastGrid,x,y,index,colorTab,rasIsDirect);
 			if (y == y2) return;
 			if (d >= 0) {
 				x += sx;

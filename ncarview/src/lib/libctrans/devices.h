@@ -1,5 +1,5 @@
 /*
- *	$Id: devices.h,v 1.8 1992-04-03 20:57:06 clyne Exp $
+ *	$Id: devices.h,v 1.9 1992-05-11 23:23:17 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -106,6 +106,7 @@ static	OptDescRec	raster_opts[] = {
 	{"landscape", 0, NULL, "Do landscape mode"},
 	{"rle", 0, NULL, "Do run length encode output (if supported)"},
 	{"dpi", 1, "75", "Dots per inch - (HPLJ only)"},
+	{"direct", 0,NULL,"Do output direct encoded imagery (default indexed)"},
 	{NULL}
 	};
 
