@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManager.c,v 1.47 1998-02-25 21:40:40 dbrown Exp $
+ *      $Id: PlotManager.c,v 1.48 1998-03-12 02:35:18 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2282,7 +2282,7 @@ static NhlErrorTypes SetTitleView
 	}
         if (! (main_on || x_on || y_on)) {
                 anno_rec->viewable = False;
-                return;
+                return ret;
         }
 
 /*

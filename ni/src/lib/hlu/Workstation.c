@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.76 1998-03-11 18:36:04 dbrown Exp $
+ *      $Id: Workstation.c,v 1.77 1998-03-12 02:35:21 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2574,7 +2574,7 @@ WorkstationClear
 	NhlWorkstationLayer	wl = (NhlWorkstationLayer)l;
 
         if (! wl->work.activated)
-                return;
+                return NhlNOERROR;
 #if DEBUG_NCGM
 	fprintf(stderr,"calling gclrwk\n");
 #endif
@@ -4860,16 +4860,16 @@ static NhlBoolean CheckAndNotify
         if (i == CurrentWksCount) {
                 NHLPERROR((NhlFATAL,NhlEUNKNOWN,
                            "Gks Workstation %d not properly recorded",gks_id));
-                return;
+                return False;
         }
         if (gksp[i].hlu_id == NhlNULLOBJID)
-                return;
+                return False;
         
         l = _NhlGetLayer(gksp[i].hlu_id);
 	if(! (l && _NhlIsWorkstation(l))) {
                 NHLPERROR((NhlFATAL,NhlEUNKNOWN,
                            "Hlu Workstation invalid for Gks Id %d",gks_id));
-                return;
+                return False;
         }
 	wcp = &((NhlWorkstationClass)l->base.layer_class)->work_class;
 

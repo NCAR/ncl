@@ -1,5 +1,5 @@
 /*
- *      $Id: Create.c,v 1.36 1997-07-25 21:11:55 dbrown Exp $
+ *      $Id: Create.c,v 1.37 1998-03-12 02:35:17 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1175,14 +1175,16 @@ _NhlRegisterChildClass
 	 * child is interested in.
 	 */
 	if(child->base_class.all_resources == NULL){
-		lret = _NhlInitAllResources(child);
-		if(lret < NhlWARNING){
+		int count = _NhlInitAllResources(child);
+		if (count < 0)
+			lret = (NhlErrorTypes) count;
+		ret = MIN(lret,ret);
+		if(ret < NhlWARNING){
 			NhlPError(NhlFATAL,NhlEUNKNOWN,
 				"Unable to determine resources for %s",
 							_NhlClassName(child));
 			return(ret);
 		}
-		ret = MIN(lret,ret);
 	}
 
 	/*

@@ -1,5 +1,5 @@
 /*
- *      $Id: TransObj.c,v 1.29 1998-02-20 22:41:37 dbrown Exp $
+ *      $Id: TransObj.c,v 1.30 1998-03-12 02:35:20 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -296,7 +296,8 @@ TransInitialize
                 tp->y_max = 1.0;
         }
         tp->off_screen = False;
-        
+
+	return NhlNOERROR;
 }
 
 /*

@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.c,v 1.61 1998-02-20 22:41:20 dbrown Exp $
+ *      $Id: TickMark.c,v 1.62 1998-03-12 02:35:19 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -5277,7 +5277,7 @@ static NhlErrorTypes CheckNotLog
 #endif
 {
 	if(c_or_s == CREATE )
-                return;
+                return NhlNOERROR;
         
         if (tnew->tick.x_b_on && told->tick.x_b_style == NhlLOG &&
             tnew->tick.x_b_style != NhlLOG &&
