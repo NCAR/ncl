@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl
 #
-#      $Id: build,v 1.19 1996-01-17 20:28:30 haley Exp $
+#      $Id: build,v 1.20 1996-04-19 16:56:44 haley Exp $
 #
 #########################################################################
 #									#
@@ -241,7 +241,7 @@ $install_dir = "INSTALL";       # where the INSTALL script lives
     'Solaris_sun4',     'Sun4Solaris',
     'ULTRIX_RISC',      'DECRISC',
     'IRIX_IP',          'SGI4D',
-    'IRIX64_IP',        'SGI64',
+    'IRIX64_IP',        'SGIR8',
     'OSF1_alpha',       'AlphaOSF1',
     'LINUX_i486',       'LINUX',
     'LINUX_i586',       'LINUX',
