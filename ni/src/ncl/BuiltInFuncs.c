@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.129 2000-10-30 17:09:41 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.130 2000-11-21 17:01:19 haley Exp $
  */
 /************************************************************************
 *									*
@@ -4019,9 +4019,10 @@ NhlErrorTypes _NclIrand
 	int tmp ;
 	int dimsize = 1;
 
-
-	tmp = rand();
-	
+/*
+ * Generate a random number from 0 to 32766 inclusive.
+ */
+	tmp = (int) (32767.0*rand()/(RAND_MAX+1.0));
 	
 	return(NclReturnValue(
 		&tmp,
