@@ -1,0 +1,15 @@
+#
+#   $Id: yMakefile,v 1.1 1995-02-08 17:55:19 haley Exp $
+#
+#   Makefile for HLU Basic examples
+#
+
+SRCS        = basic01n.ncl basic02n.ncl basic03n.ncl
+RES         = basic03.res
+EXFILES     = $(SRCS) $(RES)
+
+InstallTarget($(EXFILES),$(INSTALL_LIB),$(HLUEXROOT))
+
+CleanFilesTarget($(OBJS))
+DependTarget($(SRCS))
+
