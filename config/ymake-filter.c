@@ -1,5 +1,5 @@
 /*
- *	$Id: ymake-filter.c,v 1.6 1994-03-16 01:35:09 boote Exp $
+ *	$Id: ymake-filter.c,v 1.7 1995-03-28 23:34:15 boote Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -34,6 +34,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <ctype.h>
 
 #define TRUE	1
@@ -44,7 +45,7 @@ static char	tab_chars[] = ":=";
 
 main()
 {
-	char	*line, *getcppline(), *index(), *tchar, *tchar2;
+	char	*line, *getcppline(), *tchar, *tchar2;
 	int	len, lastlen, strlen();
 	int	isacppcomment();
 
@@ -64,7 +65,7 @@ main()
 			for(i=0; i < sizeof(tab_chars);i++){
 				char	*tchar;
 
-				tchar = index(line,tab_chars[i]);
+				tchar = strchr(line,tab_chars[i]);
 				if(tchar != NULL){
 					if((tchar != line) &&
 							(*(tchar-1) == '\\')){
@@ -83,6 +84,39 @@ main()
 			/* don't tab if Make comment or tab'd already */
 			if((line[0] == '#') || (line[0] == '\t'))
 				do_tab = FALSE;
+			else{
+				/*
+				 * Impliment ## concat for bsd cpp's.
+				 */
+				char	*tchar;
+
+				while((tchar = strstr(line,"##")) != NULL){
+					/*
+					 * if concat is escaped, eat escape
+					 * and continue.
+					 */
+					if((tchar != line) &&
+							(*(tchar-1) == '\\')){
+						/* eat escape char */
+						while(*tchar != '\0'){
+							*(tchar-1) = *tchar;
+							tchar++;
+						}
+						*(tchar-1) = *tchar;
+					}
+					/*
+					 * Otherwise, eat concat.
+					 */
+					else{
+						tchar++;tchar++;
+						while(*tchar != '\0'){
+							*(tchar-2) = *tchar;
+							tchar++;
+						}
+						*(tchar-2) = *tchar;
+					}
+				}
+			}
 
 			if(do_tab)
 				(void) printf("\t");
@@ -159,23 +193,4 @@ char	*line;
 		return TRUE;
 	else
 		return FALSE;
-}
-
-/*
- *	This function is included in order to avoid Sysv/BSD problems 
- *	on bootstrap installation.
- */
-char *
-index(s, c)
-	char	*s;
-	int	c;
-{
-	while(*s != '\0')
-	{
-		if (*s == c)
-			return s;
-		else
-			s++;
-	}
-	return(NULL);
 }
