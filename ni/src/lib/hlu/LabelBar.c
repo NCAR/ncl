@@ -1,5 +1,5 @@
 /*
- *      $Id: LabelBar.c,v 1.61 1999-05-22 00:43:11 dbrown Exp $
+ *      $Id: LabelBar.c,v 1.62 1999-08-18 03:05:51 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2702,6 +2702,8 @@ static NhlErrorTypes    SetLabels
 	float angle,label_loc;
 	float x,y,width,height;
 	NhlBoolean label_locs_changed = False;
+	NhlSArg	sargs[24];
+	int	nargs = 0;
 		
 	if (! lb_p->labels_on) {
 		lb_p->labels.lxtr = lb_p->labels.l;
@@ -2851,9 +2853,9 @@ static NhlErrorTypes    SetLabels
 	if (lb_p->orient == NhlHORIZONTAL && 
 	    lb_p->label_direction == NhlACROSS) {
 
-		char_space = 0.8 * larea.y / (max_strlen + 1.0);
-		avail_char_space = c_frac * 0.5 * 
-			larea.x / lb_p->label_draw_count;
+		char_space = 0.8 * larea.y;
+		avail_char_space = c_frac * 0.8 * 
+			larea.x / (lb_p->label_draw_count * max_strlen);
 
 		if (char_space < avail_char_space)
 			label_height = char_space;
@@ -2884,8 +2886,8 @@ static NhlErrorTypes    SetLabels
 
 		/* Set the font height */
 
-		char_space = 0.8 * larea.y / (max_strlen + 1.0);
-		avail_char_space = c_frac * 0.5 * 
+		char_space = 0.8 * larea.y / max_strlen;
+		avail_char_space = c_frac * 0.8 * 
 			larea.x / lb_p->label_draw_count;
 
 		if (char_space < avail_char_space)
@@ -2916,8 +2918,8 @@ static NhlErrorTypes    SetLabels
 	else if (lb_p->orient == NhlVERTICAL && 
 		 lb_p->label_direction == NhlACROSS) {
 
-		char_space = 0.8 * larea.x / (max_strlen + 1.0);
-		avail_char_space = c_frac * 0.5 * 
+		char_space = 0.8 * larea.x / max_strlen;
+		avail_char_space = c_frac * 0.8 * 
 			larea.y / lb_p->label_draw_count;
 
 		if (char_space < avail_char_space)
@@ -2947,9 +2949,9 @@ static NhlErrorTypes    SetLabels
 	}
 	else { /* NhlVERTICAL NhlDOWN or UP */
 
-		char_space = 0.8 * larea.x / (max_strlen + 1.0);
+		char_space = 0.8 * larea.x;
 		avail_char_space = c_frac * 0.5 * 
-			larea.y / lb_p->label_draw_count;
+			larea.y / (lb_p->label_draw_count * max_strlen);
 
 		if (char_space < avail_char_space)
 			label_height = char_space;
@@ -3047,7 +3049,7 @@ static NhlErrorTypes    SetLabels
 		lb_p->label_height = NhlLB_DEF_CHAR_HEIGHT;
 	if (! lb_p->auto_manage) 
 		label_height = lb_p->label_height;
-	lb_p->actual_label_height = label_height;
+	lb_p->label_height = label_height;
 	angle = (lb_p->label_angle < 0.0) ? 
 		lb_p->label_angle + 360.0 : lb_p->label_angle;
 	if (lb_p->labels_id < 0) {
@@ -3063,7 +3065,7 @@ static NhlErrorTypes    SetLabels
 				 NhlNtxAngleF,angle,
 				 NhlNtxFont,lb_p->label_font,
 				 NhlNtxJust,lb_p->label_just,
-				 NhlNtxFontHeightF,lb_p->actual_label_height,
+				 NhlNtxFontHeightF,lb_p->label_height,
 				 NhlNtxFontAspectF,lb_p->label_aspect,
 				 NhlNtxDirection,lb_p->label_direction,
 				 NhlNtxConstantSpacingF,
@@ -3077,25 +3079,26 @@ static NhlErrorTypes    SetLabels
 			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 			return NhlFATAL;
 		}
-	} 
+		olb_p->label_height = lb_p->label_height;
+		olb_p->label_just = lb_p->label_just;
+	}
 	else {
-		NhlSArg	sargs[24];
-		int	nargs = 0;
+		/* 
+		 * here everything is set that might indirectly affect the 
+		 * font height. These must be set before the multitext is
+		 * queried for the max_len, because its value depends on
+		 * these resources as well as on the font height. The 
+		 * intention is to avoid this SetValues call except when
+		 * necessary.
+		 */
 
-		if (lb_p->actual_label_height != olb_p->actual_label_height)
-			NhlSetSArg(&sargs[nargs++],NhlNtxFontHeightF,
-				   lb_p->actual_label_height);
-
+		nargs = 0;
 		if (lb_p->label_draw_count != olb_p->label_draw_count ||
 		    lb_p->label_strings != olb_p->label_strings ||
 		    lb_p->label_stride != olb_p->label_stride) {
 			NhlSetSArg(&sargs[nargs++],NhlNMtextNumStrings,
 				   lb_p->label_draw_count);
 			NhlSetSArg(&sargs[nargs++],NhlNMtextStrings,labels_p);
-			NhlSetSArg(&sargs[nargs++],
-				   NhlNMtextPosArray,lb_p->label_locs);
-		}
-		else if (label_locs_changed) {
 			NhlSetSArg(&sargs[nargs++],
 				   NhlNMtextPosArray,lb_p->label_locs);
 		}
@@ -3108,30 +3111,21 @@ static NhlErrorTypes    SetLabels
 		if (lb_p->label_direction != olb_p->label_direction)
 			NhlSetSArg(&sargs[nargs++],
 				   NhlNtxDirection,lb_p->label_direction);
-		if (lb_p->const_pos != olb_p->const_pos)
-			NhlSetSArg(&sargs[nargs++],
-				   NhlNMtextConstPosF,lb_p->const_pos);
 		if (lb_p->label_font != olb_p->label_font)
 			NhlSetSArg(&sargs[nargs++],
 				   NhlNtxFont,lb_p->label_font);
-		if (lb_p->label_just != olb_p->label_just)
-			NhlSetSArg(&sargs[nargs++],
-				   NhlNtxJust,lb_p->label_just);
 		if (lb_p->label_aspect != olb_p->label_aspect)
 			NhlSetSArg(&sargs[nargs++],
 				   NhlNtxFontAspectF,lb_p->label_aspect);
-		if (lb_p->label_color != olb_p->label_color)
-			NhlSetSArg(&sargs[nargs++],
-				   NhlNtxFontColor,lb_p->label_color);
 		if (lb_p->label_thickness != olb_p->label_thickness)
 			NhlSetSArg(&sargs[nargs++],
 				   NhlNtxFontThicknessF,lb_p->label_thickness);
 		if (lb_p->label_const_spacing != olb_p->label_const_spacing)
 			NhlSetSArg(&sargs[nargs++],NhlNtxConstantSpacingF,
-					lb_p->label_const_spacing);
+				   lb_p->label_const_spacing);
 		if (lb_p->label_func_code != olb_p->label_func_code)
 			NhlSetSArg(&sargs[nargs++],NhlNtxFuncCode,
-					lb_p->label_func_code);
+				   lb_p->label_func_code);
 		subret = NhlALSetValues(lb_p->labels_id,sargs,nargs);
 		if ((ret = MIN(ret,subret)) < NhlWARNING) {
 			e_text = "%s: Error setting MultiText object values";
@@ -3140,16 +3134,38 @@ static NhlErrorTypes    SetLabels
 		}
 	}
 
-
 	if (lb_p->auto_manage || lb_p->label_height <= 0.0) {
-
-		olb_p->label_just = lb_p->label_just;
-		olb_p->label_height = label_height;
 		subret = AdjustLabels(lb_p,olb_p,
 				      label_height,avail_char_space,
 				      larea.x,larea.y,entry_name);
 		ret = MIN(ret, subret);
 	}
+
+	nargs = 0;
+	if (label_locs_changed) {
+		NhlSetSArg(&sargs[nargs++],
+			   NhlNMtextPosArray,lb_p->label_locs);
+	}
+	if (lb_p->const_pos != olb_p->const_pos)
+		NhlSetSArg(&sargs[nargs++],
+			   NhlNMtextConstPosF,lb_p->const_pos);
+	if (lb_p->label_just != olb_p->label_just)
+		NhlSetSArg(&sargs[nargs++],
+			   NhlNtxJust,lb_p->label_just);
+	if (lb_p->label_height != olb_p->label_height)
+		NhlSetSArg(&sargs[nargs++],NhlNtxFontHeightF,
+			   lb_p->label_height);
+	if (lb_p->label_color != olb_p->label_color)
+		NhlSetSArg(&sargs[nargs++],
+			   NhlNtxFontColor,lb_p->label_color);
+
+	subret = NhlALSetValues(lb_p->labels_id,sargs,nargs);
+	if ((ret = MIN(ret,subret)) < NhlWARNING) {
+		e_text = "%s: Error setting MultiText object values";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
+	}
+
 
 	subret = NhlVAGetValues(lb_p->labels_id,
 				NhlNvpXF,&x,
@@ -3195,8 +3211,8 @@ static NhlErrorTypes   	AdjustLabels
 (
 	NhlLabelBarLayerPart *lb_p,
 	NhlLabelBarLayerPart *olb_p,
- 	float		height,
-	float		avail_space,
+ 	float		height,            /* not using this now */
+	float		avail_space,	   /* or this */
 	float		area_x,
 	float		area_y,
 	char		*entry_name
@@ -3222,12 +3238,12 @@ static NhlErrorTypes   	AdjustLabels
 	float avail_len;
 	float trans_angle;
 	float test_angle;
-	float box_major, box_minor, text_major, text_minor;
+	float box_major, box_minor;
 	float angle;
+	float space_fac = 0.2;
 
 	angle = (lb_p->label_angle < 0.0) ? 
 		lb_p->label_angle + 360.0 : lb_p->label_angle;
-
 /*
  * Get the width and height and the maximum text length of the multitext.
  */
@@ -3235,27 +3251,41 @@ static NhlErrorTypes   	AdjustLabels
 				NhlNMtextMaxLenF,&max_len,
 				NhlNvpWidthF,&w,
 				NhlNvpHeightF,&h,
+				NhlNtxFontHeightF,&height,
 				NULL);
 	if ((ret = MIN(ret,subret)) < NhlWARNING || w <= 0.0 || h <= 0.0) {
 		e_text = "%s: Error getting label information";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return NhlFATAL;
 	}
+
 /*
  * Set up the variables used to fit the text to the available space
+ * If the text basically parallels the length of the label bar then a fixed
+ * space is required to separate the labels. The space_fac introduces a little
+ * more space for longer strings.
  */
 
 	if (lb_p->orient == NhlHORIZONTAL) {
 		box_major = area_x / lb_p->label_draw_count;
-		text_major = box_major - area_x + w;
 		box_minor = area_y;
-		text_minor = max_len;
+
+		if (lb_p->label_direction == NhlACROSS &&
+		    fabs(fmod(lb_p->label_angle,180.)) 
+		    < NhlLB_TRANSITIONANGLE) {
+			box_major -= height;
+			space_fac = 0.1;
+		}
 	}
 	else {
-		box_minor = area_x;
-		text_minor = max_len;
 		box_major = area_y / lb_p->label_draw_count;
-		text_major = box_major - area_y + h;
+		box_minor = area_x;
+		if (lb_p->label_direction == NhlDOWN &&
+		    fabs(fmod(lb_p->label_angle,180.)) 
+		    < NhlLB_TRANSITIONANGLE) {
+			box_major -= height;
+			space_fac = 0.1;
+		}
 	}
 
 /*
@@ -3294,7 +3324,7 @@ static NhlErrorTypes   	AdjustLabels
 			sqrt(frac_minor * frac_minor + box_major * box_major);
 	}
 
-	t1 = avail_len / max_len * (1.0 - 0.2 * sin(theta)) ;
+	t1 = avail_len / max_len * (1.0 - space_fac * sin(theta)) ;
 	height *= t1;
 
 /*
@@ -3326,6 +3356,7 @@ static NhlErrorTypes   	AdjustLabels
 		}
 		height = MIN(height, 0.6 * box_major);
 	}
+	lb_p->label_height = height;
 
 /*
  * Manage the text justification.
@@ -3488,18 +3519,6 @@ static NhlErrorTypes   	AdjustLabels
 				lb_p->label_just = NhlBOTTOMCENTER;
 			}
 		}
-	}
-
-/*
- * Set the newly determined text height and justification
- */
-	lb_p->label_height = height;
-	if (_NhlCmpFAny(lb_p->label_height,olb_p->label_height,6) ||
-	    lb_p->label_just != olb_p->label_just) {
-		ret = NhlVASetValues(lb_p->labels_id,
-				     NhlNtxFontHeightF,lb_p->label_height,
-				     NhlNtxJust,lb_p->label_just,
-				     NULL);
 	}
 	return (ret);
 }
