@@ -1,5 +1,5 @@
 /*
- *	$Id: main.c,v 1.8 1991-09-26 16:29:20 clyne Exp $
+ *	$Id: main.c,v 1.9 1991-09-27 14:24:35 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -268,9 +268,7 @@ char	**argv;
 		/*
 		 *	open the metafile
 		 */
-		if ((cgm_fd = 
-			CGM_open(*meta_files, NCAR_REC_SIZE, O_RDONLY)) < 0) {
-
+		if ((cgm_fd = CGM_open(*meta_files, NCAR_REC_SIZE, "r")) < 0) {
 			ct_error(T_FOE, *meta_files);
 			exit(1);
 		}

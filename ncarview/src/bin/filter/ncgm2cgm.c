@@ -1,5 +1,5 @@
 /*
- *	$Id: ncgm2cgm.c,v 1.2 1991-01-09 10:56:13 clyne Exp $
+ *	$Id: ncgm2cgm.c,v 1.3 1991-09-27 14:25:29 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -77,9 +77,9 @@ main (argc,argv)
 	spaceAva = recordSize = record_size;	/* record record size	*/
 
 	/*
-	 * open file
+	 * open NCAR CGM file
 	 */
-	if ((cgm_fd = CGM_open("-", NCAR_CGM_S, O_RDONLY)) < 0) {
+	if ((cgm_fd = CGM_open("-", NCAR_CGM_S, "r")) < 0) {
 		perror(argv[0]);
 		exit(1);
 	}

@@ -1,5 +1,5 @@
 /*
- *	$Id: cgm2ncgm.c,v 1.3 1991-08-15 17:13:50 clyne Exp $
+ *	$Id: cgm2ncgm.c,v 1.4 1991-09-27 14:25:27 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -75,7 +75,7 @@ main (argc,argv)
 	/*
 	 * open stdout for writing
 	 */
-	if ((cgm_fd = CGM_open("-", NCAR_CGM_S, O_WRONLY)) < 0) {
+	if ((cgm_fd = CGM_open("-", NCAR_CGM_S, "w")) < 0) {
 		perror(argv[0]);
 		exit(1);
 	}
