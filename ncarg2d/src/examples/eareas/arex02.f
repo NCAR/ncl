@@ -130,9 +130,10 @@ C
         CALL GSCR (IWKID,1,1.,1.,1.)
 C
         DO 101 I=1,9
-          S=REAL(I)/9.
-          CALL GSCR (IWKID,10+I,S,1.-S,0.)
-          CALL GSCR (IWKID,20+I,S,1.-S,1.)
+          S=MAX(0.,MIN(1.,REAL(I)/9.))
+          T=MAX(0.,MIN(1.,1.-S))
+          CALL GSCR (IWKID,10+I,S,T,0.)
+          CALL GSCR (IWKID,20+I,S,T,1.)
   101   CONTINUE
 C
 C Define the mapping from the user system to the plotter frame.
