@@ -30,12 +30,8 @@ begin
 ;
 ;  a = file1->sst(0,:,:)
 ;  b = a
-;  do i = 15,180,1
-;    b(:,i-15) = a(:,i)
-;  end do
-;  do i = 165,180,1
-;    b(:,i) = a(:,i-165)
-;  end do
+;  b(:,0:165) = a(:,15:180)
+   b(:,165:180) = a(:,0:15)
 ;
 ; Create an sst data object.
 ;
@@ -93,7 +89,7 @@ begin
    ps = create "cn15Work" psWorkstationClass defaultapp
     "wkVisualType" : "color"
     "wkPSFileName" : "./cn15n.ps"      ; name the PostScript file
-    "wkColorMap" : cmap              ; assign the new color map
+    "wkColorMap"   : cmap              ; assign the new color map
 ;
 ; Since the plots are beside each other, use landscape mode and the
 ; PostScript resources for positioning the plot on the paper.
@@ -108,41 +104,41 @@ begin
 ; Create a ContourPlot object.
 ;
   cn = create "cn" contourPlotClass x
-    "cnScalarFieldData" : jan
-    "vpXF" : .06
-    "vpYF" : .65
-    "vpWidthF" : .60
-    "vpHeightF" : .30
-    "cnInfoLabelOn" : "False"
-    "cnHighLabelsOn" : "False"
-    "cnLowLabelsOn" : "False"
-    "cnMonoLineColor" : "False"
-    "cnLineColors"    : (/12,13,14,7,2,0,8,11,6,9,4,3,5,7,10/)
-    "cnLineDrawOrder" : "predraw"
-    "cnFillDrawOrder" : "predraw"
-    "cnLabelDrawOrder" : "predraw"
-    "cnLineLabelInterval" : 2
+    "cnScalarFieldData"        : jan
+    "vpXF"                     : .06
+    "vpYF"                     : .65
+    "vpWidthF"                 : .60
+    "vpHeightF"                : .30
+    "cnInfoLabelOn"            : "False"
+    "cnHighLabelsOn"           : "False"
+    "cnLowLabelsOn"            : "False"
+    "cnMonoLineColor"          : "False"
+    "cnLineColors"             : (/12,13,14,7,2,0,8,11,6,9,4,3,5,7,10/)
+    "cnLineDrawOrder"          : "predraw"
+    "cnFillDrawOrder"          : "predraw"
+    "cnLabelDrawOrder"         : "predraw"
+    "cnLineLabelInterval"      : 2
     "cnLineLabelPlacementMode" : "computed"
-    "tmXBMode" : "EXPLICIT"
-    "tmXBValues" : (/0,60,120,180,240,300,360/)
-    "tmXBLabels" : (/"0","60E","120E","180","120W","60W","0"/)
-    "tmYLMode" : "EXPLICIT"
-    "tmYLValues" : (/-90, -60,-30,0,30,60,90/)
-    "tmYLLabels" : (/"90S","60S","30S","EQ","30N","60N","90N"/)
-    "tmXTLabelsOn" : "False"
-    "tmYRLabelsOn" : "True"
-    "tmXBLabelFontHeightF" :  .010
-    "tmYLLabelFontHeightF" :  .010
-    "tmXBMajorOutwardLengthF" : .006
-    "tmXBMajorLengthF" : .006
-    "tmXTMajorLengthF" : 0.
-    "tmXTMajorOutwardLengthF" : 0.
-    "tmYLMajorOutwardLengthF" : .006
-    "tmYLMajorLengthF" : .006
-    "tmXBMinorOn" : "False"
-    "tmXTMinorOn" : "False"
-    "tmYLMinorOn" : "False"
-    "tmYRMinorOn" : "False"
+    "tmXBMode"                 : "EXPLICIT"
+    "tmXBValues"               : (/0,60,120,180,240,300,360/)
+    "tmXBLabels"               : (/"0","60E","120E","180","120W","60W","0"/)
+    "tmYLMode"                 : "EXPLICIT"
+    "tmYLValues"               : (/-90, -60,-30,0,30,60,90/)
+    "tmYLLabels"               : (/"90S","60S","30S","EQ","30N","60N","90N"/)
+    "tmXTLabelsOn"             : "False"
+    "tmYRLabelsOn"             : "True"
+    "tmXBLabelFontHeightF"     :  .010
+    "tmYLLabelFontHeightF"     :  .010
+    "tmXBMajorOutwardLengthF"  : .006
+    "tmXBMajorLengthF"         : .006
+    "tmXTMajorLengthF"         : 0.
+    "tmXTMajorOutwardLengthF"  : 0.
+    "tmYLMajorOutwardLengthF"  : .006
+    "tmYLMajorLengthF"         : .006
+    "tmXBMinorOn"              : "False"
+    "tmXTMinorOn"              : "False"
+    "tmYLMinorOn"              : "False"
+    "tmYRMinorOn"              : "False"
   end create
 ;
 ; Create another ContourPlot object.
@@ -150,50 +146,50 @@ begin
   cellsize = .8/360.
   ice = create "ice" contourPlotClass x
     "cnScalarFieldData" : jan
-    "vpXF" : .06
-    "vpYF" : .65
-    "vpWidthF" : .60
-    "vpHeightF" : .30
-    "tmXBOn" : "False"
-    "tmYLOn" : "False"
-    "tmXBMinorOn" : "False"
-    "tmYLMinorOn" : "False"
-    "tmXBLabelsOn"   : "False"
-    "tmYLLabelsOn"   : "False"
-    "tmXBMajorLengthF" : 0.
-    "tmYLMajorLengthF" : 0.
-    "cnFillOn" : "True"
-    "cnRasterModeOn" : "True"
+    "vpXF"              : .06
+    "vpYF"              : .65
+    "vpWidthF"          : .60
+    "vpHeightF"         : .30
+    "tmXBOn"            : "False"
+    "tmYLOn"            : "False"
+    "tmXBMinorOn"       : "False"
+    "tmYLMinorOn"       : "False"
+    "tmXBLabelsOn"      : "False"
+    "tmYLLabelsOn"      : "False"
+    "tmXBMajorLengthF"  : 0.
+    "tmYLMajorLengthF"  : 0.
+    "cnFillOn"          : "True"
+    "cnRasterModeOn"    : "True"
     "cnRasterCellSizeF" : cellsize
-    "cnMinLevelValF" : -2.0
-    "cnFillColors"   : (/0,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2/)
-    "cnLineLabelsOn" : "False"
-    "cnLinesOn" : "False"
-    "cnMonoFillColor" : "False"
-    "cnInfoLabelOn" : "False"
-    "cnHighLabelsOn" : "False"
+    "cnMinLevelValF"    : -2.0
+    "cnFillColors"      : (/0,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2/)
+    "cnLineLabelsOn"    : "False"
+    "cnLinesOn"         : "False"
+    "cnMonoFillColor"   : "False"
+    "cnInfoLabelOn"     : "False"
+    "cnHighLabelsOn"    : "False"
   end create
 ;
 ; Create a MapPlot object.
 ;
   mp = create "mp" mapPlotClass x
-    "vpXF" : .06
-    "vpYF" : .65
-    "vpWidthF" : .60
-    "vpHeightF" : .30
-    "mpFillOn" : True
-    "mpLabelsOn" : "False"
-    "mpDefaultFillColor" : 13
-    "mpLandFillColor" : 13
-    "mpOutlineOn" : "False"
-    "mpAreaMaskingOn" : "True"
-    "mpMaskAreaSpecifiers" : "Oceans"
+    "vpXF"                   : .06
+    "vpYF"                   : .65
+    "vpWidthF"               : .60
+    "vpHeightF"              : .30
+    "mpFillOn"               : True
+    "mpLabelsOn"             : "False"
+    "mpDefaultFillColor"     : 13
+    "mpLandFillColor"        : 13
+    "mpOutlineOn"            : "False"
+    "mpAreaMaskingOn"        : "True"
+    "mpMaskAreaSpecifiers"   : "Oceans"
     "mpInlandWaterFillColor" : 2
-    "mpGridAndLimbOn" : "False"
-    "mpLimitMode" : "latlon"
-    "mpMinLonF" : 0.
-    "mpMaxLonF" : 360.
-    "mpCenterLonF" : 180.
+    "mpGridAndLimbOn"        : "False"
+    "mpLimitMode"            : "latlon"
+    "mpMinLonF"              : 0.
+    "mpMaxLonF"              : 360.
+    "mpCenterLonF"           : 180.
   end create
 ;
 ; Create a TextItem object.

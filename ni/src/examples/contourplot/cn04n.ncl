@@ -133,16 +133,13 @@ end getvalues
 ; of areas less than the minimum contour level and the last element 
 ; specifies attributes of areas greater than the maximum contour level. 
 ;
-do i=0,dimsizes(levels)-1 
-    if (lvlflags(i) .eq. 3)
-                thicknesses(i) = 2.0
-    end if
-        if (levels(i) .ge. .000045 .and. levels(i) .lt. .000055)
-                pats(i) = 6
-        else 
-            pats(i) = -1
-    end if
-end do
+thicknesses(ind(lvlflags.eq.3)) = 2.0
+if(num(levels.ge.0.000045.and.levels.lt.0.000055).ne.0) then
+  pats(ind(levels.ge.0.000045.and.levels.lt.0.000055)) = 6
+end if
+if(num(levels.lt.0.000045.or.levels.ge.0.000055).ne.0) then
+  pats(ind(levels.lt.0.000045.or.levels.ge.0.000055)) = -1
+end if
 pats(dimsizes(pats)-1) = -1
 
 ;

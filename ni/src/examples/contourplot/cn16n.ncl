@@ -26,12 +26,8 @@ begin
 ;
   a = file1->sst(0,:,:)
   b = a
-  do i = 15,180,1
-    b(:,i-15) = a(:,i)
-  end do
-  do i = 165,180,1
-    b(:,i) = a(:,i-165)
-  end do
+  b(:,0:165) = a(:,15:180)
+  b(:,165:180) = a(:,0:15)
 ;
 ; create an sst data object
 ;

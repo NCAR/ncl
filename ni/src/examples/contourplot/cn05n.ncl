@@ -170,14 +170,11 @@ end create
 
 
 ; Create an array that will contain the indices into the 
-; colormap defined earlier.
-fillindices = new (62, integer)
-
-; Assign the indices, skipping the first two colormap entries
-; that contain the default background and foreground color. 
-do i = 0, 61
-   fillindices(i) = i+2
-end do
+; colormap defined earlier. Assign the indices, skipping the
+; first two colormap entries that contain the default background
+; and foreground color. 
+;
+fillindices = ispan(2,63,1)
 
 ; Create a contour plot object.
 con1 = create "con1" contourPlotClass wks

@@ -36,10 +36,7 @@ begin
 ;
 ;  Colors for contour fill areas varying from blue to red.
 ;
-  ii = new(NCOLORS-2,float)
-  do i = 1,NCOLORS-2
-    ii(i-1) = i
-  end do
+  ii = ispan(1,NCOLORS-2,1)
   cmap( 0,:) = (/0.00, 0.00, 0.00/)
   cmap( 1,:) = (/1.00, 1.00, 1.00/)
   cmap(2:NCOLORS-1,0) = (1.0*(ii-1))/((NCOLORS-3)*1.0)
@@ -103,16 +100,13 @@ begin
 ;
   delete(ii)
   ii = new((/NCLS,NCLS/),float)
-
-  do i = 0,NCLS-1
-    ii(i,:) = i
-  end do
+  ii = onedtond(ispan(0,NCLS-1,1),(/NCLS,NCLS/))
 
   ii!0 = "x"
   ii!1 = "y"
 
-  x = .05+.90*(ii(y | :,x | : )+.5)/NCLS
-  y = .05+.90*(ii+.5)/NCLS
+  x = .05+.90*(ii+.5)/NCLS
+  y = .05+.90*(ii(y | :,x | : )+.5)/NCLS
  
   do i=0,NCLS-1
     NhlNDCToData(mpid,x(i,:),y(i,:),x(i,:),y(i,:))

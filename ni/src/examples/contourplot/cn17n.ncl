@@ -74,11 +74,11 @@ begin
   cmap(4,:) = (/1., 1, 1./)
   cmap(5,:) = (/.4, .4, .4/)
   cmap(6,:) = (/1., 1, 0./)
-  do i=8,NCOLORS
-    cmap(i-1,0) = (NCOLORS-i)/15.
-    cmap(i-1,1) = 0.
-    cmap(i-1,2) = (i-8)/15.
-  end do
+  ii = ispan(8,NCOLORS,1)
+  cmap(7:NCOLORS-1,0) = (NCOLORS-ii)/15.
+  cmap(7:NCOLORS-1,1) = 0
+  cmap(7:NCOLORS-1,2) = (ii-8)/15.
+  delete(ii)
 ;
 ; Output to an X11 workstation
 ;
@@ -126,36 +126,37 @@ begin
   ctrlon = -105.
   xlonrng = cmaxlon - cminlon
   xlatrng = cmaxlat - cminlat
-  clon = new(NCIRC,float)
-  clat = new(NCIRC,float)
-  do i=0,NCIRC-1
-    clon(i) = ctrlon + 7.*cos((i*6.28)/(NCIRC-1))
-    clat(i) = ctrlat + 7.*sin((i*6.28)/(NCIRC-1))
-  end do
+  ii = ispan(0,NCIRC-1,1)
+  clon = ctrlon + 7.*cos((ii*6.28)/(NCIRC-1))
+  clat = ctrlat + 7.*sin((ii*6.28)/(NCIRC-1))
+  delete(ii)
 ;
 ; Generate some dummy data to contour later.
 ;
   miss_val = 1.e12
   xlonstp = xlonrng/(NCLS-1);
   xlatstp = xlatrng/(NCLS-1);
-  do i = 0,NCLS-1
-    xlon = cminlon + i * xlonstp
-    x = (1.*i)/(NCLS-1)
-    do j = 0,NCLS-1
+  ii = ispan(0,NCLS-1,1)
+  x = (1.*ii)/(NCLS-1)
+  xlon = cminlon + ii * xlonstp
+  dist = new((/NCLS/),float)
+  do j = 0,NCLS-1
       xlat = cminlat + j * xlatstp
       dist = sqrt((ctrlat-xlat)*(ctrlat-xlat) + (ctrlon-xlon)*(ctrlon-xlon))
 ;
 ; If xlat/xlon falls outside of circle, then we don't
 ; want to contour this location.
 ;
-      if (dist .le. 7.0) then
+      if (num(dist.le.7.0).ne.0) then
         y = (1.*j)/(NCLS-1)
-        zdat(j,i) = x*x + y*y + x*y + sin(9.*x)*cos(9.*y)
-      else
-        zdat(j,i) = miss_val
-     end if
-    end do
+        inds = ind(dist.le.7.0)
+        zdat(j,(/inds/)) = x((/inds/))^2 + y^2 + x((/inds/))*y \
+                           + sin(9.*x((/inds/)))*cos(9.*y)
+        delete(inds)
+      end if
+      zdat(j,ind(dist.gt.7.0)) = miss_val
   end do
+  delete(dist)
 ;
 ; AnnoManager objects allow the PlotManager to manipulate any View
 ; class object as an annotation a uniform fashion. They allow

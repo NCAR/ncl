@@ -32,15 +32,10 @@ len_dims = new((/2/),integer)
 ;
 ; create a simple bull's eye pattern test data set
 ;
-PI = 3.14159
-
-do i= -N/2,N/2
-    do j= -M/2,M/2
-        x = 8.0 * i
-        y = 8.0 * j
-        T(i+N/2,j+M/2) = 100.0 - sqrt(x*x + y*y);
-    end do
-end do
+T = onedtond(ispan(-M/2,(M-1)/2,1),(/N,M/))
+T!0 = "x"
+T!1 = "y"
+T = 100.0 - sqrt((8.*T(:,:))^2 + (8.*T(y | :, x | :))^2)
 
 ;
 ; Create an application context. Set the app dir to the current directory

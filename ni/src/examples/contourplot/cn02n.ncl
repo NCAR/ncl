@@ -152,9 +152,9 @@ getvalues cnid
 end getvalues
 
 count = dimsizes(fscales)
-do i= 0,count-1
-    fscales(i) = 2.5 - 2.0 * i / (count - 1)
-end do
+ii = ispan(0,count-1,1)
+fscales = 2.5 - 2.0 * ii / (count - 1)
+delete(ii)
 
 setvalues cnid
     "cnMonoFillScale" : "false"
@@ -190,11 +190,7 @@ getvalues cnid
 end getvalues
 
 count = dimsizes(colors)
-do i= 0,count/2-1
-    itmp = colors(i)
-    colors(i) = colors(count - 1 - i)
-    colors(count - 1 - i) = itmp
-end do
+colors(0:count/2-1) = colors(count-1:count-1-(count/2-1))
 
 setvalues cnid
     "cnFillColors" : colors
