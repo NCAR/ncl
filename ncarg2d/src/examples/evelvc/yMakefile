@@ -1,0 +1,20 @@
+#
+#	$Id: yMakefile,v 1.1 1993-01-17 04:30:01 haley Exp $
+#
+NCARG	= ../../../..
+
+FSPLIT	= ncarguncat
+
+MYNAME	= evelvc
+
+GENERIC_SRCS = \
+	 vvex01.f vvex02.f vvexcc.f 
+
+install::
+	@for file in $(GENERIC_SRCS); do\
+	($(INSTALL) -m $(INSTALL_LIB) $$file $(EXAMPLESPATH));\
+	done
+
+MakefileTarget
+CleanTarget
+UpdateTarget
