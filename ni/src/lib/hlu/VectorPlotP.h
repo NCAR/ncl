@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlotP.h,v 1.4 1996-03-30 00:29:03 dbrown Exp $
+ *      $Id: VectorPlotP.h,v 1.5 1996-04-29 15:36:44 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -178,7 +178,9 @@ typedef struct _NhlVectorPlotLayerPart {
 	NhlBoolean		mono_l_arrow_color;
 	NhlColorIndex		l_arrow_color;
 	float			l_arrow_thickness;
+	NhlBoolean		l_arrowhead_min_size_set;
 	float			l_arrowhead_min_size;
+	NhlBoolean		l_arrowhead_max_size_set;
 	float			l_arrowhead_max_size;
 	NhlBoolean		fill_arrows_on;
 	NhlBoolean		mono_f_arrow_fill_color;

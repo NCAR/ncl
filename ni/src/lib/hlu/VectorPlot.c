@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.c,v 1.14 1996-04-26 01:11:40 dbrown Exp $
+ *      $Id: VectorPlot.c,v 1.15 1996-04-29 15:36:42 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -205,12 +205,18 @@ static NhlResource resources[] = {
 	{NhlNvcLineArrowThicknessF,NhlCvcLineArrowThicknessF,
 		  NhlTFloat,sizeof(float),Oset(l_arrow_thickness),NhlTString,
 		  _NhlUSET("1.0"),0,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 Oset(l_arrowhead_min_size_set),NhlTImmediate,
+		 _NhlUSET((NhlPointer)True),0,NULL},
 	{NhlNvcLineArrowHeadMinSizeF,NhlCvcLineArrowHeadMinSizeF,
 		  NhlTFloat,sizeof(float),Oset(l_arrowhead_min_size),
-		 NhlTString,_NhlUSET("0.005"),0,NULL},
+		  NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 Oset(l_arrowhead_max_size_set),NhlTImmediate,
+		 _NhlUSET((NhlPointer)True),0,NULL},
 	{NhlNvcLineArrowHeadMaxSizeF,NhlCvcLineArrowHeadMaxSizeF,
 		  NhlTFloat,sizeof(float),Oset(l_arrowhead_max_size),
-		 NhlTString,_NhlUSET("0.05"),0,NULL},
+		  NhlTProcedure,_NhlUSET((NhlPointer)ResourceUnset),0,NULL},
 
 	{NhlNvcFillArrowsOn,NhlCvcFillArrowsOn,
 		  NhlTBoolean,sizeof(NhlBoolean),
@@ -1804,6 +1810,10 @@ VectorPlotInitialize
 		vcp->zerof_lbl.height = 0.01;
 	if (! vcp->ref_length_set) 
 		vcp->ref_length = 0.0;
+	if (! vcp->l_arrowhead_min_size_set)
+		vcp->l_arrowhead_min_size = 0.003;
+	if (! vcp->l_arrowhead_max_size_set)
+		vcp->l_arrowhead_max_size = 0.03;
 	if (! vcp->x_min_set)
 		vcp->x_min = 0.0;
 	if (! vcp->x_max_set)
@@ -1995,6 +2005,8 @@ VectorPlotInitialize
 	vcp->zerof_lbl.height_set = False;
 	vcp->lbar_labels_res_set = False;
 	vcp->ref_length_set = False;
+	vcp->l_arrowhead_min_size_set = False;
+	vcp->l_arrowhead_max_size_set = False;
 
 	return ret;
 }
@@ -2066,6 +2078,10 @@ static NhlErrorTypes VectorPlotSetValues
 		vcp->zerof_lbl.height_set = True;
 	if (_NhlArgIsSet(args,num_args,NhlNvcRefLengthF))
 		vcp->ref_length_set = True;
+	if (_NhlArgIsSet(args,num_args,NhlNvcLineArrowHeadMinSizeF))
+		vcp->l_arrowhead_min_size_set = True;
+	if (_NhlArgIsSet(args,num_args,NhlNvcLineArrowHeadMaxSizeF))
+		vcp->l_arrowhead_max_size_set = True;
 	if (_NhlArgIsSet(args,num_args,NhlNtrXMinF))
 		vcp->x_min_set = True;
 	if (_NhlArgIsSet(args,num_args,NhlNtrXMaxF))
@@ -2220,6 +2236,8 @@ static NhlErrorTypes VectorPlotSetValues
 	vcp->zerof_lbl.height_set = False;
 	vcp->lbar_labels_res_set = False;
 	vcp->ref_length_set = False;
+	vcp->l_arrowhead_min_size_set = False;
+	vcp->l_arrowhead_max_size_set = False;
 
 	return ret;
 }
@@ -3409,8 +3427,10 @@ static NhlErrorTypes vcDraw
 	if (! vcp->fill_arrows_on) {
 		c_vvseti("AST",0);
 		c_vvsetr("LWD",MAX(0.0,vcp->l_arrow_thickness));
-		c_vvsetr("AMN",MAX(0.0,vcp->l_arrowhead_min_size));
-		c_vvsetr("AMX",MAX(0.0,vcp->l_arrowhead_max_size));
+		c_vvsetr("AMN",MAX(0.0,
+				vcp->l_arrowhead_min_size/vcl->view.width));
+		c_vvsetr("AMX",MAX(0.0,
+				vcp->l_arrowhead_max_size/vcl->view.width));
                 if (vcp->mono_l_arrow_color) {
                         int lcolor = vcp->l_arrow_color;
 
@@ -5430,8 +5450,10 @@ static NhlErrorTypes ManageVecAnno
 	vcp->a_params.vrl_vrln = 
 		MAX(0.0,vcp->real_ref_length / vcnew->view.width);
 	vcp->a_params.vrm_vrmg = MAX(0.0,vcp->ref_magnitude);
-	vcp->a_params.amn_famn = MAX(0.0,vcp->l_arrowhead_min_size);
-	vcp->a_params.amx_famx = MAX(0.0,vcp->l_arrowhead_max_size);
+	vcp->a_params.amn_famn = MAX(0.0,
+			     vcp->l_arrowhead_min_size / vcnew->view.width);
+	vcp->a_params.amx_famx = MAX(0.0,
+			     vcp->l_arrowhead_max_size / vcnew->view.width);
 	vcp->a_params.air_fair = vcp->f_arrowhead_interior;
 	vcp->a_params.awr_fawr = vcp->f_arrow_width;
 	vcp->a_params.awf_fawf = vcp->f_arrow_min_width;
@@ -6675,6 +6697,27 @@ static NhlErrorTypes    ManageViewDepResources
 			vcp->real_ref_length *= ratio;
 			if (vcp->ref_length > 0.0)
 				vcp->ref_length = vcp->real_ref_length;
+		}
+	}
+
+	if (! vcp->l_arrowhead_min_size_set) {
+		if (init) {
+			vcp->l_arrowhead_min_size *= 
+				vcnew->view.width / Nhl_vcSTD_VIEW_WIDTH;
+		}
+		else if (vcnew->view.width != vcold->view.width) {
+			vcp->l_arrowhead_min_size *= 
+				vcnew->view.width / vcold->view.width;
+		}
+	}
+	if (! vcp->l_arrowhead_max_size_set) {
+		if (init) {
+			vcp->l_arrowhead_max_size *= 
+				vcnew->view.width / Nhl_vcSTD_VIEW_WIDTH;
+		}
+		else if (vcnew->view.width != vcold->view.width) {
+			vcp->l_arrowhead_max_size *= 
+				vcnew->view.width / vcold->view.width;
 		}
 	}
 
