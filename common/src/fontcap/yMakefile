@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.15 2003-04-14 13:48:39 haley Exp $
+#	$Id: yMakefile,v 1.16 2004-07-31 15:30:27 haley Exp $
 #
 
 MYNAME	= fontcap
@@ -16,7 +16,12 @@ ffprsa.f  fftbkd.f  fftkin.f  sffndc.f  sfgtin.f  sfgtkw.f  sfprcf.f  sfskbk.f \
 sftbkd.f
 
 FCPP_OBJS       = cfaamn.f
+#if defined(Darwin)
+PROG_LIBS	=	$(NCARGCLIB) $(CTOFLIBS)
+#else
 PROG_LIBS	=	$(NCARGCLIB)
+#endif
+
 DEPLIBS		=	$(DEPNCARGCLIB)
 
 FONTCAPS = \
