@@ -1,5 +1,5 @@
 /*
- *      $Id: Project,v 1.7 1994-08-05 23:05:35 boote Exp $
+ *      $Id: Project,v 1.8 1994-08-08 21:49:11 boote Exp $
  */
 /************************************************************************
 *									*
@@ -230,6 +230,7 @@ NGENV_DESCRIPT	= '{"tmp","TMPDIR",NULL,"$(TMPROOT)",NULL,	\
 		"tutorial",NULL,"ncarg",NULL,NULL,		\
 		"xapp",NULL,"ncarg",NULL,NULL,			\
 		"sysresfile",NULL,"ncarg",NULL,NULL,		\
+		"sysappres",NULL,"ncarg",NULL,NULL,		\
 		NULL}'
 
 NGENVDEF	=	-DENV_DEFS=$(NGENV_DESCRIPT)
