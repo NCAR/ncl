@@ -1,11 +1,8 @@
 NCARG	= ../../../..
 #
-#	$Id: yMakefile,v 1.13 1992-02-27 22:06:27 clyne Exp $
+#	$Id: yMakefile,v 1.14 1992-02-27 22:08:57 clyne Exp $
 #
 
-#
-# lone last time
-#
 LOCINCDIR	= ../../include
 
 MYNAME		= ctrans
