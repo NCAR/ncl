@@ -1,5 +1,5 @@
 C
-C $Id: mplnam.f,v 1.1 1998-04-16 20:45:48 kennison Exp $
+C $Id: mplnam.f,v 1.2 1998-04-17 22:11:00 kennison Exp $
 C
       SUBROUTINE MPLNAM (FLNM,ILVL,IAMA)
 C
@@ -197,7 +197,7 @@ C
           NTMS=0
           MCHR=0
           NCHR=0
-          DO 111 IDIV=0,9
+          DO 111 IDIV=0,15
             NROW=2**IDIV
             NCOL=2*NROW
             DO 110 J=1,NROW
