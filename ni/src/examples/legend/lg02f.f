@@ -68,7 +68,7 @@ C
          call nhlfrlclear(rlist)
          call nhlfrlsetstring(rlist,'wkMetaName','./lg02f.ncgm',ierr)
          call nhlfcreate(wid,'lg02Work',
- 1       nhlfncgmworkstationlayerclass,0,rlist,ierr) 
+     1       nhlfncgmworkstationlayerclass,0,rlist,ierr) 
       else 
 C
 C Create an X Workstation.
