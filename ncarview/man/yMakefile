@@ -1,9 +1,9 @@
 #
-#	$Id: yMakefile,v 1.15 1994-05-27 20:39:46 haley Exp $
+#	$Id: yMakefile,v 1.16 1994-05-27 20:49:06 haley Exp $
 #
 
 MAN1	= ctrans ictrans ncgm2cgm cgm2ncgm med gcaps fcaps \
-	rasview idt cgm_edit rascat rasgetpal \
+	rasview idt rascat rasgetpal \
 	rasls rassplit
 MAN3	= cgm 
 MAN5	= ncarv_spool ras_palette ras_formats
