@@ -1,5 +1,5 @@
 /*
- *      $Id: c_ctllg3.c,v 1.1 2003-10-06 22:03:45 kennison Exp $
+ *      $Id: c_ctllg3.c,v 1.2 2003-10-07 04:06:46 haley Exp $
  */
 
 /*
@@ -20,7 +20,7 @@
  * Include NCAR Graphics function prototypes (local modified version).
  */
 
-#include "ncargC.h"
+#include <ncarg/ncargC.h>
 
 /*
  * Define the workstation type and identifier.
