@@ -1,5 +1,5 @@
 /*
- *      $Id: wks.c.sed,v 1.15 1994-05-07 00:47:46 fred Exp $
+ *      $Id: wks.c.sed,v 1.16 1994-06-08 16:21:27 boote Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -79,10 +79,12 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <ncarg/c.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/types.h>
+#include <sys/wait.h>
 #include <sys/file.h>
 #ifdef cray
 #include <fortran.h>
@@ -898,6 +900,9 @@ int	delfil_(fname, status)
 	(void) strcat(tname, fname);	
 	(void) remove(tname);
 	free(tname);
+#ifdef cray
+	free(fname)
+#endif
 	*status = 0;
 	return(0);
 }
