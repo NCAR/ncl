@@ -1,5 +1,5 @@
 /*
- *      $Id: Site,v 1.6 1994-04-06 21:40:53 boote Exp $
+ *      $Id: Site,v 1.7 1994-08-10 21:22:45 boote Exp $
  *
  ************************************************************************
  *									*
@@ -46,16 +46,16 @@
  * set here - From outside the build tree, they are build using the value
  * of NCARG_ROOT or `ncargpath bin...` etc.
  */
-/* #define YmakeRoot /usr/local */
-/* #define BinRoot /usr/local/bin */
-/* #define LibRoot /usr/local/lib */
-/* #define IncRoot /usr/local/include */
-/* #define ManRoot /usr/local/man */
+/* #define YmakeRoot "/usr/local" */
+/* #define BinRoot "/usr/local/bin" */
+/* #define LibRoot "/usr/local/lib" */
+/* #define IncRoot "/usr/local/include" */
+/* #define ManRoot "/usr/local/man" */
 
 /*
  * Again the configure script should edit these variables
  */
-/* #define TmpRoot /tmp */
+/* #define TmpRoot "/tmp" */
 
 #define	InstallYmake
 #define LibSearch -L/X/X11/lib -L/usr/local/lib 
