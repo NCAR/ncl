@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.10 1993-10-19 17:30:38 boote Exp $
+#	$Id: yMakefile,v 1.11 1994-08-11 18:37:35 haley Exp $
 #
 
 MYNAME	= plotchar
@@ -34,18 +34,12 @@ FCPP_OBJS       = pcfopn.f
 
 PartialLibraryTarget(libncarg.a,$(OBJECTS))
 PartialSourceLibraryTarget($(MYNAME),srcncarg.a,$(SOURCES))
-CleanFilesTarget(pcfopn.F bofred.c pcbnrd.c $(FCPP_OBJS))
+CleanFilesTarget(pcfopn.F $(FCPP_OBJS))
 
 pcfopn.F: pcfopn.F.sed Makefile
 	@sed \
 	-e 's+SED_DBDIR+$(DBDIR)+' \
 	<pcfopn.F.sed >pcfopn.F
-
-bofred.c:  bofred.c.sed Makefile
-	@$(CALLCONV) $(SYSTEM_INCLUDE) bofred.c bofred
-
-pcbnrd.c:  pcbnrd.c.sed Makefile
-	@$(CALLCONV) $(SYSTEM_INCLUDE) pcbnrd.c pcbnrd
 
 /* Probably obsolete - but we'll leave it here anyway */
 #if defined(apollo)
