@@ -1,9 +1,10 @@
 NCARG	= .
 
-SUBDIRS	= ncarg2d common ncarview
+SUBDIRS	= common ncarg2d ncarview
 
 NEWDIRS	= $(BINPATH) $(LIBPATH) $(INCPATH) $(MANPATH) $(FONTCAPPATH) \
-	$(GRAPHCAPPATH) $(DBPATH) $(EXAMPLEPATH) $(TESTPATH) $(XAPPPATH)
+	$(GRAPHCAPPATH) $(DBPATH) $(EXAMPLESPATH) $(TESTSPATH) $(XAPPPATH)\
+	$(TUTORIALPATH)
 
 all::	dirs
 
@@ -32,8 +33,9 @@ Info:
 	echo "	Include Directory            " $(INCPATH); \
 	echo "	Manpage Directory            " $(MANPATH); \
 	echo "	Data Base Directory          " $(DBPATH); \
-	echo "	Examples Directory           " $(EXAMPLEPATH); \
-	echo "	Test Directory               " $(TESTPATH); \
+	echo "	Examples Directory           " $(EXAMPLESPATH); \
+	echo "	Tutorial Directory           " $(TUTORIALPATH); \
+	echo "	Test Directory               " $(TESTSPATH); \
 	echo "	X App. Defaults Directory    " $(XAPPPATH); \
 	echo "	f77 Flags                    " $(FFLAGS); \
 	echo "	cc Flags                     " $(CFLAGS);
