@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.120 2003-03-03 20:31:43 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.121 2003-03-07 15:45:14 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -1481,13 +1481,13 @@ begin
   end getvalues
 
   orthpos = get_res_value(amres,"amOrthogonalPosF",0.01*vph)
-  ablank = stringtochar(" ")
+  ablank = stringtocharacter(" ")
   do i=0,2
     if(.not.ismissing(strings(i)).and.strings(i).ne."")
 ;
 ; Check to make sure the string doesn't contain only blanks.
 ;
-      chararray = stringtochar(strings(i)) 
+      chararray = stringtocharacter(strings(i)) 
       string_len = dimsizes(chararray)-1
 
       if(any(chararray(0:string_len-1).ne.ablank(0)))
@@ -3628,8 +3628,8 @@ begin
       found = False
       i = 0
       do while(i.lt.dimsizes(names).and..not.found)
-        names_char = stringtochar(names)
-        if(chartostring(names_char(i,0:3)).eq."lon_")
+        names_char = stringtocharacter(names)
+        if(charactertostring(names_char(i,0:3)).eq."lon_")
           start = i
           found = True
         end if

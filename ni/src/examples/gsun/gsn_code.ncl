@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.104 2003-03-03 20:31:43 haley Exp $
+;      $Id: gsn_code.ncl,v 1.105 2003-03-07 15:45:13 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -360,16 +360,16 @@ begin
   upper = (/"A","B","C","D","E","F","G","H","I","J","K","L","M", \
             "N","O","P","Q","R","S","T","U","V","W","X","Y","Z" /)
   
-  lowc  = stringtochar(lower)
-  upc   = stringtochar(upper)
-  namec = stringtochar(name)
+  lowc  = stringtocharacter(lower)
+  upc   = stringtocharacter(upper)
+  namec = stringtocharacter(name)
 
   do i = 0, dimsizes(namec)-2
     if (any(upc(:,0).eq.namec(i))) then
       namec(i) = lowc(ind(upc(:,0).eq.namec(i)),0)
     end if
   end do
-  return(chartostring(namec))
+  return(charactertostring(namec))
 end
 
 
@@ -477,16 +477,16 @@ begin
   if(res.and..not.any(ismissing(getvaratts(res))))
     attnames = getvaratts(res)
     do i = 0, dimsizes(attnames)-1
-      res2 = stringtochar(attnames(i))
+      res2 = stringtocharacter(attnames(i))
 ;
 ; Loop through the resource prefixes and determine their length
 ; so that we only check that many characters in the resource name.
 ;
       do j = 0, dimsizes(res_prefix)-1
-        res_prefix_c = stringtochar(res_prefix(j))
+        res_prefix_c = stringtocharacter(res_prefix(j))
         rpclen       = dimsizes(res_prefix_c)-1   ; Don't count null char
         if(dimsizes(res2).ge.rpclen.and.\
-           any(chartostring(res2(0:rpclen-1)).eq.res_prefix(j)))
+           any(charactertostring(res2(0:rpclen-1)).eq.res_prefix(j)))
           ret_res = True
           ret_res@$attnames(i)$ = res@$attnames(i)$
         end if
@@ -514,7 +514,7 @@ begin
   if(res.and..not.any(ismissing(getvaratts(res))))
     attnames = getvaratts(res)
     do i = 0, dimsizes(attnames)-1
-      res2 = stringtochar(attnames(i))
+      res2 = stringtocharacter(attnames(i))
 ;
 ; Loop through the resource prefixes and determine their length
 ; so that we only check that many characters in the resource name.
@@ -522,10 +522,10 @@ begin
       j = 0
       found = False
       do while(.not.found.and.j.le.dimsizes(res_prefix)-1)
-        res_prefix_c = stringtochar(res_prefix(j))
+        res_prefix_c = stringtocharacter(res_prefix(j))
         rpclen       = dimsizes(res_prefix_c)-1   ; Don't count null char
         if(dimsizes(res2).ge.rpclen.and.\
-          chartostring(res2(0:rpclen-1)).eq.res_prefix(j))
+          charactertostring(res2(0:rpclen-1)).eq.res_prefix(j))
           found = True
         end if
         j = j + 1
@@ -1930,19 +1930,19 @@ begin
 ; Parse "name" to get the directory and the file prefix.
 ;
     if(name.ne."") then
-      name_char = stringtochar(name)
+      name_char = stringtocharacter(name)
       name_len  = dimsizes(name_char)-1
       i = name_len-1      ; Start checking if a directory pathname
       not_found = True    ; was specified for the resource file.
       do while(not_found.and.i.ge.0)
         if(name_char(i).eq."/")
-          res_dir  = chartostring(name_char(0:i))
+          res_dir  = charactertostring(name_char(0:i))
           not_found = False
         end if
         i = i - 1
       end do
 
-      res_file = chartostring(name_char(i+1:name_len-1))
+      res_file = charactertostring(name_char(i+1:name_len-1))
 
       if(isatt(name,"appUsrDir").and.not_found)
         res_dir = name@appUsrDir   ; No directory specified.
@@ -4529,13 +4529,13 @@ begin
     rgb_text(i) = lower_case(rgb_text(i))  ; convert to lower case
   end do
 
-  rgb_text_char = stringtochar(rgb_text)    ; convert to character
+  rgb_text_char = stringtocharacter(rgb_text)    ; convert to character
 ;
 ; Normalize RGB values.
 ;
-  red   = stringtointeger(chartostring(rgb_text_char(:,0:2)))/255.
-  green = stringtointeger(chartostring(rgb_text_char(:,4:6)))/255.
-  blue  = stringtointeger(chartostring(rgb_text_char(:,8:10)))/255.
+  red   = stringtointeger(charactertostring(rgb_text_char(:,0:2)))/255.
+  green = stringtointeger(charactertostring(rgb_text_char(:,4:6)))/255.
+  blue  = stringtointeger(charactertostring(rgb_text_char(:,8:10)))/255.
 ;
 ; Color names don't start in the same column, so we have to search
 ; for them.  The end of the RGB values is column 10, so start searching
@@ -4548,7 +4548,7 @@ begin
     done = False
     do while(j.lt.(dimsizes(tmp_name)-1).and..not.done)
       if(tmp_name(j).ne." ".and.tmp_name(j).ne."	") then
-        names(i) = chartostring(rgb_text_char(i,12+j:))
+        names(i) = charactertostring(rgb_text_char(i,12+j:))
         done = True
       end if
       j = j+1
@@ -7576,7 +7576,7 @@ begin
 ; Get list of resources.
 
         attnames = getvaratts(res2)
-        res = stringtochar(attnames(ind(attnames.ne."_FillValue")))
+        res = stringtocharacter(attnames(ind(attnames.ne."_FillValue")))
 
 ;***********************************************************************;
 ; Check to see if any xy plot resources were set.  There are two kinds  ;
@@ -7590,35 +7590,35 @@ begin
 ; object.                                                               ;
 ;***********************************************************************;
         if(dimsizes(dimsizes(res)).eq.1)
-            if((chartostring(res(0:1)).ne."ca".and.\
-                chartostring(res(0:1)).ne."xy").or.\
-               (chartostring(res(0:1)).eq."xy".and.\
-               (chartostring(res(0:3)).eq."xyCo".or.\
-                chartostring(res(0:2)).eq."xyX".or.\
-                chartostring(res(0:2)).eq."xyY")))
+            if((charactertostring(res(0:1)).ne."ca".and.\
+                charactertostring(res(0:1)).ne."xy").or.\
+               (charactertostring(res(0:1)).eq."xy".and.\
+               (charactertostring(res(0:3)).eq."xyCo".or.\
+                charactertostring(res(0:2)).eq."xyX".or.\
+                charactertostring(res(0:2)).eq."xyY")))
                 setvalues plot_object
                     attnames : res2@$attnames$
                 end setvalues
             end if
-            if(chartostring(res(0:1)).eq."xy".and.\
-              (chartostring(res(0:3)).ne."xyCo".and.\
-               chartostring(res(0:2)).ne."xyX".and.\
-               chartostring(res(0:2)).ne."xyY"))
+            if(charactertostring(res(0:1)).eq."xy".and.\
+              (charactertostring(res(0:3)).ne."xyCo".and.\
+               charactertostring(res(0:2)).ne."xyX".and.\
+               charactertostring(res(0:2)).ne."xyY"))
                 setvalues dspec
                     attnames : res2@$attnames$
                 end setvalues
             end if
         else
-            xy_res_index = ind((chartostring(res(:,0:1)).ne."ca".and.\
-                                chartostring(res(:,0:1)).ne."xy").or.\
-                               (chartostring(res(:,0:1)).eq."xy".and.\
-                               (chartostring(res(:,0:3)).eq."xyCo".or.\
-                                chartostring(res(:,0:2)).eq."xyX".or.\
-                                chartostring(res(:,0:2)).eq."xyY")))
-            xydp_res_index = ind(chartostring(res(:,0:1)).eq."xy".and.\
-                                (chartostring(res(:,0:3)).ne."xyCo".and.\
-                                 chartostring(res(:,0:2)).ne."xyX".and.\
-                                 chartostring(res(:,0:2)).ne."xyY"))
+            xy_res_index = ind((charactertostring(res(:,0:1)).ne."ca".and.\
+                                charactertostring(res(:,0:1)).ne."xy").or.\
+                               (charactertostring(res(:,0:1)).eq."xy".and.\
+                               (charactertostring(res(:,0:3)).eq."xyCo".or.\
+                                charactertostring(res(:,0:2)).eq."xyX".or.\
+                                charactertostring(res(:,0:2)).eq."xyY")))
+            xydp_res_index = ind(charactertostring(res(:,0:1)).eq."xy".and.\
+                                (charactertostring(res(:,0:3)).ne."xyCo".and.\
+                                 charactertostring(res(:,0:2)).ne."xyX".and.\
+                                 charactertostring(res(:,0:2)).ne."xyY"))
             if(.not.all(ismissing(xy_res_index)))
               xyres = True
               do i = 0,dimsizes(xy_res_index)-1

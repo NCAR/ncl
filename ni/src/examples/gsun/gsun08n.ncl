@@ -30,6 +30,7 @@ begin
   xwks   = gsn_open_wks( "x11","gsun08n") ; Open an X11 workstation.
   cgmwks = gsn_open_wks("ncgm","gsun08n") ; Open an NCGM workstation.
   pswks  = gsn_open_wks(  "ps","gsun08n") ; Open a PS workstation.
+  pdfwks = gsn_open_wks( "pdf","gsun08n") ; Open a PDF workstation.
 
   cmap = (/(/1., 1., 1./), (/0., 0., 0./), (/1., 0., 0./), (/1., 0., .4/), \
            (/1., 0., .8/), (/1., .2, 1./), (/1., .6, 1./), (/.6, .8, 1./), \
@@ -38,8 +39,9 @@ begin
            (/.6, .8, .4/), (/1., .6, .8/)/)
 
   gsn_define_colormap(  xwks,cmap) ; Define a color map for each of
-  gsn_define_colormap(cgmwks,cmap) ; the three workstations you
+  gsn_define_colormap(cgmwks,cmap) ; the four workstations you
   gsn_define_colormap( pswks,cmap) ; just opened.
+  gsn_define_colormap(pdfwks,cmap)
 
 ;----------- Begin first plot -----------------------------------------
 
@@ -117,6 +119,13 @@ begin
   frame(pswks)
   draw(xy)
   frame(pswks)
+
+  NhlChangeWorkstation(xy,pdfwks)       ; And for the PDF workstation...
+  NhlChangeWorkstation(contour,pdfwks)
+  draw(contour)
+  frame(pdfwks)
+  draw(xy)
+  frame(pdfwks)
 
   delete(xy)       ; Clean up.
   delete(contour)
