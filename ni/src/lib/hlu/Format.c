@@ -1,5 +1,5 @@
 /*
- *      $Id: Format.c,v 1.15 1997-07-14 18:36:26 dbrown Exp $
+ *      $Id: Format.c,v 1.16 1997-07-29 20:45:19 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -823,17 +823,6 @@ NhlString _NhlFormatFloat
 #endif
 {
         int ndgd,lmsd,iexp,lexp;
-#if 0
-        char *c1[] = { " "," ","x",":F18:U:F:" };
-        int  lex1[] = { 1,1,1,1 };
-        char *c2[] = { "e","E","10**","10:S:" };
-        int lex2[] = { 0,0,4,2 };
-        char *c3[] = { " "," "," ",":N:" };
-	char cex1[10],cex2[6],cex3[4];
-        int lex3[] = { 0,0,0,0 };
-        int len_diff[] = { 0,0,0,14 };
-	int exp_len[] = {1,1,5,14 };
-#endif
         char *c1[] = { " "," ","x",":L1:4" };
         int  lex1[] = { 1,1,1,1 };
         char *c2[] = { "e","E","10**","10:S:" };
@@ -874,6 +863,7 @@ NhlString _NhlFormatFloat
 			ndgd = *sig_digits;
 	}
         if (lmsd > -10000) {
+                float fval;
                 sprintf(tbuf,"%14.7e",value);
                 for (i = strlen(tbuf)-1; i >=0; i--) {
                         if (tbuf[i] == '+' || tbuf[i] == '-') {
@@ -884,15 +874,19 @@ NhlString _NhlFormatFloat
                 }
                 if (value != 0.0)
                         ndgd += MAX(0,actual_leftmost-lmsd);
+		/* 
+		   this is another attempt at fixing the CPNUMB rounding
+		   problem, by "pre-rounding" using the C-library sprintf
+		   routine. Values of .5 seem to be somewhat indeterminate.
+		   */
+                if (actual_leftmost < lmsd) {
+                        int digits = MAX(1,actual_leftmost-lmsd+ndgd);
+                        sprintf(tbuf,"%14.*g",digits,value);
+                        sscanf(tbuf,"%f",&fval);
+                        value = fval;
+                }
         }
-#if 0        
-        printf("initial value %f actual leftmost %d\n",value,actual_leftmost);
-        if (lmsd - ndgd +1 >= actual_leftmost) {
-#endif        
-        if (actual_leftmost < lmsd) {
-                float sign = value < 0.0 ? -1.0 : 1.0;
-                value += sign * 5.0 * pow(10.0,(float)(lmsd-ndgd));
-        }
+
 	field_width = format->field_width;
 	if (format->field_width_flag) {
 		if (format->field_width_flag == NhlffDYNAMIC && 
