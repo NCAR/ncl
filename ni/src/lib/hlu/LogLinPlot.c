@@ -1,5 +1,5 @@
 /*
- *      $Id: LogLinPlot.c,v 1.24 1997-08-11 18:22:13 dbrown Exp $
+ *      $Id: LogLinPlot.c,v 1.25 1998-04-16 03:08:42 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -27,14 +27,30 @@
 
 
 #define	Oset(field)	NhlOffset(NhlLogLinPlotLayerRec,llplot.field)
+#define	Osettr(field)	NhlOffset(NhlLogLinPlotLayerRec,trans.field)
 static NhlResource resources[] = {
+        
+/* Begin-documented-resources */
+/* End-documented-resources */
 
 	{ NhlNpmUpdateReq,NhlCpmUpdateReq,NhlTBoolean,sizeof(NhlBoolean),
-		  Oset(update_req),
-		  NhlTImmediate,_NhlUSET((NhlPointer) False),
-          	  _NhlRES_PRIVATE,NULL}
+          Oset(update_req),NhlTImmediate,
+          _NhlUSET((NhlPointer) False),_NhlRES_PRIVATE,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+         Osettr(x_axis_type_set),NhlTImmediate,
+         _NhlUSET((NhlPointer)False),_NhlRES_PRIVATE,NULL},
+	{ "no.res","No.res",NhlTAxisType,sizeof(NhlAxisType),
+          Osettr(x_axis_type),NhlTImmediate,
+          _NhlUSET((NhlPointer)NhlLINEARAXIS),_NhlRES_PRIVATE,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+         Osettr(y_axis_type_set),NhlTImmediate,
+         _NhlUSET((NhlPointer)False),_NhlRES_PRIVATE,NULL},
+	{ "no.res","No.res",NhlTAxisType,sizeof(NhlAxisType),
+          Osettr(y_axis_type),NhlTImmediate,
+          _NhlUSET((NhlPointer)NhlLINEARAXIS),_NhlRES_PRIVATE,NULL},
 };
 #undef Oset
+#undef Osettr
 
 /* base methods */
 
@@ -260,7 +276,7 @@ LogLinPlotClassPartInitialize
 	}
 
 	subret = _NhlRegisterChildClass(lc,NhllogLinTransObjClass,
-					False,False,NULL);
+					False,True,NULL);
 
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: error registering %s";
@@ -268,16 +284,6 @@ LogLinPlotClassPartInitialize
 			  "NhllogLinTransObjClass");
 		return(NhlFATAL);
 	}
-	subret = _NhlRegisterChildClass(lc,NhltransObjClass,
-					False,False,NULL);
-
-	if ((ret = MIN(ret,subret)) < NhlWARNING) {
-		e_text = "%s: error registering %s";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
-			  "NhltransObjClass");
-		return(NhlFATAL);
-	}
-
 	return ret;
 }
 
@@ -542,7 +548,7 @@ static NhlErrorTypes LogLinPlotDraw
 }
 
 /*
- * Function:	SetUpTransObjs
+ * Function:	SetUpTransObj
  *
  * Description: Sets up the LogLinear transformation object for the generic
  *		LogLinear plot object. Note that since this trans object
@@ -581,7 +587,7 @@ static NhlErrorTypes SetUpTransObj
 	char			buffer[_NhlMAXRESNAMLEN];
 	int			tmpid;
 	int			trans_change_count;
-        NhlSArg			sargs[16];
+        NhlSArg			sargs[32];
         int			nargs = 0;
 
 
@@ -591,14 +597,31 @@ static NhlErrorTypes SetUpTransObj
  * needs to be created once. It will not be freed until the object
  * is destroyed.
  */
+        if (tfp->x_min_set)
+                NhlSetSArg(&sargs[nargs++],NhlNtrXMinF,tfp->x_min);
+        if (tfp->x_max_set)
+                NhlSetSArg(&sargs[nargs++],NhlNtrXMaxF,tfp->x_max);
+        if (tfp->y_min_set)
+                NhlSetSArg(&sargs[nargs++],NhlNtrYMinF,tfp->y_min);
+        if (tfp->y_max_set)
+                NhlSetSArg(&sargs[nargs++],NhlNtrYMaxF,tfp->y_max);
+        if (tfp->x_log_set)
+                NhlSetSArg(&sargs[nargs++],NhlNtrXLog,tfp->x_log);
+        if (tfp->y_log_set)
+                NhlSetSArg(&sargs[nargs++],NhlNtrYLog,tfp->y_log);
+        if (tfp->x_reverse_set)
+                NhlSetSArg(&sargs[nargs++],NhlNtrXReverse,tfp->x_reverse);
+        if (tfp->y_reverse_set)
+                NhlSetSArg(&sargs[nargs++],NhlNtrYReverse,tfp->y_reverse);
+        
 	if (init || tfp->trans_obj == NULL) {
-
+                
 		sprintf(buffer,"%s",llnew->base.name);
 		strcat(buffer,".Trans");
-
-		subret = _NhlVACreateChild(&tmpid,buffer,
-					 NhllogLinTransObjClass,
-					 (NhlLayer) llnew, NULL);
+                
+		subret = _NhlALCreateChild(&tmpid,buffer,
+                                           NhllogLinTransObjClass,
+                                           (NhlLayer)llnew,sargs,nargs);
 
 		ret = MIN(subret,ret);
 
@@ -610,17 +633,27 @@ static NhlErrorTypes SetUpTransObj
 			return NhlFATAL;
 		}
 
-		return ret;
 	}
-
-	subret = _NhlALSetValuesChild(tfp->trans_obj->base.id,
-				      (NhlLayer) llnew,sargs,nargs);
+        else {
+                NhlTransformLayerPart	*otfp = &(llold->trans);
+                
+                subret = _NhlALSetValuesChild(tfp->trans_obj->base.id,
+                                              (NhlLayer) llnew,sargs,nargs);
+        }
 
 	subret = NhlVAGetValues(tfp->trans_obj->base.id,
-				NhlNtrXMinF,&tfp->data_xmin,
-				NhlNtrXMaxF,&tfp->data_xmax,
-				NhlNtrYMinF,&tfp->data_ymin,
-				NhlNtrYMaxF,&tfp->data_ymax,
+                                NhlNtrXReverse,&tfp->x_reverse,
+                                NhlNtrYReverse,&tfp->y_reverse,
+                                NhlNtrXLog,&tfp->x_log,
+                                NhlNtrYLog,&tfp->y_log,
+                                NhlNtrXMinF,&tfp->x_min,
+                                NhlNtrXMaxF,&tfp->x_max,
+                                NhlNtrYMinF,&tfp->y_min,
+                                NhlNtrYMaxF,&tfp->y_max,
+                                NhlNtrDataXStartF,&tfp->data_xstart,
+                                NhlNtrDataXEndF,&tfp->data_xend,
+                                NhlNtrDataYStartF,&tfp->data_ystart,
+                                NhlNtrDataYEndF,&tfp->data_yend,
 				NhlNtrChangeCount,&trans_change_count,
 				NULL);
 	
@@ -628,6 +661,11 @@ static NhlErrorTypes SetUpTransObj
 		llnew->llplot.trans_change_count = trans_change_count;
 		llnew->llplot.update_req = True;
 	}
+        
+        tfp->x_reverse_set = tfp->y_reverse_set = False;
+        tfp->x_log_set = tfp->y_log_set = False;
+        tfp->x_min_set = tfp->y_min_set = False;
+        tfp->x_max_set = tfp->y_max_set = False;
 
 	return MIN(ret,subret);
 

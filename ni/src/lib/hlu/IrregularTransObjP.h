@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularTransObjP.h,v 1.8 1997-09-23 00:02:53 dbrown Exp $
+ *      $Id: IrregularTransObjP.h,v 1.9 1998-04-16 03:08:42 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -38,9 +38,7 @@ typedef struct _NhlIrregularTransObjLayerPart {
 	NhlAxisType	x_axis_type;
 	NhlGenArray	x_coord_points_ga;
 	NhlGenArray	x_inter_points_ga;
-	NhlBoolean	x_min_set;
 	float		x_min;
-	NhlBoolean	x_max_set;
 	float		x_max;
 	NhlBoolean	x_reverse;
 	float		x_tension;
@@ -49,9 +47,7 @@ typedef struct _NhlIrregularTransObjLayerPart {
 	NhlAxisType	y_axis_type;
 	NhlGenArray	y_coord_points_ga;
 	NhlGenArray	y_inter_points_ga;
-	NhlBoolean	y_min_set;
 	float		y_min;
-	NhlBoolean	y_max_set;
 	float		y_max;
 	NhlBoolean	y_reverse;
 	float		y_tension;
@@ -60,6 +56,8 @@ typedef struct _NhlIrregularTransObjLayerPart {
 	/* Private fields */
 	int 		x_num_points;
 	float		*x_coord_points;
+        float		x_irr_min;
+        float		x_irr_max;
 	float		*x_inter_points;
 	NhlBoolean	x_use_log;
 	float		x_log_lin_points[3];
@@ -67,6 +65,8 @@ typedef struct _NhlIrregularTransObjLayerPart {
         int		x_irr_count;
 	int 		y_num_points;
 	float		*y_coord_points;
+        float		y_irr_min;
+        float		y_irr_max;
 	float		*y_inter_points;
 	NhlBoolean	y_use_log;
 	float		y_log_lin_points[3];
@@ -96,6 +96,10 @@ typedef struct _NhlIrregularTransObjLayerPart {
 	NhlCompareDat	*compc_xmax_dat;
 	NhlCompareDat	*compc_ymin_dat;
 	NhlCompareDat	*compc_ymax_dat;
+	NhlCompareDat	*save_compc_xmin_dat;
+	NhlCompareDat	*save_compc_xmax_dat;
+	NhlCompareDat	*save_compc_ymin_dat;
+	NhlCompareDat	*save_compc_ymax_dat;
 	NhlBoolean	low_level_log_on;
 
 } NhlIrregularTransObjLayerPart;

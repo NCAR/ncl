@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlotP.h,v 1.10 1998-01-16 21:08:31 dbrown Exp $
+ *      $Id: VectorPlotP.h,v 1.11 1998-04-16 03:09:29 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -235,19 +235,7 @@ typedef struct _NhlVectorPlotLayerPart {
 	NhlAnnotationDisplayMode	display_legend;
 	NhlAnnotationDisplayMode	display_titles;
 	NhlAnnotationDisplayMode	display_tickmarks;
-	NhlBoolean	x_min_set;
-	float 		x_min;
-	NhlBoolean	x_max_set;
-	float		x_max;
-	NhlBoolean	x_log;
-	NhlBoolean	x_reverse;
 	float		x_tension;
-	NhlBoolean	y_min_set;
-	float 		y_min;
-	NhlBoolean	y_max_set;
-	float		y_max;
-	NhlBoolean	y_log;
-	NhlBoolean	y_reverse;
 	float		y_tension;
 	NhlGenArray	lbar_labels_res;
 	char		lbar_func_code;
@@ -296,6 +284,7 @@ typedef struct _NhlVectorPlotLayerPart {
 	NhlBoolean	wk_active;
 	NhlBoolean	seg_open;
 	NhlBoolean	do_low_level_log;
+	NhlBoolean	low_level_log_on;
 	NhlString	*level_strings;
 
 	/* labelbar stuff */

@@ -1,5 +1,5 @@
 /*
- *      $Id: ScalarField.c,v 1.30 1998-03-11 18:35:49 dbrown Exp $
+ *      $Id: ScalarField.c,v 1.31 1998-04-16 03:09:01 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -23,6 +23,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
+#include <ncarg/hlu/hluutil.h>
 #include <ncarg/hlu/ScalarFieldP.h>
 
 /************************************************************************
@@ -46,9 +47,6 @@ static NhlResource resources[] = {
 		 Oset(x_arr),NhlTImmediate,_NhlUSET((NhlPointer)NULL),0,NULL},
 	{NhlNsfYArray,NhlCsfYArray,NhlTGenArray,sizeof(NhlGenArray),
 		 Oset(y_arr),NhlTImmediate,_NhlUSET((NhlPointer)NULL),0,NULL},
-	{NhlNsfSubsetByIndex,NhlCsfSubsetByIndex,
-		 NhlTBoolean,sizeof(NhlBoolean),Oset(subset_by_index),
-		 NhlTImmediate,_NhlUSET((NhlPointer)False),0,NULL},
 	{NhlNsfCopyData,NhlCdiCopyData,NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(copy_arrays),NhlTImmediate,
 		 _NhlUSET((NhlPointer)True),0,NULL},
@@ -109,14 +107,25 @@ static NhlResource resources[] = {
 	{NhlNsfXCActualEndF,NhlCsfXCActualEndF,NhlTFloat,sizeof(float),
 		 Oset(x_actual_end),NhlTString,
 		 _NhlUSET("1.0"),_NhlRES_GONLY,NULL},
+	{NhlNsfXCElementCount,NhlCsfXCElementCount,NhlTInteger,sizeof(int),
+		 Oset(x_el_count),NhlTImmediate,
+         	 _NhlUSET(0),_NhlRES_GONLY,NULL},
 	{NhlNsfYCActualStartF,NhlCsfYCActualStartF,NhlTFloat,sizeof(float),
 		 Oset(y_actual_start),NhlTString,
 		 _NhlUSET("0.0"),_NhlRES_GONLY,NULL},
 	{NhlNsfYCActualEndF,NhlCsfYCActualEndF,NhlTFloat,sizeof(float),
 		 Oset(y_actual_end),NhlTString,
-		 _NhlUSET("1.0"),_NhlRES_GONLY,NULL}
+         	_NhlUSET("1.0"),_NhlRES_GONLY,NULL},
+	{NhlNsfYCElementCount,NhlCsfYCElementCount,NhlTInteger,sizeof(int),
+		 Oset(y_el_count),NhlTImmediate,
+         	_NhlUSET(0),_NhlRES_GONLY,NULL},
 
 /* End-documented-resources */
+        
+	{NhlNsfSubsetByIndex,NhlCsfSubsetByIndex,
+		NhlTBoolean,sizeof(NhlBoolean),Oset(subset_by_index),
+		NhlTImmediate,
+         	_NhlUSET((NhlPointer)False),_NhlRES_PRIVATE,NULL}
 
 };
 #undef Oset
@@ -287,9 +296,10 @@ static	NrmQuark	Qy_index_start  = NrmNULLQUARK;
 static	NrmQuark	Qy_index_end  = NrmNULLQUARK;
 static	NrmQuark	Qx_actual_start  = NrmNULLQUARK;
 static	NrmQuark	Qx_actual_end  = NrmNULLQUARK;
+static	NrmQuark	Qx_el_count  = NrmNULLQUARK;
 static	NrmQuark	Qy_actual_start  = NrmNULLQUARK;
 static	NrmQuark	Qy_actual_end  = NrmNULLQUARK;
-
+static	NrmQuark	Qy_el_count  = NrmNULLQUARK;
 
 typedef enum _sfCoord { sfXCOORD, sfYCOORD} sfCoord;
 
@@ -906,11 +916,11 @@ ValidCoordArray
 	char *name;
 
 	if (ctype == sfXCOORD) {
-		len_dim = sfp->d_arr->len_dimensions[1];
+		len_dim = sfp->x_el_count;
 		name = NhlNsfXArray;
 	}
 	else {
-		len_dim = sfp->d_arr->len_dimensions[0];
+		len_dim = sfp->y_el_count;
 		name = NhlNsfYArray;
 	}
 
@@ -982,16 +992,6 @@ GetDataBounds
 				return ret;
 			}
 		}
-		else if (sfp->x_subset_start != NULL) {
-			subret = GetVTypeValue(sfp->x_subset_start,cstart);
-			if ((ret = MIN(ret,subret)) < NhlWARNING) {
-				e_text = 
-				     "%s: error getting variable type value";
-				NhlPError(NhlFATAL,NhlEUNKNOWN,
-					  e_text,entry_name);
-				return ret;
-			}
-		}
 		else 
 			*cstart = 0.0;
 
@@ -1005,32 +1005,12 @@ GetDataBounds
 				return ret;
 			}
 		}
-		else if (sfp->x_subset_end != NULL) {
-			subret = GetVTypeValue(sfp->x_subset_end,cend);
-			if ((ret = MIN(ret,subret)) < NhlWARNING) {
-				e_text = 
-				     "%s: error getting variable type value";
-				NhlPError(NhlFATAL,NhlEUNKNOWN,
-					  e_text,entry_name);
-				return ret;
-			}
-		}
 		else 
-			*cend = sfp->d_arr->len_dimensions[1] - 1;
+			*cend = sfp->x_el_count - 1;
 	}
 	else {
 		if (sfp->y_start != NULL) {
 			subret = GetVTypeValue(sfp->y_start,cstart);
-			if ((ret = MIN(ret,subret)) < NhlWARNING) {
-				e_text = 
-				     "%s: error getting variable type value";
-				NhlPError(NhlFATAL,NhlEUNKNOWN,
-					  e_text,entry_name);
-				return ret;
-			}
-		}
-		else if (sfp->y_subset_start != NULL) {
-			subret = GetVTypeValue(sfp->y_subset_start,cstart);
 			if ((ret = MIN(ret,subret)) < NhlWARNING) {
 				e_text = 
 				     "%s: error getting variable type value";
@@ -1052,18 +1032,8 @@ GetDataBounds
 				return ret;
 			}
 		}
-		else if (sfp->y_subset_end != NULL) {
-			subret = GetVTypeValue(sfp->y_subset_end,cend);
-			if ((ret = MIN(ret,subret)) < NhlWARNING) {
-				e_text = 
-				     "%s: error getting variable type value";
-				NhlPError(NhlFATAL,NhlEUNKNOWN,
-					  e_text,entry_name);
-				return ret;
-			}
-		}
 		else 
-			*cend = sfp->d_arr->len_dimensions[0] - 1;
+			*cend = sfp->y_el_count - 1;
 	}
 	
 	return ret;
@@ -1110,7 +1080,7 @@ GetIndexBounds
 			
 	if (ctype == sfXCOORD) {
 
-		max_index = sfp->d_arr->len_dimensions[1] - 1;
+		max_index = sfp->x_el_count - 1;
 
 		*icstart = (sfp->x_index_start < 0) ? 
 			0 : MIN(sfp->x_index_start,max_index);
@@ -1136,7 +1106,7 @@ GetIndexBounds
 	}
 	else {
 
-		max_index = sfp->d_arr->len_dimensions[0] - 1;
+		max_index = sfp->y_el_count - 1;
 
 		*icstart = (sfp->y_index_start < 0) ? 
 			0 : MIN(sfp->y_index_start,max_index); 
@@ -1223,23 +1193,28 @@ GetSubsetBounds
 	NhlBoolean	rev;
 	float		drange;
 	int		range;
-	NhlGenArray	subset_start, subset_end;
+	NhlGenArray	*subset_start, *subset_end;
 	NhlBoolean	nullstart = False, nullend = False;
+        NhlBoolean	start_byindex,end_byindex;
 	char		*c_name;
 	int		stride,rem;
 
 	if (ctype == sfXCOORD) {
-		range = sfp->d_arr->len_dimensions[1] - 1;
-		subset_start = sfp->x_subset_start;
-		subset_end = sfp->x_subset_end;
+		range = sfp->x_el_count - 1;
+		subset_start = &sfp->x_subset_start;
+		subset_end = &sfp->x_subset_end;
 		stride = sfp->x_stride;
+                start_byindex = sfp->xstart_byindex;
+                end_byindex = sfp->xend_byindex;
 		c_name = "X coordinate";
 	}
 	else {
-		range = sfp->d_arr->len_dimensions[0] - 1;
-		subset_start = sfp->y_subset_start;
-		subset_end = sfp->y_subset_end;
+		range = sfp->y_el_count - 1;
+		subset_start = &sfp->y_subset_start;
+		subset_end = &sfp->y_subset_end;
 		stride = sfp->y_stride;
+                start_byindex = sfp->ystart_byindex;
+                end_byindex = sfp->yend_byindex;
 		c_name = "Y coordinate";
 	}
 
@@ -1247,8 +1222,8 @@ GetSubsetBounds
 		float fval;
 
 		rev = cstart > cend;
-		if (subset_start != NULL) {
-			subret = GetVTypeValue(subset_start,&fval);
+		if (*subset_start != NULL && ! start_byindex) {
+			subret = GetVTypeValue(*subset_start,&fval);
 			if ((ret = MIN(ret,subret)) < NhlWARNING) {
 				e_text = 
 				      "%s: error getting variable type value";
@@ -1256,14 +1231,27 @@ GetSubsetBounds
 					  NhlEUNKNOWN,e_text,entry_name);
 				return ret;
 			}
-			*scstart = rev ? MIN(cstart,fval): MAX(cstart,fval);
+                        if ((! rev && fval < cstart) ||
+                            (rev && fval > cstart)) {
+				e_text = 
+			      "%s: %s subset start out of range: defaulting";
+				NhlPError(NhlWARNING,NhlEUNKNOWN,
+                                          e_text,entry_name,c_name);
+                                ret = MIN(NhlWARNING,ret);
+                                *scstart = cstart;
+                                NhlFreeGenArray(*subset_start);
+                                *subset_start = NULL;
+                        }
+                        else {
+                                *scstart = fval;
+                        }
 		}
 		else {
 			*scstart = cstart;
 			nullstart = True;
 		}
-		if (subset_end != NULL) {
-			subret = GetVTypeValue(subset_end,&fval);
+		if (*subset_end != NULL && ! end_byindex) {
+			subret = GetVTypeValue(*subset_end,&fval);
 			if ((ret = MIN(ret,subret)) < NhlWARNING) {
 				e_text = 
 				     "%s: error getting variable type value";
@@ -1271,7 +1259,20 @@ GetSubsetBounds
 					  NhlEUNKNOWN,e_text,entry_name);
 				return ret;
 			}
-			*scend = rev ? MAX(cend,fval): MIN(cend,fval);
+                        if ((! rev && fval > cend) ||
+                            (rev && fval < cend)) {
+				e_text = 
+			      "%s: %s subset end out of range: defaulting";
+				NhlPError(NhlWARNING,NhlEUNKNOWN,
+                                          e_text,entry_name,c_name);
+                                ret = MIN(NhlWARNING,ret);
+                                *scend = cend;
+                                NhlFreeGenArray(*subset_end);
+                                *subset_end = NULL;
+                        }
+                        else {
+                                *scend = fval;
+                        }
 		}
 		else {
 			*scend = cend;
@@ -1279,21 +1280,38 @@ GetSubsetBounds
 		}
 
 		if (rev != (*scstart > *scend)) {
+                        NhlGenArray tmp_ga;
+                        float fval;
 			e_text = 
-     "%s: %s  start/end subset order opposed to %s start/end order: not using subset resources";
+"%s: %s start/end subset order opposed to start/end order: reversing subset order";
 			NhlPError(NhlWARNING,NhlEUNKNOWN,
 				  e_text,entry_name,c_name,c_name);
 			ret = MIN(NhlWARNING,ret);
-			*scstart = cstart;
-			*scend = cend;
+                        tmp_ga = *subset_start;
+                        *subset_start = *subset_end;
+                        *subset_end = tmp_ga;
+                        fval = *scstart;
+                        *scstart = *scend;
+                        *scend = fval;
 		}
 
 /*
  * The index endpoints are chosen to include the subset data endpoints.
  */
 		drange = cend - cstart;
-		*icstart = MAX(0,floor(((*scstart - cstart) /drange) * range));
-		*icend = MIN(range,ceil(((*scend - cstart) / drange) * range));
+                if (drange == 0.0) {
+			e_text = 
+		         "%s: internal error; %s data range is 0.0.";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
+				  c_name,c_name);
+                        return NhlFATAL;
+                }
+                if (! start_byindex)
+                        *icstart = MAX(0,floor(((*scstart - cstart) /
+                                                drange) * range));
+                if (! end_byindex)
+                        *icend = MIN(range,ceil(((*scend - cstart) /
+                                                 drange) * range));
 
 		if (*icend - *icstart < 2) {
 			e_text = 
@@ -1348,7 +1366,7 @@ GetSubsetBounds
  *		the specified data points are guaranteed to be included.
  *
  * In Args:	sfp
- *		ctype
+ *		ctypef
  *		cstart,cend
  *		entry_name
  * In/Out Args: icstart,icend
@@ -1394,22 +1412,28 @@ GetSubsetBoundsIrregular
 	NhlErrorTypes   ret = NhlNOERROR,subret = NhlNOERROR;
 	NhlBoolean	rev;
 	int		i, len;
-	NhlGenArray	subset_start,subset_end,out_ga;
+	NhlGenArray	*subset_start,*subset_end;
+        NhlGenArray     out_ga;
 	NhlBoolean	nullstart = False,nullend = False;
+        NhlBoolean	start_byindex,end_byindex;
 	char		*c_name;
 	float		*fp, *nfp;
 	int		rem,stride;
 
 	if (ctype == sfXCOORD) {
-		subset_start = sfp->x_subset_start;
-		subset_end = sfp->x_subset_end;
+		subset_start = &sfp->x_subset_start;
+		subset_end = &sfp->x_subset_end;
 		stride = sfp->x_stride;
+                start_byindex = sfp->xstart_byindex;
+                end_byindex = sfp->xend_byindex;
 		c_name = "X coordinate";
 	}
 	else {
-		subset_start = sfp->y_subset_start;
-		subset_end = sfp->y_subset_end;
+		subset_start = &sfp->y_subset_start;
+		subset_end = &sfp->y_subset_end;
 		stride = sfp->y_stride;
+                start_byindex = sfp->ystart_byindex;
+                end_byindex = sfp->yend_byindex;
 		c_name = "Y coordinate";
 	}
 
@@ -1422,8 +1446,8 @@ GetSubsetBoundsIrregular
 		float fval;
 
 		rev = *cstart > *cend;
-		if (subset_start != NULL) {
-			subret = GetVTypeValue(subset_start,&fval);
+		if (*subset_start != NULL && ! start_byindex) {
+			subret = GetVTypeValue(*subset_start,&fval);
 			if ((ret = MIN(ret,subret)) < NhlWARNING) {
 				e_text = 
 				      "%s: error getting variable type value";
@@ -1431,15 +1455,28 @@ GetSubsetBoundsIrregular
 					  NhlEUNKNOWN,e_text,entry_name);
 				return ret;
 			}
-			*scstart = rev ? MIN(*cstart,fval): MAX(*cstart,fval);
+                        if ((! rev && fval < *cstart) ||
+                            (rev && fval > *cstart)) {
+				e_text = 
+			      "%s: %s subset start out of range: defaulting";
+				NhlPError(NhlWARNING,NhlEUNKNOWN,
+                                          e_text,entry_name,c_name);
+                                ret = MIN(NhlWARNING,ret);
+                                *scstart = *cstart;
+                                NhlFreeGenArray(*subset_start);
+                                *subset_start = NULL;
+                        }
+                        else {
+                                *scstart = fval;
+                        }
 		}
 		else {
 			*scstart = *cstart;
 			nullstart = True;
 		}
 
-		if (subset_end != NULL) {
-			subret = GetVTypeValue(subset_end,&fval);
+		if (*subset_end != NULL && ! end_byindex) {
+			subret = GetVTypeValue(*subset_end,&fval);
 			if ((ret = MIN(ret,subret)) < NhlWARNING) {
 				e_text = 
 				      "%s: error getting variable type value";
@@ -1447,7 +1484,20 @@ GetSubsetBoundsIrregular
 					  NhlEUNKNOWN,e_text,entry_name);
 				return ret;
 			}
-			*scend = rev ? MAX(*cend,fval) : MIN(*cend,fval);
+                        if ((! rev && fval > *cend) ||
+                            (rev && fval < *cend)) {
+				e_text = 
+			      "%s: %s subset end out of range: defaulting";
+				NhlPError(NhlWARNING,NhlEUNKNOWN,
+                                          e_text,entry_name,c_name);
+                                ret = MIN(NhlWARNING,ret);
+                                *scend = *cend;
+                                NhlFreeGenArray(*subset_end);
+                                *subset_end = NULL;
+                        }
+                        else {
+                                *scend = fval;
+                        }
 		}
 		else {
 			*scend = *cend;
@@ -1455,43 +1505,58 @@ GetSubsetBoundsIrregular
 		}
 
 		if (rev != (*scstart > *scend)) {
+                        NhlGenArray tmp_ga;
+                        float fval;
 			e_text = 
-      "%s: %s start/end subset order opposed to %s start/end order: not using subset resources";
+"%s: %s start/end subset order opposed to start/end order: reversing subset order";
 			NhlPError(NhlWARNING,NhlEUNKNOWN,
 				  e_text,entry_name,c_name,c_name);
 			ret = MIN(NhlWARNING,ret);
-			*scstart = *cstart;
-			*scend = *cend;
+                        tmp_ga = *subset_start;
+                        *subset_start = *subset_end;
+                        *subset_end = tmp_ga;
+                        fval = *scstart;
+                        *scstart = *scend;
+                        *scend = fval;
 		}
 
-		if (! rev) { 
-			for (i = 0; i < len; i++) {
-				if (*scstart < *(fp + i)) {
-					*icstart = MAX(i-1,0);
-					break;
-				}
-			}
-			for (i = len - 1; i >= 0; i--) {
-				if (*scend > *(fp + i)) {
-					*icend = MIN(i+1,len-1);
-					break;
-				}
-			}
+		if (! rev) {
+                        if (! start_byindex) {
+                                for (i = 0; i < len; i++) {
+                                        if (*scstart < *(fp + i)) {
+                                                *icstart = MAX(i-1,0);
+                                                break;
+                                        }
+                                }
+                        }
+                        if (! end_byindex) {
+                                for (i = len - 1; i >= 0; i--) {
+                                        if (*scend > *(fp + i)) {
+                                                *icend = MIN(i+1,len-1);
+                                                break;
+                                        }
+                                }
+                        }
+                        
 		}
 		else {
-			for (i = 0; i < len; i++) {
-				if (*scstart > *(fp + i)) {
-					*icstart = MAX(i-1,0);
-					break;
-				}
-			}
-			for (i = len - 1; i >= 0; i--) {
-				if (*scend < *(fp + i)) {
-					*icend = MIN(i+1,len-1);
-					break;
-				}
-			}
-		}
+                        if (! start_byindex) {
+                                for (i = 0; i < len; i++) {
+                                        if (*scstart > *(fp + i)) {
+                                                *icstart = MAX(i-1,0);
+                                                break;
+                                        }
+                                }
+                        }
+                        if (! end_byindex) {
+                                for (i = len - 1; i >= 0; i--) {
+                                        if (*scend < *(fp + i)) {
+                                                *icend = MIN(i+1,len-1);
+                                                break;
+                                        }
+                                }
+                        }
+                }
 
 		if (*icend - *icstart < 2) {
 			e_text = 
@@ -1813,7 +1878,6 @@ CvtGenSFObjToFloatSFObj
 			sfp->x_arr = NULL;
 		}
 		if (ValidCoordArray(sfp,x_arr,sfXCOORD,entry_name)) {
-			NhlSetSArg(&sargs[nargs++],NhlNsfXArray,x_arr);
 			xirr = True;
 		}
 		else {
@@ -1841,10 +1905,14 @@ CvtGenSFObjToFloatSFObj
 		if ((ret = MIN(ret,subret))  < NhlWARNING) 
 			return ret;
 	}
-	sfp->ix_start = ixstart;
-	sfp->ix_end = ixend;
+	sffp->ix_start = sfp->ix_start = ixstart;
+	sffp->ix_end = sfp->ix_end = ixend;
 	sfp->x_actual_start = sxstart;
 	sfp->x_actual_end = sxend;
+        if (! sfp->subset_by_index) {
+                sfp->x_index_start = sfp->ix_start;
+                sfp->x_index_end = sfp->ix_end;
+        }
 
 	sffp->y_arr = NULL;
 	if (sfp->y_arr != NULL && sfp->y_arr->num_elements > 0) {
@@ -1858,7 +1926,6 @@ CvtGenSFObjToFloatSFObj
 			sfp->y_arr = NULL;
 		}
 		if (ValidCoordArray(sfp,y_arr,sfYCOORD,entry_name)) {
-			NhlSetSArg(&sargs[nargs++],NhlNsfYArray,y_arr);
 			yirr = True;
 		}
 		else {
@@ -1886,10 +1953,14 @@ CvtGenSFObjToFloatSFObj
 		if ((ret = MIN(ret,subret))  < NhlWARNING) 
 			return ret;
 	}
-	sfp->iy_start = iystart;
-	sfp->iy_end = iyend;
+	sffp->iy_start = sfp->iy_start = iystart;
+	sffp->iy_end = sfp->iy_end = iyend;
 	sfp->y_actual_start = systart;
 	sfp->y_actual_end = syend;
+        if (! sfp->subset_by_index) {
+                sfp->y_index_start = sfp->iy_start;
+                sfp->y_index_end = sfp->iy_end;
+        }
 /*
  * Set flags to tell the array conversion routines whether to find
  * data max and mins (and if so whether to check for missing values) 
@@ -2009,6 +2080,7 @@ CvtGenSFObjToFloatSFObj
 
 	sffp->data_min = dmin;
 	sffp->data_max = dmax;
+	sffp->changed = sfp->changed;
         sfp->up_to_date = True;
         
 	return ret;
@@ -2071,8 +2143,10 @@ ScalarFieldClassInitialize
 	Qy_index_end  = NrmStringToQuark(NhlNsfYCEndIndex);
 	Qx_actual_start  = NrmStringToQuark(NhlNsfXCActualStartF);
 	Qx_actual_end  = NrmStringToQuark(NhlNsfXCActualEndF);
+	Qx_el_count  = NrmStringToQuark(NhlNsfXCElementCount);
 	Qy_actual_start  = NrmStringToQuark(NhlNsfYCActualStartF);
 	Qy_actual_end  = NrmStringToQuark(NhlNsfYCActualEndF);
+	Qy_el_count  = NrmStringToQuark(NhlNsfYCElementCount);
 
 	ret = NhlRegisterConverter(NhlbaseClass,
 			NhlscalarFieldClass->base_class.class_name,
@@ -2080,6 +2154,7 @@ ScalarFieldClassInitialize
 			CvtGenSFObjToFloatSFObj,NULL,0,False,NULL);
 	return ret;
 }
+
 
 /*
  * Function:	ScalarFieldClassPartInitialize
@@ -2112,6 +2187,62 @@ ScalarFieldClassPartInitialize
 	return ret;
 }
 
+
+/*
+ * Function:	VTypeValuesEqual
+ *
+ * Description:	This function does a float compare on two VTypes.
+ *
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	private
+ * Returns:	True if both values are non-null and equal, False otherwise
+ * Side Effect:	
+ */
+/*ARGSUSED*/
+static NhlBoolean
+VTypeValuesEqual
+#if	NhlNeedProto
+(
+        _NhlConvertContext	context,
+        NhlGenArray		vta1,
+        NhlGenArray     	vta2
+)
+#else
+(context,vta1,vta2)
+	_NhlConvertContext	context;
+	NhlGenArray	vta1;
+        NhlGenArray     vta2;
+#endif
+{
+        NrmValue from, to;
+        float f1,f2;
+                
+        if (! vta1 || ! vta2)
+                return False;
+        
+        from.size = sizeof(NhlGenArray);
+        from.data.ptrval = vta1;
+        to.size = sizeof(float);
+        to.data.ptrval = &f1;
+        
+        if (_NhlConvertData(context,Qgen_array,Qfloat,&from,&to) < NhlWARNING)
+                return False;
+        
+        from.data.ptrval = vta2;
+        to.data.ptrval = &f2;
+        
+        if (_NhlConvertData(context,Qgen_array,Qfloat,&from,&to) < NhlWARNING)
+                return False;
+
+        if (_NhlCmpFAny(f1,f2,5) == 0.0)
+                return True;
+        
+        return False;
+}
 
 /*
  * Function:	ScalarFieldInitialize
@@ -2160,8 +2291,14 @@ ScalarFieldInitialize
 	NhlGenArray		ga;
          _NhlConvertContext	context = NULL;
 
+        context = _NhlCreateConvertContext(new);
 	sfp->sffloat = NULL;
         sfp->up_to_date = False;
+        
+        sfp->xstart_byindex = False;
+        sfp->xend_byindex = False;
+        sfp->ystart_byindex = False;
+        sfp->yend_byindex = False;
         
 	if (sfp->d_arr == NULL) {
 		e_text = 
@@ -2176,13 +2313,13 @@ ScalarFieldInitialize
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return NhlFATAL;
 	}
+	sfp->x_el_count = sfp->d_arr->len_dimensions[1];
+	sfp->y_el_count = sfp->d_arr->len_dimensions[0];
         
         if (sfp->x_arr) {
                 NrmValue from, to;
                 NhlGenArray fltga;
                 
-                if (! context)
-                        context = _NhlCreateConvertContext(new);
                 from.size = sizeof(NhlGenArray);
                 from.data.ptrval = sfp->x_arr;
                 to.size = sizeof(NhlGenArray);
@@ -2209,8 +2346,6 @@ ScalarFieldInitialize
                 NrmValue from, to;
                 NhlGenArray fltga;
                 
-                if (! context)
-                        context = _NhlCreateConvertContext(new);
                 from.size = sizeof(NhlGenArray);
                 from.data.ptrval = sfp->y_arr;
                 to.size = sizeof(NhlGenArray);
@@ -2232,8 +2367,6 @@ ScalarFieldInitialize
                         }
                 }
 	}
-        if (context)
-                _NhlFreeConvertContext(context);
 
 	if (sfp->missing_value != NULL) {
 		ga = NULL;
@@ -2261,6 +2394,14 @@ ScalarFieldInitialize
 		sfp->data_max = ga;
 	}
 
+        if (VTypeValuesEqual(context,sfp->x_start,sfp->x_end)) {
+                e_text = "%s %s and %s values cannot be equal, defaulting";
+                NHLPERROR((NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
+                          NhlNsfXCStartV,NhlNsfXCEndV));
+                ret = MIN(ret,NhlWARNING);
+                sfp->x_start = NULL;
+                sfp->x_end = NULL;
+        }
 	if (sfp->x_start != NULL) {
 		ga = NULL;
 		subret = CheckCopyVType(&ga,sfp->x_start,
@@ -2279,6 +2420,14 @@ ScalarFieldInitialize
 	}
 
 
+        if (VTypeValuesEqual(context,sfp->y_start,sfp->y_end)) {
+                e_text = "%s %s and %s values cannot be equal, defaulting";
+                NHLPERROR((NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
+                          NhlNsfYCStartV,NhlNsfYCEndV));
+                ret = MIN(ret,NhlWARNING);
+                sfp->y_start = NULL;
+                sfp->y_end = NULL;
+        }
 	if (sfp->y_start != NULL) {
 		ga = NULL;
 		subret = CheckCopyVType(&ga,sfp->y_start,
@@ -2295,43 +2444,89 @@ ScalarFieldInitialize
 		    return ret;
 		sfp->y_end = ga;
 	}
-
-
+        
+        if (VTypeValuesEqual(context,sfp->x_subset_start,sfp->x_subset_end)) {
+                e_text = "%s %s and %s values cannot be equal, defaulting";
+                NHLPERROR((NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
+                          NhlNsfXCStartV,NhlNsfXCEndV));
+                ret = MIN(ret,NhlWARNING);
+                sfp->x_subset_start = NULL;
+                sfp->x_subset_end = NULL;
+        }
 	if (sfp->x_subset_start != NULL) {
-		ga = NULL;
-		subret = CheckCopyVType(&ga,sfp->x_subset_start,
-					NhlNsfXCStartSubsetV,True,entry_name);
-		if ((ret = MIN(ret,subret)) < NhlWARNING)
-		    return ret;
-		sfp->x_subset_start = ga;
+                if (sfp->subset_by_index)
+                        sfp->x_subset_start = NULL;
+                else {
+                        ga = NULL;
+                        subret = CheckCopyVType
+                                (&ga,sfp->x_subset_start,
+                                 NhlNsfXCStartSubsetV,True,entry_name);
+                        if ((ret = MIN(ret,subret)) < NhlWARNING)
+                                return ret;
+                        sfp->x_subset_start = ga;
+                }
 	}
+        if (! sfp->x_subset_start)
+                sfp->xstart_byindex = True;
+                
 	if (sfp->x_subset_end != NULL) {
-		ga = NULL;
-		subret = CheckCopyVType(&ga,sfp->x_subset_end,
-					NhlNsfXCEndSubsetV,True,entry_name);
-		if ((ret = MIN(ret,subret)) < NhlWARNING)
-		    return ret;
-		sfp->x_subset_end = ga;
+                if (sfp->subset_by_index)
+                        sfp->x_subset_start = NULL;
+                else {
+                        ga = NULL;
+                        subret = CheckCopyVType
+                                (&ga,sfp->x_subset_end,
+                                 NhlNsfXCEndSubsetV,True,entry_name);
+                        if ((ret = MIN(ret,subret)) < NhlWARNING)
+                                return ret;
+                        sfp->x_subset_end = ga;
+                }
 	}
+        if (! sfp->x_subset_end)
+                sfp->xend_byindex = True;
 
 
+        if (VTypeValuesEqual(context,sfp->y_subset_start,sfp->y_subset_end)) {
+                e_text = "%s %s and %s values cannot be equal, defaulting";
+                NHLPERROR((NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
+                          NhlNsfYCStartV,NhlNsfYCEndV));
+                ret = MIN(ret,NhlWARNING);
+                sfp->y_subset_start = NULL;
+                sfp->y_subset_end = NULL;
+        }
 	if (sfp->y_subset_start != NULL) {
-		ga = NULL;
-		subret = CheckCopyVType(&ga,sfp->y_subset_start,
-					NhlNsfYCStartSubsetV,True,entry_name);
-		if ((ret = MIN(ret,subret)) < NhlWARNING)
-		    return ret;
-		sfp->y_subset_start = ga;
+                if (sfp->subset_by_index)
+                        sfp->y_subset_start = NULL;
+                else {
+                        ga = NULL;
+                        subret = CheckCopyVType
+                                (&ga,sfp->y_subset_start,
+                                 NhlNsfYCStartSubsetV,True,entry_name);
+                        if ((ret = MIN(ret,subret)) < NhlWARNING)
+                                return ret;
+                        sfp->y_subset_start = ga;
+                }
 	}
+        if (! sfp->y_subset_start)
+                sfp->ystart_byindex = True;
+                
 	if (sfp->y_subset_end != NULL) {
-		ga = NULL;
-		subret = CheckCopyVType(&ga,sfp->y_subset_end,
-					NhlNsfYCEndSubsetV,True,entry_name);
-		if ((ret = MIN(ret,subret)) < NhlWARNING)
-		    return ret;
-		sfp->y_subset_end = ga;
+                if (sfp->subset_by_index)
+                        sfp->y_subset_start = NULL;
+                else {
+                        ga = NULL;
+                        subret = CheckCopyVType
+                                (&ga,sfp->y_subset_end,
+                                 NhlNsfYCEndSubsetV,True,entry_name);
+                        if ((ret = MIN(ret,subret)) < NhlWARNING)
+                                return ret;
+                        sfp->y_subset_end = ga;
+                }
 	}
+        if (! sfp->y_subset_end)
+                sfp->yend_byindex = True;
 	
+        _NhlFreeConvertContext(context);
 	return ret;
 }
 
@@ -2378,7 +2573,18 @@ ScalarFieldSetValues
 	NhlGenArray		ga;
 	NhlBoolean		status = False;
         _NhlConvertContext	context = NULL;
-        
+        NhlBoolean		x_arr_changed = False, y_arr_changed = False;
+	NhlBoolean		x_dim_changed = False, y_dim_changed = False;
+        NhlBoolean		x_start_changed = False, x_end_changed = False;
+        NhlBoolean		y_start_changed = False, y_end_changed = False;
+
+/*
+ * The changed bit field records changes to the X and Y coordinate array
+ * as passed to the ScalarFieldFloat object. Changes to the array itself
+ * count, but also subsection and stride changes.
+ */
+	sfp->changed = 0;
+        context = _NhlCreateConvertContext(new);
 	if (sfp->d_arr != osfp->d_arr) {
 		if (sfp->d_arr == NULL || sfp->d_arr->num_dimensions != 2) {
 			e_text = 
@@ -2400,19 +2606,42 @@ ScalarFieldSetValues
 			sfp->d_arr = ga;
 			NhlFreeGenArray(osfp->d_arr);
 			status = True;
+			if (sfp->d_arr->len_dimensions[1] != sfp->x_el_count)
+				x_dim_changed = True;
+			if (sfp->d_arr->len_dimensions[0] != sfp->y_el_count)
+				y_dim_changed = True;
+			sfp->x_el_count = sfp->d_arr->len_dimensions[1];
+			sfp->y_el_count = sfp->d_arr->len_dimensions[0];
+			sfp->changed |= _NhlsfDARR_CHANGED;
 		}
 	}
+/*
+ * If dimension lengths have changed then subsetting returns to default
+ */
+	if (x_dim_changed) {
+		if (! _NhlArgIsSet(args,nargs,NhlNsfXCStartIndex))
+			sfp->x_index_start = -1;
+		if (! _NhlArgIsSet(args,nargs,NhlNsfXCEndIndex))
+			sfp->x_index_end = -1;
+	}
+	
+	if (y_dim_changed) {
+		if (! _NhlArgIsSet(args,nargs,NhlNsfYCStartIndex))
+			sfp->y_index_start = -1;
+		if (! _NhlArgIsSet(args,nargs,NhlNsfYCEndIndex))
+			sfp->y_index_end = -1;
+	}
+
 
 	if (!sfp->x_arr && (sfp->x_arr != osfp->x_arr)) {
                 NhlFreeGenArray(osfp->x_arr);
                 status = True;
+                x_arr_changed = True;
         }
         else if (sfp->x_arr != osfp->x_arr) {
                 NrmValue from, to;
                 NhlGenArray fltga;
                 
-                if (! context)
-                        context = _NhlCreateConvertContext(new);
                 from.size = sizeof(NhlGenArray);
                 from.data.ptrval = sfp->x_arr;
                 to.size = sizeof(NhlGenArray);
@@ -2425,6 +2654,13 @@ ScalarFieldSetValues
                         sfp->x_arr = osfp->x_arr;
                 }
                 else {
+		        if ((! osfp->x_arr) || x_dim_changed || 
+			    sfp->x_arr->size != osfp->x_arr->size ||
+			    sfp->x_arr->typeQ != osfp->x_arr->typeQ ||
+			    memcmp(sfp->x_arr->data,osfp->x_arr->data,
+				   sfp->x_arr->size * sfp->x_el_count))
+				x_arr_changed = True;
+
                         if ((sfp->x_arr = _NhlCopyGenArray
                              (sfp->x_arr,sfp->copy_arrays)) == NULL) {
                                 e_text = "%s: dynamic memory allocation error";
@@ -2433,19 +2669,19 @@ ScalarFieldSetValues
                                 return NhlFATAL;
                         }
                         NhlFreeGenArray(osfp->x_arr);
+			sfp->changed |= _NhlsfXARR_CHANGED;
+                        status = True;
                 }
-                status = True;
 	}
 	if (!sfp->y_arr && (sfp->y_arr != osfp->y_arr)) {
                 NhlFreeGenArray(osfp->y_arr);
+                y_arr_changed = True;
                 status = True;
         }
         else if (sfp->y_arr != osfp->y_arr) {
                 NrmValue from, to;
                 NhlGenArray fltga;
                 
-                if (! context)
-                        context = _NhlCreateConvertContext(new);
                 from.size = sizeof(NhlGenArray);
                 from.data.ptrval = sfp->y_arr;
                 to.size = sizeof(NhlGenArray);
@@ -2458,6 +2694,12 @@ ScalarFieldSetValues
                         sfp->y_arr = osfp->y_arr;
                 }
                 else {
+		        if ((! osfp->y_arr) || y_dim_changed || 
+			    sfp->y_arr->size != osfp->y_arr->size ||
+			    sfp->y_arr->typeQ != osfp->y_arr->typeQ ||
+			    memcmp(sfp->y_arr->data,osfp->y_arr->data,
+				   sfp->y_arr->size * sfp->y_el_count))
+				y_arr_changed = True;
                         if ((sfp->y_arr = _NhlCopyGenArray
                              (sfp->y_arr,sfp->copy_arrays)) == NULL) {
                                 e_text = "%s: dynamic memory allocation error";
@@ -2466,11 +2708,10 @@ ScalarFieldSetValues
                                 return NhlFATAL;
                         }
                         NhlFreeGenArray(osfp->y_arr);
+			sfp->changed |= _NhlsfYARR_CHANGED;
+                        status = True;
                 }
-                status = True;
 	}
-        if (context)
-                _NhlFreeConvertContext(context);
 
 	if (sfp->missing_value != osfp->missing_value) {
 		subret = CheckCopyVType(&osfp->missing_value,
@@ -2499,60 +2740,132 @@ ScalarFieldSetValues
 		status = True;
 	}
 
+        if (VTypeValuesEqual(context,sfp->x_start,sfp->x_end)) {
+                e_text =
+             "%s %s and %s values cannot be equal, restoring previous values";
+                NHLPERROR((NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
+                          NhlNsfXCStartV,NhlNsfXCEndV));
+                ret = MIN(ret,NhlWARNING);
+                sfp->x_start = osfp->x_start;
+                sfp->x_end = osfp->x_end;
+        }
 	if (sfp->x_start != osfp->x_start) {
 		subret = CheckCopyVType(&osfp->x_start,sfp->x_start,
 					NhlNsfXCStartV,True,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING)
 		    return ret;
 		sfp->x_start = osfp->x_start;
+                x_start_changed = True;
 		status = True;
 	}
+        else if (x_arr_changed && sfp->x_start) {
+               	NhlFreeGenArray(osfp->x_start);
+                sfp->x_start = NULL;
+        }
 	if (sfp->x_end != osfp->x_end) {
 		subret = CheckCopyVType(&osfp->x_end,sfp->x_end,
 					NhlNsfXCEndV,True,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING)
 		    return ret;
 		sfp->x_end = osfp->x_end;
+                x_end_changed = True;
 		status = True;
 	}
+        else if (x_arr_changed && sfp->x_end) {
+               	NhlFreeGenArray(osfp->x_end);
+                sfp->x_end = NULL;
+        }
 
+        if (VTypeValuesEqual(context,sfp->y_start,sfp->y_end)) {
+                e_text =
+             "%s %s and %s values cannot be equal, restoring previous values";
+                NHLPERROR((NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
+                          NhlNsfYCStartV,NhlNsfYCEndV));
+                ret = MIN(ret,NhlWARNING);
+                sfp->y_start = osfp->y_start;
+                sfp->y_end = osfp->y_end;
+        }
 	if (sfp->y_start != osfp->y_start) {
 		subret = CheckCopyVType(&osfp->y_start,sfp->y_start,
 					NhlNsfYCStartV,True,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING)
 		    return ret;
 		sfp->y_start = osfp->y_start;
+                y_start_changed = True;
 		status = True;
 	}
+        else if (y_arr_changed && sfp->y_start) {
+               	NhlFreeGenArray(osfp->y_start);
+                sfp->y_start = NULL;
+        }
 	if (sfp->y_end != osfp->y_end) {
 		subret = CheckCopyVType(&osfp->y_end,sfp->y_end,
 					NhlNsfYCEndV,True,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING)
 		    return ret;
 		sfp->y_end = osfp->y_end;
+                y_end_changed = True;
 		status = True;
 	}
+        else if (y_arr_changed && sfp->y_end) {
+               	NhlFreeGenArray(osfp->y_end);
+                sfp->y_end = NULL;
+        }
 
-
+        if (VTypeValuesEqual(context,sfp->x_subset_start,sfp->x_subset_end)) {
+                e_text =
+             "%s %s and %s values cannot be equal, restoring previous values";
+                NHLPERROR((NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
+                          NhlNsfXCStartV,NhlNsfXCEndV));
+                ret = MIN(ret,NhlWARNING);
+                sfp->x_subset_start = osfp->x_subset_start;
+                sfp->x_subset_end = osfp->y_subset_end;
+        }
 	if (sfp->x_subset_start != osfp->x_subset_start) {
 		subret = CheckCopyVType(&osfp->x_subset_start,
 					sfp->x_subset_start,
 					NhlNsfXCStartSubsetV,True,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING)
 		    return ret;
+		sfp->changed |= _NhlsfXARR_CHANGED;
 		sfp->x_subset_start = osfp->x_subset_start;
 		status = True;
 	}
+        else if (x_arr_changed || sfp->subset_by_index ||
+                 x_start_changed || x_end_changed ||
+                 sfp->x_index_start != osfp->x_index_start) {
+                NhlFreeGenArray(osfp->x_subset_start);
+                sfp->x_subset_start = NULL;
+        }
+        sfp->xstart_byindex = sfp->x_subset_start ? False : True;
+        
 	if (sfp->x_subset_end != osfp->x_subset_end) {
 		subret = CheckCopyVType(&osfp->x_subset_end,sfp->x_subset_end,
 					NhlNsfXCEndSubsetV,True,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING)
 		    return ret;
 		sfp->x_subset_end = osfp->x_subset_end;
+		sfp->changed |= _NhlsfXARR_CHANGED;
 		status = True;
 	}
+        else if (x_arr_changed || sfp->subset_by_index ||
+                 x_start_changed || x_end_changed ||
+                 sfp->x_index_end != osfp->x_index_end) {
+               	NhlFreeGenArray(osfp->x_subset_end);
+                sfp->x_subset_end = NULL;
+        }
+        sfp->xend_byindex = sfp->x_subset_end ? False : True;
 
 
+        if (VTypeValuesEqual(context,sfp->y_subset_start,sfp->y_subset_end)) {
+                e_text =
+             "%s %s and %s values cannot be equal, restoring previous values";
+                NHLPERROR((NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
+                          NhlNsfYCStartV,NhlNsfYCEndV));
+                ret = MIN(ret,NhlWARNING);
+                sfp->y_subset_start = osfp->y_subset_start;
+                sfp->y_subset_end = osfp->y_subset_end;
+        }
 	if (sfp->y_subset_start != osfp->y_subset_start) {
 		subret = CheckCopyVType(&osfp->y_subset_start,
 					sfp->y_subset_start,
@@ -2560,38 +2873,79 @@ ScalarFieldSetValues
 		if ((ret = MIN(ret,subret)) < NhlWARNING)
 		    return ret;
 		sfp->y_subset_start = osfp->y_subset_start;
+		sfp->changed |= _NhlsfYARR_CHANGED;
 		status = True;
 	}
+        else if (y_arr_changed || sfp->subset_by_index ||
+                 y_start_changed || y_end_changed ||
+                 sfp->y_index_start != osfp->y_index_start) {
+               	NhlFreeGenArray(osfp->y_subset_start);
+                sfp->y_subset_start = NULL;
+        }
+        sfp->ystart_byindex = sfp->y_subset_start ? False : True;
+
+        
 	if (sfp->y_subset_end != osfp->y_subset_end) {
 		subret = CheckCopyVType(&osfp->y_subset_end,sfp->y_subset_end,
 					NhlNsfYCEndSubsetV,True,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING)
 		    return ret;
 		sfp->y_subset_end = osfp->y_subset_end;
+		sfp->changed |= _NhlsfYARR_CHANGED;
+		status = True;
+	}
+        else if (y_arr_changed || sfp->subset_by_index ||
+                 y_start_changed || y_end_changed ||
+                 sfp->y_index_end != osfp->y_index_end) {
+               	NhlFreeGenArray(osfp->y_subset_end);
+                sfp->y_subset_end = NULL;
+        }
+        sfp->yend_byindex = sfp->y_subset_end ? False : True;
+
+	if (sfp->x_index_start != osfp->x_index_start) {
+		if (sfp->xstart_byindex)
+			sfp->changed |= _NhlsfXARR_CHANGED;
+		status = True;
+	}
+	if (sfp->x_index_end != osfp->x_index_end) {
+		if (sfp->xend_byindex)
+			sfp->changed |= _NhlsfXARR_CHANGED;
 		status = True;
 	}
 
-	if (sfp->x_index_start != osfp->x_index_start) 
+	if (sfp->y_index_start != osfp->y_index_start) {
+		if (sfp->ystart_byindex)
+			sfp->changed |= _NhlsfYARR_CHANGED;
 		status = True;
-	if (sfp->x_index_end != osfp->x_index_end)
+	}
+	if (sfp->y_index_end != osfp->y_index_end) {
+		if (sfp->yend_byindex)
+			sfp->changed |= _NhlsfYARR_CHANGED;
 		status = True;
-	if (sfp->y_index_start != osfp->y_index_start)
+	}
+
+	if (sfp->x_stride != osfp->x_stride) {
+		sfp->changed |= _NhlsfXARR_CHANGED;
 		status = True;
-	if (sfp->y_index_end != osfp->y_index_end)
+	}
+	if (sfp->y_stride != osfp->y_stride) {
+		sfp->changed |= _NhlsfYARR_CHANGED;
 		status = True;
-	if (sfp->x_stride != osfp->x_stride)
+	}
+	if (sfp->exchange_dimensions != osfp->exchange_dimensions) {
+		sfp->changed |= _NhlsfXARR_CHANGED;
+		sfp->changed |= _NhlsfYARR_CHANGED;
 		status = True;
-	if (sfp->y_stride != osfp->y_stride)
-		status = True;
+	}
 	if (sfp->subset_by_index != osfp->subset_by_index)
 		status = True;
-	if (sfp->exchange_dimensions != osfp->exchange_dimensions)
-		status = True;
-
+                
         _NhlDataChanged((NhlDataItemLayer)new,status);
 
         if (status)
                 sfp->up_to_date = False;
+
+        _NhlFreeConvertContext(context);
 
 	return	ret;
 }
@@ -2639,9 +2993,9 @@ static NhlPointer CopyData
 
 
 /*
- * Function:    CreateData
+ * Function:    CreateVData
  *
- * Description: Create the data for a VType GenArray given a float value
+ * Description: Create the data for a VType GenArray given any type value
  *
  * In Args:
  *
@@ -2652,28 +3006,30 @@ static NhlPointer CopyData
  * Side Effects:
  */
 
-static NhlPointer CreateData
+static NhlPointer CreateVData
 #if	NhlNeedProto
 (
-	float fval, 
+	NhlPointer value,
+	int size,
 	NrmQuark resQ
 )
 #else
-(fval,resQ)
-	float fval;
+(value,size,resQ)
+	NhlPointer value;
+	int   size;
 	NrmQuark resQ;
 #endif
 {
 	char *e_text, *entry_name = "ScalarFieldGetValues";
 	NhlPointer new;
 
-	if ((new = NhlMalloc(sizeof(float))) == NULL) {
+	if ((new = NhlMalloc(size)) == NULL) {
 		e_text = "%s: dynamic memory allocation error for %s";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,
 			  entry_name,NrmQuarkToString(resQ));
 		return NULL;
 	}
-	memcpy(new,&fval,sizeof(float));
+	memcpy(new,value,size);
 	
 	return new;
 }
@@ -2778,7 +3134,7 @@ static NhlErrorTypes    ScalarFieldGetValues
         int i;
         NrmQuark resQ;
 	NrmQuark typeQ = NrmNULLQUARK;
-	NhlPointer	data;
+	NhlPointer	data,value;
 	int		dlen[2];
 	int		ndim;
 	int		size;
@@ -2786,6 +3142,7 @@ static NhlErrorTypes    ScalarFieldGetValues
 	float		tmp;
 	int		ival;
 	float		fval;
+	float		*farray;
 		
 	if (sfp->d_arr == NULL) {
 		e_text = "%s: internal inconsistency";
@@ -2893,7 +3250,8 @@ static NhlErrorTypes    ScalarFieldGetValues
 			}
 			else {
 				if ((data = 
-				     CreateData(sffp->data_min,resQ)) == NULL)
+				     CreateVData((NhlPointer)&sffp->data_min,
+						 sizeof(float),resQ)) == NULL)
 					return NhlFATAL;
 				typeQ = Qfloat;
 				size = sizeof(float);
@@ -2912,7 +3270,8 @@ static NhlErrorTypes    ScalarFieldGetValues
 			}
 			else {
 				if ((data = 
-				     CreateData(sffp->data_max,resQ)) == NULL)
+				     CreateVData((NhlPointer)&sffp->data_max,
+						 sizeof(float),resQ)) == NULL)
 					return NhlFATAL;
 				typeQ = Qfloat;
 				size = sizeof(float);
@@ -2923,11 +3282,13 @@ static NhlErrorTypes    ScalarFieldGetValues
 			ndim = 1;
 			dlen[0] = 1;
 			if (sfp->x_arr) {
-				tmp = ((float*)sfp->x_arr->data)[0];
-				if ((data = CreateData(tmp,resQ)) == NULL)
+				data = CreateVData
+					((NhlPointer)sfp->x_arr->data,
+					 sfp->x_arr->size,resQ);
+				if (!data)
 					return NhlFATAL;
-				typeQ = Qfloat;
-				size = sizeof(float);
+				typeQ = sfp->x_arr->typeQ;
+				size = sfp->x_arr->size;
 			}
 			else if (sfp->x_start != NULL) {
 				if ((data = CopyData(sfp->x_start,resQ))
@@ -2936,16 +3297,10 @@ static NhlErrorTypes    ScalarFieldGetValues
 				typeQ = sfp->x_start->typeQ;
 				size = sfp->x_start->size;
 			}
-			else if (sfp->x_subset_start != NULL) {
-				if ((data = CopyData(sfp->x_subset_start,resQ))
-				    == NULL)
-					return NhlFATAL;
-				typeQ = sfp->x_subset_start->typeQ;
-				size = sfp->x_subset_start->size;
-			}
 			else {
 				tmp = 0.0;
-				if ((data = CreateData(tmp,resQ)) == NULL)
+				if ((data = CreateVData((NhlPointer)&tmp,
+						 sizeof(float),resQ)) == NULL)
 					return NhlFATAL;
 				typeQ = Qfloat;
 				size = sizeof(float);
@@ -2956,12 +3311,14 @@ static NhlErrorTypes    ScalarFieldGetValues
 			ndim = 1;
 			dlen[0] = 1;
 			if (sfp->x_arr) {
-				tmp = ((float*)sfp->x_arr->data)
-					[sfp->x_arr->len_dimensions[0]-1];
-				if ((data = CreateData(tmp,resQ)) == NULL)
+				data = CreateVData
+				  ((NhlPointer)((char *)sfp->x_arr->data + 
+				   (sfp->x_el_count-1) * sfp->x_arr->size),
+				   sfp->x_arr->size,resQ);
+				if (!data)
 					return NhlFATAL;
-				typeQ = Qfloat;
-				size = sizeof(float);
+				typeQ = sfp->x_arr->typeQ;
+				size = sfp->x_arr->size;
 			}
 			else if (sfp->x_end != NULL) {
 				if ((data = CopyData(sfp->x_end,resQ))
@@ -2970,16 +3327,10 @@ static NhlErrorTypes    ScalarFieldGetValues
 				typeQ = sfp->x_end->typeQ;
 				size = sfp->x_end->size;
 			}
-			else if (sfp->x_subset_end != NULL) {
-				if ((data = CopyData(sfp->x_subset_end,resQ))
-				    == NULL)
-					return NhlFATAL;
-				typeQ = sfp->x_subset_end->typeQ;
-				size = sfp->x_subset_end->size;
-			}
 			else {
-				tmp = sfp->d_arr->len_dimensions[1] - 1;
-				if ((data = CreateData(tmp,resQ)) == NULL)
+				tmp = (float)sfp->x_el_count - 1;
+				if ((data = CreateVData((NhlPointer)&tmp,
+						 sizeof(float),resQ)) == NULL)
 					return NhlFATAL;
 				typeQ = Qfloat;
 				size = sizeof(float);
@@ -2990,11 +3341,12 @@ static NhlErrorTypes    ScalarFieldGetValues
 			ndim = 1;
 			dlen[0] = 1;
 			if (sfp->y_arr) {
-				tmp = ((float*)sfp->y_arr->data)[0];
-				if ((data = CreateData(tmp,resQ)) == NULL)
+				data = CreateVData
+				  (sfp->y_arr->data,sfp->y_arr->size,resQ);
+				if (!data)
 					return NhlFATAL;
-				typeQ = Qfloat;
-				size = sizeof(float);
+				typeQ = sfp->y_arr->typeQ;
+				size = sfp->y_arr->size;
 			}
 			else if (sfp->y_start != NULL) {
 				if ((data = CopyData(sfp->y_start,resQ))
@@ -3003,16 +3355,10 @@ static NhlErrorTypes    ScalarFieldGetValues
 				typeQ = sfp->y_start->typeQ;
 				size = sfp->y_start->size;
 			}
-			else if (sfp->y_subset_start != NULL) {
-				if ((data = CopyData(sfp->y_subset_start,resQ))
-				    == NULL)
-					return NhlFATAL;
-				typeQ = sfp->y_subset_start->typeQ;
-				size = sfp->y_subset_start->size;
-			}
 			else {
 				tmp = 0.0;
-				if ((data = CreateData(tmp,resQ)) == NULL)
+				if ((data = CreateVData((NhlPointer)&tmp,
+						 sizeof(float),resQ)) == NULL)
 					return NhlFATAL;
 				typeQ = Qfloat;
 				size = sizeof(float);
@@ -3023,12 +3369,15 @@ static NhlErrorTypes    ScalarFieldGetValues
 			ndim = 1;
 			dlen[0] = 1;
 			if (sfp->y_arr) {
-				tmp = ((float*)sfp->y_arr->data)
-					[sfp->y_arr->len_dimensions[0]-1];
-				if ((data = CreateData(tmp,resQ)) == NULL)
+				data = CreateVData
+				  ((NhlPointer)((char *)sfp->y_arr->data + 
+				   (sfp->y_el_count-1) * sfp->y_arr->size),
+				   sfp->y_arr->size,resQ);
+				if (!data)
 					return NhlFATAL;
-				typeQ = Qfloat;
-				size = sizeof(float);
+				typeQ = sfp->y_arr->typeQ;
+				size = sfp->y_arr->size;
+				
 			}
 			else if (sfp->y_end != NULL) {
 				if ((data = CopyData(sfp->y_end,resQ))
@@ -3037,16 +3386,10 @@ static NhlErrorTypes    ScalarFieldGetValues
 				typeQ = sfp->y_end->typeQ;
 				size = sfp->y_end->size;
 			}
-			else if (sfp->y_subset_end != NULL) {
-				if ((data = CopyData(sfp->y_subset_end,resQ))
-				    == NULL)
-					return NhlFATAL;
-				typeQ = sfp->y_subset_end->typeQ;
-				size = sfp->y_subset_end->size;
-			}
 			else {
-				tmp = sfp->d_arr->len_dimensions[0] - 1;
-				if ((data = CreateData(tmp,resQ)) == NULL)
+				tmp = sfp->y_el_count - 1;
+				if ((data = CreateVData((NhlPointer)&tmp,
+						 sizeof(float),resQ)) == NULL)
 					return NhlFATAL;
 				typeQ = Qfloat;
 				size = sizeof(float);
@@ -3056,7 +3399,8 @@ static NhlErrorTypes    ScalarFieldGetValues
 			do_genarray = True;
 			ndim = 1;
 			dlen[0] = 1;
-			if (sfp->x_subset_start != NULL) {
+			if (! sfp->subset_by_index &&
+			    sfp->x_subset_start != NULL) {
 				if ((data = CopyData(sfp->x_subset_start,resQ))
 				    == NULL)
 					return NhlFATAL;
@@ -3065,7 +3409,8 @@ static NhlErrorTypes    ScalarFieldGetValues
 			}
 			else {
 				if ((data = 
-				     CreateData(sffp->x_start,resQ)) == NULL)
+				     CreateVData((NhlPointer)&sffp->x_start,
+						 sizeof(float),resQ)) == NULL)
 					return NhlFATAL;
 				typeQ = Qfloat;
 				size = sizeof(float);
@@ -3075,7 +3420,8 @@ static NhlErrorTypes    ScalarFieldGetValues
 			do_genarray = True;
 			ndim = 1;
 			dlen[0] = 1;
-			if (sfp->x_subset_end != NULL) {
+			if (! sfp->subset_by_index &&
+			    sfp->x_subset_end != NULL) {
 				if ((data = CopyData(sfp->x_subset_end,resQ))
 				    == NULL)
 					return NhlFATAL;
@@ -3084,7 +3430,8 @@ static NhlErrorTypes    ScalarFieldGetValues
 			}
 			else {
 				if ((data = 
-				     CreateData(sffp->x_end,resQ)) == NULL)
+				     CreateVData((NhlPointer)&sffp->x_end,
+						 sizeof(float),resQ)) == NULL)
 					return NhlFATAL;
 				typeQ = Qfloat;
 				size = sizeof(float);
@@ -3094,7 +3441,8 @@ static NhlErrorTypes    ScalarFieldGetValues
 			do_genarray = True;
 			ndim = 1;
 			dlen[0] = 1;
-			if (sfp->y_subset_start != NULL) {
+			if (! sfp->subset_by_index &&
+			    sfp->y_subset_start != NULL) {
 				if ((data = CopyData(sfp->y_subset_start,resQ))
 				    == NULL)
 					return NhlFATAL;
@@ -3103,7 +3451,8 @@ static NhlErrorTypes    ScalarFieldGetValues
 			}
 			else {
 				if ((data = 
-				     CreateData(sffp->y_start,resQ)) == NULL)
+				     CreateVData((NhlPointer)&sffp->y_start,
+						 sizeof(float),resQ)) == NULL)
 					return NhlFATAL;
 				typeQ = Qfloat;
 				size = sizeof(float);
@@ -3113,7 +3462,8 @@ static NhlErrorTypes    ScalarFieldGetValues
 			do_genarray = True;
 			ndim = 1;
 			dlen[0] = 1;
-			if (sfp->y_subset_end != NULL) {
+			if (! sfp->subset_by_index &&
+			    sfp->y_subset_end != NULL) {
 				if ((data = CopyData(sfp->y_subset_end,resQ))
 				    == NULL)
 					return NhlFATAL;
@@ -3122,7 +3472,8 @@ static NhlErrorTypes    ScalarFieldGetValues
 			}
 			else {
 				if ((data = 
-				     CreateData(sffp->y_end,resQ)) == NULL)
+				     CreateVData((NhlPointer)&sffp->y_end,
+						 sizeof(float),resQ)) == NULL)
 					return NhlFATAL;
 				typeQ = Qfloat;
 				size = sizeof(float);
@@ -3186,6 +3537,13 @@ static NhlErrorTypes    ScalarFieldGetValues
 			*args[i].size_ret = sizeof(float);
 			*args[i].free_func = NULL;
                 }
+                else if (resQ == Qx_el_count) {
+                        ival = sfp->x_el_count;
+			*(int*)args[i].value.ptrval = ival;
+			*args[i].type_ret = Qint;
+			*args[i].size_ret = sizeof(int);
+			*args[i].free_func = NULL;
+                }
                 else if (resQ == Qy_actual_start) {
 			fval = sfp->y_actual_start;
 			*(float*)args[i].value.ptrval = fval;
@@ -3198,6 +3556,13 @@ static NhlErrorTypes    ScalarFieldGetValues
 			*(float*)args[i].value.ptrval = fval;
 			*args[i].type_ret = Qfloat;
 			*args[i].size_ret = sizeof(float);
+			*args[i].free_func = NULL;
+                }
+                else if (resQ == Qy_el_count) {
+                        ival = sfp->y_el_count;
+			*(int*)args[i].value.ptrval = ival;
+			*args[i].type_ret = Qint;
+			*args[i].size_ret = sizeof(int);
 			*args[i].free_func = NULL;
                 }
 

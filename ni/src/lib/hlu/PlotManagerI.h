@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManagerI.h,v 1.2 1996-05-17 07:54:10 dbrown Exp $
+ *      $Id: PlotManagerI.h,v 1.3 1998-04-16 03:08:58 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -79,24 +79,6 @@ extern NhlErrorTypes _NhlManageOverlay(
 	NhlSArgList	sargs,
 	int		nargs,
 	char		*entry_name				   
-#endif
-);
-
-extern void _NhlovCpMapXY(
-#if	NhlNeedProto
-	float *xin,
-	float *yin,
-	float* xout,
-	float* yout
-#endif
-);
-
-extern void _NhlovCpInvMapXY(
-#if	NhlNeedProto
-	float *xin,
-	float *yin,
-	float* xout,
-	float* yout
 #endif
 );
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: TransformI.h,v 1.7 1998-02-18 01:25:27 dbrown Exp $
+ *      $Id: TransformI.h,v 1.8 1998-04-16 03:09:14 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -117,24 +117,6 @@ extern NhlErrorTypes _NhlUnregisterAnnotation(
 #if	NhlNeedProto
         NhlLayer	plot,
 	NhlLayer	annomanager,
-	NhlString	entry_name
-#endif
-);
-
-extern NhlErrorTypes _NhltfDrawSegment(
-#if	NhlNeedProto
-        NhlLayer	plot,
-	NhlLayer	trobj,
-        NhlTransDat	*transdat,
-	NhlString	entry_name
-#endif
-);
-
-extern NhlErrorTypes _NhltfInitSegment(
-#if	NhlNeedProto
-        NhlLayer	plot,
-	NhlLayer	trobj,
-	NhlTransDat	**transdat,					      
 	NhlString	entry_name
 #endif
 );

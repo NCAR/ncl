@@ -1,5 +1,5 @@
 /*
- *      $Id: ScalarFieldFloatP.h,v 1.4 1995-04-07 10:43:41 boote Exp $
+ *      $Id: ScalarFieldFloatP.h,v 1.5 1998-04-16 03:09:04 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -35,6 +35,11 @@ typedef struct _NhlScalarFieldFloatLayerRec *NhlScalarFieldFloatLayer;
 
 extern NhlClass NhlscalarFieldFloatClass;
 
+
+#define _NhlsfDARR_CHANGED 1
+#define _NhlsfXARR_CHANGED 2
+#define _NhlsfYARR_CHANGED 4
+
 typedef struct _NhlScalarFieldFloatLayerPart{
 
 	/* all fields are private and set directly by the converter */
@@ -47,16 +52,22 @@ typedef struct _NhlScalarFieldFloatLayerPart{
 	float		missing_value;
 	float		data_min;
 	float		data_max;
+        
 	float		x_start;
 	float		x_end;
 	float		y_start;
 	float		y_end;
+        
+        int		ix_start;
+        int		ix_end;
+        int		iy_start;
+        int		iy_end;
 
 	int		begin;
 	int		fast_dim;
 	int		fast_len;
 	int		slow_len;
-
+	int		changed;
 } NhlScalarFieldFloatLayerPart;
 
 typedef struct _NhlScalarFieldFloatLayerRec{

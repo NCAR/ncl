@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorField.c,v 1.17 1998-03-11 18:35:54 dbrown Exp $
+ *      $Id: VectorField.c,v 1.18 1998-04-16 03:09:17 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -23,6 +23,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
+#include <ncarg/hlu/hluutil.h>
 #include <ncarg/hlu/VectorFieldP.h>
 
 /************************************************************************
@@ -133,14 +134,25 @@ static NhlResource resources[] = {
 	{NhlNvfXCActualEndF,NhlCvfXCActualEndF,NhlTFloat,sizeof(float),
 		 Oset(x_actual_end),NhlTString,
 		 _NhlUSET("1.0"),_NhlRES_GONLY,NULL},
+	{NhlNvfXCElementCount,NhlCvfXCElementCount,NhlTInteger,sizeof(int),
+		 Oset(x_el_count),NhlTImmediate,
+         	 _NhlUSET(0),_NhlRES_GONLY,NULL},
 	{NhlNvfYCActualStartF,NhlCvfYCActualStartF,NhlTFloat,sizeof(float),
 		 Oset(y_actual_start),NhlTString,
 		 _NhlUSET("0.0"),_NhlRES_GONLY,NULL},
 	{NhlNvfYCActualEndF,NhlCvfYCActualEndF,NhlTFloat,sizeof(float),
 		 Oset(y_actual_end),NhlTString,
-		 _NhlUSET("1.0"),_NhlRES_GONLY,NULL}
+		 _NhlUSET("1.0"),_NhlRES_GONLY,NULL},
+	{NhlNvfYCElementCount,NhlCvfYCElementCount,NhlTInteger,sizeof(int),
+		 Oset(y_el_count),NhlTImmediate,
+         	_NhlUSET(0),_NhlRES_GONLY,NULL},
 
 /* End-documented-resources */
+
+	{NhlNvfSubsetByIndex,NhlCvfSubsetByIndex,
+		NhlTBoolean,sizeof(NhlBoolean),Oset(subset_by_index),
+		NhlTImmediate,
+	 	_NhlUSET((NhlPointer)False),_NhlRES_PRIVATE,NULL}
 
 };
 #undef Oset
@@ -318,8 +330,10 @@ static	NrmQuark	Qy_index_start  = NrmNULLQUARK;
 static	NrmQuark	Qy_index_end  = NrmNULLQUARK;
 static	NrmQuark	Qx_actual_start  = NrmNULLQUARK;
 static	NrmQuark	Qx_actual_end  = NrmNULLQUARK;
+static	NrmQuark	Qx_el_count  = NrmNULLQUARK;
 static	NrmQuark	Qy_actual_start  = NrmNULLQUARK;
 static	NrmQuark	Qy_actual_end  = NrmNULLQUARK;
+static	NrmQuark	Qy_el_count  = NrmNULLQUARK;
 
 
 typedef enum _vfCoord { vfXCOORD, vfYCOORD} vfCoord;
@@ -1322,11 +1336,11 @@ ValidCoordArray
 	char *name;
 
 	if (ctype == vfXCOORD) {
-		len_dim = vfp->len_dims[1];
+		len_dim = vfp->x_el_count;
 		name = NhlNvfXArray;
 	}
 	else {
-		len_dim = vfp->len_dims[0];
+		len_dim = vfp->y_el_count;
 		name = NhlNvfYArray;
 	}
 
@@ -1398,16 +1412,6 @@ GetDataBounds
 				return ret;
 			}
 		}
-		else if (vfp->x_subset_start != NULL) {
-			subret = GetVTypeValue(vfp->x_subset_start,cstart);
-			if ((ret = MIN(ret,subret)) < NhlWARNING) {
-				e_text = 
-				     "%s: error getting variable type value";
-				NhlPError(NhlFATAL,NhlEUNKNOWN,
-					  e_text,entry_name);
-				return ret;
-			}
-		}
 		else 
 			*cstart = 0.0;
 
@@ -1421,32 +1425,12 @@ GetDataBounds
 				return ret;
 			}
 		}
-		else if (vfp->x_subset_end != NULL) {
-			subret = GetVTypeValue(vfp->x_subset_end,cend);
-			if ((ret = MIN(ret,subret)) < NhlWARNING) {
-				e_text = 
-				     "%s: error getting variable type value";
-				NhlPError(NhlFATAL,NhlEUNKNOWN,
-					  e_text,entry_name);
-				return ret;
-			}
-		}
 		else 
-			*cend = vfp->len_dims[1] - 1;
+			*cend = vfp->x_el_count - 1;
 	}
 	else {
 		if (vfp->y_start != NULL) {
 			subret = GetVTypeValue(vfp->y_start,cstart);
-			if ((ret = MIN(ret,subret)) < NhlWARNING) {
-				e_text = 
-				     "%s: error getting variable type value";
-				NhlPError(NhlFATAL,NhlEUNKNOWN,
-					  e_text,entry_name);
-				return ret;
-			}
-		}
-		else if (vfp->y_subset_start != NULL) {
-			subret = GetVTypeValue(vfp->y_subset_start,cstart);
 			if ((ret = MIN(ret,subret)) < NhlWARNING) {
 				e_text = 
 				     "%s: error getting variable type value";
@@ -1468,18 +1452,8 @@ GetDataBounds
 				return ret;
 			}
 		}
-		else if (vfp->y_subset_end != NULL) {
-			subret = GetVTypeValue(vfp->y_subset_end,cend);
-			if ((ret = MIN(ret,subret)) < NhlWARNING) {
-				e_text = 
-				     "%s: error getting variable type value";
-				NhlPError(NhlFATAL,NhlEUNKNOWN,
-					  e_text,entry_name);
-				return ret;
-			}
-		}
 		else 
-			*cend = vfp->len_dims[0] - 1;
+			*cend = vfp->y_el_count - 1;
 	}
 	
 	return ret;
@@ -1526,7 +1500,7 @@ GetIndexBounds
 			
 	if (ctype == vfXCOORD) {
 
-		max_index = vfp->len_dims[1] - 1;
+		max_index = vfp->x_el_count - 1;
 
 		*icstart = (vfp->x_index_start < 0) ? 
 			0 : MIN(vfp->x_index_start,max_index);
@@ -1552,7 +1526,7 @@ GetIndexBounds
 	}
 	else {
 
-		max_index = vfp->len_dims[0] - 1;
+		max_index = vfp->y_el_count - 1;
 
 		*icstart = (vfp->y_index_start < 0) ? 
 			0 : MIN(vfp->y_index_start,max_index); 
@@ -1639,6 +1613,507 @@ GetSubsetBounds
 	NhlBoolean	rev;
 	float		drange;
 	int		range;
+	NhlGenArray	*subset_start, *subset_end;
+	NhlBoolean	nullstart = False, nullend = False;
+        NhlBoolean	start_byindex,end_byindex;
+	char		*c_name;
+	int		stride,rem;
+
+	if (ctype == vfXCOORD) {
+		range = vfp->x_el_count - 1;
+		subset_start = &vfp->x_subset_start;
+		subset_end = &vfp->x_subset_end;
+		stride = vfp->x_stride;
+                start_byindex = vfp->xstart_byindex;
+                end_byindex = vfp->xend_byindex;
+		c_name = "X coordinate";
+	}
+	else {
+		range = vfp->y_el_count - 1;
+		subset_start = &vfp->y_subset_start;
+		subset_end = &vfp->y_subset_end;
+		stride = vfp->y_stride;
+                start_byindex = vfp->ystart_byindex;
+                end_byindex = vfp->yend_byindex;
+		c_name = "Y coordinate";
+	}
+
+	if (! vfp->subset_by_index) {
+		float fval;
+
+		rev = cstart > cend;
+		if (*subset_start != NULL && ! start_byindex) {
+			subret = GetVTypeValue(*subset_start,&fval);
+			if ((ret = MIN(ret,subret)) < NhlWARNING) {
+				e_text = 
+				      "%s: error getting variable type value";
+				NhlPError(NhlFATAL,
+					  NhlEUNKNOWN,e_text,entry_name);
+				return ret;
+			}
+                        if ((! rev && fval < cstart) ||
+                            (rev && fval > cstart)) {
+				e_text = 
+			      "%s: %s subset start out of range: defaulting";
+				NhlPError(NhlWARNING,NhlEUNKNOWN,
+                                          e_text,entry_name,c_name);
+                                ret = MIN(NhlWARNING,ret);
+                                *scstart = cstart;
+                                NhlFreeGenArray(*subset_start);
+                                *subset_start = NULL;
+                        }
+                        else {
+                                *scstart = fval;
+                        }
+		}
+		else {
+			*scstart = cstart;
+			nullstart = True;
+		}
+		if (*subset_end != NULL && ! end_byindex) {
+			subret = GetVTypeValue(*subset_end,&fval);
+			if ((ret = MIN(ret,subret)) < NhlWARNING) {
+				e_text = 
+				     "%s: error getting variable type value";
+				NhlPError(NhlFATAL,
+					  NhlEUNKNOWN,e_text,entry_name);
+				return ret;
+			}
+                        if ((! rev && fval > cend) ||
+                            (rev && fval < cend)) {
+				e_text = 
+			      "%s: %s subset end out of range: defaulting";
+				NhlPError(NhlWARNING,NhlEUNKNOWN,
+                                          e_text,entry_name,c_name);
+                                ret = MIN(NhlWARNING,ret);
+                                *scend = cend;
+                                NhlFreeGenArray(*subset_end);
+                                *subset_end = NULL;
+                        }
+                        else {
+                                *scend = fval;
+                        }
+		}
+		else {
+			*scend = cend;
+			nullend = True;
+		}
+
+		if (rev != (*scstart > *scend)) {
+                        NhlGenArray tmp_ga;
+                        float fval;
+			e_text = 
+"%s: %s start/end subset order opposed to start/end order: reversing subset order";
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
+				  e_text,entry_name,c_name,c_name);
+			ret = MIN(NhlWARNING,ret);
+                        tmp_ga = *subset_start;
+                        *subset_start = *subset_end;
+                        *subset_end = tmp_ga;
+                        fval = *scstart;
+                        *scstart = *scend;
+                        *scend = fval;
+		}
+
+/*
+ * The index endpoints are chosen to include the subset data endpoints.
+ */
+		drange = cend - cstart;
+                if (drange == 0.0) {
+			e_text = 
+		         "%s: internal error; %s data range is 0.0.";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
+				  c_name,c_name);
+                        return NhlFATAL;
+                }
+                if (! start_byindex)
+                        *icstart = MAX(0,floor(((*scstart - cstart) /
+                                                drange) * range));
+                if (! end_byindex)
+                        *icend = MIN(range,ceil(((*scend - cstart) /
+                                                 drange) * range));
+
+		if (*icend - *icstart < 2) {
+			e_text = 
+		         "%s: %s subset data range not large enough: ignoring";
+			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
+				  c_name,c_name);
+			ret = MIN(NhlWARNING,ret);
+			*scstart = cstart;
+			*scend = cend;
+			*icstart = 0;
+			*icend = range;
+		}
+	}
+
+
+/* 
+ * if a stride is specified, the index must be a multiple of the stride 
+ * value in order to assure that the complete data coordinate range is
+ * included. Add to the specified end index if necessary, unless it 
+ * would exceed the max index. In this case subtract -- it is not possible
+ * to include the complete data range.
+ */
+	rem = (*icend - *icstart) % stride;
+	if (rem  > 0) {
+		if (*icend + stride - rem <= range)
+			*icend += stride - rem;
+		else
+			*icend -= rem;
+	}
+
+	flt_inc = (cend - cstart) / range;
+
+	*scstart = cstart + flt_inc * *icstart;
+	*scend = cstart + flt_inc * *icend;
+
+	return ret;
+}
+
+
+/*
+ * Function:	GetSubsetBoundsIrregular
+ *
+ * Description:	Depending on the value of the NhlNvfSubsetByIndex resource,
+ *		determines one coordinate of the data array subset, 
+ *		based either on the 
+ *		IndexStart/End resources or the SubsetStart/End resources.
+ *		In either case the true clipping rectangle is determined
+ *		based on the calculated or user assigned array index 
+ *		start/end values. The clipping boundaries may not be exactly
+ *		what the user asked for due to the truncation involved in
+ *		converting from data points to integer array indexes, but
+ *		the specified data points are guaranteed to be included.
+ *
+ * In Args:	vfp
+ *		ctypef
+ *		cstart,cend
+ *		entry_name
+ * In/Out Args: icstart,icend
+ * Out Args:	sxstart,sxend
+ *
+ * Scope:	private
+ * Returns:	NhlGenArray or NULL on error
+ * Side Effect:	
+ */
+/*ARGSUSED*/
+static NhlErrorTypes
+GetSubsetBoundsIrregular
+#if	NhlNeedProto
+(
+ 	NhlVectorFieldLayerPart *vfp,
+	NhlGenArray		*c_array,
+	vfCoord			ctype,
+	NhlBoolean		overwrite_ok,
+	float			*cstart,
+	float			*cend,
+	int			*icstart,
+	int			*icend,
+	float			*scstart,
+	float			*scend,
+	NhlString		entry_name
+)
+#else
+(vfp,c_array,ctype,overwrite_ok,
+ cstart,cend,icstart,icend,scstart,scend,entry_name)
+ 	NhlVectorFieldLayerPart *vfp;
+	NhlGenArray		*c_array;
+	vfCoord			ctype;
+	float			*cstart;
+	float			*cend;
+	int			*icstart;
+	int			*icend;
+	float			*scstart;
+	float			*scend;
+	NhlString		entry_name;
+#endif
+{
+	char		*e_text;
+	NhlErrorTypes   ret = NhlNOERROR,subret = NhlNOERROR;
+	NhlBoolean	rev;
+	int		i, len;
+	NhlGenArray	*subset_start,*subset_end;
+        NhlGenArray     out_ga;
+	NhlBoolean	nullstart = False,nullend = False;
+        NhlBoolean	start_byindex,end_byindex;
+	char		*c_name;
+	float		*fp, *nfp;
+	int		rem,stride;
+
+	if (ctype == vfXCOORD) {
+		subset_start = &vfp->x_subset_start;
+		subset_end = &vfp->x_subset_end;
+		stride = vfp->x_stride;
+                start_byindex = vfp->xstart_byindex;
+                end_byindex = vfp->xend_byindex;
+		c_name = "X coordinate";
+	}
+	else {
+		subset_start = &vfp->y_subset_start;
+		subset_end = &vfp->y_subset_end;
+		stride = vfp->y_stride;
+                start_byindex = vfp->ystart_byindex;
+                end_byindex = vfp->yend_byindex;
+		c_name = "Y coordinate";
+	}
+
+	len = (*c_array)->len_dimensions[0];
+	fp = (float *) (*c_array)->data;
+	*cstart = fp[0];
+	*cend = fp[len-1];
+
+	if (! vfp->subset_by_index) {
+		float fval;
+
+		rev = *cstart > *cend;
+		if (*subset_start != NULL && ! start_byindex) {
+			subret = GetVTypeValue(*subset_start,&fval);
+			if ((ret = MIN(ret,subret)) < NhlWARNING) {
+				e_text = 
+				      "%s: error getting variable type value";
+				NhlPError(NhlFATAL,
+					  NhlEUNKNOWN,e_text,entry_name);
+				return ret;
+			}
+                        if ((! rev && fval < *cstart) ||
+                            (rev && fval > *cstart)) {
+				e_text = 
+			      "%s: %s subset start out of range: defaulting";
+				NhlPError(NhlWARNING,NhlEUNKNOWN,
+                                          e_text,entry_name,c_name);
+                                ret = MIN(NhlWARNING,ret);
+                                *scstart = *cstart;
+                                NhlFreeGenArray(*subset_start);
+                                *subset_start = NULL;
+                        }
+                        else {
+                                *scstart = fval;
+                        }
+		}
+		else {
+			*scstart = *cstart;
+			nullstart = True;
+		}
+
+		if (*subset_end != NULL && ! end_byindex) {
+			subret = GetVTypeValue(*subset_end,&fval);
+			if ((ret = MIN(ret,subret)) < NhlWARNING) {
+				e_text = 
+				      "%s: error getting variable type value";
+				NhlPError(NhlFATAL,
+					  NhlEUNKNOWN,e_text,entry_name);
+				return ret;
+			}
+                        if ((! rev && fval > *cend) ||
+                            (rev && fval < *cend)) {
+				e_text = 
+			      "%s: %s subset end out of range: defaulting";
+				NhlPError(NhlWARNING,NhlEUNKNOWN,
+                                          e_text,entry_name,c_name);
+                                ret = MIN(NhlWARNING,ret);
+                                *scend = *cend;
+                                NhlFreeGenArray(*subset_end);
+                                *subset_end = NULL;
+                        }
+                        else {
+                                *scend = fval;
+                        }
+		}
+		else {
+			*scend = *cend;
+			nullend = True;
+		}
+
+		if (rev != (*scstart > *scend)) {
+                        NhlGenArray tmp_ga;
+                        float fval;
+			e_text = 
+"%s: %s start/end subset order opposed to start/end order: reversing subset order";
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
+				  e_text,entry_name,c_name,c_name);
+			ret = MIN(NhlWARNING,ret);
+                        tmp_ga = *subset_start;
+                        *subset_start = *subset_end;
+                        *subset_end = tmp_ga;
+                        fval = *scstart;
+                        *scstart = *scend;
+                        *scend = fval;
+		}
+
+		if (! rev) {
+                        if (! start_byindex) {
+                                for (i = 0; i < len; i++) {
+                                        if (*scstart < *(fp + i)) {
+                                                *icstart = MAX(i-1,0);
+                                                break;
+                                        }
+                                }
+                        }
+                        if (! end_byindex) {
+                                for (i = len - 1; i >= 0; i--) {
+                                        if (*scend > *(fp + i)) {
+                                                *icend = MIN(i+1,len-1);
+                                                break;
+                                        }
+                                }
+                        }
+                        
+		}
+		else {
+                        if (! start_byindex) {
+                                for (i = 0; i < len; i++) {
+                                        if (*scstart > *(fp + i)) {
+                                                *icstart = MAX(i-1,0);
+                                                break;
+                                        }
+                                }
+                        }
+                        if (! end_byindex) {
+                                for (i = len - 1; i >= 0; i--) {
+                                        if (*scend < *(fp + i)) {
+                                                *icend = MIN(i+1,len-1);
+                                                break;
+                                        }
+                                }
+                        }
+                }
+
+		if (*icend - *icstart < 2) {
+			e_text = 
+		        "%s: %s subset data range not large enough: ignoring";
+			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
+				  c_name,c_name);
+			ret = MIN(NhlWARNING,ret);
+			*scstart = *cstart;
+			*scend = *cend;
+			*icstart = 0;
+			*icend = len - 1;
+		}
+	}
+
+/* 
+ * if a stride is specified, the end index must be a multiple of the stride 
+ * value. Increas the specified end index if necessary, unless it 
+ * would exceed the max index. In this case subtract -- it is not possible
+ * to include the complete data range.
+ */
+	rem = (*icend - *icstart) % stride;
+	if (rem  > 0) {
+		if (*icend + stride - rem <= len -1)
+			*icend += stride - rem;
+		else
+			*icend -= rem;
+	}
+	*scstart = fp[*icstart];
+	*scend = fp[*icend];
+/*
+ * If the data is a subset of the complete array, copy the relevant
+ * part of the irregular coordinate array to a new array. The old data
+ * space will eventually be freed (I think) by the Converter 
+ * memory management routines.
+ */
+	if (*icstart > 0 || *icend < len - 1 || stride > 1) {
+		int nlen = (*icend - *icstart) / stride + 1;
+		if (overwrite_ok) {
+			for (i = 0; i < nlen; i++) {
+				fp[i] = fp[*icstart+i*stride];
+			}
+			(*c_array)->num_elements = nlen;
+		}
+		else {
+			if ((nfp = (float *)
+			     NhlConvertMalloc(nlen * 
+					      sizeof(float))) == NULL) { 
+				e_text = "%s: dynamic memory allocation error";
+				NhlPError(NhlFATAL,NhlEUNKNOWN,
+					  e_text,entry_name);
+				return NhlFATAL;
+			}
+			for (i = 0; i < nlen; i++) {
+				nfp[i] = fp[*icstart+i*stride];
+			}
+			if ((out_ga = (NhlGenArray) 
+			     NhlConvertMalloc(sizeof(NhlGenArrayRec)))
+			    == NULL) {
+				e_text = "%s: dynamic memory allocation error";
+				NhlPError(NhlFATAL,NhlEUNKNOWN,
+					  e_text,entry_name);
+				return NhlFATAL;
+			}
+			out_ga->num_dimensions = 1;
+			out_ga->len_dimensions = &out_ga->num_elements;
+			out_ga->num_elements = nlen;
+			out_ga->typeQ = Qfloat;
+			out_ga->size = sizeof(float);
+			out_ga->data = (NhlPointer)nfp;
+			out_ga->my_data = True;
+			*c_array = out_ga;
+		}
+	}
+
+	return ret;
+}
+
+#if 0
+/*
+ * Function:	GetSubsetBounds
+ *
+ * Description:	Depending on the value of the NhlNvfSubsetByIndex resource,
+ *		determines one coordinate of the data array subset, 
+ *		based either on the 
+ *		IndexStart/End resources or the SubsetStart/End resources.
+ *		In either case the true clipping rectangle is determined
+ *		based on the calculated or user assigned array index 
+ *		start/end values. The clipping boundaries may not be exactly
+ *		what the user asked for due to the truncation involved in
+ *		converting from data points to integer array indexes, but
+ *		the specified data points are guaranteed to be included.
+ *
+ * In Args:	vfp
+ *		ctype
+ *		cstart,cend
+ *		entry_name
+ * In/Out Args: icstart,icend
+ * Out Args:	sxstart,sxend
+ *
+ * Scope:	private
+ * Returns:	NhlGenArray or NULL on error
+ * Side Effect:	
+ */
+/*ARGSUSED*/
+static NhlErrorTypes
+GetSubsetBounds
+#if	NhlNeedProto
+(
+ 	NhlVectorFieldLayerPart *vfp,
+	vfCoord			ctype,
+	float			cstart,
+	float			cend,
+	int			*icstart,
+	int			*icend,
+	float			*scstart,
+	float			*scend,
+	NhlString		entry_name
+)
+#else
+(vfp,ctype,cstart,cend,icstart,icend,scstart,scend,entry_name)
+ 	NhlVectorFieldLayerPart *vfp;
+	vfCoord			ctype;
+	float			cstart;
+	float			cend;
+	int			*icstart;
+	int			*icend;
+	float			*scstart;
+	float			*scend;
+	NhlString		entry_name;
+#endif
+{
+	char		*e_text;
+	NhlErrorTypes   ret = NhlNOERROR, subret = NhlNOERROR;
+	float		flt_inc;
+	NhlBoolean	rev;
+	float		drange;
+	int		range;
 	NhlGenArray	subset_start, subset_end;
 	NhlBoolean	nullstart = False, nullend = False;
 	char		*c_name;
@@ -1646,14 +2121,14 @@ GetSubsetBounds
 	
 
 	if (ctype == vfXCOORD) {
-		range =  vfp->len_dims[1] - 1;
+		range =  vfp->x_el_count - 1;
 		subset_start = vfp->x_subset_start;
 		subset_end = vfp->x_subset_end;
 		stride = vfp->x_stride;
 		c_name = "X coordinate";
 	}
 	else {
-		range = vfp->len_dims[0] - 1;
+		range = vfp->y_el_count - 1;
 		subset_start = vfp->y_subset_start;
 		subset_end = vfp->y_subset_end;
 		stride = vfp->y_stride;
@@ -1984,6 +2459,7 @@ GetSubsetBoundsIrregular
 
 	return ret;
 }
+#endif
 
 /*
  * Function:	GetCoordBounds
@@ -2273,10 +2749,14 @@ CvtGenVFObjToFloatVFObj
 		if ((ret = MIN(ret,subret))  < NhlWARNING) 
 			return ret;
 	}
-	vfp->ix_start = ixstart;
-	vfp->ix_end = ixend;
+	vffp->ix_start = vfp->ix_start = ixstart;
+	vffp->ix_end = vfp->ix_end = ixend;
 	vfp->x_actual_start = sxstart;
 	vfp->x_actual_end = sxend;
+        if (! vfp->subset_by_index) {
+                vfp->x_index_start = vfp->ix_start;
+                vfp->x_index_end = vfp->ix_end;
+        }
 
 	vffp->y_arr = NULL;
 	if (vfp->y_arr != NULL && vfp->y_arr->num_elements > 0) {
@@ -2317,10 +2797,14 @@ CvtGenVFObjToFloatVFObj
 		if ((ret = MIN(ret,subret))  < NhlWARNING) 
 			return ret;
 	}
-	vfp->iy_start = iystart;
-	vfp->iy_end = iyend;
+	vffp->iy_start = vfp->iy_start = iystart;
+	vffp->iy_end = vfp->iy_end = iyend;
 	vfp->y_actual_start = systart;
 	vfp->y_actual_end = syend;
+        if (! vfp->subset_by_index) {
+                vfp->y_index_start = vfp->iy_start;
+                vfp->y_index_end = vfp->iy_end;
+        }
 
 	if (vfp->missing_u_value == NULL) {
 		u_missing = 0.0;
@@ -2499,9 +2983,9 @@ CvtGenVFObjToFloatVFObj
 		vffp->v_min = tmin;
 		vffp->v_max = tmax;
 	}
-
+	vffp->changed = vfp->changed;
         vfp->up_to_date = True;
-        
+       
 	return ret;
 }
 
@@ -2569,8 +3053,10 @@ VectorFieldClassInitialize
 	Qy_index_end  = NrmStringToQuark(NhlNvfYCEndIndex);
 	Qx_actual_start  = NrmStringToQuark(NhlNvfXCActualStartF);
 	Qx_actual_end  = NrmStringToQuark(NhlNvfXCActualEndF);
+	Qx_el_count  = NrmStringToQuark(NhlNvfXCElementCount);
 	Qy_actual_start  = NrmStringToQuark(NhlNvfYCActualStartF);
 	Qy_actual_end  = NrmStringToQuark(NhlNvfYCActualEndF);
+	Qy_el_count  = NrmStringToQuark(NhlNvfYCElementCount);
 
 	ret = NhlRegisterConverter(NhlbaseClass,
 			NhlvectorFieldClass->base_class.class_name,
@@ -2610,6 +3096,62 @@ VectorFieldClassPartInitialize
 	return ret;
 }
 
+
+/*
+ * Function:	VTypeValuesEqual
+ *
+ * Description:	This function does a float compare on two VTypes.
+ *
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	private
+ * Returns:	True if both values are non-null and equal, False otherwise
+ * Side Effect:	
+ */
+/*ARGSUSED*/
+static NhlBoolean
+VTypeValuesEqual
+#if	NhlNeedProto
+(
+        _NhlConvertContext	context,
+        NhlGenArray		vta1,
+        NhlGenArray     	vta2
+)
+#else
+(context,vta1,vta2)
+	_NhlConvertContext	context;
+	NhlGenArray	vta1;
+        NhlGenArray     vta2;
+#endif
+{
+        NrmValue from, to;
+        float f1,f2;
+                
+        if (! vta1 || ! vta2)
+                return False;
+        
+        from.size = sizeof(NhlGenArray);
+        from.data.ptrval = vta1;
+        to.size = sizeof(float);
+        to.data.ptrval = &f1;
+        
+        if (_NhlConvertData(context,Qgen_array,Qfloat,&from,&to) < NhlWARNING)
+                return False;
+        
+        from.data.ptrval = vta2;
+        to.data.ptrval = &f2;
+        
+        if (_NhlConvertData(context,Qgen_array,Qfloat,&from,&to) < NhlWARNING)
+                return False;
+
+        if (_NhlCmpFAny(f1,f2,5) == 0.0)
+                return True;
+        
+        return False;
+}
 
 /*
  * Function:	VectorFieldInitialize
@@ -2658,11 +3200,17 @@ VectorFieldInitialize
 	NhlGenArray		ga;
          _NhlConvertContext	context = NULL;
 
+        context = _NhlCreateConvertContext(new);
 	vfp->vffloat = NULL;
 	vfp->use_d_arr = False;
         vfp->up_to_date = False;
 
-	if (! vfp->d_arr && !(vfp->u_arr && vfp->v_arr)) {
+        vfp->xstart_byindex = False;
+        vfp->xend_byindex = False;
+        vfp->ystart_byindex = False;
+        vfp->yend_byindex = False;
+
+ 	if (! vfp->d_arr && !(vfp->u_arr && vfp->v_arr)) {
 		e_text = 
      "%s: either %s or both %s and %s must be specified to create a %s object";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,
@@ -2686,8 +3234,8 @@ VectorFieldInitialize
 			return NhlFATAL;
 		}
 		vfp->use_d_arr = True;
-		vfp->len_dims[0] = vfp->d_arr->len_dimensions[1];
-		vfp->len_dims[1] = vfp->d_arr->len_dimensions[2];
+		vfp->y_el_count = vfp->d_arr->len_dimensions[1];
+		vfp->x_el_count = vfp->d_arr->len_dimensions[2];
 	}
 	if (! vfp->use_d_arr) {
 		if (vfp->u_arr->num_dimensions != 2 || 
@@ -2720,16 +3268,14 @@ VectorFieldInitialize
 			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 			return NhlFATAL;
 		}
-		vfp->len_dims[1] = vfp->u_arr->len_dimensions[1];
-		vfp->len_dims[0] = vfp->u_arr->len_dimensions[0];
+		vfp->x_el_count = vfp->u_arr->len_dimensions[1];
+		vfp->y_el_count = vfp->u_arr->len_dimensions[0];
 	}
         
         if (vfp->x_arr) {
                 NrmValue from, to;
                 NhlGenArray fltga;
                 
-                if (! context)
-                        context = _NhlCreateConvertContext(new);
                 from.size = sizeof(NhlGenArray);
                 from.data.ptrval = vfp->x_arr;
                 to.size = sizeof(NhlGenArray);
@@ -2756,8 +3302,6 @@ VectorFieldInitialize
                 NrmValue from, to;
                 NhlGenArray fltga;
                 
-                if (! context)
-                        context = _NhlCreateConvertContext(new);
                 from.size = sizeof(NhlGenArray);
                 from.data.ptrval = vfp->y_arr;
                 to.size = sizeof(NhlGenArray);
@@ -2779,8 +3323,6 @@ VectorFieldInitialize
                         }
                 }
 	}
-        if (context)
-                _NhlFreeConvertContext(context);
 
 	if (vfp->missing_u_value != NULL) {
 		ga = NULL;
@@ -2848,6 +3390,15 @@ VectorFieldInitialize
 		vfp->v_max = ga;
 	}
 
+
+        if (VTypeValuesEqual(context,vfp->x_start,vfp->x_end)) {
+                e_text = "%s %s and %s values cannot be equal, defaulting";
+                NHLPERROR((NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
+                          NhlNvfXCStartV,NhlNvfXCEndV));
+                ret = MIN(ret,NhlWARNING);
+                vfp->x_start = NULL;
+                vfp->x_end = NULL;
+        }
 	if (vfp->x_start != NULL) {
 		ga = NULL;
 		subret = CheckCopyVType(&ga,vfp->x_start,
@@ -2866,6 +3417,14 @@ VectorFieldInitialize
 	}
 
 
+        if (VTypeValuesEqual(context,vfp->y_start,vfp->y_end)) {
+                e_text = "%s %s and %s values cannot be equal, defaulting";
+                NHLPERROR((NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
+                          NhlNvfYCStartV,NhlNvfYCEndV));
+                ret = MIN(ret,NhlWARNING);
+                vfp->y_start = NULL;
+                vfp->y_end = NULL;
+        }
 	if (vfp->y_start != NULL) {
 		ga = NULL;
 		subret = CheckCopyVType(&ga,vfp->y_start,
@@ -2882,42 +3441,89 @@ VectorFieldInitialize
 		    return ret;
 		vfp->y_end = ga;
 	}
-
-
+        
+        if (VTypeValuesEqual(context,vfp->x_subset_start,vfp->x_subset_end)) {
+                e_text = "%s %s and %s values cannot be equal, defaulting";
+                NHLPERROR((NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
+                          NhlNvfXCStartV,NhlNvfXCEndV));
+                ret = MIN(ret,NhlWARNING);
+                vfp->x_subset_start = NULL;
+                vfp->x_subset_end = NULL;
+        }
 	if (vfp->x_subset_start != NULL) {
-		ga = NULL;
-		subret = CheckCopyVType(&ga,vfp->x_subset_start,
-					NhlNvfXCStartSubsetV,True,entry_name);
-		if ((ret = MIN(ret,subret)) < NhlWARNING)
-		    return ret;
-		vfp->x_subset_start = ga;
+                if (vfp->subset_by_index)
+                        vfp->x_subset_start = NULL;
+                else {
+                        ga = NULL;
+                        subret = CheckCopyVType
+                                (&ga,vfp->x_subset_start,
+                                 NhlNvfXCStartSubsetV,True,entry_name);
+                        if ((ret = MIN(ret,subret)) < NhlWARNING)
+                                return ret;
+                        vfp->x_subset_start = ga;
+                }
 	}
+        if (! vfp->x_subset_start)
+                vfp->xstart_byindex = True;
+                
 	if (vfp->x_subset_end != NULL) {
-		ga = NULL;
-		subret = CheckCopyVType(&ga,vfp->x_subset_end,
-					NhlNvfXCEndSubsetV,True,entry_name);
-		if ((ret = MIN(ret,subret)) < NhlWARNING)
-		    return ret;
-		vfp->x_subset_end = ga;
+                if (vfp->subset_by_index)
+                        vfp->x_subset_start = NULL;
+                else {
+                        ga = NULL;
+                        subret = CheckCopyVType
+                                (&ga,vfp->x_subset_end,
+                                 NhlNvfXCEndSubsetV,True,entry_name);
+                        if ((ret = MIN(ret,subret)) < NhlWARNING)
+                                return ret;
+                        vfp->x_subset_end = ga;
+                }
 	}
+        if (! vfp->x_subset_end)
+                vfp->xend_byindex = True;
 
 
+        if (VTypeValuesEqual(context,vfp->y_subset_start,vfp->y_subset_end)) {
+                e_text = "%s %s and %s values cannot be equal, defaulting";
+                NHLPERROR((NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
+                          NhlNvfYCStartV,NhlNvfYCEndV));
+                ret = MIN(ret,NhlWARNING);
+                vfp->y_subset_start = NULL;
+                vfp->y_subset_end = NULL;
+        }
 	if (vfp->y_subset_start != NULL) {
-		ga = NULL;
-		subret = CheckCopyVType(&ga,vfp->y_subset_start,
-					NhlNvfYCStartSubsetV,True,entry_name);
-		if ((ret = MIN(ret,subret)) < NhlWARNING)
-		    return ret;
-		vfp->y_subset_start = ga;
+                if (vfp->subset_by_index)
+                        vfp->y_subset_start = NULL;
+                else {
+                        ga = NULL;
+                        subret = CheckCopyVType
+                                (&ga,vfp->y_subset_start,
+                                 NhlNvfYCStartSubsetV,True,entry_name);
+                        if ((ret = MIN(ret,subret)) < NhlWARNING)
+                                return ret;
+                        vfp->y_subset_start = ga;
+                }
 	}
+        if (! vfp->y_subset_start)
+                vfp->ystart_byindex = True;
+                
 	if (vfp->y_subset_end != NULL) {
-		ga = NULL;
-		subret = CheckCopyVType(&ga,vfp->y_subset_end,
-					NhlNvfYCEndSubsetV,True,entry_name);
-		if ((ret = MIN(ret,subret)) < NhlWARNING)
-		    return ret;
-		vfp->y_subset_end = ga;
+                if (vfp->subset_by_index)
+                        vfp->y_subset_start = NULL;
+                else {
+                        ga = NULL;
+                        subret = CheckCopyVType
+                                (&ga,vfp->y_subset_end,
+                                 NhlNvfYCEndSubsetV,True,entry_name);
+                        if ((ret = MIN(ret,subret)) < NhlWARNING)
+                                return ret;
+                        vfp->y_subset_end = ga;
+                }
 	}
+        if (! vfp->y_subset_end)
+                vfp->yend_byindex = True;
+	
+        _NhlFreeConvertContext(context);
 	
 	return ret;
 }
@@ -2965,7 +3571,17 @@ VectorFieldSetValues
 	NhlGenArray		ga;
 	NhlBoolean		status = False;
         _NhlConvertContext	context = NULL;
+        NhlBoolean		x_arr_changed = False, y_arr_changed = False;
+	NhlBoolean		x_dim_changed = False, y_dim_changed = False;
+        NhlBoolean		x_start_changed = False, x_end_changed = False;
+        NhlBoolean		y_start_changed = False, y_end_changed = False;
 
+/*
+ * The changed bit field records changes to the X and Y coordinate array
+ * as passed to the ScalarFieldFloat object. Changes to the array itself
+ * count, but also subsection and stride changes.
+ */
+        context = _NhlCreateConvertContext(new);
 	if (vfp->d_arr != ovfp->d_arr) {
                 NhlBoolean reset = False;
 		if (! vfp->d_arr && ! (vfp->x_arr && vfp->y_arr)) {
@@ -3006,8 +3622,8 @@ VectorFieldSetValues
         }
         else {
                 vfp->use_d_arr = True;
-                vfp->len_dims[0] = vfp->d_arr->len_dimensions[1];
-                vfp->len_dims[1] = vfp->d_arr->len_dimensions[2];
+                vfp->y_el_count = vfp->d_arr->len_dimensions[1];
+                vfp->x_el_count = vfp->d_arr->len_dimensions[2];
         }
         
 	if (! vfp->use_d_arr &&
@@ -3081,21 +3697,40 @@ VectorFieldSetValues
                         }
                 }
                 if (! vfp->use_d_arr) {
-                        vfp->len_dims[1] = vfp->u_arr->len_dimensions[1];
-                        vfp->len_dims[0] = vfp->u_arr->len_dimensions[0];
+                        vfp->x_el_count = vfp->u_arr->len_dimensions[1];
+                        vfp->y_el_count = vfp->u_arr->len_dimensions[0];
                 }
+	}
+	if (vfp->x_el_count != ovfp->x_el_count)
+		x_dim_changed = True;
+	if (vfp->y_el_count != ovfp->y_el_count)
+		y_dim_changed = True;
+
+/*
+ * If dimension lengths have changed then subsetting returns to default
+ */
+	if (x_dim_changed) {
+		if (! _NhlArgIsSet(args,nargs,NhlNvfXCStartIndex))
+			vfp->x_index_start = -1;
+		if (! _NhlArgIsSet(args,nargs,NhlNvfXCEndIndex))
+			vfp->x_index_end = -1;
+	}
+	if (y_dim_changed) {
+		if (! _NhlArgIsSet(args,nargs,NhlNvfYCStartIndex))
+			vfp->y_index_start = -1;
+		if (! _NhlArgIsSet(args,nargs,NhlNvfYCEndIndex))
+			vfp->y_index_end = -1;
 	}
 
 	if (!vfp->x_arr && (vfp->x_arr != ovfp->x_arr)) {
                 NhlFreeGenArray(ovfp->x_arr);
                 status = True;
+                x_arr_changed = True;
         }
         else if (vfp->x_arr != ovfp->x_arr) {
                 NrmValue from, to;
                 NhlGenArray fltga;
                 
-                if (! context)
-                        context = _NhlCreateConvertContext(new);
                 from.size = sizeof(NhlGenArray);
                 from.data.ptrval = vfp->x_arr;
                 to.size = sizeof(NhlGenArray);
@@ -3108,6 +3743,13 @@ VectorFieldSetValues
                         vfp->x_arr = ovfp->x_arr;
                 }
                 else {
+		        if ((! ovfp->x_arr) || x_dim_changed || 
+			    vfp->x_arr->size != ovfp->x_arr->size ||
+			    vfp->x_arr->typeQ != ovfp->x_arr->typeQ ||
+			    memcmp(vfp->x_arr->data,ovfp->x_arr->data,
+				   vfp->x_arr->size * vfp->x_el_count))
+				x_arr_changed = True;
+
                         if ((vfp->x_arr = _NhlCopyGenArray
                              (vfp->x_arr,vfp->copy_arrays)) == NULL) {
                                 e_text = "%s: dynamic memory allocation error";
@@ -3116,19 +3758,19 @@ VectorFieldSetValues
                                 return NhlFATAL;
                         }
                         NhlFreeGenArray(ovfp->x_arr);
+			vfp->changed |= _NhlvfXARR_CHANGED;
+                        status = True;
                 }
-                status = True;
 	}
 	if (!vfp->y_arr && (vfp->y_arr != ovfp->y_arr)) {
                 NhlFreeGenArray(ovfp->y_arr);
+                y_arr_changed = True;
                 status = True;
         }
         else if (vfp->y_arr != ovfp->y_arr) {
                 NrmValue from, to;
                 NhlGenArray fltga;
                 
-                if (! context)
-                        context = _NhlCreateConvertContext(new);
                 from.size = sizeof(NhlGenArray);
                 from.data.ptrval = vfp->y_arr;
                 to.size = sizeof(NhlGenArray);
@@ -3141,6 +3783,12 @@ VectorFieldSetValues
                         vfp->y_arr = ovfp->y_arr;
                 }
                 else {
+		        if ((! ovfp->y_arr) || y_dim_changed || 
+			    vfp->y_arr->size != ovfp->y_arr->size ||
+			    vfp->y_arr->typeQ != ovfp->y_arr->typeQ ||
+			    memcmp(vfp->y_arr->data,ovfp->y_arr->data,
+				   vfp->y_arr->size * vfp->y_el_count))
+				y_arr_changed = True;
                         if ((vfp->y_arr = _NhlCopyGenArray
                              (vfp->y_arr,vfp->copy_arrays)) == NULL) {
                                 e_text = "%s: dynamic memory allocation error";
@@ -3149,11 +3797,10 @@ VectorFieldSetValues
                                 return NhlFATAL;
                         }
                         NhlFreeGenArray(ovfp->y_arr);
+			vfp->changed |= _NhlvfYARR_CHANGED;
+                        status = True;
                 }
-                status = True;
 	}
-        if (context)
-                _NhlFreeConvertContext(context);
 
 	if (vfp->missing_u_value != ovfp->missing_u_value) {
 		subret = CheckCopyVType(&ovfp->missing_u_value,
@@ -3225,41 +3872,87 @@ VectorFieldSetValues
 		status = True;
 	}
 
+        if (VTypeValuesEqual(context,vfp->x_start,vfp->x_end)) {
+                e_text =
+             "%s %s and %s values cannot be equal, restoring previous values";
+                NHLPERROR((NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
+                          NhlNvfXCStartV,NhlNvfXCEndV));
+                ret = MIN(ret,NhlWARNING);
+                vfp->x_start = ovfp->x_start;
+                vfp->x_end = ovfp->x_end;
+        }
 	if (vfp->x_start != ovfp->x_start) {
 		subret = CheckCopyVType(&ovfp->x_start,vfp->x_start,
 					NhlNvfXCStartV,True,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING)
 		    return ret;
 		vfp->x_start = ovfp->x_start;
+                x_start_changed = True;
 		status = True;
 	}
+        else if (x_arr_changed && vfp->x_start) {
+               	NhlFreeGenArray(ovfp->x_start);
+                vfp->x_start = NULL;
+        }
 	if (vfp->x_end != ovfp->x_end) {
 		subret = CheckCopyVType(&ovfp->x_end,vfp->x_end,
 					NhlNvfXCEndV,True,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING)
 		    return ret;
 		vfp->x_end = ovfp->x_end;
+                x_end_changed = True;
 		status = True;
 	}
+        else if (x_arr_changed && vfp->x_end) {
+               	NhlFreeGenArray(ovfp->x_end);
+                vfp->x_end = NULL;
+        }
 
+        if (VTypeValuesEqual(context,vfp->y_start,vfp->y_end)) {
+                e_text =
+             "%s %s and %s values cannot be equal, restoring previous values";
+                NHLPERROR((NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
+                          NhlNvfYCStartV,NhlNvfYCEndV));
+                ret = MIN(ret,NhlWARNING);
+                vfp->y_start = ovfp->y_start;
+                vfp->y_end = ovfp->y_end;
+        }
 	if (vfp->y_start != ovfp->y_start) {
 		subret = CheckCopyVType(&ovfp->y_start,vfp->y_start,
 					NhlNvfYCStartV,True,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING)
 		    return ret;
 		vfp->y_start = ovfp->y_start;
+                y_start_changed = True;
 		status = True;
 	}
+        else if (y_arr_changed && vfp->y_start) {
+               	NhlFreeGenArray(ovfp->y_start);
+                vfp->y_start = NULL;
+        }
 	if (vfp->y_end != ovfp->y_end) {
 		subret = CheckCopyVType(&ovfp->y_end,vfp->y_end,
 					NhlNvfYCEndV,True,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING)
 		    return ret;
 		vfp->y_end = ovfp->y_end;
+                y_end_changed = True;
 		status = True;
 	}
+        else if (y_arr_changed && vfp->y_end) {
+               	NhlFreeGenArray(ovfp->y_end);
+                vfp->y_end = NULL;
+        }
 
-
+        if (VTypeValuesEqual(context,vfp->x_subset_start,vfp->x_subset_end)) {
+                e_text =
+             "%s %s and %s values cannot be equal, restoring previous values";
+                NHLPERROR((NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
+                          NhlNvfXCStartV,NhlNvfXCEndV));
+                ret = MIN(ret,NhlWARNING);
+                vfp->x_subset_start = ovfp->x_subset_start;
+                vfp->x_subset_end = ovfp->y_subset_end;
+        }
 	if (vfp->x_subset_start != ovfp->x_subset_start) {
 		subret = CheckCopyVType(&ovfp->x_subset_start,
 					vfp->x_subset_start,
@@ -3267,18 +3960,43 @@ VectorFieldSetValues
 		if ((ret = MIN(ret,subret)) < NhlWARNING)
 		    return ret;
 		vfp->x_subset_start = ovfp->x_subset_start;
+		vfp->changed |= _NhlvfXARR_CHANGED;
 		status = True;
 	}
+        else if (x_arr_changed || vfp->subset_by_index ||
+                 x_start_changed || x_end_changed ||
+                 vfp->x_index_start != ovfp->x_index_start) {
+                NhlFreeGenArray(ovfp->x_subset_start);
+                vfp->x_subset_start = NULL;
+        }
+        vfp->xstart_byindex = vfp->x_subset_start ? False : True;
+        
 	if (vfp->x_subset_end != ovfp->x_subset_end) {
 		subret = CheckCopyVType(&ovfp->x_subset_end,vfp->x_subset_end,
 					NhlNvfXCEndSubsetV,True,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING)
 		    return ret;
 		vfp->x_subset_end = ovfp->x_subset_end;
+		vfp->changed |= _NhlvfXARR_CHANGED;
 		status = True;
 	}
+        else if (x_arr_changed || vfp->subset_by_index ||
+                 x_start_changed || x_end_changed ||
+                 vfp->x_index_end != ovfp->x_index_end) {
+               	NhlFreeGenArray(ovfp->x_subset_end);
+                vfp->x_subset_end = NULL;
+        }
+        vfp->xend_byindex = vfp->x_subset_end ? False : True;
 
-
+        if (VTypeValuesEqual(context,vfp->y_subset_start,vfp->y_subset_end)) {
+                e_text =
+             "%s %s and %s values cannot be equal, restoring previous values";
+                NHLPERROR((NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
+                          NhlNvfYCStartV,NhlNvfYCEndV));
+                ret = MIN(ret,NhlWARNING);
+                vfp->y_subset_start = ovfp->y_subset_start;
+                vfp->y_subset_end = ovfp->y_subset_end;
+        }
 	if (vfp->y_subset_start != ovfp->y_subset_start) {
 		subret = CheckCopyVType(&ovfp->y_subset_start,
 					vfp->y_subset_start,
@@ -3286,32 +4004,70 @@ VectorFieldSetValues
 		if ((ret = MIN(ret,subret)) < NhlWARNING)
 		    return ret;
 		vfp->y_subset_start = ovfp->y_subset_start;
+		vfp->changed |= _NhlvfYARR_CHANGED;
 		status = True;
 	}
+        else if (y_arr_changed || vfp->subset_by_index ||
+                 y_start_changed || y_end_changed ||
+                 vfp->y_index_start != ovfp->y_index_start) {
+               	NhlFreeGenArray(ovfp->y_subset_start);
+                vfp->y_subset_start = NULL;
+        }
+        vfp->ystart_byindex = vfp->y_subset_start ? False : True;
+        
 	if (vfp->y_subset_end != ovfp->y_subset_end) {
 		subret = CheckCopyVType(&ovfp->y_subset_end,vfp->y_subset_end,
 					NhlNvfYCEndSubsetV,True,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING)
 		    return ret;
 		vfp->y_subset_end = ovfp->y_subset_end;
+		vfp->changed |= _NhlvfYARR_CHANGED;
+		status = True;
+	}
+        else if (y_arr_changed || vfp->subset_by_index ||
+                 y_start_changed || y_end_changed ||
+                 vfp->y_index_end != ovfp->y_index_end) {
+               	NhlFreeGenArray(ovfp->y_subset_end);
+                vfp->y_subset_end = NULL;
+        }
+        vfp->yend_byindex = vfp->y_subset_end ? False : True;
+
+	if (vfp->x_index_start != ovfp->x_index_start) {
+		if (vfp->xstart_byindex)
+			vfp->changed |= _NhlvfXARR_CHANGED;
+		status = True;
+	}
+	if (vfp->x_index_end != ovfp->x_index_end) {
+		if (vfp->xend_byindex)
+			vfp->changed |= _NhlvfXARR_CHANGED;
 		status = True;
 	}
 
-	if (vfp->x_index_start != ovfp->x_index_start) 
+	if (vfp->y_index_start != ovfp->y_index_start) {
+		if (vfp->ystart_byindex)
+			vfp->changed |= _NhlvfYARR_CHANGED;
 		status = True;
-	if (vfp->x_index_end != ovfp->x_index_end)
+	}
+	if (vfp->y_index_end != ovfp->y_index_end) {
+		if (vfp->yend_byindex)
+			vfp->changed |= _NhlvfYARR_CHANGED;
 		status = True;
-	if (vfp->y_index_start != ovfp->y_index_start)
+	}
+
+	if (vfp->x_stride != ovfp->x_stride) {
+		vfp->changed |= _NhlvfXARR_CHANGED;
 		status = True;
-	if (vfp->y_index_end != ovfp->y_index_end)
+	}
+	if (vfp->y_stride != ovfp->y_stride) {
+		vfp->changed |= _NhlvfYARR_CHANGED;
 		status = True;
-	if (vfp->x_stride != ovfp->x_stride)
+	}
+	if (vfp->exchange_dimensions != ovfp->exchange_dimensions) {
+		vfp->changed |= _NhlvfXARR_CHANGED;
+		vfp->changed |= _NhlvfYARR_CHANGED;
 		status = True;
-	if (vfp->y_stride != ovfp->y_stride)
-		status = True;
+	}
 	if (vfp->subset_by_index != ovfp->subset_by_index)
-		status = True;
-	if (vfp->exchange_dimensions != ovfp->exchange_dimensions)
 		status = True;
 	if (vfp->exchange_uv_data != ovfp->exchange_uv_data)
 		status = True;
@@ -3320,6 +4076,8 @@ VectorFieldSetValues
         if (status)
                 vfp->up_to_date = False;
 
+        _NhlFreeConvertContext(context);
+        
 	return	ret;
 }
 
@@ -3366,9 +4124,9 @@ static NhlPointer CopyData
 
 
 /*
- * Function:    CreateData
+ * Function:    CreateVData
  *
- * Description: Create the data for a VType GenArray given a float value
+ * Description: Create the data for a VType GenArray given any type value
  *
  * In Args:
  *
@@ -3379,32 +4137,33 @@ static NhlPointer CopyData
  * Side Effects:
  */
 
-static NhlPointer CreateData
+static NhlPointer CreateVData
 #if	NhlNeedProto
 (
-	float fval, 
+	NhlPointer value,
+	int size,
 	NrmQuark resQ
 )
 #else
-(fval,resQ)
-	float fval;
+(value,size,resQ)
+	NhlPointer value;
+	int   size;
 	NrmQuark resQ;
 #endif
 {
 	char *e_text, *entry_name = "VectorFieldGetValues";
 	NhlPointer new;
 
-	if ((new = NhlMalloc(sizeof(float))) == NULL) {
+	if ((new = NhlMalloc(size)) == NULL) {
 		e_text = "%s: dynamic memory allocation error for %s";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,
 			  entry_name,NrmQuarkToString(resQ));
 		return NULL;
 	}
-	memcpy(new,&fval,sizeof(float));
+	memcpy(new,value,size);
 	
 	return new;
 }
-
 
 /*
  * Function:    ForceConvert
@@ -3685,7 +4444,8 @@ static NhlErrorTypes    VectorFieldGetValues
 			}
 			else {
 				if ((data = 
-				     CreateData(vffp->mag_min,resQ)) == NULL)
+				     CreateVData((NhlPointer)&vffp->mag_min,
+						 sizeof(float),resQ)) == NULL)
 					return NhlFATAL;
 				typeQ = Qfloat;
 				size = sizeof(float);
@@ -3704,7 +4464,8 @@ static NhlErrorTypes    VectorFieldGetValues
 			}
 			else {
 				if ((data = 
-				     CreateData(vffp->mag_max,resQ)) == NULL)
+				     CreateVData((NhlPointer)&vffp->mag_max,
+						 sizeof(float),resQ)) == NULL)
 					return NhlFATAL;
 				typeQ = Qfloat;
 				size = sizeof(float);
@@ -3723,7 +4484,8 @@ static NhlErrorTypes    VectorFieldGetValues
 			}
 			else {
 				if ((data = 
-				     CreateData(vffp->u_min,resQ)) == NULL)
+				     CreateVData((NhlPointer)&vffp->u_min,
+						 sizeof(float),resQ)) == NULL)
 					return NhlFATAL;
 				typeQ = Qfloat;
 				size = sizeof(float);
@@ -3742,7 +4504,8 @@ static NhlErrorTypes    VectorFieldGetValues
 			}
 			else {
 				if ((data = 
-				     CreateData(vffp->u_max,resQ)) == NULL)
+				     CreateVData((NhlPointer)&vffp->u_max,
+						 sizeof(float),resQ)) == NULL)
 					return NhlFATAL;
 				typeQ = Qfloat;
 				size = sizeof(float);
@@ -3761,7 +4524,8 @@ static NhlErrorTypes    VectorFieldGetValues
 			}
 			else {
 				if ((data = 
-				     CreateData(vffp->v_min,resQ)) == NULL)
+				     CreateVData((NhlPointer)&vffp->v_min,
+						 sizeof(float),resQ)) == NULL)
 					return NhlFATAL;
 				typeQ = Qfloat;
 				size = sizeof(float);
@@ -3780,7 +4544,8 @@ static NhlErrorTypes    VectorFieldGetValues
 			}
 			else {
 				if ((data = 
-				     CreateData(vffp->v_max,resQ)) == NULL)
+				     CreateVData((NhlPointer)&vffp->v_max,
+						 sizeof(float),resQ)) == NULL)
 					return NhlFATAL;
 				typeQ = Qfloat;
 				size = sizeof(float);
@@ -3791,11 +4556,13 @@ static NhlErrorTypes    VectorFieldGetValues
 			ndim = 1;
 			dlen[0] = 1;
 			if (vfp->x_arr) {
-				tmp = ((float*)vfp->x_arr->data)[0];
-				if ((data = CreateData(tmp,resQ)) == NULL)
+				data = CreateVData
+					((NhlPointer)vfp->x_arr->data,
+					 vfp->x_arr->size,resQ);
+				if (!data)
 					return NhlFATAL;
-				typeQ = Qfloat;
-				size = sizeof(float);
+				typeQ = vfp->x_arr->typeQ;
+				size = vfp->x_arr->size;
 			}
 			else if (vfp->x_start != NULL) {
 				if ((data = CopyData(vfp->x_start,resQ))
@@ -3804,16 +4571,10 @@ static NhlErrorTypes    VectorFieldGetValues
 				typeQ = vfp->x_start->typeQ;
 				size = vfp->x_start->size;
 			}
-			else if (vfp->x_subset_start != NULL) {
-				if ((data = CopyData(vfp->x_subset_start,resQ))
-				    == NULL)
-					return NhlFATAL;
-				typeQ = vfp->x_subset_start->typeQ;
-				size = vfp->x_subset_start->size;
-			}
 			else {
 				tmp = 0.0;
-				if ((data = CreateData(tmp,resQ)) == NULL)
+				if ((data = CreateVData((NhlPointer)&tmp,
+						 sizeof(float),resQ)) == NULL)
 					return NhlFATAL;
 				typeQ = Qfloat;
 				size = sizeof(float);
@@ -3824,12 +4585,14 @@ static NhlErrorTypes    VectorFieldGetValues
 			ndim = 1;
 			dlen[0] = 1;
 			if (vfp->x_arr) {
-				tmp = ((float*)vfp->x_arr->data)
-					[vfp->x_arr->len_dimensions[0]-1];
-				if ((data = CreateData(tmp,resQ)) == NULL)
+				data = CreateVData
+				  ((NhlPointer)((char *)vfp->x_arr->data + 
+				   (vfp->x_el_count-1) * vfp->x_arr->size),
+				   vfp->x_arr->size,resQ);
+				if (!data)
 					return NhlFATAL;
-				typeQ = Qfloat;
-				size = sizeof(float);
+				typeQ = vfp->x_arr->typeQ;
+				size = vfp->x_arr->size;
 			}
 			else if (vfp->x_end != NULL) {
 				if ((data = CopyData(vfp->x_end,resQ))
@@ -3838,16 +4601,10 @@ static NhlErrorTypes    VectorFieldGetValues
 				typeQ = vfp->x_end->typeQ;
 				size = vfp->x_end->size;
 			}
-			else if (vfp->x_subset_end != NULL) {
-				if ((data = CopyData(vfp->x_subset_end,resQ))
-				    == NULL)
-					return NhlFATAL;
-				typeQ = vfp->x_subset_end->typeQ;
-				size = vfp->x_subset_end->size;
-			}
 			else {
-				tmp = vfp->v_arr->len_dimensions[1] - 1;
-				if ((data = CreateData(tmp,resQ)) == NULL)
+				tmp = (float)vfp->x_el_count - 1;
+				if ((data = CreateVData((NhlPointer)&tmp,
+						 sizeof(float),resQ)) == NULL)
 					return NhlFATAL;
 				typeQ = Qfloat;
 				size = sizeof(float);
@@ -3858,11 +4615,12 @@ static NhlErrorTypes    VectorFieldGetValues
 			ndim = 1;
 			dlen[0] = 1;
 			if (vfp->y_arr) {
-				tmp = ((float*)vfp->y_arr->data)[0];
-				if ((data = CreateData(tmp,resQ)) == NULL)
+				data = CreateVData
+				  (vfp->y_arr->data,vfp->y_arr->size,resQ);
+				if (!data)
 					return NhlFATAL;
-				typeQ = Qfloat;
-				size = sizeof(float);
+				typeQ = vfp->y_arr->typeQ;
+				size = vfp->y_arr->size;
 			}
 			else if (vfp->y_start != NULL) {
 				if ((data = CopyData(vfp->y_start,resQ))
@@ -3871,16 +4629,10 @@ static NhlErrorTypes    VectorFieldGetValues
 				typeQ = vfp->y_start->typeQ;
 				size = vfp->y_start->size;
 			}
-			else if (vfp->y_subset_start != NULL) {
-				if ((data = CopyData(vfp->y_subset_start,resQ))
-				    == NULL)
-					return NhlFATAL;
-				typeQ = vfp->y_subset_start->typeQ;
-				size = vfp->y_subset_start->size;
-			}
 			else {
 				tmp = 0.0;
-				if ((data = CreateData(tmp,resQ)) == NULL)
+				if ((data = CreateVData((NhlPointer)&tmp,
+						 sizeof(float),resQ)) == NULL)
 					return NhlFATAL;
 				typeQ = Qfloat;
 				size = sizeof(float);
@@ -3891,12 +4643,15 @@ static NhlErrorTypes    VectorFieldGetValues
 			ndim = 1;
 			dlen[0] = 1;
 			if (vfp->y_arr) {
-				tmp = ((float*)vfp->y_arr->data)
-					[vfp->y_arr->len_dimensions[0]-1];
-				if ((data = CreateData(tmp,resQ)) == NULL)
+				data = CreateVData
+				  ((NhlPointer)((char *)vfp->y_arr->data + 
+				   (vfp->y_el_count-1) * vfp->y_arr->size),
+				   vfp->y_arr->size,resQ);
+				if (!data)
 					return NhlFATAL;
-				typeQ = Qfloat;
-				size = sizeof(float);
+				typeQ = vfp->y_arr->typeQ;
+				size = vfp->y_arr->size;
+				
 			}
 			else if (vfp->y_end != NULL) {
 				if ((data = CopyData(vfp->y_end,resQ))
@@ -3905,16 +4660,10 @@ static NhlErrorTypes    VectorFieldGetValues
 				typeQ = vfp->y_end->typeQ;
 				size = vfp->y_end->size;
 			}
-			else if (vfp->y_subset_end != NULL) {
-				if ((data = CopyData(vfp->y_subset_end,resQ))
-				    == NULL)
-					return NhlFATAL;
-				typeQ = vfp->y_subset_end->typeQ;
-				size = vfp->y_subset_end->size;
-			}
 			else {
-				tmp = vfp->v_arr->len_dimensions[0] - 1;
-				if ((data = CreateData(tmp,resQ)) == NULL)
+				tmp = vfp->y_el_count - 1;
+				if ((data = CreateVData((NhlPointer)&tmp,
+						 sizeof(float),resQ)) == NULL)
 					return NhlFATAL;
 				typeQ = Qfloat;
 				size = sizeof(float);
@@ -3924,7 +4673,8 @@ static NhlErrorTypes    VectorFieldGetValues
 			do_genarray = True;
 			ndim = 1;
 			dlen[0] = 1;
-			if (vfp->x_subset_start != NULL) {
+			if (! vfp->subset_by_index &&
+			    vfp->x_subset_start != NULL) {
 				if ((data = CopyData(vfp->x_subset_start,resQ))
 				    == NULL)
 					return NhlFATAL;
@@ -3933,7 +4683,8 @@ static NhlErrorTypes    VectorFieldGetValues
 			}
 			else {
 				if ((data = 
-				     CreateData(vffp->x_start,resQ)) == NULL)
+				     CreateVData((NhlPointer)&vffp->x_start,
+						 sizeof(float),resQ)) == NULL)
 					return NhlFATAL;
 				typeQ = Qfloat;
 				size = sizeof(float);
@@ -3943,7 +4694,8 @@ static NhlErrorTypes    VectorFieldGetValues
 			do_genarray = True;
 			ndim = 1;
 			dlen[0] = 1;
-			if (vfp->x_subset_end != NULL) {
+			if (! vfp->subset_by_index &&
+			    vfp->x_subset_end != NULL) {
 				if ((data = CopyData(vfp->x_subset_end,resQ))
 				    == NULL)
 					return NhlFATAL;
@@ -3952,7 +4704,8 @@ static NhlErrorTypes    VectorFieldGetValues
 			}
 			else {
 				if ((data = 
-				     CreateData(vffp->x_end,resQ)) == NULL)
+				     CreateVData((NhlPointer)&vffp->x_end,
+						 sizeof(float),resQ)) == NULL)
 					return NhlFATAL;
 				typeQ = Qfloat;
 				size = sizeof(float);
@@ -3962,7 +4715,8 @@ static NhlErrorTypes    VectorFieldGetValues
 			do_genarray = True;
 			ndim = 1;
 			dlen[0] = 1;
-			if (vfp->y_subset_start != NULL) {
+			if (! vfp->subset_by_index &&
+			    vfp->y_subset_start != NULL) {
 				if ((data = CopyData(vfp->y_subset_start,resQ))
 				    == NULL)
 					return NhlFATAL;
@@ -3971,7 +4725,8 @@ static NhlErrorTypes    VectorFieldGetValues
 			}
 			else {
 				if ((data = 
-				     CreateData(vffp->y_start,resQ)) == NULL)
+				     CreateVData((NhlPointer)&vffp->y_start,
+						 sizeof(float),resQ)) == NULL)
 					return NhlFATAL;
 				typeQ = Qfloat;
 				size = sizeof(float);
@@ -3981,7 +4736,8 @@ static NhlErrorTypes    VectorFieldGetValues
 			do_genarray = True;
 			ndim = 1;
 			dlen[0] = 1;
-			if (vfp->y_subset_end != NULL) {
+			if (! vfp->subset_by_index &&
+			    vfp->y_subset_end != NULL) {
 				if ((data = CopyData(vfp->y_subset_end,resQ))
 				    == NULL)
 					return NhlFATAL;
@@ -3990,7 +4746,8 @@ static NhlErrorTypes    VectorFieldGetValues
 			}
 			else {
 				if ((data = 
-				     CreateData(vffp->y_end,resQ)) == NULL)
+				     CreateVData((NhlPointer)&vffp->y_end,
+						 sizeof(float),resQ)) == NULL)
 					return NhlFATAL;
 				typeQ = Qfloat;
 				size = sizeof(float);
@@ -4054,6 +4811,13 @@ static NhlErrorTypes    VectorFieldGetValues
 			*args[i].size_ret = sizeof(float);
 			*args[i].free_func = NULL;
                 }
+                else if (resQ == Qx_el_count) {
+                        ival = vfp->x_el_count;
+			*(int*)args[i].value.ptrval = ival;
+			*args[i].type_ret = Qint;
+			*args[i].size_ret = sizeof(int);
+			*args[i].free_func = NULL;
+                }
                 else if (resQ == Qy_actual_start) {
 			fval = vfp->y_actual_start;
 			*(float*)args[i].value.ptrval = fval;
@@ -4066,6 +4830,13 @@ static NhlErrorTypes    VectorFieldGetValues
 			*(float*)args[i].value.ptrval = fval;
 			*args[i].type_ret = Qfloat;
 			*args[i].size_ret = sizeof(float);
+			*args[i].free_func = NULL;
+                }
+                else if (resQ == Qy_el_count) {
+                        ival = vfp->y_el_count;
+			*(int*)args[i].value.ptrval = ival;
+			*args[i].type_ret = Qint;
+			*args[i].size_ret = sizeof(int);
 			*args[i].free_func = NULL;
                 }
 		if (do_genarray) {

@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrays.c,v 1.41 1997-08-14 16:29:48 dbrown Exp $
+ *      $Id: CoordArrays.c,v 1.42 1998-04-16 03:08:35 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1461,7 +1461,7 @@ CoordArraysSetValues
 			ret = MIN(ret,NhlWARNING);
 		}
 		else{
-			NhlFreeGenArray(ocap->min_y);
+			NhlFreeGenArray(ocap->min_x);
 			ncap->sticky_min_x = True;
 			status = True;
 		}

@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularPlot.c,v 1.25 1997-08-11 18:22:08 dbrown Exp $
+ *      $Id: IrregularPlot.c,v 1.26 1998-04-16 03:08:38 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -31,14 +31,31 @@
 
 
 #define	Oset(field)	NhlOffset(NhlIrregularPlotLayerRec,irrplot.field)
+#define	Osettr(field)	NhlOffset(NhlIrregularPlotLayerRec,trans.field)
+
 static NhlResource resources[] = {
+        
+/* Begin-documented-resources */
+/* End-documented-resources */
 
 	{ NhlNpmUpdateReq,NhlCpmUpdateReq,NhlTBoolean,sizeof(NhlBoolean),
-		  Oset(update_req),
-		  NhlTImmediate,_NhlUSET((NhlPointer) False),
-          	  _NhlRES_PRIVATE,NULL}
+          Oset(update_req),NhlTImmediate,
+          _NhlUSET((NhlPointer) False),_NhlRES_PRIVATE,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+         Osettr(x_log_set),NhlTImmediate,
+         _NhlUSET((NhlPointer)False),_NhlRES_PRIVATE,NULL},
+	{ "no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+          Osettr(x_log),NhlTImmediate,
+          _NhlUSET((NhlPointer)False),_NhlRES_PRIVATE,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+         Osettr(y_log_set),NhlTImmediate,
+         _NhlUSET((NhlPointer)False),_NhlRES_PRIVATE,NULL},
+	{ "no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+          Osettr(y_log),NhlTImmediate,
+          _NhlUSET((NhlPointer)False),_NhlRES_PRIVATE,NULL}
 };
 #undef Oset
+#undef Osettr
 
 /* base methods */
 
@@ -262,21 +279,18 @@ IrregularPlotClassPartInitialize
 	}
 
 	subret = _NhlRegisterChildClass(lc,NhlirregularTransObjClass,
-					False,False,NULL);
+					False,False,
+                                        NhlNtrXMinF,NhlNtrYMinF,
+                                        NhlNtrXMaxF,NhlNtrYMaxF,
+                                        NhlNtrXAxisType,NhlNtrYAxisType,
+                                        NhlNtrXReverse,NhlNtrYReverse,
+                                        NhlNtrXTensionF,NhlNtrYTensionF,
+                                        NULL);
 
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: error registering %s";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
 			  "NhlirregularTransObjClass");
-		return(NhlFATAL);
-	}
-	subret = _NhlRegisterChildClass(lc,NhltransObjClass,
-					False,False,NULL);
-
-	if ((ret = MIN(ret,subret)) < NhlWARNING) {
-		e_text = "%s: error registering %s";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
-			  "NhltransObjClass");
 		return(NhlFATAL);
 	}
 
@@ -548,7 +562,7 @@ static NhlErrorTypes IrregularPlotDraw
 }
 
 /*
- * Function:	SetUpTransObjs
+ * Function:	SetUpTransObj
  *
  * Description: Sets up the Irregular transformation object for the generic
  *		Irregular plot object. 
@@ -592,17 +606,39 @@ static NhlErrorTypes SetUpTransObj
 	entry_name = (init) ? 
 		"IrregularPlotInitialize" : "IrregularPlotSetValues";
 /*
- * The irregular plot actually uses the irregular type 2 transformation
- * object.
+ * Normally the reverse gets defaulted when the axistype changes, but
+ * this is not desirable for IrregularPlot, so make sure that reverse gets
+ * set explicitly to its current value.
  */
+        if (tfp->x_axis_type_set) {
+                NhlSetSArg(&sargs[nargs++],NhlNtrXAxisType,tfp->x_axis_type);
+		tfp->x_reverse_set = True;
+	}
+        if (tfp->x_min_set)
+                NhlSetSArg(&sargs[nargs++],NhlNtrXMinF,tfp->x_min);
+        if (tfp->x_max_set)
+                NhlSetSArg(&sargs[nargs++],NhlNtrXMaxF,tfp->x_max);
+        if (tfp->x_reverse_set)
+                NhlSetSArg(&sargs[nargs++],NhlNtrXReverse,tfp->x_reverse);
+        if (tfp->y_axis_type_set) {
+                NhlSetSArg(&sargs[nargs++],NhlNtrYAxisType,tfp->y_axis_type);
+		tfp->y_reverse_set = True;
+	}
+        if (tfp->y_min_set)
+                NhlSetSArg(&sargs[nargs++],NhlNtrYMinF,tfp->y_min);
+        if (tfp->y_max_set)
+                NhlSetSArg(&sargs[nargs++],NhlNtrYMaxF,tfp->y_max);
+        if (tfp->y_reverse_set)
+                NhlSetSArg(&sargs[nargs++],NhlNtrYReverse,tfp->y_reverse);
+        
 	if (init || tfp->trans_obj == NULL) {
-
+                
 		sprintf(buffer,"%s",irnew->base.name);
 		strcat(buffer,".Trans");
 
-		subret = _NhlVACreateChild(&tmpid,buffer,
-					 NhlirregularTransObjClass,
-					 (NhlLayer) irnew, NULL);
+		subret = _NhlALCreateChild(&tmpid,buffer,
+                                           NhlirregularTransObjClass,
+                                           (NhlLayer) irnew,sargs,nargs);
 
 		ret = MIN(subret,ret);
 
@@ -614,17 +650,27 @@ static NhlErrorTypes SetUpTransObj
 			return NhlFATAL;
 		}
 
-		return ret;
 	}
-
-	subret = _NhlALSetValuesChild(tfp->trans_obj->base.id,
-				      (NhlLayer) irnew,sargs,nargs);
+        else {
+                NhlTransformLayerPart	*otfp = &(irold->trans);
+                
+                subret = _NhlALSetValuesChild(tfp->trans_obj->base.id,
+                                              (NhlLayer) irnew,sargs,nargs);
+        }
 
 	subret = NhlVAGetValues(tfp->trans_obj->base.id,
-				NhlNtrXMinF,&tfp->data_xmin,
-				NhlNtrXMaxF,&tfp->data_xmax,
-				NhlNtrYMinF,&tfp->data_ymin,
-				NhlNtrYMaxF,&tfp->data_ymax,
+                                NhlNtrXAxisType,&tfp->x_axis_type,
+                                NhlNtrYAxisType,&tfp->y_axis_type,
+                                NhlNtrXReverse,&tfp->x_reverse,
+                                NhlNtrYReverse,&tfp->y_reverse,
+                                NhlNtrDataXStartF,&tfp->data_xstart,
+                                NhlNtrDataXEndF,&tfp->data_xend,
+                                NhlNtrDataYStartF,&tfp->data_ystart,
+                                NhlNtrDataYEndF,&tfp->data_yend,
+                                NhlNtrXMinF,&tfp->x_min,
+                                NhlNtrXMaxF,&tfp->x_max,
+                                NhlNtrYMinF,&tfp->y_min,
+                                NhlNtrYMaxF,&tfp->y_max,
 				NhlNtrChangeCount,&trans_change_count,
 				NULL);
 	
@@ -632,6 +678,11 @@ static NhlErrorTypes SetUpTransObj
 		irnew->irrplot.trans_change_count = trans_change_count;
 		irnew->irrplot.update_req = True;
 	}
+        
+        tfp->x_reverse_set = tfp->y_reverse_set = False;
+        tfp->x_axis_type_set = tfp->y_axis_type_set = False;
+        tfp->x_min_set = tfp->y_min_set = False;
+        tfp->x_max_set = tfp->y_max_set = False;
 
 	return MIN(ret,subret);
 

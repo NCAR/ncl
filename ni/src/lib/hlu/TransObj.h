@@ -1,5 +1,5 @@
 /*
- *      $Id: TransObj.h,v 1.11 1998-02-07 03:51:30 dbrown Exp $
+ *      $Id: TransObj.h,v 1.12 1998-04-16 03:09:11 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -25,6 +25,8 @@
 #define  _NTransObj_h
 
 #include <ncarg/hlu/Base.h>
+
+#define NhlTAxisType "AxisType"
 
 #define NhlNtrXMinF		"trXMinF"
 #define NhlCtrXMinF		"TrXMinF"

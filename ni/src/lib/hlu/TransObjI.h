@@ -1,5 +1,5 @@
 /*
- *      $Id: TransObjI.h,v 1.7 1996-12-09 20:55:51 dbrown Exp $
+ *      $Id: TransObjI.h,v 1.8 1998-04-16 03:09:11 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -38,14 +38,14 @@
  * private resources for communicating plot data limits
  */
 
-#define NhlNtrDataXMinF		".trDataXMinF"
-#define NhlNtrDataYMinF		".trDataYMinF"
-#define NhlNtrDataXMaxF		".trDataXMaxF"
-#define NhlNtrDataYMaxF		".trDataYMaxF"
-#define NhlCtrDataXMinF		".TrDataXMinF"
-#define NhlCtrDataYMinF		".TrDataYMinF"
-#define NhlCtrDataXMaxF		".TrDataXMaxF"
-#define NhlCtrDataYMaxF		".TrDataYMaxF"
+#define NhlNtrDataXStartF	".trDataXStartF"
+#define NhlNtrDataYStartF	".trDataYStartF"
+#define NhlNtrDataXEndF		".trDataXEndF"
+#define NhlNtrDataYEndF		".trDataYEndF"
+#define NhlCtrDataXStartF	".TrDataXStartF"
+#define NhlCtrDataYStartF	".TrDataYStartF"
+#define NhlCtrDataXEndF		".TrDataXEndF"
+#define NhlCtrDataYEndF		".TrDataYEndF"
 
 /*
  * Private Global functions defined by the Transform Class

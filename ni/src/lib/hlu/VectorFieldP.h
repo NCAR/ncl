@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorFieldP.h,v 1.2 1997-08-11 18:22:30 dbrown Exp $
+ *      $Id: VectorFieldP.h,v 1.3 1998-04-16 03:09:21 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -77,20 +77,27 @@ typedef struct _NhlVectorFieldLayerPart{
 
 	float		x_actual_start;
 	float		x_actual_end;
+	int		x_el_count;
 	float		y_actual_start;
 	float		y_actual_end;
+	int		y_el_count;
 
 	/* private fields */
 
-	int		len_dims[2];
 	NhlBoolean	use_d_arr;
 	int		ix_start;
 	int		ix_end;
 	int		iy_start;
 	int		iy_end;
 
-	NhlVectorFieldFloatLayer	vffloat;
+        NhlBoolean	xstart_byindex;
+        NhlBoolean	xend_byindex;
+        NhlBoolean	ystart_byindex;
+        NhlBoolean	yend_byindex;
+
         NhlBoolean	up_to_date;
+	NhlVectorFieldFloatLayer	vffloat;
+	int		changed;
 
 } NhlVectorFieldLayerPart;
 

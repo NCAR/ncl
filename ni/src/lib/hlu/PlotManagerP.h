@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManagerP.h,v 1.10 1998-02-20 22:41:10 dbrown Exp $
+ *      $Id: PlotManagerP.h,v 1.11 1998-04-16 03:08:59 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -96,7 +96,7 @@ typedef struct _NhlPlotManagerLayerPart {
 	int				labelbar_zone;
 	NhlAnnotationDisplayMode	display_legend;
 	int				legend_zone;
-
+#if 0
 	/* intercepted tickmark resources */
 
 	float			x_b_data_left;
@@ -113,7 +113,7 @@ typedef struct _NhlPlotManagerLayerPart {
 	int			y_reverse;
 	float			x_tension;
 	float			y_tension;
-
+#endif
 	/* intercepted title resources */
 
 	float			ti_main_offset_x;

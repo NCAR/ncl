@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorFieldFloatP.h,v 1.2 1995-11-30 02:33:07 dbrown Exp $
+ *      $Id: VectorFieldFloatP.h,v 1.3 1998-04-16 03:09:20 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -42,6 +42,12 @@ typedef struct _NhlVectorFieldFloatLayerRec *NhlVectorFieldFloatLayer;
 
 extern NhlClass NhlvectorFieldFloatClass;
 
+#define _NhlvfDARR_CHANGED 1
+#define _NhlvfUARR_CHANGED 2
+#define _NhlvfVARR_CHANGED 4
+#define _NhlvfXARR_CHANGED 8
+#define _NhlvfYARR_CHANGED 16
+
 typedef struct _NhlVectorFieldFloatLayerPart{
 
 	/* all fields are private and set directly by the converter */
@@ -65,6 +71,11 @@ typedef struct _NhlVectorFieldFloatLayerPart{
 	float		x_end;
 	float		y_start;
 	float		y_end;
+        
+        int		ix_start;
+        int		ix_end;
+        int		iy_start;
+        int		iy_end;
 
 	int		begin;
 	int		fast_dim;
@@ -73,7 +84,7 @@ typedef struct _NhlVectorFieldFloatLayerPart{
 	int		x_stride;
 	int		y_stride;
 	NhlBoolean	polar_data;
-
+	int		changed;
 } NhlVectorFieldFloatLayerPart;
 
 typedef struct _NhlVectorFieldFloatLayerRec{

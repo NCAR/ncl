@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorField.h,v 1.1 1995-11-21 20:19:05 dbrown Exp $
+ *      $Id: VectorField.h,v 1.2 1998-04-16 03:09:20 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -63,8 +63,10 @@
 #define	NhlNvfYCStride		"vfYCStride"
 #define	NhlNvfXCActualStartF	"vfXCActualStartF"	/* read-only */
 #define	NhlNvfXCActualEndF	"vfXCActualEndF"	/* read-only */
+#define	NhlNvfXCElementCount	"vfXCElementCount"	/* read-only */
 #define	NhlNvfYCActualStartF	"vfYCActualStartF"	/* read-only */
 #define	NhlNvfYCActualEndF	"vfYCActualEndF"	/* read-only */
+#define	NhlNvfYCElementCount	"vfYCElementCount"	/* read-only */
 
 /*
  * Class Resources
@@ -106,8 +108,10 @@
 #define	NhlCvfYCStride		"VfYCStride"
 #define	NhlCvfXCActualStartF	"VfXCActualStartF"
 #define	NhlCvfXCActualEndF	"VfXCActualEndF"
+#define	NhlCvfXCElementCount	"VfXCElementCount"
 #define	NhlCvfYCActualStartF	"VfYCActualStartF"
 #define	NhlCvfYCActualEndF	"VfYCActualEndF"
+#define	NhlCvfYCElementCount	"VfYCElementCount"
 
 extern NhlClass NhlvectorFieldClass;
 

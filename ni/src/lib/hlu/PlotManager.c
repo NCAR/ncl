@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManager.c,v 1.48 1998-03-12 02:35:18 dbrown Exp $
+ *      $Id: PlotManager.c,v 1.49 1998-04-16 03:08:54 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -258,7 +258,41 @@ static NhlResource resources[] = {
 	{NhlNlgOrientation, NhlClgOrientation, NhlTOrientation, 
 		 sizeof(NhlOrientation),
 		 Oset(lgnd_orient),NhlTImmediate,
-         	 _NhlUSET((NhlPointer)NhlVERTICAL),_NhlRES_INTERCEPTED,NULL}
+         	_NhlUSET((NhlPointer)NhlVERTICAL),_NhlRES_INTERCEPTED,NULL},
+        
+/* blocked Transform resources */
+        
+	{ "no.res","No.res",NhlTFloat,sizeof(float),
+          NhlOffset(NhlPlotManagerLayerRec,trans.x_min),NhlTString,
+          _NhlUSET("0.0"),_NhlRES_PRIVATE,NULL},
+	{ "no.res","No.res",NhlTFloat,sizeof(float),
+          NhlOffset(NhlPlotManagerLayerRec,trans.x_max),NhlTString,
+          _NhlUSET("0.0"),_NhlRES_PRIVATE,NULL},
+	{ "no.res","No.res",NhlTAxisType,sizeof(NhlAxisType),
+          NhlOffset(NhlPlotManagerLayerRec,trans.x_axis_type),NhlTImmediate,
+          _NhlUSET((NhlPointer)NhlLINEARAXIS),_NhlRES_PRIVATE,NULL},
+	{ "no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+          NhlOffset(NhlPlotManagerLayerRec,trans.x_log),NhlTImmediate,
+          _NhlUSET((NhlPointer)False),_NhlRES_PRIVATE,NULL},
+	{ "no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+          NhlOffset(NhlPlotManagerLayerRec,trans.x_reverse),NhlTImmediate,
+          _NhlUSET((NhlPointer)False),_NhlRES_PRIVATE,NULL},
+	{ "no.res","No.res",NhlTFloat,sizeof(float),
+          NhlOffset(NhlPlotManagerLayerRec,trans.y_min),NhlTString,
+          _NhlUSET("0.0"),_NhlRES_PRIVATE,NULL},
+	{ "no.res","No.res",NhlTFloat,sizeof(float),
+          NhlOffset(NhlPlotManagerLayerRec,trans.y_max),NhlTString,
+          _NhlUSET("0.0"),_NhlRES_PRIVATE,NULL},
+	{ "no.res","No.res",NhlTAxisType,sizeof(NhlAxisType),
+          NhlOffset(NhlPlotManagerLayerRec,trans.y_axis_type),NhlTImmediate,
+          _NhlUSET((NhlPointer)NhlLINEARAXIS),_NhlRES_PRIVATE,NULL},
+	{ "no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+          NhlOffset(NhlPlotManagerLayerRec,trans.y_log),NhlTImmediate,
+          _NhlUSET((NhlPointer)False),_NhlRES_PRIVATE,NULL},
+	{ "no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+          NhlOffset(NhlPlotManagerLayerRec,trans.y_reverse),NhlTImmediate,
+          _NhlUSET((NhlPointer)False),_NhlRES_PRIVATE,NULL}
+        
 };
 #undef Oset
 
@@ -3709,22 +3743,6 @@ ManageTickMarks
 			d_bottom = y_min; 
 			d_top = y_max;
 		}
-		if (x_reverse) {
-			d_left = x_max; 
-			d_right = x_min;
-		}
-		else {
-			d_left = x_min; 
-			d_right = x_max;
-		}
-		if (y_reverse) {
-			d_bottom = y_max; 
-			d_top = y_min;
-		}
-		else {
-			d_bottom = y_min; 
-			d_top = y_max;
-		}
 
 		NhlSetSArg(&sargs[nargs++],NhlNtmXBDataLeftF,d_left);
 		NhlSetSArg(&sargs[nargs++],NhlNtmXBDataRightF,d_right);
@@ -4679,85 +4697,6 @@ ManageLegend
 				NULL);
 
 	return MIN(ret,subret);
-}
-
-
-/* low level overlay mapping functions */
-
-void _NhlovCpMapXY
-#if	NhlNeedProto
-(float *xin,float *yin, float* xout, float* yout)
-#else
-(xin,yin,xout,yout)
-        float *xin;
-        float *yin;
-        float *xout;
-        float *yout;
-#endif
-{
-        int status = 0;
-
-        if (PlotManager_Trans_Obj == NULL || PlotManager_Trans_Obj == Trans_Obj) {
-		_NhlCompcToWin(Trans_Obj,xin,yin,1,xout,yout,
-			       &status,NULL,NULL);
-	}
-        else {
-		_NhlCompcToData(Trans_Obj,xin,yin,1,xout,yout,
-				&status,NULL,NULL);
-
-		if (status) return;
-#if 0
-		fprintf (stderr,"inter: %f %f : ",*xout,*yout);
-#endif
-
-		_NhlDataToWin(PlotManager_Trans_Obj,
-			     xout,yout,1,xout,yout,&status,NULL,NULL);
-        }
-
-#if 0
-	fprintf (stderr,"%f %f : %f %f \n",*xin,*yin,*xout,*yout);
-#endif
-
-	return;
-}
-
-
-void _NhlovCpInvMapXY
-#if	NhlNeedProto
-(float *xin,float *yin, float* xout, float* yout)
-#else
-(xin,yin,xout,yout)
-        float *xin;
-        float *yin;
-        float *xout;
-        float *yout;
-#endif
-{
-        int status = 0;
-
-        if (PlotManager_Trans_Obj == NULL || PlotManager_Trans_Obj == Trans_Obj) {
-		_NhlWinToCompc(Trans_Obj,xin,yin,1,xout,yout,
-			       &status,NULL,NULL);
-	}
-        else {
-		_NhlWinToData(PlotManager_Trans_Obj,
-			      xin,yin,1,xout,yout,
-			      &status,NULL,NULL);
-
-		if (status) return;
-#if 0
-		fprintf (stderr,"inter: %f %f : ",*xout,*yout);
-#endif
-
-		_NhlDataToCompc(Trans_Obj,xout,yout,1,xout,yout,
-				&status,NULL,NULL);
-        }
-
-#if 0
-	fprintf (stderr,"%f %f : %f %f \n",*xin,*yin,*xout,*yout);
-#endif
-
-	return;
 }
 
 

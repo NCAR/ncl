@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlotP.h,v 1.8 1997-10-03 20:34:51 dbrown Exp $
+ *      $Id: StreamlinePlotP.h,v 1.9 1998-04-16 03:09:09 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -149,19 +149,7 @@ typedef struct _NhlStreamlinePlotLayerPart {
 	NhlAnnotationDisplayMode	display_legend;
 	NhlAnnotationDisplayMode	display_titles;
 	NhlAnnotationDisplayMode	display_tickmarks;
-	NhlBoolean	x_min_set;
-	float 		x_min;
-	NhlBoolean	x_max_set;
-	float		x_max;
-	NhlBoolean	x_log;
-	NhlBoolean	x_reverse;
 	float		x_tension;
-	NhlBoolean	y_min_set;
-	float 		y_min;
-	NhlBoolean	y_max_set;
-	float		y_max;
-	NhlBoolean	y_log;
-	NhlBoolean	y_reverse;
 	float		y_tension;
 
 	/* private resource */
@@ -199,6 +187,7 @@ typedef struct _NhlStreamlinePlotLayerPart {
 	NhlBoolean	wk_active;
 	NhlBoolean	seg_open;
 	NhlBoolean	do_low_level_log;
+	NhlBoolean	low_level_log_on;
 
 	/* workspace */
 

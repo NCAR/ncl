@@ -1,5 +1,5 @@
 /*
- *      $Id: TransformP.h,v 1.20 1997-01-08 21:10:30 dbrown Exp $
+ *      $Id: TransformP.h,v 1.21 1998-04-16 03:09:15 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -28,6 +28,8 @@
 
 #include <ncarg/hlu/ViewP.h>
 #include <ncarg/hlu/PlotManagerI.h>
+#include <ncarg/hlu/LogLinTransObj.h>
+#include <ncarg/hlu/IrregularTransObj.h>
 #include <ncarg/hlu/TransObjI.h>
 #include <ncarg/hlu/Transform.h>
 #include <ncarg/hlu/TransformI.h>
@@ -39,12 +41,38 @@
 #define NhlNtfOverlayStatus	".tfOverlayStatus"
 #define NhlCtfOverlayStatus	".TfOverlayStatus"
 
+/*
+ * The Transform superclass marks resources as set when appropriate, but
+ * leaves it to the subclasses to restore the ..._set flags to False
+ * according to their own needs.
+ */
+
 typedef struct NhlTransformLayerPart {
 
 	/* Public resource fields */
 
 	NhlBoolean		plot_manager_on;
 	NhlBoolean		do_ndc_overlay;
+	NhlBoolean		x_min_set;
+	float 			x_min;
+	NhlBoolean		x_max_set;
+	float			x_max;
+	NhlBoolean		x_axis_type_set;
+        NhlAxisType		x_axis_type;
+	NhlBoolean		x_log_set;
+	NhlBoolean		x_log;
+	NhlBoolean		x_reverse_set;
+	NhlBoolean		x_reverse;
+	NhlBoolean		y_min_set;
+	float 			y_min;
+	NhlBoolean		y_max_set;
+	float			y_max;
+	NhlBoolean		y_axis_type_set;
+        NhlAxisType		y_axis_type;
+	NhlBoolean		y_log_set;
+	NhlBoolean		y_log;
+	NhlBoolean		y_reverse_set;
+	NhlBoolean		y_reverse;
 
 	/* Private resource fields, set only by the overlay manager */
 
@@ -60,10 +88,14 @@ typedef struct NhlTransformLayerPart {
 	 */
  
 	NhlLayer		trans_obj;
-	float			data_xmin;
-	float			data_xmax;
-	float			data_ymin;
-	float			data_ymax;
+	float			data_xstart; /* start may be > than end */
+	float			data_xend;
+	float			data_ystart;
+	float			data_yend;
+	NhlBoolean		sticky_x_min_set;
+	NhlBoolean		sticky_x_max_set;
+	NhlBoolean		sticky_y_min_set;
+	NhlBoolean		sticky_y_max_set;
         _NhlCBList		overlaystatuscb;
 
 } NhlTransformLayerPart;
@@ -131,5 +163,37 @@ typedef struct _NhlTransformClassRec *NhlTransformClass;
 typedef struct _NhlTransformLayerRec *NhlTransformLayer;
 
 extern NhlTransformClassRec NhltransformClassRec;
+
+
+/*
+ * Private class functions
+ */
+
+extern NhlErrorTypes _NhltfDrawSegment(
+#if	NhlNeedProto
+        NhlLayer	plot,
+	NhlLayer	trobj,
+        NhlTransDat	*transdat,
+	NhlString	entry_name
+#endif
+);
+
+extern NhlErrorTypes _NhltfInitSegment(
+#if	NhlNeedProto
+        NhlLayer	plot,
+	NhlLayer	trobj,
+	NhlTransDat	**transdat,					      
+	NhlString	entry_name
+#endif
+);
+
+extern NhlErrorTypes _NhltfCheckCoordBounds(
+#if	NhlNeedProto
+        NhlTransformLayer	new,
+	NhlTransformLayer	old,
+        NhlBoolean		use_irr_trans,
+	NhlString		entry_name
+#endif
+);
 
 #endif  /* _NTRANSFORMP_h */

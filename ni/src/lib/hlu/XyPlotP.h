@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlotP.h,v 1.13 1996-06-13 02:06:02 dbrown Exp $
+ *      $Id: XyPlotP.h,v 1.14 1998-04-16 03:09:34 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -89,7 +89,9 @@ typedef struct _NhlXyPlotLayerPart {
 	NhlGenArray		curve_data;
 	NhlGenArray		dspeclist;
 
+	NhlBoolean		x_style_set;
 	NhlTickMarkStyle	x_style;
+	NhlBoolean		y_style_set;
 	NhlTickMarkStyle 	y_style;
 
 	float			x_tension;
@@ -97,10 +99,6 @@ typedef struct _NhlXyPlotLayerPart {
 
 	NhlGenArray		x_irregular_points;
 	NhlGenArray		y_irregular_points;
-
-	NhlBoolean		x_reverse;
-	NhlBoolean		y_reverse;
-
 	NhlBoolean		comp_x_min_set;
 	NhlBoolean		compute_x_min;
 	NhlBoolean		comp_x_max_set;
@@ -109,15 +107,6 @@ typedef struct _NhlXyPlotLayerPart {
 	NhlBoolean		compute_y_max;
 	NhlBoolean		comp_y_min_set;
 	NhlBoolean		compute_y_min;
-
-	NhlBoolean		x_min_set;
-	float			x_min;
-	NhlBoolean		x_max_set;
-	float			x_max;
-	NhlBoolean		y_max_set;
-	float			y_max;
-	NhlBoolean		y_min_set;
-	float			y_min;
 	NhlDrawOrder		curve_order;
 
 /*
@@ -141,13 +130,14 @@ typedef struct _NhlXyPlotLayerPart {
 	/* Private fields */
 	NhlLayer	thetrans;
 	NhlBoolean	have_irreg_trans;
+#if 0        
 	NhlBoolean	fake_x;
 	float		fake_x_max;
 	float		fake_x_min;
 	NhlBoolean	fake_y;
 	float		fake_y_max;
 	float		fake_y_min;
-
+#endif
 	NhlLayer	overlay;
 
 	NhlBoolean	data_ranges_set;

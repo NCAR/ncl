@@ -1,5 +1,5 @@
 /*
- *      $Id: LogLinTransObj.c,v 1.35 1998-02-20 22:40:48 dbrown Exp $
+ *      $Id: LogLinTransObj.c,v 1.36 1998-04-16 03:08:43 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -355,7 +355,8 @@ static NhlErrorTypes LlTransSetValues
 		}
 	}
 	if (lnew->lltrans.x_log) {
-		if (lnew->lltrans.x_min != lold->lltrans.x_min) {
+		if (lnew->lltrans.x_log != lold->lltrans.x_log ||
+                        lnew->lltrans.x_min != lold->lltrans.x_min) {
 			if (lnew->lltrans.log_xmin_dat != NULL)
 				free(lnew->lltrans.log_xmin_dat);
 			if ((lnew->lltrans.log_xmin_dat = 
@@ -367,7 +368,8 @@ static NhlErrorTypes LlTransSetValues
 				return(NhlFATAL);
 			}
 		}
-		if (lnew->lltrans.x_max != lold->lltrans.x_max) {
+		if (lnew->lltrans.x_log != lold->lltrans.x_log ||
+                    lnew->lltrans.x_max != lold->lltrans.x_max) {
 			if (lnew->lltrans.log_xmax_dat != NULL)
 				free(lnew->lltrans.log_xmax_dat);
 			if ((lnew->lltrans.log_xmax_dat = 
@@ -382,7 +384,8 @@ static NhlErrorTypes LlTransSetValues
 	}
 
 	if (lnew->lltrans.y_log) {
-		if (lnew->lltrans.y_min != lold->lltrans.y_min) {
+		if (lnew->lltrans.y_log != lold->lltrans.y_log ||
+                    lnew->lltrans.y_min != lold->lltrans.y_min) {
 			if (lnew->lltrans.log_ymin_dat != NULL)
 				free(lnew->lltrans.log_ymin_dat);
 			if ((lnew->lltrans.log_ymin_dat = 
@@ -394,7 +397,8 @@ static NhlErrorTypes LlTransSetValues
 				return(NhlFATAL);
 			}
 		}
-		if (lnew->lltrans.y_max != lold->lltrans.y_max) {
+		if (lnew->lltrans.y_log != lold->lltrans.y_log ||
+                    lnew->lltrans.y_max != lold->lltrans.y_max) {
 			if (lnew->lltrans.log_ymax_dat != NULL)
 				free(lnew->lltrans.log_ymax_dat);
 			if ((lnew->lltrans.log_ymax_dat = 

@@ -1,5 +1,5 @@
 /*
- *      $Id: TransObj.c,v 1.30 1998-03-12 02:35:20 dbrown Exp $
+ *      $Id: TransObj.c,v 1.31 1998-04-16 03:09:10 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -43,9 +43,13 @@ static NhlResource resources[] =  {
 	{ NhlNtrXMaxF,NhlCtrXMaxF,NhlTFloat,sizeof(float),
 		NhlOffset(NhlTransObjLayerRec,trobj.x_max),
 		NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 NhlOffset(NhlTransObjLayerRec,trobj.x_reverse_set),
+		 NhlTImmediate,_NhlUSET((NhlPointer)True),
+         	 _NhlRES_PRIVATE,NULL},
 	{ NhlNtrXReverse,NhlCtrXReverse,NhlTBoolean,sizeof(NhlBoolean),
 		NhlOffset(NhlTransObjLayerRec,trobj.x_reverse),
-		NhlTImmediate,_NhlUSET(False),0,NULL},
+		NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 NhlOffset(NhlTransObjLayerRec,trobj.y_min_set),
 		 NhlTImmediate,_NhlUSET((NhlPointer)True),
@@ -60,9 +64,13 @@ static NhlResource resources[] =  {
 	{ NhlNtrYMaxF,NhlCtrYMaxF,NhlTFloat,sizeof(float),
 		NhlOffset(NhlTransObjLayerRec,trobj.y_max),
 		NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 NhlOffset(NhlTransObjLayerRec,trobj.y_reverse_set),
+		 NhlTImmediate,_NhlUSET((NhlPointer)True),
+         	 _NhlRES_PRIVATE,NULL},
 	{ NhlNtrYReverse,NhlCtrYReverse,NhlTBoolean,sizeof(NhlBoolean),
 		NhlOffset(NhlTransObjLayerRec,trobj.y_reverse),
-         	NhlTImmediate,_NhlUSET(False),0,NULL},
+		NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{ NhlNtrOutOfRangeF, NhlCtrOutOfRangeF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlTransObjLayerRec,trobj.out_of_range),
 		NhlTString, _NhlUSET("1.0e12"),_NhlRES_PRIVATE,NULL },
@@ -76,18 +84,18 @@ static NhlResource resources[] =  {
 		NhlOffset(NhlTransObjLayerRec, trobj.change_count),
 		NhlTImmediate, _NhlUSET((NhlPointer) 0),
           	_NhlRES_GONLY|_NhlRES_PRIVATE,NULL },
-	{ NhlNtrDataXMinF, NhlCtrDataXMinF, NhlTFloat, sizeof(float),
-		NhlOffset(NhlTransObjLayerRec, trobj.data_xmin),
-		NhlTString, _NhlUSET("0.0"),_NhlRES_PRIVATE,NULL },
-	{ NhlNtrDataXMaxF, NhlCtrDataXMaxF, NhlTFloat, sizeof(float),
-		NhlOffset(NhlTransObjLayerRec, trobj.data_xmax),
-		NhlTString, _NhlUSET("0.0"),_NhlRES_PRIVATE,NULL },
-	{ NhlNtrDataYMinF, NhlCtrDataYMinF, NhlTFloat, sizeof(float),
-		NhlOffset(NhlTransObjLayerRec, trobj.data_ymin),
-		NhlTString, _NhlUSET("0.0"),_NhlRES_PRIVATE,NULL },
-	{ NhlNtrDataYMaxF, NhlCtrDataYMaxF, NhlTFloat, sizeof(float),
-		NhlOffset(NhlTransObjLayerRec, trobj.data_ymax),
-		NhlTString, _NhlUSET("0.0"),_NhlRES_PRIVATE,NULL }
+	{ NhlNtrDataXStartF, NhlCtrDataXStartF, NhlTFloat, sizeof(float),
+		NhlOffset(NhlTransObjLayerRec, trobj.data_xstart),
+		NhlTString, _NhlUSET("0.0"),0,NULL },
+	{ NhlNtrDataXEndF, NhlCtrDataXEndF, NhlTFloat, sizeof(float),
+		NhlOffset(NhlTransObjLayerRec, trobj.data_xend),
+		NhlTString, _NhlUSET("0.0"),0,NULL },
+	{ NhlNtrDataYStartF, NhlCtrDataYStartF, NhlTFloat, sizeof(float),
+		NhlOffset(NhlTransObjLayerRec, trobj.data_ystart),
+		NhlTString, _NhlUSET("0.0"),0,NULL },
+	{ NhlNtrDataYEndF, NhlCtrDataYEndF, NhlTFloat, sizeof(float),
+		NhlOffset(NhlTransObjLayerRec, trobj.data_yend),
+		NhlTString, _NhlUSET("0.0"),0,NULL }
 
 };
 static NhlErrorTypes TransInitialize(
@@ -281,7 +289,8 @@ TransInitialize
 	char			*e_text;
 	NhlTransObjLayer	tnew = (NhlTransObjLayer) new;
 	NhlTransObjLayerPart	*tp = &tnew->trobj;
-
+        float			ftmp;
+        NhlBoolean		btmp;
 
         if (! tp->x_min_set) {
                 tp->x_min = 0.0;
@@ -289,15 +298,62 @@ TransInitialize
         if (! tp->x_max_set) {
                 tp->x_max = 1.0;
         }
+        if (tp->x_min == tp->x_max) {
+		e_text = "%s: Zero X coordinate span: defaulting";
+		ret = MIN(ret,NhlWARNING);
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+		tp->x_min = 0.0;
+                tp->x_min_set = False;
+		tp->x_max = 1.0;
+                tp->x_max_set = False;
+	}
+	else if (tp->x_min > tp->x_max) {
+		e_text = "%s: min X coordinate exceeds max: exchanging";
+		ret = MIN(ret,NhlWARNING);
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+		ftmp = tp->x_min;
+		tp->x_min = tp->x_max;
+		tp->x_max = ftmp;
+                btmp = tp->x_min_set;
+                tp->x_min_set = tp->x_max_set;
+                tp->x_max_set = btmp;
+	}
+                        
+        if (! tp->x_reverse_set) {
+                tp->x_reverse = False;
+        }
         if (! tp->y_min_set) {
                 tp->y_min = 0.0;
         }
         if (! tp->y_max_set) {
                 tp->y_max = 1.0;
         }
+        if (tp->y_min == tp->y_max) {
+		e_text = "%s: Zero Y coordinate span: defaulting";
+		ret = MIN(ret,NhlWARNING);
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+		tp->y_min = 0.0;
+                tp->y_min_set = False;
+		tp->y_max = 1.0;
+                tp->y_max_set = False;
+	}
+	else if (tp->y_min > tp->y_max) {
+		e_text = "%s: min Y coordinate exceeds max: exchanging";
+		ret = MIN(ret,NhlWARNING);
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+		ftmp = tp->y_min;
+		tp->y_min = tp->y_max;
+		tp->y_max = ftmp;
+                btmp = tp->y_min_set;
+                tp->y_min_set = tp->y_max_set;
+                tp->y_max_set = btmp;
+	}
+        if (! tp->y_reverse_set) {
+                tp->y_reverse = False;
+        }
         tp->off_screen = False;
 
-	return NhlNOERROR;
+	return ret;
 }
 
 /*
@@ -336,10 +392,14 @@ static NhlErrorTypes TransSetValues
                 tp->x_min_set = True;
         if (_NhlArgIsSet(args,num_args,NhlNtrXMaxF))
                 tp->x_max_set = True;
+        if (_NhlArgIsSet(args,num_args,NhlNtrXReverse))
+                tp->x_reverse_set = True;
         if (_NhlArgIsSet(args,num_args,NhlNtrYMinF))
                 tp->y_min_set = True;
         if (_NhlArgIsSet(args,num_args,NhlNtrYMaxF))
                 tp->y_max_set = True;
+        if (_NhlArgIsSet(args,num_args,NhlNtrYReverse))
+                tp->y_reverse_set = True;
                         
         return NhlNOERROR;
 }

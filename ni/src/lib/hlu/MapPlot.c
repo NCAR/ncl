@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.62 1998-02-20 22:40:53 dbrown Exp $
+ *      $Id: MapPlot.c,v 1.63 1998-04-16 03:08:47 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -468,7 +468,38 @@ static NhlResource resources[] = {
          	_NhlRES_PRIVATE,NULL},
 	{NhlNmpLabelPerimThicknessF,NhlCmpLabelPerimThicknessF,
 		 NhlTFloat,sizeof(float),Oset(labels.perim_lthick),
-		 NhlTString, _NhlUSET("1.0"),_NhlRES_PRIVATE,NULL}
+        	 NhlTString, _NhlUSET("1.0"),_NhlRES_PRIVATE,NULL},
+        
+	{"no.res","No.res",NhlTFloat,sizeof(float),
+		 NhlOffset(NhlMapPlotLayerRec,trans.x_min),NhlTString,
+		 _NhlUSET("0.0"),_NhlRES_PRIVATE,NULL},
+	{"no.res","No.res",NhlTFloat,sizeof(float),
+		 NhlOffset(NhlMapPlotLayerRec,trans.x_max),NhlTString,
+		 _NhlUSET("0.0"),_NhlRES_PRIVATE,NULL},
+	{ "no.res","No.res",NhlTAxisType,sizeof(NhlAxisType),
+		 NhlOffset(NhlMapPlotLayerRec,trans.x_axis_type),NhlTImmediate,
+		 _NhlUSET((NhlPointer)NhlLINEARAXIS),_NhlRES_PRIVATE,NULL},
+	{ "no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 NhlOffset(NhlMapPlotLayerRec,trans.x_log),NhlTImmediate,
+		 _NhlUSET((NhlPointer)False),_NhlRES_PRIVATE,NULL},
+	{ "no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 NhlOffset(NhlMapPlotLayerRec,trans.x_reverse),NhlTImmediate,
+		 _NhlUSET((NhlPointer)False),_NhlRES_PRIVATE,NULL},
+	{ "no.res","No.res",NhlTFloat,sizeof(float),
+		 NhlOffset(NhlMapPlotLayerRec,trans.y_min),NhlTString,
+		 _NhlUSET("0.0"),_NhlRES_PRIVATE,NULL},
+	{ "no.res","No.res",NhlTFloat,sizeof(float),
+		 NhlOffset(NhlMapPlotLayerRec,trans.y_max),NhlTString,
+		 _NhlUSET("0.0"),_NhlRES_PRIVATE,NULL},
+	{ "no.res","No.res",NhlTAxisType,sizeof(NhlAxisType),
+		 NhlOffset(NhlMapPlotLayerRec,trans.y_axis_type),NhlTImmediate,
+		 _NhlUSET((NhlPointer)NhlLINEARAXIS),_NhlRES_PRIVATE,NULL},
+	{ "no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 NhlOffset(NhlMapPlotLayerRec,trans.y_log),NhlTImmediate,
+		 _NhlUSET((NhlPointer)False),_NhlRES_PRIVATE,NULL},
+	{ "no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 NhlOffset(NhlMapPlotLayerRec,trans.y_reverse),NhlTImmediate,
+		 _NhlUSET((NhlPointer)False),_NhlRES_PRIVATE,NULL}
 
 };
 #undef Oset
@@ -1448,10 +1479,10 @@ MapPlotInitialize
 /*
  * Necessary to initialize these for NDCToData to work correctly.
  */
-	Mpl->trans.data_xmin = -180.0;
-	Mpl->trans.data_xmax = 180.0;
-	Mpl->trans.data_ymin = -90.0;
-	Mpl->trans.data_ymax = 90.0;
+	Mpl->trans.data_xstart = -180.0;
+	Mpl->trans.data_xend = 180.0;
+	Mpl->trans.data_ystart = -90.0;
+	Mpl->trans.data_yend = 90.0;
 		
 /*
  * If the Outline Records are not yet initialized, do it now.

@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.77 1998-02-20 22:41:51 dbrown Exp $
+ *      $Id: XyPlot.c,v 1.78 1998-04-16 03:09:31 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -219,12 +219,18 @@ static NhlResource resources[] = {
 	{NhlNxyCoordDataSpec,NhlCxyCoordDataSpec,_NhlTDataSpecList,
 		sizeof(NhlGenArray),Oset(dspeclist),NhlTImmediate,NULL,
 		_NhlRES_GONLY,(NhlFreeFunc)NhlFreeGenArray},
+	{"no.res","no.res",NhlTBoolean,sizeof(NhlBoolean),
+		Oset(x_style_set),NhlTImmediate,(NhlPointer)True,
+		_NhlRES_NOACCESS|_NhlRES_PRIVATE,NULL},
 	{NhlNxyXStyle,NhlCxyXStyle,NhlTTickMarkStyle,sizeof(NhlTickMarkStyle),
-		Oset(x_style),NhlTImmediate,(NhlPointer)NhlLINEAR,
-		_NhlRES_DEFAULT,NULL},
+		Oset(x_style),NhlTProcedure,
+		(NhlPointer)ResUnset,_NhlRES_DEFAULT,NULL},
+	{"no.res","no.res",NhlTBoolean,sizeof(NhlBoolean),
+		Oset(y_style_set),NhlTImmediate,(NhlPointer)True,
+		_NhlRES_NOACCESS|_NhlRES_PRIVATE,NULL},
 	{NhlNxyYStyle,NhlCxyYStyle,NhlTTickMarkStyle,sizeof(NhlTickMarkStyle),
-		Oset(y_style),NhlTImmediate,(NhlPointer)NhlLINEAR,
-		_NhlRES_DEFAULT,NULL},
+		Oset(y_style),NhlTProcedure,
+		(NhlPointer)ResUnset,_NhlRES_DEFAULT,NULL},
 
 	{NhlNxyXIrregularPoints,NhlCxyXIrregularPoints,NhlTFloatGenArray,
 		sizeof(NhlPointer),Oset(x_irregular_points),NhlTImmediate,
@@ -232,13 +238,6 @@ static NhlResource resources[] = {
 	{NhlNxyYIrregularPoints,NhlCxyYIrregularPoints,NhlTFloatGenArray,
 		sizeof(NhlPointer),Oset(y_irregular_points),NhlTImmediate,
 		(NhlPointer)NULL,_NhlRES_DEFAULT,(NhlFreeFunc)NhlFreeGenArray},
-
-	{NhlNtrXReverse,NhlCtrXReverse,NhlTBoolean,sizeof(NhlBoolean),
-		Oset(x_reverse),NhlTImmediate,False,
-         	_NhlRES_DEFAULT|_NhlRES_INTERCEPTED,NULL},
-	{NhlNtrYReverse,NhlCtrYReverse,NhlTBoolean,sizeof(NhlBoolean),
-		Oset(y_reverse),NhlTImmediate,False,
-         	_NhlRES_DEFAULT|_NhlRES_INTERCEPTED,NULL},
 
 	{"no.res","no.res",NhlTBoolean,sizeof(NhlBoolean),Oset(comp_x_min_set),
 		NhlTImmediate,(NhlPointer)True,
@@ -269,31 +268,6 @@ static NhlResource resources[] = {
 		 sizeof(NhlDrawOrder),Oset(curve_order),
 		 NhlTImmediate,_NhlUSET((NhlPointer)NhlDRAW),0,NULL},
 
-	{"no.res","no.res",NhlTBoolean,sizeof(NhlBoolean),Oset(x_min_set),
-		NhlTImmediate,(NhlPointer)True,
-         	_NhlRES_NOACCESS|_NhlRES_PRIVATE,NULL},
-	{"no.res","no.res",NhlTBoolean,sizeof(NhlBoolean),Oset(x_max_set),
-		NhlTImmediate,(NhlPointer)True,
-         	_NhlRES_NOACCESS|_NhlRES_PRIVATE,NULL},
-	{"no.res","no.res",NhlTBoolean,sizeof(NhlBoolean),Oset(y_max_set),
-		NhlTImmediate,(NhlPointer)True,
-         	_NhlRES_NOACCESS|_NhlRES_PRIVATE,NULL},
-	{"no.res","no.res",NhlTBoolean,sizeof(NhlBoolean),Oset(y_min_set),
-		NhlTImmediate,(NhlPointer)True,
-         	_NhlRES_NOACCESS|_NhlRES_PRIVATE,NULL},
-
-	{NhlNtrXMinF,NhlCtrXMinF,NhlTFloat,sizeof(float),Oset(x_min),
-		NhlTProcedure,(NhlPointer)ResUnset,
-         	_NhlRES_DEFAULT|_NhlRES_INTERCEPTED,NULL},
-	{NhlNtrXMaxF,NhlCtrXMaxF,NhlTFloat,sizeof(float),Oset(x_max),
-		NhlTProcedure,(NhlPointer)ResUnset,
-         	_NhlRES_DEFAULT|_NhlRES_INTERCEPTED,NULL},
-	{NhlNtrYMaxF,NhlCtrYMaxF,NhlTFloat,sizeof(float),Oset(y_max),
-		NhlTProcedure,(NhlPointer)ResUnset,
-         	_NhlRES_DEFAULT|_NhlRES_INTERCEPTED,NULL},
-	{NhlNtrYMinF,NhlCtrYMinF,NhlTFloat,sizeof(float),Oset(y_min),
-		NhlTProcedure,(NhlPointer)ResUnset,
-         	_NhlRES_DEFAULT|_NhlRES_INTERCEPTED,NULL},
 	{NhlNtrXTensionF,NhlCtrXTensionF,NhlTFloat,sizeof(float),
 		Oset(x_tension),NhlTString,"2.0",
          	_NhlRES_DEFAULT|_NhlRES_INTERCEPTED,NULL},
@@ -974,6 +948,7 @@ XyResetExtents
 	float			xt_start,xt_end,yr_start,yr_end;
 	NhlTickMarkMode		xb_mode,xt_mode,yl_mode,yr_mode;
 	NhlXyPlotLayerPart	*newxy = &xnew->xyplot;
+	NhlTransformLayerPart	*tfp = &xnew->trans;
 	NhlErrorTypes		ret;
 
 	if (! xnew->trans.plot_manager_on ||
@@ -1007,24 +982,24 @@ XyResetExtents
 	 */
 	if((xb_mode == NhlAUTOMATIC) || (xt_mode == NhlAUTOMATIC)){
 		if(newxy->compute_x_min) {
-			newxy->x_min = (xb_mode == NhlAUTOMATIC)?
+			tfp->x_min = (xb_mode == NhlAUTOMATIC)?
 							xb_start:xt_start;
-			NhlSetSArg(&sargs[nargs++],NhlNtrXMinF,newxy->x_min);
+			NhlSetSArg(&sargs[nargs++],NhlNtrXMinF,tfp->x_min);
 		}
 		if(newxy->compute_x_max){
-			newxy->x_max = (xb_mode == NhlAUTOMATIC)?xb_end:xt_end;
-			NhlSetSArg(&sargs[nargs++],NhlNtrXMaxF,newxy->x_max);
+			tfp->x_max = (xb_mode == NhlAUTOMATIC)?xb_end:xt_end;
+			NhlSetSArg(&sargs[nargs++],NhlNtrXMaxF,tfp->x_max);
 		}
 	}
 	if((yl_mode == NhlAUTOMATIC) || (yr_mode == NhlAUTOMATIC)){
 		if(newxy->compute_y_min){
-			newxy->y_min = (yl_mode == NhlAUTOMATIC)?
+			tfp->y_min = (yl_mode == NhlAUTOMATIC)?
 							yl_start:yr_start;
-			NhlSetSArg(&sargs[nargs++],NhlNtrYMinF,newxy->y_min);
+			NhlSetSArg(&sargs[nargs++],NhlNtrYMinF,tfp->y_min);
 		}
 		if(newxy->compute_y_max){
-			newxy->y_max = (yl_mode == NhlAUTOMATIC)?yl_end:yr_end;
-			NhlSetSArg(&sargs[nargs++],NhlNtrYMaxF,newxy->y_max);
+			tfp->y_max = (yl_mode == NhlAUTOMATIC)?yl_end:yr_end;
+			NhlSetSArg(&sargs[nargs++],NhlNtrYMaxF,tfp->y_max);
 		}
 	}
 
@@ -1296,20 +1271,20 @@ XyPlotInitialize
 	NhlBaseLayerPart	*blp = &xnew->base;
 
 	xp->new_draw_req = True;
-	if(!xp->comp_x_min_set) xp->compute_x_min = !xp->x_min_set;
-	if(!xp->comp_x_max_set) xp->compute_x_max = !xp->x_max_set;
-	if(!xp->comp_y_min_set) xp->compute_y_min = !xp->y_min_set;
-	if(!xp->comp_y_max_set) xp->compute_y_max = !xp->y_max_set;
+	if(!xp->comp_x_min_set) xp->compute_x_min = !tfp->x_min_set;
+	if(!xp->comp_x_max_set) xp->compute_x_max = !tfp->x_max_set;
+	if(!xp->comp_y_min_set) xp->compute_y_min = !tfp->y_min_set;
+	if(!xp->comp_y_max_set) xp->compute_y_max = !tfp->y_max_set;
 
-	if(!xp->x_min_set) xp->x_min = 1.0;
-	if(!xp->x_max_set) xp->x_max = 2.0;
-	if(!xp->y_min_set) xp->y_min = 1.0;
-	if(!xp->y_max_set) xp->y_max = 2.0;
-
-	xnew->trans.data_xmin = xp->x_min;
-	xnew->trans.data_xmax = xp->x_max;
-	xnew->trans.data_ymin = xp->y_min;
-	xnew->trans.data_ymax = xp->y_max;
+	if(!tfp->x_min_set) tfp->x_min = 1.0;
+	if(!tfp->x_max_set) tfp->x_max = 2.0;
+	if(!tfp->y_min_set) tfp->y_min = 1.0;
+	if(!tfp->y_max_set) tfp->y_max = 2.0;
+	
+	xnew->trans.data_xstart = tfp->x_min;
+	xnew->trans.data_xend = tfp->x_max;
+	xnew->trans.data_ystart = tfp->y_min;
+	xnew->trans.data_yend = tfp->y_max;
 
 	xp->thetrans = NULL;
 	tfp->trans_obj = NULL;
@@ -1713,6 +1688,11 @@ XyPlotSetValues
 		(xn->view.height != xo->view.height))
 		xn->xyplot.vp_average = (xn->view.width+xn->view.height)/2.0;
 
+	if (_NhlArgIsSet(args,num_args,NhlNxyXStyle))
+		xn->xyplot.x_style_set = True;
+	if (_NhlArgIsSet(args,num_args,NhlNxyYStyle))
+		xn->xyplot.y_style_set = True;
+	
 	return XyPlotChanges(xn,xo,_NhlSETVALUES);
 }
 
@@ -2777,10 +2757,11 @@ static NhlErrorTypes xyUpdateTrans
 		*thetrans = tfp->overlay_trans_obj;
                 if (((*thetrans)->base.layer_class)->base_class.class_name
 		    == NhlmapTransObjClass->base_class.class_name) {
-			subret = NhlVASetValues((*thetrans)->base.id,
-						NhlNtrDataXMinF,tfp->data_xmin,
-						NhlNtrDataXMaxF,tfp->data_xmax,
-						NULL);
+			subret = NhlVASetValues
+				((*thetrans)->base.id,
+				 NhlNtrDataXStartF,tfp->data_xstart,
+				 NhlNtrDataXEndF,tfp->data_xend,
+				 NULL);
 
 			if ((ret = MIN(ret,subret)) < NhlWARNING) {
 				return(ret);
@@ -3338,31 +3319,143 @@ CheckValues
 {
 	char*		error_lead;
 	NhlErrorTypes	ret = NhlNOERROR, lret = NhlNOERROR;
+	NhlXyPlotLayerPart	*nxp = &xnew->xyplot;
+	NhlTransformLayerPart	*tfp = &xnew->trans;
+	NhlTransformLayerPart	*otfp = NULL;
 
 	if(calledfrom == _NhlCREATE)
 		error_lead = "XyPlotInitialize";
-	else
+	else {
+                otfp = &xold->trans;
 		error_lead = "XyPlotSetValues";
+        }
 
 	/*
 	 * take care of style resources
 	 */
-	if((xnew->xyplot.x_style == NhlIRREGULAR) &&
-				(xnew->xyplot.x_irregular_points == NULL)){
+
+	if (nxp->x_style_set) {
+		switch (nxp->x_style) {
+		case NhlGEOGRAPHIC:
+		case NhlTIME:
+		case NhlLINEAR:
+			nxp->x_style = NhlLINEAR;
+			tfp->x_log = False;
+			tfp->x_axis_type = NhlLINEARAXIS;
+			break;
+		case NhlLOG:
+			tfp->x_log = True;
+			tfp->x_axis_type = NhlLOGAXIS;
+			break;
+		case NhlIRREGULAR:
+			tfp->x_log = False;
+			tfp->x_axis_type = NhlIRREGULARAXIS;
+			break;
+		}
+	}
+	else if (tfp->x_axis_type_set) {
+		switch (tfp->x_axis_type) {
+		case NhlLINEARAXIS:
+			nxp->x_style = NhlLINEAR;
+			tfp->x_log = False;
+			break;
+		case NhlLOGAXIS:
+			nxp->x_style = NhlLOG;
+			tfp->x_log = True;
+			break;
+		case NhlIRREGULARAXIS:
+			nxp->x_style = NhlIRREGULAR;
+			tfp->x_log = False;
+			break;
+		}
+	}
+	else if (tfp->x_log_set) {
+		switch (tfp->x_log) {
+		case True:
+			nxp->x_style = NhlLOG;
+			tfp->x_axis_type = NhlLOGAXIS;
+			break;
+		case False:
+			nxp->x_style = NhlLINEAR;
+			tfp->x_axis_type = NhlLINEARAXIS;
+			break;
+		}
+	}
+	else if (calledfrom == _NhlCREATE) {
+		nxp->x_style = NhlLINEAR;
+	}
+	if (nxp->y_style_set) {
+		switch (nxp->y_style) {
+		case NhlGEOGRAPHIC:
+		case NhlTIME:
+		case NhlLINEAR:
+			nxp->y_style = NhlLINEAR;
+			tfp->y_log = False;
+			tfp->y_axis_type = NhlLINEARAXIS;
+			break;
+		case NhlLOG:
+			tfp->y_log = True;
+			tfp->y_axis_type = NhlLOGAXIS;
+			break;
+		case NhlIRREGULAR:
+			tfp->y_log = False;
+			tfp->y_axis_type = NhlIRREGULARAXIS;
+			break;
+		}
+	}
+	else if (tfp->y_axis_type_set) {
+		switch (tfp->y_axis_type) {
+		case NhlLINEARAXIS:
+			nxp->y_style = NhlLINEAR;
+			tfp->y_log = False;
+			break;
+		case NhlLOGAXIS:
+			nxp->y_style = NhlLOG;
+			tfp->y_log = True;
+			break;
+		case NhlIRREGULARAXIS:
+			nxp->y_style = NhlIRREGULAR;
+			tfp->y_log = False;
+			break;
+		}
+	}
+	else if (tfp->y_log_set) {
+		switch (tfp->y_log) {
+		case True:
+			nxp->y_style = NhlLOG;
+			tfp->y_axis_type = NhlLOGAXIS;
+			break;
+		case False:
+			nxp->y_style = NhlLINEAR;
+			tfp->y_axis_type = NhlLINEARAXIS;
+			break;
+		}
+	}
+	else if (calledfrom == _NhlCREATE) {
+		nxp->y_style = NhlLINEAR;
+	}
+
+	nxp->x_style_set = tfp->x_axis_type_set = tfp->x_log_set = False;
+	nxp->y_style_set = tfp->y_axis_type_set = tfp->y_log_set = False;
+	  
+	if((nxp->x_style == NhlIRREGULAR) &&
+				(nxp->x_irregular_points == NULL)){
 		NhlPError(NhlWARNING,NhlEUNKNOWN,
 		"%s: cannot be NhlIRREGULAR unless %s is set:setting %s to NhlLINEAR",
 			NhlNxyXStyle,NhlNxyXIrregularPoints,NhlNxyXStyle);
 
-		xnew->xyplot.x_style = NhlLINEAR;
+		nxp->x_style = NhlLINEAR;
+		tfp->x_axis_type = NhlLINEARAXIS;
 		ret = MIN(ret,NhlWARNING);
 	}
-	if((xnew->xyplot.y_style == NhlIRREGULAR) &&
-				(xnew->xyplot.y_irregular_points == NULL)){
+	if((nxp->y_style == NhlIRREGULAR) &&
+				(nxp->y_irregular_points == NULL)){
 		NhlPError(NhlWARNING,NhlEUNKNOWN,
 		"%s: cannot be NhlIRREGULAR unless %s is set:setting %s to NhlLINEAR",
 			NhlNxyYStyle,NhlNxyYIrregularPoints,NhlNxyYStyle);
 
-		xnew->xyplot.y_style = NhlLINEAR;
+		nxp->y_style = NhlLINEAR;
+		tfp->y_axis_type = NhlLINEARAXIS;
 		ret = MIN(ret,NhlWARNING);
 	}
 
@@ -3376,15 +3469,15 @@ CheckValues
 	 * (Eventually this part should check and make sure the coord arrays
 	 * exist if x_alternate and y_alternate are not = to NhlNONE)
 	 */
-	if(xnew->xyplot.x_alternate != NhlNONE){
-		xnew->xyplot.x_alternate = NhlNONE;
+	if(nxp->x_alternate != NhlNONE){
+		nxp->x_alternate = NhlNONE;
 		NhlPError(NhlWARNING,NhlEUNKNOWN,
 			"%s:%s only supports a value of NhlNONE at this time",
 						error_lead,NhlNxyXAlternate);
 		ret = MIN(ret,NhlWARNING);
 	}
-	if(xnew->xyplot.y_alternate != NhlNONE){
-		xnew->xyplot.y_alternate = NhlNONE;
+	if(nxp->y_alternate != NhlNONE){
+		nxp->y_alternate = NhlNONE;
 		NhlPError(NhlWARNING,NhlEUNKNOWN,
 			"%s:%s only supports a value of NhlNONE at this time",
 						error_lead,NhlNxyYAlternate);
@@ -3397,118 +3490,117 @@ CheckValues
 	 */
 
 	if(calledfrom == _NhlCREATE){
-		lret = CheckExtent(xnew->xyplot.x_min_set,
-			xnew->xyplot.comp_x_min_set,&xnew->xyplot.compute_x_min,
+		lret = CheckExtent(tfp->x_min_set,
+			nxp->comp_x_min_set,&nxp->compute_x_min,
 			NhlNxyComputeXMin,NhlNtrXMinF,error_lead);
 		ret = MIN(lret,ret);
 
-		lret = CheckExtent(xnew->xyplot.x_max_set,
-			xnew->xyplot.comp_x_max_set,&xnew->xyplot.compute_x_max,
+		lret = CheckExtent(tfp->x_max_set,
+			nxp->comp_x_max_set,&nxp->compute_x_max,
 			NhlNxyComputeXMax,NhlNtrXMaxF,error_lead);
 		ret = MIN(lret,ret);
 
-		lret = CheckExtent(xnew->xyplot.y_max_set,
-			xnew->xyplot.comp_y_max_set,&xnew->xyplot.compute_y_max,
+		lret = CheckExtent(tfp->y_max_set,
+			nxp->comp_y_max_set,&nxp->compute_y_max,
 			NhlNxyComputeYMax,NhlNtrYMaxF,error_lead);
 		ret = MIN(lret,ret);
 
-		lret = CheckExtent(xnew->xyplot.y_min_set,
-			xnew->xyplot.comp_y_min_set,&xnew->xyplot.compute_y_min,
+		lret = CheckExtent(tfp->y_min_set,
+			nxp->comp_y_min_set,&nxp->compute_y_min,
 			NhlNxyComputeYMin,NhlNtrYMinF,error_lead);
 		ret = MIN(lret,ret);
 	}
 	else{
-		lret = CheckExtent((xold->xyplot.x_min!=xnew->xyplot.x_min),
-			xnew->xyplot.compute_x_min,&xnew->xyplot.compute_x_min,
+		lret = CheckExtent((otfp->x_min!=tfp->x_min),
+			nxp->compute_x_min,&nxp->compute_x_min,
 			NhlNxyComputeXMin,NhlNtrXMinF,error_lead);
 		ret = MIN(lret,ret);
 
-		lret = CheckExtent((xold->xyplot.x_max!=xnew->xyplot.x_max),
-			xnew->xyplot.compute_x_max,&xnew->xyplot.compute_x_max,
+		lret = CheckExtent((otfp->x_max!=tfp->x_max),
+			nxp->compute_x_max,&nxp->compute_x_max,
 			NhlNxyComputeXMax,NhlNtrXMaxF,error_lead);
 		ret = MIN(lret,ret);
 
-		lret = CheckExtent((xold->xyplot.y_max!=xnew->xyplot.y_max),
-			xnew->xyplot.compute_y_max,&xnew->xyplot.compute_y_max,
+		lret = CheckExtent((otfp->y_max!=tfp->y_max),
+			nxp->compute_y_max,&nxp->compute_y_max,
 			NhlNxyComputeYMax,NhlNtrYMaxF,error_lead);
 		ret = MIN(lret,ret);
 
-		lret=CheckExtent((xold->xyplot.y_min!=xnew->xyplot.y_min),
-			xnew->xyplot.compute_y_min,&xnew->xyplot.compute_y_min,
+		lret=CheckExtent((otfp->y_min!=tfp->y_min),
+			nxp->compute_y_min,&nxp->compute_y_min,
 			NhlNxyComputeYMin,NhlNtrYMinF,error_lead);
 		ret = MIN(lret,ret);
 
 	}
 
-	if(!xnew->xyplot.compute_x_min && xnew->xyplot.x_min_set &&
-		(xnew->xyplot.x_style == NhlLOG) && (xnew->xyplot.x_min <= 0)){
+	if(!nxp->compute_x_min && tfp->x_min_set &&
+		(nxp->x_style == NhlLOG) && (tfp->x_min <= 0)){
 		NhlPError(NhlWARNING,NhlEUNKNOWN,
 			"%s:%s is NhlLOG:%s can't be <= 0.0:Setting %s to True",
 			error_lead,NhlNxyXStyle,NhlNtrXMinF,NhlNxyComputeXMin);
 
-		xnew->xyplot.compute_x_min = True;
+		nxp->compute_x_min = True;
 		ret = MIN(ret,NhlWARNING);
 	}
 
-	if(!xnew->xyplot.compute_x_max && xnew->xyplot.x_max_set &&
-		(xnew->xyplot.x_style == NhlLOG) && (xnew->xyplot.x_max <= 0)){
+	if(!nxp->compute_x_max && tfp->x_max_set &&
+		(nxp->x_style == NhlLOG) && (tfp->x_max <= 0)){
 		NhlPError(NhlWARNING,NhlEUNKNOWN,
 			"%s:%s is NhlLOG:%s can't be <= 0.0:Setting %s to True",
 			error_lead,NhlNxyXStyle,NhlNtrXMaxF,NhlNxyComputeXMax);
 
-		xnew->xyplot.compute_x_max = True;
+		nxp->compute_x_max = True;
 		ret = MIN(ret,NhlWARNING);
 	}
 
-	if(!xnew->xyplot.compute_x_min && xnew->xyplot.x_min_set &&
-		!xnew->xyplot.compute_x_max && xnew->xyplot.x_max_set &&
-		(xnew->xyplot.x_max < xnew->xyplot.x_min)){
+	if(!nxp->compute_x_min && tfp->x_min_set &&
+		!nxp->compute_x_max && tfp->x_max_set &&
+		(tfp->x_max < tfp->x_min)){
 
 		float tfloat;
 		NhlPError(NhlWARNING,NhlEUNKNOWN,"%s:%s is < %s: Swapping",
 					error_lead,NhlNtrXMaxF,NhlNtrXMinF);
-		tfloat = xnew->xyplot.x_max;
-		xnew->xyplot.x_max = xnew->xyplot.x_min;
-		xnew->xyplot.x_min = tfloat;
+		tfloat = tfp->x_max;
+		tfp->x_max = tfp->x_min;
+		tfp->x_min = tfloat;
 	}
 
-	if(!xnew->xyplot.compute_y_min && xnew->xyplot.y_min_set &&
-		(xnew->xyplot.y_style == NhlLOG) && (xnew->xyplot.y_min <= 0)){
+	if(!nxp->compute_y_min && tfp->y_min_set &&
+		(nxp->y_style == NhlLOG) && (tfp->y_min <= 0)){
 		NhlPError(NhlWARNING,NhlEUNKNOWN,
 			"%s:%s is NhlLOG:%s can't be <= 0.0:Setting %s to True",
 			error_lead,NhlNxyYStyle,NhlNtrYMinF,NhlNxyComputeYMin);
 
-		xnew->xyplot.compute_y_min = True;
+		nxp->compute_y_min = True;
 		ret = MIN(ret,NhlWARNING);
 	}
 
-	if(!xnew->xyplot.compute_y_max && xnew->xyplot.y_max_set &&
-		(xnew->xyplot.y_style == NhlLOG) && (xnew->xyplot.y_max <= 0)){
+	if(!nxp->compute_y_max && tfp->y_max_set &&
+		(nxp->y_style == NhlLOG) && (tfp->y_max <= 0)){
 		NhlPError(NhlWARNING,NhlEUNKNOWN,
 			"%s:%s is NhlLOG:%s can't be <= 0.0:Setting %s to True",
 			error_lead,NhlNxyYStyle,NhlNtrYMaxF,NhlNxyComputeYMax);
 
-		xnew->xyplot.compute_y_max = True;
+		nxp->compute_y_max = True;
 		ret = MIN(ret,NhlWARNING);
 	}
 
-	if(!xnew->xyplot.compute_y_min && xnew->xyplot.y_min_set &&
-		!xnew->xyplot.compute_y_max && xnew->xyplot.y_max_set &&
-		(xnew->xyplot.y_max < xnew->xyplot.y_min)){
+	if(!nxp->compute_y_min && tfp->y_min_set &&
+		!nxp->compute_y_max && tfp->y_max_set &&
+		(tfp->y_max < tfp->y_min)){
 
 		float tfloat;
 		NhlPError(NhlWARNING,NhlEUNKNOWN,"%s:%s is < %s: Swapping",
 					error_lead,NhlNtrYMaxF,NhlNtrYMinF);
-		tfloat = xnew->xyplot.y_max;
-		xnew->xyplot.y_max = xnew->xyplot.y_min;
-		xnew->xyplot.y_min = tfloat;
+		tfloat = tfp->y_max;
+		tfp->y_max = tfp->y_min;
+		tfp->y_min = tfloat;
 	}
 
 	if((calledfrom == _NhlSETVALUES) &&
-		((xold->xyplot.x_style != xnew->xyplot.x_style) ||
-		(xold->xyplot.y_style != xnew->xyplot.y_style))){
-
-		xnew->xyplot.check_ranges = True;
+		((xold->xyplot.x_style != nxp->x_style) ||
+		(xold->xyplot.y_style != nxp->y_style))){
+		nxp->check_ranges = True;
 	}
 
 	return ret;
@@ -3842,7 +3934,7 @@ ComputeDataExtents
 	NhlCoordArrTableFloatLayer	datal = NULL;
 	char			*error_lead;
 	NhlErrorTypes		ret = NhlNOERROR;
-
+        
 	if(calledfrom == _NhlCREATE){
 		error_lead = "XyPlotInitialize";
 		if(xnew->xyplot.curve_data == NULL){
@@ -3944,10 +4036,10 @@ ComputeDataExtents
 		}
 		xnew->xyplot.num_cpairs = num_pairs;
 
-		xnew->trans.data_xmin = xnew->xyplot.x_data_min;
-		xnew->trans.data_xmax = xnew->xyplot.x_data_max;
-		xnew->trans.data_ymin = xnew->xyplot.y_data_min;
-		xnew->trans.data_ymax = xnew->xyplot.y_data_max;
+		xnew->trans.data_xstart = xnew->xyplot.x_data_min;
+		xnew->trans.data_xend = xnew->xyplot.x_data_max;
+		xnew->trans.data_ystart = xnew->xyplot.y_data_min;
+		xnew->trans.data_yend = xnew->xyplot.y_data_max;
 	}
 
 	if(xnew->xyplot.check_ranges){
@@ -3959,21 +4051,21 @@ ComputeDataExtents
 		 *
 		 * Also set if compute resources are true.
 		 */
-		if(!xnew->xyplot.x_min_set || xnew->xyplot.compute_x_min){
-			xnew->xyplot.x_min = xnew->xyplot.x_data_min;
-			xnew->xyplot.x_min_set = True;
+		if(!xnew->trans.x_min_set || xnew->xyplot.compute_x_min){
+			xnew->trans.x_min = xnew->xyplot.x_data_min;
+			xnew->trans.x_min_set = True;
 		}
-		if(!xnew->xyplot.x_max_set || xnew->xyplot.compute_x_max){
-			xnew->xyplot.x_max = xnew->xyplot.x_data_max;
-			xnew->xyplot.x_max_set = True;
+		if(!xnew->trans.x_max_set || xnew->xyplot.compute_x_max){
+			xnew->trans.x_max = xnew->xyplot.x_data_max;
+			xnew->trans.x_max_set = True;
 		}
-		if(!xnew->xyplot.y_min_set || xnew->xyplot.compute_y_min){
-			xnew->xyplot.y_min = xnew->xyplot.y_data_min;
-			xnew->xyplot.y_min_set = True;
+		if(!xnew->trans.y_min_set || xnew->xyplot.compute_y_min){
+			xnew->trans.y_min = xnew->xyplot.y_data_min;
+			xnew->trans.y_min_set = True;
 		}
-		if(!xnew->xyplot.y_max_set || xnew->xyplot.compute_y_max){
-			xnew->xyplot.y_max = xnew->xyplot.y_data_max;
-			xnew->xyplot.y_max_set = True;
+		if(!xnew->trans.y_max_set || xnew->xyplot.compute_y_max){
+			xnew->trans.y_max = xnew->xyplot.y_data_max;
+			xnew->trans.y_max_set = True;
 		}
 
 		/*
@@ -4002,7 +4094,7 @@ ComputeDataExtents
 		 * if NhlIRREGULAR is specifed.
 		 */
 		if(xnew->xyplot.x_style == NhlIRREGULAR){
-			if(xnew->xyplot.x_min < xnew->xyplot.x_irreg_min){
+			if(xnew->trans.x_min < xnew->xyplot.x_irreg_min){
 
 				if(!xnew->xyplot.compute_x_min){
 					NhlPError(NhlWARNING,NhlEUNKNOWN,
@@ -4012,9 +4104,9 @@ ComputeDataExtents
 						xnew->xyplot.x_irreg_min);
 					ret = MIN(ret,NhlWARNING);
 				}
-				xnew->xyplot.x_min = xnew->xyplot.x_irreg_min;
+				xnew->trans.x_min = xnew->xyplot.x_irreg_min;
 			}
-			if(xnew->xyplot.x_max > xnew->xyplot.x_irreg_max){
+			if(xnew->trans.x_max > xnew->xyplot.x_irreg_max){
 
 				if(!xnew->xyplot.compute_x_max){
 					NhlPError(NhlWARNING,NhlEUNKNOWN,
@@ -4024,11 +4116,11 @@ ComputeDataExtents
 						xnew->xyplot.x_irreg_max);
 					ret = MIN(ret,NhlWARNING);
 				}
-				xnew->xyplot.x_max = xnew->xyplot.x_irreg_max;
+				xnew->trans.x_max = xnew->xyplot.x_irreg_max;
 			}
 		}
 		if(xnew->xyplot.y_style == NhlIRREGULAR){
-			if(xnew->xyplot.y_min < xnew->xyplot.y_irreg_min){
+			if(xnew->trans.y_min < xnew->xyplot.y_irreg_min){
 
 				if(!xnew->xyplot.compute_y_min){
 					NhlPError(NhlWARNING,NhlEUNKNOWN,
@@ -4038,9 +4130,9 @@ ComputeDataExtents
 						xnew->xyplot.y_irreg_min);
 					ret = MIN(ret,NhlWARNING);
 				}
-				xnew->xyplot.y_min = xnew->xyplot.y_irreg_min;
+				xnew->trans.y_min = xnew->xyplot.y_irreg_min;
 			}
-			if(xnew->xyplot.y_max > xnew->xyplot.y_irreg_max){
+			if(xnew->trans.y_max > xnew->xyplot.y_irreg_max){
 
 				if(!xnew->xyplot.compute_y_max){
 					NhlPError(NhlWARNING,NhlEUNKNOWN,
@@ -4050,7 +4142,7 @@ ComputeDataExtents
 						xnew->xyplot.y_irreg_max);
 					ret = MIN(ret,NhlWARNING);
 				}
-				xnew->xyplot.y_max = xnew->xyplot.y_irreg_max;
+				xnew->trans.y_max = xnew->xyplot.y_irreg_max;
 			}
 		}
 	}
@@ -4117,6 +4209,7 @@ SetUpTransObjs
 	NhlXyPlotLayerPart	*newxy = &xnew->xyplot;
 	NhlXyPlotLayerPart	*oldxy=NULL;
 	NhlTransformLayerPart	*tfp = &xnew->trans;
+	NhlTransformLayerPart	*otfp = NULL;
 
 /*
  * Now create main transformation object
@@ -4126,6 +4219,7 @@ SetUpTransObjs
 	}
 	else{
 		oldxy = &xold->xyplot;
+                otfp = &xold->trans;
 
 		if(calledfrom == _NhlSETVALUES){
 			error_lead = "XyPlotSetValues";
@@ -4136,10 +4230,10 @@ SetUpTransObjs
 		 * could have changed are min and max - if they haven't changed
 		 * return immediately.
 		 */
-			if((newxy->x_min == oldxy->x_min) &&
-				(newxy->x_max == oldxy->x_max) &&
-				(newxy->y_min == oldxy->y_min) &&
-				(newxy->y_max == oldxy->y_max)){
+			if((tfp->x_min == otfp->x_min) &&
+				(tfp->x_max == otfp->x_max) &&
+				(tfp->y_min == otfp->y_min) &&
+				(tfp->y_max == otfp->y_max)){
 				return NhlNOERROR;
 			}
 			error_lead = "XyPlotUpdateData";
@@ -4173,9 +4267,9 @@ SetUpTransObjs
 
 		sprintf(buffer,"%s",xnew->base.name);
 		strcat(buffer,".Trans");
-
+#if 0
 		newxy->fake_x = newxy->fake_y = False;
-
+#endif
 		if(newxy->y_style == NhlIRREGULAR){
 
 			trans_class = NhlirregularTransObjClass;
@@ -4251,13 +4345,13 @@ SetUpTransObjs
 
 			}
 		}
-		NhlSetSArg(&sargs[nargs++],NhlNtrXMinF,newxy->x_min);
-		NhlSetSArg(&sargs[nargs++],NhlNtrXMaxF,newxy->x_max);
-		NhlSetSArg(&sargs[nargs++],NhlNtrYMinF,newxy->y_min);
-		NhlSetSArg(&sargs[nargs++],NhlNtrYMaxF,newxy->y_max);
+		NhlSetSArg(&sargs[nargs++],NhlNtrXMinF,tfp->x_min);
+		NhlSetSArg(&sargs[nargs++],NhlNtrXMaxF,tfp->x_max);
+		NhlSetSArg(&sargs[nargs++],NhlNtrYMinF,tfp->y_min);
+		NhlSetSArg(&sargs[nargs++],NhlNtrYMaxF,tfp->y_max);
 
-		NhlSetSArg(&sargs[nargs++],NhlNtrXReverse,newxy->x_reverse);
-		NhlSetSArg(&sargs[nargs++],NhlNtrYReverse,newxy->y_reverse);
+		NhlSetSArg(&sargs[nargs++],NhlNtrXReverse,tfp->x_reverse);
+		NhlSetSArg(&sargs[nargs++],NhlNtrYReverse,tfp->y_reverse);
 
 		(void)NhlALCreate(&tmpid,buffer,trans_class,xnew->base.id,
 								sargs,nargs);
@@ -4331,19 +4425,19 @@ SetUpTransObjs
 			NhlSetSArg(&sargs[nargs++],NhlNtrYLog,False);
 	}
 		
-	if(newxy->x_min != oldxy->x_min)
-		NhlSetSArg(&sargs[nargs++],NhlNtrXMinF,newxy->x_min);
-	if(newxy->x_max != oldxy->x_max)
-		NhlSetSArg(&sargs[nargs++],NhlNtrXMaxF,newxy->x_max);
-	if(newxy->y_min != oldxy->y_min)
-		NhlSetSArg(&sargs[nargs++],NhlNtrYMinF,newxy->y_min);
-	if(newxy->y_max != oldxy->y_max)
-		NhlSetSArg(&sargs[nargs++],NhlNtrYMaxF,newxy->y_max);
+	if(tfp->x_min != otfp->x_min)
+		NhlSetSArg(&sargs[nargs++],NhlNtrXMinF,tfp->x_min);
+	if(tfp->x_max != otfp->x_max)
+		NhlSetSArg(&sargs[nargs++],NhlNtrXMaxF,tfp->x_max);
+	if(tfp->y_min != otfp->y_min)
+		NhlSetSArg(&sargs[nargs++],NhlNtrYMinF,tfp->y_min);
+	if(tfp->y_max != otfp->y_max)
+		NhlSetSArg(&sargs[nargs++],NhlNtrYMaxF,tfp->y_max);
 
-	if(newxy->x_reverse != oldxy->x_reverse)
-		NhlSetSArg(&sargs[nargs++],NhlNtrXReverse,newxy->x_reverse);
-	if(newxy->y_reverse != oldxy->y_reverse)
-		NhlSetSArg(&sargs[nargs++],NhlNtrYReverse,newxy->y_reverse);
+	if(tfp->x_reverse != otfp->x_reverse)
+		NhlSetSArg(&sargs[nargs++],NhlNtrXReverse,tfp->x_reverse);
+	if(tfp->y_reverse != otfp->y_reverse)
+		NhlSetSArg(&sargs[nargs++],NhlNtrYReverse,tfp->y_reverse);
 
 	if (nargs > 0)	
 		newxy->new_draw_req = True;

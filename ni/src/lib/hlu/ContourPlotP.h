@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlotP.h,v 1.20 1997-11-13 20:06:22 dbrown Exp $
+ *      $Id: ContourPlotP.h,v 1.21 1998-04-16 03:08:35 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -213,20 +213,6 @@ typedef struct _NhlContourPlotLayerPart {
 	NhlAnnotationDisplayMode	display_legend;
 	NhlAnnotationDisplayMode	display_titles;
 	NhlAnnotationDisplayMode	display_tickmarks;
-	NhlBoolean	x_min_set;
-	float 		x_min;
-	NhlBoolean	x_max_set;
-	float		x_max;
-	NhlBoolean	x_log;
-	NhlBoolean	x_reverse;
-	float		x_tension;
-	NhlBoolean	y_min_set;
-	float 		y_min;
-	NhlBoolean	y_max_set;
-	float		y_max;
-	NhlBoolean	y_log;
-	NhlBoolean	y_reverse;
-	float		y_tension;
 	NhlGenArray	lbar_labels_res;
 	char		lbar_func_code;
 	NhllbLabelAlignmentMode lbar_alignment;
@@ -234,7 +220,9 @@ typedef struct _NhlContourPlotLayerPart {
 	char		lgnd_func_code;
 	NhlBoolean	draw_lgnd_line_lbls_set;
 	NhlBoolean	draw_lgnd_line_lbls;
-
+        float		x_tension;
+        float		y_tension;
+        
 	/* private resource */
 
 	NhlBoolean	dump_area_map;
@@ -280,6 +268,8 @@ typedef struct _NhlContourPlotLayerPart {
 
 	NhlScalarFieldFloatLayerPart	*sfp;
 	NhlScalarFieldFloatLayerPart	*osfp;
+	NhlGenArray    x_arr;
+	NhlGenArray    y_arr;
 
 	NhlString	*dtable;
 	int		dtable_len;
@@ -295,6 +285,7 @@ typedef struct _NhlContourPlotLayerPart {
 	NhlBoolean	seg_open;
 	float		*data;
 	NhlBoolean	do_low_level_log;
+	NhlBoolean	low_level_log_on;
 
 	/* labelbar and legend stuff */
 

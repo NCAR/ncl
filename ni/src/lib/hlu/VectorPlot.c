@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.c,v 1.47 1998-02-20 22:41:42 dbrown Exp $
+ *      $Id: VectorPlot.c,v 1.48 1998-04-16 03:09:22 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -668,50 +668,9 @@ static NhlResource resources[] = {
 
 /* Intercepted resources */
 
-	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
-		 Oset(x_min_set),
-		 NhlTImmediate,_NhlUSET((NhlPointer)True),
-         	 _NhlRES_PRIVATE,NULL},
-	{NhlNtrXMinF,NhlCtrXMinF,NhlTFloat,sizeof(float),
-		 Oset(x_min),NhlTProcedure,
-		 _NhlUSET((NhlPointer)_NhlResUnset),_NhlRES_INTERCEPTED,NULL},
-	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
-		 Oset(x_max_set),
-		 NhlTImmediate,_NhlUSET((NhlPointer)True),
-         	 _NhlRES_PRIVATE,NULL},
-	{NhlNtrXMaxF,NhlCtrXMaxF,NhlTFloat,sizeof(float),
-		 Oset(x_max),NhlTProcedure,
-		 _NhlUSET((NhlPointer)_NhlResUnset),_NhlRES_INTERCEPTED,NULL},
-	{ NhlNtrXLog,NhlCtrXLog,NhlTBoolean,sizeof(NhlBoolean),
-		Oset(x_log),NhlTImmediate,_NhlUSET((NhlPointer)False),
-          	_NhlRES_INTERCEPTED,NULL},
-	{ NhlNtrXReverse,NhlCtrXReverse,NhlTBoolean,sizeof(NhlBoolean),
-		Oset(x_reverse),NhlTImmediate,
-          	_NhlUSET((NhlPointer)False),_NhlRES_INTERCEPTED,NULL},
 	{NhlNtrXTensionF,NhlCtrXTensionF,NhlTFloat,sizeof(float),
 		Oset(x_tension),NhlTString,"2.0",
          	_NhlRES_DEFAULT|_NhlRES_INTERCEPTED,NULL},
-	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
-		 Oset(y_min_set),
-		 NhlTImmediate,_NhlUSET((NhlPointer)True),
-         	 _NhlRES_PRIVATE,NULL},
-	{NhlNtrYMinF,NhlCtrYMinF,NhlTFloat,sizeof(float),
-		Oset(y_min),NhlTProcedure,
-		 _NhlUSET((NhlPointer)_NhlResUnset),_NhlRES_INTERCEPTED,NULL},
-	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
-		 Oset(y_max_set),
-		 NhlTImmediate,_NhlUSET((NhlPointer)True),
-         	 _NhlRES_PRIVATE,NULL},
-	{ NhlNtrYMaxF,NhlCtrYMaxF,NhlTFloat,sizeof(float),
-		Oset(y_max),NhlTProcedure,
-		 _NhlUSET((NhlPointer)_NhlResUnset),_NhlRES_INTERCEPTED,NULL},
-	{ NhlNtrYLog,NhlCtrYLog,NhlTBoolean,sizeof(NhlBoolean),
-		Oset(y_log),NhlTImmediate,_NhlUSET((NhlPointer)False),
-          	_NhlRES_INTERCEPTED,NULL},
-	{ NhlNtrYReverse,NhlCtrYReverse,NhlTBoolean,sizeof(NhlBoolean),
-		Oset(y_reverse),
-		NhlTImmediate,_NhlUSET((NhlPointer)False),
-          	_NhlRES_INTERCEPTED,NULL},
 	{NhlNtrYTensionF,NhlCtrYTensionF,NhlTFloat,sizeof(float),
 		Oset(y_tension),NhlTString,"2.0",
          	_NhlRES_DEFAULT|_NhlRES_INTERCEPTED,NULL},
@@ -894,7 +853,8 @@ static NhlErrorTypes VectorPlotDataInitialize(
 
 static NhlErrorTypes InitCoordBounds(
 #if	NhlNeedProto
-        NhlVectorPlotLayerPart	*vcp,
+        NhlVectorPlotLayer	vcl,
+        NhlVectorPlotLayer	ovcl,
 	char			*entry_name
 #endif
 );
@@ -1779,10 +1739,6 @@ VectorPlotInitialize
 	vcp->refvec_anno_rec.id = NhlNULLOBJID;
 	vcp->minvec_anno_rec.id = NhlNULLOBJID;
 	vcp->zerof_lbl_rec.id = NhlNULLOBJID;
-	vcnew->trans.data_xmin = 0.0;
-	vcnew->trans.data_xmax = 1.0;
-	vcnew->trans.data_ymin = 0.0;
-	vcnew->trans.data_ymax = 1.0;
 
 /* Initialize unset resources */
 
@@ -1804,14 +1760,6 @@ VectorPlotInitialize
 		vcp->l_arrowhead_min_size = 0.003;
 	if (! vcp->l_arrowhead_max_size_set)
 		vcp->l_arrowhead_max_size = 0.03;
-	if (! vcp->x_min_set)
-		vcp->x_min = 0.0;
-	if (! vcp->x_max_set)
-		vcp->x_max = 1.0;
-	if (! vcp->y_min_set)
-		vcp->y_min = 0.0;
-	if (! vcp->y_max_set)
-		vcp->y_max = 1.0;
 	if (! vcp->glyph_style_set) {
 		vcp->glyph_style = NhlLINEARROW;
 		if (vcp->fill_arrows_on_set && vcp->fill_arrows_on)
@@ -1893,9 +1841,6 @@ VectorPlotInitialize
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return(ret);
 	}
- 
-	subret = InitCoordBounds(vcp,entry_name);
-	if ((ret = MIN(ret,subret)) < NhlWARNING) return(ret);
 
 /* Set view dependent resources */
 
@@ -1939,7 +1884,10 @@ VectorPlotInitialize
 
 /* Set up the vector object transformation  */
 
-	vcp->do_low_level_log = False;
+ 
+	subret = InitCoordBounds(vcnew,NULL,entry_name);
+	if ((ret = MIN(ret,subret)) < NhlWARNING) return(ret);
+
 	if (vcp->use_irr_trans) {
 		subret = SetUpIrrTransObj(vcnew,(NhlVectorPlotLayer) req,True);
 		if ((ret = MIN(ret,subret)) < NhlWARNING) {
@@ -2004,6 +1952,12 @@ VectorPlotInitialize
 	vcp->ref_length_set = False;
 	vcp->l_arrowhead_min_size_set = False;
 	vcp->l_arrowhead_max_size_set = False;
+
+        vcnew->trans.x_reverse_set = vcnew->trans.y_reverse_set = False;
+        vcnew->trans.x_log_set = vcnew->trans.y_log_set = False;
+        vcnew->trans.x_axis_type_set = vcnew->trans.y_axis_type_set = False;
+        vcnew->trans.x_min_set = vcnew->trans.y_min_set = False;
+        vcnew->trans.x_max_set = vcnew->trans.y_max_set = False;
 
 	return ret;
 }
@@ -2234,14 +2188,6 @@ static NhlErrorTypes VectorPlotSetValues
 		vcp->l_arrowhead_min_size_set = True;
 	if (_NhlArgIsSet(args,num_args,NhlNvcLineArrowHeadMaxSizeF))
 		vcp->l_arrowhead_max_size_set = True;
-	if (_NhlArgIsSet(args,num_args,NhlNtrXMinF))
-		vcp->x_min_set = True;
-	if (_NhlArgIsSet(args,num_args,NhlNtrXMaxF))
-		vcp->x_max_set = True;
-	if (_NhlArgIsSet(args,num_args,NhlNtrYMinF))
-		vcp->y_min_set = True;
-	if (_NhlArgIsSet(args,num_args,NhlNtrYMaxF))
-		vcp->y_max_set = True;
 	if (_NhlArgIsSet(args,num_args,NhlNlbLabelStrings))
 		vcp->lbar_labels_res_set = True;
 
@@ -2311,8 +2257,6 @@ static NhlErrorTypes VectorPlotSetValues
 		return(ret);
 	}
 
-	subret = InitCoordBounds(vcp,entry_name);
-	if ((ret = MIN(ret,subret)) < NhlWARNING) return(ret);
 
 /* Set view dependent resources */
 
@@ -2358,7 +2302,9 @@ static NhlErrorTypes VectorPlotSetValues
 
 /* Set up the vector object transformation  */
 
-	vcp->do_low_level_log = False;
+	subret = InitCoordBounds(vcnew,(NhlVectorPlotLayer)old,entry_name);
+	if ((ret = MIN(ret,subret)) < NhlWARNING) return(ret);
+
 	if (vcp->use_irr_trans) {
 		subret = SetUpIrrTransObj(vcnew,
 					  (NhlVectorPlotLayer) old,False);
@@ -2395,6 +2341,12 @@ static NhlErrorTypes VectorPlotSetValues
 	vcp->ref_length_set = False;
 	vcp->l_arrowhead_min_size_set = False;
 	vcp->l_arrowhead_max_size_set = False;
+
+        vcnew->trans.x_reverse_set = vcnew->trans.y_reverse_set = False;
+        vcnew->trans.x_log_set = vcnew->trans.y_log_set = False;
+        vcnew->trans.x_axis_type_set = vcnew->trans.y_axis_type_set = False;
+        vcnew->trans.x_min_set = vcnew->trans.y_min_set = False;
+        vcnew->trans.x_max_set = vcnew->trans.y_max_set = False;
 
 	return ret;
 }
@@ -2538,116 +2490,6 @@ static NhlErrorTypes    VectorPlotGetValues
         }
 
         return(NhlNOERROR);
-}
-
-/*
- * Function:	InitCoordBounds
- *
- * Description: Sets coordinate boundary variables that must be 
- *              initialized regardless of whether any data has been supplied
- *
- * In Args:
- *
- * Out Args:	NONE
- *
- * Return Values:	ErrorConditions
- *
- * Side Effects:
- */
-/*ARGSUSED*/
-static NhlErrorTypes InitCoordBounds
-#if	NhlNeedProto
-(
-        NhlVectorPlotLayerPart	*vcp,
-	char			*entry_name
-)
-#else
-(vcp,entry_name)
-        NhlVectorPlotLayerPart	*vcp;
-	char			*entry_name;
-#endif
-{
-	NhlErrorTypes	ret = NhlNOERROR;
-	char		*e_text;
-	float		ftmp;
-
-	if (vcp->data_init) {
-		if (! vcp->x_min_set)
-			vcp->x_min = MIN(vcp->vfp->x_start,vcp->vfp->x_end);
-		if (! vcp->x_max_set)
-			vcp->x_max = MAX(vcp->vfp->x_start,vcp->vfp->x_end);
-		if (! vcp->y_min_set)
-			vcp->y_min = MIN(vcp->vfp->y_start,vcp->vfp->y_end);
-		if (! vcp->y_max_set)
-			vcp->y_max = MAX(vcp->vfp->y_start,vcp->vfp->y_end);
-	}
-
-	if (vcp->x_min == vcp->x_max) {
-		e_text = "%s: Zero X coordinate span: defaulting";
-		ret = MIN(ret,NhlWARNING);
-		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
-		vcp->x_min = 0.0; 
-		vcp->x_max = 1.0;
-	}
-	else if (vcp->x_min > vcp->x_max) {
-		e_text = "%s: Min X coordinate exceeds max: exchanging";
-		ret = MIN(ret,NhlWARNING);
-		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
-		ftmp = vcp->x_min;
-		vcp->x_min = vcp->x_max;
-		vcp->x_max = ftmp;
-	}
-	if (vcp->x_log && vcp->x_min <= 0.0) {
-		e_text = 
-		   "%s: Log style invalid for X coordinates: setting %s off";
-		ret = MIN(ret,NhlWARNING);
-		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,NhlNtrXLog);
-		vcp->x_log = False;
-	}
-
-	if (vcp->y_min == vcp->y_max) {
-		e_text = "%s: Zero Y coordinate span: defaulting";
-		ret = MIN(ret,NhlWARNING);
-		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
-		vcp->y_min = 0.0; 
-		vcp->y_max = 1.0;
-	}
-	else if (vcp->y_min > vcp->y_max) {
-		e_text = "%s: Min Y coordinate exceeds max: exchanging";
-		ret = MIN(ret,NhlWARNING);
-		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
-		ftmp = vcp->y_min;
-		vcp->y_min = vcp->y_max;
-		vcp->y_max = ftmp;
-	}
-	if (vcp->y_log && vcp->y_min <= 0.0) {
-		e_text = 
-		    "%s: Log style invalid for Y coordinates: setting %s off";
-		ret = MIN(ret,NhlWARNING);
-		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,NhlNtrYLog);
-		vcp->y_log = False;
-	}
-
-	if (! vcp->data_init) {
-		if (! vcp->x_reverse) {
-			vcp->xc1 = vcp->x_min;
-			vcp->xcm = vcp->x_max;
-		}
-		else {
-			vcp->xc1 = vcp->x_max;
-			vcp->xcm = vcp->x_min;
-		}
-		if (! vcp->y_reverse) {
-			vcp->yc1 = vcp->y_min;
-			vcp->ycn = vcp->y_max;
-		}
-		else {
-			vcp->yc1 = vcp->y_max;
-			vcp->ycn = vcp->y_min;
-		}
-	}
-
-	return ret;
 }
 
 /*
@@ -2997,6 +2839,7 @@ static NhlErrorTypes vcInitDraw
 {
 	NhlErrorTypes		ret = NhlNOERROR;
 	NhlVectorPlotLayerPart	*vcp = &(vcl->vectorplot);
+	NhlTransformLayerPart	*tfp = &(vcl->trans);
 	NhlString		e_text;
 
 	NhlVASetValues(vcl->base.wkptr->base.id,
@@ -3021,6 +2864,33 @@ static NhlErrorTypes vcInitDraw
 			return(ret);
 		}
 	}
+ /*
+ * Set up LLU interface coordinate boundaries 
+ */
+        vcp->xlb = MAX(tfp->x_min,MIN(tfp->data_xstart,tfp->data_xend));
+        vcp->xub = MIN(tfp->x_max,MAX(tfp->data_xstart,tfp->data_xend));
+        vcp->ylb = MAX(tfp->y_min,MIN(tfp->data_ystart,tfp->data_yend));
+        vcp->yub = MIN(tfp->y_max,MAX(tfp->data_ystart,tfp->data_yend));
+        
+	if (!vcp->use_irr_trans) {
+                vcp->xc1 = tfp->data_xstart;
+                vcp->xcm = tfp->data_xend;
+                vcp->yc1 = tfp->data_ystart;
+                vcp->ycn = tfp->data_yend;
+        }
+        else {
+                int xcount,ycount;
+                
+                xcount = tfp->x_axis_type == NhlIRREGULARAXIS ?
+                        vcp->vfp->x_arr->len_dimensions[0] : 3;
+                ycount = tfp->y_axis_type == NhlIRREGULARAXIS ?
+                        vcp->vfp->y_arr->len_dimensions[0] : 3;
+                
+                vcp->xc1 = 0;
+                vcp->xcm = xcount - 1;
+                vcp->yc1 = 0;
+                vcp->ycn = ycount - 1;
+        }
 
 	return ret;
 }
@@ -3062,9 +2932,11 @@ static void VectorAbortDraw
 	if (vcp->wk_active)
 		_NhlDeactivateWorkstation(vcl->base.wkptr);
 
-	if (vcp->do_low_level_log) 
+	if (vcp->low_level_log_on) {
 		NhlVASetValues(tfp->trans_obj->base.id,
 			       NhlNtrLowLevelLogOn,False,NULL);
+                vcp->low_level_log_on = False;
+        }
 
 	if (vcp->fws != NULL) {
 		_NhlIdleWorkspace(vcp->fws);
@@ -3093,11 +2965,13 @@ static NhlErrorTypes vcUpdateTrans
 #if	NhlNeedProto
 (
 	NhlVectorPlotLayer	vcl,
+        NhlBoolean		seg_draw,
 	NhlString		entry_name
 )
 #else
-(vcl,entry_name)
+(vcl,seg_draw,entry_name)
         NhlVectorPlotLayer vcl;
+        NhlBoolean		seg_draw;
 	NhlString		entry_name;
 #endif
 {
@@ -3106,6 +2980,7 @@ static NhlErrorTypes vcUpdateTrans
 	NhlVectorPlotLayerPart	*vcp = &(vcl->vectorplot);
 	NhlTransformLayerPart	*tfp = &(vcl->trans);
 
+        vcp->low_level_log_on = False;
 /*
  * If the plot is an overlay member, use the overlay manager's trans object.
  */
@@ -3115,27 +2990,28 @@ static NhlErrorTypes vcUpdateTrans
 		vcp->trans_obj = tfp->overlay_trans_obj;
                 if ((vcp->trans_obj->base.layer_class)->base_class.class_name 
 		    == NhlmapTransObjClass->base_class.class_name) {
-			subret = NhlVASetValues(vcp->trans_obj->base.id,
-						NhlNtrDataXMinF,tfp->data_xmin,
-						NhlNtrDataXMaxF,tfp->data_xmax,
-						NULL);
+			subret = NhlVASetValues
+				(vcp->trans_obj->base.id,
+				 NhlNtrDataXStartF,tfp->data_xend,
+				 NhlNtrDataXEndF,tfp->data_xend,
+				 NULL);
 
 			if ((ret = MIN(ret,subret)) < NhlWARNING) {
 				return(ret);
 			}
                 }
 		else if (vcp->do_low_level_log) {
-			if (vcp->x_log) {
-				subret = NhlVASetValues(
-						   tfp->trans_obj->base.id,
-						NhlNtrXAxisType,NhlLINEARAXIS,
-						NULL);
+			if (tfp->x_axis_type == NhlLOGAXIS) {
+				subret = NhlVASetValues
+                                        (tfp->trans_obj->base.id,
+                                         NhlNtrXAxisType,NhlLINEARAXIS,
+                                         NULL);
 			}
 			else {
-				subret = NhlVASetValues(
-						   tfp->trans_obj->base.id,
-						NhlNtrYAxisType,NhlLINEARAXIS,
-						NULL);
+				subret = NhlVASetValues
+                                        (tfp->trans_obj->base.id,
+                                         NhlNtrYAxisType,NhlLINEARAXIS,
+                                         NULL);
 			}
 			if ((ret = MIN(ret,subret)) < NhlWARNING) {
 				return(ret);
@@ -3145,15 +3021,17 @@ static NhlErrorTypes vcUpdateTrans
 	else {
 		vcp->trans_obj = tfp->trans_obj;
 
-		if (vcp->do_low_level_log) {
-			subret = NhlVASetValues(vcp->trans_obj->base.id,
+		if (vcp->do_low_level_log && ! seg_draw) {
+			subret = NhlVASetValues(tfp->trans_obj->base.id,
 						NhlNtrLowLevelLogOn,True,
 						NULL);
 			if ((ret = MIN(ret,subret)) < NhlWARNING) {
 				return(ret);
 			}
+                        vcp->low_level_log_on = True;
 		}
-		if (tfp->overlay_status == _tfNotInOverlay ||
+		if (vcp->do_low_level_log ||
+		    tfp->overlay_status == _tfNotInOverlay ||
 		    tfp->do_ndc_overlay) {
 			subret = _NhlSetTrans(tfp->trans_obj, (NhlLayer)vcl);
 			if ((ret = MIN(ret,subret)) < NhlWARNING) {
@@ -3194,6 +3072,7 @@ static NhlErrorTypes VectorPlotPreDraw
 	NhlString		e_text,entry_name = "VectorPlotPreDraw";
 	NhlVectorPlotLayer	vcl = (NhlVectorPlotLayer) layer;
 	NhlVectorPlotLayerPart	*vcp = &vcl->vectorplot;
+        NhlBoolean		seg_draw;
 
 	vcp->fws = NULL;
 	vcp->wk_active = False;
@@ -3206,54 +3085,32 @@ static NhlErrorTypes VectorPlotPreDraw
 	Vcp = vcp;
 	Vcl = vcl;
 
-	if (vcl->view.use_segments && ! vcp->new_draw_req) {
-		subret = vcUpdateTrans(vcl,entry_name);
-		if ((ret = MIN(subret,ret)) < NhlWARNING) {
-			VectorAbortDraw(vcl);
-			return ret;
-		}
-		ret = _NhltfDrawSegment((NhlLayer)vcl,vcp->trans_obj,
-					vcp->predraw_dat,entry_name);
-		Vcp = NULL;
-		return ret;
-	}
-
 	subret = vcInitDraw(vcl,entry_name);
 	if ((ret = MIN(subret,ret)) < NhlWARNING) {
 		Vcp = NULL;
 		return ret;
 	}
-
 	if (vcp->vector_order != NhlPREDRAW) {
 		Vcp = NULL;
 		return NhlNOERROR;
 	}
-	subret = vcUpdateTrans(vcl,entry_name);
+        
+        seg_draw = vcl->view.use_segments && ! vcp->new_draw_req;
+        
+	subret = vcUpdateTrans(vcl,seg_draw,entry_name);
 	if ((ret = MIN(subret,ret)) < NhlWARNING) {
 		VectorAbortDraw(vcl);
 		return ret;
 	}
 
-	subret = _NhlActivateWorkstation(vcl->base.wkptr);
-	if ((ret = MIN(subret,ret)) < NhlWARNING) {
-		e_text = "%s: Error activating workstation";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		VectorAbortDraw(vcl);
-		return NhlFATAL;
+	if (seg_draw) {
+		ret = _NhltfDrawSegment((NhlLayer)vcl,vcp->trans_obj,
+					vcp->predraw_dat,entry_name);
 	}
-	vcp->wk_active = True;
-
-	if (vcl->view.use_segments) {
-		subret = _NhltfInitSegment((NhlLayer)vcl,vcp->trans_obj,
-					    &vcp->predraw_dat,entry_name);
-		if ((ret = MIN(subret,ret)) < NhlWARNING) {
-			VectorAbortDraw(vcl);
-			return ret;
-		}
-		vcp->seg_open = True;
+	else {
+		subret = vcDraw(vcl,NhlPREDRAW,entry_name);
 	}
 
-	subret = vcDraw(vcl,NhlPREDRAW,entry_name);
 
 	Vcp = NULL;
 	return MIN(subret,ret);
@@ -3285,6 +3142,7 @@ static NhlErrorTypes VectorPlotDraw
 	NhlVectorPlotLayer	vcl = (NhlVectorPlotLayer) layer;
 	NhlVectorPlotLayerPart	*vcp = &vcl->vectorplot;
 	NhlString		e_text,entry_name = "VectorPlotDraw";
+        NhlBoolean		seg_draw;
 
 	if (! vcp->data_init || vcp->zero_field) {
 		Vcp = NULL;
@@ -3297,38 +3155,22 @@ static NhlErrorTypes VectorPlotDraw
 	Vcp = vcp;
 	Vcl = vcl;
 
-	subret = vcUpdateTrans(vcl,entry_name);
+        seg_draw = vcl->view.use_segments && ! vcp->new_draw_req;
+        
+	subret = vcUpdateTrans(vcl,seg_draw,entry_name);
 	if ((ret = MIN(subret,ret)) < NhlWARNING) {
 		VectorAbortDraw(vcl);
 		return ret;
 	}
 
-	if (vcl->view.use_segments && ! vcp->new_draw_req) {
+	if (seg_draw) {
 		ret = _NhltfDrawSegment((NhlLayer)vcl,vcp->trans_obj,
 					vcp->draw_dat,entry_name);
-		Vcp = NULL;
-		return ret;
+	}
+	else {
+		subret = vcDraw((NhlVectorPlotLayer) layer,NhlDRAW,entry_name);
 	}
 
-	subret = _NhlActivateWorkstation(vcl->base.wkptr);
-	if ((ret = MIN(subret,ret)) < NhlWARNING) {
-		e_text = "%s: Error activating workstation";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		VectorAbortDraw(vcl);
-		return NhlFATAL;
-	}
-	vcp->wk_active = True;
-	if (vcl->view.use_segments) {
-		subret = _NhltfInitSegment((NhlLayer)vcl,vcp->trans_obj,
-					    &vcp->draw_dat,entry_name);
-		if ((ret = MIN(subret,ret)) < NhlWARNING) {
-			VectorAbortDraw(vcl);
-			return ret;
-		}
-		vcp->seg_open = True;
-	}
-
-	subret = vcDraw((NhlVectorPlotLayer) layer,NhlDRAW,entry_name);
 	Vcp = NULL;
 	return MIN(subret,ret);
 }
@@ -3360,6 +3202,7 @@ static NhlErrorTypes VectorPlotPostDraw
 	NhlVectorPlotLayerPart	*vcp = &vcl->vectorplot;
 	NhlTransformLayerPart	*tfp = &vcl->trans;
 	NhlString		e_text,entry_name = "VectorPostPlotDraw";
+        NhlBoolean		seg_draw;
 
 	Vcp = vcp;
 	Vcl = vcl;
@@ -3374,42 +3217,23 @@ static NhlErrorTypes VectorPlotPostDraw
 		return ret;
 	}
 
-	subret = vcUpdateTrans(vcl,entry_name);
-	if ((ret = MIN(subret,ret)) < NhlWARNING) {
-		VectorAbortDraw(vcl);
-		return ret;
-	}
-	if (vcl->view.use_segments && ! vcp->new_draw_req) {
-		ret = _NhltfDrawSegment((NhlLayer)vcl,vcp->trans_obj,
-					vcp->postdraw_dat,entry_name);
-		Vcp = NULL;
-		return ret;
-	}
+        seg_draw = vcl->view.use_segments && ! vcp->new_draw_req;
+        
 
 	if (vcp->vector_order == NhlPOSTDRAW) {
-
-		subret = _NhlActivateWorkstation(vcl->base.wkptr);
-		if ((ret = MIN(subret,ret)) < NhlWARNING) {
-			e_text = "%s: Error activating workstation";
-			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-			VectorAbortDraw(vcl);
-			return NhlFATAL;
+                subret = vcUpdateTrans(vcl,seg_draw,entry_name);
+                if ((ret = MIN(subret,ret)) < NhlWARNING) {
+                        VectorAbortDraw(vcl);
+                        return ret;
+                }
+		if (seg_draw) {
+			ret = _NhltfDrawSegment((NhlLayer)vcl,vcp->trans_obj,
+						vcp->postdraw_dat,entry_name);
 		}
-		vcp->wk_active = True;
-
-		if (vcl->view.use_segments) {
-			subret = _NhltfInitSegment((NhlLayer)vcl,
-					    vcp->trans_obj,
-					    &vcp->postdraw_dat,entry_name);
-			if ((ret = MIN(subret,ret)) < NhlWARNING) {
-				VectorAbortDraw(vcl);
-				return ret;
-			}
-			vcp->seg_open = True;
+		else {
+			ret = vcDraw((NhlVectorPlotLayer) layer,
+				     NhlPOSTDRAW,entry_name);
 		}
-
-		ret = vcDraw((NhlVectorPlotLayer) layer,
-			     NhlPOSTDRAW,entry_name);
 	}
 
 	vcp->new_draw_req = False;
@@ -3470,12 +3294,37 @@ static NhlErrorTypes vcDraw
 	float			vfr,vlc,vrl,vhc,vrm;
 	float			*u_data,*v_data,*p_data;
         NhlBoolean		all_mono = False;
-	NhlBoolean		low_level_log;
 
+	subret = _NhlActivateWorkstation(vcl->base.wkptr);
+	if ((ret = MIN(subret,ret)) < NhlWARNING) {
+		e_text = "%s: Error activating workstation";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		VectorAbortDraw(vcl);
+		return NhlFATAL;
+	}
+	vcp->wk_active = True;
 
-	low_level_log = vcp->do_low_level_log &&
-		(tfp->overlay_status != _tfCurrentOverlayMember || 
-		 tfp->overlay_trans_obj == NULL);
+	if (vcl->view.use_segments) {
+                NhlTransDat **trans_dat_pp;
+                switch (order) {
+                    case NhlPREDRAW:
+                            trans_dat_pp = &vcp->predraw_dat;
+                            break;
+                    case NhlDRAW:
+                            trans_dat_pp = &vcp->draw_dat;
+                            break;
+                    case NhlPOSTDRAW:
+                            trans_dat_pp = &vcp->postdraw_dat;
+                            break;
+                }
+		subret = _NhltfInitSegment((NhlLayer)vcl,vcp->trans_obj,
+					    trans_dat_pp,entry_name);
+		if ((ret = MIN(subret,ret)) < NhlWARNING) {
+			VectorAbortDraw(vcl);
+			return ret;
+		}
+		vcp->seg_open = True;
+	}
 
 	c_vvrset();
 	
@@ -3498,17 +3347,17 @@ static NhlErrorTypes vcDraw
 		break;
 	}
 
-	if (low_level_log && vcp->x_log) {
-		c_vvsetr("XC1",(float)vcp->vfp->x_start);
-		c_vvsetr("XCM",(float)vcp->vfp->x_end);
+	if (vcp->low_level_log_on && tfp->x_axis_type == NhlLOGAXIS) {
+		c_vvsetr("XC1",(float)tfp->data_xstart);
+		c_vvsetr("XCM",(float)tfp->data_xend);
 	}
 	else {
 		c_vvsetr("XC1",(float)vcp->xc1);
 		c_vvsetr("XCM",(float)vcp->xcm);
 	}
-	if (low_level_log && vcp->y_log) {
-		c_vvsetr("YC1",(float)vcp->vfp->y_start);
-		c_vvsetr("YCN",(float)vcp->vfp->y_end);
+	if (vcp->low_level_log_on && tfp->y_axis_type == NhlLOGAXIS) {
+		c_vvsetr("YC1",(float)tfp->data_ystart);
+		c_vvsetr("YCN",(float)tfp->data_yend);
 	}
 	else {
 		c_vvsetr("YC1",(float)vcp->yc1);
@@ -3821,13 +3670,14 @@ static NhlErrorTypes vcDraw
 		vcp->seg_open = False;
 	}
 
-	if (low_level_log) {
-		subret = NhlVASetValues(vcp->trans_obj->base.id,
+	if (vcp->low_level_log_on) {
+		subret = NhlVASetValues(tfp->trans_obj->base.id,
 					NhlNtrLowLevelLogOn,False,NULL);
 		if ((ret = MIN(ret,subret)) < NhlWARNING) {
 			VectorAbortDraw(vcl);
 			return(ret);
 		}
+                vcp->low_level_log_on = False;
 	}
         subret = _NhlDeactivateWorkstation(vcl->base.wkptr);
 	vcp->wk_active = False;
@@ -3836,163 +3686,107 @@ static NhlErrorTypes vcDraw
 	return MIN(subret,ret);
 }
 
-
 /*
- * Function:	SetCoordBounds
+ * Function:	InitCoordBounds
  *
- * Description: Sets the max and min coord bounds
+ * Description: 
  *
- * In Args:	vcp	pointer to VectorPlot layer part
- *		ctype	which coordinate
- *		count	length of irregular coord array if > 0
- *                      if 0 indicates a non-irregular transformation
- *		entry_name the high level entry point
+ * In Args:
  *
  * Out Args:	NONE
  *
- * Return Values:	Error Conditions
+ * Return Values:	ErrorConditions
  *
- * Side Effects:   A number of fields in the VectorPlotLayerPart are set
+ * Side Effects:
  */
-
-static NhlErrorTypes SetCoordBounds
+/*ARGSUSED*/
+static NhlErrorTypes InitCoordBounds
 #if	NhlNeedProto
 (
-	NhlVectorPlotLayerPart	*vcp,
-	vcCoord			ctype,
-	int			count,
-	NhlString		entry_name
+        NhlVectorPlotLayer	vcl,
+        NhlVectorPlotLayer	ovcl,
+	char			*entry_name
 )
-#else 
-(vcp,ctype,count,entry_name)
-	NhlVectorPlotLayerPart	*vcp;
-	vcCoord			ctype;
-	int			count;
-	NhlString		entry_name;
+#else
+(vcl,ovcl,entry_name)
+        NhlVectorPlotLayer	vcl;
+        NhlVectorPlotLayer	ovcl;
+	char			*entry_name;
 #endif
 {
 	NhlErrorTypes	ret = NhlNOERROR;
+        NhlVectorPlotLayerPart	*vcp = &vcl->vectorplot;
+        NhlTransformLayerPart	*tfp = &vcl->trans;
 	char		*e_text;
-	float		tmin,tmax,t;
-	NhlBoolean	rev;
+	NhlBoolean	x_data_reversed,y_data_reversed;
 
-	if (ctype == vcXCOORD) {
-
-		rev = vcp->vfp->x_start > vcp->vfp->x_end;
-		if (count == 0) {
-                        if (! rev) {
-                                tmin = MAX(vcp->vfp->x_start,vcp->x_min); 
-                                tmax = MIN(vcp->vfp->x_end,vcp->x_max);
-                        }
-                        else {
-                                tmin = MAX(vcp->vfp->x_end,vcp->x_min); 
-                                tmax = MIN(vcp->vfp->x_start,vcp->x_max);
-                        }
-                        vcp->xlb = tmin;
-                        vcp->xub = tmax;
-
-			vcp->xc1 = vcp->vfp->x_start;
-			vcp->xcm = vcp->vfp->x_end;
+	vcp->do_low_level_log = False;
+        vcp->use_irr_trans = False;
+        
+	if (! vcp->data_init) {
+                tfp->data_xstart = tfp->data_xend = 0.0;
+                tfp->data_ystart = tfp->data_yend = 0.0;
+                
+		if (! tfp->x_reverse) {
+			vcp->xlb = vcp->xc1 = tfp->x_min;
+			vcp->xub = vcp->xcm = tfp->x_max;
 		}
 		else {
-                        if (! rev) {
-                                tmin = MIN(vcp->vfp->x_end,
-                                           MAX(vcp->vfp->x_start,vcp->x_min)); 
-                                tmax = MAX(vcp->vfp->x_start,
-                                           MIN(vcp->vfp->x_end,vcp->x_max));
-                        }
-                        else {
-                                tmin = MIN(vcp->vfp->x_start,
-                                           MAX(vcp->vfp->x_end,vcp->x_min));
-                                tmax = MAX(vcp->vfp->x_end,
-                                           MIN(vcp->vfp->x_start,vcp->x_max));
-                        }
-                        if (tmin > tmax) {
-                                t = tmin;
-                                tmin = tmax;
-                                tmax = t;
-                        }
-                        vcp->xlb = tmin;
-                        vcp->xub = tmax;
-			vcp->xc1 = 0;
-			vcp->xcm = count - 1;
-
-			if (vcp->x_min < tmin || vcp->x_min > tmax) {
-				e_text = 
-"%s: irregular transformation requires %s to be within data coordinate range: resetting";
-				NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
-					  entry_name,NhlNtrXMinF);
-				ret = MIN(ret,NhlWARNING);
-				vcp->x_min = tmin;
-			}
-			if (vcp->x_max > tmax || vcp->x_max < tmin) {
-				e_text = 
-"%s: irregular transformation requires %s to be within data coordinate range: resetting";
-				NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
-					  entry_name,NhlNtrXMaxF);
-				ret = MIN(ret,NhlWARNING);
-				vcp->x_max = tmax;
-			}
+			vcp->xub = vcp->xc1 = tfp->x_max;
+			vcp->xlb = vcp->xcm = tfp->x_min;
 		}
-	}
-	else if (ctype == vcYCOORD) {
-
-		rev = vcp->vfp->y_start > vcp->vfp->y_end;
-		if (count == 0) {
-                        if (! rev) {
-                                tmin = MAX(vcp->vfp->y_start,vcp->y_min); 
-                                tmax = MIN(vcp->vfp->y_end,vcp->y_max);
-                        }
-                        else {
-                                tmin = MAX(vcp->vfp->y_end,vcp->y_min); 
-                                tmax = MIN(vcp->vfp->y_start,vcp->y_max);
-                        }
-                        vcp->ylb = tmin;
-                        vcp->yub = tmax;
-			vcp->yc1 = vcp->vfp->y_start;
-			vcp->ycn = vcp->vfp->y_end;
+		if (! tfp->y_reverse) {
+			vcp->ylb = vcp->yc1 = tfp->y_min;
+			vcp->yub = vcp->ycn = tfp->y_max;
 		}
 		else {
-                        if (! rev) {
-                                tmin = MIN(vcp->vfp->y_end,
-                                           MAX(vcp->vfp->y_start,vcp->y_min)); 
-                                tmax = MAX(vcp->vfp->y_start,
-                                           MIN(vcp->vfp->y_end,vcp->y_max));
-                        }
-                        else {
-                                tmin = MIN(vcp->vfp->y_start,
-                                           MAX(vcp->vfp->y_end,vcp->y_min));
-                                tmax = MAX(vcp->vfp->y_end,
-                                           MIN(vcp->vfp->y_start,vcp->y_max));
-                        }
-                        if (tmin > tmax) {
-                                t = tmin;
-                                tmin = tmax;
-                                tmax = t;
-                        }
-                        vcp->ylb = tmin;
-                        vcp->yub = tmax;
-			vcp->yc1 = 0;
-			vcp->ycn = count - 1;
-                        
-			if (vcp->y_min < tmin || vcp->y_min > tmax) {
-				e_text = 
-"%s: irregular transformation requires %s to be within data coordinate range: resetting";
-				NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
-					  entry_name,NhlNtrYMinF);
-				ret = MIN(ret,NhlWARNING);
-				vcp->y_min = tmin;
-			}
-			if (vcp->y_max > tmax || vcp->y_max < tmin) {
-				e_text = 
-"%s: irregular transformation requires %s to be within data coordinate range: resetting";
-				NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
-					  entry_name,NhlNtrYMaxF);
-				ret = MIN(ret,NhlWARNING);
-				vcp->y_max = tmax;
-			}
+			vcp->yub = vcp->yc1 = tfp->y_max;
+			vcp->ylb = vcp->ycn = tfp->y_min;
 		}
+                return ret;
 	}
+        
+	x_data_reversed = vcp->vfp->x_start > vcp->vfp->x_end;
+	y_data_reversed = vcp->vfp->y_start > vcp->vfp->y_end;
+
+        tfp->data_xstart = vcp->vfp->x_start;
+        tfp->data_xend = vcp->vfp->x_end;
+        tfp->data_ystart = vcp->vfp->y_start;
+        tfp->data_yend = vcp->vfp->y_end;
+        
+        if (vcp->vfp->x_arr || vcp->vfp->y_arr)
+                vcp->use_irr_trans = True;
+        
+        if (vcp->use_irr_trans) {
+                if (vcp->vfp->x_arr && ! tfp->x_axis_type_set) {
+			if (! ovcl || (vcp->data_changed  &&
+			    (vcp->vfp->changed & _NhlsfXARR_CHANGED)))
+				tfp->x_axis_type = NhlIRREGULARAXIS;
+		}
+                if (! vcp->vfp->x_arr && tfp->x_axis_type == NhlIRREGULARAXIS)
+                        tfp->x_axis_type = NhlLINEARAXIS;
+                if (vcp->vfp->x_arr && tfp->x_axis_type != NhlIRREGULARAXIS) {
+                        tfp->data_xstart = vcp->vfp->ix_start;
+                        tfp->data_xend = vcp->vfp->ix_end;
+			x_data_reversed = False;
+                }
+                if (vcp->vfp->y_arr && ! tfp->y_axis_type_set) {
+			if (! ovcl || (vcp->data_changed  &&
+			    (vcp->vfp->changed & _NhlsfYARR_CHANGED)))
+				tfp->y_axis_type = NhlIRREGULARAXIS;
+		}
+                if (! vcp->vfp->y_arr && tfp->y_axis_type == NhlIRREGULARAXIS)
+                        tfp->y_axis_type = NhlLINEARAXIS;
+                if (vcp->vfp->y_arr && tfp->y_axis_type != NhlIRREGULARAXIS) {
+                        tfp->data_ystart = vcp->vfp->iy_start;
+                        tfp->data_yend = vcp->vfp->iy_end;
+			y_data_reversed = False;
+                }
+        }
+        ret = _NhltfCheckCoordBounds
+                ((NhlTransformLayer)vcl,(NhlTransformLayer)ovcl,
+                 vcp->use_irr_trans,entry_name);
+        
 	return ret;
 }
 
@@ -4001,8 +3795,8 @@ static NhlErrorTypes SetCoordBounds
  *
  * Description: Sets up a LogLinear transformation object.
  *
- * In Args:	xnew	new instance record
- *		xold	old instance record if not initializing
+ * In Args:	vcnew	new instance record
+ *		vcold	old instance record if not initializing
  *		init	true if initialization
  *
  * Out Args:	NONE
@@ -4033,35 +3827,16 @@ static NhlErrorTypes SetUpLLTransObj
 	NhlTransformLayerPart	*tfp = &(vcnew->trans);
 	char			buffer[_NhlMAXRESNAMLEN];
 	int			tmpid;
-        NhlSArg			sargs[16];
+        NhlSArg			sargs[32];
         int			nargs = 0;
-	NhlBoolean		yrev = False,xrev = False,oyrev,oxrev;
-#if 0
-	float			x,y,xr,yb;
-#endif
 
-	entry_name = (init) ? InitName : SetValuesName;
-
-#if 0
-	x = vcnew->view.x;
-	y = vcnew->view.y;
-	xr = x + vcnew->view.width;
-	yb = y - vcnew->view.height;
-	if (x < 0.0 || y > 1.0 || xr > 1.0 || yb < 0.0) {
-		e_text = "%s: View extent is outside NDC range: constraining";
-		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
-		ret = MIN(ret,NhlWARNING);
-		x = MAX(x,0.0);
-		xr = MIN(xr,1.0);
-		y = MIN(y,1.0);
-		yb = MAX(yb,0.0);
-		_NhlInternalSetView((NhlViewLayer) vcnew,x,y,
-				    xr - x, y - yb, vcnew->view.keep_aspect);
-	}
-#endif
+	entry_name = (init) ? "VectorPlotInitialize" : "VectorPlotSetValues";
+        
 	if (init)
 		tfp->trans_obj = NULL;
-	else if (ovcp->use_irr_trans && tfp->trans_obj != NULL) {
+	if (tfp->trans_obj &&
+                 tfp->trans_obj->base.layer_class->base_class.class_name !=
+                 NhllogLinTransObjClass->base_class.class_name) {
 		subret = NhlDestroy(tfp->trans_obj->base.id);
 		if ((ret = MIN(ret,subret)) < NhlWARNING) {
 			e_text = "%s: Error destroying irregular trans object";
@@ -4070,49 +3845,27 @@ static NhlErrorTypes SetUpLLTransObj
 		}
 		tfp->trans_obj = NULL;
 	}
-
-	if (vcp->data_init) {
-		subret = SetCoordBounds(vcp,vcXCOORD,0,entry_name);
-		if ((ret = MIN(subret,ret)) < NhlWARNING)
-			return ret;
-		subret = SetCoordBounds(vcp,vcYCOORD,0,entry_name);
-		if ((ret = MIN(subret,ret)) < NhlWARNING)
-			return ret;
-		xrev = vcp->vfp->x_start > vcp->vfp->x_end;
-		yrev = vcp->vfp->y_start > vcp->vfp->y_end;
-	}
-
+        
+        if (tfp->x_reverse_set)
+                NhlSetSArg(&sargs[nargs++],
+                           NhlNtrXReverse,tfp->x_reverse);
+        if (tfp->y_reverse_set)
+                NhlSetSArg(&sargs[nargs++],
+                           NhlNtrYReverse,tfp->y_reverse);
+        
 	if (tfp->trans_obj == NULL) {
 
-		vcp->update_req = True;
 		vcp->new_draw_req = True;
-		NhlSetSArg(&sargs[nargs++],NhlNtrXLog,vcp->x_log);
-		NhlSetSArg(&sargs[nargs++],NhlNtrYLog,vcp->y_log);
-
-		NhlSetSArg(&sargs[nargs++],NhlNtrXMinF,vcp->x_min);
-		NhlSetSArg(&sargs[nargs++],NhlNtrXMaxF,vcp->x_max);
-		NhlSetSArg(&sargs[nargs++],NhlNtrYMinF,vcp->y_min);
-		NhlSetSArg(&sargs[nargs++],NhlNtrYMaxF,vcp->y_max);
-
-		if (vcp->x_min_set && vcp->x_max_set)
-			NhlSetSArg(&sargs[nargs++],
-				   NhlNtrXReverse,vcp->x_reverse);
-		else {
-			xrev = (xrev && vcp->x_reverse) || 
-				(! xrev && ! vcp->x_reverse) ? False : True;
-			NhlSetSArg(&sargs[nargs++],NhlNtrXReverse,xrev);
-		}
-		if (vcp->y_min_set && vcp->y_max_set)
-			NhlSetSArg(&sargs[nargs++],
-				   NhlNtrYReverse,vcp->y_reverse);
-		else {
-			yrev = (yrev && vcp->y_reverse) || 
-				(! yrev && ! vcp->y_reverse) ? False : True;
-			NhlSetSArg(&sargs[nargs++],NhlNtrYReverse,yrev);
-		}
+                vcp->update_req = True;
+		NhlSetSArg(&sargs[nargs++],NhlNtrXLog,tfp->x_log);
+		NhlSetSArg(&sargs[nargs++],NhlNtrYLog,tfp->y_log);
+		NhlSetSArg(&sargs[nargs++],NhlNtrXMinF,tfp->x_min);
+		NhlSetSArg(&sargs[nargs++],NhlNtrXMaxF,tfp->x_max);
+		NhlSetSArg(&sargs[nargs++],NhlNtrYMinF,tfp->y_min);
+		NhlSetSArg(&sargs[nargs++],NhlNtrYMaxF,tfp->y_max);
+                
 		sprintf(buffer,"%s",vcnew->base.name);
 		strcat(buffer,".Trans");
-
 		subret = NhlALCreate(&tmpid,buffer,
 				     NhllogLinTransObjClass,
 				     vcnew->base.id,sargs,nargs);
@@ -4126,58 +3879,41 @@ static NhlErrorTypes SetUpLLTransObj
 			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 			return NhlFATAL;
 		}
+	}
+        else {
+                if (tfp->x_min != vcold->trans.x_min)
+                        NhlSetSArg(&sargs[nargs++],NhlNtrXMinF,tfp->x_min);
+                if (tfp->x_max != vcold->trans.x_max)
+                        NhlSetSArg(&sargs[nargs++],NhlNtrXMaxF,tfp->x_max);
+                if (tfp->y_min != vcold->trans.y_min)
+                        NhlSetSArg(&sargs[nargs++],NhlNtrYMinF,tfp->y_min);
+                if (tfp->y_max != vcold->trans.y_max)
+                        NhlSetSArg(&sargs[nargs++],NhlNtrYMaxF,tfp->y_max);
+                if (tfp->x_log != vcold->trans.x_log)
+                        NhlSetSArg(&sargs[nargs++],NhlNtrXLog,tfp->x_log);
+                if (tfp->y_log != vcold->trans.y_log)
+                        NhlSetSArg(&sargs[nargs++],NhlNtrYLog,tfp->y_log);
 
-		return ret;
-	}
+                subret = NhlALSetValues(tfp->trans_obj->base.id,sargs,nargs);
+                if (nargs > 0) {
+                        vcp->new_draw_req = True;
+                        vcp->update_req = True;
+                }
+        }
+        
+        NhlVAGetValues(tfp->trans_obj->base.id,
+                       NhlNtrXReverse,&tfp->x_reverse,
+                       NhlNtrYReverse,&tfp->y_reverse,
+                       NhlNtrXLog,&tfp->x_log,
+                       NhlNtrYLog,&tfp->y_log,
+                       NhlNtrXMinF,&tfp->x_min,
+                       NhlNtrXMaxF,&tfp->x_max,
+                       NhlNtrYMinF,&tfp->y_min,
+                       NhlNtrYMaxF,&tfp->y_max,
+                       NULL);
+	tfp->x_axis_type = tfp->x_log ? NhlLOGAXIS : NhlLINEARAXIS;
+	tfp->y_axis_type = tfp->y_log ? NhlLOGAXIS : NhlLINEARAXIS;
 
-	if (vcp->x_min != ovcp->x_min)
-		NhlSetSArg(&sargs[nargs++],NhlNtrXMinF,vcp->x_min);
-	if (vcp->x_max != ovcp->x_max)
-		NhlSetSArg(&sargs[nargs++],NhlNtrXMaxF,vcp->x_max);
-	if (vcp->y_min != ovcp->y_min)
-		NhlSetSArg(&sargs[nargs++],NhlNtrYMinF,vcp->y_min);
-	if (vcp->y_max != ovcp->y_max)
-		NhlSetSArg(&sargs[nargs++],NhlNtrYMaxF,vcp->y_max);
-
-	if (vcp->ovfp == NULL) {
-		oxrev = False;
-		oyrev = False;
-	}
-	else {
-		oxrev = vcp->ovfp->x_start > vcp->ovfp->x_end;
-		oyrev = vcp->ovfp->y_start > vcp->ovfp->y_end;
-	}
-
-	if (vcp->x_reverse != ovcp->x_reverse || oxrev != xrev) {
-		if (vcp->x_min_set && vcp->x_max_set)
-			NhlSetSArg(&sargs[nargs++],
-				   NhlNtrXReverse,vcp->x_reverse);
-		else {
-			xrev = (xrev && vcp->x_reverse) || 
-				(! xrev && ! vcp->x_reverse) ? False : True;
-			NhlSetSArg(&sargs[nargs++],NhlNtrXReverse,xrev);
-		}
-	}
-	if (vcp->y_reverse != ovcp->y_reverse || oyrev != yrev) {
-		if (vcp->y_min_set && vcp->y_max_set)
-			NhlSetSArg(&sargs[nargs++],
-				   NhlNtrYReverse,vcp->y_reverse);
-		else {
-			yrev = (yrev && vcp->y_reverse) || 
-				(! yrev && ! vcp->y_reverse) ? False : True;
-			NhlSetSArg(&sargs[nargs++],NhlNtrYReverse,yrev);
-		}
-	}
-	if (vcp->x_log != ovcp->x_log)
-		NhlSetSArg(&sargs[nargs++],NhlNtrXLog,vcp->x_log);
-	if (vcp->y_log != ovcp->y_log)
-		NhlSetSArg(&sargs[nargs++],NhlNtrYLog,vcp->y_log);
-
-	subret = NhlALSetValues(tfp->trans_obj->base.id,sargs,nargs);
-	if (nargs > 0) {
-		vcp->new_draw_req = True;
-		vcp->update_req = True;
-	}
 	return MIN(ret,subret);
 
 }
@@ -4219,17 +3955,16 @@ static NhlErrorTypes SetUpIrrTransObj
 	NhlTransformLayerPart	*tfp = &(vcnew->trans);
 	char			buffer[_NhlMAXRESNAMLEN];
 	int			tmpid;
-        NhlSArg			sargs[16];
+        NhlSArg			sargs[32];
         int			nargs = 0;
-	NhlBoolean		x_irr,y_irr;
-	NhlBoolean		xrev,yrev,oxrev,oyrev;
-	int			count;
 
-	entry_name = (init) ? InitName : SetValuesName;
+	entry_name = (init) ? "VectorPlotInitialize" : "VectorPlotSetValues";
 
-	if (! init &&
-	    ! ovcp->use_irr_trans && 
-	    tfp->trans_obj != NULL) {
+	if (init)
+		tfp->trans_obj = NULL;
+	if (tfp->trans_obj &&
+            tfp->trans_obj->base.layer_class->base_class.class_name !=
+	    NhlirregularTransObjClass->base_class.class_name) {
 		subret = NhlDestroy(tfp->trans_obj->base.id);
 		if ((ret = MIN(ret,subret)) < NhlWARNING) {
 			e_text = "%s: Error destroying irregular trans object";
@@ -4238,123 +3973,35 @@ static NhlErrorTypes SetUpIrrTransObj
 		}
 		tfp->trans_obj = NULL;
 	}
-
 	if (! vcp->data_init) return ret;
-
-	x_irr = vcp->vfp->x_arr == NULL ? False : True;
-	y_irr = vcp->vfp->y_arr == NULL ? False : True;
-	xrev = vcp->vfp->x_start > vcp->vfp->x_end;
-	yrev = vcp->vfp->y_start > vcp->vfp->y_end;
-	if (! x_irr && ! y_irr) {
-		e_text = "%s: Internal inconsistency setting irregular trans";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return NhlFATAL;
-	}
-
-	if (x_irr && vcp->x_log) {
-		e_text = 
-"%s: X Axis cannot be logarithmic and irregular simultaneously: turning %s off";
-		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,NhlNtrXLog);
-		vcp->x_log = False;
-		ret = MIN(NhlWARNING,ret);
-	}
-	if (y_irr && vcp->y_log) {
-		e_text = 
-"%s: Y Axis cannot be logarithmic and irregular simultaneously: turning %s off";
-		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,NhlNtrYLog);
-		vcp->y_log = False;
-		ret = MIN(NhlWARNING,ret);
-	}
-
-	if (vcp->x_log || vcp->y_log)
-		vcp->do_low_level_log = True;
-
-	if (init || tfp->trans_obj == NULL ||
-	    vcp->ovfp == NULL || ! ovcp->data_init ||
-	    vcp->vfp->x_arr != vcp->ovfp->x_arr ||
-	    vcp->vfp->x_start != vcp->ovfp->x_start ||
-	    vcp->vfp->x_end != vcp->ovfp->x_end ||
-	    vcp->x_min != ovcp->x_min ||
-	    vcp->x_max != ovcp->x_max ||
-	    vcp->x_log != ovcp->x_log) {
-
-		if (x_irr) {
-			NhlSetSArg(&sargs[nargs++],NhlNtrXCoordPoints,
-				   vcp->vfp->x_arr);
-			count = vcp->vfp->x_arr->len_dimensions[0];
-			NhlSetSArg(&sargs[nargs++],
-				   NhlNtrXAxisType,NhlIRREGULARAXIS);
-		}
-		else {
-			if (vcp->x_log)
-				NhlSetSArg(&sargs[nargs++],
-					   NhlNtrXAxisType,NhlLOGAXIS);
-			else
-				NhlSetSArg(&sargs[nargs++],
-					   NhlNtrXAxisType,NhlLINEARAXIS);
-			count = 3;
-		}
-		subret = SetCoordBounds(vcp,vcXCOORD,count,entry_name);
-		if ((ret = MIN(subret,ret)) < NhlWARNING)
-			return ret;
-		NhlSetSArg(&sargs[nargs++],NhlNtrXMinF,vcp->x_min);
-		NhlSetSArg(&sargs[nargs++],NhlNtrXMaxF,vcp->x_max);
-	}
-
-	if (init || tfp->trans_obj == NULL ||
-	    vcp->ovfp == NULL || ! ovcp->data_init ||
-	    vcp->vfp->y_arr != vcp->ovfp->y_arr ||
-	    vcp->vfp->y_start != vcp->ovfp->y_start ||
-	    vcp->vfp->y_end != vcp->ovfp->y_end ||
-	    vcp->y_min != ovcp->y_min ||
-	    vcp->y_max != ovcp->y_max ||
-	    vcp->y_log != ovcp->y_log) {
-
-		if (y_irr) {
-			NhlSetSArg(&sargs[nargs++],NhlNtrYCoordPoints,
-				   vcp->vfp->y_arr);
-			count = vcp->vfp->y_arr->len_dimensions[0];
-			NhlSetSArg(&sargs[nargs++],
-				   NhlNtrYAxisType,NhlIRREGULARAXIS);
-		}
-		else {
-			if (vcp->y_log)
-				NhlSetSArg(&sargs[nargs++],
-					   NhlNtrYAxisType,NhlLOGAXIS);
-			else
-				NhlSetSArg(&sargs[nargs++],
-					   NhlNtrYAxisType,NhlLINEARAXIS);
-			count = 3;
-		}
-		subret = SetCoordBounds(vcp,vcYCOORD,count,entry_name);
-		if ((ret = MIN(subret,ret)) < NhlWARNING)
-			return ret;
-
-		NhlSetSArg(&sargs[nargs++],NhlNtrYMinF,vcp->y_min);
-		NhlSetSArg(&sargs[nargs++],NhlNtrYMaxF,vcp->y_max);
-	}
+        
+        if (tfp->x_reverse_set)
+                NhlSetSArg(&sargs[nargs++],NhlNtrXReverse,tfp->x_reverse);
+        if (tfp->y_reverse_set)
+                NhlSetSArg(&sargs[nargs++],NhlNtrYReverse,tfp->y_reverse);
 
 	if (init || tfp->trans_obj == NULL) {
 
-		vcp->update_req = True;
 		vcp->new_draw_req = True;
-
-		if (vcp->x_min_set && vcp->x_max_set)
-			NhlSetSArg(&sargs[nargs++],
-				   NhlNtrXReverse,vcp->x_reverse);
-		else {
-			xrev = (xrev && vcp->x_reverse) || 
-				(! xrev && ! vcp->x_reverse) ? False : True;
-			NhlSetSArg(&sargs[nargs++],NhlNtrXReverse,xrev);
-		}
-		if (vcp->y_min_set && vcp->y_max_set)
-			NhlSetSArg(&sargs[nargs++],
-				   NhlNtrYReverse,vcp->y_reverse);
-		else {
-			yrev = (yrev && vcp->y_reverse) || 
-				(! yrev && ! vcp->y_reverse) ? False : True;
-			NhlSetSArg(&sargs[nargs++],NhlNtrYReverse,yrev);
-		}
+                vcp->update_req = True;
+                
+		if (vcp->vfp->x_arr)
+			NhlSetSArg(&sargs[nargs++],NhlNtrXCoordPoints,
+				   vcp->vfp->x_arr);
+		if (vcp->vfp->y_arr)
+			NhlSetSArg(&sargs[nargs++],NhlNtrYCoordPoints,
+				   vcp->vfp->y_arr);
+                
+                NhlSetSArg(&sargs[nargs++],NhlNtrXAxisType,tfp->x_axis_type);
+                NhlSetSArg(&sargs[nargs++],NhlNtrYAxisType,tfp->y_axis_type);
+		NhlSetSArg(&sargs[nargs++],NhlNtrXMinF,tfp->x_min);
+		NhlSetSArg(&sargs[nargs++],NhlNtrXMaxF,tfp->x_max);
+		NhlSetSArg(&sargs[nargs++],NhlNtrYMinF,tfp->y_min);
+		NhlSetSArg(&sargs[nargs++],NhlNtrYMaxF,tfp->y_max);
+                NhlSetSArg(&sargs[nargs++],NhlNtrDataXStartF,tfp->data_xstart);
+                NhlSetSArg(&sargs[nargs++],NhlNtrDataXEndF,tfp->data_xend);
+                NhlSetSArg(&sargs[nargs++],NhlNtrDataYStartF,tfp->data_ystart);
+                NhlSetSArg(&sargs[nargs++],NhlNtrDataYEndF,tfp->data_yend);
                 NhlSetSArg(&sargs[nargs++],NhlNtrXTensionF,vcp->x_tension);
                 NhlSetSArg(&sargs[nargs++],NhlNtrYTensionF,vcp->y_tension);
                 
@@ -4368,54 +4015,86 @@ static NhlErrorTypes SetUpIrrTransObj
 		ret = MIN(subret,ret);
 
 		tfp->trans_obj = _NhlGetLayer(tmpid);
-
 		if(tfp->trans_obj == NULL){
 			e_text = "%s: Error creating transformation object";
 			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 			return NhlFATAL;
 		}
+	}
+        else {
+                if (vcp->data_changed && vcp->vfp->x_arr &&
+		    (vcp->vfp->changed & _NhlvfXARR_CHANGED))
+                        NhlSetSArg(&sargs[nargs++],
+                                   NhlNtrXCoordPoints,vcp->vfp->x_arr);
+                if (vcp->data_changed && vcp->vfp->y_arr &&
+		    (vcp->vfp->changed & _NhlvfYARR_CHANGED))
+                        NhlSetSArg(&sargs[nargs++],
+                                   NhlNtrYCoordPoints,vcp->vfp->y_arr);
+        
+                if (tfp->x_axis_type != vcold->trans.x_axis_type)        
+                        NhlSetSArg(&sargs[nargs++],
+                                   NhlNtrXAxisType,tfp->x_axis_type);
+                if (tfp->y_axis_type != vcold->trans.y_axis_type)        
+                        NhlSetSArg(&sargs[nargs++],
+                                   NhlNtrYAxisType,tfp->y_axis_type);
+        
+                if (tfp->x_min != vcold->trans.x_min)
+                        NhlSetSArg(&sargs[nargs++],NhlNtrXMinF,tfp->x_min);
+                if (tfp->x_max != vcold->trans.x_max)
+                        NhlSetSArg(&sargs[nargs++],NhlNtrXMaxF,tfp->x_max);
+                if (tfp->y_min != vcold->trans.y_min)
+                        NhlSetSArg(&sargs[nargs++],NhlNtrYMinF,tfp->y_min);
+                if (tfp->y_max != vcold->trans.y_max)
+                        NhlSetSArg(&sargs[nargs++],NhlNtrYMaxF,tfp->y_max);
+        
+                if (tfp->data_xstart != vcold->trans.data_xstart)
+                        NhlSetSArg(&sargs[nargs++],
+                                   NhlNtrDataXStartF,tfp->data_xstart);
+                if (tfp->data_xend != vcold->trans.data_xend)
+                        NhlSetSArg(&sargs[nargs++],
+                                   NhlNtrDataXEndF,tfp->data_xend);
+                if (tfp->data_ystart != vcold->trans.data_ystart)
+                        NhlSetSArg(&sargs[nargs++],
+                                   NhlNtrDataYStartF,tfp->data_ystart);
+                if (tfp->data_yend != vcold->trans.data_yend)
+                        NhlSetSArg(&sargs[nargs++],
+                                   NhlNtrDataYEndF,tfp->data_yend);
+        
+                if (vcp->x_tension != ovcp->x_tension)
+                        NhlSetSArg(&sargs[nargs++],
+                                   NhlNtrXTensionF,vcp->x_tension);
+                if (vcp->y_tension != ovcp->y_tension)
+                        NhlSetSArg(&sargs[nargs++],
+                                   NhlNtrYTensionF,vcp->y_tension);
+                subret = NhlALSetValues(tfp->trans_obj->base.id,sargs,nargs);
 
-		return ret;
-	}
+                if (nargs > 0) {
+                        vcp->new_draw_req = True;
+                        vcp->update_req = True;
+                }
+        }
+        
+        NhlVAGetValues(tfp->trans_obj->base.id,
+                       NhlNtrXReverse,&tfp->x_reverse,
+                       NhlNtrYReverse,&tfp->y_reverse,
+                       NhlNtrXAxisType,&tfp->x_axis_type,
+                       NhlNtrYAxisType,&tfp->y_axis_type,
+                       NhlNtrDataXStartF,&tfp->data_xstart,
+                       NhlNtrDataXEndF,&tfp->data_xend,
+                       NhlNtrDataYStartF,&tfp->data_ystart,
+                       NhlNtrDataYEndF,&tfp->data_yend,
+                       NhlNtrXMinF,&tfp->x_min,
+                       NhlNtrXMaxF,&tfp->x_max,
+                       NhlNtrYMinF,&tfp->y_min,
+                       NhlNtrYMaxF,&tfp->y_max,
+                       NULL);
 
-	if (vcp->ovfp == NULL) {
-		oxrev = False;
-		oyrev = False;
-	}
-	else {
-		oxrev = vcp->ovfp->x_start > vcp->ovfp->x_end;
-		oyrev = vcp->ovfp->y_start > vcp->ovfp->y_end;
-	}
-	if (vcp->x_reverse != ovcp->x_reverse || xrev != oxrev) {
-		if (vcp->x_min_set && vcp->x_max_set)
-			NhlSetSArg(&sargs[nargs++],
-				   NhlNtrXReverse,vcp->x_reverse);
-		else {
-			xrev = (xrev && vcp->x_reverse) || 
-				(! xrev && ! vcp->x_reverse) ? False : True;
-			NhlSetSArg(&sargs[nargs++],NhlNtrXReverse,xrev);
-		}
-	}
-	if (vcp->y_reverse != ovcp->y_reverse || yrev != oyrev) {
-		if (vcp->y_min_set && vcp->y_max_set)
-			NhlSetSArg(&sargs[nargs++],
-				   NhlNtrYReverse,vcp->y_reverse);
-		else {
-			yrev = (yrev && vcp->y_reverse) || 
-				(! yrev && ! vcp->y_reverse) ? False : True;
-			NhlSetSArg(&sargs[nargs++],NhlNtrYReverse,yrev);
-		}
-	}
-        if (vcp->x_tension != ovcp->x_tension)
-                NhlSetSArg(&sargs[nargs++],NhlNtrXTensionF,vcp->x_tension);
-        if (vcp->y_tension != ovcp->y_tension)
-                NhlSetSArg(&sargs[nargs++],NhlNtrYTensionF,vcp->y_tension);
-	subret = NhlALSetValues(tfp->trans_obj->base.id,sargs,nargs);
-
-	if (nargs > 0) {
-		vcp->new_draw_req = True;
-		vcp->update_req = True;
-	}
+        tfp->x_log = tfp->x_axis_type == NhlLOGAXIS ? True : False;
+        tfp->y_log = tfp->y_axis_type == NhlLOGAXIS ? True : False;
+       
+        vcp->do_low_level_log = tfp->x_axis_type == NhlLOGAXIS ||
+                tfp->y_axis_type == NhlLOGAXIS ? True : False;
+        
 	return MIN(ret,subret);
 
 }
@@ -6817,13 +6496,6 @@ static NhlErrorTypes    ManageVectorData
 
 	vcp->data_init = True;
 	vcp->data_changed = True;
-	vcp->use_irr_trans = (vcp->vfp->x_arr == NULL &&
-			      vcp->vfp->y_arr == NULL) ? False : True;
-
-	vcnew->trans.data_xmin = MIN(vcp->vfp->x_start,vcp->vfp->x_end);
-	vcnew->trans.data_xmax = MAX(vcp->vfp->x_start,vcp->vfp->x_end);
-	vcnew->trans.data_ymin = MIN(vcp->vfp->y_start,vcp->vfp->y_end);
-	vcnew->trans.data_ymax = MAX(vcp->vfp->y_start,vcp->vfp->y_end);
 
 	return ret;
 }

@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlot.c,v 1.41 1998-02-20 22:41:13 dbrown Exp $
+ *      $Id: StreamlinePlot.c,v 1.42 1998-04-16 03:09:05 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -203,51 +203,9 @@ static NhlResource resources[] = {
          	 _NhlRES_PRIVATE,NULL},
 
 /* Intercepted resources */
-
-	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
-		 Oset(x_min_set),
-		 NhlTImmediate,_NhlUSET((NhlPointer)True),
-         	 _NhlRES_PRIVATE,NULL},
-	{NhlNtrXMinF,NhlCtrXMinF,NhlTFloat,sizeof(float),
-		 Oset(x_min),NhlTProcedure,
-		 _NhlUSET((NhlPointer)_NhlResUnset),_NhlRES_INTERCEPTED,NULL},
-	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
-		 Oset(x_max_set),
-		 NhlTImmediate,_NhlUSET((NhlPointer)True),
-         	 _NhlRES_PRIVATE,NULL},
-	{NhlNtrXMaxF,NhlCtrXMaxF,NhlTFloat,sizeof(float),
-		 Oset(x_max),NhlTProcedure,
-		 _NhlUSET((NhlPointer)_NhlResUnset),_NhlRES_INTERCEPTED,NULL},
-	{ NhlNtrXLog,NhlCtrXLog,NhlTBoolean,sizeof(NhlBoolean),
-		Oset(x_log),NhlTImmediate,_NhlUSET((NhlPointer)False),
-          	_NhlRES_INTERCEPTED,NULL},
-	{ NhlNtrXReverse,NhlCtrXReverse,NhlTBoolean,sizeof(NhlBoolean),
-		Oset(x_reverse),NhlTImmediate,
-          	_NhlUSET((NhlPointer)False),_NhlRES_INTERCEPTED,NULL},
 	{NhlNtrXTensionF,NhlCtrXTensionF,NhlTFloat,sizeof(float),
 		Oset(x_tension),NhlTString,"2.0",
          	_NhlRES_DEFAULT|_NhlRES_INTERCEPTED,NULL},
-	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
-		 Oset(y_min_set),
-		 NhlTImmediate,_NhlUSET((NhlPointer)True),
-         	 _NhlRES_PRIVATE,NULL},
-	{ NhlNtrYMinF,NhlCtrYMinF,NhlTFloat,sizeof(float),
-		Oset(y_min),NhlTProcedure,
-		 _NhlUSET((NhlPointer)_NhlResUnset),_NhlRES_INTERCEPTED,NULL},
-	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
-		 Oset(y_max_set),
-		 NhlTImmediate,_NhlUSET((NhlPointer)True),
-         	 _NhlRES_PRIVATE,NULL},
-	{ NhlNtrYMaxF,NhlCtrYMaxF,NhlTFloat,sizeof(float),
-		Oset(y_max),NhlTProcedure,
-		 _NhlUSET((NhlPointer)_NhlResUnset),_NhlRES_INTERCEPTED,NULL},
-	{ NhlNtrYLog,NhlCtrYLog,NhlTBoolean,sizeof(NhlBoolean),
-		Oset(y_log),NhlTImmediate,_NhlUSET((NhlPointer)False),
-          	_NhlRES_INTERCEPTED,NULL},
-	{ NhlNtrYReverse,NhlCtrYReverse,NhlTBoolean,sizeof(NhlBoolean),
-		Oset(y_reverse),
-		NhlTImmediate,_NhlUSET((NhlPointer)False),
-          	_NhlRES_INTERCEPTED,NULL},
 	{NhlNtrYTensionF,NhlCtrYTensionF,NhlTFloat,sizeof(float),
 		Oset(y_tension),NhlTString,"2.0",
          	_NhlRES_DEFAULT|_NhlRES_INTERCEPTED,NULL},
@@ -536,7 +494,8 @@ static NhlErrorTypes StreamlinePlotDataInitialize(
 
 static NhlErrorTypes InitCoordBounds(
 #if	NhlNeedProto
-        NhlStreamlinePlotLayerPart	*stp,
+        NhlStreamlinePlotLayer	stl,
+        NhlStreamlinePlotLayer	ostl,
 	char			*entry_name
 #endif
 );
@@ -1228,10 +1187,6 @@ StreamlinePlotInitialize
 
 	stp->zerof_anno_id = NhlNULLOBJID;
 	stp->zerof_lbl_rec.id = NhlNULLOBJID;
-	stnew->trans.data_xmin = 0.0;
-	stnew->trans.data_xmax = 1.0;
-	stnew->trans.data_ymin = 0.0;
-	stnew->trans.data_ymax = 1.0;
 
 /* Initialize unset resources */
 
@@ -1245,14 +1200,6 @@ StreamlinePlotInitialize
 	       
 	if (! stp->zerof_lbl.height_set) 
 		stp->zerof_lbl.height = 0.01;
-	if (! stp->x_min_set)
-		stp->x_min = 0.0;
-	if (! stp->x_max_set)
-		stp->x_max = 1.0;
-	if (! stp->y_min_set)
-		stp->y_min = 0.0;
-	if (! stp->y_max_set)
-		stp->y_max = 1.0;
 
 /* Initialize private members */
 
@@ -1280,9 +1227,6 @@ StreamlinePlotInitialize
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return(NhlFATAL);
 	}
- 
-	subret = InitCoordBounds(stp,entry_name);
-	if ((ret = MIN(ret,subret)) < NhlWARNING) return(ret);
 
 /* Set view dependent resources */
 
@@ -1318,7 +1262,10 @@ StreamlinePlotInitialize
 
 /* Set up the streamline object transformation  */
 
-	stp->do_low_level_log = False;
+ 
+	subret = InitCoordBounds(stnew,NULL,entry_name);
+	if ((ret = MIN(ret,subret)) < NhlWARNING) return(ret);
+        
 	if (stp->use_irr_trans) {
 		subret = SetUpIrrTransObj(stnew,
 					  (NhlStreamlinePlotLayer) req,True);
@@ -1368,6 +1315,11 @@ StreamlinePlotInitialize
 #if 0        
 	stp->min_line_length_set = False;
 #endif        
+        stnew->trans.x_reverse_set = stnew->trans.y_reverse_set = False;
+        stnew->trans.x_log_set = stnew->trans.y_log_set = False;
+        stnew->trans.x_axis_type_set = stnew->trans.y_axis_type_set = False;
+        stnew->trans.x_min_set = stnew->trans.y_min_set = False;
+        stnew->trans.x_max_set = stnew->trans.y_max_set = False;
 
 	return ret;
 }
@@ -1518,14 +1470,6 @@ static NhlErrorTypes StreamlinePlotSetValues
 
 	if (_NhlArgIsSet(args,num_args,NhlNstZeroFLabelFontHeightF))
 		stp->zerof_lbl.height_set = True;
-	if (_NhlArgIsSet(args,num_args,NhlNtrXMinF))
-		stp->x_min_set = True;
-	if (_NhlArgIsSet(args,num_args,NhlNtrXMaxF))
-		stp->x_max_set = True;
-	if (_NhlArgIsSet(args,num_args,NhlNtrYMinF))
-		stp->y_min_set = True;
-	if (_NhlArgIsSet(args,num_args,NhlNtrYMaxF))
-		stp->y_max_set = True;
 
 /* Manage the data */
 
@@ -1535,9 +1479,6 @@ static NhlErrorTypes StreamlinePlotSetValues
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return(ret);
 	}
-
-	subret = InitCoordBounds(stp,entry_name);
-	if ((ret = MIN(ret,subret)) < NhlWARNING) return(ret);
 
 /* Set view dependent resources */
 
@@ -1573,7 +1514,9 @@ static NhlErrorTypes StreamlinePlotSetValues
 
 /* Set up the streamline object transformation  */
 
-	stp->do_low_level_log = False;
+	subret = InitCoordBounds(stnew,(NhlStreamlinePlotLayer)old,entry_name);
+	if ((ret = MIN(ret,subret)) < NhlWARNING) return(ret);
+        
 	if (stp->use_irr_trans) {
 		subret = SetUpIrrTransObj(stnew,
 					  (NhlStreamlinePlotLayer) old,False);
@@ -1610,6 +1553,12 @@ static NhlErrorTypes StreamlinePlotSetValues
 #if 0        
 	stp->min_line_length_set = False;
 #endif        
+
+        stnew->trans.x_reverse_set = stnew->trans.y_reverse_set = False;
+        stnew->trans.x_log_set = stnew->trans.y_log_set = False;
+        stnew->trans.x_axis_type_set = stnew->trans.y_axis_type_set = False;
+        stnew->trans.x_min_set = stnew->trans.y_min_set = False;
+        stnew->trans.x_max_set = stnew->trans.y_max_set = False;
 
 	return ret;
 }
@@ -1683,114 +1632,6 @@ static NhlErrorTypes    StreamlinePlotGetValues
         return(NhlNOERROR);
 }
 
-
-/*
- * Function:	InitCoordBounds
- *
- * Description: Sets coordinate boundary variables that must be 
- *              initialized regardless of whether any data has been supplied
- *
- * In Args:
- *
- * Out Args:	NONE
- *
- * Return Values:	ErrorConditions
- *
- * Side Effects:
- */
-/*ARGSUSED*/
-static NhlErrorTypes InitCoordBounds
-#if	NhlNeedProto
-(
-        NhlStreamlinePlotLayerPart	*stp,
-	char			*entry_name
-)
-#else
-(stp,entry_name)
-        NhlStreamlinePlotLayerPart	*stp;
-	char			*entry_name;
-#endif
-{
-	NhlErrorTypes	ret = NhlNOERROR;
-	char		*e_text;
-	float		ftmp;
-
-	if (stp->data_init) {
-		if (! stp->x_min_set)
-			stp->x_min = MIN(stp->vfp->x_start,stp->vfp->x_end);
-		if (! stp->x_max_set)
-			stp->x_max = MAX(stp->vfp->x_start,stp->vfp->x_end);
-		if (! stp->y_min_set)
-			stp->y_min = MIN(stp->vfp->y_start,stp->vfp->y_end);
-		if (! stp->y_max_set)
-			stp->y_max = MAX(stp->vfp->y_start,stp->vfp->y_end);
-	}
-
-	if (stp->x_min == stp->x_max) {
-		e_text = "%s: Zero X coordinate span: defaulting";
-		ret = MIN(ret,NhlWARNING);
-		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
-		stp->x_min = 0.0; 
-		stp->x_max = 1.0;
-	}
-	else if (stp->x_min > stp->x_max) {
-		e_text = "%s: Min X coordinate exceeds max: exchanging";
-		ret = MIN(ret,NhlWARNING);
-		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
-		ftmp = stp->x_min;
-		stp->x_min = stp->x_max;
-		stp->x_max = ftmp;
-	}
-	if (stp->x_log && stp->x_min <= 0.0) {
-		e_text = 
-		   "%s: Log style invalid for X coordinates: setting %s off";
-		ret = MIN(ret,NhlWARNING);
-		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,NhlNtrXLog);
-		stp->x_log = False;
-	}
-
-	if (stp->y_min == stp->y_max) {
-		e_text = "%s: Zero Y coordinate span: defaulting";
-		ret = MIN(ret,NhlWARNING);
-		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
-		stp->y_min = 0.0; 
-		stp->y_max = 1.0;
-	}
-	else if (stp->y_min > stp->y_max) {
-		e_text = "%s: Min Y coordinate exceeds max: exchanging";
-		ret = MIN(ret,NhlWARNING);
-		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
-		ftmp = stp->y_min;
-		stp->y_min = stp->y_max;
-		stp->y_max = ftmp;
-	}
-	if (stp->y_log && stp->y_min <= 0.0) {
-		e_text = 
-		    "%s: Log style invalid for Y coordinates: setting %s off";
-		ret = MIN(ret,NhlWARNING);
-		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,NhlNtrYLog);
-		stp->y_log = False;
-	}
-	if (! stp->data_init) {
-		if (! stp->x_reverse) {
-			stp->xc1 = stp->x_min;
-			stp->xcm = stp->x_max;
-		}
-		else {
-			stp->xc1 = stp->x_max;
-			stp->xcm = stp->x_min;
-		}
-		if (! stp->y_reverse) {
-			stp->yc1 = stp->y_min;
-			stp->ycn = stp->y_max;
-		}
-		else {
-			stp->yc1 = stp->y_max;
-			stp->ycn = stp->y_min;
-		}
-	}
-	return ret;
-}
 
 /*
  * Function:	StreamlinePlotDestroy
@@ -1975,6 +1816,7 @@ static NhlErrorTypes stInitDraw
 {
 	NhlErrorTypes		ret = NhlNOERROR;
 	NhlStreamlinePlotLayerPart	*stp = &(stl->streamlineplot);
+	NhlTransformLayerPart		*tfp = &(stl->trans);
 	NhlString		e_text;
 
 	NhlVASetValues(stl->base.wkptr->base.id,
@@ -1996,6 +1838,33 @@ static NhlErrorTypes stInitDraw
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return(ret);
 	}
+/*
+ * Set up LLU interface coordinate boundaries 
+ */
+        stp->xlb = MAX(tfp->x_min,MIN(tfp->data_xstart,tfp->data_xend));
+        stp->xub = MIN(tfp->x_max,MAX(tfp->data_xstart,tfp->data_xend));
+        stp->ylb = MAX(tfp->y_min,MIN(tfp->data_ystart,tfp->data_yend));
+        stp->yub = MIN(tfp->y_max,MAX(tfp->data_ystart,tfp->data_yend));
+        
+	if (!stp->use_irr_trans) {
+                stp->xc1 = tfp->data_xstart;
+                stp->xcm = tfp->data_xend;
+                stp->yc1 = tfp->data_ystart;
+                stp->ycn = tfp->data_yend;
+        }
+        else {
+                int xcount,ycount;
+                
+                xcount = tfp->x_axis_type == NhlIRREGULARAXIS ?
+                        stp->vfp->x_arr->len_dimensions[0] : 3;
+                ycount = tfp->y_axis_type == NhlIRREGULARAXIS ?
+                        stp->vfp->y_arr->len_dimensions[0] : 3;
+                
+                stp->xc1 = 0;
+                stp->xcm = xcount - 1;
+                stp->yc1 = 0;
+                stp->ycn = ycount - 1;
+        }
 
 	return ret;
 }
@@ -2041,9 +1910,11 @@ static void StreamlineAbortDraw
 		stp->wk_active = False;
 	}
 
-	if (stp->do_low_level_log) 
+	if (stp->low_level_log_on) {
 		NhlVASetValues(tfp->trans_obj->base.id,
 			       NhlNtrLowLevelLogOn,False,NULL);
+                stp->low_level_log_on = False;
+        }
 
 	if (stp->fws != NULL) {
 		_NhlIdleWorkspace(stp->fws);
@@ -2072,11 +1943,13 @@ static NhlErrorTypes stUpdateTrans
 #if	NhlNeedProto
 (
 	NhlStreamlinePlotLayer	stl,
+        NhlBoolean		seg_draw,
 	NhlString		entry_name
 )
 #else
-(stl,entry_name)
+(stl,seg_draw,entry_name)
         NhlStreamlinePlotLayer stl;
+        NhlBoolean		seg_draw;
 	NhlString		entry_name;
 #endif
 {
@@ -2091,6 +1964,8 @@ static NhlErrorTypes stUpdateTrans
         Over_Map = False;
         Overlay_Trans_Obj = NULL;
         Trans_Obj = tfp->trans_obj;
+        stp->low_level_log_on = False;
+        
 	if (tfp->overlay_status == _tfCurrentOverlayMember && 
 	    ! tfp->do_ndc_overlay &&
 	    tfp->overlay_trans_obj != NULL) {
@@ -2099,27 +1974,28 @@ static NhlErrorTypes stUpdateTrans
                 if ((stp->trans_obj->base.layer_class)->base_class.class_name
 		    == NhlmapTransObjClass->base_class.class_name) {
                         Over_Map = True;	
-			subret = NhlVASetValues(stp->trans_obj->base.id,
-						NhlNtrDataXMinF,tfp->data_xmin,
-						NhlNtrDataXMaxF,tfp->data_xmax,
-						NULL);
+			subret = NhlVASetValues
+				(stp->trans_obj->base.id,
+				 NhlNtrDataXStartF,tfp->data_xstart,
+				 NhlNtrDataXEndF,tfp->data_xend,
+				 NULL);
 
 			if ((ret = MIN(ret,subret)) < NhlWARNING) {
 				return(ret);
 			}
                 }
 		else if (stp->do_low_level_log) {
-			if (stp->x_log) {
-				subret = NhlVASetValues(
-						   tfp->trans_obj->base.id,
-						NhlNtrXAxisType,NhlLINEARAXIS,
-						NULL);
+			if (tfp->x_axis_type == NhlLOGAXIS) {
+				subret = NhlVASetValues
+                                        (tfp->trans_obj->base.id,
+                                         NhlNtrXAxisType,NhlLINEARAXIS,
+                                         NULL);
 			}
 			else {
-				subret = NhlVASetValues(
-						   tfp->trans_obj->base.id,
-						NhlNtrYAxisType,NhlLINEARAXIS,
-						NULL);
+				subret = NhlVASetValues
+                                        (tfp->trans_obj->base.id,
+                                         NhlNtrYAxisType,NhlLINEARAXIS,
+                                         NULL);
 			}
 			if ((ret = MIN(ret,subret)) < NhlWARNING) {
 				return(ret);
@@ -2129,15 +2005,17 @@ static NhlErrorTypes stUpdateTrans
 	else {
 		stp->trans_obj = tfp->trans_obj;
 
-		if (stp->do_low_level_log) {
-			subret = NhlVASetValues(stp->trans_obj->base.id,
+		if (stp->do_low_level_log && ! seg_draw) {
+			subret = NhlVASetValues(tfp->trans_obj->base.id,
 						NhlNtrLowLevelLogOn,True,
 						NULL);
 			if ((ret = MIN(ret,subret)) < NhlWARNING) {
 				return(ret);
 			}
+                        stp->low_level_log_on = True;
 		}
-		if (tfp->overlay_status == _tfNotInOverlay ||
+		if (stp->do_low_level_log ||
+                    tfp->overlay_status == _tfNotInOverlay ||
 		    tfp->do_ndc_overlay) {
 			subret = _NhlSetTrans(tfp->trans_obj, (NhlLayer)stl);
 			if ((ret = MIN(ret,subret)) < NhlWARNING) {
@@ -2178,6 +2056,7 @@ static NhlErrorTypes StreamlinePlotPreDraw
 	NhlString		e_text,entry_name = "StreamlinePlotPreDraw";
 	NhlStreamlinePlotLayer		stl = (NhlStreamlinePlotLayer) layer;
 	NhlStreamlinePlotLayerPart	*stp = &stl->streamlineplot;
+        NhlBoolean		seg_draw;
 
 	stp->fws = NULL;
 	stp->wk_active = False;
@@ -2190,18 +2069,6 @@ static NhlErrorTypes StreamlinePlotPreDraw
 	Stp = stp;
 	Stl = stl;
 
-	if (stl->view.use_segments && ! stp->new_draw_req) {
-		subret = stUpdateTrans(stl,entry_name);
-		if ((ret = MIN(subret,ret)) < NhlWARNING) {
-			StreamlineAbortDraw(stl);
-			return ret;
-		}
-		ret = _NhltfDrawSegment((NhlLayer)stl,stp->trans_obj,
-					stp->predraw_dat,entry_name);
-		Stp = NULL;
-		return ret;
-	}
-
 	subret = stInitDraw(stl,entry_name);
 	if ((ret = MIN(subret,ret)) < NhlWARNING) {
 		Stp = NULL;
@@ -2212,32 +2079,22 @@ static NhlErrorTypes StreamlinePlotPreDraw
 		Stp = NULL;
 		return NhlNOERROR;
 	}
-	subret = stUpdateTrans(stl,entry_name);
+        
+        seg_draw = stl->view.use_segments && ! stp->new_draw_req;
+        
+	subret = stUpdateTrans(stl,seg_draw,entry_name);
 	if ((ret = MIN(subret,ret)) < NhlWARNING) {
 		StreamlineAbortDraw(stl);
 		return ret;
 	}
-
-	subret = _NhlActivateWorkstation(stl->base.wkptr);
-	if ((ret = MIN(subret,ret)) < NhlWARNING) {
-		e_text = "%s: Error activating workstation";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		StreamlineAbortDraw(stl);
-		return NhlFATAL;
+        
+	if (seg_draw) {
+		ret = _NhltfDrawSegment((NhlLayer)stl,stp->trans_obj,
+					stp->predraw_dat,entry_name);
 	}
-	stp->wk_active = True;
-
-	if (stl->view.use_segments) {
-		subret = _NhltfInitSegment((NhlLayer)stl,stp->trans_obj,
-					    &stp->predraw_dat,entry_name);
-		if ((ret = MIN(subret,ret)) < NhlWARNING) {
-			StreamlineAbortDraw(stl);
-			return ret;
-		}
-		stp->seg_open = True;
-	}
-
-	subret = stDraw(stl,NhlPREDRAW,entry_name);
+        else {
+                subret = stDraw(stl,NhlPREDRAW,entry_name);
+        }
 
 	Stp = NULL;
 	return MIN(subret,ret);
@@ -2269,7 +2126,7 @@ static NhlErrorTypes StreamlinePlotDraw
 	NhlStreamlinePlotLayer	stl = (NhlStreamlinePlotLayer) layer;
 	NhlStreamlinePlotLayerPart	*stp = &stl->streamlineplot;
 	NhlString		e_text,entry_name = "StreamlinePlotDraw";
-
+        NhlBoolean		seg_draw;
 
 	if (! stp->data_init || stp->zero_field) {
 		return NhlNOERROR;
@@ -2280,38 +2137,24 @@ static NhlErrorTypes StreamlinePlotDraw
 
 	Stp = stp;
 	Stl = stl;
-	subret = stUpdateTrans(stl,entry_name);
+        
+        seg_draw = stl->view.use_segments && ! stp->new_draw_req;
+        
+	subret = stUpdateTrans(stl,seg_draw,entry_name);
 	if ((ret = MIN(subret,ret)) < NhlWARNING) {
 		StreamlineAbortDraw(stl);
 		return ret;
 	}
 
-	if (stl->view.use_segments && ! stp->new_draw_req) {
-		ret = _NhltfDrawSegment((NhlLayer)stl,stp->trans_obj,
+	if (seg_draw) {
+		subret = _NhltfDrawSegment((NhlLayer)stl,stp->trans_obj,
 					stp->draw_dat,entry_name);
-		Stp = NULL;
-		return ret;
 	}
-
-	subret = _NhlActivateWorkstation(stl->base.wkptr);
-	if ((ret = MIN(subret,ret)) < NhlWARNING) {
-		e_text = "%s: Error activating workstation";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		StreamlineAbortDraw(stl);
-		return NhlFATAL;
-	}
-	stp->wk_active = True;
-	if (stl->view.use_segments) {
-		subret = _NhltfInitSegment((NhlLayer)stl,stp->trans_obj,
-					    &stp->draw_dat,entry_name);
-		if ((ret = MIN(subret,ret)) < NhlWARNING) {
-			StreamlineAbortDraw(stl);
-			return ret;
-		}
-		stp->seg_open = True;
-	}
-
-	subret = stDraw((NhlStreamlinePlotLayer) layer,NhlDRAW,entry_name);
+        else {
+                subret = stDraw
+                        ((NhlStreamlinePlotLayer) layer,NhlDRAW,entry_name);
+        }
+        
 	Stp = NULL;
 	return MIN(subret,ret);
 }
@@ -2343,6 +2186,8 @@ static NhlErrorTypes StreamlinePlotPostDraw
 	NhlStreamlinePlotLayerPart	*stp = &stl->streamlineplot;
 	NhlTransformLayerPart		*tfp = &stl->trans;
 	NhlString		e_text,entry_name = "StreamlinePostPlotDraw";
+        NhlBoolean		seg_draw;
+
 
 	Stp = stp;
 	Stl = stl;
@@ -2357,42 +2202,23 @@ static NhlErrorTypes StreamlinePlotPostDraw
 		return ret;
 	}
 
-	subret = stUpdateTrans(stl,entry_name);
-	if ((ret = MIN(subret,ret)) < NhlWARNING) {
-		StreamlineAbortDraw(stl);
-		return ret;
-	}
-	if (stl->view.use_segments && ! stp->new_draw_req) {
-		ret = _NhltfDrawSegment((NhlLayer)stl,stp->trans_obj,
-					stp->postdraw_dat,entry_name);
-		Stp = NULL;
-		return ret;
-	}
-
-	if (stp->streamline_order == NhlPOSTDRAW) {
-
-		subret = _NhlActivateWorkstation(stl->base.wkptr);
-		if ((ret = MIN(subret,ret)) < NhlWARNING) {
-			e_text = "%s: Error activating workstation";
-			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-			StreamlineAbortDraw(stl);
-			return NhlFATAL;
-		}
-		stp->wk_active = True;
-
-		if (stl->view.use_segments) {
-			subret = _NhltfInitSegment((NhlLayer)stl,
-					    stp->trans_obj,
-					    &stp->postdraw_dat,entry_name);
-			if ((ret = MIN(subret,ret)) < NhlWARNING) {
-				StreamlineAbortDraw(stl);
-				return ret;
-			}
-			stp->seg_open = True;
-		}
-
-		subret = stDraw((NhlStreamlinePlotLayer) layer,
-				NhlPOSTDRAW,entry_name);
+        seg_draw = stl->view.use_segments && ! stp->new_draw_req;
+        
+        if (stp->streamline_order == NhlPOSTDRAW) {
+                subret = stUpdateTrans(stl,seg_draw,entry_name);
+                if ((ret = MIN(subret,ret)) < NhlWARNING) {
+                        StreamlineAbortDraw(stl);
+                        return ret;
+                }
+                if (stl->view.use_segments && ! stp->new_draw_req) {
+                        subret = _NhltfDrawSegment
+                                ((NhlLayer)stl,stp->trans_obj,
+                                 stp->postdraw_dat,entry_name);
+                }
+                else {
+                        subret = stDraw((NhlStreamlinePlotLayer) layer,
+                                        NhlPOSTDRAW,entry_name);
+                }
 		ret = MIN(subret,ret);
 	}
 
@@ -2441,14 +2267,40 @@ static NhlErrorTypes stDraw
 	char			*e_text;
 	NhlStreamlinePlotLayerPart	*stp = &(stl->streamlineplot);
 	NhlTransformLayerPart	*tfp = &(stl->trans);
-	NhlBoolean		low_level_log;
 	float			*u_data,*v_data,*p_data;
 	int			cix;
 
-	low_level_log = stp->do_low_level_log &&
-		(tfp->overlay_status != _tfCurrentOverlayMember || 
-		 tfp->overlay_trans_obj == NULL);
+	subret = _NhlActivateWorkstation(stl->base.wkptr);
+	if ((ret = MIN(subret,ret)) < NhlWARNING) {
+		e_text = "%s: Error activating workstation";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		StreamlineAbortDraw(stl);
+		return NhlFATAL;
+	}
+	stp->wk_active = True;
 
+	if (stl->view.use_segments) {
+                NhlTransDat **trans_dat_pp;
+                switch (order) {
+                    case NhlPREDRAW:
+                            trans_dat_pp = &stp->predraw_dat;
+                            break;
+                    case NhlDRAW:
+                            trans_dat_pp = &stp->draw_dat;
+                            break;
+                    case NhlPOSTDRAW:
+                            trans_dat_pp = &stp->postdraw_dat;
+                            break;
+                }
+		subret = _NhltfInitSegment((NhlLayer)stl,stp->trans_obj,
+					    trans_dat_pp,entry_name);
+		if ((ret = MIN(subret,ret)) < NhlWARNING) {
+			StreamlineAbortDraw(stl);
+			return ret;
+		}
+		stp->seg_open = True;
+	}
+        
 	c_strset();
 	
 	switch (stp->vfp->miss_mode) {
@@ -2470,17 +2322,17 @@ static NhlErrorTypes stDraw
 		break;
 	}
 
-	if (low_level_log && stp->x_log) {
-		c_stsetr("XC1",(float)stp->vfp->x_start);
-		c_stsetr("XCM",(float)stp->vfp->x_end);
+	if (stp->low_level_log_on && tfp->x_axis_type == NhlLOGAXIS) {
+		c_stsetr("XC1",(float)tfp->data_xstart);
+		c_stsetr("XCM",(float)tfp->data_xend);
 	}
 	else {
 		c_stsetr("XC1",(float)stp->xc1);
 		c_stsetr("XCM",(float)stp->xcm);
 	}
-	if (low_level_log && stp->y_log) {
-		c_stsetr("YC1",(float)stp->vfp->y_start);
-		c_stsetr("YCN",(float)stp->vfp->y_end);
+	if (stp->low_level_log_on && tfp->y_axis_type == NhlLOGAXIS) {
+		c_stsetr("YC1",(float)tfp->data_ystart);
+		c_stsetr("YCN",(float)tfp->data_yend);
 	}
 	else {
 		c_stsetr("YC1",(float)stp->yc1);
@@ -2548,13 +2400,14 @@ static NhlErrorTypes stDraw
 		stp->seg_open = False;
 	}
 
-	if (low_level_log) {
-		subret = NhlVASetValues(stp->trans_obj->base.id,
+	if (stp->low_level_log_on) {
+		subret = NhlVASetValues(tfp->trans_obj->base.id,
 					NhlNtrLowLevelLogOn,False,NULL);
 		if ((ret = MIN(ret,subret)) < NhlWARNING) {
 			StreamlineAbortDraw(stl);
 			return(ret);
 		}
+                stp->low_level_log_on = False;
 	}
         subret = _NhlDeactivateWorkstation(stl->base.wkptr);
 	stp->wk_active = False;
@@ -2564,163 +2417,107 @@ static NhlErrorTypes stDraw
 }
 
 
-
 /*
- * Function:	SetCoordBounds
+ * Function:	InitCoordBounds
  *
- * Description: Sets the max and min coord bounds
+ * Description: 
  *
- * In Args:	stp	pointer to VectorPlot layer part
- *		ctype	which coordinate
- *		count	length of irregular coord array if > 0
- *                      if 0 indicates a non-irregular transformation
- *		entry_name the high level entry point
+ * In Args:
  *
  * Out Args:	NONE
  *
- * Return Values:	Error Conditions
+ * Return Values:	ErrorConditions
  *
- * Side Effects:   A number of fields in the VectorPlotLayerPart are set
+ * Side Effects:
  */
-
-static NhlErrorTypes SetCoordBounds
+/*ARGSUSED*/
+static NhlErrorTypes InitCoordBounds
 #if	NhlNeedProto
 (
-	NhlStreamlinePlotLayerPart	*stp,
-	stCoord			ctype,
-	int			count,
-	NhlString		entry_name
+        NhlStreamlinePlotLayer	stl,
+        NhlStreamlinePlotLayer	ostl,
+	char			*entry_name
 )
-#else 
-(stp,ctype,count,entry_name)
-	NhlStreamlinePlotLayerPart	*stp;
-	stCoord			ctype;
-	int			count;
-	NhlString		entry_name;
+#else
+(stl,ostl,entry_name)
+        NhlStreamlinePlotLayer	stl;
+        NhlStreamlinePlotLayer	ostl;
+	char			*entry_name;
 #endif
 {
 	NhlErrorTypes	ret = NhlNOERROR;
+        NhlStreamlinePlotLayerPart	*stp = &stl->streamlineplot;
+        NhlTransformLayerPart	*tfp = &stl->trans;
 	char		*e_text;
-	float		tmin,tmax,t;
-	NhlBoolean	rev;
+	NhlBoolean	x_data_reversed,y_data_reversed;
 
-	if (ctype == stXCOORD) {
-
-		rev = stp->vfp->x_start > stp->vfp->x_end;
-		if (count == 0) {
-                        if (! rev) {
-                                tmin = MAX(stp->vfp->x_start,stp->x_min); 
-                                tmax = MIN(stp->vfp->x_end,stp->x_max);
-                        }
-                        else {
-                                tmin = MAX(stp->vfp->x_end,stp->x_min); 
-                                tmax = MIN(stp->vfp->x_start,stp->x_max);
-                        }
-                        stp->xlb = tmin;
-                        stp->xub = tmax;
-
-			stp->xc1 = stp->vfp->x_start;
-			stp->xcm = stp->vfp->x_end;
+	stp->do_low_level_log = False;
+        stp->use_irr_trans = False;
+        
+	if (! stp->data_init) {
+                tfp->data_xstart = tfp->data_xend = 0.0;
+                tfp->data_ystart = tfp->data_yend = 0.0;
+                
+		if (! tfp->x_reverse) {
+			stp->xlb = stp->xc1 = tfp->x_min;
+			stp->xub = stp->xcm = tfp->x_max;
 		}
 		else {
-                        if (! rev) {
-                                tmin = MIN(stp->vfp->x_end,
-                                           MAX(stp->vfp->x_start,stp->x_min)); 
-                                tmax = MAX(stp->vfp->x_start,
-                                           MIN(stp->vfp->x_end,stp->x_max));
-                        }
-                        else {
-                                tmin = MIN(stp->vfp->x_start,
-                                           MAX(stp->vfp->x_end,stp->x_min));
-                                tmax = MAX(stp->vfp->x_end,
-                                           MIN(stp->vfp->x_start,stp->x_max));
-                        }
-                        if (tmin > tmax) {
-                                t = tmin;
-                                tmin = tmax;
-                                tmax = t;
-                        }
-                        stp->xlb = tmin;
-                        stp->xub = tmax;
-			stp->xc1 = 0;
-			stp->xcm = count - 1;
-
-			if (stp->x_min < tmin || stp->x_min > tmax) {
-				e_text = 
-"%s: irregular transformation requires %s to be within data coordinate range: resetting";
-				NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
-					  entry_name,NhlNtrXMinF);
-				ret = MIN(ret,NhlWARNING);
-				stp->x_min = tmin;
-			}
-			if (stp->x_max > tmax || stp->x_max < tmin) {
-				e_text = 
-"%s: irregular transformation requires %s to be within data coordinate range: resetting";
-				NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
-					  entry_name,NhlNtrXMaxF);
-				ret = MIN(ret,NhlWARNING);
-				stp->x_max = tmax;
-			}
+			stp->xub = stp->xc1 = tfp->x_max;
+			stp->xlb = stp->xcm = tfp->x_min;
 		}
-	}
-	else if (ctype == stYCOORD) {
-
-		rev = stp->vfp->y_start > stp->vfp->y_end;
-		if (count == 0) {
-                        if (! rev) {
-                                tmin = MAX(stp->vfp->y_start,stp->y_min); 
-                                tmax = MIN(stp->vfp->y_end,stp->y_max);
-                        }
-                        else {
-                                tmin = MAX(stp->vfp->y_end,stp->y_min); 
-                                tmax = MIN(stp->vfp->y_start,stp->y_max);
-                        }
-                        stp->ylb = tmin;
-                        stp->yub = tmax;
-			stp->yc1 = stp->vfp->y_start;
-			stp->ycn = stp->vfp->y_end;
+		if (! tfp->y_reverse) {
+			stp->ylb = stp->yc1 = tfp->y_min;
+			stp->yub = stp->ycn = tfp->y_max;
 		}
 		else {
-                        if (! rev) {
-                                tmin = MIN(stp->vfp->y_end,
-                                           MAX(stp->vfp->y_start,stp->y_min)); 
-                                tmax = MAX(stp->vfp->y_start,
-                                           MIN(stp->vfp->y_end,stp->y_max));
-                        }
-                        else {
-                                tmin = MIN(stp->vfp->y_start,
-                                           MAX(stp->vfp->y_end,stp->y_min));
-                                tmax = MAX(stp->vfp->y_end,
-                                           MIN(stp->vfp->y_start,stp->y_max));
-                        }
-                        if (tmin > tmax) {
-                                t = tmin;
-                                tmin = tmax;
-                                tmax = t;
-                        }
-                        stp->ylb = tmin;
-                        stp->yub = tmax;
-			stp->yc1 = 0;
-			stp->ycn = count - 1;
-                        
-			if (stp->y_min < tmin || stp->y_min > tmax) {
-				e_text = 
-"%s: irregular transformation requires %s to be within data coordinate range: resetting";
-				NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
-					  entry_name,NhlNtrYMinF);
-				ret = MIN(ret,NhlWARNING);
-				stp->y_min = tmin;
-			}
-			if (stp->y_max > tmax || stp->y_max < tmin) {
-				e_text = 
-"%s: irregular transformation requires %s to be within data coordinate range: resetting";
-				NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
-					  entry_name,NhlNtrYMaxF);
-				ret = MIN(ret,NhlWARNING);
-				stp->y_max = tmax;
-			}
+			stp->yub = stp->yc1 = tfp->y_max;
+			stp->ylb = stp->ycn = tfp->y_min;
 		}
+                return ret;
 	}
+        
+	x_data_reversed = stp->vfp->x_start > stp->vfp->x_end;
+	y_data_reversed = stp->vfp->y_start > stp->vfp->y_end;
+
+        tfp->data_xstart = stp->vfp->x_start;
+        tfp->data_xend = stp->vfp->x_end;
+        tfp->data_ystart = stp->vfp->y_start;
+        tfp->data_yend = stp->vfp->y_end;
+        
+        if (stp->vfp->x_arr || stp->vfp->y_arr)
+                stp->use_irr_trans = True;
+        
+        if (stp->use_irr_trans) {
+                if (stp->vfp->x_arr && ! tfp->x_axis_type_set) {
+			if (! ostl || (stp->data_changed  &&
+			    (stp->vfp->changed & _NhlsfXARR_CHANGED)))
+				tfp->x_axis_type = NhlIRREGULARAXIS;
+		}
+                if (! stp->vfp->x_arr && tfp->x_axis_type == NhlIRREGULARAXIS)
+                        tfp->x_axis_type = NhlLINEARAXIS;
+                if (stp->vfp->x_arr && tfp->x_axis_type != NhlIRREGULARAXIS) {
+                        tfp->data_xstart = stp->vfp->ix_start;
+                        tfp->data_xend = stp->vfp->ix_end;
+			x_data_reversed = False;
+                }
+                if (stp->vfp->y_arr && ! tfp->y_axis_type_set) {
+			if (! ostl || (stp->data_changed  &&
+			    (stp->vfp->changed & _NhlsfYARR_CHANGED)))
+				tfp->y_axis_type = NhlIRREGULARAXIS;
+		}
+                if (! stp->vfp->y_arr && tfp->y_axis_type == NhlIRREGULARAXIS)
+                        tfp->y_axis_type = NhlLINEARAXIS;
+                if (stp->vfp->y_arr && tfp->y_axis_type != NhlIRREGULARAXIS) {
+                        tfp->data_ystart = stp->vfp->iy_start;
+                        tfp->data_yend = stp->vfp->iy_end;
+			y_data_reversed = False;
+                }
+        }
+        ret = _NhltfCheckCoordBounds
+                ((NhlTransformLayer)stl,(NhlTransformLayer)ostl,
+                 stp->use_irr_trans,entry_name);
+        
 	return ret;
 }
 
@@ -2729,8 +2526,8 @@ static NhlErrorTypes SetCoordBounds
  *
  * Description: Sets up a LogLinear transformation object.
  *
- * In Args:	xnew	new instance record
- *		xold	old instance record if not initializing
+ * In Args:	stnew	new instance record
+ *		stold	old instance record if not initializing
  *		init	true if initialization
  *
  * Out Args:	NONE
@@ -2761,35 +2558,17 @@ static NhlErrorTypes SetUpLLTransObj
 	NhlTransformLayerPart	*tfp = &(stnew->trans);
 	char			buffer[_NhlMAXRESNAMLEN];
 	int			tmpid;
-        NhlSArg			sargs[16];
+        NhlSArg			sargs[32];
         int			nargs = 0;
-	NhlBoolean		yrev = False,xrev = False,oyrev,oxrev;
-#if 0
-	float			x,y,xr,yb;
-#endif
 
-	entry_name = (init) ? InitName : SetValuesName;
-
-#if 0
-	x = stnew->view.x;
-	y = stnew->view.y;
-	xr = x + stnew->view.width;
-	yb = y - stnew->view.height;
-	if (x < 0.0 || y > 1.0 || xr > 1.0 || yb < 0.0) {
-		e_text = "%s: View extent is outside NDC range: constraining";
-		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
-		ret = MIN(ret,NhlWARNING);
-		x = MAX(x,0.0);
-		xr = MIN(xr,1.0);
-		y = MIN(y,1.0);
-		yb = MAX(yb,0.0);
-		_NhlInternalSetView((NhlViewLayer) stnew,x,y,
-				    xr - x, y - yb, stnew->view.keep_aspect);
-	}
-#endif
+	entry_name = (init) ?
+                "StreamlinePlotInitialize" : "StreamlinePlotSetValues";
+        
 	if (init)
 		tfp->trans_obj = NULL;
-	else if (ostp->use_irr_trans && tfp->trans_obj != NULL) {
+	if (tfp->trans_obj &&
+                 tfp->trans_obj->base.layer_class->base_class.class_name !=
+                 NhllogLinTransObjClass->base_class.class_name) {
 		subret = NhlDestroy(tfp->trans_obj->base.id);
 		if ((ret = MIN(ret,subret)) < NhlWARNING) {
 			e_text = "%s: Error destroying irregular trans object";
@@ -2798,49 +2577,27 @@ static NhlErrorTypes SetUpLLTransObj
 		}
 		tfp->trans_obj = NULL;
 	}
-
-	if (stp->data_init) {
-		subret = SetCoordBounds(stp,stXCOORD,0,entry_name);
-		if ((ret = MIN(subret,ret)) < NhlWARNING)
-			return ret;
-		subret = SetCoordBounds(stp,stYCOORD,0,entry_name);
-		if ((ret = MIN(subret,ret)) < NhlWARNING)
-			return ret;
-		xrev = stp->vfp->x_start > stp->vfp->x_end;
-		yrev = stp->vfp->y_start > stp->vfp->y_end;
-	}
-
+        
+        if (tfp->x_reverse_set)
+                NhlSetSArg(&sargs[nargs++],
+                           NhlNtrXReverse,tfp->x_reverse);
+        if (tfp->y_reverse_set)
+                NhlSetSArg(&sargs[nargs++],
+                           NhlNtrYReverse,tfp->y_reverse);
+        
 	if (tfp->trans_obj == NULL) {
 
-		stp->update_req = True;
 		stp->new_draw_req = True;
-		NhlSetSArg(&sargs[nargs++],NhlNtrXLog,stp->x_log);
-		NhlSetSArg(&sargs[nargs++],NhlNtrYLog,stp->y_log);
-
-		NhlSetSArg(&sargs[nargs++],NhlNtrXMinF,stp->x_min);
-		NhlSetSArg(&sargs[nargs++],NhlNtrXMaxF,stp->x_max);
-		NhlSetSArg(&sargs[nargs++],NhlNtrYMinF,stp->y_min);
-		NhlSetSArg(&sargs[nargs++],NhlNtrYMaxF,stp->y_max);
-
-		if (stp->x_min_set && stp->x_max_set)
-			NhlSetSArg(&sargs[nargs++],
-				   NhlNtrXReverse,stp->x_reverse);
-		else {
-			xrev = (xrev && stp->x_reverse) || 
-				(! xrev && ! stp->x_reverse) ? False : True;
-			NhlSetSArg(&sargs[nargs++],NhlNtrXReverse,xrev);
-		}
-		if (stp->y_min_set && stp->y_max_set)
-			NhlSetSArg(&sargs[nargs++],
-				   NhlNtrYReverse,stp->y_reverse);
-		else {
-			yrev = (yrev && stp->y_reverse) || 
-				(! yrev && ! stp->y_reverse) ? False : True;
-			NhlSetSArg(&sargs[nargs++],NhlNtrYReverse,yrev);
-		}
+                stp->update_req = True;
+		NhlSetSArg(&sargs[nargs++],NhlNtrXLog,tfp->x_log);
+		NhlSetSArg(&sargs[nargs++],NhlNtrYLog,tfp->y_log);
+		NhlSetSArg(&sargs[nargs++],NhlNtrXMinF,tfp->x_min);
+		NhlSetSArg(&sargs[nargs++],NhlNtrXMaxF,tfp->x_max);
+		NhlSetSArg(&sargs[nargs++],NhlNtrYMinF,tfp->y_min);
+		NhlSetSArg(&sargs[nargs++],NhlNtrYMaxF,tfp->y_max);
+                
 		sprintf(buffer,"%s",stnew->base.name);
 		strcat(buffer,".Trans");
-
 		subret = NhlALCreate(&tmpid,buffer,
 				     NhllogLinTransObjClass,
 				     stnew->base.id,sargs,nargs);
@@ -2848,67 +2605,51 @@ static NhlErrorTypes SetUpLLTransObj
 		ret = MIN(subret,ret);
 
 		tfp->trans_obj = _NhlGetLayer(tmpid);
-
 		if(tfp->trans_obj == NULL){
 			e_text = "%s: Error creating transformation object";
 			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 			return NhlFATAL;
 		}
 
-		return ret;
 	}
+        else {
+                if (tfp->x_min != stold->trans.x_min)
+                        NhlSetSArg(&sargs[nargs++],NhlNtrXMinF,tfp->x_min);
+                if (tfp->x_max != stold->trans.x_max)
+                        NhlSetSArg(&sargs[nargs++],NhlNtrXMaxF,tfp->x_max);
+                if (tfp->y_min != stold->trans.y_min)
+                        NhlSetSArg(&sargs[nargs++],NhlNtrYMinF,tfp->y_min);
+                if (tfp->y_max != stold->trans.y_max)
+                        NhlSetSArg(&sargs[nargs++],NhlNtrYMaxF,tfp->y_max);
+                if (tfp->x_log != stold->trans.x_log)
+                        NhlSetSArg(&sargs[nargs++],NhlNtrXLog,tfp->x_log);
+                if (tfp->y_log != stold->trans.y_log)
+                        NhlSetSArg(&sargs[nargs++],NhlNtrYLog,tfp->y_log);
 
-	if (stp->x_min != ostp->x_min)
-		NhlSetSArg(&sargs[nargs++],NhlNtrXMinF,stp->x_min);
-	if (stp->x_max != ostp->x_max)
-		NhlSetSArg(&sargs[nargs++],NhlNtrXMaxF,stp->x_max);
-	if (stp->y_min != ostp->y_min)
-		NhlSetSArg(&sargs[nargs++],NhlNtrYMinF,stp->y_min);
-	if (stp->y_max != ostp->y_max)
-		NhlSetSArg(&sargs[nargs++],NhlNtrYMaxF,stp->y_max);
+                subret = NhlALSetValues(tfp->trans_obj->base.id,sargs,nargs);
+                if (nargs > 0) {
+                        stp->new_draw_req = True;
+                        stp->update_req = True;
+                }
+        }
+        
+        NhlVAGetValues(tfp->trans_obj->base.id,
+                       NhlNtrXReverse,&tfp->x_reverse,
+                       NhlNtrYReverse,&tfp->y_reverse,
+                       NhlNtrXLog,&tfp->x_log,
+                       NhlNtrYLog,&tfp->y_log,
+                       NhlNtrXMinF,&tfp->x_min,
+                       NhlNtrXMaxF,&tfp->x_max,
+                       NhlNtrYMinF,&tfp->y_min,
+                       NhlNtrYMaxF,&tfp->y_max,
+                       NULL);
+	tfp->x_axis_type = tfp->x_log ? NhlLOGAXIS : NhlLINEARAXIS;
+	tfp->y_axis_type = tfp->y_log ? NhlLOGAXIS : NhlLINEARAXIS;
 
-	if (stp->ovfp == NULL) {
-		oxrev = False;
-		oyrev = False;
-	}
-	else {
-		oxrev = stp->ovfp->x_start > stp->ovfp->x_end;
-		oyrev = stp->ovfp->y_start > stp->ovfp->y_end;
-	}
-
-	if (stp->x_reverse != ostp->x_reverse || oxrev != xrev) {
-		if (stp->x_min_set && stp->x_max_set)
-			NhlSetSArg(&sargs[nargs++],
-				   NhlNtrXReverse,stp->x_reverse);
-		else {
-			xrev = (xrev && stp->x_reverse) || 
-				(! xrev && ! stp->x_reverse) ? False : True;
-			NhlSetSArg(&sargs[nargs++],NhlNtrXReverse,xrev);
-		}
-	}
-	if (stp->y_reverse != ostp->y_reverse || oyrev != yrev) {
-		if (stp->y_min_set && stp->y_max_set)
-			NhlSetSArg(&sargs[nargs++],
-				   NhlNtrYReverse,stp->y_reverse);
-		else {
-			yrev = (yrev && stp->y_reverse) || 
-				(! yrev && ! stp->y_reverse) ? False : True;
-			NhlSetSArg(&sargs[nargs++],NhlNtrYReverse,yrev);
-		}
-	}
-	if (stp->x_log != ostp->x_log)
-		NhlSetSArg(&sargs[nargs++],NhlNtrXLog,stp->x_log);
-	if (stp->y_log != ostp->y_log)
-		NhlSetSArg(&sargs[nargs++],NhlNtrYLog,stp->y_log);
-
-	subret = NhlALSetValues(tfp->trans_obj->base.id,sargs,nargs);
-	if (nargs > 0) {
-		stp->new_draw_req = True;
-		stp->update_req = True;
-	}
 	return MIN(ret,subret);
 
 }
+
 /*
  * Function:	SetUpIrrTransObj
  *
@@ -2946,17 +2687,17 @@ static NhlErrorTypes SetUpIrrTransObj
 	NhlTransformLayerPart	*tfp = &(stnew->trans);
 	char			buffer[_NhlMAXRESNAMLEN];
 	int			tmpid;
-        NhlSArg			sargs[16];
+        NhlSArg			sargs[32];
         int			nargs = 0;
-	NhlBoolean		x_irr,y_irr;
-	NhlBoolean		xrev,yrev,oxrev,oyrev;
-	int			count;
 
-	entry_name = (init) ? InitName : SetValuesName;
+	entry_name = (init) ?
+                "StreamlinePlotInitialize" : "StreamlinePlotSetValues";
 
-	if (! init &&
-	    ! ostp->use_irr_trans && 
-	    tfp->trans_obj != NULL) {
+	if (init)
+		tfp->trans_obj = NULL;
+	if (tfp->trans_obj &&
+            tfp->trans_obj->base.layer_class->base_class.class_name !=
+	    NhlirregularTransObjClass->base_class.class_name) {
 		subret = NhlDestroy(tfp->trans_obj->base.id);
 		if ((ret = MIN(ret,subret)) < NhlWARNING) {
 			e_text = "%s: Error destroying irregular trans object";
@@ -2965,125 +2706,38 @@ static NhlErrorTypes SetUpIrrTransObj
 		}
 		tfp->trans_obj = NULL;
 	}
-
 	if (! stp->data_init) return ret;
-
-	x_irr = stp->vfp->x_arr == NULL ? False : True;
-	y_irr = stp->vfp->y_arr == NULL ? False : True;
-	xrev = stp->vfp->x_start > stp->vfp->x_end;
-	yrev = stp->vfp->y_start > stp->vfp->y_end;
-	if (! x_irr && ! y_irr) {
-		e_text = "%s: Internal inconsistency setting irregular trans";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return NhlFATAL;
-	}
-
-	if (x_irr && stp->x_log) {
-		e_text = 
-"%s: X Axis cannot be logarithmic and irregular simultaneously: turning %s off";
-		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,NhlNtrXLog);
-		stp->x_log = False;
-		ret = MIN(NhlWARNING,ret);
-	}
-	if (y_irr && stp->y_log) {
-		e_text = 
-"%s: Y Axis cannot be logarithmic and irregular simultaneously: turning %s off";
-		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,NhlNtrYLog);
-		stp->y_log = False;
-		ret = MIN(NhlWARNING,ret);
-	}
-
-	if (stp->x_log || stp->y_log)
-		stp->do_low_level_log = True;
-
-	if (init || tfp->trans_obj == NULL ||
-	    stp->ovfp == NULL || ! ostp->data_init ||
-	    stp->vfp->x_arr != stp->ovfp->x_arr ||
-	    stp->vfp->x_start != stp->ovfp->x_start ||
-	    stp->vfp->x_end != stp->ovfp->x_end ||
-	    stp->x_min != ostp->x_min ||
-	    stp->x_max != ostp->x_max ||
-	    stp->x_log != ostp->x_log) {
-
-		if (x_irr) {
-			NhlSetSArg(&sargs[nargs++],NhlNtrXCoordPoints,
-				   stp->vfp->x_arr);
-			count = stp->vfp->x_arr->len_dimensions[0];
-			NhlSetSArg(&sargs[nargs++],
-				   NhlNtrXAxisType,NhlIRREGULARAXIS);
-		}
-		else {
-			if (stp->x_log)
-				NhlSetSArg(&sargs[nargs++],
-					   NhlNtrXAxisType,NhlLOGAXIS);
-			else
-				NhlSetSArg(&sargs[nargs++],
-					   NhlNtrXAxisType,NhlLINEARAXIS);
-			count = 3;
-		}
-		subret = SetCoordBounds(stp,stXCOORD,count,entry_name);
-		if ((ret = MIN(subret,ret)) < NhlWARNING)
-			return ret;
-		NhlSetSArg(&sargs[nargs++],NhlNtrXMinF,stp->x_min);
-		NhlSetSArg(&sargs[nargs++],NhlNtrXMaxF,stp->x_max);
-	}
-
-	if (init || tfp->trans_obj == NULL ||
-	    stp->ovfp == NULL || ! ostp->data_init ||
-	    stp->vfp->y_arr != stp->ovfp->y_arr ||
-	    stp->vfp->y_start != stp->ovfp->y_start ||
-	    stp->vfp->y_end != stp->ovfp->y_end ||
-	    stp->y_min != ostp->y_min ||
-	    stp->y_max != ostp->y_max ||
-	    stp->y_log != ostp->y_log) {
-
-		if (y_irr) {
-			NhlSetSArg(&sargs[nargs++],NhlNtrYCoordPoints,
-				   stp->vfp->y_arr);
-			count = stp->vfp->y_arr->len_dimensions[0];
-			NhlSetSArg(&sargs[nargs++],
-				   NhlNtrYAxisType,NhlIRREGULARAXIS);
-		}
-		else {
-			if (stp->y_log)
-				NhlSetSArg(&sargs[nargs++],
-					   NhlNtrYAxisType,NhlLOGAXIS);
-			else
-				NhlSetSArg(&sargs[nargs++],
-					   NhlNtrYAxisType,NhlLINEARAXIS);
-			count = 3;
-		}
-		subret = SetCoordBounds(stp,stYCOORD,count,entry_name);
-		if ((ret = MIN(subret,ret)) < NhlWARNING)
-			return ret;
-
-		NhlSetSArg(&sargs[nargs++],NhlNtrYMinF,stp->y_min);
-		NhlSetSArg(&sargs[nargs++],NhlNtrYMaxF,stp->y_max);
-	}
+        
+        if (tfp->x_reverse_set)
+                NhlSetSArg(&sargs[nargs++],NhlNtrXReverse,tfp->x_reverse);
+        if (tfp->y_reverse_set)
+                NhlSetSArg(&sargs[nargs++],NhlNtrYReverse,tfp->y_reverse);
 
 	if (init || tfp->trans_obj == NULL) {
 
 		stp->new_draw_req = True;
-		stp->update_req = True;
-
-		if (stp->x_min_set && stp->x_max_set)
-			NhlSetSArg(&sargs[nargs++],
-				   NhlNtrXReverse,stp->x_reverse);
-		else {
-			xrev = (xrev && stp->x_reverse) || 
-				(! xrev && ! stp->x_reverse) ? False : True;
-			NhlSetSArg(&sargs[nargs++],NhlNtrXReverse,xrev);
-		}
-		if (stp->y_min_set && stp->y_max_set)
-			NhlSetSArg(&sargs[nargs++],
-				   NhlNtrYReverse,stp->y_reverse);
-		else {
-			yrev = (yrev && stp->y_reverse) || 
-				(! yrev && ! stp->y_reverse) ? False : True;
-			NhlSetSArg(&sargs[nargs++],NhlNtrYReverse,yrev);
-		}
+                stp->update_req = True;
+                
+		if (stp->vfp->x_arr)
+			NhlSetSArg(&sargs[nargs++],NhlNtrXCoordPoints,
+				   stp->vfp->x_arr);
+		if (stp->vfp->y_arr)
+			NhlSetSArg(&sargs[nargs++],NhlNtrYCoordPoints,
+				   stp->vfp->y_arr);
+                
+                NhlSetSArg(&sargs[nargs++],NhlNtrXAxisType,tfp->x_axis_type);
+                NhlSetSArg(&sargs[nargs++],NhlNtrYAxisType,tfp->y_axis_type);
+		NhlSetSArg(&sargs[nargs++],NhlNtrXMinF,tfp->x_min);
+		NhlSetSArg(&sargs[nargs++],NhlNtrXMaxF,tfp->x_max);
+		NhlSetSArg(&sargs[nargs++],NhlNtrYMinF,tfp->y_min);
+		NhlSetSArg(&sargs[nargs++],NhlNtrYMaxF,tfp->y_max);
+                NhlSetSArg(&sargs[nargs++],NhlNtrDataXStartF,tfp->data_xstart);
+                NhlSetSArg(&sargs[nargs++],NhlNtrDataXEndF,tfp->data_xend);
+                NhlSetSArg(&sargs[nargs++],NhlNtrDataYStartF,tfp->data_ystart);
+                NhlSetSArg(&sargs[nargs++],NhlNtrDataYEndF,tfp->data_yend);
                 NhlSetSArg(&sargs[nargs++],NhlNtrXTensionF,stp->x_tension);
                 NhlSetSArg(&sargs[nargs++],NhlNtrYTensionF,stp->y_tension);
+                
 		sprintf(buffer,"%s",stnew->base.name);
 		strcat(buffer,".Trans");
 
@@ -3094,57 +2748,90 @@ static NhlErrorTypes SetUpIrrTransObj
 		ret = MIN(subret,ret);
 
 		tfp->trans_obj = _NhlGetLayer(tmpid);
-
 		if(tfp->trans_obj == NULL){
 			e_text = "%s: Error creating transformation object";
 			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 			return NhlFATAL;
 		}
+	}
+        else {
+                if (stp->data_changed && stp->vfp->x_arr &&
+		    (stp->vfp->changed & _NhlvfXARR_CHANGED))
+                        NhlSetSArg(&sargs[nargs++],
+                                   NhlNtrXCoordPoints,stp->vfp->x_arr);
+                if (stp->data_changed && stp->vfp->y_arr &&
+		    (stp->vfp->changed & _NhlvfXARR_CHANGED))
+                        NhlSetSArg(&sargs[nargs++],
+                                   NhlNtrYCoordPoints,stp->vfp->y_arr);
+        
+                if (tfp->x_axis_type != stold->trans.x_axis_type)        
+                        NhlSetSArg(&sargs[nargs++],
+                                   NhlNtrXAxisType,tfp->x_axis_type);
+                if (tfp->y_axis_type != stold->trans.y_axis_type)        
+                        NhlSetSArg(&sargs[nargs++],
+                                   NhlNtrYAxisType,tfp->y_axis_type);
+        
+                if (tfp->x_min != stold->trans.x_min)
+                        NhlSetSArg(&sargs[nargs++],NhlNtrXMinF,tfp->x_min);
+                if (tfp->x_max != stold->trans.x_max)
+                        NhlSetSArg(&sargs[nargs++],NhlNtrXMaxF,tfp->x_max);
+                if (tfp->y_min != stold->trans.y_min)
+                        NhlSetSArg(&sargs[nargs++],NhlNtrYMinF,tfp->y_min);
+                if (tfp->y_max != stold->trans.y_max)
+                        NhlSetSArg(&sargs[nargs++],NhlNtrYMaxF,tfp->y_max);
+        
+                if (tfp->data_xstart != stold->trans.data_xstart)
+                        NhlSetSArg(&sargs[nargs++],
+                                   NhlNtrDataXStartF,tfp->data_xstart);
+                if (tfp->data_xend != stold->trans.data_xend)
+                        NhlSetSArg(&sargs[nargs++],
+                                   NhlNtrDataXEndF,tfp->data_xend);
+                if (tfp->data_ystart != stold->trans.data_ystart)
+                        NhlSetSArg(&sargs[nargs++],
+                                   NhlNtrDataYStartF,tfp->data_ystart);
+                if (tfp->data_yend != stold->trans.data_yend)
+                        NhlSetSArg(&sargs[nargs++],
+                                   NhlNtrDataYEndF,tfp->data_yend);
+        
+                if (stp->x_tension != ostp->x_tension)
+                        NhlSetSArg(&sargs[nargs++],
+                                   NhlNtrXTensionF,stp->x_tension);
+                if (stp->y_tension != ostp->y_tension)
+                        NhlSetSArg(&sargs[nargs++],
+                                   NhlNtrYTensionF,stp->y_tension);
+                subret = NhlALSetValues(tfp->trans_obj->base.id,sargs,nargs);
 
-		return ret;
-	}
+                if (nargs > 0) {
+                        stp->new_draw_req = True;
+                        stp->update_req = True;
+                }
+        }
+        
+        NhlVAGetValues(tfp->trans_obj->base.id,
+                       NhlNtrXReverse,&tfp->x_reverse,
+                       NhlNtrYReverse,&tfp->y_reverse,
+                       NhlNtrXAxisType,&tfp->x_axis_type,
+                       NhlNtrYAxisType,&tfp->y_axis_type,
+                       NhlNtrDataXStartF,&tfp->data_xstart,
+                       NhlNtrDataXEndF,&tfp->data_xend,
+                       NhlNtrDataYStartF,&tfp->data_ystart,
+                       NhlNtrDataYEndF,&tfp->data_yend,
+                       NhlNtrXMinF,&tfp->x_min,
+                       NhlNtrXMaxF,&tfp->x_max,
+                       NhlNtrYMinF,&tfp->y_min,
+                       NhlNtrYMaxF,&tfp->y_max,
+                       NULL);
 
-	if (stp->ovfp == NULL) {
-		oxrev = False;
-		oyrev = False;
-	}
-	else {
-		oxrev = stp->ovfp->x_start > stp->ovfp->x_end;
-		oyrev = stp->ovfp->y_start > stp->ovfp->y_end;
-	}
-	if (stp->x_reverse != ostp->x_reverse || xrev != oxrev) {
-		if (stp->x_min_set && stp->x_max_set)
-			NhlSetSArg(&sargs[nargs++],
-				   NhlNtrXReverse,stp->x_reverse);
-		else {
-			xrev = (xrev && stp->x_reverse) || 
-				(! xrev && ! stp->x_reverse) ? False : True;
-			NhlSetSArg(&sargs[nargs++],NhlNtrXReverse,xrev);
-		}
-	}
-	if (stp->y_reverse != ostp->y_reverse || yrev != oyrev) {
-		if (stp->y_min_set && stp->y_max_set)
-			NhlSetSArg(&sargs[nargs++],
-				   NhlNtrYReverse,stp->y_reverse);
-		else {
-			yrev = (yrev && stp->y_reverse) || 
-				(! yrev && ! stp->y_reverse) ? False : True;
-			NhlSetSArg(&sargs[nargs++],NhlNtrYReverse,yrev);
-		}
-	}
-        if (stp->x_tension != ostp->x_tension)
-                NhlSetSArg(&sargs[nargs++],NhlNtrXTensionF,stp->x_tension);
-        if (stp->y_tension != ostp->y_tension)
-                NhlSetSArg(&sargs[nargs++],NhlNtrYTensionF,stp->y_tension);
-	subret = NhlALSetValues(tfp->trans_obj->base.id,sargs,nargs);
-
-	if (nargs > 0) {
-		stp->new_draw_req = True;
-		stp->update_req = True;
-	}
+        tfp->x_log = tfp->x_axis_type == NhlLOGAXIS ? True : False;
+        tfp->y_log = tfp->y_axis_type == NhlLOGAXIS ? True : False;
+       
+        stp->do_low_level_log = tfp->x_axis_type == NhlLOGAXIS ||
+                tfp->y_axis_type == NhlLOGAXIS ? True : False;
+        
 	return MIN(ret,subret);
 
 }
+
 
 
 /*
@@ -4203,10 +3890,10 @@ static NhlErrorTypes    ManageVectorData
 	stp->use_irr_trans = (stp->vfp->x_arr == NULL &&
 			      stp->vfp->y_arr == NULL) ? False : True;
 
-	stnew->trans.data_xmin = MIN(stp->vfp->x_start,stp->vfp->x_end);
-	stnew->trans.data_xmax = MAX(stp->vfp->x_start,stp->vfp->x_end);
-	stnew->trans.data_ymin = MIN(stp->vfp->y_start,stp->vfp->y_end);
-	stnew->trans.data_ymax = MAX(stp->vfp->y_start,stp->vfp->y_end);
+	stnew->trans.data_xstart = MIN(stp->vfp->x_start,stp->vfp->x_end);
+	stnew->trans.data_xend = MAX(stp->vfp->x_start,stp->vfp->x_end);
+	stnew->trans.data_ystart = MIN(stp->vfp->y_start,stp->vfp->y_end);
+	stnew->trans.data_yend = MAX(stp->vfp->y_start,stp->vfp->y_end);
 
 	return ret;
 }

@@ -1,5 +1,5 @@
 /*
-*      $Id: MapTransObj.c,v 1.40 1998-02-20 22:40:59 dbrown Exp $
+*      $Id: MapTransObj.c,v 1.41 1998-04-16 03:08:51 dbrown Exp $
 */
 /************************************************************************
 *									*
@@ -216,25 +216,26 @@ static NhlResource resources[] = {
 	 NhlOffset(NhlMapTransObjLayerRec,mptrans.preserve_aspect),
 	 NhlTImmediate,_NhlUSET((NhlPointer)True) ,_NhlRES_PRIVATE,NULL},
 
-{ "no.res","No.res",NhlTFloat,sizeof(float),
+{ NhlNtrXMinF,NhlCtrXMinF,NhlTFloat,sizeof(float),
           NhlOffset(NhlMapTransObjLayerRec,trobj.x_min),
-          NhlTString,_NhlUSET("0.0"),_NhlRES_PRIVATE,NULL},
-{ "no.res","No.res",NhlTFloat,sizeof(float),
+          NhlTString,_NhlUSET("-180."),_NhlRES_GONLY,NULL},
+{ NhlNtrXMaxF,NhlCtrXMaxF,NhlTFloat,sizeof(float),
           NhlOffset(NhlMapTransObjLayerRec,trobj.x_max),
-          NhlTString,_NhlUSET("1.0"),_NhlRES_PRIVATE,NULL},
+          NhlTString,_NhlUSET("180.0"),_NhlRES_GONLY,NULL},
+{ NhlNtrYMinF,NhlCtrYMinF,NhlTFloat,sizeof(float),
+          NhlOffset(NhlMapTransObjLayerRec,trobj.y_min),
+          NhlTString,_NhlUSET("-90.0"),_NhlRES_GONLY,NULL},
+{ NhlNtrYMaxF,NhlCtrYMaxF,NhlTFloat,sizeof(float),
+          NhlOffset(NhlMapTransObjLayerRec,trobj.y_max),
+          NhlTString,_NhlUSET("90.0"),_NhlRES_GONLY,NULL},
+        
 { "no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
           NhlOffset(NhlMapTransObjLayerRec,trobj.x_reverse),
           NhlTImmediate,_NhlUSET(False),_NhlRES_PRIVATE,NULL},
-{ "no.res","No.res",NhlTFloat,sizeof(float),
-          NhlOffset(NhlMapTransObjLayerRec,trobj.y_min),
-          NhlTString,_NhlUSET("0.0"),_NhlRES_PRIVATE,NULL},
-{ "no.res","No.res",NhlTFloat,sizeof(float),
-          NhlOffset(NhlMapTransObjLayerRec,trobj.y_max),
-          NhlTString,_NhlUSET("1.0"),_NhlRES_PRIVATE,NULL},
 { "no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
           NhlOffset(NhlMapTransObjLayerRec,trobj.y_reverse),
           NhlTImmediate,_NhlUSET(False),_NhlRES_PRIVATE,NULL},
-        
+
 {NhlNmpTransChanged,NhlNmpTransChanged,NhlTBoolean,sizeof(NhlBoolean),
 	 NhlOffset(NhlMapTransObjLayerRec,mptrans.trans_changed),
 	 NhlTImmediate,_NhlUSET((NhlPointer) True),_NhlRES_PRIVATE,NULL},
@@ -287,6 +288,14 @@ NhlLayer,          /* reference */
 NhlLayer,          /* new */
 _NhlArgList,    /* args */
 int             /* num_args*/
+#endif
+);
+
+static NhlErrorTypes    MapTransGetValues(
+#if	NhlNeedProto
+	NhlLayer,       /* l */
+	_NhlArgList,    /* args */
+	int             /* num_args */
 #endif
 );
 
@@ -475,7 +484,7 @@ NhlMapTransObjClassRec NhlmapTransObjClassRec = {
 /* layer_initialize		*/	MapTransInitialize,
 /* layer_set_values		*/	MapTransSetValues,
 /* layer_set_values_hook	*/	NULL,
-/* layer_get_values		*/	NULL,
+/* layer_get_values		*/	MapTransGetValues,
 /* layer_reparent		*/	NULL,
 /* layer_destroy		*/	NULL
 },
@@ -529,8 +538,12 @@ static mpWinLimits Win_Limits[] = {
 };
 
 static NhlLayer Wkptr = NULL;
-static NrmQuark	Qdataxmin = NrmNULLQUARK;
-static NrmQuark	Qdataxmax =  NrmNULLQUARK;
+static NrmQuark	Qdataxstart = NrmNULLQUARK;
+static NrmQuark	Qdataxend =  NrmNULLQUARK;
+static NrmQuark	Qxmin =  NrmNULLQUARK;
+static NrmQuark	Qxmax =  NrmNULLQUARK;
+static NrmQuark	Qymin =  NrmNULLQUARK;
+static NrmQuark	Qymax =  NrmNULLQUARK;
 
 /*
 * Function:	MapSetTrans
@@ -873,7 +886,10 @@ NhlLayer parent;
 		mtp->top_npc = (mtp->top_window - Win_Limits[ix].v_min) /
 			Win_Limits[ix].v_range;
 	}
-		
+        mtp->data_xmin = MIN(minstance->trobj.data_xstart,
+                             minstance->trobj.data_xend);
+        mtp->data_xmax = MAX(minstance->trobj.data_xstart,
+                             minstance->trobj.data_xend);
 
 	mtp->trans_changed = False;
 
@@ -1177,13 +1193,99 @@ static NhlErrorTypes MapWinToData
 				*status = 1;
 				xout[i]=yout[i]=minstance->trobj.out_of_range;
 			}
-			else if (xout[i] < minstance->trobj.data_xmin) 
+			else if (xout[i] < mtp->data_xmin) 
 				xout[i] += 360.0;
-			else if (xout[i] > minstance->trobj.data_xmax)
+			else if (xout[i] > mtp->data_xmax)
 				xout[i] -= 360.0;
 		}
 	}
 	return(ret);
+}
+
+/*
+ * Function:	GetMinMaxLatLon
+ *
+ * Description: Returns the min and max lat and lon given the current
+ *              map limits and projection
+ *
+ * In Args:
+ *
+ * Out Args:
+ *
+ * Return Values:
+ *
+ * Side Effects:
+ */
+/*ARGSUSED*/
+static NhlErrorTypes GetMinMaxLatLon
+#if	NhlNeedProto
+(
+	NhlMapTransObjLayer	mpl,
+	float			*minlon,
+	float			*maxlon,
+	float			*minlat,
+	float			*maxlat
+)
+#else
+(mpl,minlon,maxlon,minlat,maxlat)
+	NhlMapTransObjLayer	mpl;
+	float			*minlon;
+	float			*maxlon;
+	float			*minlat;
+	float			*maxlat
+#endif
+{
+	NhlMapTransObjLayerPart	*mtp = &(mpl->mptrans);
+        float tlat,tlon,uval,vval;
+        float tmplon,tminlon,tmaxlon;
+        
+        *minlon = 180.0;
+        *maxlon = -180.0;
+        *minlat = 90.0;
+        *maxlat = -90.0;
+        tminlon = 360;
+        tmaxlon = 0;
+		
+        for (tlat = -90.0; tlat <= 90.0; tlat += 1.0) {
+                if (tlat == -90.0) {
+                        c_maptra(tlat,0,&uval,&vval);
+                        if (uval < 1E9 && vval < 1E9)
+                                *minlat = -90;
+                        continue;
+                }
+                if (tlat == 90.0) {
+                        c_maptra(tlat,0,&uval,&vval);
+                        if (uval < 1E9 && vval < 1E9)
+                                *maxlat = 90;
+                        continue;
+                }
+                for (tlon = -180.0; tlon <= 180.0; tlon += 1.0) {
+                        c_maptra(tlat,tlon,&uval,&vval);
+                        if (uval >= 1E9 || vval >= 1E9)
+                                continue;
+                        if (tlat < *minlat) *minlat = tlat;
+                        if (tlat > *maxlat) *maxlat = tlat;
+                        if (tlon < *minlon) *minlon = tlon;
+                        if (tlon > *maxlon) *maxlon = tlon;
+                        tmplon = tlon;
+                        if (tmplon < 0.0) tmplon += 360;
+                        if (tmplon < tminlon) tminlon = tmplon;
+                        if (tmplon > tmaxlon) tmaxlon = tmplon;
+                        
+                }
+        }
+        if (tmaxlon-tminlon < 359.0 && tmaxlon-tminlon < *maxlon-*minlon) {
+                *maxlon = tmaxlon;
+                *minlon = tminlon;
+        }
+        
+#if 0
+        printf("lat,lon min,max - %f,%f,%f,%f\n",
+	       *minlat,*maxlat,*minlon,*maxlon);
+#endif
+
+        return NhlNOERROR;
+
 }
 
 /*
@@ -1220,7 +1322,7 @@ static NhlErrorTypes  MapTransSetValues
 	char *e_text, *entry_name = "MapTransSetValues";
 
 	if (num_args == 2 && 
-	    (args[0].quark == Qdataxmin || args[0].quark == Qdataxmax))
+	    (args[0].quark == Qdataxstart || args[0].quark == Qdataxend))
 	    return NhlNOERROR;
 
 	mtp->trans_changed = True;
@@ -1274,7 +1376,7 @@ static NhlErrorTypes  MapTransSetValues
 
 	subret = _NhlSetTrans(new,new->base.parent);
 	ret = MIN(ret,subret);
-
+                
 	return(ret);
 	
 }
@@ -1326,6 +1428,63 @@ static NhlErrorTypes MapTransInitialize
 	ret = MIN(ret,subret);
 
 	return(ret);
+}
+
+/*
+ * Function:    MapTransGetValues
+ *
+ * Description: 
+ *
+ *
+ * In Args:
+ *
+ * Out Args:
+ *
+ * Return Values:
+ *
+ * Side Effects:
+ */
+
+
+static NhlErrorTypes    MapTransGetValues
+#if	NhlNeedProto
+(NhlLayer l, _NhlArgList args, int num_args)
+#else
+(l,args,num_args)
+        NhlLayer        l;
+        _NhlArgList     args;
+        int     	num_args;
+#endif
+{
+        NhlMapTransObjLayer mtl = (NhlMapTransObjLayer)l;
+        NhlBoolean gotminmax = False;
+        float minlat,maxlat,minlon,maxlon;
+        int i;
+        
+        for( i = 0; i< num_args; i++ ) {
+                if (! gotminmax && (args[i].quark == Qxmin ||
+                                    args[i].quark == Qxmax ||
+                                    args[i].quark == Qymin ||
+                                    args[i].quark == Qymax)) {
+                        GetMinMaxLatLon(mtl,
+                                        &minlon,&maxlon,
+                                        &minlat,&maxlat);
+                        gotminmax = True;
+                }
+                if (args[i].quark == Qxmin) {
+                        *((float *)(args[i].value.ptrval)) = minlon;
+                }
+                else if (args[i].quark == Qxmax) {
+                        *((float *)(args[i].value.ptrval)) = maxlon;
+                }
+                if (args[i].quark == Qymin) {
+                        *((float *)(args[i].value.ptrval)) = minlat;
+                }
+                else if (args[i].quark == Qymax) {
+                        *((float *)(args[i].value.ptrval)) = maxlat;
+                }
+        }
+        return NhlNOERROR;
 }
 
 /*
@@ -1751,83 +1910,17 @@ static NhlErrorTypes    MapTransClassInitialize
         _NhlRegisterEnumType(NhlmapTransObjClass,NhlTProjection,projectionlist,
 						NhlNumber(projectionlist));
 
-	Qdataxmin = NrmStringToQuark(NhlNtrDataXMinF);
-	Qdataxmax = NrmStringToQuark(NhlNtrDataXMaxF);
+	Qdataxstart = NrmStringToQuark(NhlNtrDataXStartF);
+	Qdataxend = NrmStringToQuark(NhlNtrDataXEndF);
+ 	Qxmin = NrmStringToQuark(NhlNtrXMinF);
+	Qxmax = NrmStringToQuark(NhlNtrXMaxF);
+ 	Qymin = NrmStringToQuark(NhlNtrYMinF);
+	Qymax = NrmStringToQuark(NhlNtrYMaxF);
 
 	return NhlNOERROR;
 }
 
-#if 0
-/*
- * Function:	GetMinMaxLatLon
- *
- * Description: Returns the min and max lat and lon given the current
- *              map limits and projection
- *
- * In Args:
- *
- * Out Args:
- *
- * Return Values:
- *
- * Side Effects:
- */
-/*ARGSUSED*/
-static NhlErrorTypes GetMinMaxLatLon
-#if	NhlNeedProto
-(
-	NhlMapTransObjLayer	mpl,
-	float			*minlon,
-	float			*maxlon,
-	float			*minlat,
-	float			*maxlat,
-	NhlString		entry_name
-)
-#else
-(mpl,minlon,maxlon,minlat,maxlat,entry_name)
-	NhlMapTransObjLayer	mpl;
-	float			*minlon;
-	float			*maxlon;
-	float			*minlat;
-	float			*maxlat;
-	NhlString		entry_name;
-#endif
-{
-	NhlMapTransObjLayerPart	*mtp = &(mpl->mptrans);
-        float tlat,tlon,uval,vval;
 
-	if (mtp->map_limit_mode == NhlLATLON) {
-		*minlon = mtp->min_lon;
-		*maxlon = mtp->max_lon;
-		*minlat = mtp->min_lat;
-		*maxlat = mtp->max_lat;
-		return NhlNOERROR;
-	}
-	*minlon = 180.0;
-	*maxlon = -180.0;
-	*minlat = 90.0;
-	*maxlat = -90.0;
-		
-        for (tlat = -90.0; tlat <= 90.0; tlat += 1.0) {
-                for (tlon = -180.0; tlon <= 180.0; tlon += 1.0) {
-                        c_maptra(tlat,tlon,&uval,&vval);
-                        if (uval >= 1E9 || vval >= 1E9)
-                                continue;
-                        if (tlat < *minlat) *minlat = tlat;
-                        if (tlat > *maxlat) *maxlat = tlat;
-                        if (tlon < *minlon) *minlon = tlon;
-                        if (tlon > *maxlon) *maxlon = tlon;
-                }
-        }
-#if 0
-        printf("lat,lon min,max - %f,%f,%f,%f\n",
-	       *minlat,*maxlat,*minlon,*maxlon);
-#endif
-
-        return NhlNOERROR;
-
-}
-#endif
 /*ARGSUSED*/
 static NhlErrorTypes MapDataLineTo
 #if	NhlNeedProto

@@ -1,5 +1,5 @@
 /*
- *      $Id: Transform.c,v 1.37 1998-02-18 01:25:26 dbrown Exp $
+ *      $Id: Transform.c,v 1.38 1998-04-16 03:09:12 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -31,7 +31,7 @@
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/TransformP.h>
 #include <ncarg/hlu/TransObjP.h>
-#include <ncarg/hlu/MapTransObjP.h>
+#include <ncarg/hlu/MapTransObj.h>
 #include <ncarg/hlu/ConvertersP.h>
 
 static _NhlRawObjCB callbacks[] = {
@@ -39,6 +39,7 @@ static _NhlRawObjCB callbacks[] = {
          NhlOffset(NhlTransformLayerRec,trans.overlaystatuscb),
 		 0,NULL,NULL,NULL}
 };
+#define Oset(field)     NhlOffset(NhlTransformLayerRec,trans.field)
 
 static NhlResource resources[] = {
 
@@ -46,32 +47,114 @@ static NhlResource resources[] = {
 
 	{ NhlNtfPlotManagerOn,NhlCtfPlotManagerOn,
 		  NhlTBoolean,sizeof(NhlBoolean),
-		  NhlOffset(NhlTransformLayerRec,trans.plot_manager_on),
+		  Oset(plot_manager_on),
 		  NhlTImmediate,_NhlUSET((NhlPointer)True),
           	  _NhlRES_NOSACCESS,NULL},
 	{ NhlNtfDoNDCOverlay,NhlCtfDoNDCOverlay,
 		  NhlTBoolean,sizeof(NhlBoolean),
-		  NhlOffset(NhlTransformLayerRec,trans.do_ndc_overlay),
+		  Oset(do_ndc_overlay),
 		  NhlTImmediate,_NhlUSET((NhlPointer)False),0,NULL},
 
 /* End-documented-resources */
 
 	{ NhlNtfOverlayObject,NhlCtfOverlayObject,
 		  NhlTPointer,sizeof(NhlPointer),
-		  NhlOffset(NhlTransformLayerRec,trans.overlay_object),
+		  Oset(overlay_object),
 		  NhlTImmediate,_NhlUSET((NhlPointer)NULL),
 		  _NhlRES_PRIVATE,NULL},
 	{ NhlNtfOverlayTrans,NhlCtfOverlayTrans,
 		  NhlTPointer,sizeof(NhlPointer),
-		  NhlOffset(NhlTransformLayerRec,trans.overlay_trans_obj),
+		  Oset(overlay_trans_obj),
 		  NhlTImmediate,_NhlUSET((NhlPointer)NULL),
 		  _NhlRES_PRIVATE,NULL},
 	{ NhlNtfOverlayStatus,NhlCtfOverlayStatus,
 		  NhlTInteger,sizeof(int),
-		  NhlOffset(NhlTransformLayerRec,trans.overlay_status),
+		  Oset(overlay_status),
 		  NhlTImmediate,_NhlUSET((NhlPointer)_tfNotInOverlay),
-		  _NhlRES_PRIVATE,NULL}
+          	  _NhlRES_PRIVATE,NULL},
+        
+/* Intercepted resources */
+
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 Oset(x_min_set),NhlTImmediate,
+		 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
+	{NhlNtrXMinF,NhlCtrXMinF,NhlTFloat,sizeof(float),
+		 Oset(x_min),NhlTProcedure,
+		 _NhlUSET((NhlPointer)_NhlResUnset),_NhlRES_INTERCEPTED,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 Oset(x_max_set),NhlTImmediate,
+		 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
+	{NhlNtrXMaxF,NhlCtrXMaxF,NhlTFloat,sizeof(float),
+		 Oset(x_max),NhlTProcedure,
+		 _NhlUSET((NhlPointer)_NhlResUnset),_NhlRES_INTERCEPTED,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 Oset(x_axis_type_set),NhlTImmediate,
+		 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
+	{ NhlNtrXAxisType,NhlCtrXAxisType,NhlTAxisType,sizeof(NhlAxisType),
+		Oset(x_axis_type),NhlTProcedure,
+		 _NhlUSET((NhlPointer)_NhlResUnset),_NhlRES_INTERCEPTED,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 Oset(x_log_set),NhlTImmediate,
+		 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
+	{ NhlNtrXLog,NhlCtrXLog,NhlTBoolean,sizeof(NhlBoolean),
+		Oset(x_log),NhlTProcedure,
+		 _NhlUSET((NhlPointer)_NhlResUnset),_NhlRES_INTERCEPTED,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 Oset(x_reverse_set),NhlTImmediate,
+		 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
+	{ NhlNtrXReverse,NhlCtrXReverse,NhlTBoolean,sizeof(NhlBoolean),
+		 Oset(x_reverse),NhlTProcedure,
+		 _NhlUSET((NhlPointer)_NhlResUnset),_NhlRES_INTERCEPTED,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 Oset(y_min_set),NhlTImmediate,
+		 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
+	{ NhlNtrYMinF,NhlCtrYMinF,NhlTFloat,sizeof(float),
+		Oset(y_min),NhlTProcedure,
+		 _NhlUSET((NhlPointer)_NhlResUnset),_NhlRES_INTERCEPTED,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 Oset(y_max_set),NhlTImmediate,
+		 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
+	{ NhlNtrYMaxF,NhlCtrYMaxF,NhlTFloat,sizeof(float),
+		Oset(y_max),NhlTProcedure,
+		 _NhlUSET((NhlPointer)_NhlResUnset),_NhlRES_INTERCEPTED,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 Oset(y_axis_type_set),NhlTImmediate,
+		 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
+	{ NhlNtrYAxisType,NhlCtrYAxisType,NhlTAxisType,sizeof(NhlAxisType),
+		Oset(y_axis_type),NhlTProcedure,
+		 _NhlUSET((NhlPointer)_NhlResUnset),_NhlRES_INTERCEPTED,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 Oset(y_log_set),NhlTImmediate,
+		 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
+	{ NhlNtrYLog,NhlCtrYLog,NhlTBoolean,sizeof(NhlBoolean),
+		Oset(y_log),NhlTProcedure,
+		 _NhlUSET((NhlPointer)_NhlResUnset),_NhlRES_INTERCEPTED,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 Oset(y_reverse_set),NhlTImmediate,
+		 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
+	{ NhlNtrYReverse,NhlCtrYReverse,NhlTBoolean,sizeof(NhlBoolean),
+		 Oset(y_reverse),NhlTProcedure,
+		 _NhlUSET((NhlPointer)_NhlResUnset),_NhlRES_INTERCEPTED,NULL},
+	{ NhlNtrDataXStartF, NhlCtrDataXStartF, NhlTFloat, sizeof(float),
+          	Oset(data_xstart),NhlTString, _NhlUSET("0.0"),
+          	_NhlRES_GONLY|_NhlRES_INTERCEPTED,NULL },
+	{ NhlNtrDataXEndF, NhlCtrDataXEndF, NhlTFloat, sizeof(float),
+		Oset(data_xend),NhlTString, _NhlUSET("0.0"),
+        	_NhlRES_GONLY|_NhlRES_INTERCEPTED,NULL },
+	{ NhlNtrDataYStartF, NhlCtrDataYStartF, NhlTFloat, sizeof(float),
+		Oset(data_ystart),NhlTString, _NhlUSET("0.0"),
+        	_NhlRES_GONLY|_NhlRES_INTERCEPTED,NULL },
+	{ NhlNtrDataYEndF, NhlCtrDataYEndF, NhlTFloat, sizeof(float),
+		Oset(data_yend),NhlTString, _NhlUSET("0.0"),
+        	_NhlRES_GONLY|_NhlRES_INTERCEPTED,NULL }
+        
 };
+
+#undef Oset
+
+/*
+* Transform Methods
+*/
 
 static NhlErrorTypes TransformClassPartInit(
 #if	NhlNeedProto
@@ -79,9 +162,26 @@ static NhlErrorTypes TransformClassPartInit(
 #endif
 );
 
-/*
-* Transform Methods
-*/
+static NhlErrorTypes TransformInitialize(
+#if	NhlNeedProto
+        NhlClass,  /* class */
+        NhlLayer,       /* req */
+        NhlLayer,       /* new */
+        _NhlArgList,    /* args */
+        int             /* num_args */
+#endif
+);
+
+static NhlErrorTypes TransformSetValues(
+#if	NhlNeedProto
+        NhlLayer,       /* old */
+        NhlLayer,       /* reference */
+        NhlLayer,       /* new */
+        _NhlArgList,    /* args */
+        int             /* num_args*/
+#endif
+);
+
 
 static NhlErrorTypes TransformDataToNDC(
 #if	NhlNeedProto
@@ -186,8 +286,8 @@ NhlTransformClassRec NhltransformClassRec = {
 
 /* class_part_initialize	*/	TransformClassPartInit,
 /* class_initialize		*/	NULL,
-/* layer_initialize		*/	NULL,
-/* layer_set_values		*/	NULL,
+/* layer_initialize		*/	TransformInitialize,
+/* layer_set_values		*/	TransformSetValues,
 /* layer_set_values_hook	*/	NULL,
 /* layer_get_values		*/	NULL,
 /* layer_reparent		*/	NULL,
@@ -250,6 +350,15 @@ TransformClassPartInit
 	NhlTransformClass	sc = (NhlTransformClass)
 						lc->base_class.superclass;
 
+        _NhlEnumVals   axistypelist[] = {
+	{NhlIRREGULARAXIS,	"IrregularAxis"},
+	{NhlLINEARAXIS,		"LinearAxis"},
+	{NhlLOGAXIS,		"LogAxis"}
+        };
+
+	_NhlRegisterEnumType(NhltransformClass,
+			NhlTAxisType,axistypelist,NhlNumber(axistypelist));
+        
 	if(tlc->trans_class.data_to_ndc == NhlInheritTransFunc)
 		tlc->trans_class.data_to_ndc = sc->trans_class.data_to_ndc;
 	if(tlc->trans_class.ndc_to_data == NhlInheritTransFunc)
@@ -271,7 +380,194 @@ TransformClassPartInit
 	if(tlc->trans_class.ndc_polymarker == NhlInheritPolyTransFunc)
 		tlc->trans_class.ndc_polymarker 
 			= sc->trans_class.ndc_polymarker;
+        
 	return NhlNOERROR;
+}
+ 
+/*
+ * Function:	TransformInitialize
+ *
+ * Description: 
+ *
+ * In Args: 	class	objects layer_class
+ *		req	instance record of requested values
+ *		new	instance record of new object
+ *		args	list of resources and values for reference
+ *		num_args 	number of elements in args.
+ *
+ * Out Args:	NONE
+ *
+ * Return Values:	Error Conditions
+ *
+ * Side Effects:	state change in GKS due to mapping transformations.
+ */
+/*ARGSUSED*/
+static NhlErrorTypes
+TransformInitialize
+#if	NhlNeedProto
+(
+	NhlClass	class,
+	NhlLayer		req,
+	NhlLayer		new,
+	_NhlArgList	args,
+	int		num_args
+)
+#else
+(class,req,new,args,num_args)
+        NhlClass      class;
+        NhlLayer           req;
+        NhlLayer           new;
+        _NhlArgList     args;
+        int             num_args;
+#endif
+{
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
+	char			*entry_name = "TransformInitialize";
+	char			*e_text;
+	NhlTransformLayer	tnew = (NhlTransformLayer) new;
+	NhlTransformLayerPart	*tfp = &(tnew->trans);
+
+	tfp->data_xstart = 0.0;
+	tfp->data_xend = 1.0;
+	tfp->data_ystart = 0.0;
+	tfp->data_yend = 1.0;
+        
+	if (tfp->x_min_set)
+		tfp->sticky_x_min_set = True;
+	else {
+		tfp->x_min = 0.0;
+		tfp->sticky_x_min_set = False;
+	}
+	if (tfp->x_max_set)
+		tfp->sticky_x_max_set = True;
+	else {
+		tfp->x_max = 1.0;
+		tfp->sticky_x_max_set = False;
+	}
+	if (tfp->y_min_set)
+		tfp->sticky_y_min_set = True;
+	else {
+		tfp->y_min = 0.0;
+		tfp->sticky_y_min_set = False;
+	}
+	if (tfp->y_max_set)
+		tfp->sticky_y_max_set = True;
+	else {
+		tfp->y_max = 1.0;
+		tfp->sticky_y_max_set = False;
+	}
+	if (! tfp->x_reverse_set)
+		tfp->x_reverse = False;
+	if (! tfp->y_reverse_set)
+		tfp->y_reverse = False;
+        
+        if (tfp->x_axis_type_set)
+                tfp->x_log = tfp->x_axis_type == NhlLOGAXIS ? True : False;
+	else if (tfp->x_log_set) {
+                tfp->x_axis_type = tfp->x_log ? NhlLOGAXIS : NhlLINEARAXIS;
+        }
+        else {
+                tfp->x_log = False;
+                tfp->x_axis_type = NhlLINEARAXIS;
+        }
+        
+        if (tfp->y_axis_type_set)
+                tfp->y_log = tfp->y_axis_type == NhlLOGAXIS ? True : False;
+	else if (tfp->y_log_set) {
+                tfp->y_axis_type = tfp->y_log ? NhlLOGAXIS : NhlLINEARAXIS;
+        }
+        else {
+                tfp->y_log = False;
+                tfp->y_axis_type = NhlLINEARAXIS;
+        }
+        return NhlNOERROR;
+        
+}
+/*
+ * Function:	TransformSetValues
+ *
+ * Description: 
+ *
+ * In Args:	old	copy of old instance record
+ *		reference	requested instance record
+ *		new	new instance record	
+ *		args 	list of resources and values for reference
+ *		num_args	number of elements in args.
+ *
+ * Out Args:	NONE
+ *
+ * Return Values:	ErrorConditions
+ *
+ * Side Effects:
+ */
+/*ARGSUSED*/
+static NhlErrorTypes TransformSetValues
+#if	NhlNeedProto
+(
+	NhlLayer	old,
+	NhlLayer	reference,
+	NhlLayer	new,
+	_NhlArgList	args,
+	int		num_args
+)
+#else
+(old,reference,new,args,num_args)
+	NhlLayer	old;
+	NhlLayer	reference;
+	NhlLayer	new;
+	_NhlArgList	args;
+	int		num_args;
+#endif
+{
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
+	char			*entry_name = "TransformSetValues";
+	char			*e_text;
+	NhlTransformLayer	tnew = (NhlTransformLayer) new;
+ 	NhlTransformLayerPart	*tfp = &(tnew->trans);
+	NhlTransformLayer	told = (NhlTransformLayer) old;
+
+	if (_NhlArgIsSet(args,num_args,NhlNtrXMinF)) {
+		tfp->x_min_set = True;
+                tfp->sticky_x_min_set = True;
+        }
+	if (_NhlArgIsSet(args,num_args,NhlNtrXMaxF)) {
+		tfp->x_max_set = True;
+                tfp->sticky_x_max_set = True;
+        }
+	if (_NhlArgIsSet(args,num_args,NhlNtrXReverse))
+		tfp->x_reverse_set = True;
+	if (_NhlArgIsSet(args,num_args,NhlNtrXLog))
+		tfp->x_log_set = True;
+	if (_NhlArgIsSet(args,num_args,NhlNtrXAxisType))
+		tfp->x_axis_type_set = True;
+	if (_NhlArgIsSet(args,num_args,NhlNtrYMinF)) {
+		tfp->y_min_set = True;
+                tfp->sticky_y_min_set = True;
+        }
+	if (_NhlArgIsSet(args,num_args,NhlNtrYMaxF)) {
+		tfp->y_max_set = True;
+                tfp->sticky_y_max_set = True;
+        }
+	if (_NhlArgIsSet(args,num_args,NhlNtrYReverse))
+		tfp->y_reverse_set = True;
+	if (_NhlArgIsSet(args,num_args,NhlNtrYLog))
+		tfp->y_log_set = True;
+	if (_NhlArgIsSet(args,num_args,NhlNtrYAxisType))
+		tfp->y_axis_type_set = True;
+        
+        if (tfp->x_axis_type_set)
+                tfp->x_log = tfp->x_axis_type == NhlLOGAXIS ? True : False;
+	else if (tfp->x_log_set) {
+                tfp->x_axis_type = tfp->x_log ? NhlLOGAXIS : NhlLINEARAXIS;
+        }
+        
+        if (tfp->y_axis_type_set)
+                tfp->y_log = tfp->y_axis_type == NhlLOGAXIS ? True : False;
+	else if (tfp->y_log_set) {
+                tfp->y_axis_type = tfp->y_log ? NhlLOGAXIS : NhlLINEARAXIS;
+        }
+
+        return NhlNOERROR;
 }
 
 /*
@@ -352,8 +648,8 @@ static NhlErrorTypes TransformDataToNDC
 	if ((top->base.layer_class)->base_class.class_name 
 	    == NhlmapTransObjClass->base_class.class_name) {
 		subret = NhlVASetValues(top->base.id,
-					NhlNtrDataXMinF,tfp->data_xmin,
-					NhlNtrDataXMaxF,tfp->data_xmax,
+					NhlNtrDataXStartF,tfp->data_xstart,
+					NhlNtrDataXEndF,tfp->data_xend,
 					NULL);
 	}
 	else {
@@ -1642,6 +1938,182 @@ extern NhlErrorTypes _NhltfInitSegment
 	_NhlResetSegTransDat(*transdat,x,y);
 	_NhlStartSegment(*transdat);
 	return ret;
+}
+
+extern NhlErrorTypes _NhltfCheckCoordBounds
+#if	NhlNeedProto
+(
+        NhlTransformLayer	new,
+	NhlTransformLayer	old,
+        NhlBoolean		use_irr_trans,
+	NhlString		entry_name
+)
+#else
+(new,old,use_irr_trans,entry_name)
+        NhlTransformLayer	new;
+	NhlTransformLayer	old;
+        NhlBoolean		use_irr_trans;
+	NhlString		entry_name;
+        
+#endif
+{
+	NhlErrorTypes	ret = NhlNOERROR, subret = NhlNOERROR;
+        NhlTransformLayerPart	*tfp = &new->trans;
+	char		*e_text;
+	float		ftmp;
+        
+        if (old) {
+                NhlTransformLayerPart	*otfp = &old->trans;
+
+                if (tfp->data_xstart != otfp->data_xstart ||
+                    tfp->data_xend != otfp->data_xend) {
+                        tfp->sticky_x_min_set = False;
+                        tfp->sticky_x_max_set = False;
+                }
+                if (tfp->data_ystart != otfp->data_ystart ||
+                    tfp->data_yend != otfp->data_yend) {
+                        tfp->sticky_y_min_set = False;
+                        tfp->sticky_y_max_set = False;
+                }
+        }
+        
+        if (! tfp->sticky_x_min_set)
+                tfp->x_min = MIN(tfp->data_xstart,tfp->data_xend);
+        if (! tfp->sticky_x_max_set)
+                tfp->x_max = MAX(tfp->data_xstart,tfp->data_xend);
+        if (! tfp->sticky_y_min_set)
+                tfp->y_min = MIN(tfp->data_ystart,tfp->data_yend);
+        if (! tfp->sticky_y_max_set)
+                tfp->y_max = MAX(tfp->data_ystart,tfp->data_yend);
+
+        if (tfp->x_min >= MAX(tfp->data_xstart,tfp->data_xend) ||
+            tfp->x_max <= MIN(tfp->data_xstart,tfp->data_xend)) {
+		e_text = "%s: X coordinates out of data range: defaulting";
+		ret = MIN(ret,NhlWARNING);
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+                tfp->x_min = MIN(tfp->data_xstart,tfp->data_xend);
+                tfp->x_max = MAX(tfp->data_xstart,tfp->data_xend);
+                tfp->sticky_x_min_set = tfp->sticky_x_max_set = False;
+        }
+	if (tfp->x_min == tfp->x_max) {
+		e_text = "%s: Zero X coordinate span: defaulting";
+		ret = MIN(ret,NhlWARNING);
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+		tfp->x_min = 0.0; 
+		tfp->x_max = 1.0;
+                tfp->sticky_x_min_set = tfp->sticky_x_max_set = False;
+	}
+	else if (tfp->x_min > tfp->x_max) {
+		e_text = "%s: Min X coordinate exceeds max: exchanging";
+		ret = MIN(ret,NhlWARNING);
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+		ftmp = tfp->x_min;
+		tfp->x_min = tfp->x_max;
+		tfp->x_max = ftmp;
+                tfp->sticky_x_min_set = tfp->sticky_x_max_set = False;
+	}
+	if (! use_irr_trans && tfp->x_log && tfp->x_min <= 0.0) {
+		e_text = 
+		   "%s: Log style invalid for X coordinates: setting %s off";
+		ret = MIN(ret,NhlWARNING);
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,NhlNtrXLog);
+		tfp->x_log = False;
+                tfp->x_axis_type = tfp->x_axis_type == NhlLOGAXIS ?
+                        NhlLINEARAXIS : tfp->x_axis_type;
+	}
+        else if (use_irr_trans && tfp->x_axis_type == NhlLOGAXIS &&
+                 (tfp->x_min <= 0.0 ||
+                  MIN(tfp->data_xstart,tfp->data_xend) <= 0.0 )) {
+		e_text = 
+		   "%s: Log style invalid for X coordinates: setting %s off";
+		ret = MIN(ret,NhlWARNING);
+		NhlPError(NhlWARNING,
+                          NhlEUNKNOWN,e_text,entry_name,NhlNtrXAxisType);
+		tfp->x_log = False;
+                tfp->x_axis_type = NhlLINEARAXIS;
+        }
+        
+        if (tfp->y_min >= MAX(tfp->data_ystart,tfp->data_yend) ||
+            tfp->y_max <= MIN(tfp->data_ystart,tfp->data_yend)) {
+		e_text = "%s: Y coordinates out of data range: defaulting";
+		ret = MIN(ret,NhlWARNING);
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+                tfp->y_min = MIN(tfp->data_ystart,tfp->data_yend);
+                tfp->y_max = MAX(tfp->data_ystart,tfp->data_yend);
+                tfp->sticky_y_min_set = tfp->sticky_y_max_set = False;
+        }
+	if (tfp->y_min == tfp->y_max) {
+		e_text = "%s: Zero Y coordinate span: defaulting";
+		ret = MIN(ret,NhlWARNING);
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+		tfp->y_min = 0.0; 
+		tfp->y_max = 1.0;
+                tfp->sticky_y_min_set = tfp->sticky_y_max_set = False;
+	}
+	else if (tfp->y_min > tfp->y_max) {
+		e_text = "%s: Min Y coordinate exceeds max: exchanging";
+		ret = MIN(ret,NhlWARNING);
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+		ftmp = tfp->y_min;
+		tfp->y_min = tfp->y_max;
+		tfp->y_max = ftmp;
+                tfp->sticky_y_min_set = tfp->sticky_y_max_set = False;
+	}
+	if (! use_irr_trans && tfp->x_log && tfp->x_min <= 0.0) {
+		e_text = 
+		   "%s: Log style invalid for X coordinates: setting %s off";
+		ret = MIN(ret,NhlWARNING);
+		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,NhlNtrXLog);
+		tfp->x_log = False;
+                tfp->x_axis_type = tfp->x_axis_type == NhlLOGAXIS ?
+                        NhlLINEARAXIS : tfp->x_axis_type;
+	}
+        else if (use_irr_trans && tfp->x_axis_type == NhlLOGAXIS &&
+                 (tfp->x_min <= 0.0 ||
+                  MIN(tfp->data_xstart,tfp->data_xend) <= 0.0 )) {
+		e_text = 
+		   "%s: Log style invalid for X coordinates: setting %s off";
+		ret = MIN(ret,NhlWARNING);
+		NhlPError(NhlWARNING,
+                          NhlEUNKNOWN,e_text,entry_name,NhlNtrXAxisType);
+		tfp->x_log = False;
+                tfp->x_axis_type = NhlLINEARAXIS;
+        }
+                
+        if (use_irr_trans) {
+                e_text = 
+"%s: irregular transformation requires %s to be within data coordinate range: resetting";
+                if (tfp->x_min < MIN(tfp->data_xstart,tfp->data_xend)) {
+                        NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
+                                  entry_name,NhlNtrXMinF);
+                        ret = MIN(ret,NhlWARNING);
+                        tfp->x_min = MIN(tfp->data_xstart,tfp->data_xend);
+                        tfp->sticky_x_min_set = False;
+                }
+                if (tfp->x_max > MAX(tfp->data_xstart,tfp->data_xend)) {
+                        NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
+                                  entry_name,NhlNtrXMaxF);
+                        ret = MIN(ret,NhlWARNING);
+                        tfp->x_max = MAX(tfp->data_xstart,tfp->data_xend);
+                        tfp->sticky_x_max_set = False;
+                }
+                if (tfp->y_min < MIN(tfp->data_ystart,tfp->data_yend)) {
+                        NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
+                                  entry_name,NhlNtrYMinF);
+                        ret = MIN(ret,NhlWARNING);
+                        tfp->y_min = MIN(tfp->data_ystart,tfp->data_yend);
+                        tfp->sticky_y_min_set = False;
+                }
+                if (tfp->y_max > MAX(tfp->data_ystart,tfp->data_yend)) {
+                        NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
+                                  entry_name,NhlNtrYMaxF);
+                        ret = MIN(ret,NhlWARNING);
+                        tfp->y_max = MAX(tfp->data_ystart,tfp->data_yend);
+                        tfp->sticky_y_max_set = False;
+                }
+        }
+        
+        return ret;
 }
 
 
