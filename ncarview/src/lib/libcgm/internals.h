@@ -11,7 +11,7 @@
 #ifndef	_internals_
 #define	_internals_
 
-#include	"boolean.h"
+#include	<ncarv.h>
 
 #define	DIR_2_ALLOC	100	/* initial directory size	*/
 #define	NAME	"CGM_tools"	/* name of this library		*/

@@ -1,5 +1,5 @@
 /*
- *	$Id: misc.c,v 1.6 1992-03-23 00:24:16 clyne Exp $
+ *	$Id: misc.c,v 1.7 1992-04-08 19:29:03 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -17,7 +17,6 @@
 #ifdef	cray
 #include <sys/unistd.h>
 #endif
-#include <common.h>
 #include "cgm_tools.h"
 #include "internals.h"
 

@@ -1,5 +1,5 @@
 /*
- *	$Id: meta_edit.c,v 1.10 1992-03-18 02:06:50 clyne Exp $
+ *	$Id: meta_edit.c,v 1.11 1992-04-08 19:28:58 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -81,6 +81,7 @@ static	int	recordSize;	/* record size of ncarCgm	*/
 static	Directory *workingDir;	/* dir representing the metafile being edited */
 static	Directory *saveDir;	/* actual dir for the metafile being edited */
 static	Cgm_fd	workingFd;	/* read file descriptor for working file   */
+static	doVerbose = FALSE;	/* operate in verbose mode		*/
 
 #ifndef	TMPDIR
 #define	TMPDIR	"/tmp"
@@ -316,7 +317,7 @@ Directory	*CGM_readFrames(ncar_cgm, start_frame, num_frames, target,
 	if ((fd = CGM_open(ncar_cgm, r, "r")) < 0) /*open readfile */
 		return(ERR);
 
-	if ((dir = CGM_directory(fd)) == NULL) {/* create directory	*/
+	if ((dir = CGM_directory(fd,doVerbose)) == NULL) {/* create directory*/
 		(void) (void) CGM_close(fd);
 		return (ERR);
 	}
@@ -584,14 +585,16 @@ Directory	*CGM_moveFrames (start_frame, num_frames, target)
  *	record_size	: number of bytes per record in ncar_cgm. if negative
  *			  space for the file is created in memory
  *	*local_tmp	: path to scratch directory. If null use /tmp
+ *	verbose		: operate in verbose mode. 
  * on exit
  *	return		: a pointer to the directory representing the modified
  *			  state of the file on success, else return NULL
  */
-Directory	*CGM_initMetaEdit (ncar_cgm, record_size, local_tmp)
+Directory	*CGM_initMetaEdit (ncar_cgm, record_size, local_tmp, verbose)
 	char		*ncar_cgm;
 	int	record_size;
 	char	*local_tmp;
+	boolean	verbose;
 {
 	int	i;
 	int	r = ABS(record_size);
@@ -607,6 +610,7 @@ Directory	*CGM_initMetaEdit (ncar_cgm, record_size, local_tmp)
 	}
 
 	recordSize = record_size;
+	doVerbose = verbose;
 
 	if (!ncar_cgm) {
 		return(ERR);	/* no file	*/
@@ -630,7 +634,7 @@ Directory	*CGM_initMetaEdit (ncar_cgm, record_size, local_tmp)
 		return(ERR);
 	}
 
-	if ((workingDir = CGM_directory(workingFd)) == NULL) {
+	if ((workingDir = CGM_directory(workingFd,doVerbose)) == NULL) {
 		(void) CGM_close(workingFd);
 		return(ERR);
 	}
@@ -654,7 +658,7 @@ Directory	*CGM_initMetaEdit (ncar_cgm, record_size, local_tmp)
 	 *	create a archive of metafile directory
 	 */
 #ifdef	DEAD
-	if ((saveDir = CGM_directory(workingFd)) == NULL) {
+	if ((saveDir = CGM_directory(workingFd,doVerbose)) == NULL) {
 		(void) CGM_close(workingFd);
 		CGM_freeDirectory(workingDir);
 		cfree((char *) workingList.list);
