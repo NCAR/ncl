@@ -1,8 +1,8 @@
 #
-#	$Id: yMakefile,v 1.1 1994-05-13 14:25:36 haley Exp $
+#	$Id: yMakefile,v 1.2 1994-07-18 16:20:45 haley Exp $
 #
 
-CSRCS = c_coex01.c c_coex02.c c_coex03.c c_tcolcv.c
+CSRCS = c_coex01.c c_coex02.c c_coex03.c c_fcce01.c c_fcce02.c c_tcolcv.c
 
 GENERIC_SRCS = $(CSRCS)
 
