@@ -16,10 +16,10 @@ C      Date:            Tue Jan 24 10:49:54 MST 1995
 C
 C     Description:      Illustrates use of Annotation objects.    
 C
-      external nhlfapplayerclass
-      external nhlfncgmworkstationlayerclass
-      external nhlfmapplotlayerclass
-      external nhlftextitemlayerclass
+      external NhlFAppLayerClass
+      external NhlFNcgmWorkstationLayerClass
+      external NhlFMapPlotLayerClass
+      external NhlFtextitemLayerClass
       external nhlfannotationlayerclass
 C
 C Define enough frames for a fairly smooth animation.
@@ -59,7 +59,7 @@ C
 C
 C Initialize the high level utility library
 C
-      call nhlfinitialize
+      call NhlFInitialize
 C
 C Create an application context. Set the app dir to the current
 C directory so the application looks for a resource file in the
@@ -67,26 +67,26 @@ C working directory. The resource file sets most of the Contour
 C resources that remain fixed throughout the life of the Contour
 C object.
 C
-      call nhlfrlcreate(rlist,'SETRL')
-      call nhlfrlclear(rlist)
-      call nhlfrlsetstring(rlist,'appUsrDir','./',ierr)
-      call nhlfrlsetstring(rlist,'appDefaultParent','True',ierr)
-      call nhlfcreate(appid,'an01',nhlfapplayerclass,0,rlist,ierr)
+      call NhlFRLCreate(rlist,'SETRL')
+      call NhlFRLClear(rlist)
+      call NhlFRLSetstring(rlist,'appUsrDir','./',ierr)
+      call NhlFRLSetstring(rlist,'appDefaultParent','True',ierr)
+      call NhlFCreate(appid,'an01',NhlFAppLayerClass,0,rlist,ierr)
       if( NCGM.eq.1 ) then
 C
 C Create a meta file workstation
 C
-         call nhlfrlclear(rlist)
-         call nhlfrlsetstring(rlist,'wkMetaName','./an01f.ncgm',ierr)
-         call nhlfcreate(wid,'an01Work',nhlfncgmworkstationlayerclass,
+         call NhlFRLClear(rlist)
+         call NhlFRLSetstring(rlist,'wkMetaName','./an01f.ncgm',ierr)
+         call NhlFCreate(wid,'an01Work',NhlFNcgmWorkstationLayerClass,
      1        0,rlist,ierr)
       else
 C
 C Create an X workstation
 C
-         call nhlfrlclear(rlist)
-         call nhlfrlsetstring(rlist,'wkPause','True',ierr)
-         call nhlfcreate(wid,'an01Work',nhlfxworkstationlayerclass,0,
+         call NhlFRLClear(rlist)
+         call NhlFRLSetstring(rlist,'wkPause','True',ierr)
+         call NhlFCreate(wid,'an01Work',NhlFXWorkstationLayerClass,0,
      1        rlist,ierr)
       endif
 C
@@ -100,9 +100,9 @@ C Then create an Annotation object for each TextItem. Register each
 C Annotation with the MapPlot object, the creator of the Overlay.
 C
       do 10 i = 1,NDIM
-         call nhlfrlclear(rlist)
-         call nhlfrlsetstring(rlist,'txString',name(i),ierr)
-         call nhlfcreate(text_ids(i),name(i),nhlftextitemlayerclass,wid,
+         call NhlFRLClear(rlist)
+         call NhlFRLSetstring(rlist,'txString',name(i),ierr)
+         call NhlFCreate(text_ids(i),name(i),NhlFtextitemLayerClass,wid,
      1    rlist,ierr)
  10   continue
 C
@@ -110,48 +110,48 @@ C Since the MapPlot object is by default an Overlay plot, you can
 C make each TextItem View object into an Annotation simply by setting
 C the  ovAnnoViews resource with the array of TextItem ids. 
 C
-      call nhlfrlclear(rlist)
-      call nhlfrlsetintegerarray(rlist,'ovAnnoViews',text_ids,NDIM,ierr)
-      call nhlfcreate(mapid,'Map0',nhlfmapplotlayerclass,wid,rlist,ierr)
+      call NhlFRLClear(rlist)
+      call NhlFRLSetintegerarray(rlist,'ovAnnoViews',text_ids,NDIM,ierr)
+      call NhlFCreate(mapid,'Map0',NhlFMapPlotLayerClass,wid,rlist,ierr)
 C
 C Retrieve the ids of the Annotation objects created by the Overlay and
 C then set their location in data coordinate space. The Annotation
 C objects are arranged in the same order as the TextItems in the
 C ovAnnoViews resource.
 C
-      call nhlfrlcreate(grlist,'GETRL')
-      call nhlfrlclear(grlist)
-      call nhlfrlgetintegerarray(grlist,'ovAnnotations',anno_ids,
+      call NhlFRLCreate(grlist,'GETRL')
+      call NhlFRLClear(grlist)
+      call NhlFRLGetintegerarray(grlist,'ovAnnotations',anno_ids,
      +                           num_anno_ids,ierr)
-      call nhlfgetvalues(mapid,grlist,ierr)
+      call NhlFGetValues(mapid,grlist,ierr)
 
       do 20 i=1,num_anno_ids
-         call nhlfrlclear(rlist)
-         call nhlfrlsetfloat(rlist,'anDataXF',lon(i),ierr)
-         call nhlfrlsetfloat(rlist,'anDataYF',lat(i),ierr)
-         call nhlfsetvalues(anno_ids(i),rlist,ierr)
+         call NhlFRLClear(rlist)
+         call NhlFRLSetfloat(rlist,'anDataXF',lon(i),ierr)
+         call NhlFRLSetfloat(rlist,'anDataYF',lat(i),ierr)
+         call NhlFSetValues(anno_ids(i),rlist,ierr)
  20   continue
 C
 C Create FRAME_COUNT plots, varying the center longitude by an equal
 C amount each time.
 C
       do 30 i = FRAME_COUNT,1,-1
-         call nhlfrlclear(rlist)
-         call nhlfrlsetfloat(rlist,'mpCenterLonF',i*360.0/FRAME_COUNT,
+         call NhlFRLClear(rlist)
+         call NhlFRLSetfloat(rlist,'mpCenterLonF',i*360.0/FRAME_COUNT,
      1    ierr)
-         call nhlfsetvalues(mapid,rlist,ierr)
-         call nhlfdraw(mapid,ierr)
-         call nhlfframe(wid,ierr)
+         call NhlFSetValues(mapid,rlist,ierr)
+         call NhlFDraw(mapid,ierr)
+         call NhlFFrame(wid,ierr)
  30   continue
 C
 C Destroy the objects created, close the HLU library and exit.
 C
       do 40 i=1,NDIM
-         call nhlfdestroy(text_ids(i),ierr)
+         call NhlFDestroy(text_ids(i),ierr)
  40   continue
-      call nhlfdestroy(mapid,ierr)
-      call nhlfdestroy(wid,ierr)
-      call nhlfdestroy(appid,ierr)
-      call nhlfclose
+      call NhlFDestroy(mapid,ierr)
+      call NhlFDestroy(wid,ierr)
+      call NhlFDestroy(appid,ierr)
+      call NhlFClose
       stop
       end
