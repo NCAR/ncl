@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.44 2004-06-28 22:07:10 shea Exp $
+;      $Id: contributed.ncl,v 1.45 2004-06-29 17:29:56 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -4927,7 +4927,7 @@ begin
                                      ; copy attributes
   copy_VarAtts (xMon, xSeaN)
   if (isatt(xMon,"long_name") .or. isatt(xMon,"description") .or. \
-      isatt(xNon,"standard_name") ) then
+      isatt(xMon,"standard_name") ) then
       xSeaN@long_name = "Seasonal Means: "+getLongName(xMon)
   end if
                                      ; copy dimension stuff
