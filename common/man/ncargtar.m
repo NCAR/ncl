@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncargtar.m,v 1.5 1993-04-21 20:04:45 fred Exp $
+.\"	$Id: ncargtar.m,v 1.6 1994-05-04 15:34:29 haley Exp $
 .\"
 .TH NCARGTAR 8NCARG "April 1993" NCAR "NCAR GRAPHICS"
 .SH NAME
@@ -23,3 +23,8 @@ Graphics is restored; if the files are extracted to some other
 directory (for example, "/tmp/ncargfx", the directory hierarchy is
 created and the files in it may be checked for correctness without
 overwriting the current working version of NCAR Graphics.
+.SH COPYRIGHT
+Copyright 1987, 1988, 1989, 1991, 1993, 1994 University Corporation
+for Atmospheric Research
+.br
+All Rights Reserved

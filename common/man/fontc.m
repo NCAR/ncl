@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: fontc.m,v 1.3 1993-04-21 20:04:13 fred Exp $
+.\"	$Id: fontc.m,v 1.4 1994-05-04 15:34:24 haley Exp $
 .\"
 .TH FONTC 1NCARG "April 1993" NCAR "NCAR GRAPHICS"
 .SH NAME
@@ -21,4 +21,10 @@ Binary encoded fontcaps
 system dependent and should not be assumed to be portable across
 different system architectures.
 .SH SEE ALSO
+Online:
 ctrans(1NCARG), fontcap(5NCARG)
+.SH COPYRIGHT
+Copyright 1987, 1988, 1989, 1991, 1993, 1994 University Corporation
+for Atmospheric Research
+.br
+All Rights Reserved

@@ -1,8 +1,8 @@
 .\"
-.\"	$Id: graphcap.m,v 1.7 1994-03-08 21:55:47 fred Exp $
+.\"	$Id: graphcap.m,v 1.8 1994-05-04 15:34:27 haley Exp $
 .\"
 .\" @(#)f77.1 1.4 86/07/31 SMI; 
-.TH GRAPHCAP 5NCARG "April 1993" NCAR "NCAR GRAPHICS"
+.TH GRAPHCAP 5NCARG "March 1994" NCAR "NCAR GRAPHICS"
 .SH NAME
 graphcap \- A list of supported NCAR Graphics device definition files for use with the CGM interpreters ctrans and ftrans.
 .SH DESCRIPTION
@@ -248,10 +248,15 @@ X Window System interface (valid only for ctrans).
 .TP 15
 .B xwd
 X11 xwd formatted raster file (valid only for ctrans).
-.SH "SEE ALSO"
+.SH SEE ALSO
+Online:
 ctrans(1NCARG), ras_formats(1NCARG), graphc(5NCARG)
-.LP
-.I "NCAR Graphics Fundamentals, UNIX Version"
-.LP
-.I "NCAR Graphics Generic Package Installer's Guide"
-.LP
+.sp
+Hardcopy:
+NCAR Graphics Fundamentals, UNIX Version;
+CGM, Fontcap, and Graphcap Supplement
+.SH COPYRIGHT
+Copyright 1987, 1988, 1989, 1991, 1993, 1994 University Corporation
+for Atmospheric Research
+.br
+All Rights Reserved
