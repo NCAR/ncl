@@ -1,5 +1,91 @@
 c -----------------------------------------------------------
 C NCLFORTSTART
+      SUBROUTINE DLININT1(NXI,XI,FI,ICYCX,NXO,XO,FO,XMSG,IER)
+      IMPLICIT NONE
+      INTEGER NXI,NXO,ICYCX,IER
+      DOUBLE PRECISION XI(NXI),FI(NXI)
+      DOUBLE PRECISION XO(NXO),FO(NXO),XMSG
+C NCLEND
+
+C This is written  with GNU f77 acceptable extensions
+C .   to allow for compilation on linux platforms.
+c .   This could be improved considerably with f90
+
+c NCL:  fo = linint1 (xi,fi, wrapX, xo, foOpt)
+c
+c            {nxi,nxo} = dimsizes( {xi,xo} )
+c            fo is the same size xo and same type as "fi"
+c            xmsg = fi@_FillValue
+c            wrapX is an NCL logical; a False ==> 0
+c                                     a True  ==> 1
+c            foOpt unused option
+c
+c            The NCL wrapper should allow for multiple datasets
+c            so the user need only make one call to the function.
+
+c perform piecewise linear interpolation allowing for missing data
+c .  nothing fancy
+
+c nomenclature:
+c .   nxi     - lengths of xi and dimensions of fi (must be >= 2)
+c .   xi      - coordinates of fi (eg, lon)
+c .             must be monotonically increasing
+c .   fi      - functional input values [2D]
+c .   icycx   - 0 if fi is cyclic in x (cyclic pt should NOT included)
+c .             .ne.0 if cyclic
+c .   nxo     - lengths of xo and dimensions of fo (must be >= 2)
+c .   xo      - coordinates of fo (eg, lon)
+c .             must be monotonically increasing
+c .   fo      - functional output values [interpolated]
+c .   xmsg    - missing code
+c .   ier     - error code
+c .             =0;   no error
+c .             =1;   not enough points in input/output array
+c .             =2;   xi are not monotonically increasing
+c .             =4;   xo yo are not monotonically increasing
+c
+c                              automatic temporary/work arrays
+      DOUBLE PRECISION XIW(0:NXI+1),FIXW(0:NXI+1)
+
+c                              local
+      INTEGER NX,NY
+      DOUBLE PRECISION DX
+c                              error checking
+      IER = 0
+      IF (NXI.LE.2 .OR. NXO.LE.2) THEN
+          IER = 1
+          RETURN
+      END IF
+c                              error mono increasing ?
+      CALL DMONOINC(XI,NXI,2,IER)
+      IF (IER.NE.0) RETURN
+      CALL DMONOINC(XO,NXO,4,IER)
+      IF (IER.NE.0) RETURN
+c                               is the input array cyclic in x
+      IF (ICYCX.EQ.0) THEN
+          CALL DLIN2INT1(NXI,XI,FI,NXO,XO,FO,XMSG)
+      ELSE
+c                               must be cyclic in x
+c                               create cyclic "x" coordinates
+          DO NX = 1,NXI
+              XIW(NX) = XI(NX)
+              FIXW(NX) = FI(NX)
+          END DO
+          DX = XI(2) - XI(1)
+          XIW(0) = XI(1) - DX
+          XIW(NXI+1) = XI(NXI) + DX
+          FIXW(0) = FI(NXI)
+          FIXW(NXI+1) = FI(1)
+
+          CALL DLIN2INT1(NXI+2,XIW,FIXW,NXO,XO,FO,XMSG)
+      END IF
+
+
+      RETURN
+      END
+
+c -----------------------------------------------------------
+C NCLFORTSTART
       SUBROUTINE DLININT2(NXI,XI,NYI,YI,FI,ICYCX,NXO,XO,NYO,YO,FO,XMSG,
      +                   IER)
       IMPLICIT NONE

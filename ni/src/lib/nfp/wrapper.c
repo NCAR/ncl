@@ -231,6 +231,7 @@ extern NhlErrorTypes vibeta_W(void);
 extern NhlErrorTypes int2p_W(void);
 extern NhlErrorTypes hydro_W(void);
 extern NhlErrorTypes linmsg_W(void);
+extern NhlErrorTypes linint1_W(void);
 extern NhlErrorTypes linint2_W(void);
 
 extern NhlErrorTypes pslhyp_W(void);
@@ -2799,6 +2800,22 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
     SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
     NclRegisterFunc(linmsg_W,args,"linmsg",nargs);
+
+/*
+ * Register "linint1".
+ */
+    nargs = 0;
+    args = NewArgs(5);
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
+
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    NclRegisterFunc(linint1_W,args,"linint1",nargs);
 
 /*
  * Register "linint2".
