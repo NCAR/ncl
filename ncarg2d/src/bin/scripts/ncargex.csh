@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.88 1995-06-14 14:03:03 haley Exp $
+#   $Id: ncargex.csh,v 1.89 1995-07-28 19:46:32 kennison Exp $
 #
 
 if ($#argv < 1) goto usage
@@ -435,7 +435,7 @@ set f_list = ($f_list $pwrite_flist)
 # set scrolled title examples #
 #                             #
 #*****************************#
-set scrlld_title_fex   = (slex01)
+set scrlld_title_fex   = (slex01 slex02)
 set scrlld_title_ftst  = (tstitl)
 set scrlld_title_ffnd  = (fslfont)
 set scrlld_title_flist = (${scrlld_title_fex} ${scrlld_title_ftst} \
