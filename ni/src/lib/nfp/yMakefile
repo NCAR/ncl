@@ -1,28 +1,28 @@
 #
-#      $Id: yMakefile,v 1.74 2003-08-28 16:51:18 haley Exp $
+#      $Id: yMakefile,v 1.75 2003-11-26 22:04:50 grubin Exp $
 #
 #########################################################################
-#									#
-#			   Copyright (C)  1997				#
-#	     University Corporation for Atmospheric Research		#
-#			   All Rights Reserved				#
-#									#
+#																		#
+#			   Copyright (C)  1997										#
+#	     University Corporation for Atmospheric Research				#
+#			   All Rights Reserved										#
+#																		#
 #########################################################################
 #
 #	File:		yMakefile
 #
 #	Author:		Mary Haley
-#			National Center for Atmospheric Research
-#			PO 3000, Boulder, Colorado
+#				National Center for Atmospheric Research
+#				POB 3000, Boulder, Colorado
 #
-#	Date:		Mon Jan  5 14:42:42 MST 1998
+#	$Date: 2003-11-26 22:04:50 $
 #
 #	Description:	
 
 MYNAME		=	libnfp
 
 EXTRA_INCLUDES  = -I../../ncl
-EXTRA_CDEFINES  = $(UDUNITS_DEFS)
+EXTRA_CDEFINES  = $(UDUNITS_DEFS) $(V5D_DEFS)
 
 HDRS = wrapper.h
 
@@ -34,6 +34,15 @@ UDUNITS_OBJS = udunitsW.o
 #define UDUNITS_SRCS
 #define UDUNITS_OBJS
 #endif
+
+# ifdef BuildV5D
+V5D_DEFS = -DBuildV5D
+V5D_SRCS = ncl2v5dW.c
+V5D_OBJS = ncl2v5dW.o
+# else
+# define    V5D_SRCS
+# define    V5D_OBJS
+# endif
 
 CSRCS = areavolW.c betaincW.c bytesW.c calcorcW.c cdf_dpW.c chiinvW.c \
 	conformW.c csagridW.c cssgridW.c cz2ccmW.c datesW.c drwvctc.c \
@@ -103,7 +112,7 @@ FOBJS = aam.o areaAve.o areaAve2.o areaRmse.o areaRmse2.o areaSum2.o \
 	vinth2p_ecmwf.o volAve.o volRmse.o wavelet.o writematrix.o \
 	wrunave_dp.o zon_mpsi.o
 
-OBJS = $(COBJS) $(FOBJS) $(EXFOBJS) $(UDUNITS_OBJS)
+OBJS = $(COBJS) $(FOBJS) $(EXFOBJS) $(UDUNITS_OBJS) $(V5D_OBJS)
 
 BuildSharedLibTarget(libNGnfp,$(OBJS),1,0,$(NCARGLIB) $(NCARGGKSLIB) $(NCARGCLIB) $(CTOFLIBS) -lm -lc)
 LibraryTarget($(MYNAME),$(OBJS))

@@ -346,6 +346,17 @@ extern NhlErrorTypes ut_calendar_W(void);
 extern NhlErrorTypes ut_inv_calendar_W(void);
 #endif
 
+/*
+ *  vis5d+ functions
+ */
+# ifdef BuildV5D
+extern NhlErrorTypes    v5d_create_W(void);
+extern NhlErrorTypes    v5d_write_W(void);
+extern NhlErrorTypes    v5d_write_var_W(void);
+extern NhlErrorTypes    v5d_close_W(void);
+extern NhlErrorTypes    v5d_missing_W(void);
+# endif /* BuildV5D */
+
 extern NhlErrorTypes angmom_atm_W(void);
 extern NhlErrorTypes relhum_W(void);
 extern NhlErrorTypes runave_W(void);
@@ -5536,8 +5547,84 @@ void NclAddUserFuncs(void)
 
     NclRegisterProc(write_matrix_W, args, "write_matrix", nargs);
 
+# ifdef BuildV5D
+/*
+ *  Register vis5d+ functions
+ *
+ *  This is a limited set of Vis5d+ functionality -- only what is needed to
+ *  write a vis5d+ formatted file.
+ */
+
+    /* v5d_create_W */
+    nargs = 0;
+    args = NewArgs(14);
+    dimsizes[0] = 1;
+
+    /* filename */
+    SetArgTemplate(args, nargs, "string", 1, dimsizes);  nargs++;
+    /* NumTimes */
+    SetArgTemplate(args, nargs, "integer", 1, dimsizes);  nargs++;
+    /* NumVars */
+    SetArgTemplate(args, nargs, "integer", 1, dimsizes);  nargs++;
+    /* Nr -- number of rows */
+    SetArgTemplate(args, nargs, "integer", 1, dimsizes);  nargs++;
+    /* Nc -- number of columns */
+    SetArgTemplate(args, nargs, "integer", 1, dimsizes);  nargs++;
+    /* Nl -- number of levels */
+    SetArgTemplate(args, nargs, "integer", 1, NclANY);  nargs++;
+    /* VarName */
+    SetArgTemplate(args, nargs, "string", 1, NclANY);  nargs++;
+    /* TimeStamp */
+    SetArgTemplate(args, nargs, "integer", 1, NclANY);  nargs++;
+    /* DateStamp */
+    SetArgTemplate(args, nargs, "integer", 1, NclANY);  nargs++;
+    /* CompressMode */
+    SetArgTemplate(args, nargs, "integer", 1, dimsizes);  nargs++;
+    /* Projection */
+    SetArgTemplate(args, nargs, "integer", 1, dimsizes);  nargs++;
+    /* ProjArgs */
+    SetArgTemplate(args, nargs, "float", 1, NclANY);  nargs++;
+    /* Vertical */
+    SetArgTemplate(args, nargs, "integer", 1, dimsizes);  nargs++;
+    /* VertArgs */
+    SetArgTemplate(args, nargs, "float", 1, NclANY);  nargs++;
+
+    NclRegisterProc(v5d_create_W, args, "v5d_create", nargs);
+
+    /* v5d_write */
+    nargs = 0;
+    args = NewArgs(3);
+    dimsizes[0] = 1;
+
+    /* Time Step */
+    SetArgTemplate(args, nargs, "integer", 1, dimsizes);  nargs++;
+    /* Var Num */
+    SetArgTemplate(args, nargs, "integer", 1, dimsizes);  nargs++;
+    /* Var Data */
+    SetArgTemplate(args, nargs, "float", 3, NclANY);  nargs++;
+    NclRegisterProc(v5d_write_W, args, "v5d_write", nargs);
+
+    /* v5d_write_var */
+    nargs = 0;
+    args = NewArgs(1);
+    SetArgTemplate(args, nargs, "float", 4, NclANY);  nargs++;
+    NclRegisterProc(v5d_write_var_W, args, "v5d_write_var", nargs);
+
+    /* v5d_close */
+    nargs = 0;
+    args = NewArgs(0);
+    NclRegisterProc(v5d_close_W, args, "v5d_close", nargs);
+
+    /* v5d_missing */
+    nargs = 0;
+    args = NewArgs(0);
+    NclRegisterFunc(v5d_missing_W, args, "v5d_missing", nargs);
+
+# endif /* BuildV5D */
+
     return;
 }
+
 
 
 
