@@ -1,5 +1,5 @@
 /*
- *      $Id: wks.c.sed,v 1.7 1993-02-19 23:57:01 don Exp $
+ *      $Id: wks.c.sed,v 1.8 1993-03-21 17:16:30 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -221,9 +221,17 @@ int	opnwks_(unit, fname, status)
 			*/
 			mftab[*unit].type = FILE_OUTPUT;
 
-			/* If file name is GMETA convert to lower case. */
+			/*
+			If file name is GMETA convert to lower case.
+			Provide for the case where the string is properly
+			terminated, and where it is not (as on some
+			poorly constructed DEC compilers). Make sure
+			that a name such as "GMETASTUFF" passes on
+			through ok.
+			*/
 
-			if (!strncmp(fname, "GMETA", 5)) {
+			if (!strncmp(fname, "GMETA", 5) &&
+			(fname[5] == '\0' || fname[5] == ' ') ) {
 				mftab[*unit].name = "gmeta";
 			}
 			else {
