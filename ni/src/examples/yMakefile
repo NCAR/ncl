@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.29 1998-11-11 21:47:34 haley Exp $
+#      $Id: yMakefile,v 1.30 1999-03-26 21:49:44 haley Exp $
 #
 #########################################################################
 #                                                                       #
@@ -46,6 +46,7 @@ CleanFilesTarget($(SCRIPTS))
 InstallManPages($(MAN1),$(FORMAT_EXT),$(MAN1PATH),$(MAN1_SECTION))
 FormatManPages($(MAN1),.man,.p)
 
+#if !defined(CRAY)
 ng4ex: ng4ex.csh Makefile
 	@sed \
 	-e 's+SED_HLUEXDIR+$(HLUEXDIR)+' \
@@ -54,3 +55,13 @@ ng4ex: ng4ex.csh Makefile
 	-e 's+SED_FCSCRIPT+$(NHF_SCRIPT)+' \
 	-e 's+SED_DATADIR+$(DATADIR)+' \
 	< ng4ex.csh > ng4ex
+#else
+ng4ex: ng4ex.cry.csh Makefile
+	@sed \
+	-e 's+SED_HLUEXDIR+$(HLUEXDIR)+' \
+	-e 's+SED_RESDIR+$(RESDIR)+' \
+	-e 's+SED_FCSCRIPT+$(NHF_SCRIPT)+' \
+	-e 's+SED_DATADIR+$(DATADIR)+' \
+	< ng4ex.cry.csh > ng4ex
+#endif
+
