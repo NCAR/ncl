@@ -1,0 +1,43 @@
+#!/bin/csh -f
+#
+#      $Id: paths.DARWIN_MAC,v 1.1 2002-03-18 04:03:57 haley Exp $
+#
+#########################################################################
+#                                                                       #
+#              Copyright (C)  2002                                      #
+#        University Corporation for Atmospheric Research                #
+#              All Rights Reserved                                      #
+#                                                                       #
+#########################################################################
+#
+#   File:       paths.DARWIN_MAC
+#
+#   Author:     Mary Haley
+#           National Center for Atmospheric Research
+#           PO 3000, Boulder, Colorado
+#
+#   Date:       Wed Feb 27 17:20:54 MST 2002
+#
+#   Description:    Set default installation paths for a Darwin system. 
+#           This script is sourced by the get_paths script to set
+#           the variables bin_path, inc_path, lib_path, and 
+#           man_path
+#
+#   Usage:      paths.DARWIN_MAC
+#
+#   Environment:
+#
+#   Files:      get_paths : sources this script
+#
+#
+#   Options:
+#
+set bin_path = /usr/local/ncarg/bin
+set inc_path = /usr/local/ncarg/include
+set lib_path = /usr/local/ncarg/lib
+set man_path = /usr/local/ncarg/man
+set man1 = man1
+set man3 = man3
+set man5 = man5
+set man8 = man8
+exit 0
