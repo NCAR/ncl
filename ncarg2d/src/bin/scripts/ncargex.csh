@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.99 1996-10-07 17:34:32 haley Exp $
+#   $Id: ncargex.csh,v 1.100 1996-12-12 15:06:18 haley Exp $
 #
 
 if ($#argv < 1) goto usage
@@ -445,7 +445,7 @@ set scrlld_title_cex   = (c_slex01)
 set scrlld_title_clist = (${scrlld_title_cex})
 
 set f_list = ($f_list ${scrlld_title_flist})
-set _clist = ($c_list ${scrlld_title_clist})
+set c_list = ($c_list ${scrlld_title_clist})
 
 #********************#
 #                    #
