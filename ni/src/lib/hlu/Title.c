@@ -1,5 +1,5 @@
 /*
- *      $Id: Title.c,v 1.20 1995-04-07 10:44:02 boote Exp $
+ *      $Id: Title.c,v 1.21 1995-04-18 00:45:17 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -23,7 +23,7 @@
 #include <ncarg/hlu/TitleP.h>
 #include <ncarg/hlu/ConvertersP.h>
 #include <ncarg/hlu/FortranP.h>
-#include <ncarg/hlu/Workstation.h>
+#include <ncarg/hlu/WorkstationI.h>
 #include <math.h>
 
 static char	Main[] = "Main";
@@ -868,7 +868,8 @@ static NhlErrorTypes    TitleInitialize
 	NhlVAGetValues(tnew->title.main_id,
 		NhlNvpYF,&tmpxy,
 		NhlNvpHeightF,&tmpwh,NULL);
-	if(tnew->title.x_axis_side == tnew->title.main_side) {
+	if(tnew->title.x_axis_side == tnew->title.main_side &&
+	   tnew->title.x_axis_on) {
 		NhlVAGetValues(tnew->title.x_axis_id,
 			NhlNvpYF,&tmpxy1,
 			NhlNvpHeightF,&tmpwh1,NULL);
@@ -1388,7 +1389,8 @@ static NhlErrorTypes    TitleSetValues
 	NhlVAGetValues(tnew->title.main_id,
 		NhlNvpYF,&tmpxy,
 		NhlNvpHeightF,&tmpwh,NULL);
-	if(tnew->title.x_axis_side == tnew->title.main_side) {
+	if(tnew->title.x_axis_side == tnew->title.main_side &&
+	   tnew->title.x_axis_on) {
 		NhlVAGetValues(tnew->title.x_axis_id,
 			NhlNvpYF,&tmpxy1,
 			NhlNvpHeightF,&tmpwh1,NULL);

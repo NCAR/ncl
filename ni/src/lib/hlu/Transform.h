@@ -1,5 +1,5 @@
 /*
- *      $Id: Transform.h,v 1.10 1995-04-07 10:44:11 boote Exp $
+ *      $Id: Transform.h,v 1.11 1995-04-18 00:45:18 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -98,16 +98,16 @@ extern NhlBoolean NhlIsTransform(
 
 extern NhlErrorTypes NhlAddOverlay(
 #if	NhlNeedProto
-        int		base_plot_id,
-	int		overlay_plot_id,
-	int		after_plot_id
+        int		base_id,
+	int		transform_id,
+	int		after_id
 #endif
 );
 
 extern NhlErrorTypes NhlRemoveOverlay(
 #if	NhlNeedProto
-        int		base_plot_id,
-	int		overlay_plot_id,
+        int		base_id,
+	int		overlay_id,
 	NhlBoolean	restore
 #endif
 );
