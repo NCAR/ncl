@@ -1502,11 +1502,8 @@ NclStackEntry missing_expr;
 				NhlPError(NhlWARNING,NhlEUNKNOWN,"New: Could not coerce missing value parameter into appropriate type, using default");
 				missing_val = typec->type_class.default_mis;
 			} else {
-				if(missing_md->obj.status != PERMANENT) {
-					_NclDestroyObj((NclObj)missing_md);
-				}
-				missing_md = tmp_md;
-				memcpy((void*)&missing_val,(void*)missing_md->multidval.val,missing_md->multidval.type->type_class.size);
+				memcpy((void*)&missing_val,(void*)tmp_md->multidval.val,tmp_md->multidval.type->type_class.size);
+				_NclDestroyObj((NclObj)tmp_md);
 			}
 		} else {
 			memcpy((void*)&missing_val,(void*)missing_md->multidval.val,missing_md->multidval.type->type_class.size);
