@@ -446,7 +446,6 @@ NhlErrorTypes triple2grid2d_W( void )
  */
   void *grid;
   double *tmp_grid;
-  int dsizes_grid[2];
   NclBasicDataTypes type_grid;
 /*
  * Various
@@ -550,8 +549,6 @@ NhlErrorTypes triple2grid2d_W( void )
  * Remember, in NCL, the Y dimension is usually associated with dimension
  * '0, and the X dimension with dimension '1'.
  */
-  dsizes_grid[0] = ngy;
-  dsizes_grid[1] = ngx;
   size_grid = ngy * ngx;
 /*
  * Get type of return variable. If z is double, then return
@@ -559,11 +556,11 @@ NhlErrorTypes triple2grid2d_W( void )
  */
   if(type_z == NCL_double) {
     type_grid = NCL_double;
-    grid      = (void*)calloc(size_grid,sizeof(double));
+    grid      = (double*)calloc(size_grid,sizeof(double));
   }
   else {
     type_grid = NCL_float;
-    grid      = (void*)calloc(size_grid,sizeof(float));
+    grid      = (float*)calloc(size_grid,sizeof(float));
   }
   tmp_grid = coerce_output_double(grid,type_grid,size_grid);
 
@@ -650,7 +647,7 @@ NhlErrorTypes triple2grid2d_W( void )
  */
   NGCALLF(triple2grid2d,TRIPLE2GRID2D)(tmp_x,tmp_y,tmp_z,&npts,
                                        &missing_dz.doubleval,&distmx,&mopt,
-                                       tmp_gridy,tmp_gridx,tmp_grid,&ngx,&ngy);
+                                       tmp_gridy,tmp_gridx,tmp_grid,&ngy,&ngx);
 /*
  * Coerce grid back to float if necessary.
  *
@@ -674,9 +671,9 @@ NhlErrorTypes triple2grid2d_W( void )
  * of its values filled in.
  */
   if(type_grid == NCL_double) {
-    return(NclReturnValue(grid,2,dsizes_grid,&missing_dz,type_grid,0));
+    return(NclReturnValue(grid,2,dsizes_gridx,&missing_dz,type_grid,0));
   }
   else {
-    return(NclReturnValue(grid,2,dsizes_grid,&missing_rz,type_grid,0));
+    return(NclReturnValue(grid,2,dsizes_gridx,&missing_rz,type_grid,0));
   }
 }

@@ -4190,7 +4190,7 @@ void NclAddUserFuncs(void)
     args = NewArgs(3);
     SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
     SetArgTemplate(args,nargs,"numeric",2,NclANY);nargs++;
-	dimsizes[0] = 1;
+    dimsizes[0] = 1;
     SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
 
     NclRegisterFunc(reg_multlin_W,args,"reg_multlin",nargs);

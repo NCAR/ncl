@@ -1772,12 +1772,6 @@ NhlErrorTypes reg_multlin_W( void )
                    NULL,
                    (NclObjClass)nclTypefloatClass
                    );
-    _NclAddAtt(
-               att_id,
-               "constant",
-               att_md,
-               NULL
-               );
   }
   else {
 /*
@@ -1815,11 +1809,35 @@ NhlErrorTypes reg_multlin_W( void )
                    NULL,
                    (NclObjClass)nclTypedoubleClass
                    );
-    _NclAddAtt(
-               att_id,
-               "constant",
-               att_md,
-               NULL
-               );
   }
+
+  _NclAddAtt(
+             att_id,
+             "constant",
+             att_md,
+             NULL
+             );
+
+  tmp_var = _NclVarCreate(
+                          NULL,
+                          NULL,
+                          Ncl_Var,
+                          0,
+                          NULL,
+                          return_md,
+                          NULL,
+                          att_id,
+                          NULL,
+                          RETURNVAR,
+                          NULL,
+                          TEMPORARY
+                          );
+/*
+ * Return output grid and attributes to NCL.
+ */
+  return_data.kind = NclStk_VAR;
+  return_data.u.data_var = tmp_var;
+  _NclPlaceReturn(return_data);
+
+  return(NhlNOERROR);
 }
