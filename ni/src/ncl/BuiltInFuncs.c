@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.80 1997-08-21 19:54:06 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.81 1997-08-21 20:43:28 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -6630,7 +6630,7 @@ NhlErrorTypes _Nclproduct
 /*
 * return missing
 */
-				memcpy(out_val,&(tmp_md->multidval.type->type_class.default_mis),tmp_md->multidval.type->type_class.size);
+				memcpy(out_val,&(tmp_md->multidval.missing_value.value),tmp_md->multidval.type->type_class.size);
 				return(NclReturnValue(
 					out_val,
 					1,
@@ -6898,7 +6898,7 @@ NhlErrorTypes _Nclsum
 */
 				if(tmp != NULL) 
 					NclFree(tmp);
-				memcpy(out_val,&(tmp_md->multidval.type->type_class.default_mis),tmp_md->multidval.type->type_class.size);
+				memcpy(out_val,&(tmp_md->multidval.missing_value.value),tmp_md->multidval.type->type_class.size);
 				return(NclReturnValue(
 					out_val,
 					1,
