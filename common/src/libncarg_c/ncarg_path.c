@@ -1,6 +1,6 @@
 
 /*
- *      $Id: ncarg_path.c,v 1.11 1994-02-07 22:25:43 haley Exp $
+ *      $Id: ncarg_path.c,v 1.12 1994-02-23 22:34:59 haley Exp $
  */
 /*
  *	File:		ncarg_path.c
@@ -99,9 +99,14 @@ static	char	*create_env_name(postfix)
 static	const char *dir_2_path(dir)
 	const char *dir;
 {
-	static	char	buf[PATH_MAX];
+	static	status = 0;
+	static 	char	root_path[PATH_MAX];
+	static char	buf[PATH_MAX];
+	char	*parent_default = "/usr/local";
+	char	*file_check = "/usr/local/lib/ncarg/fontcaps/font1";
 	char	*env_name;
 	char	*s;
+	FILE	*fp;
 
 
 	if (! (env_name = create_env_name(dir))) {
@@ -122,23 +127,39 @@ static	const char *dir_2_path(dir)
 		return(DEFAULT_TMP);
 	}
 
-	if ((s = getenv(ROOT_ENV))) {
-		strcpy(buf, s);
-	}
-	else {
-		ESprintf(E_UNKNOWN, "%s environment variable not set", ROOT_ENV);
-		(void) fprintf(stderr, "Assuming /usr/local as the parent directory.\n" );
-		setenv(ROOT_ENV, "/usr/local", 0);
-		strcpy(buf, "/usr/local");
+	if (!status) {
+		if((s = getenv(ROOT_ENV))) {
+			strcpy(root_path, s);
+		}
+		else {
+/*
+ * Assume a default of "parent_default" for NCARG_ROOT.
+ * First check for existence of the file "file_check".
+ */
+			fp = fopen( file_check, "r" );
+			if( fp == NULL ) {
+				ESprintf(E_UNKNOWN, "%s environment variable not set", ROOT_ENV);
+				return(NULL);
+			}
+			fclose(fp);
+/*
+ * Set status = 1 so we don't have to set this path time
+ * the next time around.
+ */
+			status = 1;
+			strcpy(root_path, parent_default);
+			fprintf(stderr, "\nWarning: %s environment variable not set.", ROOT_ENV);
+			fprintf(stderr, "\n         Assuming %s as the value for %s.\n",
+                    parent_default, ROOT_ENV);
+		}
 	}
 	/*
 	 * root is another special case
 	 */
 	if (strcmp("root", dir) == 0){
-		return(buf);
+		return(root_path);
 	}
-	strcat(buf, "/");
-	strcat(buf, dir);
+	sprintf(buf, "%s/%s", root_path, dir );
 	return(buf);
 }
 
