@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.44 2000-08-30 22:23:31 haley Exp $
+;      $Id: gsn_code.ncl,v 1.45 2000-09-11 17:18:32 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -1513,234 +1513,248 @@ end
 ; This procedure takes the array of plots and draws them all on one     ;
 ; workstation in the configuration specified by dims.                   ;
 ;                                                                       ;
-;   gsnPanelRemainder                                                   ;
 ; plots will be drawn in 2 rows and 3 columns.                          ;
 ;                                                                       ;
 ; However, if you set gsnPanelRowSpec to True, and dims to an array of  ;
-procedure gsn_panel(wks:graphic,plot[*]:graphic,dims[2]:float,\
+procedure gsn_panel(wks:graphic,plot[*]:graphic,dims[*]:integer,\
                     resources:logical )
-local rows, cols, xrows, xcols, top, bottom, left, right, \
-vpx, vpy, vpwidth, vpheight, bb, plot_width, plot_height, \
-xwsp_perc, ywsp_perc, xwsp, ywsp, dx, dy, total_width, total_height, \
-col_scale, row_scale, scale, xpos, ypos, xsp, ysp, panel_center, \
-new_plot_height, new_plot_width, new_total_height, new_total_width, \
-i, j, old_vpx, old_vpy, old_vpwidth, old_vpheight, callframe, text, pplot, \
-amres, txres, anno, added_anno, fig_index
+; there to be two plots in the first row, three in the second row, and  ;
+; one in the third row.                                                 ;
+;                                                                       ;
+; Special resources ("gsn" prefix) allowed:                             ;
+;                                                                       ;
+;   gsnPanelCenter                                                      ;
+;   gsnPanelLabelBar                                                    ;
+;   gsnPanelRowSpec                                                     ;
+;   gsnPanelXWhiteSpacePercent                                          ;
+;   gsnPanelYWhiteSpacePercent                                          ;
+;   gsnPanelBoxes                                                       ;
+;   gsnPanelLeft                                                        ;
+;   gsnPanelRight                                                       ;
+;   gsnPanelBottom                                                      ;
+;   gsnPanelTop                                                         ;
+;   gsnPanelSave                                                        ;
+;   gsnDraw                                                             ;
+;                                                                       ;
+;***********************************************************************;
+function gsn_panel_return(wks:graphic,plot[*]:graphic,dims[*]:integer,\
+                          resources:logical)
+local res, nrows, ncols, ddims, is_row_spec, row_spec, npanels, nplots
 begin
-    rows = floattointeger(dims(0))
-    cols = floattointeger(dims(1))
-    xrows = dims(0)
-    xcols = dims(1)
-    res = resources              ; Make copy of resources
+  res = resources              ; Make copy of resources
+
+  ddims = dimsizes(dims)
+;
+; First check if paneling is to be specified by (#rows x #columns) or
+      print("Error: gsn_panel: you must either specify # rows by # columns or set gsnPanelRowSpec to True and set the number of plots per row.")
+; resource gsnPanelRowSpec is set to True
+; 
+  is_row_spec = get_res_value(res,"gsnPanelRowSpec",False)
+;
+; Check to see if we have enough plots to fit panels, and vice versa.
+;
+  if(is_row_spec)
+    row_spec = dims
+    npanels = 0
+    nrows = ddims
+    ncols = max(row_spec)
+    do i=0,nrows-1
+      if(row_spec(i).lt.0)
+        print("Error: gsn_panel: you have specified a negative value for the number of plots in a row.")
+        exit
+      end if
+      npanels = npanels + row_spec(i)
     end do
   else
     if(ddims.ne.2)
-    panel_center   = get_res_value(res,"gsnPanelCenter",True)
-    panel_labelbar = get_res_value(res,"gsnPanelLabelBar",False)
-    callframe      = get_res_value(res,"gsnFrame",True)
-    xwsp_perc      = get_res_value(res,"gsnPanelXWhiteSpacePercent",1.)
-    ywsp_perc      = get_res_value(res,"gsnPanelYWhiteSpacePercent",1.)
-    draw_boxes     = get_res_value(res,"gsnPanelBoxes",False)
-    x_lft          = get_res_value(res,"gsnPanelLeft",0.)
-    x_rgt          = get_res_value(res,"gsnPanelRight",1.)
-    y_bot          = get_res_value(res,"gsnPanelBottom",0.)
-    y_top          = get_res_value(res,"gsnPanelTop",1.)
-    remainder      = get_res_value(res,"gsnPanelRemainder","bottom")
-
-    if(isatt(res,"gsnPanelFigureStrings"))
-      is_figure_strings = True
-      panel_strings = get_res_value(res,"gsnPanelFigureStrings","")      
+  panel_center = get_res_value(res,"gsnPanelCenter",True)
+  panel_labelbar = get_res_value(res,"gsnPanelLabelBar",False)
+  callframe      = get_res_value(res,"gsnFrame",True)
+  xwsp_perc      = get_res_value(res,"gsnPanelXWhiteSpacePercent",1.)
+  ywsp_perc      = get_res_value(res,"gsnPanelYWhiteSpacePercent",1.)
+  draw_boxes     = get_res_value(res,"gsnPanelBoxes",False)
+  x_lft          = get_res_value(res,"gsnPanelLeft",0.)
+  x_rgt          = get_res_value(res,"gsnPanelRight",1.)
+  y_bot          = get_res_value(res,"gsnPanelBottom",0.)
+  y_top          = get_res_value(res,"gsnPanelTop",1.)
+    if(y_top.eq.1.) then
+  if(main_string_on) then
+    nnewplots = nnewplots + 1
+  end if
 
   newplots = new(nnewplots,graphic)   ; Create array to save these plots
                                       ; objects.
-      justs  = (/"BottomRight", "TopRight", "TopLeft", "BottomLeft"/)
-      ljusts = (/"bottomright", "topright", "topleft", "bottomleft"/)
-      ujusts = (/"BOTTOMRIGHT", "TOPRIGHT", "TOPLEFT", "BOTTOMLEFT"/)
-      paras = (/     1.0,           1.0,      -1.0,       -1.0/)
-      orths = (/     1.0,          -1.0,      -1.0,        1.0/)
+;
+; We only need to set maxbb to True if the plots are being drawn to
+; a PostScript workstation, because the bounding box is already
+; maximized for an NCGM/X11 window.
+; 
+  if(maxbb) then
+    txres = get_res_eq(res,"tx")
+    class = NhlClassName(wks)
+    perim = get_res_value(txres,"txPerimOn",True)
+    bkgrn = get_res_value(txres,"txBackgroundFillColor",0)
+    if(class(0).ne."psWorkstationClass") then
+    is_figure_strings = True
+    panel_strings = get_res_value(res,"gsnPanelFigureStrings","")      
+;
 ; Get and set resource values for figure strings on the plots.
-      txres = get_res_eq(res,"tx")
-      amres = get_res_eq(res,"am")
-      perim = get_res_value(txres,"txPerimOn",True)
-      bkgrn = get_res_value(txres,"txBackgroundFillColor",0)
-      just  = get_res_value(amres,"amJust","BottomRight")
-    else
-      is_figure_strings = False
-    end if
+;
+    justs  = (/"BottomRight", "TopRight", "TopLeft", "BottomLeft"/)
+    ljusts = (/"bottomright", "topright", "topleft", "bottomleft"/)
+    ujusts = (/"BOTTOMRIGHT", "TOPRIGHT", "TOPLEFT", "BOTTOMLEFT"/)
+    paras = (/     1.0,           1.0,      -1.0,       -1.0/)
     orths = (/     1.0,          -1.0,      -1.0,        1.0/)
-    if(xwsp_perc.lt.0.or.xwsp_perc.ge.100.)
-      print("Warning: gsn_panel: attribute gsnPanelXWhiteSpacePercent must be >= 0 and < 100.")
-      print("Defaulting to 1.")
-      xwsp_perc = 1.
-    end if
-; title string which is also set with tx* resources. We have to figure
-    if(ywsp_perc.lt.0.or.ywsp_perc.ge.100.)
-      print("Warning: gsn_panel: attribute gsnPanelYWhiteSpacePercent must be >= 0 and < 100.")
-      print("Defaulting to 1.")
-      ywsp_perc = 1.
-    end if
-  else
-    if(x_lft.lt.0..or.x_lft.ge.1.)
-      print("Warning: gsn_panel: attribute gsnPanelLeft must be >= 0.0 and < 1.0")
-      print("Defaulting to 0.")
-      x_lft = 0.0
-    end if
-    print("Defaulting to 1.")
-    if(x_rgt.le.0..or.x_rgt.gt.1.)
-      print("Warning: gsn_panel: attribute gsnPanelRight must be > 0.0 and <= 1.0")
-      print("Defaulting to 1.")
-      x_rgt = 1.0
-    end if
-    print("Defaulting to 1.")
-    if(y_top.le.0..or.y_top.gt.1.)
-      print("Warning: gsn_panel: attribute gsnPanelTop must be > 0.0 and <= 1.0")
-      print("Defaulting to 1.")
-      y_top = 1.0
-    end if
-    print("Defaulting to 0.")
-    if(y_bot.lt.0..or.y_bot.ge.1.)
-      print("Warning: gsn_panel: attribute gsnPanelBottom must be >= 0.0 and < 1.0")
-      print("Defaulting to 0.")
-      y_bot = 0.0
-    end if
-    print("Defaulting to 1.")
-    if(x_rgt.le.x_lft)
-      print("Error: gsn_panel: attribute gsnPanelRight ("+x_rgt+") must be greater")
-      print("than gsnPanelLeft ("+x_lft+").")
-      exit
-    end if
 
-    if(y_top.le.y_bot)
-      print("Error: gsn_panel: attribute gsnPanelTop ("+y_top+") must be greater")
-      print("than gsnPanelBottom ("+y_bot+").")
-      exit
-    end if
+    amres = get_res_eq(res,"am")
+    just  = get_res_value(amres,"amJust","BottomRight")
+;
+; Don't look for tx* resources, because this will conflict with the
+; title string which is also set with tx* resources. We have to figure
+; out how to handle this later.
+;
+;    txres = get_res_eq(res,"tx")
+;    perim = get_res_value(txres,"txPerimOn",True)
+;    bkgrn = get_res_value(txres,"txBackgroundFillColor",0)
+  else
+    is_figure_strings = False
+  end if
+
+  if(xwsp_perc.lt.0.or.xwsp_perc.ge.100.)
+    print("Warning: gsn_panel: attribute gsnPanelXWhiteSpacePercent must be >= 0 and < 100.")
+    print("Defaulting to 1.")
+    xwsp_perc = 1.
+  end if
+
+  if(ywsp_perc.lt.0.or.ywsp_perc.ge.100.)
+    print("Warning: gsn_panel: attribute gsnPanelYWhiteSpacePercent must be >= 0 and < 100.")
+    print("Defaulting to 1.")
+    ywsp_perc = 1.
+  end if
+
+  if(x_lft.lt.0..or.x_lft.ge.1.)
+    print("Warning: gsn_panel: attribute gsnPanelLeft must be >= 0.0 and < 1.0")
+    print("Defaulting to 0.")
+    x_lft = 0.0
+  end if
+
+  if(x_rgt.le.0..or.x_rgt.gt.1.)
+    print("Warning: gsn_panel: attribute gsnPanelRight must be > 0.0 and <= 1.0")
+    print("Defaulting to 1.")
+    x_rgt = 1.0
+  end if
+
+  if(y_top.le.0..or.y_top.gt.1.)
+    print("Warning: gsn_panel: attribute gsnPanelTop must be > 0.0 and <= 1.0")
     print("Defaulting to 1.")
     y_top = 1.0
   end if
 
   if(y_bot.lt.0..or.y_bot.ge.1.)
-    plot_type = "unknown"
-    class = NhlClassName(plot)
+    print("Warning: gsn_panel: attribute gsnPanelBottom must be >= 0.0 and < 1.0")
+    print("Defaulting to 0.")
     y_bot = 0.0
-    if(class(0).ne."contourPlotClass".and.class(0).ne."vectorPlotClass") then
-      if(isatt(plot,"contour")) then
-        contour_plot = plot@contour
-        plot_type = "contour"
-      else
-        if(isatt(plot,"vector")) then
-          vector_plot = plot@vector
-          plot_type = "vector"
-        end if
-      end if
+  if(class(0).ne."contourPlotClass".and.class(0).ne."vectorPlotClass") then
+  if(x_rgt.le.x_lft)
+    print("Error: gsn_panel: attribute gsnPanelRight ("+x_rgt+") must be greater")
+    print("than gsnPanelLeft ("+x_lft+").")
     exit
-      if(class(0).eq."contourPlotClass") then
-        contour_plot = plot(0)
-        plot_type = "contour"
-      else
-        vector_plot = plot(0)
+  end if
+
   if(y_top.le.y_bot)
     print("Error: gsn_panel: attribute gsnPanelTop ("+y_top+") must be greater")
     print("than gsnPanelBottom ("+y_bot+").")
+    exit
+  end if
+;
+; Get the type of plots we have. "plot" can be a map, in which case
+; the vector or contour plot overlaid
+      vector_plot = plot(0)
+      plot_type = "vector"
+      plot_type = "contour"
+    else
         vector_plot = plot@vector
         plot_type = "vector"
       end if
-    if(is_figure_strings.or.panel_labelbar) then
-      if(plot_type.eq."contour") then
-        getvalues contour_plot
-          "cnInfoLabelFontHeightF" : font_height
+    end if
+  else
+    if(class(0).eq."contourPlotClass") then
+      contour_plot = plot(0)
+      plot_type = "contour"
+    else
+      if(class(0).eq."vectorPlotClass") then
+        vector_plot = plot(0)
+        plot_type = "vector"
       else
         if(class(0).eq."xyPlotClass") then
-        if(plot_type.eq."vector") then
-          getvalues vector_plot
-            "vcRefAnnoFontHeightF" : font_height
-          end getvalues
-        else
-          font_height = 0.01
-          print("Warning: gsn_panel: unrecognized plot type, thus unable to get information for font height.")
-          print("Defaulting to " + font_height)
-        end if
+        font_height = 0.01
+        print("Warning: gsn_panel: unrecognized plot type, thus unable to get information for font height.")
+        print("Defaulting to " + font_height)
   if(is_figure_strings.or.panel_labelbar) then
     if(plot_type.eq."contour") then
-;
-; Make sure we have enough panels to fit all of the plots.
-;
-    nplots  = dimsizes(plot)      ; Total number of plots.
-    npanels = rows*cols           ; Total number of panels.
-    if(nplots.gt.npanels)
-      print("Warning: gsn_panel: you have more plots than you have panels.")
-      print("Only " + npanels + " plots will be drawn.")
-      nplots = npanels
-    end if
-;
-; Calculate how many plots will be left in the last row if the
-; number of plots doesn't equal rows*columns.  A value of zero
-; indicates that there are either exactly rows*cols plots, or that
-; there are more plots than there are provided rows and columns.
-;
-  num_plots_in_odd_row = nplots % cols
+      getvalues contour_plot
         "cnInfoLabelFontHeightF" : font_height
       end getvalues
     else
       if(plot_type.eq."vector") then
-    bb = NhlGetBB(plot(0))   ; Get bounding box of plot with
-    top    = bb(0)           ; all of its annotations.
-    bottom = bb(1)
-    left   = bb(2)
-    right  = bb(3)
+        getvalues vector_plot
+          "vcRefAnnoFontHeightF" : font_height
+        end getvalues
+      else
+        if(plot_type.eq."xy") then
           getvalues xy_plot
             "tiXAxisFontHeightF" : font_height
           end getvalues
           font_height = 0.6*font_height
         else
           font_height = 0.01
-    plot_width  = right - left     ; Calculate total width of plot.
-    plot_height = top - bottom     ; Calculate total height of plot.
+          print("Warning: gsn_panel: unrecognized plot type, thus unable to get information for font height.")
+          print("Defaulting to " + font_height)
         end if
-    xwsp = xwsp_perc/100. * plot_width  ; White space is a percentage of total
-    ywsp = ywsp_perc/100. * plot_height ; width and height.
+      end if
+    end if
   end if
-    total_width  = 2.*xwsp + plot_width   ; Calculate total width and height
-    total_height = 2.*ywsp + plot_height  ; with white space added.
+;
+; We assume all plots are the same size, so if we get the size of
 ; the first one, this should be the size of all of them.
 ;
   bb = NhlGetBB(plot(0))   ; Get bounding box of plot with
   top    = bb(0)           ; all of its annotations.
-    lbhor = True
-    if(panel_labelbar) then
-      lbres = get_res_eq(res,(/"lb","vp"/))  ; Get labelbar resources.
-      if(isatt(lbres,"lbOrientation").and. \
-        (lbres@lbOrientation.eq."VERTICAL".or. \
-         lbres@lbOrientation.eq."Vertical".or. \
-         lbres@lbOrientation.eq."vertical"))
-        lbhor = False
-        labelbar_width = 0.20 * plot_width + 2.*xwsp
+  bottom = bb(1)
+  left   = bb(2)
+  right  = bb(3)
+    if(isatt(lbres,"lbOrientation").and. \
+      (lbres@lbOrientation.eq."VERTICAL".or. \
+       lbres@lbOrientation.eq."Vertical".or. \
+       lbres@lbOrientation.eq."vertical"))
+; plot_width  : total width of plot with all of its annotations
+; plot_height : total height of plot with all of its annotations
 ; total_width : plot_width plus white space on both sides
 ; total_height: plot_height plus white space on top and bottom
 ;
-        if(nplots.gt.1.and.rows.gt.1) then
-          labelbar_height  = (rows-1) * (2.*ywsp + plot_height)
-        else
-          labelbar_height  = plot_height
-        end if
-      else         
-        set_attr(lbres,"lbOrientation","Horizontal")
+  plot_width  = right - left     ; Calculate total width of plot.
+  plot_height = top - bottom     ; Calculate total height of plot.
+
+  xwsp = xwsp_perc/100. * plot_width  ; White space is a percentage of total
+  ywsp = ywsp_perc/100. * plot_height ; width and height.
+
+  total_width  = 2.*xwsp + plot_width   ; Calculate total width and height
   total_height = 2.*ywsp + plot_height  ; with white space added.
-        labelbar_height = 0.20 * plot_height + 2.*ywsp
+;
 ; If we are putting a global labelbar at the bottom (right), make 
 ; it 2/10 the height (width) of the plot.
 ;
   lbhor = True
-        if(nplots.gt.1.and.cols.gt.1) then
-          labelbar_width  = (cols-1) * (2.*xwsp + plot_width)
-        else
-          labelbar_width  = plot_width
-        end if
+  if(panel_labelbar) then
+    lbres = get_res_eq(res,(/"lb","vp"/))  ; Get labelbar resources.
+    if(check_attr(lbres,"lbOrientation","vertical",True))
+      lbhor = False
       labelbar_width = 0.20 * plot_width + 2.*xwsp
-    else
-      labelbar_height = 0.
-      labelbar_width  = 0.
 ;
+; Adjust height depending on whether we have one row or multiple rows.
+;
+      if(nplots.gt.1.and.nrows.gt.1) then
+        labelbar_height  = (nrows-1) * (2.*ywsp + plot_height)
       else
         labelbar_height  = plot_height
       end if
@@ -1752,295 +1766,268 @@ begin
 ; Adjust width depending on whether we have one column or multiple 
 ; columns.
 ;
-    xrange = x_rgt - x_lft
-    yrange = y_top - y_bot
-    col_scale = min((/xrange/(ncols*total_width), xrange/))
-    if(lbhor)
-      row_scale = min((/yrange/(xrows*total_height+labelbar_height),yrange/))
-      col_scale = min((/xrange/(xcols*total_width), xrange/))
-      scale = min((/col_scale,row_scale/))
-      yrange = yrange - scale * labelbar_height
-    else
-      row_scale = min((/yrange/(xrows*total_height),yrange/))
-      col_scale = min((/xrange/(xcols*total_width+labelbar_width), xrange/))
-      scale = min((/col_scale,row_scale/))
-      xrange = xrange - scale * labelbar_width
+      if(nplots.gt.1.and.ncols.gt.1) then
+        labelbar_width  = (ncols-1) * (2.*xwsp + plot_width)
+      else
+        labelbar_width  = plot_width
+      end if
     end if
+  else
+    labelbar_height = 0.
+    labelbar_width  = 0.
+  end if
+;
+; We want:
+;
+;   ncols * scale * total_width  <= x_rgt - x_lft (the viewport width)
+;   nrows * scale * total_height <= y_top - y_bot (the viewport height)
+;   [or scale * (nrows * total_height + labelbar_height) if a labelbar
+;    is being drawn]
+;
+; By taking the minimum of these two, we get the scale
+; factor that we need to fit all plots on a page.
+;
+  xrange = x_rgt - x_lft
+  yrange = y_top - y_bot
 
-    new_plot_width  = scale*plot_width    ; Calculate new width
-    new_plot_height = scale*plot_height   ; and height.
-
-    xwsp = xwsp_perc/100. * new_plot_width   ; Calculate new white space.
-    ywsp = ywsp_perc/100. * new_plot_height
-
-    new_total_width  = 2.*xwsp + new_plot_width  ; Calculate new total width
-    new_total_height = 2.*ywsp + new_plot_height ; and height w/white space.
-
-    xsp = xrange - new_total_width*cols   ; Calculate total amt of white space
-    ysp = yrange - new_total_height*rows  ; left in both X and Y directions.
-
-    getvalues plot(0)
-      "vpXF"      : vpx
-      "vpYF"      : vpy
-      "vpWidthF"  : vpw
-      "vpHeightF" : vph
-    end getvalues
+  if(lbhor)
+    row_scale = min((/yrange/(nrows*total_height+labelbar_height),yrange/))
+    col_scale = min((/xrange/(ncols*total_width), xrange/))
+    scale = min((/col_scale,row_scale/))
+    yrange = yrange - scale * labelbar_height
+  else
+    row_scale = min((/yrange/(nrows*total_height),yrange/))
+    col_scale = min((/xrange/(ncols*total_width+labelbar_width), xrange/))
+    scale = min((/col_scale,row_scale/))
     xrange = xrange - scale * labelbar_width
-    dx = scale * (vpx - left) ; Calculate distance from plot's left position
-                              ; to its leftmost annotation
-    dy = scale * (top - vpy) ; Calculate distance from plot's top position
-                             ; to its topmost annotation.
+  end if
 
-    ypos = y_top - ywsp - dy -(ysp/2.+new_total_height*ispan(0,rows-1,1))
+  new_plot_width  = scale*plot_width    ; Calculate new width
+  new_plot_height = scale*plot_height   ; and height.
+
+  xwsp = xwsp_perc/100. * new_plot_width   ; Calculate new white space.
   ywsp = ywsp_perc/100. * new_plot_height
 
   new_total_width  = 2.*xwsp + new_plot_width  ; Calculate new total width
   new_total_height = 2.*ywsp + new_plot_height ; and height w/white space.
-    if(is_figure_strings) then
-      fig_index = ind(just.eq.justs.or.just.eq.ljusts.or.just.eq.ujusts)
-      if(ismissing(fig_index))
-        fig_index = 0
-        just      = justs(fig_index)
-      end if
+
+  xsp = xrange - new_total_width*ncols  ; Calculate total amt of white space
+  ysp = yrange - new_total_height*nrows ; left in both X and Y directions.
+
+  getvalues plot(0)
+    "vpXF"      : vpx
     "vpYF"      : vpy
-      len_pct = 0.025           ; Percentage of width/height of plot
+    "vpWidthF"  : vpw
     "vpHeightF" : vph
-      if(vpw .lt. vph) then
-        wsp_hpct = (len_pct * vpw) / vph
-        wsp_wpct = len_pct
-      else
-        wsp_hpct = len_pct
-        wsp_wpct = (len_pct * vph) / vpw
-      end if
-      para  = get_res_value(amres,"amParallelPosF",  paras(fig_index) * \
-                                                     (0.5 - wsp_wpct))
-      orth  = get_res_value(amres,"amOrthogonalPosF", orths(fig_index) * \
-                                                      (0.5 - wsp_hpct))
-    end if
+  end getvalues
+
+  dx = scale * (vpx - left) ; Calculate distance from plot's left position
+                            ; to its leftmost annotation
+  dy = scale * (top - vpy) ; Calculate distance from plot's top position
+                           ; to its topmost annotation.
+
+  ypos = y_top - ywsp - dy -(ysp/2.+new_total_height*ispan(0,nrows-1,1))
+;
+; If we have figure strings, then determine white spacing around 
+; the text box.
+;
   if(is_figure_strings) then
 ; Variable to store rightmost location of rightmost plot.
       fig_index = 0
-      max_rgt = 0.
+      just      = justs(fig_index)
 ;
-; Loop through each plot and draw it in the new scaled-down size.
+; Loop through each row and draw each plot in the new scaled-down size.
     end if
-    nplot = 0
-    i = 0
-    do while(nplot.lt.nplots)
-      num_plots_left = nplots - nplot
+    para  = get_res_value(amres,"amParallelPosF",  paras(fig_index) * \
+                                                   (0.5 - wsp_wpct))
+    orth  = get_res_value(amres,"amOrthogonalPosF", orths(fig_index) * \
+                                                    (0.5 - wsp_hpct))
+  end if
 ;
-; Before we add plots to a row, need to figure out how many go in
-; this row. First check to see if we have enough plots
-; left to fill that row.  If not, then center the remaining plots.
-; The user can specify whether the remaining plots should be at the
-; top, or the bottom.
+; Variable to store rightmost location of rightmost plot, and topmost
+; location of top plot.
 ;
-      new_cols = cols    ; Start off with the default of "cols" columns
-      xsp      = xrange - new_total_width*cols  ; space before plots. 
-;
-; Figure out if there are going to be less than "cols" plots
-; in this row.
-;
-      if(panel_center.and.num_plots_in_odd_row) then
-        if((i.eq.0.and.(remainder.eq."top".or.remainder.eq."TOP".or. \
-                        remainder.eq."Top")).or.(num_plots_left.lt.cols.and.\
-                        (remainder.eq."bottom".or.remainder.eq."BOTTOM".or.\
-                         remainder.eq."Bottom")))
-          new_cols = num_plots_in_odd_row
-;
-; Since we don't have a nice even number of plots to fill out every
-; column specified, we need to deal with this remainder of plots. 
-; They can either be dealt with in the first row (remainder == "top")
-; or in the last row, and they can either be centered or left-justified.
-; If they are left-justified, we don't need to do anything different,
-; since we can just use our regular calculation for "xpos" for this.
-;
-; By default, we want to center the remaining plots, so we need to
-; calculate new spacings.
-; 
-          xsp = xrange - new_total_width*(num_plots_in_odd_row)
-        end if
-      end if
+  max_rgt = 0.
+  max_top = 0.
 ;
 ; Variable to hold original viewport coordinates, and annotations (if
 ; they exist).
-	  xpos = x_lft + xwsp + dx +(xsp/2.+new_total_width*ispan(0,new_cols-1,1))
+;
   old_vp = new((/nplots,4/),float)
-      do j = 0,new_cols-1
-        if(nplot .lt. nplots)
-          if(.not.ismissing(plot(nplot)))
-            pplot = plot(nplot)
-            getvalues pplot
-              "vpXF"      : old_vpx
-              "vpYF"      : old_vpy
-              "vpWidthF"  : old_vpwidth
-              "vpHeightF" : old_vpheight
-            end getvalues
-
-            setvalues pplot
-              "vpXF"      : xpos(j)
-              "vpYF"      : ypos(i)
-              "vpWidthF"  : scale*old_vpwidth 
-              "vpHeightF" : scale*old_vpheight
-            end setvalues
+  anno   = new(nplots, graphic)
+;
+; Loop through each row and create each plot in the new scaled-down
+; size. We will draw plots later, outside the loop.
+          "vpXF"      : old_vpx
+          "vpYF"      : old_vpy
+          "vpWidthF"  : old_vpwidth
+          "vpHeightF" : old_vpheight
+  do while(num_plots_left.gt.0)
     new_ncols = min((/num_plots_left,row_spec(nr)/))
-            added_anno = False
-            if(is_figure_strings) then
-              if(nplot .lt. dimsizes(panel_strings).and. \
-                panel_strings(nplot).ne."")
-                text = create "string" textItemClass wks
-                  "txString"              : panel_strings(nplot)
-                  "txFontHeightF"         : font_height
-                  "txPerimOn"             : perim
-                  "txBackgroundFillColor" : bkgrn
-                end create
-                if(txres.and..not.any(ismissing(getvaratts(txres))))
-                  attsetvalues(text,txres)
-                end if
-                anno = NhlAddAnnotation(pplot,text)
-                added_anno = True
-                setvalues anno
-                  "amZone"           : 0
-                  "amJust"           : just
-                  "amParallelPosF"   : para
-                  "amOrthogonalPosF" : orth
-                  "amResizeNotify"   : True
-                end setvalues
-                if(amres.and..not.any(ismissing(getvaratts(amres))))
-                  attsetvalues(anno,amres)
-                end if
-                delete(text)
-              end if
-            end if
+; Calculate new x positions.
+;
+    xpos = x_lft + xwsp + dx +(xsp/2.+new_total_width*ispan(0,new_ncols-1,1))
+          "vpWidthF"  : scale*old_vpwidth 
+          "vpHeightF" : scale*old_vpheight
+      if(.not.ismissing(plot(nplot)))
         pplot = plot(nplot)
-            draw(pplot)  ; Draw the scaled down plot.
-            if(added_anno) then
-              NhlRemoveAnnotation(pplot,anno)
+        getvalues pplot
+          "vpXF"      : old_vp(nplot,0)
+          "vpYF"      : old_vp(nplot,1)
+          "vpWidthF"  : old_vp(nplot,2)
+          "vpHeightF" : old_vp(nplot,3)
+        end getvalues
+
+              "txPerimOn"             : perim
+              "txBackgroundFillColor" : bkgrn
+          print("    plot #" + nplot)
+            if(txres.and..not.any(ismissing(getvaratts(txres))))
+              attsetvalues(text,txres)
             end if
+            anno = NhlAddAnnotation(pplot,text)
+          "vpXF"      : xpos(nc)
+            setvalues anno
+          "vpWidthF"  : scale*old_vp(nplot,2)
+          "vpHeightF" : scale*old_vp(nplot,3)
+        end setvalues
 
-            if(panel_labelbar.or.draw_boxes) then
-              bb = NhlGetBB(pplot) ; Get bounding box of plot
-              bot = bb(1)
-              rgt = bb(3)
-              max_rgt = max((/rgt,max_rgt/))
-
-              if(draw_boxes)
-                top = bb(0)
-                lft = bb(2)
-                gsres = True
-                gsres@gsLineThicknessF = 5.0
-                gsn_polyline_ndc(wks,(/lft,rgt,rgt,lft,lft/), \
-                                     (/bot,bot,top,top,bot/),gsres)
-              end if
+        added_anno = False
+        if(is_figure_strings) then
+            if(amres.and..not.any(ismissing(getvaratts(amres))))
+              attsetvalues(anno,amres)
             end if
+            panel_strings(nplot).ne."")
+            text = create "string" textItemClass wks
+              "txString"              : panel_strings(nplot)
 
-            setvalues pplot
-              "vpXF"      : old_vpx
-              "vpYF"      : old_vpy
-              "vpWidthF"  : old_vpwidth
-              "vpHeightF" : old_vpheight
+        draw(pplot)  ; Draw the scaled down plot.
+        if(added_anno) then
+          NhlRemoveAnnotation(pplot,anno)
+        end if
+         if(panel_labelbar.or.draw_boxes) then
+          bb = NhlGetBB(pplot) ; Get bounding box of plot
+              "amZone"           : 0
+              "amJust"           : just
+              "amParallelPosF"   : para
+              "amResizeNotify"   : True
             end setvalues
-            delete(pplot)
+            top = bb(0)
+            lft = bb(2)
+            attsetvalues_check(anno(nplot),amres)
+            delete(text)
+          end if
+        end if
 ;
 ; Save this plot.
-        nplot = nplot + 1
-      end do  ; end of columns
-      delete(xpos)
-      i = i + 1   ; increment rows
-    end do    ; end of plots
+
+        setvalues pplot
+          "vpXF"      : old_vpx
+          "vpYF"      : old_vpy
+          "vpWidthF"  : old_vpwidth
+          "vpHeightF" : old_vpheight
+        end setvalues
+        delete(pplot)
+;
+        newplots(nplot) = pplot
+;
+          max_rgt = max((/rgt,max_rgt/))
+          max_top = max((/top,max_top/))
+
+          if(draw_boxes)
             gsres = True
             gsres@gsLineThicknessF = 5.0
             gsn_polyline_ndc(wks,(/lft,rgt,rgt,lft,lft/), \
-    if(panel_labelbar) then
+                                 (/bot,bot,top,top,bot/),gsres)
           end if
 ; If plot type is unknown, then we can't get labelbar information.
       end if
-      if(plot_type.ne."unknown") then
-        if(plot_type.eq."contour") then
+    if(plot_type.ne."unknown") then
+    end do  ; end of columns
 ;
 ; Retain the smallest x position.
 ;
     if(nr.eq.0)
-          getvalues contour_plot
-            "cnLevels"               : levels
-            "cnFillColors"           : colors
-            "cnFillPatterns"         : fill_patterns
-            "cnFillScales"           : fill_scales
-            "cnMonoFillPattern"      : mono_fill_pat
-            "cnMonoFillScale"        : mono_fill_scl
-            "cnMonoFillColor"        : mono_fill_col
-          end getvalues
-        else
+      min_xpos = min(xpos)
+    else
+      min_xpos = min( (/min(xpos),min_xpos/) )
+    end if
+    delete(xpos)
+    num_plots_left = nplots - nplot
+    nr = nr + 1   ; increment rows
+  end do    ; end of plots
+;
+; Check if a labelbar is to be drawn at the bottom.
 ;
   if(panel_labelbar) then
 ;
-          mono_fill_pat = True
-          mono_fill_scl = True
-          getvalues vector_plot
-            "vcLevels"                 : levels
-            "vcLevelColors"            : colors
-            "vcMonoFillArrowFillColor" : mono_fill_col
-          end getvalues
-        end if
+; If plot type is unknown or xy, then we can't get labelbar information.
+;
+      if(plot_type.eq."contour") then
+;
+; Get information on how contour plot is filled, so we can recreate 
+          "vcMonoFillArrowFillColor" : mono_fill_col
+; labelbar.
+;
         getvalues contour_plot
           "cnLevels"               : levels
           "cnFillColors"           : colors
-        labelbar_height      = scale * labelbar_height
-        labelbar_width       = scale * labelbar_width
-        labelbar_font_height = font_height
+          "cnFillPatterns"         : fill_patterns
+          "cnFillScales"           : fill_scales
+          "cnMonoFillPattern"      : mono_fill_pat
           "cnMonoFillScale"        : mono_fill_scl
           "cnMonoFillColor"        : mono_fill_col
         end getvalues
-        lbres = True
-        set_attr(lbres,"vpWidthF", labelbar_width)
-        set_attr(lbres,"vpHeightF",labelbar_height)
+      else
+;
+; There are no fill patterns in VectorPlot, only solids.
 ;
         mono_fill_pat = True
         mono_fill_scl = True
         mono_fill_col = False
-        if(lbhor)
-          set_attr(lbres,"vpYF",max ((/ywsp+labelbar_height,bot-ywsp/)))
-          if(cols.eq.1.and.lbres@vpWidthF.le.scale*old_vpwidth)
-            set_attr(lbres,"vpXF",xpos(0)+(scale*old_vpwidth - lbres@vpWidthF)/2.)
-          else
-            set_attr(lbres,"vpXF",(1. - lbres@vpWidthF)/2.)
-          end if
+        getvalues vector_plot
+          "vcLevels"                 : levels
+        if(ncols.eq.1.and.lbres@vpWidthF.le.scale*old_vpwidth)
+          set_attr(lbres,"vpXF",xpos(0)+(scale*old_vpwidth - lbres@vpWidthF)/2.)
+      end if
+          set_attr(lbres,"vpXF",(1. - lbres@vpWidthF)/2.)
+;
+      labelbar_height      = scale * labelbar_height
+      labelbar_width       = scale * labelbar_width
+        if(nrows.eq.1.and.lbres@vpHeightF.le.scale*old_vpheight)
+          set_attr(lbres,"vpYF",ypos(0)-(scale*old_vpheight - lbres@vpHeightF)/2.)
 ; Set some labelbar resources.
-          set_attr(lbres,"vpXF",min ((/1.-(xwsp+labelbar_width),max_rgt+xwsp/)))
-          if(rows.eq.1.and.lbres@vpHeightF.le.scale*old_vpheight)
-            set_attr(lbres,"vpYF",ypos(0)-(scale*old_vpheight - lbres@vpHeightF)/2.)
-          else
-            set_attr(lbres,"vpYF",1.-(1. - lbres@vpHeightF)/2.)
-          end if
+          set_attr(lbres,"vpYF",1.-(1. - lbres@vpHeightF)/2.)
       set_attr(lbres,"vpWidthF", labelbar_width)
-        set_attr(lbres,"lbLabelFontHeightF",labelbar_font_height)
+      set_attr(lbres,"vpHeightF",labelbar_height)
+;
 ; Set position of labelbar depending on whether it's horizontal or
 ; vertical.
 ;
       if(lbhor)
-        set_attr(lbres,"lbMonoFillColor",mono_fill_col)
-        if(.not.mono_fill_pat)
-          set_attr(lbres,"lbMonoFillPattern", False)
-          set_attr(lbres,"lbFillPatterns",    fill_patterns)
+        set_attr(lbres,"vpYF",max ((/ywsp+labelbar_height,bot-ywsp/)))
+        if(ncols.eq.1.and.lbres@vpWidthF.le.scale*max(old_vp(:,2)))
+          set_attr(lbres,"vpXF",min_xpos+(scale*max(old_vp(:,2)) - lbres@vpWidthF)/2.)
+        else
+          tmp_range = x_rgt - x_lft
+          set_attr(lbres,"vpXF",x_lft + (tmp_range - lbres@vpWidthF)/2.)
         end if
-        if(.not.mono_fill_scl)
-          set_attr(lbres,"lbMonoFillScale", False)
-          set_attr(lbres,"lbFillScales",    fill_scales)
-        end if
+      else
+        set_attr(lbres,"vpXF",min ((/1.-(xwsp+labelbar_width),max_rgt+xwsp/)))
         if(nrows.eq.1.and.lbres@vpHeightF.le.scale*max(old_vp(:,3)))
 ; Create and draw the labelbar.
           set_attr(lbres,"vpYF",y_top-(tmp_range - lbres@vpHeightF)/2.)
-        labelbar = create_labelbar(wks,dimsizes(colors),colors,levels,lbres)
-        draw(labelbar)
-      else
-        print("Warning: gsn_panel: unrecognized plot type, thus unable to extract information for creating a labelbar.")
-      end if
+      labelbar = create_labelbar(wks,dimsizes(colors),colors,levels,lbres)
+      draw(labelbar)
+; Check if we want different fill patterns or fill scales.  If so, we
+       print("Warning: gsn_panel: unrecognized plot type, thus unable to extract information for creating a labelbar.")
 ;
+      set_attr(lbres,"lbMonoFillColor",mono_fill_col)
        print("Warning: gsn_panel: unrecognized plot type for getting labelbar information. Ignoring labelbar request.")
-    if(callframe)
-      frame(wks)   ; Advance the frame.
-    end if
+  if(callframe)
+    frame(wks)   ; Advance the frame.
+                             (/bot,bot,top,top,bot/),gsres)
           "vpHeightF" : old_vp(i,3)
+        end setvalues
 
       end if
     end do
