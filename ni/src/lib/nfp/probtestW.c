@@ -23,9 +23,12 @@ NhlErrorTypes ttest_W( void )
  */
   void *ave1, *ave2, *var1, *var2, *s1, *s2;
   double *tmp_ave1, *tmp_ave2, *tmp_var1, *tmp_var2, *tmp_s1, *tmp_s2;
-  NclScalar missing_ave1, missing_ave2, missing_rave1;
-  NclScalar missing_dave1, missing_dave2;
-  int has_missing_ave1, has_missing_ave2;
+  NclScalar missing_ave1, missing_ave2, missing_var1, missing_var2;
+  NclScalar missing_s1, missing_s2;
+  NclScalar missing_dave1, missing_dave2, missing_dvar1, missing_dvar2;
+  NclScalar missing_ds1, missing_ds2;
+  int has_missing_ave1, has_missing_ave2, has_missing_var1, has_missing_var2;
+  int has_missing_s1, has_missing_s2;
   logical *iflag, *tval_opt;
   int ndims_ave1, dsizes_ave1[NCL_MAX_DIMENSIONS];
   int ndims_ave2, dsizes_ave2[NCL_MAX_DIMENSIONS];
@@ -43,10 +46,11 @@ NhlErrorTypes ttest_W( void )
   double *tmp_alpha, *tmp_tval;
   int ndims_prob, *dsizes_prob;
   NclBasicDataTypes type_prob;
+  NclScalar missing_prob;
 /*
  * Declare various variables for random purposes.
  */
-  int i, index_prob, index_s1, index_s2, size_ave1, size_prob, ier;
+  int i, index_s1, index_s2, size_ave1, size_prob, ier;
   int is_missing_ave1, is_missing_ave2, is_missing_var1, is_missing_var2;
   int is_missing_s1, is_missing_s2;
 /*
@@ -70,8 +74,8 @@ NhlErrorTypes ttest_W( void )
           8,
           &ndims_var1,
           dsizes_var1,
-          NULL,
-          NULL,
+          &missing_var1,
+          &has_missing_var1,
           &type_var1,
           2);
 
@@ -80,8 +84,8 @@ NhlErrorTypes ttest_W( void )
           8,
           &ndims_s1,
           dsizes_s1,
-          NULL,
-          NULL,
+          &missing_s1,
+          &has_missing_s1,
           &type_s1,
           2);
 
@@ -100,8 +104,8 @@ NhlErrorTypes ttest_W( void )
           8,
           &ndims_var2,
           dsizes_var2,
-          NULL,
-          NULL,
+          &missing_var2,
+          &has_missing_var2,
           &type_var2,
           2);
 
@@ -110,8 +114,8 @@ NhlErrorTypes ttest_W( void )
           8,
           &ndims_s2,
           dsizes_s2,
-          NULL,
-          NULL,
+          &missing_s2,
+          &has_missing_s2,
           &type_s2,
           2);
 
@@ -276,18 +280,22 @@ NhlErrorTypes ttest_W( void )
   }
 
 /*
- * Allocate space for output array.
+ * Allocate space for output array and set a default missing value.
  */
   if(type_ave1 == NCL_double || type_var1 == NCL_double || 
      type_ave2 == NCL_double || type_var2 == NCL_double) {
 
     type_prob = NCL_double;
     prob      = (double*)calloc(size_prob,sizeof(double));
+    missing_prob.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
   }
   else {
     type_prob = NCL_float;
     prob      = (float*)calloc(size_prob,sizeof(float));
+    missing_prob.floatval = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
   }
+
+
   tmp_alpha = (double *)calloc(1,sizeof(double));
   tmp_tval  = (double *)calloc(1,sizeof(double));
   if(prob == NULL || tmp_alpha == NULL || tmp_tval == NULL) {
@@ -296,22 +304,74 @@ NhlErrorTypes ttest_W( void )
   }
 
 /*
- * Check for missing values.
+ * Coerce missing values, if any.
  */
   coerce_missing(type_ave1,has_missing_ave1,&missing_ave1,&missing_dave1,
-                 &missing_rave1);
+                 NULL);
   coerce_missing(type_ave2,has_missing_ave2,&missing_ave2,&missing_dave2,
                  NULL);
-
-  if(!has_missing_ave1) {
-    missing_dave1.doubleval = (double)((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
-    missing_rave1.floatval = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+  coerce_missing(type_var1,has_missing_var1,&missing_var1,&missing_dvar1,
+                 NULL);
+  coerce_missing(type_var2,has_missing_var2,&missing_var2,&missing_dvar2,
+                 NULL);
+  coerce_missing(type_s1,has_missing_s1,&missing_s1,&missing_ds1,NULL);
+  coerce_missing(type_s2,has_missing_s2,&missing_s2,&missing_ds2,NULL);
+/*
+ * Set output missing value to input missing value, if any exist.
+ */
+  if(has_missing_ave1) {
+    if(type_prob == NCL_float) {
+      missing_prob.floatval = (float)missing_dave1.doubleval;
+    }
+    else {
+      missing_prob.doubleval = missing_dave1.doubleval;
+    }
+  }
+  else if(has_missing_ave2) {
+    if(type_prob == NCL_float) {
+      missing_prob.floatval = (float)missing_dave2.doubleval;
+    }
+    else {
+      missing_prob.doubleval = missing_dave2.doubleval;
+    }
+  }
+  else if(has_missing_var1) {
+    if(type_prob == NCL_float) {
+      missing_prob.floatval = (float)missing_dvar1.doubleval;
+    }
+    else {
+      missing_prob.doubleval = missing_dvar1.doubleval;
+    }
+  }
+  else if(has_missing_var2) {
+    if(type_prob == NCL_float) {
+      missing_prob.floatval = (float)missing_dvar2.doubleval;
+    }
+    else {
+      missing_prob.doubleval = missing_dvar2.doubleval;
+    }
+  }
+  else if(has_missing_s1) {
+    if(type_prob == NCL_float) {
+      missing_prob.floatval = (float)missing_ds1.doubleval;
+    }
+    else {
+      missing_prob.doubleval = missing_ds1.doubleval;
+    }
+  }
+  else if(has_missing_s2) {
+    if(type_prob == NCL_float) {
+      missing_prob.floatval = (float)missing_ds2.doubleval;
+    }
+    else {
+      missing_prob.doubleval = missing_ds2.doubleval;
+    }
   }
 
 /*
  * Call the Fortran version of this routine.
  */
-  index_s1 = index_s2 = index_prob = 0;
+  index_s1 = index_s2 = 0;
 
   output_contains_msg = 0;   /* Flag to keep track of whether output contains
                                 any missing values.*/
@@ -403,41 +463,52 @@ NhlErrorTypes ttest_W( void )
                                        missing_dave1.doubleval);
     is_missing_ave2 = contains_missing(tmp_ave2,1,has_missing_ave2,
                                        missing_dave2.doubleval);
-    if(is_missing_ave1 || is_missing_ave2) {
+    is_missing_var1 = contains_missing(tmp_var1,1,has_missing_var1,
+                                       missing_dvar1.doubleval);
+    is_missing_var2 = contains_missing(tmp_var2,1,has_missing_var2,
+                                       missing_dvar2.doubleval);
+    is_missing_s1 = contains_missing(tmp_s1,1,has_missing_s1,
+                                     missing_ds1.doubleval);
+    is_missing_s2 = contains_missing(tmp_s2,1,has_missing_s2,
+                                     missing_ds2.doubleval);
+    if(is_missing_ave1 || is_missing_ave2 || is_missing_var1 || 
+       is_missing_var2 || is_missing_s1   || is_missing_s2) {
       ier = 1;
       output_contains_msg = 1;
     }
-    if(*tmp_s1 < 2. || *tmp_s2 < 2.) {
-      NhlPError(NhlWARNING,NhlEUNKNOWN,"ttest: s1 and/or s2 is less than 2; setting output to missing");
-      ier = 1;
-      output_contains_msg = 1;
-    }
-    if(*tmp_var1 <= 0. || *tmp_var2 <= 0.) {
-      NhlPError(NhlWARNING,NhlEUNKNOWN,"ttest: var1 and/or var2 is less than or equal to 0; setting output to missing");
-      ier = 1;
-      output_contains_msg = 1;
+    if(!ier) {
+      if(*tmp_s1 < 2. || *tmp_s2 < 2.) {
+        NhlPError(NhlWARNING,NhlEUNKNOWN,"ttest: s1 and/or s2 is less than 2; setting output to missing");
+        ier = 1;
+        output_contains_msg = 1;
+      }
+      if(*tmp_var1 <= 0. || *tmp_var2 <= 0.) {
+        NhlPError(NhlWARNING,NhlEUNKNOWN,"ttest: var1 and/or var2 is less than or equal to 0; setting output to missing");
+        ier = 1;
+        output_contains_msg = 1;
+      }
     }
     if(!ier) {
       NGCALLF(dttest,DTTEST)(tmp_ave1,tmp_var1,tmp_s1,tmp_ave2,tmp_var2,
                              tmp_s2,iflag,tmp_alpha,tmp_tval,&ier);
 
       if(type_prob == NCL_float) {
-        ((float*)prob)[index_prob]                 = (float)*tmp_alpha;
-        if(*tval_opt) ((float*)prob)[index_prob+1] = (float)*tmp_tval;
+        ((float*)prob)[i]                         = (float)*tmp_alpha;
+        if(*tval_opt) ((float*)prob)[i+size_ave1] = (float)*tmp_tval;
       }
       else {
-        ((double*)prob)[index_prob]                 = *tmp_alpha;
-        if(*tval_opt) ((double*)prob)[index_prob+1] = *tmp_tval;
+        ((double*)prob)[i]                         = *tmp_alpha;
+        if(*tval_opt) ((double*)prob)[i+size_ave1] = *tmp_tval;
       }
     }
     else {
       if(type_prob == NCL_float) {
-        ((float*)prob)[index_prob]                 = missing_rave1.floatval;
-        if(*tval_opt) ((float*)prob)[index_prob+1] = missing_rave1.floatval;
+        ((float*)prob)[i]                         = missing_prob.floatval;
+        if(*tval_opt) ((float*)prob)[i+size_ave1] = missing_prob.floatval;
       }
       else {
-        ((double*)prob)[index_prob]                 = missing_dave1.doubleval;
-        if(*tval_opt) ((double*)prob)[index_prob+1] = missing_dave1.doubleval;
+        ((double*)prob)[i]                         = missing_prob.doubleval;
+        if(*tval_opt) ((double*)prob)[i+size_ave1] = missing_prob.doubleval;
       }
     }
 /*
@@ -445,13 +516,6 @@ NhlErrorTypes ttest_W( void )
  */
     if(!scalar_s1) index_s1++;
     if(!scalar_s2) index_s2++;
-    if(*tval_opt) {
-      index_prob+=2;
-    }
-    else {
-      index_prob++;
-    }
-        
   }
 /*
  * free memory.
@@ -469,14 +533,8 @@ NhlErrorTypes ttest_W( void )
  * Return.
  */
   if(output_contains_msg) {
-    if(type_prob == NCL_double) {
-      return(NclReturnValue(prob,ndims_prob,dsizes_prob,&missing_dave1,
-                            type_prob,0));
-    }
-    else {
-      return(NclReturnValue(prob,ndims_prob,dsizes_prob,&missing_rave1,
-                            type_prob,0));
-    }
+    return(NclReturnValue(prob,ndims_prob,dsizes_prob,&missing_prob,
+                          type_prob,0));
   }
   else {
     return(NclReturnValue(prob,ndims_prob,dsizes_prob,NULL,type_prob,0));
