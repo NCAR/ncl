@@ -201,14 +201,8 @@ vvsetr,
 vvudmv,
 vvumxy,
 ncarg_cbind.
-<<<<<<< vectors
-.sp
-Hardcopy:
-NCAR Graphics Fundamentals, UNIX Version
-=======
 .sp
 Hardcopy: NCAR Graphics Fundamentals, UNIX Version
->>>>>>> 1.3
 .SH COPYRIGHT
 Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research
