@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ncargcc.csh,v 1.28 1994-04-05 19:25:33 haley Exp $
+#	$Id: ncargcc.csh,v 1.29 1994-04-06 19:04:33 haley Exp $
 #
 
 #*********************************************#
@@ -44,6 +44,7 @@ else if ($system == "Sun4") then
 else if ($system == "Sun4Solaris") then
   set f77libs     = "-L/opt/SUNWspro/SC2.0.1 -lF77 -lV77 -lM77 -lm"
   set XLIBPATH    = "-L/usr/openwin/lib"
+  set libextra    = "/usr/ucblib/libucb.a"
 else if ($system == "Sun3") then
   set f77libs     = "-L/usr/lang/SC1.0 -lF77 -lV77 /usr/lib/fswitch/libm.a"
 else if ($system == "AIX_RS6000") then
