@@ -21,16 +21,20 @@ NhlErrorTypes hydro_W( void )
   void *p, *tkv, *zsfc;
   double *tmp_p, *tmp_tkv, *tmp_zsfc;
   int ndims_p, dsizes_p[NCL_MAX_DIMENSIONS], has_missing_p;
-  int ndims_tkv, dsizes_tkv[NCL_MAX_DIMENSIONS], has_missing_t;
-  int ndims_zsfc, dsizes_zsfc[NCL_MAX_DIMENSIONS], has_missing_z;
+  int ndims_tkv, dsizes_tkv[NCL_MAX_DIMENSIONS], has_missing_tkv;
+  int ndims_zsfc, dsizes_zsfc[NCL_MAX_DIMENSIONS], has_missing_zsfc;
   NclBasicDataTypes type_p, type_tkv, type_zsfc;
+  NclScalar missing_p, missing_tkv, missing_zsfc;
+  NclScalar missing_dp, missing_dtkv, missing_dzsfc;
   int size_zsfc, size_p;
+  int found_missing_p, found_missing_tkv, found_missing_zsfc, any_missing;
 /*
  * Output array variables
  */
   void *zh;
   double *tmp_zh;
   NclBasicDataTypes type_zh;
+  NclScalar missing_zh;
 /*
  * Retrieve parameters
  *
@@ -46,7 +50,7 @@ NhlErrorTypes hydro_W( void )
           3,
           &ndims_p,
           dsizes_p,
-          NULL,
+          &missing_p,
           &has_missing_p,
           &type_p,
           2);
@@ -59,8 +63,8 @@ NhlErrorTypes hydro_W( void )
           3,
           &ndims_tkv,
           dsizes_tkv,
-          NULL,
-          &has_missing_t,
+          &missing_tkv,
+          &has_missing_tkv,
           &type_tkv,
           2);
 
@@ -72,8 +76,8 @@ NhlErrorTypes hydro_W( void )
           3,
           &ndims_zsfc,
           dsizes_zsfc,
-          NULL,
-          &has_missing_z,
+          &missing_zsfc,
+          &has_missing_zsfc,
           &type_zsfc,
           2);
 
@@ -89,14 +93,6 @@ NhlErrorTypes hydro_W( void )
       NhlPError(NhlFATAL,NhlEUNKNOWN,"hydro: The input arrays 'p' and 'tkv' must have the same dimensions");
       return(NhlFATAL);
     }
-  }
-
-/*
- * No missing values are allowed.
- */
-  if(has_missing_t || has_missing_p || has_missing_z) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"hydro: The input arrays 'p', 'tkv', and 'zsfc' cannot contain any missing values");
-    return(NhlFATAL);
   }
 
 /*
@@ -172,9 +168,29 @@ NhlErrorTypes hydro_W( void )
     }    
   }
 /*
+ * Check for missing values
+ */
+  coerce_missing(type_tkv, has_missing_tkv, &missing_tkv, &missing_dtkv,
+                 NULL);
+  coerce_missing(type_p,   has_missing_p,   &missing_p,   &missing_dp,
+                 NULL);
+  coerce_missing(type_zsfc,has_missing_zsfc,&missing_zsfc,&missing_dzsfc,
+                 NULL);
+
+  if(has_missing_tkv || has_missing_p || has_missing_zsfc) {
+    if(type_zh == NCL_double) {
+      missing_zh.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
+    }
+    else {
+      missing_zh.floatval = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+    }
+  }
+
+/*
  * Call the Fortran version of this routine.
  */
   index_zh = 0;
+  any_missing = 0;
   for( i = 0; i < size_zsfc; i++ ) {
     if(type_p != NCL_double) {
 /*
@@ -216,13 +232,38 @@ NhlErrorTypes hydro_W( void )
 
     if(type_zh == NCL_double) tmp_zh = &((double*)zh)[index_zh];
 
-    NGCALLF(dhydro,DHYDRO)(tmp_p,tmp_tkv,tmp_zsfc,&nlvl,tmp_zh,&ier);
+/*
+ * Test for missing values.
+ */
+    found_missing_p = contains_missing(tmp_p,nlvl,has_missing_p,
+                                       missing_dp.doubleval);
+
+    found_missing_tkv = contains_missing(tmp_tkv,nlvl,has_missing_tkv,
+                                         missing_dtkv.doubleval);
+    
+    found_missing_zsfc = (*tmp_zsfc == missing_dzsfc.doubleval) ? 1 : 0;
+
+    if(found_missing_p || found_missing_tkv || found_missing_zsfc) {
+      any_missing = 1;
+      if(type_zh == NCL_double) {
+        set_subset_output_missing(zh,index_zh,type_zh,nlvl,
+                                  missing_zh.doubleval);
+      }
+      else {
+        set_subset_output_missing(zh,index_zh,type_zh,nlvl,
+                                  (double)missing_zh.floatval);
+      }
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"hydro: one of the input arrays contains missing values. No geopotential heights calculated for this set of values.");
+    }
+    else {
+      NGCALLF(dhydro,DHYDRO)(tmp_p,tmp_tkv,tmp_zsfc,&nlvl,tmp_zh,&ier);
 /*
  * Copy output values from temporary tmp_zh to zh.
  */
-    if(type_zh != NCL_double) {
-      for(j = 0; j < nlvl; j++) {
-        ((float*)zh)[index_zh+j] = (float)(tmp_zh[j]);
+      if(type_zh != NCL_double) {
+        for(j = 0; j < nlvl; j++) {
+          ((float*)zh)[index_zh+j] = (float)(tmp_zh[j]);
+        }
       }
     }
     index_zh += nlvl;
@@ -235,5 +276,10 @@ NhlErrorTypes hydro_W( void )
   if(type_zsfc != NCL_double) NclFree(tmp_zsfc);
   if(type_zh   != NCL_double) NclFree(tmp_zh);
 
-  return(NclReturnValue(zh,ndims_p,dsizes_p,NULL,type_zh,0));
+  if(any_missing) {
+    return(NclReturnValue(zh,ndims_p,dsizes_p,&missing_zh,type_zh,0));
+  }
+  else {
+    return(NclReturnValue(zh,ndims_p,dsizes_p,NULL,type_zh,0));
+  }
 }
