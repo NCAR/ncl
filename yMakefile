@@ -1,5 +1,5 @@
 /*
- *      $Id: yMakefile,v 1.21 1994-08-24 04:49:53 haley Exp $
+ *      $Id: yMakefile,v 1.22 1997-02-20 22:58:00 haley Exp $
  */
 /************************************************************************
 *									*
@@ -23,7 +23,7 @@
 
 #define IHaveSubdirs
 
-SUBDIRS	= config common ncarg2d ncarview ni
+SUBDIRS	= config common ncarg2d ngmath ncarview ni
 
 #ifdef	YMAKEDEVFILE
 Info::
