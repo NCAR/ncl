@@ -56,9 +56,9 @@ c_slgeti
 c_slgetr
 .SH ACCESS 
 To use Scrolled_title routines, load the NCAR Graphics libraries ncarg,
-ncarg_gks, and ncarg_loc, preferably in that order.  To use the Scrolled_title 
+ncarg_gks, ncarg_c, ncarg_c, and ncarg_loc, preferably in that order.  To use the Scrolled_title 
 C-bindings, load the NCAR Graphics libraries ncargC, ncarg_gksC,
-ncarg_gks, and ncarg_loc, preferably in that order.
+ncarg_gks, ncarg_c, ncarg_c, and ncarg_loc, preferably in that order.
 .SH MESSAGES
 The error messages described can be written to the output
 unit by routines in the package Scrolled_title. Unless otherwise
@@ -114,6 +114,10 @@ slseti,
 slsetr,
 stitle,
 ncarg_cbind.
+.sp
+Hardcopy:
+NCAR Graphics Fundamentals, UNIX Version;
+User's Guide for NCAR GKS-0A Graphics
 .SH COPYRIGHT
 Copyright 1987, 1988, 1989, 1991, 1993 University Corporation
 for Atmospheric Research
