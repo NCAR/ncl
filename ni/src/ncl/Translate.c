@@ -705,6 +705,20 @@ if(groot != NULL) {
 					_NclTranslate(assign->left_side,fp);
 				}
 				break;
+#if 0
+				/*
+				 * if assigning to a double variable a real literal should be treated as a double.
+				 * unfortunately I cannot yet see how one knows the type of a variable here. 
+                                 * so leave this out for now.
+                                 */
+				case Ncl_REAL: {
+					NclVar *lhs_var = (NclVar*)(assign->left_side);
+					NclReal *real = (NclReal*)idnexpr->idn_ref_node);
+					off1 = _NclTranslate(assign->right_side,fp);
+					_NclTranslate(assign->left_side,fp);
+				}
+				break;
+#endif
 				case Ncl_FILEVARCOORD: 
 				case Ncl_FILEVAR: 
 				default:
@@ -967,10 +981,20 @@ if(groot != NULL) {
 			NclReal *real = (NclReal*)root;
 			
 			off1 = _NclPutInstr(PUSH_REAL_LIT_OP,real->line,real->file);
-			tmp_val = NclMalloc(sizeof(float));
-                        *(float*)tmp_val = real->real;
-                        tmp_md = CreateConst(NULL, NULL,Ncl_MultiDValData,0,
-                                (void*)tmp_val,NULL,1,&dim_size, PERMANENT,NULL,(NclTypeClass)nclTypefloatClass);
+			if (real->is_double) {
+				tmp_val = NclMalloc(sizeof(double));
+				*(double*)tmp_val = real->real;
+				tmp_md = CreateConst(NULL, NULL,Ncl_MultiDValData,0,
+						     (void*)tmp_val,NULL,1,&dim_size, PERMANENT,NULL,
+						     (NclTypeClass)nclTypedoubleClass);
+			}
+			else {
+				tmp_val = NclMalloc(sizeof(float));
+				*(float*)tmp_val = real->real;
+				tmp_md = CreateConst(NULL, NULL,Ncl_MultiDValData,0,
+						     (void*)tmp_val,NULL,1,&dim_size, PERMANENT,NULL,
+						     (NclTypeClass)nclTypefloatClass);
+			}
 			_NclPutIntInstr(tmp_md->obj.id,real->line,real->file);
 			break;
 		}

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: SrcTree.c,v 1.39 2002-09-26 22:14:41 haley Exp $
+ *      $Id: SrcTree.c,v 1.40 2003-06-10 00:20:22 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1716,7 +1716,7 @@ NclSrcTreeTypes type;
  */
 void * _NclMakeRealExpr
 #if	NhlNeedProto
-(float real,char *string_rep)
+(double real,char *string_rep)
 #else
 (real,string_rep)
 float real;
@@ -1739,11 +1739,16 @@ char *string_rep;
 	tmp->ref_type = Ncl_READIT;
 	tmp->total_len = -1;
 	tmp->len_after_dec = -1;
+	tmp->is_double = 0;
 	if(string_rep != NULL) {
 		tmp->total_len = strlen(string_rep);
 		ts = strchr(string_rep,'.');
 		if(ts != NULL) {
 			tmp->len_after_dec = strlen(ts);
+		}
+		ts = strchr(string_rep,'d');
+		if (ts != NULL) {
+			tmp->is_double = 1;
 		}
 	}
 	_NclRegisterNode((NclGenericNode*)tmp);

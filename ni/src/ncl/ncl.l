@@ -352,6 +352,15 @@ digit	[0-9]
 	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
 	return REAL;
 }
+{digit}+\.?{digit}*[dD][+-]?{digit}+|{digit}?\.{digit}+[dD][+-]?{digit}+|{digit}+\.?{digit}*[dD]|{digit}?\.{digit}+[dD] {
+        char *tmp = strpbrk(yytext,"dD");
+        *tmp = (yytext + yyleng - 1 == tmp) ? '\0' : 'e';
+	sscanf(yytext,"%le",&(yylval.real));
+        *tmp = 'd';
+	printtoken(REAL,yytext);
+	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
+	return REAL;
+}
 {digit}+ {
 	sscanf(yytext,"%d",&(yylval.integer));
 	printtoken(INT,yytext);

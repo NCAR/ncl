@@ -1,6 +1,6 @@
 
 /*
- *      $Id: SrcTree.h,v 1.24 2000-01-28 20:46:15 ethan Exp $
+ *      $Id: SrcTree.h,v 1.25 2003-06-10 00:20:22 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -159,7 +159,8 @@ typedef struct ncl_real{
 	char *file;
 	NclSrcTreeDestroyProc destroy_it;
 	NclReferenceTypes ref_type;
-	float real;
+	double real;
+	int is_double;
 	int total_len;
 	int len_after_dec;
 } NclReal;
@@ -841,7 +842,7 @@ extern void * _NclMakeExpr(
 
 extern void * _NclMakeRealExpr(
 #if	NhlNeedProto
-	float /*real*/,
+	double /*real*/,
 	char * /*string_rep*/
 #endif
 );
