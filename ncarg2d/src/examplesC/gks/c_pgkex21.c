@@ -167,7 +167,7 @@ int iorien, idot, icolor;
 	yv[2] = line.points[2].y = yv[0];
 
 	gpolyline(&line);
-
+	free((Gpoint *)line.points);
 	if (idot == 1) {
         c_ngdots(xv,yv,3,0.005*thick,icolor);
     }
