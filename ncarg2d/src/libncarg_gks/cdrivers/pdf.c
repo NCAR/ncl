@@ -1,5 +1,5 @@
 /*
- *      $Id: pdf.c,v 1.17 2003-03-07 18:28:27 fred Exp $
+ *      $Id: pdf.c,v 1.18 2003-03-07 22:23:36 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -73,7 +73,7 @@ char **page_lines;
 /* int maximum_lines=1000000; */
 int maximum_lines=100000;
 int  starting_page_object_number, stream_size, object_number, 
-     byte_count, num_page_lines;
+     byte_count, num_page_lines, restore_level;
 float red,green,blue,cyan,magenta,yellow,black;
 
 /*
@@ -382,6 +382,12 @@ void PDFpreamble (PDFddp *psa, preamble_type type)
     object_pointer = (int *) calloc(MAX_OBJECTS,sizeof(int));
 
 /*
+ *  Initialize the restore level to zero.
+ *
+ */
+    restore_level = 0;
+
+/*
  *  The pointer to object number 0 is 0; object number 1 is the
  *  Pages object - its pointer will be filled in at file termination.
  *
@@ -442,6 +448,7 @@ void PDFpreamble (PDFddp *psa, preamble_type type)
     num_page_lines = 0;
     sprintf(page_lines[num_page_lines], "q\n");
     stream_size += 2;
+    restore_level = 1;
 
 /*
  *  Put out the scale factor.
@@ -1613,7 +1620,7 @@ static void PDFOutputPolymarker (GKSC *gksc, int markersize, int markertype)
   /*
    *  Put the markers out.
    */
-  tsize = MAX(1, (int) (1.8 * (float) markersize));
+  tsize = MAX(1, (int) (1.7 * (float) markersize));
   hs    = 0.500*tsize;
   qs    = 0.707*hs;
 
@@ -1632,7 +1639,7 @@ static void PDFOutputPolymarker (GKSC *gksc, int markersize, int markertype)
             PDFPutLine(px   , py-hs, px,    py+hs);
             break;
     case    STAR_MARKER:
-            PDFPutLine(px+hs, py, px-hs, py);
+            PDFPutLine(px   , py+hs, px   , py-hs);
             PDFPutLine(px+qs, py+qs, px-qs, py-qs);
             PDFPutLine(px-qs, py+qs, px+qs, py-qs);
             break;
@@ -1836,6 +1843,17 @@ PDFClearWorkstation(GKSC *gksc)
   stream_size += 2;
 
 /*
+ *  Restore the graphics state to what it was at the stream start.
+ */
+  bump_page_lines();
+  sprintf(page_lines[num_page_lines],"Q\n");
+  stream_size += 2;
+  restore_level--;
+  if (restore_level != 0) {
+    fprintf(stderr,"PDF - restore level unmatched at stream end\n");
+  }
+
+/*
  *  Write out the current page stream.
  *
  */
@@ -1977,6 +1995,7 @@ PDFPolymarker(GKSC *gksc)
   bump_page_lines();
   sprintf(page_lines[num_page_lines],"q\n");
   stream_size += 2;
+  restore_level++;
 
   bump_page_lines();
   sprintf(page_lines[num_page_lines],"[] 0 d\n");
@@ -1999,6 +2018,7 @@ PDFPolymarker(GKSC *gksc)
   bump_page_lines();
   sprintf(page_lines[num_page_lines],"Q\n");
   stream_size += 2;
+  restore_level--;
 
   return(0);
 }
@@ -2179,6 +2199,7 @@ PDFText(GKSC *gksc)
   bump_page_lines();
   sprintf(page_lines[num_page_lines],"q\n");
   stream_size += 2;
+  restore_level++;
 
 /*
  *  Translate the axes to the current point, scale as per
@@ -2484,6 +2505,7 @@ PDFText(GKSC *gksc)
   bump_page_lines();
   sprintf(page_lines[num_page_lines],"Q\n");
   stream_size += 2;
+  restore_level--;
 
   return(return_value);
 }
@@ -2542,6 +2564,7 @@ PDFFillArea(GKSC *gksc)
     bump_page_lines();
     sprintf(page_lines[num_page_lines],"q\n");
     stream_size += 2;
+    restore_level++;
 
     bump_page_lines();
     sprintf(page_lines[num_page_lines],"[] 0 d\n");
@@ -2627,6 +2650,7 @@ PDFFillArea(GKSC *gksc)
     bump_page_lines();
     sprintf(page_lines[num_page_lines],"Q\n");
     stream_size += 2;
+    restore_level--;
   }
 
   return(0);
@@ -2674,6 +2698,7 @@ PDFCellarray(GKSC *gksc)
   bump_page_lines();
   sprintf(page_lines[num_page_lines],"q\n");
   stream_size += 2;
+  restore_level++;
 
 /*
  *  Translate and scale (the matrix is a composition of the
@@ -2769,6 +2794,7 @@ PDFCellarray(GKSC *gksc)
   bump_page_lines();
   sprintf(page_lines[num_page_lines],"EI\nQ\n");
   stream_size += 5;
+  restore_level--;
   
   return(0);
 }
@@ -3364,8 +3390,7 @@ PDFEsc(GKSC *gksc)
 }
 
 /*ARGSUSED*/
-PDFUpdateWorkstation(gksc)
-        GKSC    *gksc;
+PDFUpdateWorkstation(GKSC *gksc)
 {
         PDFddp   *psa = (PDFddp *) gksc->ddp;
 

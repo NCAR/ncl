@@ -1,5 +1,5 @@
 /*
- *	$Id: gksc.h,v 1.12 2003-01-06 23:30:14 fred Exp $
+ *	$Id: gksc.h,v 1.13 2003-03-07 22:23:36 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -242,6 +242,7 @@ typedef	struct	GKSC_	{
 #define ERR_PDF_MEMORY	   -350	/* error in device dependent table mem  */
 #define ERR_OPN_PDF        -351	/* error opening output file            */
 #define ERR_PDF_CHAR       -352	/* PDF char not available for requested */
+#define ERR_PDF_RESTORE    -353	/* PDF char not available for requested */
 
 extern	GKSC    *CreateGKSC(
 #ifdef	NeedFuncProto
