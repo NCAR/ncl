@@ -1,5 +1,5 @@
 /*
- *      $Id: Transform.c,v 1.42 1998-11-18 19:21:13 dbrown Exp $
+ *      $Id: Transform.c,v 1.43 1998-11-19 00:14:22 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1789,8 +1789,13 @@ _NhlTopLevelView
 	}
 
 	base_plot_id = _NhlOverlayBase(pid);
-	if (base_plot_id <= NhlNULLOBJID)
+	if (base_plot_id > NhlNULLOBJID)
+		return base_plot_id;
+	else if (_NhlGetLayer(pid))
 		return pid;
+	else 
+		return  NhlNULLOBJID;
+
 }
 
 
