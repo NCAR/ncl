@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.h,v 1.11 1995-03-29 20:58:45 dbrown Exp $
+ *      $Id: XyPlot.h,v 1.12 1995-03-31 13:03:37 boote Exp $
  */
 /************************************************************************
 *									*
@@ -106,6 +106,12 @@
 #define NhlNxyMonoMarkerThickness	"xyMonoMarkerThickness"
 #define NhlCxyMonoMarkerThickness	"XyMonoMarkerThickness"
 
+#define NhlNxyLineDashSegLenF		"xyLineDashSegLenF"
+#define NhlCxyLineDashSegLenF		"XyLineDashSegLenF"
+
+#define NhlNxyLineLabelFontHeightF	"xyLineLabelFontHeightF"
+#define NhlCxyLineLabelFontHeightF	"XyLineLabelFontHeightF"
+
 /*
  * XyPlot's resource names
  */
@@ -129,16 +135,10 @@
 #define NhlCxyYIrregularPoints	"XyYIrregularPoints"
 
 #define	NhlNxyComputeXMin	"xyComputeXMin"
-#define	NhlCxyComputeXMin	"XyComputeXMin"
-
 #define	NhlNxyComputeXMax	"xyComputeXMax"
-#define	NhlCxyComputeXMax	"XyComputeXMax"
-
 #define	NhlNxyComputeYMin	"xyComputeYMin"
-#define	NhlCxyComputeYMin	"XyComputeYMin"
-
 #define	NhlNxyComputeYMax	"xyComputeYMax"
-#define	NhlCxyComputeYMax	"XyComputeYMax"
+#define	NhlCxyComputeExtent	"XyComputeExtent"
 
 /*
  * These resources have not been implimented yet.
@@ -175,12 +175,6 @@ typedef enum _NhlAlternatePlace{
 #define NhlNxyYOriginalCoords	"xyYOriginalCoords"
 #define NhlCxyYOriginalCoords	"XyYOriginalCoords"
 #endif	/* NOT */
-
-#define NhlNxyLineDashSegLenF	"xyLineDashSegLenF"
-#define NhlCxyLineDashSegLenF	"XyLineDashSegLenF"
-
-#define NhlNxyLineLabelFontHeightF	"xyLineLabelFontHeightF"
-#define NhlCxyLineLabelFontHeightF	"XyLineLabelFontHeightF"
 
 
 /*

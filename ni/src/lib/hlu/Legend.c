@@ -1,5 +1,5 @@
 /*
- *      $Id: Legend.c,v 1.29 1995-03-29 20:58:35 dbrown Exp $
+ *      $Id: Legend.c,v 1.30 1995-03-31 13:03:31 boote Exp $
  */
 /************************************************************************
 *									*
@@ -297,13 +297,22 @@ static NhlResource resources[] = {
 	 NhlOffset(NhlLegendLayerRec,legend.line_label_colors),
 	 NhlTImmediate,
 	 _NhlUSET((NhlPointer) NULL),0,(NhlFreeFunc)NhlFreeGenArray},
+{NhlNlgMonoLineDashSegLen,NhlClgMonoLineDashSegLen,NhlTBoolean,
+	 sizeof(NhlBoolean), 
+	 NhlOffset(NhlLegendLayerRec,legend.mono_line_dash_seglen),
+	 NhlTImmediate, _NhlUSET((NhlPointer) True),0,NULL},
+{NhlNlgLineDashSegLenF, NhlClgLineDashSegLenF, NhlTFloat,sizeof(float), 
+	 NhlOffset(NhlLegendLayerRec,legend.line_dash_seglen),
+	 NhlTString, _NhlUSET("0.15"),0,NULL},
+{NhlNlgLineDashSegLens, NhlClgLineDashSegLens, NhlTFloatGenArray,
+	 sizeof(NhlGenArray), 
+	 NhlOffset(NhlLegendLayerRec,legend.line_dash_seglens),
+	 NhlTImmediate,
+	 _NhlUSET((NhlPointer) NULL),0,(NhlFreeFunc)NhlFreeGenArray},
 
 {NhlNlgLineLabelsOn,NhlClgLineLabelsOn,NhlTBoolean,sizeof(NhlBoolean), 
 	 NhlOffset(NhlLegendLayerRec,legend.line_labels_on),
 	 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
-{NhlNlgLineDashSegLenF, NhlClgLineDashSegLenF, NhlTFloat,sizeof(float), 
-	 NhlOffset(NhlLegendLayerRec,legend.line_dash_seglen),
-	 NhlTString, _NhlUSET("0.15"),0,NULL},
 
 	
 {NhlNlgLabelsOn, NhlClgLabelsOn, NhlTBoolean, 
@@ -721,6 +730,7 @@ static NrmQuark	Qline_labels = NrmNULLQUARK;
 static NrmQuark	Qline_colors = NrmNULLQUARK;
 static NrmQuark	Qmarker_colors = NrmNULLQUARK;
 static NrmQuark	Qline_thicknesses = NrmNULLQUARK;
+static NrmQuark	Qline_dash_seglens = NrmNULLQUARK;
 static NrmQuark	Qmarker_thicknesses = NrmNULLQUARK;
 static NrmQuark	Qline_label_font_heights = NrmNULLQUARK;
 static NrmQuark	Qmarker_sizes = NrmNULLQUARK;
@@ -1332,6 +1342,57 @@ static NhlErrorTypes    InitializeDynamicArrays
 				return ret;
 	}
 	lg_p->marker_colors = ga;
+
+/*=======================================================================*/
+
+/* The line seg_lens array */
+
+	count = MAX(lg_p->item_count, NhlLG_DEF_ITEM_COUNT);
+	if ((f_p = (float *) NhlMalloc(count * sizeof(float))) == NULL) {
+		e_text = "%s: error creating %s array";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
+			  NhlNlgLineDashSegLens);
+		return NhlFATAL;
+	}
+	for (i=0; i < count; i++) 
+		f_p[i] = 0.15;
+
+	if ((ga = NhlCreateGenArray((NhlPointer)f_p,NhlTFloat,
+				    sizeof(float),1,&count)) == NULL) {
+		e_text = "%s: error creating %s GenArray";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
+			  NhlNlgLineDashSegLens);
+		return NhlFATAL;
+	}
+	ga->my_data = True;
+
+/* If an line seg_lens resource array has been passed in, 
+ * copy it to the ga */
+
+	if (lg_p->line_dash_seglens != NULL) {
+		ret_1 = _NhlValidatedGenArrayCopy(&ga,lg_p->line_dash_seglens,
+						  NhlLG_MAX_ITEMS,True,False,
+						  NhlNlgLineDashSegLens, 
+						  entry_name);
+		
+		if ((ret = MIN(ret,ret_1)) < NhlWARNING) 
+				return ret;
+	}
+	lg_p->line_dash_seglens = ga;
+/*
+ * Replace any invalid elements in the array with the default value
+ */
+	f_p = (float *) lg_p->line_dash_seglens->data;
+	for (i=0; i<count; i++) {
+		if (f_p[i] <= 0.0) {
+			e_text =
+	       "%s: %s index %d holds an invalid line thickness: defaulting";
+			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
+				  NhlNlgLineDashSegLens, i);
+		        ret = MIN(ret, NhlWARNING);
+			f_p[i] = 0.15;
+		}
+	}
 
 /*=======================================================================*/
 
@@ -2048,6 +2109,57 @@ static NhlErrorTypes    ManageDynamicArrays
 		lg_p->marker_colors->data = (NhlPointer) i_p;
 		lg_p->marker_colors->num_elements = count;
 	}
+/*=======================================================================*/
+/* 
+ * Handle the line_dash_seg_len
+ */
+
+	count = lg_p->item_count;
+
+	if (lg_p->line_dash_seglens != olg_p->line_dash_seglens) {
+		
+		ret_1 = _NhlValidatedGenArrayCopy(&(olg_p->line_dash_seglens),
+						  lg_p->line_dash_seglens,
+						  NhlLG_MAX_ITEMS,True,False,
+						  NhlNlgLineDashSegLens, 
+						  entry_name);
+		
+		if ((ret = MIN(ret,ret_1)) < NhlWARNING) 
+				return ret;
+		lg_p->line_dash_seglens = olg_p->line_dash_seglens;
+		olg_p->line_dash_seglens = NULL;
+		f_p = (float *) lg_p->line_dash_seglens->data;
+
+		for (i=0; i<MIN(count,
+				lg_p->line_dash_seglens->num_elements); i++) {
+			if (f_p[i] <= 0.0) {
+				e_text =
+        "%s: %s index %d holds an invalid line thickness value: defaulting";
+				NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
+					  entry_name,NhlNlgLineDashSegLens,i);
+				ret = MIN(ret, NhlWARNING);
+				f_p[i] = 1.0;
+			}
+		}
+	}
+
+	if (lg_p->line_dash_seglens->num_elements < count) {
+		f_p = (float *) lg_p->line_dash_seglens->data;
+		if ((f_p = (float *)
+		     NhlRealloc(f_p, count * sizeof (float))) == NULL) {
+			e_text = "%s: error allocating %s data";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
+				  NhlNlgLineDashSegLens);
+			return NhlFATAL;
+		}
+		for (i=lg_p->line_dash_seglens->num_elements; i<count; i++) {
+			f_p[i] = 0.15;
+		}
+
+		lg_p->line_dash_seglens->data = (NhlPointer) f_p;
+		lg_p->line_dash_seglens->num_elements = count;
+	}
+
 /*=======================================================================*/
 /* 
  * Handle the line_thickness
@@ -4726,6 +4838,11 @@ static NhlErrorTypes	LegendGetValues
 			count = lg_p->item_count;
 			type = NhlNlgMarkerColors;
 		}
+		else if (args[i].quark == Qline_dash_seglens) {
+			ga = lg_p->line_dash_seglens;
+			count = lg_p->item_count;
+			type = NhlNlgMonoLineDashSegLen;
+		}
 		else if (args[i].quark == Qline_thicknesses) {
 			ga = lg_p->line_thicknesses;
 			count = lg_p->item_count;
@@ -4873,13 +4990,14 @@ static NhlErrorTypes    LegendDraw
 	int i;
 	int line_color,marker_color,line_label_color;
 	int item_type, dash_index, marker_index;
-	float line_label_font_height, line_thickness, marker_thickness;
-	float marker_size;
+	float line_label_font_height, line_dash_seglen, line_thickness;
+	float marker_thickness, marker_size;
 	float frac, dist, tcoord;
 	int *line_colors, *marker_colors, *line_label_colors;
 	int *dash_indexes;
 	int *marker_indexes;
 	int *types;
+	float *line_dash_seglens;
 	float *line_thicknesses;
 	float *marker_thicknesses;
 	float *font_heights;
@@ -4964,7 +5082,6 @@ static NhlErrorTypes    LegendDraw
 		     _NhlNwkEdgeColor, lg_p->box_line_color,
 		     _NhlNwkFillColor, lg_p->box_background,
 		     _NhlNwkFillIndex, NhlSOLIDFILL,
-		     _NhlNwkLineDashSegLenF, lg_p->line_dash_seglen,  
 		     NULL);
 				     
 /* 
@@ -4977,6 +5094,7 @@ static NhlErrorTypes    LegendDraw
 	dash_indexes = (int *) lg_p->dash_indexes->data;
 	marker_indexes = (int *) lg_p->marker_indexes->data;
 	types = (int *) lg_p->item_types->data;
+	line_dash_seglens = (float *) lg_p->line_dash_seglens->data;
 	line_thicknesses = (float *) lg_p->line_thicknesses->data;
 	marker_thicknesses = (float *) lg_p->marker_thicknesses->data;
 	font_heights = (float *) lg_p->line_label_font_heights->data;
@@ -5041,6 +5159,11 @@ static NhlErrorTypes    LegendDraw
 			else
 				line_label_color = line_label_colors[i];
 
+			if (lg_p->mono_line_dash_seglen)
+				line_dash_seglen = lg_p->line_dash_seglen;
+			else
+				line_dash_seglen = line_dash_seglens[i];
+			
 			if (lg_p->mono_line_thickness)
 				line_thickness = lg_p->line_thickness;
 			else
@@ -5069,6 +5192,7 @@ static NhlErrorTypes    LegendDraw
 				NhlVASetValues(lgl->base.wkptr->base.id,
 				  _NhlNwkLineLabel,string,
 				  _NhlNwkDashPattern,dash_index,
+				  _NhlNwkLineDashSegLenF,line_dash_seglen,
 				  _NhlNwkLineThicknessF,line_thickness,
 				  _NhlNwkLineLabelFontHeightF,
 						line_label_font_height,
@@ -5163,6 +5287,11 @@ static NhlErrorTypes    LegendDraw
 			else
 				line_label_color = line_label_colors[i];
 
+			if (lg_p->mono_line_dash_seglen)
+				line_dash_seglen = lg_p->line_dash_seglen;
+			else
+				line_dash_seglen = line_dash_seglens[i];
+			
 			if (lg_p->mono_line_thickness)
 				line_thickness = lg_p->line_thickness;
 			else
@@ -5191,6 +5320,7 @@ static NhlErrorTypes    LegendDraw
 				  _NhlNwkLineLabel, string,
 				  _NhlNwkDashPattern,dash_index,
 				  _NhlNwkLineThicknessF,line_thickness,
+				  _NhlNwkLineDashSegLenF,line_dash_seglen,
 				  _NhlNwkLineLabelFontHeightF,
 					       line_label_font_height,
 				  _NhlNwkLineColor, line_color, 
@@ -5303,6 +5433,7 @@ static NhlErrorTypes    LegendClassInitialize
 	Qline_labels = NrmStringToQuark(NhlNlgLineLabelStrings);
 	Qline_colors = NrmStringToQuark(NhlNlgLineColors);
 	Qmarker_colors = NrmStringToQuark(NhlNlgMarkerColors);
+	Qline_dash_seglens = NrmStringToQuark(NhlNlgMonoLineDashSegLen);
 	Qline_thicknesses = NrmStringToQuark(NhlNlgLineThicknesses);
 	Qmarker_thicknesses = NrmStringToQuark(NhlNlgMarkerThicknesses);
 	Qline_label_font_heights = NrmStringToQuark(NhlNlgLineLabelFontHeights);
@@ -5355,6 +5486,7 @@ static NhlErrorTypes    LegendDestroy
 	NhlFreeGenArray(lg_p->marker_indexes);
 	NhlFreeGenArray(lg_p->line_colors);
 	NhlFreeGenArray(lg_p->marker_colors);
+	NhlFreeGenArray(lg_p->line_dash_seglens);
 	NhlFreeGenArray(lg_p->line_thicknesses);
 	NhlFreeGenArray(lg_p->marker_thicknesses);
 	NhlFreeGenArray(lg_p->line_label_font_heights);

@@ -1,5 +1,5 @@
 /*
- *      $Id: LegendP.h,v 1.12 1995-03-29 20:58:37 dbrown Exp $
+ *      $Id: LegendP.h,v 1.13 1995-03-31 13:03:34 boote Exp $
  */
 /************************************************************************
 *									*
@@ -99,8 +99,11 @@ typedef struct _NhlLegendLayerPart {
 	NhlColorIndex	line_label_color;
 	NhlGenArray	line_label_colors;
 
-	NhlBoolean	line_labels_on;
+	NhlBoolean	mono_line_dash_seglen;
 	float		line_dash_seglen;
+	NhlGenArray	line_dash_seglens;
+
+	NhlBoolean	line_labels_on;
 
 	NhlFont		ll_font;
 	float		ll_aspect;

@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlotP.h,v 1.9 1995-03-15 11:49:01 boote Exp $
+ *      $Id: XyPlotP.h,v 1.10 1995-03-31 13:03:38 boote Exp $
  */
 /************************************************************************
 *									*
@@ -65,6 +65,7 @@ typedef struct _NhlXyDataSpecLayerPart{
 	NhlGenArray		markers;
 	NhlBoolean		mono_marker;
 	
+	NhlBoolean		marker_size_set;
 	float			marker_size;
 	NhlGenArray		marker_sizes;
 	NhlBoolean		mono_marker_size;
@@ -72,6 +73,12 @@ typedef struct _NhlXyDataSpecLayerPart{
 	float			marker_thickness;
 	NhlGenArray		marker_thicknesses;
 	NhlBoolean		mono_marker_thickness;
+	
+	NhlBoolean		dash_seg_len_set;
+	float			dash_seg_len;
+
+	NhlBoolean		llabel_fheight_set;
+	float			llabel_fheight;
 	
 	/* Private fields	*/
 } NhlXyDataSpecLayerPart;
@@ -125,9 +132,6 @@ typedef struct _NhlXyPlotLayerPart {
 	NhlGenArray		y_original_coords;
 #endif
 
-	float			dash_segment_length;
-	float			line_label_font_height;
-	
 	NhlAnnotationDisplayMode	display_legend;
 	NhlAnnotationDisplayMode	display_titles;
 	NhlAnnotationDisplayMode	display_tickmarks;
@@ -158,6 +162,8 @@ typedef struct _NhlXyPlotLayerPart {
 	float		y_irreg_min;
 	float		y_irreg_max;
 
+	float		vp_average;
+
 	int		num_cpairs;
 	int		size_cpair_arrays;
 
@@ -165,8 +171,10 @@ typedef struct _NhlXyPlotLayerPart {
 	NhlGenArray	item_types;
 	NhlGenArray	lg_label_strings;
 	NhlGenArray	line_colors;
+	NhlGenArray	dash_seg_lens;
 	NhlGenArray	llabel_colors;
 	NhlGenArray	llabel_strings;
+	NhlGenArray	llabel_fheights;
 	NhlGenArray	line_thicknesses;
 	NhlGenArray	marker_colors;
 	NhlGenArray	marker_indexes;

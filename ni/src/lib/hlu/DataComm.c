@@ -1,5 +1,5 @@
 /*
- *      $Id: DataComm.c,v 1.28 1995-03-29 10:01:44 boote Exp $
+ *      $Id: DataComm.c,v 1.29 1995-03-31 13:03:30 boote Exp $
  */
 /************************************************************************
 *									*
@@ -816,7 +816,7 @@ CompileDataList
 	}
 
 	/* -1111 is a hack to get an empty GenArray */
-	gen = _NhlCreateGenArray(NULL,_NhlTDListCompiled,0,-1111,NULL,False);
+	gen = _NhlCreateGenArray(NULL,_NhlTDListCompiled,0,0,NULL,False);
 	ilist = NhlMalloc(sizeof(_NhlInternDataListRec));
 	dnodes = NhlMalloc(sizeof(_NhlDataNodePtr) * len);
 	if((ilist == NULL) || (dnodes == NULL) || (gen == NULL)){
@@ -1882,6 +1882,65 @@ _NhlUpdateData
 	return NhlNOERROR;
 }
 
+/*
+ * Function:	_NhlGetDSpecId
+ *
+ * Description:	This function should return 0 on failure. This will indicate
+ *		to the caller of NhlAddData that their Data was added,
+ *		but it isn't possible to retrive the DSpec id for some
+ *		reason.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+static int
+_NhlGetDSpecId
+#if	NhlNeedProto
+(
+	NhlLayer	l,
+	NrmQuark	qname,
+	int		ditemid
+)
+#else
+(l,qname,ditemid)
+	NhlLayer	l;
+	NrmQuark	qname;
+	int		ditemid;
+#endif
+{
+	NhlDataCommLayerClassPart	*cp =
+		&((NhlDataCommLayerClass)l->base.layer_class)->datacomm_class;
+	_NhlDataOffset			oset;
+	_NhlInternDataList		ilist;
+	NhlGenArray			gen;
+	int				i;
+
+	for(oset = cp->data_offsets;oset != NULL;oset = oset->next){
+		if(qname == oset->res_name)
+			break;
+	}
+
+	if(oset == NULL)
+		return NhlNULLOBJID;
+
+	gen = *(NhlGenArray*)((char*)l + oset->offset);
+	if(!gen)
+		return NhlNULLOBJID;
+
+	ilist = gen->data;
+	for(i=0;i < ilist->num_items;i++){
+		if(ditemid == ilist->list[i]->item)
+			return ilist->list[i]->dataspec->base.id;
+	}
+
+	return NhlNULLOBJID;
+}
+
 /************************************************************************
 *									*
 *	Public API for adding data					*
@@ -1893,9 +1952,6 @@ _NhlUpdateData
  *
  * Description:	This function is a convienience function for adding a single
  *		data item to a data resource.
- *		**NOTE: This function is currently calling _NhlSetValues.  It
- *		should eventually use another SetValues interface so
- *		_NhlSetValues can be a static function again.
  *
  * In Args:	
  *
@@ -1922,6 +1978,7 @@ NhlAddData
 {
 	_NhlArg		larg;
 	NhlLayer	dcl = _NhlGetLayer(dcommid);
+	NhlErrorTypes	ret = NhlNOERROR;
 
 	if((dcl == NULL) || !_NhlIsDataComm(dcl)){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -1933,7 +1990,12 @@ NhlAddData
 	larg.value.intval = ditemid;
 	larg.type = NrmStringToQuark(_NhlTAddData);
 
-	return _NhlSetValues(dcl,&larg,1);
+	ret = _NhlSetValues(dcl,&larg,1);
+
+	if(ret < NhlWARNING)
+		return ret;
+
+	return _NhlGetDSpecId(dcl,larg.quark,ditemid);
 }
 
 /*

@@ -1,5 +1,5 @@
 /*
- *      $Id: Legend.h,v 1.13 1995-03-29 20:58:36 dbrown Exp $
+ *      $Id: Legend.h,v 1.14 1995-03-31 13:03:33 boote Exp $
  */
 /************************************************************************
 *									*
@@ -102,10 +102,13 @@ typedef enum _NhllgItemPlacementMode {
 #define NhlNlgLineLabelFontColor	"lgLineLabelFontColor"
 #define NhlNlgLineLabelFontColors	"lgLineLabelFontColors"
 
+#define NhlNlgMonoLineDashSegLen	"lgMonoLineDashSegLen"
+#define NhlNlgLineDashSegLenF		"lgLineDashSegLenF"
+#define NhlNlgLineDashSegLens		"lgLineDashSegLens"
+
 /*end of arrays */
 
 #define NhlNlgLineLabelsOn		"lgLineLabelsOn"
-#define NhlNlgLineDashSegLenF		"lgLineDashSegLenF"
 
 #define NhlNlgLineLabelFont		"lgLineLabelFont"
 #define NhlNlgLineLabelFontAspectF	"lgLineLabelFontAspectF"
@@ -219,10 +222,13 @@ typedef enum _NhllgItemPlacementMode {
 #define NhlClgLineLabelFontColor	"LgLineLabelFontColor"
 #define NhlClgLineLabelFontColors	"LgLineLabelFontColors"
 
+#define NhlClgMonoLineDashSegLen	"LgMonoLineDashSegLen"
+#define NhlClgLineDashSegLenF		"LgLineDashSegLenF"
+#define NhlClgLineDashSegLens		"LgLineDashSegLens"
+
 /*end of arrays */
 
 #define NhlClgLineLabelsOn		"LgLineLabelsOn"
-#define NhlClgLineDashSegLenF		"LgLineDashSegLenF"
 
 #define NhlClgLineLabelFont		"LgLineLabelFont"
 #define NhlClgLineLabelFontAspectF	"LgLineLabelFontAspectF"

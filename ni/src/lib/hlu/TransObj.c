@@ -1,5 +1,5 @@
 /*
- *      $Id: TransObj.c,v 1.10 1995-02-19 08:18:56 boote Exp $
+ *      $Id: TransObj.c,v 1.11 1995-03-31 13:03:34 boote Exp $
  */
 /************************************************************************
 *									*
@@ -30,7 +30,7 @@ static NhlResource resources[] =  {
 
 	{ NhlNtrOutOfRangeF, NhlCtrOutOfRangeF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlTransObjLayerRec, trobj.out_of_range),
-		NhlTString, "-9999.0",0,NULL }
+		NhlTString, "1.0e12",0,NULL }
 
 /* End-documented-resources */
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: hlu.c,v 1.26 1995-02-17 10:23:50 boote Exp $
+ *      $Id: hlu.c,v 1.27 1995-03-31 13:03:39 boote Exp $
  */
 /************************************************************************
 *									*
@@ -898,14 +898,6 @@ _NhlAllocCreateGenArray
 	if(QString == NrmNULLQUARK)
 		QString = NrmStringToQuark(NhlTString);
 
-#if	0
-	if((num_dimensions < 1) && (num_dimensions != -1111)){
-		NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-		"NhlGenArrayCreate:Arrays must have at least one dimension"));
-		return NULL;
-	}
-#endif
-
 	gen = alloc_func(sizeof(NhlGenArrayRec));
 
 	if(gen == NULL)
@@ -1102,6 +1094,9 @@ _NhlCopyGenArray
 	NhlBoolean	copy_data;	/* copy data?			*/
 #endif
 {
+	if(!gen)
+		return NULL;
+
 	return _NhlCreateGenArray(gen->data,NrmQuarkToString(gen->typeQ),
 		gen->size,gen->num_dimensions,gen->len_dimensions,copy_data);
 }
