@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: select_src,v 1.1 1993-02-20 00:11:44 clyne Exp $
+#      $Id: select_src,v 1.2 1993-03-25 21:03:30 clyne Exp $
 #
 #########################################################################
 #									#
@@ -67,14 +67,8 @@ EOF
 	switch ("$answer")
 
 	case "1":
-		clear > /dev/tty
 		set source = cdrom
-		cat <<EOF > /dev/tty
-
-
-	Installation from CD is not supported yet.
-EOF
-		$LOCALDIR/pause
+		set done = 1
 		breaksw
 
 	case "2":
