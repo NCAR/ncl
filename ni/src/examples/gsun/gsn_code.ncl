@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.7 1999-02-11 16:09:23 haley Exp $
+;      $Id: gsn_code.ncl,v 1.8 1999-02-16 17:38:01 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -240,8 +240,8 @@ i, j, old_vpx, old_vpy, old_vpwidth, old_vpheight, callframe
     cols = floattointeger(dims(1))
     xrows = dims(0)
     xcols = dims(1)
-    xwsp_perc = 5.     ; White space is 5% of total length of plot.
-    ywsp_perc = 5.     ; This can be changed with an attribute.
+    xwsp_perc = 1.     ; White space is 1% of total length of plot.
+    ywsp_perc = 1.     ; This can be changed with an attribute.
     callframe = True
 ;***********************************************************************;
 	if(resources)
@@ -252,16 +252,16 @@ i, j, old_vpx, old_vpy, old_vpwidth, old_vpheight, callframe
         xwsp_perc = resources@gsnPanelXWhiteSpacePercent
         if(xwsp_perc.lt.0.or.xwsp_perc.ge.100.)
           print("Warning: attribute gsnPanelXWhiteSpacePercent must be >= 0 and < 100.")
-          print("Defaulting to 5.")
-          xwsp_perc = 5.
+          print("Defaulting to 1.")
+          xwsp_perc = 1.
         end if
       end if
       if(isatt(resources,"gsnPanelYWhiteSpacePercent"))
         ywsp_perc = resources@gsnPanelYWhiteSpacePercent
         if(ywsp_perc.lt.0.or.ywsp_perc.ge.100.)
           print("Warning: attribute gsnPanelYWhiteSpacePercent must be >= 0 and < 100.")
-          print("Defaulting to 5.")
-          ywsp_perc = 5.
+          print("Defaulting to 1.")
+          ywsp_perc = 1.
         end if
       end if
     end if
