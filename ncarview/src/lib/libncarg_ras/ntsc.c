@@ -1,5 +1,5 @@
 /*
- *	$Id: ntsc.c,v 1.4 1992-09-10 21:30:43 don Exp $
+ *	$Id: ntsc.c,v 1.5 1992-09-11 20:17:21 clyne Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -166,13 +166,13 @@ RasterVHS(src, dst)
 			p1 = INDEXED_PIXEL(src, x-1, y);
 			p2 = INDEXED_PIXEL(src, x, y);
 			p3 = INDEXED_PIXEL(src, x+1, y);
-			DIRECT_RED(dst, x, y) = (INDEXED_RED(src, p1) +
+			DIRECT_RED(dst, x, y) = (int) (INDEXED_RED(src, p1) +
 						INDEXED_RED(src, p2) +
 						INDEXED_RED(src, p3)) / 3;
-			DIRECT_GREEN(dst, x, y) = (INDEXED_RED(src, p1) +
+			DIRECT_GREEN(dst, x, y) = (int) (INDEXED_RED(src, p1) +
 						INDEXED_GREEN(src, p2) +
 						INDEXED_GREEN(src, p3)) / 3;
-			DIRECT_BLUE(dst, x, y) = (INDEXED_BLUE(src, p1) +
+			DIRECT_BLUE(dst, x, y) = (int) (INDEXED_BLUE(src, p1) +
 						INDEXED_BLUE(src, p2) +
 						INDEXED_BLUE(src, p3)) / 3;
 		  }
@@ -187,13 +187,13 @@ RasterVHS(src, dst)
 		    DIRECT_BLUE(dst, x, y)  = DIRECT_BLUE(src, x, y);
 		  }
 		  else {
-		    DIRECT_RED(dst, x, y) = (DIRECT_RED(src, x-1, y) +
+		    DIRECT_RED(dst, x, y) = (int) (DIRECT_RED(src, x-1, y) +
 					    DIRECT_RED(src, x, y) +
 					    DIRECT_RED(src, x+1, y)) / 3;
-		    DIRECT_GREEN(dst, x, y) = (DIRECT_GREEN(src, x-1, y) +
+		    DIRECT_GREEN(dst, x, y) = (int) (DIRECT_GREEN(src, x-1, y) +
 					    DIRECT_GREEN(src, x, y) +
 					    DIRECT_GREEN(src, x+1, y)) / 3;
-		    DIRECT_BLUE(dst, x, y) = (DIRECT_BLUE(src, x-1, y) +
+		    DIRECT_BLUE(dst, x, y) = (int) (DIRECT_BLUE(src, x-1, y) +
 					    DIRECT_BLUE(src, x, y) +
 					    DIRECT_BLUE(src, x+1, y)) / 3;
 		  }

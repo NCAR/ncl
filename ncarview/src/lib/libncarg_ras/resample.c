@@ -1,5 +1,5 @@
 /*
- *	$Id: resample.c,v 1.7 1992-09-10 21:36:38 don Exp $
+ *	$Id: resample.c,v 1.8 1992-09-11 20:17:24 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -335,25 +335,29 @@ RasterScale(src, scale)
 		    ip01 = INDEXED_PIXEL(src,sx,sy+1);
 		    ip11 = INDEXED_PIXEL(src,sx+1,sy+1);
 
-		    red = (INDEXED_RED(src, ip00)+INDEXED_RED(src, ip10) +
+		    red = (int) (INDEXED_RED(src, ip00)+INDEXED_RED(src, ip10) +
 			   INDEXED_RED(src, ip01)+INDEXED_RED(src, ip11) ) / 4;
 
-		    green = (INDEXED_GREEN(src, ip00)+INDEXED_GREEN(src, ip10)+
-			   INDEXED_GREEN(src, ip01)+INDEXED_GREEN(src, ip11))/4;
+		    green = (int) (INDEXED_GREEN(src, ip00) +
+				INDEXED_GREEN(src, ip10)+
+				INDEXED_GREEN(src, ip01)+
+				INDEXED_GREEN(src, ip11)) / 4;
 
-		    blue = (INDEXED_BLUE(src, ip00)+INDEXED_BLUE(src, ip10) +
-			   INDEXED_BLUE(src, ip01)+INDEXED_BLUE(src, ip11))/4;
+		    blue = (int) (INDEXED_BLUE(src, ip00) +
+				INDEXED_BLUE(src, ip10) +
+				INDEXED_BLUE(src, ip01) +
+				INDEXED_BLUE(src, ip11)) / 4;
 		  }
 		  else if (src->type == RAS_DIRECT) {
-		    red = (DIRECT_RED(src,sx,sy) +
+		    red = (int) (DIRECT_RED(src,sx,sy) +
 			   DIRECT_RED(src,sx+1,sy) +
 			   DIRECT_RED(src,sx,sy+1) +
 			   DIRECT_RED(src,sx+1,sy+1)) / 4;
-		    green = (DIRECT_GREEN(src,sx,sy) +
+		    green = (int) (DIRECT_GREEN(src,sx,sy) +
 			   DIRECT_GREEN(src,sx+1,sy) +
 			   DIRECT_GREEN(src,sx,sy+1) +
 			   DIRECT_GREEN(src,sx+1,sy+1)) / 4;
-		    blue = (DIRECT_BLUE(src,sx,sy) +
+		    blue = (int) (DIRECT_BLUE(src,sx,sy) +
 			   DIRECT_BLUE(src,sx+1,sy) +
 			   DIRECT_BLUE(src,sx,sy+1) +
 			   DIRECT_BLUE(src,sx+1,sy+1)) / 4;

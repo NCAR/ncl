@@ -1,5 +1,5 @@
 /*
- *	$Id: dither.c,v 1.5 1992-09-10 21:28:51 don Exp $
+ *	$Id: dither.c,v 1.6 1992-09-11 20:17:18 clyne Exp $
  */
 #include "ncarg_ras.h"
 
@@ -65,9 +65,9 @@ RasterDitherPopular(src, dst, verbose)
 {
 	int		i, j;
 	int		x, y;
-	unsigned char	r, g, b;
+	unsigned char	r, g, b, bins;
 	int		dist, mini, mindist;
-	int		bins, shift;
+	int		shift;
 	int		count;
 	int		cmapsize;
 	int		hist[MAXBINS][MAXBINS][MAXBINS];
