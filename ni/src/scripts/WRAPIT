@@ -1,5 +1,5 @@
 #!/bin/csh -f
-set version = 040503    # YYMMDD
+set version = 041106    # YYMMDD
 echo " " 
 echo "WRAPIT Version: "$version 
 if ($#argv == 0) then
@@ -68,7 +68,7 @@ echo system has one of the supported linux fortran compilers you must
 echo specify which one you want to use by the appropriate command line
 echo option, otherwise the g77 compiler will be used. 
 echo The supported linux fortran compilers are the Portland Group
-echo "(pgf90), the Lahey/Fujitsu (lf95), and the Intel compiler (ifc)."
+echo "(pgf90), the Lahey/Fujitsu (lf95), and the Intel compiler (ifc/ifort)."
 echo "OPTION: -pg  to specify the Portland Group compiler."
 echo "OPTION: -lf  to specify the Lahey/Fujitsu compiler."
 echo "OPTION: -in  to specify the Intel compiler."
@@ -174,12 +174,17 @@ while ($#argv)
     endif
   else if ($arg:q == "-in") then
     if ($OS == Linux) then
-      which ifc 
+      which ifort              # newer version (8.1)
       if ($status) then
-        echo WARNING: Intel fortran compiler NOT found.
-        echo Using default gnu g77 compiler.
+        which ifc              # older version (7.8)
+        if ($status) then
+          echo WARNING: Intel fortran compiler NOT found.
+          echo Using default gnu g77 compiler.
+        else
+          set f90c = ifc
+        endif
       else
-        set f90c = ifc 
+        set f90c = ifort
       endif
     else
       echo "WARNING: option -in INVALID for $OS system"
@@ -291,9 +296,9 @@ switch ($OS)
      if ($real8 == 1) then
        set fopts = "$fopts --dbl"
      endif
-   else if ($f90c == ifc) then       # Intel 
+   else if ($f90c == ifc || $f90c == ifort) then     # Intel 
      if ($debug == 1) then
-       set fopts = "-c -C -V"
+       set fopts = "-c -CB -V"
      else
        set fopts = "-c -O2"
      endif 
@@ -310,9 +315,9 @@ switch ($OS)
    breaksw
  case AIX:                           # AIX
    if ($debug == 1) then
-     set fopts = "-c -C -q{$nbits} -qmaxmem=-1 -qarch=auto" 
+     set fopts = "-c -C -q{$nbits} -qmaxmem=-1 -qarch=auto -qextname=flush"
    else
-     set fopts = "-c -q{$nbits} -qmaxmem=-1 -qarch=auto -O" 
+     set fopts = "-c -q{$nbits} -qmaxmem=-1 -qarch=auto -qextname=flush -O"
    endif
    if ($real8 == 1) then
      set fopts = "$fopts -qautodbl=dbl4"
@@ -583,7 +588,7 @@ switch ($OS)
      endif
    else if ($f90c == lf95) then    # LF compiler
      $f90c --shared -lfj9f6 -lfj9i6 -lfj9e6 $ld_suffix
-   else if ($f90c == ifc) then     # INTEL compiler
+   else if ($f90c == ifc || $f90c == ifort) then     # INTEL compiler
      $f90c -shared $ld_suffix
    else                            # GNU g77               
      if ($debug == 1) then
