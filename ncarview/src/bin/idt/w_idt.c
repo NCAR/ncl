@@ -1,5 +1,5 @@
 /*
- *	$Id: w_idt.c,v 1.24 1992-09-09 15:07:03 clyne Exp $
+ *	$Id: w_idt.c,v 1.25 1992-09-23 23:02:43 clyne Exp $
  */
 /*
  *	w_idt.c
@@ -27,11 +27,8 @@
 #include <X11/Xaw/StripChart.h>
 #include <X11/Xaw/Paned.h>
 #include <X11/Xaw/Cardinals.h>
-
-#define	IDT
 #include <ncarg/c.h>
 #include "idt.h"
-#include "bits.h"
 
 
 AppData	App_Data;	/* global data settable by user resources	*/

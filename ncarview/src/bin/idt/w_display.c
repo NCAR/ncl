@@ -1,5 +1,5 @@
 /*
- *	$Id: w_display.c,v 1.13 1992-09-01 23:39:10 clyne Exp $
+ *	$Id: w_display.c,v 1.14 1992-09-23 23:02:36 clyne Exp $
  */
 /*
  *	w_display.c
@@ -645,9 +645,10 @@ void	create_top_panel(paned, wd)
 	/*
 	 * create a pixmap for the playback button
 	 */
-	pixmap = XCreateBitmapFromData(XtDisplay(paned),
-                                 RootWindowOfScreen(XtScreen(paned)),
-                                 playback_bits,playback_width,playback_height);
+	pixmap = XCreateBitmapFromData(
+		XtDisplay(paned), RootWindowOfScreen(XtScreen(paned)),
+		 (const char *) playback_bits, playback_width,playback_height
+	);
 
         n = 0;
 	XtSetArg(args[n], XtNbitmap, pixmap);	n++;
@@ -659,9 +660,10 @@ void	create_top_panel(paned, wd)
 	/*
 	 * the jogback button
 	 */
-	pixmap = XCreateBitmapFromData(XtDisplay(paned),
-                                 RootWindowOfScreen(XtScreen(paned)),
-                                 jogback_bits,jogback_width,jogback_height);
+	pixmap = XCreateBitmapFromData(
+		XtDisplay(paned), RootWindowOfScreen(XtScreen(paned)),
+		(const char *) jogback_bits,jogback_width,jogback_height
+	);
 
         n = 0;
 	XtSetArg(args[n], XtNbitmap, pixmap);	n++;
@@ -674,9 +676,10 @@ void	create_top_panel(paned, wd)
 	/*
 	 * the stop button
 	 */
-	pixmap = XCreateBitmapFromData(XtDisplay(paned),
-                                 RootWindowOfScreen(XtScreen(paned)),
-                                 stop_bits,stop_width,stop_height);
+	pixmap = XCreateBitmapFromData(
+		XtDisplay(paned), RootWindowOfScreen(XtScreen(paned)),
+		 (const char *) stop_bits,stop_width,stop_height
+	);
 
         n = 0;
 	XtSetArg(args[n], XtNbitmap, pixmap);	n++;
@@ -687,9 +690,10 @@ void	create_top_panel(paned, wd)
 	/*
 	 * the jog button
 	 */
-	pixmap = XCreateBitmapFromData(XtDisplay(paned),
-                                 RootWindowOfScreen(XtScreen(paned)),
-                                 jog_bits,jog_width,jog_height);
+	pixmap = XCreateBitmapFromData(
+		XtDisplay(paned), RootWindowOfScreen(XtScreen(paned)),
+		(const char *) jog_bits,jog_width,jog_height
+	);
 
         n = 0;
 	XtSetArg(args[n], XtNbitmap, pixmap);	n++;
@@ -700,9 +704,10 @@ void	create_top_panel(paned, wd)
 	/*
 	 * the play button
 	 */
-	pixmap = XCreateBitmapFromData(XtDisplay(paned),
-                                 RootWindowOfScreen(XtScreen(paned)),
-                                 play_bits,play_width,play_height);
+	pixmap = XCreateBitmapFromData(
+		XtDisplay(paned), RootWindowOfScreen(XtScreen(paned)),
+		(const char *) play_bits,play_width,play_height
+	);
 
         n = 0;
 	XtSetArg(args[n], XtNbitmap, pixmap);	n++;

@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class0.c,v 1.17 1992-09-01 23:41:10 clyne Exp $
+ *	$Id: X11_class0.c,v 1.18 1992-09-23 23:03:57 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -277,8 +277,10 @@ CGMC *c;
 		/*
 		 *	read in pixmap for icon
 		 */
-	       icon.pmap = XCreateBitmapFromData(dpy, drawable, ctrans_bits,
-			icon.width, icon.height);
+	       icon.pmap = XCreateBitmapFromData(
+			dpy, drawable, (const char *) ctrans_bits,
+			icon.width, icon.height
+		);
   
 		/*
 		 * Set the standard properties for the window managers. 

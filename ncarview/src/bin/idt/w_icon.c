@@ -1,5 +1,5 @@
 /*
- *	$Id: w_icon.c,v 1.3 1992-09-09 15:06:57 clyne Exp $
+ *	$Id: w_icon.c,v 1.4 1992-09-23 23:02:40 clyne Exp $
  */
 /*
  *	w_icon.c
@@ -52,9 +52,11 @@ SetIconResource(toplevel)
 		 * user hasn't specified a icon pixmap resource so use
 		 * the default
 	 	 */
-		icon.pmap = XCreateBitmapFromData(XtDisplay(toplevel),
-		RootWindowOfScreen(XtScreen(toplevel)),
-		icon.bits, icon.width, icon.height);
+		icon.pmap = XCreateBitmapFromData(
+			XtDisplay(toplevel),
+			RootWindowOfScreen(XtScreen(toplevel)),
+			(char *) icon.bits, icon.width, icon.height
+		);
 
 		n = 0;
 		XtSetArg(args[n], XtNiconPixmap, icon.pmap);    n++;
