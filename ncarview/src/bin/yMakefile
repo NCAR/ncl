@@ -5,7 +5,7 @@
 NCARG	= ../../..
 
 SUBDIRS	= ctrans ictrans filter med scripts rascat xwdtohdf nriftohdf \
-		rasstat ncgmstat cgm_edit idt rasview rasls
+	  rasstat ncgmstat cgm_edit idt rasview rasls rasgetpal rassplit
 
 MakeSubdirs($(SUBDIRS))
 InstallSubdirs($(SUBDIRS))
