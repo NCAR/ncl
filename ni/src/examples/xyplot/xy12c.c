@@ -1,5 +1,5 @@
 /*
- *      $Id: xy12c.c,v 1.7 1995-03-23 16:31:33 haley Exp $
+ *      $Id: xy12c.c,v 1.8 1995-04-06 15:21:25 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -272,7 +272,7 @@ NextFrameCB
 
         NhlRLClear(rlist);
         NhlRLSetFloat(rlist,NhlNvpXF,.25);
-        NhlRLSetFloat(rlist,NhlNvpYF,.75);
+        NhlRLSetFloat(rlist,NhlNvpYF,.85);
         NhlRLSetFloat(rlist,NhlNvpWidthF,.5);
         NhlRLSetFloat(rlist,NhlNvpHeightF,.5);
 

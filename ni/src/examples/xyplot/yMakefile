@@ -1,5 +1,5 @@
 #
-#   $Id: yMakefile,v 1.14 1995-04-05 15:14:52 haley Exp $
+#   $Id: yMakefile,v 1.15 1995-04-06 15:21:26 haley Exp $
 #
 #   Makefile for HLU XYPlot examples
 #
@@ -21,7 +21,7 @@ SRCS       = $(CSRCS) $(FSRCS)
 OBJS       = $(COBJS) $(FOBJS)
 INCLUDES   = xy13c.h 
 ASCDATA    = xy12c.asc
-RESFILES   = xy01.res xy02.res xy03.res xy04.res xy05.res xy06.res
+RESFILES   = xy01.res xy02.res xy03.res xy04.res xy05.res xy06.res xy13.res
 NCGMS	   = xy11c.ncgm xy11f.ncgm xy12c.ncgm
 EXFILES    = $(SRCS) $(INCLUDES)
 
