@@ -1,5 +1,5 @@
 C
-C	$Id: wmrgwt.f,v 1.4 1995-04-25 23:29:04 fred Exp $
+C	$Id: wmrgwt.f,v 1.5 1997-01-17 18:04:44 fred Exp $
 C
       SUBROUTINE WMRGWT(N,X,Y,IFNT,NASC)
 C
@@ -142,7 +142,7 @@ C
               K = K+1
               IF (RWORK(L).EQ.-2047.) THEN 
                 CALL PPINPO(X,Y,N,RWORK(MDGUP1),RWORK(MDGUP),
-     +                      K-1,IWORK(MDGU2P),RWORK(MDGU2P),
+     +                      K-1,RWORK(MDGU2P),IWORK(MDGU2P),
      +                      NWRK-MDGU2,WMLGFA,IER)
 C
 C  Ignore degenerate areas.
@@ -160,7 +160,7 @@ C  Install a line clipper in here when it becomes available.
 C
                 IDRFLG = -1
                 CALL PPINPO(X,Y,N,RWORK(MDGUP1),RWORK(MDGUP),
-     +                      K-1,IWORK(MDGU2P),RWORK(MDGU2P),
+     +                      K-1,RWORK(MDGU2P),IWORK(MDGU2P),
      +                      NWRK-MDGU2,WMLGFA,IER)
 C
 C  Ignore degenerate areas.
