@@ -111,6 +111,15 @@ C****
 C
       DO 70 J = 1,NLAT
           DO 60 I = 1,IMAX
+  c ==========================================================
+           if (psfc(i,j).eq.spvl) then
+               do k=1,nlevo
+                  dato(i,j,k) = spvl
+               end do
+               go to 60  
+           end if
+  c ===========================================================
+
 C
 C****     GET PRESSURE VALUES FOR HYBRID SURFACES FOR THIS POINT
 C****     AND FOR THE TYPE OF MODEL SURFACE THE DATA IS ON.
