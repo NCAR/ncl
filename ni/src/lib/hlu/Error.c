@@ -1,5 +1,5 @@
 /*
- *      $Id: Error.c,v 1.15 1994-11-23 22:41:39 ethan Exp $
+ *      $Id: Error.c,v 1.16 1995-01-11 00:46:30 boote Exp $
  */
 /************************************************************************
 *									*
@@ -44,7 +44,6 @@
 
 static char		def_file[] = "stderr";
 static NhlErrorLayer	errorLayer = NULL;
-#define	DEF_FILE	def_file
 #define	DEF_UNIT	(74)
 
 /************************************************************************
@@ -66,7 +65,7 @@ static NhlResource resources[] = {
 	{NhlNerrPrint,NhlCerrPrint,NhlTBoolean,sizeof(NhlBoolean),
 		Oset(print_errors),NhlTImmediate,(NhlPointer)True,0,NULL},
 	{NhlNerrFileName,NhlCerrFileName,NhlTString,sizeof(NhlString),
-		Oset(error_file),NhlTImmediate,(NhlPointer)DEF_FILE,0,
+		Oset(error_file),NhlTImmediate,(NhlPointer)NULL,0,
 							(_NhlFreeFunc)NhlFree},
 /* End-documented-resources */
 
@@ -415,23 +414,37 @@ ErrorInitialize
 		_NhlErrorLayerC	cchild = (_NhlErrorLayerC)
 						_NhlGetLayer(enew->error.child);
 		cchild->cerror.my_fp = False;
-		if(strcmp(tfname,"stderr") == 0)
-			cchild->cerror.fp = stderr;
-		else if(strcmp(tfname,"stdout") == 0)
-			cchild->cerror.fp = stdout;
-		else{
-			tfname = _NGResolvePath(enew->error.error_file);
-			cchild->cerror.fp = fopen(tfname,"w");
-			if(cchild->cerror.fp == NULL){
-				NHLPERROR((NhlWARNING,errno,
-			"%s:Unable to open error file:%s - Using stderr",fname,
-								tfname));
-				ret = MIN(ret,NhlWARNING);
+		if(!cchild->cerror.fp){
+			if(!tfname || (strcmp(tfname,"stderr") == 0))
 				cchild->cerror.fp = stderr;
-				tfname = "stderr";
+			else if(strcmp(tfname,"stdout") == 0)
+				cchild->cerror.fp = stdout;
+			else{
+				tfname = _NGResolvePath(enew->error.error_file);
+				if(tfname)
+					cchild->cerror.fp = fopen(tfname,"w");
+				else
+					cchild->cerror.fp = NULL;
+
+				if(cchild->cerror.fp == NULL){
+					NHLPERROR((NhlWARNING,errno,
+			"%s:Unable to open error file:%s - Using stderr",fname,
+									tfname));
+					ret = MIN(ret,NhlWARNING);
+					cchild->cerror.fp = stderr;
+					tfname = "stderr";
+				}
+				else
+					cchild->cerror.my_fp = True;
 			}
-			else
-				cchild->cerror.my_fp = True;
+		}
+		else{
+			if(tfname){
+				NhlPError(NhlWARNING,NhlEUNKNOWN,
+					"%s:%s was set, ignoring %s",fname,
+					NhlNerrFilePtr,NhlNerrFileName);
+				tfname = NULL;
+			}
 		}
 		enew->error.private_fp = cchild->cerror.fp;
 	}
@@ -442,7 +455,7 @@ ErrorInitialize
 		fchild->ferror.my_eunit = False;
 		if(fchild->ferror.eunit != -1){
 			/* Unit Number specified */
-			if(tfname != DEF_FILE){
+			if(tfname){
 				/* File is specified so open unit with file */
 				int	conn = 0;
 				int	ierr = 0;
@@ -463,7 +476,7 @@ ErrorInitialize
 							NhlNerrFileName,tfname,
 							fchild->ferror.eunit);
 					ret = MIN(ret,NhlWARNING);
-					tfname = DEF_FILE;
+					tfname = NULL;
 				}
 				else{
 					_NhlFString	ffname;
@@ -487,7 +500,8 @@ ErrorInitialize
 					if(!tfname || ierr){
 
 					NhlPError(NhlWARNING,NhlEUNKNOWN,
-	"%s:Unable to open %s with Unit %d:reverting to defaults",fname,tfname,
+	"%s:Unable to open %s with Unit %d:reverting to defaults",fname,
+						((tfname)?tfname:"nil"),
 							fchild->ferror.eunit);
 						conn = 4;
 						fchild->ferror.eunit =
@@ -501,9 +515,9 @@ ErrorInitialize
 			int tint = 4;
 
 			/* Unit number not specified */
-			if(tfname == DEF_FILE){
+			if(!tfname){
 				/* file not specified - use stderr */
-				tfname = DEF_FILE;
+				tfname = "stderr";
 				fchild->ferror.eunit =
 						_NHLCALLF(i1mach,I1MACH)(&tint);
 			}
@@ -543,7 +557,7 @@ ErrorInitialize
 					NhlPError(NhlWARNING,NhlEUNKNOWN,
 	"ErrorInit:Unable to open %s with Unit %d:reverting to defaults",tfname,
 							fchild->ferror.eunit);
-						tfname = DEF_FILE;
+						tfname = "stderr";
 						fchild->ferror.eunit =
 						_NHLCALLF(i1mach,I1MACH)(&tint);
 					}
@@ -555,11 +569,10 @@ ErrorInitialize
 		enew->error.private_eunit = fchild->ferror.eunit;
 	}
 
-	if(!tfname)
-		tfname = DEF_FILE;
-
-	enew->error.error_file = (char *)NhlMalloc(strlen(tfname) + 1);
-	strcpy(enew->error.error_file,tfname);
+	if(tfname){
+		enew->error.error_file = (char *)NhlMalloc(strlen(tfname) + 1);
+		strcpy(enew->error.error_file,tfname);
+	}
 
 	enew->error.num_emsgs = 0;
 	enew->error.emsgs = NULL;
@@ -624,6 +637,11 @@ ErrorSetValues
 	NhlErrorLayer	enew = (NhlErrorLayer)new;
 	char		*fname = "ErrorSetValues";
 	Const char	*tfname = NULL;
+	_NhlErrorLayerC	cchild;
+	_NhlErrorLayerF	fchild;
+	int		conn,ierr;
+	_NhlFString	ffname;
+	int		ffname_len;
 
 	/*
 	 * Silently ignore changes to mode. It shouldn't be possible, but
@@ -631,14 +649,10 @@ ErrorSetValues
 	 */
 	enew->error.error_mode = eold->error.error_mode;
 
-	if(eold->error.error_file != enew->error.error_file){
+	if(enew->error.error_mode == _NhlCLIB){
+		cchild = (_NhlErrorLayerC) _NhlGetLayer(enew->error.child);
 
-		tfname = enew->error.error_file;
-
-		if(enew->error.error_mode == _NhlCLIB){
-			_NhlErrorLayerC	cchild = (_NhlErrorLayerC)
-						_NhlGetLayer(enew->error.child);
-
+		if(eold->error.private_fp != cchild->cerror.fp){
 			if(cchild->cerror.my_fp){
 				if(fclose(eold->error.private_fp) != 0){
 					NhlPError(NhlWARNING,NhlEUNKNOWN,
@@ -648,89 +662,108 @@ ErrorSetValues
 			}
 
 			cchild->cerror.my_fp = False;
-			if(enew->error.private_fp != cchild->cerror.fp){
-				if(enew->error.error_file != NULL){
-					NhlPError(NhlWARNING,NhlEUNKNOWN,
-						"%s:%s specified - ignoring %s",
-							fname,NhlNerrFilePtr,
-							NhlNerrFileName);
-				}
-				tfname = DEF_FILE;
-				enew->error.private_fp = cchild->cerror.fp;
-			}
-			else{
-				FILE	*tfptr = NULL;
 
-				if(tfname == NULL){
-					NhlPError(NhlWARNING,NhlEUNKNOWN,
-				"Unable to open file NULL, Using stderr");
+			/*
+			 * New File Pointer - ignore file name.
+			 */
+			if(enew->error.error_file && (enew->error.error_file !=
+						eold->error.error_file)){
+				NhlPError(NhlINFO,NhlEUNKNOWN,
+					"%s:%s set, ignoring %s",fname,
+					NhlNerrFilePtr,NhlNerrFileName);
+			}
+			enew->error.error_file = NULL;
+			NhlFree(eold->error.error_file);
+			eold->error.error_file = NULL;
+		}
+		else if(enew->error.error_file != eold->error.error_file){
+			tfname = enew->error.error_file;
+
+			if(cchild->cerror.my_fp){
+				if(fclose(eold->error.private_fp) != 0){
+					NhlPError(NhlWARNING, NhlEUNKNOWN,
+						"Error closing old error file");
 					ret = MIN(ret,NhlWARNING);
+				}
+			}
+			cchild->cerror.my_fp = False;
+
+			if(!tfname || (strcmp(tfname,"stderr") == 0)){
+				tfname = "stderr";
+				cchild->cerror.fp = stderr;
+			}
+			else if(strcmp(tfname,"stdout") == 0)
+				cchild->cerror.fp = stdout;
+			else{
+				tfname = _NGResolvePath(enew->error.error_file);
+				if(tfname)
+					cchild->cerror.fp = fopen(tfname,"w");
+				else
+					cchild->cerror.fp = NULL;
+				if(cchild->cerror.fp)
+					cchild->cerror.my_fp = True;
+				else{
+					NHLPERROR((NhlWARNING,errno,
+			"%s:Unable to open error file:%s - Using stderr",fname,
+								tfname));
+					ret = MIN(ret,NhlWARNING);
+					cchild->cerror.fp = stderr;
 					tfname = "stderr";
 				}
-
-				if(strcmp(tfname,"stderr") == 0)
-					tfptr = stderr;
-				else if(strcmp(tfname,"stdout") == 0)
-					tfptr = stdout;
-				else{
-					tfname =
-					_NGResolvePath(enew->error.error_file);
-					if(tfname)
-						tfptr = fopen(tfname,"w");
-					if(!tfname || !tfptr){
-					NHLPERROR((NhlWARNING,NhlEUNKNOWN,
-					"%s:Unable to open %s,Using stderr",
-						fname,(tfname)?tfname:"nil"));
-						ret = MIN(ret,NhlWARNING);
-						tfptr = stderr;
-						tfname = "stderr";
-					}
-					else
-						cchild->cerror.my_fp = True;
-				}
-				enew->error.private_fp = cchild->cerror.fp =
-									tfptr;
 			}
+
+			enew->error.error_file = NhlMalloc(strlen(tfname)+1);
+			if(!enew->error.error_file){
+				NHLPERROR((NhlFATAL,ENOMEM,NULL));
+				return NhlFATAL;
+			}
+			strcpy(enew->error.error_file,tfname);
+			NhlFree(eold->error.error_file);
+			eold->error.error_file = NULL;
 		}
-		else if(enew->error.error_mode == _NhlFLIB){
-			_NhlErrorLayerF	fchild = (_NhlErrorLayerF)
-						_NhlGetLayer(enew->error.child);
-			int	ierr = 0;
-			int	conn = 0;
+		enew->error.private_fp = cchild->cerror.fp;
+	}
+	else{
+		fchild = (_NhlErrorLayerF) _NhlGetLayer(enew->error.child);
+
+		if(enew->error.private_eunit != fchild->ferror.eunit){
 
 			if(fchild->ferror.my_eunit)
 				_NHLCALLF(nhl_fclsunit,NHLF_CLSUNIT)
 					(&eold->error.private_eunit,&ierr);
-			else
-				_NHLCALLF(nhl_finqunit,NHLF_INQUNIT)
-					(&fchild->ferror.eunit,&conn,&ierr);
 
 			fchild->ferror.my_eunit = False;
 
+			_NHLCALLF(nhl_finqunit,NHLF_INQUNIT)
+					(&fchild->ferror.eunit,&conn,&ierr);
 			if(ierr){
 				NhlPError(NhlWARNING,NhlEUNKNOWN,
-				"%s:Fortran I/O error #%n - Using defaults",
+				"%s:Fortran I/O Error #%n:Using default I/O",
 								fname,ierr);
-				tfname = "stderr";
 				conn = 4;
-				fchild->ferror.eunit = _NHLCALLF(i1mach,I1MACH)
-									(&conn);
+				fchild->ferror.eunit =
+						_NHLCALLF(i1mach,I1MACH)(&conn);
+				enew->error.error_file = "stderr";
 			}
 			else if(conn){
-				NhlPError(NhlWARNING,NhlEUNKNOWN,
-			"%s:Ignoring %s=%s :Unit number %d already open",fname,
-							NhlNerrFileName,tfname,
-							fchild->ferror.eunit);
-				ret = MIN(ret,NhlWARNING);
-				tfname = DEF_FILE;
+				if(enew->error.error_file &&
+					(enew->error.error_file !=
+						eold->error.error_file)){
+					NhlPError(NhlINFO,NhlEUNKNOWN,
+					"%s:%s set to open unit, ignoring %s",
+						fname,NhlNerrUnitNumber,
+						NhlNerrFileName);
+				}
+				enew->error.error_file = NULL;
+				NhlFree(eold->error.error_file);
+				eold->error.error_file = NULL;
 			}
-			else{
-				_NhlFString	ffname;
-				int		ffname_len;
+			else if(enew->error.error_file){
 
-				tfname =_NGResolvePath(enew->error.error_file);
+				tfname = _NGResolvePath(enew->error.error_file);
 
 				if(tfname){
+
 					ffname_len = strlen(tfname);
 					ffname = (_NhlFString)
 							_NhlCptrToFptr(tfname);
@@ -740,121 +773,108 @@ ErrorSetValues
 				}
 
 				if(!tfname || ierr){
+
 					NhlPError(NhlWARNING,NhlEUNKNOWN,
-		"%s:Unable to open %s with Unit %d:reverting to defaults",fname,
-							(tfname)?tfname:"nil",
+	"%s:Unable to open %s with Unit %d:reverting to defaults",fname,tfname,
 							fchild->ferror.eunit);
 					conn = 4;
 					fchild->ferror.eunit =
 						_NHLCALLF(i1mach,I1MACH)(&conn);
 					tfname = "stderr";
 				}
-			}
-			enew->error.private_eunit = fchild->ferror.eunit;
-		}
-		else{
-			NhlPError(NhlFATAL,NhlEUNKNOWN,
-					"%s:Unknown error_mode???",fname);
-			return NhlFATAL;
-		}
 
-		(void)NhlFree(eold->error.error_file);
-		if(!tfname)
-			tfname = DEF_FILE;
-		enew->error.error_file = (char *)NhlMalloc(strlen(tfname) + 1);
-		if(!enew->error.error_file){
-			NHLPERROR((NhlFATAL,ENOMEM,NULL));
-			return NhlFATAL;
-		}
-		strcpy(enew->error.error_file,tfname);
-	}
-	else{
-
-		if(enew->error.error_mode == _NhlCLIB){
-			_NhlErrorLayerC	cchild = (_NhlErrorLayerC)
-						_NhlGetLayer(enew->error.child);
-			if(enew->error.private_fp != cchild->cerror.fp){
-
-
-				if(!cchild->cerror.fp){
-					NhlPError(NhlWARNING,NhlEUNKNOWN,
-					"%s:%s cannot be NULL - Ignoring",fname,
-					NhlNerrFilePtr);
-					cchild->cerror.fp =
-							enew->error.private_fp;
+				enew->error.error_file =
+						NhlMalloc(strlen(tfname)+1);
+				if(!enew->error.error_file){
+					NHLPERROR((NhlFATAL,ENOMEM,NULL));
+					return NhlFATAL;
 				}
-				else
-					enew->error.private_fp =
-							cchild->cerror.fp;
-				if(cchild->cerror.my_fp){
-					if(fclose(eold->error.private_fp) != 0){
-					NhlPError(NhlWARNING,NhlEUNKNOWN,
-						"Error closing old error file");
-						ret = MIN(ret,NhlWARNING);
-					}
-				}
-				cchild->cerror.my_fp = False;
-
-				if(cchild->cerror.fp == stderr)
-					tfname = "stderr";
-				else if(cchild->cerror.fp == stdout)
-					tfname = "stdout";
-				else
-					tfname = DEF_FILE;
+				strcpy(enew->error.error_file,tfname);
+				NhlFree(eold->error.error_file);
+				eold->error.error_file = NULL;
 			}
 		}
-		else if(enew->error.error_mode == _NhlFLIB){
-			_NhlErrorLayerF	fchild = (_NhlErrorLayerF)
-						_NhlGetLayer(enew->error.child);
-			if(enew->error.private_eunit != fchild->ferror.eunit){
-				int conn;
-				int ierr = 0;
+		else if(eold->error.error_file != enew->error.error_file){
 
-				enew->error.private_eunit =fchild->ferror.eunit;
+			tfname = enew->error.error_file;
 
-				if(fchild->ferror.my_eunit)
-					_NHLCALLF(nhl_fclsunit,NHLF_CLSUNIT)
+			if(fchild->ferror.my_eunit)
+				_NHLCALLF(nhl_fclsunit,NHLF_CLSUNIT)
 					(&eold->error.private_eunit,&ierr);
 
+			fchild->ferror.my_eunit = False;
+
+			if(!tfname || (strcmp(tfname,"stderr") == 0)){
+				tfname = "stderr";
+				conn = 4;
+				fchild->ferror.eunit =
+						_NHLCALLF(i1mach,I1MACH)(&conn);
+			}
+			else if(strcmp(tfname,"stdout") == 0){
+				conn = 2;
+				fchild->ferror.eunit =
+						_NHLCALLF(i1mach,I1MACH)(&conn);
+			}
+			else{
+				_NHLCALLF(nhl_finqunit,NHLF_INQUNIT)
+					(&fchild->ferror.eunit,&conn,&ierr);
 				if(ierr){
 					NhlPError(NhlWARNING,NhlEUNKNOWN,
-						"%s:Error Closing Unit #%n",
-						fname,
-						eold->error.private_eunit);
-				}
-
-				fchild->ferror.my_eunit = False;
-
-				conn = 4;
-				if(fchild->ferror.eunit ==
-						_NHLCALLF(i1mach,I1MACH)(&conn))
+				"%s:Fortran I/O Error #%n:Using default I/O",
+								fname,ierr);
+					conn = 4;
+					fchild->ferror.eunit =
+						_NHLCALLF(i1mach,I1MACH)(&conn);
 					tfname = "stderr";
-				else{
-					conn = 2;
-					if(fchild->ferror.eunit ==
-						_NHLCALLF(i1mach,I1MACH)(&conn))
+				}
+				else if(conn){
+					NhlPError(NhlINFO,NhlEUNKNOWN,
+					"%s:%s set to open unit, ignoring %s",
+							fname,NhlNerrUnitNumber,
+							NhlNerrFileName);
+					enew->error.error_file = NULL;
+					NhlFree(eold->error.error_file);
+					eold->error.error_file = NULL;
 
-						tfname = "stdout";
-					else
-						tfname = DEF_FILE;
+					return NhlINFO;
+				}
+				else{
+
+					tfname = _NGResolvePath(tfname);
+
+					if(tfname){
+
+						ffname_len = strlen(tfname);
+						ffname = (_NhlFString)
+							_NhlCptrToFptr(tfname);
+						_NHLCALLF(nhl_fopnunit,
+								NHLF_OPNUNIT)
+						(&fchild->ferror.eunit,ffname,
+							&ffname_len,&ierr);
+					}
+
+					if(!tfname || ierr){
+
+					NhlPError(NhlWARNING,NhlEUNKNOWN,
+	"%s:Unable to open %s with Unit %d:reverting to defaults",fname,tfname,
+							fchild->ferror.eunit);
+					conn = 4;
+					fchild->ferror.eunit =
+						_NHLCALLF(i1mach,I1MACH)(&conn);
+					tfname = "stderr";
+					}
 				}
 			}
+			enew->error.error_file = NhlMalloc(strlen(tfname)+1);
+			if(!enew->error.error_file){
+				NHLPERROR((NhlFATAL,ENOMEM,NULL));
+				return NhlFATAL;
+			}
+			strcpy(enew->error.error_file,tfname);
+			NhlFree(eold->error.error_file);
+			eold->error.error_file = NULL;
 		}
-		else{
-			NhlPError(NhlFATAL,NhlEUNKNOWN,
-					"%s:Unknown Error_mode???",fname);
-			return NhlFATAL;
-		}
-
-		(void)NhlFree(eold->error.error_file);
-		if(!tfname)
-			tfname = DEF_FILE;
-		enew->error.error_file = (char *)NhlMalloc(strlen(tfname) + 1);
-		if(!enew->error.error_file){
-			NHLPERROR((NhlFATAL,ENOMEM,NULL));
-			return NhlFATAL;
-		}
-		strcpy(enew->error.error_file,tfname);
+		enew->error.private_eunit = fchild->ferror.eunit;
 	}
 
 	return ret;

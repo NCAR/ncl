@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.28 1994-12-16 20:05:10 boote Exp $
+ *      $Id: XyPlot.c,v 1.29 1995-01-11 00:46:57 boote Exp $
  */
 /************************************************************************
 *									*
@@ -266,46 +266,69 @@ static NhlResource data_resources[] = {
 
 /* Begin-documented-resources */
 
-	{NhlNxyColors,NhlCxyColors,NhlTIntegerGenArray,sizeof(NhlPointer),
-		Oset(colors),NhlTImmediate,(NhlPointer)NULL,0,(NhlFreeFunc)NhlFreeGenArray},
-	{NhlNxyColor,NhlCxyColor,NhlTInteger,sizeof(int),
-		Oset(color),NhlTImmediate,(NhlPointer)1,0,NULL},
-	{NhlNxyDashPatterns,NhlCxyDashPatterns,NhlTIntegerGenArray,
-		sizeof(NhlPointer), Oset(dash_patterns),NhlTImmediate,
+	{NhlNxyColor,NhlCxyColor,NhlTColorIndex,sizeof(NhlColorIndex),
+		Oset(color),NhlTImmediate,(NhlPointer)NhlFOREGROUND,0,NULL},
+	{NhlNxyColors,NhlCxyColors,NhlTColorIndexGenArray,sizeof(NhlGenArray),
+		Oset(colors),NhlTImmediate,(NhlPointer)NULL,0,
+						(NhlFreeFunc)NhlFreeGenArray},
+	{NhlNxyMonoColor,NhlCxyMonoColor,NhlTBoolean,sizeof(NhlBoolean),
+		Oset(mono_color),NhlTImmediate,(NhlPointer)False,0,NULL},
+
+	{NhlNxyDashPattern,NhlCxyDashPattern,NhlTDashIndex,sizeof(NhlDashIndex),
+		Oset(dash),NhlTImmediate,(NhlPointer)NhlSOLIDLINE,0,NULL},
+	{NhlNxyDashPatterns,NhlCxyDashPatterns,NhlTDashIndexGenArray,
+		sizeof(NhlGenArray), Oset(dashes),NhlTImmediate,
 		(NhlPointer)NULL, 0,(NhlFreeFunc)NhlFreeGenArray},
-	{NhlNxyDashPattern,NhlCxyDashPattern,NhlTInteger,sizeof(int),
-		Oset(dash),NhlTImmediate,(NhlPointer)1,0,NULL},
-	{NhlNxyMarkerModes, NhlCxyMarkerModes,NhlTMarkerGenArray,
-		sizeof(NhlPointer), Oset(marker_modes),NhlTImmediate,
+	{NhlNxyMonoDashPattern,NhlCxyMonoDashPattern,NhlTBoolean,
+		sizeof(NhlBoolean),Oset(mono_dash),NhlTImmediate,
+		(NhlPointer)False,0,NULL},
+
+	{NhlNxyMarkerMode, NhlCxyMarkerMode,NhlTMarkerMode,
+		sizeof(NhlMarkerMode),Oset(marker_mode),NhlTImmediate,
+		(NhlPointer)NhlNOMARKERS,0,(NhlFreeFunc)NULL},
+	{NhlNxyMarkerModes, NhlCxyMarkerModes,NhlTMarkerModeGenArray,
+		sizeof(NhlGenArray),Oset(marker_modes),NhlTImmediate,
+		(NhlPointer)NULL,0,(NhlFreeFunc)NhlFreeGenArray},
+	{NhlNxyMonoMarkerMode,NhlCxyMonoMarkerMode,NhlTBoolean,
+		sizeof(NhlBoolean),Oset(mono_marker_mode),NhlTImmediate,
+		(NhlPointer)False,0,NULL},
+
+	{NhlNxyMarker, NhlCxyMarker,NhlTMarkerIndex,sizeof(NhlMarkerIndex),
+		Oset(marker),NhlTImmediate,(NhlPointer)0,0,NULL},
+	{NhlNxyMarkers, NhlCxyMarkers,NhlTMarkerIndexGenArray,
+		sizeof(NhlGenArray), Oset(markers),NhlTImmediate,
 		(NhlPointer)NULL, 0, (NhlFreeFunc)NhlFreeGenArray},
-	{NhlNxyMarkerMode, NhlCxyMarkerMode,NhlTMarkerModes,
-		sizeof(NhlPointer), Oset(marker_mode),NhlTImmediate,
-		(NhlPointer)0, 0, (NhlFreeFunc)NULL},
-	{NhlNxyMarkers, NhlCxyMarkers,NhlTIntegerGenArray,
-		sizeof(NhlPointer), Oset(markers),NhlTImmediate,
-		(NhlPointer)NULL, 0, (NhlFreeFunc)NhlFreeGenArray},
-	{NhlNxyMarker, NhlCxyMarker,NhlTInteger,
-		sizeof(NhlPointer), Oset(marker),NhlTImmediate,
-		(NhlPointer)0, 0, (NhlFreeFunc)NULL},
-	{NhlNxyMarkerSizesF, NhlCxyMarkerSizesF,NhlTFloatGenArray,
-		sizeof(NhlPointer), Oset(marker_sizes),NhlTImmediate,
-		(NhlPointer)NULL, 0, (NhlFreeFunc)NhlFreeGenArray},
+	{NhlNxyMonoMarker,NhlCxyMonoMarker,NhlTBoolean,
+		sizeof(NhlBoolean),Oset(mono_marker),NhlTImmediate,
+		(NhlPointer)False,0,NULL},
+
+	{NhlNxyMarkerColor, NhlCxyMarkerColor,NhlTColorIndex,
+		sizeof(NhlColorIndex),Oset(marker_color),NhlTImmediate,
+		(NhlPointer)NhlFOREGROUND,0,(NhlFreeFunc)NULL},
+	{NhlNxyMarkerColors, NhlCxyMarkerColors,NhlTColorIndexGenArray,
+		sizeof(NhlGenArray),Oset(marker_colors),NhlTImmediate,
+		(NhlPointer)NULL,0,(NhlFreeFunc)NhlFreeGenArray},
+	{NhlNxyMonoMarkerColor,NhlCxyMonoMarkerColor,NhlTBoolean,
+		sizeof(NhlBoolean),Oset(mono_marker_color),NhlTImmediate,
+		(NhlPointer)False,0,NULL},
+
 	{NhlNxyMarkerSizeF, NhlCxyMarkerSizeF,NhlTFloat,
-		sizeof(NhlPointer), Oset(marker_size),NhlTString,
+		sizeof(float), Oset(marker_size),NhlTString,
 		".01", 0, (NhlFreeFunc)NULL},
-	{NhlNxyMarkerColors, NhlCxyMarkerColors,NhlTIntegerGenArray,
-		sizeof(NhlPointer), Oset(marker_colors),NhlTImmediate,
+	{NhlNxyMarkerSizes, NhlCxyMarkerSizes,NhlTFloatGenArray,
+		sizeof(NhlGenArray), Oset(marker_sizes),NhlTImmediate,
 		(NhlPointer)NULL, 0, (NhlFreeFunc)NhlFreeGenArray},
-	{NhlNxyMarkerColor, NhlCxyMarkerColor,NhlTInteger,
-		sizeof(NhlPointer), Oset(marker_color),NhlTImmediate,
-		(NhlPointer)-1, 0, (NhlFreeFunc)NULL},
-	{NhlNxyLabelMode,NhlCxyLabelMode,NhlTLineLabelModes,
-		sizeof(NhlLineLabelModes),
+	{NhlNxyMonoMarkerSize,NhlCxyMonoMarkerSize,NhlTBoolean,
+		sizeof(NhlBoolean),Oset(mono_marker_size),NhlTImmediate,
+		(NhlPointer)False,0,NULL},
+
+	{NhlNxyLabelMode,NhlCxyLabelMode,NhlTLineLabelMode,
+		sizeof(NhlLineLabelMode),
 		Oset(label_mode),NhlTImmediate,(NhlPointer)NhlNOLABELS,
 		0,NULL},
 	{NhlNxyExplicitLabels,NhlCxyExplicitLabels,NhlTStringGenArray,
-		sizeof(NhlPointer),
-		Oset(labels),NhlTImmediate,(NhlPointer)NULL,0,(NhlFreeFunc)NhlFreeGenArray}
+		sizeof(NhlGenArray),Oset(labels),NhlTImmediate,
+		(NhlPointer)NULL,0,(NhlFreeFunc)NhlFreeGenArray}
 
 /* End-documented-resources */
 
@@ -385,16 +408,16 @@ static NhlResource resources[] = {
 		sizeof(NhlAlternatePlace),
 		Oset(y_alternate),NhlTImmediate,(NhlPointer)NhlNONE,0,NULL},
 	{NhlNxyYAlternateCoords,NhlCxyYAlternateCoords,NhlTFloatGenArray,
-		sizeof(NhlPointer),Oset(y_alternate_coords),NhlTImmediate,NULL,
+		sizeof(NhlGenArray),Oset(y_alternate_coords),NhlTImmediate,NULL,
 		0,(NhlFreeFunc)NhlFreeGenArray},
 	{NhlNxyXAlternateCoords,NhlCxyXAlternateCoords,NhlTFloatGenArray,
-		sizeof(NhlPointer),Oset(x_alternate_coords),NhlTImmediate,NULL,
+		sizeof(NhlGenArray),Oset(x_alternate_coords),NhlTImmediate,NULL,
 		0,(NhlFreeFunc)NhlFreeGenArray},
 	{NhlNxyXOriginalCoords,NhlCxyXOriginalCoords,NhlTFloatGenArray,
-		sizeof(NhlPointer),Oset(x_original_coords),NhlTImmediate,NULL,
+		sizeof(NhlGenArray),Oset(x_original_coords),NhlTImmediate,NULL,
 		0,(NhlFreeFunc)NhlFreeGenArray},
 	{NhlNxyYOriginalCoords,NhlCxyYOriginalCoords,NhlTFloatGenArray,
-		sizeof(NhlPointer),Oset(y_original_coords),NhlTImmediate,NULL,
+		sizeof(NhlGenArray),Oset(y_original_coords),NhlTImmediate,NULL,
 		0,(NhlFreeFunc)NhlFreeGenArray},
 	{NhlNxyDashSegmentLengthF,NhlCxyDashSegmentLengthF,NhlTFloat,
 		sizeof(float),Oset(dash_segment_length),NhlTString,".15",
@@ -821,8 +844,8 @@ XyDataClassInitialize
 		{NhlMARKLINES, "marklines"}
 	};
 
-	_NhlRegisterEnumType(NhlTLineLabelModes,lblmode,NhlNumber(lblmode));
-	_NhlRegisterEnumType(NhlTMarkerModes,mkrmode,NhlNumber(mkrmode));
+	_NhlRegisterEnumType(NhlTLineLabelMode,lblmode,NhlNumber(lblmode));
+	_NhlRegisterEnumType(NhlTMarkerMode,mkrmode,NhlNumber(mkrmode));
 	Qint = NrmStringToQuark(NhlTInteger);
 	Qstring = NrmStringToQuark(NhlTString);
 
@@ -830,7 +853,7 @@ XyDataClassInitialize
 	Qdpatterns = NrmStringToQuark(NhlNxyDashPatterns);
 	Qmarkmodes = NrmStringToQuark(NhlNxyMarkerModes);
 	Qmarkers = NrmStringToQuark(NhlNxyMarkers);
-	Qmarksizes = NrmStringToQuark(NhlNxyMarkerSizesF);
+	Qmarksizes = NrmStringToQuark(NhlNxyMarkerSizes);
 	Qmarkercolors = NrmStringToQuark(NhlNxyMarkerColors);
 	Qlabels = NrmStringToQuark(NhlNxyExplicitLabels);
 
@@ -1085,18 +1108,18 @@ XyDataInitialize
 		}
 	}
 
-	if(dnew->xydata.dash_patterns != NULL){
-		gen = dnew->xydata.dash_patterns;
+	if(dnew->xydata.dashes != NULL){
+		gen = dnew->xydata.dashes;
 		if((gen->typeQ == Qint) && (gen->size == sizeof(int)) &&
 						(gen->num_dimensions == 1)){
-			dnew->xydata.dash_patterns = _NhlCopyGenArray(gen,True);
+			dnew->xydata.dashes = _NhlCopyGenArray(gen,True);
 		}
 		else{
 			NhlPError(NhlWARNING,NhlEUNKNOWN,
 		"%s:%s must be set with a 1-dim generic int array: ignoring",
 					error_lead,NhlNxyDashPatterns);
 
-			dnew->xydata.dash_patterns = NULL;
+			dnew->xydata.dashes = NULL;
 			ret = MIN(ret,NhlWARNING);
 		}
 	}
@@ -1139,7 +1162,7 @@ XyDataInitialize
 		else{
 			NhlPError(NhlWARNING,NhlEUNKNOWN,
 		"%s:%s must be set with a 1-dim generic float array: ignoring",
-					error_lead,NhlNxyMarkerSizesF);
+					error_lead,NhlNxyMarkerSizes);
 
 			dnew->xydata.marker_sizes = NULL;
 			ret = MIN(ret,NhlWARNING);
@@ -1289,18 +1312,18 @@ XyDataSetValues
 		}
 	}
 
-	if(dnew->xydata.dash_patterns != dold->xydata.dash_patterns){
-		gen = dnew->xydata.dash_patterns;
+	if(dnew->xydata.dashes != dold->xydata.dashes){
+		gen = dnew->xydata.dashes;
 		if((gen->typeQ == Qint) && (gen->size == sizeof(int)) &&
 						(gen->num_dimensions == 1)){
-			dnew->xydata.dash_patterns = _NhlCopyGenArray(gen,True);
+			dnew->xydata.dashes = _NhlCopyGenArray(gen,True);
 		}
 		else{
 			NhlPError(NhlWARNING,NhlEUNKNOWN,
 		"%s:%s must be set with a 1-dim generic int array: ignoring",
 					error_lead,NhlNxyDashPatterns);
 
-			dnew->xydata.dash_patterns = dold->xydata.dash_patterns;
+			dnew->xydata.dashes = dold->xydata.dashes;
 			ret = MIN(ret,NhlWARNING);
 		}
 	}
@@ -1343,7 +1366,7 @@ XyDataSetValues
 		else{
 			NhlPError(NhlWARNING,NhlEUNKNOWN,
 		"%s:%s must be set with a 1-dim generic float array: ignoring",
-					error_lead,NhlNxyMarkerSizesF);
+					error_lead,NhlNxyMarkerSizes);
 
 			dnew->xydata.marker_sizes = dold->xydata.marker_sizes;
 			ret = MIN(ret,NhlWARNING);
@@ -1492,7 +1515,7 @@ XyDataGetValues
 			ga = xyp->colors;
 		}
 		if(args[i].quark == Qdpatterns){
-			ga = xyp->dash_patterns;
+			ga = xyp->dashes;
 		}
 		if(args[i].quark == Qmarkmodes){
 			ga = xyp->marker_modes;
@@ -1674,14 +1697,14 @@ DrawCurves
 		int		num_curves=0;
 		NhlString	*labeltable=NULL;
 		int		len_labeltable =0;
-		NhlMarkerModes	*markermodestable=NULL;
-		int		len_markermodestable= 0;
-		int		*markerstable=NULL;
-		int		len_markerstable= 0;
-		float		*markersizestable=NULL;
-		float		len_markersizestable= 0;
-		int		*markercolorstable= NULL;
-		int		len_markercolorstable;
+		NhlMarkerMode	*markermodetable=NULL;
+		int		len_markermodetable= 0;
+		int		*markertable=NULL;
+		int		len_markertable= 0;
+		float		*markersizetable=NULL;
+		float		len_markersizetable= 0;
+		int		*markercolortable= NULL;
+		int		len_markercolortable;
 
 		/*
 		 * Retrieve Data Information
@@ -1734,7 +1757,8 @@ DrawCurves
 		/*
 		 * colors
 		 */
-		if(dataspec->xydata.colors != NULL){
+		if(dataspec->xydata.colors != NULL &&
+						!dataspec->xydata.mono_color){
 			ctable = (int*)dataspec->xydata.colors->data;
 			len_ctable =dataspec->xydata.colors->len_dimensions[0];
 		}
@@ -1744,13 +1768,66 @@ DrawCurves
 		/*
 		 * dash patterns
 		 */
-		if(dataspec->xydata.dash_patterns != NULL){
-			dashtable = (int*)dataspec->xydata.dash_patterns->data;
+		if(dataspec->xydata.dashes != NULL &&
+						!dataspec->xydata.mono_dash){
+			dashtable = (int*)dataspec->xydata.dashes->data;
 			len_dashtable =
-				dataspec->xydata.dash_patterns->len_dimensions[0];
+				dataspec->xydata.dashes->len_dimensions[0];
 		}
 		else
 			len_dashtable = 0;
+
+		/*
+		 * marker mode
+		 */
+		if(dataspec->xydata.marker_modes != NULL &&
+					!dataspec->xydata.mono_marker_mode){
+			markermodetable = (NhlMarkerMode*)
+					dataspec->xydata.marker_modes->data;
+			len_markermodetable =
+			dataspec->xydata.marker_modes->len_dimensions[0];
+		}
+		else
+			len_markermodetable= 0;
+
+		/*
+		 * Markers
+		 */
+		if(dataspec->xydata.markers != NULL &&
+					!dataspec->xydata.mono_marker){
+			markertable = (NhlMarkerIndex*)
+						dataspec->xydata.markers->data;
+			len_markertable =
+				dataspec->xydata.markers->len_dimensions[0];
+		}
+		else
+			len_markertable = 0;
+
+		/*
+		 * Marker Color
+		 */
+		if(dataspec->xydata.marker_colors != NULL &&
+					!dataspec->xydata.mono_marker_color){
+			markercolortable = (NhlColorIndex*)
+					dataspec->xydata.marker_colors->data;
+			len_markercolortable =
+			dataspec->xydata.marker_colors->len_dimensions[0];
+		}
+		else
+			len_markercolortable = 0;
+
+		/*
+		 * Marker Size
+		 */
+		if(dataspec->xydata.marker_sizes != NULL &&
+					!dataspec->xydata.mono_marker_size){
+			markersizetable = (float*)
+					dataspec->xydata.marker_sizes->data;
+			len_markersizetable =
+			dataspec->xydata.marker_sizes->len_dimensions[0];
+		}
+		else
+			len_markersizetable = 0;
 
 		/*
 		 * labels
@@ -1762,44 +1839,15 @@ DrawCurves
 		else
 			len_labeltable = 0;
 
-		/*
-		* markers
-		*/
-		if(dataspec->xydata.marker_modes != NULL) {
-			markermodestable = (NhlMarkerModes*)dataspec->xydata.marker_modes->data;
-			len_markermodestable= dataspec->xydata.marker_modes->len_dimensions[0];
-		} else {
-			len_markermodestable= 0;
-		}
-		if(dataspec->xydata.markers != NULL) {
-			markerstable = (int*)dataspec->xydata.markers->data;
-			len_markerstable = dataspec->xydata.markers->len_dimensions[0];
-		} else {
-			len_markerstable = 0;
-		}
-		if(dataspec->xydata.marker_colors != NULL){
-			markercolorstable = (int*)dataspec->xydata.marker_colors->data;
-			len_markercolorstable = dataspec->xydata.marker_colors->len_dimensions[0];
-		} else {
-			len_markercolorstable =0;
-		}
-		if(dataspec->xydata.marker_sizes != NULL){
-			markersizestable = (float*)dataspec->xydata.marker_sizes->data;
-			len_markersizestable = dataspec->xydata.marker_sizes->len_dimensions[0];
-		} else {
-			len_markersizestable =0;
-		}
-
-		
 		for(j=0;j < num_curves;j++){
 			float		*yvect=NULL;
 			float		*xvect=NULL;
-			int		dpattern;
-			int		color;
-			int		marker_color;
-			int		marker;
+			NhlDashIndex	dpattern;
+			NhlColorIndex	color;
+			NhlColorIndex	marker_color;
+			NhlMarkerIndex	marker;
 			float		marker_size;
-			NhlMarkerModes	marker_mode;
+			NhlMarkerMode	marker_mode;
 			NhlString	label=NULL;
 			int		tint;
 			int		npts;
@@ -1849,28 +1897,29 @@ DrawCurves
 				dpattern = dashtable[j];
 			else
 				dpattern = dataspec->xydata.dash;
+
 			/****************
                         * Set Markers   *
 			****************/
-			if(j < len_markermodestable) 
-				marker_mode = markermodestable[j];
+			if(j < len_markermodetable) 
+				marker_mode = markermodetable[j];
 			else 
 				marker_mode = dataspec->xydata.marker_mode;
 		
-			if(j < len_markerstable)
-				marker = markerstable[j];
+			if(j < len_markertable)
+				marker = markertable[j];
 			else
 				marker = dataspec->xydata.marker;
 
-			if(j < len_markercolorstable)
-				marker_color = markercolorstable[j];
+			if(j < len_markercolortable)
+				marker_color = markercolortable[j];
 			else if(dataspec->xydata.marker_color != -1)
 				marker_color = dataspec->xydata.marker_color;
 			else 
 				marker_color = color;
 	
-			if(j < len_markersizestable)
-				marker_size = markersizestable[j];
+			if(j < len_markersizetable)
+				marker_size = markersizetable[j];
 			else 
 				marker_size = dataspec->xydata.marker_size ;
 
@@ -1920,8 +1969,9 @@ DrawCurves
 					NhlNwkMarkerIndex,marker,
 					NhlNwkMarkerSizeF,marker_size,
 					NhlNwkMarkerColor,marker_color,NULL);
-				_NhlSetMarkerInfo(xlayer->base.wkptr,(NhlLayer)xlayer);
-			}	
+				_NhlSetMarkerInfo(xlayer->base.wkptr,
+							(NhlLayer)xlayer);
+			}
 
 
 			upordownflag = 1;
@@ -2548,7 +2598,7 @@ static NhlErrorTypes XyPlotNDCToData
  *		curve_line_labels
  *		curve_colors
  *		curve_lengths
- *		curve_dash_patterns
+ *		curve_dashes
  *		*_irregular_points
  *		dummy_array
  *		*_alternate_coords

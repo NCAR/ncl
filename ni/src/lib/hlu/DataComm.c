@@ -1,5 +1,5 @@
 /*
- *      $Id: DataComm.c,v 1.19 1994-12-16 20:04:04 boote Exp $
+ *      $Id: DataComm.c,v 1.20 1995-01-11 00:46:29 boote Exp $
  */
 /************************************************************************
 *									*
@@ -843,8 +843,8 @@ CompileDataList
 	if((gen == NULL) || (gen->typeQ == QListCompiled))
 		return NhlNOERROR;
 
-	if((gen->num_dimensions != 1) || (gen->size != sizeof(int)) ||
-		(gen->len_dimensions[0] < 1) || (gen->typeQ != Qint)){
+	if((gen->num_dimensions != 1) || (gen->len_dimensions[0] < 1)
+					|| (gen->typeQ != Qint)){
 		NhlPError(NhlWARNING,NhlEUNKNOWN,
 			"Unable to set Data resource \"%s\":Invalid Array",
 					NrmQuarkToString(oset->res_name));

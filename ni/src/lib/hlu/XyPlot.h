@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.h,v 1.6 1994-08-19 20:36:59 ethan Exp $
+ *      $Id: XyPlot.h,v 1.7 1995-01-11 00:46:58 boote Exp $
  */
 /************************************************************************
 *									*
@@ -33,41 +33,48 @@
 /*
  * DataDep objects resources
  */
-#define NhlNxyColors	"xyColors"
-#define NhlCxyColors	"XyColors"
-
 #define	NhlNxyColor	"xyColor"
 #define	NhlCxyColor	"XyColor"
-
-#define NhlNxyMarkerMode "xyMarkerMode"
-#define NhlCxyMarkerMode "XyMarkerMode"
-
-#define NhlNxyMarkerModes "xyMarkerModes"
-#define NhlCxyMarkerModes "XyMarkerModes"
-
-#define NhlNxyMarkerColor	"xyMarkerColor"
-#define NhlCxyMarkerColor	"XyMarkerColor"
-
-#define NhlNxyMarkerColors	"xyMarkerColors"
-#define NhlCxyMarkerColors	"XyMarkerColors"
-
-#define NhlNxyMarkerSizeF	"xyMarkerSizeF"
-#define NhlCxyMarkerSizeF	"XyMarkerSizeF"
-
-#define NhlNxyMarkerSizesF	"xyMarkerSizesF"
-#define NhlCxyMarkerSizesF	"XyMarkerSizesF"
-
-#define NhlNxyMarker	"xyMarker"
-#define NhlCxyMarker	"XyMarker"
-
-#define NhlNxyMarkers	"xyMarkers"
-#define NhlCxyMarkers	"XyMarkers"
-
-#define NhlNxyDashPatterns "xyDashPatterns"
-#define NhlCxyDashPatterns "XyDashPatterns"
+#define NhlNxyColors	"xyColors"
+#define NhlCxyColors	"XyColors"
+#define	NhlNxyMonoColor	"xyMonoColor"
+#define	NhlCxyMonoColor	"XyMonoColor"
 
 #define	NhlNxyDashPattern	"xyDashPattern"
 #define	NhlCxyDashPattern	"XyDashPattern"
+#define NhlNxyDashPatterns	"xyDashPatterns"
+#define NhlCxyDashPatterns	"XyDashPatterns"
+#define	NhlNxyMonoDashPattern	"xyMonoDashPattern"
+#define	NhlCxyMonoDashPattern	"XyMonoDashPattern"
+
+
+#define NhlNxyMarkerMode	"xyMarkerMode"
+#define NhlCxyMarkerMode	"XyMarkerMode"
+#define NhlNxyMarkerModes	"xyMarkerModes"
+#define NhlCxyMarkerModes	"XyMarkerModes"
+#define NhlNxyMonoMarkerMode	"xyMonoMarkerMode"
+#define NhlCxyMonoMarkerMode	"XyMonoMarkerMode"
+
+#define NhlNxyMarker		"xyMarker"
+#define NhlCxyMarker		"XyMarker"
+#define NhlNxyMarkers		"xyMarkers"
+#define NhlCxyMarkers		"XyMarkers"
+#define NhlNxyMonoMarker	"xyMonoMarker"
+#define NhlCxyMonoMarker	"XyMonoMarker"
+
+#define NhlNxyMarkerColor	"xyMarkerColor"
+#define NhlCxyMarkerColor	"XyMarkerColor"
+#define NhlNxyMarkerColors	"xyMarkerColors"
+#define NhlCxyMarkerColors	"XyMarkerColors"
+#define NhlNxyMonoMarkerColor	"xyMonoMarkerColor"
+#define NhlCxyMonoMarkerColor	"XyMonoMarkerColor"
+
+#define NhlNxyMarkerSizeF	"xyMarkerSizeF"
+#define NhlCxyMarkerSizeF	"XyMarkerSizeF"
+#define NhlNxyMarkerSizes	"xyMarkerSizes"
+#define NhlCxyMarkerSizes	"XyMarkerSizes"
+#define NhlNxyMonoMarkerSize	"xyMonoMarkerSize"
+#define NhlCxyMonoMarkerSize	"XyMonoMarkerSize"
 
 #define NhlNxyLabelMode		"xyLabelMode"
 #define NhlCxyLabelMode		"XyLabelMode"
@@ -163,9 +170,9 @@
  * Names for new types.
  */
 #define NhlTAlternatePlace	"alternatePlace"
-#define NhlTLineLabelModes	"lineLabelModes"
-#define NhlTMarkerModes		"markerModes"
-#define NhlTMarkerGenArray 	"markerGenArray"
+#define NhlTLineLabelMode	"lineLabelMode"
+#define NhlTMarkerMode		"markerMode"
+#define NhlTMarkerModeGenArray 	"markerModeGenArray"
 
 /*
  * New types
@@ -178,17 +185,17 @@ typedef enum _NhlAlternatePlace{
 	NhlBOTTOMAXIS
 } NhlAlternatePlace;
 
-typedef enum _NhlMarkerModes {
+typedef enum _NhlMarkerMode{
 	NhlNOMARKERS,
 	NhlMARKERSONLY,
 	NhlMARKLINES
-} NhlMarkerModes;
+} NhlMarkerMode;
 
-typedef enum _NhlLineLabelModes{
+typedef enum _NhlLineLabelMode{
 	NhlNOLABELS,
 	NhlLETTERED,
 	NhlCUSTOM
-} NhlLineLabelModes;
+} NhlLineLabelMode;
 
 extern NhlLayerClass NhlxyPlotLayerClass;
 extern NhlLayerClass NhlxyDataDepLayerClass;

@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourP.h,v 1.20 1995-01-06 00:20:05 dbrown Exp $
+ *      $Id: ContourP.h,v 1.21 1995-01-11 00:46:26 boote Exp $
  */
 /************************************************************************
 *									*
@@ -59,21 +59,21 @@ typedef struct _NhlcnLabelAttrs {
 	float			height;
 	NhlTextDirection	direction;
 	NhlFont			font;
-	int			mono_color;
-	int			*colors;
+	NhlBoolean		mono_color;
+	NhlColorIndex		*colors;
 	float			aspect;
 	float			thickness;
 	NhlFontQuality		quality;
 	float			cspacing;
 	float			angle;
 	char			fcode[2];
-	int			back_color;
+	NhlColorIndex		back_color;
 	NhlBoolean		perim_on;
 	float			perim_space;
 	float			perim_lthick;
-	int			perim_lcolor;
-	int			gks_bcolor;
-	int			gks_plcolor;
+	NhlColorIndex		perim_lcolor;
+	NhlColorIndex		gks_bcolor;
+	NhlColorIndex		gks_plcolor;
 	float			real_height;
 	float			pheight;
 	float			pwidth;
@@ -85,19 +85,19 @@ typedef struct _NhlcnLabelAttrs {
 typedef struct _NhlcnRegionAttrs {
 	NhlBoolean	perim_on;
 	float		perim_thick;
-	int		perim_dpat;
-	int		perim_color;
-	int		gks_pcolor;
-	int		fill_color;
-	int		gks_fcolor;
-	int		fill_pat;
+	NhlDashIndex	perim_dpat;
+	NhlColorIndex	perim_color;
+	NhlColorIndex	gks_pcolor;
+	NhlColorIndex	fill_color;
+	NhlColorIndex	gks_fcolor;
+	NhlFillIndex	fill_pat;
 	float		fill_scale;
 } NhlcnRegionAttrs;
 
 typedef struct _NhlcnFillAttrs {
 	NhlBoolean	on;
-	int		color;
-	int		pattern;
+	NhlColorIndex	color;
+	NhlFillIndex	pattern;
 	float		scale;
 } NhlcnFillAttrs;
 
@@ -139,7 +139,7 @@ typedef struct _NhlContourLayerPart {
 	NhlDrawOrder	fill_order;
 	NhlBoolean	lines_on;
 	NhlBoolean	fill_on;
-	int		fill_background_color;
+	NhlColorIndex	fill_background_color;
 
         NhlcnLabelScalingMode	label_scaling_mode;
         float		label_scale_value;
@@ -237,11 +237,11 @@ typedef struct _NhlContourLayerPart {
 	int		ref_level;
 	float		*real_levels;
 	int		real_fill_count;
-	int		*real_fill_colors;
-	int		*real_fill_patterns;
+	NhlColorIndex	*real_fill_colors;
+	NhlFillIndex	*real_fill_patterns;
 	float		*real_fill_scales;
-	int		*gks_line_colors;
-	int		*gks_llabel_colors;
+	NhlColorIndex	*gks_line_colors;
+	NhlColorIndex	*gks_llabel_colors;
 	NhlGenArray	dash_table;
 	float		zmin;
 	float		zmax;

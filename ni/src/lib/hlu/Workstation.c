@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.20 1994-12-16 20:05:05 boote Exp $
+ *      $Id: Workstation.c,v 1.21 1995-01-11 00:46:55 boote Exp $
  */
 /************************************************************************
 *									*
@@ -40,6 +40,7 @@
 #include <string.h>
 #include <limits.h>
 #include <ncarg/hlu/hluP.h>
+#include <ncarg/hlu/ConvertersP.h>
 #include <ncarg/hlu/FortranP.h>
 #include <ncarg/hlu/WorkstationP.h>
 #include <ncarg/hlu/hluutil.h>
@@ -196,7 +197,7 @@ static char *dash_patterns[] = {
 
 /* 
  * There are 16 pre-defined fill patterns, plus solid (index 0, 
- * or NhlSOLIDFILL ) and hollow (index -1, or NhlNhlHOLLOWFILL). 
+ * or NhlSOLIDFILL ) and hollow (index -1, or NhlHOLLOWFILL). 
  * Solid is element 0 of the fill specification table, but
  * is not counted in the number of fill patterns returned to the user.
  * Therefore the user can use fill indexes -1 through NhlNwkFillTableLength
@@ -278,6 +279,8 @@ static int marker_table_alloc_len;
 static int fill_table_len;
 static int dash_table_len;
 
+static NrmQuark intQ;
+static NrmQuark intgenQ;
 static NrmQuark colormap_name;
 static NrmQuark colormaplen_name;
 static NrmQuark bkgnd_name;
@@ -291,114 +294,119 @@ static NhlResource resources[] = {
 
 /* Begin-documented-resources */
 
-	{ NhlNwkColorMap, NhlCwkColorMap,NhlTFloatGenArray , sizeof(NhlPointer),
-		Oset(color_map),NhlTImmediate,_NhlUSET(NULL),0,(NhlFreeFunc)NhlFreeGenArray},
+	{NhlNwkColorMap,NhlCwkColorMap,NhlTFloatGenArray,sizeof(NhlGenArray),
+		Oset(color_map),NhlTImmediate,_NhlUSET(NULL),0,
+		(NhlFreeFunc)NhlFreeGenArray},
 	{ NhlNwkColorMapLen, NhlCwkColorMapLen, NhlTInteger, sizeof(int),
 		Oset(color_map_len),NhlTImmediate, 
-		  _NhlUSET((NhlPointer)NhlNumber(def_color)),0,NULL},
+		_NhlUSET((NhlPointer)NhlNumber(def_color)),0,NULL},
 	{ NhlNwkBackgroundColor, NhlCwkBackgroundColor, NhlTFloatGenArray, 
-		  sizeof(NhlPointer),
-		  Oset(bkgnd_color), NhlTImmediate,_NhlUSET( NULL),0,(NhlFreeFunc)NhlFreeGenArray},
-	{ NhlNwkForegroundColor, NhlCwkForegroundColor, NhlTGenArray, 
-		  sizeof(NhlPointer),
-		  Oset(foregnd_color), NhlTImmediate,_NhlUSET( NULL),0,NULL},
+		sizeof(NhlPointer),
+		Oset(bkgnd_color), NhlTImmediate,_NhlUSET( NULL),0,
+		(NhlFreeFunc)NhlFreeGenArray},
+	{ NhlNwkForegroundColor, NhlCwkForegroundColor, NhlTFloatGenArray, 
+		sizeof(NhlPointer),
+		Oset(foregnd_color), NhlTImmediate,_NhlUSET( NULL),0,NULL},
 	{ NhlNwkDashTableLength, NhlCwkDashTableLength, NhlTInteger, 
 		sizeof(int),Oset(dash_table_len),NhlTImmediate,
-					_NhlUSET((NhlPointer)0),0,NULL},
+		_NhlUSET((NhlPointer)0),0,NULL},
 	{ NhlNwkFillTableLength, NhlCwkFillTableLength, NhlTInteger, 
 		sizeof(int),Oset(fill_table_len),NhlTImmediate,
-					_NhlUSET((NhlPointer)0),0,NULL},
+		_NhlUSET((NhlPointer)0),0,NULL},
 	{ NhlNwkMarkerTableLength, NhlCwkMarkerTableLength, NhlTInteger, 
-		  sizeof(int),Oset(marker_table_len),NhlTImmediate,
-		  _NhlUSET((NhlPointer)0),0,NULL},
+		sizeof(int),Oset(marker_table_len),NhlTImmediate,
+		_NhlUSET((NhlPointer)0),0,NULL},
 
 /* End-documented-resources */
 
-        { NhlNwkDashPattern, NhlCwkDashPattern, NhlTInteger, sizeof(int),
-		Oset(dash_pattern),NhlTImmediate,_NhlUSET((NhlPointer)0),0,NULL},
-        { NhlNwkLineLabel, NhlCwkLineLabel, NhlTString, sizeof(char*),
-                Oset(line_label), NhlTImmediate,_NhlUSET((NhlPointer)NULL),0,(NhlFreeFunc)NhlFree},
-        { NhlNwkLineLabelColor, NhlCwkLineLabelColor,NhlTInteger, sizeof(int),
-                Oset(line_label_color),NhlTImmediate,_NhlUSET((NhlPointer)1),0,NULL},
-        { NhlNwkLineThicknessF, NhlCwkLineThicknessF, NhlTFloat, sizeof(float),
+	{NhlNwkDashPattern,NhlCwkDashPattern,NhlTDashIndex,sizeof(NhlDashIndex),
+		Oset(dash_pattern),NhlTImmediate,_NhlUSET((NhlPointer)0),0,
+		NULL},
+        {NhlNwkLineLabel, NhlCwkLineLabel, NhlTString, sizeof(char*),
+                Oset(line_label), NhlTImmediate,_NhlUSET((NhlPointer)NULL),0,
+		(NhlFreeFunc)NhlFree},
+	{NhlNwkLineLabelColor,NhlCwkLineLabelColor,NhlTColorIndex,
+		sizeof(NhlColorIndex),Oset(line_label_color),NhlTImmediate,
+		_NhlUSET((NhlPointer)NhlFOREGROUND),0,NULL},
+        {NhlNwkLineThicknessF, NhlCwkLineThicknessF, NhlTFloat, sizeof(float),
                 Oset(line_thickness), NhlTString,_NhlUSET("1.0"),0,NULL},
-        { NhlNwkLineLabelFontHeightF, NhlCwkLineLabelFontHeightF, NhlTFloat,
-                sizeof(float),
-                Oset(line_label_font_height), NhlTString,_NhlUSET("0.0125"),0,NULL},
-        { NhlNwkLineDashSegLenF, NhlCwkLineDashSegLenF,NhlTFloat, 
-		  sizeof(float),
-		  Oset(line_dash_seglen),NhlTString,_NhlUSET(".15"),0,NULL},
-        { NhlNwkLineColor, NhlCwkLineColor,NhlTInteger, sizeof(int),
-                Oset(line_color),NhlTImmediate,_NhlUSET((NhlPointer)1),0,NULL},
-	{ NhlNwkDashTable, NhlCwkDashTable, NhlTGenArray,
-		  sizeof(NhlPointer),Oset(dash_table),NhlTImmediate,
-		  _NhlUSET((NhlPointer)NULL),0,(NhlFreeFunc)NhlFreeGenArray},
-	{ NhlNwkFillIndex, NhlCwkFillIndex, NhlTInteger, sizeof(int),
+        {NhlNwkLineLabelFontHeightF,NhlCwkLineLabelFontHeightF,NhlTFloat,
+                sizeof(float),Oset(line_label_font_height),NhlTString,
+		_NhlUSET("0.0125"),0,NULL},
+        {NhlNwkLineDashSegLenF, NhlCwkLineDashSegLenF,NhlTFloat,sizeof(float),
+		Oset(line_dash_seglen),NhlTString,_NhlUSET(".15"),0,NULL},
+        {NhlNwkLineColor,NhlCwkLineColor,NhlTColorIndex,sizeof(NhlColorIndex),
+                Oset(line_color),NhlTImmediate,
+		_NhlUSET((NhlPointer)NhlFOREGROUND),0,NULL},
+	{NhlNwkDashTable,NhlCwkDashTable,NhlTStringGenArray,sizeof(NhlGenArray),
+		Oset(dash_table),NhlTImmediate,_NhlUSET((NhlPointer)NULL),0,
+		(NhlFreeFunc)NhlFreeGenArray},
+	{NhlNwkFillIndex, NhlCwkFillIndex, NhlTFillIndex, sizeof(NhlFillIndex),
 		Oset(fill_index), NhlTImmediate,_NhlUSET((NhlPointer)0),0,NULL},
-	{ NhlNwkFillColor, NhlCwkFillColor, NhlTInteger, sizeof(int),
+	{NhlNwkFillColor,NhlCwkFillColor,NhlTColorIndex,sizeof(NhlColorIndex),
 		Oset(fill_color),NhlTImmediate,
-		  _NhlUSET((NhlPointer)NhlFOREGROUND),0,NULL},
-	{ NhlNwkFillBackground, NhlCwkFillBackground, NhlTInteger, sizeof(int),
-		  Oset(fill_background), NhlTImmediate,
-		  _NhlUSET((NhlPointer)NhlTRANSPARENT),0,NULL},
-	{ NhlNwkFillScaleFactorF,NhlCwkFillScaleFactorF,
-		  NhlTFloat,sizeof(float),
+		_NhlUSET((NhlPointer)NhlFOREGROUND),0,NULL},
+	{NhlNwkFillBackground,NhlCwkFillBackground,NhlTColorIndex,
+		sizeof(NhlColorIndex),Oset(fill_background),NhlTImmediate,
+		_NhlUSET((NhlPointer)NhlTRANSPARENT),0,NULL},
+	{NhlNwkFillScaleFactorF,NhlCwkFillScaleFactorF,NhlTFloat,sizeof(float),
 		Oset(fill_scale_factor),NhlTString,_NhlUSET("1.0"),0,NULL},
-	{ NhlNwkFillLineThicknessF, NhlCwkFillLineThicknessF, NhlTFloat,
+	{NhlNwkFillLineThicknessF, NhlCwkFillLineThicknessF, NhlTFloat,
 		sizeof(float),Oset(fill_line_thickness),NhlTString,
-		  _NhlUSET("1.0"),0,NULL},
-	{ NhlNwkDrawEdges, NhlCwkDrawEdges, NhlTInteger, sizeof(int),
-		Oset(edges_on),NhlTString,_NhlUSET("0"),0,NULL},
-        { NhlNwkEdgeDashPattern, NhlCwkEdgeDashPattern, 
-		  NhlTInteger,sizeof(int),
-		Oset(edge_dash_pattern),NhlTString,_NhlUSET("0"),0,NULL},
-        { NhlNwkEdgeThicknessF, NhlCwkEdgeThicknessF, NhlTFloat,sizeof(float),
+		_NhlUSET("1.0"),0,NULL},
+	{NhlNwkDrawEdges,NhlCwkDrawEdges,NhlTBoolean,sizeof(NhlBoolean),
+		Oset(edges_on),NhlTImmediate,_NhlUSET(False),0,NULL},
+        {NhlNwkEdgeDashPattern,NhlCwkEdgeDashPattern,NhlTDashIndex,
+		sizeof(NhlDashIndex),Oset(edge_dash_pattern),NhlTImmediate,
+		_NhlUSET(0),0,NULL},
+	{NhlNwkEdgeThicknessF,NhlCwkEdgeThicknessF,NhlTFloat,sizeof(float),
 		Oset(edge_thickness),NhlTString,_NhlUSET("1.0"),0,NULL},
-        { NhlNwkEdgeDashSegLenF, NhlCwkEdgeDashSegLenF,NhlTFloat,sizeof(float),
+	{NhlNwkEdgeDashSegLenF,NhlCwkEdgeDashSegLenF,NhlTFloat,sizeof(float),
 		Oset(edge_dash_seglen),NhlTString,_NhlUSET(".15"),0,NULL},
-        { NhlNwkEdgeColor, NhlCwkEdgeColor,NhlTInteger, sizeof(int),
-		Oset(edge_color),NhlTString,_NhlUSET("1"),0,NULL},
+	{NhlNwkEdgeColor,NhlCwkEdgeColor,NhlTColorIndex,sizeof(NhlColorIndex),
+		Oset(edge_color),NhlTImmediate,
+		_NhlUSET((NhlPointer)NhlFOREGROUND),0,NULL},
 
-	{ NhlNwkMarkerTableStrings, NhlCwkMarkerTableStrings, NhlTStringGenArray,
-		  sizeof(NhlPointer),Oset(marker_table_strings),NhlTImmediate,
+	{NhlNwkMarkerTableStrings,NhlCwkMarkerTableStrings,NhlTStringGenArray,
+		  sizeof(NhlGenArray),Oset(marker_table_strings),NhlTImmediate,
 		  _NhlUSET((NhlPointer)NULL),0,(NhlFreeFunc)NhlFreeGenArray},
-	{ NhlNwkMarkerTableParams, NhlCwkMarkerTableParams, 
-		  NhlTGenArray, sizeof(NhlPointer),
-		  Oset(marker_table_params), NhlTImmediate,
-		  _NhlUSET((NhlPointer)NULL),0,NULL},
-	{ NhlNwkMarkerIndex, NhlCwkMarkerIndex, NhlTInteger, sizeof(int),
-		  Oset(marker_index), NhlTImmediate,_NhlUSET((NhlPointer)3),0,NULL},
-        { NhlNwkMarkerString, NhlCwkMarkerString, NhlTString, sizeof(char*),
-                Oset(marker_string), NhlTImmediate,_NhlUSET((NhlPointer)NULL),0,(NhlFreeFunc)NhlFree},
-	{ NhlNwkMarkerColor, NhlCwkMarkerColor, NhlTInteger, sizeof(int),
-		  Oset(marker_color),NhlTImmediate,_NhlUSET((NhlPointer)1),0,NULL},
-	{ NhlNwkMarkerSizeF,NhlCwkMarkerSizeF,
-		  NhlTFloat,sizeof(float),
+	{NhlNwkMarkerTableParams,NhlCwkMarkerTableParams,NhlTGenArray,
+		sizeof(NhlGenArray),Oset(marker_table_params),NhlTImmediate,
+		_NhlUSET((NhlPointer)NULL),0,NULL},
+	{NhlNwkMarkerIndex,NhlCwkMarkerIndex,NhlTMarkerIndex,
+		sizeof(NhlMarkerIndex),Oset(marker_index),NhlTImmediate,
+		_NhlUSET((NhlPointer)3),0,NULL},
+	{NhlNwkMarkerString,NhlCwkMarkerString,NhlTString,sizeof(NhlString),
+		Oset(marker_string),NhlTImmediate,_NhlUSET((NhlPointer)NULL),0,
+							(NhlFreeFunc)NhlFree},
+	{NhlNwkMarkerColor,NhlCwkMarkerColor,NhlTColorIndex,
+		sizeof(NhlColorIndex),Oset(marker_color),NhlTImmediate,
+		_NhlUSET((NhlPointer)NhlFOREGROUND),0,NULL},
+	{NhlNwkMarkerSizeF,NhlCwkMarkerSizeF,NhlTFloat,sizeof(float),
 		  Oset(marker_size),NhlTString,_NhlUSET("0.007"),0,NULL},
-	{ NhlNwkMarkerXOffsetF,NhlCwkMarkerXOffsetF,
-		  NhlTFloat,sizeof(float),
+	{NhlNwkMarkerXOffsetF,NhlCwkMarkerXOffsetF,NhlTFloat,sizeof(float),
 		  Oset(marker_x_off),NhlTString,_NhlUSET("0.0"),0,NULL},
-	{ NhlNwkMarkerYOffsetF,NhlCwkMarkerYOffsetF,
-		  NhlTFloat,sizeof(float),
+	{NhlNwkMarkerYOffsetF,NhlCwkMarkerYOffsetF,NhlTFloat,sizeof(float),
 		  Oset(marker_y_off),NhlTString,_NhlUSET("0.0"),0,NULL},
-	{ NhlNwkMarkerThicknessF, NhlCwkMarkerThicknessF, NhlTFloat,
+	{NhlNwkMarkerThicknessF, NhlCwkMarkerThicknessF, NhlTFloat,
 		  sizeof(float),Oset(marker_thickness),NhlTString,
 		  _NhlUSET("1.0"),0,NULL},
-	{ NhlNwkDrawMarkerLines, NhlCwkDrawMarkerLines, 
-		  NhlTInteger, sizeof(int),
-		  Oset(marker_lines_on),NhlTString,_NhlUSET("0"),0,NULL},
-        { NhlNwkMarkerLineDashPattern, NhlCwkMarkerLineDashPattern, 
-		  NhlTInteger,sizeof(int),
-		  Oset(marker_line_dash_pattern),NhlTString,_NhlUSET("0"),0,NULL},
-        { NhlNwkMarkerLineThicknessF, NhlCwkMarkerLineThicknessF, 
-		  NhlTFloat,sizeof(float),
-		  Oset(marker_line_thickness),NhlTString,_NhlUSET("1.0"),0,NULL},
-	{ NhlNwkMarkerLineDashSegLenF, NhlCwkMarkerLineDashSegLenF,
-		  NhlTFloat,sizeof(float),
-		  Oset(marker_line_dash_seglen),NhlTString,_NhlUSET(".15"),0,NULL},
-        { NhlNwkMarkerLineColor, NhlCwkMarkerLineColor,NhlTInteger, 
-		  sizeof(int),
-		  Oset(marker_line_color),NhlTString,_NhlUSET("1"),0,NULL},
+	{NhlNwkDrawMarkerLines,NhlCwkDrawMarkerLines,NhlTBoolean,
+		sizeof(NhlBoolean),Oset(marker_lines_on),NhlTImmediate,
+		_NhlUSET(False),0,NULL},
+        {NhlNwkMarkerLineDashPattern,NhlCwkMarkerLineDashPattern, 
+		  NhlTDashIndex,sizeof(NhlDashIndex),
+		  Oset(marker_line_dash_pattern),NhlTImmediate,_NhlUSET(0),
+		  0,NULL},
+	{NhlNwkMarkerLineThicknessF,NhlCwkMarkerLineThicknessF,NhlTFloat,
+		sizeof(float),Oset(marker_line_thickness),NhlTString,
+		_NhlUSET("1.0"),0,NULL},
+	{NhlNwkMarkerLineDashSegLenF,NhlCwkMarkerLineDashSegLenF,NhlTFloat,
+		sizeof(float),Oset(marker_line_dash_seglen),NhlTString,
+		_NhlUSET(".15"),0,NULL},
+	{NhlNwkMarkerLineColor,NhlCwkMarkerLineColor,NhlTColorIndex,
+		sizeof(NhlColorIndex),Oset(marker_line_color),NhlTImmediate,
+		_NhlUSET((NhlPointer)NhlFOREGROUND),0,NULL},
 };
 
 /*
@@ -583,6 +591,162 @@ NhlWorkstationLayerClassRec NhlworkstationLayerClassRec = {
 
 NhlLayerClass NhlworkstationLayerClass = (NhlLayerClass)&NhlworkstationLayerClassRec;
 
+NhlErrorTypes
+NhlCvtScalarToIndex
+#if	NhlNeedProto
+(
+	NrmValue		*from,
+	NrmValue		*to,
+	NhlConvertArgList	args,
+	int			nargs
+)
+#else
+(from,to,args,nargs)
+	NrmValue		*from;
+	NrmValue		*to;
+	NhlConvertArgList	args;
+	int			nargs;
+#endif
+{
+	char		func[] = "NhlCvtScalarToIndex";
+	int		tint;
+	NrmValue	ival;
+
+	if(nargs != 2){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+				"%s:Called with improper number of args",func);
+		to->size = 0;
+		return NhlFATAL;
+	}
+
+	ival.size = sizeof(int);
+	ival.data.ptrval = &tint;
+	if(_NhlReConvertData(from->typeQ,intQ,from,&ival) < NhlWARNING){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+				"%s:Unable to convert from %s to %s",func,
+				NrmQuarkToString(from->typeQ),NhlTInteger);
+		return NhlFATAL;
+	}
+
+	if(tint < args[0].data.intval || tint > args[1].data.intval){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			"%s:Value %d is not within index range %d - %d",func,
+			tint,args[0].data.intval,args[1].data.intval);
+		return NhlFATAL;
+	}
+
+	if((to->size > 0) && (to->data.ptrval != NULL)){
+		/* caller provided space */
+
+		if(to->size < sizeof(int)){
+			/* not large enough */
+			to->size = sizeof(int);
+			return NhlFATAL;
+		}
+
+		to->size = sizeof(int);
+		*((int *)(to->data.ptrval)) = tint;
+
+		return NhlNOERROR;
+	}
+	else{
+		static int val;
+
+		to->size = sizeof(int);
+		val = tint;
+		to->data.ptrval = &val;
+		return NhlNOERROR;
+	}
+}
+
+NhlErrorTypes
+NhlCvtGenArrayToIndexGenArray
+#if	NhlNeedProto
+(
+	NrmValue		*from,
+	NrmValue		*to,
+	NhlConvertArgList	args,
+	int			nargs
+)
+#else
+(from,to,args,nargs)
+	NrmValue		*from;
+	NrmValue		*to;
+	NhlConvertArgList	args;
+	int			nargs;
+#endif
+{
+	char		func[] = "NhlCvtGenArrayToIndexGenArray";
+	char		buff[_NhlMAXRESNAMLEN];
+	char		*indxgen_name;
+	NhlGenArray	tgen;
+	int		*tint,i;
+	NrmValue	ival;
+
+	if(nargs != 2){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+				"%s:Called with improper number of args",func);
+		to->size = 0;
+		return NhlFATAL;
+	}
+
+	ival.size = sizeof(NhlGenArray);
+	ival.data.ptrval = &tgen;
+	if(_NhlReConvertData(from->typeQ,intgenQ,from,&ival) < NhlWARNING){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+				"%s:Unable to convert from %s to %s",func,
+				NrmQuarkToString(from->typeQ),
+				NhlTIntegerGenArray);
+		return NhlFATAL;
+	}
+
+	tint = (int*)tgen->data;
+
+	for(i=0;i < tgen->num_elements;i++){
+		if(tint[i] < args[0].data.intval ||
+						tint[i] > args[1].data.intval){
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+			"%s:Value %d is not within index range %d - %d",func,
+			tint[i],args[0].data.intval,args[1].data.intval);
+			return NhlFATAL;
+		}
+	}
+
+	indxgen_name = NrmQuarkToString(to->typeQ);
+	strcpy(buff,indxgen_name);
+	indxgen_name = strstr(buff,NhlTGenArray);
+	if(!indxgen_name){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:Invalid \"to\" type %s ???",
+			func,NrmQuarkToString(to->typeQ));
+		return NhlFATAL;
+	}
+	*indxgen_name = '\0';
+	tgen->typeQ = NrmStringToQuark(buff);
+
+	if((to->size > 0) && (to->data.ptrval != NULL)){
+		/* caller provided space */
+
+		if(to->size < sizeof(NhlGenArray)){
+			/* not large enough */
+			to->size = sizeof(NhlGenArray);
+			return NhlFATAL;
+		}
+
+		to->size = sizeof(NhlGenArray);
+		*((NhlGenArray *)(to->data.ptrval)) = tgen;
+
+		return NhlNOERROR;
+	}
+	else{
+		static NhlGenArray val;
+
+		to->size = sizeof(NhlGenArray);
+		val = tgen;
+		to->data.ptrval = &val;
+		return NhlNOERROR;
+	}
+}
+
 /*
  * Function:	WorkstationClassInitialize
  *
@@ -598,12 +762,93 @@ NhlLayerClass NhlworkstationLayerClass = (NhlLayerClass)&NhlworkstationLayerClas
  *
  * Side Effects:
  */
-static NhlErrorTypes WorkstationClassInitialize()
+static NhlErrorTypes
+WorkstationClassInitialize
+#if	NhlNeedProto
+(
+	void
+)
+#else
+()
+#endif
 {
 	Gop_st status;
 	int status1,dummy = 6;
 	int i;
+	_NhlEnumVals	dashvals[] = {
+		{NhlSOLIDLINE,	"solidline"}
+	};
+	NhlConvertArg	dashargs[] = {
+		{NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)0)},
+		{NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)16)}
+	};
+	_NhlEnumVals	colorvals[] = {
+		{NhlTRANSPARENT,	"transparent"},
+		{NhlBACKGROUND,		"background"},
+		{NhlFOREGROUND,		"foreground"}
+	};
+	NhlConvertArg	colorargs[] = {
+		{NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)-1)},
+		{NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)255)}
+	};
+	_NhlEnumVals	fillvals[] = {
+		{NhlSOLIDFILL,	"solidfill"},
+		{NhlHOLLOWFILL,	"hollowfill"}
+	};
+	NhlConvertArg	fillargs[] = {
+		{NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)-1)},
+		{NhlIMMEDIATE,sizeof(int),_NhlUSET((NhlPointer)16)}
+	};
+	_NhlEnumVals	markervals[] = {
+		{0,	"default"},
+		{1,	"dot"},
+		{2,	"+"},
+		{2,	"plus"},
+		{3,	"*"},
+		{3,	"asterisk"},
+		{4,	"hollow_circle"},
+		{5,	"cross"},
+		{5,	"x"},
+		{6,	"hollow_square"},
+		{7,	"up_triangle"},
+		{8,	"down_triangle"},
+		{9,	"neil"},
+		{9,	"diamond"},
+		{10,	"left_triangle_filled"},
+		{11,	"right_triangle_filled"},
+		{12,	"star_5point"},
+		{13,	"star_6point"},
+		{14,	"circle_w_dot"},
+		{15,	"circle_w_cross"},
+		{16,	"circle_filled"}
+	};
 
+	(void)_NhlRegisterEnumType(NhlTDashIndex,dashvals,NhlNumber(dashvals));
+	(void)_NhlRegisterEnumType(NhlTColorIndex,colorvals,
+		NhlNumber(colorvals));
+	(void)_NhlRegisterEnumType(NhlTFillIndex,fillvals,NhlNumber(fillvals));
+	(void)_NhlRegisterEnumType(NhlTMarkerIndex,markervals,
+		NhlNumber(markervals));
+
+	(void)NhlRegisterConverter(NhlTScalar,NhlTDashIndex,NhlCvtScalarToIndex,
+		dashargs,NhlNumber(dashargs),False,NULL);
+	(void)NhlRegisterConverter(NhlTScalar,NhlTColorIndex,
+		NhlCvtScalarToIndex,colorargs,NhlNumber(colorargs),False,NULL);
+	(void)NhlRegisterConverter(NhlTScalar,NhlTFillIndex,NhlCvtScalarToIndex,
+		fillargs,NhlNumber(fillargs),False,NULL);
+
+	(void)NhlRegisterConverter(NhlTGenArray,NhlTDashIndexGenArray,
+		NhlCvtGenArrayToIndexGenArray,dashargs,NhlNumber(dashargs),
+		False,NULL);
+	(void)NhlRegisterConverter(NhlTGenArray,NhlTColorIndexGenArray,
+		NhlCvtGenArrayToIndexGenArray,colorargs,NhlNumber(colorargs),
+		False,NULL);
+	(void)NhlRegisterConverter(NhlTGenArray,NhlTFillIndexGenArray,
+		NhlCvtGenArrayToIndexGenArray,fillargs,NhlNumber(fillargs),
+		False,NULL);
+
+	intQ = NrmStringToQuark(NhlTInteger);
+	intgenQ = NrmStringToQuark(NhlTIntegerGenArray);
 	colormap_name = NrmStringToQuark(NhlNwkColorMap);
 	colormaplen_name = NrmStringToQuark(NhlNwkColorMapLen);
 	bkgnd_name = NrmStringToQuark(NhlNwkBackgroundColor);

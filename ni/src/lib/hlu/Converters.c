@@ -1,5 +1,5 @@
 /*
- *      $Id: Converters.c,v 1.24 1994-12-16 20:03:59 boote Exp $
+ *      $Id: Converters.c,v 1.25 1995-01-11 00:46:27 boote Exp $
  */
 /************************************************************************
 *									*
@@ -37,6 +37,7 @@
 static NrmQuark intQ;
 static NrmQuark stringQ;
 static NrmQuark genQ;
+static NrmQuark intgenQ;
 
 /*
  * This macro is used because most of the converters end the same way.
@@ -202,6 +203,7 @@ NhlCvtStringToEnum
 	int		i, tmp=0;
 	NhlBoolean	set = False;
 	NhlString	s1 = from->data.strval;
+	NrmValue	ival;
 	NhlErrorTypes	ret = NhlNOERROR;
 
 	if(nargs < 1){
@@ -211,11 +213,20 @@ NhlCvtStringToEnum
 		return NhlFATAL;
 	}
 
-	for(i=0;i<nargs;i++){
-		if(comparestring(args[i].data.strval,s1) == 0){
-			tmp = args[i].size;
-			set = True;
-			break;
+	if(isdigit((int)*s1) || (*s1 == '-')){
+		tmp = (int)strtol(s1,(char**)NULL,10);
+		ival.size = sizeof(int);
+		ival.data.intval = tmp;
+
+		return _NhlReConvertData(intQ,to->typeQ,&ival,to);
+	}
+	else{
+		for(i=0;i<nargs;i++){
+			if(comparestring(args[i].data.strval,s1) == 0){
+				tmp = args[i].size;
+				set = True;
+				break;
+			}
 		}
 	}
 
@@ -367,6 +378,101 @@ NhlCvtScalarToEnum
 }
 
 /*
+ * Function:	NhlCvtGenArrayToEnumGenArray
+ *
+ * Description:	This function is used to convert.
+ *
+ * In Args:	NrmValue		*from	ptr to from data
+ *		NhlConvertArgList	args	add'n args for conversion
+ *		int			nargs	number of args
+ *		
+ *
+ * Out Args:	NrmValue		*to	ptr to to data
+ *
+ * Scope:	Global public
+ * Returns:	NhlErrorTypes
+ * Side Effect:	
+ */
+/*ARGSUSED*/
+static NhlErrorTypes
+NhlCvtGenArrayToEnumGenArray
+#if	NhlNeedProto
+(
+	NrmValue		*from,	/* ptr to from data		*/
+	NrmValue		*to,	/* ptr to to data		*/
+ 	NhlConvertArgList	args,	/* add'n args for conversion	*/
+	int			nargs	/* number of args		*/
+)
+#else
+(from,to,args,nargs)
+	NrmValue		*from;	/* ptr to from data		*/
+	NrmValue		*to;	/* ptr to to data		*/
+ 	NhlConvertArgList	args;	/* add'n args for conversion	*/
+	int			nargs;	/* number of args		*/
+#endif
+{
+	char		func[] = "NhlCvtGenArrayToEnumGenArray";
+	int		i,j;
+	NhlGenArray	tgen;
+	int		*tdata;
+	NhlBoolean	set = False;
+	NrmValue	ival;
+	char		buff[_NhlMAXRESNAMLEN];
+	char		*enumgen_name;
+	NhlErrorTypes	ret = NhlNOERROR;
+
+	if(nargs < 1){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+				"%s:Called with improper number of args",func);
+		to->size = 0;
+		return NhlFATAL;
+	}
+
+	ival.size = sizeof(NhlGenArray);
+	ival.data.ptrval = &tgen;
+	if(_NhlReConvertData(from->typeQ,intgenQ,from,&ival) < NhlWARNING){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			"%s:Unable to convert from %s to %s",func,
+			NrmQuarkToString(from->typeQ),NhlTIntegerGenArray);
+		return NhlFATAL;
+	}
+
+	tdata = (int*)tgen->data;
+
+	for(i=0;i<tgen->num_elements;i++){
+		set = False;
+
+		for(j=0;j<nargs;j++){
+			if(tdata[i] == args[j].data.intval){
+				set = True;
+				break;
+			}
+		}
+
+		if(!set){
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+				"%s:Invalid value converting from %s to %s",
+				func,NrmQuarkToString(from->typeQ),
+				NrmQuarkToString(to->typeQ));
+			return NhlFATAL;
+		}
+	}
+
+	enumgen_name = NrmQuarkToString(to->typeQ);
+	strcpy(buff,enumgen_name);
+	enumgen_name = strstr(buff,NhlTGenArray);
+	if(!enumgen_name){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:Invalid \"to\" type %s ???",
+			func,NrmQuarkToString(to->typeQ));
+		return NhlFATAL;
+	}
+	*enumgen_name = '\0';
+	tgen->typeQ = NrmStringToQuark(buff);
+
+	SetVal(NhlGenArray,sizeof(NhlGenArray),tgen);
+}
+
+/*
  * Function:	_NhlRegisterEnumType
  *
  * Description:	This function is used to register an enumeration type as
@@ -398,6 +504,7 @@ _NhlRegisterEnumType
 	char		func[] = "_NhlRegisterEnumType";
 	NhlConvertArg	args[_NhlSTACK_ARGS_SIZE];
 	int		i;
+	char		enumgen_name[_NhlMAXRESNAMLEN];
 
 	if(nvals > _NhlSTACK_ARGS_SIZE){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -407,6 +514,14 @@ _NhlRegisterEnumType
 	}
 
 	if(_NhlRegisterType(NhlTEnum,enum_name) != NhlNOERROR){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:Unable to register enum %s",
+								func,enum_name);
+		return NhlFATAL;
+	}
+
+	strcpy(enumgen_name,enum_name);
+	strcat(enumgen_name,NhlTGenArray);
+	if(_NhlRegisterType(NhlTEnumGenArray,enumgen_name) != NhlNOERROR){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:Unable to register enum %s",
 								func,enum_name);
 		return NhlFATAL;
@@ -436,6 +551,14 @@ _NhlRegisterEnumType
 		args[i].data.intval = enum_vals[i].value;
 	}
 	if(NhlRegisterConverter(NhlTScalar,enum_name,NhlCvtScalarToEnum,args,
+					nvals,False,NULL) != NhlNOERROR){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:Unable to register enum %s",
+								func,enum_name);
+		return NhlFATAL;
+	}
+	(void)_NhlRegSymConv(NhlTScalar,enumgen_name,NhlTScalar,NhlTGenArray);
+	if(NhlRegisterConverter(NhlTGenArray,enumgen_name,
+					NhlCvtGenArrayToEnumGenArray,args,
 					nvals,False,NULL) != NhlNOERROR){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:Unable to register enum %s",
 								func,enum_name);
@@ -1085,6 +1208,7 @@ CvtArgs
 	NhlGenArray	gen;
 	char		func[] = "NhlCvtGenArrayToGenArray";
 	char		buff[_NhlMAXRESNAMLEN];
+	NrmQuark	newfromQ;
 	NhlErrorTypes	ret = NhlNOERROR;
 
 	if(nargs != 0){
@@ -1130,7 +1254,14 @@ CvtArgs
 	 */
 	strcpy(buff,NrmQuarkToString(gen->typeQ));
 	strcat(buff,NhlTGenArray);
-	return _NhlReConvertData(NrmStringToQuark(buff),to->typeQ,from,to);
+	newfromQ = NrmStringToQuark(buff);
+	/*
+	 * If they are now equal, then just set.
+	 */
+	if(newfromQ == to->typeQ){
+		SetVal(NhlGenArray,sizeof(NhlGenArray),gen);
+	}
+	return _NhlReConvertData(newfromQ,to->typeQ,from,to);
 }
 
 /*
@@ -2078,82 +2209,49 @@ _NhlConvertersInitialize
 			{False,	"no"},
 			{True,	"on"},
 			{False,	"off"},
-			{True,	"1"},
-			{False,	"0"}
 			};
 
 	_NhlEnumVals	FontEnumList[] = {
 			{0,	"pwritx"},
-			{0,	"0"},
 			{1,	"default"},
 			{1,	"ugly"},
-			{1,	"1"},
 			{2,	"cartographic_roman"},
-			{2,	"2"},
 			{3,	"cartographic_greek"},
-			{3,	"3"},
 			{4,	"simplex_roman"},
-			{4,	"4"},
 			{5,	"simplex_greek"},
-			{5,	"5"},
 			{6,	"simplex_script"},
-			{6,	"6"},
 			{7,	"complex_roman"},
-			{7,	"7"},
 			{8,	"complex_greek"},
-			{8,	"8"},
 			{9,	"complex_script"},
-			{9,	"9"},
 			{10,	"complex_italic"},
-			{10,	"10"},
 			{11,	"complex_cyrillic"},
-			{11,	"11"},
 			{12,	"duplex_roman"},
-			{12,	"12"},
 			{13,	"triplex_roman"},
-			{13,	"13"},
 			{14,	"triplex_italic"},
-			{14,	"14"},
 			{15,	"gothic_german"},
-			{15,	"15"},
 			{16,	"gothic_english"},
-			{16,	"16"},
 			{17,	"gothic_italian"},
-			{17,	"17"},
 			{18,	"math_symbols"},
-			{18,	"18"},
 			{19,	"symbol_set1"},
-			{19,	"19"},
 			{20,	"symbol_set2"},
-			{20,	"20"},
 			{21,	"helvetica"},
-			{21,	"21"},
 			{22,	"helvetica-bold"},
-			{22,	"22"},
 			{25,	"times-roman"},
-			{25,	"25"},
 			{26,	"times-bold"},
-			{26,	"26"},
 			{29,	"courier"},
-			{29,	"29"},
 			{30,	"courier-bold"},
-			{30,	"30"},
 			{33,	"greek"},
-			{33,	"33"},
 			{34,	"math-symbols"},
-			{34,	"34"},
 			{35,	"text-symbols"},
-			{35,	"35"},
 			{36,	"weather1"},
-			{36,	"36"},
 			{37,	"weather2"},
-			{37,	"37"}
 			};
 
 
 	intQ = NrmStringToQuark(NhlTInteger);
 	stringQ = NrmStringToQuark(NhlTString);
 	genQ = NrmStringToQuark(NhlTGenArray);
+	intgenQ = NrmStringToQuark(NhlTIntegerGenArray);
 
 	/*
 	 * Create hierarchy
@@ -2167,6 +2265,8 @@ _NhlConvertersInitialize
 		NhlTCharacterGenArray,NhlTShortGenArray,NhlTLongGenArray,
 		NhlTFloatGenArray,NhlTDoubleGenArray,NhlTIntegerGenArray,
 		NhlTStringGenArray,NhlTQuarkGenArray,NULL);
+
+	(void)_NhlRegisterTypes(NhlTIntegerGenArray,NhlTEnumGenArray,NULL);
 
 
 	/*

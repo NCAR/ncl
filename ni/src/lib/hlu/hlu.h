@@ -1,5 +1,5 @@
 /*
- *      $Id: hlu.h,v 1.23 1994-12-16 20:05:14 boote Exp $
+ *      $Id: hlu.h,v 1.24 1995-01-11 00:47:01 boote Exp $
  */
 /************************************************************************
 *									*
@@ -106,6 +106,9 @@
 
 #define NhlTFloatGenArray	"FloatGenArray"
 #define NhlTDoubleGenArray	"DoubleGenArray"
+
+#define NhlTEnumGenArray	"EnumGenArray"
+
 #define NhlTBooleanGenArray	"BooleanGenArray"
 
 /* These types are needed by ncl - it is a semi-public type */

@@ -1,5 +1,5 @@
 /*
- *      $Id: Resources.c,v 1.15 1994-12-16 20:04:38 boote Exp $
+ *      $Id: Resources.c,v 1.16 1995-01-11 00:46:43 boote Exp $
  */
 /************************************************************************
 *									*
@@ -349,7 +349,7 @@ GetResources
 					 */
 					NrmValue	from, to;
 
-					from.size = sizeof(_NhlArgVal);
+					from.size = args[i].size;
 					from.data = args[i].value;
 					to.size = resources[j].nrm_size;
 					to.data.ptrval =(NhlPointer)(base +
@@ -649,7 +649,11 @@ GetResources
 			else{
 				/* step #4 */
 
-				from.size = 0;
+				/*
+				 * size must be the size of the first member
+				 * of the union. (ptrval)
+				 */
+				from.size = sizeof(NhlPointer);
 				from.data = resources[i].nrm_default_val;
 
 				lret = _NhlConvertData(context,

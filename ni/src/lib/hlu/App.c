@@ -1,5 +1,5 @@
 /*
- *      $Id: App.c,v 1.7 1994-12-16 20:03:52 boote Exp $
+ *      $Id: App.c,v 1.8 1995-01-11 00:46:22 boote Exp $
  */
 /************************************************************************
 *									*
@@ -121,7 +121,7 @@ GetSysAppDir
 static NhlResource resources[] = {
 /* Begin-documented-resources */
 	{NhlNappUsrDir,NhlCappUsrDir,NhlTString,sizeof(NhlString),
-		Oset(usr_appdir),NhlTImmediate,(NhlPointer)"~",0,
+		Oset(usr_appdir),NhlTImmediate,(NhlPointer)"./",0,
 							(NhlFreeFunc)NhlFree},
 	{NhlNappSysDir,NhlCappSysDir,NhlTString,sizeof(NhlString),
 		Oset(sys_appdir),NhlTProcedure,(NhlPointer)GetSysAppDir,0,

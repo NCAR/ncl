@@ -1,5 +1,5 @@
 /*
- *      $Id: ResList.c,v 1.10 1994-10-31 01:08:40 boote Exp $
+ *      $Id: ResList.c,v 1.11 1995-01-11 00:46:41 boote Exp $
  */
 /************************************************************************
 *									*
@@ -99,13 +99,15 @@ CreateNode
 	int		nameQ,
 	int		typeQ,
 	_NhlArgVal	value,
+	unsigned int	size,
 	_NhlFreeFunc	free_func
 )
 #else
-(nameQ,typeQ,value,free_func)
+(nameQ,typeQ,value,size,free_func)
 	int		nameQ;
 	int		typeQ;
 	_NhlArgVal	value;
+	unsinged int	size;
 	_NhlFreeFunc	free_func;
 #endif
 {
@@ -117,6 +119,7 @@ CreateNode
 	node->nameQ = nameQ;
 	node->typeQ = typeQ;
 	node->value = value;
+	node->size = size;
 	node->free_func = free_func;
 	node->left = NULL;
 	node->right = NULL;
@@ -217,15 +220,17 @@ _NhlRLInsert
 	int		nameQ,
 	int		typeQ,
 	_NhlArgVal	value,
+	unsigned int	size,
 	_NhlFreeFunc	free_func
 )
 #else
-(id,type_action,nameQ,typeQ,value,free_func)
+(id,type_action,nameQ,typeQ,value,size,free_func)
 	int		id;
 	NhlRLType	type_action;
 	int		nameQ;
 	int		typeQ;
 	_NhlArgVal	value;
+	unsigned int	size;
 	_NhlFreeFunc	free_func;
 #endif
 {
@@ -253,6 +258,7 @@ _NhlRLInsert
 		CleanNode(*node);
 		(*node)->typeQ = typeQ;
 		(*node)->value = value;
+		(*node)->size = size;
 		(*node)->free_func = free_func;
 	}
 	else{
@@ -261,7 +267,7 @@ _NhlRLInsert
 						"RL cannot get any larger");
 			return False;
 		}
-		*node = CreateNode(nameQ,typeQ,value,free_func);
+		*node = CreateNode(nameQ,typeQ,value,size,free_func);
 		if(*node == NULL){
 			NhlPError(NhlFATAL,ENOMEM,NULL);
 			return False;
@@ -608,33 +614,53 @@ NhlRLSet
 {
 	va_list		ap;
 	_NhlArgVal	value;
+	unsigned int	size = 0;
 	NrmQuark	typeQ = NrmStringToQuark(type);
 
 	/*
 	 * default type is "long"
 	 */
 	VA_START(ap,type);
-	if(typeQ == byteQ)
+	if(typeQ == byteQ){
 		value.charval = (char)va_arg(ap,long);
-	else if(typeQ == charQ)
+		size = sizeof(char);
+	}
+	else if(typeQ == charQ){
 		value.charval = (char)va_arg(ap,long);
-	else if(typeQ == shortQ)
+		size = sizeof(char);
+	}
+	else if(typeQ == shortQ){
 		value.shrtval = (short)va_arg(ap,long);
-	else if(_NhlIsSubtypeQ(intQ,typeQ))	/* gets all enumerated types */
+		size = sizeof(short);
+	}
+	else if(_NhlIsSubtypeQ(intQ,typeQ)){	/* gets all enumerated types */
 		value.intval = (int)va_arg(ap,long);
-	else if(typeQ == floatQ)
+		size = sizeof(int);
+	}
+	else if(typeQ == floatQ){
 		value.fltval = (float)va_arg(ap,double);
-	else if(typeQ == stringQ)
+		size = sizeof(float);
+	}
+	else if(typeQ == stringQ){
 		value.strval = (NhlString)va_arg(ap,long);
-	else if(typeQ == doubleQ)
+		size = sizeof(NhlString);
+	}
+	else if(typeQ == doubleQ){
 		value.dblval = va_arg(ap,double);
-	else if(_NhlIsSubtypeQ(genQ,typeQ))	/* gets all GenArray types */
+		size = sizeof(double);
+	}
+	else if(_NhlIsSubtypeQ(genQ,typeQ)){	/* gets all GenArray types */
 		value.ptrval = (NhlPointer)va_arg(ap,long);
-	else
+		size = sizeof(NhlGenArray);
+	}
+	else{
 		value.lngval = va_arg(ap,long);
+		size = sizeof(long);
+	}
 	va_end(ap);
 
-	if(_NhlRLInsert(id,NhlSETRL,NrmStringToQuark(name),typeQ,value,NULL))
+	if(_NhlRLInsert(id,NhlSETRL,NrmStringToQuark(name),typeQ,value,size,
+									NULL))
 		return NhlNOERROR;
 	else
 		return NhlFATAL;
@@ -783,7 +809,7 @@ NhlRLSetMDArray
 	}
 
 	if(_NhlRLInsert(id,NhlSETRL,NrmStringToQuark(name),genQ,gen,
-						(_NhlFreeFunc)NhlFreeGenArray))
+			sizeof(NhlGenArray),(_NhlFreeFunc)NhlFreeGenArray))
 		return NhlNOERROR;
 	else
 		return NhlFATAL;
@@ -1040,13 +1066,46 @@ NhlRLGet
 {
 	va_list		ap;
 	_NhlArgVal	value;
+	unsigned int	size = 0;
+	NrmQuark	typeQ = NrmStringToQuark(type);
+
+	/*
+	 * default type is "long"
+	 */
+	if(typeQ == byteQ){
+		size = sizeof(char);
+	}
+	else if(typeQ == charQ){
+		size = sizeof(char);
+	}
+	else if(typeQ == shortQ){
+		size = sizeof(short);
+	}
+	else if(_NhlIsSubtypeQ(intQ,typeQ)){	/* gets all enumerated types */
+		size = sizeof(int);
+	}
+	else if(typeQ == floatQ){
+		size = sizeof(float);
+	}
+	else if(typeQ == stringQ){
+		size = sizeof(NhlString);
+	}
+	else if(typeQ == doubleQ){
+		size = sizeof(double);
+	}
+	else if(_NhlIsSubtypeQ(genQ,typeQ)){	/* gets all GenArray types */
+		size = sizeof(NhlGenArray);
+	}
+	else{
+		size = sizeof(long);
+	}
 
 	VA_START(ap,type);
 	value.ptrval = va_arg(ap,NhlPointer);
 	va_end(ap);
 
 	if(_NhlRLInsert(id,NhlGETRL,NrmStringToQuark(name),
-					NrmStringToQuark(type),value,NULL))
+					NrmStringToQuark(type),value,size,NULL))
 		return NhlNOERROR;
 	else
 		return NhlFATAL;
@@ -1311,7 +1370,7 @@ NhlRLGetMDArray
 	expval.ptrval = exp;
 
 	if(_NhlRLInsert(id,NhlGETRL,NrmStringToQuark(name),expMDQ,expval,
-							(_NhlFreeFunc)NhlFree))
+				sizeof(NhlPointer),(_NhlFreeFunc)NhlFree))
 		return NhlNOERROR;
 	else
 		return NhlFATAL;
@@ -1505,7 +1564,7 @@ NhlRLGetMDTypeArray
 	expval.ptrval = exp;
 
 	if(_NhlRLInsert(id,NhlGETRL,NrmStringToQuark(name),expMDTypeQ,expval,
-							(_NhlFreeFunc)NhlFree))
+				sizeof(NhlPointer),(_NhlFreeFunc)NhlFree))
 		return NhlNOERROR;
 	else
 		return NhlFATAL;
@@ -1751,7 +1810,7 @@ NhlRLGetDimArray
 	expval.ptrval = exp;
 
 	if(_NhlRLInsert(id,NhlGETRL,NrmStringToQuark(name),expQ,expval,
-							(_NhlFreeFunc)NhlFree))
+				sizeof(NhlPointer),(_NhlFreeFunc)NhlFree))
 		return NhlNOERROR;
 	else
 		return NhlFATAL;
@@ -1986,7 +2045,7 @@ NhlRLGetTypeDimArray
 	expval.ptrval = exp;
 
 	if(_NhlRLInsert(id,NhlGETRL,NrmStringToQuark(name),expTypeQ,expval,
-							(_NhlFreeFunc)NhlFree))
+				sizeof(NhlPointer),(_NhlFreeFunc)NhlFree))
 		return NhlNOERROR;
 	else
 		return NhlFATAL;
@@ -2169,8 +2228,9 @@ CopyNodeToArgList
 	CopyNodeToArgList(node->left,args,nargs);
 
 	args[*nargs].quark = node->nameQ;
-	args[*nargs].value = node->value;
 	args[*nargs].type = node->typeQ;
+	args[*nargs].value = node->value;
+	args[*nargs].size = node->size;
 	(*nargs)++;
 
 	CopyNodeToArgList(node->right,args,nargs);

@@ -1,5 +1,5 @@
 /*
- *      $Id: hlu.c,v 1.23 1994-12-16 20:05:13 boote Exp $
+ *      $Id: hlu.c,v 1.24 1995-01-11 00:47:00 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1328,7 +1328,7 @@ NhlErrorTypes _NhlValidatedGenArrayCopy
 		return NhlWARNING;
 	}
 
-	if (gfrom->typeQ != (*gto)->typeQ) {
+	if (!_NhlIsSubtypeQ((*gto)->typeQ,gfrom->typeQ)){
 		e_text = "%s: %s type mismatch: copy not performed";
 		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,caller,res_name);
 		return NhlWARNING; 

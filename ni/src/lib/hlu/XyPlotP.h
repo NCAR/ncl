@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlotP.h,v 1.6 1994-08-19 20:37:01 ethan Exp $
+ *      $Id: XyPlotP.h,v 1.7 1995-01-11 00:46:59 boote Exp $
  */
 /************************************************************************
 *									*
@@ -28,25 +28,31 @@
 
 typedef struct _NhlXyDataDepLayerPart{
 	/* Public resources	*/
+	NhlColorIndex		color;
 	NhlGenArray		colors;
-	int			color;
+	NhlBoolean		mono_color;
 
-	NhlGenArray		dash_patterns;
-	int			dash;
+	NhlDashIndex		dash;
+	NhlGenArray		dashes;
+	NhlBoolean		mono_dash;
 
-	NhlGenArray		marker_colors;
-	int			marker_color;
-
-	NhlGenArray		marker_sizes;
-	float			marker_size;
-	
+	NhlMarkerMode		marker_mode;
 	NhlGenArray		marker_modes;
-	NhlMarkerModes		marker_mode;
+	NhlBoolean		mono_marker_mode;
 
+	NhlMarkerIndex		marker;
 	NhlGenArray		markers;
-	int			marker;
+	NhlBoolean		mono_marker;
 	
-	NhlLineLabelModes	label_mode;
+	NhlColorIndex		marker_color;
+	NhlGenArray		marker_colors;
+	NhlBoolean		mono_marker_color;
+
+	float			marker_size;
+	NhlGenArray		marker_sizes;
+	NhlBoolean		mono_marker_size;
+	
+	NhlLineLabelMode	label_mode;
 	NhlGenArray		labels;
 
 	/* Private fields	*/

@@ -1,5 +1,5 @@
 /*
- *      $Id: hluP.h,v 1.20 1994-12-16 20:05:15 boote Exp $
+ *      $Id: hluP.h,v 1.21 1995-01-11 00:47:02 boote Exp $
  */
 /************************************************************************
 *									*
@@ -136,6 +136,7 @@ typedef struct _NhlArgRec{
 	NrmQuark		quark;		/* resname Q		*/
 	_NhlArgVal		value;		/* val or ptr		*/
 	NrmQuark		type;		/* type of *value	*/
+	unsigned int		size;		/* size of *value	*/
 	NrmQuark		*type_ret;
 	unsigned int		*size_ret;
 	_NhlFreeFunc		*free_func;

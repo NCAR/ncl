@@ -1,5 +1,5 @@
 /*
- *      $Id: ResListP.h,v 1.3 1994-08-11 21:37:06 boote Exp $
+ *      $Id: ResListP.h,v 1.4 1995-01-11 00:46:42 boote Exp $
  */
 /************************************************************************
 *									*
@@ -43,6 +43,7 @@ struct _NhlRLNode_ {
 	NrmQuark		nameQ;
 	NrmQuark		typeQ;
 	_NhlArgVal		value;
+	unsigned int		size;
 	_NhlFreeFunc		free_func;
 	_NhlRLNode		left;
 	_NhlRLNode		right;
@@ -90,6 +91,7 @@ extern NhlBoolean _NhlRLInsert(
 	int		nameQ,
 	int		typeQ,
 	_NhlArgVal	value,
+	unsigned int	size,
 	_NhlFreeFunc	free_func
 #endif
 );

@@ -1,5 +1,5 @@
 /*
- *      $Id: Legend.c,v 1.21 1995-01-06 00:20:08 dbrown Exp $
+ *      $Id: Legend.c,v 1.22 1995-01-11 00:46:35 boote Exp $
  */
 /************************************************************************
 *									*
@@ -67,8 +67,8 @@ static NhlResource resources[] = {
 
 /* Begin-documented-resources */
 
-{NhlNlgLegend, NhlClgLegend, NhlTInteger,
-	 sizeof(int), NhlOffset(NhlLegendLayerRec,legend.legend_on),
+{NhlNlgLegend, NhlClgLegend, NhlTBoolean,
+	 sizeof(NhlBoolean), NhlOffset(NhlLegendLayerRec,legend.legend_on),
 	 NhlTImmediate, _NhlUSET((NhlPointer) 1),0,NULL},  
 {NhlNlgOrientation, NhlClgOrientation, NhlTOrientation,
 	 sizeof(NhlOrientation), NhlOffset(NhlLegendLayerRec,legend.orient),
@@ -90,9 +90,10 @@ static NhlResource resources[] = {
 	 sizeof(NhllgItemPlacementMode), 
 	 NhlOffset(NhlLegendLayerRec,legend.item_placement),
 	 NhlTImmediate, _NhlUSET((NhlPointer) NhllgUNIFORMPLACEMENT),0,NULL},
-{NhlNlgBoxBackground, NhlClgBoxBackground, NhlTInteger,
-	 sizeof(int), NhlOffset(NhlLegendLayerRec,legend.box_background),
-	 NhlTImmediate, _NhlUSET((NhlPointer) -1),0,NULL},
+{NhlNlgBoxBackground, NhlClgBoxBackground, NhlTColorIndex,
+	 sizeof(NhlColorIndex),
+	 NhlOffset(NhlLegendLayerRec,legend.box_background),
+	 NhlTImmediate, _NhlUSET((NhlPointer) NhlTRANSPARENT),0,NULL},
 
 {NhlNlgAutoManage, NhlClgAutoManage, NhlTBoolean,
 	 sizeof(NhlBoolean), NhlOffset(NhlLegendLayerRec,legend.auto_manage),
@@ -138,7 +139,7 @@ static NhlResource resources[] = {
 	 sizeof(NhlBoolean), 
 	 NhlOffset(NhlLegendLayerRec,legend.mono_item_color),
 	 NhlTImmediate, _NhlUSET((NhlPointer) False),0,NULL},
-{NhlNlgItemColors, NhlClgItemColors, NhlTIntegerGenArray,
+{NhlNlgItemColors, NhlClgItemColors, NhlTColorIndexGenArray,
 	 sizeof(NhlPointer), NhlOffset(NhlLegendLayerRec,legend.item_colors),
 	 NhlTImmediate, _NhlUSET((NhlPointer) NULL),0,NULL},
 {NhlNlgMonoItemThickness, NhlClgMonoItemThickness, NhlTBoolean,
@@ -171,7 +172,7 @@ static NhlResource resources[] = {
 	 sizeof(NhlBoolean), 
 	 NhlOffset(NhlLegendLayerRec,legend.mono_item_string_color),
 	 NhlTImmediate, _NhlUSET((NhlPointer) False),0,NULL},
-{NhlNlgItemStringColors, NhlClgItemStringColors, NhlTIntegerGenArray,
+{NhlNlgItemStringColors, NhlClgItemStringColors, NhlTColorIndexGenArray,
 	 sizeof(NhlPointer), 
 	 NhlOffset(NhlLegendLayerRec,legend.item_string_colors),
 	 NhlTImmediate,
@@ -231,8 +232,8 @@ static NhlResource resources[] = {
 {NhlNlgLabelFont, NhlCFont, NhlTFont, 
 	 sizeof(int), NhlOffset(NhlLegendLayerRec,legend.label_font),
 	 NhlTImmediate, _NhlUSET((NhlPointer) 1),0,NULL},
-{NhlNlgLabelFontColor, NhlClgLabelFontColor, NhlTInteger, 
-	 sizeof(int), NhlOffset(NhlLegendLayerRec,legend.label_color),
+{NhlNlgLabelFontColor, NhlClgLabelFontColor, NhlTColorIndex, 
+	 sizeof(NhlColorIndex),NhlOffset(NhlLegendLayerRec,legend.label_color),
 	 NhlTImmediate, _NhlUSET((NhlPointer) NhlLG_DEF_COLOR),0,NULL},
 {NhlNlgLabelFontHeightF, NhlClgLabelFontHeightF, NhlTFloat, 
 	 sizeof(float), NhlOffset(NhlLegendLayerRec,legend.label_height),
@@ -280,8 +281,8 @@ static NhlResource resources[] = {
 {NhlNlgTitleFont, NhlCFont, NhlTFont, 
 	 sizeof(NhlFont), NhlOffset(NhlLegendLayerRec,legend.title_font),
 	 NhlTImmediate, _NhlUSET((NhlPointer) 1),0,NULL},
-{NhlNlgTitleFontColor, NhlClgTitleFontColor, NhlTInteger, 
-	 sizeof(int), NhlOffset(NhlLegendLayerRec,legend.title_color),
+{NhlNlgTitleFontColor, NhlClgTitleFontColor, NhlTColorIndex, 
+	 sizeof(NhlColorIndex), NhlOffset(NhlLegendLayerRec,legend.title_color),
 	 NhlTImmediate, _NhlUSET((NhlPointer) NhlLG_DEF_COLOR),0,NULL},
 {NhlNlgTitleJust, NhlClgTitleJust, NhlTJustification, sizeof(NhlJustification),
 	 NhlOffset(NhlLegendLayerRec,legend.title_just),
@@ -307,18 +308,19 @@ static NhlResource resources[] = {
 	 sizeof(char), NhlOffset(NhlLegendLayerRec,legend.title_func_code),
 	 NhlTString, _NhlUSET(":"),0,NULL},
 	
-{NhlNlgDrawBoxLines, NhlClgDrawBoxLines, NhlTInteger, 
-	 sizeof(int), NhlOffset(NhlLegendLayerRec,legend.box_line_on),
+{NhlNlgDrawBoxLines, NhlClgDrawBoxLines, NhlTBoolean, 
+	 sizeof(NhlBoolean), NhlOffset(NhlLegendLayerRec,legend.box_line_on),
 	 NhlTImmediate, _NhlUSET((NhlPointer) 0),0,NULL},
-{NhlNlgBoxLineColor, NhlClgBoxLineColor, NhlTInteger, 
-	 sizeof(int), NhlOffset(NhlLegendLayerRec,legend.box_line_color),
+{NhlNlgBoxLineColor, NhlClgBoxLineColor, NhlTColorIndex, 
+	 sizeof(NhlColorIndex),
+	 NhlOffset(NhlLegendLayerRec,legend.box_line_color),
 	 NhlTImmediate, _NhlUSET((NhlPointer) NhlLG_DEF_COLOR),0,NULL},
 {NhlNlgBoxLineThicknessF, NhlClgBoxLineThicknessF, NhlTFloat, 
 	 sizeof(float), 
 	 NhlOffset(NhlLegendLayerRec,legend.box_line_thickness),
 	 NhlTString, _NhlUSET("1.0"),0,NULL},
-{NhlNlgBoxLineDashPattern, NhlClgBoxLineDashPattern, NhlTInteger, 
-	 sizeof(int), 
+{NhlNlgBoxLineDashPattern, NhlClgBoxLineDashPattern, NhlTDashIndex, 
+	 sizeof(NhlDashIndex), 
 	 NhlOffset(NhlLegendLayerRec,legend.box_line_dash_pattern),
 	 NhlTImmediate, _NhlUSET((NhlPointer) 0),0,NULL},
 {NhlNlgBoxLineDashSegLenF, NhlClgBoxLineDashSegLenF, NhlTFloat, 
@@ -326,24 +328,25 @@ static NhlResource resources[] = {
 	 NhlOffset(NhlLegendLayerRec,legend.box_line_dash_seglen),
 	 NhlTString, _NhlUSET("0.15"),0,NULL},
 
-{NhlNlgDrawPerim, NhlClgDrawPerim, NhlTInteger, 
-	 sizeof(int), NhlOffset(NhlLegendLayerRec,legend.perim_on),
+{NhlNlgDrawPerim, NhlClgDrawPerim, NhlTBoolean, 
+	 sizeof(NhlBoolean), NhlOffset(NhlLegendLayerRec,legend.perim_on),
 	 NhlTImmediate, _NhlUSET((NhlPointer) 1),0,NULL},
-{NhlNlgPerimColor, NhlClgPerimColor, NhlTInteger, 
-	 sizeof(int), NhlOffset(NhlLegendLayerRec,legend.perim_color),
+{NhlNlgPerimColor, NhlClgPerimColor, NhlTColorIndex, 
+	 sizeof(NhlColorIndex), NhlOffset(NhlLegendLayerRec,legend.perim_color),
 	 NhlTImmediate, _NhlUSET((NhlPointer) NhlFOREGROUND),0,NULL},
-{NhlNlgPerimFill, NhlClgPerimFill, NhlTInteger, 
-	 sizeof(int), NhlOffset(NhlLegendLayerRec,legend.perim_fill),
+{NhlNlgPerimFill, NhlClgPerimFill, NhlTFillIndex, 
+	 sizeof(NhlFillIndex), NhlOffset(NhlLegendLayerRec,legend.perim_fill),
 	 NhlTImmediate, _NhlUSET((NhlPointer) NhlHOLLOWFILL),0,NULL},
-{NhlNlgPerimFillColor, NhlClgPerimFillColor, NhlTInteger, 
-	 sizeof(int), NhlOffset(NhlLegendLayerRec,legend.perim_fill_color),
+{NhlNlgPerimFillColor, NhlClgPerimFillColor, NhlTColorIndex, 
+	 sizeof(NhlColorIndex),
+	 NhlOffset(NhlLegendLayerRec,legend.perim_fill_color),
 	 NhlTImmediate, _NhlUSET((NhlPointer) NhlBACKGROUND),0,NULL},
 {NhlNlgPerimThicknessF, NhlClgPerimThicknessF, NhlTFloat, 
 	 sizeof(float), 
 	 NhlOffset(NhlLegendLayerRec,legend.perim_thickness),
 	 NhlTString, _NhlUSET("1.0"),0,NULL},
-{NhlNlgPerimDashPattern, NhlClgPerimDashPattern, NhlTInteger, 
-	 sizeof(int), 
+{NhlNlgPerimDashPattern, NhlClgPerimDashPattern, NhlTDashIndex, 
+	 sizeof(NhlDashIndex), 
 	 NhlOffset(NhlLegendLayerRec,legend.perim_dash_pattern),
 	 NhlTImmediate, _NhlUSET((NhlPointer) 0),0,NULL}, 
 {NhlNlgPerimDashSegLenF, NhlClgPerimDashSegLenF, NhlTFloat, 
@@ -1028,7 +1031,7 @@ static NhlErrorTypes    InitializeDynamicArrays
 				    sizeof(int),1,&count)) == NULL) {
 		e_text = "%s: error creating %s GenArray";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
-			  NhlNlgItemColors);
+			  NhlNlgItemIndexes);
 		return NhlFATAL;
 	}
 	ga->my_data = True;
@@ -1162,7 +1165,7 @@ static NhlErrorTypes    InitializeDynamicArrays
 	for (i=NhlLG_DEF_ITEM_COUNT; i < count; i++)
 		i_p[i] = i;
 			
-	if ((ga = NhlCreateGenArray((NhlPointer)i_p,NhlTInteger,
+	if ((ga = NhlCreateGenArray((NhlPointer)i_p,NhlTColorIndex,
 				    sizeof(int),1,&count)) == NULL) {
 		e_text = "%s: error creating %s GenArray";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
@@ -1402,7 +1405,7 @@ static NhlErrorTypes    InitializeDynamicArrays
 		i_p[i] = _NhlIsAllocatedColor(tnew->base.wkptr, i) ?
 			i : NhlLG_DEF_COLOR;
 			
-	if ((ga = NhlCreateGenArray((NhlPointer)i_p,NhlTInteger,
+	if ((ga = NhlCreateGenArray((NhlPointer)i_p,NhlTColorIndex,
 				    sizeof(int),1,&count)) == NULL) {
 		e_text = "%s: error creating %s GenArray";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,

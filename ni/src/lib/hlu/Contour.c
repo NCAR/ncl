@@ -1,5 +1,5 @@
 /*
- *      $Id: Contour.c,v 1.45 1995-01-06 00:20:03 dbrown Exp $
+ *      $Id: Contour.c,v 1.46 1995-01-11 00:46:24 boote Exp $
  */
 /************************************************************************
 *									*
@@ -176,14 +176,14 @@ static NhlResource resources[] = {
 	{NhlNcnMonoLineColor, NhlCcnMonoLineColor, NhlTBoolean,
 		 sizeof(NhlBoolean),Oset(mono_line_color),
 		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
-	{NhlNcnLineColors, NhlCcnLineColors, NhlTIntegerGenArray,
-		 sizeof(NhlPointer),Oset(line_colors),
+	{NhlNcnLineColors, NhlCcnLineColors, NhlTColorIndexGenArray,
+		 sizeof(NhlGenArray),Oset(line_colors),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
 		 (NhlFreeFunc)NhlFreeGenArray},
 	{NhlNcnMonoLineDashPattern, NhlCcnMonoLineDashPattern, NhlTBoolean,
 		 sizeof(NhlBoolean),Oset(mono_line_dash_pattern),
 		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
-	{NhlNcnLineDashPatterns, NhlCcnLineDashPatterns, NhlTIntegerGenArray,
+	{NhlNcnLineDashPatterns, NhlCcnLineDashPatterns, NhlTDashIndexGenArray,
 		 sizeof(NhlPointer),Oset(line_dash_patterns),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
 		 (NhlFreeFunc)NhlFreeGenArray},
@@ -206,8 +206,8 @@ static NhlResource resources[] = {
 	{NhlNcnFillOn,NhlCcnFillOn,NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(fill_on),
 		 NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL},
-	{NhlNcnFillBackgroundColor,NhlCcnFillBackgroundColor,NhlTInteger,
-		 sizeof(int),Oset(fill_background_color),
+	{NhlNcnFillBackgroundColor,NhlCcnFillBackgroundColor,NhlTColorIndex,
+		 sizeof(NhlColorIndex),Oset(fill_background_color),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NhlTRANSPARENT),0,NULL},
  	{NhlNcnFillDrawOrder,NhlCcnFillDrawOrder,NhlTDrawOrder,
 		 sizeof(NhlDrawOrder),Oset(fill_order),
@@ -215,14 +215,14 @@ static NhlResource resources[] = {
 	{NhlNcnMonoFillColor, NhlCcnMonoFillColor, NhlTBoolean,
 		 sizeof(NhlBoolean),Oset(mono_fill_color),
 		 NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL},
-	{NhlNcnFillColors, NhlCcnFillColors, NhlTIntegerGenArray,
+	{NhlNcnFillColors, NhlCcnFillColors, NhlTColorIndexGenArray,
 		 sizeof(NhlPointer),Oset(fill_colors),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
 		 (NhlFreeFunc)NhlFreeGenArray},
 	{NhlNcnMonoFillPattern, NhlCcnMonoFillPattern, NhlTBoolean,
 		 sizeof(NhlBoolean),Oset(mono_fill_pattern),
 		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
-	{NhlNcnFillPatterns, NhlCcnFillPatterns, NhlTIntegerGenArray,
+	{NhlNcnFillPatterns, NhlCcnFillPatterns, NhlTFillIndexGenArray,
 		 sizeof(NhlPointer),Oset(fill_patterns),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
 		 (NhlFreeFunc)NhlFreeGenArray},
@@ -243,10 +243,10 @@ static NhlResource resources[] = {
 		  NhlTFloat,sizeof(float),Oset(below_min.scale),
 		  NhlTString,_NhlUSET("0.5"),0,NULL},
 	{ NhlNcnAboveMaxLevelColor,NhlCcnAboveMaxLevelColor,
-		  NhlTInteger,sizeof(int),Oset(above_max.color),
+		  NhlTColorIndex,sizeof(NhlColorIndex),Oset(above_max.color),
 		  NhlTImmediate,_NhlUSET((NhlPointer) 58),0,NULL},
 	{ NhlNcnAboveMaxLevelFillPattern,NhlCcnAboveMaxLevelFillPattern,
-		  NhlTInteger,sizeof(int),Oset(above_max.pattern),
+		  NhlTFillIndex,sizeof(NhlFillIndex),Oset(above_max.pattern),
 		  NhlTImmediate,_NhlUSET((NhlPointer) NhlSOLIDFILL),0,NULL},
 	{ NhlNcnAboveMaxLevelFillScale,NhlCcnAboveMaxLevelFillScale,
 		  NhlTFloat,sizeof(float),Oset(above_max.scale),
@@ -315,7 +315,7 @@ static NhlResource resources[] = {
 	{NhlNcnMonoLineLabelColor,NhlCcnMonoLineLabelColor,NhlTBoolean,
 		 sizeof(NhlBoolean),Oset(line_lbls.mono_color),
 		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
-	{NhlNcnLineLabelColors, NhlCcnLineLabelColors, NhlTIntegerGenArray,
+	{NhlNcnLineLabelColors, NhlCcnLineLabelColors, NhlTColorIndexGenArray,
 		 sizeof(NhlPointer),Oset(llabel_colors),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
 		 (NhlFreeFunc)NhlFreeGenArray},
@@ -351,8 +351,9 @@ static NhlResource resources[] = {
 		 sizeof(char),Oset(line_lbls.fcode[0]),
 		 NhlTString, _NhlUSET(":"),0,NULL},
 	{NhlNcnLineLabelBackgroundColor,NhlCcnLineLabelBackgroundColor,
-		 NhlTInteger,sizeof(int),Oset(line_lbls.back_color),
-		 NhlTImmediate,_NhlUSET((NhlPointer) NhlBACKGROUND),0,NULL},
+		 NhlTColorIndex,sizeof(NhlColorIndex),
+		 Oset(line_lbls.back_color),NhlTImmediate,
+		 _NhlUSET((NhlPointer) NhlBACKGROUND),0,NULL},
 	{NhlNcnLineLabelPerim,NhlCcnLineLabelPerim,
                  NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(line_lbls.perim_on),
@@ -360,8 +361,8 @@ static NhlResource resources[] = {
 	{NhlNcnLineLabelPerimSpaceF,NhlCcnLineLabelPerimSpaceF,
 		 NhlTFloat,sizeof(float),Oset(line_lbls.perim_space),
 		 NhlTString,_NhlUSET("0.33"),0,NULL},
-	{NhlNcnLineLabelPerimColor,NhlCcnLineLabelPerimColor,NhlTInteger,
-		 sizeof(int),Oset(line_lbls.perim_lcolor),
+	{NhlNcnLineLabelPerimColor,NhlCcnLineLabelPerimColor,NhlTColorIndex,
+		 sizeof(NhlColorIndex),Oset(line_lbls.perim_lcolor),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NhlFOREGROUND),0,NULL},
 	{NhlNcnLineLabelPerimThicknessF,NhlCcnLineLabelFontThicknessF,
 		 NhlTFloat,sizeof(float),Oset(line_lbls.perim_lthick),
@@ -410,18 +411,18 @@ static NhlResource resources[] = {
 	{NhlNcnHighLabelFuncCode,NhlCcnHighLabelFuncCode,NhlTCharacter, 
 		 sizeof(char),Oset(high_lbls.fcode[0]),
 		 NhlTString, _NhlUSET(":"),0,NULL},
-	{ NhlNcnHighLabelBackgroundColor,NhlCcnHighLabelBackgroundColor,
-		  NhlTInteger,sizeof(int),Oset(high_lbls.back_color),
-		  NhlTImmediate,_NhlUSET((NhlPointer) NhlBACKGROUND),0,NULL},
-	{ NhlNcnHighLabelPerim,NhlCcnHighLabelPerim,
-                  NhlTBoolean,sizeof(NhlBoolean),
-                  Oset(high_lbls.perim_on),
-                  NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL},
-	{ NhlNcnHighLabelPerimSpaceF,NhlCcnHighLabelPerimSpaceF,
+	{NhlNcnHighLabelBackgroundColor,NhlCcnHighLabelBackgroundColor,
+		  NhlTColorIndex,sizeof(NhlColorIndex),
+		  Oset(high_lbls.back_color),NhlTImmediate,
+		  _NhlUSET((NhlPointer) NhlBACKGROUND),0,NULL},
+	{NhlNcnHighLabelPerim,NhlCcnHighLabelPerim,NhlTBoolean,
+		sizeof(NhlBoolean),Oset(high_lbls.perim_on),NhlTImmediate,
+		_NhlUSET((NhlPointer) False),0,NULL},
+	{NhlNcnHighLabelPerimSpaceF,NhlCcnHighLabelPerimSpaceF,
 		  NhlTFloat,sizeof(float),Oset(high_lbls.perim_space),
 		  NhlTString,_NhlUSET("0.33"),0,NULL},
-	{ NhlNcnHighLabelPerimColor,NhlCcnHighLabelPerimColor,NhlTInteger,
-		  sizeof(int),Oset(high_lbls.perim_lcolor),
+	{NhlNcnHighLabelPerimColor,NhlCcnHighLabelPerimColor,NhlTColorIndex,
+		  sizeof(NhlColorIndex),Oset(high_lbls.perim_lcolor),
 		  NhlTImmediate,_NhlUSET((NhlPointer) NhlFOREGROUND),0,NULL},
 	{NhlNcnHighLabelPerimThicknessF,NhlCcnHighLabelFontThicknessF,
 		 NhlTFloat,sizeof(float),Oset(high_lbls.perim_lthick),
@@ -470,18 +471,18 @@ static NhlResource resources[] = {
 	{NhlNcnLowLabelFuncCode,NhlCcnLowLabelFuncCode,NhlTCharacter, 
 		 sizeof(char),Oset(low_lbls.fcode[0]),
 		 NhlTString, _NhlUSET(":"),0,NULL},
-	{ NhlNcnLowLabelBackgroundColor,NhlCcnLowLabelBackgroundColor,
-		  NhlTInteger,sizeof(int),Oset(low_lbls.back_color),
-		  NhlTImmediate,_NhlUSET((NhlPointer) NhlBACKGROUND),0,NULL},
-	{ NhlNcnLowLabelPerim,NhlCcnLowLabelPerim,
-                  NhlTBoolean,sizeof(NhlBoolean),
+	{NhlNcnLowLabelBackgroundColor,NhlCcnLowLabelBackgroundColor,
+		  NhlTColorIndex,sizeof(NhlColorIndex),
+		  Oset(low_lbls.back_color),NhlTImmediate,
+		  _NhlUSET((NhlPointer) NhlBACKGROUND),0,NULL},
+	{NhlNcnLowLabelPerim,NhlCcnLowLabelPerim,NhlTBoolean,sizeof(NhlBoolean),
 		Oset(low_lbls.perim_on),
 		NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL},
 	{ NhlNcnLowLabelPerimSpaceF,NhlCcnLowLabelPerimSpaceF,
 		  NhlTFloat,sizeof(float),Oset(low_lbls.perim_space),
 		  NhlTString,_NhlUSET("0.33"),0,NULL},
-	{ NhlNcnLowLabelPerimColor,NhlCcnLowLabelPerimColor,NhlTInteger,
-		  sizeof(int),Oset(low_lbls.perim_lcolor),
+	{NhlNcnLowLabelPerimColor,NhlCcnLowLabelPerimColor,NhlTColorIndex,
+		  sizeof(NhlColorIndex),Oset(low_lbls.perim_lcolor),
 		  NhlTImmediate,_NhlUSET((NhlPointer) NhlFOREGROUND),0,NULL},
 	{NhlNcnLowLabelPerimThicknessF,NhlCcnLowLabelFontThicknessF,
 		 NhlTFloat,sizeof(float),Oset(low_lbls.perim_lthick),
@@ -534,9 +535,10 @@ static NhlResource resources[] = {
 	{NhlNcnInfoLabelFuncCode,NhlCcnInfoLabelFuncCode,NhlTCharacter, 
 		 sizeof(char),Oset(info_lbl.fcode[0]),
 		 NhlTString, _NhlUSET(":"),0,NULL},
-	{ NhlNcnInfoLabelBackgroundColor,NhlCcnInfoLabelBackgroundColor,
-		  NhlTInteger,sizeof(int),Oset(info_lbl.back_color),
-		  NhlTImmediate,_NhlUSET((NhlPointer) NhlBACKGROUND),0,NULL},
+	{NhlNcnInfoLabelBackgroundColor,NhlCcnInfoLabelBackgroundColor,
+		  NhlTColorIndex,sizeof(NhlColorIndex),
+		  Oset(info_lbl.back_color),NhlTImmediate,
+		  _NhlUSET((NhlPointer) NhlBACKGROUND),0,NULL},
 	{ NhlNcnInfoLabelPerim,NhlCcnInfoLabelPerim,
                   NhlTBoolean,sizeof(NhlBoolean),
 		Oset(info_lbl.perim_on),
@@ -544,8 +546,8 @@ static NhlResource resources[] = {
 	{ NhlNcnInfoLabelPerimSpaceF,NhlCcnInfoLabelPerimSpaceF,
 		  NhlTFloat,sizeof(float),Oset(info_lbl.perim_space),
 		  NhlTString,_NhlUSET("0.33"),0,NULL},
-	{ NhlNcnInfoLabelPerimColor,NhlCcnInfoLabelPerimColor,NhlTInteger,
-		  sizeof(int),Oset(info_lbl.perim_lcolor),
+	{NhlNcnInfoLabelPerimColor,NhlCcnInfoLabelPerimColor,NhlTColorIndex,
+		  sizeof(NhlColorIndex),Oset(info_lbl.perim_lcolor),
 		  NhlTImmediate,_NhlUSET((NhlPointer) NhlFOREGROUND),0,NULL},
 	{NhlNcnInfoLabelPerimThicknessF,NhlCcnInfoLabelFontThicknessF,
 		 NhlTFloat,sizeof(float),Oset(info_lbl.perim_lthick),
@@ -617,16 +619,17 @@ static NhlResource resources[] = {
 		 sizeof(char),Oset(constf_lbl.fcode[0]),
 		 NhlTString, _NhlUSET(":"),0,NULL},
 	{NhlNcnConstFLabelBackgroundColor,NhlCcnConstFLabelBackgroundColor,
-		 NhlTInteger,sizeof(int),Oset(constf_lbl.back_color),
-		 NhlTImmediate,_NhlUSET((NhlPointer) NhlBACKGROUND),0,NULL},
+		 NhlTColorIndex,sizeof(NhlColorIndex),
+		 Oset(constf_lbl.back_color),NhlTImmediate,
+		 _NhlUSET((NhlPointer) NhlBACKGROUND),0,NULL},
 	{NhlNcnConstFLabelPerim,NhlCcnConstFLabelPerim,
                  NhlTBoolean,sizeof(NhlBoolean),Oset(constf_lbl.perim_on),
 		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
 	{NhlNcnConstFLabelPerimSpaceF,NhlCcnConstFLabelPerimSpaceF,
 		 NhlTFloat,sizeof(float),Oset(constf_lbl.perim_space),
 		 NhlTString,_NhlUSET("0.33"),0,NULL},
-	{NhlNcnConstFLabelPerimColor,NhlCcnConstFLabelPerimColor,NhlTInteger,
-		 sizeof(int),Oset(constf_lbl.perim_lcolor),
+	{NhlNcnConstFLabelPerimColor,NhlCcnConstFLabelPerimColor,NhlTColorIndex,
+		 sizeof(NhlColorIndex),Oset(constf_lbl.perim_lcolor),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NhlFOREGROUND),0,NULL},
 	{NhlNcnConstFLabelPerimThicknessF,NhlCcnConstFLabelFontThicknessF,
 		 NhlTFloat,sizeof(float),Oset(constf_lbl.perim_lthick),
@@ -659,16 +662,16 @@ static NhlResource resources[] = {
 		 NhlTFloat,sizeof(float),Oset(missing_val.perim_thick),
 		 NhlTString, _NhlUSET("1.0"),0,NULL},
 	{NhlNcnMissingValPerimDashPattern,NhlCcnMissingValPerimDashPattern,
-		 NhlTInteger,sizeof(int),Oset(missing_val.perim_dpat),
-		 NhlTImmediate,_NhlUSET(0),0,NULL},
-	{NhlNcnMissingValPerimColor,NhlCcnMissingValPerimColor,NhlTInteger,
-		 sizeof(int),Oset(missing_val.perim_color),
+		 NhlTDashIndex,sizeof(NhlDashIndex),
+		 Oset(missing_val.perim_dpat),NhlTImmediate,_NhlUSET(0),0,NULL},
+	{NhlNcnMissingValPerimColor,NhlCcnMissingValPerimColor,NhlTColorIndex,
+		 sizeof(NhlColorIndex),Oset(missing_val.perim_color),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NhlFOREGROUND),0,NULL},
-	{NhlNcnMissingValFillColor,NhlCcnMissingValFillColor,NhlTInteger,
-		 sizeof(int),Oset(missing_val.fill_color),
+	{NhlNcnMissingValFillColor,NhlCcnMissingValFillColor,NhlTColorIndex,
+		 sizeof(NhlColorIndex),Oset(missing_val.fill_color),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NhlBACKGROUND),0,NULL},
-	{NhlNcnMissingValFillPattern,NhlCcnMissingValFillPattern,NhlTInteger,
-		 sizeof(int),Oset(missing_val.fill_pat),
+	{NhlNcnMissingValFillPattern,NhlCcnMissingValFillPattern,NhlTFillIndex,
+		 sizeof(NhlFillIndex),Oset(missing_val.fill_pat),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NhlHOLLOWFILL),0,NULL},
 	{NhlNcnMissingValFillScaleF,NhlCcnMissingValFillScaleF,
 		 NhlTFloat,sizeof(float),Oset(missing_val.fill_scale),
@@ -683,16 +686,16 @@ static NhlResource resources[] = {
 		 NhlTFloat,sizeof(float),Oset(grid_bound.perim_thick),
 		 NhlTString, _NhlUSET("1.0"),0,NULL},
 	{NhlNcnGridBoundPerimDashPattern,NhlCcnGridBoundPerimDashPattern,
-		 NhlTInteger,sizeof(int),Oset(grid_bound.perim_dpat),
+		 NhlTDashIndex,sizeof(NhlDashIndex),Oset(grid_bound.perim_dpat),
 		 NhlTImmediate,_NhlUSET(0),0,NULL},
-	{NhlNcnGridBoundPerimColor,NhlCcnGridBoundPerimColor,NhlTInteger,
-		 sizeof(int),Oset(grid_bound.perim_color),
+	{NhlNcnGridBoundPerimColor,NhlCcnGridBoundPerimColor,NhlTColorIndex,
+		 sizeof(NhlColorIndex),Oset(grid_bound.perim_color),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NhlFOREGROUND),0,NULL},
-	{NhlNcnGridBoundFillColor,NhlCcnGridBoundFillColor,NhlTInteger,
-		 sizeof(int),Oset(grid_bound.fill_color),
+	{NhlNcnGridBoundFillColor,NhlCcnGridBoundFillColor,NhlTColorIndex,
+		 sizeof(NhlColorIndex),Oset(grid_bound.fill_color),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NhlBACKGROUND),0,NULL},
-	{NhlNcnGridBoundFillPattern,NhlCcnGridBoundFillPattern,NhlTInteger,
-		 sizeof(int),Oset(grid_bound.fill_pat),
+	{NhlNcnGridBoundFillPattern,NhlCcnGridBoundFillPattern,NhlTFillIndex,
+		 sizeof(NhlFillIndex),Oset(grid_bound.fill_pat),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NhlHOLLOWFILL),0,NULL},
 	{NhlNcnGridBoundFillScaleF,NhlCcnGridBoundFillScaleF,
 		 NhlTFloat,sizeof(float),Oset(grid_bound.fill_scale),
@@ -707,16 +710,17 @@ static NhlResource resources[] = {
 		 NhlTFloat,sizeof(float),Oset(out_of_range.perim_thick),
 		 NhlTString, _NhlUSET("1.0"),0,NULL},
 	{NhlNcnOutOfRangePerimDashPattern,NhlCcnOutOfRangePerimDashPattern,
-		 NhlTInteger,sizeof(int),Oset(out_of_range.perim_dpat),
-		 NhlTImmediate,_NhlUSET(0),0,NULL},
-	{NhlNcnOutOfRangePerimColor,NhlCcnOutOfRangePerimColor,NhlTInteger,
-		 sizeof(int),Oset(out_of_range.perim_color),
+		 NhlTDashIndex,sizeof(NhlDashIndex),
+		 Oset(out_of_range.perim_dpat),NhlTImmediate,
+		 _NhlUSET(0),0,NULL},
+	{NhlNcnOutOfRangePerimColor,NhlCcnOutOfRangePerimColor,NhlTColorIndex,
+		 sizeof(NhlColorIndex),Oset(out_of_range.perim_color),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NhlFOREGROUND),0,NULL},
-	{NhlNcnOutOfRangeFillColor,NhlCcnOutOfRangeFillColor,NhlTInteger,
-		 sizeof(int),Oset(out_of_range.fill_color),
+	{NhlNcnOutOfRangeFillColor,NhlCcnOutOfRangeFillColor,NhlTColorIndex,
+		 sizeof(NhlColorIndex),Oset(out_of_range.fill_color),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NhlBACKGROUND),0,NULL},
-	{NhlNcnOutOfRangeFillPattern,NhlCcnOutOfRangeFillPattern,NhlTInteger,
-		 sizeof(int),Oset(out_of_range.fill_pat),
+	{NhlNcnOutOfRangeFillPattern,NhlCcnOutOfRangeFillPattern,NhlTFillIndex,
+		 sizeof(NhlFillIndex),Oset(out_of_range.fill_pat),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NhlHOLLOWFILL),0,NULL},
 	{NhlNcnOutOfRangeFillScaleF,NhlCcnOutOfRangeFillScaleF,
 		 NhlTFloat,sizeof(float),Oset(out_of_range.fill_scale),
@@ -935,13 +939,6 @@ static NhlErrorTypes ContourUpdateData(
 #if	NhlNeedProto
 	NhlDataCommLayer	new,
 	NhlDataCommLayer	old
-#endif
-);
-
-
-static NhlErrorTypes ContourDataClassInitialize(
-#if	NhlNeedProto
-	void
 #endif
 );
 
@@ -1405,7 +1402,7 @@ NhlContourDataDepLayerClassRec NhlcontourDataDepLayerClassRec = {
 /* all_resources		*/	NULL,
 
 /* class_part_initialize	*/	NULL,
-/* class_initialize		*/	ContourDataClassInitialize,
+/* class_initialize		*/	NULL,
 /* layer_initialize		*/	ContourDataInitialize,
 /* layer_set_values		*/	NULL,
 /* layer_set_values_hook	*/	NULL,
@@ -1486,6 +1483,9 @@ NhlLayerClass NhlcontourLayerClass =
 
 static NrmQuark	Qfloat = NrmNULLQUARK;
 static NrmQuark Qint = NrmNULLQUARK;
+static NrmQuark Qcolorindex = NrmNULLQUARK;
+static NrmQuark Qfillindex = NrmNULLQUARK;
+static NrmQuark Qdashindex = NrmNULLQUARK;
 static NrmQuark Qstring = NrmNULLQUARK;
 static NrmQuark	Qlevels = NrmNULLQUARK; 
 static NrmQuark	Qlevel_flags = NrmNULLQUARK; 
@@ -1564,36 +1564,6 @@ _NHLCALLF(nhlfcontourdatadeplayerclass,NHLFCONTOURDATADEPLAYERCLASS)
 #endif
 {
 	return NhlcontourDataDepLayerClass;
-}
-
-/*
- * Function:	ContourDataClassInitialize
- *
- * Description:	init quark for latter use.
- *
- * In Args:	
- *		void
- *
- * Out Args:	
- *
- * Scope:	static
- * Returns:	NhlErrorTypes
- * Side Effect:	
- */
-static NhlErrorTypes
-ContourDataClassInitialize
-#if	NhlNeedProto
-(
-	void
-)
-#else
-()
-#endif
-{
-	Qint = NrmStringToQuark(NhlTInteger);
-	Qstring = NrmStringToQuark(NhlTString);
-
-	return NhlNOERROR;
 }
 
 /*
@@ -1763,6 +1733,9 @@ ContourClassInitialize
 	Qint = NrmStringToQuark(NhlTInteger);
 	Qstring = NrmStringToQuark(NhlTString);
 	Qfloat = NrmStringToQuark(NhlTFloat);
+	Qcolorindex = NrmStringToQuark(NhlTColorIndex);
+	Qfillindex = NrmStringToQuark(NhlTFillIndex);
+	Qdashindex = NrmStringToQuark(NhlTDashIndex);
 	Qlevels = NrmStringToQuark(NhlNcnLevels);
 	Qlevel_flags = NrmStringToQuark(NhlNcnLevelFlags);
 	Qfill_colors = NrmStringToQuark(NhlNcnFillColors);
@@ -7131,7 +7104,7 @@ static NhlErrorTypes    ManageDynamicArrays
 
 	ga = init ? NULL : ocnp->fill_colors;
 	count = cnp->fill_count;
-	subret = ManageGenArray(&ga,count,cnp->fill_colors,Qint,NULL,
+	subret = ManageGenArray(&ga,count,cnp->fill_colors,Qcolorindex,NULL,
 				&old_count,&init_count,&need_check,&changed,
 				NhlNcnFillColors,entry_name);
 
@@ -7213,7 +7186,7 @@ static NhlErrorTypes    ManageDynamicArrays
 	count = cnp->fill_count;
 	if (ga != cnp->fill_patterns) cnp->new_draw_req = True;
 
-	subret = ManageGenArray(&ga,count,cnp->fill_patterns,Qint,NULL,
+	subret = ManageGenArray(&ga,count,cnp->fill_patterns,Qfillindex,NULL,
 				&old_count,&init_count,&need_check,&changed,
 				NhlNcnFillPatterns,entry_name);
 	if ((ret = MIN(ret,subret)) < NhlWARNING)
@@ -7390,7 +7363,7 @@ static NhlErrorTypes    ManageDynamicArrays
 		ga = ocnp->line_colors;
 		count = cnp->mono_line_color ? 1 : cnp->level_count;
 	}
-	subret = ManageGenArray(&ga,count,cnp->line_colors,Qint,NULL,
+	subret = ManageGenArray(&ga,count,cnp->line_colors,Qcolorindex,NULL,
 				&old_count,&init_count,&need_check,&changed,
 				NhlNcnLineColors,entry_name);
 	if ((ret = MIN(ret,subret)) < NhlWARNING)
@@ -7434,9 +7407,9 @@ static NhlErrorTypes    ManageDynamicArrays
 		ga = ocnp->line_dash_patterns;
 		count = cnp->mono_line_dash_pattern ? 1 : cnp->level_count;
 	}
-	subret = ManageGenArray(&ga,count,cnp->line_dash_patterns,Qint,NULL,
-				&old_count,&init_count,&need_check,&changed,
-				NhlNcnLineDashPatterns,entry_name);
+	subret = ManageGenArray(&ga,count,cnp->line_dash_patterns,Qdashindex,
+				NULL,&old_count,&init_count,&need_check,
+				&changed,NhlNcnLineDashPatterns,entry_name);
 	if ((ret = MIN(ret,subret)) < NhlWARNING)
 		return ret;
 
@@ -7619,7 +7592,7 @@ static NhlErrorTypes    ManageDynamicArrays
 		ga = ocnp->llabel_colors;
 		count = cnp->line_lbls.mono_color ? 1 : cnp->level_count;
 	}
-	subret = ManageGenArray(&ga,count,cnp->llabel_colors,Qint,NULL,
+	subret = ManageGenArray(&ga,count,cnp->llabel_colors,Qcolorindex,NULL,
 				&old_count,&init_count,&need_check,&changed,
 				NhlNcnLineLabelColors,entry_name);
 	if ((ret = MIN(ret,subret)) < NhlWARNING)
@@ -7753,6 +7726,18 @@ static NhlErrorTypes    ManageGenArray
 		str_type = NhlTInteger;
 		size = sizeof(int);
 	}
+	else if (type == Qfillindex) {
+		str_type = NhlTFillIndex;
+		size = sizeof(NhlFillIndex);
+	}
+	else if (type == Qcolorindex) {
+		str_type = NhlTColorIndex;
+		size = sizeof(NhlColorIndex);
+	}
+	else if (type == Qdashindex) {
+		str_type = NhlTDashIndex;
+		size = sizeof(NhlDashIndex);
+	}
 	else if (type == Qfloat) {
 		str_type = NhlTFloat;
 		size = sizeof(float);
@@ -7845,6 +7830,18 @@ static NhlErrorTypes    ManageGenArray
 		else if (type == Qint)
 			for (i = *init_count; i< count; i++)
 				((int *)datap)[i] = *((int *)init_val);
+		else if (type == Qcolorindex)
+			for (i = *init_count; i< count; i++)
+				((NhlColorIndex *)datap)[i] =
+						*((NhlColorIndex *)init_val);
+		else if (type == Qfillindex)
+			for (i = *init_count; i< count; i++)
+				((NhlFillIndex *)datap)[i] =
+						*((NhlFillIndex *)init_val);
+		else if (type == Qdashindex)
+			for (i = *init_count; i< count; i++)
+				((NhlDashIndex *)datap)[i] =
+						*((NhlDashIndex *)init_val);
 		else if (type == Qfloat)
 			for (i = *init_count; i< count; i++)
 				((float *)datap)[i] = *((float *)init_val);

@@ -1,5 +1,5 @@
 /*
- *      $Id: Fortran.c,v 1.4 1994-12-09 22:27:23 boote Exp $
+ *      $Id: Fortran.c,v 1.5 1995-01-11 00:46:31 boote Exp $
  */
 /************************************************************************
 *									*
@@ -285,7 +285,7 @@ _NHLCALLF(nhl_frlsetinteger,NHL_FRLSETINTEGER)
 	val.intval = *ival;
 
 	if(_NhlRLInsert(*id,NhlSETRL,_NhlFstrToQuark(fname,*fname_len),intQ,val,
-									NULL))
+							sizeof(int),NULL))
 		*err = NhlNOERROR;
 	else
 		*err = NhlFATAL;
@@ -330,7 +330,7 @@ _NHLCALLF(nhl_frlsetfloat,NHL_FRLSETFLOAT)
 	val.fltval = *fval;
 
 	if(_NhlRLInsert(*id,NhlSETRL,_NhlFstrToQuark(fname,*fname_len),floatQ,
-								val,NULL))
+							val,sizeof(float),NULL))
 		*err = NhlNOERROR;
 	else
 		*err = NhlFATAL;
@@ -377,7 +377,7 @@ _NHLCALLF(nhl_frlsetstring,NHL_FRLSETSTRING)
 	val.strval = _NhlFstrToCstr(NULL,0,fstring,*fstring_len);
 
 	if(_NhlRLInsert(*id,NhlSETRL,_NhlFstrToQuark(fname,*fname_len),stringQ,
-						val,(_NhlFreeFunc)NhlFree))
+				val,sizeof(NhlString),(_NhlFreeFunc)NhlFree))
 		*err = NhlNOERROR;
 	else
 		*err = NhlFATAL;
@@ -434,7 +434,7 @@ NhlFSetMDArray
 	}
 
 	if(_NhlRLInsert(id,NhlSETRL,_NhlFstrToQuark(fname,fname_len),genQ,gen,
-						(_NhlFreeFunc)NhlFreeGenArray))
+			sizeof(NhlGenArray),(_NhlFreeFunc)NhlFreeGenArray))
 		return NhlNOERROR;
 	else
 		return NhlFATAL;
@@ -666,7 +666,7 @@ _NHLCALLF(nhl_frlsetstringarray,NHL_FRLSETSTRINGARRAY)
 	val.ptrval = gen;
 
 	if(_NhlRLInsert(*id,NhlSETRL,_NhlFstrToQuark(fname,*fname_len),genQ,val,
-						(_NhlFreeFunc)NhlFreeGenArray))
+			sizeof(NhlGenArray),(_NhlFreeFunc)NhlFreeGenArray))
 		*err = NhlNOERROR;
 	else
 		*err = NhlFATAL;
@@ -711,7 +711,7 @@ _NHLCALLF(nhl_frlgetinteger,NHL_FRLGETINTEGER)
 	val.ptrval = iptr;
 
 	if(_NhlRLInsert(*id,NhlGETRL,_NhlFstrToQuark(fname,*fname_len),intQ,val,
-									NULL))
+						sizeof(NhlPointer),NULL))
 		*err = NhlNOERROR;
 	else
 		*err = NhlFATAL;
@@ -756,7 +756,7 @@ _NHLCALLF(nhl_frlgetfloat,NHL_FRLGETFLOAT)
 	val.ptrval = fptr;
 
 	if(_NhlRLInsert(*id,NhlGETRL,_NhlFstrToQuark(fname,*fname_len),floatQ,
-								val,NULL))
+						val,sizeof(NhlPointer),NULL))
 		*err = NhlNOERROR;
 	else
 		*err = NhlFATAL;
@@ -814,7 +814,7 @@ _NHLCALLF(nhl_frlgetstring,NHL_FRLGETSTRING)
 	val.ptrval = exp;
 
 	if(_NhlRLInsert(*id,NhlGETRL,_NhlFstrToQuark(fname,*fname_len),FExpStrQ,
-						val,(_NhlFreeFunc)NhlFree))
+				val,sizeof(NhlPointer),(_NhlFreeFunc)NhlFree))
 		*err = NhlNOERROR;
 	else
 		*err = NhlFATAL;
@@ -1232,7 +1232,7 @@ GetFArray
 	val.ptrval = exp;
 
 	if(_NhlRLInsert(id,NhlGETRL,_NhlFstrToQuark(fname,fname_len),FExpArrQ,
-						val,(_NhlFreeFunc)NhlFree))
+				val,sizeof(NhlPointer),(_NhlFreeFunc)NhlFree))
 		return False;
 	else
 		return True;
@@ -1564,7 +1564,7 @@ _NHLCALLF(nhl_frlgetstringarray,NHL_FRLGETSTRINGARRAY)
 	val.ptrval = exp;
 
 	if(_NhlRLInsert(*id,NhlGETRL,_NhlFstrToQuark(fname,*fname_len),
-					FExpStrArrQ,val,(_NhlFreeFunc)NhlFree))
+		FExpStrArrQ,val,sizeof(NhlPointer),(_NhlFreeFunc)NhlFree))
 		*err = NhlNOERROR;
 	else
 		*err = NhlFATAL;

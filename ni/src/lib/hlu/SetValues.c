@@ -1,5 +1,5 @@
 /*
- *      $Id: SetValues.c,v 1.12 1994-12-16 20:04:43 boote Exp $
+ *      $Id: SetValues.c,v 1.13 1995-01-11 00:46:46 boote Exp $
  */
 /************************************************************************
 *									*
@@ -211,7 +211,7 @@ SetValues
 					 */
 					NrmValue	from, to;
 
-					from.size = sizeof(_NhlArgVal);
+					from.size = args[i].size;
 					from.data = args[i].value;
 					to.size = resources[j].nrm_size;
 					to.data.ptrval = ((char*)base +
