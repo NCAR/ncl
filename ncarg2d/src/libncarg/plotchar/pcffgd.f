@@ -1,5 +1,5 @@
 C
-C	$Id: pcffgd.f,v 1.2 1992-11-19 01:34:35 fred Exp $
+C $Id: pcffgd.f,v 1.3 1999-09-21 17:05:50 kennison Exp $
 C
       SUBROUTINE PCFFGD (IPSS,NASC,CHGT,SIZE,RDGU,LDGU,NDGU)
 C
@@ -150,7 +150,7 @@ C
            BCNTLY(IB) = YC(I+IB-2)
    30    CONTINUE
 C
-         CALL BZCURV(BCNTLX,BCNTLY,IBZL,BZXC,BZYC,NBP)
+         CALL BCCURV(BCNTLX,BCNTLY,IBZL,BZXC,BZYC,NBP)
 C
 C  Add the interpolated points to the curve (start at 2 since the
 C  original point is already in the curve).

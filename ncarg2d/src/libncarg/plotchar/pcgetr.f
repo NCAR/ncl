@@ -1,5 +1,5 @@
 C
-C $Id: pcgetr.f,v 1.11 1995-05-01 22:21:08 kennison Exp $
+C $Id: pcgetr.f,v 1.12 1999-09-21 17:05:51 kennison Exp $
 C
       SUBROUTINE PCGETR (WHCH,RVAL)
 C
@@ -89,7 +89,7 @@ C
       ELSE IF (WHCH(1:2).EQ.'DT'.OR.WHCH(1:2).EQ.'dt') THEN
         RVAL=DSTT
       ELSE IF (WHCH(1:2).EQ.'FB'.OR.WHCH(1:2).EQ.'fb') THEN
-        CALL BZGETR ('FTL',RVAL)
+        CALL BCGETR ('FTL',RVAL)
       ELSE IF (WHCH(1:2).EQ.'FN'.OR.WHCH(1:2).EQ.'fn') THEN
         RVAL=REAL(NODF)
       ELSE IF (WHCH(1:2).EQ.'HW'.OR.WHCH(1:2).EQ.'hw') THEN

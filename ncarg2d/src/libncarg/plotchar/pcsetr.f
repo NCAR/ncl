@@ -1,5 +1,5 @@
 C
-C $Id: pcsetr.f,v 1.11 1995-05-01 22:21:19 kennison Exp $
+C $Id: pcsetr.f,v 1.12 1999-09-21 17:05:51 kennison Exp $
 C
       SUBROUTINE PCSETR (WHCH,RVAL)
 C
@@ -84,7 +84,7 @@ C
         IORD=MAX(-2,MIN(+2,INT(RVAL)))
         IF (IORD.EQ.0) IORD=1
       ELSE IF (WHCH(1:2).EQ.'FB'.OR.WHCH(1:2).EQ.'fb') THEN
-        CALL BZSETR ('FTL',RVAL)
+        CALL BCSETR ('FTL',RVAL)
         IF (ICFELL('PCSETR',4).NE.0) RETURN
       ELSE IF (WHCH(1:2).EQ.'FN'.OR.WHCH(1:2).EQ.'fn') THEN
         NODF=ABS(INT(RVAL))

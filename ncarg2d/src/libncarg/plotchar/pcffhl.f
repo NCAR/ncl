@@ -1,5 +1,5 @@
 C
-C	$Id: pcffhl.f,v 1.2 1992-11-19 01:34:39 fred Exp $
+C $Id: pcffhl.f,v 1.3 1999-09-21 17:05:51 kennison Exp $
 C
       SUBROUTINE PCFFHL (NCI,JNDX,XORIG,YORIG,NCO,JNDXO,RDGU)       
 C
@@ -64,7 +64,7 @@ C
             BCNTLY(IB) = YC(NDX+IB-2)
    30     CONTINUE
 C
-          CALL BZCURV(BCNTLX,BCNTLY,IBZL,BZXC,BZYC,NBP)
+          CALL BCCURV(BCNTLX,BCNTLY,IBZL,BZXC,BZYC,NBP)
           DO 60 K=2,NBP
             JNDXO = JNDXO+1
             RDGU(JNDXO) = BZXC(K)
