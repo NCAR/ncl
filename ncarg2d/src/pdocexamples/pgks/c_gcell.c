@@ -8,6 +8,9 @@
 #include <ncarg/ncargC.h>
 #include <ncarg/gks.h>
 
+#define IWTYPE 1
+#define WKID   1
+
 main() {
 
 /*
@@ -28,8 +31,8 @@ main() {
  *  Open GKS, open and activate a workstation.
  */
   gopen_gks ("stdout",0);
-  gopen_ws (1, NULL, 8);
-  gactivate_ws (1);
+  gopen_ws (WKID, NULL, IWTYPE);
+  gactivate_ws (WKID);
 
 /*
  *  Specify the corner points.
@@ -53,21 +56,21 @@ main() {
  *  Define a color table.
  */
   rgb.rgb.red = 0.0; rgb.rgb.green = 0.0; rgb.rgb.blue = 0.0;
-  gset_colr_rep(1, 0, &rgb );
+  gset_colr_rep(WKID, 0, &rgb );
   rgb.rgb.red = 0.0; rgb.rgb.green = 0.0; rgb.rgb.blue = 0.0;
-  gset_colr_rep(1, 1, &rgb );
+  gset_colr_rep(WKID, 1, &rgb );
   rgb.rgb.red = 1.0; rgb.rgb.green = 0.0; rgb.rgb.blue = 0.0;
-  gset_colr_rep(1, 2, &rgb );
+  gset_colr_rep(WKID, 2, &rgb );
   rgb.rgb.red = 0.0; rgb.rgb.green = 1.0; rgb.rgb.blue = 0.0;
-  gset_colr_rep(1, 3, &rgb );
+  gset_colr_rep(WKID, 3, &rgb );
   rgb.rgb.red = 0.0; rgb.rgb.green = 0.0; rgb.rgb.blue = 1.0;
-  gset_colr_rep(1, 4, &rgb );
+  gset_colr_rep(WKID, 4, &rgb );
   rgb.rgb.red = 0.0; rgb.rgb.green = 1.0; rgb.rgb.blue = 1.0;
-  gset_colr_rep(1, 5, &rgb );
+  gset_colr_rep(WKID, 5, &rgb );
   rgb.rgb.red = 1.0; rgb.rgb.green = 0.0; rgb.rgb.blue = 1.0;
-  gset_colr_rep(1, 6, &rgb );
+  gset_colr_rep(WKID, 6, &rgb );
   rgb.rgb.red = 1.0; rgb.rgb.green = 1.0; rgb.rgb.blue = 0.0;
-  gset_colr_rep(1, 7, &rgb );
+  gset_colr_rep(WKID, 7, &rgb );
 
 /*
  *  Specify the color index array.
@@ -90,7 +93,7 @@ main() {
 /*
  *  Close things down.
  */
-  gdeactivate_ws (1);
-  gclose_ws (1);
+  gdeactivate_ws (WKID);
+  gclose_ws (WKID);
   gclose_gks();
 }
