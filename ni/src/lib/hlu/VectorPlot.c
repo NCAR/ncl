@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.c,v 1.75 2001-12-07 21:49:22 dbrown Exp $
+ *      $Id: VectorPlot.c,v 1.76 2002-01-14 22:43:47 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2279,6 +2279,9 @@ CurlyVectorSetValues
 		NhlRLSetFloat(rlist,NhlNvpWidthF,vcnew->view.width);
 	if (vcnew->view.height != vcold->view.height)
 		NhlRLSetFloat(rlist,NhlNvpHeightF,vcnew->view.height);
+	if (vcnew->view.use_segments != vcold->view.use_segments)
+		NhlRLSetInteger(rlist,NhlNvpUseSegments,
+				vcnew->view.use_segments);
 	if (vcp->new_draw_req || (vcp->vector_order != ovcp->vector_order))
 		NhlRLSetInteger(rlist,NhlNstStreamlineDrawOrder,
 				vcp->vector_order);
@@ -2292,12 +2295,12 @@ CurlyVectorSetValues
 			      vcp->l_arrow_thickness);
 	if (vcp->ref_magnitude != ovcp->ref_magnitude)
 		NhlRLSetFloat(rlist,NhlNstRefMagnitudeF,vcp->ref_magnitude);
-	if (vcp->ref_length != ovcp->ref_length)
+	if (vcp->ref_length_set)
 		NhlRLSetFloat(rlist,NhlNstRefLengthF,vcp->ref_length);
+	if (vcp->min_distance_set)
+		NhlRLSetFloat(rlist,NhlNstMinDistanceF,vcp->min_distance);
 	if (vcp->min_frac_len != ovcp->min_frac_len)
 		NhlRLSetFloat(rlist,NhlNstMinFracLengthF,vcp->min_frac_len);
-	if (vcp->min_distance != ovcp->min_distance)
-		NhlRLSetFloat(rlist,NhlNstMinDistanceF,vcp->min_distance);
 	if (vcp->l_arrowhead_min_size_set || vcp->l_arrowhead_max_size_set) {
 		afr = MAX(0.0001,MIN(1.0,vcp->l_arrowhead_min_size / 
 			  vcp->l_arrowhead_max_size));

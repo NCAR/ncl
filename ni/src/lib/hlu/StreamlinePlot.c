@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlot.c,v 1.62 2001-12-07 21:49:22 dbrown Exp $
+ *      $Id: StreamlinePlot.c,v 1.63 2002-01-14 22:43:47 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1760,6 +1760,10 @@ static NhlErrorTypes StreamlinePlotSetValues
 		stp->min_line_spacing_set = True;
 	if (_NhlArgIsSet(args,num_args,NhlNstMinArrowSpacingF))
 		stp->min_arrow_spacing_set = True;
+	if (_NhlArgIsSet(args,num_args,NhlNstRefLengthF))
+		stp->ref_length_set = True;
+	if (_NhlArgIsSet(args,num_args,NhlNstMinDistanceF))
+		stp->min_distance_set = True;
 
 	if (_NhlArgIsSet(args,num_args,NhlNstZeroFLabelFontHeightF))
 		stp->zerof_lbl.height_set = True;
@@ -1880,6 +1884,8 @@ static NhlErrorTypes StreamlinePlotSetValues
 	stp->step_size_set = False;
 	stp->min_line_spacing_set = False;
 	stp->min_arrow_spacing_set = False;
+	stp->ref_length_set = False;
+	stp->min_distance_set = False;
 	stp->level_spacing_set = False;
 	stp->levels_set = False;
 	stp->lbar_labels_res_set = False;
