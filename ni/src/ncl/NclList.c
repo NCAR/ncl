@@ -280,13 +280,11 @@ int new_type;
 
 	if((new_type & NCL_LIFO)||(new_type & NCL_FIFO)) {
 		thelist->list.list_type = (new_type & jo_mask) | (thelist->list.list_type & fo_mask);
-		return(NhlNOERROR) ;
 	}
 	if((new_type & NCL_JOIN )||(new_type & NCL_CONCAT)) {
 		thelist->list.list_type = (new_type & fo_mask) | (thelist->list.list_type & jo_mask);
-		return(NhlNOERROR) ;
 	}
-	return(NhlFATAL);
+	return(NhlNOERROR) ;
 }
 static NclList ReverseList
 #if     NhlNeedProto

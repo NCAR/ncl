@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.115 2000-01-28 23:31:24 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.116 2000-01-29 00:10:50 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -11722,6 +11722,56 @@ NhlErrorTypes _NclIAddFiles( void )
 		out_md = NULL;
 	}
 	_NclPlaceReturn(data);
+	return(NhlNOERROR);
+}
+
+NhlErrorTypes _NclIListSetType(void)
+{
+	obj *obj_id,*list_id;
+	NclObj thelist = NULL;
+	string *option;
+        NclStackEntry data;
+	char *tmp;	
+	char buffer[5];
+	int i;
+
+	
+
+   	list_id = (obj*)NclGetArgValue(
+           0,
+           2,
+           NULL, 
+           NULL,
+	   NULL,
+	   NULL,
+           NULL,
+           DONT_CARE);
+	data= _NclGetArg(1,2,DONT_CARE);
+   	option = (string*)NclGetArgValue(
+           1,
+           2,
+           NULL, 
+           NULL,
+	   NULL,
+	   NULL,
+           NULL,
+           DONT_CARE);
+
+	thelist = _NclGetObj(*list_id);
+	tmp = NrmQuarkToString(*option);
+	if(tmp == NULL) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"ListSetType: unknow list type. Only \"join\" or \"cat\" supported");
+		return(NhlFATAL);
+	}
+	buffer[3] = '\0';
+	buffer[4] = '\0';
+	for(i = 0; i < strlen(tmp); i++) {
+		buffer[i] = tolower(tmp[i]);
+		if(i == 3) 
+			break;
+	}
+
+	_NclListSetType(thelist, (strcmp("join",buffer) == 0 ? (NCL_JOIN | NCL_FIFO):(NCL_CONCAT|NCL_FIFO)));
 	return(NhlNOERROR);
 }
 
