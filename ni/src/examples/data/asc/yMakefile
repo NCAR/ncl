@@ -1,12 +1,13 @@
 #
-#   $Id: yMakefile,v 1.3 1996-04-16 19:14:50 haley Exp $
+#   $Id: yMakefile,v 1.4 1998-02-25 14:39:10 haley Exp $
 #
 #   Makefile for ASC data files
 #
 
 MYNAME = asc
 
-DATA  = ex05B1_uv_jan_mm92.hs.asc oceanland30e.asc xy.asc uvdata0.asc
+DATA  = ex05B1_uv_jan_mm92.hs.asc oceanland30e.asc xy.asc uvdata0.asc \
+	seismic.asc
 		
 InstallTarget($(DATA),$(INSTALL_LIB),$(DATAROOT)/asc)
 
