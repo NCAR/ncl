@@ -1,5 +1,5 @@
 C
-C $Id: mapbla.f,v 1.13 1999-04-02 23:00:25 kennison Exp $
+C $Id: mapbla.f,v 1.14 1999-04-10 00:18:40 kennison Exp $
 C
       SUBROUTINE MAPBLA (IAMP)
 C
@@ -91,6 +91,7 @@ C
 C Put the perimeter and the limb line into the area map (in group 1 and,
 C perhaps, in group 2).
 C
+      IPSS=1
       IGRP=IGI1
 C
 10001 CONTINUE
@@ -163,7 +164,7 @@ C
 C
 C Don't put the limb line in group 2.
 C
-      IF (IGRP.EQ.IGI2) GO TO 108
+      IF (IPSS.EQ.2) GO TO 108
 C
 C Limb line.
 C
@@ -706,6 +707,7 @@ C
   108 CONTINUE
       IF (IGRP.EQ.IGI2.OR.NOVS.LE.0) GO TO 10114
 C
+      IPSS=2
       IGRP=IGI2
 C
       GO TO 10001
