@@ -1,5 +1,5 @@
 C
-C  $Id: vc03f.f,v 1.1 1996-06-13 16:55:09 haley Exp $
+C  $Id: vc03f.f,v 1.2 1996-06-17 21:22:30 haley Exp $
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      
 C                 Copyright (C)  1996                                  
@@ -100,7 +100,7 @@ C
 C Create a PostScript workstation.
 C
          call NhlFRLClear(rlist)
-         call NhlFRLSetString(rlist,'wkPSFileName','./cn05f.ps',ierr)
+         call NhlFRLSetString(rlist,'wkPSFileName','./vc03f.ps',ierr)
          call NhlFCreate(wid,'vc03Work',
      +        NhlFPSWorkstationClass,0,rlist,ierr)
       endif
