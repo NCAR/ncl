@@ -1,5 +1,5 @@
 /*
- *      $Id: cn16c.c,v 1.1 1997-03-14 17:17:07 haley Exp $
+ *      $Id: cn16c.c,v 1.2 1997-04-09 21:05:29 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -68,6 +68,7 @@ main()
   int  ncid, lon_id, lat_id, stid;
   float lat[NLAT];
   long start[3], count[3], lonlen, latlen;
+  int icount[2];
   char filename[256];
   char recname[50];
   const char *dir = _NGGetNCARGEnv("data");
@@ -160,10 +161,10 @@ main()
 /*
  * Create an sst ScalarField data object.
  */
-  count[0] = NLAT;
-  count[1] = NLON;
+  icount[0] = NLAT;
+  icount[1] = NLON;
   NhlRLClear(srlist);
-  NhlRLSetMDFloatArray(srlist,NhlNsfDataArray,&sstshft[0][0],2,(int *)count);
+  NhlRLSetMDFloatArray(srlist,NhlNsfDataArray,&sstshft[0][0],2,icount);
   NhlRLSetFloat(srlist,NhlNsfXCStartV,30.);
   NhlRLSetFloat(srlist,NhlNsfXCEndV,390.);
   NhlRLSetFloat(srlist,NhlNsfYCStartV,lat[0]);

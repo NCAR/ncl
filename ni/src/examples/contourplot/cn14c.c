@@ -1,5 +1,5 @@
 /*
- *      $Id: cn14c.c,v 1.2 1997-03-14 17:17:05 haley Exp $
+ *      $Id: cn14c.c,v 1.3 1997-04-09 21:05:28 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -74,6 +74,7 @@ main()
   int  ncid, lon_id, lat_id, uid, vid;
   float lon[NPTS], lat[NPTS];
   long start[2], count[2], lonlen, latlen;
+  int icount[2];
   char filename[256], recname[50];
   const char *dir = _NGGetNCARGEnv("data");
 /*
@@ -222,9 +223,9 @@ main()
 /*
  * Create the ScalarField object needed by ContourPlot.
  */
-	count[0] = count[1] = NPTS;
+	icount[0] = icount[1] = NPTS;
 	NhlRLClear(srlist);
-	NhlRLSetMDFloatArray(srlist,NhlNsfDataArray,&spd[0][0],2,(int *)count);
+	NhlRLSetMDFloatArray(srlist,NhlNsfDataArray,&spd[0][0],2,icount);
 	NhlRLSetFloat(srlist,NhlNsfXCStartV,lon[0]);
 	NhlRLSetFloat(srlist,NhlNsfXCEndV,lon[lonlen-1]);
 	NhlRLSetFloat(srlist,NhlNsfYCStartV,lat[0]);

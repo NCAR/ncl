@@ -1,5 +1,5 @@
 /*
- *      $Id: cn15c.c,v 1.3 1997-04-09 14:07:18 haley Exp $
+ *      $Id: cn15c.c,v 1.4 1997-04-09 21:05:28 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -75,7 +75,8 @@ main()
  * Declare variables for getting information from netCDF file.
  */
     int  ncid, lon_id, lat_id, stid;
-    int start[3], count[3];
+    long start[3], count[3];
+    int icount[2];
     long lonlen, latlen;
     char filename[256];
     char recname[50];
@@ -216,10 +217,10 @@ main()
 /*
  * Create an sst data object.
  */
-    count[1] = NLON;
-    count[0] = NLAT;
+    icount[1] = NLON;
+    icount[0] = NLAT;
     NhlRLClear(srlist);
-    NhlRLSetMDFloatArray(srlist,NhlNsfDataArray,&sstjan[0][0],2,count);
+    NhlRLSetMDFloatArray(srlist,NhlNsfDataArray,&sstjan[0][0],2,icount);
     NhlRLSetFloat(srlist,NhlNsfXCStartV,0.);
     NhlRLSetFloat(srlist,NhlNsfXCEndV,360.);
     NhlRLSetFloat(srlist,NhlNsfYCStartV,lat[0]);
