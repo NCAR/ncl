@@ -1,5 +1,5 @@
 ;
-;      $Id: shea_util.ncl,v 1.14 2004-07-22 22:40:25 shea Exp $
+;      $Id: shea_util.ncl,v 1.15 2004-07-28 18:24:48 shea Exp $
 ;
 ; ******************** NOTE *******************************
 ; These are my personal functions/procedures. They do things
@@ -1530,6 +1530,60 @@ begin
         end if
 
 	return(newData)
+end
+;*********************************************************
+; Dennis Shea    
+;
+; for x-y plots where x is Months Jan->Dec [size 12]
+; create plots with a monthly x labels J,F,M,..,N,D,J
+; It will add the cyclic pts
+
+function plt_csm_xy_AddCyclicMonth(wks:graphic, x[12]:numeric, y:numeric, resxy:logical)
+local nmos, xCyclic,yCyclic,dimy,ranky
+begin
+  nmos = 12
+  xCyclic = ispan(0,nmos,1)  ; 13 values [0,...,12]
+
+  resxy@tmXBMode             = "Explicit"      ; label independently
+  resxy@tmXBValues           = xCyclic
+ ;if (isatt(resxy,"vpWidthF")) then
+ ;    if (resxy@vpWidthF.le.0.7) then
+          resxy@tmXBLabels = (/"J","F","M","A","M","J","J","A","S","O","N","D","J"/)
+ ;    else
+ ;        resxy@tmXBLabels = (/"Jan","Feb","Mar","Apr","May","Jun"      \
+ ;                            ,"Jul","Aug","Sep","Oct","Nov","Dec","Jan"/)
+ ;    end if
+ ;end if
+
+  
+  dimy  = dimsizes(y)
+  ranky = dimsizes(dimy)
+
+  if (ranky.eq.1) then
+      if (dimy(0).ne.12) then
+          print("plt_csm_xy_AddCyclicMonth: rightmost y dim must be 12")
+          print("plt_csm_xy_AddCyclicMonth: rightmost y="+dimy(0))
+          exit
+      end if
+      yCyclic = new ( (/nmos+1/), typeof(y), getFillValue(y))
+      yCyclic(0:nmos-1) = y
+      yCyclic(nmos)     = y(0)
+  end if
+
+  if (ranky.eq.2) then
+      if (dimy(1).ne.12) then
+          print("plt_csm_xy_AddCyclicMonth: rightmost y dim must be 12")
+          print("plt_csm_xy_AddCyclicMonth: rightmost y="+dimy(1))
+          exit
+      end if
+      yCyclic = new ( (/dimy(0),nmos+1/), typeof(y), getFillValue(y))
+      yCyclic(:,0:nmos-1) = y
+      yCyclic(:,nmos)     = y(:,0)
+  end if
+
+  plot = gsn_csm_xy(wks,xCyclic,yCyclic,resxy)
+  return(plot)
+
 end
 
 
