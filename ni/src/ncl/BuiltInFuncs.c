@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.135 2001-01-29 21:22:23 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.136 2001-02-13 23:09:09 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -2323,6 +2323,23 @@ NhlErrorTypes _NclIfbindirread(void)
 	}
 	dimensions = _NclGetArg(2,4,DONT_CARE);
 	type = _NclGetArg(3,4,DONT_CARE);
+	tmp_md = NULL;
+	switch(type.kind) {
+	case NclStk_VAL:
+		tmp_md = type.u.data_obj;
+		break;
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(type.u.data_var,NULL,NULL);
+		break;
+	default:
+		return(NhlFATAL);
+	}
+	if(tmp_md != NULL) {
+		thetype = _NclNameToTypeClass(*(NclQuark*)tmp_md->multidval.val);
+		if(thetype == NULL) 
+			return(NhlFATAL);	
+	}
+	tmp_md = NULL;
 	switch(fpath.kind) {
 	case NclStk_VAL:
 		tmp_md = fpath.u.data_obj;
@@ -2375,22 +2392,6 @@ NhlErrorTypes _NclIfbindirread(void)
                 }
         }
 
-	tmp_md = NULL;
-	switch(type.kind) {
-	case NclStk_VAL:
-		tmp_md = type.u.data_obj;
-		break;
-	case NclStk_VAR:
-		tmp_md = _NclVarValueRead(type.u.data_var,NULL,NULL);
-		break;
-	default:
-		return(NhlFATAL);
-	}
-	if(tmp_md != NULL) {
-		thetype = _NclNameToTypeClass(*(NclQuark*)tmp_md->multidval.val);
-		if(thetype == NULL) 
-			return(NhlFATAL);	
-	}
 	if((*recnum)*size*thetype->type_class.size > buf.st_size) {
 		ret = NhlFATAL;
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"fbindirread: The size implied by the dimension array and record number is greater that the size of the file, can't continue");
@@ -2908,6 +2909,11 @@ NhlErrorTypes _NclIfbinrecread
 			return(NhlFATAL);
 		}
 		ind = *(int*)control_word;
+		if(ind <= 0) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclIfbinrecread: 0 or less than zero fortran control word, FILE NOT SEQUENTIAL ACCESS!");
+			close(fd);
+			return(NhlFATAL);
+		}
 		lseek(fd,cur_off + ind + 4,SEEK_SET);
 		n = read(fd,(control_word),4);
 		if(n != 4) {
@@ -3037,6 +3043,23 @@ NhlErrorTypes _NclIfbinread
 	fpath = _NclGetArg(0,3,DONT_CARE);
 	dimensions = _NclGetArg(1,3,DONT_CARE);
 	type = _NclGetArg(2,3,DONT_CARE);
+	tmp_md = NULL;
+	switch(type.kind) {
+	case NclStk_VAL:
+		tmp_md = type.u.data_obj;
+		break;
+	case NclStk_VAR:
+		tmp_md = _NclVarValueRead(type.u.data_var,NULL,NULL);
+		break;
+	default:
+		return(NhlFATAL);
+	}
+	if(tmp_md != NULL) {
+		thetype = _NclNameToTypeClass(*(NclQuark*)tmp_md->multidval.val);
+		if(thetype == NULL) 
+			return(NhlFATAL);	
+	}
+	tmp_md = NULL;
 	switch(fpath.kind) {
 	case NclStk_VAL:
 		tmp_md = fpath.u.data_obj;
@@ -3082,26 +3105,15 @@ NhlErrorTypes _NclIfbinread
 			size *= dimsizes[i];
 		}
 	}
-	tmp_md = NULL;
-	switch(type.kind) {
-	case NclStk_VAL:
-		tmp_md = type.u.data_obj;
-		break;
-	case NclStk_VAR:
-		tmp_md = _NclVarValueRead(type.u.data_var,NULL,NULL);
-		break;
-	default:
-		return(NhlFATAL);
-	}
-	if(tmp_md != NULL) {
-		thetype = _NclNameToTypeClass(*(NclQuark*)tmp_md->multidval.val);
-		if(thetype == NULL) 
-			return(NhlFATAL);	
-	}
 	if(size == -1) {
 		fd = open(path_string,O_RDONLY);
 		if(read(fd,(void*)&size,4) != 4) {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclIfbinread: An error occurred while reading the file (%s), check path",_NGResolvePath(path_string));
+			return(NhlFATAL);
+		}
+		if(size <= 0) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclIfbinread: 0 or less than zero fortran control word, FILE NOT SEQUENTIAL ACCESS!");
+			close(fd);
 			return(NhlFATAL);
 		}
 		n_dimensions = 1;
