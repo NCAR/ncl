@@ -1,5 +1,5 @@
 /*
- *      $Id: AIX_RS6000,v 1.8 1994-04-08 18:37:07 boote Exp $
+ *      $Id: AIX_RS6000,v 1.9 1995-02-23 16:05:16 haley Exp $
  */
 /************************************************************************
 *									*
@@ -22,7 +22,7 @@
  *			default setup.
  */
 #define	HdfDefines	-DIBM6000
-#define	StdDefines	-DSYSV -D_POSIX_SOURCE -DRS6000
+#define	StdDefines	-DSYSV -D_POSIX_SOURCE -DRS6000 -D_XOPEN_SOURCE
 #define	CCompiler	xlc
 #define	FCompiler	xlf
 #define Cstatic		-bnso
