@@ -92,6 +92,7 @@ TIMESTEPS = 20
 ;
         wid = create "st04Work" psWorkstationClass defaultapp
          "wkPSFileName" : "./st04n.ps"
+         "wkColorMap"   : "temp1"
         end create
       else
         if (PDF .eq. 1) then
@@ -100,6 +101,7 @@ TIMESTEPS = 20
 ;
           wid = create "st04Work" pdfWorkstationClass defaultapp
            "wkPDFFileName" : "./st04n.pdf"
+           "wkColorMap"    : "temp1"
           end create
         end if
       end if
