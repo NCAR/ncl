@@ -93,7 +93,6 @@ C
         CALL CSTRMESH(NPTS,X,Y,Z,IWK(1),IWK(6*NPTS+1),IWK(12*NPTS+1),
      +                LNEW,IWK(13*NPTS+1),IWK(14*NPTS+1),RWK(1),IER)
         IF (IER .EQ. 0) THEN
-          IER = 0 
           GO TO 210
         ELSE IF (IER .EQ. -1) THEN
           IER = 1
@@ -125,7 +124,7 @@ C
      +                IWK(6*NPTS+1),LNEW,IWK(15*NPTS+1),
      +                IWK(21*NPTS+1),NB,XC,YC,ZC,RC,IER)
         IF (IER .EQ. 0) THEN
-          GO TO 200
+          GO TO 220
         ELSE IF (IER .EQ. 1) THEN
           GO TO 200
         ELSE IF (IER .EQ. 2) THEN
@@ -138,6 +137,7 @@ C
           IER = 6
           GO TO 200
         ENDIF
+  220   CONTINUE
 C
 C  Determine the number of circumcenters returned.
 C
