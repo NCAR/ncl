@@ -1,5 +1,5 @@
 /*
- *      $Id: Resources.c,v 1.26 1995-05-10 02:31:48 dbrown Exp $
+ *      $Id: Resources.c,v 1.27 1995-05-10 06:07:34 boote Exp $
  */
 /************************************************************************
 *									*
@@ -48,15 +48,15 @@
 static NrmQuark QImmediate = NrmNULLQUARK;
 static NrmQuark QProcedure = NrmNULLQUARK;
 static NrmQuark QString = NrmNULLQUARK;
-static NrmQuark	byteQ = NrmNULLQUARK;
-static NrmQuark	charQ = NrmNULLQUARK;
-static NrmQuark	doubleQ = NrmNULLQUARK;
-static NrmQuark	floatQ = NrmNULLQUARK;
-static NrmQuark	shortQ = NrmNULLQUARK;
-static NrmQuark	stringQ = NrmNULLQUARK;
-static NrmQuark	intQ = NrmNULLQUARK;
-static NrmQuark	genQ = NrmNULLQUARK;
-static NrmQuark	pointerQ = NrmNULLQUARK;
+static NrmQuark byteQ = NrmNULLQUARK;
+static NrmQuark charQ = NrmNULLQUARK;
+static NrmQuark doubleQ = NrmNULLQUARK;
+static NrmQuark floatQ = NrmNULLQUARK;
+static NrmQuark shortQ = NrmNULLQUARK;
+static NrmQuark stringQ = NrmNULLQUARK;
+static NrmQuark intQ = NrmNULLQUARK;
+static NrmQuark genQ = NrmNULLQUARK;
+static NrmQuark pointerQ = NrmNULLQUARK;
 
 /*
  * Function:	_NhlCopyFromArgVal
@@ -130,7 +130,7 @@ _NhlCopyFromArg
 (
 	_NhlArgVal	src,	/* source	*/
 	void *		dst,	/* destination	*/
-	NrmQuark	name,	/* name		*/
+	NrmQuark	name,	/* name of type	*/
 	unsigned int	size	/* size		*/
 ) 
 #else
@@ -141,14 +141,17 @@ _NhlCopyFromArg
 	unsigned int	size;	/* size		*/
 #endif
 {
-
-	if(_NhlIsSubtypeQ(floatQ,name)) 
+	if(_NhlIsSubtypeQ(floatQ,name))
 		*(float *)dst = *(float*)&src.lngval;
 	else if(_NhlIsSubtypeQ(doubleQ,name))
 		*(double *)dst = *(float*)&src.lngval;
-	else if(_NhlIsSubtypeQ(shortQ,name)) 
+	else if(_NhlIsSubtypeQ(charQ,name))
+		*(char *)dst = (char)src.lngval;
+	else if(_NhlIsSubtypeQ(byteQ,name))
+		*(char *)dst = (char)src.lngval;
+	else if(_NhlIsSubtypeQ(shortQ,name))
 		*(short *)dst = (short)src.lngval;
-	else if(_NhlIsSubtypeQ(intQ,name)) 
+	else if(_NhlIsSubtypeQ(intQ,name))
 		*(int *)dst = (int)src.lngval;
 	else if(_NhlIsSubtypeQ(stringQ,name))
 		*(NhlString *)dst = (NhlString)src.lngval;
@@ -156,13 +159,11 @@ _NhlCopyFromArg
 		*(NhlPointer *)dst = (NhlPointer)src.lngval;
 	else if(_NhlIsSubtypeQ(pointerQ,name))
 		*(NhlPointer *)dst = (NhlPointer)src.lngval;
-	else if (size == sizeof(char)) 
-		*(char *)dst = (char)src.lngval;
-	else if (size == sizeof(long))	
+	else if(size == sizeof(long))
 		*(long *)dst = src.lngval;
-	else if (size == sizeof(_NhlArgVal))	
+	else if(size == sizeof(_NhlArgVal))
 		*(_NhlArgVal *)dst = src;
-	else 
+	else
 		memcpy((void*)dst,(void*)&src,size);
 
 	return;
@@ -367,7 +368,7 @@ _NhlGetResources
 				else if(args[i].type == NrmNULLQUARK){
 					_NhlCopyFromArg(args[i].value,
 					(char*)(base + resources[j].nrm_offset),
-					resources[j].nrm_name,
+					resources[j].nrm_type,
 					resources[j].nrm_size);
 					resfound[j] = True;
 				}

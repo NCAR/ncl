@@ -1,5 +1,5 @@
 /*
- *      $Id: SetValues.c,v 1.19 1995-04-22 01:02:02 boote Exp $
+ *      $Id: SetValues.c,v 1.20 1995-05-10 06:07:36 boote Exp $
  */
 /************************************************************************
 *									*
@@ -205,7 +205,7 @@ _NhlSetValues
 				else if(args[i].type == NrmNULLQUARK){
 					_NhlCopyFromArg(args[i].value,
 					(char*)(base + resources[j].nrm_offset),
-					resources[j].nrm_name,
+					resources[j].nrm_type,
 					resources[j].nrm_size);
 				}
 				else if(args[i].type==resources[j].nrm_type){

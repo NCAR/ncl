@@ -1,5 +1,5 @@
 /*
- *      $Id: Palettes.c,v 1.3 1995-05-09 06:53:44 boote Exp $
+ *      $Id: Palettes.c,v 1.4 1995-05-10 06:07:33 boote Exp $
  */
 /************************************************************************
 *									*
@@ -153,7 +153,7 @@ static NhlColor gsdl[] = {
 	{0.96875,0.96875,0.96875}
 };
 
-static NhlColor uniform[175] = {
+static NhlColor uniform[] = {
 	{-1.0,0.0,0.0},	/* white/black */
 	{-1.0,0.0,0.0},	/* white/black */
 	{0.7500,1.0000,1.0000},
