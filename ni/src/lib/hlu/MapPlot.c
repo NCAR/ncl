@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.66 1998-05-27 22:50:22 dbrown Exp $
+ *      $Id: MapPlot.c,v 1.67 1998-06-01 17:46:01 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -88,9 +88,13 @@ static NhlResource resources[] = {
 		 sizeof(NhlPointer),Oset(outline_specs),NhlTImmediate,
 		 _NhlUSET((NhlPointer) NULL),0,(NhlFreeFunc)NhlFreeGenArray},
 
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 Oset(area_masking_on_set),
+		 NhlTImmediate,_NhlUSET((NhlPointer)True),
+         	 _NhlRES_PRIVATE,NULL},
 	{NhlNmpAreaMaskingOn, NhlCmpAreaMaskingOn, NhlTBoolean,
 		 sizeof(NhlBoolean),Oset(area_masking_on),
-		 NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL},
+		 NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{NhlNmpMaskAreaSpecifiers,NhlCmpMaskAreaSpecifiers,NhlTStringGenArray,
 		 sizeof(NhlPointer),Oset(mask_area_specs),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
@@ -337,9 +341,27 @@ static NhlResource resources[] = {
 	{NhlNmpGridAndLimbDrawOrder,NhlCmpGridAndLimbDrawOrder,NhlTDrawOrder,
 		 sizeof(NhlDrawOrder),Oset(grid.order),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NhlPOSTDRAW),0,NULL},
+        
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 Oset(grid_spacing_set),
+		 NhlTImmediate,_NhlUSET((NhlPointer)True),
+         	 _NhlRES_PRIVATE,NULL},
 	{NhlNmpGridSpacingF,NhlCmpGridSpacingF,
 		 NhlTFloat,sizeof(float),Oset(grid_spacing),
+		 NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),
+         	_NhlRES_PRIVATE,NULL},
+	{NhlNmpGridLatSpacingF,NhlCmpGridLatSpacingF,
+		 NhlTFloat,sizeof(float),Oset(grid_lat_spacing),
 		 NhlTString, _NhlUSET("15.0"),0,NULL},
+	{NhlNmpGridLonSpacingF,NhlCmpGridLonSpacingF,
+		 NhlTFloat,sizeof(float),Oset(grid_lon_spacing),
+		 NhlTString, _NhlUSET("15.0"),0,NULL},
+	{NhlNmpGridMaxLatF,NhlCmpGridMaxLatF,
+		 NhlTFloat,sizeof(float),Oset(grid_max_lat),
+		 NhlTString, _NhlUSET("90.0"),0,NULL},
+	{NhlNmpGridPolarLonSpacingF,NhlCmpGridPolarLonSpacingF,
+		 NhlTFloat,sizeof(float),Oset(grid_polar_lon_spacing),
+		 NhlTString, _NhlUSET("90.0"),0,NULL},
 	{NhlNmpGridMaskMode,NhlCmpGridMaskMode,NhlTMapGridMaskMode,
 		 sizeof(NhlMapGridMaskMode),Oset(grid_mask_mode),
 		 NhlTImmediate,_NhlUSET((NhlPointer)NhlMASKNONE),0,NULL},
@@ -474,10 +496,6 @@ static NhlResource resources[] = {
 	{NhlNmpLabelPerimThicknessF,NhlCmpLabelPerimThicknessF,
 		 NhlTFloat,sizeof(float),Oset(labels.perim_lthick),
         	 NhlTString, _NhlUSET("1.0"),_NhlRES_PRIVATE,NULL},
-	{NhlNmpRelativeGridSpacing,NhlCmpRelativeGridSpacing,
-		 NhlTBoolean,sizeof(NhlBoolean),Oset(relative_grid_spacing),
-		 NhlTImmediate,
-         	 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
         
 	{"no.res","No.res",NhlTFloat,sizeof(float),
 		 NhlOffset(NhlMapPlotLayerRec,trans.x_min),NhlTString,
@@ -1028,6 +1046,19 @@ MapPlotInitialize
 	Mpp->spec_fill_scale_count = 0;
 	Mpp->trans_change_count = 0;
         Mpp->view_changed = True;
+        if (! Mpp->area_masking_on_set && Mpp->mask_area_specs)
+                Mpp->area_masking_on = True;
+        else
+                Mpp->area_masking_on = False;
+        
+        if (Mpp->grid_spacing_set)
+                Mpp->grid_lat_spacing = Mpp->grid_lon_spacing =
+                        Mpp->grid_spacing;
+        else
+                Mpp->grid_spacing = 15.0;
+        if (Mpp->grid_lat_spacing <= 0.0) Mpp->grid_lat_spacing = 15.0;
+        if (Mpp->grid_lon_spacing <= 0.0) Mpp->grid_lon_spacing = 15.0;
+                
 /*
  * Necessary to initialize these for NDCToData to work correctly.
  */
@@ -1096,6 +1127,8 @@ MapPlotInitialize
  */
         Mpp->area_names = NULL;
         Mpp->dynamic_groups = NULL;
+        Mpp->area_masking_on_set = False;
+        Mpp->grid_spacing_set = False;
         
 	Mpp = NULL;
 	return ret;
@@ -1253,7 +1286,20 @@ static NhlErrorTypes MapPlotSetValues
 		Mpp->perim.dash_seglen_set = True;
 	if (_NhlArgIsSet(args,num_args,NhlNmpLabelFontHeightF))
 		Mpp->labels.height_set = True;
-
+	if (_NhlArgIsSet(args,num_args,NhlNmpAreaMaskingOn))
+		Mpp->area_masking_on_set = True;
+	if (_NhlArgIsSet(args,num_args,NhlNmpMaskAreaSpecifiers)) {
+                if (! Mpp->area_masking_on_set)
+                        Mpp->area_masking_on = True;
+        }
+        if ( _NhlArgIsSet(args,num_args,NhlNmpGridSpacingF))
+                Mpp->grid_lat_spacing = Mpp->grid_lon_spacing =
+                        Mpp->grid_spacing;
+        else 
+                Mpp->grid_spacing = 15.0;
+        if (Mpp->grid_lat_spacing <= 0.0) Mpp->grid_lat_spacing = 15.0;
+        if (Mpp->grid_lon_spacing <= 0.0) Mpp->grid_lon_spacing = 15.0;
+        
         
 /* Set up the Map data handler */
 
@@ -1319,6 +1365,9 @@ static NhlErrorTypes MapPlotSetValues
  */
         Mpp->area_names = NULL;
         Mpp->dynamic_groups = NULL;
+        
+        Mpp->area_masking_on_set = False;
+        Mpp->grid_spacing_set = False;
         
 	Mpp = NULL;
         

@@ -1,5 +1,5 @@
 /*
- *      $Id: MapV41DataHandler.c,v 1.4 1998-05-29 22:52:25 dbrown Exp $
+ *      $Id: MapV41DataHandler.c,v 1.5 1998-06-01 17:46:03 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2570,6 +2570,7 @@ static NhlErrorTypes mpGrid
         float flx,frx,fby,fuy,wlx,wrx,wby,wuy,lon1,lon2,lat1,lat2,spacing;
 	float avlat,avlon;
 	int ll,status;
+        float pole_param;
 
 	Grid_Setup = False;
 	c_mpseti("C2",mpp->grid.gks_color);
@@ -2577,7 +2578,13 @@ static NhlErrorTypes mpGrid
 	c_mpseti("C4", mpp->limb.gks_color);
 	_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
         
-	c_mpsetr("GR",mpp->grid_spacing);
+
+	c_mpsetr("GT",mpp->grid_lat_spacing);
+	_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
+	c_mpsetr("GN",mpp->grid_lon_spacing);
+	_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
+        pole_param = 1000.0 * mpp->grid_max_lat + mpp->grid_polar_lon_spacing;
+        c_mpsetr("GP",pole_param);
 	_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
 
 	if (mpp->grid_mask_mode == NhlMASKNONE) {

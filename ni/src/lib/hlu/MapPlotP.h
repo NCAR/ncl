@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlotP.h,v 1.18 1998-05-22 01:59:10 dbrown Exp $
+ *      $Id: MapPlotP.h,v 1.19 1998-06-01 17:46:02 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -115,6 +115,7 @@ typedef struct NhlMapPlotLayerPart {
 	NhlmpLineAttrs	us_state;
 	NhlmpLineAttrs	national;
 
+	NhlBoolean	area_masking_on_set;
 	NhlBoolean	area_masking_on;
 	NhlGenArray	mask_area_specs;
 
@@ -146,8 +147,12 @@ typedef struct NhlMapPlotLayerPart {
 	NhlmpFillAttrs	land;
 	NhlmpFillAttrs	inland_water;
 
-	NhlBoolean	relative_grid_spacing;
+	NhlBoolean	grid_spacing_set;
 	float		grid_spacing;
+        float		grid_lat_spacing;
+        float		grid_lon_spacing;
+        float		grid_max_lat;
+        float		grid_polar_lon_spacing;
 	NhlMapGridMaskMode grid_mask_mode;
 	NhlmpLineAttrs	grid;
 	NhlmpLineAttrs	limb;

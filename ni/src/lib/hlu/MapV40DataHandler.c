@@ -1,5 +1,5 @@
 /*
- *      $Id: MapV40DataHandler.c,v 1.3 1998-05-29 22:52:23 dbrown Exp $
+ *      $Id: MapV40DataHandler.c,v 1.4 1998-06-01 17:46:03 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3150,6 +3150,7 @@ static NhlErrorTypes mpGrid
         float flx,frx,fby,fuy,wlx,wrx,wby,wuy,lon1,lon2,lat1,lat2,spacing;
 	float avlat,avlon;
 	int ll,status;
+        float pole_param;
 
 	Grid_Setup = False;
 	c_mpseti("C2",mpp->grid.gks_color);
@@ -3157,25 +3158,12 @@ static NhlErrorTypes mpGrid
 	c_mpseti("C4", mpp->limb.gks_color);
 	_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
 
-	mpp->relative_grid_spacing = False;
-
-	if (! mpp->relative_grid_spacing) {
-		spacing = mpp->grid_spacing;
-	}
-	else {
-		c_getset(&flx,&frx,&fby,&fuy,&wlx,&wrx,&wby,&wuy,&ll);
-		_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
-		avlat = (wby + wuy) / 2.0;
-		avlon = (wrx + wlx) / 2.0;
-		_NhlWinToData(mpl->trans.trans_obj,&avlon,&avlat,
-			      1,&lon1,&lat1,&status,NULL,NULL);
-		_NhlWinToData(mpl->trans.trans_obj,&wrx,&avlat,
-			      1,&lon2,&lat2,&status,NULL,NULL);
-		
-		spacing = 2.0 * (lon2 - lon1) * mpp->grid_spacing;
-		spacing = spacing < 0 ? -spacing : spacing;
-	}
-	c_mpsetr("GR",spacing);
+	c_mpsetr("GT",mpp->grid_lat_spacing);
+	_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
+	c_mpsetr("GN",mpp->grid_lon_spacing);
+	_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
+        pole_param = 1000.0 * mpp->grid_max_lat + mpp->grid_polar_lon_spacing;
+        c_mpsetr("GP",pole_param);
 	_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
 
 	if (mpp->grid_mask_mode == NhlMASKNONE) {

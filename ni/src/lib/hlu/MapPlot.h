@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.h,v 1.15 1998-05-22 01:59:09 dbrown Exp $
+ *      $Id: MapPlot.h,v 1.16 1998-06-01 17:46:02 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -157,8 +157,11 @@ typedef enum _NhlMapDataBaseVersion {
 #define NhlNmpInlandWaterFillPattern	"mpInlandWaterFillPattern"
 #define NhlNmpInlandWaterFillScaleF	"mpInlandWaterFillScaleF"
 
-#define NhlNmpRelativeGridSpacing	"mpRelativeGridSpacing"
 #define NhlNmpGridSpacingF		"mpGridSpacingF"
+#define NhlNmpGridLatSpacingF           "mpGridLatSpacingF"
+#define NhlNmpGridLonSpacingF           "mpGridLonSpacingF"
+#define NhlNmpGridMaxLatF      		"mpGridMaxLatF"
+#define NhlNmpGridPolarLonSpacingF	"mpGridPolarLonSpacingF"
 #define NhlNmpGridMaskMode		"mpGridMaskMode"
 #define NhlNmpGridAndLimbOn		"mpGridAndLimbOn"
 #define NhlNmpGridAndLimbDrawOrder	"mpGridAndLimbDrawOrder"
@@ -269,8 +272,11 @@ typedef enum _NhlMapDataBaseVersion {
 #define NhlCmpInlandWaterFillPattern	"MpInlandWaterFillPattern"
 #define NhlCmpInlandWaterFillScaleF	"MpInlandWaterFillScaleF"
 
-#define NhlCmpRelativeGridSpacing	"MpRelativeGridSpacing"
 #define NhlCmpGridSpacingF		"MpGridSpacingF"
+#define NhlCmpGridLatSpacingF           "MpGridLatSpacingF"
+#define NhlCmpGridLonSpacingF           "MpGridLonSpacingF"
+#define NhlCmpGridMaxLatF      		"MpGridMaxLatF"
+#define NhlCmpGridPolarLonSpacingF	"MpGridPolarLonSpacingF"
 #define NhlCmpGridMaskMode		"MpGridMaskMode"
 #define NhlCmpGridAndLimbOn		"MpGridAndLimbOn"
 #define NhlCmpGridAndLimbDrawOrder	"MpGridAndLimbDrawOrder"
