@@ -1,6 +1,29 @@
 /*
- *	$Id: hppcl.h,v 1.2 1993-01-20 00:52:03 clyne Exp $
+ *	$Id: hppcl.h,v 1.3 2000-07-12 18:01:35 haley Exp $
  */
+/************************************************************************
+*                                                                       *
+*                Copyright (C)  2000                                    *
+*        University Corporation for Atmospheric Research                *
+*                All Rights Reserved                                    *
+*                                                                       *
+* This file is free software; you can redistribute it and/or modify     *
+* it under the terms of the GNU Lesser General Public License as        *
+* published by the Free Software Foundation; either version 2.1 of the  *
+* License, or (at your option) any later version.                       *
+*                                                                       *
+* This software is distributed in the hope that it will be useful, but  *
+* WITHOUT ANY WARRANTY; without even the implied warranty of            *
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU     *
+* Lesser General Public License for more details.                       *
+*                                                                       *
+* You should have received a copy of the GNU Lesser General Public      *
+* License along with this software; if not, write to the Free Software  *
+* Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307   *
+* USA.                                                                  *
+*                                                                       *
+************************************************************************/
+
 #ifndef	_hppcl_
 #define	_hppcl_
 
@@ -8,12 +31,12 @@
 #define	HPPCL_PORTRAIT	"&l0O"
 #define	HPPCL_LANDSCAPE	"&l1O"
 #define	HPPCL_ENCODING	""
-#define	HPPCL_START	"*r1A"
-#define	HPPCL_END	"*rB"
+#define	HPPCL_START	"1A"
+#define	HPPCL_END	"B"
 #define	HPPCL_EJECT	"&l0H"
-#define	HPPCL_POSITION	"*p%dx%dY"
-#define	HPPCL_TRANSFER	"*b%dW"
-#define	HPPCL_RESOLUTION	"*t%dR"
+#define	HPPCL_POSITION	"%dx%dY"
+#define	HPPCL_TRANSFER	"%dW"
+#define	HPPCL_RESOLUTION	"%dR"
 
 
 #ifdef	DEAD
