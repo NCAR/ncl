@@ -49,6 +49,7 @@ c write to standard out
               write (*,titfmt) title
           end if
 
+          print *, " "
           if (iopt.eq.0) then
               newfmt = "(" // fmtx // ")"
               do nr=1,nrow
@@ -121,6 +122,7 @@ c write to standard out
               write (*,titfmt) title
           end if
           
+          print *, " "
           if (iopt.eq.0) then
               newfmt = "(" // fmtx // ")" 
               do nr=1,nrow
@@ -191,6 +193,7 @@ c write to standard out
               write (*,titfmt) title
           end if
 
+          print *, " "
           if (iopt.eq.0) then
               newfmt = "(" // fmtx // ")"
               do nr=1,nrow
