@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.19 1993-11-01 17:43:36 boote Exp $
+#	$Id: yMakefile,v 1.20 1993-11-02 15:56:12 boote Exp $
 #
 
 
@@ -45,7 +45,7 @@ OBJS	= \
 FCGCDIRDEF	=	-DFONTCAPDIR='"$(FONTCAPDIR)"' \
 			-DGRAPHCAPDIR='"$(GRAPHCAPDIR)"'
 
-EXTRA_DEFINES = $(CGIDEFINES) $(X11DEFINES) $(SUNDEFINES) $(CTXTDEFINES) $(FCGCDIRDEF)
+EXTRA_DEFINES = $(CGIDEFINES) $(X11DEFINES) $(SUNDEFINES) $(CTXTDEFINES) $(FCGCDIRDEF) $(VDEFINE)
 
 # Generic code and libraries for all versions of ctrans.
 
