@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.79 2001-08-23 20:59:28 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.80 2001-09-06 16:38:08 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -35,6 +35,9 @@
 
 undef("xy_ref_interp")
 undef("ref_line_interp")
+undef("get_bar_widths")
+undef("outlined_bars")
+undef("filled_bars")
 undef("find_cross_xy")
 undef("check_for_subtitles")
 undef("set_right_subtitle")
@@ -162,7 +165,7 @@ begin
 
   xmsg = get_res_value_keep(x,"_FillValue",-999)
   ymsg = get_res_value_keep(y,"_FillValue",-999)
-
+;
 ; Convert x and y into two dimensional arrays so we don't have to
 ; test for whether we have one line or multiple lines.  Convert
 ; ref_line to a 1-d array (if it isn't already).
@@ -170,35 +173,21 @@ begin
   ndimsy = dimsizes(dimsizes(y))
   ndimsx = dimsizes(dimsizes(x))
   nref_lines = dimsizes(ref_line)
-  
-;  if(ndimsy.gt.1.and.ndimsy.ne.nref_lines)
-;    print("ref_line_interp: Fatal: if there are multiple curves, there must be")
-;    print("one reference line per curve.")
-;    exit
-;  end if
-    
+
   if(ndimsy.eq.1)
-    ncurves    = 1
-    nptsy      = dimsizes(y)
-
-    ynew       = new((/nref_lines,nptsy/),typeof(y),ymsg)
-    do i = 0,nref_lines-1
-      ynew(i,:)  = y
-    end do
+    ncurves = 1
+    nptsy   = dimsizes(y)
+    ynew    = onedtond(y,(/nref_lines,nptsy/))
   else
-    ncurves    = dimsizes(y(:,0))
-    nptsy      = dimsizes(y(0,:))
-
-    ynew       = y
+    ncurves = dimsizes(y(:,0))
+    nptsy   = dimsizes(y(0,:))
+    ynew    = y
   end if
 
   nlines = max((/ncurves,nref_lines/))
 
   if(ndimsx.eq.1)
-    xnew = new((/nlines,nptsy/),typeof(x),xmsg)
-    do i = 0,nlines-1
-        xnew(i,:)  = x
-    end do
+    xnew = onedtond(x,(/nlines,nptsy/))
   else
     xnew = x
   end if
@@ -242,6 +231,238 @@ begin
   delete(refnew)
   return(npts)
 end
+
+;***********************************************************************;
+; Function : get_bar_widths                                             ;
+;                  x: numeric                                           ;
+;               res2: logical                                           ;
+;                                                                       ;
+; Given a set of x points, return a bar width for filled bars later.    ;
+;                                                                       ;
+;***********************************************************************;
+
+function get_bar_widths(x,ncurves,res2)
+local ncurves, npts, bar_widths, dx, nwidths
+begin
+;
+; Get number of curves and points, and the distances between x values.
+;
+  dims = dimsizes(x)
+  if(dimsizes(dims).eq.1)
+    npts    = dimsizes(x)
+    dx      = min( x(1:npts-1) - x(0:npts-2) )
+  else
+    npts    = dims(1)
+    x!0     = "ncurves"
+    x!1     = "npts"
+;
+; Get the minimum dx for each set of curves.
+;
+    dx = dim_min(x(npts|1:npts-1,ncurves|:)-x(npts|0:npts-2,ncurves|:))
+    delete(x!0)
+    delete(x!1)
+  end if
+;
+; If bar width is set explicitly, we have to check it first.
+;
+  if(isatt(res2,"gsnXYBarChartBarWidth"))
+    bar_width = get_res_value(res2,"gsnXYBarChartBarWidth",0.)
+    delete(res2@gsnXYBarChartBarWidth)
+    nwidths   = dimsizes(dimsizes(bar_width))
+    if(.not.(nwidths.eq.1.or.nwidths.eq.ncurves))
+      print("get_bar_widths: Fatal: You must either select one constant bar width, or the same number of bar widths as you have curves.")
+      return
+    end if
+    if(any(bar_width.gt.dx))
+      print("get_bar_widths: Warning: The bar width(s) you selected ("+bar_width+") is larger than the smallest delta x ("+dx+").")
+      print("Defaulting to " + dx + ".")
+      
+      if(nwidths.eq.1.and.ncurves.gt.1)
+        bar_widths = new(ncurves,typeof(dx))
+      end if
+      bar_widths = dx
+    else
+;
+; Make sure bar_widths is 1D array of length (/ncurves/).
+;
+      if(nwidths.eq.1)
+        bar_widths = new(ncurves,double)
+        bar_widths = bar_width
+      end if
+    end if
+  else
+    bar_widths = new(ncurves,double)
+    bar_widths = dx        ; Bar width is not being set.
+  end if
+
+  return(bar_widths)
+end
+
+
+;***********************************************************************;
+; Procedure : outlined_bars                                             ;
+;                  x: numeric                                           ;
+;                  y: numeric                                           ;
+;            xinterp: numeric                                           ;
+;            yinterp: numeric                                           ;
+;                                                                       ;
+; Given a set of points represented by x and y, represent the y values  ;
+; with bar outlines.                                                    ;
+;***********************************************************************;
+
+procedure outlined_bars(x,y,xinterp,yinterp)
+local ndimsx, ndimsy, ncurves, dims, npts, nyb, bar_width
+begin
+;
+; Convert x and y into two dimensional arrays so we don't have to
+; test for whether we have one line or multiple lines.
+;
+  ndimsx = dimsizes(dimsizes(x))
+  ndimsy = dimsizes(dimsizes(y))
+  
+  if(ndimsy.eq.1)
+    ncurves = 1
+    npts    = dimsizes(y)
+    ynew    = onedtond(y,(/ncurves,npts/))
+  else
+    ncurves = dimsizes(y(:,0))
+    npts    = dimsizes(y(0,:))
+    ynew    = y
+  end if
+
+  if(ndimsx.eq.1)
+    xnew = onedtond(x,(/ncurves,npts/))
+  else
+    xnew = x
+  end if
+;
+; For each old y point, we need two new y points to represent
+; the horizontal line. The new X values will be the width of the bars.
+;
+  nyb = 2 * (npts-1) + 1
+
+  yinterp(:,0:nyb-2:2) = ynew(:,:npts-2)
+  yinterp(:,1:nyb-1:2) = ynew(:,:npts-2)
+  yinterp(:,nyb-1)     = ynew(:,npts-1)   ; last point
+
+  bar_widths           = xnew(:,1:) - xnew(:,:npts-2)
+  xinterp(:,0:nyb-2:2) = xnew(:,:npts-2)
+  xinterp(:,1:nyb-2:2) = xnew(:,:npts-2) + bar_widths
+  xinterp(:,nyb-1)     = xnew(:,npts-1)     ; last point, no bar
+
+  delete(xnew)
+  delete(ynew)
+end
+
+;***********************************************************************;
+; procedure : filled_bars                                               ;
+;                  x: numeric                                           ;
+;                  y: numeric                                           ;
+;             xabove: numeric                                           ;
+;             yabove: numeric                                           ;
+;             xbelow: numeric                                           ;
+;             ybelow: numeric                                           ;
+;                nya: integer                                           ;
+;                nyb: integer                                           ;
+;          yref_line: numeric                                           ;
+;         bar_widths: numeric                                           ;
+;                                                                       ;
+; Given a set of points represented by x and y, and y reference values, ;
+; represent the y values with bars above and below the reference lines. ;
+;                                                                       ;
+; Bars aren't filled in this routine. They are returned as two sets of  ;
+; polygons: those above the reference lines, and those below.           ;
+;***********************************************************************;
+
+procedure filled_bars(x,y,xabove,yabove,xbelow,ybelow,nya,nyb,yref_line, \
+                     bar_widths)
+local ndimsx, ndimsy, ncurves, dims, npts, nya, nyb
+begin
+;
+; Convert x and y into two dimensional arrays so we don't have to
+; test for whether we have one line or multiple lines.
+;
+  ndimsx = dimsizes(dimsizes(x))
+  ndimsy = dimsizes(dimsizes(y))
+  
+  if(ndimsy.eq.1)
+    ncurves = 1
+    npts    = dimsizes(y)
+    ynew    = new((/ncurves,npts/),double)
+    ynew    = onedtond(y,(/ncurves,npts/))
+  else
+    ncurves = dimsizes(y(:,0))
+    npts    = dimsizes(y(0,:))
+    ynew    = new(dimsizes(y),double)
+    ynew    = y
+  end if
+
+  if(ndimsx.eq.1)
+    xnew = new((/ncurves,npts/),double)
+    xnew = onedtond(x,(/ncurves,npts/))
+  else
+    xnew = new(dimsizes(x),double)
+    xnew = x
+  end if
+;
+; Make yref_line a 1D double array of length ncurves.
+;
+  yref_lines = new(ncurves,double)
+  yref_lines = yref_line
+;
+; Loop across ncurves.
+;
+  do i=0,ncurves-1
+;
+; Get the indices where the y curve is above and below the ref line.
+;
+    ya_ind = ind(ynew(i,:).gt.yref_lines(i))
+    yb_ind = ind(ynew(i,:).lt.yref_lines(i))
+;
+; Create new array to hold bar charts.  For each old y point, we need
+; five new y points to represent the closed rectangle.
+;
+    if(.not.any(ismissing(ya_ind)))
+      nya(i) = 5*dimsizes(ya_ind)              ; # values above ref line.
+      yabove(i,0:nya(i)-5:5)  = yref_lines(i)
+      yabove(i,1:nya(i)-4:5)  = ynew(i,ya_ind)
+      yabove(i,2:nya(i)-3:5)  = ynew(i,ya_ind)
+      yabove(i,3:nya(i)-2:5)  = yref_lines(i)
+      yabove(i,4:nya(i)-1:5)  = yref_lines(i)
+
+      xabove(i,0:nya(i)-5:5) = xnew(i,ya_ind) - bar_widths(i)/2.
+      xabove(i,1:nya(i)-4:5) = xnew(i,ya_ind) - bar_widths(i)/2.
+      xabove(i,2:nya(i)-3:5) = xnew(i,ya_ind) + bar_widths(i)/2.
+      xabove(i,3:nya(i)-2:5) = xnew(i,ya_ind) + bar_widths(i)/2.
+      xabove(i,4:nya(i)-1:5) = xnew(i,ya_ind) - bar_widths(i)/2.
+    else
+      nya(i) = 0
+    end if  
+    if(.not.any(ismissing(yb_ind))) 
+      nyb(i) = 5*dimsizes(yb_ind)               ; # values below ref line.
+
+      ybelow(i,0:nyb(i)-5:5) = yref_lines(i)
+      ybelow(i,1:nyb(i)-4:5) = ynew(i,yb_ind)
+      ybelow(i,2:nyb(i)-3:5) = ynew(i,yb_ind)
+      ybelow(i,3:nyb(i)-2:5) = yref_lines(i)
+      ybelow(i,4:nyb(i)-1:5) = yref_lines(i)
+
+      xbelow(i,0:nyb(i)-5:5) = xnew(i,yb_ind) - bar_widths(i)/2.
+      xbelow(i,1:nyb(i)-4:5) = xnew(i,yb_ind) - bar_widths(i)/2.
+      xbelow(i,2:nyb(i)-3:5) = xnew(i,yb_ind) + bar_widths(i)/2.
+      xbelow(i,3:nyb(i)-2:5) = xnew(i,yb_ind) + bar_widths(i)/2.
+      xbelow(i,4:nyb(i)-1:5) = xnew(i,yb_ind) - bar_widths(i)/2.
+    else
+      nyb(i) = 0
+    end if  
+    delete(ya_ind)
+    delete(yb_ind)
+  end do
+
+  delete(xnew)
+  delete(ynew)  
+end
+
 
 ;***********************************************************************;
 ; Function : find_cross_xy                                              ;
@@ -758,7 +979,7 @@ end
 ; just indices. This is determined by the "units" attribute, which must ;
 ; be set by CSM convention.                                             ;
 ;                                                                       ;
-; p must lie between 1013.25 mb and 2.54e-05 mb.                        ;
+;***********************************************************************;
 function is_valid_lat_ycoord(data:numeric)
 begin
   if(is_valid_ycoord(data))
@@ -6752,7 +6973,7 @@ begin
   res2_tmp@gsnFrame = False
 
 ; Check for cyclic point (default is True).
-yabove, ybelow, ya_ind, yb_ind, xinterp, yinterp, nya, nyb, bar_chart
+
   if(get_res_value(res2_tmp,"gsnAddCyclic",True))
     datanew = gsn_add_cyclic_point(data2)
   else
@@ -6779,10 +7000,27 @@ yabove, ybelow, ya_ind, yb_ind, xinterp, yinterp, nya, nyb, bar_chart
     end if
   end if
 
-      nptsy   = dimsizes(y)
+  contour2 = gsn_contour(wks,datanew,res2_tmp)
 
   overlay(contour1,contour2)
-      nptsy   = dimsizes(y(0,:))
+
+; Draw all this stuff: contour plots and subtitles.
+
+; Test dimensions.  They must both either be the same, or Y 
+; be multi-dimensioned and X singly-dimensioned.
+;***********************************************************************;
+    if(ndimsx.ne.1)
+      if(ndimsx.ne.ndimsy)
+        print("gsn_csm_xy: Fatal: X and Y must be the same dimensions, or X be 1-dimensional and Y multi-dimensional.")
+      else
+        if(.not.all(dimsizes(x).eq.dimsizes(y)))
+          print("gsn_csm_xy: Fatal: If X/Y are multiply-dimensioned, they must have the same dimension sizes.")
+        end if
+      end if
+    else
+      if(dimsizes(x).ne.npts)
+          print("gsn_csm_xy: Fatal: If X is one-dimensional, it must be the same length as the rightmost dimension of Y.")
+      end if
 ;               resources: optional resources                           ;
 ;                                                                       ;
 ; This function creates and draws a titled XY plot to the workstation   ;
@@ -6802,13 +7040,6 @@ yabove, ybelow, ya_ind, yb_ind, xinterp, yinterp, nya, nyb, bar_chart
 ; gsnBelowYRefLineColor is set, the polygons above and below the        ;
 ; reference line will be filled in these colors.                        ;
 ;                                                                       ;
-
-        if(.not.(ncurves.eq.nyref.or.ncurves.eq.1.or.nyref.eq.1))
-          print("gsn_csm_xy: Fatal: the number of reference lines must either equal the number")
-          print("of curves, or else the number of curves and/or reference lines must be one.")
-          return
-        end if
-
 ; If gsnXRefLine is set to some value, then a reference line will be    ;
 ; drawn at this value.                                                  ;
 ;                                                                       ;
@@ -6825,13 +7056,14 @@ yabove, ybelow, ya_ind, yb_ind, xinterp, yinterp, nya, nyb, bar_chart
 ; labels, then lgAutoManage will be set to False (unless it is being    ;
 ; set explicitly by the user.                                           ;
 ;                                                                       ;
+;***********************************************************************;
 
 function gsn_csm_xy(wks:graphic,x:numeric,y:numeric,resources:logical)
 local res, xy_object, res2, xfontf, yfontf, font_height, calldraw, nlines, \
 callframe, left_string, center_string, right_string, main_zone, ncurves, \
 yabove, ybelow, ya_ind, yb_ind, xinterp, yinterp, bar_chart
 begin
-            print("gsn_csm_xy: Fatal: there must either be an above-line fill color for every reference line, or one global above-line fill color specified ")
+
 ; Initialize.
     main_zone     = 2         ; Zone for main title (may change later)
     xref_line_on  = False     ; X reference line flag
@@ -6854,25 +7086,35 @@ begin
     ndimsy = dimsizes(dimsizes(y))
     ndimsx = dimsizes(dimsizes(x))
 
-      end if
     if(ndimsy.eq.1)
-; Check if we want a bar chart. If so, we can only have
-; one curve for now. Also, gsnYRefLine must be set.
+      ncurves = 1
+      npts    = dimsizes(y)
+    else
+      ncurves = dimsizes(y(:,0))
+      npts    = dimsizes(y(0,:))
+    end if
+
+    if(ndimsx.eq.1)
+      nptsx = dimsizes(x)
+    else
+      nptsx = dimsizes(x(0,:))
     end if
 ;
 ; Test dimensions. They must both either be the same, or have the
 ; same rightmost dimension.
-        if(ncurves.gt.1.or.ndimsx.gt.1)
-          print("gsn_csm_xy: Warning: if drawing a bar chart, you can only have one curve.")
-          print("Drawing a regular XY plot instead.")
-          bar_chart = False
-        end if
 ;
-          print("gsn_csm_xy: Warning: if drawing a bar chart, you must set gsnYRefLine.")
+    if( (ndimsx.gt.1.and.ndimsy.gt.1.and.(ndimsx.ne.ndimsy.or. \
          .not.all(dimsizes(x).eq.dimsizes(y)))).or.\
         ((ndimsx.eq.1.or.ndimsy.eq.1).and.nptsx.ne.npts))
-        end if
-      end if
+      print("gsn_csm_xy: Fatal: X and Y must have the same dimensions sizes, or one must be one-dimensional and both have the same rightmost dimension.")
+          if(ncurves.gt.1.and.ncurves.ne.nyref.and.nyref.ne.1)
+; This section tests for more special resources: those that start
+; with "gsn."
+
+    if((res2).and..not.any(ismissing(getvaratts(res2))))
+;
+; Check if gsnShape set.
+;
       if(isatt(res2,"gsnShape").and.res2@gsnShape)
         main_zone     = main_zone+1 ; Zone for main title
       end if
@@ -6890,7 +7132,7 @@ begin
         if(isatt(res2,"gsnYRefLineColor"))
           yref_line_color = res2@gsnYRefLineColor
           if(.not.(dimsizes(yref_line_color).eq.nyref.or.\
-    end if
+                   dimsizes(yref_line_color).eq.1))
             print("gsn_csm_xy: Fatal: you must specify either one Y reference line color")
             print("or the same number of colors as there are reference lines.")
             return
@@ -6909,157 +7151,103 @@ begin
             print("gsn_csm_xy: Fatal: there must either be an above-line fill color for every reference line, or one global above-line fill color specified")
             return
           end if
-; want to do a bar chart or a regular curve.
+          yref_line_above = res2@gsnAboveYRefLineColor
           yref_fill_on    = True
           delete(res2@gsnAboveYRefLineColor)
-
+        else
           yref_line_above = -1  ; defaults to no fill.
         end if
 ;
+; Determine color of fill below reference line(s).
+;
+        if(isatt(res2,"gsnBelowYRefLineColor"))
+          if(.not.(dimsizes(res2@gsnBelowYRefLineColor).eq.nyref.or.\
                    dimsizes(res2@gsnBelowYRefLineColor).eq.1))
-        xinterp      = new((/nyref,2*nptsy/),double,x@_FillValue)
-      else
-        xinterp      = new((/nyref,2*nptsy/),double)
+            print("gsn_csm_xy: Fatal: there must either be an below-line fill color for every reference line, or one global below-line fill color specified ")
             return
+          end if
           yref_line_below = get_res_value(res2,"gsnBelowYRefLineColor",1)
-        yinterp      = new((/nyref,2*nptsy/),double,y@_FillValue)
-      else
-        yinterp      = new((/nyref,2*nptsy/),double)
+          yref_fill_on    = True
         else
           yref_line_below = -1    ; defaults to no fill.
-      npts = ref_line_interp(x,y,xinterp,yinterp,yref_line)
+        end if
 ;
 ; If yref_fill_on is True, and we have more than one curve, then there
 ; should be the same number of reference lines as curves.
-; Figure out if we want individual bars, or just an outline.
-; Create some arrays to hold the new X/Y data.
-        if(yref_fill_on.and.ncurves.gt.1.and.ncurves.ne.nyref.and.nyref.ne.1)
-        nx = dimsizes(x) 
-
-          print("gsn_csm_xy: Fatal: if you plan to fill above and/or below reference lines, then the number of reference lines must either equal the number")
-          nya = dimsizes(y)
-          nyb = 2 * (nptsy-1) + 1
-          xinterp = new(nyb,double)
-          if(isatt(x,"_FillValue"))
-            xinterp@_FillValue = x@_FillValue
-          end if 
 ;
-; Outlines only.
+        if(yref_fill_on.and.ncurves.gt.1.and.ncurves.ne.nyref.and.nyref.ne.1)
+          print("gsn_csm_xy: Fatal: if you plan to fill above and/or below reference lines, then the number of reference lines must either equal the number")
           print("of curves, or be one.")
           return
         end if
       end if                            ; Check if gsnYRefLine set.
-          bar_width = new(nx-1,double)
-          bar_width = x(1:) - x(:nx-2)
+;
 ; Check if we want a bar chart. If so, gsnYRefLine must be set.
-          if(ncurves.eq.1)
-            yinterp            = new(nyb,double)
-            yinterp(0:nyb-2:2) = y(:nx-2)
-            yinterp(1:nyb-1:2) = y(:nx-2)
-            yinterp(nyb-1)     = y(nptsy-1)   ; last point
-          else
-            yinterp = new((/ncurves,nyb/),double)
-            do i = 0,ncurves-1
-              yinterp(i,0:nyb-2:2) = y(i,:nx-2)
-              yinterp(i,1:nyb-1:2) = y(i,:nx-2)
-            end do
-            yinterp(:,nyb-1) = y(:,nptsy-1)   ; last point
+;
+      bar_chart        = get_res_value(res2,"gsnXYBarChart",False)
+      bar_outline_only = get_res_value(res2,"gsnXYBarChartOutlineOnly",False)
+      if(bar_chart.and..not.bar_outline_only)
+        if(.not.yref_line_on)
           print("gsn_csm_xy: Warning: if drawing bar charts, you must set gsnYRefLine.")
           print("Drawing a regular XY plot instead.")
           bar_chart = False
-          end if 
-          xinterp(0:nyb-2:2) = x(:nx-2)
-          xinterp(1:nyb-2:2) = x(:nx-2) + bar_width
-          xinterp(nyb-1)     = x(nx-1)   ; last point, no bar
+        else
+          if((ncurves.gt.1.and.nyref.gt.1.and.ncurves.ne.nyref).or. \
              (ncurves.eq.1.and.nyref.ne.1))
             print("gsn_csm_xy: Fatal: if you plan to draw a bar chart with values above")
-; Full bars are desired.  
+            print("and/or below reference lines, then the number of reference lines")
             print("must either equal the number of curves, or be one.")
-; Get smallest distance between X values. This will become the
-; bar width, unless bar width is set explicitly.
-        end if          ; Check for Y ref line.
-          dx = min( x(1:nx-1) - x(0:nx-2) )
-          if(isatt(res2,"gsnXYBarChartBarWidth"))
-            bar_width = get_res_value(res2,"gsnXYBarChartBarWidth",0.)
-            if(bar_width.gt.dx)
-              print("gsn_csm_xy: Warning: The bar width you selected ("+bar_width+") is larger than the smallest delta x ("+dx+").")
-              print("Defaulting to " + dx + ".")
-              bar_width = dx
-            end if
-          else
-            bar_width = dx
+            return
           end if
-          if(ismissing(bar_width).or.bar_width.le.0)
+        end if          ; Check for Y ref line.
+      end if            ; Check for bar chart settage.
+
 ; Check if gsnXRefLine set.
 
       if(isatt(res2,"gsnXRefLine"))
         xref_line_on = True
-
         xref_line    = get_res_value(res2,"gsnXRefLine",0.)
-; Get the indices where the y curve is above and below the ref line.
+        nxref        = dimsizes(xref_line)
+
+        xref_line_color = get_res_value(res2,"gsnXRefLineColor","foreground")
+      end if
+
+; Check for existence of the left, center, and right subtitles.
+
+      check_for_subtitles(res2,left_string,center_string,right_string)
+      if(left_string.or.center_string.or.right_string)
+        main_zone   = main_zone+1
+      end if
+    end if                  ; Done checking special resources.
+
     res2          = True
-          ya_ind = ind(y.gt.yref_line)
-          yb_ind = ind(y.lt.yref_line)
+    res2@gsnDraw  = False   ; Internally, don't draw plot or advance
     res2@gsnFrame = False   ; frame since we take care of that later.
-; Create new array to hold bar charts.  For each old y point, we need
-; four new y points to represent the rectangle, and then an extra point
-; for the reference line.
+    res2@gsnScale = True    ; force labels and ticks to be same.
+
 ; If user explicitly sets X or Y tick marks, then don't label the X 
-          if(.not.any(ismissing(ya_ind)))
-            if(isatt(y,"_FillValue"))
-              yabove = new(4*dimsizes(ya_ind)+1,double,y@_FillValue)
-            else
-              yabove = new(4*dimsizes(ya_ind)+1,double,1e36)
-            end if 
-            nya = dimsizes(yabove)
-            yabove(0:nya-5:4) = yref_line
-            yabove(1:nya-4:4) = y(ya_ind)
-            yabove(2:nya-3:4) = y(ya_ind)
-            yabove(3:nya-2:4) = yref_line
-            yabove(nya-1)     = yref_line   ; last point
-            xabove = new(nya,double)
-            xabove(0:nya-5:4) = x(ya_ind) - bar_width/2.
-            xabove(1:nya-4:4) = x(ya_ind) - bar_width/2.
-            xabove(2:nya-3:4) = x(ya_ind) + bar_width/2.
-            xabove(3:nya-2:4) = x(ya_ind) + bar_width/2.
-            xabove(nya-1)     = xabove(0)   ; last point
-          else
-            nya = 0
-          end if  
-          if(.not.any(ismissing(yb_ind)))
-            if(isatt(y,"_FillValue"))
-              ybelow = new(4*dimsizes(yb_ind)+1,double,y@_FillValue)
-            else
-              ybelow = new(4*dimsizes(yb_ind)+1,double,1e36)
-            end if 
-            nyb = dimsizes(ybelow)
-            ybelow(0:nyb-5:4) = yref_line
-            ybelow(1:nyb-4:4) = y(yb_ind)
-            ybelow(2:nyb-3:4) = y(yb_ind)
-            ybelow(3:nyb-2:4) = yref_line
-            ybelow(nyb-1)     = yref_line   ; last point
-            xbelow = new(nyb,double)
-            xbelow(0:nyb-5:4) = x(yb_ind) - bar_width/2.
-            xbelow(1:nyb-4:4) = x(yb_ind) - bar_width/2.
-            xbelow(2:nyb-3:4) = x(yb_ind) + bar_width/2.
-            xbelow(3:nyb-2:4) = x(yb_ind) + bar_width/2.
-            xbelow(nyb-1)     = xbelow(0)   ; last point
-          else
-            nyb = 0
-          end if  
+; or Y axis automatically.
+
+    if(check_attr(res2,"tmXBMode","Explicit",True))
       set_attr(res2,"tiXAxisString","")
-; Combine the two sets of polygons.
+    end if
+
+    if(check_attr(res2,"tmYLMode","Explicit",True))
+      set_attr(res2,"tiYAxisString","")
+          xinterp = new((/2*ncurves,nab_max/),double,xabove@_FillValue)
+          yinterp = new((/2*ncurves,nab_max/),double,yabove@_FillValue)
+; crosses the reference line, an interpolation needs to be done to create 
+          xinterp(0:2*ncurves-1:2,0:na_max-1) = xabove(:,0:na_max-1)
+          xinterp(1:2*ncurves-1:2,0:nb_max-1) = xbelow(:,0:nb_max-1)
+          yinterp(0:2*ncurves-1:2,0:na_max-1) = yabove(:,0:na_max-1)
+          yinterp(1:2*ncurves-1:2,0:nb_max-1) = ybelow(:,0:nb_max-1)
+          yinterp(0:2*ncurves-1:2,4:na_max-1:5) = yinterp@_FillValue
+          yinterp(1:2*ncurves-1:2,4:nb_max-1:5) = yinterp@_FillValue
         yinterp@_FillValue = y@_FillValue
-          xinterp = new(nya+nyb,double)
-          yinterp = new(nya+nyb,double)
-          if(nya.gt.0)
-            xinterp(0:nya-1) = xabove
-            yinterp(0:nya-1) = yabove
-          end if 
-          if(nyb.gt.0)
-            xinterp(nya:) = xbelow
-            yinterp(nya:) = ybelow
-          end if 
+      end if
+
+      new_npts = ref_line_interp(x,y,xinterp,yinterp,yref_line)
+          res2@xyDashPatterns = get_res_value(res2,"xyDashPatterns",0)
 ;
 ; Figure out if we want filled bars or outlined bars.
 ;
@@ -7094,6 +7282,7 @@ begin
             print("Cannot draw a bar chart.")
             return
           end if
+;
 ; Loop across curves and figure out which points are above and
 ; below references lines.  First create arrays to hold points
 ; above and below reference lines.
@@ -7125,8 +7314,8 @@ begin
             print("Cannot draw a bar chart.")
             xinterp = x
             yinterp = y
-                                     xinterp(i,0:npts(i)-1), \
-                                     yinterp(i,0:npts(i)-1),\
+          else
+            xinterp = new((/2*ncurves,nab_max/),double,xabove@_FillValue)
             yinterp = new((/2*ncurves,nab_max/),double,yabove@_FillValue)
 
             if(na_max.gt.0)
@@ -7135,24 +7324,44 @@ begin
               yinterp(0:2*ncurves-1:2,4:na_max-1:5) = yinterp@_FillValue
             end if
             if(nb_max.gt.0)
-      if(yref_line_above.gt.0.and.nya.gt.0)
-        gsres@gsFillColor = yref_line_above
-        var_string = systemfunc("echo polygons$$")
-        xy_object@$var_string$ = gsn_add_polygon(wks,xy_object,xabove, \
-                                                 yabove,gsres)
-        setvalues xy_object
-          "tfPolyDrawOrder" : "Predraw"
-        end setvalues
+              xinterp(1:2*ncurves-1:2,0:nb_max-1) = xbelow(:,0:nb_max-1)
+              yinterp(1:2*ncurves-1:2,0:nb_max-1) = ybelow(:,0:nb_max-1)
+              yinterp(1:2*ncurves-1:2,4:nb_max-1:5) = yinterp@_FillValue
+            end if
+;
+; Make sure all lines are solid, and not dashed as is the default
+; with the second curve drawn.
+; 
+            res2@xyDashPatterns = get_res_value(res2,"xyDashPatterns",0)
+          end if
+        end if
+      else
+        xinterp = x
+        yinterp = y
       end if
-      if(yref_line_below.gt.0.and.nyb.gt.0)
-        gsres@gsFillColor = yref_line_below
-        var_string = systemfunc("echo polygons$$")
-        xy_object@$var_string$ = gsn_add_polygon(wks,xy_object,xbelow, \
-                                                 ybelow,gsres)
-        setvalues xy_object
-          "tfPolyDrawOrder" : "Predraw"
-        end setvalues
-      end if
+    end if
+
+    if(xref_line_on)
+      set_attr(res2,"trYMinF",min(yinterp))
+      set_attr(res2,"trYMaxF",max(yinterp))
+    end if
+
+    if(yref_line_on)
+      set_attr(res2,"trXMinF",min(xinterp))
+      set_attr(res2,"trXMaxF",max(xinterp))
+    end if
+
+;
+; If user sets lgLabelFontHeightF, then lgAutoManage needs to
+; be False in order for this resource to have any affect.
+;
+    if(isatt(res2,"lgLabelFontHeightF"))
+      set_attr(res2,"lgAutoManage",False)
+    end if
+
+; Create XY plot
+    xyres = get_res_ne(res2,(/"tx"/))
+    xy_object = gsn_xy(wks,xinterp,yinterp,xyres)
 
 ; Add lat/lon labels to X/Y axes if appropriate units exist.
 
@@ -7203,9 +7412,11 @@ begin
       gsres = True
       do i=0,ncurves-1 
 ;
+; Fill above reference line.
 ;
         gsres@gsFillColor = yref_line_above(0)
 
+        if(nabove(i).gt.0)
           if(dimsizes(yref_line_above).gt.1)
             gsres@gsFillColor = yref_line_above(i)
           end if
@@ -8112,7 +8323,7 @@ begin
                                           ; function of the size of the
                                           ; X/Y axis labels.
 
-  vcres = get_res_eq(res2,(/"vc","vf"/))
+    major_length = min((/ylength,xlength/))    ; New length for major ticks.
     minor_length = min((/ymlength,xmlength/))  ; New length for minor ticks.
 
 ; If the plot is close to square in size, then make the 
