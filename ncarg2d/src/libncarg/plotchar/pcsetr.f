@@ -1,5 +1,5 @@
 C
-C $Id: pcsetr.f,v 1.4 1992-11-17 18:46:58 kennison Exp $
+C $Id: pcsetr.f,v 1.5 1992-11-18 02:14:12 kennison Exp $
 C
 C
 C ---------------------------------------------------------------------
@@ -14,8 +14,8 @@ C
 C COMMON block declarations.
 C
       COMMON /PCPRMS/ ADDS,CONS,DSTB,DSTL,DSTR,DSTT,HPIC(3),ICEN,IOUC,
-     +                IOUF,
-     +                IQUF,ISHC,ISHF,ITEF,JCOD,NFCC,NFNT,SHDX,SHDY,
+     +                IOUF,IPCC,
+     +                IQUF,ISHC,ISHF,ITEF,JCOD,NFCC,NODF,SHDX,SHDY,
      +                SIZA,SSIC,SSPR,SUBS,VPIC(3),WPIC(3),XBEG,XCEN,
      +                XEND,XMUL(3),YBEG,YCEN,YEND,YMUL(3)
       SAVE   /PCPRMS/
@@ -48,14 +48,14 @@ C
         WPIC(3)=MAX(0.,RVAL)
         XMUL(3)=WPIC(3)/8.
       ELSE IF (WHCH(1:2).EQ.'FN'.OR.WHCH(1:2).EQ.'fn') THEN
-        NFNT=ABS(INT(RVAL))
-        IF ((NFNT.GE. 23.AND.NFNT.LE. 24).OR.
-     +      (NFNT.GE. 27.AND.NFNT.LE. 28).OR.
-     +      (NFNT.GE. 31.AND.NFNT.LE. 32).OR.
-     +      (NFNT.GE. 38.AND.NFNT.LE.120).OR.
-     +      (NFNT.GE.123.AND.NFNT.LE.124).OR.
-     +      (NFNT.GE.127.AND.NFNT.LE.128).OR.
-     +      (NFNT.GE.131.AND.NFNT.LE.132).OR.NFNT.GE.138) NFNT=1
+        NODF=ABS(INT(RVAL))
+        IF ((NODF.GE. 23.AND.NODF.LE. 24).OR.
+     +      (NODF.GE. 27.AND.NODF.LE. 28).OR.
+     +      (NODF.GE. 31.AND.NODF.LE. 32).OR.
+     +      (NODF.GE. 38.AND.NODF.LE.120).OR.
+     +      (NODF.GE.123.AND.NODF.LE.124).OR.
+     +      (NODF.GE.127.AND.NODF.LE.128).OR.
+     +      (NODF.GE.131.AND.NODF.LE.132).OR.NODF.GE.138) NODF=1
       ELSE IF (WHCH(1:2).EQ.'HW'.OR.WHCH(1:2).EQ.'hw') THEN
         RHTW=RVAL
       ELSE IF (WHCH(1:2).EQ.'IH'.OR.WHCH(1:2).EQ.'ih') THEN
@@ -74,6 +74,8 @@ C
         IOUC=INT(RVAL)
       ELSE IF (WHCH(1:2).EQ.'OF'.OR.WHCH(1:2).EQ.'of') THEN
         IOUF=MAX(0,MIN(1,INT(RVAL)))
+      ELSE IF (WHCH(1:2).EQ.'PC'.OR.WHCH(1:2).EQ.'pc') THEN
+        IPCC=INT(RVAL)
       ELSE IF (WHCH(1:2).EQ.'PH'.OR.WHCH(1:2).EQ.'ph') THEN
         HPIC(1)=MAX(0.,RVAL)
         YMUL(1)=HPIC(1)/21.

@@ -1,5 +1,5 @@
 C
-C $Id: pcblda.f,v 1.2 1992-11-17 18:46:00 kennison Exp $
+C $Id: pcblda.f,v 1.3 1992-11-18 02:13:39 kennison Exp $
 C
 C
 C***********************************************************************
@@ -15,8 +15,8 @@ C
 C COMMON block declarations.
 C
       COMMON /PCPRMS/ ADDS,CONS,DSTB,DSTL,DSTR,DSTT,HPIC(3),ICEN,IOUC,
-     +                IOUF,
-     +                IQUF,ISHC,ISHF,ITEF,JCOD,NFCC,NFNT,SHDX,SHDY,
+     +                IOUF,IPCC,
+     +                IQUF,ISHC,ISHF,ITEF,JCOD,NFCC,NODF,SHDX,SHDY,
      +                SIZA,SSIC,SSPR,SUBS,VPIC(3),WPIC(3),XBEG,XCEN,
      +                XEND,XMUL(3),YBEG,YCEN,YEND,YMUL(3)
       SAVE   /PCPRMS/
@@ -72,6 +72,12 @@ C from the filled fonts are outlined in a contrasting color.
 C
       DATA IOUF / 0 /
 C
+C IPCC is the principal character color.  When it is set less than 0,
+C no setting of color indices takes place before drawing a character.
+C Otherwise, it specifies the principal color index to use.
+C
+      DATA IPCC / -1 /
+C
 C IQUF is the "quality" flag.  When it is zero, high-quality characters
 C are used.  Otherwise, lower-quality characters are produced by calling
 C PCMQLQ, which in turn calls either PLCHMQ (if IQUF = 1) or PLCHLQ (if
@@ -116,13 +122,13 @@ C sequence - the default, an apostrophe, is set during initialization.
 C
       DATA NFCC / 0 /
 C
-C NFNT, if non-zero, selects one of the fonts defined by fontcaps,
+C NODF, if non-zero, selects one of the fonts defined by fontcaps,
 C characters from which are used in place of the "built-in" high
 C quality characters.  One may change font in the middle of a string,
 C using the "function code" F, followed by the number of the desired
 C font.
 C
-      DATA NFNT / 0 /
+      DATA NODF / 0 /
 C
 C Define the height and width of characters of the various sizes and
 C the vertical spacing between lines (on a 1024x1024 grid).

@@ -1,5 +1,5 @@
 C
-C $Id: pcsetc.f,v 1.4 1992-11-17 18:46:53 kennison Exp $
+C $Id: pcsetc.f,v 1.5 1992-11-18 02:14:07 kennison Exp $
 C
 C
 C ---------------------------------------------------------------------
@@ -14,8 +14,8 @@ C
 C COMMON block declarations.
 C
       COMMON /PCPRMS/ ADDS,CONS,DSTB,DSTL,DSTR,DSTT,HPIC(3),ICEN,IOUC,
-     +                IOUF,
-     +                IQUF,ISHC,ISHF,ITEF,JCOD,NFCC,NFNT,SHDX,SHDY,
+     +                IOUF,IPCC,
+     +                IQUF,ISHC,ISHF,ITEF,JCOD,NFCC,NODF,SHDX,SHDY,
      +                SIZA,SSIC,SSPR,SUBS,VPIC(3),WPIC(3),XBEG,XCEN,
      +                XEND,XMUL(3),YBEG,YCEN,YEND,YMUL(3)
       SAVE   /PCPRMS/

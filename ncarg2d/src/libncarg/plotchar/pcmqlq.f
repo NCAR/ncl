@@ -1,5 +1,5 @@
 C
-C $Id: pcmqlq.f,v 1.2 1992-11-17 18:46:51 kennison Exp $
+C $Id: pcmqlq.f,v 1.3 1992-11-18 02:14:05 kennison Exp $
 C
 C
 C ---------------------------------------------------------------------
@@ -18,8 +18,8 @@ C
 C COMMON block declarations.
 C
       COMMON /PCPRMS/ ADDS,CONS,DSTB,DSTL,DSTR,DSTT,HPIC(3),ICEN,IOUC,
-     +                IOUF,
-     +                IQUF,ISHC,ISHF,ITEF,JCOD,NFCC,NFNT,SHDX,SHDY,
+     +                IOUF,IPCC,
+     +                IQUF,ISHC,ISHF,ITEF,JCOD,NFCC,NODF,SHDX,SHDY,
      +                SIZA,SSIC,SSPR,SUBS,VPIC(3),WPIC(3),XBEG,XCEN,
      +                XEND,XMUL(3),YBEG,YCEN,YEND,YMUL(3)
       SAVE   /PCPRMS/

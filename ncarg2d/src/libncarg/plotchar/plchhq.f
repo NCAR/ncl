@@ -1,5 +1,5 @@
 C
-C $Id: plchhq.f,v 1.4 1992-11-17 18:47:03 kennison Exp $
+C $Id: plchhq.f,v 1.5 1992-11-18 02:14:17 kennison Exp $
 C
 C***********************************************************************
 C P A C K A G E   P L O T C H A R   -   I N T R O D U C T I O N
@@ -158,8 +158,8 @@ C Note that the sizes of IDDA and INDA may be reduced to match the
 C values of IDDL and INDL computed below.
 C
       COMMON /PCPRMS/ ADDS,CONS,DSTB,DSTL,DSTR,DSTT,HPIC(3),ICEN,IOUC,
-     +                IOUF,
-     +                IQUF,ISHC,ISHF,ITEF,JCOD,NFCC,NFNT,SHDX,SHDY,
+     +                IOUF,IPCC,
+     +                IQUF,ISHC,ISHF,ITEF,JCOD,NFCC,NODF,SHDX,SHDY,
      +                SIZA,SSIC,SSPR,SUBS,VPIC(3),WPIC(3),XBEG,XCEN,
      +                XEND,XMUL(3),YBEG,YCEN,YEND,YMUL(3)
       SAVE   /PCPRMS/
@@ -430,9 +430,9 @@ C
       XBEG=XFRA
       YBEG=YFRA
 C
-C Save the current value of NFNT for later restoration.
+C Set the current font number to the appropriate default.
 C
-      NFNO=NFNT
+      NFNT=NODF
 C
 C Make three copies of the starting position for various purposes.
 C (XBOL,YBOL) is the point at the beginning of the current line.
@@ -500,7 +500,10 @@ C
 C If text extent quantities are to be computed, initialize the needed
 C quantities.
 C
-      IF (ICEN.NE.0.OR.ITEF.NE.0) THEN
+      IF (ITEF.EQ.0.AND.ICEN.EQ.0) THEN
+        IPSS=1
+      ELSE
+        IPSS=2
         DSTL=-1.E6
         DSTR=-1.E6
         DSTB=-1.E6
@@ -576,7 +579,7 @@ C its left and right ends.
 C
   104 IF (IQUF.EQ.0) THEN
         IF (NFNT.EQ.0.OR.NDPC.LT.1.OR.NDPC.GT.95.OR.INDP.EQ.95) THEN
-          CALL PCEXCD (INDP,1+ICEN,NDGU)
+          CALL PCEXCD (INDP,IPSS,NDGU)
         ELSE
           IF (ICSE.NE.ICSL.OR.NDPC.LT.1.OR.NDPC.GT.26) THEN
             NASC=IASC(NDPC)
@@ -584,23 +587,23 @@ C
             NASC=IASC(NDPC+47)
           END IF
           IF (NFNT.GE.1.AND.NFNT.LE.20) THEN
-            CALL PCCFFC (1+ICEN,IBNU,NFNT,NASC,IPIC,RDGU,8800,NDGU)
+            CALL PCCFFC (IPSS,IBNU,NFNT,NASC,IPIC,RDGU,8800,NDGU)
           ELSE
             IF (IMAP.LE.0) THEN
               CHFS=SIZM*HPIC(IPIC)
             ELSE
               CHFS=SIZM*.1  !  ???
             END IF
-            CALL PCCFFF (1+ICEN,IBNU,NFNT,NASC,HPIC(IPIC),CHFS,
+            CALL PCCFFF (IPSS,IBNU,NFNT,NASC,HPIC(IPIC),CHFS,
      +                                          RDGU,8800,NDGU)
           END IF
           IF (NDGU.EQ.0) THEN
-            CALL PCCFFC (1+ICEN,IBNU,1,NASC,IPIC,RDGU,8800,NDGU)
-            IF (NDGU.EQ.0) CALL PCEXCD (INDP,1+ICEN,NDGU)
+            CALL PCCFFC (IPSS,IBNU,1,NASC,IPIC,RDGU,8800,NDGU)
+            IF (NDGU.EQ.0) CALL PCEXCD (INDP,IPSS,NDGU)
           END IF
         END IF
         IF (NDGU.EQ.0) THEN
-          CALL PCEXCD (358,1+ICEN,NDGU)
+          CALL PCEXCD (358,IPSS,NDGU)
           IF (NDGU.EQ.0) CALL SETER
      +            ('PLCHHQ - INTERNAL LOGIC ERROR - SEE CONSULTANT',1,2)
         END IF
@@ -709,7 +712,7 @@ C
 C If appropriate, update the quantities from which the magnitudes of
 C the text-extent vectors will be computed.
 C
-      IF (ICEN.NE.0.OR.ITEF.NE.0) THEN
+      IF (ITEF.NE.0.OR.ICEN.NE.0) THEN
 C
         UCEN=+(XCEN-XFRA)*COSO+(YCEN-YFRA)*SINO
         VCEN=-(XCEN-XFRA)*SINO+(YCEN-YFRA)*COSO
@@ -818,45 +821,79 @@ C
         YADJ=-.5*(DSTR-DSTL)*SINO-.5*(DSTT-DSTB)*COSO
       END IF
 C
+C If text extents were computed, adjust them to be measured from
+C the point relative to which the string is being centered.
+C
+      IF (ITEF.NE.0.OR.ICEN.NE.0) THEN
+        DSTL=DSTL-XADJ*COSO-YADJ*SINO
+        DSTR=DSTR+XADJ*COSO+YADJ*SINO
+        DSTB=DSTB+XADJ*SINO-YADJ*COSO
+        DSTT=DSTT-XADJ*SINO+YADJ*COSO
+      END IF
+C
+C If the object of the call was just to compute text extents, quit.
+C
+      IF (ITEF.NE.0.AND.ANGD.EQ.360.) GO TO 133
+C
 C
 C D R A W   T H E   C H A R A C T E R S
 C
+C
+C First, save the values of the current polyline, fill area, and text
+C color indices.
+C
+      CALL GQPLCI (IERR,IPLC)
+      IF (IERR.NE.0) THEN
+        CALL SETER ('PLCHHQ - ERROR EXIT FROM GQPLCI',2,2)
+        STOP
+      END IF
+C
+      CALL GQFACI (IERR,IFAC)
+      IF (IERR.NE.0) THEN
+        CALL SETER ('PLCHHQ - ERROR EXIT FROM GQFACI',2,2)
+        STOP
+      END IF
+C
+      CALL GQTXCI (IERR,ITXC)
+      IF (IERR.NE.0) THEN
+        CALL SETER ('PLCHHQ - ERROR EXIT FROM GQTXCI',2,2)
+        STOP
+      END IF
 C
 C Drawing is done in three passes.  During the first pass, we draw the
 C character shadow, if any.  During the second pass, we draw the lines
 C and fill the areas constituting the principal body of the character.
 C During the third pass, we draw the outline of the character, if any.
 C
+      ICCI=-1
+C
       DO 132 IDRW=1,3
 C
         IF (IDRW.EQ.1) THEN
-          IF (ISHF.EQ.0) GO TO 132
-          IF (ISHC.GE.0) THEN
-            CALL GQPLCI (IERR,IPLC)
-            IF (IERR.NE.0) THEN
-              CALL SETER ('PLCHHQ - ERROR EXIT FROM GQPLCI',2,2)
-              STOP
-            END IF
-            CALL GQFACI (IERR,IFAC)
-            IF (IERR.NE.0) THEN
-              CALL SETER ('PLCHHQ - ERROR EXIT FROM GQFACI',2,2)
-              STOP
-            END IF
-            CALL SFLUSH
-            CALL GSPLCI (ISHC)
-            CALL GSFACI (ISHC)
-          END IF
+          IDRF=ISHF
+          IDRC=ISHC
+        ELSE IF (IDRW.EQ.2) THEN
+          IDRF=1
+          IDRC=IPCC
         ELSE IF (IDRW.EQ.3) THEN
-          IF (IOUF.EQ.0) GO TO 132
-          IF (IOUC.GE.0) THEN
-            CALL GQPLCI (IERR,IPLC)
-            IF (IERR.NE.0) THEN
-              CALL SETER ('PLCHHQ - ERROR EXIT FROM GQPLCI',2,2)
-              STOP
-            END IF
+          IDRF=IOUF
+          IDRC=IOUC
+        END IF
+        IF (IDRF.EQ.0) GO TO 132
+        IF (IDRC.GE.0) THEN
+          IF (IDRC.NE.ICCI) THEN
+            ICCI=IDRC
             CALL SFLUSH
-            CALL GSPLCI (IOUC)
+            CALL GSPLCI (IDRC)
+            CALL GSFACI (IDRC)
+            CALL GSTXCI (IDRC)
           END IF
+        ELSE IF (ICCI.GE.0) THEN
+          ICCI=-1
+          CALL SFLUSH
+          CALL GSPLCI (IPLC)
+          CALL GSFACI (IFAC)
+          CALL GSTXCI (ITXC)
         END IF
 C
         DO 108 ICSV=1,MIN(128,NCSV)
@@ -885,7 +922,7 @@ C
           IF (IQUF.EQ.0) THEN
 C
             IF (NFNT.EQ.0.OR.NDPC.LT. 1.OR.
-     +            NDPC.GT.95.OR.INDP.EQ.95) THEN
+     +                       NDPC.GT.95.OR.INDP.EQ.95) THEN
               CALL PCEXCD (INDP,2,NDGU)
             ELSE
               IF (NFNT.GE.1.AND.NFNT.LE.20) THEN
@@ -952,29 +989,25 @@ C
 C
   108   CONTINUE
 C
-        IF (IDRW.EQ.1) THEN
-          IF (ISHC.GE.0) THEN
-            CALL SFLUSH
-            CALL GSPLCI (IPLC)
-            CALL GSFACI (IFAC)
-          END IF
-        ELSE IF (IDRW.EQ.3) THEN
-          IF (IOUC.GE.0) THEN
-            CALL SFLUSH
-            CALL GSPLCI (IPLC)
-          END IF
-        END IF
-C
   132 CONTINUE
 C
-C Restore the original value of NFNT.
+C If necessary, restore all the current color indices.
 C
-      NFNT=NFNO
+      IF (ICCI.GE.0) THEN
+        CALL SFLUSH
+        CALL GSPLCI (IPLC)
+        CALL GSFACI (IFAC)
+        CALL GSTXCI (ITXC)
+      END IF
+C
+C
+C D O N E   -   R E T U R N   T O   C A L L E R
+C
 C
 C Restore the PLCHMQ parameter specifying the ratio of character height
 C to width.
 C
-      IF (IQUF.NE.0) RHTW=RHWO
+  133 IF (IQUF.NE.0) RHTW=RHWO
 C
 C Done.
 C
@@ -1269,7 +1302,7 @@ C
   128 ICHS=ICHR
       CALL PCGTDI (CHRS,NCHR,ICHR,NFNT)
       IF (ICHR.EQ.ICHS) THEN
-        NFNT=NFNO
+        NFNT=NODF
         GO TO 103
       END IF
 C

@@ -1,5 +1,5 @@
 C
-C $Id: pcgetr.f,v 1.4 1992-11-17 18:46:37 kennison Exp $
+C $Id: pcgetr.f,v 1.5 1992-11-18 02:13:55 kennison Exp $
 C
 C
 C ---------------------------------------------------------------------
@@ -14,8 +14,8 @@ C
 C COMMON block declarations.
 C
       COMMON /PCPRMS/ ADDS,CONS,DSTB,DSTL,DSTR,DSTT,HPIC(3),ICEN,IOUC,
-     +                IOUF,
-     +                IQUF,ISHC,ISHF,ITEF,JCOD,NFCC,NFNT,SHDX,SHDY,
+     +                IOUF,IPCC,
+     +                IQUF,ISHC,ISHF,ITEF,JCOD,NFCC,NODF,SHDX,SHDY,
      +                SIZA,SSIC,SSPR,SUBS,VPIC(3),WPIC(3),XBEG,XCEN,
      +                XEND,XMUL(3),YBEG,YCEN,YEND,YMUL(3)
       SAVE   /PCPRMS/
@@ -54,7 +54,7 @@ C
       ELSE IF (WHCH(1:2).EQ.'DT'.OR.WHCH(1:2).EQ.'dt') THEN
         RVAL=DSTT
       ELSE IF (WHCH(1:2).EQ.'FN'.OR.WHCH(1:2).EQ.'fn') THEN
-        RVAL=REAL(NFNT)
+        RVAL=REAL(NODF)
       ELSE IF (WHCH(1:2).EQ.'HW'.OR.WHCH(1:2).EQ.'hw') THEN
         RVAL=RHTW
       ELSE IF (WHCH(1:2).EQ.'IH'.OR.WHCH(1:2).EQ.'ih') THEN
@@ -71,6 +71,8 @@ C
         RVAL=REAL(IOUC)
       ELSE IF (WHCH(1:2).EQ.'OF'.OR.WHCH(1:2).EQ.'of') THEN
         RVAL=REAL(IOUF)
+      ELSE IF (WHCH(1:2).EQ.'PC'.OR.WHCH(1:2).EQ.'pc') THEN
+        RVAL=REAL(IPCC)
       ELSE IF (WHCH(1:2).EQ.'PH'.OR.WHCH(1:2).EQ.'ph') THEN
         RVAL=HPIC(1)
       ELSE IF (WHCH(1:2).EQ.'PS'.OR.WHCH(1:2).EQ.'ps') THEN
