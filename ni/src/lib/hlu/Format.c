@@ -1,5 +1,5 @@
 /*
- *      $Id: Format.c,v 1.12 1996-04-26 01:11:35 dbrown Exp $
+ *      $Id: Format.c,v 1.13 1996-09-13 16:27:53 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1277,8 +1277,8 @@ NhlErrorTypes _NhlGetScaleInfo
 		cex3_f = NGCstrToFstr(cex3,len3);
 		cbuf_f = NGCstrToFstr(cbuf,len4);
 		NGCALLF(cpnumb,CPNUMB)(&value,&ndgd,&lmsd,&iexp,&lexp,
-				       cex1,cex2,cex3,&lex1,&lex2,&lex3,
-				       &ioma,&iodp,&iotz,cbuf,&nbuf,
+				       cex1_f,cex2_f,cex3_f,&lex1,&lex2,&lex3,
+				       &ioma,&iodp,&iotz,cbuf_f,&nbuf,
 				       &ndgs,&ieva,len1,len2,len3,len4);
 		cbuf_c = NGFstrToCstr(cbuf_f);
 		if (cbuf_c != &cbuf[0])
