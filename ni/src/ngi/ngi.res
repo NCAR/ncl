@@ -1,5 +1,5 @@
 !
-!      $Id: ngi.res,v 1.11 1997-09-04 16:57:35 boote Exp $
+!      $Id: ngi.res,v 1.12 1997-10-23 00:30:47 dbrown Exp $
 !
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !									!
@@ -38,7 +38,7 @@ NgNGO*synchronous:	True
 
 NgNGO*loadfileMGR.pattern:	*.ncl
 NgNGO*loadfileMGR.directory:	.
-NgNGO*addfileMGR*pattern:	*.{cdf,nc,grb,ccm}
+NgNGO*addfileMGR*pattern:	*.{cdf,nc,grb,hdf,ccm}
 NgNGO*addfileMGR*directory:	.
 
 !*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!
@@ -331,21 +331,22 @@ ncledit*reset.sensitive:		False
 !									!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-addfile*vname.resizeWidth:		True
-addfile*vname.value:			\ 
+!addfile*vname.resizeWidth:		True
+!addfile*vname.value:			\ 
 
-addfile*vname.rightAttachment:		ATTACH_NONE
-addfile*rwoptMenu.rightAttachment:	ATTACH_NONE
+!addfile*vname.rightAttachment:		ATTACH_NONE
+!addfile*rwoptMenu.rightAttachment:	ATTACH_NONE
 
 addfile*varform.topOffset: 10
 addfile*varform.bottomOffset: 10
 addfile*varform.rightOffset: 10
 addfile*varlabel.labelString: Variables
+addfile*addfile_fsb.shadowThickness: 0
 addfile*addfile_fsb*OK.shadowThickness: 0
 addfile*filterform.rightOffset: 10
 addfile*filterform.leftOffset: 10
-addfile*SelectText.leftOffset: 10
-addfile*SelectText.rightOffset: 10
+!addfile*vname.leftOffset: 10
+addfile*vname.rightOffset: 10
 addfile*sizelabel.leftOffset: 0
 addfile*sizelabel.bottomOffset: 10
 addfile*sizeframe.bottomOffset: 10
@@ -361,51 +362,7 @@ addfile*workareaform.bottomOffset: 0
 addfile*workareaform.leftOffset: 0
 addfile*workareaform.topOffset: 0
 addfile*workareaform.rightOffset: 0
-
-addfile*ItemsList.translations:  #override     \
-        Button1<Motion>:        ListBeginSelect() \n\
-        <Btn1Down>:             ListBeginSelect() \
-                                ListEndSelect() \
-                                SelectFileAction() \n\
-        <Btn1Up>:               ListEndSelect() \
-                                SelectFileAction() \n\
-        <Btn1Up>(2+):           ListEndSelect() \
-                                OpenDataFileAction() \n\
-        <Key>Return:            OpenDataFileAction() \n\
-        <Select>:               SelectFileAction() \n\
-        <Key>osfUp:             ListPrevItem() \
-                                SelectFileAction() \n\
-        <Key>osfDown:           ListNextItem() \
-                                SelectFileAction() \n\
-        <Key>osfPageUp:         ListPrevPage() \
-                                SelectFileAction() \n\
-        <Key>osfPageDown:       ListNextPage() \
-                                SelectFileAction() \n\
-        <Btn3Down>:             ListBeginSelect() \
-                                ListEndSelect() \
-                                SelectFileAction() \
-                                InfoPopupAction(2) \n\
-        <Btn3Up>:               ListEndSelect() \
-                                InfoPopdownAction(2)
-
-
-addfile*DirList.translations:  #override       \
-        <Key>Return:            FilterAction() \n\
-        <Select>:               FilterTextAction() \n\
-        <Btn1Up>(2+):           ListBeginSelect() \
-                                ListEndSelect() \
-                                FilterAction() \n\
-        <Btn1Down>,<Btn1Up>:    ListBeginSelect() \
-                                ListEndSelect() \
-                                FilterTextAction() \n\
-        <Key>osfUp:             ListPrevItem() \
-                                FilterTextAction() \n\
-        <Key>osfDown:           ListNextItem() \
-                                FilterTextAction() \n\
-        <Key>osfPageUp:         ListPrevPage() \
-                                FilterTextAction() \n\
-        <Key>osfPageDown:       ListNextPage() \
-                                FilterTextAction()
+addfile*ItemsList*XmNscrollBarDisplayPolicy: STATIC
 
 addfile*FilterText.translations:  #override    \
         <Key>Return:            FilterAction() \n\
@@ -414,33 +371,15 @@ addfile*FilterText.translations:  #override    \
         <Key>osfPageUp:         ListUpOrDownAction(2) \n\
         <Key>osfPageDown:       ListUpOrDownAction(3)
 
-addfile*SelectText.translations:  #override    \
+addfile*vname.translations:  #override    \
+        <Key>Return:            ApplyAction() \n\
         <Key>osfUp:             ListUpOrDownAction(0)\n\
         <Key>osfDown:           ListUpOrDownAction(1) \n\
         <Key>osfPageUp:         ListUpOrDownAction(2) \n\
         <Key>osfPageDown:       ListUpOrDownAction(3)
 
-addfile*VarList.translations:  #override       \
-        Button3<Motion>:        ListButtonMotion() \
-                                CheckInfoPopupAction(1) \n\
-        <Btn1Down>:             ListBeginSelect() \
-                                InfoPopupAction(0) \n\
-        <Btn1Up>:               ListEndSelect() \
-                                InfoPopdownAction(0) \n\
-        Button1<Motion>:        ListButtonMotion() \
-                                CheckInfoPopupAction(0) \n\
-        <Btn3Down>:             ListBeginSelect() \
-                                InfoPopupAction(1) \n\
-        <Btn3Up>:               ListEndSelect() \
-                                InfoPopdownAction(1)
-
 addfile*Start_Stop.translations: #override \
         <Btn1Down>,<Btn1Up>: ArmAndActivate() VcrToggleAction(0)
-
-! for development
-!addfile*directory:     /traver/dev/IRIS_IRIX_6_2_/lib/ncarg/data/cdf
-!addfile*directory:     /fs/scd/home1/dbrown/src/data
-!addfile*directory:     /fs/scd/home1/ncargd/dev/IRIS_IRIX_6_2_/lib/ncarg/data/cdf/
 
 !*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!*!
 
@@ -522,3 +461,21 @@ browse.title:				Data Browser
 *browseMGR*Folder.height: 500
 *browseMGR*topform.width: 500
 *browseMGR*topform.height: 500
+
+
+!*contourPlotClass*cnMinLevelValF : 1.0
+!*contourPlotClass*cnMaxLevelValF : 7.0
+!*contourPlotClass*cnLevelSpacingF : 1.0
+
+!*contourPlotClass*cnLevelSelectionMode : ManualLevels
+*wkColorMap : psgcap
+*wkColorMap : temp1
+*cnHighLabelsOn : False
+*cnLowLabelsOn : False
+!*browseMGR*EnumMenu*translations: #override \
+!        <Btn1Up>:               EnumButtonUpAction()
+
+! for development
+addfile*directory:     /fs/scd/home1/ncargd/dev/IRIS_IRIX_6_2_/lib/ncarg/data/cdf/
+addfile*directory: /fs/scd/home1/ncargd/dev/sun4_SunOS_5_5_1/lib/ncarg/data/cdf
+
