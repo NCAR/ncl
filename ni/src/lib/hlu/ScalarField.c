@@ -1,5 +1,5 @@
 /*
- *      $Id: ScalarField.c,v 1.15 1995-04-07 10:43:39 boote Exp $
+ *      $Id: ScalarField.c,v 1.16 1995-06-23 16:19:09 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -22,8 +22,8 @@
  */
 #include <stdio.h>
 #include <string.h>
-#include <ncarg/hlu/ScalarFieldP.h>
 #include <math.h>
+#include <ncarg/hlu/ScalarFieldP.h>
 
 /************************************************************************
 *									*
