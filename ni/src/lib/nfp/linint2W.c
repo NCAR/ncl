@@ -32,7 +32,7 @@ NhlErrorTypes linint1_W( void )
   int ndims_fi, dsizes_fi[NCL_MAX_DIMENSIONS], has_missing_fi;
   int *dsizes_fo;
   NclScalar missing_fi, missing_dfi, missing_rfi;
-  int *opt;
+  int *opt, iopt = 0;
   logical *wrap;
   NclBasicDataTypes type_xi, type_fi, type_xo;
 /*
@@ -199,7 +199,7 @@ NhlErrorTypes linint1_W( void )
     }
 
     NGCALLF(dlinint1,DLININT1)(&nxi,tmp_xi,tmp_fi,wrap,&nxo,tmp_xo,tmp_fo,xiw,
-                               fxiw,&nxi2,&missing_dfi.doubleval,opt,&ier);
+                               fxiw,&nxi2,&missing_dfi.doubleval,&iopt,&ier);
 
     if(ier) {
       NhlPError(NhlWARNING,NhlEUNKNOWN,"linint1: xi and xo must be monotonically increasing");
@@ -254,7 +254,7 @@ NhlErrorTypes linint2_W( void )
   int ndims_fi, dsizes_fi[NCL_MAX_DIMENSIONS], has_missing_fi;
   int *dsizes_fo;
   NclScalar missing_fi, missing_dfi, missing_rfi;
-  int *opt;
+  int *opt, iopt = 0;
   logical *wrap;
   NclBasicDataTypes type_xi, type_yi, type_fi, type_xo, type_yo;
 /*
@@ -445,7 +445,7 @@ NhlErrorTypes linint2_W( void )
 
     NGCALLF(dlinint2,DLININT2)(&nxi,tmp_xi,&nyi,tmp_yi,tmp_fi,wrap,&nxo,
                                tmp_xo,&nyo,tmp_yo,tmp_fo,xiw,fxiw,&nxi2,
-                               &missing_dfi.doubleval,opt,&ier);
+                               &missing_dfi.doubleval,&iopt,&ier);
 
     if(ier) {
       NhlPError(NhlWARNING,NhlEUNKNOWN,"linint2: xi, yi, xo, and yo must be monotonically increasing");
