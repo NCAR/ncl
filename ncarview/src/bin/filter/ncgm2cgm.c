@@ -1,5 +1,5 @@
 /*
- *	$Id: ncgm2cgm.c,v 1.8 1992-12-01 03:13:37 clyne Exp $
+ *	$Id: ncgm2cgm.c,v 1.9 1993-03-15 22:10:48 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -26,7 +26,7 @@
  *	NCAR CGM metafiles. The program acts as a filter taking input
  *	from stdin and writing to stdout. A command line option -s 
  * 	can be used to set the output record size. Otherwise the
- *	the default is used (1440)
+ *	the default is used (1024)
  *
  * rev 1.01 clyne 10/2/89	: Incorporated cgm_tools library into program 
  *				for simplicity 	Moved under NCAR view hierarchy
@@ -37,7 +37,7 @@
 static	unsigned char	*outBuf;	/* the output buffer	*/
 static	unsigned char	*outPtr;	/* pointer into outBuf	*/
 static	unsigned	spaceAva;	/* bytes available in outBuf	*/
-static	unsigned	blockSize;	/* output block size		*/
+static	unsigned	blockSize = 1024;	/* output block size	*/
 
 /*
  *	flush
