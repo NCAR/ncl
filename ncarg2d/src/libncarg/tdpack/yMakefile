@@ -1,5 +1,5 @@
 #
-#       $Id: yMakefile,v 1.5 2000-02-16 23:30:54 kennison Exp $
+#       $Id: yMakefile,v 1.6 2001-06-21 22:40:04 kennison Exp $
 #
 
 MYNAME  = tdpack
@@ -10,7 +10,7 @@ GENERIC_SRCS = \
 	tdgtrs.f tdinit.f tditri.f tdlbla.f tdlbls.f tdline.f tdlndp.f \
 	tdlnpa.f tdlpdp.f tdmrka.f tdmrkb.f tdmtri.f tdotri.f tdpara.f \
 	tdplch.f tdprpa.f tdprpi.f tdprpt.f tdseti.f tdsetr.f tdsort.f \
-	tdstri.f tdstrs.f tdctri.f
+	tdstri.f tdstrs.f tdctri.f tdttri.f
 
 GENERIC_OBJS = \
 	ilsint.o itrovr.o lnbpcs.o tdblda.o tdclrs.o tdctab.o tdctap.o \
@@ -18,7 +18,7 @@ GENERIC_OBJS = \
 	tdgtrs.o tdinit.o tditri.o tdlbla.o tdlbls.o tdline.o tdlndp.o \
 	tdlnpa.o tdlpdp.o tdmrka.o tdmrkb.o tdmtri.o tdotri.o tdpara.o \
 	tdplch.o tdprpa.o tdprpi.o tdprpt.o tdseti.o tdsetr.o tdsort.o \
-	tdstri.o tdstrs.o tdctri.o
+	tdstri.o tdstrs.o tdctri.o tdttri.o
 
 SOURCES = $(GENERIC_SRCS)
 
