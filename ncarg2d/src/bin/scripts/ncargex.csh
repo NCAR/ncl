@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.140 2003-08-18 20:51:50 kennison Exp $
+#   $Id: ncargex.csh,v 1.141 2003-09-18 18:31:11 kennison Exp $
 #                                                                      
 #                Copyright (C)  2000
 #        University Corporation for Atmospheric Research
@@ -107,24 +107,24 @@ set default_files = (\
                 "gmeta1.eps" "gmeta1.epsi" "gmeta1.ps" "gmeta1.eps" \
                 "gmeta1.epsi" "gmeta1.ps" "gmeta1.eps" "gmeta1.epsi")
 set default_msgs = (\
-	"Metafile file is named" \
-	"" "" "" "" "" "" "" "" \
-	"Text dump file is named" \
-	"Color portrait PDF file is named" \
-	"Color landscape PDF file is named" \
+        "Metafile file is named" \
+        "" "" "" "" "" "" "" "" \
+        "Text dump file is named" \
+        "Color portrait PDF file is named" \
+        "Color landscape PDF file is named" \
     "" "" "" "" "" "" "" \
-	"Color portrait PostScript file is named" \
-	"Color portrait encapsulated PostScript file is named" \
-	"Color portrait interchange encapsulated PostScript file is named" \
-	"Monochrome portrait PostScript file is named" \
-	"Monochrome portrait encapsulated PostScript file is named" \
-	"Monochrome portrait interchange encapsulated PostScript file is named" \
-	"Color landscape PostScript file is named" \
-	"Color landscape encapsulated PostScript file is named" \
-	"Color landscape interchange encapsulated PostScript file is named" \
-	"Monochrome landscape PostScript file is named" \
-	"Monochrome landscape encapsulated PostScript file is named" \
-	"Monochrome landscape interchange encapsulated PostScript file is named")
+        "Color portrait PostScript file is named" \
+        "Color portrait encapsulated PostScript file is named" \
+        "Color portrait interchange encapsulated PostScript file is named" \
+        "Monochrome portrait PostScript file is named" \
+        "Monochrome portrait encapsulated PostScript file is named" \
+        "Monochrome portrait interchange encapsulated PostScript file is named" \
+        "Color landscape PostScript file is named" \
+        "Color landscape encapsulated PostScript file is named" \
+        "Color landscape interchange encapsulated PostScript file is named" \
+        "Monochrome landscape PostScript file is named" \
+        "Monochrome landscape encapsulated PostScript file is named" \
+        "Monochrome landscape interchange encapsulated PostScript file is named")
 
 set f_list
 set c_list
@@ -195,8 +195,8 @@ set c_list = ($c_list $colconv_clist)
 #                        #
 #************************#
 set conpack_fex  = (cpex01 cpex02 cpex03 cpex04 cpex05 cpex06 cpex07 \
-		    cpex08 cpex09 cpex10 cpex11 cpex12 cpex13 cpex14 \
-		    cpex15 cpex16 ${cbivar_fex})
+                    cpex08 cpex09 cpex10 cpex11 cpex12 cpex13 cpex14 \
+                    cpex15 cpex16 ${cbivar_fex})
 set conpack_ftst = (tconpa)
 set conpack_fttr = (ccpback ccpcff ccpcfx ccpcica ccpcir ccpcis ccpcit ccpclc \
                     ccpcld ccpcldm ccpcldr ccpcll ccpclu ccpcnrc ccpdflt \
@@ -221,7 +221,8 @@ set c_list = ($c_list $conpack_clist)
 #  Set conpackt examples  #
 #                         #
 #*************************#
-set conpackt_fex   = (ctex01 ctex02)
+set conpackt_fex   = (ctex01 ctex02 ctfite ctgaus ctgeo1 ctgeo2 ctiscp ctllg1 \
+                      ctllg2 ctllg3 ctorca ctpopg ctswth ctwng1 ctwng2)
 set conpackt_flist = ($conpackt_fex)
 
 set f_list = ($f_list $conpackt_flist)
@@ -702,7 +703,7 @@ set overlap_fttr = (mpex03 mpex05 arex01 sfex01 tsoftf)
 set list_fx11 = (fgke01 fgke04)
 set list_cx11 = (c_xwndws)
 set list_fex = ($areas_fex $autograph_fex $colconv_fex $conpack_fex \
-		$conpackt_fex \
+                $conpackt_fex \
                 $ezmap_fex $field_fex $labelbar_fex $ngmath_fex $plotchar_fex \
                 $polypack_fex ${scrlld_title_fex} $softfill_fex $spps_fex \
                 $surface_fex $tdpack_fex $wmap_fex $misc_fex)
@@ -1598,7 +1599,39 @@ switch ($name)
     breaksw
 
     case cpex16:
-	set data_files = (cpex16.dat)
+        set data_files = (cpex16.dat)
+    breaksw
+
+    case ctfite:
+        set data_files = (ctfite.dat)
+    breaksw
+
+    case ctgaus:
+        set data_files = (ctgaus.dat)
+    breaksw
+
+    case ctiscp:
+        set data_files = (ctiscp.dat)
+    breaksw
+
+    case ctorca:
+        set data_files = (ctorca.dat)
+    breaksw
+
+    case ctpopg:
+        set data_files = (ctpopg.dat)
+    breaksw
+
+    case ctswth:
+        set data_files = (ctswth.dat)
+    breaksw
+
+    case ctwng1:
+        set data_files = (ctwng1.dat)
+    breaksw
+
+    case ctwng2:
+        set data_files = (ctwng2.dat)
     breaksw
 
     case fcover:
