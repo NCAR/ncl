@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: nhlex.new.csh,v 1.3 1995-01-26 16:44:44 haley Exp $
+#	$Id: nhlex.new.csh,v 1.4 1995-01-26 18:41:38 haley Exp $
 #
 
 #***********************#
@@ -93,15 +93,18 @@ set f_list = ($f_list $f_contour)
 #  Set LabelBar examples  #
 #                         #
 #*************************#
-set labelbar_list
+set c_labelbar = (lb01c lb02c)
+set labelbar_list = ($c_labelbar)
+set c_list = ($c_list $c_labelbar)
 
 #***********************#
 #                       #
 #  Set Legend examples  #
 #                       #
 #***********************#
-set legend_list
-
+set c_legend = (lg01c lg02c lg03c)
+set legend_list = ($c_legend)
+set c_list = ($c_list $c_legend)
 
 #************************#
 #                        #
@@ -126,7 +129,7 @@ set overlay_list
 #  Set TextITem examples  #
 #                         #
 #*************************#
-set c_textitem = (tx01c)
+set c_textitem = (tx01c tx02c tx03c tx04c)
 set f_textitem = (tx01f)
 set textitem_list  = ($c_textitem $f_textitem)
 set c_list = ($c_list $c_textitem)
@@ -137,14 +140,18 @@ set f_list = ($f_list $f_textitem)
 # set TickMark examples #
 #                       #
 #***********************#
-set tickmark_list
+set c_tickmark = (tm01c tm02c tm03c)
+set tickmark_list  = ($c_tickmark)
+set c_list = ($c_list $c_tickmark)
 
 #**********************#
 #                      #
 #  Set Title examples  #
 #                      #
 #**********************#
-set title_list
+set c_title = (ti01c ti02c ti03c)
+set title_list  = ($c_title)
+set c_list = ($c_list $c_title)
 
 #***********************#
 #                       #
@@ -170,7 +177,7 @@ while ($#argv > 0)
     case "-all":
     case "-A":
       shift
-      set names=($names $f_list $c_list)
+      set names=($names $c_list $f_list)
       breaksw
 
     case "-fortran":

@@ -1,7 +1,7 @@
 .\" The first line of this file must contain the '\"[e][r][t][v] line
 .\" to tell man to run the appropriate filter "t" for table.
 .\"
-.\" $Id: nhlex.new.man,v 1.3 1995-01-26 16:44:43 haley Exp $
+.\" $Id: nhlex.new.man,v 1.4 1995-01-26 18:41:39 haley Exp $
 .\"
 .\"######################################################################
 .\"#                                                                    #
@@ -166,18 +166,8 @@ Name(s) of example programs to generate.
 .SH "EXAMPLES AVAILABLE"
 Please notice that the C examples end with the letter 'c' and the
 Fortran examples end with the letter 'f'.
-.IP xy01c,xy01f 1i
-Demonstrates how to display an XyPlot to an X Window, and then
-copy it to a meta file.
-.IP xy02c 1i
-Demonstrates how to incorporate the HLU library with a GUI.
-It uses an X/Motif interface, and also allows the user to copy frames from
-the X Window to a meta file.
-.IP xy03c 1i
-Shows how to interactively retrieve data values from a plot by pointing
-and clicking on the plot.
-.IP tx01c,tx01f 1i
-Shows how to use the TextItem object of the HLU library.
+.IP an01c,an01f 1i
+Illustrates the use of Annotation objects.
 .IP cn01c,cn01f 1i
 Demonstrates how to use HLU objects with low level NCAR Graphics
 library calls. 
@@ -188,14 +178,58 @@ Demonstrates basic features of the Contour object.  The first
 frame emulates the contour plot drawn in nhl06 using low-level NCARG calls.
 .IP cn04c,cn04f 1i
 Emulates the output of the ncargex example "cpex02".
+.IP lb01c 1i
+Shows all the default settings for the LabelBar resources.
+.IP lb02c 1i
+Shows how to modify some of the default resources to create a solid filled
+set of boxes.
+.IP lg01c 1i
+Shows all the default settings for the Legend resources.
+.IP lg02c 1i
+Shows how to modify some of the default resources to create a legend of
+five markers.
+.IP lg03c 1i
+Shows how to create a legend of five lines.
 .IP mp01c,mp01f 1i
 Demonstrates basic MapPlot capabilities.
 .IP mp02c,mp02f 1i
 Demonstrates individual control of MapPlot areas.
 .IP mp03c,mp03f 1i
 Demonstrates MapPlot masking; loosely emulates the ncargex example "colcon".
-.IP an01c,an01f 1i
-Illustrates the use of Annotation objects.
+.IP ti01c 1i
+Shows all the default settings for the Title resources which results in a
+blank plot.
+.IP ti02c 1i
+Turns on the main, x-axis, and y-axis strings to produce a plot with three
+titles.
+.IP ti03c 1i
+Shows how to change resources to get high quality filled and colored titles.
+.IP tm01c 1i
+Shows all the default settings for the TickMark resources.
+.IP tm02c 1i
+Shows how to modify the resources to create tick marks on the axes.
+.IP tm03c 1i
+Shows how to modify the resources to change the scaling and the tick mark
+labels.
+.IP tx01c,tx01f 1i
+Shows how to use the TextItem object of the HLU library.
+.IP tx02c 1i
+Shows all the default settings for the TextItem resources.
+.IP tx03c 1i
+Shows how to modify default resources to produce a text string.
+.IP tx04c 1i
+Uses the same resources as example "tx03c", except 114 frames are
+produced with varying background colors.
+.IP xy01c,xy01f 1i
+Demonstrates how to display an XyPlot to an X Window, and then
+copy it to a meta file.
+.IP xy02c 1i
+Demonstrates how to incorporate the HLU library with a GUI.
+It uses an X/Motif interface, and also allows the user to copy frames from
+the X Window to a meta file.
+.IP xy03c 1i
+Shows how to interactively retrieve data values from a plot by pointing
+and clicking on the plot.
 .SH SEE ALSO
 ncargex(1NCARG),  ncargcex(1NCARG)
 .SH COPYRIGHT
