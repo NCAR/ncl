@@ -104,23 +104,23 @@
 ! scalar fields
 !
 
-*sf1@sfDataArray : fix_longitude($geosf1$)
+*sf1@sfDataArray : NgAdjustLongitude($geosf1$,0,0)
 *sf1@sfDataArray%Profile : (/ Name : First Data Set /)
-*sf1@sfXArray : fix_longitude_coord($geosf1$&-1)
+*sf1@sfXArray : NgAdjustLongitudeCoord($geosf1$&-1,0,0)
 *sf1@sfXArray%Profile : (/ Name : Longitude /)
 *sf1@sfYArray : $geosf1$&-2
 *sf1@sfYArray%Profile : (/ Name : Latitude /)
 
-*sf2@sfDataArray : fix_longitude($geosf2$)
+*sf2@sfDataArray : NgAdjustLongitude($geosf2$,0,0)
 *sf2@sfDataArray%Profile : (/ Name : Second Data Set /)
-*sf2@sfXArray : fix_longitude_coord($geosf2$&-1)
+*sf2@sfXArray : NgAdjustLongitudeCoord($geosf2$&-1,0,0)
 *sf2@sfXArray%Profile : (/ Name : Longitude /)
 *sf2@sfYArray : $geosf2$&-2
 *sf2@sfYArray%Profile : (/ Name : Latitude /)
 
-*sf3@sfDataArray : fix_longitude(difference($geosf1$,$geosf2$))
+*sf3@sfDataArray : NgAdjustLongitude(difference($geosf1$,$geosf2$),0,0)
 *sf3@sfDataArray%Profile : (/ Name : Difference Data Set /)
-*sf3@sfXArray : fix_longitude_coord($geosf1$&-1)
+*sf3@sfXArray : NgAdjustLongitudeCoord($geosf1$&-1,0,0)
 *sf3@sfXArray%Profile : (/ Name : Longitude /)
 *sf3@sfYArray : $geosf1$&-2
 *sf3@sfYArray%Profile : (/ Name : Latitude /)
@@ -138,11 +138,8 @@
 			$map3$,$map2$ /)
 *map1@pmAnnoViews%Profile : (/ InitializeOnly : True /)
 !
-*map1@ndvUpdateFunc0 : set_map_limits_from_object($map1$,$cn1$,0)
-*map1@ndvUpdateFunc0%Profile : \
-	(/ Name : Set Map Limits from Data Extent, \
-           Visible : False /)
-
+*map1@ndvUpdateFunc0 : NgSetMapLimits($map1$,$cn1$,-1,0,0,0,0)
+*map1@ndvUpdateFunc0%Profile : (/ Name : Map Limits /)
 !
 !*map1@ndvUpdateFunc2 : plot_titles($map1$,\
 !	$left_title1$,$geosf1$@long_name,\
@@ -161,10 +158,12 @@
 *map1*vpXF : 0.08
 *map1*vpYF : 0.88
 *map1*vpHeightF : 0.22
+*map1*vpWidthF : 0.44
+*map1*mpShapeMode : FIXEDASPECTNOFITBB
 !
 ! Loglinplot used to overlay tickmarks
 !
-*maptick1@ndvUpdateFunc2 : map_tickmarks($map1$,$maptick1$,0.009,0.012,0.006)
+*maptick1@ndvUpdateFunc2 : NgMapTickmarks($map1$,$maptick1$,0.009,0.012,0.006)
 *maptick1@ndvUpdateFunc2%Profile : (/ Name : Lat-Lon Tickmarks /)
 *maptick1*tfDoNDCOverlay : True
 *maptick1*pmTickMarkDisplayMode : always
@@ -246,8 +245,9 @@
 *map2@pmAnnoViews : (/ $left_title2$,$right_title2$,$center_title2$ /)
 *map2@pmAnnoViews%Profile : (/ InitializeOnly : True /)
 !
-*map2@ndvUpdateFunc0 : set_map_limits_from_object($map2$,$cn2$,0)
-*map2@ndvUpdateFunc0%Profile : 	(/ Visible : False /)
+!*map2@ndvUpdateFunc0 : set_map_limits_from_object($map2$,$cn2$,0)
+!*map2@ndvUpdateFunc0%Profile :	(/ Visible : False, InitializeOnly : True /)
+*map2@ndvUpdateFunc0 : match_map_transform($map1$,$map2$)
 
 !
 !*map2@ndvUpdateFunc2 : plot_titles($map2$,\
@@ -262,6 +262,8 @@
 !
 !
 *map2.vpHeightF : 0.22
+*map2*vpWidthF : 0.44
+*map2*mpShapeMode : FIXEDASPECTNOFITBB
 *map2.amZone : 2
 *map2.amSide : bottom
 !*map2.amOrthogonalPosF : 0.3
@@ -271,7 +273,7 @@
 !
 ! Loglinplot used to overlay tickmarks
 !
-*maptick2@ndvUpdateFunc2 : map_tickmarks($map2$,$maptick2$,0.009,0.012,0.006)
+*maptick2@ndvUpdateFunc2 : NgMapTickmarks($map2$,$maptick2$,0.009,0.012,0.006)
 *maptick2@ndvUpdateFunc2%Profile : (/ Name : Lat-Lon Tickmarks /)
 *maptick2*tfDoNDCOverlay : True
 *maptick2*pmTickMarkDisplayMode : always
@@ -336,10 +338,11 @@
 *map3@pmAnnoViews : (/ $left_title3$,$right_title3$,$center_title3$ /)
 *map3@pmAnnoViews%Profile : (/ InitializeOnly : True /)
 !
-*map3@ndvUpdateFunc0 : set_map_limits_from_object($map3$,$cn3$,0)
-*map3@ndvUpdateFunc0%Profile : \
-	(/ Name : Set Map Limits from Data Extent, \
-           Visible : False /)
+!*map3@ndvUpdateFunc0 : set_map_limits_from_object($map3$,$cn3$,0)
+!*map3@ndvUpdateFunc0%Profile : \
+!	(/ Name : Set Map Limits from Data Extent, \
+!           Visible : False, InitializeOnly : True /)
+*map3@ndvUpdateFunc0 : match_map_transform($map1$,$map3$)
 !
 !*map3@ndvUpdateFunc2 : plot_titles($map3$,\
 !	$left_title3$,$geosf2$@long_name,\
@@ -361,6 +364,8 @@
            Visible : False /)
 !
 *map3.vpHeightF : 0.22
+*map3*vpWidthF : 0.44
+*map3*mpShapeMode : FIXEDASPECTNOFITBB
 *map3.amZone : 3
 *map3.amSide : bottom
 !*map3.amOrthogonalPosF : 0.2
@@ -369,7 +374,7 @@
 !
 ! Loglinplot used to overlay tickmarks
 !
-*maptick3@ndvUpdateFunc2 : map_tickmarks($map3$,$maptick3$,0.009,0.012,0.006)
+*maptick3@ndvUpdateFunc2 : NgMapTickmarks($map3$,$maptick3$,0.009,0.012,0.006)
 *maptick3@ndvUpdateFunc2%Profile : (/ Name : Lat-Lon Tickmarks /)
 *maptick3*tfDoNDCOverlay : True
 *maptick3*pmTickMarkDisplayMode : always

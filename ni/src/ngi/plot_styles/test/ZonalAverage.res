@@ -72,8 +72,8 @@
 ! describes the data set
 !
 *geosf@Pattern : (/  /.*psl.*/i , /.*/ /)
-*geosf!-1@Pattern : /.*lon.*/i
-*geosf!-2@Pattern : /.*lat.*/i
+*geosf!-1@Pattern : /.*(lon|x).*/i
+*geosf!-2@Pattern : /.*(lat|y).*/i
 *geosf@Description : Georeferenced Scalar Field
 *geosf@Required : True
 
@@ -86,7 +86,7 @@
 ! a second data set. It is only to test the mechanism.) 
 !
 !*geosf2@Pattern : (/  /.*psl.*/i , /.*/ /)
-!*geosf2!-1@Pattern : /.*lon.*/i
+!*geosf2!-1@Pattern :  /.*lon.*/i
 !*geosf2!-2@Pattern : /.*lat.*/i
 !*geosf2@Description : Second Geographic Scalar Field
 !*geosf2@Required : True
@@ -124,9 +124,9 @@
 !
 ! Main data scalar field
 !
-*sf@sfDataArray : fix_longitude($geosf$)
+*sf@sfDataArray : NgAdjustLongitude($geosf$,0,0)
 *sf@sfDataArray%Profile : (/ Name : Primary Data Var /)
-*sf@sfXArray : fix_longitude_coord($geosf$&-1)
+*sf@sfXArray : NgAdjustLongitudeCoord($geosf$&-1,0,0)
 *sf@sfXArray%Profile : (/ Name : Longitude /)
 *sf@sfYArray : $geosf$&-2
 *sf@sfYArray%Profile : (/ Name : Latitude /)
@@ -136,8 +136,8 @@
 *map@pmOverlays : (/ $cnplot$, $maptick$ /)
 *map@pmOverlays%Profile : (/ InitializeOnly : True /)
 
-*map@ndvUpdateFunc : set_map_limits_from_object($map$,$cnplot$,0)
-*map@ndvUpdateFunc%Profile : (/ Name : Set Map Limits from Data Extent /)
+*map@ndvUpdateFunc0 : NgSetMapLimits($map$,$cnplot$,-1,0,0,0,0)
+*map@ndvUpdateFunc0%Profile : (/ Name : Map Limits /)
 
 *map@pmAnnoViews : (/$xy$,$left_title$,$center_title$,$right_title$ /)
 *map@pmAnnoViews%Profile : (/ InitializeOnly : True /)
@@ -161,10 +161,12 @@
 !*map*mpGeophysicalLineColor : Foreground
 *map*vpXF : 0.08
 *map*vpWidthF : 0.57
+*map*vpHeightF : 0.285
+*map*mpShapeMode : FIXEDASPECTNOFITBB 
 !
 ! Loglinplot used to overlay tickmarks
 !
-*maptick@ndvUpdateFunc2 : map_tickmarks($map$,$maptick$,0.009,0.012,0.006)
+*maptick@ndvUpdateFunc2 : NgMapTickmarks($map$,$maptick$,0.009,0.012,0.006)
 *maptick@ndvUpdateFunc2%Profile : (/ Name : Lat-Lon Tickmarks /)
 *maptick*tfDoNDCOverlay : True
 *maptick*pmTickMarkDisplayMode : always
@@ -243,4 +245,3 @@ TickMarkClass*vpUseSegments : False
 LabelBarClass*vpUseSegments : False
 *MaxLevelCount : 20
 *TextFuncCode : ~
-

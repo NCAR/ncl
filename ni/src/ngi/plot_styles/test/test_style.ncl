@@ -16,7 +16,10 @@ undef("adjust_plot_spacing")
 undef("set_colormap")
 undef("adjust_labelbar")
 undef("adjust_tickmarks")
-
+undef("cyclelon")
+undef("cycleloncoord")
+undef("match_map_transform")
+undef("set_map_limits")
 
 function test_func ( value )
 
@@ -169,8 +172,38 @@ begin
 
 	return icols
 end
+	
+function cycleloncoord(lonin[*],start_lon,end_lon)
 
-function fix_longitude_coord(lon[*])
+local lon,newlon,size1,size2,pivot,newdata
+
+begin
+	lon = lonin
+	lon&$lon!0$ = lon
+	size1 = dimsizes(lon({start_lon:}))
+	size2 = dimsizes(lon({:end_lon}))
+	pivot = new(1,typeof(lon))
+
+	if (lon(dimsizes(lon)-1) .gt. 360) then
+		pivot = 540
+	else 
+		if (lon(dimsizes(lon)-1) .gt. 180) then
+			pivot = 360
+		else
+			pivot = 180
+		end if
+	end if
+
+	newlon = new(size1 + size2,typeof(lon))
+	newlon(:size1-1) = lon({start_lon:}) - pivot
+	newlon(size1:) = lon({:end_lon})
+	newlon!0 = lon!0
+	newlon&$lon!0$ = newlon
+
+	return newlon
+end
+
+function fix_longitude_coord(lon[*],start_lon,end_lon)
 
 ;
 ; Add a cyclic point a to coord var (representing longitude)
@@ -178,6 +211,10 @@ function fix_longitude_coord(lon[*])
 local dims, newdata, ny, mx, mx1, sizes,lon,maxloninc,i,sign, \
 	loninc,monotonic,nonmono_ix1, nonmono_ix2,llon,tmp
 begin
+
+    if (start_lon .gt. end_lon) then
+	return cycleloncoord(lon,start_lon,end_lon)
+    end if
 
     mx = dimsizes(lon)
 
@@ -235,7 +272,73 @@ begin
 
 end
 
-function fix_longitude(data[*][*])
+;
+; assumes lat/lon data
+; creates a new data set consisting of a piece running from start_lon to
+; the end of the dataset, followed by a piece running from the beginning of
+; the dataset to end_lon. The longitude array is made monotonic.
+
+function cyclelon(data[*][*],start_lon,end_lon)
+
+local lon,lat,newlon,size1,size2,pivot,newdata
+
+begin
+
+	print("in cyclelon")
+
+	lon = data&$data!1$
+
+	lon&$data!1$ = lon
+	size1 = dimsizes(lon({start_lon:}))
+	size2 = dimsizes(lon({:end_lon}))
+	pivot = new(1,typeof(lon))
+
+	if (lon(dimsizes(lon)-1) .gt. 360) then
+		pivot = 540
+	else 
+		if (lon(dimsizes(lon)-1) .gt. 180) then
+			pivot = 360
+		else
+			pivot = 180
+		end if
+	end if
+	print(pivot)
+
+	newlon = new(size1 + size2,typeof(lon))
+	newlon(:size1-1) = lon({start_lon:}) - pivot 
+	newlon(size1:) = lon({:end_lon})
+	print(newlon)
+
+	lat = data&$data!0$
+
+	newdata = new((/dimsizes(lat),dimsizes(newlon)/),typeof(data))
+	newdata!0 = data!0
+	newdata&$data!0$ = lat
+	newdata!1 = data!1
+	newdata(:,:size1-1) = data(:,{start_lon:})
+	newdata(:,size1:) = data(:,{:end_lon})
+	newdata&$data!1$ = newlon
+
+	if (isatt(data,"_FillValue")) then
+    		newdata@_FillValue = data@_FillValue
+	else
+		if (isatt(data,"missing_value")) then
+			newdata@_FillValue = data@missing_value
+	        else
+			delete(newdata@_FillValue)
+		end if
+	end if
+	
+	if (isatt(newdata,"_FillValue")) then
+		    print("new cyclic dataset "+ newdata@_FillValue)
+	else
+		    print("new cyclic dataset - no fill value")
+	end if
+
+	return newdata
+end
+
+function fix_longitude(data[*][*],start_lon,end_lon)
 
 ;
 ; Add a cyclic point in "x" to a 2D array
@@ -253,9 +356,19 @@ begin
 ;
     print("in fix_longitude")
  
+    if (isatt(data,"_FillValue")) then
+	print("fillvalue "+ data@_FillValue)
+    else
+	print("no fill value")
+    end if
+
     if (ismissing(data!1) .or. .not. iscoord(data,data!1)) then
 	print("returning")
 	return data
+    end if
+
+    if (start_lon .gt. end_lon) then
+	return cyclelon(data,start_lon,end_lon)
     end if
 
     lon = data&$data!1$	
@@ -268,7 +381,11 @@ begin
 	
     if (fabs(lon(mx-1) - lon(0)).ge. 360.) then
 	; cyclic point already exists -- might be more points than we need
-	print("cyclic point not needed")
+	if (isatt(data,"_FillValue")) then
+		print("cyclic point not needed "+ data@_FillValue)
+	else
+		print("cyclic point not needed - no fill value")
+	end if
 	return data
     end if
 
@@ -321,11 +438,17 @@ begin
     else
 	if (isatt(data,"missing_value")) then
 		newdata@_FillValue = data@missing_value
+        else
+		delete(newdata@_FillValue)
 	end if
     end if
 	
 
-    print("added cyclic point")
+    if (isatt(newdata,"_FillValue")) then
+	    print("added cyclic point "+ newdata@_FillValue)
+    else
+	    print("added cyclic point - no fill value")
+    end if
     return(newdata)
 
 end
@@ -1188,6 +1311,8 @@ local	vpxf,vpyf,vpwf,vphf,min_lon,max_lon,min_lat,max_lat,center_lon, \
 	center_lat,center_rot,xmin0,ymin0,xmax0,ymax0,xbmode0,ylmode0, \
 	xlabels0,ylabels0,xvalues0,yvalues0,mxvalues0,myvalues0,\
 	xbheight0,ylheight0,xlength0,ylength0,xmlength0,ymlength0,\
+	lmap_pos,rmap_pos,bmap_pos,tmap_pos,mrange,llrange,\
+	xmin,xmax,ymin,ymax,tmp,\
 	xoutl0,youtl0,xminoutl0,yminoutl0,on,ret
 begin
 	
@@ -1198,6 +1323,10 @@ begin
       "vpYF"         : vpyf
       "vpWidthF"     : vpwf
       "vpHeightF"    : vphf
+      "mpLeftMapPosF" : lmap_pos
+      "mpRightMapPosF" : rmap_pos
+      "mpBottomMapPosF" : bmap_pos
+      "mpTopMapPosF" : tmap_pos
       "mpMinLonF"    : min_lon
       "mpMaxLonF"    : max_lon
       "mpMinLatF"    : min_lat
@@ -1210,14 +1339,6 @@ begin
       "mpRelativeCenterLat" : rel_lat
     end getvalues
 
-;    print("max " + max_lon + "min " +  min_lon + "center " + center_lon)
-
-
-
-;   print(min_lon)
-;   print(center_lon)
-;   print(projection)
-
     getvalues tm
 	"vpOn" : on
     end getvalues
@@ -1228,6 +1349,7 @@ begin
 		end setvalues
 		ret = 1
         end if
+	return ret
     else 
 	if (on.ne.True) then
         	setvalues tm
@@ -1236,6 +1358,64 @@ begin
 		ret = 1
 	end if
     end if
+
+    if (center_lon .le. -180) then
+	center_lon = center_lon + 360
+    end if
+    if (center_lon .gt. 180) then
+	center_lon = center_lon - 360
+    end if
+
+;    print("max " + max_lon + "min " +  min_lon + "center " + center_lon)
+    print(lmap_pos + " " + bmap_pos + " " + rmap_pos + " " + tmap_pos)
+
+    ndctodata(map,lmap_pos,bmap_pos,min_lon,min_lat)
+    ndctodata(map,rmap_pos,tmap_pos,max_lon,max_lat)
+
+    print("ll " + min_lon + "," + min_lat + " ur " + max_lon +","+ max_lat)
+
+    do while (min_lon .gt. max_lon)
+	min_lon = min_lon - 360
+    end do
+    do while (max_lon - min_lon .gt. 360) 
+		max_lon = max_lon - 360
+    end do
+    do while (fabs(min_lon) .gt. 180) 
+	if (min_lon .lt. -180) then
+		min_lon = min_lon + 360
+		max_lon = max_lon + 360
+	else
+		if (min_lon .gt. 180) then
+			min_lon = min_lon - 360
+			max_lon = max_lon - 360
+		end if
+	end if
+    end do
+    if (min_lon .eq. max_lon .and. lmap_pos .ne. rmap_pos) then
+	if (floattointeger(min_lon + .5) .eq. \
+	    floattointeger(180 + center_lon +.5)) then
+		min_lon = min_lon - 360
+	else
+		if (floattointeger(max_lon - .5) .eq. \
+	            floattointeger(-180 + center_lon - .5)) then
+			max_lon = max_lon + 360	
+		end if
+	end if
+    end if
+	
+
+    print("ll " + min_lon + "," + min_lat + " ur " + max_lon +","+ max_lat)
+    lmap_pos = (lmap_pos - vpxf) / vpwf
+    rmap_pos = (rmap_pos - vpxf) / vpwf
+    bmap_pos = (bmap_pos - (vpyf - vphf)) / vphf
+    tmap_pos = (tmap_pos - (vpyf - vphf)) / vphf
+    print("l " + lmap_pos + " r " + rmap_pos + " b " \
+		 + bmap_pos + " t " + tmap_pos)
+
+;   print(min_lon)
+;   print(center_lon)
+;   print(projection)
+
 
 ; Create a TickMark object to label the lat/lon grid.
 
@@ -1328,9 +1508,6 @@ begin
 ;
 ; not really sure how this condition should be handled
 ;
-    do while (max_lon - min_lon .gt. 360) 
-		max_lon = max_lon - 360
-    end do
 ;
     if (rel_lon) then
 	center_lon = center_lon + min_lon + (max_lon - min_lon) / 2
@@ -1344,36 +1521,25 @@ begin
 		end if
 	end if
     end do
-    do while (fabs(min_lon) .gt. 180) 
-	if (min_lon .lt. -180) then
-		min_lon = min_lon + 360
-		max_lon = max_lon + 360
-	else
-		if (min_lon .gt. 180) then
-			min_lon = min_lon - 360
-			max_lon = max_lon - 360
-		end if
-	end if
-    end do
 	
 
-;    print("max " + max_lon + " min " +  min_lon + " center " + center_lon)
+    print("max " + max_lon + " min " +  min_lon + " center " + center_lon)
 
     has_max_lon_span = False
     if (max_lon - min_lon .ge. 359.5) then
 	has_max_lon_span = True
-    else
-	if (min_lon .gt. center_lon .and. \
-	    center_lon + 360 .gt. max_lon .and. \
-	    center_lon + 180 .lt. max_lon) then
-		has_max_lon_span = True
-	else
-		if (max_lon .lt. center_lon .and. \
-		    center_lon - 360 .lt. min_lon .and. \
-		    center_lon - 180 .gt. min_lon) then
-			has_max_lon_span = True
-		end if
-	end if
+;    else
+;	if (min_lon .gt. center_lon .and. \
+;	    center_lon + 360 .gt. max_lon .and. \
+;	    center_lon + 180 .lt. max_lon) then
+;		has_max_lon_span = True
+;	else
+;		if (max_lon .lt. center_lon .and. \
+;		    center_lon - 360 .lt. min_lon .and. \
+;		    center_lon - 180 .gt. min_lon) then
+;			has_max_lon_span = True
+;		end if
+;	end if
     end if
 ;
 ; the center longitude only plays a role in the maximum span situation
@@ -1397,8 +1563,8 @@ begin
 	    lon_range = max_lon - min_lon   ; longitude range
     end if
 
-;    print(max_lon)
-;    print(min_lon)
+    print(max_lon)
+    print(min_lon)
 
     lon_ind    = ind(lon_range.le.lcheck_arr)
     lon_spcng  = lspcng_arr(lon_ind(0))  ; spacing for lon major tickmarks
@@ -1447,16 +1613,6 @@ begin
     xlabels  = new(dimsizes(xvalues),string)
 
     xvalues2 = xvalues
-;    if(has_max_lon_span .and. center_lon.gt.0)
-;      indexx = ind(xvalues2.gt.180)
-;      xvalues2(indexx) = xvalues2(indexx) - 360
-;      delete(indexx)
-;    end if
-;    if(has_max_lon_span .and. center_lon.lt.0)
-;      indexx = ind(xvalues2.lt.-180)
-;      xvalues2(indexx) = xvalues2(indexx) + 360
-;      delete(indexx)
-;    end if
 
     indexx = ind(xvalues2.gt.180)
 ;    print(indexx)
@@ -1494,6 +1650,32 @@ begin
     end if
     delete(indexx)
 
+    mrange = rmap_pos - lmap_pos
+    if (mrange .eq. 1.0) then
+    	xmin = min_lon
+	xmax = max_lon
+    else
+	xmin = min_lon - lon_range * lmap_pos / mrange
+	xmax = max_lon + lon_range * (1 - rmap_pos) / mrange
+    end if
+
+    print("xmin " + xmin + " xmax " + xmax + " mrange " + mrange)
+
+    mrange = tmap_pos - bmap_pos
+    if (mrange .eq. 1.0) then
+    	ymin = min_lat
+	ymax = max_lat
+    else
+	ymin = min_lat - lat_range * bmap_pos / mrange
+	ymax = max_lat + lat_range * (1 - tmap_pos) / mrange
+    end if
+
+
+;    mrange = tmap_pos - bmap_pos
+;    llrange = 1.0 * (yvalues(dimsizes(yvalues)-1) - int_min_lat)
+;    fyvalues = bmap_pos + mrange * (yvalues - int_min_lat) / llrange
+;    fmyvalues = bmap_pos + mrange * (myvalues - int_min_lat) / llrange
+
 ; Set the tickmark lat/lon grid.
 
     getvalues tm
@@ -1513,26 +1695,32 @@ begin
        "tmYLMinorValues"  : myvalues0
     end getvalues
 
-    if (.not. (xmin0 .eq. min_lon .and. \
-	       xmax0 .eq. max_lon .and. \
-	       ymin0 .eq. min_lat .and. \
-	       ymax0 .eq. max_lat .and. \
+    if (.not. (xmin0 .eq. xmin .and. \
+	       xmax0 .eq. xmax .and. \
+	       ymin0 .eq. ymin .and. \
+	       ymax0 .eq. ymax .and. \
 	       xbmode0 .eq. 2 .and. \             ; "Explicit" == 2
+	       dimsizes(xlabels0) .eq. dimsizes(xlabels) .and. \
 	       all(xlabels0 .eq. xlabels) .and. \
+	       dimsizes(xvalues0) .eq. dimsizes(xvalues) .and. \
 	       all(xvalues0 .eq. xvalues) .and. \
+	       dimsizes(mxvalues0) .eq. dimsizes(mxvalues) .and. \
 	       all(mxvalues0 .eq.mxvalues) .and. \
 	       ylmode0 .eq. 2 .and. \
+	       dimsizes(ylabels0) .eq. dimsizes(ylabels) .and. \
 	       all(ylabels0 .eq. ylabels) .and. \
+	       dimsizes(yvalues0) .eq. dimsizes(yvalues) .and. \
 	       all(yvalues0 .eq. yvalues) .and. \
+	       dimsizes(myvalues0) .eq. dimsizes(myvalues) .and. \
 	       all(myvalues0 .eq.myvalues))) then
 
 ;	    print("first")	       
 	    ret = 1
 	    setvalues tm
-	       "trXMinF"	  : min_lon
-	       "trXMaxF"	  : max_lon
-	       "trYMinF"	  : min_lat
-	       "trYMaxF"	  : max_lat
+	       "trXMinF"	  : xmin
+	       "trXMaxF"	  : xmax
+	       "trYMinF"	  : ymin
+	       "trYMaxF"	  : ymax
 
 	       "tmXBMode"         : "Explicit" ; Indicate that we want to 
 	       "tmXBLabels"       : xlabels    ; explicitly label the X axis.
@@ -1633,6 +1821,140 @@ begin
 end
 
 ;
+; this function propagates the map transformation of map1 to map2
+;
+
+function match_map_transform(map1 : graphic, map2 : graphic)
+
+local ret,proj1,proj2,clon1,clon2,clat1,clat2,crot1,crot2,lmode1,lmode2, \
+	xmin1,xmax1,ymin1,ymax1,xmin2,xmax2,ymin2,ymax2,\
+	rlon1,rlat1,rlon2,rlat2
+
+begin
+
+    ret = 0
+
+    getvalues map1
+	"mpProjection" : proj1
+      	"mpCenterLonF" : clon1
+      	"mpCenterLatF" : clat1
+      	"mpCenterRotF" : crot1
+	"mpLimitMode"  : lmode1
+    end getvalues
+
+    getvalues map2
+	"mpProjection" : proj2
+      	"mpCenterLonF" : clon2
+      	"mpCenterLatF" : clat2
+      	"mpCenterRotF" : crot2
+	"mpLimitMode"  : lmode2
+    end getvalues
+
+    if (proj1 .ne. proj2 .or. \
+	clon1 .ne. clon2 .or. \
+	clat1 .ne. clat2 .or. \
+	crot2 .ne. crot2 .or. \
+	lmode1 .ne. lmode2) then
+	ret = 1;
+    end if 
+    if (ret .eq. 1 .and. lmode1 .eq. 0) then
+	setvalues map2
+		"mpLimitMode"  : lmode1
+		"mpProjection" : proj1
+	      	"mpCenterLonF" : clon1
+		"mpCenterLatF" : clat1
+	      	"mpCenterRotF" : crot1
+	end setvalues
+	return ret
+    end if
+	
+    if (lmode1 .eq.1) then
+ 	getvalues map1
+      		"mpMinLonF"    : xmin1
+      		"mpMaxLonF"    : xmax1
+      		"mpMinLatF"    : ymin1
+      		"mpMaxLatF"    : ymax1
+      		"mpRelativeCenterLon" : rlon1
+      		"mpRelativeCenterLat" : rlat1
+    	end getvalues
+
+    	getvalues map2
+      		"mpMinLonF"    : xmin2
+      		"mpMaxLonF"    : xmax2
+      		"mpMinLatF"    : ymin2
+      		"mpMaxLatF"    : ymax2
+      		"mpRelativeCenterLon" : rlon2
+      		"mpRelativeCenterLat" : rlat2
+    	end getvalues
+
+	if (ret .eq. 1 .or. \
+	    xmin1 .ne. xmin2 .or. \
+	    xmax1 .ne. xmax2 .or. \
+	    ymin1 .ne. ymin2 .or. \
+	    ymax1 .ne. ymax2 .or. \
+	    rlon1 .ne. rlon2 .or. \
+	    rlat1 .ne. rlat2) then
+
+	        print("LatLon: xmin1 " + xmin1 + " xmin2 " + xmin2 + \
+			" ymin1 " + ymin1 + " ymin2 " + ymin2)
+		ret = 1
+		setvalues map2
+			"mpLimitMode"  : lmode1
+			"mpProjection" : proj1
+		      	"mpCenterLonF" : clon1
+      			"mpCenterLatF" : clat1
+		      	"mpCenterRotF" : crot1
+      			"mpMinLonF"    : xmin1
+      			"mpMaxLonF"    : xmax1
+	      		"mpMinLatF"    : ymin1
+      			"mpMaxLatF"    : ymax1
+      			"mpRelativeCenterLon" : rlon1
+	      		"mpRelativeCenterLat" : rlat1
+		end setvalues
+	end if
+    else 	
+ 	getvalues map1
+      		"mpLeftNPCF"    : xmin1
+      		"mpRightNPCF"    : xmax1
+      		"mpBottomNPCF"    : ymin1
+      		"mpTopNPCF"    : ymax1
+    	end getvalues
+
+    	getvalues map2
+      		"mpLeftNPCF"    : xmin2
+      		"mpRightNPCF"    : xmax2
+      		"mpBottomNPCF"    : ymin2
+      		"mpTopNPCF"    : ymax2
+    	end getvalues
+
+	if (ret .eq. 1 .or. \
+	    xmin1 .ne. xmin2 .or. \
+	    xmax1 .ne. xmax2 .or. \
+	    ymin1 .ne. ymin2 .or. \
+	    ymax1 .ne. ymax2)
+
+	        print("NPC: xmin1 " + xmax1 + " xmax1 " + xmax1 + \
+			" ymin1 " + ymin1 + " ymax1 " + ymax1)
+		ret = 1
+		setvalues map2
+			"mpLimitMode"  : "npc"
+			"mpProjection" : proj1
+		      	"mpCenterLonF" : clon1
+      			"mpCenterLatF" : clat1
+		      	"mpCenterRotF" : crot1
+      			"mpLeftNPCF"    : xmin1
+      			"mpRightNPCF"    : xmax1
+	      		"mpBottomNPCF"    : ymin1
+      			"mpTopNPCF"    : ymax1
+		end setvalues
+	end if
+    end if
+
+    return ret
+
+end
+
+;
 ; this function is tailored for cylindrical equidistant, though it
 ; may be somewhat useful for other projections
 ;
@@ -1684,9 +2006,10 @@ begin
 	     xmin0 .eq. xmin .and. \
 	     ymin0 .eq. ymin .and. \
 	     xmax0 .eq. xmax .and. \
-	     ymax0 .eq. ymax .and. \
-	     cen_lon0 .eq. cen_lon .and. \
-	     rel_lon0 .eq. rel_lon ) then
+	     ymax0 .eq. ymax) then
+;	     ymax0 .eq. ymax .and. \
+;	     cen_lon0 .eq. cen_lon .and. \
+;	     rel_lon0 .eq. rel_lon ) then
 		return 0
 	end if
 	 
@@ -1704,9 +2027,180 @@ begin
 		"mpMaxLonF"   : xmax
 		"mpMinLatF"   : ymin
 		"mpMaxLatF"   : ymax
-		"mpRelativeCenterLon" : rel_lon
-		"mpCenterLonF" : cen_lon
+;		"mpRelativeCenterLon" : rel_lon
+;		"mpCenterLonF" : cen_lon
 	end setvalues
+
+	return 1
+end
+
+function set_map_limits(map : graphic, \
+	 	        obj : graphic, \
+			limit_mode : integer, \
+			left_min[*] : float, \
+			right_max[*] : float, \
+			bottom_min[*] : float, \
+			top_max[*] : float)
+
+local lmode0,left_min0,bottom_min0,right_max0,top_max0,ret
+
+
+begin
+	if (.not. (isatt(map,"ndvClass") .and. \
+	    map@ndvClass .eq. "mapPlotClass")) then
+		return -1;
+	end if
+
+	if (limit_mode .lt. 0) then
+		ret = set_map_limits_from_object(map,obj,0)
+		return ret
+	end if
+
+	ret = 0
+	getvalues map
+		"mpLimitMode" : lmode0
+	end getvalues
+
+	if (lmode0 .ne. limit_mode) then
+		ret = 1
+	end if
+
+	if (ret .eq. 0) then
+		if (limit_mode .eq. 0) then
+			return ret
+		end if
+
+		if (limit_mode .eq. 1) then
+			getvalues map
+				"mpMinLonF"   : left_min0
+				"mpMaxLonF"   : right_max0
+				"mpMinLatF"   : bottom_min0
+				"mpMaxLatF"   : top_max0
+			end getvalues
+		else if (limit_mode .eq. 2) then
+			getvalues map
+				"mpLeftAngleF"   : left_min0
+				"mpRightAngleF"   : right_max0
+				"mpBottomAngleF"   : bottom_min0
+				"mpTopAngleF"   : top_max0
+			end getvalues
+		else if (limit_mode .eq. 3) then
+			getvalues map
+				"mpLeftNPCF"   : left_min0
+				"mpRightNPCF"   : right_max0
+				"mpBottomNPCF"   : bottom_min0
+				"mpTopNPCF"   : top_max0
+			end getvalues
+		else if (limit_mode .eq. 4) then
+			getvalues map
+				"mpLeftNDCF"   : left_min0
+				"mpRightNDCF"   : right_max0
+				"mpBottomNDCF"   : bottom_min0
+				"mpTopNDCF"   : top_max0
+			end getvalues
+		else if (limit_mode .eq. 5) then
+			getvalues map
+				"mpLeftCornerLonF"   : left_min0
+				"mpRightCornerLonF"   : right_max0
+				"mpLeftCornerLatF"   : bottom_min0
+				"mpRightCornerLatF"   : top_max0
+			end getvalues
+		else if (limit_mode .eq. 6) then
+			left_min0 = new(2,float)
+			right_max0 = new(2,float)
+			bottom_min0 = new(2,float)
+			top_max0 = new(2,float)
+			getvalues map
+				"mpLeftPointLonF"   : left_min0(0)
+				"mpLeftPointLatF"   : left_min0(1)
+				"mpBottomPointLonF"   : bottom_min0(0)
+				"mpBottomPointLatF"   : bottom_min0(1)
+				"mpRightPointLonF"   : right_max0(0)
+				"mpRightPointLatF"   : right_max0(1)
+				"mpTopPointLonF"   : top_max0(0)
+				"mpTopPointLatF"   : top_max0(1)
+			end getvalues
+		end if
+		end if
+		end if
+		end if
+		end if
+		end if
+		if (limit_mode .gt. 0 .and. \
+		    any(left_min0 .ne. left_min) .or. \
+		    any(right_max0 .ne. right_max) .or. \
+		    any(bottom_min0 .ne. bottom_min) .or. \
+		    any(top_max0 .ne. top_max)) then
+			ret = 1
+		end if 
+	end if
+	if (ret .eq. 0) then
+		return ret
+	end if
+
+	if (limit_mode .eq. 0) then
+		setvalues map
+			"mpLimitMode" : "maximalarea"
+		end setvalues
+	else if (limit_mode .eq. 1) then
+		setvalues map
+			"mpLimitMode" : "latlon"
+			"mpMinLonF"   : left_min
+			"mpMaxLonF"   : right_max
+			"mpMinLatF"   : bottom_min
+			"mpMaxLatF"   : top_max
+		end setvalues
+	else if (limit_mode .eq. 2) then
+		setvalues map
+			"mpLimitMode" : "angles"
+			"mpLeftAngleF"   : left_min
+			"mpRightAngleF"   : right_max
+			"mpBottomAngleF"   : bottom_min
+			"mpTopAngleF"   : top_max
+		end setvalues
+	else if (limit_mode .eq. 3) then
+		setvalues map
+			"mpLimitMode" : "npc"
+			"mpLeftNPCF"   : left_min
+			"mpRightNPCF"   : right_max
+			"mpBottomNPCF"   : bottom_min
+			"mpTopNPCF"   : top_max
+		end setvalues
+	else if (limit_mode .eq. 4) then
+		setvalues map
+			"mpLimitMode" : "ndc"
+			"mpLeftNDCF"   : left_min
+			"mpRightNDCF"   : right_max
+			"mpBottomNDCF"   : bottom_min
+			"mpTopNDCF"   : top_max
+		end setvalues
+	else if (limit_mode .eq. 5) then
+		setvalues map
+			"mpLimitMode" : "corners"
+			"mpLeftCornerLonF"   : left_min
+			"mpRightCornerLonF"   : right_max
+			"mpLeftCornerLatF"   : bottom_min
+			"mpRightCornerLatF"   : top_max
+		end setvalues
+	else if (limit_mode .eq. 6) then
+		setvalues map
+			"mpLimitMode" : "points"
+			"mpLeftPointLonF"   : left_min(0)
+			"mpLeftPointLatF"   : left_min(1)
+			"mpBottomPointLonF"   : bottom_min(0)
+			"mpBottomPointLatF"   : bottom_min(1)
+			"mpRightPointLonF"   : right_max(0)
+			"mpRightPointLonF"   : right_max(1)
+			"mpTopPointLonF"   : top_max(0)
+			"mpTopPointLatF"   : top_max(1)
+		end setvalues
+	end if
+	end if
+	end if
+	end if
+	end if
+	end if
+	end if
 
 	return 1
 end
