@@ -1,12 +1,12 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.153 2003-03-11 23:34:08 grubin Exp $
+ *      $Id: BuiltInFuncs.c,v 1.154 2003-03-19 18:50:35 grubin Exp $
  */
 /************************************************************************
-*									*
-*			     Copyright (C)  1995			*
-*	     University Corporation for Atmospheric Research		*
-*			     All Rights Reserved			*
-*									*
+*                                                                       *
+*                   Copyright (C)  1995                                 *
+*           University Corporation for Atmospheric Research             *
+*                   All Rights Reserved                                 *
+*                                                                       *
 ************************************************************************/
 /*
  *	File:		BuiltInFuncs.c
@@ -12291,11 +12291,6 @@ NhlErrorTypes _NclICreateFile(void)
 }
 
 
-#ifdef __cplusplus
-}
-#endif
-
-
 NhlErrorTypes   _NclIGetFileVarType
 # if    NhlNeedProto
 (void)
@@ -12303,21 +12298,27 @@ NhlErrorTypes   _NclIGetFileVarType
 ()
 # endif /* NhlNeedProto */
 {
-    /* Local variables */
+    /* file variables */
     NclFile f;
-    obj *fid;
+    int *fid;
 
-    string  *var;
+    /* var names, types */
+    string  *varnames;
+    NclQuark    *vartypes = NULL;
 
-    NclObjTypes vartype;
-    NclQuark *rstr;
+    /* dimensions, sizes */
+    int ndims,
+        dimsz[NCL_MAX_DIMENSIONS];
+    int sz = 1;
 
-    int dimsizes = 1;
     NclScalar   missing;
+    int has_missing = False;
+
+    int i = 0;
 
 
     /* get file information (1st arg.) */
-    fid = (obj *) NclGetArgValue(
+    fid = (int *) NclGetArgValue(
                     0,
                     2,
                     NULL,
@@ -12326,87 +12327,98 @@ NhlErrorTypes   _NclIGetFileVarType
                     NULL,
                     NULL,
                     0);
-
     f = (NclFile) _NclGetObj((int) *fid);
 
     /* get variable information (2nd arg.) */
-    var = (string *) NclGetArgValue(
+    varnames = (string *) NclGetArgValue(
                     1,
                     2,
-                    NULL,
-                    NULL,
+                    &ndims,
+                    dimsz,
                     NULL,
                     NULL,
                     NULL,
                     0);
 
-    /* the string to return */
-    rstr = (NclQuark*) NclMalloc(sizeof(NclQuark));
-    if (rstr == (NclQuark *) NULL) {
+    /* get all variable dimensions */
+    for (i = 0; i < ndims; i++)
+        sz *= dimsz[i];
+
+    /* the type string(s) to return */
+    vartypes = (NclQuark*) NclMalloc((unsigned int) sizeof(NclQuark) * sz);
+    if (vartypes == (NclQuark *) NULL) {
         NhlPError(NhlFATAL, errno, "getfilevartype: memory allocation error");
         return NhlFATAL;
     }
 
-    vartype = _NclFileVarRepValue(f, *var);
-    switch (vartype) {
-		case Ncl_Typedouble:                
-			*rstr = NrmStringToQuark("double");
-			break;
+    for (i = 0; i < sz; i++) {
+        switch (f->file.var_info[i]->data_type) {
+	    	case NCL_double:
+		    	vartypes[i] = NrmStringToQuark("double");
+			    break;
 
-		case Ncl_Typefloat: 
-			*rstr = NrmStringToQuark("float");
-			break;
+    		case NCL_float:
+	    		vartypes[i] = NrmStringToQuark("float");
+		    	break;
 
-		case Ncl_Typelong:
-			*rstr = NrmStringToQuark("long");
-			break;
+    		case NCL_long:
+	    		vartypes[i] = NrmStringToQuark("long");
+		    	break;
 
-		case Ncl_Typeint:
-			*rstr = NrmStringToQuark("integer");
-			break;
+    		case NCL_int:
+	    		vartypes[i] = NrmStringToQuark("integer");
+		    	break;
 
-		case Ncl_Typeshort:
-			*rstr = NrmStringToQuark("short");
-			break;
+    		case NCL_short:
+	    		vartypes[i] = NrmStringToQuark("short");
+		    	break;
 
-		case Ncl_Typebyte:
-			*rstr = NrmStringToQuark("byte");
-			break;
+       		case NCL_byte:
+	    		vartypes[i] = NrmStringToQuark("byte");
+		    	break;
 
-		case Ncl_Typestring:
-			*rstr = NrmStringToQuark("string");
-			break;
+    		case NCL_string:
+	    		vartypes[i] = NrmStringToQuark("string");
+		    	break;
 
-		case Ncl_Typechar: 
-			*rstr = NrmStringToQuark("character");
-			break;
+    		case NCL_char:
+	    		vartypes[i] = NrmStringToQuark("character");
+		    	break;
 
-		case Ncl_Typeobj: 
-			*rstr = NrmStringToQuark("obj");
-			break;
+    		case NCL_obj:
+	    		vartypes[i] = NrmStringToQuark("obj");
+		    	break;
 
-		case Ncl_Typelogical:
-			*rstr = NrmStringToQuark("logical");
-			break;
+    		case NCL_logical:
+	    		vartypes[i] = NrmStringToQuark("logical");
+		    	break;
 
-		case Ncl_Typelist:
-			*rstr = NrmStringToQuark("list");
-			break;
+    		case NCL_list:
+	    		vartypes[i] = NrmStringToQuark("list");
+		    	break;
 
-        case Ncl_None:
-        default:
-            *rstr = NrmStringToQuark("missing");
-            NhlPError(NhlWARNING, NhlEUNKNOWN,
-                "getfilevartype: variable (%s) does not exist in file (%s)",
-                NrmQuarkToString(*var), NrmQuarkToString(f->file.fname));
+            case NCL_none:
+            default:
+                has_missing = True;
+                vartypes[i] = NrmStringToQuark("missing");
 
-            missing.stringval = NrmStringToQuark("missing");
-            return NclReturnValue(rstr, 1, &dimsizes, &missing,
-                    ((NclTypeClass) nclTypestringClass)->type_class.data_type, 0);
+                NhlPError(NhlWARNING, NhlEUNKNOWN,
+                    "getfilevartype: variable (%s) does not exist in file (%s)",
+                    NrmQuarkToString(varnames[i]), NrmQuarkToString(f->file.fname));
 
-            break;
-	}
+                break;
+        }
+    }
 
-    return NclReturnValue(rstr, 1, &dimsizes, NULL,
-            ((NclTypeClass) nclTypestringClass)->type_class.data_type, 0);
+    if (has_missing) {
+        missing.stringval = NrmStringToQuark("missing");
+        return NclReturnValue((void *) vartypes, ndims, dimsz, &missing, NCL_string, 0);
+    }
+    else
+        return NclReturnValue((void *) vartypes, ndims, dimsz, NULL, NCL_string, 0);
+
 }
+
+#ifdef __cplusplus
+}
+#endif

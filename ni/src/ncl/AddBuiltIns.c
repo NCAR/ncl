@@ -1,6 +1,6 @@
 
 /*
- *      $Id: AddBuiltIns.c,v 1.61 2003-03-10 22:27:57 grubin Exp $
+ *      $Id: AddBuiltIns.c,v 1.62 2003-03-19 18:50:35 grubin Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -1526,7 +1526,7 @@ void _NclAddBuiltIns
     args = NewArgs(2);
     dimsizes[0] = 1;
     SetArgTemplate(args, nargs, "file", NclANY, NclANY);    nargs++;
-    SetArgTemplate(args, nargs, "string", 1, dimsizes);     nargs++;
+    SetArgTemplate(args, nargs, "string", dimsizes, NclANY);     nargs++;
     NclRegisterFunc(_NclIGetFileVarType, args, "getfilevartype", nargs);
 
 	nargs = 0;
