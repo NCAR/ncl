@@ -1,5 +1,5 @@
 /*
- *      $Id: mwinP.h,v 1.2 1998-01-29 16:05:06 boote Exp $
+ *      $Id: mwinP.h,v 1.3 1998-11-18 19:45:20 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -26,13 +26,14 @@
 
 #include <ncarg/ngo/mwin.h>
 
+#define DEBUG_MWIN 0
+
 typedef struct _NgMWinClassRec *NgMWinClass;
 typedef struct _NgMWinRec *NgMWin;
 
 typedef struct _NgMWinPart {
 /* required fields */
 	int		foo;
-
 /* private fields */
 	Widget		cwki;
 

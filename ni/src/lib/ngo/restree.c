@@ -1,5 +1,5 @@
 /*
- *      $Id: restree.c,v 1.15 1998-09-18 23:47:40 boote Exp $
+ *      $Id: restree.c,v 1.16 1998-11-18 19:45:21 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2265,11 +2265,15 @@ static void EditEnum
         ep->selected = -1;
 	for (i = 0; i < nargs; i++) {
 		unique[i] = True;
+		if (args[i].addressmode != NhlSTRENUM)
+			continue;
 		for (j=i-1;j>-1;j--) {
-		  if (args[j].size == args[i].size) {
+			if (args[j].addressmode != NhlSTRENUM)
+				continue;
+			if (args[j].size == args[i].size) {
 				unique[i] = False;
 				break;
-		  }
+			}
 		}
 		if (unique[i]){
 			ep->strings[noptions] = args[i].data.strval;

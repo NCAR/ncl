@@ -1,5 +1,5 @@
 /*
- *      $Id: app.h,v 1.9 1998-08-26 05:16:11 dbrown Exp $
+ *      $Id: app.h,v 1.10 1998-11-18 19:45:15 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -35,6 +35,8 @@
 #define NgCappAppId			"ngAppAppId"
 #define	NgNappNclState			"ngappNclState"
 #define	NgCappNclState			"NgAppNclState"
+#define	NgNappWksState			"ngappWksState"
+#define	NgCappWksState			"NgAppWksState"
 
 extern NhlClass NgappMgrClass;
 
@@ -191,5 +193,7 @@ struct NgAppGoChangeRec{
 };
 
 #define	NgCBAppGoChange	"CBAppGoChange"	/* cbdata.ptrval is NgAppGoChange */
+
+typedef void *NgWksState;
 
 #endif	/* _NG_APPMGR_H */

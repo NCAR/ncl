@@ -1,5 +1,5 @@
 /*
- *      $Id: go.c,v 1.17 1998-10-19 20:25:54 boote Exp $
+ *      $Id: go.c,v 1.18 1998-11-18 19:45:17 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1171,7 +1171,14 @@ _NgGOPopupCB
 	XtPointer	cbdata
 )
 {
-	NgGOPopup((int)udata);
+	int goid = (int)udata;
+
+	if (!NhlIsClass(goid,NgxWkClass))
+		NgGOPopup((int)udata);
+	else {
+		NgGO go = (NgGO)_NhlGetLayer(goid);
+		NgXWorkPopup(go->go.appmgr,goid);
+	} 
 
 	return;
 }

@@ -1,5 +1,5 @@
 /*
- *      $Id: xwk.c,v 1.9 1998-10-19 20:25:55 boote Exp $
+ *      $Id: xwk.c,v 1.10 1998-11-18 19:45:23 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -23,11 +23,13 @@
 #include <ncarg/ngo/xwkP.h>
 #include <ncarg/ngo/nclstate.h>
 #include <ncarg/ngo/colormap.h>
+#include <ncarg/ngo/xinteractP.h>
 
 #include <X11/Intrinsic.h>
 #include <Xm/Xm.h>
 #include <Xm/Form.h>
 #include <Xm/RowColumn.h>
+#include <Xm/ToggleBG.h>
 #include <Xm/MenuShell.h>
 #include <ncarg/ngo/CascadeBG.h>
 #include <Xm/PushBG.h>
@@ -41,6 +43,9 @@ static NhlResource resources[] = {
 	{NgNxwkWork,NgCxwkWork,NhlTPointer,sizeof(NhlPointer),
 		Oset(xwork),NhlTImmediate,_NhlUSET((NhlPointer)NULL),
 		_NhlRES_CONLY,NULL},
+	{NgNxwkSelectedView,NgCxwkSelectedView,NhlTPointer,
+	 sizeof(NhlPointer),Oset(selected_view_id),NhlTImmediate,
+	 _NhlUSET((NhlPointer)NhlNULLOBJID),_NhlRES_GONLY,NULL}
 };
 #undef	Oset
 
@@ -112,6 +117,50 @@ NgXWkClassRec NgxWkClassRec = {
 
 NhlClass NgxWkClass = (NhlClass)&NgxWkClassRec;
 
+static void
+ColorCB
+(
+	NhlArgVal	cbdata,
+	NhlArgVal	udata
+)
+{
+	char		func[]="ColorCB";
+	NgXWk		xwk = (NgXWk)udata.ptrval;
+	NhlXPixel	bg,fg;
+	XGCValues       gcv;
+	NgXWkPart	*xp;
+	NgXAppExport	x;
+
+#if DEBUG_XWK
+	printf("in color callback\n");
+#endif
+
+	xp = &xwk->xwk;
+	x = xwk->go.x;
+	NhlGetXPixel(xp->xwork->base.id,0,&bg);
+	NhlGetXPixel(xp->xwork->base.id,1,&fg);
+	gcv.foreground = bg ^ fg;
+	gcv.background = bg;
+
+	if (! xp->xor_gc) {
+		gcv.function = GXxor;
+		gcv.line_width = 0;
+		xp->xor_gc = XCreateGC
+			(x->dpy,DefaultRootWindow(x->dpy),
+			 (GCLineWidth|GCBackground|GCForeground|GCFunction),
+			 &gcv);
+		XtAddEventHandler(xp->graphics,ButtonPressMask,False,
+				  (XtEventHandler)_NgSelectionEH,
+				  (XtPointer)xwk);
+	}
+	else {
+		XChangeGC(xwk->go.x->dpy,xp->xor_gc,
+			  (GCBackground|GCForeground),&gcv);
+	}
+	return;
+
+}
+
 void NgXWorkPopup
 (
 	int appmgr,
@@ -119,15 +168,18 @@ void NgXWorkPopup
 )
 {
 	NgXWk			xwk;
+	NgXWkPart		*xp;
 	XtInputMask		mask;
 	NgXAppExport		x;
 
 	xwk = (NgXWk)_NhlGetLayer(xwkid);
+
 	if(!xwk){
 		NHLPERROR((NhlFATAL,NhlEUNKNOWN,
 			   "%s: Error getting X window layer"));
 		return;
 	}
+	xp = &xwk->xwk;
 	x = xwk->go.x;
 	/*
 	 * Pop up xwk, and get the workstation window.
@@ -136,6 +188,10 @@ void NgXWorkPopup
 	 */
 	NgAppGrabFocus(appmgr,xwkid);
 	NgGOPopup(xwkid);
+#if DEBUG_XWK
+	printf("mapped = %d\n",xp->mapped);
+#endif
+
 	/*
 	 * This will process all X Events until xwk is mapped, and
 	 * there are no outstanding X Events. (All those events should
@@ -147,34 +203,9 @@ void NgXWorkPopup
 	 * ** procs, timers, or alternate inputs which could be big	**
 	 * ** trouble!							**
 	 */
-#if	NOT
-	for(mask=XtAppPending(x->app);
-			!xwk->xwk.mapped || (XtIMXEvent&mask);
-						mask=XtAppPending(x->app)){
-		if(mask & XtIMXEvent)
-			XtAppProcessEvent(x->app,XtIMXEvent);
-	}
-	/* 
-	 * on my linux box at least it does not seem to be sufficient to 
-	 * wait for all the event processing -- the draws can still occur
-	 * before the window is ready to receive them. The following seems
-	 * to take care of the problem. Not sure if the syncs are really
-	 * necessary. The sleep is necessary.
-	 *
-	 * - hopefully the loop below fixes the problem without the sleep...
-	 *
-	 * It looks like the problem is that mapped was never being set to
-	 * false - so calling Popup on the XWks was not a "flushed" event, so
-	 * the event loop above probably would have still worked, but the one
-	 * below is better.. (not as effecient, but completely "flushed".)
-	 * 	- jeff
-	 */
-	XSync(x->dpy,False);
-	sleep(1);
-	XSync(x->dpy,False);
-#endif
+
 	mask = XtAppPending(x->app);
-	while(!xwk->xwk.mapped || (XtIMXEvent&mask)){
+	while(!xp->mapped || (XtIMXEvent&mask)){
 		if(mask&XtIMXEvent)
 			XtAppProcessEvent(x->app,XtIMXEvent);
 		mask = XtAppPending(x->app);
@@ -191,6 +222,42 @@ void NgXWorkPopup
 	}
 
 	NgAppReleaseFocus(appmgr,xwkid);
+}
+
+static void
+SetUpWorkColorCBs
+(
+	int xwkid
+)
+{
+	NgXWk			xwk;
+	NgXWkPart		*xp;
+
+	xwk = (NgXWk)_NhlGetLayer(xwkid);
+
+	if(!xwk){
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+			   "%s: Error getting X window layer"));
+		return;
+	}
+	xp = &xwk->xwk;
+
+	if (! xp->xor_gc) {
+		NhlArgVal		sel,udata;
+
+		NhlINITVAR(sel);
+		NhlINITVAR(udata);
+		udata.ptrval = xwk;
+		sel.lngval = 0;
+		_NhlAddObjCallback
+			((NhlLayer)xp->xwork,
+			 _NhlCBworkColorIndexChange,sel,ColorCB,udata);
+		sel.lngval = 1;
+		_NhlAddObjCallback
+			((NhlLayer)xp->xwork,
+			 _NhlCBworkColorIndexChange,sel,ColorCB,udata);
+	}
+	return;
 }
 
 /*
@@ -217,6 +284,9 @@ NgXWorkPreOpenCB
 	NhlXWorkstationLayer	wk = (NhlXWorkstationLayer)cbdata.ptrval;
 	NgXWk			xwk;
 	int			xwkid,appmgr,selected_work;
+        NclApiVarInfoRec 	*vinfo;
+        NclApiDataList		*dlist = NULL;
+	NgWksObj 		wko;
 
 	/*
 	 * Eventually, set up a *controlling* window, that doesn't actually
@@ -236,7 +306,22 @@ NgXWorkPreOpenCB
 							func,wk->base.name));
 		return;
 	}
-	wk->base.gui_data2 = (NhlPointer) xwkid;
+	/* 
+	 * For most objects the ViewTree (in mwin.c for now) allocates the 
+	 * Obj info rec and assigns it to the gui_data2 pointer. But the
+	 * draw routine may need to know the NgXwk object id before the
+	 * workstation gets put into the ViewTree. So the NgXwk creates it.
+	 * It will still be freed by the ViewTree.
+	 */
+	wko = NhlMalloc(sizeof(NgWksObjRec));
+	if(!wko){
+		NHLPERROR((NhlFATAL,ENOMEM,NULL));
+		return;
+	}	
+	/* only fill in the wrapper id at this point */
+	wko->wks_wrap_id = xwkid;
+	wko->auto_refresh = True;
+	wk->base.gui_data2 = (NhlPointer) wko;
 
 	selected_work = NgAppGetSelectedWork(appmgr,False,NULL);
 
@@ -245,14 +330,16 @@ NgXWorkPreOpenCB
 	 * been created. The first one gets created unmapped.
 	 */
 
-	if (selected_work < 0) {
+	if (selected_work < 0 ||! strncmp(wk->base.name,"_NgPreview_",11)) {
 		NgGOCreateUnmapped(xwkid);
+		SetUpWorkColorCBs(xwkid);
 		return;
 	}
 
 	/* otherwise pop up the workstation immediately */
 
 	NgXWorkPopup(appmgr,xwkid);
+	SetUpWorkColorCBs(xwkid);
 
 	return;
 }
@@ -403,6 +490,7 @@ XWkInitialize
 	 * initialize state vars...
 	 */
 	np->mapped = False;
+	np->xor_gc = NULL;
 	np->graphics = NULL;
 
 	/*
@@ -442,12 +530,22 @@ XWkInitialize
 	np->size = NULL;
 
 	if(!xwk->go.xm_title){
-		xwk->go.xm_title = NgXAppCreateXmString(xwk->go.appmgr,
-					xwk->xwk.xwork->xwork.xwinconfig.title);
+		xwk->go.xm_title = NgXAppCreateXmString
+			(xwk->go.appmgr,
+			 xwk->xwk.xwork->xwork.xwinconfig.title);
 	}
 
 	xwk->xwk.cmap_editor = NhlNULLOBJID;
 
+	xwk->xwk.lastp.x = xwk->xwk.lastp.y = (Position) -1;
+	xwk->xwk.selected_view_id = NhlNULLOBJID;
+	xwk->xwk.views = NULL;
+	xwk->xwk.view_count = 0;
+	xwk->xwk.view_alloc_count = 0;
+	xwk->xwk.auto_refresh = True;
+	xwk->xwk.draw_single_view = False;
+	xwk->xwk.select_rect_vis = False;
+	xwk->xwk.manipulate_eh_active = False;
 	return NhlNOERROR;
 }
 
@@ -480,13 +578,14 @@ XWkDestroy
 	NgXWk		xwk = (NgXWk)l;
 	NgXWkPart	*xp = &((NgXWk)l)->xwk;
 
+	
 	NgCBWPDestroy(xp->xwork_destroycb);
 	_NhlCBDelete(xp->appdestroycb);
 	_NhlCBDelete(xp->nsdestroycb);
 
-	if(xp->graphics)
-		XtRemoveEventHandler(xp->graphics,StructureNotifyMask,False,
-							MapGraphicsEH,xwk);
+	if(xwk->go.shell)
+		XtRemoveEventHandler(xwk->go.shell,StructureNotifyMask,False,
+				     (XtEventHandler)_NgSelectionEH,xwk);
 #if 0
 	NgAppRemoveGO(xwk->go.appmgr,xwk->base.id);
 #endif
@@ -494,6 +593,12 @@ XWkDestroy
 		int	nclstate=NhlDEFAULT_APP;
 		char	*ref;
 		char	cmdbuff[1024];
+		NgWksObj	wkobj = (NgWksObj) xp->xwork->base.gui_data2;
+
+		if (wkobj) {
+			/* turn off auto refresh */
+			wkobj->auto_refresh = False;
+		}
 
 		NhlVAGetValues(xwk->go.appmgr,
 			NgNappNclState,	&nclstate,
@@ -511,6 +616,13 @@ XWkDestroy
 		}
 		else
 			NhlDestroy(xp->xwork->base.id);
+	}
+
+	if (xp->xor_gc) {
+		XFreeGC(xwk->go.x->dpy,xp->xor_gc);
+		if (xp->graphics) 
+			XtRemoveEventHandler(xp->graphics,ButtonPressMask,
+					     False,MapGraphicsEH,xwk);
 	}
 
 	_NhlCBDelete(xp->broker_destroyCB);
@@ -609,6 +721,52 @@ CFault
 	return;
 }
 
+void
+DrawSingleViewOptionCB
+(
+	Widget		w,
+	XtPointer	udata,
+	XtPointer	cbdata
+)
+{
+	char			func[]="DrawSingleViewOptionCB";
+	XmToggleButtonCallbackStruct	*xmcb = 
+		(XmToggleButtonCallbackStruct*)cbdata;
+	NgXWk			xwk = (NgXWk)udata;
+
+#if DEBUG_XWK
+	printf("draw single view %s\n", xmcb->set ? "on" : "off");
+#endif
+	xwk->xwk.draw_single_view = xmcb->set;
+
+	return;
+}
+
+void
+AutoRefreshOptionCB
+(
+	Widget		w,
+	XtPointer	udata,
+	XtPointer	cbdata
+)
+{
+	char			func[]="AutoRefreshOptionCB";
+	XmToggleButtonCallbackStruct	*xmcb = 
+		(XmToggleButtonCallbackStruct*)cbdata;
+	NgXWk			xwk = (NgXWk)udata;
+	NgWksObj		wksobj;
+
+#if DEBUG_XWK
+	printf("auto refresh %s\n", xmcb->set ? "on" : "off");
+#endif
+	xwk->xwk.auto_refresh = xmcb->set;
+
+	wksobj = (NgWksObj) xwk->xwk.xwork->base.gui_data2;
+	wksobj->auto_refresh = xwk->xwk.auto_refresh;
+
+	return;
+}
+
 static NhlBoolean
 XWkCreateWin
 (
@@ -636,6 +794,40 @@ XWkCreateWin
 	w = XtVaCreateManagedWidget("colorMapEditor",xmPushButtonGadgetClass,
 		xwk->go.emenu,NULL);
 	XtAddCallback(w,XmNactivateCallback,_NgGODefActionCB,NULL);
+
+
+	XtVaSetValues(xwk->go.options,
+		XmNsensitive,	True,
+		NULL);
+	
+	w = XtVaCreateManagedWidget
+		("autoRefreshOption",xmToggleButtonGadgetClass,
+		 xwk->go.omenu,
+		 XmNset,True,
+		 NULL);
+	XtAddCallback(w,XmNvalueChangedCallback,AutoRefreshOptionCB,xwk);
+
+
+	w = XtVaCreateManagedWidget
+		("drawSingleViewOption",xmToggleButtonGadgetClass,
+		 xwk->go.omenu,
+		 XmNset,False,
+		 NULL);
+	XtAddCallback(w,XmNvalueChangedCallback,DrawSingleViewOptionCB,xwk);
+
+	XtVaSetValues(xwk->go.view,
+		XmNsensitive,	True,
+		NULL);
+	
+	w = XtVaCreateManagedWidget
+		("clearAllViews",xmPushButtonGadgetClass,
+		 xwk->go.vmenu,NULL);
+	XtAddCallback(w,XmNactivateCallback,_NgClearAllViewsCB,xwk);
+
+	w = XtVaCreateManagedWidget
+		("drawAllViews",xmPushButtonGadgetClass,
+		 xwk->go.vmenu,NULL);
+	XtAddCallback(w,XmNactivateCallback,_NgDrawAllViewsCB,xwk);
 
 	xp->graphicsSW = XtVaCreateManagedWidget("xworkSW",
 				xmScrolledWindowWidgetClass,go->go.manager,
@@ -673,20 +865,21 @@ XWkCreateWin
 		xp->xcb = xp->pxcb;
 	else
 		xp->my_broker = True;
+	
+	xp->graphics = XtVaCreateManagedWidget
+		("graphics",
+		 xmDrawingAreaWidgetClass,xp->graphicsSW,
+		 XmNbottomShadowColor,	0,
+		 XmNhighlightColor,	0,
+		 XmNtopShadowColor,	0,
+		 XmNbackground,		0,
+		 XmNborderColor,	0,
+		 XmNdepth,		XcbGetDepth(xp->xcb),
+		 XmNcolormap,		XcbGetColormap(xp->xcb),
+		 NULL);
 
-	xp->graphics = XtVaCreateManagedWidget("graphics",
-					xmDrawingAreaWidgetClass,xp->graphicsSW,
-		XmNbottomShadowColor,	0,
-		XmNhighlightColor,	0,
-		XmNtopShadowColor,	0,
-		XmNbackground,		0,
-		XmNborderColor,		0,
-		XmNdepth,		XcbGetDepth(xp->xcb),
-		XmNcolormap,		XcbGetColormap(xp->xcb),
-		NULL);
-
-	XtAddEventHandler(xp->graphics,StructureNotifyMask,False,MapGraphicsEH,
-								(XtPointer)xwk);
+	XtAddEventHandler(go->go.shell,StructureNotifyMask,
+			  False,MapGraphicsEH,(XtPointer)xwk);
 
 	if(xp->xcb){
 		NhlArgVal	sel,udata;
@@ -786,6 +979,7 @@ XWkCreateWinHook
 	xalloccolor.cref = xp->xcb;
 	gescape(NGESC_CNATIVE,&gesc_in,NULL,NULL);
 	(void)_NhlLLErrCheckPrnt(NhlWARNING,"XWkCreateWinHook");
+
 
 	return True;
 }

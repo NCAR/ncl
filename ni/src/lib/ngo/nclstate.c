@@ -1,5 +1,5 @@
 /*
- *      $Id: nclstate.c,v 1.18 1998-09-18 23:47:39 boote Exp $
+ *      $Id: nclstate.c,v 1.19 1998-11-18 19:45:21 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1805,7 +1805,7 @@ NgNclVisBlockAddResList
                         NHLPERROR((NhlFATAL,ENOMEM,NULL));
                         return NhlFATAL;
                 }
-                if (quote[i])
+                if (quote && quote[i])
                         sprintf(&ns->buffer[buflen],"\"%s\" : \"%s\"\n",
                                 res_names[i],values[i]);
                 else

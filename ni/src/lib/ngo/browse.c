@@ -1,5 +1,5 @@
 /*
- *      $Id: browse.c,v 1.21 1998-09-18 23:47:37 boote Exp $
+ *      $Id: browse.c,v 1.22 1998-11-18 19:45:15 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2361,7 +2361,11 @@ extern NhlPointer NgPageData(
         )
 {
         NgGO		go = (NgGO)_NhlGetLayer(goid);
-        brPage		*page = GetPageReference(go,page_id);
+        brPage		*page;
+
+	if (! go)
+		return NULL;
+	page = GetPageReference(go,page_id);
 
         if (! page)
                 return NULL;
@@ -2506,6 +2510,24 @@ extern NhlErrorTypes NgPageSetVisible(
 
         return NhlNOERROR;
 
+}
+
+extern NhlErrorTypes NgDeletePage(
+        int		goid,
+        NgPageId	page_id
+        )
+{
+        NgGO		go = (NgGO)_NhlGetLayer(goid);
+        brPage		*page = GetPageReference(go,page_id);
+
+        if (! page) {
+                NHLPERROR((NhlWARNING,NhlEUNKNOWN,"invalid page specified"));
+                return NhlWARNING;
+        }
+
+	DeleteVarPage(page);
+
+	return NhlNOERROR;
 }
 
 static void TabFocusAction

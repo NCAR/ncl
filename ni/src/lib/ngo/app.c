@@ -1,5 +1,5 @@
 /*
- *      $Id: app.c,v 1.16 1998-10-19 20:25:52 boote Exp $
+ *      $Id: app.c,v 1.17 1998-11-18 19:45:12 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -46,6 +46,9 @@ static NhlResource resources[] = {
 	{NgNappNclState,NgCappNclState,NhlTInteger,sizeof(int),Oset(nclstate),
 		NhlTImmediate,_NhlUSET((NhlPointer)NhlDEFAULT_APP),
 		_NhlRES_SGONLY,(NhlFreeFunc)NULL},
+	{NgNappWksState,NgCappWksState,NhlTPointer,sizeof(NhlPointer),
+	 	Oset(wks_state),NhlTImmediate,_NhlUSET((NhlPointer)NULL),
+		_NhlRES_SGONLY,(NhlFreeFunc)NULL},
 
 };
 #undef	Oset
@@ -69,6 +72,14 @@ static NhlErrorTypes AppMgrInitialize(
 	NhlLayer	new,
 	_NhlArgList	args,
 	int		nargs
+);
+
+static NhlErrorTypes AppMgrSetValues(
+        NhlLayer	old,
+        NhlLayer	reference,
+        NhlLayer	new,
+        _NhlArgList	args,
+        int             num_args
 );
 
 static NhlErrorTypes AppMgrDestroy(
@@ -99,7 +110,7 @@ NgAppMgrClassRec NgappMgrClassRec = {
 /* class_part_initialize	*/	AppMgrClassPartInitialize,
 /* class_initialize		*/	AppMgrClassInitialize,
 /* layer_initialize		*/	AppMgrInitialize,
-/* layer_set_values		*/	NULL,
+/* layer_set_values		*/	AppMgrSetValues,
 /* layer_set_values_hook	*/	NULL,
 /* layer_get_values		*/	NULL,
 /* layer_reparent		*/	NULL,
@@ -228,6 +239,53 @@ AppMgrInitialize
 	return NhlNOERROR;
 }
 
+
+/*
+ * Function:	AppMgrSetValues
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+static NhlErrorTypes
+AppMgrSetValues
+(
+        NhlLayer        old,
+        NhlLayer        reference,
+        NhlLayer        new,
+        _NhlArgList     args,
+        int             num_args
+)
+{
+	char		func[] = "AppMgrSetValues";
+	NgAppMgrPart	*app = &((NgAppMgr)new)->app;
+	NgAppMgrPart	*oldapp = &((NgAppMgr)old)->app;
+	NhlErrorTypes	ret = NhlNOERROR;
+
+	if (_NhlArgIsSet(args,num_args,NgNappNclState) &&
+	    oldapp->nclstate != NhlDEFAULT_APP) {
+		NHLPERROR((NhlWARNING,NhlEUNKNOWN,
+			   "%s: Can only set %s once",func,NgNappNclState));
+		app->nclstate = oldapp->nclstate;
+		ret = MIN(NhlWARNING,ret);	
+	}
+	if (_NhlArgIsSet(args,num_args,NgNappWksState) && 
+	    oldapp->wks_state != NULL) {
+		NHLPERROR((NhlWARNING,NhlEUNKNOWN,
+			   "%s: Can only set %s once",func,NgNappWksState));
+		app->wks_state = oldapp->wks_state;
+		ret = MIN(NhlWARNING,ret);	
+	}
+
+	return ret;
+}
+
 static void
 FreeGOList
 (
@@ -342,7 +400,7 @@ DeleteWksCB
         qsymname = NrmStringToQuark(sym->name);
         if (qsymname == Qngselectedwork)
                 return;
-                
+
         sel_id = NgNclGetHluObjId(app->app.nclstate,Ng_SELECTED_WORK,
                               &id_count,&id_array);
         if (id_count > 1)
@@ -362,11 +420,15 @@ DeleteWksCB
 		id = NgNclGetHluObjId
 			(app->app.nclstate,NrmQuarkToString(qvars[i]),
 			 &id_count,&id_array);
+		if (id <= NhlNULLOBJID)
+			continue;
                 if (id_count > 1)
                         NhlFree(id_array);
                 if (_NhlIsWorkstation(_NhlGetLayer(id))) {
-                        NgAppSetSelectedWork(app->base.id,
-                                             NrmQuarkToString(qvars[i]));
+			if (id != sel_id)
+				NgAppSetSelectedWork
+					(app->base.id,
+					 NrmQuarkToString(qvars[i]));
                         return;
                 }
         }
@@ -1303,6 +1365,7 @@ NgAppReleaseFocus
 			*fsp = (*fsp)->next;
 			break;
 		}
+		fsp = &(*fsp)->next;
 	}
 
 	if(!fs) return;

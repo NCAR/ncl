@@ -1,5 +1,5 @@
 /*
- *      $Id: graphic.h,v 1.1 1997-10-03 20:08:03 dbrown Exp $
+ *      $Id: graphic.h,v 1.2 1998-11-18 19:45:18 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -92,6 +92,18 @@ NhlErrorTypes NgDrawGraphic
 (
 	int		goid,
 	NhlString	ncl_graphic,
+        NhlBoolean	clear
+        );
+
+/*
+ * a wrapper for NgDrawGraphic that takes a view id instead of a string ref
+ */
+
+extern
+NhlErrorTypes NgDrawView
+(
+	int		goid,
+	int		view_id,
         NhlBoolean	clear
         );
 

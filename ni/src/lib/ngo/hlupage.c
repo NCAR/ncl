@@ -1,5 +1,5 @@
 /*
- *      $Id: hlupage.c,v 1.15 1998-08-26 05:16:12 dbrown Exp $
+ *      $Id: hlupage.c,v 1.16 1998-11-18 19:45:18 dbrown Exp $
  */
 /*******************************************x*****************************
 *									*
@@ -23,6 +23,7 @@
 #include <ncarg/ngo/hlupageP.h>
 #include <ncarg/ngo/nclstate.h>
 #include <ncarg/ngo/graphic.h>
+#include <ncarg/ngo/xinteract.h>
 
 #include <Xm/Xm.h>
 #include <Xm/Form.h>
@@ -70,6 +71,28 @@ SetValCB
  */
         if (rec->do_setval_cb)
                 NgResTreeResUpdateComplete(rec->res_tree,rec->hlu_id,False);
+
+        return;
+}
+
+static void
+DestroyCB
+(
+	NhlArgVal	cbdata,
+	NhlArgVal	udata
+)
+{
+	brSetValCBInfo   *info = (brSetValCBInfo *)udata.lngval;
+	brHluPageRec	*rec;
+
+#if DEBUG_HLUPAGE
+        fprintf(stderr,"in destroy cb\n");
+#endif
+	rec = (brHluPageRec *)NgPageData(info->goid,info->pid);
+        if (! rec || rec->state < _hluCREATED)
+                return;
+
+	NgDeletePage(info->goid,info->pid);
 
         return;
 }
@@ -163,7 +186,10 @@ ManageScalarField
 	return NhlNOERROR;
 }
 
-
+/*
+ * this routine is temporary: note that creates preview objects using the
+ * the ncl interface. Wrong!!! 
+ */
 static Boolean ManagePlotObj
 (
         brPage	*page,
@@ -184,6 +210,9 @@ static Boolean ManagePlotObj
 	char cellsizestring[16];
         int block_id;
         int res_count = 0;
+	NhlLayer wl;
+	NgWksObj	wks;
+	NhlBoolean	save_auto_refresh;
         
 	char *cnlineres[] = {
 		"cnScalarFieldData",
@@ -374,7 +403,28 @@ static Boolean ManagePlotObj
 		values[i] = dataitemlist[i];
 	}
 
-        if (rec->state != _hluCREATED) {
+	wl = _NhlGetLayer(wk_id);
+	if (wl) {
+		wks = (NgWksObj) wl->base.gui_data2;
+		if (wks) {
+			save_auto_refresh = wks->auto_refresh;
+			wks->auto_refresh = False;
+		}
+	}
+
+        if (rec->state == _hluNOTCREATED) {
+		char buf[512] = "_NgPreview_";
+		strcat(buf,NrmQuarkToString(page->qvar));
+                block_id = NgNclVisBlockBegin(rec->nclstate,_NgCREATE,
+					      buf,
+                                              (NhlString)NhlName(wk_id),
+                                              rec->public.class_name);
+		for (i=0; res[i] != NULL; i++){
+                        res_count++;
+                        quote[i] = False;
+                }
+        }
+        else if (rec->state == _hluPREVIEW) {
                 block_id = NgNclVisBlockBegin(rec->nclstate,_NgCREATE,
                                               NrmQuarkToString(page->qvar),
                                               (NhlString)NhlName(wk_id),
@@ -385,6 +435,13 @@ static Boolean ManagePlotObj
                 }
         }
         else {
+		NgViewObj	vobj;
+		NhlLayer	l = _NhlGetLayer(rec->hlu_id);
+
+		if (! l)	
+			return False;
+	
+
                 block_id = NgNclVisBlockBegin(rec->nclstate,_NgSETVAL,
                                               NrmQuarkToString(page->qvar),
                                               NULL,NULL);
@@ -401,6 +458,9 @@ static Boolean ManagePlotObj
         
         NgNclVisBlockEnd(rec->nclstate,block_id);
                 
+	if (wks) 
+		wks->auto_refresh = save_auto_refresh;
+
 	return True;
 }
 
@@ -413,7 +473,6 @@ ContourCreateUpdate
 {
 	brPageData	*pdp = page->pdata;
 	brHluPageRec	*rec = (brHluPageRec *) pdp->type_rec;
-	char buf[512];
         NgDataSinkRec *dsp = rec->public.data_info;
 	char *dataitemlist[2];
 	char *fillvalue = NULL;
@@ -425,6 +484,7 @@ ContourCreateUpdate
         NhlErrorTypes ret;
         XmString xmstring;
         NhlBoolean create,already_created = False;
+	char buf[512],buf1[512];
         
         if (QFillValue == NrmNULLQUARK) {
                 QFillValue = NrmStringToQuark("_FillValue"); 
@@ -476,7 +536,9 @@ ContourCreateUpdate
                 return;
 
         if (rec->state == _hluPREVIEW) {
-                sprintf(buf,"destroy(%s)\n",NrmQuarkToString(page->qvar));
+		strcpy(buf1,"_NgPreview_");
+		strcat(buf1,NrmQuarkToString(page->qvar));
+                sprintf(buf,"destroy(%s)\n",buf1);
                 (void)NgNclSubmitBlock(rec->nclstate,buf);
         }
         if  (! ManagePlotObj(page,dataitemlist,1,wk_id))
@@ -485,7 +547,9 @@ ContourCreateUpdate
         switch (rec->state) {
             case _hluNOTCREATED:
                     rec->state = _hluPREVIEW;
-                    rec->res_tree->preview_instance = True;
+		    rec->res_tree->preview_instance = True;
+		    strcpy(buf,"_NgPreview_");
+		    strcat(buf,NrmQuarkToString(page->qvar));
                     break;
             case _hluPREVIEW:
                     rec->state = _hluCREATED;
@@ -497,6 +561,7 @@ ContourCreateUpdate
                                   XmNlabelString,xmstring,
                                   NULL);
                     NgXAppFreeXmString(rec->go->go.appmgr,xmstring);
+		    strcpy(buf,NrmQuarkToString(page->qvar));
                     break;
             case _hluCREATED:
                     already_created = True;
@@ -505,7 +570,7 @@ ContourCreateUpdate
         if (! already_created) {
                 NhlArgVal sel,user_data;
                 
-                val = NclGetHLUObjId(NrmQuarkToString(page->qvar));
+                val = NclGetHLUObjId(buf);
                 if (val->totalelements > 1)
 			NHLPERROR((NhlINFO,NhlEUNKNOWN,
 				   "var references hlu object array"));
@@ -520,6 +585,9 @@ ContourCreateUpdate
                 rec->setval_cb = _NhlAddObjCallback
                         (_NhlGetLayer(rec->hlu_id),_NhlCBobjValueSet,
                          sel,SetValCB,user_data);
+                rec->destroy_cb = _NhlAddObjCallback
+                        (_NhlGetLayer(rec->hlu_id),_NhlCBobjDestroy,
+                         sel,DestroyCB,user_data);
         }
         NgResTreeResUpdateComplete(rec->res_tree,rec->hlu_id,False);
 
@@ -576,13 +644,23 @@ CreateInstance
         NgSetResProc	setresproc[2];
         XtPointer	setresdata[2];
         NhlString	parent = NULL;
+	NhlLayer	wl = _NhlGetLayer(wk_id);
+	NgWksObj	wks = NULL;
+	NhlBoolean	save_auto_refresh;
 
         setresproc[0] = NgResTreeAddResList;
         setresdata[0] = (NhlPointer)rec->res_tree;
 
         if (wk_id != NhlNULLOBJID)
                 parent = NgNclGetHLURef(rec->go->go.nclstate,wk_id);
-        
+        if (wl) {
+		wks = (NgWksObj) wl->base.gui_data2;
+		if (wks) {
+			save_auto_refresh = wks->auto_refresh;
+			wks->auto_refresh = False;
+		}
+	}
+
         ret = NgCreateGraphic
                 (rec->go->base.id,&hlu_id,
                  NrmQuarkToString(page->qvar),parent,
@@ -602,10 +680,13 @@ CreateInstance
                 NgDrawGraphic
                         (rec->go->base.id,NrmQuarkToString(page->qvar),True);
         }
+	if (wks) 
+		wks->auto_refresh = save_auto_refresh;
+
         return hlu_id;
 }
 
-static int
+static NhlErrorTypes
 UpdateInstance
 (
         brPage	*page,
@@ -615,10 +696,23 @@ UpdateInstance
         NhlErrorTypes	ret;
 	brPageData	*pdp = page->pdata;
 	brHluPageRec	*rec = (brHluPageRec *) pdp->type_rec;
-        int		hlu_id;
         NgSetResProc	setresproc[2];
         XtPointer	setresdata[2];
+	NhlLayer	l = _NhlGetLayer(rec->hlu_id);
+	NhlLayer	wl = _NhlGetLayer(wk_id);
+	NgWksObj	wks = NULL;
+	NhlBoolean	save_auto_refresh;
 
+	if (! l)	
+		return NhlFATAL;
+
+        if (wl) {
+		wks = (NgWksObj) wl->base.gui_data2;
+		if (wks) {
+			save_auto_refresh = wks->auto_refresh;
+			wks->auto_refresh = False;
+		}
+	}
         setresproc[0] = NgResTreeAddResList;
         setresdata[0] = (XtPointer)rec->res_tree;
         
@@ -630,6 +724,9 @@ UpdateInstance
                         (rec->go->base.id,NrmQuarkToString(page->qvar),True);
         }
         
+	if (wks) 
+		wks->auto_refresh = save_auto_refresh;
+
         return ret;
 }
 
@@ -647,6 +744,12 @@ CreateUpdate
         
         rec->do_setval_cb = False;
         if (rec->state == _hluNOTCREATED) {
+		if (! rec->class) {
+			NHLPERROR((NhlWARNING,NhlEUNKNOWN,
+			   "No class specified for %s: cannot create graphic",
+				   NrmQuarkToString(page->qvar)));
+			return;
+		}
                 if (NhlClassIsSubclass(rec->class,NhldataItemClass)) {
                         hlu_id = NhlNULLOBJID;
                 }
@@ -703,9 +806,12 @@ CreateUpdate
                 rec->setval_cb = _NhlAddObjCallback
                         (_NhlGetLayer(rec->hlu_id),_NhlCBobjValueSet,
                          sel,SetValCB,user_data);
-                rec->do_setval_cb = True;
+                rec->destroy_cb = _NhlAddObjCallback
+                        (_NhlGetLayer(rec->hlu_id),_NhlCBobjDestroy,
+                         sel,DestroyCB,user_data);
         }
         NgResTreeResUpdateComplete(rec->res_tree,rec->hlu_id,False);
+	rec->do_setval_cb = True;
 	return;
 }
 
@@ -724,7 +830,7 @@ int GetWorkstation
             NhlClassIsSubclass(rec->class,NhldataItemClass)) {
                 wk_id = NhlNULLOBJID;
         }
-        else {
+        else { 
                 wk_id = NgAppGetSelectedWork
                         (page->go->go.appmgr,True,work_created);
 #if 0
@@ -977,6 +1083,9 @@ DeactivateHluPage
         rec->public.data_info = NULL;
         rec->public.class_name = NULL;
         rec->new_data = True;
+
+	if (rec->res_tree)
+		XtUnmanageChild(rec->res_tree->tree);
         
         for (i=0; i <  8; i++)
                 rec->data_objects[i] = NrmNULLQUARK;
@@ -1015,6 +1124,10 @@ static void DestroyHluPage
         if (hlu_rec->setval_cb) {
                _NhlCBDelete(hlu_rec->setval_cb);
                hlu_rec->setval_cb = NULL;
+        }
+        if (hlu_rec->destroy_cb) {
+               _NhlCBDelete(hlu_rec->destroy_cb);
+               hlu_rec->destroy_cb = NULL;
         }
         
         NgDestroyResTree(hlu_rec->res_tree);
@@ -1142,6 +1255,7 @@ static NhlErrorTypes UpdateHluPage
                         rec->state == _hluCREATED ? False : True;
                 NgUpdateResTree
                         (rec->res_tree,page->qvar,rec->class,rec->hlu_id);
+		XtManageChild(rec->res_tree->tree);
         }
         XtVaGetValues(pdp->pane->scroller,
                       XmNhorizontalScrollBar,&rec->res_tree->h_scroll,
@@ -1204,6 +1318,7 @@ NewHluPage
         rec->class = NULL;
         rec->hlu_id = NhlNULLOBJID;
         rec->setval_cb = NULL;
+        rec->destroy_cb = NULL;
         rec->do_setval_cb = False;
         
         for (i=0; i <  8; i++)
@@ -1330,6 +1445,9 @@ NgGetHluPage
                 rec->setval_cb = _NhlAddObjCallback
                         (_NhlGetLayer(hlu_id),_NhlCBobjValueSet,
                          sel,SetValCB,user_data);
+                rec->destroy_cb = _NhlAddObjCallback
+                        (_NhlGetLayer(rec->hlu_id),_NhlCBobjDestroy,
+                         sel,DestroyCB,user_data);
 	}
         else {
                 rec->hlu_id = NhlNULLOBJID;

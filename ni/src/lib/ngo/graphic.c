@@ -1,5 +1,5 @@
 /*
- *      $Id: graphic.c,v 1.5 1998-08-26 05:16:12 dbrown Exp $
+ *      $Id: graphic.c,v 1.6 1998-11-18 19:45:17 dbrown Exp $
  */
 /*******************************************x*****************************
 *									*
@@ -25,6 +25,8 @@
 #include <ncarg/hlu/ViewP.h>
 #include <ncarg/ngo/xwk.h>
 #include <ncarg/ngo/nclstate.h>
+#include <ncarg/ngo/mwin.h>
+#include <ncarg/ngo/xinteract.h>
 
 /*
  * Function:	NgCreatePreviewGraphic
@@ -67,6 +69,7 @@ NhlErrorTypes NgCreatePreviewGraphic
         static NhlBoolean first = True;
         NhlClass class;
         NgGO go = (NgGO)_NhlGetLayer(goid);
+	char namebuf[128];
 
         if (!go) {
                 NHLPERROR((NhlWARNING,NhlEUNKNOWN,"invalid graphic object"));
@@ -79,6 +82,28 @@ NhlErrorTypes NgCreatePreviewGraphic
         if (! class) {
                 NHLPERROR((NhlWARNING,NhlEUNKNOWN,"invalid class name"));
                 return (NhlErrorTypes) NhlFATAL;
+        }
+	/* special handling for the Xworkstation -- add a prefix to the
+	   name so we will know not to Popup the preview XWorkstation. It
+	   also means that we have to specially handle its resources that 
+	   by default have the name attached. Hopefully this can be 
+	   eliminated when we implement class reference objects. */
+
+        if (first) {
+                srlist = NhlRLCreate(NhlSETRL);
+                first = False;
+        }
+        else {
+                NhlRLClear(srlist);
+        }
+	if (class == NhlxWorkstationClass) {
+		strcpy(namebuf,"_NgPreview_");	
+		strcat(namebuf,ncl_graphic);
+		NhlRLSetString(srlist,NhlNwkIconTitle,ncl_graphic);
+		NhlRLSetString(srlist,NhlNwkTitle,ncl_graphic);
+	}
+        for (i = 0; i < pres_proc_count; i++) {
+                (*pres_procs[i])(srlist,pres_proc_data[i]);
         }
         if (ncl_parent == NULL)
                 parent_id = NhlDEFAULT_APP;
@@ -97,17 +122,7 @@ NhlErrorTypes NgCreatePreviewGraphic
                         return NhlFATAL;
                 }
         }
-        if (first) {
-                srlist = NhlRLCreate(NhlSETRL);
-                first = False;
-        }
-        else {
-                NhlRLClear(srlist);
-        }
-        for (i = 0; i < pres_proc_count; i++) {
-                (*pres_procs[i])(srlist,pres_proc_data[i]);
-        }
-        return NhlCreate(hlu_id,ncl_graphic,class,parent_id,srlist);
+        return NhlCreate(hlu_id,namebuf,class,parent_id,srlist);
 }
 
 NhlErrorTypes NgDestroyPreviewGraphic
@@ -253,7 +268,6 @@ NhlErrorTypes NgDestroyGraphic
                 
         return NhlNOERROR;
 }
-
 NhlErrorTypes NgDrawGraphic
 (
         int		goid,
@@ -268,12 +282,15 @@ NhlErrorTypes NgDrawGraphic
         NhlString wk_name;
 	char base_name[512];
         NgGO go = (NgGO)_NhlGetLayer(goid);
+	NgWksState wks_state;
 
         if (!go) {
                 NHLPERROR((NhlWARNING,NhlEUNKNOWN,"invalid graphic object"));
                 return (NhlErrorTypes) NhlFATAL;
         }
-        
+	NhlVAGetValues(go->go.appmgr,
+		       NgNappWksState,&wks_state,
+		       NULL);
 
         hlu_id = NgNclGetHluObjId
                 (go->go.nclstate,ncl_graphic,&count,&id_array);
@@ -298,33 +315,59 @@ NhlErrorTypes NgDrawGraphic
                            "graphic not drawable %s",ncl_graphic));
                 return NhlWARNING;
         }
-        base_id =  NhlIsTransform(hlu_id) ?
-                _NhlBasePlot(hlu_id) : hlu_id;
-        
-        strcpy(base_name,NgNclGetHLURef(go->go.nclstate,base_id));
-        
-        wk_name = NgNclGetHLURef(go->go.nclstate,wk_id);
+
+	base_id = _NhlBasePlot(hlu_id);
+	base_id =  base_id != NhlNULLOBJID ? base_id : hlu_id;
 
 	if (NhlIsClass(wk_id,NhlxWorkstationClass)) {
-		int xwk_id,appmgr;
-		NgGO go;
 		NhlLayer wkl = _NhlGetLayer(wk_id);
-		xwk_id = (int) wkl->base.gui_data2;
-		appmgr = (int) wkl->base.gui_data;
-		go = (NgGO) _NhlGetLayer(xwk_id);
+		NgWksObj wko = (NgWksObj) wkl->base.gui_data2;
+		int appmgr = (int) wkl->base.gui_data;
+		NgGO go = (NgGO) _NhlGetLayer(wko->wks_wrap_id);
+
 		if (! go->go.up)
-			NgXWorkPopup(appmgr,xwk_id);
+			NgXWorkPopup(appmgr,wko->wks_wrap_id);
+		NgDrawXwkView(wko->wks_wrap_id,base_id);
 	}
-			
-
-        if (clear)
-                sprintf(buf,"clear(%s)\ndraw(%s)\n",wk_name,base_name);
-        else
-                sprintf(buf,"draw(%s)\n",base_name);
+	else {
         
-        (void)NgNclSubmitBlock(go->go.nclstate,buf);
-
+		strcpy(base_name,NgNclGetHLURef(go->go.nclstate,base_id));
+        
+		wk_name = NgNclGetHLURef(go->go.nclstate,wk_id);
+		if (clear)
+			sprintf(buf,"clear(%s)\ndraw(%s)\n",wk_name,base_name);
+		else
+			sprintf(buf,"draw(%s)\n",base_name);
+		(void)NgNclSubmitBlock(go->go.nclstate,buf);
+		NgUpdateViewBB(wks_state,hlu_id);
+	}
+        
         return NhlNOERROR;
+}
+
+
+NhlErrorTypes NgDrawView
+(
+        int		goid,
+	int		view_id,
+	NhlBoolean	clear
+)
+{
+        NgGO go = (NgGO)_NhlGetLayer(goid);
+	NhlString vname;
+
+        if (!go) {
+                NHLPERROR((NhlWARNING,NhlEUNKNOWN,"invalid graphic object"));
+                return (NhlErrorTypes) NhlFATAL;
+        }
+
+        vname = NgNclGetHLURef(go->go.nclstate,view_id);
+	if (! vname) {
+                NHLPERROR((NhlWARNING,NhlEUNKNOWN,"invalid view object"));
+                return (NhlErrorTypes) NhlFATAL;
+        }
+
+	return NgDrawGraphic(goid,vname,clear);
 }
 
 

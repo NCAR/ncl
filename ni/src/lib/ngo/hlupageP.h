@@ -1,5 +1,5 @@
 /*
- *      $Id: hlupageP.h,v 1.7 1997-10-23 00:27:05 dbrown Exp $
+ *      $Id: hlupageP.h,v 1.8 1998-11-18 19:45:18 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -70,6 +70,7 @@ typedef struct _brHluPageRec
         NgVarPageOutput	**var_data;
         NrmQuark	data_objects[8];
         NhlBoolean	do_setval_cb;
+        _NhlCB		destroy_cb;
         _NhlCB		setval_cb;
 	brSetValCBInfo	setval_info;
 } brHluPageRec;
