@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.110 2003-08-01 16:59:18 haley Exp $
+;      $Id: gsn_code.ncl,v 1.111 2003-08-20 20:56:28 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -5344,7 +5344,7 @@ begin
 ;
 ; 1. Retrieve special resources.
 ;
-  res2  = get_resources(resources)
+  res2       = get_resources(resources)
   calldraw   = get_res_value(res2,"gsnDraw", True)
   callframe  = get_res_value(res2,"gsnFrame",True)
   maxbb      = get_bb_res(res2)
@@ -5360,6 +5360,38 @@ begin
   horizontal = get_res_value(res2,"gsnHistogramHorizontal",False)
   setdiscrete= False
   setinterval= False
+;
+; xdata can only be 1D or 2D. If it is 2D, then the first dimension
+; must be 2, and this routine kicks into "compare" mode. 
+;
+; Also, if gsnHistogramCompare is already set to True, then 
+; double-check that data is correct size.
+;
+  dims = dimsizes(xdata)
+  rank = dimsizes(dims)
+  if(rank.gt.2.or.(rank.eq.2.and.dims(0).ne.2)) then
+    print("gsn_histogram: the input data must be 1-dimensional or 2-dimensional. If it is 2-dimensional, then the first dimension size must be 2.")
+    print("No plot will be drawn.")
+    return(dummy)
+  end if
+
+;
+; If comparing two fields, then first dimension must be two.
+;
+  if(compare) then
+    if(dims(0).ne.2.or.rank.eq.1) then
+      print("Error: gsn_histogram: If comparing two fields, then you must input a 2D array dimensioned 2 x npts.")
+      print("No plot will be drawn.")
+      return(dummy)
+    end if
+  else 
+    if(rank.eq.2) then
+      print("gsn_histogram: You input a 2D array dimensioned 2 x npts, so will go into compare mode.")
+      compare = True
+    end if
+  end if    
+  delete(dims)
+
 ;
 ; Check if user explicitly specified bin values. If so, and they represent
 ; end points, then make sure there are at least two values and sort them.
@@ -5398,7 +5430,7 @@ begin
       if(isatt(res2,"gsnHistogramDiscreteBinValues")) then
         delete(res2@gsnHistogramDiscreteBinValues)
       end if
-      if(isatt(res2,"ggsnHistogramDiscreteClassValues")) then
+      if(isatt(res2,"gsnHistogramDiscreteClassValues")) then
         delete(res2@gsnHistogramDiscreteClassValues)
       end if
     else
@@ -5425,27 +5457,6 @@ begin
   if(.not.setinterval.and..not.setdiscrete) then
     bins = 0.
   end if
-;
-; If xdata is 2-dimensional, then automatically kick into compare
-; mode.
-;
-  dims = dimsizes(xdata)
-  if(.not.compare.and.dimsizes(dims).eq.2.and.dims(0).eq.2) then
-    print("gsn_histogram: You have passed in a 2 x n array, so setting gsnHistogramCompare to True")
-    compare = True
-  end if
-;
-; If comparing two fields, then first dimension must be two.
-;
-  if(compare) then
-    dims = dimsizes(xdata)
-    if(dims(0).ne.2.or.dimsizes(dims).eq.1) then
-      print("Error: gsn_histogram: If comparing two fields, then the first dimension")
-      print("of the input array must be 2, and there must be at least two dimensions. No plot will be drawn.")
-      return(dummy)
-    end if
-    delete(dims)
-  end if    
 ;
 ; 2. Get number of values in each bin (num_in_bins) and bin locations
 ;    (num_in_bins@binlocs).

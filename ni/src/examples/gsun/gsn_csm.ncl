@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.135 2003-08-05 20:29:51 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.136 2003-08-20 20:56:29 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -3254,7 +3254,7 @@ begin
   mpres@tmXTOn                = False
   mpres@tmBorderLineColor     = "background"
   mpres@tmBorderThicknessF    = get_res_value_keep(res, \
-                                "tmBorderThicknessF",1.3)
+                                "tmBorderThicknessF",1.5)
 ;
 ; Now that we've set all these resources, apply them to the map.
 ;
@@ -3868,7 +3868,11 @@ begin
 ;   0 = ut + lon/15  --> lon/15 = -ut -->  lon = -ut*15.
 ;
     if(polar_time) then
-      set_attr(res2,"mpCenterLonF",-ut*15)
+      if(polar_type.eq."NH")
+        set_attr(res2,"mpCenterLonF",-ut*15)
+      else
+        set_attr(res2,"mpCenterLonF",-ut*15+180)
+      end if 
     end if 
 ;
 ; Set the spacing of the polar labels to the same as mpGridLonSpacingF,
@@ -3925,22 +3929,28 @@ begin
 ; In this case, we want the labels to appear at a fixed latitude value
 ; and at varying longitude values.
 ;
-      ngrid = floattoint(360/label_spacing)
-
-      if(min((/min_lat,max_lat/)).ge.0.or.polar_type.eq."NH")
-          plat = fspan(min_lat,min_lat,ngrid)
-      else
-          plat = fspan(max_lat,max_lat,ngrid)
-      end if 
       if(.not.polar_time) then
-        plon = fspan(0.,360.-label_spacing,ngrid)
+        ngrid = floattoint(360/label_spacing)
+        plon  = fspan(0.,360.-label_spacing,ngrid)
       else
 ;
-; If labeling with time, we want time "0" to be labeled, and so
-; on, so make sure we shift plon accordingly.
+; If labeling with time, we calculate the longitudes, given nice
+; time values of 0, 3, ..., 21.
 ;
-        plon = fspan(0.,360.-label_spacing,ngrid) + (ut*15)
+        slt   = ispan(0,21,3)
+        plon  = 15.*(slt-ut)
+        ngrid = dimsizes(plon)
       end if
+;
+; The "0.005" addition is to make sure we are within the map perimeter.
+; Otherwise,; if we enter points right along the edge of the circle, then
+; when they are converted to NDC coords, you might get missing values.
+;
+      if(min((/min_lat,max_lat/)).ge.0.or.polar_type.eq."NH")
+          plat = fspan(min_lat+.005,min_lat+.005,ngrid)
+      else
+          plat = fspan(max_lat-.005,max_lat-.005,ngrid)
+      end if 
 
 ; Create arrays to hold the NDC values that we're going to convert 
 ; the lat/lon values to.
@@ -3980,37 +3990,19 @@ begin
 ;
 ; Define an array of strings to label the time values.
 ;
-; Calculate slt, given ut and lon (slt = ut + lon/15). Make sure values 
-; fall between 0 and 23.
-;
-        ut_plon = ut + plon/15
-        slt     = ut_plon - (24 * floattointeger(floor(ut_plon/24.)))
-; 
-; Convert "slt" to integer. If it is equal to the float version of "slt",
-; then we know that our values are effectively integers, and we can plot
-; them without decimal points. Otherwise, we'll go ahead and plot them
-; with decimal points.
-;
-        labels = new(dimsizes(slt),string)
-        islt = tointeger(slt)
-        if(all(slt.eq.islt)) then
-          labels = islt
-        else 
-          labels = slt
-        end if
+        labels = slt
       end if
       num_labels = dimsizes(labels)
       text_ids = new(num_labels,graphic)
-
 ;
 ; Check if user setting own font heights.  gsnPolarLabelFontHeightF
 ; takes precedence over txFontHeightF.
 ;
-    text_font_height = get_res_value(res2,"gsnPolarLabelFontHeightF", \
-                       get_res_value_keep(res2,"txFontHeightF",\
-                       font_height))
-    text_font        = get_res_value(res2,"gsnPolarLabelFont", \
-                       get_res_value_keep(res2,"txFont","helvetica-bold"))
+      text_font_height = get_res_value(res2,"gsnPolarLabelFontHeightF", \
+                         get_res_value_keep(res2,"txFontHeightF",\
+                         font_height))
+      text_font        = get_res_value(res2,"gsnPolarLabelFont", \
+                         get_res_value_keep(res2,"txFont","helvetica-bold"))
 
 ; Create an array of TextItem objects that we'll use to label the
 ; lat/lon grid.  
@@ -4076,7 +4068,6 @@ begin
         orth(quad4) = ((ycen - yndc(quad4))/vphf) * polar_dst
         just(quad4) = "CenterLeft"
       end if
-
       para = ((xndc - xcen)/vpwf) * polar_dst
 ;
 ; Labels at the very top or bottom of the map should be centered, not
