@@ -1,5 +1,5 @@
 /*
- *	$Id: spooler.c,v 1.3 1992-04-03 23:21:05 clyne Exp $
+ *	$Id: spooler.c,v 1.4 1992-08-12 21:41:59 clyne Exp $
  */
 /*
  *	spooler.c
@@ -13,13 +13,7 @@
  */
 #include <stdio.h>
 #include <ctype.h>
-
-#ifdef	SYSV
 #include <string.h>
-#else
-#include <strings.h>
-#endif
-
 #include <ncarv.h>
 
 /*

@@ -1,5 +1,5 @@
 /*
- *	$Id: file.c,v 1.7 1992-04-03 23:20:46 clyne Exp $
+ *	$Id: file.c,v 1.8 1992-08-12 21:41:55 clyne Exp $
  */
 /*
  *	file.c
@@ -13,13 +13,7 @@
  *	code is in 'w_file.c'
  */
 #include <stdio.h>
-
-#ifdef	SYSV	
 #include <string.h>
-#else
-#include <strings.h>
-#endif
-
 #include <ncarv.h>
 
 static	char	*currentFileSelection = NULL;	/* user's current selection */

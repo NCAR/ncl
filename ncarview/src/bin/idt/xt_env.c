@@ -1,5 +1,5 @@
 /*
- *      $Id: xt_env.c,v 1.3 1992-04-03 23:21:42 clyne Exp $
+ *      $Id: xt_env.c,v 1.4 1992-08-12 21:42:10 clyne Exp $
  */
 /*
  *	File:		xt_env.c
@@ -16,12 +16,7 @@
 
 #include <stdio.h>
 #include <ncarv.h>
-
-#ifdef	SYSV
 #include <string.h>
-#else
-#include <strings.h>
-#endif
 
 extern	char	*getenv();
 

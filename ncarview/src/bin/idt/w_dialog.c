@@ -1,5 +1,5 @@
 /*
- *	$Id: w_dialog.c,v 1.3 1992-04-03 23:21:12 clyne Exp $
+ *	$Id: w_dialog.c,v 1.4 1992-08-12 21:42:02 clyne Exp $
  */
 /*
  *	w_dialog.c
@@ -35,6 +35,7 @@ typedef	struct	{
 	Widget	popup;		/* the popup widget			*/
 	Widget	dialog;		/* the dialog widget			*/
 	void	(*func)();	/* function to call when selected	*/
+	char	*format;	/* command format string		*/
 	} CallbackData;
 
 static	Widget	dialog;
@@ -55,13 +56,15 @@ static	Widget	dialog;
  *	*label		: label to appear in box
  *	*select()	: function to be called when OK is selected
  *	*data		: data to pass in select
+ *	*format		: command format string
  *	*value		: default value to be displayed
  */
-void	CreateSimpleDialogPopup(button, label, select, data, value)
+void	CreateSimpleDialogPopup(button, label, select, data, format, value)
 	Widget	button;
 	char	*label;
 	void	(*select)();
 	caddr_t		data;
+	char	*format;
 	char	*value;
 {
 
@@ -114,6 +117,7 @@ void	CreateSimpleDialogPopup(button, label, select, data, value)
 	callback_data.dialog = dialog;
 	callback_data.data = data;
 	callback_data.func = select;
+	callback_data.format = format;
 
 	XawDialogAddButton(dialog, "ok", Ok, (XtPointer) &callback_data);
 
@@ -154,7 +158,7 @@ static	void	Ok(widget, client_data, call_data)
 	/*
 	 * invoke the select function with the given data and the dialog value 
 	 */
-	((*(cd->func)) (cd->data, value));
+	((*(cd->func)) (cd->data, cd->format, value));
 
 
 	/*

@@ -1,5 +1,5 @@
 /*
- *	$Id: scroll.c,v 1.5 1992-04-03 23:21:02 clyne Exp $
+ *	$Id: scroll.c,v 1.6 1992-08-12 21:41:57 clyne Exp $
  */
 /*
  *	scroll.c
@@ -72,7 +72,7 @@ void	ScrollTo(id, percent)
 	 * send the plotting command
 	 */
 	(void) sprintf(buf, "%d", frame);
-	Command2((caddr_t) &command_id, buf);
+	Command((caddr_t) &command_id, GOTO_STRING, buf);
 
 	/*
 	 * update the displayed frame count

@@ -1,5 +1,5 @@
 /*
- *	$Id: xrubber.c,v 1.7 1992-08-10 23:46:29 clyne Exp $
+ *	$Id: xrubber.c,v 1.8 1992-08-12 21:42:07 clyne Exp $
  */
 /*
  *	xrubber.c
@@ -510,7 +510,7 @@ char	*ZoomCoords(dpy, root, llx, lly, urx, ury)
 	 * create the data string
 	 */
 	(void) sprintf(buf, 
-		"%4.2f %4.2f %4.2f %4.2f",norm_x1,norm_y1,norm_x2,norm_y2);
+		"%6.4f %6.4f %6.4f %6.4f",norm_x1,norm_y1,norm_x2,norm_y2);
 
 	if (llx) *llx = norm_x1;
 	if (lly) *lly = norm_y1;

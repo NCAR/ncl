@@ -1,5 +1,5 @@
 /*
- *	$Id: display.c,v 1.7 1992-08-10 22:04:35 clyne Exp $
+ *	$Id: display.c,v 1.8 1992-08-12 21:41:49 clyne Exp $
  */
 /*
  *	Display.c
@@ -13,13 +13,7 @@
  */
 #include <stdio.h>
 #include <fcntl.h>
-
-#ifdef	SYSV
 #include <string.h>
-#else
-#include <strings.h>
-#endif
-
 #include <ncarv.h>
 #include "display.h"
 #include "talkto.h"
@@ -111,7 +105,6 @@ int	StartTranslator(id, metafile, wid)
 	 * set some default data values for idt commands associated with 
 	 * this connection
 	 */
-	(void) strncpy(pcvs[id].loop, "0", MAX_DATA_LEN - 1);
 	(void) strncpy(pcvs[id].dup, "1", MAX_DATA_LEN - 1);
 	(void) strncpy(pcvs[id].goto_, "1", MAX_DATA_LEN - 1);
 	(void) strncpy(pcvs[id].skip ,"0", MAX_DATA_LEN - 1);
@@ -219,9 +212,6 @@ char	*GetValue(id, command)
 {
 
 	switch ((int) command) {
-	case	LOOP:
-		return (pcvs[id].loop);
-
 	case	DUP:
 		return (pcvs[id].dup);
 
@@ -255,6 +245,8 @@ char	*GetValue(id, command)
  *	[exported]
  *
  *	Set a command value for a particular command and connection id
+ *	If the command is unrecognized no action is taken.
+ *
  * on entry
  *	id		: the connection id
  *	command		: the command
@@ -267,10 +259,6 @@ void	SetValues(id, command, value)
 {
 
 	switch ((int) command) {
-	case	LOOP:
-		(void) strncpy(pcvs[id].loop, value, MAX_DATA_LEN - 1);
-		break;
-
 	case	DUP:
 		(void) strncpy(pcvs[id].dup, value, MAX_DATA_LEN - 1);
 		break;
@@ -300,7 +288,9 @@ void	SetValues(id, command, value)
 		break;
 
 	default:
-		(void) fprintf(stderr, "Illegal command\n");
+		/*
+		 * ignore unknown commands
+		 */
 		break;
 
 	}

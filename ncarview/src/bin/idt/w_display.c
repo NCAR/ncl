@@ -1,5 +1,5 @@
 /*
- *	$Id: w_display.c,v 1.10 1992-08-10 23:46:26 clyne Exp $
+ *	$Id: w_display.c,v 1.11 1992-08-12 21:42:05 clyne Exp $
  */
 /*
  *	w_display.c
@@ -36,8 +36,8 @@
 #include "display.h"
 #include "talkto.h"
 #include "bits.h"
+#include "commands.h"
 
-extern	void	Command1(), Command2(), Command3();
 
 /*
  * callbacks
@@ -421,6 +421,65 @@ void	create_print_menu(print, id)
 }
 
 /*
+ *	simple_command
+ *	[internal]
+ *
+ * on entry
+ *	id		: connection of translator 
+ *	command		: command this box represents
+ */
+static	void	simple_command(id, format, command)
+	int		id;
+	char		*format;
+	DisplayCommands	command;
+
+{
+
+	command_Id.id = id;
+	command_Id.command = command;
+
+	Command((caddr_t) &command_Id, format, NULL);
+}
+
+/*
+ *	create_simple_dialog_popup
+ *	[internal]
+ *
+ *	create a dialog popup on the fly
+ * on entry
+ * 	widget		: the calling widget, used to position the popup
+ *	id		: connection of translator 
+ *	command_name	: string used to label the box
+ *	command		: command this box represents
+ *	cmd_format	: command format string
+ */
+static	void	create_simple_dialog_popup(widget, id, command_name, command,
+		cmd_format
+		)
+	Widget	widget;
+	int	id;
+	char	*command_name;
+	DisplayCommands	command;
+	char	*cmd_format;
+
+{
+	char	*value;
+
+	void	CreateSimpleDialogPopup();
+	char	*GetValue();
+
+	value = GetValue(id, command);
+
+	command_Id.id = id;
+	command_Id.command = command;
+
+	CreateSimpleDialogPopup(
+		widget, command_name, Command, 
+		(caddr_t) &command_Id,cmd_format, value
+	);
+}
+
+/*
  *	The Callbacks
  */
 /*ARGSUSED*/
@@ -430,10 +489,9 @@ static  void    Playback(widget, client_data, call_data)
 			call_data;	/* not used	*/
 {
 	int	id = (int) client_data;
-	void	simple_command();
 
 	playMode = True;
-	simple_command(id, PLAYBACK);
+	simple_command(id, PLAYBACK_STRING, PLAYBACK);
 	UpdateFrameLabel(id, "");
 
 }
@@ -445,9 +503,8 @@ static  void    Jogback(widget, client_data, call_data)
 			call_data;	/* not used	*/
 {
 	int	id = (int) client_data;
-	void	simple_command();
 
-	simple_command(id, JOGBACK);
+	simple_command(id, JOGBACK_STRING, JOGBACK);
 	UpdateFrameLabel(id, "");
 
 }
@@ -459,14 +516,13 @@ static  void    Stop(widget, client_data, call_data)
 			call_data;	/* not used	*/
 {
 	int	id = (int) client_data;
-	void	simple_command();
 
 	if (playMode) {
-		simple_command(id, STOP);
+		SignalTo(id, STOP_SIGNAL);
 		playMode = False;
 	}
 	else {
-		simple_command(id, REDRAW);
+		simple_command(id, REDRAW_STRING, REDRAW);
 	}
 
 }
@@ -478,9 +534,8 @@ static  void    Jog(widget, client_data, call_data)
 			call_data;	/* not used	*/
 {
 	int	id = (int) client_data;
-	void	simple_command();
 
-	simple_command(id, JOG);
+	simple_command(id, JOG_STRING, JOG);
 	UpdateFrameLabel(id, "");
 
 }
@@ -492,10 +547,9 @@ static  void    Play(widget, client_data, call_data)
 			call_data;	/* not used	*/
 {
 	int	id = (int) client_data;
-	void	simple_command();
 
 	playMode = True;
-	simple_command(id, PLAY);
+	simple_command(id, PLAY_STRING, PLAY);
 	UpdateFrameLabel(id, "");
 
 }
@@ -507,9 +561,8 @@ static  void    Loop(widget, client_data, call_data)
 			call_data;	/* not used	*/
 {
 	int	id = (int) client_data;
-	void	simple_command();
 
-	simple_command(id, LOOP);
+	simple_command(id, LOOP_STRING, LOOP);
 
 }
 /*ARGSUSED*/
@@ -519,9 +572,8 @@ static  void    Dup(widget, client_data, call_data)
 			call_data;	/* not used	*/
 {
 	int	id = (int) client_data;
-	void	create_simple_dialog_popup();
 
-	create_simple_dialog_popup(widget, id, "dup:", DUP);
+	create_simple_dialog_popup(widget, id, "dup:", DUP, DUP_STRING);
 
 }
 /*ARGSUSED*/
@@ -546,9 +598,8 @@ static  void    Goto_(widget, client_data, call_data)
 			call_data;	/* not used	*/
 {
 	int		id = (int) client_data;
-	void	create_simple_dialog_popup();
 
-	create_simple_dialog_popup(widget, id, "goto:", GOTO);
+	create_simple_dialog_popup(widget, id, "goto:", GOTO, GOTO_STRING);
 
 }
 /*ARGSUSED*/
@@ -558,9 +609,8 @@ static  void    Skip(widget, client_data, call_data)
 			call_data;	/* not used	*/
 {
 	int	id = (int) client_data;
-	void	create_simple_dialog_popup();
 
-	create_simple_dialog_popup(widget, id, "skip:", SKIP);
+	create_simple_dialog_popup(widget, id, "skip:", SKIP, SKIP_STRING);
 
 }
 /*ARGSUSED*/
@@ -570,9 +620,11 @@ static  void    Start_Segment(widget, client_data, call_data)
 			call_data;	/* not used	*/
 {
 	int	id = (int) client_data;
-	void	create_simple_dialog_popup();
 
-	create_simple_dialog_popup(widget, id, "start segment:", START_SEGMENT);
+	create_simple_dialog_popup(
+		widget, id, "start segment:", START_SEGMENT,
+		START_SEGMENT_STRING
+	);
 
 }
 /*ARGSUSED*/
@@ -582,9 +634,11 @@ static  void    Stop_Segment(widget, client_data, call_data)
 			call_data;	/* not used	*/
 {
 	int	id = (int) client_data;
-	void	create_simple_dialog_popup();
 
-	create_simple_dialog_popup(widget, id, "stop segment:", STOP_SEGMENT);
+	create_simple_dialog_popup(
+		widget, id, "stop segment:", STOP_SEGMENT,
+		STOP_SEGMENT_STRING
+	);
 
 }
 /*ARGSUSED*/
@@ -594,10 +648,11 @@ static  void    Set_Window(widget, client_data, call_data)
 			call_data;	/* not used	*/
 {
 	int	id = (int) client_data;
-	void	create_simple_dialog_popup();
 
-	create_simple_dialog_popup(widget, id, 
-		"set device window coordinates:",SET_WINDOW);
+	create_simple_dialog_popup(
+		widget, id, "set device window coordinates:",
+		SET_WINDOW, SET_WINDOW_STRING
+		);
 
 }
 
@@ -613,10 +668,9 @@ static  void    Done(widget, client_data, call_data)
 
 	int	id = (int) client_data;
 
-	void	simple_command();
 	void	CloseDisplay();
 
-	simple_command(id, DONE);
+	simple_command(id, DONE_STRING, DONE);
 
 	CloseDisplay(id);
 	XtDestroyWidget(popUp[id]);
@@ -659,7 +713,7 @@ static  void    PrintSelect(widget, client_data, call_data)
 	command_Id.id = id;
 	command_Id.command = PRINT;
 
-	Command3((caddr_t) &command_Id, spooler);
+	Command((caddr_t) &command_Id, PRINT_STRING, spooler);
 }
 
 
@@ -673,9 +727,10 @@ static  void    Save(widget, client_data, call_data)
 			call_data;	/* not used	*/
 {
 	int		id = (int) client_data;
-	void	create_simple_dialog_popup();
 
-	create_simple_dialog_popup(widget, id, "Pleas enter file name:", SAVE);
+	create_simple_dialog_popup(
+		widget, id, "Pleas enter file name:", SAVE, SAVE_STRING
+	);
 
 }
 
@@ -734,13 +789,19 @@ static  void    Zoom(widget, client_data, call_data)
 	new_urx = (ax * urx) + bx;
 	new_ury = (ay * ury) + by;
 
-	sprintf(buf, "%4.2f %4.2f %4.2f %4.2f",new_llx,new_lly,new_urx,new_ury);
+	sprintf(buf, "%6.4f %6.4f %6.4f %6.4f",new_llx,new_lly,new_urx,new_ury);
 	
 
 	command_Id.id = id;
 	command_Id.command = ZOOM;
 
-	Command2((caddr_t) &command_Id, buf);
+	Command((caddr_t) &command_Id, ZOOM_STRING, buf);
+
+	/*
+	 * remember the zoom coordinates as if the SET_WINDOW command
+	 * was called
+	 */
+	SetValues(id, SET_WINDOW, buf);
 }
 
 /*ARGSUSED*/
@@ -750,62 +811,10 @@ static  void    UnZoom(widget, client_data, call_data)
 			call_data;	/* not used	*/
 {
 	int	id = (int) client_data;
-	void	simple_command();
 
-	simple_command(id, UNZOOM);
+	simple_command(id, UNZOOM_STRING, UNZOOM);
 }
 
-/*
- *	create_simple_dialog_popup
- *	[internal]
- *
- *	create a dialog popup on the fly
- * on entry
- * 	widget		: the calling widget, used to position the popup
- *	id		: connection of translator 
- *	command_name	: string used to label the box
- *	command		: command this box represents
- */
-static	void	create_simple_dialog_popup(widget, id, command_name, command)
-	Widget	widget;
-	int	id;
-	char	*command_name;
-	DisplayCommands	command;
-
-{
-	char	*value;
-
-	void	CreateSimpleDialogPopup();
-	char	*GetValue();
-
-	value = GetValue(id, command);
-
-	command_Id.id = id;
-	command_Id.command = command;
-
-	CreateSimpleDialogPopup(widget, command_name,
-				Command2, (caddr_t) &command_Id,value);
-}
-
-/*
- *	simple_command
- *	[internal]
- *
- * on entry
- *	id		: connection of translator 
- *	command		: command this box represents
- */
-static	void	simple_command(id, command)
-	int	id;
-	DisplayCommands	command;
-
-{
-
-	command_Id.id = id;
-	command_Id.command = command;
-
-	Command1((caddr_t) &command_Id);
-}
 
 UpdateFrameLabel(id, frame_string)
 	int	id;

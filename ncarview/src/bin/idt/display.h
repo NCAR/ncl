@@ -1,8 +1,7 @@
 
-#define	MAX_DATA_LEN	30
+#define	MAX_DATA_LEN	40
 typedef	struct	{
-	char	loop[MAX_DATA_LEN],
-		dup[MAX_DATA_LEN],
+	char	dup[MAX_DATA_LEN],
 		goto_[MAX_DATA_LEN],
 		skip[MAX_DATA_LEN],
 		start_segment[MAX_DATA_LEN],
