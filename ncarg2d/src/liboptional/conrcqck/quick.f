@@ -1,5 +1,5 @@
 C
-C	$Id: quick.f,v 1.3 2000-08-22 15:10:11 haley Exp $
+C       $Id: quick.f,v 1.4 2004-06-29 17:09:41 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -35,8 +35,8 @@ C
       C(P1,P2,B) = B+(P1-CV)/(P1-P2)
 C
       IDUB = 0
-      ASSIGN 102 TO JUMP
-      IF (IOFFP .NE. 0) ASSIGN 101 TO JUMP
+      JUMP = 2
+      IF (IOFFP .NE. 0) JUMP = 1
       DO 128 JP1=2,N
          J = JP1-1
          Y1 = J
@@ -49,7 +49,7 @@ C
             H2 = Z(I,JP1)
             H3 = Z(IP1,JP1)
             H4 = Z(IP1,J)
-            GO TO JUMP,(101,102)
+            GO TO (101,102) , JUMP
   101       IF (H1.EQ.SPVAL .OR. H2.EQ.SPVAL .OR. H3.EQ.SPVAL .OR.
      1          H4.EQ.SPVAL) GO TO 127
   102       DO 126 K=1,NL
