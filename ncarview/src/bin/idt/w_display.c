@@ -1,5 +1,5 @@
 /*
- *	$Id: w_display.c,v 1.20 1993-04-23 20:43:26 clyne Exp $
+ *	$Id: w_display.c,v 1.21 1993-10-15 15:17:54 clyne Exp $
  */
 /*
  *	w_display.c
@@ -591,7 +591,7 @@ static  void    UnZoom(widget, client_data, call_data)
 
 UpdateFrameLabel(wd, frame_string)
 	WidgetData	*wd;
-	int		frame_string;
+	char		*frame_string;
 {
 	Arg		args[10];
 	char		buf[80];
