@@ -1,0 +1,35 @@
+#
+#	$Id: yMakefile,v 1.1 1998-02-06 19:40:57 fred Exp $
+#
+
+MYNAME	= edsgrid
+
+SRCS = \
+	c_ftex01.c   c_ftex02.c   c_ftex03.c     \
+	c_ftex04.c   c_ftex05.c   c_ftex06.c     \
+	ftex01.f     ftex02.f     ftex03.f       \
+	ftex04.f     ftex05.f     ftex06.f
+
+SRCS = \
+	c_ftex01.o   c_ftex02.o   c_ftex03.o     \
+	c_ftex04.o   c_ftex05.o   c_ftex06.o     \
+	ftex01.o     ftex02.o     ftex03.o       \
+	ftex04.o     ftex05.o     ftex06.o
+
+PROG_LIBS               = $(NCARGLIBS) $(NGMATHLIBS)
+SYS_LIBS		= $(XLIB) $(CTOFLIBS)
+
+InstallTarget($(SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
+
+FExampleTarget(ftex01,ftex01.o)
+FExampleTarget(ftex02,ftex02.o)
+FExampleTarget(ftex03,ftex03.o)
+FExampleTarget(ftex04,ftex04.o)
+FExampleTarget(ftex05,ftex05.o)
+FExampleTarget(ftex06,ftex06.o)
+CExampleTarget(c_ftex01,c_ftex01.o)
+CExampleTarget(c_ftex02,c_ftex02.o)
+CExampleTarget(c_ftex03,c_ftex03.o)
+CExampleTarget(c_ftex04,c_ftex04.o)
+CExampleTarget(c_ftex05,c_ftex05.o)
+CExampleTarget(c_ftex06,c_ftex06.o)
