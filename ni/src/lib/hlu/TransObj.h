@@ -1,5 +1,5 @@
 /*
- *      $Id: TransObj.h,v 1.15 2003-09-10 21:29:59 dbrown Exp $
+ *      $Id: TransObj.h,v 1.16 2004-01-23 22:46:53 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -39,7 +39,8 @@ typedef enum _NhlGridType {
 	NhltrLOGLIN = 1,         /* LogLin */
 	NhltrIRREGULAR = 2,      /* Irregular */
 	NhltrCURVILINEAR = 3,    /* Curvilinear */
-	NhltrSPHERICAL = 4       /* Spherical */
+	NhltrSPHERICAL = 4,       /* Spherical */
+	NhltrTRIANGULARMESH = 5   /* TriangularMesh */
 } NhlGridType;
 
 #define NhlTGridType "GridType"

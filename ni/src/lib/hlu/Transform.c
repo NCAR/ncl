@@ -1,5 +1,5 @@
 /*
- *      $Id: Transform.c,v 1.56 2003-09-10 21:29:59 dbrown Exp $
+ *      $Id: Transform.c,v 1.57 2004-01-23 22:46:53 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -420,10 +420,11 @@ TransformClassPartInit
 
 
 /*
- * Note: axis type and transformation type are really TransObj class
- * resources. The enumeration is initialized here because they
- * are intercepted by Transform class objects. Note the two registrations
- * per type.
+ * Note: axis type and transformation type are TransObj class
+ * resources. However, the must be initialized both by the Transform 
+ * and the TransObj classes, because they are intercepted by Transform
+ * class objects. If changes are made be sure to duplicate in both
+ * classes.
  */
         _NhlEnumVals   axistypelist[] = {
 	{NhlIRREGULARAXIS,	"IrregularAxis"},
@@ -437,16 +438,10 @@ TransformClassPartInit
 		{NhltrLOGLIN, "LogLin"},
 		{NhltrIRREGULAR, "Irregular"},
 		{NhltrCURVILINEAR, "Curvilinear"},
-		{NhltrSPHERICAL, "Spherical"}
+		{NhltrSPHERICAL, "Spherical"},
+		{NhltrTRIANGULARMESH, "TriangularMesh"},
         };
 
-	_NhlRegisterEnumType(NhltransObjClass,
-			NhlTAxisType,axistypelist,NhlNumber(axistypelist));
-
-	_NhlRegisterEnumType(NhltransObjClass,
-			     NhlTGridType,
-			     gridtypelist,
-			     NhlNumber(gridtypelist));
 
 	_NhlRegisterEnumType(NhltransformClass,
 			NhlTAxisType,axistypelist,NhlNumber(axistypelist));

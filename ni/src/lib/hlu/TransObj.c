@@ -1,5 +1,5 @@
 /*
- *      $Id: TransObj.c,v 1.35 2003-09-10 21:29:59 dbrown Exp $
+ *      $Id: TransObj.c,v 1.36 2004-01-23 22:46:53 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -74,12 +74,12 @@ static NhlResource resources[] =  {
 		NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{ NhlNtrOutOfRangeF, NhlCtrOutOfRangeF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlTransObjLayerRec,trobj.out_of_range),
-		NhlTString, _NhlUSET("1.0e12"),_NhlRES_PRIVATE,NULL },
+		NhlTString, _NhlUSET("1.0e30"),_NhlRES_PRIVATE,NULL },
 	{ NhlNtrLineInterpolationOn,NhlCtrLineInterpolationOn,
 		NhlTBoolean,sizeof(NhlBoolean),
 	        NhlOffset(NhlTransObjLayerRec,trobj.line_interpolation_on),
 		NhlTImmediate,
-	  	_NhlUSET((NhlPointer)False),_NhlRES_PRIVATE,NULL},
+	  	_NhlUSET((NhlPointer)False),0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 NhlOffset(NhlTransObjLayerRec,trobj.grid_type_set),
 	         NhlTImmediate,
@@ -238,6 +238,38 @@ TransObjClassPartInit
 	NhlTransObjClass	tlc = (NhlTransObjClass)lc;
 	NhlTransObjClass	sc = (NhlTransObjClass)
 						lc->base_class.superclass;
+
+/*
+ * Note: axis type and transformation type are TransObj class
+ * resources. However, the must be initialized both by the Transform 
+ * and the TransObj classes, because they are intercepted by Transform
+ * class objects. If changes are made be sure to duplicate in both
+ * classes.
+ */
+        _NhlEnumVals   axistypelist[] = {
+	{NhlIRREGULARAXIS,	"IrregularAxis"},
+	{NhlLINEARAXIS,		"LinearAxis"},
+	{NhlLOGAXIS,		"LogAxis"}
+        };
+
+
+        _NhlEnumVals   gridtypelist[] = {
+		{NhltrMAP, "Map"},
+		{NhltrLOGLIN, "LogLin"},
+		{NhltrIRREGULAR, "Irregular"},
+		{NhltrCURVILINEAR, "Curvilinear"},
+		{NhltrSPHERICAL, "Spherical"},
+		{NhltrTRIANGULARMESH, "TriangularMesh"},
+        };
+
+	_NhlRegisterEnumType(NhltransObjClass,
+			NhlTAxisType,axistypelist,NhlNumber(axistypelist));
+
+	_NhlRegisterEnumType(NhltransObjClass,
+			     NhlTGridType,
+			     gridtypelist,
+			     NhlNumber(gridtypelist));
+
 
 	if(tlc->trobj_class.win_to_ndc == NhlInheritTransPoint)
 		tlc->trobj_class.win_to_ndc = sc->trobj_class.win_to_ndc;
