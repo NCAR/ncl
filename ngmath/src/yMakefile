@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.1 1997-02-24 14:40:44 haley Exp $
+#	$Id: yMakefile,v 1.2 1997-02-27 19:11:26 fred Exp $
 #
 #define IHaveSubdirs
-SUBDIRS = lib
+SUBDIRS = lib examples
