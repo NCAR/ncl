@@ -1,7 +1,9 @@
-
-
 .OP LS=10000 LI=1 CB RT ES=< ET=> OC UC=0
+.EL I
 
+I
+I $Id: CodeIftran,v 1.2 2004-06-29 19:34:15 kennison Exp $
+I
 
       FUNCTION MAPACI (IAI)
         INTEGER IAI
