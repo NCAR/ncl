@@ -1,5 +1,5 @@
 /*
- *      $Id: vc08c.c,v 1.1 1997-03-13 17:22:11 haley Exp $
+ *      $Id: vc08c.c,v 1.2 1997-03-16 17:33:06 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -42,7 +42,7 @@ int vccolors[14] = {26,28,30,33,36,39,42,45,48,51,54,56,58,60};
 
 main()
 {
-  int NCGM, X11, PS;
+  int NCGM=0, X11=1, PS=0;
   int appid,wid,vcid,vfield,mapid,txid1,txid2;
   int rlist;
   float U[NLAT][NLON],V[NLAT][NLON];
