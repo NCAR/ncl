@@ -1,5 +1,5 @@
 /*
- *      $Id: plottree.h,v 1.1 1999-10-05 23:16:26 dbrown Exp $
+ *      $Id: plottree.h,v 1.2 1999-10-13 17:15:50 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -46,6 +46,8 @@ typedef struct _NgPlotTree
         Widget		tree;
         ptGeoNotifyFunc	geo_notify;
         NhlPointer	geo_data;
+	int		*hlu_ids;	/* read-only pointer into plotpage */
+	NhlBoolean	first_vpon;
 } NgPlotTree;
                 
 extern NgPlotTree *NgCreatePlotTree
@@ -81,5 +83,20 @@ extern void NgDestroyPlotTree
         NgPlotTree		*plot_tree
         );
         
+
+extern int NgPlotTreeAddResList
+(
+        int		nclstate,
+        NhlPointer	res_data,
+        int		block_id
+        );
+
+typedef struct _NgPlotTreeResDataRec
+{
+	NgPlotTree	*plot_tree;
+	NrmQuark	qname;
+}NgPlotTreeResDataRec, *NgPlotTreeResData;
+	
+		
 
 #endif	/* _NG_PLOTTREE_H */

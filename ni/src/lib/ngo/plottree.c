@@ -1,5 +1,5 @@
 /*
- *      $Id: plottree.c,v 1.1 1999-10-05 23:16:26 dbrown Exp $
+ *      $Id: plottree.c,v 1.2 1999-10-13 17:15:50 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -21,11 +21,13 @@
  */
 
 #include <ncarg/ngo/plottreeP.h>
+#include <ncarg/ngo/browseP.h>
 #include <ncarg/ngo/xutil.h>
 #include <ncarg/ngo/sort.h>
 #include <ncarg/ngo/stringutil.h>
 #include <ncarg/ngo/hlupage.h>
 #include <ncarg/ngo/plotapp.h>
+#include <ncarg/hlu/View.h>
 
 #include <Xm/Xm.h>
 #include <Xm/Protocols.h>
@@ -34,6 +36,8 @@
 
 static NrmQuark Qlong_name;
 static Dimension Row_Height;
+
+static Pixmap Check_Pixmap,No_Check_Pixmap,Mask_Pixmap;
 
 static void Button3ObjectAction(
 	Widget		w,
@@ -176,6 +180,141 @@ static void ExpandPlotInfo
         return;
 }
 
+static void ToggleObjectCB 
+(
+	Widget		w,
+	XtPointer	udata,
+	XtPointer	cb_data
+)
+{
+	NgPlotTreeRec *ptp = (NgPlotTreeRec *) udata;
+        XmLGridCallbackStruct *cbs;
+        XmLGridRow	row;
+        XmLGridColumn	col;
+        ptNodeData	*ndata;
+	Pixmap		pixmap;
+	ptCompData 	cdata;
+        
+        cbs = (XmLGridCallbackStruct *)cb_data;
+	if (cbs->column != 2)
+		return;
+
+        row = XmLGridGetRow(w,XmCONTENT,cbs->row);
+        col = XmLGridGetColumn(w,XmCONTENT,2);
+
+        XtVaGetValues(w,
+                      XmNrowPtr,row,
+                      XmNcolumnPtr,col,
+		      XmNcellPixmap,&pixmap,
+                      NULL);
+
+	XtVaGetValues(ptp->public.tree,
+                      XmNrowPtr,row,
+		      XmNrowUserData,&ndata,
+		      NULL);
+
+	if (! (ndata && ndata->info)) {
+		NHLPERROR((NhlFATAL,ENOMEM,NULL));
+		return;
+	}
+	cdata = (ptCompData) ndata->info;
+
+	if (pixmap == Check_Pixmap) {
+		XtVaSetValues(w,
+			      XmNrow,cbs->row,
+			      XmNcolumn,2,
+			      XmNcellPixmap,No_Check_Pixmap,
+			      NULL);
+		cdata->on = False;
+		cdata->modified = ! cdata->modified;
+	}
+	else {
+		XtVaSetValues(w,
+			      XmNrow,cbs->row,
+			      XmNcolumn,2,
+			      XmNcellPixmap,Check_Pixmap,
+			      NULL);
+		cdata->on = True;
+		cdata->modified = ! cdata->modified;
+	}
+	return;
+}
+#if 0
+static void
+SetValCB
+(
+	NhlArgVal	cbdata,
+	NhlArgVal	udata
+)
+{
+	NgPlotTreeRec *ptp = (NgPlotTreeRec *)udata.ptrval;
+	_NhlValueSetCBData vsdata = (_NhlValueSetCBData) cbdata.ptrval;
+	ptNodeData *base_objndata,*ndata;
+	int base_objndata_count;
+	NhlLayer l;
+	NrmQuark qvname;
+	NhlBoolean on;
+	ptCompData cdata;
+	int i;
+	int row_base;
+
+#if 1
+        fprintf(stderr,"in plottree setval cb\n");
+#endif
+	return;
+
+	if (! ptp)
+		return;
+	l = _NhlGetLayer(vsdata->id);
+
+	if (! l)
+		return;
+	qvname = NrmStringToQuark(l->base.name);
+
+/*
+ * this is very simplistic and will have to be modified if this tree type
+ * becomes more complicated.
+ */
+	base_objndata = ptp->plot.subdata[1].subdata;
+	base_objndata_count = ptp->plot.subdata[1].subcount;
+	if (!base_objndata_count)
+		return;
+	if (! ptp->plot.subdata[0].expanded) 
+		row_base = 2;
+	else
+		row_base = 2 + ptp->plot.subdata[0].subcount;
+/*
+ *
+ */
+
+	for (i = 0; i < base_objndata_count; i++) {
+		ndata = &base_objndata[i];
+		if (! ndata->info) 
+			continue;
+		cdata = (ptCompData) ndata->info;
+		if (cdata->qname == qvname)
+			break;
+	}
+        if (i == base_objndata_count)
+		return;
+	
+	NhlVAGetValues(l->base.id,
+		       NhlNvpOn,&on,
+		       NULL);
+	if (cdata->pt_cb)
+		cdata->pt_cb = False;
+	else {
+		cdata->usr_on = on;
+	}
+
+	XtVaSetValues(ptp->public.tree,
+		      XmNcolumn,2,
+		      XmNrow,row_base+i,
+		      XmNcellPixmap,on ? Check_Pixmap : No_Check_Pixmap,
+		      NULL);
+	return;
+}
+#endif
 static void ExpandComponentInfo
 (
         NgPlotTreeRec *ptp,
@@ -188,6 +327,8 @@ static void ExpandComponentInfo
 	NgDataProfile	dprof = ptp->data_profile;
         int rowcount,i;
         char buf[256];
+	NhlArgVal sel,user_data;
+
         
 #if	DEBUG_PLOTTREE & DEBUG_ENTRY
 	fprintf(stderr,"ExpandPlotInfo(IN)\n");
@@ -200,6 +341,14 @@ static void ExpandComponentInfo
         ndata->subdata = NhlMalloc(rowcount * sizeof(ptNodeData));
 
         for (i = 0; i < rowcount; i++) {
+		ptCompData cdata = NhlMalloc(sizeof(ptCompDataRec));
+
+		cdata->qname = dprof->qobjects[i];
+		cdata->on = True;
+		cdata->usr_on = -1;
+		cdata->modified = False;
+		cdata->pt_cb = False;
+
 		sprintf(buf,"%s",NrmQuarkToString(dprof->qobjects[i]));
                 rowdefs[i].level = ndata->type / 10 + 1;
                 rowdefs[i].expands = False;
@@ -208,7 +357,7 @@ static void ExpandComponentInfo
                 rowdefs[i].pixmask = XmUNSPECIFIED_PIXMAP;
                 rowdefs[i].string = XmStringCreateLocalized(buf);
                 ndata->subdata[i].parent = ndata;
-                ndata->subdata[i].qname = dprof->qobjects[i];
+                ndata->subdata[i].info = (NhlPointer) cdata;
                 ndata->subdata[i].expanded = False;
                 ndata->subdata[i].type = _ptPCompObj;
                 ndata->subdata[i].subcount = 0;
@@ -219,6 +368,10 @@ static void ExpandComponentInfo
         ndata->expanded = True;
         ndata->subcount = rowcount;
         
+	NhlINITVAR(sel);
+	NhlINITVAR(user_data);
+	sel.lngval = NrmStringToQuark(NhlNvpOn);
+	user_data.ptrval = ptp;
         for (i = 0; i < rowcount; i++) {
                 NhlBoolean do_string = True;
 		char *cp;
@@ -227,6 +380,7 @@ static void ExpandComponentInfo
 		sprintf(buf,"%s",dprof->obj_classes[i]->base_class.class_name);
 		cp = strstr(buf,"Class");
 		*cp = '\0';
+		
 		buf[0] = toupper(buf[0]);
                 if (do_string) {
                         XmLGridSetStringsPos(pub->tree,
@@ -237,6 +391,26 @@ static void ExpandComponentInfo
                               XmNrow,pos+i,
                               XmNrowUserData,&ndata->subdata[i],
                               NULL);
+		if (NhlClassIsSubclass(dprof->obj_classes[i],NhlviewClass)) {
+			XtVaSetValues(ptp->public.tree,
+				      XmNcolumn,2,
+				      XmNrow,pos+i,
+				      XmNcellPixmap,Check_Pixmap,
+				      XmNcellBackground,
+				      ptp->go->go.edit_field_pixel,
+				      NULL);
+#if 0
+			if (pub->hlu_ids) {
+				NhlLayer l = _NhlGetLayer(pub->hlu_ids[i]);
+				if (! l) 
+					continue;
+				ptp->sv_cbs[i] = _NhlAddObjCallback
+					(l,_NhlCBobjValueSet,
+					 sel,SetValCB,user_data); 
+			}				
+#endif
+		}
+
         }
         XtVaSetValues(pub->tree,
                       XmNcolumn,1,
@@ -428,7 +602,15 @@ static void ExpandTree
 		ExpandPlotInfo(ptp,ndata,row+1);
 		break;
 	case _ptPComp:
+		XtVaSetValues(pub->tree,
+			      XmNrow,row,
+			      XmNcolumn,2,
+			      XmNcellType,XmSTRING_CELL,
+			      NULL);
+		XmLGridSetStringsPos(pub->tree,XmCONTENT,row,XmCONTENT,2,"On");
 		ExpandComponentInfo(ptp,ndata,row+1);
+		XtAddCallback(ptp->public.tree,XmNselectCallback,
+			      ToggleObjectCB,ptp);
 		break;
 	case _ptPLink:
 		ExpandLinkResources(ptp,ndata,row+1);
@@ -482,6 +664,11 @@ static void ExpandCB
         
         if (ndata->subcount > 0) {
                 ndata->expanded = True;
+		if (ndata->type == _ptPComp) {
+			XmLGridSetStringsPos
+				(pub->tree,XmCONTENT,
+				 cbs->row,XmCONTENT,2,"On");
+		}
                 row_change = FindRowChange(ptp,ndata);
                 if (pub->geo_notify && pub->geo_data)
                         (*pub->geo_notify)(pub->geo_data);
@@ -522,6 +709,9 @@ static void CollapseCB
 
         ndata->expanded = False;
         
+	if (ndata->type == _ptPComp)
+		XmLGridSetStringsPos
+			(pub->tree,XmCONTENT,cbs->row,XmCONTENT,2,"  ");
         if (pub->geo_notify && pub->geo_data)
                 (*pub->geo_notify)(pub->geo_data);
 }
@@ -556,6 +746,8 @@ static void FreeSubNodes
         for (i = 0; i < ndata->subcount; i++) {
                 FreeSubNodes(&ndata->subdata[i]);
         }
+	if (ndata->subdata->info)
+		NhlFree(ndata->subdata->info);
         NhlFree(ndata->subdata);
         return;
 }
@@ -662,16 +854,19 @@ NhlErrorTypes NgUpdatePlotTree
 
         pub->geo_notify = NULL;
         pub->geo_data = NULL;
+	pub->hlu_ids = NULL;
 	ptp->wk_id = wk_id;
         ptp->qname = qname;
 	ptp->data_profile = data_profile;
         ptp->page_id = NgGetPageId(ptp->go->base.id,ptp->qname,NrmNULLQUARK);
 	ptp->ditem_vis_count = 0;
+	ptp->sv_cbs = NULL;
+
 
         ndata = &ptp->plot;
         ndata->parent = NULL;
         ndata->type = _ptTop;
-        ndata->qname = qname;
+        ndata->info = NULL;
         ndata->expanded = True;
 
         if (ndata->subdata)
@@ -716,7 +911,7 @@ NhlErrorTypes NgUpdatePlotTree
                             ndata->subdata[i].type = _ptPInfo;
                             break;
                     case 1:
-			    if (dprof)
+			    if (dprof) 
 				    sprintf(buf,"%d",dprof->obj_count);
 			    else {
 				    sprintf(buf,"0");
@@ -739,7 +934,7 @@ NhlErrorTypes NgUpdatePlotTree
                             break;
                 }
                 ndata->subdata[i].parent = ndata;
-                ndata->subdata[i].qname = qname;
+                ndata->subdata[i].info = NULL;
                 ndata->subdata[i].expanded = False;
                 ndata->subdata[i].subcount = 0;
                 ndata->subdata[i].subdata = NULL;
@@ -769,6 +964,12 @@ NhlErrorTypes NgUpdatePlotTree
 			      XmNcolumnWidth,ptp->c2_width,
 			      NULL);
 	}
+#if 0
+	if (dprof) {
+		ptp->sv_cbs = NhlMalloc(dprof->obj_count * sizeof(_NhlCB));
+		memset(ptp->sv_cbs,0,dprof->obj_count * sizeof(_NhlCB));
+	}
+#endif
         return NhlNOERROR;
 }
 
@@ -789,7 +990,12 @@ NgPlotTree *NgCreatePlotTree
 	XtAppAddActions(go->go.x->app,
                         plottreeactions,NhlNumber(plottreeactions));
          if (first) {
+ 		NgBrowse browse = (NgBrowse) go;
+
                 Qlong_name = NrmStringToQuark("long_name");
+		Check_Pixmap = browse->browse.pixmaps.check;
+		No_Check_Pixmap = browse->browse.pixmaps.no_check;
+		Mask_Pixmap = browse->browse.pixmaps.mask_check;
                 first = False;
         }
         
@@ -807,14 +1013,17 @@ NgPlotTree *NgCreatePlotTree
         ptp->plot.subdata = NULL;
         ptp->plot.subcount = 0;
         
-        pub->tree = XtVaCreateManagedWidget("PlotTree",
-                                            xmlTreeWidgetClass,parent,
-                                            XmNverticalSizePolicy,XmVARIABLE,
-                                            XmNhorizontalSizePolicy,XmVARIABLE,
-                                            XmNcolumns, 2,
-                                            XmNimmediateDraw,True,
-                                            XmNuserData,ptp,
-                                            NULL);
+        pub->tree = XtVaCreateManagedWidget
+		("PlotTree",
+		 xmlTreeWidgetClass,parent,
+		 XmNverticalSizePolicy,XmVARIABLE,
+		 XmNhorizontalSizePolicy,XmVARIABLE,
+		 XmNcolumns, 3,
+		 XmNimmediateDraw,True,
+		 XmNuserData,ptp,
+		 XmNselectionPolicy,XmSELECT_NONE,
+		 NULL);
+
         XtVaSetValues(pub->tree,
                       XmNcellDefaults,True,
                       XmNcellRightBorderType,XmBORDER_NONE,
@@ -823,6 +1032,15 @@ NgPlotTree *NgCreatePlotTree
                       XmNcellAlignment,XmALIGNMENT_LEFT,
                       XmNcellMarginLeft,10,
                       NULL);
+
+        XtVaSetValues(pub->tree,
+                      XmNcellLeftBorderType,XmBORDER_NONE,
+		      XmNcellDefaults,True,
+		      XmNcolumn,2,
+                      XmNcellMarginLeft,3,
+		      XmNcellType,XmPIXMAP_CELL,
+		      XmNcolumnWidth,3,
+		      NULL);
         
         XtAddCallback(pub->tree,XmNexpandCallback,ExpandCB,ptp);
         XtAddCallback(pub->tree,XmNcollapseCallback,CollapseCB,ptp);
@@ -894,25 +1112,26 @@ static void Button3ObjectAction(
 	if (! ndata)
 		return;
         if (ndata->type == _ptPCompObj) {
-		brHluObjCreateRec hlu_create_rec;
 		NrmQuark qnames[2];
 		char buf[256];
 		NclExtValueRec	*val = NULL;
 		NhlBoolean preview = False;
-		NgDataProfile dprof;
-		int i,page_id;
-		NhlClass obj_class = NULL;
+		ptCompData cdata = (ptCompData) ndata->info;
 
 #if DEBUG_FILETREE
-                fprintf(stderr,"file var %s\n",NrmQuarkToString(ndata->qname));
+                fprintf(stderr,"file var %s\n",NrmQuarkToString(cdata->qname));
 #endif
 		sprintf(buf,"%s_%s",NrmQuarkToString(ptp->qname),
-			NrmQuarkToString(ndata->qname));
+			NrmQuarkToString(cdata->qname));
                 qnames[0] = NrmStringToQuark(buf);
                 qnames[1] = ptp->qname;
 
 
 		val = NclReadVar(qnames[0],NULL,NULL,NULL);
+		if (! val) {
+			 NHLPERROR((NhlFATAL,ENOMEM,NULL));
+			 return;
+		}
 		if (*(int*)val->value == val->missing.intval) 
 			preview = True;
 		NclFreeExtValue(val);
@@ -923,7 +1142,7 @@ static void Button3ObjectAction(
 		if (preview)
 			return;
 
-                page_id = NgOpenPage(ptp->go->base.id,_brHLUVAR,qnames,2,NULL);
+                NgOpenPage(ptp->go->base.id,_brHLUVAR,qnames,2,NULL);
 
 #if 0		
 		/*
@@ -932,7 +1151,7 @@ static void Button3ObjectAction(
 		dprof = ptp->data_profile;
 
 		for (i = 0; i < dprof->obj_count; i++) {
-			if (ndata->qname == dprof->qobjects[i]) {
+			if (cdata->qname == dprof->qobjects[i]) {
 				obj_class = dprof->obj_classes[i];
 				break;
 			}
@@ -955,4 +1174,83 @@ static void Button3ObjectAction(
 #endif		
         }
         return;
+}
+
+	
+int NgPlotTreeAddResList
+(
+        int		nclstate,
+        NhlPointer	res_data,
+        int		block_id
+        )
+{
+        NgPlotTreeRec *ptp;
+        NhlString res_name;
+        NhlString value;
+        NhlBoolean quote;
+	ptNodeData *base_objndata,*ndata;
+	int base_objndata_count;
+	NgPlotTreeResData rdata;
+	ptCompData cdata;
+	int i,row_base;
+	NhlBoolean cur_on;
+
+#if DEBUG_PLOTTREE
+	fprintf(stderr,"in res tree add res list\n");
+#endif
+
+        rdata = (NgPlotTreeResData) res_data;
+        if (!rdata) 
+		return 0;
+	ptp  = (NgPlotTreeRec *) rdata->plot_tree;
+
+	base_objndata = ptp->plot.subdata[1].subdata;
+	base_objndata_count = ptp->plot.subdata[1].subcount;
+	if (!base_objndata_count)
+		return 0;
+	if (! ptp->plot.subdata[0].expanded) 
+		row_base = 2;
+	else
+		row_base = 2 + ptp->plot.subdata[0].subcount;
+
+	for (i = 0; i < base_objndata_count; i++) {
+		ndata = &base_objndata[i];
+		if (! ndata->info) 
+			continue;
+		cdata = (ptCompData) ndata->info;
+		if (cdata->qname == rdata->qname)
+			break;
+	}
+	if (i == base_objndata_count)
+		return 0;
+	if (ptp->public.first_vpon) {
+		if (! cdata->modified)
+			return 0;
+	}
+	else {
+		NhlVAGetValues(ptp->public.hlu_ids[i],
+			       NhlNvpOn,&cur_on,
+			       NULL);
+		if (cur_on == cdata->on)
+			return 0;
+
+		cdata->on = MIN(cdata->on,cur_on);
+	}
+			       
+	res_name = "vpOn";
+	value = cdata->on ? "True" : "False";
+	quote = True;
+
+        NgNclVisBlockAddResList(nclstate,block_id,1,
+                                &res_name,&value,&quote);
+
+	cdata->modified = False;
+
+	XtVaSetValues(ptp->public.tree,
+		      XmNcolumn,2,
+		      XmNrow,row_base+i,
+		      XmNcellPixmap,cdata->on ? Check_Pixmap : No_Check_Pixmap,
+		      NULL);
+	
+        return 1;
 }

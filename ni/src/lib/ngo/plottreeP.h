@@ -1,5 +1,5 @@
 /*
- *      $Id: plottreeP.h,v 1.1 1999-10-05 23:16:26 dbrown Exp $
+ *      $Id: plottreeP.h,v 1.2 1999-10-13 17:15:51 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -51,13 +51,21 @@ typedef char _ptBool;
 typedef struct _ptNodeData 
 {
         struct _ptNodeData *parent;
-        NrmQuark	qname;
+        void		*info;
         _ptNodeType	type;
         _ptBool		expanded;
         unsigned short	subcount;
 	struct _ptNodeData  *subdata;
 } ptNodeData;
         
+typedef struct _ptCompDataRec
+{
+        NrmQuark	qname;
+	NhlBoolean	on;
+	int		usr_on;
+	NhlBoolean	pt_cb;
+	NhlBoolean	modified;
+} ptCompDataRec, *ptCompData;
 
 /*
  * Any field in the public structure NgPlotTree, defined in
@@ -81,6 +89,7 @@ typedef struct _NgPlotTreeRec
         NhlBoolean		created;
         NhlBoolean		expand_called;
         ptNodeData		plot;
+	_NhlCB			*sv_cbs;
 } NgPlotTreeRec;
 
 #endif	/* _NG_PLOTTREEP_H_ */

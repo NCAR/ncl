@@ -1,5 +1,5 @@
 /*
- *      $Id: plotapp.c,v 1.8 1999-10-05 23:16:21 dbrown Exp $
+ *      $Id: plotapp.c,v 1.9 1999-10-13 17:15:47 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2280,6 +2280,8 @@ static NhlBoolean MatchDimensions
 				return False;
 			for (j = vinfo->n_dims - 1; j >=0; j--) {
 				if (! matched[j]) {
+					if (!HasMinElementCount(vdata,j))
+						continue;
 					dt->dim_ix[i] = j;
 					dt->qdims[i] = 
 						vinfo->dim_info[j].dim_quark;

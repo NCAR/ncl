@@ -1,5 +1,5 @@
 /*
- *      $Id: browseP.h,v 1.9 1999-07-30 03:20:46 dbrown Exp $
+ *      $Id: browseP.h,v 1.10 1999-10-13 17:15:43 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -37,6 +37,16 @@
 */
 #define DEBUG_DATABROWSER 0
 #define brMAX_PANES 16
+
+/*
+ * pixmaps created by the browser for use by any of its pages
+ */
+
+typedef struct _brPixmapsRec {
+	Pixmap	check;
+	Pixmap  no_check;
+	Pixmap	mask_check;
+} brPixmapsRec, *brPixmaps;
 
 /*
  * Each page points to the tab that is currently connected to it. Because
@@ -221,6 +231,7 @@ typedef struct _NgBrowsePart {
         NgVarMenus	vmenus;
         brHistory	history;
         brPaneControl	pane_ctrl;
+	brPixmapsRec	pixmaps;
 } NgBrowsePart;
 
 typedef struct _NgBrowseRec {

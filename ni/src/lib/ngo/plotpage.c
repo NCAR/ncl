@@ -1,5 +1,5 @@
 /*
- *      $Id: plotpage.c,v 1.6 1999-10-05 23:16:23 dbrown Exp $
+ *      $Id: plotpage.c,v 1.7 1999-10-13 17:15:49 dbrown Exp $
  */
 /*******************************************x*****************************
 *									*
@@ -1254,14 +1254,13 @@ static NhlBoolean UpdateGraphic
 	NgDataProfile	dprof = rec->data_profile;
 	NrmQuark 	qobj_name = dprof->qobjects[obj_ix];
 	int		i,count;
-        NgSetResProc	setresproc[2];
-        NhlPointer	setresdata[2];
+        NgSetResProc	setresproc[1];
+        NhlPointer	setresdata[1];
 	char		ncl_name[128];
 	int		setresproc_count,rix;
 
 	if (! _NhlGetLayer(rec->hlu_ids[obj_ix]))
 		return True; /* it's ok */
-
 
 	count = 0;
 	for (i = 0; i < dprof->n_dataitems; i++) {
@@ -1325,9 +1324,9 @@ static NhlBoolean UpdateGraphic
 		resdata->vdata[count] = vdata;
 		count++;
 	}
-	if (count == 0)
+	if (count == 0) {
 		return True;
-
+	}
 	resdata->res_count = count;
 
 	sprintf(ncl_name,"%s_%s",
@@ -1336,8 +1335,7 @@ static NhlBoolean UpdateGraphic
 
 	setresproc[0] = NgAddResList;
 	setresdata[0] = (NhlPointer)resdata;
-
-
+	
 	setresproc_count = 1;
 	rix = 0;
 	ret = NgUpdateGraphic
@@ -1477,6 +1475,42 @@ static NhlErrorTypes DoUpdateFuncs
 	return ret;
 }
 
+static NhlBoolean DoPlotTreeUpdate
+(
+	brPage	*page,
+	int	obj_ix
+)
+{
+        NhlErrorTypes	ret;
+	brPageData	*pdp = page->pdata;
+	brPlotPageRec	*rec = (brPlotPageRec *) pdp->type_rec;
+	NgDataProfile	dprof = rec->data_profile;
+	NrmQuark 	qobj_name = dprof->qobjects[obj_ix];
+	char		ncl_name[128];
+	NgPlotTreeResDataRec	ptresdata;
+        NgSetResProc	setresproc;
+        NhlPointer	setresdata;
+
+	if (! _NhlGetLayer(rec->hlu_ids[obj_ix]))
+		return True; /* it's ok */
+
+	sprintf(ncl_name,"%s_%s",
+		NrmQuarkToString(page->qvar),
+		NrmQuarkToString(qobj_name));
+
+	ptresdata.qname = qobj_name;
+	ptresdata.plot_tree = rec->plot_tree;
+	setresproc = NgPlotTreeAddResList;
+	setresdata = &ptresdata;
+
+	ret = NgUpdateGraphic
+		(rec->go->base.id,ncl_name,1,
+		 &setresproc,&setresdata);
+	if (ret < NhlWARNING)
+		return False;
+	return True;
+}
+
 static NhlErrorTypes
 CreateInstance
 (
@@ -1540,15 +1574,32 @@ CreateInstance
 	/*
 	 * Now call the update functions. These functions may require
 	 * the presence of other objects that may not yet have existed at
-	 * create time.
+	 * create time. See explanation of PlotTree updates in 
+	 * UpdateInstance. It's a little simpler during a create because
+	 * we know the plot is going to be drawn.
 	 */
 
+	rec->plot_tree->first_vpon = True;
+	for (i = 0; i < dprof->obj_count; i++) {
+		if (! NhlClassIsSubclass(dprof->obj_classes[i],NhlviewClass))
+			continue;
+		if (! DoPlotTreeUpdate(page,i))
+			continue;
+	}
 	for (i = 0; i <= rec->max_seq_num; i++) {
 		for (j = 0; j < dprof->obj_count; j++) {
 			int count;
 			subret = DoUpdateFuncs(rec,j,i,&count);
 			ret = MIN(ret,subret);
 		}
+	}
+	rec->plot_tree->first_vpon = False;
+	for (i = 0; i < dprof->obj_count; i++) {
+		if (! NhlClassIsSubclass(dprof->obj_classes[i],NhlviewClass))
+			continue;
+
+		if (! DoPlotTreeUpdate(page,i))
+			continue;
 	}
 	
 	return ret;
@@ -1574,6 +1625,8 @@ UpdateInstance
 	NgDataProfile	dprof = rec->data_profile;
 	int		i,j;
 	NgResData	resdata = NgReallocResData(NULL,0);
+	NhlBoolean	*hlus_on;
+
 
 	for (i = 0; i < dprof->obj_count; i++) {
 		resdata->res_count = 0;
@@ -1594,7 +1647,34 @@ UpdateInstance
 	NgFreeResData(resdata);
 
 	/*
-	 * Now call the post create functions. These functions may require
+	 * Controlling the vpOn resource at the plot page level presents a
+	 * special challenge. Sometimes the plot update functions have to 
+	 * turn off a plot component (e.g. map tickmarks when the map is
+	 * not in an understood projection). This must override the plot page
+	 * setting. But otherwise the plot page setting should rule.
+	 * So it is necessary to first set the value. Then do the update
+	 * funcs. Then reset the value only if an update func has turned
+	 * the component on when the user has set it off via the plot page.
+	 * Save the initial state to see if a new draw will be required.
+	 */
+
+	hlus_on = NhlMalloc(rec->hlu_count * sizeof(NhlBoolean));
+
+	rec->plot_tree->first_vpon = True;
+	for (i = 0; i < dprof->obj_count; i++) {
+		if (! NhlClassIsSubclass(dprof->obj_classes[i],NhlviewClass))
+			continue;
+
+		NhlVAGetValues(rec->hlu_ids[i],
+			       NhlNvpOn,&hlus_on[i],
+			       NULL);
+		if (! DoPlotTreeUpdate(page,i))
+			continue;
+	}
+
+	
+	/*
+	 * Now call the update functions. These functions may require
 	 * the presence of other objects that may not yet have existed at
 	 * create time.
 	 */
@@ -1618,6 +1698,31 @@ UpdateInstance
 			}
 		}
 	}
+
+	rec->plot_tree->first_vpon = False;
+	for (i = 0; i < dprof->obj_count; i++) {
+		NhlBoolean new_view_on;
+		if (! NhlClassIsSubclass(dprof->obj_classes[i],NhlviewClass))
+			continue;
+
+		if (! DoPlotTreeUpdate(page,i))
+			continue;
+
+		NhlVAGetValues(rec->hlu_ids[i],
+			       NhlNvpOn,&new_view_on,
+			       NULL);
+		if (new_view_on !=  hlus_on[i]) {
+			int top_id = _NhlTopLevelView(rec->hlu_ids[i]);
+			NhlLayer tl = _NhlGetLayer(top_id);
+			if (tl) {
+				NgHluData hdata = 
+					(NgHluData) tl->base.gui_data2;
+				if (hdata)
+					hdata->draw_req = True;
+			}
+		}
+	}
+	NhlFree(hlus_on);
 
 /*
  * There is no auto callback for setvalues yet, so for updates the draw
@@ -2137,6 +2242,133 @@ SavePlotState
 
 	return;
 }
+
+static void
+AdjustPlotPageGeometry
+(
+        NhlPointer	data
+)
+{
+	brPage	*page = (brPage *) data;
+        brPlotPageRec	*rec;
+	Dimension		w,h,y,twidth,theight;
+        Dimension		avail_width,avail_height;
+        
+	rec = (brPlotPageRec *)page->pdata->type_rec;
+        
+	twidth = 0;
+	theight = 0;
+        w = 0;
+        y = 0;
+        h = 0;
+      
+	if (rec->data_var_grid &&
+	    XtIsManaged(rec->data_var_grid->grid)) {
+                XtVaGetValues(rec->data_var_grid->grid,
+                              XmNwidth,&w,
+                              XmNy,&y,
+                              XmNheight,&h,
+                              NULL);
+	}
+	twidth = w;
+
+	if (rec->plot_tree &&
+	    XtIsManaged(rec->plot_tree->tree)) {
+                XtVaGetValues(rec->plot_tree->tree,
+                              XmNwidth,&w,
+                              XmNy,&y,
+                              XmNheight,&h,
+                              NULL);
+	}
+	twidth = MAX(twidth,w);
+
+        if (rec->data_source_grid && 
+	    XtIsManaged(rec->data_source_grid->grid)) {
+                XtVaGetValues(rec->data_source_grid->grid,
+                              XmNwidth,&w,
+                              XmNy,&y,
+                              XmNheight,&h,
+                              NULL);
+        }
+	else {
+                XtVaGetValues(rec->link_tgl,
+                              XmNwidth,&w,
+                              XmNy,&y,
+                              XmNheight,&h,
+                              NULL);
+	}		
+	twidth = MAX(twidth,w);
+	theight = y + h;
+
+        NgSetFolderSize(page->pdata->pane,
+                        twidth,theight,&avail_width,&avail_height);
+	
+	return;
+}
+
+static void LinkToggleCB 
+(
+	Widget		w,
+	XtPointer	udata,
+	XtPointer	cb_data
+)
+{
+        brPage		*page = (brPage *)udata;
+	brPageData	*pdp = page->pdata;
+	brPlotPageRec *rec = (brPlotPageRec *) pdp->type_rec;
+	XmToggleButtonCallbackStruct    *xmcb = 
+		(XmToggleButtonCallbackStruct    *) cb_data;
+	Position  x,y;
+	Dimension width,height;
+	XRectangle rect;
+                
+#if DEBUG_VARPAGE
+        fprintf(stderr,"LinkToggleCB(IN)\n");
+#endif
+	if (! xmcb->set) {
+		if (! rec->data_source_grid)
+			return;
+		else {
+			/*the data source grid is not unmapped automatically */
+			XtUnmanageChild(rec->data_source_grid->grid);
+			XtUnmapWidget(rec->data_source_grid->grid);
+			AdjustPlotPageGeometry((NhlPointer)page);
+		}
+		return;
+	}
+	if (! rec->data_source_grid) {
+		rec->data_source_grid = NgCreateDataSourceGrid
+			(rec->go,pdp->form,page->qvar,rec->data_profile);
+		XtVaSetValues(rec->data_source_grid->grid,
+			      XmNtopAttachment,XmATTACH_WIDGET,
+			      XmNtopWidget,rec->link_tgl,
+			      XmNbottomAttachment,XmATTACH_NONE,
+			      XmNrightAttachment,XmATTACH_NONE,
+			      NULL);
+	}
+	NgUpdateDataSourceGrid
+		(rec->data_source_grid,page->qvar,rec->data_profile);
+	XtManageChild(rec->data_source_grid->grid);
+	XtMapWidget(rec->data_source_grid->grid);
+	(*pdp->adjust_page_geo)(page);
+
+	XtVaGetValues(rec->data_source_grid->grid,
+		      XmNwidth,&width,
+		      XmNheight,&height,
+		      XmNx,&x,
+		      XmNy,&y,
+		      NULL);
+	rect.x = x;
+	rect.y = y;
+	rect.width = width;
+	rect.height = height;
+                
+	NgPageSetVisible(rec->go->base.id,page->id,pdp->form,&rect);
+
+        return;
+        
+}
+
 static void
 DeactivatePlotPage
 (
@@ -2171,6 +2403,10 @@ DeactivatePlotPage
         if (rec->auto_update)
                 XtRemoveCallback(rec->auto_update,
                                  XmNvalueChangedCallback,AutoUpdateCB,page);
+	if (rec->link_tgl)
+		XtRemoveCallback(rec->link_tgl,
+				 XmNvalueChangedCallback,LinkToggleCB,page);
+
         rec->state = _plotNOTCREATED;
 	if (rec->hlu_ids) {
 		NhlFree(rec->hlu_ids);
@@ -2216,51 +2452,6 @@ static void DestroyPlotPage
 	return;
 }
 
-static void
-AdjustPlotPageGeometry
-(
-        NhlPointer	data
-)
-{
-	brPage	*page = (brPage *) data;
-        brPlotPageRec	*rec;
-	Dimension		w,h,y,twidth,theight;
-        Dimension		avail_width,avail_height;
-        
-	rec = (brPlotPageRec *)page->pdata->type_rec;
-        
-	twidth = 0;
-	theight = 0;
-        w = 0;
-        y = 0;
-        h = 0;
-      
-	if (rec->plot_tree &&
-	    XtIsManaged(rec->plot_tree->tree)) {
-                XtVaGetValues(rec->plot_tree->tree,
-                              XmNwidth,&w,
-                              XmNy,&y,
-                              XmNheight,&h,
-                              NULL);
-	}
-
-        if (rec->data_source_grid && 
-	    XtIsManaged(rec->data_source_grid->grid)) {
-                XtVaGetValues(rec->data_source_grid->grid,
-                              XmNwidth,&w,
-                              XmNy,&y,
-                              XmNheight,&h,
-                              NULL);
-        }
-	twidth = w;
-	theight = y + h;
-
-        NgSetFolderSize(page->pdata->pane,
-                        twidth,theight,&avail_width,&avail_height);
-	
-	return;
-}
-
 static NhlErrorTypes UpdatePlotPage
 (
         brPage *page
@@ -2289,7 +2480,6 @@ static NhlErrorTypes ResetPlotPage
 {
         brPageData	*pdp = page->pdata;
 	brPlotPageRec	*rec = (brPlotPageRec	*)pdp->type_rec;
-	int		i;
 	int		wk_id;
 	NhlBoolean	work_created;
         
@@ -2305,6 +2495,7 @@ static NhlErrorTypes ResetPlotPage
 	NgUpdatePlotTree(rec->plot_tree,wk_id,page->qvar,rec->data_profile);
 	rec->plot_tree->geo_data = (NhlPointer) page;
 	rec->plot_tree->geo_notify = AdjustPlotPageGeometry;
+	rec->plot_tree->hlu_ids = rec->hlu_ids;
 	if (! XtIsManaged(rec->plot_tree->tree))
 			XtManageChild(rec->plot_tree->tree);
 
@@ -2366,56 +2557,6 @@ static NhlErrorTypes ResetPlotPage
 	
         return NhlNOERROR;
 
-}
-
-static void LinkToggleCB 
-(
-	Widget		w,
-	XtPointer	udata,
-	XtPointer	cb_data
-)
-{
-        brPage		*page = (brPage *)udata;
-	brPageData	*pdp = page->pdata;
-	brPlotPageRec *rec = (brPlotPageRec *) pdp->type_rec;
-	XmToggleButtonCallbackStruct    *xmcb = 
-		(XmToggleButtonCallbackStruct    *) cb_data;
-                
-#if DEBUG_VARPAGE
-        fprintf(stderr,"LinkToggleCB(IN)\n");
-#endif
-	if (! xmcb->set) {
-		if (! rec->data_source_grid)
-			return;
-		else {
-			/*the data source grid is not unmapped automatically */
-			XtUnmanageChild(rec->data_source_grid->grid);
-			XtUnmapWidget(rec->data_source_grid->grid);
-			if (rec->plot_tree->geo_notify && 
-			    rec->plot_tree->geo_data)
-				(*rec->plot_tree->geo_notify)
-					(rec->plot_tree->geo_data);
-		}
-		return;
-	}
-	if (! rec->data_source_grid) {
-		rec->data_source_grid = NgCreateDataSourceGrid
-			(rec->go,pdp->form,page->qvar,rec->data_profile);
-		XtVaSetValues(rec->data_source_grid->grid,
-			      XmNtopAttachment,XmATTACH_WIDGET,
-			      XmNtopWidget,rec->link_tgl,
-			      XmNbottomAttachment,XmATTACH_NONE,
-			      XmNrightAttachment,XmATTACH_NONE,
-			      NULL);
-	}
-	NgUpdateDataSourceGrid
-		(rec->data_source_grid,page->qvar,rec->data_profile);
-	XtManageChild(rec->data_source_grid->grid);
-	XtMapWidget(rec->data_source_grid->grid);
-	if (rec->plot_tree->geo_notify && rec->plot_tree->geo_data)
-		(*rec->plot_tree->geo_notify)(rec->plot_tree->geo_data);
-        return;
-        
 }
 
 static brPageData *
@@ -2532,8 +2673,6 @@ NewPlotPage
 	rec->plot_tree = NgCreatePlotTree
                                 (go,pdp->form,NhlNULLOBJID,
 				 page->qvar,rec->data_profile);
-	rec->plot_tree->geo_notify = AdjustPlotPageGeometry;
-	rec->plot_tree->geo_data = (NhlPointer) page;
 
 	XtVaSetValues(rec->plot_tree->tree,
 		      XmNrightAttachment,XmATTACH_NONE,
@@ -2552,19 +2691,7 @@ NewPlotPage
                  XmNrightAttachment,XmATTACH_NONE,
                  XmNbottomAttachment,XmATTACH_NONE,
                  NULL);
-        XtAddCallback(rec->link_tgl,
-                      XmNvalueChangedCallback,LinkToggleCB,page);
-#if 0
-        rec->data_source_grid = NgCreateDataSourceGrid
-                (rec->go,pdp->form,page->qvar,rec->data_profile);
-        XtVaSetValues(rec->data_source_grid->grid,
-		      XmNtopOffset,8,
-		      XmNtopAttachment,XmATTACH_WIDGET,
-		      XmNtopWidget,rec->plot_tree->tree,
-                      XmNbottomAttachment,XmATTACH_NONE,
-                      XmNrightAttachment,XmATTACH_NONE,
-                      NULL);
-#endif
+
         return pdp;
 }
 
@@ -2874,6 +3001,8 @@ _NgGetPlotPage
                 (rec->create_update,XmNactivateCallback,CreateUpdateCB,page);
         XtAddCallback
                 (rec->auto_update,XmNvalueChangedCallback,AutoUpdateCB,page);
+        XtAddCallback
+		(rec->link_tgl,XmNvalueChangedCallback,LinkToggleCB,page);
 
         if (! copy_page) {
 		ResetPlotPage(page);

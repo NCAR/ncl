@@ -1,5 +1,5 @@
 /*
- *      $Id: shaper.c,v 1.17 1999-09-28 00:47:32 dbrown Exp $
+ *      $Id: shaper.c,v 1.18 1999-10-13 17:15:54 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1192,7 +1192,21 @@ NhlErrorTypes NgUpdateShaper(
 	NclApiVarInfoRec  *vinfo
 )
 {
-
+	NgShaperRec *shaper = (NgShaperRec *)si;
+	NhlBoolean new = False;
+	
+	if (qfile != si->qfile)
+		new = True;
+	if (! si->vinfo || memcmp(vinfo,si->vinfo,sizeof(NclApiVarInfoRec)))
+		new = True;
+	if (! (si->start && si->finish && si->stride))
+		new = True;
+	if (memcmp(si->start,start,vinfo->n_dims * sizeof(long)))
+		new = True;
+	if (memcmp(si->finish,finish,vinfo->n_dims * sizeof(long)))
+		new = True;
+	if (memcmp(si->stride,stride,vinfo->n_dims * sizeof(long)))
+		new = True;
 	si->qfile = qfile;
 	si->start = start;
 	si->finish = finish;
@@ -1202,6 +1216,8 @@ NhlErrorTypes NgUpdateShaper(
 	if (! si)
 		return NhlFATAL;
 
+	if (new)
+		shaper->new_data = True;
 	NgDoShaper(si);
 
 	return NhlNOERROR;

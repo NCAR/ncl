@@ -1,5 +1,5 @@
 /*
- *      $Id: dataprofile.c,v 1.6 1999-09-11 01:06:08 dbrown Exp $
+ *      $Id: dataprofile.c,v 1.7 1999-10-13 17:15:45 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1671,8 +1671,7 @@ NgDataProfile  NgCopyDataProfile(
 		dprof->plotdata = NhlMalloc
 			(data_profile->plotdata_count * sizeof(NgPlotDataRec));
 		memcpy(dprof->plotdata,data_profile->plotdata,
-		       sizeof(data_profile->plotdata_count * 
-			      sizeof(NgPlotDataRec)));
+		       data_profile->plotdata_count * sizeof(NgPlotDataRec));
 		for (i = 0; i < data_profile->plotdata_count; i++) {
 			NgVarData frvdata,tovdata;
 			frvdata = data_profile->plotdata[i].vdata;

@@ -1,5 +1,5 @@
 /*
- *      $Id: datavargrid.c,v 1.4 1999-09-11 01:06:13 dbrown Exp $
+ *      $Id: datavargrid.c,v 1.5 1999-10-13 17:15:45 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -99,16 +99,13 @@ static void AdjustShapeToolGeometry
 	}
 }
 
-static void UpdateDataVarShape
+NclApiVarInfoRec 
+*GetDataVarInfo
 (
-	NhlPointer pdata
+	NgVarData vdata
 )
 {
-        NgDataVarGridRec *dvp = (NgDataVarGridRec *)pdata;
-	NgPlotData pd = &dvp->public.plotdata[dvp->data_ix];
-	NgVarData vdata = pd->vdata;
-	NclApiVarInfoRec *vinfo = NULL;
-	int		page_id;
+	NclApiVarInfoRec *vinfo;
 
 	if (vdata->dl) {
 		vinfo = vdata->dl->u.var;
@@ -124,8 +121,26 @@ static void UpdateDataVarShape
 	}
 	if (! vinfo) {
 		NHLPERROR((NhlFATAL,ENOMEM,NULL));
-		return;
+		return NULL;
 	}
+	return vinfo;
+}
+
+static void UpdateDataVarShape
+(
+	NhlPointer pdata
+)
+{
+        NgDataVarGridRec *dvp = (NgDataVarGridRec *)pdata;
+	NgPlotData pd = &dvp->public.plotdata[dvp->data_ix];
+	NgVarData vdata = pd->vdata;
+	NclApiVarInfoRec *vinfo = NULL;
+	int		page_id;
+
+
+	vinfo = GetDataVarInfo(vdata);
+	if (! vinfo)
+		return;
 
 	vdata->set_state = _NgSHAPED_VAR;
 	vdata->cflags = _NgSHAPE_CHANGE;
@@ -189,22 +204,9 @@ static void CreateShapeTool
 	fprintf(stderr,"in create shape tool\n");
 #endif        
 
-	if (vdata->dl) {
-		vinfo = vdata->dl->u.var;
-	}
-	else {
-		if (vdata->qfile > NrmNULLQUARK)
-			vdata->dl = 
-				NclGetFileVarInfo(vdata->qfile,vdata->qvar);
-		else 	
-			vdata->dl = NclGetVarInfo(vdata->qvar);
-		if (vdata->dl)
-			vinfo = vdata->dl->u.var;
-	}
-	if (! vinfo) {
-		NHLPERROR((NhlFATAL,ENOMEM,NULL));
+	vinfo = GetDataVarInfo(vdata);
+	if (! vinfo)
 		return;
-	}
 
 	dvp->shaper = NgCreateShaper(go,go->go.manager,vdata->qfile,
 				     vdata->start,vdata->finish,vdata->stride,
@@ -290,6 +292,8 @@ static void PopupShaperAction
 			    NULL);
 	}
 	else {
+		NclApiVarInfoRec *vinfo = NULL;
+
 		shape_go = (NgGO)_NhlGetLayer(dvp->shape_tool_id);
 		if (! shape_go) {
 			NHLPERROR((NhlFATAL,NhlEUNKNOWN,
@@ -299,6 +303,13 @@ static void PopupShaperAction
 		XtVaSetValues(shape_go->go.shell,
 			      XmNtitle,buf,
 			      NULL);
+		vinfo = GetDataVarInfo(vdata);
+		if (! vinfo)
+			return;
+		NgUpdateShaper(dvp->shaper,vdata->qfile,
+			       vdata->start,vdata->finish,vdata->stride,
+			       vinfo);
+		dvp->shaper->pdata = dvp;
 	}
 	NgGOPopup(dvp->shape_tool_id);
 		
@@ -318,9 +329,13 @@ ColumnWidths
         char	sizestr[10];
         int	twidth = 0;
 	Dimension	fwidth;
+	Position	x;
 
 	XtVaGetValues(XtParent(dvp->parent),
 		      XmNwidth,&fwidth,
+		      NULL);
+	XtVaGetValues(dvp->public.grid,
+		      XmNx,&x,
 		      NULL);
         
         Buffer[0] = '\0';
@@ -329,7 +344,7 @@ ColumnWidths
                 if (width + twidth > Max_Width)
                         width = Max_Width - twidth;
 		if (i == 1) 
-			width = MAX(width,fwidth/CWidth - twidth - CWidth);
+			width = MAX(width,fwidth/CWidth - twidth - 3*CWidth);
                 twidth += width;
                 sprintf(sizestr,"%dc ",width);
 		strcat(Buffer,sizestr);
@@ -450,7 +465,7 @@ Column1String
 		/* back up 1 to remove final comma */
 		Buffer[strlen(Buffer)-1] = ')';
 	}
-	dvp->cwidths[1] = MAX(dvp->cwidths[1],strlen(Buffer)+10);
+	dvp->cwidths[1] = MAX(dvp->cwidths[1],strlen(Buffer)+2);
 
 	xmstring = NgXAppCreateXmString(dvp->go->go.appmgr,Buffer);
 

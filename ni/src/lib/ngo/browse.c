@@ -1,5 +1,5 @@
 /*
- *      $Id: browse.c,v 1.33 1999-10-05 23:16:20 dbrown Exp $
+ *      $Id: browse.c,v 1.34 1999-10-13 17:15:41 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2068,11 +2068,29 @@ static void UpdatePagesCB
 	fprintf(stderr,"UpdatePagesCB(IN)\n");
 #endif
 
+/*
+ * in order for the plot pages to reflect all changes to the individual
+ * hlu pages, postpone updating plot pages until all hlu pages are updated.
+ */
         for (i = 0; i < pcp->current_count; i++) {
 		pane = np->pane_ctrl.panes[i];
                 for (j = 0; j < pane->pagecount; j++) {
                         brPage *page = (brPage *)XmLArrayGet(pane->pagelist,j);
 			if (! page->pdata->update_page)
+				continue;
+			if (page->type == _brPLOTVAR)
+				continue;
+			(*page->pdata->update_page)(page);
+                }
+        }
+
+        for (i = 0; i < pcp->current_count; i++) {
+		pane = np->pane_ctrl.panes[i];
+                for (j = 0; j < pane->pagecount; j++) {
+                        brPage *page = (brPage *)XmLArrayGet(pane->pagelist,j);
+			if (! page->pdata->update_page)
+				continue;
+			if (page->type != _brPLOTVAR)
 				continue;
 			(*page->pdata->update_page)(page);
                 }
@@ -2098,6 +2116,72 @@ static void HelpCB
 	NgOpenPage(go->base.id,_brHTML,&qhtml,1,NULL);
 	
 }
+
+#define PIXMAP_WIDTH 9
+#define PIXMAP_HEIGHT 9
+
+static void
+CreatePixmaps
+(
+	NgBrowse	browse
+)
+{
+        XrmValue from_black,to_black,from_white,to_white;
+	Pixel white,black;
+	Pixel foreground,background;
+
+	unsigned char check_bits[] = {
+		0x00,0x01,0x80,0x01,0xc0,0x00,0x61,0x00,0x37,0x00,0x3e,0x00,
+		0x1c,0x00,0x08,0x00,0x00,0x00,0x00
+	};
+
+	unsigned char no_check_bits[] = {
+		0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+		0x00,0x00,0x00,0x00,0x00,0x00,0x00
+	};
+	unsigned char mask_bits[] = {
+		0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,
+		0xff,0xff,0xff,0xff,0xff,0xff,0xff
+	};
+
+	XtVaGetValues(browse->go.shell,
+		      XmNforeground,&foreground,
+		      XmNbackground,&background,
+		      NULL);
+	from_black.size = sizeof(String);
+	from_black.addr = (XPointer) "black";
+	to_black.size = sizeof(Pixel);
+	to_black.addr = (XPointer)&black;
+	if (! XtConvertAndStore
+	    (browse->go.shell,XtRString,&from_black,XtRPixel,&to_black))
+		NHLPERROR((NhlWARNING,NhlEUNKNOWN,"convert error"));
+                
+	from_white.size = sizeof(String);
+	from_white.addr = (XPointer) "white";
+	to_white.size = sizeof(Pixel);
+	to_white.addr = (XPointer)&white;
+	XtConvertAndStore(browse->go.shell,
+			  XtRString,&from_white,XtRPixel,&to_white);
+
+	browse->browse.pixmaps.check = XCreatePixmapFromBitmapData
+		(XtDisplay(browse->go.shell),
+		 XtWindow(browse->go.shell),
+		 (char*)check_bits,PIXMAP_WIDTH,PIXMAP_HEIGHT,
+		 black,white,XcbGetDepth(browse->go.xcb));
+	browse->browse.pixmaps.no_check = XCreatePixmapFromBitmapData
+		(XtDisplay(browse->go.shell),
+		 DefaultRootWindow(XtDisplay(browse->go.shell)),
+		 (char*)no_check_bits,PIXMAP_WIDTH,PIXMAP_HEIGHT,
+		 black,white,XcbGetDepth(browse->go.xcb));
+	browse->browse.pixmaps.mask_check = XCreatePixmapFromBitmapData
+		(XtDisplay(browse->go.shell),
+		 XtWindow(browse->go.shell),
+		 (char*)mask_bits,PIXMAP_WIDTH,PIXMAP_HEIGHT,
+		 background,background,XcbGetDepth(browse->go.xcb));
+
+	return;
+}
+
 static void
 ChangeSizeEH
 (
@@ -2131,6 +2215,7 @@ ChangeSizeEH
 #endif
 		if (! np->mapped) {
 			np->mapped = True;
+			CreatePixmaps(browse);
 
 			tdata.go = go;
 			tdata.qvar = NrmStringToQuark("Start.html");
@@ -2599,11 +2684,31 @@ extern NhlErrorTypes NgUpdatePages
 	fprintf(stderr,"NgUpdatePages(IN)\n");
 #endif
 
+/*
+ * in order for the plot pages to reflect all changes to the individual
+ * hlu pages, postpone updating plot pages until all hlu pages are updated.
+ */
+
         for (i = 0; i < pcp->current_count; i++) {
 		pane = np->pane_ctrl.panes[i];
                 for (j = 0; j < pane->pagecount; j++) {
                         brPage *page = (brPage *)XmLArrayGet(pane->pagelist,j);
 			if (! page->pdata->update_page)
+				continue;
+			if (page->type == _brPLOTVAR)
+				continue;
+			(*page->pdata->update_page)(page);
+                }
+        }
+
+
+        for (i = 0; i < pcp->current_count; i++) {
+		pane = np->pane_ctrl.panes[i];
+                for (j = 0; j < pane->pagecount; j++) {
+                        brPage *page = (brPage *)XmLArrayGet(pane->pagelist,j);
+			if (! page->pdata->update_page)
+				continue;
+			if (page->type != _brPLOTVAR)
 				continue;
 			(*page->pdata->update_page)(page);
                 }

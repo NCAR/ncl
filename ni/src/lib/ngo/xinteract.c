@@ -1,5 +1,5 @@
 /*
- *      $Id: xinteract.c,v 1.9 1999-09-21 23:36:15 dbrown Exp $
+ *      $Id: xinteract.c,v 1.10 1999-10-13 17:15:56 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -447,6 +447,7 @@ static void Manipulate
 	NgWksObj		wks;
 	NhlBoolean		save_auto_refresh;
 	NgHluData		hdata;
+	Dimension		size,fuzz;
 
 	if (! l)
 		return;
@@ -484,12 +485,18 @@ static void Manipulate
 	 * that moves with the rubberbanding action.
 	 * p0 of object is TL corner p1 of object is BR corner.
 	 */
+	size = MIN(abs(vobj->xvp.p1.x - vobj->xvp.p0.x),
+		   abs(vobj->xvp.p1.y - vobj->xvp.p0.y));
+	fuzz = MAX(FUZZFACTOR,(int)(0.05*size));
 
-	if(event->x < (vobj->xvp.p0.x + FUZZFACTOR)){
+#if DEBUG_XINTERACT
+	fprintf(stderr,"size %d fuzz = %d\n",size,fuzz);
+#endif
+	if(event->x < (vobj->xvp.p0.x + fuzz)){
 		/*
 		 * Pointer is on Left Side
 		 */
-		if(event->y < (vobj->xvp.p0.y + FUZZFACTOR)){
+		if(event->y < (vobj->xvp.p0.y + fuzz)){
 			/*
 			 * Pointer is near LeftTop Corner
 			 * make BR corner const(p0).
@@ -501,7 +508,7 @@ static void Manipulate
 			rubber.bbox.p1.y = vobj->xvp.p0.y;
 			rubber.type = MODPT;
 		}
-		else if(event->y > (vobj->xvp.p1.y - FUZZFACTOR)){
+		else if(event->y > (vobj->xvp.p1.y - fuzz)){
 			/*
 			 * Pointer is near LeftBottom Corner
 			 * make TR corner const(p0).
@@ -526,11 +533,11 @@ static void Manipulate
 			rubber.type = MODX;
 		}
 	}
-	else if(event->x > (vobj->xvp.p1.x - FUZZFACTOR)){
+	else if(event->x > (vobj->xvp.p1.x - fuzz)){
 		/*
 		 * Pointer is on Right Side
 		 */
-		if(event->y < (vobj->xvp.p0.y + FUZZFACTOR)){
+		if(event->y < (vobj->xvp.p0.y + fuzz)){
 			/*
 			 * Pointer is near RightTop Corner
 			 * make BL corner const(p0).
@@ -542,7 +549,7 @@ static void Manipulate
 			rubber.bbox.p1.y = vobj->xvp.p0.y;
 			rubber.type = MODPT;
 		}
-		else if(event->y > (vobj->xvp.p1.y - FUZZFACTOR)){
+		else if(event->y > (vobj->xvp.p1.y - fuzz)){
 			/*
 			 * Pointer is near RightBottom Corner
 			 * make TL corner const(p0).
@@ -571,7 +578,7 @@ static void Manipulate
 		/*
 		 * Pointer is in the middle (x) section.
 		 */
-		if(event->y < (vobj->xvp.p0.y + FUZZFACTOR)){
+		if(event->y < (vobj->xvp.p0.y + fuzz)){
 			/*
 			 * Pointer is on the TOP
 			 * make BL corner const(p0).
@@ -583,7 +590,7 @@ static void Manipulate
 			rubber.bbox.p1.y = vobj->xvp.p0.y;
 			rubber.type = MODY;
 		}
-		else if(event->y > (vobj->xvp.p1.y - FUZZFACTOR)){
+		else if(event->y > (vobj->xvp.p1.y - fuzz)){
 			/*
 			 * Pointer is near BOTTOM
 			 * make TL corner const(p0).

@@ -1,5 +1,5 @@
 /*
- *      $Id: restree.c,v 1.25 1999-09-11 01:06:52 dbrown Exp $
+ *      $Id: restree.c,v 1.26 1999-10-13 17:15:52 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -32,7 +32,7 @@
 #include  <ncarg/ngo/Tree.h>
 
 #include <ncarg/ngo/restreeP.h>
-#include <ncarg/ngo/browse.h>
+#include <ncarg/ngo/browseP.h>
 #include <ncarg/ngo/xutil.h>
 #include <ncarg/ngo/sort.h>
 #include <ncarg/ngo/stringutil.h>
@@ -82,27 +82,7 @@ static NrmQuark Qgenarray,Qdouble,Qfloat,Qvariable,
 					Qcharacter,Qstring,Qenum,Qcolorindex;
 static int Grlist;
 
-#define PIXMAP_WIDTH 9
-#define PIXMAP_HEIGHT 9
-
-static unsigned char Check_Bits[] = {
-        0x00,0x01,0x80,0x01,0xc0,0x00,0x61,0x00,0x37,0x00,0x3e,0x00,
-        0x1c,0x00,0x08,0x00,0x00,0x00,0x00
-};
-
-static unsigned char No_Check_Bits[] = {
-        0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
-        0x00,0x00,0x00,0x00,0x00,0x00,0x00
-};
-static unsigned char Mask_Bits[] = {
-        0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,
-        0xff,0xff,0xff,0xff,0xff,0xff,0xff
-};
-
 static Pixmap Check_Pixmap, No_Check_Pixmap,Mask_Pixmap;
-
-static Pixel Black,White;
-
 
 static rtCntrlRes CntrlRes[] = {
         {NhlNtfPlotManagerOn,"plotManagerClass",(NhlPointer)False,
@@ -2359,7 +2339,7 @@ static void EditEnum
                  XmNitemCount,ep->count,
                  XmNsetPosition,ep->selected,
                  XmNbuttonMode,mode,
-                 XmNselectColor,White,
+                 XmNselectColor,rtp->go->go.select_pixel,
                  XmNalignment,XmALIGNMENT_CENTER,
                  XmNuserData,		rtp,
                  NULL);
@@ -3695,12 +3675,9 @@ NgResTree *NgCreateResTree
         NgResTreeRec *rtp;
         NgResTree *pub_rtp;
         static NhlBoolean first = True;
-        static XrmValue from_black,to_black,from_white,to_white;
  
         if (first) {
-		Window root;
-		int x,y;
-		unsigned int w,h,b,depth;
+ 		NgBrowse browse = (NgBrowse) go;
 		
 		XtAppAddActions(go->go.x->app,myact,NhlNumber(myact));
                 Qgenarray = NrmStringToQuark(NhlTGenArray);
@@ -3723,37 +3700,11 @@ NgResTree *NgCreateResTree
                               XmNforeground,&Foreground,
                               XmNbackground,&Background,
                               NULL);
-                from_black.size = sizeof(String);
-                from_black.addr = (XPointer) "black";
-                to_black.size = sizeof(Pixel);
-                to_black.addr = (XPointer)&Black;
-                if (! XtConvertAndStore
-                    (go->go.shell,XtRString,&from_black,XtRPixel,&to_black))
-			NHLPERROR((NhlWARNING,NhlEUNKNOWN,"convert error"));
-                
-                from_white.size = sizeof(String);
-                from_white.addr = (XPointer) "white";
-                to_white.size = sizeof(Pixel);
-                to_white.addr = (XPointer)&White;
-                XtConvertAndStore(go->go.shell,
-                                  XtRString,&from_white,XtRPixel,&to_white);
-		XGetGeometry(XtDisplay(go->go.shell),XtWindow(go->go.shell),
-			     &root,&x,&y,&w,&h,&b,&depth);
-                Check_Pixmap = XCreatePixmapFromBitmapData
-                        (XtDisplay(go->go.shell),
-                         XtWindow(go->go.shell),
-                         (char*)Check_Bits,PIXMAP_WIDTH,PIXMAP_HEIGHT,
-                         Black,White,XcbGetDepth(go->go.xcb));
-                No_Check_Pixmap = XCreatePixmapFromBitmapData
-                        (XtDisplay(go->go.shell),
-                         DefaultRootWindow(XtDisplay(go->go.shell)),
-                         (char*)No_Check_Bits,PIXMAP_WIDTH,PIXMAP_HEIGHT,
-                         Black,White,XcbGetDepth(go->go.xcb));
-                Mask_Pixmap = XCreatePixmapFromBitmapData
-                        (XtDisplay(go->go.shell),
-                         XtWindow(go->go.shell),
-                         (char*)Mask_Bits,PIXMAP_WIDTH,PIXMAP_HEIGHT,
-                         Background,Background,XcbGetDepth(go->go.xcb));
+		
+		Check_Pixmap = browse->browse.pixmaps.check;
+		No_Check_Pixmap = browse->browse.pixmaps.no_check;
+		Mask_Pixmap = browse->browse.pixmaps.mask_check;
+
                 first = False;
         }
         
