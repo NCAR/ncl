@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.11 1995-06-14 13:56:32 haley Exp $
+#	$Id: yMakefile,v 1.12 1995-12-11 23:23:53 kennison Exp $
 #
 
 MYNAME	= econpa
@@ -7,12 +7,12 @@ MYNAME	= econpa
 SRCS = \
 	cpexcc.f cpex01.f cpex02.f cpex03.f cpex04.f cpex05.f cpex06.f \
 	cpex07.f cpex08.f cpex09.f cpex10.f cpex11.f cpex12.f cpex13.f \
-	cbex01.f
+	cpex14.f cbex01.f cpex14.data
 
 OBJS = \
 	cpexcc.o cpex01.o cpex02.o cpex03.o cpex04.o cpex05.o cpex06.o \
 	cpex07.o cpex08.o cpex09.o cpex10.o cpex11.o cpex12.o cpex13.o \
-	cbex01.o
+	cpex14.o cbex01.o
 
 PROG_LIBS		= $(NCARGLIBS)
 SYS_LIBS		= -lm
@@ -34,3 +34,4 @@ FExampleTarget(cpex10,cpex10.o cpexcc.o)
 FExampleTarget(cpex11,cpex11.o cpexcc.o)
 FExampleTarget(cpex12,cpex12.o cpexcc.o)
 FExampleTarget(cpex13,cpex13.o cpexcc.o)
+FExampleTarget(cpex14,cpex14.o cpexcc.o)
