@@ -23,14 +23,15 @@
 ; so the application looks for a resource file in the working directory.
 ; In this example the resource file supplies the plot title only.
 ;
-appid = create "lb01" appLayerClass noparent
+appid = create "lb01" appLayerClass defaultapp
+	"appDefaultParent" : "True"
 	"appUsrDir" : "./"
 end create
 
 ;
 ; Create an XWorkstation object.
 ;
-wid = create "lb01Work" xWorkstationLayerClass noparent
+wid = create "lb01Work" xWorkstationLayerClass defaultapp
 	"wkPause" : "True"
 end create
 

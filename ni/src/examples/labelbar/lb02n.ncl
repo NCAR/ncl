@@ -39,14 +39,15 @@ line_labels = (/"Color Index 1 ","Color Index 6 ","Color Index 11", \
 ; so the application looks for a resource file in the working directory.
 ; In this example the resource file supplies the plot title only.
 ;
-appid = create "lb02" appLayerClass noparent
+appid = create "lb02" appLayerClass defaultapp
+	"appDefaultParent" : "True"
 	"appUsrDir" : "./"
 end create
 
 ;
 ; Create an XWorkstation object.
 ;
-wid = create "lb02Work" xWorkstationLayerClass noparent
+wid = create "lb02Work" xWorkstationLayerClass defaultapp
 	"wkPause" : "True"
 end create
 
