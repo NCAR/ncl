@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.8 1997-09-04 16:57:36 boote Exp $
+#      $Id: yMakefile,v 1.9 1997-10-03 20:33:32 dbrown Exp $
 #
 #########################################################################
 #									#
@@ -31,7 +31,7 @@ PRODUCTIONHDRS	=	$(GENHDRS)
 EXTRA_DEFINES	=	-DNGDEMO $(OS1_DEF) $(MAJOR_DEF) $(DEBUGDEFS)
 EXTRA_LDFLAGS	=
 
-PROG_LIBS	=	-lXmL $(NGOLIB) $(XCBLIB) $(DBLIB) $(NCLAPILIB) \
+PROG_LIBS	=	$(NGOLIB) $(XCBLIB) $(DBLIB) $(NCLAPILIB) \
 			$(HLULIBS) $(NCARGLIBS)
 DEPLIBS		=	$(DEPNGOLIB) $(DEPNCLAPILIB) $(DEPHLULIBS) \
 			$(DEPNCARGLIBS)
@@ -40,9 +40,9 @@ SYS_LIBS	=	$(XMOTIFCLIENTLIBS) $(DEBUGLIBS) $(CTOFLIBS) -lm -ldl
 
 
 GENHDRS		= ngi.res.h
-HDRS		= $(PRODUCTIONHDRS) lmlw.h
-SRCS		= ngi.c lmlw.c
-OBJS		= ngi.o lmlw.o
+HDRS		= $(PRODUCTIONHDRS)
+SRCS		= ngi.c
+OBJS		= ngi.o
 
 CProgram($(MYNAME),$(OBJS),$(DEPLIBS))
 depend-local:: $(PRODUCTIONHDRS)
