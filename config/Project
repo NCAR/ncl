@@ -1,5 +1,5 @@
 /*
- *      $Id: Project,v 1.19 1995-02-16 15:11:01 haley Exp $
+ *      $Id: Project,v 1.20 1995-05-10 16:09:04 clyne Exp $
  */
 /************************************************************************
 *									*
@@ -87,6 +87,14 @@
 #undef	BuildRasterBinary
 #endif
 #endif	/* BuildRasterBinary */
+
+#ifndef	BuildRasterYUV
+#define	BuildRasterYUV
+#else
+#if	!BuildRasterYUV
+#undef	BuildRasterYUV
+#endif
+#endif	/* BuildRasterYUV */
 
 #ifndef BuildXlibDependentCode
 #define BuildXlibDependentCode
