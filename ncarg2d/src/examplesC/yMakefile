@@ -1,9 +1,12 @@
 #
-#	$Id: yMakefile,v 1.11 1994-05-12 19:30:51 haley Exp $
+#	$Id: yMakefile,v 1.12 1994-11-03 23:51:27 haley Exp $
 #
 
 #define IHaveSubdirs
 
 SUBDIRS = \
-	autograph bivar conpack ezmap gks labelbar plotchar scrolled_title \
-	softfill
+	areas autograph bivar colconv conpack dashline dashpack ezmap \
+	gflash gks gridall histogram isosurface labelbar ngmisc plotchar \
+	polypack scrolled_title softfill spps streamlines surface threed \
+	vectors wmap
+
