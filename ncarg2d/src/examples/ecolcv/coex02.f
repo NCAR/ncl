@@ -1,5 +1,5 @@
 C
-C	$Id: coex02.f,v 1.4 1995-06-14 13:56:15 haley Exp $
+C	$Id: coex02.f,v 1.5 1999-03-09 22:09:03 haley Exp $
 C
       PROGRAM SMPCOL
 C
@@ -93,10 +93,10 @@ C
 C  Plot labels.
 C
       CALL PLCHHQ(.5,.04,'The titles below each box indicate Red, Green
-     1and Blue intensity values.',.012,0,0)
+     1and Blue intensity values.',.012,0.,0.)
       CALL PCSETI('CD',1)
       CALL PLCHHQ(.5,.96,'Sixteen Sample Colors',
-     1 .02,0,0)
+     1 .02,0.,0.)
 C
       CALL FRAME
 C
