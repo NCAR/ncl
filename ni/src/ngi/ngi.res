@@ -1,5 +1,5 @@
 !
-!      $Id: ngi.res,v 1.15 1998-01-29 16:01:14 boote Exp $
+!      $Id: ngi.res,v 1.16 1998-02-11 23:01:40 dbrown Exp $
 !
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !									!
@@ -25,8 +25,8 @@
 !									!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-!!! DEBUGING !!!
-NgNGO*synchronous:	True
+!!! DEBUGGING !!!
+!NgNGO*synchronous:	True
 *dragInitiatorProtocolStyle:	XmDRAG_NONE
 *dragReceiverProtocolStyle:	XmDRAG_NONE
 
@@ -62,9 +62,11 @@ NgNGO*addfileMGR*directory:	.
 !	the actual hex id of the visual (Server dependent).
 !
 !NgNGO*visual:		XcbVisual
+!NgNGO*visual:		0x29
 ngi.minColorCells:	20
 
-NgNGO*colorMode:	mixedcmap
+!NgNGO*colorMode:	mixedcmap
+NgNGO*colorMode:	sharedcmap
 
 NgNGO*maxColorCells:	0
 NgNGO*rgbError:		5
@@ -486,7 +488,7 @@ addfile*directory:     /fs/scd/home1/ncargd/dev/IRIS_IRIX_6_2_/lib/ncarg/data/cd
 addfile*directory: /fs/scd/home1/ncargd/dev/sun4_SunOS_5_5_1/lib/ncarg/data/cdf
 
 !htmlview: display is sgi,linux
-*html*fontSizeList: 12,8,22,18,14,12,10,8
+!*html*fontSizeList: 12,8,22,18,14,12,10,8
 !htmlview: display is sun
-*html*fontSizeList: 10,8,20,16,12,10,8,6
+!*html*fontSizeList: 10,8,20,16,12,10,8,6
 *enableBadHTMLWarnings : HTML_NONE
