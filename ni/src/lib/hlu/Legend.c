@@ -1,5 +1,5 @@
 /*
- *      $Id: Legend.c,v 1.69 2001-12-13 01:57:45 dbrown Exp $
+ *      $Id: Legend.c,v 1.70 2003-07-15 22:13:06 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3081,7 +3081,8 @@ static NhlErrorTypes    SetTitle
 		string_changed = True;
         }
 	else if (lg_p->title_string != olg_p->title_string) {
-		NhlFree(olg_p->title_string);
+		if(olg_p->title_string != lgDefTitle)
+			NhlFree(olg_p->title_string);
 		c_p = lg_p->title_string;
 		lg_p->title_string = (char*)NhlMalloc((unsigned)strlen(c_p)+1);
 		strcpy(lg_p->title_string, c_p);
