@@ -1,5 +1,5 @@
 /*
- *      $Id: NclApi.c,v 1.43 1997-05-12 15:48:57 ethan Exp $
+ *      $Id: NclApi.c,v 1.44 1997-07-02 15:26:09 boote Exp $
  */
 /************************************************************************
 *									*
@@ -170,7 +170,8 @@ int NclInitServer
 	cur_line_text = NclMalloc((unsigned)512);
         cur_line_maxsize = 512;
         cur_line_text_pos = &(cur_line_text[0]);
-	cur_line_number = -1;
+	/* init to -3 so begin/end determination of start_state isn't counted */
+	cur_line_number = -3;
 
 	NhlOpen();
 
