@@ -1,5 +1,5 @@
 C
-C $Id: cppkcl.f,v 1.5 1995-04-26 22:44:56 kennison Exp $
+C $Id: cppkcl.f,v 1.6 1995-11-09 00:05:08 kennison Exp $
 C
       SUBROUTINE CPPKCL (ZDAT,RWRK,IWRK)
 C
@@ -131,7 +131,7 @@ C
 10002       CONTINUE
               NCLV=NCLV+1
               CLEV(NCLV)=UCMN+REAL(NCLV-1)*CINU
-              IF (ABS(CLEV(NCLV)).LT.1.E-3*CINU) CLEV(NCLV)=0.
+              IF (ABS(CLEV(NCLV)).LT..001*CINU) CLEV(NCLV)=0.
               IF (MOD(NCLV-1,LINU).NE.0) THEN
                 ICLU(NCLV)=1
               ELSE
