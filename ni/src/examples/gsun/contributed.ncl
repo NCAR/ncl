@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.33 2004-02-17 00:11:21 shea Exp $
+;      $Id: contributed.ncl,v 1.34 2004-02-22 22:43:47 shea Exp $
 ;
 ; -------------- added Feb 14 2002
 ; copy_VarMeta
@@ -82,6 +82,56 @@
 ; designed to be completely self contained so that if a user desires, the
 ; code can be extracted without loss of functionality.
 ;
+
+;************************************************************
+; D. Shea
+; return True if "x" has one of several synonyms for "long_name"
+
+function isatt_LongName(x)
+local LongName, xAtts, nAtts, n
+begin
+  LongName = (/"long_name","description","standard_name" \
+              ,"DESCRIPTION","DataFieldName" /)
+  xAtts    = getvaratts(x)
+  nAtts    = dimsizes(xAtts)
+  do n=0,nAtts-1
+     if (any(LongName.eq.xAtts(n))) then
+         return( True )
+     end if
+  end do
+  return( False )
+end
+
+;************************************************************
+; D. Shea
+; return the "long_name" attribute of a variable
+; Check for various synonyms
+
+function getLongName(x)
+; return long_name: check for various synonyms
+begin
+  if (isatt(x,"long_name")) then      ; COARDS, CSM, CF
+      return(x@long_name)
+  end if
+
+  if (isatt(x,"description")) then    ; WRF
+      return(x@description)
+  end if
+
+  if (isatt(x,"DESCRIPTION")) then
+      return(x@DESCRIPTION)
+  end if
+
+  if (isatt(x,"standard_name")) then  ; CF
+      return(x@standard_name)
+  end if
+
+  if (isatt(x,"DataFieldName")) then  ; HDF [some]
+      return(x@DataFieldName)
+  end if
+ ;return("")                          ; return 
+  return("missing")                   ; return 
+end
 
 ; ******************************************************************
 ; D. Shea
@@ -482,7 +532,7 @@ end
 
 ; *****************************************************************
 ; D. Shea
-; Generate longitudes for a Fixed-Offset global grid
+; Generate longitudes for a Fixed-OfGSUNset global grid
 ; Example: lon = lonGlobeFo (72, "lon", "longitude", "degrees_east")
 ;          lon will run from -> 2.5 to 357.5 in the above example
 ;
@@ -1639,7 +1689,7 @@ begin
  copy_VarCoords(x, xAnom)
  
  if (isatt(x,"long_name")) then
-     xAnom@long_name = "Anomalies: "+x@long_name
+     xAnom@long_name = "Anomalies: "+getLongName(x)
  else
      xAnom@long_name = "Deviation from mean"
  end if
@@ -1699,7 +1749,7 @@ begin
      
      copy_VarAtts (x, xrmsd)    ; copy attributes
      if (isatt(xrmsd,"long_name")) then
-         xrmsd@long_name = "RMSD: "+x@long_name
+         xrmsd@long_name = "RMSD: "+getLongName(x)
      end if
                                 ; copy dim  names and coord  variables
      Ndx  = dimsizes(dimx)      ; number of dimensions
@@ -1883,8 +1933,9 @@ local xzon
 begin
  xzon = dim_avg_Wrap (x)
                         ; ----DJS personal---- over ride above 
- if (isatt(xzon,"long_name")) then
-     xzon@long_name  = "Zonal Ave ["+ xzon@long_name+"]" 
+ if (isatt(xzon,"long_name") .or. isatt(xzon,"description") .or. \
+     isatt(xzon,"standard_name") ) then
+     xzon@long_name  = "Zonal Ave ["+ getLongName(xzon)+"]" 
  else
      xzon@long_name  = "Zonal Average"
  end if
@@ -2267,8 +2318,9 @@ begin
    do nmo=0,ntim-1,nmos
       xStiz(nmo:ntim-1:nmos,:,:) = dim_standardize(x(namd1|:,namd2|:,namd0|nmo:ntim-1:nmos), opt)
    end do
-   if (isatt(x,"long_name")) then
-       xStiz@long_name = "Standardized Anomalies: "+x@long_name
+   if (isatt(x,"long_name") .or. isatt(x,"description") .or. \
+       isatt(x,"standard_name") ) then
+       xStiz@long_name = "Standardized Anomalies: "+getLongName(x)
    end if
    xStiz@units = "dimensionless"
 
@@ -3712,8 +3764,9 @@ undef ("eofMeta")
 procedure eofMeta (data:numeric, neval:integer, eof:numeric)
 local evn, dimd, dime, nDimd, nDime, i
 begin
-  if (isatt(data,"long_name") ) then
-      eof@long_name = "EOF: "+data@long_name
+  if (isatt(data,"long_name") .or. isatt(data,"description") .or. \
+      isatt(data,"standard_name") ) then
+      eof@long_name = "EOF: "+getLongName(data)
   end if
   if (isatt(data,"lev") ) then
       eof@lev = data@lev
@@ -3811,8 +3864,9 @@ begin
   nDimd= dimsizes(dimsizes(data))               ; rank
   nDime= dimsizes(dimsizes(eofTs))                
 
-  if (isatt(data,"long_name") ) then
-      eofTs@long_name = "EOF: Amplitude: "+data@long_name
+  if (isatt(data,"long_name") .or. isatt(data,"description") .or. \
+      isatt(data,"standard_name") ) then
+      eofTs@long_name = "EOF: Amplitude: "+getLongName(data)
   end if
 
   if (.not.ismissing(eof!0)) then
@@ -3858,73 +3912,6 @@ begin
   return  (eofTs)                 ; return
 end
 
-; **********************************************************************
-; D Shea
-; This does a varimax rotation on the time series returned
-; from eofcov_ts. This is called Q-mode varimax rotation.
-;
-;  eof   = eofcov (x,neval)
-;  eofts = eofcov_ts (x,eof)  ; where 'deof' is the data used
-;  eofts_varimax = varimax_eofts_Qmode(eofts, eof@eval, eof@pcvar )
-;
-;  This also returns the % variance explained by:
-;       (a) each rotated component (attribute: Q_pcvar)
-;       (b) each rotated component relative to the 
-;           original variance (attribute: Q_pcvar_original)
-;
-undef ("varimax_eofts")
-function varimax_eofts (eof_ts[*][*]:numeric \
-                       ,eval[*]:numeric, pcvar[*]:numeric )
-
-local neval, nev, Q_eof_ts, Q_eof_ts2, opt, tot_pcvar \
-    , x, Q_tot_var, Q_pcvar
-
-begin
-   neval = dimsizes(eval)
-   tot_pcvar = sum(pcvar)       ; total % variance of input modes
-
-   Q_eof_ts = eof_ts            ; normalize the variance for each mode
-   do nev=0,neval-1
-      Q_eof_ts(nev,:) = eof_ts(nev,:)/sqrt(eval(nev))
-   end do
-                                        ; invoke built-in function
-   Q_eof_ts = (/ eof_varimax(Q_eof_ts) /)
-   Q_eof_ts@long_name = "Q-mode Varimax Rotation"
-
-   if (isatt(Q_eof_ts,"ts_mean")) then   
-       delete(Q_eof_ts@ts_mean)         ; not applicable to Q_eof_ts
-   end if
-                                        ; get the % variance
-   Q_eof_ts2  = Q_eof_ts
-   Q_eof_ts2  = Q_eof_ts^2              ; square all values
-   Q_mode_sum = dim_sum(Q_eof_ts2)      ; sum of squares
-   Q_mode_var = dim_variance(Q_eof_ts2) ; variance of each Q mode
-   Q_tot_var  = sum(Q_mode_var)         ; sum ... should be neval
-   Q_pcvar    = (dim_variance(Q_eof_ts2)/Q_tot_var)*100.  ; % each Q mode
-   Q_pcvar_original = Q_pcvar*tot_pcvar*0.01  ; % of original variance explained
-   delete (Q_eof_ts2)
-                                ; reorder into ascending order
-   Q_ts  = Q_eof_ts             ; save
-   Q_pc  = Q_pcvar
-   qsort(Q_pc)                  ; this sorts in ascending order
-
-   indx = new ( neval, "integer")
-   do n=0,neval-1
-      indx(n) = ind(Q_pcvar.eq.Q_pc(n))
-   end do
-   indx = indx(::-1)            ; make descending order
-
-   Q_pcvar  = Q_pcvar(indx)
-   Q_pcvar_original = Q_pcvar_original(indx)
-   do n=0,neval-1
-      Q_eof_ts(n,:) = Q_ts(indx(n),:)
-   end do
-
-   Q_eof_ts@varimax_pcvar          = Q_pcvar     ; should sum to 100%
-   Q_eof_ts@varimax_pcvar_original = Q_pcvar_original
-
-   return  (Q_eof_ts)                ; return
-end
 
 ; **********************************************************************
 ; D Shea
@@ -4593,8 +4580,9 @@ begin
   end if
 
   copy_VarAtts (xMon, xSea)
-  if (isatt(xMon, "long_name")) then
-      xSea@long_name = SEASON+": "+xMon@long_name
+  if (isatt(xMon,"long_name") .or. isatt(xMon,"description") .or. \
+      isatt(xMon,"standard_name") ) then
+      xSea@long_name = SEASON+": "+getLongName(xMon)
   end if
 
   do n=1,rank-1                  ; copy spatial coordinates
@@ -4697,7 +4685,7 @@ begin
       xSea(0)      = (xMon(0) + xMon(1) )*0.5
       xSea(ntim-1) = (xMon(ntim-2) + xMon(ntim-1) )*0.5
 
-      xSea@long_name = "seasonal means: "+xMon@long_name
+      xSea@long_name = "seasonal means: "+getLongName(xMon)
       xSea@season    = season 
 
       return (xSea)
@@ -4711,7 +4699,7 @@ begin
       xSea(:,:,0)      = (xMon(0,:,:) + xMon(1,:,:) )*0.5
       xSea(:,:,ntim-1) = (xMon(ntim-2,:,:) + xMon(ntim-1,:,:) )*0.5
 
-      xSea@long_name = "seasonal means: "+xMon@long_name
+      xSea@long_name = "seasonal means: "+getLongName(xMon)
       xSea@season    = season 
 
       return (xSea($dNam(0)$|:,$dNam(1)$|:,$dNam(2)$|:))  ; reorder and return
@@ -4726,7 +4714,7 @@ begin
       xSea(:,:,:,0)      = (xMon(0,:,:,:) + xMon(1,:,:,:) )*0.5
       xSea(:,:,:,ntim-1) = (xMon(ntim-2,:,:,:) + xMon(ntim-1,:,:,:) )*0.5
 
-      xSea@long_name = "seasonal means: "+xMon@long_name
+      xSea@long_name = "seasonal means: "+getLongName(xMon)
       xSea@season    = season
 
       return (xSea($dNam(0)$|:,$dNam(1)$|:,$dNam(2)$|:,$dNam(3)$|:)) 
@@ -4834,8 +4822,9 @@ begin
   end if
                                      ; copy attributes
   copy_VarAtts (xMon, xSeaN)
-  if (isatt(xMon, "long_name")) then
-      xSeaN@long_name = "Seasonal Means: "+xMon@long_name
+  if (isatt(xMon,"long_name") .or. isatt(xMon,"description") .or. \
+      isatt(xNon,"standard_name") ) then
+      xSeaN@long_name = "Seasonal Means: "+getLongName(xMon)
   end if
                                      ; copy dimension stuff
   xSeaN!0      = "season"
