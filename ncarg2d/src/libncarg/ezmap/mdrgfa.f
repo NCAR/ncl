@@ -1,5 +1,5 @@
 C
-C $Id: mdrgfa.f,v 1.1 2001-11-07 20:11:03 kennison Exp $
+C $Id: mdrgfa.f,v 1.2 2002-11-20 21:58:53 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -23,7 +23,7 @@ C
       SUBROUTINE MDRGFA (XCRA,YCRA,NCRA,IAAI,IAGI,NGPS)
 C
 C This routine is called by ARSCAM, which has been called by MDRGSX,
-C which has been called by MDRGSA.  If the polygon defined by the
+C which has been called by MDRGSF.  If the polygon defined by the
 C arguments is one that should be filled, the polygon is transformed
 C from its position on the unit square to a 1-degree square on a
 C lat/lon grid and then to its position on the map defined by the
