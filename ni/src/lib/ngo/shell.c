@@ -1,5 +1,5 @@
 /*
- *      $Id: shell.c,v 1.1 1999-09-11 01:06:59 dbrown Exp $
+ *      $Id: shell.c,v 1.2 1999-10-28 16:41:44 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -122,6 +122,7 @@ ShellClassPartInitialize
 	 * Override go class definition of manager class.
 	 */
 
+	shell->go_class.dialog = topLevelShellWidgetClass;
 	shell->go_class.manager = xmMessageBoxWidgetClass;
 
 	return NhlNOERROR;
