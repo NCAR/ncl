@@ -1,5 +1,5 @@
 /*
- *      $Id: ScalarField.c,v 1.38 2002-07-18 19:28:18 dbrown Exp $
+ *      $Id: ScalarField.c,v 1.39 2003-09-10 21:29:56 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -48,7 +48,7 @@ static NhlResource resources[] = {
 		 Oset(x_arr),NhlTImmediate,_NhlUSET((NhlPointer)NULL),0,NULL},
 	{NhlNsfYArray,NhlCsfYArray,NhlTGenArray,sizeof(NhlGenArray),
 		 Oset(y_arr),NhlTImmediate,_NhlUSET((NhlPointer)NULL),0,NULL},
-	{NhlNsfGridType,NhlCsfGridType,NhlTGridType,sizeof(NhlGridType),
+	{NhlNsfGridType,NhlCsfGridType,NhlTdiGridType,sizeof(NhldiGridType),
 	 	Oset(grid_type),NhlTImmediate,
 	 	_NhlUSET((NhlPointer)NhlSPHERICALGRID),0,NULL},
 	{NhlNsfCopyData,NhlCdiCopyData,NhlTBoolean,sizeof(NhlBoolean),
@@ -1543,6 +1543,7 @@ GetSubsetBounds2D
 		else
 			rev = ximin > ximax;
 		c_name = "X coordinate";
+		rev = False;
 		if (rev) {
 			*cstart = max;
 			*cend = min;
@@ -1562,6 +1563,7 @@ GetSubsetBounds2D
 		else
 			rev = yimin > yimax;
 		c_name = "Y coordinate";
+		rev = False;
 		if (rev) {
 			*cstart = max;
 			*cend = min;
@@ -2024,7 +2026,7 @@ GetCoordBounds
  *		subsets of the 	data using either the index or the subset 
  *		start/end resources.
  *              For now, only subsetting by index is allowed.
- *              The resources are given someone different meanings from
+ *              The resources are given somewhat different meanings from
  *              the 1D case: 
  *              The XC{Start|End}Index, and XCStride resources apply to the
  *              X axis of both coordinate arrays, while the 
@@ -2738,7 +2740,9 @@ ScalarFieldInitialize
 	NhlScalarFieldLayer	sfl = (NhlScalarFieldLayer)new;
 	NhlScalarFieldLayerPart	*sfp = &(sfl->sfield);
 	NhlGenArray		ga;
-         _NhlConvertContext	context = NULL;
+        _NhlConvertContext	context = NULL;
+	NhlBoolean		has_2d_coords = False;
+	
 
 	sfp->changed = 0;
         context = _NhlCreateConvertContext(new);
@@ -2829,6 +2833,9 @@ ScalarFieldInitialize
 			sfp->changed |= _NhlsfYARR_CHANGED;
                 }
 	}
+	if (sfp->x_arr && sfp->y_arr && sfp->x_arr->num_dimensions == 2) {
+		has_2d_coords = True;
+	}
 
 	if (sfp->missing_value != NULL) {
 		ga = NULL;
@@ -2857,9 +2864,9 @@ ScalarFieldInitialize
 	}
 
         if (VTypeValuesEqual(context,sfp->x_start,sfp->x_end)) {
-                e_text = "%s %s and %s values cannot be equal, defaulting";
-                NHLPERROR((NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
-                          NhlNsfXCStartV,NhlNsfXCEndV));
+                e_text = "%s: %s and %s values cannot be equal, defaulting";
+                NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
+                          NhlNsfXCStartV,NhlNsfXCEndV);
                 ret = MIN(ret,NhlWARNING);
                 sfp->x_start = NULL;
                 sfp->x_end = NULL;
@@ -2883,9 +2890,9 @@ ScalarFieldInitialize
 
 
         if (VTypeValuesEqual(context,sfp->y_start,sfp->y_end)) {
-                e_text = "%s %s and %s values cannot be equal, defaulting";
-                NHLPERROR((NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
-                          NhlNsfYCStartV,NhlNsfYCEndV));
+                e_text = "%s: %s and %s values cannot be equal, defaulting";
+                NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
+                          NhlNsfYCStartV,NhlNsfYCEndV);
                 ret = MIN(ret,NhlWARNING);
                 sfp->y_start = NULL;
                 sfp->y_end = NULL;
@@ -2908,15 +2915,15 @@ ScalarFieldInitialize
 	}
         
         if (VTypeValuesEqual(context,sfp->x_subset_start,sfp->x_subset_end)) {
-                e_text = "%s %s and %s values cannot be equal, defaulting";
-                NHLPERROR((NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
-                          NhlNsfXCStartV,NhlNsfXCEndV));
+                e_text = "%s: %s and %s values cannot be equal, defaulting";
+                NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
+                          NhlNsfXCStartSubsetV,NhlNsfXCEndSubsetV);
                 ret = MIN(ret,NhlWARNING);
                 sfp->x_subset_start = NULL;
                 sfp->x_subset_end = NULL;
         }
 	if (sfp->x_subset_start != NULL) {
-                if (sfp->subset_by_index)
+                if (sfp->subset_by_index || has_2d_coords)
                         sfp->x_subset_start = NULL;
                 else {
                         ga = NULL;
@@ -2932,8 +2939,8 @@ ScalarFieldInitialize
                 sfp->xstart_byindex = True;
                 
 	if (sfp->x_subset_end != NULL) {
-                if (sfp->subset_by_index)
-                        sfp->x_subset_start = NULL;
+                if (sfp->subset_by_index || has_2d_coords)
+                        sfp->x_subset_end = NULL;
                 else {
                         ga = NULL;
                         subret = CheckCopyVType
@@ -2949,15 +2956,15 @@ ScalarFieldInitialize
 
 
         if (VTypeValuesEqual(context,sfp->y_subset_start,sfp->y_subset_end)) {
-                e_text = "%s %s and %s values cannot be equal, defaulting";
-                NHLPERROR((NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
-                          NhlNsfYCStartV,NhlNsfYCEndV));
+                e_text = "%s: %s and %s values cannot be equal, defaulting";
+                NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
+                          NhlNsfYCStartV,NhlNsfYCEndV);
                 ret = MIN(ret,NhlWARNING);
                 sfp->y_subset_start = NULL;
                 sfp->y_subset_end = NULL;
         }
 	if (sfp->y_subset_start != NULL) {
-                if (sfp->subset_by_index)
+                if (sfp->subset_by_index || has_2d_coords)
                         sfp->y_subset_start = NULL;
                 else {
                         ga = NULL;
@@ -2973,8 +2980,8 @@ ScalarFieldInitialize
                 sfp->ystart_byindex = True;
                 
 	if (sfp->y_subset_end != NULL) {
-                if (sfp->subset_by_index)
-                        sfp->y_subset_start = NULL;
+                if (sfp->subset_by_index || has_2d_coords)
+                        sfp->y_subset_end = NULL;
                 else {
                         ga = NULL;
                         subret = CheckCopyVType
@@ -3039,6 +3046,7 @@ ScalarFieldSetValues
 	NhlBoolean		x_dim_changed = False, y_dim_changed = False;
         NhlBoolean		x_start_changed = False, x_end_changed = False;
         NhlBoolean		y_start_changed = False, y_end_changed = False;
+	NhlBoolean		has_2d_coords = False;
 
 /*
  * The changed bit field records changes to the X and Y coordinate array
@@ -3192,6 +3200,9 @@ ScalarFieldSetValues
 		if (! _NhlArgIsSet(args,nargs,NhlNsfYCEndIndex))
 			sfp->y_index_end = -1;
 	}
+	if (sfp->x_arr && sfp->y_arr && sfp->x_arr->num_dimensions == 2) {
+		has_2d_coords = True;
+	}
 
 	if (sfp->missing_value != osfp->missing_value) {
 		subret = CheckCopyVType(&osfp->missing_value,
@@ -3222,9 +3233,9 @@ ScalarFieldSetValues
 
         if (VTypeValuesEqual(context,sfp->x_start,sfp->x_end)) {
                 e_text =
-             "%s %s and %s values cannot be equal, restoring previous values";
-                NHLPERROR((NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
-                          NhlNsfXCStartV,NhlNsfXCEndV));
+             "%s: %s and %s values cannot be equal, restoring previous values";
+                NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
+                          NhlNsfXCStartV,NhlNsfXCEndV);
                 ret = MIN(ret,NhlWARNING);
                 sfp->x_start = osfp->x_start;
                 sfp->x_end = osfp->x_end;
@@ -3258,9 +3269,9 @@ ScalarFieldSetValues
 
         if (VTypeValuesEqual(context,sfp->y_start,sfp->y_end)) {
                 e_text =
-             "%s %s and %s values cannot be equal, restoring previous values";
-                NHLPERROR((NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
-                          NhlNsfYCStartV,NhlNsfYCEndV));
+             "%s: %s and %s values cannot be equal, restoring previous values";
+                NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
+                          NhlNsfYCStartV,NhlNsfYCEndV);
                 ret = MIN(ret,NhlWARNING);
                 sfp->y_start = osfp->y_start;
                 sfp->y_end = osfp->y_end;
@@ -3294,9 +3305,9 @@ ScalarFieldSetValues
 
         if (VTypeValuesEqual(context,sfp->x_subset_start,sfp->x_subset_end)) {
                 e_text =
-             "%s %s and %s values cannot be equal, restoring previous values";
-                NHLPERROR((NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
-                          NhlNsfXCStartV,NhlNsfXCEndV));
+             "%s: %s and %s values cannot be equal, restoring previous values";
+                NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
+                          NhlNsfXCStartSubsetV,NhlNsfXCEndSubsetV);
                 ret = MIN(ret,NhlWARNING);
                 sfp->x_subset_start = osfp->x_subset_start;
                 sfp->x_subset_end = osfp->y_subset_end;
@@ -3313,6 +3324,7 @@ ScalarFieldSetValues
 	}
         else if (x_arr_changed || sfp->subset_by_index ||
                  x_start_changed || x_end_changed ||
+		 has_2d_coords ||  
                  sfp->x_index_start != osfp->x_index_start) {
                 NhlFreeGenArray(osfp->x_subset_start);
                 sfp->x_subset_start = NULL;
@@ -3330,6 +3342,7 @@ ScalarFieldSetValues
 	}
         else if (x_arr_changed || sfp->subset_by_index ||
                  x_start_changed || x_end_changed ||
+		 has_2d_coords ||  
                  sfp->x_index_end != osfp->x_index_end) {
                	NhlFreeGenArray(osfp->x_subset_end);
                 sfp->x_subset_end = NULL;
@@ -3339,9 +3352,9 @@ ScalarFieldSetValues
 
         if (VTypeValuesEqual(context,sfp->y_subset_start,sfp->y_subset_end)) {
                 e_text =
-             "%s %s and %s values cannot be equal, restoring previous values";
-                NHLPERROR((NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
-                          NhlNsfYCStartV,NhlNsfYCEndV));
+             "%s: %s and %s values cannot be equal, restoring previous values";
+                NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
+                          NhlNsfYCStartSubsetV,NhlNsfYCEndSubsetV);
                 ret = MIN(ret,NhlWARNING);
                 sfp->y_subset_start = osfp->y_subset_start;
                 sfp->y_subset_end = osfp->y_subset_end;
@@ -3358,6 +3371,7 @@ ScalarFieldSetValues
 	}
         else if (y_arr_changed || sfp->subset_by_index ||
                  y_start_changed || y_end_changed ||
+		 has_2d_coords ||  
                  sfp->y_index_start != osfp->y_index_start) {
                	NhlFreeGenArray(osfp->y_subset_start);
                 sfp->y_subset_start = NULL;
@@ -3376,6 +3390,7 @@ ScalarFieldSetValues
 	}
         else if (y_arr_changed || sfp->subset_by_index ||
                  y_start_changed || y_end_changed ||
+		 has_2d_coords ||  
                  sfp->y_index_end != osfp->y_index_end) {
                	NhlFreeGenArray(osfp->y_subset_end);
                 sfp->y_subset_end = NULL;
@@ -3916,7 +3931,8 @@ static NhlErrorTypes    ScalarFieldGetValues
 			}
 			else {
 				if ((data = 
-				     CreateVData((NhlPointer)&sffp->x_start,
+				     CreateVData((NhlPointer)
+						 &sfp->x_actual_start,
 						 sizeof(float),resQ)) == NULL)
 					return NhlFATAL;
 				typeQ = Qfloat;
@@ -3937,7 +3953,8 @@ static NhlErrorTypes    ScalarFieldGetValues
 			}
 			else {
 				if ((data = 
-				     CreateVData((NhlPointer)&sffp->x_end,
+				     CreateVData((NhlPointer)
+						 &sfp->x_actual_end,
 						 sizeof(float),resQ)) == NULL)
 					return NhlFATAL;
 				typeQ = Qfloat;
@@ -3958,7 +3975,8 @@ static NhlErrorTypes    ScalarFieldGetValues
 			}
 			else {
 				if ((data = 
-				     CreateVData((NhlPointer)&sffp->y_start,
+				     CreateVData((NhlPointer)
+						 &sfp->y_actual_start,
 						 sizeof(float),resQ)) == NULL)
 					return NhlFATAL;
 				typeQ = Qfloat;
@@ -3979,7 +3997,8 @@ static NhlErrorTypes    ScalarFieldGetValues
 			}
 			else {
 				if ((data = 
-				     CreateVData((NhlPointer)&sffp->y_end,
+				     CreateVData((NhlPointer)
+						 &sfp->y_actual_end,
 						 sizeof(float),resQ)) == NULL)
 					return NhlFATAL;
 				typeQ = Qfloat;

@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.c,v 1.81 2003-04-04 18:34:00 dbrown Exp $
+ *      $Id: VectorPlot.c,v 1.82 2003-09-10 21:30:00 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1899,7 +1899,6 @@ VectorPlotInitialize
 	vcp->data_changed = True;
 	vcp->data_init = False;
 	vcp->scalar_data_init = False;
-	vcp->trans_type = vcLOGLIN;
 	vcp->zero_field = False;
 	vcp->lbar_labels_set = False;
 	vcp->lbar_labels = NULL;
@@ -2010,8 +2009,8 @@ VectorPlotInitialize
 	subret = InitCoordBounds(vcnew,NULL,entry_name);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) return(ret);
 
-	switch (vcp->trans_type) {
-	case vcLOGLIN:
+	switch (vcnew->trans.grid_type) {
+	case NhltrLOGLIN:
 	default:
 		subret = SetUpLLTransObj(vcnew,(NhlVectorPlotLayer) req,True);
 		if ((ret = MIN(ret,subret)) < NhlWARNING) {
@@ -2020,7 +2019,7 @@ VectorPlotInitialize
 			return(ret);
 		}
 		break;
-	case vcIRREGULAR:
+	case NhltrIRREGULAR:
 		subret = SetUpIrrTransObj(vcnew,(NhlVectorPlotLayer) req,True);
 		if ((ret = MIN(ret,subret)) < NhlWARNING) {
 			e_text = "%s: error setting up transformation";
@@ -2028,7 +2027,8 @@ VectorPlotInitialize
 			return(ret);
 		}
 		break;
-	case vcCURVILINEAR:
+	case NhltrCURVILINEAR:
+	case NhltrSPHERICAL:
 		subret = SetUpCrvTransObj(vcnew,(NhlVectorPlotLayer) req,True);
 		if ((ret = MIN(ret,subret)) < NhlWARNING) {
 			e_text = "%s: error setting up transformation";
@@ -2598,8 +2598,8 @@ static NhlErrorTypes VectorPlotSetValues
 	subret = InitCoordBounds(vcnew,(NhlVectorPlotLayer)old,entry_name);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) return(ret);
 
-	switch (vcp->trans_type) {
-	case vcLOGLIN:
+	switch (vcnew->trans.grid_type) {
+	case NhltrLOGLIN:
 	default:
 		subret = SetUpLLTransObj(vcnew,(NhlVectorPlotLayer)old,False);
 		if ((ret = MIN(ret,subret)) < NhlWARNING) {
@@ -2608,7 +2608,7 @@ static NhlErrorTypes VectorPlotSetValues
 			return(ret);
 		}
 		break;
-	case vcIRREGULAR:
+	case NhltrIRREGULAR:
 		subret = SetUpIrrTransObj(vcnew,(NhlVectorPlotLayer)old,False);
 		if ((ret = MIN(ret,subret)) < NhlWARNING) {
 			e_text = "%s: error setting up transformation";
@@ -2616,7 +2616,8 @@ static NhlErrorTypes VectorPlotSetValues
 			return(ret);
 		}
 		break;
-	case vcCURVILINEAR:
+	case NhltrCURVILINEAR:
+	case NhltrSPHERICAL:
 		subret = SetUpCrvTransObj(vcnew,(NhlVectorPlotLayer)old,False);
 		if ((ret = MIN(ret,subret)) < NhlWARNING) {
 			e_text = "%s: error setting up transformation";
@@ -3171,13 +3172,13 @@ static NhlErrorTypes vcInitDraw
         vcp->ylb = MAX(tfp->y_min,MIN(tfp->data_ystart,tfp->data_yend));
         vcp->yub = MIN(tfp->y_max,MAX(tfp->data_ystart,tfp->data_yend));
         
-	if (vcp->trans_type == vcLOGLIN) {
+	if (tfp->grid_type == NhltrLOGLIN) {
                 vcp->xc1 = tfp->data_xstart;
                 vcp->xcm = tfp->data_xend;
                 vcp->yc1 = tfp->data_ystart;
                 vcp->ycn = tfp->data_yend;
         }
-        else if (vcp->trans_type == vcIRREGULAR) {
+        else if (tfp->grid_type == NhltrIRREGULAR) {
                 int xcount,ycount;
                 
                 xcount = tfp->x_axis_type == NhlIRREGULARAXIS ?
@@ -3190,7 +3191,7 @@ static NhlErrorTypes vcInitDraw
                 vcp->yc1 = 0;
                 vcp->ycn = ycount - 1;
         }
-	else if (vcp->trans_type == vcCURVILINEAR) {
+	else if (tfp->grid_type == NhltrCURVILINEAR) {
                 int xcount,ycount;
 
 		xcount = vcp->vfp->x_arr->len_dimensions[1];
@@ -4203,7 +4204,6 @@ static NhlErrorTypes InitCoordBounds
 	char		*e_text;
 
 	vcp->do_low_level_log = False;
-        vcp->trans_type = vcLOGLIN;
         
 	if (! vcp->data_init) {
                 tfp->data_xstart = tfp->data_xend = 0.0;
@@ -4235,12 +4235,28 @@ static NhlErrorTypes InitCoordBounds
 
 	if (vcp->vfp->x_arr && vcp->vfp->y_arr &&
 	    vcp->vfp->x_arr->num_dimensions == 2 &&
-	    vcp->vfp->y_arr->num_dimensions == 2)
-		vcp->trans_type = vcCURVILINEAR;
-        else if (vcp->vfp->x_arr || vcp->vfp->y_arr)
-                vcp->trans_type = vcIRREGULAR;
+	    vcp->vfp->y_arr->num_dimensions == 2) {
+		if (! tfp->grid_type_set) {
+			if (vcp->vfp->grid_type == NhlBASICGRID) /* legacy */
+				tfp->grid_type = NhltrCURVILINEAR;
+			else
+				tfp->grid_type = NhltrSPHERICAL;
+		}
+		else if (tfp->grid_type < NhltrCURVILINEAR) {
+			tfp->grid_type = NhltrSPHERICAL;
+		}
+		/* leave the set flag as is */
+	}
+        else if (vcp->vfp->x_arr || vcp->vfp->y_arr) { /* ignore set value */
+		tfp->grid_type = NhltrIRREGULAR;
+		tfp->grid_type_set = False;
+	}
+	else { /* ignore set value */
+		tfp->grid_type = NhltrLOGLIN;
+		tfp->grid_type_set = False;
+	}
         
-        if (vcp->trans_type == vcIRREGULAR) {
+        if (tfp->grid_type == NhltrIRREGULAR) {
                 if (vcp->vfp->x_arr && ! tfp->x_axis_type_set) {
 			if (! vcp->ovfp || (vcp->data_changed  &&
 			    (vcp->vfp->changed & _NhlvfXARR_CHANGED)))
@@ -4267,7 +4283,6 @@ static NhlErrorTypes InitCoordBounds
         
 	ret = _NhltfCheckCoordBounds
                 ((NhlTransformLayer)vcl,(NhlTransformLayer)ovcl,
-		 (int) vcp->trans_type,
                  entry_name);
 
 	return ret;
@@ -4636,13 +4651,22 @@ static NhlErrorTypes SetUpCrvTransObj
         int			nargs = 0;
 	NhlClass		trans_class;
 
-	switch (vcp->vfp->grid_type) {
-	case NhlBASICGRID:
+	/*
+	 * By now the grid_type should only be spherical or curvilinear 
+	 * Otherwise fatal error.
+	 */ 
+
+	switch (tfp->grid_type) {
+	case NhltrCURVILINEAR:
 		trans_class =  NhlcurvilinearTransObjClass;
 		break;
-	case NhlSPHERICALGRID:
+	case NhltrSPHERICAL:
 		trans_class =  NhlsphericalTransObjClass;
 		break;
+	default:
+		e_text = "%s:internal error determinining trans type";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
 	}
 
 	entry_name = (init) ? "VectorPlotInitialize" : "VectorPlotSetValues";

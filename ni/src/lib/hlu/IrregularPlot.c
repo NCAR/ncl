@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularPlot.c,v 1.29 2002-09-16 22:03:14 dbrown Exp $
+ *      $Id: IrregularPlot.c,v 1.30 2003-09-10 21:29:53 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -341,6 +341,9 @@ IrregularPlotInitialize
 	NhlIrregularPlotLayerPart	*irp = &(inew->irrplot);
 
 
+/* force the grid type */
+
+	inew->trans.grid_type = NhltrIRREGULAR;
 
 /* Initialize private fields */
 
@@ -408,6 +411,8 @@ static NhlErrorTypes IrregularPlotSetValues
 	NhlSArg				sargs[1];
 	int				nargs = 0;
 
+
+	inew->trans.grid_type = NhltrIRREGULAR;
 
 /* Set up the Irregular transformation */
 

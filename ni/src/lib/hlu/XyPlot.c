@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.89 2003-06-11 18:45:44 dbrown Exp $
+ *      $Id: XyPlot.c,v 1.90 2003-09-10 21:30:03 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -4508,6 +4508,9 @@ SetUpTransObjs
 		NhlSetSArg(&sargs[nargs++],NhlNtrLineInterpolationOn,
 			   tfp->line_interpolation_on);
 
+		xnew->trans.grid_type = newxy->have_irreg_trans ?
+			NhltrIRREGULAR : NhltrLOGLIN;
+
 		(void)NhlALCreate(&tmpid,buffer,trans_class,xnew->base.id,
 								sargs,nargs);
 
@@ -4599,6 +4602,9 @@ SetUpTransObjs
 
 	if (nargs > 0)	
 		newxy->new_draw_req = True;
+
+	xnew->trans.grid_type = newxy->have_irreg_trans ?
+			NhltrIRREGULAR : NhltrLOGLIN;
 		
 	return NhlALSetValues(newxy->thetrans->base.id,sargs,nargs);
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.122 2003-08-16 00:45:57 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.123 2003-09-10 21:29:51 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2097,7 +2097,6 @@ ContourPlotInitialize
 	cnp->overlay_object = NULL;
 	cnp->data_changed = True;
 	cnp->ll_strings = NULL;
-	cnp->trans_type = cnLOGLIN;
 	cnp->const_field = False;
 	cnp->lbar_labels_set = False;
 	cnp->lbar_labels = NULL;
@@ -2178,8 +2177,8 @@ ContourPlotInitialize
 	subret = InitCoordBounds(cnew,NULL,entry_name);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) return(ret);
 
-	switch (cnp->trans_type) {
-	case cnLOGLIN:
+	switch (cnew->trans.grid_type) {
+	case NhltrLOGLIN:
 	default:
 		subret = SetUpLLTransObj(cnew,(NhlContourPlotLayer) req,True);
 		if ((ret = MIN(ret,subret)) < NhlWARNING) {
@@ -2188,7 +2187,7 @@ ContourPlotInitialize
 			return(ret);
 		}
 		break;
-	case cnIRREGULAR:
+	case NhltrIRREGULAR:
 		subret = SetUpIrrTransObj(cnew,(NhlContourPlotLayer) req,True);
 		if ((ret = MIN(ret,subret)) < NhlWARNING) {
 			e_text = "%s: error setting up transformation";
@@ -2196,7 +2195,8 @@ ContourPlotInitialize
 			return(ret);
 		}
 		break;
-	case cnCURVILINEAR:
+	case NhltrCURVILINEAR:
+	case NhltrSPHERICAL:
 		subret = SetUpCrvTransObj(cnew,(NhlContourPlotLayer) req,True);
 		if ((ret = MIN(ret,subret)) < NhlWARNING) {
 			e_text = "%s: error setting up transformation";
@@ -2521,8 +2521,8 @@ static NhlErrorTypes ContourPlotSetValues
 	subret = InitCoordBounds(cnew,cold,entry_name);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) return(ret);
 
-	switch (cnp->trans_type) {
-	case cnLOGLIN:
+	switch (cnew->trans.grid_type) {
+	case NhltrLOGLIN:
 	default:
 		subret = SetUpLLTransObj(cnew,(NhlContourPlotLayer)old,False);
 		if ((ret = MIN(ret,subret)) < NhlWARNING) {
@@ -2531,7 +2531,7 @@ static NhlErrorTypes ContourPlotSetValues
 			return(ret);
 		}
 		break;
-	case cnIRREGULAR:
+	case NhltrIRREGULAR:
 		subret = SetUpIrrTransObj(cnew,(NhlContourPlotLayer)old,False);
 		if ((ret = MIN(ret,subret)) < NhlWARNING) {
 			e_text = "%s: error setting up transformation";
@@ -2539,7 +2539,8 @@ static NhlErrorTypes ContourPlotSetValues
 			return(ret);
 		}
 		break;
-	case cnCURVILINEAR:
+	case NhltrCURVILINEAR:
+	case NhltrSPHERICAL:
 		subret = SetUpCrvTransObj(cnew,(NhlContourPlotLayer)old,False);
 		if ((ret = MIN(ret,subret)) < NhlWARNING) {
 			e_text = "%s: error setting up transformation";
@@ -3152,13 +3153,13 @@ static NhlErrorTypes cnInitDraw
         cnp->ylb = MAX(tfp->y_min,MIN(tfp->data_ystart,tfp->data_yend));
         cnp->yub = MIN(tfp->y_max,MAX(tfp->data_ystart,tfp->data_yend));
         
-	if (cnp->trans_type == cnLOGLIN) {
+	if (tfp->grid_type == NhltrLOGLIN) {
                 cnp->xc1 = tfp->data_xstart;
                 cnp->xcm = tfp->data_xend;
                 cnp->yc1 = tfp->data_ystart;
                 cnp->ycn = tfp->data_yend;
         }
-        else if (cnp->trans_type == cnIRREGULAR) {
+        else if (tfp->grid_type == NhltrIRREGULAR) {
                 int xcount,ycount;
 
 		xcount = tfp->x_axis_type == NhlIRREGULARAXIS ?
@@ -3171,7 +3172,7 @@ static NhlErrorTypes cnInitDraw
                 cnp->yc1 = 0;
                 cnp->ycn = ycount - 1;
         }
-	else if (cnp->trans_type == cnCURVILINEAR) {
+	else if (tfp->grid_type >= NhltrCURVILINEAR) {
                 int xcount,ycount;
 
 		xcount = cnp->sfp->x_arr->len_dimensions[1];
@@ -3445,7 +3446,7 @@ static NhlErrorTypes GetDataBound
 	cyd[0] = cnp->ylb;
 	cyd[1] = cnp->yub;
 
-        if (cnp->trans_type == cnIRREGULAR) {
+        if (cl->trans.grid_type == NhltrIRREGULAR) {
                 int i;
                 float *coords,start_diff,diff,eps,sum;
                 if (cnp->sfp->x_arr) {
@@ -3538,10 +3539,10 @@ static NhlErrorTypes GetDataBound
                  NhllogLinTransObjClass->base_class.class_name) {
 
 		if (cl->trans.x_log || x_irr || 
-		    cnp->trans_type == cnCURVILINEAR)
+		    cl->trans.grid_type >= NhltrCURVILINEAR)
 			*xlinear = False;
 		if (cl->trans.y_log || y_irr ||
-		    cnp->trans_type == cnCURVILINEAR)
+		    cl->trans.grid_type >= NhltrCURVILINEAR)
 			*ylinear = False;
 
 		if (_NhlIsOverlay(cl->base.id)) {
@@ -3587,10 +3588,10 @@ static NhlErrorTypes GetDataBound
 		NhlBoolean rel_center_lat,rel_center_lon;
 
 		if (cl->trans.x_log || x_irr || 
-		    cnp->trans_type == cnCURVILINEAR)
+		    cl->trans.grid_type >= NhltrCURVILINEAR)
 			*xlinear = False;
 		if (cl->trans.y_log || y_irr ||
-		    cnp->trans_type == cnCURVILINEAR)
+		    cl->trans.grid_type >= NhltrCURVILINEAR)
 			*ylinear = False;
 
 		NhlVAGetValues(cnp->trans_obj->base.id,
@@ -5087,7 +5088,7 @@ static NhlErrorTypes UpdateLineAndLabelParams
 	NhlContourPlotLayerPart	*cnp = &(cl->contourplot);
 	float			*clvp;
 	int			*clup;
-	int			i;
+	int			i,j;
 	float			height;
 
 	cnp->line_lbls.text = (NhlString *) cnp->llabel_strings->data;
@@ -5203,36 +5204,60 @@ static NhlErrorTypes UpdateLineAndLabelParams
 	for (i=0; i<cnp->level_count; i++) {
 		int pai,aia,aib;
 		NhlcnLevelUseMode flag;
+		NhlBoolean blank = True;
+		char *cp;
 
 		pai = i+1;
 		aib = NhlcnAREAID_OFFSET+i;
 		aia = NhlcnAREAID_OFFSET+i+1;
 		c_cpseti("PAI",pai);
 		c_cpsetr("CLV",(float)clvp[i]);
+		c_cpseti("AIB",aib);
+		c_cpseti("AIA",aia);
+
 		flag = cnp->mono_level_flag ? 
 			cnp->level_flag : (NhlcnLevelUseMode) clup[i];
-		if (*do_lines) {
-			c_cpseti("CLU",flag);
-		}
-		else {
+
+		if (! *do_lines) {
 			switch (flag) {
 			case NhlNOLINE:
 			case NhlLINEONLY:
 			default:
-				c_cpseti("CLU",NhlNOLINE);
+				flag = NhlNOLINE;
 				break;
 			case NhlLABELONLY:
 			case NhlLINEANDLABEL:
-				c_cpseti("CLU",NhlLABELONLY);
+				flag = NhlLABELONLY;
 				break;
 			}
 		}
-		c_cpseti("AIB",aib);
-		c_cpseti("AIA",aia);
+
 #if 0
 		printf("pai %d,clv %f,aib %d,aia %d\n",pai,clvp[i],aib,aia);
 #endif
-		c_cpsetc("LLT",((NhlString*)cnp->line_lbls.text)[i]);
+		cp = ((NhlString*)cnp->line_lbls.text)[i];
+		if (cp) {
+			for (j = 0; j < strlen(cp); j++) {
+				if (! isgraph(cp[j]))
+					continue;
+				blank = False;
+			}
+		}
+		if (blank) {
+			switch (flag) {
+			case NhlNOLINE:
+			case NhlLABELONLY:
+			default:
+				flag = NhlNOLINE;
+				break;
+			case NhlLINEONLY:
+			case NhlLINEANDLABEL:
+				flag = NhlLINEONLY;
+				break;
+			}
+		}
+		c_cpseti("CLU",flag);
+		c_cpsetc("LLT",cp);
 	}
 	if (cnp->level_selection_mode != NhlEXPLICITLEVELS)
 		c_cpsetr("CIU",(float)cnp->level_spacing);
@@ -5510,7 +5535,6 @@ static NhlErrorTypes InitCoordBounds
         NhlTransformLayerPart	*tfp = &cl->trans;
 
 	cnp->do_low_level_log = False;
-        cnp->trans_type = cnLOGLIN;
         
 	if (! cnp->data_init) {
                 tfp->data_xstart = tfp->data_xend = 0.0;
@@ -5542,12 +5566,28 @@ static NhlErrorTypes InitCoordBounds
         
 	if (cnp->sfp->x_arr && cnp->sfp->y_arr &&
 	    cnp->sfp->x_arr->num_dimensions == 2 &&
-	    cnp->sfp->y_arr->num_dimensions == 2)
-		cnp->trans_type = cnCURVILINEAR;
-        else if (cnp->sfp->x_arr || cnp->sfp->y_arr)
-                cnp->trans_type = cnIRREGULAR;
+	    cnp->sfp->y_arr->num_dimensions == 2) {
+		if (! tfp->grid_type_set) {
+			if (cnp->sfp->grid_type == NhlBASICGRID) /* legacy */
+				tfp->grid_type = NhltrCURVILINEAR;
+			else
+				tfp->grid_type = NhltrSPHERICAL;
+		}
+		else if (tfp->grid_type < NhltrCURVILINEAR) {
+			tfp->grid_type = NhltrSPHERICAL;
+		}
+		/* leave the set flag as is */
+	}
+        else if (cnp->sfp->x_arr || cnp->sfp->y_arr) { /* ignore set value */
+		tfp->grid_type = NhltrIRREGULAR;
+		tfp->grid_type_set = False;
+	}
+	else { /* ignore set value */
+		tfp->grid_type = NhltrLOGLIN;
+		tfp->grid_type_set = False;
+	}
         
-        if (cnp->trans_type == cnIRREGULAR) {
+        if (tfp->grid_type == NhltrIRREGULAR) {
                 if (cnp->sfp->x_arr && ! tfp->x_axis_type_set) {
 			if (! cnp->osfp || (cnp->data_changed  &&
 			    (cnp->sfp->changed & _NhlsfXARR_CHANGED)))
@@ -5574,7 +5614,6 @@ static NhlErrorTypes InitCoordBounds
         
 	ret = _NhltfCheckCoordBounds
                 ((NhlTransformLayer)cl,(NhlTransformLayer)ocl,
-		 (int) cnp->trans_type,
                  entry_name);
         
 	return ret;
@@ -5942,13 +5981,22 @@ static NhlErrorTypes SetUpCrvTransObj
         int			nargs = 0;
 	NhlClass		trans_class;
 
-	switch (cnp->sfp->grid_type) {
-	case NhlBASICGRID:
+	/*
+	 * By now the grid_type should only be spherical or curvilinear 
+	 * Otherwise fatal error.
+	 */ 
+
+	switch (tfp->grid_type) {
+	case NhltrCURVILINEAR:
 		trans_class =  NhlcurvilinearTransObjClass;
 		break;
-	case NhlSPHERICALGRID:
+	case NhltrSPHERICAL:
 		trans_class =  NhlsphericalTransObjClass;
 		break;
+	default:
+		e_text = "%s:internal error determinining trans type";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
 	}
 
 	entry_name = (init) ? "ContourPlotInitialize" : "ContourPlotSetValues";

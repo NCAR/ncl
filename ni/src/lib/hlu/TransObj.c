@@ -1,5 +1,5 @@
 /*
- *      $Id: TransObj.c,v 1.34 2002-03-18 21:20:07 dbrown Exp $
+ *      $Id: TransObj.c,v 1.35 2003-09-10 21:29:59 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -23,6 +23,7 @@
 #include <ncarg/hlu/View.h>
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/TransObjP.h>
+#include <ncarg/hlu/ConvertersP.h>
 #include <math.h>
 
 static NhlResource resources[] =  {
@@ -74,14 +75,22 @@ static NhlResource resources[] =  {
 	{ NhlNtrOutOfRangeF, NhlCtrOutOfRangeF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlTransObjLayerRec,trobj.out_of_range),
 		NhlTString, _NhlUSET("1.0e12"),_NhlRES_PRIVATE,NULL },
-
-/* End-documented-resources */
-
 	{ NhlNtrLineInterpolationOn,NhlCtrLineInterpolationOn,
 		NhlTBoolean,sizeof(NhlBoolean),
 	        NhlOffset(NhlTransObjLayerRec,trobj.line_interpolation_on),
 		NhlTImmediate,
 	  	_NhlUSET((NhlPointer)False),_NhlRES_PRIVATE,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 NhlOffset(NhlTransObjLayerRec,trobj.grid_type_set),
+	         NhlTImmediate,
+		 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
+	{NhlNtrGridType,NhlCtrGridType,
+		NhlTGridType,sizeof(NhlGridType),
+	        NhlOffset(NhlTransObjLayerRec,trobj.grid_type),NhlTProcedure,
+		_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
+
+/* End-documented-resources */
+
 	{ NhlNtrResolutionF, NhlCtrResolutionF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlTransObjLayerRec, trobj.resolution),
 		NhlTString, _NhlUSET("0.002"),_NhlRES_PRIVATE,NULL },
@@ -358,6 +367,9 @@ TransInitialize
         }
         tp->off_screen = False;
 
+	if (!tp->grid_type_set)
+		tp->grid_type = NhltrLOGLIN;
+
 	return ret;
 }
 
@@ -405,6 +417,8 @@ static NhlErrorTypes TransSetValues
                 tp->y_max_set = True;
         if (_NhlArgIsSet(args,num_args,NhlNtrYReverse))
                 tp->y_reverse_set = True;
+        if (_NhlArgIsSet(args,num_args,NhlNtrGridType))
+                tp->grid_type_set = True;
                         
         return NhlNOERROR;
 }

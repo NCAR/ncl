@@ -1,5 +1,5 @@
 /*
- *      $Id: DataItem.h,v 1.8 2002-07-02 01:26:39 dbrown Exp $
+ *      $Id: DataItem.h,v 1.9 2003-09-10 21:29:53 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -26,14 +26,15 @@
 
 /*
  * This type applies to 2D (or maybe eventually 3D .. nD) coordinate arrays,
+ * (superceded by the TransObj type NhlGridType - so this is deprecated now)
  */
 
-typedef enum _NhlGridType {
+typedef enum _NhldiGridType {
 	NhlBASICGRID,
 	NhlSPHERICALGRID
-} NhlGridType;
+} NhldiGridType;
 
-#define NhlTGridType "GridType"
+#define NhlTdiGridType "diGridType"
 	
 
 /*

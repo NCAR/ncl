@@ -1,5 +1,5 @@
 /*
- *      $Id: TransObjP.h,v 1.19 1999-04-02 23:51:16 dbrown Exp $
+ *      $Id: TransObjP.h,v 1.20 2003-09-10 21:29:59 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -80,10 +80,12 @@ typedef struct _NhlTransObjLayerPart {
 	float		y_max;
 	NhlBoolean	y_reverse_set;
 	int 		y_reverse;
-        
+
 	float		out_of_range;
 	NhlBoolean	line_interpolation_on;
 	float		resolution;
+	NhlBoolean	grid_type_set;
+        NhlGridType   	grid_type;
 /*
  * Each time the trans obj changes this field is incremented
  */

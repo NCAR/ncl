@@ -1,5 +1,5 @@
 /*
-*      $Id: MapTransObj.c,v 1.55 2003-04-04 18:33:44 dbrown Exp $
+*      $Id: MapTransObj.c,v 1.56 2003-09-10 21:29:56 dbrown Exp $
 */
 /************************************************************************
 *									*
@@ -1346,6 +1346,10 @@ static NhlErrorTypes GetMinMaxLatLon
 	float ymin_u,ymin_v,ymax_u,ymax_v;
 	float xmin_u,xmin_v,xmax_u,xmax_v;
 	float xinc2,yinc2,xstart,ystart;
+	*minlon = -180; 
+	*maxlon = 180;
+	*minlat = -90;
+	*maxlat = 90;
 	
 	proj = mtp->projection;
 	rel_lon = mtp->rel_center_lon;
@@ -1372,8 +1376,14 @@ static NhlErrorTypes GetMinMaxLatLon
 
 	if ((proj == NhlCYLINDRICALEQUIDISTANT || 
 	     proj == NhlMERCATOR) && clat == 0.0 && crot == 0.0) {
-		MapWinToData((NhlLayer)mpl,
-			     xloc,yloc,2,xout,yout,NULL,NULL,&status);
+		c_maptri(xloc[0],yloc[0],&(yout[0]),&(xout[0]));
+		c_maptri(xloc[1],yloc[1],&(yout[1]),&(xout[1]));
+
+		if (xout[0] > 1e10 || xout[1] > 1e10)
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
+	       "GetMinMaxLatLon: unable to determine min/max lat/lon values");
+			return NhlWARNING;;
+		
 		/* no problem */
 		if (_NhlCmpFAny2(xout[0],xout[1],6,1e-6)>= 0.0)
 			xout[0] -= 360;

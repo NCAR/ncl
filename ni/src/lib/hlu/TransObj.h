@@ -1,5 +1,5 @@
 /*
- *      $Id: TransObj.h,v 1.14 2002-03-18 21:20:07 dbrown Exp $
+ *      $Id: TransObj.h,v 1.15 2003-09-10 21:29:59 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -26,7 +26,24 @@
 
 #include <ncarg/hlu/Base.h>
 
+typedef enum _NhlAxisType { 
+	NhlIRREGULARAXIS, 
+	NhlLINEARAXIS, 
+	NhlLOGAXIS 
+} NhlAxisType;
+
 #define NhlTAxisType "AxisType"
+
+typedef enum _NhlGridType {
+	NhltrMAP = 0,            /* Map */
+	NhltrLOGLIN = 1,         /* LogLin */
+	NhltrIRREGULAR = 2,      /* Irregular */
+	NhltrCURVILINEAR = 3,    /* Curvilinear */
+	NhltrSPHERICAL = 4       /* Spherical */
+} NhlGridType;
+
+#define NhlTGridType "GridType"
+
 
 #define NhlNtrXMinF		"trXMinF"
 #define NhlCtrXMinF		"TrXMinF"
@@ -49,6 +66,9 @@
 
 #define NhlNtrLineInterpolationOn 	"trLineInterpolationOn"
 #define NhlCtrLineInterpolationOn 	"TrLineInterpolationOn"
+
+#define NhlNtrGridType			"trGridType"
+#define NhlCtrGridType			"TrGridType"
 
 /*
  * both Irregular and Curvilinear define these array resources

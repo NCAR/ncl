@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.93 2003-07-14 23:11:42 dbrown Exp $
+ *      $Id: MapPlot.c,v 1.94 2003-09-10 21:29:54 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1195,6 +1195,8 @@ MapPlotInitialize
 	mpl->view.keep_aspect = True;
 #endif
 
+	mpl->trans.grid_type = NhltrMAP;
+
 /* Initialize private fields */
 
 	mpp->overlay_object = NULL;
@@ -1456,6 +1458,8 @@ static NhlErrorTypes MapPlotSetValues
 	NhlMapPlotLayerPart	*mpp = &(mpl->mapplot);
         NhlMapPlotLayer		ompl = (NhlMapPlotLayer) old;
 	NhlMapPlotLayerPart	*ompp = &(ompl->mapplot);
+
+	mpl->trans.grid_type = NhltrMAP;
 
         if (mpl->view.x != ompl->view.x ||
             mpl->view.y != ompl->view.y ||

@@ -1,5 +1,5 @@
 /*
- *      $Id: Transform.c,v 1.55 2003-07-14 23:12:06 dbrown Exp $
+ *      $Id: Transform.c,v 1.56 2003-09-10 21:29:59 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -170,7 +170,16 @@ static NhlResource resources[] = {
 	{ NhlNtrLineInterpolationOn,NhlCtrLineInterpolationOn,
 		NhlTBoolean,sizeof(NhlBoolean),
 		Oset(line_interpolation_on),NhlTImmediate,
-	  	_NhlUSET((NhlPointer)False),_NhlRES_INTERCEPTED,NULL}
+	  _NhlUSET((NhlPointer)False),_NhlRES_INTERCEPTED,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 Oset(grid_type_set),
+	         NhlTImmediate,
+		 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
+	{NhlNtrGridType,NhlCtrGridType,
+		NhlTGridType,sizeof(NhlGridType),
+	        Oset(grid_type),
+	 	NhlTProcedure,
+		_NhlUSET((NhlPointer)_NhlResUnset),_NhlRES_INTERCEPTED,NULL},
         
 };
 
@@ -401,12 +410,6 @@ TransformClassPartInit
 	NhlTransformClass	sc = (NhlTransformClass)
 						lc->base_class.superclass;
 
-        _NhlEnumVals   axistypelist[] = {
-	{NhlIRREGULARAXIS,	"IrregularAxis"},
-	{NhlLINEARAXIS,		"LinearAxis"},
-	{NhlLOGAXIS,		"LogAxis"}
-        };
-
 	_NhlEnumVals 	overlaymodelist[] = {
 		{NhlDATATRANSFORM, "DataTransform"},
 		{NhlDATATRANSFORM, "False"},
@@ -415,13 +418,48 @@ TransformClassPartInit
 		{NhlNDCDATAEXTENT, "NDCDataExtent"}
 	};
 
+
+/*
+ * Note: axis type and transformation type are really TransObj class
+ * resources. The enumeration is initialized here because they
+ * are intercepted by Transform class objects. Note the two registrations
+ * per type.
+ */
+        _NhlEnumVals   axistypelist[] = {
+	{NhlIRREGULARAXIS,	"IrregularAxis"},
+	{NhlLINEARAXIS,		"LinearAxis"},
+	{NhlLOGAXIS,		"LogAxis"}
+        };
+
+
+        _NhlEnumVals   gridtypelist[] = {
+		{NhltrMAP, "Map"},
+		{NhltrLOGLIN, "LogLin"},
+		{NhltrIRREGULAR, "Irregular"},
+		{NhltrCURVILINEAR, "Curvilinear"},
+		{NhltrSPHERICAL, "Spherical"}
+        };
+
+	_NhlRegisterEnumType(NhltransObjClass,
+			NhlTAxisType,axistypelist,NhlNumber(axistypelist));
+
+	_NhlRegisterEnumType(NhltransObjClass,
+			     NhlTGridType,
+			     gridtypelist,
+			     NhlNumber(gridtypelist));
+
 	_NhlRegisterEnumType(NhltransformClass,
-			     NhlTAxisType,axistypelist,
-			     NhlNumber(axistypelist));
+			NhlTAxisType,axistypelist,NhlNumber(axistypelist));
+
+	_NhlRegisterEnumType(NhltransformClass,
+			     NhlTGridType,
+			     gridtypelist,
+			     NhlNumber(gridtypelist));
+
 	_NhlRegisterEnumType(NhltransformClass,
 			     NhlTOverlayMode,overlaymodelist,
 			     NhlNumber(overlaymodelist));
-        
+
 	if(tlc->trans_class.data_to_ndc == NhlInheritTransFunc)
 		tlc->trans_class.data_to_ndc = sc->trans_class.data_to_ndc;
 	if(tlc->trans_class.ndc_to_data == NhlInheritTransFunc)
@@ -445,6 +483,8 @@ TransformClassPartInit
 			= sc->trans_class.ndc_polymarker;
 
 	Qpolydrawlist = NrmStringToQuark(NhlNtfPolyDrawList);
+
+	_NhlInitializeClass(NhltransObjClass);
         
 	return NhlNOERROR;
 }
@@ -549,6 +589,14 @@ TransformInitialize
                 tfp->y_log = False;
                 tfp->y_axis_type = NhlLINEARAXIS;
         }
+	if (! tfp->grid_type_set) {
+		if (tfp->y_axis_type == NhlIRREGULARAXIS ||
+		    tfp->x_axis_type == NhlIRREGULARAXIS)
+			tfp->grid_type = NhltrIRREGULAR;
+		else
+			tfp->grid_type = NhltrLOGLIN;
+	}
+
 	tfp->bx = tnew->view.x;
 	tfp->by = tnew->view.y;
 	tfp->bw = tnew->view.width;
@@ -633,6 +681,8 @@ static NhlErrorTypes TransformSetValues
 		tfp->y_log_set = True;
 	if (_NhlArgIsSet(args,num_args,NhlNtrYAxisType))
 		tfp->y_axis_type_set = True;
+	if (_NhlArgIsSet(args,num_args,NhlNtrGridType))
+		tfp->grid_type_set = True;
         
         if (tfp->x_axis_type_set) {
                 tfp->x_log = tfp->x_axis_type == NhlLOGAXIS ? True : False;
@@ -2394,14 +2444,12 @@ extern NhlErrorTypes _NhltfCheckCoordBounds
 (
         NhlTransformLayer	new,
 	NhlTransformLayer	old,
-        int			trans_type,
 	NhlString		entry_name
 )
 #else
 (new,old,use_irr_trans,entry_name)
         NhlTransformLayer	new;
 	NhlTransformLayer	old;
-        int                     trans_type;
 	NhlString		entry_name;
         
 #endif
@@ -2461,7 +2509,8 @@ extern NhlErrorTypes _NhltfCheckCoordBounds
 		tfp->x_max = ftmp;
                 tfp->sticky_x_min_set = tfp->sticky_x_max_set = False;
 	}
-	if (trans_type == 0 && tfp->x_log && tfp->x_min <= 0.0) {
+	if (tfp->grid_type == NhltrLOGLIN && 
+	    tfp->x_log && tfp->x_min <= 0.0) {
 		e_text = 
 		 "%s: Log axis requires all positive extent: setting %s False";
 		ret = MIN(ret,NhlWARNING);
@@ -2470,7 +2519,8 @@ extern NhlErrorTypes _NhltfCheckCoordBounds
                 tfp->x_axis_type = tfp->x_axis_type == NhlLOGAXIS ?
                         NhlLINEARAXIS : tfp->x_axis_type;
 	}
-        else if (trans_type == 1 && tfp->x_axis_type == NhlLOGAXIS &&
+        else if (tfp->grid_type == NhltrIRREGULAR 
+		 && tfp->x_axis_type == NhlLOGAXIS &&
                  (tfp->x_min <= 0.0 ||
                   MIN(tfp->data_xstart,tfp->data_xend) <= 0.0 )) {
 		e_text = 
@@ -2508,7 +2558,8 @@ extern NhlErrorTypes _NhltfCheckCoordBounds
 		tfp->y_max = ftmp;
                 tfp->sticky_y_min_set = tfp->sticky_y_max_set = False;
 	}
-	if (trans_type == 0 && tfp->y_log && tfp->y_min <= 0.0) {
+	if (tfp->grid_type == NhltrLOGLIN && 
+	    tfp->y_log && tfp->y_min <= 0.0) {
 		e_text = 
 		 "%s: Log axis requires all positive extent: setting %s False";
 		ret = MIN(ret,NhlWARNING);
@@ -2517,7 +2568,8 @@ extern NhlErrorTypes _NhltfCheckCoordBounds
                 tfp->y_axis_type = tfp->y_axis_type == NhlLOGAXIS ?
                         NhlLINEARAXIS : tfp->y_axis_type;
 	}
-        else if (trans_type == 1 && tfp->y_axis_type == NhlLOGAXIS &&
+        else if (tfp->grid_type == NhltrIRREGULAR
+		 && tfp->y_axis_type == NhlLOGAXIS &&
                  (tfp->y_min <= 0.0 ||
                   MIN(tfp->data_ystart,tfp->data_yend) <= 0.0 )) {
 		e_text = 
@@ -2533,9 +2585,9 @@ extern NhlErrorTypes _NhltfCheckCoordBounds
 	 * values be within the data bounds
 	 */
                 
-        if (trans_type > 0) {
+        if (tfp->grid_type > NhltrLOGLIN) {
                 e_text = 
-"%s: irregular transformation requires %s to be within data coordinate range: resetting";
+"%s: current transformation requires %s to be within data coordinate range: resetting";
                 if (tfp->x_min < MIN(tfp->data_xstart,tfp->data_xend)) {
                         NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
                                   entry_name,NhlNtrXMinF);

@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlot.c,v 1.67 2003-04-04 18:33:48 dbrown Exp $
+ *      $Id: StreamlinePlot.c,v 1.68 2003-09-10 21:29:57 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1487,7 +1487,6 @@ StreamlinePlotInitialize
 	stp->overlay_object = NULL;
 	stp->data_changed = True;
 	stp->data_init = False;
-	stp->trans_type = stLOGLIN;
 	stp->zero_field = False;
 	stp->vfp = NULL;
 	stp->ovfp = NULL;
@@ -1565,8 +1564,8 @@ StreamlinePlotInitialize
 	subret = InitCoordBounds(stnew,NULL,entry_name);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) return(ret);
         
-	switch (stp->trans_type) {
-	case stLOGLIN:
+	switch (stnew->trans.grid_type) {
+	case NhltrLOGLIN:
 	default:
 		subret = SetUpLLTransObj
 			(stnew,(NhlStreamlinePlotLayer) req,True);
@@ -1576,7 +1575,7 @@ StreamlinePlotInitialize
 			return(ret);
 		}
 		break;
-	case stIRREGULAR:
+	case NhltrIRREGULAR:
 		subret = SetUpIrrTransObj
 			(stnew,(NhlStreamlinePlotLayer) req,True);
 		if ((ret = MIN(ret,subret)) < NhlWARNING) {
@@ -1585,7 +1584,8 @@ StreamlinePlotInitialize
 			return(ret);
 		}
 		break;
-	case stCURVILINEAR:
+	case NhltrCURVILINEAR:
+	case NhltrSPHERICAL:
 		subret = SetUpCrvTransObj
 			(stnew,(NhlStreamlinePlotLayer) req,True);
 		if ((ret = MIN(ret,subret)) < NhlWARNING) {
@@ -1877,8 +1877,8 @@ static NhlErrorTypes StreamlinePlotSetValues
 	subret = InitCoordBounds(stnew,(NhlStreamlinePlotLayer)old,entry_name);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) return(ret);
         
-	switch (stp->trans_type) {
-	case stLOGLIN:
+	switch (stnew->trans.grid_type) {
+	case NhltrLOGLIN:
 	default:
 		subret = SetUpLLTransObj
 			(stnew,(NhlStreamlinePlotLayer)old,False);
@@ -1888,7 +1888,7 @@ static NhlErrorTypes StreamlinePlotSetValues
 			return(ret);
 		}
 		break;
-	case stIRREGULAR:
+	case NhltrIRREGULAR:
 		subret = SetUpIrrTransObj
 			(stnew,(NhlStreamlinePlotLayer)old,False);
 		if ((ret = MIN(ret,subret)) < NhlWARNING) {
@@ -1897,7 +1897,8 @@ static NhlErrorTypes StreamlinePlotSetValues
 			return(ret);
 		}
 		break;
-	case stCURVILINEAR:
+	case NhltrCURVILINEAR:
+	case NhltrSPHERICAL:
 		subret = SetUpCrvTransObj
 			(stnew,(NhlStreamlinePlotLayer)old,False);
 		if ((ret = MIN(ret,subret)) < NhlWARNING) {
@@ -2324,13 +2325,13 @@ static NhlErrorTypes stInitDraw
         stp->ylb = MAX(tfp->y_min,MIN(tfp->data_ystart,tfp->data_yend));
         stp->yub = MIN(tfp->y_max,MAX(tfp->data_ystart,tfp->data_yend));
 
-	if (stp->trans_type == stLOGLIN) {
+	if (tfp->grid_type == NhltrLOGLIN) {
                 stp->xc1 = tfp->data_xstart;
                 stp->xcm = tfp->data_xend;
                 stp->yc1 = tfp->data_ystart;
                 stp->ycn = tfp->data_yend;
         }
-        else if (stp->trans_type == stIRREGULAR) {
+        else if (tfp->grid_type == NhltrIRREGULAR) {
                 int xcount,ycount;
                 
                 xcount = tfp->x_axis_type == NhlIRREGULARAXIS ?
@@ -2343,7 +2344,7 @@ static NhlErrorTypes stInitDraw
                 stp->yc1 = 0;
                 stp->ycn = ycount - 1;
         }
-	else if (stp->trans_type == stCURVILINEAR) {
+	else if (tfp->grid_type == NhltrCURVILINEAR) {
                 int xcount,ycount;
 
 		xcount = stp->vfp->x_arr->len_dimensions[1];
@@ -3079,7 +3080,6 @@ static NhlErrorTypes InitCoordBounds
 	NhlBoolean	x_data_reversed,y_data_reversed;
 
 	stp->do_low_level_log = False;
-        stp->trans_type = stLOGLIN;
         
 	if (! stp->data_init) {
                 tfp->data_xstart = tfp->data_xend = 0.0;
@@ -3111,12 +3111,28 @@ static NhlErrorTypes InitCoordBounds
 
 	if (stp->vfp->x_arr && stp->vfp->y_arr &&
 	    stp->vfp->x_arr->num_dimensions == 2 &&
-	    stp->vfp->y_arr->num_dimensions == 2)
-		stp->trans_type = stCURVILINEAR;
-        else if (stp->vfp->x_arr || stp->vfp->y_arr)
-                stp->trans_type = stIRREGULAR;
+	    stp->vfp->y_arr->num_dimensions == 2) {
+		if (! tfp->grid_type_set) {
+			if (stp->vfp->grid_type == NhlBASICGRID) /* legacy */
+				tfp->grid_type = NhltrCURVILINEAR;
+			else
+				tfp->grid_type = NhltrSPHERICAL;
+		}
+		else if (tfp->grid_type < NhltrCURVILINEAR) {
+			tfp->grid_type = NhltrSPHERICAL;
+		}
+		/* leave the set flag as is */
+	}
+        else if (stp->vfp->x_arr || stp->vfp->y_arr) { /* ignore set value */
+		tfp->grid_type = NhltrIRREGULAR;
+		tfp->grid_type_set = False;
+	}
+	else { /* ignore set value */
+		tfp->grid_type = NhltrLOGLIN;
+		tfp->grid_type_set = False;
+	}
         
-        if (stp->trans_type == stIRREGULAR) {
+        if (tfp->grid_type == NhltrIRREGULAR) {
                 if (stp->vfp->x_arr && ! tfp->x_axis_type_set) {
 			if (! stp->ovfp || (stp->data_changed  &&
 			    (stp->vfp->changed & _NhlvfXARR_CHANGED)))
@@ -3143,7 +3159,6 @@ static NhlErrorTypes InitCoordBounds
         
 	ret = _NhltfCheckCoordBounds
                 ((NhlTransformLayer)stl,(NhlTransformLayer)ostl,
-		 (int) stp->trans_type,
                  entry_name);
 
 	return ret;
@@ -3513,13 +3528,22 @@ static NhlErrorTypes SetUpCrvTransObj
         int			nargs = 0;
 	NhlClass		trans_class;
 
-	switch (stp->vfp->grid_type) {
+	/*
+	 * By now the grid_type should only be spherical or curvilinear 
+	 * Otherwise fatal error.
+	 */ 
+
+	switch (tfp->grid_type) {
 	case NhlBASICGRID:
 		trans_class =  NhlcurvilinearTransObjClass;
 		break;
 	case NhlSPHERICALGRID:
 		trans_class =  NhlsphericalTransObjClass;
 		break;
+	default:
+		e_text = "%s:internal error determinining trans type";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
 	}
 
 	entry_name = (init) ? 

@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorField.c,v 1.22 2002-07-12 22:41:29 dbrown Exp $
+ *      $Id: VectorField.c,v 1.23 2003-09-10 21:29:59 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -52,7 +52,7 @@ static NhlResource resources[] = {
 	{NhlNvfYArray,NhlCvfYArray,NhlTGenArray,sizeof(NhlGenArray),
 		 Oset(y_arr),NhlTImmediate,_NhlUSET((NhlPointer)NULL),0,NULL},
 
-	{NhlNvfGridType,NhlCvfGridType,NhlTGridType,sizeof(NhlGridType),
+	{NhlNvfGridType,NhlCvfGridType,NhlTdiGridType,sizeof(NhldiGridType),
  	 	Oset(grid_type),NhlTImmediate,
  	 	_NhlUSET((NhlPointer)NhlSPHERICALGRID),0,NULL},
 	{NhlNvfPolarData,NhlCvfPolarData,
@@ -1908,6 +1908,7 @@ GetSubsetBounds2D
                         rev = yimin > yimax;
                 else
                         rev = ximin > ximax;
+		rev = False;
                 c_name = "X coordinate";
                 if (rev) {
                         *cstart = max;
@@ -1927,6 +1928,7 @@ GetSubsetBounds2D
                         rev = ximin > ximax;
                 else
                         rev = yimin > yimax;
+		rev = False;
                 c_name = "Y coordinate";
                 if (rev) {
                         *cstart = max;
@@ -1980,7 +1982,7 @@ GetSubsetBounds2D
         }
         out_len[0] =  yiend - yistart + 1;
         out_len[1] =  xiend - xistart + 1;
- if (overwrite_ok)
+	if (overwrite_ok)
                 nfp = fp;
         else {
                 if ((nfp = (float *)
@@ -3170,7 +3172,8 @@ VectorFieldInitialize
 	NhlVectorFieldLayer	vfl = (NhlVectorFieldLayer)new;
 	NhlVectorFieldLayerPart	*vfp = &(vfl->vfield);
 	NhlGenArray		ga;
-         _NhlConvertContext	context = NULL;
+	_NhlConvertContext	context = NULL;
+	NhlBoolean		has_2d_coords = False;
 
 	vfp->changed = 0;
         context = _NhlCreateConvertContext(new);
@@ -3276,7 +3279,7 @@ VectorFieldInitialize
                                 return NhlFATAL;
                         }
 			vfp->changed |= _NhlvfXARR_CHANGED;
-                }
+		}
 	}
 
         if (vfp->y_arr) {
@@ -3304,6 +3307,9 @@ VectorFieldInitialize
                         }
 			vfp->changed |= _NhlvfYARR_CHANGED;
                 }
+	}
+	if (vfp->x_arr && vfp->y_arr && vfp->x_arr->num_dimensions == 2) {
+		has_2d_coords = True;
 	}
 
 	if (vfp->missing_u_value != NULL) {
@@ -3375,8 +3381,8 @@ VectorFieldInitialize
 
         if (VTypeValuesEqual(context,vfp->x_start,vfp->x_end)) {
                 e_text = "%s %s and %s values cannot be equal, defaulting";
-                NHLPERROR((NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
-                          NhlNvfXCStartV,NhlNvfXCEndV));
+                NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
+                          NhlNvfXCStartV,NhlNvfXCEndV);
                 ret = MIN(ret,NhlWARNING);
                 vfp->x_start = NULL;
                 vfp->x_end = NULL;
@@ -3401,8 +3407,8 @@ VectorFieldInitialize
 
         if (VTypeValuesEqual(context,vfp->y_start,vfp->y_end)) {
                 e_text = "%s %s and %s values cannot be equal, defaulting";
-                NHLPERROR((NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
-                          NhlNvfYCStartV,NhlNvfYCEndV));
+                NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
+                          NhlNvfYCStartV,NhlNvfYCEndV);
                 ret = MIN(ret,NhlWARNING);
                 vfp->y_start = NULL;
                 vfp->y_end = NULL;
@@ -3426,14 +3432,14 @@ VectorFieldInitialize
         
         if (VTypeValuesEqual(context,vfp->x_subset_start,vfp->x_subset_end)) {
                 e_text = "%s %s and %s values cannot be equal, defaulting";
-                NHLPERROR((NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
-                          NhlNvfXCStartV,NhlNvfXCEndV));
+                NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
+                          NhlNvfXCStartSubsetV,NhlNvfXCEndSubsetV);
                 ret = MIN(ret,NhlWARNING);
                 vfp->x_subset_start = NULL;
                 vfp->x_subset_end = NULL;
         }
 	if (vfp->x_subset_start != NULL) {
-                if (vfp->subset_by_index)
+                if (vfp->subset_by_index || has_2d_coords)
                         vfp->x_subset_start = NULL;
                 else {
                         ga = NULL;
@@ -3449,7 +3455,7 @@ VectorFieldInitialize
                 vfp->xstart_byindex = True;
                 
 	if (vfp->x_subset_end != NULL) {
-                if (vfp->subset_by_index)
+                if (vfp->subset_by_index || has_2d_coords)
                         vfp->x_subset_start = NULL;
                 else {
                         ga = NULL;
@@ -3467,14 +3473,14 @@ VectorFieldInitialize
 
         if (VTypeValuesEqual(context,vfp->y_subset_start,vfp->y_subset_end)) {
                 e_text = "%s %s and %s values cannot be equal, defaulting";
-                NHLPERROR((NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
-                          NhlNvfYCStartV,NhlNvfYCEndV));
+                NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
+                          NhlNvfYCStartSubsetV,NhlNvfYCEndSubsetV);
                 ret = MIN(ret,NhlWARNING);
                 vfp->y_subset_start = NULL;
                 vfp->y_subset_end = NULL;
         }
 	if (vfp->y_subset_start != NULL) {
-                if (vfp->subset_by_index)
+                if (vfp->subset_by_index || has_2d_coords)
                         vfp->y_subset_start = NULL;
                 else {
                         ga = NULL;
@@ -3490,7 +3496,7 @@ VectorFieldInitialize
                 vfp->ystart_byindex = True;
                 
 	if (vfp->y_subset_end != NULL) {
-                if (vfp->subset_by_index)
+                if (vfp->subset_by_index || has_2d_coords)
                         vfp->y_subset_start = NULL;
                 else {
                         ga = NULL;
@@ -3557,6 +3563,7 @@ VectorFieldSetValues
 	NhlBoolean		x_dim_changed = False, y_dim_changed = False;
         NhlBoolean		x_start_changed = False, x_end_changed = False;
         NhlBoolean		y_start_changed = False, y_end_changed = False;
+	NhlBoolean		has_2d_coords = False;
 
 /*
  * The changed bit field records changes to the X and Y coordinate array
@@ -3808,6 +3815,9 @@ VectorFieldSetValues
                         status = True;
                 }
 	}
+	if (vfp->x_arr && vfp->y_arr && vfp->x_arr->num_dimensions == 2) {
+		has_2d_coords = True;
+	}
 
 	if (vfp->missing_u_value != ovfp->missing_u_value) {
 		subret = CheckCopyVType(&ovfp->missing_u_value,
@@ -3882,8 +3892,8 @@ VectorFieldSetValues
         if (VTypeValuesEqual(context,vfp->x_start,vfp->x_end)) {
                 e_text =
              "%s %s and %s values cannot be equal, restoring previous values";
-                NHLPERROR((NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
-                          NhlNvfXCStartV,NhlNvfXCEndV));
+                NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
+                          NhlNvfXCStartV,NhlNvfXCEndV);
                 ret = MIN(ret,NhlWARNING);
                 vfp->x_start = ovfp->x_start;
                 vfp->x_end = ovfp->x_end;
@@ -3918,8 +3928,8 @@ VectorFieldSetValues
         if (VTypeValuesEqual(context,vfp->y_start,vfp->y_end)) {
                 e_text =
              "%s %s and %s values cannot be equal, restoring previous values";
-                NHLPERROR((NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
-                          NhlNvfYCStartV,NhlNvfYCEndV));
+                NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
+                          NhlNvfYCStartV,NhlNvfYCEndV);
                 ret = MIN(ret,NhlWARNING);
                 vfp->y_start = ovfp->y_start;
                 vfp->y_end = ovfp->y_end;
@@ -3954,8 +3964,8 @@ VectorFieldSetValues
         if (VTypeValuesEqual(context,vfp->x_subset_start,vfp->x_subset_end)) {
                 e_text =
              "%s %s and %s values cannot be equal, restoring previous values";
-                NHLPERROR((NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
-                          NhlNvfXCStartV,NhlNvfXCEndV));
+                NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
+                          NhlNvfXCStartSubsetV,NhlNvfXCEndSubsetV);
                 ret = MIN(ret,NhlWARNING);
                 vfp->x_subset_start = ovfp->x_subset_start;
                 vfp->x_subset_end = ovfp->y_subset_end;
@@ -3972,6 +3982,7 @@ VectorFieldSetValues
 	}
         else if (x_arr_changed || vfp->subset_by_index ||
                  x_start_changed || x_end_changed ||
+		 has_2d_coords ||  
                  vfp->x_index_start != ovfp->x_index_start) {
                 NhlFreeGenArray(ovfp->x_subset_start);
                 vfp->x_subset_start = NULL;
@@ -3989,6 +4000,7 @@ VectorFieldSetValues
 	}
         else if (x_arr_changed || vfp->subset_by_index ||
                  x_start_changed || x_end_changed ||
+		 has_2d_coords ||  
                  vfp->x_index_end != ovfp->x_index_end) {
                	NhlFreeGenArray(ovfp->x_subset_end);
                 vfp->x_subset_end = NULL;
@@ -3998,8 +4010,8 @@ VectorFieldSetValues
         if (VTypeValuesEqual(context,vfp->y_subset_start,vfp->y_subset_end)) {
                 e_text =
              "%s %s and %s values cannot be equal, restoring previous values";
-                NHLPERROR((NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
-                          NhlNvfYCStartV,NhlNvfYCEndV));
+                NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
+                          NhlNvfYCStartSubsetV,NhlNvfYCEndSubsetV);
                 ret = MIN(ret,NhlWARNING);
                 vfp->y_subset_start = ovfp->y_subset_start;
                 vfp->y_subset_end = ovfp->y_subset_end;
@@ -4016,6 +4028,7 @@ VectorFieldSetValues
 	}
         else if (y_arr_changed || vfp->subset_by_index ||
                  y_start_changed || y_end_changed ||
+		 has_2d_coords ||  
                  vfp->y_index_start != ovfp->y_index_start) {
                	NhlFreeGenArray(ovfp->y_subset_start);
                 vfp->y_subset_start = NULL;
@@ -4033,6 +4046,7 @@ VectorFieldSetValues
 	}
         else if (y_arr_changed || vfp->subset_by_index ||
                  y_start_changed || y_end_changed ||
+		 has_2d_coords ||  
                  vfp->y_index_end != ovfp->y_index_end) {
                	NhlFreeGenArray(ovfp->y_subset_end);
                 vfp->y_subset_end = NULL;
@@ -4717,7 +4731,8 @@ static NhlErrorTypes    VectorFieldGetValues
 			}
 			else {
 				if ((data = 
-				     CreateVData((NhlPointer)&vffp->x_start,
+				     CreateVData((NhlPointer)
+						 &vfp->x_actual_start,
 						 sizeof(float),resQ)) == NULL)
 					return NhlFATAL;
 				typeQ = Qfloat;
@@ -4738,7 +4753,8 @@ static NhlErrorTypes    VectorFieldGetValues
 			}
 			else {
 				if ((data = 
-				     CreateVData((NhlPointer)&vffp->x_end,
+				     CreateVData((NhlPointer)
+						 &vfp->x_actual_end,
 						 sizeof(float),resQ)) == NULL)
 					return NhlFATAL;
 				typeQ = Qfloat;
@@ -4759,7 +4775,8 @@ static NhlErrorTypes    VectorFieldGetValues
 			}
 			else {
 				if ((data = 
-				     CreateVData((NhlPointer)&vffp->y_start,
+				     CreateVData((NhlPointer)
+						 &vfp->y_actual_start,
 						 sizeof(float),resQ)) == NULL)
 					return NhlFATAL;
 				typeQ = Qfloat;
@@ -4780,7 +4797,8 @@ static NhlErrorTypes    VectorFieldGetValues
 			}
 			else {
 				if ((data = 
-				     CreateVData((NhlPointer)&vffp->y_end,
+				     CreateVData((NhlPointer)
+						 &vfp->y_actual_end,
 						 sizeof(float),resQ)) == NULL)
 					return NhlFATAL;
 				typeQ = Qfloat;

@@ -1,5 +1,5 @@
 /*
- *      $Id: LogLinPlot.c,v 1.27 1999-04-02 23:51:06 dbrown Exp $
+ *      $Id: LogLinPlot.c,v 1.28 2003-09-10 21:29:54 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -330,6 +330,8 @@ LogLinPlotInitialize
 	NhlLogLinPlotLayer		lnew = (NhlLogLinPlotLayer) new;
 	NhlLogLinPlotLayerPart	*llp = &(lnew->llplot);
 
+	lnew->trans.grid_type = NhltrLOGLIN;
+
 /* Initialize private fields */
 
 	llp->update_req = False;
@@ -395,6 +397,7 @@ static NhlErrorTypes LogLinPlotSetValues
 	NhlSArg			sargs[1];
 	int			nargs = 0;
 
+	lnew->trans.grid_type = NhltrLOGLIN;
 
 /* Set up the loglin transformation */
 

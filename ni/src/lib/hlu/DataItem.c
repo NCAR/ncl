@@ -1,5 +1,5 @@
 /*
- *      $Id: DataItem.c,v 1.17 2002-07-02 01:26:39 dbrown Exp $
+ *      $Id: DataItem.c,v 1.18 2003-09-10 21:29:53 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -183,7 +183,7 @@ DataItemClassInitialize
         };
 
 
-	_NhlRegisterEnumType(NhldataItemClass,NhlTGridType,
+	_NhlRegisterEnumType(NhldataItemClass,NhlTdiGridType,
 		gridtypelist,NhlNumber(gridtypelist));
 
 	return NhlNOERROR;

@@ -1,5 +1,5 @@
 /*
- *      $Id: TransformP.h,v 1.25 2002-03-18 21:20:07 dbrown Exp $
+ *      $Id: TransformP.h,v 1.26 2003-09-10 21:29:59 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -84,6 +84,8 @@ typedef struct NhlTransformLayerPart {
 	NhlBoolean		y_log;
 	NhlBoolean		y_reverse_set;
 	NhlBoolean		y_reverse;
+	NhlBoolean		grid_type_set;
+        NhlGridType   		grid_type;
 
 	/* Private resource fields, set only by the overlay manager */
 
@@ -204,7 +206,6 @@ extern NhlErrorTypes _NhltfCheckCoordBounds(
 #if	NhlNeedProto
         NhlTransformLayer	new,
 	NhlTransformLayer	old,
-        int		        trans_type,    /* 0 LL, 1 IR, 2 CR */
 	NhlString		entry_name
 #endif
 );

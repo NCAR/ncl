@@ -1,5 +1,5 @@
 /*
- *      $Id: IrregularTransObj.c,v 1.43 2001-01-09 22:39:18 dbrown Exp $
+ *      $Id: IrregularTransObj.c,v 1.44 2003-09-10 21:29:53 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2812,14 +2812,6 @@ static NhlErrorTypes    IrTransClassInitialize
 ()
 #endif
 {
-        _NhlEnumVals   axistypelist[] = {
-	{NhlIRREGULARAXIS,	"IrregularAxis"},
-	{NhlLINEARAXIS,		"LinearAxis"},
-	{NhlLOGAXIS,		"LogAxis"}
-        };
-
-	_NhlRegisterEnumType(NhltransObjClass,
-			NhlTAxisType,axistypelist,NhlNumber(axistypelist));
 
 	QtrXCoordPoints = NrmStringToQuark(NhlNtrXCoordPoints);
 	QtrYCoordPoints = NrmStringToQuark(NhlNtrYCoordPoints);

@@ -1,5 +1,5 @@
 /*
- *      $Id: ScalarFieldP.h,v 1.11 2002-07-18 19:28:18 dbrown Exp $
+ *      $Id: ScalarFieldP.h,v 1.12 2003-09-10 21:29:57 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -37,7 +37,7 @@ typedef struct _NhlScalarFieldLayerPart{
 	NhlGenArray	d_arr;
 	NhlGenArray	x_arr;
 	NhlGenArray	y_arr;
-	NhlGridType     grid_type;
+	NhldiGridType   grid_type;
 
 	NhlBoolean	subset_by_index;
 	NhlBoolean	copy_arrays;
