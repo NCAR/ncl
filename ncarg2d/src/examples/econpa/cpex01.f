@@ -1,5 +1,5 @@
 C
-C	$Id: cpex01.f,v 1.1.1.1 1992-04-17 22:33:10 ncargd Exp $
+C $Id: cpex01.f,v 1.2 1994-05-18 16:53:38 kennison Exp $
 C
       PROGRAM EXMPL1
 C
@@ -17,7 +17,7 @@ C
 C
 C Declare an array to hold an area map.
 C
-        DIMENSION IAMA(20000)
+        DIMENSION IAMA(25000)
 C
 C Declare the arrays needed by ARSCAM for x/y coordinates.
 C
@@ -148,7 +148,7 @@ C
 C
 C Initialize the area map.
 C
-        CALL ARINAM (IAMA,20000)
+        CALL ARINAM (IAMA,25000)
 C
 C Put label boxes into the area map.
 C
@@ -165,7 +165,7 @@ C
 C Compute and print statistics for the plot, label it, and put a
 C boundary line around the edge of the plotter frame.
 C
-        CALL CAPSAP ('EXAMPLE 1-2',TIME,IAMA,20000)
+        CALL CAPSAP ('EXAMPLE 1-2',TIME,IAMA,25000)
         CALL LABTOP ('EXAMPLE 1-2',.017)
         CALL BNDARY
 C
@@ -211,7 +211,7 @@ C
         CALL GSLWSC (2.)
         CALL CPBACK (ZDAT,RWRK,IWRK)
         CALL GSLWSC (1.)
-        CALL ARINAM (IAMA,20000)
+        CALL ARINAM (IAMA,25000)
         CALL CPLBAM (ZDAT,RWRK,IWRK,IAMA)
         CALL CPCLDM (ZDAT,RWRK,IWRK,IAMA,DRAWCL)
         CALL CPLBDR (ZDAT,RWRK,IWRK)
@@ -228,7 +228,7 @@ C
 C Compute and print statistics for the plot, label it, and put a
 C boundary line around the edge of the plotter frame.
 C
-        CALL CAPSAP ('EXAMPLE 1-3',TIME,IAMA,20000)
+        CALL CAPSAP ('EXAMPLE 1-3',TIME,IAMA,25000)
         CALL LABTOP ('EXAMPLE 1-3',.017)
         CALL BNDARY
 C
@@ -252,7 +252,7 @@ C
         CALL GSLWSC (2.)
         CALL CPBACK (ZDAT,RWRK,IWRK)
         CALL GSLWSC (1.)
-        CALL ARINAM (IAMA,20000)
+        CALL ARINAM (IAMA,25000)
         CALL CPLBAM (ZDAT,RWRK,IWRK,IAMA)
         CALL CPCLDM (ZDAT,RWRK,IWRK,IAMA,DRAWCL)
         CALL CPLBDR (ZDAT,RWRK,IWRK)
@@ -262,7 +262,7 @@ C
 C Compute and print statistics for the plot, label it, and put a
 C boundary line around the edge of the plotter frame.
 C
-        CALL CAPSAP ('EXAMPLE 1-4',TIME,IAMA,20000)
+        CALL CAPSAP ('EXAMPLE 1-4',TIME,IAMA,25000)
         CALL LABTOP ('EXAMPLE 1-4',.017)
         CALL BNDARY
 C
@@ -330,7 +330,7 @@ C
         CALL GSLWSC (2.)
         CALL PERIM (0,0,0,0)
         CALL GSLWSC (1.)
-        CALL ARINAM (IAMA,20000)
+        CALL ARINAM (IAMA,25000)
         CALL CPLBAM (ZDNS,RWRK,IWRK,IAMA)
         CALL CPCLDM (ZDNS,RWRK,IWRK,IAMA,DRAWCL)
         CALL CPLBDR (ZDNS,RWRK,IWRK)
@@ -340,7 +340,7 @@ C
 C Compute and print statistics for the plot, label it, and put a
 C boundary line around the edge of the plotter frame.
 C
-        CALL CAPSAP ('EXAMPLE 1-5',TIME,IAMA,20000)
+        CALL CAPSAP ('EXAMPLE 1-5',TIME,IAMA,25000)
         CALL LABTOP ('EXAMPLE 1-5',.017)
         CALL BNDARY
 C
@@ -394,7 +394,7 @@ C The rest of the calls are just as in example 1-5, except that the
 C perimeter is not drawn.
 C
         CALL CPSPRS (ZDAT,23,23,14,RWRK,5000,IWRK,1000,ZDNS,5152)
-        CALL ARINAM (IAMA,20000)
+        CALL ARINAM (IAMA,25000)
         CALL CPLBAM (ZDNS,RWRK,IWRK,IAMA)
         CALL CPCLDM (ZDNS,RWRK,IWRK,IAMA,DRAWCL)
         CALL CPLBDR (ZDNS,RWRK,IWRK)
@@ -404,7 +404,7 @@ C
 C Compute and print statistics for the plot, label it, and put a
 C boundary line around the edge of the plotter frame.
 C
-        CALL CAPSAP ('EXAMPLE 1-6',TIME,IAMA,20000)
+        CALL CAPSAP ('EXAMPLE 1-6',TIME,IAMA,25000)
         CALL LABTOP ('EXAMPLE 1-6',.017)
         CALL BNDARY
 C
