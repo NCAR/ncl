@@ -1,10 +1,11 @@
 #
-#	$Id: yMakefile,v 1.3 1994-07-28 14:48:16 haley Exp $
+#	$Id: yMakefile,v 1.4 1994-07-28 20:13:28 haley Exp $
 #
 
-CSRCS = c_ffex00.c c_fstream.c c_tstrml.c c_tstrm2.c c_stex02.c c_stex03.c
+CSRCS = c_ffex00.c c_ffex01.c c_ffex04.c c_fstream.c c_tstrml.c c_tstrm2.c \
+	c_stex02.c c_stex03.c
 	
-SED_SRCS = c_stex01.c
+SED_SRCS = c_stex01.c c_ffex03.c
 
 GENERIC_SRCS = $(CSRCS) $(SED_SRCS)
 
@@ -17,6 +18,10 @@ CleanFilesTarget($(SED_SRCS))
 #
 
 c_stex01.c: c_stex01.c.sed Makefile
+	@-$(RM) $@
+	@$(CALLCONV) $(SYSTEM_INCLUDE) $@ stumsl
+
+c_ffex03.c: c_ffex03.c.sed Makefile
 	@-$(RM) $@
 	@$(CALLCONV) $(SYSTEM_INCLUDE) $@ stumsl
 
