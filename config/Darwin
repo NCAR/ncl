@@ -1,5 +1,5 @@
 /*
- *      $Id: Darwin,v 1.4 2004-01-05 17:11:21 haley Exp $
+ *      $Id: Darwin,v 1.5 2004-12-14 22:40:10 haley Exp $
  */
 /************************************************************************
 *									*
@@ -35,8 +35,8 @@
 #define BuildShared NO
 #define XLibrary -lXpm -lX11 -lXext
 
-#define ArchRecLibSearch    -L/usr/X11R6/lib
-#define ArchRecIncSearch    -I/usr/X11R6/include
+#define ArchRecLibSearch    -L/usr/X11R6/lib -L/sw/lib
+#define ArchRecIncSearch    -I/usr/X11R6/include -I/sw/include
 
 FC = $(F77)
 
