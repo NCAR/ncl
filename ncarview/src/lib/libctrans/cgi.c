@@ -36,7 +36,7 @@
 #include "translate.h"
 
 #ifndef lint
-static char *RCSid = "$Header: /home/brownrig/SVN/CVS/ncarg/ncarview/src/lib/libctrans/Attic/cgi.c,v 1.1 1990-12-11 13:32:53 clyne Exp $";
+static char *RCSid = "$Header: /home/brownrig/SVN/CVS/ncarg/ncarview/src/lib/libctrans/Attic/cgi.c,v 1.1.1.1 1990-12-11 13:32:56 clyne Exp $";
 #endif
 
 #define	MAXPOINT 1024 /* maximum number of coordinate points in a list */

@@ -1,0 +1,68 @@
+NCARG	= ../../../..
+
+LOCINCDIR	= ../../include
+LOCLIBDIR	= ../../../lib
+
+MYNAME1		= $(LIBDIR)/libictrans.o
+MYNAME2		= $(LOCLIBDIR)/libictrans.o
+
+#
+# name of the spooler translator
+#
+SPOOL_TRANS	= ctrans
+
+EQUALHACK	= =
+
+CDEFINES	= -I$(LOCINCDIR)
+
+EXTENSION_OBJS	= ictrans_mem.o ictrans_wks.o fort_ictrans.o
+
+EXTENSION_SRCS	= ictrans_mem.c ictrans_wks.c fort_ictrans.f
+
+GENERIC_OBJS	= lex.yy.o commands.o cmd_tab.o get_cmd.o \
+		glob.o spooler.o ictrans.o lex_stuff.o
+
+GENERIC_SRCS	= lex.yy.c commands.c cmd_tab.c get_cmd.c \
+		glob.c spooler.c ictrans.c lex_stuff.c
+
+OBJS	= $(GENERIC_OBJS) $(EXTENSION_OBJS)
+SRCS	= $(GENERIC_SRCS) $(EXTENSION_SRCS)
+
+all::   $(MYNAME1)
+
+$(MYNAME1):	$(OBJS)
+	$(LD_REL) -r -o $(MYNAME1) $(OBJS)
+
+all::   $(MYNAME2)
+
+$(MYNAME2):	$(GENERIC_OBJS)
+	$(LD_REL) -r -o $(MYNAME2) $(GENERIC_OBJS)
+
+install::
+
+MakefileTarget
+CleanTarget
+
+
+# Files that contain C functions that are called by Fortran
+
+ictrans_wks.c: ictrans_wks.c.sed Makefile
+        @$(CALLCONV) $(SYSTEM_INCLUDE) ictrans_wks.c \
+        initic ictarg
+
+# Files that need to know installation directories
+
+spooler.o:	Makefile
+	$(CC) $(CFLAGS) -DLIBPATH$(EQUALHACK)'"$(LIBDIR)"' -c $*.c
+
+commands.o:	Makefile
+	$(CC) $(CFLAGS) -DSPOOL_TRANS$(EQUALHACK)'"$(SPOOL_TRANS)"' \
+		-DBINDIR$(EQUALHACK)'"$(BINDIR)"'  -c $*.c
+
+lex.yy.c: lex.l
+	lex lex.l
+
+lint: $(SRCS)
+	lint $(CDEFINES) $(LINTLIBS) $(SRCS)  1> lint.out 2>&1
+
+

@@ -1,0 +1,62 @@
+NCARG	= ../..
+
+
+MAN	= \ 
+	ctrans ictrans cgm ncarv_spool ncgm2cgm cgm2ncgm med gcaps fcaps
+
+UN_MAN	= \
+	idt cgm_edit 
+
+
+#ifdef	BuildUnsupportedAthenaApplications
+#
+#	unsupported man pages
+#
+MANS	= $(MAN) $(UN_MAN)
+#else
+MANS	= $(MAN)
+#endif
+
+#
+#	we always format
+#
+FORMAT	= $(MAN) $(UN_MAN)
+
+all:
+
+preformatted:
+	@for name in $(FORMAT); do\
+	(sed -e 's@MACRO_SOURCE@ncargmac.m@' <$$name.m | \
+	nroff -man >$$name.p);\
+	done
+
+#if defined(CRAY) || defined(sgi)
+# Install preformatted troff documents on systems without troff
+
+install::
+	@for name in $(MANS); do\
+	($(INSTALL) -m $(INSTALL_MAN) $$name.p \
+	$(MANDIR)/$$name.$(MAN_SECTION) );\
+	done
+
+#else
+
+install::
+	@for name in $(MANS); do\
+	(sed -e 's@MACRO_SOURCE@$(MANDIR)/ncargmac.$(MAN_SECTION)@' \
+	<$$name.m >$$name.$(MAN_SECTION));\
+	done
+
+install::
+	@for name in $(MANS); do\
+	($(INSTALL) -m $(INSTALL_MAN) $$name.$(MAN_SECTION) $(MANDIR));\
+	done
+
+install::
+	@-for name in $(MANS); do\
+	($(RM) $$name.$(MAN_SECTION));\
+	done
+#endif
+
+MakefileTarget
+CleanTarget

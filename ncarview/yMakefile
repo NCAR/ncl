@@ -1,0 +1,8 @@
+NCARG	= ..
+
+SUBDIRS = src man bin
+
+MakeSubdirs($(SUBDIRS))
+InstallSubdirs($(SUBDIRS))
+MakefilesSubdirs($(SUBDIRS))
+CleanSubdirs($(SUBDIRS))

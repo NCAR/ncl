@@ -34,7 +34,7 @@
 #include "text.h"
 
 #ifndef lint
-static char *RCSid = "$Header: /home/brownrig/SVN/CVS/ncarg/ncarview/src/lib/libctrans/clear_text.c,v 1.1 1990-12-11 13:33:07 clyne Exp $";
+static char *RCSid = "$Header: /home/brownrig/SVN/CVS/ncarg/ncarview/src/lib/libctrans/clear_text.c,v 1.1.1.1 1990-12-11 13:33:10 clyne Exp $";
 #endif
 
 extern	Ct_err	Instr_Dec();

@@ -1,0 +1,12 @@
+These filter have not be tested thoroughly due to lack of vanilla metafiles and
+interpreters. However, while testing the filters on Sun phigs' metafiles an
+interesting anomaly was noted. The Sun phigs' CGM generator produces a 
+metafile made up exclusively of "long data format" CGM elements. Instructions
+that were meant to be contained in "short" elements were coded as longs. This
+presents no problem for a "true" CGM interpreter such as Ctrans. However, I
+suspect that the Sun phigs' interpreter expects all instructions in the "long"
+format to ease translation. The filter for NCAR-format-to-vanilla will
+translate "short" instructions to "short" instructions. Thus it is unlikely
+that an NCAR CGM filtered to vanilla CGM could be interpreted by the Sun phigs'
+interpreter. Other vendors of CGM translators and interpreters may take similar
+short cuts.

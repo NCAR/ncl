@@ -1,0 +1,21 @@
+#!/bin/csh -f
+#
+#	Name		fcaps
+#
+#	Author		John Clyne
+#
+#	Date		Wed Jun 27 13:23:39 MDT 1990
+#
+#	Desc.		Report all the fontcaps installed in the fontcap 
+#			directory.
+# 
+
+set dir = "/u2/ncargfx/test/lib"
+
+set dir = "${dir}/fontcaps"
+
+cd $dir
+echo "The following fontcaps are installed to ${dir}:"
+foreach fcap (*)
+	echo "	$fcap"
+end

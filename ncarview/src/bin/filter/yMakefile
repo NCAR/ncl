@@ -1,0 +1,32 @@
+#
+#
+#	Makefile for cgm filters -- filter between NCAR CGM and vanilla CGM
+#
+#
+
+NCARG = ../../../..
+
+MYNAME	= filter
+
+LIBS		= $(LIBDIR)/libcgm.a $(LIBDIR)/libncarv.a
+
+CDEFINES	= -I../../include
+
+CGM2_SRCS	= cgm2ncgm.c bsd-sysv.c
+NCAR2_SRCS	= ncgm2cgm.c bsd-sysv.c
+
+CGM2_OBJ	= cgm2ncgm.o bsd-sysv.o
+NCAR2_OBJ	= ncgm2cgm.o bsd-sysv.o
+
+all::	cgm2ncgm ncgm2cgm 
+
+CTarget(cgm2ncgm,$(CGM2_OBJ),$(LIBS))
+CTarget(ncgm2cgm,$(NCAR2_OBJ),$(LIBS))
+MakefileTarget
+CleanTarget
+
+lint:	
+	$(LINT) $(CDEFINES) $(NCAR2_SRCS) 1> lint.out 2>&1
+	$(LINT) $(CDEFINES) $(CGM2_SRCS) 1>> lint.out 2>&1
+
+cgm2ncgm.o:	filter.h

@@ -1,0 +1,77 @@
+NCARG	= ../../../..
+
+LOCLIBDIR	= ../../../lib
+
+MYNAME	= ictrans
+
+#
+#	Sun Cgi libraries
+#
+
+#ifdef BuildCGIctrans
+CGILIBS	= $(DCGILIBS)
+#endif BuildCGIctrans
+
+#
+#	X11 libraries
+#
+#ifdef BuildX11ctrans
+X11LIBS	= $(DX11LIBS)
+#ifdef	RS6000
+LD_CFLAGS	= $(CFLAGS)
+#endif
+#endif BuildX11ctrans
+
+#
+#	Sun SunView libraries
+#
+#ifdef BuildSunViewctrans
+SUNLIBS = $(DSUNLIBS)
+#endif
+
+#
+#	local libraries
+#
+LOCLIB	= $(LOCLIBDIR)/libictrans.o $(LIBDIR)/libctrans.o \
+	$(LIBDIR)/libcgm.a $(LIBDIR)/libncarv.a
+
+SRCS	= \
+	main.c 
+OBJS	= \
+	main.o 
+
+LIBS	= $(LOCLIB) $(X11LIBS) $(CGILIBS) $(SUNLIBS) $(GENLIBS)
+
+
+GENLIBS = -lm
+
+DCGILIBS = -lcgi -lsuntool -lsunwindow -lpixrect
+
+#ifdef BuildCGIctrans
+DSUNLIBS = 
+#else
+DSUNLIBS =  -lsuntool -lsunwindow -lpixrect
+#endif
+
+#if defined(CRAY)
+DX11LIBS = -lX11 -lnet
+#else
+#if defined(sgi)
+DX11LIBS = -lX11 -lbsd
+#else
+DX11LIBS = -lX11
+#endif
+#endif
+
+all::
+	@$(CAT) Copyright
+
+all::	$(MYNAME)
+
+CTarget($(MYNAME),$(OBJS),$(LIBS))
+MakefileTarget
+CleanTarget
+
+lint: $(HDR) $(SRCS)
+	lint $(CDEFINES) $(LINTLIBS) $(SRCS)  1> lint.out 2>&1
+#	lint $(SRCS) $(LIBS) > lint.out

@@ -59,7 +59,7 @@
 #include "translate.h"
 
 #ifndef lint
-static char *RCSid = "$Header: /home/brownrig/SVN/CVS/ncarg/ncarview/src/lib/libctrans/gcap.c,v 1.1 1990-12-11 13:34:18 clyne Exp $";
+static char *RCSid = "$Header: /home/brownrig/SVN/CVS/ncarg/ncarview/src/lib/libctrans/gcap.c,v 1.1.1.1 1990-12-11 13:34:20 clyne Exp $";
 #endif
 
 extern	FILE	*tty;

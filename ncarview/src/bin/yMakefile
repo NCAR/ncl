@@ -1,0 +1,21 @@
+#
+#	Makefile for NCAR Graphics source directories
+#
+
+NCARG	= ../../..
+BINDIR_LOCAL = ../../bin
+
+SRCSUBDIRS	= ctrans ictrans filter med scripts
+BINSUBDIRS	= cgm_edit idt
+SUBDIRS 	= $(SRCSUBDIRS) $(BINSUBDIRS)
+
+MakeSubdirs($(SRCSUBDIRS))
+InstallSubdirs($(SRCSUBDIRS))
+
+#ifdef	BuildUnsupportedAthenaApplications
+MakeBinSubdirs($(BINSUBDIRS))
+InstallBinSubdirs($(BINSUBDIRS))
+#endif
+
+MakefilesSubdirs($(SUBDIRS))
+CleanSubdirs($(SUBDIRS))

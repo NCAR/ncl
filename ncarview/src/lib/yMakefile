@@ -1,0 +1,12 @@
+#
+#	Makefile for NCAR Graphics source directories
+#
+
+NCARG	= ../../..
+
+SUBDIRS = libncarv libcgm libctrans libictrans
+
+MakeSubdirs($(SUBDIRS))
+InstallSubdirs($(SUBDIRS))
+MakefilesSubdirs($(SUBDIRS))
+CleanSubdirs($(SUBDIRS))

@@ -1,0 +1,24 @@
+#
+#
+#	Makefile for libncarv -- NCAR View library of general routines
+#
+#
+
+NCARG	= ../../../..
+LOCINCDIR	= ../../include
+
+MYNAME		= libncarv.a
+
+CDEFINES	= -I$(LOCINCDIR)
+
+INCLUDES	= boolean.h options.h icmalloc.h ncarv.h common.h
+SRCS		= options.c icmalloc.c misc.c
+OBJECTS		= options.o icmalloc.o misc.o
+
+all::
+	@$(CP) $(INCLUDES) $(LOCINCDIR)
+
+Library($(MYNAME),$(OBJECTS))
+
+lint:
+	$(LINT) -I$(LOCINCDIR) $(SRCS) 1> lint.out 2>&1

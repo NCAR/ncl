@@ -1,0 +1,40 @@
+NCARG	= ../../../..
+
+LOCINCDIR	= ../../include
+
+MYNAME	= med
+
+EQUALHACK	= =
+
+LOCLIB	= $(LIBDIR)/libcgm.a $(LIBDIR)/libncarv.a 
+
+SRCS	= \
+	cmd_tab.c commands.c error.c med.c bsd-sysv.c
+
+OBJS	= \
+	cmd_tab.o commands.o error.o med.o bsd-sysv.o
+
+#if defined(CRAY)
+BSDLIBS = -lbsd
+#endif
+
+LIBS	= $(LOCLIB) $(BSDLIBS)
+
+CDEFINES	= -I$(LOCINCDIR)
+
+all::	$(MYNAME)
+
+CTarget($(MYNAME),$(OBJS),$(LIBS))
+MakefileTarget
+CleanTarget
+
+lint: $(HDR) $(SRCS)
+	lint $(CDEFINES) $(LINTLIBS) $(SRCS)  1> lint.out 2>&1
+
+cmd_tab.o:	med.h
+
+commands.o:	../../include/cgm_tools.h med.h
+
+error.o:	med.h
+
+med.o:		med.h
