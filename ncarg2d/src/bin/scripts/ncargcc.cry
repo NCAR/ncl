@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ncargcc.cry,v 1.13 1993-02-03 21:54:59 haley Exp $
+#	$Id: ncargcc.cry,v 1.14 1993-02-04 04:15:15 haley Exp $
 #
 
 set system="SED_SYSTEM_INCLUDE"
@@ -23,10 +23,10 @@ set stub_file   = ""
 # set up default libraries
 
 set libncarg    =       "-lncarg"
-set libgks      =       "-lncarg_gksC,-lncarg_gks"
+set libgks      =       "-lncarg_gksC -lncarg_gks"
 set liblocal    =       "-lncarg_loc"
 set libncarg_c  =       "-lncarg_c"
-set libcbind    =       "-libncargC"
+set libcbind    =       "-lncargC"
 set libX11      =       "-lX11"
 set f77libs     =       "-L/lib -lf -lio -lm -lp -lsci -lu -lc"
 
