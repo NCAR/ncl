@@ -1,5 +1,5 @@
 C
-C	$Id: gksbd.f,v 1.12 1994-09-15 00:24:27 fred Exp $
+C	$Id: gksbd.f,v 1.13 1995-03-01 21:16:46 fred Exp $
 C
       BLOCKDATA GKSBD
 C
@@ -217,7 +217,7 @@ C
      +             -206, -207, -208, -209, -210, -211, -212, -213,
      +             -214, -215, -216, -300, -301, -302, -303, -217,
      +             -218, -219, -220, 2200, 2201, 2202, 2203, 2204,
-     +               90                                           /
+     +               90, -113                                     /
       DATA ERMSGS(  1)/' --GKS NOT IN PROPER STATE: GKS SHALL BE IN STAT
      +E GKCL'/
       DATA ERMSGS(  2)/' --GKS NOT IN PROPER STATE: GKS SHALL BE IN STAT
@@ -400,6 +400,8 @@ C
      +ory'/
       DATA ERMSGS(121)/' --INTERIOR STYLE PATTERN IS NOT SUPPORTED ON TH
      +IS WORKSTATION'/
+      DATA ERMSGS(122)/' --Warning:  XMIN > XMAX or YMIN > YMAX in windo
+     +w (non-standard NCAR extension of GKS)'/
 C
       DATA GNAM(001),GNAM(002),GNAM(003)/'GOPKS' ,'GCLKS' ,'GOPWK' /
       DATA GNAM(004),GNAM(005),GNAM(006)/'GCLWK' ,'GACWK' ,'GDAWK' /

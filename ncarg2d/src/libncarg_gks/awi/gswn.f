@@ -1,5 +1,5 @@
 C
-C	$Id: gswn.f,v 1.5 1994-07-01 01:20:13 fred Exp $
+C	$Id: gswn.f,v 1.6 1995-03-01 21:16:51 fred Exp $
 C
       SUBROUTINE GSWN (TNR,XMIN,XMAX,YMIN,YMAX)
 C
@@ -31,10 +31,8 @@ C
 C  Check that the rectangle definition is valid.
 C
       IF (XMAX.LE.XMIN .OR. YMAX.LE.YMIN) THEN
-        IF (IFRST.EQ.0) THEN
-          WRITE(ERF,333)
-  333     FORMAT(' WARNING - OTHER GKS IMPLEMENTATIONS MAY NOT ALLOW WIN 
-     +DOW XMIN > XMAX OR WINDOW YMIN > YMAX (AS THIS ONE DOES)')
+        IF (IFRST .EQ. 0) THEN
+          CALL GERHND(-113,ESWN,ERF)
         ENDIF
       ENDIF
 C
