@@ -1,3 +1,6 @@
+/*
+ *	$Id: ictrans.h,v 1.2 1991-08-20 15:57:33 clyne Exp $
+ */
 /***********************************************************************
 *                                                                      *
 *                          Copyright (C)  1990                         *
@@ -75,6 +78,7 @@ typedef	struct	{
  * a complete command object
  */
 typedef	struct {
+	int	fd;		/* file desciptor for user prompts	*/
 	int	current_frame,	/* current frame in the file		*/
 		last_frame;	/* last frame in the file		*/
 	Cmd	cmd;		/* name of command to execute and its data*/

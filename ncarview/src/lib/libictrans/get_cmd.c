@@ -1,5 +1,5 @@
 /*
- *	$Id: get_cmd.c,v 1.3 1991-06-18 15:04:36 clyne Exp $
+ *	$Id: get_cmd.c,v 1.4 1991-08-20 15:57:29 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -84,6 +84,8 @@ get_command(ic)
 {
 	int	type;
 
+	char	*prompt = "ictrans> ";
+
 	short	loop = 1;
 	int	status = 0;	/* error status	*/
 
@@ -92,7 +94,7 @@ get_command(ic)
 	ic->cmd.src_frames.num = 0;
 	ic->cmd.dst_frames.num = 0;
 
-	(void) fprintf(stderr, "ictrans> ");
+	(void) write (ic->fd, prompt, strlen(prompt));
 	type = my_yylex();	/* get a token from data stream	*/
 	while(loop) {	/* parse source address	*/
 		switch (type) {
