@@ -2849,7 +2849,6 @@ static GribParamList *_NewListNode
 	tmp->yymmddhh = NULL;
 	tmp->forecast_time = NULL;
 	tmp->n_atts = 0;
-	tmp->theatts = NULL;
 	return(tmp);
 }
 
@@ -3233,7 +3232,6 @@ int wr_status;
 				if((name_rec == NULL)&&(grib_rec!=NULL)) {
 					tmp_name_rec = NclMalloc(sizeof(TBLE2));
 					tmp_name_rec->abrev = NclMalloc(strlen("VAR_") + 4);
-					tmp_name_rec->num = NULL;
 					sprintf(tmp_name_rec->abrev,"VAR_%d",grib_rec->param_number);
 					tmp_name_rec->long_name = NclMalloc(strlen("Unknown Variable Name") + 1);
 					sprintf(tmp_name_rec->long_name,"Unknown Variable Name");

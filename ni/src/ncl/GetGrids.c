@@ -2511,6 +2511,11 @@ GribParamList* thevarrec;
 	int offset_1o;
 	int offset_2o;
 	int sum = 0;
+	int quasi_regular = 0;
+	float pmsval = DEFAULT_MISSING_FLOAT;
+	int kret =1;
+	int kcode = 3;
+	int * num = NULL;
 	
 
 
@@ -2671,6 +2676,15 @@ GribParamList* thevarrec;
 				}
 			}
 			*outdat = data;
+		}
+		if((therec->gds[6] & (char)0377)&&(therec->gds[7] & (char)0377)){
+			num = (int*)NclMalloc(sizeof(int)*((thevarrec->thelist->rec_inq->gds_size - 32)/2));
+                        for(i = 0; i < thevarrec->thelist->rec_inq->gds_size - 32; i+=2) {
+                        	num[i/2] = (int)UnsignedCnvtToDecimal(2,&(thevarrec->thelist->rec_inq->gds[32+i]));
+                        }
+			NGCALLF(qu2reg2,QU2REG2)(*outdat,num,&(thevarrec->var_info.dim_sizes[thevarrec->var_info.num_dimensions-2]),&(thevarrec->var_info.dim_sizes[thevarrec->var_info.num_dimensions-1]),&kcode,&pmsval,&kret);
+
+			NclFree(num);
 		}
 	} else if(spherical_harm) {
 		if(complex_packing) {
@@ -3624,6 +3638,9 @@ int** dimsizes_lon;
 		int ilo1;
 		int ilo2;
 		int loinc;
+		int max_lon;
+		int num;
+		GribRecordInqRecList *step;
 
 		if((thevarrec->thelist != NULL)&&(thevarrec->thelist->rec_inq != NULL)) {
 			*n_dims_lat = 1;
@@ -3654,7 +3671,14 @@ int** dimsizes_lon;
 
 			tmpc[0] = thevarrec->thelist->rec_inq->gds[23];
 			tmpc[1] = thevarrec->thelist->rec_inq->gds[24];
-			loinc = (int)UnsignedCnvtToDecimal(2,tmpc);
+			if(!((tmpc[0] & (char)0377)&&(tmpc[1] & (char)0377))) {
+/*
+* ECMWF Quasi regular grid
+*/
+				loinc = (int)UnsignedCnvtToDecimal(2,tmpc);
+			} else {
+				loinc = -1;
+			}
 
 
 			tmpc[0] = thevarrec->thelist->rec_inq->gds[10] & (char)0177;
@@ -3715,7 +3739,19 @@ int** dimsizes_lon;
 			}
 			*n_dims_lon = 1;
 			*dimsizes_lon = malloc(sizeof(int));
-			(*dimsizes_lon)[0] = UnsignedCnvtToDecimal(2,&(thevarrec->thelist->rec_inq->gds[6]));
+			if((thevarrec->thelist->rec_inq->gds[6] & (char)0377)&&(thevarrec->thelist->rec_inq->gds[7] & (char)0377)){
+				max_lon = (int)UnsignedCnvtToDecimal(2,&(thevarrec->thelist->rec_inq->gds[32]));
+				for(i = 0; i < thevarrec->thelist->rec_inq->gds_size - 32; i+=2) {
+					num = (int)UnsignedCnvtToDecimal(2,&(thevarrec->thelist->rec_inq->gds[32+i]));
+					if(num > max_lon) {
+						max_lon = num;
+					}
+				}
+				(*dimsizes_lon)[0] = max_lon;
+				loinc = (ilo2-ilo1)/(max_lon-1);
+			} else {
+				(*dimsizes_lon)[0] = UnsignedCnvtToDecimal(2,&(thevarrec->thelist->rec_inq->gds[6]));
+			}
 			*lon = malloc(sizeof(float)*UnsignedCnvtToDecimal(2,&(thevarrec->thelist->rec_inq->gds[6])));
 			if(!(thevarrec->thelist->rec_inq->gds[27] & (char)0200)) {
 /* +i direction  west to east */
