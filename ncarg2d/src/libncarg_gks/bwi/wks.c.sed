@@ -1,5 +1,5 @@
 /*
- *	$Id: wks.c.sed,v 1.1.1.1 1992-04-17 22:34:01 ncargd Exp $
+ *      $Id: wks.c.sed,v 1.2 1992-04-21 17:58:51 ncargd Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -75,6 +75,7 @@
 
 #include <stdio.h>
 #include <fcntl.h>
+#include <unistd.h>
 #include <sys/types.h>
 #include <sys/file.h>
 #include "wks.h"
@@ -141,6 +142,7 @@ opnwks_(unit, fname, status)
 	char		*malloc();
 	char		*bufsize_env = (char *) NULL;
 	int		bufsize = 0;
+	char		*otype;
 #ifdef ardent
 	char		*fname;
 
@@ -219,9 +221,7 @@ opnwks_(unit, fname, status)
 
 	/*
 	If GKS output is a file, open it for reading and writing.
-	If its the special file "gmeta", truncate a pre-existing
-	file or create a new one for writing. Otherwise
-	create a new file if necessary, or append to the old.
+	Truncate a pre-existing file or create a new one for writing. 
 	A stream is attached to the file and a buffer allocated
 	of the size constant BUFSIZ from stdio.h or from
 	the user-defined environment variable NCARG_GKS_BUFSIZE,
@@ -277,25 +277,29 @@ opnwks_(unit, fname, status)
 #ifdef DEBUG
 		(void) fprintf(stderr,"Open file output for <%s>\n",gks_output);
 #endif
-		if (!strcmp(gks_output, "gmeta")) {
-			mftab[*unit].fp = fopen(gks_output, "w+");
-			if (mftab[*unit].fp == (FILE *) NULL) {
-				(void) fprintf(stderr, 
-				"Error in opngks_(): Could not open <%s>\n", 
-				gks_output);
-				*status = 304;
-				return(0);
-			}
+		/*
+		 * If file already exists  open it for reading/writing
+		 * If it does not exist create it and open it for
+		 * reading/writing. We can't use "w+" for all cases because
+		 * it truncates existing files. Similarly, opening a file
+		 * "r+" fails if the file does not exist
+		 * clyne@ncar Mon Apr 20 15:01:23 MDT 1992
+		 */
+		if (access(gks_output, F_OK) == 0 )  {
+			otype = "r+";	/* file exists	*/
 		}
-		else {
-			mftab[*unit].fp = fopen(gks_output, "a+");
-			if (mftab[*unit].fp == (FILE *) NULL) {
-				(void) fprintf(stderr, 
-				"Error in opngks_(): Could not open <%s>\n", 
-				gks_output);
-				*status = 304;
-				return(0);
-			}
+		else otype = "w+";
+		if (!strcmp(gks_output, "gmeta")) {
+			otype = "w+";	/* create the file	*/
+		}
+
+		mftab[*unit].fp = fopen(gks_output, otype);
+		if (mftab[*unit].fp == (FILE *) NULL) {
+			(void) fprintf(stderr, 
+			"Error in opngks_(): Could not open <%s>\n", 
+			gks_output);
+			*status = 304;
+			return(0);
 		}
 
 		/*

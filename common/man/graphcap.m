@@ -1,6 +1,3 @@
-.\"
-.\"	$Id: graphcap.m,v 1.1.1.1 1992-04-17 22:30:07 ncargd Exp $
-.\"
 .\" @(#)f77.1 1.4 86/07/31 SMI; 
 .TH GRAPHCAP 5NCARG "NOVEMBER 1989" NCAR "NCAR GRAPHICS"
 .SH NAME
@@ -164,20 +161,20 @@ Sun formatted raster file.
 .B sunview
 Sun's SunView windowing interface.
 .TP 15
-.B t4015
-Tektronix 4015 and 4012.
+.B t4010
+Tektronix 4010 and 4012.
 .TP 15
 .B t4025
 TEKTRONIX 4025 graphics terminal.
 .TP 15
-.B t4155
-TEKTRONIX 4155 color graphics terminal
+.B t4105
+TEKTRONIX 4105 color graphics terminal
 .TP 15
-.B t4157
-TEKTRONIX 4157 color graphics terminal
+.B t4107
+TEKTRONIX 4107 color graphics terminal
 .TP 15
-.B t4157.seg
-TEKTRONIX 4157 color graphics terminal
+.B t4107.seg
+TEKTRONIX 4107 color graphics terminal
 .TP 15
 .B t4115
 TEKTRONIX 4115 color graphics terminal

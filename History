@@ -765,3 +765,18 @@
 04/02/92 - Made new tarfile of 3.1.3.
 04/03/92 - Copied in new $NCARG/ncarview/src/bin/idt/talkto.c from John
 	   to fix bug with "Print" button.
+-----------3.1.4 BEGINS HERE--------------------------------------------------
+04/15/92 - Created "3.1.4" as a copy of "3.1.3".
+04/15/92 - Updated a format statement in the psblack filter to
+	   get around a compiler error that skips a blank in 
+	   column 72 on a continue.
+04/15/92 - Fixed the graphcap man page.  Some of the tektronix
+	   terminal names were spelled wrong.
+04/15/92 - Fixed the "ncargmv" script file; some garbage had been
+	   appended to the end of it.
+04/15/92 - Copied over a new $NCARG/ncarg2d/src/libncarg_gks/bwi/wks.c.sed
+	   file to fix I/O bug.
+04/16/92 - Copied over new libctrans to fix PostScript bug on System V
+	   machines.
+04/21/92 - Copied over $NCARG/ncarview/src/include/cgmdef.h from
+	   red:/u1/clyne/ncarg3.1.3/ncarview/src/include.

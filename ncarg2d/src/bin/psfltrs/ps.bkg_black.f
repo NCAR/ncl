@@ -1,5 +1,5 @@
 C
-C	$Id: ps.bkg_black.f,v 1.1.1.1 1992-04-17 22:34:47 ncargd Exp $
+C     $Id: ps.bkg_black.f,v 1.2 1992-04-21 17:58:37 ncargd Exp $
 C
       PROGRAM BKGBLK
 C
@@ -27,8 +27,8 @@ C
           WRITE(6,525)
   525     FORMAT(' ct 000 [0.0000 0.0000 0.0000] put')
           WRITE(6,530)
-  530     FORMAT(' 000 o'/'n'/' 0404 1124 m'/' 4482 1124 l'/' 4482 5202
-     -l'/' 0404 5202 l'/' 0404 1124 l'/'f')
+  530     FORMAT(' 000 o'/'n'/' 0404 1124 m'/' 4482 1124 l'/
+     +           ' 4482 5202 l'/' 0404 5202 l'/' 0404 1124 l'/'f')
       ENDIF
 C
 C  Determine if this is a color table setting.
