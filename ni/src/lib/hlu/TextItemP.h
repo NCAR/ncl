@@ -1,5 +1,5 @@
 /*
- *      $Id: TextItemP.h,v 1.6 1995-01-11 00:46:50 boote Exp $
+ *      $Id: TextItemP.h,v 1.7 1995-03-15 11:48:42 boote Exp $
  */
 /************************************************************************
 *									*
@@ -27,22 +27,31 @@
 
 typedef struct _NhlTextItemLayerPart{
 	/* user setable resource fields */
-	char	*string;
-	float	pos_x;
-	float	pos_y;
-	float	angle;
-	NhlJustification just;
-	NhlTextDirection direction;
-	NhlFont	font;
-	int	font_color;
-	float	font_height;
-	float	font_aspect;
-	float 	font_thickness;
-	NhlFontQuality	font_quality;
-	float	constant_spacing;
-	char	func_code;
-	float	*x_corners;
-	float	*y_corners;
+	char			*string;
+	NhlBoolean		pos_x_set;
+	float			pos_x;
+	NhlBoolean		pos_y_set;
+	float			pos_y;
+	NhlBoolean		angle_set;
+	float			angle;
+	NhlBoolean		just_set;
+	NhlJustification	just;
+	NhlBoolean		direction_set;
+	NhlTextDirection	direction;
+	NhlFont			font;
+	int			font_color;
+	NhlBoolean		font_height_set;
+	float			font_height;
+	NhlBoolean		font_aspect_set;
+	float			font_aspect;
+	NhlBoolean		font_thickness_set;
+	float 			font_thickness;
+	NhlFontQuality		font_quality;
+	NhlBoolean		constant_spacing_set;
+	float			constant_spacing;
+	char			func_code;
+	float			*x_corners;
+	float			*y_corners;
 	
 	int	perim_on;
 	int	perim_color;
@@ -54,14 +63,6 @@ typedef struct _NhlTextItemLayerPart{
 
 	/* Private fields */
 
-	NhlBoolean	pos_x_set;
-	NhlBoolean	pos_y_set;
-	NhlBoolean	angle_set;
-	NhlBoolean	just_set;
-	NhlBoolean	direction_set;
-	NhlBoolean	font_set;
-	NhlBoolean	font_height_set;
-	NhlBoolean	font_aspect_set;
 	char	*real_string;
 	float	cntr;
 	float	real_x_pos;

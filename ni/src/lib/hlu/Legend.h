@@ -1,5 +1,5 @@
 /*
- *      $Id: Legend.h,v 1.11 1995-02-17 10:23:19 boote Exp $
+ *      $Id: Legend.h,v 1.12 1995-03-15 11:48:34 boote Exp $
  */
 /************************************************************************
 *									*
@@ -52,14 +52,12 @@ typedef enum _NhllgItemPlacementMode {
 #define NhlNlgItemPlacement		"lgItemPlacement"
 
 #define NhlNlgAutoManage		"lgAutoManage"
-#define NhlNlgBarMode			"lgBarMode"
 #define NhlNlgLabelOffsetF		"lgLabelOffsetF"
 #define NhlNlgTitleOffsetF		"lgTitleOffsetF"
 #define NhlNlgLeftMarginF		"lgLeftMarginF"
 #define NhlNlgRightMarginF		"lgRightMarginF"
 #define NhlNlgBottomMarginF		"lgBottomMarginF"
 #define NhlNlgTopMarginF		"lgTopMarginF"
-#define NhlNlgMarginMode		"lgMarginMode"
 
 /* arrays */
 #define NhlNlgMonoItemType		"lgMonoItemType"
@@ -110,7 +108,6 @@ typedef enum _NhllgItemPlacementMode {
 #define NhlNlgLineDashSegLenF		"lgLineDashSegLenF"
 
 #define NhlNlgLineLabelFont		"lgLineLabelFont"
-#define NhlNlgLineLabelFontColor	"lgLineLabelFontColor"
 #define NhlNlgLineLabelFontAspectF	"lgLineLabelFontAspectF"
 #define NhlNlgLineLabelFontThicknessF	"lgLineLabelFontThicknessF"
 #define NhlNlgLineLabelFontQuality	"lgLineLabelFontQuality"
@@ -176,7 +173,6 @@ typedef enum _NhllgItemPlacementMode {
 #define NhlClgItemPlacement		"LgItemPlacement"
 
 #define NhlClgAutoManage		"LgAutoManage"
-#define NhlClgBarMode			"LgBarMode"
 #define NhlClgMaxLabelAngleAdditionF	"LgMaxLabelAngleAdditionF"
 #define NhlClgLabelOffsetF		"LgLabelOffsetF"
 #define NhlClgTitleOffsetF		"LgTitleOffsetF"
@@ -184,7 +180,6 @@ typedef enum _NhllgItemPlacementMode {
 #define NhlClgRightMarginF		"LgRightMarginF"
 #define NhlClgBottomMarginF		"LgBottomMarginF"
 #define NhlClgTopMarginF		"LgTopMarginF"
-#define NhlClgMarginMode		"LgMarginMode"
 
 /* arrays */
 #define NhlClgMonoItemType		"LgMonoItemType"
@@ -230,7 +225,6 @@ typedef enum _NhllgItemPlacementMode {
 #define NhlClgLineDashSegLenF		"LgLineDashSegLenF"
 
 #define NhlClgLineLabelFont		"LgLineLabelFont"
-#define NhlClgLineLabelFontColor	"LgLineLabelFontColor"
 #define NhlClgLineLabelFontAspectF	"LgLineLabelFontAspectF"
 #define NhlClgLineLabelFontThicknessF	"LgLineLabelFontThicknessF"
 #define NhlClgLineLabelFontQuality	"LgLineLabelFontQuality"

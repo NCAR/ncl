@@ -1,5 +1,5 @@
 /*
- *      $Id: Title.c,v 1.18 1995-02-19 08:18:52 boote Exp $
+ *      $Id: Title.c,v 1.19 1995-03-15 11:48:49 boote Exp $
  */
 /************************************************************************
 *									*
@@ -116,7 +116,7 @@ static NhlResource resources[] = {
 		sizeof(NhlColorIndex),
 		Oset(main_font_color),NhlTImmediate,
 		_NhlUSET((NhlPointer)NhlFOREGROUND),0,NULL},
-	{NhlNtiMainFontQuality, NhlCtiTitleFontQualities, NhlTFQuality,
+	{NhlNtiMainFontQuality, NhlCtiTitleFontQualities, NhlTFontQuality,
 		 sizeof(NhlFontQuality),Oset(main_font_quality),
 		 NhlTImmediate,_NhlUSET((NhlPointer)NhlHIGH ),0,NULL},
 	{NhlNtiUseMainAttributes,NhlCtiUseMainAttributes, NhlTBoolean,
@@ -166,7 +166,7 @@ static NhlResource resources[] = {
 	{NhlNtiXAxisFontColor,NhlCtiTitleFontColors,NhlTColorIndex,
 		sizeof(NhlColorIndex),Oset(x_axis_font_color), NhlTImmediate,
 		 _NhlUSET((NhlPointer)NhlFOREGROUND),0,NULL},
-	{NhlNtiXAxisFontQuality, NhlCtiTitleFontQualities, NhlTFQuality,
+	{NhlNtiXAxisFontQuality, NhlCtiTitleFontQualities, NhlTFontQuality,
 		 sizeof(NhlFontQuality),
 		 Oset(x_axis_font_quality), NhlTImmediate,
 		 _NhlUSET((NhlPointer)NhlHIGH ),0,NULL},
@@ -222,7 +222,7 @@ static NhlResource resources[] = {
 	{NhlNtiYAxisFontColor,NhlCtiTitleFontColors,NhlTColorIndex,
 		sizeof(NhlColorIndex),Oset(y_axis_font_color), NhlTImmediate,
 		 _NhlUSET((NhlPointer)NhlFOREGROUND),0,NULL},
-	{NhlNtiYAxisFontQuality, NhlCtiTitleFontQualities, NhlTFQuality,
+	{NhlNtiYAxisFontQuality, NhlCtiTitleFontQualities, NhlTFontQuality,
 		 sizeof(NhlFontQuality),
 		 Oset(y_axis_font_quality), NhlTImmediate,
 		 _NhlUSET((NhlPointer)NhlHIGH),0,NULL},

@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.h,v 1.8 1995-02-17 10:23:47 boote Exp $
+ *      $Id: XyPlot.h,v 1.9 1995-03-15 11:49:00 boote Exp $
  */
 /************************************************************************
 *									*
@@ -78,19 +78,19 @@
 #define NhlNxyMonoLineThickness	"xyMonoLineThickness"
 #define NhlCxyMonoLineThickness	"XyMonoLineThickness"
 
-#define NhlNxyMarkerColor	"xyMarkerColor"
-#define NhlCxyMarkerColor	"XyMarkerColor"
-#define NhlNxyMarkerColors	"xyMarkerColors"
-#define NhlCxyMarkerColors	"XyMarkerColors"
-#define NhlNxyMonoMarkerColor	"xyMonoMarkerColor"
-#define NhlCxyMonoMarkerColor	"XyMonoMarkerColor"
-
 #define NhlNxyMarker		"xyMarker"
 #define NhlCxyMarker		"XyMarker"
 #define NhlNxyMarkers		"xyMarkers"
 #define NhlCxyMarkers		"XyMarkers"
 #define NhlNxyMonoMarker	"xyMonoMarker"
 #define NhlCxyMonoMarker	"XyMonoMarker"
+
+#define NhlNxyMarkerColor	"xyMarkerColor"
+#define NhlCxyMarkerColor	"XyMarkerColor"
+#define NhlNxyMarkerColors	"xyMarkerColors"
+#define NhlCxyMarkerColors	"XyMarkerColors"
+#define NhlNxyMonoMarkerColor	"xyMonoMarkerColor"
+#define NhlCxyMonoMarkerColor	"XyMonoMarkerColor"
 
 #define NhlNxyMarkerSizeF	"xyMarkerSizeF"
 #define NhlCxyMarkerSizeF	"XyMarkerSizeF"
@@ -134,11 +134,28 @@
 #define	NhlNxyComputeXMax	"xyComputeXMax"
 #define	NhlCxyComputeXMax	"XyComputeXMax"
 
+#define	NhlNxyComputeYMin	"xyComputeYMin"
+#define	NhlCxyComputeYMin	"XyComputeYMin"
+
 #define	NhlNxyComputeYMax	"xyComputeYMax"
 #define	NhlCxyComputeYMax	"XyComputeYMax"
 
-#define	NhlNxyComputeYMin	"xyComputeYMin"
-#define	NhlCxyComputeYMin	"XyComputeYMin"
+/*
+ * These resources have not been implimented yet.
+ */
+#ifdef	NOT
+/*
+ * New types
+ */
+typedef enum _NhlAlternatePlace{
+	NhlNONE,
+	NhlLEFTAXIS,
+	NhlRIGHTAXIS,
+	NhlTOPAXIS,
+	NhlBOTTOMAXIS
+} NhlAlternatePlace;
+
+#define NhlTAlternatePlace	"alternatePlace"
 
 #define NhlNxyXAlternate	"xyXAlternate"
 #define NhlCxyXAlternate	"XyXAlternate"
@@ -157,6 +174,7 @@
 
 #define NhlNxyYOriginalCoords	"xyYOriginalCoords"
 #define NhlCxyYOriginalCoords	"XyYOriginalCoords"
+#endif	/* NOT */
 
 #define NhlNxyLineDashSegLenF	"xyLineDashSegLenF"
 #define NhlCxyLineDashSegLenF	"XyLineDashSegLenF"
@@ -168,19 +186,7 @@
 /*
  * Names for new types.
  */
-#define NhlTAlternatePlace	"alternatePlace"
 #define NhlTLineLabelMode	"lineLabelMode"
-
-/*
- * New types
- */
-typedef enum _NhlAlternatePlace{
-	NhlNONE,
-	NhlLEFTAXIS,
-	NhlRIGHTAXIS,
-	NhlTOPAXIS,
-	NhlBOTTOMAXIS
-} NhlAlternatePlace;
 
 typedef enum _NhlLineLabelMode{
 	NhlNOLABELS,

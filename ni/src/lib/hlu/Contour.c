@@ -1,5 +1,5 @@
 /*
- *      $Id: Contour.c,v 1.53 1995-03-13 21:47:20 dbrown Exp $
+ *      $Id: Contour.c,v 1.54 1995-03-15 11:48:26 boote Exp $
  */
 /************************************************************************
 *									*
@@ -346,7 +346,7 @@ static NhlResource resources[] = {
 	{NhlNcnLineLabelFontThicknessF,NhlCcnLineLabelFontThicknessF,
 		 NhlTFloat,sizeof(float),Oset(line_lbls.thickness),
 		 NhlTString, _NhlUSET("1.0"),0,NULL},
-	{NhlNcnLineLabelFontQuality,NhlCcnLineLabelFontQuality,NhlTFQuality, 
+	{NhlNcnLineLabelFontQuality,NhlCcnLineLabelFontQuality,NhlTFontQuality, 
 		 sizeof(NhlFontQuality),Oset(line_lbls.quality),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NhlHIGH),0,NULL},
 	{NhlNcnLineLabelConstantSpacingF,NhlCcnLineLabelConstantSpacingF,
@@ -407,7 +407,7 @@ static NhlResource resources[] = {
 	{NhlNcnHighLabelFontThicknessF,NhlCcnHighLabelFontThicknessF,
 		 NhlTFloat,sizeof(float),Oset(high_lbls.thickness),
 		 NhlTString, _NhlUSET("1.0"),0,NULL},
-	{NhlNcnHighLabelFontQuality,NhlCcnHighLabelFontQuality,NhlTFQuality, 
+	{NhlNcnHighLabelFontQuality,NhlCcnHighLabelFontQuality,NhlTFontQuality, 
 		 sizeof(NhlFontQuality),Oset(high_lbls.quality),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NhlHIGH),0,NULL},
 	{NhlNcnHighLabelConstantSpacingF,NhlCcnHighLabelConstantSpacingF,
@@ -467,7 +467,7 @@ static NhlResource resources[] = {
 	{NhlNcnLowLabelFontThicknessF,NhlCcnLowLabelFontThicknessF,
 		 NhlTFloat,sizeof(float),Oset(low_lbls.thickness),
 		 NhlTString, _NhlUSET("1.0"),0,NULL},
-	{NhlNcnLowLabelFontQuality,NhlCcnLowLabelFontQuality,NhlTFQuality, 
+	{NhlNcnLowLabelFontQuality,NhlCcnLowLabelFontQuality,NhlTFontQuality, 
 		 sizeof(NhlFontQuality),Oset(low_lbls.quality),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NhlHIGH),0,NULL},
 	{NhlNcnLowLabelConstantSpacingF,NhlCcnLowLabelConstantSpacingF,
@@ -531,7 +531,7 @@ static NhlResource resources[] = {
 	{NhlNcnInfoLabelFontThicknessF,NhlCcnInfoLabelFontThicknessF,
 		 NhlTFloat,sizeof(float),Oset(info_lbl.thickness),
 		 NhlTString, _NhlUSET("1.0"),0,NULL},
-	{NhlNcnInfoLabelFontQuality,NhlCcnInfoLabelFontQuality,NhlTFQuality, 
+	{NhlNcnInfoLabelFontQuality,NhlCcnInfoLabelFontQuality,NhlTFontQuality, 
 		 sizeof(NhlFontQuality),Oset(info_lbl.quality),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NhlHIGH),0,NULL},
 	{NhlNcnInfoLabelConstantSpacingF,NhlCcnInfoLabelConstantSpacingF,
@@ -614,7 +614,7 @@ static NhlResource resources[] = {
 		 NhlTFloat,sizeof(float),Oset(constf_lbl.thickness),
 		 NhlTString, _NhlUSET("1.0"),0,NULL},
 	{NhlNcnConstFLabelFontQuality,NhlCcnConstFLabelFontQuality,
-		 NhlTFQuality, 
+		 NhlTFontQuality, 
 		 sizeof(NhlFontQuality),Oset(constf_lbl.quality),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NhlHIGH),0,NULL},
 	{NhlNcnConstFLabelConstantSpacingF,NhlCcnConstFLabelConstantSpacingF,

@@ -1,5 +1,5 @@
 /*
- *      $Id: App.c,v 1.9 1995-02-17 10:22:52 boote Exp $
+ *      $Id: App.c,v 1.10 1995-03-15 11:48:23 boote Exp $
  */
 /************************************************************************
 *									*
@@ -902,4 +902,66 @@ NhlAppGetDefaultParentID
 		return NhlappLayerClassRec.app_class.current_app->base.id;
 
 	return (int)NhlFATAL;
+}
+
+/*
+ * Function:	NhlIsApp
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+NhlBoolean
+NhlIsApp
+#if	NhlNeedProto
+(
+	int	pid
+)
+#else
+(pid)
+	int	pid;
+#endif
+{
+	NhlLayer	l = _NhlGetLayer(pid);
+
+	if(l && _NhlIsApp(l))
+		return True;
+
+	return False;
+}
+
+/*
+ * Function:	nhl_fisapp
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+void _NHLCALLF(nhl_fisapp,NHL_FISAPP)
+#if	NhlNeedProto
+(
+	int	*id,
+	int	*status
+)
+#else
+(id,status)
+	int	*id;
+	int	*status;
+#endif
+{
+	*status = NhlIsApp(*id);
+
+	return;
 }

@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.25 1995-02-17 10:23:52 boote Exp $
+#      $Id: yMakefile,v 1.26 1995-03-15 11:49:02 boote Exp $
 #
 #########################################################################
 #									#
@@ -75,13 +75,13 @@ COBJS		= Base.o BoundingBox.o Close.o Convert.o Converters.o \
 
 FSRCS		= DATACOMM.f ERROR.f HLU.f OVERLAY.f RLGEN.f RLSET.f \
 		RLGET.f TRANSFORM.f VIEW.f WORKSPACE.f WORKSTATION.f \
-		DATAITEM.f \
+		DATAITEM.f APP.f \
 		coeff1.f interp.f sdot.f sgesl.f trip.f fitpack.f isamax.f \
 		search.f sscal.f saxpy.f sgefa.f terp1.f gerhnd.f
 
 FOBJS		= DATACOMM.o ERROR.o HLU.o OVERLAY.o RLGEN.o RLSET.o \
 		RLGET.o TRANSFORM.o VIEW.o WORKSPACE.o WORKSTATION.o \
-		DATAITEM.o \
+		DATAITEM.o APP.o \
 		coeff1.o interp.o sdot.o sgesl.o trip.o fitpack.o isamax.o \
 		search.o sscal.o saxpy.o sgefa.o terp1.o gerhnd.o
 

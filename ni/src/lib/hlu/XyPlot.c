@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.34 1995-03-14 21:06:20 haley Exp $
+ *      $Id: XyPlot.c,v 1.35 1995-03-15 11:48:58 boote Exp $
  */
 /************************************************************************
 *									*
@@ -188,11 +188,11 @@ static NhlResource resources[] = {
 /* Begin-documented-resources */
 
 	{NhlNxyCoordData,NhlCxyCoordData,_NhlTDataList,sizeof(NhlGenArray),
-		Oset(curve_data),NhlTImmediate,NULL,0,
+		Oset(curve_data),NhlTImmediate,NULL,_NhlRES_NORACCESS,
 						(NhlFreeFunc)NhlFreeGenArray},
 	{NhlNxyCoordDataSpec,NhlCxyCoordDataSpec,_NhlTDataSpecList,
-		sizeof(NhlGenArray),Oset(dspeclist),NhlTImmediate,NULL,0,
-						(NhlFreeFunc)NhlFreeGenArray},
+		sizeof(NhlGenArray),Oset(dspeclist),NhlTImmediate,NULL,
+		_NhlRES_GONLY,(NhlFreeFunc)NhlFreeGenArray},
 	{NhlNxyXStyle,NhlCxyXStyle,NhlTTickMarkStyle,sizeof(NhlTickMarkStyle),
 		Oset(x_style),NhlTImmediate,(NhlPointer)NhlLINEAR,0,NULL},
 	{NhlNxyYStyle,NhlCxyYStyle,NhlTTickMarkStyle,sizeof(NhlTickMarkStyle),
@@ -215,13 +215,13 @@ static NhlResource resources[] = {
 		Oset(y_reverse),NhlTImmediate,False,0,NULL},
 
 	{"no.res","no.res",NhlTBoolean,sizeof(NhlBoolean),Oset(comp_x_min_set),
-		NhlTImmediate,(NhlPointer)True,0,NULL},
-	{"no.res","no.res",NhlTBoolean,sizeof(NhlBoolean),
-		Oset(comp_x_max_set),NhlTImmediate,(NhlPointer)True,0,NULL},
-	{"no.res","no.res",NhlTBoolean,sizeof(NhlBoolean),
-		Oset(comp_y_max_set),NhlTImmediate,(NhlPointer)True,0,NULL},
-	{"no.res","no.res",NhlTBoolean,sizeof(NhlBoolean),
-		Oset(comp_y_min_set),NhlTImmediate,(NhlPointer)True,0,NULL},
+		NhlTImmediate,(NhlPointer)True,_NhlRES_NOACCESS,NULL},
+	{"no.res","no.res",NhlTBoolean,sizeof(NhlBoolean),Oset(comp_x_max_set),
+		NhlTImmediate,(NhlPointer)True,_NhlRES_NOACCESS,NULL},
+	{"no.res","no.res",NhlTBoolean,sizeof(NhlBoolean),Oset(comp_y_max_set),
+		NhlTImmediate,(NhlPointer)True,_NhlRES_NOACCESS,NULL},
+	{"no.res","no.res",NhlTBoolean,sizeof(NhlBoolean),Oset(comp_y_min_set),
+		NhlTImmediate,(NhlPointer)True,_NhlRES_NOACCESS,NULL},
 
 	{NhlNxyComputeXMin,NhlCxyComputeXMin,NhlTBoolean,sizeof(NhlBoolean),
 		Oset(compute_x_min),NhlTProcedure,(NhlPointer)ResUnset,0,NULL},
@@ -232,14 +232,14 @@ static NhlResource resources[] = {
 	{NhlNxyComputeYMin,NhlCxyComputeYMin,NhlTBoolean,sizeof(NhlBoolean),
 		Oset(compute_y_min),NhlTProcedure,(NhlPointer)ResUnset,0,NULL},
 
-	{"no.res","no.res",NhlTBoolean,sizeof(NhlBoolean),
-		Oset(x_min_set),NhlTImmediate,(NhlPointer)True,0,NULL},
-	{"no.res","no.res",NhlTBoolean,sizeof(NhlBoolean),
-		Oset(x_max_set),NhlTImmediate,(NhlPointer)True,0,NULL},
-	{"no.res","no.res",NhlTBoolean,sizeof(NhlBoolean),
-		Oset(y_max_set),NhlTImmediate,(NhlPointer)True,0,NULL},
-	{"no.res","no.res",NhlTBoolean,sizeof(NhlBoolean),
-		Oset(y_min_set),NhlTImmediate,(NhlPointer)True,0,NULL},
+	{"no.res","no.res",NhlTBoolean,sizeof(NhlBoolean),Oset(x_min_set),
+		NhlTImmediate,(NhlPointer)True,_NhlRES_NOACCESS,NULL},
+	{"no.res","no.res",NhlTBoolean,sizeof(NhlBoolean),Oset(x_max_set),
+		NhlTImmediate,(NhlPointer)True,_NhlRES_NOACCESS,NULL},
+	{"no.res","no.res",NhlTBoolean,sizeof(NhlBoolean),Oset(y_max_set),
+		NhlTImmediate,(NhlPointer)True,_NhlRES_NOACCESS,NULL},
+	{"no.res","no.res",NhlTBoolean,sizeof(NhlBoolean),Oset(y_min_set),
+		NhlTImmediate,(NhlPointer)True,_NhlRES_NOACCESS,NULL},
 
 	{NhlNtrXMinF,NhlCtrXMinF,NhlTFloat,sizeof(float),
 		Oset(x_min),NhlTProcedure,(NhlPointer)ResUnset,0,NULL},
@@ -250,6 +250,10 @@ static NhlResource resources[] = {
 	{NhlNtrYMinF,NhlCtrYMinF,NhlTFloat,sizeof(float),
 		Oset(y_min),NhlTProcedure,(NhlPointer)ResUnset,0,NULL},
 
+/*
+ * These resources have not been implimented yet.
+ */
+#ifdef	NOT
 	{NhlNxyXAlternate,NhlCxyXAlternate,NhlTAlternatePlace,
 		sizeof(NhlAlternatePlace),
 		Oset(x_alternate),NhlTImmediate,(NhlPointer)NhlNONE,0,NULL},
@@ -268,6 +272,7 @@ static NhlResource resources[] = {
 	{NhlNxyYOriginalCoords,NhlCxyYOriginalCoords,NhlTFloatGenArray,
 		sizeof(NhlGenArray),Oset(y_original_coords),NhlTImmediate,NULL,
 		0,(NhlFreeFunc)NhlFreeGenArray},
+#endif
 
 	{NhlNxyLineDashSegLenF,NhlCxyLineDashSegLenF,NhlTFloat,
 		sizeof(float),Oset(dash_segment_length),NhlTString,".15",
@@ -695,6 +700,15 @@ XyPlotClassInitialize
 ()
 #endif
 {
+	Qfloat = NrmStringToQuark(NhlTFloat);
+
+	QXirreg = NrmStringToQuark(NhlNxyXIrregularPoints);
+	QYirreg = NrmStringToQuark(NhlNxyYIrregularPoints);
+
+/*
+ * These resources have not been implimented yet...
+ */
+#ifdef	NOT
 	_NhlEnumVals	altplace[] = {
 		{NhlNONE,	"none"},
 		{NhlLEFTAXIS,	"leftaxis"},
@@ -703,16 +717,13 @@ XyPlotClassInitialize
 		{NhlBOTTOMAXIS,	"bottomaxis"}
 	};
 
-
-	Qfloat = NrmStringToQuark(NhlTFloat);
 	_NhlRegisterEnumType(NhlTAlternatePlace,altplace,NhlNumber(altplace));
 
-	QXirreg = NrmStringToQuark(NhlNxyXIrregularPoints);
-	QYirreg = NrmStringToQuark(NhlNxyYIrregularPoints);
 	QXalt = NrmStringToQuark(NhlNxyXAlternateCoords);
 	QYalt = NrmStringToQuark(NhlNxyYAlternateCoords);
 	QXorig = NrmStringToQuark(NhlNxyXOriginalCoords);
 	QYorig = NrmStringToQuark(NhlNxyYOriginalCoords);
+#endif
 
 	return NhlNOERROR;
 }
@@ -783,6 +794,7 @@ XyPlotClassPartInitialize
 			NhlNlgMonoLineLabelFontHeight,NhlNlgMonoLineThickness,
 			NhlNlgMonoMarkerColor,NhlNlgMonoMarkerIndex,
 			NhlNlgMonoMarkerSize,NhlNlgMonoMarkerThickness,
+			NhlNovLabelBarDisplayMode,
 			NULL);
 
 	/*
@@ -1152,68 +1164,185 @@ XyDataSetValues
 	int		num_args;
 #endif
 {
+	char			func[] = "XyDataSetValues";
 	NhlXyDataSpecLayer	dnew = (NhlXyDataSpecLayer)new;
 	NhlXyDataSpecLayer	dold = (NhlXyDataSpecLayer)old;
 	NhlGenArray		gen;
+	NhlBoolean		status = False;
 
 	if(dnew->xydata.dashes != dold->xydata.dashes){
 		gen = dnew->xydata.dashes;
 		dnew->xydata.dashes = _NhlCopyGenArray(gen,True);
+		if(gen && !dnew->xydata.dashes){
+			NhlPError(NhlWARNING,ENOMEM,
+				"%s:Resetting %s to previous value",
+				func,NhlNxyDashPatterns);
+			dnew->xydata.dashes = dold->xydata.dashes;
+		}
+		else{
+			NhlFreeGenArray(dold->xydata.dashes);
+			status = True;
+		}
 	}
 
 	if(dnew->xydata.marker_modes != dold->xydata.marker_modes){
 		gen = dnew->xydata.marker_modes;
 		dnew->xydata.marker_modes = _NhlCopyGenArray(gen,True);
+		if(gen && !dnew->xydata.marker_modes){
+			NhlPError(NhlWARNING,ENOMEM,
+				"%s:Resetting %s to previous value",
+				func,NhlNxyMarkLineMode);
+			dnew->xydata.marker_modes = dold->xydata.marker_modes;
+		}
+		else{
+			NhlFreeGenArray(dold->xydata.marker_modes);
+			status = True;
+		}
 	}
 
 	if(dnew->xydata.lg_label_strings != dold->xydata.lg_label_strings){
 		gen = dnew->xydata.lg_label_strings;
 		dnew->xydata.lg_label_strings = _NhlCopyGenArray(gen,True);
+		if(gen && !dnew->xydata.lg_label_strings){
+			NhlPError(NhlWARNING,ENOMEM,
+				"%s:Resetting %s to previous value",
+				func,NhlNxyExplicitLegendLabels);
+			dnew->xydata.lg_label_strings =
+						dold->xydata.lg_label_strings;
+		}
+		else{
+			NhlFreeGenArray(dold->xydata.lg_label_strings);
+			status = True;
+		}
 	}
 
 	if(dnew->xydata.colors != dold->xydata.colors){
 		gen = dnew->xydata.colors;
 		dnew->xydata.colors = _NhlCopyGenArray(gen,True);
+		if(gen && !dnew->xydata.colors){
+			NhlPError(NhlWARNING,ENOMEM,
+				"%s:Resetting %s to previous value",
+				func,NhlNxyLineColors);
+			dnew->xydata.colors = dold->xydata.colors;
+		}
+		else{
+			NhlFreeGenArray(dold->xydata.colors);
+			status = True;
+		}
 	}
 
 	if(dnew->xydata.label_colors != dold->xydata.label_colors){
 		gen = dnew->xydata.label_colors;
 		dnew->xydata.label_colors = _NhlCopyGenArray(gen,True);
+		if(gen && !dnew->xydata.label_colors){
+			NhlPError(NhlWARNING,ENOMEM,
+				"%s:Resetting %s to previous value",
+				func,NhlNxyLineLabelColors);
+			dnew->xydata.label_colors = dold->xydata.label_colors;
+		}
+		else{
+			NhlFreeGenArray(dold->xydata.label_colors);
+			status = True;
+		}
 	}
 
 	if(dnew->xydata.labels != dold->xydata.labels){
 		gen = dnew->xydata.labels;
 		dnew->xydata.labels = _NhlCopyGenArray(gen,True);
+		if(gen && !dnew->xydata.labels){
+			NhlPError(NhlWARNING,ENOMEM,
+				"%s:Resetting %s to previous value",
+				func,NhlNxyExplicitLabels);
+			dnew->xydata.labels = dold->xydata.labels;
+		}
+		else{
+			NhlFreeGenArray(dold->xydata.labels);
+			status = True;
+		}
 	}
 
 	if(dnew->xydata.line_thicknesses != dold->xydata.line_thicknesses){
 		gen = dnew->xydata.line_thicknesses;
 		dnew->xydata.line_thicknesses = _NhlCopyGenArray(gen,True);
+		if(gen && !dnew->xydata.line_thicknesses){
+			NhlPError(NhlWARNING,ENOMEM,
+				"%s:Resetting %s to previous value",
+				func,NhlNxyLineThicknesses);
+			dnew->xydata.line_thicknesses =
+						dold->xydata.line_thicknesses;
+		}
+		else{
+			NhlFreeGenArray(dold->xydata.line_thicknesses);
+			status = True;
+		}
 	}
 
 	if(dnew->xydata.marker_colors != dold->xydata.marker_colors){
 		gen = dnew->xydata.marker_colors;
 		dnew->xydata.marker_colors = _NhlCopyGenArray(gen,True);
+		if(gen && !dnew->xydata.marker_colors){
+			NhlPError(NhlWARNING,ENOMEM,
+				"%s:Resetting %s to previous value",
+				func,NhlNxyMarkerColors);
+			dnew->xydata.marker_colors = dold->xydata.marker_colors;
+		}
+		else{
+			NhlFreeGenArray(dold->xydata.marker_colors);
+			status = True;
+		}
 	}
 
 	if(dnew->xydata.markers != dold->xydata.markers){
 		gen = dnew->xydata.markers;
 		dnew->xydata.markers = _NhlCopyGenArray(gen,True);
+		if(gen && !dnew->xydata.markers){
+			NhlPError(NhlWARNING,ENOMEM,
+				"%s:Resetting %s to previous value",
+				func,NhlNxyMarkers);
+			dnew->xydata.markers = dold->xydata.markers;
+		}
+		else{
+			NhlFreeGenArray(dold->xydata.markers);
+			status = True;
+		}
 	}
 
 	if(dnew->xydata.marker_sizes != dold->xydata.marker_sizes){
 		gen = dnew->xydata.marker_sizes;
 		dnew->xydata.marker_sizes = _NhlCopyGenArray(gen,True);
+		if(gen && !dnew->xydata.marker_sizes){
+			NhlPError(NhlWARNING,ENOMEM,
+				"%s:Resetting %s to previous value",
+				func,NhlNxyMarkerSizes);
+			dnew->xydata.marker_sizes = dold->xydata.marker_sizes;
+		}
+		else{
+			NhlFreeGenArray(dold->xydata.marker_sizes);
+			status = True;
+		}
 	}
 
 	if(dnew->xydata.marker_thicknesses != dold->xydata.marker_thicknesses){
 		gen = dnew->xydata.marker_thicknesses;
 		dnew->xydata.marker_thicknesses = _NhlCopyGenArray(gen,True);
+		if(gen && !dnew->xydata.marker_thicknesses){
+			NhlPError(NhlWARNING,ENOMEM,
+				"%s:Resetting %s to previous value",
+				func,NhlNxyMarkerThicknesses);
+			dnew->xydata.marker_thicknesses =
+						dold->xydata.marker_thicknesses;
+		}
+		else{
+			NhlFreeGenArray(dold->xydata.marker_thicknesses);
+			status = True;
+		}
 	}
 
-	return NhlVASetValues(new->base.parent->base.id,
-			_NhlNxyDSpecChanged,	True,
-			NULL);
+	if(status)
+		return NhlVASetValues(new->base.parent->base.id,
+				_NhlNxyDSpecChanged,	True,
+				NULL);
+	return NhlNOERROR;
 }
 
 /*
@@ -1409,6 +1538,10 @@ XyPlotGetValues
 		else if(args[i].quark == QYirreg){
 			ga = xyp->y_irregular_points;
 		}
+/*
+ * These resources have not been implimented yet...
+ */
+#ifdef	NOT
 		else if(args[i].quark == QXalt){
 			ga = xyp->x_alternate_coords;
 		}
@@ -1421,6 +1554,7 @@ XyPlotGetValues
 		else if(args[i].quark == QYorig){
 			ga = xyp->y_original_coords;
 		}
+#endif
 
 		if(ga != NULL){
 			*((NhlGenArray *)args[i].value.ptrval) =
@@ -2545,10 +2679,15 @@ NhlLayer inst;
 	NhlFreeGenArray(xp->x_irregular_points);
 	NhlFreeGenArray(xp->y_irregular_points);
 
+/*
+ * NOT implimented yet...
+ */
+#ifdef	NOT
 	NhlFreeGenArray(xp->x_original_coords);
 	NhlFreeGenArray(xp->x_alternate_coords);
 	NhlFreeGenArray(xp->y_alternate_coords);
 	NhlFreeGenArray(xp->y_original_coords);
+#endif
 
 	NhlFreeGenArray(xp->dash_indexes);
 	NhlFreeGenArray(xp->item_types);
@@ -2790,6 +2929,10 @@ CheckValues
 		ret = MIN(ret,NhlWARNING);
 	}
 
+/*
+ * NOT implimented yet...
+ */
+#ifdef	NOT
 	/*
 	 * Alternate Coord's are not yet implimented - so make sure x_alternate
 	 * and y_alternate are set to NhlNONE.
@@ -2810,6 +2953,7 @@ CheckValues
 						error_lead,NhlNxyYAlternate);
 		ret = MIN(ret,NhlWARNING);
 	}
+#endif
 
 	/*
 	 * Check Extents - left right top bottom
@@ -3073,6 +3217,10 @@ InternalizePointers
 	if(free_y_irreg)
 		NhlFreeGenArray(xold->xyplot.y_irregular_points);
 
+/*
+ * These resources have not been implimented yet...
+ */
+#ifdef	NOT
 	/*
 	 * take care of alt coords and orig coords
 	 */
@@ -3217,6 +3365,7 @@ InternalizePointers
 	}
 	if(free_y_orig_coord)
 		NhlFreeGenArray(xold->xyplot.y_original_coords);
+#endif	/* NOT */
 
 	return ret;
 }

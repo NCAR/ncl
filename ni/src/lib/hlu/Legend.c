@@ -1,5 +1,5 @@
 /*
- *      $Id: Legend.c,v 1.27 1995-03-03 20:14:50 dbrown Exp $
+ *      $Id: Legend.c,v 1.28 1995-03-15 11:48:32 boote Exp $
  */
 /************************************************************************
 *									*
@@ -341,7 +341,7 @@ static NhlResource resources[] = {
 {NhlNlgLabelFontThicknessF, NhlClgLabelFontThicknessF, NhlTFloat, 
 	 sizeof(float), NhlOffset(NhlLegendLayerRec,legend.label_thickness),
 	 NhlTString, _NhlUSET("1.0"),0,NULL},
-{NhlNlgLabelFontQuality, NhlClgLabelFontQuality, NhlTFQuality, 
+{NhlNlgLabelFontQuality, NhlClgLabelFontQuality, NhlTFontQuality, 
 	 sizeof(NhlFontQuality), 
 	 NhlOffset(NhlLegendLayerRec,legend.label_quality),
 	 NhlTImmediate, _NhlUSET((NhlPointer) NhlHIGH),0,NULL},
@@ -401,7 +401,7 @@ static NhlResource resources[] = {
 {NhlNlgTitleFontThicknessF, NhlClgTitleFontThicknessF, NhlTFloat, 
 	 sizeof(float), NhlOffset(NhlLegendLayerRec,legend.title_thickness),
 	 NhlTString, _NhlUSET("1.0"),0,NULL},
-{NhlNlgTitleFontQuality, NhlClgTitleFontQuality, NhlTFQuality, 
+{NhlNlgTitleFontQuality, NhlClgTitleFontQuality, NhlTFontQuality, 
 	 sizeof(NhlFontQuality), 
 	 NhlOffset(NhlLegendLayerRec,legend.title_quality),
 	 NhlTImmediate, _NhlUSET((NhlPointer) NhlHIGH),0,NULL},
@@ -465,27 +465,27 @@ static NhlResource resources[] = {
 /* Not implimented	*/
 {NhlNlgLineLabelFont,NhlClgLineLabelFont,NhlTFont, 
 	 sizeof(int),NhlOffset(NhlLegendLayerRec,legend.istring_font),
-	 NhlTImmediate,_NhlUSET((NhlPointer) 0),0,NULL},
+	 NhlTImmediate,_NhlUSET((NhlPointer) 0),_NhlRES_NOACCESS,NULL},
 {NhlNlgLineLabelFontAspectF,NhlClgLineLabelFontAspectF,NhlTFloat, 
 	 sizeof(float), 
 	 NhlOffset(NhlLegendLayerRec,legend.istring_aspect),
-	 NhlTString, _NhlUSET("1.3125"),0,NULL},
+	 NhlTString, _NhlUSET("1.3125"),_NhlRES_NOACCESS,NULL},
 {NhlNlgLineLabelFontThicknessF,NhlClgLineLabelFontThicknessF,
 	 NhlTFloat,sizeof(float),
 	 NhlOffset(NhlLegendLayerRec,legend.istring_thickness),
-	 NhlTString, _NhlUSET("1.0"),0,NULL},
-{NhlNlgLineLabelFontQuality,NhlClgLineLabelFontQuality,NhlTFQuality, 
+	 NhlTString, _NhlUSET("1.0"),_NhlRES_NOACCESS,NULL},
+{NhlNlgLineLabelFontQuality,NhlClgLineLabelFontQuality,NhlTFontQuality, 
 	 sizeof(NhlFontQuality), 
 	 NhlOffset(NhlLegendLayerRec,legend.istring_quality),
-	 NhlTImmediate,_NhlUSET((NhlPointer) NhlHIGH),0,NULL},
+	 NhlTImmediate,_NhlUSET((NhlPointer) NhlHIGH),_NhlRES_NOACCESS,NULL},
 {NhlNlgLineLabelConstantSpacingF,NhlClgLineLabelConstantSpacingF,
 	 NhlTFloat,sizeof(float), 
 	 NhlOffset(NhlLegendLayerRec,legend.istring_const_spacing),
-	 NhlTString,_NhlUSET("0.0"),0,NULL},
+	 NhlTString,_NhlUSET("0.0"),_NhlRES_NOACCESS,NULL},
 {NhlNlgLineLabelFuncCode,NhlClgLineLabelFuncCode,NhlTCharacter, 
 	 sizeof(char),
 	 NhlOffset(NhlLegendLayerRec,legend.istring_func_code),
-	 NhlTString, _NhlUSET(":"),0,NULL},
+	 NhlTString, _NhlUSET(":"),_NhlRES_NOACCESS,NULL},
 
 };
 

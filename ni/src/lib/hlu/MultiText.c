@@ -1,5 +1,5 @@
 /*
- *      $Id: MultiText.c,v 1.11 1995-01-11 00:46:40 boote Exp $
+ *      $Id: MultiText.c,v 1.12 1995-03-15 11:48:38 boote Exp $
  */
 /************************************************************************
 *									*
@@ -54,7 +54,7 @@ static NhlResource resources[] = {
 		sizeof(int),Oset(font),NhlTImmediate,(NhlPointer)0,0,NULL},
 	{NhlNtxJust, NhlCtxJust, NhlTInteger,
 		sizeof(int),Oset(just),NhlTImmediate,(NhlPointer)4,0,NULL},
-	{NhlNtxFontQuality, NhlCtxFontQuality, NhlTFQuality,
+	{NhlNtxFontQuality, NhlCtxFontQuality, NhlTFontQuality,
 		sizeof(NhlFontQuality),Oset(font_quality),NhlTImmediate,
 						(NhlPointer)NhlHIGH,0,NULL},
 	{NhlNtxFontHeightF, NhlCtxFontHeightF, NhlTFloat,

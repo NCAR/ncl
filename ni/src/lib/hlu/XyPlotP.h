@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlotP.h,v 1.8 1995-02-17 10:23:48 boote Exp $
+ *      $Id: XyPlotP.h,v 1.9 1995-03-15 11:49:01 boote Exp $
  */
 /************************************************************************
 *									*
@@ -112,6 +112,10 @@ typedef struct _NhlXyPlotLayerPart {
 	NhlBoolean		y_min_set;
 	float			y_min;
 
+/*
+ * These resources have not been implimented yet...
+ */
+#ifdef	NOT
 	NhlAlternatePlace	x_alternate;
 	NhlAlternatePlace	y_alternate;
 
@@ -119,6 +123,7 @@ typedef struct _NhlXyPlotLayerPart {
 	NhlGenArray		x_original_coords;
 	NhlGenArray		y_alternate_coords;
 	NhlGenArray		y_original_coords;
+#endif
 
 	float			dash_segment_length;
 	float			line_label_font_height;

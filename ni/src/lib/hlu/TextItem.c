@@ -1,5 +1,5 @@
 /*
- *      $Id: TextItem.c,v 1.22 1995-03-14 21:06:05 haley Exp $
+ *      $Id: TextItem.c,v 1.23 1995-03-15 11:48:39 boote Exp $
  */
 /************************************************************************
 *									*
@@ -32,9 +32,22 @@
 #define DEFSTRING "NOTHING"
 #define DEGTORAD 0.017453293
 
+/*
+ * Function:	ResUnset
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
 /*ARGSUSED*/
 static NhlErrorTypes
-XPSet
+ResUnset
 #if	NhlNeedProto
 (
 	NrmName		name,
@@ -50,185 +63,10 @@ XPSet
 	unsigned int	offset;
 #endif
 {
-	NhlTextItemLayer	text = (NhlTextItemLayer)base;
+	char *cl = (char *)base;
+	NhlBoolean *set = (NhlBoolean *)(cl + offset - sizeof(NhlBoolean));
 
-	text->text.pos_x_set = False;
-	text->text.pos_x = 0.0;
-
-	return NhlNOERROR;
-}
-/*ARGSUSED*/
-static NhlErrorTypes
-YPSet
-#if	NhlNeedProto
-(
-	NrmName		name,
-	NrmClass	cname,
-	NhlPointer	base,
-	unsigned int	offset
-)
-#else
-(name,cname,base,offset)
-	NrmName		name;
-	NrmClass	cname;
-	NhlPointer	base;
-	unsigned int	offset;
-#endif
-{
-	NhlTextItemLayer	text = (NhlTextItemLayer)base;
-
-	text->text.pos_y_set = False;
-	text->text.pos_y = 1.0;
-
-	return NhlNOERROR;
-}
-/*ARGSUSED*/
-static NhlErrorTypes
-AngleSet
-#if	NhlNeedProto
-(
-	NrmName		name,
-	NrmClass	cname,
-	NhlPointer	base,
-	unsigned int	offset
-)
-#else
-(name,cname,base,offset)
-	NrmName		name;
-	NrmClass	cname;
-	NhlPointer	base;
-	unsigned int	offset;
-#endif
-{
-	NhlTextItemLayer	text = (NhlTextItemLayer)base;
-
-	text->text.angle_set = False;
-	text->text.angle = 0.0;
-
-	return NhlNOERROR;
-}
-/*ARGSUSED*/
-static NhlErrorTypes
-FontSet
-#if	NhlNeedProto
-(
-	NrmName		name,
-	NrmClass	cname,
-	NhlPointer	base,
-	unsigned int	offset
-)
-#else
-(name,cname,base,offset)
-	NrmName		name;
-	NrmClass	cname;
-	NhlPointer	base;
-	unsigned int	offset;
-#endif
-{
-	NhlTextItemLayer	text = (NhlTextItemLayer)base;
-
-	text->text.font_set = False;
-	text->text.font = 0;
-
-	return NhlNOERROR;
-}
-/*ARGSUSED*/
-static NhlErrorTypes
-JustSet
-#if	NhlNeedProto
-(
-	NrmName		name,
-	NrmClass	cname,
-	NhlPointer	base,
-	unsigned int	offset
-)
-#else
-(name,cname,base,offset)
-	NrmName		name;
-	NrmClass	cname;
-	NhlPointer	base;
-	unsigned int	offset;
-#endif
-{
-	NhlTextItemLayer	text = (NhlTextItemLayer)base;
-
-	text->text.just_set = False;
-	text->text.just = NhlCENTERCENTER;
-
-	return NhlNOERROR;
-}
-/*ARGSUSED*/
-static NhlErrorTypes
-FontHSet
-#if	NhlNeedProto
-(
-	NrmName		name,
-	NrmClass	cname,
-	NhlPointer	base,
-	unsigned int	offset
-)
-#else
-(name,cname,base,offset)
-	NrmName		name;
-	NrmClass	cname;
-	NhlPointer	base;
-	unsigned int	offset;
-#endif
-{
-	NhlTextItemLayer	text = (NhlTextItemLayer)base;
-
-	text->text.font_height_set = False;
-	text->text.font_height = .05;
-
-	return NhlNOERROR;
-}
-/*ARGSUSED*/
-static NhlErrorTypes
-FontASPSet
-#if	NhlNeedProto
-(
-	NrmName		name,
-	NrmClass	cname,
-	NhlPointer	base,
-	unsigned int	offset
-)
-#else
-(name,cname,base,offset)
-	NrmName		name;
-	NrmClass	cname;
-	NhlPointer	base;
-	unsigned int	offset;
-#endif
-{
-	NhlTextItemLayer	text = (NhlTextItemLayer)base;
-
-	text->text.font_aspect_set = False;
-	text->text.font_aspect = 1.3125;	/* 21.0/16.0 see plotchar */
-
-	return NhlNOERROR;
-}
-/*ARGSUSED*/
-static NhlErrorTypes
-DirectionSet
-#if	NhlNeedProto
-(
-	NrmName		name,
-	NrmClass	cname,
-	NhlPointer	base,
-	unsigned int	offset
-)
-#else
-(name,cname,base,offset)
-	NrmName		name;
-	NrmClass	cname;
-	NhlPointer	base;
-	unsigned int	offset;
-#endif
-{
-	NhlTextItemLayer	text = (NhlTextItemLayer)base;
-
-	text->text.direction_set = False;
-	text->text.direction = NhlACROSS;
+	*set = False;
 
 	return NhlNOERROR;
 }
@@ -245,32 +83,29 @@ static NhlResource resources[] = {
 			NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{ NhlNtxPosXF, NhlCtxPosXF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlTextItemLayerRec,text.pos_x),
-			NhlTProcedure,_NhlUSET((NhlPointer)XPSet) ,0,NULL},
+			NhlTProcedure,_NhlUSET((NhlPointer)ResUnset) ,0,NULL},
 	{ "no.res", "No.res", NhlTBoolean, sizeof(NhlBoolean),
 		NhlOffset(NhlTextItemLayerRec,text.pos_y_set),
 			NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{ NhlNtxPosYF, NhlCtxPosYF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlTextItemLayerRec,text.pos_y),
-				NhlTProcedure,_NhlUSET((NhlPointer)YPSet),0,NULL },
+			NhlTProcedure,_NhlUSET((NhlPointer)ResUnset),0,NULL },
 	{ "no.res", "No.res", NhlTBoolean, sizeof(NhlBoolean),
 		NhlOffset(NhlTextItemLayerRec,text.angle_set),
 			NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{ NhlNtxAngleF, NhlCtxAngleF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlTextItemLayerRec,text.angle),
-		NhlTProcedure,_NhlUSET((NhlPointer)AngleSet),0,NULL },
-	{ "no.res", "No.res", NhlTBoolean, sizeof(NhlBoolean),
-		NhlOffset(NhlTextItemLayerRec,text.font_set),
-			NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
+		NhlTProcedure,_NhlUSET((NhlPointer)ResUnset),0,NULL },
 	{ NhlNtxFont, NhlCFont, NhlTFont, sizeof(NhlFont),
 		NhlOffset(NhlTextItemLayerRec, text.font),
-		NhlTProcedure,_NhlUSET((NhlPointer)FontSet),0,NULL },
+		NhlTImmediate,_NhlUSET(0),0,NULL },
 	{ "no.res", "No.res", NhlTBoolean, sizeof(NhlBoolean),
 		NhlOffset(NhlTextItemLayerRec,text.just_set),
 			NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{ NhlNtxJust, NhlCtxJust, NhlTInteger, sizeof(int),
 		NhlOffset(NhlTextItemLayerRec, text.just),
-		NhlTProcedure,_NhlUSET((NhlPointer)JustSet),0,NULL},
-	{ NhlNtxFontQuality, NhlCtxFontQuality, NhlTFQuality, 
+		NhlTProcedure,_NhlUSET((NhlPointer)ResUnset),0,NULL},
+	{ NhlNtxFontQuality, NhlCtxFontQuality, NhlTFontQuality, 
 		sizeof(NhlFontQuality),
 		NhlOffset(NhlTextItemLayerRec, text.font_quality),
 		NhlTImmediate,_NhlUSET((NhlPointer)NhlHIGH),0,NULL},
@@ -282,27 +117,33 @@ static NhlResource resources[] = {
 			NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{ NhlNtxFontHeightF, NhlCtxFontHeightF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlTextItemLayerRec, text.font_height),
-		NhlTProcedure,_NhlUSET((NhlPointer)FontHSet) ,0,NULL},
+		NhlTProcedure,_NhlUSET((NhlPointer)ResUnset) ,0,NULL},
 	{ "no.res", "No.res", NhlTBoolean, sizeof(NhlBoolean),
 		NhlOffset(NhlTextItemLayerRec,text.font_aspect_set),
 			NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{ NhlNtxFontAspectF, NhlCtxFontAspectF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlTextItemLayerRec, text.font_aspect),
-		NhlTProcedure, _NhlUSET((NhlPointer)FontASPSet),0,NULL },
+		NhlTProcedure, _NhlUSET((NhlPointer)ResUnset),0,NULL },
+	{ "no.res", "No.res", NhlTBoolean, sizeof(NhlBoolean),
+		NhlOffset(NhlTextItemLayerRec,text.font_thickness_set),
+			NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{ NhlNtxFontThicknessF, NhlCtxFontThicknessF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlTextItemLayerRec, text.font_thickness),
-		NhlTString,_NhlUSET("1.0") ,0,NULL},
+		NhlTProcedure,_NhlUSET((NhlPointer)ResUnset) ,0,NULL},
+	{ "no.res", "No.res", NhlTBoolean, sizeof(NhlBoolean),
+		NhlOffset(NhlTextItemLayerRec,text.constant_spacing_set),
+			NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{ NhlNtxConstantSpacingF, NhlCtxConstantSpacingF, NhlTFloat, 
 		sizeof(float),
 		NhlOffset(NhlTextItemLayerRec, text.constant_spacing),
-		NhlTString,_NhlUSET("0.0") ,0,NULL},
+		NhlTProcedure,_NhlUSET((NhlPointer)ResUnset) ,0,NULL},
 	{ "no.res", "No.res", NhlTBoolean, sizeof(NhlBoolean),
 		NhlOffset(NhlTextItemLayerRec,text.direction_set),
 			NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
 	{ NhlNtxDirection, NhlCtxDirection, NhlTTextDirection, 
 		sizeof(NhlTextDirection),
 		NhlOffset(NhlTextItemLayerRec, text.direction),
-		NhlTProcedure,_NhlUSET((NhlPointer)DirectionSet),0,NULL},
+		NhlTProcedure,_NhlUSET((NhlPointer)ResUnset),0,NULL},
 	{ NhlNtxFuncCode, NhlCtxFuncCode, NhlTCharacter, 
 		sizeof(char),
 		NhlOffset(NhlTextItemLayerRec, text.func_code),
@@ -511,7 +352,7 @@ static NhlErrorTypes    TextItemClassInitialize
 		{NhlACROSS,	"across"}
 	};
 
-	_NhlRegisterEnumType(NhlTFQuality,fontqlist,NhlNumber(fontqlist));
+	_NhlRegisterEnumType(NhlTFontQuality,fontqlist,NhlNumber(fontqlist));
 	_NhlRegisterEnumType(NhlTTextDirection,textdirlist,
 							NhlNumber(textdirlist));
 
@@ -611,6 +452,7 @@ static NhlErrorTypes    TextItemInitialize
 	int		num_args;
 #endif
 {
+	char			func[] = "TextItemInitialize";
 	NhlTextItemLayer	tnew = (NhlTextItemLayer) new;
 	char			*tmp;
 	NhlErrorTypes		ret=NhlNOERROR,ret1 = NhlNOERROR;
@@ -618,10 +460,20 @@ static NhlErrorTypes    TextItemInitialize
 	float			tmpvx0,tmpvx1,tmpvy0,tmpvy1;
 	NhlBoolean		do_view_trans = False;
 
+	if(!tnew->text.pos_x_set) tnew->text.pos_x = 0.0;
+	if(!tnew->text.pos_y_set) tnew->text.pos_y = 1.0;
+	if(!tnew->text.angle_set) tnew->text.angle = 0.0;
+	if(!tnew->text.just_set) tnew->text.just = NhlCENTERCENTER;
+	if(!tnew->text.font_height_set) tnew->text.font_height = .05;
+	if(!tnew->text.font_aspect_set) tnew->text.font_aspect = 1.3125;
+	if(!tnew->text.direction_set) tnew->text.direction = NhlACROSS;
+	if(!tnew->text.font_thickness_set) tnew->text.font_thickness = 1.0;
+	if(!tnew->text.constant_spacing_set) tnew->text.constant_spacing = 0.0;
+
 	if( tnew->text.perim_space < 0.0 ) {
 		tnew->text.perim_space = 0.5;
 		NhlPError(NhlWARNING,NhlEUNKNOWN,
-	     "TextItemInitialize: Perimeter space cannot be less than zero");
+			"%s: Perimeter space cannot be less than zero",func);
 		ret = NhlWARNING;
 	}
 
@@ -634,19 +486,25 @@ static NhlErrorTypes    TextItemInitialize
 		sprintf(tnew->text.dirstr,"%cA%c",tnew->text.func_code,
 							tnew->text.func_code);
 	}
-	if(strcmp(tnew->text.string,DEFSTRING)==0) {
-		tnew->text.string = (char*) 
-			NhlMalloc((unsigned)strlen(tnew->base.name) +1);
-		strcpy(tnew->text.string,tnew->base.name);
-	} else {
+
+	if(strcmp(tnew->text.string,DEFSTRING)==0)
+		tmp = (char*)tnew->base.name;
+	else
 		tmp = tnew->text.string;
-		tnew->text.string= (char*)NhlMalloc((unsigned)strlen(tmp)+1);
-		strcpy(tnew->text.string,tmp);
+	tnew->text.string = (char*)NhlMalloc((unsigned)strlen(tmp)+1);
+	if(!tnew->text.string){
+		NHLPERROR((NhlFATAL,ENOMEM,NULL));
+		return NhlFATAL;
 	}
+	strcpy(tnew->text.string,tmp);
 
 	tnew->text.real_string = (char*)NhlMalloc((unsigned)
 						strlen(tnew->text.string)+
 						strlen(tnew->text.dirstr)+1);
+	if(!tnew->text.real_string){
+		NHLPERROR((NhlFATAL,ENOMEM,NULL));
+		return NhlFATAL;
+	}
 	strcpy(tnew->text.real_string,tnew->text.dirstr);
 	strcat(tnew->text.real_string,tnew->text.string);
 
@@ -670,19 +528,27 @@ static NhlErrorTypes    TextItemInitialize
 	 * the plotchar calculations, then transform everything, then
 	 * redo the plotchar calculations.
 	 */
-	if((tnew->view.x_set || tnew->view.y_set ||
-			tnew->view.width_set || tnew->view.height_set)
-		&& !(tnew->text.pos_x_set || tnew->text.pos_y_set ||
-			tnew->text.angle_set || tnew->text.just_set ||
-			tnew->text.direction_set || tnew->text.font_set ||
-			tnew->text.font_height_set ||
-			tnew->text.font_aspect_set)){
+	if(tnew->view.x_set || tnew->view.y_set ||
+			tnew->view.width_set || tnew->view.height_set){
 
-		do_view_trans = True;
-		x = tnew->view.x;
-		y = tnew->view.y;
-		width = tnew->view.width;
-		height = tnew->view.height;
+		if(tnew->text.pos_x_set || tnew->text.pos_y_set ||
+			tnew->text.angle_set || tnew->text.just_set ||
+			tnew->text.direction_set ||
+			tnew->text.font_height_set ||
+			tnew->text.font_aspect_set ||
+			tnew->text.font_thickness_set ||
+			tnew->text.constant_spacing_set){
+
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
+			"%s: Cannot set x,y,width,and height when other text attributes have been specified also, proceding with other text attribute requests",func);
+		}
+		else{
+			do_view_trans = True;
+			x = tnew->view.x;
+			y = tnew->view.y;
+			width = tnew->view.width;
+			height = tnew->view.height;
+		}
 	}
 
 	ret1 = DoPcCalc(tnew);
@@ -753,15 +619,15 @@ static NhlErrorTypes TextItemSetValues
 		||(tnew->view.y != told->view.y)
 		||(tnew->view.height != told->view.height)){
 
-		if((tnew->text.string == told->text.string)
-		  &&(tnew->text.pos_x == told->text.pos_x)
+		if((tnew->text.pos_x == told->text.pos_x)
 		  &&(tnew->text.pos_y == told->text.pos_y)
 		  &&(tnew->text.angle == told->text.angle)
 		  &&(tnew->text.just == told->text.just)
 		  &&(tnew->text.direction == told->text.direction)
-		  &&(tnew->text.font == told->text.font)
 		  &&(!_NhlArgIsSet(args,num_args,NhlNtxFontHeightF))
-		  &&(tnew->text.font_aspect == told->text.font_aspect)){
+		  &&(tnew->text.font_aspect == told->text.font_aspect)
+		  &&(tnew->text.font_thickness == told->text.font_thickness)
+		  &&(tnew->text.constant_spacing==told->text.constant_spacing)){
 /*
 * Only case where x,y,width and height can be set. Need to compute new values
 * for font_height, font_thickness, pos_x and pos_y. All other text atts can

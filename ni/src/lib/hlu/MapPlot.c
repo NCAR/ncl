@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.26 1995-03-13 21:47:28 dbrown Exp $
+ *      $Id: MapPlot.c,v 1.27 1995-03-15 11:48:35 boote Exp $
  */
 /************************************************************************
 *									*
@@ -466,7 +466,7 @@ static NhlResource resources[] = {
 		 NhlTFloat,sizeof(float),Oset(labels.thickness),
 		 NhlTString, _NhlUSET("1.0"),0,NULL},
 	{NhlNmpLabelFontQuality,NhlCmpLabelFontQuality,
-		 NhlTFQuality, 
+		 NhlTFontQuality, 
 		 sizeof(NhlFontQuality),Oset(labels.quality),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NhlHIGH),0,NULL},
 	{NhlNmpLabelConstantSpacingF,NhlCmpLabelConstantSpacingF,

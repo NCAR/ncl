@@ -1,5 +1,5 @@
 /*
- *      $Id: LabelBar.c,v 1.29 1995-03-03 20:14:48 dbrown Exp $
+ *      $Id: LabelBar.c,v 1.30 1995-03-15 11:48:29 boote Exp $
  */
 /************************************************************************
 *									*
@@ -253,7 +253,7 @@ static NhlResource resources[] = {
 	 sizeof(float), 
 	 NhlOffset(NhlLabelBarLayerRec,labelbar.label_thickness),
 	 NhlTString,_NhlUSET("1.0"),0,NULL},
-{NhlNlbLabelFontQuality, NhlClbLabelFontQuality, NhlTFQuality, 
+{NhlNlbLabelFontQuality, NhlClbLabelFontQuality, NhlTFontQuality, 
 	 sizeof(NhlFontQuality), 
 	 NhlOffset(NhlLabelBarLayerRec,labelbar.label_quality),
 	 NhlTImmediate,_NhlUSET((NhlPointer) NhlHIGH),0,NULL},
@@ -311,7 +311,7 @@ static NhlResource resources[] = {
 	 sizeof(float), 
 	 NhlOffset(NhlLabelBarLayerRec,labelbar.title_thickness),
 	 NhlTString,_NhlUSET("1.0"),0,NULL},
-{NhlNlbTitleFontQuality, NhlClbTitleFontQuality, NhlTFQuality, 
+{NhlNlbTitleFontQuality, NhlClbTitleFontQuality, NhlTFontQuality, 
 	 sizeof(NhlFontQuality), 
 	 NhlOffset(NhlLabelBarLayerRec,labelbar.title_quality),
 	 NhlTImmediate,_NhlUSET((NhlPointer) NhlHIGH),0,NULL},

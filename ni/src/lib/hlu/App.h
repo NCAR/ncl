@@ -1,5 +1,5 @@
 /*
- *      $Id: App.h,v 1.3 1995-02-17 10:22:53 boote Exp $
+ *      $Id: App.h,v 1.4 1995-03-15 11:48:24 boote Exp $
  */
 /************************************************************************
 *									*
@@ -38,6 +38,12 @@ extern NhlLayerClass NhlappLayerClass;
 extern int NhlAppGetDefaultParentID(
 #if	NhlNeedProto
 	void
+#endif
+);
+
+extern NhlBoolean NhlIsApp(
+#if	NhlNeedProto
+	int	id
 #endif
 );
 

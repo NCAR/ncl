@@ -1,5 +1,5 @@
 /*
- *      $Id: TextItem.h,v 1.4 1995-03-03 02:56:31 boote Exp $
+ *      $Id: TextItem.h,v 1.5 1995-03-15 11:48:41 boote Exp $
  */
 /************************************************************************
 *									*
@@ -79,8 +79,8 @@
 typedef enum {NhlHIGH,NhlMEDIUM,NhlLOW} NhlFontQuality;
 typedef enum {NhlDOWN,NhlACROSS} NhlTextDirection;
 
-#define NhlTFQuality "FQuality"
-#define NhlTTextDirection "TextDirection"
+#define NhlTFontQuality		"FontQuality"
+#define NhlTTextDirection	"TextDirection"
 
 extern NhlLayerClass NhltextItemLayerClass;
 #endif  /* _NTextItem_h */

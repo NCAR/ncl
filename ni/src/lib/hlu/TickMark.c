@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.c,v 1.30 1995-03-14 21:06:09 haley Exp $
+ *      $Id: TickMark.c,v 1.31 1995-03-15 11:48:47 boote Exp $
  */
 /************************************************************************
 *									*
@@ -173,7 +173,7 @@ static NhlResource resources[] = {
 		NhlTString,_NhlUSET( "0.0" ),0,NULL},
 	{ NhlNtmXBSpacingType, NhlCtmXBSpacingType, NhlTInteger, sizeof(int),
 		NhlOffset(NhlTickMarkLayerRec,tick.x_b_spacing_type),
-		NhlTImmediate,_NhlUSET( (NhlPointer)0 ),0,NULL},
+		NhlTImmediate,_NhlUSET( (NhlPointer)0 ),_NhlRES_NOACCESS,NULL},
 	{ NhlNtmXBIrregularPoints, NhlCtmXBIrregularPoints,NhlTFloatGenArray,
 		sizeof(NhlPointer),
 		NhlOffset(NhlTickMarkLayerRec,tick.x_b_irregular_points),
@@ -268,7 +268,7 @@ static NhlResource resources[] = {
 		NhlTString,_NhlUSET( "0.0" ),0,NULL},
 	{ NhlNtmXTSpacingType, NhlCtmXTSpacingType, NhlTInteger, sizeof(int),
 		NhlOffset(NhlTickMarkLayerRec,tick.x_t_spacing_type),
-		NhlTImmediate,_NhlUSET( (NhlPointer)0 ),0,NULL},
+		NhlTImmediate,_NhlUSET( (NhlPointer)0 ),_NhlRES_NOACCESS,NULL},
 	{ NhlNtmXTIrregularPoints, NhlCtmXTIrregularPoints,NhlTFloatGenArray,
 		sizeof(NhlGenArray),
 		NhlOffset(NhlTickMarkLayerRec,tick.x_t_irregular_points),
@@ -466,7 +466,7 @@ static NhlResource resources[] = {
 		NhlTString,_NhlUSET( "0.0" ),0,NULL},
 	{ NhlNtmYLSpacingType, NhlCtmYLSpacingType, NhlTInteger, sizeof(int),
 		NhlOffset(NhlTickMarkLayerRec,tick.y_l_spacing_type),
-		NhlTImmediate,_NhlUSET( (NhlPointer)0 ),0,NULL},
+		NhlTImmediate,_NhlUSET( (NhlPointer)0 ),_NhlRES_NOACCESS,NULL},
 	{ NhlNtmYLIrregularPoints, NhlCtmYLIrregularPoints,NhlTFloatGenArray,
 		sizeof(NhlGenArray),
 		NhlOffset(NhlTickMarkLayerRec,tick.y_l_irregular_points),
@@ -561,7 +561,7 @@ static NhlResource resources[] = {
 		NhlTString,_NhlUSET( "0.0" ),0,NULL},
 	{ NhlNtmYRSpacingType, NhlCtmYRSpacingType, NhlTInteger, sizeof(int),
 		NhlOffset(NhlTickMarkLayerRec,tick.y_r_spacing_type),
-		NhlTImmediate,_NhlUSET( (NhlPointer)0 ),0,NULL},
+		NhlTImmediate,_NhlUSET( (NhlPointer)0 ),_NhlRES_NOACCESS,NULL},
 	{ NhlNtmYRIrregularPoints, NhlCtmYRIrregularPoints,NhlTFloatGenArray,
 		sizeof(NhlGenArray),
 		NhlOffset(NhlTickMarkLayerRec,tick.y_r_irregular_points),
