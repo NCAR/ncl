@@ -1,5 +1,5 @@
 /*
- *      $Id: VecAnno.c,v 1.7 1996-04-17 00:24:53 dbrown Exp $
+ *      $Id: VecAnno.c,v 1.8 1996-06-13 02:05:58 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -161,11 +161,6 @@ static NhlErrorTypes VecAnnoDraw(
 #endif
 );
 
-static NhlErrorTypes VecAnnoSegDraw(
-#if	NhlNeedProto
-	NhlLayer	l	/* layer to draw	*/
-#endif
-);
 
 static NhlErrorTypes VecAnnoDestroy(
 #if	NhlNeedProto
@@ -202,7 +197,7 @@ NhlVecAnnoClassRec NhlvecAnnoClassRec = {
 /* layer_draw			*/	VecAnnoDraw,
 
 /* layer_pre_draw		*/	NULL,
-/* layer_draw_segonly		*/	VecAnnoSegDraw,
+/* layer_draw_segonly		*/	NULL,
 /* layer_post_draw		*/	NULL,
 /* layer_clear			*/	NULL
 	},
@@ -722,7 +717,7 @@ VecAnnoSetValues
  * Function:	VecAnnoDraw
  *
  * Description:	This function is called when the VecAnno object should
- *		draw it's string's
+ *		draw its strings
  *
  * In Args:	
  *		NhlLayer	l	layer to draw
@@ -842,35 +837,6 @@ VecAnnoDraw
 	return(ret);
 }
 
-
-/*
- * Function:	VecAnnoSegDraw
- *
- * Description:	This function is called when the VecAnno object should
- *		draw it's string's
- *
- * In Args:	
- *		NhlLayer	l	layer to draw
- *
- * Out Args:	
- *
- * Scope:	static
- * Returns:	NhlErrorTypes
- * Side Effect:	
- */
-static NhlErrorTypes
-VecAnnoSegDraw
-#if	NhlNeedProto
-(
-	NhlLayer	l	/* layer to draw	*/
-)
-#else
-(l)
-	NhlLayer	l;	/* layer to draw	*/
-#endif
-{
-	return NhlNOERROR;
-}
 
 /*
  * Function:	VecAnnoDestroy

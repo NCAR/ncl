@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlot.c,v 1.12 1996-05-17 07:54:11 dbrown Exp $
+ *      $Id: StreamlinePlot.c,v 1.13 1996-06-13 02:05:56 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -538,22 +538,8 @@ static NhlErrorTypes StreamlinePlotPostDraw(
 static NhlErrorTypes stDraw(
 #if	NhlNeedProto
         NhlStreamlinePlotLayer	stl,
-	NhlDrawOrder	order
-#endif
-);
-
-static NhlErrorTypes stInitSegment(
-#if	NhlNeedProto
-	NhlStreamlinePlotLayer	stl,
-	NhlTransDat	**seg_dat,
+	NhlDrawOrder	order,
 	NhlString	entry_name
-#endif
-);
-
-static NhlErrorTypes stSegDraw(
-#if	NhlNeedProto
-	NhlStreamlinePlotLayer	stl,
-	NhlDrawOrder	order
 #endif
 );
 
@@ -2305,71 +2291,6 @@ static NhlErrorTypes StreamlinePlotGetBB
 }
 
 /*
- * Function:	stSegDraw
- *
- * Description:	
- *
- * In Args:	
- *
- * Out Args:	NONE
- *
- * Return Values: Error Conditions
- *
- * Side Effects: NONE
- */	
-
-static NhlErrorTypes stSegDraw
-#if	NhlNeedProto
-(
-	NhlStreamlinePlotLayer	stl,
-	NhlDrawOrder	order
-)
-#else
-(stl,order)
-        NhlStreamlinePlotLayer stl;
-	NhlDrawOrder	order;
-#endif
-{
-	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
-	char			*entry_name  = NULL;
-	char			*e_text;
-	NhlStreamlinePlotLayerPart	*stp = &(stl->streamlineplot);
-	NhlTransDat		*seg_dat;
-
-	switch (order) {
-	case NhlPREDRAW:
-		entry_name = "StreamlinePlotPreDraw";
-		seg_dat = stp->predraw_dat;
-		break;
-	case NhlDRAW:
-		entry_name = "StreamlinePlotDraw";
-		seg_dat = stp->draw_dat;
-		break;
-	case NhlPOSTDRAW:
-		entry_name = "StreamlinePlotPostDraw";
-		seg_dat = stp->postdraw_dat;
-		break;
-	default:
-		e_text = "%s: internal enumeration error";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return(NhlFATAL);
-	}
-
-	if (seg_dat == NULL)
-		return NhlNOERROR;
-
-	subret = _NhlActivateWorkstation(stl->base.wkptr);
-	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
-
-	subret = _NhlDrawSegment(seg_dat,_NhlWorkstationId(stl->base.wkptr));
-	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
-
-	subret = _NhlDeactivateWorkstation(stl->base.wkptr);
-	return MIN(subret,ret);
-}
-
-
-/*
  * Function:	stInitDraw
  *
  * Description:	
@@ -2427,101 +2348,6 @@ static NhlErrorTypes stInitDraw
 }
 
 /*
- * Function:	stInitSegment
- *
- * Description:	
- *
- * In Args:	
- *
- * Out Args:	NONE
- *
- * Return Values: Error Conditions
- *
- * Side Effects: NONE
- */	
-
-static NhlErrorTypes stInitSegment
-#if	NhlNeedProto
-(
-	NhlStreamlinePlotLayer	stl,
-	NhlTransDat	**seg_dat,
-	NhlString	entry_name
-)
-#else
-(stl,seg_dat,entry_name)
-        NhlStreamlinePlotLayer stl;
-	NhlTransDat	**seg_dat;
-	NhlString	entry_name;
-#endif
-{
-	char			*e_text;
-
-	if (*seg_dat != NULL)
-		_NhlDeleteViewSegment((NhlLayer) stl,*seg_dat);
-	if ((*seg_dat = _NhlNewViewSegment((NhlLayer) stl)) == NULL) {
-		e_text = "%s: error opening segment";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return NhlFATAL;
-	}
-	_NhlStartSegment(*seg_dat);
-	stl->streamlineplot.seg_open = True;
-
-	return NhlNOERROR;
-}
-/*
- * Function:	StreamlinePlotPreDraw
- *
- * Description:	
- *
- * In Args:	layer	StreamlinePlot instance
- *
- * Out Args:	NONE
- *
- * Return Values: Error Conditions
- *
- * Side Effects: NONE
- */	
-
-static NhlErrorTypes StreamlinePlotPreDraw
-#if	NhlNeedProto
-(NhlLayer layer)
-#else
-(layer)
-        NhlLayer layer;
-#endif
-{
-	NhlErrorTypes ret = NhlNOERROR, subret = NhlNOERROR;
-	NhlString	entry_name = "StreamlinePlotPreDraw";
-	NhlStreamlinePlotLayer		stl = (NhlStreamlinePlotLayer) layer;
-	NhlStreamlinePlotLayerPart	*stp = &stl->streamlineplot;
-
-	Stp = stp;
-	Stl = stl;
-
-	if (! stp->data_init || stp->display_zerof_no_data) {
-		Stp = NULL;
-		return NhlNOERROR;
-	}
-
-	if (stl->view.use_segments && ! stp->new_draw_req) {
-		ret = stSegDraw(stl,NhlPREDRAW);
-		Stp = NULL;
-		return ret;
-	}
-
-	subret = stInitDraw(stl,entry_name);
-	if ((ret = MIN(subret,ret)) < NhlWARNING) {
-		Stp = NULL;
-		return ret;
-	}
-
-	subret = stDraw(stl,NhlPREDRAW);
-
-	Stp = NULL;
-	return MIN(subret,ret);
-}
-
-/*
  * Function:	StreamlineAbortDraw
  *
  * Description:	cleans up if a fatal error occurs while drawing
@@ -2552,11 +2378,15 @@ static void StreamlineAbortDraw
 	Stp = NULL;
 	Stl = NULL;
 
-	if (stl->view.use_segments && stp->seg_open)
+	if (stl->view.use_segments && stp->seg_open) {
 		_NhlEndSegment();
+		stp->seg_open = False;
+	}
 
-	if (stp->wk_active)
+	if (stp->wk_active) {
 		_NhlDeactivateWorkstation(stl->base.wkptr);
+		stp->wk_active = False;
+	}
 
 	if (stp->do_low_level_log) 
 		NhlVASetValues(tfp->trans_obj->base.id,
@@ -2569,6 +2399,182 @@ static void StreamlineAbortDraw
 
 	e_text = "%s: draw error";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,"StreamlinePlotDraw");
+}
+
+/*
+ * Function:	stUpdateTrans
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	NONE
+ *
+ * Return Values: Error Conditions
+ *
+ * Side Effects: NONE
+ */	
+
+static NhlErrorTypes stUpdateTrans
+#if	NhlNeedProto
+(
+	NhlStreamlinePlotLayer	stl,
+	NhlString		entry_name
+)
+#else
+(stl,entry_name)
+        NhlStreamlinePlotLayer stl;
+	NhlString		entry_name;
+#endif
+{
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
+	char			*e_text;
+	NhlStreamlinePlotLayerPart	*stp = &(stl->streamlineplot);
+	NhlTransformLayerPart	*tfp = &(stl->trans);
+
+/*
+ * If the plot is an overlay member, use the overlay manager's trans object.
+ */
+        Over_Map = False;
+        Overlay_Trans_Obj = NULL;
+        Trans_Obj = tfp->trans_obj;
+	if (tfp->overlay_status == _tfCurrentOverlayMember && 
+	    tfp->overlay_trans_obj != NULL) {
+		stp->trans_obj = tfp->overlay_trans_obj;
+                Overlay_Trans_Obj = tfp->overlay_trans_obj;
+                if ((
+                  stp->trans_obj->base.layer_class)->base_class.class_name ==
+                    NhlmapTransObjClass->base_class.class_name) {
+                        Over_Map = True;	
+                }
+		if (stp->do_low_level_log) {
+			if (stp->x_log) {
+				subret = NhlVASetValues(
+						   tfp->trans_obj->base.id,
+						NhlNtrXAxisType,NhlLINEARAXIS,
+						NULL);
+			}
+			else {
+				subret = NhlVASetValues(
+						   tfp->trans_obj->base.id,
+						NhlNtrYAxisType,NhlLINEARAXIS,
+						NULL);
+			}
+			if ((ret = MIN(ret,subret)) < NhlWARNING) {
+				return(ret);
+			}
+		}
+	}
+	else {
+		stp->trans_obj = tfp->trans_obj;
+
+		if (stp->do_low_level_log) {
+			subret = NhlVASetValues(stp->trans_obj->base.id,
+						NhlNtrLowLevelLogOn,True,
+						NULL);
+			if ((ret = MIN(ret,subret)) < NhlWARNING) {
+				return(ret);
+			}
+		}
+		if (tfp->overlay_status == _tfNotInOverlay) {
+			subret = _NhlSetTrans(tfp->trans_obj, (NhlLayer)stl);
+			if ((ret = MIN(ret,subret)) < NhlWARNING) {
+				e_text = "%s: error setting transformation";
+				NhlPError(NhlFATAL,
+					  NhlEUNKNOWN,e_text, entry_name);
+				return(ret);
+			}
+		}
+	}
+
+	return ret;
+}
+
+/*
+ * Function:	StreamlinePlotPreDraw
+ *
+ * Description:	
+ *
+ * In Args:	layer	StreamlinePlot instance
+ *
+ * Out Args:	NONE
+ *
+ * Return Values: Error Conditions
+ *
+ * Side Effects: NONE
+ */	
+
+static NhlErrorTypes StreamlinePlotPreDraw
+#if	NhlNeedProto
+(NhlLayer layer)
+#else
+(layer)
+        NhlLayer layer;
+#endif
+{
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
+	NhlString		e_text,entry_name = "StreamlinePlotPreDraw";
+	NhlStreamlinePlotLayer		stl = (NhlStreamlinePlotLayer) layer;
+	NhlStreamlinePlotLayerPart	*stp = &stl->streamlineplot;
+
+	if (! stp->data_init || stp->display_zerof_no_data) {
+		return NhlNOERROR;
+	}
+
+	Stp = stp;
+	Stl = stl;
+
+	if (stl->view.use_segments && ! stp->new_draw_req) {
+		subret = stUpdateTrans(stl,entry_name);
+		if ((ret = MIN(subret,ret)) < NhlWARNING) {
+			StreamlineAbortDraw(stl);
+			return ret;
+		}
+		ret = _NhltfDrawSegment((NhlLayer)stl,stp->trans_obj,
+					stp->predraw_dat,entry_name);
+		Stp = NULL;
+		return ret;
+	}
+
+	subret = stInitDraw(stl,entry_name);
+	if ((ret = MIN(subret,ret)) < NhlWARNING) {
+		Stp = NULL;
+		return ret;
+	}
+
+	if (stp->streamline_order != NhlPREDRAW) {
+		Stp = NULL;
+		return NhlNOERROR;
+	}
+	subret = stUpdateTrans(stl,entry_name);
+	if ((ret = MIN(subret,ret)) < NhlWARNING) {
+		StreamlineAbortDraw(stl);
+		return ret;
+	}
+
+	subret = _NhlActivateWorkstation(stl->base.wkptr);
+	if ((ret = MIN(subret,ret)) < NhlWARNING) {
+		e_text = "%s: Error activating workstation";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		StreamlineAbortDraw(stl);
+		return NhlFATAL;
+	}
+	stp->wk_active = True;
+
+	if (stl->view.use_segments) {
+		subret = _NhltfInitSegment((NhlLayer)stl,stp->trans_obj,
+					    &stp->predraw_dat,entry_name);
+		if ((ret = MIN(subret,ret)) < NhlWARNING) {
+			StreamlineAbortDraw(stl);
+			return ret;
+		}
+		stp->seg_open = True;
+	}
+
+	subret = stDraw(stl,NhlPREDRAW,entry_name);
+
+	Stp = NULL;
+	return MIN(subret,ret);
 }
 
 /*
@@ -2593,27 +2599,55 @@ static NhlErrorTypes StreamlinePlotDraw
         NhlLayer layer;
 #endif
 {
-	NhlErrorTypes ret;
+	NhlErrorTypes ret = NhlNOERROR, subret = NhlNOERROR;
 	NhlStreamlinePlotLayer	stl = (NhlStreamlinePlotLayer) layer;
 	NhlStreamlinePlotLayerPart	*stp = &stl->streamlineplot;
+	NhlString		e_text,entry_name = "StreamlinePlotDraw";
 
-	Stp = stp;
-	Stl = stl;
 
 	if (! stp->data_init || stp->display_zerof_no_data) {
-		Stp = NULL;
+		return NhlNOERROR;
+	}
+	if (stp->streamline_order != NhlDRAW) {
 		return NhlNOERROR;
 	}
 
+	Stp = stp;
+	Stl = stl;
+	subret = stUpdateTrans(stl,entry_name);
+	if ((ret = MIN(subret,ret)) < NhlWARNING) {
+		StreamlineAbortDraw(stl);
+		return ret;
+	}
+
 	if (stl->view.use_segments && ! stp->new_draw_req) {
-		ret = stSegDraw(stl,NhlDRAW);
+		ret = _NhltfDrawSegment((NhlLayer)stl,stp->trans_obj,
+					stp->draw_dat,entry_name);
 		Stp = NULL;
 		return ret;
 	}
 
-	ret = stDraw((NhlStreamlinePlotLayer) layer,NhlDRAW);
+	subret = _NhlActivateWorkstation(stl->base.wkptr);
+	if ((ret = MIN(subret,ret)) < NhlWARNING) {
+		e_text = "%s: Error activating workstation";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		StreamlineAbortDraw(stl);
+		return NhlFATAL;
+	}
+	stp->wk_active = True;
+	if (stl->view.use_segments) {
+		subret = _NhltfInitSegment((NhlLayer)stl,stp->trans_obj,
+					    &stp->draw_dat,entry_name);
+		if ((ret = MIN(subret,ret)) < NhlWARNING) {
+			StreamlineAbortDraw(stl);
+			return ret;
+		}
+		stp->seg_open = True;
+	}
+
+	subret = stDraw((NhlStreamlinePlotLayer) layer,NhlDRAW,entry_name);
 	Stp = NULL;
-	return ret;
+	return MIN(subret,ret);
 }
 
 /*
@@ -2641,7 +2675,8 @@ static NhlErrorTypes StreamlinePlotPostDraw
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	NhlStreamlinePlotLayer		stl = (NhlStreamlinePlotLayer) layer;
 	NhlStreamlinePlotLayerPart	*stp = &stl->streamlineplot;
-	NhlTransformLayerPart	*tfp = &stl->trans;
+	NhlTransformLayerPart		*tfp = &stl->trans;
+	NhlString		e_text,entry_name = "StreamlinePostPlotDraw";
 
 	Stp = stp;
 	Stl = stl;
@@ -2658,13 +2693,45 @@ static NhlErrorTypes StreamlinePlotPostDraw
 		return ret;
 	}
 
+	subret = stUpdateTrans(stl,entry_name);
+	if ((ret = MIN(subret,ret)) < NhlWARNING) {
+		StreamlineAbortDraw(stl);
+		return ret;
+	}
 	if (stl->view.use_segments && ! stp->new_draw_req) {
-		ret = stSegDraw(stl,NhlPOSTDRAW);
+		ret = _NhltfDrawSegment((NhlLayer)stl,stp->trans_obj,
+					stp->postdraw_dat,entry_name);
 		Stp = NULL;
 		return ret;
 	}
 
-	ret = stDraw((NhlStreamlinePlotLayer) layer,NhlPOSTDRAW);
+	if (stp->streamline_order == NhlPOSTDRAW) {
+
+		subret = _NhlActivateWorkstation(stl->base.wkptr);
+		if ((ret = MIN(subret,ret)) < NhlWARNING) {
+			e_text = "%s: Error activating workstation";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			StreamlineAbortDraw(stl);
+			return NhlFATAL;
+		}
+		stp->wk_active = True;
+
+		if (stl->view.use_segments) {
+			subret = _NhltfInitSegment((NhlLayer)stl,
+					    stp->trans_obj,
+					    &stp->postdraw_dat,entry_name);
+			if ((ret = MIN(subret,ret)) < NhlWARNING) {
+				StreamlineAbortDraw(stl);
+				return ret;
+			}
+			stp->seg_open = True;
+		}
+
+		subret = stDraw((NhlStreamlinePlotLayer) layer,
+				NhlPOSTDRAW,entry_name);
+		ret = MIN(subret,ret);
+	}
+
 	stp->new_draw_req = False;
 	Stp = NULL;
 
@@ -2696,136 +2763,29 @@ static NhlErrorTypes stDraw
 #if	NhlNeedProto
 (
 	NhlStreamlinePlotLayer	stl,
-	NhlDrawOrder	order
+	NhlDrawOrder	order,
+	NhlString	entry_name
 )
 #else
-(stl,order)
+(stl,order,entry_name)
         NhlStreamlinePlotLayer stl;
 	NhlDrawOrder	order;
+	NhlString	entry_name;
 #endif
 {
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
-	char			*entry_name = NULL;
 	char			*e_text;
 	NhlStreamlinePlotLayerPart	*stp = &(stl->streamlineplot);
 	NhlTransformLayerPart	*tfp = &(stl->trans);
-	NhlBoolean		low_level_log = False;
+	NhlBoolean		low_level_log;
 	float			*u_data,*v_data,*p_data;
 	int			cix;
 
-	if (stp->streamline_order != order)
-		return NhlNOERROR;
-
-	switch (order) {
-	case NhlPREDRAW:
-		entry_name = "StreamlinePlotPreDraw";
-		break;
-	case NhlDRAW:
-		entry_name = "StreamlinePlotDraw";
-		break;
-	case NhlPOSTDRAW:
-		entry_name = "StreamlinePlotPostDraw";
-		break;
-	default:
-		e_text = "%s: internal enumeration error";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return(NhlFATAL);
-	}
+	low_level_log = stp->do_low_level_log &&
+		(tfp->overlay_status != _tfCurrentOverlayMember || 
+		 tfp->overlay_trans_obj == NULL);
 
 	c_strset();
-	subret = _NhlActivateWorkstation(stl->base.wkptr);
-	if ((ret = MIN(subret,ret)) < NhlWARNING) {
-		e_text = "%s: Error activating workstation";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		StreamlineAbortDraw(stl);
-		return NhlFATAL;
-	}
-	stp->wk_active = True;
-
-	if (stl->view.use_segments) {
-		switch (order) {
-		case NhlPREDRAW:
-			subret = stInitSegment(stl,&stp->predraw_dat,
-					       entry_name);
-			if ((ret = MIN(subret,ret)) < NhlWARNING) {
-				StreamlineAbortDraw(stl);
-				return ret;
-			}
-			break;
-		case NhlDRAW:
-			subret = stInitSegment(stl,&stp->draw_dat,
-					       entry_name);
-			if ((ret = MIN(subret,ret)) < NhlWARNING) {
-				StreamlineAbortDraw(stl);
-				return ret;
-			}
-			break;
-		case NhlPOSTDRAW:
-			subret = stInitSegment(stl,&stp->postdraw_dat,
-					       entry_name);
-			if ((ret = MIN(subret,ret)) < NhlWARNING) {
-				StreamlineAbortDraw(stl);
-				return ret;
-			}
-			break;
-		}
-	}
-	
-/*
- * If the plot is an overlay member, use the overlay manager's trans object.
- */
-        Over_Map = False;
-        Overlay_Trans_Obj = NULL;
-        Trans_Obj = tfp->trans_obj;
-	if (tfp->overlay_status == _tfCurrentOverlayMember && 
-	    tfp->overlay_trans_obj != NULL) {
-		stp->trans_obj = tfp->overlay_trans_obj;
-                Overlay_Trans_Obj = tfp->overlay_trans_obj;
-                if ((
-                  stp->trans_obj->base.layer_class)->base_class.class_name ==
-                    NhlmapTransObjClass->base_class.class_name) {
-                        Over_Map = True;	
-                }
-		if (stp->do_low_level_log) {
-			if (stp->x_log) {
-				subret = NhlVASetValues(
-						   tfp->trans_obj->base.id,
-						NhlNtrXAxisType,NhlLINEARAXIS,
-						NULL);
-			}
-			else {
-				subret = NhlVASetValues(
-						   tfp->trans_obj->base.id,
-						NhlNtrYAxisType,NhlLINEARAXIS,
-						NULL);
-			}
-			if ((ret = MIN(ret,subret)) < NhlWARNING) {
-				StreamlineAbortDraw(stl);
-				return(ret);
-			}
-		}
-	}
-	else {
-		stp->trans_obj = tfp->trans_obj;
-
-		if (stp->do_low_level_log) {
-			subret = NhlVASetValues(stp->trans_obj->base.id,
-						NhlNtrLowLevelLogOn,True,
-						NULL);
-			if ((ret = MIN(ret,subret)) < NhlWARNING) {
-				StreamlineAbortDraw(stl);
-				return(ret);
-			}
-			low_level_log = True;
-		}
-		subret = _NhlSetTrans(tfp->trans_obj, (NhlLayer)stl);
-		if ((ret = MIN(ret,subret)) < NhlWARNING) {
-			e_text = "%s: error setting transformation";
-			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
-			StreamlineAbortDraw(stl);
-			return(ret);
- 		}
-	}
 	
 	switch (stp->vfp->miss_mode) {
 	case vfBOTH:
@@ -2894,9 +2854,6 @@ static NhlErrorTypes stDraw
 
 	/* Draw the streamlines */
 
-#if 0
-	gset_clip_ind(GIND_CLIP);
-#endif
 	Need_Info = True;
 
 	u_data = &((float *) stp->vfp->u_arr->data)[stp->vfp->begin]; 
@@ -2946,11 +2903,9 @@ static NhlErrorTypes stDraw
  		}
 	}
 
-#if 0
-	gset_clip_ind(GIND_NO_CLIP);
-#endif
 	if (stl->view.use_segments) {
 		_NhlEndSegment();
+		stp->seg_open = False;
 	}
 
 	if (low_level_log) {
@@ -2962,6 +2917,7 @@ static NhlErrorTypes stDraw
 		}
 	}
         subret = _NhlDeactivateWorkstation(stl->base.wkptr);
+	stp->wk_active = False;
 	ret = MIN(subret,ret);
 
 	return MIN(subret,ret);

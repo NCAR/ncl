@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.51 1996-05-17 07:54:07 dbrown Exp $
+ *      $Id: MapPlot.c,v 1.52 1996-06-13 02:05:55 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -593,7 +593,8 @@ static NhlGenArray mpGenArraySubsetCopy(
 static NhlErrorTypes mpDraw(
 #if	NhlNeedProto
         NhlMapPlotLayer	mpl,
-	NhlDrawOrder	order
+	NhlDrawOrder	order,
+	NhlString	entry_name
 #endif
 );
 
@@ -2193,9 +2194,64 @@ static NhlErrorTypes MapPlotPreDraw
         NhlLayer layer;
 #endif
 {
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
+	NhlString		e_text,entry_name = "MapPlotPreDraw";
+	NhlMapPlotLayer		mpl = (NhlMapPlotLayer) layer;
+	NhlMapPlotLayerPart	*mpp = &mpl->mapplot;
+	NhlTransformLayerPart	*tfp = &(mpl->trans);
+
 	Global_Amap_Inited = False;
 	US_Amap_Inited = False;
-	return mpDraw((NhlMapPlotLayer) layer,NhlPREDRAW);
+
+	if (tfp->overlay_status == _tfNotInOverlay) {
+		subret = _NhlSetTrans((NhlLayer)tfp->trans_obj,(NhlLayer)mpl);
+		if ((ret = MIN(subret,ret)) < NhlWARNING) {
+			e_text = "%s: Error setting transformation";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			return NhlFATAL;
+		}
+	}
+
+	if (mpp->fill_order != NhlPREDRAW &&
+	    mpp->outline_order != NhlPREDRAW &&
+	    mpp->grid.order != NhlPREDRAW &&
+	    mpp->perim.order != NhlPREDRAW &&
+	    mpp->labels.order != NhlPREDRAW)
+		return NhlNOERROR;
+
+	Mpp = mpp;
+	Mpl = mpl;
+
+	if (mpl->view.use_segments && ! mpp->new_draw_req) {
+		ret = _NhltfDrawSegment((NhlLayer)mpl,tfp->trans_obj,
+					mpp->predraw_dat,entry_name);
+		Mpp = NULL;
+		return ret;
+	}
+
+	subret = _NhlActivateWorkstation(mpl->base.wkptr);
+	if ((ret = MIN(subret,ret)) < NhlWARNING) {
+		Mpp = NULL;
+		e_text = "%s: Error activating workstation";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
+	}
+
+	if (mpl->view.use_segments) {
+		subret = _NhltfInitSegment((NhlLayer)mpl,tfp->trans_obj,
+					    &mpp->predraw_dat,entry_name);
+		if ((ret = MIN(subret,ret)) < NhlWARNING) {
+			Mpp = NULL;
+			e_text = "%s: Error initializing segment";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			return NhlFATAL;
+		}
+	}
+
+	subret = mpDraw((NhlMapPlotLayer) layer,NhlPREDRAW,entry_name);
+
+	Mpp = NULL;
+	return MIN(subret,ret);
 }
 
 /*
@@ -2220,8 +2276,53 @@ static NhlErrorTypes MapPlotDraw
         NhlLayer layer;
 #endif
 {
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
+	NhlString		e_text,entry_name = "MapPlotDraw";
+	NhlMapPlotLayer		mpl = (NhlMapPlotLayer) layer;
+	NhlMapPlotLayerPart	*mpp = &mpl->mapplot;
+	NhlTransformLayerPart	*tfp = &(mpl->trans);
 
-	return mpDraw((NhlMapPlotLayer) layer,NhlDRAW);
+	if (mpp->fill_order != NhlDRAW &&
+	    mpp->outline_order != NhlDRAW &&
+	    mpp->grid.order != NhlDRAW &&
+	    mpp->perim.order != NhlDRAW &&
+	    mpp->labels.order != NhlDRAW)
+		return NhlNOERROR;
+
+	Mpp = mpp;
+	Mpl = mpl;
+
+	if (mpl->view.use_segments && ! mpp->new_draw_req) {
+		ret = _NhltfDrawSegment((NhlLayer)mpl,tfp->trans_obj,
+					mpp->draw_dat,entry_name);
+		Mpp = NULL;
+		return ret;
+	}
+
+	subret = _NhlActivateWorkstation(mpl->base.wkptr);
+	if ((ret = MIN(subret,ret)) < NhlWARNING) {
+		Mpp = NULL;
+		e_text = "%s: Error activating workstation";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
+	}
+
+	if (mpl->view.use_segments) {
+		subret = _NhltfInitSegment((NhlLayer)mpl,tfp->trans_obj,
+					    &mpp->draw_dat,entry_name);
+		if ((ret = MIN(subret,ret)) < NhlWARNING) {
+			Mpp = NULL;
+			e_text = "%s: Error initializing segment";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			return NhlFATAL;
+		}
+	}
+
+	subret = mpDraw((NhlMapPlotLayer) layer,NhlDRAW,entry_name);
+
+	Mpp = NULL;
+	return MIN(subret,ret);
+
 }
 
 /*
@@ -2246,12 +2347,57 @@ static NhlErrorTypes MapPlotPostDraw
         NhlLayer layer;
 #endif
 {
-	NhlErrorTypes ret;
-	NhlMapPlotLayerPart	*mpp = &(((NhlMapPlotLayer)layer)->mapplot);
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
+	NhlString		e_text,entry_name = "MapPlotPostDraw";
+	NhlMapPlotLayer		mpl = (NhlMapPlotLayer) layer;
+	NhlMapPlotLayerPart	*mpp = &mpl->mapplot;
+	NhlTransformLayerPart	*tfp = &(mpl->trans);
 
-	ret = mpDraw((NhlMapPlotLayer) layer,NhlPOSTDRAW);
+
+	if (mpp->fill_order != NhlPOSTDRAW &&
+	    mpp->outline_order != NhlPOSTDRAW &&
+	    mpp->grid.order != NhlPOSTDRAW &&
+	    mpp->perim.order != NhlPOSTDRAW &&
+	    mpp->labels.order != NhlPOSTDRAW) {
+		Mpp = NULL;
+		mpp->new_draw_req = False;
+		return NhlNOERROR;
+	}
+
+	Mpp = mpp;
+	Mpl = mpl;
+
+	if (mpl->view.use_segments && ! mpp->new_draw_req) {
+		ret = _NhltfDrawSegment((NhlLayer)mpl,tfp->trans_obj,
+					mpp->postdraw_dat,entry_name);
+		Mpp = NULL;
+		return ret;
+	}
+	subret = _NhlActivateWorkstation(mpl->base.wkptr);
+	if ((ret = MIN(subret,ret)) < NhlWARNING) {
+		Mpp = NULL;
+		e_text = "%s: Error activating workstation";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
+	}
+
+	if (mpl->view.use_segments) {
+		subret = _NhltfInitSegment((NhlLayer)mpl,tfp->trans_obj,
+					    &mpp->postdraw_dat,entry_name);
+		if ((ret = MIN(subret,ret)) < NhlWARNING) {
+			Mpp = NULL;
+			e_text = "%s: Error initializing segment";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			return NhlFATAL;
+		}
+	}
+
+	subret = mpDraw((NhlMapPlotLayer) layer,NhlPOSTDRAW,entry_name);
+
 	mpp->new_draw_req = False;
-	return ret;
+	Mpp = NULL;
+
+	return MIN(subret,ret);
 }
 
 /*
@@ -2272,110 +2418,29 @@ static NhlErrorTypes mpDraw
 #if	NhlNeedProto
 (
 	NhlMapPlotLayer	mp,
-	NhlDrawOrder	order
+	NhlDrawOrder	order,
+	NhlString	entry_name
 )
 #else
-(mp,order)
+(mp,order,entry_name)
         NhlMapPlotLayer mp;
 	NhlDrawOrder	order;
+	NhlString	entry_name;
 #endif
 {
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
-	char			*entry_name = "";
 	char			*e_text;
 	NhlMapPlotLayerPart	*mpp = &(mp->mapplot);
 	NhlTransformLayerPart	*tfp = &(mp->trans);
 	NhlBoolean		do_labels = False,
 				do_perim = False;
 	NhlTransDat		*seg_dat;
-
-	if (mpp->fill_order != order &&
-	    mpp->outline_order != order &&
-	    mpp->grid.order != order &&
-	    mpp->perim.order != order &&
-	    mpp->labels.order != order)
-		return NhlNOERROR;
-/* 
- * set the static MapPlot layer part pointer for the benefit of the
- * mapusr_ function. Then set the correct entry name.
- */
-	Mpp = mpp;
-	Mpl = mp;
-
-	switch (order) {
-	case NhlPREDRAW:
-		entry_name = "MapPlotPreDraw";
-		seg_dat = mpp->predraw_dat;
-		break;
-	case NhlDRAW:
-		entry_name = "MapPlotDraw";
-		seg_dat = mpp->draw_dat;
-		break;
-	case NhlPOSTDRAW:
-		entry_name = "MapPlotPostDraw";
-		seg_dat = mpp->postdraw_dat;
-		break;
-	default:
-		e_text = "%s: internal enumeration error";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
-		Mpp = NULL;
-		return(NhlFATAL);
-	}
-
-	if (mp->view.use_segments && ! mpp->new_draw_req) {
-                subret = _NhlActivateWorkstation(mp->base.wkptr);
-		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
-                subret = _NhlDrawSegment(seg_dat,
-				_NhlWorkstationId(mp->base.wkptr));
-		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
-                subret = _NhlDeactivateWorkstation(mp->base.wkptr);
-		Mpp = NULL;
-		return MIN(subret,ret);
-	}
-
-	subret = _NhlActivateWorkstation(mp->base.wkptr);
-
-	if (mp->view.use_segments) {
-		if (seg_dat != NULL)
-			_NhlDeleteViewSegment((NhlLayer)mp,seg_dat);
-		if ((seg_dat = _NhlNewViewSegment((NhlLayer)mp)) == NULL) {
-			e_text = "%s: error opening segment";
-			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
-			return(ret);
-		}
-		_NhlStartSegment(seg_dat);
-		switch (order) {
-		case NhlPREDRAW:
-			mpp->predraw_dat = seg_dat;
-			break;
-		case NhlDRAW:
-			mpp->draw_dat = seg_dat;
-			break;
-		case NhlPOSTDRAW:
-			mpp->postdraw_dat = seg_dat;
-			break;
-		}
-	}
-
-	if ((ret = MIN(subret,ret)) < NhlWARNING) {
-		Mpp = NULL;
-		e_text = "%s: Error activating workstation";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return NhlFATAL;
-	}
+	float			mr,ml,mt,mb;
+	float			new_x[3],new_y[3];
 
 	NhlVASetValues(mp->base.wkptr->base.id,
 		_NhlNwkReset,	True,
 		NULL);
-
-	subret = _NhlSetTrans((NhlLayer)tfp->trans_obj,(NhlLayer)mp);
-
-	if ((ret = MIN(subret,ret)) < NhlWARNING) {
-		Mpp = NULL;
-		e_text = "%s: Error setting transformation";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return NhlFATAL;
-	}
 
 /* Do the fill first */
 
@@ -2435,11 +2500,9 @@ static NhlErrorTypes mpDraw
 	if (mp->view.use_segments) {
 		_NhlEndSegment();
 	}
-	Mpp = NULL;
 	subret = _NhlDeactivateWorkstation(mp->base.wkptr);
 
 	if ((ret = MIN(subret,ret)) < NhlWARNING) {
-
 		e_text = "%s: Error setting deactivating workstation";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return NhlFATAL;

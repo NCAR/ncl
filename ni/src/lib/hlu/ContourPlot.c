@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.39 1996-05-17 07:54:06 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.40 1996-06-13 02:05:53 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -975,22 +975,8 @@ static NhlErrorTypes ContourPlotPostDraw(
 static NhlErrorTypes cnDraw(
 #if	NhlNeedProto
         NhlContourPlotLayer	cnl,
-	NhlDrawOrder	order
-#endif
-);
-
-static NhlErrorTypes cnInitSegment(
-#if	NhlNeedProto
-	NhlContourPlotLayer	cnl,
-	NhlTransDat	**seg_dat,
-	NhlString	entry_name
-#endif
-);
-
-static NhlErrorTypes cnSegDraw(
-#if	NhlNeedProto
-	NhlContourPlotLayer	cnl,
-	NhlDrawOrder	order
+	NhlDrawOrder		order,
+	NhlString		entry_name		    
 #endif
 );
 
@@ -3151,71 +3137,6 @@ static NhlErrorTypes ContourPlotGetBB
 }
 
 /*
- * Function:	cnSegDraw
- *
- * Description:	
- *
- * In Args:	
- *
- * Out Args:	NONE
- *
- * Return Values: Error Conditions
- *
- * Side Effects: NONE
- */	
-
-static NhlErrorTypes cnSegDraw
-#if	NhlNeedProto
-(
-	NhlContourPlotLayer	cnl,
-	NhlDrawOrder	order
-)
-#else
-(cnl,order)
-        NhlContourPlotLayer cnl;
-	NhlDrawOrder	order;
-#endif
-{
-	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
-	char			*entry_name  = NULL;
-	char			*e_text;
-	NhlContourPlotLayerPart	*cnp = &(cnl->contourplot);
-	NhlTransDat		*seg_dat;
-
-	switch (order) {
-	case NhlPREDRAW:
-		entry_name = "ContourPlotPreDraw";
-		seg_dat = cnp->predraw_dat;
-		break;
-	case NhlDRAW:
-		entry_name = "ContourPlotDraw";
-		seg_dat = cnp->draw_dat;
-		break;
-	case NhlPOSTDRAW:
-		entry_name = "ContourPlotPostDraw";
-		seg_dat = cnp->postdraw_dat;
-		break;
-	default:
-		e_text = "%s: internal enumeration error";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return(NhlFATAL);
-	}
-
-	if (seg_dat == NULL)
-		return NhlNOERROR;
-
-	subret = _NhlActivateWorkstation(cnl->base.wkptr);
-	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
-
-	subret = _NhlDrawSegment(seg_dat,_NhlWorkstationId(cnl->base.wkptr));
-	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
-
-	subret = _NhlDeactivateWorkstation(cnl->base.wkptr);
-	return MIN(subret,ret);
-}
-
-
-/*
  * Function:	cnInitDraw
  *
  * Description:	
@@ -3488,7 +3409,7 @@ static NhlErrorTypes cnInitCellArray
 }
 
 /*
- * Function:	cnInitSegment
+ * Function:	cnUpdateTrans
  *
  * Description:	
  *
@@ -3501,86 +3422,72 @@ static NhlErrorTypes cnInitCellArray
  * Side Effects: NONE
  */	
 
-static NhlErrorTypes cnInitSegment
+static NhlErrorTypes cnUpdateTrans
 #if	NhlNeedProto
 (
 	NhlContourPlotLayer	cnl,
-	NhlTransDat	**seg_dat,
-	NhlString	entry_name
+	NhlString		entry_name
 )
 #else
-(cnl,seg_dat,entry_name)
+(cnl,entry_name)
         NhlContourPlotLayer cnl;
-	NhlTransDat	**seg_dat;
-	NhlString	entry_name;
+	NhlString		entry_name;
 #endif
 {
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	char			*e_text;
+	NhlContourPlotLayerPart	*cnp = &(cnl->contourplot);
+	NhlTransformLayerPart	*tfp = &(cnl->trans);
 
-	if (*seg_dat != NULL)
-		_NhlDeleteViewSegment((NhlLayer) cnl,*seg_dat);
-	if ((*seg_dat = _NhlNewViewSegment((NhlLayer) cnl)) == NULL) {
-		e_text = "%s: error opening segment";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return NhlFATAL;
-	}
-	_NhlStartSegment(*seg_dat);
-	cnl->contourplot.seg_open = True;
-
-	return NhlNOERROR;
-}
 /*
- * Function:	ContourPlotPreDraw
- *
- * Description:	
- *
- * In Args:	layer	ContourPlot instance
- *
- * Out Args:	NONE
- *
- * Return Values: Error Conditions
- *
- * Side Effects: NONE
- */	
+ * If the plot is an overlay member, use the overlay manager's trans object.
+ */
+	if (tfp->overlay_status == _tfCurrentOverlayMember && 
+	    tfp->overlay_trans_obj != NULL) {
+		cnp->trans_obj = tfp->overlay_trans_obj;
+		if (cnp->do_low_level_log) {
+			if (cnp->x_log) {
+				subret = NhlVASetValues(
+						   tfp->trans_obj->base.id,
+						NhlNtrXAxisType,NhlLINEARAXIS,
+						NULL);
+			}
+			else {
+				subret = NhlVASetValues(
+						   tfp->trans_obj->base.id,
+						NhlNtrYAxisType,NhlLINEARAXIS,
+						NULL);
+			}
+			if ((ret = MIN(ret,subret)) < NhlWARNING) {
+				return(ret);
+			}
+		}
+	}
+	else {
+		cnp->trans_obj = tfp->trans_obj;
 
-static NhlErrorTypes ContourPlotPreDraw
-#if	NhlNeedProto
-(NhlLayer layer)
-#else
-(layer)
-        NhlLayer layer;
-#endif
-{
-	NhlErrorTypes ret = NhlNOERROR, subret = NhlNOERROR;
-	NhlString	entry_name = "ContourPlotPreDraw";
-	NhlContourPlotLayer		cnl = (NhlContourPlotLayer) layer;
-	NhlContourPlotLayerPart	*cnp = &cnl->contourplot;
-
-	Cnp = cnp;
-	Cnl = cnl;
-
-	if (! cnp->data_init || cnp->display_constf_no_data) {
-		Cnp = NULL;
-		return NhlNOERROR;
+		if (cnp->do_low_level_log) {
+			subret = NhlVASetValues(cnp->trans_obj->base.id,
+						NhlNtrLowLevelLogOn,True,
+						NULL);
+			if ((ret = MIN(ret,subret)) < NhlWARNING) {
+				return(ret);
+			}
+		}
+		if (tfp->overlay_status == _tfNotInOverlay) {
+			subret = _NhlSetTrans(tfp->trans_obj, (NhlLayer)cnl);
+			if ((ret = MIN(ret,subret)) < NhlWARNING) {
+				e_text = "%s: error setting transformation";
+				NhlPError(NhlFATAL,
+					  NhlEUNKNOWN,e_text, entry_name);
+				return(ret);
+			}
+		}
 	}
 
-	if (cnl->view.use_segments && ! cnp->new_draw_req) {
-		ret = cnSegDraw(cnl,NhlPREDRAW);
-		Cnp = NULL;
-		return ret;
-	}
-
-	subret = cnInitDraw(cnl,entry_name);
-	if ((ret = MIN(subret,ret)) < NhlWARNING) {
-		Cnp = NULL;
-		return ret;
-	}
-
-	subret = cnDraw(cnl,NhlPREDRAW);
-
-	Cnp = NULL;
-	return MIN(subret,ret);
+	return ret;
 }
+
 
 /*
  * Function:	ContourAbortDraw
@@ -3630,11 +3537,15 @@ static void ContourAbortDraw
 		cnp->iws = NULL;
 	}
 
-	if (cnl->view.use_segments && cnp->seg_open)
+	if (cnl->view.use_segments && cnp->seg_open) {
 		_NhlEndSegment();
+		cnp->seg_open = False;
+	}
 
-	if (cnp->wk_active)
+	if (cnp->wk_active) {
 		_NhlDeactivateWorkstation(cnl->base.wkptr);
+		cnp->wk_active = False;
+	}
 
 	if (cnp->do_low_level_log) 
 		NhlVASetValues(tfp->trans_obj->base.id,
@@ -3642,6 +3553,94 @@ static void ContourAbortDraw
 
 	e_text = "%s: draw error";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,"ContourPlotDraw");
+}
+
+
+/*
+ * Function:	ContourPlotPreDraw
+ *
+ * Description:	
+ *
+ * In Args:	layer	ContourPlot instance
+ *
+ * Out Args:	NONE
+ *
+ * Return Values: Error Conditions
+ *
+ * Side Effects: NONE
+ */	
+
+static NhlErrorTypes ContourPlotPreDraw
+#if	NhlNeedProto
+(NhlLayer layer)
+#else
+(layer)
+        NhlLayer layer;
+#endif
+{
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
+	NhlString		e_text,entry_name = "ContourPlotPreDraw";
+	NhlContourPlotLayer	cnl = (NhlContourPlotLayer) layer;
+	NhlContourPlotLayerPart	*cnp = &cnl->contourplot;
+
+	if (! cnp->data_init || cnp->display_constf_no_data)
+		return NhlNOERROR;
+	
+	Cnp = cnp;
+	Cnl = cnl;
+	if (cnl->view.use_segments && ! cnp->new_draw_req) {
+		subret = cnUpdateTrans(cnl,entry_name);
+		if ((ret = MIN(subret,ret)) < NhlWARNING) {
+			ContourAbortDraw(cnl);
+			return ret;
+		}
+		ret = _NhltfDrawSegment((NhlLayer)cnl,cnp->trans_obj,
+					cnp->predraw_dat,entry_name);
+		Cnp = NULL;
+		return ret;
+	}
+
+	subret = cnInitDraw(cnl,entry_name);
+	if ((ret = MIN(subret,ret)) < NhlWARNING) {
+		Cnp = NULL;
+		return ret;
+	}
+
+	if (cnp->label_order != NhlPREDRAW &&
+	    cnp->line_order != NhlPREDRAW &&
+	    cnp->fill_order != NhlPREDRAW) {
+		Cnp = NULL;
+		return NhlNOERROR;
+	}
+	subret = cnUpdateTrans(cnl,entry_name);
+	if ((ret = MIN(subret,ret)) < NhlWARNING) {
+		ContourAbortDraw(cnl);
+		return ret;
+	}
+
+	subret = _NhlActivateWorkstation(cnl->base.wkptr);
+	if ((ret = MIN(subret,ret)) < NhlWARNING) {
+		e_text = "%s: Error activating workstation";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		ContourAbortDraw(cnl);
+		return NhlFATAL;
+	}
+	cnp->wk_active = True;
+
+	if (cnl->view.use_segments) {
+		subret = _NhltfInitSegment((NhlLayer)cnl,cnp->trans_obj,
+					    &cnp->predraw_dat,entry_name);
+		if ((ret = MIN(subret,ret)) < NhlWARNING) {
+			ContourAbortDraw(cnl);
+			return ret;
+		}
+		cnp->seg_open = True;
+	}
+
+	subret = cnDraw(cnl,NhlPREDRAW,entry_name);
+
+	Cnp = NULL;
+	return MIN(subret,ret);
 }
 
 /*
@@ -3666,27 +3665,57 @@ static NhlErrorTypes ContourPlotDraw
         NhlLayer layer;
 #endif
 {
-	NhlErrorTypes ret;
+	NhlErrorTypes ret = NhlNOERROR, subret = NhlNOERROR;
 	NhlContourPlotLayer	cnl = (NhlContourPlotLayer) layer;
 	NhlContourPlotLayerPart	*cnp = &cnl->contourplot;
-
-	Cnp = cnp;
-	Cnl = cnl;
+	NhlString	e_text,entry_name = "ContourPlotDraw";
 
 	if (! cnp->data_init || cnp->display_constf_no_data) {
 		Cnp = NULL;
 		return NhlNOERROR;
 	}
+	if (cnp->label_order != NhlDRAW &&
+	    cnp->line_order != NhlDRAW &&
+	    cnp->fill_order != NhlDRAW)
+		return NhlNOERROR;
+
+
+	Cnp = cnp;
+	Cnl = cnl;
+	subret = cnUpdateTrans(cnl,entry_name);
+	if ((ret = MIN(subret,ret)) < NhlWARNING) {
+		ContourAbortDraw(cnl);
+		return ret;
+	}
 
 	if (cnl->view.use_segments && ! cnp->new_draw_req) {
-		ret = cnSegDraw(cnl,NhlDRAW);
+		ret = _NhltfDrawSegment((NhlLayer)cnl,cnp->trans_obj,
+					cnp->draw_dat,entry_name);
 		Cnp = NULL;
 		return ret;
 	}
 
-	ret = cnDraw((NhlContourPlotLayer) layer,NhlDRAW);
+	subret = _NhlActivateWorkstation(cnl->base.wkptr);
+	if ((ret = MIN(subret,ret)) < NhlWARNING) {
+		e_text = "%s: Error activating workstation";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		ContourAbortDraw(cnl);
+		return NhlFATAL;
+	}
+	cnp->wk_active = True;
+	if (cnl->view.use_segments) {
+		subret = _NhltfInitSegment((NhlLayer)cnl,cnp->trans_obj,
+					    &cnp->draw_dat,entry_name);
+		if ((ret = MIN(subret,ret)) < NhlWARNING) {
+			ContourAbortDraw(cnl);
+			return ret;
+		}
+		cnp->seg_open = True;
+	}
+
+	subret = cnDraw((NhlContourPlotLayer) layer,NhlDRAW,entry_name);
 	Cnp = NULL;
-	return ret;
+	return MIN(subret,ret);
 }
 
 /*
@@ -3715,6 +3744,8 @@ static NhlErrorTypes ContourPlotPostDraw
 	NhlContourPlotLayer		cnl = (NhlContourPlotLayer) layer;
 	NhlContourPlotLayerPart	*cnp = &cnl->contourplot;
 	NhlTransformLayerPart	*tfp = &cnl->trans;
+	NhlString		e_text,entry_name = "ContourPostPlotDraw";
+
 
 	Cnp = cnp;
 	Cnl = cnl;
@@ -3731,13 +3762,46 @@ static NhlErrorTypes ContourPlotPostDraw
 		return ret;
 	}
 
+	subret = cnUpdateTrans(cnl,entry_name);
+	if ((ret = MIN(subret,ret)) < NhlWARNING) {
+		ContourAbortDraw(cnl);
+		return ret;
+	}
 	if (cnl->view.use_segments && ! cnp->new_draw_req) {
-		ret = cnSegDraw(cnl,NhlPOSTDRAW);
+		ret = _NhltfDrawSegment((NhlLayer)cnl,cnp->trans_obj,
+					cnp->postdraw_dat,entry_name);
 		Cnp = NULL;
 		return ret;
 	}
 
-	ret = cnDraw((NhlContourPlotLayer) layer,NhlPOSTDRAW);
+	if (cnp->label_order == NhlPOSTDRAW ||
+	    cnp->line_order == NhlPOSTDRAW ||
+	    cnp->fill_order == NhlPOSTDRAW) {
+
+		subret = _NhlActivateWorkstation(cnl->base.wkptr);
+		if ((ret = MIN(subret,ret)) < NhlWARNING) {
+			e_text = "%s: Error activating workstation";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			ContourAbortDraw(cnl);
+			return NhlFATAL;
+		}
+		cnp->wk_active = True;
+
+		if (cnl->view.use_segments) {
+			subret = _NhltfInitSegment((NhlLayer)cnl,
+					    cnp->trans_obj,
+					    &cnp->postdraw_dat,entry_name);
+			if ((ret = MIN(subret,ret)) < NhlWARNING) {
+				ContourAbortDraw(cnl);
+				return ret;
+			}
+			cnp->seg_open = True;
+		}
+
+		ret = cnDraw((NhlContourPlotLayer) layer,
+			     NhlPOSTDRAW,entry_name);
+	}
+
 	cnp->new_draw_req = False;
 	Cnp = NULL;
 
@@ -3856,130 +3920,29 @@ static NhlErrorTypes cnDraw
 #if	NhlNeedProto
 (
 	NhlContourPlotLayer	cnl,
-	NhlDrawOrder	order
+	NhlDrawOrder		order,
+	NhlString		entry_name
 )
 #else
-(cnl,order)
+(cnl,order,entry_name)
         NhlContourPlotLayer cnl;
 	NhlDrawOrder	order;
+	NhlString	entry_name;
 #endif
 {
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
-	char			*entry_name = NULL;
 	char			*e_text;
 	NhlContourPlotLayerPart	*cnp = &(cnl->contourplot);
 	NhlTransformLayerPart	*tfp = &(cnl->trans);
-	NhlBoolean		low_level_log = False;
+	NhlBoolean		low_level_log;
 
-	if (cnp->label_order != order &&
-	    cnp->line_order != order &&
-	    cnp->fill_order != order)
-		return NhlNOERROR;
-
-	switch (order) {
-	case NhlPREDRAW:
-		entry_name = "ContourPlotPreDraw";
-		break;
-	case NhlDRAW:
-		entry_name = "ContourPlotDraw";
-		break;
-	case NhlPOSTDRAW:
-		entry_name = "ContourPlotPostDraw";
-		break;
-	default:
-		e_text = "%s: internal enumeration error";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return(NhlFATAL);
-	}
-
+	low_level_log = cnp->do_low_level_log &&
+		(tfp->overlay_status != _tfCurrentOverlayMember || 
+		 tfp->overlay_trans_obj == NULL);
+	
 	c_cprset();
-	subret = _NhlActivateWorkstation(cnl->base.wkptr);
-	if ((ret = MIN(subret,ret)) < NhlWARNING) {
-		e_text = "%s: Error activating workstation";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		ContourAbortDraw(cnl);
-		return NhlFATAL;
-	}
-	cnp->wk_active = True;
 
 	SetCpParams(cnl,entry_name);
-
-	if (cnl->view.use_segments) {
-		switch (order) {
-		case NhlPREDRAW:
-			subret = cnInitSegment(cnl,&cnp->predraw_dat,
-					       entry_name);
-			if ((ret = MIN(subret,ret)) < NhlWARNING) {
-				ContourAbortDraw(cnl);
-				return ret;
-			}
-			break;
-		case NhlDRAW:
-			subret = cnInitSegment(cnl,&cnp->draw_dat,
-					       entry_name);
-			if ((ret = MIN(subret,ret)) < NhlWARNING) {
-				ContourAbortDraw(cnl);
-				return ret;
-			}
-			break;
-		case NhlPOSTDRAW:
-			subret = cnInitSegment(cnl,&cnp->postdraw_dat,
-					       entry_name);
-			if ((ret = MIN(subret,ret)) < NhlWARNING) {
-				ContourAbortDraw(cnl);
-				return ret;
-			}
-			break;
-		}
-	}
-	
-/*
- * If the plot is an overlay member, use the overlay manager's trans object.
- */
-	if (tfp->overlay_status == _tfCurrentOverlayMember && 
-	    tfp->overlay_trans_obj != NULL) {
-		cnp->trans_obj = tfp->overlay_trans_obj;
-		if (cnp->do_low_level_log) {
-			if (cnp->x_log) {
-				subret = NhlVASetValues(
-						   tfp->trans_obj->base.id,
-						NhlNtrXAxisType,NhlLINEARAXIS,
-						NULL);
-			}
-			else {
-				subret = NhlVASetValues(
-						   tfp->trans_obj->base.id,
-						NhlNtrYAxisType,NhlLINEARAXIS,
-						NULL);
-			}
-			if ((ret = MIN(ret,subret)) < NhlWARNING) {
-				ContourAbortDraw(cnl);
-				return(ret);
-			}
-		}
-	}
-	else {
-		cnp->trans_obj = tfp->trans_obj;
-
-		if (cnp->do_low_level_log) {
-			subret = NhlVASetValues(cnp->trans_obj->base.id,
-						NhlNtrLowLevelLogOn,True,
-						NULL);
-			if ((ret = MIN(ret,subret)) < NhlWARNING) {
-				ContourAbortDraw(cnl);
-				return(ret);
-			}
-			low_level_log = True;
-		}
-		subret = _NhlSetTrans(tfp->trans_obj, (NhlLayer)cnl);
-		if ((ret = MIN(ret,subret)) < NhlWARNING) {
-			e_text = "%s: error setting transformation";
-			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
-			ContourAbortDraw(cnl);
-			return(ret);
- 		}
-	}
-	
 	NhlVAGetValues(cnp->trans_obj->base.id, 
 		       NhlNtrOutOfRangeF, &cnp->out_of_range_val,
 		       NULL);
@@ -4148,8 +4111,9 @@ static NhlErrorTypes cnDraw
 		}
 	}
 
-	if (cnl->view.use_segments) {
+	if (cnl->view.use_segments && cnp->seg_open) {
 		_NhlEndSegment();
+		cnp->seg_open = False;
 	}
 
 	if (low_level_log) {
@@ -4161,6 +4125,7 @@ static NhlErrorTypes cnDraw
 		}
 	}
         subret = _NhlDeactivateWorkstation(cnl->base.wkptr);
+	cnp->wk_active = False;
 	ret = MIN(subret,ret);
 
 	return MIN(subret,ret);

@@ -1,5 +1,5 @@
 /*
- *      $Id: Transform.c,v 1.24 1996-05-03 03:30:56 dbrown Exp $
+ *      $Id: Transform.c,v 1.25 1996-06-13 02:05:57 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -31,6 +31,7 @@
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/TransformP.h>
 #include <ncarg/hlu/TransObjP.h>
+#include <ncarg/hlu/MapTransObjP.h>
 
 static NhlResource resources[] = {
 
@@ -1258,3 +1259,140 @@ void _NHLCALLF(nhl_fistransform,NHL_FISTRANSFORM)
 
 	return;
 }
+
+extern NhlErrorTypes _NhltfDrawSegment
+#if	NhlNeedProto
+(
+        NhlLayer	plot,
+	NhlLayer	trobj,
+        NhlTransDat	*transdat,    				       
+	NhlString	entry_name
+)
+#else
+(plot,trobj,transdat,entry_name)
+        NhlLayer	plot;
+	NhlLayer	trobj;
+        NhlTransDat	*transdat;    				       
+	NhlString	entry_name;
+
+#endif
+{
+	NhlErrorTypes	ret = NhlNOERROR, subret = NhlNOERROR;
+	NhlString	trobj_name;
+	float		mr,ml,mt,mb;
+	float		x[3],y[3];
+	NhlViewLayer	vl = (NhlViewLayer)plot;
+	NhlSegTransList	steptrans = vl->view.plot_segments_list;
+	NhlString	e_text;
+
+	if (transdat == NULL)
+		return NhlNOERROR;
+
+	trobj_name = (trobj->base.layer_class)->base_class.class_name;
+	if (trobj_name == NhlmapTransObjClass->base_class.class_name) {
+		subret = NhlVAGetValues(trobj->base.id,
+					NhlNmpLeftMapPosF,&ml,
+					NhlNmpRightMapPosF,&mr,
+					NhlNmpBottomMapPosF,&mb,
+					NhlNmpTopMapPosF,&mt,NULL);
+		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
+		x[0] = ml;
+		y[0] = mb;
+		x[1] = ml;
+		y[1] = mt;
+		x[2] = mr;
+		y[2] = mt;
+	}
+	else {
+		x[0] = vl->view.fl;
+		y[0] = vl->view.fb;
+		x[1] = vl->view.fl;
+		y[1] = vl->view.ft;
+		x[2] = vl->view.fr;
+		y[2] = vl->view.ft;
+	}
+	while(steptrans != NULL) {
+		if (steptrans->seg_trans_dat == transdat)
+			break;
+		steptrans = steptrans->next;
+	}
+	if (steptrans == NULL) {
+		e_text = "%s: internal error locating segment";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
+	}
+
+	_NhlComputeSegTrans(steptrans->seg_trans_dat,steptrans->seg_trans,x,y);
+	_NhlSetSegTrans( steptrans->seg_trans_dat,steptrans->seg_trans);
+
+	subret = _NhlActivateWorkstation(plot->base.wkptr);
+	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
+
+	subret = _NhlDrawSegment(transdat,_NhlWorkstationId(plot->base.wkptr));
+	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
+
+	subret = _NhlDeactivateWorkstation(plot->base.wkptr);
+
+	return MIN(subret,ret);
+}
+
+extern NhlErrorTypes _NhltfInitSegment
+#if	NhlNeedProto
+(
+        NhlLayer	plot,
+	NhlLayer	trobj,
+	NhlTransDat	**transdat,					      
+	NhlString	entry_name
+)
+#else
+(plot,trobj,transdat,entry_name)
+        NhlLayer	plot;
+	NhlLayer	trobj;
+        NhlTransDat	**transdat;    				       
+	NhlString	entry_name;
+#endif
+{
+	NhlErrorTypes	ret = NhlNOERROR, subret = NhlNOERROR;
+	char		*e_text;
+	NhlString	trobj_name;
+	float		mr,ml,mt,mb;
+	float		x[3],y[3];
+	NhlViewLayer	vl = (NhlViewLayer)plot;
+
+	if (*transdat != NULL)
+		_NhlDeleteViewSegment(plot,*transdat);
+	if ((*transdat = _NhlNewViewSegment(plot)) == NULL) {
+		e_text = "%s: error opening segment";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
+	}
+
+	trobj_name = (trobj->base.layer_class)->base_class.class_name;
+	if (trobj_name == NhlmapTransObjClass->base_class.class_name) {
+		subret = NhlVAGetValues(trobj->base.id,
+					NhlNmpLeftMapPosF,&ml,
+					NhlNmpRightMapPosF,&mr,
+					NhlNmpBottomMapPosF,&mb,
+					NhlNmpTopMapPosF,&mt,NULL);
+		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
+		x[0] = ml;
+		y[0] = mb;
+		x[1] = ml;
+		y[1] = mt;
+		x[2] = mr;
+		y[2] = mt;
+	}
+	else {
+		x[0] = vl->view.fl;
+		y[0] = vl->view.fb;
+		x[1] = vl->view.fl;
+		y[1] = vl->view.ft;
+		x[2] = vl->view.fr;
+		y[2] = vl->view.ft;
+	}
+	_NhlResetSegTransDat(*transdat,x,y);
+	_NhlStartSegment(*transdat);
+	return ret;
+}
+
+

@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlotP.h,v 1.12 1995-04-07 10:44:36 boote Exp $
+ *      $Id: XyPlotP.h,v 1.13 1996-06-13 02:06:02 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -118,6 +118,7 @@ typedef struct _NhlXyPlotLayerPart {
 	float			y_max;
 	NhlBoolean		y_min_set;
 	float			y_min;
+	NhlDrawOrder		curve_order;
 
 /*
  * These resources have not been implimented yet...
@@ -135,6 +136,7 @@ typedef struct _NhlXyPlotLayerPart {
 	NhlAnnotationDisplayMode	display_legend;
 	NhlAnnotationDisplayMode	display_titles;
 	NhlAnnotationDisplayMode	display_tickmarks;
+	NhlBoolean			update_req;	
 
 	/* Private fields */
 	NhlLayer	thetrans;
@@ -188,6 +190,10 @@ typedef struct _NhlXyPlotLayerPart {
 	NhlGenArray	ymissing;
 
 	NhlBoolean	dspec_changed;
+	NhlBoolean	new_draw_req;
+	NhlTransDat	*predraw_dat;
+        NhlTransDat	*draw_dat;
+        NhlTransDat	*postdraw_dat;
 }NhlXyPlotLayerPart;
 
 typedef struct _NhlXyDataSpecLayerRec{

@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.58 1996-05-10 03:22:32 dbrown Exp $
+ *      $Id: XyPlot.c,v 1.59 1996-06-13 02:06:01 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -261,6 +261,9 @@ static NhlResource resources[] = {
 	{NhlNxyComputeYMin,NhlCxyComputeExtent,NhlTBoolean,sizeof(NhlBoolean),
 		Oset(compute_y_min),NhlTProcedure,(NhlPointer)ResUnset,
 		_NhlRES_DEFAULT,NULL},
+ 	{NhlNxyCurveDrawOrder,NhlCxyCurveDrawOrder,NhlTDrawOrder,
+		 sizeof(NhlDrawOrder),Oset(curve_order),
+		 NhlTImmediate,_NhlUSET((NhlPointer)NhlDRAW),0,NULL},
 
 	{"no.res","no.res",NhlTBoolean,sizeof(NhlBoolean),Oset(x_min_set),
 		NhlTImmediate,(NhlPointer)True,_NhlRES_NOACCESS,NULL},
@@ -317,8 +320,13 @@ static NhlResource resources[] = {
 		NhlTAnnotationDisplayMode,sizeof(NhlAnnotationDisplayMode),
 		Oset(display_legend),NhlTImmediate,
 		_NhlUSET((NhlPointer)NhlNEVER),_NhlRES_DEFAULT,NULL},
-	{_NhlNxyDSpecChanged,_NhlCxyDSpecChanged,NhlTBoolean,sizeof(NhlBoolean),
-		Oset(dspec_changed),NhlTImmediate,NULL,_NhlRES_SONLY,NULL},
+	{_NhlNxyDSpecChanged,_NhlCxyDSpecChanged,NhlTBoolean,
+		 sizeof(NhlBoolean),
+		 Oset(dspec_changed),NhlTImmediate,NULL,_NhlRES_SONLY,NULL},
+	{NhlNpmUpdateReq,NhlCpmUpdateReq,NhlTInteger,sizeof(int),
+		  Oset(update_req),
+		  NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL}
+
 };
 #undef Oset
 
@@ -411,11 +419,25 @@ static NhlErrorTypes XyPlotDestroy(
 #endif
 );
 
+
+static NhlErrorTypes XyPlotPreDraw(
+#if	NhlNeedProto
+        NhlLayer	/* layer */
+#endif
+);
+
 static NhlErrorTypes XyPlotDraw(
 #if	NhlNeedProto
         NhlLayer   /* layer */
 #endif
 );
+
+static NhlErrorTypes XyPlotPostDraw(
+#if	NhlNeedProto
+        NhlLayer	/* layer */
+#endif
+);
+
 
 /* 
 * View Methods
@@ -509,7 +531,10 @@ static NhlErrorTypes SetUpLegend(
 
 static NhlErrorTypes DrawCurves(
 #if	NhlNeedProto
-	NhlXyPlotLayer	xlayer
+	NhlXyPlotLayer	xlayer,
+	NhlLayer	thetrans,
+	NhlDrawOrder	order,
+	NhlString	func
 #endif
 );
 
@@ -575,9 +600,9 @@ NhlXyPlotClassRec NhlxyPlotClassRec = {
 
 /* layer_draw                   */      XyPlotDraw,
 
-/* layer_pre_draw               */      NULL,
+/* layer_pre_draw               */      XyPlotPreDraw,
 /* layer_draw_segonly           */      NULL,
-/* layer_post_draw              */      NULL,
+/* layer_post_draw              */      XyPlotPostDraw,
 /* layer_clear                  */      NULL
         },
 	/* view_class */
@@ -935,8 +960,10 @@ XyResetExtents
 
 	nargs = 0;
 	NhlSetSArg(&sargs[nargs++],NhlNpmUpdateReq,True);
+	newxy->update_req = False;
 	return _NhlManageOverlay(&newxy->overlay,(NhlLayer)xnew,
 			(NhlLayer)xnew,_NhlUPDATEDATA,sargs,nargs,func);
+
 }
 
 /*
@@ -986,6 +1013,11 @@ XyPlotChanges
 			return(ret2);
 		ret1 = MIN(ret1,ret2);
 
+		if(xnew->xyplot.update_req){
+			NhlSetSArg(&sargs[nsargs++],NhlNpmUpdateReq,True);
+			xnew->xyplot.update_req = False;
+		}
+
 		ret2 = _NhlManageOverlay(&xnew->xyplot.overlay,(NhlLayer)xnew,
 			(NhlLayer)xold,(calledfrom == _NhlCREATE),sargs,nsargs,
 			"XyPlotChanges");
@@ -1020,9 +1052,10 @@ XyPlotChanges
 	ret1 = MIN(ret1,ret2);
 
 
-	if(xnew->xyplot.check_ranges){
+	if(xnew->xyplot.check_ranges || xnew->xyplot.update_req){
 		NhlSetSArg(&sargs[nsargs++],NhlNpmUpdateReq,True);
 		xnew->xyplot.check_ranges = False;
+		xnew->xyplot.update_req = False;
 	}
 
 	ret2 = SetUpTitles(xnew,xold,calledfrom,sargs,&nsargs);
@@ -1180,6 +1213,7 @@ XyPlotInitialize
 	NhlXyPlotLayerPart	*xp = &xnew->xyplot;
 	NhlTransformLayerPart	*tfp = &xnew->trans;
 
+	xp->new_draw_req = True;
 	if(!xp->comp_x_min_set) xp->compute_x_min = !xp->x_min_set;
 	if(!xp->comp_x_max_set) xp->compute_x_max = !xp->x_max_set;
 	if(!xp->comp_y_min_set) xp->compute_y_min = !xp->y_min_set;
@@ -1195,6 +1229,9 @@ XyPlotInitialize
 	xp->data_ranges_set = False;
 	xp->check_ranges = True;
 	xp->overlay = NULL;
+	xp->predraw_dat = NULL;
+	xp->draw_dat = NULL;
+	xp->postdraw_dat = NULL;
 
 	xp->vp_average = (xnew->view.width + xnew->view.height) / 2.0;
 
@@ -1487,6 +1524,39 @@ XyDataSetValues
 				NULL);
 }
 
+
+/*ARGSUSED*/
+static NhlBoolean NewDrawArgs
+#if	NhlNeedProto
+(
+	_NhlArgList	args,
+	int		num_args
+)
+#else
+(args,num_args)
+	_NhlArgList	args;
+	int		num_args;
+#endif
+{
+	NhlString pass_args[] = {
+		NhlNvpXF,
+		NhlNvpYF,
+		NhlNvpWidthF,
+		NhlNvpHeightF,
+		NhlNpmLegendDisplayMode,
+		NhlNpmTickMarkDisplayMode,
+		NhlNpmTitleDisplayMode
+	};
+	int i,pass_count = 0;
+
+	for (i = 0; i < NhlNumber(pass_args); i++)
+		if (_NhlArgIsSet(args,num_args,pass_args[i]))
+			pass_count++;
+	if (num_args > pass_count) 
+		return True;
+	return False;
+}
+
 /*
  * Function:	XyPlotSetValues
  *
@@ -1526,6 +1596,14 @@ XyPlotSetValues
 {
 	NhlXyPlotLayer	xn = (NhlXyPlotLayer)new;
 	NhlXyPlotLayer	xo = (NhlXyPlotLayer)old;
+	
+	if (xn->view.use_segments != xo->view.use_segments) {
+		xn->xyplot.new_draw_req = True;
+	}
+	if (xn->view.use_segments) {
+		if (NewDrawArgs(args,num_args))
+			xn->xyplot.new_draw_req = True;
+	}
 
 	if((xn->view.width != xo->view.width) ||
 		(xn->view.height != xo->view.height))
@@ -2310,20 +2388,24 @@ static NhlErrorTypes
 DrawCurves
 #if	NhlNeedProto
 (
-	NhlXyPlotLayer	xlayer
+	NhlXyPlotLayer	xlayer,
+	NhlLayer	thetrans,
+	NhlDrawOrder	order,
+	NhlString	func
 )
 #else
-(xlayer)
+(xlayer,thetrans,order,func)
 	NhlXyPlotLayer	xlayer;
+	NhlLayer	thetrans;
+	NhlDrawOrder	order;
+	NhlString	func;
 #endif
 {
-	char			func[] = "DrawCurves";
 	int			i,j;
 	NhlErrorTypes		ret = NhlNOERROR;
 	NhlErrorTypes		ret1 = NhlNOERROR;
 	int			upflag = 1;
 	NhlTransformLayerPart	*tfp = &xlayer->trans;
-	NhlLayer		thetrans = NULL;
 	NhlXyPlotLayerPart	*xlp = &xlayer->xyplot;
 	int			*dash_indexes = xlp->dash_indexes->data;
 	int			*item_types = xlp->item_types->data;
@@ -2358,29 +2440,6 @@ DrawCurves
 	}
 	if(size <= 0)
 		return NhlNOERROR;
-
-	ret = _NhlActivateWorkstation((NhlLayer)xlayer->base.wkptr);	
-	if(ret < NhlWARNING) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,
-			"%s:Unable to activate workstation",func);
-		return(NhlFATAL);
-	}
-	ret1 = MIN(ret,ret1);
-
-	if(tfp->overlay_status == _tfCurrentOverlayMember &&
-		tfp->overlay_trans_obj != NULL){
-		thetrans = tfp->overlay_trans_obj;
-	}
-	else{
-		thetrans = xlp->thetrans;
-		ret = _NhlSetTrans(thetrans,(NhlLayer)xlayer);
-		if(ret < NhlWARNING) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,
-				"%s:Unable to set transformation",func);
-			return(NhlFATAL);
-		}
-		ret1 = MIN(ret,ret1);
-	}
 
 	/*
 	 * Get some memory to transform points into.
@@ -2552,6 +2611,10 @@ DrawCurves
 	}
 
 
+	if (xlayer->view.use_segments) {
+		_NhlEndSegment();
+	}
+
 	ret = _NhlDeactivateWorkstation(xlayer->base.wkptr);	
 	ret1 = MIN(ret,ret1);
 
@@ -2561,20 +2624,140 @@ DrawCurves
 	return ret1;
 }
 
+
 /*
- * Function:	XyPlotDraw
+ * Function:	xyUpdateTrans
  *
- * Description:	Draw method for the XyPlot object. This function calls 
- *		NhlDraw for the TickMarks and the Titles and then calls 
- *		DrawCurves to set up and call AUTOGRAPH. 
+ * Description:	
  *
- * In Args:	layer	XyPlot instance
+ * In Args:	
  *
- * Out Args:	NhlNONE
+ * Out Args:	NONE
  *
  * Return Values: Error Conditions
  *
- * Side Effects: NhlNONE
+ * Side Effects: NONE
+ */	
+
+static NhlErrorTypes xyUpdateTrans
+#if	NhlNeedProto
+(
+	NhlXyPlotLayer	xyl,
+	NhlLayer	*thetrans,
+	NhlString	entry_name
+)
+#else
+(xyl,thetrans,entry_name)
+        NhlXyPlotLayer	xyl;
+	NhlLayer	*thetrans;
+	NhlString	entry_name;
+#endif
+{
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
+	char			*e_text;
+	NhlXyPlotLayerPart	*xyp = &(xyl->xyplot);
+	NhlTransformLayerPart	*tfp = &(xyl->trans);
+
+/*
+ * If the plot is an overlay member, use the overlay manager's trans object.
+ */
+	if (tfp->overlay_status == _tfCurrentOverlayMember && 
+	    tfp->overlay_trans_obj != NULL) {
+		*thetrans = tfp->overlay_trans_obj;
+	}
+	else {
+		*thetrans = tfp->trans_obj;
+		if (tfp->overlay_status == _tfNotInOverlay) {
+			subret = _NhlSetTrans(*thetrans,(NhlLayer)xyl);
+			if ((ret = MIN(ret,subret)) < NhlWARNING) {
+				e_text = "%s: error setting transformation";
+				NhlPError(NhlFATAL,
+					  NhlEUNKNOWN,e_text, entry_name);
+				return(ret);
+			}
+		}
+	}
+
+	return ret;
+}
+
+/*
+ * Function:	XyPlotPreDraw
+ *
+ * Description:	
+ *
+ * In Args:	layer	XyPlot instance
+ *
+ * Out Args:	NONE
+ *
+ * Return Values: Error Conditions
+ *
+ * Side Effects: NONE
+ */	
+
+static NhlErrorTypes XyPlotPreDraw
+#if	NhlNeedProto
+(NhlLayer layer)
+#else
+(layer)
+        NhlLayer layer;
+#endif
+{
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
+	NhlString		e_text,entry_name = "XyPlotPreDraw";
+	NhlXyPlotLayer		xyl = (NhlXyPlotLayer) layer;
+	NhlXyPlotLayerPart	*xyp = &xyl->xyplot;
+	NhlLayer		thetrans;
+
+	if((!xyp->data_ranges_set) || (xyp->thetrans == NULL)){
+		return NhlNOERROR;
+	}
+	if (xyp->curve_order != NhlPREDRAW) {
+		return NhlNOERROR;
+	}
+
+	subret = xyUpdateTrans(xyl,&thetrans,entry_name);
+	if ((ret = MIN(subret,ret)) < NhlWARNING) {
+		return ret;
+	}
+	if (xyl->view.use_segments && ! xyp->new_draw_req) {
+		ret = _NhltfDrawSegment((NhlLayer)xyl,thetrans,
+					xyp->predraw_dat,entry_name);
+		return ret;
+	}
+
+	subret = _NhlActivateWorkstation(xyl->base.wkptr);
+	if ((ret = MIN(subret,ret)) < NhlWARNING) {
+		e_text = "%s: Error activating workstation";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
+	}
+
+	if (xyl->view.use_segments) {
+		subret = _NhltfInitSegment((NhlLayer)xyl,thetrans,
+					    &xyp->predraw_dat,entry_name);
+		if ((ret = MIN(subret,ret)) < NhlWARNING) {
+			return ret;
+		}
+	}
+
+	subret = DrawCurves(xyl,thetrans,NhlPREDRAW,entry_name);
+
+	return MIN(subret,ret);
+}
+
+/*
+ * Function:	XyPlotDraw
+ *
+ * Description:	
+ *
+ * In Args:	layer	XyPlot instance
+ *
+ * Out Args:	NONE
+ *
+ * Return Values: Error Conditions
+ *
+ * Side Effects: NONE
  */	
 
 static NhlErrorTypes XyPlotDraw
@@ -2585,21 +2768,114 @@ static NhlErrorTypes XyPlotDraw
         NhlLayer layer;
 #endif
 {
-	NhlXyPlotLayer	xlayer = (NhlXyPlotLayer) layer;
-	NhlErrorTypes ret1 = NhlNOERROR;
-	NhlErrorTypes ret = NhlNOERROR;
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
+	NhlXyPlotLayer		xyl = (NhlXyPlotLayer) layer;
+	NhlXyPlotLayerPart	*xyp = &xyl->xyplot;
+	NhlString		e_text,entry_name = "XyPlotDraw";
+	NhlLayer		thetrans;
 
-	if((!xlayer->xyplot.data_ranges_set) ||
-				(xlayer->xyplot.thetrans == NULL)){
+
+	if((!xyp->data_ranges_set) || (xyp->thetrans == NULL)){
+		return NhlNOERROR;
+	}
+	if (xyp->curve_order != NhlDRAW) {
 		return NhlNOERROR;
 	}
 
-	ret = DrawCurves(xlayer);
-	if(ret < NhlWARNING)
+	subret = xyUpdateTrans(xyl,&thetrans,entry_name);
+	if ((ret = MIN(subret,ret)) < NhlWARNING) {
 		return ret;
-	ret1 = MIN(ret,ret1);
+	}
 
-	return ret1;
+	if (xyl->view.use_segments && ! xyp->new_draw_req) {
+		ret = _NhltfDrawSegment((NhlLayer)xyl,thetrans,
+					xyp->draw_dat,entry_name);
+		return ret;
+	}
+
+	subret = _NhlActivateWorkstation(xyl->base.wkptr);
+	if ((ret = MIN(subret,ret)) < NhlWARNING) {
+		e_text = "%s: Error activating workstation";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		return NhlFATAL;
+	}
+	if (xyl->view.use_segments) {
+		subret = _NhltfInitSegment((NhlLayer)xyl,thetrans,
+					    &xyp->draw_dat,entry_name);
+		if ((ret = MIN(subret,ret)) < NhlWARNING) {
+			return ret;
+		}
+	}
+
+	subret = DrawCurves((NhlXyPlotLayer)layer,
+			    thetrans,NhlDRAW,entry_name);
+	return MIN(subret,ret);
+}
+
+/*
+ * Function:	XyPlotPostDraw
+ *
+ * Description:	
+ *
+ * In Args:	layer	XyPlot instance
+ *
+ * Out Args:	NONE
+ *
+ * Return Values: Error Conditions
+ *
+ * Side Effects: NONE
+ */	
+
+static NhlErrorTypes XyPlotPostDraw
+#if	NhlNeedProto
+(NhlLayer layer)
+#else
+(layer)
+        NhlLayer layer;
+#endif
+{
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
+	NhlXyPlotLayer		xyl = (NhlXyPlotLayer) layer;
+	NhlXyPlotLayerPart	*xyp = &xyl->xyplot;
+	NhlTransformLayerPart	*tfp = &xyl->trans;
+	NhlString		e_text,entry_name = "XyPostPlotDraw";
+	NhlLayer		thetrans;
+
+	if((!xyp->data_ranges_set) || (xyp->thetrans == NULL)){
+		return NhlNOERROR;
+	}
+	if (xyp->curve_order == NhlPOSTDRAW) {
+		subret = xyUpdateTrans(xyl,&thetrans,entry_name);
+		if ((ret = MIN(subret,ret)) < NhlWARNING) {
+			return ret;
+		}
+		if (xyl->view.use_segments && ! xyp->new_draw_req) {
+			ret = _NhltfDrawSegment((NhlLayer)xyl,thetrans,
+						xyp->postdraw_dat,entry_name);
+			return ret;
+		}
+	
+		subret = _NhlActivateWorkstation(xyl->base.wkptr);
+		if ((ret = MIN(subret,ret)) < NhlWARNING) {
+			e_text = "%s: Error activating workstation";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			return NhlFATAL;
+		}
+
+		if (xyl->view.use_segments) {
+			subret = _NhltfInitSegment((NhlLayer)xyl,thetrans,
+					       &xyp->postdraw_dat,entry_name);
+			if ((ret = MIN(subret,ret)) < NhlWARNING) {
+				return ret;
+			}
+		}
+		subret = DrawCurves((NhlXyPlotLayer)layer,thetrans,
+				    NhlPOSTDRAW,entry_name);
+	}
+
+	xyp->new_draw_req = False;
+
+	return MIN(subret,ret);
 }
 
 /*
@@ -2824,9 +3100,10 @@ XyPlotUpdateData
 		return(ret2);
 	ret1 = MIN(ret1,ret2);
 
-	if(xl->xyplot.check_ranges){
+	if(xl->xyplot.check_ranges || xl->xyplot.update_req){
 		NhlSetSArg(&sargs[nsargs++],NhlNpmUpdateReq,True);
 		xl->xyplot.check_ranges = False;
+		xl->xyplot.update_req = False;
 	}
 
 
@@ -3857,6 +4134,7 @@ SetUpTransObjs
 			return NhlFATAL;
 		}
 		tfp->trans_obj = newxy->thetrans;
+		newxy->new_draw_req = True;
 
 		return NhlNOERROR;
 	}
@@ -3931,7 +4209,11 @@ SetUpTransObjs
 	if(newxy->y_reverse != oldxy->y_reverse)
 		NhlSetSArg(&sargs[nargs++],NhlNtrYReverse,newxy->y_reverse);
 
+	if (nargs > 0)	
+		newxy->new_draw_req = True;
+		
 	return NhlALSetValues(newxy->thetrans->base.id,sargs,nargs);
+
 }
 
 /*

@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.c,v 1.19 1996-05-17 07:54:12 dbrown Exp $
+ *      $Id: VectorPlot.c,v 1.20 1996-06-13 02:05:59 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -858,22 +858,8 @@ static NhlErrorTypes VectorPlotPostDraw(
 static NhlErrorTypes vcDraw(
 #if	NhlNeedProto
         NhlVectorPlotLayer	vcl,
-	NhlDrawOrder	order
-#endif
-);
-
-static NhlErrorTypes vcInitSegment(
-#if	NhlNeedProto
-	NhlVectorPlotLayer	vcl,
-	NhlTransDat	**seg_dat,
+	NhlDrawOrder	order,
 	NhlString	entry_name
-#endif
-);
-
-static NhlErrorTypes vcSegDraw(
-#if	NhlNeedProto
-	NhlVectorPlotLayer	vcl,
-	NhlDrawOrder	order
 #endif
 );
 
@@ -2025,10 +2011,14 @@ static NhlBoolean NewDrawArgs
 #endif
 {
 	NhlString pass_args[] = {
+#if 0 
+		/* until clipping problem is solved VectorPlot must
+		   redraw if viewport changes */
 		NhlNvpXF,
 		NhlNvpYF,
 		NhlNvpWidthF,
 		NhlNvpHeightF,
+#endif
 		NhlNpmTickMarkDisplayMode,
 		NhlNpmTitleDisplayMode,
 		NhlNpmLegendDisplayMode,
@@ -2944,71 +2934,6 @@ static NhlErrorTypes VectorPlotGetBB
 }
 
 /*
- * Function:	vcSegDraw
- *
- * Description:	
- *
- * In Args:	
- *
- * Out Args:	NONE
- *
- * Return Values: Error Conditions
- *
- * Side Effects: NONE
- */	
-
-static NhlErrorTypes vcSegDraw
-#if	NhlNeedProto
-(
-	NhlVectorPlotLayer	vcl,
-	NhlDrawOrder	order
-)
-#else
-(vcl,order)
-        NhlVectorPlotLayer vcl;
-	NhlDrawOrder	order;
-#endif
-{
-	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
-	char			*entry_name  = NULL;
-	char			*e_text;
-	NhlVectorPlotLayerPart	*vcp = &(vcl->vectorplot);
-	NhlTransDat		*seg_dat;
-
-	switch (order) {
-	case NhlPREDRAW:
-		entry_name = "VectorPlotPreDraw";
-		seg_dat = vcp->predraw_dat;
-		break;
-	case NhlDRAW:
-		entry_name = "VectorPlotDraw";
-		seg_dat = vcp->draw_dat;
-		break;
-	case NhlPOSTDRAW:
-		entry_name = "VectorPlotPostDraw";
-		seg_dat = vcp->postdraw_dat;
-		break;
-	default:
-		e_text = "%s: internal enumeration error";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return(NhlFATAL);
-	}
-
-	if (seg_dat == NULL)
-		return NhlNOERROR;
-
-	subret = _NhlActivateWorkstation(vcl->base.wkptr);
-	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
-
-	subret = _NhlDrawSegment(seg_dat,_NhlWorkstationId(vcl->base.wkptr));
-	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
-
-	subret = _NhlDeactivateWorkstation(vcl->base.wkptr);
-	return MIN(subret,ret);
-}
-
-
-/*
  * Function:	vcInitDraw
  *
  * Description:	
@@ -3069,101 +2994,6 @@ static NhlErrorTypes vcInitDraw
 }
 
 /*
- * Function:	vcInitSegment
- *
- * Description:	
- *
- * In Args:	
- *
- * Out Args:	NONE
- *
- * Return Values: Error Conditions
- *
- * Side Effects: NONE
- */	
-
-static NhlErrorTypes vcInitSegment
-#if	NhlNeedProto
-(
-	NhlVectorPlotLayer	vcl,
-	NhlTransDat	**seg_dat,
-	NhlString	entry_name
-)
-#else
-(vcl,seg_dat,entry_name)
-        NhlVectorPlotLayer vcl;
-	NhlTransDat	**seg_dat;
-	NhlString	entry_name;
-#endif
-{
-	char			*e_text;
-
-	if (*seg_dat != NULL)
-		_NhlDeleteViewSegment((NhlLayer) vcl,*seg_dat);
-	if ((*seg_dat = _NhlNewViewSegment((NhlLayer) vcl)) == NULL) {
-		e_text = "%s: error opening segment";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return NhlFATAL;
-	}
-	_NhlStartSegment(*seg_dat);
-	vcl->vectorplot.seg_open = True;
-
-	return NhlNOERROR;
-}
-/*
- * Function:	VectorPlotPreDraw
- *
- * Description:	
- *
- * In Args:	layer	VectorPlot instance
- *
- * Out Args:	NONE
- *
- * Return Values: Error Conditions
- *
- * Side Effects: NONE
- */	
-
-static NhlErrorTypes VectorPlotPreDraw
-#if	NhlNeedProto
-(NhlLayer layer)
-#else
-(layer)
-        NhlLayer layer;
-#endif
-{
-	NhlErrorTypes ret = NhlNOERROR, subret = NhlNOERROR;
-	NhlString	entry_name = "VectorPlotPreDraw";
-	NhlVectorPlotLayer		vcl = (NhlVectorPlotLayer) layer;
-	NhlVectorPlotLayerPart	*vcp = &vcl->vectorplot;
-
-	Vcp = vcp;
-	Vcl = vcl;
-
-	if (! vcp->data_init || vcp->display_zerof_no_data) {
-		Vcp = NULL;
-		return NhlNOERROR;
-	}
-
-	if (vcl->view.use_segments && ! vcp->new_draw_req) {
-		ret = vcSegDraw(vcl,NhlPREDRAW);
-		Vcp = NULL;
-		return ret;
-	}
-
-	subret = vcInitDraw(vcl,entry_name);
-	if ((ret = MIN(subret,ret)) < NhlWARNING) {
-		Vcp = NULL;
-		return ret;
-	}
-
-	subret = vcDraw(vcl,NhlPREDRAW);
-
-	Vcp = NULL;
-	return MIN(subret,ret);
-}
-
-/*
  * Function:	VectorAbortDraw
  *
  * Description:	cleans up if a fatal error occurs while drawing
@@ -3214,6 +3044,173 @@ static void VectorAbortDraw
 }
 
 /*
+ * Function:	vcUpdateTrans
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	NONE
+ *
+ * Return Values: Error Conditions
+ *
+ * Side Effects: NONE
+ */	
+
+static NhlErrorTypes vcUpdateTrans
+#if	NhlNeedProto
+(
+	NhlVectorPlotLayer	vcl,
+	NhlString		entry_name
+)
+#else
+(vcl,entry_name)
+        NhlVectorPlotLayer vcl;
+	NhlString		entry_name;
+#endif
+{
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
+	char			*e_text;
+	NhlVectorPlotLayerPart	*vcp = &(vcl->vectorplot);
+	NhlTransformLayerPart	*tfp = &(vcl->trans);
+
+/*
+ * If the plot is an overlay member, use the overlay manager's trans object.
+ */
+	if (tfp->overlay_status == _tfCurrentOverlayMember && 
+	    tfp->overlay_trans_obj != NULL) {
+		vcp->trans_obj = tfp->overlay_trans_obj;
+		if (vcp->do_low_level_log) {
+			if (vcp->x_log) {
+				subret = NhlVASetValues(
+						   tfp->trans_obj->base.id,
+						NhlNtrXAxisType,NhlLINEARAXIS,
+						NULL);
+			}
+			else {
+				subret = NhlVASetValues(
+						   tfp->trans_obj->base.id,
+						NhlNtrYAxisType,NhlLINEARAXIS,
+						NULL);
+			}
+			if ((ret = MIN(ret,subret)) < NhlWARNING) {
+				return(ret);
+			}
+		}
+	}
+	else {
+		vcp->trans_obj = tfp->trans_obj;
+
+		if (vcp->do_low_level_log) {
+			subret = NhlVASetValues(vcp->trans_obj->base.id,
+						NhlNtrLowLevelLogOn,True,
+						NULL);
+			if ((ret = MIN(ret,subret)) < NhlWARNING) {
+				return(ret);
+			}
+		}
+		if (tfp->overlay_status == _tfNotInOverlay) {
+			subret = _NhlSetTrans(tfp->trans_obj, (NhlLayer)vcl);
+			if ((ret = MIN(ret,subret)) < NhlWARNING) {
+				e_text = "%s: error setting transformation";
+				NhlPError(NhlFATAL,
+					  NhlEUNKNOWN,e_text, entry_name);
+				return(ret);
+			}
+		}
+	}
+
+	return ret;
+}
+
+/*
+ * Function:	VectorPlotPreDraw
+ *
+ * Description:	
+ *
+ * In Args:	layer	VectorPlot instance
+ *
+ * Out Args:	NONE
+ *
+ * Return Values: Error Conditions
+ *
+ * Side Effects: NONE
+ */	
+
+static NhlErrorTypes VectorPlotPreDraw
+#if	NhlNeedProto
+(NhlLayer layer)
+#else
+(layer)
+        NhlLayer layer;
+#endif
+{
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
+	NhlString		e_text,entry_name = "VectorPlotPreDraw";
+	NhlVectorPlotLayer	vcl = (NhlVectorPlotLayer) layer;
+	NhlVectorPlotLayerPart	*vcp = &vcl->vectorplot;
+
+	if (! vcp->data_init || vcp->display_zerof_no_data) {
+		return NhlNOERROR;
+	}
+
+	Vcp = vcp;
+	Vcl = vcl;
+
+	if (vcl->view.use_segments && ! vcp->new_draw_req) {
+		subret = vcUpdateTrans(vcl,entry_name);
+		if ((ret = MIN(subret,ret)) < NhlWARNING) {
+			VectorAbortDraw(vcl);
+			return ret;
+		}
+		ret = _NhltfDrawSegment((NhlLayer)vcl,vcp->trans_obj,
+					vcp->predraw_dat,entry_name);
+		Vcp = NULL;
+		return ret;
+	}
+
+	subret = vcInitDraw(vcl,entry_name);
+	if ((ret = MIN(subret,ret)) < NhlWARNING) {
+		Vcp = NULL;
+		return ret;
+	}
+
+	if (vcp->vector_order != NhlPREDRAW) {
+		Vcp = NULL;
+		return NhlNOERROR;
+	}
+	subret = vcUpdateTrans(vcl,entry_name);
+	if ((ret = MIN(subret,ret)) < NhlWARNING) {
+		VectorAbortDraw(vcl);
+		return ret;
+	}
+
+	subret = _NhlActivateWorkstation(vcl->base.wkptr);
+	if ((ret = MIN(subret,ret)) < NhlWARNING) {
+		e_text = "%s: Error activating workstation";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		VectorAbortDraw(vcl);
+		return NhlFATAL;
+	}
+	vcp->wk_active = True;
+
+	if (vcl->view.use_segments) {
+		subret = _NhltfInitSegment((NhlLayer)vcl,vcp->trans_obj,
+					    &vcp->predraw_dat,entry_name);
+		if ((ret = MIN(subret,ret)) < NhlWARNING) {
+			VectorAbortDraw(vcl);
+			return ret;
+		}
+		vcp->seg_open = True;
+	}
+
+	subret = vcDraw(vcl,NhlPREDRAW,entry_name);
+
+	Vcp = NULL;
+	return MIN(subret,ret);
+}
+
+/*
  * Function:	VectorPlotDraw
  *
  * Description:	
@@ -3235,27 +3232,56 @@ static NhlErrorTypes VectorPlotDraw
         NhlLayer layer;
 #endif
 {
-	NhlErrorTypes ret;
+	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
 	NhlVectorPlotLayer	vcl = (NhlVectorPlotLayer) layer;
 	NhlVectorPlotLayerPart	*vcp = &vcl->vectorplot;
-
-	Vcp = vcp;
-	Vcl = vcl;
+	NhlString		e_text,entry_name = "VectorPlotDraw";
 
 	if (! vcp->data_init || vcp->display_zerof_no_data) {
 		Vcp = NULL;
 		return NhlNOERROR;
 	}
+	if (vcp->vector_order != NhlDRAW) {
+		return NhlNOERROR;
+	}
+
+	Vcp = vcp;
+	Vcl = vcl;
+
+	subret = vcUpdateTrans(vcl,entry_name);
+	if ((ret = MIN(subret,ret)) < NhlWARNING) {
+		VectorAbortDraw(vcl);
+		return ret;
+	}
 
 	if (vcl->view.use_segments && ! vcp->new_draw_req) {
-		ret = vcSegDraw(vcl,NhlDRAW);
+		ret = _NhltfDrawSegment((NhlLayer)vcl,vcp->trans_obj,
+					vcp->draw_dat,entry_name);
 		Vcp = NULL;
 		return ret;
 	}
 
-	ret = vcDraw((NhlVectorPlotLayer) layer,NhlDRAW);
+	subret = _NhlActivateWorkstation(vcl->base.wkptr);
+	if ((ret = MIN(subret,ret)) < NhlWARNING) {
+		e_text = "%s: Error activating workstation";
+		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+		VectorAbortDraw(vcl);
+		return NhlFATAL;
+	}
+	vcp->wk_active = True;
+	if (vcl->view.use_segments) {
+		subret = _NhltfInitSegment((NhlLayer)vcl,vcp->trans_obj,
+					    &vcp->draw_dat,entry_name);
+		if ((ret = MIN(subret,ret)) < NhlWARNING) {
+			VectorAbortDraw(vcl);
+			return ret;
+		}
+		vcp->seg_open = True;
+	}
+
+	subret = vcDraw((NhlVectorPlotLayer) layer,NhlDRAW,entry_name);
 	Vcp = NULL;
-	return ret;
+	return MIN(subret,ret);
 }
 
 /*
@@ -3284,6 +3310,7 @@ static NhlErrorTypes VectorPlotPostDraw
 	NhlVectorPlotLayer		vcl = (NhlVectorPlotLayer) layer;
 	NhlVectorPlotLayerPart	*vcp = &vcl->vectorplot;
 	NhlTransformLayerPart	*tfp = &vcl->trans;
+	NhlString		e_text,entry_name = "VectorPostPlotDraw";
 
 	Vcp = vcp;
 	Vcl = vcl;
@@ -3300,13 +3327,44 @@ static NhlErrorTypes VectorPlotPostDraw
 		return ret;
 	}
 
+	subret = vcUpdateTrans(vcl,entry_name);
+	if ((ret = MIN(subret,ret)) < NhlWARNING) {
+		VectorAbortDraw(vcl);
+		return ret;
+	}
 	if (vcl->view.use_segments && ! vcp->new_draw_req) {
-		ret = vcSegDraw(vcl,NhlPOSTDRAW);
+		ret = _NhltfDrawSegment((NhlLayer)vcl,vcp->trans_obj,
+					vcp->postdraw_dat,entry_name);
 		Vcp = NULL;
 		return ret;
 	}
 
-	ret = vcDraw((NhlVectorPlotLayer) layer,NhlPOSTDRAW);
+	if (vcp->vector_order == NhlPOSTDRAW) {
+
+		subret = _NhlActivateWorkstation(vcl->base.wkptr);
+		if ((ret = MIN(subret,ret)) < NhlWARNING) {
+			e_text = "%s: Error activating workstation";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
+			VectorAbortDraw(vcl);
+			return NhlFATAL;
+		}
+		vcp->wk_active = True;
+
+		if (vcl->view.use_segments) {
+			subret = _NhltfInitSegment((NhlLayer)vcl,
+					    vcp->trans_obj,
+					    &vcp->postdraw_dat,entry_name);
+			if ((ret = MIN(subret,ret)) < NhlWARNING) {
+				VectorAbortDraw(vcl);
+				return ret;
+			}
+			vcp->seg_open = True;
+		}
+
+		ret = vcDraw((NhlVectorPlotLayer) layer,
+			     NhlPOSTDRAW,entry_name);
+	}
+
 	vcp->new_draw_req = False;
 	Vcp = NULL;
 
@@ -3348,128 +3406,31 @@ static NhlErrorTypes vcDraw
 #if	NhlNeedProto
 (
 	NhlVectorPlotLayer	vcl,
-	NhlDrawOrder	order
+	NhlDrawOrder	order,
+	NhlString	entry_name
 )
 #else
-(vcl,order)
+(vcl,order,entry_name)
         NhlVectorPlotLayer vcl;
 	NhlDrawOrder	order;
+	NhlString	entry_name;
 #endif
 {
 	NhlErrorTypes		ret = NhlNOERROR, subret = NhlNOERROR;
-	char			*entry_name = NULL;
 	char			*e_text;
 	NhlVectorPlotLayerPart	*vcp = &(vcl->vectorplot);
 	NhlTransformLayerPart	*tfp = &(vcl->trans);
-	NhlBoolean		low_level_log = False;
 	float			vfr,vlc,vrl,vhc,vrm;
 	float			*u_data,*v_data,*p_data;
         NhlBoolean		all_mono = False;
+	NhlBoolean		low_level_log;
 
-	if (vcp->vector_order != order)
-		return NhlNOERROR;
 
-	switch (order) {
-	case NhlPREDRAW:
-		entry_name = "VectorPlotPreDraw";
-		break;
-	case NhlDRAW:
-		entry_name = "VectorPlotDraw";
-		break;
-	case NhlPOSTDRAW:
-		entry_name = "VectorPlotPostDraw";
-		break;
-	default:
-		e_text = "%s: internal enumeration error";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return(NhlFATAL);
-	}
+	low_level_log = vcp->do_low_level_log &&
+		(tfp->overlay_status != _tfCurrentOverlayMember || 
+		 tfp->overlay_trans_obj == NULL);
 
 	c_vvrset();
-	subret = _NhlActivateWorkstation(vcl->base.wkptr);
-	if ((ret = MIN(subret,ret)) < NhlWARNING) {
-		e_text = "%s: Error activating workstation";
-		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		VectorAbortDraw(vcl);
-		return NhlFATAL;
-	}
-	vcp->wk_active = True;
-
-	if (vcl->view.use_segments) {
-		switch (order) {
-		case NhlPREDRAW:
-			subret = vcInitSegment(vcl,&vcp->predraw_dat,
-					       entry_name);
-			if ((ret = MIN(subret,ret)) < NhlWARNING) {
-				VectorAbortDraw(vcl);
-				return ret;
-			}
-			break;
-		case NhlDRAW:
-			subret = vcInitSegment(vcl,&vcp->draw_dat,
-					       entry_name);
-			if ((ret = MIN(subret,ret)) < NhlWARNING) {
-				VectorAbortDraw(vcl);
-				return ret;
-			}
-			break;
-		case NhlPOSTDRAW:
-			subret = vcInitSegment(vcl,&vcp->postdraw_dat,
-					       entry_name);
-			if ((ret = MIN(subret,ret)) < NhlWARNING) {
-				VectorAbortDraw(vcl);
-				return ret;
-			}
-			break;
-		}
-	}
-	
-/*
- * If the plot is an overlay member, use the overlay manager's trans object.
- */
-	if (tfp->overlay_status == _tfCurrentOverlayMember && 
-	    tfp->overlay_trans_obj != NULL) {
-		vcp->trans_obj = tfp->overlay_trans_obj;
-		if (vcp->do_low_level_log) {
-			if (vcp->x_log) {
-				subret = NhlVASetValues(
-						   tfp->trans_obj->base.id,
-						NhlNtrXAxisType,NhlLINEARAXIS,
-						NULL);
-			}
-			else {
-				subret = NhlVASetValues(
-						   tfp->trans_obj->base.id,
-						NhlNtrYAxisType,NhlLINEARAXIS,
-						NULL);
-			}
-			if ((ret = MIN(ret,subret)) < NhlWARNING) {
-				VectorAbortDraw(vcl);
-				return(ret);
-			}
-		}
-	}
-	else {
-		vcp->trans_obj = tfp->trans_obj;
-
-		if (vcp->do_low_level_log) {
-			subret = NhlVASetValues(vcp->trans_obj->base.id,
-						NhlNtrLowLevelLogOn,True,
-						NULL);
-			if ((ret = MIN(ret,subret)) < NhlWARNING) {
-				VectorAbortDraw(vcl);
-				return(ret);
-			}
-			low_level_log = True;
-		}
-		subret = _NhlSetTrans(tfp->trans_obj, (NhlLayer)vcl);
-		if ((ret = MIN(ret,subret)) < NhlWARNING) {
-			e_text = "%s: error setting transformation";
-			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
-			VectorAbortDraw(vcl);
-			return(ret);
- 		}
-	}
 	
 	switch (vcp->vfp->miss_mode) {
 	case vfBOTH:
@@ -3783,8 +3744,9 @@ static NhlErrorTypes vcDraw
 	}
 
 	gset_clip_ind(GIND_NO_CLIP);
-	if (vcl->view.use_segments) {
+	if (vcl->view.use_segments && vcp->seg_open) {
 		_NhlEndSegment();
+		vcp->seg_open = False;
 	}
 
 	if (low_level_log) {
@@ -3796,6 +3758,7 @@ static NhlErrorTypes vcDraw
 		}
 	}
         subret = _NhlDeactivateWorkstation(vcl->base.wkptr);
+	vcp->wk_active = False;
 	ret = MIN(subret,ret);
 
 	return MIN(subret,ret);

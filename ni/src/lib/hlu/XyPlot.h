@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.h,v 1.15 1995-05-03 03:11:32 dbrown Exp $
+ *      $Id: XyPlot.h,v 1.16 1996-06-13 02:06:02 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -139,6 +139,8 @@
 #define	NhlNxyComputeYMin	"xyComputeYMin"
 #define	NhlNxyComputeYMax	"xyComputeYMax"
 #define	NhlCxyComputeExtent	"XyComputeExtent"
+#define NhlNxyCurveDrawOrder	"xyCurveDrawOrder"
+#define NhlCxyCurveDrawOrder	"XyCurveDrawOrder"
 
 /*
  * These resources have not been implimented yet.
