@@ -1,5 +1,5 @@
 C
-C	$Id: gwibkd.f,v 1.1 1993-01-09 02:09:02 fred Exp $
+C	$Id: gwibkd.f,v 1.2 1993-01-11 21:58:30 fred Exp $
 C
       BLOCKDATA GWIBKD
 C
@@ -113,12 +113,6 @@ C  Number of CGM and GKS ASFs, GKS to CGM mapping array.
 C
       DATA  NCGASF/18/,  NGKASF/13/
       DATA  MASMAP/1,2,3,4,5,6,7,7,8,9,10,11,13,12,12,0,0,0/
-C
-C  GKS enumeratives.
-C
-      DATA  GNO   /0/,   GYES  /1/,     GCONDI/0/,   GALWAY/1/
-      DATA  GINACT/0/,   GACTIV/1/,     GNEMPT/0/,   GEMPTY/1/
-      DATA  GNPEND/0/,   GPEND /1/,     GCLIP /1/,   GNCLIP/0/
 C
 C  CGM opcodes, class and id codes.
 C
