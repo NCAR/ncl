@@ -14,11 +14,11 @@
 #include <math.h>
 #include <ncarg/gks.h>
 
-extern void NGCALLF(wgtrunave,WGTRUNAVE)(double*,int*,double*,int*,int*,
-                                         double*,double*,int*,int*);
+extern void NGCALLF(dwgtrunave,DWGTRUNAVE)(double*,int*,double*,int*,int*,
+                                           double*,double*,int*,int*);
 
-extern void NGCALLF(runave,RUNAVE)(double*,int*,int*,int*,double*,double*,int*,
-                                   int*);
+extern void NGCALLF(drunave,DRUNAVE)(double*,int*,int*,int*,double*,double*,
+                                     int*,int*);
 
 NhlErrorTypes wgt_runave_W( void )
 {
@@ -102,12 +102,11 @@ NhlErrorTypes wgt_runave_W( void )
   total_size_x = size_x * npts;
 
 /*
- * Types of input arrays must both be doubles or floats.
+ * Types of input arrays must float or double.
  */
-  if( !(type_x == NCL_double && type_wgt == NCL_double) &&
-      !(type_x ==  NCL_float && type_wgt == NCL_float)  &&
-      !(type_x == NCL_double && type_wgt == NCL_float)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_runave: The types of the first two input arrays must be float/float, double/double, or double/float");
+  if( (type_x   != NCL_double  && type_x   != NCL_float) ||
+      (type_wgt !=  NCL_double && type_wgt != NCL_float)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_runave: The types of the first two input arrays must be float or double");
     return(NhlFATAL);
   }
 /*
@@ -175,8 +174,8 @@ NhlErrorTypes wgt_runave_W( void )
  */
   j = 0;
   for( i = 0; i < size_x; i++ ) {
-	NGCALLF(wgtrunave, WGTRUNAVE)(&dx[j],&npts,dwgt,&nwgt,kopt,&xmsg,
-									work,&lwork,&ier);
+	NGCALLF(dwgtrunave,DWGTRUNAVE)(&dx[j],&npts,dwgt,&nwgt,kopt,&xmsg,
+								   work,&lwork,&ier);
 	j += npts;
   }
   free(work);
@@ -344,7 +343,7 @@ NhlErrorTypes runave_W( void )
 
   j = 0;
   for( i = 0; i < size_x; i++ ) {
-	NGCALLF(runave, RUNAVE)(&dx[j],&npts,nave,kopt,&xmsg,work,&lwork,&ier);
+	NGCALLF(drunave,DRUNAVE)(&dx[j],&npts,nave,kopt,&xmsg,work,&lwork,&ier);
 	j += npts;
   }
   free(work);
