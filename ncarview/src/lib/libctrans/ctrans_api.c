@@ -1,5 +1,5 @@
 /*
- *      $Id: ctrans_api.c,v 1.9 1992-06-24 21:05:10 clyne Exp $
+ *      $Id: ctrans_api.c,v 1.10 1992-06-26 17:59:53 clyne Exp $
  */
 /*
  *	File:		ctrans_api.c
@@ -44,6 +44,37 @@
 #include "defines.h"
 #include "devices.h"
 #include "ctrandef.h"
+
+
+/*
+ *      a global structure that contains values of command line options
+ */
+static  struct  {
+	float   lmin;	/* minimum line width           */
+	float   lmax;	/* maximun line width           */
+	float   lscale;	/* additional line scaling      */
+} opt;
+
+
+static  OptDescRec      set_options[] = {
+	{"lmin", 1, "-1", "Set minimum line width"},
+	{"lmax", 1, "-1", "Set maximum line width"},
+	{"lscale", 1, "-1", "Scale all lines by 'arg0'"},
+	{NULL}
+};
+
+static  Option  get_options[] = {
+	{"lmin", NCARGCvtToFloat, (Voidptr) &opt.lmin, sizeof(opt.lmin )
+	},
+	{"lmax", NCARGCvtToFloat, (Voidptr) &opt.lmax, sizeof (opt.lmax )
+	},
+	{"lscale", NCARGCvtToFloat, (Voidptr) &opt.lscale, sizeof (opt.lscale)
+	},
+	{NULL
+	}
+};
+
+
 
 
 
@@ -168,12 +199,29 @@ CtransOpenBatch(device_name, font_name, metafile, dev_argc, dev_argv)
 		(void) strcpy (dev_argv_[i], dev_argv[i]);
 	}
 	optionDesc = OpenOptionTbl();
+	(void) LoadOptionTable(optionDesc, set_options);
 	if (ParseOptionTable(
 		optionDesc, &dev_argc, dev_argv_, devices[currdev].opt) < 0) 
 	{
 		CtransSetError_(ERR_INV_ARG);
 		return(-1);
 	}
+
+	/*
+	 * load the options into opt
+	 */
+	if (GetOptions(optionDesc, get_options) < 0) {
+		CtransSetError_(ERR_INV_ARG);
+		return(-1);
+	}
+
+	/*
+	 * set line scaling options
+	 */
+	if (opt.lmin > -1) SetMinLineWidthDefault(opt.lmin);
+	if (opt.lmax > -1) SetMaxLineWidthDefault(opt.lmax);
+	if (opt.lscale > -1) SetAdditionalLineScale(opt.lscale);
+
 
 
 
