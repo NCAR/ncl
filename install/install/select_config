@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: select_config,v 1.13 2002-02-01 16:11:34 haley Exp $
+#      $Id: select_config,v 1.14 2003-11-21 20:58:37 haley Exp $
 #
 #########################################################################
 #                                                                       #
@@ -55,16 +55,18 @@ cat <<EOF > /dev/tty
           University Corporation for Atmospheric Research
      The use of this Software is governed by a License Agreement.
 
-
-
-
 Please select the type of installation that you wish to perform. 
     
     1.  Basic Installation          [ $total_size KB required ]
-        The Basic Installation is recommended.
+        A Basic Installation will install all components of the
+        software to a pre-determined directory. Select the Help option
+        for more information on which paths will be used.
 
     2.  Custom Installation         [ required disk space varies ]
-        Optional software components and installation directories
+        A Custom Installation will allow you to select which components
+        of the software are installed, and where you want them installed.
+        This is a good choice if you don't have root permissions, or
+        if you don't like the path suggested by the Basic Installation.
 
     3.  Help on Installation Choices
 
