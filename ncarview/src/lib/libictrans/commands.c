@@ -1,5 +1,5 @@
 /*
- *	$Id: commands.c,v 1.32 1994-03-09 01:04:35 clyne Exp $
+ *	$Id: commands.c,v 1.33 1994-03-31 18:33:37 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -654,8 +654,24 @@ int	iCMerge(ic)
 	int	frame1, frame2;
 	int	record1, record2;
 	FILE	*fp = ic->fp;
+	CtransRC	ctrc;
+
 	if (!Toc) return(-1);
 
+	if (newFile) {
+		ctrc = init_metafile(0, CGM_FD(Toc));
+		if (ctrc == FATAL) {
+			(void) CGM_termMetaEdit();
+			log_ct(FATAL);
+			Toc = NULL;
+			return(-1);
+		}
+		else if (ctrc == WARN) {
+			log_ct(WARN);
+			return(-1);
+		}
+		newFile = FALSE;
+	}
 	/*
 	 * put the device in graphics mode for plotting
 	 */
