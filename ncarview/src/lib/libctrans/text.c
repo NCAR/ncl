@@ -1,5 +1,5 @@
 /*
- *	$Id: text.c,v 1.24 1993-01-28 22:04:38 clyne Exp $
+ *	$Id: text.c,v 1.25 1993-04-04 20:51:35 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -152,23 +152,26 @@ static	void	make_matrix()
  *	on exit
  *		f2 : transformed version of f1 via the transformation matrix
  */
-static void	trans_coord(f1,f2)
+static void	trans_coord(f1,f2, string)
 	Fcap	*f1, *f2;	/* font lists	*/
+	char	*string;
 {
 	int	i,k;
+	int	index;
 	float	yscale = Y_SCALE(f1->char_height);
 	float xscale = X_scale(f1->char_height);
 
-	for (i = 0; i < F_NUMCHAR(*f1); i++) {
-		for (k = 0; k < F_NUMSTROKE(*f1, i); k++) {
+	for (i=0; i<strlen(string); i++) {
+		index = string[i] - F_CHAR_START(*f1);	
+		for (k = 0; k < F_NUMSTROKE(*f1, index); k++) {
 
-			F_X_COORD(*f2, i, k) = 
-				(F_X_COORD(*f1, i, k) * matrix[0][0]) 
-				+ (F_Y_COORD(*f1, i, k) * matrix[1][0]);
+			F_X_COORD(*f2, index, k) = 
+				(F_X_COORD(*f1, index, k) * matrix[0][0]) 
+				+ (F_Y_COORD(*f1, index, k) * matrix[1][0]);
 
-			F_Y_COORD(*f2, i, k) = 
-				(F_X_COORD(*f1, i, k) * matrix[0][1]) 
-				+ (F_Y_COORD(*f1, i, k) * matrix[1][1]); 
+			F_Y_COORD(*f2, index, k) = 
+				(F_X_COORD(*f1, index, k) * matrix[0][1]) 
+				+ (F_Y_COORD(*f1, index, k) * matrix[1][1]); 
 		}
 
 	}
@@ -199,10 +202,13 @@ static void	trans_coord(f1,f2)
 	 * For mono space characters this value is fixed for all characters
 	 */
 	if (var_space) {
-		for (i=0;i<F_NUMCHAR(*f1) ;i++)  {
-			leftExtent2[i] = xscale * leftExtent1[i];
-			rightExtent2[i] = xscale * rightExtent1[i];
-			Widtharray2[i] = rightExtent2[i] - leftExtent2[i];
+		for (i=0; i<strlen(string); i++) {
+			index = string[i] - F_CHAR_START(*f1);	
+
+			leftExtent2[index] = xscale * leftExtent1[index];
+			rightExtent2[index] = xscale * rightExtent1[index];
+			Widtharray2[index] = rightExtent2[index] - 
+				leftExtent2[index];
 		}
 	}
 	else {
@@ -212,10 +218,13 @@ static void	trans_coord(f1,f2)
 		 * of the character body are the left and right extents
 		 * of the font coordinate system.
 		 */
-		for (i=0;i<F_NUMCHAR(*f1) ;i++)  {
-			leftExtent2[i] = 0;
-			rightExtent2[i] = F_FONT_RIGHT(*f2);
-			Widtharray2[i] = rightExtent2[i] - leftExtent2[i];
+		for (i=0; i<strlen(string); i++) {
+			index = string[i] - F_CHAR_START(*f1);	
+
+			leftExtent2[index] = 0;
+			rightExtent2[index] = F_FONT_RIGHT(*f2);
+			Widtharray2[index] = rightExtent2[index] - 
+				leftExtent2[index];
 		}
 	}
 
@@ -333,14 +342,41 @@ static void	path_spacing ()
  *	last invocation. If any changes modify appropriate transformation
  *	tables.
  */
-static modified ()
+static modified (string)
+	char	*string;
 {
+	/*
+	 * Is fcap_current up to date for any given character?
+	 */
+	static	boolean	dirty[CHRSM1];
+	int	dirty_size = sizeof(dirty) / sizeof(dirty[0]);
+	int	i,j, index;
+	char	buf[1024];
+
 
 	if (TEXT_ATT_DAMAGE) {
 		make_matrix();
-		trans_coord(&fcap_template,&fcap_current);
 		path_spacing();
+
+		/*
+		 * invalidate entire fcap_current struct
+		 */
+		for(i=0; i<dirty_size; i++) {
+			dirty[i] = TRUE;
+		}
 		TEXT_ATT_DAMAGE = TEXT_F_IND_DAMAGE = FALSE;
+	}
+
+	for(i=0,j=0; i<strlen(string) && j<(dirty_size - 1); i++) {
+		index = string[i] - F_CHAR_START(fcap_template);
+		if (dirty[index]) {
+			buf[j++] = string[i];
+			dirty[index] = FALSE;
+		}
+	}
+	buf[j] = '\0';
+	if (strlen(buf)) {
+		trans_coord(&fcap_template,&fcap_current, buf);
 	}
 }
 
@@ -878,7 +914,6 @@ int	Text(cgmc)
 	 */
 	if (open_line_draw() < 0) return(-1);
 
-	modified();	/* recalc transformation values if attributes changed*/
 
 
 	/*
@@ -886,15 +921,24 @@ int	Text(cgmc)
 	 */
 	for (str_ind = 0; str_ind < cgmc->Snum; str_ind++) {
 
-	prev_width = 0;
-	x_space = -X_spacing;
-	y_space = -Y_spacing;
-
 	/*
 	 * make a local copy of the string to be stroked so we can modify
 	 * it if necessary.
 	 */
 	(void) strncpy(string,cgmc->s->string[str_ind], sizeof(string)-1);
+
+	/* 
+	 * recalc transformation values if attributes have changed. 
+	 * always check for spaces, " ",  because chars that don't 
+	 * have a font representation default to spaces.
+	 */
+	modified(string);	
+	modified(" ");
+
+	prev_width = 0;
+	x_space = -X_spacing;
+	y_space = -Y_spacing;
+
 
 	/*
 	 * make sure every character in the string has a definition. If
