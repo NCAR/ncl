@@ -1,5 +1,5 @@
 /*
- *	$Id: glob.c,v 1.4 1991-07-10 20:30:27 clyne Exp $
+ *	$Id: glob.c,v 1.5 1991-07-19 18:00:18 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -64,7 +64,7 @@ glob(s, r_argv, r_argc)
 	char	outbuf[MAX_LINE_LEN];
 	char	*cptr;
 	int	nbytes;
-	char	*shell;
+	char	*shell_argv[3];
 	char	*t;
 	extern	char	*getenv(), *strrchr();
 
@@ -80,20 +80,22 @@ glob(s, r_argv, r_argc)
 		 * try and find out what shell the user like so we can spawn
 		 * it to parse it to do globbing.
 		 */
-		if ((shell = getenv ("SHELL")) == NULL) {
-			shell = "/bin/sh";
+		if ((shell_argv[0] = getenv ("SHELL")) == NULL) {
+			shell_argv[0] = "/bin/sh";	/* default	*/
 		}
+		shell_argv[1] = NULL;
 
 		/*
 		 * if using csh then use csh with the fast option, '-f'
 		 */
-        	t = (t = strrchr(shell, '/')) ? ++t : shell;
+        	t = (t = strrchr(shell_argv[0], '/')) ? ++t : shell_argv[0];
 		if (!(strcmp(t, "csh"))) {
-			shell = "/bin/csh -f";
+			shell_argv[1] = "-f";
+			shell_argv[2] = NULL;
 		}
 
 
-		talkto(shell);		/* spawn shell to talk to	*/
+		talkto(shell_argv);	/* spawn shell to talk to	*/
 		is_init = 1;
 
 
@@ -174,13 +176,13 @@ glob(s, r_argv, r_argc)
  *	set up communictions between invoking process and the desired
  *	command;
  * on entry
- *	*cmd		: name of command to talk to
+ *	**argv		: name of command to talk to
  * on exit
  *	to_child[1]	: fd for writing to spawned process
  *	to_parent[0]	: fd for reading from spawned process
  */
-static	talkto(cmd) 
-	char	*cmd;
+static	talkto(argv) 
+	char	**argv;
 {
 	int	pid;
 
@@ -207,7 +209,7 @@ static	talkto(cmd)
 		/* 
 		 * exec the command to talk to	
 		 */
-		execlp(cmd, cmd, NULL);
+		execvp(argv[0], argv);
 
 		perror((char *) NULL);	/* shouldn't get here	*/
 		exit(1);
