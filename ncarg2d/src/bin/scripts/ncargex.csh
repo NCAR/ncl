@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.87 1995-06-08 20:31:43 kennison Exp $
+#   $Id: ncargex.csh,v 1.88 1995-06-14 14:03:03 haley Exp $
 #
 
 if ($#argv < 1) goto usage
@@ -1235,14 +1235,12 @@ switch($name)
     case wmex12:
     case wmex13:
     case wmex14:
-      if ($ws_type >= 20 && $ws_type < 31) then
-        set tmp_ws_type = "26"
-        echo ""
-        echo "  This example was set up to use the entire"
-        echo "  page when going to PostScript, so workstation"
-        echo "  type 26 is being used."
-        echo ""
-      endif
+      set tmp_ws_type = "26"
+      echo ""
+      echo "  This example was set up to use the entire"
+      echo "  page when going to PostScript, so workstation"
+      echo "  type 26 is being used."
+      echo ""
     breaksw
 
     case pgkex26:
@@ -1513,11 +1511,21 @@ endif
 echo "  Copying $main"
 echo ""
 cp $temp_dir/$main ./$main
+if ($?fprog && $the_ws_type != 1) then
 ed << EOF - ./$main >& /dev/null
-g/SED_WSTYPE/s//$the_ws_type/g
+g/IWTYPE=1/s//IWTYPE=$the_ws_type/g
 w
 q
 EOF
+endif
+
+if ($?cprog && $the_ws_type != 1) then
+ed << EOF - ./$main >& /dev/null
+g/define IWTYPE 1/s//define IWTYPE $the_ws_type/g
+w
+q
+EOF
+endif
 
 set src_files = ($extra_src_files $main)
 
