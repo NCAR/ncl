@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.97 2004-11-09 21:52:49 grubin Exp $
+#      $Id: yMakefile,v 1.98 2004-11-12 23:26:51 grubin Exp $
 #
 #########################################################################
 #																		#
@@ -15,7 +15,7 @@
 #				National Center for Atmospheric Research
 #				POB 3000, Boulder, Colorado
 #
-#	$Date: 2004-11-09 21:52:49 $
+#	Date:		$Date: 2004-11-12 23:26:51 $
 #
 #	Description:	
 #
@@ -60,13 +60,14 @@ HDFEOS_OBJS = NclHDFEOS.o
 #
 # DODS
 #
+#if defined(linux)
 DODS_LIBS	=	-lnc-dods -ldap++ -lcurl -lrx -lxml2 -lpthread -lssl
 NCDFLIBS	=	$(DODS_LIBS)
-
-#if defined(linux)
 CC_LD		=	g++
 #elif defined(AIX)
-CC_LD = xlC_r
+DODS_LIBS	=	-lnc-dods -ldap++ -lcurl -lrx -lxml2 -lpthread -lssl -liconv
+NCDFLIBS	=	$(DODS_LIBS)
+CC_LD		=	xlC_r
 #endif
 # endif
 
