@@ -1,19 +1,19 @@
 #
-#	$Id: yMakefile,v 1.2 1993-03-21 02:13:27 haley Exp $
+#	$Id: yMakefile,v 1.3 1993-04-01 23:51:11 haley Exp $
 #
 NCARG	= ../../..
 
-MAN3 = ezisos isgeti isgetr isosrf isosurface isosurface_params isseti issetr \
-	pwrzi
+MAN3 = dandr ezisos init3d isgeti isgetr isoscr isosrf isosrfhr isosurface \
+	isosurface_params isseti issetr pwrzi
 
 MAN = $(MAN3)
 
 all:
 
 preformatted:
-	@for name in $(MAN3); do\
+	@for name in $(MAN3); do \
 	echo "Formatting $$name.m"; \
-	nroff -man $$name.m >$$name.p;\
+	nroff -man $$name.m >$$name.p; \
 	done
 
 #if defined(CRAY) || defined(sgi) || defined(ardent)
