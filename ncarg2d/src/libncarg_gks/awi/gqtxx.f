@@ -1,5 +1,5 @@
 C
-C	$Id: gqtxx.f,v 1.6 2000-09-13 17:17:22 fred Exp $
+C	$Id: gqtxx.f,v 1.7 2000-09-13 17:30:01 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -32,6 +32,11 @@ C
       include 'gkscom.h'
 C
       INTEGER WKID,ERRIND
+C
+C  Font metric data for NCAR fonts (font right, top, cap, base, bot, and
+C  widths).
+C
+      INTEGER FMETRX(NUMX,NFNT)
       REAL    PX,PY,CPX,CPY,TXEXPX(4),TXEXPY(4)
       REAL TWIND(4),TVIEW(4)
       CHARACTER*(*) STRX
@@ -42,11 +47,6 @@ C
       DATA IFNTNM/   1, -2, -3, -4, -5, -6, -7, -8, -9,-10,-11,-12,-13,
      +             -14,-15,-16,-17,-18,-19,-20,-21,-22,-25,-26,-29,-30,
      +             -33,-34,-35,-36,-37/
-C
-C  Font metric data for NCAR fonts (font right, top, cap, base, bot, and
-C  widths).
-C
-      INTEGER FMETRX(NUMX,NFNT)
 C
       DATA (FMETRX(LL,1),LL=1,NUMX)/
      +  27,  44,  35,   8,   0,  27,  27,  27,  27,  27,
