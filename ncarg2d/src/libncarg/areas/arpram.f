@@ -1,5 +1,5 @@
 C
-C $Id: arpram.f,v 1.13 1995-05-24 16:55:51 kennison Exp $
+C $Id: arpram.f,v 1.14 1995-11-14 23:46:05 kennison Exp $
 C
       SUBROUTINE ARPRAM (IAM,IF1,IF2,IF3)
 C
@@ -1340,7 +1340,7 @@ C
             IF (.NOT.(IOF.NE.0)) GO TO 10224
               IX0=IAM(IPH+1)
               IY0=IAM(IPH+2)
-              IF (.NOT.(INT(YCO).NE.IY0)) GO TO 10225
+              IF (.NOT.(INT(YCO+.5).NE.IY0)) GO TO 10225
                 IPI=18
                 L10017=    6
                 GO TO 10017
@@ -1348,7 +1348,7 @@ C
                 IAM(IPN+7)=0
                 IAM(IPN+8)=0
                 IAM(IPN+9)=0
-                IY0=INT(YCO)
+                IY0=INT(YCO+.5)
                 L10017=    7
                 GO TO 10017
 10227           CONTINUE

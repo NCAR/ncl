@@ -1,5 +1,5 @@
 C
-C $Id: arscam.f,v 1.9 1995-04-28 19:41:09 kennison Exp $
+C $Id: arscam.f,v 1.10 1995-11-14 23:46:05 kennison Exp $
 C
       SUBROUTINE ARSCAM (IAM,XCS,YCS,MCS,IAI,IAG,MAI,APR)
 C
@@ -421,12 +421,12 @@ C
           IF (.NOT.(IOF.NE.0)) GO TO 10064
             IX0=IAM(IPH+1)
             IY0=IAM(IPH+2)
-            IF (.NOT.(INT(YCO).NE.IY0)) GO TO 10065
+            IF (.NOT.(INT(YCO+.5).NE.IY0)) GO TO 10065
               IPI=18
               L10067=    1
               GO TO 10067
 10066         CONTINUE
-              IY0=INT(YCO)
+              IY0=INT(YCO+.5)
               L10067=    2
               GO TO 10067
 10068         CONTINUE
