@@ -1,9 +1,9 @@
 C
-C	$Id: stdata.f,v 1.5 1993-02-25 19:31:58 dbrown Exp $
+C	$Id: stdata.f,v 1.6 1993-03-08 18:38:06 dbrown Exp $
 C
       BLOCK DATA STDATA
 C
-C This 'routine' defines the default values of the VELVCT parameters.
+C This routine defines the default values of the Streamline parameters.
 C
 C ---------------------------------------------------------------------
 C

@@ -1,5 +1,5 @@
 C
-C	$Id: strmln.f,v 1.8 1993-02-26 23:11:22 dbrown Exp $
+C	$Id: strmln.f,v 1.9 1993-03-08 18:38:11 dbrown Exp $
 C
       SUBROUTINE STRMLN (U,V,WORK,IMAX,IPTSX,JPTSY,NSET,IER)
 C
@@ -244,7 +244,7 @@ C  local variable)
 C
 C ISSGD, ISAGD, SARL, ISCKP, 
 C ISCKX, ISTRP, ISCYK, SVNL, 
-C ISSVF, SUSV, SVSV, SCDS, SSSP
+C ISSVF, SUSV, SVSV, SDFM, SCDS, SSSP
 C
 C IPM             - parameter use flag
 C ICB             - common blocks use flag
@@ -297,6 +297,7 @@ C
       CALL STGETI('SVF - Special Value Flag', ISSVF)
       CALL STGETR('USV - U Array Special Value', SUSV)
       CALL STGETR('VSV - V Array Special Value', SVSV)
+      CALL STGETR('DFM - Differential magnitude', SDFM) 
       CALL STGETR('CDS - Critical Displacement', SCDS)
       CALL STGETR('SSP - Streamline Spacing', SSSP)
 C
@@ -445,6 +446,7 @@ C
       CALL STSETI('SVF - Special Value Flag', ISSVF)
       CALL STSETR('USV - U Array Special Value', SUSV)
       CALL STSETR('VSV - V Array Special Value', SVSV)
+      CALL STSETR('DFM - Differential magnitude', SDFM) 
       CALL STSETR('CDS - Critical Displacement', SCDS)
       CALL STSETR('SSP - Streamline Spacing', SSSP)
 C
@@ -503,134 +505,134 @@ C
 C
 C INTERNAL PARAMETERS
 C
-C                        NAME     DEFAULT            FUNCTION
-C                        ----     -------            --------
+C                        NAME     DEFAULT         FUNCTION
+C                        ----     -------         --------
 C
-C                        EXT       0.25      Lengths of the sides of the
-C                                            plot are proportional to
-C                                            IPTSX and JPTSY except in
-C                                            the case when MIN(IPTSX,JPT)
-C                                            / MAX(IPTSX,JPTSY) .LT. EXT;
-C                                            in that case a square
-C                                            graph is plotted.
+C                        EXT       0.25   Lengths of the sides of the
+C                                         plot are proportional to
+C                                         IPTSX and JPTSY except in
+C                                         the case when MIN(IPTSX,JPT)
+C                                         / MAX(IPTSX,JPTSY) .LT. EXT;
+C                                         in that case a square
+C                                         graph is plotted.
 C
-C                        SIDE      0.90      Length of longer edge of
-C                                            plot. (See also EXT.)
+C                        SIDE      0.90   Length of longer edge of
+C                                         plot. (See also EXT.)
 C
-C                        XLT       0.05      Left hand edge of the plot.
-C                                            (0.0 = left edge of frame)
-C                                            (1.0 = right edge of frame)
+C                        XLT       0.05   Left hand edge of the plot.
+C                                         (0.0 = left edge of frame)
+C                                         (1.0 = right edge of frame)
 C
-C                        YBT       0.05      Bottom edge of the plot.
-C                                            (0.0 = bottom ; 1.0 = top)
+C                        YBT       0.05   Bottom edge of the plot.
+C                                         (0.0 = bottom ; 1.0 = top)
 C
-C                                            (YBT+SIDE and XLT+SIDE must
-C                                            be .LE. 1. )
+C                                         (YBT+SIDE and XLT+SIDE must
+C                                         be .LE. 1. )
 C
-C                        INITA     2         Used to precondition grid
-C                                            boxes to be eligible to
-C                                            start a streamline.
-C                                            For example, a value of 4
-C                                            means that every fourth
-C                                            grid box is eligible ; a
-C                                            value of 2 means that every
-C                                            other grid box is eligible.
-C                                            (see INITB)
+C                        INITA     2      Used to precondition grid
+C                                         boxes to be eligible to
+C                                         start a streamline.
+C                                         For example, a value of 4
+C                                         means that every fourth
+C                                         grid box is eligible ; a
+C                                         value of 2 means that every
+C                                         other grid box is eligible.
+C                                         (see INITB)
 C
-C                        INITB     2         Used to precondition grid
-C                                            boxes to be eligible for
-C                                            direction arrows.
-C                                            If the user changes the
-C                                            default values of INITA
-C                                            and/or INITB, it should
-C                                            be done such that
-C                                            MOD(INITA,INITB) = 0 .
-C                                            For a dense grid try
-C                                            INITA=4 and INITB=2 to
-C                                            reduce the CPU time.
+C                        INITB     2      Used to precondition grid
+C                                         boxes to be eligible for
+C                                         direction arrows.
+C                                         If the user changes the
+C                                         default values of INITA
+C                                         and/or INITB, it should
+C                                         be done such that
+C                                         MOD(INITA,INITB) = 0 .
+C                                         For a dense grid try
+C                                         INITA=4 and INITB=2 to
+C                                         reduce the CPU time.
 C
-C                        AROWL     0.33      Length of direction arrow.
-C                                            For example, 0.33 means
-C                                            each directional arrow will
-C                                            take up a third of a grid
-C                                            box.
+C                        AROWL     0.33   Length of direction arrow.
+C                                         For example, 0.33 means
+C                                         each directional arrow will
+C                                         take up a third of a grid
+C                                         box.
 C
-C                        ITERP     35        Every 'ITERP' iterations
-C                                            the streamline progress
-C                                            is checked.
+C                        ITERP     35     Every 'ITERP' iterations
+C                                         the streamline progress
+C                                         is checked.
 C
-C                        ITERC     -99       The default value of this
-C                                            parameter is such that
-C                                            it has no effect on the
-C                                            code. When set to some
-C                                            positive value, the program
-C                                            will check for streamline
-C                                            crossover every 'ITERC'
-C                                            iterations. (The routine
-C                                            currently does this every
-C                                            time it enters a new grid
-C                                            box.)
-C                                            Caution:  When this
-C                                            parameter is activated,
-C                                            CPU time will increase.
+C                        ITERC     -99    The default value of this
+C                                         parameter is such that
+C                                         it has no effect on the
+C                                         code. When set to some
+C                                         positive value, the program
+C                                         will check for streamline
+C                                         crossover every 'ITERC'
+C                                         iterations. (The routine
+C                                         currently does this every
+C                                         time it enters a new grid
+C                                         box.)
+C                                         Caution:  When this
+C                                         parameter is activated,
+C                                         CPU time will increase.
 C
-C                        IGFLG     0         A value of zero means that
-C                                            the sixteen point Bessel
-C                                            Interpolation Formula will
-C                                            be utilized where possible;
-C                                            when near the grid edges,
-C                                            quadratic and bi-linear
-C                                            interpolation  will be
-C                                            used. This mixing of
-C                                            interpolation schemes can
-C                                            sometimes cause slight
-C                                            raggedness near the edges
-C                                            of the plot.  If IGFLG.NE.0,
-C                                            then only the bilinear
-C                                            interpolation formula
-C                                            is used; this will generally
-C                                            result in slightly faster
-C                                            plot times but a less
-C                                            pleasing plot.
+C                        IGFLG     0      A value of zero means that
+C                                         the sixteen point Bessel
+C                                         Interpolation Formula will
+C                                         be utilized where possible;
+C                                         when near the grid edges,
+C                                         quadratic and bi-linear
+C                                         interpolation  will be
+C                                         used. This mixing of
+C                                         interpolation schemes can
+C                                         sometimes cause slight
+C                                         raggedness near the edges
+C                                         of the plot.  If IGFLG.NE.0,
+C                                         then only the bilinear
+C                                         interpolation formula
+C                                         is used; this will generally
+C                                         result in slightly faster
+C                                         plot times but a less
+C                                         pleasing plot.
 C
-C                        IMSG      0         If zero, then no missing
-C                                            U and V components are
-C                                            present.
-C                                            If .NE. 0, STRMLN will
-C                                            utilize the
-C                                            bi-linear interpolation
-C                                            scheme and terminate if
-C                                            any data points are missing.
+C                        IMSG      0      If zero, then no missing
+C                                         U and V components are
+C                                         present.
+C                                         If .NE. 0, STRMLN will
+C                                         utilize the
+C                                         bi-linear interpolation
+C                                         scheme and terminate if
+C                                         any data points are missing.
 C
-C                        UVMSG     1.E+36    Value assigned to a missing
-C                                            point.
+C                        UVMSG     1.E+36 Value assigned to a missing
+C                                         point.
 C
-C                        ICYC      0         Zero means the data are
-C                                            non-cyclic in the X
-C                                            direction.
-C                                            If .NE 0, the
-C                                            cyclic interpolation
-C                                            formulas will be used.
-C                                            (Note:  Even if the data
-C                                            are cyclic in X, leaving
-C                                            ICYC = 0 will do no harm.)
+C                        ICYC      0      Zero means the data are
+C                                         non-cyclic in the X
+C                                         direction.
+C                                         If .NE 0, the
+C                                         cyclic interpolation
+C                                         formulas will be used.
+C                                         (Note:  Even if the data
+C                                         are cyclic in X, leaving
+C                                         ICYC = 0 will do no harm.)
 C
-C                        DISPL     0.33      The wind speed is
-C                                            normalized to this value.
-C                                            (See the discussion below.)
+C                        DISPL     0.33   The wind speed is
+C                                         normalized to this value.
+C                                         (See the discussion below.)
 C
-C                        DISPC     0.67      The critical displacement.
-C                                            If after 'ITERP' iterations
-C                                            the streamline has not
-C                                            moved this distance, the
-C                                            streamline will be
-C                                            terminated.
+C                        DISPC     0.67   The critical displacement.
+C                                         If after 'ITERP' iterations
+C                                         the streamline has not
+C                                         moved this distance, the
+C                                         streamline will be
+C                                         terminated.
 C
-C                        CSTOP     0.50      This parameter controls
-C                                            the spacing between
-C                                            streamlines.  The checking
-C                                            is done when a new grid
-C                                            box is entered.
+C                        CSTOP     0.50   This parameter controls
+C                                         the spacing between
+C                                         streamlines.  The checking
+C                                         is done when a new grid
+C                                         box is entered.
 C
 C DISCUSSION OF          Assume a value of 0.33 for DISPL.  This
 C DISPL,DISPC            means that it will take three steps to move
