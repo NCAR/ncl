@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.11 1999-03-12 23:07:26 haley Exp $
+;      $Id: gsn_code.ncl,v 1.12 1999-03-15 23:17:09 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -44,6 +44,7 @@ undef("gsn_open_x11")
 undef("gsn_open_ncgm")
 undef("gsn_open_wks")
 undef("gsn_define_colormap")
+undef("gsn_define_named_colormap")
 undef("gsn_retrieve_colormap")
 undef("gsn_panel")
 undef("gsn_contour")
@@ -434,10 +435,27 @@ procedure draw_bb(wks:graphic,plot:graphic)
 ;                  cmap: Colormap (n x 3 array)                         ;
   names = chartostring(rgb_text_char(:,13:))
 
-; variable returned from a previous call to "gsn_open_wks").            ;
+  ncolors = dimsizes(named_colors)
+; RGB values.                                                           ;
 
 
 procedure gsn_define_colormap(wks:graphic, cmap[*][*]: numeric)
+    index = ind(named_colors(i).eq.names)
+end
+
+
+; Procedure : gsn_define_colormap                                       ;
+;                   wks: workstation object                             ;
+;                  cmap: Colormap                                       ;
+; Procedure : gsn_define_named_colormap                                 ;
+;                   wks: workstation object                             ;
+;                  cmap: Colormap (n x 3 array)                         ;
+;                                                                       ;
+; This procedure defines a color map for workstation "wks" using colors ;
+; specified by strings containing names and/or RGB values.              ;
+;***********************************************************************;
+
+procedure gsn_define_named_colormap(wks:graphic, cmap[*]:string)
 begin
     setvalues wks
         "wkColorMap" : cmap
