@@ -1,5 +1,5 @@
 /*
- *      $Id: ncarg_path.c,v 1.21 1995-06-14 15:32:26 haley Exp $
+ *      $Id: ncarg_path.c,v 1.22 1998-09-18 23:07:01 boote Exp $
  */
 /*
  *	File:		ncarg_path.c
@@ -122,12 +122,14 @@ const char
 					pw = getpwuid(getuid());
 
 				if(pw == NULL){
+					endpwent();
 					ESprintf(E_UNKNOWN,
 						"Unable to Resolve \'~\' in %s",
 								rawfname);
 					return(NULL);
 				}
 				strcat(fname,pw->pw_dir);
+				endpwent();
 
 				break;
 
