@@ -1,5 +1,5 @@
 /*
- *      $Id: shaper.c,v 1.5 1997-06-27 07:20:21 dbrown Exp $
+ *      $Id: shaper.c,v 1.6 1997-07-23 22:23:40 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -784,7 +784,8 @@ static void EditTimeoutCB
 		     si->finish[si->tgl_coord]) ? True : False;
 	XtSetSensitive(si->synchro_step_tgl,sensitive);
 
-        MAX(50,shaper->edit_timeout_value /= 1.1);
+        shaper->edit_timeout_value = 
+		MAX(3,shaper->edit_timeout_value /= 1.05);
         shaper->edit_timer_set = True;
         shaper->edit_timer_id = XtAppAddTimeOut(si->go->go.x->app,
                                                 shaper->edit_timeout_value,

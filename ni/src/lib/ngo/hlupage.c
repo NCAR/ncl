@@ -1,5 +1,5 @@
 /*
- *      $Id: hlupage.c,v 1.4 1997-06-27 07:20:17 dbrown Exp $
+ *      $Id: hlupage.c,v 1.5 1997-07-23 22:23:37 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -27,6 +27,7 @@
 #include <Xm/Form.h>
 #include <Xm/PushBG.h>
 #include <Xm/ToggleBG.h>
+#include <ncarg/hlu/XWorkstation.h>
 
 static NhlErrorTypes
 ManageScalarField
@@ -51,7 +52,7 @@ ManageScalarField
                         NrmQuarkToString(ditem->qfile),
                         NrmQuarkToString(ditem->qvar));
                 else
-                        sprintf(sfbuf,"%s",ditem->qvar);
+                        sprintf(sfbuf,"%s(",NrmQuarkToString(ditem->qvar));
         for (i=ditem->ndims-1; i>=0;i--) {
                 if (abs((ditem->finish[i] - ditem->start[i])
                         /ditem->stride[i])< 1)
@@ -125,7 +126,10 @@ static Boolean ManagePlotObj
 	char *cp = buf;
 	char title[] = 
 		"\"tiMainString\" : \"%s\"\n";
-
+        int wid;
+        Dimension h,w;
+	char cellsizestring[16];
+        
 	char *cnlineres[] = {
 		"cnScalarFieldData",
 		NULL 
@@ -158,9 +162,8 @@ static Boolean ManagePlotObj
 		"cnScalarFieldData",
 		"cnLinesOn",
 		"cnLineLabelsOn",
-		"cnFillOn",
 		"cnRasterModeOn",
-                "cnRasterCellSizeF",
+                "cnRasterSmoothingOn",
 		"pmLabelBarDisplayMode",
 		"vpXF",
 		NULL
@@ -170,13 +173,33 @@ static Boolean ManagePlotObj
 		"False",
 		"False",
 		"True",
-		"True",
-                "0.006",
+                "False",
 		"\"Conditional\"",
 		"\"0.12\"",
 		NULL
 	};
 
+	char *cninterpolatedrasterres[] = {
+		"cnScalarFieldData",
+		"cnLinesOn",
+		"cnLineLabelsOn",
+		"cnRasterModeOn",
+                "cnRasterSmoothingOn",
+		"pmLabelBarDisplayMode",
+		"vpXF",
+		NULL
+	};
+	char *cninterpolatedrastervalues[] = {
+		NULL,
+		"False",
+		"False",
+		"True",
+                "True",
+		"\"Conditional\"",
+		"\"0.12\"",
+		NULL
+	};
+        
 	char *stres[] = {
 		"stVectorFieldData",
 		NULL
@@ -264,6 +287,10 @@ static Boolean ManagePlotObj
  	case (int)ngRASTERCONTOUR:
 		res = cnrasterres;
 		values = cnrastervalues;
+		break;
+ 	case (int)ngINTERPOLATEDRASTERCONTOUR:
+                res = cninterpolatedrasterres;
+		values = cninterpolatedrastervalues;
 		break;
  	case (int)ngSTREAMLINE:
 		res = stres;
@@ -613,6 +640,7 @@ DeactivateHluPage
 )
 {
 	brHluPageRec *rec = (brHluPageRec *)page->pdata->type_rec;
+        int i;
 
         if (rec->create_update)
                 XtRemoveCallback(rec->create_update,
@@ -621,6 +649,13 @@ DeactivateHluPage
                 XtRemoveCallback(rec->auto_update,
                                  XmNvalueChangedCallback,AutoUpdateCB,page);
 
+        rec->created = False;
+        rec->do_auto_update = False;
+        rec->public.data_info = NULL;
+        rec->public.class_name = NULL;
+        
+        for (i=0; i <  8; i++)
+                rec->data_objects[i] = NrmNULLQUARK;
         rec->activated = False;
 }
 

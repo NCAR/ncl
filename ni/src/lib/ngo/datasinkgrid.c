@@ -1,5 +1,5 @@
 /*
- *      $Id: datasinkgrid.c,v 1.3 1997-06-27 07:20:16 dbrown Exp $
+ *      $Id: datasinkgrid.c,v 1.4 1997-07-23 22:23:36 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -109,7 +109,8 @@ DataText
                                 NrmQuarkToString(ditem->qfile),
                                 NrmQuarkToString(ditem->qvar));
                 else
-                        sprintf(&Buffer[cwidth0],"%s",ditem->qvar);
+                        sprintf(&Buffer[cwidth0],"%s",
+                                NrmQuarkToString(ditem->qvar));
                 for (i=0; i< ditem->ndims; i++) {
                         sprintf(&Buffer[strlen(Buffer)],"%d:%d:%d,",
                                 ditem->start[i],

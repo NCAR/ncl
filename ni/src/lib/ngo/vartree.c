@@ -1,5 +1,5 @@
 /*
- *      $Id: vartree.c,v 1.2 1997-06-20 21:48:30 dbrown Exp $
+ *      $Id: vartree.c,v 1.3 1997-07-23 22:23:42 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -33,6 +33,7 @@
 static NrmQuark Qlong_name;
 static Dimension Row_Height;
 static Dimension Char_Height;
+static NhlString Unnamed = "<unnamed>";
 
 static char *GetLongName(
         NrmQuark qfile,
@@ -786,7 +787,8 @@ static void ExpandDimList
                         ndata->subdata[i].type = subtype;
                 }
                 sprintf(buf,"%s",
-                        NrmQuarkToString(drec[i].dim_quark),
+                        (drec[i].dim_quark <= NrmNULLQUARK ?
+                         Unnamed : NrmQuarkToString(drec[i].dim_quark)),
                         drec[i].dim_size);
                 rowdefs[i].level = subtype / 10;
                 rowdefs[i].isExpanded = False;

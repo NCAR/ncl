@@ -1,5 +1,5 @@
 /*
- *      $Id: createmenus.h,v 1.2 1997-06-23 21:06:22 dbrown Exp $
+ *      $Id: createmenus.h,v 1.3 1997-07-23 22:23:35 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -40,6 +40,7 @@
 #define NgLineContour   "Line Contour"
 #define NgFillContour   "Fill Contour"
 #define NgRasterContour "Raster Contour"
+#define NgInterpolatedRasterContour "Interpolated Raster Contour"
 #define NgStreamline    "Streamline"
 #define NgLineVector    "Line Vector"
 #define NgFillVector    "Fill Vector"
@@ -54,6 +55,7 @@ typedef enum _NgDataSinkType {
         ngLINECONTOUR,
         ngFILLCONTOUR,
         ngRASTERCONTOUR,
+        ngINTERPOLATEDRASTERCONTOUR,
         ngSTREAMLINE,
         ngLINEVECTOR,
         ngFILLVECTOR,

@@ -1,5 +1,5 @@
 /*
- *      $Id: addfile.c,v 1.10 1997-06-20 21:48:19 dbrown Exp $
+ *      $Id: addfile.c,v 1.11 1997-07-23 22:23:29 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -293,7 +293,6 @@ AddFileScript
 	char		func[] = "AddFileScript";
 	NgAddFile	l = (NgAddFile)go;
 	NgAddFilePart	*np = &l->addfile;
-	int		nsid = NhlDEFAULT_APP;
 	char		*vname;
 	Widget		rtype;
 	char		*rw = "r";
@@ -334,18 +333,7 @@ AddFileScript
 
 	sprintf(Buffer,"%s = addfile(\"%s\",\"%s\")\n",vname,np->dirspec,rw);
 
-
-	NhlVAGetValues(l->go.appmgr,
-		NgNappNclState,	&nsid,
-		NULL);
-
-	if(!NhlIsClass(nsid,NgnclStateClass)){
-		NHLPERROR((NhlFATAL,
-                           NhlEUNKNOWN,"%s:invalid nclstate id",func));
-		XtFree(vname);
-		return;
-	}
-	(void)NgNclSubmitBlock(nsid,Buffer);
+	(void)NgNclSubmitBlock(np->nsid,Buffer);
 
         XtFree(vname);
 	return;
@@ -871,23 +859,12 @@ static NhlBoolean OpenForPreview
 	XmString dirspec;
 	static  first = True;
 	NclApiDataList *vlist,*dl;
-        int nsid;
         char func[] = "OpenForPreview";
         NhlBoolean	writable;
 
 #if	DEBUG_ADDFILE
 	fprintf(stderr,"OpenForPreview(IN)\n");
 #endif
-
-	NhlVAGetValues(l->go.appmgr,
-		NgNappNclState,	&nsid,
-		NULL);
-
-	if(!NhlIsClass(nsid,NgnclStateClass)){
-		NHLPERROR((NhlFATAL,NhlEUNKNOWN,
-                           "%s:invalid nclstate id",func));
-		return False;
-	}
 
 	if (! np->readable) {
                 ClearVarList(go);
@@ -907,12 +884,12 @@ static NhlBoolean OpenForPreview
 	}
 	else {
 		sprintf(Buffer,"delete(_NgPreviewFile)\n");
-                (void)NgNclSubmitBlock(nsid,Buffer);
+                (void)NgNclSubmitBlock(np->nsid,Buffer);
 	}
 	
 	sprintf(Buffer,"_NgPreviewFile = addfile(\"%s\",\"r\")\n",np->dirspec);
 
-        (void)NgNclSubmitBlock(nsid,Buffer);
+        (void)NgNclSubmitBlock(np->nsid,Buffer);
 
 	dl = NclGetFileInfo(QPreviewFile);
 	if (!dl) {
@@ -1875,6 +1852,45 @@ ChangeSizeEH
 
 	return;
 }
+
+static void
+FileRefDeleteCB
+(
+	NhlArgVal	cbdata,
+	NhlArgVal	udata
+)
+{
+	NgGO		go = (NgGO) udata.ptrval;
+        NgNclAny	node = (NgNclAny)cbdata.ptrval;
+	NgAddFilePart	*np = &((NgAddFile)go)->addfile;
+        char		*vname;
+        XmString	xmstring;
+        
+        printf("in fileref delete callback\n");
+
+        XtVaGetValues(np->vname,
+                      XmNvalue,&vname,
+                      NULL);
+        if (strcmp(vname,node->name))
+                return;
+
+        np->vname_added = False;
+        xmstring = XmStringCreateLocalized("Input Var Name");
+        XtVaSetValues(np->vname_label,
+                      XmNlabelString,xmstring,
+                      NULL);
+        XmStringFree(xmstring);
+        XtVaSetValues(np->vname,
+                      XmNeditable,True,
+                      XtVaTypedArg,XmNbackground,
+                      XmRString,"lightsalmon",12,
+                      NULL);
+        XtSetSensitive(np->ok,True);
+        XtSetSensitive(np->apply,True);
+        
+	return;
+}
+
 static NhlBoolean
 AddFileCreateWin
 (
@@ -1896,9 +1912,20 @@ AddFileCreateWin
         NgVcrControl	vcrp;
         Dimension	width1,width2;
         int		pos;
+	NhlArgVal	sel,user_data;
                 
 	XtAppAddActions(go->go.x->app,
                         addfileactions,NhlNumber(addfileactions));
+	NhlVAGetValues(go->go.appmgr,
+		NgNappNclState,	&np->nsid,
+		NULL);
+
+	if(!NhlIsClass(np->nsid,NgnclStateClass)){
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+                  "%s:invalid nclstate id, can't initialize addfile dialog",
+                           func));
+		return NhlFATAL;
+	}
 
 /*
  * Set up template dialog manager
@@ -2398,6 +2425,13 @@ AddFileCreateWin
 	XtAddCallback(np->filtertext,XmNactivateCallback,
 		      FilterTextCB,go);
 	XtFree(dirmask_text);
+        
+	NhlINITVAR(sel);
+	NhlINITVAR(user_data);
+	user_data.ptrval = go;
+        sel.lngval = NgNclCBDELETE_FILEVAR;
+	_NhlAddObjCallback(_NhlGetLayer(np->nsid),
+                           NgCBnsObject,sel,FileRefDeleteCB,user_data);
 
         Filter(go);
         ClearVarList(go);

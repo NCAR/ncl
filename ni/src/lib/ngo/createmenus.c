@@ -1,5 +1,5 @@
 /*
- *      $Id: createmenus.c,v 1.3 1997-06-23 21:06:22 dbrown Exp $
+ *      $Id: createmenus.c,v 1.4 1997-07-23 22:23:35 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -45,6 +45,11 @@ static NgDataSinkRec DataSinks[] = {
          {NrmNULLQUARK,NrmNULLQUARK,NrmNULLQUARK},{ 1, 2 }
         },
 	{NgRasterContour, ngRASTERCONTOUR,"cn_obj","contourPlotClass",
+         3,{ 2, 1, 1 },{ "scalar field", "x coord", "y coord" },
+         {NrmNULLQUARK,NrmNULLQUARK,NrmNULLQUARK},{ 1, 2 }
+        },
+	{NgInterpolatedRasterContour, ngINTERPOLATEDRASTERCONTOUR,
+         "cn_obj","contourPlotClass",
          3,{ 2, 1, 1 },{ "scalar field", "x coord", "y coord" },
          {NrmNULLQUARK,NrmNULLQUARK,NrmNULLQUARK},{ 1, 2 }
         },

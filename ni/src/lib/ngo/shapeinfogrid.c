@@ -1,5 +1,5 @@
 /*
- *      $Id: shapeinfogrid.c,v 1.5 1997-06-27 07:20:19 dbrown Exp $
+ *      $Id: shapeinfogrid.c,v 1.6 1997-07-23 22:23:39 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -33,6 +33,7 @@ static char *Buffer;
 static int  Buflen;
 static NrmQuark Qlong_name;
 static Pixel Foreground,Background,Right_Border_Color,Left_Border_Color;
+static NhlString Unnamed = "<unnamed>";
 
 static char *
 ColumnWidths
@@ -109,7 +110,10 @@ DimNamesText
         Buffer[0] = '\0';
 	for (i=0; i < vinfo->n_dims; i++) {
                 int clen;
-                cp = NrmQuarkToString(vinfo->dim_info[i].dim_quark);
+                if (vinfo->dim_info[i].dim_quark <= NrmNULLQUARK)
+                        cp = Unnamed;
+                else
+                        cp = NrmQuarkToString(vinfo->dim_info[i].dim_quark);
                 clen = strlen(cp);
                 while (clen + strlen(Buffer) + 2> Buflen) {
                         Buffer = NhlRealloc(Buffer,Buflen+BUFINC);

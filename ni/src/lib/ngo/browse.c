@@ -1,5 +1,5 @@
 /*
- *      $Id: browse.c,v 1.6 1997-07-02 15:30:50 boote Exp $
+ *      $Id: browse.c,v 1.7 1997-07-23 22:23:33 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -73,6 +73,15 @@ static NhlErrorTypes BrowseDestroy(
 
 static NhlBoolean BrowseCreateWin(
 	NgGO	go
+);
+
+static brPage *
+UpdatePanes(
+	NgGO		go,
+        brPageType	type,
+        NrmQuark	qvar,
+        NrmQuark	qfile,
+	NhlBoolean	delete
 );
 
 NgBrowseClassRec NgbrowseClassRec = {
@@ -1070,6 +1079,7 @@ UpdateTabs
 	return;
 }
 
+
 static int
 InsertPage
 (
@@ -1148,7 +1158,109 @@ InsertPage
 
         return pos;
 }
+
+static void
+DeleteVarPage
+(
+	brPage	*page
+)
+{
+        NrmQuark	qvar,qfile;
+	NgGO		go;
+
+	go = (NgGO) page->go;
+        qvar = page->qvar;
+        qfile = page->qfile;
+
+        switch (page->type) {
+            case _brREGVAR:
+                    UpdatePanes(go,_brREGVAR,qvar,NULL,True);
+                    break;
+            case _brFILEREF:
+                    UpdatePanes(go,_brFILEREF,NULL,qfile,True);
+                    break;
+            case _brFILEVAR:
+                    UpdatePanes(go,_brFILEVAR,qvar,qfile,True);
+                    break;
+            case _brHLUVAR:
+                    UpdatePanes(go,_brHLUVAR,qvar,NULL,True);
+                    break;
+        }
+}
+
+static void
+VarDeleteCB
+(
+	NhlArgVal	cbdata,
+	NhlArgVal	udata
+)
+{
+	NgGO go = (NgGO) udata.ptrval;
+        NgNclAny node = (NgNclAny)cbdata.ptrval;
+
+        printf("deleting %s\n", node->name);
+        UpdatePanes(go,_brREGVAR,NrmStringToQuark(node->name),NULL,True);
+                
+	return;
+}
+
+static void
+FileRefDeleteCB
+(
+	NhlArgVal	cbdata,
+	NhlArgVal	udata
+)
+{
+	NgGO		go = (NgGO) udata.ptrval;
+	NgBrowse	browse = (NgBrowse)go;
+        NgNclAny	node = (NgNclAny)cbdata.ptrval;
+	NgBrowsePart	*np = &browse->browse;
+        brPaneControl	*pcp = &np->pane_ctrl;
+        brPane		*pane;
+        brPage		*page;
+        int		i,j;
+        NrmQuark	qfile;
+
+        printf("deleting %s\n", node->name);
+        qfile = NrmStringToQuark(node->name);
+         
+        for (i = 0; i < pcp->alloc_count; i++) {
+                pane = pcp->panes[i];
+                for (j = 0; j < pane->pagecount; ) {
+                        page = XmLArrayGet(pane->pagelist,j);
+                        if (page->qfile == qfile) {
+                                if (page->type == _brFILEREF)
+                                        UpdatePanes(go,_brFILEREF,
+                                                    NULL,qfile,True);
+                                else if (page->type == _brFILEVAR)
+                                        UpdatePanes(go,_brFILEVAR,
+                                                    page->qvar,qfile,True);
+                                continue;
+                        }
+                        j++;
+                }
+        }
+
+	return;
+}
+
+static void
+HluVarDeleteCB
+(
+	NhlArgVal	cbdata,
+	NhlArgVal	udata
+)
+{
+	NgGO go = (NgGO) udata.ptrval;
+        NgNclAny node = (NgNclAny)cbdata.ptrval;
+
+        printf("deleting %s\n", node->name);
         
+        UpdatePanes(go,_brHLUVAR,NrmStringToQuark(node->name),NULL,True);
+        
+	return;
+}
+
 static brPage *AddPage
 (
 	NgGO		go,
@@ -1199,9 +1311,11 @@ static brPage *AddPage
 #if DEBUG_DATABROWSER
         fprintf(stderr,"clip window w,h: %d,%d\n",w,h);
 #endif
-        
+
         switch (type) {
         case _brREGVAR:
+		page->pdata = NgGetVarPage(go,pane,page,copy_page);
+		break;
         case _brFILEVAR:
 		page->pdata = NgGetVarPage(go,pane,page,copy_page);
                 break;
@@ -1218,7 +1332,7 @@ static brPage *AddPage
                 return NULL;
         }
         page->pdata->pane = pane;
-            
+	
         pos = InsertPage(pane,page);
 	
         UpdateTabs(go,pane,pos,_ADD);
@@ -1228,7 +1342,7 @@ static brPage *AddPage
         XmScrollVisible(pane->scroller,page->tab->tab,9,9);
         
 	(*page->pdata->adjust_page_geo)(page);
-        
+
         return page;
 }
 
@@ -1648,6 +1762,7 @@ static void PaneCtrlCB
         
 	return;
 }
+
 static void DeleteSelectionCB 
 (
 	Widget		w,
@@ -1671,26 +1786,10 @@ static void DeleteSelectionCB
             || pcp->focus_pos >= pcp->focus_pane->pagecount)
                 return;
         page = XmLArrayGet(pcp->focus_pane->pagelist,pcp->focus_pos);
-        qvar = page->qvar;
-        qfile = page->qfile;
 
-        switch (page->type) {
-            case _brREGVAR:
-                    UpdatePanes(go,_brREGVAR,qvar,NULL,True);
-                    break;
-            case _brFILEREF:
-                    UpdatePanes(go,_brFILEREF,NULL,qfile,True);
-                    break;
-            case _brFILEVAR:
-                    UpdatePanes(go,_brFILEVAR,qvar,qfile,True);
-                    break;
-            case _brHLUVAR:
-                    UpdatePanes(go,_brHLUVAR,qvar,NULL,True);
-                    break;
-        }
+	DeleteVarPage(page);
         
         return;
-
 }
 
 static void CycleSelectionCB 
@@ -1902,6 +2001,8 @@ BrowseCreateWin
 	Widget		form,sep;
         brPane		*pane;
         XmString	xmstring;
+	NhlArgVal	sel,user_data;
+	NhlLayer	ncl = _NhlGetLayer(np->nsid);
                 
 	np->mapped = False;
 	XtAppAddActions(go->go.x->app,
@@ -1948,6 +2049,15 @@ BrowseCreateWin
 
         pane = AddPane(go);
         
+	NhlINITVAR(sel);
+	NhlINITVAR(user_data);
+	user_data.ptrval = go;
+        sel.lngval = NgNclCBDELETE_VAR;
+	_NhlAddObjCallback(ncl,NgCBnsObject,sel,VarDeleteCB,user_data);
+        sel.lngval = NgNclCBDELETE_FILEVAR;
+	_NhlAddObjCallback(ncl,NgCBnsObject,sel,FileRefDeleteCB,user_data);
+        sel.lngval = NgNclCBDELETE_HLUVAR;
+	_NhlAddObjCallback(ncl,NgCBnsObject,sel,HluVarDeleteCB,user_data);
 	return True;
 }
 
@@ -2001,7 +2111,7 @@ static brPage *GetPageReference
         brPane		*pane;
         brPage		*page;
         int		i,j;
-        
+         
         for (i = 0; i < pcp->alloc_count; i++) {
                 pane = pcp->panes[i];
                 for (j = 0; j < pane->pagecount; j++) {

@@ -1,5 +1,5 @@
 /*
- *      $Id: diminfogrid.c,v 1.3 1997-06-20 21:48:25 dbrown Exp $
+ *      $Id: diminfogrid.c,v 1.4 1997-07-23 22:23:36 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -32,6 +32,7 @@ static char *Buffer;
 static int  Buflen;
 static NrmQuark Qlong_name;
 static Dimension Row_Height;
+static NhlString Unnamed = "<unnamed>";
 
 static char *
 ColumnWidths
@@ -128,7 +129,10 @@ DimNamesText
         
 	for (i=0; i < vinfo->n_dims; i++) {
                 int clen;
-                cp = NrmQuarkToString(vinfo->dim_info[i].dim_quark);
+                if (vinfo->dim_info[i].dim_quark <= NrmNULLQUARK)
+                        cp = Unnamed;
+                else
+                        cp = NrmQuarkToString(vinfo->dim_info[i].dim_quark);
                 clen = strlen(cp);
                 while (clen + strlen(Buffer) + 2> Buflen) {
                         Buffer = NhlRealloc(Buffer,Buflen+BUFINC);
