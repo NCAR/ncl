@@ -695,7 +695,7 @@ NhlErrorTypes dim_median_W( void )
     if (ier == 2) ier_count++;
   }
   if (ier_count) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"dim_median: %d input array(s) contained all missing values",ier_count);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"dim_median: %d rightmost sections of the input array contained all missing values",ier_count);
   }
 /*
  * Free unneeded memory.
@@ -806,7 +806,7 @@ NhlErrorTypes dim_rmvmean_W( void )
   }
 
   if (ier_count) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"dim_rmvmean: %d input array(s) contained all missing values",ier_count);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"dim_rmvmean: %d rightmost sections of the input array contained all missing values",ier_count);
   }
 
 /*
@@ -925,7 +925,7 @@ NhlErrorTypes dim_rmvmed_W( void )
     if (ier == 2) ier_count++;
   }
   if (ier_count) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"dim_rmvmed: %d input array(s) contained all missing values",ier_count);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"dim_rmvmed: %d rightmost sections of the input array contained all missing values",ier_count);
   }
 
 /*
@@ -1048,7 +1048,7 @@ NhlErrorTypes dim_standardize_W( void )
     if (ier == 2) ier_count++;
   }
   if (ier_count) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"dim_standardize: %d input array(s) contained all missing values",ier_count);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"dim_standardize: %d rightmost sections of the input array contained all missing values",ier_count);
   }
 /*
  * Free temp array.
@@ -1233,7 +1233,7 @@ NhlErrorTypes dim_rmsd_W( void )
     if (ier == 2) ier_count++;
   }
   if (ier_count) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"dim_rmsd: %d input array(s) contained all missing values",ier_count);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"dim_rmsd: %d rightmost sections of one or both of the input arrays contained all missing values",ier_count);
   }
 /*
  * Free unneeded memory.
@@ -1399,7 +1399,7 @@ NhlErrorTypes esacr_W( void )
  * Check errors.
  */
   if (ier_count2) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"esacr: %d input array(s) contained all missing values",ier_count2);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"esacr: %d rightmost sections of the input array contained all missing values",ier_count2);
   }
   if (ier_count5) {
     NhlPError(NhlWARNING,NhlEUNKNOWN,"esacr: the sample variance was zero for %d input array(s)",ier_count5);
@@ -1573,7 +1573,7 @@ NhlErrorTypes esacv_W( void )
  * Check errors.
  */
   if (ier_count2) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"esacv: %d input array(s) contained all missing values",ier_count2);
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"esacv: %d rightmost sections of the input array contained all missing values",ier_count2);
   }
   if (ier_count5) {
     NhlPError(NhlWARNING,NhlEUNKNOWN,"esacv: the sample variance was zero for %d input array(s)",ier_count5);
