@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ymake,v 1.43 2003-11-26 21:59:33 grubin Exp $
+#	$Id: ymake,v 1.44 2004-04-12 20:25:33 haley Exp $
 #
 ######################################################################
 #
@@ -640,16 +640,26 @@ case    UNICOS:
 case    Linux:
 case	FreeBSD:
 case    CYGWIN:
-        set cppopt = -traditional
+        set cppopt = -traditional-cpp
         breaksw
 default:
         set cppopt
         breaksw
 endsw
 
+switch ("$opsys")
+case    CYGWIN:
+case    Darwin:
+echo '#include "Template"' | \
+$cpp $cppopt -I. -D_COMMENT_\#="" -DNGCOMM=\# $defines -DYMAKEFILE=\"$tmp1\" | \
+"$config_dir"/ymake-filter >>$outfile
+breaksw
+default:
 echo '#include "Template"' | \
 $cpp $cppopt -I. -D_COMMENT_="" -DNGCOMM=\# $defines -DYMAKEFILE=\"$tmp1\" | \
 "$config_dir"/ymake-filter >>$outfile
+breaksw
+endsw
 
 if ($status) goto error_cleanup
 
