@@ -1,5 +1,5 @@
 /*
- *      $Id: Symbol.c,v 1.53 1997-10-24 20:48:08 ethan Exp $
+ *      $Id: Symbol.c,v 1.54 1998-12-21 19:04:56 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -182,6 +182,7 @@ long* stride;
 			sel_ptr->selection[i].u.sub.start = start[i];
 			sel_ptr->selection[i].u.sub.finish= start[i];
 			sel_ptr->selection[i].u.sub.stride = 1;
+			sel_ptr->selection[i].u.sub.is_single = 1;
 		}
 	} else if((start == NULL)&&(finish == NULL)&&(stride != NULL)) {
 /*
@@ -195,6 +196,9 @@ long* stride;
 			sel_ptr->selection[i].u.sub.start = 0;
 			sel_ptr->selection[i].u.sub.finish= dimsizes[i] - 1;
 			sel_ptr->selection[i].u.sub.stride = stride[i];
+			sel_ptr->selection[i].u.sub.is_single =
+				dimsizes[i]/stride[i] > 1 ? 0 : 1;
+
 		}
 
 	} else if((stride == NULL)&&(start != NULL)&&(finish!= NULL)) {
@@ -209,6 +213,8 @@ long* stride;
 			sel_ptr->selection[i].u.sub.start = start[i];
 			sel_ptr->selection[i].u.sub.finish= finish[i];
 			sel_ptr->selection[i].u.sub.stride = 1;
+			sel_ptr->selection[i].u.sub.is_single =
+				abs(finish[i] - start[i]) > 0 ? 0 : 1;
 		}
 
 	} else if((stride != NULL)&&(start != NULL)&&(finish!= NULL)) {
@@ -224,6 +230,8 @@ long* stride;
 			sel_ptr->selection[i].u.sub.start = start[i];
 			sel_ptr->selection[i].u.sub.finish= finish[i];
 			sel_ptr->selection[i].u.sub.stride = stride[i];
+			sel_ptr->selection[i].u.sub.is_single =
+				abs((finish[i] - start[i])/stride[i]) > 0 ? 0 : 1;
 		}
 
 	}
