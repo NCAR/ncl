@@ -1,5 +1,5 @@
 C
-C	$Id: g01pat.f,v 1.2 1993-01-09 02:06:27 fred Exp $
+C	$Id: g01pat.f,v 1.3 1998-03-17 18:16:40 fred Exp $
 C
       SUBROUTINE G01PAT
 C
@@ -76,8 +76,8 @@ C
 C  Font.
 C    Convert GKS font index to CGM pointer to font list.
 C
-      ID(1) = IABS(ID(1))
-      CALL GUPDVI (ID(1), IVTXFO, 3)
+      IFP = IABS(ID(1))
+      CALL GUPDVI (IFP, IVTXFO, 3)
 C
 C  Precision.
 C
