@@ -23,26 +23,35 @@
 #define max(x,y)  ((x) > (y) ? (x) : (y))
 
 extern void NGCALLF(stat2,STAT2)(float*, int*, float*, float*, float*, 
-				 float*, int*, int*); 
+                                 float*, int*, int*); 
+
 extern void NGCALLF(stat4,STAT4)(float*, int*, float*, float*, float*, 
-				 float*, float*, float*, int*, int*); 
+                                 float*, float*, float*, int*, int*); 
+
 extern void NGCALLF(stat2t,STAT2T)(float*, int*, float*, float*, float*, 
-				   float*, int*, float*, float*, int*); 
+                                   float*, int*, float*, float*, int*); 
+
 extern void NGCALLF(medmrng,MEDMRNG)(float*, float*, int*, float*, float*,
-				     float*, float*, int*, int*); 
-extern void NGCALLF(rmvmean,RMVMEAN)(float*, int*, float*, int*);
-extern void NGCALLF(rmvmed,RMVMED)(float*, float*, int*, float*, int*);
+                                     float*, float*, int*, int*); 
+
 extern void NGCALLF(xstnd,XSTND)(float*, int*, float*, int*, int*);
+
 extern void NGCALLF(drmvmean,DRMVMEAN)(double*, int*, double*, int*);
+
 extern void NGCALLF(drmvmed,DRMVMED)(double*, double*, int*, double*, int*);
+
 extern void NGCALLF(dmedmrng,DMEDMRNG)(double*, double*, int*, double*, 
-				       double*, double*, double*, int*, int*); 
+                                       double*, double*, double*, int*, 
+                                       int*); 
+
 extern void NGCALLF(dxstnd,DXSTND)(double*, int*, double*, int*, int*);
-extern void NGCALLF(esauto,ESAUTO)(float*, int*, float*, float*, float*, 
-				   int*, float*, float*, int*);
-extern void NGCALLF(escros,ESCROS)(float*, float*, int*, float*, float*, 
-				   float*, float*, float*, float*, int*, 
-				   float*, float*, int*);
+
+extern void NGCALLF(desauto,DESAUTO)(double*, int*, double*, double*, 
+                                     double*, int*, double*, double*, int*);
+
+extern void NGCALLF(descros,DESCROS)(double*, double*, int*, double*, 
+                                     double*, double*, double*, double*,
+                                     double*, int*, double*, double*, int*);
 
 NhlErrorTypes stat2_W( void )
 {
@@ -77,18 +86,18 @@ NhlErrorTypes stat2_W( void )
            4,
            &ndims_x, 
            dsizes_x,
-		   &missing_x,
-		   &has_missing_x,
+           &missing_x,
+           &has_missing_x,
            NULL,
            2);
 /*
  * Test for a missing value.
  */
   if( has_missing_x ) {
-	xmsg = missing_x.floatval;
+    xmsg = missing_x.floatval;
   }
   else {
-	xmsg = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+    xmsg = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
   }
 /*
  * Compute the total number of elements in our x array.
@@ -110,8 +119,8 @@ NhlErrorTypes stat2_W( void )
            4,
            &ndims_xmean, 
            dsizes_xmean,
-		   NULL,
-		   NULL,
+           NULL,
+           NULL,
            NULL,
            1);
   xvar = (float*)NclGetArgValue(
@@ -119,8 +128,8 @@ NhlErrorTypes stat2_W( void )
            4,
            &ndims_xvar, 
            dsizes_xvar,
-		   NULL,
-		   NULL,
+           NULL,
+           NULL,
            NULL,
            1);
   nptused = (int*)NclGetArgValue(
@@ -128,23 +137,23 @@ NhlErrorTypes stat2_W( void )
            4,
            &ndims_nptused, 
            dsizes_nptused,
-		   NULL,
-		   NULL,
+           NULL,
+           NULL,
            NULL,
            1);
 
   if( ndims_xmean != ndims_out || ndims_nptused != ndims_out || ndims_xvar != ndims_out ) {
-	NhlPError(NhlFATAL,NhlEUNKNOWN,"stat2: The number of dimensions of xmean, xvar, and nptused must be one less than the number of dimensions of x (or they must all be scalar if x is just a 1-d array)");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"stat2: The number of dimensions of xmean, xvar, and nptused must be one less than the number of dimensions of x (or they must all be scalar if x is just a 1-d array)");
     return(NhlFATAL);
   }
 /*
  * dimension sizes of xmean, xvar, and nptused must be the same.
  */
   for(i = 0; i < ndims_out; i++ ) {
-	  if( dsizes_xmean[i] != dsizes_out[i] || dsizes_nptused[i] != dsizes_out[i] || dsizes_xvar[i] != dsizes_out[i] ) {
-		  NhlPError(NhlFATAL,NhlEUNKNOWN,"stat2: The dimensions of xmean, xvar, and nptused must be the same as the left-most dimensions of x");
-		  return(NhlFATAL);
-	  }
+      if( dsizes_xmean[i] != dsizes_out[i] || dsizes_nptused[i] != dsizes_out[i] || dsizes_xvar[i] != dsizes_out[i] ) {
+          NhlPError(NhlFATAL,NhlEUNKNOWN,"stat2: The dimensions of xmean, xvar, and nptused must be the same as the left-most dimensions of x");
+          return(NhlFATAL);
+      }
   }
 /*
  * Call the f77 version of 'stat2' with the full argument list.
@@ -152,14 +161,14 @@ NhlErrorTypes stat2_W( void )
   l1 = l2 = 0;
   npts = dsizes_x[ndims_x-1];
   for(i = 1; i <= total_elem_x; i++) {
-	NGCALLF(stat2,STAT2)(&x[l1],&npts,&xmsg,
-						 &xmean[l2],&xvar[l2],&xsd,&nptused[l2],&ier);
-	l1 += npts;
-	l2++;
-	if (ier == 2) {
-	  NhlPError(NhlFATAL,NhlEUNKNOWN,"stat2: The first input array contains all missing values");
-	  return(NhlFATAL);
-	}
+    NGCALLF(stat2,STAT2)(&x[l1],&npts,&xmsg,
+                         &xmean[l2],&xvar[l2],&xsd,&nptused[l2],&ier);
+    l1 += npts;
+    l2++;
+    if (ier == 2) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"stat2: The first input array contains all missing values");
+      return(NhlFATAL);
+    }
   }
   return(NhlNOERROR);
 }
@@ -197,8 +206,8 @@ NhlErrorTypes stat_trim_W( void )
            5,
            &ndims_x, 
            dsizes_x,
-		   &missing_x,
-		   &has_missing_x,
+           &missing_x,
+           &has_missing_x,
            NULL,
            2);
   ptrim = (float*)NclGetArgValue(
@@ -211,17 +220,17 @@ NhlErrorTypes stat_trim_W( void )
            NULL,
            2);
   if( *ptrim < 0. || *ptrim >= 1) {
-	  NhlPError(NhlFATAL,NhlEUNKNOWN,"stat_trim: ptrim must be >= 0.0 and < 1.0");
-	  return(NhlFATAL);
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"stat_trim: ptrim must be >= 0.0 and < 1.0");
+      return(NhlFATAL);
   }
 /*
  * Test for a missing value.
  */
   if( has_missing_x ) {
-	xmsg = missing_x.floatval;
+    xmsg = missing_x.floatval;
   }
   else {
-	xmsg = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+    xmsg = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
   }
 /*
  * Compute the total number of elements in our x array.
@@ -243,8 +252,8 @@ NhlErrorTypes stat_trim_W( void )
            5,
            &ndims_xmeant, 
            dsizes_xmeant,
-		   NULL,
-		   NULL,
+           NULL,
+           NULL,
            NULL,
            1);
   xsdt = (float*)NclGetArgValue(
@@ -252,8 +261,8 @@ NhlErrorTypes stat_trim_W( void )
            5,
            &ndims_xsdt, 
            dsizes_xsdt,
-		   NULL,
-		   NULL,
+           NULL,
+           NULL,
            NULL,
            1);
   nptused = (int*)NclGetArgValue(
@@ -261,23 +270,23 @@ NhlErrorTypes stat_trim_W( void )
            5,
            &ndims_nptused, 
            dsizes_nptused,
-		   NULL,
-		   NULL,
+           NULL,
+           NULL,
            NULL,
            1);
 
   if( ndims_xmeant != ndims_out || ndims_nptused != ndims_out || ndims_xsdt != ndims_out ) {
-	NhlPError(NhlFATAL,NhlEUNKNOWN,"stat_trim: The number of dimensions of xmeant, xsdt, and nptused must be one less than the number of dimensions of x (or they must all be scalar if x is just a 1-d array)");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"stat_trim: The number of dimensions of xmeant, xsdt, and nptused must be one less than the number of dimensions of x (or they must all be scalar if x is just a 1-d array)");
     return(NhlFATAL);
   }
 /*
  * dimension sizes of xmeant, xsdt, and nptused must be the same.
  */
   for(i = 0; i < ndims_out; i++ ) {
-	  if( dsizes_xmeant[i] != dsizes_out[i] || dsizes_nptused[i] != dsizes_out[i] || dsizes_xsdt[i] != dsizes_out[i] ) {
-		  NhlPError(NhlFATAL,NhlEUNKNOWN,"stat_trim: The dimensions of xmeant, xsdt, and nptused must be the same as the left-most dimensions of x");
-		  return(NhlFATAL);
-	  }
+      if( dsizes_xmeant[i] != dsizes_out[i] || dsizes_nptused[i] != dsizes_out[i] || dsizes_xsdt[i] != dsizes_out[i] ) {
+          NhlPError(NhlFATAL,NhlEUNKNOWN,"stat_trim: The dimensions of xmeant, xsdt, and nptused must be the same as the left-most dimensions of x");
+          return(NhlFATAL);
+      }
   }
 /*
  * Allocate space for work array.
@@ -294,18 +303,18 @@ NhlErrorTypes stat_trim_W( void )
  */
   l1 = l2 = 0;
   for(i = 1; i <= total_elem_x; i++) {
-	NGCALLF(stat2t,STAT2T)(&x[l1],&npts,&xmsg,
-						 &xmeant[l2],&xvart,&xsdt[l2],&nptused[l2],work,ptrim,&ier);
-	l1 += npts;
-	l2++;
-	if (ier == 2) {
-	  NhlPError(NhlFATAL,NhlEUNKNOWN,"stat_trim: The first input array contains all missing values");
-	  return(NhlFATAL);
-	}
-	if (ier == 4) {
-	  NhlPError(NhlFATAL,NhlEUNKNOWN,"stat_trim: not enough trimmed values");
-	  return(NhlFATAL);
-	}
+    NGCALLF(stat2t,STAT2T)(&x[l1],&npts,&xmsg,
+                         &xmeant[l2],&xvart,&xsdt[l2],&nptused[l2],work,ptrim,&ier);
+    l1 += npts;
+    l2++;
+    if (ier == 2) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"stat_trim: The first input array contains all missing values");
+      return(NhlFATAL);
+    }
+    if (ier == 4) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"stat_trim: not enough trimmed values");
+      return(NhlFATAL);
+    }
   }
   free(work);
   return(NhlNOERROR);
@@ -347,18 +356,18 @@ NhlErrorTypes stat4_W( void )
            6,
            &ndims_x, 
            dsizes_x,
-		   &missing_x,
-		   &has_missing_x,
+           &missing_x,
+           &has_missing_x,
            NULL,
            2);
 /*
  * Test for a missing value.
  */
   if( has_missing_x ) {
-	xmsg = missing_x.floatval;
+    xmsg = missing_x.floatval;
   }
   else {
-	xmsg = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+    xmsg = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
   }
 /*
  * Compute the total number of elements in our x array.
@@ -380,8 +389,8 @@ NhlErrorTypes stat4_W( void )
            6,
            &ndims_xmean, 
            dsizes_xmean,
-		   NULL,
-		   NULL,
+           NULL,
+           NULL,
            NULL,
            1);
   xvar = (float*)NclGetArgValue(
@@ -389,8 +398,8 @@ NhlErrorTypes stat4_W( void )
            6,
            &ndims_xvar, 
            dsizes_xvar,
-		   NULL,
-		   NULL,
+           NULL,
+           NULL,
            NULL,
            1);
   xskew = (float*)NclGetArgValue(
@@ -398,8 +407,8 @@ NhlErrorTypes stat4_W( void )
            6,
            &ndims_xskew, 
            dsizes_xskew,
-		   NULL,
-		   NULL,
+           NULL,
+           NULL,
            NULL,
            1);
   xkurt = (float*)NclGetArgValue(
@@ -407,8 +416,8 @@ NhlErrorTypes stat4_W( void )
            6,
            &ndims_xkurt, 
            dsizes_xkurt,
-		   NULL,
-		   NULL,
+           NULL,
+           NULL,
            NULL,
            1);
   nptused = (int*)NclGetArgValue(
@@ -416,25 +425,25 @@ NhlErrorTypes stat4_W( void )
            6,
            &ndims_nptused, 
            dsizes_nptused,
-		   NULL,
-		   NULL,
+           NULL,
+           NULL,
            NULL,
            1);
 
   if( ndims_xmean != ndims_out || ndims_nptused != ndims_out || ndims_xskew != ndims_out || ndims_xkurt != ndims_out || ndims_xvar != ndims_out ) {
-	NhlPError(NhlFATAL,NhlEUNKNOWN,"stat4: The number of dimensions of xmean, xvar, xskew, xkurt, and nptused must be one less than the number of dimensions of x (or they must all be scalar if x is just a 1-d array)");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"stat4: The number of dimensions of xmean, xvar, xskew, xkurt, and nptused must be one less than the number of dimensions of x (or they must all be scalar if x is just a 1-d array)");
     return(NhlFATAL);
   }
 /*
  * dimension sizes of xmean, xskew, and nptused must be the same.
  */
   for(i = 0; i < ndims_out; i++ ) {
-	  if( dsizes_xmean[i] != dsizes_out[i] || dsizes_xkurt[i] != dsizes_out[i] || 
-		 dsizes_xvar[i] != dsizes_out[i] || dsizes_nptused[i] != dsizes_out[i] ||
-		 dsizes_xskew[i] != dsizes_out[i] ) {
-		  NhlPError(NhlFATAL,NhlEUNKNOWN,"stat4: The dimensions of xmean, xskew, xkurt, xvar, and nptused must be the same as the left-most dimensions of x");
-		  return(NhlFATAL);
-	  }
+      if( dsizes_xmean[i] != dsizes_out[i] || dsizes_xkurt[i] != dsizes_out[i] || 
+         dsizes_xvar[i] != dsizes_out[i] || dsizes_nptused[i] != dsizes_out[i] ||
+         dsizes_xskew[i] != dsizes_out[i] ) {
+          NhlPError(NhlFATAL,NhlEUNKNOWN,"stat4: The dimensions of xmean, xskew, xkurt, xvar, and nptused must be the same as the left-most dimensions of x");
+          return(NhlFATAL);
+      }
   }
 /*
  * Call the f77 version of 'stat4' with the full argument list.
@@ -442,14 +451,14 @@ NhlErrorTypes stat4_W( void )
   l1 = l2 = 0;
   npts = dsizes_x[ndims_x-1];
   for(i = 1; i <= total_elem_x; i++) {
-	NGCALLF(stat4,STAT4)(&x[l1],&npts,&xmsg,
-						 &xmean[l2],&xvar[l2],&xsd,&xskew[l2],&xkurt[l2],&nptused[l2],&ier);
-	l1 += npts;
-	l2++;
-	if (ier == 2) {
-	  NhlPError(NhlFATAL,NhlEUNKNOWN,"stat4: The first input array contains all missing values");
-	  return(NhlFATAL);
-	}
+    NGCALLF(stat4,STAT4)(&x[l1],&npts,&xmsg,
+                         &xmean[l2],&xvar[l2],&xsd,&xskew[l2],&xkurt[l2],&nptused[l2],&ier);
+    l1 += npts;
+    l2++;
+    if (ier == 2) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"stat4: The first input array contains all missing values");
+      return(NhlFATAL);
+    }
   }
   return(NhlNOERROR);
 }
@@ -488,18 +497,18 @@ NhlErrorTypes stat_medrng_W( void )
            5,
            &ndims_x, 
            dsizes_x,
-		   &missing_x,
-		   &has_missing_x,
+           &missing_x,
+           &has_missing_x,
            NULL,
            2);
 /*
  * Test for a missing value.
  */
   if( has_missing_x ) {
-	xmsg = missing_x.floatval;
+    xmsg = missing_x.floatval;
   }
   else {
-	xmsg = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+    xmsg = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
   }
 /*
  * Compute the total number of elements in our x array.
@@ -521,8 +530,8 @@ NhlErrorTypes stat_medrng_W( void )
            5,
            &ndims_xmedian, 
            dsizes_xmedian,
-		   NULL,
-		   NULL,
+           NULL,
+           NULL,
            NULL,
            1);
   xmrange = (float*)NclGetArgValue(
@@ -530,8 +539,8 @@ NhlErrorTypes stat_medrng_W( void )
            5,
            &ndims_xmrange, 
            dsizes_xmrange,
-		   NULL,
-		   NULL,
+           NULL,
+           NULL,
            NULL,
            1);
   xrange = (float*)NclGetArgValue(
@@ -539,8 +548,8 @@ NhlErrorTypes stat_medrng_W( void )
            5,
            &ndims_xrange, 
            dsizes_xrange,
-		   NULL,
-		   NULL,
+           NULL,
+           NULL,
            NULL,
            1);
   nptused = (int*)NclGetArgValue(
@@ -548,24 +557,24 @@ NhlErrorTypes stat_medrng_W( void )
            5,
            &ndims_nptused, 
            dsizes_nptused,
-		   NULL,
-		   NULL,
+           NULL,
+           NULL,
            NULL,
            1);
 
   if( ndims_xmedian != ndims_out || ndims_nptused != ndims_out || ndims_xrange != ndims_out || ndims_xmrange != ndims_out ) {
-	NhlPError(NhlFATAL,NhlEUNKNOWN,"stat_medrng: The number of dimensions of xmedian, xmrange, xrange, and nptused must be one less than the number of dimensions of x (or they must all be scalar if x is just a 1-d array)");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"stat_medrng: The number of dimensions of xmedian, xmrange, xrange, and nptused must be one less than the number of dimensions of x (or they must all be scalar if x is just a 1-d array)");
     return(NhlFATAL);
   }
 /*
  * dimension sizes of xmedian, xrange, and nptused must be the same.
  */
   for(i = 0; i < ndims_out; i++ ) {
-	  if( dsizes_xmedian[i] != dsizes_out[i] || dsizes_xmrange[i] != dsizes_out[i] ||
-		  dsizes_nptused[i] != dsizes_out[i] || dsizes_xrange[i] != dsizes_out[i] ) {
-		  NhlPError(NhlFATAL,NhlEUNKNOWN,"stat_medrng: The dimensions of xmedian, xrange, xmrange, and nptused must be the same as the left-most dimensions of x");
-		  return(NhlFATAL);
-	  }
+      if( dsizes_xmedian[i] != dsizes_out[i] || dsizes_xmrange[i] != dsizes_out[i] ||
+          dsizes_nptused[i] != dsizes_out[i] || dsizes_xrange[i] != dsizes_out[i] ) {
+          NhlPError(NhlFATAL,NhlEUNKNOWN,"stat_medrng: The dimensions of xmedian, xrange, xmrange, and nptused must be the same as the left-most dimensions of x");
+          return(NhlFATAL);
+      }
   }
 /*
  * Allocate space for work array.
@@ -582,14 +591,14 @@ NhlErrorTypes stat_medrng_W( void )
   l1 = l2 = 0;
   npts = dsizes_x[ndims_x-1];
   for(i = 1; i <= total_elem_x; i++) {
-	NGCALLF(medmrng,MEDMRNG)(&x[l1],work,&npts,&xmsg,
-				 &xmedian[l2],&xmrange[l2],&xrange[l2],&nptused[l2],&ier);
-	l1 += npts;
-	l2++;
-	if (ier == 2) {
-	  NhlPError(NhlFATAL,NhlEUNKNOWN,"stat_medrng: The first input array contains all missing values");
-	  return(NhlFATAL);
-	}
+    NGCALLF(medmrng,MEDMRNG)(&x[l1],work,&npts,&xmsg,
+                 &xmedian[l2],&xmrange[l2],&xrange[l2],&nptused[l2],&ier);
+    l1 += npts;
+    l2++;
+    if (ier == 2) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"stat_medrng: The first input array contains all missing values");
+      return(NhlFATAL);
+    }
   }
   free(work);
   return(NhlNOERROR);
@@ -626,11 +635,11 @@ NhlErrorTypes dim_median_W( void )
   data = _NclGetArg(0,1,DONT_CARE);
   switch(data.kind) {
   case NclStk_VAR:
-	tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-	break;
+    tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+    break;
   case NclStk_VAL:
-	tmp_md = (NclMultiDValData)data.u.data_obj;
-	break;
+    tmp_md = (NclMultiDValData)data.u.data_obj;
+    break;
   }
 
 /*
@@ -652,17 +661,17 @@ NhlErrorTypes dim_median_W( void )
     if(tmp1_md == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_median: Unable to convert input to double");
       return(NhlFATAL);
-    }	
+    }   
 /*
  * Get the missing value if there is one.  Otherwise, get the default 
  * missing value.
  */
     if(tmp_md->multidval.missing_value.has_missing) {
       if(tmp_md->multidval.data_type == NCL_float) {
-	missing.floatval = tmp_md->multidval.missing_value.value.floatval;
+    missing.floatval = tmp_md->multidval.missing_value.value.floatval;
       }
       else {
-	missing.floatval = (float)tmp_md->multidval.missing_value.value.intval;
+    missing.floatval = (float)tmp_md->multidval.missing_value.value.intval;
       }
     }
     else {
@@ -716,8 +725,8 @@ NhlErrorTypes dim_median_W( void )
   l1 = l2 = 0;
   for(i = 1; i <= total_elements; i++) {
     NGCALLF(dmedmrng,DMEDMRNG)(&((double*)tmp1_md->multidval.val)[l1],work,
-			       &npts,&xmsg,&xmedian[l2],&xmrange[l2],
-			       &xrange[l2],&nptused[l2],&ier);
+                   &npts,&xmsg,&xmedian[l2],&xmrange[l2],
+                   &xrange[l2],&nptused[l2],&ier);
     l1 += npts;
     l2++;
     if (ier == 2) {
@@ -748,21 +757,21 @@ NhlErrorTypes dim_median_W( void )
 
     if(tmp_md->multidval.missing_value.has_missing) {
       return(NclReturnValue((void*)xrmedian,ndims_median,dsizes_median,
-			    &missing,NCL_float,0));
+                &missing,NCL_float,0));
   }
     else {
       return(NclReturnValue((void*)xrmedian,ndims_median,dsizes_median,
-			    NULL,NCL_float,0));
+                NULL,NCL_float,0));
     }
   }
   else {
     if(tmp_md->multidval.missing_value.has_missing) {
       return(NclReturnValue((void*)xmedian,ndims_median,dsizes_median,
-			    &missing,NCL_double,0));
+                &missing,NCL_double,0));
   }
     else {
       return(NclReturnValue((void*)xmedian,ndims_median,dsizes_median,NULL,
-			    NCL_double,0));
+                NCL_double,0));
     }
   }
 }
@@ -795,11 +804,11 @@ NhlErrorTypes dim_rmvmean_W( void )
   data = _NclGetArg(0,1,DONT_CARE);
   switch(data.kind) {
   case NclStk_VAR:
-	tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-	break;
+    tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+    break;
   case NclStk_VAL:
-	tmp_md = (NclMultiDValData)data.u.data_obj;
-	break;
+    tmp_md = (NclMultiDValData)data.u.data_obj;
+    break;
   }
 
 /*
@@ -820,7 +829,7 @@ NhlErrorTypes dim_rmvmean_W( void )
   if(x == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_rmvmean: Unable to convert input to double");
     return(NhlFATAL);
-  }	
+  } 
   if( tmp_md->multidval.data_type == NCL_double ) {
     for(i = 0; i < total_elements*npts; i++) {
       x[i] = ((double *)tmp_md->multidval.val)[i];
@@ -899,22 +908,22 @@ NhlErrorTypes dim_rmvmean_W( void )
     free(x);
     if(tmp_md->multidval.missing_value.has_missing) {
       return(NclReturnValue((void*)xrmvmean,ndims,
-			    tmp_md->multidval.dim_sizes,&missing,
-			    NCL_float,0));
+                tmp_md->multidval.dim_sizes,&missing,
+                NCL_float,0));
     }
     else {
       return(NclReturnValue((void*)xrmvmean,ndims,
-			    tmp_md->multidval.dim_sizes,NULL,NCL_float,0));
+                tmp_md->multidval.dim_sizes,NULL,NCL_float,0));
     }
   }
   else {
     if(tmp_md->multidval.missing_value.has_missing) {
       return(NclReturnValue((void*)x,ndims,tmp_md->multidval.dim_sizes,
-			    &missing,NCL_double,0));
+                &missing,NCL_double,0));
     }
     else {
       return(NclReturnValue((void*)x,ndims,tmp_md->multidval.dim_sizes,
-			    NULL,NCL_double,0));
+                NULL,NCL_double,0));
     }
   }
 }
@@ -947,11 +956,11 @@ NhlErrorTypes dim_rmvmed_W( void )
   data = _NclGetArg(0,1,DONT_CARE);
   switch(data.kind) {
   case NclStk_VAR:
-	tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-	break;
+    tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+    break;
   case NclStk_VAL:
-	tmp_md = (NclMultiDValData)data.u.data_obj;
-	break;
+    tmp_md = (NclMultiDValData)data.u.data_obj;
+    break;
   }
 
 /*
@@ -1061,22 +1070,22 @@ NhlErrorTypes dim_rmvmed_W( void )
 
     if(tmp_md->multidval.missing_value.has_missing) {
       return(NclReturnValue((void*)xrmvmedian,ndims,
-			    tmp_md->multidval.dim_sizes,&missing,
-			    NCL_float,0));
+                tmp_md->multidval.dim_sizes,&missing,
+                NCL_float,0));
     }
     else {
       return(NclReturnValue((void*)xrmvmedian,ndims,
-			    tmp_md->multidval.dim_sizes,NULL,NCL_float,0));
+                tmp_md->multidval.dim_sizes,NULL,NCL_float,0));
     }
   }
   else {
     if(tmp_md->multidval.missing_value.has_missing) {
       return(NclReturnValue((void*)x,ndims,tmp_md->multidval.dim_sizes,
-			    &missing,NCL_double,0));
+                &missing,NCL_double,0));
     }
     else {
       return(NclReturnValue((void*)x,ndims,tmp_md->multidval.dim_sizes,NULL,
-			    NCL_double,0));
+                NCL_double,0));
     }
   }
 }
@@ -1109,11 +1118,11 @@ NhlErrorTypes dim_standardize_W( void )
   data = _NclGetArg(0,2,DONT_CARE);
   switch(data.kind) {
   case NclStk_VAR:
-	tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
-	break;
+    tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+    break;
   case NclStk_VAL:
-	tmp_md = (NclMultiDValData)data.u.data_obj;
-	break;
+    tmp_md = (NclMultiDValData)data.u.data_obj;
+    break;
   }
 /*
  * Get second argument.
@@ -1224,22 +1233,22 @@ NhlErrorTypes dim_standardize_W( void )
     free(x);
     if(tmp_md->multidval.missing_value.has_missing) {
       return(NclReturnValue((void*)xstandardize,ndims,
-			    tmp_md->multidval.dim_sizes,&missing,
-			    NCL_float,0));
+                tmp_md->multidval.dim_sizes,&missing,
+                NCL_float,0));
     }
     else {
       return(NclReturnValue((void*)xstandardize,ndims,
-			    tmp_md->multidval.dim_sizes,NULL,NCL_float,0));
+                tmp_md->multidval.dim_sizes,NULL,NCL_float,0));
     }
   }
   else {
     if(tmp_md->multidval.missing_value.has_missing) {
       return(NclReturnValue((void*)x,ndims,tmp_md->multidval.dim_sizes,
-			    &missing,NCL_double,0));
+                &missing,NCL_double,0));
     }
     else {
       return(NclReturnValue((void*)x,ndims,tmp_md->multidval.dim_sizes,NULL,
-			    NCL_double,0));
+                NCL_double,0));
     }
   }
 }
@@ -1250,35 +1259,49 @@ NhlErrorTypes esacr_W( void )
 /*
  * Input array variables
  */
-  float *x;
+  void *x;
+  double *dx;
   int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
   NclScalar missing_x;
+  NclBasicDataTypes type_x;
   int *mxlag;
 /*
  * Output array variables
  */
-  float *acr;
+  float *racr;
+  double *acr;
   int *dsizes_acr;
 /*
  * various
  */
-  int i, l1, l2, total_elem_x, ier = 0, npts;
-  float xmsg, xmean, xvar, *acv;
+  int i, l1, l2, total_size_x1, total_size_x, total_size_acr, ier = 0, npts;
+  double xmsg, xmean, xvar, *acv;
 /*
  * Retrieve parameters
  *
  * Note any of the pointer parameters can be set to NULL, which
  * implies you don't care about its value.
  */
-  x = (float*)NclGetArgValue(
+  x = (void*)NclGetArgValue(
            0,
            2,
            &ndims_x, 
            dsizes_x,
-		   &missing_x,
-		   &has_missing_x,
-           NULL,
+           &missing_x,
+           &has_missing_x,
+           &type_x,
            2);
+/*
+ * Type of input array must double or float.
+ */
+  if( type_x != NCL_double && type_x != NCL_float) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"esacr: The type of the first input array must be float or double");
+    return(NhlFATAL);
+  }
+
+/*
+ * Get second argument.
+ */
   mxlag = (int*)NclGetArgValue(
            1,
            2,
@@ -1288,38 +1311,69 @@ NhlErrorTypes esacr_W( void )
            NULL,
            NULL,
            2);
+/*
+ * Calculate size of input/output values.
+ */
   npts = dsizes_x[ndims_x-1];
   if(npts < 2) {
-	NhlPError(NhlFATAL,NhlEUNKNOWN,"esacr: npts must be >= 2");
-	return(NhlFATAL);
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"esacr: npts must be >= 2");
+    return(NhlFATAL);
   }
 /*
  * Check mxlag
  */
   if( *mxlag < 0 || *mxlag > npts ) {
-	NhlPError(NhlFATAL,NhlEUNKNOWN,"esacr: mxlag must be between 0 and npts");
-	return(NhlFATAL);
-  }
-/*
- * Test for a missing value.
- */
-  if( has_missing_x ) {
-	xmsg = missing_x.floatval;
-  }
-  else {
-	xmsg = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"esacr: mxlag must be between 0 and npts");
+    return(NhlFATAL);
   }
 /*
  * Compute the total number of elements in our x array.
  */
-  total_elem_x = 1;
-  for(i = 0; i < ndims_x-1; i++) total_elem_x *= dsizes_x[i];
+  total_size_x1 = 1;
+  for(i = 0; i < ndims_x-1; i++) total_size_x1 *= dsizes_x[i];
+  total_size_x = total_size_x1 * npts;
+/*
+ * Coerce data to double if necessary.
+ */
+  if(type_x != NCL_double) {
+    dx = (double*)NclMalloc(sizeof(double)*total_size_x);
+    if( dx == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"esacr: Unable to allocate memory for coercing weight array");
+      return(NhlFATAL);
+    }
+    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
+           dx,
+           x,
+           total_size_x,
+           NULL,
+           NULL,
+           _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
+  }
+  else {
+    dx = (double*)x;
+  }
+
+/*
+ * Test for a missing value.
+ */
+  if( has_missing_x ) {
+    if(type_x == NCL_double) {
+      xmsg = (double)missing_x.doubleval;
+    }
+    else {
+      xmsg = (double)missing_x.floatval;
+    }
+  }
+  else {
+    xmsg = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
+  }
 /* 
  * Get size of output variables.
  */
-  acr = (float*)NclMalloc(total_elem_x*(*mxlag+1)*sizeof(float));
-  acv = (float*)NclMalloc(total_elem_x*(*mxlag+1)*sizeof(float));
-  dsizes_acr = (int*)NclMalloc(ndims_x*sizeof(float));
+  total_size_acr = total_size_x1*(*mxlag+1);
+  acr = (double*)NclMalloc(total_size_acr*sizeof(double));
+  acv = (double*)NclMalloc(total_size_acr*sizeof(double));
+  dsizes_acr = (int*)NclMalloc(ndims_x*sizeof(int));
   if (acv == NULL || acr == NULL || dsizes_acr == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"esacr: Unable to allocate space for output arrays\n" );
     return(NhlFATAL);
@@ -1328,32 +1382,65 @@ NhlErrorTypes esacr_W( void )
   for( i = 0; i < ndims_x-1; i++ ) dsizes_acr[i] = dsizes_x[i];
   dsizes_acr[ndims_x-1] = *mxlag+1;
 /*
- * Call the f77 version of 'esauto' with the full argument list.
+ * Call the f77 version of 'desauto' with the full argument list.
  */
   l1 = l2 = 0;
-	
-  for(i = 1; i <= total_elem_x; i++) {
-	xvar = xmean = xmsg;
-	NGCALLF(esauto,ESAUTO)(&x[l1],&npts,&xmsg,&xmean,&xvar,
-						   mxlag,&acv[l2],&acr[l2],&ier);
-	l1 += npts;
-	l2 += (*mxlag+1);
-	if (ier == -2) {
-	  NhlPError(NhlFATAL,NhlEUNKNOWN,"esacr: The input array contains all missing values");
-	  return(NhlFATAL);
-	}
-	else if (ier == -5) {
-	  NhlPError(NhlFATAL,NhlEUNKNOWN,"esacr: The sample variance is zero");
-	  return(NhlFATAL);
-	}
+    
+  for(i = 1; i <= total_size_x1; i++) {
+    xvar = xmean = xmsg;
+    NGCALLF(desauto,DESAUTO)(&dx[l1],&npts,&xmsg,&xmean,&xvar,
+                             mxlag,&acv[l2],&acr[l2],&ier);
+    l1 += npts;
+    l2 += (*mxlag+1);
+    if (ier == -2) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"esacr: The input array contains all missing values");
+      return(NhlFATAL);
+    }
+    else if (ier == -5) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"esacr: The sample variance is zero");
+      return(NhlFATAL);
+    }
   }
-  if( has_missing_x ) {
-	return(NclReturnValue((void*)acr,ndims_x,dsizes_acr,&missing_x,
-			      NCL_float,0));
+/*
+ * free memory.
+ */
+  if((void*)dx != x) {
+    NclFree(dx);
+  }
+/*
+ * Return values. 
+ */
+  if(type_x != NCL_double) {
+/*
+ * Copy double values to float values.
+ */
+    racr = (float*)NclMalloc(sizeof(float)*total_size_acr);
+    if( racr == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"esacr: Unable to allocate memory for return array");
+      return(NhlFATAL);
+    }
+    for( i = 0; i < total_size_acr; i++ ) {
+      racr[i] = (float)acr[i];
+    }
+    free(acr);
+    if( has_missing_x ) {
+      return(NclReturnValue((void*)racr,ndims_x,dsizes_acr,&missing_x,
+                NCL_float,0));
+    }
+    else {
+      return(NclReturnValue((void*)racr,ndims_x,dsizes_acr,NULL,
+                NCL_float,0));
+    }
   }
   else {
-    return(NclReturnValue((void*)acr,ndims_x,dsizes_acr,NULL,
-			  NCL_float,0));
+    if( has_missing_x ) {
+      return(NclReturnValue((void*)acr,ndims_x,dsizes_acr,&missing_x,
+                NCL_double,0));
+    }
+    else {
+      return(NclReturnValue((void*)acr,ndims_x,dsizes_acr,NULL,
+                NCL_double,0));
+    }
   }
 }
 
@@ -1362,35 +1449,49 @@ NhlErrorTypes esacv_W( void )
 /*
  * Input array variables
  */
-  float *x;
+  void *x;
+  double *dx;
   int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
   NclScalar missing_x;
+  NclBasicDataTypes type_x;
   int *mxlag;
 /*
  * Output array variables
  */
-  float *acv;
+  float *racv;
+  double *acv;
   int *dsizes_acv;
 /*
  * various
  */
-  int i, l1, l2, total_elem_x, ier = 0, npts;
-  float xmsg, xmean, xvar, *acr;
+  int i, l1, l2, total_size_x1, total_size_x, total_size_acv, ier = 0, npts;
+  double xmsg, xmean, xvar, *acr;
 /*
  * Retrieve parameters
  *
  * Note any of the pointer parameters can be set to NULL, which
  * implies you don't care about its value.
  */
-  x = (float*)NclGetArgValue(
+  x = (void*)NclGetArgValue(
            0,
            2,
            &ndims_x, 
            dsizes_x,
-		   &missing_x,
-		   &has_missing_x,
-           NULL,
+           &missing_x,
+           &has_missing_x,
+           &type_x,
            2);
+/*
+ * Type of input array must double or float.
+ */
+  if( type_x != NCL_double && type_x != NCL_float) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"esacv: The type of the first input array must be float or double");
+    return(NhlFATAL);
+  }
+
+/*
+ * Get second argument.
+ */
   mxlag = (int*)NclGetArgValue(
            1,
            2,
@@ -1400,38 +1501,69 @@ NhlErrorTypes esacv_W( void )
            NULL,
            NULL,
            2);
+/*
+ * Calculate size of input/output values.
+ */
   npts = dsizes_x[ndims_x-1];
   if(npts < 2) {
-	NhlPError(NhlFATAL,NhlEUNKNOWN,"esacv: npts must be >= 2");
-	return(NhlFATAL);
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"esacv: npts must be >= 2");
+    return(NhlFATAL);
   }
 /*
  * Check mxlag
  */
   if( *mxlag < 0 || *mxlag > npts ) {
-	  NhlPError(NhlFATAL,NhlEUNKNOWN,"esacv: mxlag must be between 0 and npts");
-	  return(NhlFATAL);
-  }
-/*
- * Test for a missing value.
- */
-  if( has_missing_x ) {
-	xmsg = missing_x.floatval;
-  }
-  else {
-	xmsg = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"esacv: mxlag must be between 0 and npts");
+    return(NhlFATAL);
   }
 /*
  * Compute the total number of elements in our x array.
  */
-  total_elem_x = 1;
-  for(i = 0; i < ndims_x-1; i++) total_elem_x *= dsizes_x[i];
+  total_size_x1 = 1;
+  for(i = 0; i < ndims_x-1; i++) total_size_x1 *= dsizes_x[i];
+  total_size_x = total_size_x1 * npts;
+/*
+ * Coerce data to double if necessary.
+ */
+  if(type_x != NCL_double) {
+    dx = (double*)NclMalloc(sizeof(double)*total_size_x);
+    if( dx == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"esacv: Unable to allocate memory for coercing weight array");
+      return(NhlFATAL);
+    }
+    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
+           dx,
+           x,
+           total_size_x,
+           NULL,
+           NULL,
+           _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
+  }
+  else {
+    dx = (double*)x;
+  }
+
+/*
+ * Test for a missing value.
+ */
+  if( has_missing_x ) {
+    if(type_x == NCL_double) {
+      xmsg = (double)missing_x.doubleval;
+    }
+    else {
+      xmsg = (double)missing_x.floatval;
+    }
+  }
+  else {
+    xmsg = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
+  }
 /* 
  * Get size of output variables.
  */
-  acv = (float*)NclMalloc(total_elem_x*(*mxlag+1)*sizeof(float));
-  acr = (float*)NclMalloc(total_elem_x*(*mxlag+1)*sizeof(float));
-  dsizes_acv = (int*)NclMalloc(ndims_x*sizeof(float));
+  total_size_acv = total_size_x1*(*mxlag+1);
+  acv = (double*)NclMalloc(total_size_acv*sizeof(double));
+  acr = (double*)NclMalloc(total_size_acv*sizeof(double));
+  dsizes_acv = (int*)NclMalloc(ndims_x*sizeof(int));
   if (acv == NULL || acr == NULL || dsizes_acv == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"esacv: Unable to allocate space for output arrays\n" );
     return(NhlFATAL);
@@ -1440,78 +1572,115 @@ NhlErrorTypes esacv_W( void )
   for( i = 0; i < ndims_x-1; i++ ) dsizes_acv[i] = dsizes_x[i];
   dsizes_acv[ndims_x-1] = *mxlag+1;
 /*
- * Call the f77 version of 'esauto' with the full argument list.
+ * Call the f77 version of 'desauto' with the full argument list.
  */
   l1 = l2 = 0;
-  for(i = 1; i <= total_elem_x; i++) {
-	xvar = xmean = xmsg;
-	NGCALLF(esauto,ESAUTO)(&x[l1],&npts,&xmsg,&xmean,&xvar,
-						   mxlag,&acv[l2],&acr[l2],&ier);
-	l1 += npts;
-	l2 += (*mxlag+1);
-	if (ier == -2) {
-	  NhlPError(NhlFATAL,NhlEUNKNOWN,"esacv: The input array contains all missing values");
-	  return(NhlFATAL);
-	}
-	else if (ier == -5) {
-	  NhlPError(NhlFATAL,NhlEUNKNOWN,"esacv: The sample variance is zero");
-	  return(NhlFATAL);
-	}
+
+  for(i = 1; i <= total_size_x1; i++) {
+    xvar = xmean = xmsg;
+    NGCALLF(desauto,DESAUTO)(&dx[l1],&npts,&xmsg,&xmean,&xvar,
+                             mxlag,&acv[l2],&acr[l2],&ier);
+    l1 += npts;
+    l2 += (*mxlag+1);
+    if (ier == -2) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"esacv: The input array contains all missing values");
+      return(NhlFATAL);
+    }
+    else if (ier == -5) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"esacv: The sample variance is zero");
+      return(NhlFATAL);
+    }
   }
-  if( has_missing_x ) {
-	return(NclReturnValue((void*)acv,ndims_x,dsizes_acv,&missing_x,
-			      NCL_float,0));
+/*
+ * free memory.
+ */
+  if((void*)dx != x) {
+    NclFree(dx);
+  }
+/*
+ * Return values. 
+ */
+  if(type_x != NCL_double) {
+/*
+ * Copy double values to float values.
+ */
+    racv = (float*)NclMalloc(sizeof(float)*total_size_acv);
+    if( racv == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"esacv: Unable to allocate memory for return array");
+      return(NhlFATAL);
+    }
+    for( i = 0; i < total_size_acv; i++ ) {
+      racv[i] = (float)acv[i];
+    }
+    free(acv);
+    if( has_missing_x ) {
+      return(NclReturnValue((void*)racv,ndims_x,dsizes_acv,&missing_x,
+                NCL_float,0));
+    }
+    else {
+      return(NclReturnValue((void*)racv,ndims_x,dsizes_acv,NULL,
+                NCL_float,0));
+    }
   }
   else {
-	return(NclReturnValue((void*)acv,ndims_x,dsizes_acv,NULL,
-			      NCL_float,0));
+    if( has_missing_x ) {
+      return(NclReturnValue((void*)acv,ndims_x,dsizes_acv,&missing_x,
+                NCL_double,0));
+    }
+    else {
+      return(NclReturnValue((void*)acv,ndims_x,dsizes_acv,NULL,
+                NCL_double,0));
+    }
   }
 }
-
 
 NhlErrorTypes esccr_W( void )
 {
 /*
  * Input array variables
  */
-  float *x, *y;
+  void *x, *y;
+  double *dx, *dy;
   int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
   int ndims_y, dsizes_y[NCL_MAX_DIMENSIONS], has_missing_y;
   NclScalar missing_x, missing_y;
+  NclBasicDataTypes type_x, type_y;
   int *mxlag;
 /*
  * Output array variables
  */
-  float *ccr;
+  double *ccr;
+  float *rccr;
   int *dsizes_ccr;
 /*
  * various
  */
-  int i, l1, l2, total_elem_x, ier = 0, ier_count, npts;
-  float xmsg, ymsg, xmean, xsd, ymean, ysd, *ccv;
+  int i, l1, l2, total_size_x1, total_size_x, total_size_ccr;
+  int ier = 0, ier_count, npts;
+  double xmsg, ymsg, xmean, xsd, ymean, ysd, *ccv;
 /*
  * Retrieve parameters
  *
  * Note any of the pointer parameters can be set to NULL, which
  * implies you don't care about its value.
  */
-  x = (float*)NclGetArgValue(
+  x = (void*)NclGetArgValue(
            0,
            3,
            &ndims_x, 
            dsizes_x,
-		   &missing_x,
-		   &has_missing_x,
-           NULL,
+           &missing_x,
+           &has_missing_x,
+           &type_x,
            2);
-  y = (float*)NclGetArgValue(
+  y = (void*)NclGetArgValue(
            1,
            3,
            &ndims_y, 
            dsizes_y,
-		   &missing_y,
-		   &has_missing_y,
-           NULL,
+           &missing_y,
+           &has_missing_y,
+           &type_y,
            2);
   mxlag = (int*)NclGetArgValue(
            2,
@@ -1523,59 +1692,117 @@ NhlErrorTypes esccr_W( void )
            NULL,
            2);
 /*
+ * Types of input arrays must float or double.
+ */
+  if( (type_x != NCL_double  && type_y != NCL_float) ||
+      (type_y !=  NCL_double && type_y != NCL_float)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"esccr: The types of the two input arrays must be float or double");
+    return(NhlFATAL);
+  }
+/*
  * X and Y dimensions must be the same.
  */
   if( ndims_x != ndims_y ) {
-	  NhlPError(NhlFATAL,NhlEUNKNOWN,"esccr: x and y must have the same number of dimensions");
-	  return(NhlFATAL);
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"esccr: x and y must have the same number of dimensions");
+      return(NhlFATAL);
   }
   for( i = 0; i < ndims_x; i++ ) {
-	  if( dsizes_x[i] != dsizes_y[i] ) {
-		  NhlPError(NhlFATAL,NhlEUNKNOWN,"esccr: x and y dimensions must be the same");
-		  return(NhlFATAL);
-	  }
+      if( dsizes_x[i] != dsizes_y[i] ) {
+          NhlPError(NhlFATAL,NhlEUNKNOWN,"esccr: x and y dimensions must be the same");
+          return(NhlFATAL);
+      }
   }
-	  
+      
   npts = dsizes_x[ndims_x-1];
   if(npts < 2) {
-	NhlPError(NhlFATAL,NhlEUNKNOWN,"esccr: npts must be >= 2");
-	return(NhlFATAL);
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"esccr: npts must be >= 2");
+    return(NhlFATAL);
   }
 /*
  * Check mxlag
  */
   if( *mxlag < 0 || *mxlag > npts ) {
-	  NhlPError(NhlFATAL,NhlEUNKNOWN,"esccr: mxlag must be between 0 and npts");
-	  return(NhlFATAL);
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"esccr: mxlag must be between 0 and npts");
+      return(NhlFATAL);
   }
-/*
- * Get the missing values.
- */
-  if( has_missing_x ) {
-	xmsg = missing_x.floatval;
-  }
-  else {
-	xmsg = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
-  }
-
-  if( has_missing_y ) {
-	ymsg = missing_y.floatval;
-  }
-  else {
-	ymsg = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
-  }
-
 /*
  * Compute the total number of elements in our arrays.
  */
-  total_elem_x = 1;
-  for(i = 0; i < ndims_x-1; i++) total_elem_x *= dsizes_x[i];
+  total_size_x1 = 1;
+  for(i = 0; i < ndims_x-1; i++) total_size_x1 *= dsizes_x[i];
+  total_size_x = total_size_x1 * npts;
+/*
+ * Coerce data to double if necessary.
+ */
+  if(type_x != NCL_double) {
+    dx = (double*)NclMalloc(sizeof(double)*total_size_x);
+    if( dx == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"esccr: Unable to allocate memory for coercing weight array");
+      return(NhlFATAL);
+    }
+    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
+           dx,
+           x,
+           total_size_x,
+           NULL,
+           NULL,
+           _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
+  }
+  else {
+    dx = (double*)x;
+  }
+
+  if(type_y != NCL_double) {
+    dy = (double*)NclMalloc(sizeof(double)*total_size_x);
+    if( dy == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"esccr: Unable to allocate memory for coercing weight array");
+      return(NhlFATAL);
+    }
+    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
+           dy,
+           y,
+           total_size_x,
+           NULL,
+           NULL,
+           _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_y)));
+  }
+  else {
+    dy = (double*)y;
+  }
+/*
+ * Test for a missing value.
+ */
+  if( has_missing_x ) {
+    if(type_x == NCL_double) {
+      xmsg = (double)missing_x.doubleval;
+    }
+    else {
+      xmsg = (double)missing_x.floatval;
+    }
+  }
+  else {
+    xmsg = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
+  }
+
+  if( has_missing_y ) {
+    if(type_y == NCL_double) {
+      ymsg = (double)missing_y.doubleval;
+    }
+    else {
+      ymsg = (double)missing_y.floatval;
+    }
+  }
+  else {
+    ymsg = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
+  }
+
 /* 
  * Get size of output variables.
  */
-  ccr = (float*)NclMalloc(total_elem_x*(*mxlag+1)*sizeof(float));
-  ccv = (float*)NclMalloc(total_elem_x*(*mxlag+1)*sizeof(float));
-  dsizes_ccr = (int*)NclMalloc(ndims_x*sizeof(float));
+  total_size_ccr = total_size_x1*(*mxlag+1);
+  ccr = (double*)NclMalloc(total_size_ccr*sizeof(double));
+  ccv = (double*)NclMalloc(total_size_ccr*sizeof(double));
+  dsizes_ccr = (int*)NclMalloc(ndims_x*sizeof(int));
   if (ccv == NULL || ccr == NULL || dsizes_ccr == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"esccr: Unable to allocate space for output arrays\n" );
     return(NhlFATAL);
@@ -1584,32 +1811,73 @@ NhlErrorTypes esccr_W( void )
   for( i = 0; i < ndims_x-1; i++ ) dsizes_ccr[i] = dsizes_x[i];
   dsizes_ccr[ndims_x-1] = *mxlag+1;
 /*
- * Call the f77 version of 'esauto' with the full argument list.
+ * Call the f77 version of 'descros' with the full argument list.
  */
   l1 = l2 = 0;
   ier_count = 0;
-  for(i = 1; i <= total_elem_x; i++) {
-	xmean = ymean = xsd = ysd = xmsg;
-	NGCALLF(escros,ESCROS)(&x[l1],&y[l1],&npts,&xmsg,&ymsg,
-						   &xmean,&ymean,&xsd,&ysd,mxlag,&ccv[l2],&ccr[l2],&ier);
-	l1 += npts;
-	l2 += (*mxlag+1);
-	if(ier < 0) ier_count++;
+  for(i = 1; i <= total_size_x1; i++) {
+    xmean = ymean = xsd = ysd = xmsg;
+    NGCALLF(descros,DESCROS)(&dx[l1],&dy[l1],&npts,&xmsg,&ymsg,&xmean,&ymean,
+                             &xsd,&ysd,mxlag,&ccv[l2],&ccr[l2],&ier);
+    l1 += npts;
+    l2 += (*mxlag+1);
+    if(ier < 0) ier_count++;
   }
   if(ier_count > 0) {
-	  NhlPError(NhlWARNING,NhlEUNKNOWN,"esccr: Non-fatal conditions encountered: all missing or constant values");
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"esccr: Non-fatal conditions encountered: all missing or constant values");
   }
-  if( has_missing_x ) {
-	return(NclReturnValue((void*)ccr,ndims_x,dsizes_ccr,&missing_x,
-			      NCL_float,0));
+/*
+ * free memory.
+ */
+  if((void*)dx != x) {
+    NclFree(dx);
   }
-  else if( has_missing_y) {
-	return(NclReturnValue((void*)ccr,ndims_x,dsizes_ccr,&missing_y,
-			      NCL_float,0));
+  if((void*)dy != y) {
+    NclFree(dy);
+  }
+/*
+ * Return values. 
+ */
+  if(type_x != NCL_double && type_y != NCL_double) {
+/*
+ * Copy double values to float values.
+ */
+    rccr = (float*)NclMalloc(sizeof(float)*total_size_ccr);
+    if( rccr == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"esccr: Unable to allocate memory for return array");
+      return(NhlFATAL);
+    }
+    for( i = 0; i < total_size_ccr; i++ ) {
+      rccr[i] = (float)ccr[i];
+    }
+    free(ccr);
+
+    if( has_missing_x ) {
+      return(NclReturnValue((void*)rccr,ndims_x,dsizes_ccr,&missing_x,
+                            NCL_float,0));
+    }
+    else if( has_missing_y) {
+      return(NclReturnValue((void*)rccr,ndims_x,dsizes_ccr,&missing_y,
+                            NCL_float,0));
+    }
+    else {
+      return(NclReturnValue((void*)rccr,ndims_x,dsizes_ccr,NULL,
+                            NCL_float,0));
+    }
   }
   else {
-	return(NclReturnValue((void*)ccr,ndims_x,dsizes_ccr,NULL,
-			      NCL_float,0));
+    if( has_missing_x ) {
+      return(NclReturnValue((void*)ccr,ndims_x,dsizes_ccr,&missing_x,
+                            NCL_double,0));
+    }
+    else if( has_missing_y) {
+      return(NclReturnValue((void*)ccr,ndims_x,dsizes_ccr,&missing_y,
+                            NCL_double,0));
+    }
+    else {
+      return(NclReturnValue((void*)ccr,ndims_x,dsizes_ccr,NULL,
+                            NCL_double,0));
+    }
   }
 }
 
@@ -1619,44 +1887,48 @@ NhlErrorTypes esccv_W( void )
 /*
  * Input array variables
  */
-  float *x, *y;
+  void *x, *y;
+  double *dx, *dy;
   int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
   int ndims_y, dsizes_y[NCL_MAX_DIMENSIONS], has_missing_y;
   NclScalar missing_x, missing_y;
+  NclBasicDataTypes type_x, type_y;
   int *mxlag;
 /*
  * Output array variables
  */
-  float *ccv;
+  double *ccv;
+  float *rccv;
   int *dsizes_ccv;
 /*
  * various
  */
-  int i, l1, l2, total_elem_x, ier = 0, ier_count, npts;
-  float xmsg, ymsg, xmean, xsd, ymean, ysd, *ccr;
+  int i, l1, l2, total_size_x1, total_size_x, total_size_ccv;
+  int ier = 0, ier_count, npts;
+  double xmsg, ymsg, xmean, xsd, ymean, ysd, *ccr;
 /*
  * Retrieve parameters
  *
  * Note any of the pointer parameters can be set to NULL, which
  * implies you don't care about its value.
  */
-  x = (float*)NclGetArgValue(
+  x = (void*)NclGetArgValue(
            0,
            3,
            &ndims_x, 
            dsizes_x,
-		   &missing_x,
-		   &has_missing_x,
-           NULL,
+           &missing_x,
+           &has_missing_x,
+           &type_x,
            2);
-  y = (float*)NclGetArgValue(
+  y = (void*)NclGetArgValue(
            1,
            3,
            &ndims_y, 
            dsizes_y,
-		   &missing_y,
-		   &has_missing_y,
-           NULL,
+           &missing_y,
+           &has_missing_y,
+           &type_y,
            2);
   mxlag = (int*)NclGetArgValue(
            2,
@@ -1668,58 +1940,117 @@ NhlErrorTypes esccv_W( void )
            NULL,
            2);
 /*
+ * Types of input arrays must float or double.
+ */
+  if( (type_x != NCL_double  && type_y != NCL_float) ||
+      (type_y !=  NCL_double && type_y != NCL_float)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"esccv: The types of the two input arrays must be float or double");
+    return(NhlFATAL);
+  }
+/*
  * X and Y dimensions must be the same.
  */
   if( ndims_x != ndims_y ) {
-	  NhlPError(NhlFATAL,NhlEUNKNOWN,"esccv: x and y must have the same number of dimensions");
-	  return(NhlFATAL);
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"esccv: x and y must have the same number of dimensions");
+      return(NhlFATAL);
   }
   for( i = 0; i < ndims_x; i++ ) {
-	  if( dsizes_x[i] != dsizes_y[i] ) {
-		  NhlPError(NhlFATAL,NhlEUNKNOWN,"esccv: x and y dimensions must be the same");
-		  return(NhlFATAL);
-	  }
+      if( dsizes_x[i] != dsizes_y[i] ) {
+          NhlPError(NhlFATAL,NhlEUNKNOWN,"esccv: x and y dimensions must be the same");
+          return(NhlFATAL);
+      }
   }
-	  
+      
   npts = dsizes_x[ndims_x-1];
   if(npts < 2) {
-	NhlPError(NhlFATAL,NhlEUNKNOWN,"esccv: npts must be >= 2");
-	return(NhlFATAL);
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"esccv: npts must be >= 2");
+    return(NhlFATAL);
   }
 /*
  * Check mxlag
  */
   if( *mxlag < 0 || *mxlag > npts ) {
-	  NhlPError(NhlFATAL,NhlEUNKNOWN,"esccv: mxlag must be between 0 and npts");
-	  return(NhlFATAL);
-  }
-/*
- * Get the missing values.
- */
-  if( has_missing_x ) {
-	xmsg = missing_x.floatval;
-  }
-  else {
-	xmsg = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
-  }
-
-  if( has_missing_y ) {
-	ymsg = missing_y.floatval;
-  }
-  else {
-	ymsg = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"esccv: mxlag must be between 0 and npts");
+      return(NhlFATAL);
   }
 /*
  * Compute the total number of elements in our arrays.
  */
-  total_elem_x = 1;
-  for(i = 0; i < ndims_x-1; i++) total_elem_x *= dsizes_x[i];
+  total_size_x1 = 1;
+  for(i = 0; i < ndims_x-1; i++) total_size_x1 *= dsizes_x[i];
+  total_size_x = total_size_x1 * npts;
+/*
+ * Coerce data to double if necessary.
+ */
+  if(type_x != NCL_double) {
+    dx = (double*)NclMalloc(sizeof(double)*total_size_x);
+    if( dx == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"esccv: Unable to allocate memory for coercing weight array");
+      return(NhlFATAL);
+    }
+    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
+           dx,
+           x,
+           total_size_x,
+           NULL,
+           NULL,
+           _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
+  }
+  else {
+    dx = (double*)x;
+  }
+
+  if(type_y != NCL_double) {
+    dy = (double*)NclMalloc(sizeof(double)*total_size_x);
+    if( dy == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"esccv: Unable to allocate memory for coercing weight array");
+      return(NhlFATAL);
+    }
+    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
+           dy,
+           y,
+           total_size_x,
+           NULL,
+           NULL,
+           _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_y)));
+  }
+  else {
+    dy = (double*)y;
+  }
+/*
+ * Test for a missing value.
+ */
+  if( has_missing_x ) {
+    if(type_x == NCL_double) {
+      xmsg = (double)missing_x.doubleval;
+    }
+    else {
+      xmsg = (double)missing_x.floatval;
+    }
+  }
+  else {
+    xmsg = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
+  }
+
+  if( has_missing_y ) {
+    if(type_y == NCL_double) {
+      ymsg = (double)missing_y.doubleval;
+    }
+    else {
+      ymsg = (double)missing_y.floatval;
+    }
+  }
+  else {
+    ymsg = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
+  }
+
 /* 
  * Get size of output variables.
  */
-  ccv = (float*)NclMalloc(total_elem_x*(*mxlag+1)*sizeof(float));
-  ccr = (float*)NclMalloc(total_elem_x*(*mxlag+1)*sizeof(float));
-  dsizes_ccv = (int*)NclMalloc(ndims_x*sizeof(float));
+  total_size_ccv = total_size_x1*(*mxlag+1);
+  ccr = (double*)NclMalloc(total_size_ccv*sizeof(double));
+  ccv = (double*)NclMalloc(total_size_ccv*sizeof(double));
+  dsizes_ccv = (int*)NclMalloc(ndims_x*sizeof(int));
   if (ccr == NULL || ccv == NULL || dsizes_ccv == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"esccv: Unable to allocate space for output arrays\n" );
     return(NhlFATAL);
@@ -1728,32 +2059,73 @@ NhlErrorTypes esccv_W( void )
   for( i = 0; i < ndims_x-1; i++ ) dsizes_ccv[i] = dsizes_x[i];
   dsizes_ccv[ndims_x-1] = *mxlag+1;
 /*
- * Call the f77 version of 'esauto' with the full argument list.
+ * Call the f77 version of 'descros' with the full argument list.
  */
   l1 = l2 = 0;
   ier_count = 0;
-  for(i = 1; i <= total_elem_x; i++) {
-	xmean = ymean = xsd = ysd = xmsg;
-	NGCALLF(escros,ESCROS)(&x[l1],&y[l1],&npts,&xmsg,&ymsg,
-						   &xmean,&ymean,&xsd,&ysd,mxlag,&ccv[l2],&ccr[l2],&ier);
-	l1 += npts;
-	l2 += (*mxlag+1);
-	if(ier < 0) ier_count++;
+  for(i = 1; i <= total_size_x1; i++) {
+    xmean = ymean = xsd = ysd = xmsg;
+    NGCALLF(descros,DESCROS)(&dx[l1],&dy[l1],&npts,&xmsg,&ymsg,&xmean,&ymean,
+                             &xsd,&ysd,mxlag,&ccv[l2],&ccr[l2],&ier);
+    l1 += npts;
+    l2 += (*mxlag+1);
+    if(ier < 0) ier_count++;
   }
   if(ier_count > 0) {
-	  NhlPError(NhlWARNING,NhlEUNKNOWN,"esccv: Non-fatal conditions encountered: all missing or constant values");
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"esccv: Non-fatal conditions encountered: all missing or constant values");
   }
-  if( has_missing_x ) {
-	return(NclReturnValue((void*)ccv,ndims_x,dsizes_ccv,&missing_x,
-			      NCL_float,0));
+ /*
+ * free memory.
+ */
+  if((void*)dx != x) {
+    NclFree(dx);
   }
-  else if( has_missing_y) {
-	return(NclReturnValue((void*)ccv,ndims_x,dsizes_ccv,&missing_y,
-			      NCL_float,0));
+  if((void*)dy != y) {
+    NclFree(dy);
+  }
+/*
+ * Return values. 
+ */
+  if(type_x != NCL_double && type_y != NCL_double) {
+/*
+ * Copy double values to float values.
+ */
+    rccv = (float*)NclMalloc(sizeof(float)*total_size_ccv);
+    if( rccv == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"esccv: Unable to allocate memory for return array");
+      return(NhlFATAL);
+    }
+    for( i = 0; i < total_size_ccv; i++ ) {
+      rccv[i] = (float)ccv[i];
+    }
+    free(ccv);
+
+    if( has_missing_x ) {
+      return(NclReturnValue((void*)rccv,ndims_x,dsizes_ccv,&missing_x,
+                            NCL_float,0));
+    }
+    else if( has_missing_y) {
+      return(NclReturnValue((void*)rccv,ndims_x,dsizes_ccv,&missing_y,
+                            NCL_float,0));
+    }
+    else {
+      return(NclReturnValue((void*)rccv,ndims_x,dsizes_ccv,NULL,
+                            NCL_float,0));
+    }
   }
   else {
-	return(NclReturnValue((void*)ccv,ndims_x,dsizes_ccv,NULL,
-			      NCL_float,0));
+    if( has_missing_x ) {
+      return(NclReturnValue((void*)ccv,ndims_x,dsizes_ccv,&missing_x,
+                            NCL_double,0));
+    }
+    else if( has_missing_y) {
+      return(NclReturnValue((void*)ccv,ndims_x,dsizes_ccv,&missing_y,
+                            NCL_double,0));
+    }
+    else {
+      return(NclReturnValue((void*)ccv,ndims_x,dsizes_ccv,NULL,
+                            NCL_double,0));
+    }
   }
 }
 

@@ -23,21 +23,26 @@
 
 #define max(x,y)  ((x) > (y) ? (x) : (y))
 
-extern void NGCALLF(ezffti,EZFFTI)(int*,float*);
-extern void NGCALLF(ezfftf,EZFFTF)(int*,float*,float*,float*,float*,float*);
-extern void NGCALLF(ezfftb,EZFFTB)(int*,float*,float*,float*,float*,float*);
+extern void NGCALLF(dezffti,DEZFFTI)(int*,double*);
+extern void NGCALLF(dezfftf,DEZFFTF)(int*,double*,double*,double*,double*,
+                                     double*);
+extern void NGCALLF(dezfftb,DEZFFTB)(int*,double*,double*,double*,double*,
+                                     double*);
 
 NhlErrorTypes ezfftf_W( void )
 {
 /*
  * Input array variables
  */
-  float *x;
+  void *x;
+  double *dx;
   int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS];
+  NclBasicDataTypes type_x;
 /*
  * Output array variables
  */
-  float *cf;
+  float *rcf;
+  double *dcf;
   int dsizes_cf[2];
 /*
  * Attribute variables
@@ -50,63 +55,122 @@ NhlErrorTypes ezfftf_W( void )
 /*
  * Attribute variables
  */
-  float *xbar;
+  float *rxbar;
+  double *dxbar;
 /*
  * various
  */
-  float *work;
-  int i, npts, npts2;
+  double *work;
+  int i, npts, npts2, npts22;
 /*
  * Retrieve parameters
  *
  * Note any of the pointer parameters can be set to NULL, which
  * implies you don't care about its value.
  */
-  x = (float*)NclGetArgValue(
+  x = (void*)NclGetArgValue(
            0,
            1,
            &ndims_x, 
            dsizes_x,
-		   NULL,
-		   NULL,
            NULL,
+           NULL,
+           &type_x,
            2);
+/*
+ * Type of input array must float or double.
+ */
+  if( type_x != NCL_double && type_x != NCL_float) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ezfftf: The type of the input array must be float or double");
+    return(NhlFATAL);
+  }
 /*
  * Calculate size of output array.
  */
-  npts = dsizes_x[0];
-  npts2 = npts/2;
+  npts   = dsizes_x[0];
+  npts2  = npts/2;
+  npts22 = 2*npts2;
   dsizes_cf[0] = 2;
   dsizes_cf[1] = npts2;
-  cf = (float*)NclMalloc(2*npts2*sizeof(float));
-  if ( cf == NULL ) {
-	  NhlPError(NhlFATAL,NhlEUNKNOWN,"ezfftf: Cannot allocate memory for output array" );
-	  return(NhlFATAL);
+/*
+ * Coerce data to double if necessary.
+ */
+  if(type_x != NCL_double) {
+    dx = (double*)NclMalloc(npts*sizeof(double));
+    if ( dx == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"ezfftf: Cannot allocate memory for coercing input array to double" );
+      return(NhlFATAL);
+    }
+
+    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
+               dx,
+               x,
+               npts,
+               NULL,
+               NULL,
+               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_x)));
   }
+  else {
+    dx = (double*)x;
+  }
+  dxbar = (double *)NclMalloc(sizeof(double));
+  dcf = (double*)NclMalloc(npts22*sizeof(double));
+  if ( dcf == NULL || dxbar == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ezfftf: Cannot allocate memory for output values" );
+    return(NhlFATAL);
+  }
+
 /*
  * Allocate memory for work array
  */
-  work = (float*)NclMalloc((3*npts+15)*sizeof(float));
+  work = (double*)NclMalloc((3*npts+15)*sizeof(double));
   if ( work == NULL ) {
-	  NhlPError(NhlFATAL,NhlEUNKNOWN,"ezfftf: Cannot allocate memory for work array" );
-	  return(NhlFATAL);
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ezfftf: Cannot allocate memory for work array" );
+    return(NhlFATAL);
   }
 /*
- * Call the f77 version of 'ezfftf' with the full argument list.
+ * Call the f77 version of 'dezfftf' with the full argument list.
  */
-  xbar = (float *)NclMalloc(sizeof(float));
-  NGCALLF(ezffti,EZFFTI)(&npts,work);
-  NGCALLF(ezfftf,EZFFTF)(&npts,x,xbar,&cf[0],&cf[npts2],work);
+  NGCALLF(dezffti,DEZFFTI)(&npts,work);
+  NGCALLF(dezfftf,DEZFFTF)(&npts,dx,dxbar,&dcf[0],&dcf[npts2],work);
+/*
+ * Free up memory.
+ */
   free(work);
+  if((void*)dx != x) {
+    NclFree(dx);
+  }
 /*
  * Set up variable to return.
  */
-  return_md = _NclCreateVal(
+  if(type_x != NCL_double) {
+/*
+ * Copy double values to float values.
+ */
+    rcf   = (float*)NclMalloc(npts22*sizeof(float));
+    rxbar = (float*)NclMalloc(sizeof(float));
+    if( rcf == NULL || rxbar == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"ezfftf: Unable to allocate memory for return values");
+      return(NhlFATAL);
+    }
+    for( i = 0; i < npts22; i++ ) {
+      rcf[i] = (float)dcf[i];
+    }
+    *rxbar = (float)*dxbar;
+/*
+ * Free up double precision versions of these variables.
+ */
+    NclFree(dcf);
+    NclFree(dxbar);
+/*
+ * Set up return values.
+ */
+    return_md = _NclCreateVal(
                         NULL,
                         NULL,
                         Ncl_MultiDValData,
                         0,
-                        (void*)cf,
+                        (void*)rcf,
                         NULL,
                         2,
                         dsizes_cf,
@@ -117,29 +181,76 @@ NhlErrorTypes ezfftf_W( void )
 /*
  * Attributes
  */
-  att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
+    att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
 
-  dsizes[0] = 1;
-  att_md = _NclCreateVal(
-                         NULL,
-                         NULL,
-                         Ncl_MultiDValData,
-                         0,
-                         (void*)xbar,
-                         NULL,
-                         1,
-                         dsizes,
-                         TEMPORARY,
-                         NULL,
-                         (NclObjClass)nclTypefloatClass
-                         );
-  _NclAddAtt(
-             att_id,
-             "xbar",
-             att_md,
-             NULL
-             );
+    dsizes[0] = 1;
+    att_md = _NclCreateVal(
+                        NULL,
+                        NULL,
+                        Ncl_MultiDValData,
+                        0,
+                        (void*)rxbar,
+                        NULL,
+                        1,
+                        dsizes,
+                        TEMPORARY,
+                        NULL,
+                        (NclObjClass)nclTypefloatClass
+                        );
+    _NclAddAtt(
+               att_id,
+               "xbar",
+               att_md,
+               NULL
+               );
+  }
+  else {
+/*
+ * Input was double, so return double output.
+ */
+    return_md = _NclCreateVal(
+                        NULL,
+                        NULL,
+                        Ncl_MultiDValData,
+                        0,
+                        (void*)dcf,
+                        NULL,
+                        2,
+                        dsizes_cf,
+                        TEMPORARY,
+                        NULL,
+                        (NclObjClass)nclTypedoubleClass
+                        );
+/*
+ * Attributes
+ */
+    att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
+        
+    dsizes[0] = 1;
+    att_md = _NclCreateVal(
+                           NULL,
+                           NULL,
+                           Ncl_MultiDValData,
+                           0,
+                           (void*)dxbar,
+                           NULL,
+                           1,
+                           dsizes,
+                           TEMPORARY,
+                           NULL,
+                           (NclObjClass)nclTypedoubleClass
+                           );
+    _NclAddAtt(
+               att_id,
+               "xbar",
+               att_md,
+               NULL
+               );
 
+  }
+/*
+ * Set up variable to hold return array and attributes.
+ */
   tmp_var = _NclVarCreate(
                           NULL,
                           NULL,
@@ -169,18 +280,23 @@ NhlErrorTypes ezfftb_W( void )
 /*
  * Input array variables
  */
-  float *cf;
+  void *cf;
+  double *dcf;
+  float *rcf;
   int ndims_cf, dsizes_cf[NCL_MAX_DIMENSIONS];
-  float *xbar;
+  void *xbar;
+  double *dxbar;
+  NclBasicDataTypes type_cf, type_xbar;
 /*
  * Output array variables
  */
-  float *x;
+  float *rx;
+  double *dx;
   int dsizes_x[1];
 /*
  * various
  */
-  float *work;
+  double *work;
   int i, npts, npts2;
 /*
  * Retrieve parameters
@@ -188,49 +304,125 @@ NhlErrorTypes ezfftb_W( void )
  * Note any of the pointer parameters can be set to NULL, which
  * implies you don't care about its value.
  */
-  cf = (float*)NclGetArgValue(
+  cf = (void*)NclGetArgValue(
            0,
            2,
            &ndims_cf, 
            dsizes_cf,
-	   NULL,
-	   NULL,
            NULL,
+           NULL,
+           &type_cf,
            2);
-  xbar = (float*)NclGetArgValue(
+  xbar = (void*)NclGetArgValue(
            1,
            2,
            NULL,
            NULL,
            NULL,
            NULL,
-           NULL,
+           &type_xbar,
            2);
+/*
+ * Types of input arrays must float or double.
+ */
+  if( (type_cf   != NCL_double  && type_cf  != NCL_float) ||
+      (type_xbar != NCL_double && type_xbar != NCL_float)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"ezfftb: The types of the input arrays must be float or double");
+    return(NhlFATAL);
+  }
 /*
  * Calculate size of output array.
  */
   npts2 = dsizes_cf[1];
   npts  = 2*npts2;
   dsizes_x[0] = npts;
-  x = (float*)NclMalloc(npts*sizeof(float));
-  if ( x == NULL ) {
+/*
+ * Coerce input data to double if necessary.
+ */
+  if(type_cf != NCL_double) {
+    dcf = (double*)NclMalloc(npts*sizeof(double));
+    if ( dcf == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"ezfftb: Cannot allocate memory for coercing input array to double" );
+      return(NhlFATAL);
+    }
+
+    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
+               dcf,
+               cf,
+               npts,
+               NULL,
+               NULL,
+               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_cf)));
+  }
+  else {
+    dcf = (double*)cf;
+  }
+  if(type_xbar != NCL_double) {
+    dxbar = (double*)NclMalloc(sizeof(double));
+    if ( dxbar == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"ezfftb: Cannot allocate memory for coercing xbar to double" );
+      return(NhlFATAL);
+    }
+    _Nclcoerce((NclTypeClass)nclTypedoubleClass,
+               dxbar,
+               xbar,
+               1,
+               NULL,
+               NULL,
+               _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_xbar)));
+  }
+  else {
+    dxbar = (double*)xbar;
+  }
+/*
+ * Allocate memory for output array.
+ */
+  dx = (double*)NclMalloc(npts*sizeof(double));
+  if ( dx == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"ezfftb: Cannot allocate memory for output array" );
     return(NhlFATAL);
   }
+
 /*
  * Allocate memory for work array
  */
-  work = (float*)NclMalloc((3*npts+15)*sizeof(float));
+  work = (double*)NclMalloc((3*npts+15)*sizeof(double));
   if ( work == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"ezfftb: Cannot allocate memory for work array" );
     return(NhlFATAL);
   }
 /*
- * Call the f77 version of 'ezfftb' with the full argument list.
+ * Call the f77 version of 'dezfftb' with the full argument list.
  */
-  NGCALLF(ezffti,EZFFTI)(&npts,work);
-  NGCALLF(ezfftb,EZFFTB)(&npts,x,xbar,&cf[0],&cf[npts2],work);
+  NGCALLF(dezffti,DEZFFTI)(&npts,work);
+  NGCALLF(dezfftb,DEZFFTB)(&npts,dx,dxbar,&dcf[0],&dcf[npts2],work);
+/*
+ * Free up memory.
+ */
   free(work);
-  return(NclReturnValue((void*)x,1,dsizes_x,NULL,NCL_float,0));
+  if((void*)dcf != cf) {
+    NclFree(dcf);
+  }
+
+  if(type_cf != NCL_double) {
+/*
+ * Copy double values to float values.
+ */
+    rx = (float*)NclMalloc(sizeof(float)*npts);
+    if( rx == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"ezfftb: Unable to allocate memory for return array");
+      return(NhlFATAL);
+    }
+    for( i = 0; i < npts; i++ ) {
+      rx[i] = (float)dx[i];
+    }
+
+    NclFree(dx);
+
+    return(NclReturnValue((void*)rx,1,dsizes_x,NULL,NCL_float,0));
+  }
+  else {
+    return(NclReturnValue((void*)dx,1,dsizes_x,NULL,NCL_double,0));
+  }
 }
 

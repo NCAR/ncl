@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.9 2000-01-26 07:48:49 haley Exp $
+#      $Id: yMakefile,v 1.10 2000-02-01 16:27:01 haley Exp $
 #
 #########################################################################
 #									#
@@ -37,13 +37,13 @@ COBJS = chiinvW.o csagridW.o cssgridW.o cz2ccmW.o datesW.o drwvctc.o \
 	smth9W.o specxW.o sph2W.o sphintW.o sstoiW.o statW.o svdW.o tdpackW.o \
 	trvsphW.o varimaxW.o vibetaW.o wmapW.o wrunaveW.o wrapper.o
 
-FSRCS = chiin.f cz2ccm.f dtrend.f ezfft.f fluxEddyTav_dp.f fo2fs.f \
+FSRCS = chiin.f cz2ccm.f dtrend.f ezfft.f ezfft_dp.f fluxEddyTav_dp.f fo2fs.f \
 	hydro.f index77.f int2p.f julGreg.f linmsg.f ncl_upsl.f prneof_dp.f \
 	prneofts_dp.f rdsstoi.f regcoef.f relhum.f remap.f rhombtri.f runave_dp.f \
 	smth9.f sp2_util.f specx.f statx.f statx_dp.f svd_lap_dp.f svd_util_dp.f \
 	trcwav.f trvsph77.f varimax_dp.f vibeta.f wrunave_dp.f
 
-FOBJS = chiin.o cz2ccm.o dtrend.o ezfft.o fluxEddyTav_dp.o fo2fs.o \
+FOBJS = chiin.o cz2ccm.o dtrend.o ezfft.o ezfft_dp.o fluxEddyTav_dp.o fo2fs.o \
 	hydro.o index77.o int2p.o julGreg.o linmsg.o ncl_upsl.o prneof_dp.o \
 	prneofts_dp.o rdsstoi.o regcoef.o relhum.o remap.o runave_dp.o rhombtri.o \
 	smth9.o sp2_util.o specx.o statx.o statx_dp.o svd_lap_dp.o svd_util_dp.o \

@@ -2339,7 +2339,7 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(2);
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
     SetArgTemplate(args,nargs,"integer",NclANY,NclANY);nargs++;
 
     NclRegisterFunc(esacr_W,args,"esacr",nargs);
@@ -2350,7 +2350,7 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(2);
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
     SetArgTemplate(args,nargs,"integer",NclANY,NclANY);nargs++;
 
     NclRegisterFunc(esacv_W,args,"esacv",nargs);
@@ -2361,8 +2361,8 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(3);
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
     SetArgTemplate(args,nargs,"integer",NclANY,NclANY);nargs++;
 
     NclRegisterFunc(esccr_W,args,"esccr",nargs);
@@ -2373,8 +2373,8 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(3);
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
     SetArgTemplate(args,nargs,"integer",NclANY,NclANY);nargs++;
 
     NclRegisterFunc(esccv_W,args,"esccv",nargs);
@@ -2385,7 +2385,7 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(1);
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
 
     NclRegisterFunc(ezfftf_W,args,"ezfftf",nargs);
 /*
@@ -2395,9 +2395,9 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(2);
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
     dimsizes[0] = 1;
-    SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
 
     NclRegisterFunc(ezfftb_W,args,"ezfftb",nargs);
 /*
