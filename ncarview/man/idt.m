@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: idt.m,v 1.2 1991-01-09 10:48:12 clyne Exp $
+.\"	$Id: idt.m,v 1.3 1991-03-29 09:10:22 clyne Exp $
 .\"
 .\" NCAR View: idt.man,v 1.0 89/09/10 clyne 
 .\" Revision 3.01 90/11/15 clyne
@@ -262,7 +262,7 @@ The hierarchy of the file selection box popup
 
 The hierarchy of the display panel popup
 
-	TopLevel  <???> (The toplevel is named after the metafile displayed)
+	TopLevelShell  <??> (The toplevel is named after the metafile displayed)
 		Paned  paned
 			Form  form
 				Scrollbar  scrollbar
