@@ -13,7 +13,7 @@
 #include "NclMdInc.h"
 #include "TypeSupport.h"
 
-NhlErrorTypes vinth2p_W
+NhlErrorTypes vinth2p_ecmwf_W
 #if	NhlNeedProto
 (void)
 #else
@@ -90,6 +90,19 @@ NhlErrorTypes vinth2p_W
 	int kxtrp_has_missing;
 	NclScalar kxtrp_missing;
 
+	int *varflg = NULL;
+
+	char *tbot = NULL;
+	double *tbot_d = NULL;
+	int tbot_n_dims;
+	NclBasicDataTypes tbot_type;
+	int tbot_dimsizes[3];
+
+	double *phis = NULL;
+	char *phis_ptr = NULL;
+	NclBasicDataTypes phis_type;
+	int phis_dimsizes[2], phis_dims;
+
 	double *plevi;
 	NclScalar missing;
 	NclScalar out_missing;
@@ -99,7 +112,7 @@ NhlErrorTypes vinth2p_W
 	NclTypeClass plevo_type_class;
 	
 
-        val = _NclGetArg(0,9,DONT_CARE);
+        val = _NclGetArg(0,12,DONT_CARE);
 /*
 * Should be constrained to be a SCALAR md
 */
@@ -110,7 +123,7 @@ NhlErrorTypes vinth2p_W
 		datai_type = datai_md->multidval.data_type;
 		datai_n_dims = datai_md->multidval.n_dims;
 		if((datai_n_dims < 3)||(datai_n_dims>4)) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"vinth2p: requires a minimum of 3 dimensions [lev]x[lat]x[lon] and a maximum of 4 dimensions [time]x[lev]x[lat]x[lon], %d dimensions passed in",datai_n_dims);
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"vinth2p_ecmwf: requires a minimum of 3 dimensions [lev]x[lat]x[lon] and a maximum of 4 dimensions [time]x[lev]x[lat]x[lon], %d dimensions passed in",datai_n_dims);
 			return(NhlFATAL);
 		} else {
 			if(datai_n_dims == 3)  {
@@ -129,7 +142,7 @@ NhlErrorTypes vinth2p_W
                 datai_md = _NclVarValueRead(val.u.data_var,NULL,NULL);
 		datai_n_dims = datai_md->multidval.n_dims;
 		if((datai_n_dims < 3)||(datai_n_dims>4)) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"vinth2p: requires a minimum of 3 dimensions [lev]x[lat]x[lon] and a maximum of 4 dimensions [time]x[lev]x[lat]x[lon], %d dimensions passed in",datai_n_dims);
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"vinth2p_ecmwf: requires a minimum of 3 dimensions [lev]x[lat]x[lon] and a maximum of 4 dimensions [time]x[lev]x[lat]x[lon], %d dimensions passed in",datai_n_dims);
 			return(NhlFATAL);
 		} else {
 			if(datai_n_dims == 3)  {
@@ -165,7 +178,7 @@ NhlErrorTypes vinth2p_W
 	}
         hbcofa_ptr = (char*)NclGetArgValue(
                         1,
-                        9,
+                        12,
                         &hbcofa_n_dims,
                         &hbcofa_dimsizes,
                         &hbcofa_missing,
@@ -181,7 +194,7 @@ NhlErrorTypes vinth2p_W
         hbcofb_ptr = (char*)NclGetArgValue(
 
                         2,
-                        9,
+                        12,
                         &hbcofb_n_dims,
                         &hbcofb_dimsizes,
                         &hbcofb_missing,
@@ -195,7 +208,7 @@ NhlErrorTypes vinth2p_W
 	} else {
 		hbcofb = (double*) hbcofb_ptr;
 	}
-        plevo_val = _NclGetArg(3,9,DONT_CARE);
+        plevo_val = _NclGetArg(3,12,DONT_CARE);
 	switch(plevo_val.kind) {
 	case NclStk_VAL:
 		plevo_was_val = 1;
@@ -247,7 +260,7 @@ NhlErrorTypes vinth2p_W
 	
         psfc = (char*)NclGetArgValue(
                         4,
-                        9,
+                        12,
                         &psfc_n_dims,
                         psfc_dimsizes,
                         &psfc_missing,
@@ -269,21 +282,21 @@ NhlErrorTypes vinth2p_W
 	
 	
 	if(psfc_n_dims != datai_n_dims -1) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"vinth2p: Surface pressure must have same number of time, lat and lon elements as input, number of dimensions does not match.");
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"vinth2p_ecmwf: Surface pressure must have same number of time, lat and lon elements as input, number of dimensions does not match.");
 		return(NhlFATAL);
 	} else {
 		if(datai_n_dims == 4) {
 			if(datai_md->multidval.dim_sizes[0] != psfc_dimsizes[0]) {
-				NhlPError(NhlFATAL,NhlEUNKNOWN,"vinth2p: Surface pressure must have same number of time elements as input.");
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"vinth2p_ecmwf: Surface pressure must have same number of time elements as input.");
 				return(NhlFATAL);
 			}
 		}
 		if(datai_md->multidval.dim_sizes[datai_md->multidval.n_dims - 2] != psfc_dimsizes[psfc_n_dims - 2]) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"vinth2p: Surface pressure must have same number of latitude elements as input.");
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"vinth2p_ecmwf: Surface pressure must have same number of latitude elements as input.");
 			return(NhlFATAL);
 		}
 		if(datai_md->multidval.dim_sizes[datai_md->multidval.n_dims - 1] != psfc_dimsizes[psfc_n_dims - 1]) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"vinth2p: Surface pressure must have same number of longitude elements as input.");
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"vinth2p_ecmwf: Surface pressure must have same number of longitude elements as input.");
 			return(NhlFATAL);
 		}
 	}
@@ -296,7 +309,7 @@ NhlErrorTypes vinth2p_W
 	
         intyp = (int*)NclGetArgValue(
                         5,
-                        9,
+                        12,
                         NULL,
                         NULL,
                         &intyp_missing,
@@ -305,7 +318,7 @@ NhlErrorTypes vinth2p_W
                         0);
         p0_ptr = (char*)NclGetArgValue(
                         6,
-                        9,
+                        12,
                         NULL,
                         NULL,
                         &p0_missing,
@@ -321,7 +334,7 @@ NhlErrorTypes vinth2p_W
 	}
         ilev = (int*)NclGetArgValue(
                         7,
-                        9,
+                        12,
                         NULL,
                         NULL,
                         &ilev_missing,
@@ -330,7 +343,7 @@ NhlErrorTypes vinth2p_W
                         0);
         kxtrp = (logical*)NclGetArgValue(
                         8,
-                        9,
+                        12,
                         NULL,
                         NULL,
                         &kxtrp_missing,
@@ -339,22 +352,83 @@ NhlErrorTypes vinth2p_W
                         0);
 
 
+        varflg = (int*)NclGetArgValue(
+                        9,
+                        12,
+                        NULL,
+                        NULL,
+                        NULL,
+                        NULL,
+                        NULL,
+                        0);
+
+
+        tbot = (char*)NclGetArgValue(
+                        10,
+                        12,
+                        &tbot_n_dims,
+                        &tbot_dimsizes,
+                        NULL,
+                        NULL,
+                        &tbot_type,
+                        0);
+
+
+	if(psfc_n_dims != tbot_n_dims ) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"vinth2p_ecmwf: Temperature at the lowest temperature level must have the same number of dimensions as surface pressure.");
+		return(NhlFATAL);
+	}
+
+	for(i = 0; i < psfc_n_dims; i++) {
+	  if(psfc_dimsizes[i] != tbot_dimsizes[i]) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"vinth2p_ecmwf: Temperature at the lowest temperature level must have the same dimension sizes as surface pressure.");
+		return(NhlFATAL);
+	  }
+	}
+
+        phis_ptr = (char*)NclGetArgValue(
+                        11,
+                        12,
+                        NULL,
+                        &phis_dimsizes,
+                        NULL,
+                        NULL,
+                        &phis_type,
+                        0);
+	if(phis_dimsizes[0] != psfc_dimsizes[psfc_n_dims-2] ||
+	   phis_dimsizes[1] != psfc_dimsizes[psfc_n_dims-1]) {
+	  NhlPError(NhlFATAL,NhlEUNKNOWN,"vinth2p_ecmwf: Surface geopotential must have same number of lat and lon elements as surface pressure.");
+		return(NhlFATAL);
+	}
+
+	if(phis_type != NCL_double ) {
+		phis_dims = phis_dimsizes[0] * phis_dimsizes[1];
+		phis = (double*)NclMalloc(sizeof(double) * phis_dims);
+		_Nclcoerce((NclTypeClass)nclTypedoubleClass,(void*)phis,(void*)phis_ptr,phis_dims,NULL,NULL,(NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(phis_type))));
+	} else {
+		phis = (double*) phis_ptr;
+	}
+
+
 	plevi = (double*)NclMalloc((datai_dimsizes[0]+1)*sizeof(double));
 	if(not_double) {
 		datao = (char*)NclMalloc(total * nblk_out * sizeof(float));
 		tmp_datai = (double*)NclMalloc(nblk * sizeof(double));
 		tmp_datao = (double*)NclMalloc(nblk_out* sizeof(double));
 		psfc_d = (double*) NclMalloc(psf_blk*sizeof(double));
+		tbot_d = (double*) NclMalloc(psf_blk*sizeof(double));
 		
 		for(i = 0; i < total ; i++) {
 			_Nclcoerce((NclTypeClass)nclTypedoubleClass, tmp_datai, (datai+i*sz*nblk),nblk,NULL,NULL,datai_md->multidval.type);
 			_Nclcoerce((NclTypeClass)nclTypedoubleClass, psfc_d, ((char*)psfc+sz*psf_blk*i),psf_blk,NULL,NULL,(NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(psfc_type))));
-			NGCALLF(vinth2p,VINTH2P)(tmp_datai,tmp_datao,hbcofa,hbcofb,p0,plevi,plevo,intyp,ilev,psfc_d,&missing,kxtrp,&(datai_dimsizes[2]),&(datai_dimsizes[1]),&(datai_dimsizes[0]),&(datai_dimsizes[0]),&(plevo_dimsizes));
+			_Nclcoerce((NclTypeClass)nclTypedoubleClass, tbot_d, ((char*)tbot+sz*psf_blk*i),psf_blk,NULL,NULL,(NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(tbot_type))));
+			NGCALLF(vinth2pecmwf,VINTH2PECMWF)(tmp_datai,tmp_datao,hbcofa,hbcofb,p0,plevi,plevo,intyp,ilev,psfc_d,&missing,kxtrp,&(datai_dimsizes[2]),&(datai_dimsizes[1]),&(datai_dimsizes[0]),&(datai_dimsizes[0]),&(plevo_dimsizes),varflg,tbot_d,phis);
 			for(j = 0; j< nblk_out; j++) {
 				((float*)datao)[i*nblk_out + j] = (float)tmp_datao[j];
 			}
 		}
 		NclFree(psfc_d);
+		NclFree(tbot_d);
 		NclFree(tmp_datai);
 		NclFree(tmp_datao);
 		
@@ -366,11 +440,20 @@ NhlErrorTypes vinth2p_W
 		} else {
 			psfc_d =(double*) psfc;
 		}
+		if(tbot_type != NCL_double) {
+			tbot_d = (double*) NclMalloc(psf_elem*sizeof(double));
+			_Nclcoerce((NclTypeClass)nclTypedoubleClass, tbot_d, (char*)tbot,psf_elem,NULL,NULL,(NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(tbot_type))));
+		} else {
+			tbot_d =(double*) tbot;
+		}
 		for(i = 0; i < total; i++) {
-			NGCALLF(vinth2p,VINTH2P)((datai+sizeof(double)*i*nblk),(((char*)datao)+sizeof(double)*nblk_out*i),hbcofa,hbcofb,p0,plevi,plevo,intyp,ilev,(((char*)psfc_d)+sizeof(double)*psf_blk*i),&missing,kxtrp,&(datai_dimsizes[2]),&(datai_dimsizes[1]),&(datai_dimsizes[0]),&(datai_dimsizes[0]),&(plevo_dimsizes));
+			NGCALLF(vinth2pecmwf,VINTH2PECMWF)((datai+sizeof(double)*i*nblk),(((char*)datao)+sizeof(double)*nblk_out*i),hbcofa,hbcofb,p0,plevi,plevo,intyp,ilev,(((char*)psfc_d)+sizeof(double)*psf_blk*i),&missing,kxtrp,&(datai_dimsizes[2]),&(datai_dimsizes[1]),&(datai_dimsizes[0]),&(datai_dimsizes[0]),&(plevo_dimsizes),varflg,(((char*)tbot_d)+sizeof(double)*psf_blk*i),phis);
 		}
 		if((char*)psfc_d != psfc) {
 			NclFree(psfc_d);
+		}
+		if((char*)tbot_d != tbot) {
+			NclFree(tbot_d);
 		}
 	}
 
@@ -390,6 +473,9 @@ NhlErrorTypes vinth2p_W
 	}
 	if((char*)p0 != p0_ptr) {
 		NclFree(p0);
+	}
+	if((char*)phis != phis_ptr) {
+		NclFree(phis);
 	}
 	if(was_val) {
 		if(datai_md->multidval.n_dims == 4 ) {
