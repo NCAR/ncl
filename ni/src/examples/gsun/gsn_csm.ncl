@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.131 2003-06-04 21:21:17 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.132 2003-06-29 04:32:12 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -1753,6 +1753,7 @@ begin
      class_name.eq."irregularPlotClass")
     getvalues the_plot
       "cnLevels"          : levels
+      "cnFillDotSizeF"    : dot_size
       "cnFillColors"      : colors
       "cnFillPatterns"    : fill_patterns
       "cnFillScales"      : fill_scales
@@ -1768,10 +1769,12 @@ begin
     if(.not.mono_fill_pat)
       lbres@lbMonoFillPattern = False
       lbres@lbFillPatterns    = fill_patterns
+      lbres@lbFillDotSizeF    = dot_size
     end if
     if(.not.mono_fill_scl)
       lbres@lbMonoFillScale = False
       lbres@lbFillScales    = fill_scales
+      lbres@lbFillDotSizeF  = dot_size
     end if
   else
     getvalues the_plot
