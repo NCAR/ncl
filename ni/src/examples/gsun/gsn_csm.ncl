@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.21 1999-10-11 15:36:55 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.22 1999-11-12 21:25:59 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -1452,15 +1452,16 @@ min_lat, max_lat, min_lon, max_lon, res2, tickmark_res
     delete(lat_range)
 local i, attnames, res, res2, mp_res_index, map_object, \
 lft_str_object, ctr_str_object, rgt_str_object, main_zone, \
-calldraw, callframe, left_string, center_string, right_string, \
-min_lat, max_lat, center_lat, polar_nh, polar_sh, yoffset, main_offset
+; This section tests for regular resources.
+min_lat, max_lat, center_lat, polar_nh, polar_sh, main_offset, \
+    tmres = get_res_eq(res2,"tm")  ; Get tickmark resources
+vpxf, vpyf, vphf, vpwf, plon, plat, xndc, yndc
       tmres = True
       gsnp_turn_off_tickmarks(tmres)
     end if
     calldraw  = True
     callframe = True
 
-    yoffset       = 0.08
     mpres = get_res_ne(res2,(/"tm","tx","am"/))  ; Get rest of resources
     polar_sh      = False
     polar_nh      = False
@@ -1646,16 +1647,6 @@ side, just, orth, para, quad1, quad2, quad3, quad4, topbot, xcen, ycen, \
     end if 
     plon = fspan(0.,360.-res2@mpGridLonSpacingF,ngrid)
       "vpYF"                 : ypos
-; Increase the viewport of the map object; this is where the labels
-; will get drawn.
-
-    setvalues map_object
-        "vpXF"      : vpxf-0.02
-        "vpYF"      : vpyf+0.02
-        "vpWidthF"  : vpwf+0.04
-        "vpHeightF" : vphf+0.04
-    end setvalues
-
 
       "mpProjection"         : "Stereographic"
       "mpEllipticalBoundary" : True
@@ -1667,6 +1658,12 @@ side, just, orth, para, quad1, quad2, quad3, quad4, topbot, xcen, ycen, \
                                  "transparent"/)
     datatondc(map_object,plon,plat,xndc,yndc)
       "pmTitleZone"          : main_zone
+    end create
+
+; Set some map plot resources.
+    xcen = vpxf + vpwf/2.     ; X center
+    ycen = vpyf - vphf/2.     ; Y center
+    set_attr(res2,"mpMinLatF",min_lat)
     set_attr(res2,"mpMaxLatF",max_lat)
     set_attr(res2,"mpCenterLatF",center_lat)
     labels = new(dimsizes(plon),string)
@@ -1690,72 +1687,103 @@ side, just, orth, para, quad1, quad2, quad3, quad4, topbot, xcen, ycen, \
 
     getvalues map_object
     do i=0,num_labels-1
-      text_ids(i) = create labels(i) textItemClass wks
+      text_ids(i) = create "lon_"+labels(i) textItemClass wks
         "txString"      : labels(i)
         "txFont"        : "helvetica-bold"
         "txFontHeightF" : font_height
       end create
     end do
 
-; Set map back to original viewport.
-
     setvalues map_object
-        "vpXF"            : vpxf
-        "vpYF"            : vpyf
-        "vpWidthF"        : vpwf
-        "vpHeightF"       : vphf
+      "pmAnnoViews" : text_ids  ; Add text items as annotations of map.
     end setvalues
                                   ; of the height of the viewport.
-; Retrieve graphic style object.
+    getvalues map_object
+      "pmAnnoManagers" : am_ids   ; Retrieve anno managers so we can 
+                                  ; change some stuff.
+    end getvalues
                                           2.*font_height)
-    getvalues wks 
-        "wkDefGraphicStyleId":  gsid
-    end getvalues
     main_font = get_res_value_keep(res2,"tiMainFont","helvetica-bold")
-; Create a LogLinPlot that covers the entire NDC space
-; to use as a drawing canvas, and add the text items as annotations.
+
+    setvalues map_object
+        "tiMainOffsetYF"       : main_offset      ; main title offset
+    quad1 = ind((ycen-yndc).le.0.and.(xcen-xndc).le.0)
+    quad2 = ind((ycen-yndc).le.0.and.(xcen-xndc).gt.0)
+    quad3 = ind((ycen-yndc).gt.0.and.(xcen-xndc).gt.0)
+    quad4 = ind((ycen-yndc).gt.0.and.(xcen-xndc).le.0)
+
+    side = new(ngrid,string)
+    just = new(ngrid,string)
+    orth = new(ngrid,float)
+    para = new(ngrid,float)
+
+    side(quad1) = "Top"      ; Position labels in quadrants I and II wrt
+    side(quad2) = "Top"      ; top of plot.
+    side(quad3) = "Bottom"   ; Position labels in quadrants III and IV wrt
+    side(quad4) = "Bottom"   ; bottom of plot.
+; and at varying longitude values.
+;
+      ngrid = floattoint(360/label_spacing)
+
+      if(min((/min_lat,max_lat/)).ge.0.or.polar_type.eq."NH")
+          plat = fspan(min_lat,min_lat,ngrid)
+      else
+          plat = fspan(max_lat,max_lat,ngrid)
+      end if 
+      plon = fspan(0.,360.-label_spacing,ngrid)
+
+    orth(quad1) = ((yndc(quad1) - ycen)/vphf) * 1.04
+    orth(quad2) = ((yndc(quad2) - ycen)/vphf) * 1.04
+    orth(quad3) = ((ycen - yndc(quad3))/vphf) * 1.04
+    orth(quad4) = ((ycen - yndc(quad4))/vphf) * 1.04
+
+    para = ((xndc - xcen)/vpwf) * 1.04
+
+    just(quad1) = "CenterLeft"
+    just(quad2) = "CenterRight"
+    just(quad3) = "CenterRight"
+    just(quad4) = "CenterLeft"
+      labels(indexes) = floattoint(plon(indexes)) + "E"
+      delete(indexes)
+
+      indexes = ind(plon.gt.180.and.plon.lt.360)
+    topbot = ind(fabs(xndc-xcen).le.1e-5)
+    if(.not.all(ismissing(topbot)))
+      just(topbot) = "CenterCenter"
+    end if
+      labels(indexes) = floattoint(plon(indexes))
+      delete(indexes)
+
+      num_labels = dimsizes(labels)
+      text_ids = new(num_labels,graphic)
+
+    names = NhlName(am_ids)
+    found = False
+    i = 0
+    do while(i.lt.dimsizes(names).and..not.found)
+      names_char = stringtochar(names)
+      if(chartostring(names_char(i,0:3)).eq."lon_")
+        start = i
+        found = True
+      end if
+      delete(names_char)
+      i = i + 1
+    end do
+    delete(names)
+          "txFontHeightF" : text_font_height
+        end create
       end do
-    canvas = create "canvas" logLinPlotClass wks
-      "vpXF"      : vpxf-0.03
-      "vpYF"      : vpyf+0.03
-      "vpWidthF"  : vpwf+0.06
-      "vpHeightF" : vphf+0.06
-      "pmAnnoViews" : text_ids
-    end create
-
-; Compute new locations of labels with regard to canvas we just created.
-
-    correction = 0.01       ; Not sure why we need this, but it seems
-                            ; to adjust the labels to the right positions.
-
-    new_xndc = (xndc-(vpxf-0.03))/(vpwf+0.06)+correction
-    new_yndc = (yndc-(vpyf+0.03-(vphf+0.06)))/(vphf+0.06)-correction
-
-; Retrieve the ids of the AnnoManager objects created by the PlotManager
-; and then set their location in data coordinate space. The AnnoManager
-; objects are arranged in the same order as the TextItems in the
-; pmAnnoViews resource.
-
-    getvalues canvas
-      "pmAnnoManagers" : am_ids
-    end getvalues
-
     do i=0,num_labels-1
-      setvalues am_ids(i)
-        "amTrackData"    : True
-        "amDataXF"       : new_xndc(i)
-        "amDataYF"       : new_yndc(i)
-        "amResizeNotify" : True
+      setvalues am_ids(start+i)
+        "amTrackData"      : False
+        "amResizeNotify"   : True
+        "amZone"           : 0
+        "amSide"           : side(i)
+        "amJust"           : just(i)
+        "amOrthogonalPosF" : orth(i)
+        "amParallelPosF"   : para(i)
       end setvalues
     end do
-    anno = NhlAddAnnotation(map_object,canvas)  ; Add canvas to map_object.
-    setvalues anno
-      "amJust"           : "centercenter"
-      "amZone"           : 0
-      "amResizeNotify"   : True
-      "amParallelPosF"   : -0.015
-      "amOrthogonalPosF" : -0.010
-    end setvalues
 ; for justification, side, orthogonal and parallel positions.
     draw_and_frame(wks,map_object,calldraw,callframe)
 ;
