@@ -1,5 +1,5 @@
 C
-C	$Id: wmstnm.f,v 1.7 2000-08-22 15:07:48 haley Exp $
+C	$Id: wmstnm.f,v 1.8 2004-02-10 21:55:54 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -1137,7 +1137,7 @@ C  Cloud height.
 C
       WRITE(CHR5,'(I5)') H
       LL = WMGTLN(CHR5,LEN(CHR5),1)
-      IF (IPRSNT(13) .EQ. 1) THEN
+      IF (IPRSNT(13).EQ.1 .AND. N.GT.0) THEN
         CALL PLCHHQ(SYMPOS(1,13),SYMPOS(2,13),CHR5(LL:LEN(CHR5)),
      +              SIZ,0.,0.)       
       ENDIF
