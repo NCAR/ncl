@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.28 1999-12-16 19:50:13 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.29 2000-01-03 16:31:09 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -341,10 +341,16 @@ begin
 ; If gsnRightString hasn't been set, then use data@units if it
 ; exists.
 ;
-  if(isatt(data,"units").and..not.isatt(res,"gsnRightString"))
+  if(isatt(res,"gsnRightString"))
     newres = True
-    newres@gsnRightString = data@units
+    newres@gsnRightString = res@gsnRightString
+  else
+    if(isatt(data,"units"))
+      newres = True
+      newres@gsnRightString = data@units
+    end if
   end if
+
   return
 end
 
@@ -364,10 +370,15 @@ begin
 ; exists.  Also have to delete data@long_name so it doesn't get
 ; used in the title by gsn_code.ncl.
 ;
-  if(isatt(data,"long_name").and..not.isatt(res,"gsnLeftString"))
+  if(isatt(res,"gsnLeftString"))
     newres = True
-    newres@gsnLeftString = data@long_name
-    delete(data@long_name)
+    newres@gsnLeftString = res@gsnLeftString
+  else
+    if(isatt(data,"long_name"))
+      newres = True
+      newres@gsnLeftString = data@long_name
+      delete(data@long_name)  ; Delete so it doesn't get used for main title
+    end if
   end if
   return
 end
@@ -795,43 +806,100 @@ begin
 
   num_res  = 0
   parallel_pos = (/0.0,0.5,1.0/)
+  just         = (/"left","center","right"/)
+;        font_height: float                                             ;
+  strings = (/"","",""/)  
   if(left_string)
     strings(0) =   left_string@sub_string
   end if
   if(center_string) 
-; bottom of the plot, unless resources are set to change this.          ;
+    strings(1) = center_string@sub_string
+  end if
+  if(right_string)
+    strings(2) =  right_string@sub_string
   end if
 
-procedure add_labelbar(wks:graphic,plot,res:logical)
+procedure add_labelbar(wks:graphic,plot,zone:integer,font_height:float,\
+
   txres = get_res_eq(res,"tx")
   amres = get_res_eq(res,"am")
-mono_fill_scl, mono_fill_col, the_plot
+  
   getvalues plot
     if(strings(i).ne."")
+;
+; Check to make sure the string doesn't contain only blanks.
+;
+
+      if(any(chararray(0:string_len-1).ne.ablank(0)))
+        text_object = create just(i)+"string" textItemClass wks
+          "txString" : strings(i)
+        end create
+
+        attsetvalues_check(text_object,txres)   ; Set some text resources.
+  set_attr(amres,"amParallelPosF",0.5)
+        anno = NhlAddAnnotation(plot,text_object)  ; Add annotation to plot.
+
         setvalues anno
           "amZone"          : 3             ; Just outside plot area
           "amSide"          : "top"         ; Subtitle at top.
           "amParallelPosF"  : parallel_pos(i)
           "amJust"          : "bottom"+just(i)
           "amOrthogonalPosF": orthpos       ; Move away from top edge
-; Check for annotation/labelbar resources
-      delete(chararray)
-  lbres = get_res_eq(res,(/"lb","vp"/))
-  amres = get_res_eq(res,"am")
-end
-  set_attr(lbres,"lbOrientation","horizontal")
-  amres = True
-  set_attr(amres,"amSide","bottom")
-  set_attr(amres,"amJust","bottomcenter")
+  if(isatt(lbres,"lbOrientation").and.\
+    (lbres@lbOrientation.eq."vertical".or.\
+     lbres@lbOrientation.eq."VERTICAL".or.\
+     lbres@lbOrientation.eq."Vertical"))
+        end setvalues
 
-  if(lbres) then
-    if(isatt(lbres,"lbOrientation").and.\
-      (lbres@lbOrientation.eq."vertical".or.\
-       lbres@lbOrientation.eq."VERTICAL".or.\
-       lbres@lbOrientation.eq."Vertical"))
-   
-        amres@amSide = "right"
-        amres@amJust = "centerright"
+        attsetvalues_check(anno,amres)   ; Set some annotation resources.
+      end if
+      delete(chararray)
+    end if
+  end do
+  return
+end
+
+;***********************************************************************;
+; Procedure : add_labelbar                                              ;
+;                wks: graphic                                           ;
+;               plot: graphic                                           ;
+;               zone: integer                                           ;
+;        font_height: numeric                                           ;
+;               type: string                                            ;
+;                res: logical                                           ;
+;                                                                       ;
+; This procedure adds a labelbar to "plot" (which must be either a      ;
+; contour or vector plot). The default is to add the labelbar to the    ;
+; bottom of the plot, unless resources are set to change this. The zone ;
+; must be passed in, as well as the font height for the labelbar labels.;
+; "type" is the type of plot ("ce", "polar", and so on) so the labelbar ;
+; can be positioned differently depending on the plot.                  ;
+;***********************************************************************;
+ 
+procedure add_labelbar(wks:graphic,plot,zone:integer,font_height:numeric,\
+                       type:string,res:logical)
+local anno, num_res, amres, lbres, labelbar_object, lbar_orient, \
+lbar_side, lbar_just, fill_patterns, fill_scales, mono_fill_pat, \
+mono_fill_scl, mono_fill_col
+;
+    set_attr(lbres,"vpHeightF",height)
+    set_attr(lbres,"vpWidthF",0.2*width)
+; if lbLabelBarOn is set to False, then don't bother with a labelbar.
+      set_attr(amres,"amOrthogonalPosF",0.05)
+  if(check_attr(res,"lbLabelBarOn",False,False))
+      set_attr(amres,"amOrthogonalPosF",0.03)
+  end if
+  amres = True   ; hold annomanager resources 
+    set_attr(lbres,"vpHeightF",0.3*height)
+    set_attr(lbres,"vpWidthF",def_lvpwf*width)
+
+    if(type.eq."polar")
+      set_attr(amres,"amOrthogonalPosF",0.03)
+  set_attr(amres,"amZone",zone)
+      set_attr(amres,"amOrthogonalPosF",0.06)
+    end if
+    else
+      set_attr(amres,"amOrthogonalPosF",0.0)
   set_attr(amres,"amParallelPosF",parallel)
   set_attr(lbres,"lbLabelFontHeightF",font_height)
   lbar_orient = "horizontal"
@@ -875,14 +943,7 @@ end
       orth = get_res_value(res,"pmLabelBarOrthogonalPosF",0.05)
     else
       orth = get_res_value(res,"pmLabelBarOrthogonalPosF",0.03)
-  setvalues anno
-    "amResizeNotify" : True  ; Resize tick marks if map resized.
-    "amParallelPosF" : 0.5   ; 0.5 is center to plot
-  end setvalues
-  
-  if(amres.and..not.any(ismissing(getvaratts(amres))))
-    attsetvalues(anno,amres)   ; Set some annotation resources.
-  end if
+  attsetvalues(anno,amres)   ; Set annotation resources.
     height = get_res_value(res,"pmLabelBarHeightF",height)
     width  = get_res_value(res,"pmLabelBarWidthF",0.2*width)
   else
@@ -1653,13 +1714,13 @@ min_lon, max_lon, res2, tickmark_res
     maxbb     = get_bb_res(res2)
     
 
-    lat_range = 1.*(max_lat - min_lat)
-    lon_range = 1.*(max_lon - min_lon)
-
     left_string   = new(1,logical)
     center_string = new(1,logical)
     right_string  = new(1,logical)
 
+    check_for_subtitles(res2,left_string,center_string,right_string)
+    if(left_string.or.center_string.or.right_string)
+      main_zone   = 4
     end if
 
 ;
@@ -1799,7 +1860,7 @@ min_lon, max_lon, res2, tickmark_res
 
 ; Point tick marks outward and make labels the same size.
 
-    gsnp_point_tickmarks_outward(tickmark_object,0.,0.)
+    gsnp_point_tickmarks_outward(tickmark_object,-1.,-1.,-1.,-1.,-1.,-1.)
     gsnp_uniform_tickmark_labels(tickmark_object,0.)
     ratio2 = lon_range/lat_range
     ratio = min((/ratio1,ratio2/))
@@ -2284,51 +2345,20 @@ local i, attnames, contour_object, map_object, res, lbar_pos, lbar_zone, \
     return(map_object)
 end
 
-; This section tests for special resources: those that start with "gsn."
+; gsn_csm_map_polar depending on if gsnPolar is set, or how             ;
 ; mpProjection is set.                                                  ;
     calldraw  = get_special_res_value(res2,"gsnDraw", True)
     callframe = get_special_res_value(res2,"gsnFrame",True)
 begin
-; If the data has an attribute called "long_name",
-; then use this string for the left title.
-
-    if(.not.isatt(res2,"gsnLeftString"))
-      if(isatt(datanew,"long_name"))
-        mpres@gsnLeftString = datanew@long_name
-        delete(datanew@long_name)
-      end if
-    else
-      mpres@gsnLeftString = res2@gsnLeftString
-      delete(res2@gsnLeftString)
-    end if
-
-; If the data has an attribute called "units",
-; then use this string for the right title.
-
-    if(.not.isatt(res2,"gsnRightString"))
-      if(isatt(datanew,"units"))
-        mpres@gsnRightString = datanew@units
-        delete(datanew@units)
-      end if
-    else
-      mpres@gsnRightString = res2@gsnRightString
-      delete(res2@gsnRightString)
-    end if
-
-    if((res2).and..not.any(ismissing(getvaratts(res2))))
-
-; Check for center title at top.
-
-      if(isatt(res2,"gsnCenterString"))
-        mpres@gsnCenterString = res2@gsnCenterString
-        delete(res2@gsnCenterString)
-      end if
-    end if
   res2 = get_resources(resources)
 
   if(res2.and.(isatt(res2,"gsnPolarNH").or.isatt(res2,"gsnPolarSH").or.\
                isatt(res2,"gsnPolar")))
     return(gsn_csm_map_polar(wks,res2))
+  else
+    if(.not.isatt(res2,"mpProjection").or.\
+       check_attr(res2,"mpProjection","cylindricalequidistant",True))
+; 2-dimensional data to be contoured, and "resources" is an optional    ;
 ; list of resources. The id of the map plot is returned.                ;
 ;                                                                       ;
 ; This function behaves differently from gsn_contour in that it will    ;
@@ -2419,38 +2449,7 @@ begin
     if(isatt(res2,"gsnPolarLabelDistance"))
       mpres@gsnPolarLabelDistance = get_res_value(res2,  \
                                                  "gsnPolarLabelDistance",0)
-      lbar_height = 0.20 * vphf
-      lbar_width  = 0.75 * vpwf
-
-      if(lbar_zone.eq.2)
-        lbar_pos = 0.06
-      else
-        lbar_pos = 0.0
-      end if
-
-      if(lbres) then
-        if(isatt(lbres,"lbOrientation").and.\
-          (lbres@lbOrientation.eq."vertical".or.\
-           lbres@lbOrientation.eq."VERTICAL".or.\
-           lbres@lbOrientation.eq."Vertical"))
-       
-           lbar_height = vphf
-           lbar_width  = 0.15 * vpwf
-           lbar_pos    = 0.04
-        end if
-      end if
-
-; Generate a labelbar from the above information.
-  
-      lbres = True
-      lbres@vpWidthF          = lbar_width
-      lbres@vpHeightF         = lbar_height
-      lbres@lbLabelFontHeightF= font_height
-      
-      lbres@amZone          = lbar_zone      ; Just outside plot area
-      lbres@amOrthogonalPosF= lbar_pos       ; Move away from bottom edge
-
-      add_labelbar(wks,contour_object,lbres)
+    end if
 
 ; Create data object and use coordinate variables if they exist.
     draw_and_frame(wks,map_object,calldraw,callframe)
@@ -2501,7 +2500,7 @@ local i, attnames, contour_object, labelbar_object, xy_object, map_object, \
     mpres           = True 
     cnres@gsnDraw   = False
     cnres@gsnFrame  = False
-map_vpwf, map_vphf, vpwf, vphf, contour_plot
+    mpres@gsnDraw  = False
     mpres@gsnFrame = False
 
     contour_object = gsn_contour(wks,datanew,cnres) ; Create contours.
@@ -2630,7 +2629,7 @@ begin
             set_attr(res2,     "vpXF",0.1)
             set_attr(res2,     "vpYF",0.9)
       if(isatt(cnres,"cnFillOn").and.cnres@cnFillOn)
-	set_attr(cnres,"cnInfoLabelOn",False)
+          end if
         if(.not.isatt(lbres,"lbLabelBarOn").or.\
           isatt(lbres,"lbLabelBarOn").and.lbres@lbLabelBarOn)
           zmeans2 = dim_avg(datanew(lat | : ,lon | :))
@@ -2685,7 +2684,7 @@ begin
 
 ; Check for left/right titles at top. Use attributes "long_name" and
 ; "units" if they exist.
-    map_object = gsn_csm_map(wks,mpres)            ; Create map.
+
     set_right_subtitle(datanew,res2,mpres)
     set_left_subtitle(datanew,res2,mpres)
 
@@ -2739,73 +2738,21 @@ begin
           lbar_on = True   ; Turn on a labelbar
           if(check_attr(lbres,"lbOrientation","vertical",True))
             set_attr(mpres, "vpWidthF",0.75)   ; Make room for labelbar
-; Retrieve the view port size of the map plot so we know how big
-; to make labelbar and where to put zonal means plot (if there is one).
-
-    getvalues map_object
-      "vpWidthF"     : vpwf
-      "vpHeightF"    : vphf
-    end getvalues
+            set_attr(mpres,"vpHeightF",0.75)   ; on the side.
             set_attr(mpres,     "vpXF",0.08)
-; Create a labelbar.
             set_attr(mpres,     "vpYF",0.90)
-; 
-; Determine what the default labelbar width and height should be depending
-; on shape of plot (this is for a horizontal labelbar).  For example, if
-; the plot is square, then make the labelbar the same width as the plot.
-; If the plot is 1:2, then make the labelbar .75 * width of the plot.
-;
-; For a vertical labelbar, make the height the same as the height of the
-; plot.
-;
-      ratio1 = vpwf/vphf
-      ratio2 = vphf/vpwf
-      ratio = min((/ratio1,ratio2/))
-      ratios  = (/0.50, 0.75, 1.00/)  ; viewport ratios
-
-      lwscale   = (/0.75, 0.90, 1.00/)
-      wh_ind    = ind(ratio.le.ratios)
-      def_lvpwf = lwscale(wh_ind(0))    ; default width scale for labelbar
-
-; Generate a labelbar from the above information. If lbOrientation
-; has been set to "vertical", then we have to position the
-; labelbar differently.  The default is "horizontal".
-      end if
-      if(lbar_zone.eq.2)
-        lbar_pos = 0.06
-      else
-        lbar_pos = 0.0
-      end if
-;
-      lbar_height = 0.30 * vphf
-      lbar_width  = def_lvpwf * vpwf
-
-      if(lbres) then
-        if(isatt(lbres,"lbOrientation").and.\
-          (lbres@lbOrientation.eq."vertical".or.\
-           lbres@lbOrientation.eq."VERTICAL".or.\
-           lbres@lbOrientation.eq."Vertical"))
-          lbar_height = vphf
-          lbar_width  = 0.20 * vpwf
-          lbar_pos    = 0.03
+          end if
         end if
       end if
-
-      lbres = True
-      lbres@vpWidthF          = lbar_width
-      lbres@vpHeightF         = lbar_height
-      lbres@lbLabelFontHeightF= xbfontf
-      
-      lbres@amZone          = lbar_zone      ; Just outside plot area
-      lbres@amOrthogonalPosF= lbar_pos       ; Move away from bottom edge
-; they are supposed to get drawn.
-      add_labelbar(wks,contour_object,lbres)
     end if
-  
-; Add a zonal mean plot if requested.
-    if(zonal_mean_plot)
+;
+; Compute zones for zonal means plot, info label, and labelbar if
+; they are supposed to get drawn.
+;
+    infolabel_on = get_res_value_keep(cnres,"cnInfoLabelOn",True)
 
     if(zonal_mean_plot)
+      if(infolabel_on)
         infolabel_zone = zonal_zone + 1
         lbar_zone      = zonal_zone + 2
       else
@@ -2909,17 +2856,22 @@ begin
     cnres@gsnDraw   = False
     cnres@gsnFrame  = False
     mpres@gsnDraw   = False
+    mpres@gsnFrame  = False
+
     contour_object = gsn_contour(wks,datanew,cnres) ; Create contours.
     map_object = gsn_csm_map(wks,mpres)             ; Create map.
     overlay(map_object,contour_object)              ; Overlay contours on map.
 
-local i, attnames, vector_object, map_object, res, res2, calldraw, \
-map_vpwf, map_vphf, vpwf, vphf, callframe, min_lat, max_lat, unew, vnew
+local i, attnames, vector_object, map_object, res, res2, calldraw, vcres, \
+; size, and the info label size the same as the tick mark label size.
+
     getvalues map_object
       "tiXAxisFontHeightF"   : xfontf
       "tiYAxisFontHeightF"   : yfontf
-    infolabel_zone = 2        ; Zone for info label (may change later)
+    end getvalues
 
+    font_height = min((/xfontf,yfontf/))  ; Make label sizes a function of
+                                          ; the size of the X/Y axis labels.
 ;
     res2 = resources
 ;
@@ -2974,6 +2926,36 @@ end
 local i, vector_object, map_object, res, res2, calldraw, vcres, \
     mpres = get_res_eq(res2,(/"mp","vp","tm","ti"/))
     vcres = get_res_ne(res2,(/"mp","vp","tm"/))
+    lbres = get_res_eq(res2,"lb")
+
+; Initialize.
+      if(isatt(vcres,"vcMonoLineArrowColor").and.\
+          .not.vcres@vcMonoLineArrowColor)
+    mpres          = True
+          isatt(lbres,"lbLabelBarOn").and.lbres@lbLabelBarOn)
+    lbar_on        = False
+          if(isatt(lbres,"lbOrientation").and.\
+            (lbres@lbOrientation.eq."vertical".or.\
+             lbres@lbOrientation.eq."VERTICAL".or.\
+             lbres@lbOrientation.eq."Vertical"))
+    res2 = get_resources(resources)
+
+; Check for cyclic point (default is True).
+
+    if(get_res_value(res2,"gsnAddCyclic",True))
+      unew = gsn_add_cyclic_point(u)
+      vnew = gsn_add_cyclic_point(v)
+    else
+      unew = u
+      vnew = v
+    end if
+
+    if(isatt(vcres,"vcRefAnnoOn").and..not.vcres@vcRefAnnoOn)
+      annolabel_on = False
+    else
+      annolabel_on = True
+
+    check_for_y_lat_coord(unew,res2,"vector")
     check_for_lon_coord(unew,res2,"vector")
 
     if(.not.(isatt(res2,"vfXArray")))
@@ -2982,8 +2964,9 @@ local i, vector_object, map_object, res, res2, calldraw, vcres, \
     end if
 
     if(.not.(isatt(res2,"vfYArray")))
-    set_attr(vcres,"vcRefAnnoZone",infolabel_zone)
+      set_attr(res2,"vfYCStartV",-90.)
       set_attr(res2,"vfYCEndV",   90.)
+    end if
 
 ; Check for left/right titles at top. Use attributes "long_name" and
 ; "units" if they exist.
@@ -2991,7 +2974,7 @@ local i, vector_object, map_object, res, res2, calldraw, vcres, \
     set_right_subtitle(unew,res2,mpres)
     set_left_subtitle(unew,res2,mpres)
 
-; size, and the info label size the same as the tick mark label size.
+; Check if frame and/or draw are not supposed to be called.
 
     calldraw  = get_res_value(res2,"gsnDraw", True)
     callframe = get_res_value(res2,"gsnFrame",True)
@@ -3020,6 +3003,18 @@ local i, vector_object, map_object, res, res2, calldraw, vcres, \
 
     if(isatt(res2,"gsnMinorLonSpacing"))
       mpres@gsnMinorLonSpacing = res2@gsnMinorLonSpacing
+      delete(res2@gsnMinorLonSpacing)
+    end if
+    if(isatt(res2,"gsnMinorLatSpacing"))
+      mpres@gsnMinorLatSpacing = res2@gsnMinorLatSpacing
+      delete(res2@gsnMinorLatSpacing)
+    end if
+
+;
+; Tickmarks.
+;
+    display_mode = get_display_mode(res2,"pmTickMarkDisplayMode","nocreate")
+    if(display_mode.eq.1.or.display_mode.eq.2) then
       mpres@gsnTickMarksOn = get_res_value(res2,"gsnTickMarksOn",False)
     draw_and_frame(wks,map_object,calldraw,callframe)
       mpres@gsnTickMarksOn = get_res_value(res2,"gsnTickMarksOn",True)
@@ -3198,9 +3193,9 @@ local i, attnames, vector_object, map_object, res, res2, \
 
     tmres = get_res_eq(res2,"tm")  ; Get tickmark resources
     gsnp_point_tickmarks_outward(vector_object,tmres,xlength,ylength,\
-    infolabel_zone = 3        ; Zone for info label
-    lbar_zone      = 2        ; Zone for labelbar
-    lbar_on        = True     ; Default is to add a label bar.
+                                               xmlength,ymlength,\
+    annolabel_on   = True
+
 ; Make sure info labels, line labels, and vector labels are same size.
     res2 = resources
       if(.not.isatt(res2,"cnLineLabelFontHeightF"))
@@ -3252,6 +3247,18 @@ local i, attnames, vector_object, map_object, res, res2, \
     vector_object@vfdata  = vector_object@vfdata
 ; according to the scalar field. This resource defaults to False.       ;
 ;***********************************************************************;
+
+function gsn_csm_vector_scalar_map_ce(wks:graphic,u[*][*]:numeric,\
+                   v[*][*]:numeric,data[*][*]:numeric,resources:logical)
+      if(isatt(res2,"cnFillOn").and.res2@cnFillOn)
+map_vpwf, map_vphf, vpwf, vphf, lbar_on
+begin
+          isatt(lbres,"lbLabelBarOn").and.lbres@lbLabelBarOn)
+; Initialize.
+    infolabel_on   = False
+    refanno_on   = True
+    lbar_on        = True
+    mpres          = True
     res2           = get_resources(resources)
 
 ; Check for cyclic point (default is True).
@@ -3273,9 +3280,23 @@ local i, attnames, vector_object, map_object, res, res2, \
       set_attr(res2,"mpOutlineOn",True)
     end if
 
-; Turn off info label if labelbar is on.
-    if(lbar_on.and.scalar_contour)
-      set_attr(res2,"cnInfoLabelOn",False)
+    if(isatt(res2,"lbLabelBarOn").and..not.res2@lbLabelBarOn)
+; overlay vector on map.
+
+    check_for_y_lat_coord(unew,res2,"vector")
+    check_for_lon_coord(unew,res2,"vector")
+    if(isatt(res2,"vcRefAnnoOn").and..not.res2@vcRefAnnoOn)
+      annolabel_on = False
+      set_attr(res2,"vfXCStartV",-180.)
+      set_attr(res2,"vfXCEndV",   180.)
+    end if
+
+    if(.not.(isatt(res2,"vfYArray")))
+      set_attr(res2,"vfYCStartV",-90.)
+      set_attr(res2,"vfYCEndV",   90.)
+    end if
+
+; Check for left/right titles at top. Use attributes "long_name" and
 ; "units" if they exist.
 
     lbres = get_res_eq(res2,(/"lb","pm"/))
@@ -3291,12 +3312,31 @@ local i, attnames, vector_object, map_object, res, res2, \
 ;
 ; Check for other special resources.
 ;
-    if(scalar_contour)
-      set_attr(vcres,"cnInfoLabelZone",infolabel_zone)
+    if(lbar_on.and.lbres)
+      if(isatt(lbres,"lbOrientation").and.\
+        (lbres@lbOrientation.eq."vertical".or.\
+         lbres@lbOrientation.eq."VERTICAL".or.\
+         lbres@lbOrientation.eq."Vertical"))
+        set_attr(mpres, "vpWidthF",0.75)   ; Make room for labelbar
+        set_attr(mpres,"vpHeightF",0.75)   ; on the side.
+        set_attr(mpres,     "vpXF",0.08)
+        set_attr(mpres,     "vpYF",0.90)
+      end if
+      mpres@gsnMajorLatSpacing = res2@gsnMajorLatSpacing
+      delete(res2@gsnMajorLatSpacing)
+    end if
+
     if(isatt(res2,"gsnMinorLonSpacing"))
-    else
-      set_attr(vcres,"vcRefAnnoZone",infolabel_zone)
-      set_attr(vcres,"vcRefAnnoOrthogonalPosF", 0.06)
+      mpres@gsnMinorLonSpacing = res2@gsnMinorLonSpacing
+      delete(res2@gsnMinorLonSpacing)
+    if(annolabel_on)
+    if(isatt(res2,"gsnMinorLatSpacing"))
+      mpres@gsnMinorLatSpacing = res2@gsnMinorLatSpacing
+      delete(res2@gsnMinorLatSpacing)
+    end if
+
+    if(scalar_contour)
+      lbar_on = False
 ; Turn on labelbar if cnFillOn is True and it wasn't explicitly 
 ; turned off.
       if(check_attr(res2,"cnFillOn",True,False))
@@ -3359,38 +3399,19 @@ local i, attnames, vector_object, map_object, res, res2, \
     vcres = get_res_ne(res2,(/"mp","vp","tm","lb","tx","am","pm"/))
 
 ; Before we create the objects, turn off draw and frame for them.
-      if(lbar_zone.eq.2)
-        lbar_pos = 0.1
+      if(.not.annolabel_on.and..not.infolabel_on)
+    mpres          = True
     vcres@gsnDraw  = False
-        lbar_pos = 0.0
+    vcres@gsnFrame = False
     mpres@gsnDraw  = False
     mpres@gsnFrame = False
-      lbar_height = 0.20 * vphf
-      lbar_width  = 0.75 * vpwf
 
-      if(lbres) then
-        if(isatt(lbres,"lbOrientation").and.\
-          (lbres@lbOrientation.eq."vertical".or.\
-           lbres@lbOrientation.eq."VERTICAL".or.\
-           lbres@lbOrientation.eq."Vertical"))
-       
-           lbar_height = vphf
-           lbar_width  = 0.15 * vpwf
-           lbar_pos = 0.04
-        end if
+    if(lbar_on.and.check_attr(lbres,"lbOrientation","vertical",True))
+      set_attr(mpres, "vpWidthF",0.75)   ; Make room for labelbar
+      set_attr(mpres,"vpHeightF",0.75)   ; on the side.
+      set_attr(mpres,     "vpXF",0.08)
+      set_attr(mpres,     "vpYF",0.90)
     end if
-
-; Generate a labelbar from the above information.
-  
-      lbres = True
-      lbres@vpWidthF          = lbar_width
-      lbres@vpHeightF         = lbar_height
-      lbres@lbLabelFontHeightF= font_height
-      
-      lbres@amZone          = lbar_zone      ; Just outside plot area
-      lbres@amOrthogonalPosF= lbar_pos       ; Move away from bottom edge
-
-      add_labelbar(wks,vector_object@contour,lbres)
 
     if(scalar_contour.and.infolabel_on)
       set_attr(vcres,"cnInfoLabelZone",2)
@@ -3421,10 +3442,11 @@ local i, attnames, vector_object, map_object, res, res2, \
 
     if(scalar_contour)
       vector_object = gsn_vector_contour(wks,unew,vnew,datanew,vcres)
-resources:logical)
+    else
       vector_object = gsn_vector_scalar(wks,unew,vnew,datanew,vcres)
     end if
   res  = resources
+    map_object = gsn_csm_map(wks,mpres)         ; Create map.
     overlay(map_object,vector_object)           ; Overlay vectors on map.
 
 ; Retrieve plot height so we can compute font height.
@@ -3840,7 +3862,8 @@ begin
 ; Draw X reference line.
 
     if(xref_line_on)
-    gsnp_point_tickmarks_outward(xy_object,major_length,minor_length) 
+    gsnp_point_tickmarks_outward(xy_object,xlength,ylength,xmlength,ymlength,\
+                                 major_length,major_length)
       end getvalues
 
 
@@ -3938,13 +3961,10 @@ local dsizes_y, npts, x, rank_y, xy
 ;
   xy = gsn_csm_xy(wks,x,y,res2)
   return(xy)
-    if((res2).and..not.any(ismissing(getvaratts(res2))))
-
 end
 
-      if(isatt(res2,"gsnShape").and.res2@gsnShape)
-        main_zone     = main_zone+1 ; Zone for main title
-      end if
+    if(isatt(res2,"gsnShape").and.res2@gsnShape)
+;***********************************************************************;
 ; Function : gsn_csm_contour                                            ;
 ;                     wks: workstation object                           ;
 ;                    data: data to contour                              ;
@@ -4028,40 +4048,16 @@ begin
     right_string  = new(1,logical)
 
     check_for_subtitles(res2,left_string,center_string,right_string)
-      gsnp_point_tickmarks_outward(contour_plot,major_length,minor_length)
+      gsnp_point_tickmarks_outward(contour_object,xlength,ylength,\
+                                                  xmlength,ymlength,\
+                                                  major_length,minor_length)
 
 ; Check if gsnShape set.
 
     if(check_attr(res2,"gsnShape",True,False))
       main_zone     = main_zone+1 ; Zone for main title
       lbres = get_res_eq(res2,"lb")
-      lbar_zone = 3
 
-      if(lbres.and.isatt(lbres,"lbOrientation").and.\
-        (lbres@lbOrientation.eq."vertical".or.\
-         lbres@lbOrientation.eq."VERTICAL".or.\
-         lbres@lbOrientation.eq."Vertical"))
-        lbar_width =  0.2 * width       ; width of labelbar
-        lbar_height = height            ; height of labelbar
-        lbar_orth   = 0.0
-      else
-        lbar_width  = width
-        lbar_height = 0.2 * height
-        lbar_orth   = 0.02
-      end if
-
-      lbres = True
-      lbres@lbLabelFontHeightF = font_height
-      lbres@vpHeightF          = lbar_height
-      lbres@vpWidthF           = lbar_width
-
-      lbres@amZone          = lbar_zone      ; Just outside plot area
-      lbres@amOrthogonalPosF= lbar_orth
-
-      lbres = get_res_eq(res2,"lb") ; Check for labelbar resources.
-      lbres = True
-
-      add_labelbar(wks,contour_object,lbres)
 ; Use coordinate variables for X and/or Y if they exist.
 
     check_for_coord_arrays(datanew,res2,"contour")
@@ -4603,13 +4599,10 @@ begin
     end do
 
     attsetvalues_check(loglin_object,trres)
-    if((res2).and..not.any(ismissing(getvaratts(res2))))
-
 
 ; Overlay this on a LogLin plot so we can get a logarithmic Y axis.
-      if(isatt(res2,"gsnShape").and.res2@gsnShape)
-        main_zone     = main_zone+1 ; Zone for main title
-      end if
+    if(isatt(res2,"gsnShape").and.res2@gsnShape)
+    overlay(loglin_object,contour_object)
 
 ; Draw all this stuff: contour plot and subtitles.
     draw_and_frame(wks,loglin_object,calldraw,callframe,maxbb)
@@ -4683,39 +4676,14 @@ begin
 
     left_string   = new(1,logical)
     center_string = new(1,logical)
-    gsnp_point_tickmarks_outward(vector_object,major_length,minor_length)
-
+    gsnp_point_tickmarks_outward(vector_object,xlength,ylength,\
+                                               xmlength,ymlength,\
+                                               major_length,minor_length)
     if(left_string.or.center_string.or.right_string)
       main_zone   = main_zone+1
     end if
       lbres = get_res_eq(res2,"lb")
-      lbar_zone = 3
-
-      if(lbres.and.isatt(lbres,"lbOrientation").and.\
-        (lbres@lbOrientation.eq."vertical".or.\
-         lbres@lbOrientation.eq."VERTICAL".or.\
-         lbres@lbOrientation.eq."Vertical"))
-        lbar_width =  0.2 * width       ; width of labelbar
-        lbar_height = height            ; height of labelbar
-        lbar_orth   = 0.0
-      else
-        lbar_width  = width
-        lbar_height = 0.2 * height
-        lbar_orth   = 0.02
-      end if
-
-      lbres = True
-      lbres@lbLabelFontHeightF = font_height
-      lbres@vpHeightF          = lbar_height
-      lbres@vpWidthF           = lbar_width
-
-      lbres@amZone          = lbar_zone      ; Just outside plot area
-      lbres@amOrthogonalPosF= lbar_orth
-
-      lbres = get_res_eq(res2,"lb") ; Check for labelbar resources.
-      lbres = True
-
-      add_labelbar(wks,vector_object,lbres)
+; Check if gsnShape set.
 
     if(check_attr(res2,"gsnShape",True,False))
       main_zone     = main_zone+1 ; Zone for main title
@@ -4866,7 +4834,9 @@ begin
       vnew    = v
     end if
 ;
-    gsnp_point_tickmarks_outward(stream_object,major_length,minor_length)
+    gsnp_point_tickmarks_outward(stream_object,xlength,ylength,\
+    calldraw  = get_res_value(res2,"gsnDraw", True)
+    callframe = get_res_value(res2,"gsnFrame",True)
     maxbb     = get_bb_res(res2)
 
 
