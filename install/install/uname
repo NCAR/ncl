@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: uname,v 1.18 2002-03-18 04:04:57 haley Exp $
+#      $Id: uname,v 1.19 2002-03-18 18:22:05 haley Exp $
 #
 #########################################################################
 #									#
@@ -242,11 +242,11 @@ while($#argv)
 			case alpha
 				set arch = alpha
 				breaksw
-			breaksw
 			default:
 				echo "$0 : Unknown machine type" > /dev/tty
 				exit 1
 			endsw
+			breaksw
 
 		case	Darwin:
 			set arch = MAC
@@ -257,11 +257,11 @@ while($#argv)
 			case	*86:
 				set arch = PC
 				breaksw
-			breaksw
 			default:
 				echo "$0 : Unknown machine type" > /dev/tty
 				exit 1
 			endsw
+			breaksw
 
 		case	ULTRIX:
 		case	OSF1:
