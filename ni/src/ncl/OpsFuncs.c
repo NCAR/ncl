@@ -1063,8 +1063,7 @@ NhlErrorTypes _NclIDestroy
 	}
 	data.kind = NclStk_NOVAL;
 	data.u.data_obj = NULL;
-	_NclPutArg(data,0,1);
-	return(NhlNOERROR);
+	return(_NclPutArg(data,0,1));
 }
 NhlErrorTypes _NclIUpdate
 #if  __STDC__
@@ -1250,9 +1249,8 @@ NhlErrorTypes _NclIDelete
 	}
 	data.kind = NclStk_NOVAL;
 	data.u.data_obj = NULL;
-	_NclPutArg(data,0,1);
+	return(_NclPutArg(data,0,1));
 	
-	return(NhlNOERROR);
 }
 NhlErrorTypes _NclDualOp
 #if  __STDC__
@@ -2189,7 +2187,11 @@ NclQuark res_name;
 				if(tmp_md != NULL) {	
 					tmp_data.kind = NclStk_VAL;
 					tmp_data.u.data_obj = tmp_md;
-					_NclPush(tmp_data);
+					if(_NclPush(tmp_data) == NhlFATAL) {
+						out_data.kind = NclStk_NOVAL;
+						out_data.u.data_obj = NULL;
+						return(out_data);
+					}
 					n_items++;	
 				}
 			}
@@ -2472,8 +2474,7 @@ NclStackEntry missing_expr;
 		if(tmp_md != NULL) {
 			data.kind = NclStk_VAL;
 			data.u.data_obj = tmp_md;
-			_NclPush(data);
-			return(ret);
+			return(_NclPush(data));
 		} else{
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"New: Could not create new array");
 			return(NhlFATAL);

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.26 1994-12-13 22:36:28 ethan Exp $
+ *      $Id: Machine.c,v 1.27 1994-12-14 23:16:13 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -73,8 +73,12 @@ _NclMachineStack *mstk;
 NclStackEntry  *level_1_vars;
 int	current_level_1_size;
 
+/*
 NclFrame *fp;
 NclStackEntry *sb;
+*/
+unsigned int fp;
+unsigned int sb;
 int sb_off;
 unsigned int current_scope_level = 1;
 
@@ -167,6 +171,32 @@ static void SetUpOpsStrings() {
 
 }
 
+static NhlErrorTypes IncreaseStackSize
+#if __STDC__
+(void)
+#else
+()
+#endif
+{
+	NclStackEntry* tmpstack;
+	int i;
+
+	tmpstack = thestack;
+
+	thestack = NclRealloc(thestack,cur_stacksize*2*sizeof(NclStackEntry));
+	if(thestack == NULL ) {
+		thestack = tmpstack;
+		return(NhlFATAL);
+	} else {
+		tmpstack = thestack;
+		for(i = cur_stacksize; i < cur_stacksize * 2; i++ ) {
+			tmpstack[i].kind = NclStk_NOVAL;
+			tmpstack[i].u.offset = 0;
+		}
+		cur_stacksize *= 2;
+		return(NhlNOERROR);
+	}
+}
 NclValue *_NclGetCurrentMachine
 #if __STDC__
 (void)
@@ -185,10 +215,10 @@ NclStackEntry *_NclPeek
 	int offset;
 #endif
 {
-	return((NclStackEntry*)(sb +(sb_off - (offset + 1))));
+	return((NclStackEntry*)(thestack + ( sb + sb_off - (offset + 1))));
 }
 
-void _NclPutArg
+NhlErrorTypes _NclPutArg
 #if  __STDC__
 (NclStackEntry data, int arg_num,int total_args)
 #else
@@ -200,10 +230,16 @@ int total_args;
 {
 	NclStackEntry *ptr;
 
-	ptr = ((NclStackEntry*)(sb + (sb_off - total_args))) + arg_num;
+	if((sb+sb_off-total_args + arg_num) >= cur_stacksize) {
+		if(IncreaseStackSize() == NhlFATAL) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"Can not increase stack size, memory error can't continue");
+			return(NhlFATAL);
+		}
+	}
+	ptr = ((NclStackEntry*)(thestack + ( sb + sb_off - total_args))) + arg_num;
 	*ptr = data;
  
-	return;
+	return(NhlNOERROR);
 }
 
 NclStackEntry _NclGetArg
@@ -216,8 +252,14 @@ int total_args;
 #endif
 {
 	NclStackEntry *ptr;
+	NclStackEntry tmp ;
 
-	ptr = ((NclStackEntry*)(sb + (sb_off - total_args))) + arg_num;
+	if( sb + sb_off - total_args + arg_num  >= cur_stacksize ) {
+		tmp.kind = NclStk_NOVAL;
+		tmp.u.offset = 0;
+		return(tmp);
+	}
+	ptr = ((NclStackEntry*)(thestack + ( sb + sb_off - total_args))) + arg_num;
 
 	return(*ptr);
 }
@@ -307,11 +349,14 @@ void _NclResetMachine
 ()
 #endif
 {
-	fp = NULL;
-	if((NclStackEntry*)(sb + sb_off) != thestack) {
+	fp = 0;
+	if((NclStackEntry*)(thestack + (sb + sb_off)) != thestack) {
 		NhlPError(NhlWARNING,NhlEUNKNOWN,"ResetMachine: reseting non-empty stack, memory may leak!");
 	}
+/*
 	sb = thestack;
+*/
+	sb = 0;
 	sb_off = 0;
 	mstk->the_rec->pcoffset = 0;
 	mstk->the_rec->pc = mstk->the_rec->themachine;
@@ -319,6 +364,7 @@ void _NclResetMachine
 	mstk->the_rec->fn = mstk->the_rec->thefiles;
 	return;
 }
+
 
 static NhlErrorTypes IncreaseMachineSize
 #if __STDC__
@@ -354,9 +400,19 @@ NhlErrorTypes _NclInitMachine
 ()
 #endif
 {
+	int i;
+
 	thestack = (NclStackEntry*)NclMalloc((unsigned)sizeof(NclStackEntry)*NCL_STACK_SIZE);
+	for(i = 0; i< NCL_STACK_SIZE; i++) {
+		thestack[i].kind = NclStk_NOVAL;
+		thestack[i].u.offset = 0;
+	}
+/*
 	fp = (NclFrame*)thestack;
 	sb = thestack;
+*/
+	fp = 0;
+	sb = 0;
 	sb_off = 0;
 	mstk = (_NclMachineStack*)NclMalloc((unsigned)sizeof(_NclMachineStack));
 	mstk->the_rec = (_NclMachineRec*)NclMalloc((unsigned)sizeof(_NclMachineRec));
@@ -441,7 +497,7 @@ int access_type;
 	if(the_sym->level == 1) {
 		return(_NclGetLevel1Var(the_sym->offset));
 	} else if(the_sym->level != 0){
-		previous = (NclFrame*)fp;
+		previous = (NclFrame*)(thestack + fp);
 		while(i != the_sym->level) {
 			i--;
 			previous = (NclFrame*)((NclStackEntry*)thestack + previous->static_link.u.offset);
@@ -473,12 +529,12 @@ static struct _NclFrameList flist ;
 
 static void SaveFramePtrNLevel
 #if __STDC__
-(struct _NclFrame *tmp_fp,int level,NclStackEntry* tmp_sb)
+(unsigned int tmp_fp,int level,unsigned int tmp_sb)
 #else
 (tmp_fp,level,tmp_sb)
-	struct _NclFrame *tmp_fp;
+	unsigned int tmp_fp;
 	int level;
-	NclStackEntry* tmp_sb;
+	unsigned int tmp_sb;
 #endif
 {
 	static inited = 0;
@@ -487,8 +543,8 @@ static void SaveFramePtrNLevel
 
 	if(!inited) {
 		flist.next = NULL;
-		flist.sb = NULL;
-		flist.sb = NULL;
+		flist.fp = 0;
+		flist.sb = 0;
 		flist.level = -1;
 		inited = 1;
 	}
@@ -514,16 +570,16 @@ void _NclAbortFrame
 	if(flist.next != NULL) {
 		while(flist.next != NULL) {
 			tmp = flist.next;
-			tmp_fp = tmp->fp;
+			tmp_fp = (NclFrame*)(thestack + tmp->fp);
 			flist.next = flist.next->next;
 			NclFree(tmp);
 		}
 /*
 * May need to reset sb_off
 */
-		_NclCleanUpStack((int)((NclStackEntry*)(sb + sb_off)  - (NclStackEntry*)tmp_fp));
+		_NclCleanUpStack( (int)( (NclStackEntry*) (thestack + (sb + sb_off))  - (NclStackEntry*) (tmp_fp)));
 		sb_off = 0;
-		sb = (NclStackEntry*)tmp_fp;
+		sb = (unsigned int)((NclStackEntry*)tmp_fp - thestack);
 	}
 }
 
@@ -605,7 +661,7 @@ void _NclPopFrame
         break;
 	}
 }
-void _NclPushFrame
+NhlErrorTypes _NclPushFrame
 #if __STDC__
 (struct _NclSymbol *the_sym,unsigned long next_instr_offset)
 #else
@@ -631,16 +687,22 @@ void _NclPushFrame
 
 
 
-	tmp = (NclFrame*)(sb + sb_off);
+	if(sb + sb_off + sizeof(NclFrame)/sizeof(NclStackEntry)>= cur_stacksize) {
+		if(IncreaseStackSize() == NhlFATAL) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"Increasing stack size failed, memory allocation problem, can't continue");
+			return(NhlFATAL);
+		}
+	}
+	tmp = (NclFrame*)(thestack + (sb + sb_off));
 	tmp->func_ret_value.kind = NclStk_RETURNVAL;
 	tmp->func_ret_value.u.data_obj= (NclMultiDValData)the_sym;
 	if(new_scope_level == current_scope_level+1) {
-		tmp->static_link.u.offset  = (unsigned long)((NclStackEntry*)fp - (NclStackEntry*)thestack);
+		tmp->static_link.u.offset  = (unsigned long)fp;
 		tmp->static_link.kind = NclStk_STATIC_LINK;
 	} else if(new_scope_level == current_scope_level) {
-		tmp->static_link = fp->static_link;
+		tmp->static_link = ((NclFrame*)(thestack + fp))->static_link;
 	} else  {	
-		previous = fp;
+		previous = (NclFrame*)(thestack + fp);
 		i = current_scope_level - new_scope_level;
 		while(i-- >= 1) {
 			previous = (NclFrame*)((NclStackEntry*)thestack + previous->static_link.u.offset);
@@ -648,7 +710,7 @@ void _NclPushFrame
 		tmp->static_link.u.offset = (unsigned long)((NclStackEntry*)previous - (NclStackEntry*)thestack);
 		tmp->static_link.kind = NclStk_STATIC_LINK;
 	}
-	tmp->dynamic_link.u.offset  = (unsigned long)((NclStackEntry*)fp - (NclStackEntry*)thestack);
+	tmp->dynamic_link.u.offset  = fp;
 	tmp->dynamic_link.kind = NclStk_DYNAMIC_LINK;
 
 /*
@@ -687,7 +749,7 @@ void _NclPushFrame
 * implement CONVERT_TO_LOCAL the stack base must 
 * be temporarily save with the new frame pointer information
 */
-	sb = (NclStackEntry*)tmp;
+	sb = (unsigned int)((NclStackEntry*)tmp - thestack);
 	sb_off = 0;
 	
 
@@ -698,8 +760,8 @@ void _NclPushFrame
 * referenced by the instruction sequence. Same goes for the current scope
 * level.
 */
-	SaveFramePtrNLevel(tmp_fp,new_scope_level,(NclStackEntry*)(sb + (sb_off + new_scope_cur_off)));
-	return;
+	SaveFramePtrNLevel((unsigned int)((NclStackEntry*)tmp_fp - thestack),new_scope_level,(sb + (sb_off + new_scope_cur_off)));
+	return(NhlNOERROR);
 }
 
 int _NclFinishFrame
@@ -724,13 +786,13 @@ void *_NclLeaveFrame
 /*
 	sb = &(fp->func_ret_value);
 */
-	prev = fp;
-	fp = (NclFrame*)(thestack + fp->dynamic_link.u.offset);
+	prev = (NclFrame*)(thestack + fp);
+	fp = ((NclFrame*)(thestack + fp))->dynamic_link.u.offset;
 	current_scope_level = caller_level;
 	return((void*)prev);
 }
 
-void _NclPush
+NhlErrorTypes _NclPush
 #if __STDC__
 (NclStackEntry data)
 #else
@@ -738,12 +800,18 @@ void _NclPush
 	NclStackEntry data;
 #endif
 {
-	*(NclStackEntry*)(sb+sb_off) = data;
+	*(NclStackEntry*)(thestack + (sb+sb_off)) = data;
 	sb_off++;
-	if((NclStackEntry*)(sb+sb_off) >= &(thestack[NCL_STACK_SIZE -1]) ) {
+	if((sb+sb_off) >= cur_stacksize ) {
+/*
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"Push: Stack overflow");
+*/
+		if(IncreaseStackSize() == NhlFATAL) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"Push: Stack overflow, could not increase stack size, memory allocation error");
+			return(NhlFATAL);
+		}
 	}
-	return;
+	return(NhlNOERROR);
 }
 
 NclStackEntry _NclPop
@@ -754,16 +822,16 @@ NclStackEntry _NclPop
 #endif
 {
 	NclStackEntry tmp;
-	if(sb +sb_off <= thestack) {
+	if(thestack + (sb +sb_off) <= thestack) {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"Pop: Stack underflow");
 		tmp.kind = NclStk_NOVAL;
 		tmp.u.offset = 0;
 		return(tmp);
 	} else {
 		sb_off--;
-		tmp = (*(NclStackEntry*)(sb + sb_off));
-		((NclStackEntry*)(sb+sb_off))->kind = NclStk_NOVAL;
-		((NclStackEntry*)(sb+sb_off))->u.offset = 0;
+		tmp = (*(NclStackEntry*)(thestack +(sb + sb_off)));
+		((NclStackEntry*)(thestack + (sb+sb_off)))->kind = NclStk_NOVAL;
+		((NclStackEntry*)(thestack + (sb+sb_off)))->u.offset = 0;
 		return(tmp);
 	}
 }
@@ -1211,7 +1279,7 @@ extern void _NclAddObjToParamList
 /*
 * guarenteed to have next frame pointer in the flist stack.
 */
-	tmp_fp = flist.next->fp;
+	tmp_fp = (NclFrame*)(thestack + flist.next->fp);
 	if(obj->obj.obj_type_mask & NCL_VAR_TYPE_MASK) {
 		tmp_fp->parameter_map.u.the_list->the_elements[arg_num].p_type = VAR_P;
 		tmp_fp->parameter_map.u.the_list->the_elements[arg_num].var_sym = ((NclVar)obj)->var.thesym;
@@ -1740,7 +1808,7 @@ void _NclDumpStack
 	int off;
 #endif
 {
-	NclStackEntry *tmp_ptr = (NclStackEntry*)(sb + sb_off - off);
+	NclStackEntry *tmp_ptr = (NclStackEntry*)(thestack + (sb + sb_off - off));
 	int i;
 
 	if(fp == NULL) 
@@ -1854,7 +1922,7 @@ NhlErrorTypes _NclPlaceReturn
 	struct _NclStackEntry data;
 #endif
 {
-	fp->func_ret_value = data;
+	((NclFrame*)(thestack + fp))->func_ret_value = data;
 	return(NhlNOERROR);
 }
 

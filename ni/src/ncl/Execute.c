@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.26 1994-10-29 00:57:15 ethan Exp $
+ *      $Id: Execute.c,v 1.27 1994-12-14 23:16:23 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -144,16 +144,19 @@ NclExecuteReturnStatus _NclExecute
 						break;
 					}
 				}
-				_NclPush(data1);
-				if(estatus == NhlFATAL) 
-					_NclCleanUpStack(1);
+				if(_NclPush(data1) == NhlFATAL)  {
+					estatus = NhlFATAL;
+				} else {
+					if(estatus == NhlFATAL) 
+						_NclCleanUpStack(1);
+				}
 				break;
 			}
 			case DEFAULT_RANGE_OP : {
 				NclStackEntry data;
 				data.kind = NclStk_NOVAL;
 				data.u.offset = 0;
-				_NclPush(data);
+				estatus = _NclPush(data);
 				break;
 			}
 			case RANGE_INDEX_OP : {
@@ -255,9 +258,11 @@ NclExecuteReturnStatus _NclExecute
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"Illegal Subscript. Only scalar values are allowed in subscript ranges.\n");
 					estatus = NhlFATAL;
 				}
-				_NclPush(data);
-				if(estatus == NhlFATAL) 
+				if(_NclPush(data) == NhlFATAL) {
+					estatus = NhlFATAL;
+				} else if(estatus == NhlFATAL)  {
 					_NclCleanUpStack(1);
+				}
 				break;
 			}
 			case SINGLE_INDEX_OP : {
@@ -292,14 +297,14 @@ NclExecuteReturnStatus _NclExecute
 						data1.u.range_rec->start = val;
 						data1.u.range_rec->finish = val;
 						data1.u.range_rec->stride=NULL;
-						_NclPush(data1);
+						estatus = _NclPush(data1);
 					} else if(val->multidval.n_dims == 1) {
 						data1.kind = NclStk_VECREC;
 						data1.u.vec_rec =
 							(NclVecRec*)NclMalloc(
 							sizeof(NclVecRec));
 						data1.u.vec_rec->vec = val;
-						_NclPush(data1);
+						estatus = _NclPush(data1);
 					} else {
 						NhlPError(NhlFATAL,NhlEUNKNOWN,"Illegal subscript. Subscripts must be scalar or one dimensional vectors\n");
 						estatus = NhlFATAL;
@@ -370,9 +375,11 @@ NclExecuteReturnStatus _NclExecute
 						break;
 					}
 				}
-				_NclPush(data1);
-				if(estatus == NhlFATAL) 
+				if(_NclPush(data1) == NhlFATAL) {
+					estatus = NhlFATAL;
+				} else if(estatus == NhlFATAL) {
 					_NclCleanUpStack(1);
+				}
 				break;
 			} 
 			case NEG_OP : {
@@ -382,9 +389,11 @@ NclExecuteReturnStatus _NclExecute
 				data.kind = NclStk_NOVAL;
 				data.u.data_obj = NULL;
 				estatus = _NclMonoOp(operand,&data,NEG_OP);
-				_NclPush(data);
-				if(estatus == NhlFATAL) 
+				if(_NclPush(data) == NhlFATAL) {
+					estatus = NhlFATAL;
+				} else if(estatus == NhlFATAL)  {
 					_NclCleanUpStack(1);
+				}
 			}
 			break;
 			case NOT_OP : {
@@ -394,9 +403,11 @@ NclExecuteReturnStatus _NclExecute
 				data.kind = NclStk_NOVAL;
 				data.u.data_obj = NULL;
 				estatus = _NclMonoOp(operand,&data,NOT_OP);
-				_NclPush(data);
-				if(estatus == NhlFATAL) 
+				if(_NclPush(data) == NhlFATAL) {
+					estatus = NhlFATAL;
+				} else if(estatus == NhlFATAL) {
 					_NclCleanUpStack(1);
+				}
 			}
 			break;
 			case MOD_OP : {
@@ -408,9 +419,11 @@ NclExecuteReturnStatus _NclExecute
 				data.kind = NclStk_NOVAL;
 				data.u.data_obj = NULL;
 				estatus = _NclDualOp(lhs,rhs,&data,MOD_OP);
-				_NclPush(data);
-				if(estatus == NhlFATAL) 
+				if(_NclPush(data) == NhlFATAL) {
+					estatus = NhlFATAL;
+				} else if(estatus == NhlFATAL) {
 					_NclCleanUpStack(1);
+				}
 			}
 			break;
 			case OR_OP : {
@@ -422,9 +435,11 @@ NclExecuteReturnStatus _NclExecute
 				data.kind = NclStk_NOVAL;
 				data.u.data_obj = NULL;
 				estatus = _NclDualOp(lhs,rhs,&data,OR_OP);
-				_NclPush(data);
-				if(estatus == NhlFATAL) 
+				if(_NclPush(data) == NhlFATAL) {
+					estatus = NhlFATAL;
+				} else if(estatus == NhlFATAL) {
 					_NclCleanUpStack(1);
+				}
 			}
 			break;
 			case AND_OP : {
@@ -436,9 +451,11 @@ NclExecuteReturnStatus _NclExecute
 				data.kind = NclStk_NOVAL;
 				data.u.data_obj = NULL;
 				estatus = _NclDualOp(lhs,rhs,&data,AND_OP);
-				_NclPush(data);
-				if(estatus == NhlFATAL) 
+				if(_NclPush(data) == NhlFATAL) {
+					estatus = NhlFATAL;
+				} else if(estatus == NhlFATAL) {
 					_NclCleanUpStack(1);
+				}
 			}
 			break;
 			case XOR_OP : {
@@ -450,9 +467,11 @@ NclExecuteReturnStatus _NclExecute
 				data.kind = NclStk_NOVAL;
 				data.u.data_obj = NULL;
 				estatus = _NclDualOp(lhs,rhs,&data,XOR_OP);
-				_NclPush(data);
-				if(estatus == NhlFATAL) 
+				if(_NclPush(data) == NhlFATAL) {
+					estatus = NhlFATAL;
+				} else if(estatus == NhlFATAL) {
 					_NclCleanUpStack(1);
+				}
 			}
 			break;
 			case LTSEL_OP : {
@@ -464,9 +483,11 @@ NclExecuteReturnStatus _NclExecute
 				data.kind = NclStk_NOVAL;
 				data.u.data_obj = NULL;
 				estatus = _NclDualOp(lhs,rhs,&data,LTSEL_OP);
-				_NclPush(data);
-				if(estatus == NhlFATAL) 
+				if(_NclPush(data) == NhlFATAL) {
+					estatus = NhlFATAL;
+				} else if(estatus == NhlFATAL) {
 					_NclCleanUpStack(1);
+				}
 			}
 			break;
 			case GTSEL_OP : {
@@ -478,9 +499,11 @@ NclExecuteReturnStatus _NclExecute
 				data.kind = NclStk_NOVAL;
 				data.u.data_obj = NULL;
 				estatus = _NclDualOp(lhs,rhs,&data,GTSEL_OP);
-				_NclPush(data);
-				if(estatus == NhlFATAL) 
+				if(_NclPush(data) == NhlFATAL) {
+					estatus = NhlFATAL;
+				} else if(estatus == NhlFATAL) {
 					_NclCleanUpStack(1);
+				}
 			}
 			break;
 			case PLUS_OP :
@@ -493,9 +516,11 @@ NclExecuteReturnStatus _NclExecute
 				data.kind = NclStk_NOVAL;
 				data.u.data_obj = NULL;
 				estatus =  _NclDualOp(lhs,rhs,&data,PLUS_OP);
-				_NclPush(data);
-				if(estatus == NhlFATAL) 
+				if(_NclPush(data) == NhlFATAL) {
+					estatus = NhlFATAL;
+				} else if(estatus == NhlFATAL) {
 					_NclCleanUpStack(1);
+				}
 			}
 				break;
 			case MINUS_OP :
@@ -508,9 +533,11 @@ NclExecuteReturnStatus _NclExecute
 				data.kind = NclStk_NOVAL;
 				data.u.data_obj = NULL;
 				estatus = _NclDualOp(lhs,rhs,&data,MINUS_OP);
-				_NclPush(data);
-				if(estatus == NhlFATAL) 
+				if(_NclPush(data) == NhlFATAL) {
+					estatus = NhlFATAL;
+				} else if(estatus == NhlFATAL) {
 					_NclCleanUpStack(1);
+				}
 			}
 				break;
 			case MUL_OP :
@@ -523,9 +550,11 @@ NclExecuteReturnStatus _NclExecute
 				data.kind = NclStk_NOVAL;
 				data.u.data_obj = NULL;
 				estatus = _NclDualOp(lhs,rhs,&data,MUL_OP);
-				_NclPush(data);
-				if(estatus == NhlFATAL) 
+				if(_NclPush(data) == NhlFATAL) {
+					estatus = NhlFATAL;
+				} else if(estatus == NhlFATAL) {
 					_NclCleanUpStack(1);
+				}
 			}
 				break;
 			case MAT_OP :
@@ -538,9 +567,11 @@ NclExecuteReturnStatus _NclExecute
 				data.kind = NclStk_NOVAL;
 				data.u.data_obj = NULL;
 				estatus = _NclDualOp(lhs,rhs,&data,MAT_OP);
-				_NclPush(data);
-				if(estatus == NhlFATAL) 
+				if(_NclPush(data) == NhlFATAL) {
+					estatus = NhlFATAL;
+				} else if(estatus == NhlFATAL) {
 					_NclCleanUpStack(1);
+				}
 			}
 				break;
 			case DIV_OP :
@@ -553,9 +584,11 @@ NclExecuteReturnStatus _NclExecute
 				data.kind = NclStk_NOVAL;
 				data.u.data_obj = NULL;
 				estatus = _NclDualOp(lhs,rhs,&data,DIV_OP);
-				_NclPush(data);
-				if(estatus == NhlFATAL) 
+				if(_NclPush(data) == NhlFATAL) {
+					estatus = NhlFATAL;
+				} else if(estatus == NhlFATAL) {
 					_NclCleanUpStack(1);
+				}
 			}
 				break;
 			case EXP_OP :{
@@ -567,9 +600,11 @@ NclExecuteReturnStatus _NclExecute
 				data.kind = NclStk_NOVAL;
 				data.u.data_obj = NULL;
 				estatus = _NclDualOp(lhs,rhs,&data,EXP_OP);
-				_NclPush(data);
-				if(estatus == NhlFATAL) 
+				if(_NclPush(data) == NhlFATAL) {
+					estatus = NhlFATAL;
+				} else if(estatus == NhlFATAL) {
 					_NclCleanUpStack(1);
+				}
 			}
 			break;
 			case LE_OP : {
@@ -581,9 +616,11 @@ NclExecuteReturnStatus _NclExecute
 				data.kind = NclStk_NOVAL;
 				data.u.data_obj = NULL;
 				estatus = _NclDualOp(lhs,rhs,&data,LE_OP);
-				_NclPush(data);
-				if(estatus == NhlFATAL) 
+				if(_NclPush(data) == NhlFATAL) {
+					estatus = NhlFATAL;
+				} else if(estatus == NhlFATAL) {
 					_NclCleanUpStack(1);
+				}
 			}
 			break;
 			case GE_OP : {
@@ -595,9 +632,11 @@ NclExecuteReturnStatus _NclExecute
 				data.kind = NclStk_NOVAL;
 				data.u.data_obj = NULL;
 				estatus = _NclDualOp(lhs,rhs,&data,GE_OP);
-				_NclPush(data);
-				if(estatus == NhlFATAL) 
+				if(_NclPush(data) == NhlFATAL) {
+					estatus = NhlFATAL;
+				} else if(estatus == NhlFATAL) {
 					_NclCleanUpStack(1);
+				}
 			}
 			break;
 			case GT_OP : {
@@ -609,9 +648,11 @@ NclExecuteReturnStatus _NclExecute
 				data.kind = NclStk_NOVAL;
 				data.u.data_obj = NULL;
 				estatus = _NclDualOp(lhs,rhs,&data,GT_OP);
-				_NclPush(data);
-				if(estatus == NhlFATAL) 
+				if(_NclPush(data) == NhlFATAL) {
+					estatus = NhlFATAL;
+				} else if(estatus == NhlFATAL) {
 					_NclCleanUpStack(1);
+				}
 			}
 			break;
 			case LT_OP : {
@@ -623,9 +664,11 @@ NclExecuteReturnStatus _NclExecute
 				data.kind = NclStk_NOVAL;
 				data.u.data_obj = NULL;
 				estatus = _NclDualOp(lhs,rhs,&data,LT_OP);
-				_NclPush(data);
-				if(estatus == NhlFATAL) 
+				if(_NclPush(data) == NhlFATAL) {
+					estatus = NhlFATAL;
+				} else if(estatus == NhlFATAL) {
 					_NclCleanUpStack(1);
+				}
 			}
 			break;
 			case EQ_OP : {
@@ -637,9 +680,11 @@ NclExecuteReturnStatus _NclExecute
 				data.kind = NclStk_NOVAL;
 				data.u.data_obj = NULL;
 				estatus = _NclDualOp(lhs,rhs,&data,EQ_OP);
-				_NclPush(data);
-				if(estatus == NhlFATAL) 
+				if(_NclPush(data) == NhlFATAL) {
+					estatus = NhlFATAL;
+				} else if(estatus == NhlFATAL) {
 					_NclCleanUpStack(1);
+				}
 			}
 			break;
 			case NE_OP : {
@@ -651,9 +696,11 @@ NclExecuteReturnStatus _NclExecute
 				data.kind = NclStk_NOVAL;
 				data.u.data_obj = NULL;
 				estatus = _NclDualOp(lhs,rhs,&data,NE_OP);
-				_NclPush(data);
-				if(estatus == NhlFATAL) 
+				if(_NclPush(data) == NhlFATAL) {
+					estatus = NhlFATAL;
+				} else if(estatus == NhlFATAL) {
 					_NclCleanUpStack(1);
+				}
 			}
 			break;
 			case GET_OBJ_OP :
@@ -684,7 +731,7 @@ NclExecuteReturnStatus _NclExecute
 */
 				data_out = _NclGetHLUObjOp(name,*(NclQuark*)res->multidval.val);
 				if((data_out.kind != NclStk_NOVAL)&&(data_out.u.data_obj != NULL)){
-					_NclPush(data_out);	
+					estatus =_NclPush(data_out);	
 				}
 
 				if((res_name.kind == NclStk_VAL)&&(res_name.u.data_obj->obj.status != PERMANENT)) {
@@ -736,7 +783,7 @@ NclExecuteReturnStatus _NclExecute
 				ptr++;lptr++;fptr++;
 				estatus = _NclBuildArray((int)*ptr,&data);
 				if(estatus != NhlFATAL)
-					_NclPush(data);
+					estatus = _NclPush(data);
 				break;
 			}
 			case PUSH_STRING_LIT_OP :
@@ -753,7 +800,7 @@ NclExecuteReturnStatus _NclExecute
 						NULL,Ncl_MultiDValstringData,0,
 						(void*)thestr,NULL,1,&dim_size,
 						TEMPORARY,NULL);
-				_NclPush(data);
+				estatus  = _NclPush(data);
 				break;
 			}
 			case PUSH_REAL_LIT_OP : 
@@ -766,7 +813,7 @@ NclExecuteReturnStatus _NclExecute
 						NULL,Ncl_MultiDValfloatData,0,
 						(void*)ptr,NULL,1,&dim_size,
 						STATIC,NULL);
-				_NclPush(data);
+				estatus = _NclPush(data);
 				break;
 			}
 			case PUSH_INT_LIT_OP :
@@ -779,7 +826,7 @@ NclExecuteReturnStatus _NclExecute
 						NULL,Ncl_MultiDValintData,0,
 						(void*)ptr,NULL,1,&dim_size,
 						STATIC,NULL);
-				_NclPush(data);
+				estatus = _NclPush(data);
 				break;
 			}
 			case PUSH_LOG_LIT_OP :
@@ -792,7 +839,7 @@ NclExecuteReturnStatus _NclExecute
 						NULL,Ncl_MultiDVallogicalData,0,
 						(void*)ptr,NULL,1,&dim_size,
 						STATIC,NULL);
-				_NclPush(data);
+				estatus = _NclPush(data);
 				break;
 			}
 			case JMP_SCALAR_TRUE_OP: {
@@ -824,8 +871,10 @@ NclExecuteReturnStatus _NclExecute
 							fptr = _NclGetCurrentFileNameRec() + offset - 1;
 						}
 					} 
-				}  
-				_NclPush(data);
+				} 
+				if(estatus != NhlFATAL) {
+					estatus =  _NclPush(data);
+				}
 				break;
 			}
 			case JMP_SCALAR_FALSE_OP: {
@@ -858,7 +907,9 @@ NclExecuteReturnStatus _NclExecute
 						}
 					} 
 				}  
-				_NclPush(data);
+				if(estatus != NhlFATAL) {
+					estatus = _NclPush(data);
+				}
 				break;
 			}
 			case JMPFALSE : {
@@ -1051,14 +1102,16 @@ NclExecuteReturnStatus _NclExecute
 				case NclStk_VAL:
 					data_dup.kind = data.kind;
 					data_dup.u.data_obj = _NclCopyVal(data.u.data_obj,NULL);
-					_NclPush(data);
-					_NclPush(data_dup);
+					estatus = _NclPush(data);
+					if(estatus != NhlFATAL)
+						estatus = _NclPush(data_dup);
 					break;
 				case NclStk_VAR:
 					data_dup.kind = data.kind;
 					data_dup.u.data_var = _NclCopyVar(data.u.data_var,NULL,NULL);
-					_NclPush(data);
-					_NclPush(data_dup);
+					estatus = _NclPush(data);
+					if(estatus != NhlFATAL)
+						estatus = _NclPush(data_dup);
 					break;
 				default:
 					estatus = NhlFATAL;
@@ -1260,7 +1313,7 @@ NclExecuteReturnStatus _NclExecute
 						estatus = NhlFATAL;
 					} else {
 						data.kind = NclStk_VAL;
-						_NclPush(data);
+						estatus = _NclPush(data);
 					}
 				} else {
 					estatus = NhlFATAL;
@@ -1411,7 +1464,7 @@ NclExecuteReturnStatus _NclExecute
 					estatus = NhlFATAL;
 				} else if(nsubs == 0) {
 					if(var != NULL) {
-						_NclPush(*var);
+						estatus = _NclPush(*var);
 					} else {
 						estatus = NhlFATAL;
 					}
@@ -1460,7 +1513,7 @@ NclExecuteReturnStatus _NclExecute
 						data1.kind = NclStk_VAR;
 						data1.u.data_var = _NclVarRead(var->u.data_var,sel_ptr);
 						if(data1.u.data_var != NULL) {
-							_NclPush(data1);
+							estatus = _NclPush(data1);
 						} else {
 							estatus = NhlFATAL;
 						}
@@ -1659,7 +1712,7 @@ NclExecuteReturnStatus _NclExecute
 				ptr++;lptr++;fptr++;
 				offset = (int)(*ptr);
 				if((proc->u.procfunc != NULL)&&(offset >= 0)) {
-					_NclPushFrame(proc,offset);
+					estatus = _NclPushFrame(proc,offset);
 				} else {
 					estatus = NhlFATAL;
 				}
@@ -1844,15 +1897,15 @@ NclExecuteReturnStatus _NclExecute
                                                 	if(estatus != NhlFATAL) {
                                                         	data.kind = NclStk_VAR;
                                                         	data.u.data_var = tmp_var;
-                                                        	_NclPush(data);
+                                                        	estatus = _NclPush(data);
                                                 	}
 						} else if(estatus != NhlFATAL){
 							if(tmp_md == NULL) {
-                                                        	_NclPush(data);
+                                                        	estatus = _NclPush(data);
 							} else {
 								tmp_data.kind = NclStk_VAL;
 								tmp_data.u.data_obj = tmp_md;
-								_NclPush(tmp_data);
+								estatus = _NclPush(tmp_data);
 							}
 						}
 					}
@@ -1954,10 +2007,10 @@ NclExecuteReturnStatus _NclExecute
                                                 	if(estatus != NhlFATAL) {
                                                         	data.kind = NclStk_VAR;
                                                         	data.u.data_var = tmp_var;
-                                                        	_NclPush(data);
+                                                        	estatus = _NclPush(data);
                                                 	}
 						} else if(estatus != NhlFATAL) {
-                                                       	_NclPush(data);
+                                                       	estatus = _NclPush(data);
 						}
 					}
 					break;
@@ -2177,7 +2230,7 @@ NclExecuteReturnStatus _NclExecute
 							if(tmp1_md != NULL) {
 								data.kind = NclStk_VAL;
 								data.u.data_obj = tmp1_md;
-								_NclPush(data);
+								estatus = _NclPush(data);
 							}
 						} else {
 							NhlPError(NhlFATAL,NhlEUNKNOWN,"Dimension references must be scalar");
@@ -2274,7 +2327,7 @@ NclExecuteReturnStatus _NclExecute
 				if(estatus != NhlFATAL) {
 					data = _NclCreateHLUObjOp(nres,objname,objtype,tmp_md);
 					if(data.kind != NclStk_NOVAL) {
-						_NclPush(data);
+						estatus = _NclPush(data);
 					} else {
 						estatus = NhlFATAL;
 					}
@@ -2358,7 +2411,7 @@ NclExecuteReturnStatus _NclExecute
 					estatus = NhlFATAL;
 				}
 				if(estatus != NhlFATAL) 
-					_NclPush(data);
+					estatus = _NclPush(data);
 			}
 			break;
 			case ASSIGN_VAR_COORD_OP: {
@@ -2536,7 +2589,7 @@ NclExecuteReturnStatus _NclExecute
 						data.u.data_var = _NclReadCoordVar(var->u.data_var,coord_name,sel_ptr);
 						if(data.u.data_var != NULL) {
 							data.kind = NclStk_VAR;
-							_NclPush(data);
+							estatus = _NclPush(data);
 						} else {
 							estatus = NhlFATAL;
 						}
@@ -2717,7 +2770,7 @@ NclExecuteReturnStatus _NclExecute
 								out_var.kind = NclStk_VAR;
 								out_var.u.data_var = _NclFileReadVar(file,var,sel_ptr);
 								if((estatus != NhlFATAL)&&(out_var.u.data_var != NULL)) {
-									_NclPush(out_var);
+									estatus = _NclPush(out_var);
 								} else 	{
 									estatus = NhlFATAL;
 								}
@@ -2726,7 +2779,7 @@ NclExecuteReturnStatus _NclExecute
 								out_var.kind = NclStk_VAL;
 								out_var.u.data_obj = _NclFileReadVarValue(file,var,sel_ptr);
 								if((estatus != NhlFATAL)&&(out_var.u.data_obj != NULL)) {
-									_NclPush(out_var);
+									estatus = _NclPush(out_var);
 								} else {
 									estatus = NhlFATAL;
 								}
@@ -3101,7 +3154,7 @@ NclExecuteReturnStatus _NclExecute
 						out_data.u.data_obj = _NclFileReadVarAtt(file,var_name,att_name,sel_ptr);
 						if(out_data.u.data_obj != NULL) {
 							out_data.kind = NclStk_VAL;
-							_NclPush(out_data);
+							estatus = _NclPush(out_data);
 						} else {
 							estatus = NhlFATAL;
 						}
@@ -3181,7 +3234,7 @@ NclExecuteReturnStatus _NclExecute
 						out_data.u.data_var =_NclFileReadCoord (file, coord_name,sel_ptr);
 						if(out_data.u.data_var != NULL) {
 							out_data.kind = NclStk_VAR;
-							_NclPush(out_data);
+							estatus = _NclPush(out_data);
 						} else {
 							estatus = NhlFATAL;
 						}

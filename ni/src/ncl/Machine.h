@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.h,v 1.12 1994-10-29 00:57:26 ethan Exp $
+ *      $Id: Machine.h,v 1.13 1994-12-14 23:16:16 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -53,8 +53,8 @@ typedef struct mach_stack {
 
 typedef struct _NclFrameList {
 	int level;
-	struct _NclFrame *fp;
-	struct _NclStackEntry *sb;
+	unsigned int fp;
+	unsigned int sb;
 	struct _NclFrameList * next;
 }NclFrameList;
 
@@ -146,7 +146,7 @@ NclExecuteReturnStatus _NclExecute(
 	unsigned long start_offset
 #endif
 );
-extern void _NclPush(
+extern NhlErrorTypes _NclPush(
 #ifdef NhlNeedProto
 NclStackEntry /*data*/
 #endif
@@ -266,7 +266,7 @@ int  /*total_arg*/
 #endif
 );
 
-extern void _NclPutArg(
+extern NhlErrorTypes _NclPutArg(
 #ifdef NhlNeedProto
 NclStackEntry /* data */,
 int  /*arg_num*/,
@@ -316,7 +316,7 @@ int /* caller_level */
 #endif
 );
 
-extern void _NclPushFrame(
+extern NhlErrorTypes _NclPushFrame(
 #ifdef NhlNeedProto
 struct _NclSymbol * /* thesym*/,
 unsigned long /* offset */
