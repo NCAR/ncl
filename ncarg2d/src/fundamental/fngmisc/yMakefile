@@ -1,0 +1,17 @@
+#
+#	$Id: yMakefile,v 1.1 1993-03-24 21:24:03 haley Exp $
+#
+NCARG	= ../../../..
+
+MYNAME	= fngmisc
+
+GENERIC_SRCS = fnmngdts.f fnmwsym.f
+
+install::
+	@for file in $(GENERIC_SRCS); do\
+	($(INSTALL) -m $(INSTALL_LIB) $$file $(EXAMPLESPATH));\
+	done
+
+MakefileTarget
+CleanTarget
+UpdateTarget
