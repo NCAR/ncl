@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.71 2003-05-22 18:00:30 dbrown Exp $
+#      $Id: yMakefile,v 1.72 2003-05-22 18:02:31 dbrown Exp $
 #
 #########################################################################
 #									#
@@ -21,7 +21,7 @@
 
 MYNAME		=	libnfp
 
-EXTRA_INCLUDES  = -I../ncl
+EXTRA_INCLUDES  = -I../../ncl
 EXTRA_DEFINES  = $(UDUNITS_DEFS)
 
 HDRS = wrapper.h
