@@ -1,5 +1,5 @@
 /*
- *      $Id: pixwrite_png.c,v 1.3 2004-05-06 00:16:19 fred Exp $
+ *      $Id: pixwrite_png.c,v 1.4 2004-05-26 23:54:42 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -87,7 +87,6 @@ int PIX_Write_PNG (PIXddp *xi)
   unsigned int width,height,bw,depth;
   XImage *image;
   int image_size,pix_mask;
-  unsigned long swaptest = 1;
   XColor *colors;
   int win_name_size;
   int header_size;
@@ -169,6 +168,7 @@ void write_png(unsigned char *pix_map, unsigned long width,
   int bit_depth,color_type,filter_method,compression_type,
       interlace_type, png_transforms;
   char *pnum,*output_name;
+  unsigned long swaptest = 1;
 
   png_structp png_ptr;
   png_infop   info_ptr;
@@ -213,7 +213,15 @@ void write_png(unsigned char *pix_map, unsigned long width,
   png_set_IHDR(png_ptr, info_ptr, width, height, bit_depth, color_type, 
                interlace_type, compression_type, filter_method);
 
-  png_write_png(png_ptr, info_ptr, 0, NULL);
+  
+  if (*(char *)&swaptest) {
+    png_transforms = PNG_TRANSFORM_PACKING; 
+  }
+  else {
+    png_transforms = 0;
+  }
+
+  png_write_png(png_ptr, info_ptr, png_transforms, NULL);
   png_destroy_write_struct(&png_ptr, &info_ptr);
 }
 
