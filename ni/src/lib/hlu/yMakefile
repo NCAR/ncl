@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.47 1997-06-11 20:46:59 boote Exp $
+#      $Id: yMakefile,v 1.48 1997-07-16 18:22:18 dbrown Exp $
 #
 #########################################################################
 #									#
@@ -48,7 +48,7 @@ HDRS		= Base.h BaseI.h BaseP.h Convert.h ConvertP.h ConvertersP.h\
 		VectorFieldFloatP.h VectorFieldP.h VectorPlot.h VectorPlotP.h \
 		VecAnno.h VecAnnoP.h StreamlinePlot.h StreamlinePlotP.h \
 		Style.h StyleP.h GraphicStyle.h GraphicStyleP.h SubStylesP.h \
-		Callbacks.h CallbacksP.h
+		Callbacks.h CallbacksP.h ContourPlotI.h
 
 CSRCS		= Base.c BoundingBox.c Close.c Convert.c Converters.c \
 		Create.c Destroy.c Draw.c Error.c GetValues.c \
@@ -98,7 +98,7 @@ FOBJS		= DATACOMM.o ERROR.o HLU.o PLOTMANAGER.o RLGEN.o RLSET.o \
 
 OBJS		= $(COBJS) $(FOBJS)
 
-BuildSharedLibTarget(libNGhlu,$(OBJS),1,0,NullArgument)
+BuildSharedLibTarget(libNGhlu,$(OBJS),1,0,$(NCARGLIB) $(NCARGGKSLIB) $(NCARGCLIB) $(CTOFLIBS) -lm -lc)
 LibraryTarget($(MYNAME),$(OBJS))
 BuildIncludes($(HDRS),ncarg/hlu,../..)
 InstallTarget($(HDRS),$(INSTALL_INC),$(HLUINCPATH))
