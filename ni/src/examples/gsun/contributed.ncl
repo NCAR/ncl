@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.43 2004-06-23 20:31:14 shea Exp $
+;      $Id: contributed.ncl,v 1.44 2004-06-28 22:07:10 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -85,6 +85,14 @@
 ;
 
 ;************************************************************
+; D. Shea
+; return number of elements of an array [scalar==> size=1]
+;************************************************************
+undef("size_array")
+function size_array(x)
+begin
+  return( product(dimsizes(x)) )
+end
 ; D. Shea
 ; return True if "x" has one of several synonyms for "long_name"
 
