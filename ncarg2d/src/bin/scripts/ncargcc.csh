@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ncargcc.csh,v 1.25 1994-02-23 22:41:38 haley Exp $
+#	$Id: ncargcc.csh,v 1.26 1994-03-01 22:48:48 haley Exp $
 #
 
 #*******************#
@@ -74,13 +74,21 @@ else if ($system == "HPUX_snake") then
   set f77libs     =       "-lf -lm"
 else if ($system == "SGI4D") then
   set f77libs     =       "-lF77 -lI77 -lU77 -lisam -lm -lc"
+else if ($system == "AlphaOSF1") then
+  set f77libs     =       "-lm -lots -lfor"
 else
   set f77libs     =       "-lF77 -lI77 -lU77 -lm"
 endif
 
+if ("$system" == "AlphaOSF1") then
+set smooth = "$ro/dashsmth/*.o"
+set quick  = "$ro/dashline/*.o $ro/conrcqck/*.o $ro/conraq/*.o"
+set super  = "$ro/dashsupr/*.o $ro/conrcspr/*.o $ro/conras/*.o"
+else 
 set smooth = "$ro/libdashsmth.o"
-set quick = "$ro/libdashline.o $ro/libconrcqck.o $ro/libconraq.o"
-set super = "$ro/libdashsupr.o $ro/libconrcspr.o $ro/libconras.o"
+set quick  = "$ro/libdashline.o $ro/libconrcqck.o $ro/libconraq.o"
+set super  = "$ro/libdashsupr.o $ro/libconrcspr.o $ro/libconras.o"
+endif
 
 set libs
 
@@ -110,7 +118,11 @@ foreach arg ($argv)
 
 	case "-agupwrtx":
 		echo "Autograph with PWRITX"
-		set libs = "$libs $ro/libagupwrtx.o"
+        if ($system == "AlphaOSF1") then
+            set libs = "$libs $ro/agupwrtx/*.o"
+        else
+            set libs = "$libs $ro/libagupwrtx.o"
+        endif
 		breaksw
 
 	case "-conransmooth":
@@ -120,43 +132,75 @@ foreach arg ($argv)
 
 	case "-conranquick":
 		echo "Quick Conran"
-		set libs = "$libs $ro/libconraq.o"
+        if ($system == "AlphaOSF1") then
+            set libs = "$libs $ro/conraq/*.o"
+        else
+            set libs = "$libs $ro/libconraq.o"
+        endif
 		breaksw
 
 	case "-conransuper":
 		echo "Super Conran"
-		set libs = "$libs $ro/libconras.o $ro/libdashsupr.o"
+        if ($system == "AlphaOSF1") then
+            set libs = "$libs $ro/conras/*.o $ro/dashsupr/*.o"
+        else
+            set libs = "$libs $ro/libconras.o $ro/libdashsupr.o"
+        endif
 		breaksw
 
 	case "-conrecsmooth":
 		echo "Smooth Conrec"
-		set libs = "$libs $ro/libdashsmth.o"
+        if ($system == "AlphaOSF1") then
+            set libs = "$libs $ro/dashsmth/*.o"
+        else
+            set libs = "$libs $ro/libdashsmth.o"
+        endif
 		breaksw
 
 	case "-conrecquick":
 		echo "Quick Conrec"
-		set libs = "$libs $ro/libconrcqck.o"
+        if ($system == "AlphaOSF1") then
+            set libs = "$libs $ro/conrcqck/*.o"
+        else
+            set libs = "$libs $ro/libconrcqck.o"
+        endif
 		breaksw
 
 	case "-conrecsuper":
 		echo "Super Conrec"
-		set libs = "$libs $ro/libconrcspr.o $ro/libdashsupr.o"
+        if ($system == "AlphaOSF1") then
+            set libs = "$libs $ro/conrcspr/*.o $ro/dashsupr/*.o"
+        else
+            set libs = "$libs $ro/libconrcspr.o $ro/libdashsupr.o"
+        endif
 		breaksw
 
 	case "-dashsmooth":
 		echo "Smooth Dash"
-		set libs = "$libs $ro/libdashsmth.o"
+        if ($system == "AlphaOSF1") then
+            set libs = "$libs $ro/dashsmth/*.o"
+        else
+            set libs = "$libs $ro/libdashsmth.o"
+        endif
 		breaksw
 
 	case "-dashquick":
 	case "-dashline":
-		echo "Quick Dash"
-		set libs = "$libs $ro/libdashline.o"
+		echo "Quick Dash"	
+        if ($system == "AlphaOSF1") then
+            set libs = "$libs $ro/dashline/*.o"
+        else
+            set libs = "$libs $ro/libdashline.o"
+        endif
 		breaksw
 
 	case "-dashsuper":
 		echo "Super Dash"
-		set libs = "$libs $ro/libdashsupr.o"
+        if ($system == "AlphaOSF1") then
+             set libs = "$libs $ro/dashsupr/*.o"
+        else
+            set libs = "$libs $ro/libdashsupr.o"
+        endif
 		breaksw
 
     case "-dashchar":
