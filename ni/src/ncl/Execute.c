@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.71 1996-11-11 23:37:36 ethan Exp $
+ *      $Id: Execute.c,v 1.72 1996-11-19 23:31:33 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1997,16 +1997,17 @@ NclExecuteReturnStatus _NclExecute
                                                 	obj_type_arg = obj_type_param = _NclGetVarRepValue(data.u.data_var);
 						}
 
+						
 						if(pfinfo->theargs[arg_num].is_dimsizes) {
 							if(pfinfo->theargs[arg_num].n_dims != data.u.data_var->var.n_dims) {
-								NhlPError(NhlFATAL,NhlEUNKNOWN,"Number of dimensions in parameter (%d) of (%s) does not match specification",arg_num,thesym->name);
+								NhlPError(NhlFATAL,NhlEUNKNOWN,"Number of dimensions in parameter (%d) of (%s) is (%d), (%d) dimensions were expected ",arg_num,thesym->name,data.u.data_var->var.n_dims,pfinfo->theargs[arg_num].n_dims);
 								estatus = NhlFATAL;
 
 							} else {
 								for(i = 0; i< pfinfo->theargs[arg_num].n_dims; i++) {
 									if(pfinfo->theargs[arg_num].dim_sizes[i] != -1) {
 										if(pfinfo->theargs[arg_num].dim_sizes[i] != data.u.data_var->var.dim_info[i].dim_size) {
-											NhlPError(NhlFATAL,NhlEUNKNOWN,"Size of dimension (%d) of argument (%d) does not match specification in (%s) function definition",i,arg_num,thesym->name);
+											NhlPError(NhlFATAL,NhlEUNKNOWN,"Number of elements of dimension (%d) of argument (%d) is (%d) in function (%s), expected (%d) elements",i,arg_num,data.u.data_var->var.dim_info[i].dim_size,thesym->name,pfinfo->theargs[arg_num].dim_sizes[i]);
 											estatus = NhlFATAL;
 										}
 									}
@@ -2016,6 +2017,11 @@ NclExecuteReturnStatus _NclExecute
 										i++;
 									}
 								}
+							}
+						} else if(pfinfo->theargs[arg_num].n_dims > 0) {
+							if(pfinfo->theargs[arg_num].n_dims != data.u.data_var->var.n_dims) {
+								NhlPError(NhlFATAL,NhlEUNKNOWN,"Number of dimensions in parameter (%d) of (%s) is (%d), (%d) dimensions were expected ",arg_num,thesym->name,data.u.data_var->var.n_dims,pfinfo->theargs[arg_num].n_dims);
+								estatus = NhlFATAL;
 							}
 						}
 						if(estatus != NhlFATAL) {
@@ -2156,14 +2162,14 @@ NclExecuteReturnStatus _NclExecute
 						if(estatus != NhlFATAL) {
 							if(pfinfo->theargs[arg_num].is_dimsizes) {
 								if(pfinfo->theargs[arg_num].n_dims != data.u.data_obj->multidval.n_dims) {
-									NhlPError(NhlFATAL,NhlEUNKNOWN,"Number of dimensions in parameter (%d) of (%s) does not match specification",arg_num,thesym->name);
+									NhlPError(NhlFATAL,NhlEUNKNOWN,"Number of dimensions in parameter (%d) of (%s) is (%d), (%d) dimensions were expected ",arg_num,thesym->name,data.u.data_obj->multidval.n_dims,pfinfo->theargs[arg_num].n_dims);
 									estatus = NhlFATAL;
 	
 								} else {
 									for(i = 0; i< pfinfo->theargs->n_dims; i++) {
 										if(pfinfo->theargs[arg_num].dim_sizes[i] != -1) {
 											if(pfinfo->theargs[arg_num].dim_sizes[i] != data.u.data_obj->multidval.dim_sizes[i]) {
-												NhlPError(NhlFATAL,NhlEUNKNOWN,"Size of dimension (%d) of argument (%d) does not match specification in (%s) function definition",i,arg_num,thesym->name);
+												NhlPError(NhlFATAL,NhlEUNKNOWN,"Number of elements of dimension (%d) of argument (%d) is (%d) in function (%s), expected (%d) elements",i,arg_num,data.u.data_obj->multidval.dim_sizes[i],thesym->name,pfinfo->theargs[arg_num].dim_sizes[i]);
 												estatus = NhlFATAL;
 											}
 										}
@@ -2174,7 +2180,13 @@ NclExecuteReturnStatus _NclExecute
 										}
 									}
 								}
-							}
+							} else if(pfinfo->theargs[arg_num].n_dims > 0) {
+                                                        	if(pfinfo->theargs[arg_num].n_dims != data.u.data_obj->multidval.n_dims) {
+									NhlPError(NhlFATAL,NhlEUNKNOWN,"Number of dimensions in parameter (%d) of (%s) is (%d), (%d) dimensions were expected ",arg_num,thesym->name,data.u.data_obj->multidval.n_dims,pfinfo->theargs[arg_num].n_dims);
+                                                                	estatus = NhlFATAL;
+                                                        	}
+                                                	}
+
                                                 	if(!(obj_type_param & obj_type_arg)){
                                                 		tmp_md = _NclCoerceData(data.u.data_obj,obj_type_arg,NULL);
                                                         	if(tmp_md == NULL) {

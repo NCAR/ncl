@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.49 1996-11-19 22:46:10 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.50 1996-11-19 23:31:35 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -6229,7 +6229,7 @@ NhlErrorTypes _Nclind
 		if(count > 0) {
 			out_val = (void*)NclMalloc(((NclTypeClass)nclTypeintClass)->type_class.size * count);
 			j = 0;
-			for(i = 1; i < tmp_md->multidval.totalelements; i++) {
+			for(i = 0; i < tmp_md->multidval.totalelements; i++) {
 				if((tmp[i])&&(tmp[i] != tmp_md->multidval.missing_value.value.logicalval)) {
 					((int*)out_val)[j] = i;
 					j++;
@@ -6257,7 +6257,7 @@ NhlErrorTypes _Nclind
 		if(count > 0) {
 			out_val = (void*)NclMalloc(((NclTypeClass)nclTypeintClass)->type_class.size * count);
 			j = 0;
-			for(i = 1; i < tmp_md->multidval.totalelements; i++) {
+			for(i = 0; i < tmp_md->multidval.totalelements; i++) {
 				if(tmp[i]) {
 					((int*)out_val)[j] = i;
 					j++;
