@@ -1,48 +1,48 @@
 #
-#       $Id: yMakefile,v 1.17 2001-11-02 22:40:58 kennison Exp $
+#       $Id: yMakefile,v 1.18 2001-11-07 20:11:04 kennison Exp $
 #
 
 MYNAME	= ezmap
 
-GENERIC_SRCS = \
-	hlumapeod.f hlumapusr.f idictl.f mapbd.f mapdrw.f mapeod.f mapfst.f \
-	mapgci.f mapgrd.f mapgtc.f mapgtd.f mapgti.f mapgtl.f mapgtr.f \
-	mapint.f mapio.f mapiq.f mapiqd.f mapit.f mapitd.f maplbl.f maplmb.f \
-	maplot.f mappos.f maproj.f maprs.f maprst.f mapsav.f mapset.f mapstc.f \
+GENERIC_SRCS = hlumapeod.f hlumapusr.f \
+	idictl.f  mapbd.f mapdrw.f mapeod.f mapfst.f mapgci.f mapgrd.f \
+	mapgtc.f mapgtd.f mapgti.f mapgtl.f mapgtr.f mapint.f  mapio.f \
+	 mapiq.f mapiqd.f  mapit.f mapitd.f maplbl.f maplmb.f maplot.f \
+	mappos.f maproj.f  maprs.f maprst.f mapsav.f mapset.f mapstc.f \
 	mapstd.f mapsti.f mapstl.f mapstr.f maptra.f maptri.f maptrn.f \
 	mapusr.f mapvec.f mdgcog.f mdgetc.f mdgetd.f mdgeti.f mdgetl.f \
 	mdgetr.f mdgnin.f mdilat.f mdilon.f mdinch.f mditve.f mdlach.f \
 	mdlbln.f mdlblt.f mdloch.f mdpcem.f mdpchi.f mdpdrw.f mdpeod.f \
-	mdpfst.f mdpgci.f mdpgrd.f mdpin1.f mdpin2.f mdpint.f mdpio.f \
-	mdpiq.f mdpiqd.f mdpit.f mdpitd.f mdplbl.f mdplmb.f mdplot.f mdppos.f \
-	mdproj.f mdprs.f mdprst.f mdpsav.f mdpset.f mdptra.f mdptre.f mdptri.f \
-	mdptrn.f mdptrp.f mdpusr.f mdpvec.f mdpvp.f mdpvpd.f mdpwnd.f mdrgdi.f \
-	mdrggc.f mdrgof.f mdrgol.f mdrgsc.f mdrgsf.f mdrgsq.f mdritd.f \
-	mdrset.f mdsetc.f mdsetd.f mdseti.f mdsetl.f mdsetr.f mpgetc.f \
-	mpgetd.f mpgeti.f mpgetl.f mpgetr.f mprset.f mpsetc.f mpsetd.f \
-	mpseti.f mpsetl.f mpsetr.f rbgdfe.f rbglen.f rbidfe.f supcon.f \
-	supmap.f mdrgdl.f mdscal.f mdrged.f mdrgam.f mdrgdr.f mdrgdp.f \
-	mdrgfp.f mdrgip.f
+	mdpfst.f mdpgci.f mdpgrd.f mdpin1.f mdpin2.f mdpint.f  mdpio.f \
+	 mdpiq.f mdpiqd.f  mdpit.f mdpitd.f mdplbl.f mdplmb.f mdplot.f \
+	mdppos.f mdproj.f  mdprs.f mdprst.f mdpsav.f mdpset.f mdptra.f \
+	mdptre.f mdptri.f mdptrn.f mdptrp.f mdpusr.f mdpvec.f  mdpvp.f \
+	mdpvpd.f mdpwnd.f mdrgam.f mdrgdi.f mdrgdl.f mdrgdp.f mdrgdr.f \
+	mdrged.f mdrgfa.f mdrgfp.f mdrggc.f mdrgip.f mdrgof.f mdrgol.f \
+	mdrgsc.f mdrgsf.f mdrgsq.f mdrgsx.f mdritd.f mdrset.f mdscal.f \
+	mdsetc.f mdsetd.f mdseti.f mdsetl.f mdsetr.f mpgetc.f mpgetd.f \
+	mpgeti.f mpgetl.f mpgetr.f mprset.f mpsetc.f mpsetd.f mpseti.f \
+	mpsetl.f mpsetr.f rbgdfe.f rbglen.f rbidfe.f supcon.f supmap.f
 
-GENERIC_OBJS = \
-	hlumapeod.o hlumapusr.o idictl.o mapbd.o mapdrw.o mapeod.o mapfst.o \
-	mapgci.o mapgrd.o mapgtc.o mapgtd.o mapgti.o mapgtl.o mapgtr.o \
-	mapint.o mapio.o mapiq.o mapiqd.o mapit.o mapitd.o maplbl.o maplmb.o \
-	maplot.o mappos.o maproj.o maprs.o maprst.o mapsav.o mapset.o mapstc.o \
+GENERIC_OBJS = hlumapeod.o hlumapusr.o \
+	idictl.o  mapbd.o mapdrw.o mapeod.o mapfst.o mapgci.o mapgrd.o \
+	mapgtc.o mapgtd.o mapgti.o mapgtl.o mapgtr.o mapint.o  mapio.o \
+	 mapiq.o mapiqd.o  mapit.o mapitd.o maplbl.o maplmb.o maplot.o \
+	mappos.o maproj.o  maprs.o maprst.o mapsav.o mapset.o mapstc.o \
 	mapstd.o mapsti.o mapstl.o mapstr.o maptra.o maptri.o maptrn.o \
 	mapusr.o mapvec.o mdgcog.o mdgetc.o mdgetd.o mdgeti.o mdgetl.o \
 	mdgetr.o mdgnin.o mdilat.o mdilon.o mdinch.o mditve.o mdlach.o \
 	mdlbln.o mdlblt.o mdloch.o mdpcem.o mdpchi.o mdpdrw.o mdpeod.o \
-	mdpfst.o mdpgci.o mdpgrd.o mdpin1.o mdpin2.o mdpint.o mdpio.o \
-	mdpiq.o mdpiqd.o mdpit.o mdpitd.o mdplbl.o mdplmb.o mdplot.o mdppos.o \
-	mdproj.o mdprs.o mdprst.o mdpsav.o mdpset.o mdptra.o mdptre.o mdptri.o \
-	mdptrn.o mdptrp.o mdpusr.o mdpvec.o mdpvp.o mdpvpd.o mdpwnd.o mdrgdi.o \
-	mdrggc.o mdrgof.o mdrgol.o mdrgsc.o mdrgsf.o mdrgsq.o mdritd.o \
-	mdrset.o mdsetc.o mdsetd.o mdseti.o mdsetl.o mdsetr.o mpgetc.o \
-	mpgetd.o mpgeti.o mpgetl.o mpgetr.o mprset.o mpsetc.o mpsetd.o \
-	mpseti.o mpsetl.o mpsetr.o rbgdfe.o rbglen.o rbidfe.o supcon.o \
-	supmap.o mdrgdl.o mdscal.o mdrged.o mdrgam.o mdrgdr.o mdrgdp.o \
-	mdrgfp.o mdrgip.o
+	mdpfst.o mdpgci.o mdpgrd.o mdpin1.o mdpin2.o mdpint.o  mdpio.o \
+	 mdpiq.o mdpiqd.o  mdpit.o mdpitd.o mdplbl.o mdplmb.o mdplot.o \
+	mdppos.o mdproj.o  mdprs.o mdprst.o mdpsav.o mdpset.o mdptra.o \
+	mdptre.o mdptri.o mdptrn.o mdptrp.o mdpusr.o mdpvec.o  mdpvp.o \
+	mdpvpd.o mdpwnd.o mdrgam.o mdrgdi.o mdrgdl.o mdrgdp.o mdrgdr.o \
+	mdrged.o mdrgfa.o mdrgfp.o mdrggc.o mdrgip.o mdrgof.o mdrgol.o \
+	mdrgsc.o mdrgsf.o mdrgsq.o mdrgsx.o mdritd.o mdrset.o mdscal.o \
+	mdsetc.o mdsetd.o mdseti.o mdsetl.o mdsetr.o mpgetc.o mpgetd.o \
+	mpgeti.o mpgetl.o mpgetr.o mprset.o mpsetc.o mpsetd.o mpseti.o \
+	mpsetl.o mpsetr.o rbgdfe.o rbglen.o rbidfe.o supcon.o supmap.o
 
 UNIX_SRCS = mpdbdi.f
 
