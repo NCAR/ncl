@@ -1,5 +1,5 @@
 /*
- *      $Id: Open.c,v 1.11 1995-04-07 10:43:16 boote Exp $
+ *      $Id: Open.c,v 1.12 1995-11-21 14:25:40 boote Exp $
  */
 /************************************************************************
 *									*
@@ -22,6 +22,8 @@
  */
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/AppI.h>
+
+static NhlBoolean LIB_INITIALIZED = 0;
 
 /*
  * Function:	_NhlOpen
@@ -49,6 +51,13 @@ static void _NhlOpen
 #endif
 {
 	int	tint;
+
+	if(LIB_INITIALIZED){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			"The HLU library can only be initialized once!");
+		return;
+	}
+	LIB_INITIALIZED = True;
 
 	(void)NhlVACreate(&tint,"hlu",NhlappClass,0,
 			_NhlNappMode,		init_type,
@@ -139,6 +148,13 @@ static void _NhlInitialize
 	_NhlC_OR_F	init_type;
 #endif
 {
+	if(LIB_INITIALIZED){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			"The HLU library can only be initialized once!");
+		return;
+	}
+	LIB_INITIALIZED = True;
+
 	_NhlSetLang(init_type);
 
 	return;
