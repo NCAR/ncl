@@ -72,10 +72,10 @@ I equivalence statements defining IRnn and LRnn must be changed.
 I
 .RE /$NBRW$/4/
 I
-I Selection of code to include CVS "$Id: CodeIftran,v 1.1 2004-05-11 17:05:25 kennison Exp $" comments.
+I Selection of code to include CVS "$Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $" comments.
 I --------- -- ---- -- ------- --- ------ --------
 I
-I To include a CVS "$Id: CodeIftran,v 1.1 2004-05-11 17:05:25 kennison Exp $" comment in each routine, use ".DE A"; else,
+I To include a CVS "$Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $" comment in each routine, use ".DE A"; else,
 I use ".EL A".
 I
 .EL A
@@ -197,7 +197,7 @@ I***********************************************************************
 I C O N P A C K T   -   B L O C K   D A T A   ( D E F A U L T S )
 I***********************************************************************
 A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:05:25 kennison Exp $
+A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
 A
       BLOCK DATA CTBLDA
 C
@@ -1081,7 +1081,7 @@ I***********************************************************************
 I C O N P A C K T   -   U S E R - L E V E L   S U B R O U T I N E S
 I***********************************************************************
 A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:05:25 kennison Exp $
+A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
 A
       SUBROUTINE CTBACK (RPNT,IEDG,ITRI,RWRK,IWRK)
 C
@@ -1118,7 +1118,7 @@ C
 C
       END
 A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:05:25 kennison Exp $
+A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
 A
       SUBROUTINE CTCICA (RPNT,IEDG,ITRI,RWRK,IWRK,ICRA,ICA1,ICAM,ICAN,
      +                                            XFCP,YFCP,XFCQ,YFCQ)
@@ -1479,7 +1479,7 @@ C
 C
       END
 A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:05:25 kennison Exp $
+A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
 A
       SUBROUTINE CTCLAM (RPNT,IEDG,ITRI,RWRK,IWRK,IAMA)
 C
@@ -1725,7 +1725,7 @@ C
 C
       END
 A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:05:25 kennison Exp $
+A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
 A
       SUBROUTINE CTCLDM (RPNT,IEDG,ITRI,RWRK,IWRK,IAMA,RTPL)
 C
@@ -2160,7 +2160,7 @@ C
 C
       END
 A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:05:25 kennison Exp $
+A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
 A
       SUBROUTINE CTCLDR (RPNT,IEDG,ITRI,RWRK,IWRK)
 C
@@ -2572,7 +2572,7 @@ C
 C
       END
 A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:05:25 kennison Exp $
+A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
 A
       SUBROUTINE CTCLTR (RPNT,IEDG,ITRI,RWRK,IWRK,CLVL,IJMP,IRW1,IRW2,
      +                                                           NRWK)
@@ -2619,7 +2619,7 @@ C
 C
       END
 A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:05:25 kennison Exp $
+A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
 A
       SUBROUTINE CTDRPL (XCS,YCS,NCS,IAI,IAG,NAI)
 C
@@ -2666,7 +2666,7 @@ C
 C
       END
 A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:05:25 kennison Exp $
+A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
 A
       SUBROUTINE CTGETC (WHCH,CVAL)
 C
@@ -2760,7 +2760,7 @@ C
 C
       END
 A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:05:25 kennison Exp $
+A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
 A
       SUBROUTINE CTGETI (WHCH,IVAL)
 C
@@ -2792,7 +2792,7 @@ C
 C
       END
 A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:05:25 kennison Exp $
+A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
 A
       SUBROUTINE CTGETR (WHCH,RVAL)
 C
@@ -3140,7 +3140,7 @@ C
 C
       END
 A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:05:25 kennison Exp $
+A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
 A
       SUBROUTINE CTLBAM (RPNT,IEDG,ITRI,RWRK,IWRK,IAMA)
 C
@@ -3284,7 +3284,7 @@ C
 C
       END
 A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:05:25 kennison Exp $
+A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
 A
       SUBROUTINE CTLBDR (RPNT,IEDG,ITRI,RWRK,IWRK)
 C
@@ -3695,7 +3695,7 @@ C
 C
       END
 A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:05:25 kennison Exp $
+A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
 A
       SUBROUTINE CTMESH (RPNT,KPNT,KOPN,
      +                   IEDG,KEDG,KOEN,
@@ -4235,7 +4235,7 @@ C
 C
       END
 A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:05:25 kennison Exp $
+A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
 A
       SUBROUTINE CTMVIW (IWKO,IWKN,LWKN)
 C
@@ -4324,7 +4324,7 @@ C
 C
       END
 A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:05:25 kennison Exp $
+A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
 A
       SUBROUTINE CTMVRW (RWKO,RWKN,LWKN)
 C
@@ -4413,7 +4413,7 @@ C
 C
       END
 A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:05:25 kennison Exp $
+A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
 A
       SUBROUTINE CTPKCL (RPNT,IEDG,ITRI,RWRK,IWRK)
 C
@@ -4580,7 +4580,7 @@ C
 C
       END
 A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:05:25 kennison Exp $
+A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
 A
       SUBROUTINE CTPKLB (RPNT,IEDG,ITRI,RWRK,IWRK)
 C
@@ -4758,7 +4758,7 @@ C
 C
       END
 A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:05:25 kennison Exp $
+A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
 A
       SUBROUTINE CTPKLP (RPNT,IEDG,ITRI,RWRK,IWRK)
 C
@@ -4900,7 +4900,7 @@ C
 C
       END
 A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:05:25 kennison Exp $
+A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
 A
       SUBROUTINE CTRSET
 C
@@ -5100,7 +5100,7 @@ C
 C
       END
 A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:05:25 kennison Exp $
+A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
 A
       SUBROUTINE CTSETC (WHCH,CVAL)
 C
@@ -5223,7 +5223,7 @@ C
 C
       END
 A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:05:25 kennison Exp $
+A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
 A
       SUBROUTINE CTSETI (WHCH,IVAL)
 C
@@ -5257,7 +5257,7 @@ C
 C
       END
 A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:05:25 kennison Exp $
+A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
 A
       SUBROUTINE CTSETR (WHCH,RVAL)
 C
@@ -5588,7 +5588,7 @@ C
 C
       END
 A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:05:25 kennison Exp $
+A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
 A
       SUBROUTINE CTTMRG (IDIM,JDIM,RLAT,RLON,RDAT,ISCR,SVAL,RTMI,
      +                   RPNT,MPNT,NPNT,LOPN,
@@ -6041,7 +6041,7 @@ C
 C
       END
 A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:05:25 kennison Exp $
+A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
 A
       SUBROUTINE CTTMTL (NTTO,TBUF,MBUF,NBUF,
      +                   IPPP,MPPP,NPPP,
@@ -6060,7 +6060,7 @@ C remaining NBUF-NTTO triangles at the beginning of the array.  New
 C points are added to the point list in the array RPNT, new edges are
 C added to the edge list in the array IEDG, and new triangles are
 C added to the triangle list in the array ITRI.  The arrays IPPP and
-C IPPE are used to keep quicksorted lists of the points and the edges,
+C IPPE are used to keep tree-sorted lists of the points and the edges,
 C respectively, so that no duplicate points or edges will be created.
 C
         DO 102 I=1,NTTO
@@ -6070,16 +6070,6 @@ C triangle with index IBUF will be processed.
 C
           IBUF=1+MAX(0,MIN(NBUF-1,INT(REAL(NBUF)*CTFRAN())))
 C
-C Compute a value of EPST, to be used in ICAPNT in a test to determine
-C whether or not two points should be treated as identical.
-C
-          EPST=.01*MAX(MAX(TBUF(1,IBUF),TBUF(5,IBUF),TBUF( 9,IBUF))-
-     +                 MIN(TBUF(1,IBUF),TBUF(5,IBUF),TBUF( 9,IBUF)),
-     +                 MAX(TBUF(2,IBUF),TBUF(6,IBUF),TBUF(10,IBUF))-
-     +                 MIN(TBUF(2,IBUF),TBUF(6,IBUF),TBUF(10,IBUF)),
-     +                 MAX(TBUF(3,IBUF),TBUF(7,IBUF),TBUF(11,IBUF))-
-     +                 MIN(TBUF(3,IBUF),TBUF(7,IBUF),TBUF(11,IBUF)))
-C
 C Use the function ICAPNT to get indices for each of the three points
 C of the triangle in the point list and form the base indices (IPP1,
 C IPP2, and IPP3) of the three points in the point list.
@@ -6088,7 +6078,7 @@ C
      +                 TBUF( 2,IBUF),
      +                 TBUF( 3,IBUF),
      +                 TBUF( 4,IBUF),
-     +                 RPNT,LOPN,IPPP,MPPP,NPPP,EPST)-1)*LOPN
+     +                 RPNT,LOPN,IPPP,MPPP,NPPP)-1)*LOPN
 C
           IF (ICFELL('CTTMTL',1).NE.0) RETURN
 C
@@ -6096,7 +6086,7 @@ C
      +                 TBUF( 6,IBUF),
      +                 TBUF( 7,IBUF),
      +                 TBUF( 8,IBUF),
-     +                 RPNT,LOPN,IPPP,MPPP,NPPP,EPST)-1)*LOPN
+     +                 RPNT,LOPN,IPPP,MPPP,NPPP)-1)*LOPN
 C
           IF (ICFELL('CTTMTL',2).NE.0) RETURN
 C
@@ -6104,7 +6094,7 @@ C
      +                 TBUF(10,IBUF),
      +                 TBUF(11,IBUF),
      +                 TBUF(12,IBUF),
-     +                 RPNT,LOPN,IPPP,MPPP,NPPP,EPST)-1)*LOPN
+     +                 RPNT,LOPN,IPPP,MPPP,NPPP)-1)*LOPN
 C
           IF (ICFELL('CTTMTL',3).NE.0) RETURN
 C
@@ -6186,12 +6176,151 @@ C
         RETURN
 C
       END
+A
+A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
+A
+      SUBROUTINE CTTMTX (NTTO,TBUF,MBUF,NBUF,
+     +                   EPST,
+     +                   IPPP,MPPP,NPPP,
+     +                   IPPE,MPPE,NPPE,
+     +                   RPNT,MPNT,NPNT,LOPN,
+     +                   IEDG,MEDG,NEDG,LOEN,
+     +                   ITRI,MTRI,NTRI,LOTN)
+C
+        DIMENSION TBUF(12,MBUF)
+        DIMENSION IPPP(3,MPPP),IPPE(2,MPPE)
+        DIMENSION RPNT(MPNT),IEDG(MEDG),ITRI(MTRI)
+C
+C The routine CTTMTX is called to process NTTO randomly-selected
+C triangles from among the NBUF stored in the array TBUF, leaving the
+C remaining NBUF-NTTO triangles at the beginning of the array.  New
+C points are added to the point list in the array RPNT, new edges are
+C added to the edge list in the array IEDG, and new triangles are
+C added to the triangle list in the array ITRI.  The arrays IPPP and
+C IPPE are used to keep tree-sorted lists of the points and the edges,
+C respectively, so that no duplicate points or edges will be created.
+C The argument EPST is an epsilon used in testing whether or not two
+C coordinate values are the same or not.
+C
+        DO 102 I=1,NTTO
+C
+C Pick a value of IBUF between 1 and NTTO, inclusive.  The buffered
+C triangle with index IBUF will be processed.
+C
+          IBUF=1+MAX(0,MIN(NBUF-1,INT(REAL(NBUF)*CTFRAN())))
+C
+C Use the function ICAPNX to get indices for each of the three points
+C of the triangle in the point list and form the base indices (IPP1,
+C IPP2, and IPP3) of the three points in the point list.
+C
+          IPP1=(ICAPNX(TBUF( 1,IBUF),
+     +                 TBUF( 2,IBUF),
+     +                 TBUF( 3,IBUF),
+     +                 TBUF( 4,IBUF),
+     +                 RPNT,LOPN,IPPP,MPPP,NPPP,EPST)-1)*LOPN
+C
+          IF (ICFELL('CTTMTX',1).NE.0) RETURN
+C
+          IPP2=(ICAPNX(TBUF( 5,IBUF),
+     +                 TBUF( 6,IBUF),
+     +                 TBUF( 7,IBUF),
+     +                 TBUF( 8,IBUF),
+     +                 RPNT,LOPN,IPPP,MPPP,NPPP,EPST)-1)*LOPN
+C
+          IF (ICFELL('CTTMTX',2).NE.0) RETURN
+C
+          IPP3=(ICAPNX(TBUF( 9,IBUF),
+     +                 TBUF(10,IBUF),
+     +                 TBUF(11,IBUF),
+     +                 TBUF(12,IBUF),
+     +                 RPNT,LOPN,IPPP,MPPP,NPPP,EPST)-1)*LOPN
+C
+          IF (ICFELL('CTTMTX',3).NE.0) RETURN
+C
+C Use the function ICAEDG to get indices for each of the three edges of
+C the triangle in the edge list and form the base indices (IPE1, IPE2,
+C and IPE3) of the three edges in the edge list.  At the same time, set
+C the pointer from each edge node into the new triangle we're about to
+C create (to the left or to the right, as appropriate).
+C
+          IPE1=(ICAEDG(IPP1,IPP2,IEDG,LOEN,IPPE,MPPE,NPPE,RPNT)-1)*LOEN
+C
+          IF (ICFELL('CTTMTX',4).NE.0) RETURN
+C
+          IF (IEDG(IPE1+1).EQ.IPP1)
+            IEDG(IPE1+3)=NTRI+1
+          ELSE
+            IEDG(IPE1+4)=NTRI+1
+          END IF
+C
+          IPE2=(ICAEDG(IPP2,IPP3,IEDG,LOEN,IPPE,MPPE,NPPE,RPNT)-1)*LOEN
+C
+          IF (ICFELL('CTTMTX',5).NE.0) RETURN
+C
+          IF (IEDG(IPE2+1).EQ.IPP2)
+            IEDG(IPE2+3)=NTRI+2
+          ELSE
+            IEDG(IPE2+4)=NTRI+2
+          END IF
+C
+          IPE3=(ICAEDG(IPP3,IPP1,IEDG,LOEN,IPPE,MPPE,NPPE,RPNT)-1)*LOEN
+C
+          IF (ICFELL('CTTMTX',6).NE.0) RETURN
+C
+          IF (IEDG(IPE3+1).EQ.IPP3)
+            IEDG(IPE3+3)=NTRI+3
+          ELSE
+            IEDG(IPE3+4)=NTRI+3
+          END IF
+C
+C Add the new triangle to the triangle list.
+C
+          IF (NTRI+LOTN.GT.MTRI)
+            CALL SETER ('CTTMTX - TRIANGLE ARRAY IS TOO SMALL',7,1)
+            RETURN
+          ELSE
+            IPTT=NTRI
+            NTRI=NTRI+LOTN
+            ITRI(IPTT+1)=IPE1
+            ITRI(IPTT+2)=IPE2
+            ITRI(IPTT+3)=IPE3
+            ITRI(IPTT+4)=0
+          END IF
+C
+C Copy the last triangle in the triangle buffer to the vacated slot left
+C by the one just processed.
+C
+          IF (IBUF.NE.NBUF)
+            DO 101 J=1,12
+              TBUF(J,IBUF)=TBUF(J,NBUF)
+  101       CONTINUE
+          END IF
+C
+C Reduce the count of the number of triangles in the buffer.
+C
+          NBUF=NBUF-1
+C
+C Continue looping until NTTO triangles have been processed.
+C
+  102   CONTINUE
+C
+C Set the pointers that tell the caller how many points and edges were
+C created.
+C
+        NPNT=NPPP*LOPN
+        NEDG=NPPE*LOEN
+C
+C Done.
+C
+        RETURN
+C
+      END
 I
 I***********************************************************************
 I C O N P A C K T   -   U S E R - C A L L B A C K   R O U T I N E S
 I***********************************************************************
 A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:05:25 kennison Exp $
+A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
 A
       SUBROUTINE HLUCTCHCF (IFLG)
 C
@@ -6207,7 +6336,7 @@ C
 C
       END
 A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:05:25 kennison Exp $
+A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
 A
       SUBROUTINE CTCHCF (IFLG)
 C
@@ -6232,7 +6361,7 @@ C
 C
       END
 A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:05:25 kennison Exp $
+A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
 A
       SUBROUTINE HLUCTCHCL (IFLG)
 C
@@ -6248,7 +6377,7 @@ C
 C
       END
 A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:05:25 kennison Exp $
+A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
 A
       SUBROUTINE CTCHCL (IFLG)
 C
@@ -6267,7 +6396,7 @@ C
 C
       END
 A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:05:25 kennison Exp $
+A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
 A
       SUBROUTINE HLUCTCHHL (IFLG)
 C
@@ -6283,7 +6412,7 @@ C
 C
       END
 A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:05:25 kennison Exp $
+A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
 A
       SUBROUTINE CTCHHL (IFLG)
 C
@@ -6329,7 +6458,7 @@ C
 C
       END
 A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:05:25 kennison Exp $
+A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
 A
       SUBROUTINE HLUCTCHIL (IFLG)
 C
@@ -6345,7 +6474,7 @@ C
 C
       END
 A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:05:25 kennison Exp $
+A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
 A
       SUBROUTINE CTCHIL (IFLG)
 C
@@ -6381,7 +6510,7 @@ C
 C
       END
 A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:05:25 kennison Exp $
+A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
 A
       SUBROUTINE HLUCTCHLL (IFLG)
 C
@@ -6397,7 +6526,7 @@ C
 C
       END
 A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:05:25 kennison Exp $
+A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
 A
       SUBROUTINE CTCHLL (IFLG)
 C
@@ -6440,7 +6569,7 @@ C
 C
       END
 A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:05:25 kennison Exp $
+A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
 A
       SUBROUTINE HLUCTMXYZ (IMAP,XINP,YINP,ZINP,XOTP,YOTP)
 C
@@ -6456,7 +6585,7 @@ C
 C
       END
 A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:05:25 kennison Exp $
+A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
 A
       SUBROUTINE CTMXYZ (IMAP,XINP,YINP,ZINP,XOTP,YOTP)
 C
@@ -6509,7 +6638,7 @@ C
 C
       END
 A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:05:25 kennison Exp $
+A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
 A
       SUBROUTINE HLUCTSCAE (ICRA,ICA1,ICAM,ICAN,XCPF,YCPF,XCQF,YCQF,
      +                                          IND1,IND2,ICAF,IAID)
@@ -6529,7 +6658,7 @@ C
 C
       END
 A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:05:25 kennison Exp $
+A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
 A
       SUBROUTINE CTSCAE (ICRA,ICA1,ICAM,ICAN,XCPF,YCPF,XCQF,YCQF,
      +                                       IND1,IND2,ICAF,IAID)
@@ -6595,7 +6724,7 @@ C
 C
       END
 A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:05:25 kennison Exp $
+A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
 A
       SUBROUTINE CTTDCA (RPNT,IEDG,ITRI,RWRK,IWRK,ICRA,ICA1,ICAM,ICAN,
      +                                            XFCP,YFCP,XFCQ,YFCQ)
@@ -7030,7 +7159,7 @@ C
 C
       END
 A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:05:25 kennison Exp $
+A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
 A
       SUBROUTINE CTTDBF (RPNT,IEDG,ITRI,RWRK,IWRK,IFLG,ATOL)
 C
@@ -7546,7 +7675,7 @@ C
 C
       END
 A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:05:25 kennison Exp $
+A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
 A
       SUBROUTINE CTTDBM (IHBX,IEBX,IWBX,IUBX,IHBA,IEBA,IWBA,IUBA)
 C
@@ -7617,7 +7746,7 @@ C
 C
       END
 A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:05:25 kennison Exp $
+A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
 A
       SUBROUTINE CTTDDM (RPNT,IEDG,ITRI,RWRK,IWRK,IDIA)
 C
@@ -7700,7 +7829,7 @@ I***********************************************************************
 I C O N P A C K T   -   I N T E R N A L   S U B R O U T I N E S
 I***********************************************************************
 A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:05:25 kennison Exp $
+A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
 A
       SUBROUTINE CTCFLB (IACT,RWRK,IAMA)
 C
@@ -7990,7 +8119,7 @@ C
 C
       END
 A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:05:25 kennison Exp $
+A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
 A
       SUBROUTINE CTCPAG (RPNT,IEDG,ITRI,RWRK)
 C
@@ -8316,7 +8445,7 @@ C
 C
       END
 A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:05:25 kennison Exp $
+A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
 A
       SUBROUTINE CTDRSG (RWRK,IPTX,IPTY,NXYC)
 C
@@ -8352,7 +8481,7 @@ C
 C
       END
 A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:05:25 kennison Exp $
+A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
 A
       SUBROUTINE CTGIWS (IWRK,IOWS,LOWS,IERR)
 C
@@ -8560,7 +8689,7 @@ C
 C
       END
 A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:05:25 kennison Exp $
+A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
 A
       SUBROUTINE CTGRWS (RWRK,IOWS,LOWS,IERR)
 C
@@ -8768,7 +8897,7 @@ C
 C
       END
 A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:05:25 kennison Exp $
+A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
 A
       SUBROUTINE CTGVAI (ZVAL,IAID)
 C
@@ -8832,7 +8961,7 @@ C
 C
       END
 A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:05:25 kennison Exp $
+A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
 A
       SUBROUTINE CTHCHM (RWRK,IPTX,IPTY,NXYC,IAMA,IWRK,RTPL)
 C
@@ -8965,7 +9094,7 @@ C
 C
       END
 A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:05:25 kennison Exp $
+A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
 A
       SUBROUTINE CTHCHR (RWRK,IPTX,IPTY,NXYC)
 C
@@ -9083,7 +9212,7 @@ C
 C
       END
 A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:05:25 kennison Exp $
+A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
 A
       SUBROUTINE CTHLLB (RPNT,IEDG,ITRI,RWRK,IWRK)
 C
@@ -9878,7 +10007,7 @@ C
 C
       END
 A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:05:25 kennison Exp $
+A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
 A
       SUBROUTINE CTHLSO (RWRK,IDRW,MRWK,NRWK,IWRK)
 C
@@ -9956,7 +10085,7 @@ C
 C
       END                                                               
 A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:05:25 kennison Exp $
+A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
 A
       SUBROUTINE CTHLS2 (RWRK,NRWK,IWRK)
 C
@@ -10008,7 +10137,7 @@ C
 C
       END                                                               
 A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:05:25 kennison Exp $
+A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
 A
       SUBROUTINE CTINLB (RPNT,IEDG,ITRI,RWRK,IWRK)
 C
@@ -10130,7 +10259,7 @@ C
 C
       END
 A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:05:25 kennison Exp $
+A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
 A
       SUBROUTINE CTINRC
 C
@@ -10190,7 +10319,7 @@ C
 C
       END
 A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:05:25 kennison Exp $
+A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
 A
       SUBROUTINE CTINRK (NSDR,TMP1,TMP2,TMP3)
 C
@@ -10209,7 +10338,7 @@ C
 C
       END
 A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:05:25 kennison Exp $
+A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
 A
       SUBROUTINE CTNUMB (VALU,NDGD,LMSD,IEXP,LEXP,CEX1,CEX2,CEX3,LEX1,
      +                   LEX2,LEX3,IOMA,IODP,IOTZ,CBUF,NBUF,NDGS,IEVA)
@@ -10715,7 +10844,7 @@ C
 C
       END
 A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:05:25 kennison Exp $
+A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
 A
       SUBROUTINE CTPISB (XCPA,YCPA,XCPB,YCPB,XCPC,YCPC,XCPD,YCPD,
      +                                            XCOP,YCOP,IFLG)
@@ -10754,7 +10883,7 @@ C
 C
       END
 A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:05:25 kennison Exp $
+A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
 A
       SUBROUTINE CTPITT (XCA1,YCA1,XCA2,YCA2,XCA3,YCA3,
      +                   XCB1,YCB1,XCB2,YCB2,XCB3,YCB3,
@@ -10882,7 +11011,7 @@ C
 C
       END
 A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:05:25 kennison Exp $
+A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
 A
       SUBROUTINE CTPLAR (RWRK,IPTX,IPTY,NXYC)
 C
@@ -11147,7 +11276,7 @@ C
 C
       END
 A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:05:25 kennison Exp $
+A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
 A
       SUBROUTINE CTPLPS (RWRK,IPTX,IPTY,NXYC)
 C
@@ -11637,7 +11766,7 @@ C
 C
       END
 A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:05:25 kennison Exp $
+A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
 A
       FUNCTION CTRANF ()
 C
@@ -11663,7 +11792,7 @@ C
         RETURN
       END
 A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:05:25 kennison Exp $
+A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
 A
       SUBROUTINE CTSBST (CHSI,CHSO,NCHO)
 C
@@ -11808,7 +11937,7 @@ C
 C
       END
 A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:05:25 kennison Exp $
+A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
 A
       SUBROUTINE CTSORT (RVAL,NVAL,IPER)
 C
@@ -11862,7 +11991,7 @@ C
 C
       END                                                               
 A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:05:25 kennison Exp $
+A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
 A
       SUBROUTINE CTSTLS (RPNT,IEDG,ITRI,RWRK,IWRK)
 C
@@ -11927,7 +12056,7 @@ C
 C
       END
 A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:05:25 kennison Exp $
+A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
 A
 .OP   BI=66
       SUBROUTINE CTTRCL (RPNT,IEDG,ITRI,RWRK,IWRK,CLVL,IJMP,IRW1,IRW2,
@@ -12764,7 +12893,7 @@ C
       END
 .OP   BI=77
 A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:05:25 kennison Exp $
+A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
 A
 .OP   BI=66
       SUBROUTINE CTTREG (RPNT,IEDG,ITRI,RWRK,IWRK,IJMP,IAIC,IRW1,IRW2,
@@ -13514,7 +13643,7 @@ C
       END
 .OP   BI=77
 A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:05:25 kennison Exp $
+A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
 A
 .OP   BI=66
       SUBROUTINE CTTRVE (RPNT,IEDG,ITRI,RWRK,IWRK,IJMP,IRW1,IRW2,NRWK)
@@ -13879,7 +14008,7 @@ C
       END
 .OP   BI=77
 A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:05:25 kennison Exp $
+A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
 A
       SUBROUTINE CTTROE (XCRA,YCRA,NCRA,OFFS,RWRK,IOCF,IAMA,IGID,IAIL,
      +                                                           IAIR)
@@ -14135,7 +14264,7 @@ C
 C
       END
 A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:05:25 kennison Exp $
+A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
 A
       SUBROUTINE CTWLAM (XNXT,YNXT,IFST,IAMA,IGID,IAIL,IAIR)
 C
@@ -14390,10 +14519,9 @@ C
 C
       END
 A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:05:25 kennison Exp $
+A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
 A
-      FUNCTION ICAPNT (XCRD,YCRD,ZCRD,DVAL,RPNT,LOPN,IPPP,MPPP,NPPP,
-     +                                                         EPST)
+      FUNCTION ICAPNT (XCRD,YCRD,ZCRD,DVAL,RPNT,LOPN,IPPP,MPPP,NPPP)
 C
         DIMENSION RPNT(LOPN,MPPP),IPPP(2,MPPP)
 C
@@ -14401,7 +14529,7 @@ C This function, given the X, Y, and Z coordinates of a point and the
 C field data value at that point, searches the point list for a point
 C having the same coordinates.  If such a point exists, its index is
 C returned; if not, such a point is created and its index is returned.
-C The search is effected using a quicksort technique, the pointers for
+C The search is effected using a tree-sort technique, the pointers for
 C which are kept in the array IPPP.
 C
 C If there are any points in the point list at all, ...
@@ -14414,9 +14542,9 @@ C
 C
 C If the search index is of the point we want, return its index.
 C
-  101     IF (ABS(XCRD-RPNT(1,ITMP)).LE.EPST.AND.
-     +        ABS(YCRD-RPNT(2,ITMP)).LE.EPST.AND.
-     +        ABS(ZCRD-RPNT(3,ITMP)).LE.EPST)
+  101     IF (XCRD.EQ.RPNT(1,ITMP).AND.
+     +        YCRD.EQ.RPNT(2,ITMP).AND.
+     +        ZCRD.EQ.RPNT(3,ITMP))
 C
             ICAPNT=ITMP
 C
@@ -14495,7 +14623,180 @@ C
 C
       END
 A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:05:25 kennison Exp $
+A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
+A
+      FUNCTION ICAPNX (XCRD,YCRD,ZCRD,DVAL,RPNT,LOPN,IPPP,MPPP,NPPP,
+     +                                                         EPST)
+C
+        DIMENSION RPNT(LOPN,MPPP),IPPP(3,MPPP)
+C
+C This function, given the X, Y, and Z coordinates of a point and the
+C field data value at that point, searches the point list for a point
+C having nearly the same coordinates (within the epsilon specified by
+C the value of EPST).  If such a point exists, its index is returned;
+C if not, such a point is created and its index is returned.  The
+C search is effected using a tree-sort technique, the pointers for
+C which are kept in the array IPPP.  Each node contains three pointers:
+C 1) a forward pointer to a list of lesser values; 2) a forward pointer
+C to a list of greater values, and 3) a backward pointer to the parent.
+C
+C Initialize.
+C
+        ITMP=0
+C
+C If there are any points in the point list at all, ...
+C
+        IF (NPPP.NE.0)
+C
+C initialize the search index to point to the first one, and loop.
+C
+          ITMP=1
+C
+C If the search index is that of the point we want, return it.
+C
+  101     IF (ABS(XCRD-RPNT(1,ITMP)).LE.EPST.AND.
+     +        ABS(YCRD-RPNT(2,ITMP)).LE.EPST.AND.
+     +        ABS(ZCRD-RPNT(3,ITMP)).LE.EPST)
+C
+C 101     IF      (ABS(XCRD.EQ.RPNT(1,ITMP)).AND.
+C    +             ABS(YCRD.EQ.RPNT(2,ITMP)).AND.
+C    +             ABS(ZCRD.EQ.RPNT(3,ITMP)))
+C
+            ICAPNX=ITMP
+C
+            RETURN
+C
+C If the point we want would precede the one pointed at by the search
+C index, reset the search index to look at lesser elements (if any),
+C and loop back to continue the search.  If the pointer is null, reset
+C it to point to a new element that we will create.
+C
+          ELSE IF ((XCRD.LT.RPNT(1,ITMP)).OR.
+     +             (XCRD.EQ.RPNT(1,ITMP).AND.
+     +              YCRD.LT.RPNT(2,ITMP)).OR.
+     +             (XCRD.EQ.RPNT(1,ITMP).AND.
+     +              YCRD.EQ.RPNT(2,ITMP).AND.
+     +              ZCRD.LT.RPNT(3,ITMP)))
+C
+            IF (IPPP(1,ITMP).NE.0)
+              ITMP=IPPP(1,ITMP)
+              GO TO 101
+            END IF
+C
+            INEW=1
+C
+C If the point we want would follow the one pointed at by the search
+C index, reset the search index to look at greater elements (if any),
+C and loop back to continue the search.  If the pointer is null, reset
+C it to point to a new element that we will create.
+C
+          ELSE IF ((XCRD.GT.RPNT(1,ITMP)).OR.
+     +             (XCRD.EQ.RPNT(1,ITMP).AND.
+     +              YCRD.GT.RPNT(2,ITMP)).OR.
+     +             (XCRD.EQ.RPNT(1,ITMP).AND.
+     +              YCRD.EQ.RPNT(2,ITMP).AND.
+     +              ZCRD.GT.RPNT(3,ITMP)))
+C
+            IF (IPPP(2,ITMP).NE.0)
+              ITMP=IPPP(2,ITMP)
+              GO TO 101
+            END IF
+C
+            INEW=2
+C
+          END IF
+C
+C No point with approximately the right X, Y, and Z coordinates was
+C found.  Search backward through the list looking for near matches.
+C
+          IBAK=ITMP
+C
+          LOOP
+            IF (IPPP(1,IBAK).NE.0)
+              IBAK=IPPP(1,IBAK)
+              WHILE (IPPP(2,IBAK).NE.0)
+                IBAK=IPPP(2,IBAK)
+              END WHILE
+            ELSE
+              REPEAT
+                EXIT IF (IPPP(3,IBAK).EQ.0)
+                ISAV=IBAK
+                IBAK=IPPP(3,IBAK)
+              UNTIL (IPPP(2,IBAK).EQ.ISAV)
+            END IF
+            EXIT IF (RPNT(1,IBAK).LT.XCRD-EPST)
+            IF (ABS(XCRD-RPNT(1,IBAK)).LE.EPST.AND.
+     +          ABS(YCRD-RPNT(2,IBAK)).LE.EPST.AND.
+     +          ABS(ZCRD-RPNT(3,IBAK)).LE.EPST)
+              ICAPNX=IBAK
+              RETURN
+            END IF
+          END LOOP
+C
+C No point with approximately the right X, Y, and Z coordinates was
+C found.  Search forward through the list looking for near matches.
+C
+          IFOR=ITMP
+C
+          LOOP
+            IF (IPPP(2,IFOR).NE.0)
+              IFOR=IPPP(2,IFOR)
+              WHILE (IPPP(1,IFOR).NE.0)
+                IFOR=IPPP(1,IFOR)
+              END WHILE
+            ELSE
+              REPEAT
+                EXIT IF (IPPP(3,IFOR).EQ.0)
+                ISAV=IFOR
+                IFOR=IPPP(3,IFOR)
+              UNTIL (IPPP(1,IFOR).EQ.ISAV)
+            END IF
+            EXIT IF (RPNT(1,IFOR).GT.XCRD+EPST)
+            IF (ABS(XCRD-RPNT(1,IFOR)).LE.EPST.AND.
+     +          ABS(YCRD-RPNT(2,IFOR)).LE.EPST.AND.
+     +          ABS(ZCRD-RPNT(3,IFOR)).LE.EPST)
+              ICAPNX=IFOR
+              RETURN
+            END IF
+          END LOOP
+C
+        END IF
+C
+C Create a new point in the point list (if there's room, of course), and
+C return its index to the caller.
+C
+        IF (NPPP.GE.MPPP)
+C
+          CALL SETER ('ICAPNX - POINT ARRAY IS TOO SMALL',1,1)
+          ICAPNX=-1
+          RETURN
+C
+        ELSE
+C
+          NPPP=NPPP+1
+C
+          IF (ITMP.NE.0) IPPP(INEW,ITMP)=NPPP
+C
+          IPPP(1,NPPP)=0
+          IPPP(2,NPPP)=0
+          IPPP(3,NPPP)=ITMP
+C
+          RPNT(1,NPPP)=XCRD
+          RPNT(2,NPPP)=YCRD
+          RPNT(3,NPPP)=ZCRD
+          RPNT(4,NPPP)=DVAL
+C
+          ICAPNX=NPPP
+C
+        END IF
+C
+C Done.
+C
+        RETURN
+C
+      END
+A
+A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
 A
       FUNCTION ICAEDG (IPP1,IPP2,IEDG,LOEN,IPPE,MPPE,NPPE,RPNT)
 C
@@ -14505,7 +14806,7 @@ C This function, given the base indices, in the point list, of the two
 C points defining an edge, searches the edge list for an edge matching
 C it.  If such an edge exists, its index is returned; if not, such an
 C edge is created and its index is returned.  The search is effected
-C using a quicksort technique, the pointers for which are kept in the
+C using a tree-sort technique, the pointers for which are kept in the
 C array IPPE.
 C
 C If there are any edges in the edge list at all, ...
@@ -14516,7 +14817,7 @@ C search it.  First, order the pointers to the points in a consistent
 C manner and then find the X, Y, and Z coordinates of the edge's
 C midpoint, which we use to determine the order of the edges in the
 C list.  (Using the values of ITM1 and ITM2 results in very bad
-C behavior by the quicksort.)
+C behavior by the tree-sort.)
 C
           ITM1=MIN(IPP1,IPP2)
           ITM2=MAX(IPP1,IPP2)
@@ -14620,7 +14921,7 @@ C
 C
       END
 A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:05:25 kennison Exp $
+A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
 A
       FUNCTION CTFRAN ()
 C
@@ -14638,7 +14939,7 @@ C
 C
       END
 A
-A $Id: CodeIftran,v 1.1 2004-05-11 17:05:25 kennison Exp $
+A $Id: CodeIftran,v 1.2 2004-06-01 23:10:08 kennison Exp $
 A
       FUNCTION CTABGC (ALAT,ALON,BLAT,BLON,CLAT,CLON)
 C

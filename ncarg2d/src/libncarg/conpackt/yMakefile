@@ -1,5 +1,5 @@
 #
-#       $Id: yMakefile,v 1.6 2004-05-21 14:29:19 haley Exp $
+#       $Id: yMakefile,v 1.7 2004-06-01 23:10:09 kennison Exp $
 #
 
 MYNAME  = conpackt
@@ -13,9 +13,10 @@ SOURCES = \
 	ctmviw.f ctmvrw.f ctmxyz.f ctnumb.f ctpisb.f ctpitt.f ctpkcl.f \
 	ctpklb.f ctpklp.f ctplar.f ctplps.f ctranf.f ctrset.f ctsbst.f \
 	ctscae.f ctsetc.f ctseti.f ctsetr.f ctsort.f ctstls.f cttdbf.f \
-	cttdbm.f cttdca.f cttddm.f cttmrg.f cttmtl.f cttrcl.f cttreg.f \
-	cttroe.f cttrve.f ctwlam.f hluctchcf.f hluctchcl.f hluctchhl.f \
-	hluctchil.f hluctchll.f hluctmxyz.f hluctscae.f icaedg.f icapnt.f
+	cttdbm.f cttdca.f cttddm.f cttmrg.f cttmtl.f cttmtx.f cttrcl.f \
+	cttreg.f cttroe.f cttrve.f ctwlam.f hluctchcf.f hluctchcl.f    \
+	hluctchhl.f hluctchil.f hluctchll.f hluctmxyz.f hluctscae.f    \
+	icaedg.f icapnt.f icapnx.f
 
 OBJECTS = \
 	ctabgc.o ctback.o ctblda.o ctcflb.o ctchcf.o ctchcl.o ctchhl.o \
@@ -26,9 +27,10 @@ OBJECTS = \
 	ctmviw.o ctmvrw.o ctmxyz.o ctnumb.o ctpisb.o ctpitt.o ctpkcl.o \
 	ctpklb.o ctpklp.o ctplar.o ctplps.o ctranf.o ctrset.o ctsbst.o \
 	ctscae.o ctsetc.o ctseti.o ctsetr.o ctsort.o ctstls.o cttdbf.o \
-	cttdbm.o cttdca.o cttddm.o cttmrg.o cttmtl.o cttrcl.o cttreg.o \
-	cttroe.o cttrve.o ctwlam.o hluctchcf.o hluctchcl.o hluctchhl.o \
-	hluctchil.o hluctchll.o hluctmxyz.o hluctscae.o icaedg.o icapnt.o
+	cttdbm.o cttdca.o cttddm.o cttmrg.o cttmtl.o cttmtx.o cttrcl.o \
+	cttreg.o cttroe.o cttrve.o ctwlam.o hluctchcf.o hluctchcl.o    \
+	hluctchhl.o hluctchil.o hluctchll.o hluctmxyz.o hluctscae.o    \
+	icaedg.o icapnt.o icapnx.o
 
 PartialLibraryTarget(libncarg.a,$(OBJECTS))
 
