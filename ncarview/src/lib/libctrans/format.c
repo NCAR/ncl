@@ -1,5 +1,5 @@
 /*
- *	$Id: format.c,v 1.7 1992-09-15 22:54:51 clyne Exp $
+ *	$Id: format.c,v 1.8 1992-09-23 16:49:41 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -241,9 +241,13 @@ long n;
  *	Fills the string s with the ascii rep of the floating point number
  *	and returns the number of char in the string
  */
-ftoa(s,f)
-char	*s;
-float	f;
+#ifdef	__STDC__	/* Sun ANSI C compiler barfs on old style def.?	*/
+int	ftoa(char *s, float f)
+#else
+int	ftoa(s, f)
+	char	*s;
+	float	f;
+#endif
 {
 
 	(void) sprintf(s,"%.3f",f);

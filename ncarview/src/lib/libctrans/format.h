@@ -1,5 +1,5 @@
 /*
- *      $Id: format.h,v 1.1 1992-09-15 22:54:54 clyne Exp $
+ *      $Id: format.h,v 1.2 1992-09-23 16:49:46 clyne Exp $
  */
 /************************************************************************
 *									*
@@ -64,7 +64,7 @@ extern	int	itotek(
 );
 
 
-extern	int	int	formatcoord(
+extern	int	formatcoord(
 #ifdef	NeedFuncProto
 	long	x,
 	long	y,
@@ -72,26 +72,26 @@ extern	int	int	formatcoord(
 #endif
 );
 
-extern	int	int	formatveccnt(
+extern	int	formatveccnt(
 #ifdef	NeedFuncProto
 	long	count
 #endif
 );
 
-extern	int	int	formatindex(
+extern	int	formatindex(
 #ifdef	NeedFuncProto
 	long	index,
 	boolean	fillflag
 #endif
 );
 
-extern	int	int	formatwidth(
+extern	int	formatwidth(
 #ifdef	NeedFuncProto
 	int	width
 #endif
 );
 
-extern	int	int	formatintensity(
+extern	int	formatintensity(
 #ifdef	NeedFuncProto
 	long	data[3],
 	int	count
