@@ -1,5 +1,5 @@
 /*
- *      $Id: Darwin,v 1.3 2002-11-21 21:14:00 haley Exp $
+ *      $Id: Darwin,v 1.4 2004-01-05 17:11:21 haley Exp $
  */
 /************************************************************************
 *									*
@@ -26,11 +26,11 @@
 #define Cstatic 
 #define Cdynamic 
 #define CppCommand '/usr/bin/cpp -traditional'
-#define CCompiler   cc -DAbsoftProFortran
-#define CtoFLibraries   -lU77 -lfio -lf77math
-#define FCompiler   f90
-#define CcOptions      -DAbsoftProFortran -ansi
-#define FcOptions      -s -YEXT_NAMES="LCS" -YCOM_NAMES="LCS" -YCOM_PFX="_" -YCOM_SFX="_" -B108
+#define CCompiler   gcc
+#define CtoFLibraries   -lg2c -lcc_dynamic
+#define ExtraSysLibraries       -lcc_dynamic
+#define FCompiler   g77
+#define CcOptions      -ansi
 #define XToolLibrary    -lXt -lSM -lICE
 #define BuildShared NO
 #define XLibrary -lXpm -lX11 -lXext
