@@ -1,5 +1,5 @@
 C
-C $Id: mapint.f,v 1.9 1998-04-16 20:21:06 kennison Exp $
+C $Id: mapint.f,v 1.10 1998-05-23 20:19:42 kennison Exp $
 C
       SUBROUTINE MAPINT
 C
@@ -8,29 +8,39 @@ C common blocks and the variables in them.
 C
       COMMON /MAPCM1/ IPRJ,PHOC,IROD,RSNO,RCSO,RSNR,RCSR
       SAVE /MAPCM1/
+C
       COMMON /MAPDP1/ DSNO,DCSO,DSNR,DCSR
       DOUBLE PRECISION DSNO,DCSO,DSNR,DCSR
       SAVE /MAPDP1/
+C
       COMMON /MAPCM2/ UMIN,UMAX,VMIN,VMAX,UEPS,VEPS,UCEN,VCEN,URNG,VRNG,
      +                BLAM,SLAM,BLOM,SLOM,ISSL
       SAVE /MAPCM2/
+C
       COMMON /MAPCM3/ ITPN,NOUT,NPTS,IGID,IDLS,IDRS,BLAG,SLAG,BLOG,SLOG,
      +                PNTS(200),IDOS(4)
       SAVE /MAPCM3/
+C
       COMMON /MAPCM4/ INTF,JPRJ,PHIA,PHIO,ROTA,ILTS,PLA1,PLA2,PLA3,PLA4,
      +                PLB1,PLB2,PLB3,PLB4,PLTR,GRID,IDSH,IDOT,LBLF,PRMF,
-     +                ELPF,XLOW,XROW,YBOW,YTOW,IDTL,GRDR,SRCH,ILCW
+     +                ELPF,XLOW,XROW,YBOW,YTOW,IDTL,GRDR,SRCH,ILCW,GRLA,
+     +                GRLO,GRPO
       LOGICAL         INTF,LBLF,PRMF,ELPF
       SAVE /MAPCM4/
+C
       COMMON /MAPCM6/ ELPM,UMNM,UMXM,VMNM,VMXM,UCNM,VCNM,URNM,VRNM
       LOGICAL ELPM
       SAVE /MAPCM6/
+C
       COMMON /MAPCM7/ ULOW,UROW,VBOW,VTOW
       SAVE /MAPCM7/
+C
       COMMON /MAPCMA/ DPLT,DDTS,DSCA,DPSQ,DSSQ,DBTD,DATL
       SAVE /MAPCMA/
+C
       COMMON /MAPSAT/ SALT,SSMO,SRSS,ALFA,BETA,RSNA,RCSA,RSNB,RCSB
       SAVE /MAPSAT/
+C
       COMMON /MAPDPS/ DSNA,DCSA,DSNB,DCSB
       DOUBLE PRECISION DSNA,DCSA,DSNB,DCSB
       SAVE /MAPDPS/
@@ -528,57 +538,55 @@ C
       VRNG=.5*(VMAX-VMIN)
 C
 C Now, compute the latitude/longitude limits which will be required by
-C MAPGRD and MAPLOT, if any.
-C
-      IF (GRID.GT.0..OR.NOUT.NE.0) THEN
+C various other routines.
 C
 C At first, assume the whole globe will be projected.
 C
-        SLAM=-90.
-        BLAM=+90.
-        SLOM=PHOC-180.
-        BLOM=PHOC+180.
+      SLAM=-90.
+      BLAM=+90.
+      SLOM=PHOC-180.
+      BLOM=PHOC+180.
 C
 C Jump if it's obvious that really is the case.
 C
-        IF (ILTS.EQ.1.AND.(JPRJ.EQ.4.OR.JPRJ.EQ.6.OR.JPRJ.EQ.7.OR.
+      IF (ILTS.EQ.1.AND.(JPRJ.EQ.4.OR.JPRJ.EQ.6.OR.JPRJ.EQ.7.OR.
      +                                             JPRJ.EQ.9)) GO TO 701
 C
 C Otherwise, the whole globe is not being projected.  The first thing
 C to do is to find a point (CLAT,CLON) whose projection is known to be
 C on the map.  First, try the pole of the projection.
 C
-        CLAT=PHIA
-        CLON=PHOC
-        CALL MAPTRN (CLAT,CLON,U,V)
-        IF (ICFELL('MAPINT',9).NE.0) RETURN
-        IF ((.NOT.ELPF.AND.U.GE.UMIN.AND.U.LE.UMAX.AND.V.GE.VMIN
-     +                                               .AND.V.LE.VMAX).OR.
+      CLAT=PHIA
+      CLON=PHOC
+      CALL MAPTRN (CLAT,CLON,U,V)
+      IF (ICFELL('MAPINT',9).NE.0) RETURN
+      IF ((.NOT.ELPF.AND.U.GE.UMIN.AND.U.LE.UMAX.AND.V.GE.VMIN
+     +                                          .AND.V.LE.VMAX).OR.
      +      (ELPF.AND.((U-UCEN)/URNG)**2+((V-VCEN)/VRNG)**2.LE.1.))
      +                                                         GO TO 611
 C
 C If that didn't work, try a point based on the limits specifier.
 C
-        IF (ILTS.EQ.2.OR.ILTS.EQ.6) THEN
-          CLAT=.5*(PLA1+PLA3)
-          CLON=.5*(PLA2+PLA4)
-        ELSE IF (ILTS.EQ.3) THEN
-          TEM1=MIN(PLA1,PLA2,PLA3,PLA4)
-          TEM2=MAX(PLA1,PLA2,PLA3,PLA4)
-          TEM3=MIN(PLB1,PLB2,PLB3,PLB4)
-          TEM4=MAX(PLB1,PLB2,PLB3,PLB4)
-          CLAT=.5*(TEM1+TEM2)
-          CLON=.5*(TEM3+TEM4)
-        ELSE
-          GO TO 700
-        END IF
-        CALL MAPTRN (CLAT,CLON,U,V)
-        IF (ICFELL('MAPINT',10).NE.0) RETURN
-        IF ((.NOT.ELPF.AND.U.GE.UMIN.AND.U.LE.UMAX.AND.V.GE.VMIN
-     +                                               .AND.V.LE.VMAX).OR.
+      IF (ILTS.EQ.2.OR.ILTS.EQ.6) THEN
+        CLAT=.5*(PLA1+PLA3)
+        CLON=.5*(PLA2+PLA4)
+      ELSE IF (ILTS.EQ.3) THEN
+        TEM1=MIN(PLA1,PLA2,PLA3,PLA4)
+        TEM2=MAX(PLA1,PLA2,PLA3,PLA4)
+        TEM3=MIN(PLB1,PLB2,PLB3,PLB4)
+        TEM4=MAX(PLB1,PLB2,PLB3,PLB4)
+        CLAT=.5*(TEM1+TEM2)
+        CLON=.5*(TEM3+TEM4)
+      ELSE
+        GO TO 700
+      END IF
+      CALL MAPTRN (CLAT,CLON,U,V)
+      IF (ICFELL('MAPINT',10).NE.0) RETURN
+      IF ((.NOT.ELPF.AND.U.GE.UMIN.AND.U.LE.UMAX.AND.V.GE.VMIN
+     +                                          .AND.V.LE.VMAX).OR.
      +      (ELPF.AND.((U-UCEN)/URNG)**2+((V-VCEN)/VRNG)**2.LE.1.))
      +                                                         GO TO 611
-        GO TO 700
+      GO TO 700
 C
 C Once we have the latitudes and longitudes of a point on the map, we
 C find the minimum and maximum latitude and the minimum and maximum
@@ -586,103 +594,101 @@ C longitude by running a search point about on a fine lat/lon grid.
 C
 C Find the minimum latitude.
 C
-  611   RLAT=CLAT
-        RLON=CLON
-        DLON=SRCH
-  612   RLAT=RLAT-SRCH
-        IF (RLAT.LE.-90.) GO TO 621
-  613   CALL MAPTRN (RLAT,RLON,U,V)
-        IF (ICFELL('MAPINT',11).NE.0) RETURN
-        IF ((.NOT.ELPF.AND.U.GE.UMIN.AND.U.LE.UMAX.AND.V.GE.VMIN
-     +                                               .AND.V.LE.VMAX).OR.
+  611 RLAT=CLAT
+      RLON=CLON
+      DLON=SRCH
+  612 RLAT=RLAT-SRCH
+      IF (RLAT.LE.-90.) GO TO 621
+  613 CALL MAPTRN (RLAT,RLON,U,V)
+      IF (ICFELL('MAPINT',11).NE.0) RETURN
+      IF ((.NOT.ELPF.AND.U.GE.UMIN.AND.U.LE.UMAX.AND.V.GE.VMIN
+     +                                          .AND.V.LE.VMAX).OR.
      +      (ELPF.AND.((U-UCEN)/URNG)**2+((V-VCEN)/VRNG)**2.LE.1.)) THEN
-          DLON=SRCH
-          GO TO 612
-        END IF
-        RLON=RLON+DLON
-        DLON=SIGN(ABS(DLON)+SRCH,-DLON)
-        IF (RLON.GT.CLON-180..AND.RLON.LT.CLON+180.) GO TO 613
-        RLON=RLON+DLON
-        DLON=SIGN(ABS(DLON)+SRCH,-DLON)
-        IF (RLON.GT.CLON-180..AND.RLON.LT.CLON+180.) GO TO 613
-        SLAM=RLAT
+        DLON=SRCH
+        GO TO 612
+      END IF
+      RLON=RLON+DLON
+      DLON=SIGN(ABS(DLON)+SRCH,-DLON)
+      IF (RLON.GT.CLON-180..AND.RLON.LT.CLON+180.) GO TO 613
+      RLON=RLON+DLON
+      DLON=SIGN(ABS(DLON)+SRCH,-DLON)
+      IF (RLON.GT.CLON-180..AND.RLON.LT.CLON+180.) GO TO 613
+      SLAM=RLAT
 C
 C Find the maximum latitude.
 C
-  621   RLAT=CLAT
-        RLON=CLON
-        DLON=SRCH
-  622   RLAT=RLAT+SRCH
-        IF (RLAT.GT.90.) GO TO 631
-  623   CALL MAPTRN (RLAT,RLON,U,V)
-        IF (ICFELL('MAPINT',12).NE.0) RETURN
-        IF ((.NOT.ELPF.AND.U.GE.UMIN.AND.U.LE.UMAX.AND.V.GE.VMIN
-     +                                               .AND.V.LE.VMAX).OR.
+  621 RLAT=CLAT
+      RLON=CLON
+      DLON=SRCH
+  622 RLAT=RLAT+SRCH
+      IF (RLAT.GT.90.) GO TO 631
+  623 CALL MAPTRN (RLAT,RLON,U,V)
+      IF (ICFELL('MAPINT',12).NE.0) RETURN
+      IF ((.NOT.ELPF.AND.U.GE.UMIN.AND.U.LE.UMAX.AND.V.GE.VMIN
+     +                                          .AND.V.LE.VMAX).OR.
      +      (ELPF.AND.((U-UCEN)/URNG)**2+((V-VCEN)/VRNG)**2.LE.1.)) THEN
-          DLON=SRCH
-          GO TO 622
-        END IF
-        RLON=RLON+DLON
-        DLON=SIGN(ABS(DLON)+SRCH,-DLON)
-        IF (RLON.GT.CLON-180..AND.RLON.LT.CLON+180.) GO TO 623
-        RLON=RLON+DLON
-        DLON=SIGN(ABS(DLON)+SRCH,-DLON)
-        IF (RLON.GT.CLON-180..AND.RLON.LT.CLON+180.) GO TO 623
-        BLAM=RLAT
+        DLON=SRCH
+        GO TO 622
+      END IF
+      RLON=RLON+DLON
+      DLON=SIGN(ABS(DLON)+SRCH,-DLON)
+      IF (RLON.GT.CLON-180..AND.RLON.LT.CLON+180.) GO TO 623
+      RLON=RLON+DLON
+      DLON=SIGN(ABS(DLON)+SRCH,-DLON)
+      IF (RLON.GT.CLON-180..AND.RLON.LT.CLON+180.) GO TO 623
+      BLAM=RLAT
 C
 C Find the minimum longitude.
 C
-  631   RLAT=CLAT
-        RLON=CLON
-        DLAT=SRCH
-  632   RLON=RLON-SRCH
-        IF (RLON.LE.CLON-360.) GO TO 651
-  633   CALL MAPTRN (RLAT,RLON,U,V)
-        IF (ICFELL('MAPINT',13).NE.0) RETURN
-        IF ((.NOT.ELPF.AND.U.GE.UMIN.AND.U.LE.UMAX.AND.V.GE.VMIN
-     +                                               .AND.V.LE.VMAX).OR.
+  631 RLAT=CLAT
+      RLON=CLON
+      DLAT=SRCH
+  632 RLON=RLON-SRCH
+      IF (RLON.LE.CLON-360.) GO TO 651
+  633 CALL MAPTRN (RLAT,RLON,U,V)
+      IF (ICFELL('MAPINT',13).NE.0) RETURN
+      IF ((.NOT.ELPF.AND.U.GE.UMIN.AND.U.LE.UMAX.AND.V.GE.VMIN
+     +                                          .AND.V.LE.VMAX).OR.
      +      (ELPF.AND.((U-UCEN)/URNG)**2+((V-VCEN)/VRNG)**2.LE.1.)) THEN
-          DLAT=SRCH
-          GO TO 632
-        END IF
-        RLAT=RLAT+DLAT
-        DLAT=SIGN(ABS(DLAT)+SRCH,-DLAT)
-        IF (RLAT.GT.-90..AND.RLAT.LT.90.) GO TO 633
-        RLAT=RLAT+DLAT
-        DLAT=SIGN(ABS(DLAT)+SRCH,-DLAT)
-        IF (RLAT.GT.-90..AND.RLAT.LT.90.) GO TO 633
-        SLOM=RLON-SIGN(180.,RLON+180.)+SIGN(180.,180.-RLON)
+        DLAT=SRCH
+        GO TO 632
+      END IF
+      RLAT=RLAT+DLAT
+      DLAT=SIGN(ABS(DLAT)+SRCH,-DLAT)
+      IF (RLAT.GT.-90..AND.RLAT.LT.90.) GO TO 633
+      RLAT=RLAT+DLAT
+      DLAT=SIGN(ABS(DLAT)+SRCH,-DLAT)
+      IF (RLAT.GT.-90..AND.RLAT.LT.90.) GO TO 633
+      SLOM=RLON-SIGN(180.,RLON+180.)+SIGN(180.,180.-RLON)
 C
 C Find the maximum longitude.
 C
-  641   RLAT=CLAT
-        RLON=CLON
-        DLAT=SRCH
-  642   RLON=RLON+SRCH
-        IF (RLON.GE.CLON+360.) GO TO 651
-  643   CALL MAPTRN (RLAT,RLON,U,V)
-        IF (ICFELL('MAPINT',14).NE.0) RETURN
-        IF ((.NOT.ELPF.AND.U.GE.UMIN.AND.U.LE.UMAX.AND.V.GE.VMIN
-     +                                               .AND.V.LE.VMAX).OR.
+  641 RLAT=CLAT
+      RLON=CLON
+      DLAT=SRCH
+  642 RLON=RLON+SRCH
+      IF (RLON.GE.CLON+360.) GO TO 651
+  643 CALL MAPTRN (RLAT,RLON,U,V)
+      IF (ICFELL('MAPINT',14).NE.0) RETURN
+      IF ((.NOT.ELPF.AND.U.GE.UMIN.AND.U.LE.UMAX.AND.V.GE.VMIN
+     +                                          .AND.V.LE.VMAX).OR.
      +      (ELPF.AND.((U-UCEN)/URNG)**2+((V-VCEN)/VRNG)**2.LE.1.)) THEN
-          DLAT=SRCH
-          GO TO 642
-        END IF
-        RLAT=RLAT+DLAT
-        DLAT=SIGN(ABS(DLAT)+SRCH,-DLAT)
-        IF (RLAT.GT.-90..AND.RLAT.LT.90.) GO TO 643
-        RLAT=RLAT+DLAT
-        DLAT=SIGN(ABS(DLAT)+SRCH,-DLAT)
-        IF (RLAT.GT.-90..AND.RLAT.LT.90.) GO TO 643
-        BLOM=RLON-SIGN(180.,RLON+180.)+SIGN(180.,180.-RLON)
-        IF (BLOM.LE.SLOM) BLOM=BLOM+360.
-        GO TO 701
-C
-  651   SLOM=PHOC-180.
-        BLOM=PHOC+180.
-        GO TO 701
-C
+        DLAT=SRCH
+        GO TO 642
       END IF
+      RLAT=RLAT+DLAT
+      DLAT=SIGN(ABS(DLAT)+SRCH,-DLAT)
+      IF (RLAT.GT.-90..AND.RLAT.LT.90.) GO TO 643
+      RLAT=RLAT+DLAT
+      DLAT=SIGN(ABS(DLAT)+SRCH,-DLAT)
+      IF (RLAT.GT.-90..AND.RLAT.LT.90.) GO TO 643
+      BLOM=RLON-SIGN(180.,RLON+180.)+SIGN(180.,180.-RLON)
+      IF (BLOM.LE.SLOM) BLOM=BLOM+360.
+      GO TO 701
+C
+  651 SLOM=PHOC-180.
+      BLOM=PHOC+180.
+      GO TO 701
 C
 C Control comes here if we didn't succeed in setting limits properly.
 C

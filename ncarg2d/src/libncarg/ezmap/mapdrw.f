@@ -1,5 +1,5 @@
 C
-C $Id: mapdrw.f,v 1.9 1998-04-16 20:20:59 kennison Exp $
+C $Id: mapdrw.f,v 1.10 1998-05-23 20:19:32 kennison Exp $
 C
       SUBROUTINE MAPDRW
 C
@@ -8,7 +8,8 @@ C common blocks and the variables in them.
 C
       COMMON /MAPCM4/ INTF,JPRJ,PHIA,PHIO,ROTA,ILTS,PLA1,PLA2,PLA3,PLA4,
      +                PLB1,PLB2,PLB3,PLB4,PLTR,GRID,IDSH,IDOT,LBLF,PRMF,
-     +                ELPF,XLOW,XROW,YBOW,YTOW,IDTL,GRDR,SRCH,ILCW
+     +                ELPF,XLOW,XROW,YBOW,YTOW,IDTL,GRDR,SRCH,ILCW,GRLA,
+     +                GRLO,GRPO
       LOGICAL         INTF,LBLF,PRMF,ELPF
       SAVE /MAPCM4/
 C

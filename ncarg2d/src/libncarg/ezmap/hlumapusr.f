@@ -1,5 +1,5 @@
 C
-C $Id: hlumapusr.f,v 1.1 1995-04-26 23:34:48 kennison Exp $
+C $Id: hlumapusr.f,v 1.2 1998-05-23 20:19:28 kennison Exp $
 C
       SUBROUTINE HLUMAPUSR (IPRT)
       CALL MAPUSR (IPRT)

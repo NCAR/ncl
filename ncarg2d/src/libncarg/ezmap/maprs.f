@@ -1,5 +1,5 @@
 C
-C $Id: maprs.f,v 1.5 1998-04-16 20:21:15 kennison Exp $
+C $Id: maprs.f,v 1.6 1998-05-23 20:19:52 kennison Exp $
 C
       SUBROUTINE MAPRS
 C
@@ -9,6 +9,7 @@ C
       COMMON /MAPCM2/ UMIN,UMAX,VMIN,VMAX,UEPS,VEPS,UCEN,VCEN,URNG,VRNG,
      +                BLAM,SLAM,BLOM,SLOM,ISSL
       SAVE /MAPCM2/
+C
       COMMON /MAPCM7/ ULOW,UROW,VBOW,VTOW
       SAVE /MAPCM7/
 C

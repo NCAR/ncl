@@ -1,5 +1,5 @@
 C
-C $Id: mapio.f,v 1.11 1998-04-16 20:21:07 kennison Exp $
+C $Id: mapio.f,v 1.12 1998-05-23 20:19:43 kennison Exp $
 C
       SUBROUTINE MAPIO (IACT)
 C
@@ -14,6 +14,7 @@ C
       COMMON /MAPCM3/ ITPN,NOUT,NPTS,IGID,IDLS,IDRS,BLAG,SLAG,BLOG,SLOG,
      +                PNTS(200),IDOS(4)
       SAVE /MAPCM3/
+C
       COMMON /MAPCM5/ DDCT(5),DDCL(5),LDCT(6),LDCL(6),PDCT(10),PDCL(10)
       CHARACTER*2     DDCT,DDCL,LDCT,LDCL,PDCT,PDCL
       SAVE /MAPCM5/

@@ -1,5 +1,5 @@
 C
-C $Id: mapgtr.f,v 1.8 1998-04-16 20:21:05 kennison Exp $
+C $Id: mapgtr.f,v 1.9 1998-05-23 20:19:40 kennison Exp $
 C
       SUBROUTINE MAPGTR (WHCH,RVAL)
 C
@@ -10,13 +10,17 @@ C common blocks and the variables in them.
 C
       COMMON /MAPCM4/ INTF,JPRJ,PHIA,PHIO,ROTA,ILTS,PLA1,PLA2,PLA3,PLA4,
      +                PLB1,PLB2,PLB3,PLB4,PLTR,GRID,IDSH,IDOT,LBLF,PRMF,
-     +                ELPF,XLOW,XROW,YBOW,YTOW,IDTL,GRDR,SRCH,ILCW
+     +                ELPF,XLOW,XROW,YBOW,YTOW,IDTL,GRDR,SRCH,ILCW,GRLA,
+     +                GRLO,GRPO
       LOGICAL         INTF,LBLF,PRMF,ELPF
       SAVE /MAPCM4/
+C
       COMMON /MAPCMA/ DPLT,DDTS,DSCA,DPSQ,DSSQ,DBTD,DATL
       SAVE /MAPCMA/
+C
       COMMON /MAPSAT/ SALT,SSMO,SRSS,ALFA,BETA,RSNA,RCSA,RSNB,RCSB
       SAVE /MAPSAT/
+C
       COMMON /MAPDPS/ DSNA,DCSA,DSNB,DCSB
       DOUBLE PRECISION DSNA,DCSA,DSNB,DCSB
       SAVE /MAPDPS/
@@ -27,8 +31,14 @@ C
         RVAL=DDTS
       ELSE IF (WHCH(1:2).EQ.'GD'.OR.WHCH(1:2).EQ.'gd') THEN
         RVAL=GRDR
+      ELSE IF (WHCH(1:2).EQ.'GN'.OR.WHCH(1:2).EQ.'gn') THEN
+        RVAL=GRLO
+      ELSE IF (WHCH(1:2).EQ.'GP'.OR.WHCH(1:2).EQ.'gp') THEN
+        RVAL=GRPO
       ELSE IF (WHCH(1:2).EQ.'GR'.OR.WHCH(1:2).EQ.'gr') THEN
         RVAL=GRID
+      ELSE IF (WHCH(1:2).EQ.'GT'.OR.WHCH(1:2).EQ.'gt') THEN
+        RVAL=GRLA
       ELSE IF (WHCH(1:2).EQ.'MV'.OR.WHCH(1:2).EQ.'mv') THEN
         RVAL=DPLT
       ELSE IF (WHCH(1:2).EQ.'PN'.OR.WHCH(1:2).EQ.'pn') THEN

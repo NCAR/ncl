@@ -1,5 +1,5 @@
 C
-C $Id: mapset.f,v 1.9 1998-04-16 20:21:18 kennison Exp $
+C $Id: mapset.f,v 1.10 1998-05-23 20:19:54 kennison Exp $
 C
       SUBROUTINE MAPSET (ARG1,ARG2,ARG3,ARG4,ARG5)
 C
@@ -11,9 +11,11 @@ C common blocks and the variables in them.
 C
       COMMON /MAPCM4/ INTF,JPRJ,PHIA,PHIO,ROTA,ILTS,PLA1,PLA2,PLA3,PLA4,
      +                PLB1,PLB2,PLB3,PLB4,PLTR,GRID,IDSH,IDOT,LBLF,PRMF,
-     +                ELPF,XLOW,XROW,YBOW,YTOW,IDTL,GRDR,SRCH,ILCW
+     +                ELPF,XLOW,XROW,YBOW,YTOW,IDTL,GRDR,SRCH,ILCW,GRLA,
+     +                GRLO,GRPO
       LOGICAL         INTF,LBLF,PRMF,ELPF
       SAVE /MAPCM4/
+C
       COMMON /MAPCM5/ DDCT(5),DDCL(5),LDCT(6),LDCL(6),PDCT(10),PDCL(10)
       CHARACTER*2     DDCT,DDCL,LDCT,LDCL,PDCT,PDCL
       SAVE /MAPCM5/

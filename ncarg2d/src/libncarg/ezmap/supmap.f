@@ -1,5 +1,5 @@
 C
-C $Id: supmap.f,v 1.8 1998-04-16 20:21:36 kennison Exp $
+C $Id: supmap.f,v 1.9 1998-05-23 20:20:13 kennison Exp $
 C
       SUBROUTINE SUPMAP (JPRJ,PLAT,PLON,ROTA,PLM1,PLM2,PLM3,PLM4,JLTS,
      +                   JGRD,IOUT,IDOT,IERR)

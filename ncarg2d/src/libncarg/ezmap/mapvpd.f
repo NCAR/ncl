@@ -1,5 +1,5 @@
 C
-C $Id: mapvpd.f,v 1.2 1998-04-16 20:21:27 kennison Exp $
+C $Id: mapvpd.f,v 1.3 1998-05-23 20:20:05 kennison Exp $
 C
       SUBROUTINE MAPVPD (UOLD,VOLD,U,V)
 C
@@ -12,11 +12,14 @@ C common blocks and the variables in them.
 C
       COMMON /MAPCM4/ INTF,JPRJ,PHIA,PHIO,ROTA,ILTS,PLA1,PLA2,PLA3,PLA4,
      +                PLB1,PLB2,PLB3,PLB4,PLTR,GRID,IDSH,IDOT,LBLF,PRMF,
-     +                ELPF,XLOW,XROW,YBOW,YTOW,IDTL,GRDR,SRCH,ILCW
+     +                ELPF,XLOW,XROW,YBOW,YTOW,IDTL,GRDR,SRCH,ILCW,GRLA,
+     +                GRLO,GRPO
       LOGICAL         INTF,LBLF,PRMF,ELPF
       SAVE /MAPCM4/
+C
       COMMON /MAPCMA/ DPLT,DDTS,DSCA,DPSQ,DSSQ,DBTD,DATL
       SAVE /MAPCMA/
+C
       COMMON /MAPCMP/ NPTB,XPTB(50),YPTB(50)
       SAVE /MAPCMP/
 C

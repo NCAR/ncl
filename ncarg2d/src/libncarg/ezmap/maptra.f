@@ -1,5 +1,5 @@
 C
-C $Id: maptra.f,v 1.5 1998-04-16 20:21:23 kennison Exp $
+C $Id: maptra.f,v 1.6 1998-05-23 20:19:59 kennison Exp $
 C
       SUBROUTINE MAPTRA (RLAT,RLON,UVAL,VVAL)
 C

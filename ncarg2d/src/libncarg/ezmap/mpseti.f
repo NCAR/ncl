@@ -1,5 +1,5 @@
 C
-C $Id: mpseti.f,v 1.6 1998-04-16 20:21:33 kennison Exp $
+C $Id: mpseti.f,v 1.7 1998-05-23 20:20:10 kennison Exp $
 C
       SUBROUTINE MPSETI (WHCH,IVAL)
       CHARACTER*(*) WHCH

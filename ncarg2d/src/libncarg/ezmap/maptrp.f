@@ -1,5 +1,5 @@
 C
-C $Id: maptrp.f,v 1.4 1994-03-18 23:50:52 kennison Exp $
+C $Id: maptrp.f,v 1.5 1998-05-23 20:20:02 kennison Exp $
 C
       SUBROUTINE MAPTRP (UINS,VINS,UOUT,VOUT,UINT,VINT)
 C

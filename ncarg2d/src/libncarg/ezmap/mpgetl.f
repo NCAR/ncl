@@ -1,5 +1,5 @@
 C
-C $Id: mpgetl.f,v 1.6 1998-04-16 20:21:30 kennison Exp $
+C $Id: mpgetl.f,v 1.7 1998-05-23 20:20:07 kennison Exp $
 C
       SUBROUTINE MPGETL (WHCH,LVAL)
       CHARACTER*(*) WHCH

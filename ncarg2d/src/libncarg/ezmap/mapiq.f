@@ -1,5 +1,5 @@
 C
-C $Id: mapiq.f,v 1.5 1998-04-16 20:21:07 kennison Exp $
+C $Id: mapiq.f,v 1.6 1998-05-23 20:19:44 kennison Exp $
 C
       SUBROUTINE MAPIQ
 C

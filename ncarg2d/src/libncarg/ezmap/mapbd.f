@@ -1,5 +1,5 @@
 C
-C $Id: mapbd.f,v 1.8 1998-04-16 20:20:55 kennison Exp $
+C $Id: mapbd.f,v 1.9 1998-05-23 20:19:29 kennison Exp $
 C
       BLOCK DATA MAPBD
 C
@@ -10,99 +10,83 @@ C compilation problems on DECRISC machines, it has been split into two
 C common blocks, one of which contains double precision variables.
 C
       COMMON /MAPCM1/ IPRJ,PHOC,IROD,RSNO,RCSO,RSNR,RCSR
-C
-      SAVE /MAPCM1/
+      SAVE   /MAPCM1/
 C
       COMMON /MAPDP1/ DSNO,DCSO,DSNR,DCSR
-C
       DOUBLE PRECISION DSNO,DCSO,DSNR,DCSR
-C
-      SAVE /MAPDP1/
+      SAVE   /MAPDP1/
 C
 C The common block MAPCM2 contains area-specification variables.
 C
       COMMON /MAPCM2/ UMIN,UMAX,VMIN,VMAX,UEPS,VEPS,UCEN,VCEN,URNG,VRNG,
      +                BLAM,SLAM,BLOM,SLOM,ISSL
-C
-      SAVE /MAPCM2/
+      SAVE   /MAPCM2/
 C
 C The common block MAPCM3 contains parameters having to do with reading
 C the data for outlines.
 C
       COMMON /MAPCM3/ ITPN,NOUT,NPTS,IGID,IDLS,IDRS,BLAG,SLAG,BLOG,SLOG,
      +                PNTS(200),IDOS(4)
-C
-      SAVE /MAPCM3/
+      SAVE   /MAPCM3/
 C
 C The common block MAPCM4 contains most of the input parameters.
 C
       COMMON /MAPCM4/ INTF,JPRJ,PHIA,PHIO,ROTA,ILTS,PLA1,PLA2,PLA3,PLA4,
      +                PLB1,PLB2,PLB3,PLB4,PLTR,GRID,IDSH,IDOT,LBLF,PRMF,
-     +                ELPF,XLOW,XROW,YBOW,YTOW,IDTL,GRDR,SRCH,ILCW
-C
+     +                ELPF,XLOW,XROW,YBOW,YTOW,IDTL,GRDR,SRCH,ILCW,GRLA,
+     +                GRLO,GRPO
       LOGICAL         INTF,LBLF,PRMF,ELPF
-C
-      SAVE /MAPCM4/
+      SAVE   /MAPCM4/
 C
 C The common block MAPCM5 contains various lists ("dictionaries") of
 C two-character codes required by EZMAP for parameter-setting.
 C
       COMMON /MAPCM5/ DDCT(5),DDCL(5),LDCT(6),LDCL(6),PDCT(10),PDCL(10)
-C
       CHARACTER*2     DDCT,DDCL,LDCT,LDCL,PDCT,PDCL
-C
-      SAVE /MAPCM5/
+      SAVE   /MAPCM5/
 C
 C The common block MAPCM6 contains quantities needed by the routine
 C MAPTRA.
 C
       COMMON /MAPCM6/ ELPM,UMNM,UMXM,VMNM,VMXM,UCNM,VCNM,URNM,VRNM
-C
       LOGICAL ELPM
-C
-      SAVE /MAPCM6/
+      SAVE   /MAPCM6/
 C
 C The common block MAPCM7 contains parameters describing the portion of
 C the plotter frame being used.
 C
       COMMON /MAPCM7/ ULOW,UROW,VBOW,VTOW
-C
-      SAVE /MAPCM7/
+      SAVE   /MAPCM7/
 C
 C The common block MAPCM8 contains parameters set by MAPTRN and used by
 C MAPIT in handling "cross-over" problems.
 C
       COMMON /MAPCM8/ P,Q,R
-C
-      SAVE /MAPCM8/
+      SAVE   /MAPCM8/
 C
 C The common block MAPCMA contains values which are used to position
 C dots along dotted outlines and to avoid drawing vectors which are
 C too short.
 C
       COMMON /MAPCMA/ DPLT,DDTS,DSCA,DPSQ,DSSQ,DBTD,DATL
-C
-      SAVE /MAPCMA/
+      SAVE   /MAPCMA/
 C
 C The common block MAPCMC contains variables for MAPBLA.
 C
       COMMON /MAPCMC/ IGI1,IGI2,NOVS,XCRA(100),YCRA(100),NCRA
-C
-      SAVE /MAPCMC/
+      SAVE   /MAPCMC/
 C
 C The common block MAPCMP contains the buffers in which the x and y
 C coordinates of points are collected for an eventual call to POINTS.
 C
       COMMON /MAPCMP/ NPTB,XPTB(50),YPTB(50)
-C
-      SAVE /MAPCMP/
+      SAVE   /MAPCMP/
 C
 C The common block MAPCMQ contains quantities specifying the color
 C indices to be used for various portions of the plot.
 C
       COMMON /MAPCMQ/ ICIN(7)
-C
-      SAVE /MAPCMQ/
+      SAVE   /MAPCMQ/
 C
 C The common blocks MAPCMX and MAPCMY contain variables used by the new
 C routines in EZMAPB (implementing access to the new dataset created in
@@ -110,14 +94,10 @@ C early 1998).  MAPCMX contains integer variables and MAPCMY contains
 C character variables.
 C
       COMMON /MAPCMX/ IATY(MNAI),ISCI(MNAI),IPAR(MNAI)
-C
       SAVE   /MAPCMX/
 C
       COMMON /MAPCMY/ NAME(MNAI),FLNS
-C
-      CHARACTER*64    NAME
-      CHARACTER*128   FLNS
-C
+      CHARACTER*64    NAME,FLNS
       SAVE   /MAPCMY/
 C
 C The common block MAPSAT contains parameters for the satellite-view
@@ -126,14 +106,11 @@ C has been split into two common blocks, one of which contains double
 C precision variables.
 C
       COMMON /MAPSAT/ SALT,SSMO,SRSS,ALFA,BETA,RSNA,RCSA,RSNB,RCSB
-C
-      SAVE /MAPSAT/
+      SAVE   /MAPSAT/
 C
       COMMON /MAPDPS/ DSNA,DCSA,DSNB,DCSB
-C
       DOUBLE PRECISION DSNA,DCSA,DSNB,DCSB
-C
-      SAVE /MAPDPS/
+      SAVE   /MAPDPS/
 C
 C Below are descriptions of the variables in each of the common blocks,
 C together with data statements giving default values to those variables
@@ -213,11 +190,12 @@ C MAPROJ.  ILTS is an integer between 1 and 6, specifying how the limits
 C of the map are to be chosen.  PLA1-4 and PLB1-4 are the values given
 C by the user for PLM1(1), PLM2(1), ..., PLM1(2), PLM2(2), ..., in the
 C last call to MAPSET.  PLTR is the plotter resolution - effectively,
-C the number of addressable points in the x direction.  GRID is the
-C desired spacing between grid lines, in degrees of latitude/longitude.
-C IDSH is the desired dash pattern (16-bit binary) for grid lines.  IDOT
-C is a flag selecting solid outlines (0) or dotted outlines (1).  LBLF
-C is a logical flag indicating whether the international date line, the
+C the number of addressable points in the x direction.  GRID, if zero,
+C turns off the drawing of the lat/lon grid; if non-zero, it specifies
+C the desired default spacing between grid lines, in degrees.  IDSH is
+C the desired dash pattern (16-bit binary) for grid lines.  IDOT is a
+C flag selecting solid outlines (0) or dotted outlines (1).  LBLF is
+C a logical flag indicating whether the international date line, the
 C equator, the Greenwich meridian, and the poles are to be labelled or
 C not.  PRMF is a logical flag indicating whether or not a perimeter
 C is to be drawn.  ELPF is a logical flag indicating whether the map
@@ -231,7 +209,25 @@ C lie in the range from .001 to 10.  GRDR specifies the resolution with
 C which the grid is to be drawn and SRCH the accuracy with which the
 C latitude/longitude limits of the map are to be found.  ILCW is the
 C character width for characters in the label, as required for use in a
-C call to PWRIT.
+C call to PWRIT.  GRLA and GRLO specify the desired spacings of latitude
+C and longitude grid lines, respectively (in degrees); if either is less
+C than or equal to zero, the value of GRID is used instead.  GRPO
+C specifies the way in which the lat/lon grid is to be modified near
+C the poles on projections which map the poles into single points; it
+C has a value of the form 1000*GRP1+GRP2, where GRP1 is an integer
+C between 0 and 90 and GRP2 is a positive real between 0 and 360.  If
+C GRP1 is zero, all the latitude lines of the grid are drawn; if GRP1
+C is non-zero, latitude lines at latitudes from GRP1 to 90, inclusive
+C (South or North) are omitted.   If GRP2 is zero, no longitude lines
+C are drawn near the poles; if GRP2 is non-zero, only longitude lines
+C of the grid at multiples of GRP2 are drawn near the poles.  Examples:
+C GRPO=0 says "draw all the latitude lines of the grid; omit longitude
+C lines of the grid near the poles."  GRPO=1 says "draw entire grid."
+C GRPO=75045 says "suppress latitude lines of the grid above 75N and
+C below 75S; near the poles, draw longitude lines of the grid only at
+C multiples of 45 degrees."  The default is GRPO=90, which says "draw
+C all latitude lines of the grid; near the poles, omit longitude lines
+C of the grid except those at multiples of 90 degrees".
 C
       DATA INTF,JPRJ,PHIA,PHIO,ROTA,ILTS,PLA1,PLA2,PLA3,PLA4,PLB1,PLB2 /
      1   .TRUE.,   7,  0.,  0.,  0.,   1,  0.,  0.,  0.,  0.,  0.,  0. /
@@ -244,6 +240,8 @@ C
       DATA GRDR,SRCH / 1.,1. /
 C
       DATA ILCW / 1 /
+C
+      DATA GRLA,GRLO,GRPO / 0.,0.,90. /
 C
 C
 C Variables in MAPCM5:

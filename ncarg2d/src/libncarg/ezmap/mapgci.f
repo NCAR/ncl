@@ -1,5 +1,5 @@
 C
-C $Id: mapgci.f,v 1.6 1998-04-16 20:21:00 kennison Exp $
+C $Id: mapgci.f,v 1.7 1998-05-23 20:19:35 kennison Exp $
 C
       SUBROUTINE MAPGCI (ALAT,ALON,BLAT,BLON,NOPI,RLTI,RLNI)
 C

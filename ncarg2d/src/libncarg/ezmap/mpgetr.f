@@ -1,5 +1,5 @@
 C
-C $Id: mpgetr.f,v 1.6 1998-04-16 20:21:30 kennison Exp $
+C $Id: mpgetr.f,v 1.7 1998-05-23 20:20:08 kennison Exp $
 C
       SUBROUTINE MPGETR (WHCH,RVAL)
       CHARACTER*(*) WHCH

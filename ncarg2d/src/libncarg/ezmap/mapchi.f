@@ -1,5 +1,5 @@
 C
-C $Id: mapchi.f,v 1.6 1998-04-16 20:20:57 kennison Exp $
+C $Id: mapchi.f,v 1.7 1998-05-23 20:19:31 kennison Exp $
 C
       SUBROUTINE MAPCHI (IPRT,IDTG,IDPT)
 C
@@ -34,9 +34,11 @@ C common blocks and the variables in them.
 C
       COMMON /MAPCM4/ INTF,JPRJ,PHIA,PHIO,ROTA,ILTS,PLA1,PLA2,PLA3,PLA4,
      +                PLB1,PLB2,PLB3,PLB4,PLTR,GRID,IDSH,IDOT,LBLF,PRMF,
-     +                ELPF,XLOW,XROW,YBOW,YTOW,IDTL,GRDR,SRCH,ILCW
+     +                ELPF,XLOW,XROW,YBOW,YTOW,IDTL,GRDR,SRCH,ILCW,GRLA,
+     +                GRLO,GRPO
       LOGICAL         INTF,LBLF,PRMF,ELPF
       SAVE /MAPCM4/
+C
       COMMON /MAPCMQ/ ICIN(7)
       SAVE /MAPCMQ/
 C

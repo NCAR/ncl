@@ -1,5 +1,5 @@
 C
-C $Id: mapcem.f,v 1.5 1998-04-16 20:20:56 kennison Exp $
+C $Id: mapcem.f,v 1.6 1998-05-23 20:19:31 kennison Exp $
 C
       SUBROUTINE MAPCEM (IEM1,IEM2,IERR,IFLG)
 C

@@ -1,5 +1,5 @@
 C
-C $Id: maprst.f,v 1.5 1998-04-16 20:21:16 kennison Exp $
+C $Id: maprst.f,v 1.6 1998-05-23 20:19:53 kennison Exp $
 C
       SUBROUTINE MAPRST (IFNO)
 C
@@ -9,19 +9,26 @@ C
       COMMON /MAPCM3/ ITPN,NOUT,NPTS,IGID,IDLS,IDRS,BLAG,SLAG,BLOG,SLOG,
      +                PNTS(200),IDOS(4)
       SAVE /MAPCM3/
+C
       COMMON /MAPCM4/ INTF,JPRJ,PHIA,PHIO,ROTA,ILTS,PLA1,PLA2,PLA3,PLA4,
      +                PLB1,PLB2,PLB3,PLB4,PLTR,GRID,IDSH,IDOT,LBLF,PRMF,
-     +                ELPF,XLOW,XROW,YBOW,YTOW,IDTL,GRDR,SRCH,ILCW
+     +                ELPF,XLOW,XROW,YBOW,YTOW,IDTL,GRDR,SRCH,ILCW,GRLA,
+     +                GRLO,GRPO
       LOGICAL         INTF,LBLF,PRMF,ELPF
       SAVE /MAPCM4/
+C
       COMMON /MAPCMA/ DPLT,DDTS,DSCA,DPSQ,DSSQ,DBTD,DATL
       SAVE /MAPCMA/
+C
       COMMON /MAPCMC/ IGI1,IGI2,NOVS,XCRA(100),YCRA(100),NCRA
       SAVE /MAPCMC/
+C
       COMMON /MAPCMQ/ ICIN(7)
       SAVE /MAPCMQ/
+C
       COMMON /MAPSAT/ SALT,SSMO,SRSS,ALFA,BETA,RSNA,RCSA,RSNB,RCSB
       SAVE /MAPSAT/
+C
       COMMON /MAPDPS/ DSNA,DCSA,DSNB,DCSB
       DOUBLE PRECISION DSNA,DCSA,DSNB,DCSB
       SAVE /MAPDPS/
@@ -38,7 +45,8 @@ C
      +                            XLOW,XROW,YBOW,YTOW,IDTL,GRDR,SRCH,
      +                            ILCW,DPLT,DDTS,IGI1,IGI2,NOVS,SALT,
      +                            SSMO,SRSS,ALFA,BETA,RSNA,RCSA,RSNB,
-     +                            RCSB,DSNA,DCSA,DSNB,DCSB,ICIN
+     +                            RCSB,DSNA,DCSA,DSNB,DCSB,ICIN,GRLA,
+     +                            GRLO,GRPO
 C
 C Re-initialize EZMAP.
 C
