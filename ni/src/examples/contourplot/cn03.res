@@ -58,4 +58,9 @@
 *cn03Work.ContourPlot1*tiXAxisString: Latitude
 *cn03Work.ContourPlot1*tiYAxisString: Pressure (mb)
 *cn03Work.ContourPlot1*tiDeltaF: 1
-
+!
+! Set up colors
+!
+*wkColorMap:  example
+*cnFillColors: (/1,5,9,13,17,21,25,29,33,37,41,45,49,53,57,61,65,69,73,77,81,85,89/)
+*cnLineColors: (/1,5,9,13,17,21,25,29,33,37,41,45,49,53,57,61,65,69,73,77,81,85,89/)
