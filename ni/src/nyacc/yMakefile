@@ -8,4 +8,4 @@ OBJS		= closure.o lalr.o main.o output.o skeleton.o verbose.o \
 
 LIBS		=
 
-CProgram($(MYBIN),$(OBJS),$(LIBS))
+BuildAndInstallCProgram($(MYBIN),$(OBJS),$(LIBS))
