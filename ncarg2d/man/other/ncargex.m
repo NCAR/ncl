@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncargex.m,v 1.35 1998-02-04 05:13:32 haley Exp $
+.\"	$Id: ncargex.m,v 1.36 1998-05-07 23:12:42 kennison Exp $
 .\"
 .\" @(#)f77.1 1.4 86/07/31 SMI; 
 .TH NCARGEX 1NCARG "March 1995" NCAR "NCAR GRAPHICS"
@@ -377,7 +377,9 @@ cezmap1 cezmap2 cezmap3 cmpclr cmpdd cmpdrw cmpel cmpfil
 cmpgci cmpgrd cmpgrp cmpita cmpitm cmplab cmplbl cmplot
 cmpmsk cmpou cmppos cmpsat cmpsup cmptit cmptra cmpusr
 eezmpa mpex01 mpex02 mpex03 mpex04 mpex05 mpex06 mpex07
-mpex08 mpex09 mpex10 mpexfi tezmap tezmpa c_mpex05 c_eezmpa
+mpex08 mpex09 mpex10 mpex11 mpex12 mpexfi tezmap tezmpa
+tezmpb
+c_mpex05 c_eezmpa
 .sp
 .I "FIELD FLOW Examples:"
 .sp
