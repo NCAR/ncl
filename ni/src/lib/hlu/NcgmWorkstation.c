@@ -1,5 +1,5 @@
 /*
- *      $Id: NcgmWorkstation.c,v 1.4 1994-01-27 21:25:06 boote Exp $
+ *      $Id: NcgmWorkstation.c,v 1.5 1994-05-05 18:17:01 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -29,7 +29,7 @@
 
 static NhlResource resources[] = {
 	{ NhlNwkMetaName, NhlCwkMetaName, NhlTString, sizeof(char*),
-	NhlOffset(NhlNcgmWorkstationLayerRec,ncgm.meta_name),NhlTString,DEFAULT_META_NAME }
+	NhlOffset(NhlNcgmWorkstationLayerRec,ncgm.meta_name),NhlTString,DEFAULT_META_NAME,0,(NhlFreeFunc)NhlFree }
 };
 
 /*

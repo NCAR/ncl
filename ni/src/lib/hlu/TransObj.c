@@ -1,5 +1,5 @@
 /*
- *      $Id: TransObj.c,v 1.5 1994-01-27 21:26:45 boote Exp $
+ *      $Id: TransObj.c,v 1.6 1994-05-05 18:17:27 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -27,7 +27,7 @@
 static NhlResource resources[] =  {
 	{ NhlNtrOutOfRangeF, NhlCtrOutOfRangeF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlTransObjLayerRec, trobj.out_of_range),
-		NhlTString, "-9999.0" }
+		NhlTString, "-9999.0",0,NULL }
 };
 
 NhlTransObjLayerClassRec NhltransObjLayerClassRec = {

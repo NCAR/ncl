@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.16 1994-02-08 20:16:15 boote Exp $
+ *      $Id: XyPlot.c,v 1.17 1994-05-05 18:17:47 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -262,130 +262,131 @@ SetYMin
 
 #define	Oset(field)	NhlOffset(NhlXyDataDepLayerRec,xydata.field)
 static NhlResource data_resources[] = {
-	{NhlNxyColors,NhlCxyColors,NhlTGenArray,sizeof(NhlPointer),
-		Oset(colors),NhlTImmediate,(NhlPointer)NULL},
+	{NhlNxyColors,NhlCxyColors,NhlT1DIntGenArray,sizeof(NhlPointer),
+		Oset(colors),NhlTImmediate,(NhlPointer)NULL,0,(NhlFreeFunc)NhlFreeGenArray},
 	{NhlNxyColor,NhlCxyColor,NhlTInteger,sizeof(int),
-		Oset(color),NhlTImmediate,(NhlPointer)1},
-
-	{NhlNxyDashPatterns,NhlCxyDashPatterns,NhlTGenArray,sizeof(NhlPointer),
-		Oset(dash_patterns),NhlTImmediate,(NhlPointer)NULL},
+		Oset(color),NhlTImmediate,(NhlPointer)1,0,NULL},
+	{NhlNxyDashPatterns,NhlCxyDashPatterns,NhlT1DIntGenArray,
+		sizeof(NhlPointer), Oset(dash_patterns),NhlTImmediate,
+		(NhlPointer)NULL, 0,(NhlFreeFunc)NhlFreeGenArray},
 	{NhlNxyDashPattern,NhlCxyDashPattern,NhlTInteger,sizeof(int),
-		Oset(dash),NhlTImmediate,(NhlPointer)1},
-
+		Oset(dash),NhlTImmediate,(NhlPointer)1,0,NULL},
 	{NhlNxyLabelMode,NhlCxyLabelMode,NhlTLineLabelModes,
 		sizeof(NhlLineLabelModes),
-		Oset(label_mode),NhlTImmediate,(NhlPointer)NhlNOLABELS},
-	{NhlNxyExplicitLabels,NhlCxyExplicitLabels,NhlTGenArray,
+		Oset(label_mode),NhlTImmediate,(NhlPointer)NhlNOLABELS,
+		0,NULL},
+	{NhlNxyExplicitLabels,NhlCxyExplicitLabels,NhlT1DStringGenArray,
 		sizeof(NhlPointer),
-		Oset(labels),NhlTImmediate,(NhlPointer)NULL}
+		Oset(labels),NhlTImmediate,(NhlPointer)NULL,0,(NhlFreeFunc)NhlFreeGenArray}
 };
 #undef Oset
 
 #define	Oset(field)	NhlOffset(NhlXyPlotLayerRec,xyplot.field)
 static NhlResource resources[] = {
 	{NhlNxyCurveData,NhlCxyCurveData,_NhlTDataList,sizeof(NhlGenArray),
-		Oset(curve_data),NhlTImmediate,NULL},
-
+		Oset(curve_data),NhlTImmediate,NULL,0,(NhlFreeFunc)NhlFreeGenArray},
 	{NhlNxyCurveThicknessF,NhlCxyCurveThicknessF,NhlTFloat,sizeof(float),
-		Oset(curve_thickness),NhlTString,"1.0"},
-
+		Oset(curve_thickness),NhlTString,"1.0",0,NULL},
 	{NhlNxyXStyle,NhlCxyXStyle,NhlTTickMarkStyles,sizeof(NhlTickMarkStyles),
-		Oset(x_style),NhlTImmediate,(NhlPointer)NhlLINEAR},
+		Oset(x_style),NhlTImmediate,(NhlPointer)NhlLINEAR,0,NULL},
 	{NhlNxyXIrrTensionF,NhlCxyXIrrTensionF,NhlTFloat,sizeof(float),
-		Oset(x_tension),NhlTString,"2.0"},
+		Oset(x_tension),NhlTString,"2.0",0,NULL},
 	{NhlNxyYStyle,NhlCxyYStyle,NhlTTickMarkStyles,sizeof(NhlTickMarkStyles),
-		Oset(y_style),NhlTImmediate,(NhlPointer)NhlLINEAR},
+		Oset(y_style),NhlTImmediate,(NhlPointer)NhlLINEAR,0,NULL},
 	{NhlNxyYIrrTensionF,NhlCxyYIrrTensionF,NhlTFloat,sizeof(float),
-		Oset(y_tension),NhlTString,"2.0"},
+		Oset(y_tension),NhlTString,"2.0",0,NULL},
 
-	{NhlNxyXIrregularPoints,NhlCxyXIrregularPoints,NhlTGenArray,
-		sizeof(NhlPointer),
-		Oset(x_irregular_points),NhlTImmediate,(NhlPointer)NULL},
-	{NhlNxyYIrregularPoints,NhlCxyYIrregularPoints,NhlTGenArray,
-		sizeof(NhlPointer),
-		Oset(y_irregular_points),NhlTImmediate,(NhlPointer)NULL},
-
+	{NhlNxyXIrregularPoints,NhlCxyXIrregularPoints,NhlT1DFloatGenArray,
+		sizeof(NhlPointer), Oset(x_irregular_points),NhlTImmediate,
+		(NhlPointer)NULL,0,(NhlFreeFunc)NhlFreeGenArray},
+	{NhlNxyYIrregularPoints,NhlCxyYIrregularPoints,NhlT1DFloatGenArray,
+		sizeof(NhlPointer), Oset(y_irregular_points),NhlTImmediate,
+		(NhlPointer)NULL,0,(NhlFreeFunc)NhlFreeGenArray},
 	{NhlNxyXReverse,NhlCxyXReverse,NhlTBoolean,sizeof(NhlBoolean),
-		Oset(x_reverse),NhlTImmediate,False},
+		Oset(x_reverse),NhlTImmediate,False,0,NULL},
 	{NhlNxyYReverse,NhlCxyYReverse,NhlTBoolean,sizeof(NhlBoolean),
-		Oset(y_reverse),NhlTImmediate,False},
-
+		Oset(y_reverse),NhlTImmediate,False,0,NULL},
+	{"no.res","no.res",NhlTBoolean,sizeof(NhlBoolean),Oset(comp_x_min_set),
+		NhlTImmediate,(NhlPointer)True,0,NULL},
 	{"no.res","no.res",NhlTBoolean,sizeof(NhlBoolean),
-		Oset(comp_x_min_set),NhlTImmediate,(NhlPointer)True},
+		Oset(comp_x_max_set),NhlTImmediate,(NhlPointer)True,0,NULL},
 	{"no.res","no.res",NhlTBoolean,sizeof(NhlBoolean),
-		Oset(comp_x_max_set),NhlTImmediate,(NhlPointer)True},
+		Oset(comp_y_max_set),NhlTImmediate,(NhlPointer)True,0,NULL},
 	{"no.res","no.res",NhlTBoolean,sizeof(NhlBoolean),
-		Oset(comp_y_max_set),NhlTImmediate,(NhlPointer)True},
-	{"no.res","no.res",NhlTBoolean,sizeof(NhlBoolean),
-		Oset(comp_y_min_set),NhlTImmediate,(NhlPointer)True},
+		Oset(comp_y_min_set),NhlTImmediate,(NhlPointer)True,0,NULL},
 
 	{NhlNxyComputeXMin,NhlCxyComputeXMin,NhlTBoolean,sizeof(NhlBoolean),
-		Oset(compute_x_min),NhlTProcedure,(NhlPointer)CompXMin},
+		Oset(compute_x_min),NhlTProcedure,(NhlPointer)CompXMin,0,NULL},
 	{NhlNxyComputeXMax,NhlCxyComputeXMax,NhlTBoolean,sizeof(NhlBoolean),
-		Oset(compute_x_max),NhlTProcedure,(NhlPointer)CompXMax},
+		Oset(compute_x_max),NhlTProcedure,(NhlPointer)CompXMax,0,NULL},
 	{NhlNxyComputeYMax,NhlCxyComputeYMax,NhlTBoolean,sizeof(NhlBoolean),
-		Oset(compute_y_max),NhlTProcedure,(NhlPointer)CompYMax},
+		Oset(compute_y_max),NhlTProcedure,(NhlPointer)CompYMax,0,NULL},
 	{NhlNxyComputeYMin,NhlCxyComputeYMin,NhlTBoolean,sizeof(NhlBoolean),
-		Oset(compute_y_min),NhlTProcedure,(NhlPointer)CompYMin},
+		Oset(compute_y_min),NhlTProcedure,(NhlPointer)CompYMin,0,NULL},
 
 	{"no.res","no.res",NhlTBoolean,sizeof(NhlBoolean),
-		Oset(x_min_set),NhlTImmediate,(NhlPointer)True},
+		Oset(x_min_set),NhlTImmediate,(NhlPointer)True,0,NULL},
 	{"no.res","no.res",NhlTBoolean,sizeof(NhlBoolean),
-		Oset(x_max_set),NhlTImmediate,(NhlPointer)True},
+		Oset(x_max_set),NhlTImmediate,(NhlPointer)True,0,NULL},
 	{"no.res","no.res",NhlTBoolean,sizeof(NhlBoolean),
-		Oset(y_max_set),NhlTImmediate,(NhlPointer)True},
+		Oset(y_max_set),NhlTImmediate,(NhlPointer)True,0,NULL},
 	{"no.res","no.res",NhlTBoolean,sizeof(NhlBoolean),
-		Oset(y_min_set),NhlTImmediate,(NhlPointer)True},
+		Oset(y_min_set),NhlTImmediate,(NhlPointer)True,0,NULL},
 
 	{NhlNxyXMinF,NhlCxyXMinF,NhlTFloat,sizeof(float),
-		Oset(x_min),NhlTProcedure,(NhlPointer)SetXMin},
+		Oset(x_min),NhlTProcedure,(NhlPointer)SetXMin,0,NULL},
 	{NhlNxyXMaxF,NhlCxyXMaxF,NhlTFloat,sizeof(float),
-		Oset(x_max),NhlTProcedure,(NhlPointer)SetXMax},
+		Oset(x_max),NhlTProcedure,(NhlPointer)SetXMax,0,NULL},
 	{NhlNxyYMaxF,NhlCxyYMaxF,NhlTFloat,sizeof(float),
-		Oset(y_max),NhlTProcedure,(NhlPointer)SetYMax},
+		Oset(y_max),NhlTProcedure,(NhlPointer)SetYMax,0,NULL},
 	{NhlNxyYMinF,NhlCxyYMinF,NhlTFloat,sizeof(float),
-		Oset(y_min),NhlTProcedure,(NhlPointer)SetYMin},
+		Oset(y_min),NhlTProcedure,(NhlPointer)SetYMin,0,NULL},
 
 	{NhlNxyTitles,NhlCxyTitles,NhlTBoolean,sizeof(NhlBoolean),
-		Oset(titles),NhlTImmediate,(NhlPointer)True},
+		Oset(titles),NhlTImmediate,(NhlPointer)True,0,NULL},
 	{NhlNxyXAlternate,NhlCxyXAlternate,NhlTAlternatePlace,
 		sizeof(NhlAlternatePlace),
-		Oset(x_alternate),NhlTImmediate,(NhlPointer)NhlNONE},
+		Oset(x_alternate),NhlTImmediate,(NhlPointer)NhlNONE,0,NULL},
 	{NhlNxyYAlternate,NhlCxyYAlternate,NhlTAlternatePlace,
 		sizeof(NhlAlternatePlace),
-		Oset(y_alternate),NhlTImmediate,(NhlPointer)NhlNONE},
-	{NhlNxyYAlternateCoords,NhlCxyYAlternateCoords,NhlTGenArray,
-		sizeof(NhlPointer),Oset(y_alternate_coords),NhlTImmediate,NULL},
-	{NhlNxyXAlternateCoords,NhlCxyXAlternateCoords,NhlTGenArray,
-		sizeof(NhlPointer),Oset(x_alternate_coords),NhlTImmediate,NULL},
-	{NhlNxyXOriginalCoords,NhlCxyXOriginalCoords,NhlTGenArray,
-		sizeof(NhlPointer),Oset(x_original_coords),NhlTImmediate,NULL},
-	{NhlNxyYOriginalCoords,NhlCxyYOriginalCoords,NhlTGenArray,
-		sizeof(NhlPointer),Oset(y_original_coords),NhlTImmediate,NULL},
+		Oset(y_alternate),NhlTImmediate,(NhlPointer)NhlNONE,0,NULL},
+	{NhlNxyYAlternateCoords,NhlCxyYAlternateCoords,NhlT1DFloatGenArray,
+		sizeof(NhlPointer),Oset(y_alternate_coords),NhlTImmediate,NULL,
+		0,(NhlFreeFunc)NhlFreeGenArray},
+	{NhlNxyXAlternateCoords,NhlCxyXAlternateCoords,NhlT1DFloatGenArray,
+		sizeof(NhlPointer),Oset(x_alternate_coords),NhlTImmediate,NULL,
+		0,(NhlFreeFunc)NhlFreeGenArray},
+	{NhlNxyXOriginalCoords,NhlCxyXOriginalCoords,NhlT1DFloatGenArray,
+		sizeof(NhlPointer),Oset(x_original_coords),NhlTImmediate,NULL,
+		0,(NhlFreeFunc)NhlFreeGenArray},
+	{NhlNxyYOriginalCoords,NhlCxyYOriginalCoords,NhlT1DFloatGenArray,
+		sizeof(NhlPointer),Oset(y_original_coords),NhlTImmediate,NULL,
+		0,(NhlFreeFunc)NhlFreeGenArray},
 	{NhlNxyDashSegmentLengthF,NhlCxyDashSegmentLengthF,NhlTFloat,
-		sizeof(float),Oset(dash_segment_length),NhlTString,".15"},
+		sizeof(float),Oset(dash_segment_length),NhlTString,".15",
+		0,NULL},
 	{NhlNxyLineLabelFontHeightF,NhlCxyLineLabelFontHeightF,NhlTFloat,
-		sizeof(float),
-		Oset(line_label_font_height),NhlTString,".01"},
+		sizeof(float), Oset(line_label_font_height),NhlTString,".01",
+		0,NULL},
 
 /*
 * Title resources of special importance are intercepted here
 */
 	{NhlNtiMainOffsetXF,NhlCtiMainOffsetYF,NhlTFloat,sizeof(float),
-		Oset(ti_main_offset_x),NhlTString,"0.0"},
+		Oset(ti_main_offset_x),NhlTString,"0.0",0,NULL},
 	{NhlNtiXAxisOffsetXF,NhlCtiXAxisOffsetYF,NhlTFloat,sizeof(float),
-		Oset(ti_x_axis_offset_x),NhlTString,"0.0"},
+		Oset(ti_x_axis_offset_x),NhlTString,"0.0",0,NULL},
 	{NhlNtiYAxisOffsetYF,NhlCtiXAxisOffsetYF,NhlTFloat,sizeof(float),
-		Oset(ti_y_axis_offset_y),NhlTString,"0.0"},
+		Oset(ti_y_axis_offset_y),NhlTString,"0.0",0,NULL},
 	{NhlNtiXAxisPosition,NhlCtiXAxisPosition,NhlTTitlePositions,
-		sizeof(NhlTitlePositions),
-		Oset(ti_x_axis_position),NhlTImmediate,(NhlPointer)NhlCENTER},
+		sizeof(NhlTitlePositions),Oset(ti_x_axis_position),
+		NhlTImmediate,(NhlPointer)NhlCENTER, 0,NULL},
 	{NhlNtiYAxisPosition,NhlCtiYAxisPosition,NhlTTitlePositions,
-		sizeof(NhlTitlePositions),
-		Oset(ti_y_axis_position),NhlTImmediate,(NhlPointer)NhlCENTER},
+		sizeof(NhlTitlePositions), Oset(ti_y_axis_position),
+		NhlTImmediate,(NhlPointer)NhlCENTER, 0,NULL},
 	{NhlNtiMainPosition,NhlCtiMainPosition,NhlTTitlePositions,
-		sizeof(NhlTitlePositions),
-		Oset(ti_main_position),NhlTImmediate,(NhlPointer)NhlCENTER},
+		sizeof(NhlTitlePositions), Oset(ti_main_position),
+		NhlTImmediate,(NhlPointer)NhlCENTER,0,NULL},
 };
 #undef Oset
 
@@ -734,7 +735,15 @@ XyPlotClassInitialize
 		{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)NhlLETTERED},
 		{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)NhlCUSTOM}
 				};
+	NhlConvertArg	altplacegentoenumdat[] = {
+		{NhlIMMEDIATE,	sizeof(char*),	_NhlUSET((NhlPointer)NhlTAlternatePlace)}
+				};
+	NhlConvertArg	linelabelmodesgentoenumdat[] = {
+		{NhlIMMEDIATE,	sizeof(char*),	_NhlUSET((NhlPointer)NhlTLineLabelModes)}
+				};
 
+	NhlRegisterConverter(NhlTGenArray,NhlTAlternatePlace,NhlCvtGenToEnum,
+				altplacegentoenumdat,1,False,NULL);
 	NhlRegisterConverter(NhlTString,NhlTAlternatePlace,NhlCvtStringToEnum,
 				altplace,NhlNumber(altplace),False,NULL);
 	NhlRegisterConverter(NhlTInteger,NhlTAlternatePlace,NhlCvtIntToEnum,
@@ -742,6 +751,9 @@ XyPlotClassInitialize
 	NhlRegisterConverter(NhlTFloat,NhlTAlternatePlace,NhlCvtFloatToEnum,
 				intaltplace,NhlNumber(intaltplace),False,NULL);
 
+	NhlRegisterConverter(NhlTGenArray,NhlTLineLabelModes,NhlCvtGenToEnum,
+				linelabelmodesgentoenumdat,1,False,NULL);
+				
 	NhlRegisterConverter(NhlTString,NhlTLineLabelModes,NhlCvtStringToEnum,
 					lblmode,NhlNumber(lblmode),False,NULL);
 	NhlRegisterConverter(NhlTInteger,NhlTLineLabelModes,NhlCvtIntToEnum,

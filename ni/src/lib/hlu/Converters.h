@@ -1,5 +1,5 @@
 /*
- *      $Id: Converters.h,v 1.4 1994-04-19 00:04:37 boote Exp $
+ *      $Id: Converters.h,v 1.5 1994-05-05 18:16:16 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -26,6 +26,23 @@
 #include <ncarg/hlu/Convert.h>
 
 extern NhlErrorTypes NhlCvtStringToEnum(
+#ifdef	NhlNeedProto
+	NrmValue		*from,	/* ptr to from data	*/
+	NrmValue		*to,	/* ptr to to data	*/
+	NhlConvertArgList	args,	/* add'n args for conv	*/
+	int			nargs	/* number of args	*/
+#endif
+);
+
+extern NhlErrorTypes NhlCvtGenToEnum(
+#ifdef	NhlNeedProto
+	NrmValue		*from,	/* ptr to from data	*/
+	NrmValue		*to,	/* ptr to to data	*/
+	NhlConvertArgList	args,	/* add'n args for conv	*/
+	int			nargs	/* number of args	*/
+#endif
+);
+extern NhlErrorTypes NhlCvtQuarkToEnum(
 #ifdef	NhlNeedProto
 	NrmValue		*from,	/* ptr to from data	*/
 	NrmValue		*to,	/* ptr to to data	*/

@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.5 1994-04-29 21:31:12 dbrown Exp $
+ *      $Id: MapPlot.c,v 1.6 1994-05-05 18:16:53 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -33,7 +33,7 @@
 static NhlResource resources[] = {
 	{NhlNmpDelayOutline,NhlCmpDelayOutline,NhlTBoolean,
 		 sizeof(long),Oset(delay_outline),
-		 NhlTImmediate,_NhlUSET((NhlPointer) True)}
+		 NhlTImmediate,_NhlUSET((NhlPointer) True),NULL}
 };
 #undef Oset
 

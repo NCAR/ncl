@@ -1,5 +1,5 @@
 /*
- *      $Id: TextItem.c,v 1.7 1994-03-02 01:44:23 dbrown Exp $
+ *      $Id: TextItem.c,v 1.8 1994-05-05 18:17:11 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -33,56 +33,63 @@
 static NhlResource resources[] = {
 	{ NhlNtxString, NhlCtxString, NhlTString, sizeof(char*),
 		NhlOffset(NhlTextItemLayerRec,text.string),
-		NhlTImmediate,DEFSTRING},
+		NhlTImmediate,DEFSTRING,0,(NhlFreeFunc)NhlFree},
 	{ NhlNtxPosXF, NhlCtxPosXF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlTextItemLayerRec,text.pos_x),
-		NhlTString,"0.0" },
+		NhlTString,"0.0" ,0,NULL},
 	{ NhlNtxPosYF, NhlCtxPosYF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlTextItemLayerRec,text.pos_y),
-		NhlTString,"1.0" },
+		NhlTString,"1.0",0,NULL },
 	{ NhlNtxAngleF, NhlCtxAngleF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlTextItemLayerRec,text.angle),
-		NhlTString,"0.0" },
+		NhlTString,"0.0",0,NULL },
 	{ NhlNtxFont, NhlCFont, NhlTFont, sizeof(NhlFont),
 		NhlOffset(NhlTextItemLayerRec, text.font),
-		NhlTImmediate,0 },
+		NhlTImmediate,0,0,NULL },
 	{ NhlNtxJust, NhlCtxJust, NhlTInteger, sizeof(int),
 		NhlOffset(NhlTextItemLayerRec, text.just),
-		NhlTImmediate,(NhlPointer)4},
+		NhlTImmediate,(NhlPointer)4,0,NULL},
 	{ NhlNtxFontQuality, NhlCtxFontQuality, NhlTFQuality, 
 		sizeof(NhlFontQuality),
 		NhlOffset(NhlTextItemLayerRec, text.font_quality),
-		NhlTImmediate,(NhlPointer)NhlHIGH},
+		NhlTImmediate,(NhlPointer)NhlHIGH,0,NULL},
 	{ NhlNtxFontColor, NhlCtxFontColor, NhlTInteger, sizeof(int),
 		NhlOffset(NhlTextItemLayerRec, text.font_color),
-		NhlTImmediate, (NhlPointer)1},
+		NhlTImmediate, (NhlPointer)1,0,NULL},
 	{ NhlNtxFontHeightF, NhlCtxFontHeightF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlTextItemLayerRec, text.font_height),
-		NhlTString, ".05" },
+		NhlTString, ".05" ,0,NULL},
 	{ NhlNtxFontAspectF, NhlCtxFontAspectF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlTextItemLayerRec, text.font_aspect),
-		NhlTString, "1.3125" }, /* 21.0/16.0 see plotchar */
+		NhlTString, "1.3125",0,NULL }, /* 21.0/16.0 see plotchar */
 	{ NhlNtxFontThicknessF, NhlCtxFontThicknessF, NhlTFloat, sizeof(float),
 		NhlOffset(NhlTextItemLayerRec, text.font_thickness),
-		NhlTString, "1.0" },
+		NhlTString, "1.0" ,0,NULL},
 	{ NhlNtxConstantSpacingF, NhlCtxConstantSpacingF, NhlTFloat, 
 		sizeof(float),
 		NhlOffset(NhlTextItemLayerRec, text.constant_spacing),
-		NhlTString, "0.0" },
+		NhlTString, "0.0" ,0,NULL},
 	{ NhlNtxDirection, NhlCtxDirection, NhlTTextDirection, 
 		sizeof(NhlTextDirection),
 		NhlOffset(NhlTextItemLayerRec, text.direction),
-		NhlTImmediate, (NhlPointer)NhlACROSS},
+		NhlTImmediate, (NhlPointer)NhlACROSS,0,NULL},
 	{ NhlNtxFuncCode, NhlCtxFuncCode, NhlTCharacter, 
 		sizeof(char),
 		NhlOffset(NhlTextItemLayerRec, text.func_code),
-		NhlTString,":"},
+		NhlTString,":",0,NULL},
+
+/*
+* These probably are going to cause GetValues Problems
+*/
 	{ NhlNtxXCorners, NhlCtxXCorners, NhlTFloatPtr,sizeof(float*),
 		NhlOffset(NhlTextItemLayerRec, text.x_corners),
-		NhlTImmediate, NULL },
+		NhlTImmediate, NULL ,0,(NhlFreeFunc)NhlFree},
 	{ NhlNtxYCorners, NhlNtxYCorners, NhlTFloatPtr,sizeof(float*),
 		NhlOffset(NhlTextItemLayerRec, text.y_corners),
-		NhlTImmediate, NULL }
+		NhlTImmediate, NULL ,0,(NhlFreeFunc)NhlFree}
+/*
+* end of possible GetValues Problems
+*/
 };
 
 /*
@@ -606,6 +613,8 @@ static NhlErrorTypes    TextItemDestroy
 	return(NhlNOERROR);
 }
 
+
+
 /*
  * Function:	TextItemClassInitialize
  *
@@ -649,6 +658,15 @@ static NhlErrorTypes    TextItemClassInitialize
 			{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)NhlACROSS},
 			{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)NhlUP}
 				};
+	NhlConvertArg   fontqgentoenumdat[] = {
+			{NhlIMMEDIATE,	sizeof(char*),	_NhlUSET((NhlPointer)NhlTFQuality)},
+			};
+	NhlConvertArg   textdirgentoenumdat[] = {
+			{NhlIMMEDIATE,	sizeof(char*),	_NhlUSET((NhlPointer)NhlTTextDirection)},
+			};
+
+	NhlRegisterConverter(NhlTGenArray,NhlTFQuality,NhlCvtGenToEnum,
+				fontqgentoenumdat,1,False,NULL);
 
 	NhlRegisterConverter(NhlTString,NhlTFQuality,NhlCvtStringToEnum,
 				fontqlist,NhlNumber(fontqlist),False,NULL);
@@ -656,6 +674,9 @@ static NhlErrorTypes    TextItemClassInitialize
 			intfontqlist,NhlNumber(intfontqlist),False,NULL);
 	NhlRegisterConverter(NhlTFloat,NhlTFQuality,NhlCvtFloatToEnum,
 			intfontqlist,NhlNumber(intfontqlist),False,NULL);
+
+	NhlRegisterConverter(NhlTGenArray,NhlTTextDirection,NhlCvtGenToEnum,
+				textdirgentoenumdat,1,False,NULL);
 
 	NhlRegisterConverter(NhlTString,NhlTTextDirection,NhlCvtStringToEnum,
 				textdirlist,NhlNumber(textdirlist),False,NULL);

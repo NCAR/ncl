@@ -1,5 +1,5 @@
 /*
- *      $Id: Workspace.c,v 1.4 1994-04-29 21:31:35 dbrown Exp $
+ *      $Id: Workspace.c,v 1.5 1994-05-05 18:17:35 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -192,13 +192,13 @@ static NhlErrorTypes	SaveToFile(
 static NhlResource resources[] = {
 	{NhlNwsMaximumSize,NhlCwsMaximumSize,NhlTLong,
 		 sizeof(long),Oset(maximum_size),
-		 NhlTImmediate,_NhlUSET((NhlPointer) NhlwsDEF_MAXIMUM)},
+		 NhlTImmediate,_NhlUSET((NhlPointer) NhlwsDEF_MAXIMUM),0,NULL},
 	{NhlNwsThresholdSize,NhlCwsThresholdSize,NhlTLong,
 		 sizeof(long),Oset(threshold_size),
-		 NhlTImmediate,_NhlUSET((NhlPointer) NhlwsDEF_THRESHOLD)},
+		 NhlTImmediate,_NhlUSET((NhlPointer) NhlwsDEF_THRESHOLD),0,NULL},
 	{NhlNwsCurrentSize,NhlCwsCurrentSize,NhlTLong,
 		 sizeof(long),Oset(current_size),
-		 NhlTImmediate,_NhlUSET((NhlPointer) 0)}
+		 NhlTImmediate,_NhlUSET((NhlPointer) 0),0,NULL}
 };
 #undef Oset
 	
@@ -848,6 +848,7 @@ void _NhlFreeWorkspace
  * Returns:	NhlWorkspaceRec	* (NULL if error)
  * Side Effect:	
  */
+/*ARGSUSED*/
 static NhlWorkspaceRec	*wsFindNode
 #if	__STDC__
 (
@@ -1462,6 +1463,7 @@ static NhlErrorTypes AddToIdleList
  * Returns:	NhlErrorTypes
  * Side Effect:	
  */
+/*ARGSUSED*/
 static NhlErrorTypes RemoveFromIdleList
 #if	__STDC__
 (
@@ -2055,7 +2057,7 @@ NhlErrorTypes _NhlArdbpa
 	char		*entry_name
 )
 #else
-(amap_ws,igi,label,,entry_name)
+(amap_ws,igi,label,entry_name)
 	NhlWorkspace	*amap_ws;
 	int		igi;
 	char		*label;

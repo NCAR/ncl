@@ -1,5 +1,5 @@
 /*
- *      $Id: hlu.h,v 1.14 1994-04-19 00:04:48 boote Exp $
+ *      $Id: hlu.h,v 1.15 1994-05-05 18:17:54 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -101,6 +101,10 @@
 #define NhlTNull	"NULL"
 #define NhlTExtraLayer	"ExtraLayer"
 #define	NhlTFont	"Font"
+#define NhlTObjClassPtr "ObjClassPtr"
+#define NhlT1DFloatGenArray "1DFloatGenArray"
+#define NhlT1DIntGenArray "1DIntGenArray"
+#define NhlT1DStringGenArray "1DStringGenArray"
 
 typedef	char	*NhlString;
 typedef	void	*NhlPointer;
@@ -147,6 +151,12 @@ typedef struct NhlGArgRec{
 	NhlArgVal	value;
 } NhlGArg, *NhlGArgList;
 
+typedef void (*NhlFreeFunc)(
+#if     NhlNeedProto
+        NhlPointer      ptr
+#endif
+);
+
 NhlDOCTAG(NhlResource)
 typedef struct _NhlResource {
 	NhlString	resource_name;
@@ -157,6 +167,8 @@ typedef struct _NhlResource {
 	/* stuff for dealling with defaults */
 	NhlString	default_type;
 	NhlArgVal	default_val;
+	unsigned int	resource_info;
+	NhlFreeFunc	free_func;
 } NhlResource, *NhlResourceList;
 
 typedef struct _NhlLayerClassRec *NhlLayerClass;

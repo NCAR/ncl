@@ -1,5 +1,5 @@
 /*
- *      $Id: LogLinTransObj.c,v 1.9 1994-01-27 21:24:24 boote Exp $
+ *      $Id: LogLinTransObj.c,v 1.10 1994-05-05 18:16:51 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -30,28 +30,28 @@
 static NhlResource resources[] = {
 	{ NhlNtrXMinF,NhlCtrXMinF,NhlTFloat,sizeof(float),
 		NhlOffset(NhlLogLinTransObjLayerRec,lltrans.x_min),
-		NhlTString,"0.0"},
+		NhlTString,"0.0",0,NULL},
 	{ NhlNtrXMaxF,NhlCtrXMaxF,NhlTFloat,sizeof(float),
 		NhlOffset(NhlLogLinTransObjLayerRec,lltrans.x_max),
-		NhlTString,"1.0"},
+		NhlTString,"1.0",0,NULL},
 	{ NhlNtrXLog,NhlCtrXLog,NhlTInteger,sizeof(int),
 		NhlOffset(NhlLogLinTransObjLayerRec,lltrans.x_log),
-		NhlTString,"0" },
+		NhlTString,"0" ,0,NULL},
 	{ NhlNtrXReverse,NhlCtrXReverse,NhlTInteger,sizeof(int),
 		NhlOffset(NhlLogLinTransObjLayerRec,lltrans.x_reverse),
-		NhlTString,"0"},
+		NhlTString,"0",0,NULL},
 	{ NhlNtrYMinF,NhlCtrYMinF,NhlTFloat,sizeof(float),
 		NhlOffset(NhlLogLinTransObjLayerRec,lltrans.y_min),
-		NhlTString,"0.0"},
+		NhlTString,"0.0",0,NULL},
 	{ NhlNtrYMaxF,NhlCtrYMaxF,NhlTFloat,sizeof(float),
 		NhlOffset(NhlLogLinTransObjLayerRec,lltrans.y_max),
-		NhlTString,"1.0"},
+		NhlTString,"1.0",0,NULL},
 	{ NhlNtrYLog,NhlCtrYLog,NhlTInteger,sizeof(int),
 		NhlOffset(NhlLogLinTransObjLayerRec,lltrans.y_log),
-		NhlTString,"0" },
+		NhlTString,"0" ,0,NULL},
 	{ NhlNtrYReverse,NhlCtrYReverse,NhlTInteger,sizeof(int),
 		NhlOffset(NhlLogLinTransObjLayerRec,lltrans.y_reverse),
-		NhlTString,"0"}
+		NhlTString,"0",0,NULL}
 };
 
 /*

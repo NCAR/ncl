@@ -1,5 +1,5 @@
 /*
- *      $Id: hlu.c,v 1.12 1994-04-19 00:04:45 boote Exp $
+ *      $Id: hlu.c,v 1.13 1994-05-05 18:17:51 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -513,6 +513,7 @@ NhlName
  * Returns:	fills the "name" parameter with the name or " "'s
  * Side Effect:	
  */
+/*ARGSUSED*/
 void
 _NHLCALLF(nhl_fname,NHL_FNAME)
 #if	__STDC__

@@ -1,5 +1,5 @@
 /*
- *      $Id: Converters.c,v 1.11 1994-04-19 20:18:33 ethan Exp $
+ *      $Id: Converters.c,v 1.12 1994-05-05 18:16:13 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -38,6 +38,9 @@
 static NrmQuark	floatQ;
 static NrmQuark	intQ;
 static NrmQuark	stringQ;
+static NrmQuark	fontQ;
+static NrmQuark	booleanQ;
+static NrmQuark	quarkQ;
 
 /*
  * This macro is used because most of the converters end the same way.
@@ -392,6 +395,54 @@ comparestring
  * Returns:	NhlErrorTypes
  * Side Effect:	
  */
+/*ARGSUSED*/
+NhlErrorTypes
+NhlCvtQuarkToEnum
+#if	__STDC__
+(
+	NrmValue		*from,	/* ptr to from data	*/
+	NrmValue		*to,	/* ptr to to data	*/
+	NhlConvertArgList	args,	/* add'n args for conv	*/
+	int			nargs	/* number of args	*/
+)
+#else
+(from,to,args,nargs)
+	NrmValue		*from;	/* ptr to from data	*/
+	NrmValue		*to;	/* ptr to to data	*/
+	NhlConvertArgList	args;	/* add'n args for conv	*/
+	int			nargs;	/* number of args	*/
+#endif
+{
+	int		i, tmp=0;
+	NhlBoolean	set = False;
+	NhlString	s1 = NrmQuarkToString(from->data.intval);
+	NhlErrorTypes	ret = NhlNOERROR;
+
+	if(nargs < 1){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+		"NhlCvtStringToEnum Called with improper number of args");
+		to->size = 0;
+		return NhlFATAL;
+	}
+
+	for(i=0;i<nargs;i++){
+		if(comparestring(args[i].data.strval,s1) == 0){
+			tmp = args[i].size;
+			set = True;
+			break;
+		}
+	}
+
+	if(!set){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+	"NhlCvtStringToEnum: Unable to convert string \"%s\" to requested type",
+									s1);
+		to->size = 0;
+		return NhlFATAL;
+	}
+
+	SetVal(int,sizeof(int),tmp);
+}
 /*ARGSUSED*/
 NhlErrorTypes
 NhlCvtStringToEnum
@@ -953,6 +1004,109 @@ NhlCvtGenToString
 	}
 
 	SetVal(NhlString,sizeof(NhlString),tstring);
+}
+
+
+
+/*ARGSUSED*/
+NhlErrorTypes
+NhlCvtGenToEnum
+#if	__STDC__
+(
+	NrmValue		*from,	/* ptr to from data		*/
+	NrmValue		*to,	/* ptr to to data		*/
+ 	NhlConvertArgList	args,	/* add'n args for conversion	*/
+	int			nargs	/* number of args		*/
+)
+#else
+(from,to,args,nargs)
+	NrmValue		*from;	/* ptr to from data		*/
+	NrmValue		*to;	/* ptr to to data		*/
+ 	NhlConvertArgList	args;	/* add'n args for conversion	*/
+	int			nargs;	/* number of args		*/
+#endif
+{
+	int toutput;
+	NhlGenArray	gen;
+	char		*name = "NhlCvtGenToEnum";
+	NhlErrorTypes	ret = NhlNOERROR;
+	NrmValue	fromval,toval;
+	NhlErrorTypes	lret;
+	NrmQuark typeQ;
+
+	if(nargs != 1){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+				"%s:Called with improper number of args",name);
+		to->size = 0;
+		return NhlFATAL;
+	}
+	typeQ = NrmStringToQuark(args[0].data.strval);
+	
+
+	gen = from->data.ptrval;
+
+	if((gen->typeQ != typeQ) && !_NhlConverterExists(gen->typeQ,typeQ)){
+		if((gen->typeQ == quarkQ) && !_NhlConverterExists(stringQ,typeQ)) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+				"%s:Unable to convert \"%s\" to \"%s\"",name,
+				NrmQuarkToString(gen->typeQ),args[0].data.strval);
+			to->size = 0;
+			return NhlFATAL;
+		} 
+	} 
+
+	if(gen->num_elements != 1){
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+				"%s:Conversion loosing information",name);
+		ret = NhlWARNING;
+	}
+
+/*
+* When it gets here either types are ident or a quark type was detected or
+* some other type was detected
+*/
+
+	if(gen->typeQ == typeQ)
+		toutput= *(int*)(gen->data);
+	else if(gen->typeQ == quarkQ) {
+		fromval.data.strval = NrmQuarkToString(*(int*)gen->data);
+		fromval.size = sizeof(char*);
+	} else {
+		_NhlCopyToVal((NhlPointer)gen->data,&fromval.data,gen->size);
+		fromval.size = gen->size;
+	}
+
+	if(gen->typeQ != typeQ) {
+		if( gen->typeQ == quarkQ) {
+			toval.data.ptrval = &toutput;
+			toval.size = sizeof(int);
+
+			lret = _NhlReConvertData(stringQ,typeQ,&fromval,&toval);
+
+			if(lret < NhlWARNING){
+				NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+					"%s:Unable to convert \"%s\" to \"%s\"",name,
+					NrmQuarkToString(gen->typeQ),NrmQuarkToString(typeQ)));
+				return NhlFATAL;
+			}
+			ret = MIN(ret,lret);
+		} else {
+			toval.data.ptrval = &toutput;
+			toval.size = sizeof(int);
+
+			lret = _NhlReConvertData(gen->typeQ,typeQ,&fromval,&toval);
+
+			if(lret < NhlWARNING){
+				NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+					"%s:Unable to convert \"%s\" to \"%s\"",name,
+					NrmQuarkToString(gen->typeQ),NrmQuarkToString(typeQ)));
+				return NhlFATAL;
+			}
+			ret = MIN(ret,lret);
+		}
+	}
+
+	SetVal(int,sizeof(int),toutput);
 }
 
 /*
@@ -1598,7 +1752,7 @@ NhlCvtEnumToFStr
 
 	exp = (_NhlFExportString)to->data.ptrval;
 
-	return /*_NhlCstrToFstr(exp->fstring,exp->strlen,tstring)*/;
+	return _NhlCstrToFstr(exp->fstring,exp->strlen,tstring);
 }
 
 /*
@@ -1837,9 +1991,19 @@ _NhlConvertersInitialize
 			{NhlIMMEDIATE,	sizeof(int),	(NhlPointer)37}
 			};
 
+	NhlConvertArg   fontgentoenumdat[] = {
+			{NhlIMMEDIATE, sizeof(char*),  _NhlUSET((NhlPointer)NhlTFont)}
+			};
+	NhlConvertArg   boolgentoenumdat[] = {
+			{NhlIMMEDIATE, sizeof(char*),  _NhlUSET((NhlPointer)NhlTBoolean)}
+			};
+
 	floatQ = NrmStringToQuark(NhlTFloat);
 	intQ = NrmStringToQuark(NhlTInteger);
 	stringQ = NrmStringToQuark(NhlTString);
+	fontQ = NrmStringToQuark(NhlTFont);
+	booleanQ = NrmStringToQuark(NhlTBoolean);
+	quarkQ = NrmStringToQuark(NhlTQuark);
 
 	(void)NhlRegisterConverter(NhlTString,NhlTFloat,NhlCvtStringToFloat,
 							NULL,0,False,NULL);
@@ -1851,6 +2015,9 @@ _NhlConvertersInitialize
 							NULL,0,False,NULL);
 	(void)NhlRegisterConverter(NhlTString,NhlTBoolean,NhlCvtStringToEnum,
 			BoolEnumList,NhlNumber(BoolEnumList),False,NULL);
+	(void)NhlRegisterConverter(NhlTGenArray,NhlTBoolean,NhlCvtGenToEnum,
+			boolgentoenumdat,1,False,NULL);
+
 	(void)NhlRegisterConverter(NhlTBoolean,NhlTString,NhlCvtEnumToString,
 			BoolEnumList,NhlNumber(BoolEnumList),False,NULL);
 	(void)NhlRegisterConverter(NhlTString,NhlTCharacter,NhlCvtStringToChar,
@@ -1892,6 +2059,8 @@ _NhlConvertersInitialize
 							NULL,0,False,NULL);
 	(void)NhlRegisterConverter(NhlTGenArray,NhlTString,NhlCvtGenToString,
 							NULL,0,False,NULL);
+	(void)NhlRegisterConverter(NhlTGenArray,NhlTFont,NhlCvtGenToEnum,
+							fontgentoenumdat,1,False,NULL);
 
 	(void)NhlRegisterConverter(NhlTQuark,NhlTString,NhlCvtQuarkToString,
 							NULL,0,False,NULL);

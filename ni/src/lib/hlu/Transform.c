@@ -1,5 +1,5 @@
 /*
- *      $Id: Transform.c,v 1.7 1994-01-27 21:26:56 boote Exp $
+ *      $Id: Transform.c,v 1.8 1994-05-05 18:17:30 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -36,19 +36,19 @@ static NhlResource resources[] = {
 	{ NhlNtfOverlayPlotBase,NhlCtfOverlayPlotBase,
 		  NhlTBoolean,sizeof(NhlBoolean),
 		  NhlOffset(NhlTransformLayerRec,trans.overlay_plot_base),
-		  NhlTImmediate,(NhlPointer)True},
+		  NhlTImmediate,(NhlPointer)True,0,NULL},
 	{ NhlNtfOverlayObject,NhlCtfOverlayObject,
 		  NhlTPointer,sizeof(NhlPointer),
 		  NhlOffset(NhlTransformLayerRec,trans.overlay_object),
-		  NhlTImmediate,(NhlPointer)NULL},
+		  NhlTImmediate,(NhlPointer)NULL,0,NULL},
 	{ NhlNtfOverlayTrans,NhlCtfOverlayTrans,
 		  NhlTPointer,sizeof(NhlPointer),
 		  NhlOffset(NhlTransformLayerRec,trans.overlay_trans_obj),
-		  NhlTImmediate,(NhlPointer)NULL},
+		  NhlTImmediate,(NhlPointer)NULL,0,NULL},
 	{ NhlNtfOverlayStatus,NhlCtfOverlayStatus,
 		  NhlTInteger,sizeof(int),
 		  NhlOffset(NhlTransformLayerRec,trans.overlay_status),
-		  NhlTImmediate,(NhlPointer)_tfNotInOverlay}
+		  NhlTImmediate,(NhlPointer)_tfNotInOverlay,0,NULL}
 };
 
 

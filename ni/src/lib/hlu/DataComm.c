@@ -1,5 +1,5 @@
 /*
- *      $Id: DataComm.c,v 1.11 1994-02-18 02:54:06 boote Exp $
+ *      $Id: DataComm.c,v 1.12 1994-05-05 18:16:24 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -36,7 +36,7 @@
 #define	Oset(field)	NhlOffset(NhlDataCommLayerRec,datacomm.field)
 static NhlResource dcresources[] = {
 	{NhlNdcDelayCompute,NhlCdcDelayCompute,NhlTBoolean,sizeof(NhlBoolean),
-		Oset(delay_compute),NhlTImmediate,(NhlPointer)False}
+		Oset(delay_compute),NhlTImmediate,(NhlPointer)False,0,NULL}
 };
 #undef	Oset
 
@@ -44,7 +44,7 @@ static NhlResource dcresources[] = {
 /*SUPPRESS 25*/
 static NhlResource dsresources[] = {
 	{NhlNdsDataItem,NhlCdsDataItem,NhlTInteger,sizeof(int),
-		Oset(data_item),NhlTImmediate,(NhlPointer)NhlNULL_LAYER}
+		Oset(data_item),NhlTImmediate,(NhlPointer)NhlNULL_LAYER,0,NULL}
 };
 #undef Oset
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: DataItem.c,v 1.4 1994-02-01 18:22:31 boote Exp $
+ *      $Id: DataItem.c,v 1.5 1994-05-05 18:16:27 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -41,7 +41,7 @@
 #define	Oset(field)	NhlOffset(NhlDataItemLayerRec,dataitem.field)
 static NhlResource resources[] = {
 	{ NhlNnoManager, NhlCnoManager, NhlTBoolean, sizeof(NhlBoolean),
-			Oset(no_manager), NhlTImmediate,(NhlPointer)False}
+			Oset(no_manager), NhlTImmediate,(NhlPointer)False,0,NULL}
 };
 #undef Oset
 

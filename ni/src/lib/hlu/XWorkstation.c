@@ -1,5 +1,5 @@
 /*
- *      $Id: XWorkstation.c,v 1.3 1994-01-27 21:27:33 boote Exp $
+ *      $Id: XWorkstation.c,v 1.4 1994-05-05 18:17:43 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -117,17 +117,17 @@ PauseSet
 #define	Oset(field)	NhlOffset(NhlXWorkstationLayerRec,xwork.field)
 static NhlResource resources[] = {
 	{ "no.res", "no.res", NhlTBoolean, sizeof(NhlBoolean),
-		Oset(window_id_set), NhlTImmediate, (NhlPointer)True},
+		Oset(window_id_set), NhlTImmediate, (NhlPointer)True,0,NULL},
 	{ "no.res", "no.res", NhlTBoolean, sizeof(NhlBoolean),
-		Oset(color_map_id_set), NhlTImmediate, (NhlPointer)True},
+		Oset(color_map_id_set), NhlTImmediate, (NhlPointer)True,0,NULL},
 	{ "no.res", "no.res", NhlTBoolean, sizeof(NhlBoolean),
-		Oset(pause_set), NhlTImmediate, (NhlPointer)True},
+		Oset(pause_set), NhlTImmediate, (NhlPointer)True,0,NULL},
 	{ NhlNwkWindowId, NhlCwkWindowId, NhlTInteger, sizeof(int),
-		Oset(window_id), NhlTProcedure, (NhlPointer)WindowSet},
+		Oset(window_id), NhlTProcedure, (NhlPointer)WindowSet,0,NULL},
 	{ NhlNwkColorMapId, NhlCwkColorMapId, NhlTInteger, sizeof(int),
-		Oset(color_map_id), NhlTProcedure, (NhlPointer)CMapSet},
+		Oset(color_map_id), NhlTProcedure, (NhlPointer)CMapSet,0,NULL},
 	{ NhlNwkPause, NhlCwkPause, NhlTBoolean, sizeof(NhlBoolean),
-		Oset(pause), NhlTProcedure, (NhlPointer)PauseSet}
+		Oset(pause), NhlTProcedure, (NhlPointer)PauseSet,0,NULL}
 };
 #undef	Oset
 

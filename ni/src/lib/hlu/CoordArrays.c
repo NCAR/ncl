@@ -1,5 +1,5 @@
 /*
- *      $Id: CoordArrays.c,v 1.9 1994-02-18 02:54:00 boote Exp $
+ *      $Id: CoordArrays.c,v 1.10 1994-05-05 18:16:21 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -355,93 +355,93 @@ YCastSet
 #define	Oset(field)	NhlOffset(NhlCoordArraysFloatLayerRec,carrfloat.field)
 static NhlResource fltresources[] = {
 	{NhlNcaXArray,NhlCcaXArray,NhlTGenArray,sizeof(NhlGenArray),
-		Oset(xarray),NhlTImmediate,(NhlPointer)NULL},
+		Oset(xarray),NhlTImmediate,(NhlPointer)NULL,0,(NhlFreeFunc)NhlFreeGenArray},
 	{NhlNcaYArray,NhlCcaYArray,NhlTGenArray,sizeof(NhlGenArray),
-		Oset(yarray),NhlTImmediate,(NhlPointer)NULL},
+		Oset(yarray),NhlTImmediate,(NhlPointer)NULL,0,(NhlFreeFunc)NhlFreeGenArray},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
-		Oset(x_cast_set),NhlTImmediate,(NhlPointer)True},
+		Oset(x_cast_set),NhlTImmediate,(NhlPointer)True,0,NULL},
 	{NhlNcaXCast,NhlCcaXCast,NhlTInteger,sizeof(int),
-		Oset(x_cast),NhlTProcedure,(NhlPointer)XCastSet},
+		Oset(x_cast),NhlTProcedure,(NhlPointer)XCastSet,0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
-		Oset(y_cast_set),NhlTImmediate,(NhlPointer)True},
+		Oset(y_cast_set),NhlTImmediate,(NhlPointer)True,0,NULL},
 	{NhlNcaYCast,NhlCcaYCast,NhlTInteger,sizeof(int),
-		Oset(y_cast),NhlTProcedure,(NhlPointer)YCastSet},
+		Oset(y_cast),NhlTProcedure,(NhlPointer)YCastSet,0,NULL},
 	{NhlNcaCopyArrays,NhlCdiCopyData,NhlTBoolean,sizeof(NhlBoolean),
-		Oset(copy_arrays),NhlTImmediate,(NhlPointer)True},
+		Oset(copy_arrays),NhlTImmediate,(NhlPointer)True,0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
-		Oset(missing_x_set),NhlTImmediate,(NhlPointer)True},
+		Oset(missing_x_set),NhlTImmediate,(NhlPointer)True,0,NULL},
 	{NhlNcaXMissingF,NhlCdiMissingValue,NhlTFloat,sizeof(float),
-		Oset(missing_x),NhlTProcedure,(NhlPointer)MissingXSet},
+		Oset(missing_x),NhlTProcedure,(NhlPointer)MissingXSet,0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
-		Oset(missing_y_set),NhlTImmediate,(NhlPointer)True},
+		Oset(missing_y_set),NhlTImmediate,(NhlPointer)True,0,NULL},
 	{NhlNcaYMissingF,NhlCdiMissingValue,NhlTFloat,sizeof(float),
-		Oset(missing_y),NhlTProcedure,(NhlPointer)MissingYSet},
+		Oset(missing_y),NhlTProcedure,(NhlPointer)MissingYSet,0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
-		Oset(max_x_set),NhlTImmediate,(NhlPointer)True},
+		Oset(max_x_set),NhlTImmediate,(NhlPointer)True,0,NULL},
 	{NhlNcaXMaxF,NhlCcaXMaxF,NhlTFloat,sizeof(float),
-		Oset(max_x),NhlTProcedure,(NhlPointer)MaxXSet},
+		Oset(max_x),NhlTProcedure,(NhlPointer)MaxXSet,0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
-		Oset(max_y_set),NhlTImmediate,(NhlPointer)True},
+		Oset(max_y_set),NhlTImmediate,(NhlPointer)True,0,NULL},
 	{NhlNcaYMaxF,NhlCcaYMaxF,NhlTFloat,sizeof(float),
-		Oset(max_y),NhlTProcedure,(NhlPointer)MaxYSet},
+		Oset(max_y),NhlTProcedure,(NhlPointer)MaxYSet,0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
-		Oset(min_x_set),NhlTImmediate,(NhlPointer)True},
+		Oset(min_x_set),NhlTImmediate,(NhlPointer)True,0,NULL},
 	{NhlNcaXMinF,NhlCcaXMinF,NhlTFloat,sizeof(float),
-		Oset(min_x),NhlTProcedure,(NhlPointer)MinXSet},
+		Oset(min_x),NhlTProcedure,(NhlPointer)MinXSet,0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
-		Oset(min_y_set),NhlTImmediate,(NhlPointer)True},
+		Oset(min_y_set),NhlTImmediate,(NhlPointer)True,0,NULL},
 	{NhlNcaYMinF,NhlCcaYMinF,NhlTFloat,sizeof(float),
-		Oset(min_y),NhlTProcedure,(NhlPointer)MinYSet}
+		Oset(min_y),NhlTProcedure,(NhlPointer)MinYSet,0,NULL}
 };
 #undef Oset
 
 #define	Oset(field)	NhlOffset(NhlCoordArraysIntLayerRec,carrint.field)
 static NhlResource intresources[] = {
 	{NhlNcaXArray,NhlCcaXArray,NhlTGenArray,sizeof(NhlGenArray),
-		Oset(xarray),NhlTImmediate,(NhlPointer)NULL},
+		Oset(xarray),NhlTImmediate,(NhlPointer)NULL,0,(NhlFreeFunc)NhlFreeGenArray},
 	{NhlNcaYArray,NhlCcaYArray,NhlTGenArray,sizeof(NhlGenArray),
-		Oset(yarray),NhlTImmediate,(NhlPointer)NULL},
+		Oset(yarray),NhlTImmediate,(NhlPointer)NULL,0,(NhlFreeFunc)NhlFreeGenArray},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
-		Oset(x_cast_set),NhlTImmediate,(NhlPointer)True},
+		Oset(x_cast_set),NhlTImmediate,(NhlPointer)True,0,NULL},
 	{NhlNcaXCast,NhlCcaXCast,NhlTInteger,sizeof(int),
-		Oset(x_cast),NhlTProcedure,(NhlPointer)XCastSet},
+		Oset(x_cast),NhlTProcedure,(NhlPointer)XCastSet,0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
-		Oset(y_cast_set),NhlTImmediate,(NhlPointer)True},
+		Oset(y_cast_set),NhlTImmediate,(NhlPointer)True,0,NULL},
 	{NhlNcaYCast,NhlCcaYCast,NhlTInteger,sizeof(int),
-		Oset(y_cast),NhlTProcedure,(NhlPointer)YCastSet},
+		Oset(y_cast),NhlTProcedure,(NhlPointer)YCastSet,0,NULL},
 	{NhlNcaCopyArrays,NhlCdiCopyData,NhlTBoolean,sizeof(NhlBoolean),
-		Oset(copy_arrays),NhlTImmediate,(NhlPointer)True},
+		Oset(copy_arrays),NhlTImmediate,(NhlPointer)True,0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
-		Oset(missing_x_set),NhlTImmediate,(NhlPointer)True},
+		Oset(missing_x_set),NhlTImmediate,(NhlPointer)True,0,NULL},
 	{NhlNcaXMissing,NhlCdiMissingValue,NhlTFloat,sizeof(float),
-		Oset(missing_x),NhlTProcedure,(NhlPointer)MissingXSet},
+		Oset(missing_x),NhlTProcedure,(NhlPointer)MissingXSet,0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
-		Oset(missing_y_set),NhlTImmediate,(NhlPointer)True},
+		Oset(missing_y_set),NhlTImmediate,(NhlPointer)True,0,NULL},
 	{NhlNcaYMissing,NhlCdiMissingValue,NhlTFloat,sizeof(float),
-		Oset(missing_y),NhlTProcedure,(NhlPointer)MissingYSet},
+		Oset(missing_y),NhlTProcedure,(NhlPointer)MissingYSet,0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
-		Oset(max_x_set),NhlTImmediate,(NhlPointer)True},
+		Oset(max_x_set),NhlTImmediate,(NhlPointer)True,0,NULL},
 	{NhlNcaXMax,NhlCcaXMax,NhlTFloat,sizeof(float),
-		Oset(max_x),NhlTProcedure,(NhlPointer)MaxXSet},
+		Oset(max_x),NhlTProcedure,(NhlPointer)MaxXSet,0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
-		Oset(max_y_set),NhlTImmediate,(NhlPointer)True},
+		Oset(max_y_set),NhlTImmediate,(NhlPointer)True,0,NULL},
 	{NhlNcaYMax,NhlCcaYMax,NhlTFloat,sizeof(float),
-		Oset(max_y),NhlTProcedure,(NhlPointer)MaxYSet},
+		Oset(max_y),NhlTProcedure,(NhlPointer)MaxYSet,0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
-		Oset(min_x_set),NhlTImmediate,(NhlPointer)True},
+		Oset(min_x_set),NhlTImmediate,(NhlPointer)True,0,NULL},
 	{NhlNcaXMin,NhlCcaXMin,NhlTFloat,sizeof(float),
-		Oset(min_x),NhlTProcedure,(NhlPointer)MinXSet},
+		Oset(min_x),NhlTProcedure,(NhlPointer)MinXSet,0,NULL},
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
-		Oset(min_y_set),NhlTImmediate,(NhlPointer)True},
+		Oset(min_y_set),NhlTImmediate,(NhlPointer)True,0,NULL},
 	{NhlNcaYMin,NhlCcaYMin,NhlTFloat,sizeof(float),
-		Oset(min_y),NhlTProcedure,(NhlPointer)MinYSet}
+		Oset(min_y),NhlTProcedure,(NhlPointer)MinYSet,0,NULL}
 };
 #undef Oset
 
 #define	Oset(field)	NhlOffset(NhlCoordArraysLayerRec,carr.field)
 static NhlResource resources[] = {
 	{NhlNdiType,NhlCdiType,NhlTString,sizeof(NhlString),
-		Oset(type_string),NhlTImmediate,(NhlPointer)NULL}
+		Oset(type_string),NhlTImmediate,(NhlPointer)NULL,0,(NhlFreeFunc)NhlFree}
 };
 #undef Oset
 

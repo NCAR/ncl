@@ -1,5 +1,5 @@
 /*
- *      $Id: hluP.h,v 1.14 1994-04-19 00:04:51 boote Exp $
+ *      $Id: hluP.h,v 1.15 1994-05-05 18:17:56 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -109,11 +109,7 @@ typedef struct _NhlLayerRec *NhlLayer;
 
 typedef	NhlArgVal	_NhlArgVal;
 
-typedef void (*_NhlFreeFunc)(
-#if	NhlNeedProto
-	NhlPointer	ptr
-#endif
-);
+#define _NhlFreeFunc NhlFreeFunc
 
 typedef enum _NhlC_OR_F_{
 	_NhlCLIB,

@@ -1,5 +1,5 @@
 /*
- *      $Id: ScalarField.c,v 1.1 1994-04-29 21:31:27 dbrown Exp $
+ *      $Id: ScalarField.c,v 1.2 1994-05-05 18:17:08 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1816,7 +1816,7 @@ static void FindMinMax
 	float		*max
 )
 #else
-(ga,min,max)
+(ga,missing_set,missing_val,min,max)
 	NhlGenArray	ga;
 	NhlBoolean	missing_set;
 	float		missing_val;

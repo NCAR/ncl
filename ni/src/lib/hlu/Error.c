@@ -1,5 +1,5 @@
 /*
- *      $Id: Error.c,v 1.7 1994-02-08 20:15:32 boote Exp $
+ *      $Id: Error.c,v 1.8 1994-05-05 18:16:30 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -52,13 +52,13 @@
 #define Oset(field)	NhlOffset(NhlErrorLayerRec,error.field)
 static NhlResource resources[] = {
 	{NhlNerrBuffer,NhlCerrBuffer,NhlTBoolean,sizeof(NhlBoolean),
-		Oset(buffer_errors),NhlTImmediate,False},
+		Oset(buffer_errors),NhlTImmediate,False,0,NULL},
 	{NhlNerrLevel,NhlCerrLevel,NhlTErrorTypes,sizeof(NhlErrorTypes),
-		Oset(error_level),NhlTImmediate,(NhlPointer)NhlWARNING},
+		Oset(error_level),NhlTImmediate,(NhlPointer)NhlWARNING,0,NULL},
 	{NhlNerrPrint,NhlCerrPrint,NhlTBoolean,sizeof(NhlBoolean),
-		Oset(print_errors),NhlTImmediate,(NhlPointer)True},
+		Oset(print_errors),NhlTImmediate,(NhlPointer)True,0,NULL},
 	{NhlNerrFileName,NhlCerrFileName,NhlTString,sizeof(NhlString),
-		Oset(error_file),NhlTImmediate,(NhlPointer)"stderr"},
+		Oset(error_file),NhlTImmediate,(NhlPointer)"stderr",0,NULL},
 };
 #undef Oset
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: MultiText.c,v 1.5 1994-03-02 01:44:14 dbrown Exp $
+ *      $Id: MultiText.c,v 1.6 1994-05-05 18:16:58 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -28,41 +28,44 @@
 #define Oset(field)	NhlOffset(NhlMultiTextLayerRec,multitext.field)
 static NhlResource resources[] = {
 	{NhlNMtextNumStrings, NhlCMtextNumStrings, NhlTInteger,
-		sizeof(int),Oset(num_strings),NhlTImmediate,0},
+		sizeof(int),Oset(num_strings),NhlTImmediate,0,0,NULL},
+/*
+* The free function is probably wrong in this place
+*/
 	{NhlNMtextStrings, NhlCMtextStrings, NhlTStringPtr,
-		sizeof(char**),Oset(text_strings),NhlTImmediate,NULL},
+		sizeof(char**),Oset(text_strings),NhlTImmediate,NULL,0,(NhlFreeFunc)NhlFree},
 	{NhlNMtextOrientation, NhlCMtextOrientation, NhlTMTextOrientationType,
 		sizeof(NhlMTextOrientatonType),Oset(orientation),NhlTImmediate,
-						(NhlPointer)NhlMTEXT_X_CONST},
+						(NhlPointer)NhlMTEXT_X_CONST,0,NULL},
 	{NhlNMtextConstPosF, NhlCMtextConstPosF, NhlTFloat,
-		sizeof(float),Oset(const_pos),NhlTString,"-1.0"},
+		sizeof(float),Oset(const_pos),NhlTString,"-1.0",0,NULL},
 	{NhlNMtextPosArray, NhlCMtextPosArray, NhlTFloatPtr,
-		sizeof(float*),Oset(pos_array),NhlTImmediate,NULL},
+		sizeof(float*),Oset(pos_array),NhlTImmediate,NULL,0,(NhlFreeFunc)NhlFree},
 	/*
 	 * These resources are actually resources in the TextItem object
 	 * that is used by this object.  If there are changes in the
 	 * resources of TextItem they may need to be updated as well.
 	 */
 	{NhlNtxAngleF, NhlCtxAngleF, NhlTFloat,
-		sizeof(float),Oset(angle),NhlTString,"0.0"},
+		sizeof(float),Oset(angle),NhlTString,"0.0",0,NULL},
 	{NhlNtxFont, NhlCFont, NhlTInteger,
-		sizeof(int),Oset(font),NhlTImmediate,(NhlPointer)0},
+		sizeof(int),Oset(font),NhlTImmediate,(NhlPointer)0,0,NULL},
 	{NhlNtxJust, NhlCtxJust, NhlTInteger,
-		sizeof(int),Oset(just),NhlTImmediate,(NhlPointer)4},
+		sizeof(int),Oset(just),NhlTImmediate,(NhlPointer)4,0,NULL},
 	{NhlNtxFontQuality, NhlCtxFontQuality, NhlTFQuality,
 		sizeof(NhlFontQuality),Oset(font_quality),NhlTImmediate,
-						(NhlPointer)NhlHIGH},
+						(NhlPointer)NhlHIGH,0,NULL},
 	{NhlNtxFontHeightF, NhlCtxFontHeightF, NhlTFloat,
-		sizeof(float),Oset(font_height),NhlTString,"0.5"},
+		sizeof(float),Oset(font_height),NhlTString,"0.5",0,NULL},
 	{NhlNtxFontAspectF, NhlCtxFontAspectF, NhlTFloat,
-		sizeof(float),Oset(font_aspect),NhlTString,"1.3125"},
+		sizeof(float),Oset(font_aspect),NhlTString,"1.3125",0,NULL},
 	{NhlNtxFontThicknessF, NhlCtxFontThicknessF, NhlTFloat,
-		sizeof(float),Oset(font_thickness),NhlTString,"1.0"},
+		sizeof(float),Oset(font_thickness),NhlTString,"1.0",0,NULL},
 	{NhlNtxConstantSpacingF, NhlCtxConstantSpacingF, NhlTFloat,
-		sizeof(float),Oset(constant_spacing),NhlTString,"0.0"},
+		sizeof(float),Oset(constant_spacing),NhlTString,"0.0",0,NULL},
 	{NhlNtxDirection, NhlCtxDirection, NhlTTextDirection,
 		sizeof(NhlTextDirection),Oset(direction),NhlTImmediate,
-						(NhlPointer)NhlACROSS}
+						(NhlPointer)NhlACROSS,0,NULL}
 };
 #undef Oset
 
