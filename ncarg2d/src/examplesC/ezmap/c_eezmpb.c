@@ -1,5 +1,5 @@
 /*
- *  $Id: c_eezmpb.c,v 1.3 1999-07-27 20:15:04 haley Exp $
+ *  $Id: c_eezmpb.c,v 1.4 2004-08-12 15:14:39 haley Exp $
  */
 
 #include <stdio.h>
@@ -217,7 +217,7 @@ colram (xcs,ycs,ncs,iai,iag,nai)
     int i, itm;
     Gpoint_list area;
 
-    if (iai[9] >= 0 && iai[1] >= 0) {
+    if (iai[0] >= 0 && iai[1] >= 0) {
         itm=max(iai[0],iai[1]);
         if (itm > 0) {
 /*
