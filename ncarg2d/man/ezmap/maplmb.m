@@ -2,7 +2,7 @@
 .na
 .nh
 .SH NAME@@@
-SVG programmer nees to look at this manpage.
+SVG programmer nees to look at this man page.
 .sp
 MAPLMB - Draws a limb line.
 .SH SYNOPSIS
