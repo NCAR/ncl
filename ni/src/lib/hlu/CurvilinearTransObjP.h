@@ -1,5 +1,5 @@
 /*
- *      $Id: CurvilinearTransObjP.h,v 1.2 2004-10-05 22:50:33 dbrown Exp $
+ *      $Id: CurvilinearTransObjP.h,v 1.3 2004-12-23 22:45:16 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -69,6 +69,7 @@ typedef struct _NhlCurvilinearTransObjLayerPart {
 	int 		log_lin_value;
 
 	int		ixb,iyb,ixe,iye;
+	int             handedness_sign;
 
 	NhlCompareDat	*xmin_dat;
 	NhlCompareDat	*xmax_dat;
