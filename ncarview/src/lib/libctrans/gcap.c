@@ -1,5 +1,5 @@
 /*
- *	$Id: gcap.c,v 1.7 1991-03-12 17:37:24 clyne Exp $
+ *	$Id: gcap.c,v 1.8 1991-04-05 11:37:15 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -314,8 +314,8 @@ CGMC *c;
 			(void)lseek(0,0L,L_SET);
 			while (getc(tty) != '\n');	
 			(void)lseek(0,0L,L_SET);
-			(void)buffer(GRAPHIC_INIT, GRAPHIC_INIT_SIZE);
 		}
+		(void)buffer(GRAPHIC_INIT, GRAPHIC_INIT_SIZE);
 
 	}
 	/*
