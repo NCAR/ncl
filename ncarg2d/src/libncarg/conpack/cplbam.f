@@ -1,5 +1,5 @@
 C
-C $Id: cplbam.f,v 1.5 1995-04-26 22:44:51 kennison Exp $
+C $Id: cplbam.f,v 1.6 1995-12-13 22:52:41 kennison Exp $
 C
       SUBROUTINE CPLBAM (ZDAT,RWRK,IWRK,IAMA)
 C
@@ -107,7 +107,14 @@ C forcing contour levels to be sorted.  Otherwise, just do the sort.
 C
       IF (NLBS.LE.0.AND.(ABS(IPLL).EQ.2.OR.ABS(IPLL).EQ.3)) THEN
         CALL CPPKLP (ZDAT,RWRK,IWRK)
-        IF (ICFELL('CPLBAM',6).NE.0) RETURN
+        IF (ICFELL('CPLBAM',6).NE.0) THEN
+          NLBS=0
+          NR04=0
+          INIL=0
+          INHL=0
+          INLL=0
+          RETURN
+        END IF
       ELSE
         IF (NCLV.GT.0) CALL CPSORT (CLEV,NCLV,ICLP)
       END IF

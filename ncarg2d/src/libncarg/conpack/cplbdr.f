@@ -1,5 +1,5 @@
 C
-C $Id: cplbdr.f,v 1.6 1995-04-26 22:44:52 kennison Exp $
+C $Id: cplbdr.f,v 1.7 1995-12-13 22:52:42 kennison Exp $
 C
       SUBROUTINE CPLBDR (ZDAT,RWRK,IWRK)
 C
@@ -105,7 +105,14 @@ C
 C Make sure contour-label positions have been chosen.
 C
       CALL CPPKLP (ZDAT,RWRK,IWRK)
-      IF (ICFELL('CPLBDR',5).NE.0) RETURN
+      IF (ICFELL('CPLBDR',5).NE.0) THEN
+        NLBS=0
+        NR04=0
+        INIL=0
+        INHL=0
+        INLL=0
+        RETURN
+      END IF
 C
 C If there are still no labels in the label list, do the informational
 C label and the high/low labels directly and quit.
