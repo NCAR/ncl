@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncarg_gks_cbind.m,v 1.4 1993-04-15 16:11:17 haley Exp $
+.\"	$Id: ncarg_gks_cbind.m,v 1.5 1993-05-03 22:25:53 haley Exp $
 .\"
 .TH NCARG_GKS_CBIND 3NCARG "February 1993" NCAR "NCAR GRAPHICS"
 .SH NAME
@@ -133,9 +133,7 @@ directory, and then compile, link, and run it, type \fBncargcex c_gtxpac\fP.
 Online:
 .BR ncarg_cbind(3NCARG),
 .BR ncargcex(1NCARG),
-.BR ncargintro(5NCARG),
-.BR man pages for any of the GKS 0A routines and/or NCAR Graphics user 
-entry points.
+.BR ncargintro(5NCARG).
 .sp
 Hardcopy:
 NCAR Graphics Fundamentals, UNIX Version

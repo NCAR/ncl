@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncarg_cbind.m,v 1.4 1993-04-15 16:11:11 haley Exp $
+.\"	$Id: ncarg_cbind.m,v 1.5 1993-05-03 22:25:50 haley Exp $
 .\"
 .TH NCARG_CBIND 3NCARG "February 1993" NCAR "NCAR GRAPHICS"
 .SH NAME
@@ -47,7 +47,7 @@ the calling sequence of a particular Fortran routine.  For example,
 the NCAR Graphics routine \fBPLCHHQ\fP has the following argument list:
 .sp
 .nf
-PLCHHQ(REAL X, REAL Y, CHARACTER*CHRS(*), REAL SZ, REAL ANG, REAL CNTR)
+PLCHHQ(REAL X, REAL Y, CHARACTER CHRS, REAL SZ, REAL ANG, REAL CNTR)
 .fi
 .sp
 and the corresponding C-binding \fBc_plchhq\fP has the same type of
@@ -125,7 +125,7 @@ information.
 .sp
 If you do not wish to use
 \fBncargcc\fP, then you can just run it with no arguments to see what
-the necessary libraries are, and then put this information your
+the necessary libraries are, and then put this information in your
 Makefile or whatever else you are using to compile and link your program.
 .SH EXAMPLES
 A few examples of C programs that call the NCAR Graphics C-bindings
@@ -173,8 +173,7 @@ Online:
 .BR ncargcc(1NCARG),
 .BR ncargcex(1NCARG),
 .BR ncarg_gks_cbind(3NCARG), 
-.BR ncargintro(5NCARG),
-.BR man pages for any of the user entry points and/or GKS routines.
+.BR ncargintro(5NCARG).
 .sp
 Hardcopy:
 NCAR Graphics Fundamentals, UNIX Version; User's Guide for 
