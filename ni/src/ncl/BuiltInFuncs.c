@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.171 2004-10-11 19:25:24 dbrown Exp $
+ *      $Id: BuiltInFuncs.c,v 1.172 2005-01-12 20:54:57 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -3280,7 +3280,7 @@ int asciinumeric
 	char cc;
 
 	step = buffer;
-	while(!feof(fp)&& (state != 9)) {
+	while(!feof(fp)&& (state != -1)) {
 		cc = fgetc(fp);
 		switch(state) { 
 		case 0: /* nothing found yet:  0 and 1 are the same */
@@ -3294,6 +3294,12 @@ int asciinumeric
 			case '.':
 				*step++ = cc;
 				state = 5;
+				break;
+			case 'n':
+			case 'N':
+				/* possible Nan */
+				state = 9;
+				*step++ = cc;
 				break;
 			default:
 				if(isdigit(cc)) {
@@ -3357,7 +3363,7 @@ int asciinumeric
  * ACCEPT INTEGER
  */
 					ungetc(cc,fp);
-					state = 9;
+					state = -1;
 					*step++ = '\0';
 				}
 			}
@@ -3385,7 +3391,7 @@ int asciinumeric
 						state = 0;
 					}
 					else {
-						state = 9;
+						state = -1;
 						*step++ = '\0';
 					}
 				}
@@ -3413,7 +3419,7 @@ int asciinumeric
 					else {
 						step--; /* get rid of e|E */
 						*step++ = '\0';
-						state = 9;
+						state = -1;
 					}
 				}
 			}
@@ -3432,21 +3438,43 @@ int asciinumeric
 				else {
 					step -= 2; /* get rid of sign and e */
 					*step++ = '\0';
-					state = 9;
+					state = -1;
 				}
-				break;
-			case 8: 
-				/* at least 1 digit of an exponent */
-				if(isdigit(cc)) {
-					*step++=  cc;
-					state = 8;
-				} else {
-					ungetc(cc,fp);
-					*step++ = '\0';
-					state = 9;
-				}
-				break;
-			}	
+			}
+			break;
+		case 8: 
+			/* at least 1 digit of an exponent */
+			if(isdigit(cc)) {
+				*step++=  cc;
+				state = 8;
+			} else {
+				ungetc(cc,fp);
+				*step++ = '\0';
+				state = -1;
+			}
+			break;
+		case 9: 
+			/* possible 'a' of Nan */
+			if(cc == 'a' || cc == 'A') {
+				*step++=  cc;
+				state = 10;
+			} else {
+				step = buffer;
+				state = 0;
+			}
+			break;
+		case 10: 
+			/* possible second 'n' of Nan */
+			if(cc == 'n' || cc == 'N') {
+				*step++=  cc;
+				*step++ = '\0';
+				state = -1;
+			} else {
+				step = buffer;
+				ungetc(cc,fp);
+				state = 0;
+			}
+			break;
 		}
 	}
 	if((step != buffer)&&(!feof(fp))) {
@@ -5384,10 +5412,10 @@ NhlErrorTypes _NclIfloattochar
 	out_val = NclMalloc(((NclTypeClass)nclTypecharClass)->type_class.size *total);
 	if(has_missing) {
 		for(i = 0; i < total; i++) {
-/**/
+/*
 fprintf(stderr, "value[%d]: %3.1f\n", i, value[i]);
 fprintf(stderr, "missing.floatval == %3.1f\n", missing.floatval);
-/**/
+*/
 			if((value[i] < 0)||(value[i] > 255)||(value[i] == missing.floatval)) {
 /*				out_val[i] = (char)missing.floatval;*/
 /*				out_val[i] = missing.floatval;*/
@@ -5395,10 +5423,10 @@ fprintf(stderr, "missing.floatval == %3.1f\n", missing.floatval);
 			} else {
 				out_val[i] = (char)value[i];
 			}
-/**/
+/*
 fprintf(stderr, "out_val[%d]: %3.3f\n", i, (float) out_val[i]);
 fprintf(stderr, "out_val[%d]: %d\n", i, out_val[i]);
-/**/
+*/
 		}
 		missing2.charval = (char)missing.floatval;
 	} else {
@@ -5456,11 +5484,11 @@ NhlErrorTypes _NclIchartofloat
 missing.charval = (char) 0;
 	if(has_missing) {
 		for(i = 0; i < total; i++) {
-/**/
+/*
 fprintf(stderr, "fvalue[%d]: %3.1f\n", i, (float) value[i]);
 fprintf(stderr, "cvalue[%d]: %d\n", i, value[i]);
 fprintf(stderr, "missing.charval == %d\n", missing.charval);
-/**/
+*/
 /*			if(value[i] == missing.charval) {
 				out_val[i] = (float)missing.charval;
 */
@@ -5469,9 +5497,9 @@ fprintf(stderr, "missing.charval == %d\n", missing.charval);
 			} else {
 				out_val[i] = (float)value[i];
 			}
-/**/
+/*
 fprintf(stderr, "out_val[%d]: %3.3f\n", i, out_val[i]);
-/**/
+*/
 		}
 		missing2.floatval = (float)missing.charval;
 	} else {
