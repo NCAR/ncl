@@ -1,5 +1,5 @@
 /*
- *      $Id: xwk.c,v 1.19 1999-09-11 01:07:12 dbrown Exp $
+ *      $Id: xwk.c,v 1.20 1999-09-21 23:36:17 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -123,6 +123,48 @@ NgXWkClassRec NgxWkClassRec = {
 };
 
 NhlClass NgxWkClass = (NhlClass)&NgxWkClassRec;
+static NhlBoolean
+GetBrowser
+(
+	int		goid,
+	NhlPointer	udata
+)
+{
+	int	*browse = (int*)udata;
+
+	if(NhlIsClass(goid,NgbrowseClass)){
+		*browse = goid;
+		return False;
+	}
+
+	return True;
+}
+static void
+ColorWPCB
+(
+	NhlArgVal	cbdata,
+	NhlArgVal	udata
+)
+{
+	NgXWk		xwk = (NgXWk)udata.ptrval;
+	int		browse = NhlDEFAULT_APP;
+	NgXWkPart	*xp;
+
+	xp = &xwk->xwk;
+	if (xp->ignore_color_cb)
+		return;
+
+	if (xp->mapped) {
+
+		NgAppEnumerateGO(xwk->go.appmgr,GetBrowser,&browse);
+
+		if (browse != NhlDEFAULT_APP) {
+			xp->ignore_color_cb = True;
+			NgUpdatePages(browse,True);
+			xp->ignore_color_cb = False;
+		}
+	}
+}
 
 static void
 ColorCB
@@ -160,9 +202,11 @@ ColorCB
 				  (XtPointer)xwk);
 	}
 	else {
+		xp->select_rect_vis = False;
 		XChangeGC(xwk->go.x->dpy,xp->xor_gc,
 			  (GCBackground|GCForeground),&gcv);
 	}
+	
 	return;
 
 }
@@ -230,6 +274,22 @@ void NgXWorkPopup
 	NgAppReleaseFocus(appmgr,xwkid);
 }
 
+static NhlBoolean TestColorWPCB(
+        NhlArgVal       cbdata,
+        NhlArgVal       udata,
+        NhlArgVal       *ret
+)
+{
+
+	NgXWk		xwk = (NgXWk)udata.ptrval;
+	NgXWkPart	*xp;
+
+	xp = &xwk->xwk;
+	if (xp->ignore_color_cb)
+		return False;
+	return True;
+}
+
 static void
 SetUpWorkColorCBs
 (
@@ -258,6 +318,9 @@ SetUpWorkColorCBs
 		_NhlAddObjCallback
 			((NhlLayer)xp->xwork,
 			 _NhlCBworkColorIndexChange,sel,ColorCB,udata);
+		NgCBWPAdd(xwk->go.appmgr,TestColorWPCB,NULL,
+			  (NhlLayer)xp->xwork,
+			  _NhlCBworkColorIndexChange,sel,ColorWPCB,udata);
 		sel.lngval = 1;
 		_NhlAddObjCallback
 			((NhlLayer)xp->xwork,
@@ -508,6 +571,7 @@ XWkInitialize
 	np->mapped = False;
 	np->xor_gc = NULL;
 	np->graphics = NULL;
+	np->ignore_color_cb = False;
 	memset(np->xor_box,0,sizeof(XPoint)*5);
 
 	/*

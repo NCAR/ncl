@@ -1,5 +1,5 @@
 /*
- *      $Id: mwin.c,v 1.25 1999-09-11 01:06:35 dbrown Exp $
+ *      $Id: mwin.c,v 1.26 1999-09-21 23:36:14 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2940,6 +2940,9 @@ extern void NgDrawUpdatedViews(
 	NhlBoolean	draw_single;
 	int		selected_id;
 	NgXBBox   	bbox;
+
+	if (! otree)
+		return;
 
 	bbox.p0.x = bbox.p0.y = 16000;
 	bbox.p1.x = bbox.p1.y = -16000;

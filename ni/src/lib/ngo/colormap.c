@@ -1,5 +1,5 @@
 /*
- *      $Id: colormap.c,v 1.6 1999-09-11 01:06:00 dbrown Exp $
+ *      $Id: colormap.c,v 1.7 1999-09-21 23:36:12 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -764,7 +764,9 @@ CmapApplyCB
 )
 {
 	NgColorMap	cm = (NgColorMap)udata;
+#if 0
 	int		browse = NhlDEFAULT_APP;
+#endif
 
 	UnSelectCurrent(cm);
 	SelectIndx(cm,cm->colormap.sel_indx);
@@ -774,11 +776,12 @@ CmapApplyCB
 
 	cm->colormap.cur_pal_name_pos = cm->colormap.set_pal_name_pos;
 
-
+#if 0
 	NgAppEnumerateGO(cm->go.appmgr,GetBrowser,&browse);
 
 	if (browse != NhlDEFAULT_APP)
 		NgUpdatePages(browse,True);
+#endif
 	return;
 }
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: app.c,v 1.24 1999-09-11 01:05:49 dbrown Exp $
+ *      $Id: app.c,v 1.25 1999-09-21 23:36:11 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1019,19 +1019,20 @@ _NgCBWPCallback
 	NhlArgVal	udata
 )
 {
-	NhlArgVal	lcbdata;
+	NhlArgVal	lcbdata,cmpval;
 	_NgCBWP_WPL	wpnode;
 	NgCBWP		cbwp = (NgCBWP)udata.ptrval;
 
 	if(cbwp->state & (NgCBWPDESTROY | NgCBWPCLEANOUT))
 		return;
 
-	NhlINITVAR(lcbdata);
+	memset(&lcbdata,0,sizeof(lcbdata));
+	memset(&cmpval,0,sizeof(cmpval));
 	if(cbwp->copy_func){
 		if(!(*cbwp->copy_func)(cbdata,cbwp->udata,&lcbdata))
 			return;
 	}
-	else
+	if (memcmp(&lcbdata,&cmpval,sizeof(lcbdata)))
 		lcbdata = cbdata;
 
 	wpnode = NhlMalloc(sizeof(_NgCBWP_WPLRec));

@@ -1,5 +1,5 @@
 /*
- *      $Id: plotstylemenu.c,v 1.1 1999-09-20 23:59:31 dbrown Exp $
+ *      $Id: plotstylemenu.c,v 1.2 1999-09-21 23:36:15 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -112,6 +112,7 @@ NgPlotStyle	PlotStyles = NULL;
 
 
 NgPlotStyleRec  VarPlotStyle = { NULL, NULL, NULL, "ncl_var",NULL };
+NgPathRec	VarPath = { NULL,NULL,0,NULL,NULL,NULL,NULL,&VarPlotStyle };
 
 static NgPath	PlotStylePaths = NULL;
 static NgPath   PlotStylePathTop = NULL;
@@ -867,6 +868,8 @@ static void CreateDialog
 #if	DEBUG_PLOTSTYLEMENU
         fprintf(stderr,"%s\n",pstyle->name);
 #endif
+	if (! pstyle)
+		return;
         if (pstyle->class_name) {
                 sprintf(buf,"Create %s Plot",pstyle->name);
 	}
@@ -950,7 +953,7 @@ static void CreateDialogCB
 {
 	PlotStyleMenuRec	*priv = (PlotStyleMenuRec	*)udata;
 	NgPath		path;
-	NgPlotStyle	pstyle;
+	NgPlotStyle	pstyle = NULL;
 
 #if	DEBUG_PLOTSTYLEMENU
         fprintf(stderr,"in plot create cb\n");
@@ -959,9 +962,12 @@ static void CreateDialogCB
         XtVaGetValues(w,
                       XmNuserData,&path,
                       NULL);
-	pstyle = (NgPlotStyle) path->data;
-
-	pstyle->path = path->dirpath;
+	if (! path)
+		return;
+	if (path->data) {
+		pstyle = (NgPlotStyle) path->data;
+		pstyle->path = path->dirpath;
+	}
         CreateDialog(priv,pstyle);
         return;
         
@@ -1338,7 +1344,7 @@ NgCreatePlotStyleMenu
                 XtVaCreateManagedWidget
                 ("Variable",xmCascadeButtonGadgetClass,
                  pub->menubar,
-                 XmNuserData,&VarPlotStyle,
+                 XmNuserData,&VarPath,
                  NULL);
         XtAddCallback(pub->var_mbutton,
                       XmNactivateCallback,CreateDialogCB,

@@ -1,5 +1,5 @@
 /*
- *      $Id: xinteract.c,v 1.8 1999-09-11 01:07:10 dbrown Exp $
+ *      $Id: xinteract.c,v 1.9 1999-09-21 23:36:15 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -225,8 +225,8 @@ static void XorDrawViewPort(
 
 #if DEBUG_XINTERACT
 	fprintf(stderr,
-		"entering xordraw - erase %d xwk->xwk.select_rect_vis %d\n",
-		erase,xwk->xwk.select_rect_vis);
+    "entering xordraw - view_id %d erase %d select_rect_vis %d\n",
+		view_id,erase,xwk->xwk.select_rect_vis);
 #endif
 	if (erase && ! xwk->xwk.select_rect_vis)
 		return;
@@ -1162,6 +1162,10 @@ extern void NgDrawXwkView
 	if (!xwk)
 		return;
 
+#if DEBUG_XINTERACT
+	fprintf(stderr,"NgDrawXwkView: view_id %d, selected %d\n",
+		view_id,xwk->xwk.selected_view_id);
+#endif
 	NgXWorkPopup(xwk->go.appmgr,xwk->base.id);
 
 	NhlVAGetValues(xwk->go.appmgr,
@@ -1181,9 +1185,15 @@ extern void NgDrawXwkView
 		return;
 	}
 
+	if (xwk->xwk.selected_view_id) {
+		XorDrawViewPort(xwk,xwk->xwk.selected_view_id,True);
+		XSync(XtDisplay(xwk->xwk.graphics),False);
+	}
+#if 0
 	if (view_id == xwk->xwk.selected_view_id) {
 		XorDrawViewPort(xwk,xwk->xwk.selected_view_id,True);
 	}
+#endif
 	cleared = ClearViewBB(xwk,view_id,force_clear);
 
 	/* 

@@ -1,5 +1,5 @@
 /*
- *      $Id: xwkP.h,v 1.7 1999-08-14 01:32:59 dbrown Exp $
+ *      $Id: xwkP.h,v 1.8 1999-09-21 23:36:17 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -73,6 +73,7 @@ typedef struct _NgXWkPart {
 	NhlBoolean		select_rect_vis;
 	NhlBoolean		manipulate_eh_active;
 	XPoint			xor_box[5];
+	NhlBoolean		ignore_color_cb;
 } NgXWkPart;
 
 typedef struct _NgXWkRec {
