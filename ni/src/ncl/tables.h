@@ -384,6 +384,33 @@ TBLE2 params_ecmwf[] = {
 {"185","Cloud Cover","(0 - 1)","T_CDC"}
 };
 
+int params_fsl_index[] = { 129,149,157,158,171,172,173,179,186,187,188,189,191,193,194,195,204,205,211,212,229,234,235,252};
+TBLE2 params_fsl[] = {
+{"129","MAPS mean sea level pressure","Pa","MMSP"},
+{"149","potential vorticity","m**2/s/kg","PV"},
+{"157","convective available potential energy","J/kg","CAPE"},
+{"158","turbulent kinetic energy","J/kg","TKE"},
+{"171","montgomery stream function / gravity","m","MSG"},
+{"172","virtual potential temperature","deg K","VPT"},
+{"173","condensation pressure","mb","CPR"},
+{"179","convective inhibition","J/kg","CIN"},
+{"186","cloud water mixing ratio","kg/kg","QC"},
+{"187","rain water mixing ratio","kg/kg","QR"},
+{"188","ice mixing ratio","kg/kg","QI"},
+{"189","snow mixing ratio","kg/kg","QS"},
+{"191","snow accumulation","cm","SAC"},
+{"193","graupel mixing ratio","kg/kg","QQ"},
+{"194","number concentration for ice particles","1/m**3","QIN"},
+{"195","altimeter setting","Pa","ALT"},
+{"204","time averaged downward short wave rad. flux","W/m**2","DSWRF"},
+{"205","time averaged downward long wave rad. flux","W/m**2","DLWRF"},
+{"211","time averaged upward short wave rad. flux","W/m**2","USWRF"},
+{"212","time averaged upward long wave rad. flux","W/m**2","ULWRF"},
+{"229","time averaged snow phase change heat flux","W/m**2","SHOHF"},
+{"234","sub-surface runoff","kg/m**2","RNF"},
+{"235","surface runoff","kg/m**2","SFCRNF"},
+{"252","surface drag coefficient","non-dim","SDRCO"},
+};
 int level_index[] = {1,2,3,4,5,6,7,8,9,20,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,119,120,121,125,128,141,160,200,201};
 
 char *level_str[] = {
