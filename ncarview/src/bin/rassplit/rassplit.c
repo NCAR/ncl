@@ -8,6 +8,7 @@ static char	*ProgramName = "rassplit";
 
 int		OptionVerbose = False;
 char		*OptionOutputFormat = (char *) NULL;
+char		*OptionInputFormat = (char *) NULL;
 
 static char	*srcfile = (char *) NULL;
 static char	*Comment = "Created by rassplit";
@@ -49,6 +50,19 @@ main(argc, argv)
 			if (argc > 0) {
 				argc--;
 				OptionOutputFormat = *++argv;
+			}
+			else {
+				fprintf(stderr,
+					"%s: Ran out of arguments\n",
+					ProgramName);
+				exit(1);
+			}
+		}
+		/* Option for specifying input format */
+		else if (!strcmp(arg, "-ifmt")) {
+			if (argc > 0) {
+				argc--;
+				OptionInputFormat = *++argv;
 			}
 			else {
 				fprintf(stderr,
@@ -107,6 +121,8 @@ main(argc, argv)
 	** this won't work for HDF files. Warn the user and select
 	** a reasonable detour.
 	*/
+	if (! OptionOutputFormat) OptionOutputFormat = OptionInputFormat;
+
 	if (OptionOutputFormat == (char *) NULL) {
 		out_format = strrchr(srcfile, '.');
 		if (out_format != (char *) NULL) {
@@ -125,7 +141,7 @@ main(argc, argv)
 
 	/* Open the source file and read the header. */
 
-	src = RasterOpen(srcfile, (char *) NULL);
+	src = RasterOpen(srcfile, OptionInputFormat);
 	if (src == (Raster *) NULL) {
 		(void) RasterPrintError((char *) NULL);
 		exit(1);
@@ -216,7 +232,8 @@ Usage()
 {
 	int		i;
 	static char	*msg[] = {
-	"Usage: rassplit [-help] [-frames f1 f2 ...] [-ofmt output-format]",
+	"Usage: rassplit [-help] [-frames f1 f2 ...] [-ifmt input-format]",
+	"                [-ofmt output-format]"
 	"                [-verbose] [-Version]"
 	};
 
@@ -241,6 +258,7 @@ PrintHelp()
 	"	-help			Print this help information",
 	"	-v			Verbose",
 	"	-Version		Print version and exit",
+	"	-ifmt format-specifier	Input format selection",
 	"	-ofmt format-specifier	Output format selection",
 	"				(defaults to input format)",
 	"	-f framenumbers		Select frames to split out",
