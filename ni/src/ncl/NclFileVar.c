@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: NclFileVar.c,v 1.9 1995-06-08 15:34:59 boote Exp $
+ *      $Id: NclFileVar.c,v 1.10 1995-06-17 00:03:41 boote Exp $
  */
 /************************************************************************
 *									*
@@ -181,7 +181,7 @@ NclFileVarClassRec nclFileVarClassRec = {
 /* NclCallBackList* create_callback*/   NULL,
 /* NclCallBackList* delete_callback*/   NULL,
 /* NclCallBackList* modify_callback*/   NULL,
-/* NclObtainCall obtain_calldata*/   NULL
+/* NclObtainCall obtain_calldata*/   FileVarObtainCallData
 	},
 	{
 /* NclRepValueFunc rep_val */		NULL,

@@ -97,7 +97,6 @@ typedef struct _NclHLUObjInfoRec {
 
 typedef struct _NclHLUObjClassInfo{
 	NclObjInfoRec obj;
-	NclVarInfoRec var;
 	NclHLUObjInfoRec hluobj;
 } NclHLUObjClassInfo;
 

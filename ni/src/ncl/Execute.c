@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.42 1995-06-03 00:45:15 ethan Exp $
+ *      $Id: Execute.c,v 1.43 1995-06-17 00:03:39 boote Exp $
  */
 /************************************************************************
 *									*
@@ -3461,9 +3461,8 @@ NclExecuteReturnStatus _NclExecute
 					}
 					} else {
 						lhs_var->kind = NclStk_VAR;
-						lhs_var->u.data_var = _NclCopyVar(rhs_var->u.data_var,NULL,NULL);
+						lhs_var->u.data_var = _NclCopyVar(rhs_var->u.data_var,lhs_sym->name,NULL);
 						_NclSetStatus((NclObj)lhs_var->u.data_var,PERMANENT);	
-						lhs_var->u.data_var->var.var_quark = NrmStringToQuark(lhs_sym->name);
 						lhs_var->u.data_var->var.thesym = lhs_sym;
 						(void)_NclChangeSymbolType(lhs_sym,VAR);
 						lhs_var->u.data_var->var.var_type = NORMAL;

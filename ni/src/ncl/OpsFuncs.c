@@ -777,8 +777,13 @@ int _NclGetExtRLList
 ()
 #endif
 {
-	return(ncl_private_rl_list);
+	int	rl = ncl_private_rl_list;
+
+	ncl_private_rl_list = 0;
+
+	return rl;
 }
+
 NhlErrorTypes _NclIPSetRL
 #if	NhlNeedProto
 (void)

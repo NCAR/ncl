@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclVar.c,v 1.16 1995-06-03 00:46:00 ethan Exp $
+ *      $Id: NclVar.c,v 1.17 1995-06-17 00:03:42 boote Exp $
  */
 /************************************************************************
 *									*
@@ -188,7 +188,7 @@ struct _NclSelectionRecord * /*rhs_sel_ptr*/
 static struct _NclVarRec * VarCopy(
 #if NhlNeedProto
 struct _NclVarRec * /*thevar*/, 
-NclScalar * /*new_missing*/, 
+char * /*new_name*/, 
 struct _NclVarRec * /*storage*/
 #endif
 );
@@ -1478,11 +1478,11 @@ struct _NclObjRec *parent;
 
 static struct _NclVarRec * VarCopy
 #if	NhlNeedProto
-(struct _NclVarRec *thevar, NclScalar *new_missing, struct _NclVarRec *storage)
+(struct _NclVarRec *thevar, char *new_name, struct _NclVarRec *storage)
 #else
-(thevar,new_missing, storage)
+(thevar,new_name, storage)
 struct _NclVarRec *thevar;
-NclScalar *new_missing;
+char *new_name;
 struct _NclVarRec *storage;
 #endif
 {
@@ -1537,7 +1537,7 @@ struct _NclVarRec *storage;
 	}
 */
 	tmp_obj = (NclObj)_NclCopyAtt((NclAtt)_NclGetObj(thevar->var.att_id),NULL);
-	tmp_var = _NclVarNclCreate(NULL,thevar->obj.class_ptr,thevar->obj.obj_type,thevar->obj.obj_type_mask,NULL,(NclMultiDValData)_NclGetObj(thevar->var.thevalue_id),thevar->var.dim_info,((tmp_obj != NULL)?tmp_obj->obj.id:-1),thevar->var.coord_vars,thevar->var.var_type,NULL,TEMPORARY);
+	tmp_var = _NclVarNclCreate(NULL,thevar->obj.class_ptr,thevar->obj.obj_type,thevar->obj.obj_type_mask,NULL,(NclMultiDValData)_NclGetObj(thevar->var.thevalue_id),thevar->var.dim_info,((tmp_obj != NULL)?tmp_obj->obj.id:-1),thevar->var.coord_vars,thevar->var.var_type,new_name,TEMPORARY);
 	
 
 	return(tmp_var);

@@ -1,5 +1,5 @@
 /*
- *      $Id: VarSupport.c,v 1.10 1995-02-17 01:01:18 ethan Exp $
+ *      $Id: VarSupport.c,v 1.11 1995-06-17 00:03:45 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1081,11 +1081,11 @@ NclSelectionRecord *rhs_sel_ptr;
 
 struct _NclVarRec* _NclCopyVar
 #if	NhlNeedProto
-(struct _NclVarRec * var,NclScalar *new_missing, struct _NclVarRec * storage)
+(struct _NclVarRec * var,char *new_name, struct _NclVarRec * storage)
 #else 
-(var,new_missing,storage)
+(var,new_name,storage)
 	struct _NclVarRec * var;
-	NclScalar *new_missing;
+	char *new_name;
 	struct _NclVarRec * storage;
 #endif
 {
@@ -1098,7 +1098,7 @@ struct _NclVarRec* _NclCopyVar
 	}
 	while((NclObjClass)vc != nclObjClass) {
 		if(vc->var_class.copy_var != NULL) {
-			return((NclVar)((*vc->var_class.copy_var)(var,new_missing,storage)));
+			return((NclVar)((*vc->var_class.copy_var)(var,new_name,storage)));
 		} else {
 			vc = (NclVarClass)vc->obj_class.super_class;
 		}

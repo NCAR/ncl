@@ -1,5 +1,5 @@
 /*
- *      $Id: DataSupport.c,v 1.17 1995-06-08 15:34:55 boote Exp $
+ *      $Id: DataSupport.c,v 1.18 1995-06-17 00:03:38 boote Exp $
  */
 /************************************************************************
 *									*
@@ -183,6 +183,9 @@ unsigned int type;
 			}
 			cl = cl->next;
 		}
+
+		NclFree(call_data);
+
 		return(ret);
 	} else {
 		return(NhlFATAL);

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclVar.h,v 1.3 1995-01-28 01:52:36 ethan Exp $
+ *      $Id: NclVar.h,v 1.4 1995-06-17 00:03:43 boote Exp $
  */
 /************************************************************************
 *									*
@@ -152,7 +152,7 @@ long			/*dim_num*/
 typedef struct _NclVarRec * (*NclCopyVarFunction)(
 #if	NhlNeedProto
 struct 	_NclVarRec * /*thevar*/,
-NclScalar *	/*new_missing*/,
+char *	/*new_name*/,
 struct 	_NclVarRec*	/* storage */
 #endif
 );
