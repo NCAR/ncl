@@ -1,5 +1,5 @@
 /*
- * $Id: nnuheads.h,v 1.6 2000-08-25 23:29:45 fred Exp $
+ * $Id: nnuheads.h,v 1.7 2000-09-19 23:56:55 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -71,6 +71,8 @@ void  NGCALLF(nnpnts,NNPNTS) (float *, float *, float *);
 void  NGCALLF(nnpntend,NNPNTEND) ();
 void  NGCALLF(nngetwts,NNGETWTS) (int *, int *, float *, float *, float *, float*);
 void  NGCALLF(nngetwtsd,NNGETWTSD) (int *, int *, double *, double *, double *, double *);
+void  NGCALLF(fnnsetc,FNNSETC) (char *, char *, int *);
+void  NGCALLF(fnngetc,FNNGETC) (char *, char *, int *);
 
 float  *c_natgrids(int, float [], float [], float [],
                    int, int, float [], float [], int *);

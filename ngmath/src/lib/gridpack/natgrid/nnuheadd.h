@@ -1,5 +1,5 @@
 /*
- * $Id: nnuheadd.h,v 1.5 2000-08-22 03:34:56 haley Exp $
+ * $Id: nnuheadd.h,v 1.6 2000-09-19 23:56:54 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -66,7 +66,7 @@ void  NGCALLF(nngetsloped,NNGETSLOPED) (int *, int *, double *, int *);
 void  NGCALLF(nngetaspectd,NNGETASPECTD) (int *, int *, double *, int *);
 void  NGCALLF(nnpntinitd,NNPNTINITD) (int *, double *, double *, double *);
 void  NGCALLF(nnpntd,NNPNTD) (double *, double *, double *);
-void  NGCALLF(nnpntend,NNPNTEND) ();
+void  NGCALLF(nnpntendd,NNPNTENDD) ();
 
 double  *c_natgridd(int, double [], double [], double [],
                     int, int, double [], double [], int *);
