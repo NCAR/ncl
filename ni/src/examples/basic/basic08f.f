@@ -142,7 +142,7 @@ C
       y(4) = 0.95
       y(5) = 0.05
 
-      call NhlFNDCPolyline(ll_id,x,y,5,ierr)
+      call NhlFNDCPolyline(ll_id,0,x,y,5,ierr)
 C
 C Draw the plot with the desired boundary parameters.
 C
@@ -164,7 +164,7 @@ C
       y(4) = 0.975
       y(5) = 0.525
 
-      call NhlFNDCPolyline(ll_id,x,y,5,ierr)
+      call NhlFNDCPolyline(ll_id,0,x,y,5,ierr)
 C
 C Set the ContourPlot viewport so that the width is twice the height.
 C (The absolute numbers are not important here, only the ratio matters.)
@@ -196,7 +196,7 @@ C
       y(4) = 0.975
       y(5) = 0.525
 
-      call NhlFNDCPolyline(ll_id,x,y,5,ierr)
+      call NhlFNDCPolyline(ll_id,0,x,y,5,ierr)
 C
 C Set the ContourPlot viewport so that the height is twice the width.
 C
@@ -227,7 +227,7 @@ C
       y(4) = 0.4
       y(5) = 0.1
 
-      call NhlFNDCPolyline(ll_id,x,y,5,ierr)
+      call NhlFNDCPolyline(ll_id,0,x,y,5,ierr)
 C
 C For this plot the aspect ratio is distorted in order to fill as much as
 C possible of the desired area. Note that the space is not completely filled.

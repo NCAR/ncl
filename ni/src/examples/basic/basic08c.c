@@ -150,7 +150,7 @@ main()
     y[3] = 0.95;
     y[4] = 0.05;
 
-    NhlNDCPolyline(ll_id,x,y,5);
+    NhlNDCPolyline(ll_id,0,x,y,5);
 
 /*
  * Draw the plot with the desired boundary parameters.
@@ -174,7 +174,7 @@ main()
     y[3] = 0.975;
     y[4] = 0.525;
 
-    NhlNDCPolyline(ll_id,x,y,5);
+    NhlNDCPolyline(ll_id,0,x,y,5);
 
 /*
  * Set the ContourPlot viewport so that the width is twice the height.
@@ -207,7 +207,7 @@ main()
     y[3] = 0.975;
     y[4] = 0.525;
 
-    NhlNDCPolyline(ll_id,x,y,5);
+    NhlNDCPolyline(ll_id,0,x,y,5);
 
 /*
  * Set the ContourPlot viewport so that the height is twice the width.
@@ -239,7 +239,7 @@ main()
     y[3] = 0.4;
     y[4] = 0.1;
 
-    NhlNDCPolyline(ll_id,x,y,5);
+    NhlNDCPolyline(ll_id,0,x,y,5);
 
 /*
  * For this plot the aspect ratio is distored in order to fill as much as
