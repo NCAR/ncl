@@ -86,7 +86,7 @@ SHELL           = /bin/sh
 
 NCARG	= ../../../..
 #
-#	$Id: Makefile,v 1.10 1992-02-18 18:21:03 clyne Exp $
+#	$Id: Makefile,v 1.11 1992-02-20 12:45:30 clyne Exp $
 #
 
 LOCINCDIR	= ../../include

@@ -1,5 +1,5 @@
 /*
- *	$Id: ctrandef.h,v 1.7 1992-02-07 16:22:37 clyne Exp $
+ *	$Id: ctrandef.h,v 1.8 1992-02-20 12:45:40 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -61,6 +61,10 @@
 
 #ifndef	ROUND
 #define	ROUND(A)	((A) > 0 ? (int) ((A) + 0.5) : -(int) (0.5 - (A)))
+#endif
+
+#ifndef	ODD
+#define	ODD(A)		((A) & 1L)
 #endif
 
 typedef	double	Matrix2d[3][3];

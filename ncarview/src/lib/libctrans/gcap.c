@@ -1,5 +1,5 @@
 /*
- *	$Id: gcap.c,v 1.13 1992-02-07 17:39:11 clyne Exp $
+ *	$Id: gcap.c,v 1.14 1992-02-20 12:45:42 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -345,14 +345,6 @@ CGMC *c;
 	 * Clear the display
 	 */
 	(void)buffer(ERASE, ERASE_SIZE);
-	return (OK);
-}
-
-
-/*ARGSUSED*/
-Ct_err	DisjtLine(c)
-CGMC *c;
-{
 	return (OK);
 }
 

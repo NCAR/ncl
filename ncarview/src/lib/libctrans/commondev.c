@@ -1,5 +1,5 @@
 /*
- *	$Id: commondev.c,v 1.10 1992-02-07 17:38:50 clyne Exp $
+ *	$Id: commondev.c,v 1.11 1992-02-20 12:45:36 clyne Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -305,6 +305,50 @@ CGMC *c;
 	}
 
 	return (OK);
+}
+
+/*ARGSUSED*/
+Ct_err  DisjtLine(c)
+CGMC *c;
+{
+	register long	i;
+
+	/*
+	 *	Make sure the line attributes are set
+	 */
+	if (COLOUR_TABLE_DAMAGE) {
+		dev->update_color_table();
+		COLOUR_TABLE_DAMAGE = FALSE;
+	}
+
+	if (LINE_COLOUR_DAMAGE) {
+		dev->setlinecolour(LINE_COLOUR.index);
+		LINE_COLOUR_DAMAGE = FALSE;
+	}
+
+	if (LINE_WIDTH_DAMAGE) {
+		dev->setlinewidth(LINE_WIDTH);
+		LINE_WIDTH_DAMAGE = FALSE;
+	}
+
+	if (CLIP_DAMAGE) {
+		CoordRect	device_win_coord;
+		GetDevWin(&device_win_coord);
+		gcap_set_clip(device_win_coord, VDCExtent, CLIPFLAG);
+		CLIP_DAMAGE = FALSE;
+	}
+
+
+	if (LINE_WIDTH == 0.0) 
+		return(OK);	/* do nothing if line is zero width	*/
+
+	/*
+	 * draw line segments one at a time
+	 */
+	if (ODD(c->Pnum)) c->Pnum--;    /* must be even */
+	for(i=0; i<c->Pnum; i+=2) {
+		dev->line(c->p[i].x, c->p[i].y, c->p[i+1].x, c->p[i+1].y);
+	}
 }
 
 

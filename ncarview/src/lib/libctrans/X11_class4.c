@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class4.c,v 1.14 1992-02-07 17:38:35 clyne Exp $
+ *	$Id: X11_class4.c,v 1.15 1992-02-20 12:45:32 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -228,12 +228,83 @@ CGMC *c;
 Ct_err	X11_DisjtLine(c)
 CGMC *c;
 {
+	/* 
+	 * Disjoint Polyline routine.  Assume lineGC attributes
+	 * have been appropriately set.  Draw segments in batches of a 
+	 * maximum of points.  
+	 */
+
+	Ct_err	GCsetlinewidth();
+	Ct_err	GCsetcolor();
+	Ct_err	GCsetlinetype();
+
+	register int	i;	/* count of processed disj line coordinates */
+	register int	p;	/* count processed unsent line coordinates */
+
+	XSegment	xsegments[POINTS_ALLOCED];
+
+
+	/*
+	 *	make sure line attributes are set
+	 */
+	if (Color_ava && COLOUR_TABLE_DAMAGE) {
+		X11_UpdateColorTable_();
+		COLOUR_TABLE_DAMAGE = FALSE;
+	}
+
+	if (Color_ava && LINE_COLOUR_DAMAGE) {
+		(void) GCsetcolor(LINE_COLOUR, lineGC);
+		LINE_COLOUR_DAMAGE = FALSE;
+	}
+		
+
+	if (LINE_WIDTH_DAMAGE) {
+		(void) GCsetlinewidth(LINE_WIDTH);
+		LINE_WIDTH_DAMAGE = FALSE;
+	}
+
+	if (LINE_TYPE_DAMAGE) {
+		(void) GCsetlinetype(LINE_TYPE);
+		LINE_TYPE_DAMAGE = FALSE;
+	}
+
 	startedDrawing = TRUE;
-#ifdef DEBUG
-	(void) fprintf(stderr,"X11_DisjtLine\n");
-#endif DEBUG
+
+	/*
+	 *	check any control elements
+	 */
+	if (CLIP_DAMAGE) {
+		GCsetclipping();
+		CLIP_DAMAGE = FALSE;
+	}
+
+	if (ODD(c->Pnum)) c->Pnum--;	/* must be even	*/
+
+	/* Draw lines in groups of sizeof(xsegments)  except for the 
+	 * last group. n = count of processed points .
+	 * p = count of processed unsent point specifications.
+	 */
+	for(i=0,p=0; i<c->Pnum; i+=2) 
+	{
+		xsegments[p].x1 = (short) XConvert(c->p[i].x);
+		xsegments[p].y1 = (short) YConvert(c->p[i].y);
+		xsegments[p].x2 = (short) XConvert(c->p[i+1].x);
+		xsegments[p].y2 = (short) YConvert(c->p[i+1].y);
+
+		if (++p == sizeof(xsegments))
+		{
+			XDrawSegments(
+				dpy, drawable, lineGC, xsegments, 
+				sizeof(xsegments)
+				);
+
+			p = 0;
+		}
+	}
+	if (p > 0) XDrawSegments(dpy, drawable, lineGC, xsegments, p);
 
 	return (OK);
+
 }
 
 Ct_err	X11_PolyMarker(c)
