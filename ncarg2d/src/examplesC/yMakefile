@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.1 1992-10-26 19:52:40 haley Exp $
+#	$Id: yMakefile,v 1.2 1992-10-29 15:46:31 haley Exp $
 #
 NCARG	= ../../..
 
@@ -18,10 +18,7 @@ SED_SRCS = \
 
 FSRCS = c_cbex01-.f
 
-DATS = \
-	srex01.dat
-
-GENERIC_SRCS = $(CSRCS) $(SED_SRCS) $(FSRCS) $(DATS)
+GENERIC_SRCS = $(CSRCS) $(SED_SRCS) $(FSRCS)
 
 all::
 
