@@ -4,6 +4,11 @@
         INTEGER IASF(13)
         DATA IASF / 13*1 /
 C
+C Print out a warning about how time consuming this example is
+C
+        WRITE (6,*) ' WARNING: This example may take 20 minutes or'
+        WRITE (6,*) '          more to execute on some machines.'
+C
 C Open GKS, turn clipping off, and set up GKS flags.
 C Use workstation type 3 for use with Gflash.
 C

@@ -5,6 +5,11 @@
         INTEGER IASF(13),IWRK(LIWK),ICRA(ICAM,ICAN)
         DATA IASF / 13*1 /
 C
+C Print out a warning about how time consuming this example is
+C
+        WRITE (6,*) ' WARNING: This example may take 20 minutes or'
+        WRITE (6,*) '          more to execute on some machines.'
+C
 C Open GKS, turn clipping off, and set up GKS flags
 C
         CALL OPNGKS
@@ -13,7 +18,7 @@ C
 C
 C Set up a color table
 C
-	CALL COLOR
+        CALL COLOR
 C
 C Create some data
 C
