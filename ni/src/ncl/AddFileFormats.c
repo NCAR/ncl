@@ -51,6 +51,8 @@ void _NclAddFileFormats
 	_NclRegisterFormat(HDFAddFileFormat,"hdf");
 #ifdef BuildHDFEOS
 	_NclRegisterFormat(HDFEOSAddFileFormat,"hdfeos");
+	_NclRegisterFormat(HDFEOSAddFileFormat,"he2");
+	_NclRegisterFormat(HDFEOSAddFileFormat,"he4");
 #endif
 	_NclRegisterFormat(HDFAddFileFormat,"hd");
 	_NclRegisterFormat(GribAddFileFormat,"grb");
