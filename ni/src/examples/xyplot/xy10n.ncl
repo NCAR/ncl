@@ -1,5 +1,5 @@
 ;
-;      $Id: xy10n.ncl,v 1.2 1995-06-22 21:09:51 haley Exp $
+;      $Id: xy10n.ncl,v 1.3 1996-05-03 00:42:15 ethan Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -50,16 +50,29 @@ begin
     rec_len = dimsizes(tmpfile->id(:,0))
     spvlt = tmpfile->lat@_FillValue
     spvln = tmpfile->lon@_FillValue
-    do i = 0, rec_len-1
-        lat(i) = tmpfile->lat(i)
-        lon(i) = tmpfile->lon(i)
-        if( lat(i) .lt.  -90. .or. lat(i) .gt.  90.) then
-            lat(i) = spvlt
-        end if
-        if( lon(i) .lt. -180. .or. lon(i) .gt. 180.)
-            lon(i) = spvln
-        end if
-    end do
+;
+; Read in lat array
+;
+    lat(0:rec_len-1) = tmpfile->lat
+    lon(0:rec_len-1) = tmpfile->lon
+
+;
+; Filter out of range values using _FillValue feature
+;
+    lat = lat > -90.0
+    lat@_FillValue = -90.0
+    lat = lat < 90.0
+    lat@_FillValue = 90.0
+    lat@_FillValue = spvlt
+    print(lat)
+
+    lon = lon > -180.0
+    lon@_FillValue = -180.0
+    lon = lon < 180.0
+    lon@_FillValue = 180.0
+    lon@_FillValue = spvln
+    print(lon)
+    
 end
 
 ;
