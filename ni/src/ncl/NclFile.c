@@ -2915,7 +2915,7 @@ int type;
 			}
 			if(value->multidval.kind != SCALAR) {
 				for(i = 0; i< n_dims_selection; i++) {
-					if(selection_dim_sizes[index_map[i]] != value->multidval.dim_sizes[i]) {
+					if(selection_dim_sizes[i] != value->multidval.dim_sizes[i]) {
 						NhlPError(NhlFATAL,NhlEUNKNOWN,"Dimension sizes of left hand side do not match right hand side");
 						return(NhlFATAL);
 					}
