@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclTypestring.c.sed,v 1.4 1995-04-19 00:01:56 ethan Exp $
+ *      $Id: NclTypestring.c.sed,v 1.5 1995-04-24 19:22:34 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -34,6 +34,94 @@
 #include "NclMultiDValData.h"
 
 
+static NhlErrorTypes CvtNhlTStringGenArrayToNclData
+#if	NhlNeedProto
+(NrmValue *from, NrmValue *to, NhlConvertArgList args, int nargs)
+#else
+(from, to, args, nargs)
+NrmValue *from;
+NrmValue *to;
+NhlConvertArgList args;
+int nargs;
+#endif
+{
+	NhlGenArray gen;
+	char func[] = "CvtNhlTStringGenArrayToNclData";
+	NclQuark *val;
+	NclMultiDValData tmp_md;
+	char **strar;
+	int i;
+	
+
+	if(nargs != 0) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: called with wrong number of args",func);
+		to->size =0;
+		return(NhlFATAL);
+	}
+	gen = (NhlGenArray)from->data.ptrval;
+	if(!_NhlIsSubtypeQ(NrmStringToQuark(NhlTStringGenArray),from->typeQ)) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: called with wrong input type",func);
+		to->size =0;
+		return(NhlFATAL);
+	}
+	val = NclMalloc(sizeof(NclQuark)* gen->num_elements);
+	strar = (char**)gen->data;
+	for(i = 0; i < gen->num_elements; i++) {
+		val[i] = NrmStringToQuark(strar[i]);
+	}
+	tmp_md = _NclCreateMultiDVal(
+		NULL,NULL, Ncl_MultiDValData,
+		0,(void*)val,NULL,gen->num_dimensions,
+		gen->len_dimensions,TEMPORARY,NULL,(NclTypeClass)nclTypestringClass);
+	if(to->size < sizeof(NclMultiDValData)) {
+		return(NhlFATAL);
+	} else {
+		*((NclMultiDValData*)(to->data.ptrval)) = (void*)tmp_md;
+        	return(NhlNOERROR);
+	}
+}
+/*ARGSUSED*/
+static NhlErrorTypes CvtNhlTStringToNclData
+#if	NhlNeedProto
+(NrmValue *from, NrmValue *to, NhlConvertArgList args, int nargs)
+#else
+(from, to, args, nargs)
+NrmValue *from;
+NrmValue *to;
+NhlConvertArgList args;
+int nargs;
+#endif
+{
+	NclQuark *tmp;
+	NclMultiDValData tmp_md;
+	int n_dims = 1,len_dims = 1;
+
+	tmp = NclMalloc((unsigned)sizeof(NclQuark));
+	*tmp = NrmStringToQuark((char*)(from->data.ptrval));
+	tmp_md = _NclCreateMultiDVal(
+		NULL,NULL, Ncl_MultiDValData,
+		0,(void*)tmp,NULL,n_dims,
+		&len_dims,TEMPORARY,NULL,(NclTypeClass)nclTypestringClass);
+	if(to->size < sizeof(NclMultiDValData)) {
+		return(NhlFATAL);
+	} else {
+		*((NclMultiDValData*)(to->data.ptrval)) = (void*)tmp_md;
+        	return(NhlNOERROR);
+	}
+}
+
+static NhlErrorTypes Ncl_Type_string_InitClass
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+        NhlRegisterConverter(NhlTStringGenArray,NhlTNclData,CvtNhlTStringGenArrayToNclData,NULL,0,False,NULL);
+        NhlRegisterConverter(NhlTString,NhlTNclData,CvtNhlTStringToNclData,NULL,0,False,NULL);
+	nclTypestringClassRec.type_class.default_mis.stringval = -1;
+	return(NhlNOERROR);
+}
 
 
 /* 0 on match, non zero on non-match just like real strcmp */
