@@ -11,9 +11,8 @@ CALL HSTOPL (STRING)
 void c_hstopl (char *string)
 .SH DESCRIPTION
 .IP STRING 12
-A character string specifying whether a histogram
-option is to be turned ON, or OFF.
-The possible options are:
+Character, input -- Selects an internal parameter.  The
+possibilities are:
 .sp
    'HOR=ON' or 'HOR=OFF'
 .br

@@ -12,9 +12,8 @@ CALL HSTOPR (STRING,ARRAY,LARR)
 void c_hstopr (char *string, float *array, int larr)
 .SH DESCRIPTION
 .IP STRING 12
-A character string specifying whether one of the two
-possible HSTOPR options is to be set, or defaulted.
-The possibilities are:
+Character, input -- Selects an internal parameter.  The
+possibilities are:
 .sp
   'WIN=ON' or 'WIN=OFF'
 .br
@@ -24,71 +23,56 @@ WIN defines the portion of the frame that will receive
 the histogram. SPA determines the spacing between
 histogram bars.
 .IP ARRAY 12
-A real array of length LARR.
+Real, input -- It has a different use depending upon
+which parameter is specified by argument STRING.  See the
+examples following argument LARR.
 .IP LARR 12
-Dimension of ARRAY.
+Integer, input -- Dimension of ARRAY.
 .sp
 The following arrays may be defined by this routine:
 .sp
 Windowing:
 .sp
+.nf
 STRING is 'WIN=ON'
 LARR = 4
 ARRAY(1) = XMIN
 ARRAY(2) = XMAX
 ARRAY(3) = YMIN
 ARRAY(4) = YMAX
+.fi
 .sp
-Assumptions: These coordinates define a rectangular
+These coordinates define a rectangular
 region of the total frame in NDC's where the current
 histogram is to be plotted. The range of allowed values
-is as follows:
-.sp
-0. _ XMIN < XMAX _ 1.
-0. _ YMIN < YMAX _ 1.
+is between 0. and 1. in both dimensions.
 .sp
 For example, XMIN=0., XMAX=.5, YMIN=.5, and YMAX=1.
 would specify the upper left quadrant of the frame.
 .sp
 IF 'WIN=OFF', the default window for the histogram will
 be the entire frame.
+.sp2
+Spacing:
 .sp
-SPAC - Real value used to set spacing of histogram
-bars; valid values are 0.0 (no spacing) to 4.0 (maximum
-spacing). Default spacing is SPAC = 2.0. If 'SPA=OFF',
-the result is the same as if SPAC = 0.0, and the value
-supplied in ARRAY(1) is ignored by HISTGR. Lines will
-be drawn around the histogram bars when 'SPA=OFF' by
-default. These may not be visible if 'SHA=ON' and the
-first color index is set to white in the color table;
-it is a good idea to set color index 1 to gray if
-\&'SPA=OFF', and 'SHA=ON' (for terminals without color
-capability, this does not apply; see notes on 'SHA'
-above). If IFLAG = 3, there is a minimum amount of
-spacing supplied even if SPAC = 0.0, to allow room for
-the second dataset histogram bars.
+STRING is 'SPA=ON'
 .sp
-OVERLP - Real value used to set overlap of adjacent
-histogram bars when comparing two datasets in one
-histogram; valid values are -4.0 (maximum overlap) to
-4.0 (little or no overlap).  OVERLP applies only when
-IFLAG = 3. Default overlap is OVERLP = 0.0. If
-\&'SPA=OFF', OVERLP is ignored by HISTGR. If no overlap
-is desired, set OVERLP to 4.0, and SPAC to 3.0 or
-greater.
+.nf
+LARR = 2
+ARRAY(1) = SPAC
+ARRAY(2) = OVERLP
+.fi
 .sp
-The default values are as follows:
+SPAC determines the spacing of histogram bars between 0.
+(no spacing) and 4.  (maximum spacing).  Default spacing is
+SPAC = 2.0.
 .sp
-.IP 'WIN 12
-= OFF'   the histogram will be drawn within the maximum
-viewport of 0.0 to 1.0 in both the horizontal and
-vertical dimensions.
+OVERLP determines the overlap of adjacent histogram
+bars when two datasets are compared.  Valid values are
+-4.0 (maximum overlap) to 4.0 (little or no overlap).
+The Default is 0.
 .sp
-.IP 'SPA 12
-= ON'    default values: spacing = 2.0, overlap = -1.0
-This will yield spacing between bars on a single
-histogram and overlap of bars in the comparison
-of two histograms.
+When STRING = 'SPA=OFF', there is no spacing or overlap.
 .SH C-BINDING DESCRIPTION
 The C-binding argument descriptions are the same as the FORTRAN
 argument descriptions.

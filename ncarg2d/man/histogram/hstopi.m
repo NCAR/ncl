@@ -12,9 +12,8 @@ CALL HSTOPI (STRING, PARAM1, PARAM2, ICOL, LCOL)
 void c_hstopi (char *string, int param1, int param2, int *icol, int lcol)
 .SH DESCRIPTION
 .IP STRING 12
-A character string specifying whether one of the two
-possible HSTOPI options is to be set, or defaulted.
-The possibilities are:
+Character, input -- Selects an internal parameter.  The
+possibilities are:
 .sp
    'COL=ON' or 'COL=OFF'
 .br
@@ -44,19 +43,20 @@ ICOL and LCOL can have dummy values.  If 'CLA=OFF',
 defaults are used which cause medium sized characters
 to be written in the horizontal direction.
 .IP PARAM1 12
-Integer variable used to set character height of class
-labels when 'CLA=ON'; 1 = small, 2 = medium, 3 = large;
+Integer, input -- Specifies the character height of
+class labels.
+.sp
+When 'CLA=ON'; 1 = small, 2 = medium, 3 = large;
 default is 2 when 'CLA=OFF'.
 .IP PARAM2 12
-Integer variable used to set orientation of class
-labels, from 0 (horizontal) to 90 (vertical) degrees
-when 'CLA=ON'. Default is 0 degrees when 'CLA=OFF'.
-.IP ICOL 12
-Integer array containing values defining color indices
-1-8, for use with 'COL=ON'.
+Integer, input -- Specifies the character orientation of
+class labels.
 .sp
-The eight components of the plot for which color
-indices can be set are as follows:
+If'CLA=ON', labels can vary from 0 (horizontal) to 90 (vertical)
+degrees.  Vertical is the default when 'CLA=OFF'.
+.IP ICOL 12
+Integer, input -- Assigns a set of RGB color indices to
+the eight components of a histogram graphic when 'COL=ON'.
 .sp
 ICOL(1) = color index used for area fill of
 .br
@@ -115,8 +115,8 @@ Color Index      Color
 .br
      8           ORANGE
 .IP LCOL 12
-Integer variable specifying length of array ICOL.  LCOL
-must be set to 8.
+Integer, input -- Specifies the length of array ICOL.
+LCOL must be set to 8.
 .SH C-BINDING DESCRIPTION
 The C-binding argument descriptions are the same as the FORTRAN
 argument descriptions.

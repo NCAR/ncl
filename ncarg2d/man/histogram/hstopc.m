@@ -12,9 +12,8 @@ CALL HSTOPC (STRING,STRNG2,NUMBER,ILCH)
 void c_hstopc (char *string, char *strng2, int number, int ilch)
 .SH DESCRIPTION
 .IP STRING 12
-A character string specifying whether one of the five
-possible HSTOPC options is to be set, or defaulted.
-The possibilities are:
+Character, input -- Selects an internal parameter.  The
+possibilities are:
 .sp
   'FOR=ON' or 'FOR=OFF'
 .br
@@ -61,8 +60,7 @@ A concatenated string of alphanumeric class interval
 labels.  The default value is a set of internally
 computed numeric class labels.
 .IP STRNG2 12
-A character string up to 45 characters long which applies
-to the following options:
+Character, input -- A string of up to 45 characters.
 .sp
  'FOR=ON', STRNG2 is a format for the class labels.
 .sp
@@ -78,7 +76,8 @@ The length of this character string will be NUMBER*ILCH,
 where NUMBER is the number of class intervals and ILCH
 is the number of characters in the interval label.
 .IP NUMBER 12
-Integer variable, which applies to the following options:
+Integer, input -- It only applies to the following
+options:
 .sp
  'FOR=ON', NUMBER specifies the maximum number of class
 intervals (histogram bars) that will be labeled.  The
@@ -94,9 +93,11 @@ Calls to HSTOPC with either 'FOR=ON' or 'CHR=ON' may be
 performed in any order; the parameters set by NUMBER
 are mutually exclusive.
 .IP ILCH 12
-An integer variable specifying the number of characters
-in each label of a class interval (histogram bar). This
-argument is only used with the 'CHR=ON' option. ILCH
+Integer, input -- It only applies in the following
+instance.
+
+If 'CHR=ON', ILCH specifys the number of characters in each
+label of a class interval (histogram bar).   ILCH
 cannot be greater than 15.
 .SH C-BINDING DESCRIPTION
 The C-binding argument descriptions are the same as the FORTRAN

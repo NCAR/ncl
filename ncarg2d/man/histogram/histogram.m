@@ -3,15 +3,21 @@
 .nh
 .SH NAME
 Histogram - this utility is used to generate histograms.
+Histograms or bar charts are used to show the distribution
+of values in a like-sample dataset.  The individual
+values are sorted by size into a number of value
+ranges called class intervals.  The number of samples
+out of the total which fall into a class interval are
+represented as a histogram bar height.  The height of
+each histogram bar is proportional to the number of
+samples in that class interval.
+.sp
 Various options are available including the
 specification of class values, spacing between histogram bars,
 shading of bars, windowing (i.e. scaling), specification of
-color, labels, titles, etc.  Data values are partitioned into
-classes; histogram bars represent either number of occurrences
-within each class, or a Y-value associated with that class
-(user choice).  Options are set by calls to subroutines HSTOPL,
-HSTOPR, HSTOPC, and HSTOPI before the call to HISTGR generates
-the histogram.
+color, labels, titles, etc.  Options are set by calls to
+routines HSTOPL, HSTOPR, HSTOPC, and HSTOPI.
+A call to routine HISTGR then generates the histogram.
 .SH SYNOPSIS
 HISTGR - Generates histograms with many options available via
 input arguments and internal parameter selections.
@@ -126,7 +132,7 @@ histogram are -4.0 (maximum overlap) to
 4.0 (little or no overlap.)
 .SH SEE ALSO
 Online:
-histgr, hstopc, hstopi, hstopl, hstopr, ncarg_cbind
+histgr, histogram_params, hstopc, hstopi, hstopl, hstopr, ncarg_cbind
 .sp
 Hardcopy:  
 NCAR Graphics Fundamentals, UNIX Version
