@@ -1,5 +1,5 @@
 /*
- *      $Id: stringutil.h,v 1.1 1997-06-04 18:08:34 dbrown Exp $
+ *      $Id: stringutil.h,v 1.2 1998-12-16 23:51:41 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -52,6 +52,11 @@ NgFixFloat
 
 extern char *
 NgTypeString(
+	int type
+        );
+
+extern char *
+NgHLUTypeString(
 	int type
         );
 

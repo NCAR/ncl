@@ -1,5 +1,5 @@
 /*
- *      $Id: stringutil.c,v 1.2 1997-10-23 00:27:09 dbrown Exp $
+ *      $Id: stringutil.c,v 1.3 1998-12-16 23:51:41 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -176,3 +176,50 @@ NgTypeString
 		return("graphic");
 	}
 }
+
+
+/*
+ * returns HLU type string representation of an NCL type
+ */
+
+extern char *
+NgHLUTypeString
+(
+	int type
+)
+{
+	switch (type) {
+	case NCLAPI_none:
+	default:
+		return("None");
+	case NCLAPI_short:
+		return(NhlTShort);
+	case NCLAPI_int:
+		return(NhlTInteger);
+	case NCLAPI_long:
+		return(NhlTLong);
+	case NCLAPI_float:
+		return(NhlTFloat);
+	case NCLAPI_double:
+		return(NhlTDouble);
+	case NCLAPI_char:
+		return(NhlTCharacter);
+	case NCLAPI_byte:
+		return(NhlTByte);
+	case NCLAPI_string:
+		return(NhlTString);
+#if 0
+	case NCLAPI_numeric:
+		return("numeric");
+#endif
+	case NCLAPI_logical:
+		return(NhlTBoolean);
+	case NCLAPI_obj:
+		return(NhlTObjId);
+	}
+}
+
+
+
+
+

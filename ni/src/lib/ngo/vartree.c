@@ -1,5 +1,5 @@
 /*
- *      $Id: vartree.c,v 1.9 1998-03-23 22:48:44 dbrown Exp $
+ *      $Id: vartree.c,v 1.10 1998-12-16 23:51:43 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1252,14 +1252,22 @@ NhlErrorTypes NgUpdateVarTree
                 XmStringFree(rowdefs[i].string);
         }
         vtp->c2_width = MAX(width,14);
-        XtVaSetValues(vtp->tree,
-                      XmNcolumn,1,
-                      XmNcolumnWidth,vtp->c2_width,
-                      NULL);
-        vtp->created = True;
         vtp->expand_called = False;
         NhlFree(rowdefs);
-
+	if (! vtp->created) {
+		XtVaSetValues(vtp->tree,
+			      XmNcolumn,1,
+			      XmNcolumnWidth,vtp->c2_width,
+			      NULL);
+		vtp->created = True;
+	}
+	else {
+		XtVaSetValues(vtp->tree,
+			      XmNimmediateDraw,False,
+			      XmNcolumn,1,
+			      XmNcolumnWidth,vtp->c2_width,
+			      NULL);
+	}
         return NhlNOERROR;
 }
 
@@ -1298,6 +1306,7 @@ NgVarTree *NgCreateVarTree
                                             XmNverticalSizePolicy,XmVARIABLE,
                                             XmNhorizontalSizePolicy,XmVARIABLE,
                                             XmNcolumns, 2,
+                                            XmNimmediateDraw,True,
                                             NULL);
         XtVaSetValues(vtp->tree,
                       XmNcellDefaults,True,

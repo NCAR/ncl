@@ -1,5 +1,5 @@
 /*
- *      $Id: filetree.c,v 1.8 1998-03-23 22:48:41 dbrown Exp $
+ *      $Id: filetree.c,v 1.9 1998-12-16 23:51:35 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1444,11 +1444,20 @@ NhlErrorTypes NgUpdateFileTree
                 XmStringFree(rowdefs[i].string);
         }
         ftp->c2_width = width;
-        XtVaSetValues(ftp->tree,
-                      XmNcolumn,1,
-                      XmNcolumnWidth,width,
-                      NULL);
-        ftp->created = True;
+	if (! ftp->created) {
+		XtVaSetValues(ftp->tree,
+			      XmNcolumn,1,
+			      XmNcolumnWidth,width,
+			      NULL);
+		ftp->created = True;
+	}
+	else {
+		XtVaSetValues(ftp->tree,
+			      XmNcolumn,1,
+			      XmNcolumnWidth,width,
+			      XmNimmediateDraw,False,
+			      NULL);
+	}		
         ftp->expand_called = False;
         NhlFree(rowdefs);
         
@@ -1493,6 +1502,7 @@ NgFileTree *NgCreateFileTree
                                             XmNhorizontalSizePolicy,XmVARIABLE,
                                             XmNcolumns, 2,
                                             XmNuserData,ftp,
+					    XmNimmediateDraw,True,
                                             NULL);
         XtVaSetValues(ftp->tree,
                       XmNcellDefaults,True,

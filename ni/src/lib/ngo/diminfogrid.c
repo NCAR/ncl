@@ -1,5 +1,5 @@
 /*
- *      $Id: diminfogrid.c,v 1.5 1997-10-03 20:07:59 dbrown Exp $
+ *      $Id: diminfogrid.c,v 1.6 1998-12-16 23:51:34 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -322,9 +322,19 @@ NhlErrorTypes NgUpdateDimInfoGrid
                                      VarTypeText(dip));
         }
         
-        XtVaSetValues(dip->grid,
-                      XmNsimpleWidths,ColumnWidths(dip),
-                      NULL);
+	if (dip->creating) {
+		dip->creating = False;
+		XtVaSetValues(dip->grid,
+			      XmNsimpleWidths,ColumnWidths(dip),
+			      NULL);
+	}
+	else {
+		XtVaSetValues(dip->grid,
+			      XmNsimpleWidths,ColumnWidths(dip),
+			      XmNimmediateDraw,False,
+			      NULL);
+	}
+
         
         return NhlNOERROR;
 }
@@ -354,6 +364,7 @@ NgDimInfoGrid *NgCreateDimInfoGrid
         
         dip = NhlMalloc(sizeof(NgDimInfoGridRec));
         if (!dip) return NULL;
+	dip->creating = True;
 
         nrows = headline_on ? 4 : 3;
         sel_policy = highlight_on ? XmSELECT_BROWSE_ROW : XmSELECT_NONE;
@@ -364,6 +375,7 @@ NgDimInfoGrid *NgCreateDimInfoGrid
                                             XmNselectionPolicy,sel_policy,
                                             XmNverticalSizePolicy,XmVARIABLE,
                                             XmNhorizontalSizePolicy,XmVARIABLE,
+                                            XmNimmediateDraw,True,
                                             NULL);
         dip->headline_on = headline_on;
         dip->highlight_on = highlight_on;
