@@ -1,5 +1,5 @@
 /*
- *	$Id: commondev.c,v 1.17 1992-09-09 15:09:02 clyne Exp $
+ *	$Id: commondev.c,v 1.18 1992-11-06 23:17:44 clyne Exp $
  */
 #include <math.h>
 #include <stdio.h>
@@ -31,8 +31,6 @@ static	ComDev	func_tab[] = {
 static	int	numDev = sizeof (func_tab) / sizeof (ComDev);
 
 static	ComDev	*dev;
-
-static	CoordRect	VDCExtent;
 
 extern	boolean	*softFill;
 
@@ -150,11 +148,6 @@ init_common()
 	coordBuf = (Ptype *) malloc (1024 * (unsigned) sizeof(Ptype));
 	coordBufSize = 1024;
 
-	VDCExtent.llx = XMIN;
-	VDCExtent.lly = YMIN;
-	VDCExtent.urx = XMAX;
-	VDCExtent.ury = YMAX;
-
 }
 
 
@@ -245,7 +238,9 @@ CGMC *c;
 	if (CLIP_DAMAGE) {
 		CoordRect	device_win_coord;
 		GetDevWin(&device_win_coord);
-		gcap_set_clip(device_win_coord, VDCExtent, CLIPFLAG);
+		gcap_set_clip(device_win_coord, 
+			PackCoordRect(XMIN, YMIN, XMAX,YMAX), CLIPFLAG
+		);
 		CLIP_DAMAGE = FALSE;
 	}
 
@@ -353,7 +348,9 @@ CGMC *c;
 	if (CLIP_DAMAGE) {
 		CoordRect	device_win_coord;
 		GetDevWin(&device_win_coord);
-		gcap_set_clip(device_win_coord, VDCExtent, CLIPFLAG);
+		gcap_set_clip(device_win_coord, 
+			PackCoordRect(XMIN, YMIN, XMAX,YMAX), CLIPFLAG
+		);
 		CLIP_DAMAGE = FALSE;
 	}
 
@@ -402,7 +399,9 @@ int	fat_dot;
 	if (CLIP_DAMAGE) {
 		CoordRect	device_win_coord;
 		GetDevWin(&device_win_coord);
-		gcap_set_clip(device_win_coord, VDCExtent, CLIPFLAG);
+		gcap_set_clip(device_win_coord, 
+			PackCoordRect(XMIN, YMIN, XMAX,YMAX), CLIPFLAG
+		);
 		CLIP_DAMAGE = FALSE;
 	}
 
@@ -465,8 +464,8 @@ int	fat_dot;
 				 * replaced with info about the device which
 				 * tell us how big a box to draw
 				 */
-				xlen = ABS(VDCExtent.urx - VDCExtent.llx) /1000;
-				ylen = ABS(VDCExtent.ury - VDCExtent.lly) /1000;
+				xlen = ABS(XMAX - XMIN) /1000;
+				ylen = ABS(YMAX - YMIN) /1000;
 
 				x = c->p[i].x - xlen;
 				y = c->p[i].y - ylen;
@@ -518,7 +517,9 @@ CGMC *c;
 	if (CLIP_DAMAGE) {	/* has clipping changed	*/
 		CoordRect	device_win_coord;
 		GetDevWin(&device_win_coord);
-		gcap_set_clip(device_win_coord, VDCExtent, CLIPFLAG);
+		gcap_set_clip(device_win_coord, 
+			PackCoordRect(XMIN, YMIN, XMAX,YMAX), CLIPFLAG
+		);
 		CLIP_DAMAGE = FALSE;
 	}
 

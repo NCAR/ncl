@@ -1,5 +1,5 @@
 /*
- *	$Id: gcap.c,v 1.29 1992-11-03 21:35:52 clyne Exp $
+ *	$Id: gcap.c,v 1.30 1992-11-06 23:17:49 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -63,8 +63,6 @@ FILE	*tty = (FILE *) NULL;
 extern	boolean	Batch;
 extern	boolean	deviceIsInit;
 extern	int	optionDesc;
-
-static	CoordRect	VDCExtent;
 
 static	struct	GCapOpts_	{
 	char	*window;
@@ -145,11 +143,6 @@ CGMC *c;
 	dev_extent.lly = LOWER_LEFT_Y;
 	dev_extent.ury = UPPER_RIGHT_Y;
 	dev_extent.urx = UPPER_RIGHT_X;
-
-	VDCExtent.llx = XMIN;
-	VDCExtent.lly = YMIN;
-	VDCExtent.urx = XMAX;
-	VDCExtent.ury = YMAX;
 
 	coord_mod.x_off = XOFFSET;
 	coord_mod.y_off = YOFFSET;
@@ -648,7 +641,9 @@ CGMC *c;
 	if (CLIP_DAMAGE) {
                 CoordRect       device_win_coord;
                 GetDevWin(&device_win_coord);
-		gcap_set_clip(device_win_coord, VDCExtent, CLIPFLAG);
+		gcap_set_clip(device_win_coord, 
+			PackCoordRect(XMIN, YMIN, XMAX,YMAX), CLIPFLAG
+		);
 		CLIP_DAMAGE = FALSE;
 	}
 

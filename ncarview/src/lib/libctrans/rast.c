@@ -1,5 +1,5 @@
 /*
- *	$Id: rast.c,v 1.18 1992-09-09 15:09:35 clyne Exp $
+ *	$Id: rast.c,v 1.19 1992-11-06 23:17:52 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -73,7 +73,6 @@ RasColrTab	colorTab;	/* the color table			*/
 
 Raster	*rastGrid;		/* struct for creating output file	*/
 boolean	rasIsDirect;		/* direct encoded image?		*/
-static	CoordRect	VDCExtent;
 
 static	build_ras_arg(ras_argc, ras_argv, rast_opts)
 	int	*ras_argc;
@@ -621,12 +620,6 @@ CGMC *c;
 int	Ras_BegPicBody(c)
 CGMC *c;
 {
-        VDCExtent.llx = XMIN;
-        VDCExtent.lly = YMIN;
-        VDCExtent.urx = XMAX;
-        VDCExtent.ury = YMAX;
-
-
 	if (BACKCOLR_DAMAGE) {
 		set_back_color(BACKCOLR);
 		BACKCOLR_DAMAGE = FALSE;
@@ -719,7 +712,9 @@ CGMC *c;
 	if (CLIP_DAMAGE) {
 		CoordRect       device_win_coord;
 		GetDevWin(&device_win_coord);
-		gcap_set_clip(device_win_coord, VDCExtent, CLIPFLAG);
+		gcap_set_clip(device_win_coord, 
+			PackCoordRect(XMIN, YMIN, XMAX,YMAX), CLIPFLAG
+		);
 		CLIP_DAMAGE = FALSE;
 	}
 

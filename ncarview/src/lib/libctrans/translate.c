@@ -1,5 +1,5 @@
 /*
- *	$Id: translate.c,v 1.6 1992-09-01 23:43:26 clyne Exp $
+ *	$Id: translate.c,v 1.7 1992-11-06 23:17:55 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -358,3 +358,25 @@ void	SetDevViewport(llx, lly, urx, ury)
 	devViewport.urx = urx;
 	devViewport.ury = ury;
 }
+
+/*
+**
+**	convenience routines
+**
+*/
+
+CoordRect	PackCoordRect(llx, lly, urx, ury)
+	long	llx;
+	long	lly;
+	long	urx;
+	long	ury;
+{
+	CoordRect	cr;
+
+	cr.llx = llx;
+	cr.lly = lly;
+	cr.urx = urx;
+	cr.ury = ury;
+	return(cr);
+}
+

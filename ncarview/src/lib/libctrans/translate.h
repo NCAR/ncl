@@ -108,5 +108,13 @@ extern	void	SetDevViewport(
 #endif
 );
 
+extern	CoordRect	PackCoordRect(
+#ifdef	NeedFuncProto
+	long	llx,
+	long	lly,
+	long	urx,
+	long	ury
+#endif
+);
 
 #endif
