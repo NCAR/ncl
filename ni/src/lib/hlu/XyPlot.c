@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.9 1993-12-13 23:35:21 ethan Exp $
+ *      $Id: XyPlot.c,v 1.10 1994-01-05 18:41:06 boote Exp $
  */
 /************************************************************************
 *									*
@@ -1326,6 +1326,7 @@ DrawCurves
 			NhlSetValues(xlayer->base.wkptr->base.id,
 				NhlNwkLineColor,	color,
 				NhlNwkDashPattern,	dpattern,
+				NhlNwkDashSegLenF,	dash_segment_length,
 				NhlNwkLineLabel,	label,
 				NULL);
 
