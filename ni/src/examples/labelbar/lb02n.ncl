@@ -15,8 +15,8 @@
 ;      Date:           Fri Jan 13 18:31:18 MDT 1995
 ;
 ;      Description:    Demonstrates the LabelBar Object
-;                      Creates color bars with every 5th index of the
-;                      114 different colors in the default colormap.
+;                      Creates color bars with every 6th index of the
+;                      131 different colors in the default colormap.
 ;
 
 ;
@@ -27,17 +27,17 @@ begin
 ;
 ; Initialize data values
 ;
-colors = (/ 1,6,11,16,21,26,31,36,41,46,51,56, \
-            61,66,71,76,81,86,91,96,101,106    /)
+colors = (/ 1,7,13,19,25,31,37,43,49,55,61,67,73,79,85,91,97, \
+            103,109,115,121,127/)
 
-line_labels = (/"Color Index 1 ","Color Index 6 ","Color Index 11", \
-            "Color Index 16","Color Index 21","Color Index 26", \
-            "Color Index 31","Color Index 36","Color Index 41", \
-            "Color Index 46","Color Index 51","Color Index 56", \
-            "Color Index 61","Color Index 66","Color Index 71", \
-            "Color Index 76","Color Index 81","Color Index 86", \
-            "Color Index 91","Color Index 96","Color Index 101",\
-            "Color Index 106"/)
+line_labels = (/"Color Index 1 ","Color Index 7 ","Color Index 13", \
+            "Color Index 19","Color Index 25","Color Index 31", \
+            "Color Index 37","Color Index 43","Color Index 49", \
+            "Color Index 55","Color Index 61","Color Index 67", \
+            "Color Index 73","Color Index 79","Color Index 85", \
+            "Color Index 91","Color Index 97","Color Index 103", \
+            "Color Index 109","Color Index 115","Color Index 121",\
+            "Color Index 127"/)
 ;
 ; Create an application context. Set the app dir to the current directory
 ; so the application looks for a resource file in the working directory.
@@ -70,7 +70,7 @@ else
 end if
 
 ;
-; Create a plot with 22 color indices (Every 5th one of the default
+; Create a plot with 22 color indices (Every 6th one of the default
 ; workstation colormap.
 ;
 pid = create "LabelBar" labelBarClass wid
