@@ -1,5 +1,5 @@
 C
-C $Id: cpsp2a.f,v 1.8 1995-11-09 00:05:09 kennison Exp $
+C $Id: cpsp2a.f,v 1.9 1997-03-12 00:16:40 kennison Exp $
 C
       SUBROUTINE CPSP2A (XSPS,YSPS,ZSPS,KSPS,MSPS,NSPS,RWRK,IWRK,ZDAT)
 C
@@ -268,11 +268,11 @@ C
             JEND=IZDM
           ELSE
             JBEG=MAX(1,MIN(IZDM,INT(((XSPS(ISPS-1)-XSPS(1))/
-     +                               (XSPS(MSPS  )-XSPS(1)))*
-     +                                REAL(IZDM-1)+.000001)+2))
+     +                               (XSPS(MSPS  )-XSPS(1))+.000001)*
+     +                                REAL(IZDM-1))+2))
             JEND=MAX(1,MIN(IZDM,INT(((XSPS(ISPS+1)-XSPS(1))/
-     +                               (XSPS(MSPS  )-XSPS(1)))*
-     +                                REAL(IZDM-1)-.000001)+1))
+     +                               (XSPS(MSPS  )-XSPS(1))-.000001)*
+     +                                REAL(IZDM-1))+1))
           END IF
           IF (JSPS.EQ.1) THEN
             KBEG=1
@@ -282,11 +282,11 @@ C
             KEND=IZDN
           ELSE
             KBEG=MAX(1,MIN(IZDN,INT(((YSPS(JSPS-1)-YSPS(1))/
-     +                               (YSPS(NSPS  )-YSPS(1)))*
-     +                                REAL(IZDN-1)+.000001)+2))
+     +                               (YSPS(NSPS  )-YSPS(1))+.000001)*
+     +                                              REAL(IZDN-1))+2))
             KEND=MAX(1,MIN(IZDN,INT(((YSPS(JSPS+1)-YSPS(1))/
-     +                               (YSPS(NSPS  )-YSPS(1)))*
-     +                                REAL(IZDN-1)-.000001)+1))
+     +                               (YSPS(NSPS  )-YSPS(1))-.000001)*
+     +                                              REAL(IZDN-1))+1))
           END IF
           DO 10012 J=JBEG,JEND
             DO 10013 K=KBEG,KEND
