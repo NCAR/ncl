@@ -1,5 +1,5 @@
 /*
- *      $Id: browse.c,v 1.16 1998-01-08 22:45:07 dbrown Exp $
+ *      $Id: browse.c,v 1.17 1998-02-20 00:11:28 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1246,16 +1246,16 @@ DeleteVarPage
 
         switch (page->type) {
             case _brREGVAR:
-                    UpdatePanes(go,_brREGVAR,qvar,NULL,True);
+                    UpdatePanes(go,_brREGVAR,qvar,NrmNULLQUARK,True);
                     break;
             case _brFILEREF:
-                    UpdatePanes(go,_brFILEREF,NULL,qfile,True);
+                    UpdatePanes(go,_brFILEREF,NrmNULLQUARK,qfile,True);
                     break;
             case _brFILEVAR:
                     UpdatePanes(go,_brFILEVAR,qvar,qfile,True);
                     break;
             case _brHLUVAR:
-                    UpdatePanes(go,_brHLUVAR,qvar,NULL,True);
+                    UpdatePanes(go,_brHLUVAR,qvar,NrmNULLQUARK,True);
                     break;
         }
 }
@@ -1273,7 +1273,8 @@ VarDeleteCB
 #if	DEBUG_DATABROWSER
         fprintf(stderr,"deleting %s\n", node->name);
 #endif        
-        UpdatePanes(go,_brREGVAR,NrmStringToQuark(node->name),NULL,True);
+        UpdatePanes(go,_brREGVAR,
+                    NrmStringToQuark(node->name),NrmNULLQUARK,True);
                 
 	return;
 }
@@ -1307,7 +1308,7 @@ FileRefDeleteCB
                         if (page->qfile == qfile) {
                                 if (page->type == _brFILEREF)
                                         UpdatePanes(go,_brFILEREF,
-                                                    NULL,qfile,True);
+                                                    NrmNULLQUARK,qfile,True);
                                 else if (page->type == _brFILEVAR)
                                         UpdatePanes(go,_brFILEVAR,
                                                     page->qvar,qfile,True);
@@ -1334,7 +1335,8 @@ HluVarDeleteCB
         fprintf(stderr,"deleting %s\n", node->name);
 #endif        
         
-        UpdatePanes(go,_brHLUVAR,NrmStringToQuark(node->name),NULL,True);
+        UpdatePanes(go,_brHLUVAR,
+                    NrmStringToQuark(node->name),NrmNULLQUARK,True);
         
 	return;
 }
@@ -1605,17 +1607,17 @@ static void BrowseTimeoutCB
 
         switch (tdata->type) {
             case _brREGVAR:
-                    UpdatePanes(go,_brREGVAR,qvar,NULL,False);
+                    UpdatePanes(go,_brREGVAR,qvar,NrmNULLQUARK,False);
                     break;
             case _brFILEREF:
-                    UpdatePanes(go,_brFILEREF,NULL,qvar,False);
+                    UpdatePanes(go,_brFILEREF,NrmNULLQUARK,qvar,False);
                     break;
             case _brFILEVAR:
                     UpdatePanes(go,_brFILEVAR,
                                 qvar,np->vmenus->qfile,False);
                     break;
             case _brHLUVAR:
-                    UpdatePanes(go,_brHLUVAR,qvar,NULL,False);
+                    UpdatePanes(go,_brHLUVAR,qvar,NrmNULLQUARK,False);
                     break;
         }
         return;
@@ -1971,10 +1973,10 @@ static void CycleSelectionCB
 
         switch (page->type) {
             case _brREGVAR:
-                    UpdatePanes(go,_brREGVAR,qvar,NULL,False);
+                    UpdatePanes(go,_brREGVAR,qvar,NrmNULLQUARK,False);
                     break;
             case _brFILEREF:
-                    UpdatePanes(go,_brFILEREF,NULL,qfile,False);
+                    UpdatePanes(go,_brFILEREF,NrmNULLQUARK,qfile,False);
                     break;
             case _brFILEVAR:
                     UpdatePanes(go,_brFILEVAR,qvar,qfile,False);
@@ -2271,12 +2273,14 @@ extern NgPageId NgOpenPage(
             case _brREGVAR:
                     if (qcount < 1 || qname[0] == NrmNULLQUARK)
                             return NULL;
-                    page = UpdatePanes(go,_brREGVAR,qname[0],NULL,False);
+                    page = UpdatePanes(go,_brREGVAR,
+                                       qname[0],NrmNULLQUARK,False);
                     break;
             case _brFILEREF:
                     if (qcount < 1 || qname[0] == NrmNULLQUARK)
                             return NULL;
-                    page = UpdatePanes(go,_brFILEREF,NULL,qname[0],False);
+                    page = UpdatePanes(go,_brFILEREF,
+                                       NrmNULLQUARK,qname[0],False);
                     break;
             case _brFILEVAR:
                     if (qcount < 2
@@ -2288,7 +2292,8 @@ extern NgPageId NgOpenPage(
             case _brHLUVAR:
                     if (qcount < 1 || qname[0] == NrmNULLQUARK)
                             return NULL;
-                    page = UpdatePanes(go,_brHLUVAR,qname[0],NULL,False);
+                    page = UpdatePanes(go,_brHLUVAR,
+                                       qname[0],NrmNULLQUARK,False);
                     break;
         }
         return page->id;

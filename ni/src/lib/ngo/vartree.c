@@ -1,5 +1,5 @@
 /*
- *      $Id: vartree.c,v 1.7 1998-01-28 17:26:53 dbrown Exp $
+ *      $Id: vartree.c,v 1.8 1998-02-20 00:11:30 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -211,7 +211,8 @@ static void ExpandVarInfo
                 XmStringFree(rowdefs[i].string);
                 switch (i) {
                     case 0:
-                            sval = GetLongName(vtp->qfileref,vtp->qvar,NULL);
+                            sval = GetLongName(vtp->qfileref,
+                                               vtp->qvar,NrmNULLQUARK);
                             if (sval) {
                                     sprintf(buf,"%s",sval);
                             }

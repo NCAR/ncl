@@ -1,5 +1,5 @@
 /*
- *      $Id: restree.c,v 1.12 1998-02-07 03:57:43 dbrown Exp $
+ *      $Id: restree.c,v 1.13 1998-02-20 00:11:29 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1005,7 +1005,7 @@ static int ExpandClass
         }
         nrows = rtp->class_info[class_ix].res_count;
         if (nrows == 0)
-                return;
+                return 0;
         
         res_end = res_start + nrows;
         
@@ -1477,7 +1477,7 @@ static int ExpandTree
                     rows_added = ExpandResDoc(rtp,ndata,row+1);
                     break;
             default:
-                    return;
+                    return 0;
         }
         XtVaSetValues(pub_rtp->tree,
                       XmNlayoutFrozen,False,
@@ -1594,6 +1594,7 @@ static void UnFocusCB
         int 		i;
 
 	return;
+#if 0        
         rowptr = XmLGridGetRow(pub_rtp->tree,XmCONTENT,rtp->edit_row);
         colptr = XmLGridGetColumn(pub_rtp->tree,XmCONTENT,2);
                 
@@ -1663,6 +1664,7 @@ static void UnFocusCB
 #endif
 	}
 	return;
+#endif        
 }
 static void FocusCB 
 (

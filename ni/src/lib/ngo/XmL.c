@@ -1,5 +1,5 @@
 /*
- *      $Id: XmL.c,v 1.2 1997-10-03 20:07:50 dbrown Exp $
+ *      $Id: XmL.c,v 1.3 1998-02-20 00:11:27 dbrown Exp $
  */
 /*
 (c) Copyright 1994, 1995, 1996 Microline Software, Inc.  ALL RIGHTS RESERVED
@@ -971,8 +971,11 @@ Boolean useAverageWidth;
 	XmFontContext context;
 	XFontStruct *fs;
 	short w, h;
+/*        
 #ifndef MOTIF20
-	/* --- begin code to work around Motif 1.x internal bug */
+*/
+       /* --- begin code to work around Motif 1.x internal bug */
+
 	typedef struct {
 		XmFontList nextFontList;
 		Boolean unused;
@@ -982,24 +985,39 @@ Boolean useAverageWidth;
 		XmStringCharSet unused;
 	} XmFontListRec;
 	XmFontList nextFontList;
+/*        
 #endif
-
+*/
+#if 0        
+        printf("XmVERSION %d XmVERSION_STRING %s\n",
+               XmVERSION,XmVERSION_STRING);
+#endif        
 	*width = 0;
 	*height = 0;
 	if (XmFontListInitFontContext(&context, fontList))
 		{
 		while (1)
 			{
+/*        
 #ifndef MOTIF20
+*/
 			/* --- begin code to work around Motif internal bug */
 			/* --- this code must be removed for Motif 2.0    */
-			nextFontList = ((XmFontListContextRec *)context)->nextFontList;
-			if (!nextFontList)
-				break;
-			if (!((XmFontListRec *)nextFontList)->font)
-				break;
-			/* --- end Motif workaround code */
+                                    /* code added to check for Motif version
+                                       at runtime - dib */
+                        if (XmVERSION < 2) {
+                                        
+                                nextFontList = ((XmFontListContextRec *)
+                                                context)->nextFontList;
+                                if (!nextFontList)
+                                        break;
+                                if (!((XmFontListRec *)nextFontList)->font)
+                                        break;
+                                    /* --- end Motif workaround code */
+                        }
+/*        
 #endif
+*/
 			if (XmFontListGetNextFont(context, &charset, &fs) == False)
 				break;
 			XtFree(charset);

@@ -1,5 +1,5 @@
 /*
- *      $Id: shapeinfogrid.c,v 1.8 1997-10-23 00:27:08 dbrown Exp $
+ *      $Id: shapeinfogrid.c,v 1.9 1998-02-20 00:11:29 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1103,7 +1103,7 @@ NhlErrorTypes NgShapeInfoGridEditFocusCell
 
         row = sip->edit_row;
         col = sip->selected_dim;
-        if (how < NG_INCREMENT || how > NG_MIN_VAL)
+        if (how > NG_MIN_VAL)
                 return NhlFATAL;
         
         if (sip->synchro_step &&
