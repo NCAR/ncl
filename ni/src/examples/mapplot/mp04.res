@@ -17,9 +17,9 @@ mp04.mp04Work.Map0.mpCenterRotF : 17.0
 mp04.mp04Work.Map0.pmTitleDisplayMode : always
 mp04.mp04Work.Map0.tiMainString : mp04
 
-mp04.mp04Work.Map0*anResizeNotify : true
-mp04.mp04Work.Map0*anTrackData : true
-mp04.mp04Work.Map0*anJust : centerleft
+mp04.mp04Work.Map0*amResizeNotify : true
+mp04.mp04Work.Map0*amTrackData : true
+mp04.mp04Work.Map0*amJust : centerleft
 
 mp04.mp04Work*txFontHeightF : 0.009
 mp04.mp04Work*txFontColor : 18
