@@ -15,7 +15,7 @@ FILE *theoptr;
 int cmd_line;
 extern int cur_line_number;
 
-#ifdef SunOs
+#ifdef SunOS
 extern FILE *nclin;
 extern int nclparse();
 #else
@@ -50,7 +50,7 @@ main() {
 
 	if(cmd_line)	
 		fprintf(stdout,"ncl %d> ",0);
-#ifdef SunOs
+#ifdef SunOS
 	nclparse();
 #else
 	yyparse();

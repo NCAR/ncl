@@ -285,10 +285,11 @@ if(groot != NULL) {
                         ((NclGenericRefNode*)dofromto->inc_var)->ref_type = Ncl_WRITEIT;
                         _NclTranslate(dofromto->inc_var,fp);
 			
-
+/*
 			_NclPutInstr(VAR_READ_OP,dofromto->line,dofromto->file);
                         _NclPutInstr((NclValue)dofromto->dir_sym,dofromto->line,dofromto->file);
                         _NclPutInstr(0,dofromto->line,dofromto->file);
+*/
 
 
                         ((NclGenericRefNode*)dofromto->inc_var)->ref_type = Ncl_READIT;

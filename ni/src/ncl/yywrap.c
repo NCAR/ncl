@@ -10,7 +10,8 @@ extern char *cur_load_file;
 extern int cur_line_number;
 extern int top_level_line;
 extern int cmd_line;
-#ifdef SunOs
+
+#ifdef SunOS
 extern FILE *nclin;
 extern int ncllineno;
 int nclwrap() 
@@ -19,9 +20,10 @@ extern FILE *yyin;
 extern int yylineno;
 int yywrap() 
 #endif /*SunOs*/
+
 {
 	if(loading) {
-#ifdef SunOs
+#ifdef SunOS
 		nclin = stdin;
 #else
 		yyin = stdin;
