@@ -1,5 +1,5 @@
 /*
- *	$Id: commands.c,v 1.10 1991-11-06 21:28:27 clyne Exp $
+ *	$Id: commands.c,v 1.11 1991-12-30 12:33:05 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -667,7 +667,7 @@ int	iCPrint(ic)
 	/*
 	 * spawn the translator and filter chain	
 	 */
-	(void) PipeLine(argc, argv);
+	(void) PipeLine(argc, argv, fd);
 
 	/*
 	 * free all memory except for translator, record_opt and file

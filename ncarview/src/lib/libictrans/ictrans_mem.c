@@ -1,5 +1,5 @@
 /*
- *	$Id: ictrans_mem.c,v 1.2 1991-01-09 11:13:26 clyne Exp $
+ *	$Id: ictrans_mem.c,v 1.3 1991-12-30 12:33:11 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -141,7 +141,7 @@ ictrans_open(unit, record_size)
 	/*
 	 * create a memory file open for reading and writing
 	 */
-	if ((fd = (int) CGM_open(fname, -(record_size), O_RDWR)) < 0 ) {
+	if ((fd = (int) CGM_open(fname, -(record_size), "w+")) < 0 ) {
 		return (-1);
 	}
 

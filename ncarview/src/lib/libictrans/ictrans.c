@@ -1,5 +1,5 @@
 /*
- *	$Id: ictrans.c,v 1.7 1991-10-07 14:18:21 clyne Exp $
+ *	$Id: ictrans.c,v 1.8 1991-12-30 12:33:09 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -123,6 +123,7 @@ ICTrans(argc, argv, mem_cgm)
 
 	void	ex_command();
 	extern	char	*GetCurrentAlias();
+	char	buf[80];
 
 	/* put the program name in a global variable */
 
@@ -287,7 +288,8 @@ ICTrans(argc, argv, mem_cgm)
 			WNOHANG, (struct rusage *) NULL)) != 0) {
 
 			if (status > 0) {
-				(void) fprintf(stderr, "Done	%d\n", status);
+				(void) sprintf(buf, "Done	%d\n", status);
+				(void) write(icommand.fd, buf, strlen(buf));
 				spoolerJobs--;
 			}
 			else {
