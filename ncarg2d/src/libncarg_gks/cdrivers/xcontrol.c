@@ -1,5 +1,5 @@
 /*
- *	$Id: xcontrol.c,v 1.4 1994-06-18 00:09:47 boote Exp $
+ *	$Id: xcontrol.c,v 1.5 1994-06-21 03:31:44 boote Exp $
  */
 /*
  *      File:		xcontrol.c
@@ -497,7 +497,7 @@ X11_OpenWorkstation
 	xi->marker_size = 1.0;
 
 	xi->percent_colerr = DEF_COLOR_ERR;
-	xi->pcerr_sqr = (float)DEF_COLOR_ERR*((float)MAX_INTENSITY/(float)100);
+	xi->pcerr_sqr = (float)DEF_COLOR_ERR*((float)MAX_INTEN_DIST/(float)100);
 	xi->pcerr_sqr *= xi->pcerr_sqr;
 
 	return(0);
