@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.1 1998-02-06 19:40:57 fred Exp $
+#	$Id: yMakefile,v 1.2 1998-02-09 17:23:38 haley Exp $
 #
 
 MYNAME	= edsgrid
@@ -10,7 +10,7 @@ SRCS = \
 	ftex01.f     ftex02.f     ftex03.f       \
 	ftex04.f     ftex05.f     ftex06.f
 
-SRCS = \
+OBJS = \
 	c_ftex01.o   c_ftex02.o   c_ftex03.o     \
 	c_ftex04.o   c_ftex05.o   c_ftex06.o     \
 	ftex01.o     ftex02.o     ftex03.o       \
