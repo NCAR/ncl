@@ -111,10 +111,6 @@ NhlErrorTypes g2gsh_W( void )
 
   intl = 0;
 
-#if defined(DEBUG)
-  printf("\n g2gsh_W: debug1: %d %d %d %d %d\n",nlona,nlata,nlonb,nlatb,*twave);
-#endif
-
 /*
  * Determine the workspace size.
  */
@@ -127,11 +123,6 @@ NhlErrorTypes g2gsh_W( void )
   lsave = lwb + lwa + 2*(klon+15);
   lwork = klat*(4*k1+ klon+ 2*klat+ 4) + 3*((k1-2)*2*(2*klat-k1-1))/2;
   ldwork = klat*(klat+4);
-
-#if defined(DEBUG)
-  printf( " g2gsh_W: debug2: %d %d %d %d %d %d\n", klat,klon,k1,k2,lwa,lwb);
-  printf( " g2gsh_W: debug3, [calc] lsave,lwork=: %d %d\n",lsave,lwork);
-#endif
 
   lsave = 5*lsave;     /* the above are only approximate */
   lwork = 5*lwork;
@@ -185,10 +176,6 @@ NhlErrorTypes g2gsh_W( void )
 		NhlPError(NhlWARNING,NhlEUNKNOWN,"g2gsh: ier = %d\n", ier );
 	  }
 
-#if defined(DEBUG)
-	  printf (" g2gsh_W: lsvmin, lwkmin= %d %d\n", lsvmin, lwkmin);
-	  printf (" g2gsh_W: nlatb,nlonb,twave= %d %d %d\n",nlatb,nlonb,*twave);
-#endif
 	  if (abs(*twave)) {
 		free(dwork);
 		ldwork = 2*klat*(klat+1)+1;
@@ -203,10 +190,6 @@ NhlErrorTypes g2gsh_W( void )
 		NGCALLF(trcwav,TRCWAV)(igridb,&nlatb,&nlonb,&Tb[lout],
 							   wsave,&lsave,work,&lwork,dwork,&ldwork,
 							   &ker,twave);
-#if defined(DEBUG)
-		printf (" trcwav: ker= %d\n",ker);
-		printf (" trcwav: nlatb,nlonb,twave= %d %d %d\n",nlatb,nlonb,*twave);
-#endif
 	  }
 	}
 	lin  += (nlata*nlona);
@@ -336,10 +319,6 @@ NhlErrorTypes f2gsh_W( void )
 
   intl = 0;
 
-#if defined(DEBUG)
-  printf("\n f2gsh_W: debug1: %d %d %d %d %d\n",nlona,nlata,nlonb,nlatb,*twave);
-#endif
-
 /*
  * Determine the workspace size.
  */
@@ -352,11 +331,6 @@ NhlErrorTypes f2gsh_W( void )
   lsave = lwb + lwa + 2*(klon+15);
   lwork = klat*(4*k1+ klon+ 2*klat+ 4) + 3*((k1-2)*2*(2*klat-k1-1))/2;
   ldwork = klat*(klat+4);
-
-#if defined(DEBUG)
-  printf( " f2gsh_W: debug2: %d %d %d %d %d %d\n", klat,klon,k1,k2,lwa,lwb);
-  printf( " f2gsh_W: debug3, [calc] lsave,lwork=: %d %d\n",lsave,lwork);
-#endif
 
   lsave = 5*lsave;     /* the above are only approximate */
   lwork = 5*lwork;
@@ -410,10 +384,6 @@ NhlErrorTypes f2gsh_W( void )
 		NhlPError(NhlWARNING,NhlEUNKNOWN,"f2gsh: ier = %d\n", ier );
 	  }
 
-#if defined(DEBUG)
-	  printf (" f2gsh_W: lsvmin, lwkmin= %d %d\n", lsvmin, lwkmin);
-	  printf (" f2gsh_W: nlatb,nlonb,twave= %d %d %d\n",nlatb,nlonb,*twave);
-#endif
 	  if (abs(*twave)) {
 		free(dwork);
 		ldwork = 2*klat*(klat+1)+1;
@@ -428,10 +398,6 @@ NhlErrorTypes f2gsh_W( void )
 		NGCALLF(trcwav,TRCWAV)(igridb,&nlatb,&nlonb,&Tb[lout],
 							   wsave,&lsave,work,&lwork,dwork,&ldwork,
 							   &ker,twave);
-#if defined(DEBUG)
-		printf (" trcwav: ker= %d\n",ker);
-		printf (" trcwav: nlatb,nlonb,twave= %d %d %d\n",nlatb,nlonb,*twave);
-#endif
 	  }
 	}
 	lin  += (nlata*nlona);
@@ -549,10 +515,6 @@ NhlErrorTypes g2fsh_W( void )
 
   intl = 0;
 
-#if defined(DEBUG)
-  printf("\n g2fsh_W: debug1: %d %d %d %d\n",nlona,nlata,nlonb,nlatb);
-#endif
-
 /*
  * Determine the workspace size.
  */
@@ -565,11 +527,6 @@ NhlErrorTypes g2fsh_W( void )
   lsave = lwb + lwa + 2*(klon+15);
   lwork = klat*(4*k1+ klon+ 2*klat+ 4) + 3*((k1-2)*2*(2*klat-k1-1))/2;
   ldwork = klat*(klat+4);
-
-#if defined(DEBUG)
-  printf( " g2fsh_W: debug2: %d %d %d %d %d %d\n", klat,klon,k1,k2,lwa,lwb);
-  printf( " g2fsh_W: debug3, [calc] lsave,lwork=: %d %d\n",lsave,lwork);
-#endif
 
   lsave = 5*lsave;     /* the above are only approximate */
   lwork = 5*lwork;
@@ -622,10 +579,6 @@ NhlErrorTypes g2fsh_W( void )
 		NhlPError(NhlWARNING,NhlEUNKNOWN,"g2fsh: ier = %d\n", ier );
 	  }
 
-#if defined(DEBUG)
-	  printf (" g2fsh_W: lsvmin, lwkmin= %d %d\n", lsvmin, lwkmin);
-	  printf (" g2fsh_W: nlatb,nlonb= %d %d\n",nlatb,nlonb);
-#endif
 	}
 	lin  += (nlata*nlona);
 	lout += (nlatb*nlonb);
@@ -743,10 +696,6 @@ NhlErrorTypes f2fsh_W( void )
 
   intl = 0;
 
-#if defined(DEBUG)
-  printf("\n f2fsh_W: debug1: %d %d %d %d\n",nlona,nlata,nlonb,nlatb);
-#endif
-
 /*
  * Determine the workspace size.
  */
@@ -759,11 +708,6 @@ NhlErrorTypes f2fsh_W( void )
   lsave = lwb + lwa + 2*(klon+15);
   lwork = klat*(4*k1+ klon+ 2*klat+ 4) + 3*((k1-2)*2*(2*klat-k1-1))/2;
   ldwork = klat*(klat+4);
-
-#if defined(DEBUG)
-  printf( " f2fsh_W: debug2: %d %d %d %d %d %d\n", klat,klon,k1,k2,lwa,lwb);
-  printf( " f2fsh_W: debug3, [calc] lsave,lwork=: %d %d\n",lsave,lwork);
-#endif
 
   lsave = 5*lsave;     /* the above are only approximate */
   lwork = 5*lwork;
@@ -815,11 +759,6 @@ NhlErrorTypes f2fsh_W( void )
 	  if (ier) {
 		NhlPError(NhlWARNING,NhlEUNKNOWN,"f2fsh: ier = %d\n", ier );
 	  }
-
-#if defined(DEBUG)
-	  printf (" f2fsh_W: lsvmin, lwkmin= %d %d\n", lsvmin, lwkmin);
-	  printf (" f2fsh_W: nlatb,nlonb= %d %d\n",nlatb,nlonb);
-#endif
 	}
 	lin  += (nlata*nlona);
 	lout += (nlatb*nlonb);

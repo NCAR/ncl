@@ -155,10 +155,6 @@ NhlErrorTypes g2gshv_W( void )
 
   intl = 0;
 
-#if defined(DEBUG)
-  printf("\n g2gshv_W: debug1: %d %d %d %d %d\n",nlona,nlata,nlonb,nlatb,*twave);
-#endif
-
 /*
  * Determine the workspace size.
  */
@@ -178,11 +174,6 @@ NhlErrorTypes g2gshv_W( void )
 
   lsave = (lsave*5)/4;     /* add extra work space */
   lwork = (lwork*5)/4;     /* add extra work space */
-
-#if defined(DEBUG)
-  printf( " g2gshv_W: debug2: %d %d %d %d %d %d\n", klat,klon,k1,k2,lwa,lwb);
-  printf( " g2gshv_W: debug3, [calc] lsave,lwork=: %d %d\n",lsave,lwork);
-#endif
 
 /*
  * Dynamically allocate the various work space.
@@ -245,9 +236,6 @@ NhlErrorTypes g2gshv_W( void )
 	lin  += (nlata*nlona);
 	lout += (nlatb*nlonb);
   }
-#if defined(DEBUG)
-  printf (" g2gshv_W: nlatb,nlonb,twave= %d %d %d\n",nlatb,nlonb,*twave);
-#endif
 /*
  * Free workspace arrays.
  */
@@ -404,10 +392,6 @@ NhlErrorTypes f2gshv_W( void )
 
   intl = 0;
 
-#if defined(DEBUG)
-  printf("\n f2gshv_W: debug1: %d %d %d %d %d\n",nlona,nlata,nlonb,nlatb,*twave);
-#endif
-
 /*
  * Determine the workspace size.
  */
@@ -427,11 +411,6 @@ NhlErrorTypes f2gshv_W( void )
 
   lsave = (lsave*5)/4;     /* add extra work space */
   lwork = (lwork*5)/4;     /* add extra work space */
-
-#if defined(DEBUG)
-  printf( " f2gshv_W: debug2: %d %d %d %d %d %d\n", klat,klon,k1,k2,lwa,lwb);
-  printf( " f2gshv_W: debug3, [calc] lsave,lwork=: %d %d\n",lsave,lwork);
-#endif
 
 /*
  * Dynamically allocate the various work space.
@@ -494,9 +473,6 @@ NhlErrorTypes f2gshv_W( void )
 	lin  += (nlata*nlona);
 	lout += (nlatb*nlonb);
   }
-#if defined(DEBUG)
-  printf (" f2gshv_W: nlatb,nlonb,twave= %d %d %d\n",nlatb,nlonb,*twave);
-#endif
 /*
  * Free workspace arrays.
  */
@@ -641,10 +617,6 @@ NhlErrorTypes g2fshv_W( void )
 
   intl = 0;
 
-#if defined(DEBUG)
-  printf("\n g2fshv_W: debug1: %d %d %d %d\n",nlona,nlata,nlonb,nlatb);
-#endif
-
 /*
  * Determine the workspace size.
  */
@@ -664,11 +636,6 @@ NhlErrorTypes g2fshv_W( void )
 
   lsave = (lsave*5)/4;     /* add extra work space */
   lwork = (lwork*5)/4;     /* add extra work space */
-
-#if defined(DEBUG)
-  printf( " g2fshv_W: debug2: %d %d %d %d %d %d\n", klat,klon,k1,k2,lwa,lwb);
-  printf( " g2fshv_W: debug3, [calc] lsave,lwork=: %d %d\n",lsave,lwork);
-#endif
 
 /*
  * Dynamically allocate the various work space.
@@ -731,9 +698,6 @@ NhlErrorTypes g2fshv_W( void )
 	lin  += (nlata*nlona);
 	lout += (nlatb*nlonb);
   }
-#if defined(DEBUG)
-  printf (" g2fshv_W: nlatb,nlonb = %d %d\n",nlatb,nlonb);
-#endif
 /*
  * Free workspace arrays.
  */
@@ -877,10 +841,6 @@ NhlErrorTypes f2fshv_W( void )
 
   intl = 0;
 
-#if defined(DEBUG)
-  printf("\n f2fshv_W: debug1: %d %d %d %d\n",nlona,nlata,nlonb,nlatb);
-#endif
-
 /*
  * Determine the workspace size.
  */
@@ -900,11 +860,6 @@ NhlErrorTypes f2fshv_W( void )
 
   lsave = (lsave*5)/4;     /* add extra work space */
   lwork = (lwork*5)/4;     /* add extra work space */
-
-#if defined(DEBUG)
-  printf( " f2fshv_W: debug2: %d %d %d %d %d %d\n", klat,klon,k1,k2,lwa,lwb);
-  printf( " f2fshv_W: debug3, [calc] lsave,lwork=: %d %d\n",lsave,lwork);
-#endif
 
 /*
  * Dynamically allocate the various work space.
@@ -967,9 +922,6 @@ NhlErrorTypes f2fshv_W( void )
 	lin  += (nlata*nlona);
 	lout += (nlatb*nlonb);
   }
-#if defined(DEBUG)
-  printf (" f2fshv_W: nlatb,nlonb = %d %d\n",nlatb,nlonb);
-#endif
 /*
  * Free workspace arrays.
  */
@@ -1175,9 +1127,6 @@ NhlErrorTypes fo2fshv_W( void )
 	lin  += (jlat*ilon);
 	lout += (jlat1*ilon);
   }
-#if defined(DEBUG)
-  printf (" fo2fshv_W: nlatb,nlonb,twave= %d %d %d\n",nlatb,nlonb,*twave);
-#endif
 /*
  * Free workspace arrays.
  */
@@ -1383,9 +1332,6 @@ NhlErrorTypes f2foshv_W( void )
 	lin  += (jlat*ilon);
 	lout += (jlat1*ilon);
   }
-#if defined(DEBUG)
-  printf (" f2foshv_W: nlatb,nlonb,twave= %d %d %d\n",nlatb,nlonb,*twave);
-#endif
 /*
  * Free workspace arrays.
  */
