@@ -1,5 +1,5 @@
 ;
-;      $Id: shea_util.ncl,v 1.3 2003-03-27 21:38:04 shea Exp $
+;      $Id: shea_util.ncl,v 1.4 2003-05-06 20:05:25 haley Exp $
 ;
 ; ******************** NOTE *******************************
 ; These are my personal functions/procedures. They do things
@@ -97,33 +97,74 @@ begin
 
   return(levels)
 end
+; -------------------------------------------------------
+function GetOverlayPlot (plot:graphic, ClassName:string, PlotIndex:integer)
+
+; Retrieves a specified overlaid object.
+
+; ClassName = name of the type of object you are searching for
+;             i.e. "contourPlotClass", "vectorPlotClass"
+; PlotIndex = in case there are multiple objects of the same type
+;             overlaid, use this to indicate which one to return.
+;             PlotIndex = 0  --> first instance
+;             PlotIndex = 1  --> second instance, etc
+local i, ovrly_ids
+begin
+;
+; Retrieve objects that have been overlaid on "plot".
+; 
+      getvalues plot
+          "pmOverlaySequenceIds" : ovrly_ids
+      end getvalues
+;
+; Loop through these objects and check if any of them are a
+; match.
+;
+      if(.not.any(ismissing(ovrly_ids))) then
+          num_instances = 0
+          do i=0,dimsizes(ovrly_ids)-1
+              if(NhlClassName(ovrly_ids(i)).eq.ClassName)
+                if(num_instances.eq.PlotIndex) then
+                  return(ovrly_ids(i))
+                end if
+                num_instances = num_instances + 1
+              end if
+          end do
+      end if
+;
+; If no match found, then check the plot itself.
+;
+      if(NhlClassName(plot).eq.ClassName) then
+          return(plot)
+      end if
+;
+; No match found, so return a missing object.
+;
+      dum = new(1,graphic)
+      return(dum)
+end
+
 ;-------------------------------------------------------------------
 function get_cnLevels (plot:graphic) 
-local cnlvls
+local cnlvls, ovrly_plot
 begin
-       if (isatt(plot,"contour")) then
-           getvalues plot@contour       
-             "cnLevels"   : cnlvls
-           end getvalues
-       else
-           getvalues plot
-             "cnLevels"   : cnlvls
-           end getvalues
-       end if
-       return(cnlvls)
+      ovrly_plot = GetOverlayPlot (plot, "contourPlotClass", 0)
+
+      getvalues ovrly_plot
+        "cnLevels"   : cnlvls
+      end getvalues
+
+      return(cnlvls)
 end
 ; -------------------------------------------------------
 function get_flags (plot:graphic) 
+local ovrly_plot
 begin
-       if (isatt(plot,"contour")) then
-          getvalues plot@contour       
-             "cnLevelFlags"   : flags
-          end getvalues
-       else
-          getvalues plot       
-             "cnLevelFlags"   : flags
-          end getvalues 
-       end if
+       ovrly_plot = GetOverlayPlot (plot, "contourPlotClass", 0)
+
+       getvalues ovrly_plot
+          "cnLevelFlags"   : flags
+       end getvalues
        return(flags)
 end
 ;-------------------------------------------------------------------
@@ -153,17 +194,11 @@ begin
           end if
        end do
 
-       if (isatt(plot,"contour")) then
-           setvalues plot@contour
-             "cnMonoLineThickness"    : False
-             "cnLineThicknesses"      : cnlinethk
-           end setvalues
-       else
-           setvalues plot
-             "cnMonoLineThickness"    : False
-             "cnLineThicknesses"      : cnlinethk
-           end setvalues
-       end if
+       ovrly_plot = GetOverlayPlot (plot, "contourPlotClass", 0)
+       setvalues ovrly_plot
+           "cnMonoLineThickness"    : False
+           "cnLineThicknesses"      : cnlinethk
+       end setvalues
 
       return (plot)
 end
@@ -195,17 +230,11 @@ begin
           end if
        end do
 
-       if (isatt(plot,"contour")) then
-           setvalues plot@contour
-             "cnMonoLineThickness"    : False
-             "cnLineThicknesses"      : cnlinethk
-           end setvalues
-       else
-           setvalues plot
-             "cnMonoLineThickness"    : False
-             "cnLineThicknesses"      : cnlinethk
-           end setvalues
-       end if
+       ovrly_plot = GetOverlayPlot (plot, "contourPlotClass", 0)
+       setvalues ovrly_plot
+           "cnMonoLineThickness"    : False
+           "cnLineThicknesses"      : cnlinethk
+       end setvalues
 
       return (plot)
 end
@@ -244,21 +273,13 @@ begin
               end if
            end do
     
-           if (isatt(plot,"contour")) then
-               setvalues plot@contour
-                 "cnMonoLineDashPattern"  : False
-                 "cnLineDashPatterns"     : cnlinepat
-                 "cnMonoLineThickness"    : False
-                 "cnLineThicknesses"      : cnlinethk
-               end setvalues
-           else
-               setvalues plot
-                 "cnMonoLineDashPattern"  : False
-                 "cnLineDashPatterns"     : cnlinepat
-                 "cnMonoLineThickness"    : False
-                 "cnLineThicknesses"      : cnlinethk
-               end setvalues
-           end if
+           ovrly_plot = GetOverlayPlot (plot, "contourPlotClass", 0)
+           setvalues ovrly_plot
+               "cnMonoLineDashPattern"  : False
+               "cnLineDashPatterns"     : cnlinepat
+               "cnMonoLineThickness"    : False
+               "cnLineThicknesses"      : cnlinethk
+           end setvalues
       end if                                ; any
 
       return (plot)
@@ -271,28 +292,29 @@ function ZeroNegDashLineContourOverlay (plot:graphic)
 ; Make zero line twice as thick and set neg contourlines to dash
 ; Dash line patterns: http://ngwww.ucar.edu/ngdoc/ng/ref/dashpatterns.html
 
-local cnlvls, cnlinepat, cnlinethk, n, N
+local cnlvls, cnlinepat, cnlinethk, n, N, ovrly_plot
 begin
-       if (isatt(plot,"contour2")) then
-           getvalues plot@contour2       
-             "cnLevels"   : cnlvls
-           end getvalues
-       else
-           getvalues plot
-             "cnLevels"   : cnlvls
-           end getvalues
-       end if
+;
+; Get the *second* instance (index=1) of an overlaid contour plot.
+;
+      ovrly_plot = GetOverlayPlot (plot, "contourPlotClass", 1)
 
-       N = dimsizes(cnlvls)
-       if (ismissing(N) .or. N.le.0) then
+      if(.not.ismissing(ovrly_plot)) then
+        getvalues ovrly_plot
+            "cnLevels"   : cnlvls
+        end getvalues
+
+        N = dimsizes(cnlvls)
+        if (ismissing(N) .or. N.le.0) then
            print ("ZeroNegDashLineContour: dimsizes(cnlvls)=" \
                   +N+" return (non-fatal)")
            return (plot)
-       else 
+        else 
            cnlvls = FixZeroContour (cnlvls, "ZeroNegDashLineContour")
-       end if
+        end if
 
-       if (any(cnlvls.le.0.)) then
+        if (any(cnlvls.le.0.)) then
+
            cnlinepat = new (dimsizes(cnlvls), integer) ; line pattern vector
            cnlinepat = 0                               ; default is solid (=0)
            cnlinethk = new (dimsizes(cnlvls), integer) ; line thick vector
@@ -307,22 +329,14 @@ begin
               end if
            end do
     
-           if (isatt(plot,"contour2")) then
-               setvalues plot@contour2
-                 "cnMonoLineDashPattern"  : False
-                 "cnLineDashPatterns"     : cnlinepat
-                 "cnMonoLineThickness"    : False
-                 "cnLineThicknesses"      : cnlinethk
-               end setvalues
-           else
-               setvalues plot
-                 "cnMonoLineDashPattern"  : False
-                 "cnLineDashPatterns"     : cnlinepat
-                 "cnMonoLineThickness"    : False
-                 "cnLineThicknesses"      : cnlinethk
-               end setvalues
-           end if
-      end if                                ; any
+           setvalues ovrly_plot
+               "cnMonoLineDashPattern"  : False
+               "cnLineDashPatterns"     : cnlinepat
+               "cnMonoLineThickness"    : False
+               "cnLineThicknesses"      : cnlinethk
+           end setvalues
+        end if                                ; any
+      end if
 
       return (plot)
 
@@ -368,21 +382,13 @@ begin
        end if
     end do
 
-    if (isatt(plot,"contour")) then
-        setvalues plot@contour
-           "cnMonoLineDashPattern"  : False
-           "cnLineDashPatterns"     : cnlinepat
-           "cnMonoLevelFlag"        : False     ; this is the default
-           "cnLevelFlags"           : cnlevflg 
-        end setvalues
-    else
-        setvalues plot
-           "cnMonoLineDashPattern"  : False
-           "cnLineDashPatterns"     : cnlinepat
-           "cnMonoLevelFlag"        : False    ; but here for safety
-           "cnLevelFlags"           : cnlevflg 
-        end setvalues
-    end if
+    ovrly_plot = GetOverlayPlot (plot, "contourPlotClass", 0)
+    setvalues ovrly_plot
+         "cnMonoLineDashPattern"  : False
+         "cnLineDashPatterns"     : cnlinepat
+         "cnMonoLevelFlag"        : False     ; this is the default
+         "cnLevelFlags"           : cnlevflg 
+    end setvalues
   end if                                ; any
 
   return (plot)
@@ -418,17 +424,11 @@ begin
               end if
            end do
     
-           if (isatt(plot,"contour")) then
-               setvalues plot@contour       
-                 "cnMonoLineDashPattern"  : False
-                 "cnLineDashPatterns"     : cnlinepat
-               end setvalues
-           else
-               setvalues plot
-                 "cnMonoLineDashPattern"  : False
-                 "cnLineDashPatterns"     : cnlinepat
-               end setvalues
-           end if
+           ovrly_plot = GetOverlayPlot (plot, "contourPlotClass", 0)
+           setvalues ovrly_plot
+               "cnMonoLineDashPattern"  : False
+               "cnLineDashPatterns"     : cnlinepat
+           end setvalues
        end if                                ; any
 
       return (plot)
@@ -466,21 +466,13 @@ begin
          end if
        end do
      
-       if (isatt(plot,"contour")) then
-           setvalues plot@contour           ; Retrieve contour levels.
+       ovrly_plot = GetOverlayPlot (plot, "contourPlotClass", 0)
+       setvalues ovrly_plot           ; Set fill patterns 
              "cnFillOn"          : True
              "cnMonoFillColor"   : True
              "cnMonoFillPattern" : False
              "cnFillPatterns"    : patterns
-           end setvalues
-       else
-           setvalues plot
-             "cnFillOn"          : True
-             "cnMonoFillColor"   : True
-             "cnMonoFillPattern" : False
-             "cnFillPatterns"    : patterns
-           end setvalues
-       end if
+       end setvalues
    end if           
  
    return (plot)
@@ -519,21 +511,13 @@ begin
        end do
        patterns(i)  = FillPatGt          ; last pattern
      
-       if (isatt(plot,"contour")) then
-           setvalues plot@contour           ; Retrieve contour levels.
-             "cnFillOn"          : True
-             "cnMonoFillColor"   : True
-             "cnMonoFillPattern" : False
-             "cnFillPatterns"    : patterns
-           end setvalues
-       else
-           setvalues plot
-             "cnFillOn"          : True
-             "cnMonoFillColor"   : True
-             "cnMonoFillPattern" : False
-             "cnFillPatterns"    : patterns
-           end setvalues
-       end if
+       ovrly_plot = GetOverlayPlot (plot, "contourPlotClass", 0)
+       setvalues ovrly_plot
+           "cnFillOn"          : True
+           "cnMonoFillColor"   : True
+           "cnMonoFillPattern" : False
+           "cnFillPatterns"    : patterns
+       end setvalues
    end if
  
    return (plot)
@@ -578,21 +562,13 @@ begin
        end do
        patterns(i)  = FillPatGt          ; last pattern
      
-       if (isatt(plot,"contour")) then
-           setvalues plot@contour           ; Retrieve contour levels.
-             "cnFillOn"          : True
-             "cnMonoFillColor"   : True
-             "cnMonoFillPattern" : False
-             "cnFillPatterns"    : patterns
-           end setvalues
-       else
-           setvalues plot
-             "cnFillOn"          : True
-             "cnMonoFillColor"   : True
-             "cnMonoFillPattern" : False
-             "cnFillPatterns"    : patterns
-           end setvalues
-       end if
+       ovrly_plot = GetOverlayPlot (plot, "contourPlotClass", 0)
+       setvalues ovrly_plot
+           "cnFillOn"          : True
+           "cnMonoFillColor"   : True
+           "cnMonoFillPattern" : False
+           "cnFillPatterns"    : patterns
+       end setvalues
    end if
  
    return (plot)
@@ -632,21 +608,13 @@ begin
          end if
        end do
      
-       if (isatt(plot,"contour")) then
-           setvalues plot@contour               ; Retrieve contour levels.
-             "cnFillOn"          : True
-             "cnMonoFillColor"   : True
-             "cnMonoFillPattern" : False
-             "cnFillPatterns"    : patterns
-           end setvalues
-       else
-           setvalues plot
-             "cnFillOn"          : True
-             "cnMonoFillColor"   : True
-             "cnMonoFillPattern" : False
-             "cnFillPatterns"    : patterns
-           end setvalues
-       end if
+       ovrly_plot = GetOverlayPlot (plot, "contourPlotClass", 0)
+       setvalues ovrly_plot
+           "cnFillOn"          : True
+           "cnMonoFillColor"   : True
+           "cnMonoFillPattern" : False
+           "cnFillPatterns"    : patterns
+       end setvalues
    end if
  
    return (plot)
@@ -686,24 +654,15 @@ begin
          end if
        end do
      
-       if (isatt(plot,"contour")) then
-           setvalues plot@contour               ; Retrieve contour levels.
-             "cnFillOn"          : True
-             "cnMonoFillColor"   : True
-             "cnMonoFillPattern" : False
-             "cnFillPatterns"    : patterns
-             "cnFillScaleF"      : FillDensity  ; 'density' of lines/periods
-           end setvalues
-       else
-           setvalues plot
-             "cnFillOn"          : True
-             "cnMonoFillColor"   : True
-             "cnMonoFillPattern" : False
-             "cnFillPatterns"    : patterns
-             "cnFillScaleF"      : FillDensity  ; 'density' of lines/periods
-           end setvalues
-       end if
-   end if
+       ovrly_plot = GetOverlayPlot (plot, "contourPlotClass", 0)
+       setvalues ovrly_plot
+           "cnFillOn"          : True
+           "cnMonoFillColor"   : True
+           "cnMonoFillPattern" : False
+           "cnFillPatterns"    : patterns
+           "cnFillScaleF"      : FillDensity  ; 'density' of lines/periods
+       end setvalues
+    end if
  
    return (plot)
 
@@ -1123,17 +1082,12 @@ begin
  print ("    Example 5")
  print ("--------------------------------------------")
         
- if (isatt(plot,"contour")) then
-     getvalues plot@contour
-       "cnLevels"     : cnlvls
-       "cnFillColors" : colors
-     end getvalues
- else
-     getvalues plot
-        "cnLevels"     : cnlvls
-        "cnFillColors" : colors
-     end getvalues
- end if
+ ovrly_plot = GetOverlayPlot (plot, "contourPlotClass", 0)
+
+ getvalues ovrly_plot
+     "cnLevels"     : cnlvls
+     "cnFillColors" : colors
+ end getvalues
 
 ;
 ; Only label every other line in the labelbar.
@@ -1748,17 +1702,11 @@ begin
           end if
        end do
 
-       if (isatt(plot,"contour")) then
-           setvalues plot@contour
-             "cnMonoLineThickness"    : False
-             "cnLineThicknesses"      : cnlinethk
-           end setvalues
-       else
-           setvalues plot
-             "cnMonoLineThickness"    : False
-             "cnLineThicknesses"      : cnlinethk
-           end setvalues
-       end if
+       ovrly_plot = GetOverlayPlot (plot, "contourPlotClass", 0)
+       setvalues ovrly_plot
+           "cnMonoLineThickness"    : False
+           "cnLineThicknesses"      : cnlinethk
+       end setvalues
 
       return (plot)
 end
@@ -1804,21 +1752,13 @@ begin
 	end if
      end do
     
-     if (isatt(plot,"contour")) then
-       setvalues plot@contour       
-          "cnMonoLineDashPattern"  : False
-          "cnLineDashPatterns"     : cnlinepat
-	  "cnMonoLineColor"        : False
-	  "cnLineColors"           : cncolor
-        end setvalues
-     else
-        setvalues plot
-          "cnMonoLineDashPattern"  : False
-	  "cnLineDashPatterns"     : cnlinepat
-	  "cnMonoLineColor"        : False
-	  "cnLineColors"           : cncolor
-        end setvalues
-     end if
+     ovrly_plot = GetOverlayPlot (plot, "contourPlotClass", 0)
+     setvalues ovrly_plot
+        "cnMonoLineDashPattern"  : False
+        "cnLineDashPatterns"     : cnlinepat
+        "cnMonoLineColor"        : False
+        "cnLineColors"           : cncolor
+     end setvalues
    end if                                ; any
    return (plot)
 end
@@ -1865,21 +1805,13 @@ begin
          end if
        end do
      
-       if (isatt(plot,"contour")) then
-           setvalues plot@contour               ; Retrieve contour levels.
-             "cnFillOn"          : True
-             "cnMonoFillPattern" : True
-             "cnMonoFillColor"   : False
-             "cnFillColors"      : colist
-           end setvalues
-       else
-           setvalues plot
-             "cnFillOn"          : True
-             "cnMonoFillPattern" : True
-             "cnMonoFillCOlor"   : False
-             "cnFillColors"      : colist
-           end setvalues
-       end if
+       ovrly_plot = GetOverlayPlot (plot, "contourPlotClass", 0)
+       setvalues ovrly_plot               ; Retrieve contour levels.
+           "cnFillOn"          : True
+           "cnMonoFillPattern" : True
+           "cnMonoFillColor"   : False
+           "cnFillColors"      : colist
+       end setvalues
    end if
  
    return (plot)
@@ -2036,15 +1968,10 @@ begin
            cnlvls = FixZeroContour (cnlvls, "ZeroLineContour")
        end if
 
-       if (isatt(plot,"contour")) then
-           getvalues plot@contour       
-             "cnFillColors"   : cnFillColors
-           end getvalues
-       else
-           getvalues plot
-             "cnFillColors"   : cnFillColors
-           end getvalues
-       end if
+       ovrly_plot = GetOverlayPlot (plot, "contourPlotClass", 0)
+       getvalues ovrly_plot
+         "cnFillColors"   : cnFillColors
+       end getvalues
 
       ;print("setColorContourClear:  cnFillColors="+cnFillColors)
 
@@ -2054,15 +1981,9 @@ begin
           end if
        end do
 
-       if (isatt(plot,"contour")) then
-           setvalues plot@contour
-             "cnFillColors"    : cnFillColors
-           end setvalues
-       else
-           setvalues plot
-             "cnFillColors"    : cnFillColors
-           end setvalues
-       end if
+       setvalues ovrly_plot
+           "cnFillColors"    : cnFillColors
+       end setvalues
 
       return (plot)
 end
