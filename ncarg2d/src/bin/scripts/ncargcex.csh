@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ncargcex.csh,v 1.17 1994-10-26 13:41:33 haley Exp $
+#	$Id: ncargcex.csh,v 1.18 1994-10-28 21:42:26 haley Exp $
 #
 
 #**************************#
@@ -668,7 +668,7 @@ endif
 #                                  #
 #**********************************#
 if ("$the_ws_type" == "10") then
-  set output = "> $graphic_file"
+  set output = "$graphic_file"
 endif
 
 
@@ -755,16 +755,24 @@ if (! $?NoRunOption) then
 #*****************#
     echo ""
     echo "Executing <$name>..."
-    eval "./$name $input $output"
+    if ("$input" != "" ) then
+      if ("$output" != "") then
+        ncargrun -o $graphic_file ./$name < $input > $output
+      else 
+        ncargrun -o $graphic_file ./$name < $input
+      endif
+    else
+      if ("$output" != "") then
+        ncargrun -o $graphic_file ./$name > $output
+      else 
+        ncargrun -o $graphic_file ./$name
+      endif
+    endif
     if ($status != 0) then
         echo ""
         echo "The execution of ./$name failed"
         echo ""
-        /bin/rm ./$default_file >& /dev/null
         exit
-    endif
-    if ( ! $?no_file ) then
-        mv ./$default_file $graphic_file
     endif
     echo ""
     echo "$msg"
