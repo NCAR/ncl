@@ -85,8 +85,8 @@ NhlErrorTypes ut_calendar_W( void )
   void *x;
   double *tmp_x;
   string *sspec;
-  int *option;
   char *cspec;
+  int *option;
   int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
   NclScalar missing_x, missing_dx;
   NclBasicDataTypes type_x;
@@ -113,7 +113,7 @@ NhlErrorTypes ut_calendar_W( void )
 /*
  * various
  */
-  int i, total_size_x, index_date;
+  int i, total_size_x, index_date, return_missing;
 
 /*
  * Before we do anything, initialize the Udunits package.
@@ -131,7 +131,7 @@ NhlErrorTypes ut_calendar_W( void )
  */
   x = (void*)NclGetArgValue(
            0,
-           3,
+           2,
            &ndims_x, 
            dsizes_x,
            &missing_x,
@@ -139,34 +139,17 @@ NhlErrorTypes ut_calendar_W( void )
            &type_x,
            2);
 /*
- * Get spec string.
- */
-  sspec = (string*)NclGetArgValue(
-           1,
-           3,
-           NULL,
-           NULL,
-           NULL,
-           NULL,
-           NULL,
-           1);
-/*
  * Get option.
  */
   option = (int*)NclGetArgValue(
+           1,
            2,
-           3,
            NULL,
            NULL,
            NULL,
            NULL,
            NULL,
            1);
-/*
- * Convert sspec to character string.
- */
-  cspec = NrmQuarkToString(*sspec);
-
 /*
  * Coerce missing value to double, and get the default missing
  * value for a float type.
@@ -200,16 +183,21 @@ NhlErrorTypes ut_calendar_W( void )
   dsizes_date[ndims_x] = 6;
 
 /* 
- * Check if time variable has "calendar" attribute set. If so, it
- * must be set to "standard" or "gregorian". Otherwise, we need to 
- * return missing values.  
+ * The "units" attribute of "time" must be set, otherwise missing
+ * values will be returned.
+ *
+ * The "calendar" option may optionally be set, but it must be equal to
+ * "standard" or "gregorian".
  */
-  stack_entry = _NclGetArg(0, 3, DONT_CARE);
+  return_missing = 0;
+
+  stack_entry = _NclGetArg(0, 2, DONT_CARE);
   switch (stack_entry.kind) {
   case NclStk_VAR:
     if (stack_entry.u.data_var->var.att_id != -1) {
       attr_obj = (NclAtt) _NclGetObj(stack_entry.u.data_var->var.att_id);
       if (attr_obj == NULL) {
+		return_missing = 1;
         break;
       }
     }
@@ -217,35 +205,43 @@ NhlErrorTypes ut_calendar_W( void )
 /*
  * att_id == -1 ==> no optional args given; use default calendar.
  */
+	  return_missing = 1;
       break;
     }
 /* 
- * Get optional arguments; if none specified, use default calendar.
+ * Get optional arguments. If none are specified, then return
+ * missing values.
  */
     if (attr_obj->att.n_atts == 0) {
+	  return_missing = 1;
       break;
     }
     else {
+/*
+ * Get list of attributes.
+ */
       attr_list = attr_obj->att.att_list;
+/*
+ * Loop through attributes and check them.
+ */
       while (attr_list != NULL) {
         if ((strcmp(attr_list->attname, "calendar")) == 0) {
           calendar = (string *) attr_list->attvalue->multidval.val;
           ccal     = NrmQuarkToString(*calendar);
           if(strcmp(ccal,"standard") && strcmp(ccal,"gregorian")) {
             NhlPError(NhlWARNING,NhlEUNKNOWN,"ut_calendar: the 'calendar' attribute is not equal to 'standard' or 'gregorian'. This function only understands a mixed Julian/Gregorian calendar. Returning all missing values.");
-            for(i = 0; i < 6*total_size_x; i++) {
-              date[i] = missing_date.floatval;
-            }
+			return_missing = 1;
+          }
+        }
+        if ((strcmp(attr_list->attname, "units")) == 0) {
+          sspec = (string *) attr_list->attvalue->multidval.val;
+          cspec = NrmQuarkToString(*sspec);
 /*
- * Close up Udunits.
+ * Make sure cspec is a valid udunits string.
  */
-            utTerm();
-/*
- * Return all missing values.
- */
-            return(NclReturnValue(date,ndims_date,dsizes_date,
-                                  &missing_date,NCL_float,0));
-            
+		  if(utScan(cspec, &unit) != 0) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"ut_calendar: Invalid specification string");
+			return_missing = 1;
           }
         }
         attr_list = attr_list->next;
@@ -255,14 +251,26 @@ NhlErrorTypes ut_calendar_W( void )
     break;
   }
 
-/*
- * Make sure cspec is a valid udunits string.
+/* 
+ * If we reach this point and return_missing is not 0, then either
+ * "units" was invalid or wasn't set , or "calendar" was not a
+ * recoginized calendar. We return all missing values in this case
  */
-  if(utScan(cspec, &unit) != 0) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"ut_calendar: Invalid specification string");
-    return(NhlFATAL);
+  if(return_missing) {
+	for(i = 0; i < 6*total_size_x; i++) {
+	  date[i] = missing_date.floatval;
+	}
+/*
+ * Close up Udunits.
+ */
+	utTerm();
+/*
+ * Return all missing values.
+ */
+	return(NclReturnValue(date,ndims_date,dsizes_date,
+						  &missing_date,NCL_float,0));
   }
-
+            
 /*
  * Convert input to double if necessary.
  */
