@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class0.c,v 1.22 1993-01-06 21:11:48 clyne Exp $
+ *	$Id: X11_class0.c,v 1.23 1993-01-12 20:10:43 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -46,7 +46,12 @@
 
 #define	FONT	"8x13bold"
 
-extern	boolean	stand_Alone;
+/*
+ *	If true the driver will not attempt to set the background
+ *	color or clear the window.
+ */
+boolean	ignoreBGChanges = FALSE;
+
 extern	boolean	deviceIsInit;
 extern	boolean	Batch;
 extern	char	**Argv;
@@ -60,6 +65,33 @@ extern	boolean	startedDrawing;
 extern	int	init_color();
 extern	int	init_polygon();
 
+/*
+ * convert an decimal or  hexadecimal string to its integer value
+ * if the string is preceded by "0x" or "0X" it is in hexadecimal form.
+ */
+int     hex_to_int(from, to)
+        const char      *from;  /* the string   */
+        Voidptr to;
+{
+        int     *iptr   = (int *) to;
+
+        if (! from) {
+                *iptr = 0;
+        }
+        else if (strchr(from, 'x') || strchr(from, 'X')) {
+		if (sscanf(from, "%i", iptr) != 1) {
+			ESprintf(E_UNKNOWN, "Convert(%s) to int failed", from);
+			return(-1);
+		}
+	}
+	else if (sscanf(from, "%d", iptr) != 1) {
+                ESprintf(E_UNKNOWN, "Convert(%s) to int failed", from);
+                return(-1);
+        }
+        return(1);
+}
+
+
 static	struct	{
 	char	*Geometry;
 	char	*window;
@@ -68,6 +100,7 @@ static	struct	{
 	char	*background;
 	boolean	reverse;
 	int	wid;
+	boolean	ignorebg;
 	} x11_opts;
 
 static	Option	options[] =  {
@@ -96,8 +129,12 @@ static	Option	options[] =  {
 		(Voidptr) &x11_opts.reverse, sizeof (x11_opts.reverse )
 	},
 	{
-	"wid", NCARGCvtToInt, 
+	"wid", hex_to_int, 
 		(Voidptr) &x11_opts.wid, sizeof (x11_opts.wid )
+	},
+	{
+	"ignorebg", NCARGCvtToBoolean, 
+		(Voidptr) &x11_opts.ignorebg, sizeof (x11_opts.ignorebg )
 	},
 	{
 	NULL
@@ -204,10 +241,14 @@ CGMC *c;
 	}
 
 
+	if (x11_opts.ignorebg) {
+		ignoreBGChanges = TRUE;
+	}
+
 	/*
 	 *	load the font to use. See section 10.2 & 6.5.1
 	 */
-	if (!Batch)
+	if (!Batch && x11_opts.wid == -1)
 		fontstruct = XLoadQueryFont(dpy, FONT);
 
 	/*
@@ -421,8 +462,8 @@ CGMC *c;
 	}
 
 
-	if (stand_Alone) {
 
+	if (!Batch && x11_opts.wid == -1) {
 		/*
 		 *	Select events for which we want future notification.
 		 *	These apply for the remainder of the program. 
@@ -433,7 +474,6 @@ CGMC *c;
 		button_event = (XButtonPressedEvent *) &event;
 		key_event = (XKeyEvent *) &event;
 
-		if (!Batch) {
 		while (TRUE) {
 
 			XNextEvent(dpy, &event);
@@ -477,9 +517,8 @@ CGMC *c;
 				break;
 			}	/* end switch */
 		}	/* while	*/
-		}
 
-	}	/* if stand_Alone	*/
+	}	/* if ! Batch	*/
 	
 
 	return(status);
@@ -565,7 +604,7 @@ CGMC *c;
 			}
 		}
 
-		if (fontstruct != NULL && !Batch) {
+		if (fontstruct != NULL && !Batch && x11_opts.wid == -1) {
 
 			/*
 			 *	calculate possistion and heigth of title bar
@@ -632,16 +671,7 @@ CGMC *c;
 	 */
 	if (*doBell) XBell(dpy, 0);
 
-	if (Batch) {
-		XFlush(dpy);
-		free_colors();
-		return(0);
-	}
-
-	/*
-	 * if not stand alone do not interact with user. Let interface do it
-	 */
-	if (! stand_Alone) {
+	if (Batch || x11_opts.wid != -1) {
 		XFlush(dpy);
 		free_colors();
 		return(0);
@@ -723,7 +753,9 @@ CGMC *c;
 	/* 
 	 * clear the screen
 	 */
-	XClearWindow(dpy,win);
+	if (! ignoreBGChanges) {
+		XClearWindow(dpy,win);
+	}
 	return(0);
 }
 

@@ -1,5 +1,5 @@
 /*
- *	$Id: devices.h,v 1.13 1992-09-01 23:42:15 clyne Exp $
+ *	$Id: devices.h,v 1.14 1993-01-12 20:10:57 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -122,6 +122,7 @@ static	OptDescRec	X11_opts[] = {
 	{"background", 1, NULL, "Default background color (X11 color only)"},
 	{"reverse", 0, NULL, "Do reverse video (X11 monochrome only)"},
 	{"wid", 1, "-1", "Drawing window id, 'arg0'"},
+	{"ignorebg", 0, NULL, "Ignore CGM requests to change background color"},
 	{NULL}
 	};
 #endif

@@ -1,5 +1,5 @@
 /*
- *	$Id: sunraster.c,v 1.15 1992-09-01 23:43:20 clyne Exp $
+ *	$Id: sunraster.c,v 1.16 1993-01-12 20:11:04 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -32,7 +32,6 @@
 #include	"soft_fill.h"
 #include	"translate.h"
 
-extern	boolean	stand_Alone;
 extern	boolean	deviceIsInit;
 extern	boolean	Batch;
 extern	boolean	*softFill;

@@ -1,5 +1,5 @@
 /*
- *	$Id: sun_view.c,v 1.16 1992-09-01 23:43:17 clyne Exp $
+ *	$Id: sun_view.c,v 1.17 1993-01-12 20:11:00 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -32,7 +32,6 @@
 #include	"soft_fill.h"
 #include	"translate.h"
 
-extern	boolean	stand_Alone;
 extern	char	**Argv;
 extern	boolean	deviceIsInit;
 extern	boolean	Batch;
@@ -387,13 +386,6 @@ CGMC *c;
 	 *	if not interactive don't perform any user interaction
 	 */
 	if (Batch) {
-		return(0);
-	}
-
-	/*
-	 * if not stand alone do not interact with user. Let interface do it
-	 */
-	if (!stand_Alone) {
 		return(0);
 	}
 

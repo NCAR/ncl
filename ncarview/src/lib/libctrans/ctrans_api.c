@@ -1,5 +1,5 @@
 /*
- *      $Id: ctrans_api.c,v 1.16 1993-01-07 00:32:52 clyne Exp $
+ *      $Id: ctrans_api.c,v 1.17 1993-01-12 20:10:55 clyne Exp $
  */
 /*
  *	File:		ctrans_api.c
@@ -81,7 +81,6 @@ static  Option  get_options[] = {
 
 extern	char	**Argv;
 extern	int	Argc;
-extern	boolean	stand_Alone;
 extern	boolean	Batch;
 extern	boolean *softFill;
 extern	boolean *deBug;
@@ -157,7 +156,6 @@ CtransRC	CtransOpenBatch(device_name, font_name, metafile, dev_argc, dev_argv)
 	argv_[1] = NULL;
 	Argv = argv_;
 	Argc = 1;
-	stand_Alone = TRUE;		/* X driver creates own window	*/
 	Batch = TRUE;			/* drivers don't prompt user	*/
 	softFill = &softFillOption;	/* no soft fill			*/
 	deBug = &deBugOption;		/* no debugging			*/

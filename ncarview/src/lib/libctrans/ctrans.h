@@ -1,6 +1,6 @@
 
 /*
- *      $Id: ctrans.h,v 1.4 1992-10-15 16:49:11 clyne Exp $
+ *      $Id: ctrans.h,v 1.5 1993-01-12 20:10:52 clyne Exp $
  */
 /*
  *	File:		ctrans.h
@@ -39,7 +39,6 @@ extern	CtransRC	init_ctrans(
 	char	**argv,
 	const char	*gcap,
 	const char	*fcap,
-	boolean	stand_alone,
 	boolean	batch
 #endif
 );

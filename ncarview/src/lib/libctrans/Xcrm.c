@@ -1,5 +1,5 @@
 /*
- *	$Id: Xcrm.c,v 1.14 1993-01-08 21:17:50 clyne Exp $
+ *	$Id: Xcrm.c,v 1.15 1993-01-12 20:10:46 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -50,11 +50,17 @@ static	int	back_color(color)
 	Pixeltype	planedummy[1];
 	Pixeltype	pixel_return[1];
 	extern	boolean	startedDrawing;
+	extern	boolean	ignoreBGChanges;
 
 	extern	struct	device	devices[];
 	extern	int	currdev;
 
 	if (! Color_ava) return(0);
+
+	/*
+	 * don't change the background if ignoreBGChanges is set
+	 */
+	if (ignoreBGChanges) return(0);
 
 	if (startedDrawing) {
 		ESprintf(E_UNKNOWN, "Background color changes ignored after drawing has begun");
@@ -141,8 +147,7 @@ void	free_colors()
 
 	if (! free_list) return;	/* malloc failed	*/
 
-
-	for (i = 0; i < MAX_COLOR_SIZE; i++) {
+	for (i=0; i < MAX_COLOR_SIZE; i++) {
 		if (Colordef[i]) {
 			Colordef[i] = FALSE;
 			free_list[count] = Colortab[i];
@@ -319,5 +324,3 @@ int	X11_UpdateColorTable_()
 	}	/* for	*/
 	return (status);
 }
-
-

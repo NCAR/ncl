@@ -1,5 +1,5 @@
 /*
- *	$Id: ctrans.c,v 1.29 1993-01-07 00:32:48 clyne Exp $
+ *	$Id: ctrans.c,v 1.30 1993-01-12 20:10:49 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -66,7 +66,6 @@ extern	struct	device	devices[];
 
 char	**Argv;
 int	Argc;
-boolean	stand_Alone;	/* if false then the driver provides a window	*/
 boolean	Batch;		/* if true don't prompt for user interaction	*/ 
 /*
  * this flag is a hack to prevent bogus CGM's from attempting to change 
@@ -402,13 +401,11 @@ DoEscapes(cgmc)
  *	**argv		: the arguments to the main program
  *	*gcap		: path to the graphcap
  *	*fcap		: path to the fontcap, if NULL default font used
- *	stand_alone	: False => ctrans under control of interactive interface
  *	batch		: True => don't prompt for user interaction
  *
  * on exit
  *	*argc		: contains argc
  *	**argv		: points to argv
- *	stand_Alone	: stand_alone
  *	Batch		: batch
  *	
  *	return		== [FATAL=-2, WARN=-1, OK=1]
@@ -421,19 +418,17 @@ DoEscapes(cgmc)
  *	file.
  */
 /*ARGSUSED*/
-CtransRC	init_ctrans(argc, argv, gcap, fcap, stand_alone, batch)
+CtransRC	init_ctrans(argc, argv, gcap, fcap, batch)
 	int	*argc;
 	char	**argv;
 
 	const char	*gcap,
 			*fcap;
-	boolean	stand_alone;
 	boolean	batch;
 
 {
 	char	*minw;
  
-	stand_Alone = stand_alone;
 	Batch = batch;
 
 	if (ctransIsInit) {
