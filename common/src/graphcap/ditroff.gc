@@ -1,0 +1,182 @@
+/*
+/*	Graphcap for device independent troff (ditroff) output
+/*
+/*	Written by Brent Browning
+/*
+
+DEVICE_BATCH
+TRUE
+
+DEVICE_COORD_LOWER_LEFT_X
+0
+DEVICE_COORD_LOWER_LEFT_Y
+0
+
+DEVICE_COORD_UPPER_RIGHT_X
+2550
+DEVICE_COORD_UPPER_RIGHT_Y
+2550
+
+DEVICE_COORD_ENCODING
+/* 0 binary, 1 ascii decimal, 2 ascii hex, 3 ascii octal, 4 ascii tek
+1
+
+DEVICE_COORD_FORMAT
+/* bit_start   bit_count data_type data_value
+        0       16        1        15
+        0        8       -1        32
+        0       16        2        15
+        0        8       -1        10
+
+DEVICE_VECTOR_COUNT_ENCODING
+/* 0 binary, 1 ascii decimal, 2 ascii hex, 3 ascii octal, 4 ascii tek
+1
+DEVICE_VECTOR_COUNT_FORMAT
+/* bit_start  bit_count  data_type  data_value
+        0       16        1        15
+        0        8       -1        10
+
+LINE_DRAW_POLY_FLAG
+FALSE
+
+LINE_MOVE_INSTRUCTION_START
+M SPC 
+
+LINE_DRAW_INSTRUCTION_START
+D SPC 
+
+LINE_WIDTH_INSTRUCTION_START
+W SPC 
+
+LINE_WIDTH_ENCODING
+/* 0 binary, 1 ascii decimal, 2 ascii hex, 3 ascii octal, 4 ascii tek
+1
+
+LINE_WIDTH_FORMAT
+/* bit_start  bit_count  data_type  data_value
+       0       16        1        15
+       0        8       -1        10
+
+LINE_WIDTH_RANGE
+/* two values giving low and high DC width values
+0 14
+
+LINE_WIDTH_SCALE
+0.2
+
+POLYGON_INSTRUCTION_START
+P SPC VC 
+
+POLYGON_INSTRUCTION_TERMINATOR
+F LF
+
+/*
+/* Not really, but has to be defined to get indeces out.  The
+/* index is then used to designate a pattern (black or white)
+/* to fill polygons with.
+/*
+DEVICE_COLOR_AVAILABLE
+TRUE
+
+DEVICE_COLOR_INDEX_ENCODING
+/* 0 binary, 1 ascii decimal, 2 ascii hex, 3 ascii octal, 4 ascii tek
+1
+
+DEVICE_COLOR_INDEX_FORMAT
+/* bit_start  bit_count  data_type  data_value
+       0       16        1        15
+       0        8       -1        10
+
+DEVICE_MAP_INDEX_RANGE_DEFINED
+2
+
+DEVICE_MAP_AVAILABLE
+TRUE
+
+DEVICE_MAP_INDIVIDUAL
+TRUE
+
+DEVICE_MAP_INDEX_RANGE_MAX
+2
+
+DEVICE_MAP_INSTRUCTION_START
+I SPC 
+
+DEVICE_MAP_INTENSITY_ENCODING
+/* 0 binary, 1 ascii decimal, 2 ascii hex, 3 ascii octal, 4 ascii tek
+1
+
+DEVICE_MAP_INTENSITY_FORMAT
+/* bit_start  bit_count  data_type  data_value
+       0       16        1        15
+       0        8       -1        10
+
+DEVICE_MAP_INIT
+0
+1
+
+DEVICE_MAP_MODEL
+/* mono 0  rgb 1  bgr 2  hls 3
+0
+
+LINE_COLOR_INSTRUCTION_START
+C SPC 
+
+MARKER_COLOR_INSTRUCTION_START
+C SPC 
+
+POLYGON_COLOR_INSTRUCTION_START
+C SPC 
+
+/*
+/* If set to TRUE the translator will attempt to send filled polygons
+/* to us.  Currently not working.  Sends us only half? of the
+/* polygons to fill in??
+/*
+RASTER_SIMULATE
+TRUE
+
+/*
+/*	Dunno if these are really needed, but will include them anyway
+/*
+/* these bundles are defined for the current NCAR metafile translator
+/* they may be redifined but not all of them have any effect as of yet
+BUNDLE_LINE_INDEX
+1 2 3 4 5
+BUNDLE_LINE_TYPE
+1 2 3 4 5
+BUNDLE_LINE_WIDTH
+1.0 1.0 1.0 1.0 1.0
+BUNDLE_LINE_COLOR
+1 2 3 4 5
+
+BUNDLE_MARKER_INDEX
+1 2 3 4 5
+BUNDLE_MARKER_TYPE
+1 2 3 4 5
+BUNDLE_MARKER_SIZE
+1.0 1.0 1.0 1.0 1.0
+BUNDLE_MARKER_COLOR
+1 2 3 4 5
+
+BUNDLE_POLYGON_INDEX
+1 2 3 4 5
+BUNDLE_POLYGON_INTERIOR
+0 0 0 0 0
+BUNDLE_POLYGON_STYLE
+0 0 0 0 0
+BUNDLE_POLYGON_COLOR
+1 2 3 4 5
+
+BUNDLE_TEXT_INDEX
+1 2 3 4 5
+BUNDLE_TEXT_FONT
+1 1 1 1 1
+BUNDLE_TEXT_PRECISION
+1 1 1 1 1
+BUNDLE_TEXT_CEXPN
+1.0 0.60 0.80 1.20 1.40
+BUNDLE_TEXT_CSPACE
+0.0 0.0 0.0 0.0 0.0
+BUNDLE_TEXT_COLOR
+1 2 3 4 5
