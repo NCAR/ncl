@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.34 1995-02-27 21:54:18 ethan Exp $
+ *      $Id: Machine.c,v 1.35 1995-03-02 01:22:52 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1269,7 +1269,7 @@ extern void _NclAddObjToParamList
 			}
 		}
 		tmp_fp->parameter_map.u.the_list->the_elements[arg_num].is_modified = 0;
-	} else if(obj->obj.obj_type_mask & NCL_VAL_TYPE_MASK) {
+	} else if(obj->obj.obj_type_mask & NCL_MD_MASK) {
 		tmp_fp->parameter_map.u.the_list->the_elements[arg_num].p_type = VALUE_P;
 		tmp_fp->parameter_map.u.the_list->the_elements[arg_num].var_sym = NULL;
 		tmp_fp->parameter_map.u.the_list->the_elements[arg_num].var_ptr = NULL;
