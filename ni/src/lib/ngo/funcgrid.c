@@ -1,5 +1,5 @@
 /*
- *      $Id: funcgrid.c,v 1.1 1999-12-07 19:08:40 dbrown Exp $
+ *      $Id: funcgrid.c,v 1.2 1999-12-11 01:02:34 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -451,12 +451,15 @@ static void PopupFuncTool
 	NgGO		func_go;
 	XtPointer	rowptr;
 	NgDataItem	ditem;
+	XtPointer	userdata;
+
 	rowptr =  XmLGridGetRow(fgp->public.grid,XmCONTENT,row);
 
 	XtVaGetValues(fgp->public.grid,
 		      XmNrowPtr,rowptr,
-                      XmNrowUserData,&fgp->data_ix,
+                      XmNrowUserData,&userdata,
                       NULL);
+	fgp->data_ix = (int) userdata;
 	ditem = fgp->data_profile->ditems[fgp->data_ix];
 	if (! ditem)
 		return;

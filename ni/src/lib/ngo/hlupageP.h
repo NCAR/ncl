@@ -1,5 +1,5 @@
 /*
- *      $Id: hlupageP.h,v 1.12 1999-07-30 03:20:54 dbrown Exp $
+ *      $Id: hlupageP.h,v 1.13 1999-12-11 01:02:35 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -96,6 +96,7 @@ typedef struct _brHluPageRec
 	brSetValCBInfo	setval_info;
 	XmLArray	datalinks;
 	NhlBoolean	preview_destroy; 
+	NhlBoolean	data_source_grid_managed;
 } brHluPageRec;
 
 extern brPageData *

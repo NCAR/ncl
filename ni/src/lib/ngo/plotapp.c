@@ -1,5 +1,5 @@
 /*
- *      $Id: plotapp.c,v 1.13 1999-12-07 19:08:45 dbrown Exp $
+ *      $Id: plotapp.c,v 1.14 1999-12-11 01:02:36 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2914,13 +2914,14 @@ static NhlBoolean MatchDimensions
 			patterns[ix] = datares->value;
 		}
 	}
-	for (i = 0; i < appdata->ndims; i++) {
+	for (i = 0; i < MIN(vinfo->n_dims,9); i++) {
 		if (patterns[i]) {
 			for (j = vinfo->n_dims - 1; j >=0; j--) {
 				if (! matched[j] && 
 				    vinfo->dim_info[j].dim_quark > 
 				    NrmNULLQUARK) {
-					if (!HasMinElementCount(vdata,j))
+					if (i < appdata->ndims &&
+					    !HasMinElementCount(vdata,j))
 						continue;
 					if (PerlMatch
 					    (patterns[i],NrmQuarkToString
@@ -2935,13 +2936,14 @@ static NhlBoolean MatchDimensions
 			}
 		}
 	}
-	for (i = 0; i < appdata->ndims; i++) {
+	for (i = 0; i < MIN(vinfo->n_dims,9); i++) {
 		if (! dt->qdims[i] > NrmNULLQUARK) {
 			if (patterns[i])
 				return False;
 			for (j = vinfo->n_dims - 1; j >=0; j--) {
 				if (! matched[j]) {
-					if (!HasMinElementCount(vdata,j))
+					if (i < appdata->ndims &&
+					    !HasMinElementCount(vdata,j))
 						continue;
 					dt->dim_ix[i] = j;
 					dt->qdims[i] = 
@@ -3447,7 +3449,8 @@ static NhlBoolean ReplaceDataSymRef
 			status = True;
 		}
 		else {
-			tbuf[0] = '\0';
+			sprintf(tbuf,"\"\"");
+			status = True;
 		}
 		break;
 	case _NgREF_REGULAR:

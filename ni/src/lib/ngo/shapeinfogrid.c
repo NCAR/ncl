@@ -1,5 +1,5 @@
 /*
- *      $Id: shapeinfogrid.c,v 1.18 1999-11-19 02:10:11 dbrown Exp $
+ *      $Id: shapeinfogrid.c,v 1.19 1999-12-11 01:02:37 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1076,7 +1076,7 @@ NewCoordValue
         static int last_column = -1;
         static NclExtValueRec *val = NULL;
 
-        if (sip != last_sip || column != last_column) {
+        if (! val || sip != last_sip || column != last_column) {
                 last_sip = sip;
                 last_column = column;
                 if (val) {
@@ -1086,9 +1086,11 @@ NewCoordValue
                 }
                 val = ReadCoord(sirp->vinfo,
                                 sirp->qfileref,column,NULL,NULL,NULL);
-                if (! val)
-                        return False;
         }
+	if (! val) {
+		NHLPERROR((NhlFATAL,ENOMEM,NULL));
+		return NULL;
+	}
         index = NewIndexValue(sip,how,row,column);
         sval = NgTypedValueToString(val,index,True,&slen);
 

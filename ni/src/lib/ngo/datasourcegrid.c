@@ -1,5 +1,5 @@
 /*
- *      $Id: datasourcegrid.c,v 1.11 1999-12-07 19:08:39 dbrown Exp $
+ *      $Id: datasourcegrid.c,v 1.12 1999-12-11 01:02:34 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -100,7 +100,7 @@ ColumnWidths
                 if (width + twidth > Max_Width)
                         width = Max_Width - twidth;
 		if (i == 1) 
-			width = MAX(width,fwidth/CWidth - twidth - CWidth);
+			width = MAX(width,fwidth/CWidth - twidth - 4*CWidth);
                 twidth += width;
                 sprintf(sizestr,"%dc ",width);
 		strcat(Buffer,sizestr);
@@ -1294,6 +1294,7 @@ NhlErrorTypes NgUpdateDataSourceGrid
 		      XmNrowType,XmHEADING,
 		      XmNrow,0,
 		      XmNcolumn,0,
+		      XmNcellMarginLeft,CWidth,
 		      XmNcellAlignment, XmALIGNMENT_RIGHT,
 		      XmNcellMarginRight,CWidth,
 		      NULL);
@@ -1301,6 +1302,7 @@ NhlErrorTypes NgUpdateDataSourceGrid
 		      XmNrowType,XmHEADING,
 		      XmNrow,0,
 		      XmNcolumn,1,
+		      XmNcellMarginRight,CWidth,
 		      XmNcellAlignment, XmALIGNMENT_LEFT,
 		      XmNcellMarginLeft,CWidth,
 		      NULL);

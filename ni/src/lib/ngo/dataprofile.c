@@ -1,5 +1,5 @@
 /*
- *      $Id: dataprofile.c,v 1.11 1999-12-07 19:08:37 dbrown Exp $
+ *      $Id: dataprofile.c,v 1.12 1999-12-11 01:02:33 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -116,10 +116,12 @@ static NhlBoolean ScalarDataDefined(
 
 	switch (ref_ditem->vdata->set_state) {
 	case _NgBOGUS_EXPRESSION:
+	case _NgUSER_DISABLED:
 		return False;
 	case _NgUNKNOWN_DATA:
 		return True;
 	case _NgEXPRESSION:
+	case _NgUSER_EXPRESSION:
 		if (ref_ditem->vdata->expr_val)
 			return True;
 		break;
@@ -149,10 +151,12 @@ static NhlBoolean VectorDataDefined(
 	for (i = 0; i < NhlNumber(ref_ditems); i++) {
 		switch (ref_ditems[i]->vdata->set_state) {
 		case _NgBOGUS_EXPRESSION:
+		case _NgUSER_DISABLED:
 			return False;
 		case _NgUNKNOWN_DATA:
 			break;
 		case _NgEXPRESSION:
+		case _NgUSER_EXPRESSION:
 			if (! ref_ditems[i]->vdata->expr_val)
 				return False;
 			break;
@@ -183,10 +187,12 @@ static NhlBoolean CoordArrayDataDefined(
 	for (i = 0; i < NhlNumber(ref_ditems); i++) {
 		switch (ref_ditems[i]->vdata->set_state) {
 		case _NgBOGUS_EXPRESSION:
+		case _NgUSER_DISABLED:
 			return False;
 		case _NgUNKNOWN_DATA:
 			return True;
 		case _NgEXPRESSION:
+		case _NgUSER_EXPRESSION:
 			if (ref_ditems[i]->vdata->expr_val)
 				return True;
 			break;
@@ -335,7 +341,8 @@ static NhlBoolean GetFillValue
 
 	vdata = ditem->ref_ditem->vdata;
 	qfile = vdata->qfile;
-	if (vdata->set_state == _NgEXPRESSION)
+	if (vdata->set_state == _NgEXPRESSION ||
+	    vdata->set_state == _NgUSER_EXPRESSION)
 		qvar = vdata->qexpr_var;
 	else
 		qvar = vdata->qvar;
@@ -817,8 +824,10 @@ NhlBoolean NgCopyVarData
 		
 	}
 
+#if 0
 	if (from_var_data->set_state == _NgEXPRESSION ||
 	    from_var_data->set_state == _NgBOGUS_EXPRESSION) {
+#endif
 		if (from_var_data->expr_val) {
 			if (to_var_data->expr_val) {
 				if (strcmp(to_var_data->expr_val,
@@ -838,7 +847,9 @@ NhlBoolean NgCopyVarData
 			NhlFree(to_var_data->expr_val);
 			to_var_data->expr_val = NULL;
 		}
+#if 0
 	}
+#endif
 
 	if (from_var_data->ndims <= 0) {
 		return True;
@@ -925,6 +936,7 @@ extern NhlBoolean NgSetUnknownDataItem
 				      in a setvalues call */
 		vdata->qfile = vdata->qvar = NrmNULLQUARK;
 		return True;
+		/* is this okay ????? */
 	}
 
 	if (gen->num_dimensions > vdata->ndims) {
@@ -1170,8 +1182,8 @@ NhlBoolean NgSetExpressionVarData
 }
 
 /*
- * if the set_state is _NgEXPRESSION or _NgUNKNOWN_DATA then NgSetVarData
- * should not be used.
+ * if the set_state is any kind of expression or _NgUNKNOWN_DATA then 
+ * NgSetVarData should not be used.
  */
 
 NhlBoolean NgSetVarData
@@ -1214,6 +1226,8 @@ NhlBoolean NgSetVarData
 	case _NgEXPRESSION:
 	case _NgUNKNOWN_DATA:
 	case _NgBOGUS_EXPRESSION:
+	case _NgUSER_EXPRESSION:
+	case _NgUSER_DISABLED:
 		NHLPERROR((NhlFATAL,NhlEUNKNOWN,
 			   "%s: invalid set_state parameter","NgSetVarData"));
 		return False;
