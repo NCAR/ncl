@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ymake,v 1.20 1994-09-13 14:51:53 haley Exp $
+#	$Id: ymake,v 1.21 1994-09-28 21:45:11 boote Exp $
 #
 ######################################################################
 #
@@ -161,42 +161,42 @@ if ($useinstalled != 0) then
 		echo "$0 : Unable to find NCARG_ROOT dir" > /dev/tty
 		exit 1
 	endif
-	set defines=($defines -D_InstRoot\=\"$root_dir\" -D_InstConfig\=\"$config_dir\")
+	set defines=($defines -D_InstRoot\=$root_dir -D_InstConfig\=$config_dir)
 
 	set tmp_dir = `ncargpath tmp`
 	if ($status != 0) then
 		echo "$0 : Unable to find TMP dir" > /dev/tty
 		exit 1
 	endif
-	set defines = ($defines -D_InstTmp\=\"$tmp_dir\")
+	set defines = ($defines -D_InstTmp\=$tmp_dir)
 
 	set lib_dir = `ncargpath lib`
 	if ($status != 0) then
 		echo "$0 : Unable to find NCARG_LIB dir" > /dev/tty
 		exit 1
 	endif
-	set defines = ($defines -D_InstLib\=\"$lib_dir\")
+	set defines = ($defines -D_InstLib\=$lib_dir)
 
 	set bin_dir = `ncargpath bin`
 	if ($status != 0) then
 		echo "$0 : Unable to find NCARG_BIN dir" > /dev/tty
 		exit 1
 	endif
-	set defines = ($defines -D_InstBin\=\"$bin_dir\")
+	set defines = ($defines -D_InstBin\=$bin_dir)
 
 	set inc_dir = `ncargpath include`
 	if ($status != 0) then
 		echo "$0 : Unable to find NCARG_INCLUDE dir" > /dev/tty
 		exit 1
 	endif
-	set defines = ($defines -D_InstInc\=\"$inc_dir\")
+	set defines = ($defines -D_InstInc\=$inc_dir)
 
 	set man_dir = `ncargpath man`
 	if ($status != 0) then
 		echo "$0 : Unable to find NCARG_MAN dir" > /dev/tty
 		exit 1
 	endif
-	set defines = ($defines -D_InstMan\=\"$man_dir\")
+	set defines = ($defines -D_InstMan\=$man_dir)
 endif
 
 if ($?YMAKE_DEV_FILE) then

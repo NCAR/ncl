@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: Configure,v 1.8 1994-08-08 19:12:44 boote Exp $
+#      $Id: Configure,v 1.9 1994-09-28 21:45:04 boote Exp $
 #
 #########################################################################
 #									#
@@ -729,27 +729,27 @@ echo "#ifdef SecondSite" >> Site.local
 echo "" >> Site.local
 
 if ($?commonroot) then
-	echo '#define YmakeRoot "'$commonroot'"' >> Site.local
+	echo "#define YmakeRoot $commonroot" >> Site.local
 else
-	echo '#define BinRoot "'$bindir'"' >> Site.local
-	echo '#define IncRoot "'$incdir'"' >> Site.local
-	echo '#define LibRoot "'$libdir'"' >> Site.local
+	echo "#define BinRoot $bindir" >> Site.local
+	echo "#define IncRoot $incdir" >> Site.local
+	echo "#define LibRoot $libdir" >> Site.local
 endif
 
 if ($?newman) then
-	echo '#define ManRoot "'$mandir'"' >> Site.local
+	echo "#define ManRoot $mandir" >> Site.local
 endif
 if ($?newtmp) then
-	echo '#define TmpRoot "'$tmpdir'"' >> Site.local
+	echo "#define TmpRoot $tmpdir" >> Site.local
 endif
 
 echo "" >> Site.local
 
 if ($?nloclib) then
-	echo '#define LibSearch "'$loclib'"' >> Site.local
+	echo "#define LibSearch $loclib" >> Site.local
 endif
 if ($?nlocinc) then
-	echo '#define IncSearch "'$locinc'"' >> Site.local
+	echo "#define IncSearch $locinc" >> Site.local
 endif
 
 echo "" >> Site.local

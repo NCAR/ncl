@@ -1,5 +1,5 @@
 /*
- *      $Id: Template,v 1.25 1994-08-10 21:22:46 boote Exp $
+ *      $Id: Template,v 1.26 1994-09-28 21:45:11 boote Exp $
  */
 /************************************************************************
 *									*
@@ -148,13 +148,13 @@ NGCOMM########################################################################
 #define	YmakeRoot	_InstRoot
 #define	_IgnoreYmakeRoot
 #else
-#define	YmakeRoot	"/usr/local/ncarg"
+#define	YmakeRoot	/usr/local/ncarg
 #endif	/* UseInstalled	*/
 #endif	/* YmakeRoot */
 
 #ifndef	BinRoot
 #ifndef	_IgnoreYmakeRoot
-#define	BinRoot	YmakeRoot"/bin"
+#define	BinRoot	YmakeRoot/bin
 #else
 #define	BinRoot	_InstBin
 #endif	/* _IgnoreYmakeRoot */
@@ -162,7 +162,7 @@ NGCOMM########################################################################
 
 #ifndef	LibRoot
 #ifndef	_IgnoreYmakeRoot
-#define LibRoot YmakeRoot"/lib"
+#define LibRoot YmakeRoot/lib
 #else
 #define	LibRoot	_InstLib
 #endif	/* _IgnoreYmakeRoot */
@@ -170,7 +170,7 @@ NGCOMM########################################################################
 
 #ifndef	IncRoot
 #ifndef	_IgnoreYmakeRoot
-#define	IncRoot	YmakeRoot"/include"
+#define	IncRoot	YmakeRoot/include
 #else
 #define	IncRoot	_InstInc
 #endif	/* _IgnoreYmakeRoot */
@@ -178,7 +178,7 @@ NGCOMM########################################################################
 
 #ifndef	ManRoot
 #ifndef	_IgnoreYmakeRoot
-#define	ManRoot	YmakeRoot"/man"
+#define	ManRoot	YmakeRoot/man
 #else
 #define	ManRoot	_InstMan
 #endif	/* _IgnoreYmakeRoot */
@@ -188,7 +188,7 @@ NGCOMM########################################################################
 #ifdef	UseInstalled
 #define	TmpRoot	_InstTmp
 #else
-#define	TmpRoot	"/tmp"
+#define	TmpRoot	/tmp
 #endif
 #endif	/* TmpRoot */
 
@@ -204,35 +204,35 @@ NGCOMM########################################################################
 
 #ifndef	BinPath
 #ifdef	_UseRootPath
-#define	BinPath		RootPath"/bin"
+#define	BinPath	RootPath/bin
 #else
-#define	BinPath		BinRoot
+#define	BinPath	BinRoot
 #endif
 #endif
 
 #ifndef	LibPath
 #ifdef	_UseRootPath
-#define	LibPath		RootPath"/lib"
+#define	LibPath	RootPath/lib
 #else
 #define	_LibRootEqualPath
-#define	LibPath		LibRoot
+#define	LibPath	LibRoot
 #endif
 #endif
 
 #ifndef	IncPath
 #ifdef	_UseRootPath
-#define	IncPath		RootPath"/include"
+#define	IncPath	RootPath/include
 #else
 #define	_IncRootEqualPath
-#define	IncPath		IncRoot
+#define	IncPath	IncRoot
 #endif
 #endif
 
 #ifndef	ManPath
 #ifdef	_UseRootPath
-#define	ManPath		RootPath"/man"
+#define	ManPath	RootPath/man
 #else
-#define	ManPath		ManRoot
+#define	ManPath	ManRoot
 #endif
 #endif
 
