@@ -1,5 +1,5 @@
 /*
- *	$Id: ictrans_wks.c.sed,v 1.13 1994-02-18 22:09:40 haley Exp $
+ *	$Id: ictrans_wks.c.sed,v 1.14 1994-03-09 19:26:09 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -140,7 +140,7 @@ opnwks_(unit, fname, status)
 		"Error in opnwks_(): Max workstations (%d) exceeded\n"
 		,MAX_UNITS);
 		*status = 304;
-		return;
+		return(0);
 	}
 
 	if (mftab[*unit].fd != MF_CLOSED)
@@ -148,7 +148,7 @@ opnwks_(unit, fname, status)
 		(void) fprintf(stderr, 
 		"Error in opnwks_(): Attempt to reopen unit %d\n", *unit);
 		*status = 304;
-		return;
+		return(0);
 	}
 
 	/* Find out what output mechanism to use */
@@ -209,7 +209,7 @@ opnwks_(unit, fname, status)
 			(void) close(0); (void) dup(pipes[0]);
 			(void) execlp(gks_translator, gks_translator, "-", (char *) 0);
 			*status = 304;
-			return;
+			return(0);
 		}
 		else
 		{
@@ -231,7 +231,7 @@ opnwks_(unit, fname, status)
 				"Error in opngks_(): Could not open <%s>\n", 
 				gks_output);
 			*status = 304;
-			return;
+			return(0);
 		}
 		}
 		else
@@ -242,7 +242,7 @@ opnwks_(unit, fname, status)
 				"Error in opngks_(): Could not open <%s>\n", 
 				gks_output);
 			*status = 304;
-			return;
+			return(0);
 		}
 		}
 	}
@@ -253,7 +253,7 @@ opnwks_(unit, fname, status)
 				"Error in opngks_(): Could not open <%s>\n", 
 				gks_output);
 			*status = 304;
-			return;
+			return(0);
 		}
 		
 
@@ -281,7 +281,7 @@ clswks_(unit, status)
 	{
 		(void) fprintf(stderr, "Invalid close on unit %d\n", *unit);
 		*status = 304;
-		return;
+		return(0);
 	}
 
 	/*
@@ -295,7 +295,7 @@ clswks_(unit, status)
 			(void) fprintf(stderr,
 				"Translator failure on unit %d\n",*unit);
 			*status = 304;
-			return;
+			return(0);
 		}
 		
 
@@ -306,7 +306,7 @@ clswks_(unit, status)
 			(void) fprintf(stderr,
 				"Translator failure on unit %d\n",*unit);
 			*status = 304;
-			return;
+			return(0);
 		}
 		
 	} 
@@ -339,7 +339,7 @@ wrtwks_(unit, buffer, length, status)
 	{
 		(void) fprintf(stderr, "Invalid unit (%d)\n", *unit);
 		*status = 304;
-		return;
+		return(0);
 	}
 
 	if ( (*length * sizeof(long)) != RECORDSIZE)
@@ -348,7 +348,7 @@ wrtwks_(unit, buffer, length, status)
 			"Error in wrtwks_() : Invalid length (%d)\n",
 			(*length * 4));
 		*status = 304;
-		return;
+		return(0);
 	}
 
 #if defined(ByteSwapped)
@@ -372,7 +372,7 @@ wrtwks_(unit, buffer, length, status)
 	{
 		(void)fprintf(stderr,"Error in wrtwks_() : Writing metafile\n");
 		*status = 304;
-		return;
+		return(0);
 	}
 }
 
@@ -395,7 +395,7 @@ rdwks_(unit, buffer, length, status)
 		(void) fprintf(stderr, 
 		"Error in rdwks_() : Cannot read from non-file output type\n");
 		*status = 302;
-		return;
+		return(0);
 	}
 
 	if ( (*length * sizeof(long)) != RECORDSIZE)
@@ -404,7 +404,7 @@ rdwks_(unit, buffer, length, status)
 			"Error in rdwks_() : Invalid length (%d)\n",
 			(*length * 4));
 		*status = 302;
-		return;
+		return(0);
 	}
 
 	if (*unit >= MAX_UNITS || mftab[*unit].fd == MF_CLOSED)
@@ -412,7 +412,7 @@ rdwks_(unit, buffer, length, status)
 		(void) fprintf(stderr, 
 		"Error in rdwks_() : Invalid unit (%d)\n", *unit);
 		*status = 302;
-		return;
+		return(0);
 	}
 
 #if defined(ByteSwapped)
@@ -438,7 +438,7 @@ rdwks_(unit, buffer, length, status)
 	else {
 		(void)fprintf(stderr, "Error in rdwks_() : Reading metafile\n");
 		*status = 302;
-		return;
+		return(0);
 	}
 }
 
@@ -455,7 +455,7 @@ begwks_(unit, status)
 		(void) fprintf(stderr, 
 		"Error in begwks_() : Cannot seek on non-file output type\n");
 		*status = 304;
-		return;
+		return(0);
 	}
 
 	if (*unit >= MAX_UNITS || mftab[*unit].fd == 0)
@@ -463,7 +463,7 @@ begwks_(unit, status)
 		(void) fprintf(stderr, 
 		"Error in begwks_() : Invalid unit (%d)\n", *unit);
 		*status = 304;
-		return;
+		return(0);
 	}
 
 	if (mftab[*unit].type == MEM_FILE_OUTPUT) {
@@ -472,7 +472,7 @@ begwks_(unit, status)
 			(void) fprintf(stderr, 
 				"Error in begwks_() : Seek failed\n");
 			*status = 304;
-			return;
+			return(0);
 		}
 	}
 	else {
@@ -480,7 +480,7 @@ begwks_(unit, status)
 			(void) fprintf(stderr, 
 				"Error in begwks_() : Seek failed\n");
 			*status = 304;
-			return;
+			return(0);
 		}
 	}
 }
@@ -498,7 +498,7 @@ lstwks_(unit, status)
 		(void) fprintf(stderr, 
 		"Error in lstwks_() : Cannot seek on non-file output type\n");
 		*status = 304;
-		return;
+		return(0);
 	}
 
 	if (*unit >= MAX_UNITS || mftab[*unit].fd == 0)
@@ -506,7 +506,7 @@ lstwks_(unit, status)
 		(void) fprintf(stderr, 
 		"Error in lstwks_() : Invalid unit (%d)\n", *unit);
 		*status = 304;
-		return;
+		return(0);
 	}
 
 	if (mftab[*unit].type == MEM_FILE_OUTPUT) {
@@ -515,7 +515,7 @@ lstwks_(unit, status)
 			(void) fprintf(stderr, 
 				"Error in lstwks_() : Seek failed\n");
 			*status = 304;
-			return;
+			return(0);
 		}
 	} 
 	else {
@@ -523,7 +523,7 @@ lstwks_(unit, status)
 			(void) fprintf(stderr, 
 				"Error in lstwks_() : Seek failed\n");
 			*status = 304;
-			return;
+			return(0);
 		}
 	}
 }

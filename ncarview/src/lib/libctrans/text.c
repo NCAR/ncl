@@ -1,5 +1,5 @@
 /*
- *	$Id: text.c,v 1.27 1994-03-07 19:52:15 clyne Exp $
+ *	$Id: text.c,v 1.28 1994-03-09 19:26:01 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -22,6 +22,7 @@
 #include "text.h"
 #include "readfont.h"
 #include "default.h"
+#include "fontlist.h"
 
 
 /* 	text.c: 

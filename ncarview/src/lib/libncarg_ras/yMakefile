@@ -1,4 +1,4 @@
-#	$Id: yMakefile,v 1.42 1994-03-07 20:24:48 haley Exp $
+#	$Id: yMakefile,v 1.43 1994-03-09 19:26:31 clyne Exp $
 #
 #	Makefile for libraster - libraries for dealing with
 #	a variety of raster image formats.
@@ -96,10 +96,8 @@ BINARY_DEFS =	-DBuildRasterBinary
 
 EXTRA_DEFINES =	$(HDF_DEFS) $(HPPCL_DEFS) $(NRIF_DEFS) $(SUN_DEFS) \
 		$(XWD_DEFS) $(PARALLAX_DEFS) $(AVS_DEFS) $(SGI_DEFS) \
-		$(ABEKAS_DEFS) $(NETCDF_DEFS) $(BINARY_DEFS)
-
-EXTRA_CDEFINES   = $(EXTRA_DEFINES) -DNGTMPDIR='"$(NGTMPDIR)"'
-
+		$(ABEKAS_DEFS) $(NETCDF_DEFS) $(BINARY_DEFS) \
+		-DNGTMPDIR='"$(NGTMPDIR)"'
 
 DEVICE_OBJS =	$(HDF_OBJS) $(HPPCL_OBJS) $(NRIF_OBJS) $(SUN_OBJS) \
 		$(XWD_OBJS) $(PARALLAX_OBJS) $(AVS_OBJS) $(SGI_OBJS) \

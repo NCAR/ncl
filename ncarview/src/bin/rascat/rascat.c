@@ -1,5 +1,5 @@
 /*
- *      $Id: rascat.c,v 1.17 1993-02-10 23:40:08 don Exp $
+ *      $Id: rascat.c,v 1.18 1994-03-09 19:25:44 clyne Exp $
  */
 /*
  *	File:		rascat.c
@@ -72,7 +72,10 @@
 #include <ncarg/ncarg_ras.h>
 
 
-int	cvt_to_rsfunc();
+static int	cvt_to_rsfunc(
+	const char 	*from,
+	Voidptr		to
+);
 
 typedef struct	Subregion_ {
 	int	nx;
@@ -526,8 +529,8 @@ main(argc, argv)
 }
 
 static	int	cvt_to_rsfunc(from, to)
-	char	*from;
-	Voidptr to;
+	const char	*from;
+	Voidptr 	to;
 {
 	int	(**fptr)() = (int (**)()) to;
 

@@ -1,5 +1,5 @@
 /*
- *	$Id: commondev.c,v 1.23 1993-06-28 19:39:25 clyne Exp $
+ *	$Id: commondev.c,v 1.24 1994-03-09 19:25:52 clyne Exp $
  */
 #include <math.h>
 #include <stdio.h>
@@ -14,6 +14,7 @@
 #include "default.h"
 #include "translate.h"
 #include "ctrandef.h"
+#include "hatch.h"
 
 static	ComDev	func_tab[] = {
 	{
@@ -156,7 +157,7 @@ init_common()
  *	sim_polygon
  *	use software to simulate a filled polygon
  */
-ComSimPoly(p_list, n, skip)
+void	ComSimPoly(p_list, n, skip)
 	Ptype	*p_list;
 	int	n;
 	int	skip;

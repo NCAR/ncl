@@ -1,5 +1,5 @@
 /*
- *	$Id: fontlist.c,v 1.11 1994-03-07 19:52:13 clyne Exp $
+ *	$Id: fontlist.c,v 1.12 1994-03-09 19:25:55 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -17,6 +17,7 @@
 #include	"default.h"
 #include	"defines.h"
 #include	"ctrans.h"
+#include	"fontlist.h"
 /*	fontlist.c:
  * 
  *	Author	John Clyne	(clyne@bierstadt.UCAR.EDU)
@@ -47,7 +48,7 @@ static	int	fontindex = -1;
  *
  *		intitialize the fontlist table
  */
-InitFontList()
+void	InitFontList()
 {
 	int	i;
 

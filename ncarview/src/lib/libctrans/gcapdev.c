@@ -1,5 +1,5 @@
 /*
- *	$Id: gcapdev.c,v 1.24 1994-03-07 22:39:32 clyne Exp $
+ *	$Id: gcapdev.c,v 1.25 1994-03-09 19:25:57 clyne Exp $
  */
 #include <stdio.h>
 #include <stdlib.h>
@@ -703,9 +703,9 @@ int	gcap_update_color_table()
 
 
 	if (!COLOUR_AVAIL)
-		return;
+		return(0);
 	if (!MAP_AVAIL)
-		return;
+		return(0);
 
         /*
          * any time we change the colour table we "damage" the colour

@@ -1,5 +1,5 @@
 /*
- *	$Id: ctrans.c,v 1.35 1993-11-29 22:37:41 clyne Exp $
+ *	$Id: ctrans.c,v 1.36 1994-03-09 19:25:54 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -52,6 +52,7 @@
 #include "devices.h"
 #include "ctrandef.h"
 #include "graphcap.h"
+#include "fontlist.h"
 
 
 

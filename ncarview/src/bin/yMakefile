@@ -5,4 +5,4 @@
 #define IHaveSubdirs
 
 SUBDIRS	= ctrans ictrans filter med scripts rascat xwdtohdf nriftohdf \
-	  rasstat ncgmstat cgm_edit idt rasview rasls rasgetpal rassplit
+	  rasstat ncgmstat idt rasview rasls rasgetpal rassplit

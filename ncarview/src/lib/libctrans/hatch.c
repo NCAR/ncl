@@ -10,11 +10,10 @@
 #include <stdio.h>
 #include <math.h>
 #include "default.h"
-#include "cgmc.h"
 #include "soft_fill.h"
-#include "commondev.h"
 #include "translate.h"
 #include "ctrandef.h"
+#include "hatch.h"
 
 /*
  *	C = A x B, where A,B,C are of type Matrix2d
@@ -127,7 +126,7 @@ static	set_up_matrix(xo, yo, cos_theta, sin_theta, scale, xprime, yprime, M)
  * on exit
  *	p_list		: is undefined
  */
-ComSimHatch(p_list, n, hatch_index, hatch_spacing, dev)
+void	ComSimHatch(p_list, n, hatch_index, hatch_spacing, dev)
 	Ptype	*p_list;
 	long	n;
 	IXtype	hatch_index;
@@ -326,5 +325,3 @@ ComSimHatch(p_list, n, hatch_index, hatch_spacing, dev)
 		}
 	}
 }
-
-
