@@ -41,7 +41,7 @@ NclObj parent;
 	tmp = theobj->obj.parents;
 	theobj->obj.parents = NclMalloc((unsigned)sizeof(NclRefList));
 	theobj->obj.parents->next = tmp;
-	theobj->obj.parents->pptr = parent;
+	theobj->obj.parents->pid = parent->obj.id;
 	theobj->obj.ref_count++;
 	return(NhlNOERROR);
 }
@@ -64,7 +64,7 @@ NclObj parent;
 	} 
 
 	tmp = theobj->obj.parents;	
-	if((tmp!=NULL)&&(tmp->pptr->obj.id == parent->obj.id)) {
+	if((tmp!=NULL)&&(tmp->pid == parent->obj.id)) {
 		theobj->obj.parents = theobj->obj.parents->next;
 		NclFree(tmp);
 		tmp = theobj->obj.parents;
@@ -78,7 +78,7 @@ NclObj parent;
 		return(NhlNOERROR);
 	}
 	while(tmp->next != NULL) {
-		if(tmp->next->pptr->obj.id == parent->obj.id) {
+		if(tmp->next->pid == parent->obj.id) {
 			found = 1;
 			tmp1 = tmp->next;
 			tmp->next = tmp->next->next;
@@ -105,7 +105,7 @@ static void HLUObjDestroy
 	NclHLUObj hlu_obj = (NclHLUObj) self,ptmp;
 	NclHLUChildList *tmp1,*tmp2;
 	NclHLUExpChildList *etmp1,*etmp2;
-	NclObj tmp_obj;
+	NclObj tmp_obj,pobj;
 	NhlArgVal cbdata;
 	NhlArgVal selector;
 	NclRefList *parents,*tmpptr,*tmpptr2;
@@ -122,7 +122,7 @@ static void HLUObjDestroy
 			while(parents != NULL) {
 				tmpptr = parents;
 				while(tmpptr->next != NULL) {
-					if(tmpptr->next->pptr->obj.id == parents->pptr->obj.id) {
+					if(tmpptr->next->pid == parents->pid) {
 						tmpptr2 = tmpptr->next->next;
 						NclFree(tmpptr->next);
 						tmpptr->next = tmpptr2;
@@ -130,14 +130,15 @@ static void HLUObjDestroy
 						tmpptr = tmpptr->next;
 					}
 				}
-				if(parents->pptr->obj.obj_type_mask & Ncl_MultiDValHLUObjData) {
+				pobj = _NclGetObj(parents->pid);
+				if(pobj->obj.obj_type_mask & Ncl_MultiDValHLUObjData) {
 					cbdata.lngval = hlu_obj->obj.id;
 					selector.lngval = HLUDESTROYED;
-					_NhlCBCallCallbacks(((NclMultiDValHLUObjData)parents->pptr)->obj.cblist,selector,cbdata);
-				} else if(parents->pptr->obj.obj_type_mask & Ncl_HLUObj) {
+					_NhlCBCallCallbacks(((NclMultiDValHLUObjData)pobj)->obj.cblist,selector,cbdata);
+				} else if(pobj->obj.obj_type_mask & Ncl_HLUObj) {
 					cbdata.lngval = hlu_obj->obj.id;
 					selector.lngval = 0;
-					_NhlCBCallCallbacks(((NclHLUObj)parents->pptr)->hlu.cblist,selector,cbdata);
+					_NhlCBCallCallbacks(((NclHLUObj)pobj)->hlu.cblist,selector,cbdata);
 				}
 				tmpptr = parents;
 				parents = parents->next;

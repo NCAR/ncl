@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclApi.h,v 1.13 1996-07-25 20:28:15 ethan Exp $
+ *      $Id: NclApi.h,v 1.14 1996-08-29 23:39:10 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -156,7 +156,7 @@ typedef union _NclApiScalar {
 #define NCLAPI_char 	040
 #define NCLAPI_byte 	0100
 #define NCLAPI_string 	0200
-#define NCLAPI_numeric 	0400,
+#define NCLAPI_numeric 	0400
 #define NCLAPI_logical 	01000
 #define NCLAPI_obj 	02000
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: NclAtt.c,v 1.13 1996-07-16 20:58:14 ethan Exp $
+ *      $Id: NclAtt.c,v 1.14 1996-08-29 23:39:12 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -419,13 +419,13 @@ NclObj parent;
 	if(theattobj->obj.parents == NULL) {
 		theattobj->obj.parents = (NclRefList*)NclMalloc(sizeof(NclRefList));
 		theattobj->obj.parents->next = NULL;
-		theattobj->obj.parents->pptr = parent;
+		theattobj->obj.parents->pid = parent->obj.id;
 		theattobj->obj.ref_count = 1;
 	} else {	
 		tmp = theattobj->obj.parents;
 		theattobj->obj.parents = (NclRefList*)NclMalloc(sizeof(NclRefList));
 		theattobj->obj.parents->next = tmp;
-		theattobj->obj.parents->pptr = parent;
+		theattobj->obj.parents->pid = parent->obj.id;
 		theattobj->obj.ref_count++;
 	}
 	return(NhlNOERROR);
@@ -444,7 +444,7 @@ NclObj parent;
 	NclRefList *tmp,*tmp1;
 
 	tmp = theattobj->obj.parents;
-	if((tmp != NULL)&&(tmp->pptr == parent)){
+	if((tmp != NULL)&&(tmp->pid == parent->obj.id)){
 		theattobj->obj.parents = theattobj->obj.parents->next;
 		NclFree(tmp);
 	} else {
@@ -453,7 +453,7 @@ NclObj parent;
 			return(NhlFATAL);
 		}
 		while(tmp->next != NULL) {
-			if(tmp->next->pptr == parent) {
+			if(tmp->next->pid == parent->obj.id) {
 				tmp1 = tmp->next;
 				tmp->next = tmp->next->next;
 				NclFree(tmp1);

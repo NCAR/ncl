@@ -123,7 +123,10 @@ typedef union _NclScalar {
 }NclScalar;
 
 typedef struct _NclRefList{
+/*
         struct _NclObjRec *pptr;
+*/
+	int	pid;
         struct _NclRefList *next;
 }NclRefList;
 

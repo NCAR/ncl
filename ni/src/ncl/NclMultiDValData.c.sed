@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValData.c.sed,v 1.20 1996-07-16 20:58:34 ethan Exp $
+ *      $Id: NclMultiDValData.c.sed,v 1.21 1996-08-29 23:39:17 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1426,7 +1426,7 @@ NclObj parent;
 	tmp = theobj->obj.parents;
 	theobj->obj.parents = NclMalloc((unsigned)sizeof(NclRefList));
 	theobj->obj.parents->next = tmp;
-	theobj->obj.parents->pptr = parent;
+	theobj->obj.parents->pid= parent->obj.id;
 	theobj->obj.ref_count++;
 	return(NhlNOERROR);
 }
@@ -1442,6 +1442,7 @@ NclObj parent;
 {
 	NclRefList *tmp,*tmp1;
 	int found = 0;
+	NclObj pobj;
 
 	if(theobj->obj.parents == NULL) {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"MultiDValDelParent: Attempt to delete parent from empty list");
@@ -1449,7 +1450,7 @@ NclObj parent;
 	} 
 
 	tmp = theobj->obj.parents;	
-	while((tmp!=NULL)&&(tmp->pptr->obj.id == parent->obj.id)) {
+	while((tmp!=NULL)&&(tmp->pid == parent->obj.id)) {
 		theobj->obj.parents = theobj->obj.parents->next;
 		NclFree(tmp);
 		tmp = theobj->obj.parents;
@@ -1461,7 +1462,7 @@ NclObj parent;
 		return(NhlNOERROR);
 	}
 	while(tmp->next != NULL) {
-		if(tmp->next->pptr->obj.id == parent->obj.id) {
+		if(tmp->next->pid == parent->obj.id) {
 			found = 1;
 			tmp1 = tmp->next;
 			tmp->next = tmp->next->next;

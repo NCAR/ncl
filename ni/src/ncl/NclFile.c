@@ -487,7 +487,7 @@ struct _NclObjRec *parent;
         tmp = theobj->obj.parents;
         theobj->obj.parents = NclMalloc((unsigned)sizeof(NclRefList));
         theobj->obj.parents->next = tmp;
-        theobj->obj.parents->pptr = parent;
+        theobj->obj.parents->pid = parent->obj.id;
         theobj->obj.ref_count++;
         return(NhlNOERROR);
 
@@ -511,7 +511,7 @@ struct _NclObjRec *parent;
         }
 
         tmp = theobj->obj.parents;
-        if((tmp!=NULL)&&(tmp->pptr->obj.id == parent->obj.id)) {
+        if((tmp!=NULL)&&(tmp->pid == parent->obj.id)) {
                 theobj->obj.parents = theobj->obj.parents->next;
                 NclFree(tmp);
                 tmp = theobj->obj.parents;
@@ -523,7 +523,7 @@ struct _NclObjRec *parent;
                 return(NhlNOERROR);
         }
         while(tmp->next != NULL) {
-                if(tmp->next->pptr->obj.id == parent->obj.id) {
+                if(tmp->next->pid == parent->obj.id) {
                         found = 1;
                         tmp1 = tmp->next;
                         tmp->next = tmp->next->next;

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: TypeInitClassTemplate.c.sed,v 1.3 1995-12-19 20:42:41 boote Exp $
+ *      $Id: TypeInitClassTemplate.c.sed,v 1.4 1996-08-29 23:39:22 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -37,6 +37,7 @@ int nargs;
 	char func[] = "CvtHLUGENTYPEREPToNclData";
 	void *val;
 	NclMultiDValData tmp_md;
+	int len_dimensions = 1;
 	
 
 	if(nargs != 0) {
@@ -45,27 +46,42 @@ int nargs;
 		return(NhlFATAL);
 	}
 	gen = (NhlGenArray)from->data.ptrval;
-	if(!_NhlIsSubtypeQ(NrmStringToQuark(((NclTypeDATATYPEClass)nclTypeDATATYPEClass)->type_class.hlu_type_rep[1]),from->typeQ)) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: called with wrong input type",func);
-		to->size =0;
-		return(NhlFATAL);
-	}
-	if(gen->my_data) {
-		val = gen->data;
-		gen->my_data = False;
+	if(gen != NULL) {
+		if(!_NhlIsSubtypeQ(NrmStringToQuark(((NclTypeDATATYPEClass)nclTypeDATATYPEClass)->type_class.hlu_type_rep[1]),from->typeQ)) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: called with wrong input type",func);
+			to->size =0;
+			return(NhlFATAL);
+		}
+		if(gen->my_data) {
+			val = gen->data;
+			gen->my_data = False;
+		} else {
+			val = NclMalloc((unsigned)gen->size * gen->num_elements);
+			memcpy(val,gen->data,(unsigned)gen->size * gen->num_elements);
+		}
+		tmp_md = _NclCreateMultiDVal(
+			NULL,NULL, Ncl_MultiDValData,
+			0,val,NULL,gen->num_dimensions,
+			gen->len_dimensions,TEMPORARY,NULL,(NclTypeClass)nclTypeDATATYPEClass);
+		if(to->size < sizeof(NclMultiDValData)) {
+			return(NhlFATAL);
+		} else {
+			*((NclMultiDValData*)(to->data.ptrval)) = (void*)tmp_md;
+			return(NhlNOERROR);
+		}
 	} else {
-		val = NclMalloc((unsigned)gen->size * gen->num_elements);
-		memcpy(val,gen->data,(unsigned)gen->size * gen->num_elements);
-	}
-	tmp_md = _NclCreateMultiDVal(
-		NULL,NULL, Ncl_MultiDValData,
-		0,val,NULL,gen->num_dimensions,
-		gen->len_dimensions,TEMPORARY,NULL,(NclTypeClass)nclTypeDATATYPEClass);
-	if(to->size < sizeof(NclMultiDValData)) {
-		return(NhlFATAL);
-	} else {
-		*((NclMultiDValData*)(to->data.ptrval)) = (void*)tmp_md;
-        	return(NhlNOERROR);
+                val = NclMalloc((unsigned)nclTypeDATATYPEClassRec.type_class.size);
+                *(DATATYPE*)(val) = nclTypeDATATYPEClassRec.type_class.default_mis.DATATYPEval;
+                tmp_md = _NclCreateMultiDVal(
+                        NULL,NULL, Ncl_MultiDValData,
+                        0,val,&nclTypeDATATYPEClassRec.type_class.default_mis,1,
+                        &len_dimensions,TEMPORARY,NULL,(NclTypeClass)nclTypeDATATYPEClass);
+                if(to->size < sizeof(NclMultiDValData)) {
+                        return(NhlFATAL);
+                } else {
+                        *((NclMultiDValData*)(to->data.ptrval)) = (void*)tmp_md;
+                        return(NhlNOERROR);
+                }
 	}
 }
 /*ARGSUSED*/

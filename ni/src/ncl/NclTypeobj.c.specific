@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclTypeobj.c.specific,v 1.7 1996-05-09 23:30:37 ethan Exp $
+ *      $Id: NclTypeobj.c.specific,v 1.8 1996-08-29 23:39:20 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -76,6 +76,7 @@ int nargs;
 	int i,id;
 	NclHLUObj tmp_hlu;
 	NhlLayer tmp_layer;
+	int len_dimensions = 1;
 	
 
 	if(nargs != 0) {
@@ -84,35 +85,50 @@ int nargs;
 		return(NhlFATAL);
 	}
 	gen = (NhlGenArray)from->data.ptrval;
-	if(!_NhlIsSubtypeQ(NrmStringToQuark(NhlTIntegerGenArray),from->typeQ)) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: called with wrong input type",func);
-		to->size =0;
-		return(NhlFATAL);
-	}
-	val = NclMalloc((unsigned)sizeof(int) * gen->num_elements);
-	for(i = 0; i < gen->num_elements; i++ ){
-		id = ((int*)gen->data)[i];
-		if(id >0 ) {
-			tmp_layer = _NhlGetLayer(id);
-			tmp_hlu = _NclHLUObjCreate(NULL,NULL,Ncl_HLUObj,0,STATIC,id,-1,tmp_layer->base.layer_class);
-			if(tmp_hlu != NULL) {
-				((int*)val)[i] = tmp_hlu->obj.id;
+	if(gen != NULL) {
+		if(!_NhlIsSubtypeQ(NrmStringToQuark(NhlTIntegerGenArray),from->typeQ)) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: called with wrong input type",func);
+			to->size =0;
+			return(NhlFATAL);
+		}
+		val = NclMalloc((unsigned)sizeof(int) * gen->num_elements);
+		for(i = 0; i < gen->num_elements; i++ ){
+			id = ((int*)gen->data)[i];
+			if(id >0 ) {
+				tmp_layer = _NhlGetLayer(id);
+				tmp_hlu = _NclHLUObjCreate(NULL,NULL,Ncl_HLUObj,0,STATIC,id,-1,tmp_layer->base.layer_class);
+				if(tmp_hlu != NULL) {
+					((int*)val)[i] = tmp_hlu->obj.id;
+				} else {
+					((int*)val)[i] = ((NclTypeClass)nclTypeobjClass)->type_class.default_mis.objval;
+				}
 			} else {
 				((int*)val)[i] = ((NclTypeClass)nclTypeobjClass)->type_class.default_mis.objval;
 			}
-		} else {
-			((int*)val)[i] = ((NclTypeClass)nclTypeobjClass)->type_class.default_mis.objval;
 		}
-	}
-	tmp_md = _NclMultiDValHLUObjDataCreate(
-		NULL,NULL, Ncl_MultiDValHLUObjData,
-		0,val,NULL,gen->num_dimensions,
-		gen->len_dimensions,TEMPORARY,NULL);
-	if(to->size < sizeof(NclMultiDValData)) {
-		return(NhlFATAL);
+		tmp_md = _NclMultiDValHLUObjDataCreate(
+			NULL,NULL, Ncl_MultiDValHLUObjData,
+			0,val,NULL,gen->num_dimensions,
+			gen->len_dimensions,TEMPORARY,NULL);
+		if(to->size < sizeof(NclMultiDValData)) {
+			return(NhlFATAL);
+		} else {
+			*((NclMultiDValData*)(to->data.ptrval)) = (void*)tmp_md;
+			return(NhlNOERROR);
+		}
 	} else {
-		*((NclMultiDValData*)(to->data.ptrval)) = (void*)tmp_md;
-        	return(NhlNOERROR);
+		val = NclMalloc((unsigned)sizeof(int) );
+		*(obj*)(val) = nclTypeobjClassRec.type_class.default_mis.objval;
+		tmp_md = _NclMultiDValHLUObjDataCreate(
+			NULL,NULL, Ncl_MultiDValHLUObjData,
+			0,val,&nclTypeobjClassRec.type_class.default_mis,1,
+			&len_dimensions,TEMPORARY,NULL);
+		if(to->size < sizeof(NclMultiDValData)) {
+			return(NhlFATAL);
+		} else {
+			*((NclMultiDValData*)(to->data.ptrval)) = (void*)tmp_md;
+			return(NhlNOERROR);
+		}
 	}
 }
 /*ARGSUSED*/
