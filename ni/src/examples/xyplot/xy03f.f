@@ -1,5 +1,5 @@
 C     
-C      $Id: xy03f.f,v 1.2 1995-02-09 23:07:19 haley Exp $
+C      $Id: xy03f.f,v 1.3 1995-02-11 16:27:11 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -37,7 +37,7 @@ C
       parameter(PI100=.031415926535898)
 
       integer appid,xworkid,plotid,dataid
-      integer rlist, i, j
+      integer rlist, i
       real xdra(NPTS), ydra(NPTS), theta
 C
 C Initialize some data for the XY plot
