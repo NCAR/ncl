@@ -1,5 +1,5 @@
 /*
- *	$Id: clear_text.c,v 1.12 1993-01-09 00:35:50 clyne Exp $
+ *	$Id: clear_text.c,v 1.13 1993-01-11 16:47:58 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -29,11 +29,12 @@
 /*LINTLIBRARY*/
 
 #include <stdio.h>
-#include	<sys/types.h>
+#include <sys/types.h>
 #include <ncarg/c.h>
 #include <ncarg/cgm_tools.h>
 #include "cgmc.h"
 #include "text.h"
+#include "default.h"
 
 static	struct	{
 	boolean	no_data,	/* true if user wants element's parameters   */	

@@ -1,5 +1,5 @@
 /*
- *	$Id: text.c,v 1.20 1993-01-09 00:35:56 clyne Exp $
+ *	$Id: text.c,v 1.21 1993-01-11 16:48:01 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -79,14 +79,6 @@ static	int	Widtharray2[WDTH_SPACE];/* array containing widths of each
 static	int	leftExtent2[WDTH_SPACE];
 static	int	rightExtent2[WDTH_SPACE];
 
-
-static	CGMC	tempcgmc;		/* since text is stroked with lines
-					 * it is necessary to make sure that 
-					 * any line attributes that were set
-					 * do not effect text to be stoked
-					 * So below we save line attributes
-					 * and temporarily set them to defaults
-					 */					
 static	boolean FontIsInit = FALSE;	/* fontcap sucessfully processed? */
 
 static	float	cosBase,
@@ -238,20 +230,6 @@ int	Init_Font(fontcap)
 			}
 		}
 		else return(status);
-	}
-
-	/* create space for temp cmgc	*/
-	if ( !(tempcgmc.r = (Rtype *) malloc (sizeof(Rtype)))) {
-		ESprintf(errno, "malloc(%d)", sizeof(Rtype));
-		return(-1);
-	}
-	if ( !(tempcgmc.ix = (IXtype *) malloc (sizeof(IXtype)))) {
-		ESprintf(errno, "malloc(%d)", sizeof(IXtype));
-		return(-1);
-	}
-	if ( !(tempcgmc.ci = (CItype *) malloc (sizeof(CItype)))) {
-		ESprintf(errno, "malloc(%d)", sizeof(CItype));
-		return(-1);
 	}
 
 	FontIsInit = TRUE;
@@ -555,8 +533,7 @@ static int	str_height(strlen)
 		case PATH_RIGHT : 
 		case PATH_LEFT : 
 		case PATH_UP :  return(F_FONT_BASE(fcap_current));
-		case PATH_DOWN : 
-			return (F_FONT_TOP(fcap_current));
+		case PATH_DOWN : return (F_FONT_TOP(fcap_current));
 		}
 	case A_TOP : 
 		switch(TEXT_PATH) {
@@ -671,11 +648,128 @@ int	var_width(s,strlen)
 }
 
 
+/*
+ *	store old polyline attributes. We stroke text by calling the CGM
+ *	polyline command. Hence we need to set polyline attributes to 
+ *	match the desired text attributes. When we're finished stroking
+ *	text we need to restore the original polyline attributes
+ */
+Rtype	lineWidthSave;
+IXtype 	lineTypeSave;
+CItype	lineColourSave;
+
+/*
+ *	initialize the line drawing code
+ *	Mostly the routine is responsible for setting the aforementioned
+ *	text attributes correctly and saving the original polyline attributes
+ */
+static	int	open_line_draw()
+{
+	CGMC	cgmc;
+
+	/*
+	 * space for the various attributes
+	 */
+	Rtype	r_array[1];	
+	IXtype	ix_array[1];
+	CItype	ci_array[1];
+
+	/*
+	 * store polyline attributes
+	 */
+	lineWidthSave = LINE_WIDTH;
+	lineTypeSave = LINE_TYPE;
+	lineColourSave = LINE_COLOUR.index;
+
+	cgmc.r = &r_array[0];
+	cgmc.ix = &ix_array[0];
+	cgmc.ci = &ci_array[0];
 	
+	/*set line width */
+	cgmc.class = ATT_ELEMENT;
+	cgmc.command = LINE_WIDTH_ID;
+	cgmc.r[0] = 1.0;
+	cgmc.Rnum = 1;
+	if (Process(&cgmc) != OK) return(-1);
 
+	/*set line type	*/
+	cgmc.class = ATT_ELEMENT;
+	cgmc.command = LINE_TYPE_ID;
+	cgmc.ix[0] = 1;
+	cgmc.IXnum = 1;
+	if (Process(&cgmc) != OK) return(-1);
 
+	/*set line colour to text colour	*/
+	cgmc.class = ATT_ELEMENT;
+	cgmc.command = LINE_COLOUR_ID;
+	cgmc.ci[0] = TEXT_COLOUR.index;
+	cgmc.CInum = 1;
+	if (Process(&cgmc) != OK) return(-1);
 
+	return(0);
+}
 
+/*
+ *	cleanup the line drawing code.
+ *	i.e. restore the original polyline attributes
+ */
+static	int	close_line_draw()
+{
+	CGMC	cgmc;
+
+	Rtype	r_array[1];
+	IXtype	ix_array[1];
+	CItype	ci_array[1];
+
+	cgmc.r = &r_array[0];
+	cgmc.ix = &ix_array[0];
+	cgmc.ci = &ci_array[0];
+	
+	/*	restore line width */
+	cgmc.class = ATT_ELEMENT;
+	cgmc.command = LINE_WIDTH_ID;
+	cgmc.r[0] = lineWidthSave;
+	cgmc.Rnum = 1;
+	if (Process(&cgmc) != OK) return(-1);
+
+	/*	restore line type	*/
+	cgmc.class = ATT_ELEMENT;
+	cgmc.command = LINE_TYPE_ID;
+	cgmc.ix[0] = lineTypeSave;
+	cgmc.IXnum = 1;
+	if (Process(&cgmc) != OK) return(-1);
+
+	/*	restore line colour */
+	cgmc.class = ATT_ELEMENT;
+	cgmc.command = LINE_COLOUR_ID;
+	cgmc.ci[0] = lineColourSave;
+	cgmc.CInum = 1;
+	if (Process(&cgmc) != OK) return(-1);
+
+	return(0);
+}
+
+/*
+ *	draw a polyline by calling the CGM Polyline handler
+ */
+static	int	line_draw(p, n)
+	Ptype	*p;
+{
+	CGMC	cgmc;
+
+	if (n < 1) return(0);
+
+	cgmc.class = GRP_ELEMENT;
+	cgmc.command = POLYLINE_ID;
+	cgmc.more = FALSE;
+	cgmc.p = p;
+	cgmc.Pnum = n;
+
+	if (Process(&cgmc) != OK) return(-1);
+	
+	return(0);
+}
+	
 
 
 /* 	Text:
@@ -712,16 +806,11 @@ int	Text(cgmc)
 				 */
 	int	status = 0;
 
-	static	char *string = NULL;
-	static	unsigned str_space = 0;
+	static	char *string = NULL;	/* the string currently being stroked */
+	static	unsigned str_space = 0;	/* size of string array		*/
 
-	/* variables that will contain "text" commands input data*/
-	static	Ptype	p;  		/* point of origin of text	*/
-
-	/*store old values		*/
-	Rtype	line_width = LINE_WIDTH;
-	IXtype 	line_type = LINE_TYPE;
-	CItype	line_colour = LINE_COLOUR.index;
+	static	Ptype	pStart; 	/* point of origin of text	*/
+	static	Ptype	p[4];	/* point buffer array		*/
 
 	/*
 	 * make sure font has not changed
@@ -734,28 +823,7 @@ int	Text(cgmc)
 	if (! FontIsInit)
 		return(0);	/* no font, nothing to do	*/
 
-	/*set line width */
-	tempcgmc.class = 5;
-	tempcgmc.command = 3;
-	tempcgmc.r[0] = 1.0;
-	tempcgmc.Rnum = 1;
-	(void) Process(&tempcgmc);
-
-	/*set line type	*/
-	tempcgmc.class = 5;
-	tempcgmc.command = 2;
-	tempcgmc.ix[0] = 1;
-	tempcgmc.IXnum = 1;
-	(void) Process(&tempcgmc);
-
-	/*set line colour to text colour	*/
-	/*remember text is stroked with lines	*/
-	tempcgmc.class = 5;
-	tempcgmc.command = 4;
-	tempcgmc.ci[0] = TEXT_COLOUR.index;
-	tempcgmc.CInum = 1;
-	(void) Process(&tempcgmc);
-	
+	if (open_line_draw() < 0) return(-1);
 
 	modified();	/* recalc transformation values if attributes changed*/
 
@@ -782,13 +850,14 @@ int	Text(cgmc)
 	text_align(&trans_x, &trans_y, strlen(string), string); 
 
 	/*store contents of cgmc	*/
-	p.x = cgmc->p[0].x + trans_x; 
-	p.y = cgmc->p[0].y + trans_y;
+	pStart.x = cgmc->p[0].x + trans_x; 
+	pStart.y = cgmc->p[0].y + trans_y;
 
 
 	/* transform text in to cgmc polylines	*/
-	for (char_ind=0; char_ind < strlen(string); char_ind++) {
-		k = i = 0;		/* stroke index in Fontable and cgmc	*/
+	for (char_ind=0; char_ind<strlen(string); char_ind++) {
+
+		k = i = 0;	/* stroke index in Fontable and cgmc	*/
 
 		/* index into Fontable*/
 		index = string[char_ind] - F_CHAR_START(fcap_template);	
@@ -804,12 +873,7 @@ int	Text(cgmc)
 			numstroke = F_NUMSTROKE(fcap_current, index);
 		}
 
-
-#ifdef	DEAD
-		if (index >=0 && index < F_NUMCHAR(fcap_template) && numstroke){
-#else
 		if (index >=0 && index < F_NUMCHAR(fcap_template)){
-#endif
 			if (numstroke) {
 
 
@@ -834,69 +898,33 @@ int	Text(cgmc)
 				}
 			}
 
+			p[k].x = F_X_COORD(fcap_current, index, i)
+				+ x_space + var_x_adj + pStart.x;
 
-
-			/* make sure there is room in cgmc for strokes	*/
-			if (cgmc->Pspace <= numstroke) {
-				if (cgmc->p != (Ptype *) NULL) 
-					free((Voidptr) cgmc->p);
-
-				cgmc->p = (Ptype * ) malloc (
-					((unsigned) numstroke + 1)*sizeof(Ptype)
-				);
-				if (! cgmc->p) {
-					ESprintf(errno, "malloc()");
-					return(-1);
-				}
-
-				cgmc->Pspace = numstroke + 1;
-			}
-
-			cgmc->p[k].x = F_X_COORD(fcap_current, index, i)
-				+ x_space + var_x_adj + p.x;
-
-			cgmc->p[k].y = F_Y_COORD(fcap_current, index, i)
-				+ y_space + var_y_adj + p.y;
+			p[k].y = F_Y_COORD(fcap_current, index, i)
+				+ y_space + var_y_adj + pStart.y;
 
 			k++; i++; 
 
 
-
 			for (;i < numstroke;i++) { 
 				if (!(F_PEN(fcap_template, index, i))) {
-					cgmc->Pnum = k;
 
-					/*cgm polyline command	*/ 
-					cgmc->class = 4;
-					cgmc->command = 1;	
-#ifdef	DEBUG_TEXT
-					draw(cgmc);
-#else
-					if (cgmc->Pnum > 1) {
-						(void) Process(cgmc); 
-					}
+					if (line_draw(p, k) < 0) status = -1;
+
 					k = 0;
-#endif
 				} 
 
-				cgmc->p[k].x = F_X_COORD(fcap_current, index, i)					+ x_space + var_x_adj + p.x;
+				p[k].x = F_X_COORD(fcap_current, index, i)					+ x_space + var_x_adj + pStart.x;
 
-				cgmc->p[k].y = F_Y_COORD(fcap_current, index, i)
-					+ y_space + var_y_adj + p.y;
+				p[k].y = F_Y_COORD(fcap_current, index, i)
+					+ y_space + var_y_adj + pStart.y;
 				k++; 
 			}
-			cgmc->Pnum = k;
 
-			cgmc->class = 4;
-			cgmc->command = 1; 
-#ifdef	DEBUG_TEXT
-			draw(cgmc);
-#else
-			if (cgmc->Pnum > 1) {
-				(void) Process(cgmc); 
-			}
+			if (line_draw(p, k) < 0) status = -1;
 			k = 0;
-#endif
+
 			}	/* if numstroke	*/
 
 			/* calculate possistion of NEXT character for
@@ -934,29 +962,10 @@ int	Text(cgmc)
 		}	/* if index	*/
 	}
 
+
 	}	/* for loop	*/
 
-	/*now return line modes to normal	*/
-	/*set line width */
-	tempcgmc.class = 5;
-	tempcgmc.command = 3;
-	tempcgmc.r[0] = line_width;
-	tempcgmc.Rnum = 1;
-	(void) Process(&tempcgmc);
-
-	/*set line type	*/
-	tempcgmc.class = 5;
-	tempcgmc.command = 2;
-	tempcgmc.ix[0] = line_type;
-	tempcgmc.IXnum = 1;
-	(void) Process(&tempcgmc);
-
-	/*set line colour to normal	*/
-	tempcgmc.class = 5;
-	tempcgmc.command = 4;
-	tempcgmc.ci[0] = line_colour;
-	tempcgmc.CInum = 1;
-	(void) Process(&tempcgmc);
+	if (close_line_draw() < 0) return(-1);
 
 	return (status);
 }
