@@ -688,8 +688,6 @@ C
 C
         DIMENSION IAMA(*)
 C
-        CHARACTER*(*) LABL
-C
 C The routine ARDBPX produces a picture of that part of the contents of
 C the area map IAMA that belongs to the group IGIP; if IGIP is zero or
 C negative, all groups of edges are shown.  This is a modified version
