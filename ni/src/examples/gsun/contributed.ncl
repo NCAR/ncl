@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.15 2003-07-01 17:02:45 shea Exp $
+;      $Id: contributed.ncl,v 1.16 2003-07-01 23:29:50 shea Exp $
 ;
 ; -------------- added Feb 14 2002
 ; copy_VarMeta
@@ -663,13 +663,15 @@ begin
   do n=0,nRow-1
      chr   = stringtochar(s(n))
      kChar = dimsizes(chr)-2    ; ignore end-of-line
-    do k=kChar,0,1
-      ;print ("k="+k+"  chr(k)="+chr(k)+"$ c2i="+chartoint(chr(k)))
-       if (chr(k).ne.cBlank) then
-           str(n) = chartostring(chr(0:k))
-           break
-       end if
-    end do
+     if (kChar.ge.0) then
+         do k=kChar,0,1
+           ;print ("k="+k+"  chr(k)="+chr(k)+"$ c2i="+chartoint(chr(k)))
+            if (chr(k).ne.cBlank) then
+                str(n) = chartostring(chr(0:k))
+                break
+            end if
+         end do
+     end if
   end do
   return(str)
 end
