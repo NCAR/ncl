@@ -85,4 +85,9 @@
 #define SystemIncludesName	SystemV
 #endif
 
+#if defined(OSF1) && defined(alpha)
+#define SystemIncludes		"AlphaOSF1"
+#define SystemIncludesName	AlphaOSF1
+#endif
+
 SYSTEM_INCLUDE		= SystemIncludesName
