@@ -35,7 +35,7 @@ C
       data labels / 'Line_Type_0', 'Line_Type_1', 'Line_Type_2', 
      1      'Line_Type_3', 'Line_Type_4' /
       
-      data colors / 40, 57, 65, 80, 90 /
+      data colors / 40, 50, 65, 80, 90 /
 
       data lnthik / 4.0, 4.0, 4.0, 4.0, 4.0 /
 
