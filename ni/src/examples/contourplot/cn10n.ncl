@@ -347,6 +347,7 @@ con2 = create "con2" contourPlotClass workstation_id
   "cnLineColor": 0
   "cnLineLabelsOn": "False"
   "cnHighLabelsOn": "False"
+  "cnLowLabelsOn": "False"
   "cnInfoLabelOn": "False"
   "cnFillColors": (/3,7,11,15,19,23/)
 ; "cnFillColors": (/2,5,8,11,14,17,20,23/)
