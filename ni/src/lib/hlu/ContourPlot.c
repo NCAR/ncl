@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.113 2002-09-17 21:49:45 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.114 2002-10-01 19:29:16 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1591,6 +1591,7 @@ static NhlString cnEmptyString = "";
 
 static NhlContourPlotLayer	Cnl = NULL;
 static NhlContourPlotLayerPart	*Cnp = NULL;
+static float LowLabelFactor = 1.0;
 
 /*
  * Function:	nhlfcontourplotlayerclass
@@ -3205,16 +3206,6 @@ static NhlErrorTypes cnInitAreamap
 	subret = _NhlArinam(cnp->aws,entry_name);
 	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
 
-	subret = AddDataBoundToAreamap(cnl,entry_name);
-	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
-
-	subret = _NhlCpclam(cnp->data,cnp->fws,cnp->iws,cnp->aws,entry_name);
-	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
-
-	if (cnp->dump_area_map)
-	    _NhlDumpAreaMap(cnp->aws,entry_name);
-
-
 	return ret;
 }
 
@@ -4197,11 +4188,6 @@ static NhlErrorTypes ContourPlotPostDraw
 			ret = MIN(subret,ret);
 		}
 	}
-	if (cnp->aws != NULL) {
-		subret = _NhlIdleWorkspace(cnp->aws);
-		ret = MIN(subret,ret);
-		cnp->aws = NULL;
-	}
 
 	return ret;
 }
@@ -4440,37 +4426,6 @@ static NhlErrorTypes cnDraw
   	}
 #endif
 
-	if (cnp->do_labels && 
-	    cnp->label_masking && cnp->label_order == order) {
-
-		c_cpseti("GIL",5);
-		if (cnp->aws == NULL) {
-			subret = cnInitAreamap(cnl,entry_name);
-			if ((ret = MIN(subret,ret)) < NhlWARNING) {
-				ContourAbortDraw(cnl);
-				return ret;
-			}
-		}
-		if (! cnp->aws) {
-			e_text = "%s: Error reserving workspace";
-			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-			ContourAbortDraw(cnl);
-			return NhlFATAL;
-		}
-
-		c_pcsetr("PH",(float)cnp->line_lbls.pheight);
-		c_pcsetr("PW",(float)cnp->line_lbls.pwidth);
-		c_pcsetr("CS",(float)cnp->line_lbls.cspacing);
-		c_pcseti("FN",cnp->line_lbls.font);
-		c_pcseti("QU",cnp->line_lbls.quality);
-		c_pcsetc("FC",cnp->line_lbls.fcode);
-		subret = _NhlCplbam(cnp->data,
-				    cnp->fws,cnp->iws,cnp->aws,entry_name);
-		if ((ret = MIN(subret,ret)) < NhlWARNING) {
-			ContourAbortDraw(cnl);
-			return ret;
-		}
-	}
 
 	if (cnp->do_fill && cnp->fill_order == order) {
 
@@ -4489,6 +4444,22 @@ static NhlErrorTypes cnDraw
 				ContourAbortDraw(cnl);
 				return NhlFATAL;
 			}
+			subret = AddDataBoundToAreamap(cnl,entry_name);
+			if ((ret = MIN(subret,ret)) < NhlWARNING) {
+				ContourAbortDraw(cnl);
+				return ret;
+			}
+
+			subret = _NhlCpclam(cnp->data,cnp->fws,cnp->iws,
+					    cnp->aws,entry_name);
+			if ((ret = MIN(subret,ret)) < NhlWARNING) {
+				ContourAbortDraw(cnl);
+				return ret;
+			}
+
+			if (cnp->dump_area_map)
+				_NhlDumpAreaMap(cnp->aws,entry_name);
+
 			subret = _NhlArscam(cnp->aws,
 					    (_NHLCALLF(hlucpfill,HLUCPFILL)),
 					    entry_name);
@@ -4496,6 +4467,9 @@ static NhlErrorTypes cnDraw
 				ContourAbortDraw(cnl);
 				return ret;
 			}
+			subret = _NhlIdleWorkspace(cnp->aws);
+			ret = MIN(subret,ret);
+			cnp->aws = NULL;
 		}
 		else if (0) {
 			cnCellFill();
@@ -4534,12 +4508,33 @@ static NhlErrorTypes cnDraw
 	    (cnp->do_lines || cnp->missing_val.perim_on ||
 	     cnp->grid_bound.perim_on || cnp->out_of_range.perim_on)) {
 		if (cnp->do_labels && cnp->label_masking) {
+			c_cpseti("GIL",5);
+			if (cnp->aws == NULL) {
+				subret = cnInitAreamap(cnl,entry_name);
+				if ((ret = MIN(subret,ret)) < NhlWARNING) {
+					ContourAbortDraw(cnl);
+					return ret;
+				}
+			}
+			if (! cnp->aws) {
+				e_text = "%s: Error reserving workspace";
+				NhlPError(NhlFATAL,NhlEUNKNOWN,
+					  e_text,entry_name);
+				ContourAbortDraw(cnl);
+				return NhlFATAL;
+			}
 			c_pcsetr("PH",(float)cnp->line_lbls.pheight);
 			c_pcsetr("PW",(float)cnp->line_lbls.pwidth);
 			c_pcsetr("CS",(float)cnp->line_lbls.cspacing);
 			c_pcseti("FN",cnp->line_lbls.font);
 			c_pcseti("QU",cnp->line_lbls.quality);
 			c_pcsetc("FC",cnp->line_lbls.fcode);
+			subret = _NhlCplbam(cnp->data,cnp->fws,cnp->iws,
+					    cnp->aws,entry_name);
+			if ((ret = MIN(subret,ret)) < NhlWARNING) {
+				ContourAbortDraw(cnl);
+				return ret;
+			}
 			subret = _NhlCpcldm(cnp->data,
 					    cnp->fws,cnp->iws,cnp->aws,
 					    (_NHLCALLF(cpdrpl,CPDRPL)),
@@ -4548,6 +4543,9 @@ static NhlErrorTypes cnDraw
 				ContourAbortDraw(cnl);
 				return ret;
 			}
+			subret = _NhlIdleWorkspace(cnp->aws);
+			ret = MIN(subret,ret);
+			cnp->aws = NULL;
 		}
 		else {
 			subret = _NhlCpcldr(cnp->data,
@@ -4559,7 +4557,7 @@ static NhlErrorTypes cnDraw
 		}
 	}
 	
-	if (cnp->do_labels && cnp->label_order == order) {	
+	if (cnp->do_labels && cnp->label_order == order) {
 		gset_fill_int_style(GSTYLE_SOLID);
 
 		c_pcsetr("PH",(float)cnp->line_lbls.pheight);
@@ -5043,8 +5041,13 @@ static NhlErrorTypes UpdateLineAndLabelParams
                 cnp->line_lbls.gks_bcolor =
                         _NhlGetGksCi(cl->base.wkptr,
                                      cnp->line_lbls.back_color);
+	/* 
+	 * If the perim color is transparent the line will not be
+	 * drawn, but just in case, set the gks color to the foreground
+	 */
         if (cnp->line_lbls.perim_lcolor == NhlTRANSPARENT)
-                cnp->line_lbls.gks_plcolor = NhlTRANSPARENT;
+                cnp->line_lbls.gks_plcolor = 
+                        _NhlGetGksCi(cl->base.wkptr,NhlFOREGROUND);
         else
                 cnp->line_lbls.gks_plcolor =
                         _NhlGetGksCi(cl->base.wkptr,
@@ -5063,7 +5066,8 @@ static NhlErrorTypes UpdateLineAndLabelParams
                         _NhlGetGksCi(cl->base.wkptr,
                                      cnp->high_lbls.back_color);
         if (cnp->high_lbls.perim_lcolor == NhlTRANSPARENT)
-                cnp->high_lbls.gks_plcolor = NhlTRANSPARENT;
+                cnp->high_lbls.gks_plcolor = 
+                        _NhlGetGksCi(cl->base.wkptr,NhlFOREGROUND);
         else
                 cnp->high_lbls.gks_plcolor =
                         _NhlGetGksCi(cl->base.wkptr,
@@ -5076,14 +5080,22 @@ static NhlErrorTypes UpdateLineAndLabelParams
                 cnp->low_lbls.gks_color =
                          _NhlGetGksCi(cl->base.wkptr,
                                              cnp->low_lbls.color);
+/* 
+ * the low label background can be transparent iff (and only if) the high
+ * label background is transparent, but otherwise the color can be 
+ * different. If the low label background is set transparent when
+ * the high label is not transparent, default to the background color.
+ */
         if (cnp->low_lbls.back_color == NhlTRANSPARENT)
-                cnp->low_lbls.gks_bcolor = NhlTRANSPARENT;
+                cnp->low_lbls.gks_bcolor =  
+			_NhlGetGksCi(cl->base.wkptr,NhlBACKGROUND);
         else
                 cnp->low_lbls.gks_bcolor =
                         _NhlGetGksCi(cl->base.wkptr,
                                      cnp->low_lbls.back_color);
         if (cnp->low_lbls.perim_lcolor == NhlTRANSPARENT)
-                cnp->low_lbls.gks_plcolor = NhlTRANSPARENT;
+                cnp->low_lbls.gks_plcolor = 
+                        _NhlGetGksCi(cl->base.wkptr,NhlFOREGROUND);
         else
                 cnp->low_lbls.gks_plcolor =
                         _NhlGetGksCi(cl->base.wkptr,
@@ -5164,19 +5176,21 @@ static NhlErrorTypes UpdateLineAndLabelParams
 	else if (cnp->llabel_placement == NhlCONSTANT) {
 		*do_labels = True;
 		c_cpseti("LLP",1);
+#if 0
 		c_cpsetr("DPS",
 			 (float)(cnp->line_lbls.real_height / cl->view.width));
 		c_cpsetr("DPV",(float).015);
+#endif
 #if 0
 		c_cpsetr("RC3",(float)0.0);
 		c_cpseti("LLP",2);
-#endif
 		if (cnp->line_lbls.angle < 0.0) 
 			c_cpseti("LLO",1); /* angle to contour direction */
 		else {
 			c_cpseti("LLO",0); /* fixed angle  */
 			c_cpsetr("LLA",(float)cnp->line_lbls.angle);
 		}
+#endif
 
 	}
 	else if (cnp->llabel_placement == NhlRANDOMIZED) {
@@ -5206,14 +5220,16 @@ static NhlErrorTypes UpdateLineAndLabelParams
 		c_cpsetr("LLW", 
 			 (float) (height * cnp->line_lbls.perim_space));
 		if (cnp->line_lbls.back_color == NhlTRANSPARENT) {
-			if (! cnp->line_lbls.perim_on) 
+			if (cnp->line_lbls.perim_lcolor == NhlTRANSPARENT ||
+			    ! cnp->line_lbls.perim_on) 
 				c_cpseti("LLB",0); 
 			else
 				c_cpseti("LLB",1);
 		}
 		else {
 			c_cpseti("LBC",cnp->line_lbls.back_color);
-			if (! cnp->line_lbls.perim_on)
+			if (cnp->line_lbls.perim_lcolor == NhlTRANSPARENT ||
+			    ! cnp->line_lbls.perim_on) 
 				c_cpseti("LLB",2);
 			else
 				c_cpseti("LLB",3);
@@ -5238,26 +5254,50 @@ static NhlErrorTypes UpdateLineAndLabelParams
 
 /*
  * Due to the way Conpack works it is not possible to have different text
- * sizes, white space, background or perim on/off settings for the high
+ * sizes, white space, background and perim on/off settings for the high
  * and low labels. The high labels take precedence, so set up accordingly.
+ * Background and perim can have different colors, except that if the
+ * high background or perim is transparent (emulated by turning these
+ * features off) then the corresponding low feature must also become 
+ * transparent. 
+ * This means that 
+ * cnLowLabelFontHeightF
+ * cnLowLabelAngleF
+ * cnLowLabelPerimSpacingF
+ * cnLowLabelPerimOn
+ * are always ignored.
+ * cnLowLabelBackgroundColor and cnLowLabelPerimColor can be set independently
+ * of the corresponding HighLabel resource if that resource is not set to 
+ * transparent. However, if the low label resource is set to transparent in
+ * this case, it will be coerced to transparent.
+ * 
+ * It could be possible to set the low label font height independently of
+ * the high label font height, but it will require a more sophisticated
+ * method than the LowLabelFactor which is commented out below. 
  */
 
 	if (cnp->high_lbls.on || cnp->low_lbls.on) {
 		*do_labels = True;
 		height = cnp->high_lbls.real_height / cl->view.width;
+#if 0
+		LowLabelFactor =  cnp->high_lbls.real_height /
+			cnp->low_lbls.real_height;
+#endif
 		c_cpsetr("HLS",(float)height);
 		c_cpsetr("HLW",(float)(cnp->high_lbls.perim_space  * height));
 		c_cpsetr("HLA",(float)cnp->high_lbls.angle);
 		c_cpseti("HLO", (int) cnp->high_low_overlap);
 
 		if (cnp->high_lbls.back_color == NhlTRANSPARENT) {
-			if (! cnp->high_lbls.perim_on) 
+			if (cnp->high_lbls.perim_lcolor == NhlTRANSPARENT ||
+			    ! cnp->high_lbls.perim_on) 
 				c_cpseti("HLB",0); 
 			else
 				c_cpseti("HLB",1);
 		}
 		else {
-			if (! cnp->high_lbls.perim_on)
+			if (cnp->high_lbls.perim_lcolor == NhlTRANSPARENT ||
+			    ! cnp->high_lbls.perim_on)
 				c_cpseti("HLB",2);
 			else
 				c_cpseti("HLB",3);
@@ -11032,6 +11072,10 @@ void   (_NHLCALLF(hlucpchhl,HLUCPCHHL))
 			c_pcseti("CC", Cnp->high_lbls.gks_color);
 			c_pcseti("OC", Cnp->high_lbls.gks_color);
 		}
+		else {
+			c_cpsetc("CTM"," ");
+			return;
+		}
 		c_pcsetr("PH",(float)Cnp->high_lbls.pheight);
 		c_pcsetr("PW",(float)Cnp->high_lbls.pwidth);
 		c_pcsetr("CS",(float)Cnp->high_lbls.cspacing);
@@ -11056,12 +11100,7 @@ void   (_NHLCALLF(hlucpchhl,HLUCPCHHL))
 		c_cpsetc("CTM",buf);
 		break;
 	case 4:
-		if (! Cnp->high_lbls.on || ! Cnp->high_lbls.perim_on) 
-			return;
-		if (Cnp->high_lbls.perim_lcolor == NhlTRANSPARENT)
-			gset_line_colr_ind( Cnp->high_lbls.gks_color);
-		else
-			gset_line_colr_ind(Cnp->high_lbls.gks_plcolor);
+		gset_line_colr_ind(Cnp->high_lbls.gks_plcolor);
 		gset_linewidth(Cnp->high_lbls.perim_lthick);
 		break;
 	case 5:
@@ -11073,8 +11112,8 @@ void   (_NHLCALLF(hlucpchhl,HLUCPCHHL))
 			c_pcseti("CC", Cnp->low_lbls.gks_color);
 			c_pcseti("OC", Cnp->low_lbls.gks_color);
 		}
-		c_pcsetr("PH",(float)Cnp->low_lbls.pheight);
-		c_pcsetr("PW",(float)Cnp->low_lbls.pwidth);
+		c_pcsetr("PH",(float)Cnp->low_lbls.pheight * LowLabelFactor);
+		c_pcsetr("PW",(float)Cnp->low_lbls.pwidth * LowLabelFactor);
 		c_pcsetr("CS",(float)Cnp->low_lbls.cspacing);
 		c_pcseti("FN",Cnp->low_lbls.font);
 		c_pcseti("QU",Cnp->low_lbls.quality);
@@ -11108,8 +11147,12 @@ void   (_NHLCALLF(hlucpchhl,HLUCPCHHL))
 			c_pcseti("CC", Cnp->low_lbls.gks_color);
 			c_pcseti("OC", Cnp->low_lbls.gks_color);
 		}
-		c_pcsetr("PH",(float)Cnp->low_lbls.pheight);
-		c_pcsetr("PW",(float)Cnp->low_lbls.pwidth);
+		else {
+			c_cpsetc("CTM"," ");
+			return;
+		}
+		c_pcsetr("PH",(float)Cnp->low_lbls.pheight * LowLabelFactor);
+		c_pcsetr("PW",(float)Cnp->low_lbls.pwidth * LowLabelFactor);
 		c_pcsetr("CS",(float)Cnp->low_lbls.cspacing);
 		c_pcseti("FN",Cnp->low_lbls.font);
 		c_pcseti("QU",Cnp->low_lbls.quality);
@@ -11131,12 +11174,7 @@ void   (_NHLCALLF(hlucpchhl,HLUCPCHHL))
 		c_cpsetc("CTM",buf);
 		break;
 	case 8:
-		if (! Cnp->low_lbls.on || ! Cnp->low_lbls.perim_on) 
-			return;
-		if (Cnp->low_lbls.perim_lcolor == NhlTRANSPARENT)
-			gset_line_colr_ind( Cnp->low_lbls.gks_color);
-		else
-			gset_line_colr_ind(Cnp->low_lbls.gks_plcolor);
+		gset_line_colr_ind(Cnp->low_lbls.gks_plcolor);
 		gset_linewidth(Cnp->low_lbls.perim_lthick);
 		break;
 	default:
@@ -11208,6 +11246,9 @@ void   (_NHLCALLF(hlucpchll,HLUCPCHLL))
 				c_pcseti("CC",llcol);
 				c_pcseti("OC",llcol);
 			}
+			else {
+				c_cpsetc("CTM"," ");
+			}
 			c_pcsetr("PH",(float)Cnp->line_lbls.pheight);
 			c_pcsetr("PW",(float)Cnp->line_lbls.pwidth);
 			c_pcsetr("CS",(float)Cnp->line_lbls.cspacing);
@@ -11217,11 +11258,8 @@ void   (_NHLCALLF(hlucpchll,HLUCPCHLL))
 			gset_linewidth((float)Cnp->line_lbls.thickness);
 		}
 	}
-	else if (*iflg == 4 && Cnp->line_lbls.perim_on) {
-		if (Cnp->line_lbls.perim_lcolor == NhlTRANSPARENT)
-			gset_line_colr_ind(llcol);
-		else
-			gset_line_colr_ind(Cnp->line_lbls.gks_plcolor);
+	else if (*iflg == 4) {
+		gset_line_colr_ind(Cnp->line_lbls.gks_plcolor);
 		gset_linewidth(Cnp->line_lbls.perim_lthick);
 	}
 
