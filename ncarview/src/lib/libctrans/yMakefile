@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.26 1996-03-29 18:44:19 boote Exp $
+#	$Id: yMakefile,v 1.27 1996-11-01 15:42:10 boote Exp $
 #
 
 
@@ -109,12 +109,10 @@ DCTXTSRCS = clear_text.c
 DCTXTOBJS = clear_text.o
 
 RelocatableTarget($(MYNAME),$(OBJS))
+BuildSharedLibTarget(libNGctrans,$(OBJS),1,0,$(NCARGRASLIB) $(CGMLIB) $(NCARGCLIB) $(XLIB) -lm -lc)
 BuildIncludes($(INCLUDES),ncarg,..)
 InstallTarget($(INCLUDES),$(INSTALL_INC),$(NCARGINCPATH))
 DependTarget($(SRCS))
-
-all-local::
-	@$(CAT) Copyright
 
 saber_src: $(SRCS)
 	#setopt load_flags $(CFLAGS) $(CINC)

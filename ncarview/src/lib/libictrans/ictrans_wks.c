@@ -1,5 +1,5 @@
 /*
- *	$Id: ictrans_wks.c.sed,v 1.15 1994-04-20 17:47:52 haley Exp $
+ *	$Id: ictrans_wks.c,v 1.1 1996-11-01 15:42:15 boote Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -30,6 +30,7 @@
 #include <fortran.h>
 #endif
 
+#include <ncarg/c.h>
 #include <ncarg/cgm_tools.h>
 #include "ictrans_wks.h"
 
@@ -48,9 +49,9 @@ main()
 	int	unit = 1;
 	char	*string = "wooga";
 
-	opnwks_(&unit);
-	wrtwks_(&unit, (int *)string);
-	clswks_(&unit);
+	NGCALLF(opnwks,OPNWKS)(&unit);
+	NGCALLF(wrtwks,WRTWKS)(&unit, (int *)string);
+	NGCALLF(clswks,CLSWKS)(&unit);
 }
 #endif /* STANDALONE	*/
 
@@ -69,7 +70,7 @@ static	int	DoMem = 0;	/* if true open a memory file	*/
  * to reflect the C/FORTRAN calling characteristics of
  * the compilers in use.
  */
-initic_()
+NGCALLF(initic,INITIC)()
 {
 	DoMem = 1;
 }
@@ -86,7 +87,7 @@ initic_()
  * to reflect the C/FORTRAN calling characteristics of
  * the compilers in use.
  */
-ictarg_(unit, args, status)
+NGCALLF(ictarg,ICTARG)(unit, args, status)
 	int	*unit;
 	char	*args;
 	int	*status;
@@ -98,10 +99,10 @@ ictarg_(unit, args, status)
 
 
 #ifdef cray
-opnwks_(unit, fname_, status)
+NGCALLF(opnwks,OPNWKS)(unit, fname_, status)
 	_fcd	fname_;
 #else
-opnwks_(unit, fname, status)
+NGCALLF(opnwks,OPNWKS)(unit, fname, status)
 	char	*fname;
 #endif
 	int	*unit;
@@ -268,7 +269,7 @@ opnwks_(unit, fname, status)
 	mftab[*unit].type = type;
 }
 
-clswks_(unit, status)
+NGCALLF(clswks,CLSWKS)(unit, status)
 	int	*unit;
 	int	*status;
 {
@@ -321,7 +322,7 @@ clswks_(unit, status)
 	mftab[*unit].type = NO_OUTPUT;
 }
 
-wrtwks_(unit, buffer, length, status)
+NGCALLF(wrtwks,WRTWKS)(unit, buffer, length, status)
 	int	*unit;
 	int	*buffer;
 	int	*length;
@@ -376,7 +377,7 @@ wrtwks_(unit, buffer, length, status)
 	}
 }
 
-rdwks_(unit, buffer, length, status)
+NGCALLF(rdwks,RDWKS)(unit, buffer, length, status)
 	int	*unit;
 	int	*buffer;
 	int	*length;
@@ -442,7 +443,7 @@ rdwks_(unit, buffer, length, status)
 	}
 }
 
-begwks_(unit, status)
+NGCALLF(begwks,BEGWKS)(unit, status)
 	int	*unit;
 	int	*status;
 {
@@ -485,7 +486,7 @@ begwks_(unit, status)
 	}
 }
 
-lstwks_(unit, status)
+NGCALLF(lstwks,LSTWKS)(unit, status)
 	int	*unit;
 	int	*status;
 {
@@ -528,7 +529,7 @@ lstwks_(unit, status)
 	}
 }
 
-flswks_(unit, status)
+NGCALLF(flswks,FLSWKS)(unit, status)
 	int	*unit;
 	int	*status;
 {

@@ -1,24 +1,17 @@
 #
-#	$Id: yMakefile,v 1.19 1994-03-03 17:40:40 haley Exp $
+#	$Id: yMakefile,v 1.20 1996-11-01 15:42:16 boote Exp $
 #
 
 MYNAME1		= libictrans.o
-MYNAME2		= libictrans_.o
 
 #
 # name of the spooler translator
 #
 SPOOL_TRANS	= ctrans
 
-#if defined(IRIX) && (MAJOR == 5)
-EXTRA_CDEFINES	=	-DSPOOL_TRANS='"$(SPOOL_TRANS)"' -DNGTMPDIR='"$(NGTMPDIR)"'\
-			-DBINDIR='"$(BINDIR)"' -DLIBDIR='"$(LIBDIR)"'\
-			-DNCARGDIR='"$(NCARGDIR)"' -D_BSD_TYPES
-#else
 EXTRA_CDEFINES	=	-DSPOOL_TRANS='"$(SPOOL_TRANS)"' -DNGTMPDIR='"$(NGTMPDIR)"'\
 			-DBINDIR='"$(BINDIR)"' -DLIBDIR='"$(LIBDIR)"'\
 			-DNCARGDIR='"$(NCARGDIR)"'
-#endif
 
 EXTENSION_OBJS	= ictrans_mem.o ictrans_wks.o fort_ictrans.o
 
@@ -34,15 +27,9 @@ OBJS	= $(GENERIC_OBJS) $(EXTENSION_OBJS)
 SRCS	= $(GENERIC_SRCS) $(EXTENSION_SRCS)
 
 RelocatableTarget($(MYNAME1),$(OBJS))
-RelocatableTarget($(MYNAME2),$(GENERIC_OBJS))
+BuildSharedLibTarget(libNGictrans,$(GENERIC_OBJS),1,0,$(CTRANSLIB) $(CGMLIB) $(NCARGCLIB) -lc)
 DependTarget($(SRCS))
-CleanFilesTarget(lex.yy.c lex.yy.c.sed sedscript ictrans_wks.c)
-
-# Files that contain C functions that are called by Fortran
-
-ictrans_wks.c: ictrans_wks.c.sed Makefile
-        @$(CALLCONV) $(SYSTEM_INCLUDE) ictrans_wks.c \
-        initic ictarg opnwks clswks wrtwks rdwks begwks lstwks flswks
+CleanFilesTarget(lex.yy.c lex.yy.c.sed sedscript)
 
 lex.yy.c: lex.l Makefile
 	@echo '1a\' > sedscript
@@ -54,15 +41,6 @@ lex.yy.c: lex.l Makefile
 	@$(MV) lex.yy.c lex.yy.c.sed
 	@sed -f sedscript < lex.yy.c.sed > lex.yy.c
 	@$(RM) lex.yy.c.sed sedscript
-
-#
-# Pre 5.x versions of "IRIX" can't compile lex-generated files with the
-# "-ansiposix" option
-#
-#if defined(IRIX) && (MAJOR < 5)
-lex.yy.o:	lex.yy.c
-	$(CC) -c $(COPT) lex.yy.c
-#endif
 
 lint: $(SRCS)
 	lint $(CFLAGS) 1> lint.out 2>&1

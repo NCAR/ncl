@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.29 1994-04-19 14:33:31 haley Exp $
+#	$Id: yMakefile,v 1.30 1996-11-01 15:40:53 boote Exp $
 #
 
 
@@ -41,9 +41,6 @@ OBJS		=  main.o
 
 CProgram($(MYNAME),$(OBJS),$(DEP_LIBS))
 DependTarget($(SRCS))
-
-all-local::
-	@$(CAT) Copyright
 
 saber_src: $(SRCS)
 	#setopt load_flags $(LD_CFLAGS) $(CINCS)
