@@ -1,5 +1,5 @@
 /*
- *      $Id: c_tdstrs.c,v 1.1 1997-06-30 21:47:54 kennison Exp $
+ *      $Id: c_tdstrs.c,v 1.2 1997-07-02 22:27:00 kennison Exp $
  */
 #include <ncarg/ncargC.h>
 
@@ -7,45 +7,45 @@ void c_tdstrs
 #ifdef NeedFuncProto
 (
     int   irst,
-    int   ia01,
-    int   ia02,
-    int   ia03,
-    int   ia04,
-    int   ia05,
-    int   ia06,
-    int   ia07,
-    float ra08,
-    float ra09,
-    float ra10
+    int   ifc1,
+    int   ifc2,
+    int   ifc3,
+    int   ifc4,
+    int   ilc1,
+    int   ilc2,
+    int   iltd,
+    float ustp,
+    float vstp,
+    float wstp
 )
 #else
-(irst,ia01,ia02,ia03,ia04,ia05,ia06,ia07,ra08,ra09,ra10)
+(irst,ifc1,ifc2,ifc3,ifc4,ilc1,ilc2,iltd,ustp,vstp,wstp)
     int   irst;
-    int   ia01;
-    int   ia02;
-    int   ia03;
-    int   ia04;
-    int   ia05;
-    int   ia06;
-    int   ia07;
-    float ra08;
-    float ra09;
-    float ra10;
+    int   ifc1;
+    int   ifc2;
+    int   ifc3;
+    int   ifc4;
+    int   ilc1;
+    int   ilc2;
+    int   iltd;
+    float ustp;
+    float vstp;
+    float wstp;
 #endif
 {
-    int irst2,ia012,ia022,ia032,ia042,ia052,ia062,ia072;
-    float ra082,ra092,ra102;
+    int irst2,ifc12,ifc22,ifc32,ifc42,ilc12,ilc22,iltd2;
+    float ustp2,vstp2,wstp2;
     irst2=irst;
-    ia012=ia01;
-    ia022=ia02;
-    ia032=ia03;
-    ia042=ia04;
-    ia052=ia05;
-    ia062=ia06;
-    ia072=ia07;
-    ra082=ra08;
-    ra092=ra09;
-    ra102=ra10;
-    NGCALLF(tdstrs,TDSTRS)(&irst2,&ia012,&ia022,&ia032,&ia042,&ia052,
-                                  &ia062,&ia072,&ra082,&ra092,&ra102);
+    ifc12=ifc1;
+    ifc22=ifc2;
+    ifc32=ifc3;
+    ifc42=ifc4;
+    ilc12=ilc1;
+    ilc22=ilc2;
+    iltd2=iltd;
+    ustp2=ustp;
+    vstp2=vstp;
+    wstp2=wstp;
+    NGCALLF(tdstrs,TDSTRS)(&irst2,&ifc12,&ifc22,&ifc32,&ifc42,&ilc12,&ilc22,
+                                                &iltd2,&ustp2,&vstp2,&wstp2);
 }

@@ -1,44 +1,44 @@
 /*
- *      $Id: c_tdpara.c,v 1.1 1997-06-30 21:47:41 kennison Exp $
+ *      $Id: c_tdpara.c,v 1.2 1997-07-02 22:26:58 kennison Exp $
  */
 #include <ncarg/ncargC.h>
 
 void c_tdpara
 #ifdef NeedFuncProto
 (
-    float arg1,
-    float arg2,
-    float arg3,
-    float arg4,
-    float arg5,
-    float arg6,
-    float arg7,
-    float arg8,
-    float arg9
+    float ua00,
+    float va00,
+    float wa00,
+    float uv10,
+    float vv10,
+    float wv10,
+    float uv01,
+    float vv01,
+    float wv01
 )
 #else
-(arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8,arg9)
-    float arg1;
-    float arg2;
-    float arg3;
-    float arg4;
-    float arg5;
-    float arg6;
-    float arg7;
-    float arg8;
-    float arg9;
+(ua00,va00,wa00,uv10,vv10,wv10,uv01,vv01,wv01)
+    float ua00;
+    float va00;
+    float wa00;
+    float uv10;
+    float vv10;
+    float wv10;
+    float uv01;
+    float vv01;
+    float wv01;
 #endif
 {
-    float arg12,arg22,arg32,arg42,arg52,arg62,arg72,arg82,arg92;
-    arg12=arg1;
-    arg22=arg2;
-    arg32=arg3;
-    arg42=arg4;
-    arg52=arg5;
-    arg62=arg6;
-    arg72=arg7;
-    arg82=arg8;
-    arg92=arg9;
-    NGCALLF(tdpara,TDPARA)(&arg12,&arg22,&arg32,&arg42,&arg52,&arg62,
-                                                &arg72,&arg82,&arg92);
+    float ua002,va002,wa002,uv102,vv102,wv102,uv012,vv012,wv012;
+    ua002=ua00;
+    va002=va00;
+    wa002=wa00;
+    uv102=uv10;
+    vv102=vv10;
+    wv102=wv10;
+    uv012=uv01;
+    vv012=vv01;
+    wv012=wv01;
+    NGCALLF(tdpara,TDPARA)(&ua002,&va002,&wa002,&uv102,&vv102,&wv102,
+                                                &uv012,&vv012,&wv012);
 }
