@@ -120,7 +120,6 @@ begin
   return ret
 end
 
-
 ;
 ; This function sets the vector levels given the vector object,
 ; the min and max vector levels, and the vector level spacing.
@@ -348,13 +347,13 @@ end
 
  
 ;
-; Add three subtitles to top of plot (left, center, and right).
+; Add up to three subtitles to top of plot (left, center, and right).
 ;
 ; Input: plot to add titles to, three text items representing each title,
 ;        three strings representing the titles, and a max height and
 ;        height factor for calculating the font height.
 ;
-; Output: 0 if okay, 1 if not.
+;  Output: 1 if something happened, 0 if okay, -1 if error.
 ;
 function plot_titles (plot : graphic, \
              ltitle : graphic, ltext : string, \
@@ -402,13 +401,22 @@ begin
     c1 = stringtochar(ltext)
     c2 = stringtochar(ctext)
     c3 = stringtochar(rtext)
-    tchars = sizeof(c1) + sizeof(c2) + sizeof(c3) + 3
 ;
 ; assume constant spacing since that takes the most room
+; if there is a center title then measurement must be broken in two parts:
+; half the center strings plus each of the two end strings
 ;
-    sp_per_char = vp_width / tchars
-    
+    if (sizeof(c2).lt.2) then
+	    tchars = sizeof(c1) + sizeof(c2) + sizeof(c3) + 3
+	    sp_per_char = vp_width / tchars
+    else
+	    tchars = 2 + max((/sizeof(c1) + sizeof(c2) / 2, \
+			       sizeof(c3) + sizeof(c2) / 2 /))
+	    sp_per_char = vp_width / (tchars * 2)
+    end if
+
     height = min((/max_height,sp_per_char/)) * height_factor
+    print (tchars + " tchars " + sp_per_char + " sp_per_char " + height)
 
     if (sizeof(c1).lt.2)
         if (vpon1 .ne. False)
