@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.32 1995-01-28 23:51:50 ethan Exp $
+ *      $Id: Execute.c,v 1.33 1995-02-01 01:29:05 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -997,7 +997,9 @@ NclExecuteReturnStatus _NclExecute
 				int i;
 				NclFrame *previous_fp;
 				int caller_level;
+				NhlErrorTypes ret = NhlNOERROR;
 				ptr++;lptr++;fptr++;
+				
 	
 /*
 * This is not going to work because nothing is done to unpack the
@@ -1006,10 +1008,13 @@ NclExecuteReturnStatus _NclExecute
 */
 				caller_level = _NclFinishFrame();	
 				if(((NclSymbol*)*ptr)->u.bfunc != NULL) {
-					(*((NclSymbol*)*ptr)->u.bfunc->thefunc)();
+					ret = (*((NclSymbol*)*ptr)->u.bfunc->thefunc)();
 /*
 * should actually map values back
 */
+					if(ret < NhlWARNING) {
+						estatus = ret;
+					}
 					previous_fp = _NclLeaveFrame(caller_level);
 					_NclRemapIntrParameters(((NclSymbol*)*ptr)->u.bfunc->nargs,
 							previous_fp,INTRINSIC_FUNC_CALL);
@@ -1049,6 +1054,7 @@ NclExecuteReturnStatus _NclExecute
 				int i;
 				NclFrame *previous_fp;
 				int caller_level;
+				NhlErrorTypes ret = NhlNOERROR;
 				ptr++;lptr++;fptr++;
 /*
 * This is not going to work because nothing is done to unpack the
@@ -1057,7 +1063,10 @@ NclExecuteReturnStatus _NclExecute
 */
 				caller_level = _NclFinishFrame();	
 				if(((NclSymbol*)*ptr)->u.bproc != NULL) {
-					(*((NclSymbol*)*ptr)->u.bproc->theproc)();
+					ret = (*((NclSymbol*)*ptr)->u.bproc->theproc)();
+					if(ret < NhlWARNING) {
+						estatus = ret;
+					}
 /*
 * should actually map values back
 */

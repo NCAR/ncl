@@ -1423,19 +1423,19 @@ int rw_status;
 			if(file_out->file.private_rec == NULL) {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not open (%s)",NrmQuarkToString(path));
 				if(file_out_free) 
-					NclFree((void*)file_out_free);
+					NclFree((void*)file_out);
 				return(NULL);
 			}
 		} else  {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"An internal error in the extension code for the requested file format has occured, could not open (%s)",NrmQuarkToString(path));
 		if(file_out_free) 
-			NclFree((void*)file_out_free);
+			NclFree((void*)file_out);
 			return(NULL);
 		}
 	} else {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"An internal error in the extension code for the requested file format has occured, could not open (%s)",NrmQuarkToString(path));
 		if(file_out_free) 
-			NclFree((void*)file_out_free);
+			NclFree((void*)file_out);
 		return(NULL);
 	}
 	if(file_out->file.format_funcs->get_var_names != NULL) {
@@ -1458,7 +1458,7 @@ int rw_status;
 	} else {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not get variable names for file (%s), can't add file",NrmQuarkToString(path));
 		if(file_out_free) 
-			NclFree((void*)file_out_free);
+			NclFree((void*)file_out);
 		return(NULL);
 	}
 	if(file_out->file.format_funcs->get_dim_names!= NULL) {
@@ -1478,7 +1478,7 @@ int rw_status;
 */
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not get dimension names for file (%s), can't add file",NrmQuarkToString(path));
 		if(file_out_free) 
-			NclFree((void*)file_out_free);
+			NclFree((void*)file_out);
 	
 		return(NULL);
 	}
