@@ -1336,8 +1336,14 @@ int	wr_status;
 * coff is NOW POINTING!!! to the top of the first latitude record!!!!
 */
 		therec->n_vars = initial_iheader.NFLDH;
-		therec->n_headers = initial_iheader.MFILTH;
-		therec->n_lat_recs = initial_iheader.MFILTH*initial_iheader.NOREC;
+		if(initial_iheader.MFILTH == 0) {
+			therec->n_headers = 1;
+			therec->n_lat_recs = therec->n_headers * initial_iheader.NOREC;
+		} else {
+			therec->n_headers = initial_iheader.MFILTH;
+			therec->n_lat_recs = initial_iheader.MFILTH*initial_iheader.NOREC;
+		}
+
 		therec->lat_rec_offsets = (long*)NclMalloc(therec->n_lat_recs*sizeof(long));
 		for(i = 0; i < therec->n_lat_recs; i++) {
 			therec->lat_rec_offsets[i] = -1;
@@ -1436,13 +1442,25 @@ int	wr_status;
 		done = 0;
 		i = 0;
 		n_time = 0;
-		time_var = (double*)NclMalloc(sizeof(double)*initial_iheader.MFILTH);
-		date = (int*)NclMalloc(sizeof(int)*initial_iheader.MFILTH);
-		datesec = (int*)NclMalloc(sizeof(int)*initial_iheader.MFILTH);
-		time_var_size = initial_iheader.MFILTH;
-		time_var[n_time] = (double)initial_iheader.NDCUR + initial_iheader.NSCUR/86400.;
-		date[n_time] = initial_iheader.NCDATE;
-		datesec[n_time++] = initial_iheader.NCSEC;
+		if(initial_iheader.MFILTH == 0) {
+			time_var = (double*)NclMalloc(sizeof(double)*therec->n_headers);
+			date = (int*)NclMalloc(sizeof(int)*therec->n_headers);
+			datesec = (int*)NclMalloc(sizeof(int)*therec->n_headers);
+			time_var_size = therec->n_headers;
+			time_var[n_time] = (double)initial_iheader.NDCUR + initial_iheader.NSCUR/86400.;
+			date[n_time] = initial_iheader.NCDATE;
+			datesec[n_time++] = initial_iheader.NCSEC;
+		} else {
+			time_var = (double*)NclMalloc(sizeof(double)*initial_iheader.MFILTH);
+			date = (int*)NclMalloc(sizeof(int)*initial_iheader.MFILTH);
+			datesec = (int*)NclMalloc(sizeof(int)*initial_iheader.MFILTH);
+			time_var_size = initial_iheader.MFILTH;
+			time_var[n_time] = (double)initial_iheader.NDCUR + initial_iheader.NSCUR/86400.;
+			date[n_time] = initial_iheader.NCDATE;
+			datesec[n_time++] = initial_iheader.NCSEC;
+
+		
+		}
 		while(!done) {
 /*
 * coff NOW POINTING TO BEGINING OF NEXT TIME STEP, have to unpack or skip headers
