@@ -1,0 +1,12 @@
+#
+#	$Id: yMakefile,v 1.1 1993-04-09 17:38:24 haley Exp $
+#
+NCARG	= ../../..
+
+SUBDIRS = pgks
+
+MakeSubdirs($(SUBDIRS))
+MakefilesSubdirs($(SUBDIRS))
+InstallSubdirs($(SUBDIRS))
+CleanSubdirs($(SUBDIRS))
+
