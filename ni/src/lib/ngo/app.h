@@ -1,5 +1,5 @@
 /*
- *      $Id: app.h,v 1.7 1997-09-04 17:05:39 boote Exp $
+ *      $Id: app.h,v 1.8 1998-08-21 01:14:16 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -25,7 +25,7 @@
 #include <ncarg/hlu/Base.h>
 #include <ncarg/ngo/ngo.h>
 
-#define Ng_SELECTED_WORK	"NgSelectedWork"
+#define Ng_SELECTED_WORK	"_NgSelectedWork"
 
 #define NgNappName			"ngappName"
 #define NgCappName			"ngAppName"
@@ -156,10 +156,17 @@ extern void NgAppEnumerateGO(
 	NhlPointer	udata
 );
 
+NhlErrorTypes
+NgAppSetSelectedWork(
+	int		appid,
+        NhlString	symbol_name
+        );
+
+
 extern int NgAppGetSelectedWork(
 	int		appid,
         NhlBoolean	*created
-);
+        );
 
 extern void NgAppGrabFocus(
 	int	appid,

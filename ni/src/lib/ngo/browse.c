@@ -1,5 +1,5 @@
 /*
- *      $Id: browse.c,v 1.19 1998-03-11 18:58:16 dbrown Exp $
+ *      $Id: browse.c,v 1.20 1998-08-21 01:14:17 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2066,6 +2066,7 @@ SetupPaneControl
                  XmNleftWidget,		label,
                  XmNleftOffset,		15,
                  XmNrightAttachment,	XmATTACH_NONE,
+                 XmNbottomAttachment,	XmATTACH_NONE,
                  XmNvalue,		"1",
                  XmNcolumns,		2,
                  XmNeditable,		False,
@@ -2075,12 +2076,17 @@ SetupPaneControl
                  NULL);
         
         pcp->vcr = NgCreateVcrControl
-                (go,parent,20,False,False,False,True,False,True,False,False);
-        
+                (go,"PaneInc",parent,20,
+                 False,False,False,True,False,True,False,False);
+
         XtVaSetValues
                 (pcp->vcr->form,
                  XmNleftAttachment,	XmATTACH_WIDGET,
                  XmNleftWidget,		pcp->text,
+                 XmNbottomAttachment,	XmATTACH_OPPOSITE_WIDGET,
+                 XmNbottomWidget,	pcp->text,
+                 XmNtopAttachment,	XmATTACH_OPPOSITE_WIDGET,
+                 XmNtopWidget,		pcp->text,
                  XmNrightAttachment,	XmATTACH_NONE,
                  NULL);
         
@@ -2103,6 +2109,7 @@ SetupPaneControl
                  XmNleftAttachment,	XmATTACH_WIDGET,
                  XmNleftWidget,		label,
                  XmNrightAttachment,	XmATTACH_NONE,
+                 XmNbottomAttachment,	XmATTACH_NONE,
                  XmNtopOffset,		5,
                  XmNbottomOffset,	5,
                  NULL);
@@ -2110,12 +2117,13 @@ SetupPaneControl
 
 
         pb = XtVaCreateManagedWidget
-                ("Delete",xmPushButtonWidgetClass,
+                ("Hide",xmPushButtonWidgetClass,
                  parent,
                  XmNleftOffset,		15,
                  XmNleftAttachment,	XmATTACH_WIDGET,
                  XmNleftWidget,		pb,
                  XmNrightAttachment,	XmATTACH_NONE,
+                 XmNbottomAttachment,	XmATTACH_NONE,
                  XmNtopOffset,		5,
                  XmNbottomOffset,	5,
                  NULL);

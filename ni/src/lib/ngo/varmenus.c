@@ -1,5 +1,5 @@
 /*
- *      $Id: varmenus.c,v 1.7 1998-03-11 18:58:23 dbrown Exp $
+ *      $Id: varmenus.c,v 1.8 1998-08-21 01:14:22 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -30,8 +30,6 @@
 #include <Xm/CascadeB.h>
 #include <Xm/CascadeBG.h>
 #include <Xm/MenuShell.h>
-#include <X11/IntrinsicP.h>
-#include <X11/CoreP.h>
 
 static void
 FileVarMenu(

@@ -1,5 +1,5 @@
 /*
- *      $Id: go.c,v 1.13 1998-03-11 18:58:20 dbrown Exp $
+ *      $Id: go.c,v 1.14 1998-08-21 01:14:18 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -26,6 +26,7 @@
 #include <ncarg/ngo/browse.h>
 #include <ncarg/ngo/xwk.h>
 #include <ncarg/ngo/graphic.h>
+#include <ncarg/ngo/print.h>
 
 #include <Xm/Xm.h>
 #include <Xm/Protocols.h>
@@ -400,6 +401,54 @@ loadScript
 	return;
 }
 
+
+/*
+ * Function:	printPlot
+ *
+ * Description:	
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+static void
+printPlot
+(
+	Widget		w,
+	XEvent		*xev,
+	String		*params,
+	Cardinal	*num_params
+)
+{
+	char		func[] = "printPlot";
+	NgGO		go;
+	int		goid = NhlDEFAULT_APP;
+
+	goid = NgGOWidgetToGoId(w);
+	if(goid == NhlDEFAULT_APP){
+		NHLPERROR((NhlFATAL,NhlEUNKNOWN,"%s:invalid Widget",func));
+		return;
+	}
+	go = (NgGO) _NhlGetLayer(goid);
+
+	if (! go->go.print) {
+		NhlVACreate(&go->go.print,"printPlot",
+			   NgprintClass,goid,
+			   NULL); 
+	}
+
+	/*
+	 *TODO: move print window to center of goid window.
+	 */
+	NgGOPopup(go->go.print);
+
+	return;
+}
+
 static NhlBoolean
 GetNclEditor
 (
@@ -574,6 +623,7 @@ static XtActionsRec go_act[] = {
 	{"loadScript", loadScript,},
 	{"nclWindow", nclWindow,},
 	{"browseWindow", browseWindow,},
+	{"printPlot", printPlot,},
 };
 
 /*
@@ -666,10 +716,10 @@ GOInitialize
 	go->menubar = NULL;
         go->create_menu = NULL;
         go->delete_menu = NULL;
-        
-        
 
 	NgAppAddGO(go->appmgr,new->base.id);
+
+	go->print = NULL;
 
 	return NhlNOERROR;
 }
@@ -1449,7 +1499,7 @@ _NgGOCreateMenubar
 	NgGOPart	*gp = &go->go;
 	Widget		file,edit,view,options,window,help;
 	Widget		addfile,load,close,quit,delete,create,pulldown,menush;
-	Widget		ncledit,browse;
+	Widget		ncledit,browse,print;
 	static char	*new[]= {"new",NULL};
 	_NhlCB		cb;
 	NhlArgVal	sel,udata;
@@ -1546,16 +1596,32 @@ _NgGOCreateMenubar
                                          xmPushButtonGadgetClass,
                                          gp->fmenu,
                                          NULL);
+#if 0
+        // for now don't create a new browser -- it's not really supported
 	XtAddCallback(browse,XmNactivateCallback,_NgGODefActionCB,new);
+#endif
+	XtAddCallback(browse,XmNactivateCallback,_NgGODefActionCB,NULL);
 
 	ncledit = XtVaCreateManagedWidget("nclWindow",xmPushButtonGadgetClass,
 							gp->fmenu,
 		NULL);
+#if 0
+        // for now don't create a new ncl editor -- it's not really supported
 	XtAddCallback(ncledit,XmNactivateCallback,_NgGODefActionCB,new);
+#endif
+	XtAddCallback(ncledit,XmNactivateCallback,_NgGODefActionCB,NULL);
 
 	XtVaCreateManagedWidget("fsep",xmSeparatorGadgetClass,gp->fmenu,
 		NULL);
 
+	print = XtVaCreateManagedWidget("printPlot",
+					xmPushButtonGadgetClass,gp->fmenu,
+		NULL);
+	XtAddCallback(print,XmNactivateCallback,_NgGODefActionCB,NULL);
+        
+	XtVaCreateManagedWidget("fsep",xmSeparatorGadgetClass,gp->fmenu,
+		NULL);
+        
 	menush = XtVaCreatePopupShell("menush",xmMenuShellWidgetClass,
 								gp->fmenu,
 		XmNwidth,		5,

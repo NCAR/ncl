@@ -1,5 +1,5 @@
 /*
- *      $Id: shaper.c,v 1.8 1997-10-23 00:27:08 dbrown Exp $
+ *      $Id: shaper.c,v 1.9 1998-08-21 01:14:21 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1019,7 +1019,7 @@ void NgDoShaper
 
         if (new) {
                 shaper->vcr = NgCreateVcrControl
-                        (si->go,shaper->form,20,True,
+                        (si->go,"ElementStepper",shaper->form,20,True,
                          True,False,True,True,True,False,True);
                 XtVaSetValues(shaper->vcr->form,
                               XmNleftAttachment,XmATTACH_WIDGET,

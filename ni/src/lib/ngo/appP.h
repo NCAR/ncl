@@ -1,5 +1,5 @@
 /*
- *      $Id: appP.h,v 1.4 1997-09-04 17:05:40 boote Exp $
+ *      $Id: appP.h,v 1.5 1998-08-21 01:14:17 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -64,7 +64,8 @@ typedef struct _NgAppMgrPart {
 	_NgWorkProc		wp;
 	_NgAppGOList		go;
 	_NgAppFStack		active;
-
+        _NhlCB          	delete_wks_cb;
+        int			selected_work_id;
 } NgAppMgrPart;
 
 typedef struct _NgAppMgrRec {

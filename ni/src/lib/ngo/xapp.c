@@ -1,5 +1,5 @@
 /*
- *      $Id: xapp.c,v 1.9 1998-03-11 18:58:24 dbrown Exp $
+ *      $Id: xapp.c,v 1.10 1998-08-21 01:14:23 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -27,6 +27,7 @@
 #include <ncarg/ngo/load.h>
 #include <ncarg/ngo/xwk.h>
 #include <ncarg/ngo/browse.h>
+#include <ncarg/ngo/print.h>
 
 #include <X11/cursorfont.h>
 #include <Xm/Xm.h>
@@ -54,6 +55,9 @@ static NhlResource resources[] = {
 		_NhlRES_GONLY,NULL},
 	{NgNxappLoadFile,NgCxappLoadFile,NhlTInteger,sizeof(int),
 		Oset(loadfile),NhlTImmediate,_NhlUSET((NhlPointer)NULL),
+		_NhlRES_GONLY,NULL},
+	{NgNxappPrintPlot,NgCxappPrintPlot,NhlTInteger,sizeof(int),
+		Oset(printplot),NhlTImmediate,_NhlUSET((NhlPointer)NULL),
 		_NhlRES_GONLY,NULL},
 };
 #undef	Oset
@@ -163,6 +167,7 @@ XAppMgrClassPartInitialize
 static NrmQuark	qexp = NrmNULLQUARK;
 static NrmQuark	qlfile = NrmNULLQUARK;
 static NrmQuark	qafile = NrmNULLQUARK;
+static NrmQuark	qprintplot = NrmNULLQUARK;
 
 /*
  * Function:	XAppMgrClassInitialize
@@ -188,6 +193,7 @@ XAppMgrClassInitialize
 	qexp = NrmStringToQuark(NgNxappExport);
 	qafile = NrmStringToQuark(NgNxappAddFile);
 	qlfile = NrmStringToQuark(NgNxappLoadFile);
+	qprintplot = NrmStringToQuark(NgNxappPrintPlot);
 
 	_NhlInitializeClass(NgxWkClass);
 
@@ -348,6 +354,7 @@ XAppMgrInitialize
 
 	xapp->addfile = NhlDEFAULT_APP;
 	xapp->loadfile = NhlDEFAULT_APP;
+	xapp->printplot = NhlDEFAULT_APP;
 
 	xapp->app_widget = XtVaAppCreateShell(new->base.appobj->base.name,
 			"NgNGO",xcbApplicationShellWidgetClass,xapp->x.dpy,
@@ -417,6 +424,14 @@ XAppMgrGetValues
 						l->base.appobj->base.id,
 					NULL);
 			*(int*)args[i].value.ptrval = xapp->loadfile;
+		}
+		else if(args[i].quark == qprintplot){
+			if(xapp->printplot == NhlDEFAULT_APP)
+				NhlVACreate(&xapp->printplot,"printplot",
+						NgprintClass,
+						l->base.appobj->base.id,
+					NULL);
+			*(int*)args[i].value.ptrval = xapp->printplot;
 		}
 	}
 

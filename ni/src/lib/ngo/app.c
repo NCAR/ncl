@@ -1,5 +1,5 @@
 /*
- *      $Id: app.c,v 1.12 1998-03-11 18:58:14 dbrown Exp $
+ *      $Id: app.c,v 1.13 1998-08-21 01:14:16 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -19,10 +19,20 @@
  *
  *	Description:	
  */
+
+
 #include <ncarg/ngo/appP.h>
 #include <ncarg/hlu/AppI.h>
 #include <ncarg/ngo/ncledit.h>
 #include <ncarg/ngo/nclstate.h>
+
+#ifndef _NCL_H_
+#include <ncarg/ncl/defs.h>
+#include <ncarg/ncl/NclDataDefs.h>
+#include <ncarg/ncl/ApiRecords.h>
+#include <ncarg/ncl/NclApi.h>
+#define _NCL_H_
+#endif
 
 #define	Oset(field)	NhlOffset(NgAppMgrRec,app.field)
 static NhlResource resources[] = {
@@ -105,6 +115,9 @@ NgAppMgrClassRec NgappMgrClassRec = {
 
 NhlClass NgappMgrClass = (NhlClass)&NgappMgrClassRec;
 
+
+static NrmQuark Qngselectedwork = NrmNULLQUARK;
+
 /*
  * Function:	AppMgrClassPartInitialize
  *
@@ -124,6 +137,9 @@ AppMgrClassPartInitialize
 	NhlClass	lc
 )
 {
+        
+	Qngselectedwork = NrmStringToQuark(Ng_SELECTED_WORK);
+        
 	return NhlNOERROR;
 }
 
@@ -207,6 +223,7 @@ AppMgrInitialize
 		_NhlNguiData,	new->base.id,
 		NULL);
 
+        
 	return NhlNOERROR;
 }
 
@@ -307,6 +324,57 @@ AppError
 	return;
 }
 
+static void
+DeleteWksCB
+(
+        NhlArgVal       cbdata,
+        NhlArgVal       udata
+)
+{
+        NgAppMgr	app = (NgAppMgr) udata.ptrval;
+        NgNclAny        sym = (NgNclAny) cbdata.ptrval;
+        NrmQuark        qsymname, *qvars;
+        int		i,sel_id,id,id_count,count;
+        int		*id_array;
+	char		line[512];
+
+        qsymname = NrmStringToQuark(sym->name);
+        if (qsymname == Qngselectedwork)
+                return;
+                
+        sel_id = NgNclGetHluObjId(app->app.nclstate,Ng_SELECTED_WORK,
+                              &id_count,&id_array);
+        if (id_count > 1)
+                NhlFree(id_array);
+
+        if (sel_id != app->app.selected_work_id)
+                return;
+
+            /* find another workstation, and assign selected work to it.
+               Otherwise delete the selected work variable */
+        
+        qvars = NclGetHLUVarSymNames(&count);
+
+        for (i = 0; i < count; i++) {
+                if (qvars[i] == Qngselectedwork)
+                        continue;
+		id = NgNclGetHluObjId
+			(app->app.nclstate,NrmQuarkToString(qvars[i]),
+			 &id_count,&id_array);
+                if (id_count > 1)
+                        NhlFree(id_array);
+                if (_NhlIsWorkstation(_NhlGetLayer(id))) {
+                        NgAppSetSelectedWork(app->base.id,
+                                             NrmQuarkToString(qvars[i]));
+                        return;
+                }
+        }
+        sprintf(line,"delete(%s)\n",Ng_SELECTED_WORK);
+        (void)NgNclSubmitBlock(app->app.nclstate,line);
+        
+        return;
+}
+
 /************************************************************************
  *									*
  *				Exported API				*
@@ -335,12 +403,22 @@ NgAppRun
 	char		func[] = "NgAppRun";
 	NgAppMgr	app = (NgAppMgr)_NhlGetLayer(appid);
 	NgAppMgrClass	ac;
+	NhlArgVal	sel,user_data;
+        NhlLayer        ncl;
 
 	if(!app || !_NhlIsClass((NhlLayer)app,NgappMgrClass)){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"%s:Invalid NgAppMgr object!",
 									func);
 		return;
 	}
+        
+        ncl = _NhlGetLayer(app->app.nclstate);
+	NhlINITVAR(sel);
+        sel.lngval = NgNclCBDELETE_HLUVAR;
+	NhlINITVAR(user_data);
+        user_data.ptrval = app;
+        app->app.delete_wks_cb = _NhlAddObjCallback
+                        (ncl,NgCBnsObject,sel,DeleteWksCB,user_data);
 
 	ac = (NgAppMgrClass)app->base.layer_class;
 
@@ -1229,6 +1307,53 @@ NgAppReleaseFocus
 		}
 		go = go->next;
 	}
+}
+
+/*
+ * Function:	NgAppSetSelectedWork
+ *
+ * Description:	removes the destroy callback associated with the current
+ *              selected workstation, adds a destroy callback for the new
+ *              selected workstation, then sets the workstation.
+ *
+ * In Args:	
+ *
+ * Out Args:	
+ *
+ * Scope:	
+ * Returns:	
+ * Side Effect:	
+ */
+
+NhlErrorTypes
+NgAppSetSelectedWork
+(
+	int		appid,
+        NhlString	symbol_name
+)
+{
+	char		func[] = "NgAppSetSelectedWork";
+	NgAppMgr	app = (NgAppMgr)_NhlGetLayer(appid);
+        NhlErrorTypes   ret = NhlNOERROR;
+        int		id,id_count;
+        int		*id_array;
+	char	line[512];
+
+        id = NgNclGetHluObjId(app->app.nclstate,symbol_name,
+                              &id_count,&id_array);
+        if (id_count > 1)
+                NhlFree(id_array);
+        if (! _NhlIsWorkstation(_NhlGetLayer(id))) {
+                NHLPERROR((NhlFATAL,NhlEUNKNOWN,
+                           "%s: invalid workstation symbol_name",func));
+                return NhlFATAL;
+        }
+        sprintf(line,"%s = %s\n",Ng_SELECTED_WORK,symbol_name);
+        (void)NgNclSubmitBlock(app->app.nclstate,line);
+
+        app->app.selected_work_id = id;
+        
+        return ret;
 }
 
 /*

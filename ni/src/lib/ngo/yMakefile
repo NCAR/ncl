@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.19 1998-01-29 16:05:08 boote Exp $
+#      $Id: yMakefile,v 1.20 1998-08-21 01:14:24 dbrown Exp $
 #
 #########################################################################
 #									#
@@ -44,19 +44,21 @@ XHDRS		= xappP.h xapp.h goP.h go.h ncleditP.h ncledit.h xutil.h \
 		restree.h restreeP.h MegaB.h MegaBP.h graphic.h \
 		plotspecmenu.h plotspecmenuP.h Folder.h FolderP.h \
 		Grid.h GridP.h Tree.h TreeP.h XmL.h htmlview.h htmlviewI.h \
-		htmlviewP.h
+		htmlviewP.h print.h printP.h
 XSRCS		= xapp.c go.c ncledit.c xutil.c load.c addfile.c mwin.c \
 		xwk.c diminfogrid.c attrinfogrid.c vcrcontrol.c browse.c \
 		varmenus.c filetree.c sort.c vartree.c datagrid.c MegaB.c \
 		stringutil.c filepage.c varpage.c shaper.c shapeinfogrid.c \
 		createmenu.c hlupage.c datasinkgrid.c restree.c graphic.c \
-		plotspecmenu.c Folder.c Grid.c Tree.c XmL.c htmlview.c
+		plotspecmenu.c Folder.c Grid.c Tree.c XmL.c htmlview.c \
+		print.c
 XOBJS		= xapp.o go.o ncledit.o xutil.o load.o addfile.o mwin.o \
 		xwk.o diminfogrid.o attrinfogrid.o vcrcontrol.o browse.o \
 		varmenus.o filetree.o sort.o vartree.o datagrid.o MegaB.o \
 		stringutil.o filepage.o varpage.o shaper.o shapeinfogrid.o \
 		createmenu.o hlupage.o datasinkgrid.o restree.o graphic.o \
-		plotspecmenu.o Folder.o Grid.o Tree.o XmL.o htmlview.o
+		plotspecmenu.o Folder.o Grid.o Tree.o XmL.o htmlview.o \
+		print.o
 
 BuildSharedLibTarget(libNGgo,$(OBJS),1,0,NullArgument)
 BuildLibTarget($(MYNAME),$(OBJS))

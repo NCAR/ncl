@@ -1,5 +1,5 @@
 /*
- *      $Id: addfile.c,v 1.19 1998-03-23 22:48:40 dbrown Exp $
+ *      $Id: addfile.c,v 1.20 1998-08-21 01:14:15 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1344,8 +1344,7 @@ static void SetSelectText
 	XtFree(np->dirspec);
 	np->dirspec = selecttext;
 	
-	stat(selecttext,&statbuf);
-	if (S_ISREG(statbuf.st_mode)) {
+	if (! stat(selecttext,&statbuf) && S_ISREG(statbuf.st_mode)) {
 		sprintf(Buffer,"%ld",(long)statbuf.st_size);
 		if (((getuid() == statbuf.st_uid) && 
 		    (statbuf.st_mode & S_IRUSR)) ||
@@ -2419,7 +2418,7 @@ AddFileCreateWin
 	XmStringFree(xmtmp);
         
         np->vcrp = vcrp = 
- 		NgCreateVcrControl(go,form,20,True,
+ 		NgCreateVcrControl(go,"VarInfoStepper",form,20,True,
 				   True,False,True,True,True,False,True);
         
         XtVaSetValues(vcrp->form,

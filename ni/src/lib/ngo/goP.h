@@ -1,5 +1,5 @@
 /*
- *      $Id: goP.h,v 1.9 1998-03-11 18:58:21 dbrown Exp $
+ *      $Id: goP.h,v 1.10 1998-08-21 01:14:19 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -21,6 +21,11 @@
  */
 #ifndef	_NG_GOP_H_
 #define	_NG_GOP_H_
+
+#ifdef DEBUG
+#include <X11/IntrinsicP.h>
+#include <X11/CoreP.h>
+#endif
 
 #include <ncarg/hlu/BaseP.h>
 
@@ -73,7 +78,7 @@ typedef struct _NgGOPart {
         NgVarMenus	delete_menu;
         _NhlCB		gochange_cb;
 	XtTranslations	global_trans;
-
+	int		print;
 } NgGOPart;
 
 typedef struct _NgGORec {

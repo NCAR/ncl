@@ -1,5 +1,5 @@
 /*
- *      $Id: restree.c,v 1.13 1998-02-20 00:11:29 dbrown Exp $
+ *      $Id: restree.c,v 1.14 1998-08-21 01:14:21 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -118,6 +118,7 @@ static rtCntrlRes CntrlRes[] = {
                 
 static NhlLayer IsInstantiatedChild
 (
+        NhlLayer toplayer,
         NhlLayer layer,
         NhlClass class
         )
@@ -129,14 +130,23 @@ static NhlLayer IsInstantiatedChild
         child = layer->base.all_children;
 
         while (child) {
-                NhlLayer child_layer,layer;
+                NhlLayer child_layer,tlayer;
                 
                 if (NhlClassIsSubclass(NhlClassOfObject(child->pid),class))
                         return _NhlGetLayer(child->pid);
                 child_layer = _NhlGetLayer(child->pid);
-                layer = IsInstantiatedChild(child_layer,class);
-                if (layer)
-                        return layer;
+                tlayer = IsInstantiatedChild(toplayer,child_layer,class);
+                if (tlayer) {
+                    /* BAD HACK - hopefully temporary -
+                       if a LogLinTransformation is not instantiated
+                       by a plot object but its TickMark child does
+                       instantiate one, these resources become available. We
+                       DON'T want to see them */
+                        if (!(tlayer->base.parent != toplayer && ! strcmp
+                              (tlayer->base.layer_class->base_class.class_name,
+                               "logLinTransformationClass")))
+                                return tlayer;
+                }
                 child = child->next;
         }
         return NULL;
@@ -163,7 +173,7 @@ static void MarkInstantiated
                         cip[i].layer = layer;
         }
         for (i = rtp->super_class_count+1; i < rtp->class_count; i++) {
-                cip[i].layer = IsInstantiatedChild(layer,cip[i].class);
+                cip[i].layer = IsInstantiatedChild(layer,layer,cip[i].class);
         }
         return;
         
