@@ -1,5 +1,5 @@
 /*
- *	$Id: xwd.c,v 1.10 1992-09-10 21:06:50 don Exp $
+ *	$Id: xwd.c,v 1.11 1992-09-17 18:20:29 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -382,6 +382,14 @@ XWDOpenWrite(name, nx, ny, comment, encoding)
 
 	ras->format = (char *) calloc((unsigned) strlen(FormatName) + 1, 1);
 	(void) strcpy(ras->format, FormatName);
+
+	if (comment != (char *) NULL) {
+		ras->text = (char *) calloc((unsigned) (strlen(comment) + 1),1);
+		(void) strcpy(ras->text, comment);
+	}
+	else {
+		ras->text = (char *) NULL;
+	}
 
 	ras->nx	= nx;
 	ras->ny	= ny;

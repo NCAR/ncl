@@ -1,5 +1,5 @@
 /*
- *	$Id: hdf.c,v 1.11 1992-09-10 21:54:48 don Exp $
+ *	$Id: hdf.c,v 1.12 1992-09-17 18:17:40 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -230,6 +230,14 @@ HDFOpenWrite(name, nx, ny, comment, encoding)
 
 	ras->format = (char *) calloc((unsigned) strlen(FormatName) + 1, 1);
 	(void) strcpy(ras->format, FormatName);
+
+	if (comment != (char *) NULL) {
+		ras->text = (char *) calloc((unsigned) (strlen(comment) + 1),1);
+		(void) strcpy(ras->text, comment);
+	}
+	else {
+		ras->text = (char *) NULL;
+	}
 
 	if (encoding == RAS_DIRECT) {
 		DF24setil(HDF_IL_PIXEL);

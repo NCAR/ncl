@@ -1,5 +1,5 @@
 /*
- *	$Id: sunraster.c,v 1.12 1992-09-14 23:03:25 don Exp $
+ *	$Id: sunraster.c,v 1.13 1992-09-17 18:20:13 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -130,8 +130,13 @@ SunOpenWrite(name, nx, ny, comment, encoding)
 	ras->format = (char *) calloc((unsigned) (strlen(FormatName) + 1), 1);
 	(void) strcpy(ras->format, FormatName);
 
-	ras->text = (char *) calloc((unsigned) (strlen(comment) + 1), 1);
-	(void) strcpy(ras->text, comment);
+	if (comment != (char *) NULL) {
+		ras->text = (char *) calloc((unsigned) (strlen(comment) + 1),1);
+		(void) strcpy(ras->text, comment);
+	}
+	else {
+		ras->text = (char *) NULL;
+	}
 
 	ras->nx	= nx;
 	ras->ny	= ny;

@@ -1,5 +1,5 @@
 /*
- *	$Id: sgiraster.c,v 1.1 1992-09-10 20:49:17 don Exp $
+ *	$Id: sgiraster.c,v 1.2 1992-09-17 18:19:58 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -522,8 +522,13 @@ SGIOpenWrite(name, nx, ny, comment, encoding)
 	ras->format = (char *)calloc((unsigned)(strlen(SGI_FORMAT_NAME)+1),1);
 	(void) strcpy(ras->format, SGI_FORMAT_NAME);
 
-	ras->text = (char *) calloc((unsigned) (strlen(comment) + 1), 1);
-	(void) strcpy(ras->text, comment);
+	if (comment != (char *) NULL) {
+		ras->text = (char *) calloc((unsigned) (strlen(comment) + 1),1);
+		(void) strcpy(ras->text, comment);
+	}
+	else {
+		ras->text = (char *) NULL;
+	}
 
 	ras->nx		= nx;
 	ras->ny		= ny;

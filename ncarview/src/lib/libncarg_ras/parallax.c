@@ -1,5 +1,5 @@
 /*
- *	$Id: parallax.c,v 1.10 1992-09-10 20:59:22 don Exp $
+ *	$Id: parallax.c,v 1.11 1992-09-17 18:18:34 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -119,8 +119,13 @@ ParallaxOpenWrite(name, nx, ny, comment, encoding)
 	ras->format = (char *) calloc((unsigned) (strlen(FormatName) + 1), 1);
 	(void) strcpy(ras->format, FormatName);
 
-	ras->text = (char *) calloc((unsigned) (strlen(comment) + 1), 1);
-	(void) strcpy(ras->text, comment);
+	if (comment != (char *) NULL) {
+		ras->text = (char *) calloc((unsigned) (strlen(comment) + 1),1);
+		(void) strcpy(ras->text, comment);
+	}
+	else {
+		ras->text = (char *) NULL;
+	}
 
 	/* Initialize the Parallax frame buffer board. */
 	status = ParallaxInit();
