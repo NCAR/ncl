@@ -206,8 +206,8 @@ long start_off;
 
 
 
-char EndOfRec(char cw[]) {
-	char tmpc;
+char EndOfRec(unsigned char cw[]) {
+	unsigned char tmpc;
 	
 	tmpc = cw[0] & 0360;
 	tmpc = tmpc >> 4;
@@ -224,8 +224,8 @@ char EndOfRec(char cw[]) {
 		return((char)0377);
 	}
 }
-int forward_index(char cw[]) {
-	char buffer[WORD_SIZE];
+int forward_index(unsigned char cw[]) {
+	unsigned char buffer[WORD_SIZE];
 	
 	buffer[0] =0;
 	buffer[1] = 0;
@@ -233,8 +233,8 @@ int forward_index(char cw[]) {
 	buffer[3] = 0;
 	buffer[4] = 0;
 	buffer[5] = 0;
-	buffer[6] = (char)01 & cw[6];
-	buffer[7] = (char)0377 & cw[7];
+	buffer[6] = (unsigned char)01 & cw[6];
+	buffer[7] = (unsigned char)0377 & cw[7];
 	return(IntIt(buffer));
 }
 
@@ -304,7 +304,7 @@ int COSGetRecord(int fd, int block_number,int offset,char **buffer,int* finish_b
 {
 	long real_offset = (block_number * BLOCK_SIZE) + sz(offset);
 	long end_offset;
-	char control_word[BLOCK_SIZE];
+	unsigned char control_word[BLOCK_SIZE];
 	int total = 0;
 	int len;
 	int n;
@@ -1422,7 +1422,6 @@ int *dimsizes;
 	default:
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"Packing for this CCM file is not 1,2, or 4. This is an severe error can't continue");
 		return(-1);
-		return;
 	}
 }
 
@@ -1557,7 +1556,7 @@ void *storage
 				
 			}
 		}
-		_NclDestroyObj(tmp_md);
+		_NclDestroyObj((NclObj)tmp_md);
 		close(fd);
 	}
 	return(NULL);
